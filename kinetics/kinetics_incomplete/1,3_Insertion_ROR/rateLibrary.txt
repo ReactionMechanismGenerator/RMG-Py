@@ -1,0 +1,20 @@
+// rate library for f13: 1,3 insertion for ROR
+
+// JS, define key word for format of the rate: either Arrhenius or Arrhenius_EP
+Arrhenius_EP
+
+//f13_1,3_insertion_ROR
+// rate constants from rate_library_4.txt, Cath, 03/07/28
+
+//No.	doublebond		R_OR		Temp.		A		N	a	E0	DA	Dn	Da	DE0	Rank
+638.	doublebond	R_OR		300-1500	1E+02	3	0	45	0	0	0	0	0
+639.	Cd/H2_Cd/Nd2	H_OCmethyl		300-1500	9.36E+01	2.85	0	41.9	0	0	0	0	2
+640.	Cd/H2_Cd/H/Nd	H_OCmethyl		300-1500	2.48E+01	2.93	0	43.9	0	0	0	0	2
+641.	Cd/unsub_Cd/unsub	H_OCmethyl		300-1500	4.73E+01	3.00	0	47.0	0	0	0	0	2
+642.	cco_2H	H_OH		300-1500	1.57E+02	3.04	0	39.4	0	0	0	0	2
+643.	cco_HNd	H_OH		300-1500	5.15E+01	3.05	0	41.0	0	0	0	0	2
+644.	cco_Nd2	H_OH		300-1500	1.45E+03	2.80	0	40.8	0	0	0	0	2
+645.	Cd/unsub_Cd/unsub	H_OH		300-1500	1.47E+02	2.94	0	53.1	0	0	0	0	2
+646.	Cd/H/Nd_Cd/H2	H_OH		300-1500	2.27E+02	2.74	0	56.9	0	0	0	0	2
+647.	Cd/H2_Cd/H/Nd	H_OH		300-1500	6.52E+01	2.92	0	50.7	0	0	0	0	2
+648.	Cd/H2_Cd/Nd2	H_OH		300-1500	1.25E+03	2.76	0	48.5	0	0	0	0	2

@@ -1,0 +1,220 @@
+//Intramolecular H migration in radicals (S.R.,1/22/03)
+//f25_intramolecular_HA
+//No DD,DB,BD allowed, only BB,BBB,etc.
+//C.D.W. 04/17/03: added C_rad_out_Cs2_cy3, Cs_H_out_Cs2_cy3, etc. 
+//for cases where the radical center or XH has "outside" ring attached to it,
+//for e.g. cy3(.)CH3 --> cy3H-CH2(.)
+//C.D.W. 04/20/03 : added R3H_SS_12cy3, etc. for cases where there is "inside" ring,
+//for e.g. cyc(CH2CH(.)CH)—CH3 --> cyc(CH3CH2CH)-CH2(.)
+//1) Definition of "inside" ring : when at least two of the *1,*2,*4,..atoms 
+//are members of that ring. 
+//2) Added also R3H_SS_2Cd (for .C-Cd-CH case)
+//3) Use "Others" : Others-[father] to catch the noncyclic cases (discussion with J.S. 04/17/03) 
+//4) The policy now is to add only nodes for which rate rules are available.  
+//Thus here I expanded R2H_S, R3H_SS, etc. but not for e.g. R2H_D, R3H_SD, etc. 
+//C.D.W. 05/28/03 : added R6H and R7H
+
+L1: RnH
+	L2: R2H
+	        L3: R2H_S
+			L4: R2H_S_cy3
+			L4: R2H_S_cy4
+			L4: R2H_S_cy5
+			L4: Others-R2H_S		
+	        L3: R2H_D
+                L3: R2H_B
+	L2: R3H
+		L3: R3H_SR
+	                L4: R3H_SS
+				L5: R3H_SS_12cy3
+				L5: R3H_SS_23cy3
+				L5: R3H_SS_12cy4
+				L5: R3H_SS_23cy4
+				L5: R3H_SS_13cy4
+				L5: R3H_SS_12cy5
+				L5: R3H_SS_23cy5
+				L5: R3H_SS_13cy5
+				L5: R3H_SS_2Cd
+				L5: Others-R3H_SS
+        	        L4: R3H_SD
+                	L4: R3H_ST
+	                L4: R3H_SB
+		L3: R3H_MS
+	                L4: R3H_DS
+        	        L4: R3H_TS
+                	L4: R3H_BS
+                L3: R3H_BB
+	L2: R4H
+		L3: R4H_RSR
+			L4: R4H_RSS
+				L5: R4H_SSS
+				L5: R4H_DSS
+				L5: R4H_TSS
+				L5: R4H_BSS
+			L4: R4H_RSD
+				L5: R4H_SSD
+				L5: R4H_DSD
+				L5: R4H_TSD
+				L5: R4H_BSD
+			L4: R4H_RST
+				L5: R4H_SST
+				L5: R4H_DST
+				L5: R4H_TST
+				L5: R4H_BST
+			L4: R4H_RSB
+				L5: R4H_SSB
+				L5: R4H_DSB
+				L5: R4H_TSB
+				L5: R4H_BSB
+ 		L3: R4H_SMS
+			L4: R4H_SDS
+			L4: R4H_STS
+			L4: R4H_SBS
+                L3: R4H_SBB
+		L3: R4H_BBS
+                L3: R4H_BBB
+	L2: R5H
+		L3: R5H_RSSR
+			L4: R5H_SSSR
+				L5: R5H_SSSS
+				L5: R5H_SSSD
+				L5: R5H_SSST
+				L5: R5H_SSSB
+			L4: R5H_DSSR
+				L5: R5H_DSSS
+				L5: R5H_DSSD
+				L5: R5H_DSST
+				L5: R5H_DSSB
+			L4: R5H_TSSR
+				L5: R5H_TSSS
+				L5: R5H_TSSD
+				L5: R5H_TSST
+				L5: R5H_TSSB
+			L4: R5H_BSSR
+				L5: R5H_BSSS
+				L5: R5H_BSSD
+				L5: R5H_BSST
+				L5: R5H_BSSB
+		L3: R5H_RSMS
+			L4: R5H_SSMS
+			L4: R5H_DSMS
+			L4: R5H_TSMS
+			L4: R5H_BSMS
+		L3: R5H_SMSR
+			L4: R5H_SMSS
+			L4: R5H_SMSD
+			L4: R5H_SMST
+			L4: R5H_SMSB
+		L3: R5H_BBSR
+			L4: R5H_BBSS
+			L4: R5H_BBSD
+			L4: R5H_BBST
+			L4: R5H_BBSB
+		L3: R5H_RSBB
+			L4: R5H_SSBB
+			L4: R5H_DSBB
+			L4: R5H_TSBB
+			L4: R5H_BSBB
+		L3: R5H_SBBS
+		L3: R5H_SBBB
+		L3: R5H_BBBS
+		L3: R5H_BBBB
+	L2: R6H
+		L3: R6H_RSSSR
+			L4: R6H_SSSSR
+				L5: R6H_SSSSS
+				L5: R6H_SSSSD
+				L5: R6H_SSSST
+				L5: R6H_SSSSB
+			L4: R6H_DSSSR
+				L5: R6H_DSSSS
+				L5: R6H_DSSSD
+				L5: R6H_DSSST
+				L5: R6H_DSSSB
+			L4: R6H_TSSSR
+				L5: R6H_TSSSS
+				L5: R6H_TSSSD
+				L5: R6H_TSSST
+				L5: R6H_TSSSB
+			L4: R6H_BSSSR
+				L5: R6H_BSSSS
+				L5: R6H_BSSSD
+				L5: R6H_BSSST
+				L5: R6H_BSSSB
+		L3: R6H_RSSMS
+		L3: R6H_RSMSR
+		L3: R6H_SMSSR
+		L3: R6H_SMSMS
+		L3: R6H_BBSRS
+		L3: R6H_BBSSM
+		L3: R6H_BBSBB
+		L3: R6H_SBBSR
+		L3: R6H_RSBBS
+		L3: R6H_BBBSR
+		L3: R6H_SBBBS
+		L3: R6H_RSBBB
+		L3: R6H_SBBBB
+		L3: R6H_BBBBS
+		L3: R6H_BBBBB
+	L2 : R7H
+L1: Y_rad_out
+        L2: C_rad_out_single
+              L3: C_rad_out_2H
+              L3: C_rad_out_1H
+                   L4: C_rad_out_H/NonDeC
+                   L4: C_rad_out_H/NonDeO
+                   L4: C_rad_out_H/OneDe
+              L3: C_rad_out_noH
+                   L4: C_rad_out_NonDe
+                       L5: C_rad_out_Cs2
+				L6: C_rad_out_Cs2_cy3
+				L6: C_rad_out_Cs2_cy4
+				L6: C_rad_out_Cs2_cy5
+				L6: Others-C_rad_out_Cs2
+                       L5: C_rad_out_NDMustO
+                    L4: C_rad_out_OneDe
+		       L5: C_rad_out_OneDe/Cs
+		       L5: C_rad_out_OneDe/O
+		    L4: C_rad_out_TwoDe  
+	L2: Cd_rad_out_double
+	L2: Cd_rad_out_single
+	      L3: Cd_rad_out_singleH
+	      L3: Cd_rad_out_singleNd
+	      L3: Cd_rad_out_singleDe
+	L2: Ct_rad_out
+	L2: O_rad_out
+	L2: Cb_rad_out
+	L2: CO_rad_out
+
+L1: XH_out
+	      L2: Cs_H_out
+	          L3: Cs_H_out_2H
+	          L3: Cs_H_out_1H
+	     		L4: Cs_H_out_H/NonDeC
+			L4: Cs_H_out_H/NonDeO
+			L4: Cs_H_out_H/OneDe
+	          L3: Cs_H_out_noH
+			L4: Cs_H_out_NonDe
+				L5: Cs_H_out_Cs2
+					L6: Cs_H_out_Cs2_cy3
+					L6: Cs_H_out_Cs2_cy4
+					L6: Cs_H_out_Cs2_cy5
+					L6: Others-Cs_H_out_Cs2
+				L5: Cs_H_out_NDMustO
+			L4: Cs_H_out_OneDe
+			L4: Cs_H_out_TwoDe
+	      L2: Cd_H_out_double
+	          L3: Cd_H_out_doubleC
+	          L3: Cd_H_out_doubleO
+	      L2: Cd_H_out_single
+	          L3: Cd_H_out_singleH
+	          L3: Cd_H_out_singleNd
+	          L3: Cd_H_out_singleDe
+	      L2: CO_H_out
+	      L2: O_H_out
+	      L2: Ct_H_out
+	      L2: Cb_H_out
+	          
+        
+	
+

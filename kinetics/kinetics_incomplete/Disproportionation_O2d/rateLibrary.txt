@@ -1,0 +1,31 @@
+// rate library for f09b: Disproportionation_O2d reaction
+// move rate constants from original disproportionation rate library, JS, Aug, 05, 2003
+// divied A number to make rate per hydrogen.  March, 31, 2004
+// add 20002 for O2 + C=C-C.-C -> HO2 + C=C-C=C, from NIST,Baldwin, R.R.; Walker, R.W., Symp. Int. Combust. Proc., Vol 18, pp 819, 1981, 
+// 20002, original rate: A = 2.1E9, n = 0, E = 0; divide A by redundancy 4
+ 
+
+// JS, define key word for format of the rate: either Arrhenius or Arrhenius_EP
+Arrhenius_EP
+
+// f09b_Disproportionation_O2d
+// 20001: usinging root number of all disproporionation reacitons
+
+// JS, Apr, 4, 2004
+// fix the redundancy problem for all the disp reaction to make the rate per H, details as following
+// 487, O2 + iso-C3H7, R = 2*6 = 12
+// 501, O2 + n-C3H7, R = 2*2 = 4
+// 513, 524, 533-535, O2 + R.-R’(H), (only one H at R' site), R = 2
+
+//No.		Y_rad_birad	XH_Rrad		Temp.		A		N	a	E0	DA	Dn	Da	DE0	Rank
+20001		O2d	XH_Rrad			300-1500	2E+10		0	0	0	0	0	0	0	0
+565.		O2d	Cmethyl_Csrad		700-2500	1.05E10		0	0	0	*3.0	0	0	0	4
+20002.		O2d	Cmethyl_Csrad_De	753		5.25E8		0	0	0	*3.0	0	0	0	4
+20003.		O2d	Cmethyl_Csrad_Nd	700-2500	1.05E10		0	0	0	*3.0	0	0	0	4
+579.		O2d	C/H2/Nd_Csrad		500-900		2.26E+10	0	0	0	*3.0	0	0	0	4
+591.		O2d	C/H/NdNd_Csrad		600-900		1.205E+10	0	0	0	*5.0	0	0	0	4
+602.		O2d	Cdpri_Csrad		300-2500	6.05E+11	0	0	13.55	0	0	0	0	4
+611.		O2d	O_Csrad			298		5.7E+12		0	0	0	0	0	0	0	4
+612.		O2d	O_Csrad			298		2.89E+12	0	0	0	0	0	0	0	4
+613.		O2d	O_Csrad			200-300		2.74E+12	0	0	0	0	0	0	0	4
+

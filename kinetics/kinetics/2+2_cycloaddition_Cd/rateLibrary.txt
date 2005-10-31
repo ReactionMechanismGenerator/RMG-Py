@@ -1,0 +1,10 @@
+// rate library for f17a: 2+2-cycloaddition_Cd
+
+// jing, define key word for format of the rate: either Arrhenius or Arrhenius_EP
+Arrhenius_EP
+
+//f15a_2+2-cycloaddition_Cd
+// from rate_library_4.txt, Cath, 03/07/28
+
+//No.	db	doublebond	Temp.		A		n	a	E0	DA	Dn	Da	DE0	Rank
+586.	db	doublebond	723-786		6.92E+10	0	0	43.72	0	0	0	0	3

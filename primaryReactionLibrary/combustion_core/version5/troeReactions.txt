@@ -1,0 +1,35 @@
+// Small molecule oxidation library, pressure-dependent reaction file, PEY, 7-Jul-04
+// Originally from Leeds methane oxidation mechanism v1.5. Includes all of
+// the Leeds pressure-dependent reactions. 
+// The order of reactions is the same as the original model.
+// http://www.chem.leeds.ac.uk/Combustion/Combustion.html
+
+Unit:
+A: mol/cm3/s
+E: kJ/mol
+
+Reactions: 
+  C2H2   + H    (+M)       =    C2H3   (+M)        8.43E12     0.00    10.81 	*1.2	0	0
+N2/0.4/ O2/0.4/ CO/0.75/ CO2/1.5/ H2O/6.5/ CH4/3.0/ C2H6/3.0/ AR/0.35/
+     LOW / 3.43E18   0.0  6.15 /
+     TROE / 1 1 1 1231 /
+
+  C2H4   + H     (+M)      =    C2H5  (+M)         3.97E09     1.28     5.40 	*1.2	0	0
+N2/0.4/ O2/0.4/ CO/0.75/ CO2/1.5/ H2O/6.5/ CH4/3.0/ C2H6/3.0/ AR/0.35/
+      LOW / 1.35E19   0.00   3.16 /
+      TROE / 0.76  40  1025/
+
+  OH    + OH    (+M)       =  H2O2  (+M)           7.23E13    -0.37     0.00 	*1.2	0	0
+N2/0.4/ O2/0.4/ CO/0.75/ CO2/1.5/ H2O/6.5/ CH4/3.0/ C2H6/3.0/ AR/0.35/
+  LOW  /5.53E19  -0.76     0.00 /
+  TROE /1 1 1 1040/
+
+  H      + CH3   (+M)      =    CH4   (+M)         1.688E14    0.00     0.00  	*1.2	0	0
+N2/0.4/ O2/0.4/ CO/0.75/ CO2/1.5/ H2O/6.5/ CH4/3.0/ C2H6/3.0/ AR/0.35/
+       LOW /  1.408E24  -1.8   0.0 /
+       TROE / 0.37 3315 61 /
+
+  CH3    + CH3   (+M)       =   C2H6  (+M)          3.61E13     0.00    0.00 	*1.2	0	0
+N2/0.4/ O2/0.4/ CO/0.75/ CO2/1.5/ H2O/6.5/ CH4/3.0/ C2H6/3.0/ AR/0.35/
+        LOW / 3.63E41  -7.0   11.56 /
+        TROE /  0.62  73  1180 /

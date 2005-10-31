@@ -1,0 +1,138 @@
+/////////////////////////////////////////////////////////////////
+//
+//   Paul Yelvington, June 17, 2004
+//   Added another level to the tree to distinguish ring size
+//   Jing Song, Feb, 17, 2004
+//   change the original Ring_Correction.txt into
+//   Ring_Dictionary.txt, Ring_Tree.txt, and Ring_Library.txt
+//   To be consistent with other thermo databases   
+//   Notice that for the tree file, all the nodes are at level 1
+//   which is actually a list structure
+//
+//   NOTE:  converted from Unicode, and added an L0 node -- JR 2/22/04
+//
+/////////////////////////////////////////////////////////////////
+
+L0: Ring
+
+L1: ThreeMember
+	L2: Cyclopropane
+	L2: Cyclopropene
+	L2: Methylene_cyclopropane
+	L2: Ethylene_oxide
+	L2:dioxirane
+	L2:cyclopropanone
+	L2:12Methylenecyclopropane
+	L2:2(co)oxirane
+	L2:cyclopropanedione
+	L2:cyclopropenone
+	L2:methylenecyclopropene
+	L2:methylenecyclopropanone
+	L2:methyleneoxirane
+L1: FourMember
+	L2: Cyclobutane
+	L2: Cyclobutene
+	L2: Oxetane
+	L2: Beta-Propiolactone
+	L2: 4-Methylene-2-oxetanone
+	L2: Cyclobutanone
+	L2:12dioxetane
+	L2:dioxerene
+	L2:methylenecyclobutane
+	L2:2methyleneoxetane
+	L2:cyclobutadiene
+	L2:12methylenecyclobutane
+L1: FiveMember
+	L2: Cyclopentane
+	L2: Cyclopentene
+	L2: Cyclopentadiene
+	L2: Tetrahydrofuran
+	L2: 2,3-Dihydrofuran
+	L2: 1,3-Dioxolane
+	L2: Furan
+	L2: Dihydro-2,5-furandione
+	L2: 2,5-Furandione
+	L2: Cyclopentanone
+	L2:12methylenecyclopentane
+	L2:butyrolactone
+	L2:25dihydrofuran
+	L2:12dioxolane
+	L2:12dioxolene
+	L2:123trioxolane
+	L2:124trioxolane
+	L2:methylenecyclopentane
+L1: SixMember
+	L2: Cyclohexane
+	L2: Cyclohexene
+	L2: 1,3-Cyclohexadiene
+	L2: 1,4-Cyclohexadiene
+	L2: Tetrahydro-2H-pyran
+	L2: 1,3-Dioxane
+	L2: 1,4-Dioxane
+	L2: 1,3,5-Trioxane
+	L2: 3,4-Dihydro-2H-pyran
+	L2: Pentanedioic_anhydride
+	L2: Cyclohexanone
+	L2:14methylenecyclohexane
+	L2:36dihydro2hpyran
+	L2:12dioxane
+	L2:36dihydro12dioxin
+	L2:34dihydro12dioxin
+	L2:14dioxin
+	L2:124trioxane
+	L2:123trioxane
+	L2:124trioxene
+	L2:123trioxene
+	L2:13cyclohexadiene5methylene
+	L2:14cyclohexadiene3methylene
+	L2:24cyclohexadienone
+	L2:25cyclohexadienone
+	L2:fg6
+	L2:oxylene
+	L2:pxylene
+	L2:pbenzoquinone
+	L2:obenzoquinone
+L1: SevenMember
+	L2: Cycloheptane
+	L2: Cycloheptene
+	L2: 1,3-Cycloheptadiene
+	L2: 1,3,5-Cycloheptatriene
+	L2: Cycloheptanone
+L1: EightMember
+	L2: Cyclooctane
+//	L2: cis-Cyclooctene
+//	L2: trans-Cyclooctene
+	L2: 1,3,5-Cyclooctatriene
+	L2: Cyclooctatetraene
+	L2: Cyclooctanone
+L1: NineMember
+	L2: Cyclononane
+//	L2: cis-Cyclononene
+//	L2: trans-Cyclononene
+	L2: Cyclononanone
+L1: TenMember
+	L2: Cyclodecane
+	L2: Cyclodecanone
+
+//Very large rings and bi,tri-cycles
+//L2: Cyclododecane
+//L2: Spiropentane
+//L2: Bicyclo-(1,1,0)-butane
+//L2: Bicyclo-(2,1,0)-pentane
+//L2: Bicyclo-(3,1,0)-hexane
+//L2: 2,5-Norbornadiene
+//L2: Bicyclo-(4,1,0)-heptane
+//L2: Bicyclo-(2,2,1)-heptane
+//L2: Bicyclo-(5,1,0)-octane
+//L2: Bicyclo-(6,1,0)-nonane
+//L2: Biphenylene
+//L2: Cycloundecanone
+//L2: Cyclododecanone
+//L2: Cyclo(C15)anone
+//L2: Cyclo(C17)anone
+//L2: 1,3-Benzodioxole
+//L2: 1,4-Dioxatetralin
+//L2: trans-Bicyclo[4.4.0]-3-decanone
+//L2: cis-Bicyclo[4.4.0]-3-decanone
+//L2: Xantene
+//L2: Dodecahydrodibenzo[b,d]furan

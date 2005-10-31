@@ -1,0 +1,22 @@
+// rate library for f31: cyclic ether formation reaction
+// original from rate_library_4.txt, Cath, 03/07/28
+
+// jing, define key word for format of the rate: either Arrhenius or Arrhenius_EP
+Arrhenius_EP
+
+//f31_intermolecular_HA
+//No.		RnOOH		Y_rad_intra		Temp.		A		n	a	E0	DA	Dn	Da	DE0	Rank
+812.		RnOOH		Y_rad_intra		300-1500	1E+11		0	0	10	0	0	0	0	0
+813.		R2OOH_S		C_pri_rad_intra		300-1500	3.98E+12	0	1.3	37.0	*1.20	0	0.3	3.0	2
+814.		R2OOH_S		C_sec_rad_intra		300-1500	1.38E+12	0	1.3	37.0	*1.20	0	0.3	3.0	2
+815.		R2OOH_S		C_ter_rad_intra		300-1500	3.09E+12	0	1.3	37.0	*1.20	0	0.3	3.0	2
+816.		R3OOH_SS	C_pri_rad_intra		300-1500	4.47E+11	0	1.0	38.2	*1.74	0	0.1	3.0	2
+817.		R3OOH_SS	C_sec_rad_intra		300-1500	2.04E+11	0	1.0	38.2	*1.74	0	0.1	3.0	2
+818.		R3OOH_SS	C_ter_rad_intra		300-1500	3.31E+11	0	1.0	38.2	*1.74	0	0.1	3.0	2
+819.		R4OOH_SSS	C_pri_rad_intra		300-1500	5.13E+10	0	0	14.8	*1.41	0	0	2.0	2
+820.		R4OOH_SSS	C_sec_rad_intra		300-1500	3.63E+10	0	0	13.0	*1.41	0	0	2.5	2
+821.		R4OOH_SSS	C_ter_rad_intra		300-1500	2.57E+10	0	0	11.5	*1.41	0	0	3.0	2
+822.		R2OOH_S		Cs_rad_intra		300-1500	6.00E+11	0	0	22.000	0	0	0	0	5
+823.		R3OOH_SS	Cs_rad_intra		300-1500	7.50E+10	0	0	15.250	0	0	0	0	5
+824.		R4OOH_SSS	Cs_rad_intra		300-1500	9.38E+09	0	0	7.000	0	0	0	0	5
+825.		R5OOH_SSSS	Cs_rad_intra		300-1500	1.17E+09	0	0	1.800	0	0	0	0	5

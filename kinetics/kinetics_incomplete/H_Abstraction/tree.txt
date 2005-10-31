@@ -1,0 +1,120 @@
+// tree for f01: HAbstraction reaction
+// original from tree.txt, CDW 10/20/2002
+// SR and JS correct errors and add more nodes, Nov., 20, 2002
+// S.R., C.D.W (1/21/03) add biradicals
+// C.D.W. (6/4/03) added Y_2centeradjbirad (O2b and C2b). 
+// JS, remove CO_birad to form a new family later: CO + RH -> HCO + R.  Aug, 26, 2003
+// f01_intermolecular_HA
+
+L1: X_H
+	L2: H2
+	L2: Cs_H
+		L3: C_methane
+		L3: C_pri
+			L4: C/H3/Cs
+			L4: C/H3/Cd
+			L4: C/H3/Ct
+			L4: C/H3/Cb
+			L4: C/H3/CO
+			L4: C/H3/O
+		L3: C_sec
+			L4: C/H2/NonDeC
+			L4: C/H2/NonDeO
+				L5: C/H2/CsO
+				L5: C/H2/O2
+			L4: C/H2/OneDe
+				L5: C/H2/OneDeC
+				L5: C/H2/OneDeO
+			L4: C/H2/TwoDe
+		L3: C_ter
+			L4: C/H/NonDeC
+				L5: C/H/Cs3
+				L5: C/H/NDMustO
+			L4: C/H/OneDe
+				L5: C/H/Cs2
+				L5: C/H/ODMustO
+			L4: C/H/TwoDe
+				L5: C/H/Cs
+				L5: C/H/TDMustO
+			L4: C/H/ThreeDe
+	L2: Cd_H
+		L3: Cd_pri
+		L3: Cd_sec
+			L4: Cd/H/NonDeC
+			L4: Cd/H/NonDeO
+			L4: Cd/H/OneDe
+	L2: Ct_H
+	L2: Cb_H
+	L2: CO_H
+		L3: CO_pri
+		L3: CO_sec
+			L4: CO/H/NonDe
+			L4: CO/H/OneDe
+	L2: O_H
+		L3: O_pri
+		L3: O_sec
+			L4: O/H/NonDeC
+			L4: O/H/NonDeO
+			L4: O/H/OneDe
+
+
+L1: Y_rad_birad
+       L2: Y_2centeradjbirad
+	   L3: O2b
+	   L3: C2b
+       L2: Y_1centerbirad
+           //L3: CO_birad
+           L3: O_atom_triplet
+           L3: CH2_triplet
+       L2: Y_rad
+	   L3: H_rad
+	   L3: Cs_rad
+		L4: C_methyl
+		L4: C_pri_rad
+			L5: C_rad/H2/Cs
+			L5: C_rad/H2/Cd
+			L5: C_rad/H2/Ct
+			L5: C_rad/H2/Cb
+			L5: C_rad/H2/CO
+			L5: C_rad/H2/O
+		L4: C_sec_rad
+			L5: C_rad/H/NonDeC
+			L5: C_rad/H/NonDeO
+				L6: C_rad/H/CsO
+				L6: C_rad/H/O2
+			L5: C_rad/H/OneDe
+				L6: C_rad/H/OneDeC
+				L6: C_rad/H/OneDeO
+			L5: C_rad/H/TwoDe
+		L4: C_ter_rad
+			L5: C_rad/NonDeC
+				L6: C_rad/Cs3
+				L6: C_rad/NDMustO
+			L5: C_rad/OneDe
+				L6: C_rad/Cs2
+				L6: C_rad/ODMustO
+			L5: C_rad/TwoDe
+				L6: C_rad/Cs
+				L6: C_rad/TDMustO
+			L5: C_rad/ThreeDe
+	L3: Cd_rad
+		L4: Cd_pri_rad
+		L4: Cd_sec_rad
+			L5: Cd_rad/NonDeC
+			L5: Cd_rad/NonDeO
+			L5: Cd_rad/OneDe
+	L3: Ct_rad
+	L3: Cb_rad
+	L3: CO_rad
+		L4: CO_pri_rad
+		L4: CO_sec_rad
+			L5: CO_rad/NonDe
+			L5: CO_rad/OneDe
+	L3: O_rad
+		L4: O_pri_rad
+		L4: O_sec_rad
+			L5: O_rad/NonDeC
+			L5: O_rad/NonDeO
+			L5: O_rad/OneDe
+
+

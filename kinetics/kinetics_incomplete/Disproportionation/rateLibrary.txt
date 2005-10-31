@@ -1,0 +1,86 @@
+// rate library for f09a: Disproportionation reaction
+// original from rate_library_4.txt, Cath, 03/07/28
+
+// JS, define key word for format of the rate: either Arrhenius or Arrhenius_EP
+Arrhenius_EP
+
+// f09a_Disproportionation
+// changing root number into 3e11, 0, 0 according to Wing Tsang . J. Phys. Chem. Ref. Data 1991, 20, 221-273, JS, july 27, 2003
+// add 10001 to give HO2. + R. -> O2 + HR, JS, july 27, 2003
+
+// JS, Aug, 5, 2003
+// move the following rate constants of O2 + XH_Rrad into the new reaction family: Disproportionation_O2d
+// move #: 487, 501, 513, 514, 533, 534, 535
+
+// JS, Apr, 4, 2004
+// fix the redundancy problem for all the disp reaction to make the rate per H, details as following
+// 487-489, 491-499, iso-C3H7, R = 6
+// 490-500, C2H5 and CH3O, R = 3
+// 502-512, n-C3H7, R = 2
+// all others, R = 1
+
+//  
+//No.		Y_rad_birad	XH_Rrad		Temp.		A		N	a	E0	DA	Dn	Da	DE0	Rank
+563.		Y_rad_birad	XH_Rrad		300-1500	3E+11		0	0	0	0	0	0	0	0
+564.		O_sec_rad	O_Orad		300-1500	2.92E+9		0	0	-3.275	0	0	0	0	5		
+566.		CH2_triplet	Cmethyl_Csrad	300-2500	5.02E+12	0	0	0	*2.0	0	0	0	4
+567.		H_rad		Cmethyl_Csrad	300-2500	6.02E+11	0	0	0	*2.0	0	0	0	4
+568.		H_rad		Cmethyl_Csrad	300-2500	6.03E+11	0	0	0	*3.0	0	0	0	4
+569.		C_methyl	Cmethyl_Csrad	300-2500	1.57E+10	0.68	0	0	*1.5	0	0	0	4
+570.		C_rad/H2/Cs	Cmethyl_Csrad	300-2500	3.83E+12	-0.35	0	0	*1.8	0	0	0	4
+571.		C_rad/H2/Cd	Cmethyl_Csrad	300-2500	3.82E+12	-0.35	0	-0.13	*3.0	0	0	0	4
+572.		C_rad/H2/O	Cmethyl_Csrad	300-2500	4.82E+11	0	0	0	*5.0	0	0	0	4
+573.		C_rad/H/NonDeC	Cmethyl_Csrad	300-2500	3.52E+13	-0.70	0	0	*2.0	0	0	0	4
+574.		C_rad/Cs3	Cmethyl_Csrad	300-2500	4.77E+14	-1.10	0	0	*1.7	0	0	0	4
+575.		Cd_pri_rad	Cmethyl_Csrad	300-2500	2.53E+13	-0.70	0	0	*2.0	0	0	0	4
+576.		Ct_rad		Cmethyl_Csrad	300-2500	6.02E+11	0	0	0	*2.0	0	0	0	4
+577.		O_pri_rad	Cmethyl_Csrad	300-2500	4.02E+12	0	0	0	*3.0	0	0	0	4
+578.		H_rad		Cmethyl_Orad	300-1000	6.03E+12	0	0	0	*3.16	0	0	0	4
+580.		CH2_triplet	C/H2/Nd_Csrad	300-2500	9.05E+11	0	0	0	*3.0	0	0	0	4
+581.		H_rad		C/H2/Nd_Csrad	300-2500	9.05E+11	0	0	0	*2.0	0	0	0	4
+582.		C_methyl	C/H2/Nd_Csrad	300-2500	5.75E+12	-0.32	0	0	*1.7	0	0	0	4
+583.		C_rad/H2/Cs	C/H2/Nd_Csrad	300-2500	7.25E+11	0	0	0	*1.4	0	0	0	4
+584.		C_rad/H2/Cd	C/H2/Nd_Csrad	300-2500	7.25E+11	0	0	-0.13	*3.0	0	0	0	4
+585.		C_rad/H2/O	C/H2/Nd_Csrad	300-2500	2.41E+11	0	0	0	*3.0	0	0	0	4
+586.		C_rad/H/NonDeC	C/H2/Nd_Csrad	300-2500	2.565E+13	-0.35	0	0	*2.0	0	0	0	4
+587.		C_rad/Cs3	C/H2/Nd_Csrad	300-2500	1.08E+14	-0.75	0	0	*2.0	0	0	0	4
+588.		Cd_pri_rad	C/H2/Nd_Csrad	300-2500	6.05E+11	0	0	0	*3.0	0	0	0	4
+589.		Ct_rad		C/H2/Nd_Csrad	300-2500	3.015E+12	0	0	0	*3.0	0	0	0	4
+590.		O_pri_rad	C/H2/Nd_Csrad	300-2500	1.205E+13	0	0	0	*3.0	0	0	0	4
+592.		CH2_triplet	C/H/NdNd_Csrad	300-2500	6.03E+12	0	0	0	*3.0	0	0	0	4
+593.		H_rad		C/H/NdNd_Csrad	300-2500	9.04E+11	0	0	0	*2.0	0	0	0	4
+594.		C_methyl	C/H/NdNd_Csrad	300-2500	6.02E+12	-0.32	0	0	*2.0	0	0	0	4
+595.		C_rad/H2/Cs	C/H/NdNd_Csrad	300-2500	8.43E+11	0	0	0	*2.0	0	0	0	4
+596.		C_rad/H2/O	C/H/NdNd_Csrad	300-2500	4.82E+11	0	0	0	*3.0	0	0	0	4
+597.		C_rad/H2/Cd	C/H/NdNd_Csrad	300-2500	7.83E+11	0	0	-0.13	*2.0	0	0	0	4
+598.		C_rad/H/NonDeC	C/H/NdNd_Csrad	300-2500	2.56E+13	-0.35	0	0	*2.0	0	0	0	4
+599.		C_rad/Cs3	C/H/NdNd_Csrad	300-2500	2.16E+14	-0.75	0	0	0	0	0	0	4
+600.		Cd_pri_rad	C/H/NdNd_Csrad	300-2500	8.43E+11	0	0	0	*5.0	0	0	0	4
+601.		O_pri_rad	C/H/NdNd_Csrad	300-2500	1.21E+13	0	0	0	*3.0	0	0	0	4
+603.		H_rad		Cdpri_Csrad	300-2500	1.81E+13	0	0	0	*3.0	0	0	0	4
+604.		C_methyl	Cdpri_Csrad	300-2500	3.01E+12	-0.32	0	-0.13	*3.0	0	0	0	4
+605.		C_rad/H2/Cs	Cdpri_Csrad	300-2500	9.64E+11	0	0	-0.13	*2.0	0	0	0	4
+606.		C_rad/H2/Cd	Cdpri_Csrad	300-2500	8.43E+10	0	0	-0.26	*2.5	0	0	0	4
+607.		C_rad/H/NonDeC	Cdpri_Csrad	300-2500	4.58E+12	-0.35	0	-0.13	*3.0	0	0	0	4
+608.		C_rad/Cs3	Cdpri_Csrad	300-2500	2.89E+13	-0.75	0	-0.13	*3.0	0	0	0	4
+609.		Cd_pri_rad	Cdpri_Csrad	300-2500	2.41E+12	0	0	0	*3.0	0	0	0	4
+610.		O_pri_rad	Cdpri_Csrad	300-2500	6.03E+12	0	0	0	*3.0	0	0	0	4
+614.		O_atom_triplet	O_Csrad		298		9.04E+13	0	0	0	*1.5	0	0	0	3
+615.		CH2_triplet	O_Csrad		300-2500	1.21E+12	0	0	0	*3.0	0	0	0	4
+616.		H_rad		O_Csrad		295		2.0E+13		0	0	0	*2.0	0	0	0	4
+617.		H_rad		O_Csrad		300-2500	6.03E+12	0	0	0	*2.0	0	0	0	4
+618.		C_methyl	O_Csrad		298		8.49E+13	0	0	0	0	0	0	0	3
+619.		C_methyl	O_Csrad		300-2500	2.41E+12	0	0	0	*5.0	0	0	0	4
+620.		C_rad/H2/Cs	O_Csrad		300-2500	2.41E+12	0	0	0	*5.0	0	0	0	4
+621.		C_rad/H2/Cd	O_Csrad		300-2500	1.81E+13	0	0	0	*2.5	0	0	0	4
+622.		C_rad/H2/O	O_Csrad		300-2500	4.82E+12	0	0	0	*2.0	0	0	0	4
+623.		C_rad/H/NonDeC	O_Csrad		300-2500	2.35E+12	0	0	0	*5.0	0	0	0	4
+624.		C_rad/Cs3	O_Csrad		300-2500	6.91E+14	-0.75	0	0	*2.0	0	0	0	4
+625.		Cd_pri_rad	O_Csrad		300-2500	3.01E+13	0	0	0	*2.5	0	0	0	4
+626.		Ct_rad		O_Csrad		300-2500	3.61E+13	0	0	0	*5.0	0	0	0	4
+627.		CO_pri_rad	O_Csrad		300-2500	1.81E+14	0	0	0	*3.0	0	0	0	4
+628.		O_pri_rad	O_Csrad		300-2500	2.41E+13	0	0	0	*2.0	0	0	0	4
+629.		O_rad/NonDeC	O_Csrad		300-2500	2.41E+13	0	0	0	*2.0	0	0	0	4
+630.		O_rad/NonDeO	O_Csrad		300-2500	1.21E+13	0	0	0	*2.0	0	0	0	4
+10001		Y_rad		O_Orad		300-1500	3E+11		0	0	0	0	0	0	0	0
+

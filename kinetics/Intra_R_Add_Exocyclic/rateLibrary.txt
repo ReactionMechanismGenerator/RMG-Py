@@ -1,0 +1,11 @@
+// rate library for f27: intra radical addition to form exocyclic radical
+// original from rate library.txt, CDW 10/20/2002
+
+// JS, define key word for format of the rate: either Arrhenius or Arrhenius_EP
+Arrhenius_EP
+
+// f27 intra_radical_addition_form_exocyclic_radical
+
+//	Rn		multiplebond_intra	radadd_intra		Temp.		A		N	a	E0	DA	Dn	Da	DE0	Rank
+807.	Rn		multiplebond_intra	radadd_intra		300-1500	1E+10		0	0	5	0	0	0	0	0
+808.	R6_SSS_D	doublebond_intra_2H_pri	radadd_intra_cs2H	300-1500	2.51E+10	0	0	6.85	0	0	0	0	2

@@ -1,0 +1,122 @@
+/////////////////////////////////////////////////////////////											
+//											
+//   Paul Yelvington, July 6, 2004"											
+//   Symmetry number removed. Bi,Tri-cycles removed."											
+//   Paul Yelvington, June 17, 2004"											
+//   Added generic ring groups. Values refer to the cyclo-alkane.											
+//   Jing Song, Feb, 17, 2004"											
+//   change the original Ring_Correction.txt into											
+//   Ring_Dictionary.txt, Ring_Tree.txt, and Ring_Library.txt"											
+//   To be consistent with other thermo databases											
+//											
+/////////////////////////////////////////////////////////////											
+
+1	Cyclopropane	27.53	32.00880958	-3.227	-2.849	-2.536	-2.35	-2.191	-2.111	-1.76	0	0	0	Cyclopropane ring BENSON
+2	Cyclopropene	55.47022422	33.32566974	-0.469	-0.789	-0.953	-1.107	-1.45	-1.696	-1.716	0	0	0	Cyclopropene ring BENSON
+3	Methylene_cyclopropane	40.92	31.45066974	-2.1	-2.121	-2.081	-2.005	-1.98	-1.903	-1.541	0	0	0	Methylene cyclopropane ring BENSON
+4	dioxirane	25.19771558	32.38766974	-3.099	-3.194	-3.095	-3.038	-3.281	-3.818	-1.346	0	0	0	
+5	cyclopropanone	45.6	30.72466974	-2.274	-1.932	-1.307	-0.838	-1.06	-1.032	-0.271	0	0	0	
+6	12Methylenecyclopropane	51.47110208	35.35866974	-2.326	-3.139	-3.361	-3.148	-2.736	-2.412	-1.706	0	0	0	
+7	2(co)oxirane	40.76989009	34.529	0.147	-1.715	-2.067	-2.254	-2.546	-2.592	-1.488	0	0	0	
+8	cyclopropanedione	67.29752019	38.91066974	2.85	1.69	0.674	-0.137	-1.157	-2.068	0.878	0	0	0	
+9	cyclopropenone	56.77399816	35.61566974	-0.734	-1.275	-1.673	-1.861	-2.134	-2.557	-1.78	0	0	0	
+10	methylenecyclopropene	69.3159927	39.88566974	0.457	-0.093	-0.645	-1.124	-1.936	-2.246	-2.962	0	0	0	
+11	methylenecyclopropanone	57.7945766	37.18	-0.13	-1.101	-1.774	-2.139	-2.509	-2.858	-0.084	0	0	0	
+12	methyleneoxirane	36.05425989	29.893	-2.101	-2.381	-2.338	-2.236	-2.424	-2.639	-2.068	0	0	0	
+13	Cyclobutane	26.2	29.8	-4.61	-3.89	-3.14	-2.64	-1.88	-1.38	-0.67	0	0	0	Cyclobutane ring BENSON		
+14	Cyclobutene	29.84	29.86766974	-3.038	-2.783	-2.423	-2.153	-1.888	-1.694	-1.258	0	0	0	Cyclobutene ring BENSON	
+15	12dioxetane	28.07355355	29.02166974	-3.586	-4.031	-3.818	-3.503	-3.252	-3.45	1.262	0	0	0	
+16	dioxerene	24.44132324	29.78266974	-3.375	-4.281	-4.206	-4.037	-3.926	-3.327	-2.473	0	0	0	
+17	methylenecyclobutane	26.9	28.88866974	-3.91	-3.339	-2.739	-2.2	-1.51	-1.051	-62.52	0	0	0	
+18	2methyleneoxetane	23.79	25.597	-3.33	-3.553	-3.213	-2.78	-2.445	-2.331	0.556	0	0	0	
+19	cyclobutadiene	77.21353163	36.43033948	-2.336	-3.24	-3.526	-3.419	-3.071	-2.761	-2.346	0	0	0	
+20	12methylenecyclobutane	28.04	31.48766974	-4.313	-4.605	-4.416	-3.887	-3.024	-2.355	-1.276	0	0	0	
+21	Cyclopentane	6.3	27.3	-6.5	-5.5	-4.5	-3.8	-2.8	-1.93	-0.37	0	0	0	Cyclopentane ring BENSON
+22	Cyclopentene	5.97	25.8283738	-4.5	-3.942	-3.291	-2.759	-2.08	-1.628	-0.898	0	0	0	Cyclopentene ring BENSON
+23	Cyclopentadiene	6.05	27.98213548	-3.784497608	-3.72708134	-3.268803828	-2.743827751	-2.053588517	-1.654641148	-0.987559809	0	0	0	Cyclopentadiene ring BENSON
+24	12methylenecyclopentane	6.67	31.384	-4.844	-5.197	-4.882	-4.175	-2.988	-2.088	-0.655	0	0	0	
+25	butyrolactone	7.92	27.45466974	-5.836	-5.134	-4.114	-3.222	-2.341	-1.822	1.888	0	0	0		
+26	25dihydrofuran	4.236743497	25.15043142	-3.946	-3.361	-2.438	-1.799	-1.458	-1.056	-0.254	0	0	0	
+27	12dioxolane	6.053830707	25.05543142	-4.95	-4.859	-4.265	-3.679	-3.089	-3.091	1.915	0	0	0	
+28	12dioxolene	4.568530962	29.97	-4.159	-4.213	-3.754	-3.376	-3.14	-2.919	-1.982	0	0	0	
+29	123trioxolane	10.19707101	23.316	-2.566	-3.543	-3.344	-2.829	-2.487	-2.78	2.13	0	0	0	
+30	124trioxolane	9.4531912	25.11043142	-5.648	-4.764	-3.63	-2.89	-2.711	-2.859	2.25	0	0	0	
+31	methylenecyclopentane	5.21	24.62866974	-5.861	-4.909	-3.91	-3.01	-1.769	-0.969	0	0	0	0		
+32	Cyclohexane	0.08	18.12768375	-5.8	-4.1	-2.9	8.7	1.08	2.16	3	0	0	0	Cyclohexane ring BENSON
+33	Cyclohexene	1.17	21.21143142	-4.26	-2.98	-1.96	-1.38	-0.28	0.06	0.74	0	0	0	Cyclohexene ring BENSON
+34	1,3-Cyclohexadiene	3.78	23.98243142	0.02	0.04	0.04	-0.02	-0.04	0.26	0.18	0	0	0	"1,3-Cyclohexadiene ring BENSON"
+35	1,4-Cyclohexadiene	0.52	25.38486284	-0.04	-0.02	-0.04	0	0	0	0.02	0	0	0	"1,4-Cyclohexadiene ring BENSON"
+36	14methylenecyclohexane	1.23	15.73143142	-6	-5.349	-4.468	-3.521	-2.203	-1.238	0.384	0	0	0	
+37	36dihydro2hpyran	-4.3	20.52	-4.2	-3.64	-2.57	-1.72	-0.99	-0.33	2.65	0	0	0	
+38	12dioxane	3.9	19.64243142	-5.66	-5.11	-4.17	-3.36	-2.52	-2.4	2.76	0	0	0	
+39	36dihydro12dioxin	-2.66	18.72	-5.45	-4.66	-3.81	-3.16	-2.65	-2.68	-1.53	0	0	0	
+40	34dihydro12dioxin	-5.45	22.64	-4.64	-4.84	-4.28	-3.72	-3.11	-2.62	0.62	0	0	0	
+41	14dioxin	26.61	27.36486284	-6.26	-7.87	-7.82	-7.11	-5.92	-4.49	-3.21	0	0	0	
+42	124trioxane	5.61	19.9	-4.68	-4.07	-2.95	-2.09	-1.73	-1.8	5.2	0	0	0	
+43	123trioxane	10.03	19.3	-2.08	-2.81	-2.55	-1.93	-1.55	-1.9	3.09	0	0	0	
+44	124trioxene	0.58	24.5	-5.51	-5.86	-5.48	-4.98	-4.44	-4.15	-0.75	0	0	0	
+45	123trioxene	0.19	21.57	-1.73	-2.67	-2.62	-2.27	-2.14	-2.08	-0.97	0	0	0	
+46	13cyclohexadiene5methylene	-4.78	28.295	-5.437	-6.088	-5.788	-4.994	-3.626	-2.664	-1.187	0	0	0	
+47	14cyclohexadiene3methylene	-2.31	27.775	-2.818	-2.82	-2.578	-2.314	-2.091	-1.771	-1.49	0	0	0	
+48	24cyclohexadienone	-10.77000001	29.286	-3.46	-4.214	-4.306	-4.049	-3.424	-3.243	0.32	0	0	0	
+49	25cyclohexadienone	-7.63	22.52643142	-3.3	-3.342	-3.034	-2.574	-1.976	-1.883	-0.24	0	0	0	
+50	fg6	1.16	28.901	-5.597	-6.43	-6.331	-5.573	-4.198	-3.361	-1.155	0	0	0	
+51	oxylene	4.16	32.519	-2.078	-2.192	-2.249	-2.275	-2.541	-2.331	-2.797	0	0	0	
+52	pxylene	1.16	31.34986284	-2.139	-2.309	-2.384	-2.407	-2.643	-2.403	-2.826	0	0	0	
+53	pbenzoquinone	7.52	24.92386284	-2.957	-3.282	-3.278	-2.934	-2.427	-2.627	-0.312	0	0	0	
+54	obenzoquinone	7	25.331	-2.887	-3.225	-3.233	-2.897	-2.4	-2.365	-0.077	0	0	0	
+55	Cycloheptane	6.4	15.9	0	0	0	0	0	0	0	0	0	0	Cycloheptane ring BENSON
+56	Cycloheptene	5.4	0	0	0	0	0	0	0	0	0	0	0	Cycloheptene ring BENSON
+57	1,3-Cycloheptadiene	6.6	0	0	0	0	0	0	0	0	0	0	0	"1,3-Cycloheptadiene ring BENSON"
+58	1,3,5-Cycloheptatriene	4.7	23.7	0	0	0	0	0	0	0	0	0	0	"1,3,5-Cycloheptatriene ring BENSON"
+59	Cyclooctane	9.9	16.5	0	0	0	0	0	0	0	0	0	0	Cyclooctane ring BENSON
+//60	cis-Cyclooctene	6	0	0	0	0	0	0	0	0	0	0	0	cis-Cyclooctene ring BENSON
+//61	trans-Cyclooctene	15.3	0	0	0	0	0	0	0	0	0	0	0	trans-Cyclooctene ring BENSON
+62	1,3,5-Cyclooctatriene	8.9	0	0	0	0	0	0	0	0	0	0	0	"1,3,5-Cyclooctatriene ring BENSON"
+63	Cyclooctatetraene	17.1	0	0	0	0	0	0	0	0	0	0	0	Cyclooctatetraene ring BENSON
+64	Cyclononane	12.8	0	0	0	0	0	0	0	0	0	0	0	Cyclononane ring BENSON
+//65	cis-Cyclononene	9.9	0	0	0	0	0	0	0	0	0	0	0	cis-Cyclononene ring BENSON
+//66	trans-Cyclononene	12.8	0	0	0	0	0	0	0	0	0	0	0	trans-Cyclononene ring BENSON
+67	Cyclodecane	12.6	0	0	0	0	0	0	0	0	0	0	0	Cyclodecane ring BENSON
+68	Cyclododecane	4.4	0	0	0	0	0	0	0	0	0	0	0	Cyclododecane ring BENSON
+69	Ethylene_oxide	26.82	31.17666974	-1.891	-2.459	-2.221	-1.969	-1.965	-1.759	2.564	0	0	0	"CY/C2O from THERM (Dorofeeva, 92) Cp1500 est. as Cp1000"
+70	Oxetane	25.08	28.54866974	-4.08	-4.28	-3.636	-3.016	-2.451	-1.896	2.84	0	0	0	"CY/C3O from THERM (Dorofeeva, 92) Cp1500 est. as Cp1000"
+71	Tetrahydrofuran	5.96	21.16243142	-5.93	-5.71	-4.67	-3.721	-2.689	-1.856	3.213	0	0	0	"CY/C4O from THERM (Dorofeeva, 92) Cp1500 est. as Cp1000"
+72	Tetrahydro-2H-pyran	0.8	17.18	-6.02	-5.48	-4.18	-2.98	-1.56	-0.48	-0.48	0	0	0	"CY/C5O from THERM (Dorofeeva, 92) Cp1500 est. as Cp1000"
+73	1,3-Dioxane	1.88	16.19243142	-6.28	-5.951	-4.458	-3.15	-1.967	-0.83	6.799	0	0	0	"1,3-Dioxane ring BENSON"
+74	1,4-Dioxane	3.4	17.80486284	0.04	0	0	-0.02	-0.04	-0.02	0	0	0	0	"1,4-Dioxane ring BENSON"
+75	1,3,5-Trioxane	4.09	16.19525233	-7.01	-5.719	-3.632	-2.189	-1.525	-0.624	7.031	0	0	0	"1,3,5-Trioxane ring BENSON"
+76	2,3-Dihydrofuran	4.57	23.83	-5.56	-5.96	-5.695	-5.144	-4.218	-3.708	-0.284	0	0	0	"2,3-Dihydrofuran ring BENSON"
+77	1,3-Dioxolane	5.13	20.40213548	-5.655	-6.405	-6.306	-6.405	-7.631	-8.27	-3.21	0	0	0	"1,3-Dioxolane ring BENSON"
+78	Furan	6.89	30.08566974	-6.058	-7.002	-6.774	-6.09	-4.988	-3.95	-2.882	0	0	0	Furan ring BENSON
+79	3,4-Dihydro-2H-pyran	3.94	22.01	-6.26	-6.496	-5.96	-5.142	-3.74	-2.915	0.529	0	0	0	"3,4-Dihydro-2H-pyran ring BENSON"
+80	Dihydro-2,5-furandione	1.4	37.76466974	-5.235	-4.726	-3.615	-1.82	-1.835	-1.084	1.104	0	0	0	"Dihydro-2,5-furandione ring BENSON"
+81	Pentanedioic_anhydride	0.8	0	0	0	0	0	0	0	0	0	0	0	Pentanedioic anhydride ring BENSON
+82	2,5-Furandione	3.6	0	0	0	0	0	0	0	0	0	0	0	"2,5-Furandione ring BENSON"
+83	Beta-Propiolactone	22.98	30.392	-4.434	-4.019	-3.31	-2.703	-2.253	-2.012	1.3	0	0	0	Beta-Propiolactone ring BENSON
+84	4-Methylene-2-oxetanone	16.94	35.47700923	-1.912	-1.903	-1.567	-1.378	-1.566	-1.528	1.547	0	0	0	4-Methylene-2-oxetanone ring BENSON
+85	Cyclobutanone	22.53	29.83366974	-5.62	-4.96	-3.744	-2.671	-1.962	-1.415	-0.3	0	0	0	Cyclobutanone ring BENSON
+86	Cyclopentanone	4.47	24.62866974	-6.06	-4.927	-3.392	-2.097	-1.093	-0.322	1.29	0	0	0	Cyclopentanone ring BENSON
+87	Cyclohexanone	1.29	15.92243142	0.01	0.03	-0.04	-0.01	0	-0.03	0	0	0	0	Cyclohexanone ring BENSON
+88	Cycloheptanone	2.3	0	0	0	0	0	0	0	0	0	0	0	Cycloheptanone ring BENSON
+89	Cyclooctanone	1.5	0	0	0	0	0	0	0	0	0	0	0	Cyclooctanone ring BENSON
+90	Cyclononanone	4.7	0	0	0	0	0	0	0	0	0	0	0	Cyclononanone ring BENSON
+91	Cyclodecanone	3.6	0	0	0	0	0	0	0	0	0	0	0	Cyclodecanone ring BENSON
+92	Cycloundecanone	4.4	0	0	0	0	0	0	0	0	0	0	0	Cycloundecanone ring BENSON
+93	Cyclododecanone	3	0	0	0	0	0	0	0	0	0	0	0	Cyclododecanone ring BENSON
+94	Cyclo(C15)anone	2.1	0	0	0	0	0	0	0	0	0	0	0	Cyclo(C15)anone ring BENSON
+95	Cyclo(C17)anone	1.1	0	0	0	0	0	0	0	0	0	0	0	Cyclo(C17)anone ring BENSON
+// added following nodes (pey)											
+96	Ring	0	0	0	0	0	0	0	0	0	0	0	0	Dummy Root
+97	ThreeMember	Cyclopropane									
+98	FourMember	Cyclobutane									
+99	FiveMember	Cyclopentane									
+100	SixMember	Cyclohexane									
+101	SevenMember	Cycloheptane									
+102	EightMember	Cyclooctane									
+103	NineMember	Cyclononane									
+104	TenMember	Cyclodecane									
+//37	Ethylene_oxide	26.9	30.5	-2	-2.8	-3	-2.6	-2.3	-2.3	-2.3	0	0	0	Ethylene oxide ring BENSON Cp1500 est. as Cp1000
+//38	Oxetane	25.7	27.7	-4.6	-5	-4.2	-3.5	-2.5	0.2	0.2	0	0	0	Oxetane ring BENSON Cp1500 est. as Cp1000
+//39	Tetrahydrofuran	5.9	0	0	0	0	0	0	0	0	0	0	0	Tetrahydrofuran ring BENSON
+//40	Tetrahydro-2H-pyran	0.5	0	0	0	0	0	0	0	0	0	0	0	Tetrahydro-2H-pyran ring BENSON

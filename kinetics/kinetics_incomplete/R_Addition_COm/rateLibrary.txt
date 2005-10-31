@@ -1,0 +1,17 @@
+// rate library for f04: radical addition to COm
+
+// jing, define key word for format of the rate: either Arrhenius or Arrhenius_EP
+Arrhenius_EP
+
+// f04_radical_addition_to_COm
+// rate constants from rate_library_4.txt, Cath, 03/07/28
+
+//No.	COm	Y_rad		Temp.		A		n	a	E0	DA	Dn	Da	DE0	Rank
+494.		COm	Y_rad		300-1500	1E+11	0	0	5	0	0	0	0	0
+495.		COm	H_rad		345-449	1.18E+11	0	0	2.72	0	0	0	0	4
+496.		COm	H_rad		305-375	1.87E+11	0	0	1.53	0	0	0	0	3
+497.		COm	C_methyl		300-500	5.06E+11	0	0	6.88	*3.16	0	0	0	4
+498.		COm	C_rad/H2/Cs		300-2500	1.51E+11	0	0	4.81	*2.0	0	0	0	4
+499.		COm	Cd_pri_rad		300-2500	1.51E+11	0	0	4.81	*5.0	0	0	0	4
+500.		COm	Cb_rad		295-500	8.51E+11	0	0	2.99	*1.5	0	0	0.22	3
+501.		COm	O_rad/NonDe		250-2500	3.41E+07	0	0	3.0	0	0	0	0	5
