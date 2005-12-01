@@ -388,11 +388,9 @@ L1: C
 			L4: Cs-CtHHH
 			L4: Cs-CbHHH
 
-		L3: Cs-ClHHH
 		L3: Cs-OsHHH
 		L3: Cs-OsOsHH
 		L3: Cs-OsOsOsH
-		L3: Cs-CsClHH
 		L3: Cs-CCHH
 			L4: Cs-CsCsHH
 			L4: Cs-CdsCsHH 
@@ -1184,7 +1182,6 @@ L1: O
 
 	L2: Os
 		L3: Os-HH
-		L3: Os-ClH
 		L3: Os-OsH
 		L3: Os-OsOs
 		L3: Os-CH
