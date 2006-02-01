@@ -35,6 +35,7 @@ L1: RnH
 				L5: R3H_SS_23cy5
 				L5: R3H_SS_13cy5
 				L5: R3H_SS_2Cd
+				L5: R3H_SS_OC
 				L5: Others-R3H_SS
         	        L4: R3H_SD
                 	L4: R3H_ST
@@ -48,6 +49,9 @@ L1: RnH
 		L3: R4H_RSR
 			L4: R4H_RSS
 				L5: R4H_SSS
+					L6: R4H_SSS_OOCsCs
+					L6: R4H_SSS_OO(Cs/Cs)Cs
+					L6: R4H_SSS_OO(Cs/Cs/Cs)Cs
 				L5: R4H_DSS
 				L5: R4H_TSS
 				L5: R4H_BSS
@@ -77,6 +81,11 @@ L1: RnH
 		L3: R5H_RSSR
 			L4: R5H_SSSR
 				L5: R5H_SSSS
+					L6: R5H_SSSS_OOCCC
+					L6: R5H_SSSS_OO(Cs/Cs)Cs
+					L6: R5H_SSSS_OO(Cs/Cs/Cs)Cs
+					L6: R5H_SSSS_OOCs(Cs/Cs)
+					L6: R5H_SSSS_OOCs(Cs/Cs/Cs)
 				L5: R5H_SSSD
 				L5: R5H_SSST
 				L5: R5H_SSSB
@@ -123,6 +132,7 @@ L1: RnH
 		L3: R6H_RSSSR
 			L4: R6H_SSSSR
 				L5: R6H_SSSSS
+					L6: R6H_SSSSS_OO
 				L5: R6H_SSSSD
 				L5: R6H_SSSST
 				L5: R6H_SSSSB
@@ -157,6 +167,7 @@ L1: RnH
 		L3: R6H_BBBBS
 		L3: R6H_BBBBB
 	L2 : R7H
+		L3: R7H_OOCs4
 L1: Y_rad_out
         L2: C_rad_out_single
               L3: C_rad_out_2H
@@ -191,6 +202,15 @@ L1: XH_out
 	          L3: Cs_H_out_2H
 	          L3: Cs_H_out_1H
 	     		L4: Cs_H_out_H/NonDeC
+				L5: Cs_H_out_H/(NonDeC/Cs)
+				L5: Cs_H_out_H/(NonDeC/Cs/Cs)
+				L5: Cs_H_out_H/(NonDeC/Cs/Cs/Cs)
+				L5: Cs_H_out_H/(CCCOOH)
+				L5: Cs_H_out_H/((C/C)CCOOH)
+				L5: Cs_H_out_H/(CCOOH)
+				L5: Cs_H_out_H/((C/C)COOH)
+				L5: Cs_H_out_H/(COOH)
+				L5: Cs_H_out_H/((C/C)OOH)
 			L4: Cs_H_out_H/NonDeO
 			L4: Cs_H_out_H/OneDe
 	          L3: Cs_H_out_noH
