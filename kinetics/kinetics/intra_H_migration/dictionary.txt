@@ -190,6 +190,12 @@ R3H_BB
 3 *2 Cb 0 {2,B}, {4,S}
 4 *3 H 0 {3,S}
 
+R3H_SS_OC
+1 *1 Os 1 {2,S}
+2 *4 Os 0 {1,S}, {3,S}
+3 *2 Cs 0 {2,S}, {4,S}
+4 *3 H 0 {3,S}
+
 R4H
 Union {R4H_RSR, R4H_SMS, R4H_SBB, R4H_BBS, R4H_BBB} 
 
@@ -206,6 +212,30 @@ R4H_RSS
 3 *5 {R!H} 0 {2,S}, {4,S}
 4 *2 {R!H} 0 {3,S}, {5,S}
 5 *3 H 0 {4,S}
+
+R4H_SSS_OOCsCs
+1 *1 Os 1 {2,S}
+2 *4 Os 0 {1,S}, {3,S}
+3 *5 Cs 0 {2,S}, {4,S}
+4 *2 Cs 0 {3,S}, {5,S}
+5 *3 H 0 {4,S}
+
+R4H_SSS_OO(Cs/Cs)Cs
+1 *1 Os 1 {2,S}
+2 *4 Os 0 {1,S}, {3,S}
+3 *5 Cs 0 {2,S}, {4,S}, {6,S}
+4 *2 Cs 0 {3,S}, {5,S}
+5 *3 H 0 {4,S}
+6 Cs 0 {3,S}
+
+R4H_SSS_OO(Cs/Cs/Cs)Cs
+1 *1 Os 1 {2,S}
+2 *4 Os 0 {1,S}, {3,S}
+3 *5 Cs 0 {2,S}, {4,S}, {6,S}, {7,S}
+4 *2 Cs 0 {3,S}, {5,S}
+5 *3 H 0 {4,S}
+6 Cs 0 {3,S}
+7 Cs 0 {3,S}
 
 R4H_SSS
 1 *1 {R!H} 1 {2,S}
@@ -425,6 +455,52 @@ R5H_SSSS
 4 *5 {R!H} 0 {3,S}, {5,S}
 5 *2 {R!H} 0 {4,S}, {6,S}
 6 *3 H 0 {5,S}
+
+R5H_SSSS_OOCCC
+1 *1 Os 1 {2,S}
+2 *4 Os 0 {1,S}, {3,S}
+3 Cs 0 {2,S}, {4,S}
+4 *5 Cs 0 {3,S}, {5,S}
+5 *2 Cs 0 {4,S}, {6,S}
+6 *3 H 0 {5,S}
+
+R5H_SSSS_OO(Cs/Cs)Cs
+1 *1 Os 1 {2,S}
+2 *4 Os 0 {1,S}, {3,S}
+3 Cs 0 {2,S}, {4,S}, {7,S}
+4 *5 Cs 0 {3,S}, {5,S}
+5 *2 Cs 0 {4,S}, {6,S}
+6 *3 H 0 {5,S}
+7 Cs 0 {3,S}
+
+R5H_SSSS_OO(Cs/Cs/Cs)Cs
+1 *1 Os 1 {2,S}
+2 *4 Os 0 {1,S}, {3,S}
+3 Cs 0 {2,S}, {4,S}, {7,S}, {8,S}
+4 *5 Cs 0 {3,S}, {5,S}
+5 *2 Cs 0 {4,S}, {6,S}
+6 *3 H 0 {5,S}
+7 Cs 0 {3,S}
+8 Cs 0 {3,S}
+
+R5H_SSSS_OOCs(Cs/Cs)
+1 *1 Os 1 {2,S}
+2 *4 Os 0 {1,S}, {3,S}
+3 Cs 0 {2,S}, {4,S}
+4 *5 Cs 0 {3,S}, {5,S}, {7,S}
+5 *2 Cs 0 {4,S}, {6,S}
+6 *3 H 0 {5,S}
+7 Cs 0 {4,S}
+
+R5H_SSSS_OOCs(Cs/Cs/Cs)
+1 *1 Os 1 {2,S}
+2 *4 Os 0 {1,S}, {3,S}
+3 Cs 0 {2,S}, {4,S}
+4 *5 Cs 0 {3,S}, {5,S}, {7,S}, {8,S}
+5 *2 Cs 0 {4,S}, {6,S}
+6 *3 H 0 {5,S}
+7 Cs 0 {4,S}
+8 Cs 0 {4,S}
 
 R5H_SSSD
 1 *1 {R!H} 1 {2,S}
@@ -646,8 +722,8 @@ R5H_SMSB
 1 *1 {R!H} 1 {2,S}
 2 *4 {R!H} 0 {1,S}, {3,{D,T,B}}
 3 {R!H} 0 {2,{D,T,B}}, {4,S}
-4 *5 Ct 0 {3,S}, {5,B}
-5 *2 Ct 0 {4,B}, {6,S}
+4 *5 Cb 0 {3,S}, {5,B}
+5 *2 Cb 0 {4,B}, {6,S}
 6 *3 H 0 {5,S}
 
 R5H_BBSR
@@ -823,6 +899,15 @@ R6H_SSSSS
 4 {R!H} 0 {3,S}, {5,S}
 5 *5 {R!H} 0 {4,S}, {6,S}
 6 *2 {R!H} 0 {5,S}, {7,S}
+7 *3 H 0 {6,S}
+
+R6H_SSSSS_OO
+1 *1 Os 1 {2,S}
+2 *4 Os 0 {1,S}, {3,S}
+3 Cs 0 {2,S}, {4,S}
+4 Cs 0 {3,S}, {5,S}
+5 *5 Cs 0 {4,S}, {6,S}
+6 *2 Cs 0 {5,S}, {7,S}
 7 *3 H 0 {6,S}
 
 R6H_SSSSD
@@ -1132,6 +1217,16 @@ R7H
 7 *2 {R!H} 0 {6,{S,D,T,B}}, {8,S}
 8 *3 H 0 {7,S}
 
+R7H_OOCs4
+1 *1 Os 1 {2,S}
+2 *4 Os 0 {1,S}, {3,S}
+3 {R!H} 0 {2,S}, {4,{S,D,T,B}}
+4 {R!H} 0 {3,{S,D,T,B}}, {5,{S,D,T,B}}
+5 *5 {R!H} 0 {4,{S,D,T,B}}, {6,{S,D,T,B}}
+6 {R!H} 0 {5,{S,D,T,B}}, {7,{S,D,T,B}}
+7 *2 {R!H} 0 {6,{S,D,T,B}}, {8,S}
+8 *3 H 0 {7,S}
+
 Y_rad_out
 1 *1 {R!H} 1 
 
@@ -1285,6 +1380,75 @@ Cs_H_out_H/NonDeC
 2 *3 H 0 {1,S}
 3 Cs 0 {1,S}
 4 H 0 {1,S}
+
+Cs_H_out_H/(NonDeC/Cs)
+1 *2 Cs 0 {2,S} {3,S} {4,S}
+2 *3 H 0 {1,S}
+3 Cs 0 {1,S} {5,S}
+4 H 0 {1,S}
+5 Cs 0 {3,S}
+
+Cs_H_out_H/(NonDeC/Cs/Cs)
+1 *2 Cs 0 {2,S} {3,S} {4,S}
+2 *3 H 0 {1,S}
+3 Cs 0 {1,S} {5,S} {6,S}
+4 H 0 {1,S}
+5 Cs 0 {3,S}
+6 Cs 0 {3,S}
+
+Cs_H_out_H/(NonDeC/Cs/Cs/Cs)
+1 *2 Cs 0 {2,S} {3,S} {4,S}
+2 *3 H 0 {1,S}
+3 Cs 0 {1,S} {5,S} {6,S} {7,S}
+4 H 0 {1,S}
+5 Cs 0 {3,S}
+6 Cs 0 {3,S}
+7 Cs 0 {3,S}
+
+Cs_H_out_H/(CCCOOH)
+1 *2 Cs 0 {2,S} {3,S}
+2 *3 H 0 {1,S}
+3 Cs 0 {1,S}, {4,S}
+4 Cs 0 {3,S}, {5,S}
+5 Os 0 {4,S}, {6,S}
+6 Os 0 {5,S}
+
+Cs_H_out_H/((C/C)CCOOH)
+1 *2 Cs 0 {2,S}, {3,S}, {7,S}
+2 *3 H 0 {1,S}
+3 Cs 0 {1,S}, {4,S}
+4 Cs 0 {3,S}, {5,S}
+5 Os 0 {4,S}, {6,S}
+6 Os 0 {5,S}
+7 Cs 0 {1,S}
+
+Cs_H_out_H/(CCOOH)
+1 *2 Cs 0 {2,S} {3,S}
+2 *3 H 0 {1,S}
+3 Cs 0 {1,S}, {4,S}
+4 Os 0 {3,S}, {5,S}
+5 Os 0 {4,S}
+
+Cs_H_out_H/((C/C)COOH)
+1 *2 Cs 0 {2,S}, {3,S}, {6,S}
+2 *3 H 0 {1,S}
+3 Cs 0 {1,S}, {4,S}
+4 Os 0 {3,S}, {5,S}
+5 Os 0 {4,S}
+6 Cs 0 {1,S}
+
+Cs_H_out_H/(COOH)
+1 *2 Cs 0 {2,S} {3,S}
+2 *3 H 0 {1,S}
+3 Os 0 {1,S}, {4,S}
+4 Os 0 {3,S}
+
+Cs_H_out_H/((C/C)OOH)
+1 *2 Cs 0 {2,S}, {3,S}, {5,S}
+2 *3 H 0 {1,S}
+3 Os 0 {1,S}, {4,S}
+4 Os 0 {3,S}
+5 Cs 0 {1,S}
 
 Cs_H_out_H/NonDeO
 1 *2 Cs 0 {2,S} {3,S} {4,S}
