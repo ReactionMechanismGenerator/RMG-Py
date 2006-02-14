@@ -44,6 +44,150 @@ SixMember
 5   R!H 0 {4,{S,D}} {6,{S,D}}
 6   R!H 0 {5,{S,D}} {1,{S,D}}
 
+sixnosidedouble
+1 * {Cs,Os} 0 {2,S} {6,S}
+2   {Cs,Os} 0 {1,S} {3,S}
+3   {Cs,Os} 0 {2,S} {4,S}
+4   {Cs,Os} 0 {3,S} {5,S}
+5   {Cs,Os} 0 {4,S} {6,S}
+6   {Cs,Os} 0 {5,S} {1,S}
+
+Oxane
+1  * Cs 0 {2,S} {6,S}
+2    Os 0 {1,S} {3,S}
+3    Cs 0 {2,S} {4,S}
+4    Cs 0 {3,S} {5,S}
+5    Cs 0 {4,S} {6,S}
+6    Cs 0 {5,S} {1,S}
+
+
+six-sidedoubles
+1   {C,O} 0 {2,S} {6,S}
+2 * {Cd,CO} 0 {1,S} {3,S}
+3   {C,O} 0 {2,S} {4,S}
+4   {C,O} 0 {3,S} {5,S}
+5   {C,O} 0 {4,S} {6,S}
+6   {C,O} 0 {5,S} {1,S}
+
+
+six-onesidedouble
+1   {Cs,Os} 0 {2,S} {6,S}
+2 * {Cd,CO} 0 {1,S} {3,S}
+3   {Cs,Os} 0 {2,S} {4,S}
+4   {Cs,Os} 0 {3,S} {5,S}
+5   {Cs,Os} 0 {4,S} {6,S}
+6   {Cs,Os} 0 {5,S} {1,S}
+
+
+sixmembd-allsingles-twosidedoubles-ortho
+1   {Cs,Os} 0 {2,S} {6,S}
+2 *  {Cd,CO} 0 {1,S} {3,S}
+3   {Cd,CO} 0 {2,S} {4,S}
+4   {Cs,Os} 0 {3,S} {5,S}
+5   {Cs,Os} 0 {4,S} {6,S}
+6   {Cs,Os} 0 {5,S} {1,S}
+
+sixmembd-allsingles-twosidedoubles-meta
+1  {Cs,Os} 0 {2,S} {6,S}
+2 *  {Cd,CO} 0 {1,S} {3,S}
+3   {Cs,Os} 0 {2,S} {4,S}
+4   {Cd,CO} 0 {3,S} {5,S}
+5   {Cs,Os} 0 {4,S} {6,S}
+6   {Cs,Os} 0 {5,S} {1,S}
+
+sixmembd-allsingles-twosidedoubles-para
+1  {Cs,Os} 0 {2,S} {6,S}
+2 *  {Cd,CO} 0 {1,S} {3,S}
+3   {Cs,Os} 0 {2,S} {4,S}
+4   {Cs,Os} 0 {3,S} {5,S}
+5   {Cd,CO} 0 {4,S} {6,S}
+6   {Cs,Os} 0 {5,S} {1,S}
+
+six-inringonedouble
+1   {Cs,Os} 0 {2,S} {6,S}
+2 *  Cd 0 {1,S} {3,D}
+3   Cd 0 {2,D} {4,S}
+4   {Cs,Os} 0 {3,S} {5,S}
+5   {Cs,Os} 0 {4,S} {6,S}
+6   {Cs,Os} 0 {5,S} {1,S}
+
+
+
+
+24dihydro13dioxin
+1  Cd 0 {6,S} {2,D}
+2 * Cd 0 {3,S} {1,D}
+3  Cs 0 {4,S} {2,S}
+4  Os 0 {3,S} {5,S}
+5  Cs 0 {4,S} {6,S}
+6  Os 0 {5,S} {1,S}
+
+23dihydro14dioxin
+1  Cd 0 {6,S} {2,D}
+2 * Cd 0 {3,S} {1,D}
+3  Os 0 {4,S} {2,S}
+4  Cs 0 {3,S} {5,S}
+5  Cs 0 {4,S} {6,S}
+6  Os 0 {5,S} {1,S}
+
+
+six-inringtwodouble-13
+1  {Cs,Os} 0 {2,S} {6,S}
+2 *  Cd 0 {1,S} {3,D}
+3   Cd 0 {2,D} {4,S}
+4   Cd 0 {3,S} {5,D}
+5   Cd 0 {4,D} {6,S}
+6   {Cs,Os} 0 {5,S} {1,S}
+
+six-inringtwodouble-14
+1  {Cs,Os} 0 {2,S} {6,S}
+2 *  Cd 0 {1,S} {3,D}
+3   Cd 0 {2,D} {4,S}
+4   {Cs,Os} 0 {3,S} {5,S}
+5   Cd 0 {4,S} {6,D}
+6   Cd 0 {5,D} {1,S}
+
+six-inringtwodouble-12
+1  {Cs,Os} 0 {2,S} {6,S}
+2 *  Cd 0 {1,S} {3,D}
+3   C 0 {2,D} {4,D}
+4   Cd 0 {3,D} {5,S}
+5   {Cs,Os} 0 {4,S} {6,S}
+6   {Cs,Os} 0 {5,S} {1,S}
+
+
+six-oneside-twoindoubles-25
+1 {Cs,Os} 0 {2,S} {6,S}
+2 Cd 0 {1,S} {3,D}
+3 Cd 0 {2,D} {4,S}
+4 * {Cd,CO} 0 {3,S} {5,S}
+5 Cd 0 {4,S} {6,D}
+6 Cd 0 {5,D} {1,S} 
+
+six-oneside-twoindoubles-24
+1 {Cs,Os} 0 {2,S} {6,S}
+2 Cd 0 {1,S} {3,D}
+3 Cd 0 {2,D} {4,S}
+4 Cd 0 {3,S} {5,D}
+5 Cd 0 {4,D} {6,S}
+6 * {Cd,CO} 0 {5,S} {1,S} 
+
+six-twoin13-twoout
+1 {CO,Cd} 0 {2,S} {6,S}
+2 Cd 0 {1,S} {3,D}
+3 Cd 0 {2,D} {4,S}
+4 Cd 0 {3,S} {5,D}
+5 Cd 0 {4,D} {6,S}
+6 * {Cd,CO} 0 {5,S} {1,S} 
+
+six-twoin14-twoout
+1 {Cd,Od} 0 {2,S} {6,S}
+2 Cd 0 {1,S} {3,D}
+3 Cd 0 {2,D} {4,S}
+4 * {Cd,CO} 0 {3,S} {5,S}
+5 Cd 0 {4,S} {6,D}
+6 Cd 0 {5,D} {1,S} 
+
 SevenMember
 1 * R!H 0 {2,{S,D}} {7,{S,D}}
 2   R!H 0 {1,{S,D}} {3,{S,D}}
@@ -161,17 +305,17 @@ Cyclohexene
 
 // num. identical central atoms = two
 1,3-Cyclohexadiene
-1  * Cs 0 {2,S} {6,S}
+1    Cs 0 {2,S} {6,S}
 2    Cs 0 {1,S} {3,S}
-3    Cd 0 {2,S} {4,D}
+3   * Cd 0 {2,S} {4,D}
 4    Cd 0 {5,S} {3,D}
 5    Cd 0 {4,S} {6,D}
 6    Cd 0 {1,S} {5,D}
 
 // num. identical central atoms = two
 1,4-Cyclohexadiene
-1  * Cs 0 {2,S} {6,S}
-2    Cd 0 {1,S} {3,D}
+1    Cs 0 {2,S} {6,S}
+2  *  Cd 0 {1,S} {3,D}
 3    Cd 0 {4,S} {2,D}
 4    Cs 0 {5,S} {3,S}
 5    Cd 0 {4,S} {6,D}
@@ -357,13 +501,6 @@ Tetrahydrofuran
 4    Cs 0 {3,S} {5,S}
 5    Cs 0 {4,S} {1,S}
 
-Tetrahydro-2H-pyran
-1  * O  0 {2,S} {6,S}
-2    Cs 0 {1,S} {3,S}
-3    Cs 0 {2,S} {4,S}
-4    Cs 0 {3,S} {5,S}
-5    Cs 0 {4,S} {6,S}
-6    Cs 0 {5,S} {1,S}
 
 1,3-Dioxane
 1    O  0 {2,S} {6,S}
@@ -413,11 +550,11 @@ Furan
 5  * O  0 {4,S} {1,S}
 
 3,4-Dihydro-2H-pyran
-1  * O  0 {2,S} {6,S}
+1    O  0 {2,S} {6,S}
 2    Cs 0 {1,S} {3,S}
 3    Cs 0 {2,S} {4,S}
 4    Cs 0 {3,S} {5,S}
-5    Cd 0 {4,S} {6,D}
+5  *  Cd 0 {4,S} {6,D}
 6    Cd 0 {1,S} {5,D}
 
 Dihydro-2,5-furandione
@@ -726,8 +863,8 @@ methylenecyclobutane
 //**************************
 
 14methylenecyclohexane
-1  * Cs 0 {2,S} {6,S}
-2  Cd 0 {1,S} {3,S} {7,D}
+1  Cs 0 {2,S} {6,S}
+2 * Cd 0 {1,S} {3,S} {7,D}
 3  Cs 0 {2,S} {4,S}
 4  Cs 0 {3,S} {5,S}
 5  Cd 0 {4,S} {6,S} {8,D}
@@ -760,25 +897,36 @@ methylenecyclobutane
 
 
 
+34dihydro12dioxin
+1 O 0 {2,S} {6,S}
+2 O 0 {1,S} {3,S}
+3 Cs 0 {2,S} {4,S}
+4 Cs 0 {3,S} {5,S}
+5 * Cd 0 {4,S} {6,D}
+6 Cd 0 {5,D} {1,S}
+
+
+
 
 36dihydro12dioxin
 1  Cs 0 {2,S} {6,S}
-2  Cd 0 {1,S} {3,D}
+2  * Cd 0 {1,S} {3,D}
 3  Cd 0 {4,S} {2,D}
-4  * Cs 0 {3,S} {5,S}
+4  Cs 0 {3,S} {5,S}
 5  Os 0 {4,S} {6,S}
 6  Os 0 {5,S} {1,S}
 
 
 
 
-34dihydro12dioxin
-1  Cd 0 {6,S} {2,D}
-2  Cd 0 {3,S} {1,D}
-3  Cs 0 {4,S} {2,S}
-4  * Cs 0 {3,S} {5,S}
-5  Os 0 {4,S} {6,S}
-6  Os 0 {5,S} {1,S}
+//34dihydro12dioxin
+//1  Cd 0 {6,S} {2,D}
+//2  Cd 0 {3,S} {1,D}
+//3  Cs 0 {4,S} {2,S}
+//4  * Cs 0 {3,S} {5,S}
+//5  Os 0 {4,S} {6,S}
+//6  Os 0 {5,S} {1,S}
+
 
 
 
@@ -897,9 +1045,9 @@ fg6
 
 
 oxylene
-1  Cd 0 {5,S} {6,S} {8,D}
+1 * Cd 0 {5,S} {6,S} {8,D}
 2  Cd 0 {3,D} {6,S}
-3  * Cd 0 {4,S} {2,D}
+3  Cd 0 {4,S} {2,D}
 4  Cd 0 {3,S} {5,D}
 5  Cd 0 {1,S} {4,D}
 6  Cd 0 {1,S} {2,S} {7,D}
@@ -909,20 +1057,20 @@ oxylene
 
 
 obenzoquinone
-1  Cd 0 {5,S} {6,S} {8,D}
+1  * C 0 {5,S} {6,S} {8,D}
 2  Cd 0 {3,D} {6,S}
-3  * Cd 0 {4,S} {2,D}
+3  Cd 0 {4,S} {2,D}
 4  Cd 0 {3,S} {5,D}
 5  Cd 0 {1,S} {4,D}
-6  Cd 0 {1,S} {2,S} {7,D}
+6  C 0 {1,S} {2,S} {7,D}
 7  od 0 {6,D}
 8  od 0 {1,D}
 
 
 
 pxylene
-1  Cd 0 {4,S} {5,S} {6,D}
-2  * Cd 0 {5,D} {7,S}
+1 * Cd 0 {4,S} {5,S} {6,D}
+2  Cd 0 {5,D} {7,S}
 3  Cd 0 {4,D} {7,S}
 4  Cd 0 {1,S} {3,D}
 5  Cd 0 {1,S} {2,D}
@@ -934,8 +1082,8 @@ pxylene
 
 
 pbenzoquinone
-1  CO 0 {4,S} {5,S}
-2  * Cd 0 {5,D} {6,S}
+1  * CO 0 {4,S} {5,S}
+2  Cd 0 {5,D} {6,S}
 3  Cd 0 {4,D} {6,S}
 4  Cd 0 {1,S} {3,D}
 5  Cd 0 {1,S} {2,D}

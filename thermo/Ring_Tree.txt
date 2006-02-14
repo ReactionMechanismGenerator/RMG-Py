@@ -62,36 +62,52 @@ L1: FiveMember
 	L2:124trioxolane
 	L2:methylenecyclopentane
 L1: SixMember
-	L2: Cyclohexane
-	L2: Cyclohexene
-	L2: 1,3-Cyclohexadiene
-	L2: 1,4-Cyclohexadiene
-	L2: Tetrahydro-2H-pyran
-	L2: 1,3-Dioxane
-	L2: 1,4-Dioxane
-	L2: 1,3,5-Trioxane
-	L2: 3,4-Dihydro-2H-pyran
-	L2: Pentanedioic_anhydride
-	L2: Cyclohexanone
-	L2:14methylenecyclohexane
-	L2:36dihydro2hpyran
-	L2:12dioxane
-	L2:36dihydro12dioxin
-	L2:34dihydro12dioxin
-	L2:14dioxin
-	L2:124trioxane
-	L2:123trioxane
-	L2:124trioxene
-	L2:123trioxene
-	L2:13cyclohexadiene5methylene
-	L2:14cyclohexadiene3methylene
-	L2:24cyclohexadienone
-	L2:25cyclohexadienone
-	L2:fg6
-	L2:oxylene
-	L2:pxylene
-	L2:pbenzoquinone
-	L2:obenzoquinone
+	L2: sixnosidedouble
+		L3: Cyclohexane
+		L3: 12dioxane
+		L3: 1,3-Dioxane
+		L3: 1,4-Dioxane
+		L3: 1,3,5-Trioxane
+		L3: 124trioxane
+		L3: 123trioxane
+		L3: Oxane
+	L2: six-sidedoubles
+		L3: six-onesidedouble
+			L4: Cyclohexanone
+		L3: sixmembd-allsingles-twosidedoubles-para
+			L4: 14methylenecyclohexane
+		L3: sixmembd-allsingles-twosidedoubles-ortho
+		L3: sixmembd-allsingles-twosidedoubles-meta
+	L2:six-inringonedouble
+		L3: 34dihydro12dioxin
+		L3: 36dihydro2hpyran
+		L3: Cyclohexene
+		L3: 3,4-Dihydro-2H-pyran
+		L3: 36dihydro12dioxin
+		L3: 24dihydro13dioxin
+		L3: 23dihydro14dioxin
+		L3: 124trioxene
+		L3: 123trioxene
+	L2: six-inringtwodouble-13
+		L3: 1,3-Cyclohexadiene
+	L2: six-inringtwodouble-14
+		L3: 1,4-Cyclohexadiene
+		L3: 14dioxin
+	L2: six-inringtwodouble-12
+	L2: six-oneside-twoindoubles-25
+		L3: 25cyclohexadienone
+		L3: 14cyclohexadiene3methylene
+	L2: six-oneside-twoindoubles-24
+		L3: 13cyclohexadiene5methylene
+		L3: 24cyclohexadienone
+	L2: six-twoin13-twoout
+		L3: fg6
+		L3: oxylene
+		L3: obenzoquinone
+	L2: six-twoin14-twoout
+		L3: pxylene
+		L3: pbenzoquinone
+//	L2: Pentanedioic_anhydride
 L1: SevenMember
 	L2: Cycloheptane
 	L2: Cycloheptene
