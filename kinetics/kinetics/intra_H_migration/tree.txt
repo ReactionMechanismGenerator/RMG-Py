@@ -50,8 +50,8 @@ L1: RnH
 			L4: R4H_RSS
 				L5: R4H_SSS
 					L6: R4H_SSS_OOCsCs
-					L6: R4H_SSS_OO(Cs/Cs)Cs
-					L6: R4H_SSS_OO(Cs/Cs/Cs)Cs
+					    L7: R4H_SSS_OO(Cs/Cs)Cs
+					    L7: R4H_SSS_OO(Cs/Cs/Cs)Cs
 				L5: R4H_DSS
 				L5: R4H_TSS
 				L5: R4H_BSS
@@ -82,10 +82,10 @@ L1: RnH
 			L4: R5H_SSSR
 				L5: R5H_SSSS
 					L6: R5H_SSSS_OOCCC
-					L6: R5H_SSSS_OO(Cs/Cs)Cs
-					L6: R5H_SSSS_OO(Cs/Cs/Cs)Cs
-					L6: R5H_SSSS_OOCs(Cs/Cs)
-					L6: R5H_SSSS_OOCs(Cs/Cs/Cs)
+					    L7: R5H_SSSS_OO(Cs/Cs)Cs
+					    L7: R5H_SSSS_OO(Cs/Cs/Cs)Cs
+					    L7: R5H_SSSS_OOCs(Cs/Cs)
+					    L7: R5H_SSSS_OOCs(Cs/Cs/Cs)
 				L5: R5H_SSSD
 				L5: R5H_SSST
 				L5: R5H_SSSB
@@ -203,14 +203,15 @@ L1: XH_out
 	          L3: Cs_H_out_1H
 	     		L4: Cs_H_out_H/NonDeC
 				L5: Cs_H_out_H/(NonDeC/Cs)
+				L5: Cs_H_out_H/(NonDeC/Os/Os)
 				L5: Cs_H_out_H/(NonDeC/Cs/Cs)
 				L5: Cs_H_out_H/(NonDeC/Cs/Cs/Cs)
-				L5: Cs_H_out_H/(CCCOOH)
-				L5: Cs_H_out_H/((C/C)CCOOH)
-				L5: Cs_H_out_H/(CCOOH)
-				L5: Cs_H_out_H/((C/C)COOH)
-				L5: Cs_H_out_H/(COOH)
-				L5: Cs_H_out_H/((C/C)OOH)
+//				L5: Cs_H_out_H/(CCCOOH)
+//				L5: Cs_H_out_H/((C/C)CCOOH)
+//				L5: Cs_H_out_H/(CCOOH)
+//				L5: Cs_H_out_H/((C/C)COOH)
+//				L5: Cs_H_out_H/(COOH)
+//				L5: Cs_H_out_H/((C/C)OOH)
 			L4: Cs_H_out_H/NonDeO
 			L4: Cs_H_out_H/OneDe
 	          L3: Cs_H_out_noH
