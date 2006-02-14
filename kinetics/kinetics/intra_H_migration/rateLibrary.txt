@@ -250,3 +250,25 @@ Arrhenius_EP
 847	R4H_SSS	C_rad_out_2H	Cs_H_out_H/((C/C)OOH)	300-1500	1.09E+09	0.55	0	17.43	0	0	0	0	2
 848	R4H_SSS	C_rad_out_H/NonDeC	Cs_H_out_H/((C/C)OOH)	300-1500	7.86E+07	0.84	0	15.38	0	0	0	0	2
 849	R4H_SSS	Others-C_rad_out_Cs2	Cs_H_out_H/((C/C)OOH)	300-1500	1.05E+06	1.39	0	16.19	0	0	0	0	2
+//Added by Sandeep.
+850	R3H_SS_OC	O_rad_out	Cs_H_out_H/NonDeO	300-1500	2.355e8		1.45	0	39.27	0       0       0       0       5
+851	R3H_SS_OC	O_rad_out	Cs_H_out_NDMustO	300-1500	3.33e8		1.28	0	36.74	0	0	0	0	5
+852	R4H_SSS_OOCsCs	O_rad_out	Cs_H_out_H/NonDeO	300-1500	9.95e10		0.15	0	31.21	0	0	0	0	5	
+//853	R3H_SS_OC	O_rad_out	Cs_H_out_H/(NonDeC/Os/Os)	300-1500	4.71e8		0	0	42.27	0       0       0       0       5
+853	R4H_SSS_OO(Cs/Cs)Cs		O_rad_out		Cs_H_out_H/NonDeO	300-1500	3.19e8	1.06	0	30.51	0	0	0	0	5
+854	R4H_SSS_OO(Cs/Cs/Cs)Cs		O_rad_out		Cs_H_out_H/NonDeO	300-1500	2.53e8	1.20	0	30.53	0	0	0	0	5
+855	R4H_SSS_OOCsCs	O_rad_out	Cs_H_out_NDMustO	300-1500	1.0e8		1.10	0	27.09	0	0	0	0	5
+856	R4H_SSS_OO(Cs/Cs)Cs	O_rad_out	Cs_H_out_NDMustO	300-1500	4.905e8		0.88	0	26.48	0	0	0	0	5
+857	R4H_SSS_OO(Cs/Cs/Cs)Cs	O_rad_out	Cs_H_out_NDMustO	300-1500	1.765e9		0.69	0	27.11	0	0	0	0	5
+858	R5H_SSSS_OOCCC		O_rad_out	Cs_H_out_H/NonDeO	300-1500	8.45e5		1.55	0	18.02	0	0	0	0	5
+859	R5H_SSSS_OO(Cs/Cs)Cs	O_rad_out	Cs_H_out_H/NonDeO	300-1500	3.39e6		1.35	0	17.84	0	0	0	0	5	
+860	R5H_SSSS_OO(Cs/Cs/Cs)Cs	O_rad_out	Cs_H_out_H/NonDeO	300-1500	2.175e7		1.12	0	18.88	0	0	0	0	5	
+861	R5H_SSSS_OOCs(Cs/Cs)	O_rad_out	Cs_H_out_H/NonDeO	300-1500	7.05e6		1.32	0	18.5	0	0	0	0	5
+862	R5H_SSSS_OOCs(Cs/Cs/Cs)	O_rad_out	Cs_H_out_H/NonDeO	300-1500	5.45e7		1.23	0	18.62	0	0	0	0	5
+863	R5H_SSSS_OOCCC		O_rad_out	Cs_H_out_NDMustO	300-1500	4.47e6		1.26	0	15.17	0	0	0	0	5
+864	R5H_SSSS_OO(Cs/Cs)Cs	O_rad_out	Cs_H_out_NDMustO	300-1500	1.69e10		0.21	0	15.5	0	0	0	0	5
+865	R6H_SSSSS_OO		O_rad_out	Cs_H_out_H/NonDeO	300-1500	1.845e5		1.52	0	17.05	0	0	0	0	5
+866	R6H_SSSSS_OO		O_rad_out	Cs_H_out_NDMustO	300-1500	8.1e5		1.22	0	13.60	0	0	0	0	5
+867	R7H_OOCs4		O_rad_out	Cs_H_out_H/NonDeO	300-1500	4.53e4		1.51	0	16.95	0	0	0	0	5
+868	R7H_OOCs4		O_rad_out	Cs_H_out_NDMustO	300-1500	6.85e5		0.99	0	15.17	0	0	0	0	5
+
