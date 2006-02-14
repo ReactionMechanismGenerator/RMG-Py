@@ -1128,7 +1128,7 @@
 1122	Os-CdsCds	Os-(Cds-Cd)(Cds-Cd)									
 1123	Os-(Cds-Od)(Cds-Od)	-46.00	2.5	3.45	4.74	5.28	5.74	5.89	6.1	6.1	0.19	0.1	0.1	"O-COCO Hf BENSON S,Cp Mopac=3D"
 1124	Os-(Cds-Od)(Cds-Cd)	Os-(Cds-Cd)(Cds-Cd)									
-1125	Os-(Cds-Cd)(Cds-Cd)	-32.80	10	3.4	3.7	3.7	3.8	4.4	4.6	4.8	0.19	0.1	0.1	O-CdCd BOZZELLI
+1125	Os-(Cds-Cd)(Cds-Cd)	-19.61	10	3.4	3.7	3.7	3.8	4.4	4.6	4.8	0.19	0.1	0.1	O-CdCd BOZZELLI//sandeep has changes the value of H on 07/20/04 based on expt value of divinylether.
 1126	Os-CdsCs	Os-Cs(Cds-Cd)									
 1127	Os-Cs(Cds-Od)	-42.19	8.4	3.91	4.31	4.6	4.84	5.32	5.8	5.8	0.19	0.1	0.1	"O-COCs BOZZELLI Jul91 S,Cp ABaldwin O/Cs/O !!!WARNING! Cp1500 value taken as Cp1000"
 1128	Os-Cs(Cds-Cd)	-23.73	9.7	3.91	4.31	4.6	4.84	5.32	5.8	5.8	0.19	0.1	0.1	O-CdCs Hf RADOM vin-oh S A.Baldwin O/Cs/O !!!WARNING! Cp1500 value taken as Cp1000
