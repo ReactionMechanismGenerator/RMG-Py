@@ -153,3 +153,5 @@ Arrhenius_EP
 413.		Cd/Nd/De_Cd/H2	H_rad		300-1500	8.20E+12	0	0	5.8	0	0	0	0	3
 414.		Ct/De_Ct/H	H_rad		300-1500	2.25E+13	0	0	5.4	0	0	0	0	3
 415.		Ct/De_Ct/H	H_rad		300-1500	9.99E+13	0	0	6.0	0	0	0	0	3
+//416 Added by sandeep taken from the stufy of 1,3-Hexadiene dont at CBS-QB3 level
+416		Cd/H2_Cd/H2	Cd_pri_rad-Cd/Cd	300-1600	149.0295	3.0074	10.1708	0	0	0	0	0	3
