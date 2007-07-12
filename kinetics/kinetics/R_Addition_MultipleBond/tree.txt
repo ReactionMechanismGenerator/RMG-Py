@@ -140,7 +140,8 @@ L1: Y_rad
 				L5: C_rad/TDMustO
 			L4: C_rad/ThreeDe
 	L2: Cd_rad
-		L3: Cd_pri_rad
+		L3: Cd_pri_rad
+			L4: Cd_pri_rad-Cd/Cd
 		L3: Cd_sec_rad
 			L4: Cd_rad/NonDe
 			L4: Cd_rad/OneDe
