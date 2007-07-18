@@ -133,6 +133,7 @@
 119 six-oneside-twoindoubles-24 13cyclohexadiene5methylene
 120 six-twoin13-twoout		oxylene
 121 six-twoin14-twoout		pxylene
+122 Fulvene	14.73	34.1	-3.1	-3.4	-3.4	-3.2	-3.0	-2.6	-2.6	0	0	0	
 //37	Ethylene_oxide	26.9	30.5	-2	-2.8	-3	-2.6	-2.3	-2.3	-2.3	0	0	0	Ethylene oxide ring BENSON Cp1500 est. as Cp1000
 //38	Oxetane	25.7	27.7	-4.6	-5	-4.2	-3.5	-2.5	0.2	0.2	0	0	0	Oxetane ring BENSON Cp1500 est. as Cp1000
 //39	Tetrahydrofuran	5.9	0	0	0	0	0	0	0	0	0	0	0	Tetrahydrofuran ring BENSON
