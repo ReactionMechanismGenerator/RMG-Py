@@ -11,3 +11,7 @@ Arrhenius_EP
 809.	Rn		multiplebond_intra	radadd_intra		300-1500	1E+08		0	0	5	0	0	0	0	0
 810.	R5_SS_D		doublebond_intra_pri_2H	radadd_intra_cs2H	300-1500	1.22E+08	1.05	0	15.82	0	0	0	0	2
 811.	R6_SSS_D	doublebond_intra_pri_2H	radadd_intra_cs2H	300-1500	1.00E+08	0.855	0	5.9	0	0	0	0	2
+//added by sandeep after performing simulations on 13HXD system
+812.	R5_SD_D		doublebond_intra_pri_2H	radadd_intra_cs2H	300-1600	1.05E+07	1.192	0	34.9116	0	0	0	0	2
+//very crude rough guess
+813.	R3_D   		doublebond_intra_pri_HDe     radadd_intra_cs2H	300-1600	1.05E+08	1.192	0	54	0	0	0	0	5
