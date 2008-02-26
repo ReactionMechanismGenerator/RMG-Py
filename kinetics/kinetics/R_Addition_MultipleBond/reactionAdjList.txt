@@ -9,7 +9,7 @@
 
 // f02 radical addition to a double/triple bond
 
-XZ + Y_rad -> YXZ.
+XZ + Y_rad_birad -> YXZ.
 
 forward
 reverse(f03): Beta_Scission

@@ -6,7 +6,7 @@ Arrhenius_EP
 
 //f02_Radical_Addition
 //No.		XZ		Y_rad		Temp.		A		N	a	E0	DA	Dn	Da	DE0	Rank
-269.		XZ	Y_rad		300-1500	1E+13	0	0	0.5	0	0	0	0	0
+269.		XZ	Y_rad_birad		300-1500	1E+13	0	0	0.5	0	0	0	0	0
 270.		O2d	H_rad		298-6000	4.395E+10	1.00	0	0.45	0	0	0	0	4
 271.		O2d	H_rad		300-1500	8.15E+12	0	0	0.76	0	0	0	0	3
 272.		O2d	C_methyl		300-1500	2.26E+12	0	0	0	0	0	0	0	5
@@ -154,4 +154,4 @@ Arrhenius_EP
 414.		Ct/De_Ct/H	H_rad		300-1500	2.25E+13	0	0	5.4	0	0	0	0	3
 415.		Ct/De_Ct/H	H_rad		300-1500	9.99E+13	0	0	6.0	0	0	0	0	3
 //416 Added by sandeep taken from the stufy of 1,3-Hexadiene dont at CBS-QB3 level
-416		Cd/H2_Cd/H2	Cd_pri_rad-Cd/Cd	300-1600	149.0295	3.0074	10.1708	0	0	0	0	0	3
+416		Cd/H2_Cd/H2	Cd_pri_rad-Cd/Cd	300-1600	149.0295	3.0074	0	10.1708 0	0	0	0	3

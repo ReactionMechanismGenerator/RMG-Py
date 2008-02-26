@@ -2,6 +2,7 @@
 //SR, Jan. 30, 2003
 // CDW : since having both Cd/H/H and Cd/H2, Cd/Nd/Nd and Cd/Nd2, Cd/De/De and Cd/De2 at the same time
 // are confusing, made them uniform as Cd/H2, Cd/Nd2, and Cd/De2. 03/25/03
+//Sandeep included Y_birad in Y_rad. This enables Oa to react with multiple bond
 
 XZ
 Union {CZ,O2d,OCO,OCddO}
@@ -688,8 +689,14 @@ OCO
 1 *1 Od 0 {2,D}
 2 *2 CO 0 {1,D}
 
+Y_rad_birad
+Union {Y_rad, Y_birad} 
+
 Y_rad
 1 *3 R 1
+
+Y_birad
+1 *3 R 2
 
 H_rad
 1 *3 H 1 

@@ -108,7 +108,7 @@ L1: XZ
 	L2: OCO
 	L2: OCddO
 	
-L1: Y_rad
+L1: Y_rad_birad
 	L2: H_rad
 	L2: Cs_rad
 		L3: C_methyl
