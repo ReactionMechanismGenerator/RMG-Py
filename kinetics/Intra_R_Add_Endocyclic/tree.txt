@@ -59,6 +59,7 @@ L1: Rn
 	      L4: R5_BB_D
 	      L4: R5_BB_T
 	      L4: R5_BB_CO
+//	   L3: R5_SDD
  L2: R6
            L3: R6_RSR
                 L4: R6_SSR
