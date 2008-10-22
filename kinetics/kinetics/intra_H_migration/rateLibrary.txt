@@ -263,11 +263,12 @@ Arrhenius_EP
 865	R5H_SSSS_OO(Cs/Cs)Cs	O_rad_out	Cs_H_out_NDMustO	300-1500	1.17e11		0.43	0	15.40	0	0	0	0	3
 866	R6H_SSSSS_OO		O_rad_out	Cs_H_out_H/NonDeO	300-1500	5.49e2		2.21	0	14.38	0	0	0	0	3
 867	R6H_SSSSS_OO		O_rad_out	Cs_H_out_NDMustO	300-1500	7.23e4		1.65	0	12.02	0	0	0	0	3
-867	R6H_SSSSS_(Cs/Cs)OO	O_rad_out	Cs_H_out_H/NonDeO	300-1500	1.6e4		1.89	0	14.38	0	0	0	0	3
-867	R6H_SSSSS_(Cs/Cs)OO	O_rad_out	Cs_H_out_NDMustO	300-1500	1.03e5		1.26	0	12.02	0	0	0	0	3
+//// rwest 2008/10/22: these commented out because functional group R6H_SSSSS_(Cs/Cs)OO is not recognised
+//867	R6H_SSSSS_(Cs/Cs)OO	O_rad_out	Cs_H_out_H/NonDeO	300-1500	1.6e4		1.89	0	14.38	0	0	0	0	3
+//867	R6H_SSSSS_(Cs/Cs)OO	O_rad_out	Cs_H_out_NDMustO	300-1500	1.03e5		1.26	0	12.02	0	0	0	0	3
 868	R7H_OOCs4		O_rad_out	Cs_H_out_H/NonDeO	300-1500	9.33e5		0.75	0	12.82	0	0	0	0	3
 869	R7H_OOCs4		O_rad_out	Cs_H_out_NDMustO	300-1500	3.41e6		1.09	0	12.50	0	0	0	0	3
-/From 870 to 875 added by sandeep based on the work done on 1,3-hexadiene chemistry cbs-qb3
+//From 870 to 875 added by sandeep based on the work done on 1,3-hexadiene chemistry cbs-qb3
 870	R4H_SDS		C_rad_out_2H	Cd_H_out_doubleC	300-1600	1.32E+06	1.6229	0	44.071	0	0	0	0	3
 871	R4H_SDS     	Cd_rad_out_double     	Cs_H_out_2H		300-1600	1.11E+08	1.1915	0	24.7623	0	0	0	0	3
 872	R5H_SMSD	C_rad_out_2H	Cd_H_out_singleH	300-1600	2.19E+05	1.7613	0	38.275	0	0	0	0	3
