@@ -1,9 +1,15 @@
-// rate library for f11: 1,2 insertion
-
-// JS, define key word for format of the rate: either Arrhenius or Arrhenius_EP
-Arrhenius_EP
-
-// f11_1,2_insertion
+// rate library for f11: 1,2 insertion
+
+
+
+// JS, define key word for format of the rate: either Arrhenius or Arrhenius_EP
+
+Arrhenius_EP
+
+
+
+// f11_1,2_insertion
+
 // rate constants from rate_library_4.txt, Cath, 03/07/28
 
 //No.	CO_birad	RR'			Temp.		A		N	a	E0	DA	Dn	Da	DE0	Rank

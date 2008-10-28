@@ -6,7 +6,8 @@
 // JS, fix error in R5OOH, change from "5 {Cd,Cs,CO} 0 {4,S}, {6,S}" to "5 {Cd,Cs,CO} 0 {4,{S,D}}, {6,S}"
 
 RnOOH
-Union {R2OOH, R3OOH, R4OOH, R5OOH}
+Union {R2OOH, R3OOH, R4OOH, R5OOH}
+
 
 R2OOH
 1 *1 {Cd,Cs} 1 {2,{S,D}}

@@ -1,9 +1,15 @@
-// rate library for f13: 1,3 insertion for ROR
-
-// JS, define key word for format of the rate: either Arrhenius or Arrhenius_EP
-Arrhenius_EP
-
-//f13_1,3_insertion_ROR
+// rate library for f13: 1,3 insertion for ROR
+
+
+
+// JS, define key word for format of the rate: either Arrhenius or Arrhenius_EP
+
+Arrhenius_EP
+
+
+
+//f13_1,3_insertion_ROR
+
 // rate constants from rate_library_4.txt, Cath, 03/07/28
 
 //No.	doublebond		R_OR		Temp.		A		N	a	E0	DA	Dn	Da	DE0	Rank
