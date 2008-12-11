@@ -1,0 +1,1058 @@
+//Frequency dictionary: devised by Franklin Goldsmith
+//implemented by Greg Magoon: 11/13/08 (based off Group_Dictionary.txt for Thermo)
+//"counting nodes" (those that are counted by Franklin's code) denoted by ###
+//modified 11/18/08 since {} notation for radicals doesn't seem to work
+
+ R!H //L0
+ Union {R!Hx0,R!Hx1,R!Hx2}
+
+ R!Hx0 
+ 1  * R!H 0 
+
+ R!Hx1 
+ 1  * R!H 1 
+
+ R!Hx2 
+ 1  * R!H 2 
+
+ C_R0			// L1 Node: Carbon, no radicals
+ 1  * C 0
+				
+ RsCH3   // L2 Node: single-bonded to exactly one heavy atom ###
+ Union {RsCH3x0, RsCH3x1, RsCH3x2}
+
+ RsCH3x0
+ 1  * C 0 {2,S} {3,S},{4,S},{5,S}
+ 2    R!H 0 {1,S}
+ 3    H 0 {1,S}
+ 4    H 0 {1,S}
+ 5    H 0 {1,S}
+
+ RsCH3x1
+ 1  * C 0 {2,S} {3,S},{4,S},{5,S}
+ 2    R!H 1 {1,S}
+ 3    H 0 {1,S}
+ 4    H 0 {1,S}
+ 5    H 0 {1,S}
+
+ RsCH3x2
+ 1  * C 0 {2,S} {3,S},{4,S},{5,S}
+ 2    R!H 2 {1,S}
+ 3    H 0 {1,S}
+ 4    H 0 {1,S}
+ 5    H 0 {1,S}
+
+ RdCH2 //L2 Node: double-bonded to one heavy atom ###
+ Union {RdCH2x0, RdCH2x1, RdCH2x2}
+
+ RdCH2x0
+ 1  * C 0 {2,D} {3,S},{4,S}
+ 2    R!H 0 {1,D}
+ 3    H 0 {1,S}
+ 4    H 0 {1,S}
+
+ RdCH2x1
+ 1  * C 0 {2,D} {3,S},{4,S}
+ 2    R!H 1 {1,D}
+ 3    H 0 {1,S}
+ 4    H 0 {1,S}
+
+ RdCH2x2
+ 1  * C 0 {2,D} {3,S},{4,S}
+ 2    R!H 2 {1,D}
+ 3    H 0 {1,S}
+ 4    H 0 {1,S}
+
+ CtCH //L2 Node: triple-bonded to one heavy atom (carbon) ###
+ Union {CtCHx0,CtCHx1}
+
+ CtCHx0
+ 1  * C 0 {2,T} {3,S}
+ 2    C 0 {1,T}
+ 3    H 0 {1,S}
+
+ CtCHx1
+ 1  * C 0 {2,T} {3,S}
+ 2    C 1 {1,T}
+ 3    H 0 {1,S}
+
+ RsCH2sR   // L2 Node: single-bonded to exactly two heavy atoms ###
+ Union {RsCH2sRx00, RsCH2sRx11, RsCH2sRx01, RsCH2sRx02, RsCH2sRx12, RsCH2sRx22}
+
+ RsCH2sRx00
+ 1  * C 0 {2,S} {3,S},{4,S},{5,S}
+ 2    R!H 0 {1,S}
+ 3    R!H 0 {1,S}
+ 4    H 0 {1,S}
+ 5    H 0 {1,S}
+
+ RsCH2sRx11
+ 1  * C 0 {2,S} {3,S},{4,S},{5,S}
+ 2    R!H 1 {1,S}
+ 3    R!H 1 {1,S}
+ 4    H 0 {1,S}
+ 5    H 0 {1,S}
+
+ RsCH2sRx01
+ 1  * C 0 {2,S} {3,S},{4,S},{5,S}
+ 2    R!H 0 {1,S}
+ 3    R!H 1 {1,S}
+ 4    H 0 {1,S}
+ 5    H 0 {1,S}
+
+ RsCH2sRx02
+ 1  * C 0 {2,S} {3,S},{4,S},{5,S}
+ 2    R!H 0 {1,S}
+ 3    R!H 2 {1,S}
+ 4    H 0 {1,S}
+ 5    H 0 {1,S}
+
+ RsCH2sRx12
+ 1  * C 0 {2,S} {3,S},{4,S},{5,S}
+ 2    R!H 1 {1,S}
+ 3    R!H 2 {1,S}
+ 4    H 0 {1,S}
+ 5    H 0 {1,S}
+
+ RsCH2sRx22
+ 1  * C 0 {2,S} {3,S},{4,S},{5,S}
+ 2    R!H 2 {1,S}
+ 3    R!H 2 {1,S}
+ 4    H 0 {1,S}
+ 5    H 0 {1,S}
+
+ Aldehyde   // L2 Node: double-bonded to oxygen, single bonded to something else ###
+ Union {Aldehydex0, Aldehydex1, Aldehydex2}
+
+ Aldehydex0
+ 1  * C 0 {2,D} {3,S},{4,S}
+ 2    O 0 {1,D}
+ 3    R!H 0 {1,S}
+ 4    H 0 {1,S}
+
+ Aldehydex1
+ 1  * C 0 {2,D} {3,S},{4,S}
+ 2    O 0 {1,D}
+ 3    R!H 1 {1,S}
+ 4    H 0 {1,S}
+
+ Aldehydex2
+ 1  * C 0 {2,D} {3,S},{4,S}
+ 2    O 0 {1,D}
+ 3    R!H 2 {1,S}
+ 4    H 0 {1,S}
+
+ Ketene  // L2 Node: double-bonded to oxygen, double bonded to something else ###
+ Union {Ketenex0, Ketenex1, Ketenex2}
+
+ Ketenex0
+ 1  * C 0 {2,D} {3,D}
+ 2    O 0 {1,D}
+ 3    R!H 0 {1,D}
+
+ Ketenex1
+ 1  * C 0 {2,D} {3,D}
+ 2    O 0 {1,D}
+ 3    R!H 1 {1,D}
+
+ Ketenex2
+ 1  * C 0 {2,D} {3,D}
+ 2    O 0 {1,D}
+ 3    R!H 2 {1,D}
+
+ Cumulene   // L2 Node: double bonded to two carbons (cumulene) ### added by gmagoon
+ Union {Cumulenex00, Cumulenex01, Cumulenex11, Cumulenex02, Cumulenex12, Cumulenex22}
+
+ Cumulenex00
+ 1  * C 0 {2,D} {3,D}
+ 2    C 0 {1,D}
+ 3    C 0 {1,D}
+
+ Cumulenex01
+ 1  * C 0 {2,D} {3,D}
+ 2    C 0 {1,D}
+ 3    C 1 {1,D}
+
+ Cumulenex11
+ 1  * C 0 {2,D} {3,D}
+ 2    C 1 {1,D}
+ 3    C 1 {1,D}
+
+ Cumulenex02
+ 1  * C 0 {2,D} {3,D}
+ 2    C 0 {1,D}
+ 3    C 2 {1,D}
+
+ Cumulenex12
+ 1  * C 0 {2,D} {3,D}
+ 2    C 1 {1,D}
+ 3    C 2 {1,D}
+
+ Cumulenex22
+ 1  * C 0 {2,D} {3,D}
+ 2    C 2 {1,D}
+ 3    C 2 {1,D}
+
+ CdCHsR  // L2 Node: double-bonded to carbon, single bonded to something else ###
+ Union {CdCHsRx00, CdCHsRx01,CdCHsRx10,CdCHsRx11,CdCHsRx02,CdCHsRx20,CdCHsRx12,CdCHsRx21,CdCHsRx22}
+
+ CdCHsRx00
+ 1  * C 0 {2,D} {3,S} {4,S}
+ 2    C 0 {1,D}
+ 3    R!H 0 {1,S}
+ 4    H 0 {1,S}
+
+ CdCHsRx10
+ 1  * C 0 {2,D} {3,S} {4,S}
+ 2    C 1 {1,D}
+ 3    R!H 0 {1,S}
+ 4    H 0 {1,S}
+
+ CdCHsRx01
+ 1  * C 0 {2,D} {3,S} {4,S}
+ 2    C 0 {1,D}
+ 3    R!H 1 {1,S}
+ 4    H 0 {1,S}
+
+ CdCHsRx11
+ 1  * C 0 {2,D} {3,S} {4,S}
+ 2    C 1 {1,D}
+ 3    R!H 1 {1,S}
+ 4    H 0 {1,S}
+
+ CdCHsRx02
+ 1  * C 0 {2,D} {3,S} {4,S}
+ 2    C 0 {1,D}
+ 3    R!H 2 {1,S}
+ 4    H 0 {1,S}
+
+ CdCHsRx20
+ 1  * C 0 {2,D} {3,S} {4,S}
+ 2    C 2 {1,D}
+ 3    R!H 0 {1,S}
+ 4    H 0 {1,S}
+
+ CdCHsRx12
+ 1  * C 0 {2,D} {3,S} {4,S}
+ 2    C 1 {1,D}
+ 3    R!H 2 {1,S}
+ 4    H 0 {1,S}
+
+ CdCHsRx21
+ 1  * C 0 {2,D} {3,S} {4,S}
+ 2    C 2 {1,D}
+ 3    R!H 1 {1,S}
+ 4    H 0 {1,S}
+
+ CdCHsRx22
+ 1  * C 0 {2,D} {3,S} {4,S}
+ 2    C 2 {1,D}
+ 3    R!H 2 {1,S}
+ 4    H 0 {1,S}
+
+ CtCsR  // L2 Node: triple-bonded to carbon, single bonded to something else ###
+ Union {CtCsRx00, CtCsRx01, CtCsRx10, CtCsRx11, CtCsRx02, CtCsRx12}
+
+ CtCsRx00
+ 1  * C 0 {2,T} {3,S}
+ 2    C 0 {1,T}
+ 3    R!H 0 {1,S}
+
+ CtCsRx01
+ 1  * C 0 {2,T} {3,S}
+ 2    C 0 {1,T}
+ 3    R!H 1 {1,S}
+
+ CtCsRx10
+ 1  * C 0 {2,T} {3,S}
+ 2    C 1 {1,T}
+ 3    R!H 0 {1,S}
+
+ CtCsRx11
+ 1  * C 0 {2,T} {3,S}
+ 2    C 1 {1,T}
+ 3    R!H 1 {1,S}
+
+ CtCsRx02
+ 1  * C 0 {2,T} {3,S}
+ 2    C 0 {1,T}
+ 3    R!H 2 {1,S}
+
+ CtCsRx12
+ 1  * C 0 {2,T} {3,S}
+ 2    C 1 {1,T}
+ 3    R!H 2 {1,S}
+
+ RsCHsR2   // L2 Node: single-bonded to exactly three heavy atoms and hydrogen ###
+ Union {RsCHsR2x000,RsCHsR2x111,RsCHsR2x222,RsCHsR2x001,RsCHsR2x002,RsCHsR2x110,RsCHsR2x112,RsCHsR2x220,RsCHsR2x221,RsCHsR2x012}
+
+ RsCHsR2x000
+ 1  * C 0 {2,S} {3,S},{4,S},{5,S}
+ 2    R!H 0 {1,S}
+ 3    R!H 0 {1,S}
+ 4    R!H 0 {1,S}
+ 5    H 0 {1,S}
+
+ RsCHsR2x111
+ 1  * C 0 {2,S} {3,S},{4,S},{5,S}
+ 2    R!H 1 {1,S}
+ 3    R!H 1 {1,S}
+ 4    R!H 1 {1,S}
+ 5    H 0 {1,S}
+
+ RsCHsR2x222
+ 1  * C 0 {2,S} {3,S},{4,S},{5,S}
+ 2    R!H 2 {1,S}
+ 3    R!H 2 {1,S}
+ 4    R!H 2 {1,S}
+ 5    H 0 {1,S}
+
+ RsCHsR2x001
+ 1  * C 0 {2,S} {3,S},{4,S},{5,S}
+ 2    R!H 0 {1,S}
+ 3    R!H 0 {1,S}
+ 4    R!H 1 {1,S}
+ 5    H 0 {1,S}
+
+ RsCHsR2x002
+ 1  * C 0 {2,S} {3,S},{4,S},{5,S}
+ 2    R!H 0 {1,S}
+ 3    R!H 0 {1,S}
+ 4    R!H 2 {1,S}
+ 5    H 0 {1,S}
+
+ RsCHsR2x110
+ 1  * C 0 {2,S} {3,S},{4,S},{5,S}
+ 2    R!H 1 {1,S}
+ 3    R!H 1 {1,S}
+ 4    R!H 0 {1,S}
+ 5    H 0 {1,S}
+
+ RsCHsR2x112
+ 1  * C 0 {2,S} {3,S},{4,S},{5,S}
+ 2    R!H 1 {1,S}
+ 3    R!H 1 {1,S}
+ 4    R!H 2 {1,S}
+ 5    H 0 {1,S}
+
+ RsCHsR2x220
+ 1  * C 0 {2,S} {3,S},{4,S},{5,S}
+ 2    R!H 2 {1,S}
+ 3    R!H 2 {1,S}
+ 4    R!H 0 {1,S}
+ 5    H 0 {1,S}
+
+ RsCHsR2x221
+ 1  * C 0 {2,S} {3,S},{4,S},{5,S}
+ 2    R!H 2 {1,S}
+ 3    R!H 2 {1,S}
+ 4    R!H 1 {1,S}
+ 5    H 0 {1,S}
+
+ RsCHsR2x012
+ 1  * C 0 {2,S} {3,S},{4,S},{5,S}
+ 2    R!H 0 {1,S}
+ 3    R!H 1 {1,S}
+ 4    R!H 2 {1,S}
+ 5    H 0 {1,S}
+
+ RdCsR2   // L2 Node: single-bonded to exactly two heavy atoms and double bonded to another ### added by gmagoon
+ Union {RdCsR2x000,RdCsR2x001,RdCsR2x011,RdCsR2x002,RdCsR2x012,RdCsR2x022,RdCsR2x100,RdCsR2x101,RdCsR2x111,RdCsR2x102,RdCsR2x112,RdCsR2x122,RdCsR2x200,RdCsR2x201,RdCsR2x211,RdCsR2x202,RdCsR2x212,RdCsR2x222}
+ 
+ RdCsR2x000
+ 1  * C 0 {2,D} {3,S},{4,S}
+ 2    R!H 0 {1,D}
+ 3    R!H 0 {1,S}
+ 4    R!H 0 {1,S}
+
+ RdCsR2x001
+ 1  * C 0 {2,D} {3,S},{4,S}
+ 2    R!H 0 {1,D}
+ 3    R!H 0 {1,S}
+ 4    R!H 1 {1,S}
+
+ RdCsR2x011
+ 1  * C 0 {2,D} {3,S},{4,S}
+ 2    R!H 0 {1,D}
+ 3    R!H 1 {1,S}
+ 4    R!H 1 {1,S}
+
+ RdCsR2x002
+ 1  * C 0 {2,D} {3,S},{4,S}
+ 2    R!H 0 {1,D}
+ 3    R!H 0 {1,S}
+ 4    R!H 2 {1,S}
+
+ RdCsR2x012
+ 1  * C 0 {2,D} {3,S},{4,S}
+ 2    R!H 0 {1,D}
+ 3    R!H 1 {1,S}
+ 4    R!H 2 {1,S}
+
+ RdCsR2x022
+ 1  * C 0 {2,D} {3,S},{4,S}
+ 2    R!H 0 {1,D}
+ 3    R!H 2 {1,S}
+ 4    R!H 2 {1,S}
+
+ RdCsR2x100
+ 1  * C 0 {2,D} {3,S},{4,S}
+ 2    R!H 1 {1,D}
+ 3    R!H 0 {1,S}
+ 4    R!H 0 {1,S}
+
+ RdCsR2x101
+ 1  * C 0 {2,D} {3,S},{4,S}
+ 2    R!H 1 {1,D}
+ 3    R!H 0 {1,S}
+ 4    R!H 1 {1,S}
+
+ RdCsR2x111
+ 1  * C 0 {2,D} {3,S},{4,S}
+ 2    R!H 1 {1,D}
+ 3    R!H 1 {1,S}
+ 4    R!H 1 {1,S}
+
+ RdCsR2x102
+ 1  * C 0 {2,D} {3,S},{4,S}
+ 2    R!H 1 {1,D}
+ 3    R!H 0 {1,S}
+ 4    R!H 2 {1,S}
+
+ RdCsR2x112
+ 1  * C 0 {2,D} {3,S},{4,S}
+ 2    R!H 1 {1,D}
+ 3    R!H 1 {1,S}
+ 4    R!H 2 {1,S}
+
+ RdCsR2x122
+ 1  * C 0 {2,D} {3,S},{4,S}
+ 2    R!H 1 {1,D}
+ 3    R!H 2 {1,S}
+ 4    R!H 2 {1,S}
+
+ RdCsR2x200
+ 1  * C 0 {2,D} {3,S},{4,S}
+ 2    R!H 2 {1,D}
+ 3    R!H 0 {1,S}
+ 4    R!H 0 {1,S}
+
+ RdCsR2x201
+ 1  * C 0 {2,D} {3,S},{4,S}
+ 2    R!H 2 {1,D}
+ 3    R!H 0 {1,S}
+ 4    R!H 1 {1,S}
+
+ RdCsR2x211
+ 1  * C 0 {2,D} {3,S},{4,S}
+ 2    R!H 2 {1,D}
+ 3    R!H 1 {1,S}
+ 4    R!H 1 {1,S}
+
+ RdCsR2x202
+ 1  * C 0 {2,D} {3,S},{4,S}
+ 2    R!H 2 {1,D}
+ 3    R!H 0 {1,S}
+ 4    R!H 2 {1,S}
+
+ RdCsR2x212
+ 1  * C 0 {2,D} {3,S},{4,S}
+ 2    R!H 2 {1,D}
+ 3    R!H 1 {1,S}
+ 4    R!H 2 {1,S}
+
+ RdCsR2x222
+ 1  * C 0 {2,D} {3,S},{4,S}
+ 2    R!H 2 {1,D}
+ 3    R!H 2 {1,S}
+ 4    R!H 2 {1,S}
+
+ Ketone   // L3 Node: single-bonded to two carbons and double bonded to oxygen ### added by gmagoon; *this should be tested with RdCsR2 to make sure that deepest matching node is used
+ Union {Ketonex00,Ketonex01,Ketonex11,Ketonex02,Ketonex12,Ketonex22}
+
+ Ketonex00
+ 1  * C 0 {2,D} {3,S},{4,S}
+ 2    O 0 {1,D}
+ 3    C 0 {1,S}
+ 4    C 0 {1,S}
+
+ Ketonex01
+ 1  * C 0 {2,D} {3,S},{4,S}
+ 2    O 0 {1,D}
+ 3    C 0 {1,S}
+ 4    C 1 {1,S} 
+
+ Ketonex11
+ 1  * C 0 {2,D} {3,S},{4,S}
+ 2    O 0 {1,D}
+ 3    C 1 {1,S}
+ 4    C 1 {1,S} 
+
+ Ketonex02
+ 1  * C 0 {2,D} {3,S},{4,S}
+ 2    O 0 {1,D}
+ 3    C 0 {1,S}
+ 4    C 2 {1,S} 
+
+ Ketonex12
+ 1  * C 0 {2,D} {3,S},{4,S}
+ 2    O 0 {1,D}
+ 3    C 1 {1,S}
+ 4    C 2 {1,S} 
+
+ Ketonex22
+ 1  * C 0 {2,D} {3,S},{4,S}
+ 2    O 0 {1,D}
+ 3    C 2 {1,S}
+ 4    C 2 {1,S}  
+
+ RsCsR3   // L2 Node: single-bonded to four heavy atoms ###
+ Union{RsCsR3x0000,RsCsR3x1111,RsCsR3x2222,RsCsR3x0001,RsCsR3x0002,RsCsR3x1110,RsCsR3x1112,RsCsR3x2220,RsCsR3x2221,RsCsR3x0011,RsCsR3x0022,RsCsR3x1122,RsCsR3x0012,RsCsR3x0112,RsCsR3x0122}
+ 
+ RsCsR3x0000
+ 1  * C 0 {2,S} {3,S},{4,S},{5,S}
+ 2    R!H 0 {1,S}
+ 3    R!H 0 {1,S}
+ 4    R!H 0 {1,S}
+ 5    R!H 0 {1,S}
+
+ RsCsR3x1111
+ 1  * C 0 {2,S} {3,S},{4,S},{5,S}
+ 2    R!H 1 {1,S}
+ 3    R!H 1 {1,S}
+ 4    R!H 1 {1,S}
+ 5    R!H 1 {1,S}
+
+ RsCsR3x2222
+ 1  * C 0 {2,S} {3,S},{4,S},{5,S}
+ 2    R!H 2 {1,S}
+ 3    R!H 2 {1,S}
+ 4    R!H 2 {1,S}
+ 5    R!H 2 {1,S}
+
+ RsCsR3x0001
+ 1  * C 0 {2,S} {3,S},{4,S},{5,S}
+ 2    R!H 0 {1,S}
+ 3    R!H 0 {1,S}
+ 4    R!H 0 {1,S}
+ 5    R!H 1 {1,S}
+
+ RsCsR3x0002
+ 1  * C 0 {2,S} {3,S},{4,S},{5,S}
+ 2    R!H 0 {1,S}
+ 3    R!H 0 {1,S}
+ 4    R!H 0 {1,S}
+ 5    R!H 2 {1,S}
+
+ RsCsR3x1110
+ 1  * C 0 {2,S} {3,S},{4,S},{5,S}
+ 2    R!H 1 {1,S}
+ 3    R!H 1 {1,S}
+ 4    R!H 1 {1,S}
+ 5    R!H 0 {1,S}
+
+ RsCsR3x1112
+ 1  * C 0 {2,S} {3,S},{4,S},{5,S}
+ 2    R!H 1 {1,S}
+ 3    R!H 1 {1,S}
+ 4    R!H 1 {1,S}
+ 5    R!H 2 {1,S}
+
+ RsCsR3x2220
+ 1  * C 0 {2,S} {3,S},{4,S},{5,S}
+ 2    R!H 2 {1,S}
+ 3    R!H 2 {1,S}
+ 4    R!H 2 {1,S}
+ 5    R!H 0 {1,S}
+
+ RsCsR3x2221
+ 1  * C 0 {2,S} {3,S},{4,S},{5,S}
+ 2    R!H 2 {1,S}
+ 3    R!H 2 {1,S}
+ 4    R!H 2 {1,S}
+ 5    R!H 1 {1,S}
+
+ RsCsR3x0011
+ 1  * C 0 {2,S} {3,S},{4,S},{5,S}
+ 2    R!H 0 {1,S}
+ 3    R!H 0 {1,S}
+ 4    R!H 1 {1,S}
+ 5    R!H 1 {1,S}
+
+ RsCsR3x0022
+ 1  * C 0 {2,S} {3,S},{4,S},{5,S}
+ 2    R!H 0 {1,S}
+ 3    R!H 0 {1,S}
+ 4    R!H 2 {1,S}
+ 5    R!H 2 {1,S}
+
+ RsCsR3x1122
+ 1  * C 0 {2,S} {3,S},{4,S},{5,S}
+ 2    R!H 1 {1,S}
+ 3    R!H 1 {1,S}
+ 4    R!H 2 {1,S}
+ 5    R!H 2 {1,S}
+
+ RsCsR3x0012
+ 1  * C 0 {2,S} {3,S},{4,S},{5,S}
+ 2    R!H 0 {1,S}
+ 3    R!H 0 {1,S}
+ 4    R!H 1 {1,S}
+ 5    R!H 2 {1,S}
+
+ RsCsR3x0112
+ 1  * C 0 {2,S} {3,S},{4,S},{5,S}
+ 2    R!H 0 {1,S}
+ 3    R!H 1 {1,S}
+ 4    R!H 1 {1,S}
+ 5    R!H 2 {1,S}
+
+ RsCsR3x0122
+ 1  * C 0 {2,S} {3,S},{4,S},{5,S}
+ 2    R!H 0 {1,S}
+ 3    R!H 1 {1,S}
+ 4    R!H 2 {1,S}
+ 5    R!H 2 {1,S}
+
+ C_R1			// L1 Node: carbon, one radical
+ 1  * C 1 
+
+ RsCH2r   // L2 Node: single-bonded to exactly one heavy atom ###
+ Union {RsCH2rx0,RsCH2rx1,RsCH2rx2}
+
+ RsCH2rx0 
+ 1  * C 1 {2,S} {3,S},{4,S}
+ 2    R!H 0 {1,S}
+ 3    H 0 {1,S}
+ 4    H 0 {1,S}
+
+ RsCH2rx1 
+ 1  * C 1 {2,S} {3,S},{4,S}
+ 2    R!H 1 {1,S}
+ 3    H 0 {1,S}
+ 4    H 0 {1,S}
+
+ RsCH2rx2 
+ 1  * C 1 {2,S} {3,S},{4,S}
+ 2    R!H 2 {1,S}
+ 3    H 0 {1,S}
+ 4    H 0 {1,S}
+
+ RdCHr //L2 Node: double-bonded to one heavy atom (vinylic) ###
+ Union {RdCHrx0,RdCHrx1,RdCHrx2}
+
+ RdCHrx0
+ 1  * C 1 {2,D} {3,S}
+ 2    R!H 0 {1,D}
+ 3    H 0 {1,S}
+
+ RdCHrx1
+ 1  * C 1 {2,D} {3,S}
+ 2    R!H 1 {1,D}
+ 3    H 0 {1,S}
+
+ RdCHrx2
+ 1  * C 1 {2,D} {3,S}
+ 2    R!H 2 {1,D}
+ 3    H 0 {1,S}
+
+ CtCr //L2 Node: triple-bonded to one heavy atom (carbon) ###
+ Union {CtCrx0, CtCrx1}
+
+ CtCrx0
+ 1  * C 1 {2,T}
+ 2    C 0 {1,T}
+
+ CtCrx1
+ 1  * C 1 {2,T}
+ 2    C 1 {1,T}
+
+ RsCHrsR   // L2 Node: single-bonded to exactly two heavy atoms ###
+ Union {RsCHrsRx00,RsCHrsRx01,RsCHrsRx11,RsCHrsRx02,RsCHrsRx12,RsCHrsRx22}
+
+ RsCHrsRx00
+ 1  * C 1 {2,S} {3,S},{4,S}
+ 2    R!H 0 {1,S}
+ 3    R!H 0 {1,S}
+ 4    H 0 {1,S}
+
+ RsCHrsRx01
+ 1  * C 1 {2,S} {3,S},{4,S}
+ 2    R!H 0 {1,S}
+ 3    R!H 1 {1,S}
+ 4    H 0 {1,S}
+
+ RsCHrsRx11
+ 1  * C 1 {2,S} {3,S},{4,S}
+ 2    R!H 1 {1,S}
+ 3    R!H 1 {1,S}
+ 4    H 0 {1,S}
+
+ RsCHrsRx02
+ 1  * C 1 {2,S} {3,S},{4,S}
+ 2    R!H 0 {1,S}
+ 3    R!H 2 {1,S}
+ 4    H 0 {1,S}
+
+ RsCHrsRx12
+ 1  * C 1 {2,S} {3,S},{4,S}
+ 2    R!H 1 {1,S}
+ 3    R!H 2 {1,S}
+ 4    H 0 {1,S}
+
+ RsCHrsRx22
+ 1  * C 1 {2,S} {3,S},{4,S}
+ 2    R!H 2 {1,S}
+ 3    R!H 2 {1,S}
+ 4    H 0 {1,S}
+
+ OdCrsR   // L2 Node: double-bonded to oxygen, single bonded to something else ###
+ Union {OdCrsRx0,OdCrsRx1,OdCrsRx2}
+
+ OdCrsRx0
+ 1  * C 1 {2,D} {3,S}
+ 2    O 0 {1,D}
+ 3    R!H 0 {1,S}
+
+ OdCrsRx1
+ 1  * C 1 {2,D} {3,S}
+ 2    O 0 {1,D}
+ 3    R!H 1 {1,S}
+
+ OdCrsRx2
+ 1  * C 1 {2,D} {3,S}
+ 2    O 0 {1,D}
+ 3    R!H 2 {1,S}
+
+ CdCrsR  // L2 Node: double-bonded to carbon, single bonded to something else ###
+ Union {CdCrsRx00,CdCrsRx01,CdCrsRx10,CdCrsRx11,CdCrsRx02,CdCrsRx20,CdCrsRx12,CdCrsRx21,CdCrsRx22}
+
+ CdCrsRx00
+ 1  * C 1 {2,D} {3,S}
+ 2    C 0 {1,D}
+ 3    R!H 0 {1,S}
+
+ CdCrsRx01
+ 1  * C 1 {2,D} {3,S}
+ 2    C 0 {1,D}
+ 3    R!H 1 {1,S}
+
+ CdCrsRx10
+ 1  * C 1 {2,D} {3,S}
+ 2    C 1 {1,D}
+ 3    R!H 0 {1,S}
+
+ CdCrsRx11
+ 1  * C 1 {2,D} {3,S}
+ 2    C 1 {1,D}
+ 3    R!H 1 {1,S}
+
+ CdCrsRx02
+ 1  * C 1 {2,D} {3,S}
+ 2    C 0 {1,D}
+ 3    R!H 2 {1,S}
+
+ CdCrsRx20
+ 1  * C 1 {2,D} {3,S}
+ 2    C 2 {1,D}
+ 3    R!H 0 {1,S}
+
+ CdCrsRx12
+ 1  * C 1 {2,D} {3,S}
+ 2    C 1 {1,D}
+ 3    R!H 2 {1,S}
+
+ CdCrsRx21
+ 1  * C 1 {2,D} {3,S}
+ 2    C 2 {1,D}
+ 3    R!H 1 {1,S}
+
+ CdCrsRx22
+ 1  * C 1 {2,D} {3,S}
+ 2    C 2 {1,D}
+ 3    R!H 2 {1,S}
+
+ RsCrsR2   // L2 Node: single-bonded to exactly three heavy atoms ###
+ Union{RsCrsR2x000,RsCrsR2x111,RsCrsR2x222,RsCrsR2x001,RsCrsR2x002,RsCrsR2x110,RsCrsR2x112,RsCrsR2x220,RsCrsR2x221,RsCrsR2x012}
+
+ RsCrsR2x000
+ 1  * C 1 {2,S} {3,S},{4,S}
+ 2    R!H 0 {1,S}
+ 3    R!H 0 {1,S}
+ 4    R!H 0 {1,S}
+
+ RsCrsR2x111
+ 1  * C 1 {2,S} {3,S},{4,S}
+ 2    R!H 1 {1,S}
+ 3    R!H 1 {1,S}
+ 4    R!H 1 {1,S}
+
+ RsCrsR2x222
+ 1  * C 1 {2,S} {3,S},{4,S}
+ 2    R!H 2 {1,S}
+ 3    R!H 2 {1,S}
+ 4    R!H 2 {1,S}
+
+ RsCrsR2x001
+ 1  * C 1 {2,S} {3,S},{4,S}
+ 2    R!H 0 {1,S}
+ 3    R!H 0 {1,S}
+ 4    R!H 1 {1,S}
+
+ RsCrsR2x002
+ 1  * C 1 {2,S} {3,S},{4,S}
+ 2    R!H 0 {1,S}
+ 3    R!H 0 {1,S}
+ 4    R!H 2 {1,S}
+
+ RsCrsR2x110
+ 1  * C 1 {2,S} {3,S},{4,S}
+ 2    R!H 1 {1,S}
+ 3    R!H 1 {1,S}
+ 4    R!H 0 {1,S}
+
+ RsCrsR2x112
+ 1  * C 1 {2,S} {3,S},{4,S}
+ 2    R!H 1 {1,S}
+ 3    R!H 1 {1,S}
+ 4    R!H 2 {1,S}
+
+ RsCrsR2x220
+ 1  * C 1 {2,S} {3,S},{4,S}
+ 2    R!H 2 {1,S}
+ 3    R!H 2 {1,S}
+ 4    R!H 0 {1,S}
+
+ RsCrsR2x221
+ 1  * C 1 {2,S} {3,S},{4,S}
+ 2    R!H 2 {1,S}
+ 3    R!H 2 {1,S}
+ 4    R!H 1 {1,S}
+
+ RsCrsR2x012
+ 1  * C 1 {2,S} {3,S},{4,S}
+ 2    R!H 0 {1,S}
+ 3    R!H 1 {1,S}
+ 4    R!H 2 {1,S}
+
+ C_R2			// L1 Node: carbon, double radical
+ 1  * C 2 
+
+ RsCHrr   // L2 Node: single-bonded to exactly one heavy atom ###
+ Union {RsCHrrx0,RsCHrrx1,RsCHrrx2}
+
+ RsCHrrx0
+ 1  * C 2 {2,S} {3,S}
+ 2    R!H 0 {1,S}
+ 3    H 0 {1,S}
+
+ RsCHrrx1
+ 1  * C 2 {2,S} {3,S}
+ 2    R!H 1 {1,S}
+ 3    H 0 {1,S}
+
+ RsCHrrx2
+ 1  * C 2 {2,S} {3,S}
+ 2    R!H 2 {1,S}
+ 3    H 0 {1,S}
+
+ RdCrr //L2 Node: double-bonded to one heavy atom (vinylic) ###
+ Union {RdCrrx0,RdCrrx1,RdCrrx2}
+ 
+ RdCrrx0
+ 1  * C 2 {2,D}
+ 2    R!H 0 {1,D}
+
+ RdCrrx1
+ 1  * C 2 {2,D}
+ 2    R!H 1 {1,D}
+
+ RdCrrx2
+ 1  * C 2 {2,D}
+ 2    R!H 2 {1,D}
+
+ RsCrrsR   // L2 Node: single-bonded to exactly two heavy atoms ###
+ Union {RsCrrsRx00,RsCrrsRx01,RsCrrsRx11,RsCrrsRx02,RsCrrsRx12,RsCrrsRx22}
+
+ RsCrrsRx00
+ 1  * C 2 {2,S} {3,S}
+ 2    R!H 0 {1,S}
+ 3    R!H 0 {1,S}
+
+ RsCrrsRx01
+ 1  * C 2 {2,S} {3,S}
+ 2    R!H 0 {1,S}
+ 3    R!H 1 {1,S}
+
+ RsCrrsRx11
+ 1  * C 2 {2,S} {3,S}
+ 2    R!H 1 {1,S}
+ 3    R!H 1 {1,S}
+
+ RsCrrsRx02
+ 1  * C 2 {2,S} {3,S}
+ 2    R!H 0 {1,S}
+ 3    R!H 2 {1,S}
+
+ RsCrrsRx12
+ 1  * C 2 {2,S} {3,S}
+ 2    R!H 1 {1,S}
+ 3    R!H 2 {1,S}
+
+ RsCrrsRx22
+ 1  * C 2 {2,S} {3,S}
+ 2    R!H 2 {1,S}
+ 3    R!H 2 {1,S}
+
+ O_R0			// L1 Node:oxygen, no radicals
+ 1  * O 0
+
+ Alcohol   // L2 Node: bound to hydrogen and one heavy atom (carbon) ###
+ Union {Alcoholx0,Alcoholx1,Alcoholx2}
+
+ Alcoholx0
+ 1  * O 0 {2,S} {3,S}
+ 2    C 0 {1,S}
+ 3    H 0 {1,S}
+
+ Alcoholx1
+ 1  * O 0 {2,S} {3,S}
+ 2    C 1 {1,S}
+ 3    H 0 {1,S}
+
+ Alcoholx2
+ 1  * O 0 {2,S} {3,S}
+ 2    C 2 {1,S}
+ 3    H 0 {1,S}
+
+ Ether   // L2 Node: bound to two carbons ###
+ Union {Etherx00,Etherx01,Etherx11,Etherx02,Etherx12,Etherx22}
+
+ Etherx00
+ 1  * O 0 {2,S} {3,S}
+ 2    C 0 {1,S}
+ 3    C 0 {1,S}
+
+ Etherx01
+ 1  * O 0 {2,S} {3,S}
+ 2    C 0 {1,S}
+ 3    C 1 {1,S}
+
+ Etherx11
+ 1  * O 0 {2,S} {3,S}
+ 2    C 1 {1,S}
+ 3    C 1 {1,S}
+
+ Etherx02
+ 1  * O 0 {2,S} {3,S}
+ 2    C 0 {1,S}
+ 3    C 2 {1,S}
+
+ Etherx12
+ 1  * O 0 {2,S} {3,S}
+ 2    C 1 {1,S}
+ 3    C 2 {1,S}
+
+ Etherx22
+ 1  * O 0 {2,S} {3,S}
+ 2    C 2 {1,S}
+ 3    C 2 {1,S}
+
+ ROOH   // L2 Node: bound to carbon and OH ### gmagoon: changed name from "Peroxide" to "ROOH" to distinguish from ROOR
+ Union {ROOHx0,ROOHx1,ROOHx2}
+
+ ROOHx0
+ 1  * O 0 {2,S} {3,S}
+ 2    C 0 {1,S}
+ 3    O 0 {1,S} {4,S}
+ 4    H 0 {3,S}
+
+ ROOHx1
+ 1  * O 0 {2,S} {3,S}
+ 2    C 1 {1,S}
+ 3    O 0 {1,S} {4,S}
+ 4    H 0 {3,S}
+
+ ROOHx2
+ 1  * O 0 {2,S} {3,S}
+ 2    C 2 {1,S}
+ 3    O 0 {1,S} {4,S}
+ 4    H 0 {3,S}
+
+ ROOR   // L2 Node: bound to carbon and OC ### gmagoon: this will be double counted, so Franklin's code must divide by two
+ Union {ROORx00,ROORx01,ROORx11,ROORx02,ROORx12,ROORx22}
+
+ ROORx00
+ 1  * O 0 {2,S} {3,S}
+ 2    C 0 {1,S}
+ 3    O 0 {1,S} {4,S}
+ 4    C 0 {3,S}
+
+ ROORx01
+ 1  * O 0 {2,S} {3,S}
+ 2    C 0 {1,S}
+ 3    O 0 {1,S} {4,S}
+ 4    C 1 {3,S}
+
+ ROORx11
+ 1  * O 0 {2,S} {3,S}
+ 2    C 1 {1,S}
+ 3    O 0 {1,S} {4,S}
+ 4    C 1 {3,S}
+
+ ROORx02
+ 1  * O 0 {2,S} {3,S}
+ 2    C 0 {1,S}
+ 3    O 0 {1,S} {4,S}
+ 4    C 2 {3,S}
+
+ ROORx12
+ 1  * O 0 {2,S} {3,S}
+ 2    C 1 {1,S}
+ 3    O 0 {1,S} {4,S}
+ 4    C 2 {3,S}
+
+ ROORx22
+ 1  * O 0 {2,S} {3,S}
+ 2    C 2 {1,S}
+ 3    O 0 {1,S} {4,S}
+ 4    C 2 {3,S}
+
+ Peroxy   // L2 Node: bound to carbon and O radical ###
+ Union {Peroxyx0,Peroxyx1,Peroxyx2}
+
+ Peroxyx0
+ 1  * O 0 {2,S} {3,S}
+ 2    C 0 {1,S}
+ 3    O 1 {1,S}
+
+ Peroxyx1
+ 1  * O 0 {2,S} {3,S}
+ 2    C 1 {1,S}
+ 3    O 1 {1,S}
+
+ Peroxyx2
+ 1  * O 0 {2,S} {3,S}
+ 2    C 2 {1,S}
+ 3    O 1 {1,S}
+
+ O_R1			// L1 Node: oxygen, one radical
+ 1  * O 1
+
+
+ Oxy   // L2 Node: bound to carbon ###
+ Union {Oxyx0,Oxyx1,Oxyx2}
+
+ Oxyx0
+ 1  * O 1 {2,S}
+ 2    C 0 {1,S}
+
+ Oxyx1
+ 1  * O 1 {2,S}
+ 2    C 1 {1,S}
+
+ Oxyx2
+ 1  * O 1 {2,S}
+ 2    C 2 {1,S}
+
+//111708 gmagoon: ketone needs to be added: carbon tree or oxygen tree?; I have tentatively put it as subset of RdCsR2
