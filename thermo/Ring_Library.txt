@@ -42,7 +42,7 @@
 29	123trioxolane	10.19707101	23.316	-2.566	-3.543	-3.344	-2.829	-2.487	-2.78	2.13	0	0	0	
 30	124trioxolane	9.4531912	25.11043142	-5.648	-4.764	-3.63	-2.89	-2.711	-2.859	2.25	0	0	0	
 31	methylenecyclopentane	5.21	24.62866974	-5.861	-4.909	-3.91	-3.01	-1.769	-0.969	0	0	0	0		
-32	Cyclohexane	0.08	18.12768375	-5.8	-4.1	-2.9	8.7	1.08	2.16	3	0	0	0	Cyclohexane ring BENSON
+32	Cyclohexane	0.08	18.12768375	-5.8	-4.1	-2.9	-1.3	1.08	2.16	3	0	0	0	Cyclohexane ring BENSON https://sourceforge.net/forum/forum.php?thread_id=2801737&forum_id=904254
 33	Cyclohexene	1.17	21.21143142	-5.1	-4.3	-3.3	-2.5	-1.4	-0.7	0.4	0	0	0	Cyclohexene ring BENSON
 34	1,3-Cyclohexadiene	3.78	23.98243142	-4.8	-4.7	-4.2	-3.5	-2.5	-1.8	-0.7	0	0	0	"1,3-Cyclohexadiene ring BENSON"
 35	1,4-Cyclohexadiene	0.52	25.38486284	-3.4	-3.2	-2.6	-1.9	-1.2	-0.8	0.2	0	0	0	"1,4-Cyclohexadiene ring BENSON"
