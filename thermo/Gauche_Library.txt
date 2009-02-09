@@ -13,6 +13,7 @@
 //the total contributions for each group will be added and divided by two (since each bond will be counted twice) (except in the case of T-T-T or ethers, where it will not be divided by two); the number of interactions (with division by two where applicable) appears in the comments
 //a single gauche correction is worth 0.8 kcal/mol for alkanes and 0.5 kcal/mol for ethers (cf. Benson, Thermochemical Kinetics: Methods for the Estimation of Thermochemical Data and Rate Parameters, 2nd Edition, 1976. and Cohen and Benson, Chem. Rev. 93 (1993) 2419)
 
+0  CsOs							0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0	0	0
 1  Cs(RRRR) 						0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0	0	0 //"zeroary" (e.g. methane)
 2  Cs(CsRRR)						0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0	0	0 //P(P)
 3  Cs(Cs(CsRR)RRR)					0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0	0	0 //P(S)

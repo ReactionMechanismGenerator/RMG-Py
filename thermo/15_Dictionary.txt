@@ -1,3 +1,13 @@
+CsOs
+1  * {Cs,Os} 0 {2,S} {3,S}
+2    Cs 0 {1,S} {4,S} {5,S} {6,S}
+3    Cs 0 {1,S} {7,S} {8,S}
+4    Cs 0 {2,S}
+5    Cs 0 {2,S}
+6    Cs 0 {2,S}
+7    Cs 0 {3,S}
+8    Cs 0 {3,S}
+
 Cs(Cs(CsCsCs)Cs(CsCsR)RR) //S(QT)
 1  * Cs 0 {2,S} {3,S}
 2    Cs 0 {1,S} {4,S} {5,S} {6,S}

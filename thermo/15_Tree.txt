@@ -1,4 +1,5 @@
-L0: Cs(Cs(CsCsCs)Cs(CsCsR)RR) //S(QT)
- L1: Cs(Cs(CsCsCs)Cs(CsCsCs)RR) //S(QQ)
-L0: Os(Cs(CsCsCs)Cs(CsCsR)) //S(QT)
- L1: Os(Cs(CsCsCs)Cs(CsCsCs)) //S(QQ)
+L0: CsOs
+L1: Cs(Cs(CsCsCs)Cs(CsCsR)RR) //S(QT)
+ L2: Cs(Cs(CsCsCs)Cs(CsCsCs)RR) //S(QQ)
+L1: Os(Cs(CsCsCs)Cs(CsCsR)) //S(QT)
+ L2: Os(Cs(CsCsCs)Cs(CsCsCs)) //S(QQ)
