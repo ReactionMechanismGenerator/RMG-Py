@@ -1,8 +1,8 @@
 //P = primary Cs, S=secondary Cs, T=tertiary Cs, Q=quarternary Cs where n-ary Cs refers to a Cs bonded to n other Cs atoms
 //notation in comments x(y1...yn) refers to central atom of type x, with ligands of type yi
 
-CsOs 
-1  * {Cs,Os} 0
+CsOsCd
+1  * {Cs,Os,Cd} 0
 
 Cs(RRRR) //"zeroary" (methane, or bonded to all non-Cs atoms)
 1  * Cs 0
@@ -1268,3 +1268,118 @@ Os(Cs(CsCsCs)Cs(CsCsCs)) //S(QQ)
 7    Cs 0 {3,S}
 8    Cs 0 {3,S}
 9    Cs 0 {3,S}
+
+Cd(CsCs) //S(PP)
+1  * Cd 0 {2,D} {3,S} {4,S}
+2    Cd 0 {1,D}
+3    Cs 0 {1,S}
+4    Cs 0 {1,S}
+
+Cd(Cs(CsRR)Cs) //S(SP)
+1  * Cd 0 {2,D} {3,S} {4,S}
+2    Cd 0 {1,D}
+3    Cs 0 {1,S} {5,S} {6,S} {7,S}
+4    Cs 0 {1,S} {8,S} {9,S} {10,S}
+5    Cs 0 {2,S}
+6    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {2,S}
+7    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {2,S}
+8    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
+9    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
+10   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
+
+
+Cd(Cs(CsRR)Cs(CsRR)) //S(SS)
+1  * Cd 0 {2,D} {3,S} {4,S}
+2    Cd 0 {1,D}
+3    Cs 0 {1,S} {5,S} {6,S} {7,S}
+4    Cs 0 {1,S} {8,S} {9,S} {10,S}
+5    Cs 0 {2,S}
+6    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {2,S}
+7    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {2,S}
+8    Cs 0 {3,S}
+9    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
+10   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
+
+Cd(Cs(CsCsR)Cs) //S(TP)
+1  * Cd 0 {2,D} {3,S} {4,S}
+2    Cd 0 {1,D}
+3    Cs 0 {1,S} {5,S} {6,S} {7,S}
+4    Cs 0 {1,S} {8,S} {9,S} {10,S}
+5    Cs 0 {2,S}
+6    Cs 0 {2,S}
+7    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {2,S}
+8    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
+9    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
+10   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
+
+Cd(Cs(CsCsR)Cs(CsRR)) //S(TS)
+1  * Cd 0 {2,D} {3,S} {4,S}
+2    Cd 0 {1,D}
+3    Cs 0 {1,S} {5,S} {6,S} {7,S}
+4    Cs 0 {1,S} {8,S} {9,S} {10,S}
+5    Cs 0 {2,S}
+6    Cs 0 {2,S}
+7    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {2,S}
+8    Cs 0 {3,S}
+9    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
+10   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
+
+Cd(Cs(CsCsR)Cs(CsCsR)) //S(TT)
+1  * Cd 0 {2,D} {3,S} {4,S}
+2    Cd 0 {1,D}
+3    Cs 0 {1,S} {5,S} {6,S} {7,S}
+4    Cs 0 {1,S} {8,S} {9,S} {10,S}
+5    Cs 0 {2,S}
+6    Cs 0 {2,S}
+7    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {2,S}
+8    Cs 0 {3,S}
+9    Cs 0 {3,S}
+10   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
+
+Cd(Cs(CsCsCs)Cs) //S(QP)
+1  * Cd 0 {2,D} {3,S} {4,S}
+2    Cd 0 {1,D}
+3    Cs 0 {1,S} {5,S} {6,S} {7,S}
+4    Cs 0 {1,S} {8,S} {9,S} {10,S}
+5    Cs 0 {2,S}
+6    Cs 0 {2,S}
+7    Cs 0 {2,S}
+8    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
+9    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
+10   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
+
+Cd(Cs(CsCsCs)Cs(CsRR)) //S(QS)
+1  * Cd 0 {2,D} {3,S} {4,S}
+2    Cd 0 {1,D}
+3    Cs 0 {1,S} {5,S} {6,S} {7,S}
+4    Cs 0 {1,S} {8,S} {9,S} {10,S}
+5    Cs 0 {2,S}
+6    Cs 0 {2,S}
+7    Cs 0 {2,S}
+8    Cs 0 {3,S}
+9    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
+10   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
+
+Cd(Cs(CsCsCs)Cs(CsCsR)) //S(QT)
+1  * Cd 0 {2,D} {3,S} {4,S}
+2    Cd 0 {1,D}
+3    Cs 0 {1,S} {5,S} {6,S} {7,S}
+4    Cs 0 {1,S} {8,S} {9,S} {10,S}
+5    Cs 0 {2,S}
+6    Cs 0 {2,S}
+7    Cs 0 {2,S}
+8    Cs 0 {3,S}
+9    Cs 0 {3,S}
+10   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
+
+Cd(Cs(CsCsCs)Cs(CsCsCs)) //S(QQ)
+1  * Cd 0 {2,D} {3,S} {4,S}
+2    Cd 0 {1,D}
+3    Cs 0 {1,S} {5,S} {6,S} {7,S}
+4    Cs 0 {1,S} {8,S} {9,S} {10,S}
+5    Cs 0 {2,S}
+6    Cs 0 {2,S}
+7    Cs 0 {2,S}
+8    Cs 0 {3,S}
+9    Cs 0 {3,S}
+10   Cs 0 {3,S}

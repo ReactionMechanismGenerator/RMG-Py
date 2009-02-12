@@ -12,6 +12,7 @@
 //the above is the "simple" counting scheme (same as used by NIST Webbook with the exception of T-T-T); there is also the revised counting scheme, but as far as I know, it has only been tested on the 1992 revision of values (this is based on 1976 values to be consistent with rest of database)
 //the total contributions for each group will be added and divided by two (since each bond will be counted twice) (except in the case of T-T-T or ethers, where it will not be divided by two); the number of interactions (with division by two where applicable) appears in the comments
 //a single gauche correction is worth 0.8 kcal/mol for alkanes and 0.5 kcal/mol for ethers (cf. Benson, Thermochemical Kinetics: Methods for the Estimation of Thermochemical Data and Rate Parameters, 2nd Edition, 1976. and Cohen and Benson, Chem. Rev. 93 (1993) 2419)
+//for alkenes, the value of 0.5 kcal/mol is used and the counting scheme discussed in Benson, Cruickshank, Golden, Haugen, O'Neal, Rodgers, Shaw, and Walsh, Chemical Reviews, 1969, 69, 279, (including neglecting gauche for "secondary" Cs) was used
 
 0  CsOs							0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0	0	0
 1  Cs(RRRR) 						0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0	0	0 //"zeroary" (e.g. methane)
@@ -99,3 +100,13 @@
 83 Os(Cs(CsCsCs)Cs(CsRR)) 				1.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0	0	0 //S(QS) 2 GI
 84 Os(Cs(CsCsCs)Cs(CsCsR)) 				1.5	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0	0	0 //S(QT) 3 GI
 85 Os(Cs(CsCsCs)Cs(CsCsCs)) 				2.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0	0	0 //S(QQ) 4 GI
+86 Cd(CsCs) 						0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0	0	0 //S(PP)
+87 Cd(Cs(CsRR)Cs) 					0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0	0	0 //S(SP)
+88 Cd(Cs(CsRR)Cs(CsRR)) 				0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0	0	0 //S(SS)
+89 Cd(Cs(CsCsR)Cs) 					1.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0	0	0 //S(TP) 2 GI
+90 Cd(Cs(CsCsR)Cs(CsRR)) 				1.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0	0	0 //S(TS) 2 GI
+91 Cd(Cs(CsCsR)Cs(CsCsR))				2.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0	0	0 //S(TT) 4 GI
+92 Cd(Cs(CsCsCs)Cs) 					1.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0	0	0 //S(QP) 2 GI
+93 Cd(Cs(CsCsCs)Cs(CsRR)) 				1.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0	0	0 //S(QS) 2 GI
+94 Cd(Cs(CsCsCs)Cs(CsCsR)) 				2.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0	0	0 //S(QT) 4 GI
+95 Cd(Cs(CsCsCs)Cs(CsCsCs)) 				2.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0	0	0 //S(QQ) 4 GI
