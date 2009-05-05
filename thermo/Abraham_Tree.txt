@@ -1,0 +1,76 @@
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Abraham Solute Descriptor group tree using Rob Ashcraft's Group Definitions                                                                
+// Defines group trees for determining 5 out of 6 Abraham solute descriptors (all but hydrogen bond acidity)  
+// Constructed by Amrit Jalan                                                                            
+// March 30, 2009                                                                                        
+// Reference: Platts et al J.Chem Inf. Comput. Sci. 1999, 39, 835-845                                     
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////
+//Thermo Tree & Nomenclature for groups with C as the central atom
+//
+//C	    Carbon atom, bonds are not defined
+//Ct	Carbon atom with one triple bond and one single bond
+//Css	Carbon atom with four single bonds
+//Cdd	Carbon atom with two double bonds
+//Cds	Carbon atom with one double bond and two single bonds
+//CO    Carbon atom with doubel bond with O and 2 single bonds
+//Cb	Carbon atom belonging to a benzene ring
+//Cbf	Carbon atom belonging to a fused benzene ring
+//H	    Hydrogen atom
+//Oss	Oxygen atom with two single bonds
+//Od	Oxygen atom with one double bond
+//////////////////////////////////////////////////////////////////
+
+L0: R
+
+L1: C
+
+	L2: Cbf
+	
+	L2: Css
+		L3: CssH3
+		L3: CssH2
+			L4: Css(OssH)-Css(OssH)			
+		L3: CssH
+			L4: Css(OssH)-Css(OssH)			
+		L3: Css-noH
+			L4: Css(OssH)-Css(OssH)			
+	
+	L2: Cds
+		L3: CdsH2
+		L3: CdsH
+			L4: Oss(CdsOd)
+				L5: Cds(Od)OssH
+			L4: Cds(Od)Cds=CdsCds(Od)
+			L4: Cds*(Od)Cds=CdsCds(Od)
+
+		L3: Cds-noH
+			L4: Oss(CdsOd)
+				L5: OssCds(Od)Oss
+			L4: Cds(Od)OssH
+			L4: Cds(Od)Cds=CdsCds(Od)
+			L4: Cds*(Od)Cds=CdsCds(Od)
+		
+	L2: Ct
+
+L1: O
+
+	L2: Oss
+		L3: OssH           // Hydroxyl group
+			L4: Cds(Od)Oss*H    // Carboxylic acid
+		L3: Oss*Cds(Od)Oss // Carbonate
+		L3: OssCds(Od)Oss* // Carbonate
+		L3: Cds(Od)Oss*    // Carbamate
+		L3: Oss*(CdsOd)    // Non cyclic ester
+		L3: Css(Oss*H)-Css(OssH) // 1,2-diol
+		L3: Oss-noncyclic
+		
+    L2: Od
+    	L3: Cds(Od*)OssH   // Carboxylic acid
+    	L3: Cds(Od*)Oss    // Carbamate
+    	L3: OssCds(Od*)Oss // Carbonate
+    	L3: Oss(CdsOd*)    // Non-cyclic ester
+    	L3: Cds(Od*)Cds=CdsCds(Od) // Quinone
+	
