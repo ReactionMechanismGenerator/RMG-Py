@@ -45,7 +45,7 @@ L0: R
 								L4: COC
 					
 			
-			L2: Cb
+			L2: ring
 			
 					L3: AC
 					L3: ACH
