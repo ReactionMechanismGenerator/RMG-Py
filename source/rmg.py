@@ -29,9 +29,12 @@
 ################################################################################
 
 import time
+import optparse
 
-if __name__ == '__main__':
+################################################################################
 
+def execute(inputFile, outputDir, scratchDir, libraryDir, verbose):
+	
 	# Print out start timestamp
 	print('RMG execution initiated at ' + time.asctime())
 	print('')
@@ -50,4 +53,46 @@ if __name__ == '__main__':
 	
 	# Print out end timestamp
 	print('RMG execution terminated at ' + time.asctime())
+
+################################################################################
+
+if __name__ == '__main__':
+
+	# Command-line options
+	description = 'RMG is an automatic chemical reaction mechanism ' + \
+	              'generator that constructs kinetic models composed of ' + \
+				  'elementary chemical reaction steps using a general ' + \
+				  'understanding of how molecules react.'
 	
+	# Initialize command-line option parser
+	parser = optparse.OptionParser(usage='usage: %prog [options] FILE', \
+	                               version="RMG v0.0.1", \
+								   description=description)
+	
+	# Add options
+	parser.add_option('-o', '--output-directory', default='', \
+		              action="store", type="string", dest="outputDirectory", \
+					  help='use DIR as output directory', metavar='DIR')
+	parser.add_option('-s', '--scratch-directory', default='', \
+	                  action="store", type="string", dest="scratchDirectory", \
+					  help='use DIR as scratch directory', metavar='DIR')
+	parser.add_option('-l', '--library-directory', default='', \
+	                  action="store", type="string", dest="libraryDirectory", \
+					  help='use DIR as library directory', metavar='DIR')
+	parser.add_option('-v', '--verbose', default=0, \
+	                  action="store", type="int", dest="verbose", \
+					  help='set verbosity level to VALUE', metavar='VALUE')
+	
+	# Parse the command-line options
+	options, args = parser.parse_args()
+	
+	# There should be exactly one positional argument: the input file
+	# If this is not the case, print the help information and stop
+	if len(args) != 1:
+		parser.parse_args(['-h'])
+		quit()
+	
+	# Execute RMG
+	execute(args[0], options.outputDirectory, options.scratchDirectory, \
+	        options.libraryDirectory, options.verbose)
+
