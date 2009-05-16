@@ -51,6 +51,12 @@ if __name__ == '__main__':
 								   description=description)
 	
 	# Add options
+	parser.add_option('-q', '--quiet',
+					  action='store_const', const=30, default=20, dest='verbose', \
+					  help='quiet mode; only log errors and warnings')
+	parser.add_option('-v', '--verbose',
+					  action='store_const', const=10, default=20, dest='verbose', \
+					  help='verbose mode; log debug info')
 	parser.add_option('-o', '--output-directory', default='', \
 		              action="store", type="string", dest="outputDirectory", \
 					  help='use DIR as output directory', metavar='DIR')
@@ -60,9 +66,6 @@ if __name__ == '__main__':
 	parser.add_option('-l', '--library-directory', default='', \
 	                  action="store", type="string", dest="libraryDirectory", \
 					  help='use DIR as library directory', metavar='DIR')
-	parser.add_option('-v', '--verbose', default=0, \
-	                  action="store", type="int", dest="verbose", \
-					  help='set verbosity level to VALUE', metavar='VALUE')
 	
 	# Parse the command-line arguments
 	options, args = parser.parse_args()
@@ -74,7 +77,7 @@ if __name__ == '__main__':
 		quit()
 	
 	# Execute RMG
-	#rmg.core.execute(args[0], options.outputDirectory, \
-	                 #options.scratchDirectory, options.libraryDirectory, \
-					 #options.verbose)
+	rmg.execute(args[0], options.outputDirectory, \
+	                 options.scratchDirectory, options.libraryDirectory, \
+					 options.verbose)
 

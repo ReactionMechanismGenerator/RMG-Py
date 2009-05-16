@@ -28,8 +28,46 @@
 #
 ################################################################################
 
+import xml.dom.minidom
+
 """
-This is the rmg module.
+Contains functions for manipulation of RMG input and output files.
 """
 
-from main import *
+################################################################################
+
+class InvalidInputFileException(Exception):
+	"""
+	An exception used when parsing an RMG input file to indicate that the input
+	file is invalid. The msg parameter is used to specify what about the file
+	caused the exception to be raised.
+	"""	
+
+	def __init__(self, msg):
+		self.msg = msg
+	
+	def __str__(self):
+		return 'Invalid XML for RMG input file: ' + self.msg
+
+################################################################################
+
+def readInputFile(fstr):
+	"""
+	Parse an RMG input file.
+	"""
+
+	try:
+		
+		# Parse the RMG input XML file into a DOM tree
+		dom = xml.dom.minidom.parse(fstr)
+
+		# Process root element (must be a rmginput element)
+		root = dom.documentElement
+		if root.tagName != 'rmginput':
+			raise InvalidInputFileException('Incorrect root element.')
+	
+	except InvalidInputFileException, e:
+		print 'ERROR: ' + str(e)
+	except IOError, e:
+		print 'ERROR: Input file "' + e.filename + '" not found.'
+		
