@@ -28,31 +28,12 @@
 #
 ################################################################################
 
-import time
+"""
+RMG is an automatic chemical mechanism generator. It is awesomely awesome.
+"""
+
 import optparse
-
-################################################################################
-
-def execute(inputFile, outputDir, scratchDir, libraryDir, verbose):
-	
-	# Print out start timestamp
-	print('RMG execution initiated at ' + time.asctime())
-	print('')
-	
-	# Print out RMG header
-	print('################################################################')
-	print('#                                                              #')
-	print('#              RMG - Reaction Mechanism Generator              #')
-	print('#                    Python Version 0.0.1                      #')
-	print('#                         14 May 2009                          #')
-	print('#                                                              #')
-	print('#                 http://rmg.sourceforge.net/                  #')
-	print('#                                                              #')
-	print('################################################################')
-	print('')
-	
-	# Print out end timestamp
-	print('RMG execution terminated at ' + time.asctime())
+import rmg
 
 ################################################################################
 
@@ -83,7 +64,7 @@ if __name__ == '__main__':
 	                  action="store", type="int", dest="verbose", \
 					  help='set verbosity level to VALUE', metavar='VALUE')
 	
-	# Parse the command-line options
+	# Parse the command-line arguments
 	options, args = parser.parse_args()
 	
 	# There should be exactly one positional argument: the input file
@@ -93,6 +74,7 @@ if __name__ == '__main__':
 		quit()
 	
 	# Execute RMG
-	execute(args[0], options.outputDirectory, options.scratchDirectory, \
-	        options.libraryDirectory, options.verbose)
+	#rmg.core.execute(args[0], options.outputDirectory, \
+	                 #options.scratchDirectory, options.libraryDirectory, \
+					 #options.verbose)
 
