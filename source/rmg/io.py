@@ -45,7 +45,7 @@ Contains functions for manipulation of RMG input and output files.
 class InvalidInputFileException(Exception):
 	"""
 	An exception used when parsing an RMG input file to indicate that the input
-	file is invalid. The msg parameter is used to specify what about the file
+	file is invalid. The `msg` parameter is used to specify what about the file
 	caused the exception to be raised.
 	"""	
 
@@ -57,7 +57,12 @@ class InvalidInputFileException(Exception):
 
 ################################################################################
 
-def getFirstElement(parent, name):
+def getFirstChildElement(parent, name):
+	"""
+	Returns the first child element of the XML `parent` element with a matching
+	`name`. The `parent` parameter comes from a node of a DOM tree as produced
+	via the :data:`xml.dom.minidom` module.
+	"""
 	elements = getElements(parent, name)
 	if len(elements) > 0:
 		return elements[0]
@@ -65,10 +70,21 @@ def getFirstElement(parent, name):
 		return None
 
 def getElements(parent, name):
+	"""
+	Returns a list of all child elements of the XML `parent` element with a 
+	matching `name`. The `parent` parameter comes from a node of a DOM tree as 
+	produced via the :data:`xml.dom.minidom` module.
+	"""
 	return parent.getElementsByTagName(name)
 
-def getNodeText(node):
-	for child in node.childNodes:
+def getElementText(element):
+	"""
+	Returns the string text that is found between the open and close tags of
+	`element`, or an empty string if no text is found. The `element` parameter 
+	comes from a node of a DOM tree as produced via the 
+	:data:`xml.dom.minidom` module.
+	"""
+	for child in element.childNodes:
 		if child.nodeType == xml.dom.Node.TEXT_NODE:
 			return child.data
 	return ''
@@ -77,7 +93,9 @@ def getNodeText(node):
 
 def readInputFile(fstr):
 	"""
-	Parse an RMG input file.
+	Parse an RMG input file at the location `fstr`. If successful, this 
+	function returns a :class:`rmg.model.CoreEdgeReactionModel` object and a list of 
+	one or more :class:`rmg.model.ReactionSystem` objects.
 	"""
 
 	try:
@@ -109,19 +127,19 @@ def readInputFile(fstr):
 			
 			# Load structure
 			mol = None
-			cmlMolecule = getFirstElement(element, 'cml:molecule')
-			inchi = getFirstElement(element, 'inchi')
-			smiles = getFirstElement(element, 'smiles')
-			if cmlMolecule is not None:
-				molecule = str(cmlMolecule.toxml())
-				#molecule = molecule.replace('cml:', '')
-				#print molecule
-				#mol = pybel.readstring('cml', molecule)
+			cml = getFirstChildElement(element, 'cml')
+			inchi = getFirstChildElement(element, 'inchi')
+			smiles = getFirstChildElement(element, 'smiles')
+			if cml is not None:
+				molecule = str(getFirstChildElement(cml, 'molecule').toxml())
+				# Remove all tab characters (OpenBabel doesn't like them)
+				molecule = molecule.replace('\t', '')
+				mol = pybel.readstring('cml', molecule)
 			elif inchi is not None:
-				inchi = str(getNodeText(inchi))
+				inchi = str(getElementText(inchi))
 				mol = pybel.readstring('inchi', inchi)
 			elif smiles is not None:
-				smiles = str(getNodeText(smiles))
+				smiles = str(getElementText(smiles))
 				mol = pybel.readstring('smiles', smiles)
 			else:
 				raise InvalidInputFileException('Species missing structure information.')
@@ -154,13 +172,13 @@ def readInputFile(fstr):
 			reactionSystem = model.ReactionSystem()
 			
 			# Temperature model
-			temperatureModel = getFirstElement(element, 'temperatureModel')
+			temperatureModel = getFirstChildElement(element, 'temperatureModel')
 			tempModelType = temperatureModel.getAttribute('type')
 			if tempModelType == 'isothermal':
 				
 				# Read the (constant) temperature from the file
-				temperature = getFirstElement(temperatureModel, 'temperature')
-				value = float(getNodeText(temperature))
+				temperature = getFirstChildElement(temperatureModel, 'temperature')
+				value = float(getElementText(temperature))
 				units = str(temperature.getAttribute('units'))
 				T = pq.Quantity(value, units); T.units = 'K'
 				
@@ -171,13 +189,13 @@ def readInputFile(fstr):
 				raise InvalidInputFileException('Invalid temperature model type "' + tempModelType + '".')
 			
 			# Pressure model
-			pressureModel = getFirstElement(element, 'pressureModel')
+			pressureModel = getFirstChildElement(element, 'pressureModel')
 			pressModelType = pressureModel.getAttribute('type')
 			if pressModelType == 'isobaric':
 				
 				# Read the (constant) pressure from the file
-				pressure = getFirstElement(pressureModel, 'pressure')
-				value = float(getNodeText(pressure))
+				pressure = getFirstChildElement(pressureModel, 'pressure')
+				value = float(getElementText(pressure))
 				units = str(pressure.getAttribute('units'))
 				P = pq.Quantity(value, units); P.units = 'Pa'
 				
@@ -196,7 +214,7 @@ def readInputFile(fstr):
 			for concentration in concentrations:
 			
 				# Read the concentration from the file
-				value = float(getNodeText(concentration))
+				value = float(getElementText(concentration))
 				sid = concentration.getAttribute('speciesID')
 				units = str(concentration.getAttribute('units'))
 				C = pq.Quantity(value, units); C.units = 'mol/m**3'

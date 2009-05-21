@@ -28,6 +28,12 @@
 #
 ################################################################################
 
+
+"""
+Contains the main function for RMG execution and several helper functions that
+support it.
+"""
+
 import time
 import logging
 import io
@@ -36,7 +42,14 @@ import io
 
 def execute(inputFile, outputDir, scratchDir, libraryDir, verbose):
 	"""
-	Generate a reaction model for the set of reaction systems specified in an input file.
+	Generate a reaction model for the set of reaction systems specified in an 
+	input file at location `inputFile`. Output and temporary files will be 
+	placed in the directories `outputDir` and `scratchDir`, respectively; if
+	either of these are empty strings, the corresponding files will be placed
+	in the same directory as the input file. The `libraryDir` parameter can be
+	used to specify additional directories to search for RMG databases. The
+	`verbose` parameter is an integer specifying the amount of log text seen
+	at the console; the levels correspond to those of the :data:`logging` module.
 	"""
 
 	# Set up log (uses stdout)
@@ -58,7 +71,9 @@ def execute(inputFile, outputDir, scratchDir, libraryDir, verbose):
 
 def initializeLog(verbose):
 	"""
-	Set up a logger for RMG to use to print output to stdout.
+	Set up a logger for RMG to use to print output to stdout. The
+	`verbose` parameter is an integer specifying the amount of log text seen
+	at the console; the levels correspond to those of the :data:`logging` module.
 	"""
 
 	# Create logger

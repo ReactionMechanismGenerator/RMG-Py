@@ -1,0 +1,40 @@
+************************
+The ``rmg.model`` Module
+************************
+
+.. automodule:: rmg.model
+
+Classes in ``rmg.model``
+========================
+
+CoreEdgeReactionModel
+---------------------
+
+.. autoclass:: rmg.model.CoreEdgeReactionModel
+	:members:
+
+PressureModel
+-------------
+
+.. autoclass:: rmg.model.PressureModel
+	:members:
+
+ReactionModel
+-------------
+
+.. autoclass:: rmg.model.ReactionModel
+	:members:
+
+ReactionSystem
+--------------
+
+.. autoclass:: rmg.model.ReactionSystem
+	:members:
+
+
+TemperatureModel
+----------------
+
+.. autoclass:: rmg.model.TemperatureModel
+	:members:
+

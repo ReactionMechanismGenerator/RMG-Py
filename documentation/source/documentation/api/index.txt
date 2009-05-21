@@ -6,18 +6,24 @@
 RMG Developer's Guide
 *********************
 
-.. toctree::
-   :maxdepth: 2
+The RMG Developer's Guide provides documentation for the application programming interface (API) used by RMG. It is intended for readers who wish to understand the RMG source code, e.g. to learn how to *develop* with RMG.
 
-Indices and tables
+Contents
+========
+
+.. toctree::
+	:numbered:
+	:maxdepth: 1
+	
+	rmg-chem
+	rmg-io
+	rmg-main
+	rmg-model
+	
+Indices and Tables
 ==================
 
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-
-``rmg`` Module
-==============
-
-.. automodule:: rmg
 

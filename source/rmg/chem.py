@@ -29,7 +29,7 @@
 ################################################################################
 
 """
-Contains classes describing chemical items.
+Contains classes describing chemical entities: elements, atoms, bonds, species, etc.
 """
 
 import quantities as pq
@@ -40,12 +40,13 @@ import openbabel
 
 class Element:
     """
-	Represent a single chemical element.
-
-    This class is specifically for properties that all atoms of the same
-    element share. Ideally there is only one instance of this class for each
-    atom variant (isotope, valence, etc.).
-    """
+	Represent a single chemical element. Each element has an atomic 
+	`number`, a `name`, a `symbol`, an atomic `mass`, and a `valence`, a list 
+	of the possible numbers of bonds allowed.
+	
+	This class is specifically for properties that all atoms of the same element
+	share. Ideally there is only one instance of this class for each element. 
+	"""
 
     def __init__(self, number, name, symbol, mass, valence):
         """Initialize a chemical element.
@@ -67,7 +68,8 @@ class Element:
 
 def loadElements():
 	"""
-	Loads entries into a dictionary of elements.
+	Loads entries into a dictionary of elements. The dictionary created by
+	this function is always available at :data:`rmg.chem.elements`.
 	"""
 	elements = {}
 	elements[1] = elements['H'] = elements['hydrogen'] = Element(1, 'hydrogen', 'H', pq.Quantity(1.00794, 'g/mol'), 1)
@@ -86,16 +88,21 @@ def loadElements():
 	elements[53] = elements['I'] = elements['iodine'] = Element(53, 'iodine', 'I', pq.Quantity(126.90447, 'g/mol'), 1)
 	return elements
 	
+# The dictionary of elements, accessible by atomic number, symbol, or name.
 elements = loadElements()
 
 ################################################################################
 
 class ElectronState:
-    """Represent a single free electron state (none, radical, etc.)
-
-    This class is specifically for properties that all free electron states
-    share. Ideally there is only one instance of this class for each
-    free electron state.
+    """
+	Represent a single free electron state (none, radical, etc.) Each state is 
+	defined by a unique string `label`; the `order`, or number of 
+	free electrons; and a `spin` state ('' = none, 'S' = singlet, 'T' = 
+	triplet).
+	
+	This class is specifically for properties that all free electron states 
+	share. Ideally there is only one instance of this class for each free 
+	electron state.
     """
 
     def __init__(self, label, order, spin=''):
@@ -115,7 +122,9 @@ class ElectronState:
 
 def loadElectronStates():
 	"""
-	Loads entries into a dictionary of free electron states.
+	Loads entries into a dictionary of free electron states. The dictionary 
+	created by this function is always available at 
+	:data:`rmg.chem.electronStates`.
 	"""
 	electronStates = {}
 	electronStates['0'] = ElectronState('0', 0, '')
@@ -126,13 +135,16 @@ def loadElectronStates():
 	electronStates['4'] = ElectronState('4', 4, '')
 	return electronStates
 
+# The dictionary of electron states, accessible by label.
 electronStates = loadElectronStates()
 
 ################################################################################
 		
 class Atom:
 	"""
-	Represent an atom in a chemical species.
+	Represent an atom in a chemical species. Each atom is defined by an 
+	`element` (stored internally as an :class:`Element` object), a `electronState`
+	(stored internally as an :class:`ElectronState` object), and a numeric `charge`.
 	"""	
 
 	def __init__(self, element=None, electronState=None, charge=0):
@@ -145,7 +157,11 @@ class Atom:
 
 	def setElement(self, element):
 		"""
-		Set the element that this atom represents.
+		Set the element that this atom represents. The *element* parameter can
+		be an :class:`Element` object, an integer representing the atomic 
+		number, or a string containing the element symbol or name. In all 
+		cases *element* will be converted to and stored as an :class:`Element` 
+		object.
 		"""
 		if element.__class__ == str or element.__class__ == unicode:
 			element = elements[element]
@@ -155,7 +171,11 @@ class Atom:
 
 	def setElectronState(self, electronState):
 		"""
-		Set the electron state that this atom represents.
+		Set the electron state that this atom represents. The *electronState* 
+		parameter can be an :class:`ElectronState` object or a string 
+		representing the label of the desired electron state. In all cases 
+		*electronState*	will be converted to and stored as an 
+		:class:`ElectronState` object.
 		"""
 		if electronState.__class__ == str or electronState.__class__ == unicode:
 			electronState = electronStates[electronState]
@@ -167,11 +187,13 @@ class Atom:
 
 class BondType:
     """
-	Represent a type of chemical bond.
-
-    This class is specifically for properties that all bonds of the same
-    type share. Ideally there is only one instance of this class for each
-    bond type.
+	Represent a type of chemical bond. Each bond type has a unique string 
+	`label`; a unique string `name`; a numeric bond `order`; an integral 
+	`piElectrons`, the number of pi electrons; and a string `location` with
+	bond geometry information (i.e. 'cis' or 'trans').
+	
+	This class is specifically for properties that all bonds of the same type 
+	share. Ideally there is only one instance of this class for each bond type.
     """
 
     def __init__(self, label, name, order, piElectrons, location=''):
@@ -194,8 +216,10 @@ class BondType:
 
 def loadBondTypes():
 	"""
-	Loads entries into a dictionary of bond types.
+	Loads entries into a dictionary of bond types. The dictionary created by
+	this function is always available at :data:`rmg.chem.bondTypes`.
 	"""
+	
 	bondTypes = {}
 	bondTypes[1] = bondTypes['S'] = bondTypes['single'] = BondType('S', 'single', 1, 0, '')
 	bondTypes[2] = bondTypes['D'] = bondTypes['double'] = BondType('D', 'double', 2, 2, '')
@@ -205,22 +229,29 @@ def loadBondTypes():
 	bondTypes[1.5] = bondTypes['B'] = bondTypes['benzene'] = BondType('B', 'benzene', 1.5, 1, '')
 	return bondTypes
 	
+# The dictionary of bond types, accessible by label, order, or name.
 bondTypes = loadBondTypes()
 
 ################################################################################
 
 class Bond:
 	"""
-	Represent a bond in a chemical species.
+	Represent a bond in a chemical species. Each bond has a list `atoms` of 
+	length two containing the two atoms in the bond and a `bondType` object,
+	stored internally as a :class:`BondType` object.
 	"""	
 
-	def __init__(self, atom1, atom2, bondType=''):
+	def __init__(self, atoms, bondType=''):
 		self.setBondType(bondType)
-		self.atoms = [atom1, atom2]
+		self.atoms = atoms
 
 	def setBondType(self, bondType):
 		"""
-		Set the bond type that this bond represents.
+		Set the bond type that this bond represents. The *bondType* 
+		parameter can be a :class:`BondType` object, a number representing
+		the bond order, or a string representing the label of the desired bond 
+		type. In all cases *bondType* will be converted to and stored as a
+		:class:`BondType` object.
 		"""
 		if bondType.__class__ == str or bondType.__class__ == unicode:
 			bondType = bondTypes[bondType]
@@ -233,15 +264,25 @@ class Bond:
 class Structure:
 	"""
 	Represent the chemical structure of a single resonance form of a chemical
-	species as a graph.
+	species as a graph. Atom iteration is possible via the `atoms` list,
+	while bond iteration is possible via the `bonds` list. The graph is stored
+	as a dictionary in the `graph` data member, where the keys are atoms and
+	the values are lists of bonds.
 	"""	
 
 	def __init__(self, atoms=[], bonds=[]):
+		"""
+		Initialize a Structure object.
+		"""
 		self.atoms = atoms
 		self.bonds = bonds
 		self.updateGraph()
 	
 	def updateGraph(self):
+		"""
+		Rebuild the `graph` data member based on the current state of the
+		`atoms` and `bonds` data members.
+		"""
 		self.graph = {}
 		for atom in self.atoms:
 			self.graph[atom] = []
@@ -251,7 +292,7 @@ class Structure:
 	
 	def fromOBMol(self, obmol):
 		"""
-		Convert an OpenBabel OBMol object to a Structure object.
+		Convert an OpenBabel OBMol object `obmol` to a Structure object.
 		"""
 		
 		self.atoms = []; self.bonds = []; self.graph = {}
@@ -289,7 +330,7 @@ class Structure:
 					elif obbond.IsTriple(): order = 'T'
 					elif obbond.IsAromatic(): order = 'B'
 					
-					bond = Bond(self.atoms[i], self.atoms[j], bondTypes[order])
+					bond = Bond([self.atoms[i], self.atoms[j]], bondTypes[order])
 					self.bonds.append(bond)
 		
 		# Create the graph from the atom and bond lists
@@ -320,22 +361,40 @@ class Structure:
 
 class Species:
 	"""
-	Represent a chemical species (including all of its resonance forms).
+	Represent a chemical species (including all of its resonance forms). Each
+	species has a unique integer `id` assigned automatically by RMG and a 
+	not-necessarily unique string `label`. The *structure* variable contains a 
+	list of :class:`Structure` objects representing each resonance form. The 
+	`reactive` flag is :data:`True` if the species can react and :data:`False` 
+	if it is inert.
 	"""	
 
+	# A static counter for the number of species created since the RMG job began.
 	numSpecies = 0
 
 	def __init__(self, label='', structure=None, reactive=True):
+		"""
+		Initialize a Species object.
+		"""
 		Species.numSpecies += 1
 		self.id = Species.numSpecies
 		self.label = label
-		self.structure = structure
+		if structure is None:
+			self.structure = Structure()
+		else:
+			self.structure = structure
 		self.reactive = reactive
 		
 	def toInChI(self):
+		"""
+		Return the InChI string corresponding to the current species.
+		"""
 		return self.structure.toInChI()
 	
 	def __str__(self):
+		"""
+		Return a string representation of the species, in the form 'id(label)'.
+		"""
 		return self.label + '(' + str(self.id) + ')'
 		
 ################################################################################
