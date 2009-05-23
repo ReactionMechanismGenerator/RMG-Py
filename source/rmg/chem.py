@@ -35,6 +35,7 @@ Contains classes describing chemical entities: elements, atoms, bonds, species, 
 import quantities as pq
 import pybel
 import openbabel
+import graph
 
 ################################################################################
 
@@ -182,6 +183,13 @@ class Atom:
 		if electronState.__class__ != ElectronState:
 			raise Exception('Invalid parameter "electronState".')
 		self.electronState = electronState
+	
+	def equivalent(self, other):
+		"""
+		Return :data:`True` if `self` and `other` are equivalent atoms, i.e. 
+		they have the same element and electronic state.
+		"""
+		return self.element == other.element and self.electronState == other.electronState
 
 ################################################################################
 
@@ -258,44 +266,89 @@ class Bond:
 		if bondType.__class__ != BondType:
 			raise Exception('Invalid parameter "bondType".')
 		self.bondType = bondType
+	
+	def equivalent(self, other):
+		"""
+		Return :data:`True` if `self` and `other` are equivalent bonds, i.e. 
+		they have the same bond type.
+		"""
+		return self.bondType == other.bondType
 
 ################################################################################
 
 class Structure:
 	"""
 	Represent the chemical structure of a single resonance form of a chemical
-	species as a graph. Atom iteration is possible via the `atoms` list,
-	while bond iteration is possible via the `bonds` list. The graph is stored
-	as a dictionary in the `graph` data member, where the keys are atoms and
-	the values are lists of bonds.
+	species as a graph. Atom iteration is possible via the `atoms` method,
+	while bond iteration is possible via the `bonds` method. The graph is stored
+	as a dictionary of dictionaries in the `graph` data member, where the keys 
+	are atoms (vertices) and the values are bonds (edges).
 	"""	
 
 	def __init__(self, atoms=[], bonds=[]):
 		"""
 		Initialize a Structure object.
 		"""
-		self.atoms = atoms
-		self.bonds = bonds
-		self.updateGraph()
+		self.updateGraph(atoms, bonds)
 	
-	def updateGraph(self):
+	def atoms(self):
 		"""
-		Rebuild the `graph` data member based on the current state of the
-		`atoms` and `bonds` data members.
+		Return a list of the atoms in the structure.
+		"""
+		return self.graph.keys()
+		
+	def bonds(self):
+		"""
+		Return a list of the bonds in the structure.
+		"""
+		bondlist = []
+		for atom1 in self.graph:
+			for atom2 in self.graph[atom1]:
+				bond = self.graph[atom1][atom2]
+				if bond not in bondlist:
+					bondlist.append(bond)
+		return bondlist
+	
+	def updateGraph(self, atoms, bonds):
+		"""
+		Rebuild the `graph` data member based on the lists of atoms and bonds
+		provided in `atoms` and `bonds`, respectively.
 		"""
 		self.graph = {}
-		for atom in self.atoms:
-			self.graph[atom] = []
-		for bond in self.bonds:
-			for atom in bond.atoms:
-				self.graph[atom].append(bond)
+		for atom in atoms:
+			self.graph[atom] = {}
+		for bond in bonds:
+			self.graph[bond.atoms[0]][bond.atoms[1]] = bond
+			self.graph[bond.atoms[1]][bond.atoms[0]] = bond
+		
+	def fromCML(self, cmlstr):
+		"""
+		Convert a string of CML `cmlstr` to a Structure object.
+		"""
+		cmlstr = cmlstr.replace('\t', '')
+		mol = pybel.readstring('cml', cmlstr)
+		self.fromOBMol(mol.OBMol)
+	
+	def fromInChI(self, inchistr):
+		"""
+		Convert an InChI string `inchistr` to a Structure object.
+		"""
+		mol = pybel.readstring('inchi', inchistr)
+		self.fromOBMol(mol.OBMol)
+	
+	def fromSMILES(self, smilesstr):
+		"""
+		Convert a SMILES string `smilesstr` to a Structure object.
+		"""
+		mol = pybel.readstring('smiles', smilesstr)
+		self.fromOBMol(mol.OBMol)
 	
 	def fromOBMol(self, obmol):
 		"""
 		Convert an OpenBabel OBMol object `obmol` to a Structure object.
 		"""
 		
-		self.atoms = []; self.bonds = []; self.graph = {}
+		atoms = []; bonds = []
 		
 		# Add hydrogen atoms to complete molecule if needed
 		obmol.AddHydrogens()
@@ -315,7 +368,7 @@ class Structure:
 			elif electron == 3:	electron = '2T'
 			
 			atom = Atom(elements[number], electronStates[electron])
-			self.atoms.append(atom)
+			atoms.append(atom)
 			
 			# Add bonds by iterating again through atoms
 			for j in range(0, i):
@@ -330,23 +383,25 @@ class Structure:
 					elif obbond.IsTriple(): order = 'T'
 					elif obbond.IsAromatic(): order = 'B'
 					
-					bond = Bond([self.atoms[i], self.atoms[j]], bondTypes[order])
-					self.bonds.append(bond)
+					bond = Bond([atoms[i], atoms[j]], bondTypes[order])
+					bonds.append(bond)
 		
 		# Create the graph from the atom and bond lists
-		self.updateGraph()
+		self.updateGraph(atoms, bonds)
 		
 	def toOBMol(self):
 		"""
 		Convert a Structure object to an OpenBabel OBMol object.
 		"""
+		atoms = self.atoms(); bonds = self.bonds()
+		
 		obmol = openbabel.OBMol()
-		for atom in self.atoms:
+		for atom in atoms:
 			a = obmol.NewAtom()
 			a.SetAtomicNum(atom.element.number)
-		for bond in self.bonds:
-			index1 = self.atoms.index(bond.atoms[0])
-			index2 = self.atoms.index(bond.atoms[1])
+		for bond in bonds:
+			index1 = atoms.index(bond.atoms[0])
+			index2 = atoms.index(bond.atoms[1])
 			order = bond.bondType.order
 			if order == 1.5: order = 5
 			obmol.AddBond(index1+1, index2+1, order)
@@ -354,9 +409,34 @@ class Structure:
 		return obmol
 	
 	def toInChI(self):
+		"""
+		Convert a Structure object to an InChI string.
+		"""
 		mol = pybel.Molecule(self.toOBMol())
 		return mol.write('inchi').strip()
 		
+	def toSMILES(self):
+		"""
+		Convert a Structure object to an SMILES string.
+		"""
+		mol = pybel.Molecule(self.toOBMol())
+		return mol.write('smiles').strip()
+	
+	def isIsomorphic(self, other):
+		"""
+		Return :data:`True` if structures `self` and `other` are isomorphic,
+		i.e. represent the same structure, and :data:`False` otherwise.
+		"""
+		return graph.VF2_isomorphic(self.graph, other.graph, False)
+		
+	def isSubgraphIsomorphic(self, other):
+		"""
+		Return :data:`True` if structures `self` and `other` are subgraph
+		isomorphic,	i.e. `other` represents a portion of `self`, and 
+		:data:`False` otherwise.
+		"""
+		return graph.VF2_isomorphic(self.graph, other.graph, True)
+	
 ################################################################################
 
 class Species:
@@ -385,12 +465,6 @@ class Species:
 			self.structure = structure
 		self.reactive = reactive
 		
-	def toInChI(self):
-		"""
-		Return the InChI string corresponding to the current species.
-		"""
-		return self.structure.toInChI()
-	
 	def __str__(self):
 		"""
 		Return a string representation of the species, in the form 'id(label)'.
@@ -401,20 +475,68 @@ class Species:
 
 if __name__ == '__main__':
 	
-	print ''
+	#print ''
 	
-	print 'Elements available:'
-	for key, element in elements.iteritems():
-		print '\t' + str(key) + ' ' + element.symbol
-	print ''
+	#print 'Elements available:'
+	#for key, element in elements.iteritems():
+		#print '\t' + str(key) + ' ' + element.symbol
+	#print ''
 	
-	print 'Free electron states available:'
-	for key, electronState in electronStates.iteritems():
-		print '\t' + electronState.label
-	print ''
+	#print 'Free electron states available:'
+	#for key, electronState in electronStates.iteritems():
+		#print '\t' + electronState.label
+	#print ''
 	
-	print 'Bond types available:'
-	for key, bondType in bondTypes.iteritems():
-		print '\t' + str(key) + ' ' + bondType.label
-	print ''
+	#print 'Bond types available:'
+	#for key, bondType in bondTypes.iteritems():
+		#print '\t' + str(key) + ' ' + bondType.label
+	#print ''
 	
+	cml1 = """
+<molecule>
+<atomArray>
+<atom id="a1" elementType="C" />
+<atom id="a2" elementType="C" />
+<atom id="a3" elementType="C" />
+<atom id="a4" elementType="C" />
+<atom id="a5" elementType="C" />
+<atom id="a6" elementType="Cl" />
+</atomArray>
+<bondArray>
+<bond atomRefs2="a1 a2" order="2" />
+<bond atomRefs2="a2 a3" order="1" />
+<bond atomRefs2="a3 a4" order="2" />
+<bond atomRefs2="a4 a5" order="1" />
+<bond atomRefs2="a5 a6" order="1" />
+</bondArray>
+</molecule>
+	"""
+	structure1 = Structure()
+	structure1.fromCML(cml1)
+	print structure1.toInChI(), structure1.toSMILES()
+	
+	cml2 = """
+<molecule>
+<atomArray>
+<atom id="a3" elementType="C" />
+<atom id="a6" elementType="C" />
+<atom id="a4" elementType="C" />
+<atom id="a1" elementType="F" />
+<atom id="a5" elementType="C" />
+<atom id="a2" elementType="C" />
+</atomArray>
+<bondArray>
+<bond atomRefs2="a2 a3" order="1" />
+<bond atomRefs2="a4 a5" order="1" />
+<bond atomRefs2="a1 a2" order="1" />
+<bond atomRefs2="a5 a6" order="2" />
+<bond atomRefs2="a3 a4" order="2" />
+</bondArray>
+</molecule>
+	"""
+	structure2 = Structure()
+	structure2.fromCML(cml2)
+	print structure2.toInChI(), structure2.toSMILES()
+	
+	print structure1.isIsomorphic(structure2)
+			

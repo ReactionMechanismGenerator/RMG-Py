@@ -31,7 +31,6 @@
 import xml.dom.minidom
 import quantities as pq
 import logging
-import pybel
 
 import model
 import chem
@@ -126,27 +125,22 @@ def readInputFile(fstr):
 				reactive = True		
 			
 			# Load structure
-			mol = None
+			structure = chem.Structure()
+			
 			cml = getFirstChildElement(element, 'cml')
 			inchi = getFirstChildElement(element, 'inchi')
 			smiles = getFirstChildElement(element, 'smiles')
 			if cml is not None:
-				molecule = str(getFirstChildElement(cml, 'molecule').toxml())
-				# Remove all tab characters (OpenBabel doesn't like them)
-				molecule = molecule.replace('\t', '')
-				mol = pybel.readstring('cml', molecule)
+				cmlstr = str(getFirstChildElement(cml, 'molecule').toxml())
+				structure.fromCML(cmlstr)
 			elif inchi is not None:
-				inchi = str(getElementText(inchi))
-				mol = pybel.readstring('inchi', inchi)
+				inchistr = str(getElementText(inchi))
+				structure.fromInChI(inchistr)
 			elif smiles is not None:
-				smiles = str(getElementText(smiles))
-				mol = pybel.readstring('smiles', smiles)
+				smilesstr = str(getElementText(smiles))
+				structure.fromSMILES(smilesstr)
 			else:
 				raise InvalidInputFileException('Species missing structure information.')
-			
-			# Create a new structure from the OBMol
-			structure = chem.Structure()
-			structure.fromOBMol(mol.OBMol)
 			
 			# Create a new species and append the species to the core
 			species = chem.Species(label, structure, reactive)
@@ -160,7 +154,7 @@ def readInputFile(fstr):
 		for species in reactionModel.core.species:
 			logging.debug('Species ' + str(species) + ':')
 			if logging.getLogger().isEnabledFor(logging.DEBUG):
-				logging.debug('\t' + species.toInChI())
+				logging.debug('\t' + species.structure.toInChI())
 		logging.debug('')
 		
 		# Process reaction systems
