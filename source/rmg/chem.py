@@ -87,6 +87,7 @@ def loadElements():
 	elements[18] = elements['Ar'] = elements['argon'] = Element(18, 'argon', 'Ar', pq.Quantity(39.348, 'g/mol'), 0)
 	elements[35] = elements['Br'] = elements['bromine'] = Element(35, 'bromine', 'Br', pq.Quantity(79.904, 'g/mol'), 1)
 	elements[53] = elements['I'] = elements['iodine'] = Element(53, 'iodine', 'I', pq.Quantity(126.90447, 'g/mol'), 1)
+	elements[0] = elements['R'] = Element(0, '', 'R', pq.Quantity(0.0, 'g/mol'), 0)
 	return elements
 	
 # The dictionary of elements, accessible by atomic number, symbol, or name.
@@ -98,8 +99,7 @@ class ElectronState:
     """
 	Represent a single free electron state (none, radical, etc.) Each state is 
 	defined by a unique string `label`; the `order`, or number of 
-	free electrons; and a `spin` state ('' = none, 'S' = singlet, 'T' = 
-	triplet).
+	free electrons; and a `spin` multiplicity.
 	
 	This class is specifically for properties that all free electron states 
 	share. Ideally there is only one instance of this class for each free 
@@ -128,12 +128,10 @@ def loadElectronStates():
 	:data:`rmg.chem.electronStates`.
 	"""
 	electronStates = {}
-	electronStates['0'] = ElectronState('0', 0, '')
-	electronStates['1'] = ElectronState('1', 1, '')
-	electronStates['2S'] = ElectronState('2S', 2, 'S')
-	electronStates['2T'] = ElectronState('2T', 2, 'T')
-	electronStates['3'] = ElectronState('3', 3, '')
-	electronStates['4'] = ElectronState('4', 4, '')
+	electronStates['0'] = ElectronState('0', 0, 1)
+	electronStates['1'] = ElectronState('1', 1, 2)
+	electronStates['2S'] = ElectronState('2S', 2, 1)
+	electronStates['2T'] = ElectronState('2T', 2, 3)
 	return electronStates
 
 # The dictionary of electron states, accessible by label.
@@ -278,19 +276,21 @@ class Bond:
 
 class Structure:
 	"""
-	Represent the chemical structure of a single resonance form of a chemical
-	species as a graph. Atom iteration is possible via the `atoms` method,
-	while bond iteration is possible via the `bonds` method. The graph is stored
-	as a dictionary of dictionaries in the `graph` data member, where the keys 
-	are atoms (vertices) and the values are bonds (edges).
-	"""	
+	A representation of a chemical species or fragment using a graph data 
+	structure. The vertices represent atoms, while the edges represent bonds.
+	This class can be used to represent a resonance form of a chemical species
+	or a functional group. Atom iteration is possible via the `atoms` method,
+	while bond iteration is possible via the `bonds` method.
+	
+	Internally the graph is represented as a dictionary of dictionaries. If a 
+	vertex is in the graph it will be in the outer dictionary. If two vertices 
+	in the graph are connected by an edge, each edge will be in the inner 
+	dictionary.
+	"""
 
 	def __init__(self, atoms=[], bonds=[]):
-		"""
-		Initialize a Structure object.
-		"""
-		self.updateGraph(atoms, bonds)
-	
+		self.initialize(atoms, bonds)
+		
 	def atoms(self):
 		"""
 		Return a list of the atoms in the structure.
@@ -309,7 +309,46 @@ class Structure:
 					bondlist.append(bond)
 		return bondlist
 	
-	def updateGraph(self, atoms, bonds):
+	def addAtom(self, atom):
+		"""
+		Add `atom` to the graph as a vertex. The atom is initialized with
+		no edges.
+		"""
+		self.graph[atom] = {}
+		
+	def addBond(self, atom1, atom2, bond):
+		"""
+		Add `bond` to the graph as an edge connecting atoms `atom1` and
+		`atom2`, which must already be present in the graph.
+		"""
+		self.graph[atom1][atom2] = bond
+		self.graph[atom2][atom1] = bond
+		
+	def hasBond(self, atom1, atom2):
+		"""
+		Returns true if atoms `atom1` and `atom2`, are in the graph and
+		are connected by a bond.
+		"""
+		if atom1 in self.graph.keys():
+			if atom2 in self.graph[atom1].keys():
+				return True
+		return False
+	
+	def isIsomorphic(self, other):
+		"""
+		Returns :data:`True` if two graphs are isomorphic and :data:`False`
+		otherwise. Uses the VF2 algorithm of Vento and Foggia.
+		"""
+		return graph.VF2_isomorphic(self.graph, other.graph, False)
+		
+	def isSubgraphIsomorphic(self, other):
+		"""
+		Returns :data:`True` if `other` is subgraph isomorphic and :data:`False`
+		otherwise. Uses the VF2 algorithm of Vento and Foggia.
+		"""
+		return graph.VF2_isomorphic(self.graph, other.graph, True)
+	
+	def initialize(self, atoms, bonds):
 		"""
 		Rebuild the `graph` data member based on the lists of atoms and bonds
 		provided in `atoms` and `bonds`, respectively.
@@ -387,7 +426,7 @@ class Structure:
 					bonds.append(bond)
 		
 		# Create the graph from the atom and bond lists
-		self.updateGraph(atoms, bonds)
+		self.initialize(atoms, bonds)
 		
 	def toOBMol(self):
 		"""
@@ -422,21 +461,6 @@ class Structure:
 		mol = pybel.Molecule(self.toOBMol())
 		return mol.write('smiles').strip()
 	
-	def isIsomorphic(self, other):
-		"""
-		Return :data:`True` if structures `self` and `other` are isomorphic,
-		i.e. represent the same structure, and :data:`False` otherwise.
-		"""
-		return graph.VF2_isomorphic(self.graph, other.graph, False)
-		
-	def isSubgraphIsomorphic(self, other):
-		"""
-		Return :data:`True` if structures `self` and `other` are subgraph
-		isomorphic,	i.e. `other` represents a portion of `self`, and 
-		:data:`False` otherwise.
-		"""
-		return graph.VF2_isomorphic(self.graph, other.graph, True)
-	
 ################################################################################
 
 class Species:
@@ -467,9 +491,36 @@ class Species:
 		
 	def __str__(self):
 		"""
-		Return a string representation of the species, in the form 'id(label)'.
+		Return a string representation of the species, in the form 'label(id)'.
 		"""
 		return self.label + '(' + str(self.id) + ')'
+		
+################################################################################
+
+class FunctionalGroup:
+	"""
+	Represent a functional group. Each functional group has a unique string 
+	`label`, a `structure` that contains a :class:`Structure` object 
+	representing the functional group, and `center`, a pointer to the atom
+	that represents the reactive center of the functional group.
+	"""	
+
+	def __init__(self, label='', structure=None, center=None):
+		"""
+		Initialize a functional group.
+		"""
+		self.label = label
+		if structure is None:
+			self.structure = Structure()
+		else:
+			self.structure = structure
+		self.center = center
+		
+	def __str__(self):
+		"""
+		Return a string representation of the species.
+		"""
+		return self.label
 		
 ################################################################################
 

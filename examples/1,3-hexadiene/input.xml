@@ -22,7 +22,7 @@
 					<bond atomRefs2="a2 a3" order="1" />
 					<bond atomRefs2="a3 a4" order="2" />
 					<bond atomRefs2="a4 a5" order="1" />
-					<bond atomRefs2="a5 a6"  order="1" />
+					<bond atomRefs2="a5 a6" order="1" />
 				</bondArray>
 			</molecule>
 		</cml>

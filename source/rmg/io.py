@@ -246,3 +246,6 @@ def readInputFile(fstr):
 		dom.unlink()
 		
 	return reactionModel, reactionSystems
+
+################################################################################
+
