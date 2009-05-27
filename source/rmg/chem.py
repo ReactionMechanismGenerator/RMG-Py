@@ -130,8 +130,11 @@ def loadElectronStates():
 	electronStates = {}
 	electronStates['0'] = ElectronState('0', 0, 1)
 	electronStates['1'] = ElectronState('1', 1, 2)
+	electronStates['2'] = ElectronState('2S', 2, [1,3])
 	electronStates['2S'] = ElectronState('2S', 2, 1)
 	electronStates['2T'] = ElectronState('2T', 2, 3)
+	electronStates['3'] = ElectronState('3', 3, [2,4])
+	electronStates['4'] = ElectronState('4', 4, [1,3,5])
 	return electronStates
 
 # The dictionary of electron states, accessible by label.
@@ -274,7 +277,7 @@ class Bond:
 
 ################################################################################
 
-class Structure:
+class ChemGraph:
 	"""
 	A representation of a chemical species or fragment using a graph data 
 	structure. The vertices represent atoms, while the edges represent bonds.
@@ -359,6 +362,69 @@ class Structure:
 		for bond in bonds:
 			self.graph[bond.atoms[0]][bond.atoms[1]] = bond
 			self.graph[bond.atoms[1]][bond.atoms[0]] = bond
+		
+################################################################################
+
+class Structure(ChemGraph):
+	"""
+	A representation of a chemical species using a graph data structure. The 
+	vertices represent atoms, while the edges represent bonds.
+	"""
+
+	def __init__(self, atoms=[], bonds=[]):
+		self.initialize(atoms, bonds)
+		
+	def initialize(self, atoms, bonds):
+		"""
+		Rebuild the `graph` data member based on the lists of atoms and bonds
+		provided in `atoms` and `bonds`, respectively.
+		"""
+		self.graph = {}
+		for atom in atoms:
+			self.graph[atom] = {}
+		for bond in bonds:
+			self.graph[bond.atoms[0]][bond.atoms[1]] = bond
+			self.graph[bond.atoms[1]][bond.atoms[0]] = bond
+		
+	def fromAdjacencyList(self, adjlist):
+		"""
+		Convert a string adjacency list `adjlist` into a chemical structure.
+		"""
+		
+		atoms = []; bonds = []; atomdict = {}
+				
+		lines = adjlist.splitlines()
+		label = lines[0]
+		for line in lines[1:]:
+			
+			data = line.split()
+			
+			# First item is index for atom
+			aid = int(data[0])
+			
+			# Next is the element or functional group element
+			element = data[1]
+				
+			# Next is the electron state
+			elecState = data[2].upper()
+			
+			# Create a new atom based on the above information
+			atom = Atom(element, elecState, 0)
+				
+			# Add the atom to the list
+			atoms.append(atom)
+			atomdict[aid] = atom
+			
+			# Process list of bonds
+			for datum in data[3:]:
+				aid2, comma, btype = datum[1:-1].partition(',')
+				aid2 = int(aid2)
+				if aid2 in atomdict:
+					bond = Bond([atomdict[aid], atomdict[aid2]], btype)
+					bonds.append(bond)
+			
+		# Create species structure
+		self.initialize(atoms, bonds)
 		
 	def fromCML(self, cmlstr):
 		"""
@@ -497,33 +563,6 @@ class Species:
 		
 ################################################################################
 
-class FunctionalGroup:
-	"""
-	Represent a functional group. Each functional group has a unique string 
-	`label`, a `structure` that contains a :class:`Structure` object 
-	representing the functional group, and `center`, a pointer to the atom
-	that represents the reactive center of the functional group.
-	"""	
-
-	def __init__(self, label='', structure=None, center=None):
-		"""
-		Initialize a functional group.
-		"""
-		self.label = label
-		if structure is None:
-			self.structure = Structure()
-		else:
-			self.structure = structure
-		self.center = center
-		
-	def __str__(self):
-		"""
-		Return a string representation of the species.
-		"""
-		return self.label
-		
-################################################################################
-
 if __name__ == '__main__':
 	
 	#print ''
@@ -590,4 +629,4 @@ if __name__ == '__main__':
 	print structure2.toInChI(), structure2.toSMILES()
 	
 	print structure1.isIsomorphic(structure2)
-			
+	

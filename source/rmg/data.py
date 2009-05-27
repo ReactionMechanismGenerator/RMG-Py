@@ -103,6 +103,8 @@ class Database:
 		already in the database.
 		"""
 		
+		node.children = []
+		
 		if parent is None:
 			if self.top is None:
 				self.top = node
@@ -114,7 +116,7 @@ class Database:
 		self.nodes[node.label] = node
 		if parent is not None:
 			parent.children.append(node)
-
+			
 	def removeNode(self, node):
 		"""
 		Remove `node` and all of its children from the database.
@@ -186,46 +188,54 @@ class Database:
 			fdict.close()
 
 		# Process the tree
-		try:
+		if treestr != '':
 		
-			ftree = open(treestr, 'r')
-			for line in ftree:
-				line = removeCommentFromLine(line).strip()
-				if len(line) > 0:
-					
-					# Extract level
-					data = line.split()
-					level = int(data[0].replace('L', '').replace(':', ''))
-					label = data[1]
-					
-					# Check that tree has associated record from dictionary
-					if label not in records:
-						raise InvalidDatabaseException('Node "' + label + \
-							'" in tree, but not in database.')
-							
-					# Create new node
-					node = Node(None, label, records[label], None, '')
-					
-					# Find immediate parent of the new node
-					if len(parents) < level:
-						raise InvalidDatabaseException('Invalid level specified.')
-					else:
-						while len(parents) > level:
-							parents.remove(parents[-1])
-						if len(parents) > 0:
-							node.parent = parents[level-1]
+			try:
+			
+				ftree = open(treestr, 'r')
+				for line in ftree:
+					line = removeCommentFromLine(line).strip()
+					if len(line) > 0:
 						
-					# Formally add node to tree
-					self.addNode(node, node.parent)
-					parents.append(node)
-					
+						# Extract level
+						data = line.split()
+						level = int(data[0].replace('L', '').replace(':', ''))
+						label = data[1]
+						
+						# Check that tree has associated record from dictionary
+						if label not in records:
+							raise InvalidDatabaseException('Node "' + label + \
+								'" in tree, but not in dictionary.')
 								
-		except InvalidDatabaseException, e:
-			logging.exception(str(e))
-		except IOError, e:
-			logging.exception('Database tree file "' + e.filename + '" not found.')
-		finally:	
-			ftree.close()
+						# Create new node
+						node = Node(None, label, records[label], None, '')
+						
+						# Find immediate parent of the new node
+						if len(parents) < level:
+							raise InvalidDatabaseException('Invalid level specified.')
+						else:
+							while len(parents) > level:
+								parents.remove(parents[-1])
+							if len(parents) > 0:
+								node.parent = parents[level-1]
+						
+						# Formally add node to tree
+						self.addNode(node, node.parent)
+						parents.append(node)
+						
+									
+			except InvalidDatabaseException, e:
+				logging.exception(str(e))
+			except IOError, e:
+				logging.exception('Database tree file "' + e.filename + '" not found.')
+			finally:	
+				ftree.close()
+
+		else:
+			
+			for label, record in records.iteritems():
+				node = Node(None, label, record, None, '')
+				self.nodes[label] = node
 
 		# Process the library
 		try:
@@ -238,11 +248,11 @@ class Database:
 					# Extract level
 					info = line.split()
 					label = info[1]
+					comment = ''
 					
 					if len(info) == 3:
 						# Data is label to other node that contains the data to use
 						data = info[2]
-						comment = ''
 					else:
 						# Parse the data the node contains; numbers are added 
 						# from info[2:] to data until an entry is found that 
@@ -258,13 +268,14 @@ class Database:
 							pass
 						for i in range(index, len(info)):
 							comment += info[i] + ' '
-						comment = comment[:-1]
+						if len(comment) > 0:
+							comment = comment[:-1]
 					
 					# Check that tree has associated record from dictionary
 					if label not in self.nodes:
 						raise InvalidDatabaseException('Node "' + label + \
-							'" in library, but not in tree or database.')
-					
+							'" in library, but not in tree or dictionary.')
+						
 					# Set data of node (no further processing here, since at
 					# this point we don't know anything about the data)
 					self.nodes[label].data = data				
@@ -272,6 +283,8 @@ class Database:
 					
 		except InvalidDatabaseException, e:
 			logging.exception(str(e))
+			print dictstr, treestr, libstr
+			quit()
 		except IOError, e:
 			logging.exception('Database library file "' + e.filename + '" not found.')
 		finally:	
@@ -292,78 +305,62 @@ def removeCommentFromLine(line):
 
 ################################################################################
 
-def parseAdjacencyList(adjlist, isfgroup=True):
-	"""
-	Convert a string adjacency list `adjlist` into a functional group object.
-	The optional argument `isfgroup` specifies whether the adjacency tree
-	represents a functional group or a full chemical species.
-	"""
-	
-	atoms = []; bonds = []; atomdict = {}
-			
-	lines = adjlist.splitlines()
-	label = lines[0]
-	for line in lines[1:]:
-		
-		data = line.split()
-		
-		# First item is index for atom
-		aid = int(data[0])
-		
-		# If second item is '*', the atom is the center atom
-		center = False
-		index = 1
-		if data[1] == '*':
-			center = True
-			index = 2
-		
-		# Next is the element or functional group element
-		element = data[index]
-		if element == '{Cd,CO}':
-			element = 'Cd'
-			
-		# Next is the electron state
-		elecState = data[index+1]
-		
-		# Create a new atom based on the above information
+def loadDatabase(dictstr, treestr, libstr, isfgroup=True):
+	database = Database()
+	database.readFromFiles(dictstr, treestr, libstr)
+	for label, node in database.nodes.iteritems():
 		if isfgroup:
-			atom = fgroup.Atom(element, elecState, 0, center)
+			structure = fgroup.Structure()
 		else:
-			atom = chem.Atom(element, elecState, 0)
-			
-		# Add the atom to the list
-		atoms.append(atom)
-		atomdict[aid] = atom
+			structure = chem.Structure()
+		structure.fromAdjacencyList(node.structure)
+		node.structure = structure
 		
-		# Process list of bonds
-		for datum in data[index+2:]:
-			aid2, btype = datum.replace('{', '').replace('}', '').replace(',',' ').split()
-			aid2 = int(aid2)
-			if aid2 in atomdict:
-				if isfgroup:
-					bond = fgroup.Bond([atomdict[aid], atomdict[aid2]], btype)
-				else:
-					bond = chem.Bond([atomdict[aid], atomdict[aid2]], btype)
-				bonds.append(bond)
-		
-	# Create and return functional group or species
-	if isfgroup:
-		structure = fgroup.Structure(atoms, bonds)
-		return fgroup.FunctionalGroup(label, structure)
-	else:
-		structure = chem.Structure(atoms, bonds)
-		return chem.Species(label, structure)
-
-################################################################################
+	return database
 
 if __name__ == '__main__':
 
-	database = Database()
+	datapath = '../data/RMG_database/'
+
+	int15Database = loadDatabase(datapath + 'thermo/15_Dictionary.txt', \
+		datapath + 'thermo/15_Tree.txt', \
+		datapath + 'thermo/15_Library.txt', True)
+	#print int15Database.top.children
+	#for key, value in int15Database.nodes.iteritems():
+		#print key, value
+		#for child in value.children:
+			#print child.label
+	#quit()
 	
-	database.readFromFiles('../data/RMG_database/thermo/Group_Dictionary.txt', \
-		'../data/RMG_database/thermo/Group_Tree.txt', \
-		'../data/RMG_database/thermo/Group_Library.txt')
+	abrahamDatabase = loadDatabase(datapath + 'thermo/Abraham_Dictionary.txt', \
+		datapath + 'thermo/Abraham_Tree.txt', \
+		datapath + 'thermo/Abraham_Library.txt', True)
 	
-	for label, node in database.nodes.iteritems():
-		node.structure = parseAdjacencyList(node.structure)
-		
+	gaucheDatabase = loadDatabase(datapath + 'thermo/Gauche_Dictionary.txt', \
+		datapath + 'thermo/Gauche_Tree.txt', \
+		datapath + 'thermo/Gauche_Library.txt', True)
+	
+	groupDatabase = loadDatabase(datapath + 'thermo/Group_Dictionary.txt', \
+		datapath + 'thermo/Group_Tree.txt', \
+		datapath + 'thermo/Group_Library.txt', True)
+	
+	otherDatabase = loadDatabase(datapath + 'thermo/Other_Dictionary.txt', \
+		datapath + 'thermo/Other_Tree.txt', \
+		datapath + 'thermo/Other_Library.txt', True)
+	
+	radicalDatabase = loadDatabase(datapath + 'thermo/Radical_Dictionary.txt', \
+		datapath + 'thermo/Radical_Tree.txt', \
+		datapath + 'thermo/Radical_Library.txt', True)
+	
+	ringDatabase = loadDatabase(datapath + 'thermo/Ring_Dictionary.txt', \
+		datapath + 'thermo/Ring_Tree.txt', \
+		datapath + 'thermo/Ring_Library.txt', True)
+	
+	unifacDatabase = loadDatabase(datapath + 'thermo/Unifac_Dictionary.txt', \
+		datapath + 'thermo/Unifac_Tree.txt', \
+		datapath + 'thermo/Unifac_Library.txt', True)
+	
+	primaryDatabase = loadDatabase(datapath + 'thermo/Primary_Dictionary.txt', \
+		'', \
+		datapath + 'thermo/Primary_Library.txt', False)
+	

@@ -33,7 +33,7 @@ Contains classes describing entities relating to functional groups.
 """
 
 import quantities as pq
-from chem import ElectronState, electronStates, BondType, bondTypes, Structure
+from chem import ElectronState, electronStates, BondType, bondTypes, ChemGraph
 
 ################################################################################
 
@@ -118,8 +118,13 @@ class Atom:
 		"""
 		if element.__class__ == str or element.__class__ == unicode:
 			element = elements[element]
-		if element.__class__ != Element:
-			raise Exception('Invalid parameter "element".')
+		elif element.__class__ == list:
+			labels = element
+			element = []
+			for label in labels:
+				element.append(elements[label])
+			if len(element) == 1:
+				element = element[0]
 		self.element = element
 
 	def setElectronState(self, electronState):
@@ -132,8 +137,13 @@ class Atom:
 		"""
 		if electronState.__class__ == str or electronState.__class__ == unicode:
 			electronState = electronStates[electronState]
-		if electronState.__class__ != ElectronState:
-			raise Exception('Invalid parameter "electronState".')
+		elif electronState.__class__ == list:
+			labels = electronState
+			electronState = []
+			for label in labels:
+				electronState.append(electronStates[label])
+			if len(electronState) == 1:
+				electronState = electronState[0]
 		self.electronState = electronState
 
 ################################################################################
@@ -159,10 +169,97 @@ class Bond:
 		"""
 		if bondType.__class__ == str or bondType.__class__ == unicode:
 			bondType = bondTypes[bondType]
-		if bondType.__class__ != BondType:
-			raise Exception('Invalid parameter "bondType".')
+		elif bondType.__class__ == list:
+			labels = bondType
+			bondType = []
+			for label in labels:
+				bondType.append(bondTypes[label])
+			if len(bondType) == 1:
+				bondType = bondType[0]
 		self.bondType = bondType
 
+################################################################################
+
+class Structure(ChemGraph):
+	"""
+	A representation of a chemical species or fragment using a graph data 
+	structure. The vertices represent atoms, while the edges represent bonds.
+	This class can be used to represent a resonance form of a chemical species
+	or a functional group. Atom iteration is possible via the `atoms` method,
+	while bond iteration is possible via the `bonds` method.
+	
+	Internally the graph is represented as a dictionary of dictionaries. If a 
+	vertex is in the graph it will be in the outer dictionary. If two vertices 
+	in the graph are connected by an edge, each edge will be in the inner 
+	dictionary.
+	"""
+
+	def __init__(self, atoms=[], bonds=[]):
+		self.initialize(atoms, bonds)
+		
+	def fromAdjacencyList(self, adjlist):
+		"""
+		Convert a string adjacency list `adjlist` into a functional group 
+		object.
+		"""
+		
+		atoms = []; bonds = []; atomdict = {}
+				
+		lines = adjlist.splitlines()
+		
+		for line in lines[1:]:
+			
+			data = line.split()
+			
+			# First item is index for atom
+			aid = int(data[0])
+			
+			# If second item is '*', the atom is the center atom
+			center = False
+			index = 1
+			if data[1] == '*':
+				center = True
+				index = 2
+			
+			# Next is the element or functional group element
+			# A list can be specified with the {,} syntax
+			elements = data[index]
+			if elements[0] == '{':
+				elements = elements[1:-1].split(',')
+			else:
+				elements = [elements]
+				
+			# Next is the electron state
+			elecState = data[index+1].upper()
+			if elecState[0] == '{':
+				elecState = elecState[1:-1].split(',')
+			else:
+				elecState = [elecState]
+			
+			# Create a new atom based on the above information
+			atom = Atom(elements, elecState, 0, center)
+				
+			# Add the atom to the list
+			atoms.append(atom)
+			atomdict[aid] = atom
+			
+			# Process list of bonds
+			for datum in data[index+2:]:
+				aid2, comma, btype = datum[1:-1].partition(',')
+				aid2 = int(aid2)
+				
+				if btype[0] == '{':
+					btype = btype[1:-1].split(',')
+				else:
+					btype = [btype]
+				
+				if aid2 in atomdict:
+					bond = Bond([atomdict[aid], atomdict[aid2]], btype)
+					bonds.append(bond)
+			
+		# Create and return functional group or species
+		self.initialize(atoms, bonds)
+	
 ################################################################################
 
 class FunctionalGroup:

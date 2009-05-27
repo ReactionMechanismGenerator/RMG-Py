@@ -1,0 +1,32 @@
+***********************
+The ``rmg.data`` Module
+***********************
+
+.. automodule:: rmg.data
+
+Classes in ``rmg.data``
+=======================
+
+Database
+--------
+
+.. autoclass:: rmg.data.Database
+	:members:
+
+InvalidDatabaseException
+------------------------
+
+.. autoclass:: rmg.data.InvalidDatabaseException
+	:members:
+
+Node
+----
+
+.. autoclass:: rmg.data.Node
+	:members:
+
+Methods in ``rmg.data``
+=======================
+
+.. autofunction:: rmg.data.loadDatabase
+

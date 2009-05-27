@@ -25,6 +25,12 @@ BondType
 .. autoclass:: rmg.chem.BondType
 	:members:
 
+ChemGraph
+---------
+
+.. autoclass:: rmg.chem.ChemGraph
+	:members:
+	
 ElectronState
 -------------
 

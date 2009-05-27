@@ -1,0 +1,44 @@
+*************************
+The ``rmg.fgroup`` Module
+*************************
+
+.. automodule:: rmg.fgroup
+
+Classes in ``rmg.fgroup``
+=========================
+
+Atom
+----
+
+.. autoclass:: rmg.fgroup.Atom
+	:members:
+
+Bond
+----
+
+.. autoclass:: rmg.fgroup.Bond
+	:members:
+
+Element
+-------
+
+.. autoclass:: rmg.fgroup.Element
+	:members:
+
+FunctionalGroup
+---------------
+
+.. autoclass:: rmg.fgroup.FunctionalGroup
+	:members:
+
+Structure
+---------
+
+.. autoclass:: rmg.fgroup.Structure
+	:members:
+
+Methods in ``rmg.fgroup``
+=========================
+
+.. autofunction:: rmg.chem.loadElements
+

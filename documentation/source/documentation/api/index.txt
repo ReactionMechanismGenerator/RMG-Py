@@ -16,6 +16,8 @@ Contents
 	:maxdepth: 1
 	
 	rmg-chem
+	rmg-data
+	rmg-fgroup
 	rmg-io
 	rmg-main
 	rmg-model
