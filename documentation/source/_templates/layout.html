@@ -1,0 +1,73 @@
+{% extends "!layout.html" %}
+
+{%- block extrahead %} 
+{{ super() }}
+<link rel="stylesheet" href="{{ pathto('_static/' + 'RMG.css', 1) }}" type="text/css" />
+{% endblock %}
+
+{%- block relbaritems %}
+  {%- if current_page_name != 'index' %}
+  <li><a href="{{ pathto(current_page_name) }}">{{ title }}</a></li>
+  {%- endif %}
+{% endblock %}
+
+{%- if not customsidebar %}
+	{%- set customsidebar = 'commonSidebarContent.html' %}
+{%- endif %}
+	
+{%- set sourcename = False %} {#Remove the "view this page's source" link #}
+
+{#%- block sidebarrel %}
+<div class="sidebarbox" id="sidebarrel">
+{{ super () }}
+</div>
+{% endblock %#}
+
+{# the relbar1 block appears immediately after the <body>, so we stick the analytics code in here. Beware of overwriting this block in an extending template. #}
+{######## GOOGLE ANALYTICS DISABLED FROM RMG-Py DOCUMENTATION ########
+{%- block relbar1 %}
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-7791083-1");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+{{ super () }}
+{% endblock %}
+######## GOOGLE ANALYTICS DISABLED FROM RMG-Py DOCUMENTATION ########} 
+
+
+{%- block footer %}
+    <div class="footer">
+		<div id="sourceforgelogo">
+		<a href="http://sourceforge.net/projects/rmg"><img src="http://sflogo.sourceforge.net/sflogo.php?group_id=191843&type=12" width="120" height="30" border="0" alt="Get RMG - Reaction Mechanism Generator at SourceForge.net. Fast, secure and Free Open Source software downloads" /></a>
+		</div>
+    {%- if hasdoc('copyright') %}
+      {% trans path=pathto('copyright'), copyright=copyright|e %}&copy; <a href="{{ path }}">Copyright</a> {{ copyright }}.{% endtrans %}
+    {%- else %}
+      {% trans copyright=copyright|e %}&copy; Copyright {{ copyright }}.{% endtrans %}
+    {%- endif %}
+    {%- if last_updated %}
+      {% trans last_updated=last_updated|e %}Last updated on {{ last_updated }}.{% endtrans %}
+    {%- endif %}
+    {%- if show_sphinx %}
+      {% trans sphinx_version=sphinx_version|e %}Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> {{ sphinx_version }}.{% endtrans %}
+    {%- endif %}
+    </div>
+{%- endblock %}
+
+
+
+
+
+
+{#{% block rootrellink %}
+    <li><a href="http://sourceforge.net/projects/rmg/">Sourceforge Project</a> &raquo;</li>
+	<li><a href="http://sourceforge.net/project/showfiles.php?group_id=191843">Download RMG</a> &raquo;</li>
+	<li><a href="{{pathto('RMG-manual.pdf', 1)}}">User manual as PDF</a> &raquo;</li>
+    {{ super() }}  
+{% endblock %}
+#}
