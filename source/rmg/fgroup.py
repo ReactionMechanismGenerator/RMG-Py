@@ -38,7 +38,7 @@ from chem import ElectronState, electronStates, BondType, bondTypes, ChemGraph
 ################################################################################
 
 class Element:
-    """
+	"""
 	Represent a single functional group element. Each element has a unique
 	string `label`, a string `type` representing the symbol of the underlying
 	chemical element, and a string `description` of the element.
@@ -47,20 +47,20 @@ class Element:
 	element share. Ideally there is only one instance of this class for each 
 	element.
 	"""
-
-    def __init__(self, label, type, description, valence):
-        """Initialize a functional group element.
-
-        Parameters:
-        label -- The unique label for the element
-        type -- The symbol of the underlying chemical element
-        description -- A description of the element
-        """
-        self.label = label
-        self.type = type
-        self.description = description
-        self.valence = valence
-        
+	
+	def __init__(self, label, type, description, valence):
+		"""Initialize a functional group element.
+		
+		Parameters:
+		label -- The unique label for the element
+		type -- The symbol of the underlying chemical element
+		description -- A description of the element
+		"""
+		self.label = label
+		self.type = type
+		self.description = description
+		self.valence = valence
+		
 ################################################################################
 
 def loadElements():
@@ -99,7 +99,7 @@ class Atom:
 	and a boolean `center` which is :data:`True` if the atom is the center atom
 	for the functional group and :data:`False` if not.
 	"""	
-
+	
 	def __init__(self, element=None, electronState=None, charge=0, center=False):
 		"""
 		Initialize an atom object.
@@ -126,7 +126,7 @@ class Atom:
 			if len(element) == 1:
 				element = element[0]
 		self.element = element
-
+	
 	def setElectronState(self, electronState):
 		"""
 		Set the electron state that this atom represents. The *electronState* 

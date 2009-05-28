@@ -195,35 +195,35 @@ class Atom:
 ################################################################################
 
 class BondType:
-    """
-    Represent a type of chemical bond. Each bond type has a unique string 
-    `label`; a unique string `name`; a numeric bond `order`; an integral 
-    `piElectrons`, the number of pi electrons; and a string `location` with
-    bond geometry information (i.e. 'cis' or 'trans').
-    
-    This class is specifically for properties that all bonds of the same type 
-    share. Ideally there is only one instance of this class for each bond type.
-    """
-    
-    def __init__(self, label, name, order, piElectrons, location=''):
-        """Initialize a chemical bond.
-    
-        Parameters:
-        label -- A short string unique to this bond type
-        name -- A longer string unique to this bond type
-        order -- The bond order (1 = single, 2 = double, 3 = triple, etc.)
-        piElectrons -- The number of pi electrons in the bond
-        location -- Bond location information ('cis' or 'trans')
-        """
-        self.label = label
-        self.name = name
-        self.order = order
-        self.piElectrons = piElectrons
-        self.location = location
-    
-    def __repr__(self):
-    	"""x.__repr__() <==> repr(x)"""
-    	return self.__module__+".BondType('%s','%s',%g,%g,location='%s')"%(self.label,self.name,self.order,self.piElectrons,self.location)
+	"""
+	Represent a type of chemical bond. Each bond type has a unique string 
+	`label`; a unique string `name`; a numeric bond `order`; an integral 
+	`piElectrons`, the number of pi electrons; and a string `location` with
+	bond geometry information (i.e. 'cis' or 'trans').
+	
+	This class is specifically for properties that all bonds of the same type 
+	share. Ideally there is only one instance of this class for each bond type.
+	"""
+	
+	def __init__(self, label, name, order, piElectrons, location=''):
+		"""Initialize a chemical bond.
+		
+		Parameters:
+		label -- A short string unique to this bond type
+		name -- A longer string unique to this bond type
+		order -- The bond order (1 = single, 2 = double, 3 = triple, etc.)
+		piElectrons -- The number of pi electrons in the bond
+		location -- Bond location information ('cis' or 'trans')
+		"""
+		self.label = label
+		self.name = name
+		self.order = order
+		self.piElectrons = piElectrons
+		self.location = location
+	
+	def __repr__(self):
+		"""x.__repr__() <==> repr(x)"""
+		return self.__module__+".BondType('%s','%s',%g,%g,location='%s')"%(self.label,self.name,self.order,self.piElectrons,self.location)
 
 ################################################################################
 
@@ -253,7 +253,7 @@ class Bond:
 	length two containing the two atoms in the bond and a `bondType` object,
 	stored internally as a :class:`BondType` object.
 	"""	
-
+	
 	def __init__(self, atoms, bondType=''):
 		self.setBondType(bondType)
 		self.atoms = atoms
