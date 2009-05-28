@@ -97,7 +97,7 @@ class Database:
 		self.top = None
 		self.nodes = {}
 
-	def addNode(self, node, parent):
+	def addNodeToTree(self, node, parent):
 		"""
 		Add `node` to the database as a child of `parent`, another node
 		already in the database.
@@ -112,9 +112,7 @@ class Database:
 				raise InvalidDatabaseException('Database can only have one parent node.')
 		elif parent.label not in self.nodes:
 			raise InvalidDatabaseException('Parent node is not in database.')
-		
-		self.nodes[node.label] = node
-		if parent is not None:
+		else:
 			parent.children.append(node)
 			
 	def removeNode(self, node):
@@ -166,12 +164,15 @@ class Database:
 				# If at blank line, end of record has been found
 				if len(line) == 0 and len(record) > 0:
 					
-					# Label is first line
+					# Label is first line of record
 					lines = record.splitlines()
 					label = lines[0]
 			
 					# Add record to temporary dictionary
-					records[label] = record
+					node = Node(None, label, record, None, '')
+					self.nodes[label] = node
+					
+					# Clear record in preparation for next iteration
 					record = ''
 					
 				# Otherwise append line to record (if not empty)
@@ -186,56 +187,6 @@ class Database:
 			return
 		finally:	
 			fdict.close()
-
-		# Process the tree
-		if treestr != '':
-		
-			try:
-			
-				ftree = open(treestr, 'r')
-				for line in ftree:
-					line = removeCommentFromLine(line).strip()
-					if len(line) > 0:
-						
-						# Extract level
-						data = line.split()
-						level = int(data[0].replace('L', '').replace(':', ''))
-						label = data[1]
-						
-						# Check that tree has associated record from dictionary
-						if label not in records:
-							raise InvalidDatabaseException('Node "' + label + \
-								'" in tree, but not in dictionary.')
-								
-						# Create new node
-						node = Node(None, label, records[label], None, '')
-						
-						# Find immediate parent of the new node
-						if len(parents) < level:
-							raise InvalidDatabaseException('Invalid level specified.')
-						else:
-							while len(parents) > level:
-								parents.remove(parents[-1])
-							if len(parents) > 0:
-								node.parent = parents[level-1]
-						
-						# Formally add node to tree
-						self.addNode(node, node.parent)
-						parents.append(node)
-						
-									
-			except InvalidDatabaseException, e:
-				logging.exception(str(e))
-			except IOError, e:
-				logging.exception('Database tree file "' + e.filename + '" not found.')
-			finally:	
-				ftree.close()
-
-		else:
-			
-			for label, record in records.iteritems():
-				node = Node(None, label, record, None, '')
-				self.nodes[label] = node
 
 		# Process the library
 		try:
@@ -274,10 +225,11 @@ class Database:
 					# Check that tree has associated record from dictionary
 					if label not in self.nodes:
 						raise InvalidDatabaseException('Node "' + label + \
-							'" in library, but not in tree or dictionary.')
+							'" in library, but not in dictionary.')
 						
 					# Set data of node (no further processing here, since at
-					# this point we don't know anything about the data)
+					# this point we don't know anything about what the data
+					# represents)
 					self.nodes[label].data = data				
 					self.nodes[label].comment = comment				
 					
@@ -289,6 +241,59 @@ class Database:
 			logging.exception('Database library file "' + e.filename + '" not found.')
 		finally:	
 			flib.close()
+			
+		# Process the tree (optional)
+		if treestr != '':
+		
+			try:
+			
+				ftree = open(treestr, 'r')
+				for line in ftree:
+					line = removeCommentFromLine(line).strip()
+					if len(line) > 0:
+						
+						# Extract level
+						data = line.split()
+						level = int(data[0].replace('L', '').replace(':', ''))
+						label = data[1]
+						
+						# Check that tree has associated record from dictionary
+						if label not in self.nodes:
+							raise InvalidDatabaseException('Node "' + label + \
+								'" in tree, but not in dictionary.')
+								
+						# Create new node
+						node = self.nodes[label]
+						
+						# Find immediate parent of the new node
+						if len(parents) < level:
+							raise InvalidDatabaseException('Invalid level specified.')
+						else:
+							while len(parents) > level:
+								parents.remove(parents[-1])
+							if len(parents) > 0:
+								node.parent = parents[level-1]
+						
+						# Formally add node to tree
+						self.addNodeToTree(node, node.parent)
+						
+						parents.append(node)
+						
+									
+			except InvalidDatabaseException, e:
+				logging.exception(str(e))
+			except IOError, e:
+				logging.exception('Database tree file "' + e.filename + '" not found.')
+			finally:	
+				ftree.close()
+
+		else:
+			
+			for label, record in records.iteritems():
+				node = Node(None, label, record, None, '')
+				self.nodes[label] = node
+
+		
 
 
 ################################################################################

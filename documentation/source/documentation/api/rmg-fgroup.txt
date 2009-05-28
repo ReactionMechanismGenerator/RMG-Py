@@ -40,5 +40,5 @@ Structure
 Methods in ``rmg.fgroup``
 =========================
 
-.. autofunction:: rmg.chem.loadElements
+.. autofunction:: rmg.fgroup.loadElements
 
