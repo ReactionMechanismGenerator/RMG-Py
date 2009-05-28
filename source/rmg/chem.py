@@ -96,7 +96,7 @@ elements = loadElements()
 ################################################################################
 
 class ElectronState:
-    """
+	"""
 	Represent a single free electron state (none, radical, etc.) Each state is 
 	defined by a unique string `label`; the `order`, or number of 
 	free electrons; and a `spin` multiplicity.
@@ -104,22 +104,22 @@ class ElectronState:
 	This class is specifically for properties that all free electron states 
 	share. Ideally there is only one instance of this class for each free 
 	electron state.
-    """
-
-    def __init__(self, label, order, spin=''):
-        """
+	"""
+	
+	def __init__(self, label, order, spin=''):
+		"""
 		Initialize a free electron state.
+		
+		Parameters:
+		label -- A string unique to this free electron state
+		order -- The number of free electrons
+		spin -- The spin state for polyradicals (singlet = '1', triplet = '3')
+		"""
+		self.label = label
+		self.order = order
+		self.spin = spin
 
-        Parameters:
-        label -- A string unique to this free electron state
-        order -- The number of free electrons
-        spin -- The spin state for polyradicals (singlet = 'S', triplet = 'T')
-        """
-        self.label = label
-        self.order = order
-        self.spin = spin
-
-################################################################################
+############################################################################
 
 def loadElectronStates():
 	"""
@@ -130,7 +130,7 @@ def loadElectronStates():
 	electronStates = {}
 	electronStates['0'] = ElectronState('0', 0, 1)
 	electronStates['1'] = ElectronState('1', 1, 2)
-	electronStates['2'] = ElectronState('2S', 2, [1,3])
+	electronStates['2'] = ElectronState('2', 2, [1,3])
 	electronStates['2S'] = ElectronState('2S', 2, 1)
 	electronStates['2T'] = ElectronState('2T', 2, 3)
 	electronStates['3'] = ElectronState('3', 3, [2,4])
@@ -196,18 +196,18 @@ class Atom:
 
 class BondType:
     """
-	Represent a type of chemical bond. Each bond type has a unique string 
-	`label`; a unique string `name`; a numeric bond `order`; an integral 
-	`piElectrons`, the number of pi electrons; and a string `location` with
-	bond geometry information (i.e. 'cis' or 'trans').
-	
-	This class is specifically for properties that all bonds of the same type 
-	share. Ideally there is only one instance of this class for each bond type.
+    Represent a type of chemical bond. Each bond type has a unique string 
+    `label`; a unique string `name`; a numeric bond `order`; an integral 
+    `piElectrons`, the number of pi electrons; and a string `location` with
+    bond geometry information (i.e. 'cis' or 'trans').
+    
+    This class is specifically for properties that all bonds of the same type 
+    share. Ideally there is only one instance of this class for each bond type.
     """
-
+    
     def __init__(self, label, name, order, piElectrons, location=''):
         """Initialize a chemical bond.
-
+    
         Parameters:
         label -- A short string unique to this bond type
         name -- A longer string unique to this bond type
@@ -220,6 +220,10 @@ class BondType:
         self.order = order
         self.piElectrons = piElectrons
         self.location = location
+    
+    def __repr__(self):
+    	"""x.__repr__() <==> repr(x)"""
+    	return self.__module__+".BondType('%s','%s',%g,%g,location='%s')"%(self.label,self.name,self.order,self.piElectrons,self.location)
 
 ################################################################################
 
@@ -253,6 +257,10 @@ class Bond:
 	def __init__(self, atoms, bondType=''):
 		self.setBondType(bondType)
 		self.atoms = atoms
+		
+	def __repr__(self):
+		"""x.__repr__() <==> repr(x)"""
+		return self.__module__+".Bond(%s,bondType='%s')"%(repr(self.atoms),self.bondType.label)
 
 	def setBondType(self, bondType):
 		"""
