@@ -78,7 +78,7 @@
 //65	cis-Cyclononene	9.9	0	0	0	0	0	0	0	0	0	0	0	cis-Cyclononene ring BENSON
 //66	trans-Cyclononene	12.8	0	0	0	0	0	0	0	0	0	0	0	trans-Cyclononene ring BENSON
 67	Cyclodecane	12.6	0	0	0	0	0	0	0	0	0	0	0	Cyclodecane ring BENSON
-68	Cyclododecane	4.4	0	0	0	0	0	0	0	0	0	0	0	Cyclododecane ring BENSON
+//68	Cyclododecane	4.4	0	0	0	0	0	0	0	0	0	0	0	Cyclododecane ring BENSON
 69	Ethylene_oxide	26.82	31.17666974	-1.891	-2.459	-2.221	-1.969	-1.965	-1.759	2.564	0	0	0	"CY/C2O from THERM (Dorofeeva, 92) Cp1500 est. as Cp1000"
 70	Oxetane	25.08	28.54866974	-4.08	-4.28	-3.636	-3.016	-2.451	-1.896	2.84	0	0	0	"CY/C3O from THERM (Dorofeeva, 92) Cp1500 est. as Cp1000"
 71	Tetrahydrofuran	5.96	21.16243142	-5.93	-5.71	-4.67	-3.721	-2.689	-1.856	3.213	0	0	0	"CY/C4O from THERM (Dorofeeva, 92) Cp1500 est. as Cp1000"
@@ -102,10 +102,10 @@
 89	Cyclooctanone	1.5	0	0	0	0	0	0	0	0	0	0	0	Cyclooctanone ring BENSON
 90	Cyclononanone	4.7	0	0	0	0	0	0	0	0	0	0	0	Cyclononanone ring BENSON
 91	Cyclodecanone	3.6	0	0	0	0	0	0	0	0	0	0	0	Cyclodecanone ring BENSON
-92	Cycloundecanone	4.4	0	0	0	0	0	0	0	0	0	0	0	Cycloundecanone ring BENSON
-93	Cyclododecanone	3	0	0	0	0	0	0	0	0	0	0	0	Cyclododecanone ring BENSON
-94	Cyclo(C15)anone	2.1	0	0	0	0	0	0	0	0	0	0	0	Cyclo(C15)anone ring BENSON
-95	Cyclo(C17)anone	1.1	0	0	0	0	0	0	0	0	0	0	0	Cyclo(C17)anone ring BENSON
+//92	Cycloundecanone	4.4	0	0	0	0	0	0	0	0	0	0	0	Cycloundecanone ring BENSON
+//93	Cyclododecanone	3	0	0	0	0	0	0	0	0	0	0	0	Cyclododecanone ring BENSON
+//94	Cyclo(C15)anone	2.1	0	0	0	0	0	0	0	0	0	0	0	Cyclo(C15)anone ring BENSON
+//95	Cyclo(C17)anone	1.1	0	0	0	0	0	0	0	0	0	0	0	Cyclo(C17)anone ring BENSON
 // added following nodes (pey)											
 96	Ring	0	0	0	0	0	0	0	0	0	0	0	0	Dummy Root
 97	ThreeMember	Cyclopropane									

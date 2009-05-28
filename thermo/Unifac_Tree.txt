@@ -50,7 +50,7 @@ L0: R
 			
 			L2: Cds
 			
-					L3:CO
+					L3: CO
 								L4: CH3C*O
 								L4: CH2C*O
 								L4: CHO
@@ -87,8 +87,8 @@ L0: R
 			
 			L2: Ct
 			
-					L3:CtCt
-					L3:CtHCt
+					L3: CtCt
+					L3: CtHCt
 		
 	L1: O
 	

@@ -11,6 +11,7 @@
 
 Radical
 Union {RJ, RJ2, RJ3}
+//1  * R {1,2,3}	(new notation for RMGPy)
 
 RJ
 1  * R 1

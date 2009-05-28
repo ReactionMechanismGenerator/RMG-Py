@@ -20,15 +20,15 @@ L1: ThreeMember
 	L2: Cyclopropene
 	L2: Methylene_cyclopropane
 	L2: Ethylene_oxide
-	L2:dioxirane
-	L2:cyclopropanone
-	L2:12Methylenecyclopropane
-	L2:2(co)oxirane
-	L2:cyclopropanedione
-	L2:cyclopropenone
-	L2:methylenecyclopropene
-	L2:methylenecyclopropanone
-	L2:methyleneoxirane
+	L2: dioxirane
+	L2: cyclopropanone
+	L2: 12Methylenecyclopropane
+	L2: 2(co)oxirane
+	L2: cyclopropanedione
+	L2: cyclopropenone
+	L2: methylenecyclopropene
+	L2: methylenecyclopropanone
+	L2: methyleneoxirane
 L1: FourMember
 	L2: Cyclobutane
 	L2: Cyclobutene
@@ -36,12 +36,12 @@ L1: FourMember
 	L2: Beta-Propiolactone
 	L2: 4-Methylene-2-oxetanone
 	L2: Cyclobutanone
-	L2:12dioxetane
-	L2:dioxerene
-	L2:methylenecyclobutane
-	L2:2methyleneoxetane
-	L2:cyclobutadiene
-	L2:12methylenecyclobutane
+	L2: 12dioxetane
+	L2: dioxerene
+	L2: methylenecyclobutane
+	L2: 2methyleneoxetane
+	L2: cyclobutadiene
+	L2: 12methylenecyclobutane
 L1: FiveMember
 	L2: Cyclopentane
 	L2: Cyclopentene
@@ -53,15 +53,15 @@ L1: FiveMember
 	L2: Dihydro-2,5-furandione
 	L2: 2,5-Furandione
 	L2: Cyclopentanone
-	L2:12methylenecyclopentane
-	L2:butyrolactone
-	L2:25dihydrofuran
-	L2:12dioxolane
-	L2:12dioxolene
-	L2:123trioxolane
-	L2:124trioxolane
-	L2:methylenecyclopentane
-	L2:Fulvene
+	L2: 12methylenecyclopentane
+	L2: butyrolactone
+	L2: 25dihydrofuran
+	L2: 12dioxolane
+	L2: 12dioxolene
+	L2: 123trioxolane
+	L2: 124trioxolane
+	L2: methylenecyclopentane
+	L2: Fulvene
 L1: SixMember
 	L2: sixnosidedouble
 		L3: Cyclohexane
@@ -79,7 +79,7 @@ L1: SixMember
 			L4: 14methylenecyclohexane
 		L3: sixmembd-allsingles-twosidedoubles-ortho
 		L3: sixmembd-allsingles-twosidedoubles-meta
-	L2:six-inringonedouble
+	L2: six-inringonedouble
 		L3: 34dihydro12dioxin
 		L3: 36dihydro2hpyran
 		L3: Cyclohexene

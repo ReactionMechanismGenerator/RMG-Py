@@ -1072,8 +1072,8 @@ obenzoquinone
 4  Cd 0 {3,S} {5,D}
 5  Cd 0 {1,S} {4,D}
 6  C 0 {1,S} {2,S} {7,D}
-7  od 0 {6,D}
-8  od 0 {1,D}
+7  Od 0 {6,D}
+8  Od 0 {1,D}
 
 
 
@@ -1181,3 +1181,4 @@ methylenecyclopentane
 4  Cs 0 {5,S} {3,S}
 5  Cs 0 {4,S} {1,S}
 6  Cd 0 {1,D}
+
