@@ -105,7 +105,7 @@ def readInputFile(fstr):
 		# Process root element (must be a rmginput element)
 		root = dom.documentElement
 		if root.tagName != 'rmginput':
-			raise InvalidInputFileException('Incorrect root element.')
+			raise InvalidInputFileException('Incorrect root element. Should be <rmginput>')
 		
 		# Initialize the reaction model
 		reactionModel = model.CoreEdgeReactionModel()
@@ -140,7 +140,7 @@ def readInputFile(fstr):
 				smilesstr = str(getElementText(smiles))
 				structure.fromSMILES(smilesstr)
 			else:
-				raise InvalidInputFileException('Species missing structure information.')
+				raise InvalidInputFileException('Species '+label+' missing structure information.' )
 			
 			# Create a new species and append the species to the core
 			species = chem.Species(label, structure, reactive)
