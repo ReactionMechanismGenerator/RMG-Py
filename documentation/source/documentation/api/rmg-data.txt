@@ -25,8 +25,26 @@ Node
 .. autoclass:: rmg.data.Node
 	:members:
 
+TemperatureOutOfRangeException
+------------------------------
+
+.. autoclass:: rmg.data.TemperatureOutOfRangeException
+	:members:
+
+ThermoDatabase
+--------------
+
+.. autoclass:: rmg.data.ThermoDatabase
+	:members:
+
+ThermoGAData
+------------
+
+.. autoclass:: rmg.data.ThermoGAData
+	:members:
+
 Methods in ``rmg.data``
 =======================
 
-.. autofunction:: rmg.data.loadDatabase
+.. autofunction:: rmg.data.loadThermoDatabases
 

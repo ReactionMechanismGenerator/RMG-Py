@@ -33,15 +33,22 @@ Contains classes and functions for working with the various RMG databases.
 """
 
 import logging
+import quantities as pq
+import scipy.interpolate
+
 import chem
 import fgroup
+
+pq.UnitQuantity('kilocalories', pq.cal*1e3, symbol='kcal')
+pq.UnitQuantity('kilojoules', pq.J*1e3, symbol='kJ')
+pq.UnitQuantity('kilomoles', pq.mol*1e3, symbol='kmol') 
 
 ################################################################################
 
 class InvalidDatabaseException(Exception):
 	"""
 	An exception used when parsing an RMG database to indicate that the
-	databas is invalid. The `msg` parameter is used to specify what about the 
+	database is invalid. The `msg` parameter is used to specify what about the 
 	database caused the exception to be raised.
 	"""	
 
@@ -50,6 +57,19 @@ class InvalidDatabaseException(Exception):
 	
 	def __str__(self):
 		return 'Invalid format for RMG database: ' + self.msg
+
+class TemperatureOutOfRangeException(Exception):
+	"""
+	An exception used when parsing an RMG database to indicate that a
+	temperature is outside the allowed range. At the time of this writing the
+	allowed range was T >= 300 K.
+	"""	
+
+	def __init__(self, msg):
+		self.msg = msg
+	
+	def __str__(self):
+		return self.msg
 
 ################################################################################
 
@@ -298,6 +318,188 @@ class Database:
 
 ################################################################################
 
+class ThermoGAData:
+	"""
+	A set of thermodynamic parameters as determined from Benson's group
+	additivity data. The attributes are:
+	
+	- `H298` = the standard enthalpy of formation at 298 K in J/mol
+	
+	- `S298` = the standard entropy of formation at 298 K in J/mol*K
+	
+	- `Cp300` = the standard heat capacity at 300 K in J/mol*K
+	
+	- `Cp400` = the standard heat capacity at 400 K in J/mol*K
+	
+	- `Cp500` = the standard heat capacity at 500 K in J/mol*K
+	
+	- `Cp600` = the standard heat capacity at 600 K in J/mol*K
+	
+	- `Cp800` = the standard heat capacity at 800 K in J/mol*K
+	
+	- `Cp1000` = the standard heat capacity at 1000 K in J/mol*K
+	
+	- `Cp1500` = the standard heat capacity at 1500 K in J/mol*K
+	
+	- `comment` = a string describing the source of the data
+	"""
+
+	CpTlist = pq.Quantity([300.0, 400.0, 500.0, 600.0, 800.0, 1000.0, 1500.0], 'K')
+		
+	def __init__(self, H298=0.0, S298=0.0, Cp300=0.0, Cp400=0.0, Cp500=0.0, \
+	             Cp600=0.0, Cp800=0.0, Cp1000=0.0, Cp1500=0.0, comment=''):
+		"""Initialize a set of group additivity thermodynamic data."""
+		
+		self.H298 = H298
+		self.S298 = S298
+		self.Cp = [Cp300, Cp400, Cp500, Cp600, Cp800, Cp1000, Cp1500]
+		self.comment = comment
+
+	def fromDatabase(self, data, comment):
+		"""
+		Process a list of numbers `data` and associated description `comment`
+		generated while reading from a thermodynamic database.
+		"""
+	
+		if len(data) != 12:
+			raise Exception('Invalid list of thermo data; should be a list of numbers of length 12.')
+		
+		H298, S298, Cp300, Cp400, Cp500, Cp600, Cp800, Cp1000, Cp1500, \
+		  dH, dS, dCp = data
+		self.H298 = pq.UncertainQuantity(H298, 'kcal/mol', dH)
+		self.H298.units = 'J/mol'
+		self.S298 = pq.UncertainQuantity(S298, 'cal/(mol*K)', dS)
+		self.S298.units = 'J/(mol*K)'
+		self.Cp[0] = pq.UncertainQuantity(Cp300, 'kcal/(mol*K)', dCp)
+		self.Cp[0].units = 'J/(mol*K)'
+		self.Cp[1] = pq.UncertainQuantity(Cp400, 'kcal/(mol*K)', dCp)
+		self.Cp[1].units = 'J/(mol*K)'
+		self.Cp[2] = pq.UncertainQuantity(Cp500, 'kcal/(mol*K)', dCp)
+		self.Cp[2].units = 'J/(mol*K)'
+		self.Cp[3] = pq.UncertainQuantity(Cp600, 'kcal/(mol*K)', dCp)
+		self.Cp[3].units = 'J/(mol*K)'
+		self.Cp[4] = pq.UncertainQuantity(Cp800, 'kcal/(mol*K)', dCp)
+		self.Cp[4].units = 'J/(mol*K)'
+		self.Cp[5] = pq.UncertainQuantity(Cp1000, 'kcal/(mol*K)', dCp)
+		self.Cp[5].units = 'J/(mol*K)'
+		self.Cp[6] = pq.UncertainQuantity(Cp1500, 'kcal/(mol*K)', dCp)
+		self.Cp[6].units = 'J/(mol*K)'
+		self.comment = comment
+	
+	def __add__(self, other):
+		"""
+		Add two sets of thermodynamic data together. All parameters are 
+		additive.
+		"""
+		new = ThermoGAData()
+		new.H298 = self.H298 + other.H298
+		new.S298 = self.S298 + other.S298
+		new.Cp = []
+		for i in range(len(self.Cp)):
+			new.Cp.append(self.Cp + other.Cp)
+		new.comment = self.comment + '; ' + other.comment
+		return new
+	
+	def heatCapacity(self, T):
+		"""
+		Return the heat capacity at the specified temperature `T`. This is done
+		via linear interpolation between the provided values.
+		"""
+		T.units = 'K'; T = float(T)
+		if T < 300.0:
+			raise TemperatureOutOfRangeException('No thermodynamic data available for T < 300 K.')
+		# Use Cp(1500 K) if T > 1500 K
+		elif T > 1500.0: T = 1500.0
+		
+		Cpfun = scipy.interpolate.interp1d(ThermoGAData.CpTlist, self.Cp)
+		return pq.Quantity(Cpfun(T), 'J/(mol*K)')
+		
+	def enthalpy(self, T):
+		"""
+		Return the enthalpy of formation at the specified temperature `T`.
+		"""
+		T.units = 'K'; T = float(T)
+		if T < 300.0:
+			raise TemperatureOutOfRangeException('No thermodynamic data available for T < 300 K.')
+	
+	def getCpLinearization(self):
+		slope = []; intercept = []
+		for i in range(0, len(self.Cp)-1):
+			slope.append((self.Cp[i+1] - self.Cp[i]) / (ThermoGAData.CpTlist[i+1] - ThermoGAData.CpTlist[i]))
+			print slope, ThermoGAData.CpTlist[i], slope * ThermoGAData.CpTlist[i]
+			quit()
+			intercept.append(self.Cp[i] - slope[i] * ThermoGAData.CpTlist[i])
+		return slope, intercept
+		
+		
+################################################################################
+
+class ThermoDatabase(Database):
+	"""
+	Represent an RMG thermodynamics database. 
+	"""
+
+	def __init__(self):
+		Database.__init__(self)
+		
+
+	def load(self, dictstr, treestr, libstr, isfgroup=True):
+		"""
+		Load a thermodynamics group additivity database. The database is stored
+		in three files: `dictstr` is the path to the dictionary, `treestr` to
+		the tree, and `libstr` to the library. The tree is optional, and should
+		be set to '' if not desired.
+		"""
+		
+		self.readFromFiles(dictstr, treestr, libstr)
+		for label, node in self.nodes.iteritems():
+			
+			# Convert adjacency list to structure
+			if isfgroup:
+				structure = fgroup.Structure()
+			else:
+				structure = chem.Structure()
+			structure.fromAdjacencyList(node.structure)
+			node.structure = structure
+			
+			# Convert list of data to object
+			thermoData = ThermoGAData()
+			# Some nodes have string labels that act as pointers to other
+			# nodes' data lists; these are navigated now so that they don't 
+			# have to be in the future
+			if node.data.__class__ == str or node.data.__class__ == unicode:
+				dataNode = node
+				while dataNode.data.__class__ == str or dataNode.data.__class__ == unicode:
+					if dataNode.data not in self.nodes:
+						raise InvalidDatabaseException('Node references parameters from a node that is not in the library.')
+					if dataNode.data == dataNode.label:
+						raise InvalidDatabaseException('Node references parameters from itself.')
+					dataNode = self.nodes[dataNode.data]
+				if dataNode.data.__class__ != ThermoGAData:
+					self.nodeToThermoGAData(dataNode)
+				node.data = dataNode.data
+			# Some nodes have no data specified; this is not an exceptional
+			# circumstance and should simply be ignored
+			elif node.data.__class__ != ThermoGAData:
+				self.nodeToThermoGAData(node)
+	
+	def nodeToThermoGAData(self, node):
+		"""
+		Convert the data of `node` from a list to a :class:`ThermoGAData` 
+		object. The node must not contain a string label pointing to another
+		node; it can contain either a list of 12 numbers or :data:`None`.
+		"""
+		if node.data is None:
+			pass
+		elif len(node.data) != 12:
+			pass
+		else:
+			thermoData = ThermoGAData()
+			thermoData.fromDatabase(node.data, node.comment)
+			node.data = thermoData
+	
+################################################################################
+
 def removeCommentFromLine(line):
 	"""
 	Remove a C++/Java style comment from a line of text.
@@ -310,26 +512,86 @@ def removeCommentFromLine(line):
 
 ################################################################################
 
-def loadDatabase(dictstr, treestr, libstr, isfgroup=True):
-	database = Database()
-	database.readFromFiles(dictstr, treestr, libstr)
-	for label, node in database.nodes.iteritems():
-		if isfgroup:
-			structure = fgroup.Structure()
-		else:
-			structure = chem.Structure()
-		structure.fromAdjacencyList(node.structure)
-		node.structure = structure
-		
-	return database
+def loadThermoDatabases(datapath):
+	"""
+	Load a set of thermodynamics group additivity databases from the general
+	database specified at `datapath`. The loaded databases are: 
+	
+	- 1,5-interactions
+	
+	- Gauche interactions
+	
+	- Acyclic functional groups
+	
+	- Other functional groups
+	
+	- Radical functional groups
+	
+	- Cyclic functional groups
+	
+	- Primary thermo library
+	"""
+
+	int15Database = ThermoDatabase()
+	int15Database.load(datapath + 'thermo/15_Dictionary.txt', \
+		datapath + 'thermo/15_Tree.txt', \
+		datapath + 'thermo/15_Library.txt', True)
+	
+	logging.debug('\t1,5 interactions: ' + str(len(int15Database.nodes)) + ' nodes')
+	
+	gaucheDatabase = ThermoDatabase()
+	gaucheDatabase.load(datapath + 'thermo/Gauche_Dictionary.txt', \
+		datapath + 'thermo/Gauche_Tree.txt', \
+		datapath + 'thermo/Gauche_Library.txt', True)
+	
+	logging.debug('\tGauche interactions: ' + str(len(gaucheDatabase.nodes)) + ' nodes')
+	
+	groupDatabase = ThermoDatabase()
+	groupDatabase.load(datapath + 'thermo/Group_Dictionary.txt', \
+		datapath + 'thermo/Group_Tree.txt', \
+		datapath + 'thermo/Group_Library.txt', True)
+	
+	logging.debug('\tAcyclic functional groups: ' + str(len(groupDatabase.nodes)) + ' nodes')
+	
+	otherDatabase = ThermoDatabase()
+	otherDatabase.load(datapath + 'thermo/Other_Dictionary.txt', \
+		datapath + 'thermo/Other_Tree.txt', \
+		datapath + 'thermo/Other_Library.txt', True)
+	
+	logging.debug('\tOther functional groups: ' + str(len(otherDatabase.nodes)) + ' nodes')
+	
+	radicalDatabase = ThermoDatabase()
+	radicalDatabase.load(datapath + 'thermo/Radical_Dictionary.txt', \
+		datapath + 'thermo/Radical_Tree.txt', \
+		datapath + 'thermo/Radical_Library.txt', True)
+	
+	logging.debug('\tRadical functional groups: ' + str(len(radicalDatabase.nodes)) + ' nodes')
+	
+	ringDatabase = ThermoDatabase()
+	ringDatabase.load(datapath + 'thermo/Ring_Dictionary.txt', \
+		datapath + 'thermo/Ring_Tree.txt', \
+		datapath + 'thermo/Ring_Library.txt', True)
+	
+	logging.debug('\tCyclic functional groups: ' + str(len(ringDatabase.nodes)) + ' nodes')
+	
+	primaryDatabase = ThermoDatabase()
+	primaryDatabase.load(datapath + 'thermo/Primary_Dictionary.txt', \
+		'', \
+		datapath + 'thermo/Primary_Library.txt', False)
+
+	logging.debug('\tPrimary thermo database: ' + str(len(primaryDatabase.nodes)) + ' nodes')
+	
+	return int15Database, gaucheDatabase, groupDatabase, otherDatabase, \
+	        radicalDatabase, ringDatabase, primaryDatabase
+
+################################################################################
 
 if __name__ == '__main__':
 
-	datapath = '../data/RMG_database/'
-
-	int15Database = loadDatabase(datapath + 'thermo/15_Dictionary.txt', \
-		datapath + 'thermo/15_Tree.txt', \
-		datapath + 'thermo/15_Library.txt', True)
+	#int15Database, gaucheDatabase, groupDatabase, otherDatabase, \
+	        #radicalDatabase, ringDatabase, primaryDatabase = \
+			#loadThermoDatabases('../data/RMG_database/')
+			
 	#print int15Database.top.children
 	#for key, value in int15Database.nodes.iteritems():
 		#print key, value
@@ -337,35 +599,18 @@ if __name__ == '__main__':
 			#print child.label
 	#quit()
 	
-	abrahamDatabase = loadDatabase(datapath + 'thermo/Abraham_Dictionary.txt', \
-		datapath + 'thermo/Abraham_Tree.txt', \
-		datapath + 'thermo/Abraham_Library.txt', True)
+	#abrahamDatabase = loadDatabase(datapath + 'thermo/Abraham_Dictionary.txt', \
+		#datapath + 'thermo/Abraham_Tree.txt', \
+		#datapath + 'thermo/Abraham_Library.txt', True)
 	
-	gaucheDatabase = loadDatabase(datapath + 'thermo/Gauche_Dictionary.txt', \
-		datapath + 'thermo/Gauche_Tree.txt', \
-		datapath + 'thermo/Gauche_Library.txt', True)
+	#unifacDatabase = loadDatabase(datapath + 'thermo/Unifac_Dictionary.txt', \
+		#datapath + 'thermo/Unifac_Tree.txt', \
+		#datapath + 'thermo/Unifac_Library.txt', True)
 	
-	groupDatabase = loadDatabase(datapath + 'thermo/Group_Dictionary.txt', \
-		datapath + 'thermo/Group_Tree.txt', \
-		datapath + 'thermo/Group_Library.txt', True)
-	
-	otherDatabase = loadDatabase(datapath + 'thermo/Other_Dictionary.txt', \
-		datapath + 'thermo/Other_Tree.txt', \
-		datapath + 'thermo/Other_Library.txt', True)
-	
-	radicalDatabase = loadDatabase(datapath + 'thermo/Radical_Dictionary.txt', \
-		datapath + 'thermo/Radical_Tree.txt', \
-		datapath + 'thermo/Radical_Library.txt', True)
-	
-	ringDatabase = loadDatabase(datapath + 'thermo/Ring_Dictionary.txt', \
-		datapath + 'thermo/Ring_Tree.txt', \
-		datapath + 'thermo/Ring_Library.txt', True)
-	
-	unifacDatabase = loadDatabase(datapath + 'thermo/Unifac_Dictionary.txt', \
-		datapath + 'thermo/Unifac_Tree.txt', \
-		datapath + 'thermo/Unifac_Library.txt', True)
-	
-	primaryDatabase = loadDatabase(datapath + 'thermo/Primary_Dictionary.txt', \
-		'', \
-		datapath + 'thermo/Primary_Library.txt', False)
+	# Thermo data for H2
+	data = [0.0, 31.233, 6.895, 6.975, 6.994, 7.009, 7.081, 7.219, 7.720, 0, 0.0007, 0]
+	thermo = ThermoGAData()
+	thermo.fromDatabase(data, '')
+	Cp = thermo.heatCapacity(pq.Quantity(700, 'K')); Cp.units = 'kcal/(mol*K)'
+	print Cp
 	
