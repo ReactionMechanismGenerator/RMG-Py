@@ -259,6 +259,69 @@ class Structure(ChemGraph):
 			
 		# Create and return functional group or species
 		self.initialize(atoms, bonds)
+		
+	def toXML(self, dom, root):
+		"""
+		Return an XML representation of the functional group structure. The
+		representation is inspired by, but not identical to, CML. `dom` is
+		the XML DOM tree to use, and `root` is the element of the DOM to
+		use as the parent of the generated XML.
+		"""
+		
+		group = dom.createElement('functionalGroup')
+		root.appendChild(group)
+		atomArray = dom.createElement('atomArray')
+		group.appendChild(atomArray)
+		bondArray = dom.createElement('bondArray')
+		group.appendChild(bondArray)
+		
+		# Write atom elements as children of atomArray
+		for aid, atom in enumerate(self.atoms()):
+			elementLabel = ''
+			electronLabel = ''
+			
+			if atom.element.__class__ == Element:
+				elementLabel = atom.element.label
+			elif atom.element.__class__ == list:
+				elementLabel = '{'
+				for element in atom.element:
+					elementLabel += element.label + ','
+				elementLabel = elementLabel[0:-1] + '}'
+			
+			if atom.electronState.__class__ == ElectronState:
+				electronLabel = atom.electronState.label
+			elif atom.electronState.__class__ == list:
+				electronLabel = '{'
+				for electronState in atom.electronState:
+					electronLabel += electronState.label + ','
+				electronLabel = electronState[0:-1] + '}'
+			
+			atomElement = dom.createElement('atom')
+			atomElement.setAttribute('id', str(aid+1))
+			atomElement.setAttribute('elementType', elementLabel)
+			atomElement.setAttribute('electronState', electronLabel)
+			atomArray.appendChild(atomElement)
+	
+		# Write bond elements as children of bondArray
+		for bond in self.bonds():
+			bondLabel = ''
+			
+			if bond.bondType.__class__ == BondType:
+				bondLabel = bond.bondType.label
+			elif bond.bondType.__class__ == list:
+				bondLabel = '{'
+				for bondType in bond.bondType:
+					bondLabel += bondType.label + ','
+				bondLabel = bondLabel[0:-1] + '}'
+			
+			aid1 = self.atoms().index(bond.atoms[0])
+			aid2 = self.atoms().index(bond.atoms[1])
+			
+			bondElement = dom.createElement('bond')
+			bondElement.setAttribute('atomRefs2', str(aid1+1) + ' ' + str(aid2+1))
+			bondElement.setAttribute('type', bondLabel)
+			bondArray.appendChild(bondElement)
+
 	
 ################################################################################
 
