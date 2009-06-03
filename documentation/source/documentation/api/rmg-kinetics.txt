@@ -1,0 +1,26 @@
+***************************
+The ``rmg.kinetics`` Module
+***************************
+
+.. automodule:: rmg.kinetics
+
+Classes in ``rmg.kinetics``
+===========================
+
+ArrheniusEPKinetics
+-------------------
+
+.. autoclass:: rmg.kinetics.ArrheniusEPKinetics
+	:members:
+
+ReactionFamily
+--------------
+
+.. autoclass:: rmg.kinetics.ReactionFamily
+	:members:
+
+
+Methods in ``rmg.kinetics``
+===========================
+
+.. autofunction:: rmg.kinetics.loadReactionFamilies

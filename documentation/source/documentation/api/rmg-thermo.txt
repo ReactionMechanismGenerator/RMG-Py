@@ -1,0 +1,27 @@
+*************************
+The ``rmg.thermo`` Module
+*************************
+
+.. automodule:: rmg.io
+
+Classes in ``rmg.thermo``
+=========================
+
+ThermoDatabase
+--------------
+
+.. autoclass:: rmg.thermo.ThermoDatabase
+	:members:
+
+ThermoGAData
+------------
+
+.. autoclass:: rmg.thermo.ThermoGAData
+	:members:
+
+Methods in ``rmg.thermo``
+=========================
+
+.. autofunction:: rmg.thermo.loadOldThermoDatabases
+
+.. autofunction:: rmg.thermo.saveNewThermoDatabases

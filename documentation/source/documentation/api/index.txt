@@ -19,8 +19,11 @@ Contents
 	rmg-data
 	rmg-fgroup
 	rmg-io
+	rmg-kinetics
 	rmg-main
 	rmg-model
+	rmg-reaction
+	rmg-thermo
 	
 Indices and Tables
 ==================

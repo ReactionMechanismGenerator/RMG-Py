@@ -1,0 +1,18 @@
+***************************
+The ``rmg.reaction`` Module
+***************************
+
+.. automodule:: rmg.reaction
+
+Classes in ``rmg.reaction``
+===========================
+
+Reaction
+--------
+
+.. autoclass:: rmg.reaction.Reaction
+	:members:
+
+Methods in ``rmg.reaction``
+===========================
+

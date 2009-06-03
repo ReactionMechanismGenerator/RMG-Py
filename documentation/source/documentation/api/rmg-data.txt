@@ -13,17 +13,24 @@ Database
 .. autoclass:: rmg.data.Database
 	:members:
 
+Dictionary
+----------
+
+.. autoclass:: rmg.data.Dictionary
+	:members:
+
 InvalidDatabaseException
 ------------------------
 
 .. autoclass:: rmg.data.InvalidDatabaseException
 	:members:
 
-Node
-----
+Library
+-------
 
-.. autoclass:: rmg.data.Node
+.. autoclass:: rmg.data.Library
 	:members:
+
 
 TemperatureOutOfRangeException
 ------------------------------
@@ -31,20 +38,15 @@ TemperatureOutOfRangeException
 .. autoclass:: rmg.data.TemperatureOutOfRangeException
 	:members:
 
-ThermoDatabase
---------------
+Tree
+----
 
-.. autoclass:: rmg.data.ThermoDatabase
+.. autoclass:: rmg.data.Tree
 	:members:
 
-ThermoGAData
-------------
-
-.. autoclass:: rmg.data.ThermoGAData
-	:members:
 
 Methods in ``rmg.data``
 =======================
 
-.. autofunction:: rmg.data.loadThermoDatabases
+.. autofunction:: rmg.data.removeCommentFromLine
 
