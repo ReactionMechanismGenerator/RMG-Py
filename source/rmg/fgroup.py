@@ -215,10 +215,10 @@ class Structure(ChemGraph):
 			aid = int(data[0])
 			
 			# If second item is '*', the atom is the center atom
-			center = False
+			center = ''
 			index = 1
-			if data[1] == '*':
-				center = True
+			if data[1][0] == '*':
+				center = data[1]
 				index = 2
 			
 			# Next is the element or functional group element

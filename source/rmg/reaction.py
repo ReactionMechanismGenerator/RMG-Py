@@ -33,8 +33,10 @@ Contains classes describing chemical reactions.
 """
 
 import quantities as pq
+import logging
+import os
 
-import chem
+import data
 
 ################################################################################
 
@@ -78,5 +80,4 @@ if __name__ == '__main__':
 	
 	reaction = Reaction([reactant1], [product1, product2], None)
 	print reaction
-	
 	

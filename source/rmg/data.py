@@ -38,9 +38,6 @@ import quantities as pq
 import scipy.interpolate
 import xml.dom.minidom
 
-import chem
-import fgroup
-
 pq.UnitQuantity('kilocalories', pq.cal*1e3, symbol='kcal')
 pq.UnitQuantity('kilojoules', pq.J*1e3, symbol='kJ')
 pq.UnitQuantity('kilomoles', pq.mol*1e3, symbol='kmol') 
@@ -126,7 +123,30 @@ class Dictionary(dict):
 			return
 		finally:	
 			fdict.close()
-			
+		
+	def toStructure(self, isfgroup=True):
+		"""
+		Convert the values stored in the dictionary from adjacency list strings
+		to :class:`fgroup.Structure` or :class:`chem.Structure` objects. If a
+		record is a union, it is stored as the string 'union', and automatically
+		uses all immediate children of the node as the union.
+		"""
+	
+		for label, record in self.iteritems():
+		
+			# If record is a union, then store as string 'union'
+			# By definition a union includes all of its immediate children
+			if record.lower().find('union'):
+				self[label] = 'union'
+			# Otherwise convert adjacency list to structure
+			else:
+				if isfgroup:
+					structure = fgroup.Structure()
+				else:
+					structure = chem.Structure()
+				structure.fromAdjacencyList(record)
+				self[label] = structure
+
 	def toXML(self, dom, root):
 		"""
 		Return an XML representation of the dictionary.
@@ -153,7 +173,7 @@ class Tree:
 	"""
 	
 	def __init__(self):
-		self.top = None
+		self.top = []
 		self.parent = {}
 		self.children = {}
 	
@@ -174,8 +194,8 @@ class Tree:
 			self.children[parent].append(node)
 		
 		# Set top if needed
-		if parent is None and self.top is None:
-			self.top = node
+		if parent is None:
+			self.top.append(node)
 			
 	def remove(self, node):
 		"""
@@ -196,7 +216,7 @@ class Tree:
 		"""
 		
 		# An array of parents used when forming the tree
-		parents = []
+		parents = [None]
 		
 		# Process the tree (optional)
 		try:
@@ -210,16 +230,6 @@ class Tree:
 					data = line.split()
 					level = int(data[0].replace('L', '').replace(':', ''))
 					label = data[1]
-					
-					## If L1 but no L0, create an L0
-					## This is needed because kinetics database have implicit L0
-					#if level == 1 and self.top is None:
-						#label = 'R'
-						#record = '1 * R 0'
-						#node = Node(None, label, record, None, '')
-						#self.nodes[label] = node
-						#self.addNodeToTree(node, None)
-						
 					
 					# Find immediate parent of the new node
 					parent = None
@@ -249,6 +259,9 @@ class Tree:
 		"""
 		Return an XML representation of the tree.
 		"""
+		
+		if self.top is None:
+			return
 		
 		tree = dom.createElement('tree')
 		root.appendChild(tree)
@@ -333,38 +346,47 @@ class Library(dict):
 					
 					info = line.split()
 					
+					# Skip if the number of items on the line is invalid
+					if len(info) < 2:
+						continue
+					
 					# Extract label(s)
 					labels = []
 					for i in range(0, numLabels):
 						labels.append(info[i+1])
 					comment = ''
 					
-					if len(info) == numLabels + 2:
-						# Data is label to other node that contains the data to use
-						data = info[numLabels+1]
-					else:
-						# Parse the data the node contains; numbers are added 
-						# from info[2:] to data until an entry is found that 
-						# cannot be converted to a number; all subsequent 
-						# entries are treated as supplemental comments
-						data = []
-						index = numLabels + 1
-						try:
-							while index < len(info):
-								data.append(float(info[index]))
-								index += 1
-						except ValueError, e:
-							pass
-						for i in range(index, len(info)):
-							comment += info[i] + ' '
-						if len(comment) > 0:
-							comment = comment[:-1]
+					data = ''
+					for i in range(numLabels+1, len(info)):
+						data += info[i] + ' '
 					
-						data.append(comment)
+					#if len(info) == numLabels + 2:
+						## Data is label to other node that contains the data to use
+						#data = info[numLabels+1]
+					#else:
+						## Parse the data the node contains; numbers are added 
+						## from info[numLabels+1:] to data until an entry is found that 
+						## cannot be converted to a number; all subsequent 
+						## entries are treated as supplemental comments
+						#data = []
+						#index = numLabels + 1
+						#try:
+							#while index < len(info):
+								#data.append(float(info[index]))
+								#index += 1
+						#except ValueError, e:
+							#pass
+						#for i in range(index, len(info)):
+							#comment += info[i] + ' '
+						#if len(comment) > 0:
+							#comment = comment[:-1]
 					
-					if data.__class__ == list:
-						if data[0].__class__ == str:
-							data = data[0].split()[0]
+						#data.append(comment)					
+					
+					#if data.__class__ == list:
+						#if data[0].__class__ == str:
+							#print data
+							#data = data[0].split()[0]
 					
 					self.add(labels, data)
 					
@@ -439,6 +461,20 @@ class Database:
 		self.library = Library()
 		self.tree = Tree()
 		
+	def load(self, dictstr, treestr, libstr, isfgroup=True):
+		"""
+		Load a dictionary-tree-library based database. The database is stored
+		in three files: `dictstr` is the path to the dictionary, `treestr` to
+		the tree, and `libstr` to the library. The tree is optional, and should
+		be set to '' if not desired.
+		"""
+		
+		# Load dictionary, library, and (optionally) tree
+		self.dictionary.load(dictstr)
+		self.dictionary.toStructure(isfgroup)
+		self.library.load(libstr, 1)
+		if treestr != '': self.tree.load(treestr)
+
 	def toXML(self, dom, root):
 		"""
 		Return an XML representation of the database.
@@ -447,144 +483,6 @@ class Database:
 		self.tree.toXML(dom, root)
 		self.library.toXML(dom, root)
 
-################################################################################
-
-class ThermoDatabase(Database):
-	"""
-	Represent an RMG thermodynamics database. 
-	"""
-
-	def __init__(self):
-		Database.__init__(self)
-		
-	def load(self, dictstr, treestr, libstr, isfgroup=True):
-		"""
-		Load a thermodynamics group additivity database. The database is stored
-		in three files: `dictstr` is the path to the dictionary, `treestr` to
-		the tree, and `libstr` to the library. The tree is optional, and should
-		be set to '' if not desired.
-		"""
-		
-		self.dictionary.load(dictstr)
-		self.library.load(libstr, 1)
-		if treestr != '': self.tree.load(treestr)
-
-		for label, record in self.dictionary.iteritems():
-			
-			# Convert adjacency list to structure
-			if isfgroup:
-				structure = fgroup.Structure()
-			else:
-				structure = chem.Structure()
-			structure.fromAdjacencyList(record)
-			self.dictionary[label] = structure
-			
-		for label, data in self.library.iteritems():
-		
-			if data is None:
-				pass
-			elif data.__class__ == str or data.__class__ == unicode:
-				pass
-			elif data.__class__ == list:
-				if len(data) != 13:
-					raise InvalidDatabaseException('Invalid thermo data encountered.')
-				else:
-					thermoData = chem.ThermoGAData()
-					thermoData.fromDatabase(data[0:-1], data[-1])
-					self.library[label] = thermoData
-			else:
-				raise InvalidDatabaseException('Thermo library data format is unrecognized.')	
-		
-		#self.library.removeLinks()
-	
-	def toXML(self):
-		"""
-		Return an XML representation of the thermo database.
-		"""
-		
-		dom = xml.dom.minidom.parseString('<database type="thermodynamics"></database>')
-		root = dom.documentElement
-		
-		Database.toXML(self, dom, root)
-	
-		return dom.toprettyxml()
-	
-################################################################################
-
-class KineticsDatabase(Database):
-	"""
-	Represent an RMG kinetics database. 
-	"""
-
-	def __init__(self):
-		Database.__init__(self)
-		
-
-	def readFromFiles(self, dictstr, treestr, libstr, adjstr):
-		"""
-		Parse the files of a kinetics rate rule database. The database is 
-		stored in four files: `dictstr` is the path to the dictionary, 
-		`treestr` to the tree, `libstr` to the library, and `adjstr` to the 
-		adjustment list.
-		"""
-		self.readFromDictionary(dictstr)
-		self.readFromTree(treestr)
-		numLabels = len(self.top.children)
-		self.readFromLibrary(libstr, numLabels)
-	
-	def load(self, dictstr, treestr, libstr, adjstr):
-		"""
-		Load a kinetics rate rule database. The database is stored
-		in four files: `dictstr` is the path to the dictionary, `treestr` to
-		the tree, `libstr` to the library, and `adjstr` to the adjustment list.
-		"""
-		
-		self.readFromFiles(dictstr, treestr, libstr, adjstr)
-		for label, node in self.nodes.iteritems():
-			
-			# Convert adjacency list to structure
-			if isfgroup:
-				structure = fgroup.Structure()
-			else:
-				structure = chem.Structure()
-			structure.fromAdjacencyList(node.structure)
-			node.structure = structure
-			
-			# Convert list of data to object
-			# Some nodes have string labels that act as pointers to other
-			# nodes' data lists; these are navigated now so that they don't 
-			# have to be in the future
-			if node.data.__class__ == str or node.data.__class__ == unicode:
-				dataNode = node
-				while dataNode.data.__class__ == str or dataNode.data.__class__ == unicode:
-					if dataNode.data not in self.nodes:
-						raise InvalidDatabaseException('Node references parameters from a node that is not in the library.')
-					if dataNode.data == dataNode.label:
-						raise InvalidDatabaseException('Node references parameters from itself.')
-					dataNode = self.nodes[dataNode.data]
-				if dataNode.data.__class__ != chem.ThermoGAData:
-					self.nodeToThermoGAData(dataNode)
-				node.data = dataNode.data
-			# Some nodes have no data specified; this is not an exceptional
-			# circumstance and should simply be ignored
-			elif node.data.__class__ != chem.ThermoGAData:
-				self.nodeToThermoGAData(node)
-	
-	def nodeToThermoGAData(self, node):
-		"""
-		Convert the data of `node` from a list to a :class:`ThermoGAData` 
-		object. The node must not contain a string label pointing to another
-		node; it can contain either a list of 12 numbers or :data:`None`.
-		"""
-		if node.data is None:
-			pass
-		elif len(node.data) != 12:
-			pass
-		else:
-			thermoData = chem.ThermoGAData()
-			thermoData.fromDatabase(node.data, node.comment)
-			node.data = thermoData
-	
 ################################################################################
 
 def removeCommentFromLine(line):
@@ -599,140 +497,6 @@ def removeCommentFromLine(line):
 
 ################################################################################
 
-def loadThermoDatabases(datapath):
-	"""
-	Load a set of thermodynamics group additivity databases from the general
-	database specified at `datapath`. The loaded databases are: 
-	
-	- 1,5-interactions
-	
-	- Gauche interactions
-	
-	- Acyclic functional groups
-	
-	- Other functional groups
-	
-	- Radical functional groups
-	
-	- Cyclic functional groups
-	
-	- Primary thermo library
-	"""
-
-	int15Database = ThermoDatabase()
-	int15Database.load(datapath + 'thermo/15_Dictionary.txt', \
-		datapath + 'thermo/15_Tree.txt', \
-		datapath + 'thermo/15_Library.txt', True)
-	
-	logging.debug('\t1,5 interactions')
-	
-	gaucheDatabase = ThermoDatabase()
-	gaucheDatabase.load(datapath + 'thermo/Gauche_Dictionary.txt', \
-		datapath + 'thermo/Gauche_Tree.txt', \
-		datapath + 'thermo/Gauche_Library.txt', True)
-	
-	logging.debug('\tGauche interactions')
-	
-	groupDatabase = ThermoDatabase()
-	groupDatabase.load(datapath + 'thermo/Group_Dictionary.txt', \
-		datapath + 'thermo/Group_Tree.txt', \
-		datapath + 'thermo/Group_Library.txt', True)
-	
-	logging.debug('\tAcyclic functional groups')
-	
-	otherDatabase = ThermoDatabase()
-	otherDatabase.load(datapath + 'thermo/Other_Dictionary.txt', \
-		datapath + 'thermo/Other_Tree.txt', \
-		datapath + 'thermo/Other_Library.txt', True)
-	
-	logging.debug('\tOther functional groups')
-	
-	radicalDatabase = ThermoDatabase()
-	radicalDatabase.load(datapath + 'thermo/Radical_Dictionary.txt', \
-		datapath + 'thermo/Radical_Tree.txt', \
-		datapath + 'thermo/Radical_Library.txt', True)
-	
-	logging.debug('\tRadical functional groups')
-	
-	ringDatabase = ThermoDatabase()
-	ringDatabase.load(datapath + 'thermo/Ring_Dictionary.txt', \
-		datapath + 'thermo/Ring_Tree.txt', \
-		datapath + 'thermo/Ring_Library.txt', True)
-	
-	logging.debug('\tCyclic functional groups')
-	
-	primaryDatabase = ThermoDatabase()
-	primaryDatabase.load(datapath + 'thermo/Primary_Dictionary.txt', \
-		'', \
-		datapath + 'thermo/Primary_Library.txt', False)
-
-	logging.debug('\tPrimary thermo database')
-	
-	return int15Database, gaucheDatabase, groupDatabase, otherDatabase, \
-	        radicalDatabase, ringDatabase, primaryDatabase
-
-################################################################################
-
-def loadKineticsDatabases(datapath):
-	"""
-	Load a set of kinetics rate rule databases from the general	database 
-	specified at `datapath`.
-	"""
-	
-	databases = {}
-	for label in os.listdir(datapath + 'kinetics/'):
-		path = datapath + 'kinetics/' + label
-		if os.path.isdir(path):
-			database = KineticsDatabase()
-			database.load(path + '/dictionary.txt', \
-				path + '/tree.txt', \
-				path + '/ratelibrary.txt',
-				path + '/reactionAdjList.txt')
-			databases[label] = database
-			print label
-
-	#database = KineticsDatabase()
-	#database.load(datapath + 'thermo/15_Dictionary.txt', \
-		#datapath + 'thermo/15_Tree.txt', \
-		#datapath + 'thermo/15_Library.txt', True)
-	
-################################################################################
-
-
 if __name__ == '__main__':
-
-	datapath = '../data/RMG_database/'
-
-	int15Database, gaucheDatabase, groupDatabase, otherDatabase, \
-	        radicalDatabase, ringDatabase, primaryDatabase = \
-			loadThermoDatabases('../data/RMG_database/')
-			
-	#f = open('1,5-interactions.xml', 'w')
-	#f.write(int15Database.toXML())
-	#f.close()
-	#print groupDatabase.toXML()
-	
-	#print int15Database.top.children
-	#for key, value in int15Database.nodes.iteritems():
-		#print key, value
-		#for child in value.children:
-			#print child.label
-	#quit()
-	
-	#abrahamDatabase = loadDatabase(datapath + 'thermo/Abraham_Dictionary.txt', \
-		#datapath + 'thermo/Abraham_Tree.txt', \
-		#datapath + 'thermo/Abraham_Library.txt', True)
-	
-	#unifacDatabase = loadDatabase(datapath + 'thermo/Unifac_Dictionary.txt', \
-		#datapath + 'thermo/Unifac_Tree.txt', \
-		#datapath + 'thermo/Unifac_Library.txt', True)
-	
-	# Thermo data for H2
-	#data = [0.0, 31.233, 6.895, 6.975, 6.994, 7.009, 7.081, 7.219, 7.720, 0, 0.0007, 0]
-	#thermo = ThermoGAData()
-	#thermo.fromDatabase(data, '')
-	#Cp = thermo.heatCapacity(pq.Quantity(700, 'K')); Cp.units = 'kcal/(mol*K)'
-	#print Cp
-	
-	#loadKineticsDatabases('../data/RMG_database/')
+	pass
 	
