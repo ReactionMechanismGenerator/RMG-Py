@@ -32,6 +32,7 @@
 Contains classes describing chemical entities: elements, atoms, bonds, species, etc.
 """
 
+import logging
 import quantities as pq
 import xml.dom.minidom
 import pybel
@@ -193,6 +194,36 @@ class Atom:
 		"""
 		return self.element == other.element and self.electronState == other.electronState
 
+	def copy(self):
+		"""
+		Generate a copy of the current atom.
+		"""
+		return Atom(self.element, self.electronState, self.charge)
+
+	def increaseRadical(self):
+		"""
+		Increase the number of radical electrons on this atom by one.
+		"""
+		if self.electronState.label == '0': self.electronState = electronStates['1']
+		elif self.electronState.label == '1': self.electronState = electronStates['2']
+		elif self.electronState.label == '2': self.electronState = electronStates['3']
+		elif self.electronState.label == '2S': self.electronState = electronStates['3']
+		elif self.electronState.label == '2T': self.electronState = electronStates['3']
+		else:
+			logging.exception('Cannot increase the radical number of this atom.')
+
+	def decreaseRadical(self):
+		"""
+		Decrease the number of radical electrons on this atom by one.
+		"""
+		if self.electronState.label == '1': self.electronState = electronStates['0']
+		elif self.electronState.label == '2': self.electronState = electronStates['1']
+		elif self.electronState.label == '2S': self.electronState = electronStates['1']
+		elif self.electronState.label == '2T': self.electronState = electronStates['1']
+		elif self.electronState.label == '3': self.electronState = electronStates['2']
+		else:
+			logging.exception('Cannot decrease the radical number of this atom.')
+	
 ################################################################################
 
 class BondType:
@@ -284,6 +315,65 @@ class Bond:
 		"""
 		return self.bondType == other.bondType
 
+	def copy(self):
+		"""
+		Generate a copy of the current bond.
+		"""
+		return Bond(self.atoms, self.bondType)
+
+	def isSingle(self):
+		"""
+		Return :data:`True` if the bond represents a single bond and 
+		:data:`False` otherwise.
+		"""
+		return self.bondType.label == 'S'
+
+	def isDouble(self):
+		"""
+		Return :data:`True` if the bond represents a double bond and 
+		:data:`False` otherwise.
+		"""
+		return self.bondType.label == 'D'
+
+	def isTriple(self):
+		"""
+		Return :data:`True` if the bond represents a triple bond and 
+		:data:`False` otherwise.
+		"""
+		return self.bondType.label == 'T'
+
+	def canIncreaseOrder(self):
+		"""
+		Return :data:`True` if the bond order can be increased by one.
+		"""
+		return self.bondType.label == 'S' or self.bondType.label == 'D'
+	
+	def canDecreaseOrder(self):
+		"""
+		Return :data:`True` if the bond order can be decreased by one without
+		breaking.
+		"""
+		return self.bondType.label == 'D' or self.bondType.label == 'T'
+	
+	def increaseOrder(self):
+		"""
+		Increase the bond order by one.
+		"""
+		if self.bondType.label == 'S': self.bondType = bondTypes['D']
+		elif self.bondType.label == 'D': self.bondType = bondTypes['T']
+		else:
+			logging.exception('Cannot increase the bond order of this bond.')
+
+	def decreaseOrder(self):
+		"""
+		Decrease the bond order by one.
+		"""
+		if self.bondType.label == 'D': self.bondType = bondTypes['S']
+		elif self.bondType.label == 'T': self.bondType = bondTypes['D']
+		else:
+			logging.exception('Cannot decrease the bond order of this bond.')
+
+
 ################################################################################
 
 class ChemGraph:
@@ -371,7 +461,7 @@ class ChemGraph:
 		for bond in bonds:
 			self.graph[bond.atoms[0]][bond.atoms[1]] = bond
 			self.graph[bond.atoms[1]][bond.atoms[0]] = bond
-		
+	
 ################################################################################
 
 class Structure(ChemGraph):
@@ -552,7 +642,103 @@ class Structure(ChemGraph):
 		
 		dom2 = xml.dom.minidom.parseString(self.toCML())
 		cml.appendChild(dom2.documentElement)
+	
+	def radicalCount(self):
+		"""
+		Get the number of radicals in the structure.
+		"""
+		radical = 0
+		for atom in self.atoms():
+			radical += atom.electronState.order
+		return radical		
+	
+	def generateResonanceIsomers(self):
+		"""
+		Generate a list of all of the resonance isomers of this structure.
+		"""
+	
+		isomers = [self]
 		
+		# Radicals
+		if self.radicalCount() > 0:
+			# Iterate over resonance isomers
+			index = 0
+			while index < len(isomers):
+				isomer = isomers[index]
+				# Iterate over radicals in structure; use indices because the
+				# pointer to isomer (but not its contents) may be changing
+				for i in range(0, len(isomer.atoms())):
+					atom = isomer.atoms()[i]
+					paths = isomer.findAllDelocalizationPaths(atom)
+					for path in paths:
+						
+						# Make a copy of isomer
+						oldIsomer = isomer.copy()
+						isomers[index] = oldIsomer
+						newIsomer = isomer
+						isomer = oldIsomer
+						
+						# Adjust to (potentially) new resonance isomer
+						atom1, atom2, atom3, bond12, bond23 = path
+						atom1.decreaseRadical()
+						atom3.increaseRadical()
+						bond12.increaseOrder()
+						bond23.decreaseOrder()
+						
+						# Append to isomer list if unique
+						found = False
+						for isom in isomers:
+							if isom.isIsomorphic(newIsomer): found = True
+						if not found: 
+							isomers.append(newIsomer)
+				
+				# Move to next resonance isomer
+				index += 1
+	
+		return isomers
+	
+	def copy(self):
+		"""
+		Create a copy of the current Structure.
+		"""
+		
+		atoms = []; bonds = []
+		for atom in self.atoms():
+			atoms.append(atom.copy())
+		for bond in self.bonds():
+			newBond = bond.copy()
+			bonds.append(newBond)
+			index1 = self.atoms().index(bond.atoms[0])
+			index2 = self.atoms().index(bond.atoms[1])
+			newBond.atoms = [atoms[index1], atoms[index2]]
+		
+		return Structure(atoms, bonds)
+	
+	def findAllDelocalizationPaths(self, atom1):
+		"""
+		Find all the delocalization paths allyl to the radical center indicated
+		by `atom1`. Used to generate resonance isomers.
+		"""
+		
+		# No paths if atom1 is not a radical
+		if atom1.electronState.order <= 0:
+			return []
+		
+		# Find all delocalization paths
+		paths = []
+		for atom2, bond12 in self.graph[atom1].iteritems():
+			# Vinyl bond must be capable of gaining an order
+			if bond12.canIncreaseOrder():
+				for atom3, bond23 in self.graph[atom2].iteritems():
+					# Allyl bond must be capable of losing an order without 
+					# breaking
+					if atom1 is not atom3 and bond23.canDecreaseOrder():
+						paths.append([atom1, atom2, atom3, bond12, bond23])
+		return paths
+		
+		
+	
+
 	
 ################################################################################
 
@@ -576,10 +762,7 @@ class Species:
 		Species.numSpecies += 1
 		self.id = Species.numSpecies
 		self.label = label
-		if structure is None:
-			self.structure = Structure()
-		else:
-			self.structure = structure
+		self.structure = structure
 		self.reactive = reactive
 		
 	def __str__(self):
@@ -611,51 +794,38 @@ if __name__ == '__main__':
 		#print '\t' + str(key) + ' ' + bondType.label
 	#print ''
 	
-	cml1 = """
+	cml = """
 <molecule>
 <atomArray>
-<atom id="a1" elementType="C" />
-<atom id="a2" elementType="C" />
-<atom id="a3" elementType="C" />
-<atom id="a4" elementType="C" />
-<atom id="a5" elementType="C" />
-<atom id="a6" elementType="Cl" />
+<atom id="a1" elementType="C" hydrogenCount="3" />
+<atom id="a2" elementType="C" hydrogenCount="1" />
+<atom id="a3" elementType="C" hydrogenCount="1" />
+<atom id="a4" elementType="C" hydrogenCount="2" />
 </atomArray>
 <bondArray>
-<bond atomRefs2="a1 a2" order="2" />
-<bond atomRefs2="a2 a3" order="1" />
-<bond atomRefs2="a3 a4" order="2" />
-<bond atomRefs2="a4 a5" order="1" />
-<bond atomRefs2="a5 a6" order="1" />
-</bondArray>
-</molecule>
-	"""
-	structure1 = Structure()
-	structure1.fromCML(cml1)
-	print structure1.toInChI(), structure1.toSMILES()
-	
-	cml2 = """
-<molecule>
-<atomArray>
-<atom id="a3" elementType="C" />
-<atom id="a6" elementType="C" />
-<atom id="a4" elementType="C" />
-<atom id="a1" elementType="F" />
-<atom id="a5" elementType="C" />
-<atom id="a2" elementType="C" />
-</atomArray>
-<bondArray>
-<bond atomRefs2="a2 a3" order="1" />
-<bond atomRefs2="a4 a5" order="1" />
 <bond atomRefs2="a1 a2" order="1" />
-<bond atomRefs2="a5 a6" order="2" />
-<bond atomRefs2="a3 a4" order="2" />
+<bond atomRefs2="a2 a3" order="2" />
+<bond atomRefs2="a3 a4" order="1" />
 </bondArray>
 </molecule>
 	"""
-	structure2 = Structure()
-	structure2.fromCML(cml2)
-	print structure2.toInChI(), structure2.toSMILES()
-	
-	print structure1.isIsomorphic(structure2)
-	
+	#cml = """
+#<molecule>
+#<atomArray>
+#<atom id="a2" elementType="C" hydrogenCount="2" />
+#<atom id="a3" elementType="C" hydrogenCount="1" />
+#<atom id="a4" elementType="C" hydrogenCount="2" />
+#</atomArray>
+#<bondArray>
+#<bond atomRefs2="a2 a3" order="2" />
+#<bond atomRefs2="a3 a4" order="1" />
+#</bondArray>
+#</molecule>
+	#"""
+
+	structure = Structure()
+	structure.fromCML(cml)
+	#print structure.toCML()
+	#print structure.toInChI(), structure.toSMILES()
+
+	print structure.generateResonanceIsomers()

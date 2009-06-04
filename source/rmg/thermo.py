@@ -327,14 +327,29 @@ def loadOldThermoDatabases(datapath):
 
 	logging.debug('\t\tPrimary thermo database')
 	
-	return int15Database, gaucheDatabase, groupDatabase, otherDatabase, \
-	        radicalDatabase, ringDatabase, primaryDatabase
+	databases = {}
+	databases['1,5-interactions'] = int15Database
+	databases['gauche-interactions'] = gaucheDatabase
+	databases['acyclics'] = groupDatabase
+	databases['other'] = otherDatabase
+	databases['radicals'] = radicalDatabase
+	databases['cyclics'] = ringDatabase
+	databases['primary'] = primaryDatabase
+	
+	return databases
 
 ################################################################################
 
-def saveNewThermoDatabases(datapath, int15Database, gaucheDatabase, \
-		groupDatabase, otherDatabase, radicalDatabase, ringDatabase, \
-		primaryDatabase):
+def saveNewThermoDatabases(datapath, databases):
+	
+	int15Database = databases['1,5-interactions']
+	gaucheDatabase = databases['gauche-interactions']
+	groupDatabase = databases['acyclics']
+	otherDatabase = databases['other']
+	radicalDatabase = databases['radicals']
+	ringDatabase = databases['cyclics']
+	primaryDatabase = databases['primary']
+	
 	
 	f = open(datapath + 'thermo/1,5-interactions.xml', 'w')
 	f.write(int15Database.toXML())

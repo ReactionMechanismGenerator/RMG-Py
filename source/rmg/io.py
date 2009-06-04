@@ -113,6 +113,50 @@ def readInputFile(fstr):
 		# Initialize the reaction model
 		reactionModel = model.CoreEdgeReactionModel()
 		
+		# Process databases
+		databases = []
+		elements = getElements(root, 'database')
+		for element in elements:
+			
+			# Get database type
+			databaseType = element.getAttribute('type').lower()
+			if databaseType == '': databaseType = 'general'
+			if databaseType != 'general':
+				raise InvalidInputFileException('Invalid database type "' + databaseType + '".')
+			
+			# Get database name and form path
+			databaseName = getElementText(element)
+			databasePath = os.path.dirname(__file__)
+			databasePath = os.path.abspath(databasePath + '/../../data/' + databaseName)
+			if not os.path.exists(databasePath):
+				raise InvalidInputFileException('Database "' + databaseName + '" not found.')
+			
+			databases.append([databaseName, databaseType, databasePath])
+		
+		# Output info about databases
+		if len(databases) == 1:
+			logging.info('Found ' + str(len(databases)) + ' database')
+		else:
+			logging.info('Found ' + str(len(databases)) + ' databases')
+		
+		# Load databases
+		generalDatabaseCount = 0
+		for database in databases:
+			if database[1] == 'general':
+				if generalDatabaseCount == 0:
+					logging.debug('General database: ' + database[2])
+					thermoDatabases = thermo.loadOldThermoDatabases(database[2] + '/')
+					reactionFamilies = kinetics.loadReactionFamilies(database[2] + '/')
+				generalDatabaseCount += 1
+				
+		logging.debug('')
+		
+		# Check that exactly one general database was specified
+		if generalDatabaseCount == 0:
+			raise InvalidInputFileException('No general database specified; one must be present.')
+		elif generalDatabaseCount > 1:
+			raise InvalidInputFileException('Multiple general databases specified; only one is allowed.')
+	
 		# Process species
 		speciesDict = {}
 		elements = getElements(root, 'species')
@@ -239,52 +283,6 @@ def readInputFile(fstr):
 				
 		logging.debug('')
 			
-		# Process databases
-		databases = []
-		elements = getElements(root, 'database')
-		for element in elements:
-			
-			# Get database type
-			databaseType = element.getAttribute('type').lower()
-			if databaseType == '': databaseType = 'general'
-			if databaseType != 'general':
-				raise InvalidInputFileException('Invalid database type "' + databaseType + '".')
-			
-			# Get database name and form path
-			databaseName = getElementText(element)
-			databasePath = os.path.dirname(__file__)
-			databasePath = os.path.abspath(databasePath + '/../../data/' + databaseName)
-			if not os.path.exists(databasePath):
-				raise InvalidInputFileException('Database "' + databaseName + '" not found.')
-			
-			databases.append([databaseName, databaseType, databasePath])
-		
-		# Output info about databases
-		if len(databases) == 1:
-			logging.info('Found ' + str(len(databases)) + ' database')
-		else:
-			logging.info('Found ' + str(len(databases)) + ' databases')
-		
-		# Load databases
-		generalDatabaseCount = 0
-		for database in databases:
-			if database[1] == 'general':
-				if generalDatabaseCount == 0:
-					logging.debug('General database: ' + database[2])
-					int15Database, gaucheDatabase, groupDatabase, otherDatabase, \
-							radicalDatabase, ringDatabase, primaryDatabase = \
-							thermo.loadOldThermoDatabases(database[2] + '/')
-					reactionFamilies = kinetics.loadReactionFamilies(database[2] + '/')
-				generalDatabaseCount += 1
-				
-		logging.debug('')
-		
-		# Check that exactly one general database was specified
-		if generalDatabaseCount == 0:
-			raise InvalidInputFileException('No general database specified; one must be present.')
-		elif generalDatabaseCount > 1:
-			raise InvalidInputFileException('Multiple general databases specified; only one is allowed.')
-	
 	except InvalidInputFileException, e:
 		logging.exception(str(e))
 	except IOError, e:
@@ -293,7 +291,7 @@ def readInputFile(fstr):
 		# Unlink the DOM tree when finished
 		dom.unlink()
 		
-	return reactionModel, reactionSystems, databases
+	return reactionModel, reactionSystems, thermoDatabases, reactionFamilies
 
 ################################################################################
 

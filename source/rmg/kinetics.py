@@ -50,7 +50,7 @@ class ArrheniusEPKinetics:
 	The parameter :math:`\\alpha` is used to correct the activation energy 
 	:math:`E_\\mathrm{a}` via the Evans-Polanyi formula
 	
-	.. math:: E_\\mathrm{a} = E_\\mathrm{a}^0 + (\\alpha - 1) \\Delta H_\\mathrm{rxn} 
+	.. math:: E_\\mathrm{a} = E_\\mathrm{a}^0 - (\\alpha - 1) \\Delta H_\\mathrm{rxn} 
 	
 	"""
 
