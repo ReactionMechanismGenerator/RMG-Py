@@ -35,8 +35,7 @@ import os
 
 import model
 import chem
-import thermo
-import kinetics
+import data
 
 """
 Contains functions for manipulation of RMG input and output files.
@@ -145,8 +144,8 @@ def readInputFile(fstr):
 			if database[1] == 'general':
 				if generalDatabaseCount == 0:
 					logging.debug('General database: ' + database[2])
-					thermoDatabases = thermo.loadOldThermoDatabases(database[2] + '/')
-					reactionFamilies = kinetics.loadReactionFamilies(database[2] + '/')
+					rmgDatabase = data.RMGDatabase()
+					rmgDatabase.load(database[2] + '/')
 				generalDatabaseCount += 1
 				
 		logging.debug('')
@@ -201,7 +200,7 @@ def readInputFile(fstr):
 		for species in reactionModel.core.species:
 			logging.debug('Species ' + str(species) + ':')
 			if logging.getLogger().isEnabledFor(logging.DEBUG):
-				logging.debug('\t' + species.structure.toInChI())
+				logging.debug('\t' + species.structure[0].toInChI())
 		logging.debug('')
 		
 		# Process reaction systems
@@ -291,7 +290,7 @@ def readInputFile(fstr):
 		# Unlink the DOM tree when finished
 		dom.unlink()
 		
-	return reactionModel, reactionSystems, thermoDatabases, reactionFamilies
+	return reactionModel, reactionSystems
 
 ################################################################################
 

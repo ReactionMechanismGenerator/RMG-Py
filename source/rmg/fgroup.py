@@ -146,6 +146,13 @@ class Atom:
 				electronState = electronState[0]
 		self.electronState = electronState
 
+	def isCenter(self):
+		"""
+		Return :data:`True` if the atom is a center atom and :data:`False` 
+		otherwise.
+		"""
+		return len(self.center) > 0
+
 ################################################################################
 
 class Bond:
@@ -212,7 +219,9 @@ class Structure(ChemGraph):
 			data = line.split()
 			
 			# First item is index for atom
-			aid = int(data[0])
+			# Sometimes these have a trailing period (as if in a numbered list),
+			# so remove it just in case
+			aid = int(data[0].strip('.'))
 			
 			# If second item is '*', the atom is the center atom
 			center = ''
@@ -245,6 +254,11 @@ class Structure(ChemGraph):
 			
 			# Process list of bonds
 			for datum in data[index+2:]:
+				
+				# Sometimes commas are used to delimit bonds in the bond list,
+				# so strip them just in case
+				datum = datum.strip(',')
+				
 				aid2, comma, btype = datum[1:-1].partition(',')
 				aid2 = int(aid2)
 				
@@ -322,6 +336,13 @@ class Structure(ChemGraph):
 			bondElement.setAttribute('type', bondLabel)
 			bondArray.appendChild(bondElement)
 
+	def getCenter(self):
+		"""
+		Return the center atom of the functional group structure.
+		"""
+		for atom in self.atoms():
+			if atom.isCenter(): return atom
+		return None
 	
 ################################################################################
 

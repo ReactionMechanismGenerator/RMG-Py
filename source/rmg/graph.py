@@ -132,22 +132,32 @@ class Graph:
 		"""
 		return VF2_isomorphic(self.graph, other.graph, False)
 		
-	def isSubgraphIsomorphic(self, other):
+	def isSubgraphIsomorphic(self, other, map12={}, map21={}):
 		"""
 		Returns :data:`True` if `other` is subgraph isomorphic and :data:`False`
 		otherwise. Uses the VF2 algorithm of Vento and Foggia.
 		"""
-		return VF2_isomorphic(self.graph, other.graph, True)
-	
+		return VF2_isomorphic(self.graph, other.graph, True, False)
+
+	def findSubgraphIsomorphisms(self, other):
+		"""
+		Returns :data:`True` if `other` is subgraph isomorphic and :data:`False`
+		otherwise. Uses the VF2 algorithm of Vento and Foggia.
+		"""
+		return VF2_isomorphic(self.graph, other.graph, True, True)
+
+
 ################################################################################
 
-def VF2_isomorphic(graph1, graph2, subgraph=False):	
+def VF2_isomorphic(graph1, graph2, subgraph=False, findAll=False, mapping12={}, mapping21={}):	
 	"""
 	Returns :data:`True` if two graphs are isomorphic and :data:`False`
 	otherwise. Uses the VF2 algorithm of Vento and Foggia. `subgraph` is 
-	:data:`True` if graph2 is a potential subgraph of graph1.
+	:data:`True` if graph2 is a potential subgraph of graph1. `findAll` is
+	used to specify whether all isomorphisms should be returned, or only the
+	first.
 	"""	
-	return __VF2_match(graph1, graph2, {}, {}, {}, {}, subgraph)
+	return __VF2_match(graph1, graph2, mapping21, mapping12, {}, {}, subgraph, findAll)
 
 def __VF2_feasible(graph1, graph2, vertex1, vertex2, mapping21, mapping12, \
                  terminals1, terminals2, subgraph):
@@ -228,7 +238,7 @@ def __VF2_feasible(graph1, graph2, vertex1, vertex2, mapping21, mapping12, \
 	
 	return True
 
-def __VF2_match(graph1, graph2, mapping21, mapping12, terminals1, terminals2, subgraph):
+def __VF2_match(graph1, graph2, mapping21, mapping12, terminals1, terminals2, subgraph, findAll):
 	"""
 	A recursive function used to explore two graphs `graph1` and `graph2` for 
 	isomorphism by attempting to map them to one another. `mapping21` and
@@ -242,10 +252,17 @@ def __VF2_match(graph1, graph2, mapping21, mapping12, terminals1, terminals2, su
 	and O(N**2) (best-case) to O(N! * N) (worst-case) in temporal complexity.
 	"""	
 	
-	# Done if we have mapped to all vertices in graph2
-	if len(mapping12) == len(graph2) or len(mapping21) == len(graph1):
-		return True
+	mappings12 = []; mappings21 = []
 	
+	# Done if we have mapped to all vertices in graph2
+	print len(mapping12), len(mapping21), len(graph1), len(graph2)
+	if len(mapping12) == len(graph2) or len(mapping21) == len(graph1):
+		return True, mapping12, mapping21
+	#if len(mapping12) == len(mapping21) == min(len(graph1), len(graph2)):
+		#return True, mapping12, mapping21
+	#elif len(mapping12) != len(mapping21):
+		#return False, [], []
+		
 	# Create list of pairs of candidates for inclusion in mapping
 	pairs = []
 	# Construct list from terminals if possible
@@ -270,15 +287,32 @@ def __VF2_match(graph1, graph2, mapping21, mapping12, terminals1, terminals2, su
 			terminals1 = __VF2_terminals(graph1, mapping21)
 			terminals2 = __VF2_terminals(graph2, mapping12)
 			# Recurse
-			if __VF2_match(graph1, graph2, mapping21, mapping12, terminals1, terminals2, subgraph):
-				return True
+			ismatch, mapping12_0, mapping21_0 = __VF2_match(graph1, graph2, \
+					mapping21, mapping12, terminals1, terminals2, subgraph, findAll)
+			if ismatch:
+				if findAll:
+					print len(mapping12_0), len(mapping21_0)
+					if mapping12_0.__class__ == dict:
+						if len(mapping12_0) == len(mapping21_0) == min(len(graph1), len(graph2)):
+							mappings12.append(mapping12_0)
+							mappings21.append(mapping21_0)
+					elif mapping12_0.__class__ == list:
+						mappings12.extend(mapping12_0)
+						mappings21.extend(mapping21_0)
+					#print mapping12_0, mappings12
+					#print mapping21_0, mappings21
+				else:
+					return True, mapping12_0, mapping21_0
 			else:
 				del mapping21[vertex1]
 				del mapping12[vertex2]
 				terminals1 = __VF2_terminals(graph1, mapping21)
 				terminals2 = __VF2_terminals(graph2, mapping12)
 	
-	return False
+	if len(mappings12) == 0:
+		return False, [], []
+	else:
+		return True, mappings12, mappings21
 	
 def __VF2_terminals(graph, mapping):
 	"""
@@ -356,5 +390,6 @@ if __name__ == '__main__':
 	#edge6 = graph2.addEdge(vertex5, vertex6, Edge('white'))
 	
 	
-	print graph1.isSubgraphIsomorphic(graph2)
+	#print graph1.isSubgraphIsomorphic(graph2)
+	print graph1.findSubgraphIsomorphisms(graph2)
 	

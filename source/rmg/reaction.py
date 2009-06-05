@@ -36,8 +36,6 @@ import quantities as pq
 import logging
 import os
 
-import data
-
 ################################################################################
 
 class Reaction:
@@ -68,6 +66,50 @@ class Reaction:
 			string += str(product) + ' + '
 		string = string[0:-3]
 		return string
+
+################################################################################
+
+class ArrheniusEPKinetics:
+	"""
+	Represent a set of modified Arrhenius kinetics with Evans-Polanyi data. The
+	kinetic expression has the form
+	
+	.. math:: k(T) = A T^n \\exp \\left( - \\frac{E_\mathrm{a}}{RT} \\right)
+		
+	The parameter :math:`\\alpha` is used to correct the activation energy 
+	:math:`E_\\mathrm{a}` via the Evans-Polanyi formula
+	
+	.. math:: E_\\mathrm{a} = E_\\mathrm{a}^0 - (\\alpha - 1) \\Delta H_\\mathrm{rxn} 
+	
+	"""
+
+	def __init__(self, A=0.0, Ea=0.0, n=0.0, alpha=0.0):
+		self.A = A
+		self.Ea = Ea
+		self.n = n
+		self.alpha = alpha
+	
+	def fromDatabase(self, data, comment):
+		"""
+		Process a list of numbers `data` and associated description `comment`
+		generated while reading from a kinetics database.
+		"""
+	
+		if len(data) != 11:
+			raise Exception('Invalid list of kinetic data; should be a list of numbers of length 10.')
+		
+		Tmin, Tmax, A, n, alpha, Ea, dA, dn, dalpha, dEa, rank = data
+		
+		self.Trange = pq.Quantity([Tmin, Tmax], 'K')
+		
+		self.A = pq.UncertainQuantity(A, 's^-1', dA)
+		self.Ea = pq.UncertainQuantity(Ea, 'kcal/mol', dEa)
+		#self.Ea.units = 'J/mol'
+		self.n = pq.UncertainQuantity(n, '', dn)
+		self.alpha = pq.UncertainQuantity(alpha, 's^-1', dalpha)
+		
+		self.rank = rank
+		self.comment = comment
 
 ################################################################################
 
