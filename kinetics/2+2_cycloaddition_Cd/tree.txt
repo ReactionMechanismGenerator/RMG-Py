@@ -1,6 +1,6 @@
 // f17_2cycloaddition to form tetracyclic compd
 
-L1:db
+L1: db
        L2: db_2H
            L3: db_2H_2H
            L3: db_2H_monosub

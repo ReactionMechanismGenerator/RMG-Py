@@ -257,7 +257,7 @@ Cd/H/De_Cd/H/Nd
 3 H 0 {1,S}
 4 {Cd,Ct,Cb,CO} 0 {1,S}
 5 H 0 {2,S}
-6 {Cs,o} 0 {2,S}
+6 {Cs,O} 0 {2,S}
 
 Cd/H/De_Cd/H/De
 1 *1 C 0 {2,D}, {3,S}, {4,S}
@@ -337,7 +337,7 @@ Cd/Nd2_Cd/H/Nd
 3 {Cs,O} 0 {1,S}
 4 {Cs,O} 0 {1,S}
 5 H 0 {2,S}
-6 {Cs,o} 0 {2,S}
+6 {Cs,O} 0 {2,S}
 
 Cd/Nd2_Cd/H/De
 1 *1 C 0 {2,D}, {3,S}, {4,S}
@@ -353,7 +353,7 @@ Cd/De2_Cd/H/Nd
 3 {Cd,Ct,Cb,CO} 0 {1,S}
 4 {Cd,Ct,Cb,CO} 0 {1,S}
 5 H 0 {2,S}
-6 {Cs,o} 0 {2,S}
+6 {Cs,O} 0 {2,S}
 
 Cd/De2_Cd/H/De
 1 *1 C 0 {2,D}, {3,S}, {4,S}
@@ -369,7 +369,7 @@ Cd/Nd/De_Cd/H/Nd
 3 {Cs,O} 0 {1,S}
 4 {Cd,Ct,Cb,CO} 0 {1,S}
 5 H 0 {2,S}
-6 {Cs,o} 0 {2,S}
+6 {Cs,O} 0 {2,S}
 
 Cd/Nd/De_Cd/H/De
 1 *1 C 0 {2,D}, {3,S}, {4,S}
