@@ -35,11 +35,9 @@ Contains classes and functions for working with the various RMG databases.
 import os
 import logging
 import quantities as pq
-import scipy.interpolate
 import xml.dom.minidom
 
 import chem
-import fgroup
 import reaction
 
 pq.UnitQuantity('kilocalories', pq.cal*1e3, symbol='kcal')
@@ -128,12 +126,12 @@ class Dictionary(dict):
 		finally:	
 			fdict.close()
 		
-	def toStructure(self, isfgroup=True):
+	def toStructure(self):
 		"""
 		Convert the values stored in the dictionary from adjacency list strings
-		to :class:`fgroup.Structure` or :class:`chem.Structure` objects. If a
-		record is a union, it is stored as the string 'union', and automatically
-		uses all immediate children of the node as the union.
+		to :class:`chem.Structure` objects. If a record is a union, it is stored
+		as the string 'union', and automatically uses all immediate children of
+		the node as the union.
 		"""
 	
 		for label, record in self.iteritems():
@@ -144,10 +142,7 @@ class Dictionary(dict):
 				self[label] = 'union'
 			# Otherwise convert adjacency list to structure
 			else:
-				if isfgroup:
-					structure = fgroup.Structure()
-				else:
-					structure = chem.Structure()
+				structure = chem.Structure()
 				structure.fromAdjacencyList(record)
 				self[label] = structure
 
@@ -437,7 +432,7 @@ class Database:
 		self.library = Library()
 		self.tree = Tree()
 		
-	def load(self, dictstr, treestr, libstr, isfgroup=True):
+	def load(self, dictstr, treestr, libstr):
 		"""
 		Load a dictionary-tree-library based database. The database is stored
 		in three files: `dictstr` is the path to the dictionary, `treestr` to
@@ -447,7 +442,7 @@ class Database:
 		
 		# Load dictionary, library, and (optionally) tree
 		self.dictionary.load(dictstr)
-		self.dictionary.toStructure(isfgroup)
+		self.dictionary.toStructure()
 		self.library.load(libstr, 1)
 		if treestr != '': self.tree.load(treestr)
 
@@ -469,7 +464,7 @@ class ThermoDatabase(Database):
 	def __init__(self):
 		Database.__init__(self)
 		
-	def load(self, dictstr, treestr, libstr, isfgroup=True):
+	def load(self, dictstr, treestr, libstr):
 		"""
 		Load a thermodynamics group additivity database. The database is stored
 		in three files: `dictstr` is the path to the dictionary, `treestr` to
@@ -478,7 +473,7 @@ class ThermoDatabase(Database):
 		"""
 		
 		# Load dictionary, library, and (optionally) tree
-		Database.load(self, dictstr, treestr, libstr, isfgroup)
+		Database.load(self, dictstr, treestr, libstr)
 		
 		# Convert data in library to ThermoData objects or lists of 
 		# [link, comment] pairs
@@ -531,21 +526,17 @@ class ThermoDatabase(Database):
 		"""
 		
 		if root is None: root = self.tree.top[0]
-		print self.dictionary['R']
-		quit()
-		
 		
 		next = None
 		for child in self.tree.children[root]:
 			group = self.dictionary[child]
-			print child, group
-			quit()
 			center = group.getCenter()
-			if structure.isSubgraphIsomorphic(child, {atom:center}, {center:atom}):
+			if structure.isSubgraphIsomorphic(group, {atom:center}, {center:atom}):
 				next = child
 		
 		if next is not None:
-			return self.descend(structure, atom, next)
+			print '\t' + next
+			return self.descendTree(structure, atom, next)
 		else:
 			return root
 
@@ -592,37 +583,37 @@ class ThermoDatabaseSet:
 	
 		self.acyclicDatabase.load(datapath + 'thermo/Group_Dictionary.txt', \
 			datapath + 'thermo/Group_Tree.txt', \
-			datapath + 'thermo/Group_Library.txt', True)
+			datapath + 'thermo/Group_Library.txt')
 		logging.debug('\t\tAcyclic functional groups')
 		
 		self.cyclicDatabase.load(datapath + 'thermo/Ring_Dictionary.txt', \
 			datapath + 'thermo/Ring_Tree.txt', \
-			datapath + 'thermo/Ring_Library.txt', True)
+			datapath + 'thermo/Ring_Library.txt')
 		logging.debug('\t\tCyclic functional groups')
 		
 		self.int15Database.load(datapath + 'thermo/15_Dictionary.txt', \
 			datapath + 'thermo/15_Tree.txt', \
-			datapath + 'thermo/15_Library.txt', True)
+			datapath + 'thermo/15_Library.txt')
 		logging.debug('\t\t1,5 interactions')
 		
 		self.gaucheDatabase.load(datapath + 'thermo/Gauche_Dictionary.txt', \
 			datapath + 'thermo/Gauche_Tree.txt', \
-			datapath + 'thermo/Gauche_Library.txt', True)
+			datapath + 'thermo/Gauche_Library.txt')
 		logging.debug('\t\tGauche interactions')
 		
 		self.otherDatabase.load(datapath + 'thermo/Other_Dictionary.txt', \
 			datapath + 'thermo/Other_Tree.txt', \
-			datapath + 'thermo/Other_Library.txt', True)
+			datapath + 'thermo/Other_Library.txt')
 		logging.debug('\t\tOther functional groups')
 		
 		self.radicalDatabase.load(datapath + 'thermo/Radical_Dictionary.txt', \
 			datapath + 'thermo/Radical_Tree.txt', \
-			datapath + 'thermo/Radical_Library.txt', True)
+			datapath + 'thermo/Radical_Library.txt')
 		logging.debug('\t\tRadical functional groups')
 		
 		self.primaryDatabase.load(datapath + 'thermo/Primary_Dictionary.txt', \
 			'', \
-			datapath + 'thermo/Primary_Library.txt', False)
+			datapath + 'thermo/Primary_Library.txt')
 		logging.debug('\t\tPrimary thermo database')
 
 	def saveXML(self, datapath):
@@ -664,7 +655,9 @@ class ThermoDatabaseSet:
 		# Choose database to descend (assume acyclic for now)
 		database = self.acyclicDatabase
 		
-		database.descendTree(structure, atom)
+		node = database.descendTree(structure, atom)
+		
+		print node
 		
 		return None
 		
@@ -699,7 +692,7 @@ class ReactionFamily(Database):
 		forbstr = path + '/forbiddenGroups.txt'
 		
 		# Load the dictionary, tree, and library using the generic methods
-		Database.load(self, dictstr, treestr, libstr, True)
+		Database.load(self, dictstr, treestr, libstr)
 		
 		# Process the data in the library
 		self.__processLibraryData()
@@ -711,7 +704,7 @@ class ReactionFamily(Database):
 		if os.path.exists(forbstr):
 			self.forbidden = Dictionary()
 			self.forbidden.load(forbstr)
-			self.forbidden.toStructure(True)
+			self.forbidden.toStructure()
 		
 	def __processLibraryData(self):
 		"""

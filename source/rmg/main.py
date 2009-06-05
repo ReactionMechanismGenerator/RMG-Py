@@ -37,6 +37,7 @@ support it.
 import time
 import logging
 import io
+import sys
 
 ################################################################################
 
@@ -80,8 +81,9 @@ def initializeLog(verbose):
 	logger = logging.getLogger()
 	logger.setLevel(verbose)
 	
-	# Create console handler and set level to debug
-	ch = logging.StreamHandler()
+	# Create console handler and set level to debug; send everything to stdout
+	# rather than stderr
+	ch = logging.StreamHandler(sys.stdout)
 	ch.setLevel(verbose)
 	
 	# Create formatter and add to console handler
@@ -91,7 +93,7 @@ def initializeLog(verbose):
 	
 	# Add ch to logger
 	logger.addHandler(ch)
-
+	
 ################################################################################
 
 def printRMGHeader():

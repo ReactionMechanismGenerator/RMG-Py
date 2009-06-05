@@ -32,23 +32,22 @@
 Contains classes describing chemical entities: elements, atoms, bonds, species, etc.
 """
 
-import logging
 import quantities as pq
-import xml.dom.minidom
 import pybel
 import openbabel
+
 import graph
 
 ################################################################################
 
 class Element:
     """
-	Represent a single chemical element. Each element has an atomic 
-	`number`, a `name`, a `symbol`, an atomic `mass`, and a `valence`, a list 
+	Represent a single chemical element. Each element has an atomic
+	`number`, a `name`, a `symbol`, an atomic `mass`, and a `valence`, a list
 	of the possible numbers of bonds allowed.
-	
+
 	This class is specifically for properties that all atoms of the same element
-	share. Ideally there is only one instance of this class for each element. 
+	share. Ideally there is only one instance of this class for each element.
 	"""
 
     def __init__(self, number, name, symbol, mass, valence):
@@ -71,9 +70,10 @@ class Element:
 
 def loadElements():
 	"""
-	Loads entries into a dictionary of elements. The dictionary created by
-	this function is always available at :data:`rmg.chem.elements`.
+	Loads entries into a dictionary of elements.
 	"""
+
+	# Chemical elements
 	elements = {}
 	elements[1] = elements['H'] = elements['hydrogen'] = Element(1, 'hydrogen', 'H', pq.Quantity(1.00794, 'g/mol'), 1)
 	elements[2] = elements['He'] = elements['helium'] = Element(2, 'helium', 'He', pq.Quantity(4.002602, 'g/mol'), 0)
@@ -90,28 +90,91 @@ def loadElements():
 	elements[35] = elements['Br'] = elements['bromine'] = Element(35, 'bromine', 'Br', pq.Quantity(79.904, 'g/mol'), 1)
 	elements[53] = elements['I'] = elements['iodine'] = Element(53, 'iodine', 'I', pq.Quantity(126.90447, 'g/mol'), 1)
 	elements[0] = elements['R'] = Element(0, '', 'R', pq.Quantity(0.0, 'g/mol'), 0)
+
 	return elements
-	
+
 # The dictionary of elements, accessible by atomic number, symbol, or name.
 elements = loadElements()
 
 ################################################################################
 
+class AtomType:
+	"""
+	Represent a single atom type by its chemical element and, optionally, some
+	information about the local bond structure around that element. Each
+	element has a unique string `label`, the underlying chemical `element`, and
+	a string `description` of the element.
+
+	This class is specifically for properties that all atoms of the same
+	element share. Ideally there is only one instance of this class for each
+	element.
+	"""
+
+	def __init__(self, label, element, description):
+		"""
+		Initialize an atom type.
+		"""
+		self.label = label
+		self.element = element
+		self.description = description
+
+################################################################################
+
+def loadAtomTypes():
+	"""
+	Loads entries into a dictionary of atom types.
+	"""
+
+	# Functional group atom types
+	atomTypes = {}
+	atomTypes['H']		= AtomType('H', 	elements['H'], 	'hydrogen')
+	atomTypes['C']		= AtomType('C', 	elements['C'], 	'carbon')
+	atomTypes['N']		= AtomType('N', 	elements['N'], 	'nitrogen')
+	atomTypes['O']		= AtomType('O', 	elements['O'], 	'oxygen')
+	atomTypes['F']		= AtomType('F', 	elements['F'], 	'fluorine')
+	atomTypes['Ne'] 	= AtomType('Ne', 	elements['Ne'], 'neon')
+	atomTypes['Si'] 	= AtomType('Si', 	elements['Si'], 'silicon')
+	atomTypes['P']		= AtomType('P', 	elements['P'],	'phosphorus')
+	atomTypes['S']		= AtomType('S', 	elements['S'],	'sulfur')
+	atomTypes['Cl'] 	= AtomType('Cl', 	elements['Cl'], 'chlorine')
+	atomTypes['Ar'] 	= AtomType('Ar', 	elements['Ar'], 'argon')
+	atomTypes['Br'] 	= AtomType('Br', 	elements['Br'], 'bromine')
+	atomTypes['I']		= AtomType('I', 	elements['I'],	'iodine')
+	atomTypes['R']		= AtomType('R', 	None, 			'generic functional group')
+	atomTypes['R!H'] 	= AtomType('R!H',	None, 			'generic non-hydrogen functional group')
+	atomTypes['Ct'] 	= AtomType('Ct', 	elements['C'], 	'carbon with one triple bond and one single bond')
+	atomTypes['Cs'] 	= AtomType('Cs', 	elements['C'], 	'carbon with four single bonds')
+	atomTypes['Cd'] 	= AtomType('Cd', 	elements['C'], 	'carbon with one double bond and the rest undefined')
+	atomTypes['Cdd'] 	= AtomType('Cdd', 	elements['C'], 	'carbon with two double bonds')
+	atomTypes['Cds'] 	= AtomType('Cds', 	elements['C'], 	'carbon with one double bond and two single bonds')
+	atomTypes['Cb'] 	= AtomType('Cb', 	elements['C'], 	'carbon belonging to a benzene ring')
+	atomTypes['Cbf'] 	= AtomType('Cbf', 	elements['C'], 	'carbon belonging to a fused benzene ring')
+	atomTypes['Os'] 	= AtomType('Os', 	elements['O'], 	'oxygen with two single bonds')
+	atomTypes['Od'] 	= AtomType('Od', 	elements['O'], 	'oxygen with one double bond')
+	atomTypes['CO'] 	= AtomType('CO', 	elements['C'], 	'non-central carbon bonded with a double bond to a non-central O')
+
+	return atomTypes
+
+# The dictionary of elements, accessible by atomic number, symbol, or name.
+atomTypes = loadAtomTypes()
+
+################################################################################
+
 class ElectronState:
 	"""
-	Represent a single free electron state (none, radical, etc.) Each state is 
-	defined by a unique string `label`; the `order`, or number of 
+	Represent a single free electron state (none, radical, etc.) Each state is
+	defined by a unique string `label`; the `order`, or number of
 	free electrons; and a `spin` multiplicity.
-	
-	This class is specifically for properties that all free electron states 
-	share. Ideally there is only one instance of this class for each free 
+
+	This class is specifically for properties that all free electron states
+	share. Ideally there is only one instance of this class for each free
 	electron state.
 	"""
-	
+
 	def __init__(self, label, order, spin=''):
 		"""
 		Initialize a free electron state.
-		
+
 		Parameters:
 		label -- A string unique to this free electron state
 		order -- The number of free electrons
@@ -125,8 +188,8 @@ class ElectronState:
 
 def loadElectronStates():
 	"""
-	Loads entries into a dictionary of free electron states. The dictionary 
-	created by this function is always available at 
+	Loads entries into a dictionary of free electron states. The dictionary
+	created by this function is always available at
 	:data:`rmg.chem.electronStates`.
 	"""
 	electronStates = {}
@@ -143,77 +206,157 @@ def loadElectronStates():
 electronStates = loadElectronStates()
 
 ################################################################################
-		
-class Atom:
-	"""
-	Represent an atom in a chemical species. Each atom is defined by an 
-	`element` (stored internally as an :class:`Element` object), a `electronState`
-	(stored internally as an :class:`ElectronState` object), and a numeric `charge`.
-	"""	
 
-	def __init__(self, element=None, electronState=None, charge=0):
+class BondType:
+	"""
+	Represent a type of chemical bond. Each bond type has a unique string
+	`label`; a unique string `name`; a numeric bond `order`; an integral
+	`piElectrons`, the number of pi electrons; and a string `location` with
+	bond geometry information (i.e. 'cis' or 'trans').
+
+	This class is specifically for properties that all bonds of the same type
+	share. Ideally there is only one instance of this class for each bond type.
+	"""
+
+	def __init__(self, label, name, order, piElectrons, location=''):
+		"""Initialize a chemical bond.
+
+		Parameters:
+		label -- A short string unique to this bond type
+		name -- A longer string unique to this bond type
+		order -- The bond order (1 = single, 2 = double, 3 = triple, etc.)
+		piElectrons -- The number of pi electrons in the bond
+		location -- Bond location information ('cis' or 'trans')
+		"""
+		self.label = label
+		self.name = name
+		self.order = order
+		self.piElectrons = piElectrons
+		self.location = location
+
+	def __repr__(self):
+		"""x.__repr__() <==> repr(x)"""
+		return self.__module__+".BondType('%s','%s',%g,%g,location='%s')"%(self.label,self.name,self.order,self.piElectrons,self.location)
+
+################################################################################
+
+def loadBondTypes():
+	"""
+	Loads entries into a dictionary of bond types. The dictionary created by
+	this function is always available at :data:`rmg.chem.bondTypes`.
+	"""
+
+	bondTypes = {}
+	bondTypes[1] = bondTypes['S'] = bondTypes['single'] = BondType('S', 'single', 1, 0, '')
+	bondTypes[2] = bondTypes['D'] = bondTypes['double'] = BondType('D', 'double', 2, 2, '')
+	bondTypes['Dcis'] = BondType('Dcis', 'double_cis', 2, 2, 'cis')
+	bondTypes['Dtrans'] = BondType('Dtrans', 'double_trans', 2, 2, 'trans')
+	bondTypes[3] = bondTypes['T'] = bondTypes['triple'] = BondType('T', 'triple', 3, 4, '')
+	bondTypes[1.5] = bondTypes['B'] = bondTypes['benzene'] = BondType('B', 'benzene', 1.5, 1, '')
+	return bondTypes
+
+# The dictionary of bond types, accessible by label, order, or name.
+bondTypes = loadBondTypes()
+
+################################################################################
+
+class Atom(object):
+	"""
+	Represent an atom in a chemical species or functional group.
+	"""
+
+	def __init__(self, atomType=None, electronState=None, charge=0, label=''):
 		"""
 		Initialize an atom object.
 		"""
-		self.setElement(element)
-		self.setElectronState(electronState)
+		self.atomType = atomType
+		self.electronState = electronState
 		self.charge = charge
+		self.label = label
+		
+	def getAtomType(self):
+		if len(self._atomType) == 1: return self._atomType[0]
+		else: return self._atomType
 
-	def setElement(self, element):
+	def setAtomType(self, atomType):
 		"""
-		Set the element that this atom represents. The *element* parameter can
-		be an :class:`Element` object, an integer representing the atomic 
-		number, or a string containing the element symbol or name. In all 
-		cases *element* will be converted to and stored as an :class:`Element` 
-		object.
+		Set the element that this atom represents. The `electronState`
+		parameter is an :class:`FGElement` object or a string representing the
+		label of the desired element. If the parameter is a string, it will be
+		converted to an	:class:`FGElement` object.
 		"""
-		if element.__class__ == str or element.__class__ == unicode:
-			element = elements[element]
-		if element.__class__ != Element:
-			raise Exception('Invalid parameter "element".')
-		self.element = element
+		self._atomType = []
+		if atomType.__class__ != list:
+			atomType = [atomType]
+		for atom in atomType:
+			if (atom.__class__ == str or atom.__class__ == unicode) and atom in atomTypes:
+				atom = atomTypes[atom]
+			if atom.__class__ == AtomType:
+				self._atomType.append(atom)
+			else:
+				raise Exception('Invalid parameter "atomType".')
+
+	atomType = property(getAtomType, setAtomType)
+
+	def getElectronState(self):
+		if len(self._electronState) == 1: return self._electronState[0]
+		else: return self._electronState
 
 	def setElectronState(self, electronState):
 		"""
-		Set the electron state that this atom represents. The *electronState* 
-		parameter can be an :class:`ElectronState` object or a string 
-		representing the label of the desired electron state. In all cases 
-		*electronState*	will be converted to and stored as an 
+		Set the electron state that this atom represents. The *electronState*
+		parameter can be an :class:`ElectronState` object or a string
+		representing the label of the desired electron state. In all cases
+		*electronState*	will be converted to and stored as an
 		:class:`ElectronState` object.
 		"""
-		if electronState.__class__ == str or electronState.__class__ == unicode:
-			electronState = electronStates[electronState]
-		if electronState.__class__ != ElectronState:
-			raise Exception('Invalid parameter "electronState".')
-		self.electronState = electronState
-	
+		if electronState.__class__ != list:
+			electronState = [electronState]
+		self._electronState = []
+		for state in electronState:
+			if (state.__class__ == str or state.__class__ == unicode) and state in electronStates:
+				state = electronStates[state]
+			if state.__class__ == ElectronState:
+				self._electronState.append(state)
+			else:
+				raise Exception('Invalid parameter "electronState".')
+
+	electronState = property(getElectronState, setElectronState)
+
 	def equivalent(self, other):
 		"""
-		Return :data:`True` if `self` and `other` are equivalent atoms, i.e. 
+		Return :data:`True` if `self` and `other` are equivalent atoms, i.e.
 		they have the same element and electronic state.
 		"""
-		return self.element == other.element and self.electronState == other.electronState
+		return self.atomType == other.atomType and self.electronState == other.electronState
 
 	def copy(self):
 		"""
 		Generate a copy of the current atom.
 		"""
-		return Atom(self.element, self.electronState, self.charge)
+		return Atom(self.element, self.electronState, self.charge, self.label)
+
+	def isCenter(self):
+		"""
+		Return :data:`True` if the atom is a center atom and :data:`False`
+		otherwise.
+		"""
+		return len(self.label) > 0
 
 	def isHydrogen(self):
 		"""
-		Return :data:`True` if the atom is a hydrogen atom and :data:`False` 
+		Return :data:`True` if the atom is a hydrogen atom and :data:`False`
 		otherwise.
 		"""
-		return self.element.symbol == 'H'
-	
+		return self.atomType.element.symbol == 'H'
+
 	def isNonHydrogen(self):
 		"""
-		Return :data:`True` if the atom is not a hydrogen atom and :data:`False` 
+		Return :data:`True` if the atom is not a hydrogen atom and :data:`False`
 		otherwise.
 		"""
-		return self.element.symbol != 'H'
-	
+		return self.atomType.element.symbol != 'H'
+
 	def increaseRadical(self):
 		"""
 		Increase the number of radical electrons on this atom by one.
@@ -237,94 +380,52 @@ class Atom:
 		elif self.electronState.label == '3': self.electronState = electronStates['2']
 		else:
 			logging.exception('Cannot decrease the radical number of this atom.')
-	
-################################################################################
-
-class BondType:
-	"""
-	Represent a type of chemical bond. Each bond type has a unique string 
-	`label`; a unique string `name`; a numeric bond `order`; an integral 
-	`piElectrons`, the number of pi electrons; and a string `location` with
-	bond geometry information (i.e. 'cis' or 'trans').
-	
-	This class is specifically for properties that all bonds of the same type 
-	share. Ideally there is only one instance of this class for each bond type.
-	"""
-	
-	def __init__(self, label, name, order, piElectrons, location=''):
-		"""Initialize a chemical bond.
-		
-		Parameters:
-		label -- A short string unique to this bond type
-		name -- A longer string unique to this bond type
-		order -- The bond order (1 = single, 2 = double, 3 = triple, etc.)
-		piElectrons -- The number of pi electrons in the bond
-		location -- Bond location information ('cis' or 'trans')
-		"""
-		self.label = label
-		self.name = name
-		self.order = order
-		self.piElectrons = piElectrons
-		self.location = location
-	
-	def __repr__(self):
-		"""x.__repr__() <==> repr(x)"""
-		return self.__module__+".BondType('%s','%s',%g,%g,location='%s')"%(self.label,self.name,self.order,self.piElectrons,self.location)
-
-################################################################################
-
-def loadBondTypes():
-	"""
-	Loads entries into a dictionary of bond types. The dictionary created by
-	this function is always available at :data:`rmg.chem.bondTypes`.
-	"""
-	
-	bondTypes = {}
-	bondTypes[1] = bondTypes['S'] = bondTypes['single'] = BondType('S', 'single', 1, 0, '')
-	bondTypes[2] = bondTypes['D'] = bondTypes['double'] = BondType('D', 'double', 2, 2, '')
-	bondTypes['Dcis'] = BondType('Dcis', 'double_cis', 2, 2, 'cis')
-	bondTypes['Dtrans'] = BondType('Dtrans', 'double_trans', 2, 2, 'trans')
-	bondTypes[3] = bondTypes['T'] = bondTypes['triple'] = BondType('T', 'triple', 3, 4, '')
-	bondTypes[1.5] = bondTypes['B'] = bondTypes['benzene'] = BondType('B', 'benzene', 1.5, 1, '')
-	return bondTypes
-	
-# The dictionary of bond types, accessible by label, order, or name.
-bondTypes = loadBondTypes()
 
 ################################################################################
 
 class Bond:
 	"""
-	Represent a bond in a chemical species. Each bond has a list `atoms` of 
+	Represent a bond in a chemical species. Each bond has a list `atoms` of
 	length two containing the two atoms in the bond and a `bondType` object,
 	stored internally as a :class:`BondType` object.
-	"""	
-	
+	"""
+
 	def __init__(self, atoms, bondType=''):
 		self.setBondType(bondType)
 		self.atoms = atoms
-		
+
 	def __repr__(self):
 		"""x.__repr__() <==> repr(x)"""
 		return self.__module__+".Bond(%s,bondType='%s')"%(repr(self.atoms),self.bondType.label)
 
+	def getBondType(self):
+		if len(self._bondType) == 1: return self._bondType[0]
+		else: return self._bondType
+
 	def setBondType(self, bondType):
 		"""
-		Set the bond type that this bond represents. The *bondType* 
+		Set the bond type that this bond represents. The `bondType`
 		parameter can be a :class:`BondType` object, a number representing
-		the bond order, or a string representing the label of the desired bond 
-		type. In all cases *bondType* will be converted to and stored as a
+		the bond order, or a string representing the label of the desired bond
+		type. In all cases `bondType` will be converted to and stored as a
 		:class:`BondType` object.
 		"""
-		if bondType.__class__ == str or bondType.__class__ == unicode:
-			bondType = bondTypes[bondType]
-		if bondType.__class__ != BondType:
-			raise Exception('Invalid parameter "bondType".')
-		self.bondType = bondType
-	
+		if bondType.__class__ != list:
+			bondType = [bondType]
+		self._bondType = []
+		for bond in bondType:
+			if (bond.__class__ == str or bond.__class__ == unicode) and bond in bondTypes:
+				bond = bondTypes[bond]
+			if bond.__class__ == BondType:
+				self._bondType.append(bond)
+			else:
+				raise Exception('Invalid parameter "bondType".')
+
+	bondType = property(getBondType, setBondType)
+
 	def equivalent(self, other):
 		"""
-		Return :data:`True` if `self` and `other` are equivalent bonds, i.e. 
+		Return :data:`True` if `self` and `other` are equivalent bonds, i.e.
 		they have the same bond type.
 		"""
 		return self.bondType == other.bondType
@@ -337,21 +438,21 @@ class Bond:
 
 	def isSingle(self):
 		"""
-		Return :data:`True` if the bond represents a single bond and 
+		Return :data:`True` if the bond represents a single bond and
 		:data:`False` otherwise.
 		"""
 		return self.bondType.label == 'S'
 
 	def isDouble(self):
 		"""
-		Return :data:`True` if the bond represents a double bond and 
+		Return :data:`True` if the bond represents a double bond and
 		:data:`False` otherwise.
 		"""
 		return self.bondType.label == 'D'
 
 	def isTriple(self):
 		"""
-		Return :data:`True` if the bond represents a triple bond and 
+		Return :data:`True` if the bond represents a triple bond and
 		:data:`False` otherwise.
 		"""
 		return self.bondType.label == 'T'
@@ -361,14 +462,14 @@ class Bond:
 		Return :data:`True` if the bond order can be increased by one.
 		"""
 		return self.bondType.label == 'S' or self.bondType.label == 'D'
-	
+
 	def canDecreaseOrder(self):
 		"""
 		Return :data:`True` if the bond order can be decreased by one without
 		breaking.
 		"""
 		return self.bondType.label == 'D' or self.bondType.label == 'T'
-	
+
 	def increaseOrder(self):
 		"""
 		Increase the bond order by one.
@@ -390,156 +491,84 @@ class Bond:
 
 ################################################################################
 
-class ChemGraph:
+class Structure(graph.ChemGraph):
 	"""
-	A representation of a chemical species or fragment using a graph data 
-	structure. The vertices represent atoms, while the edges represent bonds.
-	This class can be used to represent a resonance form of a chemical species
-	or a functional group. Atom iteration is possible via the `atoms` method,
-	while bond iteration is possible via the `bonds` method.
-	
-	Internally the graph is represented as a dictionary of dictionaries. If a 
-	vertex is in the graph it will be in the outer dictionary. If two vertices 
-	in the graph are connected by an edge, each edge will be in the inner 
-	dictionary.
-	"""
-
-	def __init__(self, atoms=[], bonds=[]):
-		self.initialize(atoms, bonds)
-		
-	def atoms(self):
-		"""
-		Return a list of the atoms in the structure.
-		"""
-		return self.graph.keys()
-		
-	def bonds(self):
-		"""
-		Return a list of the bonds in the structure.
-		"""
-		bondlist = []
-		for atom1 in self.graph:
-			for atom2 in self.graph[atom1]:
-				bond = self.graph[atom1][atom2]
-				if bond not in bondlist:
-					bondlist.append(bond)
-		return bondlist
-	
-	def addAtom(self, atom):
-		"""
-		Add `atom` to the graph as a vertex. The atom is initialized with
-		no edges.
-		"""
-		self.graph[atom] = {}
-		
-	def addBond(self, atom1, atom2, bond):
-		"""
-		Add `bond` to the graph as an edge connecting atoms `atom1` and
-		`atom2`, which must already be present in the graph.
-		"""
-		self.graph[atom1][atom2] = bond
-		self.graph[atom2][atom1] = bond
-		
-	def hasBond(self, atom1, atom2):
-		"""
-		Returns true if atoms `atom1` and `atom2`, are in the graph and
-		are connected by a bond.
-		"""
-		if atom1 in self.graph.keys():
-			if atom2 in self.graph[atom1].keys():
-				return True
-		return False
-	
-	def isIsomorphic(self, other):
-		"""
-		Returns :data:`True` if two graphs are isomorphic and :data:`False`
-		otherwise. Uses the VF2 algorithm of Vento and Foggia.
-		"""
-		return graph.VF2_isomorphic(self.graph, other.graph, False)
-		
-	def isSubgraphIsomorphic(self, other):
-		"""
-		Returns :data:`True` if `other` is subgraph isomorphic and :data:`False`
-		otherwise. Uses the VF2 algorithm of Vento and Foggia.
-		"""
-		return graph.VF2_isomorphic(self.graph, other.graph, True)
-	
-	def initialize(self, atoms, bonds):
-		"""
-		Rebuild the `graph` data member based on the lists of atoms and bonds
-		provided in `atoms` and `bonds`, respectively.
-		"""
-		self.graph = {}
-		for atom in atoms:
-			self.graph[atom] = {}
-		for bond in bonds:
-			self.graph[bond.atoms[0]][bond.atoms[1]] = bond
-			self.graph[bond.atoms[1]][bond.atoms[0]] = bond
-	
-################################################################################
-
-class Structure(ChemGraph):
-	"""
-	A representation of a chemical species using a graph data structure. The 
+	A representation of a chemical species using a graph data structure. The
 	vertices represent atoms, while the edges represent bonds.
 	"""
 
 	def __init__(self, atoms=[], bonds=[]):
-		self.initialize(atoms, bonds)
-		
-	def initialize(self, atoms, bonds):
-		"""
-		Rebuild the `graph` data member based on the lists of atoms and bonds
-		provided in `atoms` and `bonds`, respectively.
-		"""
-		self.graph = {}
-		for atom in atoms:
-			self.graph[atom] = {}
-		for bond in bonds:
-			self.graph[bond.atoms[0]][bond.atoms[1]] = bond
-			self.graph[bond.atoms[1]][bond.atoms[0]] = bond
-		self.thermo = None
-		
+		graph.ChemGraph.initialize(self, atoms, bonds)
+
 	def fromAdjacencyList(self, adjlist):
 		"""
-		Convert a string adjacency list `adjlist` into a chemical structure.
+		Convert a string adjacency list `adjlist` into a structure object.
 		"""
-		
+
 		atoms = []; bonds = []; atomdict = {}
-				
+
 		lines = adjlist.splitlines()
-		label = lines[0]
+
 		for line in lines[1:]:
-			
+
 			data = line.split()
-			
+
 			# First item is index for atom
-			aid = int(data[0])
-			
+			# Sometimes these have a trailing period (as if in a numbered list),
+			# so remove it just in case
+			aid = int(data[0].strip('.'))
+
+			# If second item is '*', the atom is the center atom
+			center = ''
+			index = 1
+			if data[1][0] == '*':
+				center = data[1]
+				index = 2
+
 			# Next is the element or functional group element
-			element = data[1]
-				
+			# A list can be specified with the {,} syntax
+			elements = data[index]
+			if elements[0] == '{':
+				elements = elements[1:-1].split(',')
+			else:
+				elements = [elements]
+
 			# Next is the electron state
-			elecState = data[2].upper()
-			
+			elecState = data[index+1].upper()
+			if elecState[0] == '{':
+				elecState = elecState[1:-1].split(',')
+			else:
+				elecState = [elecState]
+
 			# Create a new atom based on the above information
-			atom = Atom(element, elecState, 0)
-				
+			atom = Atom(elements, elecState, 0, center)
+
 			# Add the atom to the list
 			atoms.append(atom)
 			atomdict[aid] = atom
-			
+
 			# Process list of bonds
-			for datum in data[3:]:
+			for datum in data[index+2:]:
+
+				# Sometimes commas are used to delimit bonds in the bond list,
+				# so strip them just in case
+				datum = datum.strip(',')
+
 				aid2, comma, btype = datum[1:-1].partition(',')
 				aid2 = int(aid2)
+
+				if btype[0] == '{':
+					btype = btype[1:-1].split(',')
+				else:
+					btype = [btype]
+
 				if aid2 in atomdict:
 					bond = Bond([atomdict[aid], atomdict[aid2]], btype)
 					bonds.append(bond)
-			
-		# Create species structure
+
+		# Create and return functional group or species
 		self.initialize(atoms, bonds)
-		
+
 	def fromCML(self, cmlstr):
 		"""
 		Convert a string of CML `cmlstr` to a Structure object.
@@ -547,117 +576,117 @@ class Structure(ChemGraph):
 		cmlstr = cmlstr.replace('\t', '')
 		mol = pybel.readstring('cml', cmlstr)
 		self.fromOBMol(mol.OBMol)
-	
+
 	def fromInChI(self, inchistr):
 		"""
 		Convert an InChI string `inchistr` to a Structure object.
 		"""
 		mol = pybel.readstring('inchi', inchistr)
 		self.fromOBMol(mol.OBMol)
-	
+
 	def fromSMILES(self, smilesstr):
 		"""
 		Convert a SMILES string `smilesstr` to a Structure object.
 		"""
 		mol = pybel.readstring('smiles', smilesstr)
 		self.fromOBMol(mol.OBMol)
-	
+
 	def fromOBMol(self, obmol):
 		"""
 		Convert an OpenBabel OBMol object `obmol` to a Structure object.
 		"""
-		
+
 		atoms = []; bonds = []
-		
+
 		# Add hydrogen atoms to complete molecule if needed
 		obmol.AddHydrogens()
-		
+
 		# Iterate through atoms in obmol
 		for i in range(0, obmol.NumAtoms()):
 			obatom = obmol.GetAtom(i + 1)
-			
+
 			# Use atomic number as key for element
 			number = obatom.GetAtomicNum()
-			
+
 			# Process spin multiplicity
 			electron = obatom.GetSpinMultiplicity()
 			if electron == 0: electron = '0'
 			elif electron == 1:	electron = '2S'
 			elif electron == 2:	electron = '1'
 			elif electron == 3:	electron = '2T'
-			
-			atom = Atom(elements[number], electronStates[electron])
+
+			atom = Atom(elements[number].symbol, electronStates[electron])
 			atoms.append(atom)
-			
+
 			# Add bonds by iterating again through atoms
 			for j in range(0, i):
 				obatom2 = obmol.GetAtom(j + 1)
 				obbond = obatom.GetBond(obatom2)
 				if obbond is not None:
 					order = ''
-					
+
 					# Process bond type
 					if obbond.IsSingle(): order = 'S'
 					elif obbond.IsDouble(): order = 'D'
 					elif obbond.IsTriple(): order = 'T'
 					elif obbond.IsAromatic(): order = 'B'
-					
+
 					bond = Bond([atoms[i], atoms[j]], bondTypes[order])
 					bonds.append(bond)
-		
+
 		# Create the graph from the atom and bond lists
 		self.initialize(atoms, bonds)
-		
+
 	def toOBMol(self):
 		"""
 		Convert a Structure object to an OpenBabel OBMol object.
 		"""
 		atoms = self.atoms(); bonds = self.bonds()
-		
+
 		obmol = openbabel.OBMol()
 		for atom in atoms:
 			a = obmol.NewAtom()
-			a.SetAtomicNum(atom.element.number)
+			a.SetAtomicNum(atom.atomType.element.number)
 		for bond in bonds:
 			index1 = atoms.index(bond.atoms[0])
 			index2 = atoms.index(bond.atoms[1])
 			order = bond.bondType.order
 			if order == 1.5: order = 5
 			obmol.AddBond(index1+1, index2+1, order)
-		
+
 		return obmol
-	
+
 	def toCML(self):
 		"""
 		Convert a Structure object to CML.
 		"""
 		mol = pybel.Molecule(self.toOBMol())
 		return mol.write('cml').strip()
-	
+
 	def toInChI(self):
 		"""
 		Convert a Structure object to an InChI string.
 		"""
 		mol = pybel.Molecule(self.toOBMol())
 		return mol.write('inchi').strip()
-		
+
 	def toSMILES(self):
 		"""
 		Convert a Structure object to an SMILES string.
 		"""
 		mol = pybel.Molecule(self.toOBMol())
 		return mol.write('smiles').strip()
-	
-	def toXML(self, dom, root): 
+
+	def toXML(self, dom, root):
 		"""
 		Convert a Structure object to an XML DOM tree.
 		"""
 		cml = dom.createElement('cml')
 		root.appendChild(cml)
-		
+
 		dom2 = xml.dom.minidom.parseString(self.toCML())
 		cml.appendChild(dom2.documentElement)
-	
+
 	def radicalCount(self):
 		"""
 		Get the number of radicals in the structure.
@@ -665,15 +694,15 @@ class Structure(ChemGraph):
 		radical = 0
 		for atom in self.atoms():
 			radical += atom.electronState.order
-		return radical		
-	
+		return radical
+
 	def generateResonanceIsomers(self):
 		"""
 		Generate a list of all of the resonance isomers of this structure.
 		"""
-	
+
 		isomers = [self]
-		
+
 		# Radicals
 		if self.radicalCount() > 0:
 			# Iterate over resonance isomers
@@ -686,37 +715,37 @@ class Structure(ChemGraph):
 					atom = isomer.atoms()[i]
 					paths = isomer.findAllDelocalizationPaths(atom)
 					for path in paths:
-						
+
 						# Make a copy of isomer
 						oldIsomer = isomer.copy()
 						isomers[index] = oldIsomer
 						newIsomer = isomer
 						isomer = oldIsomer
-						
+
 						# Adjust to (potentially) new resonance isomer
 						atom1, atom2, atom3, bond12, bond23 = path
 						atom1.decreaseRadical()
 						atom3.increaseRadical()
 						bond12.increaseOrder()
 						bond23.decreaseOrder()
-						
+
 						# Append to isomer list if unique
 						found = False
 						for isom in isomers:
 							if isom.isIsomorphic(newIsomer): found = True
-						if not found: 
+						if not found:
 							isomers.append(newIsomer)
-				
+
 				# Move to next resonance isomer
 				index += 1
-	
+
 		return isomers
-	
+
 	def copy(self):
 		"""
 		Create a copy of the current Structure.
 		"""
-		
+
 		atoms = []; bonds = []
 		for atom in self.atoms():
 			atoms.append(atom.copy())
@@ -726,59 +755,67 @@ class Structure(ChemGraph):
 			index1 = self.atoms().index(bond.atoms[0])
 			index2 = self.atoms().index(bond.atoms[1])
 			newBond.atoms = [atoms[index1], atoms[index2]]
-		
+
 		return Structure(atoms, bonds)
-	
+
 	def findAllDelocalizationPaths(self, atom1):
 		"""
 		Find all the delocalization paths allyl to the radical center indicated
 		by `atom1`. Used to generate resonance isomers.
 		"""
-		
+
 		# No paths if atom1 is not a radical
 		if atom1.electronState.order <= 0:
 			return []
-		
+
 		# Find all delocalization paths
 		paths = []
 		for atom2, bond12 in self.graph[atom1].iteritems():
 			# Vinyl bond must be capable of gaining an order
 			if bond12.canIncreaseOrder():
 				for atom3, bond23 in self.graph[atom2].iteritems():
-					# Allyl bond must be capable of losing an order without 
+					# Allyl bond must be capable of losing an order without
 					# breaking
 					if atom1 is not atom3 and bond23.canDecreaseOrder():
 						paths.append([atom1, atom2, atom3, bond12, bond23])
 		return paths
-		
+
+	def getCenter(self):
+		"""
+		Return the center atom of the functional group structure.
+		"""
+		for atom in self.atoms():
+			if atom.isCenter(): return atom
+		return None
+
 	def getThermoData(self):
 		"""
 		Calculate the thermodynamic parameters for this structure using the
-		thermo database to look up group additivity values for each heavy 
+		thermo database to look up group additivity values for each heavy
 		(i.e. non-hydrogen) atom.
 		"""
-		
+
 		# Initialize thermo data
 		self.thermo = ThermoGAData()
-		
+
 		# Iterate over heavy (non-hydrogen) atoms
-		#for atom in self.atoms():
-			#if atom.isNonHydrogen():
-				#thermoData = data..thermoDatabaseSet.getThermoData(self, atom)
-				#if thermoData is not None:
-					#self.thermo += thermoData
-	
+		for atom in self.atoms():
+			if atom.isNonHydrogen():
+				thermoData = Structure.thermoDatabase.getThermoData(self, atom)
+				if thermoData is not None:
+					self.thermo += thermoData
+
 ################################################################################
 
 class Species:
 	"""
 	Represent a chemical species (including all of its resonance forms). Each
-	species has a unique integer `id` assigned automatically by RMG and a 
-	not-necessarily unique string `label`. The *structure* variable contains a 
-	list of :class:`Structure` objects representing each resonance form. The 
-	`reactive` flag is :data:`True` if the species can react and :data:`False` 
+	species has a unique integer `id` assigned automatically by RMG and a
+	not-necessarily unique string `label`. The *structure* variable contains a
+	list of :class:`Structure` objects representing each resonance form. The
+	`reactive` flag is :data:`True` if the species can react and :data:`False`
 	if it is inert.
-	"""	
+	"""
 
 	# A static counter for the number of species created since the RMG job began.
 	numSpecies = 0
@@ -792,14 +829,14 @@ class Species:
 		self.label = label
 		self.structure = [structure]
 		self.reactive = reactive
-		
+
 		self.thermo = None
 		self.lennardJones = None
 		self.spectralData = None
-		
+
 		if structure is not None:
 			self.__generateData()
-			
+
 	def __generateData(self):
 		"""
 		Generate supplemental parameters and information about the species:
@@ -807,7 +844,7 @@ class Species:
 		"""
 		self.structure = self.structure[0].generateResonanceIsomers()
 		self.getThermoData()
-	
+
 	def getThermoData(self):
 		"""
 		Generate thermodynamic data for the species by use of the thermo
@@ -815,47 +852,47 @@ class Species:
 		"""
 		for structure in self.structure:
 			structure.getThermoData()
-			
+
 	def __str__(self):
 		"""
 		Return a string representation of the species, in the form 'label(id)'.
 		"""
 		return self.label + '(' + str(self.id) + ')'
-		
+
 ################################################################################
 
 class ThermoGAData:
 	"""
 	A set of thermodynamic parameters as determined from Benson's group
 	additivity data. The attributes are:
-	
+
 	- `H298` = the standard enthalpy of formation at 298 K in J/mol
-	
+
 	- `S298` = the standard entropy of formation at 298 K in J/mol*K
-	
+
 	- `Cp300` = the standard heat capacity at 300 K in J/mol*K
-	
+
 	- `Cp400` = the standard heat capacity at 400 K in J/mol*K
-	
+
 	- `Cp500` = the standard heat capacity at 500 K in J/mol*K
-	
+
 	- `Cp600` = the standard heat capacity at 600 K in J/mol*K
-	
+
 	- `Cp800` = the standard heat capacity at 800 K in J/mol*K
-	
+
 	- `Cp1000` = the standard heat capacity at 1000 K in J/mol*K
-	
+
 	- `Cp1500` = the standard heat capacity at 1500 K in J/mol*K
-	
+
 	- `comment` = a string describing the source of the data
 	"""
 
 	CpTlist = pq.Quantity([300.0, 400.0, 500.0, 600.0, 800.0, 1000.0, 1500.0], 'K')
-		
+
 	def __init__(self, H298=0.0, S298=0.0, Cp300=0.0, Cp400=0.0, Cp500=0.0, \
 	             Cp600=0.0, Cp800=0.0, Cp1000=0.0, Cp1500=0.0, comment=''):
 		"""Initialize a set of group additivity thermodynamic data."""
-		
+
 		self.H298 = H298
 		self.S298 = S298
 		self.Cp = [Cp300, Cp400, Cp500, Cp600, Cp800, Cp1000, Cp1500]
@@ -866,10 +903,10 @@ class ThermoGAData:
 		Process a list of numbers `data` and associated description `comment`
 		generated while reading from a thermodynamic database.
 		"""
-	
+
 		if len(data) != 12:
 			raise Exception('Invalid list of thermo data; should be a list of numbers of length 12.')
-		
+
 		H298, S298, Cp300, Cp400, Cp500, Cp600, Cp800, Cp1000, Cp1500, \
 		  dH, dS, dCp = data
 		self.H298 = pq.UncertainQuantity(H298, 'kcal/mol', dH)
@@ -878,7 +915,7 @@ class ThermoGAData:
 		#self.S298.units = 'J/(mol*K)'
 		self.Cp = pq.UncertainQuantity([Cp300, Cp400, Cp500, Cp600, Cp800, Cp1000, Cp1500], 'kcal/(mol*K)', [dCp, dCp, dCp, dCp, dCp, dCp, dCp])
 		#self.Cp.units = 'J/(mol*K)'
-		
+
 		#self.Cp[0] = pq.UncertainQuantity(Cp300, 'kcal/(mol*K)', dCp)
 		#self.Cp[0].units = 'J/(mol*K)'
 		#self.Cp[1] = pq.UncertainQuantity(Cp400, 'kcal/(mol*K)', dCp)
@@ -894,10 +931,10 @@ class ThermoGAData:
 		#self.Cp[6] = pq.UncertainQuantity(Cp1500, 'kcal/(mol*K)', dCp)
 		#self.Cp[6].units = 'J/(mol*K)'
 		self.comment = comment
-	
+
 	def __add__(self, other):
 		"""
-		Add two sets of thermodynamic data together. All parameters are 
+		Add two sets of thermodynamic data together. All parameters are
 		additive.
 		"""
 		new = ThermoGAData()
@@ -908,7 +945,7 @@ class ThermoGAData:
 			new.Cp.append(self.Cp + other.Cp)
 		new.comment = self.comment + '; ' + other.comment
 		return new
-	
+
 	def heatCapacity(self, T):
 		"""
 		Return the heat capacity at the specified temperature `T`. This is done
@@ -919,10 +956,10 @@ class ThermoGAData:
 			raise TemperatureOutOfRangeException('No thermodynamic data available for T < 300 K.')
 		# Use Cp(1500 K) if T > 1500 K
 		elif T > 1500.0: T = 1500.0
-		
+
 		Cpfun = scipy.interpolate.interp1d(ThermoGAData.CpTlist, self.Cp)
 		return pq.Quantity(Cpfun(T), 'J/(mol*K)')
-		
+
 	def enthalpy(self, T):
 		"""
 		Return the enthalpy of formation at the specified temperature `T`.
@@ -930,7 +967,7 @@ class ThermoGAData:
 		T.units = 'K'; T = float(T)
 		if T < 300.0:
 			raise TemperatureOutOfRangeException('No thermodynamic data available for T < 300 K.')
-	
+
 	def getCpLinearization(self):
 		slope = []; intercept = []
 		for i in range(0, len(self.Cp)-1):
@@ -939,12 +976,12 @@ class ThermoGAData:
 			quit()
 			intercept.append(self.Cp[i] - slope[i] * ThermoGAData.CpTlist[i])
 		return slope, intercept
-	
+
 	def toXML(self, dom, root):
-	
+
 		thermo = dom.createElement('thermo')
 		root.appendChild(thermo)
-	
+
 		self.valueToXML(dom, thermo, 'enthalpyOfFormation', self.H298, '298 K')
 		self.valueToXML(dom, thermo, 'entropyOfFormation', self.S298, '298 K')
 		self.valueToXML(dom, thermo, 'heatCapacity', self.Cp[0], '300 K')
@@ -954,80 +991,44 @@ class ThermoGAData:
 		self.valueToXML(dom, thermo, 'heatCapacity', self.Cp[4], '800 K')
 		self.valueToXML(dom, thermo, 'heatCapacity', self.Cp[5], '1000 K')
 		self.valueToXML(dom, thermo, 'heatCapacity', self.Cp[6], '1500 K')
-		
+
 		element = dom.createElement('comment')
 		thermo.appendChild(element)
 		comment = dom.createTextNode(self.comment)
 		element.appendChild(comment)
-		
-			
+
+
 	def valueToXML(self, dom, root, name, value, temp):
 		element = dom.createElement(name)
 		root.appendChild(element)
-		
+
 		units = str(value.units).split()[1]
-		
+
 		element.setAttribute('temperature', temp)
 		element.setAttribute('units', units)
 		element.setAttribute('uncertainty', str(value.uncertainty))
-		
+
 		valueNode = dom.createTextNode(str(float(value)))
 		element.appendChild(valueNode)
-		
-################################################################################
 
+################################################################################
 
 if __name__ == '__main__':
 	
-	#print ''
+	print ''
 	
-	#print 'Elements available:'
-	#for key, element in elements.iteritems():
-		#print '\t' + str(key) + ' ' + element.symbol
-	#print ''
-	
-	#print 'Free electron states available:'
-	#for key, electronState in electronStates.iteritems():
-		#print '\t' + electronState.label
-	#print ''
-	
-	#print 'Bond types available:'
-	#for key, bondType in bondTypes.iteritems():
-		#print '\t' + str(key) + ' ' + bondType.label
-	#print ''
-	
-	cml = """
-<molecule>
-<atomArray>
-<atom id="a1" elementType="C" hydrogenCount="3" />
-<atom id="a2" elementType="C" hydrogenCount="1" />
-<atom id="a3" elementType="C" hydrogenCount="1" />
-<atom id="a4" elementType="C" hydrogenCount="2" />
-</atomArray>
-<bondArray>
-<bond atomRefs2="a1 a2" order="1" />
-<bond atomRefs2="a2 a3" order="2" />
-<bond atomRefs2="a3 a4" order="1" />
-</bondArray>
-</molecule>
-	"""
-	#cml = """
-#<molecule>
-#<atomArray>
-#<atom id="a2" elementType="C" hydrogenCount="2" />
-#<atom id="a3" elementType="C" hydrogenCount="1" />
-#<atom id="a4" elementType="C" hydrogenCount="2" />
-#</atomArray>
-#<bondArray>
-#<bond atomRefs2="a2 a3" order="2" />
-#<bond atomRefs2="a3 a4" order="1" />
-#</bondArray>
-#</molecule>
-	#"""
+	print 'Atom types available:'
+	for key, atomType in atomTypes.iteritems():
+		print '\t' + str(key)
+	print ''
 
-	structure = Structure()
-	structure.fromCML(cml)
-	#print structure.toCML()
-	#print structure.toInChI(), structure.toSMILES()
-
-	print structure.generateResonanceIsomers()
+	print 'Free electron states available:'
+	for key, electronState in electronStates.iteritems():
+		print '\t' + str(key)
+	print ''
+	
+	print 'Bond types available:'
+	for key, bondType in bondTypes.iteritems():
+		print '\t' + str(key)
+	print ''
+	

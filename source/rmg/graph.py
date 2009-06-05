@@ -149,6 +149,94 @@ class Graph:
 
 ################################################################################
 
+class ChemGraph:
+	"""
+	A representation of a chemical species or fragment using a graph data 
+	structure. The vertices represent atoms, while the edges represent bonds.
+	This class can be used to represent a resonance form of a chemical species
+	or a functional group. Atom iteration is possible via the `atoms` method,
+	while bond iteration is possible via the `bonds` method.
+	
+	Internally the graph is represented as a dictionary of dictionaries. If a 
+	vertex is in the graph it will be in the outer dictionary. If two vertices 
+	in the graph are connected by an edge, each edge will be in the inner 
+	dictionary.
+	"""
+
+	def __init__(self, atoms=[], bonds=[]):
+		self.initialize(atoms, bonds)
+		
+	def atoms(self):
+		"""
+		Return a list of the atoms in the structure.
+		"""
+		return self.graph.keys()
+		
+	def bonds(self):
+		"""
+		Return a list of the bonds in the structure.
+		"""
+		bondlist = []
+		for atom1 in self.graph:
+			for atom2 in self.graph[atom1]:
+				bond = self.graph[atom1][atom2]
+				if bond not in bondlist:
+					bondlist.append(bond)
+		return bondlist
+	
+	def addAtom(self, atom):
+		"""
+		Add `atom` to the graph as a vertex. The atom is initialized with
+		no edges.
+		"""
+		self.graph[atom] = {}
+		
+	def addBond(self, atom1, atom2, bond):
+		"""
+		Add `bond` to the graph as an edge connecting atoms `atom1` and
+		`atom2`, which must already be present in the graph.
+		"""
+		self.graph[atom1][atom2] = bond
+		self.graph[atom2][atom1] = bond
+		
+	def hasBond(self, atom1, atom2):
+		"""
+		Returns true if atoms `atom1` and `atom2`, are in the graph and
+		are connected by a bond.
+		"""
+		if atom1 in self.graph.keys():
+			if atom2 in self.graph[atom1].keys():
+				return True
+		return False
+	
+	def isIsomorphic(self, other):
+		"""
+		Returns :data:`True` if two graphs are isomorphic and :data:`False`
+		otherwise. Uses the VF2 algorithm of Vento and Foggia.
+		"""
+		return VF2_isomorphic(self.graph, other.graph, False, False)
+		
+	def isSubgraphIsomorphic(self, other, map12={}, map21={}):
+		"""
+		Returns :data:`True` if `other` is subgraph isomorphic and :data:`False`
+		otherwise. Uses the VF2 algorithm of Vento and Foggia.
+		"""
+		return VF2_isomorphic(self.graph, other.graph, True, False, map12, map21)
+	
+	def initialize(self, atoms, bonds):
+		"""
+		Rebuild the `graph` data member based on the lists of atoms and bonds
+		provided in `atoms` and `bonds`, respectively.
+		"""
+		self.graph = {}
+		for atom in atoms:
+			self.graph[atom] = {}
+		for bond in bonds:
+			self.graph[bond.atoms[0]][bond.atoms[1]] = bond
+			self.graph[bond.atoms[1]][bond.atoms[0]] = bond
+	
+################################################################################
+
 def VF2_isomorphic(graph1, graph2, subgraph=False, findAll=False, mapping12={}, mapping21={}):	
 	"""
 	Returns :data:`True` if two graphs are isomorphic and :data:`False`
@@ -255,7 +343,7 @@ def __VF2_match(graph1, graph2, mapping21, mapping12, terminals1, terminals2, su
 	mappings12 = []; mappings21 = []
 	
 	# Done if we have mapped to all vertices in graph2
-	print len(mapping12), len(mapping21), len(graph1), len(graph2)
+	#print len(mapping12), len(mapping21), len(graph1), len(graph2)
 	if len(mapping12) == len(graph2) or len(mapping21) == len(graph1):
 		return True, mapping12, mapping21
 	#if len(mapping12) == len(mapping21) == min(len(graph1), len(graph2)):

@@ -95,8 +95,8 @@ def getElementText(element):
 def readInputFile(fstr):
 	"""
 	Parse an RMG input file at the location `fstr`. If successful, this 
-	function returns a :class:`rmg.model.CoreEdgeReactionModel` object and a list of 
-	one or more :class:`rmg.model.ReactionSystem` objects.
+	function returns a :class:`rmg.model.CoreEdgeReactionModel` object and a 
+	list of one or more :class:`rmg.model.ReactionSystem` objects.
 	"""
 
 	try:
@@ -146,6 +146,7 @@ def readInputFile(fstr):
 					logging.debug('General database: ' + database[2])
 					rmgDatabase = data.RMGDatabase()
 					rmgDatabase.load(database[2] + '/')
+					chem.Structure.thermoDatabase = rmgDatabase.thermo
 				generalDatabaseCount += 1
 				
 		logging.debug('')
