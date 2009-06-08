@@ -1280,12 +1280,12 @@ Cd(Cs(CsRR)Cs) //S(SP)
 2    Cd 0 {1,D}
 3    Cs 0 {1,S} {5,S} {6,S} {7,S}
 4    Cs 0 {1,S} {8,S} {9,S} {10,S}
-5    Cs 0 {2,S}
-6    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {2,S}
-7    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {2,S}
-8    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
-9    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
-10   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
+5    Cs 0 {3,S}
+6    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
+7    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
+8    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
+9    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
+10   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
 
 
 Cd(Cs(CsRR)Cs(CsRR)) //S(SS)
@@ -1293,94 +1293,94 @@ Cd(Cs(CsRR)Cs(CsRR)) //S(SS)
 2    Cd 0 {1,D}
 3    Cs 0 {1,S} {5,S} {6,S} {7,S}
 4    Cs 0 {1,S} {8,S} {9,S} {10,S}
-5    Cs 0 {2,S}
-6    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {2,S}
-7    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {2,S}
-8    Cs 0 {3,S}
-9    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
-10   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
+5    Cs 0 {3,S}
+6    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
+7    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
+8    Cs 0 {4,S}
+9    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
+10   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
 
 Cd(Cs(CsCsR)Cs) //S(TP)
 1  * Cd 0 {2,D} {3,S} {4,S}
 2    Cd 0 {1,D}
 3    Cs 0 {1,S} {5,S} {6,S} {7,S}
 4    Cs 0 {1,S} {8,S} {9,S} {10,S}
-5    Cs 0 {2,S}
-6    Cs 0 {2,S}
-7    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {2,S}
-8    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
-9    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
-10   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
+5    Cs 0 {3,S}
+6    Cs 0 {3,S}
+7    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
+8    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
+9    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
+10   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
 
 Cd(Cs(CsCsR)Cs(CsRR)) //S(TS)
 1  * Cd 0 {2,D} {3,S} {4,S}
 2    Cd 0 {1,D}
 3    Cs 0 {1,S} {5,S} {6,S} {7,S}
 4    Cs 0 {1,S} {8,S} {9,S} {10,S}
-5    Cs 0 {2,S}
-6    Cs 0 {2,S}
-7    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {2,S}
-8    Cs 0 {3,S}
-9    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
-10   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
+5    Cs 0 {3,S}
+6    Cs 0 {3,S}
+7    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
+8    Cs 0 {4,S}
+9    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
+10   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
 
 Cd(Cs(CsCsR)Cs(CsCsR)) //S(TT)
 1  * Cd 0 {2,D} {3,S} {4,S}
 2    Cd 0 {1,D}
 3    Cs 0 {1,S} {5,S} {6,S} {7,S}
 4    Cs 0 {1,S} {8,S} {9,S} {10,S}
-5    Cs 0 {2,S}
-6    Cs 0 {2,S}
-7    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {2,S}
-8    Cs 0 {3,S}
-9    Cs 0 {3,S}
-10   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
+5    Cs 0 {3,S}
+6    Cs 0 {3,S}
+7    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
+8    Cs 0 {4,S}
+9    Cs 0 {4,S}
+10   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
 
 Cd(Cs(CsCsCs)Cs) //S(QP)
 1  * Cd 0 {2,D} {3,S} {4,S}
 2    Cd 0 {1,D}
 3    Cs 0 {1,S} {5,S} {6,S} {7,S}
 4    Cs 0 {1,S} {8,S} {9,S} {10,S}
-5    Cs 0 {2,S}
-6    Cs 0 {2,S}
-7    Cs 0 {2,S}
-8    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
-9    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
-10   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
+5    Cs 0 {3,S}
+6    Cs 0 {3,S}
+7    Cs 0 {3,S}
+8    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
+9    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
+10   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
 
 Cd(Cs(CsCsCs)Cs(CsRR)) //S(QS)
 1  * Cd 0 {2,D} {3,S} {4,S}
 2    Cd 0 {1,D}
 3    Cs 0 {1,S} {5,S} {6,S} {7,S}
 4    Cs 0 {1,S} {8,S} {9,S} {10,S}
-5    Cs 0 {2,S}
-6    Cs 0 {2,S}
-7    Cs 0 {2,S}
-8    Cs 0 {3,S}
-9    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
-10   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
+5    Cs 0 {3,S}
+6    Cs 0 {3,S}
+7    Cs 0 {3,S}
+8    Cs 0 {4,S}
+9    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
+10   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
 
 Cd(Cs(CsCsCs)Cs(CsCsR)) //S(QT)
 1  * Cd 0 {2,D} {3,S} {4,S}
 2    Cd 0 {1,D}
 3    Cs 0 {1,S} {5,S} {6,S} {7,S}
 4    Cs 0 {1,S} {8,S} {9,S} {10,S}
-5    Cs 0 {2,S}
-6    Cs 0 {2,S}
-7    Cs 0 {2,S}
-8    Cs 0 {3,S}
-9    Cs 0 {3,S}
-10   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
+5    Cs 0 {3,S}
+6    Cs 0 {3,S}
+7    Cs 0 {3,S}
+8    Cs 0 {4,S}
+9    Cs 0 {4,S}
+10   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
 
 Cd(Cs(CsCsCs)Cs(CsCsCs)) //S(QQ)
 1  * Cd 0 {2,D} {3,S} {4,S}
 2    Cd 0 {1,D}
 3    Cs 0 {1,S} {5,S} {6,S} {7,S}
 4    Cs 0 {1,S} {8,S} {9,S} {10,S}
-5    Cs 0 {2,S}
-6    Cs 0 {2,S}
-7    Cs 0 {2,S}
-8    Cs 0 {3,S}
-9    Cs 0 {3,S}
-10   Cs 0 {3,S}
+5    Cs 0 {3,S}
+6    Cs 0 {3,S}
+7    Cs 0 {3,S}
+8    Cs 0 {4,S}
+9    Cs 0 {4,S}
+10   Cs 0 {4,S}
 
