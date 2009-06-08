@@ -36,6 +36,8 @@ import os
 import model
 import chem
 import data
+import thermo
+import kinetics
 
 """
 Contains functions for manipulation of RMG input and output files.
@@ -144,9 +146,10 @@ def readInputFile(fstr):
 			if database[1] == 'general':
 				if generalDatabaseCount == 0:
 					logging.debug('General database: ' + database[2])
-					rmgDatabase = data.RMGDatabase()
-					rmgDatabase.load(database[2] + '/')
-					chem.Structure.thermoDatabase = rmgDatabase.thermo
+					thermoDatabase = thermo.ThermoDatabaseSet()
+					thermoDatabase.load(database[2] + '/')
+					kineticsDatabase = kinetics.ReactionFamilySet()
+					kineticsDatabase.load(database[2] + '/')
 				generalDatabaseCount += 1
 				
 		logging.debug('')

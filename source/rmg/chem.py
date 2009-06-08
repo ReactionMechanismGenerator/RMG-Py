@@ -295,7 +295,7 @@ class Atom(object):
 				self._atomType.append(atom)
 			else:
 				raise Exception('Invalid parameter "atomType".')
-
+		
 	atomType = property(getAtomType, setAtomType)
 
 	def getElectronState(self):
@@ -328,8 +328,41 @@ class Atom(object):
 		Return :data:`True` if `self` and `other` are equivalent atoms, i.e.
 		they have the same element and electronic state.
 		"""
-		return self.atomType == other.atomType and self.electronState == other.electronState
 
+		for atomType1 in self._atomType:
+			for atomType2 in other._atomType:
+
+				# If either is a generic atom type, then always return True
+				if atomType1.label == 'R' or atomType2.label == 'R':
+					return True
+				# If either is a generic non-hydrogen atom type, then return
+				# True if any atom type in the remaining one is non-hydrogen
+				elif atomType1.label == 'R!H' and atomType2.label != 'H':
+					return True
+				elif atomType2.label == 'R!H' and atomType1.label != 'H':
+					return True
+				# If either represents an element without surrounding bond info,
+				# match remaining to any with the same element
+				elif atomType1.label == atomType1.element.symbol == \
+						atomType2.element.symbol:
+					return True
+				elif atomType2.label == atomType2.element.symbol == \
+						atomType1.element.symbol:
+					return True
+				# Special case: 'Cd' matches any of 'Cd', 'Cdd', or 'Cds'
+				elif atomType1.label == 'Cd' and (atomType2.label == 'Cd' or \
+						atomType2.label == 'Cdd' or atomType2.label == 'Cds'):
+					return True
+				elif atomType2.label == 'Cd' and (atomType1.label == 'Cd' or \
+						atomType1.label == 'Cdd' or atomType1.label == 'Cds'):
+					return True
+				# Otherwise labels must match exactly
+				elif atomType1.label == atomType2.label:
+					return True
+
+		# At this point all tests have failed, no atoms are not equivalent
+		return False
+	
 	def copy(self):
 		"""
 		Generate a copy of the current atom.
@@ -428,7 +461,11 @@ class Bond:
 		Return :data:`True` if `self` and `other` are equivalent bonds, i.e.
 		they have the same bond type.
 		"""
-		return self.bondType == other.bondType
+		for bondType in other._bondType:
+			if self.bondType == bondType:
+				return True
+
+		return False
 
 	def copy(self):
 		"""
@@ -513,6 +550,10 @@ class Structure(graph.ChemGraph):
 
 			data = line.split()
 
+			# Skip if blank line
+			if len(data) == 0:
+				continue
+				
 			# First item is index for atom
 			# Sometimes these have a trailing period (as if in a numbered list),
 			# so remove it just in case
@@ -567,7 +608,7 @@ class Structure(graph.ChemGraph):
 					bonds.append(bond)
 
 		# Create and return functional group or species
-		self.initialize(atoms, bonds)
+		self.initialize(atoms, bonds)				
 
 	def fromCML(self, cmlstr):
 		"""
@@ -843,7 +884,7 @@ class Species:
 		resonance isomers, thermodynamic data, etc.
 		"""
 		self.structure = self.structure[0].generateResonanceIsomers()
-		self.getThermoData()
+		#self.getThermoData()
 
 	def getThermoData(self):
 		"""
@@ -858,158 +899,6 @@ class Species:
 		Return a string representation of the species, in the form 'label(id)'.
 		"""
 		return self.label + '(' + str(self.id) + ')'
-
-################################################################################
-
-class ThermoGAData:
-	"""
-	A set of thermodynamic parameters as determined from Benson's group
-	additivity data. The attributes are:
-
-	- `H298` = the standard enthalpy of formation at 298 K in J/mol
-
-	- `S298` = the standard entropy of formation at 298 K in J/mol*K
-
-	- `Cp300` = the standard heat capacity at 300 K in J/mol*K
-
-	- `Cp400` = the standard heat capacity at 400 K in J/mol*K
-
-	- `Cp500` = the standard heat capacity at 500 K in J/mol*K
-
-	- `Cp600` = the standard heat capacity at 600 K in J/mol*K
-
-	- `Cp800` = the standard heat capacity at 800 K in J/mol*K
-
-	- `Cp1000` = the standard heat capacity at 1000 K in J/mol*K
-
-	- `Cp1500` = the standard heat capacity at 1500 K in J/mol*K
-
-	- `comment` = a string describing the source of the data
-	"""
-
-	CpTlist = pq.Quantity([300.0, 400.0, 500.0, 600.0, 800.0, 1000.0, 1500.0], 'K')
-
-	def __init__(self, H298=0.0, S298=0.0, Cp300=0.0, Cp400=0.0, Cp500=0.0, \
-	             Cp600=0.0, Cp800=0.0, Cp1000=0.0, Cp1500=0.0, comment=''):
-		"""Initialize a set of group additivity thermodynamic data."""
-
-		self.H298 = H298
-		self.S298 = S298
-		self.Cp = [Cp300, Cp400, Cp500, Cp600, Cp800, Cp1000, Cp1500]
-		self.comment = comment
-
-	def fromDatabase(self, data, comment):
-		"""
-		Process a list of numbers `data` and associated description `comment`
-		generated while reading from a thermodynamic database.
-		"""
-
-		if len(data) != 12:
-			raise Exception('Invalid list of thermo data; should be a list of numbers of length 12.')
-
-		H298, S298, Cp300, Cp400, Cp500, Cp600, Cp800, Cp1000, Cp1500, \
-		  dH, dS, dCp = data
-		self.H298 = pq.UncertainQuantity(H298, 'kcal/mol', dH)
-		#self.H298.units = 'J/mol'
-		self.S298 = pq.UncertainQuantity(S298, 'cal/(mol*K)', dS)
-		#self.S298.units = 'J/(mol*K)'
-		self.Cp = pq.UncertainQuantity([Cp300, Cp400, Cp500, Cp600, Cp800, Cp1000, Cp1500], 'kcal/(mol*K)', [dCp, dCp, dCp, dCp, dCp, dCp, dCp])
-		#self.Cp.units = 'J/(mol*K)'
-
-		#self.Cp[0] = pq.UncertainQuantity(Cp300, 'kcal/(mol*K)', dCp)
-		#self.Cp[0].units = 'J/(mol*K)'
-		#self.Cp[1] = pq.UncertainQuantity(Cp400, 'kcal/(mol*K)', dCp)
-		#self.Cp[1].units = 'J/(mol*K)'
-		#self.Cp[2] = pq.UncertainQuantity(Cp500, 'kcal/(mol*K)', dCp)
-		#self.Cp[2].units = 'J/(mol*K)'
-		#self.Cp[3] = pq.UncertainQuantity(Cp600, 'kcal/(mol*K)', dCp)
-		#self.Cp[3].units = 'J/(mol*K)'
-		#self.Cp[4] = pq.UncertainQuantity(Cp800, 'kcal/(mol*K)', dCp)
-		#self.Cp[4].units = 'J/(mol*K)'
-		#self.Cp[5] = pq.UncertainQuantity(Cp1000, 'kcal/(mol*K)', dCp)
-		#self.Cp[5].units = 'J/(mol*K)'
-		#self.Cp[6] = pq.UncertainQuantity(Cp1500, 'kcal/(mol*K)', dCp)
-		#self.Cp[6].units = 'J/(mol*K)'
-		self.comment = comment
-
-	def __add__(self, other):
-		"""
-		Add two sets of thermodynamic data together. All parameters are
-		additive.
-		"""
-		new = ThermoGAData()
-		new.H298 = self.H298 + other.H298
-		new.S298 = self.S298 + other.S298
-		new.Cp = []
-		for i in range(len(self.Cp)):
-			new.Cp.append(self.Cp + other.Cp)
-		new.comment = self.comment + '; ' + other.comment
-		return new
-
-	def heatCapacity(self, T):
-		"""
-		Return the heat capacity at the specified temperature `T`. This is done
-		via linear interpolation between the provided values.
-		"""
-		T.units = 'K'; T = float(T)
-		if T < 300.0:
-			raise TemperatureOutOfRangeException('No thermodynamic data available for T < 300 K.')
-		# Use Cp(1500 K) if T > 1500 K
-		elif T > 1500.0: T = 1500.0
-
-		Cpfun = scipy.interpolate.interp1d(ThermoGAData.CpTlist, self.Cp)
-		return pq.Quantity(Cpfun(T), 'J/(mol*K)')
-
-	def enthalpy(self, T):
-		"""
-		Return the enthalpy of formation at the specified temperature `T`.
-		"""
-		T.units = 'K'; T = float(T)
-		if T < 300.0:
-			raise TemperatureOutOfRangeException('No thermodynamic data available for T < 300 K.')
-
-	def getCpLinearization(self):
-		slope = []; intercept = []
-		for i in range(0, len(self.Cp)-1):
-			slope.append((self.Cp[i+1] - self.Cp[i]) / (ThermoGAData.CpTlist[i+1] - ThermoGAData.CpTlist[i]))
-			print slope, ThermoGAData.CpTlist[i], slope * ThermoGAData.CpTlist[i]
-			quit()
-			intercept.append(self.Cp[i] - slope[i] * ThermoGAData.CpTlist[i])
-		return slope, intercept
-
-	def toXML(self, dom, root):
-
-		thermo = dom.createElement('thermo')
-		root.appendChild(thermo)
-
-		self.valueToXML(dom, thermo, 'enthalpyOfFormation', self.H298, '298 K')
-		self.valueToXML(dom, thermo, 'entropyOfFormation', self.S298, '298 K')
-		self.valueToXML(dom, thermo, 'heatCapacity', self.Cp[0], '300 K')
-		self.valueToXML(dom, thermo, 'heatCapacity', self.Cp[1], '400 K')
-		self.valueToXML(dom, thermo, 'heatCapacity', self.Cp[2], '500 K')
-		self.valueToXML(dom, thermo, 'heatCapacity', self.Cp[3], '600 K')
-		self.valueToXML(dom, thermo, 'heatCapacity', self.Cp[4], '800 K')
-		self.valueToXML(dom, thermo, 'heatCapacity', self.Cp[5], '1000 K')
-		self.valueToXML(dom, thermo, 'heatCapacity', self.Cp[6], '1500 K')
-
-		element = dom.createElement('comment')
-		thermo.appendChild(element)
-		comment = dom.createTextNode(self.comment)
-		element.appendChild(comment)
-
-
-	def valueToXML(self, dom, root, name, value, temp):
-		element = dom.createElement(name)
-		root.appendChild(element)
-
-		units = str(value.units).split()[1]
-
-		element.setAttribute('temperature', temp)
-		element.setAttribute('units', units)
-		element.setAttribute('uncertainty', str(value.uncertainty))
-
-		valueNode = dom.createTextNode(str(float(value)))
-		element.appendChild(valueNode)
 
 ################################################################################
 
