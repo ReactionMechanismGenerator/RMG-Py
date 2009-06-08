@@ -32,11 +32,27 @@
 Contains classes describing chemical entities: elements, atoms, bonds, species, etc.
 """
 
+import logging
 import quantities as pq
 import pybel
 import openbabel
 
 import graph
+
+################################################################################
+
+class InvalidAdjacencyListException(Exception):
+	"""
+	An exception used when parsing an adjacency list to indicate that it is
+	invalid. The label of the adjacency list is stored in the `label` attribute.
+	"""
+
+	def __init__(self, label):
+		self.label = label
+
+	def __str__(self):
+		return 'Invalid adjacency list: ' + self.label
+
 
 ################################################################################
 
@@ -376,12 +392,35 @@ class Atom(object):
 		"""
 		return len(self.label) > 0
 
+	def isElement(self, symbol):
+		"""
+		Return :data:`True` if the atom has the element with the symbol
+		`symbol` and :data:`False` otherwise.
+		"""
+		if len(self._atomType) == 0 or len(self._atomType) > 1: return False
+		elif self.atomType.element is None: return False
+		else: return self.atomType.element.symbol == symbol
+
 	def isHydrogen(self):
 		"""
 		Return :data:`True` if the atom is a hydrogen atom and :data:`False`
 		otherwise.
 		"""
-		return self.atomType.element.symbol == 'H'
+		return self.isElement('H')
+
+	def isCarbon(self):
+		"""
+		Return :data:`True` if the atom is a carbon atom and :data:`False`
+		otherwise.
+		"""
+		return self.isElement('C')
+
+	def isOxygen(self):
+		"""
+		Return :data:`True` if the atom is an oxygen atom and :data:`False`
+		otherwise.
+		"""
+		return self.isElement('O')
 
 	def isNonHydrogen(self):
 		"""
@@ -494,6 +533,13 @@ class Bond:
 		"""
 		return self.bondType.label == 'T'
 
+	def isBenzene(self):
+		"""
+		Return :data:`True` if the bond represents a benzene (aromatic) bond and
+		:data:`False` otherwise.
+		"""
+		return self.bondType.label == 'B'
+
 	def canIncreaseOrder(self):
 		"""
 		Return :data:`True` if the bond order can be increased by one.
@@ -542,9 +588,11 @@ class Structure(graph.ChemGraph):
 		Convert a string adjacency list `adjlist` into a structure object.
 		"""
 
-		atoms = []; bonds = []; atomdict = {}
+		atoms = []; bonds = []; atomdict = {}; bonddict = {}
 
 		lines = adjlist.splitlines()
+
+		label = lines[0]
 
 		for line in lines[1:]:
 
@@ -553,7 +601,7 @@ class Structure(graph.ChemGraph):
 			# Skip if blank line
 			if len(data) == 0:
 				continue
-				
+
 			# First item is index for atom
 			# Sometimes these have a trailing period (as if in a numbered list),
 			# so remove it just in case
@@ -588,6 +636,8 @@ class Structure(graph.ChemGraph):
 			atoms.append(atom)
 			atomdict[aid] = atom
 
+			bonddict[aid] = {}
+
 			# Process list of bonds
 			for datum in data[index+2:]:
 
@@ -607,8 +657,21 @@ class Structure(graph.ChemGraph):
 					bond = Bond([atomdict[aid], atomdict[aid2]], btype)
 					bonds.append(bond)
 
+				bonddict[aid][aid2] = btype
+
+		# Check consistency using bonddict
+		for atom1 in bonddict:
+			for atom2 in bonddict[atom1]:
+				if atom1 not in bonddict[atom2]:
+					raise InvalidAdjacencyListException(label)
+				elif bonddict[atom1][atom2] != bonddict[atom2][atom1]:
+					raise InvalidAdjacencyListException(label)
+
+
 		# Create and return functional group or species
-		self.initialize(atoms, bonds)				
+		self.initialize(atoms, bonds)
+		self.updateAtomTypes()
+
 
 	def fromCML(self, cmlstr):
 		"""
@@ -728,6 +791,71 @@ class Structure(graph.ChemGraph):
 		dom2 = xml.dom.minidom.parseString(self.toCML())
 		cml.appendChild(dom2.documentElement)
 
+	def updateAtomTypes(self):
+		"""
+		Iterate through the atoms in the structure, checking their atom types
+		to ensure they are correct (i.e. accurately describe their local bond
+		environment) and complete (i.e. are as detailed as possible).
+		"""
+
+		# NOTE: Does not yet process CO atom type!
+
+		for atom1 in self.atoms():
+			# Only works for single atom types, not lists
+			if atom1.atomType.__class__ == list:
+				continue
+			# Skip generic atom types
+			if atom1.atomType.label == 'R' or atom1.atomType.label == 'R!H':
+				continue
+			# Count numbers of each bond type
+			single = 0; double = 0; triple = 0; benzene = 0; carbonyl = False
+			for atom2, bond12 in self.graph[atom1].iteritems():
+				if bond12.isSingle(): single += 1
+				elif bond12.isDouble(): double += 1
+				elif bond12.isTriple(): triple += 1
+				elif bond12.isBenzene(): benzene += 1
+				if atom1.isCarbon() and atom2.isOxygen() and bond12.isDouble():
+					carbonyl = True
+
+			# Use counts to determine proper atom type
+			atomType = atom1.atomType.element.symbol
+			if atomType == 'C':
+				if triple == 1: atomType = 'Ct'
+				elif single == 3 or single == 4: atomType = 'Cs'
+				elif double == 2: atomType = 'Cdd'
+				elif carbonyl: atomType = 'CO'
+				elif double == 1 and (single == 1 or single == 2): atomType = 'Cds'
+				elif double == 1: atomType = 'Cd'
+				elif benzene == 1 or benzene == 2: atomType = 'Cb'
+				elif benzene == 3: atomType = 'Cbf'
+			elif atomType == 'O':
+				if single == 1 or single == 2: atomType = 'Os'
+				elif double == 1: atomType = 'Od'
+
+			# Do nothing if suggested and specified atom types are identical
+			if atom1.atomType.label == atomType:
+				pass
+			# Do nothing if suggested atom type is element
+			elif atomType == atom1.atomType.element.symbol or atomType == 'Cd':
+				pass
+			# Do nothing if specified atom type is 'Cds' or 'Cdd' and suggested is 'Cd'
+			elif (atom1.atomType.label == 'Cds' or atom1.atomType.label == 'Cdd') and atomType == 'Cd':
+				pass
+			# Do nothing if specified atom type is 'Cbf' and suggested is 'Cb'
+			elif atom1.atomType.label == 'Cbf' and atomType == 'Cb':
+				pass
+			# Make change if specified atom type is element
+			elif atom1.atomType.label == atom1.atomType.element.symbol:
+				#logging.warning('Changed "' + atom1.atomType.label + '" to "' + atomType + '".')
+				atom1.atomType = atomTypes[atomType]
+			# Make change if specified atom type is 'Cd' and suggested is 'Cds' or 'Cdd'
+			elif atom1.atomType.label == 'Cd' and (atomType == 'Cds' or atomType == 'Cdd'):
+				#logging.warning('Changed "' + atom1.atomType.label + '" to "' + atomType + '".')
+				atom1.atomType = atomTypes[atomType]
+			# Else print warning
+			else:
+				logging.warning('Suggested atom type "' + atomType + '" does not match specified atom type "' + atom1.atomType.label + '".')
+			
 	def radicalCount(self):
 		"""
 		Get the number of radicals in the structure.

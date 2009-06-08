@@ -70,13 +70,15 @@ class ThermoGAData:
 
 	CpTlist = pq.Quantity([300.0, 400.0, 500.0, 600.0, 800.0, 1000.0, 1500.0], 'K')
 
-	def __init__(self, H298=0.0, S298=0.0, Cp300=0.0, Cp400=0.0, Cp500=0.0, \
-	             Cp600=0.0, Cp800=0.0, Cp1000=0.0, Cp1500=0.0, comment=''):
+	def __init__(self, H298=pq.UncertainQuantity(0.0, 'kcal/mol', 0.0), \
+			S298=pq.UncertainQuantity(0.0, 'cal/(mol*K)', 0.0),
+			Cp=pq.UncertainQuantity([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], 'kcal/(mol*K)', [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]), \
+			comment=''):
 		"""Initialize a set of group additivity thermodynamic data."""
 
 		self.H298 = H298
 		self.S298 = S298
-		self.Cp = [Cp300, Cp400, Cp500, Cp600, Cp800, Cp1000, Cp1500]
+		self.Cp = Cp
 		self.comment = comment
 
 	def fromDatabase(self, data, comment):
@@ -109,8 +111,10 @@ class ThermoGAData:
 		new.S298 = self.S298 + other.S298
 		new.Cp = []
 		for i in range(len(self.Cp)):
-			new.Cp.append(self.Cp + other.Cp)
-		new.comment = self.comment + '; ' + other.comment
+			new.Cp.append(self.Cp[i] + other.Cp[i])
+		if self.comment == '': new.comment = other.comment
+		elif other.comment == '': new.comment = self.comment
+		else: new.comment = self.comment + '+ ' + other.comment
 		return new
 
 	def toXML(self, dom, root):
@@ -145,6 +149,18 @@ class ThermoGAData:
 
 		valueNode = dom.createTextNode(str(float(value)))
 		element.appendChild(valueNode)
+
+	def __str__(self):
+		"""
+		Return a string summarizing the thermodynamic data.
+		"""
+		string = ''
+		string += 'Enthalpy of formation: ' + str(self.H298) + '\n'
+		string += 'Entropy of formation: ' + str(self.S298) + '\n'
+		for i in range (0, len(self.Cp)):
+			string += 'Heat capacity at ' + str(ThermoGAData.CpTlist[i]) + ': ' + str(self.Cp[i]) + '\n'
+		string += 'Comment: ' + str(self.comment)
+		return string
 
 ################################################################################
 
@@ -217,33 +233,17 @@ class ThermoDatabase(data.Database):
 		matches the local structure around `atom` in `structure`.
 		"""
 
-#		if root is None: root = self.tree.top[0]
-#
-#		next = None
-#		for child in self.tree.children[root]:
-#			group = self.dictionary[child]
-#			center = group.getCenter()
-#			if atom.equivalent(center):
-#				match, map12, map21 = structure.isSubgraphIsomorphic(group, {atom:center}, {center:atom})
-#				if match:
-#					next = child
-#
-#		if next is not None:
-#			return self.descendTree(structure, atom, next)
-#		else:
-#			return root
+		if root is None: root = self.tree.top[0]
 
+		next = None
+		for child in self.tree.children[root]:
+			group = self.dictionary[child]
+			center = group.getCenter()
+			if atom.equivalent(center):
+				match, map12, map21 = structure.isSubgraphIsomorphic(group, {center:atom}, {atom:center})
+				if match:
+					next = child
 
-		group = self.dictionary['Cs-COsHH']
-		center = group.getCenter()
-		if atom.equivalent(center):
-			#match, map12, map21 = structure.isSubgraphIsomorphic(group, {atom:center}, {center:atom})
-			match, map12, map21 = structure.isSubgraphIsomorphic(group, {}, {})
-			print match, map12, map21
-			if match:
-				next = child
-		quit()
-		
 		if next is not None:
 			return self.descendTree(structure, atom, next)
 		else:
@@ -364,13 +364,15 @@ class ThermoDatabaseSet:
 
 		node = database.descendTree(structure, atom)
 
+		data = database.library[node]
+
 		result = ''
 		while node is not None:
 			result = ' -> ' + node + result
 			node = database.tree.parent[node]
 		print result[4:]
 
-		return None
+		return data
 
 
 ################################################################################
@@ -389,18 +391,28 @@ if __name__ == '__main__':
 
 	adjlist = \
 """
-1 Cs 0 {2,S} {3,S} {4,S} {5,S}
-2 Cs 0 {1,S} {6,S} {7,S} {8,S}
-3 H 0 {1,S}
-4 H 0 {1,S}
-5 H 0 {1,S}
-6 H 0 {2,S}
-7 H 0 {2,S}
-8 H 0 {2,S}
+1 C 0 {2,D} {7,S} {8,S}
+2 C 0 {1,D} {3,S} {9,S}
+3 C 0 {2,S} {4,D} {10,S}
+4 C 0 {3,D} {5,S} {11,S}
+5 C 0 {4,S} {6,S} {12,S} {13,S}
+6 C 0 {5,S} {14,S} {15,S} {16,S}
+7 H 0 {1,S}
+8 H 0 {1,S}
+9 H 0 {2,S}
+10 H 0 {3,S}
+11 H 0 {4,S}
+12 H 0 {5,S}
+13 H 0 {5,S}
+14 H 0 {6,S}
+15 H 0 {6,S}
+16 H 0 {6,S}
 """
+
 
 	structure = chem.Structure()
 	structure.fromAdjacencyList(adjlist)
+	structure.updateAtomTypes()
 
 	print structure.toInChI()
 
@@ -410,4 +422,5 @@ if __name__ == '__main__':
 			thermoData = database.getThermoData(structure, atom)
 			if thermoData is not None:
 				totalThermoData += thermoData
-	
+
+	print totalThermoData

@@ -244,8 +244,10 @@ def VF2_isomorphic(graph1, graph2, subgraph=False, findAll=False, mapping12={}, 
 	:data:`True` if graph2 is a potential subgraph of graph1. `findAll` is
 	used to specify whether all isomorphisms should be returned, or only the
 	first.
-	"""	
-	return __VF2_match(graph1, graph2, mapping21, mapping12, {}, {}, subgraph, findAll)
+	"""
+	terminals1 = __VF2_terminals(graph1, mapping21)
+	terminals2 = __VF2_terminals(graph2, mapping12)
+	return __VF2_match(graph1, graph2, mapping21, mapping12, terminals1, terminals2, subgraph, findAll)
 
 def __VF2_feasible(graph1, graph2, vertex1, vertex2, mapping21, mapping12, \
                  terminals1, terminals2, subgraph):

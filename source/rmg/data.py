@@ -142,9 +142,12 @@ class Dictionary(dict):
 				self[label] = 'union'
 			# Otherwise convert adjacency list to structure
 			else:
-				structure = chem.Structure()
-				structure.fromAdjacencyList(record)
-				self[label] = structure
+				try:
+					structure = chem.Structure()
+					structure.fromAdjacencyList(record)
+					self[label] = structure
+				except chem.InvalidAdjacencyListException, e:
+					logging.error('\t\t\t' + str(e))
 
 	def toXML(self, dom, root):
 		"""
