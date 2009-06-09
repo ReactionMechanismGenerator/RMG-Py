@@ -26,9 +26,9 @@
 9       on      1,3_Insertion_CO2
 0       on      1,3_Insertion_ROR
 11      on      1+2_Cycloaddition
-12      on      2+2_cycloaddition_Cd
-13      on      2+2_cycloaddition_CO
-14      on      2+2_cycloaddition_CCO
+12      on      2+2_Cycloaddition_Cd
+13      on      2+2_Cycloaddition_CO
+14      on      2+2_Cycloaddition_CCO
 15      on      Diels_alder_addition
 16      on      intra_H_migration
 17      on      HO2_Elimination_from_PeroxyRadical

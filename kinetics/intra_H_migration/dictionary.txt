@@ -6,7 +6,7 @@
 //for cases where the radical center or XH has "outside" ring attached to it,
 //for e.g. cy3(.)CH3 --> cy3H-CH2(.)
 //C.D.W. 04/20/03 : added R3H_SS_12cy3, etc. for cases where there is "inside" ring,
-//for e.g. cyc(CH2CH(.)CH)—CH3 --> cyc(CH3CH2CH)-CH2(.)
+//for e.g. cyc(CH2CH(.)CH)-CH3 --> cyc(CH3CH2CH)-CH2(.)
 //1) Definition of "inside" ring : when at least two of the *1,*2,*4,..atoms 
 //are members of that ring. 
 //2) Added also R3H_SS_2Cd (for .C-Cd-CH case)
@@ -400,7 +400,7 @@ R4H_SBS
 
 R4H_SBB
 1 *1 {R!H} 1 {2,S}
-2 *4 Cb 0 {1,S}, {3,B}, {6,B}
+2 *4 Cb 0 {1,S}, {3,B}
 3 *5 Cbf 0 {2,B}, {4,B}
 4 *2 Cb 0 {3,B}, {5,S}
 5 *3 H 0 {4,S}
@@ -1520,7 +1520,7 @@ Cs_H_out_TwoDe
 4 {Cd,Ct,Cb,CO} 0 {1,S}
 
 Cd_H_out_double
-1 *2 Cd 0 {2,S}{3,D}
+1 *2 Cd 0 {2,S} {3,D}
 2 *3 H 0 {1,S}
 3 {Cd,O} 0 {1,D}
 
@@ -1535,7 +1535,7 @@ Cd_H_out_doubleO
 3 O 0 {1,D}
 
 Cd_H_out_single
-1 *2 Cd 0 {2,S}{3,S}
+1 *2 Cd 0 {2,S} {3,S}
 2 *3 H 0 {1,S}
 3 R 0 {1,S}
 

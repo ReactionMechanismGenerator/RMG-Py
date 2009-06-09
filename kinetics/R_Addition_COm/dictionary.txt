@@ -242,7 +242,7 @@ CO_rad/OneDe
 3 {Cd,Ct,Cb,CO} 0 {1,S}
 
 O_rad
-1 *2 O 1 {2,S}
+1 *2 O 1
 
 O_pri_rad
 1 *2 O 1 {2,S}

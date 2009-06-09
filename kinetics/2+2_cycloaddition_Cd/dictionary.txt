@@ -738,7 +738,7 @@ mb_OC_Nd2
 1 *3 Od 0 {2,D}
 2 *4 CO 0 {1,D} {3,S} {4,S}
 3 {Cs,O} 0 {2,S}
-4 {Cs,O} 0 {3,S}
+4 {Cs,O} 0 {2,S}
 
 mb_OC_NdDe
 1 *3 Od 0 {2,D}
