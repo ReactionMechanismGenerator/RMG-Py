@@ -345,45 +345,56 @@ class Atom(object):
 		they have the same element and electronic state.
 		"""
 
+		atomTypesMatch = False; electronStatesMatch = False
+
 		for atomType1 in self._atomType:
 			for atomType2 in other._atomType:
 
 				# If either is a generic atom type, then always return True
 				if atomType1.label == 'R' or atomType2.label == 'R':
-					return True
+					atomTypesMatch = True
 				# If either is a generic non-hydrogen atom type, then return
 				# True if any atom type in the remaining one is non-hydrogen
 				elif atomType1.label == 'R!H' and atomType2.label != 'H':
-					return True
+					atomTypesMatch = True
 				elif atomType2.label == 'R!H' and atomType1.label != 'H':
-					return True
+					atomTypesMatch = True
 				# If either represents an element without surrounding bond info,
 				# match remaining to any with the same element
 				elif atomType1.label == atomType1.element.symbol == \
 						atomType2.element.symbol:
-					return True
+					atomTypesMatch = True
 				elif atomType2.label == atomType2.element.symbol == \
 						atomType1.element.symbol:
-					return True
+					atomTypesMatch = True
 				# Special case: 'Cd' matches any of 'Cd', 'Cdd', or 'Cds'
 				elif atomType1.label == 'Cd' and (atomType2.label == 'Cd' or \
 						atomType2.label == 'Cdd' or atomType2.label == 'Cds'):
-					return True
+					atomTypesMatch = True
 				elif atomType2.label == 'Cd' and (atomType1.label == 'Cd' or \
 						atomType1.label == 'Cdd' or atomType1.label == 'Cds'):
-					return True
+					atomTypesMatch = True
 				# Otherwise labels must match exactly
 				elif atomType1.label == atomType2.label:
-					return True
+					atomTypesMatch = True
 
-		# At this point all tests have failed, no atoms are not equivalent
-		return False
+		for elecState1 in self._electronState:
+			for elecState2 in other._electronState:
+
+				if elecState1.label == '2' and (elecState2.label == '2' or elecState2.label == '2S' or elecState2.label == '2T'):
+					electronStatesMatch = True
+				elif (elecState1.label == '2' or elecState1.label == '2S' or elecState1.label == '2T') and elecState2.label == '2':
+					electronStatesMatch = True
+				elif elecState1.label == elecState2.label:
+					electronStatesMatch = True
+
+		return (atomTypesMatch and electronStatesMatch)
 	
 	def copy(self):
 		"""
 		Generate a copy of the current atom.
 		"""
-		return Atom(self.element, self.electronState, self.charge, self.label)
+		return Atom(self.atomType, self.electronState, self.charge, self.label)
 
 	def isCenter(self):
 		"""
@@ -429,9 +440,22 @@ class Atom(object):
 		"""
 		return self.atomType.element.symbol != 'H'
 
-	def increaseRadical(self):
+	def hasFreeElectron(self):
 		"""
-		Increase the number of radical electrons on this atom by one.
+		Return :data:`True` if the atom has one or more unpaired electrons and
+		:data:`False` otherwise.
+		"""
+		return self.electronState.order > 0
+
+	def freeElectronCount(self):
+		"""
+		Return the number of unpaired electrons.
+		"""
+		return self.electronState.order
+
+	def increaseFreeElectron(self):
+		"""
+		Increase the number of unpaired electrons on this atom by one.
 		"""
 		if self.electronState.label == '0': self.electronState = electronStates['1']
 		elif self.electronState.label == '1': self.electronState = electronStates['2']
@@ -441,9 +465,9 @@ class Atom(object):
 		else:
 			logging.exception('Cannot increase the radical number of this atom.')
 
-	def decreaseRadical(self):
+	def decreaseFreeElectron(self):
 		"""
-		Decrease the number of radical electrons on this atom by one.
+		Decrease the number of unpaird electrons on this atom by one.
 		"""
 		if self.electronState.label == '1': self.electronState = electronStates['0']
 		elif self.electronState.label == '2': self.electronState = electronStates['1']
@@ -500,9 +524,10 @@ class Bond:
 		Return :data:`True` if `self` and `other` are equivalent bonds, i.e.
 		they have the same bond type.
 		"""
-		for bondType in other._bondType:
-			if self.bondType == bondType:
-				return True
+		for bondType1 in self._bondType:
+			for bondType2 in other._bondType:
+				if bondType1 == bondType2:
+					return True
 
 		return False
 
@@ -662,7 +687,9 @@ class Structure(graph.ChemGraph):
 		# Check consistency using bonddict
 		for atom1 in bonddict:
 			for atom2 in bonddict[atom1]:
-				if atom1 not in bonddict[atom2]:
+				if atom2 not in bonddict:
+					raise InvalidAdjacencyListException(label)
+				elif atom1 not in bonddict[atom2]:
 					raise InvalidAdjacencyListException(label)
 				elif bonddict[atom1][atom2] != bonddict[atom2][atom1]:
 					raise InvalidAdjacencyListException(label)
@@ -844,12 +871,15 @@ class Structure(graph.ChemGraph):
 			# Do nothing if specified atom type is 'Cbf' and suggested is 'Cb'
 			elif atom1.atomType.label == 'Cbf' and atomType == 'Cb':
 				pass
+			# Do nothing if specified atom type is 'Cdd' and suggested is 'CO'
+			elif atom1.atomType.label == 'Cdd' and atomType == 'CO':
+				pass
 			# Make change if specified atom type is element
 			elif atom1.atomType.label == atom1.atomType.element.symbol:
 				#logging.warning('Changed "' + atom1.atomType.label + '" to "' + atomType + '".')
 				atom1.atomType = atomTypes[atomType]
 			# Make change if specified atom type is 'Cd' and suggested is 'Cds' or 'Cdd'
-			elif atom1.atomType.label == 'Cd' and (atomType == 'Cds' or atomType == 'Cdd'):
+			elif atom1.atomType.label == 'Cd' and (atomType == 'Cds' or atomType == 'Cdd' or atomType == 'CO'):
 				#logging.warning('Changed "' + atom1.atomType.label + '" to "' + atomType + '".')
 				atom1.atomType = atomTypes[atomType]
 			# Else print warning
@@ -864,51 +894,6 @@ class Structure(graph.ChemGraph):
 		for atom in self.atoms():
 			radical += atom.electronState.order
 		return radical
-
-	def generateResonanceIsomers(self):
-		"""
-		Generate a list of all of the resonance isomers of this structure.
-		"""
-
-		isomers = [self]
-
-		# Radicals
-		if self.radicalCount() > 0:
-			# Iterate over resonance isomers
-			index = 0
-			while index < len(isomers):
-				isomer = isomers[index]
-				# Iterate over radicals in structure; use indices because the
-				# pointer to isomer (but not its contents) may be changing
-				for i in range(0, len(isomer.atoms())):
-					atom = isomer.atoms()[i]
-					paths = isomer.findAllDelocalizationPaths(atom)
-					for path in paths:
-
-						# Make a copy of isomer
-						oldIsomer = isomer.copy()
-						isomers[index] = oldIsomer
-						newIsomer = isomer
-						isomer = oldIsomer
-
-						# Adjust to (potentially) new resonance isomer
-						atom1, atom2, atom3, bond12, bond23 = path
-						atom1.decreaseRadical()
-						atom3.increaseRadical()
-						bond12.increaseOrder()
-						bond23.decreaseOrder()
-
-						# Append to isomer list if unique
-						found = False
-						for isom in isomers:
-							if isom.isIsomorphic(newIsomer): found = True
-						if not found:
-							isomers.append(newIsomer)
-
-				# Move to next resonance isomer
-				index += 1
-
-		return isomers
 
 	def copy(self):
 		"""
@@ -956,77 +941,6 @@ class Structure(graph.ChemGraph):
 		for atom in self.atoms():
 			if atom.isCenter(): return atom
 		return None
-
-	def getThermoData(self):
-		"""
-		Calculate the thermodynamic parameters for this structure using the
-		thermo database to look up group additivity values for each heavy
-		(i.e. non-hydrogen) atom.
-		"""
-
-		# Initialize thermo data
-		self.thermo = ThermoGAData()
-
-		# Iterate over heavy (non-hydrogen) atoms
-		for atom in self.atoms():
-			if atom.isNonHydrogen():
-				thermoData = Structure.thermoDatabase.getThermoData(self, atom)
-				if thermoData is not None:
-					self.thermo += thermoData
-
-################################################################################
-
-class Species:
-	"""
-	Represent a chemical species (including all of its resonance forms). Each
-	species has a unique integer `id` assigned automatically by RMG and a
-	not-necessarily unique string `label`. The *structure* variable contains a
-	list of :class:`Structure` objects representing each resonance form. The
-	`reactive` flag is :data:`True` if the species can react and :data:`False`
-	if it is inert.
-	"""
-
-	# A static counter for the number of species created since the RMG job began.
-	numSpecies = 0
-
-	def __init__(self, label='', structure=None, reactive=True):
-		"""
-		Initialize a Species object.
-		"""
-		Species.numSpecies += 1
-		self.id = Species.numSpecies
-		self.label = label
-		self.structure = [structure]
-		self.reactive = reactive
-
-		self.thermo = None
-		self.lennardJones = None
-		self.spectralData = None
-
-		if structure is not None:
-			self.__generateData()
-
-	def __generateData(self):
-		"""
-		Generate supplemental parameters and information about the species:
-		resonance isomers, thermodynamic data, etc.
-		"""
-		self.structure = self.structure[0].generateResonanceIsomers()
-		#self.getThermoData()
-
-	def getThermoData(self):
-		"""
-		Generate thermodynamic data for the species by use of the thermo
-		database.
-		"""
-		for structure in self.structure:
-			structure.getThermoData()
-
-	def __str__(self):
-		"""
-		Return a string representation of the species, in the form 'label(id)'.
-		"""
-		return self.label + '(' + str(self.id) + ')'
 
 ################################################################################
 

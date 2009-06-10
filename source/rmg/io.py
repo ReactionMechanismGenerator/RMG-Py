@@ -38,6 +38,7 @@ import chem
 import data
 import thermo
 import kinetics
+from species import Species
 
 """
 Contains functions for manipulation of RMG input and output files.
@@ -146,8 +147,8 @@ def readInputFile(fstr):
 			if database[1] == 'general':
 				if generalDatabaseCount == 0:
 					logging.debug('General database: ' + database[2])
-					thermoDatabase = thermo.ThermoDatabaseSet()
-					thermoDatabase.load(database[2] + '/')
+					thermo.database = thermo.ThermoDatabaseSet()
+					thermo.database.load(database[2] + '/')
 					kineticsDatabase = kinetics.ReactionFamilySet()
 					kineticsDatabase.load(database[2] + '/')
 				generalDatabaseCount += 1
@@ -193,7 +194,7 @@ def readInputFile(fstr):
 				raise InvalidInputFileException('Species '+label+' missing structure information.' )
 			
 			# Create a new species and append the species to the core
-			species = chem.Species(label, structure, reactive)
+			species = Species(label, structure, reactive)
 			reactionModel.core.species.append(species)
 			
 			# Add to local species dictionary (for matching with other parts of file)

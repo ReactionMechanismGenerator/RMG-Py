@@ -191,11 +191,12 @@ class ChemGraph:
 		"""
 		self.graph[atom] = {}
 		
-	def addBond(self, atom1, atom2, bond):
+	def addBond(self, bond):
 		"""
 		Add `bond` to the graph as an edge connecting atoms `atom1` and
 		`atom2`, which must already be present in the graph.
 		"""
+		atom1 = bond.atoms[0]; atom2 = bond.atoms[1]
 		self.graph[atom1][atom2] = bond
 		self.graph[atom2][atom1] = bond
 		
@@ -209,6 +210,28 @@ class ChemGraph:
 				return True
 		return False
 	
+	def removeAtom(self, atom):
+		"""
+		Remove `atom` from the graph as a vertex. Also removes all bonds
+		associated with `atom`. Does not remove atoms that no longer have any
+		bonds as a result of this removal.
+		"""
+		if atom not in self.graph: return
+		for atom2 in self.graph:
+			if atom2 is not atom:
+				if atom in self.graph[atom2]:
+					del self.graph[atom2][atom]
+		del self.graph[atom]
+
+	def removeBond(self, bond):
+		"""
+		Remove `bond` from the graph. Does not remove atoms that no longer have
+		any bonds as a result of this removal.
+		"""
+		atom1 = bond.atoms[0]; atom2 = bond.atoms[1]
+		del self.graph[atom1][atom2]
+		del self.graph[atom2][atom1]
+
 	def isIsomorphic(self, other):
 		"""
 		Returns :data:`True` if two graphs are isomorphic and :data:`False`

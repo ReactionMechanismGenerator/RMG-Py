@@ -106,6 +106,8 @@ class ThermoGAData:
 		Add two sets of thermodynamic data together. All parameters are
 		additive.
 		"""
+		if other is None: other = ThermoGAData()
+		
 		new = ThermoGAData()
 		new.H298 = self.H298 + other.H298
 		new.S298 = self.S298 + other.S298
@@ -227,57 +229,98 @@ class ThermoDatabase(data.Database):
 
 		return dom.toprettyxml()
 
+	def getThermoData(self, structure, atom):
+		"""
+		Determine the group additivity thermodynamic data for the atom `atom`
+		in the structure `structure`.
+		"""
+
+		node = self.descendTree(structure, atom, None)
+		#print node
+		
+		if node not in self.library:
+			# No data present (e.g. bath gas)
+			data = ThermoGAData()
+		else:
+			data = self.library[node]
+
+		while data.__class__ != ThermoGAData and data is not None:
+			if data[0].__class__ == str or data[0].__class__ == unicode:
+				data = self.library[data[0]]
+
+#		result = ''
+#		while node is not None:
+#			result = ' -> ' + node + result
+#			node = self.tree.parent[node]
+#		print result[4:]
+
+		return data
+
+	def matchNodeToStructure(self, node, structure, atom):
+		"""
+		Return :data:`True` if the `structure` centered at `atom` matches the
+		structure at `node` in the dictionary.
+		"""
+		group = self.dictionary[node]
+		center = group.getCenter()
+		if atom.equivalent(center):
+			match, map12, map21 = structure.isSubgraphIsomorphic(group, {center:atom}, {atom:center})
+			return match
+		else:
+			return False
+
 	def descendTree(self, structure, atom, root=None):
 		"""
 		Descend the tree in search of the functional group node that best
 		matches the local structure around `atom` in `structure`.
 		"""
 
-		if root is None: root = self.tree.top[0]
+		if root is None:
+			root = self.tree.top[0]
+			if not self.matchNodeToStructure(root, structure, atom):
+				return None
 
 		next = None
 		for child in self.tree.children[root]:
-			group = self.dictionary[child]
-			center = group.getCenter()
-			if atom.equivalent(center):
-				match, map12, map21 = structure.isSubgraphIsomorphic(group, {center:atom}, {atom:center})
-				if match:
-					next = child
+			if self.matchNodeToStructure(child, structure, atom):
+				next = child
 
 		if next is not None:
 			return self.descendTree(structure, atom, next)
 		else:
 			return root
 
+	def contains(self, structure):
+		"""
+		Search the dictionary for the specified `structure`. If found, the label
+		corresponding to the structure is returned. If not found, :data:`None`
+		is returned.
+		"""
+		for label, struct in self.dictionary.iteritems():
+			match, map12, map21 = structure.isIsomorphic(struct)
+			if match:
+				return label
+		return None
+
 ################################################################################
 
 class ThermoDatabaseSet:
 	"""
-	A set of thermodynamics group additivity databases, representing:
-
-	- 1,5-interactions
-
-	- Gauche interactions
-
-	- Acyclic functional groups
-
-	- Other functional groups
-
-	- Radical functional groups
-
-	- Cyclic functional groups
-
-	- Primary thermo library
+	A set of thermodynamics group additivity databases, consisting of a primary
+	database of functional groups and a number of secondary databases to provide
+	corrections for 1,5-interactions, gauche interactions, radicals, rings,
+	and other functionality. There is also a primary library containing data for
+	individual species.
 	"""
 
 
 	def __init__(self):
-		self.acyclicDatabase = ThermoDatabase()
-		self.cyclicDatabase = ThermoDatabase()
+		self.groupDatabase = ThermoDatabase()
 		self.int15Database = ThermoDatabase()
 		self.gaucheDatabase = ThermoDatabase()
 		self.otherDatabase = ThermoDatabase()
 		self.radicalDatabase = ThermoDatabase()
+		self.ringDatabase = ThermoDatabase()
 		self.primaryDatabase = ThermoDatabase()
 
 	def load(self, datapath):
@@ -288,15 +331,10 @@ class ThermoDatabaseSet:
 
 		logging.debug('\tThermodynamics databases:')
 
-		self.acyclicDatabase.load(datapath + 'thermo/Group_Dictionary.txt', \
+		self.groupDatabase.load(datapath + 'thermo/Group_Dictionary.txt', \
 			datapath + 'thermo/Group_Tree.txt', \
 			datapath + 'thermo/Group_Library.txt')
-		logging.debug('\t\tAcyclic functional groups')
-
-		self.cyclicDatabase.load(datapath + 'thermo/Ring_Dictionary.txt', \
-			datapath + 'thermo/Ring_Tree.txt', \
-			datapath + 'thermo/Ring_Library.txt')
-		logging.debug('\t\tCyclic functional groups')
+		logging.debug('\t\tFunctional groups')
 
 		self.int15Database.load(datapath + 'thermo/15_Dictionary.txt', \
 			datapath + 'thermo/15_Tree.txt', \
@@ -311,12 +349,17 @@ class ThermoDatabaseSet:
 		self.otherDatabase.load(datapath + 'thermo/Other_Dictionary.txt', \
 			datapath + 'thermo/Other_Tree.txt', \
 			datapath + 'thermo/Other_Library.txt')
-		logging.debug('\t\tOther functional groups')
+		logging.debug('\t\tOther corrections')
 
 		self.radicalDatabase.load(datapath + 'thermo/Radical_Dictionary.txt', \
 			datapath + 'thermo/Radical_Tree.txt', \
 			datapath + 'thermo/Radical_Library.txt')
-		logging.debug('\t\tRadical functional groups')
+		logging.debug('\t\tRadical corrections')
+
+		self.ringDatabase.load(datapath + 'thermo/Ring_Dictionary.txt', \
+			datapath + 'thermo/Ring_Tree.txt', \
+			datapath + 'thermo/Ring_Library.txt')
+		logging.debug('\t\tRing corrections')
 
 		self.primaryDatabase.load(datapath + 'thermo/Primary_Dictionary.txt', \
 			'', \
@@ -325,12 +368,8 @@ class ThermoDatabaseSet:
 
 	def saveXML(self, datapath):
 
-		f = open(datapath + 'thermo/acyclics.xml', 'w')
-		f.write(self.acyclicDatabase.toXML())
-		f.close()
-
-		f = open(datapath + 'thermo/cyclics.xml', 'w')
-		f.write(self.cyclicDatabase.toXML())
+		f = open(datapath + 'thermo/group.xml', 'w')
+		f.write(self.groupDatabase.toXML())
 		f.close()
 
 		f = open(datapath + 'thermo/1,5-interactions.xml', 'w')
@@ -349,31 +388,98 @@ class ThermoDatabaseSet:
 		f.write(self.radicalDatabase.toXML())
 		f.close()
 
+		f = open(datapath + 'thermo/ring.xml', 'w')
+		f.write(self.ringDatabase.toXML())
+		f.close()
+
 		f = open(datapath + 'thermo/primary.xml', 'w')
 		f.write(self.primaryDatabase.toXML())
 		f.close()
 
-	def getThermoData(self, structure, atom):
+	def getThermoData(self, structure):
 		"""
-		Determine the group additivity thermodynamic data for the atom `atom`
-		in the structure `structure`.
+		Determine the group additivity thermodynamic data for the structure
+		`structure`.
 		"""
 
-		# Choose database to descend (assume acyclic for now)
-		database = self.acyclicDatabase
+		# First check to see if structure is in primary thermo library
+		label = self.primaryDatabase.contains(structure)
+		if label is not None:
+			return self.primaryDatabase.library[label]
 
-		node = database.descendTree(structure, atom)
+		thermoData = ThermoGAData()
 
-		data = database.library[node]
+		if structure.radicalCount() > 0:
+			# Make a copy of the structure so we don't change the original
+			struct = structure.copy()
+			# Saturate structure by replacing all radicals with bonds to 
+			# hydrogen atoms
+			added = {}
+			for atom in struct.atoms():
+				for i in range(0, atom.freeElectronCount()):
+					H = chem.Atom('H', '0')
+					bond = chem.Bond([atom, H], 'S')
+					struct.addAtom(H)
+					struct.addBond(bond)
+					atom.decreaseFreeElectron()
+					if atom not in added:
+						added[atom] = []
+					added[atom].append(bond)
+			# Get thermo estimate for saturated form of structure, including
+			# gauche and 1,5- interactions
+			thermoData = self.getThermoData(struct)
+			# For each radical site, get radical correction
+			# Only one radical site should be considered at a time; all others
+			# should be saturated with hydrogen atoms
+			for atom in added:
 
-		result = ''
-		while node is not None:
-			result = ' -> ' + node + result
-			node = database.tree.parent[node]
-		print result[4:]
+				# Remove the added hydrogen atoms and bond and restore the radical
+				for bond in added[atom]:
+					H = bond.atoms[1]
+					struct.removeBond(bond)
+					struct.removeAtom(H)
+					atom.increaseFreeElectron()
 
-		return data
+				thermoData += self.radicalDatabase.getThermoData(structure, atom)
+				
+				# Re-saturate
+				for bond in added[atom]:
+					H = bond.atoms[1]
+					struct.addAtom(H)
+					struct.addBond(bond)
+					atom.decreaseFreeElectron()
 
+			# Subtract the enthalpy of the added hydrogens
+			
+			# Correct the entropy for the symmetry number
+
+		else:
+			# Generate estimate of thermodynamics
+			for atom in structure.atoms():
+				# Iterate over heavy (non-hydrogen) atoms
+				if atom.isNonHydrogen():
+					# Get initial thermo estimate from main group database
+					thermoData += self.groupDatabase.getThermoData(structure, atom)
+					# Correct for gauche and 1,5- interactions
+					thermoData += self.gaucheDatabase.getThermoData(structure, atom)
+					thermoData += self.int15Database.getThermoData(structure, atom)
+
+			# Correct for rings
+
+			# Correct for other
+
+		return thermoData
+
+database = None
+
+################################################################################
+
+def getThermoData(structure):
+	"""
+	Get the thermodynamic data associated with `structure` by looking in the
+	loaded thermodynamic database.
+	"""
+	return database.getThermoData(structure)
 
 ################################################################################
 
@@ -389,24 +495,48 @@ if __name__ == '__main__':
 	database = ThermoDatabaseSet()
 	database.load(datapath)
 
+#	adjlist = \
+#"""
+#1 C 0 {2,D} {7,S} {8,S}
+#2 C 0 {1,D} {3,S} {9,S}
+#3 C 0 {2,S} {4,D} {10,S}
+#4 C 0 {3,D} {5,S} {11,S}
+#5 C 0 {4,S} {6,S} {12,S} {13,S}
+#6 C 0 {5,S} {14,S} {15,S} {16,S}
+#7 H 0 {1,S}
+#8 H 0 {1,S}
+#9 H 0 {2,S}
+#10 H 0 {3,S}
+#11 H 0 {4,S}
+#12 H 0 {5,S}
+#13 H 0 {5,S}
+#14 H 0 {6,S}
+#15 H 0 {6,S}
+#16 H 0 {6,S}
+#"""
+
+#	adjlist = \
+#"""
+#1 H 0 {2,S}
+#2 H 0 {1,S}
+#"""
+
+
 	adjlist = \
 """
-1 C 0 {2,D} {7,S} {8,S}
-2 C 0 {1,D} {3,S} {9,S}
-3 C 0 {2,S} {4,D} {10,S}
-4 C 0 {3,D} {5,S} {11,S}
-5 C 0 {4,S} {6,S} {12,S} {13,S}
-6 C 0 {5,S} {14,S} {15,S} {16,S}
+1 C 0 {2,S} {5,S} {6,S} {7,S}
+2 C 0 {1,S} {3,S} {8,S} {9,S}
+3 C 0 {2,S} {4,S} {10,S} {11,S}
+4 C 1 {3,S} {12,S} {13,S}
+5 H 0 {1,S}
+6 H 0 {1,S}
 7 H 0 {1,S}
-8 H 0 {1,S}
+8 H 0 {2,S}
 9 H 0 {2,S}
 10 H 0 {3,S}
-11 H 0 {4,S}
-12 H 0 {5,S}
-13 H 0 {5,S}
-14 H 0 {6,S}
-15 H 0 {6,S}
-16 H 0 {6,S}
+11 H 0 {3,S}
+12 H 0 {4,S}
+13 H 0 {4,S}
 """
 
 
@@ -416,11 +546,6 @@ if __name__ == '__main__':
 
 	print structure.toInChI()
 
-	totalThermoData = ThermoGAData()
-	for atom in structure.atoms():
-		if atom.isNonHydrogen():
-			thermoData = database.getThermoData(structure, atom)
-			if thermoData is not None:
-				totalThermoData += thermoData
+	thermoData = getThermoData(structure)
 
-	print totalThermoData
+	print thermoData
