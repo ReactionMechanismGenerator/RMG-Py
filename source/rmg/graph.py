@@ -246,6 +246,13 @@ class ChemGraph:
 		"""
 		return VF2_isomorphic(self.graph, other.graph, True, False, map12, map21)
 	
+	def findSubgraphIsomorphisms(self, other):
+		"""
+		Returns :data:`True` if `other` is subgraph isomorphic and :data:`False`
+		otherwise. Uses the VF2 algorithm of Vento and Foggia.
+		"""
+		return VF2_isomorphic(self.graph, other.graph, True, True)
+
 	def initialize(self, atoms, bonds):
 		"""
 		Rebuild the `graph` data member based on the lists of atoms and bonds
@@ -438,7 +445,7 @@ def __VF2_terminals(graph, mapping):
 
 	terminals = {}
 	for vertex in graph:
-		if vertex in mapping.keys():
+		if vertex in mapping:
 			for vert, edge in graph[vertex].iteritems():
 				if vert not in mapping:
 					terminals[vert] = True

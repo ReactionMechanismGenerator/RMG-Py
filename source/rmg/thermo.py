@@ -262,12 +262,22 @@ class ThermoDatabase(data.Database):
 		structure at `node` in the dictionary.
 		"""
 		group = self.dictionary[node]
-		center = group.getCenter()
-		if atom.equivalent(center):
-			match, map12, map21 = structure.isSubgraphIsomorphic(group, {center:atom}, {atom:center})
-			return match
+		if group.__class__ == str or group.__class__ == unicode:
+			if group.lower() == 'union':
+				match = False
+				for child in self.tree.children[node]:
+					if self.matchNodeToStructure(child, structure, atom):
+						match = True
+				return match
+			else:
+				return False
 		else:
-			return False
+			center = group.getCenter()
+			if atom.equivalent(center):
+				match, map12, map21 = structure.isSubgraphIsomorphic(group, {center:atom}, {atom:center})
+				return match
+			else:
+				return False
 
 	def descendTree(self, structure, atom, root=None):
 		"""
@@ -425,8 +435,7 @@ class ThermoDatabaseSet:
 					if atom not in added:
 						added[atom] = []
 					added[atom].append(bond)
-			# Get thermo estimate for saturated form of structure, including
-			# gauche and 1,5- interactions
+			# Get thermo estimate for saturated form of structure
 			thermoData = self.getThermoData(struct)
 			# For each radical site, get radical correction
 			# Only one radical site should be considered at a time; all others
@@ -463,10 +472,18 @@ class ThermoDatabaseSet:
 					# Correct for gauche and 1,5- interactions
 					thermoData += self.gaucheDatabase.getThermoData(structure, atom)
 					thermoData += self.int15Database.getThermoData(structure, atom)
+					thermoData += self.otherDatabase.getThermoData(structure, atom)
 
-			# Correct for rings
-
-			# Correct for other
+			# Do ring corrections separately because we only want to match
+			# each ring one time; this doesn't work yet
+#			atoms = structure.atoms()[:]
+#			for atom in atoms:
+#				# Iterate over heavy (non-hydrogen) atoms
+#				if atom.isNonHydrogen():
+#					newData = self.ringDatabase.getThermoData(structure, atom)
+#					if newData is not None:
+#						thermoData += nestructure.atoms()wData
+#						atoms.remove(atom)
 
 		return thermoData
 
@@ -524,21 +541,19 @@ if __name__ == '__main__':
 
 	adjlist = \
 """
-1 C 0 {2,S} {5,S} {6,S} {7,S}
-2 C 0 {1,S} {3,S} {8,S} {9,S}
-3 C 0 {2,S} {4,S} {10,S} {11,S}
-4 C 1 {3,S} {12,S} {13,S}
+1 C 0 {2,S} {4,S} {5,S} {6,S}
+2 C 0 {1,S} {3,S} {7,S} {8,S}
+3 C 0 {2,S} {4,S} {9,S} {10,S}
+4 C 0 {3,S} {1,S} {11,S} {12,S}
 5 H 0 {1,S}
 6 H 0 {1,S}
-7 H 0 {1,S}
+7 H 0 {2,S}
 8 H 0 {2,S}
-9 H 0 {2,S}
+9 H 0 {3,S}
 10 H 0 {3,S}
-11 H 0 {3,S}
+11 H 0 {4,S}
 12 H 0 {4,S}
-13 H 0 {4,S}
 """
-
 
 	structure = chem.Structure()
 	structure.fromAdjacencyList(adjlist)

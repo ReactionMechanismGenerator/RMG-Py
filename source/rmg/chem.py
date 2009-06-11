@@ -355,10 +355,10 @@ class Atom(object):
 					atomTypesMatch = True
 				# If either is a generic non-hydrogen atom type, then return
 				# True if any atom type in the remaining one is non-hydrogen
-				elif atomType1.label == 'R!H' and atomType2.label != 'H':
-					atomTypesMatch = True
-				elif atomType2.label == 'R!H' and atomType1.label != 'H':
-					atomTypesMatch = True
+				elif atomType1.label == 'R!H':
+					if atomType2.label != 'H': atomTypesMatch = True
+				elif atomType2.label == 'R!H':
+					if atomType1.label != 'H': atomTypesMatch = True
 				# If either represents an element without surrounding bond info,
 				# match remaining to any with the same element
 				elif atomType1.label == atomType1.element.symbol == \
