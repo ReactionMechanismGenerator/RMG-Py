@@ -13,7 +13,7 @@ Arrhenius_EP
 // rate constants from rate_library_4.txt, Cath, 03/07/28
 
 //No.	CO_birad	RR'			Temp.		A		N	a	E0	DA	Dn	Da	DE0	Rank
-553.	CO_birad	RR'			300-1500	1E+05		2	0	80	0	0	0	0	0 // a comment!
+553.	CO_birad	RR'			300-1500	1E+05		2	0	80	0	0	0	0	0 
 554.	CO_birad	C_methyl_C_methyl	300-1500	5.38E+02	3.29	0	104.5	0	0	0	0	2
 555.	CO_birad	H2			300-1500	2.89E+09	1.16	0	82.1	0	0	0	0	2
 556.	CO_birad	C_methane		300-1500	1.64E+04	2.86	0	86.9	0	0	0	0	2
