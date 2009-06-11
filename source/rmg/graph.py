@@ -268,9 +268,14 @@ def VF2_isomorphic(graph1, graph2, subgraph=False, findAll=False, mapping12={}, 
 	used to specify whether all isomorphisms should be returned, or only the
 	first.
 	"""
+	mappings12 = []; mappings21 = []
 	terminals1 = __VF2_terminals(graph1, mapping21)
 	terminals2 = __VF2_terminals(graph2, mapping12)
-	return __VF2_match(graph1, graph2, mapping21, mapping12, terminals1, terminals2, subgraph, findAll)
+	ismatch, map12, map21 = __VF2_match(graph1, graph2, mapping21, mapping12, terminals1, terminals2, subgraph, findAll, mappings21, mappings12)
+	if findAll:
+		return (mappings12 > 0), mappings12, mappings21
+	else:
+		return ismatch, map12, map21
 
 def __VF2_feasible(graph1, graph2, vertex1, vertex2, mapping21, mapping12, \
                  terminals1, terminals2, subgraph):
@@ -351,7 +356,7 @@ def __VF2_feasible(graph1, graph2, vertex1, vertex2, mapping21, mapping12, \
 	
 	return True
 
-def __VF2_match(graph1, graph2, mapping21, mapping12, terminals1, terminals2, subgraph, findAll):
+def __VF2_match(graph1, graph2, mapping21, mapping12, terminals1, terminals2, subgraph, findAll, mappingList21=[], mappingList12=[]):
 	"""
 	A recursive function used to explore two graphs `graph1` and `graph2` for 
 	isomorphism by attempting to map them to one another. `mapping21` and
@@ -364,20 +369,50 @@ def __VF2_match(graph1, graph2, mapping21, mapping12, terminals1, terminals2, su
 	Uses the VF2 algorithm of Vento and Foggia, which is O(N) in spatial complexity
 	and O(N**2) (best-case) to O(N! * N) (worst-case) in temporal complexity.
 	"""	
-	
-	mappings12 = []; mappings21 = []
-	
+
 	# Done if we have mapped to all vertices in graph2
-	#print len(mapping12), len(mapping21), len(graph1), len(graph2)
 	if len(mapping12) == len(graph2) or len(mapping21) == len(graph1):
 		return True, mapping12, mapping21
-	#if len(mapping12) == len(mapping21) == min(len(graph1), len(graph2)):
-		#return True, mapping12, mapping21
-	#elif len(mapping12) != len(mapping21):
-		#return False, [], []
 		
 	# Create list of pairs of candidates for inclusion in mapping
+	pairs = __VF2_pairs(graph1, graph2, terminals1, terminals2)
+	
+	for vertex1, vertex2 in pairs:
+		if __VF2_feasible(graph1, graph2, vertex1, vertex2, mapping21, mapping12, terminals1, terminals2, subgraph):
+			# Update mapping and terminals accordingly
+			mapping21[vertex1] = vertex2
+			mapping12[vertex2] = vertex1
+			terminals1 = __VF2_terminals(graph1, mapping21)
+			terminals2 = __VF2_terminals(graph2, mapping12)
+			# Recurse
+			ismatch, mapping12_0, mapping21_0 = __VF2_match(graph1, graph2, \
+					mapping21, mapping12, terminals1, terminals2, subgraph, findAll, mappingList21, mappingList12)
+			if ismatch:
+				if findAll:
+					mappingList21.append(mapping21_0.copy())
+					mappingList12.append(mapping12_0.copy())
+				else:
+					return True, mapping12_0, mapping21_0
+			# Undo proposed match
+			del mapping21[vertex1]
+			del mapping12[vertex2]
+			terminals1 = __VF2_terminals(graph1, mapping21)
+			terminals2 = __VF2_terminals(graph2, mapping12)
+
+
+	return False, [], []
+
+def __VF2_pairs(graph1, graph2, terminals1, terminals2):
+	"""
+	Create a list of pairs of candidates for inclusion in the VF2 mapping. If
+	there are a nonzero number of terminals in each graph, the candidates are
+	selected to be one terminal from the first graph and all terminals from the
+	second graph. If there are no terminals, the candidates are	selected to be
+	one vertex from the first graph and all vertices from the second graph.
+	"""
+
 	pairs = []
+	
 	# Construct list from terminals if possible
 	if len(terminals1) > 0 and len(terminals2) > 0:
 		for terminal2 in terminals2:
@@ -391,42 +426,9 @@ def __VF2_match(graph1, graph2, mapping21, mapping12, terminals1, terminals2, su
 				for vertex1 in graph1:
 					if vertex1 in graph1.keys():
 						pairs.append([vertex1, vertex2])
-	
-	for vertex1, vertex2 in pairs:
-		if __VF2_feasible(graph1, graph2, vertex1, vertex2, mapping21, mapping12, terminals1, terminals2, subgraph):
-			# Update mapping and terminals accordingly
-			mapping21[vertex1] = vertex2
-			mapping12[vertex2] = vertex1
-			terminals1 = __VF2_terminals(graph1, mapping21)
-			terminals2 = __VF2_terminals(graph2, mapping12)
-			# Recurse
-			ismatch, mapping12_0, mapping21_0 = __VF2_match(graph1, graph2, \
-					mapping21, mapping12, terminals1, terminals2, subgraph, findAll)
-			if ismatch:
-				if findAll:
-					print len(mapping12_0), len(mapping21_0)
-					if mapping12_0.__class__ == dict:
-						if len(mapping12_0) == len(mapping21_0) == min(len(graph1), len(graph2)):
-							mappings12.append(mapping12_0)
-							mappings21.append(mapping21_0)
-					elif mapping12_0.__class__ == list:
-						mappings12.extend(mapping12_0)
-						mappings21.extend(mapping21_0)
-					#print mapping12_0, mappings12
-					#print mapping21_0, mappings21
-				else:
-					return True, mapping12_0, mapping21_0
-			else:
-				del mapping21[vertex1]
-				del mapping12[vertex2]
-				terminals1 = __VF2_terminals(graph1, mapping21)
-				terminals2 = __VF2_terminals(graph2, mapping12)
-	
-	if len(mappings12) == 0:
-		return False, [], []
-	else:
-		return True, mappings12, mappings21
-	
+
+	return pairs
+
 def __VF2_terminals(graph, mapping):
 	"""
 	For a given graph `graph` and associated partial mapping `mapping`, 
@@ -505,4 +507,3 @@ if __name__ == '__main__':
 	
 	#print graph1.isSubgraphIsomorphic(graph2)
 	print graph1.findSubgraphIsomorphisms(graph2)
-	
