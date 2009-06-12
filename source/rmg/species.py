@@ -144,6 +144,34 @@ class Species:
 			if tdata.H298 < self.thermoData.H298:
 				self.thermoData = tdata
 
+	def heatCapacity(self, T):
+		"""
+		Return the heat capacity of the species at temperature `T`.
+		"""
+		if self.thermoData is None: self.getThermoData()
+		return self.thermoData.heatCapacity(T)
+
+	def enthalpy(self, T):
+		"""
+		Return the enthalpy of the species at temperature `T`.
+		"""
+		if self.thermoData is None: self.getThermoData()
+		return self.thermoData.enthalpy(T)
+
+	def entropy(self, T):
+		"""
+		Return the entropy of the species at temperature `T`.
+		"""
+		if self.thermoData is None: self.getThermoData()
+		return self.thermoData.entropy(T)
+
+	def freeEnergy(self, T):
+		"""
+		Return the Gibbs free energy of the species at temperature `T`.
+		"""
+		if self.thermoData is None: self.getThermoData()
+		return self.thermoData.freeEnergy(T)
+
 	def __str__(self):
 		"""
 		Return a string representation of the species, in the form 'label(id)'.

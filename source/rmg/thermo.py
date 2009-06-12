@@ -36,6 +36,7 @@ what are its thermodynamics?"
 
 import quantities as pq
 import logging
+import math
 
 import data
 import chem
@@ -70,9 +71,9 @@ class ThermoGAData:
 
 	CpTlist = pq.Quantity([300.0, 400.0, 500.0, 600.0, 800.0, 1000.0, 1500.0], 'K')
 
-	def __init__(self, H298=pq.UncertainQuantity(0.0, 'kcal/mol', 0.0), \
-			S298=pq.UncertainQuantity(0.0, 'cal/(mol*K)', 0.0),
-			Cp=pq.UncertainQuantity([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], 'kcal/(mol*K)', [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]), \
+	def __init__(self, H298=pq.UncertainQuantity(0.0, 'J/mol', 0.0), \
+			S298=pq.UncertainQuantity(0.0, 'J/(mol*K)', 0.0),
+			Cp=pq.UncertainQuantity([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], 'J/(mol*K)', [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]), \
 			comment=''):
 		"""Initialize a set of group additivity thermodynamic data."""
 
@@ -93,11 +94,11 @@ class ThermoGAData:
 		H298, S298, Cp300, Cp400, Cp500, Cp600, Cp800, Cp1000, Cp1500, \
 		  dH, dS, dCp = data
 		self.H298 = pq.UncertainQuantity(H298, 'kcal/mol', dH)
-		#self.H298.units = 'J/mol'
+		self.H298.units = 'J/mol'
 		self.S298 = pq.UncertainQuantity(S298, 'cal/(mol*K)', dS)
-		#self.S298.units = 'J/(mol*K)'
-		self.Cp = pq.UncertainQuantity([Cp300, Cp400, Cp500, Cp600, Cp800, Cp1000, Cp1500], 'kcal/(mol*K)', [dCp, dCp, dCp, dCp, dCp, dCp, dCp])
-		#self.Cp.units = 'J/(mol*K)'
+		self.S298.units = 'J/(mol*K)'
+		self.Cp = pq.UncertainQuantity([Cp300, Cp400, Cp500, Cp600, Cp800, Cp1000, Cp1500], 'cal/(mol*K)', [dCp, dCp, dCp, dCp, dCp, dCp, dCp])
+		self.Cp.units = 'J/(mol*K)'
 
 		self.comment = comment
 
@@ -163,6 +164,65 @@ class ThermoGAData:
 			string += 'Heat capacity at ' + str(ThermoGAData.CpTlist[i]) + ': ' + str(self.Cp[i]) + '\n'
 		string += 'Comment: ' + str(self.comment)
 		return string
+
+	def heatCapacity(self, T):
+		"""
+		Return the heat capacity at temperature `T`.
+		"""
+		if T < ThermoGAData.CpTlist[0]:
+			raise data.TemperatureOutOfRangeException('Invalid temperature for heat capacity estimation from group additivity.')
+		elif T > ThermoGAData.CpTlist[-1]:
+			return self.Cp[-1]
+		else:
+			for Tmin, Tmax, Cpmin, Cpmax in zip(ThermoGAData.CpTlist[:-1], \
+					ThermoGAData.CpTlist[1:], self.Cp[:-1], self.Cp[1:]):
+				if Tmin <= T and T < Tmax:
+					return (Cpmax - Cpmin) * ((T - Tmin) / (Tmax - Tmin)) + Cpmin
+
+	def enthalpy(self, T):
+		"""
+		Return the enthalpy at temperature `T`.
+		"""
+		H = self.H298
+		if T < ThermoGAData.CpTlist[0]:
+			raise data.TemperatureOutOfRangeException('Invalid temperature for enthalpy estimation from group additivity.')
+		for Tmin, Tmax, Cpmin, Cpmax in zip(ThermoGAData.CpTlist[:-1], \
+				ThermoGAData.CpTlist[1:], self.Cp[:-1], self.Cp[1:]):
+			if T > Tmin:
+				slope = (Cpmax - Cpmin) / (Tmax - Tmin)
+				intercept = (Cpmin * Tmax - Cpmax * Tmin) / (Tmax - Tmin)
+				if T < Tmax:	H += 0.5 * slope * (T**2 - Tmin**2) + intercept * (T - Tmin)
+				else:			H += 0.5 * slope * (Tmax**2 - Tmin**2) + intercept * (Tmax - Tmin)
+		if T > ThermoGAData.CpTlist[-1]:
+			H += self.Cp[-1] * (T - ThermoGAData.CpTlist[-1])
+		return H
+
+	def entropy(self, T):
+		"""
+		Return the entropy at temperature `T`.
+		"""
+		S = self.S298
+		if T < ThermoGAData.CpTlist[0]:
+			raise data.TemperatureOutOfRangeException('Invalid temperature for entropy estimation from group additivity.')
+		for Tmin, Tmax, Cpmin, Cpmax in zip(ThermoGAData.CpTlist[:-1], \
+				ThermoGAData.CpTlist[1:], self.Cp[:-1], self.Cp[1:]):
+			if T > Tmin:
+				slope = (Cpmax - Cpmin) / (Tmax - Tmin)
+				intercept = (Cpmin * Tmax - Cpmax * Tmin) / (Tmax - Tmin)
+				if T < Tmax:	S += slope * (T - Tmin) + intercept * math.log(T/Tmin)
+				else:			S += slope * (Tmax - Tmin) + intercept * math.log(Tmax/Tmin)
+		if T > ThermoGAData.CpTlist[-1]:
+			S += self.Cp[-1] * math.log(T / ThermoGAData.CpTlist[-1])
+		return S
+
+	def freeEnergy(self, T):
+		"""
+		Return the Gibbs free energy at temperature `T`.
+		"""
+		if T < ThermoGAData.CpTlist[0]:
+			raise data.TemperatureOutOfRangeException('Invalid temperature for free energy estimation from group additivity.')
+		return self.enthalpy(T) - T * self.entropy(T)
+
 
 ################################################################################
 
@@ -563,4 +623,10 @@ if __name__ == '__main__':
 
 	thermoData = getThermoData(structure)
 
-	print thermoData
+	T = pq.Quantity(1000.0, 'K')
+	print 'Heat capacity at ' + str(T) + ': ' + str(thermoData.heatCapacity(T))
+	print 'Enthalpy at ' + str(T) + ': ' + str(thermoData.enthalpy(T))
+	print 'Entropy at ' + str(T) + ': ' + str(thermoData.entropy(T))
+	print 'Free energy at ' + str(T) + ': ' + str(thermoData.freeEnergy(T))
+
+
