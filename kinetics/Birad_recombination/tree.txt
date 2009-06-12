@@ -1,77 +1,77 @@
 //f07 : biradical recombination to form cyclic structure 
 //f07_biradical_recombination_to_form_cyclic_structure
 // JS, correct typo, L3 : R6 into L2 : R6 
-L1 : Rn
-	L2 : R3
-		L3 : R3_SS
-		L3 : R3_SD
-	L2 : R4
-		L3 : R4_SSS
-		L3 : R4_SSD
-		L3 : R4_SDS
-		L3 : R4_DSD
-	L2 : R5
-		L3 : R5_SSSS
-		L3 : R5_SSSD
-		L3 : R5_SSDS
-		L3 : R5_SDSD
-		L3 : R5_DSSD
-	L2 : R6
-		L3 : R6_SSSSS
-		L3 : R6_SSSSD
-		L3 : R6_SSSDS
-		L3 : R6_SSDSS
-		L3 : R6_SSDSD
-		L3 : R6_SDSDS
-		L3 : R6_SDSSD
-		L3 : R6_DSSSD
-		L3 : R6_DSDSD
-L1 : Y_rad_out
-	L2 : C_rad_out_single
-		L3 : C_rad_out_2H
-		L3 : C_rad_out_1H
-			L4 : C_rad_out_H/NonDeC
-			L4 : C_rad_out_H/NonDeO
-			L4 : C_rad_out_H/OneDe	
-		L3 : C_rad_out_noH
-			L4 : C_rad_out_NonDe
-				L5 : C_rad_out_Cs2
-				L5 : C_rad_out_NDMustO
-			L4 : C_rad_out_OneDe
-				L5 : C_rad_out_OneDe/Cs
-				L5 : C_rad_out_OneDe/O
-			L4 : C_rad_out_TwoDe
-	L2 : Cd_rad_out
+L1: Rn
+	L2: R3
+		L3: R3_SS
+		L3: R3_SD
+	L2: R4
+		L3: R4_SSS
+		L3: R4_SSD
+		L3: R4_SDS
+		L3: R4_DSD
+	L2: R5
+		L3: R5_SSSS
+		L3: R5_SSSD
+		L3: R5_SSDS
+		L3: R5_SDSD
+		L3: R5_DSSD
+	L2: R6
+		L3: R6_SSSSS
+		L3: R6_SSSSD
+		L3: R6_SSSDS
+		L3: R6_SSDSS
+		L3: R6_SSDSD
+		L3: R6_SDSDS
+		L3: R6_SDSSD
+		L3: R6_DSSSD
+		L3: R6_DSDSD
+L1: Y_rad_out
+	L2: C_rad_out_single
+		L3: C_rad_out_2H
+		L3: C_rad_out_1H
+			L4: C_rad_out_H/NonDeC
+			L4: C_rad_out_H/NonDeO
+			L4: C_rad_out_H/OneDe	
+		L3: C_rad_out_noH
+			L4: C_rad_out_NonDe
+				L5: C_rad_out_Cs2
+				L5: C_rad_out_NDMustO
+			L4: C_rad_out_OneDe
+				L5: C_rad_out_OneDe/Cs
+				L5: C_rad_out_OneDe/O
+			L4: C_rad_out_TwoDe
+	L2: Cd_rad_out
 	        L3: Cd_rad_out_C
 	        L3: Cd_rad_out_O 
-	L2 : Cdsingle_rad_out
-		L3 : CdsingleH_rad_out
-		L3 : CdsingleND_rad_out
-		L3 : CdsingleDe_rad_out
-	L2 : O_rad	
-L1 : Ypri_rad_out
-	L2 : Cpri_rad_out_single
-		L3 : Cpri_rad_out_2H
-		L3 : Cpri_rad_out_1H
-			L4 : Cpri_rad_out_H/NonDeC
-			L4 : Cpri_rad_out_H/NonDeO
-			L4 : Cpri_rad_out_H/OneDe	
-		L3 : Cpri_rad_out_noH
-			L4 : Cpri_rad_out_NonDe
-				L5 : Cpri_rad_out_Cs2
-				L5 : Cpri_rad_out_NDMustO
-			L4 : Cpri_rad_out_OneDe
-				L5 : Cpri_rad_out_OneDe/Cs
-				L5 : Cpri_rad_out_OneDe/O
-			L4 : Cpri_rad_out_TwoDe
-	L2 : Cdpri_rad_out
-		L3 : Cdpri_rad_out_C
-		L3 : Cdpri_rad_out_O
-	L2 : Cdsinglepri_rad_out
-		L3 : CdsinglepriH_rad_out
-		L3 : CdsinglepriND_rad_out
-		L3 : CdsinglepriDe_rad_out
-	L2 : Opri_rad
+	L2: Cdsingle_rad_out
+		L3: CdsingleH_rad_out
+		L3: CdsingleND_rad_out
+		L3: CdsingleDe_rad_out
+	L2: O_rad	
+L1: Ypri_rad_out
+	L2: Cpri_rad_out_single
+		L3: Cpri_rad_out_2H
+		L3: Cpri_rad_out_1H
+			L4: Cpri_rad_out_H/NonDeC
+			L4: Cpri_rad_out_H/NonDeO
+			L4: Cpri_rad_out_H/OneDe	
+		L3: Cpri_rad_out_noH
+			L4: Cpri_rad_out_NonDe
+				L5: Cpri_rad_out_Cs2
+				L5: Cpri_rad_out_NDMustO
+			L4: Cpri_rad_out_OneDe
+				L5: Cpri_rad_out_OneDe/Cs
+				L5: Cpri_rad_out_OneDe/O
+			L4: Cpri_rad_out_TwoDe
+	L2: Cdpri_rad_out
+		L3: Cdpri_rad_out_C
+		L3: Cdpri_rad_out_O
+	L2: Cdsinglepri_rad_out
+		L3: CdsinglepriH_rad_out
+		L3: CdsinglepriND_rad_out
+		L3: CdsinglepriDe_rad_out
+	L2: Opri_rad
 
 
 

@@ -38,7 +38,7 @@ L1: RR'
              L5: Cd/H/NonDeO
              L5: Cd/H/OneDe
        L3: Cb_H
-  L2 : R_R'
+  L2: R_R'
 	L3: Cs_Cs
 		L4: C_methyl_C_methyl
 		L4: C_methyl_C_pri

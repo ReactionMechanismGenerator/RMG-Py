@@ -5,7 +5,7 @@
 //for cases where the radical center or XH has "outside" ring attached to it,
 //for e.g. cy3(.)CH3 --> cy3H-CH2(.)
 //C.D.W. 04/20/03 : added R3H_SS_12cy3, etc. for cases where there is "inside" ring,
-//for e.g. cyc(CH2CH(.)CH)—CH3 --> cyc(CH3CH2CH)-CH2(.)
+//for e.g. cyc(CH2CH(.)CH)CH3 --> cyc(CH3CH2CH)-CH2(.)
 //1) Definition of "inside" ring : when at least two of the *1,*2,*4,..atoms 
 //are members of that ring. 
 //2) Added also R3H_SS_2Cd (for .C-Cd-CH case)
@@ -166,7 +166,7 @@ L1: RnH
 		L3: R6H_SBBBB
 		L3: R6H_BBBBS
 		L3: R6H_BBBBB
-	L2 : R7H
+	L2: R7H
 		L3: R7H_OOCs4
 L1: Y_rad_out
         L2: C_rad_out_single

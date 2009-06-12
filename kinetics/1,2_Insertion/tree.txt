@@ -7,10 +7,10 @@
 // favourable.Especially with CH2T and Oat it is not possible.  It has to be
 // singlet. I now feel it is not necessary.
 
-L1 : CO_birad
+L1: CO_birad
 
-L1 : RR'
-	L2 : R_H
+L1: RR'
+	L2: R_H
 		L3: H2
 	        L3: Cs_H
 		        L4: C_methane
@@ -45,7 +45,7 @@ L1 : RR'
 			        L5: Cd/H/NonDeO
 			        L5: Cd/H/OneDe
 	        L3: Cb_H		
-	L2 : R_R'
+	L2: R_R'
 		L3: Cs_Cs
 			L4: C_methyl_C_methyl
 			L4: C_methyl_C_pri

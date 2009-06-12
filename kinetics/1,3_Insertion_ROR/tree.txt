@@ -75,7 +75,7 @@ L1: R_OR
 		L3: H_OCd
 	   		L4: H_OCdpri
 	   		L4: H_OCdsec
-	L2 : R_OH
+	L2: R_OH
 	       	L3: Cs_OH
 	        	L4: CH3OH
 	       		L4: C_pri_OH
