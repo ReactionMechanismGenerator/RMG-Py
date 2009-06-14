@@ -280,7 +280,7 @@ def VF2_isomorphic(graph1, graph2, subgraph=False, findAll=False, mapping12={}, 
 	terminals2 = __VF2_terminals(graph2, mapping12)
 	ismatch, map12, map21 = __VF2_match(graph1, graph2, mapping21, mapping12, terminals1, terminals2, subgraph, findAll, mappings21, mappings12)
 	if findAll:
-		return (mappings12 > 0), mappings12, mappings21
+		return len(mappings12) > 0, mappings12, mappings21
 	else:
 		return ismatch, map12, map21
 
@@ -363,7 +363,7 @@ def __VF2_feasible(graph1, graph2, vertex1, vertex2, mapping21, mapping12, \
 	
 	return True
 
-def __VF2_match(graph1, graph2, mapping21, mapping12, terminals1, terminals2, subgraph, findAll, mappingList21=[], mappingList12=[]):
+def __VF2_match(graph1, graph2, mapping21, mapping12, terminals1, terminals2, subgraph, findAll, mappingList21, mappingList12):
 	"""
 	A recursive function used to explore two graphs `graph1` and `graph2` for 
 	isomorphism by attempting to map them to one another. `mapping21` and
@@ -378,7 +378,8 @@ def __VF2_match(graph1, graph2, mapping21, mapping12, terminals1, terminals2, su
 	"""	
 
 	# Done if we have mapped to all vertices in graph2
-	if len(mapping12) == len(graph2) or len(mapping21) == len(graph1):
+	#if len(mapping12) == len(graph2) or len(mapping21) == len(graph1):
+	if len(mapping12) >= len(graph2) or len(mapping21) >= len(graph1):
 		return True, mapping12, mapping21
 		
 	# Create list of pairs of candidates for inclusion in mapping

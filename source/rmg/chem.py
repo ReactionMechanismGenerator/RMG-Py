@@ -526,7 +526,7 @@ class Bond:
 		"""
 		for bondType1 in self._bondType:
 			for bondType2 in other._bondType:
-				if bondType1 == bondType2:
+				if bondType1.label == bondType2.label:
 					return True
 
 		return False
@@ -767,6 +767,24 @@ class Structure(graph.ChemGraph):
 
 		# Create the graph from the atom and bond lists
 		self.initialize(atoms, bonds)
+
+	def toAdjacencyList(self):
+		"""
+		Convert the structure object to an adjacency list.
+		"""
+
+		adjlist = ''
+
+		atoms = self.atoms()
+
+		for i, atom in enumerate(atoms):
+			adjlist += str(i+1) + ' ' + atom.atomType.label + ' ' + atom.electronState.label
+			for atom2, bond in self.graph[atom].iteritems():
+				adjlist += ' {' + str(atoms.index(atom2)+1) + ',' + bond.bondType.label + '}'
+			adjlist += '\n'
+
+		return adjlist
+
 
 	def toOBMol(self):
 		"""

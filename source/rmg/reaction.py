@@ -67,6 +67,20 @@ class Reaction:
 		string = string[0:-3]
 		return string
 
+	def isUnimolecular(self):
+		"""
+		Return :data:`True` if the forward reaction has one reactant and
+		:data:`False` otherwise.
+		"""
+		return len(self.reactants) == 1
+
+	def isBimolecular(self):
+		"""
+		Return :data:`True` if the forward reaction has two reactants and
+		:data:`False` otherwise.
+		"""
+		return len(self.reactants) == 2
+
 ################################################################################
 
 if __name__ == '__main__':

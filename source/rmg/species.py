@@ -73,7 +73,7 @@ class Species:
 		resonance isomers, thermodynamic data, etc.
 		"""
 		self.generateResonanceIsomers()
-		self.getThermoData()
+		#self.getThermoData()
 
 	def generateResonanceIsomers(self):
 		"""
@@ -100,6 +100,15 @@ class Species:
 					paths = isomer.findAllDelocalizationPaths(atom)
 					for path in paths:
 
+						atom1, atom2, atom3, bond12, bond23 = path
+
+						# Skip if invalid
+						if atom1.electronState.order < 1 or \
+								not bond12.canIncreaseOrder() or \
+								not bond23.canDecreaseOrder():
+							continue
+
+
 						# Make a copy of isomer
 						oldIsomer = isomer.copy()
 						isomers[index] = oldIsomer
@@ -107,16 +116,16 @@ class Species:
 						isomer = oldIsomer
 
 						# Adjust to (potentially) new resonance isomer
-						atom1, atom2, atom3, bond12, bond23 = path
-						atom1.decreaseRadical()
-						atom3.increaseRadical()
+						atom1.decreaseFreeElectron()
+						atom3.increaseFreeElectron()
 						bond12.increaseOrder()
 						bond23.decreaseOrder()
 
 						# Append to isomer list if unique
 						found = False
 						for isom in isomers:
-							if isom.isIsomorphic(newIsomer): found = True
+							ismatch, map12, map21 = isom.isIsomorphic(newIsomer)
+							if ismatch: found = True
 						if not found:
 							isomers.append(newIsomer)
 
@@ -171,6 +180,42 @@ class Species:
 		"""
 		if self.thermoData is None: self.getThermoData()
 		return self.thermoData.freeEnergy(T)
+
+	def isIsomorphic(self, other):
+		"""
+		Returns :data:`True` if the two species are isomorphic and data:`False`
+		otherwise.
+		"""
+		for struct1 in self.structure:
+			for struct2 in other.structure:
+				ismatch, map12, map21 = struct1.isIsomorphic(struct2)
+				if ismatch:
+					return True
+		return False
+	
+	def isSubgraphIsomorphic(self, other):
+		"""
+		Returns :data:`True` if the species is isomorphic with the other
+		functional group and data:`False` otherwise.
+		"""
+		for struct1 in self.structure:
+			ismatch, map12, map21 = struct1.isSubgraphIsomorphic(other)
+			if ismatch:
+				return True
+		return False
+
+	def findSubgraphIsomorphisms(self, other):
+		"""
+		Returns a list of the subgraph matches between the species and the
+		functional group `other`.
+		"""
+		maps12 = []; maps21 = []
+		for struct1 in self.structure:
+			ismatch, map12, map21 = struct1.findSubgraphIsomorphisms(other)
+			maps12.extend(map12)
+			maps21.extend(map21)
+			print ismatch, map12, map21
+		return (len(maps12) > 0), maps12, maps21
 
 	def __str__(self):
 		"""
