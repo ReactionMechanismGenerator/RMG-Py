@@ -341,9 +341,8 @@ if __name__ == '__main__':
 	database = ReactionFamilySet()
 	database.load(datapath)
 
-	structure = chem.Structure()
-	#structure.fromInChI('InChI=1/C6H10/c1-3-5-6-4-2/h3,5-6H,1,4H2,2H3')
-	structure.fromAdjacencyList("""HXD13
+	structure1 = chem.Structure()
+	structure1.fromAdjacencyList("""HXD13
 1 C 0 {2,D} {7,S} {8,S}
 2 C 0 {1,D} {3,S} {9,S}
 3 C 0 {2,S} {4,D} {10,S}
@@ -360,10 +359,14 @@ if __name__ == '__main__':
 15 H 0 {6,S}
 16 H 0 {6,S}
 """)
-	species1 = species.Species('HXD13', structure, True)
-	structure = chem.Structure()
-	structure.fromSMILES('[H][H]')
-	species2 = species.Species('H2', structure, True)
+
+	species1 = species.Species('HXD13', structure1, True)
+
+	print len(species1.structure)
+
+	structure2 = chem.Structure()
+	structure2.fromSMILES('[H][H]')
+	species2 = species.Species('H2', structure2, True)
 
 	database.getUnimolecularReactions(species1)
 	database.getBimolecularReactions(species1, species2)

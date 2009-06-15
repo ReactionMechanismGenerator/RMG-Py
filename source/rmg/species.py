@@ -72,12 +72,15 @@ class Species:
 		Generate supplemental parameters and information about the species:
 		resonance isomers, thermodynamic data, etc.
 		"""
-		self.generateResonanceIsomers()
+		self.getResonanceIsomers()
 		#self.getThermoData()
 
-	def generateResonanceIsomers(self):
+	def getResonanceIsomers(self):
 		"""
-		Generate a list of all of the resonance isomers of this species.
+		Generate all of the resonance isomers of this species. The isomers are
+		stored as a list in the `structure` attribute. If the length of
+		`structure` is already greater than one, it is assumed that all of the
+		resonance isomers have already been generated.
 		"""
 
 		if len(self.structure) != 1:
@@ -88,49 +91,29 @@ class Species:
 		isomers = [structure]
 
 		# Radicals
-		if structure.radicalCount() > 0:
+		if structure.getRadicalCount() > 0:
 			# Iterate over resonance isomers
 			index = 0
 			while index < len(isomers):
 				isomer = isomers[index]
-				# Iterate over radicals in structure; use indices because the
-				# pointer to isomer (but not its contents) may be changing
-				for i in range(0, len(isomer.atoms())):
-					atom = isomer.atoms()[i]
-					paths = isomer.findAllDelocalizationPaths(atom)
-					for path in paths:
 
-						atom1, atom2, atom3, bond12, bond23 = path
+				newIsomers = isomer.getAdjacentResonanceIsomers()
+				
+				for newIsomer in newIsomers:
 
-						# Skip if invalid
-						if atom1.electronState.order < 1 or \
-								not bond12.canIncreaseOrder() or \
-								not bond23.canDecreaseOrder():
-							continue
-
-
-						# Make a copy of isomer
-						oldIsomer = isomer.copy()
-						isomers[index] = oldIsomer
-						newIsomer = isomer
-						isomer = oldIsomer
-
-						# Adjust to (potentially) new resonance isomer
-						atom1.decreaseFreeElectron()
-						atom3.increaseFreeElectron()
-						bond12.increaseOrder()
-						bond23.decreaseOrder()
-
-						# Append to isomer list if unique
-						found = False
-						for isom in isomers:
-							ismatch, map12, map21 = isom.isIsomorphic(newIsomer)
-							if ismatch: found = True
-						if not found:
-							isomers.append(newIsomer)
+					# Append to isomer list if unique
+					found = False
+					for isom in isomers:
+						ismatch, map12, map21 = isom.isIsomorphic(newIsomer)
+						if ismatch: found = True
+					if not found:
+						isomers.append(newIsomer)
 
 				# Move to next resonance isomer
 				index += 1
+
+		for isomer in isomers:
+			isomer.updateAtomTypes()
 
 		self.structure = isomers
 
@@ -153,33 +136,33 @@ class Species:
 			if tdata.H298 < self.thermoData.H298:
 				self.thermoData = tdata
 
-	def heatCapacity(self, T):
+	def getHeatCapacity(self, T):
 		"""
 		Return the heat capacity of the species at temperature `T`.
 		"""
 		if self.thermoData is None: self.getThermoData()
-		return self.thermoData.heatCapacity(T)
+		return self.thermoData.getHeatCapacity(T)
 
-	def enthalpy(self, T):
+	def getEnthalpy(self, T):
 		"""
 		Return the enthalpy of the species at temperature `T`.
 		"""
 		if self.thermoData is None: self.getThermoData()
-		return self.thermoData.enthalpy(T)
+		return self.thermoData.getEnthalpy(T)
 
-	def entropy(self, T):
+	def getEntropy(self, T):
 		"""
 		Return the entropy of the species at temperature `T`.
 		"""
 		if self.thermoData is None: self.getThermoData()
-		return self.thermoData.entropy(T)
+		return self.thermoData.getEntropy(T)
 
-	def freeEnergy(self, T):
+	def getFreeEnergy(self, T):
 		"""
 		Return the Gibbs free energy of the species at temperature `T`.
 		"""
 		if self.thermoData is None: self.getThermoData()
-		return self.thermoData.freeEnergy(T)
+		return self.thermoData.getFreeEnergy(T)
 
 	def isIsomorphic(self, other):
 		"""
@@ -214,7 +197,6 @@ class Species:
 			ismatch, map12, map21 = struct1.findSubgraphIsomorphisms(other)
 			maps12.extend(map12)
 			maps21.extend(map21)
-			print ismatch, map12, map21
 		return (len(maps12) > 0), maps12, maps21
 
 	def __str__(self):
@@ -224,4 +206,20 @@ class Species:
 		return self.label + '(' + str(self.id) + ')'
 
 ################################################################################
+
+if __name__ == '__main__':
+
+	structure1 = chem.Structure()
+	structure1.fromSMILES('C=CC=CC=CC=C[CH]C')
+	#structure1.fromSMILES('C=CC=CC=C[CH]C=CC')
+	#structure1.fromSMILES('C=CC=C[CH]C=CC=CC')
+	#structure1.fromSMILES('C=C[CH]C=CC=CC=CC')
+	#structure1.fromSMILES('[CH2]C=CC=CC=CC=CC')
+#	isomers = structure1.getAdjacentResonanceIsomers()
+#	for isomer in isomers:
+#		print isomer.toSMILES()
+	
+	species1 = Species('', structure1, True)
+	
+	print len(species1.structure)
 

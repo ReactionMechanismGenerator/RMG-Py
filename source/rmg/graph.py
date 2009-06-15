@@ -163,7 +163,7 @@ class ChemGraph:
 	dictionary.
 	"""
 
-	def __init__(self, atoms=[], bonds=[]):
+	def __init__(self, atoms=None, bonds=None):
 		self.initialize(atoms, bonds)
 		
 	def atoms(self):
@@ -239,7 +239,7 @@ class ChemGraph:
 		"""
 		return VF2_isomorphic(self.graph, other.graph, False, False)
 		
-	def isSubgraphIsomorphic(self, other, map12={}, map21={}):
+	def isSubgraphIsomorphic(self, other, map12=None, map21=None):
 		"""
 		Returns :data:`True` if `other` is subgraph isomorphic and :data:`False`
 		otherwise. Uses the VF2 algorithm of Vento and Foggia.
@@ -258,6 +258,9 @@ class ChemGraph:
 		Rebuild the `graph` data member based on the lists of atoms and bonds
 		provided in `atoms` and `bonds`, respectively.
 		"""
+		if atoms is None or bonds is None: 
+			return
+		
 		self.graph = {}
 		for atom in atoms:
 			self.graph[atom] = {}
@@ -267,7 +270,7 @@ class ChemGraph:
 	
 ################################################################################
 
-def VF2_isomorphic(graph1, graph2, subgraph=False, findAll=False, mapping12={}, mapping21={}):	
+def VF2_isomorphic(graph1, graph2, subgraph=False, findAll=False, mapping12=None, mapping21=None):
 	"""
 	Returns :data:`True` if two graphs are isomorphic and :data:`False`
 	otherwise. Uses the VF2 algorithm of Vento and Foggia. `subgraph` is 
@@ -275,6 +278,9 @@ def VF2_isomorphic(graph1, graph2, subgraph=False, findAll=False, mapping12={}, 
 	used to specify whether all isomorphisms should be returned, or only the
 	first.
 	"""
+	if mapping12 is None: mapping12 = {}
+	if mapping21 is None: mapping21 = {}
+
 	mappings12 = []; mappings21 = []
 	terminals1 = __VF2_terminals(graph1, mapping21)
 	terminals2 = __VF2_terminals(graph2, mapping12)

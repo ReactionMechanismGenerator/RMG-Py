@@ -278,7 +278,11 @@ bondTypes = loadBondTypes()
 
 class Atom(object):
 	"""
-	Represent an atom in a chemical species or functional group.
+	Represent an atom in a chemical species or functional group. The `atomType`
+	and `electronState` attributes contain lists of the allowed atom types and
+	electron states, respectively, for this atom. The `charge` attribute stores
+	the resulting formal charge. The `label` attribute can be used to tag
+	individual atoms, e.g. center atoms or reactive sites in functional groups.
 	"""
 
 	def __init__(self, atomType=None, electronState=None, charge=0, label=''):
@@ -291,15 +295,26 @@ class Atom(object):
 		self.label = label
 		
 	def getAtomType(self):
+		"""
+		Get the list of allowed atom types. If the list is of length 1, the
+		lone item in the list is returned instead.
+		"""
 		if len(self._atomType) == 1: return self._atomType[0]
 		else: return self._atomType
 
 	def setAtomType(self, atomType):
 		"""
-		Set the element that this atom represents. The `electronState`
-		parameter is an :class:`FGElement` object or a string representing the
-		label of the desired element. If the parameter is a string, it will be
-		converted to an	:class:`FGElement` object.
+		Set the atom type that this atom represents. The `atomType`
+		parameter is any of:
+		
+		* A string containing the label of a single atom type
+		
+		* An :class:`AtomType` object representing the atom type
+		
+		* A list containing one or more of each of the above
+
+		In all cases, the data will be stored internally as a list of
+		:class:`AtomType` objects.
 		"""
 		self._atomType = []
 		if atomType.__class__ != list:
@@ -315,16 +330,26 @@ class Atom(object):
 	atomType = property(getAtomType, setAtomType)
 
 	def getElectronState(self):
+		"""
+		Get the list of allowed electronic states. If the list is of length 1,
+		the lone item in the list is returned instead.
+		"""
 		if len(self._electronState) == 1: return self._electronState[0]
 		else: return self._electronState
 
 	def setElectronState(self, electronState):
 		"""
-		Set the electron state that this atom represents. The *electronState*
-		parameter can be an :class:`ElectronState` object or a string
-		representing the label of the desired electron state. In all cases
-		*electronState*	will be converted to and stored as an
-		:class:`ElectronState` object.
+		Set the electron state that this atom represents. The `electronState`
+		parameter is any of:
+
+		* A string containing the label of a single electron state
+
+		* An :class:`ElectronState` object representing the electron state
+
+		* A list containing one or more of each of the above
+
+		In all cases, the data will be stored internally as a list of
+		:class:`ElectronState` objects.
 		"""
 		if electronState.__class__ != list:
 			electronState = [electronState]
@@ -403,6 +428,14 @@ class Atom(object):
 		"""
 		return len(self.label) > 0
 
+	def getElement(self):
+		"""
+		Return the element that this atom represents. If there are multiple
+		atom types, then this method returns :data:`None`.
+		"""
+		if len(self._atomType) == 0 or len(self._atomType) > 1: return None
+		return self.atomType.element
+
 	def isElement(self, symbol):
 		"""
 		Return :data:`True` if the atom has the element with the symbol
@@ -438,7 +471,7 @@ class Atom(object):
 		Return :data:`True` if the atom is not a hydrogen atom and :data:`False`
 		otherwise.
 		"""
-		return self.atomType.element.symbol != 'H'
+		return not self.isHydrogen()
 
 	def hasFreeElectron(self):
 		"""
@@ -447,7 +480,7 @@ class Atom(object):
 		"""
 		return self.electronState.order > 0
 
-	def freeElectronCount(self):
+	def getFreeElectronCount(self):
 		"""
 		Return the number of unpaired electrons.
 		"""
@@ -605,7 +638,7 @@ class Structure(graph.ChemGraph):
 	vertices represent atoms, while the edges represent bonds.
 	"""
 
-	def __init__(self, atoms=[], bonds=[]):
+	def __init__(self, atoms=None, bonds=None):
 		graph.ChemGraph.initialize(self, atoms, bonds)
 
 	def fromAdjacencyList(self, adjlist):
@@ -697,7 +730,6 @@ class Structure(graph.ChemGraph):
 
 		# Create and return functional group or species
 		self.initialize(atoms, bonds)
-		self.updateAtomTypes()
 
 
 	def fromCML(self, cmlstr):
@@ -803,6 +835,8 @@ class Structure(graph.ChemGraph):
 			if order == 1.5: order = 5
 			obmol.AddBond(index1+1, index2+1, order)
 
+		obmol.AssignSpinMultiplicity(True)
+
 		return obmol
 
 	def toCML(self):
@@ -904,7 +938,7 @@ class Structure(graph.ChemGraph):
 			else:
 				logging.warning('Suggested atom type "' + atomType + '" does not match specified atom type "' + atom1.atomType.label + '".')
 			
-	def radicalCount(self):
+	def getRadicalCount(self):
 		"""
 		Get the number of radicals in the structure.
 		"""
@@ -929,6 +963,50 @@ class Structure(graph.ChemGraph):
 			newBond.atoms = [atoms[index1], atoms[index2]]
 
 		return Structure(atoms, bonds)
+
+	def getAdjacentResonanceIsomers(self):
+		"""
+		Generate all of the resonance isomers formed by one allyl radical shift.
+		"""
+
+		isomers = []
+
+		# Radicals
+		if self.getRadicalCount() > 0:
+			# Iterate over radicals in structure
+			for atom in self.atoms():
+				paths = self.findAllDelocalizationPaths(atom)
+				for path in paths:
+
+					atom1, atom2, atom3, bond12, bond23 = path
+
+					# Skip if invalid
+#					if atom1.electronState.order < 1 or \
+#							not bond12.canIncreaseOrder() or \
+#							not bond23.canDecreaseOrder():
+#						continue
+
+					# Adjust to (potentially) new resonance isomer
+					atom1.decreaseFreeElectron()
+					atom3.increaseFreeElectron()
+					bond12.increaseOrder()
+					bond23.decreaseOrder()
+
+					# Make a copy of isomer
+					#isomer = Structure()
+					#isomer.fromSMILES(self.toSMILES())
+					isomer = self.copy()
+
+					# Restore current isomer
+					atom1.increaseFreeElectron()
+					atom3.decreaseFreeElectron()
+					bond12.decreaseOrder()
+					bond23.increaseOrder()
+
+					# Append to isomer list if unique
+					isomers.append(isomer)
+
+		return isomers
 
 	def findAllDelocalizationPaths(self, atom1):
 		"""

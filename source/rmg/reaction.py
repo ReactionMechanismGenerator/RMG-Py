@@ -48,12 +48,18 @@ class Reaction:
 	taken from thermodynamic reversibility.
 	"""
 	
-	def __init__(self, reactants=[], products=[], kinetics=None):
+	def __init__(self, reactants=None, products=None, kinetics=None):
 		"""Initialize a reaction object."""
-		self.reactants = reactants
-		self.products = products
+		if reactants is None:
+			self.reactants = []
+		else:
+			self.reactants = reactants
+		if products is None:
+			self.products = []
+		else:
+			self.products = products
 		self.kinetics = kinetics
-		
+
 	def __str__(self):
 		"""
 		Return a string representation of the reaction.
