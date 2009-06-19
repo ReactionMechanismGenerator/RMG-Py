@@ -41,14 +41,8 @@ class ReactionModel:
 	"""	
 
 	def __init__(self, species=None, reactions=None):
-		if species is None:
-			self.species = []
-		else:
-			self.species = species
-		if reactions is None:
-			self.reactions = []
-		else:
-			self.reactions = reactions
+		self.species = species or []
+		self.reactions = reactions or []
 
 ################################################################################
 

@@ -50,103 +50,6 @@ Matching Large Graphs." 3rd IAPR-TC15 Workshop on Graph-based Representations
 in Pattern Recognition, Cuen, p. 149-156 (2007).
 """
 
-class Vertex:
-	"""
-	A generic vertex (node) of a graph. The vertex is required to have a
-	:meth:`equivalent()` function for comparing semantic properties between
-	pairs of vertices.
-	"""
-	def __init__(self, color):
-		self.color = color
-		
-	def equivalent(self, other):
-		"""
-		Used to determine if two vertices have equivalent semantic properties.
-		In this	case, two vertices are equivalent if they have the same color.
-		"""
-		return self.color == other.color
-		
-################################################################################
-
-class Edge:
-	"""
-	A generic edge of a graph. The edge is required to have a
-	:meth:`equivalent()` function for comparing semantic properties between
-	pairs of edges.
-	"""
-	
-	def __init__(self, color):
-		self.color = color
-		
-	def equivalent(self, other):
-		"""
-		Used to determine if two edges have equivalent semantic properties.
-		In this	case, two edges are equivalent if they have the same color.
-		"""
-		return self.color == other.color
-		
-################################################################################
-
-class Graph:
-	"""
-	A representation of a graph data structure. Internally the graph is 
-	represented as a dictionary of dictionaries. If a vertex is in the graph
-	it will be in the outer dictionary. If two vertices in the graph are
-	connected by an edge, each edge will be in the inner dictionary.
-	"""
-
-	def __init__(self):
-		self.graph = {}
-		
-	def addVertex(self, vertex):
-		"""
-		Add `vertex` to the graph as a vertex. The vertex is initialized with
-		no edges.
-		"""
-		self.graph[vertex] = {}
-		return vertex
-		
-	def addEdge(self, vertex1, vertex2, edge):
-		"""
-		Add `edge` to the graph as an edge connecting vertices `vertex1` and
-		`vertex2`, which must already be present in the graph.
-		"""
-		self.graph[vertex1][vertex2] = edge
-		self.graph[vertex2][vertex1] = edge
-		return edge
-		
-	def hasEdge(self, vertex1, vertex2):
-		"""
-		Returns true if vertices `vertex1` and `vertex2`, are in the graph and
-		are connected by an edge.
-		"""
-		if vertex1 in self.graph.keys():
-			if vertex2 in self.graph[vertex1].keys():
-				return True
-		return False
-	
-	def isIsomorphic(self, other):
-		"""
-		Returns :data:`True` if two graphs are isomorphic and :data:`False`
-		otherwise. Uses the VF2 algorithm of Vento and Foggia.
-		"""
-		return VF2_isomorphic(self.graph, other.graph, False)
-		
-	def isSubgraphIsomorphic(self, other, map12={}, map21={}):
-		"""
-		Returns :data:`True` if `other` is subgraph isomorphic and :data:`False`
-		otherwise. Uses the VF2 algorithm of Vento and Foggia.
-		"""
-		return VF2_isomorphic(self.graph, other.graph, True, False)
-
-	def findSubgraphIsomorphisms(self, other):
-		"""
-		Returns :data:`True` if `other` is subgraph isomorphic and :data:`False`
-		otherwise. Uses the VF2 algorithm of Vento and Foggia.
-		"""
-		return VF2_isomorphic(self.graph, other.graph, True, True)
-
-
 ################################################################################
 
 class ChemGraph:
@@ -164,7 +67,7 @@ class ChemGraph:
 	"""
 
 	def __init__(self, atoms=None, bonds=None):
-		self.initialize(atoms, bonds)
+		self.initialize(atoms or [], bonds or [])
 		
 	def atoms(self):
 		"""
@@ -190,6 +93,7 @@ class ChemGraph:
 		no edges.
 		"""
 		self.graph[atom] = {}
+		return atom
 		
 	def addBond(self, bond):
 		"""
@@ -199,7 +103,23 @@ class ChemGraph:
 		atom1 = bond.atoms[0]; atom2 = bond.atoms[1]
 		self.graph[atom1][atom2] = bond
 		self.graph[atom2][atom1] = bond
+		return bond
 		
+	def getBonds(self, atom):
+		"""
+		Return a list of the bonds involving the specified `atom`.
+		"""
+		if atom not in self.graph: return []
+		else: return self.graph[atom]
+
+	def getBond(self, atom1, atom2):
+		"""
+		Returns the bond connecting atoms `atom1` and `atom2` if it exists, or
+		:data:`None` if not.
+		"""
+		if self.hasBond(atom1, atom2):	return self.graph[atom1][atom2]
+		else:							return None
+
 	def hasBond(self, atom1, atom2):
 		"""
 		Returns true if atoms `atom1` and `atom2`, are in the graph and
@@ -232,6 +152,74 @@ class ChemGraph:
 		del self.graph[atom1][atom2]
 		del self.graph[atom2][atom1]
 
+	def merge(self, other):
+		"""
+		Merge two graphs so as to store them in a single Graph object.
+		"""
+
+		# Create output graph
+		new = ChemGraph()
+
+		# Add atoms to output graph
+		for atom in self.atoms():
+			new.addAtom(atom)
+		for atom in other.atoms():
+			new.addAtom(atom)
+
+		# Add bonds to output graph
+		for bond in self.bonds():
+			new.addBond(bond)
+		for bond in other.bonds():
+			new.addBond(bond)
+
+		return new
+
+	def split(self):
+		"""
+		Convert a single Graph object containing two or more unconnected graphs
+		into separate graphs.
+		"""
+		# Create potential output graphs
+		new1 = ChemGraph(); new2 = ChemGraph()
+
+		# Add all atoms and bonds to new1
+		for atom in self.atoms():
+			new1.addAtom(atom)
+		for bond in self.bonds():
+			new1.addBond(bond)
+
+		# Arbitrarily choose last atom as starting point
+		atomsToMove = [ self.atoms()[-1] ]
+		
+		# Iterate until there are no more atoms to move
+		index = 0
+		while index < len(atomsToMove):
+			for atom2 in self.getBonds(atomsToMove[index]):
+				if atom2 not in atomsToMove:
+					atomsToMove.append(atom2)
+			index += 1
+
+		# If all atoms are to be moved, simply return new1
+		if len(new1.atoms()) == len(atomsToMove):
+			return [new1]
+
+		# Copy to new graph
+		for atom in atomsToMove:
+			new2.addAtom(atom)
+		for atom1 in atomsToMove:
+			for atom2, bond in new1.getBonds(atom1).iteritems():
+				new2.addBond(bond)
+		
+		# Remove from old graph
+		for bond in new2.bonds():
+			new1.removeBond(bond)
+		for atom in atomsToMove:
+			new1.removeAtom(atom)
+
+		new = [new2]
+		new.extend(new1.split())
+		return new
+
 	def isIsomorphic(self, other):
 		"""
 		Returns :data:`True` if two graphs are isomorphic and :data:`False`
@@ -258,10 +246,11 @@ class ChemGraph:
 		Rebuild the `graph` data member based on the lists of atoms and bonds
 		provided in `atoms` and `bonds`, respectively.
 		"""
-		if atoms is None or bonds is None: 
+		self.graph = {}
+
+		if atoms is None or bonds is None:
 			return
 		
-		self.graph = {}
 		for atom in atoms:
 			self.graph[atom] = {}
 		for bond in bonds:
@@ -503,7 +492,7 @@ if __name__ == '__main__':
 	edge4 = graph1.addEdge(vertex4, vertex1, Edge('white'))
 	edge5 = graph1.addEdge(vertex4, vertex5, Edge('black'))
 	edge6 = graph1.addEdge(vertex4, vertex6, Edge('white'))
-	
+
 	graph2 = Graph()
 	vertex4 = graph2.addVertex(Vertex('blue'))
 	vertex5 = graph2.addVertex(Vertex('blue'))
@@ -517,7 +506,7 @@ if __name__ == '__main__':
 	edge4 = graph2.addEdge(vertex5, vertex1, Edge('white'))
 	#edge5 = graph2.addEdge(vertex5, vertex3, Edge('black'))
 	#edge6 = graph2.addEdge(vertex5, vertex6, Edge('white'))
-	
-	
+
+
 	#print graph1.isSubgraphIsomorphic(graph2)
 	print graph1.findSubgraphIsomorphisms(graph2)

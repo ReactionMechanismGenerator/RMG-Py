@@ -325,7 +325,7 @@ class Atom(object):
 			if atom.__class__ == AtomType:
 				self._atomType.append(atom)
 			else:
-				raise Exception('Invalid parameter "atomType".')
+				raise Exception('Invalid atom type "' + str(atomType) + '".')
 		
 	atomType = property(getAtomType, setAtomType)
 
@@ -496,7 +496,7 @@ class Atom(object):
 		elif self.electronState.label == '2S': self.electronState = electronStates['3']
 		elif self.electronState.label == '2T': self.electronState = electronStates['3']
 		else:
-			logging.exception('Cannot increase the radical number of this atom.')
+			raise Exception('Cannot increase the radical number of this atom.')
 
 	def decreaseFreeElectron(self):
 		"""
@@ -508,7 +508,7 @@ class Atom(object):
 		elif self.electronState.label == '2T': self.electronState = electronStates['1']
 		elif self.electronState.label == '3': self.electronState = electronStates['2']
 		else:
-			logging.exception('Cannot decrease the radical number of this atom.')
+			raise Exception('Cannot decrease the radical number of this atom.')
 
 ################################################################################
 
@@ -639,83 +639,95 @@ class Structure(graph.ChemGraph):
 	"""
 
 	def __init__(self, atoms=None, bonds=None):
-		graph.ChemGraph.initialize(self, atoms, bonds)
+		graph.ChemGraph.initialize(self, atoms or [], bonds or [])
 
+	def getFormula(self):
+		"""
+		Return the molecular formula for the structure.
+		"""
+		mol = pybel.Molecule(self.toOBMol())
+		return mol.formula
+	
 	def fromAdjacencyList(self, adjlist):
 		"""
 		Convert a string adjacency list `adjlist` into a structure object.
 		"""
 
-		atoms = []; bonds = []; atomdict = {}; bonddict = {}
+		try:
 
-		lines = adjlist.splitlines()
+			atoms = []; bonds = []; atomdict = {}; bonddict = {}
 
-		label = lines[0]
+			lines = adjlist.splitlines()
 
-		for line in lines[1:]:
+			label = lines[0]
 
-			data = line.split()
+			for line in lines[1:]:
 
-			# Skip if blank line
-			if len(data) == 0:
-				continue
+				data = line.split()
 
-			# First item is index for atom
-			# Sometimes these have a trailing period (as if in a numbered list),
-			# so remove it just in case
-			aid = int(data[0].strip('.'))
+				# Skip if blank line
+				if len(data) == 0:
+					continue
 
-			# If second item is '*', the atom is the center atom
-			center = ''
-			index = 1
-			if data[1][0] == '*':
-				center = data[1]
-				index = 2
+				# First item is index for atom
+				# Sometimes these have a trailing period (as if in a numbered list),
+				# so remove it just in case
+				aid = int(data[0].strip('.'))
 
-			# Next is the element or functional group element
-			# A list can be specified with the {,} syntax
-			elements = data[index]
-			if elements[0] == '{':
-				elements = elements[1:-1].split(',')
-			else:
-				elements = [elements]
+				# If second item is '*', the atom is the center atom
+				center = ''
+				index = 1
+				if data[1][0] == '*':
+					center = data[1]
+					index = 2
 
-			# Next is the electron state
-			elecState = data[index+1].upper()
-			if elecState[0] == '{':
-				elecState = elecState[1:-1].split(',')
-			else:
-				elecState = [elecState]
-
-			# Create a new atom based on the above information
-			atom = Atom(elements, elecState, 0, center)
-
-			# Add the atom to the list
-			atoms.append(atom)
-			atomdict[aid] = atom
-
-			bonddict[aid] = {}
-
-			# Process list of bonds
-			for datum in data[index+2:]:
-
-				# Sometimes commas are used to delimit bonds in the bond list,
-				# so strip them just in case
-				datum = datum.strip(',')
-
-				aid2, comma, btype = datum[1:-1].partition(',')
-				aid2 = int(aid2)
-
-				if btype[0] == '{':
-					btype = btype[1:-1].split(',')
+				# Next is the element or functional group element
+				# A list can be specified with the {,} syntax
+				elements = data[index]
+				if elements[0] == '{':
+					elements = elements[1:-1].split(',')
 				else:
-					btype = [btype]
+					elements = [elements]
 
-				if aid2 in atomdict:
-					bond = Bond([atomdict[aid], atomdict[aid2]], btype)
-					bonds.append(bond)
+				# Next is the electron state
+				elecState = data[index+1].upper()
+				if elecState[0] == '{':
+					elecState = elecState[1:-1].split(',')
+				else:
+					elecState = [elecState]
 
-				bonddict[aid][aid2] = btype
+				# Create a new atom based on the above information
+				atom = Atom(elements, elecState, 0, center)
+
+				# Add the atom to the list
+				atoms.append(atom)
+				atomdict[aid] = atom
+
+				bonddict[aid] = {}
+
+				# Process list of bonds
+				for datum in data[index+2:]:
+
+					# Sometimes commas are used to delimit bonds in the bond list,
+					# so strip them just in case
+					datum = datum.strip(',')
+
+					aid2, comma, btype = datum[1:-1].partition(',')
+					aid2 = int(aid2)
+
+					if btype[0] == '{':
+						btype = btype[1:-1].split(',')
+					else:
+						btype = [btype]
+
+					if aid2 in atomdict:
+						bond = Bond([atomdict[aid], atomdict[aid2]], btype)
+						bonds.append(bond)
+
+					bonddict[aid][aid2] = btype
+
+		except Exception, e:
+			raise InvalidAdjacencyListException(label)
 
 		# Check consistency using bonddict
 		for atom1 in bonddict:
@@ -731,6 +743,7 @@ class Structure(graph.ChemGraph):
 		# Create and return functional group or species
 		self.initialize(atoms, bonds)
 
+		
 
 	def fromCML(self, cmlstr):
 		"""
@@ -811,7 +824,7 @@ class Structure(graph.ChemGraph):
 
 		for i, atom in enumerate(atoms):
 			adjlist += str(i+1) + ' ' + atom.atomType.label + ' ' + atom.electronState.label
-			for atom2, bond in self.graph[atom].iteritems():
+			for atom2, bond in self.getBonds(atom).iteritems():
 				adjlist += ' {' + str(atoms.index(atom2)+1) + ',' + bond.bondType.label + '}'
 			adjlist += '\n'
 
@@ -870,6 +883,21 @@ class Structure(graph.ChemGraph):
 		dom2 = xml.dom.minidom.parseString(self.toCML())
 		cml.appendChild(dom2.documentElement)
 
+	def simplifyAtomTypes(self):
+		"""
+		Iterate through the atoms in the structure, setting them to be equal
+		to their element.
+		"""
+		for atom1 in self.atoms():
+			# Only works for single atom types, not lists
+			if atom1.atomType.__class__ == list:
+				continue
+			# Skip generic atom types
+			if atom1.atomType.label == 'R' or atom1.atomType.label == 'R!H':
+				continue
+			# Reset atom type to that of element
+			atom1.atomType = atomTypes[atom1.atomType.element.symbol]
+
 	def updateAtomTypes(self):
 		"""
 		Iterate through the atoms in the structure, checking their atom types
@@ -888,7 +916,7 @@ class Structure(graph.ChemGraph):
 				continue
 			# Count numbers of each bond type
 			single = 0; double = 0; triple = 0; benzene = 0; carbonyl = False
-			for atom2, bond12 in self.graph[atom1].iteritems():
+			for atom2, bond12 in self.getBonds(atom1).iteritems():
 				if bond12.isSingle(): single += 1
 				elif bond12.isDouble(): double += 1
 				elif bond12.isTriple(): triple += 1
@@ -980,12 +1008,6 @@ class Structure(graph.ChemGraph):
 
 					atom1, atom2, atom3, bond12, bond23 = path
 
-					# Skip if invalid
-#					if atom1.electronState.order < 1 or \
-#							not bond12.canIncreaseOrder() or \
-#							not bond23.canDecreaseOrder():
-#						continue
-
 					# Adjust to (potentially) new resonance isomer
 					atom1.decreaseFreeElectron()
 					atom3.increaseFreeElectron()
@@ -993,8 +1015,6 @@ class Structure(graph.ChemGraph):
 					bond23.decreaseOrder()
 
 					# Make a copy of isomer
-					#isomer = Structure()
-					#isomer.fromSMILES(self.toSMILES())
 					isomer = self.copy()
 
 					# Restore current isomer
@@ -1020,10 +1040,10 @@ class Structure(graph.ChemGraph):
 
 		# Find all delocalization paths
 		paths = []
-		for atom2, bond12 in self.graph[atom1].iteritems():
+		for atom2, bond12 in self.getBonds(atom1).iteritems():
 			# Vinyl bond must be capable of gaining an order
 			if bond12.canIncreaseOrder():
-				for atom3, bond23 in self.graph[atom2].iteritems():
+				for atom3, bond23 in self.getBonds(atom2).iteritems():
 					# Allyl bond must be capable of losing an order without
 					# breaking
 					if atom1 is not atom3 and bond23.canDecreaseOrder():
@@ -1042,20 +1062,33 @@ class Structure(graph.ChemGraph):
 
 if __name__ == '__main__':
 	
-	print ''
-	
-	print 'Atom types available:'
-	for key, atomType in atomTypes.iteritems():
-		print '\t' + str(key)
-	print ''
+#	print ''
+#
+#	print 'Atom types available:'
+#	for key, atomType in atomTypes.iteritems():
+#		print '\t' + str(key)
+#	print ''
+#
+#	print 'Free electron states available:'
+#	for key, electronState in electronStates.iteritems():
+#		print '\t' + str(key)
+#	print ''
+#
+#	print 'Bond types available:'
+#	for key, bondType in bondTypes.iteritems():
+#		print '\t' + str(key)
+#	print ''
 
-	print 'Free electron states available:'
-	for key, electronState in electronStates.iteritems():
-		print '\t' + str(key)
-	print ''
-	
-	print 'Bond types available:'
-	for key, bondType in bondTypes.iteritems():
-		print '\t' + str(key)
-	print ''
-	
+	structure1 = Structure()
+	atom1 = structure1.addAtom(Atom('C', '0'))
+	atom2 = structure1.addAtom(Atom('C', '0'))
+	atom3 = structure1.addAtom(Atom('C', '0'))
+	atom4 = structure1.addAtom(Atom('C', '0'))
+	atom5 = structure1.addAtom(Atom('C', '0'))
+	atom6 = structure1.addAtom(Atom('C', '0'))
+	bond1 = structure1.addBond(Bond([atom1, atom2], 'S'))
+	bond2 = structure1.addBond(Bond([atom3, atom4], 'S'))
+	bond3 = structure1.addBond(Bond([atom5, atom6], 'S'))
+	#bond4 = structure1.addBond(Bond([atom4, atom5], 'S'))
+
+	print structure1.split()

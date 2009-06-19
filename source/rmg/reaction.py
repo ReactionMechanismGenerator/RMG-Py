@@ -48,17 +48,12 @@ class Reaction:
 	taken from thermodynamic reversibility.
 	"""
 	
-	def __init__(self, reactants=None, products=None, kinetics=None):
+	def __init__(self, reactants=None, products=None, kinetics=None, family=None):
 		"""Initialize a reaction object."""
-		if reactants is None:
-			self.reactants = []
-		else:
-			self.reactants = reactants
-		if products is None:
-			self.products = []
-		else:
-			self.products = products
+		self.reactants = reactants or []
+		self.products = products or []
 		self.kinetics = kinetics
+		self.family = family
 
 	def __str__(self):
 		"""
@@ -86,6 +81,53 @@ class Reaction:
 		:data:`False` otherwise.
 		"""
 		return len(self.reactants) == 2
+
+	def equivalent(self, other):
+		"""
+		Return :data:`True` if the two reactions are equivalent (i.e. they have
+		the same reactants and products and are of the same reaction family) and
+		:data:`False` otherwise.
+		"""
+
+		if len(self.reactants) != len(other.reactants) or \
+		  len(self.products) != len(other.products):
+			return False
+		elif self.family is not other.family:
+			return False
+
+		reactantsMatch = False
+		if len(self.reactants) == 1:
+			indices = [[0]]
+		elif len(self.reactants) == 2:
+			indices = [[0, 1], [1, 0]]
+		elif len(self.reactants) == 3:
+			indices = [[0, 1, 2], [0, 2, 1], [1, 0, 2], [1, 2, 0], [2, 0, 1], [2, 1, 0]]
+		for index in indices:
+			if reactantsMatch: continue
+			match = True
+			for i in range(len(self.reactants)):
+				if not self.reactants[i].isIsomorphic(other.reactants[index[i]]):
+					match = False
+			if match:
+				reactantsMatch = True
+
+		productsMatch = False
+		if len(self.products) == 1:
+			indices = [[0]]
+		elif len(self.products) == 2:
+			indices = [[0, 1], [1, 0]]
+		elif len(self.products) == 3:
+			indices = [[0, 1, 2], [0, 2, 1], [1, 0, 2], [1, 2, 0], [2, 0, 1], [2, 1, 0]]
+		for index in indices:
+			if productsMatch: continue
+			match = True
+			for i in range(len(self.reactants)):
+				if not self.products[i].isIsomorphic(other.products[index[i]]):
+					match = False
+			if match:
+				productsMatch = True
+
+		return reactantsMatch and productsMatch
 
 ################################################################################
 

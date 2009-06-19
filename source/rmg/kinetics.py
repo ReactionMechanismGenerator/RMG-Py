@@ -81,6 +81,93 @@ class ArrheniusEPKinetics:
 
 ################################################################################
 
+class ReactionRecipe:
+	"""
+	Represent a list of actions that, when executed, result in the conversion
+	of a set of reactants to a set of products.
+	"""
+
+	def __init__(self, actions=None):
+		self.actions = actions or []
+
+	def addAction(self, action):
+		self.actions.append(action)
+
+	def apply(self, structure, atoms, doForward):
+
+		for action in self.actions:
+			if action[0] == 'CHANGE_BOND' or action[0] == 'FORM_BOND' or action[0] == 'BREAK_BOND':
+
+				label1, info, label2 = action[1:]
+				if label1 not in atoms or label2 not in atoms:
+					raise Exception('Invalid atom labels found while attempting to execute reaction recipe.')
+
+				# Find associated atoms
+				atom1 = atoms[label1]
+				atom2 = atoms[label2]
+				if atom1 is None or atom2 is None:
+					raise Exception('Invalid atom labels found while attempting to execute reaction recipe.')
+
+				# If found, change bond
+				if action[0] == 'CHANGE_BOND':
+					bond = structure.getBond(atom1, atom2)
+					info = int(info)
+					if bond is not None:
+						for i in range(0, abs(info)):
+							if doForward:
+								if info > 0:	bond.increaseOrder()
+								elif info < 0:	bond.decreaseOrder()
+							else:
+								if info > 0:	bond.decreaseOrder()
+								elif info < 0:	bond.increaseOrder()
+				elif action[0] == 'FORM_BOND':
+					if doForward:
+						bond = chem.Bond([atom1, atom2], info)
+						structure.addBond(bond)
+					else:
+						bond = structure.getBond(atom1, atom2)
+						structure.removeBond(bond)
+				elif action[0] == 'BREAK_BOND':
+					if doForward:
+						bond = structure.getBond(atom1, atom2)
+						structure.removeBond(bond)
+					else:
+						bond = chem.Bond([atom1, atom2], info)
+						structure.addBond(bond)
+
+			elif action[0] == 'LOSE_RADICAL' or action[0] == 'GAIN_RADICAL':
+
+				label, change = action[1:]
+				change = int(change)
+				if label not in atoms:
+					raise Exception('Invalid atom labels found while attempting to execute reaction recipe.')
+
+				# Find associated atoms
+				atom = atoms[label]
+				if atom is None:
+					raise Exception('Invalid atom labels found while attempting to execute reaction recipe.')
+
+				# If found, adjust radical
+				for i in range(0, change):
+					if doForward:
+						if action[0] == 'LOSE_RADICAL':		atom.decreaseFreeElectron()
+						elif action[0] == 'GAIN_RADICAL':	atom.increaseFreeElectron()
+					else:
+						if action[0] == 'LOSE_RADICAL':		atom.increaseFreeElectron()
+						elif action[0] == 'GAIN_RADICAL':	atom.decreaseFreeElectron()
+
+			else:
+				raise Exception('Unknown action "' + action[0] + '" encountered while attempting to execute reaction recipe.')
+
+
+	def applyForward(self, structure, atoms):
+		return self.apply(structure, atoms, True)
+
+	def applyReverse(self, structure, atoms):
+		return self.apply(structure, atoms, False)
+
+################################################################################
+
 class ReactionFamily(data.Database):
 	"""
 	Represent a reaction family: a set of reactions with similar chemistry, and
@@ -89,12 +176,13 @@ class ReactionFamily(data.Database):
 	reacting, and a dictionary-library-tree `database` of rate rules.
 	"""
 
-	def __init__(self, label='', template='', actions='', database=None):
+	def __init__(self, label='', template='', recipe=None, database=None):
 		data.Database.__init__(self)
 		self.label = label
 		self.template = template
-		self.actions = actions
+		self.recipe = None
 		self.forbidden = None
+		self.reverse = None
 
 	def load(self, path):
 		"""
@@ -104,8 +192,8 @@ class ReactionFamily(data.Database):
 		# Generate paths to files in the database
 		dictstr = path + '/dictionary.txt'
 		treestr = path + '/tree.txt'
-		libstr = path + '/rateLibrary.txt'
-		adjstr = path + '/reactionAdjList.txt'
+		libstr = path + '/library.txt'
+		tempstr = path + '/template.txt'
 		forbstr = path + '/forbiddenGroups.txt'
 
 		# Load the dictionary, tree, and library using the generic methods
@@ -115,7 +203,7 @@ class ReactionFamily(data.Database):
 		self.__processLibraryData()
 
 		# Load the adjlist
-		self.__loadAdjList(adjstr)
+		self.loadTemplate(tempstr)
 
 		# Load the forbidden groups if necessary
 		if os.path.exists(forbstr):
@@ -166,13 +254,13 @@ class ReactionFamily(data.Database):
 			else:
 				raise data.InvalidDatabaseException('Kinetics library data format is unrecognized.')
 
-	def __loadAdjList(self, path):
+	def loadTemplate(self, path):
 		"""
-		Load and process an adjList file located at `path`. This file is part
-		of every reaction family.
+		Load and process a reaction template file located at `path`. This file
+		is part of every reaction family.
 		"""
 
-		# Process the adjList file, removing comments and empty lines
+		# Process the template file, removing comments and empty lines
 		info = ''
 		try:
 			frec = open(path, 'r')
@@ -189,32 +277,61 @@ class ReactionFamily(data.Database):
 		finally:
 			frec.close()
 
-		# Process adjlist
 		lines = info.splitlines()
-		# First line is template
-		reactants = []; products = []
+
+		# First line is 'Forward: <name of forward reaction>
+		# Second line is 'Reverse: <name of reverse reaction>
+		forward = ''; reverse = ''
+		if lines[0].find('Forward:') > 0:
+			forward = line[9:].strip()
+		if lines[1].find('Reverse:') > 0:
+			reverse = line[9:].strip()
+
+		# Third line is reaction template, of the form
+		# A1 A2 ... + B1 B2 ... + ... <---> C1 C2 ... + D1 D2 ... + ...
+		# A, B, ... are reactants; C, D, ... are products
+		# A1, A2, ... represent different trees for the same species
+		# The first tree of each species is always used to identify reactions,
+		# while the others are used to select the appropriate kinetics
+		reactants = []; products = []; species = []
 		atArrow = False
-		for item in lines[0].split():
-			item = item.strip()
-			if item == '+': pass
-			elif item.find('->') > -1: atArrow = True
+		items = lines[2].split(); items.extend('+')
+		for item in items:
+			if item == '+' or (item[0] == '<' and item[-1] == '>' and item.find('-') > -1):
+				if len(species) == 1: species = species[0]
+				if atArrow:		products.append(species)
+				else:			reactants.append(species)
+				species = []
+				if item[0] == '<' and item[-1] == '>' and item.find('-') > -1:
+					atArrow = True
 			else:
-				if atArrow: products.append(item)
-				else: reactants.append(item)
-		# Check that all reactants are in dictionary; if so, convert to structures
-		for reactant in reactants:
-			if reactant not in self.dictionary:
-				raise data.InvalidDatabaseException('Reaction family template contains an unknown reactant.')
+				# Check that all structures are in dictionary
+				if item not in self.dictionary:
+					raise data.InvalidDatabaseException('Reaction family template contains an unknown structure.')
+				species.append(item)
+
 		# Set template reaction
 		self.template = reaction.Reaction(reactants, products)
-		# Skip forward/reverse and thermo_consistence information
-		index = 1
-		while not lines[index].lower().find('actions') and index < len(lines):
-			index += 1
-		# Read actions
-		self.actions = ''
-		for line in lines[index:]:
-			self.actions += line + '\n'
+		
+		# Remaining lines are reaction recipe for forward reaction
+		self.recipe = ReactionRecipe()
+		for line in lines[3:]:
+			line = line.strip()
+
+			# First item is the name of the action
+			items = line.split()
+			action = [ items[0].upper() ]
+			if items[0] != 'CHANGE_BOND' and items[0] != 'FORM_BOND' and \
+			  items[0] != 'BREAK_BOND' and items[0] != 'GAIN_RADICAL' and \
+			  items[0] != 'LOSE_RADICAL':
+				print items[0]
+
+			# Remaining items are comma-delimited list of parameters enclosed by
+			# {}, which we will split into individual parameters
+			action.extend(line[len(items[0]):].strip()[1:-1].split(','))
+
+			self.recipe.addAction(action)
+		
 
 	def reactantMatch(self, reactant, templateReactant):
 		"""
@@ -222,6 +339,7 @@ class ReactionFamily(data.Database):
 		template reactant and :data:`False` if not.
 		"""
 		maps12 = []; maps21 = []
+		if templateReactant.__class__ == list: templateReactant = templateReactant[0]
 		structure = self.dictionary[templateReactant]
 		if structure.__class__ == str or structure.__class__ == unicode:
 			if structure.lower() == 'union':
@@ -232,7 +350,7 @@ class ReactionFamily(data.Database):
 			return reactant.findSubgraphIsomorphisms(structure)
 		
 		return len(maps12) > 0, maps12, maps21
-	
+
 	def getReactionList(self, reactants):
 		"""
 		Generate a list of all of the possible reactions of this family between
@@ -242,24 +360,75 @@ class ReactionFamily(data.Database):
 		# If the number of reactants provided does not match the number of
 		# reactants in the template, return False
 		if len(reactants) == 1 and self.template.isUnimolecular():
-			ismatch, map12, map21 = self.reactantMatch(reactants[0], self.template.reactants[0])
-			if len(map12) > 0:
-				print self.label, len(map12)
+
+			# Iterate over all resonance isomers of the reactant
+			for structure in reactants[0].structure:
+				
+				ismatch, map12, map21 = self.reactantMatch(structure, self.template.reactants[0])
+				for map in map12:
+
+					# Find atoms associated with each label
+					atoms = {}
+					for key, value in map.iteritems():
+						if key.label != '':
+							atoms[key.label] = value
+
+					# Generate the product structure
+					self.recipe.applyForward(structure, atoms)
+					productStructure = structure.copy()
+					self.recipe.applyReverse(structure, atoms)
+
+					# Split product structure into multiple species if necessary
+					if len(self.template.products) > 1:
+						productList = productStructure.split()
+					else:
+						productList = [productStructure]
+
+					# Convert structure(s) to products
+					products = []
+					for product in productList:
+						spec = species.makeNewSpecies(product)
+						products.append(spec)
+
+					# Skip if no reaction (i.e. reactant and product are isomorphic)
+					if len(products) == 1 and reactants[0].isIsomorphic(products[0]):
+						pass
+					else:
+
+						# Create reaction and add if unique
+						rxn1 = reaction.Reaction(reactants, products)
+						found = False
+						for rxn2 in rxnList:
+							if rxn1.equivalent(rxn2): found = True
+						if not found: rxnList.append(rxn1)
+
+					
+
+
+		# Bimolecular reactants: A + B --> products
 		elif len(reactants) == 2 and self.template.isBimolecular():
 
 			# Reactants stored as A + B
-			ismatch_0, map12_0, map21_0 = self.reactantMatch(reactants[0], self.template.reactants[0])
-			ismatch_1, map12_1, map21_1 = self.reactantMatch(reactants[1], self.template.reactants[1])
-			if len(map12_0) > 0 and len(map12_1) > 0:
-				print self.label, len(map12_0), len(map12_1)
+			ismatch_A, map12_A, map21_A = self.reactantMatch(reactants[0], self.template.reactants[0])
+			ismatch_B, map12_B, map21_B = self.reactantMatch(reactants[1], self.template.reactants[1])
+
+			# Iterate over each pair of matches (A, B)
+			for mapA in map12_A:
+				for mapB in map12_A:
+					# Find atoms associated with each label
+					atoms = {}
+					for key, value in mapA.iteritems():
+						if key.label != '': atoms[key.label] = value
+					for key, value in mapB.iteritems():
+						if key.label != '': atoms[key.label] = value
 
 			# Reactants stored as B + A
 			ismatch_0, map12_0, map21_0 = self.reactantMatch(reactants[0], self.template.reactants[1])
 			ismatch_1, map12_1, map21_1 = self.reactantMatch(reactants[1], self.template.reactants[0])
-			if len(map12_0) > 0 and len(map12_1) > 0:
-				print self.label, len(map12_0), len(map12_1)
+			#if len(map12_0) > 0 and len(map12_1) > 0:
+			#	print self.label, len(map12_0), len(map12_1)
 
-		return []
+		return rxnList
 
 ################################################################################
 
@@ -308,22 +477,18 @@ class ReactionFamilySet:
 				self.families[label] = family
 				logging.debug('\t\t' + label)
 
-	def getUnimolecularReactions(self, species):
+	def getReactions(self, species):
 		"""
 		Generate a list of reactions that involve a single `species` as a reactant or product.
 		"""
 		for key, family in self.families.iteritems():
-			rxnList = family.getReactionList([species])
-			#print family.label, len(rxnList)
+			rxnList = family.getReactionList(species)
+			if len(rxnList) > 0:
+				print 'Found', len(rxnList), family.label, 'reactions'
+				for rxn in rxnList:
+					print '\t' + str(rxn)
 
-	def getBimolecularReactions(self, species1, species2):
-		"""
-		Generate a list of reactions that involve a pair of species `species1`
-		and `species2` as a set of reactants or products.
-		"""
-		for key, family in self.families.iteritems():
-			rxnList = family.getReactionList([species1, species2])
-			#print family.label, len(rxnList)
+	
 
 database = None
 
@@ -360,15 +525,15 @@ if __name__ == '__main__':
 16 H 0 {6,S}
 """)
 
-	species1 = species.Species('HXD13', structure1, True)
+	species1 = species.Species('C6H9', structure1, True)
 
-	print len(species1.structure)
+	#print len(species1.structure)
 
 	structure2 = chem.Structure()
 	structure2.fromSMILES('[H][H]')
 	species2 = species.Species('H2', structure2, True)
 
-	database.getUnimolecularReactions(species1)
-	database.getBimolecularReactions(species1, species2)
+	database.getReactions([species1])
+	database.getReactions([species1, species2])
 
 	

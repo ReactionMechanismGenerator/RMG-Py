@@ -37,6 +37,8 @@ import thermo
 
 ################################################################################
 
+speciesDictionary = {}
+
 class Species:
 	"""
 	Represent a chemical species (including all of its resonance forms). Each
@@ -56,8 +58,14 @@ class Species:
 		"""
 		Species.numSpecies += 1
 		self.id = Species.numSpecies
+		speciesDictionary[self.id] = self
+
 		self.label = label
-		self.structure = [structure]
+		if structure:
+			structure.simplifyAtomTypes()
+			self.structure = [structure]
+		else:
+			self.structure = []
 		self.reactive = reactive
 
 		self.thermo = None
@@ -169,9 +177,15 @@ class Species:
 		Returns :data:`True` if the two species are isomorphic and data:`False`
 		otherwise.
 		"""
-		for struct1 in self.structure:
-			for struct2 in other.structure:
-				ismatch, map12, map21 = struct1.isIsomorphic(struct2)
+		if other.__class__ == Species:
+			for struct1 in self.structure:
+				for struct2 in other.structure:
+					ismatch, map12, map21 = struct1.isIsomorphic(struct2)
+					if ismatch:
+						return True
+		elif other.__class__ == chem.Structure:
+			for struct1 in self.structure:
+				ismatch, map12, map21 = struct1.isIsomorphic(other)
 				if ismatch:
 					return True
 		return False
@@ -204,6 +218,18 @@ class Species:
 		Return a string representation of the species, in the form 'label(id)'.
 		"""
 		return self.label + '(' + str(self.id) + ')'
+
+################################################################################
+
+def makeNewSpecies(structure):
+
+	# Return an existing species if a match is found
+	for id, species in speciesDictionary.iteritems():
+		if species.isIsomorphic(structure):
+			return species
+
+	# Otherwise make a new species
+	return Species(structure.getFormula(), structure)
 
 ################################################################################
 
