@@ -84,16 +84,65 @@ class ArrheniusEPKinetics:
 class ReactionRecipe:
 	"""
 	Represent a list of actions that, when executed, result in the conversion
-	of a set of reactants to a set of products.
+	of a set of reactants to a set of products. There are currently five such
+	actions:
+
+	- CHANGE_BOND {center1,order,center2} - change the bond order of the bond
+	between center1 and center2 by order; do not break or form bonds
+
+	- FORM_BOND {center1,order,center2} - form a new bond between center1 and
+	center2 of type order
+
+	- BREAK_BOND {center1,order,center2} - break the bond between center1 and
+	center2, which should be of type order
+
+	- GAIN_RADICAL {center,radical} - Increase the number of free electrons on
+	center by radical
+
+	- LOSE_RADICAL {center,radical} - Decrease the number of free electrons on
+	center by radical
+
+	Each action is a list of items; the first is the action name, while the
+	rest are the action parameters as indicated above.
 	"""
 
 	def __init__(self, actions=None):
 		self.actions = actions or []
 
 	def addAction(self, action):
+		"""
+		Add an action to the reaction recipe.
+		"""
 		self.actions.append(action)
 
+	def getReverse(self):
+		"""
+		Generate a reaction recipe that, when applied, does the opposite of
+		what the current recipe does, i.e., it is the recipe for the reverse
+		of the reaction that this is the recipe for.
+		"""
+		other = ReactionRecipe()
+		for action in self.actions:
+			if action[0] == 'CHANGE_BOND':
+				other.addAction(['CHANGE_BOND', action[1], str(-int(action[2])), action[3]])
+			elif action[0] == 'FORM_BOND':
+				other.addAction(['BREAK_BOND', action[1], action[2], action[3]])
+			elif action[0] == 'BREAK_BOND':
+				other.addAction(['FORM_BOND', action[1], action[2], action[3]])
+			elif action[0] == 'LOSE_RADICAL':
+				other.addAction(['GAIN_RADICAL', action[1], action[2]])
+			elif action[0] == 'GAIN_RADICAL':
+				other.addAction(['LOSE_RADICAL', action[1], action[2]])
+		return other
+	
 	def apply(self, structure, atoms, doForward):
+		"""
+		Apply the reaction recipe to the set of molecules contained in
+		`structure`, a single Structure object that contains one or more
+		structures. The `atoms` parameter is a dictionary of the labeled atom
+		centers in the structure. The `doForward` parameter is used to indicate
+		whether the forward or reverse recipe should be applied.
+		"""
 
 		for action in self.actions:
 			if action[0] == 'CHANGE_BOND' or action[0] == 'FORM_BOND' or action[0] == 'BREAK_BOND':
@@ -161,9 +210,23 @@ class ReactionRecipe:
 
 
 	def applyForward(self, structure, atoms):
+		"""
+		Apply the reaction recipe to the set of molecules contained in
+		`structure`, a single Structure object that contains one or more
+		structures. The `atoms` parameter is a dictionary of the labeled atom
+		centers in the structure. The recipe is applied in the forward
+		direction.
+		"""
 		return self.apply(structure, atoms, True)
 
 	def applyReverse(self, structure, atoms):
+		"""
+		Apply the reaction recipe to the set of molecules contained in
+		`structure`, a single Structure object that contains one or more
+		structures. The `atoms` parameter is a dictionary of the labeled atom
+		centers in the structure. The recipe is applied in the reverse
+		direction.
+		"""
 		return self.apply(structure, atoms, False)
 
 ################################################################################
@@ -176,7 +239,7 @@ class ReactionFamily(data.Database):
 	reacting, and a dictionary-library-tree `database` of rate rules.
 	"""
 
-	def __init__(self, label='', template='', recipe=None, database=None):
+	def __init__(self, label='', template='', recipe=None):
 		data.Database.__init__(self)
 		self.label = label
 		self.template = template
@@ -200,18 +263,18 @@ class ReactionFamily(data.Database):
 		data.Database.load(self, dictstr, treestr, libstr)
 
 		# Process the data in the library
-		self.__processLibraryData()
-
-		# Load the adjlist
-		self.loadTemplate(tempstr)
+		self.processLibraryData()
 
 		# Load the forbidden groups if necessary
 		if os.path.exists(forbstr):
 			self.forbidden = data.Dictionary()
 			self.forbidden.load(forbstr)
 			self.forbidden.toStructure()
+		
+		# Load the adjlist (must be last, as the reverse family is also generated)
+		self.loadTemplate(tempstr)
 
-	def __processLibraryData(self):
+	def processLibraryData(self):
 		"""
 		Convert the data in the library from a string/unicode object to either
 		an :class:`ArrheniusEPKinetics` object or a list of [link, comment]
@@ -282,10 +345,10 @@ class ReactionFamily(data.Database):
 		# First line is 'Forward: <name of forward reaction>
 		# Second line is 'Reverse: <name of reverse reaction>
 		forward = ''; reverse = ''
-		if lines[0].find('Forward:') > 0:
-			forward = line[9:].strip()
-		if lines[1].find('Reverse:') > 0:
-			reverse = line[9:].strip()
+		if lines[0].find('Forward:') > -1:
+			self.label = lines[0][9:].strip()
+		if lines[1].find('Reverse:') > -1:
+			reverse = lines[1][9:].strip()
 
 		# Third line is reaction template, of the form
 		# A1 A2 ... + B1 B2 ... + ... <---> C1 C2 ... + D1 D2 ... + ...
@@ -332,6 +395,15 @@ class ReactionFamily(data.Database):
 
 			self.recipe.addAction(action)
 		
+		# Generate the reverse template
+		if reverse != self.label:
+			template = reaction.Reaction(self.template.products, self.template.reactants)
+			self.reverse = ReactionFamily(reverse, template, self.recipe.getReverse())
+			self.reverse.dictionary = self.dictionary
+			self.reverse.tree = self.tree
+			self.reverse.library = self.library
+			self.reverse.forbidden = self.forbidden
+			self.reverse.reverse = self
 
 	def reactantMatch(self, reactant, templateReactant):
 		"""
@@ -474,8 +546,11 @@ class ReactionFamilySet:
 			if os.path.isdir(path) and status.lower() == 'on':
 				family = ReactionFamily(label)
 				family.load(path)
-				self.families[label] = family
-				logging.debug('\t\t' + label)
+				self.families[family.label] = family
+				logging.debug('\t\t' + family.label)
+				if family.reverse is not None:
+					self.families[family.reverse.label] = family
+					logging.debug('\t\t' + family.reverse.label)
 
 	def getReactions(self, species):
 		"""
