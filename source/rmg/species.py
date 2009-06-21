@@ -87,6 +87,12 @@ class Species:
 		"""
 		return self.structure[0].toInChI()
 
+	def toSMILES(self):
+		"""
+		Convert a Species object to an InChI string.
+		"""
+		return self.structure[0].toSMILES()
+
 	def getResonanceIsomers(self):
 		"""
 		Generate all of the resonance isomers of this species. The isomers are
@@ -249,7 +255,10 @@ def makeNewSpecies(structure, label='', reactive=True):
 			return spec
 
 	# Otherwise make a new species
-	if label == '': label = structure.getFormula()
+	if label == '':
+		label = structure.getFormula()
+		for atom in structure.atoms():
+			if atom.hasFreeElectron(): label += 'J'
 	spec = Species(len(speciesList)+1, label, structure, reactive)
 	speciesList.insert(0, spec)
 

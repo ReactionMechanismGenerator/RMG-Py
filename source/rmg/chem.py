@@ -999,6 +999,74 @@ class Structure(graph.ChemGraph):
 
 		return Structure(atoms, bonds)
 
+	def merge(self, other):
+		"""
+		Merge two graphs so as to store them in a single Graph object.
+		"""
+
+		# Create output graph
+		new = Structure()
+
+		# Add atoms to output graph
+		for atom in self.atoms():
+			new.addAtom(atom)
+		for atom in other.atoms():
+			new.addAtom(atom)
+
+		# Add bonds to output graph
+		for bond in self.bonds():
+			new.addBond(bond)
+		for bond in other.bonds():
+			new.addBond(bond)
+
+		return new
+
+	def split(self):
+		"""
+		Convert a single Graph object containing two or more unconnected graphs
+		into separate graphs.
+		"""
+		# Create potential output graphs
+		new1 = Structure(); new2 = Structure()
+
+		# Add all atoms and bonds to new1
+		for atom in self.atoms():
+			new1.addAtom(atom)
+		for bond in self.bonds():
+			new1.addBond(bond)
+
+		# Arbitrarily choose last atom as starting point
+		atomsToMove = [ self.atoms()[-1] ]
+
+		# Iterate until there are no more atoms to move
+		index = 0
+		while index < len(atomsToMove):
+			for atom2 in self.getBonds(atomsToMove[index]):
+				if atom2 not in atomsToMove:
+					atomsToMove.append(atom2)
+			index += 1
+
+		# If all atoms are to be moved, simply return new1
+		if len(new1.atoms()) == len(atomsToMove):
+			return [new1]
+
+		# Copy to new graph
+		for atom in atomsToMove:
+			new2.addAtom(atom)
+		for atom1 in atomsToMove:
+			for atom2, bond in new1.getBonds(atom1).iteritems():
+				new2.addBond(bond)
+
+		# Remove from old graph
+		for bond in new2.bonds():
+			new1.removeBond(bond)
+		for atom in atomsToMove:
+			new1.removeAtom(atom)
+
+		new = [new2]
+		new.extend(new1.split())
+		return new
+
 	def getAdjacentResonanceIsomers(self):
 		"""
 		Generate all of the resonance isomers formed by one allyl radical shift.

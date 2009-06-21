@@ -189,7 +189,7 @@ def makeNewReaction(reactants, products, family=''):
 	reactionList.insert(0, rxn)
 	
 	# Note in the log
-	logging.debug('Created new reaction ' + str(rxn))
+	logging.debug('Created new ' + str(rxn.family) + ' reaction ' + str(rxn))
 
 	# Return newly created reaction
 	return rxn, True

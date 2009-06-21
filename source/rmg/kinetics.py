@@ -243,9 +243,12 @@ class ReactionFamily(data.Database):
 		data.Database.__init__(self)
 		self.label = label
 		self.template = template
-		self.recipe = None
+		self.recipe = recipe
 		self.forbidden = None
 		self.reverse = None
+
+	def __str__(self):
+		return self.label
 
 	def load(self, path):
 		"""
@@ -404,7 +407,7 @@ class ReactionFamily(data.Database):
 			self.reverse.library = self.library
 			self.reverse.forbidden = self.forbidden
 			self.reverse.reverse = self
-
+			
 	def reactantMatch(self, reactant, templateReactant):
 		"""
 		Return :data:`True` if the provided reactant matches the provided
@@ -423,6 +426,45 @@ class ReactionFamily(data.Database):
 		
 		return len(maps12) > 0, maps12, maps21
 
+	def makeReaction(self, reactants, structures, maps):
+		"""
+		Create a reaction.
+		"""
+		
+		# Find atoms associated with each label
+		atoms = {}
+		for map in maps:
+			for key, value in map.iteritems():
+				if key.label != '':
+					atoms[key.label] = value
+		
+		# Merge reactant structures into single structure
+		structure = chem.Structure()
+		for struct in structures:
+			structure = structure.merge(struct)
+			
+		# Generate the product structure
+		self.recipe.applyForward(structure, atoms)
+		productStructure = structure.copy()
+		self.recipe.applyReverse(structure, atoms)
+
+		# Split product structure into multiple species if necessary
+		if len(self.template.products) > 1:
+			productList = productStructure.split()
+		else:
+			productList = [productStructure]
+
+		# Convert structure(s) to products
+		products = []
+		for product in productList:
+			spec = species.makeNewSpecies(product)
+			products.append(spec)
+
+		# Create reaction and add if unique
+		rxn, isNew = reaction.makeNewReaction(reactants, products, self)
+		if isNew:	return rxn
+		else:		return None
+
 	def getReactionList(self, reactants):
 		"""
 		Generate a list of all of the possible reactions of this family between
@@ -436,58 +478,47 @@ class ReactionFamily(data.Database):
 			# Iterate over all resonance isomers of the reactant
 			for structure in reactants[0].structure:
 				
-				ismatch, map12, map21 = self.reactantMatch(structure, self.template.reactants[0])
+				# Make a copy of structure so we don't modify the original
+				structureCopy = structure.copy()
+				
+				ismatch, map12, map21 = self.reactantMatch(structureCopy, self.template.reactants[0])
 				for map in map12:
-
-					# Find atoms associated with each label
-					atoms = {}
-					for key, value in map.iteritems():
-						if key.label != '':
-							atoms[key.label] = value
-
-					# Generate the product structure
-					self.recipe.applyForward(structure, atoms)
-					productStructure = structure.copy()
-					self.recipe.applyReverse(structure, atoms)
-
-					# Split product structure into multiple species if necessary
-					if len(self.template.products) > 1:
-						productList = productStructure.split()
-					else:
-						productList = [productStructure]
-
-					# Convert structure(s) to products
-					products = []
-					for product in productList:
-						spec = species.makeNewSpecies(product)
-						products.append(spec)
-
-					# Create reaction and add if unique
-					rxn, isNew = reaction.makeNewReaction(reactants, products, self)
-					if isNew: rxnList.append(rxn)
+					rxn = self.makeReaction(reactants, [structureCopy], [map])
+					if rxn is not None:
+						rxnList.append(rxn)
 
 		# Bimolecular reactants: A + B --> products
 		elif len(reactants) == 2 and self.template.isBimolecular():
 
-			# Reactants stored as A + B
-			ismatch_A, map12_A, map21_A = self.reactantMatch(reactants[0], self.template.reactants[0])
-			ismatch_B, map12_B, map21_B = self.reactantMatch(reactants[1], self.template.reactants[1])
+			# Iterate over all resonance isomers of the reactant
+			for structureA in reactants[0].structure:
+				for structureB in reactants[1].structure:
 
-			# Iterate over each pair of matches (A, B)
-			for mapA in map12_A:
-				for mapB in map12_A:
-					# Find atoms associated with each label
-					atoms = {}
-					for key, value in mapA.iteritems():
-						if key.label != '': atoms[key.label] = value
-					for key, value in mapB.iteritems():
-						if key.label != '': atoms[key.label] = value
+					# Make a copy of structure so we don't modify the original
+					structureACopy = structureA.copy()
+					structureBCopy = structureB.copy()
 
-			# Reactants stored as B + A
-			ismatch_0, map12_0, map21_0 = self.reactantMatch(reactants[0], self.template.reactants[1])
-			ismatch_1, map12_1, map21_1 = self.reactantMatch(reactants[1], self.template.reactants[0])
-			#if len(map12_0) > 0 and len(map12_1) > 0:
-			#	print self.label, len(map12_0), len(map12_1)
+					# Reactants stored as A + B
+					ismatch_A, map12_A, map21_A = self.reactantMatch(structureACopy, self.template.reactants[0])
+					ismatch_B, map12_B, map21_B = self.reactantMatch(structureBCopy, self.template.reactants[1])
+
+					# Iterate over each pair of matches (A, B)
+					for mapA in map12_A:
+						for mapB in map12_B:
+							rxn = self.makeReaction(reactants, [structureACopy, structureBCopy], [mapA, mapB])
+							if rxn is not None:
+								rxnList.append(rxn)
+					
+					# Reactants stored as B + A
+					ismatch_0, map12_A, map21_A = self.reactantMatch(structureACopy, self.template.reactants[1])
+					ismatch_1, map12_B, map21_B = self.reactantMatch(structureBCopy, self.template.reactants[0])
+
+					# Iterate over each pair of matches (A, B)
+					for mapA in map12_A:
+						for mapB in map12_B:
+							rxn = self.makeReaction(reactants, [structureACopy, structureBCopy], [mapA, mapB])
+							if rxn is not None:
+								rxnList.append(rxn)
 
 		return rxnList
 
@@ -538,21 +569,17 @@ class ReactionFamilySet:
 				self.families[family.label] = family
 				logging.debug('\t\t' + family.label)
 				if family.reverse is not None:
-					self.families[family.reverse.label] = family
+					self.families[family.reverse.label] = family.reverse
 					logging.debug('\t\t' + family.reverse.label)
 
 	def getReactions(self, species):
 		"""
 		Generate a list of reactions that involve a single `species` as a reactant or product.
 		"""
+		rxnList = []
 		for key, family in self.families.iteritems():
-			rxnList = family.getReactionList(species)
-			if len(rxnList) > 0:
-				print 'Found', len(rxnList), family.label, 'reactions'
-				for rxn in rxnList:
-					print '\t' + str(rxn)
-
-	
+			rxnList.extend(family.getReactionList(species))
+		return rxnList
 
 database = None
 
@@ -589,7 +616,7 @@ if __name__ == '__main__':
 16 H 0 {6,S}
 """)
 
-	species1 = species.makeNewSpecies(structure1, 'C6H9', True)
+	species1 = species.makeNewSpecies(structure1, 'C6H9J', True)
 
 	#print len(species1.structure)
 
@@ -597,7 +624,9 @@ if __name__ == '__main__':
 	structure2.fromSMILES('[H][H]')
 	species2 = species.makeNewSpecies(structure2, 'H2', True)
 
-	database.getReactions([species1])
-	database.getReactions([species1, species2])
-
+	rxnList = database.getReactions([species1])
+	#rxnList = database.getReactions([species1, species2])
+	for rxn in rxnList:
+		print rxn
+	
 	
