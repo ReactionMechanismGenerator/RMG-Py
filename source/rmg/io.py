@@ -38,7 +38,7 @@ import chem
 import data
 import thermo
 import kinetics
-from species import Species
+from species import makeNewSpecies
 
 """
 Contains functions for manipulation of RMG input and output files.
@@ -164,6 +164,7 @@ def readInputFile(fstr):
 		# Process species
 		speciesDict = {}
 		elements = getElements(root, 'species')
+		logging.info('Found ' + str(len(elements)) + ' species')
 		for element in elements:
 			
 			# Attributes of the species element
@@ -194,18 +195,12 @@ def readInputFile(fstr):
 				raise InvalidInputFileException('Species '+label+' missing structure information.' )
 			
 			# Create a new species and append the species to the core
-			species = Species(label, structure, reactive)
+			species = makeNewSpecies(structure, label, reactive)
 			reactionModel.core.species.append(species)
-			
+		
 			# Add to local species dictionary (for matching with other parts of file)
 			speciesDict[sid] = species
-		
-		# Output info about reaction system
-		logging.info('Found ' + str(len(reactionModel.core.species)) + ' species')
-		for species in reactionModel.core.species:
-			logging.debug('Species ' + str(species) + ':')
-			if logging.getLogger().isEnabledFor(logging.DEBUG):
-				logging.debug('\t' + species.structure[0].toInChI())
+
 		logging.debug('')
 		
 		# Process reaction systems
@@ -263,7 +258,7 @@ def readInputFile(fstr):
 				sid = concentration.getAttribute('speciesID')
 				units = str(concentration.getAttribute('units'))
 				C = pq.Quantity(value, units); C.units = 'mol/m**3'
-			
+
 				reactionSystem.initialConcentration[speciesDict[sid]] = C
 			
 			# Append to list of reaction systems

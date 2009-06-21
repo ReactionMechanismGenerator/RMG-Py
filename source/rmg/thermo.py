@@ -165,7 +165,7 @@ class ThermoGAData:
 		string += 'Comment: ' + str(self.comment)
 		return string
 
-	def heatCapacity(self, T):
+	def getHeatCapacity(self, T):
 		"""
 		Return the heat capacity at temperature `T`.
 		"""
@@ -179,7 +179,7 @@ class ThermoGAData:
 				if Tmin <= T and T < Tmax:
 					return (Cpmax - Cpmin) * ((T - Tmin) / (Tmax - Tmin)) + Cpmin
 
-	def enthalpy(self, T):
+	def getEnthalpy(self, T):
 		"""
 		Return the enthalpy at temperature `T`.
 		"""
@@ -197,7 +197,7 @@ class ThermoGAData:
 			H += self.Cp[-1] * (T - ThermoGAData.CpTlist[-1])
 		return H
 
-	def entropy(self, T):
+	def getEntropy(self, T):
 		"""
 		Return the entropy at temperature `T`.
 		"""
@@ -215,7 +215,7 @@ class ThermoGAData:
 			S += self.Cp[-1] * math.log(T / ThermoGAData.CpTlist[-1])
 		return S
 
-	def freeEnergy(self, T):
+	def getFreeEnergy(self, T):
 		"""
 		Return the Gibbs free energy at temperature `T`.
 		"""
@@ -479,14 +479,14 @@ class ThermoDatabaseSet:
 
 		thermoData = ThermoGAData()
 
-		if structure.radicalCount() > 0:
+		if structure.getRadicalCount() > 0:
 			# Make a copy of the structure so we don't change the original
 			struct = structure.copy()
 			# Saturate structure by replacing all radicals with bonds to 
 			# hydrogen atoms
 			added = {}
 			for atom in struct.atoms():
-				for i in range(0, atom.freeElectronCount()):
+				for i in range(0, atom.getFreeElectronCount()):
 					H = chem.Atom('H', '0')
 					bond = chem.Bond([atom, H], 'S')
 					struct.addAtom(H)
@@ -624,9 +624,9 @@ if __name__ == '__main__':
 	thermoData = getThermoData(structure)
 
 	T = pq.Quantity(1000.0, 'K')
-	print 'Heat capacity at ' + str(T) + ': ' + str(thermoData.heatCapacity(T))
-	print 'Enthalpy at ' + str(T) + ': ' + str(thermoData.enthalpy(T))
-	print 'Entropy at ' + str(T) + ': ' + str(thermoData.entropy(T))
-	print 'Free energy at ' + str(T) + ': ' + str(thermoData.freeEnergy(T))
+	print 'Heat capacity at ' + str(T) + ': ' + str(thermoData.getHeatCapacity(T))
+	print 'Enthalpy at ' + str(T) + ': ' + str(thermoData.getEnthalpy(T))
+	print 'Entropy at ' + str(T) + ': ' + str(thermoData.getEntropy(T))
+	print 'Free energy at ' + str(T) + ': ' + str(thermoData.getFreeEnergy(T))
 
 

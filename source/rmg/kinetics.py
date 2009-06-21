@@ -462,20 +462,9 @@ class ReactionFamily(data.Database):
 						spec = species.makeNewSpecies(product)
 						products.append(spec)
 
-					# Skip if no reaction (i.e. reactant and product are isomorphic)
-					if len(products) == 1 and reactants[0].isIsomorphic(products[0]):
-						pass
-					else:
-
-						# Create reaction and add if unique
-						rxn1 = reaction.Reaction(reactants, products)
-						found = False
-						for rxn2 in rxnList:
-							if rxn1.equivalent(rxn2): found = True
-						if not found: rxnList.append(rxn1)
-
-					
-
+					# Create reaction and add if unique
+					rxn, isNew = reaction.makeNewReaction(reactants, products, self)
+					if isNew: rxnList.append(rxn)
 
 		# Bimolecular reactants: A + B --> products
 		elif len(reactants) == 2 and self.template.isBimolecular():
@@ -600,13 +589,13 @@ if __name__ == '__main__':
 16 H 0 {6,S}
 """)
 
-	species1 = species.Species('C6H9', structure1, True)
+	species1 = species.makeNewSpecies(structure1, 'C6H9', True)
 
 	#print len(species1.structure)
 
 	structure2 = chem.Structure()
 	structure2.fromSMILES('[H][H]')
-	species2 = species.Species('H2', structure2, True)
+	species2 = species.makeNewSpecies(structure2, 'H2', True)
 
 	database.getReactions([species1])
 	database.getReactions([species1, species2])

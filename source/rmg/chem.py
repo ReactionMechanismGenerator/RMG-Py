@@ -863,8 +863,15 @@ class Structure(graph.ChemGraph):
 		"""
 		Convert a Structure object to an InChI string.
 		"""
-		mol = pybel.Molecule(self.toOBMol())
-		return mol.write('inchi').strip()
+		# This version does not write a warning to stderr if stereochemistry is undefined
+		obmol = self.toOBMol()
+		obConversion = openbabel.OBConversion()
+		obConversion.SetOutFormat('inchi')
+		obConversion.SetOptions('w', openbabel.OBConversion.OUTOPTIONS)
+		return obConversion.WriteString(obmol).strip()
+		# This version writes a warning to stderr if stereochemistry is undefined
+		#mol = pybel.Molecule(self.toOBMol())
+		#return mol.write('inchi').strip()
 
 	def toSMILES(self):
 		"""

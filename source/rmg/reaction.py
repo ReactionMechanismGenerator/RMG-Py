@@ -48,13 +48,13 @@ class Reaction:
 	taken from thermodynamic reversibility.
 	"""
 	
-	def __init__(self, reactants=None, products=None, kinetics=None, family=None):
+	def __init__(self, reactants=None, products=None, family=None, kinetics=None):
 		"""Initialize a reaction object."""
 		self.reactants = reactants or []
 		self.products = products or []
-		self.kinetics = kinetics
 		self.family = family
-
+		self.kinetics = kinetics
+	
 	def __str__(self):
 		"""
 		Return a string representation of the reaction.
@@ -128,6 +128,71 @@ class Reaction:
 				productsMatch = True
 
 		return reactantsMatch and productsMatch
+
+################################################################################
+
+# The global list of reactions created at any point during RMG execution
+# The list is stored in reverse of the order in which the reactions are created;
+# when searching the list, it is more likely to match a recently created
+# reaction than an older reaction
+reactionList = []
+
+def makeNewReaction(reactants, products, family=''):
+	"""
+	Attempt to make a new reaction based on a list of `reactants` and a list of
+	`products`. The combination of these and a reaction `family` string uniquely
+	identifies a reaction. The reactant and product lists must contain 
+	:class:`Species` objects, not :class:`Structure` objects.
+
+	The proposed reaction is checked against the list of
+	existing reactions; if the reaction already exists, this function returns
+	the existing reaction. If the reaction does not exist, a :class:`Reaction`
+	object is created and returned after being appended to the global reaction
+	list.
+	"""
+	
+	# Sort reactants and products (to make comparisons easier/faster)
+	reactants.sort()
+	products.sort()
+
+	# Check that the reaction actually results in a different set of species
+	if len(reactants) == len(products):
+		match = True
+		for i in range(len(reactants)):
+			if reactants[i] != products[i]: match = False
+		if match: return None, False
+
+	# Check that the reaction is unique
+	for rxn in reactionList:
+		# Check forward reaction for match
+		if rxn.family is family or rxn.family is None or family is None:
+			if len(rxn.reactants) == len(reactants) and len(rxn.products) == len(products):
+				match = True
+				for i in range(len(reactants)):
+					if rxn.reactants[i] != reactants[i]: match = False
+				for i in range(len(products)):
+					if rxn.products[i] != products[i]: match = False
+				if match: return rxn, False
+		# Check reverse reaction for match
+		if rxn.family.reverse is family or rxn.family.reverse is None or family is None:
+			if len(rxn.reactants) == len(products) and len(rxn.products) == len(reactants):
+				match = True
+				for i in range(len(reactants)):
+					if rxn.products[i] != reactants[i]: match = False
+				for i in range(len(products)):
+					if rxn.reactants[i] != products[i]: match = False
+				if match: return rxn, False
+
+	# If this point is reached, the proposed reaction is new, so make new
+	# Reaction object and append to global reaction list
+	rxn = Reaction(reactants, products, family)
+	reactionList.insert(0, rxn)
+	
+	# Note in the log
+	logging.debug('Created new reaction ' + str(rxn))
+
+	# Return newly created reaction
+	return rxn, True
 
 ################################################################################
 

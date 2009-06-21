@@ -32,12 +32,12 @@
 Contains classes describing chemical species.
 """
 
+import logging
+
 import chem
 import thermo
 
 ################################################################################
-
-speciesDictionary = {}
 
 class Species:
 	"""
@@ -49,19 +49,14 @@ class Species:
 	if it is inert.
 	"""
 
-	# A static counter for the number of species created since the RMG job began.
-	numSpecies = 0
-
-	def __init__(self, label='', structure=None, reactive=True):
+	def __init__(self, id=0, label='', structure=None, reactive=True):
 		"""
 		Initialize a Species object.
 		"""
-		Species.numSpecies += 1
-		self.id = Species.numSpecies
-		speciesDictionary[self.id] = self
-
+		self.id = id
+		
 		self.label = label
-		if structure:
+		if structure is not None:
 			structure.simplifyAtomTypes()
 			self.structure = [structure]
 		else:
@@ -72,16 +67,25 @@ class Species:
 		self.lennardJones = None
 		self.spectralData = None
 
-		if structure is not None:
-			self.__generateData()
+	def __cmp__(self, other):
+		"""
+		A comparison function that can be used to sort lists of Species objects.
+		Currently the sorting method is by increasing ID.
+		"""
+		return cmp(self.id, other.id)
 
-	def __generateData(self):
+	def __hash__(self):
 		"""
-		Generate supplemental parameters and information about the species:
-		resonance isomers, thermodynamic data, etc.
+		A hash function that allows for use in dictionaries et al. Currently the
+		species ID is used.
 		"""
-		self.getResonanceIsomers()
-		#self.getThermoData()
+		return self.id
+
+	def toInChI(self):
+		"""
+		Convert a Species object to an InChI string.
+		"""
+		return self.structure[0].toInChI()
 
 	def getResonanceIsomers(self):
 		"""
@@ -221,15 +225,41 @@ class Species:
 
 ################################################################################
 
-def makeNewSpecies(structure):
+# The global list of species created at any point during RMG execution
+# The list is stored in reverse of the order in which the species are created;
+# when searching the list, it is more likely to match a recently created species
+# than an older species
+speciesList = []
+
+def makeNewSpecies(structure, label='', reactive=True):
+	"""
+	Attempt to make a new species based on a chemical `structure`, which is a
+	:class:`Structure` object.
+
+	The proposed species is checked against the list of existing species; if the
+	species already exists, this function returns
+	the existing species. If the species does not exist, a :class:`Species`
+	object is created and returned after being appended to the global species
+	list.
+	"""
 
 	# Return an existing species if a match is found
-	for id, species in speciesDictionary.iteritems():
-		if species.isIsomorphic(structure):
-			return species
+	for spec in speciesList:
+		if spec.isIsomorphic(structure):
+			return spec
 
 	# Otherwise make a new species
-	return Species(structure.getFormula(), structure)
+	if label == '': label = structure.getFormula()
+	spec = Species(len(speciesList)+1, label, structure, reactive)
+	speciesList.insert(0, spec)
+
+	spec.getResonanceIsomers()
+
+	# Note in the log
+	logging.debug('Created new species ' + str(spec) + ': ' + spec.toInChI())
+
+	# Return the newly created species
+	return spec
 
 ################################################################################
 
