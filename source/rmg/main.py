@@ -39,6 +39,8 @@ import logging
 import io
 import sys
 
+import model
+
 ################################################################################
 
 def execute(inputFile, outputDir, scratchDir, libraryDir, verbose):
@@ -63,8 +65,12 @@ def execute(inputFile, outputDir, scratchDir, libraryDir, verbose):
 	printRMGHeader()
 	
 	# Read input file
-	io.readInputFile(inputFile)
+	coreSpecies, reactionSystems = io.readInputFile(inputFile)
 	
+	# Initialize the reaction model
+	reactionModel = model.CoreEdgeReactionModel()
+	reactionModel.initialize(coreSpecies)
+
 	# Log end timestamp
 	logging.info('\nRMG execution terminated at ' + time.asctime())
 	

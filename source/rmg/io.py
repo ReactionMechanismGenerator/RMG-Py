@@ -112,9 +112,6 @@ def readInputFile(fstr):
 		if root.tagName != 'rmginput':
 			raise InvalidInputFileException('Incorrect root element. Should be <rmginput>')
 		
-		# Initialize the reaction model
-		reactionModel = model.CoreEdgeReactionModel()
-		
 		# Process databases
 		databases = []
 		elements = getElements(root, 'database')
@@ -149,8 +146,8 @@ def readInputFile(fstr):
 					logging.debug('General database: ' + database[2])
 					thermo.database = thermo.ThermoDatabaseSet()
 					thermo.database.load(database[2] + '/')
-					kineticsDatabase = kinetics.ReactionFamilySet()
-					kineticsDatabase.load(database[2] + '/')
+					kinetics.database = kinetics.ReactionFamilySet()
+					kinetics.database.load(database[2] + '/')
 				generalDatabaseCount += 1
 				
 		logging.debug('')
@@ -162,7 +159,7 @@ def readInputFile(fstr):
 			raise InvalidInputFileException('Multiple general databases specified; only one is allowed.')
 	
 		# Process species
-		speciesDict = {}
+		coreSpecies = []; speciesDict = {}
 		elements = getElements(root, 'species')
 		logging.info('Found ' + str(len(elements)) + ' species')
 		for element in elements:
@@ -196,7 +193,7 @@ def readInputFile(fstr):
 			
 			# Create a new species and append the species to the core
 			species = makeNewSpecies(structure, label, reactive)
-			reactionModel.core.species.append(species)
+			coreSpecies.append(species)
 		
 			# Add to local species dictionary (for matching with other parts of file)
 			speciesDict[sid] = species
@@ -246,7 +243,7 @@ def readInputFile(fstr):
 				raise InvalidInputFileException('Invalid pressure model type "' + pressModelType + '".')
 			
 			# Initialize all initial concentrations to zero
-			for species in reactionModel.core.species:
+			for species in coreSpecies:
 				reactionSystem.initialConcentration[species] = pq.Quantity(0.0, 'mol/m**3')
 			
 			# List of initial concentrations
@@ -290,7 +287,7 @@ def readInputFile(fstr):
 		# Unlink the DOM tree when finished
 		dom.unlink()
 		
-	return reactionModel, reactionSystems
+	return coreSpecies, reactionSystems
 
 ################################################################################
 

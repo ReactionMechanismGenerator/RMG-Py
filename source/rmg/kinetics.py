@@ -576,9 +576,20 @@ class ReactionFamilySet:
 		"""
 		Generate a list of reactions that involve a single `species` as a reactant or product.
 		"""
+
+		log = str(species[0])
+		for spec in species[1:]: log += ' + ' + str(spec)
+		
 		rxnList = []
 		for key, family in self.families.iteritems():
 			rxnList.extend(family.getReactionList(species))
+
+		if len(rxnList) == 1:
+			logging.info('Found %s reaction for %s' % (len(rxnList), log))
+		else:
+			logging.info('Found %s reactions for %s' % (len(rxnList), log))
+
+
 		return rxnList
 
 database = None
