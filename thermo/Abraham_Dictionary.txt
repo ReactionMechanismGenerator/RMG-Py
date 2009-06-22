@@ -77,16 +77,6 @@ Oss(CdsOd)
 2   Os 0 {1,S}
 3   Od 0 {1,D}
 
-Oss*(CdsOd)
-1   CO 0 {2,S} {3,D}
-2 * Os 0 {1,S}
-3   Od 0 {1,D}
-
-Oss(CdsOd*)
-1   CO 0 {2,S} {3,D}
-2   Os 0 {1,S}
-3 * Od 0 {1,D}
-
 OssCds(Od)Oss
 1 * CO 0 {2,S} {3,S} {4,D}
 2   Os 0 {1,S}
@@ -116,33 +106,6 @@ Cds(Od)OssH
 2   Os 0 {1,S} {3,S}
 3   H 0 {2,S}
 4   Od 0 {1,D}
-
-Cds(Od*)OssH
-1   CO 0 {2,S} {4,D}
-2   Os 0 {1,S} {3,S}
-3   H 0 {2,S}
-4 * Od 0 {1,D}
-
-Cds(Od)Oss*H
-1   CO 0 {2,S} {4,D}
-2 * Os 0 {1,S} {3,S}
-3   H 0 {2,S}
-4   Od 0 {1,D}
-
-Cds(Od)Oss
-1 * CO 0 {2,S} {3,D}
-2   Os 0 {1,S}
-3   Od 0 {1,D}
-
-Cds(Od)Oss*
-1   CO 0 {2,S} {3,D}
-2 * Os 0 {1,S}
-3   Od 0 {1,D}
-
-Cds(Od*)Oss
-1   CO 0 {2,S} {3,D}
-2   Os 0 {1,S}
-3 * Od 0 {1,D} 
 
 Cds(Od)Cds=CdsCds(Od)
 1 * Cd 0 {2,D} {3,S}

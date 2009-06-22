@@ -59,18 +59,16 @@ L1: O
 
 	L2: Oss
 		L3: OssH           // Hydroxyl group
-			L4: Cds(Od)Oss*H    // Carboxylic acid
+			
 		L3: Oss*Cds(Od)Oss // Carbonate
 		L3: OssCds(Od)Oss* // Carbonate
-		L3: Cds(Od)Oss*    // Carbamate
-		L3: Oss*(CdsOd)    // Non cyclic ester
+		
 		L3: Css(Oss*H)-Css(OssH) // 1,2-diol
 		L3: Oss-noncyclic
 		
     L2: Od
-    	L3: Cds(Od*)OssH   // Carboxylic acid
-    	L3: Cds(Od*)Oss    // Carbamate
+    	
     	L3: OssCds(Od*)Oss // Carbonate
-    	L3: Oss(CdsOd*)    // Non-cyclic ester
+    	
     	L3: Cds(Od*)Cds=CdsCds(Od) // Quinone
 	

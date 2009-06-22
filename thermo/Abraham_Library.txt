@@ -20,7 +20,6 @@
 8 Oss(CdsOd) -0.225 -0.206 -0.113 -0.390 0
 9 OssCds(Od)Oss -0.19 -0.267 0 0 0
 10 Cds(Od)OssH -0.412 -0.308 -0.192 -0.369 0
-//11 Cds(Od)Oss -0.588 -0.252 0 0 0
 12 Cds(Od)Cds=CdsCds(Od) -0.411 -0.051 0 0 0
 13 Css(OssH)-Css(OssH) 0.052 0 -0.043 0.1  0
 //14 CbCs-OssH
@@ -30,14 +29,8 @@
 18 Cbf 0.121 0.019 0.3 0.744 0
 19 Ct 0.034 0.028 0.04 0.332 0
 20 Cds*(Od)Cds=CdsCds(Od) 0 0 0 0 0 
-21 Cds(Od)Oss*H 0 0 0 0 0
 22 Oss*Cds(Od)Oss 0 0 0 0 0
 23 OssCds(Od)Oss* 0 0 0 0 0
-24 Cds(Od)Oss* 0 0 0 0 0
-25 Oss*(CdsOd) 0 0 0 0 0
 26 Css(Oss*H)-Css(OssH) 0 0 0 0 0
-27 Cds(Od*)OssH 0 0 0 0 0
-28 Cds(Od*)Oss 0 0 0 0 0
 29 OssCds(Od*)Oss 0 0 0 0 0
-30 Oss(CdsOd*) 0 0 0 0 0
 31 Cds(Od*)Cds=CdsCds(Od) 0 0 0 0 0
