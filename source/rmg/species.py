@@ -263,6 +263,7 @@ def makeNewSpecies(structure, label='', reactive=True):
 	speciesList.insert(0, spec)
 
 	spec.getResonanceIsomers()
+	spec.getThermoData()
 
 	# Note in the log
 	logging.debug('Created new species ' + str(spec) + ': ' + spec.toInChI())

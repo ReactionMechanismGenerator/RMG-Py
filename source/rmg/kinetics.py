@@ -461,7 +461,7 @@ class ReactionFamily(data.Database):
 			products.append(spec)
 
 		# Create reaction and add if unique
-		rxn, isNew = reaction.makeNewReaction(reactants, products, self)
+		rxn, isNew = reaction.makeNewReaction(reactants, products, self, atoms)
 		if isNew:	return rxn
 		else:		return None
 
@@ -574,7 +574,8 @@ class ReactionFamilySet:
 
 	def getReactions(self, species):
 		"""
-		Generate a list of reactions that involve a single `species` as a reactant or product.
+		Generate a list of reactions that involve a list of one or two `species`
+		as a reactant or product.
 		"""
 
 		log = str(species[0])
@@ -591,6 +592,13 @@ class ReactionFamilySet:
 
 
 		return rxnList
+
+	def getKinetics(self, reaction, atoms):
+		"""
+		Get the kinetics for the reaction `reaction` with the previously-
+		determined atom centers `atoms`.
+		"""
+		return None
 
 database = None
 

@@ -221,7 +221,7 @@ class ThermoGAData:
 		"""
 		if T < ThermoGAData.CpTlist[0]:
 			raise data.TemperatureOutOfRangeException('Invalid temperature for free energy estimation from group additivity.')
-		return self.enthalpy(T) - T * self.entropy(T)
+		return self.getEnthalpy(T) - T * self.getEntropy(T)
 
 
 ################################################################################
@@ -315,50 +315,6 @@ class ThermoDatabase(data.Database):
 #		print result[4:]
 
 		return data
-
-	def matchNodeToStructure(self, node, structure, atom):
-		"""
-		Return :data:`True` if the `structure` centered at `atom` matches the
-		structure at `node` in the dictionary.
-		"""
-		group = self.dictionary[node]
-		if group.__class__ == str or group.__class__ == unicode:
-			if group.lower() == 'union':
-				match = False
-				for child in self.tree.children[node]:
-					if self.matchNodeToStructure(child, structure, atom):
-						match = True
-				return match
-			else:
-				return False
-		else:
-			center = group.getCenter()
-			if atom.equivalent(center):
-				match, map12, map21 = structure.isSubgraphIsomorphic(group, {center:atom}, {atom:center})
-				return match
-			else:
-				return False
-
-	def descendTree(self, structure, atom, root=None):
-		"""
-		Descend the tree in search of the functional group node that best
-		matches the local structure around `atom` in `structure`.
-		"""
-
-		if root is None:
-			root = self.tree.top[0]
-			if not self.matchNodeToStructure(root, structure, atom):
-				return None
-
-		next = None
-		for child in self.tree.children[root]:
-			if self.matchNodeToStructure(child, structure, atom):
-				next = child
-
-		if next is not None:
-			return self.descendTree(structure, atom, next)
-		else:
-			return root
 
 	def contains(self, structure):
 		"""
@@ -509,7 +465,7 @@ class ThermoDatabaseSet:
 					struct.removeAtom(H)
 					atom.increaseFreeElectron()
 
-				thermoData += self.radicalDatabase.getThermoData(structure, atom)
+				thermoData += self.radicalDatabase.getThermoData(structure, {'*':atom})
 				
 				# Re-saturate
 				for bond in added[atom]:
@@ -528,11 +484,11 @@ class ThermoDatabaseSet:
 				# Iterate over heavy (non-hydrogen) atoms
 				if atom.isNonHydrogen():
 					# Get initial thermo estimate from main group database
-					thermoData += self.groupDatabase.getThermoData(structure, atom)
+					thermoData += self.groupDatabase.getThermoData(structure, {'*':atom})
 					# Correct for gauche and 1,5- interactions
-					thermoData += self.gaucheDatabase.getThermoData(structure, atom)
-					thermoData += self.int15Database.getThermoData(structure, atom)
-					thermoData += self.otherDatabase.getThermoData(structure, atom)
+					thermoData += self.gaucheDatabase.getThermoData(structure, {'*':atom})
+					thermoData += self.int15Database.getThermoData(structure, {'*':atom})
+					thermoData += self.otherDatabase.getThermoData(structure, {'*':atom})
 
 			# Do ring corrections separately because we only want to match
 			# each ring one time; this doesn't work yet

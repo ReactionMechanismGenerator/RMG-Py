@@ -53,6 +53,7 @@ class Reaction:
 		self.reactants = reactants or []
 		self.products = products or []
 		self.family = family
+		self.reverse = None
 		self.kinetics = kinetics
 	
 	def __str__(self):
@@ -137,7 +138,7 @@ class Reaction:
 # reaction than an older reaction
 reactionList = []
 
-def makeNewReaction(reactants, products, family=''):
+def makeNewReaction(reactants, products, family='', atoms=None):
 	"""
 	Attempt to make a new reaction based on a list of `reactants` and a list of
 	`products`. The combination of these and a reaction `family` string uniquely
@@ -184,15 +185,28 @@ def makeNewReaction(reactants, products, family=''):
 				if match: return rxn, False
 
 	# If this point is reached, the proposed reaction is new, so make new
-	# Reaction object and append to global reaction list
-	rxn = Reaction(reactants, products, family)
-	reactionList.insert(0, rxn)
+	# Reaction objects for forward and reverse reaction
+	forward = Reaction(reactants, products, family)
+	reverse = Reaction(products, reactants, family.reverse or family)
+	forward.reverse = reverse
+	reverse.reverse = forward
+
+	# Attempt to get the kinetics of the forward and reverse reactions
+	#forwardKinetics = kinetics.database.getKinetics(forward, atoms)
+	#reverseKinetics = kinetics.database.getKinetics(reverse, atoms)
+
+	# By convention, we only work with the reaction in the direction for which
+	# we have assigned kinetics from the kinetics database; the kinetics of the
+	# reverse of that reaction come from thermodynamics
+
+	
+	reactionList.insert(0, forward)
 	
 	# Note in the log
-	logging.debug('Created new ' + str(rxn.family) + ' reaction ' + str(rxn))
+	logging.debug('Created new ' + str(forward.family) + ' reaction ' + str(forward))
 
 	# Return newly created reaction
-	return rxn, True
+	return forward, True
 
 ################################################################################
 

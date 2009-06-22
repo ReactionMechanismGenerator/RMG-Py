@@ -457,6 +457,55 @@ class Database:
 		self.tree.toXML(dom, root)
 		self.library.toXML(dom, root)
 
+	def matchNodeToStructure(self, node, structure, atoms):
+		"""
+		Return :data:`True` if the `structure` centered at `atom` matches the
+		structure at `node` in the dictionary.
+		"""
+		group = self.dictionary[node]
+		if group.__class__ == str or group.__class__ == unicode:
+			if group.lower() == 'union':
+				match = False
+				for child in self.tree.children[node]:
+					if self.matchNodeToStructure(child, structure, atoms):
+						match = True
+				return match
+			else:
+				return False
+		else:
+			centers = group.getCenterAtoms()
+			map12_0 = {}; map21_0 = {}
+			for label in centers:
+				center = centers[label]; atom = atoms[label]
+				if center is None or atom is None:
+					return False
+				elif not atom.equivalent(center):
+					return False
+				map12_0[center] = atom; map21_0[atom] = center
+			match, map12, map21 = structure.isSubgraphIsomorphic(group, map12_0, map21_0)
+			return match
+
+	def descendTree(self, structure, atoms, root=None):
+		"""
+		Descend the tree in search of the functional group node that best
+		matches the local structure around `atoms` in `structure`.
+		"""
+
+		if root is None:
+			root = self.tree.top[0]
+			if not self.matchNodeToStructure(root, structure, atoms):
+				return None
+
+		next = None
+		for child in self.tree.children[root]:
+			if self.matchNodeToStructure(child, structure, atoms):
+				next = child
+
+		if next is not None:
+			return self.descendTree(structure, atoms, next)
+		else:
+			return root
+
 ################################################################################
 
 def removeCommentFromLine(line):

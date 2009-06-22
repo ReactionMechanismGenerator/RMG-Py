@@ -1125,13 +1125,15 @@ class Structure(graph.ChemGraph):
 						paths.append([atom1, atom2, atom3, bond12, bond23])
 		return paths
 
-	def getCenter(self):
+	def getCenterAtoms(self):
 		"""
-		Return the center atom of the functional group structure.
+		Return the atoms in functional group structure that are labeled, i.e.
+		the center atoms in the structure.
 		"""
+		atoms = {}
 		for atom in self.atoms():
-			if atom.isCenter(): return atom
-		return None
+			if atom.isCenter(): atoms[atom.label] = atom
+		return atoms
 
 ################################################################################
 
