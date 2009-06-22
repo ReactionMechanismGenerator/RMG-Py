@@ -38,7 +38,6 @@ import quantities as pq
 import xml.dom.minidom
 
 import chem
-import reaction
 
 pq.UnitQuantity('kilocalories', pq.cal*1e3, symbol='kcal')
 pq.UnitQuantity('kilojoules', pq.J*1e3, symbol='kJ')

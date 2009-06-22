@@ -35,10 +35,8 @@ import os
 
 import model
 import chem
-import data
-import thermo
-import kinetics
-from species import makeNewSpecies
+import species
+import reaction
 
 """
 Contains functions for manipulation of RMG input and output files.
@@ -144,10 +142,10 @@ def readInputFile(fstr):
 			if database[1] == 'general':
 				if generalDatabaseCount == 0:
 					logging.debug('General database: ' + database[2])
-					thermo.database = thermo.ThermoDatabaseSet()
-					thermo.database.load(database[2] + '/')
-					kinetics.database = kinetics.ReactionFamilySet()
-					kinetics.database.load(database[2] + '/')
+					species.thermoDatabase = species.ThermoDatabaseSet()
+					species.thermoDatabase.load(database[2] + '/')
+					reaction.kineticsDatabase = reaction.ReactionFamilySet()
+					reaction.kineticsDatabase.load(database[2] + '/')
 				generalDatabaseCount += 1
 				
 		logging.debug('')
@@ -192,11 +190,11 @@ def readInputFile(fstr):
 				raise InvalidInputFileException('Species '+label+' missing structure information.' )
 			
 			# Create a new species and append the species to the core
-			species = makeNewSpecies(structure, label, reactive)
-			coreSpecies.append(species)
+			spec = species.makeNewSpecies(structure, label, reactive)
+			coreSpecies.append(spec)
 		
 			# Add to local species dictionary (for matching with other parts of file)
-			speciesDict[sid] = species
+			speciesDict[sid] = spec
 
 		logging.debug('')
 		
@@ -243,8 +241,8 @@ def readInputFile(fstr):
 				raise InvalidInputFileException('Invalid pressure model type "' + pressModelType + '".')
 			
 			# Initialize all initial concentrations to zero
-			for species in coreSpecies:
-				reactionSystem.initialConcentration[species] = pq.Quantity(0.0, 'mol/m**3')
+			for spec in coreSpecies:
+				reactionSystem.initialConcentration[spec] = pq.Quantity(0.0, 'mol/m**3')
 			
 			# List of initial concentrations
 			concentrations = getElements(element, 'concentration')
@@ -270,11 +268,11 @@ def readInputFile(fstr):
 			logging.debug('Reaction system #' + str(index+1) + ':')
 			logging.debug('\t' + str(reactionSystem.temperatureModel))
 			logging.debug('\t' + str(reactionSystem.pressureModel))
-			for species, conc in reactionSystem.initialConcentration.iteritems():
-				if species.reactive:
-					logging.debug('\tInitial concentration of ' + str(species) + ': ' + str(conc))
+			for spec, conc in reactionSystem.initialConcentration.iteritems():
+				if spec.reactive:
+					logging.debug('\tInitial concentration of ' + str(spec) + ': ' + str(conc))
 				else:
-					logging.debug('\tConstant concentration of ' + str(species) + ': ' + str(conc))
+					logging.debug('\tConstant concentration of ' + str(spec) + ': ' + str(conc))
 				
 				
 		logging.debug('')
