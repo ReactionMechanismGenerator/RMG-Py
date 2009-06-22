@@ -155,6 +155,10 @@ L1: RJ
 			L5: C3COOJ
 			L5: C(=O)OOJ
 		L4: HOOJ
+
+   L2: SiJ
+
+   L2: SJ
   
 
 L1: RJ2		// biradicals
@@ -194,9 +198,15 @@ L1: RJ2		// biradicals
 	L2: Oa_t
 	L2: Oa_s
 
+   L2: SiJ2
+
+   L2: Sa
+
 L1: RJ3		// triradicals
 
    L2: CJ3
+
+   L2: SiJ3
 
 
 

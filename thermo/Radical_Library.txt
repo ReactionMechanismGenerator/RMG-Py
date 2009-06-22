@@ -157,5 +157,10 @@
 131	Oa_s		266.9	-8.02	-2.8	-3.05	-3.33	-3.62	-4.24	-4.86	-6.28	0	0	0	BDE from SCHALLEY et al.  S and Cp values taken from Oa_t															
 132	RJ3		CJ3																								
 133	CJ3		316.19	-5.7	-1.57	-2.73	-4.11	-5.5	-7.92	-9.85	-12.95	0	0	0	Calculated for methylidyene in relation to methane from NIST values	
+134	SiJ	CJ
+135	SiJ2	CJ2
+136	SiJ3	CJ3
+137	SJ	OJ
+138	Sa	Oa
 											
 																											

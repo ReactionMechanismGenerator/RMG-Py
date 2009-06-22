@@ -873,6 +873,21 @@ RJ3
 CJ3
 1  * C 3
 
+SiJ
+1  * Si 1
+
+SiJ2
+1  * Si 2
+
+SiJ3
+1  * Si 3
+
+SJ
+1  * S 1
+
+Sa
+1  * S 2
+
 
 
 
