@@ -736,7 +736,7 @@ def makeNewSpecies(structure, label='', reactive=True):
 			if atom.hasFreeElectron(): label += 'J'
 	spec = Species(len(speciesList)+1, label, structure, reactive)
 	speciesList.insert(0, spec)
-
+	
 	spec.getResonanceIsomers()
 	spec.getThermoData()
 

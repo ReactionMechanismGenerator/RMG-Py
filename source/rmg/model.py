@@ -90,6 +90,9 @@ class CoreEdgeReactionModel:
 			self.addSpeciesToCore(species1)
 			# Add to edge
 			for rxn in rxnList:
+				for spec in rxn.reactants:
+					if spec not in self.edge.species:
+						self.addSpeciesToEdge(spec)
 				for spec in rxn.products:
 					if spec not in self.edge.species:
 						self.addSpeciesToEdge(spec)

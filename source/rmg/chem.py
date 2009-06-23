@@ -823,7 +823,10 @@ class Structure(graph.ChemGraph):
 		atoms = self.atoms()
 
 		for i, atom in enumerate(atoms):
-			adjlist += str(i+1) + ' ' + atom.atomType.label + ' ' + atom.electronState.label
+			adjlist += str(i+1) + ' '
+			if atom.label != '':
+				adjlist += atom.label + ' '
+			adjlist += atom.atomType.label + ' ' + atom.electronState.label
 			for atom2, bond in self.getBonds(atom).iteritems():
 				adjlist += ' {' + str(atoms.index(atom2)+1) + ',' + bond.bondType.label + '}'
 			adjlist += '\n'
@@ -1125,7 +1128,33 @@ class Structure(graph.ChemGraph):
 						paths.append([atom1, atom2, atom3, bond12, bond23])
 		return paths
 
-	def getCenterAtoms(self):
+	def clearLabeledAtoms(self):
+		"""
+		Remove the labels from all atoms in the structure.
+		"""
+		for atom in self.atoms():
+			atom.label = ''
+
+	def containsLabeledAtom(self, label):
+		"""
+		Return :data:`True` if the structure contains an atom with the label
+		`label` and :data:`False` otherwise.
+		"""
+		atoms = {}
+		for atom in self.atoms():
+			if atom.label == label: return True
+		return False
+
+	def getLabeledAtom(self, label):
+		"""
+		Return the atoms in functional group structure that are labeled, i.e.
+		the center atoms in the structure.
+		"""
+		for atom in self.atoms():
+			if atom.label == label: return atom
+		return None
+	
+	def getLabeledAtoms(self):
 		"""
 		Return the atoms in functional group structure that are labeled, i.e.
 		the center atoms in the structure.

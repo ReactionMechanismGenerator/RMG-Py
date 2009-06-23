@@ -141,26 +141,24 @@ class ReactionRecipe:
 				other.addAction(['LOSE_RADICAL', action[1], action[2]])
 		return other
 
-	def apply(self, structure, atoms, doForward):
+	def apply(self, structure, doForward):
 		"""
 		Apply the reaction recipe to the set of molecules contained in
 		`structure`, a single Structure object that contains one or more
-		structures. The `atoms` parameter is a dictionary of the labeled atom
-		centers in the structure. The `doForward` parameter is used to indicate
-		whether the forward or reverse recipe should be applied.
+		structures. The `doForward` parameter is used to indicate
+		whether the forward or reverse recipe should be applied. The atoms in
+		the structure should be labeled with the appropriate atom centers.
 		"""
 
 		for action in self.actions:
 			if action[0] == 'CHANGE_BOND' or action[0] == 'FORM_BOND' or action[0] == 'BREAK_BOND':
 
 				label1, info, label2 = action[1:]
-				if label1 not in atoms or label2 not in atoms:
-					raise Exception('Invalid atom labels found while attempting to execute reaction recipe.')
 
 				# Find associated atoms
-				atom1 = atoms[label1]
-				atom2 = atoms[label2]
-				if atom1 is None or atom2 is None:
+				atom1 = structure.getLabeledAtom(label1)
+				atom2 = structure.getLabeledAtom(label2)
+				if atom1 is None or atom2 is None or atom1 is atom2:
 					raise Exception('Invalid atom labels found while attempting to execute reaction recipe.')
 
 				# If found, change bond
@@ -194,11 +192,8 @@ class ReactionRecipe:
 
 				label, change = action[1:]
 				change = int(change)
-				if label not in atoms:
-					raise Exception('Invalid atom labels found while attempting to execute reaction recipe.')
-
 				# Find associated atoms
-				atom = atoms[label]
+				atom = structure.getLabeledAtom(label)
 				if atom is None:
 					raise Exception('Invalid atom labels found while attempting to execute reaction recipe.')
 
@@ -215,25 +210,21 @@ class ReactionRecipe:
 				raise Exception('Unknown action "' + action[0] + '" encountered while attempting to execute reaction recipe.')
 
 
-	def applyForward(self, structure, atoms):
+	def applyForward(self, structure):
 		"""
 		Apply the reaction recipe to the set of molecules contained in
 		`structure`, a single Structure object that contains one or more
-		structures. The `atoms` parameter is a dictionary of the labeled atom
-		centers in the structure. The recipe is applied in the forward
-		direction.
+		structures.
 		"""
-		return self.apply(structure, atoms, True)
+		return self.apply(structure, True)
 
-	def applyReverse(self, structure, atoms):
+	def applyReverse(self, structure):
 		"""
 		Apply the reaction recipe to the set of molecules contained in
 		`structure`, a single Structure object that contains one or more
-		structures. The `atoms` parameter is a dictionary of the labeled atom
-		centers in the structure. The recipe is applied in the reverse
-		direction.
+		structures. 
 		"""
-		return self.apply(structure, atoms, False)
+		return self.apply(structure, False)
 
 ################################################################################
 
@@ -256,6 +247,23 @@ class ReactionFamily(data.Database):
 	def __str__(self):
 		return self.label
 
+	def getTemplateLists(self):
+		"""
+		Return lists containing the top-level nodes of each tree representing
+		the reactants and the products. These lists are flattened versions of
+		the lists available in self.template.reactants and 
+		self.template.products.
+		"""
+		forward = []
+		for reactant in self.template.reactants:
+			if type(reactant) is list:	forward.extend(reactant)
+			else:						forward.append(reactant)
+		reverse = []
+		for product in self.template.products:
+			if type(product) is list:	reverse.extend(product)
+			else:						reverse.append(product)
+		return forward, reverse
+
 	def load(self, path):
 		"""
 		Load a reaction family located in the directory `path`.
@@ -269,11 +277,9 @@ class ReactionFamily(data.Database):
 		forbstr = path + '/forbiddenGroups.txt'
 
 		# Load the dictionary, tree, and library using the generic methods
-		data.Database.load(self, dictstr, treestr, libstr)
+		data.Database.load(self, dictstr, treestr, '')
 
-		# Process the data in the library
-		self.processLibraryData()
-
+		
 		# Load the forbidden groups if necessary
 		if os.path.exists(forbstr):
 			self.forbidden = data.Dictionary()
@@ -282,6 +288,11 @@ class ReactionFamily(data.Database):
 
 		# Load the adjlist (must be last, as the reverse family is also generated)
 		self.loadTemplate(tempstr)
+
+		# Process the data in the library
+		lines = self.library.load(libstr)
+		self.library.parse(lines[2:], int(lines[1]))
+		self.processLibraryData()
 
 	def processLibraryData(self):
 		"""
@@ -432,42 +443,78 @@ class ReactionFamily(data.Database):
 
 		return len(maps12) > 0, maps12, maps21
 
-	def makeReaction(self, reactants, structures, maps):
+	def makeReaction(self, reactants, reactantStructures, maps):
 		"""
-		Create a reaction.
+		Create a reaction involving a list of `reactants`. The `reactantStructures`
+		parameter is a list of structures in the order the reactants are stored
+		in the reaction family template, and the `maps` parameter is a list of
+		mappings of the top-level tree node of each template reactant to the
+		corresponding structure.
 		"""
 
-		# Find atoms associated with each label
-		atoms = {}
+#		# Find atoms associated with each label
+#		atoms = {}
+#		for map in maps:
+#			atom = {}
+#			for key, value in map.iteritems():
+#				if key.label != '':
+#					atoms[key.label] = value
+
+		# Tag atoms with labels
+		for struct in reactantStructures: struct.clearLabeledAtoms()
 		for map in maps:
 			for key, value in map.iteritems():
 				if key.label != '':
-					atoms[key.label] = value
-
+					value.label = key.label
+					
 		# Merge reactant structures into single structure
 		structure = chem.Structure()
-		for struct in structures:
+		for struct in reactantStructures:
 			structure = structure.merge(struct)
 
 		# Generate the product structure
-		self.recipe.applyForward(structure, atoms)
+		self.recipe.applyForward(structure)
 		productStructure = structure.copy()
-		self.recipe.applyReverse(structure, atoms)
-
+		self.recipe.applyReverse(structure)
+		
 		# Split product structure into multiple species if necessary
 		if len(self.template.products) > 1:
-			productList = productStructure.split()
+			productStructures = productStructure.split()
 		else:
-			productList = [productStructure]
+			productStructures = [productStructure]
 
 		# Convert structure(s) to products
 		products = []
-		for product in productList:
+		for product in productStructures:
 			spec = species.makeNewSpecies(product)
 			products.append(spec)
 
+#		# Determine top level nodes
+#		reactantTemplate = self.template.reactants[:]
+#		productTemplate = self.template.products[:]
+#		print reactantTemplate, productTemplate
+#
+#		# Descend all reactant trees as deeply as possible
+#		for i in range(len(reactantStructures)):
+#			if reactantTemplate[i].__class__ == list:
+#				for j in range(len(reactantTemplate[i])):
+#					reactantTemplate[i][j] = self.descendTree(reactantStructures[i], atoms, reactantTemplate[i][j])
+#			else:
+#				reactantTemplate[i] = self.descendTree(reactantStructures[i], atoms, reactantTemplate[i])
+#
+#
+#		# Descend all product trees as deeply as possible
+#		for i in range(len(productStructures)):
+#			if productTemplate[i].__class__ == list:
+#				for j in range(len(productTemplate[i])):
+#					productTemplate[i][j] = self.descendTree(productStructures[i], atoms2, productTemplate[i][j])
+#			else:
+#				productTemplate[i] = self.descendTree(productStructures[i], atoms2, productTemplate[i])
+#
+#		print reactantTemplate, productTemplate
+
 		# Create reaction and add if unique
-		rxn, isNew = makeNewReaction(reactants, products, self, atoms)
+		rxn, isNew = makeNewReaction(reactants, products, self)
 		if isNew:	return rxn
 		else:		return None
 
@@ -522,11 +569,45 @@ class ReactionFamily(data.Database):
 					# Iterate over each pair of matches (A, B)
 					for mapA in map12_A:
 						for mapB in map12_B:
-							rxn = self.makeReaction(reactants, [structureACopy, structureBCopy], [mapA, mapB])
+							rxn = self.makeReaction(reactants, [structureBCopy, structureACopy], [mapB, mapA])
 							if rxn is not None:
 								rxnList.append(rxn)
 
 		return rxnList
+
+	def getKinetics(self, reaction):
+		"""
+		Determine the appropriate kinetics for `reaction` which involves the
+		labeled atoms in `atoms`.
+		"""
+		return None
+		#data = self.library.getData(template)
+		#return data
+	
+#		# Fail if reaction family is not self
+#		if reaction.family is not self: return None
+#		print self.template
+#
+#		# Descend each tree as far as possible
+#		nodes = []
+#		for top in self.tree.top:
+#
+#			for templateReactant in self.template.reactants:
+#
+#				if top == templateReactant or top in templateReactant:
+#					for reactant in reaction.reactants:
+#						for atoms in atomsList:
+#							node = self.descendTree(reactant.structure[0], atoms, top)
+#							if node is not None:
+#								nodes.append(node)
+#
+#		print nodes
+
+#						result = ''
+#						while node is not None:
+#							result = ' -> ' + node + result
+#							node = self.tree.parent[node]
+#						print result[4:]
 
 ################################################################################
 
@@ -598,13 +679,6 @@ class ReactionFamilySet:
 
 
 		return rxnList
-
-	def getKinetics(self, reaction, atoms):
-		"""
-		Get the kinetics for the reaction `reaction` with the previously-
-		determined atom centers `atoms`.
-		"""
-		return None
 
 kineticsDatabase = None
 
@@ -710,7 +784,7 @@ class Reaction:
 # reaction than an older reaction
 reactionList = []
 
-def makeNewReaction(reactants, products, family='', atoms=None):
+def makeNewReaction(reactants, products, family):
 	"""
 	Attempt to make a new reaction based on a list of `reactants` and a list of
 	`products`. The combination of these and a reaction `family` string uniquely
@@ -764,21 +838,25 @@ def makeNewReaction(reactants, products, family='', atoms=None):
 	reverse.reverse = forward
 
 	# Attempt to get the kinetics of the forward and reverse reactions
-	#forwardKinetics = kinetics.database.getKinetics(forward, atoms)
-	#reverseKinetics = kinetics.database.getKinetics(reverse, atoms)
-
+	forwardKinetics = forward.family.getKinetics(forward)
+	reverseKinetics = reverse.family.getKinetics(reverse)
+	
 	# By convention, we only work with the reaction in the direction for which
 	# we have assigned kinetics from the kinetics database; the kinetics of the
 	# reverse of that reaction come from thermodynamics
-
+	rxn = forward
+	if forwardKinetics is None and reverseKinetics is None:
+		pass
+		#raise Exception('Unable to determine kinetics of reaction ' + str(forward) + '.')
+	elif forwardKinetics is None: rxn = reverse
 	
-	reactionList.insert(0, forward)
+	reactionList.insert(0, rxn)
 	
 	# Note in the log
-	logging.debug('Created new ' + str(forward.family) + ' reaction ' + str(forward))
+	logging.debug('Created new ' + str(rxn.family) + ' reaction ' + str(rxn))
 
 	# Return newly created reaction
-	return forward, True
+	return rxn, True
 
 ################################################################################
 

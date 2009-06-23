@@ -325,17 +325,25 @@ class Library(dict):
 			names.append(labels[2] + ';' + labels[1] + ';' + labels[0])
 		return names
 	
-	#def __getitem__(self, key):
-		#if key.__class__ == str or key.__class__ == unicode:
-			#return self[key]
-		#else:
-			#names = self.hashLabels(labels)
-			#return self[names[0]]
+	def getData(self, key):
+		"""
+		Return the data in the library associated with the label or list of
+		labels denoted by `key`.
+		"""
+
+		if key.__class__ == str or key.__class__ == unicode:
+			return self[key]
+		else:
+			names = self.hashLabels(key)
+			for name in names:
+				if name in self: return self[name]
+			return None
 	
-	def load(self, path, numLabels=1):
+	def load(self, path):
 		"""
 		Parse an RMG database library located at `path`.
 		"""
+		lines = []
 		
 		# Process the library
 		try:
@@ -344,34 +352,47 @@ class Library(dict):
 			for line in flib:
 				line = removeCommentFromLine(line).strip()
 				if len(line) > 0:
+					lines.append(line)
 					
-					info = line.split()
-					
-					# Skip if the number of items on the line is invalid
-					if len(info) < 2:
-						continue
-					
-					# Extract label(s)
-					labels = []
-					for i in range(0, numLabels):
-						labels.append(info[i+1])
-					comment = ''
-					
-					data = ''
-					for i in range(numLabels+1, len(info)):
-						data += info[i] + ' '
-					
-					self.add(labels, data)
+		except IOError, e:
+			logging.exception('Database library file "' + e.filename + '" not found.')
+		finally:	
+			flib.close()
+		
+		return lines
+
+	def parse(self, lines, numLabels=1):
+		"""
+		Parse an RMG database library located at `path`.
+		"""
+		
+		# Process the library
+		try:
+		
+			for line in lines:
+				info = line.split()
+
+				# Skip if the number of items on the line is invalid
+				if len(info) < 2:
+					continue
+
+				# Extract label(s)
+				labels = []
+				for i in range(0, numLabels):
+					labels.append(info[i+1])
+				comment = ''
+
+				data = ''
+				for i in range(numLabels+1, len(info)):
+					data += info[i] + ' '
+
+				self.add(labels, data)
 					
 		except InvalidDatabaseException, e:
 			logging.exception(str(e))
 			print dictstr, treestr, libstr
 			quit()
-		except IOError, e:
-			logging.exception('Database library file "' + e.filename + '" not found.')
-		finally:	
-			flib.close()
-			
+		
 	def removeLinks(self):
 		"""
 		Ensure all values in the library are either a 
@@ -445,8 +466,28 @@ class Database:
 		# Load dictionary, library, and (optionally) tree
 		self.dictionary.load(dictstr)
 		self.dictionary.toStructure()
-		self.library.load(libstr, 1)
-		if treestr != '': self.tree.load(treestr)
+		if treestr != '':
+			self.tree.load(treestr)
+			# Check that all nodes in tree are also in dictionary
+			for node in self.tree.children:
+				if node not in self.dictionary:
+					raise InvalidDatabaseException('Node "' + node + '" found in tree "' + os.path.abspath(treestr) + '", but not in corresponding dictionary "' + os.path.abspath(dictstr) + '".')
+			# Sort children by decreasing size; the algorithm returns the first
+			# match of each children, so this makes it less likely to miss a
+			# more detailed functional group
+			# First determine if we can do the sort (that is, all children have
+			# one chem.Structure)
+			canSort = True
+			for node, children in self.tree.children.iteritems():
+				for child in children:
+					if self.dictionary[child].__class__ != chem.Structure: canSort = False
+			if canSort:
+				for node, children in self.tree.children.iteritems():
+					children.sort(lambda x, y: cmp(len(self.dictionary[x].atoms()), len(self.dictionary[y].atoms())))
+		if libstr != '':
+			lines = self.library.load(libstr)
+			self.library.parse(lines, 1)
+
 
 	def toXML(self, dom, root):
 		"""
@@ -472,15 +513,19 @@ class Database:
 			else:
 				return False
 		else:
-			centers = group.getCenterAtoms()
+			centers = group.getLabeledAtoms()
 			map12_0 = {}; map21_0 = {}
-			for label in centers:
-				center = centers[label]; atom = atoms[label]
-				if center is None or atom is None:
-					return False
-				elif not atom.equivalent(center):
-					return False
-				map12_0[center] = atom; map21_0[atom] = center
+			labels = centers.keys(); labels.extend(atoms.keys())
+			for label in labels:
+				if label in centers and label in atoms:
+					center = centers[label]; atom = atoms[label]
+					if center is None or atom is None:
+						return False
+					elif not atom.equivalent(center):
+						return False
+					map12_0[center] = atom; map21_0[atom] = center
+				#elif label not in centers:
+				#	return False
 			match, map12, map21 = structure.isSubgraphIsomorphic(group, map12_0, map21_0)
 			return match
 
@@ -490,10 +535,10 @@ class Database:
 		matches the local structure around `atoms` in `structure`.
 		"""
 
-		if root is None:
-			root = self.tree.top[0]
-			if not self.matchNodeToStructure(root, structure, atoms):
-				return None
+		if root is None: root = self.tree.top[0]
+		
+		if not self.matchNodeToStructure(root, structure, atoms):
+			return None
 
 		next = None
 		for child in self.tree.children[root]:
