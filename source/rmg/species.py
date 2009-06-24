@@ -502,6 +502,7 @@ class ThermoDatabaseSet:
 		return thermoData
 
 thermoDatabase = None
+forbiddenStructures = None
 
 ################################################################################
 
@@ -728,6 +729,11 @@ def makeNewSpecies(structure, label='', reactive=True):
 	for spec in speciesList:
 		if spec.isIsomorphic(structure):
 			return spec
+
+	# Return None if the species has a forbidden structure
+	for lbl, struct in forbiddenStructures.iteritems():
+		match, map12, map21 = structure.isSubgraphIsomorphic(struct)
+		if match: return None
 
 	# Otherwise make a new species
 	if label == '':

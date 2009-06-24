@@ -63,12 +63,11 @@ class ArrheniusEPKinetics:
 		self.n = n
 		self.alpha = alpha
 
-	def fromDatabase(self, data, comment):
+	def fromDatabase(self, data, comment, numReactants):
 		"""
 		Process a list of numbers `data` and associated description `comment`
-		generated while reading from a kinetics database. Currently ignores
-		uncertainty data and sets all units of preexponential to inverse time,
-		regardless of the associated reaction order.
+		generated while reading from a kinetics database. The `numReactants`
+		parameter is used to interpret the units of the preexponential.
 		"""
 
 		if len(data) != 11:
@@ -76,9 +75,19 @@ class ArrheniusEPKinetics:
 
 		Tmin, Tmax, A, n, alpha, E0, dA, dn, dalpha, dE0, rank = data
 
+
+		originalUnits = 's^-1'; desiredUnits = 's^-1'
+		if numReactants == 2:
+			originalUnits = 'cm^3/(mol*s)'
+			desiredUnits = 'm^3/(mol*s)'
+		elif numReactants > 2:
+			originalUnits = 'cm^%s/(mol^%s*s)' % ((numReactants-1)*3, numReactants-1)
+			desiredUnits = 'm^%s/(mol^%s*s)' % ((numReactants-1)*3, numReactants-1)
+		
 		self.Trange = pq.Quantity([Tmin, Tmax], 'K')
 
-		self.A = pq.UncertainQuantity(A, 's^-1', dA)
+		self.A = pq.UncertainQuantity(A, originalUnits, dA)
+		self.A.units = desiredUnits
 		self.E0 = pq.UncertainQuantity(E0, 'kcal/mol', dE0)
 		self.E0.units = 'J/mol'
 		self.n = pq.UncertainQuantity(n, '', dn)
@@ -336,7 +345,7 @@ class ReactionFamily(data.Database):
 						comment += items[i] + ' '
 					
 					kinetics = ArrheniusEPKinetics()
-					kinetics.fromDatabase(kineticData, comment)
+					kinetics.fromDatabase(kineticData, comment, len(self.template.reactants))
 					self.library[label] = kinetics
 
 				except (ValueError, IndexError), e:
@@ -517,10 +526,24 @@ class ReactionFamily(data.Database):
 		else:
 			productStructures = [productStructure]
 
+		# Check that reactant and product structures are allowed in this family
+		# If not, then stop
+		if self.forbidden is not None:
+			for label, struct2 in self.forbidden.iteritems():
+				for struct in reactantStructures:
+					match, map12, map21 = struct.isSubgraphIsomorphic(struct2)
+					if match: return None
+				for struct in productStructures:
+					match, map12, map21 = struct.isSubgraphIsomorphic(struct2)
+					if match: return None
+
 		# Convert structure(s) to products
 		products = []
 		for product in productStructures:
 			spec = species.makeNewSpecies(product)
+			# Don't make a new reaction if no species was returned from
+			# makeNewSpecies() (e.g. due to forbidden structure)
+			if spec is None: return None
 			products.append(spec)
 
 		# Create reaction and add if unique
@@ -733,7 +756,8 @@ class Reaction:
 	and reverse reaction are represented by a single object since they share 
 	the same transition state. By convention, the forward reaction is taken to
 	be that for which the provided kinetics apply; the reverse kinetics are 
-	taken from thermodynamic reversibility.
+	taken from thermodynamic reversibility. A multiplier attribute is used when
+	reactions involving equivalent reactive sites are used.
 	"""
 	
 	def __init__(self, reactants=None, products=None, family=None, kinetics=None):
@@ -743,7 +767,12 @@ class Reaction:
 		self.family = family
 		self.reverse = None
 		self.kinetics = kinetics
-	
+
+		# A dictionary of the labeled atoms for the reactants
+		self.atomLabels = {}
+		
+		self.multiplier = 1.0
+
 	def __str__(self):
 		"""
 		Return a string representation of the reaction.
@@ -844,6 +873,26 @@ def makeNewReaction(reactants, products, reactantStructures, productStructures, 
 	reactants.sort()
 	products.sort()
 
+	# Get atom labels of reactants
+	reactantLabels = {}; productLabels = {}
+	for structure in reactantStructures:
+		for atom in structure.atoms():
+			if atom.label == '*': 
+				if atom.label in reactantLabels: 
+					reactantLabels[atom.label].append(atom)
+				else:
+					reactantLabels[atom.label] = [atom]
+			elif atom.label != '': reactantLabels[atom.label] = atom
+	# Get atom labels of products
+	for structure in productStructures:
+		for atom in structure.atoms():
+			if atom.label == '*':
+				if atom.label in productLabels:
+					productLabels[atom.label].append(atom)
+				else:
+					productLabels[atom.label] = [atom]
+			elif atom.label != '': productLabels[atom.label] = atom
+
 	# Check that the reaction actually results in a different set of species
 	if len(reactants) == len(products):
 		match = True
@@ -852,6 +901,7 @@ def makeNewReaction(reactants, products, reactantStructures, productStructures, 
 		if match: return None, False
 
 	# Check that the reaction is unique
+	matchReaction = None
 	for rxn in reactionList:
 		# Check forward reaction for match
 		if rxn.family is family or rxn.family is None or family is None:
@@ -861,7 +911,7 @@ def makeNewReaction(reactants, products, reactantStructures, productStructures, 
 					if rxn.reactants[i] != reactants[i]: match = False
 				for i in range(len(products)):
 					if rxn.products[i] != products[i]: match = False
-				if match: return rxn, False
+				if match: matchReaction = rxn
 		# Check reverse reaction for match
 		if rxn.family.reverse is family or rxn.family.reverse is None or family is None:
 			if len(rxn.reactants) == len(products) and len(rxn.products) == len(reactants):
@@ -870,7 +920,12 @@ def makeNewReaction(reactants, products, reactantStructures, productStructures, 
 					if rxn.products[i] != reactants[i]: match = False
 				for i in range(len(products)):
 					if rxn.reactants[i] != products[i]: match = False
-				if match: return rxn, False
+				if match: matchReaction = rxn
+
+	# If a match was found, take an 
+	if matchReaction is not None:
+		#matchReaction.multiplier += 1.0
+		return matchReaction, False
 
 	# If this point is reached, the proposed reaction is new, so make new
 	# Reaction objects for forward and reverse reaction
@@ -878,6 +933,10 @@ def makeNewReaction(reactants, products, reactantStructures, productStructures, 
 	reverse = Reaction(products, reactants, family.reverse or family)
 	forward.reverse = reverse
 	reverse.reverse = forward
+
+	# Dictionaries containing the labeled atoms for the reactants and products
+	forward.atomLabels = reactantLabels
+	reverse.atomLabels = productLabels
 
 	# Attempt to get the kinetics of the forward and reverse reactions
 	forwardKinetics = forward.family.getKinetics(forward, reactantStructures)

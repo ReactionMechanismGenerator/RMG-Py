@@ -35,6 +35,7 @@ import os
 
 import model
 import chem
+import data
 import species
 import reaction
 
@@ -142,8 +143,14 @@ def readInputFile(fstr):
 			if database[1] == 'general':
 				if generalDatabaseCount == 0:
 					logging.debug('General database: ' + database[2])
+					# Load thermo databases
 					species.thermoDatabase = species.ThermoDatabaseSet()
 					species.thermoDatabase.load(database[2] + '/')
+					# Load forbidden structures
+					species.forbiddenStructures = data.Dictionary()
+					species.forbiddenStructures.load(database[2] + '/forbiddenStructure.txt')
+					species.forbiddenStructures.toStructure()
+					# Load kinetic databases (reaction families)
 					reaction.kineticsDatabase = reaction.ReactionFamilySet()
 					reaction.kineticsDatabase.load(database[2] + '/')
 				generalDatabaseCount += 1
