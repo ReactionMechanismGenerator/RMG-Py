@@ -332,12 +332,13 @@ class Library(dict):
 		"""
 
 		if key.__class__ == str or key.__class__ == unicode:
-			return self[key]
+			if key in self: return self[key]
 		else:
 			names = self.hashLabels(key)
 			for name in names:
 				if name in self: return self[name]
-			return None
+
+		return None
 	
 	def load(self, path):
 		"""

@@ -66,19 +66,21 @@ class ArrheniusEPKinetics:
 	def fromDatabase(self, data, comment):
 		"""
 		Process a list of numbers `data` and associated description `comment`
-		generated while reading from a kinetics database.
+		generated while reading from a kinetics database. Currently ignores
+		uncertainty data and sets all units of preexponential to inverse time,
+		regardless of the associated reaction order.
 		"""
 
 		if len(data) != 11:
-			raise Exception('Invalid list of kinetic data; should be a list of numbers of length 10.')
+			raise Exception('Invalid list of kinetic data; should be a list of numbers of length 11.')
 
-		Tmin, Tmax, A, n, alpha, Ea, dA, dn, dalpha, dEa, rank = data
+		Tmin, Tmax, A, n, alpha, E0, dA, dn, dalpha, dE0, rank = data
 
 		self.Trange = pq.Quantity([Tmin, Tmax], 'K')
 
 		self.A = pq.UncertainQuantity(A, 's^-1', dA)
-		self.Ea = pq.UncertainQuantity(Ea, 'kcal/mol', dEa)
-		self.Ea.units = 'J/mol'
+		self.E0 = pq.UncertainQuantity(E0, 'kcal/mol', dE0)
+		self.E0.units = 'J/mol'
 		self.n = pq.UncertainQuantity(n, '', dn)
 		self.alpha = pq.UncertainQuantity(alpha, 's^-1', dalpha)
 
@@ -312,17 +314,27 @@ class ReactionFamily(data.Database):
 					kineticData = []; comment = ''
 					# First item is temperature range
 					kineticData.extend(items[0].split('-'))
-					kineticData[0] = float(kineticData[0])
-					kineticData[1] = float(kineticData[1])
+					if len(kineticData) == 2:
+						kineticData[0] = float(kineticData[0])
+						kineticData[1] = float(kineticData[1])
+					elif len(kineticData) == 1:
+						kineticData = [float(items[0]), float(items[0])]
 					# Middle items are Arrhenius + Evans-Polanyi data
-					for i in range(1, 9):
+					for i in range(1, 5):
 						kineticData.append(float(items[i]))
+					for i in range(5, 9):
+						# Convert multiplicative uncertainties to additive
+						# uncertainties if needed
+						if items[i][0] == '*':
+							kineticData.append((float(items[i][1:]) - 1.0) * float(items[i-4]))
+						else:
+							kineticData.append(float(items[i]))
 					# Final item before comment is quality
 					kineticData.append(int(items[9]))
 					# Everything else is a comment
 					for i in range(10, len(items)):
 						comment += items[i] + ' '
-
+					
 					kinetics = ArrheniusEPKinetics()
 					kinetics.fromDatabase(kineticData, comment)
 					self.library[label] = kinetics
@@ -443,7 +455,7 @@ class ReactionFamily(data.Database):
 
 		return len(maps12) > 0, maps12, maps21
 
-	def makeReaction(self, reactants, reactantStructures, maps):
+	def makeReaction(self, reactants, structures, maps):
 		"""
 		Create a reaction involving a list of `reactants`. The `reactantStructures`
 		parameter is a list of structures in the order the reactants are stored
@@ -452,21 +464,28 @@ class ReactionFamily(data.Database):
 		corresponding structure.
 		"""
 
-#		# Find atoms associated with each label
-#		atoms = {}
-#		for map in maps:
-#			atom = {}
-#			for key, value in map.iteritems():
-#				if key.label != '':
-#					atoms[key.label] = value
-
 		# Tag atoms with labels
-		for struct in reactantStructures: struct.clearLabeledAtoms()
+		for struct in structures: struct.clearLabeledAtoms()
+		counter = 0
 		for map in maps:
 			for key, value in map.iteritems():
-				if key.label != '':
+				# For reactions involving two identical centers, both labeled
+				# '*', label one as '*1' and the other as '*2'
+				# An example reaction family is colligation (reverse of
+				# unimolecular homolysis)
+				if key.label == '*':
+					counter += 1; value.label = '*' + str(counter)
+				# Otherwise pass label as given
+				elif key.label != '':
 					value.label = key.label
-					
+
+		# Copy structures so we don't modify the originals
+		# Do this after tagging the originals so both reactants and products
+		# have tags
+		reactantStructures = []
+		for struct in structures:
+			reactantStructures.append(struct.copy())
+
 		# Merge reactant structures into single structure
 		structure = chem.Structure()
 		for struct in reactantStructures:
@@ -476,7 +495,22 @@ class ReactionFamily(data.Database):
 		self.recipe.applyForward(structure)
 		productStructure = structure.copy()
 		self.recipe.applyReverse(structure)
-		
+
+		# Restore original atom labels of the reactants if they were changed
+		# before
+		if counter > 0:
+			for struct in structures:
+				for atom in struct.atoms():
+					if atom.label != '':
+						atom.label = '*'
+
+		# Remove numbers from labeled atoms of products if they are the same
+		# top-level node
+		if len(self.template.products) > 1:
+			if self.template.products[0] == self.template.products[1]:
+				for atom in productStructure.atoms():
+					if atom.label != '': atom.label = '*'
+
 		# Split product structure into multiple species if necessary
 		if len(self.template.products) > 1:
 			productStructures = productStructure.split()
@@ -489,32 +523,8 @@ class ReactionFamily(data.Database):
 			spec = species.makeNewSpecies(product)
 			products.append(spec)
 
-#		# Determine top level nodes
-#		reactantTemplate = self.template.reactants[:]
-#		productTemplate = self.template.products[:]
-#		print reactantTemplate, productTemplate
-#
-#		# Descend all reactant trees as deeply as possible
-#		for i in range(len(reactantStructures)):
-#			if reactantTemplate[i].__class__ == list:
-#				for j in range(len(reactantTemplate[i])):
-#					reactantTemplate[i][j] = self.descendTree(reactantStructures[i], atoms, reactantTemplate[i][j])
-#			else:
-#				reactantTemplate[i] = self.descendTree(reactantStructures[i], atoms, reactantTemplate[i])
-#
-#
-#		# Descend all product trees as deeply as possible
-#		for i in range(len(productStructures)):
-#			if productTemplate[i].__class__ == list:
-#				for j in range(len(productTemplate[i])):
-#					productTemplate[i][j] = self.descendTree(productStructures[i], atoms2, productTemplate[i][j])
-#			else:
-#				productTemplate[i] = self.descendTree(productStructures[i], atoms2, productTemplate[i])
-#
-#		print reactantTemplate, productTemplate
-
 		# Create reaction and add if unique
-		rxn, isNew = makeNewReaction(reactants, products, self)
+		rxn, isNew = makeNewReaction(reactants, products, reactantStructures, productStructures, self)
 		if isNew:	return rxn
 		else:		return None
 
@@ -531,12 +541,9 @@ class ReactionFamily(data.Database):
 			# Iterate over all resonance isomers of the reactant
 			for structure in reactants[0].structure:
 
-				# Make a copy of structure so we don't modify the original
-				structureCopy = structure.copy()
-
-				ismatch, map12, map21 = self.reactantMatch(structureCopy, self.template.reactants[0])
+				ismatch, map12, map21 = self.reactantMatch(structure, self.template.reactants[0])
 				for map in map12:
-					rxn = self.makeReaction(reactants, [structureCopy], [map])
+					rxn = self.makeReaction(reactants, [structure], [map])
 					if rxn is not None:
 						rxnList.append(rxn)
 
@@ -575,39 +582,74 @@ class ReactionFamily(data.Database):
 
 		return rxnList
 
-	def getKinetics(self, reaction):
+	def getKinetics(self, reaction, structures):
 		"""
 		Determine the appropriate kinetics for `reaction` which involves the
 		labeled atoms in `atoms`.
 		"""
-		return None
-		#data = self.library.getData(template)
-		#return data
-	
-#		# Fail if reaction family is not self
-#		if reaction.family is not self: return None
-#		print self.template
-#
-#		# Descend each tree as far as possible
-#		nodes = []
-#		for top in self.tree.top:
-#
-#			for templateReactant in self.template.reactants:
-#
-#				if top == templateReactant or top in templateReactant:
-#					for reactant in reaction.reactants:
-#						for atoms in atomsList:
-#							node = self.descendTree(reactant.structure[0], atoms, top)
-#							if node is not None:
-#								nodes.append(node)
-#
-#		print nodes
 
-#						result = ''
-#						while node is not None:
-#							result = ' -> ' + node + result
-#							node = self.tree.parent[node]
-#						print result[4:]
+		# Get forward reaction template and remove any duplicates
+		forwardTemplate, reverseTemplate = self.getTemplateLists()
+		forwardTemplate = list(set(forwardTemplate))
+		
+		# Descend reactant trees as far as possible
+		template = []
+		for forward in forwardTemplate:
+			# Get labeled atoms of forward
+			node = forward;	group = self.dictionary[node]
+			while group.__class__ == str or group.__class__ == unicode:
+				node = self.tree.children[node][0]
+				group = self.dictionary[node]
+
+			atomList = group.getLabeledAtoms()
+			for structure in structures:
+				# Match labeled atoms
+				match = True
+				for label in atomList:
+					if not structure.containsLabeledAtom(label):
+						match = False
+				# Match structures
+				atoms = {}
+				node = self.descendTree(structure, atoms, forward)
+				if match and node is not None:
+					template.append(node)
+
+		#print template
+
+		nodeLists = []
+		for temp in template:
+			nodeList = []
+			while temp is not None:
+				nodeList.append(temp)
+				temp = self.tree.parent[temp]
+			nodeLists.append(nodeList)
+
+		# Generate all possible combinations of nodes
+		if len(nodeLists) == 1:
+			items = nodeLists[0]
+		elif len(nodeLists) == 2:
+			items = [[x,y] for x in nodeLists[0] for y in nodeLists[1]]
+		elif len(nodeLists) == 3:
+			items = [[x,y,z] for x in nodeLists[0] for y in nodeLists[1] for z in nodeLists[2]]
+		elif len(nodeLists) == 4:
+			items = [[x,y,z,w] for x in nodeLists[0] for y in nodeLists[1] for z in nodeLists[2] for w in nodeLists[3]]
+		elif len(nodeLists) == 5:
+			items = [[x,y,z,w,u] for x in nodeLists[0] for y in nodeLists[1] for z in nodeLists[2] for w in nodeLists[3] for u in nodeLists[4]]
+		elif len(nodeLists) == 6:
+			items = [[x,y,z,w,u,v] for x in nodeLists[0] for y in nodeLists[1] for z in nodeLists[2] for w in nodeLists[3] for u in nodeLists[4] for v in nodeLists[5]]
+		elif len(nodeLists) > 6:
+			raise Exception('RMG currently cannot handle reaction templates with more than six trees.')
+		elif len(nodeLists) == 0:
+			raise Exception('Unable to descend reactant trees.')
+
+		# Generate list of kinetics at every node
+		kinetics = []
+		for item in items:
+			data = self.library.getData(item)
+			if data is not None:
+				kinetics.append(data)
+
+		return kinetics
 
 ################################################################################
 
@@ -784,7 +826,7 @@ class Reaction:
 # reaction than an older reaction
 reactionList = []
 
-def makeNewReaction(reactants, products, family):
+def makeNewReaction(reactants, products, reactantStructures, productStructures, family):
 	"""
 	Attempt to make a new reaction based on a list of `reactants` and a list of
 	`products`. The combination of these and a reaction `family` string uniquely
@@ -838,18 +880,29 @@ def makeNewReaction(reactants, products, family):
 	reverse.reverse = forward
 
 	# Attempt to get the kinetics of the forward and reverse reactions
-	forwardKinetics = forward.family.getKinetics(forward)
-	reverseKinetics = reverse.family.getKinetics(reverse)
+	forwardKinetics = forward.family.getKinetics(forward, reactantStructures)
+	reverseKinetics = reverse.family.getKinetics(reverse, productStructures)
 	
 	# By convention, we only work with the reaction in the direction for which
 	# we have assigned kinetics from the kinetics database; the kinetics of the
 	# reverse of that reaction come from thermodynamics
+	# If we have assigned kinetics in both directions, then (for now) choose the
+	# kinetics for the forward reaction
 	rxn = forward
-	if forwardKinetics is None and reverseKinetics is None:
-		pass
-		#raise Exception('Unable to determine kinetics of reaction ' + str(forward) + '.')
-	elif forwardKinetics is None: rxn = reverse
-	
+	if len(forwardKinetics) > 0 and len(reverseKinetics) > 0:
+		rxn = forward
+		reverseKinetics = []
+	elif len(forwardKinetics) > 0:
+		rxn = forward
+	elif len(reverseKinetics) > 0:
+		rxn = reverse
+	else:
+		print family
+		raise Exception('Unable to determine kinetics of reaction ' + str(forward) + '.')
+
+	forward.kinetics = forwardKinetics
+	reverse.kinetics = reverseKinetics
+
 	reactionList.insert(0, rxn)
 	
 	# Note in the log
