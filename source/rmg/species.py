@@ -167,7 +167,7 @@ class ThermoGAData:
 		"""
 		Return the heat capacity at temperature `T`.
 		"""
-		if T < ThermoGAData.CpTlist[0]:
+		if T < ThermoGAData.CpTlist[0] and T != pq.Quantity(298, 'K'):
 			raise data.TemperatureOutOfRangeException('Invalid temperature for heat capacity estimation from group additivity.')
 		elif T > ThermoGAData.CpTlist[-1]:
 			return self.Cp[-1]
@@ -182,7 +182,7 @@ class ThermoGAData:
 		Return the enthalpy at temperature `T`.
 		"""
 		H = self.H298
-		if T < ThermoGAData.CpTlist[0]:
+		if T < ThermoGAData.CpTlist[0] and T != pq.Quantity(298, 'K'):
 			raise data.TemperatureOutOfRangeException('Invalid temperature for enthalpy estimation from group additivity.')
 		for Tmin, Tmax, Cpmin, Cpmax in zip(ThermoGAData.CpTlist[:-1], \
 				ThermoGAData.CpTlist[1:], self.Cp[:-1], self.Cp[1:]):
@@ -200,7 +200,7 @@ class ThermoGAData:
 		Return the entropy at temperature `T`.
 		"""
 		S = self.S298
-		if T < ThermoGAData.CpTlist[0]:
+		if T < ThermoGAData.CpTlist[0] and T != pq.Quantity(298, 'K'):
 			raise data.TemperatureOutOfRangeException('Invalid temperature for entropy estimation from group additivity.')
 		for Tmin, Tmax, Cpmin, Cpmax in zip(ThermoGAData.CpTlist[:-1], \
 				ThermoGAData.CpTlist[1:], self.Cp[:-1], self.Cp[1:]):
@@ -217,7 +217,7 @@ class ThermoGAData:
 		"""
 		Return the Gibbs free energy at temperature `T`.
 		"""
-		if T < ThermoGAData.CpTlist[0]:
+		if T < ThermoGAData.CpTlist[0] and T != pq.Quantity(298, 'K'):
 			raise data.TemperatureOutOfRangeException('Invalid temperature for free energy estimation from group additivity.')
 		return self.getEnthalpy(T) - T * self.getEntropy(T)
 

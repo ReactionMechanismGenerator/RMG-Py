@@ -33,6 +33,7 @@ Contains classes describing chemical reactions.
 """
 
 import quantities as pq
+import math
 import logging
 import os
 import os.path
@@ -43,7 +44,82 @@ import species
 
 ################################################################################
 
-class ArrheniusEPKinetics:
+class Kinetics:
+	"""
+	Represent a set of kinetic data. No matter how the kinetic data is modeled,
+	it should be accompanied by a temperature range over which it is valid,
+	an integer rank denoting the degree of confidence in the data (1 = high,
+	5 = low, 0 = none), and a comment describing the source of the data.
+	"""
+
+	def __init__(self, Trange=None, rank=0, comment=''):
+		self.Trange = Trange
+		self.rank = 0
+		self.comment = ''
+
+	def isTemperatureInRange(self, T):
+		"""
+		Return :data:`True` if temperature `T` is within the valid temperature
+		range specified by self.Trange and :data:`False` if not. If no
+		temperature range is specified in self.Trange, the kinetic data is
+		assumed to be valid at all temperatures.
+		"""
+		if self.Trange is not None:
+			if T < self.Trange[0] or T > self.Trange[1]:
+				return False
+		return True
+
+################################################################################
+
+class ArrheniusKinetics(Kinetics):
+	"""
+	Represent a set of modified Arrhenius kinetics. The kinetic expression has
+	the form
+
+	.. math:: k(T) = A T^n \\exp \\left( - \\frac{E_\mathrm{a}}{RT} \\right)
+
+	"""
+
+	def __init__(self, A=0.0, Ea=0.0, n=0.0):
+		Kinetics.__init__(self)
+		self.A = A
+		self.Ea = Ea
+		self.n = n
+
+	def getRateConstant(self, T):
+		"""
+		Return the rate constant k(T) at temperature `T` by evaluating the
+		Arrhenius expression.
+		"""
+
+		R = pq.constants.R.simplified
+
+		# Raise exception if T is outside of valid temperature range
+		if not self.isTemperatureInRange(T):
+			raise Exception('Attempted to evaluate a rate constant at an invalid temperature.')
+
+		return self.A * (T ** self.n) * math.exp(-self.Ea / R / T)
+
+	def getReverse(self, dHrxn, dGrxn):
+		"""
+		Generate the reverse of the current kinetics for a reaction with
+		standard enthalpy and free energy of reaction `dHrxn` and `dGrxn` at
+		298 K, respectively, defined in the same direction that these kinetics
+		are.
+		"""
+		R = pq.constants.R.simplified
+		dSrxn = (dGrxn - dHrxn) / pq.Quantity(298, 'K')
+
+		kinetics = ArrheniusKinetics(self.A * math.exp(-dSrxn / R), self.Ea - dHrxn, self.n)
+		kinetics.Trange = self.Trange
+		kinetics.rank = self.rank
+		kinetics.comment = self.comment
+
+		return kinetics
+
+################################################################################
+
+class ArrheniusEPKinetics(Kinetics):
 	"""
 	Represent a set of modified Arrhenius kinetics with Evans-Polanyi data. The
 	kinetic expression has the form
@@ -53,15 +129,53 @@ class ArrheniusEPKinetics:
 	The parameter :math:`\\alpha` is used to correct the activation energy
 	:math:`E_\\mathrm{a}` via the Evans-Polanyi formula
 
-	.. math:: E_\\mathrm{a} = E_\\mathrm{a}^0 - (\\alpha - 1) \\Delta H_\\mathrm{rxn}
+	.. math:: E_\\mathrm{a} = E_0 + \\alpha \\Delta H_\\mathrm{rxn}
 
 	"""
 
-	def __init__(self, A=0.0, Ea=0.0, n=0.0, alpha=0.0):
+	def __init__(self, A=0.0, E0=0.0, n=0.0, alpha=0.0):
+		Kinetics.__init__(self)
 		self.A = A
-		self.Ea = Ea
+		self.E0 = E0
 		self.n = n
 		self.alpha = alpha
+
+	def getActivationEnergy(self, dHrxn):
+		"""
+		Return the activation energy using the enthalpy of reaction `dHrxn`.
+		"""
+		return self.E0 + self.alpha * dHrxn
+		
+	def getArrhenius(self, dHrxn):
+		"""
+		Return the Arrhenius form of k(T) at temperature `T` by correcting E0
+		to Ea using the enthalpy of reaction `dHrxn`.
+		"""
+
+		Ea = self.getActivationEnergy(dHrxn)
+
+		kinetics = ArrheniusKinetics(self.A, Ea, self.n)
+		kinetics.Trange = self.Trange
+		kinetics.rank = self.rank
+		kinetics.comment = self.comment
+
+		return kinetics
+
+	def getRateConstant(self, T, dHrxn):
+		"""
+		Return the rate constant k(T) at temperature `T` by evaluating the
+		Arrhenius expression. The reaction has an enthalpy of reaction `dHrxn`.
+		"""
+
+		R = pq.constants.R.simplified
+
+		# Raise exception if T is outside of valid temperature range
+		if not self.isTemperatureInRange(T):
+			raise Exception('Attempted to evaluate a rate constant at an invalid temperature.')
+
+		Ea = self.getActivationEnergy(dHrxn)
+
+		return self.A * T ** self.n * math.exp(-Ea / R / T)
 
 	def fromDatabase(self, data, comment, numReactants):
 		"""
@@ -91,7 +205,7 @@ class ArrheniusEPKinetics:
 		self.E0 = pq.UncertainQuantity(E0, 'kcal/mol', dE0)
 		self.E0.units = 'J/mol'
 		self.n = pq.UncertainQuantity(n, '', dn)
-		self.alpha = pq.UncertainQuantity(alpha, 's^-1', dalpha)
+		self.alpha = pq.UncertainQuantity(alpha, '', dalpha)
 
 		self.rank = rank
 		self.comment = comment
@@ -104,20 +218,15 @@ class ReactionRecipe:
 	of a set of reactants to a set of products. There are currently five such
 	actions:
 
-	- CHANGE_BOND {center1,order,center2} - change the bond order of the bond
-	between center1 and center2 by order; do not break or form bonds
+	- CHANGE_BOND {center1,order,center2} - change the bond order of the bond between center1 and center2 by order; do not break or form bonds
 
-	- FORM_BOND {center1,order,center2} - form a new bond between center1 and
-	center2 of type order
+	- FORM_BOND {center1,order,center2} - form a new bond between center1 and center2 of type order
 
-	- BREAK_BOND {center1,order,center2} - break the bond between center1 and
-	center2, which should be of type order
+	- BREAK_BOND {center1,order,center2} - break the bond between center1 and center2, which should be of type order
 
-	- GAIN_RADICAL {center,radical} - Increase the number of free electrons on
-	center by radical
+	- GAIN_RADICAL {center,radical} - Increase the number of free electrons on center by radical
 
-	- LOSE_RADICAL {center,radical} - Decrease the number of free electrons on
-	center by radical
+	- LOSE_RADICAL {center,radical} - Decrease the number of free electrons on center by radical
 
 	Each action is a list of items; the first is the action name, while the
 	rest are the action parameters as indicated above.
@@ -846,6 +955,98 @@ class Reaction:
 				productsMatch = True
 
 		return reactantsMatch and productsMatch
+
+	def getEnthalpyOfReaction(self, T):
+		"""
+		Return the enthalpy of reaction evaluated at temperature `T`.
+		"""
+		dHrxn = -self.reactants[0].getEnthalpy(T)
+		for reactant in self.reactants[1:]:
+			dHrxn -= reactant.getEnthalpy(T)
+		for product in self.products:
+			dHrxn += product.getEnthalpy(T)
+		return dHrxn
+
+	def getEntropyOfReaction(self, T):
+		"""
+		Return the entropy of reaction evaluated at temperature `T`.
+		"""
+		dSrxn = -self.reactants[0].getEntropy(T)
+		for reactant in self.reactants[1:]:
+			dSrxn -= reactant.getEntropy(T)
+		for product in self.products:
+			dSrxn += product.getEntropy(T)
+		return dSrxn
+
+	def getFreeEnergyOfReaction(self, T):
+		"""
+		Return the Gibbs free energy of reaction evaluated at temperature `T`.
+		"""
+		dGrxn = -self.reactants[0].getFreeEnergy(T)
+		for reactant in self.reactants[1:]:
+			dGrxn -= reactant.getFreeEnergy(T)
+		for product in self.products:
+			dGrxn += product.getFreeEnergy(T)
+		return dGrxn
+
+	def getEquilibriumConstant(self, T):
+		"""
+		Return the equilibrium constant K(T) evaluated at temperature `T`.
+		"""
+		R = pq.constants.R.simplified
+		dGrxn = self.getFreeEnergyOfReaction(T)
+		K = math.exp(-dGrxn / R / T)
+		return K
+
+	def getBestKinetics(self, T):
+		"""
+		Return the best set of kinetic parameters for the forward reaction
+		evaluated at the temperature `T`. The selection method is based on the
+		lists available in self.kinetics and self.reverse.kinetics.
+		"""
+		kinetics = self.kinetics[:]
+		kinetics.extend(self.reverse.kinetics[:])
+
+		# Prune out all kinetic data not valid at desired temperature
+		i = 0
+		while i < len(kinetics):
+			k = kinetics[i]
+			if not k.isTemperatureInRange(T): kinetics.remove(k)
+			else: i += 1
+		
+		# If no data left, raise exception
+		if len(kinetics) == 0:
+			raise Exception('Unable to determine kinetics for reaction ' + str(self) + '.')
+
+		# Choose kinetics based on rank (i.e. lowest non-zero rank)
+		bestRank = kinetics[0].rank; bestKinetics = kinetics[0]
+		for k in kinetics[1:]:
+			if k.rank < bestRank and k.rank != 0:
+				bestRank = k.rank
+				bestKinetics = k
+
+		# If forward kinetics have been chosen, convert to ArrheniusKinetics and return
+		# Use T = 298 K to calculate enthalpy and free energy of reaction
+		T = pq.Quantity(298, 'K')
+		if bestKinetics in self.kinetics:
+			dHrxn = self.getEnthalpyOfReaction(T)
+			k = bestKinetics.getArrhenius(dHrxn)
+			return bestKinetics.getArrhenius(dHrxn)
+		# If reverse kinetics have been chosen, convert to forward kinetics and return
+		else:
+			dHrxn = self.getEnthalpyOfReaction(T)
+			dGrxn = self.getFreeEnergyOfReaction(T)
+			k = bestKinetics.getArrhenius(-dHrxn).getReverse(-dHrxn, -dGrxn)
+			return bestKinetics.getArrhenius(-dHrxn).getReverse(-dHrxn, -dGrxn)
+
+	def getRateConstant(self, T):
+		"""
+		Return the value of the rate constant k(T) at the temperature `T`.
+		"""
+		kinetics = self.getBestKinetics(T)
+		if kinetics is None:
+			raise Exception('Unable to determine the rate constant of reaction ' + str(self) + '.')
+		return kinetics.getRateConstant(T)
 
 ################################################################################
 
