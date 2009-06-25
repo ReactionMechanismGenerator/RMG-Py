@@ -17,13 +17,12 @@ Contents
 	
 	rmg-chem
 	rmg-data
-	rmg-fgroup
+	rmg-graph
 	rmg-io
-	rmg-kinetics
 	rmg-main
 	rmg-model
 	rmg-reaction
-	rmg-thermo
+	rmg-species
 	
 Indices and Tables
 ==================

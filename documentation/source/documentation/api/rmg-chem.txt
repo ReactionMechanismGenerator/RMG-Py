@@ -13,6 +13,12 @@ Atom
 .. autoclass:: rmg.chem.Atom
 	:members:
 
+AtomType
+--------
+
+.. autoclass:: rmg.chem.AtomType
+	:members:
+
 Bond
 ----
 
@@ -23,12 +29,6 @@ BondType
 --------
 
 .. autoclass:: rmg.chem.BondType
-	:members:
-
-ChemGraph
----------
-
-.. autoclass:: rmg.chem.ChemGraph
 	:members:
 	
 ElectronState
@@ -43,10 +43,10 @@ Element
 .. autoclass:: rmg.chem.Element
 	:members:
 
-Species
--------
+InvalidAdjacencyListException
+-----------------------------
 
-.. autoclass:: rmg.chem.Species
+.. autoclass:: rmg.chem.InvalidAdjacencyListException
 	:members:
 
 Structure
@@ -57,6 +57,8 @@ Structure
 
 Methods in ``rmg.chem``
 =======================
+
+.. autofunction:: rmg.chem.loadAtomTypes
 
 .. autofunction:: rmg.chem.loadBondTypes
 

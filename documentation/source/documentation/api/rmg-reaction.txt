@@ -7,12 +7,49 @@ The ``rmg.reaction`` Module
 Classes in ``rmg.reaction``
 ===========================
 
+ArrheniusEPKinetics
+-------------------
+
+.. autoclass:: rmg.reaction.ArrheniusEPKinetics
+	:members:
+	
+ArrheniusKinetics
+-----------------
+
+.. autoclass:: rmg.reaction.ArrheniusKinetics
+	:members:
+	
+Kinetics
+--------
+
+.. autoclass:: rmg.reaction.Kinetics
+	:members:
+	
 Reaction
 --------
 
 .. autoclass:: rmg.reaction.Reaction
 	:members:
+	
+ReactionFamily
+--------------
+
+.. autoclass:: rmg.reaction.ReactionFamily
+	:members:
+	
+ReactionFamilySet
+-----------------
+
+.. autoclass:: rmg.reaction.ReactionFamilySet
+	:members:
+	
+ReactionRecipe
+--------------
+
+.. autoclass:: rmg.reaction.ReactionRecipe
+	:members:
 
 Methods in ``rmg.reaction``
 ===========================
 
+.. autofunction:: rmg.reaction.makeNewReaction

@@ -1,0 +1,27 @@
+************************
+The ``rmg.graph`` Module
+************************
+
+.. automodule:: rmg.graph
+
+Classes in ``rmg.graph``
+========================
+
+ChemGraph
+---------
+
+.. autoclass:: rmg.graph.ChemGraph
+	:members:
+
+Methods in ``rmg.graph``
+========================
+
+.. autofunction:: rmg.graph.VF2_isomorphic
+
+.. autofunction:: rmg.graph.__VF2_feasible
+
+.. autofunction:: rmg.graph.__VF2_match
+
+.. autofunction:: rmg.graph.__VF2_pairs
+
+.. autofunction:: rmg.graph.__VF2_terminals
