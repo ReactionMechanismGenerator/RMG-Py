@@ -12,7 +12,7 @@ L0: R
 			L2: Css
 			
 					L3: CssH3
-								L4: ACC*H3
+								//L4: ACC*H3
 								L4: CH3CO
 										L5: CH3COO
 								L4: CH3O
@@ -24,15 +24,17 @@ L0: R
 										L5: CH2COO
 								
 								L4: CH2O
+										L5: CH2CO
+													L6: CH2COO
 										L5: CH2OCH2
 										L5: CH2OCH
 										L5: CH2OC
 								
-								L4: ACC*H2
+								//L4: ACC*H2
 					
 					L3: CssH
 					
-								L4: ACC*H
+								//L4: ACC*H
 								L4: CH-O
 										L5: CHOCH
 										L5: CHOC
@@ -43,45 +45,45 @@ L0: R
 								L4: CH2OC*
 								L4: CHOC*
 								L4: COC
+								L4: CH2C*OO
 					
 			
-
+			L2: Cb
+			
+					L3: AC
+					L3: ACH
+					L3: ACCH3
+					L3: ACCH2
+					L3: ACCH
+					L3: ACOH
 				 
 			
 			L2: Cds
 			
+
 					L3: CO
 								L4: CH3C*O
+											L5: CH3C*OO
 								L4: CH2C*O
+											L5: CH2C*OO
+
 								L4: CHO
-								L4: CH3C*OO
-								L4: CH2C*OO
-								L4: COOH
+											L5: CH3C*O			// Corresponds to acetaldehyde										
+											L5: CH2C*O																	
+											L5: O=COC=O
+											L5: HCOO
+											
+					L3: COOH
 								L4: HCOOH
-								L4: O=COC=O
-								
-					L3: ring			
-								//L4: AC
-								L4: ACH
-								L4: ACCH3
-								L4: ACCH2
-								L4: ACCH
-								L4: ACOH
-								
-					//L3: AC
+					
 					L3: CH2=C
 					L3: CH=C
 					L3: C=C
 					L3: CH2=C*H
-					//L3: CH=C*H
+					L3: CH=C*H
 					L3: CH2=C*
 					L3: CH=C*
 					L3: C=C*					
-					//L3: ACH
-					//L3: ACCH3
-					//L3: ACCH2
-					//L3: ACCH
-					//L3: ACOH
 					L3: CH2=CH
 					L3: CH=CH
 			
@@ -95,15 +97,17 @@ L0: R
 			L2: Oss
 			
 					L3: OssH
+								
 								L4: CH3O*H
-								L4: ACO*H
+								//L4: ACO*H
 								L4: COO*H
-								L4: HCOO*H
-					L3: CH3COO*
-					L3: CH2COO*
+									L5: HCOO*H
+									L5: CH3COO*
+									L5: CH2COO*
 					L3: HCOO*
 					L3: CH3O*
 					L3: CH2O*
+								L4: OssH
 								L4: CH2O*CH2
 								L4: CH2O*C
 								L4: CH2O*CH
@@ -115,13 +119,29 @@ L0: R
 			
 			
 			L2: Od			
-			
-					L3: CH3CO*
-	 				L3: CH2CO*
 					L3: CHO*
-					L3: CH3CO*O
-					L3: CH2CO*O
+								L4: CH3CO*
+									L5: CH3CO*O
+				 				L4: CH2CO*
+				 					L5: CH2CO*O
+
+					L3: CH3CO*
+								L4: CH3CO*O
+				 	L3: CH2CO*
+				 				L4: CH2CO*O
 					L3: HCO*O
+								L4: HCO*OH
 					L3: CO*OH
-					L3: HCO*OH
+								L4: HCO*OH
 					L3: O*=COC=O
+					
+					
+					
+// AROMATIC GROUPS
+// Not implemented yet should be implemented through ring corrections
+
+					L3: ACH
+					L3: ACCH3
+					L3: ACCH2
+					L3: ACCH
+					L3: ACOH
