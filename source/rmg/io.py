@@ -211,7 +211,11 @@ def readInputFile(fstr):
 		for element in elements:
 		
 			# Create a new reaction system
-			reactionSystem = model.ReactionSystem()
+			rsType = element.getAttribute('type')
+			if rsType == 'batch':
+				reactionSystem = model.BatchReactor()
+			else:
+				raise InvalidInputFileException('Invalid reaction system type "' + rsType + '".')
 			
 			# Temperature model
 			temperatureModel = getFirstChildElement(element, 'temperatureModel')
@@ -225,6 +229,7 @@ def readInputFile(fstr):
 				T = pq.Quantity(value, units); T.units = 'K'
 				
 				# Set the reaction system's temperature model to isothermal
+				reactionSystem.temperatureModel = model.TemperatureModel()
 				reactionSystem.temperatureModel.setIsothermal(T)
 				
 			else:
@@ -242,11 +247,24 @@ def readInputFile(fstr):
 				P = pq.Quantity(value, units); P.units = 'Pa'
 				
 				# Set the reaction system's pressure model to isobaric
+				reactionSystem.pressureModel = model.PressureModel()
 				reactionSystem.pressureModel.setIsobaric(P)
 				
 			else:
 				raise InvalidInputFileException('Invalid pressure model type "' + pressModelType + '".')
+
+			# Physical property model
+			propModel = getFirstChildElement(element, 'physicalPropertyModel')
+			propModelType = propModel.getAttribute('type')
+			if propModelType.lower() == 'idealgas':
+
+				# Set the reaction system's pressure model to isobaric
+				reactionSystem.equationOfState = model.IdealGas()
 			
+			else:
+				raise InvalidInputFileException('Invalid physical property model type "' + propModelType + '".')
+
+
 			# Initialize all initial concentrations to zero
 			for spec in coreSpecies:
 				reactionSystem.initialConcentration[spec] = pq.Quantity(0.0, 'mol/m**3')
