@@ -18,11 +18,11 @@
 					<atom id="a6" elementType="C" />
 				</atomArray>
 				<bondArray>
-					<bond atomRefs2="a1 a2" order="2" />
-					<bond atomRefs2="a2 a3" order="1" />
-					<bond atomRefs2="a3 a4" order="2" />
-					<bond atomRefs2="a4 a5" order="1" />
-					<bond atomRefs2="a5 a6" order="1" />
+					<bond atomRefs2="a1 a2" order="D" />
+					<bond atomRefs2="a2 a3" order="S" />
+					<bond atomRefs2="a3 a4" order="D" />
+					<bond atomRefs2="a4 a5" order="S" />
+					<bond atomRefs2="a5 a6" order="S" />
 				</bondArray>
 			</molecule>
 		</cml>
@@ -38,13 +38,14 @@
 		<inchi>InChI=1/N2/c1-2</inchi>
 	</species>
 	<!-- List of reaction systems -->
-	<reactionSystem>
+	<reactionSystem type="batch">
 		<temperatureModel type="isothermal">
 			<temperature units="K">1350.0</temperature>
 		</temperatureModel>
 		<pressureModel type="isobaric">
 			<pressure units="bar">1.0</pressure>
 		</pressureModel>
+		<physicalPropertyModel type="idealGas" />
 		<concentration speciesID="spec1" units="mol/cm**3">6.829e-4</concentration>
 		<concentration speciesID="spec3" units="mol/cm**3">0.104</concentration>
 		<concentration speciesID="spec6" units="mol/cm**3">0.0156</concentration>
@@ -59,7 +60,7 @@
 	<simulator name="DASSL" atol="1e-18" rtol="1e-8" />
 	
 	<!-- Options -->
-	<modelTolerance>0.1</modelTolerance>
+	<fluxTolerance>0.1</fluxTolerance>
 	<inchiGeneration>off</inchiGeneration>
 	<spectralDataEstimation>off</spectralDataEstimation>
 	<activatedNetworks>off</activatedNetworks>
