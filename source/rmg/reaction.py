@@ -745,7 +745,8 @@ class ReactionFamily(data.Database):
 				if match and node is not None:
 					template.append(node)
 
-		#print template
+		# If unable to match template, use the most general template
+		if len(template) == 0: template = forwardTemplate
 
 		nodeLists = []
 		for temp in template:
@@ -771,6 +772,8 @@ class ReactionFamily(data.Database):
 		elif len(nodeLists) > 6:
 			raise Exception('RMG currently cannot handle reaction templates with more than six trees.')
 		elif len(nodeLists) == 0:
+			print self.label, self.template
+			print reaction
 			raise Exception('Unable to descend reactant trees.')
 
 		# Generate list of kinetics at every node

@@ -205,6 +205,15 @@ def readInputFile(fstr):
 
 		logging.debug('')
 		
+		# Create an empty reaction model
+		reactionModel = model.CoreEdgeReactionModel()
+		
+		# Read model flux tolerance
+		element = getFirstChildElement(root, 'fluxTolerance')
+		reactionModel.fluxTolerance = float(getElementText(element))
+		logging.debug('Model flux tolerance set to %s' % (reactionModel.fluxTolerance))
+		logging.debug('')
+		
 		# Process reaction systems
 		reactionSystems = []
 		elements = getElements(root, 'reactionSystem')
@@ -310,7 +319,7 @@ def readInputFile(fstr):
 		# Unlink the DOM tree when finished
 		dom.unlink()
 		
-	return coreSpecies, reactionSystems
+	return reactionModel, coreSpecies, reactionSystems
 
 ################################################################################
 

@@ -65,11 +65,22 @@ def execute(inputFile, outputDir, scratchDir, libraryDir, verbose):
 	printRMGHeader()
 	
 	# Read input file
-	coreSpecies, reactionSystems = io.readInputFile(inputFile)
+	reactionModel, coreSpecies, reactionSystems = io.readInputFile(inputFile)
 	
-	# Initialize the reaction model
-	reactionModel = model.CoreEdgeReactionModel()
+	# Initialize reaction model
 	reactionModel.initialize(coreSpecies)
+
+	# Main RMG loop
+	done = False
+	while not done:
+
+		done = True
+		for reactionSystem in reactionSystems:
+			valid, species = reactionSystem.simulate(reactionModel)
+			if not valid:
+				reactionModel.enlarge(species)
+				done = False
+
 
 	# Log end timestamp
 	logging.info('\nRMG execution terminated at ' + time.asctime())
