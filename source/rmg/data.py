@@ -35,7 +35,6 @@ Contains classes and functions for working with the various RMG databases.
 import os
 import logging
 import quantities as pq
-import xml.dom.minidom
 
 import chem
 
@@ -88,8 +87,6 @@ class Dictionary(dict):
 		
 		# The current record
 		record = ''
-		# The dictionary as read from the file
-		records = {}
 		
 		# Process the dictionary
 		try:
@@ -381,7 +378,6 @@ class Library(dict):
 				labels = []
 				for i in range(0, numLabels):
 					labels.append(info[i+1])
-				comment = ''
 
 				data = ''
 				for i in range(numLabels+1, len(info)):

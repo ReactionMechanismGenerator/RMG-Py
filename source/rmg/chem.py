@@ -1140,7 +1140,6 @@ class Structure(graph.ChemGraph):
 		Return :data:`True` if the structure contains an atom with the label
 		`label` and :data:`False` otherwise.
 		"""
-		atoms = {}
 		for atom in self.atoms():
 			if atom.label == label: return True
 		return False
