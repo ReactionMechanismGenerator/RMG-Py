@@ -1,0 +1,18 @@
+////////////////////////////////////////////////////////////////////////////////
+//
+//	Reaction template for carboxyl insertion / carboxyl extrusion
+//
+////////////////////////////////////////////////////////////////////////////////
+
+// Names for forward and reverse reactions
+Forward: Carboxyl insertion
+Reverse: Carboxyl extrusion
+
+// Template for forward reaction
+CO2 + RR' <---> R_CO2_R'
+
+// Recipe for forward reaction
+BREAK_BOND		{*3,S,*4}
+CHANGE_BOND		{*1,-1,*2}
+FORM_BOND		{*1,S,*3}
+FORM_BOND		{*2,S,*4}

@@ -1,0 +1,17 @@
+////////////////////////////////////////////////////////////////////////////////
+//
+//	Reaction template for combination radical CO / dissociation radical CO
+//
+////////////////////////////////////////////////////////////////////////////////
+
+// Names for forward and reverse reactions
+Forward: Combination of radical and CO
+Reverse: Dissociation to radical and CO
+
+// Template for forward reaction
+COm  + Y_rad <---> YC.=O
+
+// Recipe for forward reaction
+FORM_BOND		{*1,S,*2}
+LOSE_RADICAL 	{*1,1}
+LOSE_RADICAL 	{*2,1}

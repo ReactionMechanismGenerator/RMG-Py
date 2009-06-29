@@ -1,0 +1,18 @@
+////////////////////////////////////////////////////////////////////////////////
+//
+//	Reaction template for alkyl hydroperoxyl intra OH migration / hydroxyl alkoxy intra OH migration
+//
+////////////////////////////////////////////////////////////////////////////////
+
+// Names for forward and reverse reactions
+Forward: Alkyl hydroperoxyl intra OH migration
+Reverse: Hydroxyl alkoxy intra OH migration
+
+// Template for forward reaction
+RnOOH Y_rad_out <---> HORnO.
+
+// Recipe for forward reaction
+BREAK_BOND		{*2,S,*3}
+FORM_BOND		{*1,S,*3}
+GAIN_RADICAL	{*2,1}
+LOSE_RADICAL 	{*1,1}

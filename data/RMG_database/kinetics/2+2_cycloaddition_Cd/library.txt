@@ -1,0 +1,15 @@
+////////////////////////////////////////////////////////////////////////////////
+//
+//	Reaction library for [2+2]cycloaddition_CC_CC / [2+2]cycloelimination_CC_CC
+//
+////////////////////////////////////////////////////////////////////////////////
+ 
+// Format of data
+Arrhenius_EP
+
+// Number of columns of data consisting of nodes
+2
+
+//No.	db	doublebond	Temp.		A		n	a	E0	DA	Dn	Da	DE0	Rank
+586.	db	doublebond	723-786		6.92E+10	0	0	43.72	0	0	0	0	3
+6000.	db_2H	mb_OC	300-1500	2.33E+06	1.65	0	54.15	*5.0	0	0	0	0	

@@ -1,0 +1,18 @@
+////////////////////////////////////////////////////////////////////////////////
+//
+//	Reaction template for cyclic ether formation from alkyl hydroperoxyl / alkyl hydroperoxyl formation from cyclic ether
+//
+////////////////////////////////////////////////////////////////////////////////
+
+// Names for forward and reverse reactions
+Forward: Cyclic ether formation from alkyl hydroperoxyl
+Reverse: Alkyl hydroperoxyl formation from cyclic ether
+
+// Template for forward reaction
+RnOOH Y_rad_intra <---> RnO + OH
+
+// Recipe for forward reaction
+BREAK_BOND		{*2,S,*3}
+FORM_BOND		{*1,S,*2}
+GAIN_RADICAL	{*3,1}
+LOSE_RADICAL 	{*1,1}

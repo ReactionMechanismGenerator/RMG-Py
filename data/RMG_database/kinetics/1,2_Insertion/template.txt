@@ -1,0 +1,18 @@
+////////////////////////////////////////////////////////////////////////////////
+//
+//	Reaction template for carbonyl insertion / carbonyl extrusion
+//
+////////////////////////////////////////////////////////////////////////////////
+
+// Names for forward and reverse reactions
+Forward: Carbonyl insertion
+Reverse: Carbonyl extrusion
+
+// Template for forward reaction
+CO_birad + RR' <---> R_CO_R'
+
+// Recipe for forward reaction
+BREAK_BOND		{*2,S,*3}
+FORM_BOND		{*1,S,*2}
+FORM_BOND		{*1,S,*3}
+LOSE_RADICAL 	{*1,2}

@@ -1,0 +1,56 @@
+////////////////////////////////////////////////////////////////////////////////
+//
+//	Structure tree for [1+2]cycloaddition / [1+2]cycloelimination
+//
+////////////////////////////////////////////////////////////////////////////////
+
+L1: elec_def
+    L2: carbene
+    L2: me_carbene
+    L2: dime_carbene
+    L2: ph_carbene
+    L2: o_atom
+
+////////////////////////////////////////////////////////////////////////////////
+
+L1: multiplebond
+     L2: mb_carbonyl
+           L3: mb_carbonyl_2H
+           L3: mb_carbonyl_HNd
+           L3: mb_carbonyl_HDe
+           L3: mb_carbonyl_NdNd
+           L3: mb_carbonyl_NdDe
+           L3: mb_carbonyl_DeDe
+     L2: mb_o2_doublebond
+     L2: mb_db
+           L3: mb_db_unsub
+           L3: mb_db_monosub
+               L4: mb_db_monosub_Nd
+               L4: mb_db_monosub_De
+           L3: mb_db_onecdisub
+               L4: mb_db_onecdisub_Nd
+               L4: mb_db_onecdisub_oneDe
+               L4: mb_db_onecdisub_twoDe
+           L3: mb_db_twocdisub
+               L4: mb_db_twocdisub_Nd
+               L4: mb_db_twocdisub_oneDe
+               L4: mb_db_twocdisub_twoDe
+           L3: mb_db_trisub
+	       L4: mb_db_trisub_Nd
+               L4: mb_db_trisub_oneMDe
+               L4: mb_db_trisub_oneDDe
+               L4: mb_db_trisub_onectwoDe
+               L4: mb_db_trisub_twoctwoDe
+               L4: mb_db_trisub_threeDe
+           L3: mb_db_tetrasub
+               L4: mb_db_tetrasub_Nd
+               L4: mb_db_tetrasub_oneDe
+               L4: mb_db_tetrasub_onectwoDe
+               L4: mb_db_tetrasub_twoctwoDe
+               L4: mb_db_tetrasub_threeDe
+               L4: mb_db_tetrasub_fourDe
+ 
+
+////////////////////////////////////////////////////////////////////////////////
+
+L1: cycle

@@ -1,0 +1,902 @@
+<?xml version="1.0" ?>
+<database type="thermodynamics">
+	<dictionary>
+		<entry label="2-butene_cis">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="C" id="1"/>
+					<atom electronState="0" elementType="H" id="2"/>
+					<atom electronState="0" elementType="C" id="3"/>
+					<atom electronState="0" elementType="H" id="4"/>
+					<atom electronState="0" elementType="C" id="5"/>
+					<atom electronState="0" elementType="H" id="6"/>
+					<atom electronState="0" elementType="H" id="7"/>
+					<atom electronState="0" elementType="C" id="8"/>
+					<atom electronState="0" elementType="H" id="9"/>
+					<atom electronState="0" elementType="H" id="10"/>
+					<atom electronState="0" elementType="H" id="11"/>
+					<atom electronState="0" elementType="H" id="12"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="3 1" type="S"/>
+					<bond atomRefs2="2 1" type="S"/>
+					<bond atomRefs2="5 1" type="Dcis"/>
+					<bond atomRefs2="9 3" type="S"/>
+					<bond atomRefs2="6 3" type="S"/>
+					<bond atomRefs2="4 3" type="S"/>
+					<bond atomRefs2="7 5" type="S"/>
+					<bond atomRefs2="8 5" type="S"/>
+					<bond atomRefs2="11 8" type="S"/>
+					<bond atomRefs2="10 8" type="S"/>
+					<bond atomRefs2="12 8" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="t-butyl_cis_t-butyl">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="C" id="1"/>
+					<atom electronState="0" elementType="C" id="2"/>
+					<atom electronState="0" elementType="R!H" id="3"/>
+					<atom electronState="0" elementType="H" id="4"/>
+					<atom electronState="0" elementType="R!H" id="5"/>
+					<atom electronState="0" elementType="R!H" id="6"/>
+					<atom electronState="0" elementType="H" id="7"/>
+					<atom electronState="0" elementType="R!H" id="8"/>
+					<atom electronState="0" elementType="C" id="9"/>
+					<atom electronState="0" elementType="R!H" id="10"/>
+					<atom electronState="0" elementType="R!H" id="11"/>
+					<atom electronState="0" elementType="C" id="12"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="5 1" type="S"/>
+					<bond atomRefs2="6 1" type="S"/>
+					<bond atomRefs2="1 12" type="S"/>
+					<bond atomRefs2="3 1" type="S"/>
+					<bond atomRefs2="9 2" type="S"/>
+					<bond atomRefs2="2 12" type="Dcis"/>
+					<bond atomRefs2="7 2" type="S"/>
+					<bond atomRefs2="4 12" type="S"/>
+					<bond atomRefs2="8 9" type="S"/>
+					<bond atomRefs2="10 9" type="S"/>
+					<bond atomRefs2="11 9" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="ketene_2C-C">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="{Cs,Cd}" id="1"/>
+					<atom electronState="0" elementType="C" id="2"/>
+					<atom electronState="0" elementType="{Cs,Cd}" id="3"/>
+					<atom electronState="0" elementType="C" id="4"/>
+					<atom electronState="0" elementType="C" id="5"/>
+					<atom electronState="0" elementType="O" id="6"/>
+					<atom electronState="0" elementType="C" id="7"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="7 1" type="S"/>
+					<bond atomRefs2="1 2" type="S"/>
+					<bond atomRefs2="4 2" type="D"/>
+					<bond atomRefs2="3 2" type="S"/>
+					<bond atomRefs2="5 3" type="S"/>
+					<bond atomRefs2="6 4" type="D"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="ketene_2C-H">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="H" id="1"/>
+					<atom electronState="0" elementType="H" id="2"/>
+					<atom electronState="0" elementType="C" id="3"/>
+					<atom electronState="0" elementType="O" id="4"/>
+					<atom electronState="0" elementType="C" id="5"/>
+					<atom electronState="0" elementType="C" id="6"/>
+					<atom electronState="0" elementType="H" id="7"/>
+					<atom electronState="0" elementType="H" id="8"/>
+					<atom electronState="0" elementType="H" id="9"/>
+					<atom electronState="0" elementType="H" id="10"/>
+					<atom electronState="0" elementType="C" id="11"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 6" type="S"/>
+					<bond atomRefs2="2 6" type="S"/>
+					<bond atomRefs2="4 3" type="D"/>
+					<bond atomRefs2="3 5" type="D"/>
+					<bond atomRefs2="11 5" type="S"/>
+					<bond atomRefs2="6 5" type="S"/>
+					<bond atomRefs2="10 6" type="S"/>
+					<bond atomRefs2="7 11" type="S"/>
+					<bond atomRefs2="8 11" type="S"/>
+					<bond atomRefs2="9 11" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="higher-ene_cis">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="R" id="1"/>
+					<atom electronState="0" elementType="C" id="2"/>
+					<atom electronState="0" elementType="R" id="3"/>
+					<atom electronState="0" elementType="C" id="4"/>
+					<atom electronState="0" elementType="C" id="5"/>
+					<atom electronState="0" elementType="C" id="6"/>
+					<atom electronState="0" elementType="H" id="7"/>
+					<atom electronState="0" elementType="R" id="8"/>
+					<atom electronState="0" elementType="H" id="9"/>
+					<atom electronState="0" elementType="R" id="10"/>
+					<atom electronState="0" elementType="R!H" id="11"/>
+					<atom electronState="0" elementType="R!H" id="12"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 4" type="S"/>
+					<bond atomRefs2="11 2" type="S"/>
+					<bond atomRefs2="8 2" type="S"/>
+					<bond atomRefs2="2 5" type="S"/>
+					<bond atomRefs2="10 2" type="S"/>
+					<bond atomRefs2="3 4" type="S"/>
+					<bond atomRefs2="12 4" type="S"/>
+					<bond atomRefs2="4 6" type="S"/>
+					<bond atomRefs2="7 5" type="S"/>
+					<bond atomRefs2="6 5" type="Dcis"/>
+					<bond atomRefs2="9 6" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="biketene">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="C" id="1"/>
+					<atom electronState="0" elementType="C" id="2"/>
+					<atom electronState="0" elementType="R!H" id="3"/>
+					<atom electronState="0" elementType="C" id="4"/>
+					<atom electronState="0" elementType="R!H" id="5"/>
+					<atom electronState="0" elementType="C" id="6"/>
+					<atom electronState="0" elementType="C" id="7"/>
+					<atom electronState="0" elementType="O" id="8"/>
+					<atom electronState="0" elementType="O" id="9"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="7 1" type="D"/>
+					<bond atomRefs2="1 4" type="S"/>
+					<bond atomRefs2="6 2" type="D"/>
+					<bond atomRefs2="2 4" type="S"/>
+					<bond atomRefs2="3 4" type="S"/>
+					<bond atomRefs2="5 4" type="S"/>
+					<bond atomRefs2="8 6" type="D"/>
+					<bond atomRefs2="9 7" type="D"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="ketene_1C-C_1C-H">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="{Cs,Cd}" id="1"/>
+					<atom electronState="0" elementType="C" id="2"/>
+					<atom electronState="0" elementType="C" id="3"/>
+					<atom electronState="0" elementType="C" id="4"/>
+					<atom electronState="0" elementType="H" id="5"/>
+					<atom electronState="0" elementType="O" id="6"/>
+					<atom electronState="0" elementType="C" id="7"/>
+					<atom electronState="0" elementType="H" id="8"/>
+					<atom electronState="0" elementType="H" id="9"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="7 1" type="S"/>
+					<bond atomRefs2="1 2" type="S"/>
+					<bond atomRefs2="4 2" type="D"/>
+					<bond atomRefs2="3 2" type="S"/>
+					<bond atomRefs2="9 3" type="S"/>
+					<bond atomRefs2="5 3" type="S"/>
+					<bond atomRefs2="8 3" type="S"/>
+					<bond atomRefs2="6 4" type="D"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="ortho">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="C" id="1"/>
+					<atom electronState="0" elementType="R!H" id="2"/>
+					<atom electronState="0" elementType="C" id="3"/>
+					<atom electronState="0" elementType="C" id="4"/>
+					<atom electronState="0" elementType="R!H" id="5"/>
+					<atom electronState="0" elementType="C" id="6"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="6 1" type="B"/>
+					<bond atomRefs2="5 1" type="S"/>
+					<bond atomRefs2="4 1" type="B"/>
+					<bond atomRefs2="2 4" type="S"/>
+					<bond atomRefs2="3 4" type="B"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="cis">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="R!H" id="1"/>
+					<atom electronState="0" elementType="C" id="2"/>
+					<atom electronState="0" elementType="H" id="3"/>
+					<atom electronState="0" elementType="R!H" id="4"/>
+					<atom electronState="0" elementType="C" id="5"/>
+					<atom electronState="0" elementType="H" id="6"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 5" type="S"/>
+					<bond atomRefs2="4 2" type="S"/>
+					<bond atomRefs2="2 5" type="Dcis"/>
+					<bond atomRefs2="6 2" type="S"/>
+					<bond atomRefs2="3 5" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="R">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="R" id="1"/>
+				</atomArray>
+				<bondArray/>
+			</functionalGroup>
+		</entry>
+		<entry label="2-ene_cis">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="H" id="1"/>
+					<atom electronState="0" elementType="C" id="2"/>
+					<atom electronState="0" elementType="H" id="3"/>
+					<atom electronState="0" elementType="R!H" id="4"/>
+					<atom electronState="0" elementType="C" id="5"/>
+					<atom electronState="0" elementType="H" id="6"/>
+					<atom electronState="0" elementType="H" id="7"/>
+					<atom electronState="0" elementType="H" id="8"/>
+					<atom electronState="0" elementType="C" id="9"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 9" type="S"/>
+					<bond atomRefs2="9 2" type="S"/>
+					<bond atomRefs2="5 2" type="Dcis"/>
+					<bond atomRefs2="3 2" type="S"/>
+					<bond atomRefs2="4 5" type="S"/>
+					<bond atomRefs2="6 5" type="S"/>
+					<bond atomRefs2="7 9" type="S"/>
+					<bond atomRefs2="8 9" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="ketene">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="C" id="1"/>
+					<atom electronState="0" elementType="R" id="2"/>
+					<atom electronState="0" elementType="C" id="3"/>
+					<atom electronState="0" elementType="O" id="4"/>
+					<atom electronState="0" elementType="R" id="5"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="4 1" type="D"/>
+					<bond atomRefs2="1 3" type="D"/>
+					<bond atomRefs2="2 3" type="S"/>
+					<bond atomRefs2="5 3" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="t-butyl_cis_2-ene">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="R!H" id="1"/>
+					<atom electronState="0" elementType="R!H" id="2"/>
+					<atom electronState="0" elementType="R!H" id="3"/>
+					<atom electronState="0" elementType="C" id="4"/>
+					<atom electronState="0" elementType="C" id="5"/>
+					<atom electronState="0" elementType="C" id="6"/>
+					<atom electronState="0" elementType="H" id="7"/>
+					<atom electronState="0" elementType="H" id="8"/>
+					<atom electronState="0" elementType="H" id="9"/>
+					<atom electronState="0" elementType="C" id="10"/>
+					<atom electronState="0" elementType="H" id="11"/>
+					<atom electronState="0" elementType="H" id="12"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 10" type="S"/>
+					<bond atomRefs2="2 10" type="S"/>
+					<bond atomRefs2="3 10" type="S"/>
+					<bond atomRefs2="8 4" type="S"/>
+					<bond atomRefs2="4 6" type="S"/>
+					<bond atomRefs2="11 4" type="S"/>
+					<bond atomRefs2="12 4" type="S"/>
+					<bond atomRefs2="10 5" type="S"/>
+					<bond atomRefs2="9 5" type="S"/>
+					<bond atomRefs2="5 6" type="Dcis"/>
+					<bond atomRefs2="7 6" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="double_cis">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="R!H" id="1"/>
+					<atom electronState="0" elementType="C" id="2"/>
+					<atom electronState="0" elementType="R!H" id="3"/>
+					<atom electronState="0" elementType="R!H" id="4"/>
+					<atom electronState="0" elementType="C" id="5"/>
+					<atom electronState="0" elementType="R!H" id="6"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 2" type="S"/>
+					<bond atomRefs2="6 2" type="S"/>
+					<bond atomRefs2="2 5" type="Dcis"/>
+					<bond atomRefs2="3 5" type="S"/>
+					<bond atomRefs2="4 5" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="t-butyl_cis">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="C" id="1"/>
+					<atom electronState="0" elementType="H" id="2"/>
+					<atom electronState="0" elementType="R!H" id="3"/>
+					<atom electronState="0" elementType="C" id="4"/>
+					<atom electronState="0" elementType="R!H" id="5"/>
+					<atom electronState="0" elementType="C" id="6"/>
+					<atom electronState="0" elementType="H" id="7"/>
+					<atom electronState="0" elementType="R!H" id="8"/>
+					<atom electronState="0" elementType="R!H" id="9"/>
+					<atom electronState="0" elementType="R" id="10"/>
+					<atom electronState="0" elementType="R" id="11"/>
+					<atom electronState="0" elementType="C" id="12"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="12 1" type="S"/>
+					<bond atomRefs2="2 1" type="S"/>
+					<bond atomRefs2="4 1" type="Dcis"/>
+					<bond atomRefs2="3 12" type="S"/>
+					<bond atomRefs2="6 4" type="S"/>
+					<bond atomRefs2="7 4" type="S"/>
+					<bond atomRefs2="5 12" type="S"/>
+					<bond atomRefs2="9 6" type="S"/>
+					<bond atomRefs2="10 6" type="S"/>
+					<bond atomRefs2="11 6" type="S"/>
+					<bond atomRefs2="8 12" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+	</dictionary>
+	<tree>
+		<node label="R">
+			<node label="cis">
+				<node label="2-ene_cis">
+					<node label="2-butene_cis"/>
+					<node label="t-butyl_cis_2-ene"/>
+				</node>
+				<node label="higher-ene_cis">
+					<node label="t-butyl_cis">
+						<node label="t-butyl_cis_t-butyl"/>
+					</node>
+				</node>
+			</node>
+			<node label="double_cis"/>
+			<node label="ortho"/>
+			<node label="ketene">
+				<node label="ketene_1C-C_1C-H"/>
+				<node label="ketene_2C-H"/>
+				<node label="ketene_2C-C"/>
+				<node label="biketene"/>
+			</node>
+		</node>
+	</tree>
+	<library>
+		<data label="2-butene_cis">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					1.0
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					1.2
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.34
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.09
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.81
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.61
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.39
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.26
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<comment>
+					&quot;The entropy correction for 2-cis-butene is not zero BENSON&quot;
+				</comment>
+			</thermo>
+		</data>
+		<data label="t-butyl_cis_t-butyl">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					10.0
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					0.0
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.34
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.09
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.81
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.61
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.39
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.26
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<comment>
+					&quot;Cis double bond interaction invloving two tertiary butyl groups BENSON&quot;
+				</comment>
+			</thermo>
+		</data>
+		<data label="ketene_2C-C">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					-1.6
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					0.0
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<comment>
+					&quot;This is correction NN2 from Sumathi &amp; Green, J. Phys. Chem. A, 2002, 106, 7937-7949&quot;
+				</comment>
+			</thermo>
+		</data>
+		<data label="ketene_2C-H">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					0.0
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					0.0
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<comment>
+					&quot;This is correction NN0 from Sumathi &amp; Green, J. Phys. Chem. A, 2002, 106, 7937-7949&quot;
+				</comment>
+			</thermo>
+		</data>
+		<data label="higher-ene_cis">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					1.0
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					-0.6
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.34
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.09
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.81
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.61
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.39
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.26
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<comment>
+					&quot;The entropy correction for 2-cis-butene is not zero BENSON&quot;
+				</comment>
+			</thermo>
+		</data>
+		<data label="biketene">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					-0.9
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					0.0
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<comment>
+					&quot;This is correction NN3 from Sumathi &amp; Green, J. Phys. Chem. A, 2002, 106, 7937-7949&quot;
+				</comment>
+			</thermo>
+		</data>
+		<data label="ketene_1C-C_1C-H">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					-0.5
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					0.0
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<comment>
+					&quot;This is correction NN1 from Sumathi &amp; Green, J. Phys. Chem. A, 2002, 106, 7937-7949&quot;
+				</comment>
+			</thermo>
+		</data>
+		<data label="ortho">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					0.57
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					-1.61
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					1.12
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					1.35
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					1.3
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					1.17
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.88
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.66
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.05
+				</heatCapacity>
+				<comment>
+					&quot;Ortho correction from BENSON&quot;
+				</comment>
+			</thermo>
+		</data>
+		<data label="cis">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					1.0
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					0.0
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.34
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.09
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.81
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.61
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.39
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.26
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<comment>
+					&quot;Cis double bond interaction BENSON&quot;
+				</comment>
+			</thermo>
+		</data>
+		<data label="R">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					0.0
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					0.0
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<comment>
+					&quot;dummy root&quot;
+				</comment>
+			</thermo>
+		</data>
+		<data label="2-ene_cis">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					1.0
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					0.0
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.34
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.09
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.81
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.61
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.39
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.26
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<comment>
+					
+				</comment>
+			</thermo>
+		</data>
+		<data label="ketene">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					0.0
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					0.0
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<comment>
+					&quot;All the corrections from this family are from Sumathi &amp; Green, J. Phys. Chem. A, 2002, 106, 7937-7949&quot;
+				</comment>
+			</thermo>
+		</data>
+		<data label="t-butyl_cis_2-ene">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					4.0
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					0.0
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.34
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.09
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.81
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.61
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.39
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.26
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<comment>
+					&quot;Cis double bond interaction involving tertiary butyl group BENSON&quot;
+				</comment>
+			</thermo>
+		</data>
+		<data label="double_cis">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					3.0
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					0.0
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.34
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.09
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.81
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.61
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.39
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.26
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<comment>
+					&quot;2 Cis interactions around a double bond BENSON&quot;
+				</comment>
+			</thermo>
+		</data>
+		<data label="t-butyl_cis">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					4.0
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					0.0
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.34
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.09
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.81
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.61
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.39
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.26
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<comment>
+					&quot;Cis double bond interaction involving tertiary butyl group BENSON&quot;
+				</comment>
+			</thermo>
+		</data>
+	</library>
+</database>

@@ -1,0 +1,21 @@
+////////////////////////////////////////////////////////////////////////////////
+//
+//	Reaction library for radical alpha H abstraction O2 / radical formation via H abstraction O2
+//
+////////////////////////////////////////////////////////////////////////////////
+ 
+// Format of data
+Arrhenius_EP
+
+// Number of columns of data consisting of nodes
+2
+
+//No.		Y_rad_birad	XH_Rrad			Temp.		A		N	a	E0	DA	Dn	Da	DE0	Rank
+20001		O2d	XH_Rrad		300-1500	3E+11	0	0	0	0	0	0	0	0
+487.		O2d	Cmethyl_Csrad		700-2500	1.26E+11	0	0	0	*3.0	0	0	0	4
+501.		O2d	C/H2/Nd_Csrad		500-900	9.04E+10	0	0	0	*3.0	0	0	0	4
+513.		O2d	C/H/NdNd_Csrad		600-900	2.41E+10	0	0	0	*5.0	0	0	0	4
+524.		O2d	Cdpri_Csrad		300-2500	1.21E+12	0	0	13.55	0	0	0	0	4
+533.		O2d	O_Csrad		298	1.14E+13	0	0	0	0	0	0	0	4
+534.		O2d	O_Csrad		298	5.78E+12	0	0	0	0	0	0	0	4
+535.		O2d	O_Csrad		200-300	5.48E+12	0	0	0	0	0	0	0	4

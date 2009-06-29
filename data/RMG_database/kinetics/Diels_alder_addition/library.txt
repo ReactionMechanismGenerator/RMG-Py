@@ -1,0 +1,37 @@
+////////////////////////////////////////////////////////////////////////////////
+//
+//	Reaction library for Diels-Alder cycloaddition / Diels-Alder cycloelimination
+//
+////////////////////////////////////////////////////////////////////////////////
+ 
+// Format of data
+Arrhenius_EP
+
+// Number of columns of data consisting of nodes
+3
+
+//No.	diene_out			diene_in	ene		Temp.		A		N	a	E0	DA	Dn	Da	DE0	Rank
+589.		diene_out	diene_in	ene	300-1500	5E+09	0	0	0	0	0	0	0	0
+590.		diene_unsub_unsub_out	diene_in_2H	ene_2H_HDe	464-557	8.91E+09	0	0	24.44	0	0	0	0	3
+591.		diene_unsub_unsub_out	diene_in_2H	ene_HDe_2H	464-557	8.91E+09	0	0	24.44	0	0	0	0	3
+592.		diene_unsub_unsub_out	diene_in_2H	ene_HNd_HDe	515-572	8.99E+08	0	0	22.06	0	0	0	0	3
+593.		diene_unsub_unsub_out	diene_in_2H	ene_HDe_HNd	515-572	8.99E+08	0	0	22.06	0	0	0	0	3
+594.		diene_unsub_unsub_out	diene_in_HNd	ene_unsub_unsub	1000-1180	1.32E+11	0	0	29.61	0	0	0	0	4
+595.		diene_unsub_unsub_out	diene_in_NdH	ene_unsub_unsub	1000-1180	1.32E+11	0	0	29.61	0	0	0	0	4
+596.		diene_unsub_unsub_out	diene_in_HNd	ene_HDe_2H	492-606	1.02E+09	0	0	18.70	0	0	0	0	3
+597.		diene_unsub_unsub_out	diene_in_NdH	ene_2H_HDe	492-606	1.02E+09	0	0	18.70	0	0	0	0	3
+598.		diene_monosubNd_monosubNd_out	diene_in_2H	ene_unsub_unsub	450-592	4.57E+09	0	0	26.03	*1.05	0	0	0	3
+599.		diene_monosubNd_monosubNd_out	diene_in_2H	ene_2H_HNd	488-606	1.12E+09	0	0	26.63	*1.12	0	0	0	3
+600.		diene_monosubNd_monosubNd_out	diene_in_2H	ene_2H_HNd	488-606	2.09E+09	0	0	28.81	*1.12	0	0	0	3
+601.		diene_monosubNd_monosubNd_out	diene_in_2H	ene_2H_HNd	488-606	7.08E+08	0	0	26.23	*1.12	0	0	0	3
+602.		diene_monosubNd_monosubNd_out	diene_in_2H	ene_2H_HNd	488-606	1.17E+09	0	0	28.62	*1.12	0	0	0	3
+603.		diene_monosubNd_monosubNd_out	diene_in_2H	ene_2H_HNd	488-600	3.72E+08	0	0	26.63	*1.07	0	0	0	3
+604.		diene_monosubNd_monosubNd_out	diene_in_2H	ene_2H_HNd	486-600	2.95E+08	0	0	28.42	*1.1	0	0	0	3
+605.		diene_monosubNd_monosubNd_out	diene_in_2H	ene_HNd_2H	488-606	1.12E+09	0	0	26.63	*1.12	0	0	0	3
+606.		diene_monosubNd_monosubNd_out	diene_in_2H	ene_2H_HDe	379-581	1.02E+09	0	0	20.07	*1.07	0	0	0	3
+607.		diene_monosubNd_monosubNd_out	diene_in_2H	ene_2H_HDe	379-581	6.03E+08	0	0	20.87	*1.07	0	0	0	3
+608.		diene_monosubNd_monosubNd_out	diene_in_2H	ene_2H_HDe	437-526	1.15E+10	0	0	26.83	*1.05	0	0	0	3
+609.		diene_monosubNd_monosubNd_out	diene_in_2H	ene_2H_HDe	437-526	3.8E+09	0	0	24.84	*1.05	0	0	0	3
+610.		diene_monosubNd_monosubNd_out	diene_in_2H	ene_HDe_2H	379-581	1.02E+09	0	0	20.07	*1.07	0	0	0	3
+611.		diene_monosubNd_monosubNd_out	diene_in_2H	ene_HNd_HDe	352-423	1.26E+9	0	0	16.69	0	0	0	0	3
+612.		diene_monosubNd_monosubNd_out	diene_in_2H	ene_HDe_HNd	352-423	1.26E+9	0	0	16.69	0	0	0	0	3

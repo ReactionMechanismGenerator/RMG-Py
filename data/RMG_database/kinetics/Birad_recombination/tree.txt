@@ -1,0 +1,40 @@
+////////////////////////////////////////////////////////////////////////////////
+//
+//	Structure tree for cyclic colligation / ring-opening homolysis
+//
+////////////////////////////////////////////////////////////////////////////////
+
+L1: Rn
+	L2: R3
+		L3: R3_SS
+		L3: R3_SD
+	L2: R4
+		L3: R4_SSS
+		L3: R4_SSD
+		L3: R4_SDS
+		L3: R4_DSD
+	L2: R5
+		L3: R5_SSSS
+		L3: R5_SSSD
+		L3: R5_SSDS
+		L3: R5_SDSD
+		L3: R5_DSSD
+	L2: R6
+		L3: R6_SSSSS
+		L3: R6_SSSSD
+		L3: R6_SSSDS
+		L3: R6_SSDSS
+		L3: R6_SSDSD
+		L3: R6_SDSDS
+		L3: R6_SDSSD
+		L3: R6_DSSSD
+		L3: R6_DSDSD
+
+////////////////////////////////////////////////////////////////////////////////
+
+L1: Rncycle
+	L2: R3cycle
+	L2: R4cycle
+	L2: R5cycle
+	L2: R6cycle
+	

@@ -1,0 +1,18 @@
+////////////////////////////////////////////////////////////////////////////////
+//
+//	Reaction template for beta scission / radical addition to multiple bond
+//
+////////////////////////////////////////////////////////////////////////////////
+
+// Names for forward and reverse reactions
+Forward: radical addition to multiple bond
+Reverse: beta scission
+
+// Template for forward reaction
+XZ + Y_rad_birad <---> YXZ.
+
+// Recipe for forward reaction
+CHANGE_BOND		{*1,-1,*2}
+FORM_BOND		{*1,S,*3}
+GAIN_RADICAL 	{*2,1}
+LOSE_RADICAL 	{*3,1}

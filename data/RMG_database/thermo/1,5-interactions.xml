@@ -1,0 +1,306 @@
+<?xml version="1.0" ?>
+<database type="thermodynamics">
+	<dictionary>
+		<entry label="Cs(Cs(CsCsCs)Cs(CsCsR)RR)">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="Cs" id="1"/>
+					<atom electronState="0" elementType="Cs" id="2"/>
+					<atom electronState="0" elementType="Cs" id="3"/>
+					<atom electronState="0" elementType="Cs" id="4"/>
+					<atom electronState="0" elementType="Cs" id="5"/>
+					<atom electronState="0" elementType="Cs" id="6"/>
+					<atom electronState="0" elementType="Cs" id="7"/>
+					<atom electronState="0" elementType="Cs" id="8"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="6 1" type="S"/>
+					<bond atomRefs2="2 1" type="S"/>
+					<bond atomRefs2="1 5" type="S"/>
+					<bond atomRefs2="4 1" type="S"/>
+					<bond atomRefs2="8 3" type="S"/>
+					<bond atomRefs2="3 5" type="S"/>
+					<bond atomRefs2="7 3" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="Os(Cs(CsCsCs)Cs(CsCsR))">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="Cs" id="1"/>
+					<atom electronState="0" elementType="Os" id="2"/>
+					<atom electronState="0" elementType="Cs" id="3"/>
+					<atom electronState="0" elementType="Cs" id="4"/>
+					<atom electronState="0" elementType="Cs" id="5"/>
+					<atom electronState="0" elementType="Cs" id="6"/>
+					<atom electronState="0" elementType="Cs" id="7"/>
+					<atom electronState="0" elementType="Cs" id="8"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="7 1" type="S"/>
+					<bond atomRefs2="1 2" type="S"/>
+					<bond atomRefs2="6 1" type="S"/>
+					<bond atomRefs2="5 2" type="S"/>
+					<bond atomRefs2="3 5" type="S"/>
+					<bond atomRefs2="4 5" type="S"/>
+					<bond atomRefs2="8 5" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="CsOs">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="Cs" id="1"/>
+					<atom electronState="0" elementType="Cs" id="2"/>
+					<atom electronState="0" elementType="Cs" id="3"/>
+					<atom electronState="0" elementType="Cs" id="4"/>
+					<atom electronState="0" elementType="Cs" id="5"/>
+					<atom electronState="0" elementType="{Cs,Os}" id="6"/>
+					<atom electronState="0" elementType="Cs" id="7"/>
+					<atom electronState="0" elementType="Cs" id="8"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 3" type="S"/>
+					<bond atomRefs2="2 3" type="S"/>
+					<bond atomRefs2="3 6" type="S"/>
+					<bond atomRefs2="7 4" type="S"/>
+					<bond atomRefs2="5 4" type="S"/>
+					<bond atomRefs2="4 6" type="S"/>
+					<bond atomRefs2="8 4" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="Cs(Cs(CsCsCs)Cs(CsCsCs)RR)">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="Cs" id="1"/>
+					<atom electronState="0" elementType="Cs" id="2"/>
+					<atom electronState="0" elementType="Cs" id="3"/>
+					<atom electronState="0" elementType="Cs" id="4"/>
+					<atom electronState="0" elementType="Cs" id="5"/>
+					<atom electronState="0" elementType="Cs" id="6"/>
+					<atom electronState="0" elementType="Cs" id="7"/>
+					<atom electronState="0" elementType="Cs" id="8"/>
+					<atom electronState="0" elementType="Cs" id="9"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="6 1" type="S"/>
+					<bond atomRefs2="7 1" type="S"/>
+					<bond atomRefs2="1 2" type="S"/>
+					<bond atomRefs2="9 1" type="S"/>
+					<bond atomRefs2="3 2" type="S"/>
+					<bond atomRefs2="4 3" type="S"/>
+					<bond atomRefs2="5 3" type="S"/>
+					<bond atomRefs2="8 3" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="Os(Cs(CsCsCs)Cs(CsCsCs))">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="Cs" id="1"/>
+					<atom electronState="0" elementType="Cs" id="2"/>
+					<atom electronState="0" elementType="Cs" id="3"/>
+					<atom electronState="0" elementType="Cs" id="4"/>
+					<atom electronState="0" elementType="Cs" id="5"/>
+					<atom electronState="0" elementType="Cs" id="6"/>
+					<atom electronState="0" elementType="Cs" id="7"/>
+					<atom electronState="0" elementType="Os" id="8"/>
+					<atom electronState="0" elementType="Cs" id="9"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 7" type="S"/>
+					<bond atomRefs2="2 7" type="S"/>
+					<bond atomRefs2="3 5" type="S"/>
+					<bond atomRefs2="4 7" type="S"/>
+					<bond atomRefs2="6 5" type="S"/>
+					<bond atomRefs2="5 8" type="S"/>
+					<bond atomRefs2="9 5" type="S"/>
+					<bond atomRefs2="7 8" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+	</dictionary>
+	<tree>
+		<node label="CsOs">
+			<node label="Cs(Cs(CsCsCs)Cs(CsCsR)RR)">
+				<node label="Cs(Cs(CsCsCs)Cs(CsCsCs)RR)"/>
+			</node>
+			<node label="Os(Cs(CsCsCs)Cs(CsCsR))">
+				<node label="Os(Cs(CsCsCs)Cs(CsCsCs))"/>
+			</node>
+		</node>
+	</tree>
+	<library>
+		<data label="Cs(Cs(CsCsCs)Cs(CsCsR)RR)">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					1.5
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					0.0
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<comment>
+					
+				</comment>
+			</thermo>
+		</data>
+		<data label="Os(Cs(CsCsCs)Cs(CsCsR))">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					3.5
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					0.0
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<comment>
+					
+				</comment>
+			</thermo>
+		</data>
+		<data label="CsOs">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					0.0
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					0.0
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<comment>
+					
+				</comment>
+			</thermo>
+		</data>
+		<data label="Cs(Cs(CsCsCs)Cs(CsCsCs)RR)">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					3.0
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					0.0
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<comment>
+					
+				</comment>
+			</thermo>
+		</data>
+		<data label="Os(Cs(CsCsCs)Cs(CsCsCs))">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					7.0
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					0.0
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<comment>
+					
+				</comment>
+			</thermo>
+		</data>
+	</library>
+</database>

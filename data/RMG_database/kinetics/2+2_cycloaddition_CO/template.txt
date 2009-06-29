@@ -1,0 +1,18 @@
+////////////////////////////////////////////////////////////////////////////////
+//
+//	Reaction template for [2+2]cycloaddition_CO_CO / [2+2]cycloelimination_CO_CO
+//
+////////////////////////////////////////////////////////////////////////////////
+
+// Names for forward and reverse reactions
+Forward: [2+2]cycloaddition_CO_CO
+Reverse: [2+2]cycloelimination_CO_CO
+
+// Template for forward reaction
+CO + doublebond <---> four_ring
+
+// Recipe for forward reaction
+CHANGE_BOND		{*1,-1,*2}
+CHANGE_BOND		{*3,-1,*4}
+FORM_BOND		{*1,S,*3}
+FORM_BOND		{*2,S,*4}

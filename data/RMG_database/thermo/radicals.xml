@@ -1,0 +1,5500 @@
+<?xml version="1.0" ?>
+<database type="thermodynamics">
+	<dictionary>
+		<entry label="Cs_T">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="C" id="1"/>
+					<atom electronState="0" elementType="C" id="2"/>
+					<atom electronState="1" elementType="C" id="3"/>
+					<atom electronState="0" elementType="C" id="4"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 3" type="S"/>
+					<bond atomRefs2="2 3" type="S"/>
+					<bond atomRefs2="4 3" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="Cs_S">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="C" id="1"/>
+					<atom electronState="1" elementType="C" id="2"/>
+					<atom electronState="0" elementType="C" id="3"/>
+					<atom electronState="0" elementType="H" id="4"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 2" type="S"/>
+					<bond atomRefs2="3 2" type="S"/>
+					<bond atomRefs2="4 2" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="Cs_P">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="H" id="1"/>
+					<atom electronState="0" elementType="C" id="2"/>
+					<atom electronState="0" elementType="H" id="3"/>
+					<atom electronState="1" elementType="C" id="4"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 4" type="S"/>
+					<bond atomRefs2="2 4" type="S"/>
+					<bond atomRefs2="3 4" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="Isobutyl">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="C" id="1"/>
+					<atom electronState="0" elementType="H" id="2"/>
+					<atom electronState="0" elementType="C" id="3"/>
+					<atom electronState="0" elementType="H" id="4"/>
+					<atom electronState="1" elementType="C" id="5"/>
+					<atom electronState="0" elementType="H" id="6"/>
+					<atom electronState="0" elementType="C" id="7"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 3" type="S"/>
+					<bond atomRefs2="2 3" type="S"/>
+					<bond atomRefs2="7 3" type="S"/>
+					<bond atomRefs2="3 5" type="S"/>
+					<bond atomRefs2="4 5" type="S"/>
+					<bond atomRefs2="6 5" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="CCJ">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="H" id="1"/>
+					<atom electronState="0" elementType="C" id="2"/>
+					<atom electronState="1" elementType="C" id="3"/>
+					<atom electronState="0" elementType="H" id="4"/>
+					<atom electronState="0" elementType="H" id="5"/>
+					<atom electronState="0" elementType="H" id="6"/>
+					<atom electronState="0" elementType="H" id="7"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 3" type="S"/>
+					<bond atomRefs2="7 2" type="S"/>
+					<bond atomRefs2="6 2" type="S"/>
+					<bond atomRefs2="2 3" type="S"/>
+					<bond atomRefs2="4 2" type="S"/>
+					<bond atomRefs2="5 3" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="(Cs)2CsJ">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="Cs" id="1"/>
+					<atom electronState="0" elementType="Cs" id="2"/>
+					<atom electronState="1" elementType="C" id="3"/>
+					<atom electronState="0" elementType="H" id="4"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 3" type="S"/>
+					<bond atomRefs2="2 3" type="S"/>
+					<bond atomRefs2="4 3" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="Cds_P">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="C" id="1"/>
+					<atom electronState="1" elementType="C" id="2"/>
+					<atom electronState="0" elementType="H" id="3"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 2" type="D"/>
+					<bond atomRefs2="3 2" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="C2CsJOCds">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="{Cd,CO}" id="1"/>
+					<atom electronState="0" elementType="O" id="2"/>
+					<atom electronState="0" elementType="C" id="3"/>
+					<atom electronState="1" elementType="C" id="4"/>
+					<atom electronState="0" elementType="C" id="5"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 2" type="S"/>
+					<bond atomRefs2="2 4" type="S"/>
+					<bond atomRefs2="3 4" type="S"/>
+					<bond atomRefs2="5 4" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="Cds_S">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="C" id="1"/>
+					<atom electronState="1" elementType="C" id="2"/>
+					<atom electronState="0" elementType="C" id="3"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 2" type="D"/>
+					<bond atomRefs2="3 2" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="C=CC=CCJ">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="Cd" id="1"/>
+					<atom electronState="1" elementType="C" id="2"/>
+					<atom electronState="0" elementType="H" id="3"/>
+					<atom electronState="0" elementType="Cd" id="4"/>
+					<atom electronState="0" elementType="C" id="5"/>
+					<atom electronState="0" elementType="H" id="6"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 5" type="S"/>
+					<bond atomRefs2="6 2" type="S"/>
+					<bond atomRefs2="3 2" type="S"/>
+					<bond atomRefs2="4 2" type="S"/>
+					<bond atomRefs2="5 4" type="D"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="RC=COJ">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="Cd" id="1"/>
+					<atom electronState="1" elementType="O" id="2"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 2" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="CdsJO">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="O" id="1"/>
+					<atom electronState="1" elementType="C" id="2"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 2" type="D"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="CH2">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="H" id="1"/>
+					<atom electronState="2" elementType="C" id="2"/>
+					<atom electronState="0" elementType="H" id="3"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 2" type="S"/>
+					<bond atomRefs2="3 2" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="CH3">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="H" id="1"/>
+					<atom electronState="1" elementType="C" id="2"/>
+					<atom electronState="0" elementType="H" id="3"/>
+					<atom electronState="0" elementType="H" id="4"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 2" type="S"/>
+					<bond atomRefs2="3 2" type="S"/>
+					<bond atomRefs2="4 2" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="(O)CJOCC">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="O" id="1"/>
+					<atom electronState="0" elementType="H" id="2"/>
+					<atom electronState="0" elementType="O" id="3"/>
+					<atom electronState="0" elementType="H" id="4"/>
+					<atom electronState="1" elementType="C" id="5"/>
+					<atom electronState="0" elementType="C" id="6"/>
+					<atom electronState="0" elementType="C" id="7"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="7 1" type="S"/>
+					<bond atomRefs2="1 5" type="S"/>
+					<bond atomRefs2="2 7" type="S"/>
+					<bond atomRefs2="3 5" type="D"/>
+					<bond atomRefs2="4 7" type="S"/>
+					<bond atomRefs2="6 7" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="CdsOJ">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="{Cd,CO}" id="1"/>
+					<atom electronState="1" elementType="O" id="2"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 2" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="RJ">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="1" elementType="R" id="1"/>
+				</atomArray>
+				<bondArray/>
+			</functionalGroup>
+		</entry>
+		<entry label="C3COOJ">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="O" id="1"/>
+					<atom electronState="0" elementType="C" id="2"/>
+					<atom electronState="1" elementType="O" id="3"/>
+					<atom electronState="0" elementType="C" id="4"/>
+					<atom electronState="0" elementType="C" id="5"/>
+					<atom electronState="0" elementType="C" id="6"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="5 1" type="S"/>
+					<bond atomRefs2="1 3" type="S"/>
+					<bond atomRefs2="2 5" type="S"/>
+					<bond atomRefs2="4 5" type="S"/>
+					<bond atomRefs2="6 5" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="Oa">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="2" elementType="O" id="1"/>
+				</atomArray>
+				<bondArray/>
+			</functionalGroup>
+		</entry>
+		<entry label="Tertalkyl">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="Cs" id="1"/>
+					<atom electronState="0" elementType="Cs" id="2"/>
+					<atom electronState="0" elementType="Cs" id="3"/>
+					<atom electronState="1" elementType="C" id="4"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 4" type="S"/>
+					<bond atomRefs2="2 4" type="S"/>
+					<bond atomRefs2="3 4" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="CsJ2_P">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="C" id="1"/>
+					<atom electronState="2" elementType="C" id="2"/>
+					<atom electronState="0" elementType="H" id="3"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 2" type="S"/>
+					<bond atomRefs2="3 2" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="CsJ2_S">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="C" id="1"/>
+					<atom electronState="2" elementType="C" id="2"/>
+					<atom electronState="0" elementType="C" id="3"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 2" type="S"/>
+					<bond atomRefs2="3 2" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="(O)CJOCH3">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="1" elementType="C" id="1"/>
+					<atom electronState="0" elementType="H" id="2"/>
+					<atom electronState="0" elementType="H" id="3"/>
+					<atom electronState="0" elementType="C" id="4"/>
+					<atom electronState="0" elementType="O" id="5"/>
+					<atom electronState="0" elementType="H" id="6"/>
+					<atom electronState="0" elementType="O" id="7"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="7 1" type="S"/>
+					<bond atomRefs2="5 1" type="D"/>
+					<bond atomRefs2="2 4" type="S"/>
+					<bond atomRefs2="3 4" type="S"/>
+					<bond atomRefs2="6 4" type="S"/>
+					<bond atomRefs2="4 7" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="OJ">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="1" elementType="O" id="1"/>
+				</atomArray>
+				<bondArray/>
+			</functionalGroup>
+		</entry>
+		<entry label="CCJ2_s">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="H" id="1"/>
+					<atom electronState="0" elementType="H" id="2"/>
+					<atom electronState="0" elementType="Cs" id="3"/>
+					<atom electronState="0" elementType="H" id="4"/>
+					<atom electronState="2S" elementType="C" id="5"/>
+					<atom electronState="0" elementType="H" id="6"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 3" type="S"/>
+					<bond atomRefs2="2 3" type="S"/>
+					<bond atomRefs2="3 5" type="S"/>
+					<bond atomRefs2="6 3" type="S"/>
+					<bond atomRefs2="4 5" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="(O)CJOC">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="O" id="1"/>
+					<atom electronState="0" elementType="O" id="2"/>
+					<atom electronState="1" elementType="C" id="3"/>
+					<atom electronState="0" elementType="C" id="4"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="4 1" type="S"/>
+					<bond atomRefs2="1 3" type="S"/>
+					<bond atomRefs2="2 3" type="D"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="C2CJCOOH">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="Cs" id="1"/>
+					<atom electronState="0" elementType="O" id="2"/>
+					<atom electronState="0" elementType="Cs" id="3"/>
+					<atom electronState="1" elementType="C" id="4"/>
+					<atom electronState="0" elementType="Cs" id="5"/>
+					<atom electronState="0" elementType="O" id="6"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="2 1" type="S"/>
+					<bond atomRefs2="1 4" type="S"/>
+					<bond atomRefs2="6 2" type="S"/>
+					<bond atomRefs2="3 4" type="S"/>
+					<bond atomRefs2="5 4" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="CsJOOC">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="H" id="1"/>
+					<atom electronState="1" elementType="C" id="2"/>
+					<atom electronState="0" elementType="O" id="3"/>
+					<atom electronState="0" elementType="H" id="4"/>
+					<atom electronState="0" elementType="O" id="5"/>
+					<atom electronState="0" elementType="C" id="6"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 2" type="S"/>
+					<bond atomRefs2="4 2" type="S"/>
+					<bond atomRefs2="3 2" type="S"/>
+					<bond atomRefs2="5 3" type="S"/>
+					<bond atomRefs2="6 5" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="CJCOOH">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="H" id="1"/>
+					<atom electronState="0" elementType="Os" id="2"/>
+					<atom electronState="0" elementType="H" id="3"/>
+					<atom electronState="0" elementType="Cs" id="4"/>
+					<atom electronState="1" elementType="C" id="5"/>
+					<atom electronState="0" elementType="O" id="6"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 5" type="S"/>
+					<bond atomRefs2="2 6" type="S"/>
+					<bond atomRefs2="3 5" type="S"/>
+					<bond atomRefs2="6 4" type="S"/>
+					<bond atomRefs2="4 5" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="CsJOOH">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="H" id="1"/>
+					<atom electronState="0" elementType="O" id="2"/>
+					<atom electronState="0" elementType="H" id="3"/>
+					<atom electronState="0" elementType="O" id="4"/>
+					<atom electronState="0" elementType="H" id="5"/>
+					<atom electronState="1" elementType="C" id="6"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 6" type="S"/>
+					<bond atomRefs2="4 2" type="S"/>
+					<bond atomRefs2="2 6" type="S"/>
+					<bond atomRefs2="3 6" type="S"/>
+					<bond atomRefs2="5 4" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="CCsJOCds">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="{CO,Cd}" id="1"/>
+					<atom electronState="0" elementType="O" id="2"/>
+					<atom electronState="0" elementType="C" id="3"/>
+					<atom electronState="1" elementType="C" id="4"/>
+					<atom electronState="0" elementType="H" id="5"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 2" type="S"/>
+					<bond atomRefs2="2 4" type="S"/>
+					<bond atomRefs2="3 4" type="S"/>
+					<bond atomRefs2="5 4" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="CCsJOCs">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="Cs" id="1"/>
+					<atom electronState="0" elementType="O" id="2"/>
+					<atom electronState="0" elementType="H" id="3"/>
+					<atom electronState="1" elementType="C" id="4"/>
+					<atom electronState="0" elementType="C" id="5"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 2" type="S"/>
+					<bond atomRefs2="2 4" type="S"/>
+					<bond atomRefs2="3 4" type="S"/>
+					<bond atomRefs2="5 4" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="CsOJ">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="Cs" id="1"/>
+					<atom electronState="1" elementType="O" id="2"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 2" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="CdJ2">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="2" elementType="{Cd,CO}" id="1"/>
+				</atomArray>
+				<bondArray/>
+			</functionalGroup>
+		</entry>
+		<entry label="CdsJ">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="1" elementType="{Cd,CO}" id="1"/>
+				</atomArray>
+				<bondArray/>
+			</functionalGroup>
+		</entry>
+		<entry label="H3COJ">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="H" id="1"/>
+					<atom electronState="0" elementType="C" id="2"/>
+					<atom electronState="0" elementType="H" id="3"/>
+					<atom electronState="1" elementType="O" id="4"/>
+					<atom electronState="0" elementType="H" id="5"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 2" type="S"/>
+					<bond atomRefs2="5 2" type="S"/>
+					<bond atomRefs2="3 2" type="S"/>
+					<bond atomRefs2="2 4" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="CTCC=CCJ">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="H" id="1"/>
+					<atom electronState="0" elementType="Cd" id="2"/>
+					<atom electronState="1" elementType="C" id="3"/>
+					<atom electronState="0" elementType="C" id="4"/>
+					<atom electronState="0" elementType="Ct" id="5"/>
+					<atom electronState="0" elementType="H" id="6"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 3" type="S"/>
+					<bond atomRefs2="4 2" type="D"/>
+					<bond atomRefs2="2 3" type="S"/>
+					<bond atomRefs2="6 3" type="S"/>
+					<bond atomRefs2="5 4" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="ROOJ">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="O" id="1"/>
+					<atom electronState="0" elementType="R!H" id="2"/>
+					<atom electronState="1" elementType="O" id="3"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="2 1" type="S"/>
+					<bond atomRefs2="1 3" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="COJ">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="C" id="1"/>
+					<atom electronState="1" elementType="O" id="2"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 2" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="CsJOC(O)">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="H" id="1"/>
+					<atom electronState="0" elementType="O" id="2"/>
+					<atom electronState="0" elementType="H" id="3"/>
+					<atom electronState="1" elementType="C" id="4"/>
+					<atom electronState="0" elementType="C" id="5"/>
+					<atom electronState="0" elementType="O" id="6"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 4" type="S"/>
+					<bond atomRefs2="5 2" type="S"/>
+					<bond atomRefs2="2 4" type="S"/>
+					<bond atomRefs2="3 4" type="S"/>
+					<bond atomRefs2="6 5" type="D"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="CsJ">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="1" elementType="Cs" id="1"/>
+				</atomArray>
+				<bondArray/>
+			</functionalGroup>
+		</entry>
+		<entry label="RCCJC">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="1" elementType="C" id="1"/>
+					<atom electronState="0" elementType="H" id="2"/>
+					<atom electronState="0" elementType="C" id="3"/>
+					<atom electronState="0" elementType="C" id="4"/>
+					<atom electronState="0" elementType="H" id="5"/>
+					<atom electronState="0" elementType="H" id="6"/>
+					<atom electronState="0" elementType="H" id="7"/>
+					<atom electronState="0" elementType="H" id="8"/>
+					<atom electronState="0" elementType="H" id="9"/>
+					<atom electronState="0" elementType="C" id="10"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="3 1" type="S"/>
+					<bond atomRefs2="2 1" type="S"/>
+					<bond atomRefs2="4 1" type="S"/>
+					<bond atomRefs2="6 3" type="S"/>
+					<bond atomRefs2="7 3" type="S"/>
+					<bond atomRefs2="8 3" type="S"/>
+					<bond atomRefs2="10 4" type="S"/>
+					<bond atomRefs2="9 4" type="S"/>
+					<bond atomRefs2="5 4" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="C2CsJOC(O)">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="C" id="1"/>
+					<atom electronState="0" elementType="O" id="2"/>
+					<atom electronState="0" elementType="O" id="3"/>
+					<atom electronState="0" elementType="C" id="4"/>
+					<atom electronState="1" elementType="C" id="5"/>
+					<atom electronState="0" elementType="C" id="6"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="2 1" type="D"/>
+					<bond atomRefs2="1 3" type="S"/>
+					<bond atomRefs2="3 5" type="S"/>
+					<bond atomRefs2="4 5" type="S"/>
+					<bond atomRefs2="6 5" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="CCsJOC(O)">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="O" id="1"/>
+					<atom electronState="0" elementType="O" id="2"/>
+					<atom electronState="1" elementType="C" id="3"/>
+					<atom electronState="0" elementType="H" id="4"/>
+					<atom electronState="0" elementType="C" id="5"/>
+					<atom electronState="0" elementType="C" id="6"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 5" type="D"/>
+					<bond atomRefs2="5 2" type="S"/>
+					<bond atomRefs2="2 3" type="S"/>
+					<bond atomRefs2="6 3" type="S"/>
+					<bond atomRefs2="4 3" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="C=CCJ=O">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="O" id="1"/>
+					<atom electronState="1" elementType="C" id="2"/>
+					<atom electronState="0" elementType="Cd" id="3"/>
+					<atom electronState="0" elementType="Cd" id="4"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 2" type="D"/>
+					<bond atomRefs2="3 2" type="S"/>
+					<bond atomRefs2="4 3" type="D"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="CCsJOO">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="O" id="1"/>
+					<atom electronState="0" elementType="O" id="2"/>
+					<atom electronState="0" elementType="C" id="3"/>
+					<atom electronState="1" elementType="C" id="4"/>
+					<atom electronState="0" elementType="H" id="5"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 2" type="S"/>
+					<bond atomRefs2="2 4" type="S"/>
+					<bond atomRefs2="3 4" type="S"/>
+					<bond atomRefs2="5 4" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="CCsJOH">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="C" id="1"/>
+					<atom electronState="0" elementType="O" id="2"/>
+					<atom electronState="1" elementType="C" id="3"/>
+					<atom electronState="0" elementType="H" id="4"/>
+					<atom electronState="0" elementType="H" id="5"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 3" type="S"/>
+					<bond atomRefs2="5 2" type="S"/>
+					<bond atomRefs2="2 3" type="S"/>
+					<bond atomRefs2="4 3" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="CJ2">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="2" elementType="C" id="1"/>
+				</atomArray>
+				<bondArray/>
+			</functionalGroup>
+		</entry>
+		<entry label="CJ3">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="3" elementType="C" id="1"/>
+				</atomArray>
+				<bondArray/>
+			</functionalGroup>
+		</entry>
+		<entry label="CCdJ2_s">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="C" id="1"/>
+					<atom electronState="2S" elementType="C" id="2"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 2" type="D"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="CCdJ2_t">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="C" id="1"/>
+					<atom electronState="2T" elementType="C" id="2"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 2" type="D"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="CCsJOC">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="H" id="1"/>
+					<atom electronState="0" elementType="O" id="2"/>
+					<atom electronState="1" elementType="C" id="3"/>
+					<atom electronState="0" elementType="C" id="4"/>
+					<atom electronState="0" elementType="C" id="5"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 3" type="S"/>
+					<bond atomRefs2="4 2" type="S"/>
+					<bond atomRefs2="2 3" type="S"/>
+					<bond atomRefs2="5 3" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="C2CsJOOC">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="C" id="1"/>
+					<atom electronState="1" elementType="C" id="2"/>
+					<atom electronState="0" elementType="C" id="3"/>
+					<atom electronState="0" elementType="O" id="4"/>
+					<atom electronState="0" elementType="O" id="5"/>
+					<atom electronState="0" elementType="C" id="6"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 2" type="S"/>
+					<bond atomRefs2="5 2" type="S"/>
+					<bond atomRefs2="3 2" type="S"/>
+					<bond atomRefs2="6 4" type="S"/>
+					<bond atomRefs2="4 5" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="AllylJ2_t">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="H" id="1"/>
+					<atom electronState="0" elementType="Cd" id="2"/>
+					<atom electronState="2T" elementType="C" id="3"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 3" type="S"/>
+					<bond atomRefs2="2 3" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="C2CsJOOH">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="O" id="1"/>
+					<atom electronState="0" elementType="H" id="2"/>
+					<atom electronState="0" elementType="O" id="3"/>
+					<atom electronState="0" elementType="C" id="4"/>
+					<atom electronState="1" elementType="C" id="5"/>
+					<atom electronState="0" elementType="C" id="6"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="2 1" type="S"/>
+					<bond atomRefs2="1 3" type="S"/>
+					<bond atomRefs2="3 5" type="S"/>
+					<bond atomRefs2="4 5" type="S"/>
+					<bond atomRefs2="6 5" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="RCCJCC">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="H" id="1"/>
+					<atom electronState="0" elementType="H" id="2"/>
+					<atom electronState="0" elementType="C" id="3"/>
+					<atom electronState="0" elementType="C" id="4"/>
+					<atom electronState="1" elementType="C" id="5"/>
+					<atom electronState="0" elementType="H" id="6"/>
+					<atom electronState="0" elementType="C" id="7"/>
+					<atom electronState="0" elementType="H" id="8"/>
+					<atom electronState="0" elementType="H" id="9"/>
+					<atom electronState="0" elementType="C" id="10"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 7" type="S"/>
+					<bond atomRefs2="2 7" type="S"/>
+					<bond atomRefs2="4 3" type="S"/>
+					<bond atomRefs2="8 3" type="S"/>
+					<bond atomRefs2="3 5" type="S"/>
+					<bond atomRefs2="9 3" type="S"/>
+					<bond atomRefs2="7 5" type="S"/>
+					<bond atomRefs2="6 5" type="S"/>
+					<bond atomRefs2="10 7" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="AllylJ2_s">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="H" id="1"/>
+					<atom electronState="0" elementType="Cd" id="2"/>
+					<atom electronState="2S" elementType="C" id="3"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 3" type="S"/>
+					<bond atomRefs2="2 3" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="CH2_s">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="H" id="1"/>
+					<atom electronState="0" elementType="H" id="2"/>
+					<atom electronState="2S" elementType="C" id="3"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 3" type="S"/>
+					<bond atomRefs2="2 3" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="CsCsJ">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="Cs" id="1"/>
+					<atom electronState="1" elementType="C" id="2"/>
+					<atom electronState="0" elementType="H" id="3"/>
+					<atom electronState="0" elementType="H" id="4"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 2" type="S"/>
+					<bond atomRefs2="3 2" type="S"/>
+					<bond atomRefs2="4 2" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="CH2_t">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="H" id="1"/>
+					<atom electronState="2T" elementType="C" id="2"/>
+					<atom electronState="0" elementType="H" id="3"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 2" type="S"/>
+					<bond atomRefs2="3 2" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="CCJCHO">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="Cd" id="1"/>
+					<atom electronState="0" elementType="Cs" id="2"/>
+					<atom electronState="0" elementType="O" id="3"/>
+					<atom electronState="1" elementType="C" id="4"/>
+					<atom electronState="0" elementType="H" id="5"/>
+					<atom electronState="0" elementType="H" id="6"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="6 1" type="S"/>
+					<bond atomRefs2="3 1" type="D"/>
+					<bond atomRefs2="1 4" type="S"/>
+					<bond atomRefs2="2 4" type="S"/>
+					<bond atomRefs2="5 4" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="OJC=O">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="CO" id="1"/>
+					<atom electronState="1" elementType="O" id="2"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 2" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="C(=O)OOJ">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="O" id="1"/>
+					<atom electronState="1" elementType="O" id="2"/>
+					<atom electronState="0" elementType="O" id="3"/>
+					<atom electronState="0" elementType="C" id="4"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="4 1" type="S"/>
+					<bond atomRefs2="1 2" type="S"/>
+					<bond atomRefs2="3 4" type="D"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="CsJ2">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="2" elementType="Cs" id="1"/>
+				</atomArray>
+				<bondArray/>
+			</functionalGroup>
+		</entry>
+		<entry label="PhCH_t">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="Cb" id="1"/>
+					<atom electronState="0" elementType="H" id="2"/>
+					<atom electronState="2T" elementType="C" id="3"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 3" type="S"/>
+					<bond atomRefs2="2 3" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="CsJOO">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="H" id="1"/>
+					<atom electronState="0" elementType="O" id="2"/>
+					<atom electronState="0" elementType="H" id="3"/>
+					<atom electronState="1" elementType="C" id="4"/>
+					<atom electronState="0" elementType="O" id="5"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 4" type="S"/>
+					<bond atomRefs2="5 2" type="S"/>
+					<bond atomRefs2="2 4" type="S"/>
+					<bond atomRefs2="3 4" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="C2CsJOC(O)H">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="C" id="1"/>
+					<atom electronState="1" elementType="C" id="2"/>
+					<atom electronState="0" elementType="O" id="3"/>
+					<atom electronState="0" elementType="C" id="4"/>
+					<atom electronState="0" elementType="C" id="5"/>
+					<atom electronState="0" elementType="H" id="6"/>
+					<atom electronState="0" elementType="O" id="7"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 2" type="S"/>
+					<bond atomRefs2="4 2" type="S"/>
+					<bond atomRefs2="3 2" type="S"/>
+					<bond atomRefs2="5 3" type="S"/>
+					<bond atomRefs2="6 5" type="S"/>
+					<bond atomRefs2="7 5" type="D"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="C2CsJO">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="O" id="1"/>
+					<atom electronState="0" elementType="C" id="2"/>
+					<atom electronState="0" elementType="C" id="3"/>
+					<atom electronState="1" elementType="C" id="4"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 4" type="S"/>
+					<bond atomRefs2="2 4" type="S"/>
+					<bond atomRefs2="3 4" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="C2CsJOO">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="C" id="1"/>
+					<atom electronState="0" elementType="O" id="2"/>
+					<atom electronState="0" elementType="C" id="3"/>
+					<atom electronState="1" elementType="C" id="4"/>
+					<atom electronState="0" elementType="O" id="5"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 4" type="S"/>
+					<bond atomRefs2="5 2" type="S"/>
+					<bond atomRefs2="2 4" type="S"/>
+					<bond atomRefs2="3 4" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="CCJC">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="H" id="1"/>
+					<atom electronState="0" elementType="H" id="2"/>
+					<atom electronState="0" elementType="H" id="3"/>
+					<atom electronState="0" elementType="H" id="4"/>
+					<atom electronState="0" elementType="C" id="5"/>
+					<atom electronState="0" elementType="H" id="6"/>
+					<atom electronState="0" elementType="C" id="7"/>
+					<atom electronState="0" elementType="H" id="8"/>
+					<atom electronState="1" elementType="C" id="9"/>
+					<atom electronState="0" elementType="H" id="10"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 5" type="S"/>
+					<bond atomRefs2="2 7" type="S"/>
+					<bond atomRefs2="3 5" type="S"/>
+					<bond atomRefs2="4 7" type="S"/>
+					<bond atomRefs2="8 5" type="S"/>
+					<bond atomRefs2="5 9" type="S"/>
+					<bond atomRefs2="6 9" type="S"/>
+					<bond atomRefs2="10 7" type="S"/>
+					<bond atomRefs2="7 9" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="Vin">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="Cd" id="1"/>
+					<atom electronState="0" elementType="H" id="2"/>
+					<atom electronState="1" elementType="Cd" id="3"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 3" type="D"/>
+					<bond atomRefs2="2 3" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="C2CsJOH">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="C" id="1"/>
+					<atom electronState="0" elementType="O" id="2"/>
+					<atom electronState="0" elementType="H" id="3"/>
+					<atom electronState="1" elementType="C" id="4"/>
+					<atom electronState="0" elementType="C" id="5"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 4" type="S"/>
+					<bond atomRefs2="3 2" type="S"/>
+					<bond atomRefs2="2 4" type="S"/>
+					<bond atomRefs2="5 4" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="Benzyl_T">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="C" id="1"/>
+					<atom electronState="0" elementType="Cb" id="2"/>
+					<atom electronState="0" elementType="C" id="3"/>
+					<atom electronState="1" elementType="C" id="4"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 4" type="S"/>
+					<bond atomRefs2="2 4" type="S"/>
+					<bond atomRefs2="3 4" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="(O)CJO">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="O" id="1"/>
+					<atom electronState="1" elementType="C" id="2"/>
+					<atom electronState="0" elementType="O" id="3"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 2" type="D"/>
+					<bond atomRefs2="3 2" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="Benzyl_P">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="Cb" id="1"/>
+					<atom electronState="1" elementType="C" id="2"/>
+					<atom electronState="0" elementType="H" id="3"/>
+					<atom electronState="0" elementType="H" id="4"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 2" type="S"/>
+					<bond atomRefs2="3 2" type="S"/>
+					<bond atomRefs2="4 2" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="Benzyl_S">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="C" id="1"/>
+					<atom electronState="0" elementType="Cb" id="2"/>
+					<atom electronState="1" elementType="C" id="3"/>
+					<atom electronState="0" elementType="H" id="4"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 3" type="S"/>
+					<bond atomRefs2="2 3" type="S"/>
+					<bond atomRefs2="4 3" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="CsJOCds">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="O" id="1"/>
+					<atom electronState="0" elementType="{Cd,CO}" id="2"/>
+					<atom electronState="1" elementType="C" id="3"/>
+					<atom electronState="0" elementType="H" id="4"/>
+					<atom electronState="0" elementType="H" id="5"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="2 1" type="S"/>
+					<bond atomRefs2="1 3" type="S"/>
+					<bond atomRefs2="5 3" type="S"/>
+					<bond atomRefs2="4 3" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="C2JC=O">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="1" elementType="C" id="1"/>
+					<atom electronState="0" elementType="H" id="2"/>
+					<atom electronState="0" elementType="Cd" id="3"/>
+					<atom electronState="0" elementType="O" id="4"/>
+					<atom electronState="0" elementType="C" id="5"/>
+					<atom electronState="0" elementType="H" id="6"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="6 1" type="S"/>
+					<bond atomRefs2="3 1" type="S"/>
+					<bond atomRefs2="2 1" type="S"/>
+					<bond atomRefs2="4 3" type="D"/>
+					<bond atomRefs2="5 3" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="CCJ=O">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="O" id="1"/>
+					<atom electronState="1" elementType="C" id="2"/>
+					<atom electronState="0" elementType="C" id="3"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 2" type="D"/>
+					<bond atomRefs2="3 2" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="CCJ2">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="H" id="1"/>
+					<atom electronState="0" elementType="H" id="2"/>
+					<atom electronState="0" elementType="Cs" id="3"/>
+					<atom electronState="0" elementType="H" id="4"/>
+					<atom electronState="2" elementType="C" id="5"/>
+					<atom electronState="0" elementType="H" id="6"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 3" type="S"/>
+					<bond atomRefs2="2 3" type="S"/>
+					<bond atomRefs2="3 5" type="S"/>
+					<bond atomRefs2="6 3" type="S"/>
+					<bond atomRefs2="4 5" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="1  * R {1,2,3}">
+			<functionalGroup>
+				<atomArray/>
+				<bondArray/>
+			</functionalGroup>
+		</entry>
+		<entry label="C2CsJOCs">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="Cs" id="1"/>
+					<atom electronState="0" elementType="O" id="2"/>
+					<atom electronState="0" elementType="C" id="3"/>
+					<atom electronState="1" elementType="C" id="4"/>
+					<atom electronState="0" elementType="C" id="5"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 2" type="S"/>
+					<bond atomRefs2="2 4" type="S"/>
+					<bond atomRefs2="3 4" type="S"/>
+					<bond atomRefs2="5 4" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="PhCH_s">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="Cb" id="1"/>
+					<atom electronState="2S" elementType="C" id="2"/>
+					<atom electronState="0" elementType="H" id="3"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 2" type="S"/>
+					<bond atomRefs2="3 2" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="(O)CJOH">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="H" id="1"/>
+					<atom electronState="0" elementType="O" id="2"/>
+					<atom electronState="1" elementType="C" id="3"/>
+					<atom electronState="0" elementType="O" id="4"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 4" type="S"/>
+					<bond atomRefs2="2 3" type="D"/>
+					<bond atomRefs2="4 3" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="Propargyl">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="Ct" id="1"/>
+					<atom electronState="1" elementType="C" id="2"/>
+					<atom electronState="0" elementType="H" id="3"/>
+					<atom electronState="0" elementType="H" id="4"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 2" type="S"/>
+					<bond atomRefs2="3 2" type="S"/>
+					<bond atomRefs2="4 2" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="Tert_Propargyl">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="Ct" id="1"/>
+					<atom electronState="0" elementType="Cs" id="2"/>
+					<atom electronState="1" elementType="C" id="3"/>
+					<atom electronState="0" elementType="Cs" id="4"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 3" type="S"/>
+					<bond atomRefs2="2 3" type="S"/>
+					<bond atomRefs2="4 3" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="AllylJ2">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="Cd" id="1"/>
+					<atom electronState="2" elementType="C" id="2"/>
+					<atom electronState="0" elementType="H" id="3"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 2" type="S"/>
+					<bond atomRefs2="3 2" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="PhCH">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="Cb" id="1"/>
+					<atom electronState="2" elementType="C" id="2"/>
+					<atom electronState="0" elementType="H" id="3"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 2" type="S"/>
+					<bond atomRefs2="3 2" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="CCJ2_t">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="Cs" id="1"/>
+					<atom electronState="0" elementType="H" id="2"/>
+					<atom electronState="2T" elementType="C" id="3"/>
+					<atom electronState="0" elementType="H" id="4"/>
+					<atom electronState="0" elementType="H" id="5"/>
+					<atom electronState="0" elementType="H" id="6"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="4 1" type="S"/>
+					<bond atomRefs2="5 1" type="S"/>
+					<bond atomRefs2="1 3" type="S"/>
+					<bond atomRefs2="6 1" type="S"/>
+					<bond atomRefs2="2 3" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="Acetyl">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="H" id="1"/>
+					<atom electronState="0" elementType="C" id="2"/>
+					<atom electronState="1" elementType="C" id="3"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 2" type="S"/>
+					<bond atomRefs2="2 3" type="T"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="Allyl_T">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="Cs" id="1"/>
+					<atom electronState="0" elementType="Cd" id="2"/>
+					<atom electronState="1" elementType="C" id="3"/>
+					<atom electronState="0" elementType="Cs" id="4"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 3" type="S"/>
+					<bond atomRefs2="2 3" type="S"/>
+					<bond atomRefs2="4 3" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="Allyl_P">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="Cd" id="1"/>
+					<atom electronState="0" elementType="H" id="2"/>
+					<atom electronState="0" elementType="H" id="3"/>
+					<atom electronState="1" elementType="C" id="4"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 4" type="S"/>
+					<bond atomRefs2="2 4" type="S"/>
+					<bond atomRefs2="3 4" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="Allyl_S">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="Cd" id="1"/>
+					<atom electronState="0" elementType="Cs" id="2"/>
+					<atom electronState="1" elementType="C" id="3"/>
+					<atom electronState="0" elementType="H" id="4"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 3" type="S"/>
+					<bond atomRefs2="2 3" type="S"/>
+					<bond atomRefs2="4 3" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="CJ">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="1" elementType="C" id="1"/>
+				</atomArray>
+				<bondArray/>
+			</functionalGroup>
+		</entry>
+		<entry label="CCJCOOH">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="Cs" id="1"/>
+					<atom electronState="0" elementType="Cs" id="2"/>
+					<atom electronState="0" elementType="O" id="3"/>
+					<atom electronState="0" elementType="O" id="4"/>
+					<atom electronState="1" elementType="C" id="5"/>
+					<atom electronState="0" elementType="H" id="6"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="4 1" type="S"/>
+					<bond atomRefs2="1 5" type="S"/>
+					<bond atomRefs2="2 5" type="S"/>
+					<bond atomRefs2="3 4" type="S"/>
+					<bond atomRefs2="6 5" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="CsCsJ2">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="Cs" id="1"/>
+					<atom electronState="0" elementType="H" id="2"/>
+					<atom electronState="2" elementType="C" id="3"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 3" type="S"/>
+					<bond atomRefs2="2 3" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="Neopentyl">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="C" id="1"/>
+					<atom electronState="1" elementType="C" id="2"/>
+					<atom electronState="0" elementType="H" id="3"/>
+					<atom electronState="0" elementType="C" id="4"/>
+					<atom electronState="0" elementType="C" id="5"/>
+					<atom electronState="0" elementType="C" id="6"/>
+					<atom electronState="0" elementType="H" id="7"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="4 1" type="S"/>
+					<bond atomRefs2="5 1" type="S"/>
+					<bond atomRefs2="1 2" type="S"/>
+					<bond atomRefs2="6 1" type="S"/>
+					<bond atomRefs2="7 2" type="S"/>
+					<bond atomRefs2="3 2" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="CbJ">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="C" id="1"/>
+					<atom electronState="0" elementType="C" id="2"/>
+					<atom electronState="1" elementType="C" id="3"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 3" type="B"/>
+					<bond atomRefs2="2 3" type="B"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="C=CJC=C">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="Cd" id="1"/>
+					<atom electronState="0" elementType="{Cd,CO}" id="2"/>
+					<atom electronState="1" elementType="C" id="3"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 3" type="D"/>
+					<bond atomRefs2="2 3" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="CsJOCs">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="O" id="1"/>
+					<atom electronState="0" elementType="H" id="2"/>
+					<atom electronState="1" elementType="C" id="3"/>
+					<atom electronState="0" elementType="H" id="4"/>
+					<atom electronState="0" elementType="Cs" id="5"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="5 1" type="S"/>
+					<bond atomRefs2="1 3" type="S"/>
+					<bond atomRefs2="2 3" type="S"/>
+					<bond atomRefs2="4 3" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="C2CsJOC">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="C" id="1"/>
+					<atom electronState="0" elementType="O" id="2"/>
+					<atom electronState="0" elementType="C" id="3"/>
+					<atom electronState="1" elementType="C" id="4"/>
+					<atom electronState="0" elementType="C" id="5"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 4" type="S"/>
+					<bond atomRefs2="5 2" type="S"/>
+					<bond atomRefs2="2 4" type="S"/>
+					<bond atomRefs2="3 4" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="CCsJOC(O)C">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="1" elementType="C" id="1"/>
+					<atom electronState="0" elementType="O" id="2"/>
+					<atom electronState="0" elementType="C" id="3"/>
+					<atom electronState="0" elementType="H" id="4"/>
+					<atom electronState="0" elementType="C" id="5"/>
+					<atom electronState="0" elementType="C" id="6"/>
+					<atom electronState="0" elementType="O" id="7"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="3 1" type="S"/>
+					<bond atomRefs2="2 1" type="S"/>
+					<bond atomRefs2="4 1" type="S"/>
+					<bond atomRefs2="5 2" type="S"/>
+					<bond atomRefs2="7 5" type="D"/>
+					<bond atomRefs2="6 5" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="CsJOH">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="H" id="1"/>
+					<atom electronState="0" elementType="O" id="2"/>
+					<atom electronState="0" elementType="H" id="3"/>
+					<atom electronState="1" elementType="C" id="4"/>
+					<atom electronState="0" elementType="H" id="5"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 4" type="S"/>
+					<bond atomRefs2="5 2" type="S"/>
+					<bond atomRefs2="2 4" type="S"/>
+					<bond atomRefs2="3 4" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="CCsJOC(O)H">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="C" id="1"/>
+					<atom electronState="0" elementType="O" id="2"/>
+					<atom electronState="1" elementType="C" id="3"/>
+					<atom electronState="0" elementType="H" id="4"/>
+					<atom electronState="0" elementType="H" id="5"/>
+					<atom electronState="0" elementType="O" id="6"/>
+					<atom electronState="0" elementType="C" id="7"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="6 1" type="D"/>
+					<bond atomRefs2="1 2" type="S"/>
+					<bond atomRefs2="5 1" type="S"/>
+					<bond atomRefs2="2 3" type="S"/>
+					<bond atomRefs2="7 3" type="S"/>
+					<bond atomRefs2="4 3" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="C2CsJOC(O)C">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="1" elementType="C" id="1"/>
+					<atom electronState="0" elementType="C" id="2"/>
+					<atom electronState="0" elementType="O" id="3"/>
+					<atom electronState="0" elementType="C" id="4"/>
+					<atom electronState="0" elementType="C" id="5"/>
+					<atom electronState="0" elementType="O" id="6"/>
+					<atom electronState="0" elementType="C" id="7"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="4 1" type="S"/>
+					<bond atomRefs2="2 1" type="S"/>
+					<bond atomRefs2="3 1" type="S"/>
+					<bond atomRefs2="5 3" type="S"/>
+					<bond atomRefs2="6 5" type="D"/>
+					<bond atomRefs2="7 5" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="CsJOCC">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="C" id="1"/>
+					<atom electronState="0" elementType="H" id="2"/>
+					<atom electronState="0" elementType="O" id="3"/>
+					<atom electronState="0" elementType="H" id="4"/>
+					<atom electronState="0" elementType="H" id="5"/>
+					<atom electronState="1" elementType="C" id="6"/>
+					<atom electronState="0" elementType="C" id="7"/>
+					<atom electronState="0" elementType="H" id="8"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 7" type="S"/>
+					<bond atomRefs2="2 7" type="S"/>
+					<bond atomRefs2="7 3" type="S"/>
+					<bond atomRefs2="3 6" type="S"/>
+					<bond atomRefs2="4 6" type="S"/>
+					<bond atomRefs2="5 6" type="S"/>
+					<bond atomRefs2="8 7" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="Oa_t">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="2T" elementType="O" id="1"/>
+				</atomArray>
+				<bondArray/>
+			</functionalGroup>
+		</entry>
+		<entry label="CsJOCC2">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="H" id="1"/>
+					<atom electronState="0" elementType="H" id="2"/>
+					<atom electronState="0" elementType="H" id="3"/>
+					<atom electronState="0" elementType="O" id="4"/>
+					<atom electronState="1" elementType="C" id="5"/>
+					<atom electronState="0" elementType="C" id="6"/>
+					<atom electronState="0" elementType="C" id="7"/>
+					<atom electronState="0" elementType="C" id="8"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 6" type="S"/>
+					<bond atomRefs2="2 5" type="S"/>
+					<bond atomRefs2="3 5" type="S"/>
+					<bond atomRefs2="6 4" type="S"/>
+					<bond atomRefs2="4 5" type="S"/>
+					<bond atomRefs2="7 6" type="S"/>
+					<bond atomRefs2="8 6" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="CsJOCC3">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="H" id="1"/>
+					<atom electronState="1" elementType="C" id="2"/>
+					<atom electronState="0" elementType="O" id="3"/>
+					<atom electronState="0" elementType="C" id="4"/>
+					<atom electronState="0" elementType="C" id="5"/>
+					<atom electronState="0" elementType="C" id="6"/>
+					<atom electronState="0" elementType="H" id="7"/>
+					<atom electronState="0" elementType="C" id="8"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 2" type="S"/>
+					<bond atomRefs2="7 2" type="S"/>
+					<bond atomRefs2="3 2" type="S"/>
+					<bond atomRefs2="5 3" type="S"/>
+					<bond atomRefs2="4 5" type="S"/>
+					<bond atomRefs2="8 5" type="S"/>
+					<bond atomRefs2="6 5" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="RJ3">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="3" elementType="R" id="1"/>
+				</atomArray>
+				<bondArray/>
+			</functionalGroup>
+		</entry>
+		<entry label="RJ2">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="2" elementType="R" id="1"/>
+				</atomArray>
+				<bondArray/>
+			</functionalGroup>
+		</entry>
+		<entry label="Oa_s">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="2S" elementType="O" id="1"/>
+				</atomArray>
+				<bondArray/>
+			</functionalGroup>
+		</entry>
+		<entry label="(O)CJOCC3">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="1" elementType="C" id="1"/>
+					<atom electronState="0" elementType="C" id="2"/>
+					<atom electronState="0" elementType="C" id="3"/>
+					<atom electronState="0" elementType="O" id="4"/>
+					<atom electronState="0" elementType="O" id="5"/>
+					<atom electronState="0" elementType="C" id="6"/>
+					<atom electronState="0" elementType="C" id="7"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="5 1" type="S"/>
+					<bond atomRefs2="4 1" type="D"/>
+					<bond atomRefs2="2 3" type="S"/>
+					<bond atomRefs2="6 3" type="S"/>
+					<bond atomRefs2="7 3" type="S"/>
+					<bond atomRefs2="3 5" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="(O)CJOCC2">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="O" id="1"/>
+					<atom electronState="0" elementType="H" id="2"/>
+					<atom electronState="0" elementType="O" id="3"/>
+					<atom electronState="0" elementType="C" id="4"/>
+					<atom electronState="1" elementType="C" id="5"/>
+					<atom electronState="0" elementType="C" id="6"/>
+					<atom electronState="0" elementType="C" id="7"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="6 1" type="S"/>
+					<bond atomRefs2="1 5" type="S"/>
+					<bond atomRefs2="2 6" type="S"/>
+					<bond atomRefs2="3 5" type="D"/>
+					<bond atomRefs2="4 6" type="S"/>
+					<bond atomRefs2="7 6" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="HOOJ">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="O" id="1"/>
+					<atom electronState="1" elementType="O" id="2"/>
+					<atom electronState="0" elementType="H" id="3"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="3 1" type="S"/>
+					<bond atomRefs2="1 2" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="CO">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="O" id="1"/>
+					<atom electronState="2" elementType="C" id="2"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 2" type="D"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="RCCJ">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="H" id="1"/>
+					<atom electronState="0" elementType="H" id="2"/>
+					<atom electronState="0" elementType="H" id="3"/>
+					<atom electronState="0" elementType="C" id="4"/>
+					<atom electronState="0" elementType="C" id="5"/>
+					<atom electronState="1" elementType="C" id="6"/>
+					<atom electronState="0" elementType="H" id="7"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 4" type="S"/>
+					<bond atomRefs2="2 4" type="S"/>
+					<bond atomRefs2="3 6" type="S"/>
+					<bond atomRefs2="5 4" type="S"/>
+					<bond atomRefs2="4 6" type="S"/>
+					<bond atomRefs2="7 6" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="CsJOC">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="H" id="1"/>
+					<atom electronState="0" elementType="O" id="2"/>
+					<atom electronState="0" elementType="H" id="3"/>
+					<atom electronState="1" elementType="C" id="4"/>
+					<atom electronState="0" elementType="C" id="5"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 4" type="S"/>
+					<bond atomRefs2="5 2" type="S"/>
+					<bond atomRefs2="2 4" type="S"/>
+					<bond atomRefs2="3 4" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="CsJOC(O)C">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="C" id="1"/>
+					<atom electronState="0" elementType="O" id="2"/>
+					<atom electronState="0" elementType="C" id="3"/>
+					<atom electronState="0" elementType="O" id="4"/>
+					<atom electronState="0" elementType="H" id="5"/>
+					<atom electronState="1" elementType="C" id="6"/>
+					<atom electronState="0" elementType="H" id="7"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 3" type="S"/>
+					<bond atomRefs2="2 3" type="D"/>
+					<bond atomRefs2="3 4" type="S"/>
+					<bond atomRefs2="4 6" type="S"/>
+					<bond atomRefs2="5 6" type="S"/>
+					<bond atomRefs2="7 6" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="CCsJOOC">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="H" id="1"/>
+					<atom electronState="0" elementType="O" id="2"/>
+					<atom electronState="1" elementType="C" id="3"/>
+					<atom electronState="0" elementType="O" id="4"/>
+					<atom electronState="0" elementType="C" id="5"/>
+					<atom electronState="0" elementType="C" id="6"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 3" type="S"/>
+					<bond atomRefs2="4 2" type="S"/>
+					<bond atomRefs2="2 3" type="S"/>
+					<bond atomRefs2="5 3" type="S"/>
+					<bond atomRefs2="6 4" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="C=CCJC=C">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="Cd" id="1"/>
+					<atom electronState="0" elementType="Cd" id="2"/>
+					<atom electronState="1" elementType="C" id="3"/>
+					<atom electronState="0" elementType="H" id="4"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 3" type="S"/>
+					<bond atomRefs2="2 3" type="S"/>
+					<bond atomRefs2="4 3" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="CCsJOOH">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="C" id="1"/>
+					<atom electronState="0" elementType="O" id="2"/>
+					<atom electronState="0" elementType="O" id="3"/>
+					<atom electronState="1" elementType="C" id="4"/>
+					<atom electronState="0" elementType="H" id="5"/>
+					<atom electronState="0" elementType="H" id="6"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 4" type="S"/>
+					<bond atomRefs2="6 2" type="S"/>
+					<bond atomRefs2="2 3" type="S"/>
+					<bond atomRefs2="3 4" type="S"/>
+					<bond atomRefs2="5 4" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="CsJOC(O)H">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="C" id="1"/>
+					<atom electronState="0" elementType="H" id="2"/>
+					<atom electronState="0" elementType="O" id="3"/>
+					<atom electronState="0" elementType="O" id="4"/>
+					<atom electronState="0" elementType="H" id="5"/>
+					<atom electronState="1" elementType="C" id="6"/>
+					<atom electronState="0" elementType="H" id="7"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="4 1" type="D"/>
+					<bond atomRefs2="2 1" type="S"/>
+					<bond atomRefs2="1 3" type="S"/>
+					<bond atomRefs2="3 6" type="S"/>
+					<bond atomRefs2="5 6" type="S"/>
+					<bond atomRefs2="7 6" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="CCsJO">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="O" id="1"/>
+					<atom electronState="0" elementType="H" id="2"/>
+					<atom electronState="1" elementType="C" id="3"/>
+					<atom electronState="0" elementType="C" id="4"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 3" type="S"/>
+					<bond atomRefs2="2 3" type="S"/>
+					<bond atomRefs2="4 3" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="C2CJCHO">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="Cs" id="1"/>
+					<atom electronState="0" elementType="Cd" id="2"/>
+					<atom electronState="0" elementType="O" id="3"/>
+					<atom electronState="1" elementType="C" id="4"/>
+					<atom electronState="0" elementType="Cs" id="5"/>
+					<atom electronState="0" elementType="H" id="6"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 4" type="S"/>
+					<bond atomRefs2="3 2" type="D"/>
+					<bond atomRefs2="2 4" type="S"/>
+					<bond atomRefs2="6 2" type="S"/>
+					<bond atomRefs2="5 4" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="CCdJ2">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="C" id="1"/>
+					<atom electronState="2" elementType="C" id="2"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 2" type="D"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="CsCJ=O">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="O" id="1"/>
+					<atom electronState="1" elementType="C" id="2"/>
+					<atom electronState="0" elementType="Cs" id="3"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 2" type="D"/>
+					<bond atomRefs2="3 2" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="HOJ">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="H" id="1"/>
+					<atom electronState="1" elementType="O" id="2"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 2" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="Sec_Propargyl">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="Ct" id="1"/>
+					<atom electronState="1" elementType="C" id="2"/>
+					<atom electronState="0" elementType="Cs" id="3"/>
+					<atom electronState="0" elementType="H" id="4"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 2" type="S"/>
+					<bond atomRefs2="3 2" type="S"/>
+					<bond atomRefs2="4 2" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="CsJOCH3">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="H" id="1"/>
+					<atom electronState="0" elementType="O" id="2"/>
+					<atom electronState="0" elementType="H" id="3"/>
+					<atom electronState="0" elementType="H" id="4"/>
+					<atom electronState="0" elementType="C" id="5"/>
+					<atom electronState="0" elementType="H" id="6"/>
+					<atom electronState="0" elementType="H" id="7"/>
+					<atom electronState="1" elementType="C" id="8"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 8" type="S"/>
+					<bond atomRefs2="5 2" type="S"/>
+					<bond atomRefs2="2 8" type="S"/>
+					<bond atomRefs2="3 5" type="S"/>
+					<bond atomRefs2="4 8" type="S"/>
+					<bond atomRefs2="6 5" type="S"/>
+					<bond atomRefs2="7 5" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="Vins">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="C" id="1"/>
+					<atom electronState="0" elementType="C" id="2"/>
+					<atom electronState="1" elementType="C" id="3"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 3" type="D"/>
+					<bond atomRefs2="2 3" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="C=C=CJ">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="C" id="1"/>
+					<atom electronState="0" elementType="C" id="2"/>
+					<atom electronState="1" elementType="C" id="3"/>
+					<atom electronState="0" elementType="H" id="4"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="2 1" type="D"/>
+					<bond atomRefs2="1 3" type="D"/>
+					<bond atomRefs2="4 3" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="HCdsJO">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="O" id="1"/>
+					<atom electronState="1" elementType="C" id="2"/>
+					<atom electronState="0" elementType="H" id="3"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 2" type="D"/>
+					<bond atomRefs2="3 2" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="Radical">
+			<functionalGroup>
+				<atomArray/>
+				<bondArray/>
+			</functionalGroup>
+		</entry>
+		<entry label="CsJO">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="H" id="1"/>
+					<atom electronState="0" elementType="O" id="2"/>
+					<atom electronState="1" elementType="C" id="3"/>
+					<atom electronState="0" elementType="H" id="4"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 3" type="S"/>
+					<bond atomRefs2="2 3" type="S"/>
+					<bond atomRefs2="4 3" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="OOJ">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="O" id="1"/>
+					<atom electronState="1" elementType="O" id="2"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 2" type="S"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+		<entry label="CtJ">
+			<functionalGroup>
+				<atomArray>
+					<atom electronState="0" elementType="C" id="1"/>
+					<atom electronState="1" elementType="C" id="2"/>
+				</atomArray>
+				<bondArray>
+					<bond atomRefs2="1 2" type="T"/>
+				</bondArray>
+			</functionalGroup>
+		</entry>
+	</dictionary>
+	<tree>
+		<node label="Radical">
+			<node label="RJ">
+				<node label="CJ">
+					<node label="CsJ">
+						<node label="CH3"/>
+						<node label="Cs_P">
+							<node label="CsCsJ">
+								<node label="CCJ"/>
+								<node label="RCCJ"/>
+								<node label="Isobutyl"/>
+								<node label="Neopentyl"/>
+								<node label="CJCOOH"/>
+							</node>
+							<node label="Benzyl_P"/>
+							<node label="Allyl_P">
+								<node label="C=CC=CCJ"/>
+								<node label="CTCC=CCJ"/>
+								<node label="C2JC=O"/>
+							</node>
+							<node label="Propargyl"/>
+						</node>
+						<node label="Cs_S">
+							<node label="(Cs)2CsJ">
+								<node label="CCJC"/>
+								<node label="RCCJC"/>
+								<node label="RCCJCC"/>
+								<node label="CCJCOOH"/>
+							</node>
+							<node label="Benzyl_S"/>
+							<node label="Allyl_S">
+								<node label="CCJCHO"/>
+							</node>
+							<node label="C=CCJC=C"/>
+							<node label="Sec_Propargyl"/>
+						</node>
+						<node label="Cs_T">
+							<node label="Tertalkyl">
+								<node label="C2CJCOOH"/>
+							</node>
+							<node label="Benzyl_T"/>
+							<node label="Allyl_T">
+								<node label="C2CJCHO"/>
+							</node>
+							<node label="Tert_Propargyl"/>
+						</node>
+						<node label="CsJO">
+							<node label="CsJOH"/>
+							<node label="CsJOC">
+								<node label="CsJOCs">
+									<node label="CsJOCH3"/>
+									<node label="CsJOCC"/>
+									<node label="CsJOCC2"/>
+									<node label="CsJOCC3"/>
+								</node>
+								<node label="CsJOCds">
+									<node label="CsJOC(O)">
+										<node label="CsJOC(O)H"/>
+										<node label="CsJOC(O)C"/>
+									</node>
+								</node>
+							</node>
+							<node label="CsJOO">
+								<node label="CsJOOH"/>
+								<node label="CsJOOC"/>
+							</node>
+						</node>
+						<node label="CCsJO">
+							<node label="CCsJOH"/>
+							<node label="CCsJOC">
+								<node label="CCsJOCs"/>
+								<node label="CCsJOCds">
+									<node label="CCsJOC(O)">
+										<node label="CCsJOC(O)H"/>
+										<node label="CCsJOC(O)C"/>
+									</node>
+								</node>
+							</node>
+							<node label="CCsJOO">
+								<node label="CCsJOOH"/>
+								<node label="CCsJOOC"/>
+							</node>
+						</node>
+						<node label="C2CsJO">
+							<node label="C2CsJOH"/>
+							<node label="C2CsJOC">
+								<node label="C2CsJOCs"/>
+								<node label="C2CsJOCds">
+									<node label="C2CsJOC(O)">
+										<node label="C2CsJOC(O)H"/>
+										<node label="C2CsJOC(O)C"/>
+									</node>
+								</node>
+							</node>
+							<node label="C2CsJOO">
+								<node label="C2CsJOOH"/>
+								<node label="C2CsJOOC"/>
+							</node>
+						</node>
+					</node>
+					<node label="CdsJ">
+						<node label="Cds_P">
+							<node label="Vin"/>
+							<node label="C=C=CJ"/>
+						</node>
+						<node label="Cds_S">
+							<node label="Vins"/>
+							<node label="C=CJC=C"/>
+						</node>
+						<node label="CdsJO">
+							<node label="HCdsJO"/>
+							<node label="CCJ=O">
+								<node label="CsCJ=O"/>
+								<node label="C=CCJ=O"/>
+							</node>
+							<node label="(O)CJO">
+								<node label="(O)CJOH"/>
+								<node label="(O)CJOC">
+									<node label="(O)CJOCH3"/>
+									<node label="(O)CJOCC"/>
+									<node label="(O)CJOCC2"/>
+									<node label="(O)CJOCC3"/>
+								</node>
+							</node>
+						</node>
+					</node>
+					<node label="CtJ">
+						<node label="Acetyl"/>
+					</node>
+					<node label="CbJ"/>
+				</node>
+				<node label="OJ">
+					<node label="HOJ"/>
+					<node label="COJ">
+						<node label="CsOJ">
+							<node label="H3COJ"/>
+						</node>
+						<node label="CdsOJ">
+							<node label="RC=COJ"/>
+							<node label="OJC=O"/>
+						</node>
+					</node>
+					<node label="OOJ">
+						<node label="ROOJ">
+							<node label="C3COOJ"/>
+							<node label="C(=O)OOJ"/>
+						</node>
+						<node label="HOOJ"/>
+					</node>
+				</node>
+			</node>
+			<node label="RJ2">
+				<node label="CJ2">
+					<node label="CsJ2">
+						<node label="CH2">
+							<node label="CH2_t"/>
+							<node label="CH2_s"/>
+						</node>
+						<node label="CsJ2_P">
+							<node label="CsCsJ2">
+								<node label="CCJ2">
+									<node label="CCJ2_t"/>
+									<node label="CCJ2_s"/>
+								</node>
+							</node>
+							<node label="PhCH">
+								<node label="PhCH_t"/>
+								<node label="PhCH_s"/>
+							</node>
+							<node label="AllylJ2">
+								<node label="AllylJ2_t"/>
+								<node label="AllylJ2_s"/>
+							</node>
+						</node>
+						<node label="CsJ2_S"/>
+					</node>
+					<node label="CdJ2">
+						<node label="CCdJ2">
+							<node label="CCdJ2_t"/>
+							<node label="CCdJ2_s"/>
+						</node>
+						<node label="CO"/>
+					</node>
+				</node>
+				<node label="Oa"/>
+				<node label="Oa_t"/>
+				<node label="Oa_s"/>
+			</node>
+			<node label="RJ3">
+				<node label="CJ3"/>
+			</node>
+		</node>
+	</tree>
+	<library>
+		<data label="Cs_T">
+			<link target="Tertalkyl"/>
+		</data>
+		<data label="Cs_S">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					98.45
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					4.44
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.5
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.33
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.1
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.39
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.75
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-4.45
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-5.2
+				</heatCapacity>
+				<comment>
+					Generic secondary radical. (CHEN &amp; BOZZELLI) #
+				</comment>
+			</thermo>
+		</data>
+		<data label="Cs_P">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					101.1
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					2.61
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.77
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.36
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.91
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.4
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.16
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.74
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-4.66
+				</heatCapacity>
+				<comment>
+					Generic primary radical. (CHEN &amp; BOZZELLI) #
+				</comment>
+			</thermo>
+		</data>
+		<data label="Isobutyl">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					101.1
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					2.91
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.54
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.26
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.92
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.46
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.27
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.84
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.84
+				</heatCapacity>
+				<comment>
+					LAY et al.
+				</comment>
+			</thermo>
+		</data>
+		<data label="CCJ">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.2 kcal/mol" units="kcal/mol">
+					101.1
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					2.61
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.65
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.21
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.75
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.24
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.02
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.63
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.63
+				</heatCapacity>
+				<comment>
+					LAY et al.
+				</comment>
+			</thermo>
+		</data>
+		<data label="(Cs)2CsJ">
+			<link target="Cs_S"/>
+		</data>
+		<data label="RCCJC">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					98.45
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					5.13
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.54
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.77
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.49
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.9
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-4.35
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-4.64
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-4.64
+				</heatCapacity>
+				<comment>
+					LAY et al.
+				</comment>
+			</thermo>
+		</data>
+		<data label="C2CsJOCds">
+			<link target="C2CsJOC(O)"/>
+		</data>
+		<data label="Cds_S">
+			<link target="Vins"/>
+		</data>
+		<data label="C=CC=CCJ">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					80.0
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					-1.55
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.83
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.86
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.98
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.99
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.3
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.5
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.5
+				</heatCapacity>
+				<comment>
+					LAY et al.
+				</comment>
+			</thermo>
+		</data>
+		<data label="RC=COJ">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					88.0
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					-1.11
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.34
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.99
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.48
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.79
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.13
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.33
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.79
+				</heatCapacity>
+				<comment>
+					CHEN &amp; BOZZELLI
+				</comment>
+			</thermo>
+		</data>
+		<data label="CdsJO">
+			<link target="CCJ=O"/>
+		</data>
+		<data label="CH2">
+			<link target="CH2_t"/>
+		</data>
+		<data label="CH3">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.1 kcal/mol" units="kcal/mol">
+					104.81
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					0.52
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.71
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.34
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.33
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.07
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.43
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.54
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-5.43
+				</heatCapacity>
+				<comment>
+					Calculated in relation to methane from NIST values
+				</comment>
+			</thermo>
+		</data>
+		<data label="(O)CJOCC">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					99.49
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					0.55
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.45
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.13
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.98
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.86
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.43
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-4.56
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-5.79
+				</heatCapacity>
+				<comment>
+					SUMATHI &amp; GREEN (values from (O)CJOCH2CH3)
+				</comment>
+			</thermo>
+		</data>
+		<data label="CdsOJ">
+			<link target="RC=COJ"/>
+		</data>
+		<data label="RJ">
+			<link target="CJ"/>
+		</data>
+		<data label="C3COOJ">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					85.3
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					0.22
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.05
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.84
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.55
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-4.09
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-4.72
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-4.97
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-5.08
+				</heatCapacity>
+				<comment>
+					CHEN &amp; BOZZELLI
+				</comment>
+			</thermo>
+		</data>
+		<data label="Oa">
+			<link target="Oa_t"/>
+		</data>
+		<data label="Tertalkyl">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					96.5
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					5.24
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.78
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.48
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.55
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-4.15
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-4.75
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-5.02
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-5.39
+				</heatCapacity>
+				<comment>
+					LAY et al. CHEN &amp; BOZZELLI #
+				</comment>
+			</thermo>
+		</data>
+		<data label="CsJ2_P">
+			<link target="CsCsJ2"/>
+		</data>
+		<data label="CsJ2_S">
+			<link target="CsJ2_P"/>
+		</data>
+		<data label="(O)CJOCH3">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					100.1
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					0.72
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.51
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.11
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.94
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.8
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.34
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-4.48
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-5.79
+				</heatCapacity>
+				<comment>
+					SUMATHI &amp; GREEN
+				</comment>
+			</thermo>
+		</data>
+		<data label="OJ">
+			<link target="COJ"/>
+		</data>
+		<data label="CCJ2_s">
+			<link target="CCJ2_t"/>
+		</data>
+		<data label="(O)CJOC">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					98.99
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					0.72
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.45
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.27
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.19
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.1
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.63
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-4.69
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-5.8
+				</heatCapacity>
+				<comment>
+					SUMATHI &amp; GREEN (Hf assigned value of (O)CJOCH(CH3)2)
+				</comment>
+			</thermo>
+		</data>
+		<data label="C2CJCOOH">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					97.2
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					7.31
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.54
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-4.16
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-4.44
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-4.58
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-4.74
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-4.88
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-5.23
+				</heatCapacity>
+				<comment>
+					WIJAYA et al.
+				</comment>
+			</thermo>
+		</data>
+		<data label="CsJOOC">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					98.34
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					-1.62
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.31
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.48
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.82
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.22
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.99
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.62
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.63
+				</heatCapacity>
+				<comment>
+					SUMATHI &amp; GREEN
+				</comment>
+			</thermo>
+		</data>
+		<data label="CJCOOH">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					103.26
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					3.54
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.25
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.76
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.34
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.91
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.87
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.6
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-4.69
+				</heatCapacity>
+				<comment>
+					WIJAYA et al.
+				</comment>
+			</thermo>
+		</data>
+		<data label="CsJOOH">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					98.91
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					-1.52
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.06
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.35
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.76
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.19
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.99
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.64
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.68
+				</heatCapacity>
+				<comment>
+					SUMATHI &amp; GREEN
+				</comment>
+			</thermo>
+		</data>
+		<data label="CCsJOCds">
+			<link target="CCsJOC(O)"/>
+		</data>
+		<data label="CCsJOCs">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					95.41
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					0.33
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.82
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.53
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.11
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.86
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.2
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.18
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-4.51
+				</heatCapacity>
+				<comment>
+					SUMATHI &amp; GREEN
+				</comment>
+			</thermo>
+		</data>
+		<data label="CsOJ">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					104.06
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					-1.46
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.98
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.3
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.61
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.89
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.38
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.8
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.59
+				</heatCapacity>
+				<comment>
+					CHEN &amp; BOZZELLI(ROJ)
+				</comment>
+			</thermo>
+		</data>
+		<data label="CdJ2">
+			<link target="CCdJ2"/>
+		</data>
+		<data label="CdsJ">
+			<link target="Cds_P"/>
+		</data>
+		<data label="H3COJ">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					104.27
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					0.51
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.11
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.29
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.62
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.97
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.59
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.07
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.84
+				</heatCapacity>
+				<comment>
+					Enthalpy HBI calculated from NIST values, entropy and Cp from B3LYP/6-31G* for CH3OH, CH3O and H
+				</comment>
+			</thermo>
+		</data>
+		<data label="CTCC=CCJ">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					81.0
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					-3.55
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.09
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.62
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.01
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.63
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.07
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.48
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.48
+				</heatCapacity>
+				<comment>
+					LAY et al.
+				</comment>
+			</thermo>
+		</data>
+		<data label="ROOJ">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					88.2
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					0.22
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.05
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.84
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.55
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-4.09
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-4.72
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-4.97
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-5.08
+				</heatCapacity>
+				<comment>
+					CHEN &amp; BOZZELLI
+				</comment>
+			</thermo>
+		</data>
+		<data label="COJ">
+			<link target="CsOJ"/>
+		</data>
+		<data label="CsJOC(O)">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					100.7
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					-0.18
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.91
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.89
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.42
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.21
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.5
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.62
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-4.43
+				</heatCapacity>
+				<comment>
+					SUMATHI &amp; GREEN
+				</comment>
+			</thermo>
+		</data>
+		<data label="CsJ">
+			<link target="Cs_P"/>
+		</data>
+		<data label="Cds_P">
+			<link target="Vin"/>
+		</data>
+		<data label="C2CsJOC(O)">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					100.1
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					4.77
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.04
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.34
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.3
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.99
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.99
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-4.77
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-5.98
+				</heatCapacity>
+				<comment>
+					SUMATHI &amp; GREEN
+				</comment>
+			</thermo>
+		</data>
+		<data label="CCsJOC(O)">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					98.7
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					0.98
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					1.16
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.78
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.05
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.73
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.13
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.24
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-4.9
+				</heatCapacity>
+				<comment>
+					SUMATHI &amp; GREEN
+				</comment>
+			</thermo>
+		</data>
+		<data label="C=CCJ=O">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					83.0
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					-1.39
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.19
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.85
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.59
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.21
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.21
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.89
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-4.61
+				</heatCapacity>
+				<comment>
+					CHEN &amp; BOZZELLI #
+				</comment>
+			</thermo>
+		</data>
+		<data label="CCsJOO">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					96.9
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					0.76
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.48
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.15
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.68
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.11
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.77
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.26
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-4.02
+				</heatCapacity>
+				<comment>
+					SUMATHI &amp; GREEN
+				</comment>
+			</thermo>
+		</data>
+		<data label="CCsJOH">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					95.39
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					0.92
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.65
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.01
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.75
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.43
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.52
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.31
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-4.47
+				</heatCapacity>
+				<comment>
+					SUMATHI &amp; GREEN
+				</comment>
+			</thermo>
+		</data>
+		<data label="CJ2">
+			<link target="CsJ2"/>
+		</data>
+		<data label="CJ3">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					316.19
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					-5.7
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.57
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.73
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-4.11
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-5.5
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-7.92
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-9.85
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-12.95
+				</heatCapacity>
+				<comment>
+					Calculated for methylidyene in relation to methane from NIST values
+				</comment>
+			</thermo>
+		</data>
+		<data label="CCdJ2_s">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					190.7
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					0.0
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<comment>
+					BDE from ERWIN et al.
+				</comment>
+			</thermo>
+		</data>
+		<data label="CCdJ2_t">
+			<link target="CCdJ2_s"/>
+		</data>
+		<data label="CCsJOC">
+			<link target="CCsJOCs"/>
+		</data>
+		<data label="C2CsJOOC">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					96.58
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					2.08
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.78
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.02
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.75
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.18
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.62
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.88
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-4.37
+				</heatCapacity>
+				<comment>
+					SUMATHI &amp; GREEN
+				</comment>
+			</thermo>
+		</data>
+		<data label="AllylJ2_t">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					192.8
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					0.0
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<comment>
+					BDE from PUTSMA et al.
+				</comment>
+			</thermo>
+		</data>
+		<data label="C2CsJOOH">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					96.74
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					2.37
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.01
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.17
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.87
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.3
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.77
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-4.05
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-4.49
+				</heatCapacity>
+				<comment>
+					SUMATHI &amp; GREEN
+				</comment>
+			</thermo>
+		</data>
+		<data label="RCCJCC">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					98.45
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					4.9
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.71
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.14
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.92
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-4.33
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-4.71
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-4.92
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-4.92
+				</heatCapacity>
+				<comment>
+					LAY et al.
+				</comment>
+			</thermo>
+		</data>
+		<data label="AllylJ2_s">
+			<link target="AllylJ2_t"/>
+		</data>
+		<data label="CH2_s">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					223.7
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					-1.73
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.27
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.08
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.14
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.23
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-5.18
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-6.74
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-9.47
+				</heatCapacity>
+				<comment>
+					BDE JANOSCHEK &amp; ROSSI. S and Cp from CH2_t.
+				</comment>
+			</thermo>
+		</data>
+		<data label="CsCsJ">
+			<link target="Cs_P"/>
+		</data>
+		<data label="CH2_t">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					214.44
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					-1.73
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.27
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.08
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.14
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.23
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-5.18
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-6.74
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-9.47
+				</heatCapacity>
+				<comment>
+					Calculated for methylene in relation to methane from NIST values
+				</comment>
+			</thermo>
+		</data>
+		<data label="CCJCHO">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					91.9
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					-2.37
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.36
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.57
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.73
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.89
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.66
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.11
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.5
+				</heatCapacity>
+				<comment>
+					CHEN &amp; BOZZELLI #
+				</comment>
+			</thermo>
+		</data>
+		<data label="OJC=O">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					104.0
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					0.79
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.31
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.87
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.32
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.69
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.28
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.74
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-4.56
+				</heatCapacity>
+				<comment>
+					CHEN &amp; BOZZELLI
+				</comment>
+			</thermo>
+		</data>
+		<data label="C(=O)OOJ">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					98.33
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					0.22
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.05
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.84
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.55
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-4.09
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-4.72
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-4.97
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-5.08
+				</heatCapacity>
+				<comment>
+					HBI for enthalpy from CHEN &amp; BOZZELLI. Cp and S values taken from ROOJ
+				</comment>
+			</thermo>
+		</data>
+		<data label="CsJ2">
+			<link target="CH2"/>
+		</data>
+		<data label="PhCH_t">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					195.0
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					0.0
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<comment>
+					BDE from PUTSMA et al.
+				</comment>
+			</thermo>
+		</data>
+		<data label="CsJOO">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					98.5
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					-1.57
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.18
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.42
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.79
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.2
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.99
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.63
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.65
+				</heatCapacity>
+				<comment>
+					SUMATHI &amp; GREEN
+				</comment>
+			</thermo>
+		</data>
+		<data label="C2CsJOC(O)H">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					99.97
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					4.88
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.03
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.28
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.28
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.1
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-4.35
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-5.19
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-6.06
+				</heatCapacity>
+				<comment>
+					SUMATHI &amp; GREEN
+				</comment>
+			</thermo>
+		</data>
+		<data label="C2CsJO">
+			<link target="C2CsJOC"/>
+		</data>
+		<data label="C2CsJOO">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					96.7
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					2.22
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.89
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.09
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.81
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.24
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.69
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.97
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-4.43
+				</heatCapacity>
+				<comment>
+					SUMATHI &amp; GREEN
+				</comment>
+			</thermo>
+		</data>
+		<data label="CCJC">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.2 kcal/mol" units="kcal/mol">
+					98.45
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					4.51
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.3
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.36
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.02
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.44
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.98
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-4.36
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-4.99
+				</heatCapacity>
+				<comment>
+					LAY et al. CHEN &amp; BOZZELLI #
+				</comment>
+			</thermo>
+		</data>
+		<data label="Vin">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					111.2
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					1.39
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.19
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.75
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.36
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.92
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.82
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.49
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-4.53
+				</heatCapacity>
+				<comment>
+					LAY et al. CHEN &amp; BOZZELLI #
+				</comment>
+			</thermo>
+		</data>
+		<data label="C2CsJOH">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					94.5
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					2.17
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.31
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.66
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.54
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.23
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.17
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.8
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-4.72
+				</heatCapacity>
+				<comment>
+					SUMATHI &amp; GREEN
+				</comment>
+			</thermo>
+		</data>
+		<data label="Benzyl_T">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					83.8
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					-5.34
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.27
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.78
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.54
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.06
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.74
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.19
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.19
+				</heatCapacity>
+				<comment>
+					LAY et al.
+				</comment>
+			</thermo>
+		</data>
+		<data label="(O)CJO">
+			<link target="(O)CJOC"/>
+		</data>
+		<data label="Benzyl_P">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.1 kcal/mol" units="kcal/mol">
+					88.5
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					-4.74
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.75
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.6
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.13
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.42
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.41
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.18
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.18
+				</heatCapacity>
+				<comment>
+					LAY et al.
+				</comment>
+			</thermo>
+		</data>
+		<data label="Benzyl_S">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					85.9
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					-5.04
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.87
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.09
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.63
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.21
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.07
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.69
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.69
+				</heatCapacity>
+				<comment>
+					LAY et al.
+				</comment>
+			</thermo>
+		</data>
+		<data label="CsJOCds">
+			<link target="CsJOC(O)"/>
+		</data>
+		<data label="C2JC=O">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					94.4
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					-1.16
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.32
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.19
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.15
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.57
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.43
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.22
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.67
+				</heatCapacity>
+				<comment>
+					CHEN &amp; BOZZELLI
+				</comment>
+			</thermo>
+		</data>
+		<data label="CCJ=O">
+			<link target="CsCJ=O"/>
+		</data>
+		<data label="CCJ2">
+			<link target="CCJ2_t"/>
+		</data>
+		<data label="C2CsJOCs">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					95.5
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					3.71
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.09
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.37
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.49
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.26
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-4.15
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-4.63
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-5.23
+				</heatCapacity>
+				<comment>
+					SUMATHI &amp; GREEN
+				</comment>
+			</thermo>
+		</data>
+		<data label="PhCH_s">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					205.8
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					0.0
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.0
+				</heatCapacity>
+				<comment>
+					BDE from NGUYEN et al.
+				</comment>
+			</thermo>
+		</data>
+		<data label="(O)CJOH">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					100.75
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					0.78
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.02
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.66
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.4
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.12
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.41
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-4.44
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-5.79
+				</heatCapacity>
+				<comment>
+					SUMATHI &amp; GREEN #
+				</comment>
+			</thermo>
+		</data>
+		<data label="Propargyl">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					89.4
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					-0.51
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.84
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.17
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.56
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.95
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.7
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.31
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-5.31
+				</heatCapacity>
+				<comment>
+					LAY et al. CHEN &amp; BOZZELLI #
+				</comment>
+			</thermo>
+		</data>
+		<data label="Tert_Propargyl">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					84.5
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					1.48
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.04
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.01
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.74
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.41
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.19
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.65
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.65
+				</heatCapacity>
+				<comment>
+					LAY et al.
+				</comment>
+			</thermo>
+		</data>
+		<data label="AllylJ2">
+			<link target="AllylJ2_t"/>
+		</data>
+		<data label="PhCH">
+			<link target="PhCH_t"/>
+		</data>
+		<data label="CCJ2_t">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					211.3
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					0.0
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.81
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.74
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.69
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.61
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-5.18
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-6.42
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-8.36
+				</heatCapacity>
+				<comment>
+					BDE and Cp calculated from data in KIM et al.
+				</comment>
+			</thermo>
+		</data>
+		<data label="Acetyl">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					132.7
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					2.11
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.51
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.56
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.27
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.78
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.47
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.97
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.97
+				</heatCapacity>
+				<comment>
+					LAY et al.
+				</comment>
+			</thermo>
+		</data>
+		<data label="Allyl_T">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					83.4
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					-3.69
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.79
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.38
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.74
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.97
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.28
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.55
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.55
+				</heatCapacity>
+				<comment>
+					LAY et al.
+				</comment>
+			</thermo>
+		</data>
+		<data label="Allyl_P">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					88.2
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					-2.56
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.62
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.56
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.78
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.12
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.84
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.46
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.49
+				</heatCapacity>
+				<comment>
+					LAY et al. CHEN &amp; BOZZELLI #
+				</comment>
+			</thermo>
+		</data>
+		<data label="Allyl_S">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					85.6
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					-3.81
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.54
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.82
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.08
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.32
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.75
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.14
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.85
+				</heatCapacity>
+				<comment>
+					LAY et al. CHEN &amp; BOZZELLI #
+				</comment>
+			</thermo>
+		</data>
+		<data label="CJ">
+			<link target="CsJ"/>
+		</data>
+		<data label="CCJCOOH">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					99.98
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					4.79
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.65
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.4
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.0
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.5
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.27
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.84
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-4.73
+				</heatCapacity>
+				<comment>
+					WIJAYA et al.
+				</comment>
+			</thermo>
+		</data>
+		<data label="CsCsJ2">
+			<link target="CCJ2"/>
+		</data>
+		<data label="Neopentyl">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					101.1
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					3.03
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.59
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.32
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.05
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.65
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.5
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-4.06
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-4.87
+				</heatCapacity>
+				<comment>
+					LAY et al. CHEN &amp; BOZZELLI #
+				</comment>
+			</thermo>
+		</data>
+		<data label="CbJ">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					113.0
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					1.48
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.41
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.18
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.93
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.69
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.75
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-4.48
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-5.24
+				</heatCapacity>
+				<comment>
+					BDE from TSANG, S and Cp from THERM
+				</comment>
+			</thermo>
+		</data>
+		<data label="C=CJC=C">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					99.8
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					0.71
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.19
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.76
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.51
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.01
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.7
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.17
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.17
+				</heatCapacity>
+				<comment>
+					LAY et al.
+				</comment>
+			</thermo>
+		</data>
+		<data label="CsJOCs">
+			<link target="CsJOCH3"/>
+		</data>
+		<data label="C2CsJOC">
+			<link target="C2CsJOCs"/>
+		</data>
+		<data label="CsJOH">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					96.51
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					0.09
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.25
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.18
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.26
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.83
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.95
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.85
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-4.22
+				</heatCapacity>
+				<comment>
+					SUMATHI &amp; GREEN
+				</comment>
+			</thermo>
+		</data>
+		<data label="CCsJOC(O)H">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					98.87
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					0.98
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					1.2
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.88
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.16
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.67
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.22
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.43
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-5.0
+				</heatCapacity>
+				<comment>
+					SUMATHI &amp; GREEN
+				</comment>
+			</thermo>
+		</data>
+		<data label="C2CsJOC(O)C">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					100.25
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					4.66
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.04
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.4
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.32
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.89
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.62
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-4.36
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-5.9
+				</heatCapacity>
+				<comment>
+					SUMATHI &amp; GREEN
+				</comment>
+			</thermo>
+		</data>
+		<data label="CsJOCC">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					96.83
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					1.41
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.01
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.22
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.4
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.71
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.5
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.24
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-4.42
+				</heatCapacity>
+				<comment>
+					Calculated from data in SUMATHI &amp; GREEN. Values might have large error bars.
+				</comment>
+			</thermo>
+		</data>
+		<data label="Oa_t">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					221.55
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					-8.02
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.8
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.05
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.33
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.62
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-4.24
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-4.86
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-6.28
+				</heatCapacity>
+				<comment>
+					Calculated for atomic oxygen in relation to water from NIST values
+				</comment>
+			</thermo>
+		</data>
+		<data label="CsJOCC2">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					96.16
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					-0.59
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.95
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.75
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.23
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.43
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.71
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.72
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-4.19
+				</heatCapacity>
+				<comment>
+					SUMATHI &amp; GREEN
+				</comment>
+			</thermo>
+		</data>
+		<data label="CsJOCC3">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					95.75
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					0.27
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.08
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.09
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.52
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.06
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.11
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.96
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-4.27
+				</heatCapacity>
+				<comment>
+					SUMATHI &amp; GREEN
+				</comment>
+			</thermo>
+		</data>
+		<data label="RJ3">
+			<link target="CJ3"/>
+		</data>
+		<data label="RJ2">
+			<link target="CJ2"/>
+		</data>
+		<data label="Oa_s">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					266.9
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					-8.02
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.8
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.05
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.33
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.62
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-4.24
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-4.86
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-6.28
+				</heatCapacity>
+				<comment>
+					BDE from SCHALLEY et al. S and Cp values taken from Oa_t
+				</comment>
+			</thermo>
+		</data>
+		<data label="(O)CJOCC3">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					97.98
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					0.76
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.11
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.79
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.8
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.73
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-4.17
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-5.06
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-5.87
+				</heatCapacity>
+				<comment>
+					SUMATHI &amp; GREEN (values from (O)CJOC(CH3)3)
+				</comment>
+			</thermo>
+		</data>
+		<data label="(O)CJOCC2">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					98.99
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					0.82
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.74
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.06
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.04
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.01
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.6
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-4.66
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-5.77
+				</heatCapacity>
+				<comment>
+					SUMATHI &amp; GREEN (values from (O)CJOCH(CH3)2)
+				</comment>
+			</thermo>
+		</data>
+		<data label="HOOJ">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					85.13
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					-0.92
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.99
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.68
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.07
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.3
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.55
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.66
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.9
+				</heatCapacity>
+				<comment>
+					Calculated from NIST values for H2O2, O2H and H
+				</comment>
+			</thermo>
+		</data>
+		<data label="CO">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					103.73
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					-6.47
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.5
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.38
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.32
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-4.24
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-5.75
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-6.88
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-8.59
+				</heatCapacity>
+				<comment>
+					Value for carbon monoxide calculated in relation to formaldehyde from NIST values
+				</comment>
+			</thermo>
+		</data>
+		<data label="RCCJ">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.2 kcal/mol" units="kcal/mol">
+					101.1
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					2.61
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.77
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.36
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.91
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.4
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.16
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.74
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-4.66
+				</heatCapacity>
+				<comment>
+					LAY et al. CHEN &amp; BOZZELLI #
+				</comment>
+			</thermo>
+		</data>
+		<data label="CsJOC">
+			<link target="CsJOCs"/>
+		</data>
+		<data label="CsJOC(O)C">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					100.48
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					-0.17
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.88
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.81
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.31
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.3
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.45
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.47
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-4.33
+				</heatCapacity>
+				<comment>
+					SUMATHI &amp; GREEN
+				</comment>
+			</thermo>
+		</data>
+		<data label="CCsJOOC">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					96.64
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					0.74
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.58
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.21
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.73
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.15
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.8
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.27
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-4.01
+				</heatCapacity>
+				<comment>
+					SUMATHI &amp; GREEN
+				</comment>
+			</thermo>
+		</data>
+		<data label="C=CCJC=C">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					76.0
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					-4.05
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.13
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.96
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.88
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.89
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.2
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.6
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.6
+				</heatCapacity>
+				<comment>
+					LAY et al.
+				</comment>
+			</thermo>
+		</data>
+		<data label="CCsJOOH">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					97.19
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					0.77
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.39
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.08
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.64
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.08
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.75
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.26
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-4.03
+				</heatCapacity>
+				<comment>
+					SUMATHI &amp; GREEN
+				</comment>
+			</thermo>
+		</data>
+		<data label="CsJOC(O)H">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					100.88
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					-0.18
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.95
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.97
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.53
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.12
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.54
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.76
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-4.53
+				</heatCapacity>
+				<comment>
+					SUMATHI &amp; GREEN
+				</comment>
+			</thermo>
+		</data>
+		<data label="CCsJO">
+			<link target="CCsJOC"/>
+		</data>
+		<data label="C2CJCHO">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					89.8
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					-1.71
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					0.62
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.2
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.23
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.82
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.87
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.47
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.47
+				</heatCapacity>
+				<comment>
+					CHEN &amp; BOZZELLI #. Value for Cp1500 taken as equal to Cp1000
+				</comment>
+			</thermo>
+		</data>
+		<data label="CCdJ2">
+			<link target="CCdJ2_s"/>
+		</data>
+		<data label="CsCJ=O">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					89.0
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					1.12
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.83
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.43
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.96
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.42
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.16
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.73
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-4.64
+				</heatCapacity>
+				<comment>
+					CHEN &amp; BOZZELLI #
+				</comment>
+			</thermo>
+		</data>
+		<data label="HOJ">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					119.22
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					-2.6
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.87
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.1
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.36
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.62
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.11
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.53
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.38
+				</heatCapacity>
+				<comment>
+					Calculated from NIST values for H2O, OH and H
+				</comment>
+			</thermo>
+		</data>
+		<data label="Sec_Propargyl">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					87.0
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					-0.45
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.59
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.2
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.75
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.19
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.91
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.49
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.49
+				</heatCapacity>
+				<comment>
+					LAY et al.
+				</comment>
+			</thermo>
+		</data>
+		<data label="CsJOCH3">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					97.0
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					0.78
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.16
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.4
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.82
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.33
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.32
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.13
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-4.37
+				</heatCapacity>
+				<comment>
+					SUMATHI &amp; GREEN #
+				</comment>
+			</thermo>
+		</data>
+		<data label="Vins">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					109.0
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					1.81
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.34
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.21
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.94
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.52
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.34
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.91
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-4.76
+				</heatCapacity>
+				<comment>
+					LAY et al. CHEN &amp; BOZZELLI #
+				</comment>
+			</thermo>
+		</data>
+		<data label="C=C=CJ">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					89.0
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					1.29
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.45
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.05
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.64
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.15
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.98
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.6
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.6
+				</heatCapacity>
+				<comment>
+					LAY et al.
+				</comment>
+			</thermo>
+		</data>
+		<data label="HCdsJO">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					88.45
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					-0.01
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.19
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-0.65
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.19
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-1.73
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-2.63
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-3.32
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					-4.42
+				</heatCapacity>
+				<comment>
+					Calculated in relation to formaldehyde from NIST values
+				</comment>
+			</thermo>
+		</data>
+		<data label="Radical">
+			<link target="RJ"/>
+		</data>
+		<data label="CsJO">
+			<link target="CsJOH"/>
+		</data>
+		<data label="OOJ">
+			<link target="ROOJ"/>
+		</data>
+		<data label="CtJ">
+			<link target="Acetyl"/>
+		</data>
+	</library>
+</database>

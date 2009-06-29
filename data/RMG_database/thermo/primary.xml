@@ -1,0 +1,190 @@
+<?xml version="1.0" ?>
+<database type="thermodynamics">
+	<dictionary>
+		<entry label="H2">
+			<cml>
+				<molecule>
+					
+ 
+					<atomArray>
+						
+  
+						<atom elementType="H" id="a1" x3="0.000000" y3="0.000000" z3="0.000000"/>
+						
+  
+						<atom elementType="H" id="a2" x3="0.000000" y3="0.000000" z3="0.000000"/>
+						
+ 
+					</atomArray>
+					
+ 
+					<bondArray>
+						
+  
+						<bond atomRefs2="a1 a2" order="1"/>
+						
+ 
+					</bondArray>
+					
+
+				</molecule>
+			</cml>
+		</entry>
+		<entry label="H">
+			<cml>
+				<molecule>
+					
+ 
+					<formula concise="H  1 "/>
+					
+
+				</molecule>
+			</cml>
+		</entry>
+		<entry label="C2O2">
+			<cml>
+				<molecule>
+					
+ 
+					<atomArray>
+						
+  
+						<atom elementType="C" id="a1" x3="0.000000" y3="0.000000" z3="0.000000"/>
+						
+  
+						<atom elementType="O" id="a2" x3="0.000000" y3="0.000000" z3="0.000000"/>
+						
+  
+						<atom elementType="C" id="a3" x3="0.000000" y3="0.000000" z3="0.000000"/>
+						
+  
+						<atom elementType="O" id="a4" x3="0.000000" y3="0.000000" z3="0.000000"/>
+						
+ 
+					</atomArray>
+					
+ 
+					<bondArray>
+						
+  
+						<bond atomRefs2="a4 a1" order="2"/>
+						
+  
+						<bond atomRefs2="a1 a3" order="2"/>
+						
+  
+						<bond atomRefs2="a2 a3" order="2"/>
+						
+ 
+					</bondArray>
+					
+
+				</molecule>
+			</cml>
+		</entry>
+	</dictionary>
+	<library>
+		<data label="H2">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					0.0
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0007 cal/(mol*K)" units="cal/(mol*K)">
+					31.233
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					6.895
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					6.975
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					6.994
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					7.009
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					7.081
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					7.219
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					7.72
+				</heatCapacity>
+				<comment>
+					&quot;library value for H2&quot;
+				</comment>
+			</thermo>
+		</data>
+		<data label="H">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.001 kcal/mol" units="kcal/mol">
+					52.103
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0005 cal/(mol*K)" units="cal/(mol*K)">
+					27.419
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					4.968
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					4.968
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					4.968
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					4.968
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					4.968
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					4.968
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					4.968
+				</heatCapacity>
+				<comment>
+					&quot;library value for H radical&quot;
+				</comment>
+			</thermo>
+		</data>
+		<data label="C2O2">
+			<thermo>
+				<enthalpyOfFormation temperature="298 K" uncertainty="0.0 kcal/mol" units="kcal/mol">
+					14.9
+				</enthalpyOfFormation>
+				<entropyOfFormation temperature="298 K" uncertainty="0.0 cal/(mol*K)" units="cal/(mol*K)">
+					57.613
+				</entropyOfFormation>
+				<heatCapacity temperature="300 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					11.0
+				</heatCapacity>
+				<heatCapacity temperature="400 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					12.0
+				</heatCapacity>
+				<heatCapacity temperature="500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					13.0
+				</heatCapacity>
+				<heatCapacity temperature="600 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					14.0
+				</heatCapacity>
+				<heatCapacity temperature="800 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					15.0
+				</heatCapacity>
+				<heatCapacity temperature="1000 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					16.0
+				</heatCapacity>
+				<heatCapacity temperature="1500 K" uncertainty="0.0 kcal/(mol*K)" units="kcal/(mol*K)">
+					17.0
+				</heatCapacity>
+				<comment>
+					&quot;G03 CBSQB3 calculation - Cp values estimated poorly&quot;
+				</comment>
+			</thermo>
+		</data>
+	</library>
+</database>

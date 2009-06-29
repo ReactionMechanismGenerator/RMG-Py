@@ -1,0 +1,14 @@
+////////////////////////////////////////////////////////////////////////////////
+//
+//	Reaction library for [2+2]cycloaddition_CO_CO / [2+2]cycloelimination_CO_CO
+//
+////////////////////////////////////////////////////////////////////////////////
+ 
+// Format of data
+Arrhenius_EP
+
+// Number of columns of data consisting of nodes
+2
+
+//No.	CO	doublebond	Temp.		A		n	a	E0	DA	Dn	Da	DE0	Rank
+587.	CO	doublebond	300-1500	6.92E+10	0	0	43.72	0	0	0	0	0

@@ -1,0 +1,203 @@
+/////////////////////////////////////////////////////////////////////
+// Radical Tree
+// 
+// Joanna Yu
+// Jan 09, 2004
+//
+// March 21, 2003:  Added bi- and tri-radicals
+// August 12, 2003: Differentiated between singlet or triplet
+// August 27, 2003: Added values for oxygenated groups (Sumathi & 
+//		    Green and Chen & Bozzelli)
+/////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////
+//Thermo Nomenclature 
+//
+//C	Carbon atom, bonds are still not defined
+//Ct	Carbon atom with one triple bond and one single bond
+//Cs	Carbon atom with four single bonds
+//Cd	Carbon atom with one double bond and the rest not defined
+//Cdd	Carbon atom with two double bonds
+//Cds	Carbon atom with one double bond and two single bonds
+//Cb	Carbon atom belonging to a benzene ring
+//Cbf	Carbon atom belonging to a fused benzene ring
+//H	Hydrogen atom
+//Os	Oxygen atom with two single bonds
+//Od	Oxygen atom with one double bond
+//////////////////////////////////////////////////////////////////
+
+L0: Radical
+
+L1: RJ
+
+   L2: CJ			// any carbon radical
+
+	L3: CsJ		// originally sp3 central carbon
+
+		L4: CH3			// methyl readical
+
+		L4: Cs_P		// primary radical
+			L5: CsCsJ
+				L6: CCJ
+				L6: RCCJ
+				L6: Isobutyl
+				L6: Neopentyl
+				L6: CJCOOH
+			L5: Benzyl_P
+			L5: Allyl_P
+				L6: C=CC=CCJ
+				L6: CTCC=CCJ
+				L6: C2JC=O
+			L5: Propargyl
+			
+
+		L4: Cs_S		// secondary radical
+			L5: (Cs)2CsJ
+				L6: CCJC
+				L6: RCCJC	
+				L6: RCCJCC
+				L6: CCJCOOH
+			L5: Benzyl_S
+			L5: Allyl_S
+				L6: CCJCHO
+			L5: C=CCJC=C
+			L5: Sec_Propargyl
+
+		L4: Cs_T		// tertiary radical
+			L5: Tertalkyl
+				L6: C2CJCOOH
+			L5: Benzyl_T	
+			L5: Allyl_T
+				L6: C2CJCHO
+			L5: Tert_Propargyl
+
+		L4: CsJO
+			L5: CsJOH
+			L5: CsJOC	
+				L6: CsJOCs
+					L7: CsJOCH3
+					L7: CsJOCC
+					L7: CsJOCC2
+					L7: CsJOCC3
+				L6: CsJOCds
+					L7: CsJOC(O)
+						L8: CsJOC(O)H
+						L8: CsJOC(O)C
+			L5: CsJOO
+				L6: CsJOOH
+				L6: CsJOOC
+
+		L4: CCsJO
+			L5: CCsJOH
+			L5: CCsJOC
+				L6: CCsJOCs
+				L6: CCsJOCds
+					L7: CCsJOC(O)
+						L8: CCsJOC(O)H
+						L8: CCsJOC(O)C		
+			L5: CCsJOO
+				L6: CCsJOOH
+				L6: CCsJOOC
+
+		L4: C2CsJO
+			L5: C2CsJOH
+			L5: C2CsJOC
+				L6: C2CsJOCs
+				L6: C2CsJOCds
+					L7: C2CsJOC(O)
+						L8: C2CsJOC(O)H
+						L8: C2CsJOC(O)C		
+			L5: C2CsJOO
+				L6: C2CsJOOH
+				L6: C2CsJOOC
+
+	L3: CdsJ	// sp2 central carbon
+
+		L4: Cds_P
+			L5: Vin
+			L5: C=C=CJ
+
+		L4: Cds_S
+			L5: Vins
+			L5: C=CJC=C
+
+		L4: CdsJO
+			L5: HCdsJO	
+			L5: CCJ=O
+				L6: CsCJ=O
+				L6: C=CCJ=O
+			L5: (O)CJO
+				L6: (O)CJOH	
+				L6: (O)CJOC
+					L7: (O)CJOCH3
+					L7: (O)CJOCC
+					L7: (O)CJOCC2
+					L7: (O)CJOCC3	
+
+	L3: CtJ		// sp central carbon
+		
+		L4: Acetyl
+
+	L3: CbJ
+
+   L2: OJ	 	// any oxigen radical
+	L3: HOJ		// H-O.
+	L3: COJ		// C-O.
+		L4: CsOJ
+			L5: H3COJ
+		L4: CdsOJ
+			L5: RC=COJ
+			L5: OJC=O	
+	
+	L3: OOJ		// O-O.
+		L4: ROOJ
+			L5: C3COOJ
+			L5: C(=O)OOJ
+		L4: HOOJ
+  
+
+L1: RJ2		// biradicals
+
+   L2: CJ2
+
+	L3: CsJ2
+
+		L4: CH2
+			L5: CH2_t	// triplet
+			L5: CH2_s	// singlet
+		
+		L4: CsJ2_P
+			L5: CsCsJ2
+				L6: CCJ2
+					L7: CCJ2_t
+					L7: CCJ2_s
+			
+			L5: PhCH
+				L6: PhCH_t
+				L6: PhCH_s
+			
+			L5: AllylJ2
+				L6: AllylJ2_t
+				L6: AllylJ2_s
+
+		L4: CsJ2_S
+			
+	L3: CdJ2	
+
+		L4: CCdJ2
+			L5: CCdJ2_t
+			L5: CCdJ2_s
+		L4: CO	// carbon monoxide
+
+   L2: Oa
+	L2: Oa_t
+	L2: Oa_s
+
+L1: RJ3		// triradicals
+
+   L2: CJ3
+
+
+
+

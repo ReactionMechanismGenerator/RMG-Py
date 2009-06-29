@@ -1,0 +1,20 @@
+////////////////////////////////////////////////////////////////////////////////
+//
+//	Reaction library for carbonyl insertion / carbonyl extrusion
+//
+////////////////////////////////////////////////////////////////////////////////
+ 
+// Format of data
+Arrhenius_EP
+
+// Number of columns of data consisting of nodes
+2
+
+//No.	CO_birad	RR'			Temp.		A		N	a	E0	DA	Dn	Da	DE0	Rank
+553.	CO_birad	RR'			300-1500	1E+05		2	0	80	0	0	0	0	0 
+554.	CO_birad	C_methyl_C_methyl	300-1500	5.38E+02	3.29	0	104.5	0	0	0	0	2
+555.	CO_birad	H2			300-1500	2.89E+09	1.16	0	82.1	0	0	0	0	2
+556.	CO_birad	C_methane		300-1500	1.64E+04	2.86	0	86.9	0	0	0	0	2
+557.	CO_birad	C_pri/NonDeC		300-1500	9.14E+04	2.53	0	85.5	0	0	0	0	2
+558.	CO_birad	C/H2/NonDeC		300-1500	7.66E+05	2.07	0	82.2	0	0	0	0	2
+559.	CO_birad	C/H/Cs3			300-1500	8.89E+07	1.51	0	79.2	0	0	0	0	2

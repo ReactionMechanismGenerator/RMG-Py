@@ -1,0 +1,17 @@
+////////////////////////////////////////////////////////////////////////////////
+//
+//	Reaction template for cyclic colligation / ring-opening homolysis
+//
+////////////////////////////////////////////////////////////////////////////////
+
+// Names for forward and reverse reactions
+Forward: Cyclic colligation
+Reverse: Ring-opening homolysis
+
+// Template for forward reaction
+Rn <---> Rncycle
+
+// Recipe for forward reaction
+FORM_BOND		{*1,S,*2}
+LOSE_RADICAL 	{*1,1}
+LOSE_RADICAL 	{*2,1}
