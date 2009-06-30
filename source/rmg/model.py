@@ -73,6 +73,8 @@ class CoreEdgeReactionModel:
 		else:
 			self.edge = edge
 		self.fluxTolerance = 1.0
+		self.absoluteTolerance = 1.0e-8
+		self.relativeTolerance = 1.0e-4
 
 	def initialize(self, coreSpecies):
 		"""
@@ -578,10 +580,11 @@ class BatchReactor(ReactionSystem):
 
 		return model.getReactionRates(T, P, Ci)
 
-	def isModelValid(self, model, P, V, T, Ni, stoichiometry):
+	def isModelValid(self, model, P, V, T, Ni, stoichiometry, t):
 		"""
 		Returns :data:`True` if `model` is valid at the specified pressure
-		`P`, volume `V`, temperature `T`, and numbers of moles `Ni`.
+		`P`, volume `V`, temperature `T`, and numbers of moles `Ni`. The final
+		parameter `t` is the current simulation time.
 		"""
 
 		speciesList, reactionList = model.getLists()
@@ -592,7 +595,7 @@ class BatchReactor(ReactionSystem):
 		dNidt = numpy.dot(stoichiometry, rxnRates)
 		maxSpeciesFlux, maxSpecies = max([ (value, i+len(model.core.species)) for i, value in enumerate(dNidt[len(model.core.species):]) ])
 		if maxSpeciesFlux > charFlux:
-			logging.info('Species flux for %s exceeds the characteristic flux' % (speciesList[maxSpecies]))
+			logging.info('At t = %s, the species flux for %s exceeds the characteristic flux' % (t, speciesList[maxSpecies]))
 			logging.info('\tCharacteristic flux: %s' % (charFlux))
 			logging.info('\tSpecies flux for %s: %s ' % (speciesList[maxSpecies], maxSpeciesFlux))
 			logging.info('')
@@ -622,63 +625,37 @@ class BatchReactor(ReactionSystem):
 		for i, spec in enumerate(model.core.species):
 			if spec in self.initialConcentration:
 				Ni[i] = self.initialConcentration[spec] * V
-		y0 = [P, V, T]; y0.extend(Ni)
-
-#		# Set up solver
-#		t0 = 0.0; tf = 1.0e0
-#		solver = scipy.integrate.ode(self.getResidual,None)
-#		solver.set_integrator('vode', method='bdf', with_jacobian=True, nsteps=100000, atol=1e-16, rtol=1e-8)
-#		solver.set_f_params(model, stoichiometry)
-#		solver.set_initial_value(y0,t0)
-#
-#		# Test for model validity
-#		valid, newSpecies = self.isModelValid(model, P, V, T, Ni, stoichiometry)
-#		if not valid:
-#			return False, newSpecies
-#		# Integrate to first nonzero time
-#		solver.integrate(1e-20)
-#		print solver.t, solver.y
-#
-#		# Integrate successive steps until finished
-#		while solver.successful() and solver.t < tf:
-#			# Test for model validity
-#			P, V, T = y[0:3]; Ni = y[3:]
-#			valid, newSpecies = self.isModelValid(model, P, V, T, Ni, stoichiometry)
-#			if not valid:
-#				return False, newSpecies
-#			# Test for end of simulation
-#			if solver.y[3] < 0.1 * y0[3]:
-#				return True, None
-#			# Integrate to next time
-#			solver.integrate(solver.t * 10**0.1)
-#			print solver.t, solver.y
-
+		
 		# Test for model validity
-		valid, newSpecies = self.isModelValid(model, P, V, T, Ni, stoichiometry)
+		valid, newSpecies = self.isModelValid(model, P, V, T, Ni, stoichiometry, 0.0)
 		if not valid:
 			return False, newSpecies
 
 		t0 = 1e-20; tf = 1e-20 * 1.1
-		y = y0
+		y = [P, V, T]; y.extend(Ni)
+		y0 = y
 		while t0 < 1.0e0:
 
 			# Conduct integration
-			y, infodict = scipy.integrate.odeint(self.getResidual, y, (t0, tf), args=(model, stoichiometry), atol=1e-8, rtol=1e-4, full_output=True)
+			y, info = scipy.integrate.odeint(self.getResidual, y, (t0, tf), \
+				args=(model, stoichiometry), atol=model.absoluteTolerance, \
+				rtol=model.relativeTolerance, full_output=True)
 			y = y[-1]
 			P, V, T = y[0:3]; Ni = y[3:]
 			print tf, P, V, T, Ni
 			
 			# Test for model validity
-			valid, newSpecies = self.isModelValid(model, P, V, T, Ni, stoichiometry)
+			valid, newSpecies = self.isModelValid(model, P, V, T, Ni, stoichiometry, tf)
 			if not valid:
 				return False, newSpecies
 
+			# Test for simulation completion
+			if y[3] < 0.1 * y0[3]:
+				return True, None
+
 			# Prepare for next integration
 			t0 = tf
-			tf = infodict['tcur'][-1] * 1.1
-
-
-		#Dfun=None, col_deriv=0, full_output=0, ml=None, mu=None, rtol=None, atol=None, tcrit=None, h0=0.0, hmax=0.0, hmin=0.0, ixpr=0, mxstep=0, mxhnil=0, mxordn=12, mxords=5, printmessg=0)
+			tf = info['tcur'][-1] * 1.1
 
 		return True, None
 

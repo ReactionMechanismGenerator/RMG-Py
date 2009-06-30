@@ -219,7 +219,17 @@ def readInputFile(fstr):
 		reactionModel.fluxTolerance = float(getElementText(element))
 		logging.debug('Model flux tolerance set to %s' % (reactionModel.fluxTolerance))
 		logging.debug('')
-		
+
+		# Read dynamic simulator
+		element = getFirstChildElement(root, 'simulator')
+		model.absoluteTolerance = float(element.getAttribute('atol'))
+		model.relativeTolerance = float(element.getAttribute('rtol'))
+		logging.info('Read dynamic simulator')
+		logging.debug('Simulator:')
+		logging.debug('\tAbsolute tolerance set to %s' % (reactionModel.absoluteTolerance))
+		logging.debug('\tRelative tolerance set to %s' % (reactionModel.relativeTolerance))
+		logging.debug('')
+
 		# Process reaction systems
 		reactionSystems = []
 		elements = getElements(root, 'reactionSystem')
