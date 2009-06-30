@@ -111,6 +111,12 @@ def readInputFile(fstr):
 		if root.tagName != 'rmginput':
 			raise InvalidInputFileException('Incorrect root element. Should be <rmginput>')
 		
+		# Process units
+		element = getFirstChildElement(root, 'units')
+		if element is None: units = 'si'
+		else: units = getElementText(element)
+		pq.set_default_units(units)
+
 		# Process databases
 		databases = []
 		elements = getElements(root, 'database')
@@ -235,7 +241,7 @@ def readInputFile(fstr):
 				temperature = getFirstChildElement(temperatureModel, 'temperature')
 				value = float(getElementText(temperature))
 				units = str(temperature.getAttribute('units'))
-				T = pq.Quantity(value, units); T.units = 'K'
+				T = pq.Quantity(value, units); T = float(T.simplified)
 				
 				# Set the reaction system's temperature model to isothermal
 				reactionSystem.temperatureModel = model.TemperatureModel()
@@ -253,7 +259,7 @@ def readInputFile(fstr):
 				pressure = getFirstChildElement(pressureModel, 'pressure')
 				value = float(getElementText(pressure))
 				units = str(pressure.getAttribute('units'))
-				P = pq.Quantity(value, units); P.units = 'Pa'
+				P = pq.Quantity(value, units); P = float(P.simplified)
 				
 				# Set the reaction system's pressure model to isobaric
 				reactionSystem.pressureModel = model.PressureModel()
@@ -276,7 +282,7 @@ def readInputFile(fstr):
 
 			# Initialize all initial concentrations to zero
 			for spec in coreSpecies:
-				reactionSystem.initialConcentration[spec] = pq.Quantity(0.0, 'mol/m**3')
+				reactionSystem.initialConcentration[spec] = 0.0
 			
 			# List of initial concentrations
 			concentrations = getElements(element, 'concentration')
@@ -286,7 +292,7 @@ def readInputFile(fstr):
 				value = float(getElementText(concentration))
 				sid = concentration.getAttribute('speciesID')
 				units = str(concentration.getAttribute('units'))
-				C = pq.Quantity(value, units); C.units = 'mol/m**3'
+				C = pq.Quantity(value, units); C = float(C.simplified)
 
 				reactionSystem.initialConcentration[speciesDict[sid]] = C
 			

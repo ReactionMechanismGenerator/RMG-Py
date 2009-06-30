@@ -38,6 +38,7 @@ import logging
 import os
 import os.path
 
+import constants
 import chem
 import data
 import species
@@ -92,13 +93,11 @@ class ArrheniusKinetics(Kinetics):
 		Arrhenius expression.
 		"""
 
-		R = pq.constants.R.simplified
-
 		# Raise exception if T is outside of valid temperature range
 		if not self.isTemperatureInRange(T):
 			raise Exception('Attempted to evaluate a rate constant at an invalid temperature.')
 
-		return self.A * (T ** self.n) * math.exp(-self.Ea / R / T)
+		return self.A * (T ** self.n) * math.exp(-self.Ea / constants.R / T)
 
 	def getReverse(self, dHrxn, Keq, T):
 		"""
@@ -107,9 +106,8 @@ class ArrheniusKinetics(Kinetics):
 		298 K, respectively, defined in the same direction that these kinetics
 		are.
 		"""
-		R = pq.constants.R.simplified
 		
-		kinetics = ArrheniusKinetics(self.A / Keq * math.exp(-dHrxn / R / T), self.Ea - dHrxn, self.n)
+		kinetics = ArrheniusKinetics(self.A / Keq * math.exp(-dHrxn / constants.R / T), self.Ea - dHrxn, self.n)
 		kinetics.Trange = self.Trange
 		kinetics.rank = self.rank
 		kinetics.comment = self.comment
@@ -166,15 +164,13 @@ class ArrheniusEPKinetics(Kinetics):
 		Arrhenius expression. The reaction has an enthalpy of reaction `dHrxn`.
 		"""
 
-		R = pq.constants.R.simplified
-
 		# Raise exception if T is outside of valid temperature range
 		if not self.isTemperatureInRange(T):
 			raise Exception('Attempted to evaluate a rate constant at an invalid temperature.')
 
 		Ea = self.getActivationEnergy(dHrxn)
 
-		return self.A * T ** self.n * math.exp(-Ea / R / T)
+		return self.A * T ** self.n * math.exp(-Ea / constants.R / T)
 
 	def fromDatabase(self, data, comment, numReactants):
 		"""
@@ -188,23 +184,19 @@ class ArrheniusEPKinetics(Kinetics):
 
 		Tmin, Tmax, A, n, alpha, E0, dA, dn, dalpha, dE0, rank = data
 
-
 		originalUnits = 's^-1'; desiredUnits = 's^-1'
 		if numReactants == 2:
 			originalUnits = 'cm^3/(mol*s)'
-			desiredUnits = 'm^3/(mol*s)'
 		elif numReactants > 2:
 			originalUnits = 'cm^%s/(mol^%s*s)' % ((numReactants-1)*3, numReactants-1)
-			desiredUnits = 'm^%s/(mol^%s*s)' % ((numReactants-1)*3, numReactants-1)
 		
-		self.Trange = pq.Quantity([Tmin, Tmax], 'K')
+		self.Trange = pq.Quantity([Tmin, Tmax], 'K').simplified
+		self.Trange = [float(self.Trange[0]), float(self.Trange[1])]
 
-		self.A = pq.UncertainQuantity(A, originalUnits, dA)
-		self.A.units = desiredUnits
-		self.E0 = pq.UncertainQuantity(E0, 'kcal/mol', dE0)
-		self.E0.units = 'J/mol'
-		self.n = pq.UncertainQuantity(n, '', dn)
-		self.alpha = pq.UncertainQuantity(alpha, '', dalpha)
+		self.A = float(pq.Quantity(A, originalUnits).simplified)
+		self.E0 = float(pq.Quantity(E0, 'kcal/mol').simplified)
+		self.n = float(pq.Quantity(n, '').simplified)
+		self.alpha = float(pq.Quantity(alpha, '').simplified)
 
 		self.rank = rank
 		self.comment = comment
@@ -999,9 +991,8 @@ class Reaction:
 		Return the equilibrium constant K(T) evaluated at temperature `T` in a
 		system with total concentration `conc`.
 		"""
-		R = pq.constants.R.simplified
 		dGrxn = self.getFreeEnergyOfReaction(T)
-		K = math.exp(-dGrxn / R / T)
+		K = math.exp(-dGrxn / constants.R / T)
 		# Convert from Ka to Kc
 		K *= conc ** (len(self.products) - len(self.reactants))
 		return K
@@ -1042,7 +1033,7 @@ class Reaction:
 
 		# Convert to ArrheniusKinetics and return
 		# Use T = 298 K to calculate enthalpy and free energy of reaction
-		T = pq.Quantity(298, 'K')
+		T = 298.0
 		dHrxn = self.getEnthalpyOfReaction(T)
 		self.bestKinetics = bestKinetics.getArrhenius(dHrxn)
 		
@@ -1097,7 +1088,7 @@ class Reaction:
 			if reactant in conc:
 				forward = forward * conc[reactant]
 			else:
-				forward = forward * pq.Quantity(0.0, 'mol/m**3')
+				forward = forward * 0.0
 
 		# Evaluate reverse concentration product
 		reverse = 1.0
@@ -1105,7 +1096,7 @@ class Reaction:
 			if product in conc:
 				reverse = reverse * conc[product]
 			else:
-				reverse = reverse * pq.Quantity(0.0, 'mol/m**3')
+				reverse = reverse * 0.0
 
 		# Return rate
 		return rateConstant * (forward - reverse / equilibriumConstant)

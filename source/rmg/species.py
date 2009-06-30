@@ -67,17 +67,15 @@ class ThermoGAData:
 	- `comment` = a string describing the source of the data
 	"""
 
-	CpTlist = pq.Quantity([300.0, 400.0, 500.0, 600.0, 800.0, 1000.0, 1500.0], 'K')
+	CpTlist = list(pq.Quantity([300.0, 400.0, 500.0, 600.0, 800.0, 1000.0, 1500.0], 'K').simplified)
+	for i in range(len(CpTlist)): CpTlist[i] = float(CpTlist[i])
 
-	def __init__(self, H298=pq.UncertainQuantity(0.0, 'J/mol', 0.0), \
-			S298=pq.UncertainQuantity(0.0, 'J/(mol*K)', 0.0),
-			Cp=pq.UncertainQuantity([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], 'J/(mol*K)', [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]), \
-			comment=''):
+	def __init__(self, H298=0.0, S298=0.0, Cp=None, comment=''):
 		"""Initialize a set of group additivity thermodynamic data."""
 
 		self.H298 = H298
 		self.S298 = S298
-		self.Cp = Cp
+		self.Cp = Cp or [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 		self.comment = comment
 
 	def fromDatabase(self, data, comment):
@@ -90,14 +88,12 @@ class ThermoGAData:
 			raise Exception('Invalid list of thermo data; should be a list of numbers of length 12.')
 
 		H298, S298, Cp300, Cp400, Cp500, Cp600, Cp800, Cp1000, Cp1500, \
-		  dH, dS, dCp = data
-		self.H298 = pq.UncertainQuantity(H298, 'kcal/mol', dH)
-		self.H298.units = 'J/mol'
-		self.S298 = pq.UncertainQuantity(S298, 'cal/(mol*K)', dS)
-		self.S298.units = 'J/(mol*K)'
-		self.Cp = pq.UncertainQuantity([Cp300, Cp400, Cp500, Cp600, Cp800, Cp1000, Cp1500], 'cal/(mol*K)', [dCp, dCp, dCp, dCp, dCp, dCp, dCp])
-		self.Cp.units = 'J/(mol*K)'
-
+			dH, dS, dCp = data
+		
+		self.H298 = float(pq.Quantity(H298, 'kcal/mol').simplified)
+		self.S298 = float(pq.Quantity(S298, 'cal/(mol*K)').simplified)
+		self.Cp = list(pq.Quantity([Cp300, Cp400, Cp500, Cp600, Cp800, Cp1000, Cp1500], 'cal/(mol*K)').simplified)
+		for i in range(len(self.Cp)): self.Cp[i] = float(self.Cp[i])
 		self.comment = comment
 
 	def __add__(self, other):
@@ -167,7 +163,7 @@ class ThermoGAData:
 		"""
 		Return the heat capacity at temperature `T`.
 		"""
-		if T < ThermoGAData.CpTlist[0] and T != pq.Quantity(298, 'K'):
+		if T < ThermoGAData.CpTlist[0] and T != 298.0:
 			raise data.TemperatureOutOfRangeException('Invalid temperature for heat capacity estimation from group additivity.')
 		elif T > ThermoGAData.CpTlist[-1]:
 			return self.Cp[-1]
@@ -181,8 +177,8 @@ class ThermoGAData:
 		"""
 		Return the enthalpy at temperature `T`.
 		"""
-		H = self.H298.copy()
-		if T < ThermoGAData.CpTlist[0] and T != pq.Quantity(298, 'K'):
+		H = self.H298
+		if T < ThermoGAData.CpTlist[0] and T != 298.0:
 			raise data.TemperatureOutOfRangeException('Invalid temperature for enthalpy estimation from group additivity.')
 		for Tmin, Tmax, Cpmin, Cpmax in zip(ThermoGAData.CpTlist[:-1], \
 				ThermoGAData.CpTlist[1:], self.Cp[:-1], self.Cp[1:]):
@@ -199,8 +195,8 @@ class ThermoGAData:
 		"""
 		Return the entropy at temperature `T`.
 		"""
-		S = self.S298.copy()
-		if T < ThermoGAData.CpTlist[0] and T != pq.Quantity(298, 'K'):
+		S = self.S298
+		if T < ThermoGAData.CpTlist[0] and T != 298.0:
 			raise data.TemperatureOutOfRangeException('Invalid temperature for entropy estimation from group additivity.')
 		for Tmin, Tmax, Cpmin, Cpmax in zip(ThermoGAData.CpTlist[:-1], \
 				ThermoGAData.CpTlist[1:], self.Cp[:-1], self.Cp[1:]):
@@ -217,7 +213,7 @@ class ThermoGAData:
 		"""
 		Return the Gibbs free energy at temperature `T`.
 		"""
-		if T < ThermoGAData.CpTlist[0] and T != pq.Quantity(298, 'K'):
+		if T < ThermoGAData.CpTlist[0] and T != T != 298.0:
 			raise data.TemperatureOutOfRangeException('Invalid temperature for free energy estimation from group additivity.')
 		return self.getEnthalpy(T) - T * self.getEntropy(T)
 
@@ -790,7 +786,7 @@ if __name__ == '__main__':
 
 	thermoData = getThermoData(structure)
 
-	T = pq.Quantity(1000.0, 'K')
+	T = 1000.0
 	print 'Heat capacity at ' + str(T) + ': ' + str(thermoData.getHeatCapacity(T))
 	print 'Enthalpy at ' + str(T) + ': ' + str(thermoData.getEnthalpy(T))
 	print 'Entropy at ' + str(T) + ': ' + str(thermoData.getEntropy(T))
