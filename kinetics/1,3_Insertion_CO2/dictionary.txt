@@ -21,7 +21,7 @@ RR'
 Union {R_H,R_R'}
 
 R_H 
-1 *3 {H,Cs,Cd,Cb} 0 {2,S}
+1 *3 {H,Cs,Cd,Cb,Sis,Sid} 0 {2,S}
 2 *4 H 0 {1,S}
 
 H2
@@ -252,8 +252,8 @@ Cb_H
 3 *4 H 0 {1,S}
 
 R_R'
-1 *3 Cs 0 {2,S}, {3,S}, {4,S}, {5,S}
-2 *4 {Cs,Cd,Cb} 0 {1,S}
+1 *3 {Cs,Sis} 0 {2,S}, {3,S}, {4,S}, {5,S}
+2 *4 {Cs,Cd,Cb,Sis,Sid} 0 {1,S}
 3 H 0 {1,S}
 4 H 0 {1,S}
 5 H 0 {1,S}

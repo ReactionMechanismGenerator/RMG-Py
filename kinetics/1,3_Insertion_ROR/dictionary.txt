@@ -465,7 +465,7 @@ Union {H_OR,R_OH}
 H_OR
 1 *3 H 0 {2,S}
 2 *4 Os 0 {1,S}, {3,S}
-3 {H,Cs,Cd} 0 {2,S}
+3 {H,Cs,Cd,Sis,Sid} 0 {2,S}
 
 H_OH
 1 *3 H 0 {2,S}
@@ -529,7 +529,7 @@ H_OCdsec
 5 C 0 {3,S}
 
 R_OH
-1 *3 {Cs,Cd} 0 {2,S}
+1 *3 {Cs,Cd,Sis,Sid} 0 {2,S}
 2 *4 Os 0 {1,S}, {3,S}
 3 H 0 {2,S}
 

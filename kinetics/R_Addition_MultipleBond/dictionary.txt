@@ -8,8 +8,8 @@ XZ
 Union {CZ,O2d,OCO,OCddO}
 
 CZ
-1 *1 {Cd,Cdd,Ct,CO} 0 {2,{D,T}}
-2 *2 {Cd,Cdd,Ct,Od} 0 {1,{D,T}}
+1 *1 {Cd,Cdd,Ct,CO,Sid,Sidd,Sit} 0 {2,{D,T}}
+2 *2 {Cd,Cdd,Ct,Od,Sid,Sidd,Sit} 0 {1,{D,T}}
  
 Cd_Cd
 1 *1 Cd 0 {2,D}
