@@ -879,6 +879,9 @@ class Reaction:
 		self.reverse = None
 		self.kinetics = kinetics or []
 
+		# A cache for the best kinetics for this reaction
+		self.bestKinetics = None
+
 		# A dictionary of the labeled atoms for the reactants
 		self.atomLabels = {}
 		
@@ -999,20 +1002,26 @@ class Reaction:
 		R = pq.constants.R.simplified
 		dGrxn = self.getFreeEnergyOfReaction(T)
 		K = math.exp(-dGrxn / R / T)
-		# Convert from Ka to Kc (is this right???)
+		# Convert from Ka to Kc
 		K *= conc ** (len(self.products) - len(self.reactants))
 		return K
 
-	def getBestKinetics(self, T, conc):
+	def getBestKinetics(self, T):
 		"""
 		Return the best set of kinetic parameters for the forward reaction
-		evaluated at the temperature `T`. The selection method is based on the
-		lists available in self.kinetics and self.reverse.kinetics.
+		evaluated at the temperature `T`. This function follows the convention
+		that the forward reaction is the one for which we are using the kinetic
+		expression, and that the reverse rate constant is evaluated using
+		thermochemical equilibrium.
 		"""
-		kinetics = []
-		kinetics.extend(self.kinetics)
-		kinetics.extend(self.reverse.kinetics)
 
+		# Check cache first
+		if self.bestKinetics is not None:
+			if self.bestKinetics.isTemperatureInRange(T):
+				return self.bestKinetics
+
+		kinetics = self.kinetics[:]
+		
 		# Prune out all kinetic data not valid at desired temperature
 		i = 0
 		while i < len(kinetics):
@@ -1031,22 +1040,19 @@ class Reaction:
 				bestRank = k.rank
 				bestKinetics = k
 
-		# If forward kinetics have been chosen, convert to ArrheniusKinetics and return
+		# Convert to ArrheniusKinetics and return
 		# Use T = 298 K to calculate enthalpy and free energy of reaction
 		T = pq.Quantity(298, 'K')
 		dHrxn = self.getEnthalpyOfReaction(T)
-		if bestKinetics in self.kinetics:
-			return bestKinetics.getArrhenius(dHrxn)
-		# If reverse kinetics have been chosen, convert to forward kinetics and return
-		else:
-			Keq = self.getEquilibriumConstant(T, conc)
-			return bestKinetics.getArrhenius(-dHrxn).getReverse(-dHrxn, 1.0/Keq, T)
+		self.bestKinetics = bestKinetics.getArrhenius(dHrxn)
+		
+		return self.bestKinetics
 
-	def getRateConstant(self, T, conc):
+	def getRateConstant(self, T):
 		"""
 		Return the value of the rate constant k(T) at the temperature `T`.
 		"""
-		kinetics = self.getBestKinetics(T, conc)
+		kinetics = self.getBestKinetics(T)
 		if kinetics is None:
 			raise Exception('Unable to determine the rate constant of reaction ' + str(self) + '.')
 		return kinetics.getRateConstant(T)
@@ -1065,36 +1071,6 @@ class Reaction:
 			if product is spec: stoich += 1
 		return stoich
 
-	def getForwardRate(self, T, P, conc):
-		"""
-		Return the forward rate of reaction at temperature `T` and pressure `P`.
-		The parameter `conc` is a map with species as keys and concentrations as
-		values. A reactant not found in the `conc` map is treated as having zero
-		concentration.
-		"""
-		totalConc = None
-		for spec in conc:
-			if totalConc is None: totalConc = conc[spec]
-			else: totalConc += conc[spec]
-
-		rate = self.getRateConstant(T, totalConc)
-		for reactant in self.reactants:
-			if reactant in conc:
-				rate = rate * conc[reactant]
-			else:
-				rate = rate * pq.Quantity(0.0, 'mol/m**3')
-
-		return rate
-
-	def getReverseRate(self, T, P, conc):
-		"""
-		Return the reverse rate of reaction at temperature `T` and pressure `P`.
-		The parameter `conc` is a map with species as keys and concentrations as
-		values. A reactant not found in the `conc` map is treated as having zero
-		concentration.
-		"""
-		return self.reverse.getForwardRate(T, P, conc)
-
 	def getRate(self, T, P, conc):
 		"""
 		Return the net rate of reaction at temperature `T` and pressure `P`. The
@@ -1102,8 +1078,37 @@ class Reaction:
 		values. A reactant not found in the `conc` map is treated as having zero
 		concentration.
 		"""
-		return self.getForwardRate(T, P, conc) - self.getReverseRate(T, P, conc)
 
+		# Calculate total concentration
+		totalConc = None
+		for spec in conc:
+			if totalConc is None: totalConc = conc[spec]
+			else: totalConc += conc[spec]
+
+		# Evaluate rate constant
+		rateConstant = self.getRateConstant(T)
+
+		# Evaluate equilibrium constant
+		equilibriumConstant = self.getEquilibriumConstant(T, totalConc)
+
+		# Evaluate forward concentration product
+		forward = 1.0
+		for reactant in self.reactants:
+			if reactant in conc:
+				forward = forward * conc[reactant]
+			else:
+				forward = forward * pq.Quantity(0.0, 'mol/m**3')
+
+		# Evaluate reverse concentration product
+		reverse = 1.0
+		for product in self.products:
+			if product in conc:
+				reverse = reverse * conc[product]
+			else:
+				reverse = reverse * pq.Quantity(0.0, 'mol/m**3')
+
+		# Return rate
+		return rateConstant * (forward - reverse / equilibriumConstant)
 
 ################################################################################
 

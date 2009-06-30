@@ -181,7 +181,7 @@ class ThermoGAData:
 		"""
 		Return the enthalpy at temperature `T`.
 		"""
-		H = self.H298
+		H = self.H298.copy()
 		if T < ThermoGAData.CpTlist[0] and T != pq.Quantity(298, 'K'):
 			raise data.TemperatureOutOfRangeException('Invalid temperature for enthalpy estimation from group additivity.')
 		for Tmin, Tmax, Cpmin, Cpmax in zip(ThermoGAData.CpTlist[:-1], \
@@ -199,7 +199,7 @@ class ThermoGAData:
 		"""
 		Return the entropy at temperature `T`.
 		"""
-		S = self.S298
+		S = self.S298.copy()
 		if T < ThermoGAData.CpTlist[0] and T != pq.Quantity(298, 'K'):
 			raise data.TemperatureOutOfRangeException('Invalid temperature for entropy estimation from group additivity.')
 		for Tmin, Tmax, Cpmin, Cpmax in zip(ThermoGAData.CpTlist[:-1], \
@@ -795,6 +795,4 @@ if __name__ == '__main__':
 	print 'Enthalpy at ' + str(T) + ': ' + str(thermoData.getEnthalpy(T))
 	print 'Entropy at ' + str(T) + ': ' + str(thermoData.getEntropy(T))
 	print 'Free energy at ' + str(T) + ': ' + str(thermoData.getFreeEnergy(T))
-
-
-
+	
