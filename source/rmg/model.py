@@ -137,11 +137,11 @@ class CoreEdgeReactionModel:
 		for rxn in rxnList:
 			allSpeciesInCore = True
 			for spec in rxn.reactants:
-				if spec not in self.core.species: allSpecies = False
+				if spec not in self.core.species: allSpeciesInCore = False
 				if spec not in self.edge.species and spec not in self.core.species:
 					self.addSpeciesToEdge(spec)
 			for spec in rxn.products:
-				if spec not in self.core.species: allSpecies = False
+				if spec not in self.core.species: allSpeciesInCore = False
 				if spec not in self.edge.species and spec not in self.core.species:
 					self.addSpeciesToEdge(spec)
 			if allSpeciesInCore:

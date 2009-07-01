@@ -87,6 +87,9 @@ class ArrheniusKinetics(Kinetics):
 		self.Ea = Ea
 		self.n = n
 
+	def __str__(self):
+		return 'k(T) = %s * T ** %s * math.exp(-%s / constants.R / T)\t%s < T < %s' % (self.A, self.n, self.Ea, self.Trange[0], self.Trange[1])
+
 	def getRateConstant(self, T):
 		"""
 		Return the rate constant k(T) at temperature `T` by evaluating the
@@ -136,6 +139,9 @@ class ArrheniusEPKinetics(Kinetics):
 		self.E0 = E0
 		self.n = n
 		self.alpha = alpha
+
+	def __str__(self):
+		return 'k(T) = %s * T ** %s * math.exp(-(%s + %s * DHrxn) / constants.R / T)\t%s < T < %s' % (self.A, self.n, self.E0, self.alpha, self.Trange[0], self.Trange[1])
 
 	def getActivationEnergy(self, dHrxn):
 		"""
@@ -573,8 +579,10 @@ class ReactionFamily(data.Database):
 		corresponding structure.
 		"""
 
-		# Tag atoms with labels
+		# Clear any previous atom labeling from all structures
 		for struct in structures: struct.clearLabeledAtoms()
+
+		# Tag atoms with labels
 		counter = 0
 		for map in maps:
 			for key, value in map.iteritems():
@@ -604,11 +612,12 @@ class ReactionFamily(data.Database):
 		self.recipe.applyForward(structure)
 		productStructure = structure.copy()
 		self.recipe.applyReverse(structure)
-
+		
 		# Restore original atom labels of the reactants if they were changed
 		# before
 		if counter > 0:
-			for struct in structures:
+			#for struct in structures:
+			for struct in reactantStructures:
 				for atom in struct.atoms():
 					if atom.label != '':
 						atom.label = '*'
@@ -620,11 +629,35 @@ class ReactionFamily(data.Database):
 				for atom in productStructure.atoms():
 					if atom.label != '': atom.label = '*'
 
+		# If reaction family is its own reverse, relabel atoms
+		if not self.reverse:
+			# Get atom labels for products
+			atomLabels = {}
+			for atom in productStructure.atoms():
+				if atom.label != '':
+					atomLabels[atom.label] = atom
+			
+			# This is hardcoding of reaction families (bad!)
+			label = self.label.lower()
+			if label == 'h abstraction':
+				atomLabels['*1'].label = '*3'
+				atomLabels['*3'].label = '*1'
+			elif label == 'intra h migration' or label == 'alkyl hydroperoxyl intra OH migration':
+				atomLabels['*1'].label = '*2'
+				atomLabels['*2'].label = '*1'
+
+
 		# Split product structure into multiple species if necessary
 		if len(self.template.products) > 1:
 			productStructures = productStructure.split()
 		else:
 			productStructures = [productStructure]
+
+		# Recalculate atom types of product structures, since they may have
+		# changed as a result of the reaction
+		for struct in productStructures:
+			struct.simplifyAtomTypes()
+			struct.updateAtomTypes()
 
 		# Check that reactant and product structures are allowed in this family
 		# If not, then stop
@@ -737,8 +770,21 @@ class ReactionFamily(data.Database):
 				if match and node is not None:
 					template.append(node)
 
-		# If unable to match template, use the most general template
-		if len(template) == 0: template = forwardTemplate
+		# Check that we were able to match the template
+		if len(template) == 0:
+			logging.warning('Warning: Unable to find matching template for reaction %s in reaction family %s; using the most general reaction template.' % (str(reaction), str(self)))
+			# If unable to match template, use the most general template
+			forwardTemplate, reverseTemplate = self.getTemplateLists()
+
+			print str(self), template, forwardTemplate, reverseTemplate
+			for reactant in reaction.reactants:
+				print reactant.toAdjacencyList() + '\n'
+			for product in reaction.products:
+				print product.toAdjacencyList() + '\n'
+			
+			quit()
+
+			template = forwardTemplate
 
 		nodeLists = []
 		for temp in template:
@@ -1020,9 +1066,14 @@ class Reaction:
 			if not k.isTemperatureInRange(T): kinetics.remove(k)
 			else: i += 1
 		
-		# If no data left, raise exception
+		# If no kinetic parameters are left to choose from, print a warning
+		# The reaction rate for the reactions is set to zero
+		# This may not be the best course of action
 		if len(kinetics) == 0:
-			raise Exception('Unable to determine kinetics for reaction ' + str(self) + '.')
+			#logging.warning('Warning: No kinetics available for reaction ' + str(self) + ' at ' + str(T) + ' K.')
+			kinetics = ArrheniusKinetics(0.0, 0.0, 0.0)
+			kinetics.Trange = [0.0, 100000.0]
+			return kinetics
 
 		# Choose kinetics based on rank (i.e. lowest non-zero rank)
 		bestRank = kinetics[0].rank; bestKinetics = kinetics[0]
@@ -1100,6 +1151,28 @@ class Reaction:
 
 		# Return rate
 		return rateConstant * (forward - reverse / equilibriumConstant)
+
+################################################################################
+
+class UndeterminableKineticsException(Exception):
+	"""
+	An exception raised when attempts to select appropriate kinetic parameters
+	for a chemical reaction are unsuccessful.
+	"""
+
+	def __init__(self, reaction):
+		self.reaction = reaction
+		
+	def __str__(self):
+		string = str(self.reaction) + '\n'
+		string += str(self.reaction.family) + '\n'
+		for reactant in self.reaction.reactants:
+			string += reactant.toAdjacencyList() + '\n'
+		for product in self.reaction.products:
+			string += product.toAdjacencyList() + '\n'
+
+		return string
+
 
 ################################################################################
 
@@ -1210,9 +1283,8 @@ def makeNewReaction(reactants, products, reactantStructures, productStructures, 
 	elif len(reverseKinetics) > 0:
 		rxn = reverse
 	else:
-		print family
-		raise Exception('Unable to determine kinetics of reaction ' + str(forward) + '.')
-
+		raise UndeterminableKineticsException(forward)
+	
 	forward.kinetics = forwardKinetics
 	reverse.kinetics = reverseKinetics
 

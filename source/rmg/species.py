@@ -565,6 +565,12 @@ class Species:
 		"""
 		return self.structure[0].toSMILES()
 
+	def toAdjacencyList(self):
+		"""
+		Convert a Species object to an adjacency list.
+		"""
+		return str(self) + '\n' + self.structure[0].toAdjacencyList()
+
 	def getResonanceIsomers(self):
 		"""
 		Generate all of the resonance isomers of this species. The isomers are
@@ -720,6 +726,10 @@ def makeNewSpecies(structure, label='', reactive=True):
 	object is created and returned after being appended to the global species
 	list.
 	"""
+
+#	# Recalculate atom types for proposed structure (hopefully not necessary)
+#	structure.simplifyAtomTypes()
+#	structure.updateAtomTypes()
 
 	# Return an existing species if a match is found
 	for spec in speciesList:

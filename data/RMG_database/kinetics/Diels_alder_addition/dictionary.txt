@@ -23,12 +23,12 @@ ene
 // Top level nodes for reverse reaction
 
 Six_Ring
-1 *1 Cd 0 {2,S} {3,S}
-2 *2 Cd 0 {1,S} {6,S}
-3 *3 Cd 0 {4,S} {1,S}
+1 *1 C 0 {2,S} {3,S}
+2 *2 C 0 {1,S} {6,S}
+3 *3 C 0 {4,S} {1,S}
 4 *4 Cd 0 {3,S} {5,D}
 5 *5 Cd 0 {4,D} {6,S}
-6 *6 Cd 0 {5,S} {2,S}
+6 *6 C 0 {5,S} {2,S}
 
 // Other nodes
 
