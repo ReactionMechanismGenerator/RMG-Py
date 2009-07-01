@@ -16,6 +16,7 @@ Contents
 	:maxdepth: 1
 	
 	rmg-chem
+	rmg-constants
 	rmg-data
 	rmg-graph
 	rmg-io

@@ -49,6 +49,12 @@ ReactionRecipe
 .. autoclass:: rmg.reaction.ReactionRecipe
 	:members:
 
+UndeterminableKineticsException
+-------------------------------
+
+.. autoclass:: rmg.reaction.UndeterminableKineticsException
+	:members:
+
 Methods in ``rmg.reaction``
 ===========================
 

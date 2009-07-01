@@ -7,10 +7,28 @@ The ``rmg.model`` Module
 Classes in ``rmg.model``
 ========================
 
+BatchReactor
+------------
+
+.. autoclass:: rmg.model.BatchReactor
+	:members:
+
 CoreEdgeReactionModel
 ---------------------
 
 .. autoclass:: rmg.model.CoreEdgeReactionModel
+	:members:
+
+IdealGas
+--------
+
+.. autoclass:: rmg.model.IdealGas
+	:members:
+
+InvalidReactionSystemException
+------------------------------
+
+.. autoclass:: rmg.model.InvalidReactionSystemException
 	:members:
 
 PressureModel
