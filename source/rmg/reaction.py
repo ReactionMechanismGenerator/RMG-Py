@@ -209,6 +209,20 @@ class ArrheniusEPKinetics(Kinetics):
 
 ################################################################################
 
+class InvalidActionException(Exception):
+	"""
+	An exception to be raised when an invalid action is encountered in a
+	reaction recipe.
+	"""
+
+	def __init__(self, msg):
+		self.msg = msg
+
+	def __str__(self):
+		return self.msg
+
+################################################################################
+
 class ReactionRecipe:
 	"""
 	Represent a list of actions that, when executed, result in the conversion
@@ -267,22 +281,24 @@ class ReactionRecipe:
 		the structure should be labeled with the appropriate atom centers.
 		"""
 
-		for action in self.actions:
-			if action[0] == 'CHANGE_BOND' or action[0] == 'FORM_BOND' or action[0] == 'BREAK_BOND':
+		try:
 
-				label1, info, label2 = action[1:]
+			for action in self.actions:
+				if action[0] == 'CHANGE_BOND' or action[0] == 'FORM_BOND' or action[0] == 'BREAK_BOND':
 
-				# Find associated atoms
-				atom1 = structure.getLabeledAtom(label1)
-				atom2 = structure.getLabeledAtom(label2)
-				if atom1 is None or atom2 is None or atom1 is atom2:
-					raise Exception('Invalid atom labels found while attempting to execute reaction recipe.')
+					label1, info, label2 = action[1:]
 
-				# If found, change bond
-				if action[0] == 'CHANGE_BOND':
-					bond = structure.getBond(atom1, atom2)
-					info = int(info)
-					if bond is not None:
+					# Find associated atoms
+					atom1 = structure.getLabeledAtom(label1)
+					atom2 = structure.getLabeledAtom(label2)
+					if atom1 is None or atom2 is None or atom1 is atom2:
+						raise InvalidActionException('Invalid atom labels encountered.')
+
+					# If found, change bond
+					if action[0] == 'CHANGE_BOND':
+						bond = structure.getBond(atom1, atom2)
+						info = int(info)
+						if bond is None: raise InvalidActionException('Attempted to change the bond order of a nonexistent bond.')
 						for i in range(0, abs(info)):
 							if doForward:
 								if info > 0:	bond.increaseOrder()
@@ -290,42 +306,57 @@ class ReactionRecipe:
 							else:
 								if info > 0:	bond.decreaseOrder()
 								elif info < 0:	bond.increaseOrder()
-				elif action[0] == 'FORM_BOND':
-					if doForward:
-						bond = chem.Bond([atom1, atom2], info)
-						structure.addBond(bond)
-					else:
-						bond = structure.getBond(atom1, atom2)
-						structure.removeBond(bond)
-				elif action[0] == 'BREAK_BOND':
-					if doForward:
-						bond = structure.getBond(atom1, atom2)
-						structure.removeBond(bond)
-					else:
-						bond = chem.Bond([atom1, atom2], info)
-						structure.addBond(bond)
+					elif action[0] == 'FORM_BOND':
+						if doForward:
+							bond = chem.Bond([atom1, atom2], info)
+							structure.addBond(bond)
+						else:
+							bond = structure.getBond(atom1, atom2)
+							if bond is None: raise InvalidActionException('Attempted to remove a nonexistent bond.')
+							structure.removeBond(bond)
+					elif action[0] == 'BREAK_BOND':
+						if doForward:
+							bond = structure.getBond(atom1, atom2)
+							if bond is None: raise InvalidActionException('Attempted to remove a nonexistent bond.')
+							structure.removeBond(bond)
+						else:
+							bond = chem.Bond([atom1, atom2], info)
+							structure.addBond(bond)
 
-			elif action[0] == 'LOSE_RADICAL' or action[0] == 'GAIN_RADICAL':
+				elif action[0] == 'LOSE_RADICAL' or action[0] == 'GAIN_RADICAL':
 
-				label, change = action[1:]
-				change = int(change)
-				# Find associated atoms
-				atom = structure.getLabeledAtom(label)
-				if atom is None:
-					raise Exception('Invalid atom labels found while attempting to execute reaction recipe.')
+					label, change = action[1:]
+					change = int(change)
+					# Find associated atoms
+					atom = structure.getLabeledAtom(label)
+					if atom is None:
+						raise Exception('Invalid atom labels found while attempting to execute reaction recipe.')
 
-				# If found, adjust radical
-				for i in range(0, change):
-					if doForward:
-						if action[0] == 'LOSE_RADICAL':		atom.decreaseFreeElectron()
-						elif action[0] == 'GAIN_RADICAL':	atom.increaseFreeElectron()
-					else:
-						if action[0] == 'LOSE_RADICAL':		atom.increaseFreeElectron()
-						elif action[0] == 'GAIN_RADICAL':	atom.decreaseFreeElectron()
+					# If found, adjust radical
+					for i in range(0, change):
+						if doForward:
+							if action[0] == 'LOSE_RADICAL':
+								if not atom.canDecreaseFreeElectron(): raise InvalidActionException('Attempted to decrease the number of free electrons below the minimum.')
+								atom.decreaseFreeElectron()
+							elif action[0] == 'GAIN_RADICAL':
+								if not atom.canIncreaseFreeElectron(): raise InvalidActionException('Attempted to increase the number of free electrons above the maximum.')
+								atom.increaseFreeElectron()
+						else:
+							if action[0] == 'LOSE_RADICAL':
+								if not atom.canIncreaseFreeElectron(): raise InvalidActionException('Attempted to increase the number of free electrons above the maximum.')
+								atom.increaseFreeElectron()
+							elif action[0] == 'GAIN_RADICAL':
+								if not atom.canDecreaseFreeElectron(): raise InvalidActionException('Attempted to decrease the number of free electrons below the minimum.')
+								atom.decreaseFreeElectron()
 
-			else:
-				raise Exception('Unknown action "' + action[0] + '" encountered while attempting to execute reaction recipe.')
+				else:
+					raise InvalidActionException('Unknown action "' + action[0] + '" encountered.')
+		
+		except InvalidActionException, e:
+			logging.warning('Warning: ' + e.msg)
+			return False
 
+		return True
 
 	def applyForward(self, structure):
 		"""
@@ -452,6 +483,7 @@ class ReactionFamily(data.Database):
 					
 					kinetics = ArrheniusEPKinetics()
 					kinetics.fromDatabase(kineticData, comment, len(self.template.reactants))
+					kinetics.comment = self.label + ' ' + label + ' ' + kinetics.comment
 					self.library[label] = kinetics
 
 				except (ValueError, IndexError), e:
@@ -609,7 +641,9 @@ class ReactionFamily(data.Database):
 			structure = structure.merge(struct)
 
 		# Generate the product structure
-		self.recipe.applyForward(structure)
+		if not self.recipe.applyForward(structure):
+			return None
+
 		productStructure = structure.copy()
 		self.recipe.applyReverse(structure)
 		
@@ -1284,6 +1318,7 @@ def makeNewReaction(reactants, products, reactantStructures, productStructures, 
 		rxn = reverse
 	else:
 		raise UndeterminableKineticsException(forward)
+		#return None, False
 	
 	forward.kinetics = forwardKinetics
 	reverse.kinetics = reverseKinetics

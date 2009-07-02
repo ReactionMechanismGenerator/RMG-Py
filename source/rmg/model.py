@@ -91,6 +91,7 @@ class CoreEdgeReactionModel:
 				# Generate unimolecular reactions
 				rxnList.extend(reaction.kineticsDatabase.getReactions([species1]))
 				# Generate bimolecular reactions
+				rxnList.extend(reaction.kineticsDatabase.getReactions([species1, species1]))
 				for species2 in self.core.species:
 					rxnList.extend(reaction.kineticsDatabase.getReactions([species1, species2]))
 			# Add to core
@@ -125,7 +126,14 @@ class CoreEdgeReactionModel:
 		"""
 
 		rxnList = []
+		# Find reactions involving the new species as unimolecular reactant or
+		# product (e.g. A <---> products)
 		rxnList.extend(reaction.kineticsDatabase.getReactions([newSpecies]))
+		# Find reactions involving the new species as bimolecular reactants or
+		# products with itself (e.g. A + A <---> products)
+		rxnList.extend(reaction.kineticsDatabase.getReactions([newSpecies, newSpecies]))
+		# Find reactions involving the new species as bimolecular reactants or
+		# products with other core species (e.g. A + B <---> products)
 		for coreSpecies in self.core.species:
 			if coreSpecies.reactive:
 				rxnList.extend(reaction.kineticsDatabase.getReactions([newSpecies, coreSpecies]))

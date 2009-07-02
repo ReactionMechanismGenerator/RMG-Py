@@ -486,6 +486,22 @@ class Atom(object):
 		"""
 		return self.electronState.order
 
+	def canIncreaseFreeElectron(self):
+		"""
+		Return :data:`True` if the number of unpaired electrons on this atom can
+		be increased by one. This method restricts the radical order to three or
+		fewer.
+		"""
+		return self.getFreeElectronCount() < 3
+
+	def canDecreaseFreeElectron(self):
+		"""
+		Return :data:`True` if the number of unpaired electrons on this atom can
+		be decreased by one. This method requires that there be at least one
+		free electron on this atom.
+		"""
+		return self.getFreeElectronCount() > 0
+
 	def increaseFreeElectron(self):
 		"""
 		Increase the number of unpaired electrons on this atom by one.

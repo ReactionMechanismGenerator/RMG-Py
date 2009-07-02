@@ -28,6 +28,8 @@
 #
 ################################################################################
 
+"""Contains a number of constants to be used throughout RMG."""
+
 import quantities as pq
 
 # RMG uses SI units throughout
