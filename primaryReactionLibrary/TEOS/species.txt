@@ -101,7 +101,7 @@ CH2OSiO(OH)
 5 Si 0 {2,S} {3,D} {4,S} 
 
 CH3
-1 C 0 
+1 C 1 
 
 CH3OSi(O)OC2H3
 1 C 0 {3,D} 
