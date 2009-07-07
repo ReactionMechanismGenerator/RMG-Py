@@ -171,8 +171,8 @@ class ArrheniusEPKinetics(Kinetics):
 		"""
 
 		# Raise exception if T is outside of valid temperature range
-		if not self.isTemperatureInRange(T):
-			raise Exception('Attempted to evaluate a rate constant at an invalid temperature.')
+		#if not self.isTemperatureInRange(T):
+		#	raise Exception('Attempted to evaluate a rate constant at an invalid temperature.')
 
 		Ea = self.getActivationEnergy(dHrxn)
 
@@ -412,6 +412,17 @@ class ReactionFamily(data.Database):
 			else:						reverse.append(product)
 		return forward, reverse
 
+	def getAllNodeCombinations(self, nodeLists):
+		"""
+		Generate a list of all possible combinations of reactant nodes.
+		"""
+
+		items = [[]]
+		for nodeList in nodeLists:
+			items = [ item + [node] for node in nodeList for item in items ]
+
+		return items
+
 	def load(self, path):
 		"""
 		Load a reaction family located in the directory `path`.
@@ -427,7 +438,6 @@ class ReactionFamily(data.Database):
 		# Load the dictionary, tree, and library using the generic methods
 		data.Database.load(self, dictstr, treestr, '')
 
-		
 		# Load the forbidden groups if necessary
 		if os.path.exists(forbstr):
 			self.forbidden = data.Dictionary()
@@ -441,6 +451,128 @@ class ReactionFamily(data.Database):
 		lines = self.library.load(libstr)
 		self.library.parse(lines[2:], int(lines[1]))
 		self.processLibraryData()
+
+		# Fill in missing nodes in library via an averaging scheme of the
+		# existing data; note that this disregards all temperature range
+		# information
+		forwardTemplate, reverseTemplate = self.getTemplateLists()
+		#self.generateMissingEntriesFromBelow(forwardTemplate)
+		#self.generateMissingEntriesFromAbove(forwardTemplate)
+
+	def generateMissingEntriesFromBelow(self, nodes):
+		"""
+		Generate a nonexisting entry in the library based on an averaging
+		scheme.
+		"""
+		
+		# Recursively generate entries for children of the current nodes
+		children = []
+		for node in nodes:
+			children.append(self.tree.children[node])
+
+		nodesList = self.getAllNodeCombinations(children)
+
+		kinetics = []
+		for nodeList in nodesList:
+			k = self.generateMissingEntriesFromBelow(nodeList)
+			if k is not None:
+				kinetics.append(k)
+
+		# Only generate new entry if data does not exist
+		if self.library.getData(nodes) is None:
+
+			if len(kinetics) == 0: return None
+			
+			lnA = 0.0; E0 = 0.0; n = 0.0; alpha = 0.0
+			for k in kinetics:
+				lnA += math.log(k.A)
+				E0 += k.E0
+				n += k.n
+				alpha += k.alpha
+
+			lnA /= len(kinetics)
+			E0 /= len(kinetics)
+			n /= len(kinetics)
+			alpha /= len(kinetics)
+
+			kin = ArrheniusEPKinetics(math.exp(lnA), E0, n, alpha)
+			kin.Trange = [0.0, 0.0]
+			self.library.add(nodes, kin)
+			return kin
+
+		else:
+			return self.library.getData(nodes)
+
+	def generateMissingEntriesFromAbove(self, nodes):
+		"""
+		Generate a nonexisting entry in the library based on an averaging
+		scheme.
+		"""
+
+		# Generate list of all sets of nodes that should have entries in the
+		# library
+		nodeLists = []
+		for parent in nodes:
+			nodeList = []
+			for node in self.tree.children:
+				temp = node
+				while temp is not None and temp not in nodes:
+					temp = self.tree.parent[temp]
+				if temp == parent:
+					nodeList.append(node)
+			nodeLists.append(nodeList)
+
+		nodesList = self.getAllNodeCombinations(nodeLists)
+		for nodeList in nodesList:
+			print nodeList
+			k = self.generateMissingEntryFromAbove(nodeList)
+			#print nodeList, k
+
+	def generateMissingEntryFromAbove(self, nodes):
+		
+		# If an entry is already present, return it
+		print '\t', nodes, self.library.getData(nodes)
+		if self.library.getData(nodes) is not None:
+			return self.library.getData(nodes)
+
+		# Generate list of parents
+		nodeLists = []
+		for node in nodes:
+			if self.tree.parent[node] is None:
+				print 'No parent for ' + str(node) + ': ' + str(nodes)
+				return None
+			else:
+				nodeLists.append([self.tree.parent[node]])
+
+		nodesList = self.getAllNodeCombinations(nodeLists)
+		
+		kinetics = []
+		for nodeList in nodesList:
+			
+			k = self.generateMissingEntryFromAbove(nodeList)
+			if k is not None:
+				kinetics.append(k)
+
+		if len(kinetics) > 0:
+
+			lnA = 0.0; E0 = 0.0; n = 0.0; alpha = 0.0
+			for k in kinetics:
+				lnA += math.log(k.A)
+				E0 += k.E0
+				n += k.n
+				alpha += k.alpha
+
+			lnA /= len(kinetics)
+			E0 /= len(kinetics)
+			n /= len(kinetics)
+			alpha /= len(kinetics)
+
+			kin = ArrheniusEPKinetics(math.exp(lnA), E0, n, alpha)
+			kin.Trange = [0.0, 0.0]
+			self.library.add(nodeList, kin)
+			return kin
+		else:
+			return None
 
 	def processLibraryData(self):
 		"""
@@ -816,10 +948,13 @@ class ReactionFamily(data.Database):
 			for product in reaction.products:
 				print product.toAdjacencyList() + '\n'
 			
-			quit()
-
 			template = forwardTemplate
 
+#		k = self.library.getData(template)
+#		print template, k
+#		if k is not None: return [k]
+#		else: return None
+		
 		nodeLists = []
 		for temp in template:
 			nodeList = []
@@ -829,24 +964,7 @@ class ReactionFamily(data.Database):
 			nodeLists.append(nodeList)
 
 		# Generate all possible combinations of nodes
-		if len(nodeLists) == 1:
-			items = nodeLists[0]
-		elif len(nodeLists) == 2:
-			items = [[x,y] for x in nodeLists[0] for y in nodeLists[1]]
-		elif len(nodeLists) == 3:
-			items = [[x,y,z] for x in nodeLists[0] for y in nodeLists[1] for z in nodeLists[2]]
-		elif len(nodeLists) == 4:
-			items = [[x,y,z,w] for x in nodeLists[0] for y in nodeLists[1] for z in nodeLists[2] for w in nodeLists[3]]
-		elif len(nodeLists) == 5:
-			items = [[x,y,z,w,u] for x in nodeLists[0] for y in nodeLists[1] for z in nodeLists[2] for w in nodeLists[3] for u in nodeLists[4]]
-		elif len(nodeLists) == 6:
-			items = [[x,y,z,w,u,v] for x in nodeLists[0] for y in nodeLists[1] for z in nodeLists[2] for w in nodeLists[3] for u in nodeLists[4] for v in nodeLists[5]]
-		elif len(nodeLists) > 6:
-			raise Exception('RMG currently cannot handle reaction templates with more than six trees.')
-		elif len(nodeLists) == 0:
-			print self.label, self.template
-			print reaction
-			raise Exception('Unable to descend reactant trees.')
+		items = self.getAllNodeCombinations(nodeLists)
 
 		# Generate list of kinetics at every node
 		kinetics = []
@@ -1309,12 +1427,12 @@ def makeNewReaction(reactants, products, reactantStructures, productStructures, 
 	# If we have assigned kinetics in both directions, then (for now) choose the
 	# kinetics for the forward reaction
 	rxn = forward
-	if len(forwardKinetics) > 0 and len(reverseKinetics) > 0:
+	if forwardKinetics is not None and reverseKinetics is not None:
 		rxn = forward
 		reverseKinetics = []
-	elif len(forwardKinetics) > 0:
+	elif forwardKinetics is not None:
 		rxn = forward
-	elif len(reverseKinetics) > 0:
+	elif reverseKinetics is not None:
 		rxn = reverse
 	else:
 		raise UndeterminableKineticsException(forward)

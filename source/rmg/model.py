@@ -84,40 +84,9 @@ class CoreEdgeReactionModel:
 
 		logging.info('')
 		
-		for species1 in coreSpecies:
-			# Generate reactions if reactive
-			rxnList = []
-			if species1.reactive:
-				# Generate unimolecular reactions
-				rxnList.extend(reaction.kineticsDatabase.getReactions([species1]))
-				# Generate bimolecular reactions
-				rxnList.extend(reaction.kineticsDatabase.getReactions([species1, species1]))
-				for species2 in self.core.species:
-					rxnList.extend(reaction.kineticsDatabase.getReactions([species1, species2]))
-			# Add to core
-			self.addSpeciesToCore(species1)
-			# Add to edge
-			for rxn in rxnList:
-				for spec in rxn.reactants:
-					if spec not in self.edge.species and spec not in self.core.species:
-						self.addSpeciesToEdge(spec)
-				for spec in rxn.products:
-					if spec not in self.edge.species and spec not in self.core.species:
-						self.addSpeciesToEdge(spec)
-				self.addReactionToEdge(rxn)
-
-		logging.info('')
-		logging.info('After core-edge reaction model initialization:')
-		logging.info('\tThe model core has %s species and %s reactions' % (len(self.core.species), len(self.core.reactions)))
-		logging.info('\tThe model edge has %s species and %s reactions' % (len(self.edge.species), len(self.edge.reactions)))
-		logging.info('')
-		
-		# We cannot conduct simulations without having at least one reaction
-		# in the core because otherwise we have no basis for selecting the
-		# characteristic flux needed to test for model validity; thus we must
-		# enlarge the reaction model until at least one reaction is in the core
-		#while len(self.core.reactions) == 0:
-		#	self.enlarge()
+		# Add all species present in input file to model core
+		for spec in coreSpecies:
+			self.enlarge(spec)
 
 	def enlarge(self, newSpecies):
 		"""

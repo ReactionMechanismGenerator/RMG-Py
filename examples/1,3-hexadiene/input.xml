@@ -48,10 +48,10 @@
 			<pressure units="bar">1.0</pressure>
 		</pressureModel>
 		<physicalPropertyModel type="idealGas" />
-		<concentration speciesID="spec1" units="mol/cm**3">6.829e-4</concentration>
-		<concentration speciesID="spec3" units="mol/cm**3">0.104</concentration>
-		<concentration speciesID="spec6" units="mol/cm**3">0.0156</concentration>
-		<concentration speciesID="spec0" units="mol/cm**3">0.8797</concentration>
+		<moleFraction speciesID="spec1">6.829e-4</moleFraction>
+		<moleFraction speciesID="spec3">0.104</moleFraction>
+		<moleFraction speciesID="spec6">0.0156</moleFraction>
+		<moleFraction speciesID="spec0">0.8797</moleFraction>
 	</reactionSystem>
 	<!-- Termination -->
 	<termination>

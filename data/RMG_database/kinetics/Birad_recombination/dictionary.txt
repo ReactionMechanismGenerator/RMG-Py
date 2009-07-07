@@ -35,6 +35,12 @@ R6
 5 {Cs,Cd,CO,Os} 0 {4,{S,D}}, {6,{S,D}}
 6 *2 {Cs,Cd,CO,Os} 1 {5,{S,D}}
 
+Y_rad_out
+1 *1 {R!H} 1 
+
+Ypri_rad_out
+1 *2 {R!H} 1
+
 // Top level nodes for reverse reaction
 
 Rncycle
@@ -211,9 +217,6 @@ R6_DSDSD
 5 *4 Cd 0 {4,S}, {6,D}
 6 *2 Cd 1 {5,D}
 
-Y_rad_out
-1 *1 {R!H} 1 
-
 C_rad_out_single
 1 *1 C 1 {2,S}, {3,S}
 2 R 0 {1,S}
@@ -314,9 +317,6 @@ CdsingleDe_rad_out
 
 O_rad
 1 *1 Os 1
-
-Ypri_rad_out
-1 *2 {R!H} 1 
 
 Cpri_rad_out_single
 1 *2 C 1 {2,S}, {3,S}

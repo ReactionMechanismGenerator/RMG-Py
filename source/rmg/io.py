@@ -289,22 +289,24 @@ def readInputFile(fstr):
 			else:
 				raise InvalidInputFileException('Invalid physical property model type "' + propModelType + '".')
 
+			# Get total concentration
+			T = reactionSystem.temperatureModel.getTemperature(0)
+			P = reactionSystem.pressureModel.getPressure(0)
+			totalConc = 1.0 / reactionSystem.equationOfState.getVolume(T, P, [1.0])
 
 			# Initialize all initial concentrations to zero
 			for spec in coreSpecies:
 				reactionSystem.initialConcentration[spec] = 0.0
 			
 			# List of initial concentrations
-			concentrations = getElements(element, 'concentration')
-			for concentration in concentrations:
+			moleFractions = getElements(element, 'moleFraction')
+			for moleFraction in moleFractions:
 			
 				# Read the concentration from the file
-				value = float(getElementText(concentration))
-				sid = concentration.getAttribute('speciesID')
-				units = str(concentration.getAttribute('units'))
-				C = pq.Quantity(value, units); C = float(C.simplified)
-
-				reactionSystem.initialConcentration[speciesDict[sid]] = C
+				value = float(getElementText(moleFraction))
+				sid = moleFraction.getAttribute('speciesID')
+				
+				reactionSystem.initialConcentration[speciesDict[sid]] = value * totalConc
 			
 			# Append to list of reaction systems
 			reactionSystems.append(reactionSystem)
