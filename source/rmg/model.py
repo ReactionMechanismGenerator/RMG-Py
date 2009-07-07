@@ -258,6 +258,7 @@ class CoreEdgeReactionModel:
 		rxnRate = numpy.zeros(len(reactionList), float)
 		for j, rxn in enumerate(reactionList):
 			rxnRate[j] = rxn.getRate(T, P, Ci)
+			#print rxn, rxn.getBestKinetics(T), rxnRate[j]
 		return rxnRate
 
 ################################################################################

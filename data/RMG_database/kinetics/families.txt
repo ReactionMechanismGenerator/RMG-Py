@@ -29,7 +29,7 @@
 12      on      2+2_cycloaddition_Cd
 13      on      2+2_cycloaddition_CO
 14      on      2+2_cycloaddition_CCO
-15      on      Diels_alder_addition
+15      off     Diels_alder_addition
 16      on      intra_H_migration
 17      on      HO2_Elimination_from_PeroxyRadical
 18      on      Birad_recombination

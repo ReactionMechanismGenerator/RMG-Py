@@ -965,7 +965,7 @@ class ReactionFamily(data.Database):
 
 		# Generate all possible combinations of nodes
 		items = self.getAllNodeCombinations(nodeLists)
-
+		
 		# Generate list of kinetics at every node
 		kinetics = []
 		for item in items:
@@ -973,6 +973,8 @@ class ReactionFamily(data.Database):
 			if data is not None:
 				kinetics.append(data)
 
+		if len(kinetics) == 0: return None
+		
 		return kinetics
 
 ################################################################################
