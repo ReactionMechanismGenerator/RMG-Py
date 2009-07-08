@@ -616,7 +616,7 @@ class BatchReactor(ReactionSystem):
 
 		# Exit simulation if model is not valid
 		if not valid:
-			logging.info('At t = %s, the species flux for %s exceeds the characteristic flux' % (tf, maxSpecies))
+			logging.info('At t = %s, the species flux for %s exceeds the characteristic flux' % (0.0, maxSpecies))
 			logging.info('\tCharacteristic flux: %s' % (charFlux))
 			logging.info('\tSpecies flux for %s: %s ' % (maxSpecies, maxSpeciesFlux))
 			logging.info('')
@@ -638,14 +638,14 @@ class BatchReactor(ReactionSystem):
 			P, V, T = solver.y[0:3]; Ni = solver.y[3:]
 			
 			# Test for model validity
-			valid, maxSpecies, maxSpeciesFlux, charFlux = self.isModelValid(model, P, V, T, Ni, stoichiometry, tf)
+			valid, maxSpecies, maxSpeciesFlux, charFlux = self.isModelValid(model, P, V, T, Ni, stoichiometry, solver.t)
 
 			# Output information about simulation at current time
-			self.printSimulationStatus(model, solver.t, y, y0, charFlux, maxSpeciesFlux, maxSpecies)
+			self.printSimulationStatus(model, solver.t, solver.y, y0, charFlux, maxSpeciesFlux, maxSpecies)
 
 			# Exit simulation if model is not valid
 			if not valid:
-				logging.info('At t = %s, the species flux for %s exceeds the characteristic flux' % (tf, maxSpecies))
+				logging.info('At t = %s, the species flux for %s exceeds the characteristic flux' % (solver.t, maxSpecies))
 				logging.info('\tCharacteristic flux: %s' % (charFlux))
 				logging.info('\tSpecies flux for %s: %s ' % (maxSpecies, maxSpeciesFlux))
 				logging.info('')
@@ -655,7 +655,7 @@ class BatchReactor(ReactionSystem):
 			for target in model.termination:
 				if target.__class__ == TerminationConversion:
 					index = model.core.species.index(target.species) + 3
-					conversion = 1.0 - y[index] / y0[index]
+					conversion = 1.0 - solver.y[index] / y0[index]
 					if conversion > target.conversion: done = True
 				elif target.__class__ == TerminationTime:
 					if solver.t > target.time: done = True
@@ -672,7 +672,7 @@ class BatchReactor(ReactionSystem):
 				conversion = 1.0 - y[index] / y0[index]
 				status += '    {0:8.4g}'.format(conversion)
 		status += '    {0:8.4e}    {1:8.4e}  {2}'.format(charFlux, maxSpeciesFlux, maxSpecies)
-		print status
+		logging.debug(status)
 		
 		#print t, P, V, T, Ni
 	

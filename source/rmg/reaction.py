@@ -772,6 +772,8 @@ class ReactionFamily(data.Database):
 		for struct in reactantStructures:
 			structure = structure.merge(struct)
 
+		#print '0', [len(x.atoms()) for x in structures], [len(x.atoms()) for x in reactantStructures], len(structure.atoms())
+
 		# Generate the product structure
 		if not self.recipe.applyForward(structure):
 			return None
@@ -872,33 +874,40 @@ class ReactionFamily(data.Database):
 		# Bimolecular reactants: A + B --> products
 		elif len(reactants) == 2 and self.template.isBimolecular():
 
-			# Iterate over all resonance isomers of the reactant
+			# Make copies of the structure lists of the two reactants
+			# This is a workaround for an issue in which the two reactant 
+			# structure lists were getting swapped around, resulting in 
+			# unbalanced reactions
+			# The copy is needed for cases where A and B are the same
+			structuresA = []; structuresB = []
 			for structureA in reactants[0].structure:
-				for structureB in reactants[1].structure:
+				structuresA.append(structureA.copy())
+			for structureB in reactants[1].structure:
+				structuresB.append(structureB.copy())
 
-					# Make a copy of structure so we don't modify the original
-					structureACopy = structureA.copy()
-					structureBCopy = structureB.copy()
+			# Iterate over all resonance isomers of the reactant
+			for structureA in structuresA:
+				for structureB in structuresB:
 
 					# Reactants stored as A + B
-					ismatch_A, map12_A, map21_A = self.reactantMatch(structureACopy, self.template.reactants[0])
-					ismatch_B, map12_B, map21_B = self.reactantMatch(structureBCopy, self.template.reactants[1])
+					ismatch_A, map12_A, map21_A = self.reactantMatch(structureA, self.template.reactants[0])
+					ismatch_B, map12_B, map21_B = self.reactantMatch(structureB, self.template.reactants[1])
 
 					# Iterate over each pair of matches (A, B)
 					for mapA in map12_A:
 						for mapB in map12_B:
-							rxn = self.makeReaction(reactants, [structureACopy, structureBCopy], [mapA, mapB])
+							rxn = self.makeReaction(reactants, [structureA, structureB], [mapA, mapB])
 							if rxn is not None:
 								rxnList.append(rxn)
 
 					# Reactants stored as B + A
-					ismatch_0, map12_A, map21_A = self.reactantMatch(structureACopy, self.template.reactants[1])
-					ismatch_1, map12_B, map21_B = self.reactantMatch(structureBCopy, self.template.reactants[0])
+					ismatch_0, map12_A, map21_A = self.reactantMatch(structureA, self.template.reactants[1])
+					ismatch_1, map12_B, map21_B = self.reactantMatch(structureB, self.template.reactants[0])
 
 					# Iterate over each pair of matches (A, B)
 					for mapA in map12_A:
 						for mapB in map12_B:
-							rxn = self.makeReaction(reactants, [structureBCopy, structureACopy], [mapB, mapA])
+							rxn = self.makeReaction(reactants, [structureB, structureA], [mapB, mapA])
 							if rxn is not None:
 								rxnList.append(rxn)
 
