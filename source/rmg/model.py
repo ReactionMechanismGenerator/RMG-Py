@@ -75,6 +75,7 @@ class CoreEdgeReactionModel:
 		self.fluxTolerance = 1.0
 		self.absoluteTolerance = 1.0e-8
 		self.relativeTolerance = 1.0e-4
+		self.termination = []
 
 	def initialize(self, coreSpecies):
 		"""
@@ -572,14 +573,8 @@ class BatchReactor(ReactionSystem):
 		charFlux = model.fluxTolerance * math.sqrt(sum([x**2 for x in rxnRates[0:len(model.core.reactions)]]))
 		dNidt = numpy.dot(stoichiometry, rxnRates)
 		maxSpeciesFlux, maxSpecies = max([ (value, i+len(model.core.species)) for i, value in enumerate(dNidt[len(model.core.species):]) ])
-		if maxSpeciesFlux > charFlux:
-			logging.info('At t = %s, the species flux for %s exceeds the characteristic flux' % (t, speciesList[maxSpecies]))
-			logging.info('\tCharacteristic flux: %s' % (charFlux))
-			logging.info('\tSpecies flux for %s: %s ' % (speciesList[maxSpecies], maxSpeciesFlux))
-			logging.info('')
-			return False, speciesList[maxSpecies]
-
-		return True, None
+		
+		return (maxSpeciesFlux < charFlux), speciesList[maxSpecies], maxSpeciesFlux, charFlux
 
 	def simulate(self, model):
 		"""
@@ -604,15 +599,32 @@ class BatchReactor(ReactionSystem):
 			if spec in self.initialConcentration:
 				Ni[i] = self.initialConcentration[spec] * V
 		
-		# Test for model validity
-		valid, newSpecies = self.isModelValid(model, P, V, T, Ni, stoichiometry, 0.0)
-		if not valid:
-			return False, newSpecies
-
 		t0 = 1e-20; tf = 1e-20 * 1.1
 		y = [P, V, T]; y.extend(Ni)
 		y0 = y
-		while t0 < 1.0e0:
+
+		# Test for model validity
+		valid, maxSpecies, maxSpeciesFlux, charFlux = self.isModelValid(model, P, V, T, Ni, stoichiometry, 0.0)
+
+		# Output information about simulation at current time
+		header = 'Time          '
+		for target in model.termination:
+			if target.__class__ == TerminationConversion: header += 'Conv        '
+		header += 'Char flux     Maximum flux to edge'
+		print header
+		self.printSimulationStatus(model, 0, y, y0, charFlux, maxSpeciesFlux, maxSpecies)
+
+		# Exit simulation if model is not valid
+		if not valid:
+			logging.info('At t = %s, the species flux for %s exceeds the characteristic flux' % (tf, maxSpecies))
+			logging.info('\tCharacteristic flux: %s' % (charFlux))
+			logging.info('\tSpecies flux for %s: %s ' % (maxSpecies, maxSpeciesFlux))
+			logging.info('')
+			return False, maxSpecies
+
+		done = False
+
+		while not done:
 
 			# Conduct integration
 			y, info = scipy.integrate.odeint(self.getResidual, y, (t0, tf), \
@@ -620,24 +632,74 @@ class BatchReactor(ReactionSystem):
 				rtol=model.relativeTolerance, full_output=True)
 			y = y[-1]
 			P, V, T = y[0:3]; Ni = y[3:]
-			print tf, P, V, T, Ni
-			
+
 			# Test for model validity
-			valid, newSpecies = self.isModelValid(model, P, V, T, Ni, stoichiometry, tf)
+			valid, maxSpecies, maxSpeciesFlux, charFlux = self.isModelValid(model, P, V, T, Ni, stoichiometry, tf)
+
+			# Output information about simulation at current time
+			self.printSimulationStatus(model, tf, y, y0, charFlux, maxSpeciesFlux, maxSpecies)
+			
+			# Exit simulation if model is not valid
 			if not valid:
-				return False, newSpecies
+				logging.info('At t = %s, the species flux for %s exceeds the characteristic flux' % (tf, maxSpecies))
+				logging.info('\tCharacteristic flux: %s' % (charFlux))
+				logging.info('\tSpecies flux for %s: %s ' % (maxSpecies, maxSpeciesFlux))
+				logging.info('')
+				return False, maxSpecies
 
 			# Test for simulation completion
-			if y[3] < 0.1 * y0[3]:
-				return True, None
-
+			for target in model.termination:
+				if target.__class__ == TerminationConversion:
+					index = model.core.species.index(target.species) + 3
+					conversion = 1.0 - y[index] / y0[index]
+					if conversion > target.conversion: done = True
+				elif target.__class__ == TerminationTime:
+					if tf > target.time: done = True
+			
 			# Prepare for next integration
 			t0 = tf
 			tf = info['tcur'][-1] * 1.1
 
 		return True, None
 
+	def printSimulationStatus(self, model, t, y, y0, charFlux, maxSpeciesFlux, maxSpecies):
+
+		# Output information about simulation at current time
+		status = '{0:8.4e}'.format(t)
+		for target in model.termination:
+			if target.__class__ == TerminationConversion:
+				index = model.core.species.index(target.species) + 3
+				conversion = 1.0 - y[index] / y0[index]
+				status += '    {0:8.4g}'.format(conversion)
+		status += '    {0:8.4e}    {1:8.4e}  {2}'.format(charFlux, maxSpeciesFlux, maxSpecies)
+		print status
+		
+		#print t, P, V, T, Ni
 	
+################################################################################
+
+class TerminationTime:
+	"""
+	Represent a time at which the simulation should be terminated. This class
+	has one attribute: the termination `time` in seconds.
+	"""
+
+	def __init__(self, time=0.0):
+		self.time = time
+
+################################################################################
+
+class TerminationConversion:
+	"""
+	Represent a conversion at which the simulation should be terminated. This
+	class has two attributes: the `species` to monitor and the fractional
+	`conversion` at which to terminate.
+	"""
+
+	def __init__(self, spec=None, conv=0.0):
+		self.species = spec
+		self.conversion = conv
+
 ################################################################################
 
 if __name__ == '__main__':

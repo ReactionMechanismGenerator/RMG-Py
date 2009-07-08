@@ -55,7 +55,7 @@
 	</reactionSystem>
 	<!-- Termination -->
 	<termination>
-		<target type="conversion" speciesID="1">0.9</target>
+		<target type="conversion" speciesID="spec1">0.9</target>
 		<target type="time" units="s">1e12</target>
 	</termination>
 	<!-- Dynamic simulator -->

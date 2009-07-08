@@ -222,12 +222,52 @@ def readInputFile(fstr):
 
 		# Read dynamic simulator
 		element = getFirstChildElement(root, 'simulator')
-		model.absoluteTolerance = float(element.getAttribute('atol'))
-		model.relativeTolerance = float(element.getAttribute('rtol'))
+		reactionModel.absoluteTolerance = float(element.getAttribute('atol'))
+		reactionModel.relativeTolerance = float(element.getAttribute('rtol'))
 		logging.info('Read dynamic simulator')
 		logging.debug('Simulator:')
 		logging.debug('\tAbsolute tolerance set to %s' % (reactionModel.absoluteTolerance))
 		logging.debug('\tRelative tolerance set to %s' % (reactionModel.relativeTolerance))
+		logging.debug('')
+
+		# Read termination targets
+		termination = getFirstChildElement(root, 'termination')
+		elements = getElements(termination, 'target')
+		for element in elements:
+
+			targetType = element.getAttribute('type')
+			if targetType == 'conversion':
+				sid = element.getAttribute('speciesID')
+				spec = speciesDict[sid]
+				conv = float(getElementText(element))
+				if conv < 0.0 or conv > 1.0:
+					raise InvalidInputFileException('Invalid value for termination fractional conversion.')
+				reactionModel.termination.append(model.TerminationConversion(spec, conv))
+			elif targetType == 'time':
+				units = str(element.getAttribute('units'))
+				time = float(getElementText(element))
+				time = pq.Quantity(time, units); time = float(time.simplified)
+				if time < 0.0:
+					raise InvalidInputFileException('Invalid value for termination time.')
+				reactionModel.termination.append(model.TerminationTime(time))
+			else:
+				raise InvalidInputFileException('Invalid termination target type "'+targetType+'".')
+		if len(reactionModel.termination) == 0:
+			raise InvalidInputFileException('No termination targets specified.')
+
+		# Output info about termination targets
+		if len(reactionModel.termination) == 1:
+			logging.info('Found ' + str(len(reactionModel.termination)) + ' termination target')
+		else:
+			logging.info('Found ' + str(len(reactionModel.termination)) + ' termination targets')
+		for index, target in enumerate(reactionModel.termination):
+			string = '\tTermination target #' + str(index+1) + ': '
+			if target.__class__ == model.TerminationConversion:
+				string += 'conversion ' + str(target.species) + ' ' + str(target.conversion)
+			elif target.__class__ == model.TerminationTime:
+				string += 'time ' + str(target.time)
+			logging.debug(string)	
+				
 		logging.debug('')
 
 		# Process reaction systems
