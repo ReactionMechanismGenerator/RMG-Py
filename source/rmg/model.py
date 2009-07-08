@@ -505,7 +505,8 @@ class BatchReactor(ReactionSystem):
 		ReactionSystem.__init__(self, temperatureModel, pressureModel, \
 				volumeModel, initialConcentration)
 
-	def getResidual(self, y, t, model, stoichiometry):
+	#def getResidual(self, y, t, model, stoichiometry):
+	def getResidual(self, t, y, model, stoichiometry):
 		"""
 		Return the residual function for this reactor model, evaluated at
 		time `t` and values of the dependent variables `y`. The residual
@@ -599,7 +600,6 @@ class BatchReactor(ReactionSystem):
 			if spec in self.initialConcentration:
 				Ni[i] = self.initialConcentration[spec] * V
 		
-		t0 = 1e-20; tf = 1e-20 * 1.1
 		y = [P, V, T]; y.extend(Ni)
 		y0 = y
 
@@ -622,23 +622,27 @@ class BatchReactor(ReactionSystem):
 			logging.info('')
 			return False, maxSpecies
 
+		# Set up solver
+		solver = scipy.integrate.ode(self.getResidual,None)
+		solver.set_integrator('vode', method='bdf', with_jacobian=True, atol=model.absoluteTolerance, rtol=model.relativeTolerance)
+		solver.set_f_params(model, stoichiometry)
+		solver.set_initial_value(y0,0.0)
+
 		done = False
 
-		while not done:
+		while not done and solver.successful():
 
 			# Conduct integration
-			y, info = scipy.integrate.odeint(self.getResidual, y, (t0, tf), \
-				args=(model, stoichiometry), atol=model.absoluteTolerance, \
-				rtol=model.relativeTolerance, full_output=True)
-			y = y[-1]
-			P, V, T = y[0:3]; Ni = y[3:]
-
+			if solver.t == 0.0:		solver.integrate(1e-20)
+			else:					solver.integrate(solver.t * 10**0.1)
+			P, V, T = solver.y[0:3]; Ni = solver.y[3:]
+			
 			# Test for model validity
 			valid, maxSpecies, maxSpeciesFlux, charFlux = self.isModelValid(model, P, V, T, Ni, stoichiometry, tf)
 
 			# Output information about simulation at current time
-			self.printSimulationStatus(model, tf, y, y0, charFlux, maxSpeciesFlux, maxSpecies)
-			
+			self.printSimulationStatus(model, solver.t, y, y0, charFlux, maxSpeciesFlux, maxSpecies)
+
 			# Exit simulation if model is not valid
 			if not valid:
 				logging.info('At t = %s, the species flux for %s exceeds the characteristic flux' % (tf, maxSpecies))
@@ -654,11 +658,7 @@ class BatchReactor(ReactionSystem):
 					conversion = 1.0 - y[index] / y0[index]
 					if conversion > target.conversion: done = True
 				elif target.__class__ == TerminationTime:
-					if tf > target.time: done = True
-			
-			# Prepare for next integration
-			t0 = tf
-			tf = info['tcur'][-1] * 1.1
+					if solver.t > target.time: done = True
 
 		return True, None
 
