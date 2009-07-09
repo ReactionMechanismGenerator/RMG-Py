@@ -1,0 +1,260 @@
+//Ar
+//1 Ar 0 
+// RMG does not recognize Ar
+
+C
+//1 C 0 
+// InChI cannot represent a carbon atom
+1 C 4
+
+C2H
+1 C 0 {2,T} 
+2 C 1 {1,T} 
+
+C2H2
+1 C 0 {2,T} 
+2 C 0 {1,T} 
+
+CH2CO
+1 C 0 {2,D} 
+2 C 0 {1,D} {3,D} 
+3 O 0 {2,D} 
+
+HCCOH
+1 C 0 {2,T} 
+2 C 0 {1,T} {3,S} 
+3 O 0 {2,S} 
+
+C2H3
+1 C 1 {2,D} 
+2 C 0 {1,D} 
+
+CH2CHO
+1 C 0 {2,D} 
+2 C 0 {1,D} {3,S} 
+3 O 1 {2,S} 
+
+C2H4
+1 C 0 {2,D} 
+2 C 0 {1,D} 
+
+CH3CHO
+1 C 0 {2,S} 
+2 C 0 {1,S} {3,D} 
+3 O 0 {2,D} 
+
+C2H5
+1 C 1 {2,S} 
+2 C 0 {1,S} 
+
+C2H6
+1 C 0 {2,S} 
+2 C 0 {1,S} 
+
+HCCO
+1 C 0 {2,T} 
+2 C 0 {1,T} {3,S} 
+3 O 1 {2,S} 
+
+//C3H7
+//1 C 0 {3,T} 
+//2 C 0 {3,S} 
+//3 C 0 {1,T} {2,S} 
+// The GRI-Mech C3H7 species is a lumped species (1-C3H7 & 2-C3H7)
+
+C3H8
+1 C 0 {3,S} 
+2 C 0 {3,S} 
+3 C 0 {1,S} {2,S} 
+
+CH
+//1 C 0 
+// InChI cannot represent a carbon atom w/one hydrogen
+1 C 3
+
+CH2(S)
+//1 C 0 
+// Not sure why InChI couldn't convert this to 1 C 2
+1 C 2S
+
+CH2
+//1 C 0 
+// Not sure why InChI couldn't convert this to 1 C 2
+1 C 2T
+
+//H2CN
+//1 C 0 {2,D} 
+//2 N 1 {1,D} 
+// No N in RMG yet
+
+CH2O
+1 C 0 {2,D} 
+2 O 0 {1,D} 
+
+CH3
+//1 C 0 
+// Not sure why InChI couldn't convert this to 1 C 1
+1 C 1
+
+CH3O
+1 C 0 {2,S} 
+2 O 1 {1,S} 
+
+CH2OH
+1 C 1 {2,S} 
+2 O 0 {1,S} 
+
+CH4
+1 C 0 
+
+CH3OH
+1 C 0 {2,S} 
+2 O 0 {1,S} 
+
+//HCN
+//1 C 0 {2,T} 
+//2 N 0 {1,T} 
+// No N in RMG yet
+
+//HCNN
+//1 C 0 {3,T} 
+//2 N 0 {3,S} 
+//3 N 0 {1,T} {2,S} 
+// No N in RMG yet
+
+//HNCO
+//1 C 0 {2,D} {3,D} 
+//2 N 0 {1,D} 
+//3 O 0 {1,D} 
+// No N in RMG yet
+
+//HOCN
+//1 C 0 {2,T} {3,S} 
+//2 N 0 {1,T} 
+//3 O 0 {1,S} 
+
+//HCNO
+//1 C 0 {2,T} 
+//2 N 0 {1,T} {3,S} 
+//3 O 0 {2,S} 
+// No N in RMG yet
+
+HCO
+1 C 1 {2,D} 
+2 O 0 {1,D} 
+
+//NCO
+//1 C 0 {2,T} {3,S} 
+//2 N 0 {1,T} 
+//3 O 1 {1,S} 
+// No N in RMG yet
+
+CO
+//1 C 0 {2,T} 
+//2 O 0 {1,T} 
+// RMG cannot handle oxygen w/a triple bond
+1 C 2T {2,D}
+2 O 0 {1,D}
+
+CO2
+1 C 0 {2,D} {3,D} 
+2 O 0 {1,D} 
+3 O 0 {1,D} 
+
+H
+//1 H 0 
+// Not sure why InChI couldn't convert this to 1 H 1
+1 H 1
+
+H2
+1 H 0 
+
+//NH2
+//1 N 0 
+// Not sure why InChI couldn't convert this to 1 N 1
+//1 N 1
+// No N in RMG yet
+
+H2O
+1 O 0 
+
+H2O2
+1 O 0 {2,S} 
+2 O 0 {1,S} 
+
+//NH3
+//1 N 0 
+// No N in RMG yet
+
+//NH
+//1 N 0 
+// Not sure why InChI couldn't convert this to 1 N 2
+//1 N 2
+// No N in RMG yet
+
+//NNH
+//1 N 0 {2,D} 
+//2 N 1 {1,D} 
+// No N in RMG yet
+
+//HNO
+//1 N 0 {2,D} 
+//2 O 0 {1,D} 
+// No N in RMG yet
+
+OH
+//1 O 0 
+// Not sure why InChI couldn't convert this to 1 O 1
+1 O 1
+
+HO2
+1 O 0 {2,S} 
+2 O 1 {1,S} 
+
+//N
+//1 N 0 
+// InChI cannot handle nitrogen atom
+//1 N 3
+// No N in RMG yet
+
+//N2
+//1 N 0 {2,T} 
+//2 N 0 {1,T} 
+// No N in RMG yet
+
+//N2O
+//1 N 0 {2,D} 
+//2 N 0 {1,D} {3,D} 
+//3 O 0 {2,D} 
+// No N in RMG yet
+
+//NO
+//1 N 1 {2,D} 
+//2 O 0 {1,D} 
+// No N in RMG yet
+
+//NO2
+//1 N 0 {2,D} {3,S} 
+//2 O 0 {1,D} 
+//3 O 1 {1,S} 
+// No N in RMG yet
+
+O
+//1 O 0 
+// Not sure why InChI couldn't convert this to 1 O 2
+1 O 2
+
+O2
+1 O 0 {2,D} 
+2 O 0 {1,D} 
+
+//CN
+//1 C 1 {2,T} 
+//2 N 0 {1,T} 
+// No N in RMG yet
+
+//s00010469
+//1 C 0 
+// InChI cannot handle carbon atom
+//1 C 4
+// This is a standard state for carbon (GR)
