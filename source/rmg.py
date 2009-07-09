@@ -32,6 +32,8 @@
 RMG is an automatic chemical mechanism generator. It is awesomely awesome.
 """
 
+import os.path
+
 import optparse
 import rmg
 
@@ -75,6 +77,14 @@ if __name__ == '__main__':
 	if len(args) != 1:
 		parser.parse_args(['-h'])
 		quit()
+
+	# For output and scratch directories, if they are empty strings, set them
+	# to match the input file location
+	inputDirectory = os.path.abspath(os.path.dirname(args[0]))
+	if options.outputDirectory == '':
+		options.outputDirectory = inputDirectory
+	if options.scratchDirectory == '':
+		options.scratchDirectory = inputDirectory
 	
 	# Execute RMG
 	rmg.execute(args[0], options.outputDirectory, \

@@ -381,3 +381,60 @@ def readInputFile(fstr):
 
 ################################################################################
 
+def writeOutputFile(fstr, reactionModel, reactionSystems):
+	"""
+	Write an RMG output file at the location `fstr` based on the provided
+	`reactionModel` and `reactionSystems`.
+	"""
+
+	# Create document
+	dom = xml.dom.minidom.Document()
+
+	# Process root element
+	root = dom.createElement('rmgoutput')
+	dom.appendChild(root)
+
+	# Process core species list
+	speciesList = dom.createElement('speciesList')
+	root.appendChild(speciesList)
+	for spec in reactionModel.core.species:
+
+		element = dom.createElement('species')
+		element.setAttribute('id', str(spec.id))
+		element.setAttribute('label', spec.label)
+		speciesList.appendChild(element)
+
+		# Output the structure using CML
+		cml = dom.createElement('cml')
+		element.appendChild(cml)
+		dom0 = xml.dom.minidom.parseString(spec.toCML())
+		cml.appendChild(dom0.documentElement)
+
+
+	# Process core reactions list
+	reactionList = dom.createElement('reactionList')
+	root.appendChild(reactionList)
+	for rxn in reactionModel.core.reactions:
+
+		element = dom.createElement('reaction')
+		element.setAttribute('family', rxn.family.label)
+		reactionList.appendChild(element)
+
+		for reac in rxn.reactants:
+			reactant = dom.createElement('reactant')
+			reactant.setAttribute('id', str(reac.id))
+			element.appendChild(reactant)
+		for prod in rxn.products:
+			product = dom.createElement('product')
+			product.setAttribute('id', str(prod.id))
+			element.appendChild(product)
+
+	# Write output file
+	f = open(fstr, 'w')
+	f.write('\n'.join([l for l in dom.toprettyxml().split('\n') if l.strip()]))
+	f.close()
+
+	# Print to log
+	logging.info('')
+	logging.info('Output written to ' + fstr)
+	

@@ -553,11 +553,23 @@ class Species:
 		"""
 		return self.id
 
+	def toCML(self):
+		"""
+		Convert a Species object to CML.
+		"""
+		return self.structure[0].toCML()
+
 	def toInChI(self):
 		"""
 		Convert a Species object to an InChI string.
 		"""
 		return self.structure[0].toInChI()
+
+	def toOBMol(self):
+		"""
+		Convert a Species object to an OBMol object.
+		"""
+		return self.structure[0].toOBMol()
 
 	def toSMILES(self):
 		"""

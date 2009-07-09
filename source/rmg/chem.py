@@ -876,8 +876,9 @@ class Structure(graph.ChemGraph):
 		Convert a Structure object to CML.
 		"""
 		mol = pybel.Molecule(self.toOBMol())
-		return mol.write('cml').strip()
-
+		cml = mol.write('cml').strip()
+		return '\n'.join([l for l in cml.split('\n') if l.strip()])
+		
 	def toInChI(self):
 		"""
 		Convert a Structure object to an InChI string.

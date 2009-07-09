@@ -34,10 +34,14 @@ Contains the main function for RMG execution and several helper functions that
 support it.
 """
 
+import os
 import time
 import logging
 import io
 import sys
+import numpy
+import pylab
+import pybel
 
 import model
 
@@ -64,6 +68,21 @@ def execute(inputFile, outputDir, scratchDir, libraryDir, verbose):
 	# Print out RMG header
 	printRMGHeader()
 	
+	# Make output subdirectories
+	plotDir = outputDir + os.sep + 'plot'
+	if os.path.exists(plotDir):
+		for f in os.listdir(plotDir):
+			os.remove(plotDir + '/' + f)
+		os.rmdir(plotDir)
+	os.mkdir(plotDir)
+
+	specDir = outputDir + os.sep + 'species'
+	if os.path.exists(specDir):
+		for f in os.listdir(specDir):
+			os.remove(specDir + '/' + f)
+		os.rmdir(specDir)
+	os.mkdir(specDir)
+
 	# Read input file
 	reactionModel, coreSpecies, reactionSystems = io.readInputFile(inputFile)
 	
@@ -75,12 +94,66 @@ def execute(inputFile, outputDir, scratchDir, libraryDir, verbose):
 	while not done:
 
 		done = True
-		for reactionSystem in reactionSystems:
-			valid, species = reactionSystem.simulate(reactionModel)
+		for index, reactionSystem in enumerate(reactionSystems):
+			
+			# Conduct simulation
+			t, y, valid, species = reactionSystem.simulate(reactionModel)
+
+			y0 = numpy.zeros((len(t), len(y[0])), float)
+			for i, u in enumerate(y):
+				for j, v in enumerate(u):
+					y0[i,j] = v
+
+			legend = []
+			for spec in reactionModel.core.species:
+				legend.append(str(spec))
+
+			# Make plot and save to file
+			pylab.semilogx(t[1:], y0[1:,0])
+			pylab.xlabel('Time (s)')
+			pylab.ylabel('Pressure (Pa)')
+			pylab.title('Pressure profile for reaction system #' + str(index+1))
+			pylab.savefig(outputDir + '/plot/pressureProfile' + str(index+1) + '.svg')
+			pylab.clf()
+
+			# Make plot and save to file
+			pylab.semilogx(t[1:], y0[1:,1])
+			pylab.xlabel('Time (s)')
+			pylab.ylabel('Volume (m^3)')
+			pylab.title('Volume profile for reaction system #' + str(index+1))
+			pylab.savefig(outputDir + '/plot/volumeProfile' + str(index+1) + '.svg')
+			pylab.clf()
+
+			# Make plot and save to file
+			pylab.semilogx(t[1:], y0[1:,2])
+			pylab.xlabel('Time (s)')
+			pylab.ylabel('Temperature (K)')
+			pylab.title('Temperature profile for reaction system #' + str(index+1))
+			pylab.savefig(outputDir + '/plot/temperatureProfile' + str(index+1) + '.svg')
+			pylab.clf()
+
+			# Make plot and save to file
+			pylab.loglog(t[1:], y0[1:,3:])
+			pylab.xlabel('Time (s)')
+			pylab.ylabel('Concentration (mol/m^3)')
+			pylab.title('Concentration profiles for reaction system #' + str(index+1))
+			pylab.legend(legend)
+			pylab.savefig(outputDir + '/plot/concentrationProfile' + str(index+1) + '.svg')
+			pylab.clf()
+
+			# Draw species in core
+			#for spec in reactionModel.core.species:
+			#	mol = pybel.Molecule(spec.toOBMol())
+			#	mol.draw(False, outputDir + '/species/' + str(spec) + '.svg')
+
+			# Enlarge reaction model if simulation is invalid
 			if not valid:
 				reactionModel.enlarge(species)
 				done = False
 
+
+	# Write output file
+	io.writeOutputFile(outputDir + '/output.xml', reactionModel, reactionSystems)
 
 	# Log end timestamp
 	logging.info('\nRMG execution terminated at ' + time.asctime())

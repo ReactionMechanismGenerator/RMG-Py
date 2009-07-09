@@ -591,6 +591,8 @@ class BatchReactor(ReactionSystem):
 			for i, spec in enumerate(speciesList):
 				stoichiometry[i,j] = rxn.getStoichiometricCoefficient(spec)
 
+		tlist = []; ylist = []
+
 		# Set up initial conditions
 		P = float(self.pressureModel.getPressure(0))
 		T = float(self.temperatureModel.getTemperature(0))
@@ -611,8 +613,9 @@ class BatchReactor(ReactionSystem):
 		for target in model.termination:
 			if target.__class__ == TerminationConversion: header += 'Conv        '
 		header += 'Char flux     Maximum flux to edge'
-		print header
+		logging.debug(header)
 		self.printSimulationStatus(model, 0, y, y0, charFlux, maxSpeciesFlux, maxSpecies)
+		tlist.append(0.0); ylist.append(y0)
 
 		# Exit simulation if model is not valid
 		if not valid:
@@ -620,7 +623,7 @@ class BatchReactor(ReactionSystem):
 			logging.info('\tCharacteristic flux: %s' % (charFlux))
 			logging.info('\tSpecies flux for %s: %s ' % (maxSpecies, maxSpeciesFlux))
 			logging.info('')
-			return False, maxSpecies
+			return tlist, ylist, False, maxSpecies
 
 		# Set up solver
 		solver = scipy.integrate.ode(self.getResidual,None)
@@ -642,6 +645,7 @@ class BatchReactor(ReactionSystem):
 
 			# Output information about simulation at current time
 			self.printSimulationStatus(model, solver.t, solver.y, y0, charFlux, maxSpeciesFlux, maxSpecies)
+			tlist.append(solver.t); ylist.append(solver.y)
 
 			# Exit simulation if model is not valid
 			if not valid:
@@ -649,7 +653,7 @@ class BatchReactor(ReactionSystem):
 				logging.info('\tCharacteristic flux: %s' % (charFlux))
 				logging.info('\tSpecies flux for %s: %s ' % (maxSpecies, maxSpeciesFlux))
 				logging.info('')
-				return False, maxSpecies
+				return tlist, ylist, False, maxSpecies
 
 			# Test for simulation completion
 			for target in model.termination:
@@ -660,7 +664,7 @@ class BatchReactor(ReactionSystem):
 				elif target.__class__ == TerminationTime:
 					if solver.t > target.time: done = True
 
-		return True, None
+		return tlist, ylist, True, None
 
 	def printSimulationStatus(self, model, t, y, y0, charFlux, maxSpeciesFlux, maxSpecies):
 
