@@ -32,6 +32,19 @@
 
 import quantities as pq
 
+################################################################################
+
+# Global variables: important directories
+outputDir = '.'
+scratchDir = '.'
+libraryDir = '.'
+
+# Global variables: options
+drawMolecules = False
+generatePlots = False
+
+################################################################################
+
 # RMG uses SI units throughout
 pq.set_default_units('si')
 

@@ -35,7 +35,9 @@ Contains classes describing chemical species and their thermodynamics.
 import quantities as pq
 import logging
 import math
+import pybel
 
+import constants
 import data
 import chem
 
@@ -763,6 +765,11 @@ def makeNewSpecies(structure, label='', reactive=True):
 	
 	spec.getResonanceIsomers()
 	spec.getThermoData()
+
+	# Draw species in core
+	if constants.drawMolecules:
+		mol = pybel.Molecule(spec.toOBMol())
+		mol.draw(False, constants.outputDir + '/species/' + str(spec) + '.png')
 
 	# Note in the log
 	logging.debug('Created new species ' + str(spec) + ': ' + spec.toInChI())

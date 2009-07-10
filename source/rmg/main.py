@@ -39,10 +39,8 @@ import time
 import logging
 import io
 import sys
-import numpy
-import pylab
-import pybel
 
+import constants
 import model
 
 ################################################################################
@@ -58,6 +56,11 @@ def execute(inputFile, outputDir, scratchDir, libraryDir, verbose):
 	`verbose` parameter is an integer specifying the amount of log text seen
 	at the console; the levels correspond to those of the :data:`logging` module.
 	"""
+
+	# Set directories
+	constants.outputDir = outputDir
+	constants.scratchDir = scratchDir
+	constants.libraryDir = libraryDir
 
 	# Set up log (uses stdout)
 	initializeLog(verbose)
@@ -99,52 +102,8 @@ def execute(inputFile, outputDir, scratchDir, libraryDir, verbose):
 			# Conduct simulation
 			t, y, valid, species = reactionSystem.simulate(reactionModel)
 
-			y0 = numpy.zeros((len(t), len(y[0])), float)
-			for i, u in enumerate(y):
-				for j, v in enumerate(u):
-					y0[i,j] = v
-
-			legend = []
-			for spec in reactionModel.core.species:
-				legend.append(str(spec))
-
-			# Make plot and save to file
-			pylab.semilogx(t[1:], y0[1:,0])
-			pylab.xlabel('Time (s)')
-			pylab.ylabel('Pressure (Pa)')
-			pylab.title('Pressure profile for reaction system #' + str(index+1))
-			pylab.savefig(outputDir + '/plot/pressureProfile' + str(index+1) + '.svg')
-			pylab.clf()
-
-			# Make plot and save to file
-			pylab.semilogx(t[1:], y0[1:,1])
-			pylab.xlabel('Time (s)')
-			pylab.ylabel('Volume (m^3)')
-			pylab.title('Volume profile for reaction system #' + str(index+1))
-			pylab.savefig(outputDir + '/plot/volumeProfile' + str(index+1) + '.svg')
-			pylab.clf()
-
-			# Make plot and save to file
-			pylab.semilogx(t[1:], y0[1:,2])
-			pylab.xlabel('Time (s)')
-			pylab.ylabel('Temperature (K)')
-			pylab.title('Temperature profile for reaction system #' + str(index+1))
-			pylab.savefig(outputDir + '/plot/temperatureProfile' + str(index+1) + '.svg')
-			pylab.clf()
-
-			# Make plot and save to file
-			pylab.loglog(t[1:], y0[1:,3:])
-			pylab.xlabel('Time (s)')
-			pylab.ylabel('Concentration (mol/m^3)')
-			pylab.title('Concentration profiles for reaction system #' + str(index+1))
-			pylab.legend(legend)
-			pylab.savefig(outputDir + '/plot/concentrationProfile' + str(index+1) + '.svg')
-			pylab.clf()
-
-			# Draw species in core
-			#for spec in reactionModel.core.species:
-			#	mol = pybel.Molecule(spec.toOBMol())
-			#	mol.draw(False, outputDir + '/species/' + str(spec) + '.svg')
+			# Postprocess results
+			reactionSystem.postprocess(reactionModel, t, y, str(index+1))
 
 			# Enlarge reaction model if simulation is invalid
 			if not valid:

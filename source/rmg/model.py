@@ -36,6 +36,7 @@ import logging
 import math
 import numpy
 import scipy.integrate
+import pylab
 
 import constants
 import reaction
@@ -667,6 +668,13 @@ class BatchReactor(ReactionSystem):
 		return tlist, ylist, True, None
 
 	def printSimulationStatus(self, model, t, y, y0, charFlux, maxSpeciesFlux, maxSpecies):
+		"""
+		Log a line of text describing the current status of the simulation. The
+		information logged is the current time `t`, the current conversion of
+		all species being monitored for conversion targets, the characteristic
+		flux `charFlux`, the maximum species flux `maxSpeciesFlux`, and the
+		species with that flux `maxSpecies`.
+		"""
 
 		# Output information about simulation at current time
 		status = '{0:8.4e}'.format(t)
@@ -679,6 +687,63 @@ class BatchReactor(ReactionSystem):
 		logging.debug(status)
 		
 		#print t, P, V, T, Ni
+
+	def postprocess(self, model, t, y, label=''):
+		"""
+		Postprocess the results of a simulation. This function generates a
+		number of plots: temperature, pressure, volume, and concentration
+		profiles. The parameters are the reaction `model`, the list of times
+		`t`, the list of state vectors `y`, and an optional `label` for the
+		reaction system.
+		"""
+
+		# Only do if the option for plot generation has been set
+		if not constants.generatePlots:
+			return
+
+		# Reshape y into a matrix rather than a list of lists
+		y0 = numpy.zeros((len(t), len(y[0])), float)
+		for i, u in enumerate(y):
+			for j, v in enumerate(u):
+				y0[i,j] = v
+
+		# Create the legend for the concentration profile
+		legend = []
+		for spec in model.core.species:
+			legend.append(str(spec))
+
+		# Make pressure plot and save to file
+		pylab.semilogx(t[1:], y0[1:,0])
+		pylab.xlabel('Time (s)')
+		pylab.ylabel('Pressure (Pa)')
+		pylab.title('Pressure profile for reaction system ' + label)
+		pylab.savefig(constants.outputDir + '/plot/pressureProfile' + label + '.svg')
+		pylab.clf()
+
+		# Make volume plot and save to file
+		pylab.semilogx(t[1:], y0[1:,1])
+		pylab.xlabel('Time (s)')
+		pylab.ylabel('Volume (m^3)')
+		pylab.title('Volume profile for reaction system ' + label)
+		pylab.savefig(constants.outputDir + '/plot/volumeProfile' + label + '.svg')
+		pylab.clf()
+
+		# Make temperature plot and save to file
+		pylab.semilogx(t[1:], y0[1:,2])
+		pylab.xlabel('Time (s)')
+		pylab.ylabel('Temperature (K)')
+		pylab.title('Temperature profile for reaction system ' + label)
+		pylab.savefig(constants.outputDir + '/plot/temperatureProfile' + label + '.svg')
+		pylab.clf()
+
+		# Make concentration plot and save to file
+		pylab.loglog(t[1:], y0[1:,3:])
+		pylab.xlabel('Time (s)')
+		pylab.ylabel('Concentration (mol/m^3)')
+		pylab.title('Concentration profiles for reaction system ' + label)
+		pylab.legend(legend)
+		pylab.savefig(constants.outputDir + '/plot/concentrationProfile' + label + '.svg')
+		pylab.clf()
 	
 ################################################################################
 

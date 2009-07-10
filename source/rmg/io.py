@@ -33,6 +33,7 @@ import quantities as pq
 import logging
 import os
 
+import constants
 import model
 import chem
 import data
@@ -116,6 +117,22 @@ def readInputFile(fstr):
 		if element is None: units = 'si'
 		else: units = getElementText(element)
 		pq.set_default_units(units)
+
+		# Read draw molecules option
+		element = getFirstChildElement(root, 'drawMolecules')
+		drawMolecules = getElementText(element).lower()
+		if drawMolecules == 'on' or drawMolecules == 'true' or drawMolecules == 'yes':
+			constants.drawMolecules = True
+		else:
+			constants.drawMolecules = False
+
+		# Read generate plots option
+		element = getFirstChildElement(root, 'generatePlots')
+		generatePlots = getElementText(element).lower()
+		if generatePlots == 'on' or generatePlots == 'true' or generatePlots == 'yes':
+			constants.generatePlots = True
+		else:
+			constants.generatePlots = False
 
 		# Process databases
 		databases = []

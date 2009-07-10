@@ -56,14 +56,16 @@
 	<!-- Termination -->
 	<termination>
 		<target type="conversion" speciesID="spec1">0.9</target>
-		<target type="time" units="s">1e12</target>
+		<target type="time" units="s">1e-7</target>
 	</termination>
 	<!-- Dynamic simulator -->
-	<simulator atol="1e-12" rtol="1e-6" />
-	<!-- Options -->
+	<simulator atol="1e-16" rtol="1e-8" />
 	<fluxTolerance>0.1</fluxTolerance>
-	<inchiGeneration>off</inchiGeneration>
+	<!-- Options -->
+	<drawMolecules>on</drawMolecules>
+	<generatePlots>on</generatePlots>
+	<!--<inchiGeneration>off</inchiGeneration>
 	<spectralDataEstimation>off</spectralDataEstimation>
-	<activatedNetworks>off</activatedNetworks>
+	<activatedNetworks>off</activatedNetworks>-->
 	
 </rmginput>
