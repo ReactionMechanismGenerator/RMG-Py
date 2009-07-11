@@ -461,7 +461,7 @@ class ThermoDatabaseSet:
 					struct.removeAtom(H)
 					atom.increaseFreeElectron()
 
-				thermoData += self.radicalDatabase.getThermoData(structure, {'*':atom})
+				thermoData += self.radicalDatabase.getThermoData(struct, {'*':atom})
 
 				# Re-saturate
 				for bond in added[atom]:
