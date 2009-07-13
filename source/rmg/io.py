@@ -35,7 +35,7 @@ import os
 
 import constants
 import model
-import chem
+import structure
 import data
 import species
 import reaction
@@ -202,25 +202,25 @@ def readInputFile(fstr):
 				reactive = True		
 			
 			# Load structure
-			structure = chem.Structure()
+			struct = structure.Structure()
 			
 			cml = getFirstChildElement(element, 'cml')
 			inchi = getFirstChildElement(element, 'inchi')
 			smiles = getFirstChildElement(element, 'smiles')
 			if cml is not None:
 				cmlstr = str(getFirstChildElement(cml, 'molecule').toxml())
-				structure.fromCML(cmlstr)
+				struct.fromCML(cmlstr)
 			elif inchi is not None:
 				inchistr = str(getElementText(inchi))
-				structure.fromInChI(inchistr)
+				struct.fromInChI(inchistr)
 			elif smiles is not None:
 				smilesstr = str(getElementText(smiles))
-				structure.fromSMILES(smilesstr)
+				struct.fromSMILES(smilesstr)
 			else:
 				raise InvalidInputFileException('Species '+label+' missing structure information.' )
 			
 			# Create a new species and append the species to the core
-			spec = species.makeNewSpecies(structure, label, reactive)
+			spec = species.makeNewSpecies(struct, label, reactive)
 			coreSpecies.append(spec)
 		
 			# Add to local species dictionary (for matching with other parts of file)

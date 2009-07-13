@@ -40,6 +40,7 @@ import pybel
 import constants
 import data
 import chem
+import structure
 
 ################################################################################
 
@@ -319,7 +320,7 @@ class ThermoDatabase(data.Database):
 		is returned.
 		"""
 		for label, struct in self.dictionary.iteritems():
-			match, map12, map21 = structure.isIsomorphic(struct)
+			match, map21, map12 = structure.isIsomorphic(struct)
 			if match:
 				return label
 		return None
@@ -614,7 +615,7 @@ class Species:
 					# Append to isomer list if unique
 					found = False
 					for isom in isomers:
-						ismatch, map12, map21 = isom.isIsomorphic(newIsomer)
+						ismatch, map21, map12 = isom.isIsomorphic(newIsomer)
 						if ismatch: found = True
 					if not found:
 						isomers.append(newIsomer)
@@ -682,12 +683,12 @@ class Species:
 		if other.__class__ == Species:
 			for struct1 in self.structure:
 				for struct2 in other.structure:
-					ismatch, map12, map21 = struct1.isIsomorphic(struct2)
+					ismatch, map21, map12 = struct1.isIsomorphic(struct2)
 					if ismatch:
 						return True
-		elif other.__class__ == chem.Structure:
+		elif other.__class__ == structure.Structure:
 			for struct1 in self.structure:
-				ismatch, map12, map21 = struct1.isIsomorphic(other)
+				ismatch, map21, map12 = struct1.isIsomorphic(other)
 				if ismatch:
 					return True
 		return False
@@ -698,7 +699,7 @@ class Species:
 		functional group and data:`False` otherwise.
 		"""
 		for struct1 in self.structure:
-			ismatch, map12, map21 = struct1.isSubgraphIsomorphic(other)
+			ismatch, map21, map12 = struct1.isSubgraphIsomorphic(other)
 			if ismatch:
 				return True
 		return False
@@ -710,10 +711,10 @@ class Species:
 		"""
 		maps12 = []; maps21 = []
 		for struct1 in self.structure:
-			ismatch, map12, map21 = struct1.findSubgraphIsomorphisms(other)
+			ismatch, map21, map12 = struct1.findSubgraphIsomorphisms(other)
 			maps12.extend(map12)
 			maps21.extend(map21)
-		return (len(maps12) > 0), maps12, maps21
+		return (len(maps12) > 0), maps21, maps12
 
 	def __str__(self):
 		"""
@@ -752,7 +753,7 @@ def makeNewSpecies(structure, label='', reactive=True):
 
 	# Return None if the species has a forbidden structure
 	for lbl, struct in forbiddenStructures.iteritems():
-		match, map12, map21 = structure.isSubgraphIsomorphic(struct)
+		match, map21, map12 = structure.isSubgraphIsomorphic(struct)
 		if match: return None
 
 	# Otherwise make a new species
@@ -807,7 +808,7 @@ if __name__ == '__main__':
 12 H 0 {4,S}
 """
 
-	structure = chem.Structure()
+	structure = structure.Structure()
 	structure.fromAdjacencyList(adjlist)
 	structure.updateAtomTypes()
 

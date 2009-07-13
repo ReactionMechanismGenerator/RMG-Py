@@ -36,7 +36,7 @@ import os
 import logging
 import quantities as pq
 
-import chem
+import structure
 
 pq.UnitQuantity('kilocalories', pq.cal*1e3, symbol='kcal')
 pq.UnitQuantity('kilojoules', pq.J*1e3, symbol='kJ')
@@ -125,7 +125,7 @@ class Dictionary(dict):
 	def toStructure(self):
 		"""
 		Convert the values stored in the dictionary from adjacency list strings
-		to :class:`chem.Structure` objects. If a record is a union, it is stored
+		to :class:`structure.Structure` objects. If a record is a union, it is stored
 		as the string 'union', and automatically uses all immediate children of
 		the node as the union.
 		"""
@@ -139,10 +139,10 @@ class Dictionary(dict):
 			# Otherwise convert adjacency list to structure
 			else:
 				try:
-					structure = chem.Structure()
-					structure.fromAdjacencyList(record)
-					self[label] = structure
-				except chem.InvalidAdjacencyListException, e:
+					struct = structure.Structure()
+					struct.fromAdjacencyList(record)
+					self[label] = struct
+				except structure.InvalidAdjacencyListException, e:
 					logging.error('\t\t\t' + str(e))
 
 	def toXML(self, dom, root):
@@ -473,11 +473,11 @@ class Database:
 			# match of each children, so this makes it less likely to miss a
 			# more detailed functional group
 			# First determine if we can do the sort (that is, all children have
-			# one chem.Structure)
+			# one structure.Structure)
 			canSort = True
 			for node, children in self.tree.children.iteritems():
 				for child in children:
-					if self.dictionary[child].__class__ != chem.Structure: canSort = False
+					if self.dictionary[child].__class__ != structure.Structure: canSort = False
 			if canSort:
 				for node, children in self.tree.children.iteritems():
 					children.sort(lambda x, y: cmp(len(self.dictionary[x].atoms()), len(self.dictionary[y].atoms())))
@@ -523,7 +523,7 @@ class Database:
 					map12_0[center] = atom; map21_0[atom] = center
 				#elif label not in centers:
 				#	return False
-			match, map12, map21 = structure.isSubgraphIsomorphic(group, map12_0, map21_0)
+			match, map21, map12 = structure.isSubgraphIsomorphic(group, map12_0, map21_0)
 			return match
 
 	def descendTree(self, structure, atoms, root=None):
@@ -533,7 +533,7 @@ class Database:
 		"""
 
 		if root is None: root = self.tree.top[0]
-		
+
 		if not self.matchNodeToStructure(root, structure, atoms):
 			return None
 

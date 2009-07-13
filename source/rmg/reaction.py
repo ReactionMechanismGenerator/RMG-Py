@@ -41,6 +41,7 @@ import os.path
 import constants
 import chem
 import data
+import structure
 import species
 
 ################################################################################
@@ -272,7 +273,7 @@ class ReactionRecipe:
 				other.addAction(['LOSE_RADICAL', action[1], action[2]])
 		return other
 
-	def apply(self, structure, doForward):
+	def apply(self, struct, doForward):
 		"""
 		Apply the reaction recipe to the set of molecules contained in
 		`structure`, a single Structure object that contains one or more
@@ -289,14 +290,14 @@ class ReactionRecipe:
 					label1, info, label2 = action[1:]
 
 					# Find associated atoms
-					atom1 = structure.getLabeledAtom(label1)
-					atom2 = structure.getLabeledAtom(label2)
+					atom1 = struct.getLabeledAtom(label1)
+					atom2 = struct.getLabeledAtom(label2)
 					if atom1 is None or atom2 is None or atom1 is atom2:
 						raise InvalidActionException('Invalid atom labels encountered.')
 
 					# If found, change bond
 					if action[0] == 'CHANGE_BOND':
-						bond = structure.getBond(atom1, atom2)
+						bond = struct.getBond(atom1, atom2)
 						info = int(info)
 						if bond is None: raise InvalidActionException('Attempted to change the bond order of a nonexistent bond.')
 						for i in range(0, abs(info)):
@@ -309,26 +310,26 @@ class ReactionRecipe:
 					elif action[0] == 'FORM_BOND':
 						if doForward:
 							bond = chem.Bond([atom1, atom2], info)
-							structure.addBond(bond)
+							struct.addBond(bond)
 						else:
-							bond = structure.getBond(atom1, atom2)
+							bond = struct.getBond(atom1, atom2)
 							if bond is None: raise InvalidActionException('Attempted to remove a nonexistent bond.')
-							structure.removeBond(bond)
+							struct.removeBond(bond)
 					elif action[0] == 'BREAK_BOND':
 						if doForward:
-							bond = structure.getBond(atom1, atom2)
+							bond = struct.getBond(atom1, atom2)
 							if bond is None: raise InvalidActionException('Attempted to remove a nonexistent bond.')
-							structure.removeBond(bond)
+							struct.removeBond(bond)
 						else:
 							bond = chem.Bond([atom1, atom2], info)
-							structure.addBond(bond)
+							struct.addBond(bond)
 
 				elif action[0] == 'LOSE_RADICAL' or action[0] == 'GAIN_RADICAL':
 
 					label, change = action[1:]
 					change = int(change)
 					# Find associated atoms
-					atom = structure.getLabeledAtom(label)
+					atom = struct.getLabeledAtom(label)
 					if atom is None:
 						raise Exception('Invalid atom labels found while attempting to execute reaction recipe.')
 
@@ -358,21 +359,21 @@ class ReactionRecipe:
 
 		return True
 
-	def applyForward(self, structure):
+	def applyForward(self, struct):
 		"""
 		Apply the reaction recipe to the set of molecules contained in
 		`structure`, a single Structure object that contains one or more
 		structures.
 		"""
-		return self.apply(structure, True)
+		return self.apply(struct, True)
 
-	def applyReverse(self, structure):
+	def applyReverse(self, struct):
 		"""
 		Apply the reaction recipe to the set of molecules contained in
 		`structure`, a single Structure object that contains one or more
 		structures. 
 		"""
-		return self.apply(structure, False)
+		return self.apply(struct, False)
 
 ################################################################################
 
@@ -723,16 +724,16 @@ class ReactionFamily(data.Database):
 		"""
 		maps12 = []; maps21 = []
 		if templateReactant.__class__ == list: templateReactant = templateReactant[0]
-		structure = self.dictionary[templateReactant]
-		if structure.__class__ == str or structure.__class__ == unicode:
-			if structure.lower() == 'union':
+		struct = self.dictionary[templateReactant]
+		if struct.__class__ == str or struct.__class__ == unicode:
+			if struct.lower() == 'union':
 				for child in self.tree.children[templateReactant]:
-					ismatch, map12, map21 = self.reactantMatch(reactant, child)
+					ismatch, map21, map12 = self.reactantMatch(reactant, child)
 					maps12.extend(map12); maps21.extend(map21)
-		elif structure.__class__ == chem.Structure:
-			return reactant.findSubgraphIsomorphisms(structure)
+		elif struct.__class__ == structure.Structure:
+			return reactant.findSubgraphIsomorphisms(struct)
 
-		return len(maps12) > 0, maps12, maps21
+		return len(maps12) > 0, maps21, maps12
 
 	def makeReaction(self, reactants, structures, maps):
 		"""
@@ -768,25 +769,23 @@ class ReactionFamily(data.Database):
 			reactantStructures.append(struct.copy())
 
 		# Merge reactant structures into single structure
-		structure = chem.Structure()
-		for struct in reactantStructures:
-			structure = structure.merge(struct)
-
-		#print '0', [len(x.atoms()) for x in structures], [len(x.atoms()) for x in reactantStructures], len(structure.atoms())
+		struct = structure.Structure()
+		for s in reactantStructures:
+			struct = struct.merge(s)
 
 		# Generate the product structure
-		if not self.recipe.applyForward(structure):
+		if not self.recipe.applyForward(struct):
 			return None
 
-		productStructure = structure.copy()
-		self.recipe.applyReverse(structure)
+		productStructure = struct.copy()
+		self.recipe.applyReverse(struct)
 		
 		# Restore original atom labels of the reactants if they were changed
 		# before
 		if counter > 0:
 			#for struct in structures:
-			for struct in reactantStructures:
-				for atom in struct.atoms():
+			for s in reactantStructures:
+				for atom in s.atoms():
 					if atom.label != '':
 						atom.label = '*'
 
@@ -832,10 +831,10 @@ class ReactionFamily(data.Database):
 		if self.forbidden is not None:
 			for label, struct2 in self.forbidden.iteritems():
 				for struct in reactantStructures:
-					match, map12, map21 = struct.isSubgraphIsomorphic(struct2)
+					match, map21, map12 = struct.isSubgraphIsomorphic(struct2)
 					if match: return None
 				for struct in productStructures:
-					match, map12, map21 = struct.isSubgraphIsomorphic(struct2)
+					match, map21, map12 = struct.isSubgraphIsomorphic(struct2)
 					if match: return None
 
 		# Convert structure(s) to products
@@ -865,7 +864,7 @@ class ReactionFamily(data.Database):
 			# Iterate over all resonance isomers of the reactant
 			for structure in reactants[0].structure:
 
-				ismatch, map12, map21 = self.reactantMatch(structure, self.template.reactants[0])
+				ismatch, map21, map12 = self.reactantMatch(structure, self.template.reactants[0])
 				for map in map12:
 					rxn = self.makeReaction(reactants, [structure], [map])
 					if rxn is not None:
@@ -890,8 +889,8 @@ class ReactionFamily(data.Database):
 				for structureB in structuresB:
 
 					# Reactants stored as A + B
-					ismatch_A, map12_A, map21_A = self.reactantMatch(structureA, self.template.reactants[0])
-					ismatch_B, map12_B, map21_B = self.reactantMatch(structureB, self.template.reactants[1])
+					ismatch_A, map21_A, map12_A = self.reactantMatch(structureA, self.template.reactants[0])
+					ismatch_B, map21_B, map12_B = self.reactantMatch(structureB, self.template.reactants[1])
 
 					# Iterate over each pair of matches (A, B)
 					for mapA in map12_A:
@@ -900,16 +899,19 @@ class ReactionFamily(data.Database):
 							if rxn is not None:
 								rxnList.append(rxn)
 
-					# Reactants stored as B + A
-					ismatch_0, map12_A, map21_A = self.reactantMatch(structureA, self.template.reactants[1])
-					ismatch_1, map12_B, map21_B = self.reactantMatch(structureB, self.template.reactants[0])
+					# Only check for swapped reactants if they are different
+					if reactants[0].id != reactants[1].id:
 
-					# Iterate over each pair of matches (A, B)
-					for mapA in map12_A:
-						for mapB in map12_B:
-							rxn = self.makeReaction(reactants, [structureB, structureA], [mapB, mapA])
-							if rxn is not None:
-								rxnList.append(rxn)
+						# Reactants stored as B + A
+						ismatch_A, map21_A, map12_A = self.reactantMatch(structureA, self.template.reactants[1])
+						ismatch_B, map21_B, map12_B = self.reactantMatch(structureB, self.template.reactants[0])
+
+						# Iterate over each pair of matches (A, B)
+						for mapA in map12_A:
+							for mapB in map12_B:
+								rxn = self.makeReaction(reactants, [structureB, structureA], [mapB, mapA])
+								if rxn is not None:
+									rxnList.append(rxn)
 
 		return rxnList
 
@@ -1476,7 +1478,7 @@ if __name__ == '__main__':
 	kineticsDatabase = ReactionFamilySet()
 	kineticsDatabase.load(datapath)
 
-	structure1 = chem.Structure()
+	structure1 = structure.Structure()
 	structure1.fromAdjacencyList("""HXD13
 1 C 0 {2,D} {7,S} {8,S}
 2 C 0 {1,D} {3,S} {9,S}
@@ -1499,7 +1501,7 @@ if __name__ == '__main__':
 
 	#print len(species1.structure)
 
-	structure2 = chem.Structure()
+	structure2 = structure.Structure()
 	structure2.fromSMILES('[H][H]')
 	species2 = species.makeNewSpecies(structure2, 'H2', True)
 

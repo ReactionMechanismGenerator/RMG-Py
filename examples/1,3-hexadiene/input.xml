@@ -56,7 +56,7 @@
 	<!-- Termination -->
 	<termination>
 		<target type="conversion" speciesID="spec1">0.9</target>
-		<target type="time" units="s">1e-7</target>
+		<target type="time" units="s">1e12</target>
 	</termination>
 	<!-- Dynamic simulator -->
 	<simulator atol="1e-16" rtol="1e-8" />
