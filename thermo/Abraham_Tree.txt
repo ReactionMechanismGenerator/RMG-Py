@@ -54,6 +54,7 @@ L1: C
 			L4: Cds*(Od)Cds=CdsCds(Od)
 		
 	L2: Ct
+	L2: Cb
 
 L1: O
 

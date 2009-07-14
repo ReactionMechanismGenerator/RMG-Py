@@ -18,7 +18,7 @@
 8 CH=C .8886 .676
 9 C=C .6605 .485
 10 ACH .5313 .4
-11 AC .3652 .12
+11 Cbfused3 .3652 .12
 12 ACCH3 1.2663 .968
 13 ACCH2 1.0396 .66
 14 ACCH .8121 .348
@@ -94,3 +94,4 @@
 84 O=COC=O* 0 0
 85 Oss 0.41 1000 // Q value arbitrary. Note that RMG is not currently meant to use the Q values in any calculations
 86 Od 0.324 1000 // Q value arbitrary
+87  Cbfused2 .3652 .12    // set equal to Cbfused3

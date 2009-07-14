@@ -47,10 +47,10 @@ L0: R
 								L4: COC
 								L4: CH2C*OO
 					
-			
+			L2: Cbfused3
+			L2: Cbfused2
 			L2: Cb
-			
-					L3: AC
+				
 					L3: ACH
 					L3: ACCH3
 					L3: ACCH2

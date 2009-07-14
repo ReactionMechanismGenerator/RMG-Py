@@ -25,10 +25,6 @@ O
 Oss				
 1  * Os 0 
 
-// fused aromatic
-Cbf
-1 * Cbf 0
-
 // benzene carbon
 Cb
 1 * Cb 0
@@ -162,9 +158,19 @@ ACH
 2   H 0 {1,S}
 
 
-AC
-1 * Cbf 0
+Cbfused3
+1 * C 0 {2,B} {3,B} {4,B}
+2   C 0 {1,B}
+3   C 0 {1,B}
+4   C 0 {1,B}
 
+Cbfused2
+1 * C 0 {2,B} {3,B} {4,S}
+2   C 0 {1,B}
+3   C 0 {1,B}
+4   C 0 {1,S}
+
+ 
 ACCH3
 1 * Cb 0 {2,S}
 2   C 0 {1,S} {3,S} {4,S} {5,S}

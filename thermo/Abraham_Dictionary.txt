@@ -14,7 +14,10 @@ C			// L1 Node
 1  * C 0  
 
 Css                                                  
-1  * Cs 0  
+1  * Cs 0
+
+Cb
+1 * Cb 0  
 
 O
 1  * O 0
