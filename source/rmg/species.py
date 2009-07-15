@@ -730,6 +730,10 @@ class Species:
 # than an older species
 speciesList = []
 
+# A cache of recently visited species
+speciesCache = []
+speciesCacheMaxSize = 4
+
 def makeNewSpecies(structure, label='', reactive=True):
 	"""
 	Attempt to make a new species based on a chemical `structure`, which is a
@@ -746,9 +750,18 @@ def makeNewSpecies(structure, label='', reactive=True):
 #	structure.simplifyAtomTypes()
 #	structure.updateAtomTypes()
 
+	# First check cache and return if species is found
+	for i, spec in enumerate(speciesCache):
+		if spec.isIsomorphic(structure):
+			speciesCache.pop(i)
+			speciesCache.insert(0, spec)
+			return spec
+
 	# Return an existing species if a match is found
 	for spec in speciesList:
 		if spec.isIsomorphic(structure):
+			speciesCache.insert(0, spec)
+			if len(speciesCache) > speciesCacheMaxSize: speciesCache.pop()
 			return spec
 
 	# Return None if the species has a forbidden structure
@@ -774,8 +787,10 @@ def makeNewSpecies(structure, label='', reactive=True):
 
 	# Note in the log
 	logging.debug('Created new species ' + str(spec) + ': ' + spec.toInChI())
-
+	
 	# Return the newly created species
+	speciesCache.insert(0, spec)
+	if len(speciesCache) > speciesCacheMaxSize: speciesCache.pop()
 	return spec
 
 ################################################################################
