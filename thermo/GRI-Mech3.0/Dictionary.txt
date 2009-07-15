@@ -171,6 +171,8 @@ s00009809
 
 //s00009856
 //1 N 0 
+// Not sure why InChI couldn't convert this to 1 N 1
+//1 N 1
 // No N in RMG yet
 
 s00009881
