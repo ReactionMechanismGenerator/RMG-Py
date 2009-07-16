@@ -137,6 +137,13 @@ class AtomType:
 		elif other.label == 'Cd' and (self.label == 'Cd' or \
 				self.label == 'Cdd' or self.label == 'Cds' or self.label == 'CO'):
 			return True
+		# Special case: 'Sid' matches any of 'Sid', 'Sidd', 'Sids', or 'SiO'
+		elif self.label == 'Sid' and (other.label == 'Sid' or \
+				other.label == 'Sidd' or other.label == 'Sids' or other.label == 'SiO'):
+			return True
+		elif other.label == 'Sid' and (self.label == 'Sid' or \
+				self.label == 'Sidd' or self.label == 'Sids' or self.label == 'SiO'):
+			return True
 		# Otherwise labels must match exactly
 		elif self.label == other.label:
 			return True
@@ -174,9 +181,18 @@ def loadAtomTypes():
 	atomTypes['Cds'] 	= AtomType('Cds', 	elements['C'], 	'carbon with one double bond and two single bonds')
 	atomTypes['Cb'] 	= AtomType('Cb', 	elements['C'], 	'carbon belonging to a benzene ring')
 	atomTypes['Cbf'] 	= AtomType('Cbf', 	elements['C'], 	'carbon belonging to a fused benzene ring')
+	atomTypes['CO'] 	= AtomType('CO', 	elements['C'], 	'non-central carbon bonded with a double bond to a non-central oxygen')
 	atomTypes['Os'] 	= AtomType('Os', 	elements['O'], 	'oxygen with two single bonds')
 	atomTypes['Od'] 	= AtomType('Od', 	elements['O'], 	'oxygen with one double bond')
-	atomTypes['CO'] 	= AtomType('CO', 	elements['C'], 	'non-central carbon bonded with a double bond to a non-central O')
+
+	atomTypes['Sit'] 	= AtomType('Sit', 	elements['Si'], 'silicon with one triple bond and one single bond')
+	atomTypes['Sis'] 	= AtomType('Sis', 	elements['Si'], 'silicon with four single bonds')
+	atomTypes['Sid'] 	= AtomType('Sid', 	elements['Si'], 'silicon with one double bond and the rest undefined')
+	atomTypes['Sidd'] 	= AtomType('Sidd', 	elements['Si'], 'silicon with two double bonds')
+	atomTypes['Sids'] 	= AtomType('Sids', 	elements['Si'], 'silicon with one double bond and two single bonds')
+	atomTypes['Sib'] 	= AtomType('Sib', 	elements['Si'], 'silicon belonging to a benzene ring')
+	atomTypes['Sibf'] 	= AtomType('Sibf', 	elements['Si'], 'silicon belonging to a fused benzene ring')
+	atomTypes['SiO'] 	= AtomType('SiO', 	elements['Si'], 'non-central silicon bonded with a double bond to a non-central oxygen')
 
 	return atomTypes
 
