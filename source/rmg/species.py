@@ -556,6 +556,47 @@ class Species:
 		"""
 		return self.id
 
+	def getFormula(self):
+		"""
+		Return the chemical formula for the species.
+		"""
+		return self.structure[0].getFormula()
+
+	def fromAdjacencyList(self, adjstr):
+		"""
+		Convert an adjacency list string `adjstr` to a Species object.
+		"""
+		self.structure = [structure.Structure()]
+		self.structure[0].fromAdjacencyList(adjstr)
+
+	def fromCML(self, cmlstr):
+		"""
+		Convert a string of CML `cmlstr` to a Species object.
+		"""
+		self.structure = [structure.Structure()]
+		self.structure[0].fromCML(cmlstr)
+	
+	def fromInChI(self, inchistr):
+		"""
+		Convert an InChI string `inchistr` to a Species object.
+		"""
+		self.structure = [structure.Structure()]
+		self.structure[0].fromInChI(inchistr)
+
+	def fromSMILES(self, smilesstr):
+		"""
+		Convert a SMILES string `smilesstr` to a Species object.
+		"""
+		self.structure = [structure.Structure()]
+		self.structure[0].fromSMILES(smilesstr)
+
+	def fromOBMol(self, obmol):
+		"""
+		Convert an OpenBabel OBMol object `obmol` to a Species object.
+		"""
+		self.structure = [structure.Structure()]
+		self.structure[0].fromOBMol(obmol)
+
 	def toCML(self):
 		"""
 		Convert a Species object to CML.
@@ -765,9 +806,10 @@ def makeNewSpecies(structure, label='', reactive=True):
 			return spec
 
 	# Return None if the species has a forbidden structure
-	for lbl, struct in forbiddenStructures.iteritems():
-		match, map21, map12 = structure.isSubgraphIsomorphic(struct)
-		if match: return None
+	if forbiddenStructures is not None:
+		for lbl, struct in forbiddenStructures.iteritems():
+			match, map21, map12 = structure.isSubgraphIsomorphic(struct)
+			if match: return None
 
 	# Otherwise make a new species
 	if label == '':
@@ -778,7 +820,8 @@ def makeNewSpecies(structure, label='', reactive=True):
 	speciesList.insert(0, spec)
 	
 	spec.getResonanceIsomers()
-	spec.getThermoData()
+	if thermoDatabase is not None:
+		spec.getThermoData()
 
 	# Draw species in core
 	if constants.drawMolecules:

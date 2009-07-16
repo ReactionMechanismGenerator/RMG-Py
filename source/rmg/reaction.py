@@ -1405,7 +1405,7 @@ def makeNewReaction(reactants, products, reactantStructures, productStructures, 
 					if rxn.products[i] != products[i]: match = False
 				if match: matchReaction = rxn
 		# Check reverse reaction for match
-		if rxn.family.reverse is family or rxn.family.reverse is None or family is None:
+		if rxn.reverse.family is family or rxn.reverse.family is None or family is None:
 			if len(rxn.reactants) == len(products) and len(rxn.products) == len(reactants):
 				match = True
 				for i in range(len(reactants)):
@@ -1414,7 +1414,7 @@ def makeNewReaction(reactants, products, reactantStructures, productStructures, 
 					if rxn.reactants[i] != products[i]: match = False
 				if match: matchReaction = rxn
 
-	# If a match was found, take an 
+	# If a match was found, take an
 	if matchReaction is not None:
 		#matchReaction.multiplier += 1.0
 		return matchReaction, False
@@ -1422,13 +1422,19 @@ def makeNewReaction(reactants, products, reactantStructures, productStructures, 
 	# If this point is reached, the proposed reaction is new, so make new
 	# Reaction objects for forward and reverse reaction
 	forward = Reaction(reactants, products, family)
-	reverse = Reaction(products, reactants, family.reverse or family)
+	reverseFamily = None
+	if family is not None: reverseFamily = family.reverse or family
+	reverse = Reaction(products, reactants, reverseFamily)
 	forward.reverse = reverse
 	reverse.reverse = forward
 
 	# Dictionaries containing the labeled atoms for the reactants and products
 	forward.atomLabels = reactantLabels
 	reverse.atomLabels = productLabels
+
+	if forward.family is None or reverse.family is None:
+		reactionList.insert(0, forward)
+		return forward, True
 
 	# Attempt to get the kinetics of the forward and reverse reactions
 	forwardKinetics = forward.family.getKinetics(forward, reactantStructures)
@@ -1449,7 +1455,7 @@ def makeNewReaction(reactants, products, reactantStructures, productStructures, 
 		rxn = reverse
 	else:
 		raise UndeterminableKineticsException(forward)
-		#return None, False
+		return None, False
 	
 	forward.kinetics = forwardKinetics
 	reverse.kinetics = reverseKinetics

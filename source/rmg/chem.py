@@ -511,7 +511,7 @@ class Atom(object):
 		be increased by one. This method restricts the radical order to three or
 		fewer.
 		"""
-		return self.getFreeElectronCount() < 3
+		return self.getFreeElectronCount() < 4
 
 	def canDecreaseFreeElectron(self):
 		"""
@@ -530,6 +530,7 @@ class Atom(object):
 		elif self.electronState.label == '2': self.electronState = electronStates['3']
 		elif self.electronState.label == '2S': self.electronState = electronStates['3']
 		elif self.electronState.label == '2T': self.electronState = electronStates['3']
+		elif self.electronState.label == '3': self.electronState = electronStates['4']
 		else:
 			raise Exception('Cannot increase the radical number of this atom.')
 
@@ -542,6 +543,7 @@ class Atom(object):
 		elif self.electronState.label == '2S': self.electronState = electronStates['1']
 		elif self.electronState.label == '2T': self.electronState = electronStates['1']
 		elif self.electronState.label == '3': self.electronState = electronStates['2']
+		elif self.electronState.label == '4': self.electronState = electronStates['3']
 		else:
 			raise Exception('Cannot decrease the radical number of this atom.')
 
@@ -609,48 +611,48 @@ class Bond(object):
 		Return :data:`True` if the bond represents a single bond and
 		:data:`False` otherwise.
 		"""
-		return self.bondType.label == 'S'
+		return self.bondType.order == 1
 
 	def isDouble(self):
 		"""
 		Return :data:`True` if the bond represents a double bond and
 		:data:`False` otherwise.
 		"""
-		return self.bondType.label == 'D'
+		return self.bondType.order == 2
 
 	def isTriple(self):
 		"""
 		Return :data:`True` if the bond represents a triple bond and
 		:data:`False` otherwise.
 		"""
-		return self.bondType.label == 'T'
+		return self.bondType.order == 3
 
 	def isBenzene(self):
 		"""
 		Return :data:`True` if the bond represents a benzene (aromatic) bond and
 		:data:`False` otherwise.
 		"""
-		return self.bondType.label == 'B'
+		return self.bondType.order == 1.5
 
 	def canIncreaseOrder(self):
 		"""
 		Return :data:`True` if the bond order can be increased by one.
 		"""
-		return self.bondType.label == 'S' or self.bondType.label == 'D'
+		return self.isSingle() or self.isDouble()
 
 	def canDecreaseOrder(self):
 		"""
 		Return :data:`True` if the bond order can be decreased by one without
 		breaking.
 		"""
-		return self.bondType.label == 'D' or self.bondType.label == 'T'
+		return self.isDouble() or self.isTriple()
 
 	def increaseOrder(self):
 		"""
 		Increase the bond order by one.
 		"""
-		if self.bondType.label == 'S': self.bondType = bondTypes['D']
-		elif self.bondType.label == 'D': self.bondType = bondTypes['T']
+		if self.isSingle():		self.bondType = bondTypes['D']
+		elif self.isDouble():	self.bondType = bondTypes['T']
 		else:
 			logging.exception('Cannot increase the bond order of this bond.')
 
@@ -658,8 +660,8 @@ class Bond(object):
 		"""
 		Decrease the bond order by one.
 		"""
-		if self.bondType.label == 'D': self.bondType = bondTypes['S']
-		elif self.bondType.label == 'T': self.bondType = bondTypes['D']
+		if self.isDouble():		self.bondType = bondTypes['S']
+		elif self.isTriple():	self.bondType = bondTypes['D']
 		else:
 			logging.exception('Cannot decrease the bond order of this bond.')
 
