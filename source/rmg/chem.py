@@ -105,6 +105,44 @@ class AtomType:
 		self.element = element
 		self.description = description
 
+	def equivalent(self, other):
+		"""
+		Returns :data:`True` if two atom types are equivalent or :data:`False`
+		otherwise.
+		"""
+
+		# If either is a generic atom type, then always return True
+		if self.label == 'R' or other.label == 'R':
+			return True
+		# If either is a generic non-hydrogen atom type, then return
+		# True if any atom type in the remaining one is non-hydrogen
+		elif self.label == 'R!H':
+			if other.label != 'H':
+				return True
+		elif other.label == 'R!H':
+			if self.label != 'H':
+				return True
+		# If either represents an element without surrounding bond info,
+		# match remaining to any with the same element
+		elif self.label == self.element.symbol == \
+				other.element.symbol:
+			return True
+		elif other.label == other.element.symbol == \
+				self.element.symbol:
+			return True
+		# Special case: 'Cd' matches any of 'Cd', 'Cdd', 'Cds', or 'CO'
+		elif self.label == 'Cd' and (other.label == 'Cd' or \
+				other.label == 'Cdd' or other.label == 'Cds' or other.label == 'CO'):
+			return True
+		elif other.label == 'Cd' and (self.label == 'Cd' or \
+				self.label == 'Cdd' or self.label == 'Cds' or self.label == 'CO'):
+			return True
+		# Otherwise labels must match exactly
+		elif self.label == other.label:
+			return True
+
+		return False
+
 ################################################################################
 
 def loadAtomTypes():
@@ -171,6 +209,21 @@ class ElectronState:
 		self.order = order
 		self.spin = spin
 
+	def equivalent(self, other):
+		"""
+		Returns :data:`True` if two electron states are equivalent or
+		:data:`False` otherwise.
+		"""
+
+		if self.label == '2' and (other.label == '2' or other.label == '2S' or other.label == '2T'):
+			return True
+		elif (self.label == '2' or self.label == '2S' or self.label == '2T') and other.label == '2':
+			return True
+		elif self.label == other.label:
+			return True
+
+		return False
+
 ############################################################################
 
 def loadElectronStates():
@@ -220,6 +273,17 @@ class BondType:
 		self.order = order
 		self.piElectrons = piElectrons
 		self.location = location
+
+	def equivalent(self, other):
+		"""
+		Returns :data:`True` if two bond types are equivalent or
+		:data:`False` otherwise.
+		"""
+		if self.label == 'D' and (other.label == 'D' or other.label == 'Dcis' or other.label == 'Dtrans'):
+			return True
+		elif (self.label == 'D' or self.label == 'Dcis' or self.label == 'Dtrans') and other.label == 'D':
+			return True
+		else: return self.label == other.label
 
 	def __repr__(self):
 		"""x.__repr__() <==> repr(x)"""
@@ -346,44 +410,11 @@ class Atom(object):
 
 		for atomType1 in self._atomType:
 			for atomType2 in other._atomType:
-
-				# If either is a generic atom type, then always return True
-				if atomType1.label == 'R' or atomType2.label == 'R':
-					atomTypesMatch = True
-				# If either is a generic non-hydrogen atom type, then return
-				# True if any atom type in the remaining one is non-hydrogen
-				elif atomType1.label == 'R!H':
-					if atomType2.label != 'H': atomTypesMatch = True
-				elif atomType2.label == 'R!H':
-					if atomType1.label != 'H': atomTypesMatch = True
-				# If either represents an element without surrounding bond info,
-				# match remaining to any with the same element
-				elif atomType1.label == atomType1.element.symbol == \
-						atomType2.element.symbol:
-					atomTypesMatch = True
-				elif atomType2.label == atomType2.element.symbol == \
-						atomType1.element.symbol:
-					atomTypesMatch = True
-				# Special case: 'Cd' matches any of 'Cd', 'Cdd', or 'Cds'
-				elif atomType1.label == 'Cd' and (atomType2.label == 'Cd' or \
-						atomType2.label == 'Cdd' or atomType2.label == 'Cds'):
-					atomTypesMatch = True
-				elif atomType2.label == 'Cd' and (atomType1.label == 'Cd' or \
-						atomType1.label == 'Cdd' or atomType1.label == 'Cds'):
-					atomTypesMatch = True
-				# Otherwise labels must match exactly
-				elif atomType1.label == atomType2.label:
-					atomTypesMatch = True
+				if atomType1.equivalent(atomType2): atomTypesMatch = True
 
 		for elecState1 in self._electronState:
 			for elecState2 in other._electronState:
-
-				if elecState1.label == '2' and (elecState2.label == '2' or elecState2.label == '2S' or elecState2.label == '2T'):
-					electronStatesMatch = True
-				elif (elecState1.label == '2' or elecState1.label == '2S' or elecState1.label == '2T') and elecState2.label == '2':
-					electronStatesMatch = True
-				elif elecState1.label == elecState2.label:
-					electronStatesMatch = True
+				if elecState1.equivalent(elecState2): electronStatesMatch = True
 
 		return (atomTypesMatch and electronStatesMatch)
 	
@@ -547,8 +578,7 @@ class Bond(object):
 		"""
 		for bondType1 in self._bondType:
 			for bondType2 in other._bondType:
-				if bondType1.label == bondType2.label:
-					return True
+				if bondType1.equivalent(bondType2): return True
 
 		return False
 

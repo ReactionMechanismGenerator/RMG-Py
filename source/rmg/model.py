@@ -677,13 +677,13 @@ class BatchReactor(ReactionSystem):
 		"""
 
 		# Output information about simulation at current time
-		status = '{0:8.4e}'.format(t)
+		status = '%8.4e' % (t)
 		for target in model.termination:
 			if target.__class__ == TerminationConversion:
 				index = model.core.species.index(target.species) + 3
 				conversion = 1.0 - y[index] / y0[index]
-				status += '    {0:8.4g}'.format(conversion)
-		status += '    {0:8.4e}    {1:8.4e}  {2}'.format(charFlux, maxSpeciesFlux, maxSpecies)
+				status += '    %8.4g' % (conversion)
+		status += '    %8.4e    %8.4e  %s' % (charFlux, maxSpeciesFlux, maxSpecies)
 		logging.debug(status)
 		
 		#print t, P, V, T, Ni
