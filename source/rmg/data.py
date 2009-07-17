@@ -561,6 +561,17 @@ def removeCommentFromLine(line):
 
 ################################################################################
 
+def createXMLQuantity(dom, root, value, units=None, uncertainty=None):
+
+	quantity = dom.createElement('quantity')
+	if units is not None:
+		quantity.setAttribute('units', units)
+	if uncertainty is not None:
+		quantity.setAttribute('uncertainty', uncertainty)
+	root.appendChild(quantity)
+	text = dom.createTextNode(str(value))
+	quantity.appendChild(text)
+
 if __name__ == '__main__':
 	pass
 	

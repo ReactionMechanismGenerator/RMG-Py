@@ -58,7 +58,7 @@ class Kinetics:
 		self.Trange = Trange
 		self.rank = 0
 		self.comment = ''
-
+		
 	def isTemperatureInRange(self, T):
 		"""
 		Return :data:`True` if temperature `T` is within the valid temperature
@@ -117,6 +117,35 @@ class ArrheniusKinetics(Kinetics):
 		kinetics.comment = self.comment
 
 		return kinetics
+
+	def toXML(self, dom, root, numReactants):
+		"""
+		Generate the XML for these kinetics using the :data:`xml.dom.minidom`
+		package. The `dom` and `root` parameters refer to the DOM and the
+		point within the DOM to place this item.
+		"""
+		kinetics = dom.createElement('arrheniusKinetics')
+		root.appendChild(kinetics)
+		kinetics.setAttribute('Trange', '%s-%s K' % (self.Trange[0], self.Trange[1]))
+		kinetics.setAttribute('rank', str(self.rank))
+		kinetics.setAttribute('comment', self.comment)
+
+		preexponential = dom.createElement('preexponential')
+		kinetics.appendChild(preexponential)
+		preexponentialUnits = None
+		if len(self.reactants) == 1:
+			preexponentialUnits = 's^-1'
+		else:
+			preexponentialUnits = 'm^%s/(mol^%s*s)' % ((numReactants-1)*3, numReactants-1)
+		data.createXMLQuantity(dom, preexponential, self.A, preexponentialUnits)
+
+		exponent = dom.createElement('exponent')
+		kinetics.appendChild(exponent)
+		data.createXMLQuantity(dom, exponent, self.n, '')
+
+		activationEnergy = dom.createElement('activationEnergy')
+		kinetics.appendChild(activationEnergy)
+		data.createXMLQuantity(dom, activationEnergy, self.Ea, 'J/mol')
 
 ################################################################################
 
@@ -207,6 +236,40 @@ class ArrheniusEPKinetics(Kinetics):
 
 		self.rank = rank
 		self.comment = comment
+
+	def toXML(self, dom, root, numReactants):
+		"""
+		Generate the XML for these kinetics using the :data:`xml.dom.minidom`
+		package. The `dom` and `root` parameters refer to the DOM and the
+		point within the DOM to place this item.
+		"""
+		kinetics = dom.createElement('arrheniusEPKinetics')
+		root.appendChild(kinetics)
+		kinetics.setAttribute('Trange', '%s-%s K' % (self.Trange[0], self.Trange[1]))
+		kinetics.setAttribute('rank', str(self.rank))
+		kinetics.setAttribute('comment', self.comment)
+
+
+		preexponential = dom.createElement('preexponential')
+		kinetics.appendChild(preexponential)
+		preexponentialUnits = None
+		if numReactants == 1:
+			preexponentialUnits = 's^-1'
+		else:
+			preexponentialUnits = 'm^%s/(mol^%s*s)' % ((numReactants-1)*3, numReactants-1)
+		data.createXMLQuantity(dom, preexponential, self.A, preexponentialUnits)
+
+		exponent = dom.createElement('exponent')
+		kinetics.appendChild(exponent)
+		data.createXMLQuantity(dom, exponent, self.n, '')
+
+		alpha = dom.createElement('evansPolanyiSlope')
+		kinetics.appendChild(alpha)
+		data.createXMLQuantity(dom, alpha, self.alpha, '')
+
+		activationEnergy = dom.createElement('evansPolanyiIntercept')
+		kinetics.appendChild(activationEnergy)
+		data.createXMLQuantity(dom, activationEnergy, self.E0, 'J/mol')
 
 ################################################################################
 

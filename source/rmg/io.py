@@ -419,6 +419,7 @@ def writeOutputFile(fstr, reactionModel, reactionSystems):
 		element = dom.createElement('species')
 		element.setAttribute('id', str(spec.id))
 		element.setAttribute('label', spec.label)
+		element.setAttribute('reactive', 'yes' if spec.reactive else 'no')
 		speciesList.appendChild(element)
 
 		# Output the structure using CML
@@ -427,6 +428,8 @@ def writeOutputFile(fstr, reactionModel, reactionSystems):
 		dom0 = xml.dom.minidom.parseString(spec.toCML())
 		cml.appendChild(dom0.documentElement)
 
+		# Output the thermo data
+		spec.thermoData.toXML(dom, element)
 
 	# Process core reactions list
 	reactionList = dom.createElement('reactionList')
@@ -445,6 +448,11 @@ def writeOutputFile(fstr, reactionModel, reactionSystems):
 			product = dom.createElement('product')
 			product.setAttribute('id', str(prod.id))
 			element.appendChild(product)
+
+		kinetics = dom.createElement('kinetics')
+		element.appendChild(kinetics)
+		for k in rxn.kinetics:
+			k.toXML(dom, kinetics, len(rxn.reactants))
 
 	# Write output file
 	f = open(fstr, 'w')

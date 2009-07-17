@@ -119,36 +119,25 @@ class ThermoGAData:
 
 	def toXML(self, dom, root):
 
-		thermo = dom.createElement('thermo')
+		thermo = dom.createElement('thermodynamics')
+		thermo.setAttribute('comment', self.comment)
 		root.appendChild(thermo)
 
-		self.valueToXML(dom, thermo, 'enthalpyOfFormation', self.H298, '298 K')
-		self.valueToXML(dom, thermo, 'entropyOfFormation', self.S298, '298 K')
-		self.valueToXML(dom, thermo, 'heatCapacity', self.Cp[0], '300 K')
-		self.valueToXML(dom, thermo, 'heatCapacity', self.Cp[1], '400 K')
-		self.valueToXML(dom, thermo, 'heatCapacity', self.Cp[2], '500 K')
-		self.valueToXML(dom, thermo, 'heatCapacity', self.Cp[3], '600 K')
-		self.valueToXML(dom, thermo, 'heatCapacity', self.Cp[4], '800 K')
-		self.valueToXML(dom, thermo, 'heatCapacity', self.Cp[5], '1000 K')
-		self.valueToXML(dom, thermo, 'heatCapacity', self.Cp[6], '1500 K')
+		enthalpy = dom.createElement('enthalpyOfFormation')
+		enthalpy.setAttribute('temperature', '298.0 K')
+		thermo.appendChild(enthalpy)
+		data.createXMLQuantity(dom, enthalpy, self.H298, 'J/mol')
 
-		element = dom.createElement('comment')
-		thermo.appendChild(element)
-		comment = dom.createTextNode(self.comment)
-		element.appendChild(comment)
+		entropy = dom.createElement('entropyOfFormation')
+		entropy.setAttribute('temperature', '298.0 K')
+		thermo.appendChild(entropy)
+		data.createXMLQuantity(dom, entropy, self.S298, 'J/(mol*K)')
 
-	def valueToXML(self, dom, root, name, value, temp):
-		element = dom.createElement(name)
-		root.appendChild(element)
-
-		units = str(value.units).split()[1]
-
-		element.setAttribute('temperature', temp)
-		element.setAttribute('units', units)
-		element.setAttribute('uncertainty', str(value.uncertainty))
-
-		valueNode = dom.createTextNode(str(float(value)))
-		element.appendChild(valueNode)
+		for i, Cp in enumerate(self.Cp):
+			heatCapacity = dom.createElement('heatCapacity')
+			heatCapacity.setAttribute('temperature', '%s K' % (self.CpTlist[i]) )
+			thermo.appendChild(heatCapacity)
+			data.createXMLQuantity(dom, heatCapacity, Cp, 'J/(mol*K)')
 
 	def __str__(self):
 		"""
