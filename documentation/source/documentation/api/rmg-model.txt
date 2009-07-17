@@ -56,3 +56,15 @@ TemperatureModel
 .. autoclass:: rmg.model.TemperatureModel
 	:members:
 
+TerminationConversion
+---------------------
+
+.. autoclass:: rmg.model.TerminationConversion
+	:members:
+
+TerminationTime
+---------------
+
+.. autoclass:: rmg.model.TerminationTime
+	:members:
+

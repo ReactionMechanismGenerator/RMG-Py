@@ -43,18 +43,6 @@ Element
 .. autoclass:: rmg.chem.Element
 	:members:
 
-InvalidAdjacencyListException
------------------------------
-
-.. autoclass:: rmg.chem.InvalidAdjacencyListException
-	:members:
-
-Structure
----------
-
-.. autoclass:: rmg.chem.Structure
-	:members:
-
 Methods in ``rmg.chem``
 =======================
 

@@ -118,6 +118,12 @@ class ThermoGAData:
 		return new
 
 	def toXML(self, dom, root):
+		"""
+		Generate an XML representation of the thermodynamic data using the
+		:data:`xml.dom.minidom` package. The `dom` and `root` parameters
+		represent the DOM and the element in the DOM used as the parent of
+		the generated XML.
+		"""
 
 		thermo = dom.createElement('thermodynamics')
 		thermo.setAttribute('comment', self.comment)
@@ -379,6 +385,9 @@ class ThermoDatabaseSet:
 		logging.debug('\t\tPrimary thermo database')
 
 	def saveXML(self, datapath):
+		"""
+		Save the loaded databases in the set to XML files.
+		"""
 
 		f = open(datapath + 'thermo/group.xml', 'w')
 		f.write(self.groupDatabase.toXML())

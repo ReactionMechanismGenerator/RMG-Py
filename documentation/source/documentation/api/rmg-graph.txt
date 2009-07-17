@@ -7,16 +7,12 @@ The ``rmg.graph`` Module
 Classes in ``rmg.graph``
 ========================
 
-ChemGraph
----------
 
-.. autoclass:: rmg.graph.ChemGraph
-	:members:
 
 Methods in ``rmg.graph``
 ========================
 
-.. autofunction:: rmg.graph.VF2_isomorphic
+.. autofunction:: rmg.graph.VF2_isomorphism
 
 .. autofunction:: rmg.graph.__VF2_feasible
 

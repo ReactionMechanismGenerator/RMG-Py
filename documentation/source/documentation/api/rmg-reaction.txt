@@ -19,6 +19,12 @@ ArrheniusKinetics
 .. autoclass:: rmg.reaction.ArrheniusKinetics
 	:members:
 	
+InvalidActionException
+----------------------
+
+.. autoclass:: rmg.reaction.InvalidActionException
+	:members:
+	
 Kinetics
 --------
 

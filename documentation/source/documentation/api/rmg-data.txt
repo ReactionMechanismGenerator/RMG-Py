@@ -48,5 +48,7 @@ Tree
 Methods in ``rmg.data``
 =======================
 
+.. autofunction:: rmg.data.createXMLQuantity
+
 .. autofunction:: rmg.data.removeCommentFromLine
 

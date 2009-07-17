@@ -23,3 +23,6 @@ Methods in ``rmg.io``
 .. autofunction:: rmg.io.getFirstChildElement
 
 .. autofunction:: rmg.io.readInputFile
+
+.. autofunction:: rmg.io.writeOutputFile
+
