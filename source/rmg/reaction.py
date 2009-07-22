@@ -520,52 +520,65 @@ class ReactionFamily(data.Database):
 		# existing data; note that this disregards all temperature range
 		# information
 		forwardTemplate, reverseTemplate = self.getTemplateLists()
-		#self.generateMissingEntriesFromBelow(forwardTemplate)
-		#self.generateMissingEntriesFromAbove(forwardTemplate)
+		self.generateMissingEntriesFromBelow(forwardTemplate)
+		self.generateMissingEntriesFromAbove(forwardTemplate)
 
 	def generateMissingEntriesFromBelow(self, nodes):
 		"""
 		Generate a nonexisting entry in the library based on an averaging
 		scheme.
 		"""
-		
-		# Recursively generate entries for children of the current nodes
+
+		# Get all possible combinations of child nodes
 		children = []
 		for node in nodes:
 			children.append(self.tree.children[node])
-
-		nodesList = self.getAllNodeCombinations(children)
-
-		kinetics = []
-		for nodeList in nodesList:
-			k = self.generateMissingEntriesFromBelow(nodeList)
-			if k is not None:
-				kinetics.append(k)
+		childNodesList = self.getAllNodeCombinations(children)
 
 		# Only generate new entry if data does not exist
 		if self.library.getData(nodes) is None:
 
-			if len(kinetics) == 0: return None
-			
-			lnA = 0.0; E0 = 0.0; n = 0.0; alpha = 0.0
-			for k in kinetics:
-				lnA += math.log(k.A)
-				E0 += k.E0
-				n += k.n
-				alpha += k.alpha
+			# Check all combinations of child nodes for existing kinetics
+			kinetics = []
+			for childNodes in childNodesList:
+				k = self.library.getData(childNodes)
+				if k is not None:
+					kinetics.append(k)
 
-			lnA /= len(kinetics)
-			E0 /= len(kinetics)
-			n /= len(kinetics)
-			alpha /= len(kinetics)
+			# Average all of the kinetics parameters found above
+			if len(kinetics) > 0:
+				kin = self.averageKinetics(kinetics)
+				self.library.add(nodes, kin)
+				#print nodes, kin
 
-			kin = ArrheniusEPKinetics(math.exp(lnA), E0, n, alpha)
-			kin.Trange = [0.0, 0.0]
-			self.library.add(nodes, kin)
-			return kin
+		# Recursively descend child nodes
+		for childNodes in childNodesList:
+			self.generateMissingEntriesFromBelow(childNodes)
 
-		else:
-			return self.library.getData(nodes)
+	def averageKinetics(self, kinetics):
+		"""
+		Return the average kinetic parameters for the list of kinetic data
+		`kinetics`.
+		"""
+		if len(kinetics) == 0:
+			return None
+
+		# Use geometric average of parameters
+		lnA = 0.0; E0 = 0.0; n = 0.0; alpha = 0.0
+		for k in kinetics:
+			lnA += math.log(k.A)
+			E0 += k.E0
+			n += k.n
+			alpha += k.alpha
+
+		lnA /= len(kinetics)
+		E0 /= len(kinetics)
+		n /= len(kinetics)
+		alpha /= len(kinetics)
+
+		kin = ArrheniusEPKinetics(math.exp(lnA), E0, n, alpha)
+		kin.Trange = [0.0, 0.0]
+		return kin
 
 	def generateMissingEntriesFromAbove(self, nodes):
 		"""
@@ -585,58 +598,72 @@ class ReactionFamily(data.Database):
 				if temp == parent:
 					nodeList.append(node)
 			nodeLists.append(nodeList)
-
 		nodesList = self.getAllNodeCombinations(nodeLists)
+
+		data = []
 		for nodeList in nodesList:
-			print nodeList
 			k = self.generateMissingEntryFromAbove(nodeList)
-			#print nodeList, k
+			if k is not None:
+				data.append((nodeList, k))
+
+		for nodeList, kinetics in data:
+			self.library.add(nodeList, kinetics)
+			#print nodeList, kinetics
 
 	def generateMissingEntryFromAbove(self, nodes):
 		
 		# If an entry is already present, return it
-		print '\t', nodes, self.library.getData(nodes)
 		if self.library.getData(nodes) is not None:
 			return self.library.getData(nodes)
 
 		# Generate list of parents
-		nodeLists = []
+		parentNodeLists = []
 		for node in nodes:
-			if self.tree.parent[node] is None:
-				print 'No parent for ' + str(node) + ': ' + str(nodes)
-				return None
-			else:
-				nodeLists.append([self.tree.parent[node]])
+			node0 = node
+			parentNodeList = []
+			while node0 is not None:
+				parentNodeList.append(node0)
+				node0 = self.tree.parent[node0]
+			parentNodeLists.append(parentNodeList)
+		parentNodesList = self.getAllNodeCombinations(parentNodeLists)
 
-		nodesList = self.getAllNodeCombinations(nodeLists)
-		
+		# Generate list of existing kinetic parameters along with "distance"
+		# values (smaller is better)
+		# This assumes that the amount of specificity indicated by moving from
+		# parent to child in each tree is approximately equal
+		minDistance = 1000000
 		kinetics = []
-		for nodeList in nodesList:
-			
-			k = self.generateMissingEntryFromAbove(nodeList)
-			if k is not None:
-				kinetics.append(k)
+		for parentNodes in parentNodesList:
 
-		if len(kinetics) > 0:
+			# Calculate distance
+			distance = 0
+			for i, node in enumerate(parentNodes):
+				distance += parentNodeLists[i].index(node)
 
-			lnA = 0.0; E0 = 0.0; n = 0.0; alpha = 0.0
-			for k in kinetics:
-				lnA += math.log(k.A)
-				E0 += k.E0
-				n += k.n
-				alpha += k.alpha
+			# Don't bother if we've already found kinetics for a smaller
+			# distance than the current distance, as we're just going to ignore
+			# it anyway
+			if distance < minDistance:
+				# Get kinetics and append if available
+				k = self.library.getData(parentNodes)
+				if k is not None:
+					kinetics.append((distance, k))
+					if distance < minDistance: minDistance = distance
 
-			lnA /= len(kinetics)
-			E0 /= len(kinetics)
-			n /= len(kinetics)
-			alpha /= len(kinetics)
-
-			kin = ArrheniusEPKinetics(math.exp(lnA), E0, n, alpha)
-			kin.Trange = [0.0, 0.0]
-			self.library.add(nodeList, kin)
-			return kin
-		else:
+		# Fail if no kinetics found
+		if len(kinetics) == 0:
+			logging.warning('Unable to estimate missing kinetics for nodes %s in reaction family %s.' % (nodes, self.label))
 			return None
+
+		# Prune all entries with distances higher than the minimum
+		kinetics = [k for d, k in kinetics if d == minDistance]
+		if len(kinetics) == 0:
+			logging.warning('Unable to estimate missing kinetics for nodes %s in reaction family %s.' % (nodes, self.label))
+			return None
+		
+		# Average remaining kinetics
+		kin = self.averageKinetics(kinetics)
+		return kin
 
 	def processLibraryData(self):
 		"""
@@ -1024,10 +1051,10 @@ class ReactionFamily(data.Database):
 			
 			template = forwardTemplate
 
-#		k = self.library.getData(template)
-#		print template, k
-#		if k is not None: return [k]
-#		else: return None
+		k = self.library.getData(template)
+		print template, k
+		if k is not None: return [k]
+		else: return None
 		
 		nodeLists = []
 		for temp in template:

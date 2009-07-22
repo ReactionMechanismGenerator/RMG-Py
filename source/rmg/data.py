@@ -287,8 +287,10 @@ class Library(dict):
 	def add(self, labels, data):
 		"""
 		Add an item of `data` to the library based on the value of the list
-		of `labels`.
+		of `labels`. Only add if there is not preexisting data.
 		"""
+		if self.getData(labels) is not None:
+			return
 		names = self.hashLabels(labels)
 		for name in names:
 			self[name] = data
