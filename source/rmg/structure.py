@@ -438,6 +438,81 @@ class Structure:
 		dom2 = xml.dom.minidom.parseString(self.toCML())
 		cml.appendChild(dom2.documentElement)
 
+	def toDOT(self, label=''):
+		"""
+		Convert a Structure object to a graph image via DOT. This is useful
+		for visualizing the functional groups that make up the databases. The
+		output is a string containing a graph in DOT format, which can be
+		passed to graphviz to produce an image; neato is recommended.
+
+		Atoms are visualized as vertices in the outputted graph. Vertices are
+		labeled with the atom type(s) of each corresponding	atom. Labeled atoms
+		('*', '*1', etc.) are color-coded, with a unique color for each label.
+		Bonds are indicated with edges; multiple bonds are represented by
+		multiple edges between the same pair of vertices. The edge line style is
+		used to denote further semantic information: dashed lines indicate
+		optional higher-order bonds, while dotted lines indicate benzene bonds.
+		"""
+		# Start of graph, including graph name (must contain letters, numbers, and _ only)
+		dot = 'graph %s {\n' % (label)
+
+		# List of atoms (vertices)
+		dot += '\t// List of atoms\n'
+		for i, atom in enumerate(self.atoms()):
+			# Generate vertex label from atom type labels
+			atomType = atom._atomType[0].label
+			for type in atom._atomType[1:]:
+				atomType += ',%s' % type.label
+			dot += '\t%s [label="%s"' % (str(i+1), atomType)
+			# Labeled atoms are color coded
+			if atom.label != '':
+				colors = {'*': 'red', '*1': 'red', '*2': 'green', '*3': 'blue', '*4': 'yellow', '*5': 'purple', '*6': 'orange'}
+				dot += ',color=%s,fontcolor=%s' % (colors[atom.label], colors[atom.label])
+			dot += ']\n'
+
+		# List of bonds (edges)
+		dot += '\t// List of bonds\n'
+		for i, bond in enumerate(self.bonds()):
+			index1 = self.atoms().index(bond.atoms[0])
+			index2 = self.atoms().index(bond.atoms[1])
+			
+			single = False; double = False; triple = False; benzene = False
+			for type in bond._bondType:
+				if type.order == 1: single = True
+				if type.order == 2: double = True
+				if type.order == 3: triple = True
+				if type.order == 1.5: benzene = True
+
+			if single or double or triple or benzene:
+
+				# One bond is always required
+				dot += '\t%s -- %s [len=2,style=solid]\n' % (str(index1+1), str(index2+1))
+
+				# Other bonds depend on the possible set of bonds allowed
+				if single and double and triple:
+					dot += '\t%s -- %s [len=2,style=dashed]\n' % (str(index1+1), str(index2+1))
+					dot += '\t%s -- %s [len=2,style=dashed]\n' % (str(index1+1), str(index2+1))
+				elif single and double:
+					dot += '\t%s -- %s [len=2,style=dashed]\n' % (str(index1+1), str(index2+1))
+				elif double and triple:
+					dot += '\t%s -- %s [len=2,style=solid]\n' % (str(index1+1), str(index2+1))
+					dot += '\t%s -- %s [len=2,style=dashed]\n' % (str(index1+1), str(index2+1))
+				elif single and triple:
+					dot += '\t%s -- %s [len=2,style=dashed]\n' % (str(index1+1), str(index2+1))
+					dot += '\t%s -- %s [len=2,style=dashed]\n' % (str(index1+1), str(index2+1))
+				elif double:
+					dot += '\t%s -- %s [len=2,style=solid]\n' % (str(index1+1), str(index2+1))
+				elif triple:
+					dot += '\t%s -- %s [len=2,style=solid]\n' % (str(index1+1), str(index2+1))
+					dot += '\t%s -- %s [len=2,style=solid]\n' % (str(index1+1), str(index2+1))
+
+				if benzene:
+					dot += '\t%s -- %s [len=2,style=dotted]\n' % (str(index1+1), str(index2+1))
+			
+		dot += '}\n'
+
+		return dot
+	
 	def simplifyAtomTypes(self):
 		"""
 		Iterate through the atoms in the structure, setting them to be equal

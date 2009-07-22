@@ -848,33 +848,39 @@ if __name__ == '__main__':
 	thermoDatabase = ThermoDatabaseSet()
 	thermoDatabase.load(datapath)
 
-	adjlist = \
-"""
-1 C 0 {2,S} {4,S} {5,S} {6,S}
-2 C 0 {1,S} {3,S} {7,S} {8,S}
-3 C 0 {2,S} {4,S} {9,S} {10,S}
-4 C 0 {3,S} {1,S} {11,S} {12,S}
-5 H 0 {1,S}
-6 H 0 {1,S}
-7 H 0 {2,S}
-8 H 0 {2,S}
-9 H 0 {3,S}
-10 H 0 {3,S}
-11 H 0 {4,S}
-12 H 0 {4,S}
-"""
+	for label, struct in thermoDatabase.groupDatabase.dictionary.iteritems():
+		label = label.replace('/', '_').replace('\\', '_')
+		f = open('data/%s.txt' % (label), 'w')
+		f.write(struct.toDOT('graphname'))
+		f.close()
 
-	structure = structure.Structure()
-	structure.fromAdjacencyList(adjlist)
-	structure.updateAtomTypes()
-
-	print structure.toInChI()
-
-	thermoData = getThermoData(structure)
-
-	T = 1000.0
-	print 'Heat capacity at ' + str(T) + ': ' + str(thermoData.getHeatCapacity(T))
-	print 'Enthalpy at ' + str(T) + ': ' + str(thermoData.getEnthalpy(T))
-	print 'Entropy at ' + str(T) + ': ' + str(thermoData.getEntropy(T))
-	print 'Free energy at ' + str(T) + ': ' + str(thermoData.getFreeEnergy(T))
-	
+#	adjlist = \
+#"""
+#1 C 0 {2,S} {4,S} {5,S} {6,S}
+#2 C 0 {1,S} {3,S} {7,S} {8,S}
+#3 C 0 {2,S} {4,S} {9,S} {10,S}
+#4 C 0 {3,S} {1,S} {11,S} {12,S}
+#5 H 0 {1,S}
+#6 H 0 {1,S}
+#7 H 0 {2,S}
+#8 H 0 {2,S}
+#9 H 0 {3,S}
+#10 H 0 {3,S}
+#11 H 0 {4,S}
+#12 H 0 {4,S}
+#"""
+#
+#	structure = structure.Structure()
+#	structure.fromAdjacencyList(adjlist)
+#	structure.updateAtomTypes()
+#
+#	print structure.toInChI()
+#
+#	thermoData = getThermoData(structure)
+#
+#	T = 1000.0
+#	print 'Heat capacity at ' + str(T) + ': ' + str(thermoData.getHeatCapacity(T))
+#	print 'Enthalpy at ' + str(T) + ': ' + str(thermoData.getEnthalpy(T))
+#	print 'Entropy at ' + str(T) + ': ' + str(thermoData.getEntropy(T))
+#	print 'Free energy at ' + str(T) + ': ' + str(thermoData.getFreeEnergy(T))
+#
