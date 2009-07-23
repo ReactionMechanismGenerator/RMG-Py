@@ -174,6 +174,18 @@ class Tree:
 		self.top = []
 		self.parent = {}
 		self.children = {}
+		
+	def ancestors(self, node):
+		"""
+		Returns all the ancestors of a node, climbing up the tree to the top.
+		"""
+		parent=self.parent[node]
+		if parent is None:
+			return list()
+		else:
+			ancestors = [parent]
+			ancestors.extend(self.ancestors(parent))
+			return ancestors
 	
 	def add(self, node, parent):
 		"""
