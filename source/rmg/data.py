@@ -347,7 +347,6 @@ class Library(dict):
 		
 		# Process the library
 		try:
-		
 			flib = open(path, 'r')
 			for line in flib:
 				line = removeCommentFromLine(line).strip()

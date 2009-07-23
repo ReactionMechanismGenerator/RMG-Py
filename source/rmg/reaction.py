@@ -520,8 +520,8 @@ class ReactionFamily(data.Database):
 		# existing data; note that this disregards all temperature range
 		# information
 		forwardTemplate, reverseTemplate = self.getTemplateLists()
-		self.generateMissingEntriesFromBelow(forwardTemplate)
-		self.generateMissingEntriesFromAbove(forwardTemplate)
+		#self.generateMissingEntriesFromBelow(forwardTemplate)
+		#self.generateMissingEntriesFromAbove(forwardTemplate)
 
 	def generateMissingEntriesFromBelow(self, nodes):
 		"""
