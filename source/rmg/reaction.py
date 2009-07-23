@@ -520,6 +520,9 @@ class ReactionFamily(data.Database):
 		# existing data; note that this disregards all temperature range
 		# information
 		forwardTemplate, reverseTemplate = self.getTemplateLists()
+		
+		self.drawGraphOfTree(forwardTemplate)
+	#	assert False
 		#self.generateMissingEntriesFromBelow(forwardTemplate)
 		#self.generateMissingEntriesFromAbove(forwardTemplate)
 
@@ -579,7 +582,50 @@ class ReactionFamily(data.Database):
 		kin = ArrheniusEPKinetics(math.exp(lnA), E0, n, alpha)
 		kin.Trange = [0.0, 0.0]
 		return kin
-
+		
+	def drawGraphOfTree(self, nodes):
+		"""draw a graph of the tree"""
+		import pydot, re
+		g=pydot.Dot(size='10,8', page='10,8' ,  rankdir='LR',
+				graph_type='digraph', simplify=True, fontsize=10,
+				overlap='true', dpi='85',center="True")
+		
+		rates =  self.library.keys() # known reaction rates in library
+		# add reactionrate nodes to graph
+		for rate in rates:
+			g.add_node(pydot.Node(rate))
+		# add edges from each node to each of its ancestors
+		for rate in rates:
+			nodes=rate.split(';')
+			for trialRate in rates: # the one we are testing for ancestry
+				if trialRate == rate: continue # reject if itself
+				for i,node in enumerate(nodes):
+					trialNode = trialRate.split(';')[i]
+					if trialNode == node: continue # ok if equal
+					if trialNode not in self.tree.ancestors(node): break 
+					# if stopped through break, then it will not run the else clause
+				else:
+					# loop fell through all nodes without breaking:
+					# trialRate must be ancestor of rate
+					g.add_edge(pydot.Edge(trialRate,rate))
+		g.set('fontsize','10')
+		format='svg'
+		prog='dot'
+		f=open(self.label+'.dot','w')
+		f.write(g.to_string())
+		f.close()
+		filename=self.label+'.'+format
+		if format=='svg':  # annoyingly, dot creates svg's without units on the font size attribute.
+			st=g.create_svg(prog=prog)
+			st=re.sub(r"(font\-size\:[0-9]+\.*[0-9]*)([^p])",r"\1pt\2",st)
+			f=open(filename,'w')
+			f.write(st)
+			f.close()
+		else:    
+			g.write(filename,format=format,prog=prog)  
+			
+			
+		
 	def generateMissingEntriesFromAbove(self, nodes):
 		"""
 		Generate a nonexisting entry in the library based on an averaging
