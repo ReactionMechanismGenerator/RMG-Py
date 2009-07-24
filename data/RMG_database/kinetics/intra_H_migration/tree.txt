@@ -178,29 +178,29 @@ L1: RnH
 ////////////////////////////////////////////////////////////////////////////////
 
 L1: Y_rad_out
-        L2: C_rad_out_single
-              L3: C_rad_out_2H
-              L3: C_rad_out_1H
-                   L4: C_rad_out_H/NonDeC
-                   L4: C_rad_out_H/NonDeO
-                   L4: C_rad_out_H/OneDe
-              L3: C_rad_out_noH
-                   L4: C_rad_out_NonDe
-                       L5: C_rad_out_Cs2
-				L6: C_rad_out_Cs2_cy3
-				L6: C_rad_out_Cs2_cy4
-				L6: C_rad_out_Cs2_cy5
-				//L6: Others-C_rad_out_Cs2
-                       L5: C_rad_out_NDMustO
-                    L4: C_rad_out_OneDe
-		       L5: C_rad_out_OneDe/Cs
-		       L5: C_rad_out_OneDe/O
-		    L4: C_rad_out_TwoDe  
+	L2: C_rad_out_single
+		L3: C_rad_out_2H
+		L3: C_rad_out_1H
+			L4: C_rad_out_H/NonDeC
+			L4: C_rad_out_H/NonDeO
+			L4: C_rad_out_H/OneDe
+		L3: C_rad_out_noH
+			L4: C_rad_out_NonDe
+				L5: C_rad_out_Cs2
+					L6: C_rad_out_Cs2_cy3
+					L6: C_rad_out_Cs2_cy4
+					L6: C_rad_out_Cs2_cy5
+					//L6: Others-C_rad_out_Cs2
+				L5: C_rad_out_NDMustO
+			L4: C_rad_out_OneDe
+				L5: C_rad_out_OneDe/Cs
+				L5: C_rad_out_OneDe/O
+			L4: C_rad_out_TwoDe  
 	L2: Cd_rad_out_double
 	L2: Cd_rad_out_single
-	      L3: Cd_rad_out_singleH
-	      L3: Cd_rad_out_singleNd
-	      L3: Cd_rad_out_singleDe
+		L3: Cd_rad_out_singleH
+		L3: Cd_rad_out_singleNd
+		L3: Cd_rad_out_singleDe
 	L2: Ct_rad_out
 	L2: O_rad_out
 	L2: Cb_rad_out
@@ -209,10 +209,10 @@ L1: Y_rad_out
 ////////////////////////////////////////////////////////////////////////////////
 
 L1: XH_out
-	      L2: Cs_H_out
-	          L3: Cs_H_out_2H
-	          L3: Cs_H_out_1H
-	     		L4: Cs_H_out_H/NonDeC
+	L2: Cs_H_out
+		L3: Cs_H_out_2H
+		L3: Cs_H_out_1H
+			L4: Cs_H_out_H/NonDeC
 				L5: Cs_H_out_H/(NonDeC/Cs)
 //				L5: Cs_H_out_H/(NonDeC/Os/Os)
 				L5: Cs_H_out_H/(NonDeC/Cs/Cs)
@@ -225,7 +225,7 @@ L1: XH_out
 //				L5: Cs_H_out_H/((C/C)OOH)
 			L4: Cs_H_out_H/NonDeO
 			L4: Cs_H_out_H/OneDe
-	          L3: Cs_H_out_noH
+		L3: Cs_H_out_noH
 			L4: Cs_H_out_NonDe
 				L5: Cs_H_out_Cs2
 					L6: Cs_H_out_Cs2_cy3
@@ -235,15 +235,15 @@ L1: XH_out
 				L5: Cs_H_out_NDMustO
 			L4: Cs_H_out_OneDe
 			L4: Cs_H_out_TwoDe
-	      L2: Cd_H_out_double
-	          L3: Cd_H_out_doubleC
-	          L3: Cd_H_out_doubleO
-	      L2: Cd_H_out_single
-	          L3: Cd_H_out_singleH
-	          L3: Cd_H_out_singleNd
-	          L3: Cd_H_out_singleDe
-	      L2: CO_H_out
-	      L2: O_H_out
-	      L2: Ct_H_out
-	      L2: Cb_H_out
+	L2: Cd_H_out_double
+		L3: Cd_H_out_doubleC
+		L3: Cd_H_out_doubleO
+	L2: Cd_H_out_single
+		L3: Cd_H_out_singleH
+		L3: Cd_H_out_singleNd
+		L3: Cd_H_out_singleDe
+	L2: CO_H_out
+	L2: O_H_out
+	L2: Ct_H_out
+	L2: Cb_H_out
 

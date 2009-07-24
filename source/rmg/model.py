@@ -574,8 +574,12 @@ class BatchReactor(ReactionSystem):
 
 		charFlux = model.fluxTolerance * math.sqrt(sum([x**2 for x in rxnRates[0:len(model.core.reactions)]]))
 		dNidt = numpy.dot(stoichiometry, rxnRates)
-		maxSpeciesFlux, maxSpecies = max([ (value, i+len(model.core.species)) for i, value in enumerate(dNidt[len(model.core.species):]) ])
-		
+		if len(model.edge.species) > 0:
+			maxSpeciesFlux, maxSpecies = max([ (value, i+len(model.core.species)) for i, value in enumerate(dNidt[len(model.core.species):]) ])
+			return (maxSpeciesFlux < charFlux), speciesList[maxSpecies], maxSpeciesFlux, charFlux
+		else:
+			return True, None, 0.0, charFlux
+
 		return (maxSpeciesFlux < charFlux), speciesList[maxSpecies], maxSpeciesFlux, charFlux
 
 	def simulate(self, model):

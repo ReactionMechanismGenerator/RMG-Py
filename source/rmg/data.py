@@ -507,6 +507,59 @@ class Database:
 		self.tree.toXML(dom, root)
 		self.library.toXML(dom, root)
 
+	def isWellFormed(self):
+		"""
+		Return :data:`True` if the database is well-formed. A well-formed
+		database has an entry in the dictionary for every entry in the tree, and
+		an entry in the tree for every entry in the library. If no tree is
+		present (e.g. the primary libraries), then every entry in the library
+		must have an entry in the dictionary. Finally, each entry in the
+		library must have the same number of nodes as the number of top-level
+		nodes in the tree, if the tree is present; this is for databases with
+		multiple trees, e.g. the kinetics databases.
+		"""
+
+		wellFormed = True
+
+		# Make list of all nodes in library
+		libraryNodes = []
+		for nodes in self.library:
+			libraryNodes.extend(nodes.split(';'))
+		libraryNodes = list(set(libraryNodes))
+		
+		
+		for node in libraryNodes:
+			
+			# All nodes in library must be in dictionary
+			try:
+				if node not in self.dictionary:
+					raise InvalidDatabaseException('Node "%s" in library is not present in dictionary.' % (node))
+			except InvalidDatabaseException, e:
+				wellFormed = False
+				logging.error(e.msg)
+
+			# If a tree is present, all nodes in library must be in tree
+			if len(self.tree.parent) > 0:
+				try:
+					if node not in self.tree.parent:
+						raise InvalidDatabaseException('Node "%s" in library is not present in tree.' % (node))
+				except InvalidDatabaseException, e:
+					wellFormed = False
+					logging.error(e.msg)
+
+		# If a tree is present, all nodes in tree must be in dictionary
+		if self.tree is not None:
+			for node in self.tree.parent:
+				try:
+					if node not in self.dictionary:
+						raise InvalidDatabaseException('Node "%s" in tree is not present in dictionary.' % (node))
+				except InvalidDatabaseException, e:
+					wellFormed = False
+					logging.error(e.msg)
+
+		return wellFormed
+
+
 	def matchNodeToStructure(self, node, structure, atoms):
 		"""
 		Return :data:`True` if the `structure` centered at `atom` matches the

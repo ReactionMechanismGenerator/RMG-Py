@@ -168,7 +168,7 @@ class ThermoGAData:
 		else:
 			for Tmin, Tmax, Cpmin, Cpmax in zip(ThermoGAData.CpTlist[:-1], \
 					ThermoGAData.CpTlist[1:], self.Cp[:-1], self.Cp[1:]):
-				if Tmin <= T and T < Tmax:
+				if Tmin <= T and T <= Tmax:
 					return (Cpmax - Cpmin) * ((T - Tmin) / (Tmax - Tmin)) + Cpmin
 
 	def getEnthalpy(self, T):
@@ -266,6 +266,10 @@ class ThermoDatabase(data.Database):
 
 			else:
 				raise data.InvalidDatabaseException('Thermo library data format is unrecognized.')
+
+		# Check for well-formedness
+		if not self.isWellFormed():
+			raise data.InvalidDatabaseException('Database at "%s" is not well-formed.' % (path))
 
 		#self.library.removeLinks()
 
@@ -536,7 +540,7 @@ class Species:
 			self.structure = []
 		self.reactive = reactive
 
-		self.thermo = None
+		self.thermoData = None
 		self.lennardJones = None
 		self.spectralData = None
 

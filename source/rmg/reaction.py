@@ -110,7 +110,7 @@ class ArrheniusKinetics(Kinetics):
 		298 K, respectively, defined in the same direction that these kinetics
 		are.
 		"""
-		
+
 		kinetics = ArrheniusKinetics(self.A / Keq * math.exp(-dHrxn / constants.R / T), self.Ea - dHrxn, self.n)
 		kinetics.Trange = self.Trange
 		kinetics.rank = self.rank
@@ -516,12 +516,16 @@ class ReactionFamily(data.Database):
 		self.library.parse(lines[2:], int(lines[1]))
 		self.processLibraryData()
 
+		# Check for well-formedness
+		if not self.isWellFormed():
+			raise data.InvalidDatabaseException('Database at "%s" is not well-formed.' % (path))
+
 		# Fill in missing nodes in library via an averaging scheme of the
 		# existing data; note that this disregards all temperature range
 		# information
 		forwardTemplate, reverseTemplate = self.getTemplateLists()
 		
-		self.drawGraphOfTree(forwardTemplate)
+		#self.drawGraphOfTree(forwardTemplate)
 	#	assert False
 		#self.generateMissingEntriesFromBelow(forwardTemplate)
 		#self.generateMissingEntriesFromAbove(forwardTemplate)
@@ -535,28 +539,32 @@ class ReactionFamily(data.Database):
 		# Get all possible combinations of child nodes
 		children = []
 		for node in nodes:
-			children.append(self.tree.children[node])
+			nodeList = [node]; nodeList.extend(self.tree.children[node])
+			children.append(nodeList)
 		childNodesList = self.getAllNodeCombinations(children)
-
-		# Only generate new entry if data does not exist
-		if self.library.getData(nodes) is None:
-
-			# Check all combinations of child nodes for existing kinetics
-			kinetics = []
-			for childNodes in childNodesList:
-				k = self.library.getData(childNodes)
-				if k is not None:
-					kinetics.append(k)
-
-			# Average all of the kinetics parameters found above
-			if len(kinetics) > 0:
-				kin = self.averageKinetics(kinetics)
-				self.library.add(nodes, kin)
-				#print nodes, kin
+		# Remove current nodes
+		for i in range(childNodesList.count(nodes)):
+			childNodesList.remove(nodes)
 
 		# Recursively descend child nodes
+		kinetics = []
 		for childNodes in childNodesList:
-			self.generateMissingEntriesFromBelow(childNodes)
+			k = self.generateMissingEntriesFromBelow(childNodes)
+			if k is not None: kinetics.append(k)
+
+		# Only generate new entry if data does not exist or rank is zero;
+		# otherwise return existing value
+		if self.library.getData(nodes) is not None:
+			if self.library.getData(nodes).rank > 0:
+				return self.library.getData(nodes)
+
+		# Otherwise average all of the kinetics parameters found above
+		if len(kinetics) > 0:
+			kin = self.averageKinetics(kinetics)
+			kin.rank = 5
+			self.library.add(nodes, kin)
+			print nodes, kin
+
 
 	def averageKinetics(self, kinetics):
 		"""
@@ -565,7 +573,7 @@ class ReactionFamily(data.Database):
 		"""
 		if len(kinetics) == 0:
 			return None
-
+		
 		# Use geometric average of parameters
 		lnA = 0.0; E0 = 0.0; n = 0.0; alpha = 0.0
 		for k in kinetics:
@@ -1097,10 +1105,10 @@ class ReactionFamily(data.Database):
 			
 			template = forwardTemplate
 
-		k = self.library.getData(template)
-		print template, k
-		if k is not None: return [k]
-		else: return None
+#		k = self.library.getData(template)
+#		print template, k
+#		if k is not None: return [k]
+#		else: return None
 		
 		nodeLists = []
 		for temp in template:
@@ -1423,10 +1431,9 @@ class Reaction:
 		"""
 
 		# Calculate total concentration
-		totalConc = None
+		totalConc = 0.0
 		for spec in conc:
-			if totalConc is None: totalConc = conc[spec]
-			else: totalConc += conc[spec]
+			totalConc += conc[spec]
 
 		# Evaluate rate constant
 		rateConstant = self.getRateConstant(T)
