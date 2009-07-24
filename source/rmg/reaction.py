@@ -476,17 +476,6 @@ class ReactionFamily(data.Database):
 			else:						reverse.append(product)
 		return forward, reverse
 
-	def getAllNodeCombinations(self, nodeLists):
-		"""
-		Generate a list of all possible combinations of reactant nodes.
-		"""
-
-		items = [[]]
-		for nodeList in nodeLists:
-			items = [ item + [node] for node in nodeList for item in items ]
-
-		return items
-
 	def load(self, path):
 		"""
 		Load a reaction family located in the directory `path`.
@@ -591,6 +580,58 @@ class ReactionFamily(data.Database):
 		kin.Trange = [0.0, 0.0]
 		return kin
 		
+	def drawFullGraphOfTree(self):
+		"""
+		Create a PyDOT representation of the current tree.
+		"""
+
+		import pydot
+
+		graph = pydot.Dot(size='10,8', page='10,8' ,  rankdir='LR',
+				graph_type='digraph', simplify=True, fontsize=10,
+				overlap='true', dpi='85',center="True")
+
+		forwardTemplate, reverseTemplate = self.getTemplateLists()
+
+		nodeLists = [[] for top in forwardTemplate]
+		for node in self.tree.parent:
+			ancestors = self.tree.ancestors(node)
+			index = -1
+			if len(ancestors) > 0:
+				try:
+					index = forwardTemplate.index(ancestors[-1])
+				except ValueError:
+					pass
+			elif node in forwardTemplate:
+				index = forwardTemplate.index(node)
+			if index >= 0 and index < len(forwardTemplate):
+				nodeLists[index].append(node)
+
+		nodesList = data.getAllCombinations(nodeLists)
+
+		# Create vertices of graph
+		for nodes in nodesList:
+			label = ';'.join(nodes)
+			node = pydot.Node(label)
+			if self.library.getData(nodes) is not None:
+				node.set_style('filled')
+				node.set_fillcolor('#000000FF')
+				node.set_fontcolor('#FFFFFFFF')
+			graph.add_node(node)
+
+		# Create edges of graph
+		for nodes in nodesList:
+			label = ';'.join(nodes)
+			for i, node in enumerate(nodes):
+				parent = nodes[:]
+				parent[i] = self.tree.parent[node]
+				if None not in parent:
+					parentLabel = ';'.join(parent)
+					graph.add_edge(pydot.Edge(parentLabel,label))
+
+		return graph
+
+
 	def drawGraphOfTree(self, nodes):
 		"""draw a graph of the tree"""
 		import pydot, re

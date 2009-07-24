@@ -217,12 +217,12 @@ L1: XH_out
 //				L5: Cs_H_out_H/(NonDeC/Os/Os)
 				L5: Cs_H_out_H/(NonDeC/Cs/Cs)
 				L5: Cs_H_out_H/(NonDeC/Cs/Cs/Cs)
-//				L5: Cs_H_out_H/(CCCOOH)
-//				L5: Cs_H_out_H/((C/C)CCOOH)
-//				L5: Cs_H_out_H/(CCOOH)
-//				L5: Cs_H_out_H/((C/C)COOH)
-//				L5: Cs_H_out_H/(COOH)
-//				L5: Cs_H_out_H/((C/C)OOH)
+				L5: Cs_H_out_H/(CCCOOH)
+				L5: Cs_H_out_H/((C/C)CCOOH)
+				L5: Cs_H_out_H/(CCOOH)
+				L5: Cs_H_out_H/((C/C)COOH)
+				L5: Cs_H_out_H/(COOH)
+				L5: Cs_H_out_H/((C/C)OOH)
 			L4: Cs_H_out_H/NonDeO
 			L4: Cs_H_out_H/OneDe
 		L3: Cs_H_out_noH

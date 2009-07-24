@@ -162,6 +162,21 @@ class Dictionary(dict):
 
 ################################################################################
 
+def getAllCombinations(nodeLists):
+	"""
+	Generate a list of all possible combinations of items in the list of
+	lists `nodeLists`.
+	"""
+
+	items = [[]]
+	for nodeList in nodeLists:
+		items = [ item + [node] for node in nodeList for item in items ]
+
+	return items
+
+################################################################################
+
+
 class Tree:
 	"""
 	An implementation of an n-ary tree used for representing a hierarchy of
@@ -287,7 +302,7 @@ class Tree:
 				nodes[key].appendChild(nodes[value])
 				
 		tree.appendChild(nodes[self.top])
-		
+
 ################################################################################
 
 class Library(dict):
