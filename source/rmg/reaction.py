@@ -83,6 +83,8 @@ class ArrheniusKinetics(Kinetics):
 	"""
 
 	def __init__(self, A=0.0, Ea=0.0, n=0.0):
+		"""If calling without keyword arguments be careful of the order!"""
+		# in fact, should (can?) we enforce keyword calling?
 		Kinetics.__init__(self)
 		self.A = A
 		self.Ea = Ea
@@ -164,6 +166,7 @@ class ArrheniusEPKinetics(Kinetics):
 	"""
 
 	def __init__(self, A=0.0, E0=0.0, n=0.0, alpha=0.0):
+		"""If calling without keyword arguments be careful of the order!"""
 		Kinetics.__init__(self)
 		self.A = A
 		self.E0 = E0
@@ -1395,11 +1398,13 @@ class Reaction:
 
 	def getBestKinetics(self, T):
 		"""
-		Return the best set of kinetic parameters for the forward reaction
+		Return the best set of ArrheniusKinetics parameters for the forward reaction
 		evaluated at the temperature `T`. This function follows the convention
 		that the forward reaction is the one for which we are using the kinetic
 		expression, and that the reverse rate constant is evaluated using
-		thermochemical equilibrium.
+		thermochemical equilibrium.  
+		Evans-Polyani ArrheniusEPKinetics are converted to ArrheniusKinetics 
+		using dHrxn(298K)
 		"""
 
 		# Check cache first
@@ -1421,23 +1426,25 @@ class Reaction:
 		# This may not be the best course of action
 		if len(kinetics) == 0:
 			#logging.warning('Warning: No kinetics available for reaction ' + str(self) + ' at ' + str(T) + ' K.')
-			kinetics = ArrheniusKinetics(0.0, 0.0, 0.0)
+			kinetics = ArrheniusKinetics(A=0.0, Ea=0.0, n=0.0)
 			kinetics.Trange = [0.0, 100000.0]
 			return kinetics
 
 		# Choose kinetics based on rank (i.e. lowest non-zero rank)
-		bestRank = kinetics[0].rank; bestKinetics = kinetics[0]
+		bestRank = kinetics[0].rank
+		bestKinetics = kinetics[0]
 		for k in kinetics[1:]:
 			if k.rank < bestRank and k.rank != 0:
 				bestRank = k.rank
 				bestKinetics = k
-
-		# Convert to ArrheniusKinetics and return
-		# Use T = 298 K to calculate enthalpy and free energy of reaction
-		T = 298.0
-		dHrxn = self.getEnthalpyOfReaction(T)
-		self.bestKinetics = bestKinetics.getArrhenius(dHrxn)
-		
+		if isinstance(bestKinetics, ArrheniusEPKinetics):
+			# Convert to ArrheniusKinetics
+			# Use T = 298 K to calculate enthalpy and free energy of reaction
+			T = 298.0
+			dHrxn = self.getEnthalpyOfReaction(T)
+			bestKinetics = bestKinetics.getArrhenius(dHrxn)
+			
+		self.bestKinetics = bestKinetics
 		return self.bestKinetics
 
 	def getRateConstant(self, T):
