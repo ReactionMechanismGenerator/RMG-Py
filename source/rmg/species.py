@@ -214,6 +214,162 @@ class ThermoGAData:
 		if T < ThermoGAData.CpTlist[0] and T != T != 298.0:
 			raise data.TemperatureOutOfRangeException('Invalid temperature for free energy estimation from group additivity.')
 		return self.getEnthalpy(T) - T * self.getEntropy(T)
+###############
+class ThermoNASAPolynomial:
+	"""A single NASA polynomial for thermochemistry. 
+	See __init__ docstring for more details"""
+
+	def __init__(self, T_range=None, coeffs=None, comment=''):
+		"""Initialize a NASA polynomial data.
+		
+		T_range is [Tmin, Tmax]
+		coeffs is [a1, a2, a3, a4, a5, a6, a7]
+		
+ 		The thermodynamic properties are given by 
+		 Cp/R = a1 + a2 T + a3 T^2 + a4 T^3 + a5 T^4
+		 H/RT = a1 + a2 T /2 + a3 T^2 /3 + a4 T^3 /4 + a5 T^4 /5 + a6/T
+		 S/R  = a1 lnT + a2 T + a3 T^2 /2 + a4 T^3 /3 + a5 T^4 /4 + a7
+		which was copied from http://www.me.berkeley.edu/gri-mech/data/nasa_plnm.html
+		"""
+		self.T_range = T_range or [0.0]*2
+		self.coeffs = coeffs or [0.0]*7
+		self.comment = comment
+	def isValidTemperature(self,temperature):
+		"""Is the given temperature within the range of this polynomial?"""
+		if temperature<self.T_range[0]: return False
+		if temperature>self.T_range[1]: return False
+		return True
+		
+	def getHeatCapacity(self, T):
+		"""
+		Return the heat capacity at temperature `T`.
+		assumes T in [K] and returns Cp in [J/mol/K]
+		"""
+		c = self.coeffs
+		T2 = T*T
+		# Cp/R = a1 + a2 T + a3 T^2 + a4 T^3 + a5 T^4
+#		HeatCapacityOverR = c[0] + c[1]*T + c[2]*T*T + c[3]*T*T*T + c[4]*T*T*T*T
+		HeatCapacityOverR = c[0] + T*(c[1] + T*(c[2] + T*(c[3] + c[4]*T)))
+		Cp = HeatCapacityOverR * constants.R
+		return Cp
+		
+	def getEnthalpy(self, T):
+		"""
+		Return the enthalpy at temperature `T`.
+		"""
+		c = self.coeffs
+		T2 = T*T
+		T4 = T2*T2
+		# H/RT = a1 + a2 T /2 + a3 T^2 /3 + a4 T^3 /4 + a5 T^4 /5 + a6/T
+		EnthalpyOverR = ( c[0]*T + c[1]*T2/2 + c[2]*T2*T/3 + c[3]*T4/4 +
+						  c[4]*T4*T/5 + c[5] )
+		H = EnthalpyOverR * constants.R
+		return H
+		
+	def getEntropy(self, T):
+		"""
+		Return the entropy at temperature `T`.
+		"""
+		# S/R  = a1 lnT + a2 T + a3 T^2 /2 + a4 T^3 /3 + a5 T^4 /4 + a7
+		c = self.coeffs
+		T2 = T*T
+		T4 = T2*T2
+		EntropyOverR = ( c[0]*math.log(T) + c[1]*T + c[2]*T2/2 +
+					c[3]*T2*T/3 + c[4]*T4/4 + c[6] )
+		S = EntropyOverR * constants.R
+		return S
+		
+	def getFreeEnergy(self, T):
+		"""
+		Return the Gibbs free energy at temperature `T`.
+		"""
+		return self.getEnthalpy(T) - T * self.getEntropy(T)
+
+	def toXML(self, dom, root):
+#   <polynomial>
+#      <validRange>
+#         <bound kind="lower" property="temperature" units="K">300.000</bound>
+#         <bound kind="upper" property="temperature" units="K">1000</bound>
+#      </validRange>
+#      <coefficient id="1" label="a1">4.0733</coefficient>
+#      <coefficient id="2" label="a2">0.011308</coefficient>
+#      <coefficient id="3" label="a3">-1.6565e-005</coefficient>
+#      <coefficient id="4" label="a4">1.1784e-008</coefficient>
+#      <coefficient id="5" label="a5">-3.3006e-012</coefficient>
+#      <coefficient id="6" label="a6">-19054.23</coefficient>
+#      <coefficient id="7" label="a7">4.4083</coefficient>
+#   </polynomial>
+		pass
+		
+class ThermoNASAData:
+	"""
+	A set of thermodynamic parameters given by NASA polynomials.
+	- `comment` = a string describing the source of the data
+	- `NASA_polynomials` = a list of ThermoNASAPolynomial() objects
+	"""
+	def __init__(self, NASA_polynomials = None, comment=''):
+		"""Initialize a set of NASA thermodynamic data."""
+		self.NASA_polynomials = NASA_polynomials or [] # a list of ThermoNASAPolynomial objects
+		self.comment = comment
+		# do some tests?
+	
+	def addPolynomial(self, polynomial):
+		if not isinstance(polynomial,ThermoNASAPolynomial):
+			raise TypeError("polynomial should be instance of ThermoNASAPolynomial")
+		self.NASA_polynomials.append(polynomial)
+
+	def selectPolynomialForT(self, temperature):
+		for poly in self.NASA_polynomials:
+			if poly.isValidTemperature(temperature): break
+		else: 
+			raise data.TemperatureOutOfRangeException("No polynomial found for T=%s"%temperature)
+		return poly
+
+	def toXML(self, dom, root):
+# <thermodynamicPolynomials type="nasa7">
+#   <referenceState>
+#      <Tref units="K">298.15</Tref>
+#      <Pref units="Pa">100000</Pref>
+#   </referenceState>
+#   <dfH units="J/mol">-145177.5731</dfH>
+#   <polynomial> FROM NASA_polynomials </polynomial>
+# </thermodynamicPolynomials>
+		pass
+
+	def __str__(self):
+		"""
+		Return a string summarizing the thermodynamic data.
+		"""
+		string = 'NASA polynomials'
+		return string
+		
+	def getHeatCapacity(self, T):
+		"""
+		Return the heat capacity at temperature `T`.
+		"""
+		poly = self.selectPolynomialForT(T)
+		return poly.getHeatCapacity(T)
+		
+	def getEnthalpy(self, T):
+		"""
+		Return the enthalpy at temperature `T`.
+		"""
+		poly = self.selectPolynomialForT(T)
+		return poly.getEnthalpy(T)
+		
+	def getEntropy(self, T):
+		"""
+		Return the entropy at temperature `T`.
+		"""
+		poly = self.selectPolynomialForT(T)
+		return poly.getEntropy(T)
+
+	def getFreeEnergy(self, T):
+		"""
+		Return the Gibbs free energy at temperature `T`.
+		"""
+		poly = self.selectPolynomialForT(T)
+		return poly.getFreeEnergy(T)
 
 
 ################################################################################
