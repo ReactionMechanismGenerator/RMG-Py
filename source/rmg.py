@@ -48,25 +48,25 @@ if __name__ == '__main__':
 				  'understanding of how molecules react.'
 	
 	# Initialize command-line option parser
-	parser = optparse.OptionParser(usage='usage: %prog [options] FILE', \
-								   version="RMG v0.0.1", \
+	parser = optparse.OptionParser(usage='usage: %prog [options] FILE', 
+								   version="RMG v0.0.1", 
 								   description=description)
 	
 	# Add options
 	parser.add_option('-q', '--quiet',
-					  action='store_const', const=30, default=20, dest='verbose', \
+					  action='store_const', const=30, default=20, dest='verbose', 
 					  help='quiet mode; only log errors and warnings')
 	parser.add_option('-v', '--verbose',
-					  action='store_const', const=10, default=20, dest='verbose', \
+					  action='store_const', const=10, default=20, dest='verbose', 
 					  help='verbose mode; log debug info')
-	parser.add_option('-o', '--output-directory', default='', \
-					  action="store", type="string", dest="outputDirectory", \
+	parser.add_option('-o', '--output-directory', default='', 
+					  action="store", type="string", dest="outputDirectory", 
 					  help='use DIR as output directory', metavar='DIR')
-	parser.add_option('-s', '--scratch-directory', default='', \
-					  action="store", type="string", dest="scratchDirectory", \
+	parser.add_option('-s', '--scratch-directory', default='', 
+					  action="store", type="string", dest="scratchDirectory", 
 					  help='use DIR as scratch directory', metavar='DIR')
-	parser.add_option('-l', '--library-directory', default='', \
-					  action="store", type="string", dest="libraryDirectory", \
+	parser.add_option('-l', '--library-directory', default='', 
+					  action="store", type="string", dest="libraryDirectory", 
 					  help='use DIR as library directory', metavar='DIR')
 	
 	# Parse the command-line arguments
@@ -87,7 +87,7 @@ if __name__ == '__main__':
 		options.scratchDirectory = inputDirectory
 	
 	# Execute RMG
-	rmg.execute(args[0], options.outputDirectory, \
-					 options.scratchDirectory, options.libraryDirectory, \
-					 options.verbose)
+	rmg.execute( args[0], options.outputDirectory, 
+					 options.scratchDirectory, options.libraryDirectory, 
+					 options.verbose )
 
