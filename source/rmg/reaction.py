@@ -89,10 +89,12 @@ class ArrheniusKinetics(Kinetics):
 		self.A = A
 		self.Ea = Ea
 		self.n = n
-
 	def __str__(self):
 		return 'k(T) = %s * T ** %s * math.exp(-%s / constants.R / T)\t%s < T < %s' % (self.A, self.n, self.Ea, self.Trange[0], self.Trange[1])
-
+	def __repr__(self):
+		"""How it looks on the console"""
+		return '<ArrheniusKinetics A=%.0e n=%.1f E=%.0fkJ/mol>'%(self.A,
+			self.n, self.Ea/1000.0 )
 	def getRateConstant(self, T):
 		"""
 		Return the rate constant k(T) at temperature `T` by evaluating the
