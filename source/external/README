@@ -1,0 +1,17 @@
+This folder ('external') is for external programs that RMG depends on but are 
+not part of the RMG code itself. In most cases you can get them elsewhere. 
+Nevertheless, they are stored here because
+ (1) they may be hard to find elsewhere
+ (2) we know that that these versions work (but ones from elsewhere may not)
+
+
+ctml_writer.py 
+comes from Cantera 1.7 (https://sourceforge.net/projects/cantera/)
+which we think uses the New BSD License
+http://www.opensource.org/licenses/bsd-license.php
+
+pydot.py 
+comes from Pydot (http://www.dkbza.org/pydot.html)
+which uses the MIT license
+http://opensource.org/licenses/mit-license.html
+the version here is based on 1.0.2 but contains a bug fix patch
