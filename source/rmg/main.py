@@ -125,7 +125,6 @@ def initializeLog(verbose):
 	`verbose` parameter is an integer specifying the amount of log text seen
 	at the console; the levels correspond to those of the :data:`logging` module.
 	"""
-
 	# Create logger
 	logger = logging.getLogger()
 	logger.setLevel(verbose)
@@ -139,6 +138,10 @@ def initializeLog(verbose):
 	#formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s', '%Y-%m-%d %H:%M:%S')
 	formatter = logging.Formatter('%(message)s', '%Y-%m-%d %H:%M:%S')
 	ch.setFormatter(formatter)
+	
+	# remove old handlers!
+	while logger.handlers:
+		logger.removeHandler(logger.handlers[0])
 	
 	# Add ch to logger
 	logger.addHandler(ch)
