@@ -359,9 +359,13 @@ class IdealGas:
 	def getVolume(self, T, P, N):
 		"""
 		Return the volume associated with temperature `T`, pressure `P`, and
-		numbers of moles `N`.
+		numbers of moles `N` (which may be a list, in which case it's summed).
 		"""
-		return sum(N) * constants.R * T / P
+		try:
+		    N = sum(N)
+		except TypeError: #can't iterate; N probably a float not a list
+		    pass
+		return N * constants.R * T / P
 
 	def getdPdV(self, P, V, T, N):
 		"""
