@@ -681,6 +681,9 @@ class Species:
 	`reactive` flag is :data:`True` if the species can react and :data:`False`
 	if it is inert.
 	"""
+	def __repr__(self):
+		"""How it looks on the console"""
+		return "<Species %d '%s'>"%(self.id, self.label)
 
 	def __init__(self, id=0, label='', structure=None, reactive=True):
 		"""
