@@ -519,8 +519,6 @@ class ReactionFamily(data.Database):
 		# information
 		forwardTemplate, reverseTemplate = self.getTemplateLists()
 		
-		#self.drawGraphOfTree(forwardTemplate)
-	#	assert False
 		#self.generateMissingEntriesFromBelow(forwardTemplate)
 		#self.generateMissingEntriesFromAbove(forwardTemplate)
 
@@ -532,9 +530,6 @@ class ReactionFamily(data.Database):
 		retained. The `template` parameter is a list of the nodes at which to
 		begin, e.g. the template lists returned from :func:`getTemplateLists()`.
 		"""
-
-		if self.library is None:
-			return
 
 		if template is None:
 			template, reverseTemplate = self.getTemplateLists()
@@ -580,10 +575,14 @@ class ReactionFamily(data.Database):
 					if self.library.getData(nodeList) is not None:
 						candidate = False
 
-				# However, we will keep a node that is the child of a union
+				# However, we will keep all top-level nodes because they are
+				# needed for the template
 				parent = self.tree.parent[node]
-				if parent is not None:
-					if self.dictionary[parent] == 'union':
+				if parent is None:
+					candidate = False
+				# We will also keep a node that is the child of a union in case
+				# unions need the children explicitly defined in the tree
+				elif self.dictionary[parent] == 'union':
 						candidate = False
 
 				if candidate:
@@ -974,7 +973,7 @@ class ReactionFamily(data.Database):
 			self.reverse = ReactionFamily(reverse, template, self.recipe.getReverse())
 			self.reverse.dictionary = self.dictionary
 			self.reverse.tree = self.tree
-			self.reverse.library = None
+			self.reverse.library = data.Library()
 			self.reverse.forbidden = self.forbidden
 			self.reverse.reverse = self
 
