@@ -522,6 +522,77 @@ class ReactionFamily(data.Database):
 		#self.generateMissingEntriesFromBelow(forwardTemplate)
 		#self.generateMissingEntriesFromAbove(forwardTemplate)
 
+	def prune(self, template=None):
+		"""
+		Remove nodes from the tree and dictionary that are not referred to in
+		the library. Nodes that are not referred to in the library but that have
+		one or more descendants that are referred to in the library are
+		retained. The `template` parameter is a list of the nodes at which to
+		begin, e.g. the template lists returned from :func:`getTemplateLists()`.
+		"""
+
+		if self.library is None:
+			return
+
+		if template is None:
+			template, reverseTemplate = self.getTemplateLists()
+
+		# Get lists of all nodes, sorted by top-level node
+		nodeLists = []
+		for parent in template:
+			nodeList = []
+			for node in self.tree.children:
+				temp = node
+				while temp is not None and temp not in template:
+					temp = self.tree.parent[temp]
+				if temp == parent:
+					nodeList.append(node)
+			nodeLists.append(nodeList)
+
+		pruneList = []
+
+		for i in range(len(template)):
+
+			nodes = nodeLists[:]
+			for node in nodes[i]:
+
+				nodeList = [node]
+				children = self.tree.children[node]
+				nodeList.extend(children)
+
+				while len(children) > 0:
+					temp = children[:]
+					children = []
+					for child in temp:
+						children.extend(self.tree.children[child])
+					nodeList.extend(children)
+
+				nodes[i] = nodeList
+
+				nodesList = data.getAllCombinations(nodes)
+
+				# If none of the possible combinations have data, the node
+				# is a candidate for pruning
+				candidate = True
+				for nodeList in nodesList:
+					if self.library.getData(nodeList) is not None:
+						candidate = False
+
+				# However, we will keep a node that is the child of a union
+				parent = self.tree.parent[node]
+				if parent is not None:
+					if self.dictionary[parent] == 'union':
+						candidate = False
+
+				if candidate:
+					pruneList.append(node)
+
+		# Complete pruning
+		for node in pruneList:
+			del self.dictionary[node]
+			del self.tree.parent[node]
+			del self.tree.children[node]
+
 	def generateMissingEntriesFromBelow(self, nodes):
 		"""
 		Generate a nonexisting entry in the library based on an averaging
@@ -533,7 +604,7 @@ class ReactionFamily(data.Database):
 		for node in nodes:
 			nodeList = [node]; nodeList.extend(self.tree.children[node])
 			children.append(nodeList)
-		childNodesList = self.getAllNodeCombinations(children)
+		childNodesList = data.getAllCombinations(children)
 		# Remove current nodes
 		for i in range(childNodesList.count(nodes)):
 			childNodesList.remove(nodes)
@@ -696,7 +767,7 @@ class ReactionFamily(data.Database):
 				if temp == parent:
 					nodeList.append(node)
 			nodeLists.append(nodeList)
-		nodesList = self.getAllNodeCombinations(nodeLists)
+		nodesList = data.getAllCombinations(nodeLists)
 
 		data = []
 		for nodeList in nodesList:
@@ -723,7 +794,7 @@ class ReactionFamily(data.Database):
 				parentNodeList.append(node0)
 				node0 = self.tree.parent[node0]
 			parentNodeLists.append(parentNodeList)
-		parentNodesList = self.getAllNodeCombinations(parentNodeLists)
+		parentNodesList = data.getAllCombinations(parentNodeLists)
 
 		# Generate list of existing kinetic parameters along with "distance"
 		# values (smaller is better)
@@ -901,7 +972,7 @@ class ReactionFamily(data.Database):
 			self.reverse = ReactionFamily(reverse, template, self.recipe.getReverse())
 			self.reverse.dictionary = self.dictionary
 			self.reverse.tree = self.tree
-			self.reverse.library = self.library
+			self.reverse.library = None
 			self.reverse.forbidden = self.forbidden
 			self.reverse.reverse = self
 
@@ -1163,14 +1234,14 @@ class ReactionFamily(data.Database):
 			nodeLists.append(nodeList)
 
 		# Generate all possible combinations of nodes
-		items = self.getAllNodeCombinations(nodeLists)
+		items = data.getAllCombinations(nodeLists)
 		
 		# Generate list of kinetics at every node
 		kinetics = []
 		for item in items:
-			data = self.library.getData(item)
-			if data is not None:
-				kinetics.append(data)
+			itemData = self.library.getData(item)
+			if itemData is not None:
+				kinetics.append(itemData)
 
 		if len(kinetics) == 0: return None
 		
