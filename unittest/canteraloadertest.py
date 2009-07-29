@@ -185,7 +185,9 @@ class SimulationCheck(unittest.TestCase):
         system = BatchReactor()
         self.apply_default_settings(model,system)
         speciesA = rmg.cantera_loader._speciesByName['A'].getRmgSpecies()
-        system.initialConcentration[speciesA] = 1.0
+        total_molar_volume = system.equationOfState.getVolume( N=1.0,
+                                  T=self.defaults['T'], P=self.defaults['P'] )
+        system.initialConcentration[speciesA] = 1.0/total_molar_volume
         
         t, y = simulate(model, system)
         postprocess(t, y, model)
@@ -216,7 +218,9 @@ class SimulationCheck(unittest.TestCase):
         system = BatchReactor()
         self.apply_default_settings(model,system)
         speciesA = rmg.cantera_loader._speciesByName['A'].getRmgSpecies()
-        system.initialConcentration[speciesA] = 1.0
+        total_molar_volume = system.equationOfState.getVolume( N=1.0,
+                                  T=self.defaults['T'], P=self.defaults['P'] )
+        system.initialConcentration[speciesA] = 1.0/total_molar_volume
         
         t, y = simulate(model, system)
         postprocess(t, y, model)
@@ -247,7 +251,9 @@ class SimulationCheck(unittest.TestCase):
         self.apply_default_settings(model,system)
         
         speciesA = rmg.cantera_loader._speciesByName['A'].getRmgSpecies()
-        system.initialConcentration[speciesA] = 1.0
+        total_molar_volume = system.equationOfState.getVolume( N=1.0,
+                                  T=self.defaults['T'], P=self.defaults['P'] )
+        system.initialConcentration[speciesA] = 1.0/total_molar_volume
         
         t, y = simulate(model, system)
         postprocess(t, y, model)
@@ -269,13 +275,15 @@ class SimulationCheck(unittest.TestCase):
         self.apply_default_settings(model,system)
         
         speciesA = rmg.cantera_loader._speciesByName['A'].getRmgSpecies()
-        system.initialConcentration[speciesA] = 1.0
+        total_molar_volume = system.equationOfState.getVolume( N=1.0,
+                                  T=self.defaults['T'], P=self.defaults['P'] )
+        system.initialConcentration[speciesA] = 1.0/total_molar_volume
         
         t, y = simulate(model, system)
         postprocess(t, y, model)
         
         # Check equilibrium
-        self.assertAlmostEqual(2.0 * y[-1,3], y[-1,4], 4)
+        self.assertAlmostEqual(2.0 * y[-1,3], y[-1,4], 3)
     
     def test7CanteraAtoB_againstCantera(self):
         """
@@ -297,7 +305,9 @@ class SimulationCheck(unittest.TestCase):
         self.apply_default_settings(model,system)
         
         speciesA = rmg.cantera_loader._speciesByName['A'].getRmgSpecies()
-        system.initialConcentration[speciesA] = 1.0 # what units? doesn't match P/V
+        total_molar_volume = system.equationOfState.getVolume( N=1.0,
+                                  T=self.defaults['T'], P=self.defaults['P'] )
+        system.initialConcentration[speciesA] = 1.0/total_molar_volume
         
         rmg_t, rmg_y = simulate(model, system)
         postprocess(rmg_t, rmg_y, model)
@@ -346,7 +356,11 @@ class SimulationCheck(unittest.TestCase):
             cantera_t.append(sim.time())
             output=[gas.pressure(), reactor.volume(), gas.temperature()]
             #output.extend(gas.massFractions())
-            output.extend([gas.moleFraction(i) for i in range(gas.nSpecies())])
+            total_molar_density = float(
+               pq.quantity.Quantity(gas.molarDensity(),'kmol/m^3').simplified )
+            # total_molar_density now in RMG units of mol/m^3
+            output.extend([gas.moleFraction(i)*total_molar_density for i in range(gas.nSpecies())])
+            # y is now moleFraction/total_molar_density which is concentration
             cantera_y.append(output)
         cantera_t = numpy.array(cantera_t)
         cantera_y = numpy.array(cantera_y)
@@ -391,7 +405,10 @@ class SimulationCheck(unittest.TestCase):
         self.apply_default_settings(model,system)
         
         speciesA = rmg.cantera_loader._speciesByName['A'].getRmgSpecies()
-        system.initialConcentration[speciesA] = 1.0 # what units? doesn't match P/V
+        
+        total_molar_volume = system.equationOfState.getVolume( N=1.0,
+                                  T=self.defaults['T'], P=self.defaults['P'] )
+        system.initialConcentration[speciesA] = 1.0/total_molar_volume
         
         rmg_t, rmg_y = simulate(model, system)
         postprocess(rmg_t, rmg_y, model)
@@ -462,7 +479,11 @@ class SimulationCheck(unittest.TestCase):
             cantera_t.append(sim.time())
             output=[gas.pressure(), reactor.volume(), gas.temperature()]
             #output.extend(gas.massFractions())
-            output.extend([gas.moleFraction(i) for i in range(gas.nSpecies())])
+            total_molar_density = float(
+               pq.quantity.Quantity(gas.molarDensity(),'kmol/m^3').simplified )
+            # total_molar_density now in RMG units of mol/m^3
+            output.extend([gas.moleFraction(i)*total_molar_density for i in range(gas.nSpecies())])
+            # y is now moleFraction/total_molar_density which is concentration
             cantera_y.append(output)
         cantera_t = numpy.array(cantera_t)
         cantera_y = numpy.array(cantera_y)
@@ -569,4 +590,4 @@ if __name__ == '__main__':
     unittest.TextTestRunner(verbosity=2).run(suite)
   # this is handy to manually interrupt a test so you can 
   # play with the PDB debugger
-    SimulationCheck('test8Chemkin2AtoB_2BagainstCantera').debug()
+   #SimulationCheck('test8Chemkin2AtoB_2BagainstCantera').debug()
