@@ -153,6 +153,7 @@ class reaction(cti.reaction):
         A = self._kf[0] / _uConc**(self.getReactantNu()-1) / _uTime
         A = float(A.simplified)
         n = self._kf[1]
+   #     assert False, 'debug breakpoint'
         #assert cti._ue=='kcal/mol', 'unit conversion not implemented'
         Ea=float(pq.Quantity(self._kf[2], cti._ue).simplified)
         kinetics=rmg.reaction.ArrheniusKinetics(A=A, Ea=Ea, n=n)

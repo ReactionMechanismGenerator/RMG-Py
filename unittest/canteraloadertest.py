@@ -369,6 +369,122 @@ class SimulationCheck(unittest.TestCase):
         ratio = rmg_y[1:,3:] / cantera_y[1:,3:]
         for i in ratio.reshape(ratio.size,1):
             self.assertAlmostEqual(i,1.0,3)
+ 
+    def test8Chemkin2AtoB_2BagainstCantera(self):
+        """
+        Simulation one is a simple isomerization reaction A <-> B, with the
+        thermodynamics designed for an equilibrium of equal A and B. This occurs in an
+        isothermal, isobaric, homogeneous batch reactor. 
+        
+        Tests by comparing with Cantera
+        """
+        pylab.figure(3)
+        import sys, os
+        import rmg.cantera_loader 
+        
+        # run it in RMG
+        #filename = 'cantera2A=B_2B.cti'
+        filename = 'chemkin2A=B_2B.inp'
+        filepath = os.path.join(self.testfolder,filename)
+        model = rmg.cantera_loader.loadChemkinFile(filepath)   
+        system = BatchReactor()
+        self.apply_default_settings(model,system)
+        
+        speciesA = rmg.cantera_loader._speciesByName['A'].getRmgSpecies()
+        system.initialConcentration[speciesA] = 1.0 # what units? doesn't match P/V
+        
+        rmg_t, rmg_y = simulate(model, system)
+        postprocess(rmg_t, rmg_y, model)
+        
+        # Now test it against Cantera
+        import Cantera
+        import Cantera.Reactor 
+        
+        canterafilename = os.path.splitext(filename)[0] + '.cti'
+        canterafilepath = os.path.join(self.testfolder,'temp',canterafilename)
+        # load the mechanism into gas
+        gas = Cantera.importPhase(canterafilepath,'chem')
+        iA = gas.speciesIndex('A') # identify species A
+        
+        # set the inital gas conditions
+        gas.set(T=self.defaults['T'], P=self.defaults['P'])
+        gas.setMoleFractions("A:1")
+        
+        # CANTERA USES THESE SI UNITS:
+        # Property SI unit 
+        # Temperature K 
+        # Pressure Pa 
+        # Density kg/m3 
+        # Quantity kmol 
+        # Concentration kmol/m3 
+        # Viscosity Pa-s 
+        # Thermal Conductivity W/m-K 
+        
+        #check some units
+        import quantities as pq
+        rmg_k = model.core.reactions[0].kinetics[0].getRateConstant(
+                                            T=self.defaults['T'] ) # m3/mol/s
+        rmg_k *= float(pq.quantity.Quantity(1.0,'m^3/mol/s').simplified)
+        cantera_k = gas.fwdRateConstants()[0] # m3/kmol/s
+        cantera_k *= float(pq.quantity.Quantity(1.0,'m^3/kmol/s').simplified)
+        
+        self.assertAlmostEqual( rmg_k, cantera_k, 5 )
+        
+        # create the environment
+        gasAir = Cantera.Air()
+        gasAir.set(T=self.defaults['T'], P=self.defaults['P'])
+        # create a reactor for the batch reactor
+        # and a reservoir for the environment
+        reactor = Cantera.Reactor.Reactor(gas, volume = 1.0)
+        environment = Cantera.Reactor.Reservoir(gasAir)
+        # Define a wall between the reactor and the environment, and
+        # make it flexible, so that the pressure in the reactor is held
+        # at the environment pressure.
+        wall = Cantera.Reactor.Wall(reactor,environment)
+        wall.set(K = 1.0e12)   # set expansion parameter. dV/dt = KA(P_1 - P_2)
+        wall.set(A = 1.0)
+        wall.setHeatTransferCoeff(1.0e15) # W/m2/K
+        
+        # put the reactor into a reactor network
+        sim = Cantera.Reactor.ReactorNet([reactor]) 
+        sim.setInitialTime(0.0)
+        maxtime = self.defaults['time']
+        
+        step=0
+        cantera_t=list()
+        cantera_y=list()
+#        while sim.time()<maxtime:
+#            step+=1
+        sim.step(maxtime) # take one free step to clear the max step size in the ode solver
+        for time in rmg_t:
+            if time: # don't integrate if time==0
+                sim.advance(time) # now try to hit the rmg_t spot on!
+            cantera_t.append(sim.time())
+            output=[gas.pressure(), reactor.volume(), gas.temperature()]
+            #output.extend(gas.massFractions())
+            output.extend([gas.moleFraction(i) for i in range(gas.nSpecies())])
+            cantera_y.append(output)
+        cantera_t = numpy.array(cantera_t)
+        cantera_y = numpy.array(cantera_y)
+        postprocess(cantera_t, cantera_y)
+        
+        #check the results are the same shape
+        self.assert_( cantera_y.shape == rmg_y.shape )
+        
+        #compare pressures
+        for i in rmg_y[:,0]/cantera_y[:,0]:
+            self.assertAlmostEqual(i,1.0,3)
+        #compare volumes
+        for i in rmg_y[:,1]/cantera_y[:,1]:
+            self.assertAlmostEqual(i,1.0,3)
+        #compare temperatures
+        for i in rmg_y[:,2]/cantera_y[:,2]:
+            self.assertAlmostEqual(i,1.0,3)      
+        
+        #compare concentration profiles
+        ratio = rmg_y[1:,3:] / cantera_y[1:,3:]
+        for i in ratio.reshape(ratio.size,1):
+            self.assertAlmostEqual(i,1.0,3)
 
             
 class DontRunTheseTestsYet:
@@ -453,4 +569,4 @@ if __name__ == '__main__':
     unittest.TextTestRunner(verbosity=2).run(suite)
   # this is handy to manually interrupt a test so you can 
   # play with the PDB debugger
-  #  SimulationCheck('testZCanteraAtoB_againstCantera').debug()
+    SimulationCheck('test8Chemkin2AtoB_2BagainstCantera').debug()
