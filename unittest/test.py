@@ -11,6 +11,7 @@ from thermotest import *
 from speciestest import *
 from reactiontest import *
 from simulationtest import *
+from canteraloadertest import *
 
 ################################################################################
 
