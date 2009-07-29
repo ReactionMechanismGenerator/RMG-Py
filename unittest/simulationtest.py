@@ -16,184 +16,273 @@ from rmg.model import *
 
 ################################################################################
 
-def initializeSimulation1():
-	
-	speciesA = Species(1, 'A')
-	speciesB = Species(2, 'B')
-	
-	reactionAB = Reaction([speciesA], [speciesB])
-	reactionAB.kinetics = [ArrheniusEPKinetics(1.0, 0.0, 0.0, 0.0)]
-	
-	model = CoreEdgeReactionModel()
-	model.addSpeciesToCore(speciesA)
-	model.addSpeciesToCore(speciesB)
-	model.addReactionToCore(reactionAB)
-	model.termination.append(TerminationTime(10.0))
+def initializeRMGSimulation(T, P, tf, model, system):
+	"""
+	Initialize an RMG simulation at temperature `T`, pressure `P`, and solution
+	termination time `tf`. Returns the initialized reaction model `model` and
+	reaction system `system`.
+	"""
+
+	model.termination.append(TerminationTime(tf))
 	model.absoluteTolerance = 1e-24
 	model.relativeTolerance = 1e-12
-	
-	system = BatchReactor()
+
 	system.equationOfState = IdealGas()
 	system.temperatureModel = TemperatureModel()
-	system.temperatureModel.setIsothermal(1000.0)
+	system.temperatureModel.setIsothermal(T)
 	system.pressureModel = PressureModel()
-	system.pressureModel.setIsobaric(1.0)
-	
-	system.initialConcentration[speciesA] = 1.0
-	
-	return speciesA, speciesB, reactionAB, model, system
+	system.pressureModel.setIsobaric(P)
 
-################################################################################
+	return model, system
 
-def initializeSimulation2():
-	
-	speciesA = Species(1, 'A')
-	speciesB = Species(2, 'B')
-	speciesC = Species(3, 'C')
-	
-	reactionABC = Reaction([speciesA, speciesB], [speciesC])
-	reactionABC.kinetics = [ArrheniusEPKinetics(1.0, 0.0, 0.0, 0.0)]
-	
-	model = CoreEdgeReactionModel()
-	model.addSpeciesToCore(speciesA)
-	model.addSpeciesToCore(speciesB)
-	model.addSpeciesToCore(speciesC)
-	model.addReactionToCore(reactionABC)
-	model.termination.append(TerminationTime(10.0))
-	model.absoluteTolerance = 1e-24
-	model.relativeTolerance = 1e-12
-	
-	system = BatchReactor()
-	system.equationOfState = IdealGas()
-	system.temperatureModel = TemperatureModel()
-	system.temperatureModel.setIsothermal(1000.0)
-	system.pressureModel = PressureModel()
-	system.pressureModel.setIsobaric(1.0)
-	
-	return speciesA, speciesB, speciesC, reactionABC, model, system
-
-################################################################################
-
-def simulate(model, system):
+def runRMGSimulation(model, system):
 
 	t, y, valid, species = system.simulate(model)
-		
+
 	# Reshape y into a matrix rather than a list of lists
 	y0 = numpy.zeros((len(t), len(y[0])), float)
 	for i, u in enumerate(y):
 		for j, v in enumerate(u):
 			y0[i,j] = v
-			
+
 	return t, y0
-	
-def postprocess(t, y):
+
+def postprocessRMGOutput(t, y, model=None):
+
+	conc = numpy.zeros((len(t), len(y[0])-3), float)
+
+	for i in range(y.shape[0]):
+		conc[i,:] = y[i,3:] / y[i,1]
 
 	# Make concentration plot and show
-	pylab.plot(t[1:], y[1:,3:])
+	pylab.figure()
+	pylab.plot(t[1:], conc[1:,:])
 	pylab.xlabel('Time (s)')
 	pylab.ylabel('Concentration (mol/m^3)')
+	if model:
+		pylab.legend([s.label for s in model.core.species])
 	pylab.show()
 	
-	print t, y
 
 ################################################################################
 
-class SimulationCheck(unittest.TestCase):                          
+class SimulationCheck(unittest.TestCase):
 
-	def testSimulation1A(self):
+	T = 1000.0 # [=] K
+
+	P = 1.0e5 # [=] Pa
+
+	tf = 10.0 # [=] s
+
+	def testIrreversibleAtoB(self):
 		"""
-		Simulation one is a simple isomerization reaction A --> B, with the
+		A simple isomerization reaction A --> B, with the
 		thermodynamics designed for an equilibrium of all B. This occurs in an
 		isothermal, isobaric, homogeneous batch reactor.
 		"""
-	
-		speciesA, speciesB, reactionAB, model, system = initializeSimulation1()
-		
-		# Case 1: Irreversibility
+
+		model = CoreEdgeReactionModel()
+		system = BatchReactor()
+		initializeRMGSimulation(T=self.T, P=self.P, tf=self.tf, model=model, system=system)
+
+		speciesA = Species(1, 'A')
 		speciesA.thermoData = ThermoGAData(500000.0, 0.0, [0, 0, 0, 0, 0, 0, 0])
+		model.addSpeciesToCore(speciesA)
+
+		speciesB = Species(2, 'B')
 		speciesB.thermoData = ThermoGAData(-500000.0, 0.0, [0, 0, 0, 0, 0, 0, 0])
-		
-		t, y = simulate(model, system)
-		
+		model.addSpeciesToCore(speciesB)
+
+		reactionAB = Reaction([speciesA], [speciesB])
+		reactionAB.kinetics = ArrheniusEPKinetics(1.0, 0.0, 0.0, 0.0)
+		model.addReactionToCore(reactionAB)
+
+		molarVolume = system.equationOfState.getVolume(T=self.T, P=self.P, N=1.0)
+		system.initialConcentration[speciesA] = 1.0 / molarVolume
+
+		t, y = runRMGSimulation(model, system)
+		postprocessRMGOutput(t, y, model)
+		pylab.title('A --> B, irreversible')
+
 		# Check equilibrium
 		self.assertTrue(y[-1,3] < 0.0001 * y[0,3])
 		self.assertTrue(y[-1,4] > 0.9999 * y[0,3])
-		
+		self.assertAlmostEqual(y[-1,1], y[0,1], 3)
+
 		# Check kinetics
 		for i in range(len(t)):
 			if abs(t[i] - 1.0) < 0.0001:
 				self.assertAlmostEqual(y[i,3] / y[0,3], math.exp(-1.0), 4)
-		
-	def testSimulation1B(self):
+
+
+	def testEquimolarAtoB(self):
 		"""
-		Simulation two is a simple isomerization reaction A --> B, with the
+#		A simple isomerization reaction A --> B, with the
+#		thermodynamics designed for an equimolar equilibrium. This occurs in an
+#		isothermal, isobaric, homogeneous batch reactor.
+#		"""
+
+		model = CoreEdgeReactionModel()
+		system = BatchReactor()
+		initializeRMGSimulation(T=self.T, P=self.P, tf=self.tf, model=model, system=system)
+
+		speciesA = Species(1, 'A')
+		speciesA.thermoData = ThermoGAData(500000.0, 0.0, [0, 0, 0, 0, 0, 0, 0])
+		model.addSpeciesToCore(speciesA)
+
+		speciesB = Species(2, 'B')
+		speciesB.thermoData = ThermoGAData(500000.0, 0.0, [0, 0, 0, 0, 0, 0, 0])
+		model.addSpeciesToCore(speciesB)
+
+		reactionAB = Reaction([speciesA], [speciesB])
+		reactionAB.kinetics = ArrheniusEPKinetics(1.0, 0.0, 0.0, 0.0)
+		model.addReactionToCore(reactionAB)
+
+		molarVolume = system.equationOfState.getVolume(T=self.T, P=self.P, N=1.0)
+		system.initialConcentration[speciesA] = 1.0 / molarVolume
+
+		t, y = runRMGSimulation(model, system)
+		postprocessRMGOutput(t, y, model)
+		pylab.title('A --> B, equimolar')
+
+		# Check equilibrium
+		self.assertAlmostEqual(y[-1,3], y[-1,4], 4)
+		self.assertAlmostEqual(y[-1,1], y[0,1], 3)
+
+	def testReversibleAtoB(self):
+		"""
+		A simple isomerization reaction A --> B, with the
 		thermodynamics designed for an equimolar equilibrium. This occurs in an
 		isothermal, isobaric, homogeneous batch reactor.
 		"""
-	
-		speciesA, speciesB, reactionAB, model, system = initializeSimulation1()
-		
-		# Case 2: Equimolar equilibrium
+
+		model = CoreEdgeReactionModel()
+		system = BatchReactor()
+		initializeRMGSimulation(T=self.T, P=self.P, tf=self.tf, model=model, system=system)
+
+		speciesA = Species(1, 'A')
 		speciesA.thermoData = ThermoGAData(500000.0, 0.0, [0, 0, 0, 0, 0, 0, 0])
-		speciesB.thermoData = ThermoGAData(500000.0, 0.0, [0, 0, 0, 0, 0, 0, 0])
-		
-		t, y = simulate(model, system)
-			
-		# Check equilibrium
-		self.assertAlmostEqual(y[-1,3], y[-1,4], 4)
-	
-	def testSimulation1C(self):
-		"""
-		Simulation three is a simple isomerization reaction A --> B, with the
-		thermodynamics designed for an equilibrium ratio of 1:2 A:B. This occurs
-		in an isothermal, isobaric, homogeneous batch reactor.
-		"""
-		speciesA, speciesB, reactionAB, model, system = initializeSimulation1()
-	
-		# Case 3: A:B = 1:2 at equilibrium
-		speciesA.thermoData = ThermoGAData(500000.0, 0.0, [0, 0, 0, 0, 0, 0, 0])
+		model.addSpeciesToCore(speciesA)
+
+		speciesB = Species(2, 'B')
 		speciesB.thermoData = ThermoGAData(494237.0, 0.0, [0, 0, 0, 0, 0, 0, 0])
-		
-		t, y = simulate(model, system)
-		
+		model.addSpeciesToCore(speciesB)
+
+		reactionAB = Reaction([speciesA], [speciesB])
+		reactionAB.kinetics = ArrheniusEPKinetics(1.0, 0.0, 0.0, 0.0)
+		model.addReactionToCore(reactionAB)
+
+		molarVolume = system.equationOfState.getVolume(T=self.T, P=self.P, N=1.0)
+		system.initialConcentration[speciesA] = 1.0 / molarVolume
+
+		t, y = runRMGSimulation(model, system)
+		postprocessRMGOutput(t, y)
+		pylab.title('A --> B, reversible')
+
 		# Check equilibrium
-		self.assertAlmostEqual(2.0 * y[-1,3], y[-1,4], 4)
-		
-	def testSimulation2A(self):
+		self.assertAlmostEqual(2.0 * y[-1,3], y[-1,4], 3)
+		self.assertAlmostEqual(y[-1,1], y[0,1], 3)
+
+	def testIrreversible2AtoB(self):
 		"""
-		Simulation one is an association reaction A + B --> C, with the
-		thermodynamics designed for an equilibrium of all C. This occurs in an
+		A simple association reaction 2A --> B, with the
+		thermodynamics designed for an equilibrium of all B. This occurs in an
 		isothermal, isobaric, homogeneous batch reactor.
 		"""
-	
-		speciesA, speciesB, speciesC, reactionABC, model, system = initializeSimulation2()
-		
-		speciesD = Species(4, 'D')
-		model.addSpeciesToCore(speciesD)
-		system.initialConcentration[speciesD] = 0.0
-		
-		system.initialConcentration[speciesA] = 1.0
-		system.initialConcentration[speciesB] = 1.0
-	
-		speciesA.thermoData = ThermoGAData(0.0, 0.0, [0, 0, 0, 0, 0, 0, 0])
-		speciesB.thermoData = ThermoGAData(0.0, 0.0, [0, 0, 0, 0, 0, 0, 0])
-		speciesC.thermoData = ThermoGAData(0.0, 0.0, [0, 0, 0, 0, 0, 0, 0])
-		
-		t, y = simulate(model, system)
-		postprocess(t, y)
-		
+
+		model = CoreEdgeReactionModel()
+		system = BatchReactor()
+		initializeRMGSimulation(T=self.T, P=self.P, tf=self.tf, model=model, system=system)
+
+		speciesA = Species(1, 'A')
+		speciesA.thermoData = ThermoGAData(500000.0, 0.0, [0, 0, 0, 0, 0, 0, 0])
+		model.addSpeciesToCore(speciesA)
+
+		speciesB = Species(2, 'B')
+		speciesB.thermoData = ThermoGAData(-500000.0, 0.0, [0, 0, 0, 0, 0, 0, 0])
+		model.addSpeciesToCore(speciesB)
+
+		reactionAB = Reaction([speciesA, speciesA], [speciesB])
+		reactionAB.kinetics = ArrheniusEPKinetics(1.0, 0.0, 0.0, 0.0)
+		model.addReactionToCore(reactionAB)
+
+		molarVolume = system.equationOfState.getVolume(T=self.T, P=self.P, N=1.0)
+		system.initialConcentration[speciesA] = 1.0 / molarVolume
+
+		t, y = runRMGSimulation(model, system)
+		postprocessRMGOutput(t, y)
+		pylab.title('2A --> B, irreversible')
+
 		# Check equilibrium
-		#self.assertTrue(y[-1,3] < 0.0001 * y[0,3])
-		#self.assertTrue(y[-1,4] > 0.9999 * y[0,3])
-		
-		# Check kinetics
-		#for i in range(len(t)):
-		#	if abs(t[i] - 1.0) < 0.0001:
-		#		self.assertAlmostEqual(y[i,3] / y[0,3], math.exp(-1.0), 4)
-		
-	
-		
-################################################################################
+		self.assertTrue(y[-1,3] < 0.01 * y[0,3])
+		self.assertTrue(y[-1,4] > 0.49 * y[0,3] and y[-1,4] < 0.51 * y[0,3])
+		self.assertTrue(y[-1,1] > 0.49 * y[0,1] and y[-1,1] < 0.51 * y[0,1])
+
+	def testEquimolar2AtoB(self):
+		"""
+		A simple association reaction 2A --> B, with the thermodynamics  
+		designed for an equimolar mixture of A and B. This occurs in an
+		isothermal, isobaric, homogeneous batch reactor.
+		"""
+
+		model = CoreEdgeReactionModel()
+		system = BatchReactor()
+		initializeRMGSimulation(T=self.T, P=self.P, tf=self.tf, model=model, system=system)
+
+		speciesA = Species(1, 'A')
+		speciesA.thermoData = ThermoGAData(250000.0, 0.0, [0, 0, 0, 0, 0, 0, 0])
+		model.addSpeciesToCore(speciesA)
+
+		speciesB = Species(2, 'B')
+		speciesB.thermoData = ThermoGAData(500000.0, 0.0, [0, 0, 0, 0, 0, 0, 0])
+		model.addSpeciesToCore(speciesB)
+
+		reactionAB = Reaction([speciesA, speciesA], [speciesB])
+		reactionAB.kinetics = ArrheniusEPKinetics(1.0, 0.0, 0.0, 0.0)
+		model.addReactionToCore(reactionAB)
+
+		molarVolume = system.equationOfState.getVolume(T=self.T, P=self.P, N=1.0)
+		system.initialConcentration[speciesA] = 1.0 / molarVolume
+
+		t, y = runRMGSimulation(model, system)
+		postprocessRMGOutput(t, y)
+		pylab.title('2A --> B, equimolar')
+
+	def testIrreversibleAto2B(self):
+		"""
+		A simple dissociation reaction A --> 2B, with the
+		thermodynamics designed for an equilibrium of all B. This occurs in an
+		isothermal, isobaric, homogeneous batch reactor.
+		"""
+
+		model = CoreEdgeReactionModel()
+		system = BatchReactor()
+		initializeRMGSimulation(T=self.T, P=self.P, tf=self.tf, model=model, system=system)
+
+		speciesA = Species(1, 'A')
+		speciesA.thermoData = ThermoGAData(500000.0, 0.0, [0, 0, 0, 0, 0, 0, 0])
+		model.addSpeciesToCore(speciesA)
+
+		speciesB = Species(2, 'B')
+		speciesB.thermoData = ThermoGAData(-500000.0, 0.0, [0, 0, 0, 0, 0, 0, 0])
+		model.addSpeciesToCore(speciesB)
+
+		reactionAB = Reaction([speciesA], [speciesB, speciesB])
+		reactionAB.kinetics = ArrheniusEPKinetics(1.0, 0.0, 0.0, 0.0)
+		model.addReactionToCore(reactionAB)
+
+		molarVolume = system.equationOfState.getVolume(T=self.T, P=self.P, N=1.0)
+		system.initialConcentration[speciesA] = 1.0 / molarVolume
+
+		t, y = runRMGSimulation(model, system)
+		postprocessRMGOutput(t, y)
+		pylab.title('A --> 2B, irreversible')
+
+		# Check equilibrium
+		self.assertTrue(y[-1,3] < 0.01 * y[0,3])
+		self.assertTrue(y[-1,4] > 1.99 * y[0,3] and y[-1,4] < 2.01 * y[0,3])
+		self.assertTrue(y[-1,1] > 1.99 * y[0,1] and y[-1,1] < 2.01 * y[0,1])
 
 if __name__ == '__main__':
-	unittest.main()
+	suite = unittest.TestLoader().loadTestsFromTestCase(SimulationCheck)
+	unittest.TextTestRunner(verbosity=2).run(suite)

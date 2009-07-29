@@ -1492,6 +1492,14 @@ class Reaction:
 			if self.bestKinetics.isTemperatureInRange(T):
 				return self.bestKinetics
 
+		# Check that self.kinetics is storing a list and not a single object
+		# If the latter, use that as the best kinetics without any other
+		# checking
+		if self.kinetics.__class__ != list:
+			dHrxn = self.getEnthalpyOfReaction(T)
+			self.bestKinetics = self.kinetics.getArrhenius(dHrxn)
+			return self.bestKinetics
+		
 		kinetics = self.kinetics[:]
 		
 		# Prune out all kinetic data not valid at desired temperature
