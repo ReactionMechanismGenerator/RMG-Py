@@ -199,6 +199,7 @@ def getSpeciesByName(name):
 
 def loadCanteraFile(filepath):
     """Load a Cantera input (.cti) file. Returns a CoreEdgeReactionModel"""
+    import os
     logging.info("Loading Cantera file %s"%filepath)
     logging.debug("which is located at %s"%os.path.abspath(filepath))
     base = os.path.basename(filepath)
@@ -228,12 +229,13 @@ def loadChemkinFile(filepath='chem.inp', thermodb='',trandb=''):
     """Loads a Chemkin file. (Converts to Cantera first)"""
     from Cantera import ck2cti
     import shutil
-    oldpath = filepath
+    import os
+    oldpath = os.path.abspath(filepath)
     oldwd   = os.getcwd()
     filename = os.path.basename(filepath)
-    newpath = os.path.join(rmg.constants.scratchDir, filename)
-    os.chdir(rmg.constants.scratchDir)
-    if not os.path.samefile(oldpath,newpath):
+    newpath = os.path.join(oldwd,rmg.constants.scratchDir, filename)
+    
+    if not os.path.exists(newpath) or not os.path.samefile(oldpath,newpath):
         logging.debug("Copying %s to %s"%(oldpath,newpath))
         shutil.copy2(oldpath, newpath)
     ctifile = os.path.splitext(newpath)[0]+'.cti'
@@ -244,14 +246,16 @@ def loadChemkinFile(filepath='chem.inp', thermodb='',trandb=''):
     nm='chem'
     # convert from chemkin to cti
     try:
+        os.chdir(rmg.constants.scratchDir)
         ck2cti.ck2cti(infile = newpath, thermodb = thermodb,
                   trandb = trandb, idtag = nm, debug=0, validate=1)
     except: 
         logging.error("Conversion from Chemkin to Cantera failed:")
         for line in open('ck2cti.log'):
              logging.error(line.rstrip())
+        os.chdir(oldwd) # change back to where you were
         raise
-    logging.debug('Converting from Chemkin to Cantera:')
+    logging.info('Converting %s from Chemkin to Cantera:'%filepath)
     for line in open('ck2cti.log'):
         logging.debug(line.rstrip())
     os.chdir(oldwd) # change back to where you were
