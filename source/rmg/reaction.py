@@ -594,6 +594,14 @@ class ReactionFamily(data.Database):
 			del self.tree.parent[node]
 			del self.tree.children[node]
 
+		# Also prune unneeded structures from dictionary
+		pruneList = []
+		for label, struct in self.dictionary.iteritems():
+			if label not in self.tree.children:
+				pruneList.append(label)
+		for node in pruneList:
+			del self.dictionary[node]
+
 	def generateMissingEntriesFromBelow(self, nodes):
 		"""
 		Generate a nonexisting entry in the library based on an averaging

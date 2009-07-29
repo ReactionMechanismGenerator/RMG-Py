@@ -303,6 +303,36 @@ class Tree:
 				
 		tree.appendChild(nodes[self.top])
 
+	def write(self, children):
+		"""
+		Write the tree to a string in the syntax used by the RMG database. The
+		`children` parameter is a list of the current children, used to enable
+		recursive writing.
+		"""
+
+		string = ''
+
+		for child in children:
+
+			# Determine level
+			level = 1
+			temp = child
+			while self.parent[temp] is not None:
+				level += 1
+				temp = self.parent[temp]
+
+			# Write current node
+			for i in range(level):
+				string += '\t'
+			string += 'L%s: %s\n' % (str(level), child)
+
+			# Recursively descend children
+			string += self.write(self.children[child])
+
+		return string
+
+
+
 ################################################################################
 
 class Library(dict):

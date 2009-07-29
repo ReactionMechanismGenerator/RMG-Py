@@ -357,22 +357,62 @@ class Structure:
 		# Create the graph from the atom and bond lists
 		self.initialize(atoms, bonds)
 
-	def toAdjacencyList(self):
+	def toAdjacencyList(self, label=''):
 		"""
-		Convert the structure object to an adjacency list.
+		Convert the structure object to an adjacency list. The `label` parameter
+		is an optional string to put as the first line of the adjacency list;
+		if set to the empty string, this line will be omitted.
 		"""
 
 		adjlist = ''
 
+		if label != '': adjlist += label + '\n'
+
 		atoms = self.atoms()
 
 		for i, atom in enumerate(atoms):
+
+			# Atom number
 			adjlist += str(i+1) + ' '
+
+			# Atom label
 			if atom.label != '':
 				adjlist += atom.label + ' '
-			adjlist += atom.atomType.label + ' ' + atom.electronState.label
+
+			# Atom type(s)
+			if atom.atomType.__class__ == list:
+				adjlist += '{' + atom.atomType[0].label
+				for atomType in atom.atomType[1:]:
+					adjlist += ',' + atomType.label
+				adjlist += '} '
+			else:
+				adjlist += atom.atomType.label + ' '
+
+			# Electron state(s)
+			if atom.electronState.__class__ == list:
+				adjlist += '{' + atom.electronState[0].label
+				for electronState in atom.electronState[1:]:
+					adjlist += ',' + electronState.label
+				adjlist += '}'
+			else:
+				adjlist += atom.electronState.label + ' '
+
+			# Bonds list
 			for atom2, bond in self.getBonds(atom).iteritems():
-				adjlist += ' {' + str(atoms.index(atom2)+1) + ',' + bond.bondType.label + '}'
+				adjlist += '{' + str(atoms.index(atom2)+1) + ','
+
+				# Bond type(s)
+				if bond.bondType.__class__ == list:
+					adjlist += '{' + bond.bondType[0].label
+					for bondType in bond.bondType[1:]:
+						adjlist += ',' + bondType.label
+					adjlist += '}'
+				else:
+					adjlist += bond.bondType.label
+
+				adjlist += '} '
+
+			# Each atom begins on a new list
 			adjlist += '\n'
 
 		return adjlist
