@@ -112,6 +112,31 @@ if __name__ == '__main__':
 	for key, family in reaction.kineticsDatabase.families.iteritems():
 		forwardTemplate, reverseTemplate = family.getTemplateLists()
 		family.prune(forwardTemplate)
+
+		# Print dictionary
+		print '/////////////////////////////////////////////////////////////////////////////////'
+		print '//'
+		print '// Structure dictionary for %s' % family.label
+		print '//'
+		print '/////////////////////////////////////////////////////////////////////////////////'
+		print ''
+		for label, struct in family.dictionary.iteritems():
+			if struct.__class__ == str:
+				union = label + '\nUnion {' + ','.join(family.tree.children[label]) + '}\n'
+				print union
+			else:
+				print struct.toAdjacencyList(label)
+
+		# Print tree
+		print '/////////////////////////////////////////////////////////////////////////////////'
+		print '//'
+		print '// Structure tree for %s' % family.label
+		print '//'
+		print '/////////////////////////////////////////////////////////////////////////////////'
+		print ''
+		print family.tree.write(family.tree.top)
+
+
 		
 	# Draw kinetics trees
 	#drawKineticsTrees()
