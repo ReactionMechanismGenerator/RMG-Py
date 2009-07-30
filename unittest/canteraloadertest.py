@@ -99,9 +99,7 @@ class CanteraLoaderCheck(unittest.TestCase):
 	testfolder = 'canteraloadertest'
 
 	T = 1000.0 # [=] K
-
 	P = 1.0e5 # [=] Pa
-
 	tf = 10.0 # [=] s
 
 	def setUp(self):
@@ -113,13 +111,13 @@ class CanteraLoaderCheck(unittest.TestCase):
 		constants.scratchDir = os.path.join(self.testfolder,'temp')
 		if os.path.isdir(constants.scratchDir): shutil.rmtree(constants.scratchDir)
 		os.makedirs(constants.scratchDir)
-
+		
 		if cti._species:
 			reload(cti)
 		if rmg.cantera_loader._species:
 			reload(rmg.cantera_loader)
 		rmg.initializeLog(verbose=20)
-
+		
 		#pylab.figure(1)
 
 	def tearDown(self):
@@ -156,10 +154,11 @@ class CanteraLoaderCheck(unittest.TestCase):
 
 		rmg_t, rmg_y = runRMGSimulation(model, system)
 		postprocessRMGOutput(rmg_t, rmg_y)
-
+		
+		#run it in Cantera
 		gas, gasAir, reactor, environment, wall, sim, maxtime = initializeCanteraSimulation(filepath=filepath, T=self.T, P=self.P, tf=self.tf)
 
-		speciesA = gas.speciesIndex('A')
+		speciesA_index = gas.speciesIndex('A')
 		gas.setMoleFractions("A:1")
 
 		cantera_t, cantera_y = runCanteraSimulation(rmg_t, gas, gasAir, reactor, environment, wall, sim, maxtime)
@@ -211,6 +210,29 @@ class CanteraLoaderCheck(unittest.TestCase):
 
 		cantera_t, cantera_y = runCanteraSimulation(rmg_t, gas, gasAir, reactor, environment, wall, sim, maxtime)
 		postprocessCanteraOutput(cantera_t, cantera_y)
+		
+		#check the results are the same shape
+		self.assert_( cantera_y.shape == rmg_y.shape )
+		
+		#compare times
+		for i in range(len(rmg_t)):
+			self.assertAlmostEqual(rmg_t[i], cantera_t[i], 3, 
+				"Times diverged at %g sec"%rmg_t[i] )
+		#compare pressures
+		for i in rmg_y[:,0]/cantera_y[:,0]:
+			self.assertAlmostEqual(i,1.0,2)
+		#compare volumes
+		for i in range(len(rmg_t)):
+			self.assertAlmostEqual(rmg_y[i,1], cantera_y[i,1], 2, 
+				"Volumes diverged at %g sec"%rmg_t[i] )
+		#compare temperatures
+		for i in rmg_y[:,2]/cantera_y[:,2]:
+			self.assertAlmostEqual(i,1.0,2)
+		
+		#compare concentration profiles
+		ratio = rmg_y[1:,3:] / cantera_y[1:,3:]
+		for i in ratio.reshape(ratio.size,1):
+			self.assertAlmostEqual(i,1.0,2)
 
 ################################################################################
 
