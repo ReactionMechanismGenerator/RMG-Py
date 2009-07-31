@@ -475,8 +475,7 @@ class ThermoDatabase(data.Database):
 		is returned.
 		"""
 		for label, struct in self.dictionary.iteritems():
-			match, map21, map12 = structure.isIsomorphic(struct)
-			if match:
+			if structure.isIsomorphic(struct):
 				return label
 		return None
 
@@ -577,37 +576,37 @@ class ThermoDatabaseSet:
 		f.write(self.primaryDatabase.toXML())
 		f.close()
 
-	def getThermoData(self, structure):
+	def getThermoData(self, struct):
 		"""
 		Determine the group additivity thermodynamic data for the structure
 		`structure`.
 		"""
 
 		# First check to see if structure is in primary thermo library
-		label = self.primaryDatabase.contains(structure)
+		label = self.primaryDatabase.contains(struct)
 		if label is not None:
 			return self.primaryDatabase.library[label]
 
 		thermoData = ThermoGAData()
 
-		if structure.getRadicalCount() > 0:
+		if struct.getRadicalCount() > 0:
 			# Make a copy of the structure so we don't change the original
-			struct = structure.copy()
+			saturatedStruct = struct.copy()
 			# Saturate structure by replacing all radicals with bonds to
 			# hydrogen atoms
 			added = {}
-			for atom in struct.atoms():
+			for atom in saturatedStruct.atoms():
 				for i in range(0, atom.getFreeElectronCount()):
 					H = chem.Atom('H', '0')
 					bond = chem.Bond([atom, H], 'S')
-					struct.addAtom(H)
-					struct.addBond(bond)
+					saturatedStruct.addAtom(H)
+					saturatedStruct.addBond(bond)
 					atom.decreaseFreeElectron()
 					if atom not in added:
 						added[atom] = []
 					added[atom].append(bond)
 			# Get thermo estimate for saturated form of structure
-			thermoData = self.getThermoData(struct)
+			thermoData = self.getThermoData(saturatedStruct)
 			# For each radical site, get radical correction
 			# Only one radical site should be considered at a time; all others
 			# should be saturated with hydrogen atoms
@@ -616,17 +615,17 @@ class ThermoDatabaseSet:
 				# Remove the added hydrogen atoms and bond and restore the radical
 				for bond in added[atom]:
 					H = bond.atoms[1]
-					struct.removeBond(bond)
-					struct.removeAtom(H)
+					saturatedStruct.removeBond(bond)
+					saturatedStruct.removeAtom(H)
 					atom.increaseFreeElectron()
 
-				thermoData += self.radicalDatabase.getThermoData(struct, {'*':atom})
+				thermoData += self.radicalDatabase.getThermoData(saturatedStruct, {'*':atom})
 
 				# Re-saturate
 				for bond in added[atom]:
 					H = bond.atoms[1]
-					struct.addAtom(H)
-					struct.addBond(bond)
+					saturatedStruct.addAtom(H)
+					saturatedStruct.addBond(bond)
 					atom.decreaseFreeElectron()
 
 			# Subtract the enthalpy of the added hydrogens
@@ -635,26 +634,33 @@ class ThermoDatabaseSet:
 
 		else:
 			# Generate estimate of thermodynamics
-			for atom in structure.atoms():
+			for atom in struct.atoms():
 				# Iterate over heavy (non-hydrogen) atoms
 				if atom.isNonHydrogen():
 					# Get initial thermo estimate from main group database
-					thermoData += self.groupDatabase.getThermoData(structure, {'*':atom})
+					thermoData += self.groupDatabase.getThermoData(struct, {'*':atom})
 					# Correct for gauche and 1,5- interactions
-					thermoData += self.gaucheDatabase.getThermoData(structure, {'*':atom})
-					thermoData += self.int15Database.getThermoData(structure, {'*':atom})
-					thermoData += self.otherDatabase.getThermoData(structure, {'*':atom})
+					thermoData += self.gaucheDatabase.getThermoData(struct, {'*':atom})
+					thermoData += self.int15Database.getThermoData(struct, {'*':atom})
+					thermoData += self.otherDatabase.getThermoData(struct, {'*':atom})
 
 			# Do ring corrections separately because we only want to match
 			# each ring one time; this doesn't work yet
-#			atoms = structure.atoms()[:]
-#			for atom in atoms:
-#				# Iterate over heavy (non-hydrogen) atoms
-#				if atom.isNonHydrogen():
-#					newData = self.ringDatabase.getThermoData(structure, atom)
-#					if newData is not None:
-#						thermoData += nestructure.atoms()wData
-#						atoms.remove(atom)
+			rings = struct.getSmallestSetOfSmallestRings()
+			for ring in rings:
+
+				# Make a temporary structure containing only the atoms in the ring
+				ringStructure = structure.Structure()
+				for atom in ring: ringStructure.addAtom(atom)
+				for atom1 in ring:
+					for atom2 in ring:
+						if struct.hasBond(atom1, atom2):
+							ringStructure.addBond(struct.getBond(atom1, atom2))
+
+				# Get thermo correction for this ring
+				thermoData += self.ringDatabase.getThermoData(ringStructure, {})
+
+
 
 		return thermoData
 
@@ -676,7 +682,7 @@ class Species:
 	"""
 	Represent a chemical species (including all of its resonance forms). Each
 	species has a unique integer `id` assigned automatically by RMG and a
-	not-necessarily unique string `label`. The *structure* variable contains a
+	not-necessarily unique string `label`. The `structure` variable contains a
 	list of :class:`Structure` objects representing each resonance form. The
 	`reactive` flag is :data:`True` if the species can react and :data:`False`
 	if it is inert.
@@ -817,8 +823,7 @@ class Species:
 					# Append to isomer list if unique
 					found = False
 					for isom in isomers:
-						ismatch, map21, map12 = isom.isIsomorphic(newIsomer)
-						if ismatch: found = True
+						if isom.isIsomorphic(newIsomer): found = True
 					if not found:
 						isomers.append(newIsomer)
 
@@ -885,13 +890,11 @@ class Species:
 		if other.__class__ == Species:
 			for struct1 in self.structure:
 				for struct2 in other.structure:
-					ismatch, map21, map12 = struct1.isIsomorphic(struct2)
-					if ismatch:
+					if struct1.isIsomorphic(struct2):
 						return True
 		elif other.__class__ == structure.Structure:
 			for struct1 in self.structure:
-				ismatch, map21, map12 = struct1.isIsomorphic(other)
-				if ismatch:
+				if struct1.isIsomorphic(other):
 					return True
 		return False
 	
@@ -901,8 +904,7 @@ class Species:
 		functional group and data:`False` otherwise.
 		"""
 		for struct1 in self.structure:
-			ismatch, map21, map12 = struct1.isSubgraphIsomorphic(other)
-			if ismatch:
+			if struct1.isSubgraphIsomorphic(other):
 				return True
 		return False
 
@@ -969,8 +971,7 @@ def makeNewSpecies(structure, label='', reactive=True):
 	# Return None if the species has a forbidden structure
 	if forbiddenStructures is not None:
 		for lbl, struct in forbiddenStructures.iteritems():
-			match, map21, map12 = structure.isSubgraphIsomorphic(struct)
-			if match: return None
+			if structure.isSubgraphIsomorphic(struct): return None
 
 	# Otherwise make a new species
 	if label == '':

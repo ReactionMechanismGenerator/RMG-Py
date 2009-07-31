@@ -69,62 +69,48 @@ class Structure:
 		"""
 		Return a list of the atoms in the structure.
 		"""
-		return self.graph.keys()
+		return self.graph.vertices
 
 	def bonds(self):
 		"""
 		Return a list of the bonds in the structure.
 		"""
-		bondlist = []
-		for atom1 in self.graph:
-			for atom2 in self.graph[atom1]:
-				bond = self.graph[atom1][atom2]
-				if bond not in bondlist:
-					bondlist.append(bond)
-		return bondlist
+		return self.graph.edges
 
 	def addAtom(self, atom):
 		"""
 		Add `atom` to the graph as a vertex. The atom is initialized with
 		no edges.
 		"""
-		self.graph[atom] = {}
-		return atom
+		return self.graph.addVertex(atom)
 
 	def addBond(self, bond):
 		"""
 		Add `bond` to the graph as an edge connecting atoms `atom1` and
 		`atom2`, which must already be present in the graph.
 		"""
-		atom1 = bond.atoms[0]; atom2 = bond.atoms[1]
-		self.graph[atom1][atom2] = bond
-		self.graph[atom2][atom1] = bond
-		return bond
+		atom1, atom2 = bond.atoms
+		return self.graph.addEdge((atom1, atom2), bond)
 
 	def getBonds(self, atom):
 		"""
 		Return a list of the bonds involving the specified `atom`.
 		"""
-		if atom not in self.graph: return []
-		else: return self.graph[atom]
+		return self.graph.getEdges(atom)
 
 	def getBond(self, atom1, atom2):
 		"""
 		Returns the bond connecting atoms `atom1` and `atom2` if it exists, or
 		:data:`None` if not.
 		"""
-		if self.hasBond(atom1, atom2):	return self.graph[atom1][atom2]
-		else:							return None
+		return self.graph.getEdge((atom1, atom2))
 
 	def hasBond(self, atom1, atom2):
 		"""
 		Returns true if atoms `atom1` and `atom2`, are in the graph and
 		are connected by a bond.
 		"""
-		if atom1 in self.graph.keys():
-			if atom2 in self.graph[atom1].keys():
-				return True
-		return False
+		return self.graph.hasEdge((atom1, atom2))
 
 	def removeAtom(self, atom):
 		"""
@@ -132,58 +118,94 @@ class Structure:
 		associated with `atom`. Does not remove atoms that no longer have any
 		bonds as a result of this removal.
 		"""
-		if atom not in self.graph: return
-		for atom2 in self.graph:
-			if atom2 is not atom:
-				if atom in self.graph[atom2]:
-					del self.graph[atom2][atom]
-		del self.graph[atom]
+		self.graph.removeVertex(atom)
 
 	def removeBond(self, bond):
 		"""
 		Remove `bond` from the graph. Does not remove atoms that no longer have
 		any bonds as a result of this removal.
 		"""
-		atom1 = bond.atoms[0]; atom2 = bond.atoms[1]
-		del self.graph[atom1][atom2]
-		del self.graph[atom2][atom1]
+		atom1, atom2 = bond.atoms
+		return self.graph.removeEdge((atom1, atom2))
 
 	def isIsomorphic(self, other):
 		"""
 		Returns :data:`True` if two graphs are isomorphic and :data:`False`
 		otherwise. Uses the VF2 algorithm of Vento and Foggia.
 		"""
-		return graph.VF2_isomorphism(self.graph, other.graph, {}, {}, False, False)
+		return self.graph.isIsomorphic(other.graph)
 
 	def isSubgraphIsomorphic(self, other, map12=None, map21=None):
 		"""
 		Returns :data:`True` if `other` is subgraph isomorphic and :data:`False`
 		otherwise. Uses the VF2 algorithm of Vento and Foggia.
 		"""
-		return graph.VF2_isomorphism(self.graph, other.graph, map21, map12, True, False)
+		return self.graph.isSubgraphIsomorphic(other.graph)
 
 	def findSubgraphIsomorphisms(self, other):
 		"""
 		Returns :data:`True` if `other` is subgraph isomorphic and :data:`False`
 		otherwise. Uses the VF2 algorithm of Vento and Foggia.
 		"""
-		return graph.VF2_isomorphism(self.graph, other.graph, {}, {}, True, True)
+		return self.graph.findSubgraphIsomorphisms(other.graph)
 
 	def initialize(self, atoms, bonds):
 		"""
 		Rebuild the `graph` data member based on the lists of atoms and bonds
 		provided in `atoms` and `bonds`, respectively.
 		"""
-		self.graph = {}
+		self.graph = graph.Graph()
 
 		if atoms is None or bonds is None:
 			return
 
 		for atom in atoms:
-			self.graph[atom] = {}
+			self.addAtom(atom)
 		for bond in bonds:
-			self.graph[bond.atoms[0]][bond.atoms[1]] = bond
-			self.graph[bond.atoms[1]][bond.atoms[0]] = bond
+			self.addBond(bond)
+
+	def copy(self):
+		"""
+		Create a copy of the current Structure.
+		"""
+		atoms = []; bonds = []
+		for atom in self.atoms():
+			atoms.append(atom.copy())
+		for bond in self.bonds():
+			newBond = bond.copy()
+			bonds.append(newBond)
+			index1 = self.atoms().index(bond.atoms[0])
+			index2 = self.atoms().index(bond.atoms[1])
+			newBond.atoms = [atoms[index1], atoms[index2]]
+
+		return Structure(atoms, bonds)
+
+	def merge(self, other):
+		"""
+		Merge two graphs so as to store them in a single Graph object.
+		"""
+		structure = Structure()
+		structure.graph = self.graph.merge(other.graph)
+		return structure
+
+	def split(self):
+		"""
+		Convert a single Graph object containing two or more unconnected graphs
+		into separate graphs.
+		"""
+		graphs = self.graph.split()
+		structures = []
+		for g in graphs:
+			structure = Structure()
+			structure.graph = g
+			structures.append(structure)
+		return structures
+
+	def getSmallestSetOfSmallestRings(self):
+		"""
+		Return the smallest set of smallest rings for the structure.
+		"""
+		return self.graph.getSmallestSetOfSmallestRings()
 
 	def getFormula(self):
 		"""
@@ -644,91 +666,6 @@ class Structure:
 		for atom in self.atoms():
 			radical += atom.electronState.order
 		return radical
-
-	def copy(self):
-		"""
-		Create a copy of the current Structure.
-		"""
-
-		atoms = []; bonds = []
-		for atom in self.atoms():
-			atoms.append(atom.copy())
-		for bond in self.bonds():
-			newBond = bond.copy()
-			bonds.append(newBond)
-			index1 = self.atoms().index(bond.atoms[0])
-			index2 = self.atoms().index(bond.atoms[1])
-			newBond.atoms = [atoms[index1], atoms[index2]]
-
-		return Structure(atoms, bonds)
-
-	def merge(self, other):
-		"""
-		Merge two graphs so as to store them in a single Graph object.
-		"""
-
-		# Create output graph
-		new = Structure()
-
-		# Add atoms to output graph
-		for atom in self.atoms():
-			new.addAtom(atom)
-		for atom in other.atoms():
-			new.addAtom(atom)
-
-		# Add bonds to output graph
-		for bond in self.bonds():
-			new.addBond(bond)
-		for bond in other.bonds():
-			new.addBond(bond)
-
-		return new
-
-	def split(self):
-		"""
-		Convert a single Graph object containing two or more unconnected graphs
-		into separate graphs.
-		"""
-		# Create potential output graphs
-		new1 = Structure(); new2 = Structure()
-
-		# Add all atoms and bonds to new1
-		for atom in self.atoms():
-			new1.addAtom(atom)
-		for bond in self.bonds():
-			new1.addBond(bond)
-
-		# Arbitrarily choose last atom as starting point
-		atomsToMove = [ self.atoms()[-1] ]
-
-		# Iterate until there are no more atoms to move
-		index = 0
-		while index < len(atomsToMove):
-			for atom2 in self.getBonds(atomsToMove[index]):
-				if atom2 not in atomsToMove:
-					atomsToMove.append(atom2)
-			index += 1
-
-		# If all atoms are to be moved, simply return new1
-		if len(new1.atoms()) == len(atomsToMove):
-			return [new1]
-
-		# Copy to new graph
-		for atom in atomsToMove:
-			new2.addAtom(atom)
-		for atom1 in atomsToMove:
-			for atom2, bond in new1.getBonds(atom1).iteritems():
-				new2.addBond(bond)
-
-		# Remove from old graph
-		for bond in new2.bonds():
-			new1.removeBond(bond)
-		for atom in atomsToMove:
-			new1.removeAtom(atom)
-
-		new = [new2]
-		new.extend(new1.split())
-		return new
 
 	def getAdjacentResonanceIsomers(self):
 		"""

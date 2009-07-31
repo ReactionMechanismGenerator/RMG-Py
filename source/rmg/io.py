@@ -222,7 +222,7 @@ def readInputFile(fstr):
 			# Create a new species and append the species to the core
 			spec = species.makeNewSpecies(struct, label, reactive)
 			coreSpecies.append(spec)
-		
+			
 			# Add to local species dictionary (for matching with other parts of file)
 			speciesDict[sid] = spec
 

@@ -101,7 +101,7 @@ class Graph(dict, object):
 		no edge exists.
 		"""
 		v1, v2 = vertices
-		return self[v1][v2] if self.hasEdge[v1][v2] else None
+		return self[v1][v2] if self.hasEdge(vertices) else None
 
 	def hasEdge(self, vertices):
 		"""
@@ -201,9 +201,13 @@ class Graph(dict, object):
 		Convert a single Graph object containing two or more unconnected graphs
 		into separate graphs.
 		"""
+		
 		# Create potential output graphs
 		new1 = self.copy()
 		new2 = Graph()
+
+		if len(self.vertices) == 0:
+			return [new1]
 
 		# Arbitrarily choose last atom as starting point
 		verticesToMove = [ self.vertices[-1] ]

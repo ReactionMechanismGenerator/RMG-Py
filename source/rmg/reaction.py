@@ -1087,7 +1087,9 @@ class ReactionFamily(data.Database):
 			productStructures = productStructure.split()
 		else:
 			productStructures = [productStructure]
-
+		if len(self.template.products) != len(productStructures):
+			raise Exception('Application of reaction recipe failed; expected %s product(s), but %s found.' % (len(self.template.products), len(productStructures)))
+		
 		# Recalculate atom types of product structures, since they may have
 		# changed as a result of the reaction
 		for struct in productStructures:
@@ -1099,11 +1101,9 @@ class ReactionFamily(data.Database):
 		if self.forbidden is not None:
 			for label, struct2 in self.forbidden.iteritems():
 				for struct in reactantStructures:
-					match, map21, map12 = struct.isSubgraphIsomorphic(struct2)
-					if match: return None
+					if struct.isSubgraphIsomorphic(struct2): return None
 				for struct in productStructures:
-					match, map21, map12 = struct.isSubgraphIsomorphic(struct2)
-					if match: return None
+					if struct.isSubgraphIsomorphic(struct2): return None
 
 		# Convert structure(s) to products
 		products = []
@@ -1113,7 +1113,7 @@ class ReactionFamily(data.Database):
 			# makeNewSpecies() (e.g. due to forbidden structure)
 			if spec is None: return None
 			products.append(spec)
-
+		
 		# Create reaction and add if unique
 		rxn, isNew = makeNewReaction(reactants, products, reactantStructures, productStructures, self)
 		if isNew:	return rxn
@@ -1639,7 +1639,7 @@ def makeNewReaction(reactants, products, reactantStructures, productStructures, 
 	object is created and returned after being appended to the global reaction
 	list.
 	"""
-	
+
 	# Sort reactants and products (to make comparisons easier/faster)
 	reactants.sort()
 	products.sort()

@@ -650,8 +650,7 @@ class Database:
 					map12_0[center] = atom; map21_0[atom] = center
 				#elif label not in centers:
 				#	return False
-			match, map21, map12 = structure.isSubgraphIsomorphic(group, map12_0, map21_0)
-			return match
+			return structure.isSubgraphIsomorphic(group, map12_0, map21_0)
 
 	def descendTree(self, structure, atoms, root=None):
 		"""
