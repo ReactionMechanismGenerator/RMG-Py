@@ -25,6 +25,331 @@
 #
 ################################################################################
 
+class Vertex:
+
+	def __init__(self):
+		pass
+
+	def equivalent(self, other):
+		return True
+
+class Edge:
+
+	def __init__(self):
+		pass
+
+	def equivalent(self, other):
+		return True
+
+class Graph(dict, object):
+	"""
+	A representation of a graph using a dictionary of dictionaries. The keys
+	of the outer dictionary are the vertices, while edges are accessed via
+	self[vertex1][vertex2].
+	"""
+
+	def __init__(self, vertices=None, edges=None):
+		self.clear()
+
+	def vertices(self):
+		"""
+		Return a list of the vertices in the graph.
+		"""
+		return self.keys()
+	vertices = property(vertices)
+
+	def edges(self):
+		"""
+		Return a list of the edges in the graph.
+		"""
+		edgelist = []; pairslist = []
+		for v1 in self:
+			for v2 in self[v1]:
+				if (v1, v2) not in pairslist:
+					edgelist.append(self[v1][v2])
+					pairslist.append((v1,v2))
+					pairslist.append((v2,v1))
+		return edgelist
+	edges = property(edges)
+
+	def addVertex(self, vertex):
+		"""
+		Add a `vertex` to the graph. The vertex is initialized with no edges.
+		"""
+		self[vertex] = {}
+		return vertex
+
+	def addEdge(self, vertices, edge):
+		"""
+		Add an `edge` to the graph as an edge connecting the two vertices
+		specified in the 2-tuple `vertices`.
+		"""
+		v1, v2 = vertices
+		self[v1][v2] = edge
+		self[v2][v1] = edge
+		return edge
+
+	def getEdges(self, vertex):
+		"""
+		Return a list of the edges involving the specified `vertex`.
+		"""
+		return self[vertex]
+
+	def getEdge(self, vertices):
+		"""
+		Returns the edge connecting vertices in 2-tuple `vertices`, or None if
+		no edge exists.
+		"""
+		v1, v2 = vertices
+		return self[v1][v2] if self.hasEdge[v1][v2] else None
+
+	def hasEdge(self, vertices):
+		"""
+		Returns :data:`True` if vertices in the 2-tuple `vertices` are connected
+		by an edge, and :data:`False` if not.
+		"""
+		v1, v2 = vertices
+		if v1 in self:
+			return v2 in self[v1]
+		return False
+
+	def removeVertex(self, vertex1):
+		"""
+		Remove `vertex1` and all edges associated with it from the graph. Does
+		not remove vertices that no longer have any edges as a result of this
+		removal.
+		"""
+		for vertex2 in self:
+			if vertex2 is not vertex1:
+				if vertex1 in self[vertex2]:
+					del self[vertex2][vertex1]
+		del self[vertex1]
+
+	def removeEdge(self, vertices):
+		"""
+		Remove the edge having vertices as specified in the 2-tuple `vertices
+		from the graph. Does not remove vertices that no longer have any edges
+		as a result of this removal.
+		"""
+		v1, v2 = vertices
+		del self[v1][v2]
+		del self[v2][v1]
+
+	def isIsomorphic(self, other):
+		"""
+		Returns :data:`True` if two graphs are isomorphic and :data:`False`
+		otherwise. Uses the VF2 algorithm of Vento and Foggia.
+		"""
+		ismatch, map21, map12 = VF2_isomorphism(self, other, {}, {}, False, False)
+		return ismatch
+
+	def isSubgraphIsomorphic(self, other, map12=None, map21=None):
+		"""
+		Returns :data:`True` if `other` is subgraph isomorphic and :data:`False`
+		otherwise. Uses the VF2 algorithm of Vento and Foggia.
+		"""
+		ismatch, map21, map12 = VF2_isomorphism(self, other, map21, map12, True, False)
+		return ismatch
+
+	def findSubgraphIsomorphisms(self, other):
+		"""
+		Returns :data:`True` if `other` is subgraph isomorphic and :data:`False`
+		otherwise. Uses the VF2 algorithm of Vento and Foggia.
+		"""
+		return VF2_isomorphism(self, other, {}, {}, True, True)
+
+	def copy(self):
+		"""
+		Create a copy of the current graph.
+		"""
+
+		other = Graph()
+		for vertex in self:
+			other.addVertex(vertex)
+		for v1 in self:
+			for v2 in self[v1]:
+				other[v1][v2] = self[v1][v2]
+		
+		return other
+
+	def merge(self, other):
+		"""
+		Merge two graphs so as to store them in a single Graph object.
+		"""
+
+		# Create output graph
+		new = Graph()
+
+		# Add vertices to output graph
+		for vertex in self:
+			new.addVertex(vertex)
+		for vertex in other:
+			new.addVertex(vertex)
+
+		# Add edges to output graph
+		for v1 in self:
+			for v2 in self[v1]:
+				new[v1][v2] = self[v1][v2]
+		for v1 in other:
+			for v2 in other[v1]:
+				new[v1][v2] = other[v1][v2]
+
+		return new
+
+	def split(self):
+		"""
+		Convert a single Graph object containing two or more unconnected graphs
+		into separate graphs.
+		"""
+		# Create potential output graphs
+		new1 = self.copy()
+		new2 = Graph()
+
+		# Arbitrarily choose last atom as starting point
+		verticesToMove = [ self.vertices[-1] ]
+
+		# Iterate until there are no more atoms to move
+		index = 0
+		while index < len(verticesToMove):
+			for v2 in self.getEdges(verticesToMove[index]):
+				if v2 not in verticesToMove:
+					verticesToMove.append(v2)
+			index += 1
+
+		# If all atoms are to be moved, simply return new1
+		if len(new1.vertices) == len(verticesToMove):
+			return [new1]
+
+		# Copy to new graph
+		for vertex in verticesToMove:
+			new2.addVertex(vertex)
+		for v1 in verticesToMove:
+			for v2, edge in new1[v1].iteritems():
+				new2[v1][v2] = edge
+
+		# Remove from old graph
+		for v1 in new2:
+			for v2 in new2[v1]:
+				if v1 in verticesToMove and v2 in verticesToMove:
+					del new1[v1][v2]
+		for vertex in verticesToMove:
+			new1.removeVertex(vertex)
+
+		new = [new2]
+		new.extend(new1.split())
+		return new
+
+	def getSmallestSetOfSmallestRings(self):
+		"""
+		Return a list of the smallest set of smallest rings in the graph. The
+		algorithm implements was adapted from a description by Fan, Panaye,
+		Doucet, and Barbu (doi: 10.1021/ci00015a002)
+
+		B. T. Fan, A. Panaye, J. P. Doucet, and A. Barbu. "Ring Perception: A
+		New Algorithm for Directly Finding the Smallest Set of Smallest Rings
+		from a Connection Table." *J. Chem. Inf. Comput. Sci.* **33**, 
+		p. 657-662 (1993).
+		"""
+
+		# Make a copy of the graph so we don't modify the original
+		graph = self.copy()
+
+		# Step 1: Remove all terminal vertices
+		done = False
+		while not done:
+			verticesToRemove = []
+			for vertex1, value in graph.iteritems():
+				if len(value) == 1: verticesToRemove.append(vertex1)
+			done = len(verticesToRemove) == 0
+			# Remove identified vertices from graph
+			for vertex in verticesToRemove:
+				graph.removeVertex(vertex)
+
+		# Step 2: Remove all other vertices that are not part of cycles
+		verticesToRemove = []
+		for vertex in graph:
+			found, cycle = graph.isVertexInCycle(vertex)
+			if not found:
+				verticesToRemove.append(vertex)
+		# Remove identified vertices from graph
+		for vertex in verticesToRemove:
+			graph.removeVertex(vertex)
+
+		# Step 3: Split graph into remaining subgraphs
+		graphs = graph.split()
+
+		# Step 4: Find ring sets in each subgraph
+		cycleList = []
+		for graph in graphs:
+
+			while len(graph) > 0:
+
+				# Choose root vertex as vertex with smallest number of edges
+				rootVertex = None
+				for vertex in graph:
+					if rootVertex is None:
+						rootVertex = vertex
+					elif len(graph[vertex]) < len(graph[rootVertex]):
+						rootVertex = vertex
+
+				# Get all cycles involving the root vertex
+				cycles = []
+				graph.getAllCycles(rootVertex, cycles)
+				if len(cycles) == 0:
+					raise Exception('Did not find expected cycle!')
+
+				# Keep the smallest of the cycles found above
+				cycle = cycles[0]
+				for c in cycles[1:]:
+					if len(c) < len(cycle):
+						cycle = c
+				cycleList.append(cycle)
+
+				# Remove all vertices in the cycle from the graph that have only two edges
+				verticesToRemove = []
+				for vertex in cycle:
+					if len(graph[vertex]) <= 2:
+						verticesToRemove.append(vertex)
+				if len(verticesToRemove) == 0:
+					# Remove edge between root vertex and any vertex it is connected to
+					graph.removeEdge((rootVertex, graph[rootVertex].keys()[0]))
+				else:
+					for vertex in verticesToRemove:
+						graph.removeVertex(vertex)
+
+
+		return cycleList
+
+	def isVertexInCycle(self, cycle):
+
+		if not isinstance(cycle, list): cycle = [cycle]
+
+		for vertex2, edge in self[cycle[-1]].iteritems():
+			if vertex2 is cycle[0] and len(cycle) > 2:
+				return True, cycle
+			elif vertex2 not in cycle:
+				cycle.append(vertex2)
+				found, c = self.isVertexInCycle(cycle)
+				if found: return True, cycle
+				cycle.remove(vertex2)
+
+		return False, []
+
+
+	def getAllCycles(self, cycle, cycleList):
+
+		if not isinstance(cycle, list): cycle = [cycle]
+
+		for vertex2, edge in self[cycle[-1]].iteritems():
+			if vertex2 is cycle[0] and len(cycle) > 2:
+				cycleList.append(cycle[:])
+			elif vertex2 not in cycle:
+				cycle.append(vertex2)
+				self.getAllCycles(cycle, cycleList)
+				cycle.pop(-1)
+
+################################################################################
+
 def VF2_isomorphism(graph1, graph2, map21, map12, subgraph=False, findAll=False):
 	"""
 	Returns :data:`True` if two graphs are isomorphic and :data:`False`
@@ -33,6 +358,10 @@ def VF2_isomorphism(graph1, graph2, map21, map12, subgraph=False, findAll=False)
 	used to specify whether all isomorphisms should be returned, or only the
 	first.
 	"""
+
+	if not subgraph and len(graph1) != len(graph2):
+		return False, [], []
+
 	if map12 is None: map12 = {}
 	if map21 is None: map21 = {}
 
@@ -214,4 +543,20 @@ def __VF2_terminals(graph, mapping):
 				terminals[vert] = True
 	return terminals
 
-	
+################################################################################
+
+if __name__ == '__main__':
+
+	graph = {}
+	graph[0] = { 1: 'S', 2: 'S' }
+	graph[1] = { 0: 'S', 2: 'S' }
+	graph[2] = { 1: 'S', 0: 'S', 4: 'S' }
+	graph[3] = { 0: 'S' }
+	graph[4] = { 2: 'S' }
+
+	print isVertexInCycle(graph, [0])
+	print isVertexInCycle(graph, [1])
+	print isVertexInCycle(graph, [2])
+	print isVertexInCycle(graph, [3])
+	print isVertexInCycle(graph, [4])
+
