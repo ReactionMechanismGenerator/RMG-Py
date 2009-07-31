@@ -202,6 +202,22 @@ class Tree:
 			ancestors.extend(self.ancestors(parent))
 			return ancestors
 	
+	def descendants(self, node):
+		"""
+		Returns all the descendants of a node, climbing down the tree to the bottom.
+		"""
+		children = self.children[node][:]
+		temp0 = children[:]
+
+		while len(temp0) > 0:
+			temp = []
+			for child in temp0:
+				children.extend(self.children[child])
+				temp.extend(self.children[child])
+			temp0 = temp
+
+		return children
+
 	def add(self, node, parent):
 		"""
 		Add `node` to the tree as a child of `parent`, another node	already in 
