@@ -13,7 +13,7 @@ Contents
 
 .. toctree::
 	:numbered:
-	:maxdepth: 1
+	:maxdepth: 2
 	
 	rmg-chem
 	rmg-constants

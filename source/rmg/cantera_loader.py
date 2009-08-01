@@ -57,7 +57,8 @@ if cti._species:
 _species=cti._species
 _reactions=cti._reactions
 _speciesnames=cti._speciesnames
-_speciesByName={} # a dictionary to look up species objects by their cantera name
+# a dictionary to look up species objects by their cantera name
+_speciesByName={} 
 
 # Classes should usually be named with CamelCase but need to stick with 
 # Cantera .cti names, hence lowercase names here:

@@ -108,7 +108,7 @@ html_style = 'default.css'
 #html_logo = None
 
 # The name of an image file (within the static path) to use as favicon of the
-# docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
+# docs.	 This file should be a Windows icon file (.ico) being 16x16 or 32x32
 # pixels large.
 #html_favicon = None
 
@@ -142,10 +142,10 @@ html_static_path = ['_static']
 #html_split_index = False
 
 # If true, the reST sources are included in the HTML build as _sources/<name>.
-#html_copy_source = True
+html_copy_source = True
 
 # If true, an OpenSearch description file will be output, and all pages will
-# contain a <link> tag referring to it.  The value of this option must be the
+# contain a <link> tag referring to it.	 The value of this option must be the
 # base URL from which the finished HTML is served.
 #html_use_opensearch = ''
 
@@ -188,3 +188,30 @@ latex_documents = [
 
 # If false, no module index is generated.
 #latex_use_modindex = True
+
+
+# Options for Autodoc
+#-------------------
+
+# concatenate the class's docstring and the __init__ method's docstring
+# (default is "class" and other options are "both" and "init")
+autoclass_content = "both"
+
+
+def add_value(app, what, name, obj, options, lines):
+	"""
+	Return a listener that adds an evaluation of data objects to the docs. 
+	Useful for constants and stuff.
+
+	Use like this (e.g. in the ``setup()`` function of :file:`conf.py`)::
+
+	   app.connect('autodoc-process-docstring', add_value)
+	"""
+	if what not in ['data']: return
+	lines.append(':data:`%s` = %s'%(name,obj))
+	# make sure there is a blank line at the end
+	if lines and lines[-1]:
+		lines.append('')
+	
+def setup(self):
+	self.connect('autodoc-process-docstring', add_value)

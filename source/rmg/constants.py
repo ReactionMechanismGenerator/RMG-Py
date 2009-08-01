@@ -52,31 +52,36 @@ if __name__ == "__main__":
 	print 'Constants available:'
 	print ''
 
-# The Avogadro constant
+# putting a comment with a colon just before the thing is defined
+# makes it show up in the documentation with autodoc. Clever hey?
+#: The Avogadro constant
 Na = pq.constants.Avogadro_constant.simplified
 if __name__ == "__main__":
 	print 'Avogadro constant: Na = %s' % (Na)
 Na = float(Na)
 
-# The Boltzmann constant
+#: The Boltzmann constant
 kB = pq.constants.Boltzmann_constant.simplified
 if __name__ == "__main__":
 	print 'Boltzmann constant: kB = %s' % (kB)
 kB = float(kB)
 
-# The gas law constant
+#: The gas law constant
 R = pq.constants.R.simplified
 if __name__ == "__main__":
 	print 'Gas law constant: R = %s' % (R)
 R = float(R)
+"""The molar gas constant, in J/mol/s"""
+# you can also put a docstring straight after the definition 
+# and autodoc will find it
 
-# The Planck constant
+#: The Planck constant
 h = pq.constants.Planck_constant.simplified
 if __name__ == "__main__":
 	print 'Planck constant: h = %s' % (h)
 h = float(h)
 
-# The speed of light in a vacuum
+#: The speed of light in a vacuum
 c = pq.constants.natural_unit_of_velocity.simplified
 if __name__ == "__main__":
 	print 'Speed of light in a vacuum: c = %s' % (c)

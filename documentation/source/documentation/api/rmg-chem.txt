@@ -3,6 +3,13 @@ The ``rmg.chem`` Module
 ***********************
 
 .. automodule:: rmg.chem
+	:members:
+	:show-inheritance:
+	:inherited-members:
+	
+data
+----
+.. autodata:: rmg.chem
 
 Classes in ``rmg.chem``
 =======================
