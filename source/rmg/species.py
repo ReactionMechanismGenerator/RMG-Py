@@ -48,27 +48,21 @@ class ThermoGAData:
 	"""
 	A set of thermodynamic parameters as determined from Benson's group
 	additivity data. The attributes are:
-
-	- `H298` = the standard enthalpy of formation at 298 K in J/mol
-
-	- `S298` = the standard entropy of formation at 298 K in J/mol*K
-
-	- `Cp300` = the standard heat capacity at 300 K in J/mol*K
-
-	- `Cp400` = the standard heat capacity at 400 K in J/mol*K
-
-	- `Cp500` = the standard heat capacity at 500 K in J/mol*K
-
-	- `Cp600` = the standard heat capacity at 600 K in J/mol*K
-
-	- `Cp800` = the standard heat capacity at 800 K in J/mol*K
-
-	- `Cp1000` = the standard heat capacity at 1000 K in J/mol*K
-
-	- `Cp1500` = the standard heat capacity at 1500 K in J/mol*K
-
-	- `comment` = a string describing the source of the data
-	"""
+	 ========= ========================================================
+	 Attribute Meaning
+	 ========= ========================================================
+	 `H298`    the standard enthalpy of formation at 298 K in J/mol
+	 `S298`    the standard entropy of formation at 298 K in J/mol*K
+	 `Cp300`   the standard heat capacity at 300 K in J/mol*K
+	 `Cp400`   the standard heat capacity at 400 K in J/mol*K
+	 `Cp500`   the standard heat capacity at 500 K in J/mol*K
+	 `Cp600`   the standard heat capacity at 600 K in J/mol*K
+	 `Cp800`   the standard heat capacity at 800 K in J/mol*K
+	 `Cp1000`  the standard heat capacity at 1000 K in J/mol*K
+	 `Cp1500`  the standard heat capacity at 1500 K in J/mol*K
+	 `comment` a string describing the source of the data
+	 ========= ========================================================
+	 """
 
 	CpTlist = list(pq.Quantity([300.0, 400.0, 500.0, 600.0, 800.0, 1000.0, 1500.0], 'K').simplified)
 	for i in range(len(CpTlist)): CpTlist[i] = float(CpTlist[i])

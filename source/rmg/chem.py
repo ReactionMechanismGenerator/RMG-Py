@@ -86,7 +86,8 @@ elements = loadElements()
 ################################################################################
 
 class AtomType:
-	"""
+	"""A type of atom such as Cd, a carbon atom with all single bonds.
+	
 	Represent a single atom type by its chemical element and, optionally, some
 	information about the local bond structure around that element. Each
 	element has a unique string `label`, the underlying chemical `element`, and

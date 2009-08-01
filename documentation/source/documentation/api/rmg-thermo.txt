@@ -2,7 +2,7 @@
 The ``rmg.thermo`` Module
 *************************
 
-.. automodule:: rmg.io
+.. automodule:: rmg.thermo
 
 Classes in ``rmg.thermo``
 =========================

@@ -7,8 +7,6 @@ The ``rmg.kinetics`` Module
 Classes in ``rmg.kinetics``
 ===========================
 
-
-
 Methods in ``rmg.kinetics``
 ===========================
 

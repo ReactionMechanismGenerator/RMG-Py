@@ -195,8 +195,9 @@ latex_documents = [
 
 # concatenate the class's docstring and the __init__ method's docstring
 # (default is "class" and other options are "both" and "init")
-autoclass_content = "both"
+#autoclass_content = "both"
 
+#autosummary_generate = ['documentation/api/rmg-chem']
 
 def add_value(app, what, name, obj, options, lines):
 	"""
