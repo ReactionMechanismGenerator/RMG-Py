@@ -4,7 +4,6 @@ The ``rmg.chem`` Module
 
 .. automodule:: rmg.chem
 	:show-inheritance:
-	
 
 
 Classes in ``rmg.chem``
