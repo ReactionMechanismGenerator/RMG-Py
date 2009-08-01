@@ -199,7 +199,6 @@ latex_documents = [
 
 #autosummary_generate = ['documentation/api/rmg-chem']
 
-
 def add_value(app, what, name, obj, options, lines):
 	"""
 	Return a listener that adds an evaluation of data objects to the docs. 
