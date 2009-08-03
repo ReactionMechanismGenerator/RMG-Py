@@ -33,7 +33,7 @@ import logging
 
 ################################################################################
 
-class Element:
+cpdef class Element:
 	"""
 	Represent a single chemical element. Each element has an atomic
 	`number`, a `name`, a `symbol`, an atomic `mass`, and a `valence`, a list
@@ -42,6 +42,12 @@ class Element:
 	This class is specifically for properties that all atoms of the same element
 	share. Ideally there is only one instance of this class for each element.
 	"""
+
+	cdef public int number
+	cdef public str name
+	cdef public str symbol
+	cdef public float mass
+	cdef public list valence
 
 	def __init__(self, number, name, symbol, mass, valence):
 		"""
@@ -85,7 +91,7 @@ elements = loadElements()
 
 ################################################################################
 
-class AtomType:
+cpdef class AtomType:
 	"""A type of atom such as Cd, a carbon atom with all single bonds.
 	
 	Represent a single atom type by its chemical element and, optionally, some
@@ -98,6 +104,10 @@ class AtomType:
 	element.
 	"""
 
+	cdef public str label
+	cdef public object element
+	cdef public str description
+
 	def __init__(self, label, element, description):
 		"""
 		Initialize an atom type.
@@ -106,7 +116,7 @@ class AtomType:
 		self.element = element
 		self.description = description
 
-	def equivalent(self, other):
+	cpdef bint equivalent(AtomType self, AtomType other):
 		"""
 		Returns :data:`True` if two atom types are equivalent or :data:`False`
 		otherwise.
@@ -202,7 +212,7 @@ atomTypes = loadAtomTypes()
 
 ################################################################################
 
-class ElectronState:
+cpdef class ElectronState:
 	"""
 	Represent a single free electron state (none, radical, etc.) Each state is
 	defined by a unique string `label`; the `order`, or number of
@@ -212,6 +222,10 @@ class ElectronState:
 	share. Ideally there is only one instance of this class for each free
 	electron state.
 	"""
+
+	cdef public str label
+	cdef public int order
+	cdef public list spin
 
 	def __init__(self, label, order, spin):
 		"""
@@ -226,7 +240,7 @@ class ElectronState:
 		self.order = order
 		self.spin = spin
 
-	def equivalent(self, other):
+	cpdef bint equivalent(ElectronState self, ElectronState other):
 		"""
 		Returns :data:`True` if two electron states are equivalent or
 		:data:`False` otherwise.
@@ -264,7 +278,7 @@ electronStates = loadElectronStates()
 
 ################################################################################
 
-class BondType:
+cpdef class BondType:
 	"""
 	Represent a type of chemical bond. Each bond type has a unique string
 	`label`; a unique string `name`; a numeric bond `order`; an integral
@@ -274,6 +288,12 @@ class BondType:
 	This class is specifically for properties that all bonds of the same type
 	share. Ideally there is only one instance of this class for each bond type.
 	"""
+
+	cdef public str label
+	cdef public str name
+	cdef public float order
+	cdef public int piElectrons
+	cdef public str location
 
 	def __init__(self, label, name, order, piElectrons, location=''):
 		"""Initialize a chemical bond.
@@ -291,7 +311,7 @@ class BondType:
 		self.piElectrons = piElectrons
 		self.location = location
 
-	def equivalent(self, other):
+	cpdef bint equivalent(BondType self, BondType other):
 		"""
 		Returns :data:`True` if two bond types are equivalent or
 		:data:`False` otherwise.
@@ -328,7 +348,7 @@ bondTypes = loadBondTypes()
 
 ################################################################################
 
-class Atom(object):
+cpdef class Atom:
 	"""
 	Represent an atom in a chemical species or functional group. The `atomType`
 	and `electronState` attributes contain lists of the allowed atom types and
@@ -336,6 +356,11 @@ class Atom(object):
 	the resulting formal charge. The `label` attribute can be used to tag
 	individual atoms, e.g. center atoms or reactive sites in functional groups.
 	"""
+
+	cdef public list _atomType
+	cdef public list _electronState
+	cdef public int charge
+	cdef public str label
 
 	def __init__(self, atomType=None, electronState=None, charge=0, label=''):
 		"""
@@ -416,14 +441,16 @@ class Atom(object):
 
 	electronState = property(getElectronState, setElectronState)
 
-	def equivalent(self, other):
+	cpdef bint equivalent(Atom self, Atom other):
 		"""
 		Return :data:`True` if `self` and `other` are equivalent atoms, i.e.
 		they have the same element and electronic state.
 		"""
 
-		atomTypesMatch = False
-		electronStatesMatch = False
+		cdef bint atomTypesMatch = False
+		cdef bint electronStatesMatch = False
+		cdef AtomType atomType1, atomType2
+		cdef ElectronState elecState1, elecState2
 
 		for atomType1 in self._atomType:
 			for atomType2 in other._atomType:
@@ -550,15 +577,18 @@ class Atom(object):
 
 ################################################################################
 
-class Bond(object):
+cpdef class Bond:
 	"""
 	Represent a bond in a chemical species. Each bond has a list `atoms` of
 	length two containing the two atoms in the bond and a `bondType` object,
 	stored internally as a :class:`BondType` object.
 	"""
 
+	cdef public list atoms
+	cdef public list _bondType
+
 	def __init__(self, atoms, bondType=''):
-		self.setBondType(bondType)
+		self.bondType = bondType
 		self.atoms = atoms
 
 	def __repr__(self):
@@ -590,11 +620,13 @@ class Bond(object):
 
 	bondType = property(getBondType, setBondType)
 
-	def equivalent(self, other):
+	cpdef bint equivalent(Bond self, Bond other):
 		"""
 		Return :data:`True` if `self` and `other` are equivalent bonds, i.e.
 		they have the same bond type.
 		"""
+		cdef BondType bondType1, bondType2
+
 		for bondType1 in self._bondType:
 			for bondType2 in other._bondType:
 				if bondType1.equivalent(bondType2): return True

@@ -69,13 +69,13 @@ class Structure:
 		"""
 		Return a list of the atoms in the structure.
 		"""
-		return self.graph.vertices
+		return self.graph.vertices()
 
 	def bonds(self):
 		"""
 		Return a list of the bonds in the structure.
 		"""
-		return self.graph.edges
+		return self.graph.edges()
 
 	def addAtom(self, atom):
 		"""
@@ -140,7 +140,7 @@ class Structure:
 		Returns :data:`True` if `other` is subgraph isomorphic and :data:`False`
 		otherwise. Uses the VF2 algorithm of Vento and Foggia.
 		"""
-		return self.graph.isSubgraphIsomorphic(other.graph)
+		return self.graph.isSubgraphIsomorphic(other.graph, dict(), dict())
 
 	def findSubgraphIsomorphisms(self, other):
 		"""

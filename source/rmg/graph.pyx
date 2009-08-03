@@ -25,6 +25,10 @@
 #
 ################################################################################
 
+cdef extern from "dictobject.h":
+	ctypedef class __builtin__.dict [object PyDictObject]:
+		pass
+
 class Vertex:
 
 	def __init__(self):
@@ -41,7 +45,7 @@ class Edge:
 	def equivalent(self, other):
 		return True
 
-class Graph(dict, object):
+cpdef class Graph(dict):
 	"""
 	A representation of a graph using a dictionary of dictionaries. The keys
 	of the outer dictionary are the vertices, while edges are accessed via
@@ -51,18 +55,18 @@ class Graph(dict, object):
 	def __init__(self, vertices=None, edges=None):
 		self.clear()
 
-	def vertices(self):
+	cpdef list vertices(Graph self):
 		"""
 		Return a list of the vertices in the graph.
 		"""
 		return self.keys()
-	vertices = property(vertices)
-
-	def edges(self):
+	
+	cpdef list edges(Graph self):
 		"""
 		Return a list of the edges in the graph.
 		"""
-		edgelist = []; pairslist = []
+		cdef list edgelist = list()
+		cdef list pairslist = list()
 		for v1 in self:
 			for v2 in self[v1]:
 				if (v1, v2) not in pairslist:
@@ -70,16 +74,15 @@ class Graph(dict, object):
 					pairslist.append((v1,v2))
 					pairslist.append((v2,v1))
 		return edgelist
-	edges = property(edges)
-
-	def addVertex(self, vertex):
+	
+	cpdef addVertex(Graph self, vertex):
 		"""
 		Add a `vertex` to the graph. The vertex is initialized with no edges.
 		"""
-		self[vertex] = {}
+		self[vertex] = dict()
 		return vertex
 
-	def addEdge(self, vertices, edge):
+	cpdef addEdge(Graph self, vertices, edge):
 		"""
 		Add an `edge` to the graph as an edge connecting the two vertices
 		specified in the 2-tuple `vertices`.
@@ -89,13 +92,13 @@ class Graph(dict, object):
 		self[v2][v1] = edge
 		return edge
 
-	def getEdges(self, vertex):
+	cpdef dict getEdges(Graph self, vertex):
 		"""
 		Return a list of the edges involving the specified `vertex`.
 		"""
 		return self[vertex]
 
-	def getEdge(self, vertices):
+	cpdef getEdge(Graph self, tuple vertices):
 		"""
 		Returns the edge connecting vertices in 2-tuple `vertices`, or None if
 		no edge exists.
@@ -103,7 +106,7 @@ class Graph(dict, object):
 		v1, v2 = vertices
 		return self[v1][v2] if self.hasEdge(vertices) else None
 
-	def hasEdge(self, vertices):
+	cpdef bint hasEdge(self, tuple vertices):
 		"""
 		Returns :data:`True` if vertices in the 2-tuple `vertices` are connected
 		by an edge, and :data:`False` if not.
@@ -113,7 +116,7 @@ class Graph(dict, object):
 			return v2 in self[v1]
 		return False
 
-	def removeVertex(self, vertex1):
+	cpdef removeVertex(Graph self, vertex1):
 		"""
 		Remove `vertex1` and all edges associated with it from the graph. Does
 		not remove vertices that no longer have any edges as a result of this
@@ -125,7 +128,7 @@ class Graph(dict, object):
 					del self[vertex2][vertex1]
 		del self[vertex1]
 
-	def removeEdge(self, vertices):
+	cpdef removeEdge(Graph self, vertices):
 		"""
 		Remove the edge having vertices as specified in the 2-tuple `vertices
 		from the graph. Does not remove vertices that no longer have any edges
@@ -135,15 +138,16 @@ class Graph(dict, object):
 		del self[v1][v2]
 		del self[v2][v1]
 
-	def isIsomorphic(self, other):
+	cpdef isIsomorphic(Graph self, Graph other):
 		"""
 		Returns :data:`True` if two graphs are isomorphic and :data:`False`
 		otherwise. Uses the VF2 algorithm of Vento and Foggia.
 		"""
-		ismatch, map21, map12 = VF2_isomorphism(self, other, {}, {}, False, False)
+		if len(self) != len(other): return False
+		ismatch, map21, map12 = VF2_isomorphism(self, other, dict(), dict(), False, False)
 		return ismatch
 
-	def isSubgraphIsomorphic(self, other, map12=None, map21=None):
+	cpdef isSubgraphIsomorphic(Graph self, Graph other, dict map12, dict map21):
 		"""
 		Returns :data:`True` if `other` is subgraph isomorphic and :data:`False`
 		otherwise. Uses the VF2 algorithm of Vento and Foggia.
@@ -151,19 +155,19 @@ class Graph(dict, object):
 		ismatch, map21, map12 = VF2_isomorphism(self, other, map21, map12, True, False)
 		return ismatch
 
-	def findSubgraphIsomorphisms(self, other):
+	cpdef findSubgraphIsomorphisms(Graph self, Graph other):
 		"""
 		Returns :data:`True` if `other` is subgraph isomorphic and :data:`False`
 		otherwise. Uses the VF2 algorithm of Vento and Foggia.
 		"""
-		return VF2_isomorphism(self, other, {}, {}, True, True)
+		return VF2_isomorphism(self, other, dict(), dict(), True, True)
 
-	def copy(self):
+	cpdef Graph copy(Graph self):
 		"""
 		Create a copy of the current graph.
 		"""
+		cdef Graph other = Graph()
 
-		other = Graph()
 		for vertex in self:
 			other.addVertex(vertex)
 		for v1 in self:
@@ -172,13 +176,13 @@ class Graph(dict, object):
 		
 		return other
 
-	def merge(self, other):
+	cpdef Graph merge(Graph self, Graph other):
 		"""
 		Merge two graphs so as to store them in a single Graph object.
 		"""
 
 		# Create output graph
-		new = Graph()
+		cdef Graph new = Graph()
 
 		# Add vertices to output graph
 		for vertex in self:
@@ -196,21 +200,23 @@ class Graph(dict, object):
 
 		return new
 
-	def split(self):
+	cpdef list split(Graph self):
 		"""
 		Convert a single Graph object containing two or more unconnected graphs
 		into separate graphs.
 		"""
 		
 		# Create potential output graphs
-		new1 = self.copy()
-		new2 = Graph()
+		cdef Graph new1 = self.copy()
+		cdef Graph new2 = Graph()
+		cdef list verticesToMove
+		cdef int index
 
-		if len(self.vertices) == 0:
+		if len(self.vertices()) == 0:
 			return [new1]
 
 		# Arbitrarily choose last atom as starting point
-		verticesToMove = [ self.vertices[-1] ]
+		verticesToMove = [ self.vertices()[-1] ]
 
 		# Iterate until there are no more atoms to move
 		index = 0
@@ -221,7 +227,7 @@ class Graph(dict, object):
 			index += 1
 
 		# If all atoms are to be moved, simply return new1
-		if len(new1.vertices) == len(verticesToMove):
+		if len(new1.vertices()) == len(verticesToMove):
 			return [new1]
 
 		# Copy to new graph
@@ -243,7 +249,7 @@ class Graph(dict, object):
 		new.extend(new1.split())
 		return new
 
-	def getSmallestSetOfSmallestRings(self):
+	cpdef list getSmallestSetOfSmallestRings(Graph self):
 		"""
 		Return a list of the smallest set of smallest rings in the graph. The
 		algorithm implements was adapted from a description by Fan, Panaye,
@@ -256,7 +262,11 @@ class Graph(dict, object):
 		"""
 
 		# Make a copy of the graph so we don't modify the original
-		graph = self.copy()
+		cdef Graph graph = self.copy()
+		cdef bint done
+		cdef list verticesToMove
+		cdef list cycleList
+		cdef list cycles
 
 		# Step 1: Remove all terminal vertices
 		done = False
@@ -297,7 +307,7 @@ class Graph(dict, object):
 						rootVertex = vertex
 
 				# Get all cycles involving the root vertex
-				cycles = []
+				cycles = list()
 				graph.getAllCycles(rootVertex, cycles)
 				if len(cycles) == 0:
 					raise Exception('Did not find expected cycle!')
@@ -324,7 +334,7 @@ class Graph(dict, object):
 
 		return cycleList
 
-	def isVertexInCycle(self, cycle):
+	cpdef isVertexInCycle(Graph self, cycle):
 
 		if not isinstance(cycle, list): cycle = [cycle]
 
@@ -340,7 +350,7 @@ class Graph(dict, object):
 		return False, []
 
 
-	def getAllCycles(self, cycle, cycleList):
+	cpdef getAllCycles(Graph self, cycle, cycleList):
 
 		if not isinstance(cycle, list): cycle = [cycle]
 
@@ -354,58 +364,55 @@ class Graph(dict, object):
 
 ################################################################################
 
-def VF2_isomorphism(graph1, graph2, map21, map12, subgraph=False, findAll=False):
+cpdef VF2_isomorphism(Graph graph1, Graph graph2, dict map12, dict map21, \
+	bint subgraph=False, bint findAll=False):
 	"""
 	Returns :data:`True` if two graphs are isomorphic and :data:`False`
-	otherwise. Uses the VF2 algorithm of Vento and Foggia. `subgraph` is 
+	otherwise. Uses the VF2 algorithm of Vento and Foggia. `subgraph` is
 	:data:`True` if graph2 is a potential subgraph of graph1. `findAll` is
 	used to specify whether all isomorphisms should be returned, or only the
 	first.
 	"""
 
-	if not subgraph and len(graph1) != len(graph2):
-		return False, [], []
+	cdef list map12List = list(), map21List = list()
+	cdef dict terminals1, terminals2
 
-	if map12 is None: map12 = {}
-	if map21 is None: map21 = {}
-
-	map12List = []; map21List = []
 	terminals1 = __VF2_terminals(graph1, map21)
 	terminals2 = __VF2_terminals(graph2, map12)
-	
+
 	ismatch = __VF2_match(graph1, graph2, map21, map12, \
 		terminals1, terminals2, subgraph, findAll, map21List, map12List)
-	
+
 	if findAll:
 		return len(map21List) > 0, map21List, map12List
 	else:
-		return ismatch, map21, map12
+		return ismatch, map12, map21
 
-def __VF2_feasible(graph1, graph2, vertex1, vertex2, \
-	map21, map12, terminals1, terminals2, subgraph):
+cdef __VF2_feasible(Graph graph1, Graph graph2, object vertex1, object vertex2, \
+	dict map21, dict map12, dict terminals1, dict terminals2, bint subgraph):
 	"""
 	Returns :data:`True` if two vertices `vertex1` and `vertex2` from graphs
 	`graph1` and `graph2`, respectively, are feasible matches. `mapping21` and
 	`mapping12` are the current state of the mapping from `graph1` to `graph2`
-	and vice versa, respectively. `terminals1` and `terminals2` are lists of 
+	and vice versa, respectively. `terminals1` and `terminals2` are lists of
 	the vertices that are directly connected to the already-mapped vertices.
-	`subgraph` is :data:`True` if graph2 is to be treated as a potential 
+	`subgraph` is :data:`True` if graph2 is to be treated as a potential
 	subgraph of graph1.
-	
-	Uses the VF2 algorithm of Vento and Foggia. The feasibility is assessed 
+
+	Uses the VF2 algorithm of Vento and Foggia. The feasibility is assessed
 	through a series of semantic and structural checks. Only the combination
 	of the semantic checks and the level 0 structural check are both
 	necessary and sufficient to ensure feasibility. (This does *not* mean that
 	vertex1 and vertex2 are always a match, although the level 1 and level 2
 	checks preemptively eliminate a number of false positives.)
-	"""	
-	edges1 = graph1[vertex1]
-	edges2 = graph2[vertex2]
-	
+	"""
+	cdef dict edges1 = graph1[vertex1]
+	cdef dict edges2 = graph2[vertex2]
+
 	# Semantic check #1: vertex1 and vertex2 must be equivalent
 	if not vertex1.equivalent(vertex2):
 		return False
-	
+
 	# Semantic check #2: adjacent vertices to vertex1 and vertex2 that are
 	# already mapped should be connected by equivalent edges
 	for vert1, edge1 in edges1.iteritems():
@@ -416,10 +423,9 @@ def __VF2_feasible(graph1, graph2, vertex1, vertex2, \
 			edge2 = edges2[vert2]
 			if not edge1.equivalent(edge2):
 				return False
-	
+
 	# Count number of terminals adjacent to vertex1 and vertex2
-	term1Count = 0; term2Count = 0
-	neither1Count = 0; neither2Count = 0
+	cdef int term1Count = 0, term2Count = 0, neither1Count = 0, neither2Count = 0
 	
 	for vert1, edge1 in edges1.iteritems():
 		if vert1 in terminals1:
@@ -431,7 +437,7 @@ def __VF2_feasible(graph1, graph2, vertex1, vertex2, \
 			term2Count += 1
 		elif vert2 not in map12:
 			neither2Count += 1
-		
+
 	# Level 2 look-ahead: the number of adjacent vertices of vertex1 and
 	# vertex2 that are non-terminals must be equal
 	if subgraph:
@@ -440,7 +446,7 @@ def __VF2_feasible(graph1, graph2, vertex1, vertex2, \
 	else:
 		if neither1Count != neither2Count:
 			return False
-	
+
 	# Level 1 look-ahead: the number of adjacent vertices of vertex1 and
 	# vertex2 that are terminals must be equal
 	if subgraph:
@@ -449,7 +455,7 @@ def __VF2_feasible(graph1, graph2, vertex1, vertex2, \
 	else:
 		if term1Count != term2Count:
 			return False
-		
+
 	# Level 0 look-ahead: all adjacent vertices of vertex1 already in the
 	# mapping must map to adjacent vertices of vertex2
 	for vert1, edge1 in edges1.iteritems():
@@ -457,32 +463,32 @@ def __VF2_feasible(graph1, graph2, vertex1, vertex2, \
 			vert2 = map21[vert1]
 			if vert2 not in edges2:
 				return False
-	
+
 	return True
 
-def __VF2_match(graph1, graph2, map21, map12, \
-	terminals1, terminals2, subgraph, findAll, \
-	map21List, map12List):
+cdef bint __VF2_match(Graph graph1, Graph graph2, dict map21, dict map12, \
+	dict terminals1, dict terminals2, bint subgraph, bint findAll, \
+	list map21List, list map12List):
 	"""
-	A recursive function used to explore two graphs `graph1` and `graph2` for 
+	A recursive function used to explore two graphs `graph1` and `graph2` for
 	isomorphism by attempting to map them to one another. `mapping21` and
 	`mapping12` are the current state of the mapping from `graph1` to `graph2`
-	and vice versa, respectively. `terminals1` and `terminals2` are lists of 
+	and vice versa, respectively. `terminals1` and `terminals2` are lists of
 	the vertices that are directly connected to the already-mapped vertices.
-	`subgraph` is :data:`True` if graph2 is to be treated as a potential 
+	`subgraph` is :data:`True` if graph2 is to be treated as a potential
 	subgraph of graph1.
-	
+
 	Uses the VF2 algorithm of Vento and Foggia, which is O(N) in spatial complexity
 	and O(N**2) (best-case) to O(N! * N) (worst-case) in temporal complexity.
-	"""	
-	
+	"""
+
 	# Done if we have mapped to all vertices in graph2
 	if len(map12) >= len(graph2) or len(map21) >= len(graph1):
 		return True
-		
+
 	# Create list of pairs of candidates for inclusion in mapping
-	pairs = __VF2_pairs(graph1, graph2, terminals1, terminals2)
-	
+	cdef list pairs = __VF2_pairs(graph1, graph2, terminals1, terminals2)
+
 	for vertex1, vertex2 in pairs:
 		if __VF2_feasible(graph1, graph2, vertex1, vertex2, map21, map12, \
 				terminals1, terminals2, subgraph):
@@ -493,8 +499,8 @@ def __VF2_match(graph1, graph2, map21, map12, \
 			terminals2 = __VF2_terminals(graph2, map12)
 			# Recurse
 			ismatch = __VF2_match(graph1, graph2, \
-					map21, map12, terminals1, terminals2, subgraph, findAll, \
-					map21List, map12List)
+				map21, map12, terminals1, terminals2, subgraph, findAll, \
+				map21List, map12List)
 			if ismatch:
 				if findAll:
 					map21List.append(map21.copy())
@@ -509,7 +515,7 @@ def __VF2_match(graph1, graph2, map21, map12, \
 
 	return False
 
-def __VF2_pairs(graph1, graph2, terminals1, terminals2):
+cdef list __VF2_pairs(Graph graph1, Graph graph2, dict terminals1, dict terminals2):
 	"""
 	Create a list of pairs of candidates for inclusion in the VF2 mapping. If
 	there are a nonzero number of terminals in each graph, the candidates are
@@ -518,8 +524,8 @@ def __VF2_pairs(graph1, graph2, terminals1, terminals2):
 	one vertex from the first graph and all vertices from the second graph.
 	"""
 
-	pairs = []
-	
+	cdef list pairs = list()
+
 	# Construct list from terminals if possible
 	if len(terminals1) > 0 and len(terminals2) > 0:
 		terminal2 = terminals2.keys()[0]
@@ -533,14 +539,14 @@ def __VF2_pairs(graph1, graph2, terminals1, terminals2):
 
 	return pairs
 
-def __VF2_terminals(graph, mapping):
+cdef dict __VF2_terminals(Graph graph, dict mapping):
 	"""
-	For a given graph `graph` and associated partial mapping `mapping`, 
+	For a given graph `graph` and associated partial mapping `mapping`,
 	generate a list of terminals, vertices that are directly connected to
 	vertices that have already been mapped.
 	"""
 
-	terminals = {}
+	cdef dict terminals = dict()
 	for vertex in mapping:
 		for vert, edge in graph[vertex].iteritems():
 			if vert not in mapping:
@@ -548,19 +554,4 @@ def __VF2_terminals(graph, mapping):
 	return terminals
 
 ################################################################################
-
-if __name__ == '__main__':
-
-	graph = {}
-	graph[0] = { 1: 'S', 2: 'S' }
-	graph[1] = { 0: 'S', 2: 'S' }
-	graph[2] = { 1: 'S', 0: 'S', 4: 'S' }
-	graph[3] = { 0: 'S' }
-	graph[4] = { 2: 'S' }
-
-	print isVertexInCycle(graph, [0])
-	print isVertexInCycle(graph, [1])
-	print isVertexInCycle(graph, [2])
-	print isVertexInCycle(graph, [3])
-	print isVertexInCycle(graph, [4])
 
