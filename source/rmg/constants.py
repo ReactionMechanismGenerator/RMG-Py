@@ -28,7 +28,8 @@
 #
 ################################################################################
 
-"""Contains a number of constants to be used throughout RMG."""
+"""Contains a number of constants to be used throughout RMG. 
+Note that RMG uses SI units throughout: mol, m, s, J"""
 
 import quantities as pq
 
