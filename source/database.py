@@ -36,6 +36,8 @@ import rmg.data as data
 import rmg.species as species
 import rmg.reaction as reaction
 
+import logging
+
 ################################################################################
 
 def loadThermoDatabases(databasePath):
@@ -71,18 +73,18 @@ def drawKineticsTrees():
 	for key, family in reaction.kineticsDatabase.families.iteritems():
 
 		print '\tCreating DOT object...'
-
+		
 		graph = family.drawFullGraphOfTree()
-
+		
 		graph.set('fontsize','10')
 		format='svg'
 		prog='dot'
-
+		
 		print '\tCreating DOT file...'
 		f=open(key+'.dot','w')
 		f.write(graph.to_string())
 		f.close()
-
+		
 		print '\tCreating SVG file...'
 		filename=key+'.'+format
 		if format=='svg':  # annoyingly, dot creates svg's without units on the font size attribute.
@@ -93,13 +95,13 @@ def drawKineticsTrees():
 			f.close()
 		else:
 			graph.write(filename,format=format,prog=prog)
-
+			
 		print 'Created DOT for reaction family %s' % (key)
 
 ################################################################################
 
 if __name__ == '__main__':
-
+	import math
 	# Show debug messages (as databases are loading)
 	main.initializeLog(10)
 
@@ -141,17 +143,99 @@ if __name__ == '__main__':
 
 	# DECOUPLE LIBRARY DATA
 	family = reaction.kineticsDatabase.families['H abstraction']
+	
+	# Get set of all nodes
+	node_set = family.tree.parent.keys()
+	non_top_nodes = [ node for node in node_set if family.tree.parent[node] ]
+	top_nodes = [ node for node in node_set if not family.tree.parent[node] ]
 
+	A_list = []
+	b_list = []
 	# Get available data
 	nodesList = []; dataList = []
-	for key, value in family.library.iteritems():
+	for key, kinetics in family.library.iteritems():
 		nodes = key.split(';')
-		if value not in dataList:
-			nodesList.append(nodes)
-			dataList.append(value)
+		# example:
+		#  nodes = ['A11', 'B11']
+		#  kinetics = <rmg.reaction.ArrheniusEPKinetics instance>
+		
+		b_row = [ math.log(kinetics.A),
+				  kinetics.n,
+				  kinetics.alpha,
+				  kinetics.E0 ]
+			
+		all_ancestors=[]
+		for node in nodes:
+			# start with the most specific - the node itself
+			# then add the ancestors
+			ancestors = [node]
+			ancestors.extend( family.tree.ancestors(node) )
+			# append to the list of lists
+			all_ancestors.append(ancestors)
+		
+		# example
+		#  all_ancestors = [['A11','A1','A'], ['B11','B1','B']]
+		
+		all_combinations = data.getAllCombinations(all_ancestors)
+		
+		# example:
+		#  all_combinations = 
+		#  [['A11', 'B11'],
+		#   ['A1', 'B11'],
+		#   ['A', 'B11'],
+		#   ['A11', 'B1'],
+		#   ['A1', 'B1'],
+		#   ['A', 'B1'],
+		#   ['A11', 'B'],
+		#   ['A1', 'B'],
+		#   ['A', 'B']]
+		
+		for combination in all_combinations:
+			# Create a row of the A matrix. Each column is for a non_top_node
+			# It contains 1 if that node exists in combination, else 0
+			A_row = [int(node in combination) for node in non_top_nodes]
+			# Add on a column at the end for constant C which is always there
+			A_row.append(1)
+			
+			A_list.append(A_row)
+			b_list.append(b_row)
+			
+	import numpy
+	import numpy.linalg
 
-	# Get set of all nodes; remove those with no data
+	A = numpy.array(A_list)
+	b = numpy.array(b_list)
+	
+	x, residues, rank, s = numpy.linalg.lstsq(A,b)
+	
+	group_values=dict()
+
+	for i in range(len(non_top_nodes)):
+		group_values[non_top_nodes[i]] = tuple(x[i,:])
+	group_values['Constant'] = tuple(x[len(non_top_nodes),:])
+	family.tree.children['Constant']=[]
+	for node in top_nodes:
+		group_values[node] = (0,0,0,0)
+	
+	def print_node_tree(node,indent=0):
+		print (' '*indent +
+				node.ljust(17-indent) + 
+				"\t%.2g\t%.2g\t%.2g   \t%.2g"%group_values[node] )
+		children = family.tree.children[node]
+		if children:
+			children.sort()
+			for child in children:
+				print_node_tree(child,indent+1)
+	
+	for node in top_nodes:
+		print_node_tree(node)
+	print_node_tree('Constant')
+
+
+if False: # The following is Josh's old code:
+	# Get set of all nodes
 	nodeSet = family.tree.parent.keys()
+	# remove those with no data
 #	nodesToRemove = []
 #	for node in nodeSet:
 #		hasData = False
