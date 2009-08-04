@@ -201,7 +201,7 @@ latex_documents = [
 
 def add_value(app, what, name, obj, options, lines):
 	"""
-	Return a listener that adds an evaluation of data objects to the docs. 
+	A listener that adds an evaluation of data objects to the docs. 
 	Useful for constants and stuff.
 
 	Use like this (e.g. in the ``setup()`` function of :file:`conf.py`)::
