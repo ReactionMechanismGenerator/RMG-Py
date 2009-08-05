@@ -1,17 +1,19 @@
 // rate library for f04: radical addition to COm
 
+// Catherina Wijaya thesis, pg 155
+
 // jing, define key word for format of the rate: either Arrhenius or Arrhenius_EP
 Arrhenius_EP
 
 // f04_radical_addition_to_COm
 // rate constants from rate_library_4.txt, Cath, 03/07/28
 
-//No.	COm	Y_rad		Temp.		A		n	a	E0	DA	Dn	Da	DE0	Rank
-416.		COm	Y_rad		300-1500	1E+11	0	0	5	0	0	0	0	0
-417.		COm	H_rad		345-449	1.18E+11	0	0	2.72	0	0	0	0	4
-418.		COm	H_rad		305-375	1.87E+11	0	0	1.53	0	0	0	0	3
-419.		COm	C_methyl		300-500	5.06E+11	0	0	6.88	*3.16	0	0	0	4
-420.		COm	C_rad/H2/Cs		300-2500	1.51E+11	0	0	4.81	*2.0	0	0	0	4
-421.		COm	Cd_pri_rad		300-2500	1.51E+11	0	0	4.81	*5.0	0	0	0	4
-422.		COm	Cb_rad		295-500	8.51E+11	0	0	2.99	*1.5	0	0	0.22	3
-423.		COm	O_rad/NonDe		250-2500	3.41E+07	0	0	3.0	0	0	0	0	5
+//No.		COm		Y_rad		Temp.		A			n		a		E0		DA		Dn		Da		DE0		Rank	Comments
+416.		COm		Y_rad		300-1500	1E+11		0		0		5		0		0		0		0		0
+417.		COm		H_rad		345-449		1.18E+11	0		0		2.72	0		0		0		0		4		Arai et al [102]. 
+418.		COm		H_rad		305-375		1.87E+11	0		0		1.53	0		0		0		0		3		Gordon et al [103].  
+419.		COm		C_methyl	300-500		5.06E+11	0		0		6.88	*3.16	0		0		0		4		Baulch et al. [94] 
+420.		COm		C_rad/H2/Cs	300-2500	1.51E+11	0		0		4.81	*2.0	0		0		0		4		Tsang et al [89] literature review. 
+421.		COm		Cd_pri_rad	300-2500	1.51E+11	0		0		4.81	*5.0	0		0		0		4		Tsang et al [89] literature review. 
+422.		COm		Cb_rad		295-500		8.51E+11	0		0		2.99	*1.5	0		0		0.22	3		Nam et al [104].
+423.		COm		O_rad/NonDe	250-2500	3.41E+07	0		0		3.0		0		0		0		0		5		Wang et al. [105]. 

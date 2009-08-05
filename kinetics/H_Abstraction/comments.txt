@@ -1,0 +1,913 @@
+02: [118] Dean, A.M. Development and application of Detailed Kinetic Mechanisms for Free Radical Systems.
+
+03: [118] Dean, A.M. Development and application of Detailed Kinetic Mechanisms for Free Radical Systems.
+
+04: [118] Dean, A.M. Development and application of Detailed Kinetic Mechanisms for Free Radical Systems.
+
+05: [118] Dean, A.M. Development and application of Detailed Kinetic Mechanisms for Free Radical Systems.
+
+06: [118] Dean, A.M. Development and application of Detailed Kinetic Mechanisms for Free Radical Systems.
+
+07: Sumathy CBS-Q calculations. Rate expression per H atom.
+
+08: Sumathy CBS-Q calculations. Rate expression per H atom.
+
+09: Sumathy CBS-Q calculations. Rate expression per H atom.
+
+10: Sumathy CBS-Q calculations. Rate expression per H atom.
+
+11: Sumathy CBS-Q calculations. Rate expression per H atom.
+
+12: Sumathy CBS-Q calculations. Rate expression per H atom.
+
+13: Sumathy CBS-Q calculations. Rate expression per H atom.
+
+14: Sumathy CBS-Q calculations. Rate expression per H atom.
+
+15: Sumathy CBS-Q calculations. Rate expression per H atom.
+
+16: Sumathy CBS-Q calculations. Rate expression per H atom.
+
+17: Sumathy CBS-Q calculations. Rate expression per H atom.
+
+18: Sumathy CBS-Q calculations. Rate expression per H atom.
+
+19: Sumathy CBS-Q calculations. Rate expression per H atom.
+
+20: Sumathy CBS-Q calculations. Rate expression per H atom.
+
+21: Sumathy CBS-Q calculations. Rate expression per H atom.
+
+22: Sumathy CBS-Q calculations. Rate expression per H atom.
+
+23: Sumathy CBS-Q calculations. Rate expression per H atom.
+
+24: Sumathy CBS-Q calculations. Rate expression per H atom.
+	Sumathi, R.; Carstensen, H.-H.; Green, W.H. Jr.; J. Phys. Chem. A. 2001, 105, 8978
+	Table 8: Modified ArrHenius Fitted Parameters for GA Predicted Rates.
+	ROH + H --> RO + H2
+	Verified by Karma James
+
+25: Sumathy CBS-Q calculations. Rate expression per H atom.
+	Sumathi, R.; Carstensen, H.-H.; Green, W.H. Jr.; J. Phys. Chem. A. 2001, 105, 8978
+	Table 8: Modified ArrHenius Fitted Parameters for GA Predicted Rates.
+	HCHO + H --> HCO + H2
+	Verified by Karma James
+
+26: Sumathy CBS-Q calculations. Rate expression per H atom.
+	Sumathi, R.; Carstensen, H.-H.; Green, W.H. Jr.; J. Phys. Chem. A. 2001, 105, 8978
+	Table 8: Modified ArrHenius Fitted Parameters for GA Predicted Rates.
+	RCHO + H --> RCO + H2
+	Verified by Karma James
+
+27: Sumathy CBS-Q calculations. Rate expression per H atom.
+	Sumathi, R.; Carstensen, H.-H.; Green, W.H. Jr.; J. Phys. Chem. A. 2001, 105, 8978
+	Table 8: Modified ArrHenius Fitted Parameters for GA Predicted Rates.
+	R2C=CH2 + H --> R2C=CH + H2
+	Verified by Karma James
+
+28: Sumathy CBS-Q calculations. Rate expression per H atom.
+
+29: Sumathy CBS-Q calculations. Rate expression per H atom.
+
+30: Sumathy CBS-Q calculations. Rate expression per H atom.
+	Sumathi, R.; Carstensen, H.-H.; Green, W.H. Jr.; J. Phys. Chem. A. 2001, 105, 8978
+	Table 8: Modified ArrHenius Fitted Parameters for GA Predicted Rates.
+	RCH=CR2 + H --> RC=CR2 + H2
+	Verified by Karma James
+
+31: Sumathy CBS-Q calculations. Rate expression per H atom.
+	Sumathi, R.; Carstensen, H.-H.; Green, W.H. Jr.; J. Phys. Chem. A. 2001, 105, 8978
+	Table 8: Modified ArrHenius Fitted Parameters for GA Predicted Rates.
+	R2C=CRCH3 + H --> R2C=CRCH2 + H2
+	Verified by Karma James
+
+32: Sumathy CBS-Q calculations. Rate expression per H atom.
+	Sumathi, R.; Carstensen, H.-H.; Green, W.H. Jr.; J. Phys. Chem. A. 2001, 105, 8978
+	Table 8: Modified ArrHenius Fitted Parameters for GA Predicted Rates.
+	RR2C=CRCH2R + H --> R2C=CRCHR + H2
+	Verified by Karma James
+
+33: Sumathy CBS-Q calculations. Rate expression per H atom.
+	Sumathi, R.; Carstensen, H.-H.; Green, W.H. Jr.; J. Phys. Chem. A. 2001, 105, 8978
+	Table 8: Modified ArrHenius Fitted Parameters for GA Predicted Rates.
+	RCCCH2R + H --> RCCCHR + H2
+	Verified by Karma James
+
+34: Sumathy CBS-Q calculations. Rate expression per H atom.
+	Sumathi, R.; Carstensen, H.-H.; Green, W.H. Jr.; J. Phys. Chem. A. 2001, 105, 8978
+	Table 8: Modified ArrHenius Fitted Parameters for GA Predicted Rates.
+	R2C=CRCHR2 + H --> R2C=CRCR2 + H2
+	Verified by Karma James
+
+35: Sumathy CBS-Q calculations. Rate expression per H atom.
+	Sumathi, R.; Carstensen, H.-H.; Green, W.H. Jr.; J. Phys. Chem. A. 2001, 105, 8978
+	Table 8: Modified ArrHenius Fitted Parameters for GA Predicted Rates.
+	RCCCHR2 + H --> RCCCR2 + H2
+	Verified by Karma James
+
+36: Sumathy CBS-Q calculations. Rate expression per H atom.
+	Sumathi, R.; Carstensen, H.-H.; Green, W.H. Jr.; J. Phys. Chem. A. 2001, 105, 8978
+	Table 8: Modified ArrHenius Fitted Parameters for GA Predicted Rates.
+	R2C=CH-CH2-CH=CR2 + H --> R2C=CH-CH-CH=CR2 + H2
+	Verified by Karma James
+
+37: Sumathy CBS-Q calculations. Rate expression per H atom.
+	Sumathi, R.; Carstensen, H.-H.; Green, W.H. Jr.; J. Phys. Chem. A. 2001, 105, 8978
+	Table 8: Modified ArrHenius Fitted Parameters for GA Predicted Rates.
+	R2C=CRCH=CR2 + H --> R2C=CRC=CR2 + H2
+	Verified by Karma James
+
+38: Sumathy CBS-Q calculations. Rate expression per H atom.
+	Sumathi, R.; Carstensen, H.-H.; Green, W.H. Jr.; J. Phys. Chem. A. 2001, 105, 8978
+	Table 8: Modified ArrHenius Fitted Parameters for GA Predicted Rates.
+	RCC-CH=CR2 + H --> RCC-C=CR2 + H2
+	Verified by Karma James
+
+39: Sumathy CBS-Q calculations. Rate expression per H atom.
+	Sumathi, R.; Carstensen, H.-H.; Green, W.H. Jr.; J. Phys. Chem. A. 2001, 105, 8978
+	Table 8: Modified ArrHenius Fitted Parameters for GA Predicted Rates.
+	RCCH + H --> RCC + H2
+	NOTE: There was a discrepancy in the rate values. The published values were: A = 1.30E+08, n = 1.88, 
+	E0 = 1.34E+04
+	RMG values: A=1.65E+08, n=1.85, E0=	26.52.
+	Verified by Karma James
+
+40: Sumathy CBS-Q calculations. Rate expression per H atom.
+	Sumathi, R.; Carstensen, H.-H.; Green, W.H. Jr.; J. Phys. Chem. A. 2001, 105, 8978
+	Table 8: Modified ArrHenius Fitted Parameters for GA Predicted Rates.
+	RCCCH3 + H --> RCCCH2 + H2
+	Verified by Karma James
+
+41: Sumathy CBS-Q calculations. Rate expression per H atom.
+
+42: Sumathy CBS-Q calculations. Rate expression per H atom.
+
+43: Sumathy CBS-Q calculations. Rate expression per H atom.
+
+44: Sumathy CBS-Q calculations. Rate expression per H atom.
+
+45: Sumathy CBS-Q calculations. Rate expression per H atom.
+
+46: Sumathy CBS-Q calculations. Rate expression per H atom.
+
+47: Sumathy CBS-Q calculations. Rate expression per H atom.
+
+48: Sumathy CBS-Q calculations. Rate expression per H atom.
+	Sumathi, R.; Carstensen, H.-H.; Green, W.H. Jr.; J. Phys. Chem. A. 2001, 105, 8978
+	Table 8: Modified ArrHenius Fitted Parameters for GA Predicted Rates.
+	RCOOOH + H --> RCOOO + H2
+	Verified by Karma James
+
+49: Sumathy CBS-Q calculations. Rate expression per H atom.
+
+50: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom. 
+	Same reaction as #19. 
+	Saeys, M.; Reyniers, M.-F.; Marin, G.B.; Van Speybroeck, V.; Waroquier, M. J. Phys. Chem. A 2003, 107, 9147 - 9159.
+	CH3 + CH4 --> CH4 + CH3
+	pg 9156 Table 6: Calculated and Experimental Activation Energies(kJ/mol) at 0 K, deltaE (0 k), 
+	for Three Families of Radical Reactions from Various Levels of Theory.
+	From reference: E0 = 71.0/4.185 = 16.97, @ 0 K, from database: E0 = 19.0 @ 300 - 1500 K
+	Experimental values from reference @ 0 K = 55.4 kJ/mol, 60.7 kJ/mol, 61.9 kJ/mol
+	
+51: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+
+52: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+53: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+54: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+55: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+56: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+57: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+58: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+59: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+60: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+61: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+62: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+63: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+64: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+65: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+66: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+67: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+68: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+69: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+70: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+71: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+72: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+73: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+74: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+75: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+76: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+77: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+78: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+79: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+80: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+81: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+82: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+83: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+84: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+85: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+86: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+87: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+88: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+89: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+90: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+91: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+92: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+93: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+94: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+95: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+96: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+97: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+98: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+99: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+100: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	 
+101: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+102: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+103: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	 
+104: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+105: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+106: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+107: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+108: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+109: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+110: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+111: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+112: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+113: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+114: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+115: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+116: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+117: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+118: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+119: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+120: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+121: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+122: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+123: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+124: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+125: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+126: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+127: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+128: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+129: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+130: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+131: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+132: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	 
+133: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+134: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+135: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+136: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	 
+137: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+138: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	
+139: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	 
+140: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	 
+141: Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.
+	 
+142: [8] Curran, H.J.; Gaffuri, P.; Pit z, W.J.; Westbrook, C.K. Combust. Flame 2002, 129, 253.
+	 Rate expressions for H atom abstraction from fuels.
+	 pg 257 A Comprehensive Modelling Study of iso-Octane Oxidation, Table 1. Radical:OH, Site: primary (a)
+	 Verified by Karma James
+
+143: [8] Curran, H.J.; Gaffuri, P.; Pit z, W.J.; Westbrook, C.K. Combust. Flame 2002, 129, 253.
+	 Rate expressions for H atom abstraction from fuels.
+	 pg 257 A Comprehensive Modelling Study of iso-Octane Oxidation, Table 1. Radical:OH, Site: secondary (b)
+	 Verified by Karma James
+
+144: [8] Curran, H.J.; Gaffuri, P.; Pit z, W.J.; Westbrook, C.K. Combust. Flame 2002, 129, 253.
+	 Rate expressions for H atom abstraction from fuels.
+	 pg 257 A Comprehensive Modelling Study of iso-Octane Oxidation, Table 1. Radical:OH, Site: tertiary (c)
+	 Verified by Karma James
+
+145: [8] Curran, H.J.; Gaffuri, P.; Pit z, W.J.; Westbrook, C.K. Combust. Flame 2002, 129, 253.
+	 Rate expressions for H atom abstraction from fuels.
+	 pg 257 A Comprehensive Modelling Study of iso-Octane Oxidation, Table 1. Radical:O, Site: primary (a)
+	 Verified by Karma James
+
+146: [8] Curran, H.J.; Gaffuri, P.; Pit z, W.J.; Westbrook, C.K. Combust. Flame 2002, 129, 253.
+	 Rate expressions for H atom abstraction from fuels.
+	 pg 257 A Comprehensive Modelling Study of iso-Octane Oxidation, Table 1. Radical:O, Site: secondary (b)
+	 Verified by Karma James
+
+147: [8] Curran, H.J.; Gaffuri, P.; Pit z, W.J.; Westbrook, C.K. Combust. Flame 2002, 129, 253.
+	 Rate expressions for H atom abstraction from fuels.
+	 pg 257 A Comprehensive Modelling Study of iso-Octane Oxidation, Table 1. Radical:O, Site: tertiary (c)
+	 Verified by Karma James
+
+148: [8] Curran, H.J.; Gaffuri, P.; Pit z, W.J.; Westbrook, C.K. Combust. Flame 2002, 129, 253.
+	 Rate expressions for H atom abstraction from fuels.
+	  pg 257 A Comprehensive Modelling Study of iso-Octane Oxidation, Table 1. Radical:HO2, Site: primary (a)
+	 Verified by Karma James
+
+149: [8] Curran, H.J.; Gaffuri, P.; Pit z, W.J.; Westbrook, C.K. Combust. Flame 2002, 129, 253.
+	 Rate expressions for H atom abstraction from fuels.
+	 pg 257 A Comprehensive Modelling Study of iso-Octane Oxidation, Table 1. Radical:HO2, Site: secondary (b)
+	 Verified by Karma James
+
+150: [8] Curran, H.J.; Gaffuri, P.; Pit z, W.J.; Westbrook, C.K. Combust. Flame 2002, 129, 253.
+	 Rate expressions for H atom abstraction from fuels.
+	 pg 257 A Comprehensive Modelling Study of iso-Octane Oxidation, Table 1. Radical:HO2, Site: tertiary (c)
+	 Verified by Karma James
+
+151: [8] Curran, H.J.; Gaffuri, P.; Pit z, W.J.; Westbrook, C.K. Combust. Flame 2002, 129, 253.
+	 Rate expressions for H atom abstraction from fuels.
+	 pg 257 A Comprehensive Modelling Study of iso-Octane Oxidation, Table 1. Radical:CH3O, Site: primary (a)
+	 Verified by Karma James
+
+152: [8] Curran, H.J.; Gaffuri, P.; Pit z, W.J.; Westbrook, C.K. Combust. Flame 2002, 129, 253.
+	 Rate expressions for H atom abstraction from fuels.
+	 pg 257 A Comprehensive Modelling Study of iso-Octane Oxidation, Table 1. Radical:CH3O, Site: secondary (b)
+	 Verified by Karma James
+
+153: [8] Curran, H.J.; Gaffuri, P.; Pit z, W.J.; Westbrook, C.K. Combust. Flame 2002, 129, 253.
+	 Rate expressions for H atom abstraction from fuels.
+	 pg 257 A Comprehensive Modelling Study of iso-Octane Oxidation, Table 1. Radical:CH3O, Site: tertiary (c)
+	 Verified by Karma James	 
+
+154: [8] Curran, H.J.; Gaffuri, P.; Pit z, W.J.; Westbrook, C.K. Combust. Flame 2002, 129, 253.
+	 Rate expressions for H atom abstraction from fuels.
+	 pg 257 A Comprehensive Modelling Study of iso-Octane Oxidation, Table 1. Radical:O2, Site: primary (a)
+	 Verified by Karma James
+	 
+155: [8] Curran, H.J.; Gaffuri, P.; Pit z, W.J.; Westbrook, C.K. Combust. Flame 2002, 129, 253.
+	 Rate expressions for H atom abstraction from fuels.
+	 pg 257 A Comprehensive Modelling Study of iso-Octane Oxidation, Table 1. Radical:O2, Site: secondary (b)
+	 Verified by Karma James
+
+156: [8] Curran, H.J.; Gaffuri, P.; Pit z, W.J.; Westbrook, C.K. Combust. Flame 2002, 129, 253.
+	 Rate expressions for H atom abstraction from fuels.
+	 pg 257 A Comprehensive Modelling Study of iso-Octane Oxidation, Table 1. Radical:O2, Site: tertiary (c)
+	 Verified by Karma James	 
+  
+157: [89] Tsang, W.; Hampson, R.F. J. Phys. Chem. Ref. Data 1986, 15, 1087.
+	 H2 + O2 --> H + HO2 C.D.W divided original rate expression by 2, to get rate expression per H atom.
+	 pg 1091, Chemical Kinetic Database For Combustion Chemistry, 2. Index of Reactions and Summary of Recommended Rate Expressions. No. 3,2.
+	 Verified by Karma James
+	 
+158: [119] Knyazev, V.D; Bencsura, A.; Stoliarov, S.I.; Slagle, I.R. J. Phys. Chem. 1996, 100, 11346.
+	 H2 + C2H3 --> H + C2H4 C.D.W divided original rate expression by 2 ( from A = 9.45E+03), to get rate expression per H atom.
+
+159: [120] Mebel, A.M.; Morokuma, K.; Lin, M.C. J Chem. Phys. 1995, 103, 3440.
+	 H2 + C2H3 --> H + C2H4 C.D.W divided original rate expression by 2, to get rate expression per H atom.
+	 
+160: [121] Weissman, M.A.; Benson, S.W. J. Phys. Chem. 1988, 92, 4080.
+	 H2 + C2H3 --> H + C2H4 C.D.W divided original rate expression by 2 ( from A = 3.15E+09), to get rate expression per H atom.
+	 
+161: [94] Baulch, D.L.; Cobos, C.J.; Cox, R.A.; Frank, P.; Hayman, G,; Just, T.; Kerr, J.A.; Murrells, T.; Pilling, M.J.; 
+	 Troe, J.; Walker, R.W.; Warnatz, J. J. Phys. Chem. Ref. Data 1994, 23, 847.
+	 H2 + C2H --> H + C2H2 C.D.W divided original rate expression by 2, to get rate expression per H atom.
+	 pg 863 Evaluated Kinetic Data for Combustion Modelling Supplement 1, Table 1. Bimolecular reactions - C2H Radical Reactions.
+	 Verified by Karma James
+	 
+162: [122] Mebel, A.M.; Lin, M.C.; Yu, T.; Morokuma, K. J. Phys. Chem. A. 1997, 101, 3189.
+	 H2 + phenyl --> H + benzene C.D.W divided original rate expression by 2 ( from A = 5.71E+04), to get rate expression per H atom.
+	 
+163: [89] Tsang, W.; Hampson, R.F. J. Phys. Chem. Ref. Data 1986, 15, 1087.
+	 H2 + HCO --> H + CH20 C.D.W divided original rate expression by 2, to get rate expression per H atom.
+	 pg 1094, Chemical Kinetic Database For Combustion Chemistry, 2. Index of Reactions and Summary of Recommended Rate Expressions. No. 15,2.
+	 Verified by Karma James
+	 
+164: [89] Tsang, W.; Hampson, R.F. J. Phys. Chem. Ref. Data 1986, 15, 1087.
+	 H2 + CH3CO --> H + CH3CHO C.D.W divided original rate expression by 2, to get rate expression per H atom.
+	 WAS UNABLE TO VERIFY DATA!!! DATA NOT FOUND IN REFERENCE.
+	 
+165: [123] Isaacson, A.D. J. Chem. Phys. 1997, 107, 3832.
+	 H2 + O2 --> H + H2O C.D.W divided original rate expression by 2, to get rate expression per H atom.
+	 
+166. [100] Jodkowski, J.T.; Rauez, M.-T.; Rayez, J.-C. J. Phys. Chem. A. 1999, 103, 3750.
+	 H2 + CH3O --> H + CH30H The calculated reverse rate constants are in good agreement with experiment. 
+	 C.D.W divided original rate expression by 2, to get rate expression per H atom.
+	 
+167: [95] Baulch, D.L.; Cobos, C.J.; Cox, R.A.; Esser, C.; Frank, P.; Just, T.; Kerr, J.A.; Pilling, M.J.; 
+	 Troe, J.; Walker, R.W.; Warnatz, J. J. Phys. Chem. Ref. Data 1992, 21, 411.
+	 CH4 + O2 --> CH3 + HO2 C.D.W divided original rate expression by 4, to get rate expression per H atom.
+	 pg 417 Evaluated Kinetic Data for Combustion Modelling, Table 1. Bimolecular reactions - O2 Reactions.
+	 Verified by Karma James
+	 
+168: [89] Tsang, W.; Hampson, R.F. J. Phys. Chem. Ref. Data 1986, 15, 1087.
+	 CH4 + C2H5 --> CH3 + C2H6 C.D.W divided original rate expression by 4, to get rate expression per H atom.
+	 WAS UNABLE TO VERIFY DATA!!! DATA NOT FOUND IN REFERENCE.
+	 
+169: [91] Tsang, W. J. Phys. Chem. Ref. Data 1988, 17, 887.
+	 CH4 + iso-C3H7 --> CH3 + C3H8 C.D.W divided original rate expression by 4, to get rate expression per H atom.
+	 pg 894, Chemical Kinetic Database For Combustion Chemistry, Part 3. Index of Reactions and Summary of Recommended Rate Expressions. No. 42,10.
+	 Verified by Karma James
+	 
+170: [89] Tsang, W.; Hampson, R.F. J. Phys. Chem. Ref. Data 1986, 15, 1087.
+	 CH4 + C2H --> CH3 + C2H2 C.D.W divided original rate expression by 4, to get rate expression per H atom.
+	 pg 1101, Chemical Kinetic Database For Combustion Chemistry, 2. Index of Reactions and Summary of Recommended Rate Expressions. No. 21,10.
+	 Verified by Karma James
+	 
+171: [124] Heckmann, E.; Hippler, H. Troe, J. Sypm. Int. Combust. Proc. 1996, 26, 543.
+	 Absolute value measured directly (excitation technique: thermal, analytical technique: vis-UV absorption) CH4 + phenyl --> benzene
+	 C.D.W divided original rate expression by 4, to get rate expression per H atom.
+	 
+172: [89] Tsang, W.; Hampson, R.F. J. Phys. Chem. Ref. Data 1986, 15, 1087.
+	 CH4 + HCO --> CH3 + CH2O C.D.W divided original rate expression by 4, to get rate expression per H atom.
+	 pg 1094, Chemical Kinetic Database For Combustion Chemistry, 2. Index of Reactions and Summary of Recommended Rate Expressions. No. 15,10.
+	 Verified by Karma James
+	 
+173: [89] Tsang, W.; Hampson, R.F. J. Phys. Chem. Ref. Data 1986, 15, 1087.
+	 CH4 + CH3CO --> CH3 + CH3CHO C.D.W divided original rate expression by 4, to get rate expression per H atom.
+	 pg 1102, Chemical Kinetic Database For Combustion Chemistry, 2. Index of Reactions and Summary of Recommended Rate Expressions. No. 22,10.
+	 Verified by Karma James
+	 
+174: [125] Melissas, V.S.; Truhlar, D.G. J. Chem. Phys. 1993,99,1010.
+	 CH4 + OH --> CH3 + H2O C.D.W divided original rate expression by 4, to get rate expression per H atom.
+	 
+175: [95] Baulch, D.L.; Cobos, C.J.; Cox, R.A.; Esser, C.; Frank, P.; Just, T.; Kerr, J.A.; Pilling, M.J.; 
+	 Troe, J.; Walker, R.W.; Warnatz, J. J. Phys. Chem. Ref. Data 1992, 21, 411.
+	 CH4 + OH --> CH3 + H2O C.D.W divided original rate expression by 4, to get rate expression per H atom.
+	 pg 419 Evaluated Kinetic Data for Combustion Modelling, Table 1. Bimolecular reactions - OH Radical Reactions.
+	 Verified by Karma James
+
+176: [101] Cohen, N. Int. J. Chem. Kinet. 1991, 23, 397.
+	 CH4 + OH --> CH3 + H2O C.D.W divided original rate expression by 4, to get rate expression per H atom.
+
+177: [100] Jodkowski, J.T.; Rauez, M.-T.; Rayez, J.-C. J. Phys. Chem. A. 1999, 103, 3750.
+	 CH4 + CH30 --> CH3 + CH3OH The calculated reverse rate constants are in good agreement with experiment. 
+	 C.D.W divided original rate expression by 4 ( from A= 1.51E+09), to get rate expression per H atom.
+	 
+178: [89] Tsang, W.; Hampson, R.F. J. Phys. Chem. Ref. Data 1986, 15, 1087.
+	 CH4 + HO2 --> CH3 + H2O2 C.D.W divided original rate expression by 4, to get rate expression per H atom.
+	 pg 1093, Chemical Kinetic Database For Combustion Chemistry, 2. Index of Reactions and Summary of Recommended Rate Expressions. No. 10,7.
+	 Verified by Karma James
+	 
+179: [95] Baulch, D.L.; Cobos, C.J.; Cox, R.A.; Esser, C.; Frank, P.; Just, T.; Kerr, J.A.; Pilling, M.J.; 
+	 Troe, J.; Walker, R.W.; Warnatz, J. J. Phys. Chem. Ref. Data 1992, 21, 411.
+	 C2H6 + O2 --> C2H5 + HO2 C.D.W divided original rate expression by 6, to get rate expression per H atom.
+	 pg 417 Evaluated Kinetic Data for Combustion Modelling  Table 1. Bimolecular reactions - O2 Reactions. (The value for E0 does not 
+	 match the value in the reference, E0 RMG = 1.87; E0 Reference = 51.86)
+	 Verified by Karma James
+	 
+180: [89] Tsang, W.; Hampson, R.F. J. Phys. Chem. Ref. Data 1986, 15, 1087.
+	 C2H6 + C2H --> C2H5 + C2H2 C.D.W divided original rate expression by 6, to get rate expression per H atom.
+	 pg 1101, Chemical Kinetic Database For Combustion Chemistry, 2. Index of Reactions and Summary of Recommended Rate Expressions. No. 21,11.
+	 Verified by Karma James
+	  
+181: [126] Park, J.; Gheyas, S.; Lin, M.C. Int. J. Chem. Kinet. 2001, 33, 64.
+	 Absolute value measured directly. Static or low flow, flash photolysis excitation, Vis-UV absoprtion analysis. 
+	 Phenyl radicals are produced from 193 nm photolysis of C6H5COCH3. The cavity ringdown spectroscopy and/or mass spectroscopy
+	 have been used to monitor reactant and/or products. C2H6 + phenyl --> C2H5 + benzene.
+	 C.D.W divided original rate expression by 6 ( from A= 2.09E+11), to get rate expression per H atom. Original delta A = 2.0E+10.
+	 
+182: [89] Tsang, W.; Hampson, R.F. J. Phys. Chem. Ref. Data 1986, 15, 1087.
+	 C2H6 + HCO --> C2H5 + CH2O C.D.W divided original rate expression by 6(from A = 4.69E+04), to get rate expression per H atom.
+	 pg 1094, Chemical Kinetic Database For Combustion Chemistry, 2. Index of Reactions and Summary of Recommended Rate Expressions. No. 15,11.
+	 Verified by Karma James
+	 
+183: [89] Tsang, W.; Hampson, R.F. J. Phys. Chem. Ref. Data 1986, 15, 1087.
+	 C2H6 + CH3CO --> C2H5 + CH3CHO C.D.W divided original rate expression by 6(from A = 1.81E+04), to get rate expression per H atom.
+	 pg 1102, Chemical Kinetic Database For Combustion Chemistry, 2. Index of Reactions and Summary of Recommended Rate Expressions. No. 22,11.
+	 Verified by Karma James
+	 
+184: [95] Baulch, D.L.; Cobos, C.J.; Cox, R.A.; Esser, C.; Frank, P.; Just, T.; Kerr, J.A.; Pilling, M.J.; 
+	 Troe, J.; Walker, R.W.; Warnatz, J. J. Phys. Chem. Ref. Data 1992, 21, 411.
+	 C2H6 + OH --> C2H5 + H2O C.D.W divided original rate expression by 6, to get rate expression per H atom.
+	 pg 420 Evaluated Kinetic Data for Combustion Modelling, Table 1. Bimolecular reactions - OH Radical Reactions.
+	 Verified by Karma James
+	 
+185: [127] Taylor, P.H.; Rahman, M.S.; Arif, M.; Dellinger, B.; Marshall, P. Sypm. Int. Combust. Proc. 1996, 26, 497.
+	 CH3CHO + OH --> CH2CHO + H2O Rate constant is high pressure limit (pressure 0.13-0.97atm?) 
+	 C.D.W divided original rate expression by 3(from A = 1.55E+06), to get rate expression per H atom.
+	 
+186: [100] Jodkowski, J.T.; Rauez, M.-T.; Rayez, J.-C. J. Phys. Chem. A. 1999, 103, 3750.
+	 CH3OH + CH3 --> CH2OH + CH4 The calculated rate constants are in good agreement with experiment. 
+	 C.D.W divided original rate expression by 3 ( from A= 8.43E+08), to get rate expression per H atom.
+	 
+187: [100] Jodkowski, J.T.; Rauez, M.-T.; Rayez, J.-C. J. Phys. Chem. A. 1999, 103, 3750.
+	 CH3OH + OH --> CH2OH + H2O The calculated rate constants are in good agreement with experiment. 
+	 C.D.W divided original rate expression by 3 ( from A= 2.11E+11), to get rate expression per H atom.
+	 
+188: [91] Tsang, W. J. Phys. Chem. Ref. Data 1988, 17, 887.
+	 C3H8 + O2 --> iso-C3H7 + HO2  C.D.W divided original rate expression by 2, to get rate expression per H atom.
+	 pg 891, Chemical Kinetic Database For Combustion Chemistry, Part 3. Index of Reactions and Summary of Recommended Rate Expressions. No. 40,3.
+	 NOTE: For A value, Database value = 1.985E+13 and Reference value = 1.65E+13
+	 Verified by Karma James
+
+189: [91] Tsang, W. J. Phys. Chem. Ref. Data 1988, 17, 887.
+	 C3H8 + CH2 --> iso-C3H7 + CH3  C.D.W divided original rate expression by 2(from A = 1.51), to get rate expression per H atom.
+`	 pg 892, Chemical Kinetic Database For Combustion Chemistry, Part 3. Index of Reactions and Summary of Recommended Rate Expressions. No. 40,26.
+	 Verified by Karma James
+	 
+190: [91] Tsang, W. J. Phys. Chem. Ref. Data 1988, 17, 887.
+	 C3H8 + O --> iso-C3H7 + OH  C.D.W divided original rate expression by 2(from A = 4.77E+04), to get rate expression per H atom.
+	 pg 891, Chemical Kinetic Database For Combustion Chemistry, Part 3. Index of Reactions and Summary of Recommended Rate Expressions. No. 40,5.
+	 Verified by Karma James
+	 
+191: [91] Tsang, W. J. Phys. Chem. Ref. Data 1988, 17, 887.
+	 C3H8 + CH2OH --> iso-C3H7 + CH3OH  C.D.W divided original rate expression by 2(from A = 6.03E+01), to get rate expression per H atom.
+	 WAS UNABLE TO VERIFY DATA!!! DATA NOT FOUND IN REFERENCE.
+	 
+192: [91] Tsang, W. J. Phys. Chem. Ref. Data 1988, 17, 887.
+	 C3H8 + C2H3 --> iso-C3H7 + C2H4  C.D.W divided original rate expression by 2, to get rate expression per H atom.
+	 pg 891, Chemical Kinetic Database For Combustion Chemistry, Part 3. Index of Reactions and Summary of Recommended Rate Expressions. No. 40,19.
+	 Verified by Karma James
+
+193: [91] Tsang, W. J. Phys. Chem. Ref. Data 1988, 17, 887.
+	 C3H8 + C2H --> iso-C3H7 + C2H2  C.D.W divided original rate expression by 2, to get rate expression per H atom.
+	 pg 891, Chemical Kinetic Database For Combustion Chemistry, Part 3. Index of Reactions and Summary of Recommended Rate Expressions. No. 40,21.
+	 Verified by Karma James
+
+194: [91] Tsang, W. J. Phys. Chem. Ref. Data 1988, 17, 887.
+	 C3H8 + HCO --> iso-C3H7 + CH2O  C.D.W divided original rate expression by 2, to get rate expression per H atom.
+	 pg 891, Chemical Kinetic Database For Combustion Chemistry, Part 3. Index of Reactions and Summary of Recommended Rate Expressions. No. 40,15.
+	 Verified by Karma James
+
+195: [91] Tsang, W. J. Phys. Chem. Ref. Data 1988, 17, 887.
+	 C3H8 + CH3CO --> iso-C3H7 + CH3CHO  C.D.W divided original rate expression by 2, to get rate expression per H atom.
+	 pg 891, Chemical Kinetic Database For Combustion Chemistry, Part 3. Index of Reactions and Summary of Recommended Rate Expressions. No. 40,22.
+	 Verified by Karma James
+	 
+196: [101] Cohen, N. Int. J. Chem. Kinet. 1991, 23, 397.
+	 C3H8 + OH --> iso-C3H7 + H20  C.D.W divided original rate expression by 2, to get rate expression per H atom.
+	 DOES NOT MATCH! Reference: A = 2.95E+23, E0 = 0.89, n = 0.1, Database: A = 3.95E+06, E0 = 0.16, n = 1.90
+	 pg 891, Chemical Kinetic Database For Combustion Chemistry, Part 3. Index of Reactions and Summary of Recommended Rate Expressions. No. 40,6.
+	 Verified by Karma James
+	 
+197: [91] Tsang, W. J. Phys. Chem. Ref. Data 1988, 17, 887.
+	 C3H8 + CH3O --> iso-C3H7 + CH3OH  C.D.W divided original rate expression by 2, to get rate expression per H atom.
+	 pg 891, Chemical Kinetic Database For Combustion Chemistry, Part 3. Index of Reactions and Summary of Recommended Rate Expressions. No. 40,24.
+	 Verified by Karma James
+	 
+198: [92] Tsang, W. J. Phys. Chem. Ref. Data 1990, 19, 1.
+	 Iso-C4H10 + O2 --> tert-C4H9 + HO2
+	 
+199: [92] Tsang, W. J. Phys. Chem. Ref. Data 1990, 19, 1.
+	 Iso-C4H10 + O --> tert-C4H9 + OH
+
+200: [92] Tsang, W. J. Phys. Chem. Ref. Data 1990, 19, 1.
+	 Iso-C4H10 + CH2 --> tert-C4H9 + CH3
+
+201: [92] Tsang, W. J. Phys. Chem. Ref. Data 1990, 19, 1.
+	 Iso-C4H10 + C2H3 --> tert-C4H9 + C2H4
+
+202: [92] Tsang, W. J. Phys. Chem. Ref. Data 1990, 19, 1.
+	 Iso-C4H10 + C2H --> tert-C4H9 + C2H2
+
+203: [92] Tsang, W. J. Phys. Chem. Ref. Data 1990, 19, 1.
+	 Iso-C4H10 + HCO --> tert-C4H9 + CH2O
+
+204: [92] Tsang, W. J. Phys. Chem. Ref. Data 1990, 19, 1.
+	 Iso-C4H10 + CH3CO --> tert-C4H9 + CH3CHO
+
+205: [101] Cohen, N. Int. J. Chem. Kinet. 1991, 23, 397.
+	 Iso-C4H10 + OH --> tert-C4H9 + H2O
+
+206: [92] Tsang, W. J. Phys. Chem. Ref. Data 1990, 19, 1.
+	 Iso-C4H10 + CH3O --> tert-C4H9 + CH3OH
+	 
+207: [89] Tsang, W.; Hampson, R.F. J. Phys. Chem. Ref. Data 1986, 15, 1087.
+	 C2H4 + O2 --> C2H3 + HO2 C.D.W divided original rate expression by 4, to get rate expression per H atom.
+	 pg 1097, Chemical Kinetic Database For Combustion Chemistry, 2. Index of Reactions and Summary of Recommended Rate Expressions. No. 18,3.
+	 Verified by Karma James
+
+208: [89] Tsang, W.; Hampson, R.F. J. Phys. Chem. Ref. Data 1986, 15, 1087.
+	 C2H4 + CO --> C2H3 + HCO C.D.W divided original rate expression by 4(from A= 1.51E+14), to get rate expression per H atom.
+	 pg 1097, Chemical Kinetic Database For Combustion Chemistry, 2. Index of Reactions and Summary of Recommended Rate Expressions. No. 18,14.
+	 Verified by Karma James
+
+209: [128] Mahmud, K.; Marshall, P.; Fontijn, A. J Phys. Chem. 1987, 91, `568.
+	 C2H4 + O --> C2H3 + OH C.D.W divided original rate expression by 4(from A= 1.51E+07), to get rate expression per H atom.
+
+210: [89] Tsang, W.; Hampson, R.F. J. Phys. Chem. Ref. Data 1986, 15, 1087.
+	 C2H4 + C2H5 --> C2H3 + C2H6 C.D.W divided original rate expression by 4, to get rate expression per H atom.
+	 pg 1098, Chemical Kinetic Database For Combustion Chemistry, 2. Index of Reactions and Summary of Recommended Rate Expressions. No. 18,17.
+	 Verified by Karma James
+
+211: [95] Baulch, D.L.; Cobos, C.J.; Cox, R.A.; Esser, C.; Frank, P.; Just, T.; Kerr, J.A.; Pilling, M.J.; 
+	 Troe, J.; Walker, R.W.; Warnatz, J. J. Phys. Chem. Ref. Data 1992, 21, 411.
+	 C2H4 + OH --> C2H3 + H2O C.D.W divided original rate expression by 4(from A= 2.05E+13), to get rate expression per H atom.
+	 pg 420 Evaluated Kinetic Data for Combustion Modelling, Table 1. Bimolecular reactions - OH Radical Reactions.
+	 Verified by Karma James
+
+212: [93] Tsang, W. J. Phys. Chem. Ref. Data 1991, 20, 221.
+	 CH3CH=CH2 + O --> CH3C=CH2 + OH
+
+213: [93] Tsang, W. J. Phys. Chem. Ref. Data 1991, 20, 221.
+	 CH3CH=CH2 + H --> CH3C=CH2 + H2
+
+214: [93] Tsang, W. J. Phys. Chem. Ref. Data 1991, 20, 221.
+	 CH3CH=CH2 + CH3 --> CH3C=CH2 + CH4
+
+215: [93] Tsang, W. J. Phys. Chem. Ref. Data 1991, 20, 221.
+	 CH3CH=CH2 + C2H3 --> CH3C=CH2 + C2H4
+
+216: [93] Tsang, W. J. Phys. Chem. Ref. Data 1991, 20, 221.
+	 CH3CH=CH2 + C2H --> CH3C=CH2 + C2H2 
+
+217: [93] Tsang, W. J. Phys. Chem. Ref. Data 1991, 20, 221.
+	 CH3CH=CH2 + OH --> CH3C=CH2 + H2O
+
+218: [89] Tsang, W.; Hampson, R.F. J. Phys. Chem. Ref. Data 1986, 15, 1087.
+	 C2H2 + O2 --> C2H + HO2 C.D.W divided original rate expression by 2, to get rate expression per H atom.
+	 pg 1100, Chemical Kinetic Database For Combustion Chemistry, 2. Index of Reactions and Summary of Recommended Rate Expressions. No. 20,3.
+	 Verified by Karma James
+
+219: [89] Tsang, W.; Hampson, R.F. J. Phys. Chem. Ref. Data 1986, 15, 1087.
+	 C2H2 + CO --> C2H + HCO C.D.W divided original rate expression by 2, to get rate expression per H atom.
+	 pg 1100, Chemical Kinetic Database For Combustion Chemistry, 2. Index of Reactions and Summary of Recommended Rate Expressions. No. 20,14.
+	 Verified by Karma James
+
+220: [89] Tsang, W.; Hampson, R.F. J. Phys. Chem. Ref. Data 1986, 15, 1087.
+	 C2H2 + C2H5 --> C2H + C2H6 C.D.W divided original rate expression by 2 (from A= 2.71E+11), to get rate expression per H atom.
+	 pg 1100, Chemical Kinetic Database For Combustion Chemistry, 2. Index of Reactions and Summary of Recommended Rate Expressions. No. 20,17.
+	 Verified by Karma James
+
+221: [89] Tsang, W.; Hampson, R.F. J. Phys. Chem. Ref. Data 1986, 15, 1087.
+	 C2H2 + OH --> C2H + H2O C.D.W divided original rate expression by 2, to get rate expression per H atom.
+	 pg 1100, Chemical Kinetic Database For Combustion Chemistry, 2. Index of Reactions and Summary of Recommended Rate Expressions. No. 20,6.
+	 Verified by Karma James
+
+222: [129] Asaba, T.; Fujii, N.; Proc. Int. Symp. Shock Tubes Waves 1971, 8, 1.
+	 Benzene + O2 --> phenyl + HO2 C.D.W divided original rate expression by 6(from A = 6.31E+13), to get rate expression per H atom.
+
+223: [122] Mebel, A.M.; Lin, M.C.; Yu, T.; Morokuma, K. J. Phys. Chem. A. 1997, 101, 3189.
+	 Rate constant is high pressure limit. Benzene + H --> phenyl + H2
+	 C.D.W divided original rate expression by 6(from A = 6.02E+08), to get rate expression per H atom.
+
+224: [130] Nicovich, J.M.; Ravishankara, A.R. J. Phys. Chem. 1984, 88, 2534.
+	 Pressure 0.01-0.26 atm Excitation: flash photolysis, analysis: resonance fluorescence. Benzene + H --> phenyl + H2
+	 C.D.W divided original rate expression by 6(from A = 3.01E+12), to get rate expression per H atom.
+
+225: [131] Zhang, H.X.; Ahonkhai, S.I. Back, H.M. Can. J. Chem. 1989, 67, 1541.
+	 Pressure 0.30-0.50 atm Excitation: thermal, analysis: GC. Benzene + C2H5 --> phenyl + C2H6
+	 C.D.W divided original rate expression by 6(from A = 6.31E+11), to get rate expression per H atom.
+
+226: [95] Baulch, D.L.; Cobos, C.J.; Cox, R.A.; Esser, C.; Frank, P.; Just, T.; Kerr, J.A.; Pilling, M.J.; 
+	 Troe, J.; Walker, R.W.; Warnatz, J. J. Phys. Chem. Ref. Data 1992, 21, 411.
+	 Benzene + OH --> phenyl + H2O  C.D.W divided original rate expression by 6(from A = 1.63E+08), to get rate expression per H atom.
+	 pg 420 Evaluated Kinetic Data for Combustion Modelling, Table 1. Bimolecular reactions - OH Radical Reactions.
+	 Verified by Karma James
+
+227: [132] Michael, J.V.; Kumaran, S.S.; Su, M.-C. J. Phys. Chem. A. 1999, 103, 5942.
+	 CH2O + O2 --> HCO + HO2 C.D.W divided original rate expression by 2, to get rate expression per H atom.
+
+228: [95] Baulch, D.L.; Cobos, C.J.; Cox, R.A.; Esser, C.; Frank, P.; Just, T.; Kerr, J.A.; Pilling, M.J.; 
+	 Troe, J.; Walker, R.W.; Warnatz, J. J. Phys. Chem. Ref. Data 1992, 21, 411.
+	 CH2O + O --> HCO + OH C.D.W divided original rate expression by 2, to get rate expression per H atom.
+	 pg 416 Evaluated Kinetic Data for Combustion Modelling, Table 1. Bimolecular reactions - O Atom Reactions.
+	 Verified by Karma James
+
+229: [89] Tsang, W.; Hampson, R.F. J. Phys. Chem. Ref. Data 1986, 15, 1087.
+	 Rate constant is an upper limit. CH2O + CH2 --> HCO + CH3
+	 C.D.W divided original rate expression by 2 (from A= 6.03E+09), to get rate expression per H atom.
+	 pg 1106, Chemical Kinetic Database For Combustion Chemistry, 2. Index of Reactions and Summary of Recommended Rate Expressions. No. 26,12.
+	 Verified by Karma James
+
+230: [94] Baulch, D.L.; Cobos, C.J.; Cox, R.A.; Frank, P.; Hayman, G,; Just, T.; Kerr, J.A.; Murrells, T.; Pilling, M.J.; 
+	 Troe, J.; Walker, R.W.; Warnatz, J. J. Phys. Chem. Ref. Data 1994, 23, 847.
+	 CH2O + CH3 --> HCO + CH4 C.D.W divided original rate expression by 2, to get rate expression per H atom.
+	 pg 862 Evaluated Kinetic Data for Combustion Modelling Supplement 1, Table 1. Bimolecular reactions - CH3 Radical Reactions.
+	 Verified by Karma James
+	
+231: [89] Tsang, W.; Hampson, R.F. J. Phys. Chem. Ref. Data 1986, 15, 1087.
+	 CH2O + C2H5 --> HCO + C2H6 C.D.W divided original rate expression by 2, to get rate expression per H atom.
+	 pg 1096, Chemical Kinetic Database For Combustion Chemistry, 2. Index of Reactions and Summary of Recommended Rate Expressions. No. 17,12.
+	 Verified by Karma James
+
+232: [91] Tsang, W. J. Phys. Chem. Ref. Data 1988, 17, 887.
+	 CH2O + iso-C3H7 --> HCO + C3H8 C.D.W divided original rate expression by 2, to get rate expression per H atom.
+	 pg 894, Chemical Kinetic Database For Combustion Chemistry, Part 3. Index of Reactions and Summary of Recommended Rate Expressions. No. 42,12.
+	 Verified by Karma James
+
+233: [92] Tsang, W. J. Phys. Chem. Ref. Data 1990, 19, 1.
+	 CH2O + tert-C4H9 --> HCO + iso-C4H10 C.D.W divided original rate expression by 2 (from A= 3.25E+09), to get rate expression per H atom.
+	 
+234: [89] Tsang, W.; Hampson, R.F. J. Phys. Chem. Ref. Data 1986, 15, 1087.
+	 CH2O + C2H3 --> HCO + C2H4 C.D.W divided original rate expression by 2, to get rate expression per H atom.
+	 pg 1099, Chemical Kinetic Database For Combustion Chemistry, 2. Index of Reactions and Summary of Recommended Rate Expressions. No. 19,12.
+	 Verified by Karma James
+
+235: [89] Tsang, W.; Hampson, R.F. J. Phys. Chem. Ref. Data 1986, 15, 1087.
+	 CH2O + CH3CO --> HCO + CH3CHO C.D.W divided original rate expression by 2, to get rate expression per H atom.
+	 pg 1102, Chemical Kinetic Database For Combustion Chemistry, 2. Index of Reactions and Summary of Recommended Rate Expressions. No. 22,12.
+	 Verified by Karma James
+
+236: [95] Baulch, D.L.; Cobos, C.J.; Cox, R.A.; Esser, C.; Frank, P.; Just, T.; Kerr, J.A.; Pilling, M.J.; 
+	 Troe, J.; Walker, R.W.; Warnatz, J. J. Phys. Chem. Ref. Data 1992, 21, 411.
+	 CH2O + OH --> HCO + H2O C.D.W divided original rate expression by 2 (from A= 3.43E+09), to get rate expression per H atom.
+	 pg 419 Evaluated Kinetic Data for Combustion Modelling, Table 1. Bimolecular reactions - OH Radical Reactions.
+	 Verified by Karma James
+
+237: [89] Tsang, W.; Hampson, R.F. J. Phys. Chem. Ref. Data 1986, 15, 1087.
+	 CH2O + CH3O --> HCO + CH3OH C.D.W divided original rate expression by 2, to get rate expression per H atom.
+	 pg 1104, Chemical Kinetic Database For Combustion Chemistry, 2. Index of Reactions and Summary of Recommended Rate Expressions. No. 24,12.
+	 Verified by Karma James
+
+238: [133] Eiteneer, B.; Yu, C.-L.; Goldenberg, M.; Frenklach, M. J. Phys. Chem. A. 1998, 102, 5196.
+	 CH2O + HO2 --> HCO + H2O2 C.D.W divided original rate expression by 2 (from A= 4.11E+04), to get rate expression per H atom.
+
+239: [95] Baulch, D.L.; Cobos, C.J.; Cox, R.A.; Esser, C.; Frank, P.; Just, T.; Kerr, J.A.; Pilling, M.J.; 
+	 Troe, J.; Walker, R.W.; Warnatz, J. J. Phys. Chem. Ref. Data 1992, 21, 411.
+	 CH3CHO + O2 --> CH3CO + HO2
+	 pg 417 Evaluated Kinetic Data for Combustion Modelling, Table 1. Bimolecular reactions - O2 Reactions.
+	 Verified by Karma James
+
+240: [134] Warnatz, J. Rate coefficeints in the C/H/O system. In Combustion Chemistry, 1984; pp 197.
+	 CH3CHO + O --> CH3CO + OH
+
+241: [134] Warnatz, J. Rate coefficeints in the C/H/O system. In Combustion Chemistry, 1984; pp 197.
+	 CH3CHO + H --> CH3CO + H2
+
+242: [95] Baulch, D.L.; Cobos, C.J.; Cox, R.A.; Esser, C.; Frank, P.; Just, T.; Kerr, J.A.; Pilling, M.J.; 
+	 Troe, J.; Walker, R.W.; Warnatz, J. J. Phys. Chem. Ref. Data 1992, 21, 411.
+	 CH3CHO + CH3 --> CH3CO + CH4
+	 pg 423 Evaluated Kinetic Data for Combustion Modelling, Table 1. Bimolecular reactions - CH3 Radical Reactions.
+	 Verified by Karma James
+
+243: [135] Loser, U.; Scherzer, K.; Weber, K. Z. Phys. Chem. (Leipzig) 1989, 270, 237.
+	 CH3CHO + CH2CH=CH2 --> CH3CO + CH3CH=CH2
+
+244: [136] Scherzer, K.; Loser, U.; Stiller, W. Z. Phys. Chem. 1987, 27, 300.
+	 CH3CHO + C2H3 --> CH3CO + C2H4
+
+245: [127] Taylor, P.H.; Rahman, M.S.; Arif, M.; Dellinger, B.; Marshall, P. Sypm. Int. Combust. Proc. 1996, 26, 497.
+	 CH3CHO + OH --> CH3CO + H2O Pressure 0.13-0.97 atm. Rate constant is high pressure limit.
+
+246: [134] Warnatz, J. Rate coefficeints in the C/H/O system. In Combustion Chemistry, 1984; pp 197.
+	 CH3CHO + OH --> CH3CO + H2O
+
+247: [95] Baulch, D.L.; Cobos, C.J.; Cox, R.A.; Esser, C.; Frank, P.; Just, T.; Kerr, J.A.; Pilling, M.J.; 
+	 Troe, J.; Walker, R.W.; Warnatz, J. J. Phys. Chem. Ref. Data 1992, 21, 411.
+	 CH3CHO + HO2 --> CH3CO + H2O2
+	 pg 421 Evaluated Kinetic Data for Combustion Modelling, Table 1. Bimolecular reactions - HO2 Radical Reactions.
+	 Verified by Karma James
+
+248: [137] Mayer, S.W.; Schieler, L. J. Phys. Chem. 1968, 72, 2628.
+	 H2O + O2 --> OH + HO2. C.D.W divided original rate expression by 2, to get rate expression per H atom.
+
+249: [138] Karach, S.P.; Oscherov, V.I. J. Phys. Chem. 1999, 110, 11918.
+	 H2O + O --> OH + OH. C.D.W divided original rate expression by 2 (from A= 2.95E+39), to get rate expression per H atom.
+
+250: [139] Harding, L.B.; Wagner, A.F. Symp. Int. Combust. proc. 1989, 22, 983.
+	 H2O + O --> OH + OH. C.D.W divided original rate expression by 2 (from A= 1.48E+05), to get rate expression per H atom.
+	 
+251: [95] Baulch, D.L.; Cobos, C.J.; Cox, R.A.; Esser, C.; Frank, P.; Just, T.; Kerr, J.A.; Pilling, M.J.; 
+	 Troe, J.; Walker, R.W.; Warnatz, J. J. Phys. Chem. Ref. Data 1992, 21, 411.
+	 H2O + H --> OH + H2. C.D.W divided original rate expression by 2, to get rate expression per H atom.
+	 pg 418 Evaluated Kinetic Data for Combustion Modelling, Table 1. Bimolecular reactions - H Atom Reactions.
+	 NOTE: E0 Rference = 18.4, E0 RMG database = 19.32
+	 Verified by Karma James
+	 
+252: [140] Ma, S.; Liu, R.; Sci. China Ser. S: 1996, 39, 37.
+	 H2O + CH3 --> OH + CH4. C.D.W divided original rate expression by 2 (from A= 6.39), to get rate expression per H atom.
+
+253: [89] Tsang, W.; Hampson, R.F. J. Phys. Chem. Ref. Data 1986, 15, 1087.
+	 H2O + CH3 --> OH + CH4. C.D.W divided original rate expression by 2 (from A= 4.83E+02), to get rate expression per H atom.
+	 pg 1095, Chemical Kinetic Database For Combustion Chemistry, 2. Index of Reactions and Summary of Recommended Rate Expressions. No. 16,9.
+	 Verified by Karma James
+
+254: [89] Tsang, W.; Hampson, R.F. J. Phys. Chem. Ref. Data 1986, 15, 1087.
+	 H2O + C2H5 --> OH + C2H6. C.D.W divided original rate expression by 2 (from A= 3.39E+06), to get rate expression per H atom.
+	 pg 1096, Chemical Kinetic Database For Combustion Chemistry, 2. Index of Reactions and Summary of Recommended Rate Expressions. No. 17,9.
+	 Verified by Karma James
+
+255: [89] Tsang, W.; Hampson, R.F. J. Phys. Chem. Ref. Data 1986, 15, 1087.
+	 H2O + C2H3 --> OH + C2H4. C.D.W divided original rate expression by 2 (from A= 4.83E+02), to get rate expression per H atom.
+	 pg 1098, Chemical Kinetic Database For Combustion Chemistry, 2. Index of Reactions and Summary of Recommended Rate Expressions. No. 19,9.
+	 Verified by Karma James
+
+256: [89] Tsang, W.; Hampson, R.F. J. Phys. Chem. Ref. Data 1986, 15, 1087.
+	 H2O + HCO --> OH + CH2O. C.D.W divided original rate expression by 2 (from A= 2.35E+08), to get rate expression per H atom.
+	 pg 1094, Chemical Kinetic Database For Combustion Chemistry, 2. Index of Reactions and Summary of Recommended Rate Expressions. No. 15,9.
+	 Verified by Karma James
+
+257: [141] Masgrau, L.; Gonzalez-Lafont, A.; Lluch, J.M. J. Phys. Chem. A. 1999, 103, 1044.
+	  H2O + OH --> OH + H2O . C.D.W refitted their k(T) to get A, n, and Ea, and divided original rate expression by 2, to get rate expression per H atom.
+
+258: [100] Jodkowski, J.T.; Rauez, M.-T.; Rayez, J.-C. J. Phys. Chem. A. 1999, 103, 3750.
+	 H2O + CH3O --> OH + CH3OH. C.D.W divided original rate expression by 2 (from A= 9.03E+08), to get rate expression per H atom.
+
+259: [134] Warnatz, J. Rate coefficeints in the C/H/O system. In Combustion Chemistry, 1984; pp 197.
+	 CH3OH + O --> CH3O + OH
+
+260: [90] Tsang, W. J. Phys. Chem. Ref. Data 1987, 16, 471.
+	 CH3OH + CH2 --> CH3O + CH3
+	 pg 475, Chemical Kinetic Database For Combustion Chemistry, Part 2 - Methanol. 
+	 Index of Reactions and Summary of Recommended Rate Expressions. No. 38,25.
+	 Verified by Karma James
+
+261: [100] Jodkowski, J.T.; Rauez, M.-T.; Rayez, J.-C. J. Phys. Chem. A. 1999, 103, 3750.
+	 The calculated rate constants are in good agreement with experiment. CH3OH + CH3 --> CH3O + CH4
+
+262: [90] Tsang, W. J. Phys. Chem. Ref. Data 1987, 16, 471.
+	 CH3OH + C2H5 --> CH3O + C2H6
+	 pg 475, Chemical Kinetic Database For Combustion Chemistry, Part 2 - Methanol. 
+	 Index of Reactions and Summary of Recommended Rate Expressions. No. 38,17.
+	 Verified by Karma James
+
+263: [90] Tsang, W. J. Phys. Chem. Ref. Data 1987, 16, 471.
+	 CH3OH + iso-C3H7 --> CH3O + C3H8
+	 WAS UNABLE TO VERIFY DATA!!! DATA NOT FOUND IN REFERENCE.
+
+264: [90] Tsang, W. J. Phys. Chem. Ref. Data 1987, 16, 471.
+	 CH3OH + tert-C4H9 --> CH3O + iso-C4H10
+	 WAS UNABLE TO VERIFY DATA!!! DATA NOT FOUND IN REFERENCE.
+	 
+265: [90] Tsang, W. J. Phys. Chem. Ref. Data 1987, 16, 471.
+	 CH3OH + C2H3 --> CH3O + C2H4
+	 pg 475, Chemical Kinetic Database For Combustion Chemistry, Part 2 - Methanol. 
+	 Index of Reactions and Summary of Recommended Rate Expressions. No. 38,19.
+	 Verified by Karma James
+	 
+266: [90] Tsang, W. J. Phys. Chem. Ref. Data 1987, 16, 471.
+	 CH3OH + C2H --> CH3O + C2H2
+	 pg 475, Chemical Kinetic Database For Combustion Chemistry, Part 2 - Methanol. 
+	 Index of Reactions and Summary of Recommended Rate Expressions. No. 38,21.
+	 Verified by Karma James
+
+267: [100] Jodkowski, J.T.; Rauez, M.-T.; Rayez, J.-C. J. Phys. Chem. A. 1999, 103, 3750.
+	 The calculated rate constants are in good agreement with experiment. CH3OH + OH --> CH3O + H2O
+
+268: [134] Warnatz, J. Rate coefficeints in the C/H/O system. In Combustion Chemistry, 1984; pp 197.
+	 CH3OH + OH --> CH3O + H2O
+

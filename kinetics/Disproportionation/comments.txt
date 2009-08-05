@@ -1,0 +1,12 @@
+536: [189] Grotheer, H.; Riekert, G.; Walter, D.; Just, T. Symp. Int. Combust. Proc. 1989, 22, 963.
+	 Absolute value measured directly. Excitation: discharge, analysis: mass spectroscopy. Original uncertainty 3.0E+13
+	 O + CH2OC --> OH + CH2O, O + CH3CHOH --> OH + CH3CHO
+	 
+538: [190] Edelbuttel-Einhaus, J.; Hoyermann, K.; Rohde, G.; Seeba, J. Symp. Int. Combust. Proc. 1992, 22, 661.
+	 Data derived from fitting to a complex mechanism. Excitation: discharge, analysis: mass spectroscopy. Original uncertainty 1.0E+13
+	 H + CH3CHOH --> H2 + CH3CHO
+	 
+540: [191] Pagsberg, P.; Munk, J.; Sillesen, A.; Anastasi, C. Chem. Phys. Lett. 1988, 146, 375.
+	 Absolute value measured directly. Excitatio: electron beam, analysis: Vis-UV absorption.
+	 CH2OH + CH3 --> CH2O + CH4
+	 

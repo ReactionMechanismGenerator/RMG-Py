@@ -1,0 +1,240 @@
+425: [167] Dingle, J.R.; Le Roy, D.J.; J. Chem. Phys. 1950, 18, 1632.
+	 Absolute value measured directly. Excitation: thermal. H + H --> H2 Bath gas: C2H2
+
+426: [168] Takahashi, J.; Momose, T.; Shida, T. Bull. Chem. Soc. Jpn. 1994, 67, 74.
+	 H + CH3 --> CH4
+
+427: [94] Baulch, D.L.; Cobos, C.J.; Cox, R.A.; Frank, P.; Hayman, G,; Just, T.; Kerr, J.A.; Murrells, T.; Pilling, M.J.; 
+	 Troe, J.; Walker, R.W.; Warnatz, J. J. Phys. Chem. Ref. Data 1994, 23, 847.
+	 H + CH3 --> CH4
+	 pg 870 Evaluated Kinetic Data for Combustion Modelling Supplement 1, Table 3. Combination reactions.
+	 RMG data matches reference data for k(infinity).
+	 Verified by Karma James
+
+428: [169] Sillesen , A.; Ratajczak, E.; Pagsberg, P. Chem. Phys. Lett. 1993, 201, 171.
+	 Data derived from fitting to a complex mechanism. Excitation: radiolysis, analysis: IR absroption. Pressure 0.10 atm
+	 H + C2H5 --> C2H6
+
+429: [134] Warnatz, J. Rate coefficeints in the C/H/O system. In Combustion Chemistry, 1984; pp 197.
+
+430: Munk, J; Pagsberg, P.; Ratajczak, E.; Sillensen, A. Chem. Phys. Lett. 1986, 132, 417.
+	 Data derived from fitting to a complex mechanism. Excitation: electron beam, analysis: Vis-UV absorption. Pressure 1.0 atm
+	 H + isoC3H7 --> C3H8
+
+431: [171] Fahr, A.; Laufer, A.; Klein, R.; Braun, W. J. Phys. Chem. 1991, 95, 3218.
+	 Absolute value measured directly. Excitation: flash photolysis, analysis : Vis-UV absorption. Pressure 0.13 atm. Original uncertainty 4.8E+13
+	 H + iso-C3H7 --> C3H8
+
+432: [165] Duran, R. P.; Amorebieta, V. T.; Colussi, A. J. J. Phys. Chem. 1988, 92, 636.
+	 Ab initio
+	 H + C2H3 --> C2H4
+	
+433: [89] Tsang, W.; Hampson, R. F. J. Phys. Chem. Ref. Data 1986, 15, 1087.
+	 H + C2H --> C2H2
+	 pg 1101, Chemical Kinetic Database For Combustion Chemistry, 2. Index of Reactions and Summary of Recommended Rate Expressions. No. 21,4.
+	 Verified by Karma James
+
+434: [172] Davis, S. G.; Wang, H.; Brezinsky K.; Law C. K. Symp. Int. Combust. Proc. 1996, 26, 1025.
+	 (1000-1200K, excitation : thermal, pressure 1.0 atm)
+	 [173] Ackerman, L.; Hippler, H.; Pagsberg, P.; Reihs, C.; Troe, J. J. Phys. Chem. 1990, 94, 5247. 
+	 (300K, absolute value measured directly, excitation : flash photolysis, analysis : VIS-UV absorption, pressure 0.01-0.99 atm) 
+	 H + phenyl --> benzene 	
+
+435: [174] Tsuboi, T.; Katoh, M.; Kikuchi, S.; Hashimoto, K. Jpn J. Appl. Phys. 1981, 20, 985.
+	 Data is estimated. Pressure 7.0 atm. 
+	 H + HCO --> H2CO
+
+436: [106] Cobos, C. J.; Troe, J. J. Chem. Phys. 1985, 83, 1010. 
+	 Transition State Theory
+	 H + OH --> H2O
+	 
+437: [175] Pesa, M. ; Pilling, M. J.; Robertson, S. H.; Wardlaw. J. Phys. Chem. A 1998, 102, 8526.
+	 Transition State Theory 
+	 CH3 + CH3 --> C2H6 (Same as 438)
+
+438: [94] Baulch, D. L.; Cobos, C. J.; Cox, R. A.; Frank, P.; Hayman, G.; Just, T.; Kerr, J. A.; 
+	 Murrells, T.; Pilling, M. J.; Troe, J.; Walker, R. W.; Warnatz, J. J. Phys. Chem. Ref. Data 1994, 23, 847.
+	 CH3 + CH3 --> C2H6 (Same as 437)
+	 pg 871 Evaluated Kinetic Data for Combustion Modelling Supplement 1, Table 3. Combination reactions.
+	 RMG data matches reference data for k(infinity).
+	 Verified by Karma James
+
+439: [94] Baulch, D. L.; Cobos, C. J.; Cox, R. A.; Frank, P.; Hayman, G.; Just, T.; Kerr, J. A.;
+	 Murrells, T.; Pilling, M. J.; Troe, J.; Walker, R. W.; Warnatz, J. J. Phys. Chem. Ref. Data 1994, 23, 847.
+	 CH3 + C2H5 --> C3H8
+	 pg 871 Evaluated Kinetic Data for Combustion Modelling Supplement 1, Table 3. Combination reactions.
+	 RMG data matches reference data for k(infinity).
+	 Verified by Karma James
+
+440: [176] Tsang, W. Combust. Flame 1989, 78, 71. 
+	 RRK(M) extrapolation. 
+	 CH3 + iso-C3H7 --> iso-C4H10 
+
+441: [92] Tsang, W. J. Phys. Chem. Ref. Data 1990, 19, 1.
+	 CH3 + tert-C4H9 --> neo-C5H12
+
+442: [171] Fahr, A.; Laufer, A.; Klein, R.; Braun, W. J. Phys. Chem. 1991, 95, 3218.
+	 Absolute value measured directly. Excitation: flash photolysis, analysis : Vis-UV absorption. Pressure 0.13 atm. Original Uncertainty 1.8E+13
+	 CH3 + HC= CH2 --> CH3HC=CH2
+
+443: [177] Tokmakov, I. V.; Park, J.; Gheyas, S. I.; Lin, M. C. J. Phys. Chem. A. 1999, 103, 3636.
+	 Data Derived from detailed balance/reverse rate. Uncertainty 8.0E-2. 
+	 CH3 + phenyl --> C6H5CH3
+
+444: [178] Park, J.; Cheyas, s. I.; Lin, M. C. Int. J. Chem. Kinet. 1999, 31, 645.
+	 Absolute value measured directly. Excitation: flash photolysis, analysis : mass spectometry. Pressure 0.05 atm. Uncertainty 7.0E-02 
+	 CH3 + phenyl --> C6H5CH3
+
+445: [89] Tsang, W.; Hampson, R. F. J. Phys. Chem. Ref. Data 1986, 15, 1087.
+	 CH3 + HCO --> CH3CHO 
+	 pg 1095, Chemical Kinetic Database For Combustion Chemistry, 2. Index of Reactions and Summary of Recommended Rate Expressions. No. 16,15.
+	 Verified by Karma James
+
+446: [179] Hassinen, E.; Kalliorinne, K; Koskikallio, J. Int. J. Chem. Kinet. 1990, 22, 741
+	 Data derived from fitting to a complex mechanism. Excitation : direct photolysis, analysis : GC. Pressure 0.95-0.98 atm. 
+	 CH3CO + .CH3 --> (CH3)2CO
+
+447: [89] Tsang, W.; Hampson, R. F. J. Phys. Chem. Ref. Data 1986, 15, 1087.
+	 CH3 + CH3CO --> (CH3)2CO 
+	 pg 1103, Chemical Kinetic Database For Combustion Chemistry, 2. Index of Reactions and Summary of Recommended Rate Expressions. No. 22,16.
+	 Verified by Karma James
+
+448: [94] Baulch, D. L.; Cobos, C. J.; Cox, R. A.; Frank, P.; Hayman, G.; Just, T.; Kerr, J. A.;
+	 Murrells, T.; Pilling, M. J.; Troe, J.; Walker, R. W.; Warnatz, J. J. Phys. Chem. Ref. Data 1994, 23, 847.
+	 CH3 + .OH --> CH3OH
+	 pg 871 Evaluated Kinetic Data for Combustion Modelling Supplement 1, Table 3. Combination reactions.
+	 RMG data matches reference data for k(infinity).
+	 Verified by Karma James
+	 
+449: [89] Tsang, W.; Hampson, R. F. J. Phys. Chem. Ref. Data 1986, 15, 1087.
+	 CH3 + CH3O --> (CH3)2O
+	 pg 1104, Chemical Kinetic Database For Combustion Chemistry, 2. Index of Reactions and Summary of Recommended Rate Expressions. No. 24,16.
+	 Verified by Karma James
+
+450: [95] Baulch, D. L.; Cobos, C. J.; Cox, R. A.; Esser, C.; Frank, P.; Just, T.; Kerr, 
+	 J. A.; Pilling, M. J.; Troe, J.; Walker, R. W.; Warnatz, J. J. Phys. Chem. Ref. Data 1992, 21, 411.
+	 .C2H5 + .C2H5 --> n-C4H10 
+
+451: [91] Tsang, W. J. Phys. Chem. Ref. Data 1988, 17, 887.
+	 C2H5 + iso-C3H7 --> iso-C5H12
+	 pg 894, Chemical Kinetic Database For Combustion Chemistry, Part 3. Index of Reactions and Summary of Recommended Rate Expressions. No. 42,17.
+	 Verified by Karma James
+
+452: [92] Tsang, W. J Phys. Chem. Ref. Data 1990, 19, 1.
+	 C2H5 + tert-C4H9 --> (CH3)3CCH2CH3
+
+453: [89] Tsang, W.; Hampson, R. F. J. Phys. Chem. Ref. Data 1986, 15, 1087.
+	 C2H5 + HCO --> C2H5CHO
+	 pg 1097, Chemical Kinetic Database For Combustion Chemistry, 2. Index of Reactions and Summary of Recommended Rate Expressions. No. 17,15.
+	 Verified by Karma James
+
+454: [89] Tsang, W.; Hampson, R. F. J. Phys. Chem. Ref. Data 1986, 15, 1087.
+	 C2H5 + CH3CO --> C2H5COCH3
+	 pg 1103, Chemical Kinetic Database For Combustion Chemistry, 2. Index of Reactions and Summary of Recommended Rate Expressions. No. 22,17.
+	 Verified by Karma James
+
+455: [180] Fagerstrom, K.; Lund, A.; Mahmoud, G.; Jodkowski, J. T.; Ratajczak, E. Chem. Phys. Lett. 1993, 208, 321
+	 Excitation : radiolysis, analysis : VIS-UV absorption. Pressure 0.25-0.99 atm. Original Uncertainty 1.0E+13. 
+	 C2H5 + OH --> C2H5OH
+
+456: [91] Tsang, W. J. Phys. Chem. Ref. Data 1988, 17, 887.
+	 Iso-C3H7 + iso-C3H7 --> (CH3)2CHCH(CH3)2
+	 pg 895, Chemical Kinetic Database For Combustion Chemistry, Part 3. Index of Reactions and Summary of Recommended Rate Expressions. No. 42,42.
+	 NOTE: For A value, Database value = 3.25E+14 and Reference value = 6.023E+12
+	 Verified by Karma James
+
+457: [92] Tsang, W. J Phys. Chem. Ref. Data 1990, 19, 1.
+	 Iso-C3H7 + tert-C4H9 --> 2,2,3-trimethyl-butane
+
+458: [91] Tsang, W. J. Phys. Chem. Ref. Data 1988, 17, 887.
+	 Iso-C3H7 + CH3CO --> iso-C3H7COCH3
+	 pg 895, Chemical Kinetic Database For Combustion Chemistry, Part 3. Index of Reactions and Summary of Recommended Rate Expressions. No. 42,22.
+	 NOTE: For A value, Database value = 6.64E+13 and Reference value = 9.03E+12
+	 Verified by Karma James
+	 
+459: [91] Tsang, W. J. Phys. Chem. Ref. Data 1988, 17, 887.
+	 Iso-C3H7 + CH3O --> i-C3H7OCH3
+	 pg 895, Chemical Kinetic Database For Combustion Chemistry, Part 3. Index of Reactions and Summary of Recommended Rate Expressions. No. 42,24.
+	 Verified by Karma James
+
+460: [92] Tsang, W. J Phys. Chem. Ref. Data 1990, 19, 1.
+	 Tert-C4H9 + tert- C4H9 --> (CH3)3CC(CH3)3
+
+461: [92] Tsang, W. J Phys. Chem. Ref. Data 1990, 19, 1.
+	 Tert-C4H9 + HCO --> tert-C4H9CHO
+	 
+462: [92] Tsang, W. J Phys. Chem. Ref. Data 1990, 19, 1.
+	 Tert-C4H9 + CH3CO --> tert-C4H9COCH3
+
+463: [92] Tsang, W. J Phys. Chem. Ref. Data 1990, 19, 1.
+	 Tert-C4H9 + CH3O --> tert-C4H9OCH3
+	 
+464: [171] Fahr, A.; Laufer, A.; Klein, R.; Braun, W. J. Phys. Chem. 1991, 95, 3218.
+	 Absolute value measured directly. Excitation: flash photolysis, analysis : Vis-UV absorption. Original Uncertainty 1.2E+13. 
+	 C2H3 + C2H3 --> (E)-CH2=CHCH=CH2
+
+465: [165] Duran, R. P.; Amorebieta, V. T.; Colussi, A. J. J. Phys. Chem. 1988, 92, 636.
+	 Ab initio. Pressure 0.10-1.0 atm. 
+	 C2H3 +.C2h --> CH2=CHC=CH
+
+466: [89] Tsang, W.; Hampson, R. F. J. Phys. Chem. Ref. Data 1986, 15, 1087.
+	 C2H3 + HCO --> CH2=CHCHO
+	 pg 1099, Chemical Kinetic Database For Combustion Chemistry, 2. Index of Reactions and Summary of Recommended Rate Expressions. No. 19,15.
+	 Verified by Karma James
+
+467: [124] Heckmann, E.; Hippler, H.; Troe, J. Symp. Int. Combust. Proc.1996, 26, 543.
+	 Absolute value measured directly. Excitation : thermal, analysis : Vis-UV absorption. 
+	 Phenyl + Phenyl --> Biphenyl
+
+468: [181] Park, J. ; Lin, M. C. J. Phys. Chem. A. 1997, 101, 14
+	 Absolute value measured directly. Excitation : flash photolysis, analysis : mass spectometry. Original Uncertainty 1.1E+12.   
+	 phenyl + phenyl --> biphenyl 
+
+469: [182] Stoeckel, F.; Schuh, M. D.; Goldstein, N.; Atkinson, G.H. Chem. Phys. 1985, 95, 135
+	 Absolute value measured directly. Excitation : flash photolysis, abalysis : VIS-UV absorption. Original uncertainty 1.2E+13.
+	 HCO + HCO --> (CHO)2 
+
+470: [89] Tsang, W.; Hampson, R. F. J. Phys. Chem. Ref. Data 1986, 15, 1087.
+	 HCO + CH3CO --> CH3COCHO
+	 pg 1102, Chemical Kinetic Database For Combustion Chemistry, 2. Index of Reactions and Summary of Recommended Rate Expressions. No. 22,15.
+	 Verified by Karma James
+	 
+471: [89] Tsang, W.; Hampson, R. F. J. Phys. Chem. Ref. Data 1986, 15, 1087.
+	 CH3CO + CH3CO --> (CH3CO)2
+	 pg 1103, Chemical Kinetic Database For Combustion Chemistry, 2. Index of Reactions and Summary of Recommended Rate Expressions. No. 22,22.
+	 Verified by Karma James
+	 
+472: [183] DeMore, W. B.; Sander, S. P.; Golden, D. M.; Hampson, R. F.; Kurylo, M.J.; 
+	 Howard, C. J.; Ravishankara, A. R.; Kolb, C. E.; Molina, M .J. JPL publication 97-4 1997, 1.
+	 (Rate constant is high pressure limit, original uncertainty 6.0E+12) 
+	 [97] Atkinson, R.; Baulch, D. L.; Cox, R. A.; Hampson, R. F., jr.; Kerr, J. A.; Rossi, M. J.; Troe, J. 
+	 J. Phys. Chem. Ref. Data 1997, 26, 1329
+	 OH + OH --> H2O2
+
+473: [89] Tsang, W.; Hampson, R. F. J. Phys. Chem. Ref. Data 1986, 15, 1087.
+	 CH3O + CH3O --> CH3OOCH3
+	 pg 1105, Chemical Kinetic Database For Combustion Chemistry, 2. Index of Reactions and Summary of Recommended Rate Expressions. No. 24,24.
+	 Verified by Karma James
+
+474: [8] Curran, H.J.; Gaffuri, P.; Pit z, W.J.; Westbrook, C.K. Combust. Flame 2002, 129, 253. 
+	 Curran's estimation, based on half that recommended by Allara and Shaw [146] for H (rad) and R (rad) recombination reactions
+
+475: [8] Curran, H.J.; Gaffuri, P.; Pit z, W.J.; Westbrook, C.K. Combust. Flame 2002, 129, 253.
+	 Curran's estimation, based on recommendations of Tsang [92] for CH3 + tC4H9
+
+476: [8] Curran, H.J.; Gaffuri, P.; Pit z, W.J.; Westbrook, C.K. Combust. Flame 2002, 129, 253.
+	 Curran's estimation based on half Tsang's [91] recommendation for CH3 + iC3H7
+
+477: [8] Curran, H.J.; Gaffuri, P.; Pit z, W.J.; Westbrook, C.K. Combust. Flame 2002, 129, 253.
+	 Curran's estimation for neoC5H11 + iC3H7, similar to tC4H9 + iC4H9 
+
+478: [8] Curran, H.J.; Gaffuri, P.; Pit z, W.J.; Westbrook, C.K. Combust. Flame 2002, 129, 253.
+	 Curran's estimation based on Tsang's [92] reccomendation for tC4H9 Curran's estimation. About a factor of 2 slower than other 
+	 values from literature for smaller alkyl, based upon the consideration that rate constants decrease with the increasing size of R radical. 
+
+479: [159] Curran, H.J.; Pit z, W.J.; Westbrook, C.K.; Dagaut, P.; Boettner, J.-C.; Cathonnet, M. Int. J. Chem. Kinet. 1998, 30, 229.
+	 Curran's estimation in DME modeling for ketohydroperoxide decomposition 
+	 
+	 
+	 
+	 
