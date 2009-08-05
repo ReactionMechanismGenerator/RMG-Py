@@ -104,6 +104,7 @@ def fit_groups(family_names = None):
 	"""Decouples a nested tree and fits values to groups for each seperate tree.
 	   If given a list of family names, only does those families.
 	"""
+	import os
 	import math
 	import numpy
 	import numpy.linalg
@@ -119,8 +120,8 @@ def fit_groups(family_names = None):
 				logging.debug("(but its reverse '%s' does)"%family.reverse.label)
 			continue
 		
-		logging.info("Fitting groups for reaction family: %s"%family_name)
-
+		logging.info("Fitting groups for reaction family: %s (%s)"%(family_name,
+			os.path.basename(os.path.abspath(family._path))) )
 		
 		# Get set of all nodes
 		node_set = family.tree.parent.keys()
