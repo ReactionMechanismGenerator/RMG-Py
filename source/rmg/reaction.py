@@ -93,8 +93,8 @@ class ArrheniusKinetics(Kinetics):
 		return 'k(T) = %s * T ** %s * math.exp(-%s / constants.R / T)\t%s < T < %s' % (self.A, self.n, self.Ea, self.Trange[0], self.Trange[1])
 	def __repr__(self):
 		"""How it looks on the console"""
-		return '<ArrheniusKinetics A=%.0e n=%.1f E=%.0fkJ/mol>'%(self.A,
-			self.n, self.Ea/1000.0 )
+		return '<ArrheniusKinetics A=%.0e E=%.0fkJ/mol n=%.1f >'%(self.A,
+			self.Ea/1000.0, self.n )
 	def getRateConstant(self, T):
 		"""
 		Return the rate constant k(T) at temperature `T` by evaluating the
@@ -177,7 +177,11 @@ class ArrheniusEPKinetics(Kinetics):
 
 	def __str__(self):
 		return 'k(T) = %s * T ** %s * math.exp(-(%s + %s * DHrxn) / constants.R / T)\t%s < T < %s' % (self.A, self.n, self.E0, self.alpha, self.Trange[0], self.Trange[1])
-
+	def __repr__(self):
+		"""How it looks on the console"""
+		return '<ArrheniusEPKinetics A=%.0e E0=%.0fkJ/mol n=%.1f alpha=%.1g>'%(
+			self.A, self.E0/1000.0, self.n, self.alpha)
+			
 	def getActivationEnergy(self, dHrxn):
 		"""
 		Return the activation energy using the enthalpy of reaction `dHrxn`.
@@ -487,11 +491,14 @@ class ReactionFamily(data.Database):
 		"""
 
 		# Generate paths to files in the database
-		dictstr = path + '/dictionary.txt'
-		treestr = path + '/tree.txt'
-		libstr = path + '/library.txt'
-		tempstr = path + '/template.txt'
-		forbstr = path + '/forbiddenGroups.txt'
+		dictstr = os.path.join(path, 'dictionary.txt')
+		treestr = os.path.join(path, 'tree.txt')
+		libstr  = os.path.join(path, 'library.txt')
+		tempstr = os.path.join(path, 'template.txt')
+		forbstr = os.path.join(path, 'forbiddenGroups.txt')
+		
+		#: The path of the database that was loaded.
+		self._path = path
 
 		# Load the dictionary, tree, and library using the generic methods
 		data.Database.load(self, dictstr, treestr, '')
