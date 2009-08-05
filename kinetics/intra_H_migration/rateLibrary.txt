@@ -135,7 +135,7 @@ Arrhenius_EP
 736		R3H_SS_12cy3	C_rad_out_H/NonDeC		Cs_H_out_2H				300-1500	2.62E+10	0.69	0		35.10	0	0	0		0	2		Sumathy B3LYP/CCPVDZ calculations 
 737		R3H_SS_23cy3	C_rad_out_2H			Cs_H_out_H/NonDeC		300-1500	1.04E+10	0.71	0		34.90	0	0	0		0	2		Sumathy B3LYP/CCPVDZ calculations 
 738		R3H_SS_12cy3	C_rad_out_H/NonDeC		Cs_H_out_H/NonDeC		300-1500	3.16E+11	0.26	0		33.50	0	0	0		0	2		Sumathy B3LYP/CCPVDZ calculations 
-739		3H_SS_23cy3		C_rad_out_H/NonDeC		Cs_H_out_H/NonDeC		300-1500	5.63E+08	1.01	0		45.40	0	0	0		0	2		Sumathy B3LYP/CCPVDZ calculations 
+739		R3H_SS_23cy3	C_rad_out_H/NonDeC		Cs_H_out_H/NonDeC		300-1500	5.63E+08	1.01	0		45.40	0	0	0		0	2		Sumathy B3LYP/CCPVDZ calculations 
 740		R3H_SS_12cy3	C_rad_out_H/NonDeC		Others-Cs_H_out_Cs2		300-1500	2.26E+13	0.26	0		32.10	0	0	0		0	2		Sumathy B3LYP/CCPVDZ calculations 
 741		R3H_SS_23cy3	Others-C_rad_out_Cs2	Cs_H_out_H/NonDeC		300-1500	2.68E+07	1.42	0		46.30	0	0	0		0	2		Sumathy B3LYP/CCPVDZ calculations 
 742		Others-R3H_SS	C_rad_out_Cs2_cy3		Cs_H_out_2H				300-1500	1.78E+09	1.04	0		36.30	0	0	0		0	2		Sumathy B3LYP/CCPVDZ calculations 
@@ -222,7 +222,7 @@ Arrhenius_EP
 823		R6H_SSSSS_OO			O_rad_out		Others-Cs_H_out_Cs2		300-1500	1.48E+06	1.22	0		13.84	0	0	0		0	2		Curran's [8] estimation in reaction type 19, QOOH = cyclic ether + OH
 824		R7H_OOCs4				O_rad_out		Cs_H_out_2H				300-1500	9.06E+04	1.51	0		19.95	0	0	0		0	2		Curran's [8] estimation in reaction type 19, QOOH = cyclic ether + OH
 825		R7H_OOCs4				O_rad_out		Cs_H_out_H/NonDeC		300-1500	1.37E+06	0.99	0		18.17	0	0	0		0	2		Curran's [8] estimation in reaction type 19, QOOH = cyclic ether + OH
-826		7H_OOCs4		O_rad_out				Others-Cs_H_out_Cs2		300-1500	5.62E+05	1.09	0		14.28	0	0	0		0	2		
+826		R7H_OOCs4		O_rad_out				Others-Cs_H_out_Cs2		300-1500	5.62E+05	1.09	0		14.28	0	0	0		0	2		
 827		Others-R2H_S	C_rad_out_2H			Cs_H_out_H/(CCCOOH)		300-1500	4.07E+09	0.99	0		37.33	0	0	0		0	2		CBS-QB3 calculations (Catherina Wijaya). 
 828		Others-R2H_S	C_rad_out_H/NonDeC		Cs_H_out_H/(CCCOOH)		300-1500	6.70E+08	1.15	0		39.04	0	0	0		0	2		CBS-QB3 calculations (Catherina Wijaya). 
 829		Others-R2H_S	Others-C_rad_out_Cs2	Cs_H_out_H/(CCCOOH)		300-1500	3.56E+07	1.53	0		40.58	0	0	0		0	2		CBS-QB3 calculations (Catherina Wijaya). 
