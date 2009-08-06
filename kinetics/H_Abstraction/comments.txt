@@ -620,30 +620,58 @@
 	 
 198: [92] Tsang, W. J. Phys. Chem. Ref. Data 1990, 19, 1.
 	 Iso-C4H10 + O2 --> tert-C4H9 + HO2
+	 pg 5, Chemical Kinetic Database For Combustion Chemistry, Part 4 - Isobutane. 
+	 Index of Reactions and Summary of Recommended Rate Expressions. No. 43,3.
+	 Verified by Karma James
 	 
 199: [92] Tsang, W. J. Phys. Chem. Ref. Data 1990, 19, 1.
 	 Iso-C4H10 + O --> tert-C4H9 + OH
+	 pg 5, Chemical Kinetic Database For Combustion Chemistry, Part 4 - Isobutane. 
+	 Index of Reactions and Summary of Recommended Rate Expressions. No. 43,5.
+	 Verified by Karma James
 
 200: [92] Tsang, W. J. Phys. Chem. Ref. Data 1990, 19, 1.
 	 Iso-C4H10 + CH2 --> tert-C4H9 + CH3
+	 pg 6, Chemical Kinetic Database For Combustion Chemistry, Part 4 - Isobutane. 
+	 Index of Reactions and Summary of Recommended Rate Expressions. No. 43,25.
+	 Verified by Karma James
 
 201: [92] Tsang, W. J. Phys. Chem. Ref. Data 1990, 19, 1.
 	 Iso-C4H10 + C2H3 --> tert-C4H9 + C2H4
+	 pg 5, Chemical Kinetic Database For Combustion Chemistry, Part 4 - Isobutane. 
+	 Index of Reactions and Summary of Recommended Rate Expressions. No. 43,19.
+	 Verified by Karma James
 
 202: [92] Tsang, W. J. Phys. Chem. Ref. Data 1990, 19, 1.
 	 Iso-C4H10 + C2H --> tert-C4H9 + C2H2
+	 pg 5, Chemical Kinetic Database For Combustion Chemistry, Part 4 - Isobutane. 
+	 Index of Reactions and Summary of Recommended Rate Expressions. No. 43,21.
+	 Verified by Karma James
 
 203: [92] Tsang, W. J. Phys. Chem. Ref. Data 1990, 19, 1.
 	 Iso-C4H10 + HCO --> tert-C4H9 + CH2O
+	 pg 5, Chemical Kinetic Database For Combustion Chemistry, Part 4 - Isobutane. 
+	 Index of Reactions and Summary of Recommended Rate Expressions. No. 43,15.
+	 Verified by Karma James
 
 204: [92] Tsang, W. J. Phys. Chem. Ref. Data 1990, 19, 1.
 	 Iso-C4H10 + CH3CO --> tert-C4H9 + CH3CHO
+	 pg 5, Chemical Kinetic Database For Combustion Chemistry, Part 4 - Isobutane. 
+	 Index of Reactions and Summary of Recommended Rate Expressions. No. 43,22.
+	 Verified by Karma James
 
 205: [101] Cohen, N. Int. J. Chem. Kinet. 1991, 23, 397.
 	 Iso-C4H10 + OH --> tert-C4H9 + H2O
+	 DOES NOT MATCH! Reference: A = 5.7E+10, E0 = 0.06, n = 0.51, Database: A = 2.57E+06, E0 = 1.45, n = 1.90
+	 pg 5, Chemical Kinetic Database For Combustion Chemistry, Part 4 - Isobutane. 
+	 Index of Reactions and Summary of Recommended Rate Expressions. No. 43,6.
+	 Verified by Karma James
 
 206: [92] Tsang, W. J. Phys. Chem. Ref. Data 1990, 19, 1.
 	 Iso-C4H10 + CH3O --> tert-C4H9 + CH3OH
+	 pg 6, Chemical Kinetic Database For Combustion Chemistry, Part 4 - Isobutane. 
+	 Index of Reactions and Summary of Recommended Rate Expressions. No. 43,24.
+	 Verified by Karma James
 	 
 207: [89] Tsang, W.; Hampson, R.F. J. Phys. Chem. Ref. Data 1986, 15, 1087.
 	 C2H4 + O2 --> C2H3 + HO2 C.D.W divided original rate expression by 4, to get rate expression per H atom.
@@ -761,6 +789,9 @@
 
 233: [92] Tsang, W. J. Phys. Chem. Ref. Data 1990, 19, 1.
 	 CH2O + tert-C4H9 --> HCO + iso-C4H10 C.D.W divided original rate expression by 2 (from A= 3.25E+09), to get rate expression per H atom.
+	 pg 7, Chemical Kinetic Database For Combustion Chemistry, Part 4 - Isobutane. 
+	 Index of Reactions and Summary of Recommended Rate Expressions. No. 44,12.
+	 Verified by Karma James
 	 
 234: [89] Tsang, W.; Hampson, R.F. J. Phys. Chem. Ref. Data 1986, 15, 1087.
 	 CH2O + C2H3 --> HCO + C2H4 C.D.W divided original rate expression by 2, to get rate expression per H atom.
