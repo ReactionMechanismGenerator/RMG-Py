@@ -609,9 +609,7 @@
 	 
 196: [101] Cohen, N. Int. J. Chem. Kinet. 1991, 23, 397.
 	 C3H8 + OH --> iso-C3H7 + H20  C.D.W divided original rate expression by 2, to get rate expression per H atom.
-	 DOES NOT MATCH! Reference: A = 2.95E+23, E0 = 0.89, n = 0.1, Database: A = 3.95E+06, E0 = 0.16, n = 1.90
-	 pg 891, Chemical Kinetic Database For Combustion Chemistry, Part 3. Index of Reactions and Summary of Recommended Rate Expressions. No. 40,6.
-	 Verified by Karma James
+	 Not yet checked
 	 
 197: [91] Tsang, W. J. Phys. Chem. Ref. Data 1988, 17, 887.
 	 C3H8 + CH3O --> iso-C3H7 + CH3OH  C.D.W divided original rate expression by 2, to get rate expression per H atom.
@@ -662,10 +660,7 @@
 
 205: [101] Cohen, N. Int. J. Chem. Kinet. 1991, 23, 397.
 	 Iso-C4H10 + OH --> tert-C4H9 + H2O
-	 DOES NOT MATCH! Reference: A = 5.7E+10, E0 = 0.06, n = 0.51, Database: A = 2.57E+06, E0 = 1.45, n = 1.90
-	 pg 5, Chemical Kinetic Database For Combustion Chemistry, Part 4 - Isobutane. 
-	 Index of Reactions and Summary of Recommended Rate Expressions. No. 43,6.
-	 Verified by Karma James
+	  Not yet checked
 
 206: [92] Tsang, W. J. Phys. Chem. Ref. Data 1990, 19, 1.
 	 Iso-C4H10 + CH3O --> tert-C4H9 + CH3OH
