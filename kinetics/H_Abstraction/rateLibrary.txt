@@ -223,11 +223,15 @@ Arrhenius_EP
 210.	Cd_pri		C_rad/H2/Cs			300-2500	1.58E+02	3.13	0		18.00	*5.0	0		0		0		4		Tsang [89] literature review.
 211.	Cd_pri		O_pri_rad			650-1500	5.13E+12	0		0		5.94	*3.16	0		0		0		4		Baulch et al. [95] literature review.
 212.	Cd/H/NonDeC	O_atom_triplet		300-2500	6.02E+10	0.70	0		7.63	*3.0	0		0		0		4		Tsang [93] literature review.
-213.	Cd/H/NonDeC	H_rad				300-2500	2.37E+00	0		0		7.31	*5.0	0		0		0		4		Tsang [93] literature review.
-214.	Cd/H/NonDeC	C_methyl			300-2500	3.8E-01		0		0		5.98	*100.0	0		0		0		4		Tsang [93] literature review.
-215.	Cd/H/NonDeC	Cd_pri_rad			300-2500	3.8E-01		0		0		4.99	*10.0	0		0		0		4		Tsang [93] literature review.
+//213.	Cd/H/NonDeC	H_rad				300-2500	2.37E+00	0		0		7.31	*5.0	0		0		0		4		Tsang [93] literature review.
+213.	Cd/H/NonDeC	H_rad				300-800	4.09e+05	2.5	0	9.79	*4.0	0.0	0.0	0.0	4	Tsang [93] literature review.
+//214.	Cd/H/NonDeC	C_methyl			300-2500	3.8E-01		0		0		5.98	*100.0	0		0		0		4		Tsang [93] literature review.
+214.	Cd/H/NonDeC	C_methyl	300-2500	0.842	3.5	0.0	11.66	*6.0	0.0	0.0	0.0	4	Tsang [93] literature review.
+//215.	Cd/H/NonDeC	Cd_pri_rad			300-2500	3.8E-01		0		0		4.99	*10.0	0		0		0		4		Tsang [93] literature review.
+215.	Cd/H/NonDeC	Cd_pri_rad		300-2500	0.842	3.5	0.0	9.67	*6.0	0.0	0.0	0.0	4	Tsang [93] literature review.
 216.	Cd/H/NonDeC	Ct_rad				300-2500	1.21E+12	0		0		0		*5.0	0		0		0		4		Tsang [93] literature review.
-217.	Cd/H/NonDeC	O_pri_rad			300-2500	1.11E+06	2.00	0		1.45	0		0		0		0		4		Tsang [93] literature review.
+//217.	Cd/H/NonDeC	O_pri_rad			300-2500	1.11E+06	2.00	0		1.45	0		0		0		0		4		Tsang [93] literature review.
+217.	Cd/H/NonDeC	O_pri_rad		700-2500	1.11E+06	2.00	0	1.45	*2	0.0	0.0	0.0	4	Tsang [93] literature review.
 218.	Ct_H		O2b					300-2500	6.05E+12	0		0		74.52	*5.0	0		0		0		4		Tsang [89] literature review.
 //219.	Ct_H		CO_birad			300-2500	2.41E+14	0		0		107		*5.0	0		0		0		4		Tsang [89] literature review.
 220.	Ct_H		C_rad/H2/Cs			300-2500	1.36E+11	0		0		23.45	*5.0	0		0		0		4		Tsang [89] literature review.
@@ -255,7 +259,8 @@ Arrhenius_EP
 242.	CO/H/NonDe	C_methyl			300-1250	1.99E-06	5.64	0		2.46	*2.0	0		0		0		4		Baulch et al. [95] literature review.
 243.	CO/H/NonDe	C_rad/H2/Cd			790-810		3.8E+11		0		0		7.21	0		0		0		0		5		Loser et al. [135] bond strength-bond length method.
 244.	CO/H/NonDe	Cd_pri_rad			480-520		8.13E+10	0		0		3.68	0		0		0		0		5		Scherzer et al. [136] bond energy-bond order method.
-245.	CO/H/NonDe	O_pri_rad			295-600		2.0E+06		1.80	0		1.30	0		0		0		0		3		Taylor et al. [127] Transition state theory.
+//245.	CO/H/NonDe	O_pri_rad			295-600		2.0E+06		1.80	0		1.30	0		0		0		0		3		Taylor et al. [127] Transition state theory.
+245.	CO/H/NonDe	O_pri_rad			295-600		2.0E+06		1.80	0		-1.30	0		0		0		0		3		Taylor et al. [127] Transition state theory.
 246.	CO/H/NonDe	O_pri_rad			300-2000	1.0E+13		0		0		0		*2.51	0		0		0		4		Warnatz [134] literature review
 247.	CO/H/NonDe	O_rad/NonDeO		900-1200	3.01E+12	0		0		11.92	*10.0	0		0		0		4		Baulch et al. [95] literature review.
 248.	O_pri		O2b					300-1000	2.325E+12	0		0		74.12	0		0		0		0		5		Mayer et al. [137] Bond energy-bond order.
@@ -267,7 +272,8 @@ Arrhenius_EP
 254.	O_pri		C_rad/H2/Cs			300-2500	1.70E+06	1.44	0		20.27	*2.0	0		0		0		4		Tsang [89] literature review.
 255.	O_pri		Cd_pri_rad			300-2500	2.42E+02	2.90	0		14.86	*5.0	0		0		0		4		Tsang [89] literature review.
 256.	O_pri		CO_pri_rad			300-2500	1.18E+08	1.35	0		26.03	*5.0	0		0		0		4		Tsang [89] literature review.
-257.	O_pri		O_pri_rad			200-700		6.45E-06	5.01	0		0.61	0		0		0		0		3		Masgrau et al. [141] Transition state theory.
+//257.	O_pri		O_pri_rad			200-700		6.45E-06	5.01	0		0.61	0		0		0		0		3		Masgrau et al. [141] Transition state theory w/tunneling correction.
+257.	O_pri		O_pri_rad			200-700	2.417E-07	5.48	0	0.274	0.0	0.0	0.0	0.0	3	Masgrau et al. [141] Transition state theory.
 258.	O_pri		O_rad/NonDeC		300-2000	1.74E-01	3.80	0		11.49	0		0		0		0		2		Jodkowski et al. [100] ab initio calculations.
 259.	O/H/NonDeC	O_atom_triplet		300-1000	1.0E+13		0		0		4.69	*2.51	0		0		0		4		Warnatz [134] literature review
 260.	O/H/NonDeC	CH2_triplet			300-2500	1.44E+01	3.10	0		6.94	0		0		0		0		4		Tsang [90] literature review.

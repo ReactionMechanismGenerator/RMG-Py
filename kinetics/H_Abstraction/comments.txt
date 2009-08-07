@@ -699,21 +699,42 @@
 
 212: [93] Tsang, W. J. Phys. Chem. Ref. Data 1991, 20, 221.
 	 CH3CH=CH2 + O --> CH3C=CH2 + OH
+	 pg 233-234
+	 Verified by MRH on 6Aug2009
 
 213: [93] Tsang, W. J. Phys. Chem. Ref. Data 1991, 20, 221.
 	 CH3CH=CH2 + H --> CH3C=CH2 + H2
+	 pg 231
+	 Previous modified Arrhenius parameters were for RELATIVE rate (kc/ka)
+	 Multipled kc/ka by ka to get kc (only one H to abstract, so no division necessary)
+	 Valid T range in reference suggested 300-800K
+	 Certified by MRH on 6Aug2009
 
 214: [93] Tsang, W. J. Phys. Chem. Ref. Data 1991, 20, 221.
 	 CH3CH=CH2 + CH3 --> CH3C=CH2 + CH4
+	 pg 237-239
+	 Previous modified Arrhenius parameters were for RELATIVE rate (ke/kc)
+	 Multiplied ke/kc by kc to get ke (only one H to abstract, so no division necessary)
+	 Certified by MRH on 6Aug2009
 
 215: [93] Tsang, W. J. Phys. Chem. Ref. Data 1991, 20, 221.
 	 CH3CH=CH2 + C2H3 --> CH3C=CH2 + C2H4
+	 pg 240-241
+	 Previous modified Arrhenius parameters were for RELATIVE rate (kc/ka)
+	 Multiplied kc/ka by ka to get kc (only one H to abstract, so no division necessary)
+	 Certified by MRH on 6Aug2009
 
 216: [93] Tsang, W. J. Phys. Chem. Ref. Data 1991, 20, 221.
 	 CH3CH=CH2 + C2H --> CH3C=CH2 + C2H2 
+	 pg 241
+	 Verified by MRH on 6Aug2009
 
 217: [93] Tsang, W. J. Phys. Chem. Ref. Data 1991, 20, 221.
 	 CH3CH=CH2 + OH --> CH3C=CH2 + H2O
+	 pg 235-236
+	 Valid T range in reference suggested 700-2500K
+	 Uncertainty stated in reference was *2.0
+	 Verified by MRH on 6Aug2009
 
 218: [89] Tsang, W.; Hampson, R.F. J. Phys. Chem. Ref. Data 1986, 15, 1087.
 	 C2H2 + O2 --> C2H + HO2 C.D.W divided original rate expression by 2, to get rate expression per H atom.
@@ -843,6 +864,9 @@
 
 245: [127] Taylor, P.H.; Rahman, M.S.; Arif, M.; Dellinger, B.; Marshall, P. Sypm. Int. Combust. Proc. 1996, 26, 497.
 	 CH3CHO + OH --> CH3CO + H2O Pressure 0.13-0.97 atm. Rate constant is high pressure limit.
+	 pg 501, Table 1, k2 = 2.00x10^6 T^1.8 exp(1300/RT)
+	 Previous modified Arrhenius parameters had E=1.3 kcal/mol; it should be E=-1.3 kcal/mol
+	 Certified by MRH on 6Aug2009
 
 246: [134] Warnatz, J. Rate coefficeints in the C/H/O system. In Combustion Chemistry, 1984; pp 197.
 	 CH3CHO + OH --> CH3CO + H2O
@@ -893,7 +917,12 @@
 	 Verified by Karma James
 
 257: [141] Masgrau, L.; Gonzalez-Lafont, A.; Lluch, J.M. J. Phys. Chem. A. 1999, 103, 1044.
-	  H2O + OH --> OH + H2O . C.D.W refitted their k(T) to get A, n, and Ea, and divided original rate expression by 2, to get rate expression per H atom.
+	 H2O + OH --> OH + H2O . C.D.W refitted their k(T) to get A, n, and Ea, and divided original rate expression by 2, to get rate expression per H atom.
+	 pg 1050, Table 4, Section: HO + HOH = HOH + OH(1), Column k_ab_CVT/SCT
+	 MRH computed modified Arrhenius parameters using least-squares regression: ln(k) = ln(A) + n*ln(T) - (E/R)*(1/T)
+	 E: Multiplied (E/R) expression by 1.987e-3
+	 A: exp(ln(A)), multiplied by 6.02e23 (to convert /molecule to /mol) and divided by 2 (to get rate per H atom)
+	 Certified by MRH on 7Aug2009
 
 258: [100] Jodkowski, J.T.; Rauez, M.-T.; Rayez, J.-C. J. Phys. Chem. A. 1999, 103, 3750.
 	 H2O + CH3O --> OH + CH3OH. C.D.W divided original rate expression by 2 (from A= 9.03E+08), to get rate expression per H atom.
