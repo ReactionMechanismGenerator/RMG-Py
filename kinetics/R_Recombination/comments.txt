@@ -125,10 +125,16 @@
 
 452: [92] Tsang, W. J Phys. Chem. Ref. Data 1990, 19, 1.
 	 C2H5 + tert-C4H9 --> (CH3)3CCH2CH3
-	 DOES NOT MATCH! Reference: A = 9.6E+12, E0 = 0, n = -0.75, Database: A = 6.91E+14, E0 = 0, n = -0.75
-	 pg 7, Chemical Kinetic Database For Combustion Chemistry, Part 4 - Isobutane. 
-	 Index of Reactions and Summary of Recommended Rate Expressions. No. 44,17.
-	 Verified by Karma James
+	 //DOES NOT MATCH! Reference: A = 9.6E+12, E0 = 0, n = -0.75, Database: A = 6.91E+14, E0 = 0, n = -0.75
+	 //pg 7, Chemical Kinetic Database For Combustion Chemistry, Part 4 - Isobutane. 
+	 //Index of Reactions and Summary of Recommended Rate Expressions. No. 44,17.
+	 //Verified by Karma James
+	 pg. 37
+	 Data reported as kc = 1.6e-11 * (300/T)^0.75
+		When lumping the 1.6e-11 * 300^0.75, attain A=6.94e+14
+	 No experimental data, at the time
+	 Recommended data obtained by taking geometric mean of two relative rates
+	 Verified by MRH on 10Aug2009
 
 453: [89] Tsang, W.; Hampson, R. F. J. Phys. Chem. Ref. Data 1986, 15, 1087.
 	 C2H5 + HCO --> C2H5CHO
@@ -152,10 +158,16 @@
 
 457: [92] Tsang, W. J Phys. Chem. Ref. Data 1990, 19, 1.
 	 Iso-C3H7 + tert-C4H9 --> 2,2,3-trimethyl-butane
-	 DOES NOT MATCH! Reference: A = 7.83E+12, E0 = 0, n = -1.1, Database: A = 4.12E+15, E0 = 0, n = -1.1
-	 pg 8, Chemical Kinetic Database For Combustion Chemistry, Part 4 - Isobutane. 
-	 Index of Reactions and Summary of Recommended Rate Expressions. No. 44,42.
-	 Verified by Karma James
+	 //DOES NOT MATCH! Reference: A = 7.83E+12, E0 = 0, n = -1.1, Database: A = 4.12E+15, E0 = 0, n = -1.1
+	 //pg 8, Chemical Kinetic Database For Combustion Chemistry, Part 4 - Isobutane. 
+	 //Index of Reactions and Summary of Recommended Rate Expressions. No. 44,42.
+	 //Verified by Karma James
+	 pg. 46
+	 Data reported as kc = 1.3e-11 * (300/T)^1.1
+		When lumping the 1.3e-11 * 300^1.1, attain A=4.15e+15
+	 No experimental data, at the time
+	 Recommended data obtained by taking geometric mean of two relative rates
+	 Verified by MRH on 10Aug2009
 
 458: [91] Tsang, W. J. Phys. Chem. Ref. Data 1988, 17, 887.
 	 Iso-C3H7 + CH3CO --> iso-C3H7COCH3
@@ -170,10 +182,15 @@
 
 460: [92] Tsang, W. J Phys. Chem. Ref. Data 1990, 19, 1.
 	 Tert-C4H9 + tert- C4H9 --> (CH3)3CC(CH3)3
-	 DOES NOT MATCH! Reference: A = 2.4E+12, E0 = 0, n = -1.5, Database: A = 1.24E+16, E0 = 0, n = -1.5
-	 pg 8, Chemical Kinetic Database For Combustion Chemistry, Part 4 - Isobutane. 
-	 Index of Reactions and Summary of Recommended Rate Expressions. No. 44,44.
-	 Verified by Karma James
+	 //DOES NOT MATCH! Reference: A = 2.4E+12, E0 = 0, n = -1.5, Database: A = 1.24E+16, E0 = 0, n = -1.5
+	 //pg 8, Chemical Kinetic Database For Combustion Chemistry, Part 4 - Isobutane. 
+	 //Index of Reactions and Summary of Recommended Rate Expressions. No. 44,44.
+	 //Verified by Karma James
+	 pg. 47
+	 Data reported as ka = 4e-12 * (300/T)^1.5
+		When lumping the 4e-12 * 300^1.5, attain A=1.25e+16
+	 Recommended data taken from expression computed by Parkes, Quinn (1976)
+	 Verified by MRH on 10Aug2009
 
 461: [92] Tsang, W. J Phys. Chem. Ref. Data 1990, 19, 1.
 	 Tert-C4H9 + HCO --> tert-C4H9CHO
@@ -183,10 +200,16 @@
 	 
 462: [92] Tsang, W. J Phys. Chem. Ref. Data 1990, 19, 1.
 	 Tert-C4H9 + CH3CO --> tert-C4H9COCH3
-	 DOES NOT MATCH! Reference: A = 1.08E+13, E0 = 0, n = -0.75, Database: A = 7.75E+14, E0 = 0, n = -0.75
-	 pg 7, Chemical Kinetic Database For Combustion Chemistry, Part 4 - Isobutane. 
-	 Index of Reactions and Summary of Recommended Rate Expressions. No. 44,22.
-	 Verified by Karma James
+	 //DOES NOT MATCH! Reference: A = 1.08E+13, E0 = 0, n = -0.75, Database: A = 7.75E+14, E0 = 0, n = -0.75
+	 //pg 7, Chemical Kinetic Database For Combustion Chemistry, Part 4 - Isobutane. 
+	 //Index of Reactions and Summary of Recommended Rate Expressions. No. 44,22.
+	 //Verified by Karma James
+	 pg. 42
+	 Data reported as k = 1.8e-11 * (300/T)^0.75
+		When lumping the 1.8e-11 * 300^0.75, attain A=7.81e+14
+	 No experimental data, at the time
+	 Recommended data taken from geometric mean rule (... of what?)
+	 Verified by MRH on 10Aug2009
 
 463: [92] Tsang, W. J Phys. Chem. Ref. Data 1990, 19, 1.
 	 Tert-C4H9 + CH3O --> tert-C4H9OCH3
