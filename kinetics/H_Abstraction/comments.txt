@@ -457,7 +457,12 @@
 	 
 164: [89] Tsang, W.; Hampson, R.F. J. Phys. Chem. Ref. Data 1986, 15, 1087.
 	 H2 + CH3CO --> H + CH3CHO C.D.W divided original rate expression by 2, to get rate expression per H atom.
-	 WAS UNABLE TO VERIFY DATA!!! DATA NOT FOUND IN REFERENCE.
+	 //WAS UNABLE TO VERIFY DATA!!! DATA NOT FOUND IN REFERENCE.
+	 pg. 1229
+	 No experimental data for forward rxn, at the time
+	 Reviewers noticed that k(H+HCHO=H2+HCO) / k(H+CH3CHO=H2+CH3CO) ~ 2, due to double the number of H atoms available
+	 Used 0.5*k(H+HCHO=H2+HCO) and equilibrium constant to compute recommended rate expression
+	 Verified by MRH on 10Aug2009
 	 
 165: [123] Isaacson, A.D. J. Chem. Phys. 1997, 107, 3832.
 	 H2 + O2 --> H + H2O C.D.W divided original rate expression by 2, to get rate expression per H atom.
@@ -474,7 +479,11 @@
 	 
 168: [89] Tsang, W.; Hampson, R.F. J. Phys. Chem. Ref. Data 1986, 15, 1087.
 	 CH4 + C2H5 --> CH3 + C2H6 C.D.W divided original rate expression by 4, to get rate expression per H atom.
-	 WAS UNABLE TO VERIFY DATA!!! DATA NOT FOUND IN REFERENCE.
+	 //WAS UNABLE TO VERIFY DATA!!! DATA NOT FOUND IN REFERENCE.
+	 pg. 1177
+	 No experimental data for forward rxn, at the time
+	 Recommended # from reverse rate and equilibrium constant
+	 Verified by MRH on 10Aug2009
 	 
 169: [91] Tsang, W. J. Phys. Chem. Ref. Data 1988, 17, 887.
 	 CH4 + iso-C3H7 --> CH3 + C3H8 C.D.W divided original rate expression by 4, to get rate expression per H atom.
@@ -585,7 +594,14 @@
 	 
 191: [91] Tsang, W. J. Phys. Chem. Ref. Data 1988, 17, 887.
 	 C3H8 + CH2OH --> iso-C3H7 + CH3OH  C.D.W divided original rate expression by 2(from A = 6.03E+01), to get rate expression per H atom.
-	 WAS UNABLE TO VERIFY DATA!!! DATA NOT FOUND IN REFERENCE.
+	 //WAS UNABLE TO VERIFY DATA!!! DATA NOT FOUND IN REFERENCE.
+	 pg. 910
+	 No experimental data, at the time
+	 Recommended value for C3H8+CH2OH-->n-C3H7+CH3OH comes from rate for C2H6+CH2OH-->C2H5+CH3OH
+	 No discussion on where rate for C3H8+CH2OH-->i-C3H7+CH3OH comes from:
+	 	A is ~ factor of 3 smaller (6 hydrogens vs 2 ... seems reasonable to MRH)
+		E is 1 kcal/mol smaller (more stable to form secondary radical than primary)
+	 Verified by MRH on 10Aug2009
 	 
 192: [91] Tsang, W. J. Phys. Chem. Ref. Data 1988, 17, 887.
 	 C3H8 + C2H3 --> iso-C3H7 + C2H4  C.D.W divided original rate expression by 2, to get rate expression per H atom.
@@ -940,13 +956,27 @@
 	 Index of Reactions and Summary of Recommended Rate Expressions. No. 38,17.
 	 Verified by Karma James
 
-263: [90] Tsang, W. J. Phys. Chem. Ref. Data 1987, 16, 471.
+//263: [90] Tsang, W. J. Phys. Chem. Ref. Data 1987, 16, 471.
+263: [91] Tsang, W. J. Phys. Chem. Ref. Data 1988, 17, 887.
 	 CH3OH + iso-C3H7 --> CH3O + C3H8
-	 WAS UNABLE TO VERIFY DATA!!! DATA NOT FOUND IN REFERENCE.
+	 //WAS UNABLE TO VERIFY DATA!!! DATA NOT FOUND IN REFERENCE.
+	 Ref[90] was incorrect; rate matches that reported in Ref[91].
+	 pg. 944
+	 No experimental data, at the time
+	 Recommended rate is based on C2H5+CH3OH=C2H6+CH3O
+	 Verified by MRH on 10Aug2009
 
-264: [90] Tsang, W. J. Phys. Chem. Ref. Data 1987, 16, 471.
+//264: [90] Tsang, W. J. Phys. Chem. Ref. Data 1987, 16, 471.
+264: [92] Tsang, W. J. Phys. Chem. Ref. Data 1990, 19, 1.
 	 CH3OH + tert-C4H9 --> CH3O + iso-C4H10
-	 WAS UNABLE TO VERIFY DATA!!! DATA NOT FOUND IN REFERENCE.
+	 //WAS UNABLE TO VERIFY DATA!!! DATA NOT FOUND IN REFERENCE.
+	 Ref[90] was incorrect; rate matches that reported in Ref[92].
+	 pg. 44
+	 Reference reports reaction as: t-C4H9+CH3OH=t-C4H10+CH3O
+		This is a typo: no t-C4H10 molecule exists (should be i-C4H10)
+	 No experimental data, at the time
+	 Recommended rate is based on reverse rxn and equilibrium constant
+	 Verified by MRH on 10Aug2009
 	 
 265: [90] Tsang, W. J. Phys. Chem. Ref. Data 1987, 16, 471.
 	 CH3OH + C2H3 --> CH3O + C2H4
