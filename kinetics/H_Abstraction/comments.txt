@@ -579,8 +579,9 @@
 188: [91] Tsang, W. J. Phys. Chem. Ref. Data 1988, 17, 887.
 	 C3H8 + O2 --> iso-C3H7 + HO2  C.D.W divided original rate expression by 2, to get rate expression per H atom.
 	 pg 891, Chemical Kinetic Database For Combustion Chemistry, Part 3. Index of Reactions and Summary of Recommended Rate Expressions. No. 40,3.
-	 NOTE: For A value, Database value = 1.985E+13 and Reference value = 1.65E+13
+	 //NOTE: For A value, Database value = 1.985E+13 and Reference value = 1.65E+13
 	 Verified by Karma James
+	 NOTE: MRH computed Reference A value of 1.99E+13 (11Aug2009)
 
 189: [91] Tsang, W. J. Phys. Chem. Ref. Data 1988, 17, 887.
 	 C3H8 + CH2 --> iso-C3H7 + CH3  C.D.W divided original rate expression by 2(from A = 1.51), to get rate expression per H atom.
@@ -944,8 +945,11 @@
 260: [90] Tsang, W. J. Phys. Chem. Ref. Data 1987, 16, 471.
 	 CH3OH + CH2 --> CH3O + CH3
 	 pg 475, Chemical Kinetic Database For Combustion Chemistry, Part 2 - Methanol. 
-	 Index of Reactions and Summary of Recommended Rate Expressions. No. 38,25.
+	 //Index of Reactions and Summary of Recommended Rate Expressions. No. 38,25.
 	 Verified by Karma James
+	 Data for Rate Expression 38,26 (pg. 493)
+	 Stated uncertainty factor is 3
+	 Verified by MRH on 11Aug2009
 
 261: [100] Jodkowski, J.T.; Rauez, M.-T.; Rayez, J.-C. J. Phys. Chem. A. 1999, 103, 3750.
 	 The calculated rate constants are in good agreement with experiment. CH3OH + CH3 --> CH3O + CH4

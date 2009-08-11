@@ -276,7 +276,7 @@ Arrhenius_EP
 257.	O_pri		O_pri_rad			200-700		2.417E-07	5.48	0		0.274	0.0		0.0		0.0		0.0		3		Masgrau et al. [141] Transition state theory.
 258.	O_pri		O_rad/NonDeC		300-2000	1.74E-01	3.80	0		11.49	0		0		0		0		2		Jodkowski et al. [100] ab initio calculations.
 259.	O/H/NonDeC	O_atom_triplet		300-1000	1.0E+13		0		0		4.69	*2.51	0		0		0		4		Warnatz [134] literature review
-260.	O/H/NonDeC	CH2_triplet			300-2500	1.44E+01	3.10	0		6.94	0		0		0		0		4		Tsang [90] literature review.
+260.	O/H/NonDeC	CH2_triplet			300-2500	1.44E+01	3.10	0		6.94	*3.0	0		0		0		4		Tsang [90] literature review.
 261.	O/H/NonDeC	C_methyl			300-2500	3.70E-04	4.70	0		5.78	0		0		0		0		2		Jodkowski et al. [100] ab initio calculations.
 262.	O/H/NonDeC	C_rad/H2/Cs			300-2500	1.44E+01	3.10	0		8.94	*3.0	0		0		0		4		Tsang [90] literature review.
 //263.	O/H/NonDeC	C_rad/H/NonDeC		300-2500	1.45E+01	3.10	0		10.33	*5.0	0		0		0		4		Tsang [90] literature review.
