@@ -16,11 +16,13 @@
 	 CO + C2H5 --> C2H5CO.
 	 pg 1096, Chemical Kinetic Database For Combustion Chemistry, 2. Index of Reactions and Summary of Recommended Rate Expressions. No. 17,14.
 	 Verified by Karma James
+	 NOTE: Reported rate coefficients are for k_inf (MRH 11Aug2009)
 
 421: [89] Tsang, W.; Hampson, R.F. J.Phys. Chem. Ref. Data 1986, 15, 1087.
 	 CO + C2H3 --> CH2=CHCO.
 	 pg 1099, Chemical Kinetic Database For Combustion Chemistry, 2. Index of Reactions and Summary of Recommended Rate Expressions. No. 19,14.
 	 Verified by Karma James
+	 NOTE: Reported rate coefficients are for k_inf (MRH 11Aug2009)
 	 
 422: [104] Nam, G.-J.; Xia, W.; Park, J.; Lin, M. Phys. Chem. A 2000, 104, 1233.	
 	 Phenyl + CO --> Benzoyl. Original deltaA = 2.8E+11
