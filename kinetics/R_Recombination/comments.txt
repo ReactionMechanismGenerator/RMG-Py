@@ -33,6 +33,7 @@
 	 H + C2H --> C2H2
 	 pg 1101, Chemical Kinetic Database For Combustion Chemistry, 2. Index of Reactions and Summary of Recommended Rate Expressions. No. 21,4.
 	 Verified by Karma James
+	 NOTE: Reported rate coefficients are for k_inf (MRH 11Aug2009)
 
 434: [172] Davis, S. G.; Wang, H.; Brezinsky K.; Law C. K. Symp. Int. Combust. Proc. 1996, 26, 1025.
 	 (1000-1200K, excitation : thermal, pressure 1.0 atm)
@@ -75,6 +76,12 @@
 	 pg 7, Chemical Kinetic Database For Combustion Chemistry, Part 4 - Isobutane. 
 	 Index of Reactions and Summary of Recommended Rate Expressions. No. 44,16.
 	 Verified by Karma James
+	 NOTE: Data entry was not consistent w/recommended value in reference (pg. 36)
+	 MRH computes A=4.88E+15, n=-1, E=0, dA=*2.0 (11Aug2009)
+	 MRH interprets data in reference as 2.7E-11*(300/T)^-1, NOT 2.7E-11*exp(300/T)
+	 NOTE: kinetics.nist.gov has 2.7E-11*exp(300/T) expression in database
+	 	kinetics.nist.gov also has A/n/E from 2006 paper by Klippenstein et al.;
+	 		the new rate expression matches Klippenstein's value better across the valid T range
 
 442: [171] Fahr, A.; Laufer, A.; Klein, R.; Braun, W. J. Phys. Chem. 1991, 95, 3218.
 	 Absolute value measured directly. Excitation: flash photolysis, analysis : Vis-UV absorption. Pressure 0.13 atm. Original Uncertainty 1.8E+13
@@ -101,6 +108,7 @@
 	 CH3 + CH3CO --> (CH3)2CO 
 	 pg 1103, Chemical Kinetic Database For Combustion Chemistry, 2. Index of Reactions and Summary of Recommended Rate Expressions. No. 22,16.
 	 Verified by Karma James
+	 NOTE: Reported rate coefficients are for k_inf (MRH 11Aug2009)
 
 448: [94] Baulch, D. L.; Cobos, C. J.; Cox, R. A.; Frank, P.; Hayman, G.; Just, T.; Kerr, J. A.;
 	 Murrells, T.; Pilling, M. J.; Troe, J.; Walker, R. W.; Warnatz, J. J. Phys. Chem. Ref. Data 1994, 23, 847.
@@ -153,8 +161,9 @@
 456: [91] Tsang, W. J. Phys. Chem. Ref. Data 1988, 17, 887.
 	 Iso-C3H7 + iso-C3H7 --> (CH3)2CHCH(CH3)2
 	 pg 895, Chemical Kinetic Database For Combustion Chemistry, Part 3. Index of Reactions and Summary of Recommended Rate Expressions. No. 42,42.
-	 NOTE: For A value, Database value = 3.25E+14 and Reference value = 6.023E+12
+	 //NOTE: For A value, Database value = 3.25E+14 and Reference value = 6.023E+12
 	 Verified by Karma James
+	 MRH computes reference A value = 3.26E+14 (11Aug2009)
 
 457: [92] Tsang, W. J Phys. Chem. Ref. Data 1990, 19, 1.
 	 Iso-C3H7 + tert-C4H9 --> 2,2,3-trimethyl-butane
@@ -172,8 +181,9 @@
 458: [91] Tsang, W. J. Phys. Chem. Ref. Data 1988, 17, 887.
 	 Iso-C3H7 + CH3CO --> iso-C3H7COCH3
 	 pg 895, Chemical Kinetic Database For Combustion Chemistry, Part 3. Index of Reactions and Summary of Recommended Rate Expressions. No. 42,22.
-	 NOTE: For A value, Database value = 6.64E+13 and Reference value = 9.03E+12
+	 //NOTE: For A value, Database value = 6.64E+13 and Reference value = 9.03E+12
 	 Verified by Karma James
+	 MRH computes reference A value = 6.65E+13 (11Aug2009)
 	 
 459: [91] Tsang, W. J. Phys. Chem. Ref. Data 1988, 17, 887.
 	 Iso-C3H7 + CH3O --> i-C3H7OCH3
