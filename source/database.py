@@ -28,7 +28,7 @@
 #
 ################################################################################
 
-import pydot
+
 import re
 
 import rmg.main as main
@@ -46,19 +46,21 @@ def loadThermoDatabases(databasePath):
 	"""
 	# Create and load thermo databases
 	species.thermoDatabase = species.ThermoDatabaseSet()
-	species.thermoDatabase.load(databasePath + '/')
+	species.thermoDatabase.load(databasePath )
 
 	# Create and load forbidden structures
 	species.forbiddenStructures = data.Dictionary()
-	species.forbiddenStructures.load(databasePath + '/forbiddenStructure.txt')
+	species.forbiddenStructures.load(os.path.join(databasePath, 'forbiddenStructure.txt'))
 	species.forbiddenStructures.toStructure()
 
-def loadKineticsDatabases(databasePath):
+def loadKineticsDatabases(databasePath, only_families=False):
 	"""
 	Create and load the kinetics databases (reaction families).
+	If only_families is a list like ['H_Abstraction'] then only families in this
+	list will be loaded.
 	"""
 	reaction.kineticsDatabase = reaction.ReactionFamilySet()
-	reaction.kineticsDatabase.load(databasePath + '/')
+	reaction.kineticsDatabase.load(databasePath, only_families=only_families)
 
 ################################################################################
 
@@ -67,7 +69,8 @@ def drawKineticsTrees():
 	For each reaction family, output a DOT file containing a combined form of
 	the various trees that make up the reaction family.
 	"""
-
+	import pydot
+	
 	# Iterate through reaction families: key is a string containing the family
 	# name, family is the corresponding ReactionFamily object
 	for key, family in reaction.kineticsDatabase.families.iteritems():
@@ -208,8 +211,9 @@ def fit_groups(family_names = None):
 		print_node_tree('Constant')
 		for node in top_nodes:
 			print_node_tree(node)
-
-		
+		print
+		graph = family.drawFullGraphOfTree()
+		return graph
 
 
 ################################################################################
@@ -222,10 +226,14 @@ if __name__ == '__main__':
 	# Load databases
 	databasePath = '../data/RMG_database'
 	#loadThermoDatabases(databasePath)
-	loadKineticsDatabases(databasePath)
+	loadKineticsDatabases(databasePath,only_families=['H_Abstraction'])
 
 #	fit_groups(['H abstraction'])	
-	fit_groups()
+	graph = fit_groups()
+	for node in graph.get_node_list():	
+		node.set_style('filled')
+		node.set_fontcolor('#FFFFFFFF')
+		node.set_fillcolor('#000000FF')
 	
 #	# Prune kinetics dictionaries and trees
 #	for key, family in reaction.kineticsDatabase.families.iteritems():
