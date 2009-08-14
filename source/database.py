@@ -130,7 +130,10 @@ def fit_groups(family_names = None):
 		node_set = family.tree.parent.keys()
 		non_top_nodes = [ node for node in node_set if family.tree.parent[node] ]
 		top_nodes = [ node for node in node_set if not family.tree.parent[node] ]
-	
+		group_names = [node for node in non_top_nodes] # poor man's copy
+		group_names.append("Constant")
+		family.tree.children['Constant']=[]
+		
 		A_list = []
 		b_list = []
 		# Get available data
@@ -139,12 +142,10 @@ def fit_groups(family_names = None):
 			# example:
 			#  nodes = ['A11', 'B11']
 			#  kinetics = <rmg.reaction.ArrheniusEPKinetics instance>
-			
 			#b_row = [ math.log(kinetics.A),
 			#		  kinetics.n,
 			#		  kinetics.alpha,
 			#		  kinetics.E0 ]
-			#
 			if kinetics.alpha:
 				logging.info("Warning: %s has EP alpha = %g"%(nodes,kinetics.alpha))
 			Ts = [300, 500, 1000, 1500]
@@ -188,32 +189,65 @@ def fit_groups(family_names = None):
 		
 		x, residues, rank, s = numpy.linalg.lstsq(A,b)
 		
+		fitted_b = numpy.dot(A,x)
+		errors = fitted_b - b
+		errors_sum_squared = numpy.sum(errors*errors, axis=1)
+		
+		
 		group_values=dict()
-	
-		for i in range(len(non_top_nodes)):
-			group_values[non_top_nodes[i]] = tuple(x[i,:])
-		group_values['Constant'] = tuple(x[len(non_top_nodes),:])
-		family.tree.children['Constant']=[]
+		group_error=dict()
+		group_count=dict()
+		group_error_MAD_by_T=dict()
+		
 		for node in top_nodes:
 			group_values[node] = (0,0,0,0)
+			group_error[node] = 0
+			group_count[node] = 0
+			group_error_MAD_by_T[node] = (0,0,0,0)
+			
+		for i in range(len(x)):
+			group_values[group_names[i]] = tuple(x[i,:])
+			
+		
+		for i in range(len(x)): # for each group
+			rates_in_group = A[:,i] 
+			group_error[group_names[i]] = numpy.sqrt(
+				sum(rates_in_group * errors_sum_squared)  /
+					 sum(rates_in_group) / len(Ts)   )
+			group_count[group_names[i]] = sum(rates_in_group)
+			group_error_MAD_by_T[group_names[i]] = tuple( 
+				numpy.dot(rates_in_group, abs(errors)) /
+				 sum(rates_in_group)  )
+		 #   if group_names[i]=='Cs_rad':
+		 #   	print "foobar"
+			
 		
 		def print_node_tree(node,indent=0):
 			print (' '*indent +
 					node.ljust(17-indent) + 
-					"\t%8.2g\t%8.2g\t%8.2g\t%8.2g"%group_values[node] )
+					"\t%7.2g\t%7.2g\t%7.2g\t%7.2g"%group_values[node]  +
+					"\t%6.2g\t%d"%(group_error[node],group_count[node]) + 
+					"\t%7.3g\t%7.3g\t%7.3g\t%7.3g"%group_error_MAD_by_T[node]
+				)
 			children = family.tree.children[node]
 			if children:
 				children.sort()
 				for child in children:
 					print_node_tree(child,indent+1)
 					
-		print "Log10(k) at T=   \t%8g\t%8g\t%8g\t%8g"%tuple(Ts)
+		print ("Log10(k) at T=   \t%7g\t%7g\t%7g\t%7g"%tuple(Ts) + 
+				'\t RMS\tcount' + 
+				"\tMAD @ %d\tMAD @ %d\tMAD @ %d\tMAD @ %d"%tuple(Ts) 
+			)
 		print_node_tree('Constant')
 		for node in top_nodes:
 			print_node_tree(node)
 		print
-		graph = family.drawFullGraphOfTree()
-		return graph
+		
+		
+			
+	#	graph = family.drawFullGraphOfTree()
+	#	return graph
 
 
 ################################################################################
@@ -226,14 +260,14 @@ if __name__ == '__main__':
 	# Load databases
 	databasePath = '../data/RMG_database'
 	#loadThermoDatabases(databasePath)
-	loadKineticsDatabases(databasePath,only_families=['H_Abstraction'])
+	loadKineticsDatabases(databasePath) #,only_families=['H_Abstraction'])
 
 #	fit_groups(['H abstraction'])	
 	graph = fit_groups()
-	for node in graph.get_node_list():	
-		node.set_style('filled')
-		node.set_fontcolor('#FFFFFFFF')
-		node.set_fillcolor('#000000FF')
+#	for node in graph.get_node_list():	
+#		node.set_style('filled')
+#		node.set_fontcolor('#FFFFFFFF')
+#		node.set_fillcolor('#000000FF')
 	
 #	# Prune kinetics dictionaries and trees
 #	for key, family in reaction.kineticsDatabase.families.iteritems():
