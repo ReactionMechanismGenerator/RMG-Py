@@ -1276,15 +1276,16 @@ class ReactionFamilySet:
 	def load(self, datapath, only_families=False):
 		"""
 		Load a set of reaction families from the general database
-		specified at `datapath`.
+		specified at `datapath`. If only_families is present, families not in
+		this list will not be loaded (e.g. only_families=['H_Abstraction'] )
 		"""
 
-		logging.debug('\tReaction families:')
+		logging.debug('\tLoading reaction families:')
 
 		# Load the families from kinetics/families.txt
 		familyList = []
 		try:
-			ffam = open(datapath + 'kinetics/families.txt', 'r')
+			ffam = open(os.path.join(datapath,'kinetics','families.txt'), 'r')
 			for line in ffam:
 				line = data.removeCommentFromLine(line).strip()
 				if len(line) > 0:
@@ -1303,7 +1304,7 @@ class ReactionFamilySet:
 		# Load the reaction families (if they exist and status is 'on')
 		self.families = {}
 		for index, status, label in familyList:
-			path = datapath + 'kinetics/' + label
+			path = os.path.join(datapath, 'kinetics', label)
 			if os.path.isdir(path) and status.lower() == 'on':
 				# skip families not in only_families, if it's set
 				if only_families and label not in only_families: continue
