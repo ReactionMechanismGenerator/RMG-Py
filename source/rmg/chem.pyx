@@ -370,7 +370,11 @@ cpdef class Atom:
 		self.electronState = electronState
 		self.charge = charge
 		self.label = label
-		
+
+	#def __repr__(self):
+	#	"""x.__repr__() <==> repr(x)"""
+	#	return "Atom(atomType=%s,electronState=%s,charge=%s,label='%s')" % (self.atomType, self.electronState, self.charge, self.label)
+
 	def getAtomType(self):
 		"""
 		Get the list of allowed atom types. If the list is of length 1, the
@@ -593,7 +597,8 @@ cpdef class Bond:
 
 	def __repr__(self):
 		"""x.__repr__() <==> repr(x)"""
-		return self.__module__+".Bond(%s,bondType='%s')"%(repr(self.atoms),self.bondType.label)
+		#return self.__module__+".Bond(%s,bondType='%s')"%(repr(self.atoms),self.bondType.label)
+		return "Bond(%s,bondType='%s')"%(repr(self.atoms),self.bondType.label)
 
 	def getBondType(self):
 		if len(self._bondType) == 1: return self._bondType[0]

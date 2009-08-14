@@ -760,6 +760,324 @@ class Structure:
 			if atom.isCenter(): atoms[atom.label] = atom
 		return atoms
 
+	def isAtomInCycle(self, atom):
+		"""
+		Return :data:`True` if `atom` is in one or more cycles in the structure,
+		and :data:`False` if not.
+		"""
+		return self.graph.isVertexInCycle(atom)[0]
+
+	def isBondInCycle(self, bond):
+		"""
+		Return :data:`True` if `atom` is in one or more cycles in the structure,
+		and :data:`False` if not.
+		"""
+		return self.isAtomInCycle(bond.atoms[0]) and self.isAtomInCycle(bond.atoms[1])
+
+	def isCyclic(self):
+		"""
+		Return :data:`True` if one or more cycles are present in the structure
+		and :data:`False` otherwise.
+		"""
+		for atom in self.atoms():
+			if self.isAtomInCycle(atom):
+				return True
+		return False
+
+	def calculateAtomSymmetryNumber(self, atom):
+		"""
+		Return the symmetry number centered at `atom` in the structure. The
+		`atom` of interest must not be in a cycle.
+		"""
+		symmetryNumber = 1
+
+		single = 0; double = 0; triple = 0; benzene = 0
+		numNeighbors = 0
+		for atom2, bond in self.getBonds(atom).iteritems():
+			if bond.isSingle(): single += 1
+			elif bond.isDouble(): double += 1
+			elif bond.isTriple(): triple += 1
+			elif bond.isBenzene(): benzene += 1
+
+			numNeighbors += 1
+		
+		# If atom has zero or one neighbors, the symmetry number is 1
+		if numNeighbors < 2: return symmetryNumber
+
+		# Create temporary structures for each functional group attached to atom
+		structure = Structure(self.atoms(), self.bonds())
+		bondsToRemove = [bond for atom2, bond in structure.graph[atom].iteritems()]
+		for bond in bondsToRemove: structure.removeBond(bond)
+		structure.removeAtom(atom)
+		groups = structure.split()
+
+		# Determine equivalence of functional groups around atom
+		groupIsomorphism = dict([(group, dict()) for group in groups])
+		for group1 in groups:
+			for group2 in groups:
+				if group1 is not group2 and group2 not in groupIsomorphism[group1]:
+					groupIsomorphism[group1][group2] = group1.isIsomorphic(group2)
+					groupIsomorphism[group2][group1] = groupIsomorphism[group1][group2]
+				elif group1 is group2:
+					groupIsomorphism[group1][group1] = True
+		count = [sum([int(groupIsomorphism[group1][group2]) for group2 in groups]) for group1 in groups]
+		for i in range(count.count(2) / 2):
+			count.remove(2)
+		for i in range(count.count(3) / 3):
+			count.remove(3); count.remove(3)
+		for i in range(count.count(4) / 4):
+			count.remove(4); count.remove(4); count.remove(4)
+		count.sort(); count.reverse()
+		
+		if atom.getFreeElectronCount() == 0:
+			if single == 4:
+				# Four single bonds
+				if count == [4]: symmetryNumber *= 12
+				elif count == [3, 1]: symmetryNumber *= 3
+				elif count == [2, 2]: symmetryNumber *= 2
+				elif count == [2, 1, 1]: symmetryNumber *= 1
+				elif count == [1, 1, 1, 1]: symmetryNumber *= 1
+			elif single == 2:
+				# Two single bonds
+				if count == [2]: symmetryNumber *= 2
+			elif double == 2:
+				# Two double bonds
+				if count == [2]: symmetryNumber *= 2
+		elif atom.getFreeElectronCount() == 1:
+			if single == 3:
+				# Three single bonds
+				if count == [3]: symmetryNumber *= 6
+				elif count == [2, 1]: symmetryNumber *= 2
+				elif count == [1, 1, 1]: symmetryNumber *= 1
+		elif atom.getFreeElectronCount() == 2:
+			if single == 2:
+				# Two single bonds
+				if count == [2]: symmetryNumber *= 2
+
+		return symmetryNumber
+
+	def calculateBondSymmetryNumber(self, bond):
+		"""
+		Return the symmetry number centered at `bond` in the structure.
+		"""
+		symmetryNumber = 1
+		if bond.isSingle() or bond.isDouble() or bond.isTriple():
+			if bond.atoms[0].equivalent(bond.atoms[1]):
+				# An O-O bond is considered to be an "optical isomer" and so no
+				# symmetry correction will be applied
+				if bond.atoms[0].atomType.label == 'Os' and bond.atoms[1].atomType.label == 'Os' and \
+					bond.atoms[0].getFreeElectronCount() == 0 and bond.atoms[1].getFreeElectronCount() == 0:
+					pass
+				else:
+					structure = Structure(self.atoms(), self.bonds())
+					structure.removeBond(bond)
+					structure1, structure2 = structure.split()
+
+
+					if bond.atoms[0] in structure1.atoms(): structure1.removeAtom(bond.atoms[0])
+					if bond.atoms[1] in structure1.atoms(): structure1.removeAtom(bond.atoms[1])
+					if bond.atoms[0] in structure2.atoms(): structure2.removeAtom(bond.atoms[0])
+					if bond.atoms[1] in structure2.atoms(): structure2.removeAtom(bond.atoms[1])
+					groups1 = structure1.split()
+					groups2 = structure2.split()
+
+					# Test functional groups for symmetry
+					if len(groups1) == len(groups2) == 1:
+						if groups1[0].isIsomorphic(groups2[0]): symmetryNumber *= 2
+					elif len(groups1) == len(groups2) == 2:
+						if groups1[0].isIsomorphic(groups2[0]) and groups1[1].isIsomorphic(groups2[1]): symmetryNumber *= 2
+						elif groups1[1].isIsomorphic(groups2[0]) and groups1[0].isIsomorphic(groups2[1]): symmetryNumber *= 2
+					elif len(groups1) == len(groups2) == 3:
+						if groups1[0].isIsomorphic(groups2[0]) and groups1[1].isIsomorphic(groups2[1]) and groups1[2].isIsomorphic(groups2[2]): symmetryNumber *= 2
+						elif groups1[0].isIsomorphic(groups2[0]) and groups1[1].isIsomorphic(groups2[2]) and groups1[2].isIsomorphic(groups2[1]): symmetryNumber *= 2
+						elif groups1[0].isIsomorphic(groups2[1]) and groups1[1].isIsomorphic(groups2[2]) and groups1[2].isIsomorphic(groups2[0]): symmetryNumber *= 2
+						elif groups1[0].isIsomorphic(groups2[1]) and groups1[1].isIsomorphic(groups2[0]) and groups1[2].isIsomorphic(groups2[2]): symmetryNumber *= 2
+						elif groups1[0].isIsomorphic(groups2[2]) and groups1[1].isIsomorphic(groups2[0]) and groups1[2].isIsomorphic(groups2[1]): symmetryNumber *= 2
+						elif groups1[0].isIsomorphic(groups2[2]) and groups1[1].isIsomorphic(groups2[1]) and groups1[2].isIsomorphic(groups2[0]): symmetryNumber *= 2
+
+		return symmetryNumber
+
+	def calculateAxisSymmetryNumber(self):
+		"""
+		Get the axis symmetry number correction. The "axis" refers to a series
+		of two or more cumulated double bonds (e.g. C=C=C, etc.). Corrections
+		for single C=C bonds are handled in getBondSymmetryNumber().
+		"""
+
+		symmetryNumber = 1
+
+		# List all double bonds in the structure
+		doubleBonds = []
+		for bond in self.bonds():
+			if bond.isDouble(): doubleBonds.append(bond)
+
+		# Search for adjacent double bonds
+		cumulatedBonds = []
+		for i, bond1 in enumerate(doubleBonds):
+			for bond2 in doubleBonds[i+1:]:
+				if bond1.atoms[0] in bond2.atoms or bond1.atoms[1] in bond2.atoms:
+					listToAddTo = None
+					for cumBonds in cumulatedBonds:
+						if bond1 in cumBonds or bond2 in cumBonds:
+							listToAddTo = cumBonds
+					if listToAddTo:
+						if bond1 not in listToAddTo: listToAddTo.append(bond1)
+						if bond2 not in listToAddTo: listToAddTo.append(bond2)
+					else:
+						cumulatedBonds.append([bond1, bond2])
+
+		# For each set of adjacent double bonds, check substituents for symmetry
+		for bonds in cumulatedBonds:
+
+			# Do nothing if less than two cumulated bonds
+			if len(bonds) < 2: continue
+
+			# Do nothing if axis is in cycle
+			#found = False
+			#for bond in bonds:
+			#	if self.isBondInCycle(bond): found = True
+			#if found: continue
+
+			# Find terminal atoms in axis
+			terminalAtoms = []
+			for bond12 in bonds:
+				atom1, atom2 = bond12.atoms
+				for bond in bonds:
+					if bond is not bond12:
+						if atom1 in bond.atoms: atom1 = None
+						if atom2 in bond.atoms: atom2 = None
+				if atom1 is not None: terminalAtoms.append(atom1)	
+				if atom2 is not None: terminalAtoms.append(atom2)
+			if len(terminalAtoms) != 2: continue
+			
+			# Remove axis from (copy of) structure
+			structure = Structure(self.atoms(), self.bonds())
+			for bond in bonds:
+				structure.removeBond(bond)
+			atomsToRemove = []
+			for atom in structure.atoms():
+				if len(structure.graph[atom]) == 0:
+					atomsToRemove.append(atom)
+			for atom in atomsToRemove: structure.removeAtom(atom)
+
+			# Split remaining fragments of structure
+			structure1, structure2 = structure.split()
+
+			# Split each fragment into functional groups
+			if terminalAtoms[0] in structure1.atoms(): structure1.removeAtom(terminalAtoms[0])
+			if terminalAtoms[1] in structure1.atoms(): structure1.removeAtom(terminalAtoms[1])
+			if terminalAtoms[0] in structure2.atoms(): structure2.removeAtom(terminalAtoms[0])
+			if terminalAtoms[1] in structure2.atoms(): structure2.removeAtom(terminalAtoms[1])
+			groups1 = structure1.split()
+			groups2 = structure2.split()
+
+			# Test functional groups for symmetry
+			if len(groups1) == len(groups2) == 1:
+				if groups1[0].isIsomorphic(groups2[0]): symmetryNumber *= 2
+			elif len(groups1) == len(groups2) == 2:
+				if groups1[0].isIsomorphic(groups2[0]) and groups1[1].isIsomorphic(groups2[1]): symmetryNumber *= 2
+				elif groups1[1].isIsomorphic(groups2[0]) and groups1[0].isIsomorphic(groups2[1]): symmetryNumber *= 2
+
+		return symmetryNumber
+
+	def calculateCyclicSymmetryNumber(self):
+		"""
+		Get the symmetry number correction for cyclic regions of a molecule.
+		For complicated fused rings the smallest set of smallest rings is used.
+		"""
+
+		symmetryNumber = 1
+
+		# Get symmetry number for each ring in structure
+		rings = self.getSmallestSetOfSmallestRings()
+		for ring in rings:
+
+			# Make copy of structure
+			structure = Structure(self.atoms(), self.bonds())
+
+			# Remove bonds of ring from structure
+			for i, atom1 in enumerate(ring):
+				for atom2 in ring[i+1:]:
+					if structure.hasBond(atom1, atom2):
+						bond = self.getBond(atom1, atom2)
+						structure.removeBond(bond)
+
+			structures = structure.split()
+			groups = []
+			for struct in structures:
+				for atom in ring:
+					if atom in struct.atoms(): struct.removeAtom(atom)
+				groups.append(struct.split())
+
+			# Find equivalent functional groups on ring
+			equivalentGroups = []
+			for group in groups:
+				found = False
+				for eqGroup in equivalentGroups:
+					if not found:
+						if group.isIsomorphic(eqGroup[0]):
+							eqGroup.append(group)
+							found = True
+				if not found:
+					equivalentGroups.append([group])
+
+			# Find equivalent bonds on ring
+			equivalentBonds = []
+			for i, atom1 in enumerate(ring):
+				for atom2 in ring[i+1:]:
+					if self.hasBond(atom1, atom2):
+						bond = self.getBond(atom1, atom2)
+						found = False
+						for eqBond in equivalentBonds:
+							if not found:
+								if bond.equivalent(eqBond[0]):
+									eqBond.append(group)
+									found = True
+						if not found:
+							equivalentBonds.append([bond])
+
+			# Find maximum number of equivalent groups and bonds
+			maxEquivalentGroups = 0
+			for groups in equivalentGroups:
+				if len(groups) > maxEquivalentGroups:
+					maxEquivalentGroups = len(groups)
+			maxEquivalentBonds = 0
+			for bonds in equivalentBonds:
+				if len(bonds) > maxEquivalentBonds:
+					maxEquivalentBonds = len(bonds)
+
+			if maxEquivalentGroups == maxEquivalentBonds == len(ring):
+				symmetryNumber *= len(ring)
+			else:
+				symmetryNumber *= max(maxEquivalentGroups, maxEquivalentBonds)
+
+			print len(ring), maxEquivalentGroups, maxEquivalentBonds, symmetryNumber
+
+
+		return symmetryNumber
+
+	def calculateSymmetryNumber(self):
+		"""
+		Return the symmetry number for the structure. The symmetry number
+		includes both external and internal modes.
+		"""
+		symmetryNumber = 1
+
+		for atom in self.atoms():
+			if not self.isAtomInCycle(atom):
+				symmetryNumber *= self.calculateAtomSymmetryNumber(atom)
+
+		for bond in self.bonds():
+			if not self.isBondInCycle(bond):
+				symmetryNumber *= self.calculateBondSymmetryNumber(bond)
+
+		symmetryNumber *= self.calculateAxisSymmetryNumber()
+
+		#if self.isCyclic():
+		#	symmetryNumber *= self.calculateCyclicSymmetryNumber()
+
+		self.symmetryNumber = symmetryNumber
+
 ################################################################################
 
 if __name__ == '__main__':

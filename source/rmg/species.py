@@ -44,6 +44,57 @@ import structure
 
 ################################################################################
 
+class ThermoSnapshot:
+	"""
+	A set of thermodynamic state variables for a given state under a single
+	set of conditions. During dynamic simulations, this class enables the
+	simulator to update the thermodynamics of each species one per iteration.
+	The attributes are:
+	 ============== ========================================================
+	 Attribute      Meaning
+	 ============== ========================================================
+	 `temperature`  the temperature at which the snapshot was taken in K
+	 `heatCapacity` the heat capacity at the current conditions in J/mol*K
+	 `enthalpy`     the enthalpy at the current conditions in J/mol
+	 `entropy`      the entropy at the current conditions in J/mol*K
+	 `freeEnergy`   the Gibbs free energy at the current conditions in J/mol
+	 ============== ========================================================
+	"""
+
+	def __init__(self, temperature=0.0, heatCapacity=0.0, enthalpy=0.0, entropy=0.0):
+		self.temperature = temperature
+		self.heatCapacity = heatCapacity
+		self.enthalpy = enthalpy
+		self.entropy = entropy
+		self.freeEnergy = enthalpy - temperature * entropy
+
+	def isValid(self, temperature):
+		"""
+		Return :data:`True` if the current snapshot is still valid at the new
+		`temperature` (in K), or :data:`False` if it needs to be recalculated.
+		The snapshot is considered valid if the	temperatures are equal to within
+		six signficiant figures. The primary benefit is a speedup of simulations
+		that are isothermal or steady-state in temperature.
+		"""
+		if self.temperature == 0: return False
+		return abs(math.log10(temperature / self.temperature)) < 6
+
+	def update(self, temperature, thermoData):
+		"""
+		Update the thermodynamics snapshot to a new `temperature` (in K) using
+		the information in `thermoData`. The latter can be any object that
+		provides the necessary getHeatCapacity(), getEnthalpy(), getEntropy(),
+		and getFreeEnergy() methods.
+		"""
+		self.temperature = temperature
+		self.heatCapacity = thermoData.getHeatCapacity(temperature)
+		self.enthalpy = thermoData.getEnthalpy(temperature)
+		self.entropy = thermoData.getEntropy(temperature)
+		self.freeEnergy = self.enthalpy - self.temperature * self.entropy
+
+################################################################################
+
+
 class ThermoGAData:
 	"""
 	A set of thermodynamic parameters as determined from Benson's group
@@ -157,6 +208,8 @@ class ThermoGAData:
 		"""
 		if T < ThermoGAData.CpTlist[0] and T != 298.0:
 			raise data.TemperatureOutOfRangeException('Invalid temperature for heat capacity estimation from group additivity.')
+		elif T == 298.0:
+			return self.Cp[0]
 		elif T > ThermoGAData.CpTlist[-1]:
 			return self.Cp[-1]
 		else:
@@ -623,6 +676,10 @@ class ThermoDatabaseSet:
 					atom.decreaseFreeElectron()
 
 			# Subtract the enthalpy of the added hydrogens
+			thermoData_H = self.primaryDatabase.library['H']
+			for bond in added[atom]:
+				thermoData.H298 -= thermoData_H.H298
+				#thermoData.S298 -= thermoData_H.S298
 
 			# Correct the entropy for the symmetry number
 
@@ -654,8 +711,6 @@ class ThermoDatabaseSet:
 				# Get thermo correction for this ring
 				thermoData += self.ringDatabase.getThermoData(ringStructure, {})
 
-
-
 		return thermoData
 
 thermoDatabase = None
@@ -663,12 +718,18 @@ forbiddenStructures = None
 
 ################################################################################
 
-def getThermoData(structure):
+def getThermoData(struct):
 	"""
 	Get the thermodynamic data associated with `structure` by looking in the
 	loaded thermodynamic database.
 	"""
-	return thermoDatabase.getThermoData(structure)
+	thermoData = thermoDatabase.getThermoData(struct)
+
+	# Correct entropy for symmetry number
+	struct.calculateSymmetryNumber()
+	thermoData.S298 -= constants.R * math.log(struct.symmetryNumber)
+
+	return thermoData
 
 ################################################################################
 
@@ -700,6 +761,7 @@ class Species:
 		self.reactive = reactive
 
 		self.thermoData = None
+		self.thermoSnapshot = ThermoSnapshot()
 		self.lennardJones = None
 		self.spectralData = None
 
@@ -839,7 +901,7 @@ class Species:
 		for structure in self.structure:
 			structure.updateAtomTypes()
 			thermoData.append(getThermoData(structure))
-
+		
 		# If multiple resonance isomers are present, use the thermo data of
 		# the most stable isomer (i.e. one with lowest enthalpy of formation)
 		# as the thermo data of the species
@@ -852,6 +914,8 @@ class Species:
 		"""
 		Return the heat capacity of the species at temperature `T`.
 		"""
+		if self.thermoSnapshot.isValid(temperature=T):
+			return self.thermoSnapshot.heatCapacity
 		if self.thermoData is None: self.getThermoData()
 		return self.thermoData.getHeatCapacity(T)
 
@@ -859,6 +923,8 @@ class Species:
 		"""
 		Return the enthalpy of the species at temperature `T`.
 		"""
+		if self.thermoSnapshot.isValid(temperature=T):
+			return self.thermoSnapshot.enthalpy
 		if self.thermoData is None: self.getThermoData()
 		return self.thermoData.getEnthalpy(T)
 
@@ -866,6 +932,8 @@ class Species:
 		"""
 		Return the entropy of the species at temperature `T`.
 		"""
+		if self.thermoSnapshot.isValid(temperature=T):
+			return self.thermoSnapshot.entropy
 		if self.thermoData is None: self.getThermoData()
 		return self.thermoData.getEntropy(T)
 
@@ -873,6 +941,8 @@ class Species:
 		"""
 		Return the Gibbs free energy of the species at temperature `T`.
 		"""
+		if self.thermoSnapshot.isValid(temperature=T):
+			return self.thermoSnapshot.freeEnergy
 		if self.thermoData is None: self.getThermoData()
 		return self.thermoData.getFreeEnergy(T)
 
@@ -978,7 +1048,7 @@ def makeNewSpecies(structure, label='', reactive=True):
 	spec.getResonanceIsomers()
 	if thermoDatabase is not None:
 		spec.getThermoData()
-
+	
 	# Draw species in core
 	if constants.drawMolecules:
 		mol = pybel.Molecule(spec.toOBMol())

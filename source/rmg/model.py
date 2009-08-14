@@ -260,7 +260,6 @@ class CoreEdgeReactionModel:
 		rxnRate = numpy.zeros(len(reactionList), float)
 		for j, rxn in enumerate(reactionList):
 			rxnRate[j] = rxn.getRate(T, P, Ci)
-			#print rxn, rxn.getBestKinetics(T), rxnRate[j]
 		return rxnRate
 
 ################################################################################
@@ -510,7 +509,6 @@ class BatchReactor(ReactionSystem):
 		ReactionSystem.__init__(self, temperatureModel, pressureModel, \
 				volumeModel, initialConcentration)
 
-	#def getResidual(self, y, t, model, stoichiometry):
 	def getResidual(self, t, y, model, stoichiometry):
 		"""
 		Return the residual function for this reactor model, evaluated at
@@ -524,6 +522,12 @@ class BatchReactor(ReactionSystem):
 		"""
 
 		P, V, T = y[0:3]; Ni = y[3:]
+		
+		# Get new thermo snapshots
+		for spec in model.core.species:
+			if not spec.thermoSnapshot.isValid(temperature=T):
+				if spec.thermoData is None: spec.getThermoData()
+				spec.thermoSnapshot.update(temperature=T, thermoData=spec.thermoData)
 		
 		# Reaction rates
 		rxnRate = self.getReactionRates(P, V, T, Ni, model)

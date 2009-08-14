@@ -8,7 +8,10 @@ sys.path.append('../source')
 
 import math
 		
-from rmg.species import *
+import rmg.main as main
+import rmg.data as data
+import rmg.species as species
+import rmg.reaction as reaction
 
 ################################################################################
 
@@ -29,7 +32,7 @@ class ThermoGACheck(unittest.TestCase):
 		# Heat capacity: 
 		#		Cp = 0.1 * T - 20.0		300.0 < T < 1500.0
 		#		Cp = 130.0				T > 1500.0
-		thermoData = ThermoGAData(0, 0, [10, 20, 30, 40, 60, 80, 130.0])
+		thermoData = species.ThermoGAData(0, 0, [10, 20, 30, 40, 60, 80, 130.0])
 		
 		Tlist = [T for T in range(300, 1500, 10)]
 		for T in Tlist:
@@ -57,7 +60,7 @@ class ThermoGACheck(unittest.TestCase):
 		
 		H0 = 800000.0
 		
-		thermoData = ThermoGAData(H0, 0, [10, 20, 30, 40, 60, 80, 130.0])
+		thermoData = species.ThermoGAData(H0, 0, [10, 20, 30, 40, 60, 80, 130.0])
 		
 		Tlist = [T for T in range(300, 1500, 10)]
 		for T in Tlist:
@@ -85,7 +88,7 @@ class ThermoGACheck(unittest.TestCase):
 		"""
 		
 		S0 = 500.0
-		thermoData = ThermoGAData(0, S0, [10, 20, 30, 40, 60, 80, 130.0])
+		thermoData = species.ThermoGAData(0, S0, [10, 20, 30, 40, 60, 80, 130.0])
 		
 		Tlist = [T for T in range(300, 1500, 10)]
 		for T in Tlist:
@@ -98,9 +101,57 @@ class ThermoGACheck(unittest.TestCase):
 			S = S0 + 130 * math.log(T/1500.0)
 			self.assertAlmostEqual(thermoData.getEntropy(T), S, 4)
 		
+################################################################################
+
+class ThermoEstimationCheck(unittest.TestCase):                          
+	
+	def test1C2H6(self):
 		
+		C2H6 = species.Species()
+		C2H6.fromSMILES('CC')
+		C2H6.getThermoData()
+#		print 'ethane'
+#		print 'H(298 K) = %s' % (C2H6.getEnthalpy(298) / 4184)
+#		print 'S(298 K) = %s' % (C2H6.getEntropy(298) / 4.184)
+#		print 'G(298 K) = %s' % (C2H6.getFreeEnergy(298) / 4184)
+#		print 'Cp(298 K) = %s' % (C2H6.getHeatCapacity(300) / 4.184)
+		self.assertAlmostEqual(C2H6.getEnthalpy(298) / 4184, -20.4, 1)
+		self.assertAlmostEqual(C2H6.getEntropy(298) / 4.184, 55.1, 1)
+		self.assertAlmostEqual(C2H6.getFreeEnergy(298) / 4184, -36.8, 1)
+		self.assertAlmostEqual(C2H6.getHeatCapacity(298) / 4.184, 12.5, 1)
+
+	def test2CH3(self):
 		
+		CH3 = species.Species()
+		CH3.fromSMILES('[CH3]')
+		CH3.getThermoData()
+#		print 'methyl'
+#		print 'H(298 K) = %s' % (CH3.getEnthalpy(298) / 4184)
+#		print 'S(298 K) = %s' % (CH3.getEntropy(298) / 4.184)
+#		print 'G(298 K) = %s' % (CH3.getFreeEnergy(298) / 4184)
+#		print 'Cp(298 K) = %s' % (CH3.getHeatCapacity(300) / 4.184)
+		self.assertAlmostEqual(CH3.getEnthalpy(298) / 4184, 34.8, 1)
+		self.assertAlmostEqual(CH3.getEntropy(298) / 4.184, 46.4, 1)
+		self.assertAlmostEqual(CH3.getFreeEnergy(298) / 4184, 21.0, 1)
+		self.assertAlmostEqual(CH3.getHeatCapacity(298) / 4.184, 9.54, 1)
+
 ################################################################################
 
 if __name__ == '__main__':
+	
+	# Show debug messages (as databases are loading)
+	main.initializeLog(10)
+
+	# Load databases
+	databasePath = '../data/RMG_database'
+	
+	# Create and load thermo databases
+	species.thermoDatabase = species.ThermoDatabaseSet()
+	species.thermoDatabase.load(databasePath + '/')
+
+	# Create and load forbidden structures
+	species.forbiddenStructures = data.Dictionary()
+	species.forbiddenStructures.load(databasePath + '/forbiddenStructure.txt')
+	species.forbiddenStructures.toStructure()
+
 	unittest.main()

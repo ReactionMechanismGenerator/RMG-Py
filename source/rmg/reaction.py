@@ -1111,7 +1111,7 @@ class ReactionFamily(data.Database):
 					if struct.isSubgraphIsomorphic(struct2): return None
 				for struct in productStructures:
 					if struct.isSubgraphIsomorphic(struct2): return None
-
+		
 		# Convert structure(s) to products
 		products = []
 		for product in productStructures:
