@@ -1,29 +1,38 @@
 615: [5] Curran, H.J.; Gaffuri, P.; Pit z, W.J.; Westbrook, C.K. Combust. Flame 1998, 114, 149. 
-	 Currans's estimation in his reaction type 5. 
+	 Currans's estimation in his reaction type 5. C7H15
+	 Checked by Paul Green. 
 
 616: [5] Curran, H.J.; Gaffuri, P.; Pit z, W.J.; Westbrook, C.K. Combust. Flame 1998, 114, 149. 
-	 Currans's estimation in his reaction type 5. 
+	 Currans's estimation in his reaction type 5. C7H15
+	 Checked by Paul Green.
 
 617: [5] Curran, H.J.; Gaffuri, P.; Pit z, W.J.; Westbrook, C.K. Combust. Flame 1998, 114, 149. 
-	 Currans's estimation in his reaction type 5. 
+	 Currans's estimation in his reaction type 5. C7H15
+	 Checked By Paul Green
 
 618: [5] Curran, H.J.; Gaffuri, P.; Pit z, W.J.; Westbrook, C.K. Combust. Flame 1998, 114, 149. 
-	 Currans's estimation in his reaction type 5. 
+	 Currans's estimation in his reaction type 5. C7H15
+	 Checked By Paul Green.
 
 619: [5] Curran, H.J.; Gaffuri, P.; Pit z, W.J.; Westbrook, C.K. Combust. Flame 1998, 114, 149. 
-	 Currans's estimation in his reaction type 5. 
+	 Currans's estimation in his reaction type 5. C7H15
+	 Checked By Paul Green.
 
 620: [5] Curran, H.J.; Gaffuri, P.; Pit z, W.J.; Westbrook, C.K. Combust. Flame 1998, 114, 149. 
-	 Currans's estimation in his reaction type 5. 
+	 Currans's estimation in his reaction type 5. C7H15
+	 Checked By Paul Green.
 
 621: [5] Curran, H.J.; Gaffuri, P.; Pit z, W.J.; Westbrook, C.K. Combust. Flame 1998, 114, 149. 
 	 Currans's estimation in his reaction type 5. 
+	 NEEDS TO BE CHECKED	
 
 622: [5] Curran, H.J.; Gaffuri, P.; Pit z, W.J.; Westbrook, C.K. Combust. Flame 1998, 114, 149. 
-	 Currans's estimation in his reaction type 5. 
+	 Currans's estimation in his reaction type 5. C7H15
+	 Checked By Paul Green
 
 623: [5] Curran, H.J.; Gaffuri, P.; Pit z, W.J.; Westbrook, C.K. Combust. Flame 1998, 114, 149. 
-	 Currans's estimation in his reaction type 5. 
+	 Currans's estimation in his reaction type 5. C7H15
+	 Checked by Paul Green
 
 624: [8] Curran, H.J.; Gaffuri, P.; Pit z, W.J.; Westbrook, C.K. Combust. Flame 2002, 129, 253.
 	 Curran's estimstion in his reaction type 12 RO2 isomerization.

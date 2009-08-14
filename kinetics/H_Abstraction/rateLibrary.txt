@@ -241,7 +241,7 @@ Arrhenius_EP
 224.	Cb_H		H_rad				298-1000	5.02E+11	0		0		8.11	0		0		0		0		5		Nicovich et al. [130]
 225.	Cb_H		C_rad/H2/Cs			650-770		1.05E+11	0		0		14.86	*2.0	0		0		1.19	5		Zhang et al. [131]
 226.	Cb_H		O_pri_rad			400-1500	2.72E+07	1.42	0		1.45	*2.0	0		0		0		4		Baulch et al. [95] literature review.
-227.	CO_pri		O2b					300-2200	2.34E+07	2.05	0		37.93	0		0		0		0		3		michael et al. [132] Transition state theory.
+227.	CO_pri		O2b					300-2200	2.34E+07	2.05	0		37.93	0		0		0		0		3		Michael et al. [132] Transition state theory.
 228.	CO_pri		O_atom_triplet		250-2200	2.08E+11	0.57	0		2.76	*2.0	0		0		0		4		Baulch et al. [95] literature review.
 229.	CO_pri		CH2_triplet			300-2500	3.02E+09	0		0		0		0		0		0		0		4		Tsang [89] literature review.
 230.	CO_pri		C_methyl			300-2000	3.89E-08	6.10	0		1.97	*1.58	0		0		0		4		Baulch et al. [94] literature review.

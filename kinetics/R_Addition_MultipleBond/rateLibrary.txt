@@ -53,7 +53,7 @@ Arrhenius_EP
 313.		Cd/Nd2_Ca		Cs_rad			300-1500	8.5E+10		0		0	10.6	0		0		0	0		5		Curran et al. [8] in his reaction type 3. Based on recommendations of Allara and Shaw [146] 
 314.		Cd/H2_Ca		C_methyl		573-595		5.75E+10	0		0	6.84	0		0		0	0.20	5		Scherzer et al. [156] Data derived from fitting a complex mechanism.
 315.		Ca_Cd/H2		H_rad			350-1200	1.2E+11		0.69	0	3.00	*2.5	0		0	0		4		Tsang et al. [157]
-316.		Ca_Cd/H2		C_methyl		996-1180	1.58E+11	0		0	4.97	0		0		0	0		5		Tsang [158] Data are estimated.
+316.		Ca_Cd/H2		C_methyl		996-1180	1.58E+11	0		0	4.97	0		0		0	0		5		Tsang [158] Data is estimated.
 317.		CO_O			H_rad			300-1500	1.0E+11		0		0	11.9	0		0		0	0		5		Curran et al. [8] in his reaction type 18.
 318.		CO_O			Cs_rad			300-1500	1.0E+11		0		0	11.9	0		0		0	0		5		Curran et al. [8] in his reaction type 18.
 319.		CO_O			CO_pri_rad		300-1500	5.2E+11		0		0	6.560	0		0		0	0		4		Bozzelli et al. [144] based on CH3 addition to CO (Anastasi and Maw)

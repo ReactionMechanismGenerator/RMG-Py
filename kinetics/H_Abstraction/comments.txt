@@ -677,7 +677,7 @@
 
 205: [101] Cohen, N. Int. J. Chem. Kinet. 1991, 23, 397.
 	 Iso-C4H10 + OH --> tert-C4H9 + H2O
-	  Not yet checked
+	 Not yet checked
 
 206: [92] Tsang, W. J. Phys. Chem. Ref. Data 1990, 19, 1.
 	 Iso-C4H10 + CH3O --> tert-C4H9 + CH3OH
