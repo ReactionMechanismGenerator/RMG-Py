@@ -1273,7 +1273,7 @@ class ReactionFamilySet:
 	def __init__(self):
 		self.families = {}
 
-	def load(self, datapath):
+	def load(self, datapath, only_families=False):
 		"""
 		Load a set of reaction families from the general database
 		specified at `datapath`.
@@ -1305,6 +1305,8 @@ class ReactionFamilySet:
 		for index, status, label in familyList:
 			path = datapath + 'kinetics/' + label
 			if os.path.isdir(path) and status.lower() == 'on':
+				# skip families not in only_families, if it's set
+				if only_families and label not in only_families: continue
 				family = ReactionFamily(label)
 				family.load(path)
 				self.families[family.label] = family
