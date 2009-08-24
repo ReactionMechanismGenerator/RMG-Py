@@ -105,7 +105,7 @@
 	 Verified by Karma James
 
 446: [179] Hassinen, E.; Kalliorinne, K; Koskikallio, J. Int. J. Chem. Kinet. 1990, 22, 741
-	 Data derived from fitting to a complex mechanism. Excitation : direct photolysis, analysis : GC. Pressure 96?-99 kPa. 
+	 Data derived from fitting to a complex mechanism. Excitation : direct photolysis, analysis : GC. Pressure 96? and 99 kPa with He, 5.5 kPa and 25 kPa with CO2. 
 	 CH3CO. + .CH3 --> (CH3)2CO (Rxn. 6)
          paper states reaction occurs close to high pressure limit (p. 742)
          Verified by Greg Magoon; Note that the paper cites 4 other values for k6 from literature; perhaps uncertainty could be assigned based on these values; also, page 744 discusses "relatively large value of k6" potentially due to other reactions; p. 744: uncertainty estimated to be 20% -> I changed DA uncertainty from 0 to 8.4E+12
@@ -161,8 +161,9 @@
 	 Verified by Karma James
 
 455: [180] Fagerstrom, K.; Lund, A.; Mahmoud, G.; Jodkowski, J. T.; Ratajczak, E. Chem. Phys. Lett. 1993, 208, 321
-	 Excitation : radiolysis, analysis : VIS-UV absorption. Pressure 0.25-0.99 atm. Original Uncertainty 1.0E+13. 
-	 C2H5 + OH --> C2H5OH
+	 Excitation : radiolysis, analysis : VIS-UV absorption. Pressure 0.25-0.99 bar SF6. Original Uncertainty 1.0E+13. 
+	 C2H5 + OH (+M) --> C2H5OH (+M) (Rxn. 1a)
+         Verified by Greg Magoon; value reported for k1a,Infinity (high-pressure) appears to be theoretical rather than experimentally based; value in paper is 7.7+/-1.0E13 (RMG had 7.69E13 with uncertainty of *1.1, so I changed it to match paper values); there doesn't seem to be an experimental value for k1a, but k(1a+1b) is slightly lower (6.5E13); experimentally, they say no pressure dependence observed in studied pressure range (p. 326)
 
 456: [91] Tsang, W. J. Phys. Chem. Ref. Data 1988, 17, 887.
 	 Iso-C3H7 + iso-C3H7 --> (CH3)2CHCH(CH3)2
