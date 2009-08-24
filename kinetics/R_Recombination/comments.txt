@@ -13,15 +13,17 @@
 
 428: [169] Sillesen , A.; Ratajczak, E.; Pagsberg, P. Chem. Phys. Lett. 1993, 201, 171.
 	 Data derived from fitting to a complex mechanism. Excitation: radiolysis, analysis: IR absroption. Pressure 0.10 bar
-	 H + C2H5 --> C2H6
+	 H + C2H5 (+ M) --> C2H6 (+ M) (2b)
          ***NHP***
-         Verified by Greg Magoon; I changed the uncertainty from *1.1 to (+/-)1E13, as this is what the abstract reports (also, Table 3 mentions uncertainties in the range of 10%-20%)
+         Verified by Greg Magoon; I changed the DA uncertainty from *1.1 to (+/-)1E13, as this is what the abstract reports (also, Table 3 mentions uncertainties in the range of 10%-20%)
 
 429: [134] Warnatz, J. Rate coefficeints in the C/H/O system. In Combustion Chemistry, 1984; pp 197.
 
-430: Munk, J; Pagsberg, P.; Ratajczak, E.; Sillensen, A. Chem. Phys. Lett. 1986, 132, 417.
+430: [170] Munk, J; Pagsberg, P.; Ratajczak, E.; Sillensen, A. Chem. Phys. Lett. 1986, 132, 417.
 	 Data derived from fitting to a complex mechanism. Excitation: electron beam, analysis: Vis-UV absorption. Pressure 1.0 atm
-	 H + isoC3H7 --> C3H8
+	 H + isoC3H7 (+ M) --> C3H8 (+ M) (7)
+         ***NHP***
+         Verified by Greg Magoon; I changed the DA uncertainty from *1.25 to 0.3E+14, as reported in the paper
 
 431: [171] Fahr, A.; Laufer, A.; Klein, R.; Braun, W. J. Phys. Chem. 1991, 95, 3218.
 	 Absolute value measured directly. Excitation: flash photolysis, analysis : Vis-UV absorption. Pressure 0.13 atm. Original uncertainty 4.8E+13
