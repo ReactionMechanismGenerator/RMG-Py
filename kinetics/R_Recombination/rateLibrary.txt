@@ -55,7 +55,7 @@ Arrhenius_EP
 466.		Cd_pri_rad		CO_pri_rad		300-2500	1.81E+13	0		0		0		*3.0	0		0		0		4	Tsang [89] literature review.
 467.		Cb_rad			Cb_rad			1100-1400	5.7E+12		0		0		0		0		0		0		0		3	Heckmann et al. [124]
 468.		Cb_rad			Cb_rad			300-500		1.39E+13	0		0		0.11	*1.1 	0		0		0.07	3	Park et al. [181]
-469.		CO_pri_rad		CO_pri_rad		298			3.01E+13	0		0		0		*1.7	0		0		0		3	Stoeckel et al. [182]
+469.		CO_pri_rad		CO_pri_rad		298			3.01E+13	0		0		0		1.2E+13	0		0		0		3	Stoeckel et al. [182]
 470.		CO_pri_rad		CO_rad/NonDe	300-2500	1.81E+13	0		0		0		*3.0	0		0		0		4	Tsang [89] literature review.
 471.		CO_rad/NonDe	CO_rad/NonDe	300-2500	1.21E+13	0		0		0		*2.0	0		0		0		4	Tsang [89] literature review.
 472.		O_pri_rad		O_pri_rad		200-400		1.57E+13	0		0		0		*1.6	0		0		0		4	DeMore et al. [183] literature review.
