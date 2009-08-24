@@ -13,7 +13,7 @@ Arrhenius_EP
 425.		H_rad			H_rad			278-372		1.09E+11	0		0		1.50	0		0		0		0		5	Dingle et al. [167]
 426.		H_rad			C_methyl		300-2000	1.93E+14	0		0		0.27	0		0		0		0		3	Takahashi et al. [168] Transition state theory. 
 427.		H_rad			C_methyl		300-1000	2.11E+14	0		0		0		*2.0	0		0		0		4	Baulch et al. [94] literature review. 
-428.		H_rad			C_rad/H2/Cs		298			1.0E+14		0		0		0		*1.1	0		0		0		5	Sillensen et al [169]
+428.		H_rad			C_rad/H2/Cs		298			1.0E+14		0		0		0		1.0E+13	0		0		0		5	Sillensen et al [169]
 429.		H_rad			C_rad/H/NonDeC	300-2000	2.0E+13		0		0		0		*3.16	0		0		0		4	Warnatz [134] literature review.
 430.		H_rad			C_rad/H/NonDeC	298			1.5E+14		0		0		0		*1.25	0		0		0		5	Munk et al. [170]
 431.		H_rad			Cd_pri_rad		298			1.21E+14	0		0		0		*1.7	0		0		0		3	Fahr et al. [171]

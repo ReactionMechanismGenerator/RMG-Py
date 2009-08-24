@@ -12,8 +12,10 @@
 	 Verified by Karma James
 
 428: [169] Sillesen , A.; Ratajczak, E.; Pagsberg, P. Chem. Phys. Lett. 1993, 201, 171.
-	 Data derived from fitting to a complex mechanism. Excitation: radiolysis, analysis: IR absroption. Pressure 0.10 atm
+	 Data derived from fitting to a complex mechanism. Excitation: radiolysis, analysis: IR absroption. Pressure 0.10 bar
 	 H + C2H5 --> C2H6
+         ***NHP***
+         Verified by Greg Magoon; I changed the uncertainty from *1.1 to (+/-)1E13, as this is what the abstract reports (also, Table 3 mentions uncertainties in the range of 10%-20%)
 
 429: [134] Warnatz, J. Rate coefficeints in the C/H/O system. In Combustion Chemistry, 1984; pp 197.
 
@@ -293,6 +295,6 @@
 479: [159] Curran, H.J.; Pit z, W.J.; Westbrook, C.K.; Dagaut, P.; Boettner, J.-C.; Cathonnet, M. Int. J. Chem. Kinet. 1998, 30, 229.
 	 Curran's estimation in DME modeling for ketohydroperoxide decomposition 
 	 
-	 
+*NHP = Not necessarily at high pressure limit	 
 	 
 	 
