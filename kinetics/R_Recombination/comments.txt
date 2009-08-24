@@ -13,7 +13,7 @@
 
 428: [169] Sillesen , A.; Ratajczak, E.; Pagsberg, P. Chem. Phys. Lett. 1993, 201, 171.
 	 Data derived from fitting to a complex mechanism. Excitation: radiolysis, analysis: IR absroption. Pressure 0.10 bar
-	 H + C2H5 (+ M) --> C2H6 (+ M) (2b)
+	 H + C2H5 (+ M) --> C2H6 (+ M) (Rxn. 2b)
          ***NHP***
          Verified by Greg Magoon; I changed the DA uncertainty from *1.1 to (+/-)1E13, as this is what the abstract reports (also, Table 3 mentions uncertainties in the range of 10%-20%)
 
@@ -21,7 +21,7 @@
 
 430: [170] Munk, J; Pagsberg, P.; Ratajczak, E.; Sillensen, A. Chem. Phys. Lett. 1986, 132, 417.
 	 Data derived from fitting to a complex mechanism. Excitation: electron beam, analysis: Vis-UV absorption. Pressure 1.0 atm
-	 H + isoC3H7 (+ M) --> C3H8 (+ M) (7)
+	 H + isoC3H7 (+ M) --> C3H8 (+ M) (Rxn. 7)
          ***NHP***
          Verified by Greg Magoon; I changed the DA uncertainty from *1.25 to 0.3E+14, as reported in the paper
 
@@ -105,8 +105,10 @@
 	 Verified by Karma James
 
 446: [179] Hassinen, E.; Kalliorinne, K; Koskikallio, J. Int. J. Chem. Kinet. 1990, 22, 741
-	 Data derived from fitting to a complex mechanism. Excitation : direct photolysis, analysis : GC. Pressure 0.95-0.98 atm. 
-	 CH3CO + .CH3 --> (CH3)2CO
+	 Data derived from fitting to a complex mechanism. Excitation : direct photolysis, analysis : GC. Pressure 96?-99 kPa. 
+	 CH3CO. + .CH3 --> (CH3)2CO (Rxn. 6)
+         paper states reaction occurs close to high pressure limit (p. 742)
+         Verified by Greg Magoon; Note that the paper cites 4 other values for k6 from literature; perhaps uncertainty could be assigned based on these values; also, page 744 discusses "relatively large value of k6" potentially due to other reactions; p. 744: uncertainty estimated to be 20% -> I changed DA uncertainty from 0 to 8.4E+12
 
 447: [89] Tsang, W.; Hampson, R. F. J. Phys. Chem. Ref. Data 1986, 15, 1087.
 	 CH3 + CH3CO --> (CH3)2CO 

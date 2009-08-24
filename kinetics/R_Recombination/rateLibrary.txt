@@ -32,7 +32,7 @@ Arrhenius_EP
 443.		C_methyl		Cb_rad			300-980		1.38E+13	0		0		0.05	0		0		0		0.07	3	Tokmakov et al. [177]
 444.		C_methyl		Cb_rad			424-972		1.39E+13	0		0		0.03	0		0		0		0.07	3	Park et al. [178]
 445.		C_methyl		CO_pri_rad		300-2500	1.81E+13	0		0		0		*2.0	0		0		0		4	Tsang [89] literature review.
-446.		C_methyl		CO_rad/NonDe	298			4.2E+13		0		0		0		0		0		0		0		4   Hassinen et al [179]
+446.		C_methyl		CO_rad/NonDe	298			4.2E+13		0		0		0		8.4E+12		0		0		0		4   Hassinen et al [179]
 447.		C_methyl		CO_rad/NonDe	300-2500	4.04E+15	-0.80	0		0		*1.5	0		0		0		4	Tsang [89] literature review.
 448.		C_methyl		O_pri_rad		300-2000	6.03E+13	0		0		0		*2.0	0		0		0		4	Baulch et al. [94] literature review.
 449.		C_methyl		O_rad/NonDe		300-2500	1.21E+13	0		0		0		*5.0	0		0		0		4	Tsang [89] literature review.
