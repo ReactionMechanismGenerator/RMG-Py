@@ -174,7 +174,7 @@
 
 330: [165] Duran et al. Ab initio. C.D.W divided rate expression by 2, to get rate of addition per site.
 	 C2H2 + C2H3 --> CH2=CHCH=CH. (Rxn. -5?)
-         Verified by Greg Magoon: note: NIST seems to have values (http://kinetics.nist.gov/kinetics/Detail?id=1988DUR/AMO636:5 , which agree with RMG's original values) that are slightly diferent than this paper's values (p. 637); I can't seem to figure out where the NIST values are coming from (maybe Table 3?); therefore, I have changed rateLibrary to use paper parameters of 10^8.8 (/2) and 4.9 kcal/mol (these values seem to actually be taken from other publications, however), which I am assuming to be high-pressure values
+         Verified by Greg Magoon: note: NIST seems to have values (http://kinetics.nist.gov/kinetics/Detail?id=1988DUR/AMO636:5 , which agree with RMG's original values) that are slightly diferent than this paper's values (p. 637); I can't seem to figure out where the NIST values are coming from (maybe Table 3?); therefore, I have changed rateLibrary to use paper parameters of 10^8.8 (/2) and 4.9 kcal/mol (these values seem to actually be taken from other publications, however), which I am assuming to be high-pressure values; also note that values from other sources are available in the NIST Kinetics Database
 	 
 331: [165] Duran et al. Ab initio. C.D.W divided rate expression by 2, to get rate of addition per site.
 	 C2H2 + CCH --> HC(tb)CCH=CH. (Rxn. 18?) 
