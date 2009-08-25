@@ -179,7 +179,7 @@
 331: [165] Duran et al. Ab initio. C.D.W divided rate expression by 2, to get rate of addition per site.
 	 C2H2 + CCH --> HC(tb)CCH=CH. (Rxn. 18?) 
          NIST Record: http://kinetics.nist.gov/kinetics/Detail?id=1988DUR/AMO636:4
-         Verified by Greg Magoon: it looks like value is taken from Rxn 18 of Table 3 (1E10), and is apparently non-pressure dependent (and non-temp dependent)
+         Verified by Greg Magoon: it looks like value is taken from Rxn 18 of Table 3 (1E10), and is apparently non-pressure dependent (and non-temp dependent); based on the table, it looks like Ref. 42 in this paper may be the ultimate source of the value?
 
 332: [95] Baulch et al. literature review. C.D.W divided rate expression by 2, to get rate of addition per site.
 	 C2H2 + .OH --> HOCH=CH
