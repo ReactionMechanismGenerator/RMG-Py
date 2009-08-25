@@ -31,7 +31,9 @@
 
 432: [165] Duran, R. P.; Amorebieta, V. T.; Colussi, A. J. J. Phys. Chem. 1988, 92, 636.
 	 Ab initio
-	 H + C2H3 --> C2H4
+	 H + C2H3 --> C2H4 (Rxn. 13)
+         NIST Record: http://kinetics.nist.gov/kinetics/Detail?id=1988DUR/AMO636:10
+         Verified by Greg Magoon; RMG and NIST data seem to be the same; presumably, NIST fit is based off of data in Table 3, but the fit isn't quite right, especially at 1500 K ; using the 700 and 1300 table values, I get Ea=1.03 kcal/mol; using 1300 K value, I get A = 5.66E14 cm^3/mol-s; fit seems to be essentially indistinguishable from data at end points, and error is just under 10% at 1000 K...since the NIST fit has a slightly lower maximum error, I will just leave it the way it is; aside: 10^9.7 prefactor mentioned on p. 637 doesn't seem consistent with NIST data or paper data in Table III; this is presumably high-pressure limit since no pressure-dependence is indicated in the table
 	
 433: [89] Tsang, W.; Hampson, R. F. J. Phys. Chem. Ref. Data 1986, 15, 1087.
 	 H + C2H --> C2H2
@@ -240,7 +242,9 @@
 
 465: [165] Duran, R. P.; Amorebieta, V. T.; Colussi, A. J. J. Phys. Chem. 1988, 92, 636.
 	 Ab initio. Pressure 0.10-1.0 atm. 
-	 C2H3 +.C2h --> CH2=CHC=CH
+	 C2H3 +.C2H --> CH2=CHC=CH (Rxn. 25)
+         NIST record: http://kinetics.nist.gov/kinetics/Detail?id=1988DUR/AMO636:4
+         Verified by Greg Magoon; value confirmed from paper data in Table III; this is presumably high-pressure limit since no pressure-dependence is indicated in the table
 
 466: [89] Tsang, W.; Hampson, R. F. J. Phys. Chem. Ref. Data 1986, 15, 1087.
 	 C2H3 + HCO --> CH2=CHCHO
