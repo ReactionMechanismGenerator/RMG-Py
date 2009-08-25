@@ -142,7 +142,8 @@
 319: [144] Bozzelli et al. Based upon CH3 addition to CO (Anastasi and Maw)
 
 320: [159] Curran et al. His estimation in DME oxidation modeling for ketohydroperoxide decomposition. 
-	 H2C0 + HCO2. --> +  .OCH2OCHO
+	 H2CO + HCO2. (formic acid radical) --> +  .OCH2OCHO (ester) (Rxn. 338, p. 234)
+         Verified by Greg Magoon; it is not immediately clear whether this rate constant is for high pressure limit, but based on other references to high pressure limit in the paper, I suspect that it is a high pressure limit value; also, note that CO_O group is used for H2CO...MRH and I have interpreted CO_O as referring to any carbonyl group
 
 321: [160] Knoll et al. Data derived from fitting to a complex mechanism. Pressure 0.08 atm. Excitation : direct photolysis, analysis : mass spectrometry.
 		N-C3H7 + C2HO --> N-C4H9O 
