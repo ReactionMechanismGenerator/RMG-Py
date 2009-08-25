@@ -198,6 +198,7 @@ Arrhenius_EP
 185.	C/H3/CO		O_pri_rad			295-600		5.17E+05	2.20	0		1.00	0		0		0		0		3		Taylor et al. [127] Transition state theory.
 186.	C/H3/O		C_methyl			300-2000	2.05E-04	4.90	0		6.72	0		0		0		0		2		Jodkowski et al. [100] ab initio calculations.
 187.	C/H3/O		O_pri_rad			300-2000	8.14E+03	2.80	0		-0.42	0		0		0		0		2		Jodkowski et al. [100] ab initio calculations.
+100_R2    C/H3/O          H_rad                         300-2000        4.51E+02        3.20    0               3.49    0               0               0               0               2               Jodkowski et al. [100] ab initio calculations. added by Greg Magoon 08/25/09
 188.	C/H2/NonDeC	O2b					300-2500	1.985E+13	0		0		47.69	*10.0	0		0		0		4		Tsang [91] literature review.
 189.	C/H2/NonDeC	CH2_triplet			300-2500	7.55E-01	3.46	0		7.47	*10.0	0		0		0		4		Tsang [91] literature review.
 190.	C/H2/NonDeC	O_atom_triplet		300-2500	2.39E+04	2.71	0		2.11	*2.0	0		0		0		4		Tsang [91] literature review.
@@ -277,7 +278,7 @@ Arrhenius_EP
 258.	O_pri		O_rad/NonDeC		300-2000	1.74E-01	3.80	0		11.49	0		0		0		0		2		Jodkowski et al. [100] ab initio calculations.
 259.	O/H/NonDeC	O_atom_triplet		300-1000	1.0E+13		0		0		4.69	*2.51	0		0		0		4		Warnatz [134] literature review
 260.	O/H/NonDeC	CH2_triplet			300-2500	1.44E+01	3.10	0		6.94	*3.0	0		0		0		4		Tsang [90] literature review.
-261.	O/H/NonDeC	C_methyl			300-2500	3.70E-04	4.70	0		5.78	0		0		0		0		2		Jodkowski et al. [100] ab initio calculations.
+261.	O/H/NonDeC	C_methyl			300-2000	3.70E-04	4.70	0		5.78	0		0		0		0		2		Jodkowski et al. [100] ab initio calculations.
 262.	O/H/NonDeC	C_rad/H2/Cs			300-2500	1.44E+01	3.10	0		8.94	*3.0	0		0		0		4		Tsang [90] literature review.
 //263.	O/H/NonDeC	C_rad/H/NonDeC		300-2500	1.45E+01	3.10	0		10.33	*5.0	0		0		0		4		Tsang [90] literature review.
 263.	O/H/NonDeC	C_rad/H/NonDeC		300-2500	1.45E+01	3.10	0		10.33	*5.0	0		0		0		4		Tsang [91] literature review.

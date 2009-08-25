@@ -468,8 +468,9 @@
 	 H2 + O2 --> H + H2O C.D.W divided original rate expression by 2, to get rate expression per H atom.
 	 
 166. [100] Jodkowski, J.T.; Rauez, M.-T.; Rayez, J.-C. J. Phys. Chem. A. 1999, 103, 3750.
-	 H2 + CH3O --> H + CH30H The calculated reverse rate constants are in good agreement with experiment. 
+	 H2 + CH3O --> H + CH3OH The calculated reverse rate constants are in good agreement with experiment. (This is -R1 in the paper)
 	 C.D.W divided original rate expression by 2, to get rate expression per H atom.
+         Verified by Greg Magoon; maximum error of fitted expression from tabular data for forward rate constant, kr1 is 15% (cf. p. 3758)
 	 
 167: [95] Baulch, D.L.; Cobos, C.J.; Cox, R.A.; Esser, C.; Frank, P.; Just, T.; Kerr, J.A.; Pilling, M.J.; 
 	 Troe, J.; Walker, R.W.; Warnatz, J. J. Phys. Chem. Ref. Data 1992, 21, 411.
@@ -522,8 +523,9 @@
 	 CH4 + OH --> CH3 + H2O C.D.W divided original rate expression by 4, to get rate expression per H atom.
 
 177: [100] Jodkowski, J.T.; Rauez, M.-T.; Rayez, J.-C. J. Phys. Chem. A. 1999, 103, 3750.
-	 CH4 + CH30 --> CH3 + CH3OH The calculated reverse rate constants are in good agreement with experiment. 
+	 CH4 + CH3O --> CH3 + CH3OH The calculated reverse rate constants are in good agreement with experiment. (Rxn. -R3 in paper)
 	 C.D.W divided original rate expression by 4 ( from A= 1.51E+09), to get rate expression per H atom.
+         Verified by Greg Magoon; cf. reverse reaction, #261, below
 	 
 178: [89] Tsang, W.; Hampson, R.F. J. Phys. Chem. Ref. Data 1986, 15, 1087.
 	 CH4 + HO2 --> CH3 + H2O2 C.D.W divided original rate expression by 4, to get rate expression per H atom.
@@ -569,12 +571,20 @@
 	 C.D.W divided original rate expression by 3(from A = 1.55E+06), to get rate expression per H atom.
 	 
 186: [100] Jodkowski, J.T.; Rauez, M.-T.; Rayez, J.-C. J. Phys. Chem. A. 1999, 103, 3750.
-	 CH3OH + CH3 --> CH2OH + CH4 The calculated rate constants are in good agreement with experiment. 
+	 CH3OH + CH3 --> CH2OH + CH4 The calculated rate constants are in good agreement with experiment. (Rxn. R4 in paper)
 	 C.D.W divided original rate expression by 3 ( from A= 8.43E+08), to get rate expression per H atom.
+         Verified by Greg Magoon
 	 
 187: [100] Jodkowski, J.T.; Rauez, M.-T.; Rayez, J.-C. J. Phys. Chem. A. 1999, 103, 3750.
-	 CH3OH + OH --> CH2OH + H2O The calculated rate constants are in good agreement with experiment. 
+	 CH3OH + OH --> CH2OH + H2O The calculated rate constants are in good agreement with experiment. (Rxn. R6 in paper)
 	 C.D.W divided original rate expression by 3 ( from A= 2.11E+11), to get rate expression per H atom.
+         Verified by Greg Magoon
+**Note that R2 from this paper appears to be missing from the RMG library, so I have added it as 100_R2**
+
+100_R2: [100] Jodkowski, J.T.; Rauez, M.-T.; Rayez, J.-C. J. Phys. Chem. A. 1999, 103, 3750.
+	 CH3OH + H --> CH2OH + H2 (Rxn. R2 in paper)
+	 divided original rate expression by 3 to get rate expression per H atom.
+         Created by Greg Magoon; maximum error of fitted expression from tabular data for kr2 is 20% (cf. p. 3758); rank of 2 assigned based on rank for other values reported in the paper in the rateLibrary (also 2)
 	 
 188: [91] Tsang, W. J. Phys. Chem. Ref. Data 1988, 17, 887.
 	 C3H8 + O2 --> iso-C3H7 + HO2  C.D.W divided original rate expression by 2, to get rate expression per H atom.
@@ -937,7 +947,8 @@
 	 Certified by MRH on 7Aug2009
 
 258: [100] Jodkowski, J.T.; Rauez, M.-T.; Rayez, J.-C. J. Phys. Chem. A. 1999, 103, 3750.
-	 H2O + CH3O --> OH + CH3OH. C.D.W divided original rate expression by 2 (from A= 9.03E+08), to get rate expression per H atom.
+	 H2O + CH3O --> OH + CH3OH C.D.W divided original rate expression by 2 (from A= 9.03E+08), to get rate expression per H atom.; This is Rxn. -R5 from mpaper
+         Verified by Greg Magoon: note that this reaction is endothermic; the reverse (R5), appears as #267, below
 
 259: [134] Warnatz, J. Rate coefficeints in the C/H/O system. In Combustion Chemistry, 1984; pp 197.
 	 CH3OH + O --> CH3O + OH
@@ -952,7 +963,8 @@
 	 Verified by MRH on 11Aug2009
 
 261: [100] Jodkowski, J.T.; Rauez, M.-T.; Rayez, J.-C. J. Phys. Chem. A. 1999, 103, 3750.
-	 The calculated rate constants are in good agreement with experiment. CH3OH + CH3 --> CH3O + CH4
+	 The calculated rate constants are in good agreement with experiment. CH3OH + CH3 --> CH3O + CH4 (Rxn. R3 from paper)
+         Verified by Greg Magoon: I changed upper temperature to 2000 K (was 2500) in line with other reactions from same paper; note that according to the paper, this reaction is very slightly endothermic; the exothermic reverse (-R3) is included above as #177
 
 262: [90] Tsang, W. J. Phys. Chem. Ref. Data 1987, 16, 471.
 	 CH3OH + C2H5 --> CH3O + C2H6
@@ -995,7 +1007,9 @@
 	 Verified by Karma James
 
 267: [100] Jodkowski, J.T.; Rauez, M.-T.; Rayez, J.-C. J. Phys. Chem. A. 1999, 103, 3750.
-	 The calculated rate constants are in good agreement with experiment. CH3OH + OH --> CH3O + H2O
+	 The calculated rate constants are in good agreement with experiment. CH3OH + OH --> CH3O + H2O (Rxn. R5 from paper)
+         Verified by Greg Magoon (cf. reverse, #258, above)
+         
 
 268: [134] Warnatz, J. Rate coefficeints in the C/H/O system. In Combustion Chemistry, 1984; pp 197.
 	 CH3OH + OH --> CH3O + H2O
