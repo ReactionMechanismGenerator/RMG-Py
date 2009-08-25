@@ -259,7 +259,7 @@
 	 Absolute value measured directly. Excitation : flash photolysis, abalysis : VIS-UV absorption. Original uncertainty 1.2E+13. Pressure: 10 Torr (this is total pressure; see p. 141)
 	 HCO + HCO --> (CHO)2 
          ***NHP***
-         Verified by Greg Magoon: the k is probably off by a factor of two, since they use d[HCO]/dt=-k*[HCO]^2; they report k=5+/-*10^-11 molecules^-1*cm^3/s (references 9, 19, and 20 in this paper could have better data); I think it should be half of this (2.5 +/- 1) as RMG would use it
+         Verified by Greg Magoon: the existing k in the rateLibrary appeared to be off by a factor of two, since the paper uses d[HCO]/dt=-k*[HCO]^2; they report k=(5+/-2)*10^-11 molecules^-1*cm^3/s (references 9, 19, and 20 in this paper could have better data); I think in rateLibrary, we should have half of this (2.5 +/- 1), so I have changed the value in the rateLibrary accordingly (with 2nd opinion to confirm from MRH)
 
 470: [89] Tsang, W.; Hampson, R. F. J. Phys. Chem. Ref. Data 1986, 15, 1087.
 	 HCO + CH3CO --> CH3COCHO
