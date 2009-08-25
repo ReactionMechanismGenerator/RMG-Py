@@ -299,9 +299,11 @@
 	 Curran's estimation based on Tsang's [92] reccomendation for tC4H9 Curran's estimation. About a factor of 2 slower than other 
 	 values from literature for smaller alkyl, based upon the consideration that rate constants decrease with the increasing size of R radical. 
 
-479: [159] Curran, H.J.; Pit z, W.J.; Westbrook, C.K.; Dagaut, P.; Boettner, J.-C.; Cathonnet, M. Int. J. Chem. Kinet. 1998, 30, 229.
+479: [159] Curran, H.J.; Pitz, W.J.; Westbrook, C.K.; Dagaut, P.; Boettner, J.-C.; Cathonnet, M. Int. J. Chem. Kinet. 1998, 30, 229.
 	 Curran's estimation in DME modeling for ketohydroperoxide decomposition 
-	 
+         Apparently the number comes from estimate for reverse of Rxn. 337: HO2CH2OCHO -> .OCH2OCHO + .OH (2E13) (p. 234); reverse of Rxn. 191 (p. 238) would also be informative, but it doesn't seem to be disucussed in paper
+	 Verified by Greg Magoon; it is not immediately clear whether this rate constant is for high pressure limit, but based on other references to high pressure limit in the paper, I suspect that it is a high pressure limit value
+
 *NHP = Not necessarily at high pressure limit	 
 	 
 	 
