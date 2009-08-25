@@ -67,7 +67,7 @@ Arrhenius_EP
 327.		Ct/H_Ct/H		C_rad/H/NonDeC	363-577		2.505E+10	0		0	6.90	0		0		0	0		5		Kerr et al. [163] literature review.
 328.		Ct/H_Ct/H		C_rad/Cs3		373-493		2.505E+10	0		0	5.31	0		0		0	0		4		Dominguez et al. [164] Data derived from fitting a complex mechanism.
 329.		Ct/H_Ct/H		Cd_pri_rad		300-1500	1.255E+05	1.90	0	2.11	0		0		0	0		3		Weissman et al. [121] Transition state theory.
-330.		Ct/H_Ct/H		Cd_pri_rad		700-1300	3.095E+11	0		0	4.85	0		0		0	0		3		Duran et al. [165] Ab initio.
+330.		Ct/H_Ct/H		Cd_pri_rad		700-1300	3.155E+11	0		0	4.9	0		0		0	0		3		Duran et al. [165] Ab initio.
 331.		Ct/H_Ct/H		Ct_rad			700-1300	5.0E+12		0		0	0		0		0		0	0		3		Duran et al. [165] Ab initio.
 332.		Ct/H_Ct/H		O_pri_rad		298-1100	6.05E+11	0		0	0.46	*10.0	0		0	0		4		Baulch et al. [95] literature review.
 333.		Ct/H_Ct/H		O_pri_rad		250-2500	7.60E+07	1.70	0	1.00	0		0		0	0		3		Miller et al. [166] Transition state theory.
