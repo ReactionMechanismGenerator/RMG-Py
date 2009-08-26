@@ -19,7 +19,7 @@ Arrhenius_EP
 431.		H_rad			Cd_pri_rad		298			1.21E+14	0		0		0		4.82E+13	0		0		0		3	Fahr et al. [171]
 432.		H_rad			Cd_pri_rad		700-1300	5.36E+14	0		0		0.98	0		0		0		0		3	Duran et al. [165] 
 433.		H_rad			Ct_rad			300-2500	1.81E+14	0		0		0		*1.5	0		0		0		4	Tsang [89] literature review. 
-434.		H_rad			Cb_rad			300-1200	2.2E+14		0		0		0		*1.6	0		0		0		3	Davis et al. [172] Ackermann et al. [173]
+434.		H_rad			Cb_rad			300-1200	2.2E+14		0		0		0		0.8E+14	0		0		0		3	Davis et al. [172] Ackermann et al. [173] Emdee et al. [172b]
 435.		H_rad			CO_pri_rad		1500-1900	4.68E+10	0		0		-4.53	0		0		0		0		4	Tsuboi et al. [174]
 436.		H_rad			O_pri_rad		300-2100	1.62E+14	0		0		0.15	0		0		0		0		3	Cobos et al. [106]
 437.		C_methyl		C_methyl		300-2000	8.26E+17	-1.40	0		1.00	0		0		0		0		3	Pesa et al. [175]

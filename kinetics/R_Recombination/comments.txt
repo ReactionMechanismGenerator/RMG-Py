@@ -51,10 +51,14 @@
 
 434: [172] Davis, S. G.; Wang, H.; Brezinsky K.; Law C. K. Symp. Int. Combust. Proc. 1996, 26, 1025.
 	 (1000-1200K, excitation : thermal, pressure 1.0 atm)
-	 [173] Ackerman, L.; Hippler, H.; Pagsberg, P.; Reihs, C.; Troe, J. J. Phys. Chem. 1990, 94, 5247. 
+     [173] Ackerman, L.; Hippler, H.; Pagsberg, P.; Reihs, C.; Troe, J. J. Phys. Chem. 1990, 94, 5247. 
 	 (300K, absolute value measured directly, excitation : flash photolysis, analysis : VIS-UV absorption, pressure 0.01-0.99 atm) 
-	 H + phenyl --> benzene (R1)
-         Verified by Greg Magoon; reported rate coefficient is for k_inf (see Table 1); I can't seem to see where *1.6 uncertainty comes from
+     [172b] Emdee, J. L., Brezinsky, K., and Glassman, I., J. Phys. Chem. 96:2151–2161 (1992) DOI: 10.1021/j100184a025
+         H + phenyl --> benzene (R1 in [172]) (Reaction 1 in [172b])
+         Verified by Greg Magoon
+            [172]: reported rate coefficient is for k_inf (see Table 1); I can't seem to see where *1.6 uncertainty comes from; temperature range considered is 1000-1200 K; this paper cites: Emdee, J. L., Brezinsky, K., and Glassman, I., J. Phys. Chem. 96:2151–2161 (1992) DOI: 10.1021/j100184a025 (included as 172b, above), which, in turn, references [173] (Troe) paper...conditions for this paper are 1100 K - 1200 K
+            [173]: this contains the uncertainty estimate (see Table 2); I updated the DA uncertainty as I have done elsewhere; this seems to be the actual raw value that was subsequently interpreted/used in the paper cited by Ref. 172; conditions are 300 K and 1 bar, so apparently, the paper cited by Ref. 172 and/or Ref. 172 itself has assumed that it is in high-pressure limit and that it is temperature independent
+            [172b]: see Table III
 
 435: [174] Tsuboi, T.; Katoh, M.; Kikuchi, S.; Hashimoto, K. Jpn J. Appl. Phys. 1981, 20, 985.
 	 Data is estimated. Pressure 7.0 atm. 
