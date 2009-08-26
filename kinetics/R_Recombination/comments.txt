@@ -93,7 +93,7 @@
 440: [176] Tsang, W. Combust. Flame 1989, 78, 71. 
 	 RRK(M) extrapolation. 
 	 CH3 + iso-C3H7 --> iso-C4H10 
-         Verified by Greg Magoon; high-pressure rate constants are reported here; I don't immediately see an explicit temperature range for the polynomial fits, but the domain of the graphs agrees pretty well with the range in the rateLibrary (though the graphs seem to go slightly higher, to 2000 K); minor: I calculate 1.1E-9*6.022141E23=6.624E14, but rateLibrary has slightly different value of 6.64E14
+         Verified by Greg Magoon; high-pressure rate constants are reported here; I don't immediately see an explicit temperature range for the polynomial fits, but the domain of the graphs agrees pretty well with the range in the rateLibrary (though the graphs seem to go slightly higher, to 2000 K); the abstract says "from room to combustion temperatures", so if anything, the range specified in the rateLibrary is probably too narrow; minor: I calculate 1.1E-9*6.022141E23=6.624E14, but rateLibrary has slightly different value of 6.64E14
 
 441: [92] Tsang, W. J. Phys. Chem. Ref. Data 1990, 19, 1.
 	 CH3 + tert-C4H9 --> neo-C5H12
