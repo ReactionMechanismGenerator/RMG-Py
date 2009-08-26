@@ -62,7 +62,9 @@
 
 435: [174] Tsuboi, T.; Katoh, M.; Kikuchi, S.; Hashimoto, K. Jpn J. Appl. Phys. 1981, 20, 985.
 	 Data is estimated. Pressure 7.0 atm. 
-	 H + HCO --> H2CO
+	 H + HCO (+M) --> H2CO (+M) (Rxn -9)
+         ***NHP*** possible improvement for A (for rho = 1E-4): 6.61E10
+         Verified by Greg Magoon; three A factors have been reported (for 3 different densities); the value currently used in the rateLibrary appears to come from the middle density: 5E-5 (mol/cm^3, I think);I have assumed that the 2nd two columns in Table II are for the reverse reaction reference for this value is apparently in Japanese (see *** note in Table 2); minor issue: I calculate -19/4.184 = -4.54 kcal/mol (vs. -4.53 in rateLibrary)
 
 436: [106] Cobos, C. J.; Troe, J. J. Chem. Phys. 1985, 83, 1010. 
 	 Transition State Theory
