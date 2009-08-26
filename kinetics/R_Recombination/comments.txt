@@ -74,7 +74,7 @@
 	 Canonical Flexible Transition State Theory 
 	 CH3 + CH3 --> C2H6 (Same as 438) (Rxn. R1)
          NIST record: http://kinetics.nist.gov/kinetics/Detail?id=1998PES/PIL8526-8536:1
-         Verified by Greg Magoon; NIST record has slightly different parameters than RMG; paper values for k_inf with alpha = 1 appear in Tables 5/11 and values for alpha = 0.7 appear in Tables 6/12; NIST parameters agree within 10% of k_inf values in the paper with alpha = 1 A^-1 (Tables 11) (though in paper, they seem to suggest that alpha = 0.7 A^-1 (Table 6/12) matches experimental data better); I am assuming that their k is for the reaction, as written, so that no factor of two correction is needed; RMG parameters seem to agree with Table 5 values within 10% (agreement may not be quite as good as NIST fit, though it is not immediately obvious which fit is better without looking closer/doing calculations)
+         Verified by Greg Magoon; NIST record has slightly different parameters than RMG (it doesn't seem like best-fit parameters are reported in the paper); paper values for k_inf with alpha = 1 appear in Tables 5/11 and values for alpha = 0.7 appear in Tables 6/12; NIST parameters agree within 10% of k_inf values in the paper with alpha = 1 A^-1 (Tables 11) (though in paper, they seem to suggest that alpha = 0.7 A^-1 (Table 6/12) matches experimental data better); I am assuming that their k is for the reaction, as written, so that no factor of two correction is needed; RMG parameters seem to agree with Table 5 values within 10% (agreement may not be quite as good as NIST fit, though it is not immediately obvious which fit is better without looking closer/doing calculations)
 
 438: [94] Baulch, D. L.; Cobos, C. J.; Cox, R. A.; Frank, P.; Hayman, G.; Just, T.; Kerr, J. A.; 
 	 Murrells, T.; Pilling, M. J.; Troe, J.; Walker, R. W.; Warnatz, J. J. Phys. Chem. Ref. Data 1994, 23, 847.
@@ -93,6 +93,7 @@
 440: [176] Tsang, W. Combust. Flame 1989, 78, 71. 
 	 RRK(M) extrapolation. 
 	 CH3 + iso-C3H7 --> iso-C4H10 
+         Verified by Greg Magoon; high-pressure rate constants are reported here; I don't immediately see an explicit temperature range for the polynomial fits, but the domain of the graphs agrees pretty well with the range in the rateLibrary (though the graphs seem to go slightly higher, to 2000 K); minor: I calculate 1.1E-9*6.022141E23=6.624E14, but rateLibrary has slightly different value of 6.64E14
 
 441: [92] Tsang, W. J. Phys. Chem. Ref. Data 1990, 19, 1.
 	 CH3 + tert-C4H9 --> neo-C5H12
