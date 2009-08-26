@@ -53,7 +53,8 @@
 	 (1000-1200K, excitation : thermal, pressure 1.0 atm)
 	 [173] Ackerman, L.; Hippler, H.; Pagsberg, P.; Reihs, C.; Troe, J. J. Phys. Chem. 1990, 94, 5247. 
 	 (300K, absolute value measured directly, excitation : flash photolysis, analysis : VIS-UV absorption, pressure 0.01-0.99 atm) 
-	 H + phenyl --> benzene 	
+	 H + phenyl --> benzene (R1)
+         Verified by Greg Magoon; reported rate coefficient is for k_inf (see Table 1); I can't seem to see where *1.6 uncertainty comes from
 
 435: [174] Tsuboi, T.; Katoh, M.; Kikuchi, S.; Hashimoto, K. Jpn J. Appl. Phys. 1981, 20, 985.
 	 Data is estimated. Pressure 7.0 atm. 
