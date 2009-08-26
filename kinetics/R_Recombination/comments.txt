@@ -33,7 +33,9 @@
 
 431: [171] Fahr, A.; Laufer, A.; Klein, R.; Braun, W. J. Phys. Chem. 1991, 95, 3218.
 	 Absolute value measured directly. Excitation: flash photolysis, analysis : Vis-UV absorption. Pressure 0.13 atm. Original uncertainty 4.8E+13
-	 H + iso-C3H7 --> C3H8
+	 H + C2H3 -> C2H4 (Rxn. VIIC)
+         ***NHP***
+         Verified by Greg Magoon; note that the value in rateLibrary agrees with value reported in abstract, the value in Table III also includes contribution from Rxn. VIID, which apparently dominates at low pressures (p. 3222); DA uncertainty updated, as I have done elsewhere; also, for k, I calculate 1.2044E14 (which is very slightly different from 1.21 used here)
 
 432: [165] Duran, R. P.; Amorebieta, V. T.; Colussi, A. J. J. Phys. Chem. 1988, 92, 636.
 	 Ab initio
@@ -97,7 +99,9 @@
 
 442: [171] Fahr, A.; Laufer, A.; Klein, R.; Braun, W. J. Phys. Chem. 1991, 95, 3218.
 	 Absolute value measured directly. Excitation: flash photolysis, analysis : Vis-UV absorption. Pressure 0.13 atm. Original Uncertainty 1.8E+13
-	 CH3 + HC= CH2 --> CH3HC=CH2
+	 CH3. + .HC=CH2 --> CH3HC=CH2 (Rxn. IIIC)
+         ***NHP***
+         Verified by Greg Magoon; DA uncertainty updated, as I have done elsewhere
 
 443: [177] Tokmakov, I. V.; Park, J.; Gheyas, S. I.; Lin, M. C. J. Phys. Chem. A. 1999, 103, 3636.
 	 Data Derived from detailed balance/reverse rate. Uncertainty 8.0E-2. 
@@ -244,7 +248,8 @@
 	 
 464: [171] Fahr, A.; Laufer, A.; Klein, R.; Braun, W. J. Phys. Chem. 1991, 95, 3218.
 	 Absolute value measured directly. Excitation: flash photolysis, analysis : Vis-UV absorption. Original Uncertainty 1.2E+13. 
-	 C2H3 + C2H3 --> (E)-CH2=CHCH=CH2
+	 C2H3 + C2H3 --> (E)-CH2=CHCH=CH2 (Rxn. IIC)
+         Verified by Greg Magoon; DA uncertainty updated, as I have done elsewhere; based on Eqs. 3, 6, it looks like a factor of two correction is not needed
 
 465: [165] Duran, R. P.; Amorebieta, V. T.; Colussi, A. J. J. Phys. Chem. 1988, 92, 636.
 	 Ab initio. Pressure 0.10-1.0 atm. 
