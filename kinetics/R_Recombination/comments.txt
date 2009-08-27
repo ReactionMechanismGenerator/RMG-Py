@@ -115,11 +115,15 @@
 
 443: [177] Tokmakov, I. V.; Park, J.; Gheyas, S. I.; Lin, M. C. J. Phys. Chem. A. 1999, 103, 3636.
 	 Data Derived from detailed balance/reverse rate. Uncertainty 8.0E-2. 
-	 CH3 + phenyl --> C6H5CH3
+	 CH3 + phenyl --> C6H5CH3 (Rxn. 2) (cf. #444, below)
+         ***NHP***
+         Verified by Greg Magoon; 0.05 kcal barrier changed to 0.046 as reported in paper; uncertainties are in abstract; more precise values appear in Tables 3,4; however, note: in text on p. 3639, A factor uncertainty is expressed as additive on log scale...value is relatively small, so it probably doesn't make that much of a difference; DA uncertainty was added and DEa uncertainty was refined
 
 444: [178] Park, J.; Cheyas, s. I.; Lin, M. C. Int. J. Chem. Kinet. 1999, 31, 645.
 	 Absolute value measured directly. Excitation: flash photolysis, analysis : mass spectometry. Pressure 0.05 atm. Uncertainty 7.0E-02 
-	 CH3 + phenyl --> C6H5CH3
+	 CH3 + phenyl --> C6H5CH3 (Rxn. 4) (cf. #443, above)
+         ***NHP***
+         Verified by Greg Magoon; values appear in Appendix A and (with uncertainty) on p. 649; total pressure around 3 torr (Table II); DA uncertainty was added and DEa uncertainty was refined
 
 445: [89] Tsang, W.; Hampson, R. F. J. Phys. Chem. Ref. Data 1986, 15, 1087.
 	 CH3 + HCO --> CH3CHO 
