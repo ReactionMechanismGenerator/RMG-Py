@@ -282,7 +282,9 @@
 
 468: [181] Park, J. ; Lin, M. C. J. Phys. Chem. A. 1997, 101, 14
 	 Absolute value measured directly. Excitation : flash photolysis, analysis : mass spectometry. Original Uncertainty 1.1E+12.   
-	 phenyl + phenyl --> biphenyl 
+	 phenyl + phenyl --> biphenyl (Reaction 1)
+         ***NHP***
+         Verified by Greg Magoon: total pressure ~7 torr; DA uncertainty changed to additive, as reported in paper, and DEa uncertainty was refined
 
 469: [182] Stoeckel, F.; Schuh, M. D.; Goldstein, N.; Atkinson, G.H. Chem. Phys. 1985, 95, 135
 	 Absolute value measured directly. Excitation : flash photolysis, abalysis : VIS-UV absorption. Original uncertainty 1.2E+13. Pressure: 10 Torr (this is total pressure; see p. 141)
