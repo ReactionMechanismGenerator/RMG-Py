@@ -1,6 +1,8 @@
 481: [185] Roth, W.R.; Scholz, B.P.; Breuckmann, R.; Jelich, K.; Lennartz, H-W. Chem. Ber. 1982, 115, 1934. 
-	 CH2=CHC(=CH2)C(=CH2)CH-CH2 --> cyclobutene, 1,2-diethenyl.
+	 CH2=CHC(=CH2)C(=CH2)CH-CH2 --> cyclobutene, 1,2-diethenyl. (Apparently, reaction of 4->5; doesn't seem to be a birad recombination; note similar reaction in reference 6
 	 Data derived from fitting to a complex mechanism. Excitation: thermal, analysis: GC. Pressure 0.01-0.77 atm.
+         ***Should probably be removed, as this does not fit with this reaction family*** GRM: I have commented it out for the time-being
+         Verified by Greg Magoon (with translation help from CFG); Barrier, DA, and DEa changed based on Gl. 8 on p. 1937; I didn't check if this was high-pressure limit
 	 
 482: [186] Benson, S.W. J. Chem. Phys. 1967, 46, 4920.
 	 CH2=CHCH(.)CH2CH2CH(.)CH=CH2 --> 4-vinylcyclohexene.
