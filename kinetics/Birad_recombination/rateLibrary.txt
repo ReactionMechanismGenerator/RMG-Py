@@ -16,6 +16,6 @@ Arrhenius_EP
 //No.	Rn			Y_rad_out			Ypri_rad_out		Temp.		A			n	a		E0		DA		Dn		Da		DE0		Rank	Comments
 480.	Rn			Y_rad_out			Ypri_rad_out		300-1500	5E+11		0		0		30		0		0		0		0		0	Default
 //481.	R4_SDS		C_rad_out_2H		Cpri_rad_out_2H		495-549		2.5E+11		0		0		35.7	1.3E+11	0		0		0.5	5	[185] Roth et al.
-482.	R6_SSSDS	C_rad_out_H/OneDe	Cpri_rad_out_2H		550-650		2.0E+12		0		0		1.80	0		0		0		0		4	[186] Benson et al.
+482.	R6_SSSDS	C_rad_out_H/OneDe	Cpri_rad_out_2H		550-650		2.0E+12		0		0		1.80	0		0		0		1.0		4	[186] Benson et al.
 483.	R6_SDSDS	C_rad_out_2H		Cpri_rad_out_2H		555-606		2.77E+13	0		0		45.51	*1.2	0		0		0		3	[187] Grimme et al.
 484.	R6_SDSDS	C_rad_out_2H		Cpri_rad_out_2H		390-463		7.14E+11	0		0		29.01	*3.7	0		0		0.58	3	[188] Lewis et al.
