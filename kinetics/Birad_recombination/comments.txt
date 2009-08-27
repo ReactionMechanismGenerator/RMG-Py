@@ -20,3 +20,5 @@
 484: [188] Lewis, K.E.; Steiner, H. J. Chem. Soc. 1964, 3080.
 	 (Z)-CH2=CHCH=CHCH=CH2 --> 1,3-cyclohexadiene.
 	 Absolute value measured directly. Excitation: thermal, analysis: Vis-UV. Pressure0.08-0.11 atm.
+         ***Should probably be removed, as this does not seem to fit with this reaction family***
+         Checked by Greg Magoon: this reference does not seem to consider biradical form; as far as I can tell, they are considering "regular" 1,3,5-hexatriene (not diradical excited state) 
