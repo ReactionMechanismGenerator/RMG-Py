@@ -76,6 +76,10 @@
 
 291: [89] Tsang, W.; Hampson, R.F. J. Phys. Chem. Ref. Data 1986, 15, 1087. 
      literature review. C2H4 + CH3 --> n-C3H7. C.D.W. divided rate expression by 2, to get rate of addition per site
+	pg. 1191: Discussion on evaluated data
+	Entry 18,16 (b)
+	Recommended data is from other Review paper by Kerr and Parsonage (1972)
+	MRH 28-Aug-2009
 
 292: [147] Knyazev,V.D.;Slagle,I.R. J Phys. Chem. 1996 100, 5318.
      Pressure up to 10 atm. Excitation; thermal, analysis: mass spectrometry. C2H4 + C2H5--> n-C4H9. C.D.W. divided rate expression by 2, to get rate of addtion per site
@@ -88,6 +92,15 @@
 	 
 295: [89] Tsang et al. Literature Review.  
 	 C2H4 + OH --> CH2CH2OH  C.D.W. divided rate expression by 2, to get rate of addition per site
+	pg. 1189: Discussion on evaluated data (in theory)
+		Online reference does not have pages 1188-1189; pages 1198-1199 come between
+		pages 1187&1190 and between 1197&1200
+	Following discussion is only based on table (pg. 1097) that summarizes all evaluated
+		data in the reference
+	Entry 18,6 (b)
+	Table states rxn is pressure-dependent: C2H4+OH(+M)=C2H4OH(+M)
+		Only data available in table is k=9.0x10^-12
+	MRH 28-Aug-2009
 
 296: [149] Tsang experiments and limited review. CH3CH=CH2 + H --> iso-C3H7
 
