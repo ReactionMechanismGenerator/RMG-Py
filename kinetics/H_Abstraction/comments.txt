@@ -431,6 +431,9 @@
 	 H2 + O2 --> H + HO2 C.D.W divided original rate expression by 2, to get rate expression per H atom.
 	 pg 1091, Chemical Kinetic Database For Combustion Chemistry, 2. Index of Reactions and Summary of Recommended Rate Expressions. No. 3,2.
 	 Verified by Karma James
+	 pg. 1109: Discussion of evaluated data
+	 Recommended value computed using reverse rate and thermodynamics
+	 MRH 28-Aug-2009
 	 
 158: [119] Knyazev, V.D; Bencsura, A.; Stoliarov, S.I.; Slagle, I.R. J. Phys. Chem. 1996, 100, 11346.
 	 H2 + C2H3 --> H + C2H4 C.D.W divided original rate expression by 2 ( from A = 9.45E+03), to get rate expression per H atom.
@@ -451,14 +454,17 @@
 	 H2 + phenyl --> H + benzene C.D.W divided original rate expression by 2 ( from A = 5.71E+04), to get rate expression per H atom.
 	 
 163: [89] Tsang, W.; Hampson, R.F. J. Phys. Chem. Ref. Data 1986, 15, 1087.
-	 H2 + HCO --> H + CH20 C.D.W divided original rate expression by 2, to get rate expression per H atom.
+	 H2 + HCO --> H + CH2O C.D.W divided original rate expression by 2, to get rate expression per H atom.
 	 pg 1094, Chemical Kinetic Database For Combustion Chemistry, 2. Index of Reactions and Summary of Recommended Rate Expressions. No. 15,2.
 	 Verified by Karma James
+	 pg. 1147: Discussion of evaluated data
+	 Recommended value computed using reverse rate and thermodynamics
+	 MRH 28-Aug-2009
 	 
 164: [89] Tsang, W.; Hampson, R.F. J. Phys. Chem. Ref. Data 1986, 15, 1087.
 	 H2 + CH3CO --> H + CH3CHO C.D.W divided original rate expression by 2, to get rate expression per H atom.
 	 //WAS UNABLE TO VERIFY DATA!!! DATA NOT FOUND IN REFERENCE.
-	 pg. 1229
+	 pg. 1229: Discussion on evaluated data
 	 No experimental data for forward rxn, at the time
 	 Reviewers noticed that k(H+HCHO=H2+HCO) / k(H+CH3CHO=H2+CH3CO) ~ 2, due to double the number of H atoms available
 	 Used 0.5*k(H+HCHO=H2+HCO) and equilibrium constant to compute recommended rate expression
@@ -481,9 +487,9 @@
 168: [89] Tsang, W.; Hampson, R.F. J. Phys. Chem. Ref. Data 1986, 15, 1087.
 	 CH4 + C2H5 --> CH3 + C2H6 C.D.W divided original rate expression by 4, to get rate expression per H atom.
 	 //WAS UNABLE TO VERIFY DATA!!! DATA NOT FOUND IN REFERENCE.
-	 pg. 1177
+	 pg. 1177: Discussion on evaluated data
 	 No experimental data for forward rxn, at the time
-	 Recommended # from reverse rate and equilibrium constant
+	 Recommended data from reverse rate and equilibrium constant
 	 Verified by MRH on 10Aug2009
 	 
 169: [91] Tsang, W. J. Phys. Chem. Ref. Data 1988, 17, 887.
@@ -495,6 +501,11 @@
 	 CH4 + C2H --> CH3 + C2H2 C.D.W divided original rate expression by 4, to get rate expression per H atom.
 	 pg 1101, Chemical Kinetic Database For Combustion Chemistry, 2. Index of Reactions and Summary of Recommended Rate Expressions. No. 21,10.
 	 Verified by Karma James
+	 pg. 1220: Discussion of evaluated data
+	 Recommended data is expression given by Brown and Laufer (1981).
+	 They computed the pre-exponential factor by the bond energy-bond order (BEBO) method
+		and combined that with experimental k at room temperature to yield Arrhenius expression
+	 MRH 28-Aug-2009
 	 
 171: [124] Heckmann, E.; Hippler, H. Troe, J. Sypm. Int. Combust. Proc. 1996, 26, 543.
 	 Absolute value measured directly (excitation technique: thermal, analytical technique: vis-UV absorption) CH4 + phenyl --> benzene
@@ -504,11 +515,17 @@
 	 CH4 + HCO --> CH3 + CH2O C.D.W divided original rate expression by 4, to get rate expression per H atom.
 	 pg 1094, Chemical Kinetic Database For Combustion Chemistry, 2. Index of Reactions and Summary of Recommended Rate Expressions. No. 15,10.
 	 Verified by Karma James
+	 pg. 1150: Discussion on evaluated data
+	 Recommended data computed using reverse rate and equilibrium constant
+	 MRH 28-Aug-2009
 	 
 173: [89] Tsang, W.; Hampson, R.F. J. Phys. Chem. Ref. Data 1986, 15, 1087.
 	 CH4 + CH3CO --> CH3 + CH3CHO C.D.W divided original rate expression by 4, to get rate expression per H atom.
 	 pg 1102, Chemical Kinetic Database For Combustion Chemistry, 2. Index of Reactions and Summary of Recommended Rate Expressions. No. 22,10.
 	 Verified by Karma James
+	 pg. 1231: Discussion on evaluated data
+	 Recommended number computed from reverse rate and equilibrium constant
+	 MRH 28-Aug-2009
 	 
 174: [125] Melissas, V.S.; Truhlar, D.G. J. Chem. Phys. 1993,99,1010.
 	 CH4 + OH --> CH3 + H2O C.D.W divided original rate expression by 4, to get rate expression per H atom.
@@ -531,6 +548,9 @@
 	 CH4 + HO2 --> CH3 + H2O2 C.D.W divided original rate expression by 4, to get rate expression per H atom.
 	 pg 1093, Chemical Kinetic Database For Combustion Chemistry, 2. Index of Reactions and Summary of Recommended Rate Expressions. No. 10,7.
 	 Verified by Karma James
+	 pg. 1131: Discussion on evaluated data
+	 Recommended data is based on expression for HO2 attach on alkanes (Walker)
+	 MRH 28-Aug-2009
 	 
 179: [95] Baulch, D.L.; Cobos, C.J.; Cox, R.A.; Esser, C.; Frank, P.; Just, T.; Kerr, J.A.; Pilling, M.J.; 
 	 Troe, J.; Walker, R.W.; Warnatz, J. J. Phys. Chem. Ref. Data 1992, 21, 411.
@@ -543,6 +563,11 @@
 	 C2H6 + C2H --> C2H5 + C2H2 C.D.W divided original rate expression by 6, to get rate expression per H atom.
 	 pg 1101, Chemical Kinetic Database For Combustion Chemistry, 2. Index of Reactions and Summary of Recommended Rate Expressions. No. 21,11.
 	 Verified by Karma James
+	 pg. 1221: Discussion on evaluated data
+	 Recommended data is based on expression given by Brown and Laufer (1981).
+	 	Brown and Laufer calculated pre-exponential factor by BEBO method and
+	 	combined calculation with experimental measurement of k at room temperature.
+	 MRH 28-Aug-2009
 	  
 181: [126] Park, J.; Gheyas, S.; Lin, M.C. Int. J. Chem. Kinet. 2001, 33, 64.
 	 Absolute value measured directly. Static or low flow, flash photolysis excitation, Vis-UV absoprtion analysis. 
@@ -554,11 +579,18 @@
 	 C2H6 + HCO --> C2H5 + CH2O C.D.W divided original rate expression by 6(from A = 4.69E+04), to get rate expression per H atom.
 	 pg 1094, Chemical Kinetic Database For Combustion Chemistry, 2. Index of Reactions and Summary of Recommended Rate Expressions. No. 15,11.
 	 Verified by Karma James
+	 pg. 1150: Discussion on evaluated data
+	 Recommended data computed from reverse rate and equilibrium constant
+	 MRH 28-Aug-2009
 	 
 183: [89] Tsang, W.; Hampson, R.F. J. Phys. Chem. Ref. Data 1986, 15, 1087.
 	 C2H6 + CH3CO --> C2H5 + CH3CHO C.D.W divided original rate expression by 6(from A = 1.81E+04), to get rate expression per H atom.
 	 pg 1102, Chemical Kinetic Database For Combustion Chemistry, 2. Index of Reactions and Summary of Recommended Rate Expressions. No. 22,11.
 	 Verified by Karma James
+	 pg. 1231: Discussion on evaluated data
+	 Recommended data computed using rate of C2H5+CH2O divided by 2 (since only one O=C-H
+		hydrogen is present in CH3CHO) and equilibrium constant
+	 MRH 28-Aug-2009
 	 
 184: [95] Baulch, D.L.; Cobos, C.J.; Cox, R.A.; Esser, C.; Frank, P.; Just, T.; Kerr, J.A.; Pilling, M.J.; 
 	 Troe, J.; Walker, R.W.; Warnatz, J. J. Phys. Chem. Ref. Data 1992, 21, 411.
@@ -699,11 +731,23 @@
 	 C2H4 + O2 --> C2H3 + HO2 C.D.W divided original rate expression by 4, to get rate expression per H atom.
 	 pg 1097, Chemical Kinetic Database For Combustion Chemistry, 2. Index of Reactions and Summary of Recommended Rate Expressions. No. 18,3.
 	 Verified by Karma James
+	 pg. 1184: Discussion on evaluated data
+	 Recommended data follows Walker's estimates for O2+alkane
+		Note: The authors note that a lower lying channel, involving addition and
+		rearrangement prior to decomposition, may exist.
+	 MRH 28-Aug-2009
 
 208: [89] Tsang, W.; Hampson, R.F. J. Phys. Chem. Ref. Data 1986, 15, 1087.
 	 C2H4 + CO --> C2H3 + HCO C.D.W divided original rate expression by 4(from A= 1.51E+14), to get rate expression per H atom.
 	 pg 1097, Chemical Kinetic Database For Combustion Chemistry, 2. Index of Reactions and Summary of Recommended Rate Expressions. No. 18,14.
 	 Verified by Karma James
+	 pg. 1190: Discussion on evaluated data
+	 Recommended data based on assumed reverse rate (of 3.3x10^-12 cm3/molecule*s) and equilibrium constant
+	 NOTE: Data entry in rateLibrary.txt file has been commented out (not by MRH)
+		Header of rateLibrary.txt file states a new rxn family was created for special case
+		of CO acting as Y_rad_birad.  MRH does not see this family in database (neither
+		does the PopulateReactions module predict CO abstracting a Hydrogen atom from C2H4)
+	 MRH 28-Aug-2009
 
 209: [128] Mahmud, K.; Marshall, P.; Fontijn, A. J Phys. Chem. 1987, 91, `568.
 	 C2H4 + O --> C2H3 + OH C.D.W divided original rate expression by 4(from A= 1.51E+07), to get rate expression per H atom.
@@ -712,6 +756,11 @@
 	 C2H4 + C2H5 --> C2H3 + C2H6 C.D.W divided original rate expression by 4, to get rate expression per H atom.
 	 pg 1098, Chemical Kinetic Database For Combustion Chemistry, 2. Index of Reactions and Summary of Recommended Rate Expressions. No. 18,17.
 	 Verified by Karma James
+	 pgs. 1191-1192: Discussion on evaluated data
+	 Recommended data based on study performed by Halstead and Quinn
+	 	Tsang fit the data against BEBO calculations (to attain the Arrhenius A, n)
+		and manually adjusted the E.
+	 MRH 28-Aug-2009
 
 211: [95] Baulch, D.L.; Cobos, C.J.; Cox, R.A.; Esser, C.; Frank, P.; Just, T.; Kerr, J.A.; Pilling, M.J.; 
 	 Troe, J.; Walker, R.W.; Warnatz, J. J. Phys. Chem. Ref. Data 1992, 21, 411.
@@ -762,21 +811,39 @@
 	 C2H2 + O2 --> C2H + HO2 C.D.W divided original rate expression by 2, to get rate expression per H atom.
 	 pg 1100, Chemical Kinetic Database For Combustion Chemistry, 2. Index of Reactions and Summary of Recommended Rate Expressions. No. 20,3.
 	 Verified by Karma James
+	 pg. 1209: Discussion on evaluated data
+	 Recommended data based on report by Walker
+		NOTE: Authors note that a lower-lying channel of O2 addition, rearrangement,
+		and decomposition may exist.
+	 MRH 28-Aug-2009
 
 219: [89] Tsang, W.; Hampson, R.F. J. Phys. Chem. Ref. Data 1986, 15, 1087.
 	 C2H2 + CO --> C2H + HCO C.D.W divided original rate expression by 2, to get rate expression per H atom.
 	 pg 1100, Chemical Kinetic Database For Combustion Chemistry, 2. Index of Reactions and Summary of Recommended Rate Expressions. No. 20,14.
 	 Verified by Karma James
+	 pg. 1214: Discussion on evaluated data
+	 Recommended data based on assumed reverse rate (of 3.3x10^-11 cm3/molecule*s) and equilibrium constant
+	 NOTE: Data entry in rateLibrary.txt file has been commented out (not by MRH)
+		Header of rateLibrary.txt file states a new rxn family was created for special case
+		of CO acting as Y_rad_birad.  MRH does not see this family in database (neither
+		does the PopulateReactions module predict CO abstracting a Hydrogen atom from C2H2)
+	 MRH 28-Aug-2009
 
 220: [89] Tsang, W.; Hampson, R.F. J. Phys. Chem. Ref. Data 1986, 15, 1087.
 	 C2H2 + C2H5 --> C2H + C2H6 C.D.W divided original rate expression by 2 (from A= 2.71E+11), to get rate expression per H atom.
 	 pg 1100, Chemical Kinetic Database For Combustion Chemistry, 2. Index of Reactions and Summary of Recommended Rate Expressions. No. 20,17.
 	 Verified by Karma James
+	 pg. 1215: Discussion on evaluated data
+	 Recommended data based on reverse rate and equilibrium constant
+	 MRH 28-Aug-2009
 
 221: [89] Tsang, W.; Hampson, R.F. J. Phys. Chem. Ref. Data 1986, 15, 1087.
 	 C2H2 + OH --> C2H + H2O C.D.W divided original rate expression by 2, to get rate expression per H atom.
 	 pg 1100, Chemical Kinetic Database For Combustion Chemistry, 2. Index of Reactions and Summary of Recommended Rate Expressions. No. 20,6.
 	 Verified by Karma James
+	 pg. 1213: Discussion on evaluated data
+	 Recommended data is derived from BEBO method calculation
+	 MRH 28-Aug-2009
 
 222: [129] Asaba, T.; Fujii, N.; Proc. Int. Symp. Shock Tubes Waves 1971, 8, 1.
 	 Benzene + O2 --> phenyl + HO2 C.D.W divided original rate expression by 6(from A = 6.31E+13), to get rate expression per H atom.
@@ -813,6 +880,10 @@
 	 C.D.W divided original rate expression by 2 (from A= 6.03E+09), to get rate expression per H atom.
 	 pg 1106, Chemical Kinetic Database For Combustion Chemistry, 2. Index of Reactions and Summary of Recommended Rate Expressions. No. 26,12.
 	 Verified by Karma James
+	 pg. 1267: Discussion on evaluated data
+	 Recommended data based on triplet methylene's general lack of reactivity in H-atom abstractions
+	 	NOTE: Rate coefficient is an upper limit
+	 MRH 28-Aug-2009
 
 230: [94] Baulch, D.L.; Cobos, C.J.; Cox, R.A.; Frank, P.; Hayman, G,; Just, T.; Kerr, J.A.; Murrells, T.; Pilling, M.J.; 
 	 Troe, J.; Walker, R.W.; Warnatz, J. J. Phys. Chem. Ref. Data 1994, 23, 847.
@@ -824,6 +895,11 @@
 	 CH2O + C2H5 --> HCO + C2H6 C.D.W divided original rate expression by 2, to get rate expression per H atom.
 	 pg 1096, Chemical Kinetic Database For Combustion Chemistry, 2. Index of Reactions and Summary of Recommended Rate Expressions. No. 17,12.
 	 Verified by Karma James
+	 pg. 1178: Discussion on evaluated data
+	 Recommended data is the rate of CH2O+CH3-->HCO+CH4.
+		Authors note that rate coefficients for alkyl radicals w/aldehydic H-atoms are
+		similar (as noted by Kerr, J.A. and Trotman-Dickenson, A.F.
+	 MRH 28-Aug-2009
 
 232: [91] Tsang, W. J. Phys. Chem. Ref. Data 1988, 17, 887.
 	 CH2O + iso-C3H7 --> HCO + C3H8 C.D.W divided original rate expression by 2, to get rate expression per H atom.
@@ -840,11 +916,19 @@
 	 CH2O + C2H3 --> HCO + C2H4 C.D.W divided original rate expression by 2, to get rate expression per H atom.
 	 pg 1099, Chemical Kinetic Database For Combustion Chemistry, 2. Index of Reactions and Summary of Recommended Rate Expressions. No. 19,12.
 	 Verified by Karma James
+	 pg. 1197: Discussion on evaluated data
+	 Recommended data is the rate of CH2O+CH3-->HCO+CH4.
+		Authors note that rate coefficients for alkyl radicals w/aldehydic H-atoms are
+		similar (as noted by Kerr, J.A. and Trotman-Dickenson, A.F.
+	 MRH 28-Aug-2009
 
 235: [89] Tsang, W.; Hampson, R.F. J. Phys. Chem. Ref. Data 1986, 15, 1087.
 	 CH2O + CH3CO --> HCO + CH3CHO C.D.W divided original rate expression by 2, to get rate expression per H atom.
 	 pg 1102, Chemical Kinetic Database For Combustion Chemistry, 2. Index of Reactions and Summary of Recommended Rate Expressions. No. 22,12.
 	 Verified by Karma James
+	 pg. 1231: Discussion on evaluated data
+	 Recommended data based on "analogous systems"
+	 MRH 28-Aug-2009
 
 236: [95] Baulch, D.L.; Cobos, C.J.; Cox, R.A.; Esser, C.; Frank, P.; Just, T.; Kerr, J.A.; Pilling, M.J.; 
 	 Troe, J.; Walker, R.W.; Warnatz, J. J. Phys. Chem. Ref. Data 1992, 21, 411.
@@ -856,6 +940,11 @@
 	 CH2O + CH3O --> HCO + CH3OH C.D.W divided original rate expression by 2, to get rate expression per H atom.
 	 pg 1104, Chemical Kinetic Database For Combustion Chemistry, 2. Index of Reactions and Summary of Recommended Rate Expressions. No. 24,12.
 	 Verified by Karma James
+	 pg. 1245: Discussion on evaluated data
+	 Recommended data based on review by Gray, based on experiments performed by Hoare and Wellington.
+		Authors note that experimental conditions were such that rxn of interest was
+		in competition with the disproportionation of two CH3O radicals (CH3O+CH3O-->CH3OH+CH2O)
+	 MRH 28-Aug-2009
 
 238: [133] Eiteneer, B.; Yu, C.-L.; Goldenberg, M.; Frenklach, M. J. Phys. Chem. A. 1998, 102, 5196.
 	 CH2O + HO2 --> HCO + H2O2 C.D.W divided original rate expression by 2 (from A= 4.11E+04), to get rate expression per H atom.
@@ -922,21 +1011,33 @@
 	 H2O + CH3 --> OH + CH4. C.D.W divided original rate expression by 2 (from A= 4.83E+02), to get rate expression per H atom.
 	 pg 1095, Chemical Kinetic Database For Combustion Chemistry, 2. Index of Reactions and Summary of Recommended Rate Expressions. No. 16,9.
 	 Verified by Karma James
+	 pg. 1163: Discussion on evaluated data
+	 Recommended data based on reverse rate and equilibrium constant
+	 MRH 28-Aug-2009
 
 254: [89] Tsang, W.; Hampson, R.F. J. Phys. Chem. Ref. Data 1986, 15, 1087.
 	 H2O + C2H5 --> OH + C2H6. C.D.W divided original rate expression by 2 (from A= 3.39E+06), to get rate expression per H atom.
 	 pg 1096, Chemical Kinetic Database For Combustion Chemistry, 2. Index of Reactions and Summary of Recommended Rate Expressions. No. 17,9.
 	 Verified by Karma James
+	 pg. 1177: Discussion on evaluated data
+	 Recommended data based on reverse rate and equilibrium constant
+	 MRH 28-Aug-2009
 
 255: [89] Tsang, W.; Hampson, R.F. J. Phys. Chem. Ref. Data 1986, 15, 1087.
 	 H2O + C2H3 --> OH + C2H4. C.D.W divided original rate expression by 2 (from A= 4.83E+02), to get rate expression per H atom.
 	 pg 1098, Chemical Kinetic Database For Combustion Chemistry, 2. Index of Reactions and Summary of Recommended Rate Expressions. No. 19,9.
 	 Verified by Karma James
+	 pg. 1196: Discussion on evaluated data
+	 Recommended data based on expression for CH3+H2O=CH4+OH
+	 MRH 28-Aug-2009
 
 256: [89] Tsang, W.; Hampson, R.F. J. Phys. Chem. Ref. Data 1986, 15, 1087.
 	 H2O + HCO --> OH + CH2O. C.D.W divided original rate expression by 2 (from A= 2.35E+08), to get rate expression per H atom.
 	 pg 1094, Chemical Kinetic Database For Combustion Chemistry, 2. Index of Reactions and Summary of Recommended Rate Expressions. No. 15,9.
 	 Verified by Karma James
+	 pg. 1150: Discussion on evaluated data
+	 Recommended data based on reverse rate and equilibrium constant
+	 MRH 28-Aug-2009
 
 257: [141] Masgrau, L.; Gonzalez-Lafont, A.; Lluch, J.M. J. Phys. Chem. A. 1999, 103, 1044.
 	 H2O + OH --> OH + H2O . C.D.W refitted their k(T) to get A, n, and Ea, and divided original rate expression by 2, to get rate expression per H atom.

@@ -167,7 +167,7 @@ Arrhenius_EP
 154.	C/H3/Cs		O2b					300-1500	6.30E+13	0		0		50.76	0		0		0		0		5		Curran et al. [8] Rate expressions for H atom abstraction from fuels.	
 155.	C/H2/NonDeC	O2b					300-1500	1.40E+13	0		0		48.21	0		0		0		0		5		Curran et al. [8] Rate expressions for H atom abstraction from fuels.	
 156.	C/H/Cs3		O2b					300-1500	7.00E+12	0		0		46.06	0		0		0		0		5		Curran et al. [8] Rate expressions for H atom abstraction from fuels.	
-157.	H2			O2b					298-1000	7.25E+13	0		0		56.64	*5.0	0		0		0		4		Tsang et al. [89] literature review. 
+157.	H2			O2b					300-800	7.25E+13	0		0		56.64	*5.0	0		0		0		4		Tsang et al. [89] literature review. 
 158.	H2			Cd_pri_rad			200-3000	4.73E+03	2.56	0		5.03	0		0		0		0		3		Knyazev et al. [119] Transition state theory.
 159.	H2			Cd_pri_rad			300-3500	1.11E+04	2.48	0		7.13	0		0		0		0		3		Mebel et al. [120] Transition state theory.
 160.	H2			Cd_pri_rad			300-1500	1.58E+09	0.70	0		5.11	0		0		0		0		3 		Weissman et al. [121] Transition state theory.
@@ -180,7 +180,7 @@ Arrhenius_EP
 167.	C_methane	O2b					500-2000	9.925E+12	0		0		56.83	*10.0	0		0		0		4		Baulch et al. [95] literature review.
 168.	C_methane	C_rad/H2/Cs			300-2500	2.16E-02	4.14	0		12.56	*2.0	0		0		0		4		Tsang et al. [89] literature review. 
 169.	C_methane	C_rad/H/NonDeC		300-2500	1.81E-04	4.40	0		10.79	*3.0	0		0		0		4		Tsang et al. [91] literature review. 
-170.	C_methane	Ct_rad				300-2500	4.53E+11	0		0		0.50	*3.0	0		0		0		4		Tsang et al. [89] literature review. 
+170.	C_methane	Ct_rad				300-2500	4.53E+11	0		0		0.50	*10.0	0		0		0		4		Tsang et al. [89] literature review. 
 171.	C_methane	Cb_rad				560-1410	5.0E+11		0		0		8.60	0		0		0		0		2		Heckmann et al. [124] 
 172.	C_methane	CO_pri_rad			300-2500	1.82E+03	2.85	0		22.46	*5.0	0		0		0		4		Tsang et al. [89] literature review. 
 173.	C_methane	CO_rad/NonDe		300-2500	5.43E+02	2.88	0		21.46	*5.0	0		0		0		4		Tsang et al. [89] literature review. 
@@ -218,10 +218,10 @@ Arrhenius_EP
 204.	C/H/Cs3		CO_rad/NonDe		300-2500	3.43E+04	2.50	0		13.51	*10.0	0		0		0		4		Tsang [92] literature review.
 205.	C/H/Cs3		O_pri_rad			298-1150	2.57E+06	1.90	0		1.45	0		0		0		0		3		Cohen et al. [101] Transition state theory.
 206.	C/H/Cs3		O_rad/NonDeC		300-2500	2.29E+10	0		0		2.88	*10.0	0		0		0		4		Tsang [92] literature review.
-207.	Cd_pri		O2b					300-2500	1.055E+13	0		0		57.63	*5.0	0		0		0		4		Tsang [89] literature review.
+207.	Cd_pri		O2b					300-2500	1.055E+13	0		0		57.63	*10.0	0		0		0		4		Tsang [89] literature review.
 //208.	Cd_pri		CO_birad			300-2500	3.78E+13	0		0		90.62	*5.0	0		0		0		4		Tsang [89] literature review.
 209.	Cd_pri		O_atom_triplet		290-1510	3.78E+06	1.91	0		3.74	0		0		0		0		3		Mahmud et al. [128] Transition state theory
-210.	Cd_pri		C_rad/H2/Cs			300-2500	1.58E+02	3.13	0		18.00	*5.0	0		0		0		4		Tsang [89] literature review.
+210.	Cd_pri		C_rad/H2/Cs			300-2500	1.58E+02	3.13	0		18.00	*10.0	0		0		0		4		Tsang [89] literature review.
 211.	Cd_pri		O_pri_rad			650-1500	5.13E+12	0		0		5.94	*3.16	0		0		0		4		Baulch et al. [95] literature review.
 212.	Cd/H/NonDeC	O_atom_triplet		300-2500	6.02E+10	0.70	0		7.63	*3.0	0		0		0		4		Tsang [93] literature review.
 //213.	Cd/H/NonDeC	H_rad				300-2500	2.37E+00	0		0		7.31	*5.0	0		0		0		4		Tsang [93] literature review.
@@ -233,10 +233,10 @@ Arrhenius_EP
 216.	Cd/H/NonDeC	Ct_rad				300-2500	1.21E+12	0		0		0		*5.0	0		0		0		4		Tsang [93] literature review.
 //217.	Cd/H/NonDeC	O_pri_rad			300-2500	1.11E+06	2.00	0		1.45	0		0		0		0		4		Tsang [93] literature review.
 217.	Cd/H/NonDeC	O_pri_rad			700-2500	1.11E+06	2.00	0		1.45	*2		0.0		0.0		0.0		4		Tsang [93] literature review.
-218.	Ct_H		O2b					300-2500	6.05E+12	0		0		74.52	*5.0	0		0		0		4		Tsang [89] literature review.
-//219.	Ct_H		CO_birad			300-2500	2.41E+14	0		0		107		*5.0	0		0		0		4		Tsang [89] literature review.
+218.	Ct_H		O2b					300-2500	6.05E+12	0		0		74.52	*10.0	0		0		0		4		Tsang [89] literature review.
+//219.	Ct_H		CO_birad			300-2500	2.41E+14	0		0		107		*10.0	0		0		0		4		Tsang [89] literature review.
 220.	Ct_H		C_rad/H2/Cs			300-2500	1.36E+11	0		0		23.45	*5.0	0		0		0		4		Tsang [89] literature review.
-221.	Ct_H		O_pri_rad			300-2500	7.25E+03	2.68	0		12.04	*5.0	0		0		0		4		Tsang [89] literature review.
+221.	Ct_H		O_pri_rad			300-2500	7.25E+03	2.68	0		12.04	*10.0	0		0		0		4		Tsang [89] literature review.
 222.	Cb_H		O2b					1200-1700	1.052E+13	0		0		60.01	0		0		0		0		4		Asaba et al. [129]. Data are estimated.
 223.	Cb_H		H_rad				500-800		1.00E+08	1.80	0		16.35	0		0		0		0		4		Mebel et al. [122] RRK(M) extrapolation.
 224.	Cb_H		H_rad				298-1000	5.02E+11	0		0		8.11	0		0		0		0		5		Nicovich et al. [130]
@@ -250,7 +250,7 @@ Arrhenius_EP
 232.	CO_pri		C_rad/H/NonDeC		300-2500	5.40E+10	0		0		6.96	*2.5	0		0		0		4		Tsang [91] literature review.
 233.	CO_pri		C_rad/Cs3			300-2500	1.63E+09	0		0		3.56	*5.0	0		0		0		4		Tsang [92] literature review.
 234.	CO_pri		Cd_pri_rad			300-2500	2.71E+03	2.81	0		5.86	*5.0	0		0		0		4		Tsang [89] literature review.
-235.	CO_pri		CO_rad/NonDe		300-2500	9.05E+10	0		0		12.92	*5.0	0		0		0		4		Tsang [89] literature review.
+235.	CO_pri		CO_rad/NonDe		300-2500	9.05E+10	0		0		12.92	*10.0	0		0		0		4		Tsang [89] literature review.
 236.	CO_pri		O_pri_rad			300-3000	1.72E+09	1.18	0		-0.45	*10.0	0		0		0		4		Baulch et al. [95] literature review.
 237.	CO_pri		O_rad/NonDeC		300-2500	5.10E+10	0		0		2.98	*3.0	0		0		0		4		Tsang [89] literature review.
 238.	CO_pri		O_rad/NonDeO		641-1600	2.06E+04	2.50	0		10.21	0		0		0		0		4		Eiteneer et al. [133] literature review.
