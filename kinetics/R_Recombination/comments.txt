@@ -48,6 +48,11 @@
 	 pg 1101, Chemical Kinetic Database For Combustion Chemistry, 2. Index of Reactions and Summary of Recommended Rate Expressions. No. 21,4.
 	 Verified by Karma James
 	 NOTE: Reported rate coefficients are for k_inf (MRH 11Aug2009)
+	 pg. 1218-1219: Discussion on evaluated data
+	 Recommended data (k_inf) based on reverse rate and equilibrium constant
+		Fall-off and collisional efficiencies are available in reference
+		(although we do not store them in RMG_database)
+	 MRH 28-Aug-2009
 
 434: [172] Davis, S. G.; Wang, H.; Brezinsky K.; Law C. K. Symp. Int. Combust. Proc. 1996, 26, 1025.
 	 (1000-1200K, excitation : thermal, pressure 1.0 atm)
@@ -129,6 +134,11 @@
 	 CH3 + HCO --> CH3CHO 
 	 pg 1095, Chemical Kinetic Database For Combustion Chemistry, 2. Index of Reactions and Summary of Recommended Rate Expressions. No. 16,15.
 	 Verified by Karma James
+	 pg. 1167: Discussion on evaluated data
+	 Recommended data calculated using reverse rate and equilibrium constant
+		Authors note that their RRKM calculations suggest that rxn is very close
+		to high-P limit at low temperatures.
+	 MRH 28-Aug-2009
 
 446: [179] Hassinen, E.; Kalliorinne, K; Koskikallio, J. Int. J. Chem. Kinet. 1990, 22, 741
 	 Data derived from fitting to a complex mechanism. Excitation : direct photolysis, analysis : GC. Pressure 96? and 99 kPa with He, 5.5 kPa and 25 kPa with CO2. 
@@ -141,6 +151,16 @@
 	 pg 1103, Chemical Kinetic Database For Combustion Chemistry, 2. Index of Reactions and Summary of Recommended Rate Expressions. No. 22,16.
 	 Verified by Karma James
 	 NOTE: Reported rate coefficients are for k_inf (MRH 11Aug2009)
+	 pg. 1232-1233: Discussion on evaluated data
+	 Recommended data computed using reverse rate constant (assuming pre-exponential factor
+		of 5x10^16 s^-1) and equilibrium constant.
+	 Fall-off curves and collisional efficiencies are reported (although we do not
+		store them in RMG_database)
+	 Rate coefficient expression given on pg. 1232 different from that reported in
+		table on pg. 1103.  Value in RMG and on kinetics.nist.gov agree with the
+		expression reported in table.
+	 MRH 28-Aug-2009
+			
 
 448: [94] Baulch, D. L.; Cobos, C. J.; Cox, R. A.; Frank, P.; Hayman, G.; Just, T.; Kerr, J. A.;
 	 Murrells, T.; Pilling, M. J.; Troe, J.; Walker, R. W.; Warnatz, J. J. Phys. Chem. Ref. Data 1994, 23, 847.
@@ -153,6 +173,10 @@
 	 CH3 + CH3O --> (CH3)2O
 	 pg 1104, Chemical Kinetic Database For Combustion Chemistry, 2. Index of Reactions and Summary of Recommended Rate Expressions. No. 24,16.
 	 Verified by Karma James
+	 pg. 1247: Discussion on evaluated data
+	 Recommended data from study by Gray, Shaw, and Thynne (1967).  Expression was
+		estimated from rates of CH3+CH3=C2H6 and CH3O+CH3O=CH3OOCH3.
+	 MRH 28-Aug-2009
 
 450: [95] Baulch, D. L.; Cobos, C. J.; Cox, R. A.; Esser, C.; Frank, P.; Just, T.; Kerr, 
 	 J. A.; Pilling, M. J.; Troe, J.; Walker, R. W.; Warnatz, J. J. Phys. Chem. Ref. Data 1992, 21, 411.
@@ -180,11 +204,17 @@
 	 C2H5 + HCO --> C2H5CHO
 	 pg 1097, Chemical Kinetic Database For Combustion Chemistry, 2. Index of Reactions and Summary of Recommended Rate Expressions. No. 17,15.
 	 Verified by Karma James
+	 pg. 1179: Discussion on evaluated data
+	 Recommended data is based on the rate expression for CH3+CHO-->H3CCHO
+	 MRH 28-Aug-2009
 
 454: [89] Tsang, W.; Hampson, R. F. J. Phys. Chem. Ref. Data 1986, 15, 1087.
 	 C2H5 + CH3CO --> C2H5COCH3
 	 pg 1103, Chemical Kinetic Database For Combustion Chemistry, 2. Index of Reactions and Summary of Recommended Rate Expressions. No. 22,17.
 	 Verified by Karma James
+	 pg. 1234: Discussion on evaluated data
+	 Recommended data is based on the rate expression for CH3+CH3CO-->(CH3)2CO
+	 MRH 28-Aug-2009
 
 455: [180] Fagerstrom, K.; Lund, A.; Mahmoud, G.; Jodkowski, J. T.; Ratajczak, E. Chem. Phys. Lett. 1993, 208, 321
 	 Excitation : radiolysis, analysis : VIS-UV absorption. Pressure 0.25-0.99 bar SF6. Original Uncertainty 1.0E+13. 
@@ -275,6 +305,10 @@
 	 C2H3 + HCO --> CH2=CHCHO
 	 pg 1099, Chemical Kinetic Database For Combustion Chemistry, 2. Index of Reactions and Summary of Recommended Rate Expressions. No. 19,15.
 	 Verified by Karma James
+	 pg. 1199: Discussion on evaluated data
+	 Recommended data based on rate expression for CH3+HCO-->CH3CHO
+		Authors note that rate expression will be in fall-off region at high temperatures
+	 MRH 28-Aug-2009
 
 467: [124] Heckmann, E.; Hippler, H.; Troe, J. Symp. Int. Combust. Proc.1996, 26, 543.
 	 Absolute value measured directly. Excitation : thermal, analysis : Vis-UV absorption. 
@@ -296,11 +330,18 @@
 	 HCO + CH3CO --> CH3COCHO
 	 pg 1102, Chemical Kinetic Database For Combustion Chemistry, 2. Index of Reactions and Summary of Recommended Rate Expressions. No. 22,15.
 	 Verified by Karma James
+	 pg. 1232: Discussion on evaluated data
+	 Recommended data is assigned a value of 3x10^-11 cm3/molecule*s (This appears to be
+		the default value the authors assign for recombination rxns)
+	 MRH 28-Aug-2009
 	 
 471: [89] Tsang, W.; Hampson, R. F. J. Phys. Chem. Ref. Data 1986, 15, 1087.
 	 CH3CO + CH3CO --> (CH3CO)2
 	 pg 1103, Chemical Kinetic Database For Combustion Chemistry, 2. Index of Reactions and Summary of Recommended Rate Expressions. No. 22,22.
 	 Verified by Karma James
+	 pg. 1234-1235: Discussion on evaluated data
+	 Recommended data is assigned based on 5 reported direct measurements of rate coefficient
+	 MRH 28-Aug-2009
 	 
 472: [183] DeMore, W. B.; Sander, S. P.; Golden, D. M.; Hampson, R. F.; Kurylo, M.J.; 
 	 Howard, C. J.; Ravishankara, A. R.; Kolb, C. E.; Molina, M .J. JPL publication 97-4 1997, 1.
@@ -313,6 +354,11 @@
 	 CH3O + CH3O --> CH3OOCH3
 	 pg 1105, Chemical Kinetic Database For Combustion Chemistry, 2. Index of Reactions and Summary of Recommended Rate Expressions. No. 24,24.
 	 Verified by Karma James
+	 pg. 1251: Discussion on evaluated data (in theory)
+		Online reference does not contain pg. 1251.  The following discussion is based
+		on the information provided in the table on pg. 1105
+	 Entry 24,24 (b)
+	 MRH 28-Aug-2009
 
 474: [8] Curran, H.J.; Gaffuri, P.; Pit z, W.J.; Westbrook, C.K. Combust. Flame 2002, 129, 253. 
 	 Curran's estimation, based on half that recommended by Allara and Shaw [146] for H (rad) and R (rad) recombination reactions

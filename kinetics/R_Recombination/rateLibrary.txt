@@ -18,7 +18,7 @@ Arrhenius_EP
 430.		H_rad			C_rad/H/NonDeC	298			1.5E+14		0		0		0		0.3E+14	0		0		0		5	Munk et al. [170]
 431.		H_rad			Cd_pri_rad		298			1.21E+14	0		0		0		4.82E+13	0		0		0		3	Fahr et al. [171]
 432.		H_rad			Cd_pri_rad		700-1300	5.36E+14	0		0		0.98	0		0		0		0		3	Duran et al. [165] 
-433.		H_rad			Ct_rad			300-2500	1.81E+14	0		0		0		*1.5	0		0		0		4	Tsang [89] literature review. 
+433.		H_rad			Ct_rad			300-2500	1.81E+14	0		0		0		*3	0		0		0		4	Tsang [89] literature review. 
 434.		H_rad			Cb_rad			300-1200	2.2E+14		0		0		0		0.8E+14	0		0		0		3	Davis et al. [172] Ackermann et al. [173] Emdee et al. [172b]
 435.		H_rad			CO_pri_rad		1500-1900	4.68E+10	0		0		-4.53	0		0		0		0		4	Tsuboi et al. [174]
 436.		H_rad			O_pri_rad		300-2100	1.62E+14	0		0		0.15	0		0		0		0		3	Cobos et al. [106]
@@ -40,7 +40,7 @@ Arrhenius_EP
 451.		C_rad/H2/Cs		C_rad/H/NonDeC	300-2500	1.15E+14	-0.35	0		0		*1.8	0		0		0		4	Tsang [91] literature review.
 452.		C_rad/H2/Cs		C_rad/Cs3		300-2500	6.91E+14	-0.75	0		0		*2.0	0		0		0		4	Tsang [92] literature review.
 453.		C_rad/H2/Cs		CO_pri_rad		300-2500	1.81E+13	0		0		0		*3.0	0		0		0		4	Tsang [89] literature review.
-454.		C_rad/H2/Cs		CO_rad/NonDe	300-2500	3.12E+14	-0.50	0		0		*2.0	0		0		0		4	Tsang [89] literature review.
+454.		C_rad/H2/Cs		CO_rad/NonDe	300-2500	3.12E+14	-0.50	0		0		*3.0	0		0		0		4	Tsang [89] literature review.
 455.		C_rad/H2/Cs		O_pri_rad		200-400		7.7E+13	0		0		0		1E+13	0		0		0		4	Fagerstrom et al. [180]
 456.		C_rad/H/NonDeC	C_rad/H/NonDeC	300-2500	3.25E+14	-0.70	0		0		*2.0	0		0		0		4	Tsang [91] literature review.
 457.		C_rad/H/NonDeC	C_rad/Cs3		300-2500	4.12E+15	-1.10	0		0		*1.5	0		0		0		4	Tsang [92] literature review.
