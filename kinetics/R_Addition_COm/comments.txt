@@ -17,12 +17,24 @@
 	 pg 1096, Chemical Kinetic Database For Combustion Chemistry, 2. Index of Reactions and Summary of Recommended Rate Expressions. No. 17,14.
 	 Verified by Karma James
 	 NOTE: Reported rate coefficients are for k_inf (MRH 11Aug2009)
+	 pg. 1178-1179: Discussion on evaluated data
+	 Recommended data (in the form of k_inf) comes from expression given by Watkins and Thompson
+		Fall-off corrections and collision efficiencies are also available
+		(although we do not store them in RMG_database)
+	 MRH 28-Aug-2009
 
 421: [89] Tsang, W.; Hampson, R.F. J.Phys. Chem. Ref. Data 1986, 15, 1087.
 	 CO + C2H3 --> CH2=CHCO.
 	 pg 1099, Chemical Kinetic Database For Combustion Chemistry, 2. Index of Reactions and Summary of Recommended Rate Expressions. No. 19,14.
 	 Verified by Karma James
 	 NOTE: Reported rate coefficients are for k_inf (MRH 11Aug2009)
+	 pg. 1198-1199: Discussion of evaluated data
+	 Recommended data (in the form of k_inf) is assumed to be equal to the rate expression
+		for CO+C2H5-->H3C-CH2-C=O.  Authors note the rxn is in the fall-off region
+		under all conditions.
+		Fall-off corrections and collision efficiencies are also available
+		(although we do not store them in RMG_database).
+	 MRH 28-Aug-2009
 	 
 422: [104] Nam, G.-J.; Xia, W.; Park, J.; Lin, M. Phys. Chem. A 2000, 104, 1233.	
 	 Phenyl + CO --> Benzoyl. Original deltaA = 2.8E+11
