@@ -1062,6 +1062,9 @@
 	 Data for Rate Expression 38,26 (pg. 493)
 	 Stated uncertainty factor is 3
 	 Verified by MRH on 11Aug2009
+	Entry 38,26 (b): No data available at the time.  Author suggests the rate coefficient
+		expression for CH3+CH3OH=CH4+CH3O
+	MRH 30-Aug-2009
 
 261: [100] Jodkowski, J.T.; Rauez, M.-T.; Rayez, J.-C. J. Phys. Chem. A. 1999, 103, 3750.
 	 The calculated rate constants are in good agreement with experiment. CH3OH + CH3 --> CH3O + CH4 (Rxn. R3 from paper)
@@ -1072,6 +1075,12 @@
 	 pg 475, Chemical Kinetic Database For Combustion Chemistry, Part 2 - Methanol. 
 	 Index of Reactions and Summary of Recommended Rate Expressions. No. 38,17.
 	 Verified by Karma James
+	pg. 489: Discussion on evaluated data
+	Entry 38,17 (b): No data available at the time.  Author notes ethyl radicals are known
+		to be considerably less reactive than methyl.  Author recommends the rate coefficient
+		expression of CH3+CH3OH=CH4+CH3O, with a slight adjustment (based on the observed
+		trends in methyl vs. ethyl radical reactivity with hydrocarbons).
+	MRH 30-Aug-2009
 
 //263: [90] Tsang, W. J. Phys. Chem. Ref. Data 1987, 16, 471.
 263: [91] Tsang, W. J. Phys. Chem. Ref. Data 1988, 17, 887.
@@ -1100,12 +1109,20 @@
 	 pg 475, Chemical Kinetic Database For Combustion Chemistry, Part 2 - Methanol. 
 	 Index of Reactions and Summary of Recommended Rate Expressions. No. 38,19.
 	 Verified by Karma James
+	pg. 489: Discussion on evaluated data
+	Entry 38,19 (b): No data available at the time.  Author recommends the rate coefficient
+		expression for CH3+CH3OH=CH4+CH3O.
+	MRH 30-Aug-2009
 	 
 266: [90] Tsang, W. J. Phys. Chem. Ref. Data 1987, 16, 471.
 	 CH3OH + C2H --> CH3O + C2H2
 	 pg 475, Chemical Kinetic Database For Combustion Chemistry, Part 2 - Methanol. 
 	 Index of Reactions and Summary of Recommended Rate Expressions. No. 38,21.
 	 Verified by Karma James
+	pg. 490: Discussion on evaluated data
+	Entry 38,21 (b): No data available at the time.  Author recommends a rate coefficient
+		expression based on measurements of C2H+CH4 and C2H+C2H6 rxns
+	MRH 30-Aug-2009
 
 267: [100] Jodkowski, J.T.; Rauez, M.-T.; Rayez, J.-C. J. Phys. Chem. A. 1999, 103, 3750.
 	 The calculated rate constants are in good agreement with experiment. CH3OH + OH --> CH3O + H2O (Rxn. R5 from paper)
