@@ -86,6 +86,11 @@
 
 293: [90] Tsang,W.J. Phys. Chem. Ref. Data 1987,16,471.
      literature review. C2H4+ CH2OH --> CH2CH2CH2OH C.D.W. divided rate expression by 2, to get rate of addition per site
+	pg. 502: Discussion on evaluated data
+	Entry 39,18 (a): No data available at the time.  Author suggests rate coefficient expression
+		of 8.0x10^-14 * exp(-3500/T) cm3/molecule/s noting rates of alkyl radical addition
+		to ethylene are similar (Kerr, J.A., Trotman-Dickenson, A.F.)
+	MRH 30-Aug-2009
 
 294: [148] Weissman and Benson. Estimated values. Activation energy is a lower limit. Pressure 1.00 atm. 
 	  C2H4 + C2H3 --> CH2=CHCH2CH2 C.D.W. divided rate expression by 2, to get rate of addition per site
