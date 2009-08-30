@@ -73,19 +73,19 @@ Arrhenius_EP
 536.		O_atom_triplet	O_Csrad				298			9.04E+13	0		0		0		*1.5	0		0		0		3		Grotheer et al [189].
 537.		CH2_triplet		O_Csrad				300-2500	1.21E+12	0		0		0		*3.0	0		0		0		4		Tsang [90] Literature review.
 538.		H_rad			O_Csrad				295			2.0E+13		0		0		0		*2.0	0		0		0		4		Edelbuttel-Einhaus et al [190].
-539.		H_rad			O_Csrad				300-2500	6.03E+12	0		0		0		*2.0	0		0		0		4		Tsang [90] Literature review.
+539.		H_rad			O_Csrad				300-2500	6.03E+12	0		0		0		*3.0	0		0		0		4		Tsang [90] Literature review.
 540.		C_methyl		O_Csrad				298			8.49E+13	0		0		0		0		0		0		0		3		Pagsberg et al [191].
-541.		C_methyl		O_Csrad				300-2500	2.41E+12	0		0		0		*5.0	0		0		0		4		Tsang [90] Literature review. CH3 + CH20H --> CH4 + CH2O
-542.		C_rad/H2/Cs		O_Csrad				300-2500	2.41E+12	0		0		0		*5.0	0		0		0		4		Tsang [90] Literature review. C2H5 + CH20H --> C2H6 + CH2O
-543.		C_rad/H2/Cd		O_Csrad				300-2500	1.81E+13	0		0		0		*2.5	0		0		0		4		Tsang [90] Literature review. CH2CH=CH2 + CH20H --> CH3CH=CH2 + CH2O
-544.		C_rad/H2/O		O_Csrad				300-2500	4.82E+12	0		0		0		*2.0	0		0		0		4		Tsang [90] Literature review. CH2OH + CH20H --> CH3OH + CH2O
-545.		C_rad/H/NonDeC	O_Csrad				300-2500	2.35E+12	0		0		0		*5.0	0		0		0		4		Tsang [90] Literature review. iso-C3H7 + CH20H --> C3H8 + CH2O
-546.		C_rad/Cs3		O_Csrad				300-2500	6.91E+14	-0.75	0		0		*2.0	0		0		0		4		Tsang [90] Literature review. tert-C4H9 + CH20H --> iso-C4H10 + CH2O
-547.		Cd_pri_rad		O_Csrad				300-2500	3.01E+13	0		0		0		*2.5	0		0		0		4		Tsang [90] Literature review. C2H3 + CH20H --> C2H4 + CH2O
-548.		Ct_rad			O_Csrad				300-2500	3.61E+13	0		0		0		*5.0	0		0		0		4		Tsang [90] Literature review. C2H + CH20H --> C2H2 + CH2O
-549.		CO_pri_rad		O_Csrad				300-2500	1.81E+14	0		0		0		*3.0	0		0		0		4		Tsang [90] Literature review. HCO + CH20H --> C2H2 + CH2O
-550.		O_pri_rad		O_Csrad				300-2500	2.41E+13	0		0		0		*2.0	0		0		0		4		Tsang [90] Literature review. OH + CH20H --> CH2O + CH2O
-551.		O_rad/NonDeC	O_Csrad				300-2500	2.41E+13	0		0		0		*2.0	0		0		0		4		Tsang [90] Literature review. CH3O + CH20H --> CH3OH + CH2O
-552.		O_rad/NonDeO	O_Csrad				300-2500	1.21E+13	0		0		0		*2.0	0		0		0		4		Tsang [90] Literature review. H2O + CH20H --> H2O2 + CH2O
+541.		C_methyl		O_Csrad				300-2500	2.41E+12	0		0		0		*5.0	0		0		0		4		Tsang [90] Literature review.
+542.		C_rad/H2/Cs		O_Csrad				300-2500	2.41E+12	0		0		0		*5.0	0		0		0		4		Tsang [90] Literature review.
+543.		C_rad/H2/Cd		O_Csrad				300-2500	1.81E+13	0		0		0		*2.5	0		0		0		4		Tsang [93] Literature review. CH2CH=CH2 + CH2OH --> CH3CH=CH2 + CH2O
+544.		C_rad/H2/O		O_Csrad				300-2500	4.82E+12	0		0		0		*2.0	0		0		0		4		Tsang [90] Literature review.
+545.		C_rad/H/NonDeC	O_Csrad				300-2500	2.35E+12	0		0		0		*5.0	0		0		0		4		Tsang [91] Literature review. iso-C3H7 + CH2OH --> C3H8 + CH2O
+546.		C_rad/Cs3		O_Csrad				300-2500	6.91E+14	-0.75	0		0		*2.0	0		0		0		4		Tsang [92] Literature review. tert-C4H9 + CH2OH --> iso-C4H10 + CH2O
+547.		Cd_pri_rad		O_Csrad				300-2500	3.01E+13	0		0		0		*2.5	0		0		0		4		Tsang [90] Literature review.
+548.		Ct_rad			O_Csrad				300-2500	3.61E+13	0		0		0		*5.0	0		0		0		4		Tsang [90] Literature review.
+549.		CO_pri_rad		O_Csrad				300-2500	1.81E+14	0		0		0		*3.0	0		0		0		4		Tsang [90] Literature review.
+550.		O_pri_rad		O_Csrad				300-2500	2.41E+13	0		0		0		*2.0	0		0		0		4		Tsang [90] Literature review.
+551.		O_rad/NonDeC	O_Csrad				300-2500	2.41E+13	0		0		0		*2.0	0		0		0		4		Tsang [90] Literature review.
+552.		O_rad/NonDeO	O_Csrad				300-2500	1.21E+13	0		0		0		*2.0	0		0		0		4		Tsang [90] Literature review.
 10001		Y_rad			O_Orad				300-1500	3E+11		0		0		0		0		0		0		0		0
 

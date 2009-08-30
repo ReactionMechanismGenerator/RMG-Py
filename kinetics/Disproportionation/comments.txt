@@ -1,12 +1,104 @@
 536: [189] Grotheer, H.; Riekert, G.; Walter, D.; Just, T. Symp. Int. Combust. Proc. 1989, 22, 963.
 	 Absolute value measured directly. Excitation: discharge, analysis: mass spectroscopy. Original uncertainty 3.0E+13
 	 O + CH2OC --> OH + CH2O, O + CH3CHOH --> OH + CH3CHO
+
+537: [90] Tsang, W.; Journal of Physical and Chemical Reference Data (1987), 16(3), 471-508.
+	Literature review: CH2 + CH2OH --> CH3 + CH2O
+	pg. 505: Discussion on evaluated data
+	Entry 39,26 (b): CH2OH + CH2(triplet) --> CH3 + CH2O
+	Author estimates the rate of disproportionation as 2.0x10^-12 cm3/molecule/s.  No data at the time.
+	MRH 30-Aug-2009
 	 
 538: [190] Edelbuttel-Einhaus, J.; Hoyermann, K.; Rohde, G.; Seeba, J. Symp. Int. Combust. Proc. 1992, 22, 661.
 	 Data derived from fitting to a complex mechanism. Excitation: discharge, analysis: mass spectroscopy. Original uncertainty 1.0E+13
 	 H + CH3CHOH --> H2 + CH3CHO
+
+539: [90] Tsang, W.; Journal of Physical and Chemical Reference Data (1987), 16(3), 471-508.
+	Literature review: H + CH2OH --> H2 + CH2O
+	pg. 496-497: Discussion on evaluated data
+	Entry 39,4 (a): CH2OH + H --> H2 + CH2O
+	Author estimates disproportionation rate will be faster than the H+C2H5=H2+C2H4 reaction
+		and reports rate coefficient as 1.0x10^-11 cm3/molecule/s.  No data at the time.
+	MRH 30-Aug-2009
 	 
 540: [191] Pagsberg, P.; Munk, J.; Sillesen, A.; Anastasi, C. Chem. Phys. Lett. 1988, 146, 375.
 	 Absolute value measured directly. Excitatio: electron beam, analysis: Vis-UV absorption.
 	 CH2OH + CH3 --> CH2O + CH4
-	 
+
+541: [90] Tsang, W.; Journal of Physical and Chemical Reference Data (1987), 16(3), 471-508.
+	Literature review: CH3 + CH2OH --> CH4 + CH2O
+	pg. 500-501: Discussion on evaluated data
+	Entry 39,16 (b): CH2OH + CH3 --> CH4 + CH2O
+	Author estimates ratio of disproportionation rate to addition rate to be 0.2,
+		namely 4x10^-12 cm3/molecule/s.  No data at the time.
+	MRH 30-Aug-2009
+
+542: [90] Tsang, W.; Journal of Physical and Chemical Reference Data (1987), 16(3), 471-508.
+	Literature review: C2H5 + CH2OH --> C2H6 + CH2O
+	pg. 502: Discussion on evaluated data
+	Entry 39,17 (b): C2H5 + CH2OH --> C2H6 + CH2O
+	Author estimates the disproportionation rate coefficient as 4x10^-12 cm3/molecule/s.
+		No data at the time.
+	MRH 30-Aug-2009
+
+544: [90] Tsang, W.; Journal of Physical and Chemical Reference Data (1987), 16(3), 471-508.
+	Literature review: CH2OH + CH2OH --> CH3OH + CH2O
+	pg. 506: Discussion on evaluated data
+	Entry 39,39 (b): CH2OH + CH2OH --> CH3OH + CH2O
+	Meier, et al. (1985) measured the rate of addition + disproportionation.  Tsang estimates
+		a disproportionation to combination ratio of 0.5
+	NOTE: Rate coefficient given in table at beginning of reference (summarizing all data
+		presented) gives k_a+b = 2.4x10^-11, leading to k_b = 8x10^-12.  NIST's online
+		database (kinetics.nist.gov) reports this number as well.  However, the discussion
+		on pg. 506 suggests k_a+b = 1.5x10^-11, leading to k_b = 5x10^-12.
+	MRH 30-Aug-2009
+	*** NEED TO INVESTIGATE ***
+
+547: [90] Tsang, W.; Journal of Physical and Chemical Reference Data (1987), 16(3), 471-508.
+	Literature review: CH2OH + C2H3 --> C2H4 + CH2O
+	pg. 503: Discussion on evaluated data
+	Entry 39,19 (a): CH2OH + C2H3 --> C2H4 + CH2O
+	Author suggests a disproportionation rate coefficient near the collision limit, due
+		to rxn's exothermicity.  No data available at the time.
+	MRH 30-Aug-2009
+
+548: [90] Tsang, W.; Journal of Physical and Chemical Reference Data (1987), 16(3), 471-508.
+	Literature review: C2H + CH2OH --> C2H2 + CH2O
+	pg. 504: Discussion on evaluated data
+	Entry 39,21 (a): CH2OH + C2H --> C2H2 + CH2O
+	Author suggest a disproportionation rate coefficient of 6.0x10^-11 cm3/molecule/s, due
+		to very exothermic rxn.  No data available at the time.
+	MRH 30-Aug-2009
+
+549: [90] Tsang, W.; Journal of Physical and Chemical Reference Data (1987), 16(3), 471-508.
+	Literature review: HCO + CH2OH --> CH2O + CH2O
+	pg. 500: Discussion on evaluated data
+	Entry 39,15 (b): CH2OH + HCO --> 2 CH2O
+	Author estimates a disproportionation rate coefficient of 3x10^-11 cm3/molecule/s.
+		No data available at the time.
+	MRH 30-Aug-2009
+
+550: [90] Tsang, W.; Journal of Physical and Chemical Reference Data (1987), 16(3), 471-508.
+	Literature review: OH + CH2OH --> H2O + CH2O
+	pg. 497: Discussion on evaluated data
+	Entry 39,6: CH2OH + OH --> H2O + CH2O
+	Author estimates a disproportionation rate coefficient of 4x10^-11 cm3/molecule/s.
+		No data available at the time.
+	MRH 30-Aug-2009
+
+551: [90] Tsang, W.; Journal of Physical and Chemical Reference Data (1987), 16(3), 471-508.
+	Literature review: CH3O + CH2OH --> CH3OH + CH2O
+	pg. 505: Discussion on evaluated data
+	Entry 39,24: CH2OH + CH3O --> CH3OH + CH2O
+	Author estimates a disproportionation rate coefficient of 4x10^-11 cm3/molecule/s.
+		No data available at the time.
+	MRH 30-Aug-2009
+
+552: [90] Tsang, W.; Journal of Physical and Chemical Reference Data (1987), 16(3), 471-508.
+	Literature review: HO2 + CH2OH --> CH3OH + H2O2
+	pg. 498: Discussion on evaluated data
+	Entry 39,7: CH2OH + HO2 --> H2O2 + CH2O
+	Author recommends a disproportionation rate coefficient of 2x10^-11 cm3/molecules/s.
+		No data available at the time.
+	MRH 30-Aug-2009
+
