@@ -1,0 +1,20 @@
+487: [91] Tsang, W.; Journal of Physical and Chemical Reference Data (1988), 17(2), 887-951.
+	Literature review: i-C3H7 + O2 = HO2 + C3H6
+	pg. 931-932: Discussion on evaluated data
+	Entry 42,3 (a): Author appears to be skeptical of the only experimentally reported
+		value.  Author notes that more recent work on C2H5+O2 suggested that the
+		addition and disproportionation rxns may be coupled through a common intermediate.
+		For the time being, the author decided to recommend the only experimentally
+		reported rate coefficient, only for temperatures above 700K, as they note the
+		addition rxn should be the predominant rxn at lower temperatures.
+	MRH 30-Aug-2009
+
+501: [91] Tsang, W.; Journal of Physical and Chemical Reference Data (1988), 17(2), 887-951.
+	Literature review: n-C3H7 + O2 = HO2 + C3H6
+	pg. 914-915: Discussion on evaluated data
+	Entry 41,3 (a): The author suggests a rate coefficient based on those reported in the
+		literature.  The author notes that the data reported in the literature suggests
+		the formation of C3H6 is controlled by the addition rxn.  The author further
+		notes that it is surprising that p-dependence effects are not observed for
+		C3H6 formation.
+	MRH 30-Aug-2009
