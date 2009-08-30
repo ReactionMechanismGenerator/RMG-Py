@@ -496,6 +496,10 @@
 	 CH4 + iso-C3H7 --> CH3 + C3H8 C.D.W divided original rate expression by 4, to get rate expression per H atom.
 	 pg 894, Chemical Kinetic Database For Combustion Chemistry, Part 3. Index of Reactions and Summary of Recommended Rate Expressions. No. 42,10.
 	 Verified by Karma James
+	 pg. 935: Discussion on evaluated data
+	 Entry 42,10: No data available at the time.  Author recommends rate coefficient
+		expression based on reverse rate and equilibrium constant.
+	 MRH 30-Aug-2009
 	 
 170: [89] Tsang, W.; Hampson, R.F. J. Phys. Chem. Ref. Data 1986, 15, 1087.
 	 CH4 + C2H --> CH3 + C2H2 C.D.W divided original rate expression by 4, to get rate expression per H atom.
@@ -624,47 +628,86 @@
 	 //NOTE: For A value, Database value = 1.985E+13 and Reference value = 1.65E+13
 	 Verified by Karma James
 	 NOTE: MRH computed Reference A value of 1.99E+13 (11Aug2009)
+	 pg. 899: Discussion on evaluated data
+	 Entry 40,3 (b): No data available at the time.  The author "estimates" the rate
+		coefficient expressions (no indication of how).
+	 MRH 30-Aug-2009
 
 189: [91] Tsang, W. J. Phys. Chem. Ref. Data 1988, 17, 887.
 	 C3H8 + CH2 --> iso-C3H7 + CH3  C.D.W divided original rate expression by 2(from A = 1.51), to get rate expression per H atom.
-`	 pg 892, Chemical Kinetic Database For Combustion Chemistry, Part 3. Index of Reactions and Summary of Recommended Rate Expressions. No. 40,26.
+ 	 pg 892, Chemical Kinetic Database For Combustion Chemistry, Part 3. Index of Reactions and Summary of Recommended Rate Expressions. No. 40,26.
 	 Verified by Karma James
+	 pg. 910: Discussion on evaluated data
+	 Entry 40,26 (b): No data available at the time.  Author estimates the rate coefficient
+		expression as that of CH3+C3H8=i-C3H7+CH4.
+	 MRH 30-Aug-2009
 	 
 190: [91] Tsang, W. J. Phys. Chem. Ref. Data 1988, 17, 887.
 	 C3H8 + O --> iso-C3H7 + OH  C.D.W divided original rate expression by 2(from A = 4.77E+04), to get rate expression per H atom.
 	 pg 891, Chemical Kinetic Database For Combustion Chemistry, Part 3. Index of Reactions and Summary of Recommended Rate Expressions. No. 40,5.
 	 Verified by Karma James
+	 pg. 901: Discussion on evaluated data
+	 Entry 40,5 (b): The author notes "considerable scatter" among the existing data.  The
+		author computed Arrhenius A and n parameters using a BEBO calculation and performed
+		a "fit" on the data reported by Herron and Huie to obtain the Arrhenius E.  This
+		rate coefficient expression is stated to fit 3 (of the 5) raw data reported.
+	 MRH 30-Aug-2009
 	 
 191: [91] Tsang, W. J. Phys. Chem. Ref. Data 1988, 17, 887.
 	 C3H8 + CH2OH --> iso-C3H7 + CH3OH  C.D.W divided original rate expression by 2(from A = 6.03E+01), to get rate expression per H atom.
 	 //WAS UNABLE TO VERIFY DATA!!! DATA NOT FOUND IN REFERENCE.
-	 pg. 910
+	 pg. 910: Discussion on evaluated data
+	 Entry 40,39 (b)
 	 No experimental data, at the time
 	 Recommended value for C3H8+CH2OH-->n-C3H7+CH3OH comes from rate for C2H6+CH2OH-->C2H5+CH3OH
 	 No discussion on where rate for C3H8+CH2OH-->i-C3H7+CH3OH comes from:
 	 	A is ~ factor of 3 smaller (6 hydrogens vs 2 ... seems reasonable to MRH)
 		E is 1 kcal/mol smaller (more stable to form secondary radical than primary)
 	 Verified by MRH on 10Aug2009
+	 MRH 30-Aug-2009
 	 
 192: [91] Tsang, W. J. Phys. Chem. Ref. Data 1988, 17, 887.
 	 C3H8 + C2H3 --> iso-C3H7 + C2H4  C.D.W divided original rate expression by 2, to get rate expression per H atom.
 	 pg 891, Chemical Kinetic Database For Combustion Chemistry, Part 3. Index of Reactions and Summary of Recommended Rate Expressions. No. 40,19.
 	 Verified by Karma James
+	 pg. 906: Discussion on evaluated data
+	 Entry 40,19 (b): No data available at the time.  The author recommends the rate coefficient
+		expression of C2H3+C2H6=C2H5+C2H4 for the rxn C2H3+C3H8=n-C3H7+C2H4.  The author
+		assumes the ratio of secondary-to-primary H-atom abstraction for the rxn CH3+C3H8
+		to obtain the recommended rate coefficient expression.
+	 MRH 30-Aug-2009
 
 193: [91] Tsang, W. J. Phys. Chem. Ref. Data 1988, 17, 887.
 	 C3H8 + C2H --> iso-C3H7 + C2H2  C.D.W divided original rate expression by 2, to get rate expression per H atom.
 	 pg 891, Chemical Kinetic Database For Combustion Chemistry, Part 3. Index of Reactions and Summary of Recommended Rate Expressions. No. 40,21.
 	 Verified by Karma James
+	 pg. 906-907: Discussion on evaluated data
+	 Entry 40,21 (b): No data available at the time.  The author recommends the rate coefficient
+		of C2H6+C2H=C2H2+C2H5 for the rxn C3H8+C2H=C2H2+n-C3H7.  Due to the high exothermicity
+		of the rxn, the author assumes the H-atom abstraction rxn is limited to the number
+		of H-atoms available, thus recommedning a rate coefficient equal to one-third that
+		recommended for C3H8+C2H=C2H2+n-C3H7.
+	 MRH 30-Aug-2009
 
 194: [91] Tsang, W. J. Phys. Chem. Ref. Data 1988, 17, 887.
 	 C3H8 + HCO --> iso-C3H7 + CH2O  C.D.W divided original rate expression by 2, to get rate expression per H atom.
 	 pg 891, Chemical Kinetic Database For Combustion Chemistry, Part 3. Index of Reactions and Summary of Recommended Rate Expressions. No. 40,15.
 	 Verified by Karma James
+	 pg. 904: Discussion on evaluated data
+	 Entry 40,15 (b): No data available at the time.  The author recommends a rate coefficient
+		expression based on the reverse rxn (note: the author uses the rate of the rxn
+		n-C3H7+CH2O=HCO+C3H8 instead of i-C3H7+CH2O=HCO+C3H8) and equilibrium constant.
+	 MRH 30-Aug-2009
 
 195: [91] Tsang, W. J. Phys. Chem. Ref. Data 1988, 17, 887.
 	 C3H8 + CH3CO --> iso-C3H7 + CH3CHO  C.D.W divided original rate expression by 2, to get rate expression per H atom.
 	 pg 891, Chemical Kinetic Database For Combustion Chemistry, Part 3. Index of Reactions and Summary of Recommended Rate Expressions. No. 40,22.
 	 Verified by Karma James
+	 pg. 907: Discussion on evaluated data
+	 Entry 40,22 (b): No data available at the time.  The author recommends a rate coefficient
+		expression based on the equilibrium constant and the reverse rate (note: the author
+		estimates this reverse rate using the suggestions of Kerr, J.A. and Trotman-Dickenson, A.F.).
+	 MRH 30-Aug-2009
 	 
 196: [101] Cohen, N. Int. J. Chem. Kinet. 1991, 23, 397.
 	 C3H8 + OH --> iso-C3H7 + H20  C.D.W divided original rate expression by 2, to get rate expression per H atom.
@@ -674,6 +717,14 @@
 	 C3H8 + CH3O --> iso-C3H7 + CH3OH  C.D.W divided original rate expression by 2, to get rate expression per H atom.
 	 pg 891, Chemical Kinetic Database For Combustion Chemistry, Part 3. Index of Reactions and Summary of Recommended Rate Expressions. No. 40,24.
 	 Verified by Karma James
+	 pg. 908: Discussion on evaluated data
+	 Entry 40,24 (b): The author assumes the Arrhenius A parameter should follow:
+		A(C3H8+CH3O=CH3OH+n-C3H7) / A(C3H8+CH3O=CH3OH+i-C3H7) = 3
+		The author also demands that the recommended data fit both sets of experiments
+		reported.  These assumptions (plus one unwritten one, as we still have 3
+		unknown parameters [A1, E1, E2 ... A2=f(A1)]) produce the reported rate
+		coefficient expression.
+	 MRH 30-Aug-2009
 	 
 198: [92] Tsang, W. J. Phys. Chem. Ref. Data 1990, 19, 1.
 	 Iso-C4H10 + O2 --> tert-C4H9 + HO2
@@ -905,6 +956,13 @@
 	 CH2O + iso-C3H7 --> HCO + C3H8 C.D.W divided original rate expression by 2, to get rate expression per H atom.
 	 pg 894, Chemical Kinetic Database For Combustion Chemistry, Part 3. Index of Reactions and Summary of Recommended Rate Expressions. No. 42,12.
 	 Verified by Karma James
+	 pg. 936: Discussion on evaluated data
+	 Entry 42,12: No data available at the time.  The author recommends a rate coefficient
+		expression that is twice that of the rxn i-C3H7+(CH3)2CHCHO, taken from a study
+		by Kerr, J.A. and Trotman-Dickenson, A.F. (1959).  The author states that a correction
+		was made to the 1959 report, taking the recommended rate of i-C3H7 recombination
+		(reported by Tsang) into consideration.
+	 MRH 30-Aug-2009
 
 233: [92] Tsang, W. J. Phys. Chem. Ref. Data 1990, 19, 1.
 	 CH2O + tert-C4H9 --> HCO + iso-C4H10 C.D.W divided original rate expression by 2 (from A= 3.25E+09), to get rate expression per H atom.
@@ -1087,10 +1145,12 @@
 	 CH3OH + iso-C3H7 --> CH3O + C3H8
 	 //WAS UNABLE TO VERIFY DATA!!! DATA NOT FOUND IN REFERENCE.
 	 Ref[90] was incorrect; rate matches that reported in Ref[91].
-	 pg. 944
+	 pg. 944: Discussion on evaluated data
+	 Entry 42,38 (b)
 	 No experimental data, at the time
 	 Recommended rate is based on C2H5+CH3OH=C2H6+CH3O
 	 Verified by MRH on 10Aug2009
+	 MRH 30-Aug-2009
 
 //264: [90] Tsang, W. J. Phys. Chem. Ref. Data 1987, 16, 471.
 264: [92] Tsang, W. J. Phys. Chem. Ref. Data 1990, 19, 1.
