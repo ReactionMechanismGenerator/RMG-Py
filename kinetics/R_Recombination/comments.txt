@@ -186,6 +186,11 @@
 	 C2H5 + iso-C3H7 --> iso-C5H12
 	 pg 894, Chemical Kinetic Database For Combustion Chemistry, Part 3. Index of Reactions and Summary of Recommended Rate Expressions. No. 42,17.
 	 Verified by Karma James
+	 pg. 937-938: Discussion on evaluated data
+	 Entry 42,17 (a): No data available at the time.  The author obtains the recommended
+		rate coefficient expression by using the geometric mean rule (using the rxn rates
+		of C2H5+C2H5-->adduct and i-C3H7+i-C3H7-->adduct).
+	 MRH 30-Aug-2009
 
 452: [92] Tsang, W. J Phys. Chem. Ref. Data 1990, 19, 1.
 	 C2H5 + tert-C4H9 --> (CH3)3CCH2CH3
@@ -227,6 +232,12 @@
 	 //NOTE: For A value, Database value = 3.25E+14 and Reference value = 6.023E+12
 	 Verified by Karma James
 	 MRH computes reference A value = 3.26E+14 (11Aug2009)
+	 pg. 946-947: Discussion on evaluated data
+	 Entry 42,42 (a): Multiple data available at low T.  Author fit experimentally reported
+		data to obtain recommended rate coefficient expression.  Note: the author states
+		that more high-Temperature data points are necessary (to ensure a reasonable
+		fit at high-T).
+	 MRH 30-Aug-2009
 
 457: [92] Tsang, W. J Phys. Chem. Ref. Data 1990, 19, 1.
 	 Iso-C3H7 + tert-C4H9 --> 2,2,3-trimethyl-butane
@@ -247,11 +258,20 @@
 	 //NOTE: For A value, Database value = 6.64E+13 and Reference value = 9.03E+12
 	 Verified by Karma James
 	 MRH computes reference A value = 6.65E+13 (11Aug2009)
+	 pg. 943: Discussion on evaluated data
+	 Entry 42,22: No data available at the time.  Author uses the geometrical mean rule
+		(for the rxns i-C3H7+i-C3H7-->adduct and CH3CO+CH3CO-->adduct) to obtain 
+		recommended rate coefficient expression
+	 MRH 30-Aug-2009
 	 
 459: [91] Tsang, W. J. Phys. Chem. Ref. Data 1988, 17, 887.
 	 Iso-C3H7 + CH3O --> i-C3H7OCH3
 	 pg 895, Chemical Kinetic Database For Combustion Chemistry, Part 3. Index of Reactions and Summary of Recommended Rate Expressions. No. 42,24.
 	 Verified by Karma James
+	 pg. 943: Discussion on evaluated data
+	 Entry 42,24 (b): No data available at the time.  Author recommends rate coefficient
+		based on CH3+CH3O-->adduct.
+	 MRH 30-Aug-2009
 
 460: [92] Tsang, W. J Phys. Chem. Ref. Data 1990, 19, 1.
 	 Tert-C4H9 + tert- C4H9 --> (CH3)3CC(CH3)3

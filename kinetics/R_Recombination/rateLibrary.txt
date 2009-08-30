@@ -37,7 +37,7 @@ Arrhenius_EP
 448.		C_methyl		O_pri_rad		300-2000	6.03E+13	0		0		0		*2.0	0		0		0		4	Baulch et al. [94] literature review.
 449.		C_methyl		O_rad/NonDe		300-2500	1.21E+13	0		0		0		*5.0	0		0		0		4	Tsang [89] literature review.
 450.		C_rad/H2/Cs		C_rad/H2/Cs		300-1200	1.15E+13	0		0		0		*2.0	0		0		0		4	Baulch et al. [95] literature review.
-451.		C_rad/H2/Cs		C_rad/H/NonDeC	300-2500	1.15E+14	-0.35	0		0		*1.8	0		0		0		4	Tsang [91] literature review.
+451.		C_rad/H2/Cs		C_rad/H/NonDeC	300-2500	1.15E+14	-0.35	0		0		*2.0	0		0		0		4	Tsang [91] literature review.
 452.		C_rad/H2/Cs		C_rad/Cs3		300-2500	6.91E+14	-0.75	0		0		*2.0	0		0		0		4	Tsang [92] literature review.
 453.		C_rad/H2/Cs		CO_pri_rad		300-2500	1.81E+13	0		0		0		*3.0	0		0		0		4	Tsang [89] literature review.
 454.		C_rad/H2/Cs		CO_rad/NonDe	300-2500	3.12E+14	-0.50	0		0		*3.0	0		0		0		4	Tsang [89] literature review.
