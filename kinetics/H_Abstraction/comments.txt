@@ -488,6 +488,10 @@
 	 CH4 + O2 --> CH3 + HO2 C.D.W divided original rate expression by 4, to get rate expression per H atom.
 	 pg 417 Evaluated Kinetic Data for Combustion Modelling, Table 1. Bimolecular reactions - O2 Reactions.
 	 Verified by Karma James
+	 pg.483: Discussion on evaluated data
+	 O2+CH4 --> HO2+CH3: Recommended data based on experimental value for CH2O + O2 -->
+		HO2 + HCO.  Assumes equal A factor per C-H bond and Ea = deltaH.
+	 MRH 31-Aug-2009
 	 
 168: [89] Tsang, W.; Hampson, R.F. J. Phys. Chem. Ref. Data 1986, 15, 1087.
 	 CH4 + C2H5 --> CH3 + C2H6 C.D.W divided original rate expression by 4, to get rate expression per H atom.
@@ -544,6 +548,11 @@
 	 CH4 + OH --> CH3 + H2O C.D.W divided original rate expression by 4, to get rate expression per H atom.
 	 pg 419 Evaluated Kinetic Data for Combustion Modelling, Table 1. Bimolecular reactions - OH Radical Reactions.
 	 Verified by Karma James
+	 pg.571-572: Discussion on evaluated data
+	 OH+CH4 --> H2O+CH3: "The preferred value of k is that obtained experimentally by
+		Madronich and Felder which predicts very precisely the data obtained between
+		240 and 2000K."
+	 MRH 31-Aug-2009
 
 176: [101] Cohen, N. Int. J. Chem. Kinet. 1991, 23, 397.
 	 CH4 + OH --> CH3 + H2O C.D.W divided original rate expression by 4, to get rate expression per H atom.
@@ -567,6 +576,13 @@
 	 pg 417 Evaluated Kinetic Data for Combustion Modelling  Table 1. Bimolecular reactions - O2 Reactions. (The value for E0 does not 
 	 match the value in the reference, E0 RMG = 1.87; E0 Reference = 51.86)
 	 Verified by Karma James
+	 pg.484: Discussion on evaluated data
+	 O2+C2H6 --> HO2+C2H5: "The value given in the Walker review has been modified slightly
+		to allow for the higher heat of formation of the C2H5 radical now recommended
+		and for an assumed equal A factor per C-H bond in CH2O+O2 and C2H6+O2."
+	 *** NOTE: MRH agrees with KJ on discrepancy in RMG-stored E0.  MRH is changing the value
+		of E0 in RMG from 1.87 kcal/mol to 51.87 kcal/mol. ***
+	 MRH 31-Aug-2009
 	 
 180: [89] Tsang, W.; Hampson, R.F. J. Phys. Chem. Ref. Data 1986, 15, 1087.
 	 C2H6 + C2H --> C2H5 + C2H2 C.D.W divided original rate expression by 6, to get rate expression per H atom.
@@ -606,6 +622,11 @@
 	 C2H6 + OH --> C2H5 + H2O C.D.W divided original rate expression by 6, to get rate expression per H atom.
 	 pg 420 Evaluated Kinetic Data for Combustion Modelling, Table 1. Bimolecular reactions - OH Radical Reactions.
 	 Verified by Karma James
+	 pg.589-590: Discussion on evaluated data
+	 OH+C2H6 --> H2O+C2H5: "The preferred value of k is almost indistinguishable from the
+		value obtained by Cohen from transition state calculations carried out for
+		temperatures between 300 and 2000K."
+	 MRH 31-Aug-2009
 	 
 185: [127] Taylor, P.H.; Rahman, M.S.; Arif, M.; Dellinger, B.; Marshall, P. Sypm. Int. Combust. Proc. 1996, 26, 497.
 	 CH3CHO + OH --> CH2CHO + H2O Rate constant is high pressure limit (pressure 0.13-0.97atm?) 
@@ -875,6 +896,9 @@
 	 C2H4 + OH --> C2H3 + H2O C.D.W divided original rate expression by 4(from A= 2.05E+13), to get rate expression per H atom.
 	 pg 420 Evaluated Kinetic Data for Combustion Modelling, Table 1. Bimolecular reactions - OH Radical Reactions.
 	 Verified by Karma James
+	 pg.586-587: Discussion on evaluated data
+	 OH+C2H4 --> H2O+C2H3: Recommended rate taken from expression reported by Tully (1988).
+	 MRH 31-Aug-2009
 
 212: [93] Tsang, W. J. Phys. Chem. Ref. Data 1991, 20, 221.
 	 CH3CH=CH2 + O --> CH3C=CH2 + OH
@@ -1005,6 +1029,11 @@
 	 Benzene + OH --> phenyl + H2O  C.D.W divided original rate expression by 6(from A = 1.63E+08), to get rate expression per H atom.
 	 pg 420 Evaluated Kinetic Data for Combustion Modelling, Table 1. Bimolecular reactions - OH Radical Reactions.
 	 Verified by Karma James
+	 pg.595-597: Discussion on evaluated data
+	 OH+C6H6 --> H2O+C6H5: Authors note that this rxn should be dominant at temperatures
+		above 500K.  No other comment on where the recommended rate expression comes from
+		(although MRH believes it is a best-fit to the available data, based on graph).
+	 MRH 31-Aug-2009
 
 227: [132] Michael, J.V.; Kumaran, S.S.; Su, M.-C. J. Phys. Chem. A. 1999, 103, 5942.
 	 CH2O + O2 --> HCO + HO2 C.D.W divided original rate expression by 2, to get rate expression per H atom.
@@ -1014,6 +1043,10 @@
 	 CH2O + O --> HCO + OH C.D.W divided original rate expression by 2, to get rate expression per H atom.
 	 pg 416 Evaluated Kinetic Data for Combustion Modelling, Table 1. Bimolecular reactions - O Atom Reactions.
 	 Verified by Karma James
+	 pg.449-450: Discussion on evaluated data
+	 O+CH2O --> OH+HCO: "The preferred values are based on the low temperature data which are
+		all in good agreement, and on the higher temperature value of Bowman."
+	 MRH 31-Aug-2009
 
 229: [89] Tsang, W.; Hampson, R.F. J. Phys. Chem. Ref. Data 1986, 15, 1087.
 	 Rate constant is an upper limit. CH2O + CH2 --> HCO + CH3
@@ -1094,6 +1127,10 @@
 	 CH2O + OH --> HCO + H2O C.D.W divided original rate expression by 2 (from A= 3.43E+09), to get rate expression per H atom.
 	 pg 419 Evaluated Kinetic Data for Combustion Modelling, Table 1. Bimolecular reactions - OH Radical Reactions.
 	 Verified by Karma James
+	 pg.575-576: Discussion on evaluated data
+	 OH+CH2O --> H2O+HCO: The recommended rate coefficient is the value reported by Tsang
+		and Hampson.
+	 MRH 31-Aug-2009
 
 237: [89] Tsang, W.; Hampson, R.F. J. Phys. Chem. Ref. Data 1986, 15, 1087.
 	 CH2O + CH3O --> HCO + CH3OH C.D.W divided original rate expression by 2, to get rate expression per H atom.
@@ -1113,6 +1150,12 @@
 	 CH3CHO + O2 --> CH3CO + HO2
 	 pg 417 Evaluated Kinetic Data for Combustion Modelling, Table 1. Bimolecular reactions - O2 Reactions.
 	 Verified by Karma James
+	 pg.485: Discussion on evaluated data
+	 O2+CH3CHO --> HO2+CH3CO: "For this evaluation we prefer the approach of Walker and
+		the recommended value is based on the best current deltaH298 value (=163.8 kJ/mol
+		using deltaHf(CH3CO)=11.0 kJ/mol and deltaHf(HO2)=14.6 kJ/mol) and A=5.0x10^-11
+		cm3/molecule/s."
+	 MRH 31-Aug-2009
 
 240: [134] Warnatz, J. Rate coefficeints in the C/H/O system. In Combustion Chemistry, 1984; pp 197.
 	 CH3CHO + O --> CH3CO + OH
@@ -1125,6 +1168,12 @@
 	 CH3CHO + CH3 --> CH3CO + CH4
 	 pg 423 Evaluated Kinetic Data for Combustion Modelling, Table 1. Bimolecular reactions - CH3 Radical Reactions.
 	 Verified by Karma James
+	 pg.671: Discussion on evaluated data
+	 CH3+CH3CHO --> CH4+CH3CO: "There are no direct studies of the kinetics of this reaction
+		and all of the k values are relative to methyl recombination ... The preferred values
+		are based on a line constructed through the mean of the low temperature data and the
+		data of Liu and Laidler and Colket et al."
+	 MRH 31-Aug-2009
 
 243: [135] Loser, U.; Scherzer, K.; Weber, K. Z. Phys. Chem. (Leipzig) 1989, 270, 237.
 	 CH3CHO + CH2CH=CH2 --> CH3CO + CH3CH=CH2
@@ -1146,6 +1195,11 @@
 	 CH3CHO + HO2 --> CH3CO + H2O2
 	 pg 421 Evaluated Kinetic Data for Combustion Modelling, Table 1. Bimolecular reactions - HO2 Radical Reactions.
 	 Verified by Karma James
+	 pg.614-615: Discussion on evaluated data
+	 HO2+CH3CHO --> CH3CO+H2O2: "The preferred expression is based on a value of 1.7x10^-14
+		cm3/molecule/s at 1050K from a study performed by Colket et al. and an assumed A
+		factor of 5.0x10^-12 cm3/molecule/s."
+	 MRH 31-Aug-2009
 
 248: [137] Mayer, S.W.; Schieler, L. J. Phys. Chem. 1968, 72, 2628.
 	 H2O + O2 --> OH + HO2. C.D.W divided original rate expression by 2, to get rate expression per H atom.
@@ -1162,6 +1216,12 @@
 	 pg 418 Evaluated Kinetic Data for Combustion Modelling, Table 1. Bimolecular reactions - H Atom Reactions.
 	 NOTE: E0 Rference = 18.4, E0 RMG database = 19.32
 	 Verified by Karma James
+	 pg.504: Discussion on evaluated data
+	 H+H2O --> OH+H2: "The recommended rate coefficient is based on the spare high temperature
+		measurements and rate data of the reverse rxn combined with the equilibrium constant."
+	 MRH agrees with Karma.  However, the discrepancy is small and NIST's online database Webbook
+		has an E = 19.32 kcal/mol.
+	 MRH 31-Aug-2009
 	 
 252: [140] Ma, S.; Liu, R.; Sci. China Ser. S: 1996, 39, 37.
 	 H2O + CH3 --> OH + CH4. C.D.W divided original rate expression by 2 (from A= 6.39), to get rate expression per H atom.

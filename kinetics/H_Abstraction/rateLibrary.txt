@@ -185,11 +185,11 @@ Arrhenius_EP
 172.	C_methane	CO_pri_rad			300-2500	1.82E+03	2.85	0		22.46	*5.0	0		0		0		4		Tsang et al. [89] literature review. 
 173.	C_methane	CO_rad/NonDe		300-2500	5.43E+02	2.88	0		21.46	*5.0	0		0		0		4		Tsang et al. [89] literature review. 
 174.	C_methane	O_pri_rad			223-2400	3.85E-01	3.95	0		0.55	0		0		0		0		3		Melissas and Truhlar [125] Transition state theory.
-175.	C_methane	O_pri_rad			250-2500	3.93E+06	1.83	0		2.78	*1.41	0		0		0		4		Baulch et al. [95] literature review.
+175.	C_methane	O_pri_rad			240-2500	3.93E+06	1.83	0		2.78	*1.41	0		0		0		4		Baulch et al. [95] literature review.
 176.	C_methane	O_pri_rad			298-1510	2.55E+07	1.60	0		3.12	0		0		0		0		3		Cohen et al. [101] Transition state theory.
 177.	C_methane	O_rad/NonDeC		300-2000	1.55E-04	5.00	0		5.58	0		0		0		0		2		Jodkowski et al. [100] ab initio calculations.
 178.	C_methane	O_rad/NonDeO		300-2500	4.53E+10	0		0		18.58	*5.0	0		0		0		4		Tsang et al. [89] literature review. 
-179.	C/H3/Cs		O2b					500-2000	1.005E+13	0		0		1.87	*10.0	0		0		0		4		Baulch et al. [95] literature review.
+179.	C/H3/Cs		O2b					500-2000	1.005E+13	0		0		51.87	*10.0	0		0		0		4		Baulch et al. [95] literature review.
 180.	C/H3/Cs		Ct_rad				300-1500	6.02E+11	0		0		0		*3		0		0		0		4		Tsang et al. [89] literature review. 
 181.	C/H3/Cs		Cb_rad				565-1000	3.48E+10	0		0		4.44	*2.35	0		0		0.18	2		Park et al. [126]
 182.	C/H3/Cs		CO_pri_rad			300-2500	7.82E+03	2.72	0		18.24	*5.0	0		0		0		4		Tsang et al. [89] literature review. 
@@ -251,10 +251,10 @@ Arrhenius_EP
 233.	CO_pri		C_rad/Cs3			300-2500	1.63E+09	0		0		3.56	*5.0	0		0		0		4		Tsang [92] literature review.
 234.	CO_pri		Cd_pri_rad			300-2500	2.71E+03	2.81	0		5.86	*5.0	0		0		0		4		Tsang [89] literature review.
 235.	CO_pri		CO_rad/NonDe		300-2500	9.05E+10	0		0		12.92	*10.0	0		0		0		4		Tsang [89] literature review.
-236.	CO_pri		O_pri_rad			300-3000	1.72E+09	1.18	0		-0.45	*10.0	0		0		0		4		Baulch et al. [95] literature review.
+236.	CO_pri		O_pri_rad			300-3000	1.72E+09	1.18	0		-0.45	*5.0	0		0		0		4		Baulch et al. [95] literature review.
 237.	CO_pri		O_rad/NonDeC		300-2500	5.10E+10	0		0		2.98	*3.0	0		0		0		4		Tsang [89] literature review.
 238.	CO_pri		O_rad/NonDeO		641-1600	2.06E+04	2.50	0		10.21	0		0		0		0		4		Eiteneer et al. [133] literature review.
-239.	CO/H/NonDe	O2b					600-1100	3.01E+13	0		0		39.15	*1.0	0		0		0		4		Baulch et al. [95] literature review.
+239.	CO/H/NonDe	O2b					600-1100	3.01E+13	0		0		39.15	*10.0	0		0		0		4		Baulch et al. [95] literature review.
 240.	CO/H/NonDe	O_atom_triplet		300-2000	5.0E+12		0		0		1.79	*2.0	0		0		0		4		Warnatz [134] literature review
 241.	CO/H/NonDe	H_rad				300-2000	4.0E+13		0		0		4.21	*2.0	0		0		0		4		Warnatz [134] literature review
 242.	CO/H/NonDe	C_methyl			300-1250	1.99E-06	5.64	0		2.46	*2.0	0		0		0		4		Baulch et al. [95] literature review.
@@ -263,11 +263,11 @@ Arrhenius_EP
 //245.	CO/H/NonDe	O_pri_rad			295-600		2.0E+06		1.80	0		1.30	0		0		0		0		3		Taylor et al. [127] Transition state theory.
 245.	CO/H/NonDe	O_pri_rad			295-600		2.0E+06		1.80	0		-1.30	0		0		0		0		3		Taylor et al. [127] Transition state theory.
 246.	CO/H/NonDe	O_pri_rad			300-2000	1.0E+13		0		0		0		*2.51	0		0		0		4		Warnatz [134] literature review
-247.	CO/H/NonDe	O_rad/NonDeO		900-1200	3.01E+12	0		0		11.92	*10.0	0		0		0		4		Baulch et al. [95] literature review.
+247.	CO/H/NonDe	O_rad/NonDeO		900-1200	3.01E+12	0		0		11.92	*5.0	0		0		0		4		Baulch et al. [95] literature review.
 248.	O_pri		O2b					300-1000	2.325E+12	0		0		74.12	0		0		0		0		5		Mayer et al. [137] Bond energy-bond order.
 249.	O_pri		O_atom_triplet		298-1000	2.63E+09	1.20	0		17.83	0		0		0		0		3		Karach et al. [138] Transition state theory.
 250.	O_pri		O_atom_triplet		300-2000	7.40E+04	2.60	0		15.18	0		0		0		0		3		Harding et al. [139] Transition state theory.
-251.	O_pri		H_rad				300-2500	2.26E+08	1.60	0		19.32	0		0		0		0		4		Baulch et al. [95] literature review.
+251.	O_pri		H_rad				300-2500	2.26E+08	1.60	0		19.32	*1.6		0		0		0		4		Baulch et al. [95] literature review.
 252.	O_pri		C_methyl			300-1500	3.20E+00	3.31	0		12.56	0		0		0		0		3		Ma et al. [140] Transition state theory.
 253.	O_pri		C_methyl			300-2500	2.42E+02	2.90	0		14.86	*1.6	0		0		0		4		Tsang [89] literature review.
 254.	O_pri		C_rad/H2/Cs			300-2500	1.70E+06	1.44	0		20.27	*2.0	0		0		0		4		Tsang [89] literature review.
