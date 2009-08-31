@@ -64,6 +64,15 @@
 		ratio agrees well with most of the experimental data.
 	MRH 30-Aug-2009
 
+496: [92] Tsang, W.; Journal of Physical and Chemical Reference Data (1990), 19(1), 1-68.
+	Literature review: t-C4H9 + i-C3H7 --> C3H6 + i-C4H10
+	pg. 46: Discussion on evaluated data
+	Entry 44,42 (a): The author computes the combination rate expression using the geometric
+		mean rule (of the rxns t-C4H9+t-C4H9-->adduct and i-C3H7+i-C3H7-->adduct).  The
+		disproportionation rate coefficient expression was then computed using the
+		reported branching ratio.
+	MRH 30-Aug-2009
+
 497: [91] Tsang, W.; Journal of Physical and Chemical Reference Data (1988), 17(2), 887-951.
 	Literature review.  C2H3 + i-C3H7 --> C3H6 + C2H4
 	pg. 939-940: Discussion on evaluated data
@@ -143,6 +152,16 @@
 		Corley (1973).
 	MRH 30-Aug-2009
 
+509: [92] Tsang, W.; Journal of Physical and Chemical Reference Data (1990), 19(1), 1-68.
+	Literature review: t-C4H9 + n-C3H7 --> C3H6 + i-C4H10
+	pg. 45: Discussion on evaluated data
+	Entry 44,41 (a): No data available at the time.  Author estimates the rate expression
+		for the combination rxn using the geometric mean rule (of the rxns t-C4H9+t-C4H9-->adduct
+		and n-C3H7+n-C3H7-->adduct).  The author then estimates the disproportionation
+		rate expression using the branching ratio; the branching ratio is from "analogous
+		processes".
+	MRH 30-Aug-2009
+
 510: [91] Tsang, W.; Journal of Physical and Chemical Reference Data (1988), 17(2), 887-951.
 	Literature review.  C2H3 + n-C3H7 --> C3H6 + C2H4
 	pg. 922: Discussion on evaluated data
@@ -163,6 +182,103 @@
 	pg. 917: Discussion on evaluated data
 	Entry 41,6 (a): No data available at the time.  Author estimates rate coefficient based
 		on the rate coefficient for OH+C2H5=C2H4+H2O, namely 4.0x10^-11 cm3/molecule/s.
+	MRH 30-Aug-2009
+
+514: [92] Tsang, W.; Journal of Physical and Chemical Reference Data (1990), 19(1), 1-68.
+	Literature review: C2H + i-C4H9 --> i-C4H8 + C2H2
+	pg. 61: Discussion on evaluated data
+	Entry 45,21: No data available at the time.  The author estimates the rate of 
+		disproportionation to be 1x10^-11 cm3/molecule/s.
+	*** NOTE: RMG_database previously had CH2_triplet as Y_rad_birad node, not Ct_rad ***
+	MRH 30-Aug-2009
+
+515: [92] Tsang, W.; Journal of Physical and Chemical Reference Data (1990), 19(1), 1-68.
+	Literature review: H + i-C4H9 --> i-C4H8 + H2
+	pg. 53: Discussion on evaluated data
+	Entry 45,4 (c): No data available at the time.  The author estimates the disproportionation
+		rate coefficent as half the rate of H+n-C3H7=C3H6+H2 (due to the presence of 2
+		H-atoms on the alpha-carbon in n-C3H7 and only 1 on the alpha-carbon of i-C4H9).
+		The author also states that the branching ratio is pressure-dependent and supplies
+		fall-off tables and collisional efficiencies.
+	MRH 30-Aug-2009
+
+516: [92] Tsang, W.; Journal of Physical and Chemical Reference Data (1990), 19(1), 1-68.
+	Literature review: CH3 + i-C4H9 --> i-C4H8 + CH4
+	pg. 58: Discussion on evaluated data
+	Entry 45,16 (b): No data available at the time.  The author estimates the disproportionation
+		rate coefficient as half the rate of CH3+n-C3H7=C3H6+H2 (due to half as many H-atoms
+		on the alpha-carbon).
+	MRH 30-Aug-2009
+
+517: [92] Tsang, W.; Journal of Physical and Chemical Reference Data (1990), 19(1), 1-68.
+	Literature review: C2H5 + i-C4H9 --> i-C4H8 + C2H6
+	pg. 59: Discussion on evaluated data
+	Entry 45,17 (a): No direct measurements of either the addition or disproportionation rxns.
+		The combination rate coefficient was computed using the geometric mean rule (of the
+		rxns C2H5+C2H5-->adduct and i-C4H9+i-C4H9-->adduct).  The disproportionation rate
+		coefficient was computed using the disproportionation-to-combination ratio reported
+		by Gibian and Corley (1973).
+	MRH 30-Aug-2009
+
+518: [92] Tsang, W.; Journal of Physical and Chemical Reference Data (1990), 19(1), 1-68.
+	Literature review: CH2OH + i-C4H9 --> i-C4H8 + CH3OH
+	pg. 64: Discussion on evaluated data
+	Entry 45,39 (c): No data available at the time.  Author estimates the disproportionation rate
+		coefficient as half the rate of CH2OH+n-C3H7=C3H6+CH3OH (due to half as many H-atoms
+		on the alpha-carbon).
+	*** NOTE: Although author states the the rate coefficient of CH2OH+i-C4H9=i-C4H8+CH3OH
+		is half that of CH2OH+n-C3H7=C3H6+CH3OH, MRH finds them to be equal, both in the electronic
+		references and the online NIST database (kinetics.nist.gov).  I am therefore
+		cutting the A in the RMG_database in two. ***
+	MRH 30-Aug-2009
+
+520: [92] Tsang, W.; Journal of Physical and Chemical Reference Data (1990), 19(1), 1-68.
+	Literature review: i-C3H7 + i-C4H9 --> i-C4H8 + C3H8
+	pg. 65: Discussion on evaluated data
+	Entry 45,42 (b): No data available at the time.  Author estimates the disproportionation rate
+		coefficient as half the rate of i-C3H7+n-C3H7=C3H6+C3H8 (due to half as many H-atoms
+		on the alpha-carbon).
+	*** NOTE: MRH computes half the rate of i-C3H7+n-C3H7=C3H6+C3H8 as 0.52x10^-11 * (300/T)^0.35,
+		not 0.58x10^-11 * (300/T)^0.35.  However, there may be a reason for the relatively
+		small discrepancy between the author's stated and implemented calculation. ***
+	MRH 30-Aug-2009
+
+521: [92] Tsang, W.; Journal of Physical and Chemical Reference Data (1990), 19(1), 1-68.
+	Literature review: t-C4H9 + i-C4H9 --> i-C4H8 + i-C4H10
+	pg. 66: Discussion on evaluated data
+	Entry 45,44 (b): No data available at the time.  Author estimates the disproportionation rate
+		coefficient as half the rate of t-C4H9+n-C3H7=C3H6+i-C4H10 (due to half as many H-atoms
+		on the alpha-carbon).
+	*** NOTE: Although author states the the rate coefficient of t-C4H9+i-C4H9=i-C4H8+i-C4H10
+		is half that of t-C4H9+n-C3H7=C3H6+i-C4H10, MRH finds them to be equal, both in the electronic
+		references and the online NIST database (kinetics.nist.gov).  I am therefore
+		cutting the A in the RMG_database in two. ***
+	MRH 30-Aug-2009
+
+522: [92] Tsang, W.; Journal of Physical and Chemical Reference Data (1990), 19(1), 1-68.
+	Literature review: C2H3 + i-C4H9 --> i-C4H8 + C2H4
+	pg. 60: Discussion on evaluated data
+	Entry 45,19 (b): No data available at the time.  Author estimates the disproportionation rate
+		coefficient based on the rate of C2H5+i-C4H9=i-C4H8+C2H6.
+	MRH 30-Aug-2009
+
+523: [92] Tsang, W.; Journal of Physical and Chemical Reference Data (1990), 19(1), 1-68.
+	Literature review: OH + i-C4H9 --> i-C4H8 + H2O
+	pg. 55: Discussion on evaluated data
+	Entry 45,6 (a): No data available at the time.  Author estimates the disproportionation rate
+		coefficient as half the rate of OH+n-C3H7=C3H6+H2O (due to half as many H-atoms
+		on the alpha-carbon).
+	MRH 30-Aug-2009
+
+546: [92] Tsang, W.; Journal of Physical and Chemical Reference Data (1990), 19(1), 1-68.
+	Literature review: t-C4H9 + CH2OH = CH2O + i-C4H10
+	pg. 44: Discussion on evaluated data
+	Entry 44,39 (a): No data available at the time.  Author estimates the addition rxn rate
+		coefficient based on the rate for t-C4H9+C2H5-->adduct.  The author uses a
+		disproportionation-to-addition ratio of 0.52 to obtain the reported rate coefficient
+		expression.
+	*** NOTE: Previous value in RMG was for k_c (the addition rxn).  I have changed it to match
+		the rate for the disproportionation rxn. ***
 	MRH 30-Aug-2009
 
 536: [189] Grotheer, H.; Riekert, G.; Walter, D.; Just, T. Symp. Int. Combust. Proc. 1989, 22, 963.
