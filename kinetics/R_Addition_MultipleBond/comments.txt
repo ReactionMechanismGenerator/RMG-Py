@@ -226,6 +226,13 @@
 
 332: [95] Baulch et al. literature review. C.D.W divided rate expression by 2, to get rate of addition per site.
 	 C2H2 + .OH --> HOCH=CH
+	 pg.583-584: Discussion on evaluated data
+	 OH+C2H2(+m) --> C2H2OH(+m): "At temperatures below ~1100K and at atmospheric pressure,
+		the addition channel becomes important and shows a strong pressure dependence.
+		The following parameters give a reasonable representation of the high temperature data
+		for k and are also compatible with Atkinson's analysis at low temperature ..."
+	 RMG stores the recommended high-pressure limit rate coefficient, k_inf.
+	 MRH 31-Aug-2009
 
 333: [166] Miller et al. Transition State Theory. C.D.W divided rate expression by 2, to get rate of addition per site. 
 	 Same reaction as #332, #333 ranked as more accurate in rate library than #332, but they are both from relatively old sources from the early '90s.  
