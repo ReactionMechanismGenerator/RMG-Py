@@ -111,6 +111,13 @@
 	 NOTE: kinetics.nist.gov has 2.7E-11*exp(300/T) expression in database
 	 	kinetics.nist.gov also has A/n/E from 2006 paper by Klippenstein et al.;
 	 		the new rate expression matches Klippenstein's value better across the valid T range
+	 pg.36: Discussion on evaluated data
+	 Entry 44,16(b)
+	 MRH computed geometric mean of CH3+CH3-->adduct (1.68x10^-9 * T^-0.64) and tC4H9+tC4H9-->adduct
+		(4x10^-12 * (300/T)^1.5) to obtain: 5.909x10^-9 * T^-1.07.  Setting the temperature
+		exponent equal to one and multiplying by 1 (*300/300) results in: 1.970x10^-11 * (300/T)
+		which is somewhat in agreement with the value recommended by Tsang.
+	 MRH 31-Aug-2009
 
 442: [171] Fahr, A.; Laufer, A.; Klein, R.; Braun, W. J. Phys. Chem. 1991, 95, 3218.
 	 Absolute value measured directly. Excitation: flash photolysis, analysis : Vis-UV absorption. Pressure 0.13 atm. Original Uncertainty 1.8E+13
@@ -202,8 +209,11 @@
 	 Data reported as kc = 1.6e-11 * (300/T)^0.75
 		When lumping the 1.6e-11 * 300^0.75, attain A=6.94e+14
 	 No experimental data, at the time
-	 Recommended data obtained by taking geometric mean of two relative rates
 	 Verified by MRH on 10Aug2009
+	 pg.37: Discussion on evaluated data
+	 Entry 44,17(c): Recommended rate calculated by taking geometric mean of C2H5+C2H5-->adduct
+		and tC4H9+tC4H9-->adduct rxns.
+	 MRH 31-Aug-2009
 
 453: [89] Tsang, W.; Hampson, R. F. J. Phys. Chem. Ref. Data 1986, 15, 1087.
 	 C2H5 + HCO --> C2H5CHO
@@ -249,8 +259,10 @@
 	 Data reported as kc = 1.3e-11 * (300/T)^1.1
 		When lumping the 1.3e-11 * 300^1.1, attain A=4.15e+15
 	 No experimental data, at the time
-	 Recommended data obtained by taking geometric mean of two relative rates
 	 Verified by MRH on 10Aug2009
+	 Entry 44,42(c): Recommended rate computed using geometric mean of iC3H7+iC3H7-->adduct
+		and tC4H9+tC4H9-->adduct rxns.
+	 MRH 31-Aug-2009
 
 458: [91] Tsang, W. J. Phys. Chem. Ref. Data 1988, 17, 887.
 	 Iso-C3H7 + CH3CO --> iso-C3H7COCH3
@@ -284,12 +296,18 @@
 		When lumping the 4e-12 * 300^1.5, attain A=1.25e+16
 	 Recommended data taken from expression computed by Parkes, Quinn (1976)
 	 Verified by MRH on 10Aug2009
+	 Entry 44,44(a)
+	 MRH 31-Aug-2009
 
 461: [92] Tsang, W. J Phys. Chem. Ref. Data 1990, 19, 1.
 	 Tert-C4H9 + HCO --> tert-C4H9CHO
 	 pg 7, Chemical Kinetic Database For Combustion Chemistry, Part 4 - Isobutane. 
 	 Index of Reactions and Summary of Recommended Rate Expressions. No. 44,15.
 	 Verified by Karma James
+	 pg.36: Discussion on evaluated data
+	 Entry 44,15(b): No data available at the time.  Recommended rate coefficient is based
+		on rate of rxn tC4H9+CH3-->adduct, but "slightly smaller"
+	 MRH 31-Aug-2009
 	 
 462: [92] Tsang, W. J Phys. Chem. Ref. Data 1990, 19, 1.
 	 Tert-C4H9 + CH3CO --> tert-C4H9COCH3
@@ -301,14 +319,20 @@
 	 Data reported as k = 1.8e-11 * (300/T)^0.75
 		When lumping the 1.8e-11 * 300^0.75, attain A=7.81e+14
 	 No experimental data, at the time
-	 Recommended data taken from geometric mean rule (... of what?)
 	 Verified by MRH on 10Aug2009
+	 Entry 44,22: Recommended rate coefficient computed using geometric mean rule of
+		tC4H9+tC4H9-->adduct and CH3CO+CH3CO-->adduct rxns
+	 MRH 31-Aug-2009
 
 463: [92] Tsang, W. J Phys. Chem. Ref. Data 1990, 19, 1.
 	 Tert-C4H9 + CH3O --> tert-C4H9OCH3
 	 pg 8, Chemical Kinetic Database For Combustion Chemistry, Part 4 - Isobutane. 
 	 Index of Reactions and Summary of Recommended Rate Expressions. No. 44,24.
 	 Verified by Karma James
+	 pg.42-43: Discussion on evaluated data
+	 Entry 44,24(b): Rate coefficient calculated using geometric mean rule of tC4H9+tC4H9-->adduct
+		and CH3O+CH3O-->adduct rxns
+	 MRH 31-Aug-2009
 	 
 464: [171] Fahr, A.; Laufer, A.; Klein, R.; Braun, W. J. Phys. Chem. 1991, 95, 3218.
 	 Absolute value measured directly. Excitation: flash photolysis, analysis : Vis-UV absorption. Original Uncertainty 1.2E+13. 
