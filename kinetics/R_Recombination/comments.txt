@@ -16,6 +16,11 @@
 	 pg 870 Evaluated Kinetic Data for Combustion Modelling Supplement 1, Table 3. Combination reactions.
 	 RMG data matches reference data for k(infinity).
 	 Verified by Karma James
+	 pg.903-906: Discussion on evaluated data
+	 H+CH3(+m) --> CH4(+m): RMG stores the recommended rate coefficient for k_inf.  Recommended
+		rate coefficient is that reported by Baulch et al. in previous literature review
+		(since no new experimental data had been reported since).
+	 MRH 31-Aug-2009
 
 428: [169] Sillesen , A.; Ratajczak, E.; Pagsberg, P. Chem. Phys. Lett. 1993, 201, 171.
 	 Data derived from fitting to a complex mechanism. Excitation: radiolysis, analysis: IR absroption. Pressure 0.10 bar
@@ -87,6 +92,11 @@
 	 pg 871 Evaluated Kinetic Data for Combustion Modelling Supplement 1, Table 3. Combination reactions.
 	 RMG data matches reference data for k(infinity).
 	 Verified by Karma James
+	 pg.980-983: Discussion on evaluated data
+	 CH3+CH3(+m) --> C2H6(+m): RMG stores the recommended high-pressure limit rate coefficient,
+		k_inf.  "The recommended values are based mainly on the extensive sets of data
+		from Refs. 4, 10, 11, and 14 up to 1000K ..."
+	 MRH 31-Aug-2009
 
 439: [94] Baulch, D. L.; Cobos, C. J.; Cox, R. A.; Frank, P.; Hayman, G.; Just, T.; Kerr, J. A.;
 	 Murrells, T.; Pilling, M. J.; Troe, J.; Walker, R. W.; Warnatz, J. J. Phys. Chem. Ref. Data 1994, 23, 847.
@@ -94,6 +104,12 @@
 	 pg 871 Evaluated Kinetic Data for Combustion Modelling Supplement 1, Table 3. Combination reactions.
 	 RMG data matches reference data for k(infinity).
 	 Verified by Karma James
+	 pg.991: Discussion on evaluated data
+	 CH3+C2H5(+m) --> C3H8(+m): RMG stores the recommended high-pressure limit rate coefficient,
+		k_inf.  "The recommended value for k_inf is a weighted average of earlier experiments
+		in agreement with SACM calculations following Ref.10.  A temperature independent value
+		of k_inf is assumed until more definite experimental information is available."
+	 MRH 31-Aug-2009
 
 440: [176] Tsang, W. Combust. Flame 1989, 78, 71. 
 	 RRK(M) extrapolation. 
@@ -175,6 +191,11 @@
 	 pg 871 Evaluated Kinetic Data for Combustion Modelling Supplement 1, Table 3. Combination reactions.
 	 RMG data matches reference data for k(infinity).
 	 Verified by Karma James
+	 pg.933-934: Discussion of evaluated data
+	 OH+CH3(+m) --> CH3OH(+m): RMG stores the recommended high-pressure limit rate coefficient,
+		k_inf.  "The available database is still limited and more measurements are needed.
+		... The preferred k_inf is consistent with SACM estimates ..."
+	 MRH 31-Aug-2009
 	 
 449: [89] Tsang, W.; Hampson, R. F. J. Phys. Chem. Ref. Data 1986, 15, 1087.
 	 CH3 + CH3O --> (CH3)2O
