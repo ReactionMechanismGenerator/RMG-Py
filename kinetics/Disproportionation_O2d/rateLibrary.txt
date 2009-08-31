@@ -20,7 +20,7 @@ Arrhenius_EP
 487.		O2d				Cmethyl_Csrad	700-2500	1.26E+11	0		0		0		*3.0	0		0		0		4		Tsang [91] Literature review.
 501.		O2d				C/H2/Nd_Csrad	500-900		9.04E+10	0		0		0		*3.0	0		0		0		4		Tsang [91] Literature review.
 513.		O2d				C/H/NdNd_Csrad	600-1000		2.41E+10	0		0		0		*5.0	0		0		0		4		Tsang [92] Literature review.
-524.		O2d				Cdpri_Csrad		300-2500	1.21E+12	0		0		13.55	0		0		0		0		4		Tsang [93] Literature review. O2 + CH2CHCH2 --> HO2 + CH2=C=CH2 (Rate constant is an upper limit)
+524.		O2d				Cdpri_Csrad		300-2500	1.21E+12	0		0		13.55	0		0		0		0		4		Tsang [93] Literature review.
 533.		O2d				O_Csrad			298			1.14E+13	0		0		0		0		0		0		0		4		Atkinson et al [98] literature review. O2 + CH3CHOH --> HO2 + CH3CHO
 534.		O2d				O_Csrad			298			5.78E+12	0		0		0		0		0		0		0		4		Atkinson et al [98] literature review. O2 + CH2OH --> HO2 + CH2O
 535.		O2d				O_Csrad			200-300		5.48E+12	0		0		0		0		0		0		0		4		DeMore et al [183] literature review. O2 + CH2OH --> HO2 + CH2O
