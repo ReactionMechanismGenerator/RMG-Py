@@ -18,3 +18,11 @@
 		notes that it is surprising that p-dependence effects are not observed for
 		C3H6 formation.
 	MRH 30-Aug-2009
+
+513: [92] Tsang, W.; Journal of Physical and Chemical Reference Data (1990), 19(1), 1-68.
+	Literature review: O2 + iC4H9 --> iC4H8 + HO2
+	pg. 52-53: Discussion on evaluated data
+	Entry 45,3 (a): The author recommends a rate coefficient based on the experiments performed
+		by Baker et al. (yielding a disproportionation-to-decomposition ratio) and the
+		current (Tsang) study's recommended iC4H9 unimolecular decomposition rate.
+	MRH 31-Aug-2009
