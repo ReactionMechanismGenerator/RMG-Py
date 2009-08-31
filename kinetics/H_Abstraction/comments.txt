@@ -449,6 +449,11 @@
 	 H2 + C2H --> H + C2H2 C.D.W divided original rate expression by 2, to get rate expression per H atom.
 	 pg 863 Evaluated Kinetic Data for Combustion Modelling Supplement 1, Table 1. Bimolecular reactions - C2H Radical Reactions.
 	 Verified by Karma James
+	 pg.1013-1014: Discussion on evaluated data
+	 C2H+H2-->C2H2+H: Recommended rate coefficient is that reported by Koshi et al.  Rate
+		coefficient was computed for low temperatures, but extrapolation to higher temperatures
+		fits other reported data reasonably well.
+	 MRH 31-Aug-2009
 	 
 162: [122] Mebel, A.M.; Lin, M.C.; Yu, T.; Morokuma, K. J. Phys. Chem. A. 1997, 101, 3189.
 	 H2 + phenyl --> H + benzene C.D.W divided original rate expression by 2 ( from A = 5.71E+04), to get rate expression per H atom.
@@ -1025,6 +1030,11 @@
 	 CH2O + CH3 --> HCO + CH4 C.D.W divided original rate expression by 2, to get rate expression per H atom.
 	 pg 862 Evaluated Kinetic Data for Combustion Modelling Supplement 1, Table 1. Bimolecular reactions - CH3 Radical Reactions.
 	 Verified by Karma James
+	 pg.989-990: Discussion on evaluated data
+	 CH3+HCHO --> CH4+HCO: The recommended value is a "best fit to the data of Choudhury et al.,
+		the reworked data from Anastasi, together with those at lower temperatures from
+		Refs. 4, 5, and 7."
+	 MRH 31-Aug-2009
 	
 231: [89] Tsang, W.; Hampson, R.F. J. Phys. Chem. Ref. Data 1986, 15, 1087.
 	 CH2O + C2H5 --> HCO + C2H6 C.D.W divided original rate expression by 2, to get rate expression per H atom.
