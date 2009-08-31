@@ -106,6 +106,13 @@
 		rxn and an addition + hot adduct decomposition rxn will result in the same products.
 	MRH 30-Aug-2009
 
+500: [95] Baulch, D.L.; Cobos, C.J.; Cox, R.A.; Esser, C.; Frank, P.; Just, T.; Kerr, J.A.; Pilling, M.J.; Troe, J.; Walker, R.W.; Warnatz, J.; Journal of Physical and Chemical Reference Data (1992), 21(3), 411-734.
+	pg.523: Discussion of evaluated data
+	H+CH3O --> H2+CH2O: Authors state that no new data have been reported for this reaction.
+		MRH assumes the recommended value comes from a previous review article published
+		by authors.  In any case, recommended data fits the reported data well.
+	MRH 31-Aug-2009
+
 502: [91] Tsang, W.; Journal of Physical and Chemical Reference Data (1988), 17(2), 887-951.
 	Literature review.  CH2_triplet + n-C3H7 --> C3H6 + CH3
 	pg. 925: Discussion on evaluated data
