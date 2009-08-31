@@ -731,42 +731,83 @@
 	 pg 5, Chemical Kinetic Database For Combustion Chemistry, Part 4 - Isobutane. 
 	 Index of Reactions and Summary of Recommended Rate Expressions. No. 43,3.
 	 Verified by Karma James
+	 pg.14: Discussion on evaluated data
+	 Entry 43,3(b): No direct measurements at the time.  A review article reported a rate
+		coefficient expression for iC4H10+O2-->tC4H9+HO2.  An experiment performed by
+		Baldwin, Drewery, and Walker reported a rate coefficient expression for O2 abstracting
+		a tertiary H-atom from 2,3-dimethylbutane.  The experiment's value matched well
+		with the review's value, so Tsang recommended the review's value.
+	 MRH 31-Aug-2009
 	 
 199: [92] Tsang, W. J. Phys. Chem. Ref. Data 1990, 19, 1.
 	 Iso-C4H10 + O --> tert-C4H9 + OH
 	 pg 5, Chemical Kinetic Database For Combustion Chemistry, Part 4 - Isobutane. 
 	 Index of Reactions and Summary of Recommended Rate Expressions. No. 43,5.
 	 Verified by Karma James
+	 pg.15: Discussion on evaluated data
+	 Entry 43,5(b): Michael et al. reported the rate coefficient expression for iC4H10+O=OH+C4H9 isomer.
+		Tsang subtracted from this expression the contributions from iC4H10+O=OH+iC4H9 (What
+		rate expression was used?  The one recommended here?) to obtain an expression for
+		iC4H10+O=OH+tC4H9.  Tsang then adjusted the rate expression such that the A-factor's
+		temperature dependence was 2.5 (was this 2.5 based on the review by Cohen and Westberg?).
+	 MRH 31-Aug-2009
 
 200: [92] Tsang, W. J. Phys. Chem. Ref. Data 1990, 19, 1.
 	 Iso-C4H10 + CH2 --> tert-C4H9 + CH3
 	 pg 6, Chemical Kinetic Database For Combustion Chemistry, Part 4 - Isobutane. 
 	 Index of Reactions and Summary of Recommended Rate Expressions. No. 43,25.
 	 Verified by Karma James
+	 pg.23-24: Discussion on evaluated data
+	 Entry 43,25(b): Tsang recommends the rate coefficient expression reported by Bohland et al.
+		Tsang notes that the rate for CH2_triplet abstracting a H-atom is faster than
+		the recommended value for CH3 abstracting a H-atom.
+	 MRH 31-Aug-2009
 
 201: [92] Tsang, W. J. Phys. Chem. Ref. Data 1990, 19, 1.
 	 Iso-C4H10 + C2H3 --> tert-C4H9 + C2H4
 	 pg 5, Chemical Kinetic Database For Combustion Chemistry, Part 4 - Isobutane. 
 	 Index of Reactions and Summary of Recommended Rate Expressions. No. 43,19.
 	 Verified by Karma James
+	 pg.20: Discussion on evaluated data
+	 Entry 43,19(b): No data available at the time.  Author recommends rate coefficient expression
+		based on the rxn CH3+iC4H10=CH4+tC4H9: same Arrhenius A and n parameters, Ea decreased
+		by 8.5 kJ/mol.
+	 MRH 31-Aug-2009
 
 202: [92] Tsang, W. J. Phys. Chem. Ref. Data 1990, 19, 1.
 	 Iso-C4H10 + C2H --> tert-C4H9 + C2H2
 	 pg 5, Chemical Kinetic Database For Combustion Chemistry, Part 4 - Isobutane. 
 	 Index of Reactions and Summary of Recommended Rate Expressions. No. 43,21.
 	 Verified by Karma James
+	 pg.21: Discussion on evaluated data
+	 Entry 43,21(b): No data available at the time.  For the rxn iC4H10+C2H=C2H2+iC4H9, author
+		recommends 1.5x the rate of the rxn C2H6+C2H=C2H2+C2H5 (9 vs. 6 primary H-atoms).
+		The author then recommends a rate coefficient for iC4H10+C2H=C2H2+tC4H9 that appears
+		to be 1/9 the rate of iC4H10+C2H=C2H2+iC4H9 (9 vs. 1 H-atom).
+	 MRH 31-Aug-2009
 
 203: [92] Tsang, W. J. Phys. Chem. Ref. Data 1990, 19, 1.
 	 Iso-C4H10 + HCO --> tert-C4H9 + CH2O
 	 pg 5, Chemical Kinetic Database For Combustion Chemistry, Part 4 - Isobutane. 
 	 Index of Reactions and Summary of Recommended Rate Expressions. No. 43,15.
 	 Verified by Karma James
+	 pg.18: Discussion on evaluated data
+	 Entry 43,15(b): No data available at the time.  For the rxn iC4H10+HCO=CH2O+iC4H9, author
+		recommends 1.5x the rate of the rxn C3H8+HCO+CH2O+nC3H7 (9 vs. 6 primary H-atoms).
+		The author then recommends the rate coefficient for iC4H10+HCO=CH2O+tC4H9 to be the 
+		rate coefficient of iC4H10+HCO=CH2O+iC4H9, with the A factor divided by 9 (9 vs. 1
+		H-atoms) and the Ea decreased by 20 kJ/mol.
+	 MRH 31-Aug-2009
 
 204: [92] Tsang, W. J. Phys. Chem. Ref. Data 1990, 19, 1.
 	 Iso-C4H10 + CH3CO --> tert-C4H9 + CH3CHO
 	 pg 5, Chemical Kinetic Database For Combustion Chemistry, Part 4 - Isobutane. 
 	 Index of Reactions and Summary of Recommended Rate Expressions. No. 43,22.
 	 Verified by Karma James
+	 pg.21: Discussion on evaluated data
+	 Entry 43,22(b): No data available at the time.  Author recommends rate coefficient expression
+		based on the rxn iC4H10+HCO=CH2O+tC4H9.
+	 MRH 31-Aug-2009
 
 205: [101] Cohen, N. Int. J. Chem. Kinet. 1991, 23, 397.
 	 Iso-C4H10 + OH --> tert-C4H9 + H2O
@@ -777,6 +818,17 @@
 	 pg 6, Chemical Kinetic Database For Combustion Chemistry, Part 4 - Isobutane. 
 	 Index of Reactions and Summary of Recommended Rate Expressions. No. 43,24.
 	 Verified by Karma James
+	 pg.22: Discussion on evaluated data
+	 Entry 43,24(b): A study by Berces and Trotman-Dickenson reported a rate coefficient
+		for the rxn iC4H10+CH3O=CH3OH+C4H9 isomer.  Tsang used the rate coefficient for
+		the rxn CH3O+C(CH3)4=CH3OH+H2C*-C(CH3)3 determined by Shaw and Trotman-Dickenson
+		as a characteristic for CH3O+primary H-atom abstraction to recommend a rate coefficient
+		for iC4H10+CH3O=CH3OH+iC4H9.  This rate expression was subtracted from the rate
+		coefficient reported by Berces and Trotman-Dickenson to yield the rate coefficient
+		for iC4H10+CH3O=CH3OH+tC4H9.  Lastly, the pre-exponential factor was cut in half,
+		due to Tsang's correcting an arithmetic error by Kerr and Parsonage (perhaps this
+		work was referenced in the Berces and Trotman-Dickenson study?)
+	 MRH 31-Aug-2009
 	 
 207: [89] Tsang, W.; Hampson, R.F. J. Phys. Chem. Ref. Data 1986, 15, 1087.
 	 C2H4 + O2 --> C2H3 + HO2 C.D.W divided original rate expression by 4, to get rate expression per H atom.
@@ -969,6 +1021,13 @@
 	 pg 7, Chemical Kinetic Database For Combustion Chemistry, Part 4 - Isobutane. 
 	 Index of Reactions and Summary of Recommended Rate Expressions. No. 44,12.
 	 Verified by Karma James
+	 pg.35: Discussion on evaluated data
+	 Entry 44,12: No data available at the time.  The author recommends 2x the rate coefficient
+		of the rxn tC4H9+tC4H9-CHO=iC4H10+tC4H9-CO (2 vs. 1 aldehydic H-atoms); this value
+		was reported by Birrell and Trotman-Dickenson.  The author also notes that he has
+		taken into account tC4H9 combination (perhaps meaning he used a geometric mean rule
+		to derive the final form of the expression?)
+	 MRH 31-Aug-2009
 	 
 234: [89] Tsang, W.; Hampson, R.F. J. Phys. Chem. Ref. Data 1986, 15, 1087.
 	 CH2O + C2H3 --> HCO + C2H4 C.D.W divided original rate expression by 2, to get rate expression per H atom.
@@ -1157,7 +1216,8 @@
 	 CH3OH + tert-C4H9 --> CH3O + iso-C4H10
 	 //WAS UNABLE TO VERIFY DATA!!! DATA NOT FOUND IN REFERENCE.
 	 Ref[90] was incorrect; rate matches that reported in Ref[92].
-	 pg. 44
+	 pg.44: Discussion on evaluated data
+	 Entry 44,38(b)
 	 Reference reports reaction as: t-C4H9+CH3OH=t-C4H10+CH3O
 		This is a typo: no t-C4H10 molecule exists (should be i-C4H10)
 	 No experimental data, at the time
