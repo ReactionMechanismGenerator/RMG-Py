@@ -34,7 +34,7 @@ Arrhenius_EP
 //491.		C_methyl		Cmethyl_Csrad		300-2500	9.41E+10	0.68	0		0		*1.5	0		0		0		4		Tsang [91] Literature review.
 491.		C_methyl		Cmethyl_Csrad		300-2500	2.19E+14	-0.68	0		0		*1.1	0		0		0		4		Tsang [91] Literature review.
 492.		C_rad/H2/Cs		Cmethyl_Csrad		300-2500	2.3E+13		-0.35	0		0		*1.1	0		0		0		4		Tsang [91] Literature review.
-493.		C_rad/H2/Cd		Cmethyl_Csrad		300-2500	2.29E+13	-0.35	0		-0.13	*3.0	0		0		0		4		Tsang [93] Literature review. CH3CH=CH2 + iso-C3H7 --> CH3CH=CH2 + CH3CH=CH2
+493.		C_rad/H2/Cd		Cmethyl_Csrad		300-2500	2.29E+13	-0.35	0		-0.13	*3.0	0		0		0		4		Tsang [93] Literature review.
 494.		C_rad/H2/O		Cmethyl_Csrad		300-2500	2.89E+12	0		0		0		*5.0	0		0		0		4		Tsang [91] Literature review.
 495.		C_rad/H/NonDeC	Cmethyl_Csrad		300-2500	2.11E+14	-0.70	0		0		*2.0	0		0		0		4		Tsang [91] Literature review.
 496.		C_rad/Cs3		Cmethyl_Csrad		300-2500	2.86E+15	-1.10	0		0		*1.7	0		0		0		4		Tsang [92] Literature review.
@@ -46,7 +46,7 @@ Arrhenius_EP
 503.		H_rad			C/H2/Nd_Csrad		300-2500	1.81E+12	0		0		0		*2.0	0		0		0		4		Tsang [91] Literature review.
 504.		C_methyl		C/H2/Nd_Csrad		300-2500	1.15E+13	-0.32	0		0		*1.7	0		0		0		4		Tsang [91] Literature review.
 505.		C_rad/H2/Cs		C/H2/Nd_Csrad		300-2500	1.45E+12	0		0		0		*1.4	0		0		0		4		Tsang [91] Literature review.
-506.		C_rad/H2/Cd		C/H2/Nd_Csrad		300-2500	1.45E+12	0		0		-0.13	*3.0	0		0		0		4		Tsang [93] Literature review. CH2CH=CH2 + n-C3H7 --> CH3CH=CH2 + CH3CH=CH2
+506.		C_rad/H2/Cd		C/H2/Nd_Csrad		300-2500	1.45E+12	0		0		-0.13	*3.0	0		0		0		4		Tsang [93] Literature review.
 507.		C_rad/H2/O		C/H2/Nd_Csrad		300-2500	4.82E+11	0		0		0		*3.0	0		0		0		4		Tsang [91] Literature review.
 508.		C_rad/H/NonDeC	C/H2/Nd_Csrad		300-2500	5.13E+13	-0.35	0		0		*2.0	0		0		0		4		Tsang [91] Literature review.
 509.		C_rad/Cs3		C/H2/Nd_Csrad		300-2500	2.16E+14	-0.75	0		0		*2.0	0		0		0		4		Tsang [92] Literature review.
@@ -59,19 +59,19 @@ Arrhenius_EP
 516.		C_methyl		C/H/NdNd_Csrad		300-2500	6.02E+12	-0.32	0		0		*2.0	0		0		0		4		Tsang [92] Literature review.
 517.		C_rad/H2/Cs		C/H/NdNd_Csrad		300-2500	8.43E+11	0		0		0		*2.0	0		0		0		4		Tsang [92] Literature review.
 518.		C_rad/H2/O		C/H/NdNd_Csrad		300-2500	2.41E+11	0		0		0		*3.0	0		0		0		4		Tsang [92] Literature review.
-519.		C_rad/H2/Cd		C/H/NdNd_Csrad		300-2500	7.83E+11	0		0		-0.13	*2.0	0		0		0		4		Tsang [93] Literature review. 
+519.		C_rad/H2/Cd		C/H/NdNd_Csrad		300-2500	7.83E+11	0		0		-0.13	*3.0	0		0		0		4		Tsang [93] Literature review. 
 520.		C_rad/H/NonDeC	C/H/NdNd_Csrad		300-2500	2.56E+13	-0.35	0		0		*2.0	0		0		0		4		Tsang [92] Literature review.
 521.		C_rad/Cs3		C/H/NdNd_Csrad		300-2500	1.08E+14	-0.75	0		0		*2.0		0		0		0		4		Tsang [92] Literature review.
 522.		Cd_pri_rad		C/H/NdNd_Csrad		300-2500	8.43E+11	0		0		0		*4.0	0		0		0		4		Tsang [92] Literature review.
 523.		O_pri_rad		C/H/NdNd_Csrad		300-2500	1.21E+13	0		0		0		*3.0	0		0		0		4		Tsang [92] Literature review.
-525.		H_rad			Cdpri_Csrad			300-2500	1.81E+13	0		0		0		*3.0	0		0		0		4		Tsang [93] Literature review. H + CH2CH=CH2 --> H2 + CH2=C=CH2
-526.		C_methyl		Cdpri_Csrad			300-2500	3.01E+12	-0.32	0		-0.13	*3.0	0		0		0		4		Tsang [93] Literature review. CH3 + CH2CH=CH2 --> CH4 + CH2=C=CH2
-527.		C_rad/H2/Cs		Cdpri_Csrad			300-2500	9.64E+11	0		0		-0.13	*2.0	0		0		0		4		Tsang [93] Literature review. C2H5 + CH2CH=CH2 --> C2H6 + CH2=C=CH2
-528.		C_rad/H2/Cd		Cdpri_Csrad			300-2500	8.43E+10	0		0		-0.26	*2.5	0		0		0		4		Tsang [93] Literature review. CH2CH=CH2 + CH2CH=CH2 --> CH3CH=CH2 + CH2=C=CH2
-529.		C_rad/H/NonDeC	Cdpri_Csrad			300-2500	4.58E+12	-0.35	0		-0.13	*3.0	0		0		0		4		Tsang [93] Literature review. iso-C3H7 + CH2CH=CH2 --> C3H8 + CH2=C=CH2
-530.		C_rad/Cs3		Cdpri_Csrad			300-2500	2.89E+13	-0.75	0		-0.13	*3.0	0		0		0		4		Tsang [93] Literature review. Tert-C4H9 + CH2CH=CH2 --> iso-C4H10 + CH2=C=CH2
-531.		Cd_pri_rad		Cdpri_Csrad			300-2500	2.41E+12	0		0		0		*3.0	0		0		0		4		Tsang [93] Literature review. C2H3 + CH2CH=CH2 --> C2H4 + CH2=C=CH2
-532.		O_pri_rad		Cdpri_Csrad			300-2500	6.03E+12	0		0		0		*3.0	0		0		0		4		Tsang [93] Literature review. OH + CH2CH=CH2 --> H2O + CH2=C=CH2
+525.		H_rad			Cdpri_Csrad			300-2500	1.81E+13	0		0		0		*3.0	0		0		0		4		Tsang [93] Literature review.
+526.		C_methyl		Cdpri_Csrad			300-2500	3.01E+12	-0.32	0		-0.13	*3.0	0		0		0		4		Tsang [93] Literature review.
+527.		C_rad/H2/Cs		Cdpri_Csrad			300-2500	9.64E+11	0		0		-0.13	*2.0	0		0		0		4		Tsang [93] Literature review.
+528.		C_rad/H2/Cd		Cdpri_Csrad			300-2500	8.43E+10	0		0		-0.26	*2.5	0		0		0		4		Tsang [93] Literature review.
+529.		C_rad/H/NonDeC	Cdpri_Csrad			300-2500	4.58E+12	-0.35	0		-0.13	*3.0	0		0		0		4		Tsang [93] Literature review.
+530.		C_rad/Cs3		Cdpri_Csrad			300-2500	2.89E+13	-0.75	0		-0.13	*3.0	0		0		0		4		Tsang [93] Literature review.
+531.		Cd_pri_rad		Cdpri_Csrad			300-2500	2.41E+12	0		0		0		*3.0	0		0		0		4		Tsang [93] Literature review.
+532.		O_pri_rad		Cdpri_Csrad			300-2500	6.03E+12	0		0		0		*3.0	0		0		0		4		Tsang [93] Literature review.
 536.		O_atom_triplet	O_Csrad				298			9.04E+13	0		0		0		*1.5	0		0		0		3		Grotheer et al [189].
 537.		CH2_triplet		O_Csrad				300-2500	1.21E+12	0		0		0		*3.0	0		0		0		4		Tsang [90] Literature review.
 538.		H_rad			O_Csrad				295			2.0E+13		0		0		0		*2.0	0		0		0		4		Edelbuttel-Einhaus et al [190].
@@ -79,7 +79,7 @@ Arrhenius_EP
 540.		C_methyl		O_Csrad				298			8.49E+13	0		0		0		0		0		0		0		3		Pagsberg et al [191].
 541.		C_methyl		O_Csrad				300-2500	2.41E+12	0		0		0		*5.0	0		0		0		4		Tsang [90] Literature review.
 542.		C_rad/H2/Cs		O_Csrad				300-2500	2.41E+12	0		0		0		*5.0	0		0		0		4		Tsang [90] Literature review.
-543.		C_rad/H2/Cd		O_Csrad				300-2500	1.81E+13	0		0		0		*2.5	0		0		0		4		Tsang [93] Literature review. CH2CH=CH2 + CH2OH --> CH3CH=CH2 + CH2O
+543.		C_rad/H2/Cd		O_Csrad				300-2500	1.81E+13	0		0		0		*2.5	0		0		0		4		Tsang [93] Literature review.
 544.		C_rad/H2/O		O_Csrad				300-2500	4.82E+12	0		0		0		*2.0	0		0		0		4		Tsang [90] Literature review.
 545.		C_rad/H/NonDeC	O_Csrad				300-2500	2.35E+12	0		0		0		*5.0	0		0		0		4		Tsang [91] Literature review.
 546.		C_rad/Cs3		O_Csrad				300-2500	3.47E+14	-0.75	0		0		*3.0	0		0		0		4		Tsang [92] Literature review.

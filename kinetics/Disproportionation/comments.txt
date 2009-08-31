@@ -49,6 +49,16 @@
 		disproportionation to addition is that reported by Gibian and Corley (1973).
 	MRH 30-Aug-2009
 
+493: [93] Tsang, W.; Journal of Physical and Chemical Reference Data (1991), 20(2), 221-273.
+	Literature review: C3H5 + iC3H7 --> C3H6 + C3H6
+	pg.268: Discussion on evaluated data
+	Entry 47,42(a): No data available at the time.  Recommended rate coefficient expression
+		based on rxn C3H5+C2H5=C2H4+C3H6 (James, D.G.L. and Troughton, G.E.) and values
+		for "alkyl radicals" (Gibian M.J. and Corley R.C.); this leads to disproportionation-
+		to-addition ratio of 0.2.  The addition rate expression was derived using the geometric
+		mean rule for the rxns C3H5+C3H5-->adduct and iC3H7+iC3H7-->adduct.
+	MRH 31-Aug-2009
+
 494: [91] Tsang, W.; Journal of Physical and Chemical Reference Data (1988), 17(2), 887-951.
 	Literature review.  CH2OH + i-C3H7 --> C3H6 + CH3OH
 	pg. 945: Discussion on evaluated data
@@ -133,6 +143,16 @@
 		addition of 0.073 (which is an average of the 2 experimentally determined
 		branching ratios)
 	MRH 30-Aug-2009
+
+506: [93] Tsang, W.; Journal of Physical and Chemical Reference Data (1991), 20(2), 221-273.
+	Literature review: C3H5 + nC3H7 --> C3H6 + C3H6
+	pg.268: Discussion on evaluated data
+	Entry 47,41(a): No data available at the time.  Recommended rate coefficient expression
+		based on rxn C3H5+C2H5=C2H4+C3H6 (James, D.G.L. and Troughton, G.E.) and values
+		for "alkyl radicals" (Gibian M.J. and Corley R.C.); this leads to disproportionation-
+		to-addition ratio of 0.07.  The addition rate expression was derived using the geometric
+		mean rule for the rxns C3H5+C3H5-->adduct and nC3H7+nC3H7-->adduct.
+	MRH 31-Aug-2009
 
 507: [91] Tsang, W.; Journal of Physical and Chemical Reference Data (1988), 17(2), 887-951.
 	Literature review.  CH2OH + n-C3H7 --> C3H6 + CH3OH
@@ -232,6 +252,15 @@
 		cutting the A in the RMG_database in two. ***
 	MRH 30-Aug-2009
 
+519: [93] Tsang, W.; Journal of Physical and Chemical Reference Data (1991), 20(2), 221-273.
+	Literature review: C3H5 + iC4H9 --> iC4H8 + C3H6
+	pg.270: Discussion on evaluated data
+	Entry 47,45(a): No data available at the time.  Recommended rate coefficient expression
+		based on rxn C3H5+C2H5=C2H4+C3H6 (James, D.G.L. and Troughton, G.E.); this leads to disproportionation-
+		to-addition ratio of 0.04.  The addition rate expression was derived using the geometric
+		mean rule for the rxns C3H5+C3H5-->adduct and iC4H9+iC4H9-->adduct.
+	MRH 31-Aug-2009
+
 520: [92] Tsang, W.; Journal of Physical and Chemical Reference Data (1990), 19(1), 1-68.
 	Literature review: i-C3H7 + i-C4H9 --> i-C4H8 + C3H8
 	pg. 65: Discussion on evaluated data
@@ -270,16 +299,79 @@
 		on the alpha-carbon).
 	MRH 30-Aug-2009
 
-546: [92] Tsang, W.; Journal of Physical and Chemical Reference Data (1990), 19(1), 1-68.
-	Literature review: t-C4H9 + CH2OH = CH2O + i-C4H10
-	pg. 44: Discussion on evaluated data
-	Entry 44,39 (a): No data available at the time.  Author estimates the addition rxn rate
-		coefficient based on the rate for t-C4H9+C2H5-->adduct.  The author uses a
-		disproportionation-to-addition ratio of 0.52 to obtain the reported rate coefficient
-		expression.
-	*** NOTE: Previous value in RMG was for k_c (the addition rxn).  I have changed it to match
-		the rate for the disproportionation rxn. ***
-	MRH 30-Aug-2009
+525: [93] Tsang, W.; Journal of Physical and Chemical Reference Data (1991), 20(2), 221-273.
+	Literature review: H + C3H5 --> H2C=C=CH2 + H2
+	pg.252: Discussion on evaluated data
+	Entry 47,4(c): No data available at the time.  Author assigns a rate coefficient of 
+		3x10^-11 cm3/molecule/s for the disproportionation rxn.
+	MRH 31-Aug-2009
+
+526: [93] Tsang, W.; Journal of Physical and Chemical Reference Data (1991), 20(2), 221-273.
+	Literature review: CH3 + C3H5 --> H2C=C=CH2 + CH4
+	pg.257: Discussion on evaluated data
+	Entry 47,16(a): No data available at the time.  Recommended rate coefficient expression
+		based on rxn C3H5+C2H5=C2H4+C3H6 (James, D.G.L. and Troughton, G.E.); this leads to disproportionation-
+		to-addition ratio of 0.03.  The addition rate expression was derived using the geometric
+		mean rule for the rxns C3H5+C3H5-->adduct and CH3+CH3-->adduct.
+	NOTE: The Ea reported in the discussion is Ea/R=-132 Kelvin.  However, in the table near
+		the beginning of the review article (summarizing all reported data) and in the NIST
+		online database (kinetics.nist.gov), the reported Ea/R=-66 Kelvin.  MRH took the
+		geometric mean of the allyl combination rxn (1.70x10^-11 * exp(132/T)) and methyl
+		combination rxn (1.68x10^-9 * T^-0.64) to obtain 1.69x10^-11 * T^-0.32 * exp(66/T).
+		Multiplying by 0.03 results in the recommended rate coefficient expression.
+	MRH 31-Aug-2009
+
+527: [93] Tsang, W.; Journal of Physical and Chemical Reference Data (1991), 20(2), 221-273.
+	Literature review: C2H5 + C3H5 --> H2C=C=CH2 + C2H6
+	pg.259: Discussion on evaluated data
+	Entry 47,17(a): The recommended rate expression is derived from the experimentally-
+		determined disproportionation-to-addition ratio of 0.047 (James and Troughton)
+		and the addition rate rule (C2H5+C3H5-->adduct) calculated using the geometric
+		mean rule of the rxns C2H5+C2H5-->adduct and C3H5+C3H5-->adduct.
+	MRH 31-Aug-2009
+
+528: [93] Tsang, W.; Journal of Physical and Chemical Reference Data (1991), 20(2), 221-273.
+	Literature review: C3H5 + C3H5 --> H2C=C=CH2 + C3H6
+	pg.271-272: Discussion on evaluated data
+	Entry 47,47(b): The recommended rate expression is derived from the experimentally-
+		determined disproportionation-to-addition ratio of 0.008 (James and Kambanis)
+		and the addition rate rule (C3H5+C3H5-->adduct) calculated based on the results
+		of Tulloch et al.
+	MRH 31-Aug-2009
+
+529: [93] Tsang, W.; Journal of Physical and Chemical Reference Data (1991), 20(2), 221-273.
+	Literature review: iC3H7 + C3H5 --> H2C=C=CH2 + C3H8
+	pg.268: Discussion on evaluated data
+	Entry 47,42(b): No data available at the time.  Recommended rate coefficient expression
+		based on rxn C3H5+C2H5=C2H4+C3H6 (James, D.G.L. and Troughton, G.E.) and values
+		for "alkyl radicals" (Gibian M.J. and Corley R.C.); this leads to disproportionation-
+		to-addition ratio of 0.04.  The addition rate expression was derived using the geometric
+		mean rule for the rxns C3H5+C3H5-->adduct and iC3H7+iC3H7-->adduct.
+	MRH 31-Aug-2009
+
+530: [93] Tsang, W.; Journal of Physical and Chemical Reference Data (1991), 20(2), 221-273.
+	Literature review: tC4H9 + C3H5 --> H2C=C=CH2 + iC4H10
+	pg.269: Discussion on evaluated data
+	Entry 47,44(b): No data available at the time.  Recommended rate coefficient expression
+		based on "allyl and alkyl radicals behaving in similar fashion" (possibly referencing
+		Gibian M.J. and Corley R.C.); this leads to disproportionation-
+		to-addition ratio of 0.04.  The addition rate expression was derived using the geometric
+		mean rule for the rxns C3H5+C3H5-->adduct and tC4H9+tC4H9-->adduct.
+	MRH 31-Aug-2009
+
+531: [93] Tsang, W.; Journal of Physical and Chemical Reference Data (1991), 20(2), 221-273.
+	Literature review: C2H3 + C3H5 --> H2C=C=CH2 + C2H4
+	pg.261-262: Discussion on evaluated data
+	Entry 47,19(d): No data available at the time.  Author recommends a rate coefficient
+		of 4x10^-12 cm3/molecule/s for the disproportionation rxn.
+	MRH 31-Aug-2009
+
+532: [93] Tsang, W.; Journal of Physical and Chemical Reference Data (1991), 20(2), 221-273.
+	Literature review: OH + C3H5 --> H2C=C=CH2 + H2O
+	pg.253: Discussion on evaluated data
+	Entry 47,6(a): No data available at the time.  Author recommends a rate coefficient
+		of 1x10^-11 cm3/molecule/s, based on "comparable rxns".
+	MRH 31-Aug-2009
 
 536: [189] Grotheer, H.; Riekert, G.; Walter, D.; Just, T. Symp. Int. Combust. Proc. 1989, 22, 963.
 	 Absolute value measured directly. Excitation: discharge, analysis: mass spectroscopy. Original uncertainty 3.0E+13
@@ -324,6 +416,15 @@
 		No data at the time.
 	MRH 30-Aug-2009
 
+543: [93] Tsang, W.; Journal of Physical and Chemical Reference Data (1991), 20(2), 221-273.
+	Literature review: C3H5 + CH2OH --> CH2O + C3H6
+	pg.267: Discussion on evaluated data
+	Entry 47,39: No data available at the time.  Author notes that combination of these two
+		reactants will form 3-butene-1-ol which should decompose under combustion conditions
+		to form C3H6 + CH2O (same products).  The author therefore recommends a rate
+		coefficient of 3x10^-11 cm3/molecule/s.
+	MRH 31-Aug-2009
+
 544: [90] Tsang, W.; Journal of Physical and Chemical Reference Data (1987), 16(3), 471-508.
 	Literature review: CH2OH + CH2OH --> CH3OH + CH2O
 	pg. 506: Discussion on evaluated data
@@ -342,6 +443,17 @@
 	pg. 945: Discussion on evaluated data
 	Entry 42,39 (b): No data available at the time.  Author suggests rate coefficient based
 		on rxn C2H5+i-C3H7=C3H8+C2H4, namely 3.9x10^-12 cm3/molecule/s
+	MRH 30-Aug-2009
+
+546: [92] Tsang, W.; Journal of Physical and Chemical Reference Data (1990), 19(1), 1-68.
+	Literature review: t-C4H9 + CH2OH = CH2O + i-C4H10
+	pg. 44: Discussion on evaluated data
+	Entry 44,39 (a): No data available at the time.  Author estimates the addition rxn rate
+		coefficient based on the rate for t-C4H9+C2H5-->adduct.  The author uses a
+		disproportionation-to-addition ratio of 0.52 to obtain the reported rate coefficient
+		expression.
+	*** NOTE: Previous value in RMG was for k_c (the addition rxn).  I have changed it to match
+		the rate for the disproportionation rxn. ***
 	MRH 30-Aug-2009
 
 547: [90] Tsang, W.; Journal of Physical and Chemical Reference Data (1987), 16(3), 471-508.
