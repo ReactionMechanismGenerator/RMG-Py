@@ -11,6 +11,11 @@
 	 pg 871 Evaluated Kinetic Data for Combustion Modelling Supplement 1, Table 3. Combination reactions.
 	 RMG data matches reference data for k(infinity).
 	 Verified by Karma James
+	 pg.973-974: Discussion on evaluated data
+	 CH3+CO(+m) --> CH3CO(+m): RMG stores k_inf rate coefficient.  The recommended rate
+		coefficient comes from the preferred (from this reference) rxn rate and the equilibrium
+		constant (from Bencsura et al.)
+	 MRH 31-Aug-2009
 
 420: [89] Tsang, W.; Hampson, R.F. J.Phys. Chem. Ref. Data 1986, 15, 1087.
 	 CO + C2H5 --> C2H5CO.
