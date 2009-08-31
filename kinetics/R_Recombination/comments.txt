@@ -209,6 +209,12 @@
 450: [95] Baulch, D. L.; Cobos, C. J.; Cox, R. A.; Esser, C.; Frank, P.; Just, T.; Kerr, 
 	 J. A.; Pilling, M. J.; Troe, J.; Walker, R. W.; Warnatz, J. J. Phys. Chem. Ref. Data 1992, 21, 411.
 	 .C2H5 + .C2H5 --> n-C4H10 
+	 pg.707: Discussion on evaluated data
+	 C2H5+C2H5 --> nC4H10: "The preferred rate coefficient is the mean of the results of
+		Parkes and Quinn, Adachi et al., Demissy and Lesclaux, Pacey and Wimalasena,
+		Munk et al., Arthur, and Anastasi and Arthur which are all in substantial 
+		agreement."
+	 MRH 31-Aug-2009
 
 451: [91] Tsang, W. J. Phys. Chem. Ref. Data 1988, 17, 887.
 	 C2H5 + iso-C3H7 --> iso-C5H12
