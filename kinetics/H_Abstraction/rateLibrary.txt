@@ -225,14 +225,14 @@ Arrhenius_EP
 211.	Cd_pri		O_pri_rad			650-1500	5.13E+12	0		0		5.94	*3.16	0		0		0		4		Baulch et al. [95] literature review.
 212.	Cd/H/NonDeC	O_atom_triplet		300-2500	6.02E+10	0.70	0		7.63	*3.0	0		0		0		4		Tsang [93] literature review.
 //213.	Cd/H/NonDeC	H_rad				300-2500	2.37E+00	0		0		7.31	*5.0	0		0		0		4		Tsang [93] literature review.
-213.	Cd/H/NonDeC	H_rad				300-800		4.09e+05	2.5		0		9.79	*4.0	0.0		0.0		0.0		4		Tsang [93] literature review.
+213.	Cd/H/NonDeC	H_rad				300-2500		4.09e+05	2.5		0		9.79	*4.0	0.0		0.0		0.0		4		Tsang [93] literature review.
 //214.	Cd/H/NonDeC	C_methyl			300-2500	3.8E-01		0		0		5.98	*100.0	0		0		0		4		Tsang [93] literature review.
 214.	Cd/H/NonDeC	C_methyl			300-2500	0.842		3.5		0.0		11.66	*6.0	0.0		0.0		0.0		4		Tsang [93] literature review.
 //215.	Cd/H/NonDeC	Cd_pri_rad			300-2500	3.8E-01		0		0		4.99	*10.0	0		0		0		4		Tsang [93] literature review.
 215.	Cd/H/NonDeC	Cd_pri_rad			300-2500	0.842		3.5		0.0		9.67	*6.0	0.0		0.0		0.0		4		Tsang [93] literature review.
 216.	Cd/H/NonDeC	Ct_rad				300-2500	1.21E+12	0		0		0		*5.0	0		0		0		4		Tsang [93] literature review.
 //217.	Cd/H/NonDeC	O_pri_rad			300-2500	1.11E+06	2.00	0		1.45	0		0		0		0		4		Tsang [93] literature review.
-217.	Cd/H/NonDeC	O_pri_rad			700-2500	1.11E+06	2.00	0		1.45	*2		0.0		0.0		0.0		4		Tsang [93] literature review.
+217.	Cd/H/NonDeC	O_pri_rad			300-2500	1.11E+06	2.00	0		1.45	*2		0.0		0.0		0.0		4		Tsang [93] literature review.
 218.	Ct_H		O2b					300-2500	6.05E+12	0		0		74.52	*10.0	0		0		0		4		Tsang [89] literature review.
 //219.	Ct_H		CO_birad			300-2500	2.41E+14	0		0		107		*10.0	0		0		0		4		Tsang [89] literature review.
 220.	Ct_H		C_rad/H2/Cs			300-2500	1.36E+11	0		0		23.45	*5.0	0		0		0		4		Tsang [89] literature review.

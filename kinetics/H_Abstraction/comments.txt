@@ -873,16 +873,31 @@
 
 212: [93] Tsang, W. J. Phys. Chem. Ref. Data 1991, 20, 221.
 	 CH3CH=CH2 + O --> CH3C=CH2 + OH
-	 pg 233-234
+	 pg 233-234: Discussion on evaluated data
 	 Verified by MRH on 6Aug2009
+	 Entry 46,5(f): No measurements on H-atom abstraction rxns. Recommended rate coefficient
+	 is computed as follows:
+		The rate of O + C3H6 --> OH + H2C=CH-*CH2 is computed using the expression:
+			[k(O+C2H6-->C2H5+HO)/k(OH+C2H6-->C2H5+H2O)] * k(OH+C3H6-->H2C=CH-*CH2+H2O).
+			The author uses this expression because he notes that OH and O H-atom abstraction
+			rxns generally follow the same trend.  The O+C2H6, OH+C2H6, and OH+C3H6
+			are from other Tsang review articles.
+		The rate of O+C3H6 --> OH+CH3C=CH2 is computed by adjusting the O+C3H6 --> OH+H2C=CH-*CH2
+			rate coefficient: increasing the Ea/R by 880 Kelvin and multiplying the A
+			by ~0.345; these values come from the relative difference between the rxns
+			OH+C3H6 --> H2O+H2C=CH-*CH2 and OH+C3H6 --> H2O+CH3C=CH2
+	MRH 31-Aug-2009
 
 213: [93] Tsang, W. J. Phys. Chem. Ref. Data 1991, 20, 221.
 	 CH3CH=CH2 + H --> CH3C=CH2 + H2
-	 pg 231
+	 pg 231: Discussion on evaluated data
 	 Previous modified Arrhenius parameters were for RELATIVE rate (kc/ka)
 	 Multipled kc/ka by ka to get kc (only one H to abstract, so no division necessary)
-	 Valid T range in reference suggested 300-800K
 	 Certified by MRH on 6Aug2009
+	 Entry 46,4(c): No data available for H-atom abstraction rxns.  The recommended rate
+		coefficient is based on the author's assumption that methyl substitution has the
+		same influence in olefins as in alkanes.
+	 MRH 31-Aug-2009
 
 214: [93] Tsang, W. J. Phys. Chem. Ref. Data 1991, 20, 221.
 	 CH3CH=CH2 + CH3 --> CH3C=CH2 + CH4
@@ -890,6 +905,9 @@
 	 Previous modified Arrhenius parameters were for RELATIVE rate (ke/kc)
 	 Multiplied ke/kc by kc to get ke (only one H to abstract, so no division necessary)
 	 Certified by MRH on 6Aug2009
+	 Entry 46,16(e): Recommended rate coefficient is based on the author's assumption
+		that methyl substitution has the same influence in olefins as in alkanes.
+	 MRH 31-Aug-2009
 
 215: [93] Tsang, W. J. Phys. Chem. Ref. Data 1991, 20, 221.
 	 CH3CH=CH2 + C2H3 --> CH3C=CH2 + C2H4
@@ -897,11 +915,19 @@
 	 Previous modified Arrhenius parameters were for RELATIVE rate (kc/ka)
 	 Multiplied kc/ka by ka to get kc (only one H to abstract, so no division necessary)
 	 Certified by MRH on 6Aug2009
+	 Entry 46,19(c): No data available at the time.  The recommended rate coefficient
+		is based on the rate expressions for CH3 abstracting a H-atom from C3H6; all of
+		the Ea's have been decreased by 4kJ/mol.
+	 MRH 31-Aug-2009
 
 216: [93] Tsang, W. J. Phys. Chem. Ref. Data 1991, 20, 221.
 	 CH3CH=CH2 + C2H --> CH3C=CH2 + C2H2 
 	 pg 241
 	 Verified by MRH on 6Aug2009
+	 Entry 46,21(e): No data available at the time.  Recommended rate expression is "somewhat
+		smaller" than the rate of rxn C3H6+C2H --> C2H2+H2C=CH-*CH2.  The rate of this rxn
+		is assumed to be the rate of the rxn C2H+C2H6 --> C2H2+C2H5.
+	 MRH 31-Aug-2009
 
 217: [93] Tsang, W. J. Phys. Chem. Ref. Data 1991, 20, 221.
 	 CH3CH=CH2 + OH --> CH3C=CH2 + H2O
@@ -909,6 +935,12 @@
 	 Valid T range in reference suggested 700-2500K
 	 Uncertainty stated in reference was *2.0
 	 Verified by MRH on 6Aug2009
+	 Entry 46,6(d): No direct measurements of H-atom abstraction rxns.  The recommended
+		H-atom abstraction rxns are based on "the results of Tully (1988) for the rxn
+		of OH + C2H4 and the rate constant ratio of OH + primary Hydrogens in ethane by
+		Tully et al. (1986) to OH + secondary Hydrogens by Droege and Tully (1986)".  The
+		author has also introduced a T^2 dependence in the A-factor.
+	 MRH 31-Aug-2009
 
 218: [89] Tsang, W.; Hampson, R.F. J. Phys. Chem. Ref. Data 1986, 15, 1087.
 	 C2H2 + O2 --> C2H + HO2 C.D.W divided original rate expression by 2, to get rate expression per H atom.
