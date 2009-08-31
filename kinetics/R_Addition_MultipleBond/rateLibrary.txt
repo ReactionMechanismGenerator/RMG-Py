@@ -35,9 +35,9 @@ Arrhenius_EP
 295.		Cd/H2_Cd/H2		O_pri_rad		300-1500	2.71E+12	0		0	0		0		0		0	0		4		Tsang et al. [89] literature review.
 296.		Cd/H2_Cd/H/Nd	H_rad			500-2500	1.3E+13		0		0	1.56	0		0		0	0		4		Tsang [149] experiments and limited review. 
 297.		Cd/H2_Cd/H/Nd	C_methyl		298-1500	1.28E+05	2.28	0	6.60	0		0		0	0		4		Knyazev et al. [150]
-298.		Cd/H2_Cd/H/Nd	C_methyl		300-2500	1.69E+11	0		0	7.41	0		0		0	0		4		Tsang [93] literature review.
+298.		Cd/H2_Cd/H/Nd	C_methyl		300-2500	1.69E+11	0		0	7.41	*1.4		0		0	0		4		Tsang [93] literature review.
 299.		Cd/H2_Cd/H/Nd	C_rad/H2/Cd		762-811		3.55E+11	0		0	16.89	0		0		0	0		4		Barbe et al. [151] Data are estimated.
-300.		Cd/H2_Cd/H/Nd	C_rad/Cs3		300-2500	3.07E+09	0		0	5.88	0		0		0	0		4		Tsang [93] literature review.
+300.		Cd/H2_Cd/H/Nd	C_rad/Cs3		300-2500	3.07E+09	0		0	5.88	*10.0		0		0	0		4		Tsang [93] literature review.
 301.		Cd/H2_Cd/H/De	C_methyl		743-772		3.155E+10	0		0	7.49	0		0		0	0		5		Perrin et al. [152] Data are estimated.
 302.		Cd/H2_Cd/Nd2	H_rad			712-779		6.21E+12	0.25	0	1.46	0		0		0	0		4		Knyazev et al. [153]
 303.		Cd/H2_Cd/Nd2	C_methyl		391-449		2.51E+11	0		0	6.70	0		0		0	0		4		Seres et al. [154] Data derived from fitting a complex mechanism.

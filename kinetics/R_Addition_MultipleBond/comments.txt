@@ -113,10 +113,19 @@
 	 CH3CH=CH2 + CH3 --> sec-C4H9 
 
 298: [93] Tsang literature review. CH3CH=CH2 + CH3 --> sec-C4H9 
+	pg.237-239: Discussion on evaluated data
+	Entry 46,16(a): Recommended rate coefficient is that reported by Kerr and Parsonage (1972).
+		Author notes that rxn is pressure dependent and lists fall-off ratios and
+		collision efficiencies; these are not stored in RMG.
+	MRH 31-Aug-2009
 
 299: [151] Barbe et al. Data is estimated. Pressure 0.04-0.26 atm. CH3CH=CH2 + .CH2CH=CH2 --> CH3CH(.)CH2CH2CH=CH2
 
 300: [93] Tsang literature review. CH3CH=CH2 + tert-C4H9 --> (CH3)3CCH2CH(.)CH3
+	pg.247: Discussion on evaluated data
+	Entry 46,44(terminal): Recommended rate coefficient is based on summary of data on alkyl
+		radical addition to olefins (Kerr and Parsonage, 1972).
+	MRH 31-Aug-2009
 
 301: [152] Perrin et al. Data is estimated. Pressure 0.01-0.13 atm. 
 	 CH2=CHCH=CH2 + .CH3 --> CH2CH=CHCH2CH3 C.D.W. divied rate expression by 2, to get rate of addition per site.
@@ -131,6 +140,11 @@
 	 CH3CH=CH2 + CH3 --> iso-C4H9
 
 306: [93] literature review. CH3CH=CH2 + CH3 --> iso-C4H9
+	pg.237-239: Discussion on evaluated data
+	Entry 46,16(b): Recommended rate coefficient is from reverse rate and equilibrium constant.
+		Author notes that rxn is pressure dependent and lists fall-off ratios and
+		collision efficiencies; these are not stored in RMG.
+	MRH 31-Aug-2009
 
 307: [155] Slagle et al. Data deriver from detailed balance/reverse rate. Pressure ~ 0.01 atm. 
 	 Iso-C4H8 + .CH3 --> (CH3)3CCH2
@@ -180,6 +194,11 @@
 
 326: [93] Tsang et al. literature review. Pressure 0.03-0.20 atm. C.D.W divided rate expression by 2, to get rate of addition per site.
 	 C2H2 + .CH2CH=CH2 --> CHCH2CH=CH 
+	 pg.263: Discussion on evaluated data
+	 Entry 47,20(a): Recommended rate coefficient is estimated from the addition of alkyl
+		radicals to C2H2.  Author notes that this could be used as an upper limit for
+		cyclopentadiene formation.
+	 MRH 31-Aug-2009
 
 327: [163] Kerr et al. literature review. Pressure 0.07-0.13 atm. C.D.W divided rate expression by 2, to get rate of addition per site.
 	 C2H2 + Iso-C3H7 --> (CH3)2CHCH=CH
