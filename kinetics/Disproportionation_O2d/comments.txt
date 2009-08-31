@@ -39,3 +39,15 @@
 		contribution from a complex rearrangement of the adduct.  Finally, the author
 		notes that this rxn should not be significant in combustion situations.
 	MRH 31-Aug-2009
+
+533: [98] Atkinson, R.; Baulch, D.L.; Cox, R.A.; Crowley, J.N.; Hampson, R.F., Jr.; Kerr, J.A.; Rossi, M.J.; Troe, J. "Summary of Evaluated Kinetic and Photochemical Data for Atmospheric Chemistry,", 2001.
+	Literature review: CH3CHOH + O2 --> CH3CHO + HO2
+	Recommended value is k298.  This reference just gives a table of results,
+		with no discussion on how the preferred numbers were arrived at.
+	MRH 31-Aug-2009
+
+534: [98] Atkinson, R.; Baulch, D.L.; Cox, R.A.; Crowley, J.N.; Hampson, R.F., Jr.; Kerr, J.A.; Rossi, M.J.; Troe, J. "Summary of Evaluated Kinetic and Photochemical Data for Atmospheric Chemistry,", 2001.
+	Literature review: CH2OH + O2 --> CH2O + HO2
+	Recommended value is k298.  This reference just gives a table of results,
+		with no discussion on how the preferred numbers were arrived at.
+	MRH 31-Aug-2009
