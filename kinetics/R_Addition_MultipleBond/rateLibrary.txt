@@ -27,7 +27,7 @@ Arrhenius_EP
 287.		Cd/H2			O_rad/NonDe		300-1500	1.0E+11		0		0	12.5	0		0		0	0		5		Curran et al. [8] in his reaction type 20. Based on recommendations of Chen and Bozzelli [57] 
 288.		Cd/H/Nd			O_rad/NonDe		300-1500	1.0E+11		0		0	11.0	0		0		0	0		5		Curran et al. [8] in his reaction type 20. Based on recommendations of Chen and Bozzelli [57]
 289.		Cd/Nd2			O_rad/NonDe		300-1500	1.0E+11		0		0	7.6		0		0		0	0		5		Curran et al. [8] in his reaction type 20. Based on recommendations of Chen and Bozzelli [57] 
-290.		Cd/H2_Cd/H2		H_rad			200-1100	1.985E+09	1.28	0	1.29	0		0		0	0		4		Baulch et al. [94] literature review.
+290.		Cd/H2_Cd/H2		H_rad			200-1100	1.985E+09	1.28	0	1.29	*2.0		0		0	0		4		Baulch et al. [94] literature review.
 291.		Cd/H2_Cd/H2		C_methyl		300-2500	1.655E+11	0		0	7.71	*1.3		0		0	0		4		Tsang et al. [89] literature review.
 292.		Cd/H2_Cd/H2		C_rad/H2/Cs		298-1500	1.99E+03	2.44	0	5.37	0		0		0	0		2		Knyazev et al. [147]
 293.		Cd/H2_Cd/H2		C_rad/H2/O		300-2500	2.41E+10	0		0	6.96	*5.0		0		0	0		4		Tsang et al. [90] literature review.

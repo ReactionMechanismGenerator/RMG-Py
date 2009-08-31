@@ -73,6 +73,12 @@
 
 290: [94] Baulch,D.L.; Cobos,C.J.;Cox,R.A;Frank,P.;Hayman,G.;Just,T.;Kerr,J.A.;Murells,T.;Philling,M.J.;Troe,J.;Walker,R.W.; Warnatz, J. J Phys Chem. Ref. Data 1994,23,847.
      literature review. C2H4 + H --> C2H5. C.D.W. divided rate expression by 2, to get rate of addition per site 
+	pg.916-920: Discussion on evaluated data
+	H+C2H4(+m) --> C2H5(+m): "The analysis of the rxn is based on theoretical fall-off
+		curves and strong collision low pressure rate coefficients which were calculated
+		using a rxn threshold of 154.78 kJ/mol."  The rate coefficient stored in RMG
+		is the high-pressure limit, k_inf.
+	MRH 31-Aug-2009
 
 291: [89] Tsang, W.; Hampson, R.F. J. Phys. Chem. Ref. Data 1986, 15, 1087. 
      literature review. C2H4 + CH3 --> n-C3H7. C.D.W. divided rate expression by 2, to get rate of addition per site
