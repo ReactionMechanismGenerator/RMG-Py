@@ -111,6 +111,8 @@ def fit_groups(family_names = None):
 	import math
 	import numpy
 	import numpy.linalg
+	import pylab
+	
 	if not family_names: 
 		family_names = reaction.kineticsDatabase.families.keys()
 		
@@ -244,7 +246,9 @@ def fit_groups(family_names = None):
 			print_node_tree(node)
 		print
 		
-		
+		pylab.figure(1)
+		pylab.semilogx(rates_in_group)
+		#http://matplotlib.sourceforge.net/users/event_handling.html
 			
 	#	graph = family.drawFullGraphOfTree()
 	#	return graph
