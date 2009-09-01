@@ -420,6 +420,14 @@
 	 [97] Atkinson, R.; Baulch, D. L.; Cox, R. A.; Hampson, R. F., jr.; Kerr, J. A.; Rossi, M. J.; Troe, J. 
 	 J. Phys. Chem. Ref. Data 1997, 26, 1329
 	 OH + OH --> H2O2
+	Literature review: OH + OH (+m) --> H2OH
+	pg.126: Recommended low-pressure and high-pressure limit rate coefficient
+	pg.130 B2: Discussion on evaluated data.
+		Authors recommend the fits by Zellner et al. in N2 and by Forster et al.
+			in 1-150kbar He scaled to N2.  RMG stores the high-pressure limit (k_inf)
+			rate coefficient.
+	*** High-pressure rate coefficient. ***
+	MRH 1-Sept-2009
 
 473: [89] Tsang, W.; Hampson, R. F. J. Phys. Chem. Ref. Data 1986, 15, 1087.
 	 CH3O + CH3O --> CH3OOCH3

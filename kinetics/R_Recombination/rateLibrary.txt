@@ -58,7 +58,7 @@ Arrhenius_EP
 469.		CO_pri_rad		CO_pri_rad		298			1.51E+13	0		0		0		6.02E+12	0		0		0		3	Stoeckel et al. [182]
 470.		CO_pri_rad		CO_rad/NonDe	300-2500	1.81E+13	0		0		0		*3.0	0		0		0		4	Tsang [89] literature review.
 471.		CO_rad/NonDe	CO_rad/NonDe	300-2500	1.21E+13	0		0		0		*2.0	0		0		0		4	Tsang [89] literature review.
-472.		O_pri_rad		O_pri_rad		200-400		1.57E+13	0		0		0		*1.6	0		0		0		4	DeMore et al. [183] literature review.
+472.		O_pri_rad		O_pri_rad		200-400		1.57E+13	0		0		0		6.02E+12	0.5		0		0		4	DeMore et al. [183] literature review.
 473.		O_rad/NonDe		O_rad/NonDe		300-2500	1.81E+12	0		0		0		*5.0	0		0		0		4	Tsang [89] literature review.
 474.		H_rad			Cs_rad			300-1500	5E+13		0		0		0		0		0		0		0		5	Curran's [8] estimation. 
 475.		C_methyl		C_ter_rad		300-1500	1.63E+13	0		0		0.596	0		0		0		0		5	Curran's [8] estimation. 
