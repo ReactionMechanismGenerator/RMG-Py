@@ -253,6 +253,39 @@ def fit_groups(family_names = None):
 	#	graph = family.drawFullGraphOfTree()
 	#	return graph
 
+def write_xml(family_names = None):
+	"""Writes the library to xml files
+	"""
+	import os
+	import xml.dom.minidom
+	
+	# Create document
+	dom = xml.dom.minidom.Document()
+
+	# Process root element
+	root = dom.createElement('rmgoutput')
+	dom.appendChild(root)
+	
+	
+	if not family_names: 
+		family_names = reaction.kineticsDatabase.families.keys()
+		
+	for family_name in family_names:
+		family = reaction.kineticsDatabase.families[family_name]
+		print 
+		if not family.library:
+			logging.debug("Family '%s' has no data in the library."%family_name)
+			if family.reverse.library:
+				logging.debug("(but its reverse '%s' does)"%family.reverse.label)
+			continue
+		
+		logging.info("Writing xml for reaction family: %s (%s)"%(family_name,
+			os.path.basename(os.path.abspath(family._path))) )
+			
+		
+		
+		family.library.toXML(dom,root)
+		print dom.toprettyxml()
 
 ################################################################################
 
@@ -264,10 +297,13 @@ if __name__ == '__main__':
 	# Load databases
 	databasePath = '../data/RMG_database'
 	#loadThermoDatabases(databasePath)
-	loadKineticsDatabases(databasePath) #,only_families=['H_Abstraction'])
+	loadKineticsDatabases(databasePath,only_families=['H_Abstraction'])
 
 #	fit_groups(['H abstraction'])	
-	graph = fit_groups()
+	#graph = fit_groups()
+	
+	write_xml()
+	
 #	for node in graph.get_node_list():	
 #		node.set_style('filled')
 #		node.set_fontcolor('#FFFFFFFF')

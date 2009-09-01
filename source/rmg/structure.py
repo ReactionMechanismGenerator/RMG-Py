@@ -494,6 +494,7 @@ class Structure:
 		"""
 		Convert a Structure object to an XML DOM tree.
 		"""
+		import xml.dom.minidom
 		cml = dom.createElement('cml')
 		root.appendChild(cml)
 

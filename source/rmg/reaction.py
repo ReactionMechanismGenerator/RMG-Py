@@ -58,6 +58,7 @@ class Kinetics:
 		self.Trange = Trange
 		self.rank = 0
 		self.comment = ''
+		self.numReactants = None
 		
 	def isTemperatureInRange(self, T):
 		"""
@@ -245,8 +246,9 @@ class ArrheniusEPKinetics(Kinetics):
 
 		self.rank = rank
 		self.comment = comment
+		self.numReactants = numReactants
 
-	def toXML(self, dom, root, numReactants):
+	def toXML(self, dom, root):
 		"""
 		Generate the XML for these kinetics using the :data:`xml.dom.minidom`
 		package. The `dom` and `root` parameters refer to the DOM and the
@@ -262,6 +264,7 @@ class ArrheniusEPKinetics(Kinetics):
 		preexponential = dom.createElement('preexponential')
 		kinetics.appendChild(preexponential)
 		preexponentialUnits = None
+		numReactants = self.numReactants
 		if numReactants == 1:
 			preexponentialUnits = 's^-1'
 		else:
