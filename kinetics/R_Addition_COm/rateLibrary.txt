@@ -15,5 +15,6 @@ Arrhenius_EP
 419.		COm		C_methyl	300-500		5.06E+11	0		0		6.88	*3.16	0		0		0		4		Baulch et al. [94] 
 420.		COm		C_rad/H2/Cs	300-2500	1.51E+11	0		0		4.81	*2.0	0		0		0		4		Tsang et al [89] literature review. 
 421.		COm		Cd_pri_rad	300-2500	1.51E+11	0		0		4.81	*5.0	0		0		0		4		Tsang et al [89] literature review. 
-422.		COm		Cb_rad		295-500		8.51E+11	0		0		2.99	*1.5	0		0		0.22	3		Nam et al [104].
+//422.		COm		Cb_rad		295-500		8.51E+11	0		0		2.99	*1.5	0		0		0.22	3		Nam et al [104].
+422.		COm		Cb_rad		295-500		1.48E+12	0		0		3.33	*1.5	0		0		0.30	3		Nam et al [104].
 423.		COm		O_rad/NonDe	250-2500	3.41E+07	0		0		3.0		0		0		0		0		5		Wang et al. [105]. 
