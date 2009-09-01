@@ -51,3 +51,9 @@
 	Recommended value is k298.  This reference just gives a table of results,
 		with no discussion on how the preferred numbers were arrived at.
 	MRH 31-Aug-2009
+
+535: [183] DeMore, W.B.; Golden, D.M.; Hampson, R.F.; Howard, C.J.; Kolb, C.E.; Molina, M.J.; JPL Publication 97-4
+	Literature review: CH2OH + O2 --> CH2O + HO2
+	pg.62 D38: Discussion on evaluated data
+	pg.22: Recommended A-factor and E/R parameter values
+	MRH 1-Sept-2009
