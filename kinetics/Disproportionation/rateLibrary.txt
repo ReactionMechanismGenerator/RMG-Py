@@ -72,9 +72,9 @@ Arrhenius_EP
 530.		C_rad/Cs3		Cdpri_Csrad			300-2500	2.89E+13	-0.75	0		-0.13	*3.0	0		0		0		4		Tsang [93] Literature review.
 531.		Cd_pri_rad		Cdpri_Csrad			300-2500	2.41E+12	0		0		0		*3.0	0		0		0		4		Tsang [93] Literature review.
 532.		O_pri_rad		Cdpri_Csrad			300-2500	6.03E+12	0		0		0		*3.0	0		0		0		4		Tsang [93] Literature review.
-536.		O_atom_triplet	O_Csrad				298			9.04E+13	0		0		0		*1.5	0		0		0		3		Grotheer et al [189].
+536.		O_atom_triplet	O_Csrad				298			9.04E+13	0		0		0		3.01E+13	0		0		0		3		Grotheer et al [189].
 537.		CH2_triplet		O_Csrad				300-2500	1.21E+12	0		0		0		*3.0	0		0		0		4		Tsang [90] Literature review.
-538.		H_rad			O_Csrad				295			2.0E+13		0		0		0		*2.0	0		0		0		4		Edelbuttel-Einhaus et al [190].
+538.		H_rad			O_Csrad				295			2.0E+13		0		0		0		1.0E+13	0		0		0		4		Edelbuttel-Einhaus et al [190].
 539.		H_rad			O_Csrad				300-2500	6.03E+12	0		0		0		*3.0	0		0		0		4		Tsang [90] Literature review.
 540.		C_methyl		O_Csrad				298			8.49E+13	0		0		0		0		0		0		0		3		Pagsberg et al [191].
 541.		C_methyl		O_Csrad				300-2500	2.41E+12	0		0		0		*5.0	0		0		0		4		Tsang [90] Literature review.

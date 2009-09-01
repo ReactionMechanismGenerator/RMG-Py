@@ -383,6 +383,10 @@
 536: [189] Grotheer, H.; Riekert, G.; Walter, D.; Just, T. Symp. Int. Combust. Proc. 1989, 22, 963.
 	 Absolute value measured directly. Excitation: discharge, analysis: mass spectroscopy. Original uncertainty 3.0E+13
 	 O + CH2OC --> OH + CH2O, O + CH3CHOH --> OH + CH3CHO
+	O+CH2OH --> OH+CH2O && O+CH3CHOH --> OH+CH3CHO
+	pg.963: Measured rate coefficients mentioned in abstract as k_2M and k_2E.
+	pg.965-967: Discussion on measured rate coefficients.
+	MRH 1-Sept-2009
 
 537: [90] Tsang, W.; Journal of Physical and Chemical Reference Data (1987), 16(3), 471-508.
 	Literature review: CH2 + CH2OH --> CH3 + CH2O
@@ -394,6 +398,13 @@
 538: [190] Edelbuttel-Einhaus, J.; Hoyermann, K.; Rohde, G.; Seeba, J. Symp. Int. Combust. Proc. 1992, 22, 661.
 	 Data derived from fitting to a complex mechanism. Excitation: discharge, analysis: mass spectroscopy. Original uncertainty 1.0E+13
 	 H + CH3CHOH --> H2 + CH3CHO
+	H+CH3CHOH --> H2+CH3CHO
+	pg.661: Measured rate coefficient mentioned in abstract as k6.
+	pg.665-666: Discussion on measured rate coefficient.  The reported rate coefficient is
+		for H+CH3CHOH --> products, making this an UPPER LIMIT.  The rate coefficient
+		was calculated based on the rate coefficient of the rxn C2H5+H --> CH3+CH3; the
+		value the authors used was 3.6x10^13 cm3/mol/s.
+	MRH 1-Sept-2009
 
 539: [90] Tsang, W.; Journal of Physical and Chemical Reference Data (1987), 16(3), 471-508.
 	Literature review: H + CH2OH --> H2 + CH2O
@@ -406,6 +417,14 @@
 540: [191] Pagsberg, P.; Munk, J.; Sillesen, A.; Anastasi, C. Chem. Phys. Lett. 1988, 146, 375.
 	 Absolute value measured directly. Excitatio: electron beam, analysis: Vis-UV absorption.
 	 CH2OH + CH3 --> CH2O + CH4
+	pg.378 Table 2: Formation and decay rates of CH2OH, CH3, and OH observed by pulse radiolysis of
+		gas mixtures of varying composition.  Chemical composition of systems A-E as in Table 1.
+	The authors note below Table 2 that the reported rate coefficient for CH3+CH2OH is an
+		"adjustment of model to reproduce the observed decay rates of CH3 and CH2OH".
+	MRH is skeptical of data, as this specific rxn is not directly referenced in the article,
+		nor do the authors address whether other channels besides -->CH4+CH2O exist / are significant.
+		The value of A in the database is consistent with that reported in Table 2.
+	MRH 1-Sept-2009
 
 541: [90] Tsang, W.; Journal of Physical and Chemical Reference Data (1987), 16(3), 471-508.
 	Literature review: CH3 + CH2OH --> CH4 + CH2O
