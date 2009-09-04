@@ -36,7 +36,7 @@ import logging
 import math
 import numpy
 import scipy.integrate
-import pylab
+
 
 import constants
 import reaction
@@ -708,11 +708,10 @@ class BatchReactor(ReactionSystem):
 		`t`, the list of state vectors `y`, and an optional `label` for the
 		reaction system.
 		"""
-
 		# Only do if the option for plot generation has been set
 		if not constants.generatePlots:
 			return
-
+		import pylab
 		# Reshape y into a matrix rather than a list of lists
 		y0 = numpy.zeros((len(t), len(y[0])), float)
 		for i, u in enumerate(y):
