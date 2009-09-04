@@ -1,7 +1,5 @@
 ----
-
 481
-
 ----
 
 [185] Roth, W.R.; Scholz, B.P.; Breuckmann, R.; Jelich, K.; Lennartz, H-W. *Chem. Ber.* 1982, 115, 1934. 
@@ -19,9 +17,7 @@ Data derived from fitting to a complex mechanism. Excitation: thermal, analysis:
 Verified by Greg Magoon (with translation help from CFG); Barrier, DA, and DE0 changed based on Gl. 8 on p. 1937; I didn't check if this was high-pressure limit
 
 ----
-
 482
-
 ----
 
 [186] Benson, S.W. J. Chem. Phys. 1967, 46, 4920.
@@ -36,9 +32,7 @@ Verified by Greg Magoon: Rxn. -d. also looks to be of interest here; whether the
 Note: after some preliminary confusion on my part, it looks like the existing groups are correct (the correct resonance form for the CH2 radical is taken into account with the Ypri_rad_out (i.e. Cpri_rad_out_H2)), but arguably, another, a more-specific group (C_rad_out_H2/OneDe and Cpri_rad_out_H2/OneDe) should be specified to account for delocalizing group at this site
 
 ----
-
 483
-
 ----
 
 [187] Grimme, W.; Schumachers, L.; Roth, W.R.; Breuckmann, R. Chem. Ber. 1981, 114, 3197. 
@@ -51,10 +45,8 @@ Absolute value measured directly. Excitation: thermal, analysis: GC.
 
 Checked by Greg Magoon: this reference doesn't seem to have this reaction, and even if it did, it wouldn't be biradical recombination; therefore, I have commented this entry out; there are some (polycyclic) birad recombinations and ring opening reactions in the paper, however
 
----	 
-
+---
 484
-
 ---
 
 [188] Lewis, K.E.; Steiner, H. J. Chem. Soc. 1964, 3080.
