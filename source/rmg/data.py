@@ -255,27 +255,31 @@ class Tree:
 		Parse an RMG database tree located at `path`. An RMG tree is an 
 		n-ary tree representing the hierarchy of items in the dictionary.
 		"""
-		
+
 		# An array of parents used when forming the tree
 		parents = [None]
 		
+		import re
+		parser = re.compile('^\s*L(?P<level>\d+)\s*:\s*(?P<label>\S+)')
+		# should match '  L3 : foo_bar '  and 'L3:foo_bar'
+		
 		# Process the tree (optional)
 		try:
-		
 			ftree = open(path, 'r')
 			for line in ftree:
 				line = removeCommentFromLine(line).strip()
 				if len(line) > 0:
-					
 					# Extract level
-					data = line.split()
-					level = int(data[0].replace('L', '').replace(':', ''))
-					label = data[1]
+					match = parser.match(line)
+					if not match: 
+						raise InvalidDatabaseException("Couldn't parse line '%s'"%line.strip() ) 
+					level = int(match.group('level'))
+					label = match.group('label')
 					
 					# Find immediate parent of the new node
 					parent = None
 					if len(parents) < level:
-						raise InvalidDatabaseException('Invalid level specified.')
+						raise InvalidDatabaseException("Invalid level specified in line '%s'"%line.strip() )
 					else:
 						while len(parents) > level:
 							parents.remove(parents[-1])
