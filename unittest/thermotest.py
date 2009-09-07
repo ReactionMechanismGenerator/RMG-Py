@@ -12,6 +12,7 @@ import rmg.main as main
 import rmg.data as data
 import rmg.species as species
 import rmg.reaction as reaction
+import rmg.thermo as thermo
 
 ################################################################################
 
@@ -146,12 +147,12 @@ if __name__ == '__main__':
 	databasePath = '../data/RMG_database'
 	
 	# Create and load thermo databases
-	species.thermoDatabase = species.ThermoDatabaseSet()
-	species.thermoDatabase.load(databasePath + '/')
+	thermo.thermoDatabase = thermo.ThermoDatabaseSet()
+	thermo.thermoDatabase.load(databasePath + '/')
 
 	# Create and load forbidden structures
-	species.forbiddenStructures = data.Dictionary()
-	species.forbiddenStructures.load(databasePath + '/forbiddenStructure.txt')
-	species.forbiddenStructures.toStructure()
+	thermo.forbiddenStructures = data.Dictionary()
+	thermo.forbiddenStructures.load(databasePath + '/forbiddenStructure.txt')
+	thermo.forbiddenStructures.toStructure()
 
 	unittest.main()

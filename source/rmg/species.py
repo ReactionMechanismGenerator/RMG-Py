@@ -41,7 +41,7 @@ import constants
 import data
 import chem
 import structure
-from thermo import *
+import thermo
 
 ################################################################################
 
@@ -92,318 +92,6 @@ class ThermoSnapshot:
 		self.enthalpy = thermoData.getEnthalpy(temperature)
 		self.entropy = thermoData.getEntropy(temperature)
 		self.freeEnergy = self.enthalpy - self.temperature * self.entropy
-
-################################################################################
-
-class ThermoDatabase(data.Database):
-	"""
-	Represent an RMG thermodynamics database.
-	"""
-
-	def __init__(self):
-		data.Database.__init__(self)
-
-	def load(self, dictstr, treestr, libstr):
-		"""
-		Load a thermodynamics group additivity database. The database is stored
-		in three files: `dictstr` is the path to the dictionary, `treestr` to
-		the tree, and `libstr` to the library. The tree is optional, and should
-		be set to '' if not desired.
-		"""
-
-		# Load dictionary, library, and (optionally) tree
-		data.Database.load(self, dictstr, treestr, libstr)
-
-		# Convert data in library to ThermoData objects or lists of
-		# [link, comment] pairs
-		for label, item in self.library.iteritems():
-
-			if item is None:
-				pass
-			elif item.__class__ == str or item.__class__ == unicode:
-				items = item.split()
-				try:
-					thermoData = []; comment = ''
-					# First 12 entries are thermo data
-					for i in range(0, 12):
-						thermoData.append(float(items[i]))
-					# Remaining entries are comment
-					for i in range(12, len(items)):
-						comment += items[i] + ' '
-
-					thermoGAData = ThermoGAData()
-					thermoGAData.fromDatabase(thermoData, comment)
-					self.library[label] = thermoGAData
-				except (ValueError, IndexError), e:
-					# Split data into link string and comment string; store
-					# as list of length 2
-					link = items[0]
-					comment = item[len(link)+1:].strip()
-					self.library[label] = [link, comment]
-
-			else:
-				raise data.InvalidDatabaseException('Thermo library data format is unrecognized.')
-
-		# Check for well-formedness
-		if not self.isWellFormed():
-			raise data.InvalidDatabaseException('Database at "%s" is not well-formed.' % (path))
-
-		#self.library.removeLinks()
-
-	def toXML(self):
-		"""
-		Return an XML representation of the thermo database.
-		"""
-
-		dom = xml.dom.minidom.parseString('<database type="thermodynamics"></database>')
-		root = dom.documentElement
-
-		Database.toXML(self, dom, root)
-
-		return dom.toprettyxml()
-
-	def getThermoData(self, structure, atom):
-		"""
-		Determine the group additivity thermodynamic data for the atom `atom`
-		in the structure `structure`.
-		"""
-
-		node = self.descendTree(structure, atom, None)
-		#print node
-
-		if node not in self.library:
-			# No data present (e.g. bath gas)
-			data = ThermoGAData()
-		else:
-			data = self.library[node]
-
-		while data.__class__ != ThermoGAData and data is not None:
-			if data[0].__class__ == str or data[0].__class__ == unicode:
-				data = self.library[data[0]]
-
-#		result = ''
-#		while node is not None:
-#			result = ' -> ' + node + result
-#			node = self.tree.parent[node]
-#		print result[4:]
-
-		return data
-
-	def contains(self, structure):
-		"""
-		Search the dictionary for the specified `structure`. If found, the label
-		corresponding to the structure is returned. If not found, :data:`None`
-		is returned.
-		"""
-		for label, struct in self.dictionary.iteritems():
-			if structure.isIsomorphic(struct):
-				return label
-		return None
-
-################################################################################
-
-class ThermoDatabaseSet:
-	"""
-	A set of thermodynamics group additivity databases, consisting of a primary
-	database of functional groups and a number of secondary databases to provide
-	corrections for 1,5-interactions, gauche interactions, radicals, rings,
-	and other functionality. There is also a primary library containing data for
-	individual species.
-	"""
-
-
-	def __init__(self):
-		self.groupDatabase = ThermoDatabase()
-		self.int15Database = ThermoDatabase()
-		self.gaucheDatabase = ThermoDatabase()
-		self.otherDatabase = ThermoDatabase()
-		self.radicalDatabase = ThermoDatabase()
-		self.ringDatabase = ThermoDatabase()
-		self.primaryDatabase = ThermoDatabase()
-
-	def load(self, datapath):
-		"""
-		Load a set of thermodynamics group additivity databases from the general
-		database specified at `datapath`.
-		"""
-
-		logging.debug('\tThermodynamics databases:')
-
-		self.groupDatabase.load(datapath + 'thermo/Group_Dictionary.txt', \
-			datapath + 'thermo/Group_Tree.txt', \
-			datapath + 'thermo/Group_Library.txt')
-		logging.debug('\t\tFunctional groups')
-
-		self.int15Database.load(datapath + 'thermo/15_Dictionary.txt', \
-			datapath + 'thermo/15_Tree.txt', \
-			datapath + 'thermo/15_Library.txt')
-		logging.debug('\t\t1,5 interactions')
-
-		self.gaucheDatabase.load(datapath + 'thermo/Gauche_Dictionary.txt', \
-			datapath + 'thermo/Gauche_Tree.txt', \
-			datapath + 'thermo/Gauche_Library.txt')
-		logging.debug('\t\tGauche interactions')
-
-		self.otherDatabase.load(datapath + 'thermo/Other_Dictionary.txt', \
-			datapath + 'thermo/Other_Tree.txt', \
-			datapath + 'thermo/Other_Library.txt')
-		logging.debug('\t\tOther corrections')
-
-		self.radicalDatabase.load(datapath + 'thermo/Radical_Dictionary.txt', \
-			datapath + 'thermo/Radical_Tree.txt', \
-			datapath + 'thermo/Radical_Library.txt')
-		logging.debug('\t\tRadical corrections')
-
-		self.ringDatabase.load(datapath + 'thermo/Ring_Dictionary.txt', \
-			datapath + 'thermo/Ring_Tree.txt', \
-			datapath + 'thermo/Ring_Library.txt')
-		logging.debug('\t\tRing corrections')
-
-		self.primaryDatabase.load(datapath + 'thermo/Primary_Dictionary.txt', \
-			'', \
-			datapath + 'thermo/Primary_Library.txt')
-		logging.debug('\t\tPrimary thermo database')
-
-	def saveXML(self, datapath):
-		"""
-		Save the loaded databases in the set to XML files.
-		"""
-
-		f = open(datapath + 'thermo/group.xml', 'w')
-		f.write(self.groupDatabase.toXML())
-		f.close()
-
-		f = open(datapath + 'thermo/1,5-interactions.xml', 'w')
-		f.write(self.int15Database.toXML())
-		f.close()
-
-		f = open(datapath + 'thermo/gauche-interactions.xml', 'w')
-		f.write(self.gaucheDatabase.toXML())
-		f.close()
-
-		f = open(datapath + 'thermo/other.xml', 'w')
-		f.write(self.otherDatabase.toXML())
-		f.close()
-
-		f = open(datapath + 'thermo/radicals.xml', 'w')
-		f.write(self.radicalDatabase.toXML())
-		f.close()
-
-		f = open(datapath + 'thermo/ring.xml', 'w')
-		f.write(self.ringDatabase.toXML())
-		f.close()
-
-		f = open(datapath + 'thermo/primary.xml', 'w')
-		f.write(self.primaryDatabase.toXML())
-		f.close()
-
-	def getThermoData(self, struct):
-		"""
-		Determine the group additivity thermodynamic data for the structure
-		`structure`.
-		"""
-
-		# First check to see if structure is in primary thermo library
-		label = self.primaryDatabase.contains(struct)
-		if label is not None:
-			return self.primaryDatabase.library[label]
-
-		thermoData = ThermoGAData()
-
-		if struct.getRadicalCount() > 0:
-			# Make a copy of the structure so we don't change the original
-			saturatedStruct = struct.copy()
-			# Saturate structure by replacing all radicals with bonds to
-			# hydrogen atoms
-			added = {}
-			for atom in saturatedStruct.atoms():
-				for i in range(0, atom.getFreeElectronCount()):
-					H = chem.Atom('H', '0')
-					bond = chem.Bond([atom, H], 'S')
-					saturatedStruct.addAtom(H)
-					saturatedStruct.addBond(bond)
-					atom.decreaseFreeElectron()
-					if atom not in added:
-						added[atom] = []
-					added[atom].append(bond)
-			# Get thermo estimate for saturated form of structure
-			thermoData = self.getThermoData(saturatedStruct)
-			# For each radical site, get radical correction
-			# Only one radical site should be considered at a time; all others
-			# should be saturated with hydrogen atoms
-			for atom in added:
-
-				# Remove the added hydrogen atoms and bond and restore the radical
-				for bond in added[atom]:
-					H = bond.atoms[1]
-					saturatedStruct.removeBond(bond)
-					saturatedStruct.removeAtom(H)
-					atom.increaseFreeElectron()
-
-				thermoData += self.radicalDatabase.getThermoData(saturatedStruct, {'*':atom})
-
-				# Re-saturate
-				for bond in added[atom]:
-					H = bond.atoms[1]
-					saturatedStruct.addAtom(H)
-					saturatedStruct.addBond(bond)
-					atom.decreaseFreeElectron()
-
-			# Subtract the enthalpy of the added hydrogens
-			thermoData_H = self.primaryDatabase.library['H']
-			for bond in added[atom]:
-				thermoData.H298 -= thermoData_H.H298
-				#thermoData.S298 -= thermoData_H.S298
-
-			# Correct the entropy for the symmetry number
-
-		else:
-			# Generate estimate of thermodynamics
-			for atom in struct.atoms():
-				# Iterate over heavy (non-hydrogen) atoms
-				if atom.isNonHydrogen():
-					# Get initial thermo estimate from main group database
-					thermoData += self.groupDatabase.getThermoData(struct, {'*':atom})
-					# Correct for gauche and 1,5- interactions
-					thermoData += self.gaucheDatabase.getThermoData(struct, {'*':atom})
-					thermoData += self.int15Database.getThermoData(struct, {'*':atom})
-					thermoData += self.otherDatabase.getThermoData(struct, {'*':atom})
-
-			# Do ring corrections separately because we only want to match
-			# each ring one time; this doesn't work yet
-			rings = struct.getSmallestSetOfSmallestRings()
-			for ring in rings:
-
-				# Make a temporary structure containing only the atoms in the ring
-				ringStructure = structure.Structure()
-				for atom in ring: ringStructure.addAtom(atom)
-				for atom1 in ring:
-					for atom2 in ring:
-						if struct.hasBond(atom1, atom2):
-							ringStructure.addBond(struct.getBond(atom1, atom2))
-
-				# Get thermo correction for this ring
-				thermoData += self.ringDatabase.getThermoData(ringStructure, {})
-
-		return thermoData
-
-thermoDatabase = None
-forbiddenStructures = None
-
-################################################################################
-
-def getThermoData(struct):
-	"""
-	Get the thermodynamic data associated with `structure` by looking in the
-	loaded thermodynamic database.
-	"""
-	thermoData = thermoDatabase.getThermoData(struct)
-
-	# Correct entropy for symmetry number
-	struct.calculateSymmetryNumber()
-	thermoData.S298 -= constants.R * math.log(struct.symmetryNumber)
-
-	return thermoData
 
 ################################################################################
 
@@ -574,7 +262,7 @@ class Species:
 		thermoData = []
 		for structure in self.structure:
 			structure.updateAtomTypes()
-			thermoData.append(getThermoData(structure))
+			thermoData.append(thermo.getThermoData(structure))
 		
 		# If multiple resonance isomers are present, use the thermo data of
 		# the most stable isomer (i.e. one with lowest enthalpy of formation)
@@ -707,8 +395,8 @@ def makeNewSpecies(structure, label='', reactive=True):
 			return spec
 
 	# Return None if the species has a forbidden structure
-	if forbiddenStructures is not None:
-		for lbl, struct in forbiddenStructures.iteritems():
+	if thermo.forbiddenStructures is not None:
+		for lbl, struct in thermo.forbiddenStructures.iteritems():
 			if structure.isSubgraphIsomorphic(struct): return None
 
 	# Otherwise make a new species
@@ -720,7 +408,7 @@ def makeNewSpecies(structure, label='', reactive=True):
 	speciesList.insert(0, spec)
 	
 	spec.getResonanceIsomers()
-	if thermoDatabase is not None:
+	if thermo.thermoDatabase is not None:
 		spec.getThermoData()
 	
 	# Draw species in core

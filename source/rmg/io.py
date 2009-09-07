@@ -39,6 +39,7 @@ import structure
 import data
 import species
 import reaction
+import thermo
 
 """
 Contains functions for manipulation of RMG input and output files.
@@ -167,12 +168,12 @@ def readInputFile(fstr):
 				if generalDatabaseCount == 0:
 					logging.debug('General database: ' + database[2])
 					# Load thermo databases
-					species.thermoDatabase = species.ThermoDatabaseSet()
-					species.thermoDatabase.load(database[2] + '/')
+					thermo.thermoDatabase = thermo.ThermoDatabaseSet()
+					thermo.thermoDatabase.load(database[2] + '/')
 					# Load forbidden structures
-					species.forbiddenStructures = data.Dictionary()
-					species.forbiddenStructures.load(database[2] + '/forbiddenStructure.txt')
-					species.forbiddenStructures.toStructure()
+					thermo.forbiddenStructures = data.Dictionary()
+					thermo.forbiddenStructures.load(database[2] + '/forbiddenStructure.txt')
+					thermo.forbiddenStructures.toStructure()
 					# Load kinetic databases (reaction families)
 					reaction.kineticsDatabase = reaction.ReactionFamilySet()
 					reaction.kineticsDatabase.load(database[2] + '/')

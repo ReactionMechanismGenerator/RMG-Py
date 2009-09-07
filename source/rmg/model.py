@@ -788,7 +788,8 @@ if __name__ == '__main__':
 	import data
 	import species
 	import reaction
-
+	import thermo
+	
 	import os.path
 	import main
 	main.initializeLog(logging.DEBUG)
@@ -796,11 +797,11 @@ if __name__ == '__main__':
 	datapath = '../data/RMG_database/'
 
 	logging.debug('General database: ' + os.path.abspath(datapath))
-	species.thermoDatabase = species.ThermoDatabaseSet()
-	species.thermoDatabase.load(datapath)
-	species.forbiddenStructures = data.Dictionary()
-	species.forbiddenStructures.load(datapath + 'forbiddenStructure.txt')
-	species.forbiddenStructures.toStructure()
+	thermo.thermoDatabase = species.ThermoDatabaseSet()
+	thermo.thermoDatabase.load(datapath)
+	thermo.forbiddenStructures = data.Dictionary()
+	thermo.forbiddenStructures.load(datapath + 'forbiddenStructure.txt')
+	thermo.forbiddenStructures.toStructure()
 	#reaction.kineticsDatabase = reaction.ReactionFamilySet()
 	#reaction.kineticsDatabase.load(datapath)
 
