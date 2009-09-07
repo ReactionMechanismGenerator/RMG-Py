@@ -128,26 +128,32 @@ class Structure:
 		atom1, atom2 = bond.atoms
 		return self.graph.removeEdge((atom1, atom2))
 
-	def isIsomorphic(self, other):
+	def isIsomorphic(self, other, map12=None, map21=None):
 		"""
 		Returns :data:`True` if two graphs are isomorphic and :data:`False`
 		otherwise. Uses the VF2 algorithm of Vento and Foggia.
 		"""
-		return self.graph.isIsomorphic(other.graph)
+		if map12 is None: map12 = dict()
+		if map21 is None: map21 = dict()
+		return self.graph.isIsomorphic(other.graph, map12, map21)
 
 	def isSubgraphIsomorphic(self, other, map12=None, map21=None):
 		"""
 		Returns :data:`True` if `other` is subgraph isomorphic and :data:`False`
 		otherwise. Uses the VF2 algorithm of Vento and Foggia.
 		"""
-		return self.graph.isSubgraphIsomorphic(other.graph, dict(), dict())
+		if map12 is None: map12 = dict()
+		if map21 is None: map21 = dict()
+		return self.graph.isSubgraphIsomorphic(other.graph, map12, map21)
 
-	def findSubgraphIsomorphisms(self, other):
+	def findSubgraphIsomorphisms(self, other, map12=None, map21=None):
 		"""
 		Returns :data:`True` if `other` is subgraph isomorphic and :data:`False`
 		otherwise. Uses the VF2 algorithm of Vento and Foggia.
 		"""
-		return self.graph.findSubgraphIsomorphisms(other.graph)
+		if map12 is None: map12 = dict()
+		if map21 is None: map21 = dict()
+		return self.graph.findSubgraphIsomorphisms(other.graph, map12, map21)
 
 	def initialize(self, atoms, bonds):
 		"""

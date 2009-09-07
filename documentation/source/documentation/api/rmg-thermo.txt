@@ -7,6 +7,30 @@ The ``rmg.thermo`` Module
 Classes in ``rmg.thermo``
 =========================
 
+ThermoData
+----------
+
+.. autoclass:: rmg.thermo.ThermoData
+	:members:
+
+ThermoGAData
+------------
+
+.. autoclass:: rmg.thermo.ThermoGAData
+	:members:
+
+ThermoNASAData
+--------------
+
+.. autoclass:: rmg.thermo.ThermoNASAData
+	:members:
+
+ThermoNASAPolynomial
+--------------------
+
+.. autoclass:: rmg.thermo.ThermoNASAPolynomial
+	:members:
+
 Methods in ``rmg.thermo``
 =========================
 

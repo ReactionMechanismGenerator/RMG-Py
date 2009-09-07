@@ -35,6 +35,7 @@ import rmg.main as main
 import rmg.data as data
 import rmg.species as species
 import rmg.reaction as reaction
+import rmg.thermo as thermo
 
 import logging
 
@@ -45,13 +46,13 @@ def loadThermoDatabases(databasePath):
 	Create and load the thermodynamics databases.
 	"""
 	# Create and load thermo databases
-	species.thermoDatabase = species.ThermoDatabaseSet()
-	species.thermoDatabase.load(databasePath )
+	thermo.thermoDatabase = thermo.ThermoDatabaseSet()
+	thermo.thermoDatabase.load(databasePath )
 
 	# Create and load forbidden structures
-	species.forbiddenStructures = data.Dictionary()
-	species.forbiddenStructures.load(os.path.join(databasePath, 'forbiddenStructure.txt'))
-	species.forbiddenStructures.toStructure()
+	thermo.forbiddenStructures = data.Dictionary()
+	thermo.forbiddenStructures.load(os.path.join(databasePath, 'forbiddenStructure.txt'))
+	thermo.forbiddenStructures.toStructure()
 
 def loadKineticsDatabases(databasePath, only_families=False):
 	"""

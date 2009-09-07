@@ -651,7 +651,7 @@ class Database:
 						return False
 					elif not atom.equivalent(center):
 						return False
-					map12_0[center] = atom; map21_0[atom] = center
+					map21_0[center] = atom; map12_0[atom] = center
 				#elif label not in centers:
 				#	return False
 			return structure.isSubgraphIsomorphic(group, map12_0, map21_0)
@@ -662,20 +662,58 @@ class Database:
 		matches the local structure around `atoms` in `structure`.
 		"""
 
+#		if root is None: root = self.tree.top[0]
+#
+#		# Check that the current node matches the structure (shouldn't be
+#		# necessary if things are working fine)
+#		#if not self.matchNodeToStructure(root, structure, atoms):
+#		#	return None
+#
+#		# Search children for match; descend if found
+#		for child in self.tree.children[root]:
+#			if self.matchNodeToStructure(child, structure, atoms):
+#				# Match found; attempt to descend tree further
+#				return self.descendTree(structure, atoms, child)
+#
+#		# If no match is found, return the current node in the tree
+#		return root
+
+#		if root is None: root = self.tree.top[0]
+#
+#		if not self.matchNodeToStructure(root, structure, atoms):
+#			return None
+#
+#		next = None
+#		for child in self.tree.children[root]:
+#			if self.matchNodeToStructure(child, structure, atoms):
+#				next = child
+#
+#		if next is not None:
+#			return self.descendTree(structure, atoms, next)
+#		else:
+#			return root
+
 		if root is None: root = self.tree.top[0]
 
 		if not self.matchNodeToStructure(root, structure, atoms):
 			return None
 
-		next = None
+		next = []
 		for child in self.tree.children[root]:
 			if self.matchNodeToStructure(child, structure, atoms):
-				next = child
+				next.append(child)
 
-		if next is not None:
-			return self.descendTree(structure, atoms, next)
-		else:
+		if len(next) == 1:
+			return self.descendTree(structure, atoms, next[0])
+		elif len(next) == 0:
 			return root
+		else:
+#			logging.warning('Unable to descend tree further; multiple paths are available. Returning the current node.')
+#			logging.warning('\tThe current structure is %s' % (structure.toSMILES()))
+#			logging.warning('\tI am at node %s with valid options %s' % (root, next))
+#			return root
+			logging.warning('Multiple tree descent paths are valid. Following the first path only.')
+			return self.descendTree(structure, atoms, next[0])
 
 ################################################################################
 

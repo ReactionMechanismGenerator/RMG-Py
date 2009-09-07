@@ -25,6 +25,7 @@ Contents
 	rmg-reaction
 	rmg-species
 	rmg-structure
+	rmg-thermo
 	rmg-cantera_loader
 	
 Indices and Tables

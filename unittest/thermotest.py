@@ -33,7 +33,7 @@ class ThermoGACheck(unittest.TestCase):
 		# Heat capacity: 
 		#		Cp = 0.1 * T - 20.0		300.0 < T < 1500.0
 		#		Cp = 130.0				T > 1500.0
-		thermoData = species.ThermoGAData(0, 0, [10, 20, 30, 40, 60, 80, 130.0])
+		thermoData = thermo.ThermoGAData(0, 0, [10, 20, 30, 40, 60, 80, 130.0])
 		
 		Tlist = [T for T in range(300, 1500, 10)]
 		for T in Tlist:
@@ -61,7 +61,7 @@ class ThermoGACheck(unittest.TestCase):
 		
 		H0 = 800000.0
 		
-		thermoData = species.ThermoGAData(H0, 0, [10, 20, 30, 40, 60, 80, 130.0])
+		thermoData = thermo.ThermoGAData(H0, 0, [10, 20, 30, 40, 60, 80, 130.0])
 		
 		Tlist = [T for T in range(300, 1500, 10)]
 		for T in Tlist:
@@ -89,7 +89,7 @@ class ThermoGACheck(unittest.TestCase):
 		"""
 		
 		S0 = 500.0
-		thermoData = species.ThermoGAData(0, S0, [10, 20, 30, 40, 60, 80, 130.0])
+		thermoData = thermo.ThermoGAData(0, S0, [10, 20, 30, 40, 60, 80, 130.0])
 		
 		Tlist = [T for T in range(300, 1500, 10)]
 		for T in Tlist:
@@ -135,6 +135,71 @@ class ThermoEstimationCheck(unittest.TestCase):
 		self.assertAlmostEqual(CH3.getEntropy(298) / 4.184, 46.4, 1)
 		self.assertAlmostEqual(CH3.getFreeEnergy(298) / 4184, 21.0, 1)
 		self.assertAlmostEqual(CH3.getHeatCapacity(298) / 4.184, 9.54, 1)
+
+	def test3C6H9(self):
+
+		C6H10 = species.Species()
+		C6H10.fromSMILES('C=CC=CCC')
+		C6H10.getThermoData()
+		print '1,3-hexadiene'
+		print 'H(298 K) = %s' % (C6H10.getEnthalpy(298) / 4184)
+		print 'S(298 K) = %s' % (C6H10.getEntropy(298) / 4.184)
+		print 'G(298 K) = %s' % (C6H10.getFreeEnergy(298) / 4184)
+		print 'Cp(298 K) = %s' % (C6H10.getHeatCapacity(300) / 4.184)
+
+		C6H9 = species.Species()
+		C6H9.fromSMILES('[CH]=CC=CCC')
+		C6H9.getThermoData()
+		print 'hexa-1,3-diene-1-yl'
+		print 'H(298 K) = %s' % (C6H9.getEnthalpy(298) / 4184)
+		print 'S(298 K) = %s' % (C6H9.getEntropy(298) / 4.184)
+		print 'G(298 K) = %s' % (C6H9.getFreeEnergy(298) / 4184)
+		print 'Cp(298 K) = %s' % (C6H9.getHeatCapacity(300) / 4.184)
+
+		C6H9 = species.Species()
+		C6H9.fromSMILES('C=[C]C=CCC')
+		C6H9.getThermoData()
+		print 'hexa-1,3-diene-2-yl'
+		print 'H(298 K) = %s' % (C6H9.getEnthalpy(298) / 4184)
+		print 'S(298 K) = %s' % (C6H9.getEntropy(298) / 4.184)
+		print 'G(298 K) = %s' % (C6H9.getFreeEnergy(298) / 4184)
+		print 'Cp(298 K) = %s' % (C6H9.getHeatCapacity(300) / 4.184)
+
+		C6H9 = species.Species()
+		C6H9.fromSMILES('C=C[C]=CCC')
+		C6H9.getThermoData()
+		print 'hexa-1,3-diene-3-yl'
+		print 'H(298 K) = %s' % (C6H9.getEnthalpy(298) / 4184)
+		print 'S(298 K) = %s' % (C6H9.getEntropy(298) / 4.184)
+		print 'G(298 K) = %s' % (C6H9.getFreeEnergy(298) / 4184)
+		print 'Cp(298 K) = %s' % (C6H9.getHeatCapacity(300) / 4.184)
+
+		C6H9 = species.Species()
+		C6H9.fromSMILES('C=CC=[C]CC')
+		C6H9.getThermoData()
+		print 'hexa-1,3-diene-4-yl'
+		print 'H(298 K) = %s' % (C6H9.getEnthalpy(298) / 4184)
+		print 'S(298 K) = %s' % (C6H9.getEntropy(298) / 4.184)
+		print 'G(298 K) = %s' % (C6H9.getFreeEnergy(298) / 4184)
+		print 'Cp(298 K) = %s' % (C6H9.getHeatCapacity(300) / 4.184)
+
+		C6H9 = species.Species()
+		C6H9.fromSMILES('C=CC=C[CH]C')
+		C6H9.getThermoData()
+		print 'hexa-1,3-diene-5-yl'
+		print 'H(298 K) = %s' % (C6H9.getEnthalpy(298) / 4184)
+		print 'S(298 K) = %s' % (C6H9.getEntropy(298) / 4.184)
+		print 'G(298 K) = %s' % (C6H9.getFreeEnergy(298) / 4184)
+		print 'Cp(298 K) = %s' % (C6H9.getHeatCapacity(300) / 4.184)
+
+		C6H9 = species.Species()
+		C6H9.fromSMILES('C=CC=CC[CH2]')
+		C6H9.getThermoData()
+		print 'hexa-1,3-diene-6-yl'
+		print 'H(298 K) = %s' % (C6H9.getEnthalpy(298) / 4184)
+		print 'S(298 K) = %s' % (C6H9.getEntropy(298) / 4.184)
+		print 'G(298 K) = %s' % (C6H9.getFreeEnergy(298) / 4184)
+		print 'Cp(298 K) = %s' % (C6H9.getHeatCapacity(300) / 4.184)
 
 ################################################################################
 

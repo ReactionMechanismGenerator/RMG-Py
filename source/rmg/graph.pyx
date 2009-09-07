@@ -138,29 +138,29 @@ cpdef class Graph(dict):
 		del self[v1][v2]
 		del self[v2][v1]
 
-	cpdef isIsomorphic(Graph self, Graph other):
+	cpdef isIsomorphic(Graph self, Graph other, dict map12_0, dict map21_0):
 		"""
 		Returns :data:`True` if two graphs are isomorphic and :data:`False`
 		otherwise. Uses the VF2 algorithm of Vento and Foggia.
 		"""
 		if len(self) != len(other): return False
-		ismatch, map21, map12 = VF2_isomorphism(self, other, dict(), dict(), False, False)
+		ismatch, map21, map12 = VF2_isomorphism(self, other, map21_0, map12_0, False, False)
 		return ismatch
 
-	cpdef isSubgraphIsomorphic(Graph self, Graph other, dict map12, dict map21):
+	cpdef isSubgraphIsomorphic(Graph self, Graph other, dict map12_0, dict map21_0):
 		"""
 		Returns :data:`True` if `other` is subgraph isomorphic and :data:`False`
 		otherwise. Uses the VF2 algorithm of Vento and Foggia.
 		"""
-		ismatch, map21, map12 = VF2_isomorphism(self, other, map21, map12, True, False)
+		ismatch, map21, map12 = VF2_isomorphism(self, other, map21_0, map12_0, True, False)
 		return ismatch
 
-	cpdef findSubgraphIsomorphisms(Graph self, Graph other):
+	cpdef findSubgraphIsomorphisms(Graph self, Graph other, dict map12_0, dict map21_0):
 		"""
 		Returns :data:`True` if `other` is subgraph isomorphic and :data:`False`
 		otherwise. Uses the VF2 algorithm of Vento and Foggia.
 		"""
-		return VF2_isomorphism(self, other, dict(), dict(), True, True)
+		return VF2_isomorphism(self, other, map21_0, map12_0, True, True)
 
 	cpdef Graph copy(Graph self):
 		"""

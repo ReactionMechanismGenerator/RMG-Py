@@ -192,51 +192,6 @@ class CoreEdgeReactionModel:
 		"""
 		self.edge.reactions.append(rxn)
 
-	def isValid(self, T, P, conc):
-		"""
-		Return :data:`True` if the model is valid at the specified conditions -
-		temperature `T`, pressure `P`, and dictionary of concentrations `conc` -
-		or :data:`False` otherwise. A model is considered valid if the flux to
-		all species in the edge is less than a certain tolerance (usually some
-		fraction of the root mean square flux of all core reactions).
-		"""
-
-		# Determine the reaction fluxes
-		rxnFlux = {}
-		for rxn in self.core.reactions:
-			rxnFlux[rxn] = rxn.getRate(T, P, conc)
-
-		# Get the chracteristic flux to use for assessing model validity
-		charFlux = self.fluxTolerance * math.sqrt(sum([flux**2 for flux in rxnFlux.values()]))
-
-		# Determine the species fluxes (for edge species only)
-		specFlux = {}
-		for rxn in self.core.reactions:
-			for reactant in rxn.reactants:
-				if reactant in self.edge.species:
-					try:
-						specFlux[reactant] -= rxnFlux[rxn]
-					except KeyError:
-						specFlux[reactant] = -rxnFlux[rxn]
-			for product in rxn.products:
-				if product in self.edge.species:
-					try:
-						specFlux[product] += rxnFlux[rxn]
-					except KeyError:
-						specFlux[product] = rxnFlux[rxn]
-
-		# Get maximum edge species flux
-		maxSpecFlux, maxSpec = max([(specFlux[x],x) for x in specFlux])
-		
-		# If maximum edge species flux is greater than the tolerance, return
-		# False and the species with the maximum flux
-		if maxSpecFlux > charFlux:
-			return False
-
-		# At this stage the model has passed all validity tests and is therefore
-		# presumed valid
-		return True
-
 	def getLists(self):
 		"""
 		Return lists of all of the species and reactions in the core and the
@@ -249,6 +204,19 @@ class CoreEdgeReactionModel:
 		reactionList.extend(self.core.reactions)
 		reactionList.extend(self.edge.reactions)
 		return speciesList, reactionList
+
+	def getStoichiometryMatrix(self):
+		"""
+		Return the stoichiometry matrix for all core and edge species. The
+		rows represent the species in the core and edge in order, while the
+		columns represent the reactions in the core and edge in order.
+		"""
+		speciesList, reactionList = self.getLists()
+		stoichiometry = numpy.zeros((len(speciesList), len(reactionList)), float)
+		for j, rxn in enumerate(reactionList):
+			for i, spec in enumerate(speciesList):
+				stoichiometry[i,j] = rxn.getStoichiometricCoefficient(spec)
+		return stoichiometry
 
 	def getReactionRates(self, T, P, Ci):
 		"""
@@ -579,9 +547,11 @@ class BatchReactor(ReactionSystem):
 		speciesList, reactionList = model.getLists()
 
 		rxnRates = self.getReactionRates(P, V, T, Ni, model)
-
-		charFlux = model.fluxTolerance * math.sqrt(sum([x**2 for x in rxnRates[0:len(model.core.reactions)]]))
 		dNidt = numpy.dot(stoichiometry, rxnRates)
+
+		charFlux = model.fluxTolerance * math.sqrt(sum([x**2 for x in dNidt[0:len(model.core.species)]]))
+		#charFlux = model.fluxTolerance * math.sqrt(sum([x**2 for x in rxnRates[0:len(model.core.reactions)]]))
+
 		if len(model.edge.species) > 0:
 			maxSpeciesFlux, maxSpecies = max([ (value, i+len(model.core.species)) for i, value in enumerate(dNidt[len(model.core.species):]) ])
 			return (maxSpeciesFlux < charFlux), speciesList[maxSpecies], maxSpeciesFlux, charFlux
@@ -598,12 +568,8 @@ class BatchReactor(ReactionSystem):
 
 		# Assemble stoichiometry matrix for all core and edge species
 		# Rows are species (core, then edge); columns are reactions (core, then edge)
-		speciesList, reactionList = model.getLists()
-		stoichiometry = numpy.zeros((len(speciesList), len(reactionList)), float)
-		for j, rxn in enumerate(reactionList):
-			for i, spec in enumerate(speciesList):
-				stoichiometry[i,j] = rxn.getStoichiometricCoefficient(spec)
-
+		stoichiometry = model.getStoichiometryMatrix()
+		
 		tlist = []; ylist = []
 
 		# Set up initial conditions

@@ -53,6 +53,60 @@ class StructureCheck(unittest.TestCase):
 				self.assertTrue(key in structure2.atoms())
 				self.assertTrue(value in structure1.atoms())
 
+	def testSubgraphIsomorphismAgain(self):
+
+		structure1 = Structure()
+		#structure1.fromSMILES('C=CC=CCC')
+		structure1.fromAdjacencyList("""
+		1 * C 0 {2,D} {7,S} {8,S}
+		2 C 0 {1,D} {3,S} {9,S}
+		3 C 0 {2,S} {4,D} {10,S}
+		4 C 0 {3,D} {5,S} {11,S}
+		5 C 0 {4,S} {6,S} {12,S} {13,S}
+		6 C 0 {5,S} {14,S} {15,S} {16,S}
+		7 H 0 {1,S}
+		8 H 0 {1,S}
+		9 H 0 {2,S}
+		10 H 0 {3,S}
+		11 H 0 {4,S}
+		12 H 0 {5,S}
+		13 H 0 {5,S}
+		14 H 0 {6,S}
+		15 H 0 {6,S}
+		16 H 0 {6,S}
+		""")
+
+		structure2 = Structure()
+		structure2.fromAdjacencyList("""
+		1 * C 0 {2,D} {3,S} {4,S}
+		2 C 0 {1,D}
+		3 H 0 {1,S}
+		4 H 0 {1,S}
+		""")
+
+		labeled1 = structure1.getLabeledAtoms().values()[0]
+		labeled2 = structure2.getLabeledAtoms().values()[0]
+
+		map21_0 = {labeled2: labeled1}; map12_0 = {labeled1: labeled2}
+		self.assertTrue(structure1.isSubgraphIsomorphic(structure2, map12_0, map21_0))
+
+		map21_0 = {labeled2: labeled1}; map12_0 = {labeled1: labeled2}
+		match, map21, map12 = structure1.findSubgraphIsomorphisms(structure2, map12_0, map21_0)
+		self.assertTrue(match)
+		self.assertTrue(len(map21) == len(map12) == 2)
+		for mapA, mapB in zip(map21, map12):
+			self.assertTrue(len(mapA) == len(mapB) == min(len(structure1.atoms()), len(structure2.atoms())))
+			for key, value in mapA.iteritems():
+				self.assertTrue(value in mapB)
+				self.assertTrue(key is mapB[value])
+				self.assertTrue(key in structure1.atoms())
+				self.assertTrue(value in structure2.atoms())
+			for key, value in mapB.iteritems():
+				self.assertTrue(value in mapA)
+				self.assertTrue(key is mapA[value])
+				self.assertTrue(key in structure2.atoms())
+				self.assertTrue(value in structure1.atoms())
+
 	def testIsInCycle(self):
 
 		# ethane
