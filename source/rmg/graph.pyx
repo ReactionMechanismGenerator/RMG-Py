@@ -29,20 +29,20 @@ cdef extern from "dictobject.h":
 	ctypedef class __builtin__.dict [object PyDictObject]:
 		pass
 
-class Vertex:
+cpdef class Vertex:
 
 	def __init__(self):
 		pass
 
-	def equivalent(self, other):
+	cpdef bint equivalent(Vertex self, Vertex other):
 		return True
 
-class Edge:
+cpdef class Edge:
 
 	def __init__(self):
 		pass
 
-	def equivalent(self, other):
+	cpdef bint equivalent(Edge self, Edge other):
 		return True
 
 cpdef class Graph(dict):

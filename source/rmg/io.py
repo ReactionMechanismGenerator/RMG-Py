@@ -452,7 +452,7 @@ def writeOutputFile(fstr, reactionModel, reactionSystems):
 		kinetics = dom.createElement('kinetics')
 		element.appendChild(kinetics)
 		for k in rxn.kinetics:
-			k.toXML(dom, kinetics, len(rxn.reactants))
+			k.toXML(dom, kinetics)
 
 	# Write output file
 	f = open(fstr, 'w')
