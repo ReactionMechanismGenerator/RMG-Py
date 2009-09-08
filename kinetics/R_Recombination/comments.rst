@@ -1,8 +1,23 @@
 
+For some reason the definition of Cs_rad::
+
+ Cs_rad
+ 1 * C 1 
+
+which is not mutually exclusive from its L2 siblings such as::
+
+ Cd_rad
+ 1 * C 1 {2,D}, {3,S}
+ 2   C 0 {1,D}
+ 3   R 0 {1,S}
+
+is apparently not causing a problem
+
 ---
 425
 ---
 [167] Dingle, J.R.; Le Roy, D.J.; J. Chem. Phys. 1950, 18, 1632.
+
 Absolute value measured directly. Excitation: thermal. H + H --> H2 Bath gas: C2H2
 
 NIST record: http://kinetics.nist.gov/kinetics/Detail?id=1950DIN/LER1632-1637:1
@@ -13,6 +28,7 @@ Checked by Greg Magoon; I suspect the parameters in the paper come from a differ
 426
 ---
 [168] Takahashi, J.; Momose, T.; Shida, T. Bull. Chem. Soc. Jpn. 1994, 67, 74.
+
 H + CH3 --> CH4
 
 CVTST calculation
@@ -30,8 +46,7 @@ H + CH3 --> CH4
 pg 870 Evaluated Kinetic Data for Combustion Modelling Supplement 1, Table 3. Combination reactions.
 
 RMG data matches reference data for k(infinity).
-
-Verified by Karma James
+ Verified by Karma James
 
 pg.903-906: Discussion on evaluated data
 
@@ -51,7 +66,7 @@ Data derived from fitting to a complex mechanism. Excitation: radiolysis, analys
 H + C2H5 (+ M) --> C2H6 (+ M) (Rxn. 2b)
 
 ***NHP***
-Verified by Greg Magoon; I changed the DA uncertainty from *1.1 to (+/-)1E13, as this is what the abstract reports (also, Table 3 mentions uncertainties in the range of 10%-20%)
+Verified by Greg Magoon; I changed the DA uncertainty from (times/divide)1.1 to (+/-)1E13, as this is what the abstract reports (also, Table 3 mentions uncertainties in the range of 10%-20%)
 
 ---
 429
@@ -67,7 +82,7 @@ Data derived from fitting to a complex mechanism. Excitation: electron beam, ana
 H + isoC3H7 (+ M) --> C3H8 (+ M) (Rxn. 7)
 
 ***NHP***
-Verified by Greg Magoon; I changed the DA uncertainty from *1.25 to 0.3E+14, as reported in the paper
+Verified by Greg Magoon; I changed the DA uncertainty from (times/divide)1.25 to 0.3E+14, as reported in the paper
 
 ---
 431
@@ -214,18 +229,24 @@ RRK(M) extrapolation.
 
 CH3 + iso-C3H7 --> iso-C4H10 
 
-Verified by Greg Magoon; high-pressure rate constants are reported here; I don't immediately see an explicit temperature range for the polynomial fits, but the domain of the graphs agrees pretty well with the range in the rateLibrary (though the graphs seem to go slightly higher, to 2000 K); the abstract says "from room to combustion temperatures", so if anything, the range specified in the rateLibrary is probably too narrow; minor: I calculate 1.1E-9*6.022141E23=6.624E14, but rateLibrary has slightly different value of 6.64E14
+Verified by Greg Magoon; high-pressure rate constants are reported here; 
+I don't immediately see an explicit temperature range for the polynomial fits, 
+but the domain of the graphs agrees pretty well with the range in the rateLibrary 
+(though the graphs seem to go slightly higher, to 2000 K); the abstract says 
+"from room to combustion temperatures", so if anything, the range specified in 
+the rateLibrary is probably too narrow; minor: I calculate 1.1E-9*6.022141E23=6.624E14, 
+but rateLibrary has slightly different value of 6.64E14
 
 ---
 441
 ---
 [92] Tsang, W. J. Phys. Chem. Ref. Data 1990, 19, 1.
+
 CH3 + tert-C4H9 --> neo-C5H12
 
 pg 7, Chemical Kinetic Database For Combustion Chemistry, Part 4 - Isobutane. 
 
 Index of Reactions and Summary of Recommended Rate Expressions. No. 44,16.
-
 Verified by Karma James
 
 NOTE: Data entry was not consistent w/recommended value in reference (pg. 36)

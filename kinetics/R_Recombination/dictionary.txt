@@ -181,8 +181,8 @@ C_rad/ThreeDe
 
 Cd_rad
 1 * C 1 {2,D}, {3,S}
-2 C 0 {1,D}
-3 R 0 {1,S}
+2   C 0 {1,D}
+3   R 0 {1,S}
 
 Cd_pri_rad
 1 * C 1 {2,D}, {3,S}
