@@ -18,7 +18,7 @@ RR'
 // Top level nodes for reverse reaction
 
 R_CO2_R'
-1 *1 Cds 0 {2,S} {3,D} {4,S}
+1 *1 Cd 0 {2,S} {3,D} {4,S}
 2 *2 Os 0 {1,S} {5,S}
 3 Od 0 {1,D}
 4 *3 {C,H} 0 {1,S}

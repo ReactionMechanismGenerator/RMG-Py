@@ -510,6 +510,7 @@ class ThermoDatabase(data.Database):
 			if data[0].__class__ == str or data[0].__class__ == unicode:
 				data = self.library[data[0]]
 
+		# This code prints the hierarchy of the found node; useful for debugging
 #		result = ''
 #		while node is not None:
 #			result = ' -> ' + node + result

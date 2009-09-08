@@ -142,19 +142,19 @@ cpdef class AtomType:
 				self.element.symbol:
 			return True
 		# Special case: 'Cd' matches any of 'Cd', 'Cdd', 'Cds', or 'CO'
-		elif self.label == 'Cd' and (other.label == 'Cd' or \
-				other.label == 'Cdd' or other.label == 'Cds' or other.label == 'CO'):
-			return True
-		elif other.label == 'Cd' and (self.label == 'Cd' or \
-				self.label == 'Cdd' or self.label == 'Cds' or self.label == 'CO'):
-			return True
+		#elif self.label == 'Cd' and (other.label == 'Cd' or \
+		#		other.label == 'Cdd' or other.label == 'Cds' or other.label == 'CO'):
+		#	return True
+		#elif other.label == 'Cd' and (self.label == 'Cd' or \
+		#		self.label == 'Cdd' or self.label == 'Cds' or self.label == 'CO'):
+		#	return True
 		# Special case: 'Sid' matches any of 'Sid', 'Sidd', 'Sids', or 'SiO'
-		elif self.label == 'Sid' and (other.label == 'Sid' or \
-				other.label == 'Sidd' or other.label == 'Sids' or other.label == 'SiO'):
-			return True
-		elif other.label == 'Sid' and (self.label == 'Sid' or \
-				self.label == 'Sidd' or self.label == 'Sids' or self.label == 'SiO'):
-			return True
+		#elif self.label == 'Sid' and (other.label == 'Sid' or \
+		#		other.label == 'Sidd' or other.label == 'Sids' or other.label == 'SiO'):
+		#	return True
+		#elif other.label == 'Sid' and (self.label == 'Sid' or \
+		#		self.label == 'Sidd' or self.label == 'Sids' or self.label == 'SiO'):
+		#	return True
 		# Otherwise labels must match exactly
 		elif self.label == other.label:
 			return True
@@ -187,9 +187,8 @@ def loadAtomTypes():
 	atomTypes['R!H'] 	= AtomType('R!H',	None, 			'generic non-hydrogen functional group')
 	atomTypes['Ct'] 	= AtomType('Ct', 	elements['C'], 	'carbon with one triple bond and one single bond')
 	atomTypes['Cs'] 	= AtomType('Cs', 	elements['C'], 	'carbon with four single bonds')
-	atomTypes['Cd'] 	= AtomType('Cd', 	elements['C'], 	'carbon with one double bond and the rest undefined')
+	atomTypes['Cd'] 	= AtomType('Cd', 	elements['C'], 	'carbon with one double bond and two single bonds')
 	atomTypes['Cdd'] 	= AtomType('Cdd', 	elements['C'], 	'carbon with two double bonds')
-	atomTypes['Cds'] 	= AtomType('Cds', 	elements['C'], 	'carbon with one double bond and two single bonds')
 	atomTypes['Cb'] 	= AtomType('Cb', 	elements['C'], 	'carbon belonging to a benzene ring')
 	atomTypes['Cbf'] 	= AtomType('Cbf', 	elements['C'], 	'carbon belonging to a fused benzene ring')
 	atomTypes['CO'] 	= AtomType('CO', 	elements['C'], 	'non-central carbon bonded with a double bond to a non-central oxygen')
@@ -198,9 +197,8 @@ def loadAtomTypes():
 
 	atomTypes['Sit'] 	= AtomType('Sit', 	elements['Si'], 'silicon with one triple bond and one single bond')
 	atomTypes['Sis'] 	= AtomType('Sis', 	elements['Si'], 'silicon with four single bonds')
-	atomTypes['Sid'] 	= AtomType('Sid', 	elements['Si'], 'silicon with one double bond and the rest undefined')
+	atomTypes['Sid'] 	= AtomType('Sids', 	elements['Si'], 'silicon with one double bond and two single bonds')
 	atomTypes['Sidd'] 	= AtomType('Sidd', 	elements['Si'], 'silicon with two double bonds')
-	atomTypes['Sids'] 	= AtomType('Sids', 	elements['Si'], 'silicon with one double bond and two single bonds')
 	atomTypes['Sib'] 	= AtomType('Sib', 	elements['Si'], 'silicon belonging to a benzene ring')
 	atomTypes['Sibf'] 	= AtomType('Sibf', 	elements['Si'], 'silicon belonging to a fused benzene ring')
 	atomTypes['SiO'] 	= AtomType('SiO', 	elements['Si'], 'non-central silicon bonded with a double bond to a non-central oxygen')
@@ -313,14 +311,13 @@ cpdef class BondType:
 
 	cpdef bint equivalent(BondType self, BondType other):
 		"""
-		Returns :data:`True` if two bond types are equivalent or
-		:data:`False` otherwise.
+		Returns :data:`True` if two bond types are equivalent or :data:`False`
+		otherwise. The method is strictly a comparison of the bond type via the
+		`label` attribute. Unlike with atom types, no fuzzy matching of bond
+		types is currently allowed (i.e. 'D' is different from 'Dcis' and
+		'Dtrans').
 		"""
-		if self.label == 'D' and (other.label == 'D' or other.label == 'Dcis' or other.label == 'Dtrans'):
-			return True
-		elif (self.label == 'D' or self.label == 'Dcis' or self.label == 'Dtrans') and other.label == 'D':
-			return True
-		else: return self.label == other.label
+		return self.label == other.label
 
 	def __repr__(self):
 		"""x.__repr__() <==> repr(x)"""

@@ -95,11 +95,9 @@
 70	C2CsJOOH	96.74	2.37	-1.01	-2.17	-2.87	-3.3	-3.77	-4.05	-4.49	0	0	0	SUMATHI & GREEN																
 71	C2CsJOOC	96.58	2.08	-0.78	-2.02	-2.75	-3.18	-3.62	-3.88	-4.37	0	0	0	SUMATHI & GREEN																
 72	CdsJ		Cds_P																								
-73	Cds_P		Vin																								
-74	Vin		111.2	1.39	-0.19	-0.75	-1.36	-1.92	-2.82	-3.49	-4.53	0	0	0	LAY et al. CHEN & BOZZELLI #															
+74	Cds_P		111.2	1.39	-0.19	-0.75	-1.36	-1.92	-2.82	-3.49	-4.53	0	0	0	LAY et al. CHEN & BOZZELLI #															
 75	C=C=CJ		89	1.29	-0.45	-1.05	-1.64	-2.15	-2.98	-3.6	-3.6	0	0	0	LAY et al.															
-76	Cds_S		Vins																								
-77	Vins		109	1.81	-0.34	-1.21	-1.94	-2.52	-3.34	-3.91	-4.76	0	0	0	LAY et al. CHEN & BOZZELLI #															
+77	Cds_S		109	1.81	-0.34	-1.21	-1.94	-2.52	-3.34	-3.91	-4.76	0	0	0	LAY et al. CHEN & BOZZELLI #															
 78	C=CJC=C		99.8	0.71	0.19	-0.76	-1.51	-2.01	-2.7	-3.17	-3.17	0	0	0	LAY et al.															
 79	CdsJO		CCJ=O																								
 80	HCdsJO		88.45	-0.01	-0.19	-0.65	-1.19	-1.73	-2.63	-3.32	-4.42	0	0	0	Calculated in relation to formaldehyde from NIST values															

@@ -630,7 +630,6 @@ class Structure:
 				elif single == 3 or single == 4: atomType = 'Cs'
 				elif double == 2: atomType = 'Cdd'
 				elif carbonyl: atomType = 'CO'
-				elif double == 1 and (single == 1 or single == 2): atomType = 'Cds'
 				elif double == 1: atomType = 'Cd'
 				elif benzene == 1 or benzene == 2: atomType = 'Cb'
 				elif benzene == 3: atomType = 'Cbf'
@@ -641,12 +640,6 @@ class Structure:
 			# Do nothing if suggested and specified atom types are identical
 			if atom1.atomType.label == atomType:
 				pass
-			# Do nothing if suggested atom type is element
-			elif atomType == atom1.atomType.element.symbol or atomType == 'Cd':
-				pass
-			# Do nothing if specified atom type is 'Cds' or 'Cdd' and suggested is 'Cd'
-			elif (atom1.atomType.label == 'Cds' or atom1.atomType.label == 'Cdd') and atomType == 'Cd':
-				pass
 			# Do nothing if specified atom type is 'Cbf' and suggested is 'Cb'
 			elif atom1.atomType.label == 'Cbf' and atomType == 'Cb':
 				pass
@@ -655,10 +648,6 @@ class Structure:
 				pass
 			# Make change if specified atom type is element
 			elif atom1.atomType.label == atom1.atomType.element.symbol:
-				#logging.warning('Changed "' + atom1.atomType.label + '" to "' + atomType + '".')
-				atom1.atomType = chem.atomTypes[atomType]
-			# Make change if specified atom type is 'Cd' and suggested is 'Cds' or 'Cdd'
-			elif atom1.atomType.label == 'Cd' and (atomType == 'Cds' or atomType == 'Cdd' or atomType == 'CO'):
 				#logging.warning('Changed "' + atom1.atomType.label + '" to "' + atomType + '".')
 				atom1.atomType = chem.atomTypes[atomType]
 			# Else print warning

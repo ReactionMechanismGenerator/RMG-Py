@@ -708,12 +708,12 @@ class Database:
 		elif len(next) == 0:
 			return root
 		else:
-#			logging.warning('Unable to descend tree further; multiple paths are available. Returning the current node.')
-#			logging.warning('\tThe current structure is %s' % (structure.toSMILES()))
-#			logging.warning('\tI am at node %s with valid options %s' % (root, next))
-#			return root
-			logging.warning('Multiple tree descent paths are valid. Following the first path only.')
-			return self.descendTree(structure, atoms, next[0])
+			logging.warning('Unable to descend tree further; multiple paths are available.')
+			logging.warning('\tThe current structure is %s' % (structure.toSMILES()))
+			logging.warning('\tI am at node %s with valid options %s' % (root, next))
+			return root
+#			logging.warning('Multiple tree descent paths are valid. Following the first path only.')
+#			return self.descendTree(structure, atoms, next[0])
 
 ################################################################################
 

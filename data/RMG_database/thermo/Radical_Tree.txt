@@ -115,11 +115,9 @@ L1: RJ
 	L3: CdsJ	// sp2 central carbon
 
 		L4: Cds_P
-			L5: Vin
 			L5: C=C=CJ
 
 		L4: Cds_S
-			L5: Vins
 			L5: C=CJC=C
 
 		L4: CdsJO

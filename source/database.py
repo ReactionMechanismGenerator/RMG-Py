@@ -45,6 +45,9 @@ def loadThermoDatabases(databasePath):
 	"""
 	Create and load the thermodynamics databases.
 	"""
+	import os.path
+	databasePath += '/'
+
 	# Create and load thermo databases
 	thermo.thermoDatabase = thermo.ThermoDatabaseSet()
 	thermo.thermoDatabase.load(databasePath )
@@ -290,6 +293,96 @@ def write_xml(family_names = None):
 
 ################################################################################
 
+def pruneKineticsTrees():
+
+	# Prune kinetics dictionaries and trees
+	for key, family in reaction.kineticsDatabase.families.iteritems():
+		forwardTemplate, reverseTemplate = family.getTemplateLists()
+		family.prune(forwardTemplate)
+
+		# Print dictionary
+		print '/////////////////////////////////////////////////////////////////////////////////'
+		print '//'
+		print '// Structure dictionary for %s' % family.label
+		print '//'
+		print '/////////////////////////////////////////////////////////////////////////////////'
+		print ''
+		for label, struct in family.dictionary.iteritems():
+			if struct.__class__ == str:
+				union = label + '\nUnion {' + ','.join(family.tree.children[label]) + '}\n'
+				print union
+			else:
+				print struct.toAdjacencyList(label)
+
+		# Print tree
+		print '/////////////////////////////////////////////////////////////////////////////////'
+		print '//'
+		print '// Structure tree for %s' % family.label
+		print '//'
+		print '/////////////////////////////////////////////////////////////////////////////////'
+		print ''
+		print family.tree.write(family.tree.top)
+
+################################################################################
+
+def findCatchallNodes():
+
+	import rmg.structure as structure
+
+	families = { 'group': thermo.thermoDatabase.groupDatabase, \
+				 'radical': thermo.thermoDatabase.radicalDatabase, \
+				 '1,5-interations': thermo.thermoDatabase.int15Database, \
+				 'gauche': thermo.thermoDatabase.gaucheDatabase, \
+				 'ring': thermo.thermoDatabase.ringDatabase, \
+				 'other': thermo.thermoDatabase.otherDatabase }
+
+	#families = reaction.kineticsDatabase.families
+
+
+	for key, family in families.iteritems():
+		for parent, children in family.tree.children.iteritems():
+			for child in children:
+				try:
+					print family.library[parent], family.library[child]
+					if family.library[parent] == family.library[child]:
+						print key, parent, child
+				except KeyError:
+					pass
+#				struct1 = family.dictionary[parent]
+#				struct2 = family.dictionary[child]
+#				if isinstance(struct1, structure.Structure) and isinstance(struct2, structure.Structure):
+#
+#					struct1.updateAtomTypes()
+#					struct2.updateAtomTypes()
+#
+#					match = True
+#					if len(struct1.atoms()) != len(struct2.atoms()):
+#						match = False
+#					else:
+#						for i in range(len(struct1.atoms())):
+#							if struct1.atoms()[i].atomType != struct2.atoms()[i].atomType or \
+#								struct1.atoms()[i].electronState != struct2.atoms()[i].electronState:
+#								match = False
+
+#					labeled1 = struct1.getLabeledAtoms().values()[0]
+#					labeled2 = struct2.getLabeledAtoms().values()[0]
+#					map21 = {labeled2: labeled1}
+#					map12 = {labeled1: labeled2}
+#					match, map21List, map12List = struct1.findSubgraphIsomorphisms(struct2, map12, map21)
+#					match = False
+#					for map in map21List:
+#						found = True
+#						for k, v in map.iteritems():
+#							if k.atomType != v.atomType: found = False
+#						if found: match = True
+#
+#					if match:
+#						print key, parent, child
+	print ''
+		
+
+################################################################################
+
 if __name__ == '__main__':
 	import math
 	# Show debug messages (as databases are loading)
@@ -297,122 +390,23 @@ if __name__ == '__main__':
 
 	# Load databases
 	databasePath = '../data/RMG_database'
-	#loadThermoDatabases(databasePath)
-	loadKineticsDatabases(databasePath,only_families=['H_Abstraction'])
+	loadThermoDatabases(databasePath)
+	loadKineticsDatabases(databasePath)
 
-#	fit_groups(['H abstraction'])	
+	findCatchallNodes()
+
+	#fit_groups(['H abstraction'])
 	#graph = fit_groups()
-	
-	write_xml()
+	#write_xml()
 	
 #	for node in graph.get_node_list():	
 #		node.set_style('filled')
 #		node.set_fontcolor('#FFFFFFFF')
 #		node.set_fillcolor('#000000FF')
 	
-#	# Prune kinetics dictionaries and trees
-#	for key, family in reaction.kineticsDatabase.families.iteritems():
-#		forwardTemplate, reverseTemplate = family.getTemplateLists()
-#		family.prune(forwardTemplate)
-#
-#		# Print dictionary
-#		print '/////////////////////////////////////////////////////////////////////////////////'
-#		print '//'
-#		print '// Structure dictionary for %s' % family.label
-#		print '//'
-#		print '/////////////////////////////////////////////////////////////////////////////////'
-#		print ''
-#		for label, struct in family.dictionary.iteritems():
-#			if struct.__class__ == str:
-#				union = label + '\nUnion {' + ','.join(family.tree.children[label]) + '}\n'
-#				print union
-#			else:
-#				print struct.toAdjacencyList(label)
-#
-#		# Print tree
-#		print '/////////////////////////////////////////////////////////////////////////////////'
-#		print '//'
-#		print '// Structure tree for %s' % family.label
-#		print '//'
-#		print '/////////////////////////////////////////////////////////////////////////////////'
-#		print ''
-#		print family.tree.write(family.tree.top)
+	# Prune kinetics trees
+	#pruneKineticsTrees()
 
 	# Draw kinetics trees
 	#drawKineticsTrees()
 
-if False: # The following is Josh's old code:
-	# Get set of all nodes
-	nodeSet = family.tree.parent.keys()
-	# remove those with no data
-#	nodesToRemove = []
-#	for node in nodeSet:
-#		hasData = False
-#		children = family.tree.descendants(node)
-#		for nodes in nodesList:
-#			if node in nodes: hasData = True
-#			for child in children:
-#				if child in nodes: hasData = True
-#		if not hasData:
-#			nodesToRemove.append(node)
-#	for node in nodesToRemove:
-#		nodeSet.remove(node)
-	
-	# Determine size of matrix and vector
-	ncols = len(nodeSet) + 1
-	nrows = 0
-	for nodes in nodesList:
-		nodeLists = []
-		for node in nodes:
-			nodeList = []
-			temp = node
-			while temp is not None:
-				nodeList.append(temp)
-				temp = family.tree.parent[temp]
-			nodeLists.append(nodeList)
-		nodeLists = data.getAllCombinations(nodeLists)
-		nrows += len(nodeLists)
-
-	import numpy
-	import numpy.linalg
-	import math
-
-	# Initialize matrix and vector
-	A = numpy.zeros((nrows, ncols), float)
-	b = numpy.zeros((nrows, 4), float)
-
-	# Fill in matrix and vector
-	rowcount = 0
-	for nodes, kinetics in zip(nodesList, dataList):
-		nodeLists = []
-		for node in nodes:
-			nodeList = []
-			temp = node
-			while temp is not None:
-				nodeList.append(temp)
-				temp = family.tree.parent[temp]
-			nodeLists.append(nodeList)
-		nodeLists = data.getAllCombinations(nodeLists)
-		for nodeList in nodeLists:
-			for i, node in enumerate(nodeList):
-				temp = node
-				while temp is not None:
-					A[rowcount,nodeSet.index(temp)] += 1
-					temp = family.tree.parent[temp]
-
-			A[rowcount,len(nodeSet)] += 1
-			b[rowcount,0] = math.log(kinetics.A)
-			b[rowcount,1] = kinetics.n
-			b[rowcount,2] = kinetics.alpha
-			b[rowcount,3] = kinetics.E0
-			rowcount += 1
-
-	x, residues, rank, s = numpy.linalg.lstsq(A,b)
-
-	for i in range(len(nodeSet)):
-		print nodeSet[i], x[i,:]
-	print x[len(nodeSet),:]
-#	print x
-#	print residues
-#	print rank, nrows, ncols, 4
-#	print s

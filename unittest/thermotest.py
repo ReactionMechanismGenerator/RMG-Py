@@ -137,69 +137,70 @@ class ThermoEstimationCheck(unittest.TestCase):
 		self.assertAlmostEqual(CH3.getHeatCapacity(298) / 4.184, 9.54, 1)
 
 	def test3C6H9(self):
+		"""
+		This tests the effect of abstraction of a hydrogen from each of the
+		six sites of a 1,3-hexadiene molecule to ensure that the appropriate
+		thermo parameters are determined for each. It also checks the original
+		1,3-hexadiene. The comparison is done in units of kcal/mol for enthalpy
+		and free energy and cal/mol*K for entropy and heat capacity.
+		"""
 
 		C6H10 = species.Species()
 		C6H10.fromSMILES('C=CC=CCC')
+		C6H10.getResonanceIsomers()
 		C6H10.getThermoData()
-		print '1,3-hexadiene'
-		print 'H(298 K) = %s' % (C6H10.getEnthalpy(298) / 4184)
-		print 'S(298 K) = %s' % (C6H10.getEntropy(298) / 4.184)
-		print 'G(298 K) = %s' % (C6H10.getFreeEnergy(298) / 4184)
-		print 'Cp(298 K) = %s' % (C6H10.getHeatCapacity(300) / 4.184)
+		self.assertAlmostEqual(C6H10.getEnthalpy(298) / 4184, 13.45, 1)
+		self.assertAlmostEqual(C6H10.getEntropy(298) / 4.184, 86.37, 1)
+		self.assertAlmostEqual(C6H10.getFreeEnergy(298) / 4184, -12.3, 1)
+		self.assertAlmostEqual(C6H10.getHeatCapacity(298) / 4.184, 29.49, 1)
 
 		C6H9 = species.Species()
 		C6H9.fromSMILES('[CH]=CC=CCC')
+		C6H9.getResonanceIsomers()
 		C6H9.getThermoData()
-		print 'hexa-1,3-diene-1-yl'
-		print 'H(298 K) = %s' % (C6H9.getEnthalpy(298) / 4184)
-		print 'S(298 K) = %s' % (C6H9.getEntropy(298) / 4.184)
-		print 'G(298 K) = %s' % (C6H9.getFreeEnergy(298) / 4184)
-		print 'Cp(298 K) = %s' % (C6H9.getHeatCapacity(300) / 4.184)
+		self.assertAlmostEqual(C6H9.getEnthalpy(298) / 4184, 72.55, 1)
+		self.assertAlmostEqual(C6H9.getEntropy(298) / 4.184, 87.76, 1)
+		self.assertAlmostEqual(C6H9.getHeatCapacity(298) / 4.184, 29.30, 1)
 
 		C6H9 = species.Species()
 		C6H9.fromSMILES('C=[C]C=CCC')
+		C6H9.getResonanceIsomers()
 		C6H9.getThermoData()
-		print 'hexa-1,3-diene-2-yl'
-		print 'H(298 K) = %s' % (C6H9.getEnthalpy(298) / 4184)
-		print 'S(298 K) = %s' % (C6H9.getEntropy(298) / 4.184)
-		print 'G(298 K) = %s' % (C6H9.getFreeEnergy(298) / 4184)
-		print 'Cp(298 K) = %s' % (C6H9.getHeatCapacity(300) / 4.184)
+		self.assertAlmostEqual(C6H9.getEnthalpy(298) / 4184, 61.15, 1)
+		self.assertAlmostEqual(C6H9.getEntropy(298) / 4.184, 87.07, 1)
+		self.assertAlmostEqual(C6H9.getHeatCapacity(298) / 4.184, 29.68, 1)
 
 		C6H9 = species.Species()
 		C6H9.fromSMILES('C=C[C]=CCC')
+		C6H9.getResonanceIsomers()
 		C6H9.getThermoData()
-		print 'hexa-1,3-diene-3-yl'
-		print 'H(298 K) = %s' % (C6H9.getEnthalpy(298) / 4184)
-		print 'S(298 K) = %s' % (C6H9.getEntropy(298) / 4.184)
-		print 'G(298 K) = %s' % (C6H9.getFreeEnergy(298) / 4184)
-		print 'Cp(298 K) = %s' % (C6H9.getHeatCapacity(300) / 4.184)
+		self.assertAlmostEqual(C6H9.getEnthalpy(298) / 4184, 61.15, 1)
+		self.assertAlmostEqual(C6H9.getEntropy(298) / 4.184, 87.07, 1)
+		self.assertAlmostEqual(C6H9.getHeatCapacity(298) / 4.184, 29.68, 1)
 
 		C6H9 = species.Species()
 		C6H9.fromSMILES('C=CC=[C]CC')
+		C6H9.getResonanceIsomers()
 		C6H9.getThermoData()
-		print 'hexa-1,3-diene-4-yl'
-		print 'H(298 K) = %s' % (C6H9.getEnthalpy(298) / 4184)
-		print 'S(298 K) = %s' % (C6H9.getEntropy(298) / 4.184)
-		print 'G(298 K) = %s' % (C6H9.getFreeEnergy(298) / 4184)
-		print 'Cp(298 K) = %s' % (C6H9.getHeatCapacity(300) / 4.184)
+		self.assertAlmostEqual(C6H9.getEnthalpy(298) / 4184, 70.35, 1)
+		self.assertAlmostEqual(C6H9.getEntropy(298) / 4.184, 88.18, 1)
+		self.assertAlmostEqual(C6H9.getHeatCapacity(298) / 4.184, 29.15, 1)
 
 		C6H9 = species.Species()
 		C6H9.fromSMILES('C=CC=C[CH]C')
+		C6H9.getResonanceIsomers()
 		C6H9.getThermoData()
-		print 'hexa-1,3-diene-5-yl'
-		print 'H(298 K) = %s' % (C6H9.getEnthalpy(298) / 4184)
-		print 'S(298 K) = %s' % (C6H9.getEntropy(298) / 4.184)
-		print 'G(298 K) = %s' % (C6H9.getFreeEnergy(298) / 4184)
-		print 'Cp(298 K) = %s' % (C6H9.getHeatCapacity(300) / 4.184)
+		self.assertAlmostEqual(C6H9.getEnthalpy(298) / 4184, 38.24, 1)
+		self.assertAlmostEqual(C6H9.getEntropy(298) / 4.184, 84.41, 1)
+		self.assertAlmostEqual(C6H9.getHeatCapacity(298) / 4.184, 27.79, 1)
 
 		C6H9 = species.Species()
 		C6H9.fromSMILES('C=CC=CC[CH2]')
+		C6H9.getResonanceIsomers()
 		C6H9.getThermoData()
-		print 'hexa-1,3-diene-6-yl'
-		print 'H(298 K) = %s' % (C6H9.getEnthalpy(298) / 4184)
-		print 'S(298 K) = %s' % (C6H9.getEntropy(298) / 4.184)
-		print 'G(298 K) = %s' % (C6H9.getFreeEnergy(298) / 4184)
-		print 'Cp(298 K) = %s' % (C6H9.getHeatCapacity(300) / 4.184)
+		self.assertAlmostEqual(C6H9.getEnthalpy(298) / 4184, 62.44, 1)
+		self.assertAlmostEqual(C6H9.getEntropy(298) / 4.184, 89.78, 1)
+		self.assertAlmostEqual(C6H9.getHeatCapacity(298) / 4.184, 28.72, 1)
 
 ################################################################################
 
