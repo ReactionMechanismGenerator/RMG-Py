@@ -73,14 +73,16 @@ giving  (2.26±0.42)E12 cm3/mole/sec.
     
     The rate constants, in units of 10E−11 cm3/molecule/sec, are:
     
-     * n-butyl (0.75±0.14); (gives (2.26±0.42)E12 cm3/mole/sec when divided by 2 to get rate per site)
+     * **n-butyl (0.75±0.14); (gives (2.26±0.42)E12 cm3/mole/sec when divided by 2 to get rate per site)**
      * s-butyl (1.66±0.22); (gives (5.00±0.66)E12 cm3/mole/sec when divided by 2 to get rate per site)
      * t-butyl (2.34±0.39); (gives (7.05±1.17)E12 cm3/mole/sec when divided by 2 to get rate per site)
      * 3-hydroxy s-butyl (2.8±1.8). (gives (8.43±5.42)E12 cm3/mole/sec when divided by 2 to get rate per site)
      
     No pressure dependence of the rate constants was observed over the range 1 to 4 Torr. 
 
-rwest@mit.edu
+Because radical addition to a double bond is probably barrierless, the temperature range 300-1500K
+has been assigned although the rate was only measured at 300K. 
+rwest@mit.edu  7-Sep-2009
 
 ---
 273
@@ -110,30 +112,30 @@ giving  (2.26±0.42)E12 cm3/mole/sec.
      
     No pressure dependence of the rate constants was observed over the range 1 to 4 Torr. 
 
-rwest@mit.edu
+Because radical addition to a double bond is probably barrierless, the temperature range 300-1500K
+has been assigned although the rate was only measured at 300K. 
+
+rwest@mit.edu  7-Sep-2009
 
 ---
 274
 ---
 
 Lenhardt [143] measured (10.0±1.3)E12 cm3/mole/sec (at 300K, high pressure limit, from flash photolysis experiments.)
-
 Atkinson [96], in their review, recommend 6.62E12 cm3/mole/sec. (according to Curran [8]).
-
 Curran [8], in their modelling paper, refer to both these and chose and "intermediate" value of 7.54E12 cm3/mol/sec.
 
 Curran [8] is the rate adopted here, giving 3.77E+12 cm3/mole/sec when divided by two to give the rate of addition per site.
 The uncertainty of 1E12 cm3/mole/sec was estimated from these values
-  
 
-[8] Curran, H.J.; Gaffuri, P.; Pit z, W.J.; Westbrook, C.K. *Combust. Flame* 2002, 129, 253-280. http://dx.doi.org/10.1016/S0010-2180(01)00373-X
+ * [8] Curran, H.J.; Gaffuri, P.; Pit z, W.J.; Westbrook, C.K. *Combust. Flame* 2002, 129, 253-280. http://dx.doi.org/10.1016/S0010-2180(01)00373-X
+ * [96] Atkinson,R; Baulch,D. L.; Cox R.A.;Hampson,R.F.,Jr.;Kerr,J.A;Rossi,M.J.;Troe,J. *J Phys. Chem. Ref. Data* 1997,26,521.
+ * [143] Lenhardt,T.M.;McDade,C.E.;Bayes,K.D.; *J. Chem Phys* 1980, 72,304 http://dx.doi.org/10.1063/1.438848
 
-[96] Atkinson,R; Baulch,D. L.; Cox R.A.;Hampson,R.F.,Jr.;Kerr,J.A;Rossi,M.J.;Troe,J. *J Phys. Chem. Ref. Data* 1997,26,521.
+Because radical addition to a double bond is probably barrierless, the temperature range 300-1500K
+has been assigned although the rate was only measured/estimated at 300K. 
 
-[143] Lenhardt,T.M.;McDade,C.E.;Bayes,K.D.; *J. Chem Phys* 1980, 72,304 http://dx.doi.org/10.1063/1.438848
-
-
-rwest@mit.edu
+rwest@mit.edu  7-Sep-2009
 
 ---
 275
@@ -158,12 +160,15 @@ giving  (7.05±1.17)E12 cm3/mole/sec.
     
      * n-butyl (0.75±0.14); (gives (2.26±0.42)E12 cm3/mole/sec when divided by 2 to get rate per site)
      * s-butyl (1.66±0.22); (gives (5.00±0.66)E12 cm3/mole/sec when divided by 2 to get rate per site)
-     * ** t-butyl (2.34±0.39); (gives (7.05±1.17)E12 cm3/mole/sec when divided by 2 to get rate per site) **
+     * **t-butyl (2.34±0.39); (gives (7.05±1.17)E12 cm3/mole/sec when divided by 2 to get rate per site)**
      * 3-hydroxy s-butyl (2.8±1.8). (gives (8.43±5.42)E12 cm3/mole/sec when divided by 2 to get rate per site)
      
     No pressure dependence of the rate constants was observed over the range 1 to 4 Torr. 
 
-rwest@mit.edu
+Because radical addition to a double bond is probably barrierless, the temperature range 300-1500K
+has been assigned although the rate was only measured at 300K. 
+
+rwest@mit.edu  7-Sep-2009
 
 ---
 276
