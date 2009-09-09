@@ -33,7 +33,7 @@ import logging
 
 ################################################################################
 
-cpdef class Element:
+cdef class Element:
 	"""
 	Represent a single chemical element. Each element has an atomic
 	`number`, a `name`, a `symbol`, an atomic `mass`, and a `valence`, a list
@@ -91,7 +91,7 @@ elements = loadElements()
 
 ################################################################################
 
-cpdef class AtomType:
+cdef class AtomType:
 	"""A type of atom such as Cd, a carbon atom with all single bonds.
 	
 	Represent a single atom type by its chemical element and, optionally, some
@@ -210,7 +210,7 @@ atomTypes = loadAtomTypes()
 
 ################################################################################
 
-cpdef class ElectronState:
+cdef class ElectronState:
 	"""
 	Represent a single free electron state (none, radical, etc.) Each state is
 	defined by a unique string `label`; the `order`, or number of
@@ -276,7 +276,7 @@ electronStates = loadElectronStates()
 
 ################################################################################
 
-cpdef class BondType:
+cdef class BondType:
 	"""
 	Represent a type of chemical bond. Each bond type has a unique string
 	`label`; a unique string `name`; a numeric bond `order`; an integral
@@ -345,7 +345,7 @@ bondTypes = loadBondTypes()
 
 ################################################################################
 
-cpdef class Atom:
+cdef class Atom:
 	"""
 	Represent an atom in a chemical species or functional group. The `atomType`
 	and `electronState` attributes contain lists of the allowed atom types and
@@ -578,7 +578,7 @@ cpdef class Atom:
 
 ################################################################################
 
-cpdef class Bond:
+cdef class Bond:
 	"""
 	Represent a bond in a chemical species. Each bond has a list `atoms` of
 	length two containing the two atoms in the bond and a `bondType` object,

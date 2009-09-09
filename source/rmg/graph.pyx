@@ -29,7 +29,7 @@ cdef extern from "dictobject.h":
 	ctypedef class __builtin__.dict [object PyDictObject]:
 		pass
 
-cpdef class Vertex:
+cdef class Vertex:
 
 	def __init__(self):
 		pass
@@ -37,7 +37,7 @@ cpdef class Vertex:
 	cpdef bint equivalent(Vertex self, Vertex other):
 		return True
 
-cpdef class Edge:
+cdef class Edge:
 
 	def __init__(self):
 		pass
@@ -45,7 +45,7 @@ cpdef class Edge:
 	cpdef bint equivalent(Edge self, Edge other):
 		return True
 
-cpdef class Graph(dict):
+cdef class Graph(dict):
 	"""
 	A representation of a graph using a dictionary of dictionaries. The keys
 	of the outer dictionary are the vertices, while edges are accessed via
