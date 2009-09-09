@@ -129,11 +129,13 @@ cdef class AtomType:
 		# True if any atom type in the remaining one is non-hydrogen
 		elif self.label == 'R!H':
 			if other.label != 'H':
+				logging.debug('I think %s == %s'%(self.label, other.label))
 				return True
 			else: 
 				return False
 		elif other.label == 'R!H':
 			if self.label != 'H':
+				logging.debug('I think %s == %s'%(self.label, other.label))
 				return True
 			else: 
 				return False

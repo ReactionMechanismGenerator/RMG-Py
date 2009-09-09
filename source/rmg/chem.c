@@ -11810,5 +11810,3 @@ static INLINE size_t __Pyx_PyInt_AsSize_t(PyObject* x) {
    }
    return (size_t)val;
 }
-
-
