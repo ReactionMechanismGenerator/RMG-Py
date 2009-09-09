@@ -130,9 +130,13 @@ cdef class AtomType:
 		elif self.label == 'R!H':
 			if other.label != 'H':
 				return True
+			else: 
+				return False
 		elif other.label == 'R!H':
 			if self.label != 'H':
 				return True
+			else: 
+				return False
 		# If either represents an element without surrounding bond info,
 		# match remaining to any with the same element
 		elif self.label == self.element.symbol == \

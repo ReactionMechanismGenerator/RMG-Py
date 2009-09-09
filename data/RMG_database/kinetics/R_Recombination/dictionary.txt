@@ -21,7 +21,7 @@ H_rad
 1 * H 1 
 
 Cs_rad
-1 * C 1 
+1 * Cs 1 
 
 C_methyl
 1 * C 1 {2,S}, {3,S}, {4,S}
