@@ -119,7 +119,7 @@ cdef class AtomType:
 	cpdef bint equivalent(AtomType self, AtomType other):
 		"""
 		Returns :data:`True` if two atom types are equivalent or :data:`False`
-		otherwise.
+		otherwise. Respects wildcards, e.g. returns True for {R!H}=={C}
 		"""
 
 		# If either is a generic atom type, then always return True
@@ -129,13 +129,13 @@ cdef class AtomType:
 		# True if any atom type in the remaining one is non-hydrogen
 		elif self.label == 'R!H':
 			if other.label != 'H':
-				logging.debug('I think %s == %s'%(self.label, other.label))
+				#logging.debug('I think %s == %s'%(self.label, other.label))
 				return True
 			else: 
 				return False
 		elif other.label == 'R!H':
 			if self.label != 'H':
-				logging.debug('I think %s == %s'%(self.label, other.label))
+				#logging.debug('I think %s == %s'%(self.label, other.label))
 				return True
 			else: 
 				return False
