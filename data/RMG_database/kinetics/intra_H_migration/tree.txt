@@ -196,8 +196,13 @@ L1: Y_rad_out
 				L5: C_rad_out_OneDe/Cs
 				L5: C_rad_out_OneDe/O
 			L4: C_rad_out_TwoDe  
+	// Cd_rad_out_double and Cd_rad_out_single are not mutually exclusive!
+// 	L2: Cd_rad_out_double
+// 	L2: Cd_rad_out_single
+// 		L3: Cd_rad_out_singleH
+// 		L3: Cd_rad_out_singleNd
+// 		L3: Cd_rad_out_singleDe
 	L2: Cd_rad_out_double
-	L2: Cd_rad_out_single
 		L3: Cd_rad_out_singleH
 		L3: Cd_rad_out_singleNd
 		L3: Cd_rad_out_singleDe
@@ -235,10 +240,15 @@ L1: XH_out
 				L5: Cs_H_out_NDMustO
 			L4: Cs_H_out_OneDe
 			L4: Cs_H_out_TwoDe
-	L2: Cd_H_out_double
-		L3: Cd_H_out_doubleC
-		L3: Cd_H_out_doubleO
-	L2: Cd_H_out_single
+// Cd_H_out_double and Cd_H_out_single are not mutually exclusive!
+// 	L2: Cd_H_out_double
+// 		L3: Cd_H_out_doubleC
+// 		L3: Cd_H_out_doubleO
+// 	L2: Cd_H_out_single
+// 		L3: Cd_H_out_singleH
+// 		L3: Cd_H_out_singleNd
+// 		L3: Cd_H_out_singleDe
+	L2: Cd_H_out_doubleC
 		L3: Cd_H_out_singleH
 		L3: Cd_H_out_singleNd
 		L3: Cd_H_out_singleDe

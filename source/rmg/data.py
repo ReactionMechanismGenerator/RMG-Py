@@ -652,10 +652,24 @@ class Database:
 			for label in centers.keys():
 				if label in centers and label in atoms:
 					center = centers[label]; atom = atoms[label]
+					# Make sure labels actually pointed to atoms
 					if center is None or atom is None:
 						return False
+					# Semantic check #1: atoms with same label are equivalent
 					elif not atom.equivalent(center):
 						return False
+					# Semantic check #2: labeled atoms that share bond in one
+					# also share equivalent bond in the other
+					for atom1, atom2 in map21_0.iteritems():
+						if group.hasBond(center, atom1) and structure.hasBond(atom, atom2):
+							bond1 = group.getBond(center, atom1)
+							bond2 = structure.getBond(atom, atom2)
+							if not bond1.equivalent(bond2):
+								return False
+						elif group.hasBond(center, atom1) or structure.hasBond(atom, atom2):
+							return False
+					# Passed semantic checks, so add to maps of already-matched
+					# atoms
 					map21_0[center] = atom; map12_0[atom] = center
 				else:
 					return False
