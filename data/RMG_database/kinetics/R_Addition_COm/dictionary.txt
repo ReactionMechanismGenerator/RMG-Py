@@ -86,7 +86,7 @@ C_rad/H/NonDeC
 1 *2 C 1 {2,S}, {3,S}, {4,S}
 2 H 0 {1,S}
 3 Cs 0 {1,S}
-4 {Cs,O} 0 {1,S}
+4 Cs 0 {1,S}
 
 C_rad/H/NonDeO
 1 *2 C 1 {2,S}, {3,S}, {4,S}
