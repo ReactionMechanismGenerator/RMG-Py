@@ -9,51 +9,6 @@
 RnH
 Union {R2H, R3H, R4H, R5H, R6H, R7H}
 
-R2H
-1 *1 R!H 1 {2,{S,D,T,B}}
-2 *2 R!H 0 {1,{S,D,T,B}}, {3,S}
-3 *3 H 0 {2,S}
-
-R3H
-1 *1 R!H 1 {2,{S,D,T,B}}
-2 R!H 0 {1,{S,D,T,B}}, {3,{S,D,T,B}}
-3 *2 R!H 0 {2,{S,D,T,B}}, {4,S}
-4 *3 H 0 {3,S}
-
-R4H
-1 *1 R!H 1 {2,{S,D,T,B}}
-2 R!H 0 {1,{S,D,T,B}}, {3,{S,D,T,B}}
-3 R!H 0 {2,{S,D,T,B}}, {4,{S,D,T,B}}
-4 *2 R!H 0 {3,{S,D,T,B}}, {5,S}
-5 *3 H 0 {4,S}
-
-R5H
-1 *1 R!H 1 {2,{S,D,T,B}}
-2 R!H 0 {1,{S,D,T,B}}, {3,{S,D,T,B}}
-3 R!H 0 {2,{S,D,T,B}}, {4,{S,D,T,B}}
-4 R!H 0 {3,{S,D,T,B}}, {5,{S,D,T,B}}
-5 *2 R!H 0 {4,{S,D,T,B}}, {6,S}
-6 *3 H 0 {5,S}
-
-R6H
-1 *1 R!H 1 {2,{S,D,T,B}}
-2 R!H 0 {1,{S,D,T,B}}, {3,{S,D,T,B}}
-3 R!H 0 {2,{S,D,T,B}}, {4,{S,D,T,B}}
-4 R!H 0 {3,{S,D,T,B}}, {5,{S,D,T,B}}
-5 R!H 0 {4,{S,D,T,B}}, {6,{S,D,T,B}}
-6 *2 R!H 0 {5,{S,D,T,B}}, {7,S}
-7 *3 H 0 {6,S}
-
-R7H
-1 *1 R!H 1 {2,{S,D,T,B}}
-2 R!H 0 {1,{S,D,T,B}}, {3,{S,D,T,B}}
-3 R!H 0 {2,{S,D,T,B}}, {4,{S,D,T,B}}
-4 R!H 0 {3,{S,D,T,B}}, {5,{S,D,T,B}}
-5 R!H 0 {4,{S,D,T,B}}, {6,{S,D,T,B}}
-6 R!H 0 {5,{S,D,T,B}}, {7,{S,D,T,B}}
-7 *2 R!H 0 {6,{S,D,T,B}}, {8,S}
-8 *3 H 0 {7,S}
-
 Y_rad_out
 1 *1 {R!H} 1 
 
@@ -62,6 +17,11 @@ XH_out
 2 *3 H 0 {1,S}
 
 // Other nodes
+
+R2H
+1 *1 {R!H} 1 {2,{S,D,B}}
+2 *2 {R!H} 0 {1,{S,D,B}}, {3,S}
+3 *3 H 0 {2,S}
 
 R2H_S
 1 *1 {R!H} 1 {2,S}
@@ -98,6 +58,9 @@ R2H_B
 1 *1 Cb 1 {2,B}
 2 *2 Cb 0 {1,B}, {3,S}
 3 *3 H 0 {2,S}
+
+R3H
+Union {R3H_SR, R3H_MS, R3H_BB}
 
 R3H_SR
 1 *1 {R!H} 1 {2,S}
@@ -233,6 +196,9 @@ R3H_SS_OC
 2 *4 Os 0 {1,S}, {3,S}
 3 *2 Cs 0 {2,S}, {4,S}
 4 *3 H 0 {3,S}
+
+R4H
+Union {R4H_RSR, R4H_SMS, R4H_SBB, R4H_BBS, R4H_BBB} 
 
 R4H_RSR
 1 *1 {R!H} 1 {2,{S,D,T,B}}
@@ -463,6 +429,9 @@ R4H_BBB
 13 {Cb,Cbf} 0 {12,B}, {14,B} 
 14 {Cb,Cbf} 0 {13,B}, {15,B}
 15 {Cb,Cbf} 0 {14,B}, {1,B}
+
+R5H
+Union {R5H_RSSR, R5H_RSMS, R5H_SMSR, R5H_BBSR, R5H_RSBB, R5H_SBBS, R5H_SBBB, R5H_BBBS, R5H_BBBB}
 
 R5H_RSSR
 1 *1 {R!H} 1 {2,{S,D,T,B}}
@@ -903,6 +872,9 @@ R5H_BBBB
 18 {Cb,Cbf} 0 {17,B}, {19,B}
 19 {Cb,Cbf} 0 {18,B}, {1,B}
 
+R6H
+Union {R6H_RSSSR, R6H_RSSMS, R6H_RSMSR, R6H_SMSSR, R6H_SMSMS, R6H_BBSRS, R6H_BBSSM, R6H_BBSBB, R6H_SBBSR, R6H_RSBBS, R6H_BBBSR, R6H_SBBBS, R6H_RSBBB, R6H_SBBBB, R6H_BBBBS, R6H_BBBBB}
+
 R6H_RSSSR
 1 *1 {R!H} 1 {2,{S,D,T,B}}
 2 *4 {R!H} 0 {1,{S,D,T,B}}, {3,S}
@@ -1236,6 +1208,16 @@ R6H_BBBBB
 6 *2 Cb 0 {5,B}, {7,S}
 7 *3 H 0 {6,S}
 
+R7H
+1 *1 {R!H} 1 {2,{S,D,T,B}}
+2 *4 {R!H} 0 {1,{S,D,T,B}}, {3,{S,D,T,B}}
+3 {R!H} 0 {2,{S,D,T,B}}, {4,{S,D,T,B}}
+4 {R!H} 0 {3,{S,D,T,B}}, {5,{S,D,T,B}}
+5 {R!H} 0 {4,{S,D,T,B}}, {6,{S,D,T,B}}
+6 *5 {R!H} 0 {5,{S,D,T,B}}, {7,{S,D,T,B}}
+7 *2 {R!H} 0 {6,{S,D,T,B}}, {8,S}
+8 *3 H 0 {7,S}
+
 R7H_OOCs4
 1 *1 Os 1 {2,S}
 2 *4 Os 0 {1,S}, {3,S}
@@ -1245,6 +1227,9 @@ R7H_OOCs4
 6 *5 {R!H} 0 {5,{S,D,T,B}}, {7,{S,D,T,B}}
 7 *2 {R!H} 0 {6,{S,D,T,B}}, {8,S}
 8 *3 H 0 {7,S}
+
+Y_rad_out
+1 *1 {R!H} 1 
 
 C_rad_out_single
 1 *1 C 1 {2,S}, {3,S} 
@@ -1368,6 +1353,10 @@ Cb_rad_out
 CO_rad_out
 1 *1 C 1 {2,D}
 2 O 0 {1,D}
+
+XH_out
+1 *2 {R!H} 0 {2,S}
+2 *3 H 0 {1,S}
 
 Cs_H_out
 1 *2 Cs 0 {2,S} {3,S} {4,S}
@@ -1581,5 +1570,6 @@ Ct_H_out
 Cb_H_out
 1 *2 Cb 0 {2,S}
 2 *3 H 0 {1,S}
+
 
 
