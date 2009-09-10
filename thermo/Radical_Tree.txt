@@ -195,8 +195,8 @@ L1: RJ2		// biradicals
 		L4: CO	// carbon monoxide
 
    L2: Oa
-	L2: Oa_t
-	L2: Oa_s
+	L3: Oa_t
+	L3: Oa_s
 
    L2: SiJ2
 
