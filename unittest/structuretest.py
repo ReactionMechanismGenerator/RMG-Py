@@ -251,7 +251,7 @@ class StructureCheck(unittest.TestCase):
 		struct.calculateSymmetryNumber()
 		self.assertEqual(struct.symmetryNumber, 18)
 
-
+		
 ################################################################################
 
 if __name__ == '__main__':

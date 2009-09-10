@@ -498,8 +498,7 @@ class ThermoDatabase(data.Database):
 		"""
 
 		node = self.descendTree(structure, atom, None)
-		#print node
-
+		
 		if node not in self.library:
 			# No data present (e.g. bath gas)
 			data = ThermoGAData()
@@ -660,6 +659,12 @@ class ThermoDatabaseSet:
 					if atom not in added:
 						added[atom] = []
 					added[atom].append(bond)
+			# Update the atom types of the saturated structure (not sure why
+			# this is necessary, because saturating with H shouldn't be
+			# changing atom types, but it doesn't hurt anything and is not
+			# very expensive, so will do it anyway)
+			saturatedStruct.simplifyAtomTypes()
+			saturatedStruct.updateAtomTypes()
 			# Get thermo estimate for saturated form of structure
 			thermoData = self.getThermoData(saturatedStruct)
 			# For each radical site, get radical correction

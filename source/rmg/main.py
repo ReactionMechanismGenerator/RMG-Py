@@ -97,6 +97,7 @@ def execute(inputFile, outputDir, scratchDir, libraryDir, verbose):
 	while not done:
 
 		done = True
+		speciesToAdd = []
 		for index, reactionSystem in enumerate(reactionSystems):
 			
 			# Conduct simulation
@@ -105,11 +106,23 @@ def execute(inputFile, outputDir, scratchDir, libraryDir, verbose):
 			# Postprocess results
 			reactionSystem.postprocess(reactionModel, t, y, str(index+1))
 
-			# Enlarge reaction model if simulation is invalid
+			# If simulation is invalid, note which species should be added to
+			# the core
 			if not valid:
-				reactionModel.enlarge(species)
+				speciesToAdd.append(species)
 				done = False
 
+		# Add the notes species to the core
+		speciesToAdd = list(set(speciesToAdd))
+		for species in speciesToAdd:
+			reactionModel.enlarge(species)
+
+		# Save the restart file
+#		import pickle
+#		f = open(outputDir + '/restart.pkl', 'wb')
+#		pickle.dump(reactionModel, f)
+#		pickle.dump(reactionSystems, f)
+#		f.close()
 
 	# Write output file
 	io.writeOutputFile(outputDir + '/output.xml', reactionModel, reactionSystems)

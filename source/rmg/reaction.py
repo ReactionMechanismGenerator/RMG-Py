@@ -1057,7 +1057,7 @@ class ReactionFamily(data.Database):
 
 		productStructure = struct.copy()
 		self.recipe.applyReverse(struct)
-		
+
 		# Restore original atom labels of the reactants if they were changed
 		# before
 		if counter > 0:
@@ -1220,7 +1220,7 @@ class ReactionFamily(data.Database):
 					if not structure.containsLabeledAtom(label):
 						match = False
 				# Match structures
-				atoms = {}
+				atoms = structure.getLabeledAtoms()
 				node = self.descendTree(structure, atoms, forward)
 				if match and node is not None:
 					template.append(node)
@@ -1723,7 +1723,7 @@ def makeNewReaction(reactants, products, reactantStructures, productStructures, 
 	# Dictionaries containing the labeled atoms for the reactants and products
 	forward.atomLabels = reactantLabels
 	reverse.atomLabels = productLabels
-
+	
 	if forward.family is None or reverse.family is None:
 		reactionList.insert(0, forward)
 		return forward, True

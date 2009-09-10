@@ -59,6 +59,12 @@ cdef class Element:
 		self.mass = mass
 		self.valence = valence
 
+	def __reduce__(self):
+		"""
+		Used for pickling.
+		"""
+		return (Element, (0, '', '', 0.0, []))
+
 ################################################################################
 
 def loadElements():
@@ -115,6 +121,12 @@ cdef class AtomType:
 		self.label = label
 		self.element = element
 		self.description = description
+
+	def __reduce__(self):
+		"""
+		Used for pickling.
+		"""
+		return (AtomType, ('', None, ''))
 
 	cpdef bint equivalent(AtomType self, AtomType other):
 		"""
@@ -244,6 +256,12 @@ cdef class ElectronState:
 		self.order = order
 		self.spin = spin
 
+	def __reduce__(self):
+		"""
+		Used for pickling.
+		"""
+		return (ElectronState, ('', 0, []))
+
 	cpdef bint equivalent(ElectronState self, ElectronState other):
 		"""
 		Returns :data:`True` if two electron states are equivalent or
@@ -256,7 +274,7 @@ cdef class ElectronState:
 			return True
 		elif self.label == other.label:
 			return True
-
+		
 		return False
 
 ############################################################################
@@ -314,6 +332,12 @@ cdef class BondType:
 		self.order = order
 		self.piElectrons = piElectrons
 		self.location = location
+
+	def __reduce__(self):
+		"""
+		Used for pickling.
+		"""
+		return (BondType, ('', '', 0.0, 0, ''))
 
 	cpdef bint equivalent(BondType self, BondType other):
 		"""
@@ -373,6 +397,12 @@ cdef class Atom:
 		self.electronState = electronState
 		self.charge = charge
 		self.label = label
+
+	def __reduce__(self):
+		"""
+		Used for pickling.
+		"""
+		return (Atom, ())
 
 	#def __repr__(self):
 	#	"""x.__repr__() <==> repr(x)"""
@@ -602,6 +632,12 @@ cdef class Bond:
 		"""x.__repr__() <==> repr(x)"""
 		#return self.__module__+".Bond(%s,bondType='%s')"%(repr(self.atoms),self.bondType.label)
 		return "Bond(%s,bondType='%s')"%(repr(self.atoms),self.bondType.label)
+
+	def __reduce__(self):
+		"""
+		Used for pickling.
+		"""
+		return (Bond, ([None, None], []))
 
 	def getBondType(self):
 		if len(self._bondType) == 1: return self._bondType[0]

@@ -55,6 +55,9 @@ cdef class Graph(dict):
 	def __init__(self, vertices=None, edges=None):
 		self.clear()
 
+	def __reduce__(self):
+		return (dict, (), None, None, self.iteritems())
+
 	cpdef list vertices(Graph self):
 		"""
 		Return a list of the vertices in the graph.

@@ -628,7 +628,13 @@ class Database:
 	def matchNodeToStructure(self, node, structure, atoms):
 		"""
 		Return :data:`True` if the `structure` centered at `atom` matches the
-		structure at `node` in the dictionary.
+		structure at `node` in the dictionary. The structure at `node` should
+		have atoms with the appropriate labels because they are set on loading
+		and never change. However, the atoms in `structure` may not have the
+		correct labels, hence the `atoms` parameter. The `atoms` parameter may
+		include extra labels, and so we only require that every labeled atom in
+		the functional group represented by `node` has an equivalent labeled
+		atom in `structure`.
 		"""
 		group = self.dictionary[node]
 		if group.__class__ == str or group.__class__ == unicode:
@@ -643,8 +649,7 @@ class Database:
 		else:
 			centers = group.getLabeledAtoms()
 			map12_0 = {}; map21_0 = {}
-			labels = centers.keys(); labels.extend(atoms.keys())
-			for label in labels:
+			for label in centers.keys():
 				if label in centers and label in atoms:
 					center = centers[label]; atom = atoms[label]
 					if center is None or atom is None:
@@ -652,8 +657,8 @@ class Database:
 					elif not atom.equivalent(center):
 						return False
 					map21_0[center] = atom; map12_0[atom] = center
-				#elif label not in centers:
-				#	return False
+				else:
+					return False
 			return structure.isSubgraphIsomorphic(group, map12_0, map21_0)
 
 	def descendTree(self, structure, atoms, root=None):
@@ -661,37 +666,6 @@ class Database:
 		Descend the tree in search of the functional group node that best
 		matches the local structure around `atoms` in `structure`.
 		"""
-
-#		if root is None: root = self.tree.top[0]
-#
-#		# Check that the current node matches the structure (shouldn't be
-#		# necessary if things are working fine)
-#		#if not self.matchNodeToStructure(root, structure, atoms):
-#		#	return None
-#
-#		# Search children for match; descend if found
-#		for child in self.tree.children[root]:
-#			if self.matchNodeToStructure(child, structure, atoms):
-#				# Match found; attempt to descend tree further
-#				return self.descendTree(structure, atoms, child)
-#
-#		# If no match is found, return the current node in the tree
-#		return root
-
-#		if root is None: root = self.tree.top[0]
-#
-#		if not self.matchNodeToStructure(root, structure, atoms):
-#			return None
-#
-#		next = None
-#		for child in self.tree.children[root]:
-#			if self.matchNodeToStructure(child, structure, atoms):
-#				next = child
-#
-#		if next is not None:
-#			return self.descendTree(structure, atoms, next)
-#		else:
-#			return root
 
 		if root is None: root = self.tree.top[0]
 
@@ -708,15 +682,11 @@ class Database:
 		elif len(next) == 0:
 			return root
 		else:
-#			logging.warning('Unable to descend tree further; multiple paths are available. Returning the current node.')
-#			logging.warning('\tThe current structure is %s' % (structure.toSMILES()))
-#			logging.warning('\tI am at node %s with valid options %s' % (root, next))
-#			return root
-			logging.warning('Multiple tree descent paths are valid. Following the first path only.')
-			logging.warning('\tThe current structure is %s' % (structure.toSMILES()))
-			logging.warning('\tI am at node %s with valid options %s' % (root, next))
-			return self.descendTree(structure, atoms, next[0])
-
+			#print structure.toAdjacencyList()
+			#raise InvalidDatabaseException('For structure %s, a node %s with non-mutually-exclusive children %s was encountered in tree with top level nodes %s.' % (structure.getFormula(), root, next, self.tree.top))
+			logging.warning('For structure %s, a node %s with non-mutually-exclusive children %s was encountered in tree with top level nodes %s.' % (structure.getFormula(), root, next, self.tree.top))
+			return root
+		
 ################################################################################
 
 def removeCommentFromLine(line):
