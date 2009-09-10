@@ -56,4 +56,42 @@ Checked by Greg Magoon: this reference doesn't seem to have this reaction, and e
 Absolute value measured directly. Excitation: thermal, analysis: Vis-UV. Pressure0.08-0.11 atm.
 
 ***Should probably be removed, as this does not seem to fit with this reaction family***
-Checked by Greg Magoon: this reference does not seem to consider biradical form; as far as I can tell, they are considering "regular" 1,3,5-hexatriene (not diradical excited state) 
+Checked by Greg Magoon: this reference does not seem to consider biradical form; as far as I can tell, they are considering "regular" 1,3,5-hexatriene (not diradical excited state)
+
+----
+484
+----
+
+[x] Sirjean, B.; Glaude, P. A.; Ruiz-Lopez, M. F.; Fournet, R.; J. Phys. Chem. A. 2006, 110, 12693-12704. 
+http://dx.doi.org/10.1021/jp0651081
+.CH2CH2CH2CH2. -> cyclobutane (k2-1 in Scheme 3/Table 3)
+
+TST calculation
+
+Added by Greg Magoon: Stated pressure is 1 atm, but I believe they are actually calculating the high-pressure limit rate constant
+
+----
+485
+----
+
+[x] Sirjean, B.; Glaude, P. A.; Ruiz-Lopez, M. F.; Fournet, R.; J. Phys. Chem. A. 2006, 110, 12693-12704. 
+http://dx.doi.org/10.1021/jp0651081
+.CH2CH2CH2CH2CH2. -> cyclopentane (k4-1 in Scheme 5/Table 7)
+
+TST calculation
+
+Added by Greg Magoon: Stated pressure is 1 atm, but I believe they are actually calculating the high-pressure limit rate constant
+
+----
+486
+----
+
+[x] Sirjean, B.; Glaude, P. A.; Ruiz-Lopez, M. F.; Fournet, R.; J. Phys. Chem. A. 2006, 110, 12693-12704. 
+http://dx.doi.org/10.1021/jp0651081
+.CH2CH2CH2CH2CH2CH2. -> cyclohexane (k5-1+k5-2 in Scheme 7/Table 10) (includes formation of both boat and chair conformations)
+
+TST calculation
+
+Added by Greg Magoon: Stated pressure is 1 atm, but I believe they are actually calculating the high-pressure limit rate constant; the rate constant added here was found my performing least squares fit for log(ktot) from 600-2000 K (where ktot is the sum of k5-1 and k5-2)
+
+Note: Recent experimental/RRKM study by Kiefer, Gupte, Harding, and Klippenstein (http://www.combustion.org.uk/ECM_2009/P810069.pdf) (stated uncertainty is +/- 30%) appears to agree with Sirjean et al. results, but they only report forward rate constant
