@@ -389,7 +389,7 @@ cdef class Atom:
 	cdef public int charge
 	cdef public str label
 
-	def __init__(self, atomType=None, electronState=None, charge=0, label=''):
+	def __init__(self, atomType='R', electronState='0', charge=0, label=''):
 		"""
 		Initialize an atom object.
 		"""
@@ -624,7 +624,7 @@ cdef class Bond:
 	cdef public list atoms
 	cdef public list _bondType
 
-	def __init__(self, atoms, bondType=''):
+	def __init__(self, atoms, bondType='S'):
 		self.bondType = bondType
 		self.atoms = atoms
 
@@ -637,7 +637,7 @@ cdef class Bond:
 		"""
 		Used for pickling.
 		"""
-		return (Bond, ([None, None], []))
+		return (Bond, ([None, None], 'S'))
 
 	def getBondType(self):
 		if len(self._bondType) == 1: return self._bondType[0]

@@ -118,11 +118,11 @@ def execute(inputFile, outputDir, scratchDir, libraryDir, verbose):
 			reactionModel.enlarge(species)
 
 		# Save the restart file
-#		import pickle
-#		f = open(outputDir + '/restart.pkl', 'wb')
-#		pickle.dump(reactionModel, f)
-#		pickle.dump(reactionSystems, f)
-#		f.close()
+		import pickle
+		f = open(outputDir + '/restart.pkl', 'wb')
+		pickle.dump(reactionModel, f)
+		pickle.dump(reactionSystems, f)
+		f.close()
 
 	# Write output file
 	io.writeOutputFile(outputDir + '/output.xml', reactionModel, reactionSystems)

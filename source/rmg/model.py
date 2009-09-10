@@ -537,28 +537,29 @@ class BatchReactor(ReactionSystem):
 
 		return model.getReactionRates(T, P, Ci)
 
-	def isModelValid(self, model, P, V, T, Ni, stoichiometry, t):
+	def getSpeciesFluxes(self, model, P, V, T, Ni, stoichiometry):
 		"""
-		Returns :data:`True` if `model` is valid at the specified pressure
-		`P`, volume `V`, temperature `T`, and numbers of moles `Ni`. The final
-		parameter `t` is the current simulation time.
+		Determine the species fluxes of all species in the model core and edge
+		at the specified pressure `P`, volume `V`, temperature `T`, and numbers 
+		of moles `Ni`. The `stoichiometry` parameter is the stoichiometry
+		matrix for the model.
+		"""
+		rxnRates = self.getReactionRates(P, V, T, Ni, model)
+		return numpy.dot(stoichiometry, rxnRates)
+
+	def isModelValid(self, model, dNidt, charFlux):
+		"""
+		Returns :data:`True` if `model` is valid given the set of species fluxes
+		`dNidt` and the characteristic flux `charFlux`.
 		"""
 
 		speciesList, reactionList = model.getLists()
 
-		rxnRates = self.getReactionRates(P, V, T, Ni, model)
-		dNidt = numpy.dot(stoichiometry, rxnRates)
-
-		charFlux = model.fluxTolerance * math.sqrt(sum([x**2 for x in dNidt[0:len(model.core.species)]]))
-		#charFlux = model.fluxTolerance * math.sqrt(sum([x**2 for x in rxnRates[0:len(model.core.reactions)]]))
-
 		if len(model.edge.species) > 0:
 			maxSpeciesFlux, maxSpecies = max([ (value, i+len(model.core.species)) for i, value in enumerate(dNidt[len(model.core.species):]) ])
-			return (maxSpeciesFlux < charFlux), speciesList[maxSpecies], maxSpeciesFlux, charFlux
+			return (maxSpeciesFlux < charFlux), speciesList[maxSpecies], maxSpeciesFlux
 		else:
-			return True, None, 0.0, charFlux
-
-		return (maxSpeciesFlux < charFlux), speciesList[maxSpecies], maxSpeciesFlux, charFlux
+			return True, None, 0.0
 
 	def simulate(self, model):
 		"""
@@ -584,9 +585,16 @@ class BatchReactor(ReactionSystem):
 		y = [P, V, T]; y.extend(Ni)
 		y0 = y
 
-		# Test for model validity
-		valid, maxSpecies, maxSpeciesFlux, charFlux = self.isModelValid(model, P, V, T, Ni, stoichiometry, 0.0)
+		# Calculate species fluxes of all core and edge species at the
+		# current time
+		dNidt = self.getSpeciesFluxes(model, P, V, T, Ni, stoichiometry)
 
+		# Determine characteristic species flux
+		charFlux = model.fluxTolerance * math.sqrt(sum([x**2 for x in dNidt[0:len(model.core.species)]]))
+
+		# Test for model validity
+		valid, maxSpecies, maxSpeciesFlux = self.isModelValid(model, dNidt, charFlux)
+		
 		# Output information about simulation at current time
 		header = 'Time          '
 		for target in model.termination:
@@ -619,8 +627,15 @@ class BatchReactor(ReactionSystem):
 			else:					solver.integrate(solver.t * 10**0.1)
 			P, V, T = solver.y[0:3]; Ni = solver.y[3:]
 			
+			# Calculate species fluxes of all core and edge species at the
+			# current time
+			dNidt = self.getSpeciesFluxes(model, P, V, T, Ni, stoichiometry)
+
+			# Determine characteristic species flux
+			charFlux = model.fluxTolerance * math.sqrt(sum([x**2 for x in dNidt[0:len(model.core.species)]]))
+
 			# Test for model validity
-			valid, maxSpecies, maxSpeciesFlux, charFlux = self.isModelValid(model, P, V, T, Ni, stoichiometry, solver.t)
+			valid, maxSpecies, maxSpeciesFlux = self.isModelValid(model, dNidt, charFlux)
 
 			# Output information about simulation at current time
 			self.printSimulationStatus(model, solver.t, solver.y, y0, charFlux, maxSpeciesFlux, maxSpecies)
