@@ -571,7 +571,7 @@ class BatchReactor(ReactionSystem):
 		# Rows are species (core, then edge); columns are reactions (core, then edge)
 		stoichiometry = model.getStoichiometryMatrix()
 		
-		tlist = []; ylist = []
+		tlist = []; ylist = []; dydtlist = []
 
 		# Set up initial conditions
 		P = float(self.pressureModel.getPressure(0))
@@ -603,6 +603,7 @@ class BatchReactor(ReactionSystem):
 		logging.debug(header)
 		self.printSimulationStatus(model, 0, y, y0, charFlux, maxSpeciesFlux, maxSpecies)
 		tlist.append(0.0); ylist.append(y0)
+		dydtlist.append(self.getResidual(0.0, y0, model, stoichiometry))
 
 		# Exit simulation if model is not valid
 		if not valid:
@@ -610,7 +611,7 @@ class BatchReactor(ReactionSystem):
 			logging.info('\tCharacteristic flux: %s' % (charFlux))
 			logging.info('\tSpecies flux for %s: %s ' % (maxSpecies, maxSpeciesFlux))
 			logging.info('')
-			return tlist, ylist, False, maxSpecies
+			return tlist, ylist, dydtlist, False, maxSpecies
 
 		# Set up solver
 		solver = scipy.integrate.ode(self.getResidual,None)
@@ -640,6 +641,7 @@ class BatchReactor(ReactionSystem):
 			# Output information about simulation at current time
 			self.printSimulationStatus(model, solver.t, solver.y, y0, charFlux, maxSpeciesFlux, maxSpecies)
 			tlist.append(solver.t); ylist.append(solver.y)
+			dydtlist.append(self.getResidual(solver.t, solver.y, model, stoichiometry))
 
 			# Exit simulation if model is not valid
 			if not valid:
@@ -647,7 +649,7 @@ class BatchReactor(ReactionSystem):
 				logging.info('\tCharacteristic flux: %s' % (charFlux))
 				logging.info('\tSpecies flux for %s: %s ' % (maxSpecies, maxSpeciesFlux))
 				logging.info('')
-				return tlist, ylist, False, maxSpecies
+				return tlist, ylist, dydtlist, False, maxSpecies
 
 			# Test for simulation completion
 			for target in model.termination:
@@ -658,7 +660,7 @@ class BatchReactor(ReactionSystem):
 				elif target.__class__ == TerminationTime:
 					if solver.t > target.time: done = True
 
-		return tlist, ylist, True, None
+		return tlist, ylist, dydtlist, True, None
 
 	def printSimulationStatus(self, model, t, y, y0, charFlux, maxSpeciesFlux, maxSpecies):
 		"""
@@ -681,7 +683,7 @@ class BatchReactor(ReactionSystem):
 		
 		#print t, P, V, T, Ni
 
-	def postprocess(self, model, t, y, label=''):
+	def postprocess(self, model, t, y, dydt, label=''):
 		"""
 		Postprocess the results of a simulation. This function generates a
 		number of plots: temperature, pressure, volume, and concentration
@@ -698,6 +700,11 @@ class BatchReactor(ReactionSystem):
 		for i, u in enumerate(y):
 			for j, v in enumerate(u):
 				y0[i,j] = v
+		# Reshape dydt into a matrix rather than a list of lists
+		dydt0 = numpy.zeros((len(t), len(dydt[0])), float)
+		for i, u in enumerate(dydt):
+			for j, v in enumerate(u):
+				dydt0[i,j] = v
 
 		# Create the legend for the concentration profile
 		legend = []
@@ -735,6 +742,15 @@ class BatchReactor(ReactionSystem):
 		pylab.title('Concentration profiles for reaction system ' + label)
 		pylab.legend(legend)
 		pylab.savefig(constants.outputDir + '/plot/concentrationProfile' + label + '.svg')
+		pylab.clf()
+
+		# Make species flux plot and save to file
+		pylab.loglog(t[1:], abs(dydt0[1:,3:len(model.core.species)+3]))
+		pylab.xlabel('Time (s)')
+		pylab.ylabel('Species flux (mol/m^3*s)')
+		pylab.title('Species flux profiles for reaction system ' + label)
+		pylab.legend(legend)
+		pylab.savefig(constants.outputDir + '/plot/fluxProfile' + label + '.svg')
 		pylab.clf()
 	
 ################################################################################

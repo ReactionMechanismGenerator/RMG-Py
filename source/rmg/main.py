@@ -35,13 +35,13 @@ support it.
 """
 
 import os
+import os.path
 import time
 import logging
 import io
 import sys
 
 import constants
-import model
 
 ################################################################################
 
@@ -92,6 +92,14 @@ def execute(inputFile, outputDir, scratchDir, libraryDir, verbose):
 	# Initialize reaction model
 	reactionModel.initialize(coreSpecies)
 
+	# RMG execution statistics
+	coreSpeciesCount = []
+	coreReactionCount = []
+	edgeSpeciesCount = []
+	edgeReactionCount = []
+	execTime = []
+	restartSize = []
+
 	# Main RMG loop
 	done = False
 	while not done:
@@ -101,10 +109,12 @@ def execute(inputFile, outputDir, scratchDir, libraryDir, verbose):
 		for index, reactionSystem in enumerate(reactionSystems):
 			
 			# Conduct simulation
-			t, y, valid, species = reactionSystem.simulate(reactionModel)
+			logging.info('Conducting simulation of reaction system %s...' % (index+1))
+			t, y, dydt, valid, species = reactionSystem.simulate(reactionModel)
 
 			# Postprocess results
-			reactionSystem.postprocess(reactionModel, t, y, str(index+1))
+			logging.info('Saving simulation results for reaction system %s...' % (index+1))
+			reactionSystem.postprocess(reactionModel, t, y, dydt, str(index+1))
 
 			# If simulation is invalid, note which species should be added to
 			# the core
@@ -118,17 +128,36 @@ def execute(inputFile, outputDir, scratchDir, libraryDir, verbose):
 			reactionModel.enlarge(species)
 
 		# Save the restart file
+		logging.info('Saving restart file...')
 		import pickle
 		f = open(outputDir + '/restart.pkl', 'wb')
 		pickle.dump(reactionModel, f)
 		pickle.dump(reactionSystems, f)
 		f.close()
 
+		if not done:
+			logging.info('Updating RMG execution statistics...')
+			# Update RMG execution statistics
+			coreSpeciesCount.append(len(reactionModel.core.species))
+			coreReactionCount.append(len(reactionModel.core.reactions))
+			edgeSpeciesCount.append(len(reactionModel.edge.species))
+			edgeReactionCount.append(len(reactionModel.edge.reactions))
+			execTime.append(time.clock())
+			restartSize.append(os.path.getsize(outputDir + '/restart.pkl') / 1.0e6)
+			generateExecutionPlots(execTime, coreSpeciesCount, coreReactionCount, edgeSpeciesCount, edgeReactionCount, restartSize)
+
+		logging.info('')
+
+
 	# Write output file
+	logging.info('MODEL GENERATION COMPLETED')
+	logging.info('')
+	logging.info('The final model core has %s species and %s reactions' % (len(reactionModel.core.species), len(reactionModel.core.reactions)))
+	logging.info('The final model edge has %s species and %s reactions' % (len(reactionModel.edge.species), len(reactionModel.edge.reactions)))
 	io.writeOutputFile(outputDir + '/output.xml', reactionModel, reactionSystems)
 
 	# Log end timestamp
-	logging.info('\nRMG execution terminated at ' + time.asctime())
+	logging.info('RMG execution terminated at ' + time.asctime())
 	
 ################################################################################
 
@@ -159,6 +188,41 @@ def initializeLog(verbose):
 	# Add ch to logger
 	logger.addHandler(ch)
 	
+################################################################################
+
+def generateExecutionPlots(execTime, coreSpeciesCount, coreReactionCount, edgeSpeciesCount, edgeReactionCount, restartSize):
+
+	import matplotlib.pyplot as plt
+	fig = plt.figure()
+	ax1 = fig.add_subplot(111)
+	ax1.semilogx(execTime, coreSpeciesCount, 'o-b')
+	ax1.set_xlabel('Execution time (s)')
+	ax1.set_ylabel('Number of core species')
+	ax2 = ax1.twinx()
+	ax2.semilogx(execTime, coreReactionCount, 'o-r')
+	ax2.set_ylabel('Number of core reactions')
+	plt.savefig(constants.outputDir + '/plot/coreSize.svg')
+	plt.clf()
+
+	fig = plt.figure()
+	ax1 = fig.add_subplot(111)
+	ax1.loglog(execTime, edgeSpeciesCount, 'o-b')
+	ax1.set_xlabel('Execution time (s)')
+	ax1.set_ylabel('Number of edge species')
+	ax2 = ax1.twinx()
+	ax2.loglog(execTime, edgeReactionCount, 'o-r')
+	ax2.set_ylabel('Number of edge reactions')
+	plt.savefig(constants.outputDir + '/plot/edgeSize.svg')
+	plt.clf()
+
+	fig = plt.figure()
+	ax1 = fig.add_subplot(111)
+	ax1.loglog(execTime, restartSize, 'o-g')
+	ax1.set_xlabel('Execution time (s)')
+	ax1.set_ylabel('Size of restart file (MB)')
+	plt.savefig(constants.outputDir + '/plot/memoryUse.svg')
+	plt.clf()
+
 ################################################################################
 
 def printRMGHeader():
