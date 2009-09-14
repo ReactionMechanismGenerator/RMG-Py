@@ -868,7 +868,7 @@ class ReactionFamily(data.Database):
 			elif data.__class__ == str or data.__class__ == unicode:
 				items = data.split()
 				try:
-					kineticData = []; comment = ''
+					kineticData = [];
 					# First item is temperature range
 					kineticData.extend(items[0].split('-'))
 					if len(kineticData) == 2:
@@ -889,8 +889,7 @@ class ReactionFamily(data.Database):
 					# Final item before comment is quality
 					kineticData.append(int(items[9]))
 					# Everything else is a comment
-					for i in range(10, len(items)):
-						comment += items[i] + ' '
+					comment = ' '.join(items[10:])
 					
 					kinetics = ArrheniusEPKinetics()
 					kinetics.fromDatabase(kineticData, comment, len(self.template.reactants))
@@ -903,7 +902,6 @@ class ReactionFamily(data.Database):
 					link = items[0]
 					comment = data[len(link)+1:].strip()
 					self.library[label] = [link, comment]
-
 			else:
 				raise data.InvalidDatabaseException('Kinetics library data format is unrecognized.')
 
@@ -912,7 +910,7 @@ class ReactionFamily(data.Database):
 		Load and process a reaction template file located at `path`. This file
 		is part of every reaction family.
 		"""
-
+		
 		# Process the template file, removing comments and empty lines
 		info = ''
 		try:
@@ -929,9 +927,9 @@ class ReactionFamily(data.Database):
 			return
 		finally:
 			frec.close()
-
+			
 		lines = info.splitlines()
-
+		
 		# First line is 'Forward: <name of forward reaction>
 		# Second line is 'Reverse: <name of reverse reaction>
 		forward = ''; reverse = ''
@@ -939,7 +937,7 @@ class ReactionFamily(data.Database):
 			self.label = lines[0][9:].strip()
 		if lines[1].find('Reverse:') > -1:
 			reverse = lines[1][9:].strip()
-
+		
 		# Third line is reaction template, of the form
 		# A1 A2 ... + B1 B2 ... + ... <---> C1 C2 ... + D1 D2 ... + ...
 		# A, B, ... are reactants; C, D, ... are products
@@ -970,7 +968,7 @@ class ReactionFamily(data.Database):
 		self.recipe = ReactionRecipe()
 		for line in lines[3:]:
 			line = line.strip()
-
+			
 			# First item is the name of the action
 			items = line.split()
 			action = [ items[0].upper() ]
@@ -1325,20 +1323,19 @@ class ReactionFamilySet:
 		as a reactant or product.
 		"""
 
-		log = str(species[0])
-		for spec in species[1:]: log += ' + ' + str(spec)
+		log_text = ' + '.join([str(spec) for spec in species])
 
 		rxnList = []
 		for key, family in self.families.iteritems():
 			rxnList.extend(family.getReactionList(species))
 
 		if len(rxnList) == 1:
-			logging.info('Found %s reaction for %s' % (len(rxnList), log))
+			logging.info('Found %s reaction for %s'%(len(rxnList), log_text))
 		else:
-			logging.info('Found %s reactions for %s' % (len(rxnList), log))
-
-
+			logging.info('Found %s reactions for %s'%(len(rxnList), log_text))
+		
 		return rxnList
+
 
 kineticsDatabase = None
 
@@ -1692,19 +1689,33 @@ def makeNewReaction(reactants, products, reactantStructures, productStructures, 
 			if len(rxn.reactants) == len(reactants) and len(rxn.products) == len(products):
 				match = True
 				for i in range(len(reactants)):
-					if rxn.reactants[i] != reactants[i]: match = False
-				for i in range(len(products)):
-					if rxn.products[i] != products[i]: match = False
-				if match: matchReaction = rxn
+					if rxn.reactants[i] != reactants[i]: 
+						match = False
+						break # already different; stop checking reactants
+				else: # 'for' loop completed without breaking; they could still be the same
+					for i in range(len(products)):
+						if rxn.products[i] != products[i]: 
+							match = False
+							break # already different; stop checking products
+				if match: 
+					matchReaction = rxn
+					break # already found a matching reaction; stop checking reactionList
 		# Check reverse reaction for match
 		if rxn.reverse.family is family or rxn.reverse.family is None or family is None:
 			if len(rxn.reactants) == len(products) and len(rxn.products) == len(reactants):
 				match = True
 				for i in range(len(reactants)):
-					if rxn.products[i] != reactants[i]: match = False
-				for i in range(len(products)):
-					if rxn.reactants[i] != products[i]: match = False
-				if match: matchReaction = rxn
+					if rxn.products[i] != reactants[i]: 
+						match = False
+						break # already different; stop checking reactants
+				else: # 'for' loop completed without breaking; they could still be the same
+					for i in range(len(products)):
+						if rxn.reactants[i] != products[i]: 
+							match = False
+							break # already different; stop checking products
+				if match: 
+					matchReaction = rxn # << Josh, should this be rxn or rxn.reverse?
+					break # already found a matching reaction; stop checking reactionList
 
 	# If a match was found, take an
 	if matchReaction is not None:
