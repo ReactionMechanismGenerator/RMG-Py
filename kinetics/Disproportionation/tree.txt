@@ -3,12 +3,13 @@
 // JS, remove the O2b node to a new reaction families Disproportionation_O2d, Aug, 05, 2003
 
 L1: Y_rad_birad
-	L2: Y_2centeradjbirad
-		L3: C2b
-      	L2: Y_1centerbirad
-           	L3: O_atom_triplet
-           	L3: CH2_triplet
-       	L2: Y_rad
+	//L2: Y_2centeradjbirad
+		//L3: C2b
+    L2: Y_1centerbirad
+        L3: O_atom_triplet
+        L3: CH2_triplet
+    L2: Y_rad
+        L3: C2b
 	   	L3: H_rad
 	   	L3: Cs_rad
 			L4: C_methyl
