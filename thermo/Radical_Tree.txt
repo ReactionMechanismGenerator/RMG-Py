@@ -30,13 +30,9 @@
 L0: Radical
 
 L1: RJ
-
    L2: CJ			// any carbon radical
-
 	L3: CsJ		// originally sp3 central carbon
-
 		L4: CH3			// methyl readical
-
 		L4: Cs_P		// primary radical
 			L5: CsCsJ
 				L6: CCJ
@@ -51,7 +47,6 @@ L1: RJ
 				L6: C2JC=O
 			L5: Propargyl
 			
-
 		L4: Cs_S		// secondary radical
 			L5: (Cs)2CsJ
 				L6: CCJC
@@ -63,7 +58,6 @@ L1: RJ
 				L6: CCJCHO
 			L5: C=CCJC=C
 			L5: Sec_Propargyl
-
 		L4: Cs_T		// tertiary radical
 			L5: Tertalkyl
 				L6: C2CJCOOH
@@ -71,7 +65,6 @@ L1: RJ
 			L5: Allyl_T
 				L6: C2CJCHO
 			L5: Tert_Propargyl
-
 		L4: CsJO
 			L5: CsJOH
 			L5: CsJOC	
@@ -87,7 +80,6 @@ L1: RJ
 			L5: CsJOO
 				L6: CsJOOH
 				L6: CsJOOC
-
 		L4: CCsJO
 			L5: CCsJOH
 			L5: CCsJOC
@@ -99,7 +91,6 @@ L1: RJ
 			L5: CCsJOO
 				L6: CCsJOOH
 				L6: CCsJOOC
-
 		L4: C2CsJO
 			L5: C2CsJOH
 			L5: C2CsJOC
@@ -111,17 +102,13 @@ L1: RJ
 			L5: C2CsJOO
 				L6: C2CsJOOH
 				L6: C2CsJOOC
-
 	L3: CdsJ	// sp2 central carbon
-
 		L4: Cds_P
 			//L5: Vin
 			L5: C=C=CJ
-
 		L4: Cds_S
 			//L5: Vins
 			L5: C=CJC=C
-
 		L4: CdsJO
 			L5: HCdsJO	
 			L5: CCJ=O
@@ -134,11 +121,8 @@ L1: RJ
 					L7: (O)CJOCC
 					L7: (O)CJOCC2
 					L7: (O)CJOCC3	
-
 	L3: CtJ		// sp central carbon
-		
 		L4: Acetyl
-
 	L3: CbJ
 
    L2: OJ	 	// any oxigen radical
@@ -149,63 +133,46 @@ L1: RJ
 		L4: CdsOJ
 			L5: RC=COJ
 			L5: OJC=O	
-	
 	L3: OOJ		// O-O.
 		L4: ROOJ
 			L5: C3COOJ
 			L5: C(=O)OOJ
 		L4: HOOJ
-
    L2: SiJ
-
    L2: SJ
   
-
 L1: RJ2		// biradicals
-
    L2: CJ2
-
 	L3: CsJ2
-
 		L4: CH2
 			L5: CH2_t	// triplet
 			L5: CH2_s	// singlet
-		
 		L4: CsJ2_P
 			L5: CsCsJ2
 				L6: CCJ2
 					L7: CCJ2_t
-					L7: CCJ2_s
-			
+					L7: CCJ2_s	
 			L5: PhCH
 				L6: PhCH_t
 				L6: PhCH_s
-			
 			L5: AllylJ2
 				L6: AllylJ2_t
 				L6: AllylJ2_s
-
 		L4: CsJ2_S
-			
 	L3: CdJ2	
-
 		L4: CCdJ2
 			L5: CCdJ2_t
 			L5: CCdJ2_s
 		L4: CO	// carbon monoxide
-
    L2: Oa
 	L3: Oa_t
 	L3: Oa_s
 
    L2: SiJ2
-
    L2: Sa
 
 L1: RJ3		// triradicals
-
    L2: CJ3
-
    L2: SiJ3
 
 
