@@ -401,9 +401,10 @@ def makeNewSpecies(structure, label='', reactive=True):
 
 	# Otherwise make a new species
 	if label == '':
-		label = structure.getFormula()
-		for atom in structure.atoms():
-			if atom.hasFreeElectron(): label += 'J'
+#		label = structure.getFormula()
+#		for atom in structure.atoms():
+#			if atom.hasFreeElectron(): label += 'J'
+		label = structure.toSMILES()
 	spec = Species(len(speciesList)+1, label, structure, reactive)
 	speciesList.insert(0, spec)
 	
