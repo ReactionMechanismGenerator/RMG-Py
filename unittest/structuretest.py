@@ -10,7 +10,17 @@ from rmg.structure import *
 
 ################################################################################
 
-class StructureCheck(unittest.TestCase):                          
+class StructureCheck(unittest.TestCase):  
+
+	def testSSSR(self):
+		"""
+		Check the graph's Smallest Set of Smallest Rings function
+		"""
+		structure = Structure()
+		structure.fromSMILES('C(CC1C(C(CCCCCCCC)C1c1ccccc1)c1ccccc1)CCCCCC')
+		#http://cactus.nci.nih.gov/chemical/structure/C(CC1C(C(CCCCCCCC)C1c1ccccc1)c1ccccc1)CCCCCC/image
+		sssr = structure.getSmallestSetOfSmallestRings()
+		self.assertEqual( len(sssr), 3)
 
 	def testIsomorphism(self):
 		"""
@@ -255,4 +265,4 @@ class StructureCheck(unittest.TestCase):
 ################################################################################
 
 if __name__ == '__main__':
-	unittest.main()
+	unittest.main( testRunner = unittest.TextTestRunner(verbosity=2) )

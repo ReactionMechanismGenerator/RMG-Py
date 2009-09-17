@@ -154,6 +154,11 @@ class GraphCheck(unittest.TestCase):
 	def testRingSearch1(self):
 		"""
 		Check the graph cycle identification functions.
+		Tests a square with some substituents.
+		
+		 _|_
+		| |
+		 - --
 		"""
 
 		vertices = [Vertex() for i in range(8)]
@@ -168,7 +173,7 @@ class GraphCheck(unittest.TestCase):
 		graph.addEdge((vertices[3], vertices[4]), edges[4])
 		graph.addEdge((vertices[4], vertices[5]), edges[5])
 		graph.addEdge((vertices[2], vertices[6]), edges[6])
-		graph.addEdge((vertices[2], vertices[6]), edges[7])
+		graph.addEdge((vertices[2], vertices[7]), edges[7])
 
 		rings = graph.getSmallestSetOfSmallestRings()
 
@@ -264,5 +269,5 @@ class GraphCheck(unittest.TestCase):
 ################################################################################
 
 if __name__ == '__main__':
-	unittest.main()
+	unittest.main( testRunner = unittest.TextTestRunner(verbosity=2) )
 

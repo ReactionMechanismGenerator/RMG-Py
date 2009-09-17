@@ -221,4 +221,4 @@ if __name__ == '__main__':
 	thermo.forbiddenStructures.load(databasePath + '/forbiddenStructure.txt')
 	thermo.forbiddenStructures.toStructure()
 
-	unittest.main()
+	unittest.main( testRunner = unittest.TextTestRunner(verbosity=2) )

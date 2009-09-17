@@ -265,8 +265,9 @@ class CanteraLoaderCheck(unittest.TestCase):
 ################################################################################
 
 if __name__ == '__main__':
-	suite = unittest.TestLoader().loadTestsFromTestCase(CanteraLoaderCheck)
-	unittest.TextTestRunner(verbosity=2).run(suite)
+	unittest.main( testRunner = unittest.TextTestRunner(verbosity=2) )
+	##suite = unittest.TestLoader().loadTestsFromTestCase(CanteraLoaderCheck)
+	##unittest.TextTestRunner(verbosity=2).run(suite)
 	# this is handy to manually interrupt a test so you can 
 	# play with the PDB debugger
 	# CanteraLoaderCheck('test4CanteraVsRMGComplex').debug()

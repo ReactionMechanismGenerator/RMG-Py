@@ -284,5 +284,4 @@ class SimulationCheck(unittest.TestCase):
 		self.assertTrue(y[-1,1] > 1.99 * y[0,1] and y[-1,1] < 2.01 * y[0,1])
 
 if __name__ == '__main__':
-	suite = unittest.TestLoader().loadTestsFromTestCase(SimulationCheck)
-	unittest.TextTestRunner(verbosity=2).run(suite)
+	unittest.main( testRunner = unittest.TextTestRunner(verbosity=2) )
