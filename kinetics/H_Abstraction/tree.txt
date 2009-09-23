@@ -67,7 +67,9 @@ L1: Y_rad_birad
            L3: O_atom_triplet
            L3: CH2_triplet
        L2: Y_rad
-         L3: O2b
+         L3: Y_2centeradjbirad
+	      L4: O2b
+	      L4: C2b
 	   L3: H_rad
 	   L3: Cs_rad
 		L4: C_methyl
