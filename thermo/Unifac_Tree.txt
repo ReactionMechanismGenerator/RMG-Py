@@ -5,6 +5,9 @@
 // Only C,H and O groups included
 /////////////////////////////////////////////////////////
 
+// Syntax: Following Sandler, we use AC for Aromatic Carbon, 
+//         rather than Cb as used elsewhere in RMG
+
 L0: R
 
 		L1: C
@@ -47,20 +50,19 @@ L0: R
 								L4: COC
 								L4: CH2C*OO
 					
-			L2: Cbfused3
-			L2: Cbfused2
+	
 			L2: Cb
-				
+					
 					L3: ACH
 					L3: ACCH3
 					L3: ACCH2
 					L3: ACCH
 					L3: ACOH
 				 
+			L2: ACfused // (elsewhere known as Cbf)
+			L2: ACfused2
 			
 			L2: Cds
-			
-
 					L3: CO
 								L4: CH3C*O
 											L5: CH3C*OO
@@ -73,19 +75,27 @@ L0: R
 											L5: O=COC=O
 											L5: HCOO
 											
-					L3: COOH
-								L4: HCOOH
-					
+								L4: COOH
+											L5: HCOOH
+								
+					L3: CH2=CH2
 					L3: CH2=C
 					L3: CH=C
 					L3: C=C
 					L3: CH2=C*H
-					L3: CH=C*H
 					L3: CH2=C*
-					L3: CH=C*
-					L3: C=C*					
+					L3: CH=C*					
 					L3: CH2=CH
 					L3: CH=CH
+					L3: CH2=Cdd
+					L3: CH=Cdd
+					L3: C=Cdd
+					
+			L2: Cdd
+				L3: CH2=Cdd*
+				L3: CH=Cdd*
+				L3: C=Cdd*
+				L3: Cdd=Cdd
 			
 			L2: Ct
 			

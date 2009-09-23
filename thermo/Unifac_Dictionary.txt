@@ -5,6 +5,9 @@
 // Only C,H and O groups included
 /////////////////////////////////////////////////////////
 
+// Syntax: Following Sandler, we use AC for Aromatic Carbon, 
+//         rather than Cb as used elsewhere in RMG
+
 R
 1  * R 0
 
@@ -40,6 +43,9 @@ Ct
 Cds
 1  * {Cd,CO} 0 
 
+Cdd
+1 * Cdd 0
+
 // O=
 Od
 1 * Od 0
@@ -74,8 +80,8 @@ Css-noH
 5   R!H 0 {1,S}
 
 CH2=CH
-1 * C 0 {2,D} {4,S} {5,S}
-2   C 0 {3,S} {1,D} {6,S}
+1 * Cd 0 {2,D} {4,S} {5,S}
+2   Cd 0 {3,S} {1,D} {6,S}
 3   R!H 0 {2,S}
 4   H 0 {1,S}
 5   H 0 {1,S}
@@ -90,20 +96,13 @@ CH2=C*H
 6   H 0 {2,S}
 
 CH=CH
-1 * C 0 {2,D} {4,S} {5,S} 
-2   C 0 {3,S} {1,D} {6,S}
+1 * Cd 0 {2,D} {4,S} {5,S} 
+2   Cd 0 {3,S} {1,D} {6,S}
 3   R!H 0 {2,S}
 4   R!H 0 {1,S}
 5   H 0 {1,S}
 6   H 0 {2,S}
 
-CH=C*H
-1   C 0 {2,D} {4,S} {5,S} 
-2 * C 0 {3,S} {1,D} {6,S}
-3   R!H 0 {2,S}
-4   R!H 0 {1,S}
-5   H 0 {1,S}
-6   H 0 {2,S}
 
 CH2=C
 1 * C 0 {2,D} {5,S} {6,S}
@@ -121,56 +120,109 @@ CH2=C*
 5   H 0 {1,S}
 6   H 0 {1,S}
 
+CH2=Cdd
+1 * C 0 {2,D} {4,S} {5,S}
+2   C 0 {3,D} {1,D}
+3   R!H 0 {2,D}
+4   H 0 {1,S}
+5   H 0 {1,S}
+
+CH2=Cdd*
+1   C 0 {2,D} {4,S} {5,S}
+2 * C 0 {3,D} {1,D}
+3   R!H 0 {2,D}
+4   H 0 {1,S}
+5   H 0 {1,S}
+
+CH2=CH2
+1 * C 0 {2,D} {5,S} {6,S}
+2   C 0 {3,S} {1,D} {4,S}
+3   H 0 {2,S}
+4   H 0 {2,S}
+5   H 0 {1,S}
+6   H 0 {1,S}
+
+CH2=C*H2
+1   C 0 {2,D} {5,S} {6,S}
+2 * C 0 {3,S} {1,D} {4,S}
+3   H 0 {2,S}
+4   H 0 {2,S}
+5   H 0 {1,S}
+6   H 0 {1,S}
+
 CH=C
-1 * C 0 {2,D} {4,S} {6,S} 
-2   C 0 {3,S} {1,D} {5,S}
+1 * Cd 0 {2,D} {4,S} {6,S} 
+2   Cd 0 {3,S} {1,D} {5,S}
 3   R!H 0 {2,S}
 4   R!H 0 {1,S}
 5   R!H 0 {2,S}
 6   H 0 {1,S}
 
 CH=C*
-1   C 0 {2,D} {4,S} {6,S}  
-2 * C 0 {3,S} {1,D} {5,S}
+1   Cd 0 {2,D} {4,S} {6,S}  
+2 * Cd 0 {3,S} {1,D} {5,S}
 3   R!H 0 {2,S}
 4   R!H 0 {1,S}
 5   R!H 0 {2,S}
 6   H 0 {1,S}
 
+CH=Cdd
+1 * Cd 0 {2,D} {4,S} {5,S} 
+2   Cdd 0 {3,D} {1,D}
+3   R!H 0 {2,D}
+4   R!H 0 {1,S}
+5   H 0 {1,S}
+
+CH=Cdd*
+1   Cd 0 {2,D} {4,S} {5,S} 
+2 * Cdd 0 {3,D} {1,D}
+3   R!H 0 {2,D}
+4   R!H 0 {1,S}
+5   H 0 {1,S}
+
 C=C
-1 * C 0 {2,D} {4,S} {6,S} 
-2   C 0 {3,S} {1,D} {5,S}
+1 * Cd 0 {2,D} {4,S} {6,S} 
+2   Cd 0 {3,S} {1,D} {5,S}
 3   R!H 0 {2,S}
 4   R!H 0 {1,S}
 5   R!H 0 {2,S}
 6   R!H 0 {1,S}
 
-C=C*
-1   C 0 {2,D} {4,S} {6,S} 
-2 * C 0 {3,S} {1,D} {5,S}
-3   R!H 0 {2,S}
+
+C=Cdd
+1 * C 0 {2,D} {4,S} {5,S} 
+2   C 0 {3,D} {1,D}
+3   R!H 0 {2,D}
 4   R!H 0 {1,S}
-5   R!H 0 {2,S}
-6   R!H 0 {1,S}
+5   R!H 0 {1,S}
+
+C=Cdd*
+1   C 0 {2,D} {4,S} {5,S} 
+2 * C 0 {3,D} {1,D}
+3   R!H 0 {2,D}
+4   R!H 0 {1,S}
+5   R!H 0 {1,S}
+
+Cdd=Cdd
+1 * C 0 {2,D} {3,D}
+2   C 0 {1,D} {4,D}
+3   R!H 0 {1,D}
+4   R!H 0 {2,D}
 
 ACH
 1 * Cb 0 {2,S}
 2   H 0 {1,S}
 
 
-Cbfused3
-1 * C 0 {2,B} {3,B} {4,B}
-2   C 0 {1,B}
-3   C 0 {1,B}
-4   C 0 {1,B}
+ACfused
+1 * Cbf 0
 
-Cbfused2
-1 * C 0 {2,B} {3,B} {4,S}
-2   C 0 {1,B}
-3   C 0 {1,B}
+ACfused2
+1 * Cb 0 {2,B} {3,B} {4,S}
+2   Cb 0 {1,B}
+3   Cb 0 {1,B}
 4   C 0 {1,S}
 
- 
 ACCH3
 1 * Cb 0 {2,S}
 2   C 0 {1,S} {3,S} {4,S} {5,S}

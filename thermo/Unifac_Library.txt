@@ -5,6 +5,8 @@
 // Only C,H and O groups included
 ////////////////////////////////////////////////////////////////////////////////
 
+// Syntax: Following Sandler, we use AC for Aromatic Carbon, 
+//         rather than Cb as used elsewhere in RMG
 
 //#	Group Ri Qi
 
@@ -13,12 +15,12 @@
 3 CssH .4469 .228
 4 Css-noH .2195 0
 5 CH2=CH 1.3454 1.176
-6 CH=CH 1.1167 .867
+6 CH=CH 0.55835 0.4335  // divided by two because we match both ends
 7 CH2=C 1.1173 .988
 8 CH=C .8886 .676
-9 C=C .6605 .485
+9 C=C .33025 .2425  // divided by two because we match both ends
 10 ACH .5313 .4
-11 Cbfused3 .3652 .12
+11 ACfused .3652 .12  
 12 ACCH3 1.2663 .968
 13 ACCH2 1.0396 .66
 14 ACCH .8121 .348
@@ -38,19 +40,18 @@
 28 COOH 1.3013 1.224
 29 HCOOH 1.52 1.532
 30 CtHCt 1.292 1.088
-31 CtCt 1.0613 .784
-32 CH2OCH2 1.5926 1.320
+31 CtCt 0.53065 0.392   // divided by two because we match both ends
+32 CH2OCH2 0.7963 0.66  // divided by two because we match both carbons
 33 CH2OCH 1.3652 1.008
 34 CH2OC 1.1378 0.780
-35 CHOCH 1.1378 0.696
+35 CHOCH 0.5689 0.348  // divided by two because we match both carbons
 36 CHOC 0.9103 0.468
-37 COC 0.6829 0.240
+37 COC 0.34145 0.120    // divided by two because we match both carbons
 38 O=COC=O 1.7732 1.520
 39 CH2=C*H 0 0
-40 CH=C*H 0 0
+40 ACfused2 .3652 .12 // Set equal to ACfused
 41 CH2=C* 0 0
 42 CH=C* 0 0
-43 C=C* 0 0
 44 ACC*H3 0 0
 45 ACC*H2 0 0
 46 ACC*H 0 0
@@ -94,4 +95,13 @@
 84 O=COC=O* 0 0
 85 Oss 0.41 1000 // Q value arbitrary. Note that RMG is not currently meant to use the Q values in any calculations
 86 Od 0.324 1000 // Q value arbitrary
-87  Cbfused2 .3652 .12    // set equal to Cbfused3
+
+88 CH2=CH2 1.315 1000 // Q value arbitrary
+89 CH2=Cdd 1.1173 .988 // Set equal to CH2=C
+90 CH=Cdd .8886 .676 // Set equal to CH=C
+91 C=Cdd .6605 .485 // Set equal to C=C
+92 CH2=Cdd* 0 0
+93 CH=Cdd* 0 0
+94 C=Cdd* 0 0
+95 Cdd=Cdd .33025 .2425  // Set equal to C=C
+
