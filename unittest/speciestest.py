@@ -20,7 +20,7 @@ class SpeciesCheck(unittest.TestCase):
 		species = Species()
 		species.fromSMILES('C=CC=CC=CC=C[CH]C')
 		species.getResonanceIsomers()
-		self.assertTrue(len(species.structure) == 5)
+		self.assertTrue(len(species.structure) == 5, "Found %d structures, expected 5"%len(species.structure) )
 		for structure in species.structure:
 			self.assertTrue(structure.getFormula() == 'C10H13')
 		

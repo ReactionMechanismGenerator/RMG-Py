@@ -49,7 +49,7 @@ class StructureCheck(unittest.TestCase):
 		self.assertTrue(structure1.isSubgraphIsomorphic(structure2))
 		match, map21, map12 = structure1.findSubgraphIsomorphisms(structure2)
 		self.assertTrue(match)
-		self.assertTrue(len(map21) == len(map12) == 4)
+		self.assertTrue(len(map21) == len(map12) == 4, "len(map21) = %d, len(map12) = %d, should both = 4"%(len(map21),len(map12)))
 		for mapA, mapB in zip(map21, map12):
 			self.assertTrue(len(mapA) == len(mapB) == min(len(structure1.atoms()), len(structure2.atoms())))
 			for key, value in mapA.iteritems():
