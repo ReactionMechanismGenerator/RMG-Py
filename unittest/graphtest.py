@@ -58,8 +58,8 @@ class GraphCheck(unittest.TestCase):
 		self.assertTrue(len(graphs) == 2)
 		self.assertTrue(len(graphs[0]) == 4 or len(graphs[0]) == 2)
 		self.assertTrue(len(graphs[0]) + len(graphs[1]) == len(graph))
-		self.assertTrue(len(graphs[0].edges) == 3 or len(graphs[0].edges) == 1)
-		self.assertTrue(len(graphs[0].edges) + len(graphs[1].edges) == len(graph.edges))
+		self.assertTrue(len(graphs[0].edges()) == 3 or len(graphs[0].edges()) == 1)
+		self.assertTrue(len(graphs[0].edges()) + len(graphs[1].edges()) == len(graph.edges()))
 
 	def testMerge(self):
 		"""
@@ -87,7 +87,7 @@ class GraphCheck(unittest.TestCase):
 		graph = graph1.merge(graph2)
 
 		self.assertTrue(len(graph1) + len(graph2) == len(graph))
-		self.assertTrue(len(graph1.edges) + len(graph2.edges) == len(graph.edges))
+		self.assertTrue(len(graph1.edges()) + len(graph2.edges()) == len(graph.edges()))
 
 	def testIsomorphism(self):
 		"""
@@ -115,10 +115,10 @@ class GraphCheck(unittest.TestCase):
 		graph2[vertices2[4]] = { vertices2[3]: edges2[1], vertices2[5]: edges2[0] }
 		graph2[vertices2[5]] = { vertices2[4]: edges2[0] }
 
-		self.assertTrue(graph1.isIsomorphic(graph2))
-		self.assertTrue(graph1.isSubgraphIsomorphic(graph2))
-		self.assertTrue(graph2.isIsomorphic(graph1))
-		self.assertTrue(graph2.isSubgraphIsomorphic(graph1))
+		self.assertTrue(graph1.isIsomorphic(graph2, {}, {}))
+		self.assertTrue(graph1.isSubgraphIsomorphic(graph2, {}, {}))
+		self.assertTrue(graph2.isIsomorphic(graph1, {}, {}))
+		self.assertTrue(graph2.isSubgraphIsomorphic(graph1, {}, {}))
 
 	def testSubgraphIsomorphism(self):
 		"""
@@ -143,11 +143,11 @@ class GraphCheck(unittest.TestCase):
 		graph2[vertices2[1]] = { vertices2[0]: edges2[0] }
 
 
-		self.assertFalse(graph1.isIsomorphic(graph2))
-		self.assertFalse(graph2.isIsomorphic(graph1))
-		self.assertTrue(graph1.isSubgraphIsomorphic(graph2))
+		self.assertFalse(graph1.isIsomorphic(graph2, {}, {}))
+		self.assertFalse(graph2.isIsomorphic(graph1, {}, {}))
+		self.assertTrue(graph1.isSubgraphIsomorphic(graph2, {}, {}))
 
-		ismatch, map21, map12 = graph1.findSubgraphIsomorphisms(graph2)
+		ismatch, map21, map12 = graph1.findSubgraphIsomorphisms(graph2, {}, {})
 		self.assertTrue(ismatch)
 		self.assertTrue(len(map21) == len(map12) == 10)
 

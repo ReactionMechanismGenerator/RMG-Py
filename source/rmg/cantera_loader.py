@@ -98,7 +98,7 @@ class species(cti.species):
 		id=cti._speciesnames.index(name)
 		self._RmgSpecies = rmg.species.Species(id=id, label=name)
 		# initialise thermo now
-		self._RmgSpecies.thermoData = rmg.species.ThermoNASAData(
+		self._RmgSpecies.thermoData = rmg.thermo.ThermoNASAData(
 			comment="Imported from Cantera file" )
 		for canterapoly in self._thermo:
 			poly = canterapoly.getRmgPolynomial()
@@ -121,7 +121,7 @@ class NASA(cti.NASA):
 		"""Make the RMG ThermoNASAPolynomial associated with this Cantera NASA"""
 		if self._pref > 0.0: raise Exception(
 			"Not sure what to do with customised standard state pressure")
-		poly = rmg.species.ThermoNASAPolynomial( T_range = self._t, 
+		poly = rmg.thermo.ThermoNASAPolynomial( T_range = self._t,
 								  coeffs = self._coeffs,
 								  comment = "Imported from Cantera file")
 		self._RmgThermoNASAPolynomial = poly

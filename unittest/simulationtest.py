@@ -13,6 +13,7 @@ import math
 from rmg.species import *
 from rmg.reaction import *
 from rmg.model import *
+from rmg.thermo import *
 
 ################################################################################
 
@@ -37,8 +38,8 @@ def initializeRMGSimulation(T, P, tf, model, system):
 
 def runRMGSimulation(model, system):
 
-	t, y, valid, species = system.simulate(model)
-
+	t, y, dydt, valid, species = system.simulate(model)
+	
 	# Reshape y into a matrix rather than a list of lists
 	y0 = numpy.zeros((len(t), len(y[0])), float)
 	for i, u in enumerate(y):

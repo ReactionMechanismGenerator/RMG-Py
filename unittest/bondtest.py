@@ -19,14 +19,14 @@ class BondTypeEquivalencyCheck(unittest.TestCase):
 		for key, value in bondTypes.iteritems():
 			self.assertTrue(value.equivalent(value))
 			
-	def testSpecialEquivalence(self):
-		"""
-		Check that certain special cases are equivalent.
-		"""
-		self.assertTrue(bondTypes['D'].equivalent(bondTypes['Dcis']))
-		self.assertTrue(bondTypes['D'].equivalent(bondTypes['Dtrans']))
-		self.assertTrue(bondTypes['Dcis'].equivalent(bondTypes['D']))
-		self.assertTrue(bondTypes['Dtrans'].equivalent(bondTypes['D']))
+#	def testSpecialEquivalence(self):
+#		"""
+#		Check that certain special cases are equivalent.
+#		"""
+#		self.assertTrue(bondTypes['D'].equivalent(bondTypes['Dcis']))
+#		self.assertTrue(bondTypes['D'].equivalent(bondTypes['Dtrans']))
+#		self.assertTrue(bondTypes['Dcis'].equivalent(bondTypes['D']))
+#		self.assertTrue(bondTypes['Dtrans'].equivalent(bondTypes['D']))
 						
 		
 ################################################################################

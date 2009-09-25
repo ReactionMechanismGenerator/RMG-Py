@@ -50,24 +50,6 @@ class AtomTypeEquivalencyCheck(unittest.TestCase):
 					self.assertTrue(atomTypes['R!H'].equivalent(value))
 		self.assertFalse(atomTypes['H'].equivalent(atomTypes['R!H']))
 		self.assertFalse(atomTypes['R!H'].equivalent(atomTypes['H']))
-	
-	def testSpecialEquivalence(self):
-		"""
-		Check that certain special cases are equivalent.
-		"""
-		self.assertTrue(atomTypes['Cd'].equivalent(atomTypes['Cdd']))
-		self.assertTrue(atomTypes['Cd'].equivalent(atomTypes['Cds']))
-		self.assertTrue(atomTypes['Cd'].equivalent(atomTypes['CO']))
-		self.assertTrue(atomTypes['Cdd'].equivalent(atomTypes['Cd']))
-		self.assertTrue(atomTypes['Cds'].equivalent(atomTypes['Cd']))
-		self.assertTrue(atomTypes['CO'].equivalent(atomTypes['Cd']))
-		
-		self.assertTrue(atomTypes['Sid'].equivalent(atomTypes['Sidd']))
-		self.assertTrue(atomTypes['Sid'].equivalent(atomTypes['Sids']))
-		self.assertTrue(atomTypes['Sid'].equivalent(atomTypes['SiO']))
-		self.assertTrue(atomTypes['Sidd'].equivalent(atomTypes['Sid']))
-		self.assertTrue(atomTypes['Sids'].equivalent(atomTypes['Sid']))
-		self.assertTrue(atomTypes['SiO'].equivalent(atomTypes['Sid']))
 
 ################################################################################
 
@@ -99,7 +81,7 @@ class AtomCheck(unittest.TestCase):
 		Checks involving atom equivalency.
 		"""
 		atom1 = Atom(['Cs', 'Cd'], '0', 0, '1*')
-		atom2 = Atom(['Cds'], '0', 0, '2*')
+		atom2 = Atom(['C'], '0', 0, '2*')
 		self.assertTrue(atom1.equivalent(atom2))
 		self.assertTrue(atom2.equivalent(atom1))
 						

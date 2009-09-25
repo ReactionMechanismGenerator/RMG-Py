@@ -171,7 +171,7 @@ class ThermoGAData(ThermoData):
 				if T < Tmax:	S += slope * (T - Tmin) + intercept * math.log(T/Tmin)
 				else:			S += slope * (Tmax - Tmin) + intercept * math.log(Tmax/Tmin)
 		if T > ThermoGAData_CpTlist[-1]:
-			S += self.Cp[-1] * math.log(T / ThermoGAData.Tlist[-1])
+			S += self.Cp[-1] * math.log(T / ThermoGAData_CpTlist[-1])
 		return S
 
 	def getFreeEnergy(self, T):
