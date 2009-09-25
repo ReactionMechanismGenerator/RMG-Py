@@ -35,3 +35,4 @@
 29 OssCds(Od*)Oss 0 0 0 0 0
 31 Cds(Od*)Cds=CdsCds(Od) 0 0 0 0 0
 32 Cb CdsH
+53 Cdd Cds-noH
