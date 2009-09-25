@@ -572,6 +572,7 @@ class BatchReactor(ReactionSystem):
 		stoichiometry = model.getStoichiometryMatrix()
 		
 		tlist = []; ylist = []; dydtlist = []
+		maxSpeciesFluxes = numpy.zeros(len(model.core.species) + len(model.edge.species), float)
 
 		# Set up initial conditions
 		P = float(self.pressureModel.getPressure(0))
@@ -588,12 +589,15 @@ class BatchReactor(ReactionSystem):
 		# Calculate species fluxes of all core and edge species at the
 		# current time
 		dNidt = self.getSpeciesFluxes(model, P, V, T, Ni, stoichiometry)
+		for i in range(len(dNidt)):
+			if maxSpeciesFluxes[i] < abs(dNidt[i]): maxSpeciesFluxes[i] = abs(dNidt[i])
 
 		# Determine characteristic species flux
 		charFlux = model.fluxTolerance * math.sqrt(sum([x**2 for x in dNidt[0:len(model.core.species)]]))
 
 		# Test for model validity
 		valid, maxSpecies, maxSpeciesFlux = self.isModelValid(model, dNidt, charFlux)
+		valid = True
 		
 		# Output information about simulation at current time
 		header = 'Time          '
@@ -606,12 +610,12 @@ class BatchReactor(ReactionSystem):
 		dydtlist.append(self.getResidual(0.0, y0, model, stoichiometry))
 
 		# Exit simulation if model is not valid
-		if not valid:
-			logging.info('At t = %s, the species flux for %s exceeds the characteristic flux' % (0.0, maxSpecies))
-			logging.info('\tCharacteristic flux: %s' % (charFlux))
-			logging.info('\tSpecies flux for %s: %s ' % (maxSpecies, maxSpeciesFlux))
-			logging.info('')
-			return tlist, ylist, dydtlist, False, maxSpecies
+		#if not valid:
+		#	logging.info('At t = %s, the species flux for %s exceeds the characteristic flux' % (0.0, maxSpecies))
+		#	logging.info('\tCharacteristic flux: %s' % (charFlux))
+		#	logging.info('\tSpecies flux for %s: %s ' % (maxSpecies, maxSpeciesFlux))
+		#	logging.info('')
+		#	return tlist, ylist, dydtlist, False, maxSpecies
 
 		# Set up solver
 		solver = scipy.integrate.ode(self.getResidual,None)
@@ -631,25 +635,33 @@ class BatchReactor(ReactionSystem):
 			# Calculate species fluxes of all core and edge species at the
 			# current time
 			dNidt = self.getSpeciesFluxes(model, P, V, T, Ni, stoichiometry)
+			for i in range(len(dNidt)):
+				if maxSpeciesFluxes[i] < abs(dNidt[i]): maxSpeciesFluxes[i] = abs(dNidt[i])
 
 			# Determine characteristic species flux
 			charFlux = model.fluxTolerance * math.sqrt(sum([x**2 for x in dNidt[0:len(model.core.species)]]))
 
 			# Test for model validity
 			valid, maxSpecies, maxSpeciesFlux = self.isModelValid(model, dNidt, charFlux)
-
+			valid = True
+		
 			# Output information about simulation at current time
 			self.printSimulationStatus(model, solver.t, solver.y, y0, charFlux, maxSpeciesFlux, maxSpecies)
 			tlist.append(solver.t); ylist.append(solver.y)
 			dydtlist.append(self.getResidual(solver.t, solver.y, model, stoichiometry))
 
 			# Exit simulation if model is not valid
-			if not valid:
-				logging.info('At t = %s, the species flux for %s exceeds the characteristic flux' % (solver.t, maxSpecies))
-				logging.info('\tCharacteristic flux: %s' % (charFlux))
-				logging.info('\tSpecies flux for %s: %s ' % (maxSpecies, maxSpeciesFlux))
-				logging.info('')
-				return tlist, ylist, dydtlist, False, maxSpecies
+			#if not valid:
+			#	logging.info('At t = %s, the species flux for %s exceeds the characteristic flux' % (solver.t, maxSpecies))
+			#	logging.info('\tCharacteristic flux: %s' % (charFlux))
+			#	logging.info('\tSpecies flux for %s: %s ' % (maxSpecies, maxSpeciesFlux))
+			#	logging.info('')
+			#	for i in range(len(dNidt)):
+			#		if i < len(model.core.species):
+			#			print model.core.species[i], maxSpeciesFluxes[i]
+			#		else:
+			#			print model.edge.species[i-len(model.core.species)], maxSpeciesFluxes[i]
+			#	return tlist, ylist, dydtlist, False, maxSpecies
 
 			# Test for simulation completion
 			for target in model.termination:
@@ -659,6 +671,32 @@ class BatchReactor(ReactionSystem):
 					if conversion > target.conversion: done = True
 				elif target.__class__ == TerminationTime:
 					if solver.t > target.time: done = True
+
+		# Test for model validity
+		charFlux = model.fluxTolerance * math.sqrt(sum([flux*flux for flux in maxSpeciesFluxes[0:len(model.core.species)]]))
+		maxSpecies = None
+		maxSpeciesFlux = 0.0
+		for i in range(len(model.core.species), len(maxSpeciesFluxes)):
+			if maxSpeciesFluxes[i] > maxSpeciesFlux:
+				maxSpeciesFlux = maxSpeciesFluxes[i]
+				maxSpecies = model.edge.species[i - len(model.core.species)]
+		if maxSpeciesFlux > charFlux:
+			logging.info('The species flux for %s exceeds the characteristic flux' % (maxSpecies))
+			logging.info('\tCharacteristic flux: %s' % (charFlux))
+			logging.info('\tSpecies flux for %s: %s ' % (maxSpecies, maxSpeciesFlux))
+			logging.info('')
+			for i in range(len(dNidt)):
+				if i < len(model.core.species):
+					print model.core.species[i], maxSpeciesFluxes[i]
+				else:
+					print model.edge.species[i-len(model.core.species)], maxSpeciesFluxes[i]
+			return tlist, ylist, dydtlist, False, maxSpecies
+
+		#for i in range(len(model.core.species), len(dNidt)):
+			#		if i < len(model.core.species):
+			#			print model.core.species[i], maxSpeciesFluxes[i]
+			#		else:
+			#			print model.edge.species[i-len(model.core.species)], maxSpeciesFluxes[i]
 
 		return tlist, ylist, dydtlist, True, None
 
@@ -745,12 +783,16 @@ class BatchReactor(ReactionSystem):
 		pylab.clf()
 
 		# Make species flux plot and save to file
-		pylab.loglog(t[1:], abs(dydt0[1:,3:len(model.core.species)+3]))
-		pylab.xlabel('Time (s)')
-		pylab.ylabel('Species flux (mol/m^3*s)')
-		pylab.title('Species flux profiles for reaction system ' + label)
-		pylab.legend(legend)
-		pylab.savefig(constants.outputDir + '/plot/fluxProfile' + label + '.svg')
+		try:
+			pylab.loglog(t[1:], abs(dydt0[1:,3:len(model.core.species)+3]))
+			pylab.xlabel('Time (s)')
+			pylab.ylabel('Species flux (mol/m^3*s)')
+			pylab.title('Species flux profiles for reaction system ' + label)
+			pylab.legend(legend)
+			pylab.savefig(constants.outputDir + '/plot/fluxProfile' + label + '.svg')
+		except OverflowError:
+			pass
+		
 		pylab.clf()
 	
 ################################################################################

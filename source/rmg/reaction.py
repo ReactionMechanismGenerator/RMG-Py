@@ -32,7 +32,6 @@
 Contains classes describing chemical reactions.
 """
 
-import quantities as pq
 import math
 import logging
 import os
@@ -43,247 +42,282 @@ import chem
 import data
 import structure
 import species
+from kinetics import *
 
 ################################################################################
 
-class Kinetics:
+class Reaction:
 	"""
-	Represent a set of kinetic data. No matter how the kinetic data is modeled,
-	it should be accompanied by a temperature range over which it is valid,
-	an integer rank denoting the degree of confidence in the data (1 = high,
-	5 = low, 0 = none), and a comment describing the source of the data.
+	Represent a generic chemical reaction. A reaction is defined by the set of
+	reactants, set of products, and the transition state; thus both the forward
+	and reverse reaction are represented by a single object since they share 
+	the same transition state. By convention, the forward reaction is taken to
+	be that for which the provided kinetics apply; the reverse kinetics are 
+	taken from thermodynamic reversibility. A multiplier attribute is used when
+	reactions involving equivalent reactive sites are used.
 	"""
+	
+	def __init__(self, reactants=None, products=None, family=None, kinetics=None):
+		"""Initialize a reaction object."""
+		self.reactants = reactants or []
+		self.products = products or []
+		self.family = family
+		self.reverse = None
+		self.kinetics = kinetics or []
+		self.multiplier = 1.0
 
-	def __init__(self, Trange=None, rank=0, comment=''):
-		self.Trange = Trange
-		self.rank = 0
-		self.comment = ''
-		self.numReactants = None
-		
-	def isTemperatureInRange(self, T):
-		"""
-		Return :data:`True` if temperature `T` is within the valid temperature
-		range specified by self.Trange and :data:`False` if not. If no
-		temperature range is specified in self.Trange, the kinetic data is
-		assumed to be valid at all temperatures.
-		"""
-		if self.Trange is not None:
-			if T < self.Trange[0] or T > self.Trange[1]:
-				return False
-		return True
+		# A cache for the best kinetics for this reaction
+		self.bestKinetics = None
 
-################################################################################
+		# A dictionary of the labeled atoms for the reactants
+		self.atomLabels = {}
 
-class ArrheniusKinetics(Kinetics):
-	"""
-	Represent a set of modified Arrhenius kinetics. The kinetic expression has
-	the form
-
-	.. math:: k(T) = A T^n \\exp \\left( - \\frac{E_\mathrm{a}}{RT} \\right)
-
-	"""
-
-	def __init__(self, A=0.0, Ea=0.0, n=0.0):
-		"""If calling without keyword arguments be careful of the order!"""
-		# in fact, should (can?) we enforce keyword calling?
-		Kinetics.__init__(self)
-		self.A = A
-		self.Ea = Ea
-		self.n = n
 	def __str__(self):
-		return 'k(T) = %s * T ** %s * math.exp(-%s / constants.R / T)\t%s < T < %s' % (self.A, self.n, self.Ea, self.Trange[0], self.Trange[1])
-	def __repr__(self):
-		"""How it looks on the console"""
-		return '<ArrheniusKinetics A=%.0e E=%.0fkJ/mol n=%.1f >'%(self.A,
-			self.Ea/1000.0, self.n )
+		"""
+		Return a string representation of the reaction.
+		"""
+		string = ''
+		for reactant in self.reactants:
+			string += str(reactant) + ' + '
+		string = string[0:-3] + ' <---> '
+		for product in self.products:
+			string += str(product) + ' + '
+		string = string[0:-3]
+		return string
+
+	def isUnimolecular(self):
+		"""
+		Return :data:`True` if the forward reaction has one reactant and
+		:data:`False` otherwise.
+		"""
+		return len(self.reactants) == 1
+
+	def isBimolecular(self):
+		"""
+		Return :data:`True` if the forward reaction has two reactants and
+		:data:`False` otherwise.
+		"""
+		return len(self.reactants) == 2
+
+	def equivalent(self, other):
+		"""
+		Return :data:`True` if the two reactions are equivalent (i.e. they have
+		the same reactants and products and are of the same reaction family) and
+		:data:`False` otherwise.
+		"""
+
+		if len(self.reactants) != len(other.reactants) or \
+		  len(self.products) != len(other.products):
+			return False
+		elif self.family is not other.family:
+			return False
+
+		reactantsMatch = False
+		if len(self.reactants) == 1:
+			indices = [[0]]
+		elif len(self.reactants) == 2:
+			indices = [[0, 1], [1, 0]]
+		elif len(self.reactants) == 3:
+			indices = [[0, 1, 2], [0, 2, 1], [1, 0, 2], [1, 2, 0], [2, 0, 1], [2, 1, 0]]
+		for index in indices:
+			if reactantsMatch: continue
+			match = True
+			for i in range(len(self.reactants)):
+				if not self.reactants[i].isIsomorphic(other.reactants[index[i]]):
+					match = False
+			if match:
+				reactantsMatch = True
+
+		productsMatch = False
+		if len(self.products) == 1:
+			indices = [[0]]
+		elif len(self.products) == 2:
+			indices = [[0, 1], [1, 0]]
+		elif len(self.products) == 3:
+			indices = [[0, 1, 2], [0, 2, 1], [1, 0, 2], [1, 2, 0], [2, 0, 1], [2, 1, 0]]
+		for index in indices:
+			if productsMatch: continue
+			match = True
+			for i in range(len(self.reactants)):
+				if not self.products[i].isIsomorphic(other.products[index[i]]):
+					match = False
+			if match:
+				productsMatch = True
+
+		return reactantsMatch and productsMatch
+
+	def getEnthalpyOfReaction(self, T):
+		"""
+		Return the enthalpy of reaction evaluated at temperature `T`.
+		"""
+		dHrxn = -self.reactants[0].getEnthalpy(T)
+		for reactant in self.reactants[1:]:
+			dHrxn -= reactant.getEnthalpy(T)
+		for product in self.products:
+			dHrxn += product.getEnthalpy(T)
+		return dHrxn
+
+	def getEntropyOfReaction(self, T):
+		"""
+		Return the entropy of reaction evaluated at temperature `T`.
+		"""
+		dSrxn = -self.reactants[0].getEntropy(T)
+		for reactant in self.reactants[1:]:
+			dSrxn -= reactant.getEntropy(T)
+		for product in self.products:
+			dSrxn += product.getEntropy(T)
+		return dSrxn
+
+	def getFreeEnergyOfReaction(self, T):
+		"""
+		Return the Gibbs free energy of reaction evaluated at temperature `T`.
+		"""
+		dGrxn = -self.reactants[0].getFreeEnergy(T)
+		for reactant in self.reactants[1:]:
+			dGrxn -= reactant.getFreeEnergy(T)
+		for product in self.products:
+			dGrxn += product.getFreeEnergy(T)
+		return dGrxn
+
+	def getEquilibriumConstant(self, T, conc):
+		"""
+		Return the equilibrium constant K(T) evaluated at temperature `T` in a
+		system with total concentration `conc`.
+		"""
+		dGrxn = self.getFreeEnergyOfReaction(T)
+		K = math.exp(-dGrxn / constants.R / T)
+		# Convert from Ka to Kc
+		K *= conc ** (len(self.products) - len(self.reactants))
+		return K
+
+
+	def getBestKinetics(self, T):
+		"""
+		Return the best set of ArrheniusKinetics parameters for the forward reaction
+		evaluated at the temperature `T`. This function follows the convention
+		that the forward reaction is the one for which we are using the kinetic
+		expression, and that the reverse rate constant is evaluated using
+		thermochemical equilibrium.  
+		Evans-Polyani ArrheniusEPKinetics are converted to ArrheniusKinetics 
+		using dHrxn(298K)
+		"""
+
+		# Check cache first
+		if self.bestKinetics is not None:
+			if self.bestKinetics.isTemperatureInRange(T):
+				return self.bestKinetics
+
+		# Check that self.kinetics is storing a list and not a single object
+		# If the latter, use that as the best kinetics without any other
+		# checking
+		if self.kinetics.__class__ != list:
+			dHrxn = self.getEnthalpyOfReaction(T)
+			self.bestKinetics = self.kinetics.getArrhenius(dHrxn)
+			return self.bestKinetics
+		
+		kinetics = self.kinetics[:]
+		
+		# Prune out all kinetic data not valid at desired temperature
+		i = 0
+		while i < len(kinetics):
+			k = kinetics[i]
+			if not k.isTemperatureInRange(T): kinetics.remove(k)
+			else: i += 1
+		
+		# If no kinetic parameters are left to choose from, print a warning
+		# The reaction rate for the reactions is set to zero
+		# This may not be the best course of action
+#		if len(kinetics) == 0:
+#			#logging.warning('Warning: No kinetics available for reaction ' + str(self) + ' at ' + str(T) + ' K.')
+#			kinetics = ArrheniusKinetics(A=0.0, Ea=0.0, n=0.0)
+#			kinetics.Trange = [0.0, 100000.0]
+#			return kinetics
+
+		# If no kinetic parameters are left to choose from, ignore the
+		# temperature ranges
+		if len(kinetics) == 0:
+			kinetics = self.kinetics[:]
+
+		# Choose kinetics based on rank (i.e. lowest non-zero rank)
+		bestRank = kinetics[0].rank
+		bestKinetics = kinetics[0]
+		for k in kinetics[1:]:
+			if k.rank < bestRank and k.rank != 0:
+				bestRank = k.rank
+				bestKinetics = k
+		if isinstance(bestKinetics, ArrheniusEPKinetics):
+			# Convert to ArrheniusKinetics
+			# Use T = 298 K to calculate enthalpy and free energy of reaction
+			T = 298.0
+			dHrxn = self.getEnthalpyOfReaction(T)
+			bestKinetics = bestKinetics.getArrhenius(dHrxn)
+			
+		self.bestKinetics = bestKinetics
+		return self.bestKinetics
+
 	def getRateConstant(self, T):
 		"""
-		Return the rate constant k(T) at temperature `T` by evaluating the
-		Arrhenius expression.
+		Return the value of the rate constant k(T) at the temperature `T`.
+		"""
+		kinetics = self.getBestKinetics(T)
+		if kinetics is None:
+			raise Exception('Unable to determine the rate constant of reaction ' + str(self) + '.')
+		return kinetics.getRateConstant(T)
+
+	def getStoichiometricCoefficient(self, spec):
+		"""
+		Return the stoichiometric coefficient of species `spec` in the reaction.
+		The stoichiometric coefficient is increased by one for each time `spec`
+		appears as a product and decreased by one for each time `spec` appears
+		as a reactant.
+		"""
+		stoich = 0
+		for reactant in self.reactants:
+			if reactant is spec: stoich -= 1
+		for product in self.products:
+			if product is spec: stoich += 1
+		return stoich
+
+	def getRate(self, T, P, conc):
+		"""
+		Return the net rate of reaction at temperature `T` and pressure `P`. The
+		parameter `conc` is a map with species as keys and concentrations as
+		values. A reactant not found in the `conc` map is treated as having zero
+		concentration.
 		"""
 
-		# Raise exception if T is outside of valid temperature range
-		if not self.isTemperatureInRange(T):
-			raise Exception('Attempted to evaluate a rate constant at an invalid temperature.')
+		# Calculate total concentration
+		totalConc = 0.0
+		for spec in conc:
+			totalConc += conc[spec]
 
-		return self.A * (T ** self.n) * math.exp(-self.Ea / constants.R / T)
+		# Evaluate rate constant
+		rateConstant = self.getRateConstant(T)
 
-	def getReverse(self, dHrxn, Keq, T):
-		"""
-		Generate the reverse of the current kinetics for a reaction with
-		standard enthalpy of reaction `dHrxn` and equilibrium constant `Keq` at
-		298 K, respectively, defined in the same direction that these kinetics
-		are.
-		"""
+		# Evaluate equilibrium constant
+		equilibriumConstant = self.getEquilibriumConstant(T, totalConc)
 
-		kinetics = ArrheniusKinetics(self.A / Keq * math.exp(-dHrxn / constants.R / T), self.Ea - dHrxn, self.n)
-		kinetics.Trange = self.Trange
-		kinetics.rank = self.rank
-		kinetics.comment = self.comment
+		# Evaluate forward concentration product
+		forward = 1.0
+		for reactant in self.reactants:
+			if reactant in conc:
+				forward = forward * conc[reactant]
+			else:
+				forward = forward * 0.0
 
-		return kinetics
+		# Evaluate reverse concentration product
+		reverse = 1.0
+		for product in self.products:
+			if product in conc:
+				reverse = reverse * conc[product]
+			else:
+				reverse = reverse * 0.0
 
-	def toXML(self, dom, root, numReactants):
-		"""
-		Generate the XML for these kinetics using the :data:`xml.dom.minidom`
-		package. The `dom` and `root` parameters refer to the DOM and the
-		point within the DOM to place this item.
-		"""
-		kinetics = dom.createElement('arrheniusKinetics')
-		root.appendChild(kinetics)
-		kinetics.setAttribute('Trange', '%s-%s K' % (self.Trange[0], self.Trange[1]))
-		kinetics.setAttribute('rank', str(self.rank))
-		kinetics.setAttribute('comment', self.comment)
-
-		preexponential = dom.createElement('preexponential')
-		kinetics.appendChild(preexponential)
-		preexponentialUnits = None
-		if len(self.reactants) == 1:
-			preexponentialUnits = 's^-1'
-		else:
-			preexponentialUnits = 'm^%s/(mol^%s*s)' % ((numReactants-1)*3, numReactants-1)
-		data.createXMLQuantity(dom, preexponential, self.A, preexponentialUnits)
-
-		exponent = dom.createElement('exponent')
-		kinetics.appendChild(exponent)
-		data.createXMLQuantity(dom, exponent, self.n, '')
-
-		activationEnergy = dom.createElement('activationEnergy')
-		kinetics.appendChild(activationEnergy)
-		data.createXMLQuantity(dom, activationEnergy, self.Ea, 'J/mol')
+		# Return rate
+		return rateConstant * (forward - reverse / equilibriumConstant)
 
 ################################################################################
 
-class ArrheniusEPKinetics(Kinetics):
-	"""
-	Represent a set of modified Arrhenius kinetics with Evans-Polanyi data. The
-	kinetic expression has the form
-
-	.. math:: k(T) = A T^n \\exp \\left( - \\frac{E_\mathrm{a}}{RT} \\right)
-
-	The parameter :math:`\\alpha` is used to correct the activation energy
-	:math:`E_\\mathrm{a}` via the Evans-Polanyi formula
-
-	.. math:: E_\\mathrm{a} = E_0 + \\alpha \\Delta H_\\mathrm{rxn}
-
-	"""
-
-	def __init__(self, A=0.0, E0=0.0, n=0.0, alpha=0.0):
-		"""If calling without keyword arguments be careful of the order!"""
-		Kinetics.__init__(self)
-		self.A = A
-		self.E0 = E0
-		self.n = n
-		self.alpha = alpha
-
-	def __str__(self):
-		return 'k(T) = %s * T ** %s * math.exp(-(%s + %s * DHrxn) / constants.R / T)\t%s < T < %s' % (self.A, self.n, self.E0, self.alpha, self.Trange[0], self.Trange[1])
-	def __repr__(self):
-		"""How it looks on the console"""
-		return '<ArrheniusEPKinetics A=%.0e E0=%.0fkJ/mol n=%.1f alpha=%.1g>'%(
-			self.A, self.E0/1000.0, self.n, self.alpha)
-			
-	def getActivationEnergy(self, dHrxn):
-		"""
-		Return the activation energy using the enthalpy of reaction `dHrxn`.
-		"""
-		return self.E0 + self.alpha * dHrxn
-		
-	def getArrhenius(self, dHrxn):
-		"""
-		Return the Arrhenius form of k(T) at temperature `T` by correcting E0
-		to Ea using the enthalpy of reaction `dHrxn`.
-		"""
-
-		Ea = self.getActivationEnergy(dHrxn)
-
-		kinetics = ArrheniusKinetics(self.A, Ea, self.n)
-		kinetics.Trange = self.Trange
-		kinetics.rank = self.rank
-		kinetics.comment = self.comment
-
-		return kinetics
-
-	def getRateConstant(self, T, dHrxn):
-		"""
-		Return the rate constant k(T) at temperature `T` by evaluating the
-		Arrhenius expression. The reaction has an enthalpy of reaction `dHrxn`.
-		"""
-
-		# Raise exception if T is outside of valid temperature range
-		#if not self.isTemperatureInRange(T):
-		#	raise Exception('Attempted to evaluate a rate constant at an invalid temperature.')
-
-		Ea = self.getActivationEnergy(dHrxn)
-
-		return self.A * T ** self.n * math.exp(-Ea / constants.R / T)
-
-	def fromDatabase(self, data, comment, numReactants):
-		"""
-		Process a list of numbers `data` and associated description `comment`
-		generated while reading from a kinetics database. The `numReactants`
-		parameter is used to interpret the units of the preexponential.
-		"""
-
-		if len(data) != 11:
-			raise Exception('Invalid list of kinetic data; should be a list of numbers of length 11.')
-
-		Tmin, Tmax, A, n, alpha, E0, dA, dn, dalpha, dE0, rank = data
-
-		originalUnits = 's^-1'; desiredUnits = 's^-1'
-		if numReactants == 2:
-			originalUnits = 'cm^3/(mol*s)'
-		elif numReactants > 2:
-			originalUnits = 'cm^%s/(mol^%s*s)' % ((numReactants-1)*3, numReactants-1)
-		
-		self.Trange = pq.Quantity([Tmin, Tmax], 'K').simplified
-		self.Trange = [float(self.Trange[0]), float(self.Trange[1])]
-
-		self.A = float(pq.Quantity(A, originalUnits).simplified)
-		self.E0 = float(pq.Quantity(E0, 'kcal/mol').simplified)
-		self.n = float(pq.Quantity(n, '').simplified)
-		self.alpha = float(pq.Quantity(alpha, '').simplified)
-
-		self.rank = rank
-		self.comment = comment
-		self.numReactants = numReactants
-
-	def toXML(self, dom, root):
-		"""
-		Generate the XML for these kinetics using the :data:`xml.dom.minidom`
-		package. The `dom` and `root` parameters refer to the DOM and the
-		point within the DOM to place this item.
-		"""
-		kinetics = dom.createElement('arrheniusEPKinetics')
-		root.appendChild(kinetics)
-		kinetics.setAttribute('Trange', '%s-%s K' % (self.Trange[0], self.Trange[1]))
-		kinetics.setAttribute('rank', str(self.rank))
-		kinetics.setAttribute('comment', self.comment)
-
-
-		preexponential = dom.createElement('preexponential')
-		kinetics.appendChild(preexponential)
-		preexponentialUnits = None
-		numReactants = self.numReactants
-		if numReactants == 1:
-			preexponentialUnits = 's^-1'
-		else:
-			preexponentialUnits = 'm^%s/(mol^%s*s)' % ((numReactants-1)*3, numReactants-1)
-		data.createXMLQuantity(dom, preexponential, self.A, preexponentialUnits)
-
-		exponent = dom.createElement('exponent')
-		kinetics.appendChild(exponent)
-		data.createXMLQuantity(dom, exponent, self.n, '')
-
-		alpha = dom.createElement('evansPolanyiSlope')
-		kinetics.appendChild(alpha)
-		data.createXMLQuantity(dom, alpha, self.alpha, '')
-
-		activationEnergy = dom.createElement('evansPolanyiIntercept')
-		kinetics.appendChild(activationEnergy)
-		data.createXMLQuantity(dom, activationEnergy, self.E0, 'J/mol')
-
-################################################################################
 
 class InvalidActionException(Exception):
 	"""
@@ -427,7 +461,7 @@ class ReactionRecipe:
 
 				else:
 					raise InvalidActionException('Unknown action "' + action[0] + '" encountered.')
-		
+
 		except InvalidActionException, e:
 			logging.warning('Warning: ' + e.msg)
 			return False
@@ -446,7 +480,7 @@ class ReactionRecipe:
 		"""
 		Apply the reaction recipe to the set of molecules contained in
 		`structure`, a single Structure object that contains one or more
-		structures. 
+		structures.
 		"""
 		return self.apply(struct, False)
 
@@ -475,7 +509,7 @@ class ReactionFamily(data.Database):
 		"""
 		Return lists containing the top-level nodes of each tree representing
 		the reactants and the products. These lists are flattened versions of
-		the lists available in self.template.reactants and 
+		the lists available in self.template.reactants and
 		self.template.products.
 		"""
 		forward = []
@@ -499,7 +533,7 @@ class ReactionFamily(data.Database):
 		libstr  = os.path.join(path, 'library.txt')
 		tempstr = os.path.join(path, 'template.txt')
 		forbstr = os.path.join(path, 'forbiddenGroups.txt')
-		
+
 		#: The path of the database that was loaded.
 		self._path = path
 
@@ -528,7 +562,7 @@ class ReactionFamily(data.Database):
 		# existing data; note that this disregards all temperature range
 		# information
 		forwardTemplate, reverseTemplate = self.getTemplateLists()
-		
+
 		#self.generateMissingEntriesFromBelow(forwardTemplate)
 		#self.generateMissingEntriesFromAbove(forwardTemplate)
 
@@ -655,7 +689,7 @@ class ReactionFamily(data.Database):
 		"""
 		if len(kinetics) == 0:
 			return None
-		
+
 		# Use geometric average of parameters
 		lnA = 0.0; E0 = 0.0; n = 0.0; alpha = 0.0
 		for k in kinetics:
@@ -672,7 +706,7 @@ class ReactionFamily(data.Database):
 		kin = ArrheniusEPKinetics(math.exp(lnA), E0, n, alpha)
 		kin.Trange = [0.0, 0.0]
 		return kin
-		
+
 	def drawFullGraphOfTree(self):
 		"""
 		Create a PyDOT representation of the current tree.
@@ -731,7 +765,7 @@ class ReactionFamily(data.Database):
 		g=pydot.Dot(size='10,8', page='10,8' ,  rankdir='LR',
 				graph_type='digraph', simplify=True, fontsize=10,
 				overlap='true', dpi='85',center="True")
-		
+
 		rates =  self.library.keys() # known reaction rates in library
 		# add reactionrate nodes to graph
 		for rate in rates:
@@ -744,7 +778,7 @@ class ReactionFamily(data.Database):
 				for i,node in enumerate(nodes):
 					trialNode = trialRate.split(';')[i]
 					if trialNode == node: continue # ok if equal
-					if trialNode not in self.tree.ancestors(node): break 
+					if trialNode not in self.tree.ancestors(node): break
 					# if stopped through break, then it will not run the else clause
 				else:
 					# loop fell through all nodes without breaking:
@@ -763,11 +797,11 @@ class ReactionFamily(data.Database):
 			f=open(filename,'w')
 			f.write(st)
 			f.close()
-		else:    
-			g.write(filename,format=format,prog=prog)  
-			
-			
-		
+		else:
+			g.write(filename,format=format,prog=prog)
+
+
+
 	def generateMissingEntriesFromAbove(self, nodes):
 		"""
 		Generate a nonexisting entry in the library based on an averaging
@@ -799,7 +833,7 @@ class ReactionFamily(data.Database):
 			#print nodeList, kinetics
 
 	def generateMissingEntryFromAbove(self, nodes):
-		
+
 		# If an entry is already present, return it
 		if self.library.getData(nodes) is not None:
 			return self.library.getData(nodes)
@@ -848,7 +882,7 @@ class ReactionFamily(data.Database):
 		if len(kinetics) == 0:
 			logging.warning('Unable to estimate missing kinetics for nodes %s in reaction family %s.' % (nodes, self.label))
 			return None
-		
+
 		# Average remaining kinetics
 		kin = self.averageKinetics(kinetics)
 		return kin
@@ -890,7 +924,7 @@ class ReactionFamily(data.Database):
 					kineticData.append(int(items[9]))
 					# Everything else is a comment
 					comment = ' '.join(items[10:])
-					
+
 					kinetics = ArrheniusEPKinetics()
 					kinetics.fromDatabase(kineticData, comment, len(self.template.reactants))
 					kinetics.comment = self.label + ' ' + label + ' ' + kinetics.comment
@@ -1079,7 +1113,7 @@ class ReactionFamily(data.Database):
 			for atom in productStructure.atoms():
 				if atom.label != '':
 					atomLabels[atom.label] = atom
-			
+
 			# This is hardcoding of reaction families (bad!)
 			label = self.label.lower()
 			if label == 'h abstraction':
@@ -1097,7 +1131,7 @@ class ReactionFamily(data.Database):
 			productStructures = [productStructure]
 		if len(self.template.products) != len(productStructures):
 			raise Exception('Application of reaction recipe failed; expected %s product(s), but %s found.' % (len(self.template.products), len(productStructures)))
-		
+
 		# Recalculate atom types of product structures, since they may have
 		# changed as a result of the reaction
 		for struct in productStructures:
@@ -1112,7 +1146,7 @@ class ReactionFamily(data.Database):
 					if struct.isSubgraphIsomorphic(struct2): return None
 				for struct in productStructures:
 					if struct.isSubgraphIsomorphic(struct2): return None
-		
+
 		# Convert structure(s) to products
 		products = []
 		for product in productStructures:
@@ -1121,7 +1155,7 @@ class ReactionFamily(data.Database):
 			# makeNewSpecies() (e.g. due to forbidden structure)
 			if spec is None: return None
 			products.append(spec)
-		
+
 		# Create reaction and add if unique
 		rxn, isNew = makeNewReaction(reactants, products, reactantStructures, productStructures, self)
 		if isNew:	return rxn
@@ -1150,8 +1184,8 @@ class ReactionFamily(data.Database):
 		elif len(reactants) == 2 and self.template.isBimolecular():
 
 			# Make copies of the structure lists of the two reactants
-			# This is a workaround for an issue in which the two reactant 
-			# structure lists were getting swapped around, resulting in 
+			# This is a workaround for an issue in which the two reactant
+			# structure lists were getting swapped around, resulting in
 			# unbalanced reactions
 			# The copy is needed for cases where A and B are the same
 			structuresA = []; structuresB = []
@@ -1200,7 +1234,7 @@ class ReactionFamily(data.Database):
 		# Get forward reaction template and remove any duplicates
 		forwardTemplate, reverseTemplate = self.getTemplateLists()
 		forwardTemplate = list(set(forwardTemplate))
-		
+
 		# Descend reactant trees as far as possible
 		template = []
 		for forward in forwardTemplate:
@@ -1234,14 +1268,14 @@ class ReactionFamily(data.Database):
 				print reactant.toAdjacencyList() + '\n'
 			for product in reaction.products:
 				print product.toAdjacencyList() + '\n'
-			
+
 			template = forwardTemplate
 
 #		k = self.library.getData(template)
 #		print template, k
 #		if k is not None: return [k]
 #		else: return None
-		
+
 		nodeLists = []
 		for temp in template:
 			nodeList = []
@@ -1252,7 +1286,7 @@ class ReactionFamily(data.Database):
 
 		# Generate all possible combinations of nodes
 		items = data.getAllCombinations(nodeLists)
-		
+
 		# Generate list of kinetics at every node
 		kinetics = []
 		for item in items:
@@ -1261,7 +1295,7 @@ class ReactionFamily(data.Database):
 				kinetics.append(itemData)
 
 		if len(kinetics) == 0: return None
-		
+
 		return kinetics
 
 ################################################################################
@@ -1338,273 +1372,6 @@ class ReactionFamilySet:
 
 
 kineticsDatabase = None
-
-################################################################################
-
-class Reaction:
-	"""
-	Represent a generic chemical reaction. A reaction is defined by the set of
-	reactants, set of products, and the transition state; thus both the forward
-	and reverse reaction are represented by a single object since they share 
-	the same transition state. By convention, the forward reaction is taken to
-	be that for which the provided kinetics apply; the reverse kinetics are 
-	taken from thermodynamic reversibility. A multiplier attribute is used when
-	reactions involving equivalent reactive sites are used.
-	"""
-	
-	def __init__(self, reactants=None, products=None, family=None, kinetics=None):
-		"""Initialize a reaction object."""
-		self.reactants = reactants or []
-		self.products = products or []
-		self.family = family
-		self.reverse = None
-		self.kinetics = kinetics or []
-
-		# A cache for the best kinetics for this reaction
-		self.bestKinetics = None
-
-		# A dictionary of the labeled atoms for the reactants
-		self.atomLabels = {}
-		
-		self.multiplier = 1.0
-
-	def __str__(self):
-		"""
-		Return a string representation of the reaction.
-		"""
-		string = ''
-		for reactant in self.reactants:
-			string += str(reactant) + ' + '
-		string = string[0:-3] + ' <---> '
-		for product in self.products:
-			string += str(product) + ' + '
-		string = string[0:-3]
-		return string
-
-	def isUnimolecular(self):
-		"""
-		Return :data:`True` if the forward reaction has one reactant and
-		:data:`False` otherwise.
-		"""
-		return len(self.reactants) == 1
-
-	def isBimolecular(self):
-		"""
-		Return :data:`True` if the forward reaction has two reactants and
-		:data:`False` otherwise.
-		"""
-		return len(self.reactants) == 2
-
-	def equivalent(self, other):
-		"""
-		Return :data:`True` if the two reactions are equivalent (i.e. they have
-		the same reactants and products and are of the same reaction family) and
-		:data:`False` otherwise.
-		"""
-
-		if len(self.reactants) != len(other.reactants) or \
-		  len(self.products) != len(other.products):
-			return False
-		elif self.family is not other.family:
-			return False
-
-		reactantsMatch = False
-		if len(self.reactants) == 1:
-			indices = [[0]]
-		elif len(self.reactants) == 2:
-			indices = [[0, 1], [1, 0]]
-		elif len(self.reactants) == 3:
-			indices = [[0, 1, 2], [0, 2, 1], [1, 0, 2], [1, 2, 0], [2, 0, 1], [2, 1, 0]]
-		for index in indices:
-			if reactantsMatch: continue
-			match = True
-			for i in range(len(self.reactants)):
-				if not self.reactants[i].isIsomorphic(other.reactants[index[i]]):
-					match = False
-			if match:
-				reactantsMatch = True
-
-		productsMatch = False
-		if len(self.products) == 1:
-			indices = [[0]]
-		elif len(self.products) == 2:
-			indices = [[0, 1], [1, 0]]
-		elif len(self.products) == 3:
-			indices = [[0, 1, 2], [0, 2, 1], [1, 0, 2], [1, 2, 0], [2, 0, 1], [2, 1, 0]]
-		for index in indices:
-			if productsMatch: continue
-			match = True
-			for i in range(len(self.reactants)):
-				if not self.products[i].isIsomorphic(other.products[index[i]]):
-					match = False
-			if match:
-				productsMatch = True
-
-		return reactantsMatch and productsMatch
-
-	def getEnthalpyOfReaction(self, T):
-		"""
-		Return the enthalpy of reaction evaluated at temperature `T`.
-		"""
-		dHrxn = -self.reactants[0].getEnthalpy(T)
-		for reactant in self.reactants[1:]:
-			dHrxn -= reactant.getEnthalpy(T)
-		for product in self.products:
-			dHrxn += product.getEnthalpy(T)
-		return dHrxn
-
-	def getEntropyOfReaction(self, T):
-		"""
-		Return the entropy of reaction evaluated at temperature `T`.
-		"""
-		dSrxn = -self.reactants[0].getEntropy(T)
-		for reactant in self.reactants[1:]:
-			dSrxn -= reactant.getEntropy(T)
-		for product in self.products:
-			dSrxn += product.getEntropy(T)
-		return dSrxn
-
-	def getFreeEnergyOfReaction(self, T):
-		"""
-		Return the Gibbs free energy of reaction evaluated at temperature `T`.
-		"""
-		dGrxn = -self.reactants[0].getFreeEnergy(T)
-		for reactant in self.reactants[1:]:
-			dGrxn -= reactant.getFreeEnergy(T)
-		for product in self.products:
-			dGrxn += product.getFreeEnergy(T)
-		return dGrxn
-
-	def getEquilibriumConstant(self, T, conc):
-		"""
-		Return the equilibrium constant K(T) evaluated at temperature `T` in a
-		system with total concentration `conc`.
-		"""
-		dGrxn = self.getFreeEnergyOfReaction(T)
-		K = math.exp(-dGrxn / constants.R / T)
-		# Convert from Ka to Kc
-		K *= conc ** (len(self.products) - len(self.reactants))
-		return K
-
-	def getBestKinetics(self, T):
-		"""
-		Return the best set of ArrheniusKinetics parameters for the forward reaction
-		evaluated at the temperature `T`. This function follows the convention
-		that the forward reaction is the one for which we are using the kinetic
-		expression, and that the reverse rate constant is evaluated using
-		thermochemical equilibrium.  
-		Evans-Polyani ArrheniusEPKinetics are converted to ArrheniusKinetics 
-		using dHrxn(298K)
-		"""
-
-		# Check cache first
-		if self.bestKinetics is not None:
-			if self.bestKinetics.isTemperatureInRange(T):
-				return self.bestKinetics
-
-		# Check that self.kinetics is storing a list and not a single object
-		# If the latter, use that as the best kinetics without any other
-		# checking
-		if self.kinetics.__class__ != list:
-			dHrxn = self.getEnthalpyOfReaction(T)
-			self.bestKinetics = self.kinetics.getArrhenius(dHrxn)
-			return self.bestKinetics
-		
-		kinetics = self.kinetics[:]
-		
-		# Prune out all kinetic data not valid at desired temperature
-		i = 0
-		while i < len(kinetics):
-			k = kinetics[i]
-			if not k.isTemperatureInRange(T): kinetics.remove(k)
-			else: i += 1
-		
-		# If no kinetic parameters are left to choose from, print a warning
-		# The reaction rate for the reactions is set to zero
-		# This may not be the best course of action
-		if len(kinetics) == 0:
-			#logging.warning('Warning: No kinetics available for reaction ' + str(self) + ' at ' + str(T) + ' K.')
-			kinetics = ArrheniusKinetics(A=0.0, Ea=0.0, n=0.0)
-			kinetics.Trange = [0.0, 100000.0]
-			return kinetics
-
-		# Choose kinetics based on rank (i.e. lowest non-zero rank)
-		bestRank = kinetics[0].rank
-		bestKinetics = kinetics[0]
-		for k in kinetics[1:]:
-			if k.rank < bestRank and k.rank != 0:
-				bestRank = k.rank
-				bestKinetics = k
-		if isinstance(bestKinetics, ArrheniusEPKinetics):
-			# Convert to ArrheniusKinetics
-			# Use T = 298 K to calculate enthalpy and free energy of reaction
-			T = 298.0
-			dHrxn = self.getEnthalpyOfReaction(T)
-			bestKinetics = bestKinetics.getArrhenius(dHrxn)
-			
-		self.bestKinetics = bestKinetics
-		return self.bestKinetics
-
-	def getRateConstant(self, T):
-		"""
-		Return the value of the rate constant k(T) at the temperature `T`.
-		"""
-		kinetics = self.getBestKinetics(T)
-		if kinetics is None:
-			raise Exception('Unable to determine the rate constant of reaction ' + str(self) + '.')
-		return kinetics.getRateConstant(T)
-
-	def getStoichiometricCoefficient(self, spec):
-		"""
-		Return the stoichiometric coefficient of species `spec` in the reaction.
-		The stoichiometric coefficient is increased by one for each time `spec`
-		appears as a product and decreased by one for each time `spec` appears
-		as a reactant.
-		"""
-		stoich = 0
-		for reactant in self.reactants:
-			if reactant is spec: stoich -= 1
-		for product in self.products:
-			if product is spec: stoich += 1
-		return stoich
-
-	def getRate(self, T, P, conc):
-		"""
-		Return the net rate of reaction at temperature `T` and pressure `P`. The
-		parameter `conc` is a map with species as keys and concentrations as
-		values. A reactant not found in the `conc` map is treated as having zero
-		concentration.
-		"""
-
-		# Calculate total concentration
-		totalConc = 0.0
-		for spec in conc:
-			totalConc += conc[spec]
-
-		# Evaluate rate constant
-		rateConstant = self.getRateConstant(T)
-
-		# Evaluate equilibrium constant
-		equilibriumConstant = self.getEquilibriumConstant(T, totalConc)
-
-		# Evaluate forward concentration product
-		forward = 1.0
-		for reactant in self.reactants:
-			if reactant in conc:
-				forward = forward * conc[reactant]
-			else:
-				forward = forward * 0.0
-
-		# Evaluate reverse concentration product
-		reverse = 1.0
-		for product in self.products:
-			if product in conc:
-				reverse = reverse * conc[product]
-			else:
-				reverse = reverse * 0.0
-
-		# Return rate
-		return rateConstant * (forward - reverse / equilibriumConstant)
 
 ################################################################################
 
@@ -1767,7 +1534,7 @@ def makeNewReaction(reactants, products, reactantStructures, productStructures, 
 	
 	# Note in the log
 	logging.debug('Created new ' + str(rxn.family) + ' reaction ' + str(rxn))
-
+	
 	# Return newly created reaction
 	return rxn, True
 

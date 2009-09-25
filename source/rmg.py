@@ -32,14 +32,13 @@
 RMG is an automatic chemical mechanism generator. It is awesomely awesome.
 """
 
-import os.path
-
-import optparse
-import rmg
-
 ################################################################################
 
 if __name__ == '__main__':
+
+	from guppy import hpy
+	hp = hpy()
+	hp.heap()
 
 	# Command-line options
 	description = 'RMG is an automatic chemical reaction mechanism ' + \
@@ -48,7 +47,8 @@ if __name__ == '__main__':
 				  'understanding of how molecules react.'
 	
 	# Initialize command-line option parser
-	parser = optparse.OptionParser(usage='usage: %prog [options] FILE', 
+	import optparse
+	parser = optparse.OptionParser(usage='usage: %prog [options] FILE',
 								   version="RMG v0.0.1", 
 								   description=description)
 	
@@ -80,6 +80,7 @@ if __name__ == '__main__':
 
 	# For output and scratch directories, if they are empty strings, set them
 	# to match the input file location
+	import os.path
 	inputDirectory = os.path.abspath(os.path.dirname(args[0]))
 	if options.outputDirectory == '':
 		options.outputDirectory = inputDirectory
@@ -87,7 +88,8 @@ if __name__ == '__main__':
 		options.scratchDirectory = inputDirectory
 	
 	# Execute RMG
-	rmg.execute( args[0], options.outputDirectory, 
+	import rmg
+	rmg.execute( args[0], options.outputDirectory,
 					 options.scratchDirectory, options.libraryDirectory, 
 					 options.verbose )
 

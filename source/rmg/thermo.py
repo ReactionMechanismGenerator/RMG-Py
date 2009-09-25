@@ -34,6 +34,8 @@ seeks to provide functionality for answering the question, "Given a species,
 what are its thermodynamics?"
 """
 
+import quantities as pq
+
 import data
 
 ################################################################################
@@ -65,31 +67,10 @@ class ThermoData:
 		else:
 			return self.Trange[0] <= T and T <= self.Trange[1]
 
-	def getHeatCapacity(self, T):
-		"""
-		Return the heat capacity in J/mol*K at temperature `T` in K.
-		"""
-		abstract
-
-	def getEnthalpy(self, T):
-		"""
-		Return the enthalpy in J/mol at temperature `T` in K.
-		"""
-		abstract
-
-	def getEntropy(self, T):
-		"""
-		Return the entropy in J/mol*K at temperature `T` in K.
-		"""
-		abstract
-
-	def getFreeEnergy(self, T):
-		"""
-		Return the Gibbs free energy in J/mol at temperature `T` in K.
-		"""
-		abstract
-
 ################################################################################
+
+ThermoGAData_CpTlist = list(pq.Quantity([300.0, 400.0, 500.0, 600.0, 800.0, 1000.0, 1500.0], 'K').simplified)
+ThermoGAData_CpTlist = [float(T) for T in ThermoGAData_CpTlist]
 
 class ThermoGAData(ThermoData):
 	"""
@@ -106,17 +87,12 @@ class ThermoGAData(ThermoData):
 	========= ========================================================
 	"""
 
-	import quantities as pq
-
-	Tlist = list(pq.Quantity([300.0, 400.0, 500.0, 600.0, 800.0, 1000.0, 1500.0], 'K').simplified)
-	Tlist = [float(T) for T in Tlist]
-	
 	def __init__(self, H298=0.0, S298=0.0, Cp=None, comment=''):
 		"""Initialize a set of group additivity thermodynamic data."""
 		ThermoData.__init__(self, Trange=(298.0, 2500.0), comment=comment)
 		self.H298 = H298
 		self.S298 = S298
-		self.Cp = Cp or (0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
+		self.Cp = Cp or [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 
 	def __add__(self, other):
 		"""
@@ -132,7 +108,7 @@ class ThermoGAData(ThermoData):
 		elif other.comment == '': new.comment = self.comment
 		else: new.comment = self.comment + '+ ' + other.comment
 		return new
-	
+
 	def __str__(self):
 		"""
 		Return a string summarizing the thermodynamic data.
@@ -153,11 +129,11 @@ class ThermoGAData(ThermoData):
 			raise data.TemperatureOutOfRangeException('Invalid temperature for heat capacity estimation from group additivity.')
 		if T < 300.0:
 			return self.Cp[0]
-		elif T > ThermoGAData.Tlist[-1]:
+		elif T > ThermoGAData_CpTlist[-1]:
 			return self.Cp[-1]
 		else:
-			for Tmin, Tmax, Cpmin, Cpmax in zip(ThermoGAData.Tlist[:-1], \
-					ThermoGAData.Tlist[1:], self.Cp[:-1], self.Cp[1:]):
+			for Tmin, Tmax, Cpmin, Cpmax in zip(ThermoGAData_CpTlist[:-1], \
+					ThermoGAData_CpTlist[1:], self.Cp[:-1], self.Cp[1:]):
 				if Tmin <= T and T <= Tmax:
 					return (Cpmax - Cpmin) * ((T - Tmin) / (Tmax - Tmin)) + Cpmin
 
@@ -168,15 +144,15 @@ class ThermoGAData(ThermoData):
 		H = self.H298
 		if not self.isTemperatureValid(T):
 			raise data.TemperatureOutOfRangeException('Invalid temperature for enthalpy estimation from group additivity.')
-		for Tmin, Tmax, Cpmin, Cpmax in zip(ThermoGAData.Tlist[:-1], \
-				ThermoGAData.Tlist[1:], self.Cp[:-1], self.Cp[1:]):
+		for Tmin, Tmax, Cpmin, Cpmax in zip(ThermoGAData_CpTlist[:-1], \
+				ThermoGAData_CpTlist[1:], self.Cp[:-1], self.Cp[1:]):
 			if T > Tmin:
 				slope = (Cpmax - Cpmin) / (Tmax - Tmin)
 				intercept = (Cpmin * Tmax - Cpmax * Tmin) / (Tmax - Tmin)
 				if T < Tmax:	H += 0.5 * slope * (T**2 - Tmin**2) + intercept * (T - Tmin)
 				else:			H += 0.5 * slope * (Tmax**2 - Tmin**2) + intercept * (Tmax - Tmin)
-		if T > ThermoGAData.Tlist[-1]:
-			H += self.Cp[-1] * (T - ThermoGAData.Tlist[-1])
+		if T > ThermoGAData_CpTlist[-1]:
+			H += self.Cp[-1] * (T - ThermoGAData_CpTlist[-1])
 		return H
 
 	def getEntropy(self, T):
@@ -187,14 +163,14 @@ class ThermoGAData(ThermoData):
 		S = self.S298
 		if not self.isTemperatureValid(T):
 			raise data.TemperatureOutOfRangeException('Invalid temperature for entropy estimation from group additivity.')
-		for Tmin, Tmax, Cpmin, Cpmax in zip(ThermoGAData.Tlist[:-1], \
-				ThermoGAData.Tlist[1:], self.Cp[:-1], self.Cp[1:]):
+		for Tmin, Tmax, Cpmin, Cpmax in zip(ThermoGAData_CpTlist[:-1], \
+				ThermoGAData_CpTlist[1:], self.Cp[:-1], self.Cp[1:]):
 			if T > Tmin:
 				slope = (Cpmax - Cpmin) / (Tmax - Tmin)
 				intercept = (Cpmin * Tmax - Cpmax * Tmin) / (Tmax - Tmin)
 				if T < Tmax:	S += slope * (T - Tmin) + intercept * math.log(T/Tmin)
 				else:			S += slope * (Tmax - Tmin) + intercept * math.log(Tmax/Tmin)
-		if T > ThermoGAData.Tlist[-1]:
+		if T > ThermoGAData_CpTlist[-1]:
 			S += self.Cp[-1] * math.log(T / ThermoGAData.Tlist[-1])
 		return S
 
@@ -211,8 +187,6 @@ class ThermoGAData(ThermoData):
 		Process a list of numbers `data` and associated description `comment`
 		generated while reading from a thermodynamic database.
 		"""
-
-		import quantities as pq
 
 		if len(data) != 12:
 			raise Exception('Invalid list of thermo data; should be a list of numbers of length 12.')
@@ -250,7 +224,7 @@ class ThermoGAData(ThermoData):
 
 		for i, Cp in enumerate(self.Cp):
 			heatCapacity = dom.createElement('heatCapacity')
-			heatCapacity.setAttribute('temperature', '%s K' % (self.Tlist[i]) )
+			heatCapacity.setAttribute('temperature', '%s K' % (ThermoGAData_CpTlist[i]) )
 			thermo.appendChild(heatCapacity)
 			data.createXMLQuantity(dom, heatCapacity, Cp, 'J/(mol*K)')
 
@@ -258,7 +232,7 @@ class ThermoGAData(ThermoData):
 
 class ThermoNASAPolynomial(ThermoData):
 	"""
-	A single NASA polynomial for thermodynamic data. The `coeffs` attribute 
+	A single NASA polynomial for thermodynamic data. The `coeffs` attribute
 	stores the seven polynomial coefficients
 	:math:`\\mathbf{a} = \\left[a_1\\ a_2\\ a_3\\ a_4\\ a_5\\ a_6\\ a_7 \\right]`
 	from which the relevant thermodynamic parameters are evaluated via the
@@ -475,7 +449,7 @@ class ThermoDatabase(data.Database):
 
 		# Check for well-formedness
 		if not self.isWellFormed():
-			raise data.InvalidDatabaseException('Database at "%s" is not well-formed.' % (path))
+			raise data.InvalidDatabaseException('Database at "%s" is not well-formed.' % (dictstr))
 
 		#self.library.removeLinks()
 
@@ -483,11 +457,11 @@ class ThermoDatabase(data.Database):
 		"""
 		Return an XML representation of the thermo database.
 		"""
-
+		import xml.dom.minidom
 		dom = xml.dom.minidom.parseString('<database type="thermodynamics"></database>')
 		root = dom.documentElement
 
-		Database.toXML(self, dom, root)
+		data.Database.toXML(self, dom, root)
 
 		return dom.toprettyxml()
 

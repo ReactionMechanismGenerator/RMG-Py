@@ -99,6 +99,7 @@ def execute(inputFile, outputDir, scratchDir, libraryDir, verbose):
 	edgeReactionCount = []
 	execTime = []
 	restartSize = []
+	memoryUse = []
 
 	# Main RMG loop
 	done = False
@@ -143,8 +144,11 @@ def execute(inputFile, outputDir, scratchDir, libraryDir, verbose):
 			edgeSpeciesCount.append(len(reactionModel.edge.species))
 			edgeReactionCount.append(len(reactionModel.edge.reactions))
 			execTime.append(time.clock())
+			from guppy import hpy
+			hp = hpy()
+			memoryUse.append(hp.heap().size / 1.0e6)
 			restartSize.append(os.path.getsize(outputDir + '/restart.pkl') / 1.0e6)
-			generateExecutionPlots(execTime, coreSpeciesCount, coreReactionCount, edgeSpeciesCount, edgeReactionCount, restartSize)
+			generateExecutionPlots(execTime, coreSpeciesCount, coreReactionCount, edgeSpeciesCount, edgeReactionCount, memoryUse, restartSize)
 
 		logging.info('')
 
@@ -190,7 +194,7 @@ def initializeLog(verbose):
 	
 ################################################################################
 
-def generateExecutionPlots(execTime, coreSpeciesCount, coreReactionCount, edgeSpeciesCount, edgeReactionCount, restartSize):
+def generateExecutionPlots(execTime, coreSpeciesCount, coreReactionCount, edgeSpeciesCount, edgeReactionCount, memoryUse, restartSize):
 
 	import matplotlib.pyplot as plt
 	fig = plt.figure()
@@ -217,9 +221,11 @@ def generateExecutionPlots(execTime, coreSpeciesCount, coreReactionCount, edgeSp
 
 	fig = plt.figure()
 	ax1 = fig.add_subplot(111)
-	ax1.loglog(execTime, restartSize, 'o-g')
+	ax1.semilogx(execTime, memoryUse, 'o-k')
+	ax1.semilogx(execTime, restartSize, 'o-g')
 	ax1.set_xlabel('Execution time (s)')
-	ax1.set_ylabel('Size of restart file (MB)')
+	ax1.set_ylabel('Memory (MB)')
+	ax1.legend(['RAM', 'Restart file'], loc=2)
 	plt.savefig(constants.outputDir + '/plot/memoryUse.svg')
 	plt.clf()
 
