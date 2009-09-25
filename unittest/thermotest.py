@@ -14,6 +14,8 @@ import rmg.species as species
 import rmg.reaction as reaction
 import rmg.thermo as thermo
 
+
+
 ################################################################################
 
 class ThermoGACheck(unittest.TestCase):                          
@@ -204,21 +206,24 @@ class ThermoEstimationCheck(unittest.TestCase):
 
 ################################################################################
 
-if __name__ == '__main__':
-	
+# Run this only if being run independently
+if __name__ == '__main__':	
 	# Show debug messages (as databases are loading)
 	main.initializeLog(10)
-
-	# Load databases
-	databasePath = '../data/RMG_database'
 	
-	# Create and load thermo databases
-	thermo.thermoDatabase = thermo.ThermoDatabaseSet()
-	thermo.thermoDatabase.load(databasePath + '/')
+# Run this whether being run as __main__ or called by other unit test suite:
+# Load databases
+databasePath = '../data/RMG_database'
 
-	# Create and load forbidden structures
-	thermo.forbiddenStructures = data.Dictionary()
-	thermo.forbiddenStructures.load(databasePath + '/forbiddenStructure.txt')
-	thermo.forbiddenStructures.toStructure()
+# Create and load thermo databases
+thermo.thermoDatabase = thermo.ThermoDatabaseSet()
+thermo.thermoDatabase.load(databasePath + '/')
 
+# Create and load forbidden structures
+thermo.forbiddenStructures = data.Dictionary()
+thermo.forbiddenStructures.load(databasePath + '/forbiddenStructure.txt')
+thermo.forbiddenStructures.toStructure()
+	
+# Run this only if being run independently
+if __name__ == '__main__':	
 	unittest.main( testRunner = unittest.TextTestRunner(verbosity=2) )
