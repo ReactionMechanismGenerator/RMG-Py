@@ -285,12 +285,14 @@ cdef class Graph(dict):
 		# Step 2: Remove all other vertices that are not part of cycles
 		verticesToRemove = []
 		for vertex in graph:
-			found, cycle = graph.isVertexInCycle(vertex)
+			found = graph.isVertexInCycle(vertex)
 			if not found:
 				verticesToRemove.append(vertex)
 		# Remove identified vertices from graph
 		for vertex in verticesToRemove:
 			graph.removeVertex(vertex)
+			
+		### also need to remove EDGES that are not in ring
 
 		# Step 3: Split graph into remaining subgraphs
 		graphs = graph.split()
@@ -310,10 +312,18 @@ cdef class Graph(dict):
 						rootVertex = vertex
 
 				# Get all cycles involving the root vertex
-				cycles = list()
-				graph.getAllCycles(rootVertex, cycles)
+				cycles = graph.getAllCycles(rootVertex)
 				if len(cycles) == 0:
-					raise Exception('Did not find expected cycle!')
+					# this vertex is no longer in a ring.
+					# remove all its edges
+					neighbours = graph[rootVertex].keys()[:]
+					for vertex2 in neighbours:
+						graph.removeEdge((rootVertex, vertex2))
+					# then remove it
+					graph.removeVertex(rootVertex)
+					#print("Removed vertex that's no longer in ring")
+					continue # (pick a new root Vertex)
+#					raise Exception('Did not find expected cycle!')
 
 				# Keep the smallest of the cycles found above
 				cycle = cycles[0]
@@ -322,48 +332,104 @@ cdef class Graph(dict):
 						cycle = c
 				cycleList.append(cycle)
 
-				# Remove all vertices in the cycle from the graph that have only two edges
+				# Remove from the graph all vertices in the cycle that have only two edges
 				verticesToRemove = []
 				for vertex in cycle:
 					if len(graph[vertex]) <= 2:
 						verticesToRemove.append(vertex)
 				if len(verticesToRemove) == 0:
-					# Remove edge between root vertex and any vertex it is connected to
+					# there are no vertices in this cycle that with only two edges
+					
+					# Remove edge between root vertex and any one vertex it is connected to
 					graph.removeEdge((rootVertex, graph[rootVertex].keys()[0]))
 				else:
 					for vertex in verticesToRemove:
 						graph.removeVertex(vertex)
-
-
+						
 		return cycleList
 
-	cpdef isVertexInCycle(Graph self, cycle):
+	cpdef bint isVertexInCycle(Graph self, vertex):
+		""" 
+		Is `vertex` in a cycle?
+		Returns :data:`True` if it is in a cycle, else :data:`False`.
+		"""
+		cdef list chain
+		chain = [vertex]
+		return self.__isChainInCycle(chain)
 
-		if not isinstance(cycle, list): cycle = [cycle]
+	cpdef bint __isChainInCycle(Graph self, list chain):
+		""" 
+		Is the `chain` in a cycle? 
+		Returns True/False.
+		Recursively calls itself
+		"""
+		# Note that this function no longer returns the cycle; just True/False
+		
+		
+		cdef bint found
+		
+		for vertex2, edge in self[chain[-1]].iteritems():
+			if vertex2 is chain[0] and len(chain) > 2:
+				return True
+			elif vertex2 not in chain:
+				# make the chain a little longer and explore again
+				chain.append(vertex2)
+				found = self.__isChainInCycle(chain)
+				if found: return True
+				# didn't find a cycle down this path (-vertex2),
+				# so remove the vertex from the chain
+				chain.remove(vertex2)
+		return False
 
-		for vertex2, edge in self[cycle[-1]].iteritems():
-			if vertex2 is cycle[0] and len(cycle) > 2:
-				return True, cycle
-			elif vertex2 not in cycle:
-				cycle.append(vertex2)
-				found, c = self.isVertexInCycle(cycle)
-				if found: return True, cycle
-				cycle.remove(vertex2)
-
-		return False, []
-
-
-	cpdef getAllCycles(Graph self, cycle, cycleList):
-
-		if not isinstance(cycle, list): cycle = [cycle]
-
-		for vertex2, edge in self[cycle[-1]].iteritems():
-			if vertex2 is cycle[0] and len(cycle) > 2:
-				cycleList.append(cycle[:])
-			elif vertex2 not in cycle:
-				cycle.append(vertex2)
-				self.getAllCycles(cycle, cycleList)
-				cycle.pop(-1)
+	cpdef list getAllCycles(Graph self, startingVertex):
+		"""
+		Given a starting vertex, returns a list of all the cycles containing 
+		that vertex.
+		"""
+		cdef list chain, cycleList
+		
+		cycleList=list()
+		chain = [startingVertex]
+		
+		chainLabels=range(len(self.keys()))
+		#print "Starting at %s in graph: %s"%(self.keys().index(startingVertex),chainLabels)
+		
+		cycleList = self.__exploreCyclesRecursively(chain, cycleList)
+		return cycleList
+		
+	cpdef list __exploreCyclesRecursively(Graph self, list chain, list cycleList):
+		"""
+		Finds cycles by spidering through a graph.
+		Give it a chain of atoms that are connected, `chain`,
+		and a list of cycles found so far `cycleList`.
+		If `chain` is a cycle, it is appended to `cycleList`.
+		Then chain is expanded by one atom (in each available direction)
+		and the function is called again. This recursively spiders outwards
+		from the starting chain, finding all the cycles.
+		"""
+		# unless we derive Atom and Bond from Vertex and Edge we can't cdef these:
+		#cdef Vertex vertex2
+		#cdef Edge edge
+		
+		
+		
+		chainLabels=[self.keys().index(v) for v in chain]
+		#print "found %d so far. Chain=%s"%(len(cycleList),chainLabels)
+		
+		for vertex2, edge in self[chain[-1]].iteritems():
+			# vertex2 will loop through each of the atoms 
+			# that are bonded to the last atom in the chain.
+			if vertex2 is chain[0] and len(chain) > 2:
+				# it is the first atom in the chain - so the chain IS a cycle!
+				cycleList.append(chain[:])
+			elif vertex2 not in chain:
+				# make the chain a little longer and explore again
+				chain.append(vertex2)
+				cycleList = self.__exploreCyclesRecursively(chain, cycleList)
+				# any cycles down this path (-vertex2) have now been found,
+				# so remove the vertex from the chain
+				chain.pop(-1)
+		return cycleList
 
 ################################################################################
 
@@ -379,6 +445,7 @@ cpdef VF2_isomorphism(Graph graph1, Graph graph2, dict map12, dict map21, \
 
 	cdef list map12List = list(), map21List = list()
 	cdef dict terminals1, terminals2
+	cdef bint ismatch
 
 	terminals1 = __VF2_terminals(graph1, map21)
 	terminals2 = __VF2_terminals(graph2, map12)
@@ -391,7 +458,7 @@ cpdef VF2_isomorphism(Graph graph1, Graph graph2, dict map12, dict map21, \
 	else:
 		return ismatch, map12, map21
 
-cdef __VF2_feasible(Graph graph1, Graph graph2, object vertex1, object vertex2, \
+cdef bint __VF2_feasible(Graph graph1, Graph graph2, vertex1, vertex2, \
 	dict map21, dict map12, dict terminals1, dict terminals2, bint subgraph):
 	"""
 	Returns :data:`True` if two vertices `vertex1` and `vertex2` from graphs
@@ -426,7 +493,7 @@ cdef __VF2_feasible(Graph graph1, Graph graph2, object vertex1, object vertex2, 
 			edge2 = edges2[vert2]
 			if not edge1.equivalent(edge2):
 				return False
-
+	
 	# Count number of terminals adjacent to vertex1 and vertex2
 	cdef int term1Count = 0, term2Count = 0, neither1Count = 0, neither2Count = 0
 	
@@ -466,7 +533,6 @@ cdef __VF2_feasible(Graph graph1, Graph graph2, object vertex1, object vertex2, 
 			vert2 = map21[vert1]
 			if vert2 not in edges2:
 				return False
-
 	return True
 
 cdef bint __VF2_match(Graph graph1, Graph graph2, dict map21, dict map12, \

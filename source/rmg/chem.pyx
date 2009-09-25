@@ -674,7 +674,6 @@ cdef class Bond:
 		for bondType1 in self._bondType:
 			for bondType2 in other._bondType:
 				if bondType1.equivalent(bondType2): return True
-
 		return False
 
 	def copy(self):

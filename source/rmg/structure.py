@@ -761,7 +761,7 @@ class Structure:
 		Return :data:`True` if `atom` is in one or more cycles in the structure,
 		and :data:`False` if not.
 		"""
-		return self.graph.isVertexInCycle(atom)[0]
+		return self.graph.isVertexInCycle(atom)
 
 	def isBondInCycle(self, bond):
 		"""
