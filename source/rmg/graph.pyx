@@ -494,12 +494,12 @@ cdef bint __VF2_feasible(Graph graph1, Graph graph2, vertex1, vertex2, \
 	# Count number of terminals adjacent to vertex1 and vertex2
 	cdef int term1Count = 0, term2Count = 0, neither1Count = 0, neither2Count = 0
 	
-	for vert1, edge1 in edges1.iteritems():
+	for vert1 in edges1:
 		if vert1 in terminals1:
 			term1Count += 1
 		elif vert1 not in map21:
 			neither1Count += 1
-	for vert2, edge2 in edges2.iteritems():
+	for vert2 in edges2:
 		if vert2 in terminals2:
 			term2Count += 1
 		elif vert2 not in map12:
@@ -525,7 +525,7 @@ cdef bint __VF2_feasible(Graph graph1, Graph graph2, vertex1, vertex2, \
 
 	# Level 0 look-ahead: all adjacent vertices of vertex1 already in the
 	# mapping must map to adjacent vertices of vertex2
-	for vert1, edge1 in edges1.iteritems():
+	for vert1 in edges1:
 		if vert1 in map21:
 			vert2 = map21[vert1]
 			if vert2 not in edges2:
@@ -559,11 +559,12 @@ cdef bint __VF2_match(Graph graph1, Graph graph2, dict map21, dict map12, \
 	terminals2 = __VF2_terminals(graph2, map12)
 	
 	cdef list pairs = __VF2_pairs(graph1, graph2, terminals1, terminals2)
-
+	
 	for vertex1, vertex2 in pairs:
+		# propose a pairing
 		if __VF2_feasible(graph1, graph2, vertex1, vertex2, map21, map12, \
 				terminals1, terminals2, subgraph):
-			# Update mapping and terminals accordingly
+			# Update mapping accordingly
 			map21[vertex1] = vertex2
 			map12[vertex2] = vertex1
 
@@ -580,7 +581,6 @@ cdef bint __VF2_match(Graph graph1, Graph graph2, dict map21, dict map12, \
 			# Undo proposed match
 			del map21[vertex1]
 			del map12[vertex2]
-
 
 	return False
 
@@ -605,7 +605,7 @@ cdef list __VF2_pairs(Graph graph1, Graph graph2, dict terminals1, dict terminal
 		vertex2 = graph2.keys()[0]
 		for vertex1 in graph1:
 			pairs.append([vertex1, vertex2])
-
+	
 	return pairs
 
 cdef dict __VF2_terminals(Graph graph, dict mapping):
@@ -615,9 +615,9 @@ cdef dict __VF2_terminals(Graph graph, dict mapping):
 	vertices that have already been mapped.
 	"""
 
-	cdef dict terminals = dict()
+	cdef dict terminals = dict() # why won't {} work?
 	for vertex in mapping:
-		for vert, edge in graph[vertex].iteritems():
+		for vert in <dict>graph[vertex]:
 			if vert not in mapping:
 				terminals[vert] = True
 	return terminals
