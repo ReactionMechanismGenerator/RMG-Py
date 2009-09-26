@@ -444,14 +444,11 @@ cpdef VF2_isomorphism(Graph graph1, Graph graph2, dict map12, dict map21, \
 	"""
 
 	cdef list map12List = list(), map21List = list()
-	cdef dict terminals1, terminals2
 	cdef bint ismatch
 
-	terminals1 = __VF2_terminals(graph1, map21)
-	terminals2 = __VF2_terminals(graph2, map12)
 
 	ismatch = __VF2_match(graph1, graph2, map21, map12, \
-		terminals1, terminals2, subgraph, findAll, map21List, map12List)
+		subgraph, findAll, map21List, map12List)
 
 	if findAll:
 		return len(map21List) > 0, map21List, map12List
@@ -536,7 +533,7 @@ cdef bint __VF2_feasible(Graph graph1, Graph graph2, vertex1, vertex2, \
 	return True
 
 cdef bint __VF2_match(Graph graph1, Graph graph2, dict map21, dict map12, \
-	dict terminals1, dict terminals2, bint subgraph, bint findAll, \
+	bint subgraph, bint findAll, \
 	list map21List, list map12List):
 	"""
 	A recursive function used to explore two graphs `graph1` and `graph2` for
@@ -550,12 +547,17 @@ cdef bint __VF2_match(Graph graph1, Graph graph2, dict map21, dict map12, \
 	Uses the VF2 algorithm of Vento and Foggia, which is O(N) in spatial complexity
 	and O(N**2) (best-case) to O(N! * N) (worst-case) in temporal complexity.
 	"""
+	
+	cdef dict terminals1, terminals2
 
 	# Done if we have mapped to all vertices in graph2
 	if len(map12) >= len(graph2) or len(map21) >= len(graph1):
 		return True
 
 	# Create list of pairs of candidates for inclusion in mapping
+	terminals1 = __VF2_terminals(graph1, map21)
+	terminals2 = __VF2_terminals(graph2, map12)
+	
 	cdef list pairs = __VF2_pairs(graph1, graph2, terminals1, terminals2)
 
 	for vertex1, vertex2 in pairs:
@@ -564,11 +566,10 @@ cdef bint __VF2_match(Graph graph1, Graph graph2, dict map21, dict map12, \
 			# Update mapping and terminals accordingly
 			map21[vertex1] = vertex2
 			map12[vertex2] = vertex1
-			terminals1 = __VF2_terminals(graph1, map21)
-			terminals2 = __VF2_terminals(graph2, map12)
+
 			# Recurse
 			ismatch = __VF2_match(graph1, graph2, \
-				map21, map12, terminals1, terminals2, subgraph, findAll, \
+				map21, map12, subgraph, findAll, \
 				map21List, map12List)
 			if ismatch:
 				if findAll:
@@ -579,8 +580,7 @@ cdef bint __VF2_match(Graph graph1, Graph graph2, dict map21, dict map12, \
 			# Undo proposed match
 			del map21[vertex1]
 			del map12[vertex2]
-			terminals1 = __VF2_terminals(graph1, map21)
-			terminals2 = __VF2_terminals(graph2, map12)
+
 
 	return False
 
