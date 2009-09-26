@@ -196,6 +196,9 @@ def initializeLog(verbose):
 
 def generateExecutionPlots(execTime, coreSpeciesCount, coreReactionCount, edgeSpeciesCount, edgeReactionCount, memoryUse, restartSize):
 
+	if not constants.generatePlots:
+		return
+
 	import matplotlib.pyplot as plt
 	fig = plt.figure()
 	ax1 = fig.add_subplot(111)
