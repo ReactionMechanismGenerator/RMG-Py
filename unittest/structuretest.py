@@ -263,6 +263,25 @@ class StructureCheck(unittest.TestCase):
 
 		
 ################################################################################
+from timeit import Timer
+
+
 
 if __name__ == '__main__':
+	
+	startup = """gc.enable() # enable garbage collection in timeit
+import sys
+sys.path.append('../source')
+from rmg.structure import Structure
+structure1 = Structure()
+structure1.fromSMILES('C=CC=C[CH]C')
+structure2 = Structure()
+structure2.fromSMILES('C[CH]C=CC=C')
+"""
+	test = "structure1.isIsomorphic(structure2)"
+	print "Timing isIsomorphic:"
+	t = Timer(test,startup)
+	print "  took %.3f milliseconds"%min(t.repeat(repeat=10,number=1000))
+	
+	
 	unittest.main( testRunner = unittest.TextTestRunner(verbosity=2) )
