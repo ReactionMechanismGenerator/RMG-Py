@@ -185,12 +185,22 @@ def initializeLog(verbose):
 	formatter = logging.Formatter('%(message)s', '%Y-%m-%d %H:%M:%S')
 	ch.setFormatter(formatter)
 	
+	# create file handler
+	log_file_name = os.path.join(constants.outputDir,'RMG.log')
+	fh = logging.FileHandler(filename=log_file_name) #, backupCount=3)
+	fh.setLevel(logging.DEBUG) # always verbose in the file
+	fh.setFormatter(formatter)
+	# notice that STDERR does not get saved to the log file
+	# so errors from underlying libraries (eg. openbabel) etc. that report
+	# on stderr will not be logged to disk.
+	
 	# remove old handlers!
 	while logger.handlers:
 		logger.removeHandler(logger.handlers[0])
 	
 	# Add ch to logger
 	logger.addHandler(ch)
+	logger.addHandler(fh)
 	
 ################################################################################
 
