@@ -40,6 +40,16 @@ try:
 	cythonInstalled = True
 except ImportError:
 	cythonInstalled = False
+	
+# Stop wasting my time compiling PowerPC-compatible C extensions on my intel Mac
+import distutils.sysconfig  
+config = distutils.sysconfig.get_config_vars()
+for key,value in config.iteritems():
+	location = str(value).find('-arch ppc')
+	if location>=0:
+		print "removing '-arch ppc' from %s"%(key)
+		config[key] = value.replace('-arch ppc ','')
+
 
 setup(name='RMG',
       version='0.0.1',
