@@ -177,6 +177,23 @@ class GraphCheck(unittest.TestCase):
 
 		rings = graph.getSmallestSetOfSmallestRings()
 
+		self.assertTrue(graph.isVertexInCycle(vertices[0]))
+		self.assertTrue(graph.isVertexInCycle(vertices[1]))
+		self.assertTrue(graph.isVertexInCycle(vertices[2]))
+		self.assertTrue(graph.isVertexInCycle(vertices[3]))
+		self.assertFalse(graph.isVertexInCycle(vertices[4]))
+		self.assertFalse(graph.isVertexInCycle(vertices[5]))
+		self.assertFalse(graph.isVertexInCycle(vertices[6]))
+		self.assertFalse(graph.isVertexInCycle(vertices[7]))
+
+#		self.assertTrue(graph.isEdgeInCycle(edges[0]))
+#		self.assertTrue(graph.isEdgeInCycle(edges[1]))
+#		self.assertTrue(graph.isEdgeInCycle(edges[2]))
+#		self.assertTrue(graph.isEdgeInCycle(edges[3]))
+#		self.assertFalse(graph.isEdgeInCycle(edges[4]))
+#		self.assertFalse(graph.isEdgeInCycle(edges[5]))
+#		self.assertFalse(graph.isEdgeInCycle(edges[6]))
+
 		self.assertTrue(len(rings) == 1)
 		self.assertTrue(len(rings[0]) == 4)
 		
@@ -200,6 +217,21 @@ class GraphCheck(unittest.TestCase):
 		graph.addEdge((vertices[5], vertices[2]), edges[6])
 
 		rings = graph.getSmallestSetOfSmallestRings()
+
+		self.assertTrue(graph.isVertexInCycle(vertices[0]))
+		self.assertTrue(graph.isVertexInCycle(vertices[1]))
+		self.assertTrue(graph.isVertexInCycle(vertices[2]))
+		self.assertTrue(graph.isVertexInCycle(vertices[3]))
+		self.assertTrue(graph.isVertexInCycle(vertices[4]))
+		self.assertTrue(graph.isVertexInCycle(vertices[5]))
+		
+#		self.assertTrue(graph.isEdgeInCycle(edges[0]))
+#		self.assertTrue(graph.isEdgeInCycle(edges[1]))
+#		self.assertTrue(graph.isEdgeInCycle(edges[2]))
+#		self.assertTrue(graph.isEdgeInCycle(edges[3]))
+#		self.assertTrue(graph.isEdgeInCycle(edges[4]))
+#		self.assertTrue(graph.isEdgeInCycle(edges[5]))
+#		self.assertTrue(graph.isEdgeInCycle(edges[6]))
 
 		self.assertTrue(len(rings) == 2)
 		self.assertTrue(len(rings[0]) == 4)
@@ -231,6 +263,27 @@ class GraphCheck(unittest.TestCase):
 
 		rings = graph.getSmallestSetOfSmallestRings()
 
+		self.assertTrue(graph.isVertexInCycle(vertices[0]))
+		self.assertTrue(graph.isVertexInCycle(vertices[1]))
+		self.assertTrue(graph.isVertexInCycle(vertices[2]))
+		self.assertTrue(graph.isVertexInCycle(vertices[3]))
+		self.assertFalse(graph.isVertexInCycle(vertices[4]))
+		self.assertFalse(graph.isVertexInCycle(vertices[5]))
+		self.assertTrue(graph.isVertexInCycle(vertices[6]))
+		self.assertTrue(graph.isVertexInCycle(vertices[7]))
+		self.assertTrue(graph.isVertexInCycle(vertices[8]))
+
+#		self.assertTrue(graph.isEdgeInCycle(edges[0]))
+#		self.assertTrue(graph.isEdgeInCycle(edges[1]))
+#		self.assertTrue(graph.isEdgeInCycle(edges[2]))
+#		self.assertTrue(graph.isEdgeInCycle(edges[3]))
+#		self.assertFalse(graph.isEdgeInCycle(edges[4]))
+#		self.assertFalse(graph.isEdgeInCycle(edges[5]))
+#		self.assertFalse(graph.isEdgeInCycle(edges[6]))
+#		self.assertTrue(graph.isEdgeInCycle(edges[7]))
+#		self.assertTrue(graph.isEdgeInCycle(edges[8]))
+#		self.assertTrue(graph.isEdgeInCycle(edges[9]))
+
 		self.assertTrue(len(rings) == 2)
 		self.assertTrue(len(rings[0]) == 3 or len(rings[0]) == 4)
 		self.assertTrue(len(rings[0]) + len(rings[1]) == 7)
@@ -260,6 +313,28 @@ class GraphCheck(unittest.TestCase):
 		graph.addEdge((vertices[7], vertices[3]), edges[11])
 
 		rings = graph.getSmallestSetOfSmallestRings()
+
+		self.assertTrue(graph.isVertexInCycle(vertices[0]))
+		self.assertTrue(graph.isVertexInCycle(vertices[1]))
+		self.assertTrue(graph.isVertexInCycle(vertices[2]))
+		self.assertTrue(graph.isVertexInCycle(vertices[3]))
+		self.assertTrue(graph.isVertexInCycle(vertices[4]))
+		self.assertTrue(graph.isVertexInCycle(vertices[5]))
+		self.assertTrue(graph.isVertexInCycle(vertices[6]))
+		self.assertTrue(graph.isVertexInCycle(vertices[7]))
+
+#		self.assertTrue(graph.isEdgeInCycle(edges[0]))
+#		self.assertTrue(graph.isEdgeInCycle(edges[1]))
+#		self.assertTrue(graph.isEdgeInCycle(edges[2]))
+#		self.assertTrue(graph.isEdgeInCycle(edges[3]))
+#		self.assertTrue(graph.isEdgeInCycle(edges[4]))
+#		self.assertTrue(graph.isEdgeInCycle(edges[5]))
+#		self.assertTrue(graph.isEdgeInCycle(edges[6]))
+#		self.assertTrue(graph.isEdgeInCycle(edges[7]))
+#		self.assertTrue(graph.isEdgeInCycle(edges[8]))
+#		self.assertTrue(graph.isEdgeInCycle(edges[9]))
+#		self.assertTrue(graph.isEdgeInCycle(edges[10]))
+#		self.assertTrue(graph.isEdgeInCycle(edges[11]))
 
 		# Not exactly sure how many SSSR rings ought to be found for this case
 		self.assertTrue(len(rings) == 5 or len(rings) == 6)
