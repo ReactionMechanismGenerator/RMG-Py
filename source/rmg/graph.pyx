@@ -445,10 +445,13 @@ cpdef VF2_isomorphism(Graph graph1, Graph graph2, dict map12, dict map21, \
 
 	cdef list map12List = list(), map21List = list()
 	cdef bint ismatch
+	cdef dict terminals1, terminals2
 
+	terminals1 = __VF2_terminals(graph1, map21)
+	terminals2 = __VF2_terminals(graph2, map12)
 
 	ismatch = __VF2_match(graph1, graph2, map21, map12, \
-		subgraph, findAll, map21List, map12List)
+		 terminals1, terminals2, subgraph, findAll, map21List, map12List)
 
 	if findAll:
 		return len(map21List) > 0, map21List, map12List
@@ -533,7 +536,7 @@ cdef bint __VF2_feasible(Graph graph1, Graph graph2, vertex1, vertex2, \
 	return True
 
 cdef bint __VF2_match(Graph graph1, Graph graph2, dict map21, dict map12, \
-	bint subgraph, bint findAll, \
+	dict terminals1, dict terminals2, bint subgraph, bint findAll, \
 	list map21List, list map12List):
 	"""
 	A recursive function used to explore two graphs `graph1` and `graph2` for
@@ -548,16 +551,17 @@ cdef bint __VF2_match(Graph graph1, Graph graph2, dict map21, dict map12, \
 	and O(N**2) (best-case) to O(N! * N) (worst-case) in temporal complexity.
 	"""
 	
-	cdef dict terminals1, terminals2
+	cdef dict new_terminals1, new_terminals2
 
 	# Done if we have mapped to all vertices in graph2
 	if len(map12) >= len(graph2) or len(map21) >= len(graph1):
 		return True
-
-	# Create list of pairs of candidates for inclusion in mapping
-	terminals1 = __VF2_terminals(graph1, map21)
-	terminals2 = __VF2_terminals(graph2, map12)
 	
+	#cdef dict terminals1, terminals2
+	#terminals1 = __VF2_terminals(graph1, map21)
+	#terminals2 = __VF2_terminals(graph2, map12)
+	
+	# Create list of pairs of candidates for inclusion in mapping
 	cdef list pairs = __VF2_pairs(graph1, graph2, terminals1, terminals2)
 	
 	for vertex1, vertex2 in pairs:
@@ -567,10 +571,14 @@ cdef bint __VF2_match(Graph graph1, Graph graph2, dict map21, dict map12, \
 			# Update mapping accordingly
 			map21[vertex1] = vertex2
 			map12[vertex2] = vertex1
+			
+			# update terminals
+			new_terminals1 = __VF2_new_terminals(graph1, map21, terminals1, vertex1)
+			new_terminals2 = __VF2_new_terminals(graph2, map12, terminals2, vertex2)
 
 			# Recurse
 			ismatch = __VF2_match(graph1, graph2, \
-				map21, map12, subgraph, findAll, \
+				map21, map12, new_terminals1, new_terminals2, subgraph, findAll, \
 				map21List, map12List)
 			if ismatch:
 				if findAll:
@@ -581,6 +589,7 @@ cdef bint __VF2_match(Graph graph1, Graph graph2, dict map21, dict map12, \
 			# Undo proposed match
 			del map21[vertex1]
 			del map12[vertex2]
+			# changes to 'new_terminals' will be discarded and 'terminals' is unchanged
 
 	return False
 
@@ -620,6 +629,28 @@ cdef dict __VF2_terminals(Graph graph, dict mapping):
 		for vert in <dict>graph[vertex]:
 			if vert not in mapping:
 				terminals[vert] = True
+	return terminals
+
+cdef dict __VF2_new_terminals(Graph graph, dict mapping, dict old_terminals, new_vertex):
+	"""
+	For a given graph `graph` and associated partial mapping `mapping`,
+	UPDATES a list of terminals, vertices that are directly connected to
+	vertices that have already been mapped. You have to pass it the previous 
+	list of terminals `old_terminals` and the vertex `vertex` that has been added 
+	to the mapping. Returns a new copy of the terminals.
+	"""
+	
+	cdef dict terminals = dict() # why won't {} work?
+	
+	# copy the old terminals, leaving out the new_vertex
+	for vertex in old_terminals:
+		if not vertex is new_vertex: 
+			terminals[vertex] = True
+	
+	# add the terminals of new_vertex
+	for vertex in <dict>graph[new_vertex]:
+		if vertex not in mapping:
+			terminals[vertex] = True
 	return terminals
 
 ################################################################################
