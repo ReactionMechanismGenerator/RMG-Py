@@ -277,11 +277,19 @@ structure1 = Structure()
 structure1.fromSMILES('C=CC=C[CH]C')
 structure2 = Structure()
 structure2.fromSMILES('C[CH]C=CC=C')
+structure3 = Structure()
+structure3.fromSMILES('C(CCC)CCCC(CC(C(OOC(c1ccccc1)CCCCCCC=CC)c1ccccc1)CCCCCCCC)O[O]')
+structure4 = Structure()
+structure4.fromSMILES('C(CCC)CCCC(CC(C(OOC(c1ccccc1)CCCCCCCCC)c1ccccc1)CCCCCC=CC)O[O]')
 """
-	test = "structure1.isIsomorphic(structure2)"
+	test1 = "structure1.isIsomorphic(structure2)"
+	test2 = "structure3.isIsomorphic(structure4)"
 	print "Timing isIsomorphic:"
-	t = Timer(test,startup)
-	print "  took %.3f milliseconds"%min(t.repeat(repeat=10,number=1000))
-	
+	t = Timer(test1,startup)
+	times = t.repeat(repeat=10,number=1000)
+	print " Test1 took %.3f milliseconds (%s)"%(min(times), times)
+	t = Timer(test2,startup)
+	times = t.repeat(repeat=2,number=1)
+	print " Test2 took %.3f seconds (%s)"%(min(times),times )
 	
 	unittest.main( testRunner = unittest.TextTestRunner(verbosity=2) )
