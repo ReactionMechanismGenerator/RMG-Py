@@ -7,6 +7,7 @@ import sys
 sys.path.append('../source')
 
 from rmg.graph import *
+from rmg.chem import Atom, Bond
 
 ################################################################################
 
@@ -36,6 +37,50 @@ class GraphCheck(unittest.TestCase):
 			for v2 in graph[v1]:
 				self.assertTrue(graph2.hasEdge((v1, v2)))
 				self.assertTrue(graph2.hasEdge((v2, v1)))
+
+	def testConnectivityValues(self):
+		"""
+		Tests the Connectivity Values 
+		as introduced by Morgan (1965)
+		http://dx.doi.org/10.1021/c160017a018
+		
+		First CV1 is the number of neighbours
+		CV2 is the sum of neighbouring CV1 values
+		CV3 is the sum of neighbouring CV2 values
+		
+		Graph:     Expected (and tested) values:
+		
+		0-1-2-3-4            1-3-2-2-1   3-4-5-3-2    4-11-7-7-3
+		  |                    |           |             |
+		  5                    1           3             4
+		
+		"""
+		#vertices = [Vertex() for i in range(6)]
+		vertices = [Atom() for i in range(6)]
+		edges = [Edge() for i in range(5)]
+
+		graph = Graph()
+		for vertex in vertices: graph.addVertex(vertex)
+		graph.addEdge((vertices[0], vertices[1]), edges[0])
+		graph.addEdge((vertices[1], vertices[2]), edges[1])
+		graph.addEdge((vertices[2], vertices[3]), edges[2])
+		graph.addEdge((vertices[3], vertices[4]), edges[3])
+		graph.addEdge((vertices[1], vertices[5]), edges[4])
+	
+		graph.set_connectivity_values()
+		
+		for i,cv_ in enumerate([1,3,2,2,1,1]):
+			cv = vertices[i].connectivity_value_1
+			#print "On vertex %d got connectivity_value_1 = %d and expected %d"%(i,cv,cv_)
+			self.assertEqual(cv, cv_, "On vertex %d got connectivity_value_1=%d but expected %d"%(i,cv,cv_))
+		for i,cv_ in enumerate([3,4,5,3,2,3]):
+			cv = vertices[i].connectivity_value_2
+			#print "On vertex %d got connectivity_value_2 = %d and expected %d"%(i,cv,cv_)
+			self.assertEqual(cv, cv_, "On vertex %d got connectivity_value_2=%d but expected %d"%(i,cv,cv_))		
+		for i,cv_ in enumerate([4,11,7,7,3,4]):
+			cv = vertices[i].connectivity_value_3
+			#print "On vertex %d got connectivity_value_3 = %d and expected %d"%(i,cv,cv_)
+			self.assertEqual(cv, cv_, "On vertex %d got connectivity_value_3=%d but expected %d"%(i,cv,cv_))
 
 	def testSplit(self):
 		"""

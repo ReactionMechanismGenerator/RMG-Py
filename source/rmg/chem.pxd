@@ -43,6 +43,12 @@ cdef class Atom:
 	cdef  public str label
 	cpdef bint equivalent(Atom, Atom)
 
+	# apparently on Intel x86 processors executing 32 bit code
+	# short ints are slower to calculate than ints
+	# http://home.att.net/~jackklein/c/inttypes.html#short
+	cdef  public short int connectivity_value_1
+	cdef  public short int connectivity_value_2
+	cdef  public short int connectivity_value_3
 
 cdef class Bond:
 	"""

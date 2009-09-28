@@ -29,6 +29,10 @@
 cdef class Vertex:
 	cdef int nothing
 	cpdef bint equivalent(Vertex, Vertex)
+	
+	cdef  public short int connectivity_value_1
+	cdef  public short int connectivity_value_2
+	cdef  public short int connectivity_value_3
 
 cdef class Edge:
 	cdef int nothing

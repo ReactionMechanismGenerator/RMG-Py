@@ -34,6 +34,11 @@ cdef extern from "dictobject.h":
 cdef class Vertex:
 
 	def __init__(self):
+		# for Extended Connectivity; as introduced by Morgan (1965)
+		# http://dx.doi.org/10.1021/c160017a018
+		self.connectivity_value_1 = 0
+		self.connectivity_value_2 = 0
+		self.connectivity_value_3 = 0
 		pass
 
 	cpdef bint equivalent(Vertex self, Vertex other):
@@ -436,6 +441,35 @@ cdef class Graph(dict):
 				chain.pop(-1)
 		return cycleList
 
+	cpdef set_connectivity_values(Graph self):
+		"""
+		Sets the Extended Connectivity values as introduced by Morgan (1965)
+		http://dx.doi.org/10.1021/c160017a018
+		
+		First CV1 is the number of neighbours  (Morgan proposed non-Hydrogen neighbours)
+		CV2 is the sum of neighbouring CV1 values
+		CV3 is the sum of neighbouring CV2 values
+		"""
+		
+		cdef int count
+		cdef chem.Atom vert1, vert2
+		
+		for vert1 in self:
+			vert1.connectivity_value_1 = len(<dict>self[vert1])
+			
+		for vert1 in self:
+			count = 0
+			for vert2 in <dict>self[vert1]:
+				count += vert2.connectivity_value_1
+			vert1.connectivity_value_2 = count
+			
+		for vert1 in self:
+			count = 0
+			for vert2 in <dict>self[vert1]:
+				count += vert2.connectivity_value_2
+			vert1.connectivity_value_3 = count
+		
+		
 ################################################################################
 
 cpdef VF2_isomorphism(Graph graph1, Graph graph2, dict map12, dict map21, \
