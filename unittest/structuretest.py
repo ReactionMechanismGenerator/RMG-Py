@@ -289,7 +289,7 @@ structure4.fromSMILES('C(CCC)CCCC(CC(C(OOC(c1ccccc1)CCCCCCCCC)c1ccccc1)CCCCCC=CC
 	times = t.repeat(repeat=10,number=1000)
 	print " Test1 took %.3f milliseconds (%s)"%(min(times), times)
 	t = Timer(test2,startup)
-	times = t.repeat(repeat=10,number=1)
-	print " Test2 took %.3f seconds (%s)"%(min(times),times )
+	times = t.repeat(repeat=10,number=1000)
+	print " Test2 took %.3f milliseconds (%s)"%(min(times),times )
 	
 	unittest.main( testRunner = unittest.TextTestRunner(verbosity=2) )

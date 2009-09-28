@@ -475,17 +475,20 @@ cdef class Graph(dict):
 cpdef VF2_isomorphism(Graph graph1, Graph graph2, dict map12, dict map21, \
 	bint subgraph=False, bint findAll=False):
 	"""
-	Returns :data:`True` if two graphs are isomorphic and :data:`False`
-	otherwise. Uses the VF2 algorithm of Vento and Foggia. `subgraph` is
-	:data:`True` if graph2 is a potential subgraph of graph1. `findAll` is
-	used to specify whether all isomorphisms should be returned, or only the
-	first.
+	Returns :data:`True` if two :class:`Graph`s are isomorphic and :data:`False`
+	otherwise. Uses the VF2 algorithm of Vento and Foggia. If `subgraph` is
+	:data:`True` then graph2 is checked for being a potential subgraph of graph1. 
+	`findAll` isused to specify whether all isomorphisms should be returned, 
+	or only the first.
 	"""
 
 	cdef list map12List = list(), map21List = list()
 	cdef bint ismatch
 	cdef dict terminals1, terminals2
 
+	graph1.set_connectivity_values() # could probably run this less often elsewhere
+	graph2.set_connectivity_values() # as the values don't change often
+		
 	terminals1 = __VF2_terminals(graph1, map21)
 	terminals2 = __VF2_terminals(graph2, map12)
 
@@ -515,18 +518,32 @@ cdef bint __VF2_feasible(Graph graph1, Graph graph2, chem.Atom vertex1, chem.Ato
 	vertex1 and vertex2 are always a match, although the level 1 and level 2
 	checks preemptively eliminate a number of false positives.)
 	"""
-	cdef dict edges1 = <dict>graph1[vertex1]
-	cdef dict edges2 = <dict>graph2[vertex2]
+
 	cdef chem.Bond edge1, edge2
 	cdef chem.Atom vert1, vert2
 
+	# Richard's Connectivity Value check
+	# not sure where this is best done. Is it more specific or more general?
+#	if subgraph:
+#		if vertex1.connectivity_value_1 < vertex2.connectivity_value_1: return False
+#		if vertex1.connectivity_value_2 < vertex2.connectivity_value_2: return False
+#		if vertex1.connectivity_value_3 < vertex2.connectivity_value_3: return False
+#	else:
+	if not subgraph:
+		if vertex1.connectivity_value_1 != vertex2.connectivity_value_1: return False
+		if vertex1.connectivity_value_2 != vertex2.connectivity_value_2: return False
+		if vertex1.connectivity_value_3 != vertex2.connectivity_value_3: return False
+		
 	# Semantic check #1: vertex1 and vertex2 must be equivalent
 	if not vertex1.equivalent(vertex2):
 		return False
 	
+	
 	# Semantic check #2: adjacent vertices to vertex1 and vertex2 that are
 	# already mapped should be connected by equivalent edges
-	
+	cdef dict edges1 = <dict>graph1[vertex1]
+	cdef dict edges2 = <dict>graph2[vertex2]
+		
 	for vert1 in edges1:
 	# for vert1, edge1 in edges1.iteritems(): # if you uncomment this..**
 		if vert1 in map21:
@@ -639,6 +656,16 @@ cdef bint __VF2_match(Graph graph1, Graph graph2, dict map21, dict map12, \
 
 	return False
 
+cpdef int __atom_sort_value(chem.Atom atom):
+	"""
+	Used to sort atoms prior to poposing candidate pairs in :method:`__VF2_pairs` 
+	The lowest (or most negative) values will be first in the list when you sort, 
+	so should be given to the atoms you want to explore first. 
+	For now, that is (roughly speaking) the most connected atoms. This definitely helps for large graphs
+	but bizarrely the opposite ordering seems to help small graphs. Not sure about subggraphs...
+	"""
+	return -100 * atom.connectivity_value_1 - 10 * atom.connectivity_value_2  - atom.connectivity_value_3
+	
 cdef list __VF2_pairs(Graph graph1, Graph graph2, dict terminals1, dict terminals2):
 	"""
 	Create a list of pairs of candidates for inclusion in the VF2 mapping. If
@@ -650,17 +677,26 @@ cdef list __VF2_pairs(Graph graph1, Graph graph2, dict terminals1, dict terminal
 
 	cdef list pairs = list()
 	cdef chem.Atom vertex1, vertex2, terminal1, terminal2
-#	cdef Vertex vertex2, vertex1
-
+	cdef list list_to_sort
 	# Construct list from terminals if possible
 	if len(terminals1) > 0 and len(terminals2) > 0:
-		terminal2 = terminals2.keys()[0]
-		for terminal1 in terminals1:
+		list_to_sort = terminals2.keys()
+		list_to_sort.sort(key=__atom_sort_value)
+		terminal2 = list_to_sort[0]
+		list_to_sort = terminals1.keys()
+		list_to_sort.sort(key=__atom_sort_value)
+		
+		for terminal1 in list_to_sort:
 			pairs.append([terminal1, terminal2])
 	# Otherwise construct list from all remaining vertices
 	else:
-		vertex2 = graph2.keys()[0]
-		for vertex1 in graph1:
+		list_to_sort = graph2.keys()
+		list_to_sort = graph2.keys()
+		list_to_sort.sort(key=__atom_sort_value)
+		vertex2 = list_to_sort[0]
+		list_to_sort = graph1.keys()
+		list_to_sort.sort(key=__atom_sort_value)		
+		for vertex1 in list_to_sort:
 			pairs.append([vertex1, vertex2])
 	
 	return pairs
