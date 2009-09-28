@@ -25,6 +25,8 @@
 #
 ################################################################################
 
+cimport chem # so we have 
+
 cdef extern from "dictobject.h":
 	ctypedef class __builtin__.dict [object PyDictObject]:
 		pass
@@ -270,6 +272,9 @@ cdef class Graph(dict):
 		cdef list verticesToMove
 		cdef list cycleList
 		cdef list cycles
+		cdef chem.Atom vertex, rootVertex
+		cdef bint found
+		cdef list cycle, graphs
 
 		# Step 1: Remove all terminal vertices
 		done = False
@@ -348,7 +353,7 @@ cdef class Graph(dict):
 						
 		return cycleList
 
-	cpdef bint isVertexInCycle(Graph self, vertex):
+	cpdef bint isVertexInCycle(Graph self, chem.Atom vertex):
 		""" 
 		Is `vertex` in a cycle?
 		Returns :data:`True` if it is in a cycle, else :data:`False`.
@@ -364,8 +369,8 @@ cdef class Graph(dict):
 		Recursively calls itself
 		"""
 		# Note that this function no longer returns the cycle; just True/False
-		
-		
+		cdef chem.Atom vertex2
+		cdef chem.Bond edge
 		cdef bint found
 		
 		for vertex2, edge in self[chain[-1]].iteritems():
@@ -381,7 +386,7 @@ cdef class Graph(dict):
 				chain.remove(vertex2)
 		return False
 
-	cpdef list getAllCycles(Graph self, startingVertex):
+	cpdef list getAllCycles(Graph self, chem.Atom startingVertex):
 		"""
 		Given a starting vertex, returns a list of all the cycles containing 
 		that vertex.
@@ -410,8 +415,8 @@ cdef class Graph(dict):
 		# unless we derive Atom and Bond from Vertex and Edge we can't cdef these:
 		#cdef Vertex vertex2
 		#cdef Edge edge
-		
-		
+		cdef chem.Atom vertex2
+		cdef chem.Bond edge
 		
 		chainLabels=[self.keys().index(v) for v in chain]
 		#print "found %d so far. Chain=%s"%(len(cycleList),chainLabels)
@@ -458,7 +463,7 @@ cpdef VF2_isomorphism(Graph graph1, Graph graph2, dict map12, dict map21, \
 	else:
 		return ismatch, map12, map21
 
-cdef bint __VF2_feasible(Graph graph1, Graph graph2, vertex1, vertex2, \
+cdef bint __VF2_feasible(Graph graph1, Graph graph2, chem.Atom vertex1, chem.Atom vertex2, \
 	dict map21, dict map12, dict terminals1, dict terminals2, bint subgraph):
 	"""
 	Returns :data:`True` if two vertices `vertex1` and `vertex2` from graphs
@@ -478,11 +483,13 @@ cdef bint __VF2_feasible(Graph graph1, Graph graph2, vertex1, vertex2, \
 	"""
 	cdef dict edges1 = graph1[vertex1]
 	cdef dict edges2 = graph2[vertex2]
+	cdef chem.Bond edge1, edge2
+	cdef chem.Atom vert1, vert2
 
 	# Semantic check #1: vertex1 and vertex2 must be equivalent
 	if not vertex1.equivalent(vertex2):
 		return False
-
+	
 	# Semantic check #2: adjacent vertices to vertex1 and vertex2 that are
 	# already mapped should be connected by equivalent edges
 	for vert1, edge1 in edges1.iteritems():
@@ -550,9 +557,11 @@ cdef bint __VF2_match(Graph graph1, Graph graph2, dict map21, dict map12, \
 	Uses the VF2 algorithm of Vento and Foggia, which is O(N) in spatial complexity
 	and O(N**2) (best-case) to O(N! * N) (worst-case) in temporal complexity.
 	"""
-	
-	cdef dict new_terminals1, new_terminals2
 
+	cdef dict new_terminals1, new_terminals2
+	cdef chem.Atom vertex1, vertex2
+	cdef bint ismatch 
+	
 	# Done if we have mapped to all vertices in graph2
 	if len(map12) >= len(graph2) or len(map21) >= len(graph1):
 		return True
@@ -603,6 +612,8 @@ cdef list __VF2_pairs(Graph graph1, Graph graph2, dict terminals1, dict terminal
 	"""
 
 	cdef list pairs = list()
+	cdef chem.Atom vertex1, vertex2, terminal1, terminal2
+#	cdef Vertex vertex2, vertex1
 
 	# Construct list from terminals if possible
 	if len(terminals1) > 0 and len(terminals2) > 0:
@@ -625,6 +636,9 @@ cdef dict __VF2_terminals(Graph graph, dict mapping):
 	"""
 
 	cdef dict terminals = dict() # why won't {} work?
+	cdef chem.Atom vertex, vert
+	cdef chem.Bond edge
+	
 	for vertex in mapping:
 		for vert in <dict>graph[vertex]:
 			if vert not in mapping:

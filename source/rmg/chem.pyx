@@ -31,6 +31,9 @@ Contains classes describing simple chemical entities: elements, atoms, bonds, et
 
 import logging
 
+cimport graph
+#import graph
+
 ################################################################################
 
 cdef class Element:
@@ -384,10 +387,11 @@ cdef class Atom:
 	individual atoms, e.g. center atoms or reactive sites in functional groups.
 	"""
 
-	cdef public list _atomType
-	cdef public list _electronState
-	cdef public int charge
-	cdef public str label
+## moved to chem.pyxd
+#	cdef public list _atomType
+#	cdef public list _electronState
+#	cdef public int charge
+#	cdef public str label
 
 	def __init__(self, atomType='R', electronState='0', charge=0, label=''):
 		"""
@@ -620,9 +624,11 @@ cdef class Bond:
 	length two containing the two atoms in the bond and a `bondType` object,
 	stored internally as a :class:`BondType` object.
 	"""
-
-	cdef public list atoms
-	cdef public list _bondType
+# moved to pxd file:
+#	cdef public list atoms
+#	cdef public list _bondType
+#	cdef public list atoms
+#	cdef public list _bondType
 
 	def __init__(self, atoms, bondType='S'):
 		self.bondType = bondType
