@@ -6,6 +6,7 @@ import unittest
 from atomtest import *
 from bondtest import *
 from datatest import *
+from graphtest import *
 from structuretest import *
 from thermotest import *
 from speciestest import *
