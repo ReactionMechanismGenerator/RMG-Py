@@ -147,6 +147,8 @@ def execute(inputFile, outputDir, scratchDir, libraryDir, verbose):
 			from guppy import hpy
 			hp = hpy()
 			memoryUse.append(hp.heap().size / 1.0e6)
+			logging.debug('Execution time: %s s' % (execTime[-1]))
+			logging.debug('Memory used: %s MB' % (memoryUse[-1]))
 			restartSize.append(os.path.getsize(outputDir + '/restart.pkl') / 1.0e6)
 			generateExecutionPlots(execTime, coreSpeciesCount, coreReactionCount, edgeSpeciesCount, edgeReactionCount, memoryUse, restartSize)
 
