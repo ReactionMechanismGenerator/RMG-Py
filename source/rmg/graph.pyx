@@ -481,8 +481,8 @@ cdef bint __VF2_feasible(Graph graph1, Graph graph2, chem.Atom vertex1, chem.Ato
 	vertex1 and vertex2 are always a match, although the level 1 and level 2
 	checks preemptively eliminate a number of false positives.)
 	"""
-	cdef dict edges1 = graph1[vertex1]
-	cdef dict edges2 = graph2[vertex2]
+	cdef dict edges1 = <dict>graph1[vertex1]
+	cdef dict edges2 = <dict>graph2[vertex2]
 	cdef chem.Bond edge1, edge2
 	cdef chem.Atom vert1, vert2
 
@@ -492,11 +492,14 @@ cdef bint __VF2_feasible(Graph graph1, Graph graph2, chem.Atom vertex1, chem.Ato
 	
 	# Semantic check #2: adjacent vertices to vertex1 and vertex2 that are
 	# already mapped should be connected by equivalent edges
-	for vert1, edge1 in edges1.iteritems():
+	
+	for vert1 in edges1:
+	# for vert1, edge1 in edges1.iteritems(): # if you uncomment this..**
 		if vert1 in map21:
 			vert2 = map21[vert1]
 			if not vert2 in edges2:
 				return False
+			edge1 = edges1[vert1] # **..then remove this
 			edge2 = edges2[vert2]
 			if not edge1.equivalent(edge2):
 				return False
