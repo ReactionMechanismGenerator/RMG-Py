@@ -9,7 +9,7 @@ Forward: Ethane insertion to ether
 Reverse: Ethane extrusion from ether
 
 // Template for forward reaction
-doublebond + R_OR <---> R_doublebond_OR
+doublebond + R_OR <---> R_inserted_OR
 
 // Recipe for forward reaction
 BREAK_BOND		{*3,S,*4}
