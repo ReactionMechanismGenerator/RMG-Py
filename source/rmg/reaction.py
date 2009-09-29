@@ -1058,18 +1058,19 @@ class ReactionFamily(data.Database):
 		for struct in structures: struct.clearLabeledAtoms()
 
 		# Tag atoms with labels
-		counter = 0
+		identicalCenterCounter = 0
 		for map in maps:
-			for key, value in map.iteritems():
+			for templateAtom, reactantAtom in map.iteritems():
 				# For reactions involving two identical centers, both labeled
 				# '*', label one as '*1' and the other as '*2'
 				# An example reaction family is colligation (reverse of
 				# unimolecular homolysis)
-				if key.label == '*':
-					counter += 1; value.label = '*' + str(counter)
+				if templateAtom.label == '*':
+					identicalCenterCounter += 1
+					reactantAtom.label = '*' + str(identicalCenterCounter)
 				# Otherwise pass label as given
-				elif key.label != '':
-					value.label = key.label
+				elif templateAtom.label != '':
+					reactantAtom.label = templateAtom.label
 
 		# Copy structures so we don't modify the originals
 		# Do this after tagging the originals so both reactants and products
@@ -1092,7 +1093,7 @@ class ReactionFamily(data.Database):
 
 		# Restore original atom labels of the reactants if they were changed
 		# before
-		if counter > 0:
+		if identicalCenterCounter > 0:
 			#for struct in structures:
 			for s in reactantStructures:
 				for atom in s.atoms():
@@ -1122,7 +1123,6 @@ class ReactionFamily(data.Database):
 			elif label == 'intra h migration' or label == 'alkyl hydroperoxyl intra OH migration':
 				atomLabels['*1'].label = '*2'
 				atomLabels['*2'].label = '*1'
-
 
 		# Split product structure into multiple species if necessary
 		if len(self.template.products) > 1:
@@ -1245,20 +1245,20 @@ class ReactionFamily(data.Database):
 				group = self.dictionary[node]
 
 			atomList = group.getLabeledAtoms()
-			for structure in structures:
+			for struct in structures:
 				# Match labeled atoms
 				match = True
 				for label in atomList:
-					if not structure.containsLabeledAtom(label):
+					if not struct.containsLabeledAtom(label):
 						match = False
 				# Match structures
-				atoms = structure.getLabeledAtoms()
-				node = self.descendTree(structure, atoms, forward)
+				atoms = struct.getLabeledAtoms()
+				node = self.descendTree(struct, atoms, forward)
 				if match and node is not None:
 					template.append(node)
-
+		
 		# Check that we were able to match the template
-		if len(template) == 0:
+		if len(template) != len(forwardTemplate):
 			logging.warning('Warning: Unable to find matching template for reaction %s in reaction family %s; using the most general reaction template.' % (str(reaction), str(self)))
 			# If unable to match template, use the most general template
 			forwardTemplate, reverseTemplate = self.getTemplateLists()
