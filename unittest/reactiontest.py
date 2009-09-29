@@ -99,16 +99,18 @@ class ReactionCheck(unittest.TestCase):
 		
 class ReactionSetCheck(unittest.TestCase): 
 	
-	def setUp(self):
+	def loadDatabase(self,only_families=[]):
 		# Load database
 		databasePath = '../data/RMG_database'
-		only_families=['1,3_Insertion_ROR']
+		if only_families: 
+			print "Only loading reaction families %s"%only_families
 		reaction.kineticsDatabase = reaction.ReactionFamilySet()
 		reaction.kineticsDatabase.load(databasePath, only_families=only_families)
 
 	
 	def testEthaneExtrusionFromEther(self):
 		"""A reaction that was giving trouble in a diesel simulation"""
+		self.loadDatabase(only_families=['1,3_Insertion_ROR'])
 		structure1 = Structure()
 		structure1.fromSMILES("c1c([CH]C(C=CCCCCCC)OOCc2c3ccccc3ccc2)cccc1")
 		species1 = makeNewSpecies(structure1)
@@ -121,16 +123,48 @@ class ReactionSetCheck(unittest.TestCase):
 		structure3.fromSMILES("c1cc(C=C[C]=CCCCCCC)ccc1")
 		species3 = makeNewSpecies(structure3)
 		
-		print "FORWARD"
+		# wipe the reaction list
+		reaction.reactionList=[]
+		#print "FORWARD"
 		rxns = reaction.kineticsDatabase.getReactions([species2,species3])
-		for rxn in rxns:
-			print 'Reaction family:',rxn.family
-			print 'Reaction:',rxn
-			print 'Kinetics:',rxn.kinetics
-			print 'bestKinetics:',rxn.bestKinetics
-			print
+		#for rxn in rxns:
+		#	print 'Reaction family:',rxn.family
+		#	print 'Reaction:',rxn
+		#	print 'Kinetics:',rxn.kinetics
+		#	print 'bestKinetics:',rxn.bestKinetics
+		#	print
+		self.assertEqual(len(rxns),18, "Was expecting to make 18 reactions for %s + %s"%(species2,species3))
 			
-		print "REVERSE"
+		# wipe the reaction list
+		reaction.reactionList=[]
+		#print "REVERSE"
+		rxns = reaction.kineticsDatabase.getReactions([species1])
+		#for rxn in rxns:
+		#	print 'Reaction family:',rxn.family
+		#	print 'Reaction:',rxn
+		#	print 'Kinetics:',rxn.kinetics
+		#	print 'bestKinetics:',rxn.bestKinetics
+		#	print
+		self.assertEqual(len(rxns),1, "Was expecting to make 1 reaction for %s"%(species1))
+		rxn = rxns[0]
+		self.assertEqual(len(rxn.reactants),2,"Reaction wasn't bimolecular")
+		self.assertTrue(species2 in rxn.reactants, "Didn't make %s"%species2)
+		self.assertTrue(species3 in rxn.reactants, "Didn't make %s"%species3)
+
+	def testIntraHmigration(self):
+		"""An intra-H migration reaction"""
+		self.loadDatabase(only_families=['intra_H_migration'])
+		structure1 = Structure()
+		structure1.fromSMILES("[CH](CCCc1ccccc1)CCCCCC")
+		species1 = makeNewSpecies(structure1)
+
+		structure2 = Structure()
+		structure2.fromSMILES("C(CCCC[CH]c1ccccc1)CCCC")
+		species2 = makeNewSpecies(structure2)
+			
+		# wipe the reaction list
+		reaction.reactionList=[]
+
 		rxns = reaction.kineticsDatabase.getReactions([species1])
 		for rxn in rxns:
 			print 'Reaction family:',rxn.family
@@ -138,6 +172,10 @@ class ReactionSetCheck(unittest.TestCase):
 			print 'Kinetics:',rxn.kinetics
 			print 'bestKinetics:',rxn.bestKinetics
 			print
+		self.assertEqual(len(rxns),1, "Was expecting to make 1 reaction for %s"%(species1))
+		rxn = rxns[0]
+		self.assertEqual(len(rxn.reactants),1,"Reaction wasn't unimolecular")
+		self.assertTrue(species2 in rxn.products, "Reaction didn't make %s"%(species2))
 			
 
 

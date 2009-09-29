@@ -1155,7 +1155,7 @@ class ReactionFamily(data.Database):
 			# makeNewSpecies() (e.g. due to forbidden structure)
 			if spec is None: return None
 			products.append(spec)
-
+		
 		# Create reaction and add if unique
 		rxn, isNew = makeNewReaction(reactants, products, reactantStructures, productStructures, self)
 		if isNew:	return rxn
@@ -1256,20 +1256,24 @@ class ReactionFamily(data.Database):
 				node = self.descendTree(struct, atoms, forward)
 				if match and node is not None:
 					template.append(node)
+					
+		forwardTemplate, reverseTemplate = self.getTemplateLists()
 		
-		# Check that we were able to match the template
+		# Check that we were able to match the template.
+		# template is a list of the actual matched nodes
+		# forwardTemplate is a list of the top level nodes that should be matched
 		if len(template) != len(forwardTemplate):
-			logging.warning('Warning: Unable to find matching template for reaction %s in reaction family %s; using the most general reaction template.' % (str(reaction), str(self)))
-			# If unable to match template, use the most general template
-			forwardTemplate, reverseTemplate = self.getTemplateLists()
-
+			print 'Warning: Unable to find matching template for reaction %s in reaction family %s' % (str(reaction), str(self))
+			raise UndeterminableKineticsException(reaction)
 			print str(self), template, forwardTemplate, reverseTemplate
 			for reactant in reaction.reactants:
 				print reactant.toAdjacencyList() + '\n'
 			for product in reaction.products:
 				print product.toAdjacencyList() + '\n'
+				
+			## If unable to match template, use the most general template
+			#template = forwardTemplate
 
-			template = forwardTemplate
 
 #		k = self.library.getData(template)
 #		print template, k
