@@ -6,16 +6,23 @@ import unittest
 import sys
 sys.path.append('../source')
 
-from rmg.structure import *
-from rmg.species import *
+from rmg.structure import Structure
+from rmg.species import makeNewSpecies
 from rmg.reaction import *
+import rmg.reaction as reaction
 
+# Run this whether being run as __main__ or called by other unit test suite:
+
+
+
+	
+	
 ################################################################################
 
 class ReactionCheck(unittest.TestCase):                          
 
 	def testMakeNewReaction(self):
-	
+		"""Create a new reaction and check you can identify the reverse"""
 		structure1 = Structure()
 		structure1.fromAdjacencyList("""
 		1 C 0 {2,D} {7,S} {8,S}
@@ -71,6 +78,9 @@ class ReactionCheck(unittest.TestCase):
 		C6H9 = makeNewSpecies(structure3)
 		H2 = makeNewSpecies(structure4)
 		
+		# wipe the reaction list
+		reaction.reactionList=[]
+		
 		reaction1, isNew = makeNewReaction([C6H9, H2], [C6H10, H], \
 			[C6H9.structure[0], H2.structure[0]], \
 			[C6H10.structure[0], H.structure[0]], \
@@ -86,6 +96,52 @@ class ReactionCheck(unittest.TestCase):
 		self.assertTrue(reaction1 is reaction2)
 		self.assertFalse(isNew)
 				
+		
+class ReactionSetCheck(unittest.TestCase): 
+	
+	def setUp(self):
+		# Load database
+		databasePath = '../data/RMG_database'
+		only_families=['1,3_Insertion_ROR']
+		reaction.kineticsDatabase = reaction.ReactionFamilySet()
+		reaction.kineticsDatabase.load(databasePath, only_families=only_families)
+
+	
+	def testEthaneExtrusionFromEther(self):
+		"""A reaction that was giving trouble in a diesel simulation"""
+		structure1 = Structure()
+		structure1.fromSMILES("c1c([CH]C(C=CCCCCCC)OOCc2c3ccccc3ccc2)cccc1")
+		species1 = makeNewSpecies(structure1)
+		
+		structure2 = Structure()
+		structure2.fromSMILES("c1ccc(c2ccccc12)COO")
+		species2 = makeNewSpecies(structure2)
+		
+		structure3 = Structure()
+		structure3.fromSMILES("c1cc(C=C[C]=CCCCCCC)ccc1")
+		species3 = makeNewSpecies(structure3)
+		
+		print "FORWARD"
+		rxns = reaction.kineticsDatabase.getReactions([species2,species3])
+		for rxn in rxns:
+			print 'Reaction family:',rxn.family
+			print 'Reaction:',rxn
+			print 'Kinetics:',rxn.kinetics
+			print 'bestKinetics:',rxn.bestKinetics
+			print
+			
+		print "REVERSE"
+		rxns = reaction.kineticsDatabase.getReactions([species1])
+		for rxn in rxns:
+			print 'Reaction family:',rxn.family
+			print 'Reaction:',rxn
+			print 'Kinetics:',rxn.kinetics
+			print 'bestKinetics:',rxn.bestKinetics
+			print
+			
+
+
+
 ################################################################################
 
 if __name__ == '__main__':
