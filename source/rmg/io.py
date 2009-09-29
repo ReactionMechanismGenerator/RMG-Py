@@ -340,10 +340,19 @@ def readInputFile(fstr):
 			propModel = getFirstChildElement(element, 'physicalPropertyModel')
 			propModelType = propModel.getAttribute('type')
 			if propModelType.lower() == 'idealgas':
-
 				# Set the reaction system's pressure model to isobaric
 				reactionSystem.equationOfState = model.IdealGas()
-			
+			elif propModelType.lower() == 'incompressibleliquid':
+				molarVolume = getFirstChildElement(element, 'molarVolume')
+				value = float(getElementText(molarVolume))
+				units = str(molarVolume.getAttribute('units'))
+				Vmol = float(pq.Quantity(value, units).simplified); 
+				
+				reactionSystem.equationOfState = model.IncompressibleLiquid( 
+					P = reactionSystem.pressureModel.getPressure(),
+					T = reactionSystem.temperatureModel.getTemperature(),
+					Vmol = Vmol
+					)
 			else:
 				raise InvalidInputFileException('Invalid physical property model type "' + propModelType + '".')
 

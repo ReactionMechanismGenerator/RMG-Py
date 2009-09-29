@@ -249,7 +249,7 @@ class TemperatureModel:
 		self.type = 'isothermal'
 		self.temperatures = [ [0.0, temperature] ]
 	
-	def getTemperature(self, time):
+	def getTemperature(self, time=None):
 		if self.isIsothermal():
 			return self.temperatures[0][1]
 		else:
@@ -280,7 +280,7 @@ class PressureModel:
 		self.type = 'isobaric'
 		self.pressures = [ [0.0, pressure] ]
 	
-	def getPressure(self, time):
+	def getPressure(self, time=None):
 		if self.isIsobaric():
 			return self.pressures[0][1]
 		else:
@@ -318,7 +318,7 @@ class IdealGas:
 
 	def getPressure(self, T, V, N):
 		"""
-		Return the temperature associated with temperature `T`, volume `V`, and
+		Return the pressure associated with temperature `T`, volume `V`, and
 		numbers of moles `N`.
 		"""
 		return sum(N) * constants.R * T / V
@@ -415,6 +415,156 @@ class IdealGas:
 
 ################################################################################
 
+class IncompressibleLiquid:
+	"""
+	An equation of state for incompressible liquids
+
+	.. math::
+
+		f(P, V, T, \\mathbf{N}) = ?
+
+	where :math:`N \\equiv \\sum_i N_i` is the total number of moles.
+
+	Initialise with keyword arguments::
+		il = IncompressibleLiquid(T=298, P=1E5, V=, N=)
+	"""
+	def __init__(self, T=None, P=None, V=None, N=None, Vmol=None):
+		self.T = T
+		self.P = P
+		self.V = V
+		self.N = N
+		self.Vmol = Vmol
+		
+	def getTemperature(self, P, V, N):
+		"""
+		Return the temperature associated with pressure `P`, volume `V`, and
+		numbers of moles `N`.
+		"""
+		if self.T: 
+			return self.T
+		else:
+			raise Exception("I'm a liquid, and can't deduce T from P,V,N.")
+
+	def getPressure(self, T, V, N):
+		"""
+		Return the pressure associated with temperature `T`, volume `V`, and
+		numbers of moles `N`.
+		"""
+		if self.P:
+			return self.P
+		else:
+			raise Exception("I'm a liquid, and can't deduce P from T,V,N.")
+		
+	def getVolume(self, T, P, N):
+		"""
+		Return the volume associated with temperature `T`, pressure `P`, and
+		numbers of moles `N` (which may be a list, in which case it's summed).
+		"""
+		if self.V:
+			logging.debug("Using explicit volume.")
+			return self.V
+		try:
+		    N = sum(N)
+		except TypeError: #can't iterate; N probably a float not a list
+		    pass
+		if self.Vmol:
+			return N * self.Vmol
+		else:
+			raise Exception("I'm a liquid with unknown molarVolume, and can't deduce V from T,P,N.")
+		
+	def getdPdV(self, P, V, T, N):
+		"""
+		Return the derivative :math:`\\frac{dP}{dV}\\bigg|_{T,\mathbf{N}}`
+		evaluated at a given pressure `P`, volume `V`, temperature `T`, and
+		numbers of moles `N`.
+		"""
+		return  0
+
+	def getdPdT(self, P, V, T, N):
+		"""
+		Return the derivative :math:`\\frac{dP}{dT}\\bigg|_{V,\mathbf{N}}`
+		evaluated at a given pressure `P`, volume `V`, temperature `T`, and
+		numbers of moles `N`.
+		"""
+		return 0
+
+	def getdVdT(self, P, V, T, N):
+		"""
+		Return the derivative :math:`\\frac{dV}{dT}\\bigg|_{P,\mathbf{N}}`
+		evaluated at a given pressure `P`, volume `V`, temperature `T`, and
+		numbers of moles `N`.
+		"""
+		return 0
+
+	def getdVdP(self, P, V, T, N):
+		"""
+		Return the derivative :math:`\\frac{dV}{dP}\\bigg|_{T,\mathbf{N}}`
+		evaluated at a given pressure `P`, volume `V`, temperature `T`, and
+		numbers of moles `N`.
+		"""
+		return 0
+
+	def getdTdP(self, P, V, T, N):
+		"""
+		Return the derivative :math:`\\frac{dT}{dP}\\bigg|_{V,\mathbf{N}}`
+		evaluated at a given pressure `P`, volume `V`, temperature `T`, and
+		numbers of moles `N`.
+		"""
+		return 0
+
+	def getdTdV(self, P, V, T, N):
+		"""
+		Return the derivative :math:`\\frac{dT}{dV}\\bigg|_{P,\mathbf{N}}`
+		evaluated at a given pressure `P`, volume `V`, temperature `T`, and
+		numbers of moles `N`.
+		"""
+		return 0
+
+	def getdPdNi(self, P, V, T, N, i):
+		"""
+		Return the derivative :math:`\\frac{dP}{dN_i}\\bigg|_{T, V,\mathbf{N}_{j \\ne i}}`
+		evaluated at a given pressure `P`, volume `V`, temperature `T`, and
+		numbers of moles `N`. The final parameter `i` is used to determine which
+		species to use; if `N` is a list, then `i` is an index, while if `N` is
+		a dictionary, `i` is a key.
+		
+		Warning: inconsistent with dVdNi and dVdP
+		"""
+		# logging.debug('Warning: inconsistent equation of state. dPdNi should equal infinity')
+		return numpy.inf
+		### Warning: inconsistent with dVdNi and dVdP
+		## if dVdNi>0 and dVdP=0 then is'nt dPdNi = infinity ?
+		
+	def getdTdNi(self, P, V, T, N, i):
+		"""
+		Return the derivative :math:`\\frac{dT}{dN_i}\\bigg|_{P, V,\mathbf{N}_{j \\ne i}}`
+		evaluated at a given pressure `P`, volume `V`, temperature `T`, and
+		numbers of moles `N`. The final parameter `i` is the index of the
+		species of interest, corresponding to an index into the list `N`.
+		"""
+		return 0
+		
+	def getdVdNi(self, P, V, T, N, i):
+		"""
+		Return the derivative :math:`\\frac{dV}{dN_i}\\bigg|_{T, P,\mathbf{N}_{j \\ne i}}`
+		evaluated at a given pressure `P`, volume `V`, temperature `T`, and
+		numbers of moles `N`. The final parameter `i` is the index of the
+		species of interest, corresponding to an index into the list `N`.
+		
+		For lack of better information,
+		we assume that the partial molar volume of species `i`
+		is equal to the average molar volume of the mixture as a whole.
+		"""
+		
+		# assume that the partial molar volume of species i
+		# is equal to the average molar volume of all species
+		if type(N) is dict: return (V/numpy.sum(N.values()))
+		else: return (V/numpy.sum(N))
+
+
+
+################################################################################
+
 class InvalidReactionSystemException(Exception):
 	"""
 	An exception used when an invalid reaction system is encountered.
@@ -485,8 +635,12 @@ class BatchReactor(ReactionSystem):
 
 		.. math:: \\frac{d \\mathbf{y}}{dt} = \\mathbf{R}(\\mathbf{y})
 
-		The dependent variables include temperature, pressure, volume, and
+		The dependent variables are temperature, pressure, volume, and
 		numbers of moles for each species.
+		
+		.. math:: \\mathbf{y} \\equiv \\left[ P, V, T, N_1, N_2,\\ldots, N_i \\right]
+		
+		Currently only models isothermal and isobaric reactors (:math:`dT/dt=dP/dt=0`)
 		"""
 
 		P, V, T = y[0:3]; Ni = y[3:]
@@ -530,7 +684,6 @@ class BatchReactor(ReactionSystem):
 		Evaluate the reaction rates for all reactions in the model (core and
 		edge).
 		"""
-
 		Ci = {}
 		for i, spec in enumerate(model.core.species):
 			Ci[spec] = Ni[i] / V
@@ -551,6 +704,7 @@ class BatchReactor(ReactionSystem):
 		"""
 		Returns :data:`True` if `model` is valid given the set of species fluxes
 		`dNidt` and the characteristic flux `charFlux`.
+		Also returns the edge species whose flux is greatest, and that flux.
 		"""
 
 		speciesList, reactionList = model.getLists()
@@ -566,7 +720,6 @@ class BatchReactor(ReactionSystem):
 		Conduct a simulation of the current reaction system using the core-edge
 		reaction model `model`.
 		"""
-
 		# Assemble stoichiometry matrix for all core and edge species
 		# Rows are species (core, then edge); columns are reactions (core, then edge)
 		stoichiometry = model.getStoichiometryMatrix()
@@ -639,7 +792,7 @@ class BatchReactor(ReactionSystem):
 				if maxSpeciesFluxes[i] < abs(dNidt[i]): maxSpeciesFluxes[i] = abs(dNidt[i])
 
 			# Determine characteristic species flux
-			charFlux = model.fluxTolerance * math.sqrt(sum([x**2 for x in dNidt[0:len(model.core.species)]]))
+			charFlux = model.fluxTolerance * math.sqrt(sum([x*x for x in dNidt[0:len(model.core.species)]]))
 
 			# Test for model validity
 			valid, maxSpecies, maxSpeciesFlux = self.isModelValid(model, dNidt, charFlux)
@@ -708,7 +861,7 @@ class BatchReactor(ReactionSystem):
 		flux `charFlux`, the maximum species flux `maxSpeciesFlux`, and the
 		species with that flux `maxSpecies`.
 		"""
-
+		
 		# Output information about simulation at current time
 		status = '%8.4e' % (t)
 		for target in model.termination:
