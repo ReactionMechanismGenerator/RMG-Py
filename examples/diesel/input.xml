@@ -12,6 +12,29 @@
 	<species id="n-decylbenzene" label="n-decylbz" reactive="yes">
 		<smiles>CCCCCCCCCCc1ccccc1</smiles>
 	</species>
+	<species id="n-undecane" label="n-C11" reactive="yes">
+		<smiles>CCCCCCCCCCC</smiles>
+	</species>
+	<species id="n-tridecane" label="n-C13" reactive="yes">
+		<smiles>CCCCCCCCCCCCC</smiles>
+	</species>
+	<species id="n-hexadecane" label="n-C16" reactive="yes">
+		<smiles>CCCCCCCCCCCCCCCC</smiles>
+	</species>
+	<species id="n-nonadecane" label="n-C19" reactive="yes">
+		<smiles>CCCCCCCCCCCCCCCCCCC</smiles>
+	</species>
+	<species id="n-heneicosane" label="n-C21" reactive="yes">
+		<smiles>CCCCCCCCCCCCCCCCCCCCC</smiles>
+	</species>
+	<species id="1-methylnapthalene" label="1M-napthalene" reactive="yes">
+		<smiles>Cc1cccc2ccccc12</smiles>
+	</species>
+	<!--
+	<species id="linoleic acid methyl ester" label="M-linoleate" reactive="yes">
+		<smiles>CCCCC/C=C\C\C=C/CCCCCCCC(=O)OC</smiles>
+	</species>
+	-->
 	<species id="oxygen" label="O2" reactive="yes">
 		<smiles>O=O</smiles>
 	</species>
@@ -30,8 +53,17 @@
 		<physicalPropertyModel type="incompressibleLiquid" >
 		    <molarVolume units="cm^3/mol">162.0</molarVolume>
 		</physicalPropertyModel>
-		<moleFraction speciesID="n-decylbenzene">0.5</moleFraction>
-		<moleFraction speciesID="oxygen">0.5</moleFraction>
+		<moleFraction speciesID="n-undecane">0.05</moleFraction>
+		<moleFraction speciesID="n-tridecane">0.19</moleFraction>
+		<moleFraction speciesID="n-hexadecane">0.25</moleFraction>
+		<moleFraction speciesID="n-nonadecane">0.18</moleFraction>
+		<moleFraction speciesID="n-heneicosane">0.10</moleFraction>
+		<moleFraction speciesID="n-decylbenzene">0.12</moleFraction>
+		<moleFraction speciesID="1-methylnapthalene">0.1</moleFraction>
+		
+		<moleFraction speciesID="oxygen">0.05</moleFraction>
+		
+		<!-- <moleFraction speciesID="M-linoleate">0.0</moleFraction> -->
 	</reactionSystem>
 	<!-- Termination -->
 	<termination>
