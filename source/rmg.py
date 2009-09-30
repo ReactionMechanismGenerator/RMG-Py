@@ -34,6 +34,14 @@ RMG is an automatic chemical mechanism generator. It is awesomely awesome.
 
 ################################################################################
 
+class tee:
+	"""A simple tee to create a stream which prints to many streams"""
+	def __init__(self, *fileobjects):
+		self.fileobjects=fileobjects
+	def write(self, string):
+		for fileobject in self.fileobjects:
+			fileobject.write(string)
+
 if __name__ == '__main__':
 
 	from guppy import hpy
@@ -68,6 +76,8 @@ if __name__ == '__main__':
 	parser.add_option('-l', '--library-directory', default='', 
 					  action="store", type="string", dest="libraryDirectory", 
 					  help='use DIR as library directory', metavar='DIR')
+	parser.add_option('-p', '--profile',
+						action="store_true", dest="profile", default=True )
 	
 	# Parse the command-line arguments
 	options, args = parser.parse_args()
@@ -89,7 +99,28 @@ if __name__ == '__main__':
 	
 	# Execute RMG
 	import rmg
-	rmg.execute( args[0], options.outputDirectory,
+	
+	if options.profile:
+		import cProfile, sys, pstats, os
+		global_vars = {}
+		local_vars = {'args': args, 'options':options, 'rmg':rmg}
+		command = """rmg.execute( args[0], options.outputDirectory,
+					 options.scratchDirectory, options.libraryDirectory, 
+					 options.verbose )"""
+		stats_file = os.path.join(options.outputDirectory,'RMG.profile')
+		print("Running under cProfile")
+		cProfile.runctx(command, global_vars, local_vars, stats_file)
+		log_file = os.path.join(options.outputDirectory,'RMG.log')
+		out_stream = tee(sys.stdout,open(log_file,'a')) # print to screen AND append to RMG.log
+		stats = pstats.Stats(stats_file,stream=out_stream)
+		stats.strip_dirs()
+		stats.sort_stats('time')
+		stats.print_stats(25)
+		stats.print_callers(25)
+		stats.print_callees(25)
+		
+	else: 
+		rmg.execute( args[0], options.outputDirectory,
 					 options.scratchDirectory, options.libraryDirectory, 
 					 options.verbose )
 
