@@ -166,17 +166,21 @@ class ReactionSetCheck(unittest.TestCase):
 		reaction.reactionList=[]
 
 		rxns = reaction.kineticsDatabase.getReactions([species1])
+		#for rxn in rxns:
+		#	print 'Reaction family:',rxn.family
+		#	print 'Reaction:',rxn
+		#	print 'Kinetics:',rxn.kinetics
+		#	print 'bestKinetics:',rxn.bestKinetics
+		#	print
+		
+		all_products = []
 		for rxn in rxns:
-			print 'Reaction family:',rxn.family
-			print 'Reaction:',rxn
-			print 'Kinetics:',rxn.kinetics
-			print 'bestKinetics:',rxn.bestKinetics
-			print
-		self.assertEqual(len(rxns),1, "Was expecting to make 1 reaction for %s"%(species1))
-		rxn = rxns[0]
-		self.assertEqual(len(rxn.reactants),1,"Reaction wasn't unimolecular")
-		self.assertTrue(species2 in rxn.products, "Reaction didn't make %s"%(species2))
-			
+			self.assertEqual(str(rxn.family),'Intra H migration',"Was trying to test 'Intra H migration' but made a reaction from family %s"%rxn.family)
+			self.assertEqual(len(rxn.reactants),1,"Reaction %s wasn't unimolecular"%rxn)
+			all_products.extend(rxn.products)
+		self.assertTrue(species2 in all_products, "None of the reactions made %s"%(species2))
+
+		#self.assertEqual(len(rxns),1, "Was expecting to make 1 reaction for %s"%(species1))
 
 
 

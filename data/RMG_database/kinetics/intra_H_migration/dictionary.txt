@@ -6,6 +6,14 @@
 
 // Top level nodes for forward reaction
 
+///// IMPORTANT!! /////
+//  *3 is the H that is migrating
+//  *1 and *2 are the terminal atoms it's moving between
+// For the ring nodes:
+//  The atoms in the ring joining *1 to *2 MUST be labelled
+//  *4, *5, *6... in ascending order
+//  because this is assumed in some hard-coding in rmg.reaction.makeReaction()
+
 RnH
 Union {R2H, R3H, R4H, R5H, R6H, R7H}
 
@@ -72,21 +80,21 @@ R3H_SS
 1 *1 {R!H} 1 {2,S}
 2 *4 {R!H} 0 {1,S}, {3,S}
 3 *2 {R!H} 0 {2,S}, {4,S}
-4 *3 H 0 {3,S}
+4 *3   H   0 {3,S}
 
 R3H_SS_12cy3
 1 *1 {R!H} 1 {2,S}, {5,{S,D,B}}
 2 *4 {R!H} 0 {1,S}, {3,S}, {5,{S,D,B}}
 3 *2 {R!H} 0 {2,S}, {4,S}
-4 *3 H 0 {3,S}
-5 {R!H} 0 {1,{S,D,B}}, {2,{S,D,B}}
+4 *3   H   0 {3,S}
+5    {R!H} 0 {1,{S,D,B}}, {2,{S,D,B}}
 
 R3H_SS_23cy3
 1 *1 {R!H} 1 {2,S}
 2 *4 {R!H} 0 {1,S}, {3,S}, {5,{S,D,B}}
 3 *2 {R!H} 0 {2,S}, {4,S}, {5,{S,D,B}}
-4 *3 H 0 {3,S}
-5 {R!H} 0 {2,{S,D,B}}, {3,{S,D,B}}
+4 *3   H   0 {3,S}
+5    {R!H} 0 {2,{S,D,B}}, {3,{S,D,B}}
 
 R3H_SS_12cy4
 1 *1 {R!H} 1 {2,S}, {6,{S,D,B}}

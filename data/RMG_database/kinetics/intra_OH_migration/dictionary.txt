@@ -6,6 +6,13 @@
 
 // Top level nodes for forward reaction
 
+///// IMPORTANT!! /////
+//  *3 is the OH that is migrating
+//  *1 and *2 are the terminal atoms it's moving between
+// For the ring nodes:
+//  The atoms in the ring joining *1 to *2 should be labelled
+//  *4, *5, *6... in ascending order
+
 RnOOH
 Union {ROOH, R2OOH, R3OOH, R4OOH}
 
@@ -17,24 +24,24 @@ ROOH
 
 R2OOH
 1 *1 {Cd,Cs} 1 {2,{S,D}} 
-2 {Cd,Cs} 0 {1,{S,D}}, {3,S} 
+2 *4 {Cd,Cs} 0 {1,{S,D}}, {3,S} 
 3 *2 O 0 {2,S}, {4,S}
 4 *3 O 0 {3,S}, {5,S}
 5 H 0 {4,S}
 
 R3OOH
 1 *1 {Cd,Cs} 1 {2,{S,D}} 
-2 {Cd,Cs} 0 {1,{S,D}}, {3,{S,D}} 
-3 {Cd,Cs} 0 {2,{S,D}}, {4,S}
+2 *4 {Cd,Cs} 0 {1,{S,D}}, {3,{S,D}} 
+3 *5 {Cd,Cs} 0 {2,{S,D}}, {4,S}
 4 *2 O 0 {3,S}, {5,S}
 5 *3 O 0 {4,S}, {6,S}
 6 H 0 {5,S}
 
 R4OOH
 1 *1 {Cd,Cs} 1 {2,{S,D}} 
-2 {Cd,Cs} 0 {1,{S,D}}, {3,{S,D}} 
-3 {Cd,Cs} 0 {2,{S,D}}, {4,{S,D}}
-4 {Cd,Cs} 0 {3,{S,D}}, {5,S}
+2 *4 {Cd,Cs} 0 {1,{S,D}}, {3,{S,D}} 
+3 *5 {Cd,Cs} 0 {2,{S,D}}, {4,{S,D}}
+4 *6 {Cd,Cs} 0 {3,{S,D}}, {5,S}
 5 *2 O 0 {4,S}, {6,S}
 6 *3 O 0 {5,S}, {7,S}
 7 H 0 {6,S}
@@ -51,28 +58,28 @@ HORO.
 1 *1 {Cd,Cs} 0 {2,S} {3,S}
 2 *2 O 1 {1,S}
 3 *3 O 0 {4,S} {1,S}
-4 H 0 {3,S}
+4    H 0 {3,S}
 
 HOR2O.
 1 *1 {Cd,Cs} 0 {2,{S,D}} {4,S}
-2 {Cd,Cs} 0 {1,{S,D}}, {3,S} 
+2 *4 {Cd,Cs} 0 {1,{S,D}}, {3,S} 
 3 *2 O 1 {2,S}
 4 *3 O 0 {5,S} {1,S}
-5 H 0 {4,S}
+5    H 0 {4,S}
 
 HOR3O.
 1 *1 {Cd,Cs} 0 {2,{S,D}} {5,S}
-2 {Cd,Cs} 0 {1,{S,D}}, {3,{S,D}} 
-3 {Cd,Cs} 0 {2,{S,D}}, {4,S}
+2 *4 {Cd,Cs} 0 {1,{S,D}}, {3,{S,D}} 
+3 *5 {Cd,Cs} 0 {2,{S,D}}, {4,S}
 4 *2 O 1 {3,S}
 5 *3 O 0 {6,S} {1,S}
 6 H 0 {5,S}
 
 HOR4O.
 1 *1 {Cd,Cs} 0 {2,{S,D}} {6,S}
-2 {Cd,Cs} 0 {1,{S,D}}, {3,{S,D}} 
-3 {Cd,Cs} 0 {2,{S,D}}, {4,{S,D}}
-4 {Cd,Cs} 0 {3,{S,D}}, {5,S}
+2 *4 {Cd,Cs} 0 {1,{S,D}}, {3,{S,D}} 
+3 *5 {Cd,Cs} 0 {2,{S,D}}, {4,{S,D}}
+4 *6 {Cd,Cs} 0 {3,{S,D}}, {5,S}
 5 *2 O 1 {4,S}
 6 *3 O 0 {7,S} {1,S}
 7 H 0 {6,S}

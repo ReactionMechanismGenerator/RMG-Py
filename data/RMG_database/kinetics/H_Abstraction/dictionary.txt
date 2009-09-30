@@ -6,6 +6,12 @@
 
 // Top level nodes for forward reaction
 
+// 
+// '*2' is the H that migrates
+//  it moves from '*1' to '*3'
+// This is assumed in rmg.reaction.getKinetics()
+// 
+
 X_H
 1 *1 R 0 {2,S}
 2 *2 H 0 {1,S}

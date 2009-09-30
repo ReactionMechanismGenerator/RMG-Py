@@ -1118,11 +1118,23 @@ class ReactionFamily(data.Database):
 			# This is hardcoding of reaction families (bad!)
 			label = self.label.lower()
 			if label == 'h abstraction':
+				# '*2' is the H that migrates
+				# it moves from '*1' to '*3'
 				atomLabels['*1'].label = '*3'
 				atomLabels['*3'].label = '*1'
-			elif label == 'intra h migration' or label == 'alkyl hydroperoxyl intra OH migration':
+
+			elif label == 'intra h migration':
+				# '*3' is the H that migrates
+				# swap the two ends between which the H moves
 				atomLabels['*1'].label = '*2'
 				atomLabels['*2'].label = '*1'
+				# reverse all the atoms in the chain between *1 and *2
+				# i.e. swap *4 with the highest, *5 with the second-highest
+				highest = len(atomLabels)
+				if highest>4:
+					for i in range(4,highest+1):
+						atomLabels['*%d'%i].label = '*%d'%(4+highest-i)
+				
 
 		# Split product structure into multiple species if necessary
 		if len(self.template.products) > 1:
