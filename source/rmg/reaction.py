@@ -1238,25 +1238,41 @@ class ReactionFamily(data.Database):
 		# Descend reactant trees as far as possible
 		template = []
 		for forward in forwardTemplate:
+			# 'forward' is a head node that should be matched.
 			# Get labeled atoms of forward
-			node = forward;	group = self.dictionary[node]
-			while group.__class__ == str or group.__class__ == unicode:
+			node = forward
+			group = self.dictionary[node]
+			# to sort out "union" groups:
+			# descends to the first child that's not a union
+			while isinstance(group,str) or isinstance(group,unicode):
 				node = self.tree.children[node][0]
 				group = self.dictionary[node]
-
-			atomList = group.getLabeledAtoms()
+			# ...but this child may not match the structure.
+			# eg. an R3 ring node will not match an R4 ring structure.
+			# (but at least the first such child will contain fewest labels - we hope)
+			
+			atomList = group.getLabeledAtoms() # list of atom labels in highest non-union node
+			
 			for struct in structures:
 				# Match labeled atoms
-				match = True
+				# Check this structure has each of the atom labels in this group
+				has_all_atom_labels = True
 				for label in atomList:
 					if not struct.containsLabeledAtom(label):
-						match = False
+						has_all_atom_labels = False
+						#print "%s does not contain %s atom labels"%(struct.toSMILES(),node)
+						break
+						# this structure (reactant/product) does not contain this group's atom labels
+				if not has_all_atom_labels: continue # don't try to match this structure - the atoms aren't there!
+				
 				# Match structures
 				atoms = struct.getLabeledAtoms()
-				node = self.descendTree(struct, atoms, forward)
-				if match and node is not None:
-					template.append(node)
-					
+				matched_node = self.descendTree(struct, atoms, forward)
+				if matched_node is not None:
+					template.append(matched_node)
+				else:
+					print "Couldn't find match for %s in %s"%(forward,atomList)
+					print struct.toAdjacencyList()
 		forwardTemplate, reverseTemplate = self.getTemplateLists()
 		
 		# Check that we were able to match the template.
@@ -1264,6 +1280,8 @@ class ReactionFamily(data.Database):
 		# forwardTemplate is a list of the top level nodes that should be matched
 		if len(template) != len(forwardTemplate):
 			print 'Warning: Unable to find matching template for reaction %s in reaction family %s' % (str(reaction), str(self))
+			print " Trying to match",forwardTemplate
+			print " Matched",template
 			raise UndeterminableKineticsException(reaction)
 			print str(self), template, forwardTemplate, reverseTemplate
 			for reactant in reaction.reactants:
