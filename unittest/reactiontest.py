@@ -183,6 +183,38 @@ class ReactionSetCheck(unittest.TestCase):
 		#self.assertEqual(len(rxns),1, "Was expecting to make 1 reaction for %s"%(species1))
 
 
+	def testCyclicColligation(self):
+		"""A test of a Birad_recombination  (Cyclic colligation) reaction"""
+		self.loadDatabase(only_families=['Birad_recombination'])
+		structure1 = Structure()
+		structure1.fromSMILES("CCCCCCCCC1C(c2ccccc2)C(CCCCCC)C=CC1c1ccccc1")
+		species1 = makeNewSpecies(structure1)
+
+		#structure2 = Structure()
+		#structure2.fromSMILES("C(CCCC[CH]c1ccccc1)CCCC")
+		#species2 = makeNewSpecies(structure2)
+			
+		# wipe the reaction list
+		reaction.reactionList=[]
+
+		rxns = reaction.kineticsDatabase.getReactions([species1])
+		for rxn in rxns:
+			print 'Reaction family:',rxn.family
+			print 'Reaction:',rxn
+			print 'Kinetics:',rxn.kinetics
+			#print 'bestKinetics:',rxn.bestKinetics
+			print
+		
+		all_products = []
+		for rxn in rxns:
+			self.assertEqual(str(rxn.family),'Cyclic colligation ',"Was trying to test 'Cyclic colligation ' but made a reaction from family %s"%rxn.family)
+			self.assertEqual(len(rxn.reactants),2,"Reaction %s didn't have 2 reactants"%rxn)
+			self.assertEqual(len(rxn.products),1,"Reaction %s didn't produce 1 product"%rxn)
+			all_products.extend(rxn.products)
+		#self.assertTrue(species2 in all_products, "None of the reactions made %s"%(species2))	
+	
+	
+
 
 ################################################################################
 
