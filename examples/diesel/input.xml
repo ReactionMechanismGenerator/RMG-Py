@@ -72,12 +72,12 @@
 	</termination>
 	<!-- Dynamic simulator -->
 	<simulator atol="1e-16" rtol="1e-8" />
-	<fluxTolerance>0.1</fluxTolerance>
+	<fluxTolerance>0.01</fluxTolerance>
 	<!-- Options -->
 	<drawMolecules>on</drawMolecules>
 	<generatePlots>on</generatePlots>
-	<!--<inchiGeneration>off</inchiGeneration>
-	<spectralDataEstimation>off</spectralDataEstimation>
+	<inchiGeneration>off</inchiGeneration>
+	<!--<spectralDataEstimation>off</spectralDataEstimation>
 	<activatedNetworks>off</activatedNetworks>-->
 	
 </rmginput>
