@@ -61,9 +61,15 @@ class Structure:
 	A representation of a chemical species using a graph data structure. The
 	vertices represent atoms, while the edges represent bonds.
 	"""
+	
+	def __repr__(self):
+		message = "Structure(SMILES='%s')"%(self.toSMILES())
+		return message
 
-	def __init__(self, atoms=None, bonds=None):
+	def __init__(self, atoms=None, bonds=None, SMILES=None):
 		self.initialize(atoms or [], bonds or [])
+		if SMILES:
+			self.fromSMILES(SMILES)
 
 	def atoms(self):
 		"""

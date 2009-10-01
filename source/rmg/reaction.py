@@ -1142,7 +1142,11 @@ class ReactionFamily(data.Database):
 		else:
 			productStructures = [productStructure]
 		if len(self.template.products) != len(productStructures):
-			raise Exception('Application of reaction recipe failed; expected %s product(s), but %s found.' % (len(self.template.products), len(productStructures)))
+			message = 'Application of reaction recipe failed; expected %s product(s), but %s found.\n' % (len(self.template.products), len(productStructures))
+			message += "Product structures: %s \n"%productStructures
+			message += "Template: %s"%self.template
+			logging.error(message)
+			raise Exception(message)
 
 		# Recalculate atom types of product structures, since they may have
 		# changed as a result of the reaction
@@ -1408,25 +1412,34 @@ class ReactionFamilySet:
 kineticsDatabase = None
 
 ################################################################################
-
-class UndeterminableKineticsException(Exception):
+class ReactionException(Exception):
 	"""
-	An exception raised when attempts to select appropriate kinetic parameters
-	for a chemical reaction are unsuccessful.
+	An base exception for reactions.
+	Takes a reaction object, and optional message
 	"""
-
-	def __init__(self, reaction):
+	def __init__(self, reaction, message=''):
 		self.reaction = reaction
+		self.message = message
 		
 	def __str__(self):
-		string = str(self.reaction) + '\n'
-		string += str(self.reaction.family) + '\n'
+		string = "Reaction: "+str(self.reaction) + '\n'
+		string += "Reaction Family: "+str(self.reaction.family) + '\n'
 		for reactant in self.reaction.reactants:
 			string += reactant.toAdjacencyList() + '\n'
 		for product in self.reaction.products:
 			string += product.toAdjacencyList() + '\n'
-
+		if self.message: string += "Message: "+self.message
 		return string
+
+
+class UndeterminableKineticsException(ReactionException):
+	"""
+	An exception raised when attempts to select appropriate kinetic parameters
+	for a chemical reaction are unsuccessful.
+	"""
+	def __init__(self, reaction, message=''):
+		new_message = 'Kinetics could not be determined. '+message
+		ReactionException.__init__(self,reaction,new_message)
 
 
 ################################################################################

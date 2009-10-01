@@ -426,14 +426,14 @@ class IncompressibleLiquid:
 	where :math:`N \\equiv \\sum_i N_i` is the total number of moles.
 
 	Initialise with keyword arguments::
-		il = IncompressibleLiquid(T=298, P=1E5, V=, N=)
+		il = IncompressibleLiquid(T=298, P=1E5, V=, N=, Vmol=)
 	"""
 	def __init__(self, T=None, P=None, V=None, N=None, Vmol=None):
 		self.T = T
 		self.P = P
 		self.V = V
 		self.N = N
-		self.Vmol = Vmol
+		self.Vmol = Vmol # Molar volume
 		
 	def getTemperature(self, P, V, N):
 		"""
@@ -527,12 +527,9 @@ class IncompressibleLiquid:
 		numbers of moles `N`. The final parameter `i` is used to determine which
 		species to use; if `N` is a list, then `i` is an index, while if `N` is
 		a dictionary, `i` is a key.
-		
-		Warning: inconsistent with dVdNi and dVdP
 		"""
-		# logging.debug('Warning: inconsistent equation of state. dPdNi should equal infinity')
 		return numpy.inf
-		### Warning: inconsistent with dVdNi and dVdP
+		### Warning: may be inconsistent with dVdNi and dVdP
 		## if dVdNi>0 and dVdP=0 then is'nt dPdNi = infinity ?
 		
 	def getdTdNi(self, P, V, T, N, i):
@@ -556,7 +553,10 @@ class IncompressibleLiquid:
 		is equal to the average molar volume of the mixture as a whole.
 		"""
 		
-		# assume that the partial molar volume of species i
+		if self.Vmol: # molar volume is set; assume it's the same for all components, and use it
+			return self.Vmol 
+			
+		# Else assume that the partial molar volume of species i
 		# is equal to the average molar volume of all species
 		if type(N) is dict: return (V/numpy.sum(N.values()))
 		else: return (V/numpy.sum(N))
@@ -655,7 +655,8 @@ class BatchReactor(ReactionSystem):
 		rxnRate = self.getReactionRates(P, V, T, Ni, model)
 		
 		# Species balances
-		dNidt = numpy.dot(stoichiometry[0:len(model.core.species), 0:len(model.core.reactions)], rxnRate[0:len(model.core.reactions)])
+		dNidt = numpy.dot(stoichiometry[0:len(model.core.species), 0:len(model.core.reactions)],
+		 					rxnRate[0:len(model.core.reactions)])
 
 		# Energy balance (assume isothermal for now)
 		dTdt = 0.0
@@ -678,6 +679,25 @@ class BatchReactor(ReactionSystem):
 
 		# Return residual
 		return dydt
+		
+	def getJacobean(self, t, y, model, stoichiometry):
+		"""
+		Return the Jacobean function for this reactor model, evaluated at
+		time `t` and values of the dependent variables `y`. The Jacobean
+		function is the right-hand side of the equation
+
+		.. math:: something
+
+		The dependent variables are temperature, pressure, volume, and
+		numbers of moles for each species.
+		
+		.. math:: \\mathbf{y} \\equiv \\left[ P, V, T, N_1, N_2,\\ldots, N_i \\right]
+		
+		Currently only models isothermal and isobaric reactors (:math:`dT/dt=dP/dt=0`)
+		"""
+		P, V, T = y[0:3]; Ni = y[3:]
+		
+
 
 	def getReactionRates(self, P, V, T, Ni, model):
 		"""
@@ -746,7 +766,7 @@ class BatchReactor(ReactionSystem):
 			if maxSpeciesFluxes[i] < abs(dNidt[i]): maxSpeciesFluxes[i] = abs(dNidt[i])
 
 		# Determine characteristic species flux
-		charFlux = model.fluxTolerance * math.sqrt(sum([x**2 for x in dNidt[0:len(model.core.species)]]))
+		charFlux = model.fluxTolerance * math.sqrt(sum([x*x for x in dNidt[0:len(model.core.species)]]))
 
 		# Test for model validity
 		# notice it only break's here if we exceed 10 times the usual threshold
@@ -757,7 +777,7 @@ class BatchReactor(ReactionSystem):
 		header = 'Time          '
 		for target in model.termination:
 			if target.__class__ == TerminationConversion: header += 'Conv        '
-		header += 'Char flux     Maximum flux to edge'
+		header += 'Thresh. flux     Maximum flux to edge'
 		logging.debug(header)
 		self.printSimulationStatus(model, 0, y, y0, charFlux, maxSpeciesFlux, maxSpecies)
 		tlist.append(0.0); ylist.append(y0)
@@ -783,7 +803,7 @@ class BatchReactor(ReactionSystem):
 
 			# Conduct integration
 			if solver.t == 0.0:		solver.integrate(1e-20)
-			else:					solver.integrate(solver.t * 10**0.1)
+			else:					solver.integrate(solver.t * 1.2589254117941673) # 10**0.1 so ten steps increases time 10-fold
 			P, V, T = solver.y[0:3]; Ni = solver.y[3:]
 			
 			# Calculate species fluxes of all core and edge species at the
