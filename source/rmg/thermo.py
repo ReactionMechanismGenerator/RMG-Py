@@ -93,6 +93,8 @@ class ThermoGAData(ThermoData):
 		self.H298 = H298
 		self.S298 = S298
 		self.Cp = Cp or [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+		self.__cache_T=None
+		self.__cache = dict()
 
 	def __add__(self, other):
 		"""
@@ -108,6 +110,10 @@ class ThermoGAData(ThermoData):
 		elif other.comment == '': new.comment = self.comment
 		else: new.comment = self.comment + '+ ' + other.comment
 		return new
+	
+	def __repr__(self):
+		string = 'ThermoGAData(H298=%s, S298=%s, Cp=%s)'%(self.H298,self.S298,self.Cp)
+		return string
 
 	def __str__(self):
 		"""
@@ -140,7 +146,14 @@ class ThermoGAData(ThermoData):
 	def getEnthalpy(self, T):
 		"""
 		Return the enthalpy in J/mol at temperature `T` in K.
-		"""
+		"""	
+		if self.__cache_T==T:
+			try: return self.__cache['H']
+			except KeyError: pass # 'H' isn't cached yet
+		else:  # temperature has changed
+			self.__cache = dict()
+			self.__cache_T = T
+			
 		H = self.H298
 		if not self.isTemperatureValid(T):
 			raise data.TemperatureOutOfRangeException('Invalid temperature for enthalpy estimation from group additivity.')
@@ -149,10 +162,11 @@ class ThermoGAData(ThermoData):
 			if T > Tmin:
 				slope = (Cpmax - Cpmin) / (Tmax - Tmin)
 				intercept = (Cpmin * Tmax - Cpmax * Tmin) / (Tmax - Tmin)
-				if T < Tmax:	H += 0.5 * slope * (T**2 - Tmin**2) + intercept * (T - Tmin)
-				else:			H += 0.5 * slope * (Tmax**2 - Tmin**2) + intercept * (Tmax - Tmin)
+				if T < Tmax:	H += 0.5 * slope * (T*T - Tmin*Tmin) + intercept * (T - Tmin)
+				else:			H += 0.5 * slope * (Tmax*Tmax - Tmin*Tmin) + intercept * (Tmax - Tmin)
 		if T > ThermoGAData_CpTlist[-1]:
 			H += self.Cp[-1] * (T - ThermoGAData_CpTlist[-1])
+		self.__cache['H'] = H
 		return H
 
 	def getEntropy(self, T):
@@ -160,6 +174,14 @@ class ThermoGAData(ThermoData):
 		Return the entropy in J/mol*K at temperature `T` in K.
 		"""
 		import math
+		
+		if self.__cache_T==T:
+			try: return self.__cache['S']
+			except KeyError: pass # 'S' isn't cached yet
+		else:  # temperature has changed
+			self.__cache = dict()
+			self.__cache_T = T
+			
 		S = self.S298
 		if not self.isTemperatureValid(T):
 			raise data.TemperatureOutOfRangeException('Invalid temperature for entropy estimation from group additivity.')
@@ -172,15 +194,25 @@ class ThermoGAData(ThermoData):
 				else:			S += slope * (Tmax - Tmin) + intercept * math.log(Tmax/Tmin)
 		if T > ThermoGAData_CpTlist[-1]:
 			S += self.Cp[-1] * math.log(T / ThermoGAData_CpTlist[-1])
+		self.__cache['S'] = S
 		return S
 
 	def getFreeEnergy(self, T):
 		"""
 		Return the Gibbs free energy in J/mol at temperature `T` in K.
 		"""
+		if self.__cache_T==T:
+			try: return self.__cache['G']
+			except KeyError: pass # 'G' isn't cached yet
+		else:  # temperature has changed
+			self.__cache = dict()
+			self.__cache_T = T
+			
 		if not self.isTemperatureValid(T):
 			raise data.TemperatureOutOfRangeException('Invalid temperature for free energy estimation from group additivity.')
-		return self.getEnthalpy(T) - T * self.getEntropy(T)
+		G = self.getEnthalpy(T) - T * self.getEntropy(T)
+		self.__cache['G'] = G
+		return G
 
 	def fromDatabase(self, data, comment):
 		"""
