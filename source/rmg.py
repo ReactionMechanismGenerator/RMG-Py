@@ -41,6 +41,16 @@ class tee:
 	def write(self, string):
 		for fileobject in self.fileobjects:
 			fileobject.write(string)
+			
+			
+def process_stats(stats_file, log_file):
+		out_stream = tee(sys.stdout,open(log_file,'a')) # print to screen AND append to RMG.log
+		stats = pstats.Stats(stats_file,stream=out_stream)
+		stats.strip_dirs()
+		stats.sort_stats('time')
+		stats.print_stats(25)
+		stats.print_callers(25)
+		stats.print_callees(25)
 
 if __name__ == '__main__':
 
@@ -77,7 +87,11 @@ if __name__ == '__main__':
 					  action="store", type="string", dest="libraryDirectory", 
 					  help='use DIR as library directory', metavar='DIR')
 	parser.add_option('-p', '--profile',
-						action="store_true", dest="profile", default=True )
+						action="store_true", dest="profile", default=False,
+						help="run under cProfile to gather profiling statistics, and postprocess them if job completes." )
+	parser.add_option('-P', '--postprocess',
+					action="store_true", dest="postprocess_only", default=False,
+					help="postprocess profiling statistics from previous [failed] run. Does not run the simulation.")
 	
 	# Parse the command-line arguments
 	options, args = parser.parse_args()
@@ -100,6 +114,11 @@ if __name__ == '__main__':
 	# Execute RMG
 	import rmg
 	
+	if options.postprocess_only:
+		print "Postprocessing the profiler statistics (will be appended to RMG.log)"
+		options.profile = True
+		
+	
 	if options.profile:
 		import cProfile, sys, pstats, os
 		global_vars = {}
@@ -109,15 +128,12 @@ if __name__ == '__main__':
 					 options.verbose )"""
 		stats_file = os.path.join(options.outputDirectory,'RMG.profile')
 		print("Running under cProfile")
-		cProfile.runctx(command, global_vars, local_vars, stats_file)
+		if not options.postprocess_only:
+			# actually run the program!
+			cProfile.runctx(command, global_vars, local_vars, stats_file)
+		# postprocess the stats
 		log_file = os.path.join(options.outputDirectory,'RMG.log')
-		out_stream = tee(sys.stdout,open(log_file,'a')) # print to screen AND append to RMG.log
-		stats = pstats.Stats(stats_file,stream=out_stream)
-		stats.strip_dirs()
-		stats.sort_stats('time')
-		stats.print_stats(25)
-		stats.print_callers(25)
-		stats.print_callees(25)
+		process_stats(stats_file, log_file)
 		
 	else: 
 		rmg.execute( args[0], options.outputDirectory,
