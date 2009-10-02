@@ -26,6 +26,7 @@
 ################################################################################
 
 cimport chem # so we have 
+import logging
 
 cdef extern from "dictobject.h":
 	ctypedef class __builtin__.dict [object PyDictObject]:
@@ -480,20 +481,39 @@ cpdef VF2_isomorphism(Graph graph1, Graph graph2, dict map12, dict map21, \
 	:data:`True` then graph2 is checked for being a potential subgraph of graph1. 
 	`findAll` isused to specify whether all isomorphisms should be returned, 
 	or only the first.
+	
+	Returns tuple (is_match, map12, map21)
 	"""
 
 	cdef list map12List = list(), map21List = list()
 	cdef bint ismatch
 	cdef dict terminals1, terminals2
+	cdef int call_depth
+	
+	if not subgraph:
+		if len(graph2) != len(graph1):
+			logging.debug("Tried matching graphs of different sizes!")
+			return False, None, None # is_match, map12, map21
+	else:
+		if len(graph2)>len(graph1):
+			logging.debug("Tried matching small graph to larger subgraph")
+			return False, None, None
 
+	# start call_depth off as the size of the largest graph.
+	# each recursive call to __VF2_match will decrease it by one,
+	# until, when the whole graph has been explored, it should reach 0
+	# it should never go below zero!
+	call_depth = len(graph1)
+
+	# update the connectivity values (before sorting by them)
 	graph1.set_connectivity_values() # could probably run this less often elsewhere
 	graph2.set_connectivity_values() # as the values don't change often
-		
+	
 	terminals1 = __VF2_terminals(graph1, map21)
 	terminals2 = __VF2_terminals(graph2, map12)
 
 	ismatch = __VF2_match(graph1, graph2, map21, map12, \
-		 terminals1, terminals2, subgraph, findAll, map21List, map12List)
+		 terminals1, terminals2, subgraph, findAll, map21List, map12List, call_depth)
 
 	if findAll:
 		return len(map21List) > 0, map21List, map12List
@@ -598,7 +618,7 @@ cdef bint __VF2_feasible(Graph graph1, Graph graph2, chem.Atom vertex1, chem.Ato
 
 cdef bint __VF2_match(Graph graph1, Graph graph2, dict map21, dict map12, \
 	dict terminals1, dict terminals2, bint subgraph, bint findAll, \
-	list map21List, list map12List):
+	list map21List, list map12List, int call_depth):
 	"""
 	A recursive function used to explore two graphs `graph1` and `graph2` for
 	isomorphism by attempting to map them to one another. `mapping21` and
@@ -616,16 +636,23 @@ cdef bint __VF2_match(Graph graph1, Graph graph2, dict map21, dict map12, \
 	cdef chem.Atom vertex1, vertex2
 	cdef bint ismatch 
 	
+	if call_depth < 0:
+		logging.error("Recursing too deep. Now %d"%call_depth)
+		if call_depth < -100:
+			raise Exception("Recursing infinitely deep!")
+			logging.error('******************************************')
+			logging.error("** RETURNING TRUE FOR ISOMORPHISM MATCH **")
+			logging.error("**   JUST TO GET OUT OF INFINITE LOOP   **")
+			logging.error('******************************************')
+			return True
+	
 	# Done if we have mapped to all vertices in graph2
 	if len(map12) >= len(graph2) or len(map21) >= len(graph1):
 		return True
 	
-	#cdef dict terminals1, terminals2
-	#terminals1 = __VF2_terminals(graph1, map21)
-	#terminals2 = __VF2_terminals(graph2, map12)
 	
 	# Create list of pairs of candidates for inclusion in mapping
-	cdef list pairs = __VF2_pairs(graph1, graph2, terminals1, terminals2)
+	cdef list pairs = __VF2_pairs(graph1, graph2, terminals1, terminals2, map21, map12)
 	
 	for vertex1, vertex2 in pairs:
 		# propose a pairing
@@ -642,7 +669,7 @@ cdef bint __VF2_match(Graph graph1, Graph graph2, dict map21, dict map12, \
 			# Recurse
 			ismatch = __VF2_match(graph1, graph2, \
 				map21, map12, new_terminals1, new_terminals2, subgraph, findAll, \
-				map21List, map12List)
+				map21List, map12List, call_depth-1)
 			if ismatch:
 				if findAll:
 					map21List.append(map21.copy())
@@ -664,9 +691,10 @@ cpdef int __atom_sort_value(chem.Atom atom):
 	For now, that is (roughly speaking) the most connected atoms. This definitely helps for large graphs
 	but bizarrely the opposite ordering seems to help small graphs. Not sure about subggraphs...
 	"""
+	
 	return -100 * atom.connectivity_value_1 - 10 * atom.connectivity_value_2  - atom.connectivity_value_3
 	
-cdef list __VF2_pairs(Graph graph1, Graph graph2, dict terminals1, dict terminals2):
+cdef list __VF2_pairs(Graph graph1, Graph graph2, dict terminals1, dict terminals2, dict map21, dict map12):
 	"""
 	Create a list of pairs of candidates for inclusion in the VF2 mapping. If
 	there are a nonzero number of terminals in each graph, the candidates are
@@ -688,16 +716,20 @@ cdef list __VF2_pairs(Graph graph1, Graph graph2, dict terminals1, dict terminal
 		
 		for terminal1 in list_to_sort:
 			pairs.append([terminal1, terminal2])
-	# Otherwise construct list from all remaining vertices
+	# Otherwise construct list from all *remaining* vertices (not matched)
 	else:
 		list_to_sort = graph2.keys()
-		list_to_sort = graph2.keys()
+		# remove already mapped vertices
+		for vertex2 in map12:
+			list_to_sort.remove(vertex2)
 		list_to_sort.sort(key=__atom_sort_value)
-		vertex2 = list_to_sort[0]
+		vertex2 = list_to_sort[0]  # take first vertex2
+		# pair with all vertex1s
 		list_to_sort = graph1.keys()
-		list_to_sort.sort(key=__atom_sort_value)		
+		list_to_sort.sort(key=__atom_sort_value)
 		for vertex1 in list_to_sort:
-			pairs.append([vertex1, vertex2])
+			if vertex1 not in map21: # exclude already mapped vertices
+				pairs.append([vertex1, vertex2])
 	
 	return pairs
 
@@ -726,7 +758,6 @@ cdef dict __VF2_new_terminals(Graph graph, dict mapping, dict old_terminals, new
 	list of terminals `old_terminals` and the vertex `vertex` that has been added 
 	to the mapping. Returns a new copy of the terminals.
 	"""
-	
 	cdef dict terminals = dict() # why won't {} work?
 	
 	# copy the old terminals, leaving out the new_vertex
