@@ -9,6 +9,13 @@ sys.path.append('../source')
 from rmg.graph import *
 from rmg.chem import Atom, Bond
 
+# Horrible hack because Cythonised graph class now demands vertices and edges are 
+# instances of chem.Atom and chem.Bond 
+Vertex = Atom
+class Edge(Bond):
+	def __init__(self):
+		self.bondType = 'S'
+
 ################################################################################
 
 class GraphCheck(unittest.TestCase):
