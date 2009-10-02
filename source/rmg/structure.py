@@ -774,7 +774,21 @@ class Structure:
 		Return :data:`True` if `atom` is in one or more cycles in the structure,
 		and :data:`False` if not.
 		"""
-		return self.isAtomInCycle(bond.atoms[0]) and self.isAtomInCycle(bond.atoms[1])
+		atom1 = bond.atoms[0]
+		atom2 = bond.atoms[1]
+		cycle_list = self.graph.getAllCycles(atom1)
+		for cycle in cycle_list:
+			if atom2 in cycle:
+				return True
+		return False
+		
+		# You could have both atoms of the bond be in separate cycles,
+		# eg. C6H11-C6H11
+		# /\_/\
+		# || ||
+		# \/ \/
+		# so this doesn't work: 
+		## return self.isAtomInCycle(bond.atoms[0]) and self.isAtomInCycle(bond.atoms[1])
 
 	def isCyclic(self):
 		"""
@@ -904,6 +918,30 @@ class Structure:
 		Get the axis symmetry number correction. The "axis" refers to a series
 		of two or more cumulated double bonds (e.g. C=C=C, etc.). Corrections
 		for single C=C bonds are handled in getBondSymmetryNumber().
+		
+		Each axis (C=C=C) has the potential to double the symmetry number.
+		If an end has 0 or 1 groups (eg. =C=CJJ or =C=C-R) then it cannot 
+		alter the axis symmetry and is disregarded::
+		
+			A=C=C=C..        A-C=C=C=C-A
+			
+			  s=1                s=1
+		
+		If an end has 2 groups that are different then it breaks the symmetry 
+		and the symmetry for that axis is 1, no matter what's at the other end::
+		
+			A\               A\         /A
+			  T=C=C=C=C-A      T=C=C=C=T
+			B/               A/         \B
+			      s=1             s=1
+		
+		If you have one or more ends with 2 groups, and neither end breaks the 
+		symmetry, then you have an axis symmetry number of 2::
+		
+			A\         /B      A\         
+			  C=C=C=C=C          C=C=C=C-B
+			A/         \B      A/         
+			      s=2                s=2
 		"""
 
 		symmetryNumber = 1
@@ -928,9 +966,9 @@ class Structure:
 					else:
 						cumulatedBonds.append([bond1, bond2])
 
-		# For each set of adjacent double bonds, check substituents for symmetry
+		# For each set of adjacent double bonds, check for axis symmetry
 		for bonds in cumulatedBonds:
-
+			
 			# Do nothing if less than two cumulated bonds
 			if len(bonds) < 2: continue
 
@@ -941,16 +979,19 @@ class Structure:
 			#if found: continue
 
 			# Find terminal atoms in axis
+			# Terminal atoms labelled T:  T=C=C=C=T
 			terminalAtoms = []
 			for bond12 in bonds:
 				atom1, atom2 = bond12.atoms
+				# if atom is also in one of the OTHER bonds in the axis, 
+				# then it's not a terminal
 				for bond in bonds:
 					if bond is not bond12:
 						if atom1 in bond.atoms: atom1 = None
 						if atom2 in bond.atoms: atom2 = None
 				if atom1 is not None: terminalAtoms.append(atom1)	
 				if atom2 is not None: terminalAtoms.append(atom2)
-			if len(terminalAtoms) != 2: continue
+			if len(terminalAtoms) != 2: continue # when does this occur??
 			
 			# Remove axis from (copy of) structure
 			structure = Structure(self.atoms(), self.bonds())
@@ -958,28 +999,45 @@ class Structure:
 				structure.removeBond(bond)
 			atomsToRemove = []
 			for atom in structure.atoms():
-				if len(structure.graph[atom]) == 0:
+				if len(structure.graph[atom]) == 0: # it's not bonded to anything
 					atomsToRemove.append(atom)
 			for atom in atomsToRemove: structure.removeAtom(atom)
 
 			# Split remaining fragments of structure
-			structure1, structure2 = structure.split()
-
-			# Split each fragment into functional groups
-			if terminalAtoms[0] in structure1.atoms(): structure1.removeAtom(terminalAtoms[0])
-			if terminalAtoms[1] in structure1.atoms(): structure1.removeAtom(terminalAtoms[1])
-			if terminalAtoms[0] in structure2.atoms(): structure2.removeAtom(terminalAtoms[0])
-			if terminalAtoms[1] in structure2.atoms(): structure2.removeAtom(terminalAtoms[1])
-			groups1 = structure1.split()
-			groups2 = structure2.split()
-
-			# Test functional groups for symmetry
-			if len(groups1) == len(groups2) == 1:
-				if groups1[0].isIsomorphic(groups2[0]): symmetryNumber *= 2
-			elif len(groups1) == len(groups2) == 2:
-				if groups1[0].isIsomorphic(groups2[0]) and groups1[1].isIsomorphic(groups2[1]): symmetryNumber *= 2
-				elif groups1[1].isIsomorphic(groups2[0]) and groups1[0].isIsomorphic(groups2[1]): symmetryNumber *= 2
-
+			end_fragments = structure.split()
+			# you may have only one end fragment,
+			# eg. if you started with H2C=C=C..
+			
+			# 
+			# there can be two groups at each end     A\         /B
+			#                                           T=C=C=C=T
+			#                                         A/         \B
+			
+			# to start with nothing has broken symmetry about the axis
+			symmetry_broken=False 
+			for fragment in end_fragments: # a fragment is one end of the axis
+				
+				# remove the atom that was at the end of the axis and split what's left into groups
+				for atom in terminalAtoms:
+					if atom in fragment.atoms(): fragment.removeAtom(atom)
+				groups = fragment.split()
+				
+				# If end has only one group then it can't contribute to (nor break) axial symmetry
+				#   Eg. this has no axis symmetry:   A-T=C=C=C=T-A
+				# so we remove this end from the list of interesting end fragments
+				if len(groups)==1:
+					end_fragments.remove(fragment)
+					continue # next end fragment
+				if len(groups)==2:
+					if not groups[0].isIsomorphic(groups[1]):
+						# this end has broken the symmetry of the axis
+						symmetry_broken = True
+						
+			# If there are end fragments left that can contribute to symmetry,
+			# and none of them broke it, then double the symmetry number
+			if end_fragments and not symmetry_broken:
+				symmetryNumber *= 2
+					
 		return symmetryNumber
 
 	def calculateCyclicSymmetryNumber(self):

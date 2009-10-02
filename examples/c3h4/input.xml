@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 
-<!-- Tracks the consumption of 1,3-hexadiene in presence of methane, hydrogen, and nitrogen. -->
+<!-- Tracks the consumption of CH2.. reacting with H-C#C-H , in nitrogen. -->
 
 <rmginput>
 	<!-- The units to use for RMG output: si or cgs -->
@@ -11,7 +11,7 @@
 	<species id="spec1" label="CH2" reactive="yes">
 		<smiles>[CH2]</smiles>
 	</species>
-	<species id="spec3" label="C2H2" reactive="yes">
+	<species id="spec2" label="C2H2" reactive="yes">
 		<smiles>C#C</smiles>
 	</species>
 	<!-- Inert gases -->
@@ -28,17 +28,17 @@
 		</pressureModel>
 		<physicalPropertyModel type="idealGas" />
 		<moleFraction speciesID="spec1">0.001</moleFraction>
-		<moleFraction speciesID="spec3">0.099</moleFraction>
+		<moleFraction speciesID="spec2">0.099</moleFraction>
 		<moleFraction speciesID="spec0">0.9</moleFraction>
 	</reactionSystem>
 	<!-- Termination -->
 	<termination>
-		<target type="conversion" speciesID="spec1">0.9</target>
+		<target type="conversion" speciesID="spec2">0.9</target>
 		<target type="time" units="s">1e12</target>
 	</termination>
 	<!-- Dynamic simulator -->
 	<simulator atol="1e-16" rtol="1e-8" />
-	<fluxTolerance>0.1</fluxTolerance>
+	<fluxTolerance>0.01</fluxTolerance>
 	<!-- Options -->
 	<drawMolecules>on</drawMolecules>
 	<generatePlots>on</generatePlots>

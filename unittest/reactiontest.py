@@ -189,6 +189,7 @@ class ReactionSetCheck(unittest.TestCase):
 		structure1 = Structure()
 		structure1.fromSMILES("CCCCCCCCC1C(c2ccccc2)C(CCCCCC)C=CC1c1ccccc1")
 		species1 = makeNewSpecies(structure1)
+		print 'Made species',species1
 
 		#structure2 = Structure()
 		#structure2.fromSMILES("C(CCCC[CH]c1ccccc1)CCCC")
@@ -207,10 +208,11 @@ class ReactionSetCheck(unittest.TestCase):
 		
 		all_products = []
 		for rxn in rxns:
-			self.assertEqual(str(rxn.family),'Cyclic colligation ',"Was trying to test 'Cyclic colligation ' but made a reaction from family %s"%rxn.family)
-			self.assertEqual(len(rxn.reactants),2,"Reaction %s didn't have 2 reactants"%rxn)
-			self.assertEqual(len(rxn.products),1,"Reaction %s didn't produce 1 product"%rxn)
+			self.assertEqual(str(rxn.family),'Cyclic colligation',"Was trying to test 'Cyclic colligation' but made a reaction from family %s"%rxn.family)
+			self.assertEqual(len(rxn.reactants),1,"Reaction %s wasn't unimolecular"%rxn)
+			self.assertEqual(len(rxn.products),1,"Reaction %s wasn't unimolecular"%rxn)
 			all_products.extend(rxn.products)
+			print rxn
 		#self.assertTrue(species2 in all_products, "None of the reactions made %s"%(species2))	
 	
 	
