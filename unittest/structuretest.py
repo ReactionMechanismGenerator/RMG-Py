@@ -232,64 +232,34 @@ class StructureCheck(unittest.TestCase):
 		self.assertEqual(symmetryNumber, 2)
 
 	def testAxisSymmetryNumber(self):
-
-		# allene
-		struct = Structure()
-		struct.fromSMILES('C=C=C')
-		symmetryNumber = struct.calculateAxisSymmetryNumber()
-		self.assertEqual(symmetryNumber, 2, 
-			"Got axis symmetry number of %d for %s (expected %s)"%(symmetryNumber,struct,2)
-			)
-		# cumulene
-		struct = Structure()
-		struct.fromSMILES('C=C=C=C')
-		symmetryNumber = struct.calculateAxisSymmetryNumber()
-		self.assertEqual(symmetryNumber, 2, 
-			"Got axis symmetry number of %d for %s (expected %s)"%(symmetryNumber,struct,2)
-			)
-		
-		struct = Structure(SMILES='C=C=C=[CH]'); should_be=2
-		symmetryNumber = struct.calculateAxisSymmetryNumber()
-		self.assertEqual(symmetryNumber, should_be, 
-			"Got axis symmetry number of %d for %s (expected %s)"%(symmetryNumber,struct,should_be)
-			)
-			
-		struct = Structure(SMILES='C=C=[C]'); should_be=2
-		symmetryNumber = struct.calculateAxisSymmetryNumber()
-		self.assertEqual(symmetryNumber, should_be, 
-			"Got axis symmetry number of %d for %s (expected %s)"%(symmetryNumber,struct,should_be)
-			)
-			
-		struct = Structure(SMILES='CC=C=[C]'); should_be=1
-		symmetryNumber = struct.calculateAxisSymmetryNumber()
-		self.assertEqual(symmetryNumber, should_be, 
-			"Got axis symmetry number of %d for %s (expected %s)"%(symmetryNumber,struct,should_be)
-			)
-			
-		struct = Structure(SMILES='C=C=CC(CC)'); should_be=1
-		symmetryNumber = struct.calculateAxisSymmetryNumber()
-		self.assertEqual(symmetryNumber, should_be, 
-			"Got axis symmetry number of %d for %s (expected %s)"%(symmetryNumber,struct,should_be)
-			)
-			
-		struct = Structure(SMILES='CC(C)=C=C(CC)CC'); should_be=2
-		symmetryNumber = struct.calculateAxisSymmetryNumber()
-		self.assertEqual(symmetryNumber, should_be, 
-			"Got axis symmetry number of %d for %s (expected %s)"%(symmetryNumber,struct,should_be)
-			)
-		
+		test_set = [('C=C=C', 2), # ethane
+					('C=C=C=C', 2),
+					('C=C=C=[CH]', 2), # =C-H is straight
+					('C=C=[C]', 2),
+					('CC=C=[C]', 1),
+					('C=C=CC(CC)', 1),
+					('CC(C)=C=C(CC)CC', 2),
+					('C=C=C(C(C(C(C=C=C)=C=C)=C=C)=C=C)', 2),
+					('C=C=[C]C(C)(C)[C]=C=C', 1),
+					('C=C=C=O', 2),
+					('CC=C=C=O', 1),
+					('C=C=C=N', 1), # =N-H is bent
+					('C=C=C=[N]', 2)
+					]
 		# http://cactus.nci.nih.gov/chemical/structure/C=C=C(C(C(C(C=C=C)=C=C)=C=C)=C=C)/image
-		struct = Structure(SMILES='C=C=C(C(C(C(C=C=C)=C=C)=C=C)=C=C)'); should_be=2
-		symmetryNumber = struct.calculateAxisSymmetryNumber()
-		self.assertEqual(symmetryNumber, should_be, 
-			"Got axis symmetry number of %s for %s (expected %s)"%(symmetryNumber,struct,should_be)
-			)
-			
-		struct = Structure(SMILES='C=C=[C]C(C)(C)[C]=C=C'); should_be=4
-		symmetryNumber = struct.calculateAxisSymmetryNumber()
-		self.assertEqual(symmetryNumber, should_be, 
-			"Got axis symmetry number of %s for %s (expected %s)"%(symmetryNumber,struct,should_be)
-			)
+		fail_message = ''
+		
+		for smile,should_be in test_set:
+			struct = Structure(SMILES=smile)
+			symmetryNumber = struct.calculateAxisSymmetryNumber()
+			if symmetryNumber!=should_be:
+				fail_message+="Got axis symmetry number of %s for %s (expected %s)\n"%(symmetryNumber,struct,should_be)
+			#self.assertEqual(symmetryNumber, should_be, 
+			#	"Got axis symmetry number of %s for %s (expected %s)"%(symmetryNumber,struct,should_be)
+			#	)
+		self.assertEqual(fail_message,'',fail_message)
+	
+
 			
 			
 #	def testCyclicSymmetryNumber(self):
@@ -301,19 +271,17 @@ class StructureCheck(unittest.TestCase):
 #		self.assertEqual(symmetryNumber, 12)
 
 	def testSymmetryNumber(self):
-
-		# ethane
-		struct = Structure(SMILES='CC'); should_be=18
-		symmetryNumber = struct.calculateSymmetryNumber()
-		self.assertEqual(symmetryNumber, should_be, 
-			"Got symmetry number of %s for %s (expected %s)"%(symmetryNumber,struct,should_be)
-			)
-		
-		struct = Structure(SMILES='C=C=[C]C(C)(C)[C]=C=C'); should_be='Who knows??'
-		symmetryNumber = struct.calculateSymmetryNumber()
-		self.assertEqual(symmetryNumber, should_be, 
-			"Got symmetry number of %s for %s (expected %s)"%(symmetryNumber,struct,should_be)
-			)
+		test_set = [('CC', 18), # ethane
+					('C=C=[C]C(C)(C)[C]=C=C', 'Who knows?'),
+					]
+		fail_message = ''
+		for smile,should_be in test_set:
+			struct = Structure(SMILES=smile)
+			struct.calculateSymmetryNumber()
+			symmetryNumber = struct.symmetryNumber
+			if symmetryNumber!=should_be:
+				fail_message+="Got total symmetry number of %s for %s (expected %s)\n"%(symmetryNumber,struct,should_be)
+		self.assertEqual(fail_message,'',fail_message)
 		
 
 		
@@ -341,10 +309,10 @@ structure4.fromSMILES('C(CCC)CCCC(CC(C(OOC(c1ccccc1)CCCCCCCCC)c1ccccc1)CCCCCC=CC
 	test2 = "structure3.isIsomorphic(structure4)"
 	print "Timing isIsomorphic:"
 	t = Timer(test1,startup)
-	times = t.repeat(repeat=10,number=1000)
+	times = t.repeat(repeat=5,number=1000)
 	print " Test1 took %.3f milliseconds (%s)"%(min(times), times)
 	t = Timer(test2,startup)
-	times = t.repeat(repeat=10,number=1000)
+	times = t.repeat(repeat=5,number=1000)
 	print " Test2 took %.3f milliseconds (%s)"%(min(times),times )
 	
 	unittest.main( testRunner = unittest.TextTestRunner(verbosity=2) )
