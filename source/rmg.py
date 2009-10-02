@@ -47,7 +47,12 @@ def process_stats(stats_file, log_file):
 		out_stream = tee(sys.stdout,open(log_file,'a')) # print to screen AND append to RMG.log
 		stats = pstats.Stats(stats_file,stream=out_stream)
 		stats.strip_dirs()
+		print "Sorted by internal time">>out_stream
 		stats.sort_stats('time')
+		stats.print_stats(25)
+		stats.print_callers(25)
+		print "Sorted by cumulative time">>out_stream
+		stats.sort_stats('cumulative')
 		stats.print_stats(25)
 		stats.print_callers(25)
 		stats.print_callees(25)
