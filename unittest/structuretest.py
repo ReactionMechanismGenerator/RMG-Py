@@ -254,14 +254,8 @@ class StructureCheck(unittest.TestCase):
 			symmetryNumber = struct.calculateAxisSymmetryNumber()
 			if symmetryNumber!=should_be:
 				fail_message+="Got axis symmetry number of %s for %s (expected %s)\n"%(symmetryNumber,struct,should_be)
-			#self.assertEqual(symmetryNumber, should_be, 
-			#	"Got axis symmetry number of %s for %s (expected %s)"%(symmetryNumber,struct,should_be)
-			#	)
 		self.assertEqual(fail_message,'',fail_message)
 	
-
-			
-			
 #	def testCyclicSymmetryNumber(self):
 #
 #		# cyclohexane
