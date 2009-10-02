@@ -6,6 +6,19 @@ General
 or in a section(s) titled 'General'
 
 .. the ID must match those in the rateLibrary AS A STRING (ie. '2' is different from '02')
+
+--
+0
+--
+If a biradical CH2JJ can abstract from RCH4 to make RCH3J and CH3J 
+then a Y_rad CH3J should be able to abstract from RCH3J which means X_H needs 
+to include Xrad_H. I.e. you can abstract from a radical. To make this possible
+a head node has been created X_H_or_Xrad_H which is a union of X_H and Xrad_H.
+The kinetics for it have just been copied from X_H and are only defined for 
+abstraction by Y_rad_birad. I.e. the top level very approximate guess.
+
+Do better kinetics for this exist? Do we in fact use the reverse kinetics anyway?
+
 --
 2
 --

@@ -5,6 +5,14 @@
 // S.R., C.D.W (1/21/03) add biradicals
 // JS, remove CO_birad to form a new family later: CO + RH -> HCO + R.  Aug, 26, 2003
 
+
+X_H_or_Xrad_H
+Union {X_H, Xrad_H}
+
+Xrad_H
+1 *1 R 1 {2,S}
+2 *2 H 0 {1,S}
+
 X_H
 1 *1 R 0 {2,S}
 2 *2 H 0 {1,S}

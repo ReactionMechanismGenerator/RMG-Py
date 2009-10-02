@@ -11,6 +11,7 @@ Arrhenius_EP
 
 //f01_intermolecular_HA
 //No.	XH			Y_rad				Temp.		A			n		a		E0		DA		Dn		Da		DE0		Rank	Comments
+0.   X_H_or_Xrad_H  Y_rad_birad			300-1500	1E+05		0		0		10		0		0		0		0		0		Default
 1.		X_H			Y_rad_birad			300-1500	1E+05		0		0		10		0		0		0		0		0		Default
 2.		X_H			H_rad				300-1500	2.4E+08		1.5		0.65	9.4		0		0		0		0		5		Dean, A. M. [118]
 3.		X_H			O_atom_triplet		300-1500	1.7E+08		1.5		0.75	6.6		0		0		0		0		5		Dean, A. M. [118]
