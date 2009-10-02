@@ -501,9 +501,14 @@ class ReactionFamily(data.Database):
 		self.recipe = recipe
 		self.forbidden = None
 		self.reverse = None
-
+		
 	def __str__(self):
-		return self.label
+		# append the path folder name to the reaction family label, and to the reverse
+		return '<ReactionFamily(%s) from %s>'%(self.label,os.path.basename(self._path))
+	
+	def __str__(self):
+		# append the path folder name to the reaction family label, and to the reverse
+		return self.label + ' [%s]'%(os.path.basename(self._path))
 
 	def getTemplateLists(self):
 		"""
@@ -565,6 +570,11 @@ class ReactionFamily(data.Database):
 
 		#self.generateMissingEntriesFromBelow(forwardTemplate)
 		#self.generateMissingEntriesFromAbove(forwardTemplate)
+		
+		# give the path to the reverse family too
+		if self.reverse:
+			self.reverse._path = self._path
+
 
 	def prune(self, template=None):
 		"""
@@ -1142,7 +1152,24 @@ class ReactionFamily(data.Database):
 		else:
 			productStructures = [productStructure]
 		if len(self.template.products) != len(productStructures):
+			# We have a different number of products than expected by the template.
+			# It might be because we found a ring-opening using a homolysis template
+			if (self.label=='Unimolecular homolysis' 
+			 and len(productStructures) == 1
+			 and len(reactantStructures) == 1):
+				# just be absolutely sure (maybe slow, but safe)
+				rs = reactantStructures[0]
+				if ( rs.graph.isVertexInCycle(rs.getLabeledAtom('*1'))
+				 and rs.graph.isVertexInCycle(rs.getLabeledAtom('*2'))):
+					# both *1 and *2 are in cycles (probably the same one)
+					# so it's pretty safe to just fail quietly, 
+					# and try the next reaction
+					return None
+			
+			# no other excuses, raise an exception
 			message = 'Application of reaction recipe failed; expected %s product(s), but %s found.\n' % (len(self.template.products), len(productStructures))
+			message += "Reaction family: %s \n"%str(self)
+			message += "Reactant structures: %s \n"%reactantStructures
 			message += "Product structures: %s \n"%productStructures
 			message += "Template: %s"%self.template
 			logging.error(message)
