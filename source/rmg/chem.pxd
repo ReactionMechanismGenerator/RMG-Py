@@ -49,6 +49,7 @@ cdef class Atom:
 	cdef  public short int connectivity_value_1
 	cdef  public short int connectivity_value_2
 	cdef  public short int connectivity_value_3
+	cdef  public int sorting_label
 
 cdef class Bond:
 	"""

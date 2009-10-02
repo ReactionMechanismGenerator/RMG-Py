@@ -59,7 +59,7 @@ cdef class Graph(dict):
 	of the outer dictionary are the vertices, while edges are accessed via
 	self[vertex1][vertex2].
 	"""
-
+	
 	def __init__(self, vertices=None, edges=None):
 		self.clear()
 
@@ -469,8 +469,24 @@ cdef class Graph(dict):
 			for vert2 in <dict>self[vert1]:
 				count += vert2.connectivity_value_2
 			vert1.connectivity_value_3 = count
-		
-		
+			
+	cpdef sort_and_label_vertices(Graph self):
+		"""
+		Sort the vertices according to something wise,
+		and record the sorting index on the vertices so they know what order 
+		they were in. These are stored in `vertex.sorting_label`.
+		"""
+		# get the vertices into a list (so order is preserved)
+		cdef list ordered_vertices
+		ordered_vertices = self.vertices()
+		## sort the list according to something wise
+		ordered_vertices.sort(key=__global_atom_sort_value)
+		# vertices with the same __global_atom_sort_value can be in 
+		# an arbitary order, as long as it remains constant
+		# so we record the ordering index ON the vertices
+		for i in range(len(ordered_vertices)):
+			(<chem.Atom>ordered_vertices[i]).sorting_label = i
+    	
 ################################################################################
 
 cpdef VF2_isomorphism(Graph graph1, Graph graph2, dict map12, dict map21, \
@@ -498,7 +514,7 @@ cpdef VF2_isomorphism(Graph graph1, Graph graph2, dict map12, dict map21, \
 		if len(graph2)>len(graph1):
 			logging.debug("Tried matching small graph to larger subgraph")
 			return False, None, None
-
+			
 	# start call_depth off as the size of the largest graph.
 	# each recursive call to __VF2_match will decrease it by one,
 	# until, when the whole graph has been explored, it should reach 0
@@ -508,6 +524,11 @@ cpdef VF2_isomorphism(Graph graph1, Graph graph2, dict map12, dict map21, \
 	# update the connectivity values (before sorting by them)
 	graph1.set_connectivity_values() # could probably run this less often elsewhere
 	graph2.set_connectivity_values() # as the values don't change often
+	
+	# sort the vertices according to something wise (based on connectivity value), and 
+	# record the sorting order on each vertex (as vertex.sorting_label)
+	graph1.sort_and_label_vertices()
+	graph2.sort_and_label_vertices()
 	
 	terminals1 = __VF2_terminals(graph1, map21)
 	terminals2 = __VF2_terminals(graph2, map12)
@@ -683,7 +704,16 @@ cdef bint __VF2_match(Graph graph1, Graph graph2, dict map21, dict map12, \
 
 	return False
 
-cpdef int __atom_sort_value(chem.Atom atom):
+cpdef int __get_sort_label(chem.Atom vertex):
+		"""
+		Used to sort vertices prior to poposing candidate pairs in :method:`__VF2_pairs`
+		
+		This returns the `sorting_label` that is stored on the vertex. It should have been
+		put there recently by a call to :method:`Graph.sort_and_label_vertices()`
+		"""
+		return vertex.sorting_label
+		
+cpdef int __global_atom_sort_value(chem.Atom atom):
 	"""
 	Used to sort atoms prior to poposing candidate pairs in :method:`__VF2_pairs` 
 	The lowest (or most negative) values will be first in the list when you sort, 
@@ -691,8 +721,12 @@ cpdef int __atom_sort_value(chem.Atom atom):
 	For now, that is (roughly speaking) the most connected atoms. This definitely helps for large graphs
 	but bizarrely the opposite ordering seems to help small graphs. Not sure about subggraphs...
 	"""
-	
-	return -100 * atom.connectivity_value_1 - 10 * atom.connectivity_value_2  - atom.connectivity_value_3
+	#return hash(atom)  # apparently random?
+	#return (atom.connectivity_value_1 ) # not unique enough
+	return ( - (atom.connectivity_value_1<<8)  # left shift 8 = multiply by 2**8=256
+			 - (atom.connectivity_value_2<<4)  # left shift 4 = multiply by 2**4=16
+			 - (atom.connectivity_value_3)
+			)
 	
 cdef list __VF2_pairs(Graph graph1, Graph graph2, dict terminals1, dict terminals2, dict map21, dict map12):
 	"""
@@ -709,10 +743,10 @@ cdef list __VF2_pairs(Graph graph1, Graph graph2, dict terminals1, dict terminal
 	# Construct list from terminals if possible
 	if len(terminals1) > 0 and len(terminals2) > 0:
 		list_to_sort = terminals2.keys()
-		list_to_sort.sort(key=__atom_sort_value)
+		list_to_sort.sort(key=__get_sort_label)
 		terminal2 = list_to_sort[0]
 		list_to_sort = terminals1.keys()
-		list_to_sort.sort(key=__atom_sort_value)
+		list_to_sort.sort(key=__get_sort_label)
 		
 		for terminal1 in list_to_sort:
 			pairs.append([terminal1, terminal2])
@@ -722,11 +756,11 @@ cdef list __VF2_pairs(Graph graph1, Graph graph2, dict terminals1, dict terminal
 		# remove already mapped vertices
 		for vertex2 in map12:
 			list_to_sort.remove(vertex2)
-		list_to_sort.sort(key=__atom_sort_value)
+		list_to_sort.sort(key=__get_sort_label)
 		vertex2 = list_to_sort[0]  # take first vertex2
 		# pair with all vertex1s
-		list_to_sort = graph1.keys()
-		list_to_sort.sort(key=__atom_sort_value)
+		list_to_sort = graph1.keys() 
+		list_to_sort.sort(key=__get_sort_label)
 		for vertex1 in list_to_sort:
 			if vertex1 not in map21: # exclude already mapped vertices
 				pairs.append([vertex1, vertex2])
