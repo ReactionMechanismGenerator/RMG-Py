@@ -1049,7 +1049,8 @@ class ReactionFamily(data.Database):
 			if struct.lower() == 'union':
 				for child in self.tree.children[templateReactant]:
 					ismatch, map21, map12 = self.reactantMatch(reactant, child)
-					maps12.extend(map12); maps21.extend(map21)
+					if ismatch:
+						maps12.extend(map12); maps21.extend(map21)
 		elif struct.__class__ == structure.Structure:
 			return reactant.findSubgraphIsomorphisms(struct)
 
@@ -1218,10 +1219,11 @@ class ReactionFamily(data.Database):
 			for structure in reactants[0].structure:
 
 				ismatch, map21, map12 = self.reactantMatch(structure, self.template.reactants[0])
-				for map in map12:
-					rxn = self.makeReaction(reactants, [structure], [map])
-					if rxn is not None:
-						rxnList.append(rxn)
+				if ismatch:
+					for map in map12:
+						rxn = self.makeReaction(reactants, [structure], [map])
+						if rxn is not None:
+							rxnList.append(rxn)
 
 		# Bimolecular reactants: A + B --> products
 		elif len(reactants) == 2 and self.template.isBimolecular():
@@ -1246,11 +1248,12 @@ class ReactionFamily(data.Database):
 					ismatch_B, map21_B, map12_B = self.reactantMatch(structureB, self.template.reactants[1])
 
 					# Iterate over each pair of matches (A, B)
-					for mapA in map12_A:
-						for mapB in map12_B:
-							rxn = self.makeReaction(reactants, [structureA, structureB], [mapA, mapB])
-							if rxn is not None:
-								rxnList.append(rxn)
+					if ismatch_A and ismatch_B:
+						for mapA in map12_A:
+							for mapB in map12_B:
+								rxn = self.makeReaction(reactants, [structureA, structureB], [mapA, mapB])
+								if rxn is not None:
+									rxnList.append(rxn)
 
 					# Only check for swapped reactants if they are different
 					if reactants[0].id != reactants[1].id:
@@ -1260,11 +1263,12 @@ class ReactionFamily(data.Database):
 						ismatch_B, map21_B, map12_B = self.reactantMatch(structureB, self.template.reactants[0])
 
 						# Iterate over each pair of matches (A, B)
-						for mapA in map12_A:
-							for mapB in map12_B:
-								rxn = self.makeReaction(reactants, [structureB, structureA], [mapB, mapA])
-								if rxn is not None:
-									rxnList.append(rxn)
+						if ismatch_A and ismatch_B:
+							for mapA in map12_A:
+								for mapB in map12_B:
+									rxn = self.makeReaction(reactants, [structureB, structureA], [mapB, mapA])
+									if rxn is not None:
+										rxnList.append(rxn)
 
 		return rxnList
 
