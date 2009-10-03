@@ -340,7 +340,7 @@ cdef class BondType:
 		"""
 		Used for pickling.
 		"""
-		return (BondType, ('', '', 0.0, 0, ''))
+		return (BondType, (self.label, self.name, self.order, self.piElectrons, self.location))
 
 	cpdef bint equivalent(BondType self, BondType other):
 		"""

@@ -45,7 +45,7 @@ import constants
 
 ################################################################################
 
-def execute(inputFile, outputDir, scratchDir, libraryDir, verbose):
+def execute(inputFile, options ):
 	"""
 	Generate a reaction model for the set of reaction systems specified in an 
 	input file at location `inputFile`. Output and temporary files will be 
@@ -56,14 +56,16 @@ def execute(inputFile, outputDir, scratchDir, libraryDir, verbose):
 	`verbose` parameter is an integer specifying the amount of log text seen
 	at the console; the levels correspond to those of the :data:`logging` module.
 	"""
-
+	
 	# Set directories
-	constants.outputDir = outputDir
-	constants.scratchDir = scratchDir
-	constants.libraryDir = libraryDir
+	constants.outputDir = options.outputDirectory
+	constants.scratchDir = options.scratchDirectory
+	constants.libraryDir = options.libraryDirectory
+	
 
-	# Set up log (uses stdout)
-	initializeLog(verbose)
+
+	# Set up log (uses stdout and a file)
+	initializeLog(options.verbose)
 	
 	# Log start timestamp
 	logging.info('RMG execution initiated at ' + time.asctime() + '\n')
@@ -72,14 +74,14 @@ def execute(inputFile, outputDir, scratchDir, libraryDir, verbose):
 	printRMGHeader()
 	
 	# Make output subdirectories
-	plotDir = outputDir + os.sep + 'plot'
+	plotDir = constants.outputDir + os.sep + 'plot'
 	if os.path.exists(plotDir):
 		for f in os.listdir(plotDir):
 			os.remove(plotDir + '/' + f)
 		os.rmdir(plotDir)
 	os.mkdir(plotDir)
 
-	specDir = outputDir + os.sep + 'species'
+	specDir = constants.outputDir + os.sep + 'species'
 	if os.path.exists(specDir):
 		for f in os.listdir(specDir):
 			os.remove(specDir + '/' + f)
@@ -127,14 +129,22 @@ def execute(inputFile, outputDir, scratchDir, libraryDir, verbose):
 		speciesToAdd = list(set(speciesToAdd))
 		for species in speciesToAdd:
 			reactionModel.enlarge(species)
-
-		# Save the restart file
-		logging.info('Saving restart file...')
-		import pickle
-		f = open(outputDir + '/restart.pkl', 'wb')
-		pickle.dump(reactionModel, f)
-		pickle.dump(reactionSystems, f)
-		f.close()
+		
+		import cPickle
+		if options.restart:
+			logging.info('Loading previous restart file...')
+			f = open(os.path.join(constants.outputDir,'restart.pkl'), 'rb')
+			reactionModel = cPickle.load( f)
+			reactionSystems = cPickle.load(f)
+			f.close()
+			options.restart = False # have already restarted
+		else:
+			# Save the restart file
+			logging.info('Saving restart file...')
+			f = open(os.path.join(constants.outputDir,'restart.pkl'), 'wb')
+			cPickle.dump(reactionModel, f)
+			cPickle.dump(reactionSystems, f)
+			f.close()
 
 		if not done:
 			logging.info('Updating RMG execution statistics...')
@@ -149,7 +159,7 @@ def execute(inputFile, outputDir, scratchDir, libraryDir, verbose):
 			memoryUse.append(hp.heap().size / 1.0e6)
 			logging.debug('Execution time: %s s' % (execTime[-1]))
 			logging.debug('Memory used: %s MB' % (memoryUse[-1]))
-			restartSize.append(os.path.getsize(outputDir + '/restart.pkl') / 1.0e6)
+			restartSize.append(os.path.getsize(os.path.join(constants.outputDir,'restart.pkl')) / 1.0e6)
 			generateExecutionPlots(execTime, coreSpeciesCount, coreReactionCount, edgeSpeciesCount, edgeReactionCount, memoryUse, restartSize)
 
 		logging.info('')
@@ -160,7 +170,7 @@ def execute(inputFile, outputDir, scratchDir, libraryDir, verbose):
 	logging.info('')
 	logging.info('The final model core has %s species and %s reactions' % (len(reactionModel.core.species), len(reactionModel.core.reactions)))
 	logging.info('The final model edge has %s species and %s reactions' % (len(reactionModel.edge.species), len(reactionModel.edge.reactions)))
-	io.writeOutputFile(outputDir + '/output.xml', reactionModel, reactionSystems)
+	io.writeOutputFile(os.path.join(constants.outputDir,'output.xml'), reactionModel, reactionSystems)
 
 	# Log end timestamp
 	logging.info('RMG execution terminated at ' + time.asctime())

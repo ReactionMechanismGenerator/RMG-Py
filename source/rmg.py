@@ -91,6 +91,9 @@ if __name__ == '__main__':
 	parser.add_option('-l', '--library-directory', default='', 
 					  action="store", type="string", dest="libraryDirectory", 
 					  help='use DIR as library directory', metavar='DIR')
+	parser.add_option('-r', '--restart',
+						action="store_true", dest="restart", default=False,
+						help="restart an incomplete job." )
 	parser.add_option('-p', '--profile',
 						action="store_true", dest="profile", default=False,
 						help="run under cProfile to gather profiling statistics, and postprocess them if job completes." )
@@ -128,9 +131,7 @@ if __name__ == '__main__':
 		import cProfile, sys, pstats, os
 		global_vars = {}
 		local_vars = {'args': args, 'options':options, 'rmg':rmg}
-		command = """rmg.execute( args[0], options.outputDirectory,
-					 options.scratchDirectory, options.libraryDirectory, 
-					 options.verbose )"""
+		command = """rmg.execute( args[0], options )"""
 		stats_file = os.path.join(options.outputDirectory,'RMG.profile')
 		print("Running under cProfile")
 		if not options.postprocess_only:
@@ -141,7 +142,5 @@ if __name__ == '__main__':
 		process_stats(stats_file, log_file)
 		
 	else: 
-		rmg.execute( args[0], options.outputDirectory,
-					 options.scratchDirectory, options.libraryDirectory, 
-					 options.verbose )
+		rmg.execute( args[0], options )
 
