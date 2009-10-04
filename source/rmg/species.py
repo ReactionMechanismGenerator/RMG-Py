@@ -74,11 +74,31 @@ class ThermoSnapshot:
 		Return :data:`True` if the current snapshot is still valid at the new
 		`temperature` (in K), or :data:`False` if it needs to be recalculated.
 		The snapshot is considered valid if the	temperatures are equal to within
-		six signficiant figures. The primary benefit is a speedup of simulations
+		five signficiant figures. The primary benefit is a speedup of simulations
 		that are isothermal or steady-state in temperature.
 		"""
 		if self.temperature == 0: return False
-		return abs(math.log10(temperature / self.temperature)) < 6
+		if temperature==self.temperature: return True
+		
+		## This test ensures the temperature is not more than 
+		## 100,000 times too low or 100,000 times too high!!!
+		## Probably not what was intended  :-)
+		#return abs(math.log10(temperature / self.temperature)) < 5
+		## I think this is better:
+		#return math.log10(abs(1-temperature / self.temperature)) < -5
+		## however, this is faster (and this function is called a LOT!)
+		ratio =  temperature / self.temperature
+		return (ratio > 0.99999 and ratio < 1.00001)
+		
+# >>> import timeit
+# >>> timeit.Timer('math.log10(abs(1-500.0/500.05))<-5', 'import math').timeit()
+# 0.78184604644775391
+# >>> timeit.Timer('(abs(1-500.0/500.05))<0.00001', 'import math').timeit()
+# 0.34678912162780762
+# >>> timeit.Timer('ratio=500.0/500.05; (ratio<1.00001 and ratio>0.99999)', 'import math').timeit()
+# 0.27086305618286133
+
+
 
 	def update(self, temperature, thermoData):
 		"""
@@ -258,7 +278,7 @@ class Species:
 		Generate thermodynamic data for the species by use of the thermo
 		database.
 		"""
-
+		
 		thermoData = []
 		for structure in self.structure:
 			structure.updateAtomTypes()
