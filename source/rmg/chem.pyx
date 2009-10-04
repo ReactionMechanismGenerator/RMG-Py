@@ -66,7 +66,7 @@ cdef class Element:
 		"""
 		Used for pickling.
 		"""
-		return (Element, (0, '', '', 0.0, []))
+		return (Element, (self.number, self.name, self.symbol, self.mass, self.valence))
 
 ################################################################################
 
@@ -129,7 +129,7 @@ cdef class AtomType:
 		"""
 		Used for pickling.
 		"""
-		return (AtomType, ('', None, ''))
+		return (AtomType, (self.label, self.element, self.description))
 
 	cpdef bint equivalent(AtomType self, AtomType other):
 		"""
@@ -263,7 +263,7 @@ cdef class ElectronState:
 		"""
 		Used for pickling.
 		"""
-		return (ElectronState, ('', 0, []))
+		return (ElectronState, (self.label, self.order, self.spin))
 
 	cpdef bint equivalent(ElectronState self, ElectronState other):
 		"""
@@ -412,7 +412,7 @@ cdef class Atom:
 		"""
 		Used for pickling.
 		"""
-		return (Atom, ())
+		return (Atom, (self.atomType, self.electronState, self.charge, self.label))
 
 	#def __repr__(self):
 	#	"""x.__repr__() <==> repr(x)"""
@@ -649,7 +649,7 @@ cdef class Bond:
 		"""
 		Used for pickling.
 		"""
-		return (Bond, ([None, None], 'S'))
+		return (Bond, (self.atoms, self.bondType))
 
 	def getBondType(self):
 		if len(self._bondType) == 1: return self._bondType[0]

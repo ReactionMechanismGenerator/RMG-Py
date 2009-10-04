@@ -62,9 +62,19 @@ cdef class Graph(dict):
 	
 	def __init__(self, vertices=None, edges=None):
 		self.clear()
+		if vertices is not None:
+			for v in vertices: self.addVertex(v)
+		if edges is not None:
+			for e in edges: self.addEdge(e.atoms, e)
 
 	def __reduce__(self):
-		return (dict, (), None, None, self.iteritems())
+		# This uses the dict constructor, but the resulting object is a dict,
+		# not a graph
+		#return (dict, (), None, None, self.iteritems())
+		# Can we just use Graph instead of dict?
+		return (Graph, (), None, None, self.iteritems())
+		# This uses the graph constructor
+		#return (Graph, (self.vertices, self.edges))
 
 	cpdef list vertices(Graph self):
 		"""
