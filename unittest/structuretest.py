@@ -267,6 +267,7 @@ class StructureCheck(unittest.TestCase):
 	def testSymmetryNumber(self):
 		test_set = [('CC', 18), # ethane
 					('C=C=[C]C(C)(C)[C]=C=C', 'Who knows?'),
+					('C(=CC(c1ccccc1)C([CH]CCCCCC)C=Cc1ccccc1)[CH]CCCCCC', 1)
 					]
 		fail_message = ''
 		for smile,should_be in test_set:

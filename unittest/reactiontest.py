@@ -181,64 +181,41 @@ class ReactionSetCheck(unittest.TestCase):
 		self.assertTrue(species2 in all_products, "None of the reactions made %s"%(species2))
 
 		#self.assertEqual(len(rxns),1, "Was expecting to make 1 reaction for %s"%(species1))
-
-
-	def testCyclicColligation1(self):
-		"""A simple test of a Birad_recombination (ring opening) reaction with cyclohexane"""
-		self.loadDatabase(only_families=['Birad_recombination'])
-		structure1 = Structure(SMILES="C1CCCCC1")
-		species1 = makeNewSpecies(structure1)
-		print 'Made species',species1
-			
-		# wipe the reaction list
-		reaction.reactionList=[]
-
-		rxns = reaction.kineticsDatabase.getReactions([species1])
-		for rxn in rxns:
-			print 'Reaction family:',rxn.family
-			print 'Reaction:',rxn
-			print 'Kinetics:',rxn.kinetics
-			#print 'bestKinetics:',rxn.bestKinetics
-			print
-		
-		all_products = []
-		for rxn in rxns:
-			self.assertEqual(rxn.family.label,'Cyclic colligation',"Was trying to test 'Cyclic colligation' but made a reaction from family %s"%rxn.family)
-			self.assertEqual(len(rxn.reactants),1,"Reaction %s wasn't unimolecular"%rxn)
-			self.assertEqual(len(rxn.products),1,"Reaction %s wasn't unimolecular"%rxn)
-			all_products.extend(rxn.products)
-			print rxn
-		self.assertEqual(len(all_products),1,"Expected to make 1 product, but made %s"%all_products)
-			
+	
 			
 	def testCyclicColligation2(self):
-		"""A test of a Birad_recombination  (Cyclic colligation) reaction"""
+		"""A test of a Birad_recombination  (Cyclic colligation) reactions"""
 		self.loadDatabase(only_families=['Birad_recombination'])
-		structure1 = Structure()
-		structure1.fromSMILES("CCCCCCCCC1C(c2ccccc2)C(CCCCCC)C=CC1c1ccccc1")
-		species1 = makeNewSpecies(structure1)
-		print 'Made species',species1
-			
-		# wipe the reaction list
-		reaction.reactionList=[]
-
-		rxns = reaction.kineticsDatabase.getReactions([species1])
-		for rxn in rxns:
-			print 'Reaction family:',rxn.family
-			print 'Reaction:',rxn
-			print 'Kinetics:',rxn.kinetics
-			#print 'bestKinetics:',rxn.bestKinetics
-			print
 		
-		all_products = []
-		for rxn in rxns:
-			self.assertEqual(rxn.family.label,'Cyclic colligation',"Was trying to test 'Cyclic colligation' but made a reaction from family %s"%rxn.family)
-			self.assertEqual(len(rxn.reactants),1,"Reaction %s wasn't unimolecular"%rxn)
-			self.assertEqual(len(rxn.products),1,"Reaction %s wasn't unimolecular"%rxn)
-			all_products.extend(rxn.products)
-			print rxn
+		for smile in ['C1CCCCC1',
+					  'CCCCCCCCC1C(c2ccccc2)C(CCCCCC)C=CC1c1ccccc1',
+					  'C(=CC(c1ccccc1)C([CH]CCCCCC)C=Cc1ccccc1)[CH]CCCCCC'
+					]:
 			
-	
+			structure1 = Structure(SMILES=smile)
+			species1 = makeNewSpecies(structure1)
+			print 'Reacting species',species1
+				
+			# wipe the reaction list
+			reaction.reactionList=[]
+    	
+			rxns = reaction.kineticsDatabase.getReactions([species1])
+			for rxn in rxns:
+				print 'Reaction family:',rxn.family
+				print 'Reaction:',rxn
+				print 'Kinetics:',rxn.kinetics
+				print
+			
+			all_products = []
+			for rxn in rxns:
+				self.assertEqual(rxn.family.label,'Cyclic colligation',"Was trying to test 'Cyclic colligation' but made a reaction from family %s"%rxn.family)
+				self.assertEqual(len(rxn.reactants),1,"Reaction %s wasn't unimolecular"%rxn)
+				self.assertEqual(len(rxn.products),1,"Reaction %s wasn't unimolecular"%rxn)
+				all_products.extend(rxn.products)
+				
+			print "All products for reacting %s:"%species1, [p.structure[0] for p in all_products]
+			
+		
 	
 
 

@@ -698,7 +698,7 @@ class Database:
 		else:
 			#print structure.toAdjacencyList()
 			#raise InvalidDatabaseException('For structure %s, a node %s with non-mutually-exclusive children %s was encountered in tree with top level nodes %s.' % (structure.getFormula(), root, next, self.tree.top))
-			logging.warning('For structure %s, a node %s with non-mutually-exclusive children %s was encountered in tree with top level nodes %s.' % (structure.getFormula(), root, next, self.tree.top))
+			logging.warning('For %s, a node %s with overlapping children %s was encountered in tree with top level nodes %s.' % (structure, root, next, self.tree.top))
 			return root
 		
 ################################################################################
