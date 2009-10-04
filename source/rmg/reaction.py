@@ -278,18 +278,22 @@ class Reaction:
 			if product is spec: stoich += 1
 		return stoich
 
-	def getRate(self, T, P, conc):
+	def getRate(self, T, P, conc, totalConc=None):
 		"""
 		Return the net rate of reaction at temperature `T` and pressure `P`. The
 		parameter `conc` is a map with species as keys and concentrations as
 		values. A reactant not found in the `conc` map is treated as having zero
 		concentration.
+		
+		If passed a `totalConc`, it won't bother recalculating it.
 		"""
 
 		# Calculate total concentration
-		totalConc = 0.0
-		for spec in conc:
-			totalConc += conc[spec]
+		#totalConc = 0.0
+		#for spec in conc:
+		#	totalConc += conc[spec]
+		if totalConc is None:
+			totalConc=sum( conc.values() )
 
 		# Evaluate rate constant
 		rateConstant = self.getRateConstant(T)
@@ -303,7 +307,8 @@ class Reaction:
 			if reactant in conc:
 				forward = forward * conc[reactant]
 			else:
-				forward = forward * 0.0
+				forward = 0.0
+				break
 
 		# Evaluate reverse concentration product
 		reverse = 1.0
@@ -311,7 +316,8 @@ class Reaction:
 			if product in conc:
 				reverse = reverse * conc[product]
 			else:
-				reverse = reverse * 0.0
+				reverse = 0.0
+				break
 
 		# Return rate
 		return rateConstant * (forward - reverse / equilibriumConstant)

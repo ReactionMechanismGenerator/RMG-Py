@@ -226,8 +226,9 @@ class CoreEdgeReactionModel:
 		"""
 		speciesList, reactionList = self.getLists()
 		rxnRate = numpy.zeros(len(reactionList), float)
+		totalConc = sum( Ci.values() )
 		for j, rxn in enumerate(reactionList):
-			rxnRate[j] = rxn.getRate(T, P, Ci)
+			rxnRate[j] = rxn.getRate(T, P, Ci, totalConc)
 		return rxnRate
 
 ################################################################################
