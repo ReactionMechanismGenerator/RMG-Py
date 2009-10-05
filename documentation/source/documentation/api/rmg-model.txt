@@ -25,6 +25,12 @@ IdealGas
 .. autoclass:: rmg.model.IdealGas
 	:members:
 
+IncompressibleLiquid
+--------------------
+
+.. autoclass:: rmg.model.IncompressibleLiquid
+	:members:
+
 InvalidReactionSystemException
 ------------------------------
 

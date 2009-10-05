@@ -45,7 +45,7 @@ import constants
 
 ################################################################################
 
-def execute(inputFile, options ):
+def execute(inputFile, options):
 	"""
 	Generate a reaction model for the set of reaction systems specified in an 
 	input file at location `inputFile`. Output and temporary files will be 
@@ -58,11 +58,12 @@ def execute(inputFile, options ):
 	"""
 	
 	# Set directories
-	constants.outputDir = options.outputDirectory
-	constants.scratchDir = options.scratchDirectory
-	constants.libraryDir = options.libraryDirectory
-	
+	constants.outputDirectory = options.outputDirectory
+	constants.scratchDirectory = options.scratchDirectory
+	constants.libraryDirectory = options.libraryDirectory
 
+	# Save initialization time
+	constants.initializationTime = time.time()
 
 	# Set up log (uses stdout and a file)
 	initializeLog(options.verbose)
@@ -74,14 +75,14 @@ def execute(inputFile, options ):
 	printRMGHeader()
 	
 	# Make output subdirectories
-	plotDir = constants.outputDir + os.sep + 'plot'
+	plotDir = os.path.join(constants.outputDirectory, 'plot')
 	if os.path.exists(plotDir):
 		for f in os.listdir(plotDir):
 			os.remove(plotDir + '/' + f)
 		os.rmdir(plotDir)
 	os.mkdir(plotDir)
 
-	specDir = constants.outputDir + os.sep + 'species'
+	specDir = os.path.join(constants.outputDirectory, 'species')
 	if os.path.exists(specDir):
 		for f in os.listdir(specDir):
 			os.remove(specDir + '/' + f)
@@ -133,7 +134,7 @@ def execute(inputFile, options ):
 		import cPickle
 		if options.restart:
 			logging.info('Loading previous restart file...')
-			f = open(os.path.join(constants.outputDir,'restart.pkl'), 'rb')
+			f = open(os.path.join(constants.outputDirectory,'restart.pkl'), 'rb')
 			reactionModel = cPickle.load( f)
 			reactionSystems = cPickle.load(f)
 			f.close()
@@ -141,7 +142,7 @@ def execute(inputFile, options ):
 		else:
 			# Save the restart file
 			logging.info('Saving restart file...')
-			f = open(os.path.join(constants.outputDir,'restart.pkl'), 'wb')
+			f = open(os.path.join(constants.outputDirectory,'restart.pkl'), 'wb')
 			cPickle.dump(reactionModel, f)
 			cPickle.dump(reactionSystems, f)
 			f.close()
@@ -153,13 +154,13 @@ def execute(inputFile, options ):
 			coreReactionCount.append(len(reactionModel.core.reactions))
 			edgeSpeciesCount.append(len(reactionModel.edge.species))
 			edgeReactionCount.append(len(reactionModel.edge.reactions))
-			execTime.append(time.clock())
+			execTime.append(time.time() - constants.initializationTime)
 			from guppy import hpy
 			hp = hpy()
 			memoryUse.append(hp.heap().size / 1.0e6)
 			logging.debug('Execution time: %s s' % (execTime[-1]))
 			logging.debug('Memory used: %s MB' % (memoryUse[-1]))
-			restartSize.append(os.path.getsize(os.path.join(constants.outputDir,'restart.pkl')) / 1.0e6)
+			restartSize.append(os.path.getsize(os.path.join(constants.outputDirectory,'restart.pkl')) / 1.0e6)
 			generateExecutionPlots(execTime, coreSpeciesCount, coreReactionCount, edgeSpeciesCount, edgeReactionCount, memoryUse, restartSize)
 
 		logging.info('')
@@ -170,7 +171,7 @@ def execute(inputFile, options ):
 	logging.info('')
 	logging.info('The final model core has %s species and %s reactions' % (len(reactionModel.core.species), len(reactionModel.core.reactions)))
 	logging.info('The final model edge has %s species and %s reactions' % (len(reactionModel.edge.species), len(reactionModel.edge.reactions)))
-	io.writeOutputFile(os.path.join(constants.outputDir,'output.xml'), reactionModel, reactionSystems)
+	io.writeOutputFile(os.path.join(constants.outputDirectory,'output.xml'), reactionModel, reactionSystems)
 
 	# Log end timestamp
 	logging.info('RMG execution terminated at ' + time.asctime())
@@ -198,7 +199,7 @@ def initializeLog(verbose):
 	ch.setFormatter(formatter)
 	
 	# create file handler
-	log_file_name = os.path.join(constants.outputDir,'RMG.log')
+	log_file_name = os.path.join(constants.outputDirectory,'RMG.log')
 	if os.path.exists(log_file_name):
 		backup_name = '_backup'.join(os.path.splitext(log_file_name))
 		if os.path.exists(backup_name):
@@ -223,8 +224,16 @@ def initializeLog(verbose):
 	
 ################################################################################
 
-def generateExecutionPlots(execTime, coreSpeciesCount, coreReactionCount, edgeSpeciesCount, edgeReactionCount, memoryUse, restartSize):
+def generateExecutionPlots(execTime, coreSpeciesCount, coreReactionCount, \
+	edgeSpeciesCount, edgeReactionCount, memoryUse, restartSize):
+	"""
+	Generate a number of plots describing the statistics of the RMG job, 
+	including the reaction model core and edge size and memory use versus
+	execution time. These will be placed in the output directory in the plot/
+	folder.
+	"""
 
+	# Only generate plots if that flag is turned on (in input file)
 	if not constants.generatePlots:
 		return
 
@@ -237,7 +246,7 @@ def generateExecutionPlots(execTime, coreSpeciesCount, coreReactionCount, edgeSp
 	ax2 = ax1.twinx()
 	ax2.semilogx(execTime, coreReactionCount, 'o-r')
 	ax2.set_ylabel('Number of core reactions')
-	plt.savefig(constants.outputDir + '/plot/coreSize.svg')
+	plt.savefig(os.path.join(constants.outputDirectory, 'plot/coreSize.svg'))
 	plt.clf()
 
 	fig = plt.figure()
@@ -248,7 +257,7 @@ def generateExecutionPlots(execTime, coreSpeciesCount, coreReactionCount, edgeSp
 	ax2 = ax1.twinx()
 	ax2.loglog(execTime, edgeReactionCount, 'o-r')
 	ax2.set_ylabel('Number of edge reactions')
-	plt.savefig(constants.outputDir + '/plot/edgeSize.svg')
+	plt.savefig(os.path.join(constants.outputDirectory, 'plot/edgeSize.svg'))
 	plt.clf()
 
 	fig = plt.figure()
@@ -258,7 +267,7 @@ def generateExecutionPlots(execTime, coreSpeciesCount, coreReactionCount, edgeSp
 	ax1.set_xlabel('Execution time (s)')
 	ax1.set_ylabel('Memory (MB)')
 	ax1.legend(['RAM', 'Restart file'], loc=2)
-	plt.savefig(constants.outputDir + '/plot/memoryUse.svg')
+	plt.savefig(os.path.join(constants.outputDirectory, 'plot/memoryUse.svg'))
 	plt.clf()
 
 ################################################################################

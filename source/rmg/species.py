@@ -29,17 +29,14 @@
 ################################################################################
 
 """
-Contains classes describing chemical species and their thermodynamics.
+Contains classes describing chemical species.
 """
 
-import quantities as pq
 import logging
 import math
 import pybel
 
 import constants
-import data
-import chem
 import structure
 import thermo
 
@@ -51,15 +48,17 @@ class ThermoSnapshot:
 	set of conditions. During dynamic simulations, this class enables the
 	simulator to update the thermodynamics of each species one per iteration.
 	The attributes are:
-	 ============== ========================================================
-	 Attribute      Meaning
-	 ============== ========================================================
-	 `temperature`  the temperature at which the snapshot was taken in K
-	 `heatCapacity` the heat capacity at the current conditions in J/mol*K
-	 `enthalpy`     the enthalpy at the current conditions in J/mol
-	 `entropy`      the entropy at the current conditions in J/mol*K
-	 `freeEnergy`   the Gibbs free energy at the current conditions in J/mol
-	 ============== ========================================================
+	
+	============== ========================================================
+	Attribute      Description
+	============== ========================================================
+	`temperature`  the temperature at which the snapshot was taken in K
+	`heatCapacity` the heat capacity at the current conditions in J/mol*K
+	`enthalpy`     the enthalpy at the current conditions in J/mol
+	`entropy`      the entropy at the current conditions in J/mol*K
+	`freeEnergy`   the Gibbs free energy at the current conditions in J/mol
+	============== ========================================================
+	
 	"""
 
 	def __init__(self, temperature=0.0, heatCapacity=0.0, enthalpy=0.0, entropy=0.0):
@@ -117,12 +116,27 @@ class ThermoSnapshot:
 
 class Species:
 	"""
-	Represent a chemical species (including all of its resonance forms). Each
-	species has a unique integer `id` assigned automatically by RMG and a
-	not-necessarily unique string `label`. The `structure` variable contains a
-	list of :class:`Structure` objects representing each resonance form. The
-	`reactive` flag is :data:`True` if the species can react and :data:`False`
-	if it is inert.
+	Represent a chemical species (including all of its resonance forms). The
+	attributes are:
+
+	================  ==========================================================
+	Attributes        Description
+	================  ==========================================================
+	`id`              A unique integer identifier
+	`label`           A more descriptive (but not necessarily unique) string
+	                  label
+	`lennardJones`    The Lennard-Jones parameters for the species
+	`reactive`        :data:`True` if the species is reactive, :data:`False` if
+	                  inert
+	`spectralData`    The spectral data (degrees of freedom) for the species
+	`structure`       A list of :class:`structure.Structure` objects
+	                  representing the set of resonance isomers
+	`thermoData`      The thermodynamic parameters for the species, always a
+	                  derived class of `thermo.ThermoData`
+	`thermoSnapshot`  The thermodynamic parameters at the current point in the
+	                  simulation
+	================  ==========================================================
+
 	"""
 	def __repr__(self):
 		"""How it looks on the console"""
@@ -435,7 +449,7 @@ def makeNewSpecies(structure, label='', reactive=True):
 	# Draw species in core
 	if constants.drawMolecules:
 		mol = pybel.Molecule(spec.toOBMol())
-		mol.draw(False, constants.outputDir + '/species/' + str(spec) + '.png')
+		mol.draw(False, os.path.join(constants.outputDirectory, 'species/' + str(spec) + '.png'))
 
 	# Note in the log
 	logging.debug('Created new species ' + str(spec) + ': ' + spec.toInChI())

@@ -29,7 +29,8 @@
 ################################################################################
 
 """
-Contains classes describing chemical entities: elements, atoms, bonds, species, etc.
+Contains classes describing chemical structures, which are made up of atoms and
+bonds.
 """
 
 import logging
@@ -59,17 +60,28 @@ class InvalidAdjacencyListException(Exception):
 class Structure:
 	"""
 	A representation of a chemical species using a graph data structure. The
-	vertices represent atoms, while the edges represent bonds.
+	vertices represent atoms, while the edges represent bonds. The attributes
+	are:
+
+	================  ==========================================================
+	Attributes        Description
+	================  ==========================================================
+	`graph`           A graph representation of the atoms and bonds of the
+	                  structure
+	`symmetryNumber`  The combined external and internal symmetry number of the
+	                  structure
+	================  ==========================================================
+
 	"""
 	
-	def __repr__(self):
-		message = "Structure(SMILES='%s')"%(self.toSMILES())
-		return message
-
 	def __init__(self, atoms=None, bonds=None, SMILES=None):
 		self.initialize(atoms or [], bonds or [])
 		if SMILES:
 			self.fromSMILES(SMILES)
+
+	def __repr__(self):
+		message = "Structure(SMILES='%s')"%(self.toSMILES())
+		return message
 
 	def atoms(self):
 		"""
@@ -522,7 +534,7 @@ class Structure:
 
 		Atoms are visualized as vertices in the outputted graph. Vertices are
 		labeled with the atom type(s) of each corresponding	atom. Labeled atoms
-		('*', '*1', etc.) are color-coded, with a unique color for each label.
+		('\*', '\*1', etc.) are color-coded, with a unique color for each label.
 		Bonds are indicated with edges; multiple bonds are represented by
 		multiple edges between the same pair of vertices. The edge line style is
 		used to denote further semantic information: dashed lines indicate
@@ -789,6 +801,13 @@ class Structure:
 		# \/ \/
 		# so this doesn't work: 
 		## return self.isAtomInCycle(bond.atoms[0]) and self.isAtomInCycle(bond.atoms[1])
+
+	def getAllCycles(self, atom):
+		"""
+		Given a starting `atom`, return a list of all cycles this atom is found
+		in.
+		"""
+		return self.graph.getAllCycles(atom)
 
 	def isCyclic(self):
 		"""

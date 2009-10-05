@@ -25,6 +25,11 @@
 #
 ################################################################################
 
+"""
+Contains an implementation of a graph data structure (the :class:`Graph` class)
+and functions for manipulating that graph, including isomorphism functions.
+"""
+
 cimport chem # so we have 
 import logging
 
@@ -68,14 +73,8 @@ cdef class Graph(dict):
 			for e in edges: self.addEdge(e.atoms, e)
 
 	def __reduce__(self):
-		# This uses the dict constructor, but the resulting object is a dict,
-		# not a graph
-		#return (dict, (), None, None, self.iteritems())
-		# Can we just use Graph instead of dict?
 		return (Graph, (), None, None, self.iteritems())
-		# This uses the graph constructor
-		#return (Graph, (self.vertices, self.edges))
-
+		
 	cpdef list vertices(Graph self):
 		"""
 		Return a list of the vertices in the graph.
@@ -151,7 +150,7 @@ cdef class Graph(dict):
 
 	cpdef removeEdge(Graph self, vertices):
 		"""
-		Remove the edge having vertices as specified in the 2-tuple `vertices
+		Remove the edge having vertices as specified in the 2-tuple `vertices`
 		from the graph. Does not remove vertices that no longer have any edges
 		as a result of this removal.
 		"""
@@ -502,11 +501,11 @@ cdef class Graph(dict):
 cpdef VF2_isomorphism(Graph graph1, Graph graph2, dict map12, dict map21, \
 	bint subgraph=False, bint findAll=False):
 	"""
-	Returns :data:`True` if two :class:`Graph`s are isomorphic and :data:`False`
-	otherwise. Uses the VF2 algorithm of Vento and Foggia. If `subgraph` is
-	:data:`True` then graph2 is checked for being a potential subgraph of graph1. 
-	`findAll` isused to specify whether all isomorphisms should be returned, 
-	or only the first.
+	Returns :data:`True` if two :class:`Graph` objects are isomorphic and
+	:data:`False` otherwise. Uses the VF2 algorithm of Vento and Foggia. If
+	`subgraph` is :data:`True` then graph2 is checked for being a potential
+	subgraph of graph1. `findAll` is used to specify whether all isomorphisms
+	should be returned,  or only the first.
 	
 	Returns tuple (is_match, map12, map21)
 	"""
@@ -551,7 +550,7 @@ cpdef VF2_isomorphism(Graph graph1, Graph graph2, dict map12, dict map21, \
 	else:
 		return ismatch, map12, map21
 
-cdef bint __VF2_feasible(Graph graph1, Graph graph2, chem.Atom vertex1, chem.Atom vertex2, \
+cpdef bint __VF2_feasible(Graph graph1, Graph graph2, chem.Atom vertex1, chem.Atom vertex2, \
 	dict map21, dict map12, dict terminals1, dict terminals2, bint subgraph):
 	"""
 	Returns :data:`True` if two vertices `vertex1` and `vertex2` from graphs
@@ -647,7 +646,7 @@ cdef bint __VF2_feasible(Graph graph1, Graph graph2, chem.Atom vertex1, chem.Ato
 				return False
 	return True
 
-cdef bint __VF2_match(Graph graph1, Graph graph2, dict map21, dict map12, \
+cpdef bint __VF2_match(Graph graph1, Graph graph2, dict map21, dict map12, \
 	dict terminals1, dict terminals2, bint subgraph, bint findAll, \
 	list map21List, list map12List, int call_depth):
 	"""
@@ -738,7 +737,7 @@ cpdef int __global_atom_sort_value(chem.Atom atom):
 			 - (atom.connectivity_value_3)
 			)
 	
-cdef list __VF2_pairs(Graph graph1, Graph graph2, dict terminals1, dict terminals2, dict map21, dict map12):
+cpdef list __VF2_pairs(Graph graph1, Graph graph2, dict terminals1, dict terminals2, dict map21, dict map12):
 	"""
 	Create a list of pairs of candidates for inclusion in the VF2 mapping. If
 	there are a nonzero number of terminals in each graph, the candidates are
@@ -777,7 +776,7 @@ cdef list __VF2_pairs(Graph graph1, Graph graph2, dict terminals1, dict terminal
 	
 	return pairs
 
-cdef dict __VF2_terminals(Graph graph, dict mapping):
+cpdef dict __VF2_terminals(Graph graph, dict mapping):
 	"""
 	For a given graph `graph` and associated partial mapping `mapping`,
 	generate a list of terminals, vertices that are directly connected to
@@ -794,7 +793,7 @@ cdef dict __VF2_terminals(Graph graph, dict mapping):
 				terminals[vert] = True
 	return terminals
 
-cdef dict __VF2_new_terminals(Graph graph, dict mapping, dict old_terminals, new_vertex):
+cpdef dict __VF2_new_terminals(Graph graph, dict mapping, dict old_terminals, new_vertex):
 	"""
 	For a given graph `graph` and associated partial mapping `mapping`,
 	UPDATES a list of terminals, vertices that are directly connected to

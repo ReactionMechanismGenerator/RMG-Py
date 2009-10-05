@@ -26,7 +26,20 @@
 ################################################################################
 
 """
-Contains classes describing simple chemical entities: elements, atoms, bonds, etc.
+Contains classes describing simple chemical entities:
+
+* :class:`Element` - A chemical element
+
+* :class:`AtomType` - A type of atom, combining element information with local bonding information
+
+* :class:`ElectronState` - A free electron state for an atom, describing the number of free electrons and the spin multiplicity
+
+* :class:`BondType` - A type of bond, reflecting the bond order
+
+* :class:`Atom` - A chemical atom, combining one (or more) atom types with one (or more) electron states
+
+* :class:`Bond` - A chemical bond, combining one (or more) bond types
+
 """
 
 import logging
@@ -38,10 +51,18 @@ cimport graph
 
 cdef class Element:
 	"""
-	Represent a single chemical element. Each element has an atomic
-	`number`, a `name`, a `symbol`, an atomic `mass`, and a `valence`, a list
-	of the possible numbers of bonds allowed.
+	A single chemical element. The attributes are:
 
+	=========  =================================================================
+	Attribute  Description
+	=========  =================================================================
+	`number`   The atomic number of the element
+	`name`     The name of the element
+	`symbol`   The symbol used for the element
+	`mass`     The mass of the element in kg/mol
+	`valence`  A list of the allowed numbers of bonds to this element
+	=========  =================================================================
+	
 	This class is specifically for properties that all atoms of the same element
 	share. Ideally there is only one instance of this class for each element.
 	"""
@@ -101,16 +122,21 @@ elements = loadElements()
 ################################################################################
 
 cdef class AtomType:
-	"""A type of atom such as Cd, a carbon atom with all single bonds.
-	
-	Represent a single atom type by its chemical element and, optionally, some
-	information about the local bond structure around that element. Each
-	element has a unique string `label`, the underlying chemical `element`, and
-	a string `description` of the element.
+	"""
+	A type of atom which combines the element information with information
+	about the local bonding structure. The attributes are:
+
+	============= ==============================================================
+	Attribute     Description
+	============= ==============================================================
+	`label`       A unique string identifier for the atom type
+	`element`     The :class:`Element` object this atom type represents, if any
+	`description` A one-line description of the atom type
+	============= ==============================================================
 
 	This class is specifically for properties that all atoms of the same
-	element share. Ideally there is only one instance of this class for each
-	element.
+	type share. Ideally there is only one instance of this class for each
+	atom type.
 	"""
 
 	cdef public str label
@@ -162,20 +188,6 @@ cdef class AtomType:
 		elif other.label == other.element.symbol == \
 				self.element.symbol:
 			return True
-		# Special case: 'Cd' matches any of 'Cd', 'Cdd', 'Cds', or 'CO'
-		#elif self.label == 'Cd' and (other.label == 'Cd' or \
-		#		other.label == 'Cdd' or other.label == 'Cds' or other.label == 'CO'):
-		#	return True
-		#elif other.label == 'Cd' and (self.label == 'Cd' or \
-		#		self.label == 'Cdd' or self.label == 'Cds' or self.label == 'CO'):
-		#	return True
-		# Special case: 'Sid' matches any of 'Sid', 'Sidd', 'Sids', or 'SiO'
-		#elif self.label == 'Sid' and (other.label == 'Sid' or \
-		#		other.label == 'Sidd' or other.label == 'Sids' or other.label == 'SiO'):
-		#	return True
-		#elif other.label == 'Sid' and (self.label == 'Sid' or \
-		#		self.label == 'Sidd' or self.label == 'Sids' or self.label == 'SiO'):
-		#	return True
 		# Otherwise labels must match exactly
 		elif self.label == other.label:
 			return True
@@ -233,9 +245,15 @@ atomTypes = loadAtomTypes()
 
 cdef class ElectronState:
 	"""
-	Represent a single free electron state (none, radical, etc.) Each state is
-	defined by a unique string `label`; the `order`, or number of
-	free electrons; and a `spin` multiplicity.
+	A single free electron state for an atom. The attributes are:
+
+	=========  ==============================================================
+	Attribute     Description
+	=========  ==============================================================
+	`label`    A unique string identifier for the electron state
+	`order`    The number of free electrons
+	`spin`     A list of the allowed spin states for polyradicals (singlet = 1, doublet = 2, etc.)
+	=========  ==============================================================
 
 	This class is specifically for properties that all free electron states
 	share. Ideally there is only one instance of this class for each free
@@ -305,10 +323,17 @@ electronStates = loadElectronStates()
 
 cdef class BondType:
 	"""
-	Represent a type of chemical bond. Each bond type has a unique string
-	`label`; a unique string `name`; a numeric bond `order`; an integral
-	`piElectrons`, the number of pi electrons; and a string `location` with
-	bond geometry information (i.e. 'cis' or 'trans').
+	A type of chemical bond. The attributes are:
+
+	=============  =============================================================
+	Attribute      Description
+	=============  =============================================================
+	`label`        A unique string identifier for the bond type
+	`name`         A longer descriptor of the bond type
+	`order`        The bond order
+	`piElectrons`  The number of pi electrons that contribute to the bond
+	`location`     Geometric description of bond if needed (i.e. 'cis' or 'trans')
+	=============  =============================================================
 
 	This class is specifically for properties that all bonds of the same type
 	share. Ideally there is only one instance of this class for each bond type.
@@ -378,13 +403,38 @@ bondTypes = loadBondTypes()
 
 ################################################################################
 
+class InvalidChemicalActionException(Exception):
+
+	"""
+	An exception used attempting to carry out a chemical action (bond formation
+	or breaking, increasing or decreasing free radical count on an atom, etc.)
+	that is not permitted.
+	"""
+
+	def __init__(self, msg):
+		self.msg = msg
+
+	def __str__(self):
+		return self.msg
+
+################################################################################
+
 cdef class Atom:
 	"""
-	Represent an atom in a chemical species or functional group. The `atomType`
-	and `electronState` attributes contain lists of the allowed atom types and
-	electron states, respectively, for this atom. The `charge` attribute stores
-	the resulting formal charge. The `label` attribute can be used to tag
-	individual atoms, e.g. center atoms or reactive sites in functional groups.
+	Represent an atom in a chemical species or functional group. The attributes
+	are:
+
+	===============  ===========================================================
+	Attribute        Description
+	===============  ===========================================================
+	`atomType`       The atom's type or a list of the allowed types
+	`electronState`  The atom's free electron state or a list of the allowed
+	                 states
+	`charge`         The formal charge of the atom (always zero)
+	`label`          A string used to tag individual atoms, e.g. center atoms or
+	                 reactive sites
+	===============  ===========================================================
+
 	"""
 
 ## moved to chem.pyxd
@@ -491,7 +541,12 @@ cdef class Atom:
 	cpdef bint equivalent(Atom self, Atom other):
 		"""
 		Return :data:`True` if `self` and `other` are equivalent atoms, i.e.
-		they have the same element and electronic state.
+		they have the same atom type and electronic state. If one or both of
+		the atoms being tested for equivalence have multiple atom types,
+		:data:`True` is returned if *any* atom type in one atom matches *any*
+		atom type in the other. This is also done for electron states. Both an
+		atom types match and an electron state match must be found in order to
+		return :data:`True`.
 		"""
 
 		cdef bint atomTypesMatch = False
@@ -518,7 +573,7 @@ cdef class Atom:
 	def isCenter(self):
 		"""
 		Return :data:`True` if the atom is a center atom and :data:`False`
-		otherwise.
+		otherwise. An atom is a center atom if it has any form of label.
 		"""
 		return len(self.label) > 0
 
@@ -537,7 +592,7 @@ cdef class Atom:
 		"""
 		if len(self._atomType) == 0 or len(self._atomType) > 1: return False
 		elif self.atomType.element is None: return False
-		else: return self.atomType.element.symbol == symbol
+		else: return self.atomType is atomTypes[symbol]
 
 	def isHydrogen(self):
 		"""
@@ -607,11 +662,11 @@ cdef class Atom:
 		elif self.electronState.label == '2T': self.electronState = electronStates['3']
 		elif self.electronState.label == '3': self.electronState = electronStates['4']
 		else:
-			raise Exception('Cannot increase the radical number of this atom.')
+			raise InvalidChemicalActionException('Cannot increase the radical number of this atom.')
 
 	def decreaseFreeElectron(self):
 		"""
-		Decrease the number of unpaird electrons on this atom by one.
+		Decrease the number of unpaired electrons on this atom by one.
 		"""
 		if self.electronState.label == '1': self.electronState = electronStates['0']
 		elif self.electronState.label == '2': self.electronState = electronStates['1']
@@ -620,15 +675,21 @@ cdef class Atom:
 		elif self.electronState.label == '3': self.electronState = electronStates['2']
 		elif self.electronState.label == '4': self.electronState = electronStates['3']
 		else:
-			raise Exception('Cannot decrease the radical number of this atom.')
+			raise InvalidChemicalActionException('Cannot decrease the radical number of this atom.')
 
 ################################################################################
 
 cdef class Bond:
 	"""
-	Represent a bond in a chemical species. Each bond has a list `atoms` of
-	length two containing the two atoms in the bond and a `bondType` object,
-	stored internally as a :class:`BondType` object.
+	A chemical bond between atoms. The attributes are:
+
+	===========  ===========================================================
+	Attribute    Description
+	===========  ===========================================================
+	`atoms`      A list of the two atoms linked by the bond
+	`bondType`   The bond's type or a list of the allowed types
+	===========  ===========================================================
+
 	"""
 # moved to pxd file:
 #	cdef public list atoms
@@ -651,17 +712,44 @@ cdef class Bond:
 		"""
 		return (Bond, (self.atoms, self.bondType))
 
+	def setAtomType(self, atomType):
+		"""
+		Set the atom type that this atom represents. The `atomType`
+		parameter is any of:
+
+		* A string containing the label of a single atom type
+
+		* An :class:`AtomType` object representing the atom type
+
+		* A list containing one or more of each of the above
+
+		In all cases, the data will be stored internally as a list of
+		:class:`AtomType` objects.
+		"""
+
 	def getBondType(self):
+		"""
+		Get the list of allowed bond types. If the list is of length 1, the
+		lone item in the list is returned instead.
+		"""
 		if len(self._bondType) == 1: return self._bondType[0]
 		else: return self._bondType
 
 	def setBondType(self, bondType):
 		"""
-		Set the bond type that this bond represents. The `bondType`
-		parameter can be a :class:`BondType` object, a number representing
-		the bond order, or a string representing the label of the desired bond
-		type. In all cases `bondType` will be converted to and stored as a
-		:class:`BondType` object.
+		Set the bond type that this atom represents. The `bondType`
+		parameter is any of:
+
+		* A number representing the bond order
+
+		* A string containing the label of a single bond type
+
+		* An :class:`BondType` object representing the bond type
+
+		* A list containing one or more of each of the above
+
+		In all cases, the data will be stored internally as a list of
+		:class:`BondType` objects.
 		"""
 		if bondType.__class__ != list:
 			bondType = [bondType]
@@ -679,7 +767,9 @@ cdef class Bond:
 	cpdef bint equivalent(Bond self, Bond other):
 		"""
 		Return :data:`True` if `self` and `other` are equivalent bonds, i.e.
-		they have the same bond type.
+		they have the same bond type. If one or both of the bonds being tested
+		for equivalence have multiple bond types, :data:`True` is returned if
+		*any* bond type in one bond matches *any* bond type in the other.
 		"""
 		cdef BondType bondType1, bondType2
 
@@ -742,7 +832,7 @@ cdef class Bond:
 		if self.isSingle():		self.bondType = bondTypes['D']
 		elif self.isDouble():	self.bondType = bondTypes['T']
 		else:
-			logging.exception('Cannot increase the bond order of this bond.')
+			raise InvalidChemicalActionException('Cannot increase the bond order of this bond.')
 
 	def decreaseOrder(self):
 		"""
@@ -751,7 +841,7 @@ cdef class Bond:
 		if self.isDouble():		self.bondType = bondTypes['S']
 		elif self.isTriple():	self.bondType = bondTypes['D']
 		else:
-			logging.exception('Cannot decrease the bond order of this bond.')
+			raise InvalidChemicalActionException('Cannot decrease the bond order of this bond.')
 
 
 ################################################################################

@@ -13,13 +13,14 @@ Contents
 
 .. toctree::
 	:numbered:
-	:maxdepth: 2
+	:maxdepth: 1
 	
 	rmg-chem
 	rmg-constants
 	rmg-data
 	rmg-graph
 	rmg-io
+	rmg-kinetics
 	rmg-main
 	rmg-model
 	rmg-reaction

@@ -29,7 +29,19 @@
 ################################################################################
 
 """
-Contains classes and functions for working with the various RMG databases.
+Contains classes and functions for working with the various RMG databases. In
+RMG a database is composed of three parts:
+
+* A *dictionary*, associating a string identifier with a chemical structure.
+
+* A *tree*, providing a hierarchical and extensible organization of the chemical structures.
+
+* A *library*, associating a chemical structure with some sort of physical information.
+
+These are implemented via the :class:`Dictionary`, :class:`Tree`, and
+:class:`Library` classes, respectively. A base class for databases is
+implemented in the :class:`Database` class, which is often overloaded to
+provide specific functionality for individual databases.
 """
 
 import os
@@ -75,7 +87,11 @@ class TemperatureOutOfRangeException(Exception):
 class Dictionary(dict):
 	"""
 	An RMG dictionary class, extended from the Python dictionary class to
-	include	functions for loading the dictionary from a file.
+	include	functions for loading the dictionary from a file. The keys of the
+	dictionary are strings that represent unique identifiers, while the
+	corresponding values are either :class:`chem.Structure` objects representing
+	a chemical structure or the string 'union' to indicate that the structure
+	is a union of all of its child nodes in the corresponding tree.
 	"""
 
 	def load(self, path):
@@ -125,9 +141,9 @@ class Dictionary(dict):
 	def toStructure(self):
 		"""
 		Convert the values stored in the dictionary from adjacency list strings
-		to :class:`structure.Structure` objects. If a record is a union, it is stored
-		as the string 'union', and automatically uses all immediate children of
-		the node as the union.
+		to :class:`structure.Structure` objects. If a record is a union, it is 
+		stored as the string 'union', and automatically uses all immediate
+		children of the node as the union.
 		"""
 	
 		for label, record in self.iteritems():
@@ -165,7 +181,11 @@ class Dictionary(dict):
 def getAllCombinations(nodeLists):
 	"""
 	Generate a list of all possible combinations of items in the list of
-	lists `nodeLists`.
+	lists `nodeLists`. Each combination takes one item from each list
+	contained within `nodeLists`. The order of items in the returned lists 
+	reflects the order of lists in `nodeLists`. For example, if `nodeLists` was
+	[[A, B, C],	[N], [X, Y]], the returned combinations would be
+	[[A, N, X], [A, N, Y], [B, N, X], [B, N, Y], [C, N, X], [C, N, Y]].
 	"""
 
 	items = [[]]
@@ -176,13 +196,31 @@ def getAllCombinations(nodeLists):
 
 ################################################################################
 
-
 class Tree:
 	"""
 	An implementation of an n-ary tree used for representing a hierarchy of
-	data. Each instance contains dictionaries `parent` and `children` which use
-	nodes as keys; the values are the node's parent and a list of the node's
-	children, respectively.
+	data. The tree is represented as a pair of dictionaries:
+
+	* The `parent` dictionary. For a given identifier, returns the identifier
+	  corresponding to the parent.
+
+	* The `children` dictionary. For a given identifier, returns a list of
+	  identifiers corresponding to the children.
+
+	The top-level node(s) of the tree are stored in a list in the `top`
+	attribute.
+
+	In constructing the tree, it is important to develop a hierarchy such that
+	siblings are mutually exclusive, to ensure that there is a unique path of
+	descent down a tree for each structure. If non-mutually exclusive siblings
+	are encountered, a warning is raised and the parent of the siblings is
+	returned.
+
+	There is no requirement that the children of a node span the range of
+	more specific permutations of the parent. As the database gets more complex,
+	attempting to maintain complete sets of children for each parent in each
+	database rapidly becomes untenable, and is against the spirit of
+	extensibility behind the database development.
 	"""
 	
 	def __init__(self):
@@ -242,11 +280,15 @@ class Tree:
 		"""
 		Remove `node` and all of its children from the tree.
 		"""
-		
+		# Recursively remove the children of node
 		while len(self.children[node]) > 0:
 			self.remove(self.children[node][0])
+			
+		# Remove the current node from the list of its parent's children
 		if self.parent[node] is not None:
 			self.children[self.parent[node]].remove(node)
+
+		# Delete the node from the parent and children dictionaries
 		del self.parent[node]
 		del self.children[node]
 		

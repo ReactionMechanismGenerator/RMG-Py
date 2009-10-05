@@ -33,7 +33,7 @@ def initializeCanteraSimulation(filepath, T, P, tf):
 	absfilepath = os.path.abspath(filepath)
 	oldwd	= os.getcwd()
 	try:
-		os.chdir(rmg.constants.scratchDir)
+		os.chdir(rmg.constants.scratchDirectory)
 		# load the mechanism into gas
 		gas = Cantera.importPhase(absfilepath,'chem')
 		# create the environment
@@ -129,9 +129,9 @@ class CanteraLoaderCheck(unittest.TestCase):
 		import rmg.cantera_loader
 		import ctml_writer as cti
 		
-		constants.scratchDir = os.path.join(self.testfolder,'temp')
-		if os.path.isdir(constants.scratchDir): shutil.rmtree(constants.scratchDir)
-		os.makedirs(constants.scratchDir)
+		constants.scratchDirectory = os.path.join(self.testfolder,'temp')
+		if os.path.isdir(constants.scratchDirectory): shutil.rmtree(constants.scratchDirectory)
+		os.makedirs(constants.scratchDirectory)
 		
 		if cti._species:
 			reload(cti)

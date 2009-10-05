@@ -29,7 +29,16 @@
 ################################################################################
 
 """
-Contains classes describing chemical reactions.
+Contains classes describing chemical reactions:
+
+* :class:`Reaction` - A general chemical reaction
+
+* :class:`ReactionRecipe` - A set of actions to take when applying a reaction
+
+* :class:`ReactionFamily` - A database of a general family of related reactions
+
+* :class:`ReactionFamilySet` - A set of reaction families
+
 """
 
 import math
@@ -48,13 +57,34 @@ from kinetics import *
 
 class Reaction:
 	"""
-	Represent a generic chemical reaction. A reaction is defined by the set of
-	reactants, set of products, and the transition state; thus both the forward
-	and reverse reaction are represented by a single object since they share 
-	the same transition state. By convention, the forward reaction is taken to
-	be that for which the provided kinetics apply; the reverse kinetics are 
-	taken from thermodynamic reversibility. A multiplier attribute is used when
-	reactions involving equivalent reactive sites are used.
+	Represent a generic chemical reaction. The attributes are:
+	
+	==============  ============================================================
+	Attribute       Description
+	==============  ============================================================
+	`atomLabels`    A dictionary with the keys representing the labels and the
+	                values the atoms of the reactant or product species that
+	                were labeled at the time the reaction was generated
+	`bestKinetics`  The best kinetics for the reaction, always a derived class
+	                of :class:`kinetics.Kinetics`
+	`family`        The reaction family that this reaction represents, as a
+	                pointer to a :class:`ReactionFamily` object
+	`kinetics`      A list of all of the valid sets of kinetics for the reaction
+	`multiplier`    A multiplier to use to increase the reaction rate for cases
+	                when the reaction is generated multiple times due to
+	                different parts of the reactants yielding the same behavior
+	`products`      A list of the species that are produced by this reaction
+	`reactants`     A list of the species that are consumed by this reaction
+	`reverse`       A pointer to the reverse reaction, also a :class:`Reaction`
+	                object
+	==============  ============================================================
+
+	By convention, the forward reaction is taken to be that for which the
+	provided kinetics apply; the reverse kinetics are taken from thermodynamic
+	reversibility. Lists of reactions in a model or mechanism should therefore
+	only store the forward reaction. Note that the reverse reaction exists as a
+	:class:`Reaction` object in the `reverse` attribute because this is a
+	convenient way to represent the reverse reaction.
 	"""
 	
 	def __init__(self, reactants=None, products=None, family=None, kinetics=None):
@@ -345,18 +375,19 @@ class ReactionRecipe:
 	of a set of reactants to a set of products. There are currently five such
 	actions:
 
-	- CHANGE_BOND {center1,order,center2} - change the bond order of the bond between center1 and center2 by order; do not break or form bonds
+	============  =======================  =====================================
+	Action Name   Arguments                Action
+	============  =======================  =====================================
+	CHANGE_BOND   center1, order, center2  change the bond order of the bond between center1 and center2 by order; do not break or form bonds
+	FORM_BOND     center1, order, center2  form a new bond between center1 and center2 of type order
+	BREAK_BOND    center1, order, center2  break the bond between center1 and center2, which should be of type order
+	GAIN_RADICAL  center, radical          increase the number of free electrons on center by radical
+	LOSE_RADICAL  center, radical          decrease the number of free electrons on center by radical
+	============  =======================  =====================================
 
-	- FORM_BOND {center1,order,center2} - form a new bond between center1 and center2 of type order
-
-	- BREAK_BOND {center1,order,center2} - break the bond between center1 and center2, which should be of type order
-
-	- GAIN_RADICAL {center,radical} - Increase the number of free electrons on center by radical
-
-	- LOSE_RADICAL {center,radical} - Decrease the number of free electrons on center by radical
-
-	Each action is a list of items; the first is the action name, while the
-	rest are the action parameters as indicated above.
+	The actions are stored as a list in the `actions` attribute. Each action is
+	a list of items; the first is the action name, while the rest are the
+	action parameters as indicated above.
 	"""
 
 	def __init__(self, actions=None):
@@ -495,9 +526,22 @@ class ReactionRecipe:
 class ReactionFamily(data.Database):
 	"""
 	Represent a reaction family: a set of reactions with similar chemistry, and
-	therefore similar reaction rates. Attributes include the family name `name`,
-	the reaction template `template`, a list `actions` of actions to take when
-	reacting, and a dictionary-library-tree `database` of rate rules.
+	therefore similar reaction rates. Besides the dictionary, tree, and library
+	inherited from :class:`data.Database`, the attributes are:
+	
+	===========  ===============================================================
+	Attribute    Description
+	===========  ===============================================================
+	`label`      The name of the reaction family
+	`template`   A :class:`Reaction` object representing the forward reaction
+	             template
+	`recipe`     A :class:`ReactionRecipe` object representing the steps to 
+	             take when applying the reaction to a set of reactants
+	`forbidden`  (Optional) A dictionary of forbidden product structures
+	`reverse`    A pointer to the reverse reaction family (or :data:`None` if
+	             the family is its own reverse
+	===========  ===============================================================
+
 	"""
 
 	def __init__(self, label='', template='', recipe=None):
@@ -1377,7 +1421,9 @@ class ReactionFamily(data.Database):
 
 class ReactionFamilySet:
 	"""
-	Represent a set of reaction families.
+	Represent a set of reaction families. The `families` attribute stores a
+	dictionary of :class:`ReactionFamily` objects representing the families in
+	the set.
 	"""
 
 	def __init__(self):
@@ -1449,6 +1495,7 @@ class ReactionFamilySet:
 kineticsDatabase = None
 
 ################################################################################
+
 class ReactionException(Exception):
 	"""
 	An base exception for reactions.

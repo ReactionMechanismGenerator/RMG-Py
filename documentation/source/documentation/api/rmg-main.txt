@@ -9,6 +9,8 @@ Methods in ``rmg.main``
 
 .. autofunction:: rmg.main.execute
 
+.. autofunction:: rmg.main.generateExecutionPlots
+
 .. autofunction:: rmg.main.initializeLog
 
 .. autofunction:: rmg.main.printRMGHeader

@@ -337,7 +337,7 @@ class IdealGas:
 
 	def getdPdV(self, P, V, T, N):
 		"""
-		Return the derivative :math:`\\frac{dP}{dV}\\bigg|_{T,\mathbf{N}}`
+		Return the derivative :math:`\\frac{dP}{dV}\\big|_{T,\mathbf{N}}`
 		evaluated at a given pressure `P`, volume `V`, temperature `T`, and
 		numbers of moles `N`.
 		"""
@@ -345,7 +345,7 @@ class IdealGas:
 
 	def getdPdT(self, P, V, T, N):
 		"""
-		Return the derivative :math:`\\frac{dP}{dT}\\bigg|_{V,\mathbf{N}}`
+		Return the derivative :math:`\\frac{dP}{dT}\\big|_{V,\mathbf{N}}`
 		evaluated at a given pressure `P`, volume `V`, temperature `T`, and
 		numbers of moles `N`.
 		"""
@@ -353,7 +353,7 @@ class IdealGas:
 
 	def getdVdT(self, P, V, T, N):
 		"""
-		Return the derivative :math:`\\frac{dV}{dT}\\bigg|_{P,\mathbf{N}}`
+		Return the derivative :math:`\\frac{dV}{dT}\\big|_{P,\mathbf{N}}`
 		evaluated at a given pressure `P`, volume `V`, temperature `T`, and
 		numbers of moles `N`.
 		"""
@@ -361,7 +361,7 @@ class IdealGas:
 
 	def getdVdP(self, P, V, T, N):
 		"""
-		Return the derivative :math:`\\frac{dV}{dP}\\bigg|_{T,\mathbf{N}}`
+		Return the derivative :math:`\\frac{dV}{dP}\\big|_{T,\mathbf{N}}`
 		evaluated at a given pressure `P`, volume `V`, temperature `T`, and
 		numbers of moles `N`.
 		"""
@@ -369,7 +369,7 @@ class IdealGas:
 
 	def getdTdP(self, P, V, T, N):
 		"""
-		Return the derivative :math:`\\frac{dT}{dP}\\bigg|_{V,\mathbf{N}}`
+		Return the derivative :math:`\\frac{dT}{dP}\\big|_{V,\mathbf{N}}`
 		evaluated at a given pressure `P`, volume `V`, temperature `T`, and
 		numbers of moles `N`.
 		"""
@@ -377,7 +377,7 @@ class IdealGas:
 
 	def getdTdV(self, P, V, T, N):
 		"""
-		Return the derivative :math:`\\frac{dT}{dV}\\bigg|_{P,\mathbf{N}}`
+		Return the derivative :math:`\\frac{dT}{dV}\\big|_{P,\mathbf{N}}`
 		evaluated at a given pressure `P`, volume `V`, temperature `T`, and
 		numbers of moles `N`.
 		"""
@@ -385,7 +385,7 @@ class IdealGas:
 
 	def getdPdNi(self, P, V, T, N, i):
 		"""
-		Return the derivative :math:`\\frac{dP}{dN_i}\\bigg|_{T, V,\mathbf{N}_{j \\ne i}}`
+		Return the derivative :math:`\\frac{dP}{dN_i}\\big|_{T, V,\mathbf{N}_{j \\ne i}}`
 		evaluated at a given pressure `P`, volume `V`, temperature `T`, and
 		numbers of moles `N`. The final parameter `i` is used to determine which
 		species to use; if `N` is a list, then `i` is an index, while if `N` is
@@ -396,7 +396,7 @@ class IdealGas:
 
 	def getdVdNi(self, P, V, T, N, i):
 		"""
-		Return the derivative :math:`\\frac{dV}{dN_i}\\bigg|_{T, P,\mathbf{N}_{j \\ne i}}`
+		Return the derivative :math:`\\frac{dV}{dN_i}\\big|_{T, P,\mathbf{N}_{j \\ne i}}`
 		evaluated at a given pressure `P`, volume `V`, temperature `T`, and
 		numbers of moles `N`. The final parameter `i` is the index of the
 		species of interest, corresponding to an index into the list `N`.
@@ -406,7 +406,7 @@ class IdealGas:
 
 	def getdTdNi(self, P, V, T, N, i):
 		"""
-		Return the derivative :math:`\\frac{dT}{dN_i}\\bigg|_{P, V,\mathbf{N}_{j \\ne i}}`
+		Return the derivative :math:`\\frac{dT}{dN_i}\\big|_{P, V,\mathbf{N}_{j \\ne i}}`
 		evaluated at a given pressure `P`, volume `V`, temperature `T`, and
 		numbers of moles `N`. The final parameter `i` is the index of the
 		species of interest, corresponding to an index into the list `N`.
@@ -420,9 +420,7 @@ class IncompressibleLiquid:
 	"""
 	An equation of state for incompressible liquids
 
-	.. math::
-
-		f(P, V, T, \\mathbf{N}) = ?
+	.. math:: f(P, V, T, \\mathbf{N}) = ?
 
 	where :math:`N \\equiv \\sum_i N_i` is the total number of moles.
 
@@ -475,7 +473,7 @@ class IncompressibleLiquid:
 		
 	def getdPdV(self, P, V, T, N):
 		"""
-		Return the derivative :math:`\\frac{dP}{dV}\\bigg|_{T,\mathbf{N}}`
+		Return the derivative :math:`\\frac{dP}{dV}\\big|_{T,\mathbf{N}}`
 		evaluated at a given pressure `P`, volume `V`, temperature `T`, and
 		numbers of moles `N`.
 		"""
@@ -483,7 +481,7 @@ class IncompressibleLiquid:
 
 	def getdPdT(self, P, V, T, N):
 		"""
-		Return the derivative :math:`\\frac{dP}{dT}\\bigg|_{V,\mathbf{N}}`
+		Return the derivative :math:`\\frac{dP}{dT}\\big|_{V,\mathbf{N}}`
 		evaluated at a given pressure `P`, volume `V`, temperature `T`, and
 		numbers of moles `N`.
 		"""
@@ -491,7 +489,7 @@ class IncompressibleLiquid:
 
 	def getdVdT(self, P, V, T, N):
 		"""
-		Return the derivative :math:`\\frac{dV}{dT}\\bigg|_{P,\mathbf{N}}`
+		Return the derivative :math:`\\frac{dV}{dT}\\big|_{P,\mathbf{N}}`
 		evaluated at a given pressure `P`, volume `V`, temperature `T`, and
 		numbers of moles `N`.
 		"""
@@ -499,7 +497,7 @@ class IncompressibleLiquid:
 
 	def getdVdP(self, P, V, T, N):
 		"""
-		Return the derivative :math:`\\frac{dV}{dP}\\bigg|_{T,\mathbf{N}}`
+		Return the derivative :math:`\\frac{dV}{dP}\\big|_{T,\mathbf{N}}`
 		evaluated at a given pressure `P`, volume `V`, temperature `T`, and
 		numbers of moles `N`.
 		"""
@@ -515,7 +513,7 @@ class IncompressibleLiquid:
 
 	def getdTdV(self, P, V, T, N):
 		"""
-		Return the derivative :math:`\\frac{dT}{dV}\\bigg|_{P,\mathbf{N}}`
+		Return the derivative :math:`\\frac{dT}{dV}\\big|_{P,\mathbf{N}}`
 		evaluated at a given pressure `P`, volume `V`, temperature `T`, and
 		numbers of moles `N`.
 		"""
@@ -523,7 +521,7 @@ class IncompressibleLiquid:
 
 	def getdPdNi(self, P, V, T, N, i):
 		"""
-		Return the derivative :math:`\\frac{dP}{dN_i}\\bigg|_{T, V,\mathbf{N}_{j \\ne i}}`
+		Return the derivative :math:`\\frac{dP}{dN_i}\\big|_{T, V,\mathbf{N}_{j \\ne i}}`
 		evaluated at a given pressure `P`, volume `V`, temperature `T`, and
 		numbers of moles `N`. The final parameter `i` is used to determine which
 		species to use; if `N` is a list, then `i` is an index, while if `N` is
@@ -535,7 +533,7 @@ class IncompressibleLiquid:
 		
 	def getdTdNi(self, P, V, T, N, i):
 		"""
-		Return the derivative :math:`\\frac{dT}{dN_i}\\bigg|_{P, V,\mathbf{N}_{j \\ne i}}`
+		Return the derivative :math:`\\frac{dT}{dN_i}\\big|_{P, V,\mathbf{N}_{j \\ne i}}`
 		evaluated at a given pressure `P`, volume `V`, temperature `T`, and
 		numbers of moles `N`. The final parameter `i` is the index of the
 		species of interest, corresponding to an index into the list `N`.
@@ -544,7 +542,7 @@ class IncompressibleLiquid:
 		
 	def getdVdNi(self, P, V, T, N, i):
 		"""
-		Return the derivative :math:`\\frac{dV}{dN_i}\\bigg|_{T, P,\mathbf{N}_{j \\ne i}}`
+		Return the derivative :math:`\\frac{dV}{dN_i}\\big|_{T, P,\mathbf{N}_{j \\ne i}}`
 		evaluated at a given pressure `P`, volume `V`, temperature `T`, and
 		numbers of moles `N`. The final parameter `i` is the index of the
 		species of interest, corresponding to an index into the list `N`.
@@ -681,9 +679,9 @@ class BatchReactor(ReactionSystem):
 		# Return residual
 		return dydt
 		
-	def getJacobean(self, t, y, model, stoichiometry):
+	def getJacobian(self, t, y, model, stoichiometry):
 		"""
-		Return the Jacobean function for this reactor model, evaluated at
+		Return the Jacobian function for this reactor model, evaluated at
 		time `t` and values of the dependent variables `y`. The Jacobean
 		function is the right-hand side of the equation
 
@@ -697,7 +695,7 @@ class BatchReactor(ReactionSystem):
 		Currently only models isothermal and isobaric reactors (:math:`dT/dt=dP/dt=0`)
 		"""
 		P, V, T = y[0:3]; Ni = y[3:]
-		
+		raise NotImplementedError('Jacobian not implemented for batch reactor.')
 
 
 	def getReactionRates(self, P, V, T, Ni, model):
@@ -861,11 +859,6 @@ class BatchReactor(ReactionSystem):
 			logging.info('\tCharacteristic flux: %s' % (charFlux))
 			logging.info('\tSpecies flux for %s: %s ' % (maxSpecies, maxSpeciesFlux))
 			logging.info('')
-			for i in range(len(dNidt)):
-				if i < len(model.core.species):
-					print model.core.species[i], maxSpeciesFluxes[i]
-				else:
-					print model.edge.species[i-len(model.core.species)], maxSpeciesFluxes[i]
 			return tlist, ylist, dydtlist, False, maxSpecies
 
 		#for i in range(len(model.core.species), len(dNidt)):
@@ -930,7 +923,7 @@ class BatchReactor(ReactionSystem):
 		pylab.xlabel('Time (s)')
 		pylab.ylabel('Pressure (Pa)')
 		pylab.title('Pressure profile for reaction system ' + label)
-		pylab.savefig(constants.outputDir + '/plot/pressureProfile' + label + '.svg')
+		pylab.savefig(constants.outputDirectory + '/plot/pressureProfile' + label + '.svg')
 		pylab.clf()
 
 		# Make volume plot and save to file
@@ -938,7 +931,7 @@ class BatchReactor(ReactionSystem):
 		pylab.xlabel('Time (s)')
 		pylab.ylabel('Volume (m^3)')
 		pylab.title('Volume profile for reaction system ' + label)
-		pylab.savefig(constants.outputDir + '/plot/volumeProfile' + label + '.svg')
+		pylab.savefig(constants.outputDirectory + '/plot/volumeProfile' + label + '.svg')
 		pylab.clf()
 
 		# Make temperature plot and save to file
@@ -946,7 +939,7 @@ class BatchReactor(ReactionSystem):
 		pylab.xlabel('Time (s)')
 		pylab.ylabel('Temperature (K)')
 		pylab.title('Temperature profile for reaction system ' + label)
-		pylab.savefig(constants.outputDir + '/plot/temperatureProfile' + label + '.svg')
+		pylab.savefig(constants.outputDirectory + '/plot/temperatureProfile' + label + '.svg')
 		pylab.clf()
 
 		# Make concentration plot and save to file
@@ -955,7 +948,7 @@ class BatchReactor(ReactionSystem):
 		pylab.ylabel('Concentration (mol/m^3)')
 		pylab.title('Concentration profiles for reaction system ' + label)
 		pylab.legend(legend)
-		pylab.savefig(constants.outputDir + '/plot/concentrationProfile' + label + '.svg')
+		pylab.savefig(constants.outputDirectory + '/plot/concentrationProfile' + label + '.svg')
 		pylab.clf()
 
 		# Make species flux plot and save to file
@@ -965,7 +958,7 @@ class BatchReactor(ReactionSystem):
 			pylab.ylabel('Species flux (mol/m^3*s)')
 			pylab.title('Species flux profiles for reaction system ' + label)
 			pylab.legend(legend)
-			pylab.savefig(constants.outputDir + '/plot/fluxProfile' + label + '.svg')
+			pylab.savefig(constants.outputDirectory + '/plot/fluxProfile' + label + '.svg')
 		except OverflowError:
 			pass
 		

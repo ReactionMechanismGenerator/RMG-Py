@@ -28,6 +28,17 @@
 #
 ################################################################################
 
+"""
+Provides classes for working with the kinetics of chemical reactions:
+
+* :class:`Kinetics` - A base class from which kinetics classes are derived
+
+* :class:`ArrheniusKinetics` - A representation of an Arrhenius kinetic model
+
+* :class:`ArrheniusEPKinetics` - A representation of an Arrhenius kinetic model with Evans-Polanyi correction
+
+"""
+
 import math
 import quantities as pq
 
@@ -38,10 +49,21 @@ import data
 
 class Kinetics:
 	"""
-	Represent a set of kinetic data. No matter how the kinetic data is modeled,
-	it should be accompanied by a temperature range over which it is valid,
-	an integer rank denoting the degree of confidence in the data (1 = high,
-	5 = low, 0 = none), and a comment describing the source of the data.
+	Represent a set of kinetic data. The details of the form of the kinetic
+	data are left to a derived class. The attributes are:
+
+	===============  ===========================================================
+	Attribute        Description
+	===============  ===========================================================
+	`Trange`         A list of the minimum and maximum valid temperatures in K
+	`rank`           An integer rank denoting the degree of confidence in the
+	                 data (1 = high, 5 = low, 0 = none)
+	`comment`        Comments, including but not limited to the source of the
+	                 data
+	`numReactants`   The number of reactants (used to determine the units of the
+	                 kinetics)
+	===============  ===========================================================
+
 	"""
 
 	def __init__(self, Trange=None, rank=0, comment=''):
@@ -69,7 +91,17 @@ class ArrheniusKinetics(Kinetics):
 	Represent a set of modified Arrhenius kinetics. The kinetic expression has
 	the form
 
-	.. math:: k(T) = A T^n \\exp \\left( - \\frac{E_\mathrm{a}}{RT} \\right)
+	.. math:: k(T) = A T^n \\exp \\left( - \\frac{E_\\mathrm{a}}{RT} \\right)
+
+	The attributes are:
+
+	=========  ===========================================================
+	Attribute  Description
+	=========  ===========================================================
+	`A`        The preexponential factor in s^-1, m^3/mol*s, etc.
+	`n`        The temperature exponent
+	`Ea`       The activation energy in J/mol
+	=========  ===========================================================
 
 	"""
 
@@ -80,12 +112,15 @@ class ArrheniusKinetics(Kinetics):
 		self.A = A
 		self.Ea = Ea
 		self.n = n
+
 	def __str__(self):
 		return 'k(T) = %s * T ** %s * math.exp(-%s / constants.R / T)\t%s < T < %s' % (self.A, self.n, self.Ea, self.Trange[0], self.Trange[1])
+
 	def __repr__(self):
 		"""How it looks on the console"""
 		return '<ArrheniusKinetics A=%.0e E=%.0fkJ/mol n=%.1f >'%(self.A,
 			self.Ea/1000.0, self.n )
+
 	def getRateConstant(self, T):
 		"""
 		Return the rate constant k(T) at temperature `T` by evaluating the
@@ -149,12 +184,19 @@ class ArrheniusEPKinetics(Kinetics):
 	Represent a set of modified Arrhenius kinetics with Evans-Polanyi data. The
 	kinetic expression has the form
 
-	.. math:: k(T) = A T^n \\exp \\left( - \\frac{E_\mathrm{a}}{RT} \\right)
+	.. math:: k(T) = A T^n \\exp \\left( - \\frac{E_0 + \\alpha \\Delta H_\\mathrm{rxn}}{RT} \\right)
 
-	The parameter :math:`\\alpha` is used to correct the activation energy
-	:math:`E_\\mathrm{a}` via the Evans-Polanyi formula
+	The attributes are:
 
-	.. math:: E_\\mathrm{a} = E_0 + \\alpha \\Delta H_\\mathrm{rxn}
+	=========  ===========================================================
+	Attribute  Description
+	=========  ===========================================================
+	`A`        The preexponential factor in s^-1, m^3/mol*s, etc.
+	`n`        The temperature exponent
+	`E0`       The activation energy at zero enthalpy of reaction in J/mol
+	`alpha`    The linear dependence of activation energy on enthalpy of
+	           reaction
+	=========  ===========================================================
 
 	"""
 
@@ -168,6 +210,7 @@ class ArrheniusEPKinetics(Kinetics):
 
 	def __str__(self):
 		return 'k(T) = %s * T ** %s * math.exp(-(%s + %s * DHrxn) / constants.R / T)\t%s < T < %s' % (self.A, self.n, self.E0, self.alpha, self.Trange[0], self.Trange[1])
+
 	def __repr__(self):
 		"""How it looks on the console"""
 		return '<ArrheniusEPKinetics A=%.0e E0=%.0fkJ/mol n=%.1f alpha=%.1g>'%(

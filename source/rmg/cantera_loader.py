@@ -236,7 +236,7 @@ def loadChemkinFile(filepath='chem.inp', thermodb='',trandb=''):
 	oldpath = os.path.abspath(filepath)
 	oldwd	= os.getcwd()
 	filename = os.path.basename(filepath)
-	newpath = os.path.join(oldwd,rmg.constants.scratchDir, filename)
+	newpath = os.path.join(oldwd,rmg.constants.scratchDirectory, filename)
 	
 	if not os.path.exists(newpath) or not os.path.samefile(oldpath,newpath):
 		logging.debug("Copying %s to %s"%(oldpath,newpath))
@@ -249,7 +249,7 @@ def loadChemkinFile(filepath='chem.inp', thermodb='',trandb=''):
 	nm='chem'
 	# convert from chemkin to cti
 	try:
-		os.chdir(rmg.constants.scratchDir)
+		os.chdir(rmg.constants.scratchDirectory)
 		ck2cti.ck2cti(infile = newpath, thermodb = thermodb,
 				  trandb = trandb, idtag = nm, debug=0, validate=1)
 	except: 
