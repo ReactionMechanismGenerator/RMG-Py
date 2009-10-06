@@ -79,25 +79,9 @@ class ThermoSnapshot:
 		if self.temperature == 0: return False
 		if temperature==self.temperature: return True
 		
-		## This test ensures the temperature is not more than 
-		## 100,000 times too low or 100,000 times too high!!!
-		## Probably not what was intended  :-)
-		#return abs(math.log10(temperature / self.temperature)) < 5
-		## I think this is better:
-		#return math.log10(abs(1-temperature / self.temperature)) < -5
-		## however, this is faster (and this function is called a LOT!)
 		ratio =  temperature / self.temperature
 		return (ratio > 0.99999 and ratio < 1.00001)
 		
-# >>> import timeit
-# >>> timeit.Timer('math.log10(abs(1-500.0/500.05))<-5', 'import math').timeit()
-# 0.78184604644775391
-# >>> timeit.Timer('(abs(1-500.0/500.05))<0.00001', 'import math').timeit()
-# 0.34678912162780762
-# >>> timeit.Timer('ratio=500.0/500.05; (ratio<1.00001 and ratio>0.99999)', 'import math').timeit()
-# 0.27086305618286133
-
-
 
 	def update(self, temperature, thermoData):
 		"""
@@ -446,7 +430,7 @@ def makeNewSpecies(structure, label='', reactive=True):
 	if thermo.thermoDatabase is not None:
 		spec.getThermoData()
 	
-	# Draw species in core
+	# Draw species
 	if constants.drawMolecules:
 		mol = pybel.Molecule(spec.toOBMol())
 		mol.draw(False, os.path.join(constants.outputDirectory, 'species/' + str(spec) + '.png'))

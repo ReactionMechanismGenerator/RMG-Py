@@ -521,7 +521,7 @@ cpdef VF2_isomorphism(Graph graph1, Graph graph2, dict map12, dict map21, \
 			return False, None, None # is_match, map12, map21
 	else:
 		if len(graph2)>len(graph1):
-			logging.debug("Tried matching small graph to larger subgraph")
+			#logging.debug("Tried matching small graph to larger subgraph")
 			return False, None, None
 			
 	# start call_depth off as the size of the largest graph.
