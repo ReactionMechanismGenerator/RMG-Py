@@ -153,7 +153,7 @@ def fit_groups(family_names = None):
 			#		  kinetics.alpha,
 			#		  kinetics.E0 ]
 			if kinetics.alpha:
-				logging.info("Warning: %s has EP alpha = %g"%(nodes,kinetics.alpha))
+				logging.warning("Warning: %s has EP alpha = %g"%(nodes,kinetics.alpha))
 			Ts = [300, 500, 1000, 1500]
 			Hrxn=0
 			b_row = [ math.log10(kinetics.getRateConstant(T,Hrxn)) for T in Ts ]
@@ -197,8 +197,8 @@ def fit_groups(family_names = None):
 		
 		fitted_b = numpy.dot(A,x)
 		errors = fitted_b - b
+		#: squared and SUMMED over temperatures, not averaged
 		errors_sum_squared = numpy.sum(errors*errors, axis=1)
-		
 		
 		group_values=dict()
 		group_error=dict()
@@ -206,53 +206,75 @@ def fit_groups(family_names = None):
 		group_error_MAD_by_T=dict()
 		
 		for node in top_nodes:
-			group_values[node] = (0,0,0,0)
+			group_values[node] = tuple([0 for i in Ts])
 			group_error[node] = 0
 			group_count[node] = 0
-			group_error_MAD_by_T[node] = (0,0,0,0)
+			group_error_MAD_by_T[node] = tuple([0 for i in Ts])
 			
 		for i in range(len(x)):
 			group_values[group_names[i]] = tuple(x[i,:])
 			
-		
 		for i in range(len(x)): # for each group
-			rates_in_group = A[:,i] 
+			#: vector of 1s and 0s, one for each rate-group
+			rates_in_group = A[:,i]  
+			#: number of data points training this group (each measured rate may be counted many times)
+			group_count[group_names[i]] = sum(rates_in_group)
+			#: RMS error for this group (where M = mean over temperatures and values training the group) 
 			group_error[group_names[i]] = numpy.sqrt(
 				sum(rates_in_group * errors_sum_squared)  /
 					 sum(rates_in_group) / len(Ts)   )
-			group_count[group_names[i]] = sum(rates_in_group)
+			#: Mean Absolute Deviation, reported by Temperature (as tuple)
 			group_error_MAD_by_T[group_names[i]] = tuple( 
 				numpy.dot(rates_in_group, abs(errors)) /
 				 sum(rates_in_group)  )
-		 #   if group_names[i]=='Cs_rad':
-		 #   	print "foobar"
-			
 		
 		def print_node_tree(node,indent=0):
 			print (' '*indent +
 					node.ljust(17-indent) + 
-					"\t%7.2g\t%7.2g\t%7.2g\t%7.2g"%group_values[node]  +
+					("\t%7.2g"*len(group_values[node])) % group_values[node]  +
 					"\t%6.2g\t%d"%(group_error[node],group_count[node]) + 
-					"\t%7.3g\t%7.3g\t%7.3g\t%7.3g"%group_error_MAD_by_T[node]
+					("\t%7.3g"*len(group_error_MAD_by_T[node])) % group_error_MAD_by_T[node]
 				)
+				
 			children = family.tree.children[node]
 			if children:
 				children.sort()
 				for child in children:
+					# recurse!
 					print_node_tree(child,indent+1)
 					
-		print ("Log10(k) at T=   \t%7g\t%7g\t%7g\t%7g"%tuple(Ts) + 
+		print ("Log10(k) at T=   " + ("\t%7g"*len(Ts)) % tuple(Ts) + 
 				'\t RMS\tcount' + 
-				"\tMAD @ %d\tMAD @ %d\tMAD @ %d\tMAD @ %d"%tuple(Ts) 
+				("\tMAD @ %d"*len(Ts)) % tuple(Ts) 
 			)
+			
 		print_node_tree('Constant')
 		for node in top_nodes:
 			print_node_tree(node)
 		print
 		
-		pylab.figure(1)
-		pylab.semilogx(rates_in_group)
+		
+		fig_number = family_names.index(family_name)
+		fig = pylab.figure( fig_number )
+		
+		xvals = numpy.array([ group_count[group] for group in group_names ])
+		yvals = numpy.array([ group_error[group] for group in group_names ])
+		pylab.semilogx(xvals,yvals,'o',picker=5) # 5 points tolerance
+		pylab.title(family_name)
+		
+		def onpick(event):
+			thisline = event.artist
+			xdata = thisline.get_xdata()
+			ydata = thisline.get_ydata()
+			for ind in event.ind:
+				print "#%d Name: %s  rates: %d \tRMS error: %g \t MAD errors: %s"%(ind, group_names[ind],xvals[ind],yvals[ind], group_error_MAD_by_T[group_names[ind]])
+				#print 'check %g:'%ind, zip(xdata[ind], ydata[ind])
+		connection_id = fig.canvas.mpl_connect('pick_event', onpick)
+		# disconnect with: fig.canvas.mpl_disconnect(connection_id) 
+		pylab.show()
 		#http://matplotlib.sourceforge.net/users/event_handling.html
+		
+		import pdb; pdb.set_trace()
 			
 	#	graph = family.drawFullGraphOfTree()
 	#	return graph
@@ -511,10 +533,10 @@ if __name__ == '__main__':
 	loadThermoDatabases(databasePath)
 	loadKineticsDatabases(databasePath)
 
-	#findCatchallNodes()
+	# findCatchallNodes()
 
-	#fit_groups(['H abstraction'])
-	#graph = fit_groups()
+	fit_groups(['H abstraction'])
+	graph = fit_groups()
 	#write_xml()
 	
 #	for node in graph.get_node_list():	
