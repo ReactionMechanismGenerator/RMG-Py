@@ -69,9 +69,6 @@ class ThermoData:
 
 ################################################################################
 
-ThermoGAData_CpTlist = list(pq.Quantity([300.0, 400.0, 500.0, 600.0, 800.0, 1000.0, 1500.0], 'K').simplified)
-ThermoGAData_CpTlist = [float(T) for T in ThermoGAData_CpTlist]
-
 class ThermoGAData(ThermoData):
 	"""
 	A set of thermodynamic parameters as determined from Benson's group
@@ -86,6 +83,12 @@ class ThermoGAData(ThermoData):
 		      600, 800, 1000, and 1500 K
 	========= ========================================================
 	"""
+# I think putting a comment with a colon just before the thing is defined
+# makes it show up in the documentation with autodoc. (or is that just in constants.py?)
+#: The list of temperatures at which heat capacity is defined = [300,400,500,600,800,1000,1500]
+	CpTlist = list(pq.Quantity([300.0, 400.0, 500.0, 600.0, 800.0, 1000.0, 1500.0], 'K').simplified)
+	CpTlist = [float(T) for T in CpTlist]
+	# refer to it as ThermoGAData.CpTlist, even when calling it from methods within this Class.
 
 	def __init__(self, H298=0.0, S298=0.0, Cp=None, comment=''):
 		"""Initialize a set of group additivity thermodynamic data."""
@@ -122,8 +125,10 @@ class ThermoGAData(ThermoData):
 		string = ''
 		string += 'Enthalpy of formation: %s J/mol\n' % (self.H298)
 		string += 'Entropy of formation: %s J/mol*K\n' % (self.S298)
-		for T, Cp in zip(ThermoGAData.Tlist, self.Cp):
-			string += 'Heat capacity at %s K: %s J/mol*K' % (T, Cp)
+		string += 'Heat capacity (J/mol*K): '
+		for T, Cp in zip(ThermoGAData.CpTlist, self.Cp):
+			string += '%s(%sK) ' % (Cp,T)
+		string += '\n'
 		string += 'Comment: %s' % (self.comment)
 		return string
 
@@ -135,11 +140,11 @@ class ThermoGAData(ThermoData):
 			raise data.TemperatureOutOfRangeException('Invalid temperature for heat capacity estimation from group additivity.')
 		if T < 300.0:
 			return self.Cp[0]
-		elif T > ThermoGAData_CpTlist[-1]:
+		elif T > ThermoGAData.CpTlist[-1]:
 			return self.Cp[-1]
 		else:
-			for Tmin, Tmax, Cpmin, Cpmax in zip(ThermoGAData_CpTlist[:-1], \
-					ThermoGAData_CpTlist[1:], self.Cp[:-1], self.Cp[1:]):
+			for Tmin, Tmax, Cpmin, Cpmax in zip(ThermoGAData.CpTlist[:-1], \
+					ThermoGAData.CpTlist[1:], self.Cp[:-1], self.Cp[1:]):
 				if Tmin <= T and T <= Tmax:
 					return (Cpmax - Cpmin) * ((T - Tmin) / (Tmax - Tmin)) + Cpmin
 
@@ -157,15 +162,15 @@ class ThermoGAData(ThermoData):
 		H = self.H298
 		if not self.isTemperatureValid(T):
 			raise data.TemperatureOutOfRangeException('Invalid temperature for enthalpy estimation from group additivity.')
-		for Tmin, Tmax, Cpmin, Cpmax in zip(ThermoGAData_CpTlist[:-1], \
-				ThermoGAData_CpTlist[1:], self.Cp[:-1], self.Cp[1:]):
+		for Tmin, Tmax, Cpmin, Cpmax in zip(ThermoGAData.CpTlist[:-1], \
+				ThermoGAData.CpTlist[1:], self.Cp[:-1], self.Cp[1:]):
 			if T > Tmin:
 				slope = (Cpmax - Cpmin) / (Tmax - Tmin)
 				intercept = (Cpmin * Tmax - Cpmax * Tmin) / (Tmax - Tmin)
 				if T < Tmax:	H += 0.5 * slope * (T*T - Tmin*Tmin) + intercept * (T - Tmin)
 				else:			H += 0.5 * slope * (Tmax*Tmax - Tmin*Tmin) + intercept * (Tmax - Tmin)
-		if T > ThermoGAData_CpTlist[-1]:
-			H += self.Cp[-1] * (T - ThermoGAData_CpTlist[-1])
+		if T > ThermoGAData.CpTlist[-1]:
+			H += self.Cp[-1] * (T - ThermoGAData.CpTlist[-1])
 		self.__cache['H'] = H
 		return H
 
@@ -185,15 +190,15 @@ class ThermoGAData(ThermoData):
 		S = self.S298
 		if not self.isTemperatureValid(T):
 			raise data.TemperatureOutOfRangeException('Invalid temperature for entropy estimation from group additivity.')
-		for Tmin, Tmax, Cpmin, Cpmax in zip(ThermoGAData_CpTlist[:-1], \
-				ThermoGAData_CpTlist[1:], self.Cp[:-1], self.Cp[1:]):
+		for Tmin, Tmax, Cpmin, Cpmax in zip(ThermoGAData.CpTlist[:-1], \
+				ThermoGAData.CpTlist[1:], self.Cp[:-1], self.Cp[1:]):
 			if T > Tmin:
 				slope = (Cpmax - Cpmin) / (Tmax - Tmin)
 				intercept = (Cpmin * Tmax - Cpmax * Tmin) / (Tmax - Tmin)
 				if T < Tmax:	S += slope * (T - Tmin) + intercept * math.log(T/Tmin)
 				else:			S += slope * (Tmax - Tmin) + intercept * math.log(Tmax/Tmin)
-		if T > ThermoGAData_CpTlist[-1]:
-			S += self.Cp[-1] * math.log(T / ThermoGAData_CpTlist[-1])
+		if T > ThermoGAData.CpTlist[-1]:
+			S += self.Cp[-1] * math.log(T / ThermoGAData.CpTlist[-1])
 		self.__cache['S'] = S
 		return S
 
@@ -256,7 +261,7 @@ class ThermoGAData(ThermoData):
 
 		for i, Cp in enumerate(self.Cp):
 			heatCapacity = dom.createElement('heatCapacity')
-			heatCapacity.setAttribute('temperature', '%s K' % (ThermoGAData_CpTlist[i]) )
+			heatCapacity.setAttribute('temperature', '%s K' % (ThermoGAData.CpTlist[i]) )
 			thermo.appendChild(heatCapacity)
 			data.createXMLQuantity(dom, heatCapacity, Cp, 'J/(mol*K)')
 
@@ -381,6 +386,9 @@ class ThermoNASAData(ThermoData):
 			raise data.TemperatureOutOfRangeException("No polynomial found for T=%s" % T)
 		return poly
 
+	def __repr__(self):
+		return "ThermoNASAData(%s, '%s')"%(repr(self.polynomials),self.comment)
+				
 	def toXML(self, dom, root):
 # <thermodynamicPolynomials type="nasa7">
 #   <referenceState>
@@ -392,12 +400,7 @@ class ThermoNASAData(ThermoData):
 # </thermodynamicPolynomials>
 		pass
 
-	def __str__(self):
-		"""
-		Return a string summarizing the thermodynamic data.
-		"""
-		string = 'NASA polynomials'
-		return string
+
 
 	def getHeatCapacity(self, T):
 		"""
