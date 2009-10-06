@@ -609,11 +609,12 @@ cdef class Atom:
 	def isElement(self, symbol):
 		"""
 		Return :data:`True` if the atom has the element with the symbol
-		`symbol` and :data:`False` otherwise.
+		`symbol` and :data:`False` otherwise. Returns False if atom is a wildcard
+		(e.g. in a functional group)
 		"""
 		if len(self._atomType) == 0 or len(self._atomType) > 1: return False
 		elif self.atomType.element is None: return False
-		else: return self.atomType is atomTypes[symbol]
+		else: return self.atomType.element is elements[symbol]
 
 	def isHydrogen(self):
 		"""
