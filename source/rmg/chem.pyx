@@ -82,6 +82,9 @@ cdef class Element:
 		self.symbol = symbol
 		self.mass = mass
 		self.valence = valence
+	
+	def __repr__(self):
+		return "Element(%s,%s,%s,%s,%s)"%(self.number, self.name, self.symbol, self.mass, self.valence)
 
 	def __reduce__(self):
 		"""
@@ -150,6 +153,9 @@ cdef class AtomType:
 		self.label = label
 		self.element = element
 		self.description = description
+	
+	def __repr__(self):
+		return "AtomType('%s',%s,'%s')"%(self.label, self.element, self.description)
 
 	def __reduce__(self):
 		"""
@@ -276,6 +282,9 @@ cdef class ElectronState:
 		self.label = label
 		self.order = order
 		self.spin = spin
+	
+	def __repr__(self):
+		return "ElectronState('%s',%s,%s)"%(self.label, self.order, self.spin)
 
 	def __reduce__(self):
 		"""
@@ -457,6 +466,18 @@ cdef class Atom:
 		self.connectivity_value_1 = 0
 		self.connectivity_value_2 = 0
 		self.connectivity_value_3 = 0
+
+	def __repr__(self):
+		# if there's just one atomType and it's in the global dictionary of atomTypes
+		# then just use it's label as we can look it up in the dictionary.
+		aType = self.atomType
+		if aType.__class__ == AtomType and aType.label in atomTypes:
+			aType = "'%s'"%aType.label
+		# same for electronState
+		eState = self.electronState
+		if eState.__class__ == ElectronState and eState.label in electronStates:
+			eState = "'%s'"%eState.label
+		return "Atom(%s,%s,%s,'%s')"%(aType, eState, self.charge, self.label)
 
 	def __reduce__(self):
 		"""

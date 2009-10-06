@@ -116,7 +116,8 @@ class AtomCheck(unittest.TestCase):
 			for label2, electronState in electronStates.iteritems():
 				atom = Atom(atomType, electronState, 0, '1*')
 				if atomType.element is not None:
-					self.assertTrue(atom.isElement(atomType.element.symbol))
+					self.assertTrue(atom.isElement(atomType.element.symbol),
+						"%s.isElement('%s') returned False"%(atom,atomType.element.symbol))
 					if atomType.element.symbol == 'C':
 						self.assertTrue(atom.isCarbon())
 					if atomType.element.symbol == 'O':
