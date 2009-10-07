@@ -7,9 +7,6 @@
 // Format of data
 Arrhenius_EP
 
-// Number of columns of data consisting of nodes
-3
-
 //No.	diene_out			diene_in	ene		Temp.		A		N	a	E0	DA	Dn	Da	DE0	Rank
 589.		diene_out	diene_in	ene	300-1500	5E+09	0	0	0	0	0	0	0	0
 590.		diene_unsub_unsub_out	diene_in_2H	ene_2H_HDe	464-557	8.91E+09	0	0	24.44	0	0	0	0	3

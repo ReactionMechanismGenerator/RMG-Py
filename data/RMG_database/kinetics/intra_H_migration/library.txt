@@ -7,9 +7,6 @@
 // Format of data
 Arrhenius_EP
 
-// Number of columns of data consisting of nodes
-3
-
 //No	RnH	Y_rad_out	XH_out	Temp	A	N	Alpha	E	DA	DN	DAlpha	DE	Rank											
 614	RnH	Y_rad_out	XH_out	300-1500	1.00E+10	0	0	25.00	0	0	0	0	0											
 615	R2H_S	C_rad_out_single	Cs_H_out_2H	300-1500	5.48E+08	1.62	0	38.76	0	0	0	0	5											

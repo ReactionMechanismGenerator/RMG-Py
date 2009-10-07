@@ -7,9 +7,6 @@
 // Format of data
 Arrhenius_EP
 
-// Number of columns of data consisting of nodes
-1
-
 //	R2OO		Temp.		A		N	a	E0	DA	Dn	Da	DE0	Rank
 835.	R2OO		300-1500	1E+10		1	0	30	0	0	0	0	0
 836.	R2OO_2H_2H	300-1500	1.56E+07	1.69	0	29.8	0	0	0	0	2

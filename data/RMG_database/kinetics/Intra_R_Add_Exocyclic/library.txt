@@ -7,9 +7,6 @@
 // Format of data
 Arrhenius_EP
 
-// Number of columns of data consisting of nodes
-3
-
 //		Rn		multiplebond_intra	radadd_intra		Temp.		A		N	a	E0	DA	Dn	Da	DE0	Rank
 807.	Rn		multiplebond_intra	radadd_intra		300-1500	1E+10		0	0	5	0	0	0	0	0
 808.	R6_SSS_D	doublebond_intra_2H_pri	radadd_intra_cs2H	300-1500	2.51E+10	0	0	6.85	0	0	0	0	2

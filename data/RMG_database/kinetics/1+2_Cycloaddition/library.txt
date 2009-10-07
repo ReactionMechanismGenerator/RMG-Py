@@ -7,9 +7,6 @@
 // Format of data
 Arrhenius_EP
 
-// Number of columns of data consisting of nodes
-2
-
 //No.	elec_def	multiplebond		Temp.		A		n	a	E0	DA	Dn	Da	DE0	Rank
 576.		elec_def	multiplebond		300-1500	1E+12	0	0	0	0	0	0	0	0
 577.		carbene	mb_db_unsub		296-728	1.98E+12	0	0	5.29	*3.2	0	0	0.26	3

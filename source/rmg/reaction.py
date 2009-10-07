@@ -581,7 +581,7 @@ class ReactionFamily(data.Database):
 		"""
 		Load a reaction family located in the directory `path`.
 		"""
-
+		import re
 		# Generate paths to files in the database
 		dictstr = os.path.join(path, 'dictionary.txt')
 		treestr = os.path.join(path, 'tree.txt')
@@ -606,7 +606,25 @@ class ReactionFamily(data.Database):
 
 		# Process the data in the library
 		lines = self.library.load(libstr)
-		self.library.parse(lines[2:], int(lines[1]))
+		
+		# pop off the first line and check that it's 'Arrhenius_EP'
+		line = lines.pop(0)
+		if line != 'Arrhenius_EP':
+			raise data.InvalidDatabaseException("Was expecting 'Arrhenius_EP' as first line, but got %s, in %s"%(line,libstr))
+		
+		#figure out how many labels there are
+		test_line = lines[0].split()
+		for token_no, token in enumerate(test_line):
+			# skip token_no=0 because it's the label (but may match the regular expression)
+			if token_no and re.match('^[0-9\-.]*$',token):
+				# found the Temperature range at token_no
+				number_of_groups = token_no-1
+				logging.debug("I think there are %d groups %s in %s"%(number_of_groups,test_line[1:token_no],libstr))
+				break
+		else: # didn't break
+			raise data.InvalidDatabaseException("Unable to figure out how many groups in %s using line %s"%(libstr,' '.join(test_line)))
+		
+		self.library.parse(lines, number_of_groups )
 		self.processLibraryData()
 
 		# Check for well-formedness
@@ -956,7 +974,6 @@ class ReactionFamily(data.Database):
 		"""
 
 		for label, data in self.library.iteritems():
-
 			if data is None:
 				pass
 			elif data.__class__ == str or data.__class__ == unicode:

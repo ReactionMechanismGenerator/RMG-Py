@@ -7,9 +7,6 @@
 // Format of data
 Arrhenius_EP
 
-// Number of columns of data consisting of nodes
-2
-
 //No.	CO_birad	RR'			Temp.		A		N	a	E0	DA	Dn	Da	DE0	Rank
 553.	CO_birad	RR'			300-1500	1E+05		2	0	80	0	0	0	0	0 
 554.	CO_birad	C_methyl_C_methyl	300-1500	5.38E+02	3.29	0	104.5	0	0	0	0	2

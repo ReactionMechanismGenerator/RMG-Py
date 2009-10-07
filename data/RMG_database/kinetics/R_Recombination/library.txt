@@ -7,9 +7,6 @@
 // Format of data
 Arrhenius_EP
 
-// Number of columns of data consisting of nodes
-2
-
 //No.		Y_rad		Y_rad		Temp.		A		N	a	E0	DA	Dn	Da	DE0	Rank
 424.		Y_rad	Y_rad		300-1500	1E+13	0	0	0	0	0	0	0	0
 425.		H_rad	H_rad		278-372	1.09E+11	0	0	1.50	0	0	0	0	5

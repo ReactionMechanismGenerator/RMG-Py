@@ -7,9 +7,6 @@
 // Format of data
 Arrhenius_EP
 
-// Number of columns of data consisting of nodes
-2
-
 //			RnOOH		Y_rad_out			Temp.		A			N	a	E0		DA	Dn	Da	DE0	Rank
 826.		RnOOH		Y_rad_out			300-1500	1E+10		0	0	15		0	0	0	0	0
 827.		R2OOH_S		C_rad_out_2H		300-1500	3.39E+11	0	0	26.9	0	0	0	0	2

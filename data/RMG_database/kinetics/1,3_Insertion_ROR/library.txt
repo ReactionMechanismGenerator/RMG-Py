@@ -7,9 +7,6 @@
 // Format of data
 Arrhenius_EP
 
-// Number of columns of data consisting of nodes
-2
-
 //No.	doublebond		R_OR		Temp.		A		N	a	E0	DA	Dn	Da	DE0	Rank
 560.	doublebond	R_OR		300-1500	1E+02	3	0	45	0	0	0	0	0
 561.	Cd/H2_Cd/Nd2	H_OCmethyl		300-1500	9.36E+01	2.85	0	41.9	0	0	0	0	2
