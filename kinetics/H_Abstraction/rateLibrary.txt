@@ -4,10 +4,10 @@
 // JS, comment out 10th, change XH in 23 from C/Cd/H3 to C/H3/Cd
 // JS, remove CO_birad to form a new family later: CO + RH -> HCO + R.  Aug, 26, 2003
 
-// Catherina Wijaya thesis, pg 151 -154.
-
 // JS, define key word for format of the rate: either Arrhenius or Arrhenius_EP
 Arrhenius_EP
+
+// Catherina Wijaya thesis, pg 151 -154.
 
 //f01_intermolecular_HA
 //No.	XH			Y_rad				Temp.		A			n		a		E0		DA		Dn		Da		DE0		Rank	Comments

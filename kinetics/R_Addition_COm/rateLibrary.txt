@@ -1,9 +1,9 @@
 // rate library for f04: radical addition to COm
 
-// Catherina Wijaya thesis, pg 155
-
 // jing, define key word for format of the rate: either Arrhenius or Arrhenius_EP
 Arrhenius_EP
+
+// Catherina Wijaya thesis, pg 155
 
 // f04_radical_addition_to_COm
 // rate constants from rate_library_4.txt, Cath, 03/07/28

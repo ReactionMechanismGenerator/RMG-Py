@@ -1,6 +1,12 @@
 // rate library for f09b: Disproportionation_O2d reaction
 // move rate constants from original disproportionation rate library, JS, Aug, 05, 2003
 
+// JS, define key word for format of the rate: either Arrhenius or Arrhenius_EP
+Arrhenius_EP
+
+// f09b_Disproportionation_O2d
+// 20001: usinging root number of all disproporionation reacitons
+
 // Catherina Wijaya Thesis pg 157 - 158
 // [91] Tsang, W. J. Phys. Chem. Ref. Data 1988, 17, 887.
 // [92] Tsang, W. J. Phys. Chem. Ref. Data 1990, 19, 1.
@@ -8,12 +14,6 @@
 // [98] Atkinson, R.; Baulch, D.L.; Cox, R.A.; Crowley, J.N.; Hampson, R.F., Jr.; Kerr, J.A.; Rossi, M.J.; Troe, J. 
 // "summary of Evaluated Kinetic and Photochemical Data for Atmospheric Chemistry,", 2001.
 // [183] DeMore, W.B.; Sander, S.P.; Golden, D.M.; Hampson, R.F.; Kurylo, M.J.; Howard, C.J.; Ravishankara, A.R.; Kolb, C.E.; Molina, M.J. JPL Publication 97-4 1997, 1. 
-
-// JS, define key word for format of the rate: either Arrhenius or Arrhenius_EP
-Arrhenius_EP
-
-// f09b_Disproportionation_O2d
-// 20001: usinging root number of all disproporionation reacitons
 
 //No.		Y_rad_birad		XH_Rrad			Temp.		A			N		a		E0		DA		Dn		Da		DE0		Rank	Comments
 20001		O2d				XH_Rrad			300-1500	3E+11		0		0		0		0		0		0		0		0

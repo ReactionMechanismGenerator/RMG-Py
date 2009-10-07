@@ -1,5 +1,11 @@
 // rate library for f19: diels-Alder reaction
 
+// JS, define key word for format of the rate: either Arrhenius or Arrhenius_EP
+Arrhenius_EP
+
+// f19_diels_Alde
+// rate constants from rate_library_4.txt, Cath, 03/07/28
+
 // Catherina Wijaya thesis, pg 132
 
 // [108] Huybrechts, G.; Poppelsdorf, H.; Maesschalck, L.; Van Mele, B. Int. J. Chem. Kinet. 1984, 16, 93.
@@ -10,12 +16,6 @@
 // [198] Huybrechts, G.; Luyckx, L.; Vandenboom, T.; Van Mele, B. Int. J. Chem. Kinet. 1977, 9, 283.
 // [199] Simmie, J. M. Int. J. Chem. Kinet. 1978, 10, 227.
 // [200] Benford, G. A.; Wassermann, A. J. Chem. Soc. 1939, 362. 
-
-// JS, define key word for format of the rate: either Arrhenius or Arrhenius_EP
-Arrhenius_EP
-
-// f19_diels_Alde
-// rate constants from rate_library_4.txt, Cath, 03/07/28
 
 //No.	diene_out						diene_in			ene				Temp.		A			N		a		E0		DA		Dn		Da		DE0		Rank	Comments
 589.	diene_out						diene_in			ene				300-1500	5E+09		0		0		0		0		0		0		0		0		"default"

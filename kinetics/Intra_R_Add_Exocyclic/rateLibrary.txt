@@ -14,7 +14,3 @@ Arrhenius_EP
 811.	R6_SSM_D    doublebond_intra     		radadd_intra_cs 	300-1500	1E+10		0		0		46.85	0		0		0		0		2
 812.	R5_SD_D     doublebond_intra_HNd_pri    radadd_intra_csHNd	300-1500	1E+10		0		0		46.85	0		0		0		0		2 
 
-     
-
-
-
