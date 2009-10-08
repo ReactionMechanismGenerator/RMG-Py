@@ -209,8 +209,13 @@ class ArrheniusEPKinetics(Kinetics):
 		self.alpha = alpha
 
 	def __str__(self):
-		return 'k(T) = %s * T ** %s * math.exp(-(%s + %s * DHrxn) / constants.R / T)\t%s < T < %s' % (self.A, self.n, self.E0, self.alpha, self.Trange[0], self.Trange[1])
-
+		string = 'k(T) = %s * T ** %s * math.exp(-(%s + %s * DHrxn) / constants.R / T)\t%s < T < %s' % (self.A, self.n, self.E0, self.alpha, self.Trange[0], self.Trange[1])
+		if self.family and self.label:
+			string += '/nFrom %s Item %s'%(self.family.label, self.label)
+		if self.comment:
+			string += '/nComment: %s'%(self.comment)
+		return string
+		
 	def __repr__(self):
 		"""How it looks on the console"""
 		return '<ArrheniusEPKinetics A=%.0e E0=%.0fkJ/mol n=%.1f alpha=%.1g>'%(
