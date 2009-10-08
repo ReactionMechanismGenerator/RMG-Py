@@ -104,9 +104,10 @@ def drawKineticsTrees():
 			graph.write(filename,format=format,prog=prog)
 			
 		print 'Created DOT for reaction family %s' % (key)
-	
+
+
 ################################################################################
-		
+
 def write_xml(family_names = None):
 	"""Writes the library to xml files
 	"""
@@ -136,8 +137,6 @@ def write_xml(family_names = None):
 		logging.info("Writing xml for reaction family: %s (%s)"%(family_name,
 			os.path.basename(os.path.abspath(family._path))) )
 			
-		
-		
 		family.library.toXML(dom,root)
 		print dom.toprettyxml()
 
@@ -229,7 +228,7 @@ def findCatchallNodes():
 #					if match:
 #						print key, parent, child
 	print ''
-			
+		
 ################################################################################
 
 def fit_groups(family_names = None):
@@ -265,6 +264,20 @@ def fit_groups(family_names = None):
 		group_names.append("Constant")
 		family.tree.children['Constant']=[]
 		
+		#: a dictionary of lists. key = node, value = list of kinetics items which contributed to that node
+		kinetics_used_in={'Constant':[]}
+		for node in node_set: # must initialise in loop so each has a separate list instance!
+			kinetics_used_in[node] = list() 
+		Ts = [300, 500, 1000, 1500]
+		
+		def rates_string(k):
+			"""Return a string representing the rates of :class:`kinetics` object k
+			
+			log10 of the k at a bunch of T values"""
+			string = "%5.2f "*len(Ts)
+			return string%tuple([ math.log10(k.getRateConstant(T,Hrxn)) for T in Ts ])
+
+		
 		A_list = []
 		b_list = []
 		# Get available data
@@ -279,11 +292,13 @@ def fit_groups(family_names = None):
 			#		  kinetics.E0 ]
 			if kinetics.alpha:
 				logging.warning("Warning: %s has EP alpha = %g"%(nodes,kinetics.alpha))
-			Ts = [300, 500, 1000, 1500]
+			
 			Hrxn=0
 			b_row = [ math.log10(kinetics.getRateConstant(T,Hrxn)) for T in Ts ]
 				
-			all_ancestors=[]
+			all_ancestors=list()
+			kinetics.used_in_groups = list()
+			kinetics.used_in_combinations = list()
 			for node in nodes:
 				# start with the most specific - the node itself
 				# then add the ancestors
@@ -291,9 +306,17 @@ def fit_groups(family_names = None):
 				ancestors.extend( family.tree.ancestors(node) )
 				# append to the list of lists
 				all_ancestors.append(ancestors)
+				# add to the list 
+				kinetics.used_in_groups.extend(ancestors)
+				
+				for ancestor in ancestors:
+					kinetics_used_in[ancestor].append(kinetics)
+			kinetics_used_in['Constant'].append(kinetics)
 			
 			# example
 			#  all_ancestors = [['A11','A1','A'], ['B11','B1','B']]
+			#  kinetics.used_in_groups = [ 'A11','A1','A','B11','B1','B' ]
+			#  kinetics_used_in['A11'] = kinetics_used_in['A1'] ... = [... <kinetics>]
 			
 			all_combinations = data.getAllCombinations(all_ancestors)
 			
@@ -309,6 +332,7 @@ def fit_groups(family_names = None):
 				# Add on a column at the end for constant C which is always there
 				A_row.append(1)
 				
+				kinetics.used_in_combinations.append(len(A_list))
 				A_list.append(A_row)
 				b_list.append(b_row)
 				
@@ -331,10 +355,10 @@ def fit_groups(family_names = None):
 		group_error_MAD_by_T=dict()
 		
 		for node in top_nodes:
-			group_values[node] = tuple([0 for i in Ts])
+			group_values[node] = tuple([0 for i in Ts]) # eg. (0 0 0 0 0)
 			group_error[node] = 0
 			group_count[node] = 0
-			group_error_MAD_by_T[node] = tuple([0 for i in Ts])
+			group_error_MAD_by_T[node] = tuple([0 for i in Ts]) # eg. (0 0 0 0 0)
 			
 		for i in range(len(x)):
 			group_values[group_names[i]] = tuple(x[i,:])
@@ -344,7 +368,7 @@ def fit_groups(family_names = None):
 			rates_in_group = A[:,i]  
 			#: number of data points training this group (each measured rate may be counted many times)
 			group_count[group_names[i]] = sum(rates_in_group)
-			#: RMS error for this group (where M = mean over temperatures and values training the group) 
+			#: RMS error for this group (where M = mean over temperatures and rates training the group) 
 			group_error[group_names[i]] = numpy.sqrt(
 				sum(rates_in_group * errors_sum_squared)  /
 					 sum(rates_in_group) / len(Ts)   )
@@ -352,7 +376,21 @@ def fit_groups(family_names = None):
 			group_error_MAD_by_T[group_names[i]] = tuple( 
 				numpy.dot(rates_in_group, abs(errors)) /
 				 sum(rates_in_group)  )
-		
+				
+		for key, kinetics in family.library.iteritems():
+			rows = kinetics.used_in_combinations
+			#: RMS error for this rate (where M = mean over temperatures and group combinations it's estimated by)
+			kinetics.RMS_error = numpy.sqrt( 
+				sum([errors_sum_squared[i] for i in rows])
+				 / len(rows) / len(Ts) 
+				)
+			kinetics.key = key
+		rates = family.library.values()
+		rates.sort(cmp=lambda x,y: cmp(x.RMS_error, y.RMS_error))
+		print "Rate expressions sorted by how well they are predicted by their group combinations"
+		for k in rates:
+			print "%s\tRMS error: %.2f  Rates: %s"%(k.key, k.RMS_error, rates_string(k) )
+			
 		def print_node_tree(node,indent=0):
 			print (' '*indent +
 					node.ljust(17-indent) + 
@@ -360,7 +398,6 @@ def fit_groups(family_names = None):
 					"\t%6.2g\t%d"%(group_error[node],group_count[node]) + 
 					("\t%7.3g"*len(group_error_MAD_by_T[node])) % group_error_MAD_by_T[node]
 				)
-				
 			children = family.tree.children[node]
 			if children:
 				children.sort()
@@ -392,8 +429,15 @@ def fit_groups(family_names = None):
 			xdata = thisline.get_xdata()
 			ydata = thisline.get_ydata()
 			for ind in event.ind:
-				print "#%d Name: %s  rates: %d \tRMS error: %g \t MAD errors: %s"%(ind, group_names[ind],xvals[ind],yvals[ind], group_error_MAD_by_T[group_names[ind]])
+				group_name = group_names[ind]
+				print "#%d Name: %s Rates:%d Node-Rates:%d \tRMS error: %g \t MAD errors: %s"%(ind, group_name, len(kinetics_used_in[group_name]) , xvals[ind],yvals[ind], group_error_MAD_by_T[group_names[ind]])
+				print "Kinetics taken from:"
+				for k in kinetics_used_in[group_name]:
+					print "%s \t%s "%(k.key,repr(k))
+					print "RMS error: %.2f"%(k.RMS_error)
+					print "Rates: ",rates_string(k)
 				#print 'check %g:'%ind, zip(xdata[ind], ydata[ind])
+				
 		connection_id = fig.canvas.mpl_connect('pick_event', onpick)
 		# disconnect with: fig.canvas.mpl_disconnect(connection_id) 
 		pylab.show()
@@ -530,14 +574,14 @@ if __name__ == '__main__':
 
 	# Load databases
 	databasePath = '../data/RMG_database'
-	loadThermoDatabases(databasePath)
-	loadKineticsDatabases(databasePath)
+#	loadThermoDatabases(databasePath)
+	loadKineticsDatabases(databasePath,only_families=['H_Abstraction'])
 
 	# findCatchallNodes()
-
-	fit_groups(['H abstraction'])
-	graph = fit_groups()
-	#write_xml()
+	fit_groups()	
+#	fit_groups(['H abstraction'])
+#	graph = fit_groups()
+#	write_xml()
 	
 #	for node in graph.get_node_list():	
 #		node.set_style('filled')
