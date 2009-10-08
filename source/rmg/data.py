@@ -406,13 +406,16 @@ class Library(dict):
 	def add(self, labels, data):
 		"""
 		Add an item of `data` to the library based on the value of the list
-		of `labels`. Only add if there is not preexisting data.
+		of `labels`. Only add and return True if there is not preexisting data 
+		with those labels, else return False.
 		"""
 		if self.getData(labels) is not None:
-			return
+			logging.warning("There was already something labelled %s in the database. Ignoring %s"%(labels,data))
+			return False
 		names = self.hashLabels(labels)
 		for name in names:
 			self[name] = data
+		return True
 		
 	def remove(self, labels):
 		"""
