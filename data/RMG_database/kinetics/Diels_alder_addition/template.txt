@@ -9,7 +9,7 @@ Forward: Diels-Alder cycloaddition
 Reverse: Diels-Alder cycloelimination
 
 // Template for forward reaction
-ene + diene_out diene_in <---> Six_Ring
+diene_out diene_in + ene <---> Six_Ring
 
 // Recipe for forward reaction
 CHANGE_BOND		{*1,-1,*2}
