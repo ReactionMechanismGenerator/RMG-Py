@@ -580,6 +580,14 @@ class ReactionFamily(data.Database):
 	def load(self, path):
 		"""
 		Load a reaction family located in the directory `path`.
+		
+		The family consists of the files::
+			dictionary.txt
+			tree.txt
+			library.txt
+			template.txt
+			forbiddenGroups.txt
+		
 		"""
 		import re
 		# Generate paths to files in the database
@@ -619,7 +627,7 @@ class ReactionFamily(data.Database):
 			if token_no and re.match('^[0-9\-.]*$',token):
 				# found the Temperature range at token_no
 				number_of_groups = token_no-1
-				logging.debug("I think there are %d groups %s in %s"%(number_of_groups,test_line[1:token_no],libstr))
+				logging.debug("Deduced there are %d groups %s in %s"%(number_of_groups,test_line[1:token_no],libstr))
 				break
 		else: # didn't break
 			raise data.InvalidDatabaseException("Unable to figure out how many groups in %s using line %s"%(libstr,' '.join(test_line)))
@@ -972,7 +980,7 @@ class ReactionFamily(data.Database):
 		string pairs. This function is generally called in the course of
 		loading a database from files.
 		"""
-
+		
 		for label, data in self.library.iteritems():
 			if data is None:
 				pass
@@ -1004,7 +1012,9 @@ class ReactionFamily(data.Database):
 
 					kinetics = ArrheniusEPKinetics()
 					kinetics.fromDatabase(kineticData, comment, len(self.template.reactants))
-					kinetics.comment = self.label + ' ' + label + ' ' + kinetics.comment
+					kinetics.family = self
+					kinetics.label = label
+					#kinetics.comment = self.label + ' ' + label + ' ' + kinetics.comment
 					self.library[label] = kinetics
 
 				except (ValueError, IndexError), e:
