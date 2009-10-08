@@ -1344,11 +1344,22 @@ class ReactionFamily(data.Database):
 		Determine the appropriate kinetics for `reaction` which involves the
 		labeled atoms in `atoms`.
 		"""
-
+		
 		# Get forward reaction template and remove any duplicates
 		forwardTemplate, reverseTemplate = self.getTemplateLists()
-		forwardTemplate = list(set(forwardTemplate))
-
+		#forwardTemplate = list(set(forwardTemplate)) # this can shuffle the order!
+		temporary=[]
+		symmetric_tree=False
+		for node in forwardTemplate:
+			if node not in temporary:
+				temporary.append(node)
+			else: 
+				# duplicate node found at top of tree
+				# eg. R_recombination: ['Y_rad', 'Y_rad']
+				assert len(forwardTemplate)==2 , 'Can currently only do symmetric trees with nothing else in them'
+				symmetric_tree = True
+		forwardTemplate = temporary
+		
 		# Descend reactant trees as far as possible
 		template = []
 		for forward in forwardTemplate:
@@ -1385,17 +1396,19 @@ class ReactionFamily(data.Database):
 				if matched_node is not None:
 					template.append(matched_node)
 				else:
-					print "Couldn't find match for %s in %s"%(forward,atomList)
-					print struct.toAdjacencyList()
+					logging.warning("Couldn't find match for %s in %s"%(forward,atomList))
+					logging.warning( struct.toAdjacencyList() )
+					
+		# Get fresh templates (with duplicate nodes back in)
 		forwardTemplate, reverseTemplate = self.getTemplateLists()
 		
 		# Check that we were able to match the template.
 		# template is a list of the actual matched nodes
 		# forwardTemplate is a list of the top level nodes that should be matched
 		if len(template) != len(forwardTemplate):
-			print 'Warning: Unable to find matching template for reaction %s in reaction family %s' % (str(reaction), str(self))
-			print " Trying to match",forwardTemplate
-			print " Matched",template
+			logging.warning('Warning: Unable to find matching template for reaction %s in reaction family %s' % (str(reaction), str(self)) )
+			logging.warning(" Trying to match",forwardTemplate)
+			logging.warning(" Matched",template)
 			raise UndeterminableKineticsException(reaction)
 			print str(self), template, forwardTemplate, reverseTemplate
 			for reactant in reaction.reactants:
@@ -1412,6 +1425,8 @@ class ReactionFamily(data.Database):
 #		if k is not None: return [k]
 #		else: return None
 
+		
+		# climb the tree finding ancestors
 		nodeLists = []
 		for temp in template:
 			nodeList = []
@@ -1419,17 +1434,26 @@ class ReactionFamily(data.Database):
 				nodeList.append(temp)
 				temp = self.tree.parent[temp]
 			nodeLists.append(nodeList)
-
+		
 		# Generate all possible combinations of nodes
 		items = data.getAllCombinations(nodeLists)
-
+		
 		# Generate list of kinetics at every node
+		logging.debug("   Template contains %s"%forwardTemplate)
 		kinetics = []
 		for item in items:
 			itemData = self.library.getData(item)
+			logging.debug("   Looking for %s found %r"%(item, itemData))
 			if itemData is not None:
 				kinetics.append(itemData)
-
+				
+			if symmetric_tree: # we might only store kinetics the other way around
+				item.reverse()
+				itemData = self.library.getData(item)
+				logging.debug("   Also looking for %s found %r"%(item, itemData))
+				if itemData is not None:
+					kinetics.append(itemData)				
+					
 		if len(kinetics) == 0: return None
 
 		return kinetics

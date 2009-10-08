@@ -102,9 +102,9 @@ class ArrheniusKinetics(Kinetics):
 	`n`        The temperature exponent
 	`Ea`       The activation energy in J/mol
 	=========  ===========================================================
-
+	
 	"""
-
+	
 	def __init__(self, A=0.0, Ea=0.0, n=0.0):
 		"""If calling without keyword arguments be careful of the order!"""
 		# in fact, should (can?) we enforce keyword calling?
@@ -112,27 +112,27 @@ class ArrheniusKinetics(Kinetics):
 		self.A = A
 		self.Ea = Ea
 		self.n = n
-
+	
 	def __str__(self):
 		return 'k(T) = %s * T ** %s * math.exp(-%s / constants.R / T)\t%s < T < %s' % (self.A, self.n, self.Ea, self.Trange[0], self.Trange[1])
-
+	
 	def __repr__(self):
 		"""How it looks on the console"""
 		return '<ArrheniusKinetics A=%.0e E=%.0fkJ/mol n=%.1f >'%(self.A,
 			self.Ea/1000.0, self.n )
-
+	
 	def getRateConstant(self, T):
 		"""
 		Return the rate constant k(T) at temperature `T` by evaluating the
 		Arrhenius expression.
 		"""
-
+		
 		# Raise exception if T is outside of valid temperature range
 		#if not self.isTemperatureInRange(T):
 		#	raise Exception('Attempted to evaluate a rate constant at an invalid temperature.')
-
+		
 		return self.A * (T ** self.n) * math.exp(-self.Ea / constants.R / T)
-
+	
 	def getReverse(self, dHrxn, Keq, T):
 		"""
 		Generate the reverse of the current kinetics for a reaction with
@@ -140,14 +140,14 @@ class ArrheniusKinetics(Kinetics):
 		298 K, respectively, defined in the same direction that these kinetics
 		are.
 		"""
-
+		
 		kinetics = ArrheniusKinetics(self.A / Keq * math.exp(-dHrxn / constants.R / T), self.Ea - dHrxn, self.n)
 		kinetics.Trange = self.Trange
 		kinetics.rank = self.rank
 		kinetics.comment = self.comment
-
+		
 		return kinetics
-
+	
 	def toXML(self, dom, root, numReactants):
 		"""
 		Generate the XML for these kinetics using the :data:`xml.dom.minidom`
@@ -159,7 +159,7 @@ class ArrheniusKinetics(Kinetics):
 		kinetics.setAttribute('Trange', '%s-%s K' % (self.Trange[0], self.Trange[1]))
 		kinetics.setAttribute('rank', str(self.rank))
 		kinetics.setAttribute('comment', self.comment)
-
+		
 		preexponential = dom.createElement('preexponential')
 		kinetics.appendChild(preexponential)
 		preexponentialUnits = None
@@ -168,11 +168,11 @@ class ArrheniusKinetics(Kinetics):
 		else:
 			preexponentialUnits = 'm^%s/(mol^%s*s)' % ((numReactants-1)*3, numReactants-1)
 		data.createXMLQuantity(dom, preexponential, self.A, preexponentialUnits)
-
+		
 		exponent = dom.createElement('exponent')
 		kinetics.appendChild(exponent)
 		data.createXMLQuantity(dom, exponent, self.n, '')
-
+		
 		activationEnergy = dom.createElement('activationEnergy')
 		kinetics.appendChild(activationEnergy)
 		data.createXMLQuantity(dom, activationEnergy, self.Ea, 'J/mol')
@@ -227,14 +227,13 @@ class ArrheniusEPKinetics(Kinetics):
 		Return the Arrhenius form of k(T) at temperature `T` by correcting E0
 		to Ea using the enthalpy of reaction `dHrxn`.
 		"""
-
+		
 		Ea = self.getActivationEnergy(dHrxn)
-
+		
 		kinetics = ArrheniusKinetics(self.A, Ea, self.n)
 		kinetics.Trange = self.Trange
 		kinetics.rank = self.rank
-		kinetics.comment = self.comment
-
+		kinetics.comment = self.comment + 'Used dHrxn=%.0fkJ/mol to evaluate Ea.'%(dHrxn/1000.0)
 		return kinetics
 
 	def getRateConstant(self, T, dHrxn):
@@ -249,18 +248,21 @@ class ArrheniusEPKinetics(Kinetics):
 
 		Ea = self.getActivationEnergy(dHrxn)
 
-		return self.A * T ** self.n * math.exp(-Ea / constants.R / T)
+		return self.A * (T ** self.n) * math.exp(-Ea / constants.R / T)
 
 	def fromDatabase(self, data, comment, numReactants):
 		"""
 		Process a list of numbers `data` and associated description `comment`
 		generated while reading from a kinetics database. The `numReactants`
 		parameter is used to interpret the units of the preexponential.
+		
+		Database units for A are assumed to be :math:`(cm^3/mol)^{(n-1)}/s`  where :math:`n` is `numReactants`
+		Database units for E0 are kcal/mol.
 		"""
-
+		
 		if len(data) != 11:
-			raise Exception('Invalid list of kinetic data; should be a list of numbers of length 11.')
-
+			raise Exception('Invalid list of kinetic data. Should be a list of numbers of length 11; instead got %s'%data)
+		
 		Tmin, Tmax, A, n, alpha, E0, dA, dn, dalpha, dE0, rank = data
 
 		originalUnits = 's^-1'; desiredUnits = 's^-1'

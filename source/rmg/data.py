@@ -426,21 +426,24 @@ class Library(dict):
 	def hashLabels(self, labels):
 		"""
 		Convert a list of string `labels` to a list of single strings that
-		represent permutations of the individual strings in the `labels` list.
+		represent permutations of the individual strings in the `labels` list::
+		
+			>>> hashLabels(['a','b'])
+			['a;b', 'b;a']
 		"""
 		names = []
 		if len(labels) == 1:
 			names.append(labels[0])
 		elif len(labels) == 2:
 			names.append(labels[0] + ';' + labels[1])
-			names.append(labels[1] + ';' + labels[0])
+		#	names.append(labels[1] + ';' + labels[0])
 		elif len(labels) == 3:
 			names.append(labels[0] + ';' + labels[1] + ';' + labels[2])
-			names.append(labels[0] + ';' + labels[2] + ';' + labels[1])
-			names.append(labels[1] + ';' + labels[0] + ';' + labels[2])
-			names.append(labels[1] + ';' + labels[2] + ';' + labels[0])
-			names.append(labels[2] + ';' + labels[0] + ';' + labels[1])
-			names.append(labels[2] + ';' + labels[1] + ';' + labels[0])
+		#	names.append(labels[0] + ';' + labels[2] + ';' + labels[1])
+		#	names.append(labels[1] + ';' + labels[0] + ';' + labels[2])
+		#	names.append(labels[1] + ';' + labels[2] + ';' + labels[0])
+		#	names.append(labels[2] + ';' + labels[0] + ';' + labels[1])
+		#	names.append(labels[2] + ';' + labels[1] + ';' + labels[0])
 		return names
 	
 	def getData(self, key):
@@ -448,14 +451,12 @@ class Library(dict):
 		Return the data in the library associated with the label or list of
 		labels denoted by `key`.
 		"""
-
 		if key.__class__ == str or key.__class__ == unicode:
 			if key in self: return self[key]
 		else:
 			names = self.hashLabels(key)
 			for name in names:
 				if name in self: return self[name]
-
 		return None
 	
 	def load(self, path):
@@ -482,32 +483,38 @@ class Library(dict):
 	def parse(self, lines, numLabels=1):
 		"""
 		Parse an RMG database library located at `path`.
+		It splits lines on whitespace then treats tokens as::
+		
+			<ignored> <label1> ... <labelN> <data1>  <data2> ...
+		
+		`numLabels` determines how  many labels are assumed.
+		All the data are concatenated to a string with single spaces between items.
 		"""
 		
 		# Process the library
 		try:
-		
 			for line in lines:
 				info = line.split()
-
+				
 				# Skip if the number of items on the line is invalid
 				if len(info) < 2:
 					continue
-
+				
 				# Extract label(s)
 				labels = []
 				for i in range(0, numLabels):
 					labels.append(info[i+1])
-
+				
 				data = ''
 				for i in range(numLabels+1, len(info)):
 					data += info[i] + ' '
-
+				
 				self.add(labels, data)
 					
 		except InvalidDatabaseException, e:
 			logging.exception(str(e))
-			print dictstr, treestr, libstr
+			for s in (dictstr, treestr, libstr):
+				logging.exception(s)
 			quit()
 		
 	def removeLinks(self):
@@ -518,13 +525,12 @@ class Library(dict):
 		"""
 		
 		for label, data in self.iteritems():
-		
 			dataLabel = ''
 			while data.__class__ == str or data.__class__ == unicode:
 				if data not in self:
-					raise InvalidDatabaseException('Node references parameters from a node that is not in the library.')
+					raise InvalidDatabaseException('Node %s references parameters from a node %s that is not in the library.'%(label,data))
 				if dataLabel == data:
-					raise InvalidDatabaseException('Node references parameters from itself.')
+					raise InvalidDatabaseException('Node %s references parameters from itself.'%label )
 				dataLabel = data; data = self[dataLabel]
 			
 			self[label] = data
@@ -749,7 +755,7 @@ def removeCommentFromLine(line):
 	"""
 	Remove a C++/Java style comment from a line of text.
 	"""
-
+	
 	index = line.find('//')
 	if index >= 0:
 		line = line[0:index]
