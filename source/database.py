@@ -104,9 +104,134 @@ def drawKineticsTrees():
 			graph.write(filename,format=format,prog=prog)
 			
 		print 'Created DOT for reaction family %s' % (key)
+	
+################################################################################
+		
+def write_xml(family_names = None):
+	"""Writes the library to xml files
+	"""
+	import os
+	import xml.dom.minidom
+	
+	# Create document
+	dom = xml.dom.minidom.Document()
+
+	# Process root element
+	root = dom.createElement('rmgoutput')
+	dom.appendChild(root)
+	
+	
+	if not family_names: 
+		family_names = reaction.kineticsDatabase.families.keys()
+		
+	for family_name in family_names:
+		family = reaction.kineticsDatabase.families[family_name]
+		print 
+		if not family.library:
+			logging.debug("Family '%s' has no data in the library."%family_name)
+			if family.reverse.library:
+				logging.debug("(but its reverse '%s' does)"%family.reverse.label)
+			continue
+		
+		logging.info("Writing xml for reaction family: %s (%s)"%(family_name,
+			os.path.basename(os.path.abspath(family._path))) )
+			
 		
 		
-###################
+		family.library.toXML(dom,root)
+		print dom.toprettyxml()
+
+################################################################################
+
+def pruneKineticsTrees():
+
+	# Prune kinetics dictionaries and trees
+	for key, family in reaction.kineticsDatabase.families.iteritems():
+		forwardTemplate, reverseTemplate = family.getTemplateLists()
+		family.prune(forwardTemplate)
+
+		# Print dictionary
+		print '/////////////////////////////////////////////////////////////////////////////////'
+		print '//'
+		print '// Structure dictionary for %s' % family.label
+		print '//'
+		print '/////////////////////////////////////////////////////////////////////////////////'
+		print ''
+		for label, struct in family.dictionary.iteritems():
+			if struct.__class__ == str:
+				union = label + '\nUnion {' + ','.join(family.tree.children[label]) + '}\n'
+				print union
+			else:
+				print struct.toAdjacencyList(label)
+
+		# Print tree
+		print '/////////////////////////////////////////////////////////////////////////////////'
+		print '//'
+		print '// Structure tree for %s' % family.label
+		print '//'
+		print '/////////////////////////////////////////////////////////////////////////////////'
+		print ''
+		print family.tree.write(family.tree.top)
+
+################################################################################
+
+def findCatchallNodes():
+
+	import rmg.structure as structure
+
+	families = { 'group': thermo.thermoDatabase.groupDatabase, \
+				 'radical': thermo.thermoDatabase.radicalDatabase, \
+				 '1,5-interations': thermo.thermoDatabase.int15Database, \
+				 'gauche': thermo.thermoDatabase.gaucheDatabase, \
+				 'ring': thermo.thermoDatabase.ringDatabase, \
+				 'other': thermo.thermoDatabase.otherDatabase }
+
+	#families = reaction.kineticsDatabase.families
+
+
+	for key, family in families.iteritems():
+		for parent, children in family.tree.children.iteritems():
+			for child in children:
+				try:
+					print family.library[parent], family.library[child]
+					if family.library[parent] == family.library[child]:
+						print key, parent, child
+				except KeyError:
+					pass
+#				struct1 = family.dictionary[parent]
+#				struct2 = family.dictionary[child]
+#				if isinstance(struct1, structure.Structure) and isinstance(struct2, structure.Structure):
+#
+#					struct1.updateAtomTypes()
+#					struct2.updateAtomTypes()
+#
+#					match = True
+#					if len(struct1.atoms()) != len(struct2.atoms()):
+#						match = False
+#					else:
+#						for i in range(len(struct1.atoms())):
+#							if struct1.atoms()[i].atomType != struct2.atoms()[i].atomType or \
+#								struct1.atoms()[i].electronState != struct2.atoms()[i].electronState:
+#								match = False
+
+#					labeled1 = struct1.getLabeledAtoms().values()[0]
+#					labeled2 = struct2.getLabeledAtoms().values()[0]
+#					map21 = {labeled2: labeled1}
+#					map12 = {labeled1: labeled2}
+#					match, map21List, map12List = struct1.findSubgraphIsomorphisms(struct2, map12, map21)
+#					match = False
+#					for map in map21List:
+#						found = True
+#						for k, v in map.iteritems():
+#							if k.atomType != v.atomType: found = False
+#						if found: match = True
+#
+#					if match:
+#						print key, parent, child
+	print ''
+			
+################################################################################
+
 def fit_groups(family_names = None):
 	"""Decouples a nested tree and fits values to groups for each seperate tree.
 	   If given a list of family names, only does those families.
@@ -279,129 +404,6 @@ def fit_groups(family_names = None):
 	#	graph = family.drawFullGraphOfTree()
 	#	return graph
 
-def write_xml(family_names = None):
-	"""Writes the library to xml files
-	"""
-	import os
-	import xml.dom.minidom
-	
-	# Create document
-	dom = xml.dom.minidom.Document()
-
-	# Process root element
-	root = dom.createElement('rmgoutput')
-	dom.appendChild(root)
-	
-	
-	if not family_names: 
-		family_names = reaction.kineticsDatabase.families.keys()
-		
-	for family_name in family_names:
-		family = reaction.kineticsDatabase.families[family_name]
-		print 
-		if not family.library:
-			logging.debug("Family '%s' has no data in the library."%family_name)
-			if family.reverse.library:
-				logging.debug("(but its reverse '%s' does)"%family.reverse.label)
-			continue
-		
-		logging.info("Writing xml for reaction family: %s (%s)"%(family_name,
-			os.path.basename(os.path.abspath(family._path))) )
-			
-		
-		
-		family.library.toXML(dom,root)
-		print dom.toprettyxml()
-
-################################################################################
-
-def pruneKineticsTrees():
-
-	# Prune kinetics dictionaries and trees
-	for key, family in reaction.kineticsDatabase.families.iteritems():
-		forwardTemplate, reverseTemplate = family.getTemplateLists()
-		family.prune(forwardTemplate)
-
-		# Print dictionary
-		print '/////////////////////////////////////////////////////////////////////////////////'
-		print '//'
-		print '// Structure dictionary for %s' % family.label
-		print '//'
-		print '/////////////////////////////////////////////////////////////////////////////////'
-		print ''
-		for label, struct in family.dictionary.iteritems():
-			if struct.__class__ == str:
-				union = label + '\nUnion {' + ','.join(family.tree.children[label]) + '}\n'
-				print union
-			else:
-				print struct.toAdjacencyList(label)
-
-		# Print tree
-		print '/////////////////////////////////////////////////////////////////////////////////'
-		print '//'
-		print '// Structure tree for %s' % family.label
-		print '//'
-		print '/////////////////////////////////////////////////////////////////////////////////'
-		print ''
-		print family.tree.write(family.tree.top)
-
-################################################################################
-
-def findCatchallNodes():
-
-	import rmg.structure as structure
-
-	families = { 'group': thermo.thermoDatabase.groupDatabase, \
-				 'radical': thermo.thermoDatabase.radicalDatabase, \
-				 '1,5-interations': thermo.thermoDatabase.int15Database, \
-				 'gauche': thermo.thermoDatabase.gaucheDatabase, \
-				 'ring': thermo.thermoDatabase.ringDatabase, \
-				 'other': thermo.thermoDatabase.otherDatabase }
-
-	#families = reaction.kineticsDatabase.families
-
-
-	for key, family in families.iteritems():
-		for parent, children in family.tree.children.iteritems():
-			for child in children:
-				try:
-					print family.library[parent], family.library[child]
-					if family.library[parent] == family.library[child]:
-						print key, parent, child
-				except KeyError:
-					pass
-#				struct1 = family.dictionary[parent]
-#				struct2 = family.dictionary[child]
-#				if isinstance(struct1, structure.Structure) and isinstance(struct2, structure.Structure):
-#
-#					struct1.updateAtomTypes()
-#					struct2.updateAtomTypes()
-#
-#					match = True
-#					if len(struct1.atoms()) != len(struct2.atoms()):
-#						match = False
-#					else:
-#						for i in range(len(struct1.atoms())):
-#							if struct1.atoms()[i].atomType != struct2.atoms()[i].atomType or \
-#								struct1.atoms()[i].electronState != struct2.atoms()[i].electronState:
-#								match = False
-
-#					labeled1 = struct1.getLabeledAtoms().values()[0]
-#					labeled2 = struct2.getLabeledAtoms().values()[0]
-#					map21 = {labeled2: labeled1}
-#					map12 = {labeled1: labeled2}
-#					match, map21List, map12List = struct1.findSubgraphIsomorphisms(struct2, map12, map21)
-#					match = False
-#					for map in map21List:
-#						found = True
-#						for k, v in map.iteritems():
-#							if k.atomType != v.atomType: found = False
-#						if found: match = True
-#
-#					if match:
-#						print key, parent, child
-	print ''
-
 ################################################################################
 
 def saveDOTAndImage(graph, root, format='svg', prog='dot'):
@@ -516,8 +518,6 @@ def drawAllTrees(root):
 #		graph.write(filename,format=format,prog=prog)
 #
 #	quit()
-
-
 
 
 ################################################################################
