@@ -281,6 +281,21 @@ def fit_groups(family_names = None):
 		A_list = []
 		b_list = []
 		# Get available data
+		
+		to_delete=[]
+		for key, kinetics in family.library.iteritems():
+			if kinetics.alpha:
+				logging.warning("Warning: %s %s has EP alpha = %g"%(kinetics.index, kinetics.label, kinetics.alpha))
+				to_delete.append(key)
+				
+			if re.search('O2b',kinetics.label): 
+				logging.warning("Removing %s %s because I don't like O2b"%(kinetics.index, kinetics.label))
+				to_delete.append(key)
+		for key in to_delete:
+			del family.library[key]
+			logging.warning("Deleting %s from kinetics library!"%key)
+				
+				
 		for key, kinetics in family.library.iteritems():
 			nodes = key.split(';')
 			# example:
@@ -294,6 +309,7 @@ def fit_groups(family_names = None):
 				logging.warning("Warning: %s has EP alpha = %g"%(nodes,kinetics.alpha))
 			
 			Hrxn=0
+			
 			b_row = [ math.log10(kinetics.getRateConstant(T,Hrxn)) for T in Ts ]
 				
 			all_ancestors=list()
@@ -389,14 +405,14 @@ def fit_groups(family_names = None):
 		rates.sort(cmp=lambda x,y: cmp(x.RMS_error, y.RMS_error))
 		print "Rate expressions sorted by how well they are predicted by their group combinations"
 		for k in rates:
-			print "%s\tRMS error: %.2f  Rates: %s"%(k.key, k.RMS_error, rates_string(k) )
+			print "%-5s %-30s\tRMS error: %.2f  Rates: %s  %.30s"%(k.index, k.key, k.RMS_error, rates_string(k), k.comment )
 			
 		def print_node_tree(node,indent=0):
 			print (' '*indent +
 					node.ljust(17-indent) + 
 					("\t%7.2g"*len(group_values[node])) % group_values[node]  +
 					"\t%6.2g\t%d"%(group_error[node],group_count[node]) + 
-					("\t%7.3g"*len(group_error_MAD_by_T[node])) % group_error_MAD_by_T[node]
+					("\t%7.3g"*len(group_error_MAD_by_T[node])) % group_error_MAD_by_T[node] 
 				)
 			children = family.tree.children[node]
 			if children:
@@ -430,12 +446,27 @@ def fit_groups(family_names = None):
 			ydata = thisline.get_ydata()
 			for ind in event.ind:
 				group_name = group_names[ind]
-				print "#%d Name: %s Rates:%d Node-Rates:%d \tRMS error: %g \t MAD errors: %s"%(ind, group_name, len(kinetics_used_in[group_name]) , xvals[ind],yvals[ind], group_error_MAD_by_T[group_names[ind]])
+				print "#%d Name: %s \tRates:%d \tNode-Rates:%d \tRMS error: %g"%(ind, group_name, len(kinetics_used_in[group_name]) , xvals[ind], yvals[ind])
+				print "MAD errors:"+("  %.2f"*len(Ts))%group_error_MAD_by_T[group_name]
 				print "Kinetics taken from:"
-				for k in kinetics_used_in[group_name]:
-					print "%s \t%s "%(k.key,repr(k))
-					print "RMS error: %.2f"%(k.RMS_error)
+				rates = kinetics_used_in[group_name]
+				rates.sort(cmp=lambda x,y: cmp(x.RMS_error, y.RMS_error))
+				for k in rates:
+					print "%s\tIndex:%s \t%s "%(k.key,k.index,repr(k))
+					print "RMS error: %.2f"%(k.RMS_error), 
 					print "Rates: ",rates_string(k)
+					for combo in k.used_in_combinations:
+						#print "A[%d,%d] ="%(combo,ind),A[combo,ind]
+						if not A[combo,ind]:
+							#print "Rate didn't use the node in question (presumably used an ancestor)"
+							continue
+						print "Using",
+						used_nodes = [ group_names[i] for i in A[combo,:].nonzero()[0] ]
+						used_nodes.remove(group_name)
+						print group_name + ' with ' + ' + '.join(used_nodes) + '\t',
+						rms = numpy.sqrt( errors_sum_squared[combo] / len(Ts) )
+						print "RMSE: %.2f  Err(T):"%(rms), errors[combo]
+					print 
 				#print 'check %g:'%ind, zip(xdata[ind], ydata[ind])
 				
 		connection_id = fig.canvas.mpl_connect('pick_event', onpick)
