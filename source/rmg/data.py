@@ -87,7 +87,7 @@ class TemperatureOutOfRangeException(Exception):
 class Dictionary(dict):
 	"""
 	An RMG dictionary class, extended from the Python dictionary class to
-	include	functions for loading the dictionary from a file. The keys of the
+	include functions for loading the dictionary from a file. The keys of the
 	dictionary are strings that represent unique identifiers, while the
 	corresponding values are either :class:`chem.Structure` objects representing
 	a chemical structure or the string 'union' to indicate that the structure
@@ -106,7 +106,6 @@ class Dictionary(dict):
 		
 		# Process the dictionary
 		try:
-			
 			fdict = open(path, 'r')
 			for line in fdict:
 				
@@ -403,18 +402,20 @@ class Library(dict):
 	to be able to handle an array of string labels.
 	"""
 	
-	def add(self, labels, data):
+	def add(self, index, labels, data):
 		"""
 		Add an item of `data` to the library based on the value of the list
 		of `labels`. Only add and return True if there is not preexisting data 
 		with those labels, else return False.
 		"""
 		if self.getData(labels) is not None:
-			logging.warning("There was already something labelled %s in the database. Ignoring %s"%(labels,data))
+			logging.warning("There was already something labelled %s in the database. Ignoring '%s' (%s)"%(labels,index, data))
 			return False
 		names = self.hashLabels(labels)
+		
 		for name in names:
-			self[name] = data
+			self[name] = (index, data )
+
 		return True
 		
 	def remove(self, labels):
@@ -486,12 +487,13 @@ class Library(dict):
 	def parse(self, lines, numLabels=1):
 		"""
 		Parse an RMG database library located at `path`.
+		
 		It splits lines on whitespace then treats tokens as::
 		
-			<ignored> <label1> ... <labelN> <data1>  <data2> ...
+			<index> <label1> ... <labelN> <data1>  <data2> ...
 		
 		`numLabels` determines how  many labels are assumed.
-		All the data are concatenated to a string with single spaces between items.
+		All the data are concatenated to a single string with single spaces between items.
 		"""
 		
 		# Process the library
@@ -512,7 +514,9 @@ class Library(dict):
 				for i in range(numLabels+1, len(info)):
 					data += info[i] + ' '
 				
-				self.add(labels, data)
+				index = info[0]
+				
+				self.add(index, labels, data)
 					
 		except InvalidDatabaseException, e:
 			logging.exception(str(e))

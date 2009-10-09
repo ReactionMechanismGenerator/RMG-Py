@@ -90,12 +90,13 @@ class ThermoGAData(ThermoData):
 	CpTlist = [float(T) for T in CpTlist]
 	# refer to it as ThermoGAData.CpTlist, even when calling it from methods within this Class.
 
-	def __init__(self, H298=0.0, S298=0.0, Cp=None, comment=''):
+	def __init__(self, H298=0.0, S298=0.0, Cp=None, comment='', index=''):
 		"""Initialize a set of group additivity thermodynamic data."""
 		ThermoData.__init__(self, Trange=(298.0, 2500.0), comment=comment)
 		self.H298 = H298
 		self.S298 = S298
 		self.Cp = Cp or [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+		self.index = index
 		self.__cache_T=None
 		self.__cache = dict()
 
@@ -112,10 +113,11 @@ class ThermoGAData(ThermoData):
 		if self.comment == '': new.comment = other.comment
 		elif other.comment == '': new.comment = self.comment
 		else: new.comment = self.comment + '+ ' + other.comment
+		new.index = self.index + '+' + other.index
 		return new
 	
 	def __repr__(self):
-		string = 'ThermoGAData(H298=%s, S298=%s, Cp=%s)'%(self.H298,self.S298,self.Cp)
+		string = 'ThermoGAData(H298=%s, S298=%s, Cp=%s, index="%s")'%(self.H298,self.S298,self.Cp,self.index)
 		return string
 
 	def __str__(self):
@@ -129,7 +131,7 @@ class ThermoGAData(ThermoData):
 		for T, Cp in zip(ThermoGAData.CpTlist, self.Cp):
 			string += '%s(%sK) ' % (Cp,T)
 		string += '\n'
-		string += 'Comment: %s' % (self.comment)
+		string += 'Index: %s\tComment: %s' % (self.index, self.comment)
 		return string
 
 	def getHeatCapacity(self, T):
@@ -246,6 +248,7 @@ class ThermoGAData(ThermoData):
 		"""
 
 		thermo = dom.createElement('thermodynamics')
+		thermo.setAttribute('index', self.index)
 		thermo.setAttribute('comment', self.comment)
 		root.appendChild(thermo)
 
@@ -439,7 +442,15 @@ class ThermoDatabase(data.Database):
 	"""
 
 	def __init__(self):
+		"""Call the generic `data.Database.__init__()` method.
+		
+		This in turn creates
+			* self.dictionary = Dictionary()
+			* self.library = Library()
+			* self.tree = Tree()
+		"""
 		data.Database.__init__(self)
+		
 
 	def load(self, dictstr, treestr, libstr):
 		"""
@@ -458,7 +469,15 @@ class ThermoDatabase(data.Database):
 
 			if item is None:
 				pass
-			elif item.__class__ == str or item.__class__ == unicode:
+			elif not item.__class__ is tuple:
+				raise data.InvalidDatabaseException('Kinetics library should be tuple at this point. Instead got %r'%data) 
+			else: 
+				index,item = item # break apart tuple, recover the 'index' - the beginning of the line in the library file.
+				# Is't it dangerous having a local variable with the same name as a module?
+				# what if we want to raise another data.InvalidDatabaseException() ?
+				if not ( item.__class__ is str or item.__class__ is unicode) :
+					raise data.InvalidDatabaseException('Kinetics library data format is unrecognized.')
+				
 				items = item.split()
 				try:
 					thermoData = []; comment = ''
@@ -468,9 +487,10 @@ class ThermoDatabase(data.Database):
 					# Remaining entries are comment
 					for i in range(12, len(items)):
 						comment += items[i] + ' '
-
+					
 					thermoGAData = ThermoGAData()
 					thermoGAData.fromDatabase(thermoData, comment)
+					thermoGAData.index = index
 					self.library[label] = thermoGAData
 				except (ValueError, IndexError), e:
 					# Split data into link string and comment string; store
@@ -478,10 +498,7 @@ class ThermoDatabase(data.Database):
 					link = items[0]
 					comment = item[len(link)+1:].strip()
 					self.library[label] = [link, comment]
-
-			else:
-				raise data.InvalidDatabaseException('Thermo library data format is unrecognized.')
-
+		
 		# Check for well-formedness
 		if not self.isWellFormed():
 			raise data.InvalidDatabaseException('Database at "%s" is not well-formed.' % (dictstr))

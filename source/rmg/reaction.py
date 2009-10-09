@@ -546,6 +546,10 @@ class ReactionFamily(data.Database):
 
 	def __init__(self, label='', template='', recipe=None):
 		data.Database.__init__(self)
+		# calling  data.Database.__init__(self) sets:
+		# 	self.dictionary = Dictionary()
+		# 	self.library = Library()
+		# 	self.tree = Tree()
 		self.label = label
 		self.template = template
 		self.recipe = recipe
@@ -553,7 +557,6 @@ class ReactionFamily(data.Database):
 		self.reverse = None
 		
 	def __str__(self):
-		# append the path folder name to the reaction family label, and to the reverse
 		return '<ReactionFamily(%s) from %s>'%(self.label,os.path.basename(self._path))
 	
 	def __str__(self):
@@ -602,6 +605,7 @@ class ReactionFamily(data.Database):
 
 		# Load the dictionary, tree, and library using the generic methods
 		data.Database.load(self, dictstr, treestr, '')
+		#
 
 		# Load the forbidden groups if necessary
 		if os.path.exists(forbstr):
@@ -981,10 +985,19 @@ class ReactionFamily(data.Database):
 		loading a database from files.
 		"""
 		
-		for label, data in self.library.iteritems():
-			if data is None:
+		for label, item in self.library.iteritems():
+			
+			if item is None:
 				pass
-			elif data.__class__ == str or data.__class__ == unicode:
+			elif not item.__class__ is tuple:
+				raise data.InvalidDatabaseException('Kinetics library should be tuple at this point. Instead got %r'%data) 
+			else: 
+				index,data = item # break apart tuple, recover the 'index' - the beginning of the line in the library file.
+				# Is't it dangerous having a local variable with the same name as a module?
+				# what if we want to raise another data.InvalidDatabaseException() ?
+				if not ( data.__class__ is str or data.__class__ is unicode) :
+					raise data.InvalidDatabaseException('Kinetics library data format is unrecognized.')
+				
 				items = data.split()
 				try:
 					kineticData = [];
@@ -1014,18 +1027,17 @@ class ReactionFamily(data.Database):
 					kinetics.fromDatabase(kineticData, comment, len(self.template.reactants))
 					kinetics.family = self
 					kinetics.label = label
+					kinetics.index = index
 					#kinetics.comment = self.label + ' ' + label + ' ' + kinetics.comment
 					self.library[label] = kinetics
-
+					
 				except (ValueError, IndexError), e:
 					# Split data into link string and comment string; store
 					# as list of length 2
 					link = items[0]
 					comment = data[len(link)+1:].strip()
 					self.library[label] = [link, comment]
-			else:
-				raise data.InvalidDatabaseException('Kinetics library data format is unrecognized.')
-
+					
 	def loadTemplate(self, path):
 		"""
 		Load and process a reaction template file located at `path`. This file
