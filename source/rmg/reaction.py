@@ -1125,30 +1125,6 @@ class ReactionFamily(data.Database):
 
 			self.recipe.addAction(action)
 
-#		# Generate the product structures by applying the reaction template to
-#		# the top-level nodes (A1 and B1 above)
-#		# First, merge reactant structures into single structure
-#		reactantStructure = structure.Structure()
-#		for reactant in self.template.reactants:
-#			if isinstance(reactant, list):
-#				s = self.dictionary[reactant[0]]
-#			elif isinstance(reactant, str):
-#				s = self.dictionary[reactant]
-#			else:
-#				raise data.InvalidDatabaseException('Expected list or str in reaction family template for reactants; got %s.' % (reactant.__class__))
-#			struct = struct.merge(s)
-#		# Next, generate the (combined) product structure
-#		if not self.recipe.applyForward(reactantStructure):
-#			return None
-#		# Next, restore the (combined) reactant structure
-#		productStructure = reactantStructure.copy()
-#		self.recipe.applyReverse(reactantStructure)
-#		# Now, split the product structure into multiple structures
-#		if len(self.template.products) > 1:
-#			productStructures = productStructure.split()
-#		else:
-#			productStructures = [productStructure]
-
 		# Generate the reverse template
 		if reverse != self.label:
 			template = Reaction(self.template.products, self.template.reactants)
@@ -1158,6 +1134,22 @@ class ReactionFamily(data.Database):
 			self.reverse.library = data.Library()
 			self.reverse.forbidden = self.forbidden
 			self.reverse.reverse = self
+
+		# Generate the product structures by applying the reaction template to
+		# the top-level nodes (A1 and B1 above)
+		# First, merge reactant structures into single structure
+		reactantStructures = []
+		for reactant in self.template.reactants:
+			s = reactant[0] if isinstance(reactant, list) else reactant
+			if self.dictionary[s] == 'union':
+				print 'Cannot handle unions yet'
+				return
+			reactantStructures.append(self.dictionary[s])
+		# Next, generate the product structures
+		productStructures = self.applyRecipe(reactantStructures)
+		for productStructure in productStructures:
+			print productStructure.toAdjacencyList()
+
 
 	def reactantMatch(self, reactant, templateReactant):
 		"""
