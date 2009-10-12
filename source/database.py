@@ -288,9 +288,10 @@ def fit_groups(family_names = None):
 				logging.warning("Warning: %s %s has EP alpha = %g"%(kinetics.index, kinetics.label, kinetics.alpha))
 				to_delete.append(key)
 				
-			if re.search('O2b',kinetics.label): 
-				logging.warning("Removing %s %s because I don't like O2b"%(kinetics.index, kinetics.label))
-				to_delete.append(key)
+			#if re.search('O2b',kinetics.label): 
+			#	logging.warning("Removing %s %s because I don't like O2b"%(kinetics.index, kinetics.label))
+			#	to_delete.append(key)
+			#	
 		for key in to_delete:
 			del family.library[key]
 			logging.warning("Deleting %s from kinetics library!"%key)
@@ -404,9 +405,23 @@ def fit_groups(family_names = None):
 		rates = family.library.values()
 		rates.sort(cmp=lambda x,y: cmp(x.RMS_error, y.RMS_error))
 		print "Rate expressions sorted by how well they are predicted by their group combinations"
+		
+		rates_1000 = []
+		rates_err = []
 		for k in rates:
 			print "%-5s %-30s\tRMS error: %.2f  Rates: %s  %.30s"%(k.index, k.key, k.RMS_error, rates_string(k), k.comment )
-			
+			rates_1000.append( math.log10(k.getRateConstant(1000,Hrxn)) )
+			rates_err.append( k.RMS_error )  # [Ts.index(T)]
+		rates_1000 = numpy.array(rates_1000)
+		rates_err = numpy.array(rates_err)
+		
+		fig_number = family_names.index(family_name)
+		fig1 = pylab.figure( fig_number )
+		pylab.plot(rates_1000, rates_err, 'o')
+		pylab.xlabel('log10(k) at 1000K')
+		pylab.ylabel('RMSE')
+		pylab.show()
+		
 		def print_node_tree(node,indent=0):
 			print (' '*indent +
 					node.ljust(17-indent) + 
@@ -432,8 +447,7 @@ def fit_groups(family_names = None):
 		print
 		
 		
-		fig_number = family_names.index(family_name)
-		fig = pylab.figure( fig_number )
+		fig = pylab.figure( 100 + fig_number )
 		
 		xvals = numpy.array([ group_count[group] for group in group_names ])
 		yvals = numpy.array([ group_error[group] for group in group_names ])
