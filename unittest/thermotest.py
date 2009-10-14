@@ -218,6 +218,43 @@ class ThermoEstimationCheck(unittest.TestCase):
 
 ################################################################################
 
+
+class ThermoGAtoNASACheck(unittest.TestCase):                          
+	"""Test all the """
+	def testNASAcreated(self):
+		"""Test that we make NASA polynomial data"""
+		GAthermoData = thermo.ThermoGAData(0, 0, [10, 20, 30, 40, 60, 80, 130.0])
+		NASAthermoData = thermo.convertGAtoNASA(GAthermoData)
+		# well, if we didn't cause an error, I guess that's good enough for now.
+
+	def testHeatCapacity(self):
+		"""Test that the NASA Cp matches the GA Cp
+		
+		A test of the method of calculating heat capacity from heat capacity data.
+		The Cp data is selected to follow the formula
+		
+		.. math:: C_p(T) = 0.1 T - 20 \hspace{20pt} 300 < T < 1500
+		
+		The implementation specified Cp values at 300, 400, 500, 600, 800, 1000,
+		and 1500 K and interpolated when necessary. Above 1500 K the Cp value is
+		assumed to be equal to Cp(1500 K).
+		"""
+		
+		# Heat capacity: 
+		#		Cp = 0.1 * T - 20.0		300.0 < T < 1500.0
+		#		Cp = 130.0				T > 1500.0
+		GAthermoData = thermo.ThermoGAData(0, 0, [10, 20, 30, 40, 60, 80, 130.0])
+		NASAthermoData = thermo.convertGAtoNASA(GAthermoData)
+		
+		Tlist = [T for T in range(300, 2000, 10)]
+		for T in Tlist:
+			self.assertAlmostEqual(GAthermoData.getHeatCapacity(T), NASAthermoData.getHeatCapacity(T), 4)
+		
+		
+################################################################################
+
+		
+		
 # Run this only if being run independently
 if __name__ == '__main__':	
 	# Show debug messages (as databases are loading)

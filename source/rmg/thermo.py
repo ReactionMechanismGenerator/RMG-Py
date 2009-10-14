@@ -175,7 +175,7 @@ class ThermoGAData(ThermoData):
 			H += self.Cp[-1] * (T - ThermoGAData.CpTlist[-1])
 		self.__cache['H'] = H
 		return H
-
+	
 	def getEntropy(self, T):
 		"""
 		Return the entropy in J/mol*K at temperature `T` in K.
@@ -203,7 +203,7 @@ class ThermoGAData(ThermoData):
 			S += self.Cp[-1] * math.log(T / ThermoGAData.CpTlist[-1])
 		self.__cache['S'] = S
 		return S
-
+	
 	def getFreeEnergy(self, T):
 		"""
 		Return the Gibbs free energy in J/mol at temperature `T` in K.
@@ -220,16 +220,16 @@ class ThermoGAData(ThermoData):
 		G = self.getEnthalpy(T) - T * self.getEntropy(T)
 		self.__cache['G'] = G
 		return G
-
+	
 	def fromDatabase(self, data, comment):
 		"""
 		Process a list of numbers `data` and associated description `comment`
 		generated while reading from a thermodynamic database.
 		"""
-
+		
 		if len(data) != 12:
 			raise Exception('Invalid list of thermo data; should be a list of numbers of length 12.')
-
+		
 		H298, S298, Cp300, Cp400, Cp500, Cp600, Cp800, Cp1000, Cp1500, \
 			dH, dS, dCp = data
 
@@ -238,7 +238,7 @@ class ThermoGAData(ThermoData):
 		self.Cp = list(pq.Quantity([Cp300, Cp400, Cp500, Cp600, Cp800, Cp1000, Cp1500], 'cal/(mol*K)').simplified)
 		for i in range(len(self.Cp)): self.Cp[i] = float(self.Cp[i])
 		self.comment = comment
-
+	
 	def toXML(self, dom, root):
 		"""
 		Generate an XML representation of the thermodynamic data using the
@@ -246,28 +246,28 @@ class ThermoGAData(ThermoData):
 		represent the DOM and the element in the DOM used as the parent of
 		the generated XML.
 		"""
-
+		
 		thermo = dom.createElement('thermodynamics')
 		thermo.setAttribute('index', self.index)
 		thermo.setAttribute('comment', self.comment)
 		root.appendChild(thermo)
-
+		
 		enthalpy = dom.createElement('enthalpyOfFormation')
 		enthalpy.setAttribute('temperature', '298.0 K')
 		thermo.appendChild(enthalpy)
 		data.createXMLQuantity(dom, enthalpy, self.H298, 'J/mol')
-
+		
 		entropy = dom.createElement('entropyOfFormation')
 		entropy.setAttribute('temperature', '298.0 K')
 		thermo.appendChild(entropy)
 		data.createXMLQuantity(dom, entropy, self.S298, 'J/(mol*K)')
-
+		
 		for i, Cp in enumerate(self.Cp):
 			heatCapacity = dom.createElement('heatCapacity')
 			heatCapacity.setAttribute('temperature', '%s K' % (ThermoGAData.CpTlist[i]) )
 			thermo.appendChild(heatCapacity)
 			data.createXMLQuantity(dom, heatCapacity, Cp, 'J/(mol*K)')
-
+	
 ################################################################################
 
 class ThermoNASAPolynomial(ThermoData):
@@ -348,6 +348,7 @@ class ThermoNASAPolynomial(ThermoData):
 		return self.getEnthalpy(T) - T * self.getEntropy(T)
 
 	def toXML(self, dom, root):
+### prime-like:
 #   <polynomial>
 #      <validRange>
 #         <bound kind="lower" property="temperature" units="K">300.000</bound>
@@ -373,8 +374,8 @@ class ThermoNASAData(ThermoData):
 	contains the desired temperature within its valid range will be used.
 	"""
 
-	def __init__(self, polynomials=None, comment=''):
-		ThermoData.__init__(self, Trange=None, comment=comment)
+	def __init__(self, polynomials=None, comment='', Trange=None):
+		ThermoData.__init__(self, Trange=Trange, comment=comment)
 		self.polynomials = polynomials or []
 
 	def addPolynomial(self, polynomial):
@@ -393,6 +394,7 @@ class ThermoNASAData(ThermoData):
 		return "ThermoNASAData(%s, '%s')"%(repr(self.polynomials),self.comment)
 				
 	def toXML(self, dom, root):
+### prime-like: 
 # <thermodynamicPolynomials type="nasa7">
 #   <referenceState>
 #      <Tref units="K">298.15</Tref>
@@ -402,8 +404,6 @@ class ThermoNASAData(ThermoData):
 #   <polynomial> FROM NASA_polynomials </polynomial>
 # </thermodynamicPolynomials>
 		pass
-
-
 
 	def getHeatCapacity(self, T):
 		"""
@@ -433,6 +433,43 @@ class ThermoNASAData(ThermoData):
 		poly = self.selectPolynomialForTemperature(T)
 		return poly.getFreeEnergy(T)
 
+####
+
+def convertGAtoNASA(GAthermo):
+	"""Convert a Group Additivity thermo instance into a NASA polynomial thermo instance.
+	
+	Takes a `ThermoGAData` instance of themochemical data, and some extra information 
+	about the molecule used to calculate high- and low-temperature limits of Cp.
+	Returns a `ThermoNASAData` instance containing two `ThermoNASAPolynomial` 
+	polynomials
+	"""
+	
+	# Temperature ranges for resulting polynomials
+	T_low = 298.0
+	T_intermediate = 1000.0
+	T_high = 6000
+	
+	# get info from incoming group additivity thermo
+	H298 = GAthermo.H298
+	S298 = GAthermo.S298
+	Cp_list = GAthermo.Cp
+	T_list = ThermoGAData.CpTlist  # usually [300, 400, 500, 600, 800, 1000, 1500] but why assume?
+	
+	# do your clever manths here
+	
+	# output polynomial coefficients
+	coeffs_low = (0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
+	coeffs_high = (0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
+	
+	# output comment
+	comment = 'Fitted to GA data.'+GAthermo.comment
+		
+	# create ThermoNASAPolynomial instances
+	polynomial_low = ThermoNASAPolynomial( T_range=(T_low,T_intermediate), comment=comment, coeffs=coeffs_low)
+	polynomial_high = ThermoNASAPolynomial( T_range=(T_intermediate,T_high), comment=comment, coeffs=coeffs_high)
+	
+	NASAthermo = ThermoNASAData( Trange=(T_low,T_high), polynomials=[polynomial_low,polynomial_high], comment=comment)
+	return NASAthermo
 
 ################################################################################
 
