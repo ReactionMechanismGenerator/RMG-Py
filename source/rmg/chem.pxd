@@ -25,40 +25,71 @@
 #
 ################################################################################
 
-# these class definitions are required by graph.pyx
-#
+cdef class Element:
+
+	cdef public int number
+	cdef public str name
+	cdef public str symbol
+	cdef public float mass
+	cdef public list valence
+
+################################################################################
+
+cdef class AtomType:
+
+	cdef public str label
+	cdef public object element
+	cdef public str description
+
+	cpdef bint equivalent(AtomType self, AtomType other)
+
+################################################################################
+
+cdef class ElectronState:
+
+	cdef public str label
+	cdef public int order
+	cdef public list spin
+
+	cpdef bint equivalent(ElectronState self, ElectronState other)
+
+################################################################################
+
+cdef class BondType:
+
+	cdef public str label
+	cdef public str name
+	cdef public float order
+	cdef public int piElectrons
+	cdef public str location
+
+	cpdef bint equivalent(BondType self, BondType other)
+
+################################################################################
 
 cdef class Atom:
-	"""
-	Represent an atom in a chemical species or functional group. The `atomType`
-	and `electronState` attributes contain lists of the allowed atom types and
-	electron states, respectively, for this atom. The `charge` attribute stores
-	the resulting formal charge. The `label` attribute can be used to tag
-	individual atoms, e.g. center atoms or reactive sites in functional groups.
-	"""
-	# should only be declared public if access is needed from Python (not just C)
-	cdef  public list _atomType
-	cdef  public list _electronState
-	cdef  public int charge
-	cdef  public str label
-	cpdef bint equivalent(Atom, Atom)
+	
+	cdef public list _atomType
+	cdef public list _electronState
+	cdef public int charge
+	cdef public str label
+	
+	# for Extended Connectivity; as introduced by Morgan (1965)
+	# http://dx.doi.org/10.1021/c160017a018
+	cdef public int connectivity_value_1
+	cdef public int connectivity_value_2
+	cdef public int connectivity_value_3
+	
+	cpdef bint equivalent(Atom self, Atom other)
 
-	# apparently on Intel x86 processors executing 32 bit code
-	# short ints are slower to calculate than ints
-	# http://home.att.net/~jackklein/c/inttypes.html#short
-	cdef  public short int connectivity_value_1
-	cdef  public short int connectivity_value_2
-	cdef  public short int connectivity_value_3
-	cdef  public int sorting_label
+################################################################################
 
 cdef class Bond:
-	"""
-	Represent a bond in a chemical species. Each bond has a list `atoms` of
-	length two containing the two atoms in the bond and a `bondType` object,
-	stored internally as a :class:`BondType` object.
-	"""
+	
 	cdef public list atoms
 	cdef public list _bondType
-	cpdef bint equivalent(Bond, Bond)
+	
+	cpdef bint equivalent(Bond self, Bond other)
 
+################################################################################
 
