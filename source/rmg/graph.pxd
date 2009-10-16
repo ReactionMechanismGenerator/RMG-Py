@@ -25,15 +25,97 @@
 #
 ################################################################################
 
+cimport chem
+
+cdef extern from "dictobject.h":
+	ctypedef class __builtin__.dict [object PyDictObject]:
+		pass
+
+################################################################################
 
 cdef class Vertex:
-	cdef int nothing
-	cpdef bint equivalent(Vertex, Vertex)
-	
-	cdef  public short int connectivity_value_1
-	cdef  public short int connectivity_value_2
-	cdef  public short int connectivity_value_3
+
+	cdef public short int connectivity_value_1
+	cdef public short int connectivity_value_2
+	cdef public short int connectivity_value_3
+
+	cpdef bint equivalent(Vertex self, Vertex other)
+
+################################################################################
 
 cdef class Edge:
-	cdef int nothing
-	cpdef bint equivalent(Edge, Edge)
+
+	cpdef bint equivalent(Edge self, Edge other)
+
+################################################################################
+
+cdef class Graph(dict):
+
+	cpdef list vertices(Graph self)
+
+	cpdef list edges(Graph self)
+
+	cpdef addVertex(Graph self, vertex)
+
+	cpdef addEdge(Graph self, vertices, edge)
+
+	cpdef dict getEdges(Graph self, vertex)
+
+	cpdef getEdge(Graph self, tuple vertices)
+
+	cpdef bint hasEdge(self, tuple vertices)
+
+	cpdef removeVertex(Graph self, vertex1)
+
+	cpdef removeEdge(Graph self, vertices)
+
+	cpdef isIsomorphic(Graph self, Graph other, dict map12_0, dict map21_0)
+
+	cpdef isSubgraphIsomorphic(Graph self, Graph other, dict map12_0, dict map21_0)
+
+	cpdef findSubgraphIsomorphisms(Graph self, Graph other, dict map12_0, dict map21_0)
+
+	cpdef Graph copy(Graph self)
+
+	cpdef Graph merge(Graph self, Graph other)
+
+	cpdef list split(Graph self)
+
+	cpdef list getSmallestSetOfSmallestRings(Graph self)
+
+	cpdef bint isVertexInCycle(Graph self, chem.Atom vertex)
+
+	cpdef bint __isChainInCycle(Graph self, list chain)
+
+	cpdef list getAllCycles(Graph self, chem.Atom startingVertex)
+
+	cpdef list __exploreCyclesRecursively(Graph self, list chain, list cycleList)
+
+	cpdef set_connectivity_values(Graph self)
+
+	cpdef sort_and_label_vertices(Graph self)
+
+################################################################################
+
+cpdef VF2_isomorphism(Graph graph1, Graph graph2, dict map12, dict map21,
+	bint subgraph, bint findAll)
+
+cpdef bint __VF2_feasible(Graph graph1, Graph graph2, chem.Atom vertex1,
+	chem.Atom vertex2, dict map21, dict map12, dict terminals1, dict terminals2,
+	bint subgraph)
+
+cpdef bint __VF2_match(Graph graph1, Graph graph2, dict map21, dict map12,
+	dict terminals1, dict terminals2, bint subgraph, bint findAll,
+	list map21List, list map12List, int call_depth)
+
+cpdef int __get_sort_label(chem.Atom vertex)
+
+cpdef int __global_atom_sort_value(chem.Atom atom)
+
+cpdef list __VF2_pairs(Graph graph1, Graph graph2, dict terminals1,
+	dict terminals2, dict map21, dict map12)
+
+cpdef dict __VF2_terminals(Graph graph, dict mapping)
+
+cpdef dict __VF2_new_terminals(Graph graph, dict mapping, dict old_terminals,
+	new_vertex)

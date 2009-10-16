@@ -1,3 +1,6 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 ################################################################################
 #
 #	RMG - Reaction Mechanism Generator
@@ -42,14 +45,11 @@ Contains classes describing simple chemical entities:
 
 """
 
-import logging
-
-cimport graph
-#import graph
+import cython
 
 ################################################################################
 
-cdef class Element:
+class Element:
 	"""
 	A single chemical element. The attributes are:
 
@@ -67,12 +67,6 @@ cdef class Element:
 	share. Ideally there is only one instance of this class for each element.
 	"""
 
-	cdef public int number
-	cdef public str name
-	cdef public str symbol
-	cdef public float mass
-	cdef public list valence
-
 	def __init__(self, number, name, symbol, mass, valence):
 		"""
 		Initialize a chemical element.
@@ -82,10 +76,13 @@ cdef class Element:
 		self.symbol = symbol
 		self.mass = mass
 		self.valence = valence
-	
-	def __repr__(self):
-		return "Element(%s,%s,%s,%s,%s)"%(self.number, self.name, self.symbol, self.mass, self.valence)
 
+	def __repr__(self):
+		"""
+		Return a representation that can be used to reconstruct the object.
+		"""
+		return "Element(%s, '%s', '%s', %s, %s)" % (self.number, self.name, self.symbol, self.mass, self.valence)
+	
 	def __reduce__(self):
 		"""
 		Used for pickling.
@@ -124,7 +121,7 @@ elements = loadElements()
 
 ################################################################################
 
-cdef class AtomType:
+class AtomType:
 	"""
 	A type of atom which combines the element information with information
 	about the local bonding structure. The attributes are:
@@ -142,28 +139,27 @@ cdef class AtomType:
 	atom type.
 	"""
 
-	cdef public str label
-	cdef public object element
-	cdef public str description
-
-	def __init__(self, label, element, description):
+	def __init__(self, label='', element=None, description=''):
 		"""
 		Initialize an atom type.
 		"""
 		self.label = label
 		self.element = element
 		self.description = description
-	
-	def __repr__(self):
-		return "AtomType('%s',%s,'%s')"%(self.label, self.element, self.description)
 
+	def __repr__(self):
+		"""
+		Return a representation that can be used to reconstruct the object.
+		"""
+		return "AtomType('%s', %s, '%s')" % (self.label, self.element, self.description)
+	
 	def __reduce__(self):
 		"""
 		Used for pickling.
 		"""
 		return (AtomType, (self.label, self.element, self.description))
 
-	cpdef bint equivalent(AtomType self, AtomType other):
+	def equivalent(self, other):
 		"""
 		Returns :data:`True` if two atom types are equivalent or :data:`False`
 		otherwise. Respects wildcards, e.g. returns True for {R!H}=={C}
@@ -249,7 +245,7 @@ atomTypes = loadAtomTypes()
 
 ################################################################################
 
-cdef class ElectronState:
+class ElectronState:
 	"""
 	A single free electron state for an atom. The attributes are:
 
@@ -266,11 +262,7 @@ cdef class ElectronState:
 	electron state.
 	"""
 
-	cdef public str label
-	cdef public int order
-	cdef public list spin
-
-	def __init__(self, label, order, spin):
+	def __init__(self, label='', order=0, spin=None):
 		"""
 		Initialize a free electron state.
 
@@ -282,17 +274,20 @@ cdef class ElectronState:
 		self.label = label
 		self.order = order
 		self.spin = spin
-	
-	def __repr__(self):
-		return "ElectronState('%s',%s,%s)"%(self.label, self.order, self.spin)
 
+	def __repr__(self):
+		"""
+		Return a representation that can be used to reconstruct the object.
+		"""
+		return "ElectronState('%s', %s, %s)" % (self.label, self.order, self.spin)
+	
 	def __reduce__(self):
 		"""
 		Used for pickling.
 		"""
 		return (ElectronState, (self.label, self.order, self.spin))
 
-	cpdef bint equivalent(ElectronState self, ElectronState other):
+	def equivalent(self, other):
 		"""
 		Returns :data:`True` if two electron states are equivalent or
 		:data:`False` otherwise.
@@ -330,7 +325,7 @@ electronStates = loadElectronStates()
 
 ################################################################################
 
-cdef class BondType:
+class BondType:
 	"""
 	A type of chemical bond. The attributes are:
 
@@ -348,13 +343,7 @@ cdef class BondType:
 	share. Ideally there is only one instance of this class for each bond type.
 	"""
 
-	cdef public str label
-	cdef public str name
-	cdef public float order
-	cdef public int piElectrons
-	cdef public str location
-
-	def __init__(self, label, name, order, piElectrons, location=''):
+	def __init__(self, label='', name='', order=0, piElectrons=0, location=''):
 		"""Initialize a chemical bond.
 
 		Parameters:
@@ -370,13 +359,19 @@ cdef class BondType:
 		self.piElectrons = piElectrons
 		self.location = location
 
+	def __repr__(self):
+		"""
+		Return a representation that can be used to reconstruct the object.
+		"""
+		return "BondType('%s', '%s', %g, %g, location='%s')" % (self.label, self.name, self.order, self.piElectrons, self.location)
+
 	def __reduce__(self):
 		"""
 		Used for pickling.
 		"""
 		return (BondType, (self.label, self.name, self.order, self.piElectrons, self.location))
 
-	cpdef bint equivalent(BondType self, BondType other):
+	def equivalent(self, other):
 		"""
 		Returns :data:`True` if two bond types are equivalent or :data:`False`
 		otherwise. The method is strictly a comparison of the bond type via the
@@ -385,10 +380,6 @@ cdef class BondType:
 		'Dtrans').
 		"""
 		return self.label == other.label
-
-	def __repr__(self):
-		"""x.__repr__() <==> repr(x)"""
-		return +"%s.BondType('%s','%s',%g,%g,location='%s')"%(self.__module__,self.label,self.name,self.order,self.piElectrons,self.location)
 
 ################################################################################
 
@@ -428,7 +419,7 @@ class InvalidChemicalActionException(Exception):
 
 ################################################################################
 
-cdef class Atom:
+class Atom(object):
 	"""
 	Represent an atom in a chemical species or functional group. The attributes
 	are:
@@ -446,12 +437,6 @@ cdef class Atom:
 
 	"""
 
-## moved to chem.pyxd
-#	cdef public list _atomType
-#	cdef public list _electronState
-#	cdef public int charge
-#	cdef public str label
-
 	def __init__(self, atomType='R', electronState='0', charge=0, label=''):
 		"""
 		Initialize an atom object.
@@ -460,7 +445,7 @@ cdef class Atom:
 		self.electronState = electronState
 		self.charge = charge
 		self.label = label
-		
+
 		# for Extended Connectivity; as introduced by Morgan (1965)
 		# http://dx.doi.org/10.1021/c160017a018
 		self.connectivity_value_1 = 0
@@ -468,26 +453,16 @@ cdef class Atom:
 		self.connectivity_value_3 = 0
 
 	def __repr__(self):
-		# if there's just one atomType and it's in the global dictionary of atomTypes
-		# then just use it's label as we can look it up in the dictionary.
-		aType = self.atomType
-		if aType.__class__ == AtomType and aType.label in atomTypes:
-			aType = "'%s'"%aType.label
-		# same for electronState
-		eState = self.electronState
-		if eState.__class__ == ElectronState and eState.label in electronStates:
-			eState = "'%s'"%eState.label
-		return "Atom(%s,%s,%s,'%s')"%(aType, eState, self.charge, self.label)
+		"""
+		Return a representation that can be used to reconstruct the object.
+		"""
+		return "Atom(atomType=%s, electronState=%s, charge=%s, label='%s')" % (self.atomType, self.electronState, self.charge, self.label)
 
 	def __reduce__(self):
 		"""
 		Used for pickling.
 		"""
 		return (Atom, (self.atomType, self.electronState, self.charge, self.label))
-
-	#def __repr__(self):
-	#	"""x.__repr__() <==> repr(x)"""
-	#	return "Atom(atomType=%s,electronState=%s,charge=%s,label='%s')" % (self.atomType, self.electronState, self.charge, self.label)
 
 	def getAtomType(self):
 		"""
@@ -559,7 +534,7 @@ cdef class Atom:
 
 	electronState = property(getElectronState, setElectronState)
 
-	cpdef bint equivalent(Atom self, Atom other):
+	def equivalent(self, other):
 		"""
 		Return :data:`True` if `self` and `other` are equivalent atoms, i.e.
 		they have the same atom type and electronic state. If one or both of
@@ -570,11 +545,14 @@ cdef class Atom:
 		return :data:`True`.
 		"""
 
-		cdef bint atomTypesMatch = False
-		cdef bint electronStatesMatch = False
-		cdef AtomType atomType1, atomType2
-		cdef ElectronState elecState1, elecState2
-
+		atomTypesMatch = cython.declare(cython.bint, False)
+		electronStatesMatch = cython.declare(cython.bint, False)
+		
+		atomType1 = cython.declare(AtomType)
+		atomType2 = cython.declare(AtomType)
+		elecState1 = cython.declare(ElectronState)
+		elecState2 = cython.declare(ElectronState)
+		
 		for atomType1 in self._atomType:
 			for atomType2 in other._atomType:
 				if atomType1.equivalent(atomType2): atomTypesMatch = True
@@ -701,7 +679,7 @@ cdef class Atom:
 
 ################################################################################
 
-cdef class Bond:
+class Bond(object):
 	"""
 	A chemical bond between atoms. The attributes are:
 
@@ -713,20 +691,16 @@ cdef class Bond:
 	===========  ===========================================================
 
 	"""
-# moved to pxd file:
-#	cdef public list atoms
-#	cdef public list _bondType
-#	cdef public list atoms
-#	cdef public list _bondType
 
-	def __init__(self, atoms, bondType='S'):
+	def __init__(self, atoms=[None, None], bondType='S'):
 		self.bondType = bondType
 		self.atoms = atoms
 
 	def __repr__(self):
-		"""x.__repr__() <==> repr(x)"""
-		#return self.__module__+".Bond(%s,bondType='%s')"%(repr(self.atoms),self.bondType.label)
-		return "Bond(%s,bondType='%s')"%(repr(self.atoms),self.bondType.label)
+		"""
+		Return a representation that can be used to reconstruct the object.
+		"""
+		return "Bond(%s, bondType='%s')" % (repr(self.atoms), self.bondType.label)
 
 	def __reduce__(self):
 		"""
@@ -786,15 +760,16 @@ cdef class Bond:
 
 	bondType = property(getBondType, setBondType)
 
-	cpdef bint equivalent(Bond self, Bond other):
+	def equivalent(self, other):
 		"""
 		Return :data:`True` if `self` and `other` are equivalent bonds, i.e.
 		they have the same bond type. If one or both of the bonds being tested
 		for equivalence have multiple bond types, :data:`True` is returned if
 		*any* bond type in one bond matches *any* bond type in the other.
 		"""
-		cdef BondType bondType1, bondType2
-
+		bondType1 = cython.declare(BondType)
+		bondType2 = cython.declare(BondType)
+		
 		for bondType1 in self._bondType:
 			for bondType2 in other._bondType:
 				if bondType1.equivalent(bondType2): return True
