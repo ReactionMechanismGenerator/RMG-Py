@@ -76,9 +76,7 @@ cdef class Atom(object):
 	
 	# for Extended Connectivity; as introduced by Morgan (1965)
 	# http://dx.doi.org/10.1021/c160017a018
-	cdef public int connectivity_value_1
-	cdef public int connectivity_value_2
-	cdef public int connectivity_value_3
+	cdef public list connectivity
 
 	cdef public int sorting_label
 

@@ -35,9 +35,7 @@ cdef extern from "dictobject.h":
 
 cdef class Vertex:
 
-	cdef public short int connectivity_value_1
-	cdef public short int connectivity_value_2
-	cdef public short int connectivity_value_3
+	cdef public list connectivity
 
 	cpdef bint equivalent(Vertex self, Vertex other)
 
@@ -91,7 +89,7 @@ cdef class Graph(dict):
 
 	cpdef list __exploreCyclesRecursively(Graph self, list chain, list cycleList)
 
-	cpdef set_connectivity_values(Graph self)
+	cpdef setConnectivityValues(Graph self)
 
 	cpdef sort_and_label_vertices(Graph self)
 
