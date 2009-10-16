@@ -91,7 +91,7 @@ cdef class Graph(dict):
 
 	cpdef setConnectivityValues(Graph self)
 
-	cpdef sort_and_label_vertices(Graph self)
+	cpdef sortAndLabelVertices(Graph self)
 
 ################################################################################
 
@@ -106,9 +106,9 @@ cpdef bint __VF2_match(Graph graph1, Graph graph2, dict map21, dict map12,
 	dict terminals1, dict terminals2, bint subgraph, bint findAll,
 	list map21List, list map12List, int call_depth)
 
-cpdef int __get_sort_label(chem.Atom vertex)
+cpdef int __getSortLabel(chem.Atom vertex)
 
-cpdef int global_atom_sort_value(chem.Atom atom)
+cpdef int globalAtomSortValue(chem.Atom atom)
 
 cpdef list __VF2_pairs(Graph graph1, Graph graph2, dict terminals1,
 	dict terminals2, dict map21, dict map12)

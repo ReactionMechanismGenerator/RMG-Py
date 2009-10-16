@@ -482,11 +482,11 @@ class Graph(dict):
 				if i == 0:
 					count = len(self[vert1])
 				else:
-					for vert2 in self[vert1]: count += vert1.connectivity[i-1]
+					for vert2 in self[vert1]: count += vert2.connectivity[i-1]
 				vert1.connectivity[i] = count
 			
 			
-	def sort_and_label_vertices(self):
+	def sortAndLabelVertices(self):
 		"""
 		Sort the vertices according to something wise,
 		and record the sorting index on the vertices so they know what order 
@@ -496,8 +496,8 @@ class Graph(dict):
 		ordered_vertices = cython.declare(list)
 		ordered_vertices = self.vertices()
 		## sort the list according to something wise
-		ordered_vertices.sort(key=global_atom_sort_value)
-		# vertices with the same __global_atom_sort_value can be in 
+		ordered_vertices.sort(key=globalAtomSortValue)
+		# vertices with the same globalAtomSortValue can be in
 		# an arbitary order, as long as it remains constant
 		# so we record the ordering index ON the vertices
 		for i in range(len(ordered_vertices)):
@@ -547,8 +547,8 @@ def VF2_isomorphism(graph1, graph2, map12, map21, subgraph=False, findAll=False)
 	
 	# sort the vertices according to something wise (based on connectivity value), and 
 	# record the sorting order on each vertex (as vertex.sorting_label)
-	graph1.sort_and_label_vertices()
-	graph2.sort_and_label_vertices()
+	graph1.sortAndLabelVertices()
+	graph2.sortAndLabelVertices()
 	
 	terminals1 = __VF2_terminals(graph1, map21)
 	terminals2 = __VF2_terminals(graph2, map12)
@@ -727,16 +727,16 @@ def __VF2_match(graph1, graph2, map21, map12, terminals1, terminals2, subgraph,
 
 	return False
 
-def __get_sort_label(vertex):
+def __getSortLabel(vertex):
 	"""
 	Used to sort vertices prior to poposing candidate pairs in :method:`__VF2_pairs`
 
 	This returns the `sorting_label` that is stored on the vertex. It should have been
-	put there recently by a call to :method:`Graph.sort_and_label_vertices()`
+	put there recently by a call to :method:`Graph.sortAndLabelVertices()`
 	"""
 	return vertex.sorting_label
 		
-def global_atom_sort_value(atom):
+def globalAtomSortValue(atom):
 	"""
 	Used to sort atoms prior to poposing candidate pairs in :method:`__VF2_pairs` 
 	The lowest (or most negative) values will be first in the list when you sort, 
@@ -772,10 +772,10 @@ def __VF2_pairs(graph1, graph2, terminals1, terminals2, map21, map12):
 	# Construct list from terminals if possible
 	if len(terminals1) > 0 and len(terminals2) > 0:
 		list_to_sort = terminals2.keys()
-		list_to_sort.sort(key=__get_sort_label)
+		list_to_sort.sort(key=__getSortLabel)
 		terminal2 = list_to_sort[0]
 		list_to_sort = terminals1.keys()
-		list_to_sort.sort(key=__get_sort_label)
+		list_to_sort.sort(key=__getSortLabel)
 		
 		for terminal1 in list_to_sort:
 			pairs.append([terminal1, terminal2])
@@ -785,11 +785,11 @@ def __VF2_pairs(graph1, graph2, terminals1, terminals2, map21, map12):
 		# remove already mapped vertices
 		for vertex2 in map12:
 			list_to_sort.remove(vertex2)
-		list_to_sort.sort(key=__get_sort_label)
+		list_to_sort.sort(key=__getSortLabel)
 		vertex2 = list_to_sort[0]  # take first vertex2
 		# pair with all vertex1s
 		list_to_sort = graph1.keys() 
-		list_to_sort.sort(key=__get_sort_label)
+		list_to_sort.sort(key=__getSortLabel)
 		for vertex1 in list_to_sort:
 			if vertex1 not in map21: # exclude already mapped vertices
 				pairs.append([vertex1, vertex2])
