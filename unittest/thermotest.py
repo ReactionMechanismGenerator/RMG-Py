@@ -219,36 +219,73 @@ class ThermoEstimationCheck(unittest.TestCase):
 ################################################################################
 
 
-class ThermoGAtoNASACheck(unittest.TestCase):                          
-	"""Test all the """
-	def testNASAcreated(self):
-		"""Test that we make NASA polynomial data"""
+class ThermoGAtoWilhoitCheck(unittest.TestCase):                          
+	"""Test conversion of Group Additivity thermo to Wilhoit thermo"""
+	def testWilhoitCreated(self):
+		"""Can we make Wilhoit polynomial data"""
 		GAthermoData = thermo.ThermoGAData(0, 0, [10, 20, 30, 40, 60, 80, 130.0])
-		NASAthermoData = thermo.convertGAtoNASA(GAthermoData)
+		WilhoitData = thermo.convertGAtoWilhoit(GAthermoData, atoms=2, rotors=0, linear=True )
+		self.assertTrue(isinstance(WilhoitData,thermo.ThermoWilhoitData),"Didn't make ThermoWilhoitData instance")
+		self.assertTrue(isinstance(WilhoitData,thermo.ThermoData),"Didn't make any kind of ThermoData instance")
 		# well, if we didn't cause an error, I guess that's good enough for now.
 
 	def testHeatCapacity(self):
-		"""Test that the NASA Cp matches the GA Cp
+		"""Check the Wilhoit Cp matches the GA Cp for propane.
 		
-		A test of the method of calculating heat capacity from heat capacity data.
-		The Cp data is selected to follow the formula
-		
-		.. math:: C_p(T) = 0.1 T - 20 \hspace{20pt} 300 < T < 1500
-		
-		The implementation specified Cp values at 300, 400, 500, 600, 800, 1000,
-		and 1500 K and interpolated when necessary. Above 1500 K the Cp value is
-		assumed to be equal to Cp(1500 K).
+		Uses Propane as a test-case. atoms=11, rotors=2, linear=False
 		"""
 		
-		# Heat capacity: 
-		#		Cp = 0.1 * T - 20.0		300.0 < T < 1500.0
-		#		Cp = 130.0				T > 1500.0
-		GAthermoData = thermo.ThermoGAData(0, 0, [10, 20, 30, 40, 60, 80, 130.0])
-		NASAthermoData = thermo.convertGAtoNASA(GAthermoData)
+		hexadiene = species.Species(SMILES='CCC')
+		hexadiene.getResonanceIsomers()
+		GAthermoData = hexadiene.getThermoData()
+		WilhoitData = thermo.convertGAtoWilhoit(GAthermoData, atoms=11, rotors=2, linear=False)
 		
-		Tlist = [T for T in range(300, 2000, 10)]
+		Tlist = thermo.ThermoGAData.CpTlist # just check at defined data points
 		for T in Tlist:
-			self.assertAlmostEqual(GAthermoData.getHeatCapacity(T), NASAthermoData.getHeatCapacity(T), 4)
+			self.assertAlmostEqual(GAthermoData.getHeatCapacity(T), WilhoitData.getHeatCapacity(T), 3)
+	
+	def testEnthalpy(self):
+		"""Check the Wilhoit H matches the GA H for propane.
+		
+		Uses Propane as a test-case. atoms=11, rotors=2, linear=False
+		"""
+		
+		hexadiene = species.Species(SMILES='CCC')
+		hexadiene.getResonanceIsomers()
+		GAthermoData = hexadiene.getThermoData()
+		WilhoitData = thermo.convertGAtoWilhoit(GAthermoData, atoms=11, rotors=2, linear=False)
+		
+		Tlist = thermo.ThermoGAData.CpTlist # just check at defined data points
+		for T in Tlist:
+			self.assertAlmostEqual(GAthermoData.getEnthalpy(T), WilhoitData.getEnthalpy(T), 3)
+			
+	def testEntropy(self):
+		"""Check the Wilhoit S matches the GA S for propane.
+		
+		Uses Propane as a test-case. atoms=11, rotors=2, linear=False
+		"""
+		
+		hexadiene = species.Species(SMILES='CCC')
+		hexadiene.getResonanceIsomers()
+		GAthermoData = hexadiene.getThermoData()
+		WilhoitData = thermo.convertGAtoWilhoit(GAthermoData, atoms=11, rotors=2, linear=False)
+		
+		Tlist = thermo.ThermoGAData.CpTlist # just check at defined data points
+		for T in Tlist:
+			self.assertAlmostEqual(GAthermoData.getEntropy(T), WilhoitData.getEntropy(T), 3)
+			
+			
+			
+class ThermoWilhoitToNASACheck(unittest.TestCase):                          
+	"""Test conversion to NASA polynomials"""
+	def testNASAcreated(self):
+		"""Can we make NASA polynomial data"""
+		cp0, cpInf, B, a0, a1, a2, a3 = (1.0,1.0,500.0,1.0,1.0,1.0,1.0)
+		comment = "Stupid thermo."
+		WilhoitThermo = thermo.ThermoWilhoitData( cp0, cpInf, B, a0, a1, a2, a3, comment=comment)
+		NASAthermoData = thermo.convertWilhoitToNASA(WilhoitThermo)
+		# well, if we didn't cause an error, I guess that's good enough for now.
+
 		
 		
 ################################################################################
