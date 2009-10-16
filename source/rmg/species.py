@@ -126,7 +126,7 @@ class Species:
 		"""How it looks on the console"""
 		return "<Species %d '%s'>"%(self.id, self.label)
 
-	def __init__(self, id=0, label='', structure=None, reactive=True):
+	def __init__(self, id=0, label='', structure=None, reactive=True, SMILES=None):
 		"""
 		Initialize a Species object.
 		"""
@@ -144,6 +144,9 @@ class Species:
 		self.thermoSnapshot = ThermoSnapshot()
 		self.lennardJones = None
 		self.spectralData = None
+		
+		if SMILES is not None:
+			self.fromSMILES(SMILES)
 
 	def __cmp__(self, other):
 		"""
@@ -289,6 +292,7 @@ class Species:
 		for tdata in thermoData[1:]:
 			if tdata.H298 < self.thermoData.H298:
 				self.thermoData = tdata
+		return self.thermoData
 
 	def getHeatCapacity(self, T):
 		"""

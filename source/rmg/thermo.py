@@ -35,7 +35,7 @@ what are its thermodynamics?"
 """
 
 import quantities as pq
-
+import constants
 import data
 
 ################################################################################
@@ -435,11 +435,94 @@ class ThermoNASAData(ThermoData):
 
 ####
 
-def convertGAtoNASA(GAthermo):
-	"""Convert a Group Additivity thermo instance into a NASA polynomial thermo instance.
+################################################################################
+
+class ThermoWilhoitData(ThermoData):
+	"""
+	A set of thermodynamic parameters given by Wilhoit polynomials. 
+	
+	"""
+	
+	def __init__(self, cp0, cpInf, B, a0, a1, a2, a3, comment='', ):
+		"""Initialise the Wilhoit polynomial. Trange is set to (0,infinity)"""
+		Trange = (0,9999.9) # Wilhoit valid over all temperatures
+		ThermoData.__init__(self, Trange=Trange, comment=comment)
+		self.cp0 = cp0
+		self.cpInf = cpInf
+		self.B = B
+		self.a0 = a0
+		self.a1 = a1
+		self.a2 = a2
+		self.a3 = a3
+	
+	def __repr__(self):
+		return "ThermoWilhoitData(%.2g,%.2g,%.2g,%.2g,%.2g,%.2g,%.2g,'%s')"%(self.cp0, self.cpInf, self.B, self.a0, self.a1, self.a2, self.a3, self.comment)
+	
+	def toXML(self, dom, root):
+		pass
+	
+	def getHeatCapacity(self, T):
+		"""
+		Return the heat capacity in J/mol*K at temperature `T` in K.
+		"""
+		y = T/(T+self.B)
+		Cp_over_R = self.cp0+(self.cpInf-self.cp0)*y*y*( 1 + 
+			(y-1)*(self.a0 + y*(self.a1 + y*(self.a2 + self.a3*y))) )
+		return Cp_over_R * constants.R
+	
+	def getEnthalpy(self, T):
+		"""
+		Return the enthalpy in J/mol at temperature `T` in K.
+		"""
+		raise Exception("Not implemented yet")
+
+	def getEntropy(self, T):
+		"""
+		Return the entropy in J/mol*K at temperature `T` in K.
+		"""
+		raise Exception("Not implemented yet")
+
+	def getFreeEnergy(self, T):
+		"""
+		Return the Gibbs free energy in J/mol at temperature `T` in K.
+		"""
+		raise Exception("Not implemented yet")
+		
+###########
+def convertGAtoWilhoit(GAthermo, atoms, rotors, linear):
+	"""Convert a Group Additivity thermo instance into a Wilhoit thermo instance.
 	
 	Takes a `ThermoGAData` instance of themochemical data, and some extra information 
 	about the molecule used to calculate high- and low-temperature limits of Cp.
+	These are the number of atoms (integer `atoms`), the number of rotors (integer `rotors`)
+	and whether the molecule is linear (boolean `linear`)
+	Returns a `ThermoWilhoitData` instance.
+	"""
+	
+	# get info from incoming group additivity thermo
+	H298 = GAthermo.H298
+	S298 = GAthermo.S298
+	Cp_list = GAthermo.Cp
+	T_list = ThermoGAData.CpTlist  # usually [300, 400, 500, 600, 800, 1000, 1500] but why assume?
+	
+	# do your clever maths here
+	
+	# output coefficients
+	# for now, setting them all to one (except B)
+	cp0, cpInf, B, a0, a1, a2, a3 = (1.0,1.0,500.0,1.0,1.0,1.0,1.0)
+	
+	# output comment
+	comment = 'Fitted to GA data with Cp0=%2g and Cp_inf=%2g. '%(cp0,cpInf) + GAthermo.comment
+	
+	# create Wilhoit instances
+	WilhoitThermo = ThermoWilhoitData( cp0, cpInf, B, a0, a1, a2, a3, comment=comment)
+	return WilhoitThermo
+
+################################################################################
+def convertWilhoitToNASA(Wilhoit):
+	"""Convert a Wilhoit thermo instance into a NASA polynomial thermo instance.
+	
+	Takes a `ThermoWilhoitData` instance of themochemical data.
 	Returns a `ThermoNASAData` instance containing two `ThermoNASAPolynomial` 
 	polynomials
 	"""
@@ -449,20 +532,24 @@ def convertGAtoNASA(GAthermo):
 	T_intermediate = 1000.0
 	T_high = 6000
 	
-	# get info from incoming group additivity thermo
-	H298 = GAthermo.H298
-	S298 = GAthermo.S298
-	Cp_list = GAthermo.Cp
-	T_list = ThermoGAData.CpTlist  # usually [300, 400, 500, 600, 800, 1000, 1500] but why assume?
+	# get info from incoming Wilhoit thermo
+	cp0 = Wilhoit.cp0
+	cpInf = Wilhoit.cpInf
+	B = Wilhoit.B
+	a0 = Wilhoit.a0
+	a1 = Wilhoit.a1
+	a2 = Wilhoit.a2
+	a3 = Wilhoit.a3
 	
 	# do your clever manths here
 	
 	# output polynomial coefficients
+	# for now, making them all zero
 	coeffs_low = (0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
 	coeffs_high = (0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
 	
 	# output comment
-	comment = 'Fitted to GA data.'+GAthermo.comment
+	comment = 'Fitted to Wilhoit data. '+Wilhoit.comment
 		
 	# create ThermoNASAPolynomial instances
 	polynomial_low = ThermoNASAPolynomial( T_range=(T_low,T_intermediate), comment=comment, coeffs=coeffs_low)
