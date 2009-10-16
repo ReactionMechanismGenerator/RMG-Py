@@ -1498,18 +1498,18 @@ class ReactionFamily(data.Database):
 		items = data.getAllCombinations(nodeLists)
 		
 		# Generate list of kinetics at every node
-		logging.debug("   Template contains %s"%forwardTemplate)
+		#logging.debug("   Template contains %s"%forwardTemplate)
 		kinetics = []
 		for item in items:
 			itemData = self.library.getData(item)
-			logging.debug("   Looking for %s found %r"%(item, itemData))
+			#logging.debug("   Looking for %s found %r"%(item, itemData))
 			if itemData is not None:
 				kinetics.append(itemData)
 				
 			if symmetric_tree: # we might only store kinetics the other way around
 				item.reverse()
 				itemData = self.library.getData(item)
-				logging.debug("   Also looking for %s found %r"%(item, itemData))
+				#logging.debug("   Also looking for %s found %r"%(item, itemData))
 				if itemData is not None:
 					kinetics.append(itemData)				
 					

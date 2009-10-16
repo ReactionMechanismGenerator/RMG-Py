@@ -197,7 +197,7 @@ class Graph(dict):
 		Create a copy of the current graph.
 		"""
 		other = cython.declare(Graph)
-
+		other = Graph()
 		for vertex in self:
 			other.addVertex(vertex)
 		for v1 in self:
@@ -213,6 +213,7 @@ class Graph(dict):
 
 		# Create output graph
 		new = cython.declare(Graph)
+		new = Graph()
 		
 		# Add vertices to output graph
 		for vertex in self:
@@ -295,7 +296,7 @@ class Graph(dict):
 
 		graph = cython.declare(Graph)
 		done = cython.declare(cython.bint)
-		verticesToMove = cython.declare(list)
+		verticesToRemove = cython.declare(list)
 		cycleList = cython.declare(list)
 		cycles = cython.declare(list)
 		vertex = cython.declare(chem.Atom)
@@ -428,7 +429,7 @@ class Graph(dict):
 		cycleList=list()
 		chain = [startingVertex]
 		
-		chainLabels=range(len(self.keys()))
+		#chainLabels=range(len(self.keys()))
 		#print "Starting at %s in graph: %s"%(self.keys().index(startingVertex),chainLabels)
 		
 		cycleList = self.__exploreCyclesRecursively(chain, cycleList)
@@ -532,6 +533,9 @@ def VF2_isomorphism(graph1, graph2, map12, map21, subgraph=False, findAll=False)
 	terminals2 = cython.declare(dict)
 	call_depth = cython.declare(cython.int)
 
+	map12List = list()
+	map21List = list()
+	
 	if not subgraph:
 		if len(graph2) != len(graph1):
 			logging.debug("Tried matching graphs of different sizes!")
@@ -780,6 +784,8 @@ def __VF2_pairs(graph1, graph2, terminals1, terminals2, map21, map12):
 	terminal2 = cython.declare(chem.Atom)
 	list_to_sort = cython.declare(list)
 
+	pairs = list()
+
 	# Construct list from terminals if possible
 	if len(terminals1) > 0 and len(terminals2) > 0:
 		list_to_sort = terminals2.keys()
@@ -817,7 +823,9 @@ def __VF2_terminals(graph, mapping):
 	terminals = cython.declare(dict)
 	vertex = cython.declare(chem.Atom)
 	vert = cython.declare(chem.Atom)
-	
+
+	terminals = dict()
+
 	for vertex in mapping:
 		for vert in graph[vertex]:
 			if vert not in mapping:
@@ -834,7 +842,8 @@ def __VF2_new_terminals(graph, mapping, old_terminals, new_vertex):
 	"""
 	
 	terminals = cython.declare(dict)
-	
+	terminals = dict()
+
 	# copy the old terminals, leaving out the new_vertex
 	for vertex in old_terminals:
 		if not vertex is new_vertex: 
