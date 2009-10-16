@@ -43,13 +43,8 @@ import logging
 class Vertex:
 
 	def __init__(self):
-		# for Extended Connectivity; as introduced by Morgan (1965)
-		# http://dx.doi.org/10.1021/c160017a018
-		self.connectivity_value_1 = 0
-		self.connectivity_value_2 = 0
-		self.connectivity_value_3 = 0
-		pass
-
+		self.connectivity = [0, 0, 0]
+	
 	def equivalent(self, other):
 		return True
 
@@ -467,7 +462,7 @@ class Graph(dict):
 				chain.pop(-1)
 		return cycleList
 
-	def set_connectivity_values(self):
+	def setConnectivityValues(self):
 		"""
 		Sets the Extended Connectivity values as introduced by Morgan (1965)
 		http://dx.doi.org/10.1021/c160017a018
@@ -481,20 +476,15 @@ class Graph(dict):
 		vert1 = cython.declare(chem.Atom)
 		vert2 = cython.declare(chem.Atom)
 		
-		for vert1 in self:
-			vert1.connectivity_value_1 = len(self[vert1])
+		for i in range(3):
+			for vert1 in self:
+				count = 0
+				if i == 0:
+					count = len(self[vert1])
+				else:
+					for vert2 in self[vert1]: count += vert1.connectivity[i-1]
+				vert1.connectivity[i] = count
 			
-		for vert1 in self:
-			count = 0
-			for vert2 in self[vert1]:
-				count += vert2.connectivity_value_1
-			vert1.connectivity_value_2 = count
-			
-		for vert1 in self:
-			count = 0
-			for vert2 in self[vert1]:
-				count += vert2.connectivity_value_2
-			vert1.connectivity_value_3 = count
 			
 	def sort_and_label_vertices(self):
 		"""
@@ -552,8 +542,8 @@ def VF2_isomorphism(graph1, graph2, map12, map21, subgraph=False, findAll=False)
 	call_depth = len(graph1)
 
 	# update the connectivity values (before sorting by them)
-	graph1.set_connectivity_values() # could probably run this less often elsewhere
-	graph2.set_connectivity_values() # as the values don't change often
+	graph1.setConnectivityValues() # could probably run this less often elsewhere
+	graph2.setConnectivityValues() # as the values don't change often
 	
 	# sort the vertices according to something wise (based on connectivity value), and 
 	# record the sorting order on each vertex (as vertex.sorting_label)
@@ -599,20 +589,13 @@ def __VF2_feasible(graph1, graph2, vertex1, vertex2, map21, map12, terminals1,
 
 	# Richard's Connectivity Value check
 	# not sure where this is best done. Is it more specific or more general?
-#	if subgraph:
-#		if vertex1.connectivity_value_1 < vertex2.connectivity_value_1: return False
-#		if vertex1.connectivity_value_2 < vertex2.connectivity_value_2: return False
-#		if vertex1.connectivity_value_3 < vertex2.connectivity_value_3: return False
-#	else:
 	if not subgraph:
-		if vertex1.connectivity_value_1 != vertex2.connectivity_value_1: return False
-		if vertex1.connectivity_value_2 != vertex2.connectivity_value_2: return False
-		if vertex1.connectivity_value_3 != vertex2.connectivity_value_3: return False
+		for i in range(3):
+			if vertex1.connectivity[i] != vertex2.connectivity[i]: return False
 		
 	# Semantic check #1: vertex1 and vertex2 must be equivalent
 	if not vertex1.equivalent(vertex2):
 		return False
-	
 	
 	# Semantic check #2: adjacent vertices to vertex1 and vertex2 that are
 	# already mapped should be connected by equivalent edges
@@ -762,10 +745,10 @@ def global_atom_sort_value(atom):
 	but bizarrely the opposite ordering seems to help small graphs. Not sure about subggraphs...
 	"""
 	#return hash(atom)  # apparently random?
-	#return (atom.connectivity_value_1 ) # not unique enough
-	return ( - (atom.connectivity_value_1<<8)  # left shift 8 = multiply by 2**8=256
-			 - (atom.connectivity_value_2<<4)  # left shift 4 = multiply by 2**4=16
-			 - (atom.connectivity_value_3)
+	#return (atom.connectivity[0] ) # not unique enough
+	return ( - (atom.connectivity[0]<<8)  # left shift 8 = multiply by 2**8=256
+			 - (atom.connectivity[1]<<4)  # left shift 4 = multiply by 2**4=16
+			 - (atom.connectivity[2])
 			)
 	
 def __VF2_pairs(graph1, graph2, terminals1, terminals2, map21, map12):

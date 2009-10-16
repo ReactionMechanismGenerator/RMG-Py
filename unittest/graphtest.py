@@ -74,20 +74,20 @@ class GraphCheck(unittest.TestCase):
 		graph.addEdge((vertices[3], vertices[4]), edges[3])
 		graph.addEdge((vertices[1], vertices[5]), edges[4])
 	
-		graph.set_connectivity_values()
+		graph.setConnectivityValues()
 		
 		for i,cv_ in enumerate([1,3,2,2,1,1]):
-			cv = vertices[i].connectivity_value_1
-			#print "On vertex %d got connectivity_value_1 = %d and expected %d"%(i,cv,cv_)
-			self.assertEqual(cv, cv_, "On vertex %d got connectivity_value_1=%d but expected %d"%(i,cv,cv_))
+			cv = vertices[i].connectivity[0]
+			#print "On vertex %d got connectivity[0] = %d and expected %d"%(i,cv,cv_)
+			self.assertEqual(cv, cv_, "On vertex %d got connectivity[0]=%d but expected %d"%(i,cv,cv_))
 		for i,cv_ in enumerate([3,4,5,3,2,3]):
-			cv = vertices[i].connectivity_value_2
-			#print "On vertex %d got connectivity_value_2 = %d and expected %d"%(i,cv,cv_)
-			self.assertEqual(cv, cv_, "On vertex %d got connectivity_value_2=%d but expected %d"%(i,cv,cv_))		
+			cv = vertices[i].connectivity[1]
+			#print "On vertex %d got connectivity[1] = %d and expected %d"%(i,cv,cv_)
+			self.assertEqual(cv, cv_, "On vertex %d got connectivity[1]=%d but expected %d"%(i,cv,cv_))
 		for i,cv_ in enumerate([4,11,7,7,3,4]):
-			cv = vertices[i].connectivity_value_3
-			#print "On vertex %d got connectivity_value_3 = %d and expected %d"%(i,cv,cv_)
-			self.assertEqual(cv, cv_, "On vertex %d got connectivity_value_3=%d but expected %d"%(i,cv,cv_))
+			cv = vertices[i].connectivity[2]
+			#print "On vertex %d got connectivity[2] = %d and expected %d"%(i,cv,cv_)
+			self.assertEqual(cv, cv_, "On vertex %d got connectivity[2]=%d but expected %d"%(i,cv,cv_))
 
 	def testSplit(self):
 		"""
