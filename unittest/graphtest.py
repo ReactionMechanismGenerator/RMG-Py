@@ -75,7 +75,7 @@ class GraphCheck(unittest.TestCase):
 		graph.addEdge((vertices[1], vertices[5]), edges[4])
 	
 		graph.setConnectivityValues()
-		
+
 		for i,cv_ in enumerate([1,3,2,2,1,1]):
 			cv = vertices[i].connectivity[0]
 			#print "On vertex %d got connectivity[0] = %d and expected %d"%(i,cv,cv_)
