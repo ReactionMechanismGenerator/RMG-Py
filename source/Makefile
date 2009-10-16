@@ -1,20 +1,21 @@
-# Makefile to run cython on the necessary files
+################################################################################
+#
+#	Makefile to build Cython modules into compiled libraries
+#
+################################################################################
 
-# If graph.so and chem.so up to date, nothing to do
 all: rmg/graph.so rmg/chem.so
-	cython rmg/chem.py
-	cython rmg/graph.py
 	python setup.py build_ext --inplace
 
-# remember graph.so depens on chem.pxd
-rmg/graph.so: rmg/graph.py rmg/graph.pxd rmg/chem.pxd
-	rm -f rmg/rmg.c rmg/rmg.so # delete the intermediate files so cython rebuilds
+rmg/graph.so: rmg/graph.c
 
-rmg/chem.so: rmg/chem.py rmg/chem.pxd
-	rm -f rmg/chem.c rmg/chem.so # delete the intermediate files so cython rebuilds
+rmg/graph.c: rmg/graph.py rmg/graph.pxd rmg/chem.pxd
+	cython rmg/graph.py
+
+rmg/chem.so: rmg/chem.c
+
+rmg/chem.c: rmg/chem.py rmg/chem.pxd
+	cython rmg/chem.py
 	
-cgit:
-	git checkout -- rmg/graph.c rmg/chem.c # kill local changes to c files
-
 clean:
-	rm rmg/*.so rmg/*.c
+	rm -rf rmg/*.so rmg/*.c build/
