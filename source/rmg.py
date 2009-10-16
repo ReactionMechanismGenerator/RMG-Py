@@ -41,8 +41,8 @@ class tee:
 	def write(self, string):
 		for fileobject in self.fileobjects:
 			fileobject.write(string)
-			
-			
+
+
 def process_stats(stats_file, log_file):
 		out_stream = tee(sys.stdout,open(log_file,'a')) # print to screen AND append to RMG.log
 		stats = pstats.Stats(stats_file,stream=out_stream)
@@ -68,28 +68,28 @@ if __name__ == '__main__':
 				  'generator that constructs kinetic models composed of ' + \
 				  'elementary chemical reaction steps using a general ' + \
 				  'understanding of how molecules react.'
-	
+
 	# Initialize command-line option parser
 	import optparse
 	parser = optparse.OptionParser(usage='usage: %prog [options] FILE',
-								   version="RMG v0.0.1", 
+								   version="RMG v0.0.1",
 								   description=description)
-	
+
 	# Add options
 	parser.add_option('-q', '--quiet',
-					  action='store_const', const=30, default=20, dest='verbose', 
+					  action='store_const', const=30, default=20, dest='verbose',
 					  help='quiet mode; only log errors and warnings')
 	parser.add_option('-v', '--verbose',
-					  action='store_const', const=10, default=20, dest='verbose', 
+					  action='store_const', const=10, default=20, dest='verbose',
 					  help='verbose mode; log debug info')
-	parser.add_option('-o', '--output-directory', default='', 
-					  action="store", type="string", dest="outputDirectory", 
+	parser.add_option('-o', '--output-directory', default='',
+					  action="store", type="string", dest="outputDirectory",
 					  help='use DIR as output directory', metavar='DIR')
-	parser.add_option('-s', '--scratch-directory', default='', 
-					  action="store", type="string", dest="scratchDirectory", 
+	parser.add_option('-s', '--scratch-directory', default='',
+					  action="store", type="string", dest="scratchDirectory",
 					  help='use DIR as scratch directory', metavar='DIR')
-	parser.add_option('-l', '--library-directory', default='', 
-					  action="store", type="string", dest="libraryDirectory", 
+	parser.add_option('-l', '--library-directory', default='',
+					  action="store", type="string", dest="libraryDirectory",
 					  help='use DIR as library directory', metavar='DIR')
 	parser.add_option('-r', '--restart',
 						action="store_true", dest="restart", default=False,
@@ -100,10 +100,10 @@ if __name__ == '__main__':
 	parser.add_option('-P', '--postprocess',
 					action="store_true", dest="postprocess_only", default=False,
 					help="postprocess profiling statistics from previous [failed] run. Does not run the simulation.")
-	
+
 	# Parse the command-line arguments
 	options, args = parser.parse_args()
-	
+
 	# There should be exactly one positional argument: the input file
 	# If this is not the case, print the help information and stop
 	if len(args) != 1:
@@ -118,15 +118,15 @@ if __name__ == '__main__':
 		options.outputDirectory = inputDirectory
 	if options.scratchDirectory == '':
 		options.scratchDirectory = inputDirectory
-	
+
 	# Execute RMG
 	import rmg
-	
+
 	if options.postprocess_only:
 		print "Postprocessing the profiler statistics (will be appended to RMG.log)"
 		options.profile = True
-		
-	
+
+
 	if options.profile:
 		import cProfile, sys, pstats, os
 		global_vars = {}
@@ -140,7 +140,7 @@ if __name__ == '__main__':
 		# postprocess the stats
 		log_file = os.path.join(options.outputDirectory,'RMG.log')
 		process_stats(stats_file, log_file)
-		
-	else: 
+
+	else:
 		rmg.execute( args[0], options )
 

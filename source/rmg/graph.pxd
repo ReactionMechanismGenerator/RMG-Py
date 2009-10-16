@@ -98,7 +98,7 @@ cdef class Graph(dict):
 ################################################################################
 
 cpdef VF2_isomorphism(Graph graph1, Graph graph2, dict map12, dict map21,
-	bint subgraph, bint findAll)
+	bint subgraph=?, bint findAll=?)
 
 cpdef bint __VF2_feasible(Graph graph1, Graph graph2, chem.Atom vertex1,
 	chem.Atom vertex2, dict map21, dict map12, dict terminals1, dict terminals2,
@@ -110,7 +110,7 @@ cpdef bint __VF2_match(Graph graph1, Graph graph2, dict map21, dict map12,
 
 cpdef int __get_sort_label(chem.Atom vertex)
 
-cpdef int __global_atom_sort_value(chem.Atom atom)
+cpdef int global_atom_sort_value(chem.Atom atom)
 
 cpdef list __VF2_pairs(Graph graph1, Graph graph2, dict terminals1,
 	dict terminals2, dict map21, dict map12)

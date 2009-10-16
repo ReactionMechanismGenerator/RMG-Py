@@ -67,7 +67,7 @@ cdef class BondType:
 
 ################################################################################
 
-cdef class Atom:
+cdef class Atom(object):
 	
 	cdef public list _atomType
 	cdef public list _electronState
@@ -79,12 +79,14 @@ cdef class Atom:
 	cdef public int connectivity_value_1
 	cdef public int connectivity_value_2
 	cdef public int connectivity_value_3
-	
+
+	cdef public int sorting_label
+
 	cpdef bint equivalent(Atom self, Atom other)
 
 ################################################################################
 
-cdef class Bond:
+cdef class Bond(object):
 	
 	cdef public list atoms
 	cdef public list _bondType

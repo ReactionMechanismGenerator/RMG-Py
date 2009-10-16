@@ -35,12 +35,6 @@ This is the setup file for RMG.
 from distutils.core import setup
 from distutils.extension import Extension
 
-try:
-	from Cython.Distutils import build_ext
-	cythonInstalled = True
-except ImportError:
-	cythonInstalled = False
-	
 # Stop wasting my time compiling PowerPC-compatible C extensions on my intel Mac
 import distutils.sysconfig  
 config = distutils.sysconfig.get_config_vars()
@@ -57,7 +51,6 @@ setup(name='RMG',
       author='Prof. William H. Green and the RMG Team',
       author_email='whgreen@mit.edu, rmg_dev@mit.edu',
       url='http://rmg.sourceforge.net/',
-      cmdclass = {'build_ext': build_ext},
       packages=['rmg'],
-      ext_modules = [Extension('rmg.chem', ['rmg/chem.pyx']), Extension('rmg.graph', ['rmg/graph.pyx'])]
+      ext_modules = [Extension('rmg.chem', ['rmg/chem.c']), Extension('rmg.graph', ['rmg/graph.c'])]
      )
