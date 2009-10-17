@@ -870,10 +870,10 @@ class ThermoDatabaseSet:
 					for atom2 in ring:
 						if struct.hasBond(atom1, atom2):
 							ringStructure.addBond(struct.getBond(atom1, atom2))
-
+				
 				# Get thermo correction for this ring
 				thermoData += self.ringDatabase.getThermoData(ringStructure, {})
-
+		
 		return thermoData
 
 thermoDatabase = None
@@ -889,13 +889,23 @@ def getThermoData(struct):
 	import constants
 	import math
 		
-	thermoData = thermoDatabase.getThermoData(struct)
+	GAthermoData = thermoDatabase.getThermoData(struct)
 
 	# Correct entropy for symmetry number
 	struct.calculateSymmetryNumber()
-	thermoData.S298 -= constants.R * math.log(struct.symmetryNumber)
+	GAthermoData.S298 -= constants.R * math.log(struct.symmetryNumber)
+	
+	return GAthermoData  # return here because Wilhoit conversion not working yet
+	
+	# Convert to Wilhoit
+	rotors = struct.calculateNumberOfRotors()
+	atoms = len(struct.atoms())
+	linear = struct.isLinear()
+	WilhoitData = convertGAtoWilhoit(GAthermoData,atoms,rotors,linear)
 
-	return thermoData
+	return WilhoitData
+
+
 
 ################################################################################
 
