@@ -713,21 +713,6 @@ class Bond(object):
 		"""
 		return (Bond, (self.atoms, self.bondType))
 
-	def setAtomType(self, atomType):
-		"""
-		Set the atom type that this atom represents. The `atomType`
-		parameter is any of:
-
-		* A string containing the label of a single atom type
-
-		* An :class:`AtomType` object representing the atom type
-
-		* A list containing one or more of each of the above
-
-		In all cases, the data will be stored internally as a list of
-		:class:`AtomType` objects.
-		"""
-
 	def getBondType(self):
 		"""
 		Get the list of allowed bond types. If the list is of length 1, the
