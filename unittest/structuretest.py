@@ -296,7 +296,20 @@ class StructureCheck(unittest.TestCase):
 			if symmetryNumber!=should_be:
 				fail_message+="Got rotor number of %s for %s (expected %s)\n"%(symmetryNumber,struct,should_be)
 		self.assertEqual(fail_message,'',fail_message)
-
+		
+	def testRotorNumberHard(self):
+		"""Count the number of internal rotors in a tricky case"""
+		test_set = [('CC', 1),   # start with something simple:    H3C---CH3
+					('CC#CC', 1) # now lengthen that middle bond: H3C-C#C-CH3
+					]
+		fail_message = ''
+		for smile,should_be in test_set:
+			struct = Structure(SMILES=smile)
+			symmetryNumber = struct.calculateRotorNumber()
+			if symmetryNumber!=should_be:
+				fail_message+="Got rotor number of %s for %s (expected %s)\n"%(symmetryNumber,struct,should_be)
+		self.assertEqual(fail_message,'',fail_message)		
+		
 	def testLinear(self):
 		"""Identify linear molecules"""
 		# http://cactus.nci.nih.gov/chemical/structure/C1CCCC1C/image
@@ -307,6 +320,7 @@ class StructureCheck(unittest.TestCase):
 					('[H]',False),
 					('O=O',True),
 					('O=S',True),
+					('O=C=O',True),
 					('C#C', True),
 					('C#CC#CC#C', True)
 					]
