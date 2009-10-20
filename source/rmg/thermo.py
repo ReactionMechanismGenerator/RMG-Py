@@ -473,26 +473,29 @@ class ThermoWilhoitData(ThermoData):
 		Cp_over_R = self.cp0+(self.cpInf-self.cp0)*y*y*( 1 + 
 			(y-1)*(self.a0 + y*(self.a1 + y*(self.a2 + y*self.a3))) )
 		return Cp_over_R * constants.R
-                #*****units need to be decided
 	
 	def getEnthalpy(self, T):
 		"""
 		Return the enthalpy in J/mol at temperature `T` in K.
 		"""
-		cp0 = self.cp0
-		cpInf = self.cpInf
-		B = self.B
+		cpo = self.cp0 * R
+		cpi = self.cpInf * R
+ 		B = self.B
 		a0 = self.a0
 		a1 = self.a1
 		a2 = self.a2
 		a3 = self.a3
+		I = self.I
+		#y = T/T+B
+
+		entropy = I + WilhoitInt0(cp0, cpInf, B, a0, a1, a2, a3, t)
 
 	def getEntropy(self, T):
 		"""
 		Return the entropy in J/mol*K at temperature `T` in K.
 		"""
-		cp0 = self.cp0
-		cpInf = self.cpInf
+		cp0 = self.cp0 * R
+		cpInf = self.cpInf * R
 		B = self.B
 		a0 = self.a0
 		a1 = self.a1
@@ -500,8 +503,8 @@ class ThermoWilhoitData(ThermoData):
 		a3 = self.a3
 		J = self.J
 
-                y = T/(T+B)
-		entropy = J + cpInf*math.log(T)-(cpInf-cp0)*(math.log(y)+y*(1+y*(a0/2+y*(a1/3 + y*(a2/4 + y*a3/5)))))
+                #y = T/(T+B)
+		entropy = J + WilhoitIntM1(cp0, cpInf, B, a0, a1, a2, a3, t)
 
 		return entropy
 
@@ -567,8 +570,9 @@ def convertGAtoWilhoit(GAthermo, atoms, rotors, linear):
         #t = [x*1000. for x in t] #not needed
         B = B*1000.
         #cp = [x*R for x in cp] #not needed
-        cp0 = cp0*R
-        cpInf = cpInf*R
+        #cp0 and cpInf will be in dimensionless units
+        #cp0 = cp0*R
+        #cpInf = cpInf*R
         
         # calculate I, J (for H, S, respectively); self.getX(T) should return results with I, J = 0, thereby allowing easy solution of the additive parameters I, J
         I = 0
@@ -1347,12 +1351,19 @@ def TintOpt_objFun_W(tint, cp0, cpInf, B, a0, a1, a2, a3, tmin, tmax):
 
 #analytical integrals:
 
-#input (for all functions WilhoitXIntN): Wilhoit parameters: Cp0(/R), CpInf(/R), B, a0, a1, a2, a3 and t (in kiloKelvin)
+#input (for all functions WilhoitXIntN): Wilhoit parameters: Cp0, CpInf, B, a0, a1, a2, a3 and t; units of Cp0/CpInf and B/t should be consistent and determine the units of the output 
 
-def WilhoitInt0(cp0, cpInf, B, a0, a1, a2, a3, t):
+def WilhoitInt0Orig(cp0, cpInf, B, a0, a1, a2, a3, t):
     #output: the quantity Integrate[Cp(Wilhoit)/R, t'] evaluated at t'=t
     result =        ( cpInf*t + (a3*B**6*(cp0 - cpInf))/(5.*(B + t)**5) - ((a2 + 5*a3)*B**5*(cp0 - cpInf))/(4.*(B + t)**4) + ((a1 + 4*a2 + 10*a3)*B**4*(cp0 - cpInf))/(3.*(B + t)**3) - 
            ((a0 + 3*a1 + 6*a2 + 10*a3)*B**3*(cp0 - cpInf))/(2.*(B + t)**2) + ((1 + 2*a0 + 3*a1 + 4*a2 + 5*a3)*B**2*(cp0 - cpInf))/(B + t) + (2 + a0 + a1 + a2 + a3)*B*(cp0 - cpInf)*math.log(B + t))
+    return result
+
+#a faster version of the integral based on H from Yelvington's thesis; it differs from the original (see above) by a constant (dependent on parameters but independent of t)
+def WilhoitInt0(cp0, cpInf, B, a0, a1, a2, a3, t):
+    #output: the quantity Integrate[Cp(Wilhoit)/R, t'] evaluated at t'=t
+    y = t/t+B
+    result = cp0*t - (-cp0 + cpInf)*t*(y**2*((3*a0 + a1 + a2 + a3)/6. + ((4*a1 + a2 + a3)*y)/12. + ((5*a2 + a3)*y**2)/20. + (a3*y**3)/5.) + (2 + a0 + a1 + a2 + a3)*(-1 + y/2. + (-1 + 1/y)*Log(B + t)))
     return result
 
 def WilhoitInt1(cp0, cpInf, B, a0, a1, a2, a3, t):
@@ -1411,10 +1422,18 @@ def NASA2Int(c1,c2,c3,c4,c5,t) :
     result = c1*c1*t + c1*c2*t*t + (2*c1*c3+c2*c2)/3*t*t*t + (c1*c4+c2*c3)/2*t*t*t*t + (2*c1*c5 + 2*c2*c4 + c3*c3)/5*t*t*t*t*t + (c2*c5 + c3*c4)/3*t*t*t*t*t*t + (2*c3*c5 + c4*c4)/7*t*t*t*t*t*t*t + c4*c5/4*t*t*t*t*t*t*t*t + c5*c5/9*t*t*t*t*t*t*t*t*t
     return result
 
-def WilhoitIntM1(cp0, cpInf, B, a0, a1, a2, a3, t):
+def WilhoitIntM1Orig(cp0, cpInf, B, a0, a1, a2, a3, t):
     #output: the quantity Integrate[Cp(Wilhoit)/R*t^-1, t'] evaluated at t'=t
     result=             (a3*B**5*(-cp0 + cpInf))/(5.*(B + t)**5) + ((a2 + 4*a3)*B**4*(cp0 - cpInf))/(4.*(B + t)**4) - ((a1 + 3*a2 + 6*a3)*B**3*(cp0 - cpInf))/(3.*(B + t)**3) +   ((a0 + 2*a1 + 3*a2 + 4*a3)*B**2*(cp0 - cpInf))/(2.*(B + t)**2) - ((1 + a0 + a1 + a2 + a3)*B*(cp0 - cpInf))/(B + t) + cp0*math.log(t) + (-cp0 + cpInf)*math.log(B + t) 
     return result
+
+#a faster version of the integral based on S from Yelvington's thesis; it differs from the original by a constant (dependent on parameters but independent of t)
+def WilhoitIntM1(cp0, cpInf, B, a0, a1, a2, a3, t):
+    #output: the quantity Integrate[Cp(Wilhoit)/R*t^-1, t'] evaluated at t'=t
+    y = t/(t+B)
+    result=             cpInf*math.log(t)-(cpInf-cp0)*(math.log(y)+y*(1+y*(a0/2+y*(a1/3 + y*(a2/4 + y*a3/5))))) 
+    return result
+
 
 def Wilhoit2IntM1(cp0, cpInf, B, a0, a1, a2, a3, t):
     #output: the quantity Integrate[(Cp(Wilhoit)/R)^2*t^-1, t'] evaluated at t'=t
