@@ -564,13 +564,13 @@ def convertGAtoWilhoit(GAthermo, atoms, rotors, linear):
         a2 = x[2]
         a3 = x[3]
         
-        err = self.rmsErrWilhoit(t, cp, cp0, cpInf, B, a0, a1, a2, a3) #(optional); display rmsError
+        err = self.rmsErrWilhoit(t, cp, cp0, cpInf, B, a0, a1, a2, a3) #(optional); display rmsError (dimensionless units)
 
         # scale everything back
         #t = [x*1000. for x in t] #not needed
         B = B*1000.
         #cp = [x*R for x in cp] #not needed
-        #UPDATE: cp0 and cpInf will be in units of J/mol-K
+        #cp0 and cpInf will be in units of J/mol-K
         cp0 = cp0*R
         cpInf = cpInf*R
         
@@ -584,7 +584,7 @@ def convertGAtoWilhoit(GAthermo, atoms, rotors, linear):
 	# for now, setting them all to one (except B)
 	#cp0, cpInf, B, a0, a1, a2, a3 = (1.0,1.0,500.0,1.0,1.0,1.0,1.0)
 	
-	# output comment
+	# output comment; ****we could also include fitting accuracy ("err") in the output below
 	comment = 'Fitted to GA data with Cp0=%2g and Cp_inf=%2g. '%(cp0,cpInf) + GAthermo.comment
 	
 	# create Wilhoit instances
@@ -688,6 +688,15 @@ def convertWilhoitToNASA(Wilhoit):
         b9 = b9/1000000000.
         b5 = b5/1000000000000.
         b10= b10/1000000000000.
+
+        #for now, set H and S parameters equal to zero; this will need to be fixed****
+        Hlow = 0.0
+        Slow = 0.0
+        Hhigh = 0.0
+        Shigh = 0.0
+        
+        coeffs_low = (Hlow,Slow,b1,b2,b3,b4,b5)
+        coeffs_high = (Hhigh,Shigh,b6,b7,b8,b9,b10)
 	
         # could we include fitting accuracy in the expression below?
 	# output comment
