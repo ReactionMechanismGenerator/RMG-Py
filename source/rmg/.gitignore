@@ -1,0 +1,4 @@
+# files that git should ignore and not suggest adding to the repository
+*.c
+*.so
+*.pyc

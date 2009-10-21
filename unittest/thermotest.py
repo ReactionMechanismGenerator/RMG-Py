@@ -242,7 +242,11 @@ class ThermoGAtoWilhoitCheck(unittest.TestCase):
 		
 		Tlist = thermo.ThermoGAData.CpTlist # just check at defined data points
 		for T in Tlist:
-			self.assertAlmostEqual(GAthermoData.getHeatCapacity(T), WilhoitData.getHeatCapacity(T), 3)
+			ga = GAthermoData.getHeatCapacity(T)
+			wil = WilhoitData.getHeatCapacity(T)[0]
+			err = abs(ga-wil)
+			limit = 4.0 # J/mol/K
+			self.assertTrue(err<limit,"GA (%.1f) and Wilhoit (%.1f) differ by more than %s J/mol/K at %dK"%(ga,wil,limit,T))
 	
 	def testEnthalpy(self):
 		"""Check the Wilhoit H matches the GA H for propane.
@@ -257,7 +261,11 @@ class ThermoGAtoWilhoitCheck(unittest.TestCase):
 		
 		Tlist = thermo.ThermoGAData.CpTlist # just check at defined data points
 		for T in Tlist:
-			self.assertAlmostEqual(GAthermoData.getEnthalpy(T), WilhoitData.getEnthalpy(T), 3)
+			ga = GAthermoData.getEnthalpy(T)
+			wil = WilhoitData.getEnthalpy(T)[0]
+			err = abs(ga-wil)
+			limit = 1000.0 # J/mol
+			self.assertTrue(err<limit,"GA (%.1f) and Wilhoit (%.1f) differ by more than %s J/mol at %dK"%(ga,wil,limit,T))
 			
 	def testEntropy(self):
 		"""Check the Wilhoit S matches the GA S for propane.
@@ -272,7 +280,11 @@ class ThermoGAtoWilhoitCheck(unittest.TestCase):
 		
 		Tlist = thermo.ThermoGAData.CpTlist # just check at defined data points
 		for T in Tlist:
-			self.assertAlmostEqual(GAthermoData.getEntropy(T), WilhoitData.getEntropy(T), 3)
+			ga = GAthermoData.getEntropy(T)
+			wil = WilhoitData.getEntropy(T)[0]
+			err = abs(ga-wil)
+			limit = 4.0 # J/mol/K
+			self.assertTrue(err<limit,"GA (%.1f) and Wilhoit (%.1f) differ by more than %s J/mol/K at %dK"%(ga,wil,limit,T))
 			
 			
 			
@@ -280,9 +292,9 @@ class ThermoWilhoitToNASACheck(unittest.TestCase):
 	"""Test conversion to NASA polynomials"""
 	def testNASAcreated(self):
 		"""Can we make NASA polynomial data"""
-		cp0, cpInf, B, a0, a1, a2, a3 = (1.0,1.0,500.0,1.0,1.0,1.0,1.0)
+		cp0, cpInf, a0, a1, a2, a3, I, J = (1.0,1.0,1.0,1.0,1.0,1.0, 1.0, 1.0)
 		comment = "Stupid thermo."
-		WilhoitThermo = thermo.ThermoWilhoitData( cp0, cpInf, B, a0, a1, a2, a3, comment=comment)
+		WilhoitThermo = thermo.ThermoWilhoitData( cp0, cpInf, a0, a1, a2, a3, I, J, comment=comment)
 		NASAthermoData = thermo.convertWilhoitToNASA(WilhoitThermo)
 		# well, if we didn't cause an error, I guess that's good enough for now.
 
