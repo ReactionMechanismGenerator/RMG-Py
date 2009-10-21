@@ -1135,20 +1135,20 @@ class ReactionFamily(data.Database):
 			self.reverse.forbidden = self.forbidden
 			self.reverse.reverse = self
 
-		# Generate the product structures by applying the reaction template to
-		# the top-level nodes (A1 and B1 above)
-		# First, merge reactant structures into single structure
-		reactantStructures = []
-		for reactant in self.template.reactants:
-			s = reactant[0] if isinstance(reactant, list) else reactant
-			if self.dictionary[s] == 'union':
-				print 'Cannot handle unions yet'
-				return
-			reactantStructures.append(self.dictionary[s])
-		# Next, generate the product structures
-		productStructures = self.applyRecipe(reactantStructures)
-		for productStructure in productStructures:
-			print productStructure.toAdjacencyList()
+#		# Generate the product structures by applying the reaction template to
+#		# the top-level nodes (A1 and B1 above)
+#		# First, merge reactant structures into single structure
+#		reactantStructures = []
+#		for reactant in self.template.reactants:
+#			s = reactant[0] if isinstance(reactant, list) else reactant
+#			if self.dictionary[s] == 'union':
+#				print 'Cannot handle unions yet'
+#				return
+#			reactantStructures.append(self.dictionary[s])
+#		# Next, generate the product structures
+#		productStructures = self.applyRecipe(reactantStructures)
+#		for productStructure in productStructures:
+#			print productStructure.toAdjacencyList()
 
 
 	def reactantMatch(self, reactant, templateReactant):
