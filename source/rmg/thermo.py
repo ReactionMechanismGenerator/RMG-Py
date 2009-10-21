@@ -447,21 +447,24 @@ class ThermoWilhoitData(ThermoData):
 	A set of thermodynamic parameters given by Wilhoit polynomials. 
 	
 	"""
+	B = 500 # Kelvin. Default temperature.
 	
-	def __init__(self, cp0, cpInf, B, a0, a1, a2, a3, I, J, comment='', ):
-		"""Initialise the Wilhoit polynomial. Trange is set to (0,infinity)"""
+	def __init__(self, cp0, cpInf, a0, a1, a2, a3, I, J, comment='', ):
+		"""Initialise the Wilhoit polynomial. Trange is set to (0,9999.9)"""
 		Trange = (0,9999.9) # Wilhoit valid over all temperatures
 		ThermoData.__init__(self, Trange=Trange, comment=comment)
 		self.cp0 = cp0
 		self.cpInf = cpInf
-		self.B = B
+		self.B = ThermoWilhoitData.B
 		self.a0 = a0
 		self.a1 = a1
 		self.a2 = a2
 		self.a3 = a3
+		self.I = I
+		self.J = J
 	
 	def __repr__(self):
-		return "ThermoWilhoitData(%.2g,%.2g,%.2g,%.2g,%.2g,%.2g,%.2g,'%s')"%(self.cp0, self.cpInf, self.B, self.a0, self.a1, self.a2, self.a3, self.comment)
+		return "ThermoWilhoitData(%.2g,%.2g,%.2g,%.2g,%.2g,%.2g,%.2g,%.2g,%.2g'%s')"%(self.cp0, self.cpInf, self.B, self.a0, self.a1, self.a2, self.a3, self.I, self.J, self.comment)
 	
 	def toXML(self, dom, root):
 		pass
@@ -481,7 +484,9 @@ class ThermoWilhoitData(ThermoData):
 		"""
 		#cp0 = self.cp0 * R
 		#cpInf = self.cpInf * R
- 		B = self.B
+		cp0 = self.cp0
+		cpInf = self.cpInf
+		B = self.B
 		a0 = self.a0
 		a1 = self.a1
 		a2 = self.a2
@@ -489,14 +494,18 @@ class ThermoWilhoitData(ThermoData):
 		I = self.I
 		#y = T/T+B
 		
-		entropy = I + WilhoitInt0(cp0, cpInf, B, a0, a1, a2, a3, t)
-
+		enthalpy = I + WilhoitInt0(cp0, cpInf, B, a0, a1, a2, a3, T)
+		
+		return enthalpy
+	
 	def getEntropy(self, T):
 		"""
 		Return the entropy in J/mol*K at temperature `T` in K.
 		"""
 		#cp0 = self.cp0 * R
 		#cpInf = self.cpInf * R
+		cp0 = self.cp0
+		cpInf = self.cpInf
 		B = self.B
 		a0 = self.a0
 		a1 = self.a1
@@ -505,10 +514,10 @@ class ThermoWilhoitData(ThermoData):
 		J = self.J
 		
 		#y = T/(T+B)
-		entropy = J + WilhoitIntM1(cp0, cpInf, B, a0, a1, a2, a3, t)
+		entropy = J + WilhoitIntM1(cp0, cpInf, B, a0, a1, a2, a3, T)
 		
 		return entropy
-
+	
 	def getFreeEnergy(self, T):
 		"""
 		Return the Gibbs free energy in J/mol at temperature `T` in K.
@@ -538,7 +547,9 @@ def convertGAtoWilhoit(GAthermo, atoms, rotors, linear):
 	
 	#convert from K to kK
 	t = [x/1000. for x in t] 
-	B = B/1000.
+	
+	B = ThermoWilhoitData.B # Constant, set once in the class def.
+	B = B/1000.  
 	
 	cp = [x/R for x in cp] #convert to Cp/R
 	
@@ -565,31 +576,35 @@ def convertGAtoWilhoit(GAthermo, atoms, rotors, linear):
 	a2 = x[2]
 	a3 = x[3]
 	
-	err = self.rmsErrWilhoit(t, cp, cp0, cpInf, B, a0, a1, a2, a3) #(optional); display rmsError (dimensionless units)
+	# err = rmsErrWilhoit(t, cp, cp0, cpInf, a0, a1, a2, a3) #(optional); display rmsError (dimensionless units)
 	
 	# scale everything back
 	#t = [x*1000. for x in t] #not needed
-	B = B*1000.
+	# B = B*1000. # not needed
 	#cp = [x*R for x in cp] #not needed
 	#cp0 and cpInf will be in units of J/mol-K
 	cp0 = cp0*R
 	cpInf = cpInf*R
 	
-	# calculate I, J (for H, S, respectively); self.getX(T) should return results with I, J = 0, thereby allowing easy solution of the additive parameters I, J
-	I = 0
-	J = 0
-	I = H298 - self.getEnthalpy(298.15)
-	J = S298 - self.getEntropy(298.15)
-	
-	# output coefficients
-	# for now, setting them all to one (except B)
-	#cp0, cpInf, B, a0, a1, a2, a3 = (1.0,1.0,500.0,1.0,1.0,1.0,1.0)
-	
 	# output comment; ****we could also include fitting accuracy ("err") in the output below
 	comment = 'Fitted to GA data with Cp0=%2g and Cp_inf=%2g. '%(cp0,cpInf) + GAthermo.comment
 	
+	# first create an instance with I=J=0, then calculate what they should be 
+	# by referring to H298, S298
+	I = 0
+	J = 0
+	
 	# create Wilhoit instances
-	WilhoitThermo = ThermoWilhoitData( cp0, cpInf, B, a0, a1, a2, a3, comment=comment)
+	WilhoitThermo = ThermoWilhoitData( cp0, cpInf, a0, a1, a2, a3, I, J, comment=comment)
+
+	# calculate I, J (for H, S, respectively); self.getX(T) should return results
+	# with I, J = 0, thereby allowing easy solution of the additive parameters I, J 
+	I = H298 - WilhoitThermo.getEnthalpy(298.15)
+	J = S298 - WilhoitThermo.getEntropy(298.15)
+	
+	WilhoitThermo.I = I
+	WilhoitThermo.J = J
+	
 	return WilhoitThermo
 
 def CpLimits(atoms, rotors, linearity):
@@ -1020,6 +1035,8 @@ def TintOpt_objFun_W(tint, cp0, cpInf, B, a0, a1, a2, a3, tmin, tmax):
 
 #input (for all functions WilhoitXIntN): Wilhoit parameters: Cp0, CpInf, B, a0, a1, a2, a3 and t; units of Cp0/CpInf and B/t should be consistent and determine the units of the output 
 
+### These functions belong inside the ThermoWilhoitData class:
+
 def WilhoitInt0Orig(cp0, cpInf, B, a0, a1, a2, a3, t):
 	#output: the quantity Integrate[Cp(Wilhoit)/R, t'] evaluated at t'=t
 	result = ( cpInf*t + (a3*B**6*(cp0 - cpInf))/(5.*(B + t)**5) - ((a2 + 5*a3)*B**5*(cp0 - cpInf))/(4.*(B + t)**4) + ((a1 + 4*a2 + 10*a3)*B**4*(cp0 - cpInf))/(3.*(B + t)**3) - 
@@ -1029,7 +1046,7 @@ def WilhoitInt0Orig(cp0, cpInf, B, a0, a1, a2, a3, t):
 #a faster version of the integral based on H from Yelvington's thesis; it differs from the original (see above) by a constant (dependent on parameters but independent of t)
 def WilhoitInt0(cp0, cpInf, B, a0, a1, a2, a3, t):
 	#output: the quantity Integrate[Cp(Wilhoit)/R, t'] evaluated at t'=t
-	y = t/t+B
+	y = t/(t+B)
 	result = cp0*t - (-cp0 + cpInf)*t*(y**2*((3*a0 + a1 + a2 + a3)/6. + ((4*a1 + a2 + a3)*y)/12. + ((5*a2 + a3)*y**2)/20. + (a3*y**3)/5.) + (2 + a0 + a1 + a2 + a3)*(-1 + y/2. + (-1 + 1/y)*math.log(B + t)))
 	return result
 
