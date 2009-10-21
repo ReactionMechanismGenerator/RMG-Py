@@ -112,7 +112,12 @@ class Structure:
 
 	def getBonds(self, atom):
 		"""
-		Return a list of the bonds involving the specified `atom`.
+		Return a dictionary of neighbouring atoms and their bonds to the specified `atom`.
+		
+		The keys in the dictionary are the neighbouring atoms.
+		The values are the bonds themselves.
+		`getBonds(atom).values()` will return just the bonds
+		
 		"""
 		return self.graph.getEdges(atom)
 
@@ -817,6 +822,74 @@ class Structure:
 		for atom in self.atoms():
 			if self.isAtomInCycle(atom):
 				return True
+		return False
+
+	def calculateRotorNumber(self):
+		"""
+		Return the number of rotors in the molecule.
+		"""
+		# # this is tempting, but returns the number of rotors that lead to 
+		# # different conformers, not the total number of internal rotors
+		# obmol = self.toOBMol()
+		# rotors = obmol.NumRotors()
+		# return rotors
+		
+		if self.isLinear(): return 0
+		rotors = 0
+		for bond in self.bonds():
+			if not bond.isSingle(): continue # only count single bonds
+			if self.isBondInCycle(bond): continue # ring bonds no good either
+			
+			for atom in bond.atoms:
+				# an atom has only one bond, so is terminal
+				if len(self.graph[atom])==1: break
+			else: # didn't break
+				rotors+=1
+		return rotors
+		
+		
+	def isLinear(self):
+		"""
+		Return :data:`True` if the structure is linear and :data:`False` otherwise.
+		"""
+		atoms = self.atoms()
+		atomCount = len(atoms)
+		
+		# True if two atoms
+		if atomCount == 2:
+			return True
+		# False if one atom
+		if atomCount == 1:
+			return False
+		# False if cyclic
+		if self.isCyclic():
+			return False
+			
+		# True if all bonds are double bonds
+		for bond in self.bonds(): 
+			if not bond.isDouble(): break
+		else: # didn't break
+			return True
+		
+		# True if alternating single-triple bonds
+		for atom in atoms:
+			#print 'atom',atom.atomType.label
+			bonds = self.getBonds(atom).values()
+			#print 'bonds',[b.bondType.label for b in bonds]
+			if len(bonds)==1:
+				continue # ok, next atom
+			if len(bonds)>2:
+				break # fail!
+			if bonds[0].isSingle() and bonds[1].isTriple():
+				continue # ok, next atom
+			if bonds[1].isSingle() and bonds[0].isTriple():
+				continue # ok, next atom
+			break # fail if we haven't continued
+		else:
+			# didn't fail
+			return True
+			
+		# not returned yet? must be nonlinear
 		return False
 
 	def calculateAtomSymmetryNumber(self, atom):

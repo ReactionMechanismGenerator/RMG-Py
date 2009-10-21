@@ -232,6 +232,7 @@ class StructureCheck(unittest.TestCase):
 		self.assertEqual(symmetryNumber, 2)
 
 	def testAxisSymmetryNumber(self):
+		"""Axis symmetry number"""
 		test_set = [('C=C=C', 2), # ethane
 					('C=C=C=C', 2),
 					('C=C=C=[CH]', 2), # =C-H is straight
@@ -265,6 +266,7 @@ class StructureCheck(unittest.TestCase):
 #		self.assertEqual(symmetryNumber, 12)
 
 	def testSymmetryNumber(self):
+		"""Overall symmetry number"""
 		test_set = [('CC', 18), # ethane
 					('C=C=[C]C(C)(C)[C]=C=C', 'Who knows?'),
 					('C(=CC(c1ccccc1)C([CH]CCCCCC)C=Cc1ccccc1)[CH]CCCCCC', 1)
@@ -278,8 +280,59 @@ class StructureCheck(unittest.TestCase):
 				fail_message+="Got total symmetry number of %s for %s (expected %s)\n"%(symmetryNumber,struct,should_be)
 		self.assertEqual(fail_message,'',fail_message)
 		
-
+	def testRotorNumber(self):
+		"""Count the number of internal rotors"""
+		# http://cactus.nci.nih.gov/chemical/structure/C1CCCC1C/image
+		test_set = [('CC', 1), 
+					('CCC', 2),
+					('CC(C)(C)C', 4),
+					('C1CCCC1C',1),
+					('C=C',0)
+					]
+		fail_message = ''
+		for smile,should_be in test_set:
+			struct = Structure(SMILES=smile)
+			symmetryNumber = struct.calculateRotorNumber()
+			if symmetryNumber!=should_be:
+				fail_message+="Got rotor number of %s for %s (expected %s)\n"%(symmetryNumber,struct,should_be)
+		self.assertEqual(fail_message,'',fail_message)
 		
+	def testRotorNumberHard(self):
+		"""Count the number of internal rotors in a tricky case"""
+		test_set = [('CC', 1),   # start with something simple:    H3C---CH3
+					('CC#CC', 1) # now lengthen that middle bond: H3C-C#C-CH3
+					]
+		fail_message = ''
+		for smile,should_be in test_set:
+			struct = Structure(SMILES=smile)
+			symmetryNumber = struct.calculateRotorNumber()
+			if symmetryNumber!=should_be:
+				fail_message+="Got rotor number of %s for %s (expected %s)\n"%(symmetryNumber,struct,should_be)
+		self.assertEqual(fail_message,'',fail_message)		
+		
+	def testLinear(self):
+		"""Identify linear molecules"""
+		# http://cactus.nci.nih.gov/chemical/structure/C1CCCC1C/image
+		test_set = [('CC', False), 
+					('CCC', False),
+					('CC(C)(C)C', False),
+					('C',False),
+					('[H]',False),
+					('O=O',True),
+					('O=S',True),
+					('O=C=O',True),
+					('C#C', True),
+					('C#CC#CC#C', True)
+					]
+		fail_message = ''
+		for smile,should_be in test_set:
+			struct = Structure(SMILES=smile)
+			symmetryNumber = struct.isLinear()
+			if symmetryNumber!=should_be:
+				fail_message+="Got linearity %s for %s (expected %s)\n"%(symmetryNumber,struct,should_be)
+		self.assertEqual(fail_message,'',fail_message)
+		
+				
 ################################################################################
 from timeit import Timer
 

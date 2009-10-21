@@ -276,8 +276,22 @@ class Species:
 
 	def getThermoData(self):
 		"""
-		Generate thermodynamic data for the species by use of the thermo
-		database.
+		Get thermodynamic data for the species, generating it if necessary.
+		
+		The specific type of thermo data returned is unknown, but it will be 
+		a subclass of :class:`thermo.ThermoData`.  If `self.thermoData` does 
+		not yet exist, it is created using :method:`self.generateThermoData()`
+		"""
+		if not self.thermoData:
+			self.generateThermoData()
+		return self.thermoData
+		
+	def generateThermoData(self):
+		"""
+		Generate thermodynamic data for the species using the thermo database.
+		
+		Generates the thermo data for each structure (resonance isomer), 
+		picks that with lowest H298 value, and saves it to `self.thermoData`.
 		"""
 		
 		thermoData = []
@@ -289,9 +303,12 @@ class Species:
 		# the most stable isomer (i.e. one with lowest enthalpy of formation)
 		# as the thermo data of the species
 		self.thermoData = thermoData[0]
+		lowestH298 = self.thermoData.getEnthalpy(298)
 		for tdata in thermoData[1:]:
-			if tdata.H298 < self.thermoData.H298:
+			thisH298 = tdata.getEnthalpy(298)
+			if thisH298 < lowestH298:
 				self.thermoData = tdata
+				lowestH298 = thisH298
 		return self.thermoData
 
 	def getHeatCapacity(self, T):
@@ -300,7 +317,7 @@ class Species:
 		"""
 		if self.thermoSnapshot.isValid(temperature=T):
 			return self.thermoSnapshot.heatCapacity
-		if self.thermoData is None: self.getThermoData()
+		#if self.thermoData is None: self.getThermoData()
 		return self.thermoData.getHeatCapacity(T)
 
 	def getEnthalpy(self, T):
@@ -309,7 +326,7 @@ class Species:
 		"""
 		if self.thermoSnapshot.isValid(temperature=T):
 			return self.thermoSnapshot.enthalpy
-		if self.thermoData is None: self.getThermoData()
+		#if self.thermoData is None: self.getThermoData()
 		return self.thermoData.getEnthalpy(T)
 
 	def getEntropy(self, T):
@@ -318,7 +335,7 @@ class Species:
 		"""
 		if self.thermoSnapshot.isValid(temperature=T):
 			return self.thermoSnapshot.entropy
-		if self.thermoData is None: self.getThermoData()
+		#if self.thermoData is None: self.getThermoData()
 		return self.thermoData.getEntropy(T)
 
 	def getFreeEnergy(self, T):
@@ -327,7 +344,7 @@ class Species:
 		"""
 		if self.thermoSnapshot.isValid(temperature=T):
 			return self.thermoSnapshot.freeEnergy
-		if self.thermoData is None: self.getThermoData()
+		#if self.thermoData is None: self.getThermoData()
 		return self.thermoData.getFreeEnergy(T)
 
 	def isIsomorphic(self, other):

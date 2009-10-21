@@ -640,41 +640,47 @@ class Atom(object):
 		be increased by one. This method restricts the radical order to three or
 		fewer.
 		"""
-		return self.getFreeElectronCount() < 4
-
+		for electronState in self._electronState:
+			if electronState.order >= 4: return False
+		return True
+	
 	def canDecreaseFreeElectron(self):
 		"""
 		Return :data:`True` if the number of unpaired electrons on this atom can
 		be decreased by one. This method requires that there be at least one
 		free electron on this atom.
 		"""
-		return self.getFreeElectronCount() > 0
-
+		for electronState in self._electronState:
+			if electronState.order < 1: return False
+		return True
+	
 	def increaseFreeElectron(self):
 		"""
 		Increase the number of unpaired electrons on this atom by one.
 		"""
-		if self.electronState.label == '0': self.electronState = electronStates['1']
-		elif self.electronState.label == '1': self.electronState = electronStates['2']
-		elif self.electronState.label == '2': self.electronState = electronStates['3']
-		elif self.electronState.label == '2S': self.electronState = electronStates['3']
-		elif self.electronState.label == '2T': self.electronState = electronStates['3']
-		elif self.electronState.label == '3': self.electronState = electronStates['4']
-		else:
-			raise InvalidChemicalActionException('Cannot increase the radical number of this atom.')
+		for i in range(len(self._electronState)):
+			if self._electronState[i].label == '0': self._electronState[i] = electronStates['1']
+			elif self._electronState[i].label == '1': self._electronState[i] = electronStates['2']
+			elif self._electronState[i].label == '2': self._electronState[i] = electronStates['3']
+			elif self._electronState[i].label == '2S': self._electronState[i] = electronStates['3']
+			elif self._electronState[i].label == '2T': self._electronState[i] = electronStates['3']
+			elif self._electronState[i].label == '3': self._electronState[i] = electronStates['4']
+			else:
+				raise InvalidChemicalActionException('Cannot increase the radical number of this atom.')
 
 	def decreaseFreeElectron(self):
 		"""
 		Decrease the number of unpaired electrons on this atom by one.
 		"""
-		if self.electronState.label == '1': self.electronState = electronStates['0']
-		elif self.electronState.label == '2': self.electronState = electronStates['1']
-		elif self.electronState.label == '2S': self.electronState = electronStates['1']
-		elif self.electronState.label == '2T': self.electronState = electronStates['1']
-		elif self.electronState.label == '3': self.electronState = electronStates['2']
-		elif self.electronState.label == '4': self.electronState = electronStates['3']
-		else:
-			raise InvalidChemicalActionException('Cannot decrease the radical number of this atom.')
+		for i in range(len(self._electronState)):
+			if self._electronState[i].label == '1': self._electronState[i] = electronStates['0']
+			elif self._electronState[i].label == '2': self._electronState[i] = electronStates['1']
+			elif self._electronState[i].label == '2S': self._electronState[i] = electronStates['1']
+			elif self._electronState[i].label == '2T': self._electronState[i] = electronStates['1']
+			elif self._electronState[i].label == '3': self._electronState[i] = electronStates['2']
+			elif self._electronState[i].label == '4': self._electronState[i] = electronStates['3']
+			else:
+				raise InvalidChemicalActionException('Cannot decrease the radical number of this atom.')
 
 ################################################################################
 
@@ -706,21 +712,6 @@ class Bond(object):
 		Used for pickling.
 		"""
 		return (Bond, (self.atoms, self.bondType))
-
-	def setAtomType(self, atomType):
-		"""
-		Set the atom type that this atom represents. The `atomType`
-		parameter is any of:
-
-		* A string containing the label of a single atom type
-
-		* An :class:`AtomType` object representing the atom type
-
-		* A list containing one or more of each of the above
-
-		In all cases, the data will be stored internally as a list of
-		:class:`AtomType` objects.
-		"""
 
 	def getBondType(self):
 		"""
@@ -812,32 +803,38 @@ class Bond(object):
 		"""
 		Return :data:`True` if the bond order can be increased by one.
 		"""
-		return self.isSingle() or self.isDouble()
+		for bondType in self._bondType:
+			if bondType.order != 1 and bondType.order != 2: return False
+		return True
 
 	def canDecreaseOrder(self):
 		"""
 		Return :data:`True` if the bond order can be decreased by one without
 		breaking.
 		"""
-		return self.isDouble() or self.isTriple()
-
+		for bondType in self._bondType:
+			if bondType.order != 2 and bondType.order != 3: return False
+		return True
+	
 	def increaseOrder(self):
 		"""
 		Increase the bond order by one.
 		"""
-		if self.isSingle():		self.bondType = bondTypes['D']
-		elif self.isDouble():	self.bondType = bondTypes['T']
-		else:
-			raise InvalidChemicalActionException('Cannot increase the bond order of this bond.')
+		for i in range(len(self._bondType)):
+			if self._bondType[i].order == 1:		self._bondType[i] = bondTypes['D']
+			elif self._bondType[i].order == 2:		self._bondType[i] = bondTypes['T']
+			else:
+				raise InvalidChemicalActionException('Cannot increase the bond order of this bond.')
 
 	def decreaseOrder(self):
 		"""
 		Decrease the bond order by one.
 		"""
-		if self.isDouble():		self.bondType = bondTypes['S']
-		elif self.isTriple():	self.bondType = bondTypes['D']
-		else:
-			raise InvalidChemicalActionException('Cannot decrease the bond order of this bond.')
+		for i in range(len(self._bondType)):
+			if self._bondType[i].order == 2:		self._bondType[i] = bondTypes['S']
+			elif self._bondType[i].order == 3:		self._bondType[i] = bondTypes['D']
+			else:
+				raise InvalidChemicalActionException('Cannot decrease the bond order of this bond.')
 
 
 ################################################################################

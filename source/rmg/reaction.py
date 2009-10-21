@@ -603,17 +603,21 @@ class ReactionFamily(data.Database):
 		#: The path of the database that was loaded.
 		self._path = path
 
-		# Load the dictionary, tree, and library using the generic methods
+		# Load the dictionary and tree using the generic methods
+		# We can't use the generic method to load the library because it has
+		# the type ('Arrhenius_EP') as the first meaningful line
 		data.Database.load(self, dictstr, treestr, '')
-		#
-
-		# Load the forbidden groups if necessary
+		
+		# Load the forbidden groups if the file 'forbiddenGroups.txt' is present
+		# This file has the form of a standard dictionary so we can use the
+		# standard dictionary loading function
 		if os.path.exists(forbstr):
 			self.forbidden = data.Dictionary()
 			self.forbidden.load(forbstr)
 			self.forbidden.toStructure()
 
-		# Load the adjlist (must be last, as the reverse family is also generated)
+		# Load the reaction template information and generate the reverse family
+		# This requires that the dictionary and tree be loaded
 		self.loadTemplate(tempstr)
 
 		# Process the data in the library
@@ -1075,8 +1079,11 @@ class ReactionFamily(data.Database):
 		# A1 A2 ... + B1 B2 ... + ... <---> C1 C2 ... + D1 D2 ... + ...
 		# A, B, ... are reactants; C, D, ... are products
 		# A1, A2, ... represent different trees for the same species
-		# The first tree of each species is always used to identify reactions,
-		# while the others are used to select the appropriate kinetics
+		# The first tree of each species is always used to identify the 
+		# reactants, so it should have all of the labeled atoms that are in that
+		# reactant
+		# The other trees can be used to provide functional group trees for
+		# different parts of the molecule
 		reactants = []; products = []; species = []
 		atArrow = False
 		items = lines[2].split(); items.extend('+')
@@ -1089,8 +1096,10 @@ class ReactionFamily(data.Database):
 				if item[0] == '<' and item[-1] == '>' and item.find('-') > -1:
 					atArrow = True
 			else:
-				# Check that all structures are in dictionary
-				if item not in self.dictionary:
+				# Check that all reactant structures are in dictionary
+				# The product structures are generated automatically and need
+				# not be included
+				if item not in self.dictionary and not atArrow:
 					raise data.InvalidDatabaseException('Reaction family template contains an unknown structure.')
 				species.append(item)
 
@@ -1126,6 +1135,22 @@ class ReactionFamily(data.Database):
 			self.reverse.forbidden = self.forbidden
 			self.reverse.reverse = self
 
+#		# Generate the product structures by applying the reaction template to
+#		# the top-level nodes (A1 and B1 above)
+#		# First, merge reactant structures into single structure
+#		reactantStructures = []
+#		for reactant in self.template.reactants:
+#			s = reactant[0] if isinstance(reactant, list) else reactant
+#			if self.dictionary[s] == 'union':
+#				print 'Cannot handle unions yet'
+#				return
+#			reactantStructures.append(self.dictionary[s])
+#		# Next, generate the product structures
+#		productStructures = self.applyRecipe(reactantStructures)
+#		for productStructure in productStructures:
+#			print productStructure.toAdjacencyList()
+
+
 	def reactantMatch(self, reactant, templateReactant):
 		"""
 		Return :data:`True` if the provided reactant matches the provided
@@ -1145,70 +1170,57 @@ class ReactionFamily(data.Database):
 
 		return len(maps12) > 0, maps21, maps12
 
-	def makeReaction(self, reactants, structures, maps):
+	def applyRecipe(self, reactantStructures):
 		"""
-		Create a reaction involving a list of `reactants`. The `reactantStructures`
-		parameter is a list of structures in the order the reactants are stored
-		in the reaction family template, and the `maps` parameter is a list of
-		mappings of the top-level tree node of each template reactant to the
-		corresponding structure.
+		Apply the recipe for this reaction family to the list of
+		:class:`structure.Structure` objects `reactantStructures`. The atoms
+		of the reactant structures must already be tagged with the appropriate
+		labels. Returns a list of structures corresponding to the products
+		after checking that the correct number of products was produced.
 		"""
 
-		# Clear any previous atom labeling from all structures
-		for struct in structures: struct.clearLabeledAtoms()
-
-		# Tag atoms with labels
-		identicalCenterCounter = 0
-		for map in maps:
-			for templateAtom, reactantAtom in map.iteritems():
-				# For reactions involving two identical centers, both labeled
-				# '*', label one as '*1' and the other as '*2'
-				# An example reaction family is colligation (reverse of
-				# unimolecular homolysis)
-				if templateAtom.label == '*':
-					identicalCenterCounter += 1
-					reactantAtom.label = '*' + str(identicalCenterCounter)
-				# Otherwise pass label as given
-				elif templateAtom.label != '':
-					reactantAtom.label = templateAtom.label
-
-		# Copy structures so we don't modify the originals
-		# Do this after tagging the originals so both reactants and products
-		# have tags
-		reactantStructures = []
-		for struct in structures:
-			reactantStructures.append(struct.copy())
+		# There is some hardcoding of reaction families in this function, so
+		# we need the label of the reaction family for this
+		label = self.label.lower()
 
 		# Merge reactant structures into single structure
-		struct = structure.Structure()
+		# Also copy structures so we don't modify the originals
+		# Since the tagging has already occurred, both the reactants and the
+		# products will have tags
+		reactantStructure = structure.Structure()
 		for s in reactantStructures:
-			struct = struct.merge(s)
+			reactantStructure = reactantStructure.merge(s.copy())
 
-		# Generate the product structure
-		if not self.recipe.applyForward(struct):
+		# Hardcoding of reaction family for radical recombination (colligation)
+		# because the two reactants are identical, they have the same tags
+		# In this case, we must change the labels from '*' and '*' to '*1' and
+		# '*2'
+		if label == 'colligation':
+			identicalCenterCounter = 0
+			for atom in reactantStructure.atoms():
+				if atom.label == '*':
+					identicalCenterCounter += 1
+					atom.label = '*' + str(identicalCenterCounter)
+			if identicalCenterCounter != 2:
+				raise Exception('Unable to change labels from "*" to "*1" and "*2" for reaction family %s.' % (label))
+
+		# Generate the product structure by applying the recipe
+		if not self.recipe.applyForward(reactantStructure):
 			return None
+		productStructure = reactantStructure.copy()
 
-		productStructure = struct.copy()
-		self.recipe.applyReverse(struct)
-
-		# Restore original atom labels of the reactants if they were changed
-		# before
-		if identicalCenterCounter > 0:
-			#for struct in structures:
-			for s in reactantStructures:
-				for atom in s.atoms():
-					if atom.label != '':
-						atom.label = '*'
-
-		# Remove numbers from labeled atoms of products if they are the same
-		# top-level node
-		if len(self.template.products) > 1:
-			if self.template.products[0] == self.template.products[1]:
-				for atom in productStructure.atoms():
-					if atom.label != '': atom.label = '*'
+		# Hardcoding of reaction family for reverse of radical recombination
+		# (Unimolecular homolysis)
+		# Because the two products are identical, they should the same tags
+		# In this case, we must change the labels from '*1' and '*2' to '*' and
+		# '*'
+		if label == 'unimolecular homolysis':
+			for atom in productStructure.atoms():
+				if atom.label == '*1' or atom.label == '*2': atom.label = '*'
 
 		# If reaction family is its own reverse, relabel atoms
 		if not self.reverse:
+
 			# Get atom labels for products
 			atomLabels = {}
 			for atom in productStructure.atoms():
@@ -1234,17 +1246,19 @@ class ReactionFamily(data.Database):
 				if highest>4:
 					for i in range(4,highest+1):
 						atomLabels['*%d'%i].label = '*%d'%(4+highest-i)
-				
+
 
 		# Split product structure into multiple species if necessary
 		if len(self.template.products) > 1:
 			productStructures = productStructure.split()
 		else:
 			productStructures = [productStructure]
+
+		# Make sure we've made the expected number of products
 		if len(self.template.products) != len(productStructures):
 			# We have a different number of products than expected by the template.
 			# It might be because we found a ring-opening using a homolysis template
-			if (self.label=='Unimolecular homolysis' 
+			if (self.label=='Unimolecular homolysis'
 			 and len(productStructures) == 1
 			 and len(reactantStructures) == 1):
 				# just be absolutely sure (maybe slow, but safe)
@@ -1252,10 +1266,10 @@ class ReactionFamily(data.Database):
 				if ( rs.graph.isVertexInCycle(rs.getLabeledAtom('*1'))
 				 and rs.graph.isVertexInCycle(rs.getLabeledAtom('*2'))):
 					# both *1 and *2 are in cycles (probably the same one)
-					# so it's pretty safe to just fail quietly, 
+					# so it's pretty safe to just fail quietly,
 					# and try the next reaction
 					return None
-			
+
 			# no other excuses, raise an exception
 			message = 'Application of reaction recipe failed; expected %s product(s), but %s found.\n' % (len(self.template.products), len(productStructures))
 			message += "Reaction family: %s \n"%str(self)
@@ -1270,6 +1284,29 @@ class ReactionFamily(data.Database):
 		for struct in productStructures:
 			struct.simplifyAtomTypes()
 			struct.updateAtomTypes()
+
+		# Return the product structures
+		return productStructures
+
+	def makeReaction(self, reactants, reactantStructures, maps):
+		"""
+		Create a reaction involving a list of `reactants`. The `reactantStructures`
+		parameter is a list of structures in the order the reactants are stored
+		in the reaction family template, and the `maps` parameter is a list of
+		mappings of the top-level tree node of each template reactant to the
+		corresponding structure.
+		"""
+
+		# Clear any previous atom labeling from all reactant structures
+		for struct in reactantStructures: struct.clearLabeledAtoms()
+
+		# Tag atoms with labels
+		for map in maps:
+			for templateAtom, reactantAtom in map.iteritems():
+				reactantAtom.label = templateAtom.label
+
+		# Generate the product structures by applying the forward reaction recipe
+		productStructures = self.applyRecipe(reactantStructures)
 
 		# Check that reactant and product structures are allowed in this family
 		# If not, then stop
