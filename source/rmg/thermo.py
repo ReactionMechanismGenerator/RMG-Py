@@ -492,7 +492,6 @@ class ThermoWilhoitData(ThermoData):
 		a2 = self.a2
 		a3 = self.a3
 		I = self.I
-		#y = T/T+B
 		
 		enthalpy = I + WilhoitInt0(cp0, cpInf, B, a0, a1, a2, a3, T)
 		
@@ -513,7 +512,6 @@ class ThermoWilhoitData(ThermoData):
 		a3 = self.a3
 		J = self.J
 		
-		#y = T/(T+B)
 		entropy = J + WilhoitIntM1(cp0, cpInf, B, a0, a1, a2, a3, T)
 		
 		return entropy
@@ -563,11 +561,12 @@ def convertGAtoWilhoit(GAthermo, atoms, rotors, linear):
 	b = scipy.zeros([m,1])
 	for i in range(m):
 		y = T_list[i]/(T_list[i]+B)
-		A[i,0] = y*y*(y-1)
-		A[i,1] = A[i,0]*y
-		A[i,2] = A[i,1]*y
-		A[i,3] = A[i,2]*y
-		b[i] = (Cp_list[i]-cp0)/(cpInf-cp0) - y*y
+		A[i,0] = (cpInf-cp0) * y*y*(y-1)
+		A[i,1] = A[i,0] * y
+		A[i,2] = A[i,1] * y
+		A[i,3] = A[i,2] * y
+		b[i] = (Cp_list[i]-cp0) - y*y*(cpInf-cp0)
+		
 	#solve least squares problem A*x = b; http://docs.scipy.org/doc/scipy/reference/tutorial/linalg.html#solving-linear-least-squares-problems-and-pseudo-inverses
 	x,resid,rank,sigma = linalg.lstsq(A,b)
 	a0 = x[0]
@@ -1045,7 +1044,7 @@ def WilhoitInt0Orig(cp0, cpInf, B, a0, a1, a2, a3, t):
 def WilhoitInt0(cp0, cpInf, B, a0, a1, a2, a3, t):
 	#output: the quantity Integrate[Cp(Wilhoit)/R, t'] evaluated at t'=t
 	y = t/(t+B)
-	result = cp0*t - (-cp0 + cpInf)*t*(y**2*((3*a0 + a1 + a2 + a3)/6. + ((4*a1 + a2 + a3)*y)/12. + ((5*a2 + a3)*y**2)/20. + (a3*y**3)/5.) + (2 + a0 + a1 + a2 + a3)*(-1 + y/2. + (-1 + 1/y)*math.log(B + t)))
+	result = cp0*t - (-cp0 + cpInf)*t*(y*y*((3*a0 + a1 + a2 + a3)/6. + ((4*a1 + a2 + a3)*y)/12. + ((5*a2 + a3)*y*y)/20. + (a3*y*y*y)/5.) + (2 + a0 + a1 + a2 + a3)*(-1 + y/2. + (-1 + 1/y)*math.log(B + t)))
 	return result
 
 def WilhoitInt1(cp0, cpInf, B, a0, a1, a2, a3, t):
@@ -1466,7 +1465,7 @@ forbiddenStructures = None
 
 ################################################################################
 
-def getThermoData(struct, required_class=ThermoGAData): # ThermoWilhoitData
+def getThermoData(struct, required_class=ThermoWilhoitData):
 	"""
 	Get the thermodynamic data associated with `structure` by looking in the
 	loaded thermodynamic database.
