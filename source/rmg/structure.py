@@ -824,7 +824,7 @@ class Structure:
 				return True
 		return False
 
-	def calculateRotorNumber(self):
+	def calculateNumberOfRotors(self):
 		"""
 		Return the number of rotors in the molecule.
 		"""

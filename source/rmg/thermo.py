@@ -447,7 +447,7 @@ class ThermoWilhoitData(ThermoData):
 	A set of thermodynamic parameters given by Wilhoit polynomials. 
 	
 	"""
-	B = 500 # Kelvin. Default temperature.
+	B = 500.0 # Kelvin. Default temperature.
 	
 	def __init__(self, cp0, cpInf, a0, a1, a2, a3, I, J, comment='', ):
 		"""Initialise the Wilhoit polynomial. Trange is set to (0,9999.9)"""
@@ -539,34 +539,34 @@ def convertGAtoWilhoit(GAthermo, atoms, rotors, linear):
 	# get info from incoming group additivity thermo
 	H298 = GAthermo.H298
 	S298 = GAthermo.S298
-	cp = GAthermo.Cp
-	t = ThermoGAData.CpTlist  # usually [300, 400, 500, 600, 800, 1000, 1500] but why assume?
+	Cp_list = GAthermo.Cp
+	T_list = ThermoGAData.CpTlist  # usually [300, 400, 500, 600, 800, 1000, 1500] but why assume?
 	R = constants.R
-	
-	#convert from K to kK
-	t = [x/1000. for x in t] 
-	
 	B = ThermoWilhoitData.B # Constant, set once in the class def.
+	
+	# convert from K to kK
+	T_list = [t/1000. for t in T_list] 
 	B = B/1000.  
 	
-	cp = [x/R for x in cp] #convert to Cp/R
+	Cp_list = [x/R for x in Cp_list] # convert to Cp/R
 	
-	(cp0, cpInf)=CpLimits(atoms, rotors, linear)#determine the heat capacity limits (non-dimensional)
+	(cp0, cpInf) = CpLimits(atoms, rotors, linear) # determine the heat capacity limits (non-dimensional)
 	
 	#create matrices for linear least squares problem
-	m = len(t)
-	#A = mx4
-	#b = mx1
-	#x = 4x1
+	m = len(T_list)  # probably m=7
+	# A = mx4
+	# b = mx1
+	# x = 4x1
 	A = scipy.zeros([m,4])
 	b = scipy.zeros([m,1])
 	for i in range(m):
-		y = t[i]/(t[i]+B)
-		A[i,0] = y*y*(y-1)*(cpInf-cp0)
-		A[i,1] = A[i,0]*y
-		A[i,2] = A[i,1]*y
-		A[i,3] = A[i,2]*y
-		b[i] = cp[i]-cp0 - y*y*(cpInf-cp0)
+		y = T_list[i]/(T_list[i]+B)
+		A[i,0] = (cpInf-cp0) * y*y*(y-1)
+		A[i,1] = A[i,0] * y
+		A[i,2] = A[i,1] * y
+		A[i,3] = A[i,2] * y
+		b[i] = (Cp_list[i]-cp0) - y*y*(cpInf-cp0)
+		
 	#solve least squares problem A*x = b; http://docs.scipy.org/doc/scipy/reference/tutorial/linalg.html#solving-linear-least-squares-problems-and-pseudo-inverses
 	x,resid,rank,sigma = linalg.lstsq(A,b)
 	a0 = x[0]
@@ -574,54 +574,53 @@ def convertGAtoWilhoit(GAthermo, atoms, rotors, linear):
 	a2 = x[2]
 	a3 = x[3]
 	
+	# this doesn't work yet:
 	# err = rmsErrWilhoit(t, cp, cp0, cpInf, a0, a1, a2, a3) #(optional); display rmsError (dimensionless units)
 	
 	# scale everything back
-	#t = [x*1000. for x in t] #not needed
-	# B = B*1000. # not needed
-	#cp = [x*R for x in cp] #not needed
-	#cp0 and cpInf will be in units of J/mol-K
+	# T_list = [t*1000. for t in T_list] # not needed because not stored here
+	# B = B*1000. # not needed because stored elsewhere
+	# Cp_list = [x*R for x in Cp_list] # not needed becasue not stored
+	
+	# cp0 and cpInf should be in units of J/mol-K
 	cp0 = cp0*R
 	cpInf = cpInf*R
 	
 	# output comment; ****we could also include fitting accuracy ("err") in the output below
 	comment = 'Fitted to GA data with Cp0=%2g and Cp_inf=%2g. '%(cp0,cpInf) + GAthermo.comment
 	
-	# first create an instance with I=J=0, then calculate what they should be 
+	# first set I=J=0, then calculate what they should be 
 	# by referring to H298, S298
 	I = 0
 	J = 0
-	
-	# create Wilhoit instances
+	# create Wilhoit instance
 	WilhoitThermo = ThermoWilhoitData( cp0, cpInf, a0, a1, a2, a3, I, J, comment=comment)
-
-	# calculate I, J (for H, S, respectively); self.getX(T) should return results
-	# with I, J = 0, thereby allowing easy solution of the additive parameters I, J 
+	# calculate correct I, J (integration constants for H, S, respectively)
 	I = H298 - WilhoitThermo.getEnthalpy(298.15)
 	J = S298 - WilhoitThermo.getEntropy(298.15)
-	
+	# update Wilhoit instance with correct I,J
 	WilhoitThermo.I = I
 	WilhoitThermo.J = J
 	
 	return WilhoitThermo
 
 def CpLimits(atoms, rotors, linear):
+	"""Calculate the zero and infinity limits for heat capacity.
+	
+	Input: number of atoms, number of rotors, linearity (`True` if molecule is linear)
+	Output: Cp(0 K)/R, Cp(infinity)/R
+	"""
 	#(based off of lsfp_wilh1.f in GATPFit)
-	#input: number of atoms, number of rotors, and linearity (False for non-linear, True for linear)
-	#output: Cp0/R, CpInf/R
-	#monatomic case
-	if(atoms == 1):
+
+	if (atoms == 1): # monoatomic
 		cp0 = 2.5
 		cpInf = 2.5
-	#non-linear case
-	elif(not linear):
-		cp0	 = 4.0
-		cpInf=3.*atoms-(2.+0.5*rotors)
-		#linear case
-	else:
+	elif linear: # linear
 		cp0	 = 3.5
-		cpInf=3.*atoms-1.5
-	
+		cpInf = 3*atoms - 1.5
+	else: # nonlinear
+		cp0	 = 4.0
+		cpInf = 3*atoms - (2 + 0.5*rotors)
 	return cp0, cpInf
 
 def rmsErrWilhoit(self,t):
@@ -1045,7 +1044,7 @@ def WilhoitInt0Orig(cp0, cpInf, B, a0, a1, a2, a3, t):
 def WilhoitInt0(cp0, cpInf, B, a0, a1, a2, a3, t):
 	#output: the quantity Integrate[Cp(Wilhoit)/R, t'] evaluated at t'=t
 	y = t/(t+B)
-	result = cp0*t - (-cp0 + cpInf)*t*(y**2*((3*a0 + a1 + a2 + a3)/6. + ((4*a1 + a2 + a3)*y)/12. + ((5*a2 + a3)*y**2)/20. + (a3*y**3)/5.) + (2 + a0 + a1 + a2 + a3)*(-1 + y/2. + (-1 + 1/y)*math.log(B + t)))
+	result = cp0*t - (-cp0 + cpInf)*t*(y*y*((3*a0 + a1 + a2 + a3)/6. + ((4*a1 + a2 + a3)*y)/12. + ((5*a2 + a3)*y*y)/20. + (a3*y*y*y)/5.) + (2 + a0 + a1 + a2 + a3)*(-1 + y/2. + (-1 + 1/y)*math.log(B + t)))
 	return result
 
 def WilhoitInt1(cp0, cpInf, B, a0, a1, a2, a3, t):
@@ -1466,10 +1465,13 @@ forbiddenStructures = None
 
 ################################################################################
 
-def getThermoData(struct):
+def getThermoData(struct, required_class=ThermoWilhoitData):
 	"""
 	Get the thermodynamic data associated with `structure` by looking in the
 	loaded thermodynamic database.
+	
+	required_class is the class of thermo object you want returning; default 
+	is :class:`ThermoWilhoitData`
 	"""
 	import constants
 	import math
@@ -1480,7 +1482,8 @@ def getThermoData(struct):
 	struct.calculateSymmetryNumber()
 	GAthermoData.S298 -= constants.R * math.log(struct.symmetryNumber)
 	
-	return GAthermoData  # return here because Wilhoit conversion not working yet
+	if required_class==ThermoGAData:
+		return GAthermoData  # return here because Wilhoit conversion not wanted
 	
 	# Convert to Wilhoit
 	rotors = struct.calculateNumberOfRotors()
