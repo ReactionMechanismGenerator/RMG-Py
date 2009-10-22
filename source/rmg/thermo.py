@@ -492,7 +492,6 @@ class ThermoWilhoitData(ThermoData):
 		a2 = self.a2
 		a3 = self.a3
 		I = self.I
-		#y = T/T+B
 		
 		enthalpy = I + WilhoitInt0(cp0, cpInf, B, a0, a1, a2, a3, T)
 		
@@ -513,7 +512,6 @@ class ThermoWilhoitData(ThermoData):
 		a3 = self.a3
 		J = self.J
 		
-		#y = T/(T+B)
 		entropy = J + WilhoitIntM1(cp0, cpInf, B, a0, a1, a2, a3, T)
 		
 		return entropy
@@ -564,11 +562,11 @@ def convertGAtoWilhoit(GAthermo, atoms, rotors, linear):
 	b = scipy.zeros([m,1])
 	for i in range(m):
 		y = t[i]/(t[i]+B)
-		A[i,0] = y*y*(y-1)
-		A[i,1] = A[i,0]*y
-		A[i,2] = A[i,1]*y
-		A[i,3] = A[i,2]*y
-		b[i] = (cp[i]-cp0)/(cpInf-cp0) - y*y
+		A[i,0] = y*y*(y-1)*(cpInf-cp0)
+		A[i,1] = A[i,0]*y*(cpInf-cp0)
+		A[i,2] = A[i,1]*y*(cpInf-cp0)
+		A[i,3] = A[i,2]*y*(cpInf-cp0)
+		b[i] = cp[i]-cp0 - y*y*(cpInf-cp0)
 	#solve least squares problem A*x = b; http://docs.scipy.org/doc/scipy/reference/tutorial/linalg.html#solving-linear-least-squares-problems-and-pseudo-inverses
 	x,resid,rank,sigma = linalg.lstsq(A,b)
 	a0 = x[0]
@@ -607,16 +605,16 @@ def convertGAtoWilhoit(GAthermo, atoms, rotors, linear):
 	
 	return WilhoitThermo
 
-def CpLimits(atoms, rotors, linearity):
+def CpLimits(atoms, rotors, linear):
 	#(based off of lsfp_wilh1.f in GATPFit)
-	#input: number of atoms, number of rotors, and linearity (0 for non-linear, 1 for linear)
+	#input: number of atoms, number of rotors, and linearity (False for non-linear, True for linear)
 	#output: Cp0/R, CpInf/R
 	#monatomic case
 	if(atoms == 1):
 		cp0 = 2.5
 		cpInf = 2.5
 	#non-linear case
-	elif(linearity == 0):
+	elif(not linear):
 		cp0	 = 4.0
 		cpInf=3.*atoms-(2.+0.5*rotors)
 		#linear case
