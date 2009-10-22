@@ -51,7 +51,7 @@ R4_DSD
 R5
 1 *1 {Cs,Cd,CO,Os} 1 {2,{S,D}}
 2 *3 {Cs,Cd,CO,Os} 0 {1,{S,D}}, {3,{S,D}}
-3 {Cs,Cd,CO,Os} 0 {2,{S,D}}, {4,{S,D}}
+3    {Cs,Cd,CO,Os} 0 {2,{S,D}}, {4,{S,D}}
 4 *4 {Cs,Cd,CO,Os} 0 {3,{S,D}}, {5,{S,D}}
 5 *2 {Cs,Cd,CO,Os} 1 {4,{S,D}}
 
@@ -93,8 +93,8 @@ R5_DSSD
 R6
 1 *1 {Cs,Cd,CO,Os} 1 {2,{S,D}}
 2 *3 {Cs,Cd,CO,Os} 0 {1,{S,D}}, {3,{S,D}}
-3 {Cs,Cd,CO,Os} 0 {2,{S,D}}, {4,{S,D}}
-4 {Cs,Cd,CO,Os} 0 {3,{S,D}}, {5,{S,D}}
+3    {Cs,Cd,CO,Os} 0 {2,{S,D}}, {4,{S,D}}
+4    {Cs,Cd,CO,Os} 0 {3,{S,D}}, {5,{S,D}}
 5 *4 {Cs,Cd,CO,Os} 0 {4,{S,D}}, {6,{S,D}}
 6 *2 {Cs,Cd,CO,Os} 1 {5,{S,D}}
 
