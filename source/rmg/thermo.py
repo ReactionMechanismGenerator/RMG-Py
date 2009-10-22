@@ -1045,7 +1045,7 @@ def WilhoitInt0(cp0, cpInf, B, a0, a1, a2, a3, t):
 	#output: the quantity Integrate[Cp(Wilhoit)/R, t'] evaluated at t'=t
 	y = t/(t+B)
 	y2 = y*y
-	result = cp0*t - (cpInf-cp0)*t*(y2*((3*a0 + a1 + a2 + a3)/6. + ((4*a1 + a2 + a3)*y)/12. + ((5*a2 + a3)*y2)/20. + (a3*y2*y)/5.) + (2 + a0 + a1 + a2 + a3)*( y/2. - 1 + (1/y-1)*math.log(B + t)))
+	result = cp0*t - (cpInf-cp0)*t*(y2*((3*a0 + a1 + a2 + a3)/6. + (4*a1 + a2 + a3)*y/12. + (5*a2 + a3)*y2/20. + a3*y2*y/5.) + (2 + a0 + a1 + a2 + a3)*( y/2. - 1 + (1/y-1)*math.log(B + t)))
 	return result
 
 def WilhoitInt1(cp0, cpInf, B, a0, a1, a2, a3, t):
