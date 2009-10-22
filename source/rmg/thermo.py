@@ -1468,10 +1468,13 @@ forbiddenStructures = None
 
 ################################################################################
 
-def getThermoData(struct):
+def getThermoData(struct, required_class=ThermoGAData): # ThermoWilhoitData
 	"""
 	Get the thermodynamic data associated with `structure` by looking in the
 	loaded thermodynamic database.
+	
+	required_class is the class of thermo object you want returning; default 
+	is :class:`ThermoWilhoitData`
 	"""
 	import constants
 	import math
@@ -1482,7 +1485,8 @@ def getThermoData(struct):
 	struct.calculateSymmetryNumber()
 	GAthermoData.S298 -= constants.R * math.log(struct.symmetryNumber)
 	
-	return GAthermoData  # return here because Wilhoit conversion not working yet
+	if required_class==ThermoGAData:
+		return GAthermoData  # return here because Wilhoit conversion not wanted
 	
 	# Convert to Wilhoit
 	rotors = struct.calculateNumberOfRotors()

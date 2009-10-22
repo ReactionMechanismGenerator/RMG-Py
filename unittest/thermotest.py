@@ -11,6 +11,7 @@ import math
 import rmg.main as main
 import rmg.data as data
 import rmg.species as species
+import rmg.structure as structure
 import rmg.reaction as reaction
 import rmg.thermo as thermo
 
@@ -235,9 +236,9 @@ class ThermoGAtoWilhoitCheck(unittest.TestCase):
 		Uses Propane as a test-case. atoms=11, rotors=2, linear=False
 		"""
 		
-		hexadiene = species.Species(SMILES='CCC')
-		hexadiene.getResonanceIsomers()
-		GAthermoData = hexadiene.getThermoData()
+		propane = structure.Structure(SMILES='CCC')
+		propane.updateAtomTypes()
+		GAthermoData = thermo.getThermoData(propane,required_class=thermo.ThermoGAData)
 		WilhoitData = thermo.convertGAtoWilhoit(GAthermoData, atoms=11, rotors=2, linear=False)
 		
 		Tlist = thermo.ThermoGAData.CpTlist # just check at defined data points
@@ -254,9 +255,9 @@ class ThermoGAtoWilhoitCheck(unittest.TestCase):
 		Uses Propane as a test-case. atoms=11, rotors=2, linear=False
 		"""
 		
-		hexadiene = species.Species(SMILES='CCC')
-		hexadiene.getResonanceIsomers()
-		GAthermoData = hexadiene.getThermoData()
+		propane = structure.Structure(SMILES='CCC')
+		propane.updateAtomTypes()
+		GAthermoData = thermo.getThermoData(propane,required_class=thermo.ThermoGAData)
 		WilhoitData = thermo.convertGAtoWilhoit(GAthermoData, atoms=11, rotors=2, linear=False)
 		
 		Tlist = thermo.ThermoGAData.CpTlist # just check at defined data points
@@ -264,7 +265,7 @@ class ThermoGAtoWilhoitCheck(unittest.TestCase):
 			ga = GAthermoData.getEnthalpy(T)
 			wil = WilhoitData.getEnthalpy(T)[0]
 			err = abs(ga-wil)
-			limit = 1000.0 # J/mol
+			limit = 2000.0 # J/mol  # the wilhoit should be more accurate then trapezoid integration of GA, so wouldn't want them to be exactly the same
 			self.assertTrue(err<limit,"GA (%.1f) and Wilhoit (%.1f) differ by more than %s J/mol at %dK"%(ga,wil,limit,T))
 			
 	def testEntropy(self):
@@ -273,9 +274,9 @@ class ThermoGAtoWilhoitCheck(unittest.TestCase):
 		Uses Propane as a test-case. atoms=11, rotors=2, linear=False
 		"""
 		
-		hexadiene = species.Species(SMILES='CCC')
-		hexadiene.getResonanceIsomers()
-		GAthermoData = hexadiene.getThermoData()
+		propane = structure.Structure(SMILES='CCC')
+		propane.updateAtomTypes()
+		GAthermoData = thermo.getThermoData(propane,required_class=thermo.ThermoGAData)
 		WilhoitData = thermo.convertGAtoWilhoit(GAthermoData, atoms=11, rotors=2, linear=False)
 		
 		Tlist = thermo.ThermoGAData.CpTlist # just check at defined data points
