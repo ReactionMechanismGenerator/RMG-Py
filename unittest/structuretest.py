@@ -292,9 +292,9 @@ class StructureCheck(unittest.TestCase):
 		fail_message = ''
 		for smile,should_be in test_set:
 			struct = Structure(SMILES=smile)
-			symmetryNumber = struct.calculateRotorNumber()
-			if symmetryNumber!=should_be:
-				fail_message+="Got rotor number of %s for %s (expected %s)\n"%(symmetryNumber,struct,should_be)
+			rotorNumber = struct.calculateNumberOfRotors()
+			if rotorNumber!=should_be:
+				fail_message+="Got rotor number of %s for %s (expected %s)\n"%(rotorNumber,struct,should_be)
 		self.assertEqual(fail_message,'',fail_message)
 		
 	def testRotorNumberHard(self):
@@ -305,9 +305,9 @@ class StructureCheck(unittest.TestCase):
 		fail_message = ''
 		for smile,should_be in test_set:
 			struct = Structure(SMILES=smile)
-			symmetryNumber = struct.calculateRotorNumber()
-			if symmetryNumber!=should_be:
-				fail_message+="Got rotor number of %s for %s (expected %s)\n"%(symmetryNumber,struct,should_be)
+			rotorNumber = struct.calculateNumberOfRotors()
+			if rotorNumber!=should_be:
+				fail_message+="Got rotor number of %s for %s (expected %s)\n"%(rotorNumber,struct,should_be)
 		self.assertEqual(fail_message,'',fail_message)		
 		
 	def testLinear(self):
