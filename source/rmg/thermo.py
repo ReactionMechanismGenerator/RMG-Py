@@ -694,6 +694,8 @@ def convertWilhoitToNASA(Wilhoit):
 		
 	#restore to conventional units of K for Tint and units based on K rather than kK in NASA polynomial coefficients
 	tint=tint*1000.
+	Tmin = Tmin*1000
+	Tmax = Tmax*1000
 	b2 = b2/1000.
 	b7 = b7/1000.
 	b3 = b3/1000000.
@@ -709,8 +711,8 @@ def convertWilhoitToNASA(Wilhoit):
 	Hhigh = 0.0
 	Shigh = 0.0
 	
-	coeffs_low = (Hlow,Slow,b1,b2,b3,b4,b5)
-	coeffs_high = (Hhigh,Shigh,b6,b7,b8,b9,b10)
+	coeffs_low = (b1,b2,b3,b4,b5,Hlow,Slow)
+	coeffs_high = (b6,b7,b8,b9,b10,Hhigh,Shigh)
 	
 	# could we include fitting accuracy in the expression below?
 	# output comment
@@ -999,8 +1001,8 @@ def TintOpt_objFun(tint, cp0, cpInf, B, a0, a1, a2, a3, tmin, tmax,weighting):
 		result = TintOpt_objFun_W(tint, cp0, cpInf, B, a0, a1, a2, a3, tmin, tmax)
 	else:
 		result = TintOpt_objFun_NW(tint, cp0, cpInf, B, a0, a1, a2, a3, tmin, tmax)
-	print tint
-	print result
+	#print tint
+	#print result
 	return result
 
 def TintOpt_objFun_NW(tint, cp0, cpInf, B, a0, a1, a2, a3, tmin, tmax):
