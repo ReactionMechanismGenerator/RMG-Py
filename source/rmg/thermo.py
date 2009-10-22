@@ -1465,7 +1465,7 @@ forbiddenStructures = None
 
 ################################################################################
 
-def getThermoData(struct, required_class=ThermoWilhoitData):
+def getThermoData(struct, required_class=ThermoGAData): # ThermoWilhoitData
 	"""
 	Get the thermodynamic data associated with `structure` by looking in the
 	loaded thermodynamic database.
