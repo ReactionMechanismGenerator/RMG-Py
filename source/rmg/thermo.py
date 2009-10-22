@@ -295,7 +295,8 @@ class ThermoNASAPolynomial(ThermoData):
 	def __init__(self, T_range=None, coeffs=None, comment=''):
 		ThermoData.__init__(self, Trange=T_range, comment=comment)
 		self.coeffs = coeffs or (0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
-	
+	def __repr__(self):
+                return "ThermoNASAPolynomial(%r,%r,'%s')"%(self.Trange,self.coeffs,self.comment)
 	def getHeatCapacity(self, T):
 		"""
 		Return the heat capacity in J/mol*K at temperature `T` in K.
@@ -565,7 +566,7 @@ def convertGAtoWilhoit(GAthermo, atoms, rotors, linear):
 		A[i,1] = A[i,0] * y
 		A[i,2] = A[i,1] * y
 		A[i,3] = A[i,2] * y
-		b[i] = (Cp_list[i]-cp0) - y*y*(cpInf-cp0)
+		b[i] = Cp_list[i]-cp0 - y*y*(cpInf-cp0)
 		
 	#solve least squares problem A*x = b; http://docs.scipy.org/doc/scipy/reference/tutorial/linalg.html#solving-linear-least-squares-problems-and-pseudo-inverses
 	x,resid,rank,sigma = linalg.lstsq(A,b)
