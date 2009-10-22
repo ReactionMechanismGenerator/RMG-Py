@@ -264,7 +264,7 @@ class ThermoGAtoWilhoitCheck(unittest.TestCase):
 			ga = GAthermoData.getEnthalpy(T)
 			wil = WilhoitData.getEnthalpy(T)[0]
 			err = abs(ga-wil)
-			limit = 1000.0 # J/mol
+			limit = 5000.0 # J/mol
 			self.assertTrue(err<limit,"GA (%.1f) and Wilhoit (%.1f) differ by more than %s J/mol at %dK"%(ga,wil,limit,T))
 			
 	def testEntropy(self):
@@ -297,6 +297,26 @@ class ThermoWilhoitToNASACheck(unittest.TestCase):
 		WilhoitThermo = thermo.ThermoWilhoitData( cp0, cpInf, a0, a1, a2, a3, I, J, comment=comment)
 		NASAthermoData = thermo.convertWilhoitToNASA(WilhoitThermo)
 		# well, if we didn't cause an error, I guess that's good enough for now.
+
+	def testHeatCapacity(self):
+		"""Check the NASA Cp matches the GA Cp for propane.
+		
+		Uses Propane as a test-case. atoms=11, rotors=2, linear=False
+		"""
+		
+		hexadiene = species.Species(SMILES='CCC')
+		hexadiene.getResonanceIsomers()
+		GAthermoData = hexadiene.getThermoData()
+		WilhoitThermo = thermo.convertGAtoWilhoit(GAthermoData, atoms=11, rotors=2, linear=False)
+		NASAthermoData = thermo.convertWilhoitToNASA(WilhoitThermo)
+		
+		Tlist = thermo.ThermoGAData.CpTlist # just check at defined data points
+		for T in Tlist:
+			ga = GAthermoData.getHeatCapacity(T)
+			nasa = NASAthermoData.getHeatCapacity(T)[0]
+			err = abs(ga-nasa)
+			limit = 10.0 # J/mol/K
+			self.assertTrue(err<limit,"GA (%.1f) and NASA (%.1f) differ by more than %s J/mol/K at %dK"%(ga,nasa,limit,T))
 
 		
 		
