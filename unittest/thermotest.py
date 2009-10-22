@@ -327,7 +327,30 @@ class ThermoWilhoitToNASACheck(unittest.TestCase):
 		
 # Run this only if being run independently
 if __name__ == '__main__':	
+	from timeit import Timer
+	startup = """gc.enable() # enable garbage collection in timeit
+import sys
+sys.path.append('../source')
+import rmg.thermo as thermo
+import rmg.structure as structure
+from rmg.structure import Structure
+propane = structure.Structure(SMILES='CCC')
+propane.updateAtomTypes()
+GAthermoData = thermo.getThermoData(propane,required_class=thermo.ThermoGAData)
+WilhoitData = thermo.convertGAtoWilhoit(GAthermoData, atoms=11, rotors=2, linear=False)
+"""
+	test1 = "GAthermoData.getEnthalpy(876.5)"
+	test2 = "WilhoitData.getEnthalpy(876.5)"
+	print "****"
+	print "Timing getEnthalpy:"
+	t = Timer(test1,startup)
+	times = t.repeat(repeat=5,number=1000)
+	print " ThermoGAData    took   %.3f milliseconds (%s)"%(min(times), times)
+	t = Timer(test2,startup)
+	times = t.repeat(repeat=5,number=1000)
+	print " ThermoWilhoitData took %.3f milliseconds (%s)"%(min(times), times)
+	print "****\n\nContinuing with tests..."
+	
 	# Show debug messages (as databases are loading)
-	main.initializeLog(10)
-
+	main.initializeLog(10)	
 	unittest.main( testRunner = unittest.TextTestRunner(verbosity=2) )
