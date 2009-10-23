@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-all: rmg/graph.so rmg/chem.so
+all: rmg/graph.so rmg/chem.so rmg/thermo.so
 	python setup.py build_ext --inplace
 
 rmg/graph.so: rmg/graph.c
@@ -16,6 +16,11 @@ rmg/chem.so: rmg/chem.c
 
 rmg/chem.c: rmg/chem.py rmg/chem.pxd
 	cython rmg/chem.py
+
+rmg/thermo.so: rmg/thermo.c 
+
+rmg/thermo.c: rmg/thermo.py rmg/thermo.pxd
+	cython rmg/thermo.py
 	
 clean:
 	rm -rf rmg/*.so rmg/*.c build/
