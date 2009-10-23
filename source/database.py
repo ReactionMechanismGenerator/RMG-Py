@@ -33,7 +33,7 @@ import re
 
 import rmg.main as main
 import rmg.data as data
-import rmg.species as species
+import rmg.structure as structure
 import rmg.reaction as reaction
 import rmg.thermo as thermo
 
@@ -379,11 +379,129 @@ def findCatchallNodes():
 #					if match:
 #						print key, parent, child
 	print ''
-		
+
+################################################################################
+
+def saveDOTAndImage(graph, root, format='svg', prog='dot'):
+	"""
+	Save a DOT file and an image file from the Dot class `graph` to the location
+	specified by `root`, a directory and filename without extension.
+	"""
+
+	#print '\tCreating DOT file...'
+	f=open(root+'.dot','w')
+	f.write(graph.to_string())
+	f.close()
+
+	#print '\tCreating SVG file...'
+	filename=root+'.'+format
+	if format=='svg':  # annoyingly, dot creates svg's without units on the font size attribute.
+		st=graph.create_svg(prog=prog)
+		st=re.sub(r"(font\-size\:[0-9]+\.*[0-9]*)([^p])",r"\1pt\2",st)
+		f=open(filename,'w')
+		f.write(st)
+		f.close()
+	else:
+		graph.write(filename,format=format,prog=prog)
+
+
+def drawAllTrees(root):
+	"""
+	Draws all of the trees in the thermo and kinetics database. The trees are
+	placed in the folder specified by `root`.
+	"""
+
+	import os
+
+	thermoDatabases = {'group': thermo.thermoDatabase.groupDatabase,
+		'1,5-interactions': thermo.thermoDatabase.int15Database,
+		'gauche': thermo.thermoDatabase.gaucheDatabase,
+		'other': thermo.thermoDatabase.otherDatabase,
+		'radical': thermo.thermoDatabase.radicalDatabase,
+		'ring': thermo.thermoDatabase.ringDatabase}
+	
+	
+	# Create directories
+	try:
+		os.makedirs(root)
+		os.makedirs(root+os.sep+'thermo')
+		os.makedirs(root+os.sep+'kinetics')
+		for key in thermoDatabases:
+			os.makedirs(root+os.sep+'thermo'+os.sep+key)
+		for key in reaction.kineticsDatabase.families:
+			os.makedirs(root+os.sep+'kinetics'+os.sep+key)
+
+	except OSError:
+		raise
+
+	# Process thermo databases
+	for key, thermoDatabase in thermoDatabases.iteritems():
+		# Process all structures in dictionary
+		for label, node in thermoDatabase.dictionary.iteritems():
+			if isinstance(node, structure.Structure):
+				print '\t'+ label
+				graph = node.toDOT()
+				graph.set('fontsize','10')
+				saveDOTAndImage(graph, root+os.sep+'thermo'+os.sep+key+os.sep+label, 'svg', 'neato')
+		# Process tree itself
+		print '\t'+key
+		graph = thermoDatabase.tree.toDOT()
+		graph.set('fontsize','10')
+		saveDOTAndImage(graph, root+os.sep+'thermo'+os.sep+key, 'svg', 'dot')
+		print 'Created DOT for thermo database %s' % (key)
+
+	# Process kinetics databases
+	for key, family in reaction.kineticsDatabase.families.iteritems():
+		# Process all structures in dictionary
+		for label, node in family.dictionary.iteritems():
+			if isinstance(node, structure.Structure):
+				print '\t'+ label
+				graph = node.toDOT()
+				graph.set('fontsize','10')
+				saveDOTAndImage(graph, root+os.sep+'thermo'+os.sep+key+os.sep+label, 'svg', 'neato')
+		# Process tree itself
+		print '\t'+key
+		graph = family.tree.toDOT()
+		graph.set('fontsize','10')
+		saveDOTAndImage(graph, root+os.sep+'kinetics'+os.sep+key, 'svg', 'neato')
+		print 'Created DOT for kinetics database %s' % (key)
+
+#
+#
+#	import rmg.structure
+#	s = rmg.structure.Structure()
+#	s.fromSMILES('C=CC=CCC')
+#	s.updateAtomTypes()
+#	graph = s.toDOT()
+#
+#	key = 'hxd13'
+#	print '\tCreating DOT file...'
+#	f=open(key+'.dot','w')
+#	f.write(graph.to_string())
+#	f.close()
+#
+#	print '\tCreating SVG file...'
+#	format='svg'
+#	prog='neato'
+#	filename=key+'.'+format
+#	if format=='svg':  # annoyingly, dot creates svg's without units on the font size attribute.
+#		st=graph.create_svg(prog=prog)
+#		st=re.sub(r"(font\-size\:[0-9]+\.*[0-9]*)([^p])",r"\1pt\2",st)
+#		f=open(filename,'w')
+#		f.write(st)
+#		f.close()
+#	else:
+#		graph.write(filename,format=format,prog=prog)
+#
+#	quit()
+
+
+
 
 ################################################################################
 
 if __name__ == '__main__':
+
 	import math
 	# Show debug messages (as databases are loading)
 	main.initializeLog(10)
@@ -393,7 +511,7 @@ if __name__ == '__main__':
 	loadThermoDatabases(databasePath)
 	loadKineticsDatabases(databasePath)
 
-	findCatchallNodes()
+	#findCatchallNodes()
 
 	#fit_groups(['H abstraction'])
 	#graph = fit_groups()
@@ -409,4 +527,35 @@ if __name__ == '__main__':
 
 	# Draw kinetics trees
 	#drawKineticsTrees()
+
+	# Draw trees in database
+	drawAllTrees('database')
+
+#	for key, family in reaction.kineticsDatabase.families.iteritems():
+#
+#		print '\tCreating DOT object...'
+#
+#		graph = family.tree.toDOT()
+#
+#		graph.set('fontsize','10')
+#		format='svg'
+#		prog='dot'
+#
+#		print '\tCreating DOT file...'
+#		f=open(key+'.dot','w')
+#		f.write(graph.to_string())
+#		f.close()
+#
+#		print '\tCreating SVG file...'
+#		filename=key+'.'+format
+#		if format=='svg':  # annoyingly, dot creates svg's without units on the font size attribute.
+#			st=graph.create_svg(prog=prog)
+#			st=re.sub(r"(font\-size\:[0-9]+\.*[0-9]*)([^p])",r"\1pt\2",st)
+#			f=open(filename,'w')
+#			f.write(st)
+#			f.close()
+#		else:
+#			graph.write(filename,format=format,prog=prog)
+#
+#		print 'Created DOT for reaction family %s' % (key)
 

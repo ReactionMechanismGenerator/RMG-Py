@@ -341,6 +341,29 @@ class Tree:
 		finally:	
 			ftree.close()
 
+	def toDOT(self):
+		"""
+		Create a DOT representation of the tree.
+		"""
+		
+		import pydot
+
+		graph = pydot.Dot(size='10,8', page='10,8' ,  rankdir='LR',
+				graph_type='digraph', simplify=True, fontsize=10,
+				overlap='true', dpi='85',center="True")
+
+		# Create vertices of digraph
+		for label in self.parent:
+			node = pydot.Node(label)
+			graph.add_node(node)
+		
+		# Create edges of digraph
+		for key, value in self.parent.iteritems():
+			if value is not None:
+				graph.add_edge(pydot.Edge(value,key))
+
+		return graph
+
 	def toXML(self, dom, root):
 		"""
 		Return an XML representation of the tree.

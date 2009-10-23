@@ -1,6 +1,3 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
-
 ################################################################################
 #
 #	RMG - Reaction Mechanism Generator
@@ -28,32 +25,34 @@
 #
 ################################################################################
 
-"""
-This is the setup file for RMG.
-"""
+cdef extern from "dictobject.h":
+	ctypedef class __builtin__.dict [object PyDictObject]:
+		pass
 
-from distutils.core import setup
-from distutils.extension import Extension
+################################################################################
 
-# Stop wasting my time compiling PowerPC-compatible C extensions on my intel Mac
-import distutils.sysconfig  
-config = distutils.sysconfig.get_config_vars()
-for key,value in config.iteritems():
-	location = str(value).find('-arch ppc')
-	if location>=0:
-		print "removing '-arch ppc' from %s"%(key)
-		config[key] = value.replace('-arch ppc ','')
+cdef class ThermoData:
+	
+	cdef public object Trange # to be removed
+	cdef public str comment
+	cdef public float Tmin
+	cdef public float Tmax
+	
+	cpdef bint isTemperatureValid(ThermoData self, float T)
 
+################################################################################
 
-setup(name='RMG',
-	version='0.0.1',
-	description='Reaction Mechanism Generator',
-	author='Prof. William H. Green and the RMG Team',
-	author_email='whgreen@mit.edu, rmg_dev@mit.edu',
-	url='http://rmg.sourceforge.net/',
-	packages=['rmg'],
-	ext_modules = [	Extension('rmg.chem', ['rmg/chem.c']), 
-					Extension('rmg.graph', ['rmg/graph.c']),
-					Extension('rmg.thermo', ['rmg/thermo.c'])
-					]
-     )
+cdef class ThermoNASAPolynomial(ThermoData):
+	
+	cdef public float c0, c1, c2, c3, c4, c5, c6 
+	
+	cpdef float getHeatCapacity(ThermoNASAPolynomial self, float T)
+	
+	cpdef float getEnthalpy(ThermoNASAPolynomial self, float T)
+	
+	cpdef float getEntropy(ThermoNASAPolynomial self, float T)
+	
+	cpdef float getFreeEnergy(ThermoNASAPolynomial self, float T)	
+
+################################################################################
+

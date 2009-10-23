@@ -134,7 +134,7 @@ class ThermoEstimationCheck(unittest.TestCase):
 		self.assertAlmostEqual(C2H6.getEnthalpy(298) / 4184, -20.4, 1)
 		self.assertAlmostEqual(C2H6.getEntropy(298) / 4.184, 55.1, 1)
 		self.assertAlmostEqual(C2H6.getFreeEnergy(298) / 4184, -36.8, 1)
-		self.assertAlmostEqual(C2H6.getHeatCapacity(298) / 4.184, 12.5, 1)
+		self.assertAlmostEqual(C2H6.getHeatCapacity(298) / 4.184, 12.38, 1)
 
 	def test2CH3(self):
 		
@@ -149,7 +149,7 @@ class ThermoEstimationCheck(unittest.TestCase):
 		self.assertAlmostEqual(CH3.getEnthalpy(298) / 4184, 34.8, 1)
 		self.assertAlmostEqual(CH3.getEntropy(298) / 4.184, 46.4, 1)
 		self.assertAlmostEqual(CH3.getFreeEnergy(298) / 4184, 21.0, 1)
-		self.assertAlmostEqual(CH3.getHeatCapacity(298) / 4.184, 9.54, 1)
+		self.assertAlmostEqual(CH3.getHeatCapacity(300) / 4.184, 9.14, 1)
 
 	def test3C6H9(self):
 		"""
@@ -244,7 +244,7 @@ class ThermoGAtoWilhoitCheck(unittest.TestCase):
 		Tlist = thermo.ThermoGAData.CpTlist # just check at defined data points
 		for T in Tlist:
 			ga = GAthermoData.getHeatCapacity(T)
-			wil = WilhoitData.getHeatCapacity(T)[0]
+			wil = WilhoitData.getHeatCapacity(T)
 			err = abs(ga-wil)
 			limit = 4.0 # J/mol/K
 			self.assertTrue(err<limit,"GA (%.1f) and Wilhoit (%.1f) differ by more than %s J/mol/K at %dK"%(ga,wil,limit,T))
@@ -263,7 +263,7 @@ class ThermoGAtoWilhoitCheck(unittest.TestCase):
 		Tlist = thermo.ThermoGAData.CpTlist # just check at defined data points
 		for T in Tlist:
 			ga = GAthermoData.getEnthalpy(T)
-			wil = WilhoitData.getEnthalpy(T)[0]
+			wil = WilhoitData.getEnthalpy(T)
 			err = abs(ga-wil)
 			limit = 2000.0 # J/mol  # the wilhoit should be more accurate then trapezoid integration of GA, so wouldn't want them to be exactly the same
 			self.assertTrue(err<limit,"GA (%.1f) and Wilhoit (%.1f) differ by more than %s J/mol at %dK"%(ga,wil,limit,T))
@@ -282,7 +282,7 @@ class ThermoGAtoWilhoitCheck(unittest.TestCase):
 		Tlist = thermo.ThermoGAData.CpTlist # just check at defined data points
 		for T in Tlist:
 			ga = GAthermoData.getEntropy(T)
-			wil = WilhoitData.getEntropy(T)[0]
+			wil = WilhoitData.getEntropy(T)
 			err = abs(ga-wil)
 			limit = 4.0 # J/mol/K
 			self.assertTrue(err<limit,"GA (%.1f) and Wilhoit (%.1f) differ by more than %s J/mol/K at %dK"%(ga,wil,limit,T))
@@ -314,7 +314,7 @@ class ThermoWilhoitToNASACheck(unittest.TestCase):
 		Tlist = thermo.ThermoGAData.CpTlist # just check at defined data points
 		for T in Tlist:
 			ga = GAthermoData.getHeatCapacity(T)
-			nasa = NASAthermoData.getHeatCapacity(T)[0]
+			nasa = NASAthermoData.getHeatCapacity(T)
 			err = abs(ga-nasa)
 			limit = 10.0 # J/mol/K
 			self.assertTrue(err<limit,"GA (%.1f) and NASA (%.1f) differ by more than %s J/mol/K at %dK"%(ga,nasa,limit,T))
@@ -334,7 +334,7 @@ class ThermoWilhoitToNASACheck(unittest.TestCase):
 		Tlist = thermo.ThermoGAData.CpTlist # just check at defined data points
 		for T in Tlist:
 			ga = GAthermoData.getEntropy(T)
-			nasa = NASAthermoData.getEntropy(T)[0]
+			nasa = NASAthermoData.getEntropy(T)
 			err = abs(ga-nasa)
 			limit = 4.0 # J/mol/K
 			self.assertTrue(err<limit,"GA (%.1f) and NASA (%.1f) differ by more than %s J/mol/K at %dK"%(ga,nasa,limit,T))
@@ -354,7 +354,7 @@ class ThermoWilhoitToNASACheck(unittest.TestCase):
 		Tlist = thermo.ThermoGAData.CpTlist # just check at defined data points
 		for T in Tlist:
 			ga = GAthermoData.getEnthalpy(T)
-			nasa = NASAthermoData.getEnthalpy(T)[0]
+			nasa = NASAthermoData.getEnthalpy(T)
 			err = abs(ga-nasa)
 			limit = 2000.0 # J/mol  # the wilhoit should be more accurate then trapezoid integration of GA, so wouldn't want them to be exactly the same
 			self.assertTrue(err<limit,"GA (%.1f) and NASA (%.1f) differ by more than %s J/mol at %dK"%(ga,nasa,limit,T))
