@@ -34,6 +34,10 @@ RMG is an automatic chemical mechanism generator. It is awesomely awesome.
 
 ################################################################################
 
+def breakpoint():
+	"""To insert a breakpoint in the code, just call breakpoint()"""
+	import pdb; pdb.set_trace()
+	
 class tee:
 	"""A simple tee to create a stream which prints to many streams"""
 	def __init__(self, *fileobjects):

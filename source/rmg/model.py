@@ -36,6 +36,7 @@ import logging
 import math
 import numpy
 import scipy.integrate
+import scipy.sparse
 
 
 import constants
@@ -227,10 +228,28 @@ class CoreEdgeReactionModel:
 		columns represent the reactions in the core and edge in order.
 		"""
 		speciesList, reactionList = self.getLists()
-		stoichiometry = numpy.zeros((len(speciesList), len(reactionList)), float)
+		#stoichiometry = numpy.zeros((len(speciesList), len(reactionList)), float)
+		stoichiometry = scipy.sparse.lil_matrix((len(speciesList), len(reactionList)), dtype=float)
+		# sparse matrix examples at http://www.scipy.org/SciPy_Tutorial
 		for j, rxn in enumerate(reactionList):
 			for i, spec in enumerate(speciesList):
 				stoichiometry[i,j] = rxn.getStoichiometricCoefficient(spec)
+		
+# Advantages of the LIL format
+#     - supports flexible slicing
+#     - changes to the matrix sparsity structure are efficient
+# 
+# Disadvantages of the LIL format
+#     - arithmetic operations LIL + LIL are slow (consider CSR or CSC)
+#     - slow column slicing (consider CSC)
+#     - slow matrix vector products (consider CSR or CSC)
+# 
+# Intended Usage
+#     - LIL is a convenient format for constructing sparse matrices
+#     - once a matrix has been constructed, convert to CSR or
+#       CSC format for fast arithmetic and matrix vector operations
+#     - consider using the COO format when constructing large matrices
+		stoichiometry.tocsc()  # convert to CSC format for faster matrix vector operations
 		return stoichiometry
 	
 	def getReactionRates(self, T, P, Ci):
@@ -669,8 +688,15 @@ class BatchReactor(ReactionSystem):
 		rxnRate = self.getReactionRates(P, V, T, Ni, model)
 		
 		# Species balances
-		dNidt = numpy.dot(stoichiometry[0:len(model.core.species), 0:len(model.core.reactions)],
-		 					rxnRate[0:len(model.core.reactions)])
+		
+		# can't take a zero-width slice of a sparse matrix, so special-case it:
+		if not model.core.reactions:
+			dNidt = numpy.zeros([len(model.core.species)])
+		else:
+			dNidt = ( stoichiometry[0:len(model.core.species), 0:len(model.core.reactions)] * 
+				rxnRate[0:len(model.core.reactions)] ) # stoichiometry matrix is sparse
+		# old version for dense matrix:
+		# dNidt = numpy.dot(stoichiometry.todense()[0:len(model.core.species), 0:len(model.core.reactions)],rxnRate[0:len(model.core.reactions)])
 
 		# Energy balance (assume isothermal for now)
 		dTdt = 0.0
@@ -732,7 +758,12 @@ class BatchReactor(ReactionSystem):
 		matrix for the model.
 		"""
 		rxnRates = self.getReactionRates(P, V, T, Ni, model)
+		return stoichiometry * rxnRates
+		# seems to have the same result as this
+		return numpy.dot(stoichiometry.todense(),rxnRates)
+		# which is the same as this
 		return numpy.dot(stoichiometry, rxnRates)
+		# in the old days of a dense stoichiometry matrix 
 
 	def isModelValid(self, model, dNidt, criticalFlux):
 		"""
@@ -804,7 +835,7 @@ class BatchReactor(ReactionSystem):
 		solver.set_integrator('vode', method='bdf', with_jacobian=True, atol=model.absoluteTolerance, rtol=model.relativeTolerance)
 		solver.set_f_params(model, stoichiometry)
 		solver.set_initial_value(y0,0.0)
-
+		
 		done = False
 		first_step = True
 		while not done and solver.successful():
