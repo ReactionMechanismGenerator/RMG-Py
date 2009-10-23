@@ -739,7 +739,7 @@ def convertWilhoitToNASA(Wilhoit):
 	Shigh = (polynomial_low.getEntropy(tint) - polynomial_high.getEntropy(tint))/constants.R
 	###polynomial_high.coeffs[6] = (polynomial_low.getEntropy(tint) - polynomial_high.getEntropy(tint))/constants.R
 
-        polynomial_high.coeffs = (b6,b7,b8,b9,b10,Hhigh,Shigh)
+	polynomial_high.coeffs = (b6,b7,b8,b9,b10,Hhigh,Shigh)
 	
 	NASAthermo = ThermoNASAData( Trange=(Tmin,Tmax), polynomials=[polynomial_low,polynomial_high], comment=comment)
 	return NASAthermo
