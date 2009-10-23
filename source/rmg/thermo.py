@@ -572,6 +572,18 @@ class ThermoWilhoitData(ThermoData):
 		"""
 		return self.getEnthalpy(T) - T * self.getEntropy(T)
 
+        def rmsErrWilhoit(self,t,cp):
+                #calculate the RMS error between the Wilhoit form and training data points; result will have same units as cp inputs; cp, cp0, and cpInf should agree in units (e.g. Cp/R); units of B and t should be consistent, based, for example on kK or K 
+                m = len(t)
+                rms = 0.0
+                for i in range(m):
+                        err = cp[i]-self.getHeatCapacity(t[i])
+                        rms += err*err
+                rms = rms/m
+                rms = math.sqrt(rms)
+                
+                return rms
+
 	#a faster version of the integral based on H from Yelvington's thesis; it differs from the original (see above) by a constant (dependent on parameters but independent of t)
 	def integral_T0(self, t):
 		#output: the quantity Integrate[Cp(Wilhoit)/R, t'] evaluated at t'=t
@@ -715,20 +727,17 @@ def convertGAtoWilhoit(GAthermo, atoms, rotors, linear):
 	a2 = x[2]
 	a3 = x[3]
 	
-	# this doesn't work yet:
-	# err = rmsErrWilhoit(t, cp, cp0, cpInf, a0, a1, a2, a3) #(optional); display rmsError (dimensionless units)
-	
 	# scale everything back
-	# T_list = [t*1000. for t in T_list] # not needed because not stored here
+	T_list = [t*1000. for t in T_list] 
 	# B = B*1000. # not needed because stored elsewhere
-	# Cp_list = [x*R for x in Cp_list] # not needed because not stored
+	Cp_list = [x*R for x in Cp_list]
 	
 	# cp0 and cpInf should be in units of J/mol-K
 	cp0 = cp0*R
 	cpInf = cpInf*R
 	
-	# output comment; ****we could also include fitting accuracy ("err") in the output below
-	comment = 'Fitted to GA data with Cp0=%2g and Cp_inf=%2g. '%(cp0,cpInf) + GAthermo.comment
+	# output comment
+	comment = ''
 	
 	# first set H0 = S0 = 0, then calculate what they should be
 	# by referring to H298, S298
@@ -742,6 +751,10 @@ def convertGAtoWilhoit(GAthermo, atoms, rotors, linear):
 	# update Wilhoit instance with correct I,J
 	WilhoitThermo.H0 = H0
 	WilhoitThermo.S0 = S0
+
+	err = WilhoitThermo.rmsErrWilhoit(T_list, Cp_list)/R #rms Error (J/mol-K units until it is divided by R) (not needed, but it is useful in comment)
+        WilhoitThermo.comment = WilhoitThermo.comment + 'Fitted to GA data with Cp0=%2g and Cp_inf=%2g. RMS error = %.3f*R. '%(cp0,cpInf,err) + GAthermo.comment
+
 	
 	return WilhoitThermo
 
@@ -763,26 +776,6 @@ def CpLimits(atoms, rotors, linear):
 		cp0	 = 4.0
 		cpInf = 3*atoms - (2 + 0.5*rotors)
 	return cp0, cpInf
-
-#def rmsErrWilhoit(self,t):
-#	#calculate the RMS error between the Wilhoit form and training data points; result will have same units as cp inputs; cp, cp0, and cpInf should agree in units (e.g. Cp/R); units of B and t should be consistent, based, for example on kK or K 
-#	m = len(t)
-#	rms = 0.0
-#	for i in range(m):
-#		err = cp[i]-getHeatCapacity(self,t[i])
-#		rms += err*err
-#	rms = rms/m
-#	rms = math.sqrt(rms)
-#	
-#	return rms
-
-#this function already exists in getHeatCapacity
-#def Wilhoit_Cp(t, cp0, cpInf, B, a0, a1, a2, a3):
-#	#calculate Cp/R based on Wilhoit form;  result will have same units as cp0 and cpInf (e.g. Cp/R); cp is Cp/R; units of B and t should be consistent, based, for example on kK or K
-#	y = t/(t+B)
-#	cp = cp0+(cpInf-cp0)*y*y*(1+(y-1)*(a0+a1*y+a2*y*y+a3*y*y*y))
-#	
-#	return cp
 
 ################################################################################
 def convertWilhoitToNASA(Wilhoit):
