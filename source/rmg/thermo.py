@@ -304,6 +304,8 @@ class ThermoNASAPolynomial(ThermoData):
 		
 	def __repr__(self):
 		return "ThermoNASAPolynomial(%r,%r,'%s')"%(self.Trange,self.coeffs,self.comment)
+	def __reduce__(self):
+		return (ThermoNASAPolynomial,(self.Trange,(self.c0, self.c1, self.c2, self.c3, self.c4, self.c5, self.c6),self.comment))
 	def getHeatCapacity(self, T):
 		"""
 		Return the heat capacity in J/mol*K at temperature `T` in K.
@@ -397,7 +399,9 @@ class ThermoNASAData(ThermoData):
 	def __init__(self, polynomials=None, comment='', Trange=None):
 		ThermoData.__init__(self, Trange=Trange, comment=comment)
 		self.polynomials = polynomials or []
-	
+	def __reduce__(self):
+		return (ThermoNASAData,(self.polynomials,self.comment,self.Trange))
+		
 	def addPolynomial(self, polynomial):
 		if not isinstance(polynomial,ThermoNASAPolynomial):
 			raise TypeError("Polynomial attribute should be instance of ThermoNASAPolynomial")
@@ -1504,13 +1508,13 @@ forbiddenStructures = None
 
 ################################################################################
 
-def getThermoData(struct, required_class=ThermoGAData): # ThermoWilhoitData
+def getThermoData(struct, required_class=ThermoNASAData): # ThermoGAData
 	"""
 	Get the thermodynamic data associated with `structure` by looking in the
 	loaded thermodynamic database.
 	
 	`required_class` is the class of thermo object you want returning; default 
-	is :class:`ThermoWilhoitData`
+	is :class:`ThermoNASAData`
 	"""
 	import constants
 	import math
