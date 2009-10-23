@@ -721,17 +721,17 @@ def convertWilhoitToNASA(Wilhoit):
 	polynomial_low = ThermoNASAPolynomial( T_range=(Tmin,tint), comment=comment, coeffs=coeffs_low)
 	polynomial_high = ThermoNASAPolynomial( T_range=(tint,Tmax), comment=comment, coeffs=coeffs_high)
 
-        #for the low polynomial, we want the results to match the Wilhoit value at 298.15K
-        #low polynomial enthalpy:
+	#for the low polynomial, we want the results to match the Wilhoit value at 298.15K
+	#low polynomial enthalpy:
 	Hlow = (Wilhoit.getEnthalpy(298.15) - polynomial_low.getEnthalpy(298.15))/constants.R
 	###polynomial_low.coeffs[5] = (Wilhoit.getEnthalpy(298.15) - polynomial_low.getEnthalpy(298.15))/constants.R
 	#low polynomial entropy:
 	Slow = (Wilhoit.getEntropy(298.15) - polynomial_low.getEntropy(298.15))/constants.R
 	###polynomial_low.coeffs[6] = (Wilhoit.getEntropy(298.15) - polynomial_low.getEntropy(298.15))/constants.R
 
-        polynomial_low.coeffs = (b1,b2,b3,b4,b5,Hlow,Slow)
+	polynomial_low.coeffs = (b1,b2,b3,b4,b5,Hlow,Slow)
 
-        #for the high polynomial, we want the results to match the low polynomial value at tint
+	#for the high polynomial, we want the results to match the low polynomial value at tint
 	#high polynomial enthalpy:
 	Hhigh = (polynomial_low.getEnthalpy(tint) - polynomial_high.getEnthalpy(tint))/constants.R
 	###polynomial_high.coeffs[5] = (polynomial_low.getEnthalpy(tint) - polynomial_high.getEnthalpy(tint))/constants.R
