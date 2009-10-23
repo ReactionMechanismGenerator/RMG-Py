@@ -659,8 +659,7 @@ def convertWilhoitToNASA(Wilhoit):
 	Tmax = 6000.0
 	
 	#for now, do not allow tint to float so tint = Tint(guess)
-	fixed = 1
-	
+	fixed = 1	
 	#for now, use weighting of 1/T
 	weighting = 1
 	
