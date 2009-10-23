@@ -581,7 +581,7 @@ def convertGAtoWilhoit(GAthermo, atoms, rotors, linear):
 	# scale everything back
 	# T_list = [t*1000. for t in T_list] # not needed because not stored here
 	# B = B*1000. # not needed because stored elsewhere
-	# Cp_list = [x*R for x in Cp_list] # not needed becasue not stored
+	# Cp_list = [x*R for x in Cp_list] # not needed because not stored
 	
 	# cp0 and cpInf should be in units of J/mol-K
 	cp0 = cp0*R
@@ -705,7 +705,7 @@ def convertWilhoitToNASA(Wilhoit):
 	b5 = b5/1000000000000.
 	b10= b10/1000000000000.
 	
-	#for now, set H and S parameters equal to zero; this will need to be fixed****
+	#set H and S parameters equal to zero; we will solve for the correct values below, based on the enthalpy/entropy with the parameters equal to zero 
 	Hlow = 0.0
 	Slow = 0.0
 	Hhigh = 0.0
@@ -721,6 +721,17 @@ def convertWilhoitToNASA(Wilhoit):
 	# create ThermoNASAPolynomial instances
 	polynomial_low = ThermoNASAPolynomial( T_range=(Tmin,tint), comment=comment, coeffs=coeffs_low)
 	polynomial_high = ThermoNASAPolynomial( T_range=(tint,Tmax), comment=comment, coeffs=coeffs_high)
+
+        #for the low polynomial, we want the results to match the Wilhoit value at 298.15K
+        #low polynomial enthalpy:
+	polynomial_low.coeffs[5] = (Wilhoit.getEnthalpy(298.15) - polynomial_low.getEnthalpy(298.15))/constants.R
+	#low polynomial entropy:
+	polynomial_low.coeffs[6] = (Wilhoit.getEntropy(298.15) - polynomial_low.getEntropy(298.15))/constants.R
+        #for the high polynomial, we want the results to match the low polynomial value at tint
+	#high polynomial enthalpy:
+	polynomial_high.coeffs[5] = (polynomial_low.getEnthalpy(tint) - polynomial_high.getEnthalpy(tint))/constants.R
+	#high polynomial entropy:
+	polynomial_high.coeffs[6] = (polynomial_low.getEntropy(tint) - polynomial_high.getEntropy(tint))/constants.R
 	
 	NASAthermo = ThermoNASAData( Trange=(Tmin,Tmax), polynomials=[polynomial_low,polynomial_high], comment=comment)
 	return NASAthermo
