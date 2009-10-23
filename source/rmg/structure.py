@@ -545,25 +545,27 @@ class Structure:
 		used to denote further semantic information: dashed lines indicate
 		optional higher-order bonds, while dotted lines indicate benzene bonds.
 		"""
-		# Start of graph, including graph name (must contain letters, numbers, and _ only)
-		dot = 'graph %s {\n' % (label)
+
+		import pydot
+
+		graph = pydot.Dot(size='5,4', rankdir='LR',
+				graph_type='graph', simplify=True, fontsize='8',
+				overlap='true', dpi='85',center="True")
 
 		# List of atoms (vertices)
-		dot += '\t// List of atoms\n'
 		for i, atom in enumerate(self.atoms()):
 			# Generate vertex label from atom type labels
-			atomType = atom._atomType[0].label
-			for type in atom._atomType[1:]:
-				atomType += ',%s' % type.label
-			dot += '\t%s [label="%s"' % (str(i+1), atomType)
+			label = ','.join([atomType.label for atomType in atom._atomType])
 			# Labeled atoms are color coded
+			color = 'black'
 			if atom.label != '':
-				colors = {'*': 'red', '*1': 'red', '*2': 'green', '*3': 'blue', '*4': 'yellow', '*5': 'purple', '*6': 'orange'}
-				dot += ',color=%s,fontcolor=%s' % (colors[atom.label], colors[atom.label])
-			dot += ']\n'
-
+				colors = {'*': 'red', '*1': 'red', '*2': 'green', '*3': 'blue', '*4': 'yellow', '*5': 'purple', '*6': 'orange', '*7': 'magenta', '*8': 'cyan'}
+				color = colors[atom.label]
+			# Create and add vertex to graph
+			node = pydot.Node(str(i+1), label=label, color=color, fontcolor=color)
+			graph.add_node(node)
+			
 		# List of bonds (edges)
-		dot += '\t// List of bonds\n'
 		for i, bond in enumerate(self.bonds()):
 			index1 = self.atoms().index(bond.atoms[0])
 			index2 = self.atoms().index(bond.atoms[1])
@@ -575,35 +577,18 @@ class Structure:
 				if type.order == 3: triple = True
 				if type.order == 1.5: benzene = True
 
-			if single or double or triple or benzene:
+			label = []
+			if single: label.append('S')
+			if double: label.append('D')
+			if triple: label.append('T')
+			if benzene: label.append('B')
+			label = ','.join(label)
 
-				# One bond is always required
-				dot += '\t%s -- %s [len=2,style=solid]\n' % (str(index1+1), str(index2+1))
+			# Create and add edge to graph
+			edge = pydot.Edge(str(index1+1), str(index2+1), label=label, len='2')
+			graph.add_edge(edge)
 
-				# Other bonds depend on the possible set of bonds allowed
-				if single and double and triple:
-					dot += '\t%s -- %s [len=2,style=dashed]\n' % (str(index1+1), str(index2+1))
-					dot += '\t%s -- %s [len=2,style=dashed]\n' % (str(index1+1), str(index2+1))
-				elif single and double:
-					dot += '\t%s -- %s [len=2,style=dashed]\n' % (str(index1+1), str(index2+1))
-				elif double and triple:
-					dot += '\t%s -- %s [len=2,style=solid]\n' % (str(index1+1), str(index2+1))
-					dot += '\t%s -- %s [len=2,style=dashed]\n' % (str(index1+1), str(index2+1))
-				elif single and triple:
-					dot += '\t%s -- %s [len=2,style=dashed]\n' % (str(index1+1), str(index2+1))
-					dot += '\t%s -- %s [len=2,style=dashed]\n' % (str(index1+1), str(index2+1))
-				elif double:
-					dot += '\t%s -- %s [len=2,style=solid]\n' % (str(index1+1), str(index2+1))
-				elif triple:
-					dot += '\t%s -- %s [len=2,style=solid]\n' % (str(index1+1), str(index2+1))
-					dot += '\t%s -- %s [len=2,style=solid]\n' % (str(index1+1), str(index2+1))
-
-				if benzene:
-					dot += '\t%s -- %s [len=2,style=dotted]\n' % (str(index1+1), str(index2+1))
-			
-		dot += '}\n'
-
-		return dot
+		return graph
 	
 	def simplifyAtomTypes(self):
 		"""
