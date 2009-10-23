@@ -41,6 +41,7 @@ import math
 import scipy
 from scipy import linalg
 from scipy import optimize
+import cython
 
 ################################################################################
 
@@ -49,16 +50,19 @@ class ThermoData:
 	A base class for all forms of thermodynamic data used by RMG. The common
 	attributes are:
 	
-	========= ============================================================
+	========= ==============================================================
 	Attribute Meaning
-	========= ============================================================
-	`Trange`  a 2-tuple containin the minimum and maximum temperature in K
+	========= ==============================================================
+	`Trange`  a list of length 2 containing the min and max temperature in K
 	`comment` a string describing the source of the data
-	========= ============================================================
+	========= ==============================================================
 	"""
 	
 	def __init__(self, Trange=None, comment=''):
-		self.Trange = Trange or (0.0, 0.0)
+		Trange = Trange or [0.0, 0.0]
+		self.Trange=Trange
+		self.Tmin = Trange[0]
+		self.Tmax = Trange[1]
 		self.comment = comment
 	
 	def isTemperatureValid(self, T):
@@ -66,10 +70,10 @@ class ThermoData:
 		Return :data:`True` if the temperature `T` in K is within the valid
 		temperature range of the thermodynamic data, or :data:`False` if not.
 		"""
-		if self.Trange is None:
+		if self.Tmin is None and self.Tmax is None:
 			return True
 		else:
-			return self.Trange[0] <= T and T <= self.Trange[1]
+			return self.Tmin <= T and T <= self.Tmax
 
 ################################################################################
 
@@ -294,9 +298,12 @@ class ThermoNASAPolynomial(ThermoData):
 	
 	def __init__(self, T_range=None, coeffs=None, comment=''):
 		ThermoData.__init__(self, Trange=T_range, comment=comment)
-		self.coeffs = coeffs or (0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
+		coeffs = coeffs or (0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
+		
+		self.c0, self.c1, self.c2, self.c3, self.c4, self.c5, self.c6 = coeffs
+		
 	def __repr__(self):
-                return "ThermoNASAPolynomial(%r,%r,'%s')"%(self.Trange,self.coeffs,self.comment)
+		return "ThermoNASAPolynomial(%r,%r,'%s')"%(self.Trange,self.coeffs,self.comment)
 	def getHeatCapacity(self, T):
 		"""
 		Return the heat capacity in J/mol*K at temperature `T` in K.
@@ -304,13 +311,14 @@ class ThermoNASAPolynomial(ThermoData):
 		import constants
 		if not self.isTemperatureValid(T):
 			raise data.TemperatureOutOfRangeException('Invalid temperature for heat capacity estimation from NASA polynomial.')
-		c = self.coeffs
+		T2 = cython.declare(cython.float)
+		HeatCapacityOverR = cython.declare(cython.float)
+		
 		T2 = T*T
 		# Cp/R = a1 + a2 T + a3 T^2 + a4 T^3 + a5 T^4
-#		HeatCapacityOverR = c[0] + c[1]*T + c[2]*T*T + c[3]*T*T*T + c[4]*T*T*T*T
-		HeatCapacityOverR = c[0] + T*(c[1] + T*(c[2] + T*(c[3] + c[4]*T)))
-		Cp = HeatCapacityOverR * constants.R
-		return Cp
+		# HeatCapacityOverR = self.c0 + self.c1*T + self.c2*T*T + self.c3*T*T*T + self.c4*T*T*T*T
+		HeatCapacityOverR = self.c0 + T*(self.c1 + T*(self.c2 + T*(self.c3 + self.c4*T)))
+		return HeatCapacityOverR * constants.R
 	
 	def getEnthalpy(self, T):
 		"""
@@ -319,14 +327,16 @@ class ThermoNASAPolynomial(ThermoData):
 		import constants
 		if not self.isTemperatureValid(T):
 			raise data.TemperatureOutOfRangeException('Invalid temperature for enthalpy estimation from NASA polynomial.')
-		c = self.coeffs
+		T2 = cython.declare(cython.float)
+		T4 = cython.declare(cython.float)
+		EnthalpyOverR = cython.declare(cython.float)
+		
 		T2 = T*T
 		T4 = T2*T2
 		# H/RT = a1 + a2 T /2 + a3 T^2 /3 + a4 T^3 /4 + a5 T^4 /5 + a6/T
-		EnthalpyOverR = ( c[0]*T + c[1]*T2/2 + c[2]*T2*T/3 + c[3]*T4/4 +
-						  c[4]*T4*T/5 + c[5] )
-		H = EnthalpyOverR * constants.R
-		return H
+		EnthalpyOverR = ( self.c0*T + self.c1*T2/2 + self.c2*T2*T/3 + self.c3*T4/4 +
+						  self.c4*T4*T/5 + self.c5 )
+		return EnthalpyOverR * constants.R
 	
 	def getEntropy(self, T):
 		"""
@@ -337,13 +347,15 @@ class ThermoNASAPolynomial(ThermoData):
 		if not self.isTemperatureValid(T):
 			raise data.TemperatureOutOfRangeException('Invalid temperature for entropy estimation from NASA polynomial.')
 		# S/R  = a1 lnT + a2 T + a3 T^2 /2 + a4 T^3 /3 + a5 T^4 /4 + a7
-		c = self.coeffs
+		T2 = cython.declare(cython.float)
+		T4 = cython.declare(cython.float)
+		EntropyOverR = cython.declare(cython.float)
+		
 		T2 = T*T
 		T4 = T2*T2
-		EntropyOverR = ( c[0]*math.log(T) + c[1]*T + c[2]*T2/2 +
-					c[3]*T2*T/3 + c[4]*T4/4 + c[6] )
-		S = EntropyOverR * constants.R
-		return S
+		EntropyOverR = ( self.c0*math.log(T) + self.c1*T + self.c2*T2/2 +
+					self.c3*T2*T/3 + self.c4*T4/4 + self.c6 )
+		return EntropyOverR * constants.R
 	
 	def getFreeEnergy(self, T):
 		"""
@@ -354,6 +366,7 @@ class ThermoNASAPolynomial(ThermoData):
 		return self.getEnthalpy(T) - T * self.getEntropy(T)
 	
 	def toXML(self, dom, root):
+		
 ### prime-like:
 #   <polynomial>
 #      <validRange>
@@ -465,7 +478,7 @@ class ThermoWilhoitData(ThermoData):
 		self.J = J
 	
 	def __repr__(self):
-		return "ThermoWilhoitData(%.2g,%.2g,%.2g,%.2g,%.2g,%.2g,%.2g,%.2g,%.2g'%s')"%(self.cp0, self.cpInf, self.B, self.a0, self.a1, self.a2, self.a3, self.I, self.J, self.comment)
+		return "ThermoWilhoitData(%.2g,%.2g,%.2g,%.2g,%.2g,%.2g,%.2g,%.2g,%.2g,'%s')"%(self.cp0, self.cpInf, self.B, self.a0, self.a1, self.a2, self.a3, self.I, self.J, self.comment)
 	
 	def toXML(self, dom, root):
 		pass
@@ -559,7 +572,7 @@ def convertGAtoWilhoit(GAthermo, atoms, rotors, linear):
 	# b = mx1
 	# x = 4x1
 	A = scipy.zeros([m,4])
-	b = scipy.zeros([m,1])
+	b = scipy.zeros([m])
 	for i in range(m):
 		y = T_list[i]/(T_list[i]+B)
 		A[i,0] = (cpInf-cp0) * y*y*(y-1)
@@ -624,17 +637,17 @@ def CpLimits(atoms, rotors, linear):
 		cpInf = 3*atoms - (2 + 0.5*rotors)
 	return cp0, cpInf
 
-def rmsErrWilhoit(self,t):
-	#calculate the RMS error between the Wilhoit form and training data points; result will have same units as cp inputs; cp, cp0, and cpInf should agree in units (e.g. Cp/R); units of B and t should be consistent, based, for example on kK or K 
-	m = len(t)
-	rms = 0.0
-	for i in range(m):
-		err = cp[i]-getHeatCapacity(self,t[i])
-		rms += err*err
-	rms = rms/m
-	rms = math.sqrt(rms)
-	
-	return rms
+#def rmsErrWilhoit(self,t):
+#	#calculate the RMS error between the Wilhoit form and training data points; result will have same units as cp inputs; cp, cp0, and cpInf should agree in units (e.g. Cp/R); units of B and t should be consistent, based, for example on kK or K 
+#	m = len(t)
+#	rms = 0.0
+#	for i in range(m):
+#		err = cp[i]-getHeatCapacity(self,t[i])
+#		rms += err*err
+#	rms = rms/m
+#	rms = math.sqrt(rms)
+#	
+#	return rms
 
 #this function already exists in getHeatCapacity
 #def Wilhoit_Cp(t, cp0, cpInf, B, a0, a1, a2, a3):
@@ -729,17 +742,20 @@ def convertWilhoitToNASA(Wilhoit):
 	Slow = (Wilhoit.getEntropy(298.15) - polynomial_low.getEntropy(298.15))/constants.R
 	###polynomial_low.coeffs[6] = (Wilhoit.getEntropy(298.15) - polynomial_low.getEntropy(298.15))/constants.R
 
-	polynomial_low.coeffs = (b1,b2,b3,b4,b5,Hlow,Slow)
+	# update last two coefficients
+	polynomial_low.c5 = Hlow
+	polynomial_low.c6 = Slow
 
 	#for the high polynomial, we want the results to match the low polynomial value at tint
 	#high polynomial enthalpy:
 	Hhigh = (polynomial_low.getEnthalpy(tint) - polynomial_high.getEnthalpy(tint))/constants.R
-	###polynomial_high.coeffs[5] = (polynomial_low.getEnthalpy(tint) - polynomial_high.getEnthalpy(tint))/constants.R
 	#high polynomial entropy:
 	Shigh = (polynomial_low.getEntropy(tint) - polynomial_high.getEntropy(tint))/constants.R
-	###polynomial_high.coeffs[6] = (polynomial_low.getEntropy(tint) - polynomial_high.getEntropy(tint))/constants.R
 
-	polynomial_high.coeffs = (b6,b7,b8,b9,b10,Hhigh,Shigh)
+	# update last two coefficients
+	#polynomial_high.coeffs = (b6,b7,b8,b9,b10,Hhigh,Shigh)
+	polynomial_high.c5 = Hhigh
+	polynomial_high.c6 = Shigh
 	
 	NASAthermo = ThermoNASAData( Trange=(Tmin,Tmax), polynomials=[polynomial_low,polynomial_high], comment=comment)
 	return NASAthermo
@@ -786,7 +802,7 @@ def Wilhoit2NASA_NW(cp0, cpInf, B, a0, a1, a2, a3, tmin, tmax, tint):
 	
 	#construct 13*13 symmetric A matrix (in A*x = b); other elements will be zero
 	A = scipy.zeros([13,13])
-	b = scipy.zeros([13,1])
+	b = scipy.zeros([13])
 	A[0,0] = 2*(tint - tmin)
 	A[0,1] = tint*tint - tmin*tmin
 	A[0,2] = 2.*(tint*tint*tint - tmin*tmin*tmin)/3
@@ -896,7 +912,7 @@ def Wilhoit2NASA_W(cp0, cpInf, B, a0, a1, a2, a3, tmin, tmax, tint):
 	
 	#construct 13*13 symmetric A matrix (in A*x = b); other elements will be zero
 	A = scipy.zeros([13,13])
-	b = scipy.zeros([13,1])
+	b = scipy.zeros([13])
 	
 	A[0,0] = 2*math.log(tint/tmin)
 	A[0,1] = 2*(tint - tmin)
@@ -1119,7 +1135,7 @@ def Wilhoit2Int(cp0, cpInf, B, a0, a1, a2, a3, t):
 		2*(2 + a0 + a1 + a2 + a3)*B*(cp0 - cpInf)*cpInf*math.log(B + t))
 	return result
 
-def NASA2Int(c1,c2,c3,c4,c5,t) :
+def NASA2Int(c1,c2,c3,c4,c5,t):
 	#input: NASA parameters for Cp/R, c1, c2, c3, c4, c5 (either low or high temp parameters), temperature t (in kiloKelvin; an endpoint of the low or high temp range
 	#output: the quantity Integrate[(Cp(NASA)/R)^2, t'] evaluated at t'=t 
 	#can speed further by precomputing and storing e.g. thigh^2, tlow^2, etc.
@@ -1157,7 +1173,7 @@ def Wilhoit2IntM1(cp0, cpInf, B, a0, a1, a2, a3, t):
 		(B*(cp0 - cpInf)*(cp0 - (3 + 2*a0 + 2*a1 + 2*a2 + 2*a3)*cpInf))/(B + t) + cp0**2*math.log(t) + (-cp0**2 + cpInf**2)*math.log(B + t))
 	return result
 
-def NASA2IntM1(c1,c2,c3,c4,c5,t) :
+def NASA2IntM1(c1,c2,c3,c4,c5,t):
 	#input: NASA parameters for Cp/R, c1, c2, c3, c4, c5 (either low or high temp parameters), temperature t (in kiloKelvin; an endpoint of the low or high temp range
 	#output: the quantity Integrate[(Cp(NASA)/R)^2*t^-1, t'] evaluated at t'=t 
 	#can speed further by precomputing and storing e.g. thigh^2, tlow^2, etc.
@@ -1520,7 +1536,7 @@ def getThermoData(struct, required_class=ThermoGAData): # ThermoWilhoitData
 	# Convert to NASA
 	NASAthermoData = convertWilhoitToNASA(WilhoitData)
 	
-	if required_class==NASAThermoData:
+	if required_class==ThermoNASAData:
 		return NASAthermoData
 	
 	# Still not returned?
