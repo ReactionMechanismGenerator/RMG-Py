@@ -295,7 +295,8 @@ class ThermoNASAPolynomial(ThermoData):
 	def __init__(self, T_range=None, coeffs=None, comment=''):
 		ThermoData.__init__(self, Trange=T_range, comment=comment)
 		self.coeffs = coeffs or (0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
-	
+	def __repr__(self):
+                return "ThermoNASAPolynomial(%r,%r,'%s')"%(self.Trange,self.coeffs,self.comment)
 	def getHeatCapacity(self, T):
 		"""
 		Return the heat capacity in J/mol*K at temperature `T` in K.
@@ -565,7 +566,7 @@ def convertGAtoWilhoit(GAthermo, atoms, rotors, linear):
 		A[i,1] = A[i,0] * y
 		A[i,2] = A[i,1] * y
 		A[i,3] = A[i,2] * y
-		b[i] = (Cp_list[i]-cp0) - y*y*(cpInf-cp0)
+		b[i] = Cp_list[i]-cp0 - y*y*(cpInf-cp0)
 		
 	#solve least squares problem A*x = b; http://docs.scipy.org/doc/scipy/reference/tutorial/linalg.html#solving-linear-least-squares-problems-and-pseudo-inverses
 	x,resid,rank,sigma = linalg.lstsq(A,b)
@@ -693,6 +694,8 @@ def convertWilhoitToNASA(Wilhoit):
 		
 	#restore to conventional units of K for Tint and units based on K rather than kK in NASA polynomial coefficients
 	tint=tint*1000.
+	Tmin = Tmin*1000
+	Tmax = Tmax*1000
 	b2 = b2/1000.
 	b7 = b7/1000.
 	b3 = b3/1000000.
@@ -708,8 +711,8 @@ def convertWilhoitToNASA(Wilhoit):
 	Hhigh = 0.0
 	Shigh = 0.0
 	
-	coeffs_low = (Hlow,Slow,b1,b2,b3,b4,b5)
-	coeffs_high = (Hhigh,Shigh,b6,b7,b8,b9,b10)
+	coeffs_low = (b1,b2,b3,b4,b5,Hlow,Slow)
+	coeffs_high = (b6,b7,b8,b9,b10,Hhigh,Shigh)
 	
 	# could we include fitting accuracy in the expression below?
 	# output comment
@@ -998,8 +1001,8 @@ def TintOpt_objFun(tint, cp0, cpInf, B, a0, a1, a2, a3, tmin, tmax,weighting):
 		result = TintOpt_objFun_W(tint, cp0, cpInf, B, a0, a1, a2, a3, tmin, tmax)
 	else:
 		result = TintOpt_objFun_NW(tint, cp0, cpInf, B, a0, a1, a2, a3, tmin, tmax)
-	print tint
-	print result
+	#print tint
+	#print result
 	return result
 
 def TintOpt_objFun_NW(tint, cp0, cpInf, B, a0, a1, a2, a3, tmin, tmax):
@@ -1044,7 +1047,8 @@ def WilhoitInt0Orig(cp0, cpInf, B, a0, a1, a2, a3, t):
 def WilhoitInt0(cp0, cpInf, B, a0, a1, a2, a3, t):
 	#output: the quantity Integrate[Cp(Wilhoit)/R, t'] evaluated at t'=t
 	y = t/(t+B)
-	result = cp0*t - (-cp0 + cpInf)*t*(y*y*((3*a0 + a1 + a2 + a3)/6. + ((4*a1 + a2 + a3)*y)/12. + ((5*a2 + a3)*y*y)/20. + (a3*y*y*y)/5.) + (2 + a0 + a1 + a2 + a3)*(-1 + y/2. + (-1 + 1/y)*math.log(B + t)))
+	y2 = y*y
+	result = cp0*t - (cpInf-cp0)*t*(y2*((3*a0 + a1 + a2 + a3)/6. + (4*a1 + a2 + a3)*y/12. + (5*a2 + a3)*y2/20. + a3*y2*y/5.) + (2 + a0 + a1 + a2 + a3)*( y/2. - 1 + (1/y-1)*math.log(B + t)))
 	return result
 
 def WilhoitInt1(cp0, cpInf, B, a0, a1, a2, a3, t):
