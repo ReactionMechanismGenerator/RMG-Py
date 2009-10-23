@@ -728,9 +728,9 @@ def convertGAtoWilhoit(GAthermo, atoms, rotors, linear):
 	a3 = x[3]
 	
 	# scale everything back
-	# T_list = [t*1000. for t in T_list] # not needed because not stored here
+	T_list = [t*1000. for t in T_list] 
 	# B = B*1000. # not needed because stored elsewhere
-	# Cp_list = [x*R for x in Cp_list] # not needed because not stored
+	Cp_list = [x*R for x in Cp_list]
 	
 	# cp0 and cpInf should be in units of J/mol-K
 	cp0 = cp0*R
@@ -753,7 +753,7 @@ def convertGAtoWilhoit(GAthermo, atoms, rotors, linear):
 	WilhoitThermo.S0 = S0
 
 	err = WilhoitThermo.rmsErrWilhoit(T_list, Cp_list)/R #rms Error (J/mol-K units until it is divided by R) (not needed, but it is useful in comment)
-        WilhoitThermo.comment = WilhoitThermo.comment + 'Fitted to GA data with Cp0=%2g and Cp_inf=%2g. RMS error = %.2f*R.'%(cp0,cpInf,err) + GAthermo.comment
+        WilhoitThermo.comment = WilhoitThermo.comment + 'Fitted to GA data with Cp0=%2g and Cp_inf=%2g. RMS error = %.3f*R. '%(cp0,cpInf,err) + GAthermo.comment
 
 	
 	return WilhoitThermo
