@@ -295,8 +295,8 @@ class ThermoWilhoitToNASACheck(unittest.TestCase):
 		"""Can we make NASA polynomial data"""
 		cp0, cpInf, a0, a1, a2, a3, I, J = (1.0,1.0,1.0,1.0,1.0,1.0, 1.0, 1.0)
 		comment = "Stupid thermo."
-		WilhoitThermo = thermo.ThermoWilhoitData( cp0, cpInf, a0, a1, a2, a3, I, J, comment=comment)
-		NASAthermoData = thermo.convertWilhoitToNASA(WilhoitThermo)
+		WilhoitData = thermo.ThermoWilhoitData( cp0, cpInf, a0, a1, a2, a3, I, J, comment=comment)
+		NASAthermoData = thermo.convertWilhoitToNASA(WilhoitData)
 		# well, if we didn't cause an error, I guess that's good enough for now.
 
 	def testHeatCapacity(self):
@@ -308,8 +308,8 @@ class ThermoWilhoitToNASACheck(unittest.TestCase):
 		hexadiene = species.Species(SMILES='CCC')
 		hexadiene.getResonanceIsomers()
 		GAthermoData = hexadiene.getThermoData()
-		WilhoitThermo = thermo.convertGAtoWilhoit(GAthermoData, atoms=11, rotors=2, linear=False)
-		NASAthermoData = thermo.convertWilhoitToNASA(WilhoitThermo)
+		WilhoitData = thermo.convertGAtoWilhoit(GAthermoData, atoms=11, rotors=2, linear=False)
+		NASAthermoData = thermo.convertWilhoitToNASA(WilhoitData)
 		
 		Tlist = thermo.ThermoGAData.CpTlist # just check at defined data points
 		for T in Tlist:
@@ -318,9 +318,47 @@ class ThermoWilhoitToNASACheck(unittest.TestCase):
 			err = abs(ga-nasa)
 			limit = 10.0 # J/mol/K
 			self.assertTrue(err<limit,"GA (%.1f) and NASA (%.1f) differ by more than %s J/mol/K at %dK"%(ga,nasa,limit,T))
+			
+	def testEntropy(self):
+		"""Check the NASA S matches the GA S for propane.
+		
+		Uses Propane as a test-case. atoms=11, rotors=2, linear=False
+		"""
+		
+		propane = structure.Structure(SMILES='CCC')
+		propane.updateAtomTypes()
+		GAthermoData = thermo.getThermoData(propane,required_class=thermo.ThermoGAData)
+		WilhoitData = thermo.convertGAtoWilhoit(GAthermoData, atoms=11, rotors=2, linear=False)
+		NASAthermoData = thermo.convertWilhoitToNASA(WilhoitData)
+		
+		Tlist = thermo.ThermoGAData.CpTlist # just check at defined data points
+		for T in Tlist:
+			ga = GAthermoData.getEntropy(T)
+			nasa = NASAthermoData.getEntropy(T)[0]
+			err = abs(ga-nasa)
+			limit = 4.0 # J/mol/K
+			self.assertTrue(err<limit,"GA (%.1f) and NASA (%.1f) differ by more than %s J/mol/K at %dK"%(ga,nasa,limit,T))
 
+	def testEnthalpy(self):
+		"""Check the NASA H matches the GA H for propane.
 		
+		Uses Propane as a test-case. atoms=11, rotors=2, linear=False
+		"""
 		
+		propane = structure.Structure(SMILES='CCC')
+		propane.updateAtomTypes()
+		GAthermoData = thermo.getThermoData(propane,required_class=thermo.ThermoGAData)
+		WilhoitData = thermo.convertGAtoWilhoit(GAthermoData, atoms=11, rotors=2, linear=False)
+		NASAthermoData = thermo.convertWilhoitToNASA(WilhoitData)
+		
+		Tlist = thermo.ThermoGAData.CpTlist # just check at defined data points
+		for T in Tlist:
+			ga = GAthermoData.getEnthalpy(T)
+			nasa = NASAthermoData.getEnthalpy(T)[0]
+			err = abs(ga-nasa)
+			limit = 2000.0 # J/mol  # the wilhoit should be more accurate then trapezoid integration of GA, so wouldn't want them to be exactly the same
+			self.assertTrue(err<limit,"GA (%.1f) and NASA (%.1f) differ by more than %s J/mol at %dK"%(ga,nasa,limit,T))
+			
 ################################################################################
 
 		
@@ -338,17 +376,22 @@ propane = structure.Structure(SMILES='CCC')
 propane.updateAtomTypes()
 GAthermoData = thermo.getThermoData(propane,required_class=thermo.ThermoGAData)
 WilhoitData = thermo.convertGAtoWilhoit(GAthermoData, atoms=11, rotors=2, linear=False)
+NASAthermoData = thermo.convertWilhoitToNASA(WilhoitData)
 """
-	test1 = "GAthermoData.getEnthalpy(876.5)"
-	test2 = "WilhoitData.getEnthalpy(876.5)"
+	test1 = "for T in range(600,1100,100):\n\tGAthermoData.getEnthalpy(T)"
+	test2 = "for T in range(600,1100,100):\n\tWilhoitData.getEnthalpy(T)"
+	test3 = "for T in range(600,1100,100):\n\tNASAthermoData.getEnthalpy(T)"
 	print "****"
 	print "Timing getEnthalpy:"
 	t = Timer(test1,startup)
 	times = t.repeat(repeat=5,number=1000)
 	print " ThermoGAData    took   %.3f milliseconds (%s)"%(min(times), times)
 	t = Timer(test2,startup)
-	times = t.repeat(repeat=5,number=1000)
+	times = t.repeat(repeat=3,number=1000)
 	print " ThermoWilhoitData took %.3f milliseconds (%s)"%(min(times), times)
+	t = Timer(test3,startup)
+	times = t.repeat(repeat=3,number=1000)
+	print " ThermoNASAData   took  %.3f milliseconds (%s)"%(min(times), times)
 	print "****\n\nContinuing with tests..."
 	
 	# Show debug messages (as databases are loading)
