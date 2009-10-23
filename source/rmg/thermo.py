@@ -1182,7 +1182,7 @@ class ThermoDatabase(data.Database):
 		"""
 		data.Database.__init__(self)
 		
-
+	
 	def load(self, dictstr, treestr, libstr):
 		"""
 		Load a thermodynamics group additivity database. The database is stored
@@ -1235,7 +1235,7 @@ class ThermoDatabase(data.Database):
 			raise data.InvalidDatabaseException('Database at "%s" is not well-formed.' % (dictstr))
 		
 		#self.library.removeLinks()
-
+	
 	def toXML(self):
 		"""
 		Return an XML representation of the thermo database.
@@ -1247,7 +1247,7 @@ class ThermoDatabase(data.Database):
 		data.Database.toXML(self, dom, root)
 		
 		return dom.toprettyxml()
-
+	
 	def getThermoData(self, structure, atom):
 		"""
 		Determine the group additivity thermodynamic data for the atom `atom`
@@ -1265,16 +1265,16 @@ class ThermoDatabase(data.Database):
 		while data.__class__ != ThermoGAData and data is not None:
 			if data[0].__class__ == str or data[0].__class__ == unicode:
 				data = self.library[data[0]]
-
-		# This code prints the hierarchy of the found node; useful for debugging
-#		result = ''
-#		while node is not None:
-#			result = ' -> ' + node + result
-#			node = self.tree.parent[node]
-#		print result[4:]
-
+				
+			# This code prints the hierarchy of the found node; useful for debugging
+		#result = ''
+		#while node is not None:
+		#	result = ' -> ' + node + result
+		#	node = self.tree.parent[node]
+		#print result[4:]
+	    #
 		return data
-
+	
 	def contains(self, structure):
 		"""
 		Search the dictionary for the specified `structure`. If found, the label
@@ -1493,7 +1493,7 @@ def getThermoData(struct, required_class=ThermoGAData): # ThermoWilhoitData
 	Get the thermodynamic data associated with `structure` by looking in the
 	loaded thermodynamic database.
 	
-	required_class is the class of thermo object you want returning; default 
+	`required_class` is the class of thermo object you want returning; default 
 	is :class:`ThermoWilhoitData`
 	"""
 	import constants
@@ -1513,8 +1513,18 @@ def getThermoData(struct, required_class=ThermoGAData): # ThermoWilhoitData
 	atoms = len(struct.atoms())
 	linear = struct.isLinear()
 	WilhoitData = convertGAtoWilhoit(GAthermoData,atoms,rotors,linear)
-
-	return WilhoitData
+	
+	if required_class==ThermoWilhoitData:
+		return WilhoitData
+		
+	# Convert to NASA
+	NASAthermoData = convertWilhoitToNASA(WilhoitData)
+	
+	if required_class==NASAThermoData:
+		return NASAthermoData
+	
+	# Still not returned?
+	raise Exception("Cannot convert themo data into class %r"%(required_class))
 
 ################################################################################
 
