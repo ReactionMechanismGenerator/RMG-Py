@@ -729,6 +729,9 @@ def convertWilhoitToNASA(Wilhoit):
 	#low polynomial entropy:
 	Slow = (Wilhoit.getEntropy(298.15) - polynomial_low.getEntropy(298.15))/constants.R
 	###polynomial_low.coeffs[6] = (Wilhoit.getEntropy(298.15) - polynomial_low.getEntropy(298.15))/constants.R
+
+        polynomial_low.coeffs = (b1,b2,b3,b4,b5,Hlow,Slow)
+
         #for the high polynomial, we want the results to match the low polynomial value at tint
 	#high polynomial enthalpy:
 	Hhigh = (polynomial_low.getEnthalpy(tint) - polynomial_high.getEnthalpy(tint))/constants.R
@@ -737,7 +740,6 @@ def convertWilhoitToNASA(Wilhoit):
 	Shigh = (polynomial_low.getEntropy(tint) - polynomial_high.getEntropy(tint))/constants.R
 	###polynomial_high.coeffs[6] = (polynomial_low.getEntropy(tint) - polynomial_high.getEntropy(tint))/constants.R
 
-        polynomial_low.coeffs = (b1,b2,b3,b4,b5,Hlow,Slow)
         polynomial_high.coeffs = (b6,b7,b8,b9,b10,Hhigh,Shigh)
 	
 	NASAthermo = ThermoNASAData( Trange=(Tmin,Tmax), polynomials=[polynomial_low,polynomial_high], comment=comment)
