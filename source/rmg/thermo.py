@@ -383,6 +383,21 @@ class ThermoNASAPolynomial(ThermoData):
 #   </polynomial>
 		pass
 	
+	def integral2_T0(self, t):
+		#input: NASA parameters for Cp/R, c1, c2, c3, c4, c5 (either low or high temp parameters), temperature t (in kiloKelvin; an endpoint of the low or high temp range
+		#output: the quantity Integrate[(Cp(NASA)/R)^2, t'] evaluated at t'=t 
+		#can speed further by precomputing and storing e.g. thigh^2, tlow^2, etc.
+		c1, c2, c3, c4, c5 = self.c0, self.c1, self.c2, self.c3, self.c4
+		result = c1*c1*t + c1*c2*t*t + (2*c1*c3+c2*c2)/3*t*t*t + (c1*c4+c2*c3)/2*t*t*t*t + (2*c1*c5 + 2*c2*c4 + c3*c3)/5*t*t*t*t*t + (c2*c5 + c3*c4)/3*t*t*t*t*t*t + (2*c3*c5 + c4*c4)/7*t*t*t*t*t*t*t + c4*c5/4*t*t*t*t*t*t*t*t + c5*c5/9*t*t*t*t*t*t*t*t*t
+		return result
+
+	def integral2_TM1(self, t):
+		#input: NASA parameters for Cp/R, c1, c2, c3, c4, c5 (either low or high temp parameters), temperature t (in kiloKelvin; an endpoint of the low or high temp range
+		#output: the quantity Integrate[(Cp(NASA)/R)^2*t^-1, t'] evaluated at t'=t 
+		#can speed further by precomputing and storing e.g. thigh^2, tlow^2, etc.
+		c1, c2, c3, c4, c5 = self.c0, self.c1, self.c2, self.c3, self.c4
+		result = c1*c1*math.log(t) + 2*c1*c2*t + (2*c1*c3+c2*c2)/2*t*t + 2*(c1*c4+c2*c3)/3*t*t*t + (2*c1*c5 + 2*c2*c4 + c3*c3)/4*t*t*t*t + 2*(c2*c5 + c3*c4)/5*t*t*t*t*t + (2*c3*c5 + c4*c4)/6*t*t*t*t*t*t + 2*c4*c5/7*t*t*t*t*t*t*t + c5*c5/8*t*t*t*t*t*t*t*t
+		return result
 
 ################################################################################
 
@@ -784,20 +799,7 @@ def convertWilhoitToNASA(Wilhoit):
 	#for now, use weighting of 1/T
 	weighting = 1
 	
-	# get info from incoming Wilhoit thermo
-	cp0 = Wilhoit.cp0
-	cpInf = Wilhoit.cpInf
-	B = Wilhoit.B
-	a0 = Wilhoit.a0
-	a1 = Wilhoit.a1
-	a2 = Wilhoit.a2
-	a3 = Wilhoit.a3
-	R = constants.R
-	
-	#scale the values to kK and dimensionless (for heat capacity)
-	cp0 = cp0/R
-	cpInf = cpInf/R
-	B = B/1000
+	# Scale the temperatures to kK
 	Tmin = Tmin/1000
 	Tintg = Tintg/1000
 	Tmax = Tmax/1000
@@ -805,67 +807,60 @@ def convertWilhoitToNASA(Wilhoit):
 	# do your clever maths here
 	#if we are using fixed tint, set tint equal to Tintg and do not allow tint to float
 	if(fixed == 1):
-		(b1, b2, b3, b4, b5, b6, b7, b8, b9, b10) = Wilhoit2NASA(Wilhoit, Tmin, Tmax, Tintg, weighting)
+		nasa_low, nasa_high = Wilhoit2NASA(Wilhoit, Tmin, Tmax, Tintg, weighting)
 		err = TintOpt_objFun(Tintg, Wilhoit, Tmin, Tmax, weighting) #to print the objective function value
 		tint = Tintg
 	else:
-		(b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, tint) = Wilhoit2NASA_TintOpt(Wilhoit, Tmin, Tmax, Tintg, weighting)
+		nasa_low, nasa_high, tint = Wilhoit2NASA_TintOpt(Wilhoit, Tmin, Tmax, Tintg, weighting)
 		# rmsErr = rmsErrNASA(t, cp, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, tint) #this needs group data
 		
 	#restore to conventional units of K for Tint and units based on K rather than kK in NASA polynomial coefficients
 	tint=tint*1000.
 	Tmin = Tmin*1000
 	Tmax = Tmax*1000
-	b2 = b2/1000.
-	b7 = b7/1000.
-	b3 = b3/1000000.
-	b8 = b8/1000000.
-	b4 = b4/1000000000.
-	b9 = b9/1000000000.
-	b5 = b5/1000000000000.
-	b10= b10/1000000000000.
-	
-	#set H and S parameters equal to zero; we will solve for the correct values below, based on the enthalpy/entropy with the parameters equal to zero 
-	Hlow = 0.0
-	Slow = 0.0
-	Hhigh = 0.0
-	Shigh = 0.0
-	
-	coeffs_low = (b1,b2,b3,b4,b5,Hlow,Slow)
-	coeffs_high = (b6,b7,b8,b9,b10,Hhigh,Shigh)
+
+	nasa_low.c1 /= 1000.
+	nasa_low.c2 /= 1000000.
+	nasa_low.c3 /= 1000000000.
+	nasa_low.c4 /= 1000000000000.
+
+	nasa_high.c1 /= 1000.
+	nasa_high.c2 /= 1000000.
+	nasa_high.c3 /= 1000000000.
+	nasa_high.c4 /= 1000000000000.
 	
 	# could we include fitting accuracy in the expression below?
 	# output comment
 	comment = 'Fitted to Wilhoit data. '+Wilhoit.comment
-		
-	# create ThermoNASAPolynomial instances
-	polynomial_low = ThermoNASAPolynomial( T_range=(Tmin,tint), comment=comment, coeffs=coeffs_low)
-	polynomial_high = ThermoNASAPolynomial( T_range=(tint,Tmax), comment=comment, coeffs=coeffs_high)
+	nasa_low.Trange = (Tmin,tint); nasa_low.Tmin = Tmin; nasa_low.Tmax = tint
+	nasa_low.comment = comment
+	nasa_high.Trange = (tint,Tmax); nasa_high.Tmin = tint; nasa_high.Tmax = Tmax
+	nasa_high.comment = comment
 
 	#for the low polynomial, we want the results to match the Wilhoit value at 298.15K
 	#low polynomial enthalpy:
-	Hlow = (Wilhoit.getEnthalpy(298.15) - polynomial_low.getEnthalpy(298.15))/constants.R
+	Hlow = (Wilhoit.getEnthalpy(298.15) - nasa_low.getEnthalpy(298.15))/constants.R
 	###polynomial_low.coeffs[5] = (Wilhoit.getEnthalpy(298.15) - polynomial_low.getEnthalpy(298.15))/constants.R
 	#low polynomial entropy:
-	Slow = (Wilhoit.getEntropy(298.15) - polynomial_low.getEntropy(298.15))/constants.R
+	Slow = (Wilhoit.getEntropy(298.15) - nasa_low.getEntropy(298.15))/constants.R
 	###polynomial_low.coeffs[6] = (Wilhoit.getEntropy(298.15) - polynomial_low.getEntropy(298.15))/constants.R
 
 	# update last two coefficients
-	polynomial_low.c5 = Hlow
-	polynomial_low.c6 = Slow
+	nasa_low.c5 = Hlow
+	nasa_low.c6 = Slow
 
 	#for the high polynomial, we want the results to match the low polynomial value at tint
 	#high polynomial enthalpy:
-	Hhigh = (polynomial_low.getEnthalpy(tint) - polynomial_high.getEnthalpy(tint))/constants.R
+	Hhigh = (nasa_low.getEnthalpy(tint) - nasa_high.getEnthalpy(tint))/constants.R
 	#high polynomial entropy:
-	Shigh = (polynomial_low.getEntropy(tint) - polynomial_high.getEntropy(tint))/constants.R
+	Shigh = (nasa_low.getEntropy(tint) - nasa_high.getEntropy(tint))/constants.R
 
 	# update last two coefficients
 	#polynomial_high.coeffs = (b6,b7,b8,b9,b10,Hhigh,Shigh)
-	polynomial_high.c5 = Hhigh
-	polynomial_high.c6 = Shigh
+	nasa_high.c5 = Hhigh
+	nasa_high.c6 = Shigh
 	
-	NASAthermo = ThermoNASAData( Trange=(Tmin,Tmax), polynomials=[polynomial_low,polynomial_high], comment=comment)
+	NASAthermo = ThermoNASAData( Trange=(Tmin,Tmax), polynomials=[nasa_low,nasa_high], comment=comment)
 	return NASAthermo
 
 ################################################################################
@@ -903,12 +898,12 @@ def Wilhoit2NASA(wilhoit, tmin, tmax, tint, weighting):
 	wilhoit.cp0 /= constants.R
 	wilhoit.cpInf /= constants.R
 	wilhoit.B /= 1000.
-	
+
 	if (weighting == 1):
-		(b1, b2, b3, b4, b5, b6, b7, b8, b9, b10) = Wilhoit2NASA_W(wilhoit, tmin, tmax, tint)
+		nasa1, nasa2 = Wilhoit2NASA_W(wilhoit, tmin, tmax, tint)
 	else:
-		(b1, b2, b3, b4, b5, b6, b7, b8, b9, b10) = Wilhoit2NASA_NW(wilhoit, tmin, tmax, tint)
-	return b1, b2, b3, b4, b5, b6, b7, b8, b9, b10
+		nasa1, nasa2 = Wilhoit2NASA_NW(wilhoit, tmin, tmax, tint)
+	return nasa1, nasa2
 
 
 def Wilhoit2NASA_NW(wilhoit, tmin, tmax, tint):
@@ -1021,18 +1016,10 @@ def Wilhoit2NASA_NW(wilhoit, tmin, tmax, tint):
 	#from linalg import solve
 	#print A
 	x = linalg.solve(A,b,overwrite_a=1,overwrite_b=1)
-	b1 = x[0]
-	b2 = x[1]
-	b3 = x[2]
-	b4 = x[3]
-	b5 = x[4]
-	b6 = x[5]
-	b7 = x[6]
-	b8 = x[7]
-	b9 = x[8]
-	b10 = x[9]
+	nasa_low = ThermoNASAPolynomial(T_range=(0,0), coeffs=[x[0], x[1], x[2], x[3], x[4], 0.0, 0.0], comment='')
+	nasa_high = ThermoNASAPolynomial(T_range=(0,0), coeffs=[x[5], x[6], x[7], x[8], x[9], 0.0, 0.0], comment='')
 	
-	return b1, b2, b3, b4, b5, b6, b7, b8, b9, b10
+	return nasa_low, nasa_high
 
 def Wilhoit2NASA_W(wilhoit, tmin, tmax, tint):
 	#this is the case WITH weighting
@@ -1146,18 +1133,10 @@ def Wilhoit2NASA_W(wilhoit, tmin, tmax, tint):
 	#from linalg import solve
 	#print A
 	x = linalg.solve(A,b,overwrite_a=1,overwrite_b=1)
-	b1 = x[0]
-	b2 = x[1]
-	b3 = x[2]
-	b4 = x[3]
-	b5 = x[4]
-	b6 = x[5]
-	b7 = x[6]
-	b8 = x[7]
-	b9 = x[8]
-	b10 = x[9]
-	
-	return b1, b2, b3, b4, b5, b6, b7, b8, b9, b10
+	nasa1 = ThermoNASAPolynomial(T_range=(0,9999.9), coeffs=[x[0], x[1], x[2], x[3], x[4], 0.0, 0.0], comment='')
+	nasa2 = ThermoNASAPolynomial(T_range=(0,9999.9), coeffs=[x[5], x[6], x[7], x[8], x[9], 0.0, 0.0], comment='')
+
+	return nasa1, nasa2
 	
 def Wilhoit2NASA_TintOpt(cp0, cpInf, B, a0, a1, a2, a3, tmin, tmax, tintg, weighting):
 	#input: Wilhoit parameters, Cp0/R, CpInf/R, and B (kK), a0, a1, a2, a3, Tmin (minimum temperature (in kiloKelvin), Tmax (maximum temperature (in kiloKelvin), Tintg (guess intermediate temperature, in kiloKelvin)
@@ -1184,9 +1163,11 @@ def TintOpt_objFun(tint, wilhoit, tmin, tmax, weighting):
 def TintOpt_objFun_NW(tint, wilhoit, tmin, tmax):
 	#input: Tint (intermediate temperature, in kiloKelvin); Wilhoit parameters, Cp0/R, CpInf/R, and B (kK), a0, a1, a2, a3, Tmin (minimum temperature (in kiloKelvin), Tmax (maximum temperature (in kiloKelvin)
 	#output: the quantity Integrate[(Cp(Wilhoit)/R-Cp(NASA)/R)^2, {t, tmin, tmax}]
-	(b1, b2, b3, b4, b5, b6, b7, b8, b9, b10) = Wilhoit2NASA(wilhoit,tmin,tmax,tint, 0)
+	nasa_low, nasa_high = Wilhoit2NASA(wilhoit,tmin,tmax,tint, 1)
+	b1, b2, b3, b4, b5 = nasa_low.c0, nasa_low.c1, nasa_low.c2, nasa_low.c3, nasa_low.c4
+	b6, b7, b8, b9, b10 = nasa_high.c0, nasa_high.c1, nasa_high.c2, nasa_high.c3, nasa_high.c4
 	result = (wilhoit.integral2_T0(tmax) - wilhoit.integral2_T0(tmin) +
-				 NASA2Int(b1,b2,b3,b4,b5,tint)-NASA2Int(b1,b2,b3,b4,b5,tmin) + NASA2Int(b6,b7,b8,b9,b10,tmax) - NASA2Int(b6,b7,b8,b9,b10,tint)
+				 nasa_low.integral2_T0(tint)-nasa_low.integral2_T0(tmin) + nasa_high.integral2_T0(tmax) - nasa_high.integral2_T0(tint)
 				 - 2* (b6*wilhoit.integral_T0(tmax)+(b1-b6)*wilhoit.integral_T0(tint) - b1*wilhoit.integral_T0(tmin)
 				 +b7*wilhoit.integral_T1(tmax)+(b2-b7)*wilhoit.integral_T1(tint) - b2*wilhoit.integral_T1(tmin)
 				 +b8*wilhoit.integral_T2(tmax)+(b3-b8)*wilhoit.integral_T2(tint) - b3*wilhoit.integral_T2(tmin)
@@ -1197,35 +1178,17 @@ def TintOpt_objFun_NW(tint, wilhoit, tmin, tmax):
 def TintOpt_objFun_W(tint, wilhoit, tmin, tmax):
 	#input: Tint (intermediate temperature, in kiloKelvin); Wilhoit parameters, Cp0/R, CpInf/R, and B (kK), a0, a1, a2, a3, Tmin (minimum temperature (in kiloKelvin), Tmax (maximum temperature (in kiloKelvin)
 	#output: the quantity Integrate[(Cp(Wilhoit)/R-Cp(NASA)/R)^2, {t, tmin, tmax}]
-	(b1, b2, b3, b4, b5, b6, b7, b8, b9, b10) = Wilhoit2NASA(wilhoit,tmin,tmax,tint, 1)
+	nasa_low, nasa_high = Wilhoit2NASA(wilhoit,tmin,tmax,tint, 1)
+	b1, b2, b3, b4, b5 = nasa_low.c0, nasa_low.c1, nasa_low.c2, nasa_low.c3, nasa_low.c4
+	b6, b7, b8, b9, b10 = nasa_high.c0, nasa_high.c1, nasa_high.c2, nasa_high.c3, nasa_high.c4
 	result = (wilhoit.integral2_TM1(tmax) - wilhoit.integral2_TM1(tmin) +
-				 NASA2IntM1(b1,b2,b3,b4,b5,tint)-NASA2IntM1(b1,b2,b3,b4,b5,tmin) + NASA2IntM1(b6,b7,b8,b9,b10,tmax) - NASA2IntM1(b6,b7,b8,b9,b10,tint)
+				 nasa_low.integral2_TM1(tint)-nasa_low.integral2_TM1(tmin) + nasa_high.integral2_TM1(tmax) - nasa_high.integral2_TM1(tint)
 				 - 2* (b6*wilhoit.integral_TM1(tmax)+(b1-b6)*wilhoit.integral_TM1(tint) - b1*wilhoit.integral_TM1(tmin)
 				 +b7*wilhoit.integral_T0(tmax)+(b2-b7)*wilhoit.integral_T0(tint) - b2*wilhoit.integral_T0(tmin)
 				 +b8*wilhoit.integral_T1(tmax)+(b3-b8)*wilhoit.integral_T1(tint) - b3*wilhoit.integral_T1(tmin)
 				 +b9*wilhoit.integral_T2(tmax)+(b4-b9)*wilhoit.integral_T2(tint) - b4*wilhoit.integral_T2(tmin)
 				 +b10*wilhoit.integral_T3(tmax)+(b5-b10)*wilhoit.integral_T3(tint) - b5*wilhoit.integral_T3(tmin)))
 	return result
-
-#analytical integrals:
-
-#input (for all functions WilhoitXIntN): Wilhoit parameters: Cp0, CpInf, B, a0, a1, a2, a3 and t; units of Cp0/CpInf and B/t should be consistent and determine the units of the output 
-
-def NASA2Int(c1,c2,c3,c4,c5,t):
-	#input: NASA parameters for Cp/R, c1, c2, c3, c4, c5 (either low or high temp parameters), temperature t (in kiloKelvin; an endpoint of the low or high temp range
-	#output: the quantity Integrate[(Cp(NASA)/R)^2, t'] evaluated at t'=t 
-	#can speed further by precomputing and storing e.g. thigh^2, tlow^2, etc.
-	result = c1*c1*t + c1*c2*t*t + (2*c1*c3+c2*c2)/3*t*t*t + (c1*c4+c2*c3)/2*t*t*t*t + (2*c1*c5 + 2*c2*c4 + c3*c3)/5*t*t*t*t*t + (c2*c5 + c3*c4)/3*t*t*t*t*t*t + (2*c3*c5 + c4*c4)/7*t*t*t*t*t*t*t + c4*c5/4*t*t*t*t*t*t*t*t + c5*c5/9*t*t*t*t*t*t*t*t*t
-	return result
-
-def NASA2IntM1(c1,c2,c3,c4,c5,t):
-	#input: NASA parameters for Cp/R, c1, c2, c3, c4, c5 (either low or high temp parameters), temperature t (in kiloKelvin; an endpoint of the low or high temp range
-	#output: the quantity Integrate[(Cp(NASA)/R)^2*t^-1, t'] evaluated at t'=t 
-	#can speed further by precomputing and storing e.g. thigh^2, tlow^2, etc.
-	result = c1*c1*math.log(t) + 2*c1*c2*t + (2*c1*c3+c2*c2)/2*t*t + 2*(c1*c4+c2*c3)/3*t*t*t + (2*c1*c5 + 2*c2*c4 + c3*c3)/4*t*t*t*t + 2*(c2*c5 + c3*c4)/5*t*t*t*t*t + (2*c3*c5 + c4*c4)/6*t*t*t*t*t*t + 2*c4*c5/7*t*t*t*t*t*t*t + c5*c5/8*t*t*t*t*t*t*t*t
-	return result
-
-
 
 ################################################################################
 class ThermoDatabase(data.Database):
