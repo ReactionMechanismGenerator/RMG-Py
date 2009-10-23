@@ -531,7 +531,7 @@ class ThermoWilhoitData(ThermoData):
 		where :math:`f_{ij} = 3 + j` if :math:`i = j`, :math:`f_{ij} = 1` if
 		:math:`i > j`, and :math:`f_{ij} = 0` if :math:`i < j`.
 		"""
-		return self.H0 + ThermoWilhoitData.integral_T0(self.cp0, self.cpInf, self.B, self.a0, self.a1, self.a2, self.a3, T)
+		return self.H0 + self.integral_T0(T)
 	
 	def getEntropy(self, T):
 		"""
@@ -545,7 +545,7 @@ class ThermoWilhoitData(ThermoData):
 			\\right]
 
 		"""
-		return self.S0 + ThermoWilhoitData.integral_TM1(self.cp0, self.cpInf, self.B, self.a0, self.a1, self.a2, self.a3, T)
+		return self.S0 + self.integral_TM1(T)
 	
 	def getFreeEnergy(self, T):
 		"""
@@ -554,59 +554,59 @@ class ThermoWilhoitData(ThermoData):
 		return self.getEnthalpy(T) - T * self.getEntropy(T)
 
 	#a faster version of the integral based on H from Yelvington's thesis; it differs from the original (see above) by a constant (dependent on parameters but independent of t)
-	@staticmethod
-	def integral_T0(cp0, cpInf, B, a0, a1, a2, a3, t):
+	def integral_T0(self, t):
 		#output: the quantity Integrate[Cp(Wilhoit)/R, t'] evaluated at t'=t
+		cp0, cpInf, B, a0, a1, a2, a3 = self.cp0, self.cpInf, self.B, self.a0, self.a1, self.a2, self.a3
 		y = t/(t+B)
 		y2 = y*y
 		result = cp0*t - (cpInf-cp0)*t*(y2*((3*a0 + a1 + a2 + a3)/6. + (4*a1 + a2 + a3)*y/12. + (5*a2 + a3)*y2/20. + a3*y2*y/5.) + (2 + a0 + a1 + a2 + a3)*( y/2. - 1 + (1/y-1)*math.log(B + t)))
 		return result
 
 	#a faster version of the integral based on S from Yelvington's thesis; it differs from the original by a constant (dependent on parameters but independent of t)
-	@staticmethod
-	def integral_TM1(cp0, cpInf, B, a0, a1, a2, a3, t):
+	def integral_TM1(self, t):
 		#output: the quantity Integrate[Cp(Wilhoit)/R*t^-1, t'] evaluated at t'=t
+		cp0, cpInf, B, a0, a1, a2, a3 = self.cp0, self.cpInf, self.B, self.a0, self.a1, self.a2, self.a3
 		y = t/(t+B)
 		result= cpInf*math.log(t)-(cpInf-cp0)*(math.log(y)+y*(1+y*(a0/2+y*(a1/3 + y*(a2/4 + y*a3/5)))))
 		return result
 
-	@staticmethod
-	def integral_T1(cp0, cpInf, B, a0, a1, a2, a3, t):
+	def integral_T1(self, t):
 		#output: the quantity Integrate[Cp(Wilhoit)/R*t, t'] evaluated at t'=t
+		cp0, cpInf, B, a0, a1, a2, a3 = self.cp0, self.cpInf, self.B, self.a0, self.a1, self.a2, self.a3
 		result = ( (2 + a0 + a1 + a2 + a3)*B*(cp0 - cpInf)*t + (cpInf*t**2)/2. + (a3*B**7*(-cp0 + cpInf))/(5.*(B + t)**5) + ((a2 + 6*a3)*B**6*(cp0 - cpInf))/(4.*(B + t)**4) -
 			((a1 + 5*(a2 + 3*a3))*B**5*(cp0 - cpInf))/(3.*(B + t)**3) + ((a0 + 4*a1 + 10*(a2 + 2*a3))*B**4*(cp0 - cpInf))/(2.*(B + t)**2) -
 			((1 + 3*a0 + 6*a1 + 10*a2 + 15*a3)*B**3*(cp0 - cpInf))/(B + t) - (3 + 3*a0 + 4*a1 + 5*a2 + 6*a3)*B**2*(cp0 - cpInf)*math.log(B + t))
 		return result
 
-	@staticmethod
-	def integral_T2(cp0, cpInf, B, a0, a1, a2, a3, t):
+	def integral_T2(self, t):
 		#output: the quantity Integrate[Cp(Wilhoit)/R*t^2, t'] evaluated at t'=t
+		cp0, cpInf, B, a0, a1, a2, a3 = self.cp0, self.cpInf, self.B, self.a0, self.a1, self.a2, self.a3
 		result = ( -((3 + 3*a0 + 4*a1 + 5*a2 + 6*a3)*B**2*(cp0 - cpInf)*t) + ((2 + a0 + a1 + a2 + a3)*B*(cp0 - cpInf)*t**2)/2. + (cpInf*t**3)/3. + (a3*B**8*(cp0 - cpInf))/(5.*(B + t)**5) -
 			((a2 + 7*a3)*B**7*(cp0 - cpInf))/(4.*(B + t)**4) + ((a1 + 6*a2 + 21*a3)*B**6*(cp0 - cpInf))/(3.*(B + t)**3) - ((a0 + 5*(a1 + 3*a2 + 7*a3))*B**5*(cp0 - cpInf))/(2.*(B + t)**2) +
 			((1 + 4*a0 + 10*a1 + 20*a2 + 35*a3)*B**4*(cp0 - cpInf))/(B + t) + (4 + 6*a0 + 10*a1 + 15*a2 + 21*a3)*B**3*(cp0 - cpInf)*math.log(B + t))
 		return result
 
-	@staticmethod
-	def integral_T3(cp0, cpInf, B, a0, a1, a2, a3, t):
+	def integral_T3(self, t):
 		#output: the quantity Integrate[Cp(Wilhoit)/R*t^3, t'] evaluated at t'=t
+		cp0, cpInf, B, a0, a1, a2, a3 = self.cp0, self.cpInf, self.B, self.a0, self.a1, self.a2, self.a3
 		result = ( (4 + 6*a0 + 10*a1 + 15*a2 + 21*a3)*B**3*(cp0 - cpInf)*t + ((3 + 3*a0 + 4*a1 + 5*a2 + 6*a3)*B**2*(-cp0 + cpInf)*t**2)/2. + ((2 + a0 + a1 + a2 + a3)*B*(cp0 - cpInf)*t**3)/3. +
 			(cpInf*t**4)/4. + (a3*B**9*(-cp0 + cpInf))/(5.*(B + t)**5) + ((a2 + 8*a3)*B**8*(cp0 - cpInf))/(4.*(B + t)**4) - ((a1 + 7*(a2 + 4*a3))*B**7*(cp0 - cpInf))/(3.*(B + t)**3) +
 			((a0 + 6*a1 + 21*a2 + 56*a3)*B**6*(cp0 - cpInf))/(2.*(B + t)**2) - ((1 + 5*a0 + 15*a1 + 35*a2 + 70*a3)*B**5*(cp0 - cpInf))/(B + t) -
 			(5 + 10*a0 + 20*a1 + 35*a2 + 56*a3)*B**4*(cp0 - cpInf)*math.log(B + t))
 		return result
 
-	@staticmethod
-	def integral_T4(cp0, cpInf, B, a0, a1, a2, a3, t):
+	def integral_T4(self, t):
 		#output: the quantity Integrate[Cp(Wilhoit)/R*t^4, t'] evaluated at t'=t
+		cp0, cpInf, B, a0, a1, a2, a3 = self.cp0, self.cpInf, self.B, self.a0, self.a1, self.a2, self.a3
 		result = ( -((5 + 10*a0 + 20*a1 + 35*a2 + 56*a3)*B**4*(cp0 - cpInf)*t) + ((4 + 6*a0 + 10*a1 + 15*a2 + 21*a3)*B**3*(cp0 - cpInf)*t**2)/2. +
 			((3 + 3*a0 + 4*a1 + 5*a2 + 6*a3)*B**2*(-cp0 + cpInf)*t**3)/3. + ((2 + a0 + a1 + a2 + a3)*B*(cp0 - cpInf)*t**4)/4. + (cpInf*t**5)/5. + (a3*B**10*(cp0 - cpInf))/(5.*(B + t)**5) -
 			((a2 + 9*a3)*B**9*(cp0 - cpInf))/(4.*(B + t)**4) + ((a1 + 8*a2 + 36*a3)*B**8*(cp0 - cpInf))/(3.*(B + t)**3) - ((a0 + 7*(a1 + 4*(a2 + 3*a3)))*B**7*(cp0 - cpInf))/(2.*(B + t)**2) +
 			((1 + 6*a0 + 21*a1 + 56*a2 + 126*a3)*B**6*(cp0 - cpInf))/(B + t) + (6 + 15*a0 + 35*a1 + 70*a2 + 126*a3)*B**5*(cp0 - cpInf)*math.log(B + t))
 		return result
 
-	@staticmethod
-	def integral2_T0(cp0, cpInf, B, a0, a1, a2, a3, t):
+	def integral2_T0(self, t):
 		#output: the quantity Integrate[(Cp(Wilhoit)/R)^2, t'] evaluated at t'=t
+		cp0, cpInf, B, a0, a1, a2, a3 = self.cp0, self.cpInf, self.B, self.a0, self.a1, self.a2, self.a3
 		result = (cpInf**2*t - (a3**2*B**12*(cp0 - cpInf)**2)/(11.*(B + t)**11) + (a3*(a2 + 5*a3)*B**11*(cp0 - cpInf)**2)/(5.*(B + t)**10) -
 			((a2**2 + 18*a2*a3 + a3*(2*a1 + 45*a3))*B**10*(cp0 - cpInf)**2)/(9.*(B + t)**9) + ((4*a2**2 + 36*a2*a3 + a1*(a2 + 8*a3) + a3*(a0 + 60*a3))*B**9*(cp0 - cpInf)**2)/(4.*(B + t)**8) -
 			((a1**2 + 14*a1*(a2 + 4*a3) + 2*(14*a2**2 + a3 + 84*a2*a3 + 105*a3**2 + a0*(a2 + 7*a3)))*B**8*(cp0 - cpInf)**2)/(7.*(B + t)**7) +
@@ -624,9 +624,9 @@ class ThermoWilhoitData(ThermoData):
 			2*(2 + a0 + a1 + a2 + a3)*B*(cp0 - cpInf)*cpInf*math.log(B + t))
 		return result
 
-	@staticmethod
-	def integral2_TM1(cp0, cpInf, B, a0, a1, a2, a3, t):
+	def integral2_TM1(self, t):
 		#output: the quantity Integrate[(Cp(Wilhoit)/R)^2*t^-1, t'] evaluated at t'=t
+		cp0, cpInf, B, a0, a1, a2, a3 = self.cp0, self.cpInf, self.B, self.a0, self.a1, self.a2, self.a3
 		result = ( (a3**2*B**11*(cp0 - cpInf)**2)/(11.*(B + t)**11) - (a3*(2*a2 + 9*a3)*B**10*(cp0 - cpInf)**2)/(10.*(B + t)**10) +
 			((a2**2 + 16*a2*a3 + 2*a3*(a1 + 18*a3))*B**9*(cp0 - cpInf)**2)/(9.*(B + t)**9) -
 			((7*a2**2 + 56*a2*a3 + 2*a1*(a2 + 7*a3) + 2*a3*(a0 + 42*a3))*B**8*(cp0 - cpInf)**2)/(8.*(B + t)**8) +
@@ -805,11 +805,11 @@ def convertWilhoitToNASA(Wilhoit):
 	# do your clever maths here
 	#if we are using fixed tint, set tint equal to Tintg and do not allow tint to float
 	if(fixed == 1):
-		(b1, b2, b3, b4, b5, b6, b7, b8, b9, b10) = Wilhoit2NASA(cp0, cpInf, B, a0, a1, a2, a3, Tmin, Tmax, Tintg, weighting)
-		err = TintOpt_objFun(Tintg, cp0, cpInf, B, a0, a1, a2, a3, Tmin, Tmax, weighting) #to print the objective function value
+		(b1, b2, b3, b4, b5, b6, b7, b8, b9, b10) = Wilhoit2NASA(Wilhoit, Tmin, Tmax, Tintg, weighting)
+		err = TintOpt_objFun(Tintg, Wilhoit, Tmin, Tmax, weighting) #to print the objective function value
 		tint = Tintg
 	else:
-		(b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, tint) = Wilhoit2NASA_TintOpt(cp0, cpInf, B, a0, a1, a2, a3, Tmin, Tmax, Tintg, weighting)
+		(b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, tint) = Wilhoit2NASA_TintOpt(Wilhoit, Tmin, Tmax, Tintg, weighting)
 		# rmsErr = rmsErrNASA(t, cp, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, tint) #this needs group data
 		
 	#restore to conventional units of K for Tint and units based on K rather than kK in NASA polynomial coefficients
@@ -893,17 +893,25 @@ def NASA_CpR(t, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, tint):
 
 
 
-def Wilhoit2NASA(cp0, cpInf, B, a0, a1, a2, a3, tmin, tmax, tint, weighting):
+def Wilhoit2NASA(wilhoit, tmin, tmax, tint, weighting):
 	#input: Wilhoit parameters, Cp0/R, CpInf/R, and B (kK), a0, a1, a2, a3, Tmin (minimum temperature (in kiloKelvin), Tmax (maximum temperature (in kiloKelvin), Tint (intermediate temperature, in kiloKelvin)
 	#output: NASA parameters for Cp/R, b1, b2, b3, b4, b5 (low temp parameters) and b6, b7, b8, b9, b10 (high temp parameters)
+
+	# Make copy of Wilhoit data so we don't modify the original
+	wilhoit = ThermoWilhoitData(wilhoit.cp0, wilhoit.cpInf, wilhoit.a0, wilhoit.a1, wilhoit.a2, wilhoit.a3, wilhoit.H0, wilhoit.S0, wilhoit.comment)
+	# Rescale Wilhoit parameters
+	wilhoit.cp0 /= constants.R
+	wilhoit.cpInf /= constants.R
+	wilhoit.B /= 1000.
+	
 	if (weighting == 1):
-		(b1, b2, b3, b4, b5, b6, b7, b8, b9, b10) = Wilhoit2NASA_W(cp0, cpInf, B, a0, a1, a2, a3, tmin, tmax, tint)
+		(b1, b2, b3, b4, b5, b6, b7, b8, b9, b10) = Wilhoit2NASA_W(wilhoit, tmin, tmax, tint)
 	else:
-		(b1, b2, b3, b4, b5, b6, b7, b8, b9, b10) = Wilhoit2NASA_NW(cp0, cpInf, B, a0, a1, a2, a3, tmin, tmax, tint)
+		(b1, b2, b3, b4, b5, b6, b7, b8, b9, b10) = Wilhoit2NASA_NW(wilhoit, tmin, tmax, tint)
 	return b1, b2, b3, b4, b5, b6, b7, b8, b9, b10
 
 
-def Wilhoit2NASA_NW(cp0, cpInf, B, a0, a1, a2, a3, tmin, tmax, tint):
+def Wilhoit2NASA_NW(wilhoit, tmin, tmax, tint):
 	#this is the case with no weighting
 	#input: Wilhoit parameters, Cp0/R, CpInf/R, and B (kK), a0, a1, a2, a3, Tmin (minimum temperature (in kiloKelvin), Tmax (maximum temperature (in kiloKelvin), Tint (intermediate temperature, in kiloKelvin)
 	#output: NASA parameters for Cp/R, b1, b2, b3, b4, b5 (low temp parameters) and b6, b7, b8, b9, b10 (high temp parameters)
@@ -976,23 +984,23 @@ def Wilhoit2NASA_NW(cp0, cpInf, B, a0, a1, a2, a3, tmin, tmax, tint):
 			
 	#construct b vector
 	#store values at tint (this will avoid evaluating them twice)
-		wM1int = ThermoWilhoitData.integral_TM1(cp0,cpInf,B,a0,a1,a2,a3,tint)
-	w0int = ThermoWilhoitData.integral_T0(cp0,cpInf,B,a0,a1,a2,a3,tint)
-	w1int = ThermoWilhoitData.integral_T1(cp0,cpInf,B,a0,a1,a2,a3,tint)
-	w2int = ThermoWilhoitData.integral_T2(cp0,cpInf,B,a0,a1,a2,a3,tint)
-	w3int = ThermoWilhoitData.integral_T3(cp0,cpInf,B,a0,a1,a2,a3,tint)
+	wM1int = wilhoit.integral_TM1(tint)
+	w0int = wilhoit.integral_T0(tint)
+	w1int = wilhoit.integral_T1(tint)
+	w2int = wilhoit.integral_T2(tint)
+	w3int = wilhoit.integral_T3(tint)
 
-	wM1min = ThermoWilhoitData.integral_TM1(cp0,cpInf,B,a0,a1,a2,a3,tmin)
-	w0min = ThermoWilhoitData.integral_T0(cp0,cpInf,B,a0,a1,a2,a3,tmin)
-	w1min = ThermoWilhoitData.integral_T1(cp0,cpInf,B,a0,a1,a2,a3,tmin)
-	w2min = ThermoWilhoitData.integral_T2(cp0,cpInf,B,a0,a1,a2,a3,tmin)
-	w3min = ThermoWilhoitData.integral_T3(cp0,cpInf,B,a0,a1,a2,a3,tmin)
+	wM1min = wilhoit.integral_TM1(tmin)
+	w0min = wilhoit.integral_T0(tmin)
+	w1min = wilhoit.integral_T1(tmin)
+	w2min = wilhoit.integral_T2(tmin)
+	w3min = wilhoit.integral_T3(tmin)
 
-	wM1max = ThermoWilhoitData.integral_TM1(cp0,cpInf,B,a0,a1,a2,a3,tmax)
-	w0max = ThermoWilhoitData.integral_T0(cp0,cpInf,B,a0,a1,a2,a3,tmax)
-	w1max = ThermoWilhoitData.integral_T1(cp0,cpInf,B,a0,a1,a2,a3,tmax)
-	w2max = ThermoWilhoitData.integral_T2(cp0,cpInf,B,a0,a1,a2,a3,tmax)
-	w3max = ThermoWilhoitData.integral_T3(cp0,cpInf,B,a0,a1,a2,a3,tmax)
+	wM1max = wilhoit.integral_TM1(tmax)
+	w0max = wilhoit.integral_T0(tmax)
+	w1max = wilhoit.integral_T1(tmax)
+	w2max = wilhoit.integral_T2(tmax)
+	w3max = wilhoit.integral_T3(tmax)
 
 
 	b[0] = 2*(wM1int - wM1min)
@@ -1026,11 +1034,11 @@ def Wilhoit2NASA_NW(cp0, cpInf, B, a0, a1, a2, a3, tmin, tmax, tint):
 	
 	return b1, b2, b3, b4, b5, b6, b7, b8, b9, b10
 
-def Wilhoit2NASA_W(cp0, cpInf, B, a0, a1, a2, a3, tmin, tmax, tint):
+def Wilhoit2NASA_W(wilhoit, tmin, tmax, tint):
 	#this is the case WITH weighting
 	#input: Wilhoit parameters, Cp0/R, CpInf/R, and B (kK), a0, a1, a2, a3, Tmin (minimum temperature (in kiloKelvin), Tmax (maximum temperature (in kiloKelvin), Tint (intermediate temperature, in kiloKelvin)
 	#output: NASA parameters for Cp/R, b1, b2, b3, b4, b5 (low temp parameters) and b6, b7, b8, b9, b10 (high temp parameters)
-	
+
 	#construct 13*13 symmetric A matrix (in A*x = b); other elements will be zero
 	A = scipy.zeros([13,13])
 	b = scipy.zeros([13])
@@ -1101,23 +1109,23 @@ def Wilhoit2NASA_W(cp0, cpInf, B, a0, a1, a2, a3, tmin, tmax, tint):
 	
 	#construct b vector
 	#store values at tint (this will avoid evaluating them twice)
-	wM1int = ThermoWilhoitData.integral_TM1(cp0,cpInf,B,a0,a1,a2,a3,tint)
-	w0int = ThermoWilhoitData.integral_T0(cp0,cpInf,B,a0,a1,a2,a3,tint)
-	w1int = ThermoWilhoitData.integral_T1(cp0,cpInf,B,a0,a1,a2,a3,tint)
-	w2int = ThermoWilhoitData.integral_T2(cp0,cpInf,B,a0,a1,a2,a3,tint)
-	w3int = ThermoWilhoitData.integral_T3(cp0,cpInf,B,a0,a1,a2,a3,tint)
+	wM1int = wilhoit.integral_TM1(tint)
+	w0int = wilhoit.integral_T0(tint)
+	w1int = wilhoit.integral_T1(tint)
+	w2int = wilhoit.integral_T2(tint)
+	w3int = wilhoit.integral_T3(tint)
 
-	wM1min = ThermoWilhoitData.integral_TM1(cp0,cpInf,B,a0,a1,a2,a3,tmin)
-	w0min = ThermoWilhoitData.integral_T0(cp0,cpInf,B,a0,a1,a2,a3,tmin)
-	w1min = ThermoWilhoitData.integral_T1(cp0,cpInf,B,a0,a1,a2,a3,tmin)
-	w2min = ThermoWilhoitData.integral_T2(cp0,cpInf,B,a0,a1,a2,a3,tmin)
-	w3min = ThermoWilhoitData.integral_T3(cp0,cpInf,B,a0,a1,a2,a3,tmin)
+	wM1min = wilhoit.integral_TM1(tmin)
+	w0min = wilhoit.integral_T0(tmin)
+	w1min = wilhoit.integral_T1(tmin)
+	w2min = wilhoit.integral_T2(tmin)
+	w3min = wilhoit.integral_T3(tmin)
 
-	wM1max = ThermoWilhoitData.integral_TM1(cp0,cpInf,B,a0,a1,a2,a3,tmax)
-	w0max = ThermoWilhoitData.integral_T0(cp0,cpInf,B,a0,a1,a2,a3,tmax)
-	w1max = ThermoWilhoitData.integral_T1(cp0,cpInf,B,a0,a1,a2,a3,tmax)
-	w2max = ThermoWilhoitData.integral_T2(cp0,cpInf,B,a0,a1,a2,a3,tmax)
-	w3max = ThermoWilhoitData.integral_T3(cp0,cpInf,B,a0,a1,a2,a3,tmax)
+	wM1max = wilhoit.integral_TM1(tmax)
+	w0max = wilhoit.integral_T0(tmax)
+	w1max = wilhoit.integral_T1(tmax)
+	w2max = wilhoit.integral_T2(tmax)
+	w3max = wilhoit.integral_T3(tmax)
 
 
 	b[0] = 2*(wM1int - wM1min)
@@ -1162,41 +1170,41 @@ def Wilhoit2NASA_TintOpt(cp0, cpInf, B, a0, a1, a2, a3, tmin, tmax, tintg, weigh
 	(b1, b2, b3, b4, b5, b6, b7, b8, b9, b10) = Wilhoit2NASA(cp0,cpInf,B,a0,a1,a2,a3,tmin,tmax,tint,weighting)
 	return b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, tint
 
-def TintOpt_objFun(tint, cp0, cpInf, B, a0, a1, a2, a3, tmin, tmax,weighting):
+def TintOpt_objFun(tint, wilhoit, tmin, tmax, weighting):
 	#input: Tint (intermediate temperature, in kiloKelvin); Wilhoit parameters, Cp0/R, CpInf/R, and B (kK), a0, a1, a2, a3, Tmin (minimum temperature (in kiloKelvin), Tmax (maximum temperature (in kiloKelvin)
 	#output: the quantity Integrate[(Cp(Wilhoit)/R-Cp(NASA)/R)^2, {t, tmin, tmax}]
 	if (weighting == 1):
-		result = TintOpt_objFun_W(tint, cp0, cpInf, B, a0, a1, a2, a3, tmin, tmax)
+		result = TintOpt_objFun_W(tint, wilhoit, tmin, tmax)
 	else:
-		result = TintOpt_objFun_NW(tint, cp0, cpInf, B, a0, a1, a2, a3, tmin, tmax)
+		result = TintOpt_objFun_NW(tint, wilhoit, tmin, tmax)
 	#print tint
 	#print result
 	return result
 
-def TintOpt_objFun_NW(tint, cp0, cpInf, B, a0, a1, a2, a3, tmin, tmax):
+def TintOpt_objFun_NW(tint, wilhoit, tmin, tmax):
 	#input: Tint (intermediate temperature, in kiloKelvin); Wilhoit parameters, Cp0/R, CpInf/R, and B (kK), a0, a1, a2, a3, Tmin (minimum temperature (in kiloKelvin), Tmax (maximum temperature (in kiloKelvin)
 	#output: the quantity Integrate[(Cp(Wilhoit)/R-Cp(NASA)/R)^2, {t, tmin, tmax}]
-	(b1, b2, b3, b4, b5, b6, b7, b8, b9, b10) = Wilhoit2NASA(cp0,cpInf,B,a0,a1,a2,a3,tmin,tmax,tint, 0)
-	result = (ThermoWilhoitData.integral2_T0(cp0,cpInf,B,a0,a1,a2,a3,tmax) - ThermoWilhoitData.integral2_T0(cp0,cpInf,B,a0,a1,a2,a3,tmin) +
+	(b1, b2, b3, b4, b5, b6, b7, b8, b9, b10) = Wilhoit2NASA(wilhoit,tmin,tmax,tint, 0)
+	result = (wilhoit.integral2_T0(tmax) - wilhoit.integral2_T0(tmin) +
 				 NASA2Int(b1,b2,b3,b4,b5,tint)-NASA2Int(b1,b2,b3,b4,b5,tmin) + NASA2Int(b6,b7,b8,b9,b10,tmax) - NASA2Int(b6,b7,b8,b9,b10,tint)
-				 - 2* (b6*ThermoWilhoitData.integral_T0(cp0,cpInf,B,a0,a1,a2,a3,tmax)+(b1-b6)*ThermoWilhoitData.integral_T0(cp0,cpInf,B,a0,a1,a2,a3,tint) - b1*ThermoWilhoitData.integral_T0(cp0,cpInf,B,a0,a1,a2,a3,tmin)
-				 +b7*ThermoWilhoitData.integral_T1(cp0,cpInf,B,a0,a1,a2,a3,tmax)+(b2-b7)*ThermoWilhoitData.integral_T1(cp0,cpInf,B,a0,a1,a2,a3,tint) - b2*ThermoWilhoitData.integral_T1(cp0,cpInf,B,a0,a1,a2,a3,tmin)
-				 +b8*ThermoWilhoitData.integral_T2(cp0,cpInf,B,a0,a1,a2,a3,tmax)+(b3-b8)*ThermoWilhoitData.integral_T2(cp0,cpInf,B,a0,a1,a2,a3,tint) - b3*ThermoWilhoitData.integral_T2(cp0,cpInf,B,a0,a1,a2,a3,tmin)
-				 +b9*ThermoWilhoitData.integral_T3(cp0,cpInf,B,a0,a1,a2,a3,tmax)+(b4-b9)*ThermoWilhoitData.integral_T3(cp0,cpInf,B,a0,a1,a2,a3,tint) - b4*ThermoWilhoitData.integral_T3(cp0,cpInf,B,a0,a1,a2,a3,tmin)
-				 +b10*ThermoWilhoitData.integral_T4(cp0,cpInf,B,a0,a1,a2,a3,tmax)+(b5-b10)*ThermoWilhoitData.integral_T4(cp0,cpInf,B,a0,a1,a2,a3,tint) - b5*ThermoWilhoitData.integral_T4(cp0,cpInf,B,a0,a1,a2,a3,tmin)))
+				 - 2* (b6*wilhoit.integral_T0(tmax)+(b1-b6)*wilhoit.integral_T0(tint) - b1*wilhoit.integral_T0(tmin)
+				 +b7*wilhoit.integral_T1(tmax)+(b2-b7)*wilhoit.integral_T1(tint) - b2*wilhoit.integral_T1(tmin)
+				 +b8*wilhoit.integral_T2(tmax)+(b3-b8)*wilhoit.integral_T2(tint) - b3*wilhoit.integral_T2(tmin)
+				 +b9*wilhoit.integral_T3(tmax)+(b4-b9)*wilhoit.integral_T3(tint) - b4*wilhoit.integral_T3(tmin)
+				 +b10*wilhoit.integral_T4(tmax)+(b5-b10)*wilhoit.integral_T4(tint) - b5*wilhoit.integral_T4(tmin)))
 	return result
 
-def TintOpt_objFun_W(tint, cp0, cpInf, B, a0, a1, a2, a3, tmin, tmax):
+def TintOpt_objFun_W(tint, wilhoit, tmin, tmax):
 	#input: Tint (intermediate temperature, in kiloKelvin); Wilhoit parameters, Cp0/R, CpInf/R, and B (kK), a0, a1, a2, a3, Tmin (minimum temperature (in kiloKelvin), Tmax (maximum temperature (in kiloKelvin)
 	#output: the quantity Integrate[(Cp(Wilhoit)/R-Cp(NASA)/R)^2, {t, tmin, tmax}]
-	(b1, b2, b3, b4, b5, b6, b7, b8, b9, b10) = Wilhoit2NASA(cp0,cpInf,B,a0,a1,a2,a3,tmin,tmax,tint, 1)
-	result = (ThermoWilhoitData.integral2_TM1(cp0,cpInf,B,a0,a1,a2,a3,tmax) - ThermoWilhoitData.integral2_TM1(cp0,cpInf,B,a0,a1,a2,a3,tmin) +
+	(b1, b2, b3, b4, b5, b6, b7, b8, b9, b10) = Wilhoit2NASA(wilhoit,tmin,tmax,tint, 1)
+	result = (wilhoit.integral2_TM1(tmax) - wilhoit.integral2_TM1(tmin) +
 				 NASA2IntM1(b1,b2,b3,b4,b5,tint)-NASA2IntM1(b1,b2,b3,b4,b5,tmin) + NASA2IntM1(b6,b7,b8,b9,b10,tmax) - NASA2IntM1(b6,b7,b8,b9,b10,tint)
-				 - 2* (b6*ThermoWilhoitData.integral_TM1(cp0,cpInf,B,a0,a1,a2,a3,tmax)+(b1-b6)*ThermoWilhoitData.integral_TM1(cp0,cpInf,B,a0,a1,a2,a3,tint) - b1*ThermoWilhoitData.integral_TM1(cp0,cpInf,B,a0,a1,a2,a3,tmin)
-				 +b7*ThermoWilhoitData.integral_T0(cp0,cpInf,B,a0,a1,a2,a3,tmax)+(b2-b7)*ThermoWilhoitData.integral_T0(cp0,cpInf,B,a0,a1,a2,a3,tint) - b2*ThermoWilhoitData.integral_T0(cp0,cpInf,B,a0,a1,a2,a3,tmin)
-				 +b8*ThermoWilhoitData.integral_T1(cp0,cpInf,B,a0,a1,a2,a3,tmax)+(b3-b8)*ThermoWilhoitData.integral_T1(cp0,cpInf,B,a0,a1,a2,a3,tint) - b3*ThermoWilhoitData.integral_T1(cp0,cpInf,B,a0,a1,a2,a3,tmin)
-				 +b9*ThermoWilhoitData.integral_T2(cp0,cpInf,B,a0,a1,a2,a3,tmax)+(b4-b9)*ThermoWilhoitData.integral_T2(cp0,cpInf,B,a0,a1,a2,a3,tint) - b4*ThermoWilhoitData.integral_T2(cp0,cpInf,B,a0,a1,a2,a3,tmin)
-				 +b10*ThermoWilhoitData.integral_T3(cp0,cpInf,B,a0,a1,a2,a3,tmax)+(b5-b10)*ThermoWilhoitData.integral_T3(cp0,cpInf,B,a0,a1,a2,a3,tint) - b5*ThermoWilhoitData.integral_T3(cp0,cpInf,B,a0,a1,a2,a3,tmin)))
+				 - 2* (b6*wilhoit.integral_TM1(tmax)+(b1-b6)*wilhoit.integral_TM1(tint) - b1*wilhoit.integral_TM1(tmin)
+				 +b7*wilhoit.integral_T0(tmax)+(b2-b7)*wilhoit.integral_T0(tint) - b2*wilhoit.integral_T0(tmin)
+				 +b8*wilhoit.integral_T1(tmax)+(b3-b8)*wilhoit.integral_T1(tint) - b3*wilhoit.integral_T1(tmin)
+				 +b9*wilhoit.integral_T2(tmax)+(b4-b9)*wilhoit.integral_T2(tint) - b4*wilhoit.integral_T2(tmin)
+				 +b10*wilhoit.integral_T3(tmax)+(b5-b10)*wilhoit.integral_T3(tint) - b5*wilhoit.integral_T3(tmin)))
 	return result
 
 #analytical integrals:
