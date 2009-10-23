@@ -39,6 +39,7 @@ import pybel
 import constants
 import structure
 import thermo
+import os
 
 ################################################################################
 

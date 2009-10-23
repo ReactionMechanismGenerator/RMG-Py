@@ -233,7 +233,14 @@ def readInputFile(fstr):
 		reactionModel = model.CoreEdgeReactionModel()
 		
 		# Read model flux tolerance
-		element = getFirstChildElement(root, 'fluxTolerance')
+		fluxtolerance = getFirstChildElement(root, 'fluxTolerance')
+		element = getFirstChildElement(fluxtolerance, 'keepInEdge')
+		reactionModel.fluxTolerance_keepInEdge = float(getElementText(element))
+		element = getFirstChildElement(fluxtolerance, 'moveToCore')
+		reactionModel.fluxTolerance_moveToCore = float(getElementText(element))
+		element = getFirstChildElement(fluxtolerance, 'interruptSimulation')
+		reactionModel.fluxTolerance_interruptSimulation = float(getElementText(element))
+		
 		reactionModel.fluxTolerance = float(getElementText(element))
 		logging.debug('Model flux tolerance set to %s' % (reactionModel.fluxTolerance))
 		logging.debug('')

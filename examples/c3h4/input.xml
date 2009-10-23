@@ -38,7 +38,11 @@
 	</termination>
 	<!-- Dynamic simulator -->
 	<simulator atol="1e-16" rtol="1e-8" />
-	<fluxTolerance>0.01</fluxTolerance>
+	<fluxTolerance>
+		<keepInEdge>1e-5</keepInEdge>
+		<moveToCore>0.01</moveToCore>
+		<interruptSimulation>0.1</interruptSimulation>
+	</fluxTolerance>
 	<!-- Options -->
 	<drawMolecules>on</drawMolecules>
 	<generatePlots>on</generatePlots>

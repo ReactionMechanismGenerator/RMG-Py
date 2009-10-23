@@ -63,7 +63,7 @@ class CoreEdgeReactionModel:
 	represents species and reactions identified as candidates for addition to 
 	the core.
 	"""	
-
+	
 	def __init__(self, core=None, edge=None):
 		if core is None:
 			self.core = ReactionModel()
@@ -73,7 +73,9 @@ class CoreEdgeReactionModel:
 			self.edge = ReactionModel()
 		else:
 			self.edge = edge
-		self.fluxTolerance = 1.0
+		self.fluxTolerance_keep_in_edge = 0.0
+		self.fluxTolerance_move_to_core = 1.0
+		self.fluxTolerance_interrupt_simulation = 1.0
 		self.absoluteTolerance = 1.0e-8
 		self.relativeTolerance = 1.0e-4
 		self.termination = []
@@ -108,10 +110,10 @@ class CoreEdgeReactionModel:
 		for coreSpecies in self.core.species:
 			if coreSpecies.reactive:
 				rxnList.extend(reaction.kineticsDatabase.getReactions([newSpecies, coreSpecies]))
-
+		
 		# Add new species
 		self.addSpeciesToCore(newSpecies)
-
+		
 		# Add new reactions
 		for rxn in rxnList:
 			allSpeciesInCore = True
@@ -127,7 +129,7 @@ class CoreEdgeReactionModel:
 				self.addReactionToCore(rxn)
 			else:
 				self.addReactionToEdge(rxn)
-
+		
 		logging.info('')
 		logging.info('After model enlargement:')
 		logging.info('\tThe model core has %s species and %s reactions' % (len(self.core.species), len(self.core.reactions)))
@@ -140,15 +142,15 @@ class CoreEdgeReactionModel:
 		necessary). This function also moves any reactions in the edge that gain
 		core status as a result of this change in status to the core.
 		"""
-
+		
 		# Add the species to the core
 		self.core.species.append(spec)
-
+		
 		if spec in self.edge.species:
-
+			
 			# If species was in edge, remove it
 			self.edge.species.remove(spec)
-
+			
 			# Search edge for reactions that now contain only core species;
 			# these belong in the model core and will be moved there
 			rxnList = []
@@ -159,18 +161,31 @@ class CoreEdgeReactionModel:
 				for product in rxn.products:
 					if product not in self.core.species: allCore = False
 				if allCore: rxnList.append(rxn)
-
+				
 			# Move any identified reactions to the core
 			for rxn in rxnList:
 				self.addReactionToCore(rxn)
-
-
+	
 	def addSpeciesToEdge(self, spec):
 		"""
 		Add a species `spec` to the reaction model edge.
 		"""
 		self.edge.species.append(spec)
-
+	
+	def removeSpeciesFromEdge(self, spec):
+		"""
+		Add a species `spec` to the reaction model edge.
+		"""
+		# remove the species
+		self.edge.species.remove(spec)
+		# identify any reactions it's involved in
+		rxnList = []
+		for rxn in self.edge.reactions:
+			if spec not in rxn.reactants and spec not in rxn.products:
+				rxnList.append(rxn)
+		# remove those reactions
+		self.edge.reactions.remove(rxn)
+	
 	def addReactionToCore(self, rxn):
 		"""
 		Add a reaction `rxn` to the reaction model core (and remove from edge if
@@ -181,7 +196,7 @@ class CoreEdgeReactionModel:
 		self.core.reactions.append(rxn)
 		if rxn in self.edge.reactions:
 			self.edge.reactions.remove(rxn)
-
+	
 	def addReactionToEdge(self, rxn):
 		"""
 		Add a reaction `rxn` to the reaction model edge. This function assumes
@@ -191,7 +206,7 @@ class CoreEdgeReactionModel:
 		edge).
 		"""
 		self.edge.reactions.append(rxn)
-
+	
 	def getLists(self):
 		"""
 		Return lists of all of the species and reactions in the core and the
@@ -204,7 +219,7 @@ class CoreEdgeReactionModel:
 		reactionList.extend(self.core.reactions)
 		reactionList.extend(self.edge.reactions)
 		return speciesList, reactionList
-
+	
 	def getStoichiometryMatrix(self):
 		"""
 		Return the stoichiometry matrix for all core and edge species. The
@@ -217,7 +232,7 @@ class CoreEdgeReactionModel:
 			for i, spec in enumerate(speciesList):
 				stoichiometry[i,j] = rxn.getStoichiometricCoefficient(spec)
 		return stoichiometry
-
+	
 	def getReactionRates(self, T, P, Ci):
 		"""
 		Return an array of reaction rates for each reaction in the model core
@@ -719,18 +734,18 @@ class BatchReactor(ReactionSystem):
 		rxnRates = self.getReactionRates(P, V, T, Ni, model)
 		return numpy.dot(stoichiometry, rxnRates)
 
-	def isModelValid(self, model, dNidt, charFlux):
+	def isModelValid(self, model, dNidt, criticalFlux):
 		"""
 		Returns :data:`True` if `model` is valid given the set of species fluxes
-		`dNidt` and the characteristic flux `charFlux`.
+		`dNidt` and the critical flux `criticalFlux`.
 		Also returns the edge species whose flux is greatest, and that flux.
 		"""
-
+		
 		speciesList, reactionList = model.getLists()
-
+		
 		if len(model.edge.species) > 0:
 			maxSpeciesFlux, maxSpecies = max([ (value, i+len(model.core.species)) for i, value in enumerate(dNidt[len(model.core.species):]) ])
-			return (maxSpeciesFlux < charFlux), speciesList[maxSpecies], maxSpeciesFlux
+			return (maxSpeciesFlux < criticalFlux), speciesList[maxSpecies], maxSpeciesFlux
 		else:
 			return True, None, 0.0
 
@@ -738,13 +753,29 @@ class BatchReactor(ReactionSystem):
 		"""
 		Conduct a simulation of the current reaction system using the core-edge
 		reaction model `model`.
+		
+		Edge species fluxes are tracked, relative to the characteristic core 
+		flux at that time, throughout the simulation. 
+		If one exceeds `model.fluxTolerance_interruptSimulation` the simulation
+		is interrupted, and that species is returned.
+		The highest relative flux reached by each species during the simulation 
+		is stored for later analysis.
+		If one or more of these exceed `model.fluxTolerance_moveToCore` then the 
+		species with the highest will be returned.
+		
+		If the simulation completes without interruption, then any that fall 
+		below `model.fluxTolerance_keepInEdge` will be removed from the
+		edge, along with the reactions that involve them.
+		
+		Returns:
+		(tlist, ylist, dydtlist, valid?, Edge_species_with_highest_flux)
 		"""
 		# Assemble stoichiometry matrix for all core and edge species
 		# Rows are species (core, then edge); columns are reactions (core, then edge)
 		stoichiometry = model.getStoichiometryMatrix()
 		
 		tlist = []; ylist = []; dydtlist = []
-		maxSpeciesFluxes = numpy.zeros(len(model.core.species) + len(model.edge.species), float)
+		maxRelativeFluxes = numpy.zeros(len(model.core.species) + len(model.edge.species), float)
 
 		# Set up initial conditions
 		P = float(self.pressureModel.getPressure(0))
@@ -758,38 +789,16 @@ class BatchReactor(ReactionSystem):
 		y = [P, V, T]; y.extend(Ni)
 		y0 = y
 
-		# Calculate species fluxes of all core and edge species at the
-		# current time
-		dNidt = self.getSpeciesFluxes(model, P, V, T, Ni, stoichiometry)
-		for i in range(len(dNidt)):
-			if maxSpeciesFluxes[i] < abs(dNidt[i]): maxSpeciesFluxes[i] = abs(dNidt[i])
-
-		# Determine characteristic species flux
-		charFlux = model.fluxTolerance * math.sqrt(sum([x*x for x in dNidt[0:len(model.core.species)]]))
-
-		# Test for model validity
-		# notice it only break's here if we exceed 10 times the usual threshold
-		valid, maxSpecies, maxSpeciesFlux = self.isModelValid(model, dNidt, charFlux*10)
-		#valid = True
-		
-		# Output information about simulation at current time
+#		# Output information about simulation at current time
 		header = 'Time          '
 		for target in model.termination:
 			if target.__class__ == TerminationConversion: header += 'Conv        '
 		header += 'Thresh. flux     Maximum flux to edge'
 		logging.debug(header)
-		self.printSimulationStatus(model, 0, y, y0, charFlux, maxSpeciesFlux, maxSpecies)
-		tlist.append(0.0); ylist.append(y0)
-		dydtlist.append(self.getResidual(0.0, y0, model, stoichiometry))
-
-		# Exit simulation if model is not valid
-		if not valid:
-			logging.info('At t = %s, the species flux for %s exceeds the characteristic flux' % (0.0, maxSpecies))
-			logging.info('\tCharacteristic flux: %s' % (charFlux))
-			logging.info('\tSpecies flux for %s: %s ' % (maxSpecies, maxSpeciesFlux))
-			logging.info('')
-			return tlist, ylist, dydtlist, False, maxSpecies
-
+#		self.printSimulationStatus(model, 0, y, y0, criticalFlux, maxSpeciesFlux, maxSpecies)
+#		tlist.append(0.0); ylist.append(y0)
+#		dydtlist.append(self.getResidual(0.0, y0, model, stoichiometry))
+		
 		# Set up solver
 		solver = scipy.integrate.ode(self.getResidual,None)
 		solver.set_integrator('vode', method='bdf', with_jacobian=True, atol=model.absoluteTolerance, rtol=model.relativeTolerance)
@@ -797,46 +806,54 @@ class BatchReactor(ReactionSystem):
 		solver.set_initial_value(y0,0.0)
 
 		done = False
-
+		first_step = True
 		while not done and solver.successful():
-
+			
 			# Conduct integration
-			if solver.t == 0.0:		solver.integrate(1e-20)
-			else:					solver.integrate(solver.t * 1.2589254117941673) # 10**0.1 so ten steps increases time 10-fold
-			P, V, T = solver.y[0:3]; Ni = solver.y[3:]
+			if first_step: 
+				first_step = False # don't integrate on first time through, just do the validity checking and result reporting
+			elif solver.t == 0.0:
+				solver.integrate(1e-20)
+			else:
+				solver.integrate(solver.t * 1.2589254117941673) # 10**0.1 so ten steps increases time 10-fold
+			P, V, T = solver.y[0:3]
+			Ni = solver.y[3:]
 			
 			# Calculate species fluxes of all core and edge species at the
 			# current time
 			dNidt = self.getSpeciesFluxes(model, P, V, T, Ni, stoichiometry)
-			for i in range(len(dNidt)):
-				if maxSpeciesFluxes[i] < abs(dNidt[i]): maxSpeciesFluxes[i] = abs(dNidt[i])
-
+			
 			# Determine characteristic species flux
-			charFlux = model.fluxTolerance * math.sqrt(sum([x*x for x in dNidt[0:len(model.core.species)]]))
-
+			charFlux = math.sqrt(sum([x*x for x in dNidt[0:len(model.core.species)]]))
+			
+			# Store the highest relative flux for each species
+			for i in range(len(dNidt)):
+				if maxRelativeFluxes[i] < abs(dNidt[i])/charFlux:
+					maxRelativeFluxes[i] = abs(dNidt[i])/charFlux
+				
 			# Test for model validity
-			# notice it only break's here if we exceed 10 times the usual threshold
-			valid, maxSpecies, maxSpeciesFlux = self.isModelValid(model, dNidt, charFlux*10)
-			#valid = True
-		
+			criticalFlux = charFlux * model.fluxTolerance_interruptSimulation
+			valid, maxSpecies, maxSpeciesFlux = self.isModelValid(model, dNidt, criticalFlux)
+			
 			# Output information about simulation at current time
-			self.printSimulationStatus(model, solver.t, solver.y, y0, charFlux, maxSpeciesFlux, maxSpecies)
+			self.printSimulationStatus(model, solver.t, solver.y, y0, criticalFlux, maxSpeciesFlux, maxSpecies)
 			tlist.append(solver.t); ylist.append(solver.y)
 			dydtlist.append(self.getResidual(solver.t, solver.y, model, stoichiometry))
-
-			# Exit simulation if model is not valid
+			
+			# Exit simulation if model is not valid (exceeds interruption criterion)
 			if not valid:
-				logging.info('At t = %s, the species flux for %s exceeds the characteristic flux' % (solver.t, maxSpecies))
+				logging.info('At t = %s, an edge species flux exceeds the critical flux for simulation interruption' % (solver.t, maxSpecies))
 				logging.info('\tCharacteristic flux: %s' % (charFlux))
-				logging.info('\tSpecies flux for %s: %s ' % (maxSpecies, maxSpeciesFlux))
+				logging.info('\tCritical flux: %s (%s times charFlux)' % (criticalFlux, model.fluxTolerance_interruptSimulation))
+				logging.info('\tSpecies flux for %s: %s (%.2g times charFlux)' % (maxSpecies, maxSpeciesFlux, maxSpeciesFlux/charFlux))
 				logging.info('')
-				for i in range(len(dNidt)):
-					if i < len(model.core.species):
-						print model.core.species[i], maxSpeciesFluxes[i]
-					else:
-						print model.edge.species[i-len(model.core.species)], maxSpeciesFluxes[i]
+				#for i in range(len(dNidt)):
+				#	if i < len(model.core.species):
+				#		print model.core.species[i], maxSpeciesFluxes[i]
+				#	else:
+				#		print model.edge.species[i-len(model.core.species)], maxSpeciesFluxes[i]
 				return tlist, ylist, dydtlist, False, maxSpecies
-
+			
 			# Test for simulation completion
 			for target in model.termination:
 				if target.__class__ == TerminationConversion:
@@ -845,28 +862,41 @@ class BatchReactor(ReactionSystem):
 					if conversion > target.conversion: done = True
 				elif target.__class__ == TerminationTime:
 					if solver.t > target.time: done = True
-
-		# Test for model validity
-		charFlux = model.fluxTolerance * math.sqrt(sum([flux*flux for flux in maxSpeciesFluxes[0:len(model.core.species)]]))
+		
+		# Test for model validity once simulation complete
 		maxSpecies = None
-		maxSpeciesFlux = 0.0
-		for i in range(len(model.core.species), len(maxSpeciesFluxes)):
-			if maxSpeciesFluxes[i] > maxSpeciesFlux:
-				maxSpeciesFlux = maxSpeciesFluxes[i]
+		maxRelativeFlux = 0.0
+		speciesToRemove = []
+		for i in range(len(model.core.species), len(maxRelativeFluxes)):
+			# pick out the single highest-flux edge species
+			if maxRelativeFluxes[i] > maxRelativeFlux:
+				maxRelativeFlux = maxRelativeFluxes[i]
 				maxSpecies = model.edge.species[i - len(model.core.species)]
-		if maxSpeciesFlux > charFlux:
-			logging.info('The species flux for %s exceeds the characteristic flux' % (maxSpecies))
-			logging.info('\tCharacteristic flux: %s' % (charFlux))
-			logging.info('\tSpecies flux for %s: %s ' % (maxSpecies, maxSpeciesFlux))
+				# mark for removal those species whose flux is always too low
+				if maxRelativeFluxes[i] < model.fluxTolerance_keepInEdge:
+					speciesToRemove.append(model.edge.species[i - len(model.core.species)])
+		
+		# trim the edge
+		logging.info("Removing from edge %d/%d species whose relative flux never exceeded %s"%( 
+			len(speciesToRemove),len(model.edge.species),model.fluxTolerance_keepInEdge))
+		for sp in speciesToRemove:	
+			logging.info("Removing %s"%(sp))
+			model.removeSpeciesFromEdge(sp)
+		
+		if maxRelativeFlux > model.fluxTolerance_moveToCore:
+			logging.info('At some time the species flux for %s exceeded the critical flux\nrelative to the characteristic core flux at that time' % (maxSpecies))
+			logging.info('\tCritical Relative flux: %s' % (model.fluxTolerance_moveToCore))
+			logging.info('\tHighest Relative flux for %s: %s ' % (maxSpecies, maxRelativeFlux))
 			logging.info('')
+			
 			return tlist, ylist, dydtlist, False, maxSpecies
-
+			
 		#for i in range(len(model.core.species), len(dNidt)):
 			#		if i < len(model.core.species):
 			#			print model.core.species[i], maxSpeciesFluxes[i]
 			#		else:
 			#			print model.edge.species[i-len(model.core.species)], maxSpeciesFluxes[i]
-
+		
 		return tlist, ylist, dydtlist, True, None
 
 	def printSimulationStatus(self, model, t, y, y0, charFlux, maxSpeciesFlux, maxSpecies):
