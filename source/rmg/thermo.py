@@ -572,6 +572,18 @@ class ThermoWilhoitData(ThermoData):
 		"""
 		return self.getEnthalpy(T) - T * self.getEntropy(T)
 
+        def rmsErrWilhoit(self,t,cp):
+                #calculate the RMS error between the Wilhoit form and training data points; result will have same units as cp inputs; cp, cp0, and cpInf should agree in units (e.g. Cp/R); units of B and t should be consistent, based, for example on kK or K 
+                m = len(t)
+                rms = 0.0
+                for i in range(m):
+                        err = cp[i]-self.getHeatCapacity(t[i])
+                        rms += err*err
+                rms = rms/m
+                rms = math.sqrt(rms)
+                
+                return rms
+
 	#a faster version of the integral based on H from Yelvington's thesis; it differs from the original (see above) by a constant (dependent on parameters but independent of t)
 	def integral_T0(self, t):
 		#output: the quantity Integrate[Cp(Wilhoit)/R, t'] evaluated at t'=t
@@ -764,26 +776,6 @@ def CpLimits(atoms, rotors, linear):
 		cp0	 = 4.0
 		cpInf = 3*atoms - (2 + 0.5*rotors)
 	return cp0, cpInf
-
-def rmsErrWilhoit(self,t,cp):
-	#calculate the RMS error between the Wilhoit form and training data points; result will have same units as cp inputs; cp, cp0, and cpInf should agree in units (e.g. Cp/R); units of B and t should be consistent, based, for example on kK or K 
-	m = len(t)
-	rms = 0.0
-	for i in range(m):
-		err = cp[i]-getHeatCapacity(self,t[i])
-		rms += err*err
-	rms = rms/m
-	rms = math.sqrt(rms)
-	
-	return rms
-
-#this function already exists in getHeatCapacity
-#def Wilhoit_Cp(t, cp0, cpInf, B, a0, a1, a2, a3):
-#	#calculate Cp/R based on Wilhoit form;  result will have same units as cp0 and cpInf (e.g. Cp/R); cp is Cp/R; units of B and t should be consistent, based, for example on kK or K
-#	y = t/(t+B)
-#	cp = cp0+(cpInf-cp0)*y*y*(1+(y-1)*(a0+a1*y+a2*y*y+a3*y*y*y))
-#	
-#	return cp
 
 ################################################################################
 def convertWilhoitToNASA(Wilhoit):
