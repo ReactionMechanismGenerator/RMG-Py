@@ -42,6 +42,12 @@ ThermoNASAPolynomial
 
 .. autoclass:: rmg.thermo.ThermoNASAPolynomial
 	:members:
+	
+ThermoWilhoitData
+-----------------
+
+.. autoclass:: rmg.thermo.ThermoWilhoitData
+	:members:
 
 Methods in ``rmg.thermo``
 =========================
