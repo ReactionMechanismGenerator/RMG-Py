@@ -575,9 +575,6 @@ def convertGAtoWilhoit(GAthermo, atoms, rotors, linear):
 	a2 = x[2]
 	a3 = x[3]
 	
-	# this doesn't work yet:
-	# err = rmsErrWilhoit(t, cp, cp0, cpInf, a0, a1, a2, a3) #(optional); display rmsError (dimensionless units)
-	
 	# scale everything back
 	# T_list = [t*1000. for t in T_list] # not needed because not stored here
 	# B = B*1000. # not needed because stored elsewhere
@@ -587,8 +584,8 @@ def convertGAtoWilhoit(GAthermo, atoms, rotors, linear):
 	cp0 = cp0*R
 	cpInf = cpInf*R
 	
-	# output comment; ****we could also include fitting accuracy ("err") in the output below
-	comment = 'Fitted to GA data with Cp0=%2g and Cp_inf=%2g. '%(cp0,cpInf) + GAthermo.comment
+	# output comment
+	comment = ''
 	
 	# first set I=J=0, then calculate what they should be 
 	# by referring to H298, S298
@@ -602,6 +599,9 @@ def convertGAtoWilhoit(GAthermo, atoms, rotors, linear):
 	# update Wilhoit instance with correct I,J
 	WilhoitThermo.I = I
 	WilhoitThermo.J = J
+
+	err = WilhoitThermo.rmsErrWilhoit(T_list, Cp_list)/R #rms Error (J/mol-K units until it is divided by R) (not needed, but it is useful in comment)
+        WilhoitThermo.comment = WilhoitThermo.comment + 'Fitted to GA data with Cp0=%2g and Cp_inf=%2g. RMS error = %.2f*R.'%(cp0,cpInf,err) + GAthermo.comment
 	
 	return WilhoitThermo
 
@@ -624,7 +624,7 @@ def CpLimits(atoms, rotors, linear):
 		cpInf = 3*atoms - (2 + 0.5*rotors)
 	return cp0, cpInf
 
-def rmsErrWilhoit(self,t):
+def rmsErrWilhoit(self,t,cp):
 	#calculate the RMS error between the Wilhoit form and training data points; result will have same units as cp inputs; cp, cp0, and cpInf should agree in units (e.g. Cp/R); units of B and t should be consistent, based, for example on kK or K 
 	m = len(t)
 	rms = 0.0
