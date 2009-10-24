@@ -873,7 +873,7 @@ class BatchReactor(ReactionSystem):
 			
 			# Exit simulation if model is not valid (exceeds interruption criterion)
 			if not valid:
-				logging.info('At t = %s, an edge species flux exceeds the critical flux for simulation interruption' % (solver.t, maxSpecies))
+				logging.info('At t = %s, an edge species flux exceeds the critical flux for simulation interruption' % (solver.t))
 				logging.info('\tCharacteristic flux: %s' % (charFlux))
 				logging.info('\tCritical flux: %s (%s times charFlux)' % (criticalFlux, model.fluxTolerance_interruptSimulation))
 				logging.info('\tSpecies flux for %s: %s (%.2g times charFlux)' % (maxSpecies, maxSpeciesFlux, maxSpeciesFlux/charFlux))
