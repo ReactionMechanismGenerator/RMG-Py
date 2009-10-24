@@ -444,7 +444,7 @@ class Structure:
 				adjlist += '{' + atom.electronState[0].label
 				for electronState in atom.electronState[1:]:
 					adjlist += ',' + electronState.label
-				adjlist += '}'
+				adjlist += '} '
 			else:
 				adjlist += atom.electronState.label + ' '
 
