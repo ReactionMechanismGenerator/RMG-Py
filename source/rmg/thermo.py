@@ -800,15 +800,22 @@ def convertWilhoitToNASA(Wilhoit):
 	Tmin = Tmin/1000
 	Tintg = Tintg/1000
 	Tmax = Tmax/1000
+
+	# Make copy of Wilhoit data so we don't modify the original
+	wilhoit_scaled = ThermoWilhoitData(Wilhoit.cp0, Wilhoit.cpInf, Wilhoit.a0, Wilhoit.a1, Wilhoit.a2, Wilhoit.a3, Wilhoit.H0, Wilhoit.S0, Wilhoit.comment)
+	# Rescale Wilhoit parameters
+	wilhoit_scaled.cp0 /= constants.R
+	wilhoit_scaled.cpInf /= constants.R
+	wilhoit_scaled.B /= 1000.
 	
-	# do your clever maths here
 	#if we are using fixed tint, set tint equal to Tintg and do not allow tint to float
 	if(fixed == 1):
-		nasa_low, nasa_high = Wilhoit2NASA(Wilhoit, Tmin, Tmax, Tintg, weighting)
-		err = TintOpt_objFun(Tintg, Wilhoit, Tmin, Tmax, weighting) #to print the objective function value
+		nasa_low, nasa_high = Wilhoit2NASA(wilhoit_scaled, Tmin, Tmax, Tintg, weighting)
+		err = TintOpt_objFun(Tintg, wilhoit_scaled, Tmin, Tmax, weighting)
 		tint = Tintg
 	else:
-		nasa_low, nasa_high, tint = Wilhoit2NASA_TintOpt(Wilhoit, Tmin, Tmax, Tintg, weighting)
+		nasa_low, nasa_high, tint = Wilhoit2NASA_TintOpt(wilhoit_scaled, Tmin, Tmax, Tintg, weighting)
+		err = TintOpt_objFun(Tintg, wilhoit_scaled, Tmin, Tmax, weighting)
 		# rmsErr = rmsErrNASA(t, cp, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, tint) #this needs group data
 		
 	#restore to conventional units of K for Tint and units based on K rather than kK in NASA polynomial coefficients
@@ -828,7 +835,7 @@ def convertWilhoitToNASA(Wilhoit):
 	
 	# could we include fitting accuracy in the expression below?
 	# output comment
-	comment = 'Fitted to Wilhoit data. '+Wilhoit.comment
+	comment = 'Fitted to Wilhoit data. Weighted, scaled ISE: %s; '%(err)+Wilhoit.comment
 	nasa_low.Trange = (Tmin,tint); nasa_low.Tmin = Tmin; nasa_low.Tmax = tint
 	nasa_low.comment = comment
 	nasa_high.Trange = (tint,Tmax); nasa_high.Tmin = tint; nasa_high.Tmax = Tmax
@@ -888,13 +895,6 @@ def NASA_CpR(t, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, tint):
 def Wilhoit2NASA(wilhoit, tmin, tmax, tint, weighting):
 	#input: Wilhoit parameters, Cp0/R, CpInf/R, and B (kK), a0, a1, a2, a3, Tmin (minimum temperature (in kiloKelvin), Tmax (maximum temperature (in kiloKelvin), Tint (intermediate temperature, in kiloKelvin)
 	#output: NASA parameters for Cp/R, b1, b2, b3, b4, b5 (low temp parameters) and b6, b7, b8, b9, b10 (high temp parameters)
-
-	# Make copy of Wilhoit data so we don't modify the original
-	wilhoit = ThermoWilhoitData(wilhoit.cp0, wilhoit.cpInf, wilhoit.a0, wilhoit.a1, wilhoit.a2, wilhoit.a3, wilhoit.H0, wilhoit.S0, wilhoit.comment)
-	# Rescale Wilhoit parameters
-	wilhoit.cp0 /= constants.R
-	wilhoit.cpInf /= constants.R
-	wilhoit.B /= 1000.
 
 	if (weighting == 1):
 		nasa1, nasa2 = Wilhoit2NASA_W(wilhoit, tmin, tmax, tint)
@@ -1130,21 +1130,21 @@ def Wilhoit2NASA_W(wilhoit, tmin, tmax, tint):
 	#from linalg import solve
 	#print A
 	x = linalg.solve(A,b,overwrite_a=1,overwrite_b=1)
-	nasa1 = ThermoNASAPolynomial(T_range=(0,9999.9), coeffs=[x[0], x[1], x[2], x[3], x[4], 0.0, 0.0], comment='')
-	nasa2 = ThermoNASAPolynomial(T_range=(0,9999.9), coeffs=[x[5], x[6], x[7], x[8], x[9], 0.0, 0.0], comment='')
+	nasa1 = ThermoNASAPolynomial(T_range=(0,0), coeffs=[x[0], x[1], x[2], x[3], x[4], 0.0, 0.0], comment='')
+	nasa2 = ThermoNASAPolynomial(T_range=(0,0), coeffs=[x[5], x[6], x[7], x[8], x[9], 0.0, 0.0], comment='')
 
 	return nasa1, nasa2
 	
-def Wilhoit2NASA_TintOpt(cp0, cpInf, B, a0, a1, a2, a3, tmin, tmax, tintg, weighting):
+def Wilhoit2NASA_TintOpt(wilhoit, tmin, tmax, tintg, weighting):
 	#input: Wilhoit parameters, Cp0/R, CpInf/R, and B (kK), a0, a1, a2, a3, Tmin (minimum temperature (in kiloKelvin), Tmax (maximum temperature (in kiloKelvin), Tintg (guess intermediate temperature, in kiloKelvin)
 	#output: NASA parameters for Cp/R, b1, b2, b3, b4, b5 (low temp parameters) and b6, b7, b8, b9, b10 (high temp parameters), and Tint
 	#1. vary Tint, using Tintg as a starting guess, to minimize TintOpt_objFun
 	#from optimize import fminbound
-	tint = optimize.fminbound(TintOpt_objFun, tmin, tmax, args=(cp0, cpInf,B,a0,a1,a2,a3,tmin,tmax,weighting))
+	tint = optimize.fminbound(TintOpt_objFun, tmin, tmax, args=(wilhoit, tmin, tmax, weighting))
 	#note that we have not used the specified guess, tintg when using this minimization routine
 	#2. determine the bi parameters based on the optimized Tint (alternatively, maybe we could have TintOpt_objFun also return these parameters, along with the objective function, which would avoid an extra calculation)
-	(b1, b2, b3, b4, b5, b6, b7, b8, b9, b10) = Wilhoit2NASA(cp0,cpInf,B,a0,a1,a2,a3,tmin,tmax,tint,weighting)
-	return b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, tint
+	(nasa1, nasa2) = Wilhoit2NASA(wilhoit, tmin, tmax, tint ,weighting)
+	return nasa1, nasa2, tint
 
 def TintOpt_objFun(tint, wilhoit, tmin, tmax, weighting):
 	#input: Tint (intermediate temperature, in kiloKelvin); Wilhoit parameters, Cp0/R, CpInf/R, and B (kK), a0, a1, a2, a3, Tmin (minimum temperature (in kiloKelvin), Tmax (maximum temperature (in kiloKelvin)
@@ -1160,7 +1160,7 @@ def TintOpt_objFun(tint, wilhoit, tmin, tmax, weighting):
 def TintOpt_objFun_NW(tint, wilhoit, tmin, tmax):
 	#input: Tint (intermediate temperature, in kiloKelvin); Wilhoit parameters, Cp0/R, CpInf/R, and B (kK), a0, a1, a2, a3, Tmin (minimum temperature (in kiloKelvin), Tmax (maximum temperature (in kiloKelvin)
 	#output: the quantity Integrate[(Cp(Wilhoit)/R-Cp(NASA)/R)^2, {t, tmin, tmax}]
-	nasa_low, nasa_high = Wilhoit2NASA(wilhoit,tmin,tmax,tint, 1)
+	nasa_low, nasa_high = Wilhoit2NASA(wilhoit,tmin,tmax,tint, 0)
 	b1, b2, b3, b4, b5 = nasa_low.c0, nasa_low.c1, nasa_low.c2, nasa_low.c3, nasa_low.c4
 	b6, b7, b8, b9, b10 = nasa_high.c0, nasa_high.c1, nasa_high.c2, nasa_high.c3, nasa_high.c4
 	result = (wilhoit.integral2_T0(tmax) - wilhoit.integral2_T0(tmin) +
