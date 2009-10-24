@@ -126,38 +126,44 @@ class AtomType:
 	A type of atom which combines the element information with information
 	about the local bonding structure. The attributes are:
 
-	============= ==============================================================
-	Attribute     Description
-	============= ==============================================================
-	`label`       A unique string identifier for the atom type
-	`element`     The :class:`Element` object this atom type represents, if any
-	`description` A one-line description of the atom type
-	============= ==============================================================
+	=============  ==============================================================
+	Attribute      Description
+	=============  ==============================================================
+	`label`        A unique string identifier for the atom type
+	`element`      The :class:`Element` object this atom type represents, if any
+	`description`  A one-line description of the atom type
+	`doubleBonds`  The number of double bonds to this atom type
+	`tripleBonds`  The number of triple bonds to this atom type
+	`benzeneBonds` The number of benzene bonds to this atom type
+	=============  ==============================================================
 
 	This class is specifically for properties that all atoms of the same
 	type share. Ideally there is only one instance of this class for each
 	atom type.
 	"""
 
-	def __init__(self, label='', element=None, description=''):
+	def __init__(self, label='', element=None, doubleBonds=None, tripleBonds=None, benzeneBonds=None, description=''):
 		"""
 		Initialize an atom type.
 		"""
 		self.label = label
 		self.element = element
+		self.doubleBonds = doubleBonds
+		self.tripleBonds = tripleBonds
+		self.benzeneBonds = benzeneBonds
 		self.description = description
 
 	def __repr__(self):
 		"""
 		Return a representation that can be used to reconstruct the object.
 		"""
-		return "AtomType('%s', %s, '%s')" % (self.label, self.element, self.description)
+		return "AtomType('%s', %s, %s, %s, %s, '%s')" % (self.label, self.element, self.doubleBonds, self.tripleBonds, self.benzeneBonds, self.description)
 	
 	def __reduce__(self):
 		"""
 		Used for pickling.
 		"""
-		return (AtomType, (self.label, self.element, self.description))
+		return (AtomType, (self.label, self.element, self.doubleBonds, self.tripleBonds, self.benzeneBonds, self.description))
 
 	def equivalent(self, other):
 		"""
@@ -205,38 +211,38 @@ def loadAtomTypes():
 
 	# Functional group atom types
 	atomTypes = {}
-	atomTypes['H']		= AtomType('H', 	elements['H'], 	'hydrogen')
-	atomTypes['C']		= AtomType('C', 	elements['C'], 	'carbon')
-	atomTypes['N']		= AtomType('N', 	elements['N'], 	'nitrogen')
-	atomTypes['O']		= AtomType('O', 	elements['O'], 	'oxygen')
-	atomTypes['F']		= AtomType('F', 	elements['F'], 	'fluorine')
-	atomTypes['Ne'] 	= AtomType('Ne', 	elements['Ne'], 'neon')
-	atomTypes['Si'] 	= AtomType('Si', 	elements['Si'], 'silicon')
-	atomTypes['P']		= AtomType('P', 	elements['P'],	'phosphorus')
-	atomTypes['S']		= AtomType('S', 	elements['S'],	'sulfur')
-	atomTypes['Cl'] 	= AtomType('Cl', 	elements['Cl'], 'chlorine')
-	atomTypes['Ar'] 	= AtomType('Ar', 	elements['Ar'], 'argon')
-	atomTypes['Br'] 	= AtomType('Br', 	elements['Br'], 'bromine')
-	atomTypes['I']		= AtomType('I', 	elements['I'],	'iodine')
-	atomTypes['R']		= AtomType('R', 	None, 			'generic functional group')
-	atomTypes['R!H'] 	= AtomType('R!H',	None, 			'generic non-hydrogen functional group')
-	atomTypes['Ct'] 	= AtomType('Ct', 	elements['C'], 	'carbon with one triple bond and one single bond')
-	atomTypes['Cs'] 	= AtomType('Cs', 	elements['C'], 	'carbon with four single bonds')
-	atomTypes['Cd'] 	= AtomType('Cd', 	elements['C'], 	'carbon with one double bond and two single bonds')
-	atomTypes['Cdd'] 	= AtomType('Cdd', 	elements['C'], 	'carbon with two double bonds')
-	atomTypes['Cb'] 	= AtomType('Cb', 	elements['C'], 	'carbon belonging to a benzene ring')
-	atomTypes['Cbf'] 	= AtomType('Cbf', 	elements['C'], 	'carbon belonging to a fused benzene ring')
-	atomTypes['CO'] 	= AtomType('CO', 	elements['C'], 	'non-central carbon bonded with a double bond to a non-central oxygen')
-	atomTypes['Os'] 	= AtomType('Os', 	elements['O'], 	'oxygen with two single bonds')
-	atomTypes['Od'] 	= AtomType('Od', 	elements['O'], 	'oxygen with one double bond')
+	atomTypes['H']		= AtomType('H', 	elements['H'], 	description='hydrogen')
+	atomTypes['C']		= AtomType('C', 	elements['C'], 	description='carbon')
+	atomTypes['N']		= AtomType('N', 	elements['N'], 	description='nitrogen')
+	atomTypes['O']		= AtomType('O', 	elements['O'], 	description='oxygen')
+	atomTypes['F']		= AtomType('F', 	elements['F'], 	description='fluorine')
+	atomTypes['Ne'] 	= AtomType('Ne', 	elements['Ne'], description='neon')
+	atomTypes['Si'] 	= AtomType('Si', 	elements['Si'], description='silicon')
+	atomTypes['P']		= AtomType('P', 	elements['P'],	description='phosphorus')
+	atomTypes['S']		= AtomType('S', 	elements['S'],	description='sulfur')
+	atomTypes['Cl'] 	= AtomType('Cl', 	elements['Cl'], description='chlorine')
+	atomTypes['Ar'] 	= AtomType('Ar', 	elements['Ar'], description='argon')
+	atomTypes['Br'] 	= AtomType('Br', 	elements['Br'], description='bromine')
+	atomTypes['I']		= AtomType('I', 	elements['I'],	description='iodine')
+	atomTypes['R']		= AtomType('R', 	None, 			description='generic functional group')
+	atomTypes['R!H'] 	= AtomType('R!H',	None, 			description='generic non-hydrogen functional group')
 
-	atomTypes['Sit'] 	= AtomType('Sit', 	elements['Si'], 'silicon with one triple bond and one single bond')
-	atomTypes['Sis'] 	= AtomType('Sis', 	elements['Si'], 'silicon with four single bonds')
-	atomTypes['Sid'] 	= AtomType('Sids', 	elements['Si'], 'silicon with one double bond and two single bonds')
-	atomTypes['Sidd'] 	= AtomType('Sidd', 	elements['Si'], 'silicon with two double bonds')
-	atomTypes['Sib'] 	= AtomType('Sib', 	elements['Si'], 'silicon belonging to a benzene ring')
-	atomTypes['Sibf'] 	= AtomType('Sibf', 	elements['Si'], 'silicon belonging to a fused benzene ring')
-	atomTypes['SiO'] 	= AtomType('SiO', 	elements['Si'], 'non-central silicon bonded with a double bond to a non-central oxygen')
+	atomTypes['Cs'] 	= AtomType('Cs', 	elements['C'], 	doubleBonds=0, tripleBonds=0, benzeneBonds=0, description='carbon with four single bonds')
+	atomTypes['Cd'] 	= AtomType('Cd', 	elements['C'], 	doubleBonds=1, tripleBonds=0, benzeneBonds=0, description='carbon with one double bond and two single bonds')
+	atomTypes['Cdd'] 	= AtomType('Cdd', 	elements['C'], 	doubleBonds=2, tripleBonds=0, benzeneBonds=0, description='carbon with two double bonds')
+	atomTypes['Ct'] 	= AtomType('Ct', 	elements['C'], 	doubleBonds=0, tripleBonds=1, benzeneBonds=0, description='carbon with one triple bond and one single bond')
+	atomTypes['Cb'] 	= AtomType('Cb', 	elements['C'], 	doubleBonds=0, tripleBonds=0, benzeneBonds=2, description='carbon belonging to a benzene ring')
+	atomTypes['Cbf'] 	= AtomType('Cbf', 	elements['C'], 	doubleBonds=0, tripleBonds=0, benzeneBonds=3, description='carbon belonging to a fused benzene ring')
+
+	atomTypes['Os'] 	= AtomType('Os', 	elements['O'], 	doubleBonds=0, tripleBonds=0, benzeneBonds=0, description='oxygen with two single bonds')
+	atomTypes['Od'] 	= AtomType('Od', 	elements['O'], 	doubleBonds=1, tripleBonds=0, benzeneBonds=0, description='oxygen with one double bond')
+
+	atomTypes['Sis'] 	= AtomType('Sis', 	elements['Si'], doubleBonds=0, tripleBonds=0, benzeneBonds=0, description='silicon with four single bonds')
+	atomTypes['Sid'] 	= AtomType('Sid', 	elements['Si'], doubleBonds=1, tripleBonds=0, benzeneBonds=0, description='silicon with one double bond and two single bonds')
+	atomTypes['Sidd'] 	= AtomType('Sidd', 	elements['Si'], doubleBonds=2, tripleBonds=0, benzeneBonds=0, description='silicon with two double bonds')
+	atomTypes['Sit'] 	= AtomType('Sit', 	elements['Si'], doubleBonds=0, tripleBonds=1, benzeneBonds=0, description='silicon with one triple bond and one single bond')
+	atomTypes['Sib'] 	= AtomType('Sib', 	elements['Si'], doubleBonds=0, tripleBonds=0, benzeneBonds=2, description='silicon belonging to a benzene ring')
+	atomTypes['Sibf'] 	= AtomType('Sibf', 	elements['Si'], doubleBonds=0, tripleBonds=0, benzeneBonds=3, description='silicon belonging to a fused benzene ring')
 
 	return atomTypes
 

@@ -40,6 +40,9 @@ cdef class AtomType:
 	cdef public str label
 	cdef public object element
 	cdef public str description
+	cdef public object doubleBonds
+	cdef public object tripleBonds
+	cdef public object benzeneBonds
 
 	cpdef bint equivalent(AtomType self, AtomType other)
 

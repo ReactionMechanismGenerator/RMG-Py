@@ -600,7 +600,7 @@ class Structure:
 			if atom1.atomType.__class__ == list:
 				continue
 			# Skip generic atom types
-			if atom1.atomType.label == 'R' or atom1.atomType.label == 'R!H':
+			if atom1.atomType.element is None:
 				continue
 			# Reset atom type to that of element
 			atom1.atomType = chem.atomTypes[atom1.atomType.element.symbol]
@@ -612,56 +612,43 @@ class Structure:
 		environment) and complete (i.e. are as detailed as possible).
 		"""
 
-		# NOTE: Does not yet process CO atom type!
-
 		for atom1 in self.atoms():
+
 			# Only works for single atom types, not lists
 			if atom1.atomType.__class__ == list:
 				continue
 			# Skip generic atom types
-			if atom1.atomType.label == 'R' or atom1.atomType.label == 'R!H':
+			if atom1.atomType.element is None:
 				continue
-			# Count numbers of each bond type
-			single = 0; double = 0; triple = 0; benzene = 0; carbonyl = False
+
+			# Get atom element
+			element = atom1.atomType.element
+			# Count numbers of each higher-order bond type
+			double = 0; triple = 0; benzene = 0
 			for atom2, bond12 in self.getBonds(atom1).iteritems():
-				if bond12.isSingle(): single += 1
-				elif bond12.isDouble(): double += 1
+				if bond12.isDouble(): double += 1
 				elif bond12.isTriple(): triple += 1
 				elif bond12.isBenzene(): benzene += 1
-				if atom1.isCarbon() and atom2.isOxygen() and bond12.isDouble():
-					carbonyl = True
 
-			# Use counts to determine proper atom type
-			atomType = atom1.atomType.element.symbol
-			if atomType == 'C':
-				if triple == 1: atomType = 'Ct'
-				elif single == 3 or single == 4: atomType = 'Cs'
-				elif double == 2: atomType = 'Cdd'
-				elif carbonyl: atomType = 'CO'
-				elif double == 1: atomType = 'Cd'
-				elif benzene == 1 or benzene == 2: atomType = 'Cb'
-				elif benzene == 3: atomType = 'Cbf'
-			elif atomType == 'O':
-				if single == 1 or single == 2: atomType = 'Os'
-				elif double == 1: atomType = 'Od'
-
-			# Do nothing if suggested and specified atom types are identical
-			if atom1.atomType.label == atomType:
-				pass
-			# Do nothing if specified atom type is 'Cbf' and suggested is 'Cb'
-			elif atom1.atomType.label == 'Cbf' and atomType == 'Cb':
-				pass
-			# Do nothing if specified atom type is 'Cdd' and suggested is 'CO'
-			elif atom1.atomType.label == 'Cdd' and atomType == 'CO':
-				pass
-			# Make change if specified atom type is element
-			elif atom1.atomType.label == atom1.atomType.element.symbol:
-				#logging.warning('Changed "' + atom1.atomType.label + '" to "' + atomType + '".')
-				atom1.atomType = chem.atomTypes[atomType]
-			# Else print warning
-			else:
-				logging.warning('Suggested atom type "' + atomType + '" does not match specified atom type "' + atom1.atomType.label + '".')
-
+			# Use element and counts to determine proper atom type
+			newAtomType = None
+			for label, atomType in chem.atomTypes.iteritems():
+				if ((element is atomType.element or atomType.element is None) and
+					(double == atomType.doubleBonds or atomType.doubleBonds is None) and
+					(triple == atomType.tripleBonds or atomType.tripleBonds is None) and
+					(benzene == atomType.benzeneBonds or atomType.benzeneBonds is None)):
+						
+					if newAtomType is None:
+						newAtomType = atomType
+					elif newAtomType.element is None and atomType.element is not None:
+						newAtomType = atomType
+					elif (newAtomType.doubleBonds is None or newAtomType.tripleBonds is None or newAtomType.benzeneBonds is None) and \
+						(atomType.doubleBonds is not None or atomType.tripleBonds is not None or atomType.benzeneBonds is not None):
+						newAtomType = atomType
+			
+			# Set the new atom type
+			atom1.setAtomType(newAtomType)
+		
 	def getRadicalCount(self):
 		"""
 		Get the number of radicals in the structure.
