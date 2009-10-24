@@ -458,7 +458,7 @@ def makeNewSpecies(structure, label='', reactive=True):
 		mol.draw(False, os.path.join(constants.outputDirectory, 'species/' + str(spec) + '.png'))
 
 	# Note in the log
-	logging.debug('Created new species ' + str(spec) + ': ' + spec.toInChI())
+	logging.debug('Created new species ' + str(spec) # + ': ' + spec.toInChI())
 	
 	# Return the newly created species
 	speciesCache.insert(0, spec)
