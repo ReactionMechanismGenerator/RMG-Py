@@ -571,19 +571,19 @@ class ThermoWilhoitData(ThermoData):
 		Return the Gibbs free energy in J/mol at temperature `T` in K.
 		"""
 		return self.getEnthalpy(T) - T * self.getEntropy(T)
-
-        def rmsErrWilhoit(self,t,cp):
-                #calculate the RMS error between the Wilhoit form and training data points; result will have same units as cp inputs; cp, cp0, and cpInf should agree in units (e.g. Cp/R); units of B and t should be consistent, based, for example on kK or K 
-                m = len(t)
-                rms = 0.0
-                for i in range(m):
-                        err = cp[i]-self.getHeatCapacity(t[i])
-                        rms += err*err
-                rms = rms/m
-                rms = math.sqrt(rms)
-                
-                return rms
-
+	
+	def rmsErrWilhoit(self,t,cp):
+		#calculate the RMS error between the Wilhoit form and training data points; result will have same units as cp inputs; cp, cp0, and cpInf should agree in units (e.g. Cp/R); units of B and t should be consistent, based, for example on kK or K 
+		m = len(t)
+		rms = 0.0
+		for i in range(m):
+			err = cp[i]-self.getHeatCapacity(t[i])
+			rms += err*err
+		rms = rms/m
+		rms = math.sqrt(rms)
+		
+		return rms
+	
 	#a faster version of the integral based on H from Yelvington's thesis; it differs from the original (see above) by a constant (dependent on parameters but independent of t)
 	def integral_T0(self, t):
 		#output: the quantity Integrate[Cp(Wilhoit)/R, t'] evaluated at t'=t
@@ -592,7 +592,7 @@ class ThermoWilhoitData(ThermoData):
 		y2 = y*y
 		result = cp0*t - (cpInf-cp0)*t*(y2*((3*a0 + a1 + a2 + a3)/6. + (4*a1 + a2 + a3)*y/12. + (5*a2 + a3)*y2/20. + a3*y2*y/5.) + (2 + a0 + a1 + a2 + a3)*( y/2. - 1 + (1/y-1)*math.log(B + t)))
 		return result
-
+	
 	#a faster version of the integral based on S from Yelvington's thesis; it differs from the original by a constant (dependent on parameters but independent of t)
 	def integral_TM1(self, t):
 		#output: the quantity Integrate[Cp(Wilhoit)/R*t^-1, t'] evaluated at t'=t
@@ -600,7 +600,7 @@ class ThermoWilhoitData(ThermoData):
 		y = t/(t+B)
 		result= cpInf*math.log(t)-(cpInf-cp0)*(math.log(y)+y*(1+y*(a0/2+y*(a1/3 + y*(a2/4 + y*a3/5)))))
 		return result
-
+	
 	def integral_T1(self, t):
 		#output: the quantity Integrate[Cp(Wilhoit)/R*t, t'] evaluated at t'=t
 		cp0, cpInf, B, a0, a1, a2, a3 = self.cp0, self.cpInf, self.B, self.a0, self.a1, self.a2, self.a3
@@ -608,7 +608,7 @@ class ThermoWilhoitData(ThermoData):
 			((a1 + 5*(a2 + 3*a3))*B**5*(cp0 - cpInf))/(3.*(B + t)**3) + ((a0 + 4*a1 + 10*(a2 + 2*a3))*B**4*(cp0 - cpInf))/(2.*(B + t)**2) -
 			((1 + 3*a0 + 6*a1 + 10*a2 + 15*a3)*B**3*(cp0 - cpInf))/(B + t) - (3 + 3*a0 + 4*a1 + 5*a2 + 6*a3)*B**2*(cp0 - cpInf)*math.log(B + t))
 		return result
-
+	
 	def integral_T2(self, t):
 		#output: the quantity Integrate[Cp(Wilhoit)/R*t^2, t'] evaluated at t'=t
 		cp0, cpInf, B, a0, a1, a2, a3 = self.cp0, self.cpInf, self.B, self.a0, self.a1, self.a2, self.a3
@@ -616,7 +616,7 @@ class ThermoWilhoitData(ThermoData):
 			((a2 + 7*a3)*B**7*(cp0 - cpInf))/(4.*(B + t)**4) + ((a1 + 6*a2 + 21*a3)*B**6*(cp0 - cpInf))/(3.*(B + t)**3) - ((a0 + 5*(a1 + 3*a2 + 7*a3))*B**5*(cp0 - cpInf))/(2.*(B + t)**2) +
 			((1 + 4*a0 + 10*a1 + 20*a2 + 35*a3)*B**4*(cp0 - cpInf))/(B + t) + (4 + 6*a0 + 10*a1 + 15*a2 + 21*a3)*B**3*(cp0 - cpInf)*math.log(B + t))
 		return result
-
+	
 	def integral_T3(self, t):
 		#output: the quantity Integrate[Cp(Wilhoit)/R*t^3, t'] evaluated at t'=t
 		cp0, cpInf, B, a0, a1, a2, a3 = self.cp0, self.cpInf, self.B, self.a0, self.a1, self.a2, self.a3
@@ -625,7 +625,7 @@ class ThermoWilhoitData(ThermoData):
 			((a0 + 6*a1 + 21*a2 + 56*a3)*B**6*(cp0 - cpInf))/(2.*(B + t)**2) - ((1 + 5*a0 + 15*a1 + 35*a2 + 70*a3)*B**5*(cp0 - cpInf))/(B + t) -
 			(5 + 10*a0 + 20*a1 + 35*a2 + 56*a3)*B**4*(cp0 - cpInf)*math.log(B + t))
 		return result
-
+	
 	def integral_T4(self, t):
 		#output: the quantity Integrate[Cp(Wilhoit)/R*t^4, t'] evaluated at t'=t
 		cp0, cpInf, B, a0, a1, a2, a3 = self.cp0, self.cpInf, self.B, self.a0, self.a1, self.a2, self.a3
@@ -634,7 +634,7 @@ class ThermoWilhoitData(ThermoData):
 			((a2 + 9*a3)*B**9*(cp0 - cpInf))/(4.*(B + t)**4) + ((a1 + 8*a2 + 36*a3)*B**8*(cp0 - cpInf))/(3.*(B + t)**3) - ((a0 + 7*(a1 + 4*(a2 + 3*a3)))*B**7*(cp0 - cpInf))/(2.*(B + t)**2) +
 			((1 + 6*a0 + 21*a1 + 56*a2 + 126*a3)*B**6*(cp0 - cpInf))/(B + t) + (6 + 15*a0 + 35*a1 + 70*a2 + 126*a3)*B**5*(cp0 - cpInf)*math.log(B + t))
 		return result
-
+	
 	def integral2_T0(self, t):
 		#output: the quantity Integrate[(Cp(Wilhoit)/R)^2, t'] evaluated at t'=t
 		cp0, cpInf, B, a0, a1, a2, a3 = self.cp0, self.cpInf, self.B, self.a0, self.a1, self.a2, self.a3
@@ -654,7 +654,7 @@ class ThermoWilhoitData(ThermoData):
 			 (6 + a0**2 + a1**2 + 12*a2 + a2**2 + 14*a3 + 2*a2*a3 + a3**2 + 2*a1*(5 + a2 + a3) + 2*a0*(4 + a1 + a2 + a3))*cpInf**2))/(B + t) +
 			2*(2 + a0 + a1 + a2 + a3)*B*(cp0 - cpInf)*cpInf*math.log(B + t))
 		return result
-
+	
 	def integral2_TM1(self, t):
 		#output: the quantity Integrate[(Cp(Wilhoit)/R)^2*t^-1, t'] evaluated at t'=t
 		cp0, cpInf, B, a0, a1, a2, a3 = self.cp0, self.cpInf, self.B, self.a0, self.a1, self.a2, self.a3
@@ -674,7 +674,7 @@ class ThermoWilhoitData(ThermoData):
 			(3 + a0**2 + a1**2 + 10*a2 + a2**2 + 12*a3 + 2*a2*a3 + a3**2 + 2*a1*(4 + a2 + a3) + 2*a0*(3 + a1 + a2 + a3))*cpInf**2))/(2.*(B + t)**2) +
 			(B*(cp0 - cpInf)*(cp0 - (3 + 2*a0 + 2*a1 + 2*a2 + 2*a3)*cpInf))/(B + t) + cp0**2*math.log(t) + (-cp0**2 + cpInf**2)*math.log(B + t))
 		return result
-
+	
 ################################################################################
 
 def convertGAtoWilhoit(GAthermo, atoms, rotors, linear):
@@ -751,10 +751,9 @@ def convertGAtoWilhoit(GAthermo, atoms, rotors, linear):
 	# update Wilhoit instance with correct I,J
 	WilhoitThermo.H0 = H0
 	WilhoitThermo.S0 = S0
-
+	
 	err = WilhoitThermo.rmsErrWilhoit(T_list, Cp_list)/R #rms Error (J/mol-K units until it is divided by R) (not needed, but it is useful in comment)
-        WilhoitThermo.comment = WilhoitThermo.comment + 'Fitted to GA data with Cp0=%2g and Cp_inf=%2g. RMS error = %.3f*R. '%(cp0,cpInf,err) + GAthermo.comment
-
+	WilhoitThermo.comment = WilhoitThermo.comment + 'Fitted to GA data with Cp0=%2g and Cp_inf=%2g. RMS error = %.3f*R. '%(cp0,cpInf,err) + GAthermo.comment
 	
 	return WilhoitThermo
 
@@ -765,7 +764,7 @@ def CpLimits(atoms, rotors, linear):
 	Output: Cp(0 K)/R, Cp(infinity)/R
 	"""
 	#(based off of lsfp_wilh1.f in GATPFit)
-
+	
 	if (atoms == 1): # monoatomic
 		cp0 = 2.5
 		cpInf = 2.5
@@ -822,12 +821,12 @@ def convertWilhoitToNASA(Wilhoit):
 	tint=tint*1000.
 	Tmin = Tmin*1000
 	Tmax = Tmax*1000
-
+	
 	nasa_low.c1 /= 1000.
 	nasa_low.c2 /= 1000000.
 	nasa_low.c3 /= 1000000000.
 	nasa_low.c4 /= 1000000000000.
-
+	
 	nasa_high.c1 /= 1000.
 	nasa_high.c2 /= 1000000.
 	nasa_high.c3 /= 1000000000.
@@ -840,7 +839,7 @@ def convertWilhoitToNASA(Wilhoit):
 	nasa_low.comment = comment
 	nasa_high.Trange = (tint,Tmax); nasa_high.Tmin = tint; nasa_high.Tmax = Tmax
 	nasa_high.comment = comment
-
+	
 	#for the low polynomial, we want the results to match the Wilhoit value at 298.15K
 	#low polynomial enthalpy:
 	Hlow = (Wilhoit.getEnthalpy(298.15) - nasa_low.getEnthalpy(298.15))/constants.R
@@ -848,17 +847,17 @@ def convertWilhoitToNASA(Wilhoit):
 	#low polynomial entropy:
 	Slow = (Wilhoit.getEntropy(298.15) - nasa_low.getEntropy(298.15))/constants.R
 	###polynomial_low.coeffs[6] = (Wilhoit.getEntropy(298.15) - polynomial_low.getEntropy(298.15))/constants.R
-
+	
 	# update last two coefficients
 	nasa_low.c5 = Hlow
 	nasa_low.c6 = Slow
-
+	
 	#for the high polynomial, we want the results to match the low polynomial value at tint
 	#high polynomial enthalpy:
 	Hhigh = (nasa_low.getEnthalpy(tint) - nasa_high.getEnthalpy(tint))/constants.R
 	#high polynomial entropy:
 	Shigh = (nasa_low.getEntropy(tint) - nasa_high.getEntropy(tint))/constants.R
-
+	
 	# update last two coefficients
 	#polynomial_high.coeffs = (b6,b7,b8,b9,b10,Hhigh,Shigh)
 	nasa_high.c5 = Hhigh
@@ -981,20 +980,20 @@ def Wilhoit2NASA_NW(wilhoit, tmin, tmax, tint):
 	w1int = wilhoit.integral_T1(tint)
 	w2int = wilhoit.integral_T2(tint)
 	w3int = wilhoit.integral_T3(tint)
-
+	
 	wM1min = wilhoit.integral_TM1(tmin)
 	w0min = wilhoit.integral_T0(tmin)
 	w1min = wilhoit.integral_T1(tmin)
 	w2min = wilhoit.integral_T2(tmin)
 	w3min = wilhoit.integral_T3(tmin)
-
+	
 	wM1max = wilhoit.integral_TM1(tmax)
 	w0max = wilhoit.integral_T0(tmax)
 	w1max = wilhoit.integral_T1(tmax)
 	w2max = wilhoit.integral_T2(tmax)
 	w3max = wilhoit.integral_T3(tmax)
-
-
+	
+	
 	b[0] = 2*(wM1int - wM1min)
 	b[1] = 2*(w0int - w0min)
 	b[2] = 2*(w1int - w1min)
@@ -1022,7 +1021,7 @@ def Wilhoit2NASA_W(wilhoit, tmin, tmax, tint):
 	#this is the case WITH weighting
 	#input: Wilhoit parameters, Cp0/R, CpInf/R, and B (kK), a0, a1, a2, a3, Tmin (minimum temperature (in kiloKelvin), Tmax (maximum temperature (in kiloKelvin), Tint (intermediate temperature, in kiloKelvin)
 	#output: NASA parameters for Cp/R, b1, b2, b3, b4, b5 (low temp parameters) and b6, b7, b8, b9, b10 (high temp parameters)
-
+	
 	#construct 13*13 symmetric A matrix (in A*x = b); other elements will be zero
 	A = scipy.zeros([13,13])
 	b = scipy.zeros([13])
