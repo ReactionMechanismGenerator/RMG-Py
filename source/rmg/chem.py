@@ -255,20 +255,25 @@ class ElectronState:
 	"""
 	A single free electron state for an atom. The attributes are:
 
-	=========  ==============================================================
-	Attribute     Description
-	=========  ==============================================================
-	`label`    A unique string identifier for the electron state
-	`order`    The number of free electrons
-	`spin`     A list of the allowed spin states for polyradicals (singlet = 1, doublet = 2, etc.)
-	=========  ==============================================================
+	===========  ===============================================================
+	Attribute    Description
+	===========  ===============================================================
+	`label`      A unique string identifier for the electron state
+	`order`      The number of free electrons
+	`spin`       A list of the allowed spin states for polyradicals (singlet =
+	             1, doublet = 2, etc.)
+	`increment`  The electron state that results from incrementing the radical
+	             count, if any
+	`decrement`  The electron state that results from decrementing the radical
+	             count, if any
+	===========  ===============================================================
 
 	This class is specifically for properties that all free electron states
 	share. Ideally there is only one instance of this class for each free
 	electron state.
 	"""
 
-	def __init__(self, label='', order=0, spin=None):
+	def __init__(self, label='', order=0, spin=None, increment=None, decrement=None):
 		"""
 		Initialize a free electron state.
 
@@ -280,18 +285,35 @@ class ElectronState:
 		self.label = label
 		self.order = order
 		self.spin = spin
+		self.increment = increment
+		self.decrement = decrement
 
 	def __repr__(self):
 		"""
 		Return a representation that can be used to reconstruct the object.
 		"""
-		return "ElectronState('%s', %s, %s)" % (self.label, self.order, self.spin)
+		return "ElectronState('%s', %s, %s)" % (self.label, self.order, self.spin, self.increment, self.decrement)
 	
 	def __reduce__(self):
 		"""
 		Used for pickling.
 		"""
-		return (ElectronState, (self.label, self.order, self.spin))
+		return (ElectronState, (self.label, self.order, self.spin, None, None))
+
+	def setActions(self, increment=None, decrement=None):
+		"""
+		Set the electron states that result from the application of the
+		relevant chemical actions. For electron states, these actions are:
+
+		* INCREMENT_RADICAL - increment the free electron count by one
+
+		* DECREMENT_RADICAL - decrement the free electron count by one
+
+		If an action cannot be applied to an electron state, it should be set
+		to :data:`None`.
+		"""
+		self.increment = increment
+		self.decrement = decrement
 
 	def equivalent(self, other):
 		"""
@@ -324,6 +346,16 @@ def loadElectronStates():
 	electronStates['2T'] = ElectronState('2T', 2, [3])
 	electronStates['3'] = ElectronState('3', 3, [2,4])
 	electronStates['4'] = ElectronState('4', 4, [1,3,5])
+
+	# Set increment and decrement attributes
+	electronStates['0'].setActions(increment=electronStates['1'])
+	electronStates['1'].setActions(increment=electronStates['2'], decrement=electronStates['0'])
+	electronStates['2'].setActions(increment=electronStates['3'], decrement=electronStates['1'])
+	electronStates['2S'].setActions(increment=electronStates['3'], decrement=electronStates['1'])
+	electronStates['2T'].setActions(increment=electronStates['3'], decrement=electronStates['1'])
+	electronStates['3'].setActions(increment=electronStates['4'], decrement=electronStates['2'])
+	electronStates['4'].setActions(decrement=electronStates['1'])
+
 	return electronStates
 
 # The dictionary of electron states, accessible by label.
@@ -647,7 +679,7 @@ class Atom(object):
 		fewer.
 		"""
 		for electronState in self._electronState:
-			if electronState.order >= 4: return False
+			if electronState.increment is None: return False
 		return True
 	
 	def canDecreaseFreeElectron(self):
@@ -657,7 +689,7 @@ class Atom(object):
 		free electron on this atom.
 		"""
 		for electronState in self._electronState:
-			if electronState.order < 1: return False
+			if electronState.decrement is None: return False
 		return True
 	
 	def increaseFreeElectron(self):
@@ -665,28 +697,20 @@ class Atom(object):
 		Increase the number of unpaired electrons on this atom by one.
 		"""
 		for i in range(len(self._electronState)):
-			if self._electronState[i].label == '0': self._electronState[i] = electronStates['1']
-			elif self._electronState[i].label == '1': self._electronState[i] = electronStates['2']
-			elif self._electronState[i].label == '2': self._electronState[i] = electronStates['3']
-			elif self._electronState[i].label == '2S': self._electronState[i] = electronStates['3']
-			elif self._electronState[i].label == '2T': self._electronState[i] = electronStates['3']
-			elif self._electronState[i].label == '3': self._electronState[i] = electronStates['4']
-			else:
+			if self._electronState[i].increment is None:
 				raise InvalidChemicalActionException('Cannot increase the radical number of this atom.')
+			else:
+				self._electronState[i] = self._electronState[i].increment
 
 	def decreaseFreeElectron(self):
 		"""
 		Decrease the number of unpaired electrons on this atom by one.
 		"""
 		for i in range(len(self._electronState)):
-			if self._electronState[i].label == '1': self._electronState[i] = electronStates['0']
-			elif self._electronState[i].label == '2': self._electronState[i] = electronStates['1']
-			elif self._electronState[i].label == '2S': self._electronState[i] = electronStates['1']
-			elif self._electronState[i].label == '2T': self._electronState[i] = electronStates['1']
-			elif self._electronState[i].label == '3': self._electronState[i] = electronStates['2']
-			elif self._electronState[i].label == '4': self._electronState[i] = electronStates['3']
-			else:
+			if self._electronState[i].decrement is None:
 				raise InvalidChemicalActionException('Cannot decrease the radical number of this atom.')
+			else:
+				self._electronState[i] = self._electronState[i].decrement
 
 ################################################################################
 

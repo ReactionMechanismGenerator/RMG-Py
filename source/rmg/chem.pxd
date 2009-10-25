@@ -53,6 +53,8 @@ cdef class ElectronState:
 	cdef public str label
 	cdef public int order
 	cdef public list spin
+	cdef public ElectronState increment
+	cdef public ElectronState decrement
 
 	cpdef bint equivalent(ElectronState self, ElectronState other)
 
