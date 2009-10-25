@@ -419,7 +419,7 @@ class ReactionRecipe:
 				other.addAction(['LOSE_RADICAL', action[1], action[2]])
 		return other
 
-	def apply(self, struct, doForward, unique=True):
+	def __apply(self, struct, doForward, unique):
 		"""
 		Apply the reaction recipe to the set of molecules contained in
 		`structure`, a single Structure object that contains one or more
@@ -500,17 +500,16 @@ class ReactionRecipe:
 						raise Exception('Invalid atom labels found while attempting to execute reaction recipe.')
 					
 					change = int(change)
-					if change != 1:
-						raise InvalidActionException('Attempted to change the radical count of an atom by more than one at a time.')
-
-					if (action[0] == 'GAIN_RADICAL' and doForward) or \
-						(action[0] == 'LOSE_RADICAL' and not doForward):
-						# Increment radical count
-						atom.increaseFreeElectron()
-					elif (action[0] == 'LOSE_RADICAL' and doForward) or \
-						(action[0] == 'GAIN_RADICAL' and not doForward):
-						# Decrement radical count
-						atom.decreaseFreeElectron()
+					
+					for i in range(change):
+						if (action[0] == 'GAIN_RADICAL' and doForward) or \
+							(action[0] == 'LOSE_RADICAL' and not doForward):
+							# Increment radical count
+							atom.increaseFreeElectron()
+						elif (action[0] == 'LOSE_RADICAL' and doForward) or \
+							(action[0] == 'GAIN_RADICAL' and not doForward):
+							# Decrement radical count
+							atom.decreaseFreeElectron()
 
 				else:
 					raise InvalidActionException('Unknown action "' + action[0] + '" encountered.')
@@ -521,21 +520,21 @@ class ReactionRecipe:
 
 		return True
 
-	def applyForward(self, struct):
+	def applyForward(self, struct, unique=True):
 		"""
 		Apply the reaction recipe to the set of molecules contained in
 		`structure`, a single Structure object that contains one or more
 		structures.
 		"""
-		return self.apply(struct, True)
+		return self.__apply(struct, True, unique)
 
-	def applyReverse(self, struct):
+	def applyReverse(self, struct, unique=True):
 		"""
 		Apply the reaction recipe to the set of molecules contained in
 		`structure`, a single Structure object that contains one or more
 		structures.
 		"""
-		return self.apply(struct, False)
+		return self.__apply(struct, False, unique)
 
 ################################################################################
 
@@ -1151,21 +1150,75 @@ class ReactionFamily(data.Database):
 			self.reverse.forbidden = self.forbidden
 			self.reverse.reverse = self
 
-#		# Generate the product structures by applying the reaction template to
-#		# the top-level nodes (A1 and B1 above)
-#		# First, merge reactant structures into single structure
-#		reactantStructures = []
-#		for reactant in self.template.reactants:
-#			s = reactant[0] if isinstance(reactant, list) else reactant
-#			if self.dictionary[s] == 'union':
-#				print 'Cannot handle unions yet'
-#				return
-#			reactantStructures.append(self.dictionary[s])
-#		# Next, generate the product structures
-#		productStructures = self.applyRecipe(reactantStructures)
-#		for productStructure in productStructures:
-#			print productStructure.toAdjacencyList()
+		# If necessary, generate the product template structure(s)
+		# Don't need to do this if family is its own reverse
+		if reverse != self.label:
+			self.generateProductTemplate()
 
+	def generateProductTemplate(self):
+		"""
+		Generate the product structures by applying the reaction template to
+		the top-level nodes. For reactants defined by multiple structures, only
+		the first is used here; it is assumed to be the most generic.
+		"""
+
+		# First, generate a list of reactant structures that are actual
+		# structures, rather than unions
+		reactantStructures = []
+		for reactant in self.template.reactants:
+			if isinstance(reactant, list):	reactants = [reactant[0]]
+			else:							reactants = [reactant]
+			unionFound = True
+			while unionFound:
+				unionFound = False; reactantsToRemove = []; reactantsToAdd = []
+				for s in reactants:
+					if self.dictionary[s] == 'union':
+						reactantsToRemove.append(s)
+						reactantsToAdd.extend(self.tree.children[s])
+						unionFound = True
+				for s in reactantsToRemove: reactants.remove(s)
+				reactants.extend(reactantsToAdd)
+			reactantStructures.append([self.dictionary[s] for s in reactants])
+		
+		# Second, get all possible combinations of reactant structures
+		reactantStructures = data.getAllCombinations(reactantStructures)
+
+		# Third, generate all possible product structures by applying the
+		# recipe to each combination of reactant structures
+		# Note that bimolecular products are split by labeled atoms
+		productStructures = []
+		for reactantStructure in reactantStructures:
+			productStructure = self.applyRecipe(reactantStructure, unique=False)
+			productStructures.append(productStructure)
+		
+		# Fourth, remove duplicates from the lists
+		productStructureList = [[] for i in range(len(productStructures[0]))]
+		for productStructure in productStructures:
+			for i, struct in enumerate(productStructure):
+				found = False
+				for s in productStructureList[i]:
+					if s.isIsomorphic(struct): found = True
+				if not found:
+					productStructureList[i].append(struct)
+
+		# Fifth, associate structures with product template
+		for i in range(len(self.template.products)):
+			if len(productStructureList[i]) == 1:
+				self.dictionary[self.template.products[i]] = productStructureList[i][0]
+				self.tree.parent[self.template.products[i]] = None
+				self.tree.children[self.template.products[i]] = []
+			else:
+				self.dictionary[self.template.products[i]] = 'union'
+				children = []
+				for j in range(len(productStructureList[i])):
+					label = '%s_%i' % (self.template.products[i], j+1)
+					self.dictionary[label] = productStructureList[i][j]
+					children.append(label)
+					self.tree.parent[label] = self.template.products[i]
+					self.tree.children[label] = []
+
+				self.tree.parent[self.template.products[i]] = None
+				self.tree.children[self.template.products[i]] = children
 
 	def reactantMatch(self, reactant, templateReactant):
 		"""
@@ -1186,7 +1239,7 @@ class ReactionFamily(data.Database):
 
 		return len(maps12) > 0, maps21, maps12
 
-	def applyRecipe(self, reactantStructures):
+	def applyRecipe(self, reactantStructures, unique=True):
 		"""
 		Apply the recipe for this reaction family to the list of
 		:class:`structure.Structure` objects `reactantStructures`. The atoms
@@ -1221,7 +1274,7 @@ class ReactionFamily(data.Database):
 				raise Exception('Unable to change labels from "*" to "*1" and "*2" for reaction family %s.' % (label))
 
 		# Generate the product structure by applying the recipe
-		if not self.recipe.applyForward(reactantStructure):
+		if not self.recipe.applyForward(reactantStructure, unique):
 			return None
 		productStructure = reactantStructure.copy()
 
@@ -1294,6 +1347,12 @@ class ReactionFamily(data.Database):
 			message += "Template: %s"%self.template
 			logging.error(message)
 			raise Exception(message)
+
+		# If there are two product structures, place the one containing '*1' first
+		if len(productStructures) == 2:
+			if not productStructures[0].containsLabeledAtom('*1') and \
+				productStructures[1].containsLabeledAtom('*1'):
+				productStructures.reverse()
 
 		# Return the product structures
 		return productStructures

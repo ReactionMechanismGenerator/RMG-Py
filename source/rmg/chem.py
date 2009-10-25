@@ -785,21 +785,25 @@ class Atom(object):
 		newAtomTypes = list(set(newAtomTypes))
 
 		# Count numbers of each higher-order bond type
+		wildcardBond = False
 		doubleBonds = 0; tripleBonds = 0; benzeneBonds = 0
 		for atom2, bond12 in bonds.iteritems():
-			if bond12.isDouble(): doubleBonds += 1
+			if isinstance(bond12.bondType, list): wildcardBond = True
+			elif bond12.isDouble(): doubleBonds += 1
 			elif bond12.isTriple(): tripleBonds += 1
 			elif bond12.isBenzene(): benzeneBonds += 1
 
 		# Eliminate impossible atom types
-		atomTypesToRemove = []
-		for atomType in newAtomTypes:
-			if (atomType.doubleBonds != doubleBonds and atomType.doubleBonds is not None) or \
-				(atomType.tripleBonds != tripleBonds and atomType.tripleBonds is not None) or \
-				(atomType.benzeneBonds != benzeneBonds and atomType.benzeneBonds is not None):
-				atomTypesToRemove.append(atomType)
-		for atomType in atomTypesToRemove:
-			newAtomTypes.remove(atomType)
+		if not wildcardBond:
+			atomTypesToRemove = []
+			for atomType in newAtomTypes:
+				if (atomType.doubleBonds != doubleBonds and atomType.doubleBonds is not None) or \
+					(atomType.tripleBonds != tripleBonds and atomType.tripleBonds is not None) or \
+					(atomType.benzeneBonds != 0 and benzeneBonds == 0 and atomType.benzeneBonds is not None) or \
+					(atomType.benzeneBonds == 0 and benzeneBonds != 0 and atomType.benzeneBonds is not None):
+					atomTypesToRemove.append(atomType)
+			for atomType in atomTypesToRemove:
+				newAtomTypes.remove(atomType)
 			
 		# Raise exception if we don't have at least one atom type remaining
 		if len(newAtomTypes) == 0:
