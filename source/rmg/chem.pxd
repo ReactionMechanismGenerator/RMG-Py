@@ -43,6 +43,10 @@ cdef class AtomType:
 	cdef public object doubleBonds
 	cdef public object tripleBonds
 	cdef public object benzeneBonds
+	cdef public object formBond
+	cdef public object breakBond
+	cdef public object incrementBond
+	cdef public object decrementBond
 
 	cpdef bint equivalent(AtomType self, AtomType other)
 

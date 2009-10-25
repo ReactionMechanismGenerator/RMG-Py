@@ -126,16 +126,23 @@ class AtomType:
 	A type of atom which combines the element information with information
 	about the local bonding structure. The attributes are:
 
-	=============  ==============================================================
-	Attribute      Description
-	=============  ==============================================================
-	`label`        A unique string identifier for the atom type
-	`element`      The :class:`Element` object this atom type represents, if any
-	`description`  A one-line description of the atom type
-	`doubleBonds`  The number of double bonds to this atom type
-	`tripleBonds`  The number of triple bonds to this atom type
-	`benzeneBonds` The number of benzene bonds to this atom type
-	=============  ==============================================================
+	=============== ============================================================
+	Attribute       Description
+	=============== ============================================================
+	`label`         A unique string identifier for the atom type
+	`element`       The :class:`Element` object this atom type represents, if
+	                any
+	`description`   A one-line description of the atom type
+	`doubleBonds`   The number of double bonds to this atom type
+	`tripleBonds`   The number of triple bonds to this atom type
+	`benzeneBonds`  The number of benzene bonds to this atom type
+	`formBond`      The atom type(s) resulting from an adjacent bond formation
+	`breakBond`     The atom type(s) resulting from an adjacent bond breaking
+	`incrementBond` The atom type(s) resulting from an adjacent bond order
+	                increment
+	`decrementBond` The atom type(s) resulting from an adjacent bond order
+	                decrement
+	=============== ============================================================
 
 	This class is specifically for properties that all atoms of the same
 	type share. Ideally there is only one instance of this class for each
@@ -152,6 +159,10 @@ class AtomType:
 		self.tripleBonds = tripleBonds
 		self.benzeneBonds = benzeneBonds
 		self.description = description
+		self.formBond = None
+		self.breakBond = None
+		self.incrementBond = None
+		self.decrementBond = None
 
 	def __repr__(self):
 		"""
@@ -164,6 +175,29 @@ class AtomType:
 		Used for pickling.
 		"""
 		return (AtomType, (self.label, self.element, self.doubleBonds, self.tripleBonds, self.benzeneBonds, self.description))
+
+	def setActions(self, formBond=None, breakBond=None, incrementBond=None, decrementBond=None):
+		"""
+		Set the atom types that result from the application of the
+		relevant chemical actions. For atom types, these actions are:
+
+		* FORM_BOND - form a single bond between this atom and another atom
+
+		* BREAK_BOND - break a single bond between this atom and another atom
+
+		* INCREMENT_BOND - increment the order of a bond involving this atom by one
+
+		* DECREMENT_BOND - decrement the order of a bond involving this atom by one
+
+		If an action cannot be applied to an atom type, it should be set
+		to :data:`None`. If multiple atom types can result from an action, a
+		list should be used; RMG will eliminate atom types based on the
+		resulting structure, if possible.
+		"""
+		self.formBond = formBond
+		self.breakBond = breakBond
+		self.incrementBond = incrementBond
+		self.decrementBond = decrementBond
 
 	def equivalent(self, other):
 		"""
@@ -224,6 +258,7 @@ def loadAtomTypes():
 	atomTypes['Ar'] 	= AtomType('Ar', 	elements['Ar'], description='argon')
 	atomTypes['Br'] 	= AtomType('Br', 	elements['Br'], description='bromine')
 	atomTypes['I']		= AtomType('I', 	elements['I'],	description='iodine')
+
 	atomTypes['R']		= AtomType('R', 	None, 			description='generic functional group')
 	atomTypes['R!H'] 	= AtomType('R!H',	None, 			description='generic non-hydrogen functional group')
 
@@ -243,6 +278,23 @@ def loadAtomTypes():
 	atomTypes['Sit'] 	= AtomType('Sit', 	elements['Si'], doubleBonds=0, tripleBonds=1, benzeneBonds=0, description='silicon with one triple bond and one single bond')
 	atomTypes['Sib'] 	= AtomType('Sib', 	elements['Si'], doubleBonds=0, tripleBonds=0, benzeneBonds=2, description='silicon belonging to a benzene ring')
 	atomTypes['Sibf'] 	= AtomType('Sibf', 	elements['Si'], doubleBonds=0, tripleBonds=0, benzeneBonds=3, description='silicon belonging to a fused benzene ring')
+
+	atomTypes['H'].setActions(formBond=atomTypes['H'], breakBond=atomTypes['H'], incrementBond=None, decrementBond=None)
+	atomTypes['C'].setActions(formBond=atomTypes['C'], breakBond=atomTypes['C'], incrementBond=atomTypes['C'], decrementBond=atomTypes['C'])
+	atomTypes['O'].setActions(formBond=atomTypes['O'], breakBond=atomTypes['O'], incrementBond=atomTypes['O'], decrementBond=atomTypes['O'])
+
+	atomTypes['R'].setActions(formBond=atomTypes['R'], breakBond=atomTypes['R'], incrementBond=atomTypes['R'], decrementBond=atomTypes['R'])
+	atomTypes['R!H'].setActions(formBond=atomTypes['R!H'], breakBond=atomTypes['R!H'], incrementBond=atomTypes['R!H'], decrementBond=atomTypes['R!H'])
+
+	atomTypes['Cs'].setActions(formBond=atomTypes['Cs'], breakBond=atomTypes['Cs'], incrementBond=atomTypes['Cd'], decrementBond=None)
+	atomTypes['Cd'].setActions(formBond=atomTypes['Cd'], breakBond=atomTypes['Cd'], incrementBond=[atomTypes['Cdd'],atomTypes['Ct']], decrementBond=atomTypes['Cs'])
+	atomTypes['Cdd'].setActions(formBond=atomTypes['Cdd'], breakBond=atomTypes['Cdd'], incrementBond=None, decrementBond=atomTypes['Cd'])
+	atomTypes['Ct'].setActions(formBond=atomTypes['Ct'], breakBond=atomTypes['Ct'], incrementBond=None, decrementBond=atomTypes['Cd'])
+	atomTypes['Cb'].setActions(formBond=atomTypes['Cb'], breakBond=atomTypes['Cb'], incrementBond=None, decrementBond=None)
+	atomTypes['Cbf'].setActions(formBond=atomTypes['Cbf'], breakBond=atomTypes['Cbf'], incrementBond=None, decrementBond=None)
+
+	atomTypes['Os'].setActions(formBond=atomTypes['Os'], breakBond=atomTypes['Os'], incrementBond=atomTypes['Od'], decrementBond=None)
+	atomTypes['Od'].setActions(formBond=atomTypes['Od'], breakBond=atomTypes['Od'], incrementBond=None, decrementBond=atomTypes['Os'])
 
 	return atomTypes
 
@@ -711,6 +763,84 @@ class Atom(object):
 				raise InvalidChemicalActionException('Cannot decrease the radical number of this atom.')
 			else:
 				self._electronState[i] = self._electronState[i].decrement
+
+	def __applyAction(self, action, bonds, unique):
+
+		newAtomTypes = []
+
+		# Collect possible new atom types
+		for atomType in self._atomType:
+			if action == 'FORM_BOND':			newAtomType = atomType.formBond
+			elif action == 'BREAK_BOND':		newAtomType = atomType.breakBond
+			elif action == 'INCREMENT_BOND':	newAtomType = atomType.incrementBond
+			elif action == 'DECREMENT_BOND':	newAtomType = atomType.decrementBond
+			if newAtomType is None:
+				pass
+			elif isinstance(newAtomType, list):
+				newAtomTypes.extend(newAtomType)
+			else:
+				newAtomTypes.append(newAtomType)
+
+		# Eliminate duplicates
+		newAtomTypes = list(set(newAtomTypes))
+
+		# Count numbers of each higher-order bond type
+		doubleBonds = 0; tripleBonds = 0; benzeneBonds = 0
+		for atom2, bond12 in bonds.iteritems():
+			if bond12.isDouble(): doubleBonds += 1
+			elif bond12.isTriple(): tripleBonds += 1
+			elif bond12.isBenzene(): benzeneBonds += 1
+
+		# Eliminate impossible atom types
+		atomTypesToRemove = []
+		for atomType in newAtomTypes:
+			if (atomType.doubleBonds != doubleBonds and atomType.doubleBonds is not None) or \
+				(atomType.tripleBonds != tripleBonds and atomType.tripleBonds is not None) or \
+				(atomType.benzeneBonds != benzeneBonds and atomType.benzeneBonds is not None):
+				atomTypesToRemove.append(atomType)
+		for atomType in atomTypesToRemove:
+			newAtomTypes.remove(atomType)
+			
+		# Raise exception if we don't have at least one atom type remaining
+		if len(newAtomTypes) == 0:
+			raise InvalidChemicalActionException('No atom types remaining after %s action with original atom type(s) %s.' % (action, self._atomType))
+		# Raise exception if we have more than one atom type remaining and the
+		# unique flag is set
+		elif len(newAtomTypes) > 1 and unique:
+			raise InvalidChemicalActionException('Unable to determine a unique atom type after %s action with original atom type(s) %s.' % (action, self._atomType))
+
+		# Set atom type(s) to atom
+		self._atomType = newAtomTypes
+
+
+	def formBond(self, bonds, unique):
+		"""
+		Modify the atom type(s) of this atom in response to a FORM_BOND 
+		chemical action.
+		"""
+		self.__applyAction('FORM_BOND', bonds, unique)
+
+	def breakBond(self, bonds, unique):
+		"""
+		Modify the atom type(s) of this atom in response to a BREAK_BOND
+		chemical action.
+		"""
+		self.__applyAction('BREAK_BOND', bonds, unique)
+
+	def incrementBond(self, bonds, unique):
+		"""
+		Modify the atom type(s) of this atom in response to a INCREMENT_BOND
+		chemical action.
+		"""
+		self.__applyAction('INCREMENT_BOND', bonds, unique)
+
+	def decrementBond(self, bonds, unique):
+		"""
+		Modify the atom type(s) of this atom in response to a DECREMENT_BOND
+		chemical action.
+		"""
+		self.__applyAction('DECREMENT_BOND', bonds, unique)
+
 
 ################################################################################
 

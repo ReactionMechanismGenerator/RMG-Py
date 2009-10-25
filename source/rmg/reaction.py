@@ -419,7 +419,7 @@ class ReactionRecipe:
 				other.addAction(['LOSE_RADICAL', action[1], action[2]])
 		return other
 
-	def apply(self, struct, doForward):
+	def apply(self, struct, doForward, unique=True):
 		"""
 		Apply the reaction recipe to the set of molecules contained in
 		`structure`, a single Structure object that contains one or more
@@ -441,19 +441,39 @@ class ReactionRecipe:
 					if atom1 is None or atom2 is None or atom1 is atom2:
 						raise InvalidActionException('Invalid atom labels encountered.')
 
-					# If found, change bond
+					# Find associated bond, if present
+					bond = struct.getBond(atom1, atom2)
+
+					# If found, apply action
 					if action[0] == 'CHANGE_BOND':
-						bond = struct.getBond(atom1, atom2)
+						if bond is None:
+							raise InvalidActionException('Attempted to change the bond order of a nonexistent bond.')
+
 						info = int(info)
-						if bond is None: raise InvalidActionException('Attempted to change the bond order of a nonexistent bond.')
-						for i in range(0, abs(info)):
-							if doForward:
-								if info > 0:	bond.increaseOrder()
-								elif info < 0:	bond.decreaseOrder()
-							else:
-								if info > 0:	bond.decreaseOrder()
-								elif info < 0:	bond.increaseOrder()
-					elif action[0] == 'FORM_BOND':
+						if abs(info) != 1:
+							raise InvalidActionException('Attempted to change the bond order of a bond by more than one at a time.')
+
+						if (info > 0 and doForward) or (info < 0 and not doForward):
+							# Increment bond order
+							bond.increaseOrder()
+							atom1.incrementBond(struct.getBonds(atom1), unique)
+							atom2.incrementBond(struct.getBonds(atom2), unique)
+						else:
+							# Decrement bond order
+							bond.decreaseOrder()
+							atom1.decrementBond(struct.getBonds(atom1), unique)
+							atom2.decrementBond(struct.getBonds(atom2), unique)
+
+					elif (action[0] == 'FORM_BOND' and doForward) or \
+						(action[0] == 'BREAK_BOND' and not doForward):
+						if bond is not None:
+							raise InvalidActionException('Attempted to form a bond that already exists.')
+						# Form single bond
+						bond = chem.Bond([atom1, atom2], 'S')
+						struct.addBond(bond)
+						atom1.formBond(struct.getBonds(atom1), unique)
+						atom2.formBond(struct.getBonds(atom2), unique)
+
 						if doForward:
 							bond = chem.Bond([atom1, atom2], info)
 							struct.addBond(bond)
@@ -461,40 +481,36 @@ class ReactionRecipe:
 							bond = struct.getBond(atom1, atom2)
 							if bond is None: raise InvalidActionException('Attempted to remove a nonexistent bond.')
 							struct.removeBond(bond)
-					elif action[0] == 'BREAK_BOND':
-						if doForward:
-							bond = struct.getBond(atom1, atom2)
-							if bond is None: raise InvalidActionException('Attempted to remove a nonexistent bond.')
-							struct.removeBond(bond)
-						else:
-							bond = chem.Bond([atom1, atom2], info)
-							struct.addBond(bond)
+
+					elif (action[0] == 'BREAK_BOND' and doForward) or \
+						(action[0] == 'FORM_BOND' and not doForward):
+						if bond is None: raise InvalidActionException('Attempted to remove a nonexistent bond.')
+						# Break single bond
+						struct.removeBond(bond)
+						atom1.breakBond(struct.getBonds(atom1), unique)
+						atom2.breakBond(struct.getBonds(atom2), unique)
 
 				elif action[0] == 'LOSE_RADICAL' or action[0] == 'GAIN_RADICAL':
 
 					label, change = action[1:]
-					change = int(change)
+
 					# Find associated atoms
 					atom = struct.getLabeledAtom(label)
 					if atom is None:
 						raise Exception('Invalid atom labels found while attempting to execute reaction recipe.')
+					
+					change = int(change)
+					if change != 1:
+						raise InvalidActionException('Attempted to change the radical count of an atom by more than one at a time.')
 
-					# If found, adjust radical
-					for i in range(0, change):
-						if doForward:
-							if action[0] == 'LOSE_RADICAL':
-								if not atom.canDecreaseFreeElectron(): raise InvalidActionException('Attempted to decrease the number of free electrons below the minimum.')
-								atom.decreaseFreeElectron()
-							elif action[0] == 'GAIN_RADICAL':
-								if not atom.canIncreaseFreeElectron(): raise InvalidActionException('Attempted to increase the number of free electrons above the maximum.')
-								atom.increaseFreeElectron()
-						else:
-							if action[0] == 'LOSE_RADICAL':
-								if not atom.canIncreaseFreeElectron(): raise InvalidActionException('Attempted to increase the number of free electrons above the maximum.')
-								atom.increaseFreeElectron()
-							elif action[0] == 'GAIN_RADICAL':
-								if not atom.canDecreaseFreeElectron(): raise InvalidActionException('Attempted to decrease the number of free electrons below the minimum.')
-								atom.decreaseFreeElectron()
+					if (action[0] == 'GAIN_RADICAL' and doForward) or \
+						(action[0] == 'LOSE_RADICAL' and not doForward):
+						# Increment radical count
+						atom.increaseFreeElectron()
+					elif (action[0] == 'LOSE_RADICAL' and doForward) or \
+						(action[0] == 'GAIN_RADICAL' and not doForward):
+						# Decrement radical count
+						atom.decreaseFreeElectron()
 
 				else:
 					raise InvalidActionException('Unknown action "' + action[0] + '" encountered.')
@@ -1279,12 +1295,6 @@ class ReactionFamily(data.Database):
 			logging.error(message)
 			raise Exception(message)
 
-		# Recalculate atom types of product structures, since they may have
-		# changed as a result of the reaction
-		for struct in productStructures:
-			struct.simplifyAtomTypes()
-			struct.updateAtomTypes()
-
 		# Return the product structures
 		return productStructures
 
@@ -1306,7 +1316,15 @@ class ReactionFamily(data.Database):
 				reactantAtom.label = templateAtom.label
 
 		# Generate the product structures by applying the forward reaction recipe
-		productStructures = self.applyRecipe(reactantStructures)
+		try:
+			productStructures = self.applyRecipe(reactantStructures)
+		except chem.InvalidChemicalActionException, e:
+			print 'Unable to apply reaction recipe!'
+			print 'Reaction family is %s' % self
+			print 'Reactant structures are:'
+			for struct in reactantStructures:
+				print struct.toAdjacencyList()
+			raise e
 
 		# Check that reactant and product structures are allowed in this family
 		# If not, then stop
