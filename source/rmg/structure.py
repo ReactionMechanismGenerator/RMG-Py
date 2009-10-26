@@ -419,7 +419,19 @@ class Structure:
 
 		if label != '': adjlist += label + '\n'
 
+		def sortAtomsByConnectivity(atom1, atom2):
+			if atom1.connectivity[0] > atom2.connectivity[0]: return -1
+			elif atom1.connectivity[0] < atom2.connectivity[0]: return 1
+			elif atom1.connectivity[1] > atom2.connectivity[1]: return -1
+			elif atom1.connectivity[1] < atom2.connectivity[1]: return 1
+			elif atom1.connectivity[2] > atom2.connectivity[2]: return -1
+			elif atom1.connectivity[2] < atom2.connectivity[2]: return 1
+			else: return 0
+
+		# Sort the atoms by connectivity value, from lowest to highest
+		self.graph.setConnectivityValues()
 		atoms = self.atoms()
+		atoms.sort(sortAtomsByConnectivity)
 
 		for i, atom in enumerate(atoms):
 
@@ -449,7 +461,11 @@ class Structure:
 				adjlist += atom.electronState.label + ' '
 
 			# Bonds list
-			for atom2, bond in self.getBonds(atom).iteritems():
+			atoms2 = self.getBonds(atom).keys()
+			atoms2.sort(sortAtomsByConnectivity)
+
+			for atom2 in atoms2:
+				bond = self.getBond(atom, atom2)
 				adjlist += '{' + str(atoms.index(atom2)+1) + ','
 
 				# Bond type(s)
