@@ -1217,16 +1217,16 @@ class ReactionFamily(data.Database):
 		if label == 'unimolecular homolysis':
 			for atom in productStructure.atoms():
 				if atom.label == '*1' or atom.label == '*2': atom.label = '*'
-
+			
+		
 		# If reaction family is its own reverse, relabel atoms
 		if not self.reverse:
-
 			# Get atom labels for products
 			atomLabels = {}
 			for atom in productStructure.atoms():
 				if atom.label != '':
 					atomLabels[atom.label] = atom
-
+			
 			# This is hardcoding of reaction families (bad!)
 			label = self.label.lower()
 			if label == 'h abstraction':
@@ -1234,7 +1234,7 @@ class ReactionFamily(data.Database):
 				# it moves from '*1' to '*3'
 				atomLabels['*1'].label = '*3'
 				atomLabels['*3'].label = '*1'
-
+			
 			elif label == 'intra h migration':
 				# '*3' is the H that migrates
 				# swap the two ends between which the H moves
@@ -1246,19 +1246,19 @@ class ReactionFamily(data.Database):
 				if highest>4:
 					for i in range(4,highest+1):
 						atomLabels['*%d'%i].label = '*%d'%(4+highest-i)
-
-
+		
+		
 		# Split product structure into multiple species if necessary
 		if len(self.template.products) > 1:
 			productStructures = productStructure.split()
 		else:
 			productStructures = [productStructure]
-
+		
 		# Make sure we've made the expected number of products
 		if len(self.template.products) != len(productStructures):
 			# We have a different number of products than expected by the template.
 			# It might be because we found a ring-opening using a homolysis template
-			if (self.label=='Unimolecular homolysis'
+			if (label=='unimolecular homolysis'
 			 and len(productStructures) == 1
 			 and len(reactantStructures) == 1):
 				# just be absolutely sure (maybe slow, but safe)
@@ -1269,7 +1269,7 @@ class ReactionFamily(data.Database):
 					# so it's pretty safe to just fail quietly,
 					# and try the next reaction
 					return None
-
+			
 			# no other excuses, raise an exception
 			message = 'Application of reaction recipe failed; expected %s product(s), but %s found.\n' % (len(self.template.products), len(productStructures))
 			message += "Reaction family: %s \n"%str(self)
@@ -1278,16 +1278,16 @@ class ReactionFamily(data.Database):
 			message += "Template: %s"%self.template
 			logging.error(message)
 			raise Exception(message)
-
+		
 		# Recalculate atom types of product structures, since they may have
 		# changed as a result of the reaction
 		for struct in productStructures:
 			struct.simplifyAtomTypes()
 			struct.updateAtomTypes()
-
+		
 		# Return the product structures
 		return productStructures
-
+	
 	def makeReaction(self, reactants, reactantStructures, maps):
 		"""
 		Create a reaction involving a list of `reactants`. The `reactantStructures`
@@ -1296,18 +1296,20 @@ class ReactionFamily(data.Database):
 		mappings of the top-level tree node of each template reactant to the
 		corresponding structure.
 		"""
-
+		
 		# Clear any previous atom labeling from all reactant structures
 		for struct in reactantStructures: struct.clearLabeledAtoms()
-
+		
 		# Tag atoms with labels
 		for map in maps:
 			for templateAtom, reactantAtom in map.iteritems():
 				reactantAtom.label = templateAtom.label
-
+		
 		# Generate the product structures by applying the forward reaction recipe
 		productStructures = self.applyRecipe(reactantStructures)
-
+		if productStructures is None: # then we have no valid reaction
+			return None
+		
 		# Check that reactant and product structures are allowed in this family
 		# If not, then stop
 		if self.forbidden is not None:
@@ -1316,7 +1318,7 @@ class ReactionFamily(data.Database):
 					if struct.isSubgraphIsomorphic(struct2): return None
 				for struct in productStructures:
 					if struct.isSubgraphIsomorphic(struct2): return None
-
+		
 		# Convert structure(s) to products
 		products = []
 		for product in productStructures:
@@ -1330,7 +1332,7 @@ class ReactionFamily(data.Database):
 		rxn, isNew = makeNewReaction(reactants, products, reactantStructures, productStructures, self)
 		if isNew:	return rxn
 		else:		return None
-
+	
 	def getReactionList(self, reactants):
 		"""
 		Generate a list of all of the possible reactions of this family between
@@ -1350,10 +1352,10 @@ class ReactionFamily(data.Database):
 						rxn = self.makeReaction(reactants, [structure], [map])
 						if rxn is not None:
 							rxnList.append(rxn)
-
+			
 		# Bimolecular reactants: A + B --> products
 		elif len(reactants) == 2 and self.template.isBimolecular():
-
+			
 			# Make copies of the structure lists of the two reactants
 			# This is a workaround for an issue in which the two reactant
 			# structure lists were getting swapped around, resulting in
@@ -1364,15 +1366,15 @@ class ReactionFamily(data.Database):
 				structuresA.append(structureA.copy())
 			for structureB in reactants[1].structure:
 				structuresB.append(structureB.copy())
-
+			
 			# Iterate over all resonance isomers of the reactant
 			for structureA in structuresA:
 				for structureB in structuresB:
-
+				
 					# Reactants stored as A + B
 					ismatch_A, map21_A, map12_A = self.reactantMatch(structureA, self.template.reactants[0])
 					ismatch_B, map21_B, map12_B = self.reactantMatch(structureB, self.template.reactants[1])
-
+					
 					# Iterate over each pair of matches (A, B)
 					if ismatch_A and ismatch_B:
 						for mapA in map12_A:
@@ -1380,14 +1382,14 @@ class ReactionFamily(data.Database):
 								rxn = self.makeReaction(reactants, [structureA, structureB], [mapA, mapB])
 								if rxn is not None:
 									rxnList.append(rxn)
-
+									
 					# Only check for swapped reactants if they are different
 					if reactants[0].id != reactants[1].id:
-
+						
 						# Reactants stored as B + A
 						ismatch_A, map21_A, map12_A = self.reactantMatch(structureA, self.template.reactants[1])
 						ismatch_B, map21_B, map12_B = self.reactantMatch(structureB, self.template.reactants[0])
-
+						
 						# Iterate over each pair of matches (A, B)
 						if ismatch_A and ismatch_B:
 							for mapA in map12_A:
@@ -1395,9 +1397,9 @@ class ReactionFamily(data.Database):
 									rxn = self.makeReaction(reactants, [structureB, structureA], [mapB, mapA])
 									if rxn is not None:
 										rxnList.append(rxn)
-
+		
 		return rxnList
-
+	
 	def getKinetics(self, reaction, structures):
 		"""
 		Determine the appropriate kinetics for `reaction` which involves the
@@ -1477,13 +1479,13 @@ class ReactionFamily(data.Database):
 				
 			## If unable to match template, use the most general template
 			#template = forwardTemplate
-
-
+		
+		
 #		k = self.library.getData(template)
 #		print template, k
 #		if k is not None: return [k]
 #		else: return None
-
+		
 		
 		# climb the tree finding ancestors
 		nodeLists = []
@@ -1511,12 +1513,12 @@ class ReactionFamily(data.Database):
 				itemData = self.library.getData(item)
 				#logging.debug("   Also looking for %s found %r"%(item, itemData))
 				if itemData is not None:
-					kinetics.append(itemData)				
+					kinetics.append(itemData)
 					
 		if len(kinetics) == 0: return None
-
+		
 		return kinetics
-
+	
 ################################################################################
 
 class ReactionFamilySet:
@@ -1525,19 +1527,19 @@ class ReactionFamilySet:
 	dictionary of :class:`ReactionFamily` objects representing the families in
 	the set.
 	"""
-
+	
 	def __init__(self):
 		self.families = {}
-
+	
 	def load(self, datapath, only_families=False):
 		"""
 		Load a set of reaction families from the general database
 		specified at `datapath`. If only_families is present, families not in
 		this list will not be loaded (e.g. only_families=['H_Abstraction'] )
 		"""
-
+		
 		logging.debug('\tLoading reaction families:')
-
+		
 		# Load the families from kinetics/families.txt
 		familyList = []
 		try:
@@ -1556,7 +1558,7 @@ class ReactionFamilySet:
 			return
 		finally:
 			ffam.close()
-
+		
 		# Load the reaction families (if they exist and status is 'on')
 		self.families = {}
 		for index, status, label in familyList:
@@ -1571,7 +1573,7 @@ class ReactionFamilySet:
 				if family.reverse is not None:
 					self.families[family.reverse.label] = family.reverse
 					logging.debug('\t\t' + family.reverse.label)
-
+	
 	def getReactions(self, species):
 		"""
 		Generate a list of reactions that involve a list of one or two `species`
