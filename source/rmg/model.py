@@ -816,7 +816,7 @@ class BatchReactor(ReactionSystem):
 		for i, spec in enumerate(model.core.species):
 			if spec in self.initialConcentration:
 				Ni[i] = self.initialConcentration[spec] * V
-		
+		Ni0 = Ni
 		y = [P, V, T]; y.extend(Ni)
 		y0 = y
 
@@ -849,6 +849,7 @@ class BatchReactor(ReactionSystem):
 				solver.integrate(solver.t * 1.2589254117941673) # 10**0.1 so ten steps increases time 10-fold
 			P, V, T = solver.y[0:3]
 			Ni = solver.y[3:]
+			time = solver.t
 			
 			# Calculate species fluxes of all core and edge species at the
 			# current time
@@ -866,14 +867,19 @@ class BatchReactor(ReactionSystem):
 			criticalFlux = charFlux * model.fluxTolerance_interruptSimulation
 			valid, maxSpecies, maxSpeciesFlux = self.isModelValid(model, dNidt, criticalFlux)
 			
+			# invalid if core empty
+			if len(model.core.reactions)==0: 
+				logging.info("No reactions in core yet. Not running simulation.")
+				valid=False
+			
 			# Output information about simulation at current time
-			self.printSimulationStatus(model, solver.t, solver.y, y0, criticalFlux, maxSpeciesFlux, maxSpecies)
-			tlist.append(solver.t); ylist.append(solver.y)
-			dydtlist.append(self.getResidual(solver.t, solver.y, model, stoichiometry))
+			self.printSimulationStatus(model, time, solver.y, y0, criticalFlux, maxSpeciesFlux, maxSpecies)
+			tlist.append(time); ylist.append(solver.y)
+			dydtlist.append(self.getResidual(time, solver.y, model, stoichiometry))
 			
 			# Exit simulation if model is not valid (exceeds interruption criterion)
 			if not valid:
-				logging.info('At t = %s, an edge species flux exceeds the critical flux for simulation interruption' % (solver.t))
+				logging.info('At t = %s, an edge species flux exceeds the critical flux for simulation interruption' % (time))
 				logging.info('\tCharacteristic flux: %s' % (charFlux))
 				logging.info('\tCritical flux: %s (%s times charFlux)' % (criticalFlux, model.fluxTolerance_interruptSimulation))
 				logging.info('\tSpecies flux for %s: %s (%.2g times charFlux)' % (maxSpecies, maxSpeciesFlux, maxSpeciesFlux/charFlux))
@@ -892,7 +898,7 @@ class BatchReactor(ReactionSystem):
 					conversion = 1.0 - solver.y[index] / y0[index]
 					if conversion > target.conversion: done = True
 				elif target.__class__ == TerminationTime:
-					if solver.t > target.time: done = True
+					if time > target.time: done = True
 		
 		# Test for model validity once simulation complete
 		maxSpecies = None
