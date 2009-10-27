@@ -43,6 +43,8 @@ from scipy import linalg
 from scipy import optimize
 import cython
 
+import ctml_writer
+		
 ################################################################################
 
 class ThermoData:
@@ -368,7 +370,7 @@ class ThermoNASAPolynomial(ThermoData):
 		return self.getEnthalpy(T) - T * self.getEntropy(T)
 	
 	def toXML(self, dom, root):
-		
+		"""Append to xml `dom` at node `root`"""
 ### prime-like:
 #   <polynomial>
 #      <validRange>
@@ -384,6 +386,11 @@ class ThermoNASAPolynomial(ThermoData):
 #      <coefficient id="7" label="a7">4.4083</coefficient>
 #   </polynomial>
 		pass
+		
+	def toCantera(self):
+		"""Return a Cantera ctml_writer instance"""
+		return ctml_writer.NASA([self.Tmin,self.Tmax], [self.c0, self.c1, self.c2, self.c3, self.c4, self.c5, self.c6])
+		
 	
 	def integral2_T0(self, t):
 		#input: NASA parameters for Cp/R, c1, c2, c3, c4, c5 (either low or high temp parameters), temperature t (in kiloKelvin; an endpoint of the low or high temp range
@@ -443,6 +450,10 @@ class ThermoNASAData(ThermoData):
 #   <polynomial> FROM NASA_polynomials </polynomial>
 # </thermodynamicPolynomials>
 		pass
+	
+	def toCantera(self):
+		"""Return a Cantera ctml_writer instance"""
+		return tuple([poly.toCantera() for poly in self.polynomials])
 	
 	def getHeatCapacity(self, T):
 		"""

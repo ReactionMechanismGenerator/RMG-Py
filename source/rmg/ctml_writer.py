@@ -869,6 +869,10 @@ class reaction:
             self._kf = [self._kf]
             mdim += 1
             ldim -= 3
+        # 'falloff' reactions have a 2-tuple for self._kf
+        # 'stick' may have something else
+        if type(self._kf[0]) == types.ListType: # we've wrapped it too deep!
+            self._kf = self._kf[0]
 
         if self._type == 'edge':
             if self._beta > 0:

@@ -53,6 +53,8 @@ import structure
 import species
 from kinetics import *
 
+import ctml_writer
+
 ################################################################################
 
 class Reaction:
@@ -106,14 +108,31 @@ class Reaction:
 		"""
 		Return a string representation of the reaction.
 		"""
+		#string = ' + '.join([str(s) for s in self.reactants])
 		string = ''
 		for reactant in self.reactants:
 			string += str(reactant) + ' + '
-		string = string[0:-3] + ' <---> '
+		string = string[0:-3] + ' <=> '
 		for product in self.products:
 			string += str(product) + ' + '
 		string = string[0:-3]
 		return string
+	
+	def toCantera(self, T=1000):
+		"""Return a Cantera ctml_writer instance"""
+		#  Made up. Unimolecular rate constant 1/s 
+		#reaction(  "A <=> B",  [1.00000E+00, 0, 0])
+		rxnstring = ' + '.join([str(sp) for sp in self.reactants])
+		rxnstring += ' <=> '
+		rxnstring += ' + '.join([str(sp) for sp in self.products])
+		k = self.getBestKinetics(T)
+		A = k.A
+		Ea= k.Ea 
+		n = k.n 
+		#import pdb; pdb.set_trace()
+		return ctml_writer.reaction(rxnstring, ctml_writer.Arrhenius(A, n, Ea) )
+		
+	
 
 	def isUnimolecular(self):
 		"""
@@ -231,12 +250,12 @@ class Reaction:
 		Evans-Polyani ArrheniusEPKinetics are converted to ArrheniusKinetics 
 		using dHrxn(298K)
 		"""
-
+		
 		# Check cache first
 		if self.bestKinetics is not None:
 			if self.bestKinetics.isTemperatureInRange(T):
 				return self.bestKinetics
-
+		
 		# Check that self.kinetics is storing a list and not a single object
 		# If the latter, use that as the best kinetics without any other
 		# checking
@@ -262,12 +281,12 @@ class Reaction:
 #			kinetics = ArrheniusKinetics(A=0.0, Ea=0.0, n=0.0)
 #			kinetics.Trange = [0.0, 100000.0]
 #			return kinetics
-
+		
 		# If no kinetic parameters are left to choose from, ignore the
 		# temperature ranges
 		if len(kinetics) == 0:
 			kinetics = self.kinetics[:]
-
+		
 		# Choose kinetics based on rank (i.e. lowest non-zero rank)
 		bestRank = kinetics[0].rank
 		bestKinetics = kinetics[0]
@@ -284,7 +303,7 @@ class Reaction:
 			
 		self.bestKinetics = bestKinetics
 		return self.bestKinetics
-
+	
 	def getRateConstant(self, T):
 		"""
 		Return the value of the rate constant k(T) at the temperature `T`.
@@ -293,7 +312,7 @@ class Reaction:
 		if kinetics is None:
 			raise Exception('Unable to determine the rate constant of reaction ' + str(self) + '.')
 		return kinetics.getRateConstant(T)
-
+	
 	def getStoichiometricCoefficient(self, spec):
 		"""
 		Return the stoichiometric coefficient of species `spec` in the reaction.

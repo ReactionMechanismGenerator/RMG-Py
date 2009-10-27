@@ -41,6 +41,8 @@ import structure
 import thermo
 import os
 
+import ctml_writer
+
 ################################################################################
 
 class ThermoSnapshot:
@@ -162,7 +164,25 @@ class Species:
 		species ID is used.
 		"""
 		return self.id
-
+		
+	def __str__(self):
+		"""
+		Return a string representation of the species, in the form 'label(id)'.
+		"""
+		return self.label + '(' + str(self.id) + ')'
+		
+	def toCantera(self):
+		"""Return a Cantera ctml_writer instance"""
+		# contrivedly get a list like ['C', '3', 'H', '9', 'Si', '1']
+		atoms = self.structure[0].toOBMol().GetSpacedFormula().split()
+		# magically turn that lst into a string like 'C:3 H:9 Si:1'
+		atoms = ' '.join([i+':'+j for i,j in zip(*[iter(atoms)]*2)])
+		return ctml_writer.species(name = str(self),
+		    atoms = " %s "%atoms,
+		    thermo = self.thermoData.toCantera(),
+		    note = "%s (%s)"%(self.label,self.thermoData.comment)
+		       )
+		
 	def getFormula(self):
 		"""
 		Return the chemical formula for the species.
@@ -386,11 +406,7 @@ class Species:
 			maps21.extend(map21)
 		return (len(maps12) > 0), maps21, maps12
 
-	def __str__(self):
-		"""
-		Return a string representation of the species, in the form 'label(id)'.
-		"""
-		return self.label + '(' + str(self.id) + ')'
+
 
 ################################################################################
 

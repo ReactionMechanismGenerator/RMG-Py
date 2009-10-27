@@ -32,4 +32,10 @@
 This is the rmg module.
 """
 
+#import sys, os
+#newpath = os.path.normpath(os.path.join(os.path.split(os.path.abspath(__file__))[0],'../external'))
+#print "adding %s to path"%newpath
+#sys.path.append(newpath)
+#
+
 from main import *

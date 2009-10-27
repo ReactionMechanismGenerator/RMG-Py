@@ -42,6 +42,8 @@ import scipy.sparse
 import constants
 import reaction
 
+import ctml_writer
+
 ################################################################################
 
 class ReactionModel:
@@ -147,6 +149,9 @@ class CoreEdgeReactionModel:
 		# Add the species to the core
 		self.core.species.append(spec)
 		
+		# Add it to the cantera list
+		spec.toCantera()
+		
 		if spec in self.edge.species:
 			
 			# If species was in edge, remove it
@@ -197,6 +202,9 @@ class CoreEdgeReactionModel:
 		self.core.reactions.append(rxn)
 		if rxn in self.edge.reactions:
 			self.edge.reactions.remove(rxn)
+		
+		# add it to the Cantera list
+		rxn.toCantera()
 	
 	def addReactionToEdge(self, rxn):
 		"""
@@ -659,7 +667,28 @@ class BatchReactor(ReactionSystem):
 				 volumeModel=None, initialConcentration=None):
 		ReactionSystem.__init__(self, temperatureModel, pressureModel, \
 				volumeModel, initialConcentration)
+		
+		self.toCantera()
 
+	
+	def toCantera(self):
+		"""Creata a Cantera instance"""
+		ctml_writer.units(length = "m", time = "s", quantity = "mol", act_energy = "J/mol")
+		phase = ctml_writer.ideal_gas(name = "chem",
+		      elements = " C H O ",
+		      species = "all",
+		      reactions = "all",
+		      initial_state = ctml_writer.state(temperature = 1000 ,
+		                        pressure = 101325 )    )
+		def has_species(sp):
+			"""Return 1 is a species with name 's' belongs to the phase,
+			or 0 otherwise. Redefined because the ctml_writer one doesn't work for us"""
+			if sp in ctml_writer._speciesnames: return 1
+			return 0
+		phase.has_species = has_species
+		#self._cantera = phase  # if we save it, we have to pickle it, and we can't pickle the has_species function
+	
+	
 	def getResidual(self, t, y, model, stoichiometry):
 		"""
 		Return the residual function for this reactor model, evaluated at
@@ -780,6 +809,19 @@ class BatchReactor(ReactionSystem):
 		else:
 			return True, None, 0.0
 
+	def runCantera(self, model):
+		"""Write a cantera file"""
+		
+		# Write the cantera file
+		import os, constants
+		cti_file = os.path.join(constants.scratchDirectory,'cantera_input_%03d'%len(model.core.species) )
+		logging.debug("Writing CTML file %s"%cti_file)
+		ctml_writer.dataset(cti_file) # change name
+		ctml_writer.validate()
+		ctml_writer.write()
+		
+		
+
 	def simulate(self, model):
 		"""
 		Conduct a simulation of the current reaction system using the core-edge
@@ -801,6 +843,10 @@ class BatchReactor(ReactionSystem):
 		Returns:
 		(tlist, ylist, dydtlist, valid?, Edge_species_with_highest_flux)
 		"""
+		
+		# try writing cantera file
+		self.runCantera(model)
+		
 		# Assemble stoichiometry matrix for all core and edge species
 		# Rows are species (core, then edge); columns are reactions (core, then edge)
 		stoichiometry = model.getStoichiometryMatrix()
