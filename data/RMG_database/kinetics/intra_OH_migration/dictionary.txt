@@ -23,23 +23,23 @@ ROOH
 4 H 0 {3,S}
 
 R2OOH
-1 *1 {Cd,Cs} 1 {2,{S,D}} 
-2 *4 {Cd,Cs} 0 {1,{S,D}}, {3,S} 
+1 *1 {Cd,Cs} 1 {2,{S,D}}
+2 *4 {Cd,Cs} 0 {1,{S,D}}, {3,S}
 3 *2 O 0 {2,S}, {4,S}
 4 *3 O 0 {3,S}, {5,S}
 5 H 0 {4,S}
 
 R3OOH
-1 *1 {Cd,Cs} 1 {2,{S,D}} 
-2 *4 {Cd,Cs} 0 {1,{S,D}}, {3,{S,D}} 
+1 *1 {Cd,Cs} 1 {2,{S,D}}
+2 *4 {Cd,Cs} 0 {1,{S,D}}, {3,{S,D}}
 3 *5 {Cd,Cs} 0 {2,{S,D}}, {4,S}
 4 *2 O 0 {3,S}, {5,S}
 5 *3 O 0 {4,S}, {6,S}
 6 H 0 {5,S}
 
 R4OOH
-1 *1 {Cd,Cs} 1 {2,{S,D}} 
-2 *4 {Cd,Cs} 0 {1,{S,D}}, {3,{S,D}} 
+1 *1 {Cd,Cs} 1 {2,{S,D}}
+2 *4 {Cd,Cs} 0 {1,{S,D}}, {3,{S,D}}
 3 *5 {Cd,Cs} 0 {2,{S,D}}, {4,{S,D}}
 4 *6 {Cd,Cs} 0 {3,{S,D}}, {5,S}
 5 *2 O 0 {4,S}, {6,S}
@@ -47,7 +47,7 @@ R4OOH
 7 H 0 {6,S}
 
 Y_rad_out
-1 *1 {Cd,Cs} 1 
+1 *1 {Cd,Cs} 1
 
 // Top level nodes for reverse reaction
 
@@ -62,14 +62,14 @@ HORO.
 
 HOR2O.
 1 *1 {Cd,Cs} 0 {2,{S,D}} {4,S}
-2 *4 {Cd,Cs} 0 {1,{S,D}}, {3,S} 
+2 *4 {Cd,Cs} 0 {1,{S,D}}, {3,S}
 3 *2 O 1 {2,S}
 4 *3 O 0 {5,S} {1,S}
 5    H 0 {4,S}
 
 HOR3O.
 1 *1 {Cd,Cs} 0 {2,{S,D}} {5,S}
-2 *4 {Cd,Cs} 0 {1,{S,D}}, {3,{S,D}} 
+2 *4 {Cd,Cs} 0 {1,{S,D}}, {3,{S,D}}
 3 *5 {Cd,Cs} 0 {2,{S,D}}, {4,S}
 4 *2 O 1 {3,S}
 5 *3 O 0 {6,S} {1,S}
@@ -77,7 +77,7 @@ HOR3O.
 
 HOR4O.
 1 *1 {Cd,Cs} 0 {2,{S,D}} {6,S}
-2 *4 {Cd,Cs} 0 {1,{S,D}}, {3,{S,D}} 
+2 *4 {Cd,Cs} 0 {1,{S,D}}, {3,{S,D}}
 3 *5 {Cd,Cs} 0 {2,{S,D}}, {4,{S,D}}
 4 *6 {Cd,Cs} 0 {3,{S,D}}, {5,S}
 5 *2 O 1 {4,S}
@@ -87,46 +87,46 @@ HOR4O.
 // Other nodes
 
 R2OOH_S
-1 *1 {Cd,Cs} 1 {2,S} 
-2 *4 {Cd,Cs} 0 {1,S}, {3,S} 
+1 *1 {Cd,Cs} 1 {2,S}
+2 *4 {Cd,Cs} 0 {1,S}, {3,S}
 3 *2 O 0 {2,S}, {4,S}
 4 *3 O 0 {3,S}, {5,S}
 5 H 0 {4,S}
 
 R2OOH_D
-1 *1 Cd 1 {2,D} 
-2 *4 {Cd,Cs} 0 {1,D}, {3,S} 
+1 *1 Cd 1 {2,D}
+2 *4 {Cd,Cs} 0 {1,D}, {3,S}
 3 *2 O 0 {2,S}, {4,S}
 4 *3 O 0 {3,S}, {5,S}
 5 H 0 {4,S}
 
 R3OOH_SS
-1 *1 {Cd,Cs} 1 {2,S} 
-2 *4 {Cd,Cs} 0 {1,S}, {3,S} 
+1 *1 {Cd,Cs} 1 {2,S}
+2 *4 {Cd,Cs} 0 {1,S}, {3,S}
 3 {Cd,Cs} 0 {2,S}, {4,S}
 4 *2 O 0 {3,S}, {5,S}
 5 *3 O 0 {4,S}, {6,S}
 6 H 0 {5,S}
 
 R3OOH_SD
-1 *1 {Cd,Cs} 1 {2,S} 
-2 *4 Cd 0 {1,S}, {3,D} 
+1 *1 {Cd,Cs} 1 {2,S}
+2 *4 Cd 0 {1,S}, {3,D}
 3 Cd 0 {2,D}, {4,S}
 4 *2 O 0 {3,S}, {5,S}
 5 *3 O 0 {4,S}, {6,S}
 6. H 0 {5,S}
 
 R3OOH_DS
-1 *1 Cd 1 {2,D} 
-2 *4 Cd 0 {1,D}, {3,S} 
+1 *1 Cd 1 {2,D}
+2 *4 Cd 0 {1,D}, {3,S}
 3 {Cd,Cs} 0 {2,S}, {4,S}
 4 *2 O 0 {3,S}, {5,S}
 5 *3 O 0 {4,S}, {6,S}
 6 H 0 {5,S}
 
 R4OOH_SSS
-1 *1 {Cd,Cs} 1 {2,S} 
-2 *4 {Cd,Cs} 0 {1,S}, {3,S} 
+1 *1 {Cd,Cs} 1 {2,S}
+2 *4 {Cd,Cs} 0 {1,S}, {3,S}
 3 {Cd,Cs} 0 {2,S}, {4,S}
 4 {Cd,Cs} 0 {3,S}, {5,S}
 5 *2 O 0 {4,S}, {6,S}
@@ -134,8 +134,8 @@ R4OOH_SSS
 7 H 0 {6,S}
 
 R4OOH_SSD
-1 *1 {Cd,Cs} 1 {2,S} 
-2 *4 {Cd,Cs} 0 {1,S}, {3,S} 
+1 *1 {Cd,Cs} 1 {2,S}
+2 *4 {Cd,Cs} 0 {1,S}, {3,S}
 3 Cd 0 {2,S}, {4,D}
 4 Cd 0 {3,D}, {5,S}
 5 *2 O 0 {4,S}, {6,S}
@@ -143,8 +143,8 @@ R4OOH_SSD
 7 H 0 {6,S}
 
 R4OOH_SDS
-1 *1 {Cd,Cs} 1 {2,S} 
-2 *4 Cd 0 {1,S}, {3,D} 
+1 *1 {Cd,Cs} 1 {2,S}
+2 *4 Cd 0 {1,S}, {3,D}
 3 Cd 0 {2,D}, {4,S}
 4 {Cd,Cs} 0 {3,S}, {5,S}
 5 *2 O 0 {4,S}, {6,S}
@@ -152,8 +152,8 @@ R4OOH_SDS
 7 H 0 {6,S}
 
 R4OOH_DSS
-1 *1 Cd 1 {2,D} 
-2 *4 Cd 0 {1,D}, {3,S} 
+1 *1 Cd 1 {2,D}
+2 *4 Cd 0 {1,D}, {3,S}
 3 {Cd,Cs} 0 {2,S}, {4,S}
 4 {Cd,Cs} 0 {3,S}, {5,S}
 5 *2 O 0 {4,S}, {6,S}
@@ -161,8 +161,8 @@ R4OOH_DSS
 7 H 0 {6,S}
 
 R4OOH_DSD
-1 *1 Cd 1 {2,D} 
-2 *4 Cd 0 {1,D}, {3,S} 
+1 *1 Cd 1 {2,D}
+2 *4 Cd 0 {1,D}, {3,S}
 3 Cd 0 {2,S}, {4,D}
 4 Cd 0 {3,D}, {5,S}
 5 *2 O 0 {4,S}, {6,S}
@@ -197,7 +197,7 @@ C_rad_out_H/NonDeO
 C_rad_out_H/OneDe
 1 *1 C 1 {2,S}, {3,S}
 2 H 0 {1,S}
-3 {Cd,Ct,Cb,CO} 0 {1,S}
+3 {Cd,Ct,Cb} 0 {1,S}
 
 C_rad_out_noH
 1 *1 C 1 {2,S}, {3,S}
@@ -221,23 +221,23 @@ C_rad_out_NDMustO
 
 C_rad_out_OneDe
 1 *1 C 1 {2,S}, {3,S}
-2 {Cd,Ct,Cb,CO} 0 {1,S}
+2 {Cd,Ct,Cb} 0 {1,S}
 3 {Cs,O} 0 {1,S}
 
 C_rad_out_OneDe/Cs
 1 *1 C 1 {2,S}, {3,S}
-2 {Cd,Ct,Cb,CO} 0 {1,S}
+2 {Cd,Ct,Cb} 0 {1,S}
 3 Cs 0 {1,S}
 
 C_rad_out_OneDe/O
 1 *1 C 1 {2,S}, {3,S}
-2 {Cd,Ct,Cb,CO} 0 {1,S}
+2 {Cd,Ct,Cb} 0 {1,S}
 3 O 0 {1,S}
 
 C_rad_out_TwoDe
 1 *1 C 1 {2,S}, {3,S}
-2 {Cd,Ct,Cb,CO} 0 {1,S}
-3 {Cd,Ct,Cb,CO} 0 {1,S}
+2 {Cd,Ct,Cb} 0 {1,S}
+3 {Cd,Ct,Cb} 0 {1,S}
 
 Cd_rad_out
 1 *1 Cd 1 {2,D}
@@ -257,7 +257,7 @@ CdsingleND_rad_out
 
 CdsingleDe_rad_out
 1 *1 Cd 1 {2,S}
-2 {Cd,Ct,Cb,CO} 0 {1,S}
+2 {Cd,Ct,Cb} 0 {1,S}
 
 
 

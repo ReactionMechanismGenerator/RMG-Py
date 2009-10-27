@@ -10,36 +10,36 @@ Cs(RRRR) //"zeroary" (methane, or bonded to all non-Cs atoms)
 Cs(CsRRR) //P(P)
 1  * Cs 0 {2,S} {3,S} {4,S} {5,S}
 2    Cs 0 {1,S}
-3    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {1,S}
-4    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {1,S}
-5    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {1,S}
+3 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {1,S}
+4 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {1,S}
+5 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {1,S}
 
 Cs(Cs(CsRR)RRR) //P(S)
 1  * Cs 0 {2,S} {3,S} {4,S} {5,S}
 2    Cs 0 {1,S} {6,S} {7,S} {8,S}
-3    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {1,S}
-4    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {1,S}
-5    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {1,S}
+3 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {1,S}
+4 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {1,S}
+5 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {1,S}
 6    Cs 0 {2,S}
-7    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {2,S}
-8    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {2,S}
+7 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {2,S}
+8 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {2,S}
 
 Cs(Cs(CsCsR)RRR) //P(T)
 1  * Cs 0 {2,S} {3,S} {4,S} {5,S}
 2    Cs 0 {1,S} {6,S} {7,S} {8,S}
-3    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {1,S}
-4    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {1,S}
-5    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {1,S}
+3 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {1,S}
+4 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {1,S}
+5 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {1,S}
 6    Cs 0 {2,S}
 7    Cs 0 {2,S}
-8    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {2,S}
+8 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {2,S}
 
 Cs(Cs(CsCsCs)RRR) //P(Q)
 1  * Cs 0 {2,S} {3,S} {4,S} {5,S}
 2    Cs 0 {1,S} {6,S} {7,S} {8,S}
-3    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {1,S}
-4    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {1,S}
-5    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {1,S}
+3 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {1,S}
+4 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {1,S}
+5 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {1,S}
 6    Cs 0 {2,S}
 7    Cs 0 {2,S}
 8    Cs 0 {2,S}
@@ -48,119 +48,119 @@ Cs(CsCsRR) //S(PP)
 1  * Cs 0 {2,S} {3,S} {4,S} {5,S}
 2    Cs 0 {1,S}
 3    Cs 0 {1,S}
-4    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {1,S}
-5    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {1,S}
+4 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {1,S}
+5 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {1,S}
 
 Cs(Cs(CsRR)CsRR)   //S(SP)
 1  * Cs 0 {2,S} {3,S} {4,S} {5,S}
 2    Cs 0 {1,S} {6,S} {7,S} {8,S}
 3    Cs 0 {1,S} {9,S} {10,S} {11,S}
-4    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {1,S}
-5    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {1,S}
+4 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {1,S}
+5 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {1,S}
 6    Cs 0 {2,S}
-7    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {2,S}
-8    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {2,S}
-9    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
-10   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
-11   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
+7 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {2,S}
+8 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {2,S}
+9 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
+10 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
+11 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
 
 Cs(Cs(CsRR)Cs(CsRR)RR) //S(SS)
 1  * Cs 0 {2,S} {3,S} {4,S} {5,S}
 2    Cs 0 {1,S} {6,S} {7,S} {8,S}
 3    Cs 0 {1,S} {9,S} {10,S} {11,S}
-4    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {1,S}
-5    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {1,S}
+4 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {1,S}
+5 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {1,S}
 6    Cs 0 {2,S}
-7    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {2,S}
-8    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {2,S}
+7 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {2,S}
+8 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {2,S}
 9    Cs 0 {3,S}
-10   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
-11   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
+10 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
+11 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
 
 Cs(Cs(CsCsR)CsRR) //S(TP)
 1  * Cs 0 {2,S} {3,S} {4,S} {5,S}
 2    Cs 0 {1,S} {6,S} {7,S} {8,S}
 3    Cs 0 {1,S} {9,S} {10,S} {11,S}
-4    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {1,S}
-5    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {1,S}
+4 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {1,S}
+5 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {1,S}
 6    Cs 0 {2,S}
 7    Cs 0 {2,S}
-8    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {2,S}
-9    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
-10   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
-11   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
+8 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {2,S}
+9 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
+10 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
+11 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
 
 Cs(Cs(CsCsR)Cs(CsRR)RR) //S(TS)
 1  * Cs 0 {2,S} {3,S} {4,S} {5,S}
 2    Cs 0 {1,S} {6,S} {7,S} {8,S}
 3    Cs 0 {1,S} {9,S} {10,S} {11,S}
-4    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {1,S}
-5    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {1,S}
+4 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {1,S}
+5 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {1,S}
 6    Cs 0 {2,S}
 7    Cs 0 {2,S}
-8    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {2,S}
+8 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {2,S}
 9    Cs 0 {3,S}
-10   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
-11   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
+10 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
+11 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
 
 Cs(Cs(CsCsR)Cs(CsCsR)RR) //S(TT)
 1  * Cs 0 {2,S} {3,S} {4,S} {5,S}
 2    Cs 0 {1,S} {6,S} {7,S} {8,S}
 3    Cs 0 {1,S} {9,S} {10,S} {11,S}
-4    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {1,S}
-5    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {1,S}
+4 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {1,S}
+5 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {1,S}
 6    Cs 0 {2,S}
 7    Cs 0 {2,S}
-8    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {2,S}
+8 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {2,S}
 9    Cs 0 {3,S}
 10   Cs 0 {3,S}
-11   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
+11 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
 
 Cs(Cs(CsCsCs)CsRR) //S(QP)
 1  * Cs 0 {2,S} {3,S} {4,S} {5,S}
 2    Cs 0 {1,S} {6,S} {7,S} {8,S}
 3    Cs 0 {1,S} {9,S} {10,S} {11,S}
-4    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {1,S}
-5    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {1,S}
+4 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {1,S}
+5 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {1,S}
 6    Cs 0 {2,S}
 7    Cs 0 {2,S}
 8    Cs 0 {2,S}
-9    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
-10   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
-11   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
+9 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
+10 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
+11 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
 
 Cs(Cs(CsCsCs)Cs(CsRR)RR) //S(QS)
 1  * Cs 0 {2,S} {3,S} {4,S} {5,S}
 2    Cs 0 {1,S} {6,S} {7,S} {8,S}
 3    Cs 0 {1,S} {9,S} {10,S} {11,S}
-4    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {1,S}
-5    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {1,S}
+4 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {1,S}
+5 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {1,S}
 6    Cs 0 {2,S}
 7    Cs 0 {2,S}
 8    Cs 0 {2,S}
 9    Cs 0 {3,S}
-10   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
-11   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
+10 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
+11 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
 
 Cs(Cs(CsCsCs)Cs(CsCsR)RR) //S(QT)
 1  * Cs 0 {2,S} {3,S} {4,S} {5,S}
 2    Cs 0 {1,S} {6,S} {7,S} {8,S}
 3    Cs 0 {1,S} {9,S} {10,S} {11,S}
-4    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {1,S}
-5    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {1,S}
+4 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {1,S}
+5 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {1,S}
 6    Cs 0 {2,S}
 7    Cs 0 {2,S}
 8    Cs 0 {2,S}
 9    Cs 0 {3,S}
 10   Cs 0 {3,S}
-11   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
+11 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
 
 Cs(Cs(CsCsCs)Cs(CsCsCs)RR) //S(QQ)
 1  * Cs 0 {2,S} {3,S} {4,S} {5,S}
 2    Cs 0 {1,S} {6,S} {7,S} {8,S}
 3    Cs 0 {1,S} {9,S} {10,S} {11,S}
-4    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {1,S}
-5    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {1,S}
+4 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {1,S}
+5 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {1,S}
 6    Cs 0 {2,S}
 7    Cs 0 {2,S}
 8    Cs 0 {2,S}
@@ -170,273 +170,273 @@ Cs(Cs(CsCsCs)Cs(CsCsCs)RR) //S(QQ)
 
 Cs(CsCsCsR) //T(PPP)
 1  * Cs 0 {2,S} {3,S} {4,S} {5,S}
-2    Cs 0 {1,S} 
+2    Cs 0 {1,S}
 3    Cs 0 {1,S}
-4    Cs 0 {1,S} 
-5    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {1,S}
+4    Cs 0 {1,S}
+5 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {1,S}
 
 Cs(Cs(CsRR)CsCsR) //T(SPP)
 1  * Cs 0 {2,S} {3,S} {4,S} {5,S}
 2    Cs 0 {1,S} {6,S} {7,S} {8,S}
 3    Cs 0 {1,S} {9,S} {10,S} {11,S}
 4    Cs 0 {1,S} {12,S} {13,S} {14,S}
-5    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {1,S}
+5 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {1,S}
 6    Cs 0 {2,S}
-7    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {2,S}
-8    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {2,S}
-9    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
-10   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
-11   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
-12   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-13   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-14   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
+7 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {2,S}
+8 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {2,S}
+9 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
+10 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
+11 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
+12 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+13 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+14 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
 
 Cs(Cs(CsRR)Cs(CsRR)CsR) //T(SSP)
 1  * Cs 0 {2,S} {3,S} {4,S} {5,S}
 2    Cs 0 {1,S} {6,S} {7,S} {8,S}
 3    Cs 0 {1,S} {9,S} {10,S} {11,S}
 4    Cs 0 {1,S} {12,S} {13,S} {14,S}
-5    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {1,S}
+5 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {1,S}
 6    Cs 0 {2,S}
-7    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {2,S}
-8    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {2,S}
+7 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {2,S}
+8 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {2,S}
 9    Cs 0 {3,S}
-10   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
-11   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
-12   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-13   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-14   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
+10 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
+11 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
+12 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+13 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+14 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
 
 Cs(Cs(CsRR)Cs(CsRR)Cs(CsRR)R) //T(SSS)
 1  * Cs 0 {2,S} {3,S} {4,S} {5,S}
 2    Cs 0 {1,S} {6,S} {7,S} {8,S}
 3    Cs 0 {1,S} {9,S} {10,S} {11,S}
 4    Cs 0 {1,S} {12,S} {13,S} {14,S}
-5    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {1,S}
+5 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {1,S}
 6    Cs 0 {2,S}
-7    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {2,S}
-8    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {2,S}
+7 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {2,S}
+8 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {2,S}
 9    Cs 0 {3,S}
-10   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
-11   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
+10 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
+11 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
 12   Cs 0 {4,S}
-13   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-14   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
+13 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+14 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
 
 Cs(Cs(CsCsR)CsCsR) //T(TPP)
 1  * Cs 0 {2,S} {3,S} {4,S} {5,S}
 2    Cs 0 {1,S} {6,S} {7,S} {8,S}
 3    Cs 0 {1,S} {9,S} {10,S} {11,S}
 4    Cs 0 {1,S} {12,S} {13,S} {14,S}
-5    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {1,S}
+5 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {1,S}
 6    Cs 0 {2,S}
 7    Cs 0 {2,S}
-8    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {2,S}
-9    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
-10   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
-11   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
-12   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-13   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-14   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
+8 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {2,S}
+9 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
+10 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
+11 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
+12 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+13 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+14 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
 
 Cs(Cs(CsCsR)Cs(CsRR)CsR) //T(TSP)
 1  * Cs 0 {2,S} {3,S} {4,S} {5,S}
 2    Cs 0 {1,S} {6,S} {7,S} {8,S}
 3    Cs 0 {1,S} {9,S} {10,S} {11,S}
 4    Cs 0 {1,S} {12,S} {13,S} {14,S}
-5    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {1,S}
+5 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {1,S}
 6    Cs 0 {2,S}
 7    Cs 0 {2,S}
-8    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {2,S}
+8 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {2,S}
 9    Cs 0 {3,S}
-10   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
-11   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
-12   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-13   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-14   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
+10 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
+11 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
+12 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+13 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+14 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
 
 Cs(Cs(CsCsR)Cs(CsRR)Cs(CsRR)R) //T(TSS)
 1  * Cs 0 {2,S} {3,S} {4,S} {5,S}
 2    Cs 0 {1,S} {6,S} {7,S} {8,S}
 3    Cs 0 {1,S} {9,S} {10,S} {11,S}
 4    Cs 0 {1,S} {12,S} {13,S} {14,S}
-5    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {1,S}
+5 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {1,S}
 6    Cs 0 {2,S}
 7    Cs 0 {2,S}
-8    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {2,S}
+8 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {2,S}
 9    Cs 0 {3,S}
-10   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
-11   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
+10 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
+11 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
 12   Cs 0 {4,S}
-13   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-14   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
+13 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+14 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
 
 Cs(Cs(CsCsR)Cs(CsCsR)CsR) //T(TTP)
 1  * Cs 0 {2,S} {3,S} {4,S} {5,S}
 2    Cs 0 {1,S} {6,S} {7,S} {8,S}
 3    Cs 0 {1,S} {9,S} {10,S} {11,S}
 4    Cs 0 {1,S} {12,S} {13,S} {14,S}
-5    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {1,S}
+5 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {1,S}
 6    Cs 0 {2,S}
 7    Cs 0 {2,S}
-8    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {2,S}
+8 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {2,S}
 9    Cs 0 {3,S}
 10   Cs 0 {3,S}
-11   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
-12   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-13   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-14   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
+11 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
+12 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+13 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+14 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
 
 Cs(Cs(CsCsR)Cs(CsCsR)Cs(CsRR)R) //T(TTS)
 1  * Cs 0 {2,S} {3,S} {4,S} {5,S}
 2    Cs 0 {1,S} {6,S} {7,S} {8,S}
 3    Cs 0 {1,S} {9,S} {10,S} {11,S}
 4    Cs 0 {1,S} {12,S} {13,S} {14,S}
-5    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {1,S}
+5 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {1,S}
 6    Cs 0 {2,S}
 7    Cs 0 {2,S}
-8    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {2,S}
+8 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {2,S}
 9    Cs 0 {3,S}
 10   Cs 0 {3,S}
-11   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
+11 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
 12   Cs 0 {4,S}
-13   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-14   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
+13 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+14 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
 
 Cs(Cs(CsCsR)Cs(CsCsR)Cs(CsCsR)R) //T(TTT)
 1  * Cs 0 {2,S} {3,S} {4,S} {5,S}
 2    Cs 0 {1,S} {6,S} {7,S} {8,S}
 3    Cs 0 {1,S} {9,S} {10,S} {11,S}
 4    Cs 0 {1,S} {12,S} {13,S} {14,S}
-5    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {1,S}
+5 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {1,S}
 6    Cs 0 {2,S}
 7    Cs 0 {2,S}
-8    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {2,S}
+8 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {2,S}
 9    Cs 0 {3,S}
 10   Cs 0 {3,S}
-11   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
+11 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
 12   Cs 0 {4,S}
 13   Cs 0 {4,S}
-14   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-              
+14 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+
 Cs(Cs(CsCsCs)CsCsR) //T(QPP)
 1  * Cs 0 {2,S} {3,S} {4,S} {5,S}
 2    Cs 0 {1,S} {6,S} {7,S} {8,S}
 3    Cs 0 {1,S} {9,S} {10,S} {11,S}
 4    Cs 0 {1,S} {12,S} {13,S} {14,S}
-5    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {1,S}
+5 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {1,S}
 6    Cs 0 {2,S}
 7    Cs 0 {2,S}
 8    Cs 0 {2,S}
-9    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
-10   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
-11   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
-12   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-13   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-14   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
+9 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
+10 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
+11 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
+12 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+13 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+14 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
 
 Cs(Cs(CsCsCs)Cs(CsRR)CsR) //T(QSP)
 1  * Cs 0 {2,S} {3,S} {4,S} {5,S}
 2    Cs 0 {1,S} {6,S} {7,S} {8,S}
 3    Cs 0 {1,S} {9,S} {10,S} {11,S}
 4    Cs 0 {1,S} {12,S} {13,S} {14,S}
-5    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {1,S}
+5 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {1,S}
 6    Cs 0 {2,S}
 7    Cs 0 {2,S}
 8    Cs 0 {2,S}
 9    Cs 0 {3,S}
-10   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
-11   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
-12   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-13   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-14   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
+10 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
+11 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
+12 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+13 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+14 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
 
 Cs(Cs(CsCsCs)Cs(CsRR)Cs(CsRR)R) //T(QSS)
 1  * Cs 0 {2,S} {3,S} {4,S} {5,S}
 2    Cs 0 {1,S} {6,S} {7,S} {8,S}
 3    Cs 0 {1,S} {9,S} {10,S} {11,S}
 4    Cs 0 {1,S} {12,S} {13,S} {14,S}
-5    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {1,S}
+5 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {1,S}
 6    Cs 0 {2,S}
 7    Cs 0 {2,S}
 8    Cs 0 {2,S}
 9    Cs 0 {3,S}
-10   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
-11   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
+10 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
+11 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
 12   Cs 0 {4,S}
-13   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-14   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
+13 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+14 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
 
 Cs(Cs(CsCsCs)Cs(CsCsR)CsR) //T(QTP)
 1  * Cs 0 {2,S} {3,S} {4,S} {5,S}
 2    Cs 0 {1,S} {6,S} {7,S} {8,S}
 3    Cs 0 {1,S} {9,S} {10,S} {11,S}
 4    Cs 0 {1,S} {12,S} {13,S} {14,S}
-5    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {1,S}
+5 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {1,S}
 6    Cs 0 {2,S}
 7    Cs 0 {2,S}
 8    Cs 0 {2,S}
 9    Cs 0 {3,S}
 10   Cs 0 {3,S}
-11   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
-12   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-13   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-14   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
+11 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
+12 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+13 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+14 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
 
 Cs(Cs(CsCsCs)Cs(CsCsR)Cs(CsRR)R) //T(QTS)
 1  * Cs 0 {2,S} {3,S} {4,S} {5,S}
 2    Cs 0 {1,S} {6,S} {7,S} {8,S}
 3    Cs 0 {1,S} {9,S} {10,S} {11,S}
 4    Cs 0 {1,S} {12,S} {13,S} {14,S}
-5    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {1,S}
+5 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {1,S}
 6    Cs 0 {2,S}
 7    Cs 0 {2,S}
 8    Cs 0 {2,S}
 9    Cs 0 {3,S}
 10   Cs 0 {3,S}
-11   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
+11 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
 12   Cs 0 {4,S}
-13   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-14   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
+13 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+14 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
 
 Cs(Cs(CsCsCs)Cs(CsCsR)Cs(CsCsR)R) //T(QTT)
 1  * Cs 0 {2,S} {3,S} {4,S} {5,S}
 2    Cs 0 {1,S} {6,S} {7,S} {8,S}
 3    Cs 0 {1,S} {9,S} {10,S} {11,S}
 4    Cs 0 {1,S} {12,S} {13,S} {14,S}
-5    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {1,S}
+5 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {1,S}
 6    Cs 0 {2,S}
 7    Cs 0 {2,S}
 8    Cs 0 {2,S}
 9    Cs 0 {3,S}
 10   Cs 0 {3,S}
-11   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
+11 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
 12   Cs 0 {4,S}
 13   Cs 0 {4,S}
-14   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
+14 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
 
 Cs(Cs(CsCsCs)Cs(CsCsCs)CsR) //T(QQP)
 1  * Cs 0 {2,S} {3,S} {4,S} {5,S}
 2    Cs 0 {1,S} {6,S} {7,S} {8,S}
 3    Cs 0 {1,S} {9,S} {10,S} {11,S}
 4    Cs 0 {1,S} {12,S} {13,S} {14,S}
-5    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {1,S}
+5 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {1,S}
 6    Cs 0 {2,S}
 7    Cs 0 {2,S}
 8    Cs 0 {2,S}
 9    Cs 0 {3,S}
 10   Cs 0 {3,S}
 11   Cs 0 {3,S}
-12   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-13   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-14   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
+12 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+13 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+14 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
 
 Cs(Cs(CsCsCs)Cs(CsCsCs)Cs(CsRR)R) //T(QQS)
 1  * Cs 0 {2,S} {3,S} {4,S} {5,S}
 2    Cs 0 {1,S} {6,S} {7,S} {8,S}
 3    Cs 0 {1,S} {9,S} {10,S} {11,S}
 4    Cs 0 {1,S} {12,S} {13,S} {14,S}
-5    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {1,S}
+5 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {1,S}
 6    Cs 0 {2,S}
 7    Cs 0 {2,S}
 8    Cs 0 {2,S}
@@ -444,15 +444,15 @@ Cs(Cs(CsCsCs)Cs(CsCsCs)Cs(CsRR)R) //T(QQS)
 10   Cs 0 {3,S}
 11   Cs 0 {3,S}
 12   Cs 0 {4,S}
-13   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-14   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
+13 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+14 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
 
 Cs(Cs(CsCsCs)Cs(CsCsCs)Cs(CsCsR)R) //T(QQT)
 1  * Cs 0 {2,S} {3,S} {4,S} {5,S}
 2    Cs 0 {1,S} {6,S} {7,S} {8,S}
 3    Cs 0 {1,S} {9,S} {10,S} {11,S}
 4    Cs 0 {1,S} {12,S} {13,S} {14,S}
-5    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {1,S}
+5 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {1,S}
 6    Cs 0 {2,S}
 7    Cs 0 {2,S}
 8    Cs 0 {2,S}
@@ -461,14 +461,14 @@ Cs(Cs(CsCsCs)Cs(CsCsCs)Cs(CsCsR)R) //T(QQT)
 11   Cs 0 {3,S}
 12   Cs 0 {4,S}
 13   Cs 0 {4,S}
-14   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
+14 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
 
 Cs(Cs(CsCsCs)Cs(CsCsCs)Cs(CsCsCs)R) //T(QQQ)
 1  * Cs 0 {2,S} {3,S} {4,S} {5,S}
 2    Cs 0 {1,S} {6,S} {7,S} {8,S}
 3    Cs 0 {1,S} {9,S} {10,S} {11,S}
 4    Cs 0 {1,S} {12,S} {13,S} {14,S}
-5    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {1,S}
+5 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {1,S}
 6    Cs 0 {2,S}
 7    Cs 0 {2,S}
 8    Cs 0 {2,S}
@@ -478,12 +478,12 @@ Cs(Cs(CsCsCs)Cs(CsCsCs)Cs(CsCsCs)R) //T(QQQ)
 12   Cs 0 {4,S}
 13   Cs 0 {4,S}
 14   Cs 0 {4,S}
- 
+
 Cs(CsCsCsCs) //Q(PPPP)
 1  * Cs 0 {2,S} {3,S} {4,S} {5,S}
-2    Cs 0 {1,S} 
+2    Cs 0 {1,S}
 3    Cs 0 {1,S}
-4    Cs 0 {1,S} 
+4    Cs 0 {1,S}
 5    Cs 0 {1,S}
 
 Cs(Cs(CsRR)CsCsCs) //Q(SPPP)
@@ -493,17 +493,17 @@ Cs(Cs(CsRR)CsCsCs) //Q(SPPP)
 4    Cs 0 {1,S} {12,S} {13,S} {14,S}
 5    Cs 0 {1,S} {15,S} {16,S} {17,S}
 6    Cs 0 {2,S}
-7    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {2,S}
-8    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {2,S}
-9    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
-10   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
-11   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
-12   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-13   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-14   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-15   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
-16   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
-17   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
+7 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {2,S}
+8 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {2,S}
+9 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
+10 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
+11 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
+12 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+13 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+14 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+15 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
+16 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
+17 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
 
 Cs(Cs(CsRR)Cs(CsRR)CsCs) //Q(SSPP)
 1  * Cs 0 {2,S} {3,S} {4,S} {5,S}
@@ -512,17 +512,17 @@ Cs(Cs(CsRR)Cs(CsRR)CsCs) //Q(SSPP)
 4    Cs 0 {1,S} {12,S} {13,S} {14,S}
 5    Cs 0 {1,S} {15,S} {16,S} {17,S}
 6    Cs 0 {2,S}
-7    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {2,S}
-8    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {2,S}
+7 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {2,S}
+8 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {2,S}
 9    Cs 0 {3,S}
-10   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
-11   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
-12   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-13   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-14   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-15   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
-16   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
-17   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
+10 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
+11 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
+12 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+13 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+14 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+15 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
+16 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
+17 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
 
 Cs(Cs(CsRR)Cs(CsRR)Cs(CsRR)Cs) //Q(SSSP)
 1  * Cs 0 {2,S} {3,S} {4,S} {5,S}
@@ -531,17 +531,17 @@ Cs(Cs(CsRR)Cs(CsRR)Cs(CsRR)Cs) //Q(SSSP)
 4    Cs 0 {1,S} {12,S} {13,S} {14,S}
 5    Cs 0 {1,S} {15,S} {16,S} {17,S}
 6    Cs 0 {2,S}
-7    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {2,S}
-8    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {2,S}
+7 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {2,S}
+8 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {2,S}
 9    Cs 0 {3,S}
-10   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
-11   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
+10 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
+11 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
 12   Cs 0 {4,S}
-13   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-14   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-15   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
-16   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
-17   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
+13 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+14 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+15 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
+16 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
+17 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
 
 Cs(Cs(CsRR)Cs(CsRR)Cs(CsRR)Cs(CsRR)) //Q(SSSS)
 1  * Cs 0 {2,S} {3,S} {4,S} {5,S}
@@ -550,17 +550,17 @@ Cs(Cs(CsRR)Cs(CsRR)Cs(CsRR)Cs(CsRR)) //Q(SSSS)
 4    Cs 0 {1,S} {12,S} {13,S} {14,S}
 5    Cs 0 {1,S} {15,S} {16,S} {17,S}
 6    Cs 0 {2,S}
-7    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {2,S}
-8    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {2,S}
+7 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {2,S}
+8 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {2,S}
 9    Cs 0 {3,S}
-10   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
-11   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
+10 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
+11 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
 12   Cs 0 {4,S}
-13   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-14   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
+13 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+14 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
 15   Cs 0 {5,S}
-16   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
-17   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
+16 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
+17 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
 
 Cs(Cs(CsCsR)CsCsCs) //Q(TPPP)
 1  * Cs 0 {2,S} {3,S} {4,S} {5,S}
@@ -570,16 +570,16 @@ Cs(Cs(CsCsR)CsCsCs) //Q(TPPP)
 5    Cs 0 {1,S} {15,S} {16,S} {17,S}
 6    Cs 0 {2,S}
 7    Cs 0 {2,S}
-8    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {2,S}
-9    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
-10   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
-11   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
-12   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-13   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-14   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-15   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
-16   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
-17   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
+8 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {2,S}
+9 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
+10 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
+11 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
+12 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+13 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+14 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+15 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
+16 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
+17 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
 
 Cs(Cs(CsCsR)Cs(CsRR)CsCs) //Q(TSPP)
 1  * Cs 0 {2,S} {3,S} {4,S} {5,S}
@@ -589,16 +589,16 @@ Cs(Cs(CsCsR)Cs(CsRR)CsCs) //Q(TSPP)
 5    Cs 0 {1,S} {15,S} {16,S} {17,S}
 6    Cs 0 {2,S}
 7    Cs 0 {2,S}
-8    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {2,S}
+8 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {2,S}
 9    Cs 0 {3,S}
-10   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
-11   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
-12   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-13   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-14   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-15   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
-16   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
-17   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
+10 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
+11 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
+12 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+13 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+14 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+15 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
+16 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
+17 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
 
 Cs(Cs(CsCsR)Cs(CsRR)Cs(CsRR)Cs) //Q(TSSP)
 1  * Cs 0 {2,S} {3,S} {4,S} {5,S}
@@ -608,16 +608,16 @@ Cs(Cs(CsCsR)Cs(CsRR)Cs(CsRR)Cs) //Q(TSSP)
 5    Cs 0 {1,S} {15,S} {16,S} {17,S}
 6    Cs 0 {2,S}
 7    Cs 0 {2,S}
-8    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {2,S}
+8 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {2,S}
 9    Cs 0 {3,S}
-10   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
-11   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
+10 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
+11 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
 12   Cs 0 {4,S}
-13   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-14   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-15   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
-16   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
-17   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
+13 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+14 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+15 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
+16 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
+17 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
 
 Cs(Cs(CsCsR)Cs(CsRR)Cs(CsRR)Cs(CsRR)) //Q(TSSS)
 1  * Cs 0 {2,S} {3,S} {4,S} {5,S}
@@ -627,16 +627,16 @@ Cs(Cs(CsCsR)Cs(CsRR)Cs(CsRR)Cs(CsRR)) //Q(TSSS)
 5    Cs 0 {1,S} {15,S} {16,S} {17,S}
 6    Cs 0 {2,S}
 7    Cs 0 {2,S}
-8    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {2,S}
+8 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {2,S}
 9    Cs 0 {3,S}
-10   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
-11   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
+10 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
+11 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
 12   Cs 0 {4,S}
-13   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-14   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
+13 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+14 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
 15   Cs 0 {5,S}
-16   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
-17   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
+16 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
+17 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
 
 Cs(Cs(CsCsR)Cs(CsCsR)CsCs) //Q(TTPP)
 1  * Cs 0 {2,S} {3,S} {4,S} {5,S}
@@ -646,16 +646,16 @@ Cs(Cs(CsCsR)Cs(CsCsR)CsCs) //Q(TTPP)
 5    Cs 0 {1,S} {15,S} {16,S} {17,S}
 6    Cs 0 {2,S}
 7    Cs 0 {2,S}
-8    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {2,S}
+8 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {2,S}
 9    Cs 0 {3,S}
 10   Cs 0 {3,S}
-11   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
-12   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-13   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-14   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-15   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
-16   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
-17   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
+11 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
+12 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+13 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+14 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+15 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
+16 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
+17 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
 
 Cs(Cs(CsCsR)Cs(CsCsR)Cs(CsRR)Cs) //Q(TTSP)
 1  * Cs 0 {2,S} {3,S} {4,S} {5,S}
@@ -665,16 +665,16 @@ Cs(Cs(CsCsR)Cs(CsCsR)Cs(CsRR)Cs) //Q(TTSP)
 5    Cs 0 {1,S} {15,S} {16,S} {17,S}
 6    Cs 0 {2,S}
 7    Cs 0 {2,S}
-8    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {2,S}
+8 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {2,S}
 9    Cs 0 {3,S}
 10   Cs 0 {3,S}
-11   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
+11 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
 12   Cs 0 {4,S}
-13   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-14   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-15   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
-16   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
-17   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
+13 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+14 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+15 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
+16 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
+17 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
 
 Cs(Cs(CsCsR)Cs(CsCsR)Cs(CsRR)Cs(CsRR)) //Q(TTSS)
 1  * Cs 0 {2,S} {3,S} {4,S} {5,S}
@@ -684,16 +684,16 @@ Cs(Cs(CsCsR)Cs(CsCsR)Cs(CsRR)Cs(CsRR)) //Q(TTSS)
 5    Cs 0 {1,S} {15,S} {16,S} {17,S}
 6    Cs 0 {2,S}
 7    Cs 0 {2,S}
-8    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {2,S}
+8 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {2,S}
 9    Cs 0 {3,S}
 10   Cs 0 {3,S}
-11   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
+11 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
 12   Cs 0 {4,S}
-13   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-14   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
+13 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+14 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
 15   Cs 0 {5,S}
-16   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
-17   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
+16 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
+17 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
 
 Cs(Cs(CsCsR)Cs(CsCsR)Cs(CsCsR)Cs) //Q(TTTP)
 1  * Cs 0 {2,S} {3,S} {4,S} {5,S}
@@ -703,16 +703,16 @@ Cs(Cs(CsCsR)Cs(CsCsR)Cs(CsCsR)Cs) //Q(TTTP)
 5    Cs 0 {1,S} {15,S} {16,S} {17,S}
 6    Cs 0 {2,S}
 7    Cs 0 {2,S}
-8    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {2,S}
+8 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {2,S}
 9    Cs 0 {3,S}
 10   Cs 0 {3,S}
-11   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
+11 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
 12   Cs 0 {4,S}
 13   Cs 0 {4,S}
-14   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-15   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
-16   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
-17   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
+14 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+15 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
+16 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
+17 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
 
 Cs(Cs(CsCsR)Cs(CsCsR)Cs(CsCsR)Cs(CsRR)) //Q(TTTS)
 1  * Cs 0 {2,S} {3,S} {4,S} {5,S}
@@ -722,16 +722,16 @@ Cs(Cs(CsCsR)Cs(CsCsR)Cs(CsCsR)Cs(CsRR)) //Q(TTTS)
 5    Cs 0 {1,S} {15,S} {16,S} {17,S}
 6    Cs 0 {2,S}
 7    Cs 0 {2,S}
-8    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {2,S}
+8 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {2,S}
 9    Cs 0 {3,S}
 10   Cs 0 {3,S}
-11   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
+11 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
 12   Cs 0 {4,S}
 13   Cs 0 {4,S}
-14   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
+14 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
 15   Cs 0 {5,S}
-16   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
-17   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
+16 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
+17 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
 
 Cs(Cs(CsCsR)Cs(CsCsR)Cs(CsCsR)Cs(CsCsR)) //Q(TTTT)
 1  * Cs 0 {2,S} {3,S} {4,S} {5,S}
@@ -741,16 +741,16 @@ Cs(Cs(CsCsR)Cs(CsCsR)Cs(CsCsR)Cs(CsCsR)) //Q(TTTT)
 5    Cs 0 {1,S} {15,S} {16,S} {17,S}
 6    Cs 0 {2,S}
 7    Cs 0 {2,S}
-8    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {2,S}
+8 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {2,S}
 9    Cs 0 {3,S}
 10   Cs 0 {3,S}
-11   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
+11 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
 12   Cs 0 {4,S}
 13   Cs 0 {4,S}
-14   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
+14 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
 15   Cs 0 {5,S}
 16   Cs 0 {5,S}
-17   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
+17 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
 
 Cs(Cs(CsCsCs)CsCsCs) //Q(QPPP)
 1  * Cs 0 {2,S} {3,S} {4,S} {5,S}
@@ -761,15 +761,15 @@ Cs(Cs(CsCsCs)CsCsCs) //Q(QPPP)
 6    Cs 0 {2,S}
 7    Cs 0 {2,S}
 8    Cs 0 {2,S}
-9    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
-10   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
-11   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
-12   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-13   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-14   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-15   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
-16   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
-17   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
+9 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
+10 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
+11 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
+12 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+13 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+14 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+15 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
+16 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
+17 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
 
 Cs(Cs(CsCsCs)Cs(CsRR)CsCs) //Q(QSPP)
 1  * Cs 0 {2,S} {3,S} {4,S} {5,S}
@@ -781,14 +781,14 @@ Cs(Cs(CsCsCs)Cs(CsRR)CsCs) //Q(QSPP)
 7    Cs 0 {2,S}
 8    Cs 0 {2,S}
 9    Cs 0 {3,S}
-10   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
-11   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
-12   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-13   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-14   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-15   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
-16   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
-17   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
+10 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
+11 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
+12 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+13 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+14 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+15 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
+16 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
+17 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
 
 Cs(Cs(CsCsCs)Cs(CsRR)Cs(CsRR)Cs) //Q(QSSP)
 1  * Cs 0 {2,S} {3,S} {4,S} {5,S}
@@ -800,14 +800,14 @@ Cs(Cs(CsCsCs)Cs(CsRR)Cs(CsRR)Cs) //Q(QSSP)
 7    Cs 0 {2,S}
 8    Cs 0 {2,S}
 9    Cs 0 {3,S}
-10   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
-11   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
+10 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
+11 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
 12   Cs 0 {4,S}
-13   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-14   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-15   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
-16   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
-17   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
+13 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+14 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+15 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
+16 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
+17 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
 
 Cs(Cs(CsCsCs)Cs(CsRR)Cs(CsRR)Cs(CsRR)) //Q(QSSS)
 1  * Cs 0 {2,S} {3,S} {4,S} {5,S}
@@ -819,14 +819,14 @@ Cs(Cs(CsCsCs)Cs(CsRR)Cs(CsRR)Cs(CsRR)) //Q(QSSS)
 7    Cs 0 {2,S}
 8    Cs 0 {2,S}
 9    Cs 0 {3,S}
-10   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
-11   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
+10 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
+11 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
 12   Cs 0 {4,S}
-13   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-14   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
+13 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+14 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
 15   Cs 0 {5,S}
-16   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
-17   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
+16 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
+17 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
 
 Cs(Cs(CsCsCs)Cs(CsCsR)CsCs) //Q(QTPP)
 1  * Cs 0 {2,S} {3,S} {4,S} {5,S}
@@ -839,13 +839,13 @@ Cs(Cs(CsCsCs)Cs(CsCsR)CsCs) //Q(QTPP)
 8    Cs 0 {2,S}
 9    Cs 0 {3,S}
 10   Cs 0 {3,S}
-11   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
-12   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-13   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-14   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-15   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
-16   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
-17   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
+11 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
+12 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+13 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+14 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+15 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
+16 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
+17 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
 
 Cs(Cs(CsCsCs)Cs(CsCsR)Cs(CsRR)Cs) //Q(QTSP)
 1  * Cs 0 {2,S} {3,S} {4,S} {5,S}
@@ -858,13 +858,13 @@ Cs(Cs(CsCsCs)Cs(CsCsR)Cs(CsRR)Cs) //Q(QTSP)
 8    Cs 0 {2,S}
 9    Cs 0 {3,S}
 10   Cs 0 {3,S}
-11   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
+11 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
 12   Cs 0 {4,S}
-13   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-14   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-15   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
-16   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
-17   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
+13 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+14 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+15 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
+16 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
+17 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
 
 Cs(Cs(CsCsCs)Cs(CsCsR)Cs(CsRR)Cs(CsRR)) //Q(QTSS)
 1  * Cs 0 {2,S} {3,S} {4,S} {5,S}
@@ -877,13 +877,13 @@ Cs(Cs(CsCsCs)Cs(CsCsR)Cs(CsRR)Cs(CsRR)) //Q(QTSS)
 8    Cs 0 {2,S}
 9    Cs 0 {3,S}
 10   Cs 0 {3,S}
-11   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
+11 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
 12   Cs 0 {4,S}
-13   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-14   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
+13 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+14 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
 15   Cs 0 {5,S}
-16   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
-17   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
+16 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
+17 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
 
 Cs(Cs(CsCsCs)Cs(CsCsR)Cs(CsCsR)Cs) //Q(QTTP)
 1  * Cs 0 {2,S} {3,S} {4,S} {5,S}
@@ -896,13 +896,13 @@ Cs(Cs(CsCsCs)Cs(CsCsR)Cs(CsCsR)Cs) //Q(QTTP)
 8    Cs 0 {2,S}
 9    Cs 0 {3,S}
 10   Cs 0 {3,S}
-11   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
+11 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
 12   Cs 0 {4,S}
 13   Cs 0 {4,S}
-14   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-15   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
-16   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
-17   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
+14 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+15 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
+16 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
+17 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
 
 Cs(Cs(CsCsCs)Cs(CsCsR)Cs(CsCsR)Cs(CsRR)) //Q(QTTS)
 1  * Cs 0 {2,S} {3,S} {4,S} {5,S}
@@ -915,13 +915,13 @@ Cs(Cs(CsCsCs)Cs(CsCsR)Cs(CsCsR)Cs(CsRR)) //Q(QTTS)
 8    Cs 0 {2,S}
 9    Cs 0 {3,S}
 10   Cs 0 {3,S}
-11   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
+11 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
 12   Cs 0 {4,S}
 13   Cs 0 {4,S}
-14   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
+14 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
 15   Cs 0 {5,S}
-16   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
-17   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
+16 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
+17 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
 
 Cs(Cs(CsCsCs)Cs(CsCsR)Cs(CsCsR)Cs(CsCsR)) //Q(QTTT)
 1  * Cs 0 {2,S} {3,S} {4,S} {5,S}
@@ -934,13 +934,13 @@ Cs(Cs(CsCsCs)Cs(CsCsR)Cs(CsCsR)Cs(CsCsR)) //Q(QTTT)
 8    Cs 0 {2,S}
 9    Cs 0 {3,S}
 10   Cs 0 {3,S}
-11   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
+11 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
 12   Cs 0 {4,S}
 13   Cs 0 {4,S}
-14   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
+14 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
 15   Cs 0 {5,S}
 16   Cs 0 {5,S}
-17   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
+17 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
 
 Cs(Cs(CsCsCs)Cs(CsCsCs)CsCs) //Q(QQPP)
 1  * Cs 0 {2,S} {3,S} {4,S} {5,S}
@@ -954,12 +954,12 @@ Cs(Cs(CsCsCs)Cs(CsCsCs)CsCs) //Q(QQPP)
 9    Cs 0 {3,S}
 10   Cs 0 {3,S}
 11   Cs 0 {3,S}
-12   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-13   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-14   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-15   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
-16   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
-17   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
+12 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+13 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+14 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+15 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
+16 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
+17 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
 
 Cs(Cs(CsCsCs)Cs(CsCsCs)Cs(CsRR)Cs) //Q(QQSP)
 1  * Cs 0 {2,S} {3,S} {4,S} {5,S}
@@ -974,11 +974,11 @@ Cs(Cs(CsCsCs)Cs(CsCsCs)Cs(CsRR)Cs) //Q(QQSP)
 10   Cs 0 {3,S}
 11   Cs 0 {3,S}
 12   Cs 0 {4,S}
-13   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-14   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-15   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
-16   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
-17   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
+13 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+14 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+15 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
+16 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
+17 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
 
 Cs(Cs(CsCsCs)Cs(CsCsCs)Cs(CsRR)Cs(CsRR)) //Q(QQSS)
 1  * Cs 0 {2,S} {3,S} {4,S} {5,S}
@@ -993,11 +993,11 @@ Cs(Cs(CsCsCs)Cs(CsCsCs)Cs(CsRR)Cs(CsRR)) //Q(QQSS)
 10   Cs 0 {3,S}
 11   Cs 0 {3,S}
 12   Cs 0 {4,S}
-13   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-14   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
+13 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+14 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
 15   Cs 0 {5,S}
-16   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
-17   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
+16 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
+17 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
 
 Cs(Cs(CsCsCs)Cs(CsCsCs)Cs(CsCsR)Cs) //Q(QQTP)
 1  * Cs 0 {2,S} {3,S} {4,S} {5,S}
@@ -1013,10 +1013,10 @@ Cs(Cs(CsCsCs)Cs(CsCsCs)Cs(CsCsR)Cs) //Q(QQTP)
 11   Cs 0 {3,S}
 12   Cs 0 {4,S}
 13   Cs 0 {4,S}
-14   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-15   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
-16   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
-17   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
+14 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+15 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
+16 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
+17 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
 
 Cs(Cs(CsCsCs)Cs(CsCsCs)Cs(CsCsR)Cs(CsRR)) //Q(QQTS)
 1  * Cs 0 {2,S} {3,S} {4,S} {5,S}
@@ -1032,10 +1032,10 @@ Cs(Cs(CsCsCs)Cs(CsCsCs)Cs(CsCsR)Cs(CsRR)) //Q(QQTS)
 11   Cs 0 {3,S}
 12   Cs 0 {4,S}
 13   Cs 0 {4,S}
-14   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
+14 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
 15   Cs 0 {5,S}
-16   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
-17   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
+16 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
+17 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
 
 Cs(Cs(CsCsCs)Cs(CsCsCs)Cs(CsCsR)Cs(CsCsR)) //Q(QQTT)
 1  * Cs 0 {2,S} {3,S} {4,S} {5,S}
@@ -1051,10 +1051,10 @@ Cs(Cs(CsCsCs)Cs(CsCsCs)Cs(CsCsR)Cs(CsCsR)) //Q(QQTT)
 11   Cs 0 {3,S}
 12   Cs 0 {4,S}
 13   Cs 0 {4,S}
-14   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
+14 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
 15   Cs 0 {5,S}
 16   Cs 0 {5,S}
-17   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
+17 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
 
 Cs(Cs(CsCsCs)Cs(CsCsCs)Cs(CsCsCs)Cs) //Q(QQQP)
 1  * Cs 0 {2,S} {3,S} {4,S} {5,S}
@@ -1071,9 +1071,9 @@ Cs(Cs(CsCsCs)Cs(CsCsCs)Cs(CsCsCs)Cs) //Q(QQQP)
 12   Cs 0 {4,S}
 13   Cs 0 {4,S}
 14   Cs 0 {4,S}
-15   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
-16   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
-17   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
+15 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
+16 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
+17 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
 
 Cs(Cs(CsCsCs)Cs(CsCsCs)Cs(CsCsCs)Cs(CsRR)) //Q(QQQS)
 1  * Cs 0 {2,S} {3,S} {4,S} {5,S}
@@ -1091,8 +1091,8 @@ Cs(Cs(CsCsCs)Cs(CsCsCs)Cs(CsCsCs)Cs(CsRR)) //Q(QQQS)
 13   Cs 0 {4,S}
 14   Cs 0 {4,S}
 15   Cs 0 {5,S}
-16   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
-17   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
+16 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
+17 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
 
 Cs(Cs(CsCsCs)Cs(CsCsCs)Cs(CsCsCs)Cs(CsCsR)) //Q(QQQT)
 1  * Cs 0 {2,S} {3,S} {4,S} {5,S}
@@ -1111,7 +1111,7 @@ Cs(Cs(CsCsCs)Cs(CsCsCs)Cs(CsCsCs)Cs(CsCsR)) //Q(QQQT)
 14   Cs 0 {4,S}
 15   Cs 0 {5,S}
 16   Cs 0 {5,S}
-17   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {5,S}
+17 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {5,S}
 
 Cs(Cs(CsCsCs)Cs(CsCsCs)Cs(CsCsCs)Cs(CsCsCs)) //Q(QQQQ)
 1  * Cs 0 {2,S} {3,S} {4,S} {5,S}
@@ -1138,28 +1138,28 @@ Os(RR) //zeroary oxygen (water or no Cs groups)
 Os(CsR) //P(P)
 1  * Os 0 {2,S} {3,S}
 2    Cs 0 {1,S}
-3    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {1,S}
+3 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {1,S}
 
 Os(Cs(CsRR)R) //P(S)
-1  * Os 0 {2,S} {3,S} 
+1  * Os 0 {2,S} {3,S}
 2    Cs 0 {1,S} {4,S} {5,S} {6,S}
-3    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {1,S}
+3 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {1,S}
 4    Cs 0 {2,S}
-5    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {2,S}
-6    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {2,S}
+5 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {2,S}
+6 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {2,S}
 
 Os(Cs(CsCsR)R) //P(T)
-1  * Os 0 {2,S} {3,S} 
+1  * Os 0 {2,S} {3,S}
 2    Cs 0 {1,S} {4,S} {5,S} {6,S}
-3    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {1,S}
+3 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {1,S}
 4    Cs 0 {2,S}
 5    Cs 0 {2,S}
-6    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {2,S}
+6 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {2,S}
 
 Os(Cs(CsCsCs)R) //P(Q)
-1  * Os 0 {2,S} {3,S} 
+1  * Os 0 {2,S} {3,S}
 2    Cs 0 {1,S} {4,S} {5,S} {6,S}
-3    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {1,S}
+3 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {1,S}
 4    Cs 0 {2,S}
 5    Cs 0 {2,S}
 6    Cs 0 {2,S}
@@ -1174,11 +1174,11 @@ Os(Cs(CsRR)Cs) //S(SP)
 2    Cs 0 {1,S} {4,S} {5,S} {6,S}
 3    Cs 0 {1,S} {7,S} {8,S} {9,S}
 4    Cs 0 {2,S}
-5    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {2,S}
-6    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {2,S}
-7    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
-8    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
-9    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
+5 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {2,S}
+6 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {2,S}
+7 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
+8 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
+9 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
 
 
 Os(Cs(CsRR)Cs(CsRR)) //S(SS)
@@ -1186,11 +1186,11 @@ Os(Cs(CsRR)Cs(CsRR)) //S(SS)
 2    Cs 0 {1,S} {4,S} {5,S} {6,S}
 3    Cs 0 {1,S} {7,S} {8,S} {9,S}
 4    Cs 0 {2,S}
-5    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {2,S}
-6    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {2,S}
+5 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {2,S}
+6 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {2,S}
 7    Cs 0 {3,S}
-8    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
-9    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
+8 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
+9 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
 
 Os(Cs(CsCsR)Cs) //S(TP)
 1  * Os 0 {2,S} {3,S}
@@ -1198,10 +1198,10 @@ Os(Cs(CsCsR)Cs) //S(TP)
 3    Cs 0 {1,S} {7,S} {8,S} {9,S}
 4    Cs 0 {2,S}
 5    Cs 0 {2,S}
-6    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {2,S}
-7    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
-8    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
-9    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
+6 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {2,S}
+7 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
+8 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
+9 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
 
 Os(Cs(CsCsR)Cs(CsRR)) //S(TS)
 1  * Os 0 {2,S} {3,S}
@@ -1209,10 +1209,10 @@ Os(Cs(CsCsR)Cs(CsRR)) //S(TS)
 3    Cs 0 {1,S} {7,S} {8,S} {9,S}
 4    Cs 0 {2,S}
 5    Cs 0 {2,S}
-6    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {2,S}
+6 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {2,S}
 7    Cs 0 {3,S}
-8    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
-9    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
+8 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
+9 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
 
 Os(Cs(CsCsR)Cs(CsCsR)) //S(TT)
 1  * Os 0 {2,S} {3,S}
@@ -1220,10 +1220,10 @@ Os(Cs(CsCsR)Cs(CsCsR)) //S(TT)
 3    Cs 0 {1,S} {7,S} {8,S} {9,S}
 4    Cs 0 {2,S}
 5    Cs 0 {2,S}
-6    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {2,S}
+6 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {2,S}
 7    Cs 0 {3,S}
 8    Cs 0 {3,S}
-9    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
+9 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
 
 Os(Cs(CsCsCs)Cs) //S(QP)
 1  * Os 0 {2,S} {3,S}
@@ -1232,9 +1232,9 @@ Os(Cs(CsCsCs)Cs) //S(QP)
 4    Cs 0 {2,S}
 5    Cs 0 {2,S}
 6    Cs 0 {2,S}
-7    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
-8    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
-9    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
+7 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
+8 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
+9 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
 
 Os(Cs(CsCsCs)Cs(CsRR)) //S(QS)
 1  * Os 0 {2,S} {3,S}
@@ -1244,8 +1244,8 @@ Os(Cs(CsCsCs)Cs(CsRR)) //S(QS)
 5    Cs 0 {2,S}
 6    Cs 0 {2,S}
 7    Cs 0 {3,S}
-8    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
-9    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
+8 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
+9 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
 
 Os(Cs(CsCsCs)Cs(CsCsR)) //S(QT)
 1  * Os 0 {2,S} {3,S}
@@ -1256,7 +1256,7 @@ Os(Cs(CsCsCs)Cs(CsCsR)) //S(QT)
 6    Cs 0 {2,S}
 7    Cs 0 {3,S}
 8    Cs 0 {3,S}
-9    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
+9 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
 
 Os(Cs(CsCsCs)Cs(CsCsCs)) //S(QQ)
 1  * Os 0 {2,S} {3,S}
@@ -1281,11 +1281,11 @@ Cd(Cs(CsRR)Cs) //S(SP)
 3    Cs 0 {1,S} {5,S} {6,S} {7,S}
 4    Cs 0 {1,S} {8,S} {9,S} {10,S}
 5    Cs 0 {3,S}
-6    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
-7    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
-8    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-9    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-10   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
+6 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
+7 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
+8 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+9 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+10 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
 
 
 Cd(Cs(CsRR)Cs(CsRR)) //S(SS)
@@ -1294,11 +1294,11 @@ Cd(Cs(CsRR)Cs(CsRR)) //S(SS)
 3    Cs 0 {1,S} {5,S} {6,S} {7,S}
 4    Cs 0 {1,S} {8,S} {9,S} {10,S}
 5    Cs 0 {3,S}
-6    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
-7    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
+6 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
+7 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
 8    Cs 0 {4,S}
-9    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-10   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
+9 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+10 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
 
 Cd(Cs(CsCsR)Cs) //S(TP)
 1  * Cd 0 {2,D} {3,S} {4,S}
@@ -1307,10 +1307,10 @@ Cd(Cs(CsCsR)Cs) //S(TP)
 4    Cs 0 {1,S} {8,S} {9,S} {10,S}
 5    Cs 0 {3,S}
 6    Cs 0 {3,S}
-7    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
-8    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-9    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-10   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
+7 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
+8 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+9 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+10 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
 
 Cd(Cs(CsCsR)Cs(CsRR)) //S(TS)
 1  * Cd 0 {2,D} {3,S} {4,S}
@@ -1319,10 +1319,10 @@ Cd(Cs(CsCsR)Cs(CsRR)) //S(TS)
 4    Cs 0 {1,S} {8,S} {9,S} {10,S}
 5    Cs 0 {3,S}
 6    Cs 0 {3,S}
-7    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
+7 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
 8    Cs 0 {4,S}
-9    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-10   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
+9 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+10 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
 
 Cd(Cs(CsCsR)Cs(CsCsR)) //S(TT)
 1  * Cd 0 {2,D} {3,S} {4,S}
@@ -1331,10 +1331,10 @@ Cd(Cs(CsCsR)Cs(CsCsR)) //S(TT)
 4    Cs 0 {1,S} {8,S} {9,S} {10,S}
 5    Cs 0 {3,S}
 6    Cs 0 {3,S}
-7    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}
+7 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {3,S}
 8    Cs 0 {4,S}
 9    Cs 0 {4,S}
-10   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
+10 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
 
 Cd(Cs(CsCsCs)Cs) //S(QP)
 1  * Cd 0 {2,D} {3,S} {4,S}
@@ -1344,9 +1344,9 @@ Cd(Cs(CsCsCs)Cs) //S(QP)
 5    Cs 0 {3,S}
 6    Cs 0 {3,S}
 7    Cs 0 {3,S}
-8    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-9    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-10   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
+8 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+9 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+10 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
 
 Cd(Cs(CsCsCs)Cs(CsRR)) //S(QS)
 1  * Cd 0 {2,D} {3,S} {4,S}
@@ -1357,8 +1357,8 @@ Cd(Cs(CsCsCs)Cs(CsRR)) //S(QS)
 6    Cs 0 {3,S}
 7    Cs 0 {3,S}
 8    Cs 0 {4,S}
-9    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
-10   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
+9 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
+10 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
 
 Cd(Cs(CsCsCs)Cs(CsCsR)) //S(QT)
 1  * Cd 0 {2,D} {3,S} {4,S}
@@ -1370,7 +1370,7 @@ Cd(Cs(CsCsCs)Cs(CsCsR)) //S(QT)
 7    Cs 0 {3,S}
 8    Cs 0 {4,S}
 9    Cs 0 {4,S}
-10   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {4,S}
+10 {Cd,Cdd,Ct,Cb,Cbf,Os,H} 0 {4,S}
 
 Cd(Cs(CsCsCs)Cs(CsCsCs)) //S(QQ)
 1  * Cd 0 {2,D} {3,S} {4,S}
