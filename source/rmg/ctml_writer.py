@@ -1170,6 +1170,7 @@ class phase:
         # for each reaction string, check whether or not the reactions
         # are imported or defined locally. If imported, the string
         # contains a colon (:) 
+        self._rx=[] # reset it!!
         for r in self._rxns:
             icolon = r.find(':')
             if icolon > 0:

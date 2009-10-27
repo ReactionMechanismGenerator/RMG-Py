@@ -618,7 +618,14 @@ class InvalidReactionSystemException(Exception):
 		return 'Invalid reaction system: ' + self.label
 
 ################################################################################
-
+class FakeSolver:
+	"""Used as a dummy solver, to contain t etc."""
+	def __init__(self):
+		self.t = 0
+		self.y = None
+	def successful(self):
+		return True # how can I fail?
+	
 class ReactionSystem:
 	"""
 	Represent a generic reaction system, e.g. a chemical reactor. A reaction
@@ -672,10 +679,10 @@ class BatchReactor(ReactionSystem):
 
 	
 	def toCantera(self):
-		"""Creata a Cantera instance"""
+		"""Creata a Cantera instance. Call this once"""
 		ctml_writer.units(length = "m", time = "s", quantity = "mol", act_energy = "J/mol")
 		phase = ctml_writer.ideal_gas(name = "chem",
-		      elements = " C H O ",
+		      elements = " C H O N Ar He",
 		      species = "all",
 		      reactions = "all",
 		      initial_state = ctml_writer.state(temperature = 1000 ,
@@ -809,8 +816,9 @@ class BatchReactor(ReactionSystem):
 		else:
 			return True, None, 0.0
 
+
 	def runCantera(self, model):
-		"""Write a cantera file"""
+		"""Write a cantera file, read it in cantera, and return a ReactorNet and Solution"""
 		
 		# Write the cantera file
 		import os, constants
@@ -820,6 +828,42 @@ class BatchReactor(ReactionSystem):
 		ctml_writer.validate()
 		ctml_writer.write()
 		
+		import Cantera
+		import Cantera.Reactor
+		
+		logging.info("Preparing Cantera simulation %d"%len(model.core.species))
+		Cantera.reset()
+		gas = Cantera.importPhase(cti_file+'.xml','chem', loglevel=1)
+		
+		concentrations = numpy.zeros(len(model.core.species))
+		for spec, conc in self.initialConcentration.iteritems():
+			concentrations[gas.speciesIndex(str(spec))] = conc
+		gas.setMoleFractions(concentrations) # it normalises it to 1
+		
+		gas.set( T = float(self.temperatureModel.getTemperature(0)),
+		         P = float(self.pressureModel.getPressure(0)) )
+		
+		# create a batch reactor
+		reactor = Cantera.Reactor.Reactor(gas, volume = 1.0)
+			
+		# set the inital environment conditions
+		gasAir = Cantera.Air()
+		gasAir.set(T=float(self.temperatureModel.getTemperature(0)), P=float(self.pressureModel.getPressure(0)))
+		# create a reservoir for the environment
+		environment = Cantera.Reactor.Reservoir(gasAir)
+		# Define a wall between the reactor and the environment, and
+		# make it flexible, so that the pressure in the reactor is held
+		# at the environment pressure, and conductive so the temperature likewise
+		wall = Cantera.Reactor.Wall(reactor,environment)
+		wall.set(K = 1.0e12)   # set expansion parameter. dV/dt = KA(P_1 - P_2)
+		wall.set(A = 1.0) # set wall area
+		wall.setHeatTransferCoeff(1.0e15) # W/m2/K
+		
+		# put reactor in a reactor network so it can be integrated
+		sim = Cantera.Reactor.ReactorNet([reactor])
+		
+		#import pdb; pdb.set_trace()
+		return sim, gas
 		
 
 	def simulate(self, model):
@@ -845,7 +889,7 @@ class BatchReactor(ReactionSystem):
 		"""
 		
 		# try writing cantera file
-		self.runCantera(model)
+		sim,gas = self.runCantera(model)
 		
 		# Assemble stoichiometry matrix for all core and edge species
 		# Rows are species (core, then edge); columns are reactions (core, then edge)
@@ -854,6 +898,11 @@ class BatchReactor(ReactionSystem):
 		tlist = []; ylist = []; dydtlist = []
 		maxRelativeFluxes = numpy.zeros(len(model.core.species) + len(model.edge.species), float)
 
+		endtime = 10.0 # default. check for user value:
+		for target in model.termination:
+			if target.__class__ == TerminationTime:
+				endtime = target.time
+				
 		# Set up initial conditions
 		P = float(self.pressureModel.getPressure(0))
 		T = float(self.temperatureModel.getTemperature(0))
@@ -877,10 +926,12 @@ class BatchReactor(ReactionSystem):
 #		dydtlist.append(self.getResidual(0.0, y0, model, stoichiometry))
 		
 		# Set up solver
-		solver = scipy.integrate.ode(self.getResidual,None)
-		solver.set_integrator('vode', method='bdf', with_jacobian=True, atol=model.absoluteTolerance, rtol=model.relativeTolerance)
-		solver.set_f_params(model, stoichiometry)
-		solver.set_initial_value(y0,0.0)
+		#solver = scipy.integrate.ode(self.getResidual,None)
+		#solver.set_integrator('vode', method='bdf', with_jacobian=True, atol=model.absoluteTolerance, rtol=model.relativeTolerance)
+		#solver.set_f_params(model, stoichiometry)
+		#solver.set_initial_value(y0,0.0)
+		#
+		solver = FakeSolver()
 		
 		done = False
 		first_step = True
@@ -889,13 +940,19 @@ class BatchReactor(ReactionSystem):
 			# Conduct integration
 			if first_step: 
 				first_step = False # don't integrate on first time through, just do the validity checking and result reporting
-			elif solver.t == 0.0:
-				solver.integrate(1e-20)
 			else:
-				solver.integrate(solver.t * 1.2589254117941673) # 10**0.1 so ten steps increases time 10-fold
-			P, V, T = solver.y[0:3]
-			Ni = solver.y[3:]
-			time = solver.t
+				# advance cantera one step, or two if the first didn't get there
+				if sim.step(endtime) < endtime:
+				 	sim.step(endtime) 
+				
+			time = sim.time()
+			P = gas.pressure()
+			V = sim.reactors()[0].volume()
+			T = gas.temperature()
+			# recall that Cantera returns molarDensity() in units of kmol/m3
+			# and this program thinks in mol/m3
+			Ni = gas.molarDensity()*1000.0 * gas.moleFractions() * V 
+			solver.y = [P, V, T]; solver.y.extend(Ni)
 			
 			# Calculate species fluxes of all core and edge species at the
 			# current time
