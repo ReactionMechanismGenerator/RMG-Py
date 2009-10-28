@@ -475,7 +475,8 @@ class Graph(dict):
 		count = cython.declare(cython.int)
 		vert1 = cython.declare(chem.Atom)
 		vert2 = cython.declare(chem.Atom)
-		
+		i = cython.declare(cython.int)
+			
 		for i in range(3):
 			for vert1 in self:
 				count = 0
@@ -500,6 +501,7 @@ class Graph(dict):
 		# vertices with the same globalAtomSortValue can be in
 		# an arbitary order, as long as it remains constant
 		# so we record the ordering index ON the vertices
+		i = cython.declare(cython.int)
 		for i in range(len(ordered_vertices)):
 			(ordered_vertices[i]).sorting_label = i
     	
@@ -586,6 +588,7 @@ def __VF2_feasible(graph1, graph2, vertex1, vertex2, map21, map12, terminals1,
 	edge2 = cython.declare(chem.Bond)
 	edges1 = cython.declare(dict)
 	edges2 = cython.declare(dict)
+	i = cython.declare(cython.int)
 
 	# Richard's Connectivity Value check
 	# not sure where this is best done. Is it more specific or more general?
