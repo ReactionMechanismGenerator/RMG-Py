@@ -902,17 +902,16 @@ class BatchReactor(ReactionSystem):
 		for target in model.termination:
 			if target.__class__ == TerminationTime:
 				endtime = target.time
-				
+			
 		# Set up initial conditions
-		P = float(self.pressureModel.getPressure(0))
-		T = float(self.temperatureModel.getTemperature(0))
-		V = 1.0 # [=] m**3
-		Ni = numpy.zeros(len(model.core.species), float)
-		for i, spec in enumerate(model.core.species):
-			if spec in self.initialConcentration:
-				Ni[i] = self.initialConcentration[spec] * V
-		Ni0 = Ni
+		P = gas.pressure()
+		V = sim.reactors()[0].volume()
+		T = gas.temperature()
+		# recall that Cantera returns molarDensity() in units of kmol/m3
+		# and this program thinks in mol/m3
+		Ni = gas.molarDensity()*1000.0 * gas.moleFractions() * V 
 		y = [P, V, T]; y.extend(Ni)
+		Ni0 = Ni
 		y0 = y
 
 #		# Output information about simulation at current time
@@ -925,12 +924,7 @@ class BatchReactor(ReactionSystem):
 #		tlist.append(0.0); ylist.append(y0)
 #		dydtlist.append(self.getResidual(0.0, y0, model, stoichiometry))
 		
-		# Set up solver
-		#solver = scipy.integrate.ode(self.getResidual,None)
-		#solver.set_integrator('vode', method='bdf', with_jacobian=True, atol=model.absoluteTolerance, rtol=model.relativeTolerance)
-		#solver.set_f_params(model, stoichiometry)
-		#solver.set_initial_value(y0,0.0)
-		#
+		
 		solver = FakeSolver()
 		
 		done = False
@@ -992,6 +986,7 @@ class BatchReactor(ReactionSystem):
 				#		print model.core.species[i], maxSpeciesFluxes[i]
 				#	else:
 				#		print model.edge.species[i-len(model.core.species)], maxSpeciesFluxes[i]
+				print gas
 				return tlist, ylist, dydtlist, False, maxSpecies
 			
 			# Test for simulation completion
@@ -1002,6 +997,8 @@ class BatchReactor(ReactionSystem):
 					if conversion > target.conversion: done = True
 				elif target.__class__ == TerminationTime:
 					if time > target.time: done = True
+		
+		print gas 
 		
 		# Test for model validity once simulation complete
 		maxSpecies = None
