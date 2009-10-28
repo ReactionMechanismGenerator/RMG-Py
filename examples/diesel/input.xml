@@ -48,7 +48,7 @@
 			<temperature units="K">500.0</temperature>
 		</temperatureModel>
 		<pressureModel type="isobaric">
-			<pressure units="bar">1.0</pressure>
+			<pressure units="bar">201.0</pressure>
 		</pressureModel>
 		<physicalPropertyModel type="incompressibleLiquid" >
 		    <molarVolume units="cm^3/mol">162.0</molarVolume>

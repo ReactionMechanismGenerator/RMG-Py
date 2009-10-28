@@ -936,8 +936,10 @@ class BatchReactor(ReactionSystem):
 				first_step = False # don't integrate on first time through, just do the validity checking and result reporting
 			else:
 				# advance cantera one step, or two if the first didn't get there
+				nexttime = time*1.2589254117941673
 				if sim.step(endtime) < endtime:
-				 	sim.step(endtime) 
+				 	if sim.step(endtime) < nexttime:
+						sim.advance(nexttime)
 				
 			time = sim.time()
 			P = gas.pressure()
