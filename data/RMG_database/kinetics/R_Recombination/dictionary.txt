@@ -18,10 +18,10 @@ Y_Y
 // Other nodes
 
 H_rad
-1 * H 1 
+1 * H 1
 
 Cs_rad
-1 * Cs 1 
+1 * Cs 1
 
 C_methyl
 1 * C 1 {2,S}, {3,S}, {4,S}
@@ -63,7 +63,8 @@ C_rad/H2/CO
 1 * C 1 {2,S}, {3,S}, {4,S}
 2 H 0 {1,S}
 3 H 0 {1,S}
-4 CO 0 {1,S}
+4 Cd 0 {1,S} {5,D}
+5 Od 0 {4,D}
 
 C_rad/H2/O
 1 * C 1 {2,S}, {3,S}, {4,S}
@@ -104,26 +105,26 @@ C_rad/H/O2
 C_rad/H/OneDe
 1 * C 1 {2,S}, {3,S}, {4,S}
 2 H 0 {1,S}
-3 {Cd,Ct,Cb,CO} 0 {1,S}
+3 {Cd,Ct,Cb} 0 {1,S}
 4 {Cs,O} 0 {1,S}
 
 C_rad/H/OneDeC
 1 * C 1 {2,S}, {3,S}, {4,S}
 2 H 0 {1,S}
-3 {Cd,Ct,Cb,CO} 0 {1,S}
+3 {Cd,Ct,Cb} 0 {1,S}
 4 Cs 0 {1,S}
 
 C_rad/H/OneDeO
 1 * C 1 {2,S}, {3,S}, {4,S}
 2 H 0 {1,S}
-3 {Cd,Ct,Cb,CO} 0 {1,S}
+3 {Cd,Ct,Cb} 0 {1,S}
 4 O 0 {1,S}
 
 C_rad/H/TwoDe
 1 * C 1 {2,S}, {3,S}, {4,S}
 2 H 0 {1,S}
-3 {Cd,Ct,Cb,CO} 0 {1,S}
-4 {Cd,Ct,Cb,CO} 0 {1,S}
+3 {Cd,Ct,Cb} 0 {1,S}
+4 {Cd,Ct,Cb} 0 {1,S}
 
 C_ter_rad
 1 * C 1 {2,S}, {3,S}, {4,S}
@@ -151,45 +152,45 @@ C_rad/NDMustO
 
 C_rad/OneDe
 1 * C 1 {2,S}, {3,S}, {4,S}
-2 {Cd,Ct,Cb,CO} 0 {1,S}
+2 {Cd,Ct,Cb} 0 {1,S}
 3 {Cs,O} 0 {1,S}
 4 {Cs,O} 0 {1,S}
 
 C_rad/Cs2
 1 * C 1 {2,S}, {3,S}, {4,S}
-2 {Cd,Ct,Cb,CO} 0 {1,S}
+2 {Cd,Ct,Cb} 0 {1,S}
 3 Cs 0 {1,S}
 4 Cs 0 {1,S}
 
 C_rad/ODMustO
 1 * C 1 {2,S}, {3,S}, {4,S}
-2 {Cd,Ct,Cb,CO} 0 {1,S}
+2 {Cd,Ct,Cb} 0 {1,S}
 3 O 0 {1,S}
 4 {Cs,O} 0 {1,S}
 
 C_rad/TwoDe
 1 * C 1 {2,S}, {3,S}, {4,S}
-2 {Cd,Ct,Cb,CO} 0 {1,S}
-3 {Cd,Ct,Cb,CO} 0 {1,S}
+2 {Cd,Ct,Cb} 0 {1,S}
+3 {Cd,Ct,Cb} 0 {1,S}
 4 {Cs,O} 0 {1,S}
 
 C_rad/Cs
 1 * C 1 {2,S}, {3,S}, {4,S}
-2 {Cd,Ct,Cb,CO} 0 {1,S}
-3 {Cd,Ct,Cb,CO} 0 {1,S}
+2 {Cd,Ct,Cb} 0 {1,S}
+3 {Cd,Ct,Cb} 0 {1,S}
 4 Cs 0 {1,S}
 
 C_rad/TDMustO
 1 * C 1 {2,S}, {3,S}, {4,S}
-2 {Cd,Ct,Cb,CO} 0 {1,S}
-3 {Cd,Ct,Cb,CO} 0 {1,S}
+2 {Cd,Ct,Cb} 0 {1,S}
+3 {Cd,Ct,Cb} 0 {1,S}
 4 O 0 {1,S}
 
 C_rad/ThreeDe
 1 * C 1 {2,S}, {3,S}, {4,S}
-2 {Cd,Ct,Cb,CO} 0 {1,S}
-3 {Cd,Ct,Cb,CO} 0 {1,S}
-4 {Cd,Ct,Cb,CO} 0 {1,S}
+2 {Cd,Ct,Cb} 0 {1,S}
+3 {Cd,Ct,Cb} 0 {1,S}
+4 {Cd,Ct,Cb} 0 {1,S}
 
 Cd_rad
 1 * C 1 {2,D}, {3,S}
@@ -214,7 +215,7 @@ Cd_rad/NonDe
 Cd_rad/OneDe
 1 * C 1 {2,D}, {3,S}
 2 C 0 {1,D}
-3 {Cd,Ct,Cb,CO} 0 {1,S}
+3 {Cd,Ct,Cb} 0 {1,S}
 
 Ct_rad
 1 * C 1 {2,T}
@@ -222,7 +223,7 @@ Ct_rad
 
 Cb_rad
 1 * Cb 1 {2,B}, {3,B}
-2 {Cb,Cbf} 0 {1,B}  
+2 {Cb,Cbf} 0 {1,B}
 3 {Cb,Cbf} 0 {1,B}
 
 CO_rad
@@ -248,7 +249,7 @@ CO_rad/NonDe
 CO_rad/OneDe
 1 * C 1 {2,D}, {3,S}
 2 O 0 {1,D}
-3 {Cd,Ct,Cb,CO} 0 {1,S}
+3 {Cd,Ct,Cb} 0 {1,S}
 
 O_rad
 1 * O 1 {2,S}
@@ -268,5 +269,5 @@ O_rad/NonDe
 
 O_rad/OneDe
 1 * O 1 {2,S}
-2 {Cd,Ct,Cb,CO} 0 {1,S}
+2 {Cd,Ct,Cb} 0 {1,S}
 

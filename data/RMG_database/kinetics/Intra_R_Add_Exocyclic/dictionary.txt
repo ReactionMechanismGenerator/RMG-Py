@@ -40,7 +40,7 @@ R7
 7 *3 C 0 {6,{D,T}}
 
 multiplebond_intra
-1 *2 {Cd,Ct,CO} 0 {2,{D,T}}
+1 *2 {Cd,Ct} 0 {2,{D,T}}
 2 *3 {Cd,Ct,Od} 0 {1,{D,T}}
 
 radadd_intra
@@ -88,7 +88,7 @@ R7Cycle
 R4_S
 1 *1 {R!H} 1 {2,S}
 2 *4 {R!H} 0 {1,S} {3,S}
-3 *2 {Cd,Ct,CO} 0 {2,S} {4,{D,T}}
+3 *2 {Cd,Ct} 0 {2,S} {4,{D,T}}
 4 *3 {Cd,Ct,Od} 0 {3,{D,T}}
 
 R4_S_D
@@ -106,13 +106,14 @@ R4_S_T
 R4_S_CO
 1 *1 {R!H} 1 {2,S}
 2 *4 {R!H} 0 {1,S}, {3,S}
-3 *2 CO 0 {2,S} {4,D}
+3 *2 Cd 0 {2,S} {4,D} {5,D}
 4 *3 Od 0 {3,D}
+5 Od 0 {3,D}
 
 R4_D
 1 *1 Cd 1 {2,D}
 2 *4 Cd 0 {1,D}, {3,S}
-3 *2 {Cd,Ct,CO} 0 {2,S} {4,{D,T}}
+3 *2 {Cd,Ct} 0 {2,S} {4,{D,T}}
 4 *3 {Cd,Ct,Od} 0 {3,{D,T}}
 
 R4_D_D
@@ -130,13 +131,14 @@ R4_D_T
 R4_D_CO
 1 *1 Cd 1 {2,D}
 2 *4 Cd 0 {1,D} {3,S}
-3 *2 CO 0 {2,S} {4,D}
+3 *2 Cd 0 {2,S} {4,D} {5,D}
 4 *3 Od 0 {3,D}
+5 Od 0 {3,D}
 
 R4_T
 1 *1 Ct 1 {2,T}
 2 *4 Ct 0 {1,T} {3,S}
-3 *2 {Cd,Ct,CO} 0 {2,S} {4,{D,T}}
+3 *2 {Cd,Ct} 0 {2,S} {4,{D,T}}
 4 *3 {Cd,Ct,Od} 0 {3,{D,T}}
 
 R4_T_D
@@ -154,13 +156,14 @@ R4_T_T
 R4_T_CO
 1 *1 Ct 1 {2,T}
 2 *4 Ct 0 {1,T} {3,S}
-3 *2 CO 0 {2,S} {4,D}
+3 *2 Cd 0 {2,S} {4,D} {5,D}
 4 *3 Od 0 {3,D}
+5 Od 0 {3,D}
 
 R4_B
 1 *1 Cb 1 {2,B}
 2 *4 Cb 0 {1,B} {3,S}
-3 *2 {Cd,Ct,CO} 0 {2,S} {4,{D,T}}
+3 *2 {Cd,Ct} 0 {2,S} {4,{D,T}}
 4 *3 {Cd,Ct,Od} 0 {3,{D,T}}
 
 R4_B_D
@@ -178,14 +181,15 @@ R4_B_T
 R4_B_CO
 1 *1 Cb 1 {2,B}
 2 *4 Cb 0 {1,B} {3,S}
-3 *2 CO 0 {2,S} {4,D}
+3 *2 Cd 0 {2,S} {4,D} {5,D}
 4 *3 Od 0 {3,D}
+5 Od 0 {3,D}
 
 R5_SS
 1 *1 {R!H} 1 {2,S}
 2 *4 {R!H} 0 {1,S} {3,S}
 3 *5 {R!H} 0 {2,S} {4,S}
-4 *2 {Cd,Ct,CO} 0 {3,S} {5,{D,T}}
+4 *2 {Cd,Ct} 0 {3,S} {5,{D,T}}
 5 *3 {Cd,Ct,Od} 0 {4,{D,T}}
 
 R5_SS_D
@@ -206,14 +210,15 @@ R5_SS_CO
 1 *1 {R!H} 1 {2,S}
 2 *4 {R!H} 0 {1,S} {3,S}
 3 *5 {R!H} 0 {2,S} {4,S}
-4 *2 CO 0 {3,S} {5,D}
+4 *2 Cd 0 {3,S} {5,D} {6,D}
 5 *3 Od 0 {4,D}
+6 Od 0 {4,D}
 
 R5_SD
 1 *1 {R!H} 1 {2,S}
 2 *4 Cd 0 {1,S} {3,D}
 3 *5 Cd 0 {2,D} {4,S}
-4 *2 {Cd,Ct,CO} 0 {3,S} {5,{D,T}}
+4 *2 {Cd,Ct} 0 {3,S} {5,{D,T}}
 5 *3 {Cd,Ct,Od} 0 {4,{D,T}}
 
 R5_SD_D
@@ -234,14 +239,15 @@ R5_SD_CO
 1 *1 {R!H} 1 {2,S}
 2 *4 Cd 0 {1,S} {3,D}
 3 *5 Cd 0 {2,D} {4,S}
-4 *2 CO 0 {3,S} {5,D}
+4 *2 Cd 0 {3,S} {5,D} {6,D}
 5 *3 Od 0 {4,D}
+6 Od 0 {4,D}
 
 R5_DS
 1 *1 Cd 1 {2,D}
 2 *4 Cd 0 {1,D} {3,S}
 3 *5 {R!H} 0 {2,S} {4,S}
-4 *2 {Cd,Ct,CO} 0 {3,S} {5,{D,T}}
+4 *2 {Cd,Ct} 0 {3,S} {5,{D,T}}
 5 *3 {Cd,Ct,Od} 0 {4,{D,T}}
 
 R5_DS_D
@@ -262,14 +268,15 @@ R5_DS_CO
 1 *1 Cd 1 {2,D}
 2 *4 Cd 0 {1,D} {3,S}
 3 *5 {R!H} 0 {2,S} {4,S}
-4 *2 CO 0 {3,S} {5,D}
+4 *2 Cd 0 {3,S} {5,D} {6,D}
 5 *3 Od 0 {4,D}
+6 Od 0 {4,D}
 
 R5_ST
 1 *1 {R!H} 1 {2,S}
 2 *4 Ct 0 {1,S} {3,T}
 3 *5 Ct 0 {2,T} {4,S}
-4 *2 {Cd,Ct,CO} 0 {3,S} {5,{D,T}}
+4 *2 {Cd,Ct} 0 {3,S} {5,{D,T}}
 5 *3 {Cd,Ct,Od} 0 {4,{D,T}}
 
 R5_ST_D
@@ -290,14 +297,15 @@ R5_ST_CO
 1 *1 {R!H} 1 {2,S}
 2 *4 Ct 0 {1,S} {3,T}
 3 *5 Ct 0 {2,T} {4,S}
-4 *2 CO 0 {3,S} {5,D}
+4 *2 Cd 0 {3,S} {5,D} {6,D}
 5 *3 Od 0 {4,D}
+6 Od 0 {4,D}
 
 R5_TS
 1 *1 Ct 1 {2,T}
 2 *4 Ct 0 {1,T} {3,S}
 3 *5 {R!H} 0 {2,S} {4,S}
-4 *2 {Cd,Ct,CO} 0 {3,S} {5,{D,T}}
+4 *2 {Cd,Ct} 0 {3,S} {5,{D,T}}
 5 *3 {Cd,Ct,Od} 0 {4,{D,T}}
 
 R5_TS_D
@@ -318,14 +326,15 @@ R5_TS_CO
 1 *1 Ct 1 {2,T}
 2 *4 Ct 0 {1,T} {3,S}
 3 *5 {R!H} 0 {2,S} {4,S}
-4 *2 CO 0 {3,S} {5,D}
+4 *2 Cd 0 {3,S} {5,D} {6,D}
 5 *3 Od 0 {4,D}
+6 Od 0 {4,D}
 
 R5_SB
 1 *1 {R!H} 1 {2,S}
 2 *4 Cb 0 {1,S} {3,B}
 3 *5 Cb 0 {2,B} {4,S}
-4 *2 {Cd,Ct,CO} 0 {3,S} {5,{D,T}}
+4 *2 {Cd,Ct} 0 {3,S} {5,{D,T}}
 5 *3 {Cd,Ct,Od} 0 {4,{D,T}}
 
 R5_SB_D
@@ -346,14 +355,15 @@ R5_SB_CO
 1 *1 {R!H} 1 {2,S}
 2 *4 Cb 0 {1,S} {3,B}
 3 *5 Cb 0 {2,B} {4,S}
-4 *2 CO 0 {3,S} {5,D}
+4 *2 Cd 0 {3,S} {5,D} {6,D}
 5 *3 Od 0 {4,D}
+6 Od 0 {4,D}
 
 R5_BS
 1 *1 Cb 1 {2,B}
 2 *4 Cb 0 {1,B} {3,S}
 3 *5 {R!H} 0 {2,S} {4,S}
-4 *2 {Cd,Ct,CO} 0 {3,S} {5,{D,T}}
+4 *2 {Cd,Ct} 0 {3,S} {5,{D,T}}
 5 *3 {Cd,Ct,Od} 0 {4,{D,T}}
 
 R5_BS_D
@@ -374,15 +384,16 @@ R5_BS_CO
 1 *1 Cb 1 {2,B}
 2 *4 Cb 0 {1,B} {3,S}
 3 *5 {R!H} 0 {2,S} {4,S}
-4 *2 CO 0 {3,S} {5,D}
+4 *2 Cd 0 {3,S} {5,D} {6,D}
 5 *3 Od 0 {4,D}
+6 Od 0 {4,D}
 
 R6_RSR
 1 *1 {R!H} 1 {2,{S,D,T,B}}
 2 *4 {R!H} 0 {1,{S,D,T,B}} {3,S}
 3 {R!H} 0 {2,S} {4,{S,D,T,B}}
 4 *5 {R!H} 0 {3,{S,D,T,B}} {5,S}
-5 *2 {Cd,Ct,CO} 0 {4,S} {6,{D,T}}
+5 *2 {Cd,Ct} 0 {4,S} {6,{D,T}}
 6 *3 {Cd,Ct,Od} 0 {5,{D,T}}
 
 R6_SSR
@@ -390,7 +401,7 @@ R6_SSR
 2 *4 {R!H} 0 {1,S} {3,S}
 3 {R!H} 0 {2,S} {4,{S,D,T,B}}
 4 *5 {R!H} 0 {3,{S,D,T,B}} {5,S}
-5 *2 {Cd,Ct,CO} 0 {4,S} {6,{D,T}}
+5 *2 {Cd,Ct} 0 {4,S} {6,{D,T}}
 6 *3 {Cd,Ct,Od} 0 {5,{D,T}}
 
 R6_SSS
@@ -398,7 +409,7 @@ R6_SSS
 2 *4 {R!H} 0 {1,S} {3,S}
 3 {R!H} 0 {2,S} {4,S}
 4 *5 {R!H} 0 {3,S} {5,S}
-5 *2 {Cd,Ct,CO} 0 {4,S} {6,{D,T}}
+5 *2 {Cd,Ct} 0 {4,S} {6,{D,T}}
 6 *3 {Cd,Ct,Od} 0 {5,{D,T}}
 
 R6_SSS_D
@@ -422,15 +433,16 @@ R6_SSS_CO
 2 *4 {R!H} 0 {1,S} {3,S}
 3 {R!H} 0 {2,S} {4,S}
 4 *5 {R!H} 0 {3,S} {5,S}
-5 *2 CO 0 {4,S} {6,D}
+5 *2 Cd 0 {4,S} {6,D} {7,D}
 6 *3 Od 0 {5,D}
+7 Od 0 {5,D}
 
 R6_SSM
 1 *1 {R!H} 1 {2,S}
 2 *4 {R!H} 0 {1,S} {3,S}
 3 {Cd,Ct,Cb} 0 {2,S} {4,{D,T,B}}
 4 *5 {Cd,Ct,Cb} 0 {3,{D,T,B}} {5,S}
-5 *2 {Cd,Ct,CO} 0 {4,S} {6,{D,T}}
+5 *2 {Cd,Ct} 0 {4,S} {6,{D,T}}
 6 *3 {Cd,Ct,Od} 0 {5,{D,T}}
 
 R6_SSM_D
@@ -454,15 +466,16 @@ R6_SSM_CO
 2 *4 {R!H} 0 {1,S} {3,S}
 3 {Cd,Ct,Cb} 0 {2,S} {4,{D,T,B}}
 4 *5 {Cd,Ct,Cb} 0 {3,{D,T,B}} {5,S}
-5 *2 CO 0 {4,S} {6,D}
+5 *2 Cd 0 {4,S} {6,D} {7,D}
 6 *3 Od 0 {5,D}
+7 Od 0 {5,D}
 
 R6_DSR
 1 *1 Cd 1 {2,D}
 2 *4 Cd 0 {1,D} {3,S}
 3 {R!H} 0 {2,S} {4,{S,D,T,B}}
 4 *5 {R!H} 0 {3,{S,D,T,B}} {5,S}
-5 *2 {Cd,Ct,CO} 0 {4,S} {6,{D,T}}
+5 *2 {Cd,Ct} 0 {4,S} {6,{D,T}}
 6 *3 {Cd,Ct,Od} 0 {5,{D,T}}
 
 R6_DSS
@@ -470,7 +483,7 @@ R6_DSS
 2 *4 Cd 0 {1,D} {3,S}
 3 {R!H} 0 {2,S} {4,S}
 4 *5 {R!H} 0 {3,S} {5,S}
-5 *2 {Cd,Ct,CO} 0 {4,S} {6,{D,T}}
+5 *2 {Cd,Ct} 0 {4,S} {6,{D,T}}
 6 *3 {Cd,Ct,Od} 0 {5,{D,T}}
 
 R6_DSS_D
@@ -494,15 +507,16 @@ R6_DSS_CO
 2 *4 Cd 0 {1,D} {3,S}
 3 {R!H} 0 {2,S} {4,S}
 4 *5 {R!H} 0 {3,S} {5,S}
-5 *2 CO 0 {4,S} {6,D}
+5 *2 Cd 0 {4,S} {6,D} {7,D}
 6 *3 Od 0 {5,D}
+7 Od 0 {5,D}
 
 R6_DSM
 1 *1 Cd 1 {2,D}
 2 *4 Cd 0 {1,D} {3,S}
 3 {Cd,Ct,Cb} 0 {2,S} {4,{D,T,B}}
 4 *5 {Cd,Ct,Cb} 0 {3,{D,T,B}} {5,S}
-5 *2 {Cd,Ct,CO} 0 {4,S} {6,{D,T}}
+5 *2 {Cd,Ct} 0 {4,S} {6,{D,T}}
 6 *3 {Cd,Ct,Od} 0 {5,{D,T}}
 
 R6_DSM_D
@@ -526,15 +540,16 @@ R6_DSM_CO
 2 *4 Cd 0 {1,D} {3,S}
 3 {Cd,Ct,Cb} 0 {2,S} {4,{D,T,B}}
 4 *5 {Cd,Ct,Cb} 0 {3,{D,T,B}} {5,S}
-5 *2 CO 0 {4,S} {6,D}
+5 *2 Cd 0 {4,S} {6,D} {7,D}
 6 *3 Od 0 {5,D}
+7 Od 0 {5,D}
 
 R6_TSR
 1 *1 Ct 1 {2,T}
 2 *4 Ct 0 {1,T} {3,S}
 3 {R!H} 0 {2,S} {4,{S,D,T,B}}
 4 *5 {R!H} 0 {3,{S,D,T,B}} {5,S}
-5 *2 {Cd,Ct,CO} 0 {4,S} {6,{D,T}}
+5 *2 {Cd,Ct} 0 {4,S} {6,{D,T}}
 6 *3 {Cd,Ct,Od} 0 {5,{D,T}}
 
 R6_TSS
@@ -542,7 +557,7 @@ R6_TSS
 2 *4 Ct 0 {1,T} {3,S}
 3 {R!H} 0 {2,S} {4,S}
 4 *5 {R!H} 0 {3,S} {5,S}
-5 *2 {Cd,Ct,CO} 0 {4,S} {6,{D,T}}
+5 *2 {Cd,Ct} 0 {4,S} {6,{D,T}}
 6 *3 {Cd,Ct,Od} 0 {5,{D,T}}
 
 R6_TSS_D
@@ -566,15 +581,16 @@ R6_TSS_CO
 2 *4 Ct 0 {1,T} {3,S}
 3 {R!H} 0 {2,S} {4,S}
 4 *5 {R!H} 0 {3,S} {5,S}
-5 *2 CO 0 {4,S} {6,D}
+5 *2 Cd 0 {4,S} {6,D} {7,D}
 6 *3 Od 0 {5,D}
+7 Od 0 {5,D}
 
 R6_TSM
 1 *1 Ct 1 {2,T}
 2 *4 Ct 0 {1,T} {3,S}
 3 {Cd,Ct,Cb} 0 {2,S} {4,{D,T,B}}
 4 *5 {Cd,Ct,Cb} 0 {3,{D,T,B}} {5,S}
-5 *2 {Cd,Ct,CO} 0 {4,S} {6,{D,T}}
+5 *2 {Cd,Ct} 0 {4,S} {6,{D,T}}
 6 *3 {Cd,Ct,Od} 0 {5,{D,T}}
 
 R6_TSM_D
@@ -598,15 +614,16 @@ R6_TSM_CO
 2 *4 Ct 0 {1,T} {3,S}
 3 {Cd,Ct,Cb} 0 {2,S} {4,{D,T,B}}
 4 *5 {Cd,Ct,Cb} 0 {3,{D,T,B}} {5,S}
-5 *2 CO 0 {4,S} {6,D}
+5 *2 Cd 0 {4,S} {6,D} {7,D}
 6 *3 Od 0 {5,D}
+7 Od 0 {5,D}
 
 R6_BSR
 1 *1 Cb 1 {2,B}
 2 *4 Cb 0 {1,B} {3,S}
 3 {R!H} 0 {2,S} {4,{S,D,T,B}}
 4 *5 {R!H} 0 {3,{S,D,T,B}} {5,S}
-5 *2 {Cd,Ct,CO} 0 {4,S} {6,{D,T}}
+5 *2 {Cd,Ct} 0 {4,S} {6,{D,T}}
 6 *3 {Cd,Ct,Od} 0 {5,{D,T}}
 
 R6_BSS
@@ -614,7 +631,7 @@ R6_BSS
 2 *4 Cb 0 {1,B} {3,S}
 3 {R!H} 0 {2,S} {4,S}
 4 *5 {R!H} 0 {3,S} {5,S}
-5 *2 {Cd,Ct,CO} 0 {4,S} {6,{D,T}}
+5 *2 {Cd,Ct} 0 {4,S} {6,{D,T}}
 6 *3 {Cd,Ct,Od} 0 {5,{D,T}}
 
 R6_BSS_D
@@ -638,15 +655,16 @@ R6_BSS_CO
 2 *4 Cb 0 {1,B} {3,S}
 3 {R!H} 0 {2,S} {4,S}
 4 *5 {R!H} 0 {3,S} {5,S}
-5 *2 CO 0 {4,S} {6,D}
+5 *2 Cd 0 {4,S} {6,D} {7,D}
 6 *3 Od 0 {5,D}
+7 Od 0 {5,D}
 
 R6_BSM
 1 *1 Cb 1 {2,B}
 2 *4 Cb 0 {1,B} {3,S}
 3 {Cd,Ct,Cb} 0 {2,S} {4,{D,T,B}}
 4 *5 {Cd,Ct,Cb} 0 {3,{D,T,B}} {5,S}
-5 *2 {Cd,Ct,CO} 0 {4,S} {6,{D,T}}
+5 *2 {Cd,Ct} 0 {4,S} {6,{D,T}}
 6 *3 {Cd,Ct,Od} 0 {5,{D,T}}
 
 R6_BSM_D
@@ -670,15 +688,16 @@ R6_BSM_CO
 2 *4 Cb 0 {1,B} {3,S}
 3 {Cd,Ct,Cb} 0 {2,S} {4,{D,T,B}}
 4 *5 {Cd,Ct,Cb} 0 {3,{D,T,B}} {5,S}
-5 *2 CO 0 {4,S} {6,D}
+5 *2 Cd 0 {4,S} {6,D} {7,D}
 6 *3 Od 0 {5,D}
+7 Od 0 {5,D}
 
 R6_SMS
 1 *1 {R!H} 1 {2,S}
 2 *4 {Cd,Ct,Cb} 0 {1,S} {3,{D,T,B}}
 3 {Cd,Ct,Cb} 0 {2,{D,T,B}} {4,S}
 4 *5 {R!H} 0 {3,S} {5,S}
-5 *2 {Cd,Ct,CO} 0 {4,S} {6,{D,T}}
+5 *2 {Cd,Ct} 0 {4,S} {6,{D,T}}
 6 *3 {Cd,Ct,Od} 0 {5,{D,T}}
 
 R6_SMS_D
@@ -702,15 +721,16 @@ R6_SMS_CO
 2 *4 {Cd,Ct,Cb} 0 {1,S} {3,{D,T,B}}
 3 {Cd,Ct,Cb} 0 {2,{D,T,B}} {4,S}
 4 *5 {R!H} 0 {3,S} {5,S}
-5 *2 CO 0 {4,S} {6,D}
+5 *2 Cd 0 {4,S} {6,D} {7,D}
 6 *3 Od 0 {5,D}
+7 Od 0 {5,D}
 
 R6_SBB
 1 *1 {R!H} 1 {2,S}
 2 *4 Cb 0 {1,S} {3,B}
 3 Cbf 0 {2,B} {4,B}
 4 *5 Cb 0 {3,B} {5,S}
-5 *2 {Cd,Ct,CO} 0 {4,S} {6,{D,T}}
+5 *2 {Cd,Ct} 0 {4,S} {6,{D,T}}
 6 *3 {Cd,Ct,Od} 0 {5,{D,T}}
 
 R6_SBB_D
@@ -734,15 +754,16 @@ R6_SBB_CO
 2 *4 Cb 0 {1,S} {3,B}
 3 Cbf 0 {2,B} {4,B}
 4 *5 Cb 0 {3,B} {5,S}
-5 *2 CO 0 {4,S} {6,D}
+5 *2 Cd 0 {4,S} {6,D} {7,D}
 6 *3 Od 0 {5,D}
+7 Od 0 {5,D}
 
 R6_BBS
 1 *1 Cb 1 {2,B}
 2 *4 Cbf 0 {1,B} {3,B}
 3 Cb 0 {2,B} {4,S}
 4 *5 {R!H} 0 {3,S} {5,S}
-5 *2 {Cd,Ct,CO} 0 {4,S} {6,{D,T}}
+5 *2 {Cd,Ct} 0 {4,S} {6,{D,T}}
 6 *3 {Cd,Ct,Od} 0 {5,{D,T}}
 
 R6_BBS_D
@@ -766,8 +787,9 @@ R6_BBS_CO
 2 *4 Cbf 0 {1,B} {3,B}
 3 Cb 0 {2,B} {4,S}
 4 *5 {R!H} 0 {3,S} {5,S}
-5 *2 CO 0 {4,S} {6,D}
+5 *2 Cd 0 {4,S} {6,D} {7,D}
 6 *3 Od 0 {5,D}
+7 Od 0 {5,D}
 
 R7_RSSR
 1 *1 {R!H} 1 {2,{S,D,T,B}}
@@ -775,7 +797,7 @@ R7_RSSR
 3 {R!H} 0 {2,S} {4,S}
 4 {R!H} 0 {3,S} {5,{S,D,T,B}}
 5 *5 {R!H} 0 {4,{S,D,T,B}} {6,S}
-6 *2 {Cd,Ct,CO} 0 {5,S} {7,{D,T}}
+6 *2 {Cd,Ct} 0 {5,S} {7,{D,T}}
 7 *3 {Cd,Ct,Od} 0 {6,{D,T}}
 
 R7_SSSR
@@ -784,7 +806,7 @@ R7_SSSR
 3 {R!H} 0 {2,S} {4,S}
 4 {R!H} 0 {3,S} {5,{S,D,T,B}}
 5 *5 {R!H} 0 {4,{S,D,T,B}} {6,S}
-6 *2 {Cd,Ct,CO} 0 {5,S} {7,{D,T}}
+6 *2 {Cd,Ct} 0 {5,S} {7,{D,T}}
 7 *3 {Cd,Ct,Od} 0 {6,{D,T}}
 
 R7_SSSS
@@ -793,7 +815,7 @@ R7_SSSS
 3 {R!H} 0 {2,S} {4,S}
 4 {R!H} 0 {3,S} {5,S}
 5 *5 {R!H} 0 {4,S} {6,S}
-6 *2 {Cd,Ct,CO} 0 {5,S} {7,{D,T}}
+6 *2 {Cd,Ct} 0 {5,S} {7,{D,T}}
 7 *3 {Cd,Ct,Od} 0 {6,{D,T}}
 
 R7_SSSS_D
@@ -820,8 +842,9 @@ R7_SSSS_CO
 3 {R!H} 0 {2,S} {4,S}
 4 {R!H} 0 {3,S} {5,S}
 5 *5 {R!H} 0 {4,S} {6,S}
-6 *2 CO 0 {5,S} {7,D}
+6 *2 Cd 0 {5,S} {7,D} {8,D}
 7 *3 Od 0 {6,D}
+8 Od 0 {6,D}
 
 R7_SSSM
 1 *1 {R!H} 1 {2,S}
@@ -829,7 +852,7 @@ R7_SSSM
 3 {R!H} 0 {2,S} {4,S}
 4 {Cd,Ct,Cb} 0 {3,S} {5,{D,T,B}}
 5 *5 {Cd,Ct,Cb} 0 {4,{D,T,B}} {6,S}
-6 *2 {Cd,Ct,CO} 0 {5,S} {7,{D,T}}
+6 *2 {Cd,Ct} 0 {5,S} {7,{D,T}}
 7 *3 {Cd,Ct,Od} 0 {6,{D,T}}
 
 R7_SSSM_D
@@ -856,8 +879,9 @@ R7_SSSM_CO
 3 {R!H} 0 {2,S} {4,S}
 4 {Cd,Ct,Cb} 0 {3,S} {5,{D,T,B}}
 5 *5 {Cd,Ct,Cb} 0 {4,{D,T,B}} {6,S}
-6 *2 CO 0 {5,S} {7,D}
+6 *2 Cd 0 {5,S} {7,D} {8,D}
 7 *3 Od 0 {6,D}
+8 Od 0 {6,D}
 
 R7_DSSR
 1 *1 Cd 1 {2,D}
@@ -865,7 +889,7 @@ R7_DSSR
 3 {R!H} 0 {2,S} {4,S}
 4 {R!H} 0 {3,S} {5,{S,D,T,B}}
 5 *5 {R!H} 0 {4,{S,D,T,B}} {6,S}
-6 *2 {Cd,Ct,CO} 0 {5,S} {7,{D,T}}
+6 *2 {Cd,Ct} 0 {5,S} {7,{D,T}}
 7 *3 {Cd,Ct,Od} 0 {6,{D,T}}
 
 R7_DSSS
@@ -874,7 +898,7 @@ R7_DSSS
 3 {R!H} 0 {2,S} {4,S}
 4 {R!H} 0 {3,S} {5,S}
 5 *5 {R!H} 0 {4,S} {6,S}
-6 *2 {Cd,Ct,CO} 0 {5,S} {7,{D,T}}
+6 *2 {Cd,Ct} 0 {5,S} {7,{D,T}}
 7 *3 {Cd,Ct,Od} 0 {6,{D,T}}
 
 R7_DSSS_D
@@ -901,8 +925,9 @@ R7_DSSS_CO
 3 {R!H} 0 {2,S} {4,S}
 4 {R!H} 0 {3,S} {5,S}
 5 *5 {R!H} 0 {4,S} {6,S}
-6 *2 CO 0 {5,S} {7,D}
+6 *2 Cd 0 {5,S} {7,D} {8,D}
 7 *3 Od 0 {6,D}
+8 Od 0 {6,D}
 
 R7_DSSM
 1 *1 Cd 1 {2,D}
@@ -910,7 +935,7 @@ R7_DSSM
 3 {R!H} 0 {2,S} {4,S}
 4 {Cd,Ct,Cb} 0 {3,S} {5,{D,T,B}}
 5 *5 {Cd,Ct,Cb} 0 {4,{D,T,B}} {6,S}
-6 *2 {Cd,Ct,CO} 0 {5,S} {7,{D,T}}
+6 *2 {Cd,Ct} 0 {5,S} {7,{D,T}}
 7 *3 {Cd,Ct,Od} 0 {6,{D,T}}
 
 R7_DSSM_D
@@ -937,8 +962,9 @@ R7_DSSM_CO
 3 {R!H} 0 {2,S} {4,S}
 4 {Cd,Ct,Cb} 0 {3,S} {5,{D,T,B}}
 5 *5 {Cd,Ct,Cb} 0 {4,{D,T,B}} {6,S}
-6 *2 CO 0 {5,S} {7,D}
+6 *2 Cd 0 {5,S} {7,D} {8,D}
 7 *3 Od 0 {6,D}
+8 Od 0 {6,D}
 
 R7_TSSR
 1 *1 Ct 1 {2,T}
@@ -946,7 +972,7 @@ R7_TSSR
 3 {R!H} 0 {2,S} {4,S}
 4 {R!H} 0 {3,S} {5,{S,D,T,B}}
 5 *5 {R!H} 0 {4,{S,D,T,B}} {6,S}
-6 *2 {Cd,Ct,CO} 0 {5,S} {7,{D,T}}
+6 *2 {Cd,Ct} 0 {5,S} {7,{D,T}}
 7 *3 {Cd,Ct,Od} 0 {6,{D,T}}
 
 R7_TSSS
@@ -955,7 +981,7 @@ R7_TSSS
 3 {R!H} 0 {2,S} {4,S}
 4 {R!H} 0 {3,S} {5,S}
 5 *5 {R!H} 0 {4,S} {6,S}
-6 *2 {Cd,Ct,CO} 0 {5,S} {7,{D,T}}
+6 *2 {Cd,Ct} 0 {5,S} {7,{D,T}}
 7 *3 {Cd,Ct,Od} 0 {6,{D,T}}
 
 R7_TSSS_D
@@ -982,8 +1008,9 @@ R7_TSSS_CO
 3 {R!H} 0 {2,S} {4,S}
 4 {R!H} 0 {3,S} {5,S}
 5 *5 {R!H} 0 {4,S} {6,S}
-6 *2 CO 0 {5,S} {7,D}
+6 *2 Cd 0 {5,S} {7,D} {8,D}
 7 *3 Od 0 {6,D}
+8 Od 0 {6,D}
 
 R7_TSSM
 1 *1 Ct 1 {2,T}
@@ -991,7 +1018,7 @@ R7_TSSM
 3 {R!H} 0 {2,S} {4,S}
 4 {Cd,Ct,Cb} 0 {3,S} {5,{D,T,B}}
 5 *5 {Cd,Ct,Cb} 0 {4,{D,T,B}} {6,S}
-6 *2 {Cd,Ct,CO} 0 {5,S} {7,{D,T}}
+6 *2 {Cd,Ct} 0 {5,S} {7,{D,T}}
 7 *3 {Cd,Ct,Od} 0 {6,{D,T}}
 
 R7_TSSM_D
@@ -1018,8 +1045,9 @@ R7_TSSM_CO
 3 {R!H} 0 {2,S} {4,S}
 4 {Cd,Ct,Cb} 0 {3,S} {5,{D,T,B}}
 5 *5 {Cd,Ct,Cb} 0 {4,{D,T,B}} {6,S}
-6 *2 CO 0 {5,S} {7,D}
+6 *2 Cd 0 {5,S} {7,D} {8,D}
 7 *3 Od 0 {6,D}
+8 Od 0 {6,D}
 
 R7_BSSR
 1 *1 Cb 1 {2,B}
@@ -1027,7 +1055,7 @@ R7_BSSR
 3 {R!H} 0 {2,S} {4,S}
 4 {R!H} 0 {3,S} {5,{S,D,T,B}}
 5 *5 {R!H} 0 {4,{S,D,T,B}} {6,S}
-6 *2 {Cd,Ct,CO} 0 {5,S} {7,{D,T}}
+6 *2 {Cd,Ct} 0 {5,S} {7,{D,T}}
 7 *3 {Cd,Ct,Od} 0 {6,{D,T}}
 
 R7_BSSS
@@ -1036,7 +1064,7 @@ R7_BSSS
 3 {R!H} 0 {2,S} {4,S}
 4 {R!H} 0 {3,S} {5,S}
 5 *5 {R!H} 0 {4,S} {6,S}
-6 *2 {Cd,Ct,CO} 0 {5,S} {7,{D,T}}
+6 *2 {Cd,Ct} 0 {5,S} {7,{D,T}}
 7 *3 {Cd,Ct,Od} 0 {6,{D,T}}
 
 R7_BSSS_D
@@ -1063,8 +1091,9 @@ R7_BSSS_CO
 3 {R!H} 0 {2,S} {4,S}
 4 {R!H} 0 {3,S} {5,S}
 5 *5 {R!H} 0 {4,S} {6,S}
-6 *2 CO 0 {5,S} {7,D}
+6 *2 Cd 0 {5,S} {7,D} {8,D}
 7 *3 Od 0 {6,D}
+8 Od 0 {6,D}
 
 R7_BSSM
 1 *1 Cb 1 {2,B}
@@ -1072,7 +1101,7 @@ R7_BSSM
 3 {R!H} 0 {2,S} {4,S}
 4 {Cd,Ct,Cb} 0 {3,S} {5,{D,T,B}}
 5 *5 {Cd,Ct,Cb} 0 {4,{D,T,B}} {6,S}
-6 *2 {Cd,Ct,CO} 0 {5,S} {7,{D,T}}
+6 *2 {Cd,Ct} 0 {5,S} {7,{D,T}}
 7 *3 {Cd,Ct,Od} 0 {6,{D,T}}
 
 R7_BSSM_D
@@ -1099,8 +1128,9 @@ R7_BSSM_CO
 3 {R!H} 0 {2,S} {4,S}
 4 {Cd,Ct,Cb} 0 {3,S} {5,{D,T,B}}
 5 *5 {Cd,Ct,Cb} 0 {4,{D,T,B}} {6,S}
-6 *2 CO 0 {5,S} {7,D}
+6 *2 Cd 0 {5,S} {7,D} {8,D}
 7 *3 Od 0 {6,D}
+8 Od 0 {6,D}
 
 R7_RSMS
 1 *1 {R!H} 1 {2,{S,D,T,B}}
@@ -1108,7 +1138,7 @@ R7_RSMS
 3 {Cd,Ct,Cb} 0 {2,S} {4,{D,T,B}}
 4 {Cd,Ct,Cb} 0 {3,{D,T,B}} {5,S}
 5 *5 {R!H} 0 {4,S} {6,S}
-6 *2 {Cd,Ct,CO} 0 {5,S} {7,{D,T}}
+6 *2 {Cd,Ct} 0 {5,S} {7,{D,T}}
 7 *3 {Cd,Ct,Od} 0 {6,{D,T}}
 
 R7_SSMS
@@ -1117,7 +1147,7 @@ R7_SSMS
 3 {Cd,Ct,Cb} 0 {2,S} {4,{D,T,B}}
 4 {Cd,Ct,Cb} 0 {3,{D,T,B}} {5,S}
 5 *5 {R!H} 0 {4,S} {6,S}
-6 *2 {Cd,Ct,CO} 0 {5,S} {7,{D,T}}
+6 *2 {Cd,Ct} 0 {5,S} {7,{D,T}}
 7 *3 {Cd,Ct,Od} 0 {6,{D,T}}
 
 R7_SSMS_D
@@ -1144,8 +1174,9 @@ R7_SSMS_CO
 3 {Cd,Ct,Cb} 0 {2,S} {4,{D,T,B}}
 4 {Cd,Ct,Cb} 0 {3,{D,T,B}} {5,S}
 5 *5 {R!H} 0 {4,S} {6,S}
-6 *2 CO 0 {5,S} {7,D}
+6 *2 Cd 0 {5,S} {7,D} {8,D}
 7 *3 Od 0 {6,D}
+8 Od 0 {6,D}
 
 R7_DSMS
 1 *1 Cd 1 {2,D}
@@ -1153,7 +1184,7 @@ R7_DSMS
 3 {Cd,Ct,Cb} 0 {2,S} {4,{D,T,B}}
 4 {Cd,Ct,Cb} 0 {3,{D,T,B}} {5,S}
 5 *5 {R!H} 0 {4,S} {6,S}
-6 *2 {Cd,Ct,CO} 0 {5,S} {7,{D,T}}
+6 *2 {Cd,Ct} 0 {5,S} {7,{D,T}}
 7 *3 {Cd,Ct,Od} 0 {6,{D,T}}
 
 R7_DSMS_D
@@ -1180,8 +1211,9 @@ R7_DSMS_CO
 3 {Cd,Ct,Cb} 0 {2,S} {4,{D,T,B}}
 4 {Cd,Ct,Cb} 0 {3,{D,T,B}} {5,S}
 5 *5 {R!H} 0 {4,S} {6,S}
-6 *2 CO 0 {5,S} {7,D}
+6 *2 Cd 0 {5,S} {7,D} {8,D}
 7 *3 Od 0 {6,D}
+8 Od 0 {6,D}
 
 R7_TSMS
 1 *1 Ct 1 {2,T}
@@ -1189,7 +1221,7 @@ R7_TSMS
 3 {Cd,Ct,Cb} 0 {2,S} {4,{D,T,B}}
 4 {Cd,Ct,Cb} 0 {3,{D,T,B}} {5,S}
 5 *5 {R!H} 0 {4,S} {6,S}
-6 *2 {Cd,Ct,CO} 0 {5,S} {7,{D,T}}
+6 *2 {Cd,Ct} 0 {5,S} {7,{D,T}}
 7 *3 {Cd,Ct,Od} 0 {6,{D,T}}
 
 R7_TSMS_D
@@ -1216,8 +1248,9 @@ R7_TSMS_CO
 3 {Cd,Ct,Cb} 0 {2,S} {4,{D,T,B}}
 4 {Cd,Ct,Cb} 0 {3,{D,T,B}} {5,S}
 5 *5 {R!H} 0 {4,S} {6,S}
-6 *2 CO 0 {5,S} {7,D}
+6 *2 Cd 0 {5,S} {7,D} {8,D}
 7 *3 Od 0 {6,D}
+8 Od 0 {6,D}
 
 R7_BSMS
 1 *1 Cb 1 {2,B}
@@ -1225,7 +1258,7 @@ R7_BSMS
 3 {Cd,Ct,Cb} 0 {2,S} {4,{D,T,B}}
 4 {Cd,Ct,Cb} 0 {3,{D,T,B}} {5,S}
 5 *5 {R!H} 0 {4,S} {6,S}
-6 *2 {Cd,Ct,CO} 0 {5,S} {7,{D,T}}
+6 *2 {Cd,Ct} 0 {5,S} {7,{D,T}}
 7 *3 {Cd,Ct,Od} 0 {6,{D,T}}
 
 R7_BSMS_D
@@ -1252,8 +1285,9 @@ R7_BSMS_CO
 3 {Cd,Ct,Cb} 0 {2,S} {4,{D,T,B}}
 4 {Cd,Ct,Cb} 0 {3,{D,T,B}} {5,S}
 5 *5 {R!H} 0 {4,S} {6,S}
-6 *2 CO 0 {5,S} {7,D}
+6 *2 Cd 0 {5,S} {7,D} {8,D}
 7 *3 Od 0 {6,D}
+8 Od 0 {6,D}
 
 R7_SMSR
 1 *1 {R!H} 1 {2,S}
@@ -1261,7 +1295,7 @@ R7_SMSR
 3 {Cd,Ct,Cb} 0 {2,{D,T,B}} {4,S}
 4 {R!H} 0 {3,S} {5,{S,D,T,B}}
 5 *5 {R!H} 0 {4,{S,D,T,B}} {6,S}
-6 *2 {Cd,Ct,CO} 0 {5,S} {7,{D,T}}
+6 *2 {Cd,Ct} 0 {5,S} {7,{D,T}}
 7 *3 {Cd,Ct,Od} 0 {6,{D,T}}
 
 R7_SMSS
@@ -1270,7 +1304,7 @@ R7_SMSS
 3 {Cd,Ct,Cb} 0 {2,{D,T,B}} {4,S}
 4 {R!H} 0 {3,S} {5,S}
 5 *5 {R!H} 0 {4,S} {6,S}
-6 *2 {Cd,Ct,CO} 0 {5,S} {7,{D,T}}
+6 *2 {Cd,Ct} 0 {5,S} {7,{D,T}}
 7 *3 {Cd,Ct,Od} 0 {6,{D,T}}
 
 R7_SMSS_D
@@ -1297,8 +1331,9 @@ R7_SMSS_CO
 3 {Cd,Ct,Cb} 0 {2,{D,T,B}} {4,S}
 4 {R!H} 0 {3,S} {5,S}
 5 *5 {R!H} 0 {4,S} {6,S}
-6 *2 CO 0 {5,S} {7,D}
+6 *2 Cd 0 {5,S} {7,D} {8,D}
 7 *3 Od 0 {6,D}
+8 Od 0 {6,D}
 
 R7_SMSM
 1 *1 {R!H} 1 {2,S}
@@ -1306,7 +1341,7 @@ R7_SMSM
 3 {Cd,Ct,Cb} 0 {2,{D,T,B}} {4,S}
 4 {Cd,Ct,Cb} 0 {3,S} {5,{D,T,B}}
 5 *5 {Cd,Ct,Cb} 0 {4,{D,T,B}} {6,S}
-6 *2 {Cd,Ct,CO} 0 {5,S} {7,{D,T}}
+6 *2 {Cd,Ct} 0 {5,S} {7,{D,T}}
 7 *3 {Cd,Ct,Od} 0 {6,{D,T}}
 
 R7_SMSM_D
@@ -1333,8 +1368,9 @@ R7_SMSM_CO
 3 {Cd,Ct,Cb} 0 {2,{D,T,B}} {4,S}
 4 {Cd,Ct,Cb} 0 {3,S} {5,{D,T,B}}
 5 *5 {Cd,Ct,Cb} 0 {4,{D,T,B}} {6,S}
-6 *2 CO 0 {5,S} {7,D}
+6 *2 Cd 0 {5,S} {7,D} {8,D}
 7 *3 Od 0 {6,D}
+8 Od 0 {6,D}
 
 R7_BBSR
 1 *1 Cb 1 {2,B}
@@ -1342,7 +1378,7 @@ R7_BBSR
 3 Cb 0 {2,B} {4,S}
 4 {R!H} 0 {3,S} {5,{S,D,T,B}}
 5 *5 {R!H} 0 {4,{S,D,T,B}} {6,S}
-6 *2 {Cd,Ct,CO} 0 {5,S} {7,{D,T}}
+6 *2 {Cd,Ct} 0 {5,S} {7,{D,T}}
 7 *3 {Cd,Ct,Od} 0 {6,{D,T}}
 
 R7_BBSS
@@ -1351,7 +1387,7 @@ R7_BBSS
 3 Cb 0 {2,B} {4,S}
 4 {R!H} 0 {3,S} {5,S}
 5 *5 {R!H} 0 {4,S} {6,S}
-6 *2 {Cd,Ct,CO} 0 {5,S} {7,{D,T}}
+6 *2 {Cd,Ct} 0 {5,S} {7,{D,T}}
 7 *3 {Cd,Ct,Od} 0 {6,{D,T}}
 
 R7_BBSS_D
@@ -1378,8 +1414,9 @@ R7_BBSS_CO
 3 Cb 0 {2,B} {4,S}
 4 {R!H} 0 {3,S} {5,S}
 5 *5 {R!H} 0 {4,S} {6,S}
-6 *2 CO 0 {5,S} {7,D}
+6 *2 Cd 0 {5,S} {7,D} {8,D}
 7 *3 Od 0 {6,D}
+8 Od 0 {6,D}
 
 R7_BBSM
 1 *1 Cb 1 {2,B}
@@ -1387,7 +1424,7 @@ R7_BBSM
 3 Cb 0 {2,B} {4,S}
 4 {Cd,Ct,Cb} 0 {3,S} {5,{D,T,B}}
 5 *5 {Cd,Ct,Cb} 0 {4,{D,T,B}} {6,S}
-6 *2 {Cd,Ct,CO} 0 {5,S} {7,{D,T}}
+6 *2 {Cd,Ct} 0 {5,S} {7,{D,T}}
 7 *3 {Cd,Ct,Od} 0 {6,{D,T}}
 
 R7_BBSM_D
@@ -1414,8 +1451,9 @@ R7_BBSM_CO
 3 Cb 0 {2,B} {4,S}
 4 {Cd,Ct,Cb} 0 {3,S} {5,{D,T,B}}
 5 *5 {Cd,Ct,Cb} 0 {4,{D,T,B}} {6,S}
-6 *2 CO 0 {5,S} {7,D}
+6 *2 Cd 0 {5,S} {7,D} {8,D}
 7 *3 Od 0 {6,D}
+8 Od 0 {6,D}
 
 R7_RSBB
 1 *1 {R!H} 1 {2,{S,D,T,B}}
@@ -1423,7 +1461,7 @@ R7_RSBB
 3 Cb 0 {2,S} {4,B}
 4 Cbf 0 {3,B} {5,B}
 5 *5 Cb 0 {4,B} {6,S}
-6 *2 {Cd,Ct,CO} 0 {5,S} {7,{D,T}}
+6 *2 {Cd,Ct} 0 {5,S} {7,{D,T}}
 7 *3 {Cd,Ct,Od} 0 {6,{D,T}}
 
 R7_SSBB
@@ -1432,7 +1470,7 @@ R7_SSBB
 3 Cb 0 {2,S} {4,B}
 4 Cbf 0 {3,B} {5,B}
 5 *5 Cb 0 {4,B} {6,S}
-6 *2 {Cd,Ct,CO} 0 {5,S} {7,{D,T}}
+6 *2 {Cd,Ct} 0 {5,S} {7,{D,T}}
 7 *3 {Cd,Ct,Od} 0 {6,{D,T}}
 
 R7_SSBB_D
@@ -1459,8 +1497,9 @@ R7_SSBB_CO
 3 Cb 0 {2,S} {4,B}
 4 Cbf 0 {3,B} {5,B}
 5 *5 Cb 0 {4,B} {6,S}
-6 *2 CO 0 {5,S} {7,D}
+6 *2 Cd 0 {5,S} {7,D} {8,D}
 7 *3 Od 0 {6,D}
+8 Od 0 {6,D}
 
 R7_DSBB
 1 *1 Cd 1 {2,D}
@@ -1468,7 +1507,7 @@ R7_DSBB
 3 Cb 0 {2,S} {4,B}
 4 Cbf 0 {3,B} {5,B}
 5 *5 Cb 0 {4,B} {6,S}
-6 *2 {Cd,Ct,CO} 0 {5,S} {7,{D,T}}
+6 *2 {Cd,Ct} 0 {5,S} {7,{D,T}}
 7 *3 {Cd,Ct,Od} 0 {6,{D,T}}
 
 R7_DSBB_D
@@ -1495,8 +1534,9 @@ R7_DSBB_CO
 3 Cb 0 {2,S} {4,B}
 4 Cbf 0 {3,B} {5,B}
 5 *5 Cb 0 {4,B} {6,S}
-6 *2 CO 0 {5,S} {7,D}
+6 *2 Cd 0 {5,S} {7,D} {8,D}
 7 *3 Od 0 {6,D}
+8 Od 0 {6,D}
 
 R7_TSBB
 1 *1 Ct 1 {2,T}
@@ -1504,7 +1544,7 @@ R7_TSBB
 3 Cb 0 {2,S} {4,B}
 4 Cbf 0 {3,B} {5,B}
 5 *5 Cb 0 {4,B} {6,S}
-6 *2 {Cd,Ct,CO} 0 {5,S} {7,{D,T}}
+6 *2 {Cd,Ct} 0 {5,S} {7,{D,T}}
 7 *3 {Cd,Ct,Od} 0 {6,{D,T}}
 
 R7_TSBB_D
@@ -1531,8 +1571,9 @@ R7_TSBB_CO
 3 Cb 0 {2,S} {4,B}
 4 Cbf 0 {3,B} {5,B}
 5 *5 Cb 0 {4,B} {6,S}
-6 *2 CO 0 {5,S} {7,D}
+6 *2 Cd 0 {5,S} {7,D} {8,D}
 7 *3 Od 0 {6,D}
+8 Od 0 {6,D}
 
 R7_BSBB
 1 *1 Cb 1 {2,B}
@@ -1540,7 +1581,7 @@ R7_BSBB
 3 Cb 0 {2,S} {4,B}
 4 Cbf 0 {3,B} {5,B}
 5 *5 Cb 0 {4,B} {6,S}
-6 *2 {Cd,Ct,CO} 0 {5,S} {7,{D,T}}
+6 *2 {Cd,Ct} 0 {5,S} {7,{D,T}}
 7 *3 {Cd,Ct,Od} 0 {6,{D,T}}
 
 R7_BSBB_D
@@ -1567,8 +1608,9 @@ R7_BSBB_CO
 3 Cb 0 {2,S} {4,B}
 4 Cbf 0 {3,B} {5,B}
 5 *5 Cb 0 {4,B} {6,S}
-6 *2 CO 0 {5,S} {7,D}
+6 *2 Cd 0 {5,S} {7,D} {8,D}
 7 *3 Od 0 {6,D}
+8 Od 0 {6,D}
 
 R7_SBBS
 1 *1 {R!H} 1 {2,S}
@@ -1576,7 +1618,7 @@ R7_SBBS
 3 Cbf 0 {2,B} {4,B}
 4 Cb 0 {3,B} {5,S}
 5 *5 {R!H} 0 {4,S} {6,S}
-6 *2 {Cd,Ct,CO} 0 {5,S} {7,{D,T}}
+6 *2 {Cd,Ct} 0 {5,S} {7,{D,T}}
 7 *3 {Cd,Ct,Od} 0 {6,{D,T}}
 
 R7_SBBS_D
@@ -1603,8 +1645,9 @@ R7_SBBS_CO
 3 Cbf 0 {2,B} {4,B}
 4 Cb 0 {3,B} {5,S}
 5 *5 {R!H} 0 {4,S} {6,S}
-6 *2 CO 0 {5,S} {7,D}
+6 *2 Cd 0 {5,S} {7,D} {8,D}
 7 *3 Od 0 {6,D}
+8 Od 0 {6,D}
 
 doublebond_intra
 1 *2 Cd 0 {2,D}
@@ -1633,7 +1676,7 @@ doublebond_intra_2H_secNd
 doublebond_intra_2H_secDe
 1 *2 Cd 0 {2,D} {3,S}
 2 *3 Cd 0 {1,D} {4,S} {5,S}
-3 {Cd,Ct,Cb,CO} 0 {1,S}
+3 {Cd,Ct,Cb} 0 {1,S}
 4 H 0 {2,S}
 5 H 0 {2,S}
 
@@ -1660,7 +1703,7 @@ doublebond_intra_HNd_secNd
 doublebond_intra_HNd_secDe
 1 *2 Cd 0 {2,D} {3,S}
 2 *3 Cd 0 {1,D} {4,S} {5,S}
-3 {Cd,Ct,Cb,CO} 0 {1,S}
+3 {Cd,Ct,Cb} 0 {1,S}
 4 H 0 {2,S}
 5 {Cs,O} 0 {2,S}
 
@@ -1668,28 +1711,28 @@ doublebond_intra_HDe
 1 *2 Cd 0 {2,D}
 2 *3 Cd 0 {1,D} {4,S} {3,S}
 3 H 0 {2,S}
-4 {Cd,Ct,Cb,CO} 0 {2,S}
+4 {Cd,Ct,Cb} 0 {2,S}
 
 doublebond_intra_HDe_pri
 1 *2 Cd 0 {2,D} {3,S}
 2 *3 Cd 0 {1,D} {4,S} {5,S}
 3 H 0 {1,S}
 4 H 0 {2,S}
-5 {Cd,Ct,Cb,CO} 0 {2,S}
+5 {Cd,Ct,Cb} 0 {2,S}
 
 doublebond_intra_HDe_secNd
 1 *2 Cd 0 {2,D} {3,S}
 2 *3 Cd 0 {1,D} {4,S} {5,S}
 3 {Cs,O} 0 {1,S}
 4 H 0 {2,S}
-5 {Cd,Ct,Cb,CO} 0 {2,S}
+5 {Cd,Ct,Cb} 0 {2,S}
 
 doublebond_intra_HDe_secDe
 1 *2 Cd 0 {2,D} {3,S}
 2 *3 Cd 0 {1,D} {4,S} {5,S}
-3 {Cd,Ct,Cb,CO} 0 {1,S}
+3 {Cd,Ct,Cb} 0 {1,S}
 4 H 0 {2,S}
-5 {Cd,Ct,Cb,CO} 0 {2,S}
+5 {Cd,Ct,Cb} 0 {2,S}
 
 doublebond_intra_NdNd
 1 *2 Cd 0 {2,D}
@@ -1714,7 +1757,7 @@ doublebond_intra_NdNd_secNd
 doublebond_intra_NdNd_secDe
 1 *2 Cd 0 {2,D} {3,S}
 2 *3 Cd 0 {1,D} {4,S} {5,S}
-3 {Cd,Ct,Cb,CO} 0 {1,S}
+3 {Cd,Ct,Cb} 0 {1,S}
 4 {Cs,O} 0 {2,S}
 5 {Cs,O} 0 {2,S}
 
@@ -1722,55 +1765,55 @@ doublebond_intra_NdDe
 1 *2 Cd 0 {2,D}
 2 *3 Cd 0 {1,D} {4,S} {3,S}
 3 {Cs,O} 0 {2,S}
-4 {Cd,Ct,Cb,CO} 0 {2,S}
+4 {Cd,Ct,Cb} 0 {2,S}
 
 doublebond_intra_NdDe_pri
 1 *2 Cd 0 {2,D} {3,S}
 2 *3 Cd 0 {1,D} {4,S} {5,S}
 3 H 0 {1,S}
 4 {Cs,O} 0 {2,S}
-5 {Cd,Ct,Cb,CO} 0 {2,S}
+5 {Cd,Ct,Cb} 0 {2,S}
 
 doublebond_intra_NdDe_secNd
 1 *2 Cd 0 {2,D} {3,S}
 2 *3 Cd 0 {1,D} {4,S} {5,S}
 3 {Cs,O} 0 {1,S}
 4 {Cs,O} 0 {2,S}
-5 {Cd,Ct,Cb,CO} 0 {2,S}
+5 {Cd,Ct,Cb} 0 {2,S}
 
 doublebond_intra_NdDe_secDe
 1 *2 Cd 0 {2,D} {3,S}
 2 *3 Cd 0 {1,D} {4,S} {5,S}
-3 {Cd,Ct,Cb,CO} 0 {1,S}
+3 {Cd,Ct,Cb} 0 {1,S}
 4 {Cs,O} 0 {2,S}
-5 {Cd,Ct,Cb,CO} 0 {2,S}
+5 {Cd,Ct,Cb} 0 {2,S}
 
 doublebond_intra_DeDe
 1 *2 Cd 0 {2,D}
 2 *3 Cd 0 {1,D} {3,S} {4,S}
-3 {Cd,Ct,Cb,CO} 0 {2,S}
-4 {Cd,Ct,Cb,CO} 0 {2,S}
+3 {Cd,Ct,Cb} 0 {2,S}
+4 {Cd,Ct,Cb} 0 {2,S}
 
 doublebond_intra_DeDe_pri
 1 *2 Cd 0 {2,D} {3,S}
 2 *3 Cd 0 {1,D} {4,S} {5,S}
 3 H 0 {1,S}
-4 {Cd,Ct,Cb,CO} 0 {2,S}
-5 {Cd,Ct,Cb,CO} 0 {2,S}
+4 {Cd,Ct,Cb} 0 {2,S}
+5 {Cd,Ct,Cb} 0 {2,S}
 
 doublebond_intra_DeDe_secNd
 1 *2 Cd 0 {2,D} {3,S}
 2 *3 Cd 0 {1,D} {4,S} {5,S}
 3 {Cs,O} 0 {1,S}
-4 {Cd,Ct,Cb,CO} 0 {2,S}
-5 {Cd,Ct,Cb,CO} 0 {2,S}
+4 {Cd,Ct,Cb} 0 {2,S}
+5 {Cd,Ct,Cb} 0 {2,S}
 
 doublebond_intra_DeDe_secDe
 1 *2 Cd 0 {2,D} {3,S}
 2 *3 Cd 0 {1,D} {4,S} {5,S}
-3 {Cd,Ct,Cb,CO} 0 {1,S}
-4 {Cd,Ct,Cb,CO} 0 {2,S}
-5 {Cd,Ct,Cb,CO} 0 {2,S}
+3 {Cd,Ct,Cb} 0 {1,S}
+4 {Cd,Ct,Cb} 0 {2,S}
+5 {Cd,Ct,Cb} 0 {2,S}
 
 triplebond_intra
 1 *2 Ct 0 {2,T}
@@ -1789,29 +1832,33 @@ triplebond_intra_Nd
 triplebond_intra_De
 1 *2 Ct 0 {2,T}
 2 *3 Ct 0 {1,T} {3,S}
-3 {Cd,Ct,Cb,CO} 0 {2,S}
+3 {Cd,Ct,Cb} 0 {2,S}
 
 carbonylbond_intra
-1 *2 CO 0 {2,D}
+1 *2 Cd 0 {2,D} {3,D}
 2 *3 Od 0 {1,D}
+3 Od 0 {1,D}
 
 carbonylbond_intra_H
-1 *2 CO 0 {2,D} {3,S}
+1 *2 Cd 0 {2,D} {3,S} {4,D}
 2 *3 Od 0 {1,D}
 3 H 0 {1,S}
+4 Od 0 {1,D}
 
 carbonylbond_intra_Nd
-1 *2 CO 0 {2,D} {3,S}
+1 *2 Cd 0 {2,D} {3,S} {4,D}
 2 *3 Od 0 {1,D}
 3 {Cs,O} 0 {1,S}
+4 Od 0 {1,D}
 
 carbonylbond_intra_De
-1 *2 CO 0 {2,D} {3,S}
+1 *2 Cd 0 {2,D} {3,S} {4,D}
 2 *3 Od 0 {1,D}
-3 {Cd,Ct,Cb,CO} 0 {1,S}
+3 {Cd,Ct,Cb} 0 {1,S}
+4 Od 0 {1,D}
 
 radadd_intra_cs
-1 *1 Cs 1 
+1 *1 Cs 1
 
 radadd_intra_cs2H
 1 *1 Cs 1 {2,S} {3,S}
@@ -1826,7 +1873,7 @@ radadd_intra_csHNd
 radadd_intra_csHDe
 1 *1 Cs 1 {2,S} {3,S}
 2 H 0 {1,S}
-3 {Cd,Ct,Cb,CO} 0 {1,S}
+3 {Cd,Ct,Cb} 0 {1,S}
 
 radadd_intra_csNdNd
 1 *1 Cs 1 {2,S} {3,S}
@@ -1836,15 +1883,15 @@ radadd_intra_csNdNd
 radadd_intra_csNdDe
 1 *1 Cs 1 {2,S} {3,S}
 2 {Cs,O} 0 {1,S}
-3 {Cd,Ct,Cb,CO} 0 {1,S}
+3 {Cd,Ct,Cb} 0 {1,S}
 
 radadd_intra_csDeDe
 1 *1 Cs 1 {2,S} {3,S}
-2 {Cd,Ct,Cb,CO} 0 {1,S}
-3 {Cd,Ct,Cb,CO} 0 {1,S}
+2 {Cd,Ct,Cb} 0 {1,S}
+3 {Cd,Ct,Cb} 0 {1,S}
 
 radadd_intra_cdsingle
-1 *1 Cd 1 {2,S} 
+1 *1 Cd 1 {2,S}
 2 R 0 {1,S}
 
 radadd_intra_cdsingleH
@@ -1852,20 +1899,21 @@ radadd_intra_cdsingleH
 2 H 0 {1,S}
 
 radadd_intra_cdsingleNd
-1 *1 Cd 1 {2,S} 
+1 *1 Cd 1 {2,S}
 2 {Cs,O} 0 {1,S}
 
 radadd_intra_cdsingleDe
 1 *1 Cd 1 {2,S}
-2 {Cd,Ct,Cb,CO} 0 {1,S}
+2 {Cd,Ct,Cb} 0 {1,S}
 
 radadd_intra_cddouble
 1 *1 Cd 1 {2,D}
 2 Cd 0 {1,D}
 
 radadd_intra_CO
-1 *1 CO 1 {2,D}
+1 *1 Cd 1 {2,D} {3,D}
 2 O 0 {1,D}
+3 Od 0 {1,D}
 
 radadd_intra_O
 1 *1 O 1
