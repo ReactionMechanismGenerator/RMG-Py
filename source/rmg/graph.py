@@ -762,16 +762,18 @@ def __VF2_pairs(graph1, graph2, terminals1, terminals2, map21, map12):
 	second graph. If there are no terminals, the candidates are	selected to be
 	one vertex from the first graph and all vertices from the second graph.
 	"""
-
+	
 	pairs = cython.declare(list)
 	vertex1 = cython.declare(chem.Atom)
 	vertex2 = cython.declare(chem.Atom)
 	terminal1 = cython.declare(chem.Atom)
 	terminal2 = cython.declare(chem.Atom)
 	list_to_sort = cython.declare(list)
-
+	lowest_label = cython.declare(int)
+	this_label = cython.declare(int)
+	
 	pairs = list()
-
+	
 	# Construct list from terminals if possible
 	if len(terminals1) > 0 and len(terminals2) > 0:
 		list_to_sort = terminals2.keys()
@@ -784,12 +786,16 @@ def __VF2_pairs(graph1, graph2, terminals1, terminals2, map21, map12):
 			pairs.append([terminal1, terminal2])
 	# Otherwise construct list from all *remaining* vertices (not matched)
 	else:
+		# vertex2 is the lowest-labelled un-mapped vertex from graph2
 		list_to_sort = graph2.keys()
-		# remove already mapped vertices
-		for vertex2 in map12:
-			list_to_sort.remove(vertex2)
-		list_to_sort.sort(key=__getSortLabel)
-		vertex2 = list_to_sort[0]  # take first vertex2
+		lowest_label = 999999999 # hopefully we don't have more unmapped atoms than this!
+		for vertex1 in list_to_sort: # just using vertex1 as a temporary variable
+			this_label = vertex1.sorting_label
+			if this_label < lowest_label:
+				if not vertex1 in map12:
+					lowest_label = this_label
+					vertex2 = vertex1
+			
 		# pair with all vertex1s
 		list_to_sort = graph1.keys() 
 		list_to_sort.sort(key=__getSortLabel)
