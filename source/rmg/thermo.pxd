@@ -29,6 +29,9 @@ cdef extern from "dictobject.h":
 	ctypedef class __builtin__.dict [object PyDictObject]:
 		pass
 
+
+cdef extern from "math.h":
+	cdef float log(float theta)
 ################################################################################
 
 cdef class ThermoData:

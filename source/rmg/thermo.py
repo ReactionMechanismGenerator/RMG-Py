@@ -43,6 +43,7 @@ from scipy import linalg
 from scipy import optimize
 import cython
 
+
 ################################################################################
 
 class ThermoData:
@@ -279,6 +280,8 @@ class ThermoGAData(ThermoData):
 
 ################################################################################
 
+
+
 class ThermoNASAPolynomial(ThermoData):
 	"""
 	A single NASA polynomial for thermodynamic data. The `coeffs` attribute
@@ -310,7 +313,6 @@ class ThermoNASAPolynomial(ThermoData):
 		"""
 		Return the heat capacity in J/mol*K at temperature `T` in K.
 		"""
-		import constants
 		if not self.isTemperatureValid(T):
 			raise data.TemperatureOutOfRangeException('Invalid temperature for heat capacity estimation from NASA polynomial.')
 		T2 = cython.declare(cython.float)
@@ -326,7 +328,6 @@ class ThermoNASAPolynomial(ThermoData):
 		"""
 		Return the enthalpy in J/mol at temperature `T` in K.
 		"""
-		import constants
 		if not self.isTemperatureValid(T):
 			raise data.TemperatureOutOfRangeException('Invalid temperature for enthalpy estimation from NASA polynomial.')
 		T2 = cython.declare(cython.float)
@@ -344,8 +345,6 @@ class ThermoNASAPolynomial(ThermoData):
 		"""
 		Return the entropy in J/mol*K at temperature `T` in K.
 		"""
-		import math
-		import constants
 		if not self.isTemperatureValid(T):
 			raise data.TemperatureOutOfRangeException('Invalid temperature for entropy estimation from NASA polynomial.')
 		# S/R  = a1 lnT + a2 T + a3 T^2 /2 + a4 T^3 /3 + a5 T^4 /4 + a7
@@ -355,7 +354,11 @@ class ThermoNASAPolynomial(ThermoData):
 		
 		T2 = T*T
 		T4 = T2*T2
-		EntropyOverR = ( self.c0*math.log(T) + self.c1*T + self.c2*T2/2 +
+		if cython.compiled: # we've imported log from math.h in the pxd file
+			EntropyOverR = ( self.c0*log(T) + self.c1*T + self.c2*T2/2 +
+					self.c3*T2*T/3 + self.c4*T4/4 + self.c6 )
+		else:
+			EntropyOverR = ( self.c0*math.log(T) + self.c1*T + self.c2*T2/2 +
 					self.c3*T2*T/3 + self.c4*T4/4 + self.c6 )
 		return EntropyOverR * constants.R
 	
