@@ -399,7 +399,7 @@ class Graph(dict):
 		vertex2 = cython.declare(chem.Atom)
 		edge = cython.declare(chem.Bond)
 		found = cython.declare(cython.bint)
-
+		
 		for vertex2, edge in self[chain[-1]].iteritems():
 			if vertex2 is chain[0] and len(chain) > 2:
 				return True
@@ -442,10 +442,10 @@ class Graph(dict):
 		"""
 		vertex2 = cython.declare(chem.Atom)
 		edge = cython.declare(chem.Bond)
-		chainLabels = cython.declare(list)
-
-		chainLabels=[self.keys().index(v) for v in chain]
-		#print "found %d so far. Chain=%s"%(len(cycleList),chainLabels)
+		
+		# chainLabels = cython.declare(list)
+		# chainLabels=[self.keys().index(v) for v in chain] 
+		# print "found %d so far. Chain=%s"%(len(cycleList),chainLabels)
 		
 		for vertex2, edge in self[chain[-1]].iteritems():
 			# vertex2 will loop through each of the atoms 
@@ -727,7 +727,7 @@ def __VF2_match(graph1, graph2, map21, map12, terminals1, terminals2, subgraph,
 			del map21[vertex1]
 			del map12[vertex2]
 			# changes to 'new_terminals' will be discarded and 'terminals' is unchanged
-
+			
 	return False
 
 def __getSortLabel(vertex):
