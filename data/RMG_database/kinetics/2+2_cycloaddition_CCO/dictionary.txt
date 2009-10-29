@@ -24,27 +24,6 @@ mb_COC
 2 *4 Cd 0 {1,D}
 3 Od 0 {1,D}
 
-// Top level nodes for reverse reaction
-
-four_ring
-Union {four_ring_syn, four_ring_anti}
-
-four_ring_syn
-1 *1 C 0 {2,S} {5,S}
-2 *2 Cd 0 {1,S} {3,D} {4,S}
-3 Od 0 {2,D}
-4 *4 C 0 {5,S} {2,S}
-5 *3 Cd 0 {4,S} {6,D} {1,S}
-6 Od 0 {5,D}
-
-four_ring_anti
-1 *1 C 0 {2,S} {4,S}
-2 *2 Cd 0 {1,S} {3,D} {5,S}
-3 Od 0 {2,D}
-4 *3 C 0 {5,S} {1,S}
-5 *4 Cd 0 {4,S} {6,D} {2,S}
-6 Od 0 {5,D}
-
 // Other nodes
 
 CCO_2H

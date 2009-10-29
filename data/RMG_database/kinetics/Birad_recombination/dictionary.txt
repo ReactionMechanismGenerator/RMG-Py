@@ -41,37 +41,6 @@ Y_rad_out
 Ypri_rad_out
 1 *2 {R!H} 1
 
-// Top level nodes for reverse reaction
-
-Rncycle
-Union {R3cycle, R4cycle, R5cycle, R6cycle}
-
-R3cycle
-1 *1 {Cs,Cd,Os} 0 {2,{S,D}} {3,S}
-2 {Cs,Cd,Os} 0 {1,{S,D}} {3,{S,D}}
-3 *2 {Cs,Cd,Os} 0 {2,{S,D}} {1,S}
-
-R4cycle
-1 *1 {Cs,Cd,Os} 0 {2,{S,D}} {4,S}
-2 {Cs,Cd,Os} 0 {1,{S,D}} {3,{S,D}}
-3 {Cs,Cd,Os} 0 {2,{S,D}} {4,{S,D}}
-4 *2 {Cs,Cd,Os} 0 {3,{S,D}} {1,S}
-
-R5cycle
-1 *1 {Cs,Cd,Os} 0 {2,{S,D}} {5,S}
-2 {Cs,Cd,Os} 0 {1,{S,D}} {3,{S,D}}
-3 {Cs,Cd,Os} 0 {2,{S,D}} {4,{S,D}}
-4 {Cs,Cd,Os} 0 {3,{S,D}} {5,{S,D}}
-5 *2 {Cs,Cd,Os} 0 {4,{S,D}} {1,S}
-
-R6cycle
-1 *1 {Cs,Cd,Os} 0 {2,{S,D}} {6,S}
-2 {Cs,Cd,Os} 0 {1,{S,D}} {3,{S,D}}
-3 {Cs,Cd,Os} 0 {2,{S,D}} {4,{S,D}}
-4 {Cs,Cd,Os} 0 {3,{S,D}} {5,{S,D}}
-5 {Cs,Cd,Os} 0 {4,{S,D}} {6,{S,D}}
-6 *2 {Cs,Cd,Os} 0 {5,{S,D}} {1,S}
-
 // Other nodes
 
 //f07 : biradical recombination to form cyclic structure

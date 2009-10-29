@@ -79,12 +79,4 @@ L1: Ypri_rad_out
 		L3: CdsinglepriDe_rad_out
 	L2: Opri_rad
 
-
-////////////////////////////////////////////////////////////////////////////////
-
-L1: Rncycle
-	L2: R3cycle
-	L2: R4cycle
-	L2: R5cycle
-	L2: R6cycle
 	

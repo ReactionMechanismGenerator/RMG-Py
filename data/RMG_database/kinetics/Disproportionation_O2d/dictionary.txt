@@ -15,17 +15,6 @@ XH_Rrad
 2 *3 {R!H} 1 {1,S}
 3 *4 H 0 {1,S}
 
-// Top level nodes for reverse reaction
-
-HO2
-1 *1 O 0 {2,S} {3,S}
-2 *5 O 1 {1,S}
-3 *4 H 0 {1,S}
-
-X_R
-1 *2 {R!H} 0 {2,D}
-2 *3 {R!H} 0 {1,D}
-
 // Other nodes
 
 Cmethyl_Rrad

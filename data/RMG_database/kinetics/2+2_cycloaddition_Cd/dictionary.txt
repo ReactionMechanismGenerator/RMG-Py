@@ -14,14 +14,6 @@ doublebond
 1 *3 {Cd,Od} 0 {2,D}
 2 *4 Cd 0 {1,D}
 
-// Top level nodes for reverse reaction
-
-four_ring
-1 *1 C 0 {2,S} {3,S}
-2 *2 C 0 {1,S} {4,S}
-3 *3 {C,Os} 0 {4,S} {1,S}
-4 *4 C 0 {3,S} {2,S}
-
 // Other nodes
 
 // f17_2cycloaddition

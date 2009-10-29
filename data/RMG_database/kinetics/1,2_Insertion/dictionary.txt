@@ -14,14 +14,6 @@ RR'
 1 *2 {C,H} 0 {2,S}
 2 *3 {C,H} 0 {1,S}
 
-// Top level nodes for reverse reaction
-
-R_CO_R'
-1 *1 C 0 {2,D} {3,S} {4,S}
-2 O 0 {1,D}
-3 *2 {C,H} 0 {1,S}
-4 *3 {C,H} 0 {1,S}
-
 // Other nodes
 
 R_H

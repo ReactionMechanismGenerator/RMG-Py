@@ -14,16 +14,6 @@ XH_Rrad
 2 *3 R!H 1 {1,S}
 3 *4 H 0 {1,S}
 
-// Top level nodes for reverse reaction
-
-Y_H
-1 *1 R {0,1} {2,S}
-2 *4 H 0 {1,S}
-
-X_R
-1 *2 R!H 0 {2,D}
-2 *3 R!H 0 {1,D}
-
 // Other nodes
 
 Y_2centeradjbirad

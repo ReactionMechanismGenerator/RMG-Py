@@ -9,12 +9,6 @@
 Y_rad
 1 * R 1
 
-// Top level nodes for reverse reaction
-
-Y_Y
-1 *1 R 0 {2,S}
-2 *2 R 0 {1,S}
-
 // Other nodes
 
 H_rad

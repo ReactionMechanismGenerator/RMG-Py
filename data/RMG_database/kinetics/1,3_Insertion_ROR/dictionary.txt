@@ -15,15 +15,6 @@ R_OR
 2 *4 Os 0 {1,S} {3,S}
 3    R  0 {2,S}
 
-// Top level nodes for reverse reaction
-
-R_inserted_OR
-1 *1 C  0 {2,S} {3,S}
-2 *2 C  0 {1,S} {4,S}
-3 *3 R  0 {1,S}
-4 *4 Os 0 {5,S} {2,S}
-5    R  0 {4,S}
-
 // Other nodes
 
 // Cat, I have split the 1,2 elimination reaction

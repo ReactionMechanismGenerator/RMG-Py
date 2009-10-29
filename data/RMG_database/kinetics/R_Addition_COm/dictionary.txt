@@ -13,13 +13,6 @@ COm
 Y_rad
 1 *2 R 1
 
-// Top level nodes for reverse reaction
-
-YC.=O
-1 *1 C 1 {2,D} {3,S}
-2 O 0 {1,D}
-3 *2 R 0 {1,S}
-
 // Other nodes
 
 H_rad

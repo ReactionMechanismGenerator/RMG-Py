@@ -46,42 +46,6 @@ R5OOH
 Y_rad_intra
 1 *1 R 1
 
-// Top level nodes for reverse reaction
-
-OH
-1 *3 Os 1 {2,S}
-2 H 0 {1,S}
-
-RnO
-Union {R2O, R3O, R4O, R5O}
-
-R2O
-1 *1 {Cd,Cs} 0 {2,{S,D}} {3,S}
-2 {Cd,Cs} 0 {1,{S,D}}, {3,S}
-3 *2 O 0 {2,S} {1,S}
-
-R3O
-1 *1 {Cd,Cs} 0 {2,{S,D}} {4,S}
-2 {Cd,Cs} 0 {1,{S,D}} {3,{S,D}}
-3 {Cd,Cs} 0 {2,{S,D}} {4,S}
-4 *2 O 0 {3,S} {1,S}
-
-
-R4O
-1 *1 {Cd,Cs} 1 {2,{S,D}} {5,S}
-2 {Cd,Cs} 0 {1,{S,D}} {3,{S,D}}
-3 {Cd,Cs} 0 {2,{S,D}} {4,{S,D}}
-4 {Cd,Cs} 0 {3,{S,D}} {5,S}
-5 *2 O 0 {4,S} {1,S}
-
-R5O
-1 *1 {Cd,Cs} 0 {2,{S,D}} {6,S}
-2 {Cd,Cs} 0 {1,{S,D}}, {3,{S,D}}
-3 {Cd,Cs} 0 {2,{S,D}}, {4,{S,D}}
-4 {Cd,Cs} 0 {3,{S,D}}, {5,{S,D}}
-5 {Cd,Cs} 0 {4,{S,D}}, {6,S}
-6 *2 O 0 {5,S} {1,S}
-
 // Other nodes
 
 R2OOH_S

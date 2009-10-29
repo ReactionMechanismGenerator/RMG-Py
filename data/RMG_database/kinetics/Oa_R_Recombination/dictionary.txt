@@ -12,12 +12,6 @@ Y_rad
 Oa
 1 *2 O 2T
 
-// Top level nodes for reverse reaction
-
-YO.
-1 *1 R 0 {2,S}
-2 *2 O 1 {1,S}
-
 // Other nodes
 
 H_rad
