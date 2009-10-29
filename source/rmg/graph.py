@@ -521,8 +521,8 @@ def VF2_isomorphism(graph1, graph2, map12, map21, subgraph=False, findAll=False)
 	map12List = cython.declare(list)
 	map21List = cython.declare(list)
 	ismatch = cython.declare(cython.bint)
-	terminals1 = cython.declare(dict)
-	terminals2 = cython.declare(dict)
+	terminals1 = cython.declare(list)
+	terminals2 = cython.declare(list)
 	call_depth = cython.declare(cython.int)
 
 	map12List = list()
@@ -677,8 +677,8 @@ def __VF2_match(graph1, graph2, map21, map12, terminals1, terminals2, subgraph,
 	and O(N**2) (best-case) to O(N! * N) (worst-case) in temporal complexity.
 	"""
 
-	new_terminals1 = cython.declare(dict)
-	new_terminals2 = cython.declare(dict)
+	new_terminals1 = cython.declare(list)
+	new_terminals2 = cython.declare(list)
 	vertex1 = cython.declare(chem.Atom)
 	vertex2 = cython.declare(chem.Atom)
 	ismatch = cython.declare(cython.bint)
@@ -776,10 +776,10 @@ def __VF2_pairs(graph1, graph2, terminals1, terminals2, map21, map12):
 	
 	# Construct list from terminals if possible
 	if len(terminals1) > 0 and len(terminals2) > 0:
-		list_to_sort = terminals2.keys()
+		list_to_sort = terminals2
 		list_to_sort.sort(key=__getSortLabel)
 		terminal2 = list_to_sort[0]
-		list_to_sort = terminals1.keys()
+		list_to_sort = terminals1
 		list_to_sort.sort(key=__getSortLabel)
 		
 		for terminal1 in list_to_sort:
@@ -811,17 +811,18 @@ def __VF2_terminals(graph, mapping):
 	generate a list of terminals, vertices that are directly connected to
 	vertices that have already been mapped.
 	"""
-
-	terminals = cython.declare(dict)
+	
+	terminals = cython.declare(list)
 	vertex = cython.declare(chem.Atom)
 	vert = cython.declare(chem.Atom)
-
-	terminals = dict()
-
+	
+	terminals = list()
+	
 	for vertex in mapping:
 		for vert in graph[vertex]:
 			if vert not in mapping:
-				terminals[vert] = True
+				if vert not in terminals:
+					terminals.append(vert)
 	return terminals
 
 def __VF2_new_terminals(graph, mapping, old_terminals, new_vertex):
@@ -830,21 +831,23 @@ def __VF2_new_terminals(graph, mapping, old_terminals, new_vertex):
 	UPDATES a list of terminals, vertices that are directly connected to
 	vertices that have already been mapped. You have to pass it the previous 
 	list of terminals `old_terminals` and the vertex `vertex` that has been added 
-	to the mapping. Returns a new copy of the terminals.
+	to the mapping. Returns a new COPY of the terminals.
 	"""
 	
-	terminals = cython.declare(dict)
-	terminals = dict()
-
+	terminals = cython.declare(list)
+	#terminals = list()
+	
 	# copy the old terminals, leaving out the new_vertex
-	for vertex in old_terminals:
-		if not vertex is new_vertex: 
-			terminals[vertex] = True
+	#for vertex in old_terminals:
+	#	if not vertex is new_vertex: 
+	#		terminals[vertex] = True
+	terminals = [v for v in <list>old_terminals if not v is new_vertex]
 	
 	# add the terminals of new_vertex
 	for vertex in graph[new_vertex]:
-		if vertex not in mapping:
-			terminals[vertex] = True
+		if vertex not in terminals: # only add if not already there
+			if vertex not in mapping: # only add if not already mapped
+				terminals.append(vertex)
 			
 	return terminals
 

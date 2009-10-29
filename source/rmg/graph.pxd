@@ -99,21 +99,21 @@ cpdef VF2_isomorphism(Graph graph1, Graph graph2, dict map12, dict map21,
 	bint subgraph=?, bint findAll=?)
 
 cpdef bint __VF2_feasible(Graph graph1, Graph graph2, chem.Atom vertex1,
-	chem.Atom vertex2, dict map21, dict map12, dict terminals1, dict terminals2,
+	chem.Atom vertex2, dict map21, dict map12, list terminals1, list terminals2,
 	bint subgraph)
 
 cpdef bint __VF2_match(Graph graph1, Graph graph2, dict map21, dict map12,
-	dict terminals1, dict terminals2, bint subgraph, bint findAll,
+	list terminals1, list terminals2, bint subgraph, bint findAll,
 	list map21List, list map12List, int call_depth)
 
 cpdef int __getSortLabel(chem.Atom vertex)
 
 cpdef int globalAtomSortValue(chem.Atom atom)
 
-cpdef list __VF2_pairs(Graph graph1, Graph graph2, dict terminals1,
-	dict terminals2, dict map21, dict map12)
+cpdef list __VF2_pairs(Graph graph1, Graph graph2, list terminals1,
+	list terminals2, dict map21, dict map12)
 
-cpdef dict __VF2_terminals(Graph graph, dict mapping)
+cpdef list __VF2_terminals(Graph graph, dict mapping)
 
-cpdef dict __VF2_new_terminals(Graph graph, dict mapping, dict old_terminals,
+cpdef list __VF2_new_terminals(Graph graph, dict mapping, list old_terminals,
 	new_vertex)
