@@ -55,7 +55,12 @@ cdef class ThermoNASAPolynomial(ThermoData):
 	
 	cpdef float getEntropy(ThermoNASAPolynomial self, float T)
 	
-	cpdef float getFreeEnergy(ThermoNASAPolynomial self, float T)	
+	cpdef float getFreeEnergy(ThermoNASAPolynomial self, float T)
+	
+	cpdef float integral2_T0(ThermoNASAPolynomial self, float t)
+	
+	cpdef float integral2_TM1(ThermoNASAPolynomial self, float t)
+	
 
 ################################################################################
 
