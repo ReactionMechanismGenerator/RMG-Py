@@ -776,13 +776,14 @@ def __VF2_pairs(graph1, graph2, terminals1, terminals2, map21, map12):
 	
 	# Construct list from terminals if possible
 	if len(terminals1) > 0 and len(terminals2) > 0:
-		list_to_sort = terminals2
-		list_to_sort.sort(key=__getSortLabel)
-		terminal2 = list_to_sort[0]
-		list_to_sort = terminals1
-		list_to_sort.sort(key=__getSortLabel)
+		#list_to_sort = terminals2
+		#list_to_sort.sort(key=__getSortLabel)
+		#terminal2 = list_to_sort[0]
+		terminal2 = terminals2[0]
+		#list_to_sort = terminals1
+		#list_to_sort.sort(key=__getSortLabel)
 		
-		for terminal1 in list_to_sort:
+		for terminal1 in terminals1:
 			pairs.append([terminal1, terminal2])
 	# Otherwise construct list from all *remaining* vertices (not matched)
 	else:
@@ -810,19 +811,22 @@ def __VF2_terminals(graph, mapping):
 	For a given graph `graph` and associated partial mapping `mapping`,
 	generate a list of terminals, vertices that are directly connected to
 	vertices that have already been mapped.
+	
+	List is sorted (using key=__getSortLabel) before returning.
 	"""
 	
 	terminals = cython.declare(list)
 	vertex = cython.declare(chem.Atom)
 	vert = cython.declare(chem.Atom)
 	
-	terminals = list()
+	terminals = []# list()
 	
 	for vertex in mapping:
 		for vert in graph[vertex]:
 			if vert not in mapping:
 				if vert not in terminals:
 					terminals.append(vert)
+	terminals.sort(key=__getSortLabel)
 	return terminals
 
 def __VF2_new_terminals(graph, mapping, old_terminals, new_vertex):
@@ -834,21 +838,45 @@ def __VF2_new_terminals(graph, mapping, old_terminals, new_vertex):
 	to the mapping. Returns a new COPY of the terminals.
 	"""
 	
+	vertex = cython.declare(chem.Atom)
+	vertex2 = cython.declare(chem.Atom)
+	sorting_label = cython.declare(int)
+	sorting_label2 = cython.declare(int)
 	terminals = cython.declare(list)
-	#terminals = list()
+	i = cython.declare(int)
 	
 	# copy the old terminals, leaving out the new_vertex
-	#for vertex in old_terminals:
-	#	if not vertex is new_vertex: 
-	#		terminals[vertex] = True
-	terminals = [v for v in <list>old_terminals if not v is new_vertex]
+	#terminals = [v for v in old_terminals if not v is new_vertex]
+	terminals = old_terminals[:]
+	if new_vertex in terminals:
+		terminals.remove(new_vertex)
 	
-	# add the terminals of new_vertex
+	# Add the terminals of new_vertex
 	for vertex in graph[new_vertex]:
-		if vertex not in terminals: # only add if not already there
-			if vertex not in mapping: # only add if not already mapped
-				terminals.append(vertex)
+		if vertex not in mapping: # only add if not already mapped
+	
+	## the next block of code is equivalent to these two lines:
+	#		if vertex not in terminals: terminals.append(vertex)
+	#terminals.sort(key=__getSortLabel)
 			
+			# find spot in the sorted terminals list where we should put this vertex
+			sorting_label = vertex.sorting_label
+			i=0; sorting_label2=-1 # in case terminals list empty
+			for i in range(len(terminals)):
+				vertex2 = terminals[i]
+				sorting_label2 = vertex2.sorting_label
+				if sorting_label2 >= sorting_label:
+					break  
+				# else continue going through the list of terminals
+			else: # got to end of list without breaking, 
+				# so add one to index to make sure vertex goes at end
+				i+=1
+			if sorting_label2 == sorting_label: # this vertex already in terminals.
+				continue # try next vertex in graph[new_vertex]
+			
+			# insert vertex in right spot in terminals
+			terminals.insert(i,vertex)
+	
 	return terminals
 
 ################################################################################
