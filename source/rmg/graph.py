@@ -472,21 +472,27 @@ class Graph(dict):
 		CV3 is the sum of neighbouring CV2 values
 		"""
 		
-		count = cython.declare(cython.int)
+		count = cython.declare(cython.short)
 		vert1 = cython.declare(chem.Atom)
 		vert2 = cython.declare(chem.Atom)
-		i = cython.declare(cython.int)
-			
-		for i in range(3):
-			for vert1 in self:
-				count = 0
-				if i == 0:
-					count = len(self[vert1])
-				else:
-					for vert2 in self[vert1]: count += vert2.connectivity[i-1]
-				vert1.connectivity[i] = count
-			
-			
+		
+		vertices = cython.declare(list)
+		vertices = self.vertices()
+		
+		for vert1 in self:
+			count = 0
+			count = len(self[vert1])
+			vert1.connectivity1 = count	
+		for vert1 in self:
+			count = 0
+			for vert2 in self[vert1]: count += vert2.connectivity1
+			vert1.connectivity2 = count
+		for vert1 in self:
+			count = 0
+			for vert2 in self[vert1]: count += vert2.connectivity2
+			vert1.connectivity3 = count
+		
+		
 	def sortAndLabelVertices(self):
 		"""
 		Sort the vertices according to something wise,
@@ -593,9 +599,9 @@ def __VF2_feasible(graph1, graph2, vertex1, vertex2, map21, map12, terminals1,
 	# Richard's Connectivity Value check
 	# not sure where this is best done. Is it more specific or more general?
 	if not subgraph:
-		for i in range(3):
-			if vertex1.connectivity[i] != vertex2.connectivity[i]: return False
-		
+		if vertex1.connectivity1 != vertex2.connectivity1: return False
+		if vertex1.connectivity2 != vertex2.connectivity2: return False
+		if vertex1.connectivity3 != vertex2.connectivity3: return False
 	# Semantic check #1: vertex1 and vertex2 must be equivalent
 	if not vertex1.equivalent(vertex2):
 		return False
@@ -749,10 +755,8 @@ def globalAtomSortValue(atom):
 	"""
 	#return hash(atom)  # apparently random?
 	#return (atom.connectivity[0] ) # not unique enough
-	return ( - (atom.connectivity[0]<<8)  # left shift 8 = multiply by 2**8=256
-			 - (atom.connectivity[1]<<4)  # left shift 4 = multiply by 2**4=16
-			 - (atom.connectivity[2])
-			)
+	
+	return ( -256*atom.connectivity1 - 16*atom.connectivity2 - atom.connectivity3 )
 	
 def __VF2_pairs(graph1, graph2, terminals1, terminals2, map21, map12):
 	"""
@@ -769,8 +773,8 @@ def __VF2_pairs(graph1, graph2, terminals1, terminals2, map21, map12):
 	terminal1 = cython.declare(chem.Atom)
 	terminal2 = cython.declare(chem.Atom)
 	list_to_sort = cython.declare(list)
-	lowest_label = cython.declare(int)
-	this_label = cython.declare(int)
+	lowest_label = cython.declare(cython.short)
+	this_label = cython.declare(cython.short)
 	
 	pairs = list()
 	
@@ -789,7 +793,7 @@ def __VF2_pairs(graph1, graph2, terminals1, terminals2, map21, map12):
 	else:
 		# vertex2 is the lowest-labelled un-mapped vertex from graph2
 		list_to_sort = graph2.keys()
-		lowest_label = 999999999 # hopefully we don't have more unmapped atoms than this!
+		lowest_label = 32766 # hopefully we don't have more unmapped atoms than this!
 		for vertex1 in list_to_sort: # just using vertex1 as a temporary variable
 			this_label = vertex1.sorting_label
 			if this_label < lowest_label:
@@ -840,8 +844,8 @@ def __VF2_new_terminals(graph, mapping, old_terminals, new_vertex):
 	
 	vertex = cython.declare(chem.Atom)
 	vertex2 = cython.declare(chem.Atom)
-	sorting_label = cython.declare(int)
-	sorting_label2 = cython.declare(int)
+	sorting_label = cython.declare(cython.short)
+	sorting_label2 = cython.declare(cython.short)
 	terminals = cython.declare(list)
 	i = cython.declare(int)
 	

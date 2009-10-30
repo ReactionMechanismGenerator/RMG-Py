@@ -76,9 +76,11 @@ cdef class Atom(object):
 	
 	# for Extended Connectivity; as introduced by Morgan (1965)
 	# http://dx.doi.org/10.1021/c160017a018
-	cdef public list connectivity
+	cdef public short connectivity1
+	cdef public short connectivity2
+	cdef public short connectivity3
 
-	cdef public int sorting_label
+	cdef public short sorting_label
 
 	cpdef bint equivalent(Atom self, Atom other)
 
