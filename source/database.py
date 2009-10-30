@@ -49,8 +49,8 @@ def loadThermoDatabases(databasePath):
 	databasePath += '/'
 
 	# Create and load thermo databases
-	thermo.thermoDatabase = thermo.ThermoDatabaseSet()
-	thermo.thermoDatabase.load(databasePath )
+	species.thermoDatabase = species.ThermoDatabaseSet()
+	species.thermoDatabase.load(databasePath )
 
 	# Create and load forbidden structures
 	thermo.forbiddenStructures = data.Dictionary()
@@ -178,12 +178,12 @@ def findCatchallNodes():
 
 	import rmg.structure as structure
 
-	families = { 'group': thermo.thermoDatabase.groupDatabase, \
-				 'radical': thermo.thermoDatabase.radicalDatabase, \
-				 '1,5-interations': thermo.thermoDatabase.int15Database, \
-				 'gauche': thermo.thermoDatabase.gaucheDatabase, \
-				 'ring': thermo.thermoDatabase.ringDatabase, \
-				 'other': thermo.thermoDatabase.otherDatabase }
+	families = { 'group': species.thermoDatabase.groupDatabase, \
+				 'radical': species.thermoDatabase.radicalDatabase, \
+				 '1,5-interations': species.thermoDatabase.int15Database, \
+				 'gauche': species.thermoDatabase.gaucheDatabase, \
+				 'ring': species.thermoDatabase.ringDatabase, \
+				 'other': species.thermoDatabase.otherDatabase }
 
 	#families = reaction.kineticsDatabase.families
 
@@ -526,12 +526,12 @@ def drawAllTrees(root):
 
 	import os
 
-	thermoDatabases = {'group': thermo.thermoDatabase.groupDatabase,
-		'1,5-interactions': thermo.thermoDatabase.int15Database,
-		'gauche': thermo.thermoDatabase.gaucheDatabase,
-		'other': thermo.thermoDatabase.otherDatabase,
-		'radical': thermo.thermoDatabase.radicalDatabase,
-		'ring': thermo.thermoDatabase.ringDatabase}
+	thermoDatabases = {'group': species.thermoDatabase.groupDatabase,
+		'1,5-interactions': species.thermoDatabase.int15Database,
+		'gauche': species.thermoDatabase.gaucheDatabase,
+		'other': species.thermoDatabase.otherDatabase,
+		'radical': species.thermoDatabase.radicalDatabase,
+		'ring': species.thermoDatabase.ringDatabase}
 	
 	
 	# Create directories

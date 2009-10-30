@@ -1784,8 +1784,8 @@ if __name__ == '__main__':
 	datapath = '../data/RMG_database/'
 
 	logging.debug('General database: ' + os.path.abspath(datapath))
-	thermo.thermoDatabase = species.ThermoDatabaseSet()
-	thermo.thermoDatabase.load(datapath)
+	species.thermoDatabase = species.ThermoDatabaseSet()
+	species.thermoDatabase.load(datapath)
 	kineticsDatabase = ReactionFamilySet()
 	kineticsDatabase.load(datapath)
 
