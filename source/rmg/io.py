@@ -168,8 +168,8 @@ def readInputFile(fstr):
 				if generalDatabaseCount == 0:
 					logging.debug('General database: ' + database[2])
 					# Load thermo databases
-					thermo.thermoDatabase = thermo.ThermoDatabaseSet()
-					thermo.thermoDatabase.load(database[2] + '/')
+					species.thermoDatabase = species.ThermoDatabaseSet()
+					species.thermoDatabase.load(database[2] + '/')
 					# Load forbidden structures
 					thermo.forbiddenStructures = data.Dictionary()
 					thermo.forbiddenStructures.load(database[2] + '/forbiddenStructure.txt')

@@ -60,6 +60,44 @@ cdef class ThermoGAData(ThermoData):
 
 ################################################################################
 
+cdef class ThermoWilhoitData(ThermoData):
+
+	cdef public float cp0
+	cdef public float cpInf
+	cdef public float B
+	cdef public float a0
+	cdef public float a1
+	cdef public float a2
+	cdef public float a3
+	cdef public float H0
+	cdef public float S0
+
+	cpdef float getHeatCapacity(ThermoWilhoitData self, float T)
+
+	cpdef float getEnthalpy(ThermoWilhoitData self, float T)
+
+	cpdef float getEntropy(ThermoWilhoitData self, float T)
+
+	cpdef float getFreeEnergy(ThermoWilhoitData self, float T)
+
+	cpdef float integral_T0(ThermoWilhoitData self, float t)
+
+	cpdef float integral_TM1(ThermoWilhoitData self, float t)
+
+	cpdef float integral_T1(ThermoWilhoitData self, float t)
+
+	cpdef float integral_T2(ThermoWilhoitData self, float t)
+
+	cpdef float integral_T3(ThermoWilhoitData self, float t)
+
+	cpdef float integral_T4(ThermoWilhoitData self, float t)
+
+	cpdef float integral2_T0(ThermoWilhoitData self, float t)
+
+	cpdef float integral2_TM1(ThermoWilhoitData self, float t)
+
+################################################################################
+
 cdef class ThermoNASAPolynomial(ThermoData):
 	
 	cdef public float c0, c1, c2, c3, c4, c5, c6 

@@ -20,8 +20,8 @@ import rmg.thermo as thermo
 databasePath = '../data/RMG_database'
 
 # Create and load thermo databases
-thermo.thermoDatabase = thermo.ThermoDatabaseSet()
-thermo.thermoDatabase.load(databasePath + '/')
+species.thermoDatabase = species.ThermoDatabaseSet()
+species.thermoDatabase.load(databasePath + '/')
 
 # Create and load forbidden structures
 thermo.forbiddenStructures = data.Dictionary()
@@ -238,7 +238,7 @@ class ThermoGAtoWilhoitCheck(unittest.TestCase):
 		
 		propane = structure.Structure(SMILES='CCC')
 		propane.updateAtomTypes()
-		GAthermoData = thermo.getThermoData(propane,required_class=thermo.ThermoGAData)
+		GAthermoData = species.getThermoData(propane,required_class=thermo.ThermoGAData)
 		WilhoitData = thermo.convertGAtoWilhoit(GAthermoData, atoms=11, rotors=2, linear=False)
 		
 		Tlist = thermo.ThermoGAData.CpTlist # just check at defined data points
@@ -257,7 +257,7 @@ class ThermoGAtoWilhoitCheck(unittest.TestCase):
 		
 		propane = structure.Structure(SMILES='CCC')
 		propane.updateAtomTypes()
-		GAthermoData = thermo.getThermoData(propane,required_class=thermo.ThermoGAData)
+		GAthermoData = species.getThermoData(propane,required_class=thermo.ThermoGAData)
 		WilhoitData = thermo.convertGAtoWilhoit(GAthermoData, atoms=11, rotors=2, linear=False)
 		
 		Tlist = thermo.ThermoGAData.CpTlist # just check at defined data points
@@ -276,7 +276,7 @@ class ThermoGAtoWilhoitCheck(unittest.TestCase):
 		
 		propane = structure.Structure(SMILES='CCC')
 		propane.updateAtomTypes()
-		GAthermoData = thermo.getThermoData(propane,required_class=thermo.ThermoGAData)
+		GAthermoData = species.getThermoData(propane,required_class=thermo.ThermoGAData)
 		WilhoitData = thermo.convertGAtoWilhoit(GAthermoData, atoms=11, rotors=2, linear=False)
 		
 		Tlist = thermo.ThermoGAData.CpTlist # just check at defined data points
@@ -327,7 +327,7 @@ class ThermoWilhoitToNASACheck(unittest.TestCase):
 		
 		propane = structure.Structure(SMILES='CCC')
 		propane.updateAtomTypes()
-		GAthermoData = thermo.getThermoData(propane,required_class=thermo.ThermoGAData)
+		GAthermoData = species.getThermoData(propane,required_class=thermo.ThermoGAData)
 		WilhoitData = thermo.convertGAtoWilhoit(GAthermoData, atoms=11, rotors=2, linear=False)
 		NASAthermoData = thermo.convertWilhoitToNASA(WilhoitData)
 		
@@ -347,7 +347,7 @@ class ThermoWilhoitToNASACheck(unittest.TestCase):
 		
 		propane = structure.Structure(SMILES='CCC')
 		propane.updateAtomTypes()
-		GAthermoData = thermo.getThermoData(propane,required_class=thermo.ThermoGAData)
+		GAthermoData = species.getThermoData(propane,required_class=thermo.ThermoGAData)
 		WilhoitData = thermo.convertGAtoWilhoit(GAthermoData, atoms=11, rotors=2, linear=False)
 		NASAthermoData = thermo.convertWilhoitToNASA(WilhoitData)
 		
@@ -370,11 +370,12 @@ if __name__ == '__main__':
 import sys
 sys.path.append('../source')
 import rmg.thermo as thermo
+import rmg.species as species
 import rmg.structure as structure
 from rmg.structure import Structure
 propane = structure.Structure(SMILES='CCC')
 propane.updateAtomTypes()
-GAthermoData = thermo.getThermoData(propane,required_class=thermo.ThermoGAData)
+GAthermoData = species.getThermoData(propane,required_class=thermo.ThermoGAData)
 WilhoitData = thermo.convertGAtoWilhoit(GAthermoData, atoms=11, rotors=2, linear=False)
 NASAthermoData = thermo.convertWilhoitToNASA(WilhoitData)
 """
