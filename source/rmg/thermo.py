@@ -71,8 +71,12 @@ class ThermoData:
 		"""
 		Return :data:`True` if the temperature `T` in K is within the valid
 		temperature range of the thermodynamic data, or :data:`False` if not.
+		
+		If  Tmax == Tmin == 0 then returns :data:`True`.
+		(This case is for when the range is undefined. Tmax and Tmin must be
+		:type:`float`s because of Cython declaration )
 		"""
-		if self.Tmin is None and self.Tmax is None:
+		if self.Tmax == 0 and self.Tmin == 0:
 			return True
 		else:
 			return self.Tmin <= T and T <= self.Tmax
@@ -107,9 +111,8 @@ class ThermoGAData(ThermoData):
 		self.S298 = S298
 		self.Cp = Cp or [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 		self.index = index
-		self.__cache_T=None
-		self.__cache = dict()
 	
+	@cython.locals(self=ThermoGAData, other=ThermoGAData, new=ThermoGAData, i=cython.int)
 	def __add__(self, other):
 		"""
 		Add two sets of thermodynamic data together. All parameters are
@@ -155,6 +158,7 @@ class ThermoGAData(ThermoData):
 		elif T > ThermoGAData.CpTlist[-1]:
 			return self.Cp[-1]
 		else:
+			cython.declare(Tmin=cython.float, Tmax=cython.float, Cpmin=cython.float, Cpmax=cython.float)
 			for Tmin, Tmax, Cpmin, Cpmax in zip(ThermoGAData.CpTlist[:-1], \
 					ThermoGAData.CpTlist[1:], self.Cp[:-1], self.Cp[1:]):
 				if Tmin <= T and T <= Tmax:
@@ -164,13 +168,10 @@ class ThermoGAData(ThermoData):
 		"""
 		Return the enthalpy in J/mol at temperature `T` in K.
 		"""	
-		if self.__cache_T==T:
-			try: return self.__cache['H']
-			except KeyError: pass # 'H' isn't cached yet
-		else:  # temperature has changed
-			self.__cache = dict()
-			self.__cache_T = T
-			
+		
+		cython.declare(H=cython.float, slope=cython.float, intercept=cython.float,
+		     Tmin=cython.float, Tmax=cython.float, Cpmin=cython.float, Cpmax=cython.float)
+		
 		H = self.H298
 		if not self.isTemperatureValid(T):
 			raise data.TemperatureOutOfRangeException('Invalid temperature for enthalpy estimation from group additivity.')
@@ -183,22 +184,13 @@ class ThermoGAData(ThermoData):
 				else:			H += 0.5 * slope * (Tmax*Tmax - Tmin*Tmin) + intercept * (Tmax - Tmin)
 		if T > ThermoGAData.CpTlist[-1]:
 			H += self.Cp[-1] * (T - ThermoGAData.CpTlist[-1])
-		self.__cache['H'] = H
 		return H
 	
 	def getEntropy(self, T):
 		"""
 		Return the entropy in J/mol*K at temperature `T` in K.
 		"""
-		import math
 		
-		if self.__cache_T==T:
-			try: return self.__cache['S']
-			except KeyError: pass # 'S' isn't cached yet
-		else:  # temperature has changed
-			self.__cache = dict()
-			self.__cache_T = T
-			
 		S = self.S298
 		if not self.isTemperatureValid(T):
 			raise data.TemperatureOutOfRangeException('Invalid temperature for entropy estimation from group additivity.')
@@ -211,24 +203,16 @@ class ThermoGAData(ThermoData):
 				else:			S += slope * (Tmax - Tmin) + intercept * math.log(Tmax/Tmin)
 		if T > ThermoGAData.CpTlist[-1]:
 			S += self.Cp[-1] * math.log(T / ThermoGAData.CpTlist[-1])
-		self.__cache['S'] = S
 		return S
 	
 	def getFreeEnergy(self, T):
 		"""
 		Return the Gibbs free energy in J/mol at temperature `T` in K.
 		"""
-		if self.__cache_T==T:
-			try: return self.__cache['G']
-			except KeyError: pass # 'G' isn't cached yet
-		else:  # temperature has changed
-			self.__cache = dict()
-			self.__cache_T = T
 			
 		if not self.isTemperatureValid(T):
 			raise data.TemperatureOutOfRangeException('Invalid temperature for free energy estimation from group additivity.')
 		G = self.getEnthalpy(T) - T * self.getEntropy(T)
-		self.__cache['G'] = G
 		return G
 	
 	def fromDatabase(self, data, comment):
@@ -278,10 +262,7 @@ class ThermoGAData(ThermoData):
 			thermo.appendChild(heatCapacity)
 			data.createXMLQuantity(dom, heatCapacity, Cp, 'J/(mol*K)')
 	
-
 ################################################################################
-
-
 
 class ThermoNASAPolynomial(ThermoData):
 	"""
@@ -496,6 +477,9 @@ class ThermoNASAData(ThermoData):
 
 ################################################################################
 
+#: The default temperature in K
+ThermoWilhoitDataB = 500.0
+
 class ThermoWilhoitData(ThermoData):
 	"""
 	A set of thermodynamic parameters given by Wilhoit polynomials, which have
@@ -523,8 +507,6 @@ class ThermoWilhoitData(ThermoData):
 	`S0` that are needed to evaluate the enthalpy and entropy, respectively.
 	"""
 
-	# The default temperature in K
-	B = 500.0
 	
 	def __init__(self, cp0, cpInf, a0, a1, a2, a3, H0, S0, comment='', ):
 		"""Initialise the Wilhoit polynomial. Trange is set to (0,9999.9)"""
@@ -532,7 +514,7 @@ class ThermoWilhoitData(ThermoData):
 		ThermoData.__init__(self, Trange=Trange, comment=comment)
 		self.cp0 = cp0
 		self.cpInf = cpInf
-		self.B = ThermoWilhoitData.B
+		self.B = ThermoWilhoitDataB
 		self.a0 = a0
 		self.a1 = a1
 		self.a2 = a2
@@ -551,9 +533,8 @@ class ThermoWilhoitData(ThermoData):
 		Return the heat capacity in J/mol*K at temperature `T` in K.
 		"""
 		y = T/(T+self.B)
-		Cp = self.cp0+(self.cpInf-self.cp0)*y*y*( 1 + 
+		return self.cp0+(self.cpInf-self.cp0)*y*y*( 1 +
 			(y-1)*(self.a0 + y*(self.a1 + y*(self.a2 + y*self.a3))) )
-		return Cp
 	
 	def getEnthalpy(self, T):
 		"""
@@ -608,57 +589,99 @@ class ThermoWilhoitData(ThermoData):
 	#a faster version of the integral based on H from Yelvington's thesis; it differs from the original (see above) by a constant (dependent on parameters but independent of t)
 	def integral_T0(self, t):
 		#output: the quantity Integrate[Cp(Wilhoit)/R, t'] evaluated at t'=t
+		cython.declare(cp0=cython.float, cpInf=cython.float, B=cython.float, a0=cython.float, a1=cython.float, a2=cython.float, a3=cython.float)
+		cython.declare(y=cython.float, y2=cython.float, logBplust=cython.float, result=cython.float)
 		cp0, cpInf, B, a0, a1, a2, a3 = self.cp0, self.cpInf, self.B, self.a0, self.a1, self.a2, self.a3
 		y = t/(t+B)
 		y2 = y*y
-		result = cp0*t - (cpInf-cp0)*t*(y2*((3*a0 + a1 + a2 + a3)/6. + (4*a1 + a2 + a3)*y/12. + (5*a2 + a3)*y2/20. + a3*y2*y/5.) + (2 + a0 + a1 + a2 + a3)*( y/2. - 1 + (1/y-1)*math.log(B + t)))
+		if cython.compiled:
+			logBplust = log(B + t)
+		else:
+			logBplust = math.log(B + t)
+		result = cp0*t - (cpInf-cp0)*t*(y2*((3*a0 + a1 + a2 + a3)/6. + (4*a1 + a2 + a3)*y/12. + (5*a2 + a3)*y2/20. + a3*y2*y/5.) + (2 + a0 + a1 + a2 + a3)*( y/2. - 1 + (1/y-1)*logBplust))
 		return result
 	
 	#a faster version of the integral based on S from Yelvington's thesis; it differs from the original by a constant (dependent on parameters but independent of t)
 	def integral_TM1(self, t):
 		#output: the quantity Integrate[Cp(Wilhoit)/R*t^-1, t'] evaluated at t'=t
+		cython.declare(cp0=cython.float, cpInf=cython.float, B=cython.float, a0=cython.float, a1=cython.float, a2=cython.float, a3=cython.float)
+		cython.declare(y=cython.float, logt=cython.float, logy=cython.float, result=cython.float)
 		cp0, cpInf, B, a0, a1, a2, a3 = self.cp0, self.cpInf, self.B, self.a0, self.a1, self.a2, self.a3
 		y = t/(t+B)
-		result= cpInf*math.log(t)-(cpInf-cp0)*(math.log(y)+y*(1+y*(a0/2+y*(a1/3 + y*(a2/4 + y*a3/5)))))
+		if cython.compiled:
+			logy = log(y); logt = log(t)
+		else:
+			logy = math.log(y); logt = math.log(t)
+		result = cpInf*logt-(cpInf-cp0)*(logy+y*(1+y*(a0/2+y*(a1/3 + y*(a2/4 + y*a3/5)))))
 		return result
 	
 	def integral_T1(self, t):
 		#output: the quantity Integrate[Cp(Wilhoit)/R*t, t'] evaluated at t'=t
+		cython.declare(cp0=cython.float, cpInf=cython.float, B=cython.float, a0=cython.float, a1=cython.float, a2=cython.float, a3=cython.float)
+		cython.declare(logBplust=cython.float, result=cython.float)
 		cp0, cpInf, B, a0, a1, a2, a3 = self.cp0, self.cpInf, self.B, self.a0, self.a1, self.a2, self.a3
+		if cython.compiled:
+			logBplust = log(B + t)
+		else:
+			logBplust = math.log(B + t)
 		result = ( (2 + a0 + a1 + a2 + a3)*B*(cp0 - cpInf)*t + (cpInf*t**2)/2. + (a3*B**7*(-cp0 + cpInf))/(5.*(B + t)**5) + ((a2 + 6*a3)*B**6*(cp0 - cpInf))/(4.*(B + t)**4) -
 			((a1 + 5*(a2 + 3*a3))*B**5*(cp0 - cpInf))/(3.*(B + t)**3) + ((a0 + 4*a1 + 10*(a2 + 2*a3))*B**4*(cp0 - cpInf))/(2.*(B + t)**2) -
-			((1 + 3*a0 + 6*a1 + 10*a2 + 15*a3)*B**3*(cp0 - cpInf))/(B + t) - (3 + 3*a0 + 4*a1 + 5*a2 + 6*a3)*B**2*(cp0 - cpInf)*math.log(B + t))
+			((1 + 3*a0 + 6*a1 + 10*a2 + 15*a3)*B**3*(cp0 - cpInf))/(B + t) - (3 + 3*a0 + 4*a1 + 5*a2 + 6*a3)*B**2*(cp0 - cpInf)*logBplust)
 		return result
 	
 	def integral_T2(self, t):
 		#output: the quantity Integrate[Cp(Wilhoit)/R*t^2, t'] evaluated at t'=t
+		cython.declare(cp0=cython.float, cpInf=cython.float, B=cython.float, a0=cython.float, a1=cython.float, a2=cython.float, a3=cython.float)
+		cython.declare(logBplust=cython.float, result=cython.float)
 		cp0, cpInf, B, a0, a1, a2, a3 = self.cp0, self.cpInf, self.B, self.a0, self.a1, self.a2, self.a3
+		if cython.compiled:
+			logBplust = log(B + t)
+		else:
+			logBplust = math.log(B + t)
 		result = ( -((3 + 3*a0 + 4*a1 + 5*a2 + 6*a3)*B**2*(cp0 - cpInf)*t) + ((2 + a0 + a1 + a2 + a3)*B*(cp0 - cpInf)*t**2)/2. + (cpInf*t**3)/3. + (a3*B**8*(cp0 - cpInf))/(5.*(B + t)**5) -
 			((a2 + 7*a3)*B**7*(cp0 - cpInf))/(4.*(B + t)**4) + ((a1 + 6*a2 + 21*a3)*B**6*(cp0 - cpInf))/(3.*(B + t)**3) - ((a0 + 5*(a1 + 3*a2 + 7*a3))*B**5*(cp0 - cpInf))/(2.*(B + t)**2) +
-			((1 + 4*a0 + 10*a1 + 20*a2 + 35*a3)*B**4*(cp0 - cpInf))/(B + t) + (4 + 6*a0 + 10*a1 + 15*a2 + 21*a3)*B**3*(cp0 - cpInf)*math.log(B + t))
+			((1 + 4*a0 + 10*a1 + 20*a2 + 35*a3)*B**4*(cp0 - cpInf))/(B + t) + (4 + 6*a0 + 10*a1 + 15*a2 + 21*a3)*B**3*(cp0 - cpInf)*logBplust)
 		return result
-	
+
 	def integral_T3(self, t):
 		#output: the quantity Integrate[Cp(Wilhoit)/R*t^3, t'] evaluated at t'=t
+		cython.declare(cp0=cython.float, cpInf=cython.float, B=cython.float, a0=cython.float, a1=cython.float, a2=cython.float, a3=cython.float)
+		cython.declare(logBplust=cython.float, result=cython.float)
 		cp0, cpInf, B, a0, a1, a2, a3 = self.cp0, self.cpInf, self.B, self.a0, self.a1, self.a2, self.a3
+		if cython.compiled:
+			logBplust = log(B + t)
+		else:
+			logBplust = math.log(B + t)
 		result = ( (4 + 6*a0 + 10*a1 + 15*a2 + 21*a3)*B**3*(cp0 - cpInf)*t + ((3 + 3*a0 + 4*a1 + 5*a2 + 6*a3)*B**2*(-cp0 + cpInf)*t**2)/2. + ((2 + a0 + a1 + a2 + a3)*B*(cp0 - cpInf)*t**3)/3. +
 			(cpInf*t**4)/4. + (a3*B**9*(-cp0 + cpInf))/(5.*(B + t)**5) + ((a2 + 8*a3)*B**8*(cp0 - cpInf))/(4.*(B + t)**4) - ((a1 + 7*(a2 + 4*a3))*B**7*(cp0 - cpInf))/(3.*(B + t)**3) +
 			((a0 + 6*a1 + 21*a2 + 56*a3)*B**6*(cp0 - cpInf))/(2.*(B + t)**2) - ((1 + 5*a0 + 15*a1 + 35*a2 + 70*a3)*B**5*(cp0 - cpInf))/(B + t) -
-			(5 + 10*a0 + 20*a1 + 35*a2 + 56*a3)*B**4*(cp0 - cpInf)*math.log(B + t))
+			(5 + 10*a0 + 20*a1 + 35*a2 + 56*a3)*B**4*(cp0 - cpInf)*logBplust)
 		return result
-	
+
 	def integral_T4(self, t):
 		#output: the quantity Integrate[Cp(Wilhoit)/R*t^4, t'] evaluated at t'=t
+		cython.declare(cp0=cython.float, cpInf=cython.float, B=cython.float, a0=cython.float, a1=cython.float, a2=cython.float, a3=cython.float)
+		cython.declare(logBplust=cython.float, result=cython.float)
 		cp0, cpInf, B, a0, a1, a2, a3 = self.cp0, self.cpInf, self.B, self.a0, self.a1, self.a2, self.a3
+		if cython.compiled:
+			logBplust = log(B + t)
+		else:
+			logBplust = math.log(B + t)
 		result = ( -((5 + 10*a0 + 20*a1 + 35*a2 + 56*a3)*B**4*(cp0 - cpInf)*t) + ((4 + 6*a0 + 10*a1 + 15*a2 + 21*a3)*B**3*(cp0 - cpInf)*t**2)/2. +
 			((3 + 3*a0 + 4*a1 + 5*a2 + 6*a3)*B**2*(-cp0 + cpInf)*t**3)/3. + ((2 + a0 + a1 + a2 + a3)*B*(cp0 - cpInf)*t**4)/4. + (cpInf*t**5)/5. + (a3*B**10*(cp0 - cpInf))/(5.*(B + t)**5) -
 			((a2 + 9*a3)*B**9*(cp0 - cpInf))/(4.*(B + t)**4) + ((a1 + 8*a2 + 36*a3)*B**8*(cp0 - cpInf))/(3.*(B + t)**3) - ((a0 + 7*(a1 + 4*(a2 + 3*a3)))*B**7*(cp0 - cpInf))/(2.*(B + t)**2) +
-			((1 + 6*a0 + 21*a1 + 56*a2 + 126*a3)*B**6*(cp0 - cpInf))/(B + t) + (6 + 15*a0 + 35*a1 + 70*a2 + 126*a3)*B**5*(cp0 - cpInf)*math.log(B + t))
+			((1 + 6*a0 + 21*a1 + 56*a2 + 126*a3)*B**6*(cp0 - cpInf))/(B + t) + (6 + 15*a0 + 35*a1 + 70*a2 + 126*a3)*B**5*(cp0 - cpInf)*logBplust)
 		return result
-	
+
 	def integral2_T0(self, t):
 		#output: the quantity Integrate[(Cp(Wilhoit)/R)^2, t'] evaluated at t'=t
+		cython.declare(cp0=cython.float, cpInf=cython.float, B=cython.float, a0=cython.float, a1=cython.float, a2=cython.float, a3=cython.float)
+		cython.declare(logBplust=cython.float, result=cython.float)
 		cp0, cpInf, B, a0, a1, a2, a3 = self.cp0, self.cpInf, self.B, self.a0, self.a1, self.a2, self.a3
+		if cython.compiled:
+			logBplust = log(B + t)
+		else:
+			logBplust = math.log(B + t)
 		result = (cpInf**2*t - (a3**2*B**12*(cp0 - cpInf)**2)/(11.*(B + t)**11) + (a3*(a2 + 5*a3)*B**11*(cp0 - cpInf)**2)/(5.*(B + t)**10) -
 			((a2**2 + 18*a2*a3 + a3*(2*a1 + 45*a3))*B**10*(cp0 - cpInf)**2)/(9.*(B + t)**9) + ((4*a2**2 + 36*a2*a3 + a1*(a2 + 8*a3) + a3*(a0 + 60*a3))*B**9*(cp0 - cpInf)**2)/(4.*(B + t)**8) -
 			((a1**2 + 14*a1*(a2 + 4*a3) + 2*(14*a2**2 + a3 + 84*a2*a3 + 105*a3**2 + a0*(a2 + 7*a3)))*B**8*(cp0 - cpInf)**2)/(7.*(B + t)**7) +
@@ -673,12 +696,18 @@ class ThermoWilhoitData(ThermoData):
 			 (2 + 2*a0**2 + 3*a1**2 + 15*a2 + 4*a2**2 + 21*a3 + 9*a2*a3 + 5*a3**2 + a0*(6 + 5*a1 + 6*a2 + 7*a3) + a1*(10 + 7*a2 + 8*a3))*cpInf))/(B + t)**2 -
 			(B**2*((2 + a0 + a1 + a2 + a3)**2*cp0**2 - 2*(5 + a0**2 + a1**2 + 8*a2 + a2**2 + 9*a3 + 2*a2*a3 + a3**2 + 2*a0*(3 + a1 + a2 + a3) + a1*(7 + 2*a2 + 2*a3))*cp0*cpInf +
 			 (6 + a0**2 + a1**2 + 12*a2 + a2**2 + 14*a3 + 2*a2*a3 + a3**2 + 2*a1*(5 + a2 + a3) + 2*a0*(4 + a1 + a2 + a3))*cpInf**2))/(B + t) +
-			2*(2 + a0 + a1 + a2 + a3)*B*(cp0 - cpInf)*cpInf*math.log(B + t))
+			2*(2 + a0 + a1 + a2 + a3)*B*(cp0 - cpInf)*cpInf*logBplust)
 		return result
-	
+
 	def integral2_TM1(self, t):
 		#output: the quantity Integrate[(Cp(Wilhoit)/R)^2*t^-1, t'] evaluated at t'=t
+		cython.declare(cp0=cython.float, cpInf=cython.float, B=cython.float, a0=cython.float, a1=cython.float, a2=cython.float, a3=cython.float)
+		cython.declare(logBplust=cython.float, logt=cython.float, result=cython.float)
 		cp0, cpInf, B, a0, a1, a2, a3 = self.cp0, self.cpInf, self.B, self.a0, self.a1, self.a2, self.a3
+		if cython.compiled:
+			logBplust = log(B + t); logt = log(t)
+		else:
+			logBplust = math.log(B + t); logt = math.log(t)
 		result = ( (a3**2*B**11*(cp0 - cpInf)**2)/(11.*(B + t)**11) - (a3*(2*a2 + 9*a3)*B**10*(cp0 - cpInf)**2)/(10.*(B + t)**10) +
 			((a2**2 + 16*a2*a3 + 2*a3*(a1 + 18*a3))*B**9*(cp0 - cpInf)**2)/(9.*(B + t)**9) -
 			((7*a2**2 + 56*a2*a3 + 2*a1*(a2 + 7*a3) + 2*a3*(a0 + 42*a3))*B**8*(cp0 - cpInf)**2)/(8.*(B + t)**8) +
@@ -693,9 +722,9 @@ class ThermoWilhoitData(ThermoData):
 			(B**2*((3 + a0**2 + a1**2 + 4*a2 + a2**2 + 4*a3 + 2*a2*a3 + a3**2 + 2*a1*(2 + a2 + a3) + 2*a0*(2 + a1 + a2 + a3))*cp0**2 -
 			2*(3 + a0**2 + a1**2 + 7*a2 + a2**2 + 8*a3 + 2*a2*a3 + a3**2 + 2*a1*(3 + a2 + a3) + a0*(5 + 2*a1 + 2*a2 + 2*a3))*cp0*cpInf +
 			(3 + a0**2 + a1**2 + 10*a2 + a2**2 + 12*a3 + 2*a2*a3 + a3**2 + 2*a1*(4 + a2 + a3) + 2*a0*(3 + a1 + a2 + a3))*cpInf**2))/(2.*(B + t)**2) +
-			(B*(cp0 - cpInf)*(cp0 - (3 + 2*a0 + 2*a1 + 2*a2 + 2*a3)*cpInf))/(B + t) + cp0**2*math.log(t) + (-cp0**2 + cpInf**2)*math.log(B + t))
+			(B*(cp0 - cpInf)*(cp0 - (3 + 2*a0 + 2*a1 + 2*a2 + 2*a3)*cpInf))/(B + t) + cp0**2*logt + (-cp0**2 + cpInf**2)*logBplust)
 		return result
-	
+
 ################################################################################
 
 def convertGAtoWilhoit(GAthermo, atoms, rotors, linear):
@@ -716,7 +745,7 @@ def convertGAtoWilhoit(GAthermo, atoms, rotors, linear):
 	Cp_list = GAthermo.Cp
 	T_list = ThermoGAData.CpTlist  # usually [300, 400, 500, 600, 800, 1000, 1500] but why assume?
 	R = constants.R
-	B = ThermoWilhoitData.B # Constant, set once in the class def.
+	B = ThermoWilhoitDataB # Constant, set once in the class def.
 	
 	# convert from K to kK
 	T_list = [t/1000. for t in T_list] 
@@ -916,53 +945,64 @@ def Wilhoit2NASA(wilhoit, tmin, tmax, tint, weighting):
 	wilhoit.cpInf /= constants.R
 	wilhoit.B /= 1000.
 
-	if (weighting == 1):
-		nasa1, nasa2 = Wilhoit2NASA_W(wilhoit, tmin, tmax, tint)
-	else:
-		nasa1, nasa2 = Wilhoit2NASA_NW(wilhoit, tmin, tmax, tint)
-	return nasa1, nasa2
-
-
-def Wilhoit2NASA_NW(wilhoit, tmin, tmax, tint):
-	#this is the case with no weighting
-	#input: Wilhoit parameters, Cp0/R, CpInf/R, and B (kK), a0, a1, a2, a3, Tmin (minimum temperature (in kiloKelvin), Tmax (maximum temperature (in kiloKelvin), Tint (intermediate temperature, in kiloKelvin)
-	#output: NASA parameters for Cp/R, b1, b2, b3, b4, b5 (low temp parameters) and b6, b7, b8, b9, b10 (high temp parameters)
-	
 	#construct 13*13 symmetric A matrix (in A*x = b); other elements will be zero
 	A = scipy.zeros([13,13])
 	b = scipy.zeros([13])
-	A[0,0] = 2*(tint - tmin)
-	A[0,1] = tint*tint - tmin*tmin
-	A[0,2] = 2.*(tint*tint*tint - tmin*tmin*tmin)/3
-	A[0,3] = (tint*tint*tint*tint - tmin*tmin*tmin*tmin)/2
-	A[0,4] = 2.*(tint*tint*tint*tint*tint - tmin*tmin*tmin*tmin*tmin)/5
+
+	if weighting:
+		A[0,0] = 2*math.log(tint/tmin)
+		A[0,1] = 2*(tint - tmin)
+		A[0,2] = tint*tint - tmin*tmin
+		A[0,3] = 2.*(tint*tint*tint - tmin*tmin*tmin)/3
+		A[0,4] = (tint*tint*tint*tint - tmin*tmin*tmin*tmin)/2
+		A[1,4] = 2.*(tint*tint*tint*tint*tint - tmin*tmin*tmin*tmin*tmin)/5
+		A[2,4] = (tint*tint*tint*tint*tint*tint - tmin*tmin*tmin*tmin*tmin*tmin)/3
+		A[3,4] = 2.*(tint*tint*tint*tint*tint*tint*tint - tmin*tmin*tmin*tmin*tmin*tmin*tmin)/7
+		A[4,4] = (tint*tint*tint*tint*tint*tint*tint*tint - tmin*tmin*tmin*tmin*tmin*tmin*tmin*tmin)/4
+	else:
+		A[0,0] = 2*(tint - tmin)
+		A[0,1] = tint*tint - tmin*tmin
+		A[0,2] = 2.*(tint*tint*tint - tmin*tmin*tmin)/3
+		A[0,3] = (tint*tint*tint*tint - tmin*tmin*tmin*tmin)/2
+		A[0,4] = 2.*(tint*tint*tint*tint*tint - tmin*tmin*tmin*tmin*tmin)/5
+		A[1,4] = (tint*tint*tint*tint*tint*tint - tmin*tmin*tmin*tmin*tmin*tmin)/3
+		A[2,4] = 2.*(tint*tint*tint*tint*tint*tint*tint - tmin*tmin*tmin*tmin*tmin*tmin*tmin)/7
+		A[3,4] = (tint*tint*tint*tint*tint*tint*tint*tint - tmin*tmin*tmin*tmin*tmin*tmin*tmin*tmin)/4
+		A[4,4] = 2.*(tint*tint*tint*tint*tint*tint*tint*tint*tint - tmin*tmin*tmin*tmin*tmin*tmin*tmin*tmin*tmin)/9
 	A[1,1] = A[0,2]
 	A[1,2] = A[0,3]
 	A[1,3] = A[0,4]
-	A[1,4] = (tint*tint*tint*tint*tint*tint - tmin*tmin*tmin*tmin*tmin*tmin)/3
 	A[2,2] = A[0,4]
 	A[2,3] = A[1,4]
-	A[2,4] = 2.*(tint*tint*tint*tint*tint*tint*tint - tmin*tmin*tmin*tmin*tmin*tmin*tmin)/7
 	A[3,3] = A[2,4]
-	A[3,4] = (tint*tint*tint*tint*tint*tint*tint*tint - tmin*tmin*tmin*tmin*tmin*tmin*tmin*tmin)/4
-	A[4,4] = 2.*(tint*tint*tint*tint*tint*tint*tint*tint*tint - tmin*tmin*tmin*tmin*tmin*tmin*tmin*tmin*tmin)/9
-	
-	A[5,5] = 2*(tmax - tint)
-	A[5,6] = tmax*tmax - tint*tint
-	A[5,7] = 2.*(tmax*tmax*tmax - tint*tint*tint)/3
-	A[5,8] = (tmax*tmax*tmax*tmax - tint*tint*tint*tint)/2
-	A[5,9] = 2.*(tmax*tmax*tmax*tmax*tmax - tint*tint*tint*tint*tint)/5
+
+	if weighting:
+		A[5,5] = 2*math.log(tmax/tint)
+		A[5,6] = 2*(tmax - tint)
+		A[5,7] = tmax*tmax - tint*tint
+		A[5,8] = 2.*(tmax*tmax*tmax - tint*tint*tint)/3
+		A[5,9] = (tmax*tmax*tmax*tmax - tint*tint*tint*tint)/2
+		A[6,9] = 2.*(tmax*tmax*tmax*tmax*tmax - tint*tint*tint*tint*tint)/5
+		A[7,9] = (tmax*tmax*tmax*tmax*tmax*tmax - tint*tint*tint*tint*tint*tint)/3
+		A[8,9] = 2.*(tmax*tmax*tmax*tmax*tmax*tmax*tmax - tint*tint*tint*tint*tint*tint*tint)/7
+		A[9,9] = (tmax*tmax*tmax*tmax*tmax*tmax*tmax*tmax - tint*tint*tint*tint*tint*tint*tint*tint)/4
+	else:
+		A[5,5] = 2*(tmax - tint)
+		A[5,6] = tmax*tmax - tint*tint
+		A[5,7] = 2.*(tmax*tmax*tmax - tint*tint*tint)/3
+		A[5,8] = (tmax*tmax*tmax*tmax - tint*tint*tint*tint)/2
+		A[5,9] = 2.*(tmax*tmax*tmax*tmax*tmax - tint*tint*tint*tint*tint)/5
+		A[6,9] = (tmax*tmax*tmax*tmax*tmax*tmax - tint*tint*tint*tint*tint*tint)/3
+		A[7,9] = 2.*(tmax*tmax*tmax*tmax*tmax*tmax*tmax - tint*tint*tint*tint*tint*tint*tint)/7
+		A[8,9] = (tmax*tmax*tmax*tmax*tmax*tmax*tmax*tmax - tint*tint*tint*tint*tint*tint*tint*tint)/4
+		A[9,9] = 2.*(tmax*tmax*tmax*tmax*tmax*tmax*tmax*tmax*tmax - tint*tint*tint*tint*tint*tint*tint*tint*tint)/9
 	A[6,6] = A[5,7]
 	A[6,7] = A[5,8]
 	A[6,8] = A[5,9]
-	A[6,9] = (tmax*tmax*tmax*tmax*tmax*tmax - tint*tint*tint*tint*tint*tint)/3
 	A[7,7] = A[5,9]
 	A[7,8] = A[6,9]
-	A[7,9] = 2.*(tmax*tmax*tmax*tmax*tmax*tmax*tmax - tint*tint*tint*tint*tint*tint*tint)/7
 	A[8,8] = A[7,9]
-	A[8,9] = (tmax*tmax*tmax*tmax*tmax*tmax*tmax*tmax - tint*tint*tint*tint*tint*tint*tint*tint)/4
-	A[9,9] = 2.*(tmax*tmax*tmax*tmax*tmax*tmax*tmax*tmax*tmax - tint*tint*tint*tint*tint*tint*tint*tint*tint)/9
-	
+
 	A[0,10] = 1.
 	A[1,10] = tint
 	A[1,11] = 1.
@@ -975,7 +1015,7 @@ def Wilhoit2NASA_NW(wilhoit, tmin, tmax, tint):
 	A[4,10] = A[3,10]*tint
 	A[4,11] = 4*A[3,10]
 	A[4,12] = 12*A[2,10]
-	
+
 	A[5,10] = -A[0,10]
 	A[6,10] = -A[1,10]
 	A[6,11] = -A[1,11]
@@ -988,172 +1028,65 @@ def Wilhoit2NASA_NW(wilhoit, tmin, tmax, tint):
 	A[9,10] = -A[4,10]
 	A[9,11] = -A[4,11]
 	A[9,12] = -A[4,12]
-	
+
 	# make the matrix symmetric
 	for i in range(1,13):
 		for j in range(0, i):
 			A[i,j] = A[j,i]
-			
+
 	#construct b vector
-	#store values at tint (this will avoid evaluating them twice)
-	wM1int = wilhoit.integral_TM1(tint)
 	w0int = wilhoit.integral_T0(tint)
 	w1int = wilhoit.integral_T1(tint)
 	w2int = wilhoit.integral_T2(tint)
 	w3int = wilhoit.integral_T3(tint)
-	
-	wM1min = wilhoit.integral_TM1(tmin)
 	w0min = wilhoit.integral_T0(tmin)
 	w1min = wilhoit.integral_T1(tmin)
 	w2min = wilhoit.integral_T2(tmin)
 	w3min = wilhoit.integral_T3(tmin)
-	
-	wM1max = wilhoit.integral_TM1(tmax)
 	w0max = wilhoit.integral_T0(tmax)
 	w1max = wilhoit.integral_T1(tmax)
 	w2max = wilhoit.integral_T2(tmax)
 	w3max = wilhoit.integral_T3(tmax)
-	
-	
-	b[0] = 2*(wM1int - wM1min)
-	b[1] = 2*(w0int - w0min)
-	b[2] = 2*(w1int - w1min)
-	b[3] = 2*(w2int - w2min)
-	b[4] = 2*(w3int - w3min)
-	b[5] = 2*(wM1max - wM1int)
-	b[6] = 2*(w0max - w0int)
-	b[7] = 2*(w1max - w1int)
-	b[8] = 2*(w2max - w2int)
-	b[9] = 2*(w3max - w3int)
-	# b[10] = 0
-	# b[11] = 0
-	# b[12] = 0
-	
+	if weighting:
+		wM1int = wilhoit.integral_TM1(tint)
+		wM1min = wilhoit.integral_TM1(tmin)
+		wM1max = wilhoit.integral_TM1(tmax)
+	else:
+		w4int = wilhoit.integral_T4(tint)
+		w4min = wilhoit.integral_T4(tmin)
+		w4max = wilhoit.integral_T4(tmax)
+
+	if weighting:
+		b[0] = 2*(wM1int - wM1min)
+		b[1] = 2*(w0int - w0min)
+		b[2] = 2*(w1int - w1min)
+		b[3] = 2*(w2int - w2min)
+		b[4] = 2*(w3int - w3min)
+		b[5] = 2*(wM1max - wM1int)
+		b[6] = 2*(w0max - w0int)
+		b[7] = 2*(w1max - w1int)
+		b[8] = 2*(w2max - w2int)
+		b[9] = 2*(w3max - w3int)
+	else:
+		b[0] = 2*(w0int - w0min)
+		b[1] = 2*(w1int - w1min)
+		b[2] = 2*(w2int - w2min)
+		b[3] = 2*(w3int - w3min)
+		b[4] = 2*(w4int - w4min)
+		b[5] = 2*(w0max - w0int)
+		b[6] = 2*(w1max - w1int)
+		b[7] = 2*(w2max - w2int)
+		b[8] = 2*(w3max - w3int)
+		b[9] = 2*(w4max - w4int)
+
 	#solve A*x=b for x (note that factor of 2 in b vector and 10*10 submatrix of A matrix is not required; not including it should give same result, except Lagrange multipliers will differ by a factor of two)
 	#from linalg import solve
 	#print A
 	x = linalg.solve(A,b,overwrite_a=1,overwrite_b=1)
 	nasa_low = ThermoNASAPolynomial(T_range=(0,0), coeffs=[x[0], x[1], x[2], x[3], x[4], 0.0, 0.0], comment='')
 	nasa_high = ThermoNASAPolynomial(T_range=(0,0), coeffs=[x[5], x[6], x[7], x[8], x[9], 0.0, 0.0], comment='')
-	
+
 	return nasa_low, nasa_high
-
-def Wilhoit2NASA_W(wilhoit, tmin, tmax, tint):
-	#this is the case WITH weighting
-	#input: Wilhoit parameters, Cp0/R, CpInf/R, and B (kK), a0, a1, a2, a3, Tmin (minimum temperature (in kiloKelvin), Tmax (maximum temperature (in kiloKelvin), Tint (intermediate temperature, in kiloKelvin)
-	#output: NASA parameters for Cp/R, b1, b2, b3, b4, b5 (low temp parameters) and b6, b7, b8, b9, b10 (high temp parameters)
-	
-	#construct 13*13 symmetric A matrix (in A*x = b); other elements will be zero
-	A = scipy.zeros([13,13])
-	b = scipy.zeros([13])
-	
-	A[0,0] = 2*math.log(tint/tmin)
-	A[0,1] = 2*(tint - tmin)
-	A[0,2] = tint*tint - tmin*tmin
-	A[0,3] = 2.*(tint*tint*tint - tmin*tmin*tmin)/3
-	A[0,4] = (tint*tint*tint*tint - tmin*tmin*tmin*tmin)/2	 
-	A[1,1] = A[0,2]
-	A[1,2] = A[0,3]
-	A[1,3] = A[0,4]
-	A[1,4] = 2.*(tint*tint*tint*tint*tint - tmin*tmin*tmin*tmin*tmin)/5
-	A[2,2] = A[0,4]
-	A[2,3] = A[1,4]
-	A[2,4] = (tint*tint*tint*tint*tint*tint - tmin*tmin*tmin*tmin*tmin*tmin)/3
-	A[3,3] = A[2,4]
-	A[3,4] = 2.*(tint*tint*tint*tint*tint*tint*tint - tmin*tmin*tmin*tmin*tmin*tmin*tmin)/7
-	A[4,4] = (tint*tint*tint*tint*tint*tint*tint*tint - tmin*tmin*tmin*tmin*tmin*tmin*tmin*tmin)/4
-	
-	A[5,5] = 2*math.log(tmax/tint)
-	A[5,6] = 2*(tmax - tint)
-	A[5,7] = tmax*tmax - tint*tint
-	A[5,8] = 2.*(tmax*tmax*tmax - tint*tint*tint)/3
-	A[5,9] = (tmax*tmax*tmax*tmax - tint*tint*tint*tint)/2
-	A[6,6] = A[5,7]
-	A[6,7] = A[5,8]
-	A[6,8] = A[5,9]
-	A[6,9] = 2.*(tmax*tmax*tmax*tmax*tmax - tint*tint*tint*tint*tint)/5
-	A[7,7] = A[5,9]
-	A[7,8] = A[6,9]
-	A[7,9] = (tmax*tmax*tmax*tmax*tmax*tmax - tint*tint*tint*tint*tint*tint)/3
-	A[8,8] = A[7,9]
-	A[8,9] = 2.*(tmax*tmax*tmax*tmax*tmax*tmax*tmax - tint*tint*tint*tint*tint*tint*tint)/7
-	A[9,9] = (tmax*tmax*tmax*tmax*tmax*tmax*tmax*tmax - tint*tint*tint*tint*tint*tint*tint*tint)/4
-	
-	
-	A[0,10] = 1.
-	A[1,10] = tint
-	A[1,11] = 1.
-	A[2,10] = tint*tint
-	A[2,11] = 2*tint
-	A[2,12] = 2.
-	A[3,10] = A[2,10]*tint
-	A[3,11] = 3*A[2,10]
-	A[3,12] = 6*tint
-	A[4,10] = A[3,10]*tint
-	A[4,11] = 4*A[3,10]
-	A[4,12] = 12*A[2,10]
-	
-	A[5,10] = -A[0,10]
-	A[6,10] = -A[1,10]
-	A[6,11] = -A[1,11]
-	A[7,10] = -A[2,10]
-	A[7,11] = -A[2,11]
-	A[7,12] = -A[2,12]
-	A[8,10] = -A[3,10]
-	A[8,11] = -A[3,11]
-	A[8,12] = -A[3,12]
-	A[9,10] = -A[4,10]
-	A[9,11] = -A[4,11]
-	A[9,12] = -A[4,12]
-	
-	# make the matrix symmetric
-	for i in range(1,13):
-		for j in range(0, i):
-			A[i,j] = A[j,i]
-	
-	#construct b vector
-	#store values at tint (this will avoid evaluating them twice)
-	wM1int = wilhoit.integral_TM1(tint)
-	w0int = wilhoit.integral_T0(tint)
-	w1int = wilhoit.integral_T1(tint)
-	w2int = wilhoit.integral_T2(tint)
-	w3int = wilhoit.integral_T3(tint)
-
-	wM1min = wilhoit.integral_TM1(tmin)
-	w0min = wilhoit.integral_T0(tmin)
-	w1min = wilhoit.integral_T1(tmin)
-	w2min = wilhoit.integral_T2(tmin)
-	w3min = wilhoit.integral_T3(tmin)
-
-	wM1max = wilhoit.integral_TM1(tmax)
-	w0max = wilhoit.integral_T0(tmax)
-	w1max = wilhoit.integral_T1(tmax)
-	w2max = wilhoit.integral_T2(tmax)
-	w3max = wilhoit.integral_T3(tmax)
-
-
-	b[0] = 2*(wM1int - wM1min)
-	b[1] = 2*(w0int - w0min)
-	b[2] = 2*(w1int - w1min)
-	b[3] = 2*(w2int - w2min)
-	b[4] = 2*(w3int - w3min)
-	b[5] = 2*(wM1max - wM1int)
-	b[6] = 2*(w0max - w0int)
-	b[7] = 2*(w1max - w1int)
-	b[8] = 2*(w2max - w2int)
-	b[9] = 2*(w3max - w3int)
-	# b[10] = 0
-	# b[11] = 0
-	# b[12] = 0
-
-	#solve A*x=b for x (note that factor of 2 in b vector and 10*10 submatrix of A matrix is not required; not including it should give same result, except Lagrange multipliers will differ by a factor of two)
-	#from linalg import solve
-	#print A
-	x = linalg.solve(A,b,overwrite_a=1,overwrite_b=1)
-	nasa1 = ThermoNASAPolynomial(T_range=(0,9999.9), coeffs=[x[0], x[1], x[2], x[3], x[4], 0.0, 0.0], comment='')
-	nasa2 = ThermoNASAPolynomial(T_range=(0,9999.9), coeffs=[x[5], x[6], x[7], x[8], x[9], 0.0, 0.0], comment='')
-
-	return nasa1, nasa2
 	
 def Wilhoit2NASA_TintOpt(cp0, cpInf, B, a0, a1, a2, a3, tmin, tmax, tintg, weighting):
 	#input: Wilhoit parameters, Cp0/R, CpInf/R, and B (kK), a0, a1, a2, a3, Tmin (minimum temperature (in kiloKelvin), Tmax (maximum temperature (in kiloKelvin), Tintg (guess intermediate temperature, in kiloKelvin)
@@ -1206,366 +1139,6 @@ def TintOpt_objFun_W(tint, wilhoit, tmin, tmax):
 				 +b9*wilhoit.integral_T2(tmax)+(b4-b9)*wilhoit.integral_T2(tint) - b4*wilhoit.integral_T2(tmin)
 				 +b10*wilhoit.integral_T3(tmax)+(b5-b10)*wilhoit.integral_T3(tint) - b5*wilhoit.integral_T3(tmin)))
 	return result
-
-################################################################################
-class ThermoDatabase(data.Database):
-	"""
-	Represent an RMG thermodynamics database.
-	"""
-	
-	def __init__(self):
-		"""Call the generic `data.Database.__init__()` method.
-		
-		This in turn creates
-			* self.dictionary = Dictionary()
-			* self.library = Library()
-			* self.tree = Tree()
-		"""
-		data.Database.__init__(self)
-		
-	
-	def load(self, dictstr, treestr, libstr):
-		"""
-		Load a thermodynamics group additivity database. The database is stored
-		in three files: `dictstr` is the path to the dictionary, `treestr` to
-		the tree, and `libstr` to the library. The tree is optional, and should
-		be set to '' if not desired.
-		"""
-		
-		# Load dictionary, library, and (optionally) tree
-		data.Database.load(self, dictstr, treestr, libstr)
-		
-		# Convert data in library to ThermoData objects or lists of
-		# [link, comment] pairs
-		for label, item in self.library.iteritems():
-		
-			if item is None:
-				pass
-			elif not item.__class__ is tuple:
-				raise data.InvalidDatabaseException('Kinetics library should be tuple at this point. Instead got %r'%data) 
-			else: 
-				index,item = item # break apart tuple, recover the 'index' - the beginning of the line in the library file.
-				# Is't it dangerous having a local variable with the same name as a module?
-				# what if we want to raise another data.InvalidDatabaseException() ?
-				if not ( item.__class__ is str or item.__class__ is unicode) :
-					raise data.InvalidDatabaseException('Kinetics library data format is unrecognized.')
-				
-				items = item.split()
-				try:
-					thermoData = []; comment = ''
-					# First 12 entries are thermo data
-					for i in range(0, 12):
-						thermoData.append(float(items[i]))
-					# Remaining entries are comment
-					for i in range(12, len(items)):
-						comment += items[i] + ' '
-					
-					thermoGAData = ThermoGAData()
-					thermoGAData.fromDatabase(thermoData, comment)
-					thermoGAData.index = index
-					self.library[label] = thermoGAData
-				except (ValueError, IndexError), e:
-					# Split data into link string and comment string; store
-					# as list of length 2
-					link = items[0]
-					comment = item[len(link)+1:].strip()
-					self.library[label] = [link, comment]
-		
-		# Check for well-formedness
-		if not self.isWellFormed():
-			raise data.InvalidDatabaseException('Database at "%s" is not well-formed.' % (dictstr))
-		
-		#self.library.removeLinks()
-	
-	def toXML(self):
-		"""
-		Return an XML representation of the thermo database.
-		"""
-		import xml.dom.minidom
-		dom = xml.dom.minidom.parseString('<database type="thermodynamics"></database>')
-		root = dom.documentElement
-		
-		data.Database.toXML(self, dom, root)
-		
-		return dom.toprettyxml()
-	
-	def getThermoData(self, structure, atom):
-		"""
-		Determine the group additivity thermodynamic data for the atom `atom`
-		in the structure `structure`.
-		"""
-		
-		node = self.descendTree(structure, atom, None)
-		
-		if node not in self.library:
-			# No data present (e.g. bath gas)
-			data = ThermoGAData()
-		else:
-			data = self.library[node]
-		
-		while data.__class__ != ThermoGAData and data is not None:
-			if data[0].__class__ == str or data[0].__class__ == unicode:
-				data = self.library[data[0]]
-				
-			# This code prints the hierarchy of the found node; useful for debugging
-		#result = ''
-		#while node is not None:
-		#	result = ' -> ' + node + result
-		#	node = self.tree.parent[node]
-		#print result[4:]
-	    #
-		return data
-	
-	def contains(self, structure):
-		"""
-		Search the dictionary for the specified `structure`. If found, the label
-		corresponding to the structure is returned. If not found, :data:`None`
-		is returned.
-		"""
-		for label, struct in self.dictionary.iteritems():
-			if structure.isIsomorphic(struct):
-				return label
-		return None
-
-################################################################################
-
-class ThermoDatabaseSet:
-	"""
-	A set of thermodynamics group additivity databases, consisting of a primary
-	database of functional groups and a number of secondary databases to provide
-	corrections for 1,5-interactions, gauche interactions, radicals, rings,
-	and other functionality. There is also a primary library containing data for
-	individual species.
-	"""
-	
-	
-	def __init__(self):
-		self.groupDatabase = ThermoDatabase()
-		self.int15Database = ThermoDatabase()
-		self.gaucheDatabase = ThermoDatabase()
-		self.otherDatabase = ThermoDatabase()
-		self.radicalDatabase = ThermoDatabase()
-		self.ringDatabase = ThermoDatabase()
-		self.primaryDatabase = ThermoDatabase()
-	
-	def load(self, datapath):
-		"""
-		Load a set of thermodynamics group additivity databases from the general
-		database specified at `datapath`.
-		"""
-		import logging
-		
-		logging.debug('\tThermodynamics databases:')
-		
-		self.groupDatabase.load(datapath + 'thermo/Group_Dictionary.txt', \
-			datapath + 'thermo/Group_Tree.txt', \
-			datapath + 'thermo/Group_Library.txt')
-		logging.debug('\t\tFunctional groups')
-		
-		self.int15Database.load(datapath + 'thermo/15_Dictionary.txt', \
-			datapath + 'thermo/15_Tree.txt', \
-			datapath + 'thermo/15_Library.txt')
-		logging.debug('\t\t1,5 interactions')
-		
-		self.gaucheDatabase.load(datapath + 'thermo/Gauche_Dictionary.txt', \
-			datapath + 'thermo/Gauche_Tree.txt', \
-			datapath + 'thermo/Gauche_Library.txt')
-		logging.debug('\t\tGauche interactions')
-		
-		self.otherDatabase.load(datapath + 'thermo/Other_Dictionary.txt', \
-			datapath + 'thermo/Other_Tree.txt', \
-			datapath + 'thermo/Other_Library.txt')
-		logging.debug('\t\tOther corrections')
-		
-		self.radicalDatabase.load(datapath + 'thermo/Radical_Dictionary.txt', \
-			datapath + 'thermo/Radical_Tree.txt', \
-			datapath + 'thermo/Radical_Library.txt')
-		logging.debug('\t\tRadical corrections')
-		
-		self.ringDatabase.load(datapath + 'thermo/Ring_Dictionary.txt', \
-			datapath + 'thermo/Ring_Tree.txt', \
-			datapath + 'thermo/Ring_Library.txt')
-		logging.debug('\t\tRing corrections')
-		
-		self.primaryDatabase.load(datapath + 'thermo/Primary_Dictionary.txt', \
-			'', \
-			datapath + 'thermo/Primary_Library.txt')
-		logging.debug('\t\tPrimary thermo database')
-	
-	def saveXML(self, datapath):
-		"""
-		Save the loaded databases in the set to XML files.
-		"""
-		
-		f = open(datapath + 'thermo/group.xml', 'w')
-		f.write(self.groupDatabase.toXML())
-		f.close()
-		
-		f = open(datapath + 'thermo/1,5-interactions.xml', 'w')
-		f.write(self.int15Database.toXML())
-		f.close()
-		
-		f = open(datapath + 'thermo/gauche-interactions.xml', 'w')
-		f.write(self.gaucheDatabase.toXML())
-		f.close()
-		
-		f = open(datapath + 'thermo/other.xml', 'w')
-		f.write(self.otherDatabase.toXML())
-		f.close()
-		
-		f = open(datapath + 'thermo/radicals.xml', 'w')
-		f.write(self.radicalDatabase.toXML())
-		f.close()
-		
-		f = open(datapath + 'thermo/ring.xml', 'w')
-		f.write(self.ringDatabase.toXML())
-		f.close()
-		
-		f = open(datapath + 'thermo/primary.xml', 'w')
-		f.write(self.primaryDatabase.toXML())
-		f.close()
-	
-	def getThermoData(self, struct):
-		"""
-		Determine the group additivity thermodynamic data for the structure
-		`structure`.
-		"""
-		
-		import chem
-		import structure
-		
-		# First check to see if structure is in primary thermo library
-		label = self.primaryDatabase.contains(struct)
-		if label is not None:
-			return self.primaryDatabase.library[label]
-		
-		thermoData = ThermoGAData()
-		
-		if struct.getRadicalCount() > 0:
-			# Make a copy of the structure so we don't change the original
-			saturatedStruct = struct.copy()
-			# Saturate structure by replacing all radicals with bonds to
-			# hydrogen atoms
-			added = {}
-			for atom in saturatedStruct.atoms():
-				for i in range(0, atom.getFreeElectronCount()):
-					H = chem.Atom('H', '0')
-					bond = chem.Bond([atom, H], 'S')
-					saturatedStruct.addAtom(H)
-					saturatedStruct.addBond(bond)
-					atom.decreaseFreeElectron()
-					if atom not in added:
-						added[atom] = []
-					added[atom].append(bond)
-			# Update the atom types of the saturated structure (not sure why
-			# this is necessary, because saturating with H shouldn't be
-			# changing atom types, but it doesn't hurt anything and is not
-			# very expensive, so will do it anyway)
-			saturatedStruct.simplifyAtomTypes()
-			saturatedStruct.updateAtomTypes()
-			# Get thermo estimate for saturated form of structure
-			thermoData = self.getThermoData(saturatedStruct)
-			# For each radical site, get radical correction
-			# Only one radical site should be considered at a time; all others
-			# should be saturated with hydrogen atoms
-			for atom in added:
-			
-				# Remove the added hydrogen atoms and bond and restore the radical
-				for bond in added[atom]:
-					H = bond.atoms[1]
-					saturatedStruct.removeBond(bond)
-					saturatedStruct.removeAtom(H)
-					atom.increaseFreeElectron()
-				
-				thermoData += self.radicalDatabase.getThermoData(saturatedStruct, {'*':atom})
-				
-				# Re-saturate
-				for bond in added[atom]:
-					H = bond.atoms[1]
-					saturatedStruct.addAtom(H)
-					saturatedStruct.addBond(bond)
-					atom.decreaseFreeElectron()
-			
-			# Subtract the enthalpy of the added hydrogens
-			thermoData_H = self.primaryDatabase.library['H']
-			for bond in added[atom]:
-				thermoData.H298 -= thermoData_H.H298
-				#thermoData.S298 -= thermoData_H.S298
-			
-			# Correct the entropy for the symmetry number
-		
-		else:
-			# Generate estimate of thermodynamics
-			for atom in struct.atoms():
-				# Iterate over heavy (non-hydrogen) atoms
-				if atom.isNonHydrogen():
-					# Get initial thermo estimate from main group database
-					thermoData += self.groupDatabase.getThermoData(struct, {'*':atom})
-					# Correct for gauche and 1,5- interactions
-					thermoData += self.gaucheDatabase.getThermoData(struct, {'*':atom})
-					thermoData += self.int15Database.getThermoData(struct, {'*':atom})
-					thermoData += self.otherDatabase.getThermoData(struct, {'*':atom})
-			
-			# Do ring corrections separately because we only want to match
-			# each ring one time; this doesn't work yet
-			rings = struct.getSmallestSetOfSmallestRings()
-			for ring in rings:
-				
-				# Make a temporary structure containing only the atoms in the ring
-				ringStructure = structure.Structure()
-				for atom in ring: ringStructure.addAtom(atom)
-				for atom1 in ring:
-					for atom2 in ring:
-						if struct.hasBond(atom1, atom2):
-							ringStructure.addBond(struct.getBond(atom1, atom2))
-				
-				# Get thermo correction for this ring
-				thermoData += self.ringDatabase.getThermoData(ringStructure, {})
-		
-		return thermoData
-
-thermoDatabase = None
-forbiddenStructures = None
-
-################################################################################
-
-def getThermoData(struct, required_class=ThermoNASAData): # ThermoGAData
-	"""
-	Get the thermodynamic data associated with `structure` by looking in the
-	loaded thermodynamic database.
-	
-	`required_class` is the class of thermo object you want returning; default 
-	is :class:`ThermoNASAData`
-	"""
-	import constants
-	import math
-		
-	GAthermoData = thermoDatabase.getThermoData(struct)
-
-	# Correct entropy for symmetry number
-	struct.calculateSymmetryNumber()
-	GAthermoData.S298 -= constants.R * math.log(struct.symmetryNumber)
-	
-	if required_class==ThermoGAData:
-		return GAthermoData  # return here because Wilhoit conversion not wanted
-	
-	# Convert to Wilhoit
-	rotors = struct.calculateNumberOfRotors()
-	atoms = len(struct.atoms())
-	linear = struct.isLinear()
-	WilhoitData = convertGAtoWilhoit(GAthermoData,atoms,rotors,linear)
-	
-	if required_class==ThermoWilhoitData:
-		return WilhoitData
-		
-	# Convert to NASA
-	NASAthermoData = convertWilhoitToNASA(WilhoitData)
-	
-	if required_class==ThermoNASAData:
-		return NASAthermoData
-	
-	# Still not returned?
-	raise Exception("Cannot convert themo data into class %r"%(required_class))
 
 ################################################################################
 

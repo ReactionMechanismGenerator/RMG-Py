@@ -41,7 +41,60 @@ cdef class ThermoData:
 	cdef public float Tmin
 	cdef public float Tmax
 	
-	cpdef bint isTemperatureValid(ThermoData self, float T)
+	cpdef bint isTemperatureValid(ThermoData self, float T) except -2
+
+################################################################################
+
+cdef class ThermoGAData(ThermoData):
+
+	cdef public float H298, S298
+	cdef public list Cp
+	cdef public str index
+	
+	# can't cpdef special methods like __add__ :-(
+	#cpdef ThermoGAData __add__(ThermoGAData self, ThermoGAData other)
+	
+	cpdef float getHeatCapacity(ThermoGAData self, float T)
+	
+	cpdef float getEnthalpy(ThermoGAData self, float T)
+
+################################################################################
+
+cdef class ThermoWilhoitData(ThermoData):
+
+	cdef public float cp0
+	cdef public float cpInf
+	cdef public float B
+	cdef public float a0
+	cdef public float a1
+	cdef public float a2
+	cdef public float a3
+	cdef public float H0
+	cdef public float S0
+
+	cpdef float getHeatCapacity(ThermoWilhoitData self, float T)
+
+	cpdef float getEnthalpy(ThermoWilhoitData self, float T)
+
+	cpdef float getEntropy(ThermoWilhoitData self, float T)
+
+	cpdef float getFreeEnergy(ThermoWilhoitData self, float T)
+
+	cpdef float integral_T0(ThermoWilhoitData self, float t)
+
+	cpdef float integral_TM1(ThermoWilhoitData self, float t)
+
+	cpdef float integral_T1(ThermoWilhoitData self, float t)
+
+	cpdef float integral_T2(ThermoWilhoitData self, float t)
+
+	cpdef float integral_T3(ThermoWilhoitData self, float t)
+
+	cpdef float integral_T4(ThermoWilhoitData self, float t)
+
+	cpdef float integral2_T0(ThermoWilhoitData self, float t)
+
+	cpdef float integral2_TM1(ThermoWilhoitData self, float t)
 
 ################################################################################
 
