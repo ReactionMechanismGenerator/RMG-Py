@@ -70,8 +70,12 @@ class ThermoData:
 		"""
 		Return :data:`True` if the temperature `T` in K is within the valid
 		temperature range of the thermodynamic data, or :data:`False` if not.
+		
+		If  Tmax == Tmin == 0 then returns :data:`True`.
+		(This case is for when the range is undefined. Tmax and Tmin must be
+		:type:`float`s because of Cython declaration )
 		"""
-		if self.Tmin is None and self.Tmax is None:
+		if self.Tmax == 0 and self.Tmin == 0:
 			return True
 		else:
 			return self.Tmin <= T and T <= self.Tmax
@@ -106,9 +110,8 @@ class ThermoGAData(ThermoData):
 		self.S298 = S298
 		self.Cp = Cp or [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 		self.index = index
-		self.__cache_T=None
-		self.__cache = dict()
 	
+	@cython.locals(self=ThermoGAData, other=ThermoGAData, new=ThermoGAData, i=cython.int)
 	def __add__(self, other):
 		"""
 		Add two sets of thermodynamic data together. All parameters are
@@ -154,6 +157,7 @@ class ThermoGAData(ThermoData):
 		elif T > ThermoGAData.CpTlist[-1]:
 			return self.Cp[-1]
 		else:
+			cython.declare(Tmin=cython.float, Tmax=cython.float, Cpmin=cython.float, Cpmax=cython.float)
 			for Tmin, Tmax, Cpmin, Cpmax in zip(ThermoGAData.CpTlist[:-1], \
 					ThermoGAData.CpTlist[1:], self.Cp[:-1], self.Cp[1:]):
 				if Tmin <= T and T <= Tmax:
@@ -163,13 +167,10 @@ class ThermoGAData(ThermoData):
 		"""
 		Return the enthalpy in J/mol at temperature `T` in K.
 		"""	
-		if self.__cache_T==T:
-			try: return self.__cache['H']
-			except KeyError: pass # 'H' isn't cached yet
-		else:  # temperature has changed
-			self.__cache = dict()
-			self.__cache_T = T
-			
+		
+		cython.declare(H=cython.float, slope=cython.float, intercept=cython.float,
+		     Tmin=cython.float, Tmax=cython.float, Cpmin=cython.float, Cpmax=cython.float)
+		
 		H = self.H298
 		if not self.isTemperatureValid(T):
 			raise data.TemperatureOutOfRangeException('Invalid temperature for enthalpy estimation from group additivity.')
@@ -182,22 +183,13 @@ class ThermoGAData(ThermoData):
 				else:			H += 0.5 * slope * (Tmax*Tmax - Tmin*Tmin) + intercept * (Tmax - Tmin)
 		if T > ThermoGAData.CpTlist[-1]:
 			H += self.Cp[-1] * (T - ThermoGAData.CpTlist[-1])
-		self.__cache['H'] = H
 		return H
 	
 	def getEntropy(self, T):
 		"""
 		Return the entropy in J/mol*K at temperature `T` in K.
 		"""
-		import math
 		
-		if self.__cache_T==T:
-			try: return self.__cache['S']
-			except KeyError: pass # 'S' isn't cached yet
-		else:  # temperature has changed
-			self.__cache = dict()
-			self.__cache_T = T
-			
 		S = self.S298
 		if not self.isTemperatureValid(T):
 			raise data.TemperatureOutOfRangeException('Invalid temperature for entropy estimation from group additivity.')
@@ -210,24 +202,16 @@ class ThermoGAData(ThermoData):
 				else:			S += slope * (Tmax - Tmin) + intercept * math.log(Tmax/Tmin)
 		if T > ThermoGAData.CpTlist[-1]:
 			S += self.Cp[-1] * math.log(T / ThermoGAData.CpTlist[-1])
-		self.__cache['S'] = S
 		return S
 	
 	def getFreeEnergy(self, T):
 		"""
 		Return the Gibbs free energy in J/mol at temperature `T` in K.
 		"""
-		if self.__cache_T==T:
-			try: return self.__cache['G']
-			except KeyError: pass # 'G' isn't cached yet
-		else:  # temperature has changed
-			self.__cache = dict()
-			self.__cache_T = T
 			
 		if not self.isTemperatureValid(T):
 			raise data.TemperatureOutOfRangeException('Invalid temperature for free energy estimation from group additivity.')
 		G = self.getEnthalpy(T) - T * self.getEntropy(T)
-		self.__cache['G'] = G
 		return G
 	
 	def fromDatabase(self, data, comment):
@@ -277,10 +261,7 @@ class ThermoGAData(ThermoData):
 			thermo.appendChild(heatCapacity)
 			data.createXMLQuantity(dom, heatCapacity, Cp, 'J/(mol*K)')
 	
-
 ################################################################################
-
-
 
 class ThermoNASAPolynomial(ThermoData):
 	"""

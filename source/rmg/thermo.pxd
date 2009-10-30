@@ -41,7 +41,22 @@ cdef class ThermoData:
 	cdef public float Tmin
 	cdef public float Tmax
 	
-	cpdef bint isTemperatureValid(ThermoData self, float T)
+	cpdef bint isTemperatureValid(ThermoData self, float T) except -2
+
+################################################################################
+
+cdef class ThermoGAData(ThermoData):
+
+	cdef public float H298, S298
+	cdef public list Cp
+	cdef public str index
+	
+	# can't cpdef special methods like __add__ :-(
+	#cpdef ThermoGAData __add__(ThermoGAData self, ThermoGAData other)
+	
+	cpdef float getHeatCapacity(ThermoGAData self, float T)
+	
+	cpdef float getEnthalpy(ThermoGAData self, float T)
 
 ################################################################################
 
