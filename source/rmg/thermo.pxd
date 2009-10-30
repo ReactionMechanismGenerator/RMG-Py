@@ -29,6 +29,9 @@ cdef extern from "dictobject.h":
 	ctypedef class __builtin__.dict [object PyDictObject]:
 		pass
 
+
+cdef extern from "math.h":
+	cdef float log(float theta)
 ################################################################################
 
 cdef class ThermoData:
@@ -52,7 +55,12 @@ cdef class ThermoNASAPolynomial(ThermoData):
 	
 	cpdef float getEntropy(ThermoNASAPolynomial self, float T)
 	
-	cpdef float getFreeEnergy(ThermoNASAPolynomial self, float T)	
+	cpdef float getFreeEnergy(ThermoNASAPolynomial self, float T)
+	
+	cpdef float integral2_T0(ThermoNASAPolynomial self, float t)
+	
+	cpdef float integral2_TM1(ThermoNASAPolynomial self, float t)
+	
 
 ################################################################################
 

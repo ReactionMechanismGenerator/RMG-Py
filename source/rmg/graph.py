@@ -399,7 +399,7 @@ class Graph(dict):
 		vertex2 = cython.declare(chem.Atom)
 		edge = cython.declare(chem.Bond)
 		found = cython.declare(cython.bint)
-
+		
 		for vertex2, edge in self[chain[-1]].iteritems():
 			if vertex2 is chain[0] and len(chain) > 2:
 				return True
@@ -442,10 +442,10 @@ class Graph(dict):
 		"""
 		vertex2 = cython.declare(chem.Atom)
 		edge = cython.declare(chem.Bond)
-		chainLabels = cython.declare(list)
-
-		chainLabels=[self.keys().index(v) for v in chain]
-		#print "found %d so far. Chain=%s"%(len(cycleList),chainLabels)
+		
+		# chainLabels = cython.declare(list)
+		# chainLabels=[self.keys().index(v) for v in chain] 
+		# print "found %d so far. Chain=%s"%(len(cycleList),chainLabels)
 		
 		for vertex2, edge in self[chain[-1]].iteritems():
 			# vertex2 will loop through each of the atoms 
@@ -521,8 +521,8 @@ def VF2_isomorphism(graph1, graph2, map12, map21, subgraph=False, findAll=False)
 	map12List = cython.declare(list)
 	map21List = cython.declare(list)
 	ismatch = cython.declare(cython.bint)
-	terminals1 = cython.declare(dict)
-	terminals2 = cython.declare(dict)
+	terminals1 = cython.declare(list)
+	terminals2 = cython.declare(list)
 	call_depth = cython.declare(cython.int)
 
 	map12List = list()
@@ -677,8 +677,8 @@ def __VF2_match(graph1, graph2, map21, map12, terminals1, terminals2, subgraph,
 	and O(N**2) (best-case) to O(N! * N) (worst-case) in temporal complexity.
 	"""
 
-	new_terminals1 = cython.declare(dict)
-	new_terminals2 = cython.declare(dict)
+	new_terminals1 = cython.declare(list)
+	new_terminals2 = cython.declare(list)
 	vertex1 = cython.declare(chem.Atom)
 	vertex2 = cython.declare(chem.Atom)
 	ismatch = cython.declare(cython.bint)
@@ -727,7 +727,7 @@ def __VF2_match(graph1, graph2, map21, map12, terminals1, terminals2, subgraph,
 			del map21[vertex1]
 			del map12[vertex2]
 			# changes to 'new_terminals' will be discarded and 'terminals' is unchanged
-
+			
 	return False
 
 def __getSortLabel(vertex):
@@ -762,34 +762,41 @@ def __VF2_pairs(graph1, graph2, terminals1, terminals2, map21, map12):
 	second graph. If there are no terminals, the candidates are	selected to be
 	one vertex from the first graph and all vertices from the second graph.
 	"""
-
+	
 	pairs = cython.declare(list)
 	vertex1 = cython.declare(chem.Atom)
 	vertex2 = cython.declare(chem.Atom)
 	terminal1 = cython.declare(chem.Atom)
 	terminal2 = cython.declare(chem.Atom)
 	list_to_sort = cython.declare(list)
-
+	lowest_label = cython.declare(int)
+	this_label = cython.declare(int)
+	
 	pairs = list()
-
+	
 	# Construct list from terminals if possible
 	if len(terminals1) > 0 and len(terminals2) > 0:
-		list_to_sort = terminals2.keys()
-		list_to_sort.sort(key=__getSortLabel)
-		terminal2 = list_to_sort[0]
-		list_to_sort = terminals1.keys()
-		list_to_sort.sort(key=__getSortLabel)
+		#list_to_sort = terminals2
+		#list_to_sort.sort(key=__getSortLabel)
+		#terminal2 = list_to_sort[0]
+		terminal2 = terminals2[0]
+		#list_to_sort = terminals1
+		#list_to_sort.sort(key=__getSortLabel)
 		
-		for terminal1 in list_to_sort:
+		for terminal1 in terminals1:
 			pairs.append([terminal1, terminal2])
 	# Otherwise construct list from all *remaining* vertices (not matched)
 	else:
+		# vertex2 is the lowest-labelled un-mapped vertex from graph2
 		list_to_sort = graph2.keys()
-		# remove already mapped vertices
-		for vertex2 in map12:
-			list_to_sort.remove(vertex2)
-		list_to_sort.sort(key=__getSortLabel)
-		vertex2 = list_to_sort[0]  # take first vertex2
+		lowest_label = 999999999 # hopefully we don't have more unmapped atoms than this!
+		for vertex1 in list_to_sort: # just using vertex1 as a temporary variable
+			this_label = vertex1.sorting_label
+			if this_label < lowest_label:
+				if not vertex1 in map12:
+					lowest_label = this_label
+					vertex2 = vertex1
+			
 		# pair with all vertex1s
 		list_to_sort = graph1.keys() 
 		list_to_sort.sort(key=__getSortLabel)
@@ -804,18 +811,22 @@ def __VF2_terminals(graph, mapping):
 	For a given graph `graph` and associated partial mapping `mapping`,
 	generate a list of terminals, vertices that are directly connected to
 	vertices that have already been mapped.
+	
+	List is sorted (using key=__getSortLabel) before returning.
 	"""
-
-	terminals = cython.declare(dict)
+	
+	terminals = cython.declare(list)
 	vertex = cython.declare(chem.Atom)
 	vert = cython.declare(chem.Atom)
-
-	terminals = dict()
-
+	
+	terminals = []# list()
+	
 	for vertex in mapping:
 		for vert in graph[vertex]:
 			if vert not in mapping:
-				terminals[vert] = True
+				if vert not in terminals:
+					terminals.append(vert)
+	terminals.sort(key=__getSortLabel)
 	return terminals
 
 def __VF2_new_terminals(graph, mapping, old_terminals, new_vertex):
@@ -824,22 +835,48 @@ def __VF2_new_terminals(graph, mapping, old_terminals, new_vertex):
 	UPDATES a list of terminals, vertices that are directly connected to
 	vertices that have already been mapped. You have to pass it the previous 
 	list of terminals `old_terminals` and the vertex `vertex` that has been added 
-	to the mapping. Returns a new copy of the terminals.
+	to the mapping. Returns a new COPY of the terminals.
 	"""
 	
-	terminals = cython.declare(dict)
-	terminals = dict()
-
-	# copy the old terminals, leaving out the new_vertex
-	for vertex in old_terminals:
-		if not vertex is new_vertex: 
-			terminals[vertex] = True
+	vertex = cython.declare(chem.Atom)
+	vertex2 = cython.declare(chem.Atom)
+	sorting_label = cython.declare(int)
+	sorting_label2 = cython.declare(int)
+	terminals = cython.declare(list)
+	i = cython.declare(int)
 	
-	# add the terminals of new_vertex
+	# copy the old terminals, leaving out the new_vertex
+	#terminals = [v for v in old_terminals if not v is new_vertex]
+	terminals = old_terminals[:]
+	if new_vertex in terminals:
+		terminals.remove(new_vertex)
+	
+	# Add the terminals of new_vertex
 	for vertex in graph[new_vertex]:
-		if vertex not in mapping:
-			terminals[vertex] = True
+		if vertex not in mapping: # only add if not already mapped
+	
+	## the next block of code is equivalent to these two lines:
+	#		if vertex not in terminals: terminals.append(vertex)
+	#terminals.sort(key=__getSortLabel)
 			
+			# find spot in the sorted terminals list where we should put this vertex
+			sorting_label = vertex.sorting_label
+			i=0; sorting_label2=-1 # in case terminals list empty
+			for i in range(len(terminals)):
+				vertex2 = terminals[i]
+				sorting_label2 = vertex2.sorting_label
+				if sorting_label2 >= sorting_label:
+					break  
+				# else continue going through the list of terminals
+			else: # got to end of list without breaking, 
+				# so add one to index to make sure vertex goes at end
+				i+=1
+			if sorting_label2 == sorting_label: # this vertex already in terminals.
+				continue # try next vertex in graph[new_vertex]
+			
+			# insert vertex in right spot in terminals
+			terminals.insert(i,vertex)
+	
 	return terminals
 
 ################################################################################

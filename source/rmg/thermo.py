@@ -44,7 +44,7 @@ from scipy import optimize
 import cython
 
 import ctml_writer
-		
+
 ################################################################################
 
 class ThermoData:
@@ -281,6 +281,8 @@ class ThermoGAData(ThermoData):
 
 ################################################################################
 
+
+
 class ThermoNASAPolynomial(ThermoData):
 	"""
 	A single NASA polynomial for thermodynamic data. The `coeffs` attribute
@@ -312,7 +314,6 @@ class ThermoNASAPolynomial(ThermoData):
 		"""
 		Return the heat capacity in J/mol*K at temperature `T` in K.
 		"""
-		import constants
 		if not self.isTemperatureValid(T):
 			raise data.TemperatureOutOfRangeException('Invalid temperature for heat capacity estimation from NASA polynomial.')
 		T2 = cython.declare(cython.float)
@@ -328,7 +329,6 @@ class ThermoNASAPolynomial(ThermoData):
 		"""
 		Return the enthalpy in J/mol at temperature `T` in K.
 		"""
-		import constants
 		if not self.isTemperatureValid(T):
 			raise data.TemperatureOutOfRangeException('Invalid temperature for enthalpy estimation from NASA polynomial.')
 		T2 = cython.declare(cython.float)
@@ -346,8 +346,6 @@ class ThermoNASAPolynomial(ThermoData):
 		"""
 		Return the entropy in J/mol*K at temperature `T` in K.
 		"""
-		import math
-		import constants
 		if not self.isTemperatureValid(T):
 			raise data.TemperatureOutOfRangeException('Invalid temperature for entropy estimation from NASA polynomial.')
 		# S/R  = a1 lnT + a2 T + a3 T^2 /2 + a4 T^3 /3 + a5 T^4 /4 + a7
@@ -357,7 +355,11 @@ class ThermoNASAPolynomial(ThermoData):
 		
 		T2 = T*T
 		T4 = T2*T2
-		EntropyOverR = ( self.c0*math.log(T) + self.c1*T + self.c2*T2/2 +
+		if cython.compiled: # we've imported log from math.h in the pxd file
+			EntropyOverR = ( self.c0*log(T) + self.c1*T + self.c2*T2/2 +
+					self.c3*T2*T/3 + self.c4*T4/4 + self.c6 )
+		else:
+			EntropyOverR = ( self.c0*math.log(T) + self.c1*T + self.c2*T2/2 +
 					self.c3*T2*T/3 + self.c4*T4/4 + self.c6 )
 		return EntropyOverR * constants.R
 	
@@ -396,6 +398,8 @@ class ThermoNASAPolynomial(ThermoData):
 		#input: NASA parameters for Cp/R, c1, c2, c3, c4, c5 (either low or high temp parameters), temperature t (in kiloKelvin; an endpoint of the low or high temp range
 		#output: the quantity Integrate[(Cp(NASA)/R)^2, t'] evaluated at t'=t 
 		#can speed further by precomputing and storing e.g. thigh^2, tlow^2, etc.
+		cython.declare(c1=cython.float, c2=cython.float,c3=cython.float,c4=cython.float,c5=cython.float)
+		cython.declare(result=cython.float)
 		c1, c2, c3, c4, c5 = self.c0, self.c1, self.c2, self.c3, self.c4
 		result = c1*c1*t + c1*c2*t*t + (2*c1*c3+c2*c2)/3*t*t*t + (c1*c4+c2*c3)/2*t*t*t*t + (2*c1*c5 + 2*c2*c4 + c3*c3)/5*t*t*t*t*t + (c2*c5 + c3*c4)/3*t*t*t*t*t*t + (2*c3*c5 + c4*c4)/7*t*t*t*t*t*t*t + c4*c5/4*t*t*t*t*t*t*t*t + c5*c5/9*t*t*t*t*t*t*t*t*t
 		return result
@@ -404,8 +408,14 @@ class ThermoNASAPolynomial(ThermoData):
 		#input: NASA parameters for Cp/R, c1, c2, c3, c4, c5 (either low or high temp parameters), temperature t (in kiloKelvin; an endpoint of the low or high temp range
 		#output: the quantity Integrate[(Cp(NASA)/R)^2*t^-1, t'] evaluated at t'=t 
 		#can speed further by precomputing and storing e.g. thigh^2, tlow^2, etc.
+		cython.declare(c1=cython.float, c2=cython.float,c3=cython.float,c4=cython.float,c5=cython.float)
+		cython.declare(result=cython.float)
 		c1, c2, c3, c4, c5 = self.c0, self.c1, self.c2, self.c3, self.c4
-		result = c1*c1*math.log(t) + 2*c1*c2*t + (2*c1*c3+c2*c2)/2*t*t + 2*(c1*c4+c2*c3)/3*t*t*t + (2*c1*c5 + 2*c2*c4 + c3*c3)/4*t*t*t*t + 2*(c2*c5 + c3*c4)/5*t*t*t*t*t + (2*c3*c5 + c4*c4)/6*t*t*t*t*t*t + 2*c4*c5/7*t*t*t*t*t*t*t + c5*c5/8*t*t*t*t*t*t*t*t
+		if cython.compiled: # we've imported log from math.h in the pxd file
+			result = c1*c1*log(t)
+		else:
+			result = c1*c1*math.log(t)
+		result = result + 2*c1*c2*t + (2*c1*c3+c2*c2)/2*t*t + 2*(c1*c4+c2*c3)/3*t*t*t + (2*c1*c5 + 2*c2*c4 + c3*c3)/4*t*t*t*t + 2*(c2*c5 + c3*c4)/5*t*t*t*t*t + (2*c3*c5 + c4*c4)/6*t*t*t*t*t*t + 2*c4*c5/7*t*t*t*t*t*t*t + c5*c5/8*t*t*t*t*t*t*t*t
 		return result
 
 ################################################################################
