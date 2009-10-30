@@ -32,4 +32,4 @@
 This is the rmg module.
 """
 
-from main import *
+
