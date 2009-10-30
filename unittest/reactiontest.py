@@ -183,13 +183,14 @@ class ReactionSetCheck(unittest.TestCase):
 		#self.assertEqual(len(rxns),1, "Was expecting to make 1 reaction for %s"%(species1))
 	
 			
-	def testCyclicColligation2(self):
+	def testCyclicColligation(self):
 		"""A test of a Birad_recombination  (Cyclic colligation) reactions"""
 		self.loadDatabase(only_families=['Birad_recombination'])
 		
 		for smile in ['C1CCCCC1',
 					  'CCCCCCCCC1C(c2ccccc2)C(CCCCCC)C=CC1c1ccccc1',
-					  'C(=CC(c1ccccc1)C([CH]CCCCCC)C=Cc1ccccc1)[CH]CCCCCC'
+					  'C(=CC(c1ccccc1)C([CH]CCCCCC)C=Cc1ccccc1)[CH]CCCCCC',
+					'C1(C(CCCCCCCC)C(C(CCCCCC)C=C1)c1ccccc1)c1ccccc1'
 					]:
 			
 			structure1 = Structure(SMILES=smile)
@@ -198,7 +199,7 @@ class ReactionSetCheck(unittest.TestCase):
 				
 			# wipe the reaction list
 			reaction.reactionList=[]
-    	
+			
 			rxns = reaction.kineticsDatabase.getReactions([species1])
 			for rxn in rxns:
 				print 'Reaction family:',rxn.family
@@ -216,10 +217,36 @@ class ReactionSetCheck(unittest.TestCase):
 			print "All products for reacting %s:"%species1, [p.structure[0] for p in all_products]
 			
 		
+
 	
+	def testAllFamilies(self):
+		"""A test of all reaction families
+		
+		Doesn't do (m)any actual tests, but hopefully won't cause any errors"""
+		self.loadDatabase()
+		
+		for smile in ['C1(C(CCCCCCCC)C(C(CCCCCC)C=C1)c1ccccc1)c1ccccc1',
+					]:
+			structure1 = Structure(SMILES=smile)
+			species1 = makeNewSpecies(structure1)
+			print 'Reacting species',species1
+				
+			# wipe the reaction list
+			reaction.reactionList=[]
+			
+			rxns = reaction.kineticsDatabase.getReactions([species1])
+			
+			all_products = []
+			for rxn in rxns:
+				all_products.extend(rxn.products)
+				
+			print "All products for reacting %s:"%species1, [p.structure[0] for p in all_products]
+			
+			
 
 
 ################################################################################
 
 if __name__ == '__main__':
+	ReactionSetCheck('testAllFamilies').debug()
 	unittest.main( testRunner = unittest.TextTestRunner(verbosity=2) )
