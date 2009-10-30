@@ -111,13 +111,16 @@ class ThermoGAData(ThermoData):
 		self.Cp = Cp or [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 		self.index = index
 	
-	@cython.locals(self=ThermoGAData, other=ThermoGAData, new=ThermoGAData, i=cython.int)
+	# how do we cythonize 'special' methods?
+	# it's so confusing. This breaks pure python mode:
+	#@cython.locals(self=ThermoGAData, other=ThermoGAData, new=ThermoGAData, i=cython.int)
 	def __add__(self, other):
 		"""
 		Add two sets of thermodynamic data together. All parameters are
 		considered additive. Returns a new :class:`ThermoGAData` object that is
 		the sum of the two sets of thermodynamic data.
 		"""
+		cython.declare(i=int, new=ThermoGAData)
 		new = ThermoGAData()
 		new.H298 = self.H298 + other.H298
 		new.S298 = self.S298 + other.S298
