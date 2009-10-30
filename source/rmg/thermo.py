@@ -467,6 +467,9 @@ class ThermoNASAData(ThermoData):
 
 ################################################################################
 
+#: The default temperature in K
+ThermoWilhoitDataB = 500.0
+
 class ThermoWilhoitData(ThermoData):
 	"""
 	A set of thermodynamic parameters given by Wilhoit polynomials, which have
@@ -494,8 +497,6 @@ class ThermoWilhoitData(ThermoData):
 	`S0` that are needed to evaluate the enthalpy and entropy, respectively.
 	"""
 
-	# The default temperature in K
-	B = 500.0
 	
 	def __init__(self, cp0, cpInf, a0, a1, a2, a3, H0, S0, comment='', ):
 		"""Initialise the Wilhoit polynomial. Trange is set to (0,9999.9)"""
@@ -503,7 +504,7 @@ class ThermoWilhoitData(ThermoData):
 		ThermoData.__init__(self, Trange=Trange, comment=comment)
 		self.cp0 = cp0
 		self.cpInf = cpInf
-		self.B = ThermoWilhoitData.B
+		self.B = ThermoWilhoitDataB
 		self.a0 = a0
 		self.a1 = a1
 		self.a2 = a2
@@ -522,9 +523,8 @@ class ThermoWilhoitData(ThermoData):
 		Return the heat capacity in J/mol*K at temperature `T` in K.
 		"""
 		y = T/(T+self.B)
-		Cp = self.cp0+(self.cpInf-self.cp0)*y*y*( 1 + 
+		return self.cp0+(self.cpInf-self.cp0)*y*y*( 1 +
 			(y-1)*(self.a0 + y*(self.a1 + y*(self.a2 + y*self.a3))) )
-		return Cp
 	
 	def getEnthalpy(self, T):
 		"""
@@ -579,57 +579,99 @@ class ThermoWilhoitData(ThermoData):
 	#a faster version of the integral based on H from Yelvington's thesis; it differs from the original (see above) by a constant (dependent on parameters but independent of t)
 	def integral_T0(self, t):
 		#output: the quantity Integrate[Cp(Wilhoit)/R, t'] evaluated at t'=t
+		cython.declare(cp0=cython.float, cpInf=cython.float, B=cython.float, a0=cython.float, a1=cython.float, a2=cython.float, a3=cython.float)
+		cython.declare(y=cython.float, y2=cython.float, logBplust=cython.float, result=cython.float)
 		cp0, cpInf, B, a0, a1, a2, a3 = self.cp0, self.cpInf, self.B, self.a0, self.a1, self.a2, self.a3
 		y = t/(t+B)
 		y2 = y*y
-		result = cp0*t - (cpInf-cp0)*t*(y2*((3*a0 + a1 + a2 + a3)/6. + (4*a1 + a2 + a3)*y/12. + (5*a2 + a3)*y2/20. + a3*y2*y/5.) + (2 + a0 + a1 + a2 + a3)*( y/2. - 1 + (1/y-1)*math.log(B + t)))
+		if cython.compiled:
+			logBplust = log(B + t)
+		else:
+			logBplust = math.log(B + t)
+		result = cp0*t - (cpInf-cp0)*t*(y2*((3*a0 + a1 + a2 + a3)/6. + (4*a1 + a2 + a3)*y/12. + (5*a2 + a3)*y2/20. + a3*y2*y/5.) + (2 + a0 + a1 + a2 + a3)*( y/2. - 1 + (1/y-1)*logBplust))
 		return result
 	
 	#a faster version of the integral based on S from Yelvington's thesis; it differs from the original by a constant (dependent on parameters but independent of t)
 	def integral_TM1(self, t):
 		#output: the quantity Integrate[Cp(Wilhoit)/R*t^-1, t'] evaluated at t'=t
+		cython.declare(cp0=cython.float, cpInf=cython.float, B=cython.float, a0=cython.float, a1=cython.float, a2=cython.float, a3=cython.float)
+		cython.declare(y=cython.float, logt=cython.float, logy=cython.float, result=cython.float)
 		cp0, cpInf, B, a0, a1, a2, a3 = self.cp0, self.cpInf, self.B, self.a0, self.a1, self.a2, self.a3
 		y = t/(t+B)
-		result= cpInf*math.log(t)-(cpInf-cp0)*(math.log(y)+y*(1+y*(a0/2+y*(a1/3 + y*(a2/4 + y*a3/5)))))
+		if cython.compiled:
+			logy = log(y); logt = log(t)
+		else:
+			logy = math.log(y); logt = math.log(t)
+		result = cpInf*logt-(cpInf-cp0)*(logy+y*(1+y*(a0/2+y*(a1/3 + y*(a2/4 + y*a3/5)))))
 		return result
 	
 	def integral_T1(self, t):
 		#output: the quantity Integrate[Cp(Wilhoit)/R*t, t'] evaluated at t'=t
+		cython.declare(cp0=cython.float, cpInf=cython.float, B=cython.float, a0=cython.float, a1=cython.float, a2=cython.float, a3=cython.float)
+		cython.declare(logBplust=cython.float, result=cython.float)
 		cp0, cpInf, B, a0, a1, a2, a3 = self.cp0, self.cpInf, self.B, self.a0, self.a1, self.a2, self.a3
+		if cython.compiled:
+			logBplust = log(B + t)
+		else:
+			logBplust = math.log(B + t)
 		result = ( (2 + a0 + a1 + a2 + a3)*B*(cp0 - cpInf)*t + (cpInf*t**2)/2. + (a3*B**7*(-cp0 + cpInf))/(5.*(B + t)**5) + ((a2 + 6*a3)*B**6*(cp0 - cpInf))/(4.*(B + t)**4) -
 			((a1 + 5*(a2 + 3*a3))*B**5*(cp0 - cpInf))/(3.*(B + t)**3) + ((a0 + 4*a1 + 10*(a2 + 2*a3))*B**4*(cp0 - cpInf))/(2.*(B + t)**2) -
-			((1 + 3*a0 + 6*a1 + 10*a2 + 15*a3)*B**3*(cp0 - cpInf))/(B + t) - (3 + 3*a0 + 4*a1 + 5*a2 + 6*a3)*B**2*(cp0 - cpInf)*math.log(B + t))
+			((1 + 3*a0 + 6*a1 + 10*a2 + 15*a3)*B**3*(cp0 - cpInf))/(B + t) - (3 + 3*a0 + 4*a1 + 5*a2 + 6*a3)*B**2*(cp0 - cpInf)*logBplust)
 		return result
 	
 	def integral_T2(self, t):
 		#output: the quantity Integrate[Cp(Wilhoit)/R*t^2, t'] evaluated at t'=t
+		cython.declare(cp0=cython.float, cpInf=cython.float, B=cython.float, a0=cython.float, a1=cython.float, a2=cython.float, a3=cython.float)
+		cython.declare(logBplust=cython.float, result=cython.float)
 		cp0, cpInf, B, a0, a1, a2, a3 = self.cp0, self.cpInf, self.B, self.a0, self.a1, self.a2, self.a3
+		if cython.compiled:
+			logBplust = log(B + t)
+		else:
+			logBplust = math.log(B + t)
 		result = ( -((3 + 3*a0 + 4*a1 + 5*a2 + 6*a3)*B**2*(cp0 - cpInf)*t) + ((2 + a0 + a1 + a2 + a3)*B*(cp0 - cpInf)*t**2)/2. + (cpInf*t**3)/3. + (a3*B**8*(cp0 - cpInf))/(5.*(B + t)**5) -
 			((a2 + 7*a3)*B**7*(cp0 - cpInf))/(4.*(B + t)**4) + ((a1 + 6*a2 + 21*a3)*B**6*(cp0 - cpInf))/(3.*(B + t)**3) - ((a0 + 5*(a1 + 3*a2 + 7*a3))*B**5*(cp0 - cpInf))/(2.*(B + t)**2) +
-			((1 + 4*a0 + 10*a1 + 20*a2 + 35*a3)*B**4*(cp0 - cpInf))/(B + t) + (4 + 6*a0 + 10*a1 + 15*a2 + 21*a3)*B**3*(cp0 - cpInf)*math.log(B + t))
+			((1 + 4*a0 + 10*a1 + 20*a2 + 35*a3)*B**4*(cp0 - cpInf))/(B + t) + (4 + 6*a0 + 10*a1 + 15*a2 + 21*a3)*B**3*(cp0 - cpInf)*logBplust)
 		return result
-	
+
 	def integral_T3(self, t):
 		#output: the quantity Integrate[Cp(Wilhoit)/R*t^3, t'] evaluated at t'=t
+		cython.declare(cp0=cython.float, cpInf=cython.float, B=cython.float, a0=cython.float, a1=cython.float, a2=cython.float, a3=cython.float)
+		cython.declare(logBplust=cython.float, result=cython.float)
 		cp0, cpInf, B, a0, a1, a2, a3 = self.cp0, self.cpInf, self.B, self.a0, self.a1, self.a2, self.a3
+		if cython.compiled:
+			logBplust = log(B + t)
+		else:
+			logBplust = math.log(B + t)
 		result = ( (4 + 6*a0 + 10*a1 + 15*a2 + 21*a3)*B**3*(cp0 - cpInf)*t + ((3 + 3*a0 + 4*a1 + 5*a2 + 6*a3)*B**2*(-cp0 + cpInf)*t**2)/2. + ((2 + a0 + a1 + a2 + a3)*B*(cp0 - cpInf)*t**3)/3. +
 			(cpInf*t**4)/4. + (a3*B**9*(-cp0 + cpInf))/(5.*(B + t)**5) + ((a2 + 8*a3)*B**8*(cp0 - cpInf))/(4.*(B + t)**4) - ((a1 + 7*(a2 + 4*a3))*B**7*(cp0 - cpInf))/(3.*(B + t)**3) +
 			((a0 + 6*a1 + 21*a2 + 56*a3)*B**6*(cp0 - cpInf))/(2.*(B + t)**2) - ((1 + 5*a0 + 15*a1 + 35*a2 + 70*a3)*B**5*(cp0 - cpInf))/(B + t) -
-			(5 + 10*a0 + 20*a1 + 35*a2 + 56*a3)*B**4*(cp0 - cpInf)*math.log(B + t))
+			(5 + 10*a0 + 20*a1 + 35*a2 + 56*a3)*B**4*(cp0 - cpInf)*logBplust)
 		return result
-	
+
 	def integral_T4(self, t):
 		#output: the quantity Integrate[Cp(Wilhoit)/R*t^4, t'] evaluated at t'=t
+		cython.declare(cp0=cython.float, cpInf=cython.float, B=cython.float, a0=cython.float, a1=cython.float, a2=cython.float, a3=cython.float)
+		cython.declare(logBplust=cython.float, result=cython.float)
 		cp0, cpInf, B, a0, a1, a2, a3 = self.cp0, self.cpInf, self.B, self.a0, self.a1, self.a2, self.a3
+		if cython.compiled:
+			logBplust = log(B + t)
+		else:
+			logBplust = math.log(B + t)
 		result = ( -((5 + 10*a0 + 20*a1 + 35*a2 + 56*a3)*B**4*(cp0 - cpInf)*t) + ((4 + 6*a0 + 10*a1 + 15*a2 + 21*a3)*B**3*(cp0 - cpInf)*t**2)/2. +
 			((3 + 3*a0 + 4*a1 + 5*a2 + 6*a3)*B**2*(-cp0 + cpInf)*t**3)/3. + ((2 + a0 + a1 + a2 + a3)*B*(cp0 - cpInf)*t**4)/4. + (cpInf*t**5)/5. + (a3*B**10*(cp0 - cpInf))/(5.*(B + t)**5) -
 			((a2 + 9*a3)*B**9*(cp0 - cpInf))/(4.*(B + t)**4) + ((a1 + 8*a2 + 36*a3)*B**8*(cp0 - cpInf))/(3.*(B + t)**3) - ((a0 + 7*(a1 + 4*(a2 + 3*a3)))*B**7*(cp0 - cpInf))/(2.*(B + t)**2) +
-			((1 + 6*a0 + 21*a1 + 56*a2 + 126*a3)*B**6*(cp0 - cpInf))/(B + t) + (6 + 15*a0 + 35*a1 + 70*a2 + 126*a3)*B**5*(cp0 - cpInf)*math.log(B + t))
+			((1 + 6*a0 + 21*a1 + 56*a2 + 126*a3)*B**6*(cp0 - cpInf))/(B + t) + (6 + 15*a0 + 35*a1 + 70*a2 + 126*a3)*B**5*(cp0 - cpInf)*logBplust)
 		return result
-	
+
 	def integral2_T0(self, t):
 		#output: the quantity Integrate[(Cp(Wilhoit)/R)^2, t'] evaluated at t'=t
+		cython.declare(cp0=cython.float, cpInf=cython.float, B=cython.float, a0=cython.float, a1=cython.float, a2=cython.float, a3=cython.float)
+		cython.declare(logBplust=cython.float, result=cython.float)
 		cp0, cpInf, B, a0, a1, a2, a3 = self.cp0, self.cpInf, self.B, self.a0, self.a1, self.a2, self.a3
+		if cython.compiled:
+			logBplust = log(B + t)
+		else:
+			logBplust = math.log(B + t)
 		result = (cpInf**2*t - (a3**2*B**12*(cp0 - cpInf)**2)/(11.*(B + t)**11) + (a3*(a2 + 5*a3)*B**11*(cp0 - cpInf)**2)/(5.*(B + t)**10) -
 			((a2**2 + 18*a2*a3 + a3*(2*a1 + 45*a3))*B**10*(cp0 - cpInf)**2)/(9.*(B + t)**9) + ((4*a2**2 + 36*a2*a3 + a1*(a2 + 8*a3) + a3*(a0 + 60*a3))*B**9*(cp0 - cpInf)**2)/(4.*(B + t)**8) -
 			((a1**2 + 14*a1*(a2 + 4*a3) + 2*(14*a2**2 + a3 + 84*a2*a3 + 105*a3**2 + a0*(a2 + 7*a3)))*B**8*(cp0 - cpInf)**2)/(7.*(B + t)**7) +
@@ -644,12 +686,18 @@ class ThermoWilhoitData(ThermoData):
 			 (2 + 2*a0**2 + 3*a1**2 + 15*a2 + 4*a2**2 + 21*a3 + 9*a2*a3 + 5*a3**2 + a0*(6 + 5*a1 + 6*a2 + 7*a3) + a1*(10 + 7*a2 + 8*a3))*cpInf))/(B + t)**2 -
 			(B**2*((2 + a0 + a1 + a2 + a3)**2*cp0**2 - 2*(5 + a0**2 + a1**2 + 8*a2 + a2**2 + 9*a3 + 2*a2*a3 + a3**2 + 2*a0*(3 + a1 + a2 + a3) + a1*(7 + 2*a2 + 2*a3))*cp0*cpInf +
 			 (6 + a0**2 + a1**2 + 12*a2 + a2**2 + 14*a3 + 2*a2*a3 + a3**2 + 2*a1*(5 + a2 + a3) + 2*a0*(4 + a1 + a2 + a3))*cpInf**2))/(B + t) +
-			2*(2 + a0 + a1 + a2 + a3)*B*(cp0 - cpInf)*cpInf*math.log(B + t))
+			2*(2 + a0 + a1 + a2 + a3)*B*(cp0 - cpInf)*cpInf*logBplust)
 		return result
-	
+
 	def integral2_TM1(self, t):
 		#output: the quantity Integrate[(Cp(Wilhoit)/R)^2*t^-1, t'] evaluated at t'=t
+		cython.declare(cp0=cython.float, cpInf=cython.float, B=cython.float, a0=cython.float, a1=cython.float, a2=cython.float, a3=cython.float)
+		cython.declare(logBplust=cython.float, logt=cython.float, result=cython.float)
 		cp0, cpInf, B, a0, a1, a2, a3 = self.cp0, self.cpInf, self.B, self.a0, self.a1, self.a2, self.a3
+		if cython.compiled:
+			logBplust = log(B + t); logt = log(t)
+		else:
+			logBplust = math.log(B + t); logt = math.log(t)
 		result = ( (a3**2*B**11*(cp0 - cpInf)**2)/(11.*(B + t)**11) - (a3*(2*a2 + 9*a3)*B**10*(cp0 - cpInf)**2)/(10.*(B + t)**10) +
 			((a2**2 + 16*a2*a3 + 2*a3*(a1 + 18*a3))*B**9*(cp0 - cpInf)**2)/(9.*(B + t)**9) -
 			((7*a2**2 + 56*a2*a3 + 2*a1*(a2 + 7*a3) + 2*a3*(a0 + 42*a3))*B**8*(cp0 - cpInf)**2)/(8.*(B + t)**8) +
@@ -664,9 +712,9 @@ class ThermoWilhoitData(ThermoData):
 			(B**2*((3 + a0**2 + a1**2 + 4*a2 + a2**2 + 4*a3 + 2*a2*a3 + a3**2 + 2*a1*(2 + a2 + a3) + 2*a0*(2 + a1 + a2 + a3))*cp0**2 -
 			2*(3 + a0**2 + a1**2 + 7*a2 + a2**2 + 8*a3 + 2*a2*a3 + a3**2 + 2*a1*(3 + a2 + a3) + a0*(5 + 2*a1 + 2*a2 + 2*a3))*cp0*cpInf +
 			(3 + a0**2 + a1**2 + 10*a2 + a2**2 + 12*a3 + 2*a2*a3 + a3**2 + 2*a1*(4 + a2 + a3) + 2*a0*(3 + a1 + a2 + a3))*cpInf**2))/(2.*(B + t)**2) +
-			(B*(cp0 - cpInf)*(cp0 - (3 + 2*a0 + 2*a1 + 2*a2 + 2*a3)*cpInf))/(B + t) + cp0**2*math.log(t) + (-cp0**2 + cpInf**2)*math.log(B + t))
+			(B*(cp0 - cpInf)*(cp0 - (3 + 2*a0 + 2*a1 + 2*a2 + 2*a3)*cpInf))/(B + t) + cp0**2*logt + (-cp0**2 + cpInf**2)*logBplust)
 		return result
-	
+
 ################################################################################
 
 def convertGAtoWilhoit(GAthermo, atoms, rotors, linear):
@@ -687,7 +735,7 @@ def convertGAtoWilhoit(GAthermo, atoms, rotors, linear):
 	Cp_list = GAthermo.Cp
 	T_list = ThermoGAData.CpTlist  # usually [300, 400, 500, 600, 800, 1000, 1500] but why assume?
 	R = constants.R
-	B = ThermoWilhoitData.B # Constant, set once in the class def.
+	B = ThermoWilhoitDataB # Constant, set once in the class def.
 	
 	# convert from K to kK
 	T_list = [t/1000. for t in T_list] 
@@ -887,53 +935,64 @@ def Wilhoit2NASA(wilhoit, tmin, tmax, tint, weighting):
 	wilhoit.cpInf /= constants.R
 	wilhoit.B /= 1000.
 
-	if (weighting == 1):
-		nasa1, nasa2 = Wilhoit2NASA_W(wilhoit, tmin, tmax, tint)
-	else:
-		nasa1, nasa2 = Wilhoit2NASA_NW(wilhoit, tmin, tmax, tint)
-	return nasa1, nasa2
-
-
-def Wilhoit2NASA_NW(wilhoit, tmin, tmax, tint):
-	#this is the case with no weighting
-	#input: Wilhoit parameters, Cp0/R, CpInf/R, and B (kK), a0, a1, a2, a3, Tmin (minimum temperature (in kiloKelvin), Tmax (maximum temperature (in kiloKelvin), Tint (intermediate temperature, in kiloKelvin)
-	#output: NASA parameters for Cp/R, b1, b2, b3, b4, b5 (low temp parameters) and b6, b7, b8, b9, b10 (high temp parameters)
-	
 	#construct 13*13 symmetric A matrix (in A*x = b); other elements will be zero
 	A = scipy.zeros([13,13])
 	b = scipy.zeros([13])
-	A[0,0] = 2*(tint - tmin)
-	A[0,1] = tint*tint - tmin*tmin
-	A[0,2] = 2.*(tint*tint*tint - tmin*tmin*tmin)/3
-	A[0,3] = (tint*tint*tint*tint - tmin*tmin*tmin*tmin)/2
-	A[0,4] = 2.*(tint*tint*tint*tint*tint - tmin*tmin*tmin*tmin*tmin)/5
+
+	if weighting:
+		A[0,0] = 2*math.log(tint/tmin)
+		A[0,1] = 2*(tint - tmin)
+		A[0,2] = tint*tint - tmin*tmin
+		A[0,3] = 2.*(tint*tint*tint - tmin*tmin*tmin)/3
+		A[0,4] = (tint*tint*tint*tint - tmin*tmin*tmin*tmin)/2
+		A[1,4] = 2.*(tint*tint*tint*tint*tint - tmin*tmin*tmin*tmin*tmin)/5
+		A[2,4] = (tint*tint*tint*tint*tint*tint - tmin*tmin*tmin*tmin*tmin*tmin)/3
+		A[3,4] = 2.*(tint*tint*tint*tint*tint*tint*tint - tmin*tmin*tmin*tmin*tmin*tmin*tmin)/7
+		A[4,4] = (tint*tint*tint*tint*tint*tint*tint*tint - tmin*tmin*tmin*tmin*tmin*tmin*tmin*tmin)/4
+	else:
+		A[0,0] = 2*(tint - tmin)
+		A[0,1] = tint*tint - tmin*tmin
+		A[0,2] = 2.*(tint*tint*tint - tmin*tmin*tmin)/3
+		A[0,3] = (tint*tint*tint*tint - tmin*tmin*tmin*tmin)/2
+		A[0,4] = 2.*(tint*tint*tint*tint*tint - tmin*tmin*tmin*tmin*tmin)/5
+		A[1,4] = (tint*tint*tint*tint*tint*tint - tmin*tmin*tmin*tmin*tmin*tmin)/3
+		A[2,4] = 2.*(tint*tint*tint*tint*tint*tint*tint - tmin*tmin*tmin*tmin*tmin*tmin*tmin)/7
+		A[3,4] = (tint*tint*tint*tint*tint*tint*tint*tint - tmin*tmin*tmin*tmin*tmin*tmin*tmin*tmin)/4
+		A[4,4] = 2.*(tint*tint*tint*tint*tint*tint*tint*tint*tint - tmin*tmin*tmin*tmin*tmin*tmin*tmin*tmin*tmin)/9
 	A[1,1] = A[0,2]
 	A[1,2] = A[0,3]
 	A[1,3] = A[0,4]
-	A[1,4] = (tint*tint*tint*tint*tint*tint - tmin*tmin*tmin*tmin*tmin*tmin)/3
 	A[2,2] = A[0,4]
 	A[2,3] = A[1,4]
-	A[2,4] = 2.*(tint*tint*tint*tint*tint*tint*tint - tmin*tmin*tmin*tmin*tmin*tmin*tmin)/7
 	A[3,3] = A[2,4]
-	A[3,4] = (tint*tint*tint*tint*tint*tint*tint*tint - tmin*tmin*tmin*tmin*tmin*tmin*tmin*tmin)/4
-	A[4,4] = 2.*(tint*tint*tint*tint*tint*tint*tint*tint*tint - tmin*tmin*tmin*tmin*tmin*tmin*tmin*tmin*tmin)/9
-	
-	A[5,5] = 2*(tmax - tint)
-	A[5,6] = tmax*tmax - tint*tint
-	A[5,7] = 2.*(tmax*tmax*tmax - tint*tint*tint)/3
-	A[5,8] = (tmax*tmax*tmax*tmax - tint*tint*tint*tint)/2
-	A[5,9] = 2.*(tmax*tmax*tmax*tmax*tmax - tint*tint*tint*tint*tint)/5
+
+	if weighting:
+		A[5,5] = 2*math.log(tmax/tint)
+		A[5,6] = 2*(tmax - tint)
+		A[5,7] = tmax*tmax - tint*tint
+		A[5,8] = 2.*(tmax*tmax*tmax - tint*tint*tint)/3
+		A[5,9] = (tmax*tmax*tmax*tmax - tint*tint*tint*tint)/2
+		A[6,9] = 2.*(tmax*tmax*tmax*tmax*tmax - tint*tint*tint*tint*tint)/5
+		A[7,9] = (tmax*tmax*tmax*tmax*tmax*tmax - tint*tint*tint*tint*tint*tint)/3
+		A[8,9] = 2.*(tmax*tmax*tmax*tmax*tmax*tmax*tmax - tint*tint*tint*tint*tint*tint*tint)/7
+		A[9,9] = (tmax*tmax*tmax*tmax*tmax*tmax*tmax*tmax - tint*tint*tint*tint*tint*tint*tint*tint)/4
+	else:
+		A[5,5] = 2*(tmax - tint)
+		A[5,6] = tmax*tmax - tint*tint
+		A[5,7] = 2.*(tmax*tmax*tmax - tint*tint*tint)/3
+		A[5,8] = (tmax*tmax*tmax*tmax - tint*tint*tint*tint)/2
+		A[5,9] = 2.*(tmax*tmax*tmax*tmax*tmax - tint*tint*tint*tint*tint)/5
+		A[6,9] = (tmax*tmax*tmax*tmax*tmax*tmax - tint*tint*tint*tint*tint*tint)/3
+		A[7,9] = 2.*(tmax*tmax*tmax*tmax*tmax*tmax*tmax - tint*tint*tint*tint*tint*tint*tint)/7
+		A[8,9] = (tmax*tmax*tmax*tmax*tmax*tmax*tmax*tmax - tint*tint*tint*tint*tint*tint*tint*tint)/4
+		A[9,9] = 2.*(tmax*tmax*tmax*tmax*tmax*tmax*tmax*tmax*tmax - tint*tint*tint*tint*tint*tint*tint*tint*tint)/9
 	A[6,6] = A[5,7]
 	A[6,7] = A[5,8]
 	A[6,8] = A[5,9]
-	A[6,9] = (tmax*tmax*tmax*tmax*tmax*tmax - tint*tint*tint*tint*tint*tint)/3
 	A[7,7] = A[5,9]
 	A[7,8] = A[6,9]
-	A[7,9] = 2.*(tmax*tmax*tmax*tmax*tmax*tmax*tmax - tint*tint*tint*tint*tint*tint*tint)/7
 	A[8,8] = A[7,9]
-	A[8,9] = (tmax*tmax*tmax*tmax*tmax*tmax*tmax*tmax - tint*tint*tint*tint*tint*tint*tint*tint)/4
-	A[9,9] = 2.*(tmax*tmax*tmax*tmax*tmax*tmax*tmax*tmax*tmax - tint*tint*tint*tint*tint*tint*tint*tint*tint)/9
-	
+
 	A[0,10] = 1.
 	A[1,10] = tint
 	A[1,11] = 1.
@@ -946,7 +1005,7 @@ def Wilhoit2NASA_NW(wilhoit, tmin, tmax, tint):
 	A[4,10] = A[3,10]*tint
 	A[4,11] = 4*A[3,10]
 	A[4,12] = 12*A[2,10]
-	
+
 	A[5,10] = -A[0,10]
 	A[6,10] = -A[1,10]
 	A[6,11] = -A[1,11]
@@ -959,172 +1018,65 @@ def Wilhoit2NASA_NW(wilhoit, tmin, tmax, tint):
 	A[9,10] = -A[4,10]
 	A[9,11] = -A[4,11]
 	A[9,12] = -A[4,12]
-	
+
 	# make the matrix symmetric
 	for i in range(1,13):
 		for j in range(0, i):
 			A[i,j] = A[j,i]
-			
+
 	#construct b vector
-	#store values at tint (this will avoid evaluating them twice)
-	wM1int = wilhoit.integral_TM1(tint)
 	w0int = wilhoit.integral_T0(tint)
 	w1int = wilhoit.integral_T1(tint)
 	w2int = wilhoit.integral_T2(tint)
 	w3int = wilhoit.integral_T3(tint)
-	
-	wM1min = wilhoit.integral_TM1(tmin)
 	w0min = wilhoit.integral_T0(tmin)
 	w1min = wilhoit.integral_T1(tmin)
 	w2min = wilhoit.integral_T2(tmin)
 	w3min = wilhoit.integral_T3(tmin)
-	
-	wM1max = wilhoit.integral_TM1(tmax)
 	w0max = wilhoit.integral_T0(tmax)
 	w1max = wilhoit.integral_T1(tmax)
 	w2max = wilhoit.integral_T2(tmax)
 	w3max = wilhoit.integral_T3(tmax)
-	
-	
-	b[0] = 2*(wM1int - wM1min)
-	b[1] = 2*(w0int - w0min)
-	b[2] = 2*(w1int - w1min)
-	b[3] = 2*(w2int - w2min)
-	b[4] = 2*(w3int - w3min)
-	b[5] = 2*(wM1max - wM1int)
-	b[6] = 2*(w0max - w0int)
-	b[7] = 2*(w1max - w1int)
-	b[8] = 2*(w2max - w2int)
-	b[9] = 2*(w3max - w3int)
-	# b[10] = 0
-	# b[11] = 0
-	# b[12] = 0
-	
+	if weighting:
+		wM1int = wilhoit.integral_TM1(tint)
+		wM1min = wilhoit.integral_TM1(tmin)
+		wM1max = wilhoit.integral_TM1(tmax)
+	else:
+		w4int = wilhoit.integral_T4(tint)
+		w4min = wilhoit.integral_T4(tmin)
+		w4max = wilhoit.integral_T4(tmax)
+
+	if weighting:
+		b[0] = 2*(wM1int - wM1min)
+		b[1] = 2*(w0int - w0min)
+		b[2] = 2*(w1int - w1min)
+		b[3] = 2*(w2int - w2min)
+		b[4] = 2*(w3int - w3min)
+		b[5] = 2*(wM1max - wM1int)
+		b[6] = 2*(w0max - w0int)
+		b[7] = 2*(w1max - w1int)
+		b[8] = 2*(w2max - w2int)
+		b[9] = 2*(w3max - w3int)
+	else:
+		b[0] = 2*(w0int - w0min)
+		b[1] = 2*(w1int - w1min)
+		b[2] = 2*(w2int - w2min)
+		b[3] = 2*(w3int - w3min)
+		b[4] = 2*(w4int - w4min)
+		b[5] = 2*(w0max - w0int)
+		b[6] = 2*(w1max - w1int)
+		b[7] = 2*(w2max - w2int)
+		b[8] = 2*(w3max - w3int)
+		b[9] = 2*(w4max - w4int)
+
 	#solve A*x=b for x (note that factor of 2 in b vector and 10*10 submatrix of A matrix is not required; not including it should give same result, except Lagrange multipliers will differ by a factor of two)
 	#from linalg import solve
 	#print A
 	x = linalg.solve(A,b,overwrite_a=1,overwrite_b=1)
 	nasa_low = ThermoNASAPolynomial(T_range=(0,0), coeffs=[x[0], x[1], x[2], x[3], x[4], 0.0, 0.0], comment='')
 	nasa_high = ThermoNASAPolynomial(T_range=(0,0), coeffs=[x[5], x[6], x[7], x[8], x[9], 0.0, 0.0], comment='')
-	
+
 	return nasa_low, nasa_high
-
-def Wilhoit2NASA_W(wilhoit, tmin, tmax, tint):
-	#this is the case WITH weighting
-	#input: Wilhoit parameters, Cp0/R, CpInf/R, and B (kK), a0, a1, a2, a3, Tmin (minimum temperature (in kiloKelvin), Tmax (maximum temperature (in kiloKelvin), Tint (intermediate temperature, in kiloKelvin)
-	#output: NASA parameters for Cp/R, b1, b2, b3, b4, b5 (low temp parameters) and b6, b7, b8, b9, b10 (high temp parameters)
-	
-	#construct 13*13 symmetric A matrix (in A*x = b); other elements will be zero
-	A = scipy.zeros([13,13])
-	b = scipy.zeros([13])
-	
-	A[0,0] = 2*math.log(tint/tmin)
-	A[0,1] = 2*(tint - tmin)
-	A[0,2] = tint*tint - tmin*tmin
-	A[0,3] = 2.*(tint*tint*tint - tmin*tmin*tmin)/3
-	A[0,4] = (tint*tint*tint*tint - tmin*tmin*tmin*tmin)/2	 
-	A[1,1] = A[0,2]
-	A[1,2] = A[0,3]
-	A[1,3] = A[0,4]
-	A[1,4] = 2.*(tint*tint*tint*tint*tint - tmin*tmin*tmin*tmin*tmin)/5
-	A[2,2] = A[0,4]
-	A[2,3] = A[1,4]
-	A[2,4] = (tint*tint*tint*tint*tint*tint - tmin*tmin*tmin*tmin*tmin*tmin)/3
-	A[3,3] = A[2,4]
-	A[3,4] = 2.*(tint*tint*tint*tint*tint*tint*tint - tmin*tmin*tmin*tmin*tmin*tmin*tmin)/7
-	A[4,4] = (tint*tint*tint*tint*tint*tint*tint*tint - tmin*tmin*tmin*tmin*tmin*tmin*tmin*tmin)/4
-	
-	A[5,5] = 2*math.log(tmax/tint)
-	A[5,6] = 2*(tmax - tint)
-	A[5,7] = tmax*tmax - tint*tint
-	A[5,8] = 2.*(tmax*tmax*tmax - tint*tint*tint)/3
-	A[5,9] = (tmax*tmax*tmax*tmax - tint*tint*tint*tint)/2
-	A[6,6] = A[5,7]
-	A[6,7] = A[5,8]
-	A[6,8] = A[5,9]
-	A[6,9] = 2.*(tmax*tmax*tmax*tmax*tmax - tint*tint*tint*tint*tint)/5
-	A[7,7] = A[5,9]
-	A[7,8] = A[6,9]
-	A[7,9] = (tmax*tmax*tmax*tmax*tmax*tmax - tint*tint*tint*tint*tint*tint)/3
-	A[8,8] = A[7,9]
-	A[8,9] = 2.*(tmax*tmax*tmax*tmax*tmax*tmax*tmax - tint*tint*tint*tint*tint*tint*tint)/7
-	A[9,9] = (tmax*tmax*tmax*tmax*tmax*tmax*tmax*tmax - tint*tint*tint*tint*tint*tint*tint*tint)/4
-	
-	
-	A[0,10] = 1.
-	A[1,10] = tint
-	A[1,11] = 1.
-	A[2,10] = tint*tint
-	A[2,11] = 2*tint
-	A[2,12] = 2.
-	A[3,10] = A[2,10]*tint
-	A[3,11] = 3*A[2,10]
-	A[3,12] = 6*tint
-	A[4,10] = A[3,10]*tint
-	A[4,11] = 4*A[3,10]
-	A[4,12] = 12*A[2,10]
-	
-	A[5,10] = -A[0,10]
-	A[6,10] = -A[1,10]
-	A[6,11] = -A[1,11]
-	A[7,10] = -A[2,10]
-	A[7,11] = -A[2,11]
-	A[7,12] = -A[2,12]
-	A[8,10] = -A[3,10]
-	A[8,11] = -A[3,11]
-	A[8,12] = -A[3,12]
-	A[9,10] = -A[4,10]
-	A[9,11] = -A[4,11]
-	A[9,12] = -A[4,12]
-	
-	# make the matrix symmetric
-	for i in range(1,13):
-		for j in range(0, i):
-			A[i,j] = A[j,i]
-	
-	#construct b vector
-	#store values at tint (this will avoid evaluating them twice)
-	wM1int = wilhoit.integral_TM1(tint)
-	w0int = wilhoit.integral_T0(tint)
-	w1int = wilhoit.integral_T1(tint)
-	w2int = wilhoit.integral_T2(tint)
-	w3int = wilhoit.integral_T3(tint)
-
-	wM1min = wilhoit.integral_TM1(tmin)
-	w0min = wilhoit.integral_T0(tmin)
-	w1min = wilhoit.integral_T1(tmin)
-	w2min = wilhoit.integral_T2(tmin)
-	w3min = wilhoit.integral_T3(tmin)
-
-	wM1max = wilhoit.integral_TM1(tmax)
-	w0max = wilhoit.integral_T0(tmax)
-	w1max = wilhoit.integral_T1(tmax)
-	w2max = wilhoit.integral_T2(tmax)
-	w3max = wilhoit.integral_T3(tmax)
-
-
-	b[0] = 2*(wM1int - wM1min)
-	b[1] = 2*(w0int - w0min)
-	b[2] = 2*(w1int - w1min)
-	b[3] = 2*(w2int - w2min)
-	b[4] = 2*(w3int - w3min)
-	b[5] = 2*(wM1max - wM1int)
-	b[6] = 2*(w0max - w0int)
-	b[7] = 2*(w1max - w1int)
-	b[8] = 2*(w2max - w2int)
-	b[9] = 2*(w3max - w3int)
-	# b[10] = 0
-	# b[11] = 0
-	# b[12] = 0
-
-	#solve A*x=b for x (note that factor of 2 in b vector and 10*10 submatrix of A matrix is not required; not including it should give same result, except Lagrange multipliers will differ by a factor of two)
-	#from linalg import solve
-	#print A
-	x = linalg.solve(A,b,overwrite_a=1,overwrite_b=1)
-	nasa1 = ThermoNASAPolynomial(T_range=(0,9999.9), coeffs=[x[0], x[1], x[2], x[3], x[4], 0.0, 0.0], comment='')
-	nasa2 = ThermoNASAPolynomial(T_range=(0,9999.9), coeffs=[x[5], x[6], x[7], x[8], x[9], 0.0, 0.0], comment='')
-
-	return nasa1, nasa2
 	
 def Wilhoit2NASA_TintOpt(cp0, cpInf, B, a0, a1, a2, a3, tmin, tmax, tintg, weighting):
 	#input: Wilhoit parameters, Cp0/R, CpInf/R, and B (kK), a0, a1, a2, a3, Tmin (minimum temperature (in kiloKelvin), Tmax (maximum temperature (in kiloKelvin), Tintg (guess intermediate temperature, in kiloKelvin)
