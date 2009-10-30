@@ -943,7 +943,7 @@ class BatchReactor(ReactionSystem):
 			# Output information about simulation at current time
 			self.printSimulationStatus(model, time, solver.y, y0, criticalFlux, maxSpeciesFlux, maxSpecies)
 			tlist.append(time); ylist.append(solver.y)
-			dydtlist.append(self.getResidual(time, solver.y, model, stoichiometry))
+			#dydtlist.append(self.getResidual(time, solver.y, model, stoichiometry))
 			
 			# Exit simulation if model is not valid (exceeds interruption criterion)
 			if not valid:
