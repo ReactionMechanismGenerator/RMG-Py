@@ -305,9 +305,9 @@ class ThermoWilhoitToNASACheck(unittest.TestCase):
 		Uses Propane as a test-case. atoms=11, rotors=2, linear=False
 		"""
 		
-		hexadiene = species.Species(SMILES='CCC')
-		hexadiene.getResonanceIsomers()
-		GAthermoData = hexadiene.getThermoData()
+		propane = structure.Structure(SMILES='CCC')
+		propane.updateAtomTypes()
+		GAthermoData = species.getThermoData(propane,required_class=thermo.ThermoGAData)
 		WilhoitData = thermo.convertGAtoWilhoit(GAthermoData, atoms=11, rotors=2, linear=False)
 		NASAthermoData = thermo.convertWilhoitToNASA(WilhoitData)
 		
