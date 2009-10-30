@@ -935,13 +935,6 @@ def Wilhoit2NASA(wilhoit, tmin, tmax, tint, weighting):
 	#input: Wilhoit parameters, Cp0/R, CpInf/R, and B (kK), a0, a1, a2, a3, Tmin (minimum temperature (in kiloKelvin), Tmax (maximum temperature (in kiloKelvin), Tint (intermediate temperature, in kiloKelvin)
 	#output: NASA parameters for Cp/R, b1, b2, b3, b4, b5 (low temp parameters) and b6, b7, b8, b9, b10 (high temp parameters)
 
-	# Make copy of Wilhoit data so we don't modify the original
-	wilhoit = ThermoWilhoitData(wilhoit.cp0, wilhoit.cpInf, wilhoit.a0, wilhoit.a1, wilhoit.a2, wilhoit.a3, wilhoit.H0, wilhoit.S0, wilhoit.comment)
-	# Rescale Wilhoit parameters
-	wilhoit.cp0 /= constants.R
-	wilhoit.cpInf /= constants.R
-	wilhoit.B /= 1000.
-
 	#construct 13*13 symmetric A matrix (in A*x = b); other elements will be zero
 	A = scipy.zeros([13,13])
 	b = scipy.zeros([13])
