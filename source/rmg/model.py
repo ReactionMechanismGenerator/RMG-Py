@@ -38,8 +38,8 @@ import numpy
 import scipy.integrate
 import scipy.sparse
 
-
 import constants
+import settings
 import reaction
 
 ################################################################################
@@ -966,7 +966,7 @@ class BatchReactor(ReactionSystem):
 		reaction system.
 		"""
 		# Only do if the option for plot generation has been set
-		if not constants.generatePlots:
+		if not settings.generatePlots:
 			return
 		import pylab
 		# Reshape y into a matrix rather than a list of lists
@@ -990,7 +990,7 @@ class BatchReactor(ReactionSystem):
 		pylab.xlabel('Time (s)')
 		pylab.ylabel('Pressure (Pa)')
 		pylab.title('Pressure profile for reaction system ' + label)
-		pylab.savefig(constants.outputDirectory + '/plot/pressureProfile' + label + '.svg')
+		pylab.savefig(settings.outputDirectory + '/plot/pressureProfile' + label + '.svg')
 		pylab.clf()
 
 		# Make volume plot and save to file
@@ -998,7 +998,7 @@ class BatchReactor(ReactionSystem):
 		pylab.xlabel('Time (s)')
 		pylab.ylabel('Volume (m^3)')
 		pylab.title('Volume profile for reaction system ' + label)
-		pylab.savefig(constants.outputDirectory + '/plot/volumeProfile' + label + '.svg')
+		pylab.savefig(settings.outputDirectory + '/plot/volumeProfile' + label + '.svg')
 		pylab.clf()
 
 		# Make temperature plot and save to file
@@ -1006,7 +1006,7 @@ class BatchReactor(ReactionSystem):
 		pylab.xlabel('Time (s)')
 		pylab.ylabel('Temperature (K)')
 		pylab.title('Temperature profile for reaction system ' + label)
-		pylab.savefig(constants.outputDirectory + '/plot/temperatureProfile' + label + '.svg')
+		pylab.savefig(settings.outputDirectory + '/plot/temperatureProfile' + label + '.svg')
 		pylab.clf()
 
 		# Make concentration plot and save to file
@@ -1015,7 +1015,7 @@ class BatchReactor(ReactionSystem):
 		pylab.ylabel('Concentration (mol/m^3)')
 		pylab.title('Concentration profiles for reaction system ' + label)
 		pylab.legend(legend)
-		pylab.savefig(constants.outputDirectory + '/plot/concentrationProfile' + label + '.svg')
+		pylab.savefig(settings.outputDirectory + '/plot/concentrationProfile' + label + '.svg')
 		pylab.clf()
 
 		# Make species flux plot and save to file
@@ -1025,7 +1025,7 @@ class BatchReactor(ReactionSystem):
 			pylab.ylabel('Species flux (mol/m^3*s)')
 			pylab.title('Species flux profiles for reaction system ' + label)
 			pylab.legend(legend)
-			pylab.savefig(constants.outputDirectory + '/plot/fluxProfile' + label + '.svg')
+			pylab.savefig(settings.outputDirectory + '/plot/fluxProfile' + label + '.svg')
 		except OverflowError:
 			pass
 		

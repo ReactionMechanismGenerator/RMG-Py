@@ -37,6 +37,7 @@ import math
 import pybel
 
 import constants
+import settings
 import structure
 import data
 import thermo
@@ -454,9 +455,9 @@ def makeNewSpecies(structure, label='', reactive=True):
 		spec.getThermoData()
 	
 	# Draw species
-	if constants.drawMolecules:
+	if settings.drawMolecules:
 		mol = pybel.Molecule(spec.toOBMol())
-		mol.draw(False, os.path.join(constants.outputDirectory, 'species/' + str(spec) + '.png'))
+		mol.draw(False, os.path.join(settings.outputDirectory, 'species/' + str(spec) + '.png'))
 
 	# Note in the log
 	logging.debug('Created new species ' + str(spec) )# + ': ' + spec.toInChI())

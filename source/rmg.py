@@ -124,7 +124,7 @@ if __name__ == '__main__':
 		options.scratchDirectory = inputDirectory
 
 	# Execute RMG
-	import rmg
+	import rmg.main
 
 	if options.postprocess_only:
 		print "Postprocessing the profiler statistics (will be appended to RMG.log)"
@@ -135,7 +135,7 @@ if __name__ == '__main__':
 		import cProfile, sys, pstats, os
 		global_vars = {}
 		local_vars = {'args': args, 'options':options, 'rmg':rmg}
-		command = """rmg.execute( args[0], options )"""
+		command = """rmg.main.execute( args[0], options )"""
 		stats_file = os.path.join(options.outputDirectory,'RMG.profile')
 		print("Running under cProfile")
 		if not options.postprocess_only:
@@ -146,5 +146,5 @@ if __name__ == '__main__':
 		process_stats(stats_file, log_file)
 
 	else:
-		rmg.execute( args[0], options )
+		rmg.main.execute( args[0], options )
 

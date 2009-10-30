@@ -34,6 +34,7 @@ import logging
 import os
 
 import constants
+import settings
 import model
 import structure
 import data
@@ -123,18 +124,20 @@ def readInputFile(fstr):
 		element = getFirstChildElement(root, 'drawMolecules')
 		drawMolecules = getElementText(element).lower()
 		if drawMolecules == 'on' or drawMolecules == 'true' or drawMolecules == 'yes':
-			constants.drawMolecules = True
+			settings.drawMolecules = True
 		else:
-			constants.drawMolecules = False
-
+			settings.drawMolecules = False
+		
+		
 		# Read generate plots option
 		element = getFirstChildElement(root, 'generatePlots')
 		generatePlots = getElementText(element).lower()
 		if generatePlots == 'on' or generatePlots == 'true' or generatePlots == 'yes':
-			constants.generatePlots = True
+			settings.generatePlots = True
 		else:
-			constants.generatePlots = False
-
+			settings.generatePlots = False
+		
+		
 		# Process databases
 		databases = []
 		elements = getElements(root, 'database')
