@@ -451,9 +451,10 @@ class Atom(object):
 
 		# for Extended Connectivity; as introduced by Morgan (1965)
 		# http://dx.doi.org/10.1021/c160017a018
-		self.connectivity1 = 0
-		self.connectivity2 = 0
-		self.connectivity3 = 0
+		self.connectivity1 = -1
+		self.connectivity2 = -1
+		self.connectivity3 = -1
+		self.sorting_label = -1
 	
 	def __repr__(self):
 		"""

@@ -1285,6 +1285,10 @@ class ReactionFamily(data.Database):
 			struct.simplifyAtomTypes()
 			struct.updateAtomTypes()
 		
+		
+		# reset any cached structure information because it is now invalid
+		for struct in productStructures:
+			struct.resetCachedStructureInfo()
 		# Return the product structures
 		return productStructures
 	

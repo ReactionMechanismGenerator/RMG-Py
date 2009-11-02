@@ -49,6 +49,8 @@ cdef class Edge:
 
 cdef class Graph(dict):
 
+	cpdef resetCachedStructureInfo(Graph self)
+
 	cpdef list vertices(Graph self)
 
 	cpdef list edges(Graph self)
