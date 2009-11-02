@@ -508,8 +508,10 @@ class Graph(dict):
 		# an arbitary order, as long as it remains constant
 		# so we record the ordering index ON the vertices
 		i = cython.declare(cython.int)
+		vertex = cython.declare(chem.Atom)
 		for i in range(len(ordered_vertices)):
-			(ordered_vertices[i]).sorting_label = i
+			vertex=ordered_vertices[i]
+			vertex.sorting_label = i
     	
 ################################################################################
 
