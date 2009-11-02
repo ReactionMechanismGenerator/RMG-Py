@@ -184,16 +184,13 @@ class AtomType:
 				return False
 		# If either represents an element without surrounding bond info,
 		# match remaining to any with the same element
-		elif self.label == self.element.symbol == \
-				other.element.symbol:
+		elif self.label == self.element.symbol == other.element.symbol:
 			return True
-		elif other.label == other.element.symbol == \
-				self.element.symbol:
+		elif other.label == other.element.symbol == self.element.symbol:
 			return True
 		# Otherwise labels must match exactly
 		elif self.label == other.label:
 			return True
-
 		return False
 
 ################################################################################
