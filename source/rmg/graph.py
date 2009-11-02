@@ -237,6 +237,7 @@ class Graph(dict):
 		new2 = cython.declare(Graph)
 		verticesToMove = cython.declare(list)
 		index = cython.declare(cython.int)
+		
 		new1 = self.copy()
 		new2 = Graph()
 		

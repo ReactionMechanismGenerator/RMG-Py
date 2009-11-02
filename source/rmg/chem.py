@@ -73,7 +73,7 @@ class Element:
 		"""
 		self.number = number
 		self.name = name
-		self.symbol = symbol
+		self.symbol = intern(symbol)
 		self.mass = mass
 		self.valence = valence
 
@@ -120,6 +120,12 @@ def loadElements():
 elements = loadElements()
 
 ################################################################################
+cython.declare(AtomType_R=str)
+AtomType_R = intern('R')
+cython.declare(AtomType_RnotH=str)
+AtomType_RnotH = intern('R!H')
+cython.declare(AtomType_H=str)
+AtomType_H = intern('H')
 
 class AtomType:
 	"""
@@ -143,7 +149,7 @@ class AtomType:
 		"""
 		Initialize an atom type.
 		"""
-		self.label = label
+		self.label = intern(label)
 		self.element = element
 		self.description = description
 
@@ -158,38 +164,39 @@ class AtomType:
 		Used for pickling.
 		"""
 		return (AtomType, (self.label, self.element, self.description))
-
+	
+	
 	def equivalent(self, other):
 		"""
 		Returns :data:`True` if two atom types are equivalent or :data:`False`
 		otherwise. Respects wildcards, e.g. returns True for {R!H}=={C}
 		"""
-
+		
 		# If either is a generic atom type, then always return True
-		if self.label == 'R' or other.label == 'R':
+		if self.label is AtomType_R or other.label is AtomType_R: 
 			return True
 		# If either is a generic non-hydrogen atom type, then return
 		# True if any atom type in the remaining one is non-hydrogen
-		elif self.label == 'R!H':
-			if other.label != 'H':
+		elif self.label is AtomType_RnotH:
+			if not other.label is AtomType_H:
 				#logging.debug('I think %s == %s'%(self.label, other.label))
 				return True
 			else: 
 				return False
-		elif other.label == 'R!H':
-			if self.label != 'H':
+		elif other.label is AtomType_RnotH:
+			if not self.label is AtomType_H:
 				#logging.debug('I think %s == %s'%(self.label, other.label))
 				return True
 			else: 
 				return False
 		# If either represents an element without surrounding bond info,
 		# match remaining to any with the same element
-		elif self.label == self.element.symbol == other.element.symbol:
+		elif self.label is self.element.symbol is other.element.symbol:
 			return True
-		elif other.label == other.element.symbol == self.element.symbol:
+		elif other.label is other.element.symbol is self.element.symbol:
 			return True
 		# Otherwise labels must match exactly
-		elif self.label == other.label:
+		elif self.label is other.label:
 			return True
 		return False
 
@@ -226,7 +233,6 @@ def loadAtomTypes():
 	atomTypes['CO'] 	= AtomType('CO', 	elements['C'], 	'non-central carbon bonded with a double bond to a non-central oxygen')
 	atomTypes['Os'] 	= AtomType('Os', 	elements['O'], 	'oxygen with two single bonds')
 	atomTypes['Od'] 	= AtomType('Od', 	elements['O'], 	'oxygen with one double bond')
-
 	atomTypes['Sit'] 	= AtomType('Sit', 	elements['Si'], 'silicon with one triple bond and one single bond')
 	atomTypes['Sis'] 	= AtomType('Sis', 	elements['Si'], 'silicon with four single bonds')
 	atomTypes['Sid'] 	= AtomType('Sids', 	elements['Si'], 'silicon with one double bond and two single bonds')
