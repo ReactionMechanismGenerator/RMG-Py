@@ -38,7 +38,7 @@ cdef class Element:
 cdef class AtomType:
 
 	cdef public str label
-	cdef public object element
+	cdef public Element element
 	cdef public str description
 
 	cpdef bint equivalent(AtomType self, AtomType other)
