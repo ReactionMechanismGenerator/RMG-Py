@@ -61,9 +61,9 @@
 	<!-- Dynamic simulator -->
 	<simulator atol="1e-16" rtol="1e-8" />
 	<fluxTolerance>
-		<keepInEdge>1e-5</keepInEdge>
-		<moveToCore>0.01</moveToCore>
-		<interruptSimulation>0.5</interruptSimulation>
+		<keepInEdge>1e-4</keepInEdge>
+		<moveToCore>0.1</moveToCore>
+		<interruptSimulation>1.0</interruptSimulation>
 	</fluxTolerance>
 	<!-- Options -->
 	<drawMolecules>off</drawMolecules>
