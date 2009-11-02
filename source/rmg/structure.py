@@ -184,15 +184,15 @@ class Structure:
 		provided in `atoms` and `bonds`, respectively.
 		"""
 		self.graph = graph.Graph()
-
+		
 		if atoms is None or bonds is None:
 			return
-
+		
 		for atom in atoms:
 			self.addAtom(atom)
 		for bond in bonds:
 			self.addBond(bond)
-
+	
 	def copy(self):
 		"""
 		Create a copy of the current Structure.
@@ -206,7 +206,7 @@ class Structure:
 			index1 = self.atoms().index(bond.atoms[0])
 			index2 = self.atoms().index(bond.atoms[1])
 			newBond.atoms = [atoms[index1], atoms[index2]]
-
+		
 		return Structure(atoms, bonds)
 
 	def merge(self, other):
@@ -229,6 +229,14 @@ class Structure:
 			structure.graph = g
 			structures.append(structure)
 		return structures
+
+	def resetCachedStructureInfo(self):
+		"""Reset any cached structural information.
+		
+		Call this method when you have modified the graph or structure,
+		so that any information (eg. connectivity values, ring locations) that
+		we are cacheing, is reset."""
+		self.graph.resetCachedStructureInfo()
 
 	def getSmallestSetOfSmallestRings(self):
 		"""

@@ -73,9 +73,23 @@ class Graph(dict):
 			for v in vertices: self.addVertex(v)
 		if edges is not None:
 			for e in edges: self.addEdge(e.atoms, e)
+		self.resetCachedStructureInfo()
 
 	def __reduce__(self):
 		return (Graph, (), None, None, self.iteritems())
+		
+	def resetCachedStructureInfo(self):
+		"""Reset any cached structural information.
+		
+		Call this method when you have modified the graph or structure,
+		so that any information (eg. connectivity values, ring locations) that
+		we are cacheing, is reset."""
+		vert = cython.declare(chem.Atom)
+		for vert in self:
+			vert.connectivity1 = -1
+			vert.connectivity2 = -1
+			vert.connectivity3 = -1
+			vert.sorting_label = -1
 		
 	def vertices(self):
 		"""
@@ -89,7 +103,7 @@ class Graph(dict):
 		"""
 		edgelist = cython.declare(list)
 		pairslist = cython.declare(list)
-
+		
 		edgelist = list()
 		pairslist = list()
 		for v1 in self:
@@ -189,7 +203,9 @@ class Graph(dict):
 
 	def copy(self):
 		"""
-		Create a copy of the current graph.
+		Create a copy of the current graph. The vertices used in both graphs
+		are the SAME vertices, not copies of each other, so it should not be used
+		for copying structures (instead do structure.copy()) 
 		"""
 		other = cython.declare(Graph)
 		other = Graph()
@@ -314,7 +330,7 @@ class Graph(dict):
 			# Remove identified vertices from graph
 			for vertex in verticesToRemove:
 				graph.removeVertex(vertex)
-
+		
 		# Step 2: Remove all other vertices that are not part of cycles
 		verticesToRemove = []
 		for vertex in graph:
@@ -326,16 +342,16 @@ class Graph(dict):
 			graph.removeVertex(vertex)
 			
 		### also need to remove EDGES that are not in ring
-
+		
 		# Step 3: Split graph into remaining subgraphs
 		graphs = graph.split()
-
+		
 		# Step 4: Find ring sets in each subgraph
 		cycleList = []
 		for graph in graphs:
-
+			
 			while len(graph) > 0:
-
+				
 				# Choose root vertex as vertex with smallest number of edges
 				rootVertex = None
 				for vertex in graph:
@@ -496,7 +512,7 @@ class Graph(dict):
 		
 	def sortAndLabelVertices(self):
 		"""
-		Sort the vertices according to something wise,
+		Sort the vertices according to `globalAtomSortValue(atom)`,
 		and record the sorting index on the vertices so they know what order 
 		they were in. These are stored in `vertex.sorting_label`.
 		"""
@@ -513,7 +529,9 @@ class Graph(dict):
 		for i in range(len(ordered_vertices)):
 			vertex=ordered_vertices[i]
 			vertex.sorting_label = i
-    	
+			
+
+
 ################################################################################
 
 def VF2_isomorphism(graph1, graph2, map12, map21, subgraph=False, findAll=False):
@@ -541,11 +559,15 @@ def VF2_isomorphism(graph1, graph2, map12, map21, subgraph=False, findAll=False)
 		if len(graph2) != len(graph1):
 			logging.debug("Tried matching graphs of different sizes!")
 			return False, None, None # is_match, map12, map21
+		elif len(graph2) == 0 == len(graph1):
+			logging.warning("Tried matching empty graphs (returning True)")
+			# This occurs (at least) when testing bond symmetry of H2
+			return True, None, None
 	else:
 		if len(graph2)>len(graph1):
 			#logging.debug("Tried matching small graph to larger subgraph")
 			return False, None, None
-			
+	
 	# start call_depth off as the size of the largest graph.
 	# each recursive call to __VF2_match will decrease it by one,
 	# until, when the whole graph has been explored, it should reach 0
@@ -553,17 +575,27 @@ def VF2_isomorphism(graph1, graph2, map12, map21, subgraph=False, findAll=False)
 	call_depth = len(graph1)
 
 	# update the connectivity values (before sorting by them)
-	graph1.setConnectivityValues() # could probably run this less often elsewhere
-	graph2.setConnectivityValues() # as the values don't change often
-	
 	# sort the vertices according to something wise (based on connectivity value), and 
 	# record the sorting order on each vertex (as vertex.sorting_label)
-	graph1.sortAndLabelVertices()
-	graph2.sortAndLabelVertices()
+	cython.declare(vert=chem.Atom)
+	vert = graph1.iterkeys().next() # just check the first atom in the graph
+	if vert.sorting_label < 0:
+		graph1.setConnectivityValues()
+		graph1.sortAndLabelVertices()
+	vert = graph2.iterkeys().next() # just check the first atom in the graph
+	if vert.sorting_label < 0:
+		graph2.setConnectivityValues()
+		graph2.sortAndLabelVertices()
+	
+	# graph1.setConnectivityValues() # could probably run this less often elsewhere
+	# graph2.setConnectivityValues() # as the values don't change often
+	
+	# graph1.sortAndLabelVertices()
+	# graph2.sortAndLabelVertices()
 	
 	terminals1 = __VF2_terminals(graph1, map21)
 	terminals2 = __VF2_terminals(graph2, map12)
-
+	
 	ismatch = __VF2_match(graph1, graph2, map21, map12, \
 		 terminals1, terminals2, subgraph, findAll, map21List, map12List, call_depth)
 
@@ -755,6 +787,8 @@ def globalAtomSortValue(atom):
 	so should be given to the atoms you want to explore first. 
 	For now, that is (roughly speaking) the most connected atoms. This definitely helps for large graphs
 	but bizarrely the opposite ordering seems to help small graphs. Not sure about subggraphs...
+	
+	Assumes that atom.connictivityN (N=1..3) are all up to date.
 	"""
 	#return hash(atom)  # apparently random?
 	#return (atom.connectivity[0] ) # not unique enough
