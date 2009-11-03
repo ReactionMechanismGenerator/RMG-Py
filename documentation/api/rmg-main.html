@@ -1,0 +1,172 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>6. The rmg.main Module &mdash; RMG v0.0.1 documentation</title>
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.0.1',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="RMG v0.0.1 documentation" href="../../index.html" />
+    <link rel="up" title="RMG Developer’s Guide" href="index.html" />
+    <link rel="next" title="7. The rmg.model Module" href="rmg-model.html" />
+    <link rel="prev" title="5. The rmg.io Module" href="rmg-io.html" /> 
+ 
+<link rel="stylesheet" href="../../_static/RMG.css" type="text/css" />
+
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../modindex.html" title="Global Module Index"
+             accesskey="M">modules</a> |</li>
+        <li class="right" >
+          <a href="rmg-model.html" title="7. The rmg.model Module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="rmg-io.html" title="5. The rmg.io Module"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">RMG v0.0.1 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >RMG Documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">RMG Developer&#8217;s Guide</a> &raquo;</li>
+  <li><a href="">6. The <tt class="docutils literal docutils literal"><span class="pre">rmg.main</span></tt> Module</a></li>
+
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-rmg.main">
+<h1>6. The <tt class="docutils literal"><span class="pre">rmg.main</span></tt> Module<a class="headerlink" href="#module-rmg.main" title="Permalink to this headline">¶</a></h1>
+<p>Contains the main function for RMG execution and several helper functions that
+support it.</p>
+<div class="section" id="methods-in-rmg-main">
+<h2>6.1. Methods in <tt class="docutils literal"><span class="pre">rmg.main</span></tt><a class="headerlink" href="#methods-in-rmg-main" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="rmg.main.execute">
+<tt class="descclassname">rmg.main.</tt><tt class="descname">execute</tt><big>(</big><em>inputFile</em>, <em>outputDir</em>, <em>scratchDir</em>, <em>libraryDir</em>, <em>verbose</em><big>)</big><a class="headerlink" href="#rmg.main.execute" title="Permalink to this definition">¶</a></dt>
+<dd>Generate a reaction model for the set of reaction systems specified in an 
+input file at location <cite>inputFile</cite>. Output and temporary files will be 
+placed in the directories <cite>outputDir</cite> and <cite>scratchDir</cite>, respectively; if
+either of these are empty strings, the corresponding files will be placed
+in the same directory as the input file. The <cite>libraryDir</cite> parameter can be
+used to specify additional directories to search for RMG databases. The
+<cite>verbose</cite> parameter is an integer specifying the amount of log text seen
+at the console; the levels correspond to those of the <tt class="xref docutils literal"><span class="pre">logging</span></tt> module.</dd></dl>
+
+<dl class="function">
+<dt id="rmg.main.initializeLog">
+<tt class="descclassname">rmg.main.</tt><tt class="descname">initializeLog</tt><big>(</big><em>verbose</em><big>)</big><a class="headerlink" href="#rmg.main.initializeLog" title="Permalink to this definition">¶</a></dt>
+<dd>Set up a logger for RMG to use to print output to stdout. The
+<cite>verbose</cite> parameter is an integer specifying the amount of log text seen
+at the console; the levels correspond to those of the <tt class="xref docutils literal"><span class="pre">logging</span></tt> module.</dd></dl>
+
+<dl class="function">
+<dt id="rmg.main.printRMGHeader">
+<tt class="descclassname">rmg.main.</tt><tt class="descname">printRMGHeader</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.main.printRMGHeader" title="Permalink to this definition">¶</a></dt>
+<dd>Output a header containing identifying information about RMG to the log.</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h3><a href="../../index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="">6. The <tt class="docutils literal"><span class="pre">rmg.main</span></tt> Module</a><ul>
+<li><a class="reference external" href="#methods-in-rmg-main">6.1. Methods in <tt class="docutils literal"><span class="pre">rmg.main</span></tt></a></li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="rmg-io.html"
+                                  title="previous chapter">5. The <tt class="docutils literal docutils literal docutils literal"><span class="pre">rmg.io</span></tt> Module</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="rmg-model.html"
+                                  title="next chapter">7. The <tt class="docutils literal"><span class="pre">rmg.model</span></tt> Module</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../../_sources/documentation/api/rmg-main.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <h3>Other links</h3>
+<ul>
+<li><a href="http://sourceforge.net/projects/rmg/">Sourceforge Project details</a></li>
+<li><a href="http://sourceforge.net/project/showfiles.php?group_id=191843&package_id=225575" onClick="javascript: pageTracker._trackPageview('/downloads/');">Download RMG</a> </li>
+<!--li><a href="../../RMG-manual.pdf" onClick="javascript: pageTracker._trackPageview('/documentation/RMG-manual.pdf');">View user manual as PDF</a></li-->
+<li><a href="http://apps.sourceforge.net/trac/rmg/">RMG-Python Trac</a></li>
+<li><a href="http://apps.sourceforge.net/trac/rmg/report/3" title="Trac Active Tickets by Milestone">Active Tickets</a></li>
+</ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../modindex.html" title="Global Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="rmg-model.html" title="7. The rmg.model Module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="rmg-io.html" title="5. The rmg.io Module"
+             >previous</a> |</li>
+        <li><a href="../../index.html">RMG v0.0.1 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >RMG Documentation</a> &raquo;</li>
+          <li><a href="index.html" >RMG Developer&#8217;s Guide</a> &raquo;</li>
+  <li><a href="">6. The <tt class="docutils literal docutils literal"><span class="pre">rmg.main</span></tt> Module</a></li>
+
+      </ul>
+    </div>
+    <div class="footer">
+		<div id="sourceforgelogo">
+		<a href="http://sourceforge.net/projects/rmg"><img src="http://sflogo.sourceforge.net/sflogo.php?group_id=191843&type=12" width="120" height="30" border="0" alt="Get RMG - Reaction Mechanism Generator at SourceForge.net. Fast, secure and Free Open Source software downloads" /></a>
+		</div>
+      &copy; Copyright 2009, Prof. William H. Green and the RMG Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.2.
+    </div>
+  </body>
+</html>

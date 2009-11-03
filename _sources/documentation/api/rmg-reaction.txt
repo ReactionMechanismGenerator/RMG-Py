@@ -1,0 +1,67 @@
+***************************
+The ``rmg.reaction`` Module
+***************************
+
+.. automodule:: rmg.reaction
+
+Classes in ``rmg.reaction``
+===========================
+
+ArrheniusEPKinetics
+-------------------
+
+.. autoclass:: rmg.reaction.ArrheniusEPKinetics
+	:members:
+	
+ArrheniusKinetics
+-----------------
+
+.. autoclass:: rmg.reaction.ArrheniusKinetics
+	:members:
+	
+InvalidActionException
+----------------------
+
+.. autoclass:: rmg.reaction.InvalidActionException
+	:members:
+	
+Kinetics
+--------
+
+.. autoclass:: rmg.reaction.Kinetics
+	:members:
+	
+Reaction
+--------
+
+.. autoclass:: rmg.reaction.Reaction
+	:members:
+	
+ReactionFamily
+--------------
+
+.. autoclass:: rmg.reaction.ReactionFamily
+	:members:
+	
+ReactionFamilySet
+-----------------
+
+.. autoclass:: rmg.reaction.ReactionFamilySet
+	:members:
+	
+ReactionRecipe
+--------------
+
+.. autoclass:: rmg.reaction.ReactionRecipe
+	:members:
+
+UndeterminableKineticsException
+-------------------------------
+
+.. autoclass:: rmg.reaction.UndeterminableKineticsException
+	:members:
+
+Methods in ``rmg.reaction``
+===========================
+
+.. autofunction:: rmg.reaction.makeNewReaction

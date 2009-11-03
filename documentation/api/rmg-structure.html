@@ -1,0 +1,403 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>10. The rmg.structure Module &mdash; RMG v0.0.1 documentation</title>
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.0.1',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="RMG v0.0.1 documentation" href="../../index.html" />
+    <link rel="up" title="RMG Developer’s Guide" href="index.html" />
+    <link rel="next" title="11. The rmg.cantera_loader Module" href="rmg-cantera_loader.html" />
+    <link rel="prev" title="9. The rmg.species Module" href="rmg-species.html" /> 
+ 
+<link rel="stylesheet" href="../../_static/RMG.css" type="text/css" />
+
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../modindex.html" title="Global Module Index"
+             accesskey="M">modules</a> |</li>
+        <li class="right" >
+          <a href="rmg-cantera_loader.html" title="11. The rmg.cantera_loader Module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="rmg-species.html" title="9. The rmg.species Module"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">RMG v0.0.1 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >RMG Documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">RMG Developer&#8217;s Guide</a> &raquo;</li>
+  <li><a href="">10. The <tt class="docutils literal docutils literal docutils literal"><span class="pre">rmg.structure</span></tt> Module</a></li>
+
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-rmg.structure">
+<h1>10. The <tt class="docutils literal"><span class="pre">rmg.structure</span></tt> Module<a class="headerlink" href="#module-rmg.structure" title="Permalink to this headline">¶</a></h1>
+<p>Contains classes describing chemical entities: elements, atoms, bonds, species, etc.</p>
+<div class="section" id="classes-in-rmg-structure">
+<h2>10.1. Classes in <tt class="docutils literal"><span class="pre">rmg.structure</span></tt><a class="headerlink" href="#classes-in-rmg-structure" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="invalidadjacencylistexception">
+<h3>10.1.1. InvalidAdjacencyListException<a class="headerlink" href="#invalidadjacencylistexception" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="rmg.structure.InvalidAdjacencyListException">
+<em class="property">
+class </em><tt class="descclassname">rmg.structure.</tt><tt class="descname">InvalidAdjacencyListException</tt><big>(</big><em>label</em><big>)</big><a class="headerlink" href="#rmg.structure.InvalidAdjacencyListException" title="Permalink to this definition">¶</a></dt>
+<dd>An exception used when parsing an adjacency list to indicate that it is
+invalid. The label of the adjacency list is stored in the <cite>label</cite> attribute.</dd></dl>
+
+</div>
+<div class="section" id="structure">
+<h3>10.1.2. Structure<a class="headerlink" href="#structure" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="rmg.structure.Structure">
+<em class="property">
+class </em><tt class="descclassname">rmg.structure.</tt><tt class="descname">Structure</tt><big>(</big><em>atoms=None</em>, <em>bonds=None</em><big>)</big><a class="headerlink" href="#rmg.structure.Structure" title="Permalink to this definition">¶</a></dt>
+<dd><p>A representation of a chemical species using a graph data structure. The
+vertices represent atoms, while the edges represent bonds.</p>
+<dl class="method">
+<dt id="rmg.structure.Structure.addAtom">
+<tt class="descname">addAtom</tt><big>(</big><em>atom</em><big>)</big><a class="headerlink" href="#rmg.structure.Structure.addAtom" title="Permalink to this definition">¶</a></dt>
+<dd>Add <cite>atom</cite> to the graph as a vertex. The atom is initialized with
+no edges.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.structure.Structure.addBond">
+<tt class="descname">addBond</tt><big>(</big><em>bond</em><big>)</big><a class="headerlink" href="#rmg.structure.Structure.addBond" title="Permalink to this definition">¶</a></dt>
+<dd>Add <cite>bond</cite> to the graph as an edge connecting atoms <cite>atom1</cite> and
+<cite>atom2</cite>, which must already be present in the graph.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.structure.Structure.atoms">
+<tt class="descname">atoms</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.structure.Structure.atoms" title="Permalink to this definition">¶</a></dt>
+<dd>Return a list of the atoms in the structure.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.structure.Structure.bonds">
+<tt class="descname">bonds</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.structure.Structure.bonds" title="Permalink to this definition">¶</a></dt>
+<dd>Return a list of the bonds in the structure.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.structure.Structure.clearLabeledAtoms">
+<tt class="descname">clearLabeledAtoms</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.structure.Structure.clearLabeledAtoms" title="Permalink to this definition">¶</a></dt>
+<dd>Remove the labels from all atoms in the structure.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.structure.Structure.containsLabeledAtom">
+<tt class="descname">containsLabeledAtom</tt><big>(</big><em>label</em><big>)</big><a class="headerlink" href="#rmg.structure.Structure.containsLabeledAtom" title="Permalink to this definition">¶</a></dt>
+<dd>Return <tt class="xref xref docutils literal"><span class="pre">True</span></tt> if the structure contains an atom with the label
+<cite>label</cite> and <tt class="xref xref docutils literal"><span class="pre">False</span></tt> otherwise.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.structure.Structure.copy">
+<tt class="descname">copy</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.structure.Structure.copy" title="Permalink to this definition">¶</a></dt>
+<dd>Create a copy of the current Structure.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.structure.Structure.findAllDelocalizationPaths">
+<tt class="descname">findAllDelocalizationPaths</tt><big>(</big><em>atom1</em><big>)</big><a class="headerlink" href="#rmg.structure.Structure.findAllDelocalizationPaths" title="Permalink to this definition">¶</a></dt>
+<dd>Find all the delocalization paths allyl to the radical center indicated
+by <cite>atom1</cite>. Used to generate resonance isomers.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.structure.Structure.findSubgraphIsomorphisms">
+<tt class="descname">findSubgraphIsomorphisms</tt><big>(</big><em>other</em><big>)</big><a class="headerlink" href="#rmg.structure.Structure.findSubgraphIsomorphisms" title="Permalink to this definition">¶</a></dt>
+<dd>Returns <tt class="xref xref docutils literal"><span class="pre">True</span></tt> if <cite>other</cite> is subgraph isomorphic and <tt class="xref xref docutils literal"><span class="pre">False</span></tt>
+otherwise. Uses the VF2 algorithm of Vento and Foggia.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.structure.Structure.fromAdjacencyList">
+<tt class="descname">fromAdjacencyList</tt><big>(</big><em>adjlist</em><big>)</big><a class="headerlink" href="#rmg.structure.Structure.fromAdjacencyList" title="Permalink to this definition">¶</a></dt>
+<dd>Convert a string adjacency list <cite>adjlist</cite> into a structure object.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.structure.Structure.fromCML">
+<tt class="descname">fromCML</tt><big>(</big><em>cmlstr</em><big>)</big><a class="headerlink" href="#rmg.structure.Structure.fromCML" title="Permalink to this definition">¶</a></dt>
+<dd>Convert a string of CML <cite>cmlstr</cite> to a Structure object.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.structure.Structure.fromInChI">
+<tt class="descname">fromInChI</tt><big>(</big><em>inchistr</em><big>)</big><a class="headerlink" href="#rmg.structure.Structure.fromInChI" title="Permalink to this definition">¶</a></dt>
+<dd>Convert an InChI string <cite>inchistr</cite> to a Structure object.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.structure.Structure.fromOBMol">
+<tt class="descname">fromOBMol</tt><big>(</big><em>obmol</em><big>)</big><a class="headerlink" href="#rmg.structure.Structure.fromOBMol" title="Permalink to this definition">¶</a></dt>
+<dd>Convert an OpenBabel OBMol object <cite>obmol</cite> to a Structure object.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.structure.Structure.fromSMILES">
+<tt class="descname">fromSMILES</tt><big>(</big><em>smilesstr</em><big>)</big><a class="headerlink" href="#rmg.structure.Structure.fromSMILES" title="Permalink to this definition">¶</a></dt>
+<dd>Convert a SMILES string <cite>smilesstr</cite> to a Structure object.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.structure.Structure.getAdjacentResonanceIsomers">
+<tt class="descname">getAdjacentResonanceIsomers</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.structure.Structure.getAdjacentResonanceIsomers" title="Permalink to this definition">¶</a></dt>
+<dd>Generate all of the resonance isomers formed by one allyl radical shift.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.structure.Structure.getBond">
+<tt class="descname">getBond</tt><big>(</big><em>atom1</em>, <em>atom2</em><big>)</big><a class="headerlink" href="#rmg.structure.Structure.getBond" title="Permalink to this definition">¶</a></dt>
+<dd>Returns the bond connecting atoms <cite>atom1</cite> and <cite>atom2</cite> if it exists, or
+<tt class="xref xref docutils literal"><span class="pre">None</span></tt> if not.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.structure.Structure.getBonds">
+<tt class="descname">getBonds</tt><big>(</big><em>atom</em><big>)</big><a class="headerlink" href="#rmg.structure.Structure.getBonds" title="Permalink to this definition">¶</a></dt>
+<dd>Return a list of the bonds involving the specified <cite>atom</cite>.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.structure.Structure.getFormula">
+<tt class="descname">getFormula</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.structure.Structure.getFormula" title="Permalink to this definition">¶</a></dt>
+<dd>Return the molecular formula for the structure.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.structure.Structure.getLabeledAtom">
+<tt class="descname">getLabeledAtom</tt><big>(</big><em>label</em><big>)</big><a class="headerlink" href="#rmg.structure.Structure.getLabeledAtom" title="Permalink to this definition">¶</a></dt>
+<dd>Return the atoms in functional group structure that are labeled, i.e.
+the center atoms in the structure.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.structure.Structure.getLabeledAtoms">
+<tt class="descname">getLabeledAtoms</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.structure.Structure.getLabeledAtoms" title="Permalink to this definition">¶</a></dt>
+<dd>Return the atoms in functional group structure that are labeled, i.e.
+the center atoms in the structure.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.structure.Structure.getRadicalCount">
+<tt class="descname">getRadicalCount</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.structure.Structure.getRadicalCount" title="Permalink to this definition">¶</a></dt>
+<dd>Get the number of radicals in the structure.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.structure.Structure.getSmallestSetOfSmallestRings">
+<tt class="descname">getSmallestSetOfSmallestRings</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.structure.Structure.getSmallestSetOfSmallestRings" title="Permalink to this definition">¶</a></dt>
+<dd>Return the smallest set of smallest rings for the structure.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.structure.Structure.hasBond">
+<tt class="descname">hasBond</tt><big>(</big><em>atom1</em>, <em>atom2</em><big>)</big><a class="headerlink" href="#rmg.structure.Structure.hasBond" title="Permalink to this definition">¶</a></dt>
+<dd>Returns true if atoms <cite>atom1</cite> and <cite>atom2</cite>, are in the graph and
+are connected by a bond.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.structure.Structure.initialize">
+<tt class="descname">initialize</tt><big>(</big><em>atoms</em>, <em>bonds</em><big>)</big><a class="headerlink" href="#rmg.structure.Structure.initialize" title="Permalink to this definition">¶</a></dt>
+<dd>Rebuild the <cite>graph</cite> data member based on the lists of atoms and bonds
+provided in <cite>atoms</cite> and <cite>bonds</cite>, respectively.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.structure.Structure.isIsomorphic">
+<tt class="descname">isIsomorphic</tt><big>(</big><em>other</em><big>)</big><a class="headerlink" href="#rmg.structure.Structure.isIsomorphic" title="Permalink to this definition">¶</a></dt>
+<dd>Returns <tt class="xref xref docutils literal"><span class="pre">True</span></tt> if two graphs are isomorphic and <tt class="xref xref docutils literal"><span class="pre">False</span></tt>
+otherwise. Uses the VF2 algorithm of Vento and Foggia.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.structure.Structure.isSubgraphIsomorphic">
+<tt class="descname">isSubgraphIsomorphic</tt><big>(</big><em>other</em>, <em>map12=None</em>, <em>map21=None</em><big>)</big><a class="headerlink" href="#rmg.structure.Structure.isSubgraphIsomorphic" title="Permalink to this definition">¶</a></dt>
+<dd>Returns <tt class="xref xref docutils literal"><span class="pre">True</span></tt> if <cite>other</cite> is subgraph isomorphic and <tt class="xref xref docutils literal"><span class="pre">False</span></tt>
+otherwise. Uses the VF2 algorithm of Vento and Foggia.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.structure.Structure.merge">
+<tt class="descname">merge</tt><big>(</big><em>other</em><big>)</big><a class="headerlink" href="#rmg.structure.Structure.merge" title="Permalink to this definition">¶</a></dt>
+<dd>Merge two graphs so as to store them in a single Graph object.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.structure.Structure.removeAtom">
+<tt class="descname">removeAtom</tt><big>(</big><em>atom</em><big>)</big><a class="headerlink" href="#rmg.structure.Structure.removeAtom" title="Permalink to this definition">¶</a></dt>
+<dd>Remove <cite>atom</cite> from the graph as a vertex. Also removes all bonds
+associated with <cite>atom</cite>. Does not remove atoms that no longer have any
+bonds as a result of this removal.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.structure.Structure.removeBond">
+<tt class="descname">removeBond</tt><big>(</big><em>bond</em><big>)</big><a class="headerlink" href="#rmg.structure.Structure.removeBond" title="Permalink to this definition">¶</a></dt>
+<dd>Remove <cite>bond</cite> from the graph. Does not remove atoms that no longer have
+any bonds as a result of this removal.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.structure.Structure.simplifyAtomTypes">
+<tt class="descname">simplifyAtomTypes</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.structure.Structure.simplifyAtomTypes" title="Permalink to this definition">¶</a></dt>
+<dd>Iterate through the atoms in the structure, setting them to be equal
+to their element.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.structure.Structure.split">
+<tt class="descname">split</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.structure.Structure.split" title="Permalink to this definition">¶</a></dt>
+<dd>Convert a single Graph object containing two or more unconnected graphs
+into separate graphs.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.structure.Structure.toAdjacencyList">
+<tt class="descname">toAdjacencyList</tt><big>(</big><em>label=''</em><big>)</big><a class="headerlink" href="#rmg.structure.Structure.toAdjacencyList" title="Permalink to this definition">¶</a></dt>
+<dd>Convert the structure object to an adjacency list. The <cite>label</cite> parameter
+is an optional string to put as the first line of the adjacency list;
+if set to the empty string, this line will be omitted.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.structure.Structure.toCML">
+<tt class="descname">toCML</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.structure.Structure.toCML" title="Permalink to this definition">¶</a></dt>
+<dd>Convert a Structure object to CML.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.structure.Structure.toDOT">
+<tt class="descname">toDOT</tt><big>(</big><em>label=''</em><big>)</big><a class="headerlink" href="#rmg.structure.Structure.toDOT" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert a Structure object to a graph image via DOT. This is useful
+for visualizing the functional groups that make up the databases. The
+output is a string containing a graph in DOT format, which can be
+passed to graphviz to produce an image; neato is recommended.</p>
+<p>Atoms are visualized as vertices in the outputted graph. Vertices are
+labeled with the atom type(s) of each corresponding     atom. Labeled atoms
+(&#8216;*&#8217;, &#8216;<a href="#id1"><span class="problematic" id="id2">*</span></a>1&#8217;, etc.) are color-coded, with a unique color for each label.
+Bonds are indicated with edges; multiple bonds are represented by
+multiple edges between the same pair of vertices. The edge line style is
+used to denote further semantic information: dashed lines indicate
+optional higher-order bonds, while dotted lines indicate benzene bonds.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmg.structure.Structure.toInChI">
+<tt class="descname">toInChI</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.structure.Structure.toInChI" title="Permalink to this definition">¶</a></dt>
+<dd>Convert a Structure object to an InChI string.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.structure.Structure.toOBMol">
+<tt class="descname">toOBMol</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.structure.Structure.toOBMol" title="Permalink to this definition">¶</a></dt>
+<dd>Convert a Structure object to an OpenBabel OBMol object.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.structure.Structure.toSMILES">
+<tt class="descname">toSMILES</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.structure.Structure.toSMILES" title="Permalink to this definition">¶</a></dt>
+<dd>Convert a Structure object to an SMILES string.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.structure.Structure.toXML">
+<tt class="descname">toXML</tt><big>(</big><em>dom</em>, <em>root</em><big>)</big><a class="headerlink" href="#rmg.structure.Structure.toXML" title="Permalink to this definition">¶</a></dt>
+<dd>Convert a Structure object to an XML DOM tree.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.structure.Structure.updateAtomTypes">
+<tt class="descname">updateAtomTypes</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.structure.Structure.updateAtomTypes" title="Permalink to this definition">¶</a></dt>
+<dd>Iterate through the atoms in the structure, checking their atom types
+to ensure they are correct (i.e. accurately describe their local bond
+environment) and complete (i.e. are as detailed as possible).</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="methods-in-rmg-structure">
+<h2>10.2. Methods in <tt class="docutils literal"><span class="pre">rmg.structure</span></tt><a class="headerlink" href="#methods-in-rmg-structure" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h3><a href="../../index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="">10. The <tt class="docutils literal"><span class="pre">rmg.structure</span></tt> Module</a><ul>
+<li><a class="reference external" href="#classes-in-rmg-structure">10.1. Classes in <tt class="docutils literal"><span class="pre">rmg.structure</span></tt></a><ul>
+<li><a class="reference external" href="#invalidadjacencylistexception">10.1.1. InvalidAdjacencyListException</a></li>
+<li><a class="reference external" href="#structure">10.1.2. Structure</a></li>
+</ul>
+</li>
+<li><a class="reference external" href="#methods-in-rmg-structure">10.2. Methods in <tt class="docutils literal"><span class="pre">rmg.structure</span></tt></a></li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="rmg-species.html"
+                                  title="previous chapter">9. The <tt class="docutils literal docutils literal docutils literal"><span class="pre">rmg.species</span></tt> Module</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="rmg-cantera_loader.html"
+                                  title="next chapter">11. The <tt class="docutils literal docutils literal"><span class="pre">rmg.cantera_loader</span></tt> Module</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../../_sources/documentation/api/rmg-structure.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <h3>Other links</h3>
+<ul>
+<li><a href="http://sourceforge.net/projects/rmg/">Sourceforge Project details</a></li>
+<li><a href="http://sourceforge.net/project/showfiles.php?group_id=191843&package_id=225575" onClick="javascript: pageTracker._trackPageview('/downloads/');">Download RMG</a> </li>
+<!--li><a href="../../RMG-manual.pdf" onClick="javascript: pageTracker._trackPageview('/documentation/RMG-manual.pdf');">View user manual as PDF</a></li-->
+<li><a href="http://apps.sourceforge.net/trac/rmg/">RMG-Python Trac</a></li>
+<li><a href="http://apps.sourceforge.net/trac/rmg/report/3" title="Trac Active Tickets by Milestone">Active Tickets</a></li>
+</ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../modindex.html" title="Global Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="rmg-cantera_loader.html" title="11. The rmg.cantera_loader Module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="rmg-species.html" title="9. The rmg.species Module"
+             >previous</a> |</li>
+        <li><a href="../../index.html">RMG v0.0.1 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >RMG Documentation</a> &raquo;</li>
+          <li><a href="index.html" >RMG Developer&#8217;s Guide</a> &raquo;</li>
+  <li><a href="">10. The <tt class="docutils literal docutils literal docutils literal"><span class="pre">rmg.structure</span></tt> Module</a></li>
+
+      </ul>
+    </div>
+    <div class="footer">
+		<div id="sourceforgelogo">
+		<a href="http://sourceforge.net/projects/rmg"><img src="http://sflogo.sourceforge.net/sflogo.php?group_id=191843&type=12" width="120" height="30" border="0" alt="Get RMG - Reaction Mechanism Generator at SourceForge.net. Fast, secure and Free Open Source software downloads" /></a>
+		</div>
+      &copy; Copyright 2009, Prof. William H. Green and the RMG Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.2.
+    </div>
+  </body>
+</html>

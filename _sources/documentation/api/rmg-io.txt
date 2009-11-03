@@ -1,0 +1,28 @@
+*********************
+The ``rmg.io`` Module
+*********************
+
+.. automodule:: rmg.io
+
+Classes in ``rmg.io``
+=====================
+
+InvalidInputFileException
+-------------------------
+
+.. autoclass:: rmg.io.InvalidInputFileException
+	:members:
+
+Methods in ``rmg.io``
+=====================
+
+.. autofunction:: rmg.io.getElements
+
+.. autofunction:: rmg.io.getElementText
+
+.. autofunction:: rmg.io.getFirstChildElement
+
+.. autofunction:: rmg.io.readInputFile
+
+.. autofunction:: rmg.io.writeOutputFile
+

@@ -1,0 +1,158 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>1.1.2. rmg.chem.AtomType &mdash; RMG v0.0.1 documentation</title>
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.0.1',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="RMG v0.0.1 documentation" href="../../index.html" />
+    <link rel="up" title="1. The rmg.chem Module" href="rmg-chem.html" />
+    <link rel="next" title="1.1.3. rmg.chem.Bond" href="rmg.chem.Bond.html" />
+    <link rel="prev" title="1.1.1. rmg.chem.Atom" href="rmg.chem.Atom.html" /> 
+ 
+<link rel="stylesheet" href="../../_static/RMG.css" type="text/css" />
+
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../modindex.html" title="Global Module Index"
+             accesskey="M">modules</a> |</li>
+        <li class="right" >
+          <a href="rmg.chem.Bond.html" title="1.1.3. rmg.chem.Bond"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="rmg.chem.Atom.html" title="1.1.1. rmg.chem.Atom"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">RMG v0.0.1 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >RMG Documentation</a> &raquo;</li>
+          <li><a href="index.html" >RMG Developer&#8217;s Guide</a> &raquo;</li>
+          <li><a href="rmg-chem.html" accesskey="U">1. The <tt class="docutils literal docutils literal docutils literal docutils literal"><span class="pre">rmg.chem</span></tt> Module</a> &raquo;</li>
+  <li><a href="">1.1.2. rmg.chem.AtomType</a></li>
+
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="rmg-chem-atomtype">
+<h1>1.1.2. rmg.chem.AtomType<a class="headerlink" href="#rmg-chem-atomtype" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="rmg.chem.AtomType">
+<em class="property">
+class </em><tt class="descclassname">rmg.chem.</tt><tt class="descname">AtomType</tt><big>(</big><em>label</em>, <em>element</em>, <em>description</em><big>)</big><a class="headerlink" href="#rmg.chem.AtomType" title="Permalink to this definition">¶</a></dt>
+<dd><p>A type of atom such as Cd, a carbon atom with all single bonds.</p>
+<p>Represent a single atom type by its chemical element and, optionally, some
+information about the local bond structure around that element. Each
+element has a unique string <cite>label</cite>, the underlying chemical <cite>element</cite>, and
+a string <cite>description</cite> of the element.</p>
+<p>This class is specifically for properties that all atoms of the same
+element share. Ideally there is only one instance of this class for each
+element.</p>
+<p>Initialize an atom type.</p>
+<dl class="method">
+<dt id="rmg.chem.AtomType.equivalent">
+<tt class="descname">equivalent</tt><big>(</big><em>other</em><big>)</big><a class="headerlink" href="#rmg.chem.AtomType.equivalent" title="Permalink to this definition">¶</a></dt>
+<dd>Returns <tt class="xref xref docutils literal"><span class="pre">True</span></tt> if two atom types are equivalent or <tt class="xref xref docutils literal"><span class="pre">False</span></tt>
+otherwise.</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="rmg.chem.Atom.html"
+                                  title="previous chapter">1.1.1. rmg.chem.Atom</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="rmg.chem.Bond.html"
+                                  title="next chapter">1.1.3. rmg.chem.Bond</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../../_sources/documentation/api/rmg.chem.AtomType.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <h3>Other links</h3>
+<ul>
+<li><a href="http://sourceforge.net/projects/rmg/">Sourceforge Project details</a></li>
+<li><a href="http://sourceforge.net/project/showfiles.php?group_id=191843&package_id=225575" onClick="javascript: pageTracker._trackPageview('/downloads/');">Download RMG</a> </li>
+<!--li><a href="../../RMG-manual.pdf" onClick="javascript: pageTracker._trackPageview('/documentation/RMG-manual.pdf');">View user manual as PDF</a></li-->
+<li><a href="http://apps.sourceforge.net/trac/rmg/">RMG-Python Trac</a></li>
+<li><a href="http://apps.sourceforge.net/trac/rmg/report/3" title="Trac Active Tickets by Milestone">Active Tickets</a></li>
+</ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../modindex.html" title="Global Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="rmg.chem.Bond.html" title="1.1.3. rmg.chem.Bond"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="rmg.chem.Atom.html" title="1.1.1. rmg.chem.Atom"
+             >previous</a> |</li>
+        <li><a href="../../index.html">RMG v0.0.1 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >RMG Documentation</a> &raquo;</li>
+          <li><a href="index.html" >RMG Developer&#8217;s Guide</a> &raquo;</li>
+          <li><a href="rmg-chem.html" >1. The <tt class="docutils literal docutils literal docutils literal docutils literal"><span class="pre">rmg.chem</span></tt> Module</a> &raquo;</li>
+  <li><a href="">1.1.2. rmg.chem.AtomType</a></li>
+
+      </ul>
+    </div>
+    <div class="footer">
+		<div id="sourceforgelogo">
+		<a href="http://sourceforge.net/projects/rmg"><img src="http://sflogo.sourceforge.net/sflogo.php?group_id=191843&type=12" width="120" height="30" border="0" alt="Get RMG - Reaction Mechanism Generator at SourceForge.net. Fast, secure and Free Open Source software downloads" /></a>
+		</div>
+      &copy; Copyright 2009, Prof. William H. Green and the RMG Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.2.
+    </div>
+  </body>
+</html>

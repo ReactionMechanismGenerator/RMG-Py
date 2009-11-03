@@ -1,0 +1,57 @@
+***********************
+The ``rmg.chem`` Module
+***********************
+
+.. automodule:: rmg.chem
+	:show-inheritance:
+
+Classes in ``rmg.chem``
+=======================
+
+Atom
+----
+
+.. autoclass:: rmg.chem.Atom
+	:members:
+
+AtomType
+--------
+
+.. autoclass:: rmg.chem.AtomType
+	:members:
+
+Bond
+----
+
+.. autoclass:: rmg.chem.Bond
+	:members:
+
+BondType
+--------
+
+.. autoclass:: rmg.chem.BondType
+	:members:
+	
+ElectronState
+-------------
+
+.. autoclass:: rmg.chem.ElectronState
+	:members:
+
+Element
+-------
+
+.. autoclass:: rmg.chem.Element
+	:members:
+
+Methods in ``rmg.chem``
+=======================
+
+.. autofunction:: rmg.chem.loadAtomTypes
+
+.. autofunction:: rmg.chem.loadBondTypes
+
+.. autofunction:: rmg.chem.loadElectronStates
+
+.. autofunction:: rmg.chem.loadElements
+

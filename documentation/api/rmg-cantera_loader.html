@@ -1,0 +1,216 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The rmg.cantera_loader Module &mdash; RMG v0.0.1 documentation</title>
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.0.1',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="RMG v0.0.1 documentation" href="../../index.html" /> 
+ 
+<link rel="stylesheet" href="../../_static/RMG.css" type="text/css" />
+
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../modindex.html" title="Global Module Index"
+             accesskey="M">modules</a> |</li>
+        <li><a href="../../index.html">RMG v0.0.1 documentation</a> &raquo;</li>
+  <li><a href="">The <tt class="docutils literal"><span class="pre">rmg.cantera_loader</span></tt> Module</a></li>
+
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-rmg.cantera_loader">
+<h1>The <tt class="docutils literal"><span class="pre">rmg.cantera_loader</span></tt> Module<a class="headerlink" href="#module-rmg.cantera_loader" title="Permalink to this headline">¶</a></h1>
+<p>This module is used to read Chemkin and Cantera files</p>
+<p>This documentation is lacking.</p>
+<dl class="class">
+<dt id="rmg.cantera_loader.NASA">
+<em class="property">
+class </em><tt class="descclassname">rmg.cantera_loader.</tt><tt class="descname">NASA</tt><big>(</big><em>range=(0.0</em>, <em>0.0)</em>, <em>coeffs=</em><span class="optional">[</span><span class="optional">]</span>, <em>p0=-1.0</em><big>)</big><a class="headerlink" href="#rmg.cantera_loader.NASA" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref docutils literal"><span class="pre">ctml_writer.NASA</span></tt></p>
+<p>NASA polynomial representation of thermo. For importing Cantera files.</p>
+<dl class="method">
+<dt id="rmg.cantera_loader.NASA.getRmgPolynomial">
+<tt class="descname">getRmgPolynomial</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.cantera_loader.NASA.getRmgPolynomial" title="Permalink to this definition">¶</a></dt>
+<dd>Fetch the RMG ThermoNASAPolynomial associated with this Cantera NASA</dd></dl>
+
+<dl class="method">
+<dt id="rmg.cantera_loader.NASA.makeRmgPolynomial">
+<tt class="descname">makeRmgPolynomial</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.cantera_loader.NASA.makeRmgPolynomial" title="Permalink to this definition">¶</a></dt>
+<dd>Make the RMG ThermoNASAPolynomial associated with this Cantera NASA</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="rmg.cantera_loader.getSpeciesByName">
+<tt class="descclassname">rmg.cantera_loader.</tt><tt class="descname">getSpeciesByName</tt><big>(</big><em>name</em><big>)</big><a class="headerlink" href="#rmg.cantera_loader.getSpeciesByName" title="Permalink to this definition">¶</a></dt>
+<dd>Select a species by its name.</dd></dl>
+
+<dl class="function">
+<dt id="rmg.cantera_loader.loadCanteraFile">
+<tt class="descclassname">rmg.cantera_loader.</tt><tt class="descname">loadCanteraFile</tt><big>(</big><em>filepath</em><big>)</big><a class="headerlink" href="#rmg.cantera_loader.loadCanteraFile" title="Permalink to this definition">¶</a></dt>
+<dd>Load a Cantera input (.cti) file. Returns a CoreEdgeReactionModel</dd></dl>
+
+<dl class="function">
+<dt id="rmg.cantera_loader.loadChemkinFile">
+<tt class="descclassname">rmg.cantera_loader.</tt><tt class="descname">loadChemkinFile</tt><big>(</big><em>filepath='chem.inp'</em>, <em>thermodb=''</em>, <em>trandb=''</em><big>)</big><a class="headerlink" href="#rmg.cantera_loader.loadChemkinFile" title="Permalink to this definition">¶</a></dt>
+<dd>Loads a Chemkin file. (Converts to Cantera first)</dd></dl>
+
+<dl class="class">
+<dt id="rmg.cantera_loader.reaction">
+<em class="property">
+class </em><tt class="descclassname">rmg.cantera_loader.</tt><tt class="descname">reaction</tt><big>(</big><em>equation=''</em>, <em>kf=None</em>, <em>id=''</em>, <em>order=''</em>, <em>options=</em><span class="optional">[</span><span class="optional">]</span><big>)</big><a class="headerlink" href="#rmg.cantera_loader.reaction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref docutils literal"><span class="pre">ctml_writer.reaction</span></tt></p>
+<p>A chemical reaction. For importing Cantera files</p>
+<dl class="method">
+<dt id="rmg.cantera_loader.reaction.getDeltaNu">
+<tt class="descname">getDeltaNu</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.cantera_loader.reaction.getDeltaNu" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the change in stoichiometry of the reaction, delta Nu.</p>
+<p>deltaNu= productNu - reactantNu
+uses self._deltaNu to cache the answer</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmg.cantera_loader.reaction.getProductNu">
+<tt class="descname">getProductNu</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.cantera_loader.reaction.getProductNu" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the stoichiometry in the reverse direction.</p>
+<p>i.e. the number of product molecules.
+uses self._productNu to cache the answer</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmg.cantera_loader.reaction.getReactantNu">
+<tt class="descname">getReactantNu</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.cantera_loader.reaction.getReactantNu" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the stoichiometry in the forwards direction.</p>
+<p>i.e. the number of reactant molecules.
+uses self._reactantNu to cache the answer</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmg.cantera_loader.reaction.getRmgReaction">
+<tt class="descname">getRmgReaction</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.cantera_loader.reaction.getRmgReaction" title="Permalink to this definition">¶</a></dt>
+<dd>Fetch the RMG Reaction object associated with this cantera reaction</dd></dl>
+
+<dl class="method">
+<dt id="rmg.cantera_loader.reaction.makeRmgKinetics">
+<tt class="descname">makeRmgKinetics</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.cantera_loader.reaction.makeRmgKinetics" title="Permalink to this definition">¶</a></dt>
+<dd>Create and return an RMG ArrheniusKinetics object based on self._kf</dd></dl>
+
+<dl class="method">
+<dt id="rmg.cantera_loader.reaction.makeRmgReaction">
+<tt class="descname">makeRmgReaction</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.cantera_loader.reaction.makeRmgReaction" title="Permalink to this definition">¶</a></dt>
+<dd>Create an RMG Reaction object based on this cantera reaction</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="rmg.cantera_loader.species">
+<em class="property">
+class </em><tt class="descclassname">rmg.cantera_loader.</tt><tt class="descname">species</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#rmg.cantera_loader.species" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref docutils literal"><span class="pre">ctml_writer.species</span></tt></p>
+<p>A species derived from ctml_writer.species.</p>
+<p>species(name,atoms,note,thermo,transport,charge)</p>
+<dl class="method">
+<dt id="rmg.cantera_loader.species.getCorrectNasaPoly">
+<tt class="descname">getCorrectNasaPoly</tt><big>(</big><em>T</em><big>)</big><a class="headerlink" href="#rmg.cantera_loader.species.getCorrectNasaPoly" title="Permalink to this definition">¶</a></dt>
+<dd>Select the first NASA polynomial that is valid at temperature T</dd></dl>
+
+<dl class="method">
+<dt id="rmg.cantera_loader.species.getRmgSpecies">
+<tt class="descname">getRmgSpecies</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.cantera_loader.species.getRmgSpecies" title="Permalink to this definition">¶</a></dt>
+<dd>Fetch the RMG Species object associated with this cantera species</dd></dl>
+
+<dl class="method">
+<dt id="rmg.cantera_loader.species.makeRmgSpecies">
+<tt class="descname">makeRmgSpecies</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.cantera_loader.species.makeRmgSpecies" title="Permalink to this definition">¶</a></dt>
+<dd>Create an RMG Species object based on this cantera species</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../../_sources/documentation/api/rmg-cantera_loader.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <h3>Other links</h3>
+<ul>
+<li><a href="http://sourceforge.net/projects/rmg/">Sourceforge Project details</a></li>
+<li><a href="http://sourceforge.net/project/showfiles.php?group_id=191843&package_id=225575" onClick="javascript: pageTracker._trackPageview('/downloads/');">Download RMG</a> </li>
+<!--li><a href="../../RMG-manual.pdf" onClick="javascript: pageTracker._trackPageview('/documentation/RMG-manual.pdf');">View user manual as PDF</a></li-->
+<li><a href="http://apps.sourceforge.net/trac/rmg/">RMG-Python Trac</a></li>
+<li><a href="http://apps.sourceforge.net/trac/rmg/report/3" title="Trac Active Tickets by Milestone">Active Tickets</a></li>
+</ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../modindex.html" title="Global Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">RMG v0.0.1 documentation</a> &raquo;</li>
+  <li><a href="">The <tt class="docutils literal"><span class="pre">rmg.cantera_loader</span></tt> Module</a></li>
+
+      </ul>
+    </div>
+    <div class="footer">
+		<div id="sourceforgelogo">
+		<a href="http://sourceforge.net/projects/rmg"><img src="http://sflogo.sourceforge.net/sflogo.php?group_id=191843&type=12" width="120" height="30" border="0" alt="Get RMG - Reaction Mechanism Generator at SourceForge.net. Fast, secure and Free Open Source software downloads" /></a>
+		</div>
+      &copy; Copyright 2009, Prof. William H. Green and the RMG Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.2.
+    </div>
+  </body>
+</html>

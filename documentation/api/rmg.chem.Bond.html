@@ -1,0 +1,211 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>1.1.3. rmg.chem.Bond &mdash; RMG v0.0.1 documentation</title>
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.0.1',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="RMG v0.0.1 documentation" href="../../index.html" />
+    <link rel="up" title="1. The rmg.chem Module" href="rmg-chem.html" />
+    <link rel="next" title="1.1.4. rmg.chem.BondType" href="rmg.chem.BondType.html" />
+    <link rel="prev" title="1.1.2. rmg.chem.AtomType" href="rmg.chem.AtomType.html" /> 
+ 
+<link rel="stylesheet" href="../../_static/RMG.css" type="text/css" />
+
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../modindex.html" title="Global Module Index"
+             accesskey="M">modules</a> |</li>
+        <li class="right" >
+          <a href="rmg.chem.BondType.html" title="1.1.4. rmg.chem.BondType"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="rmg.chem.AtomType.html" title="1.1.2. rmg.chem.AtomType"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">RMG v0.0.1 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >RMG Documentation</a> &raquo;</li>
+          <li><a href="index.html" >RMG Developer&#8217;s Guide</a> &raquo;</li>
+          <li><a href="rmg-chem.html" accesskey="U">1. The <tt class="docutils literal docutils literal docutils literal"><span class="pre">rmg.chem</span></tt> Module</a> &raquo;</li>
+  <li><a href="">1.1.3. rmg.chem.Bond</a></li>
+
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="rmg-chem-bond">
+<h1>1.1.3. rmg.chem.Bond<a class="headerlink" href="#rmg-chem-bond" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="rmg.chem.Bond">
+<em class="property">
+class </em><tt class="descclassname">rmg.chem.</tt><tt class="descname">Bond</tt><big>(</big><em>atoms</em>, <em>bondType=''</em><big>)</big><a class="headerlink" href="#rmg.chem.Bond" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represent a bond in a chemical species. Each bond has a list <cite>atoms</cite> of
+length two containing the two atoms in the bond and a <cite>bondType</cite> object,
+stored internally as a <a title="rmg.chem.BondType" class="reference external" href="rmg.chem.BondType.html#rmg.chem.BondType"><tt class="xref docutils literal"><span class="pre">BondType</span></tt></a> object.</p>
+<dl class="method">
+<dt id="rmg.chem.Bond.canDecreaseOrder">
+<tt class="descname">canDecreaseOrder</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.chem.Bond.canDecreaseOrder" title="Permalink to this definition">¶</a></dt>
+<dd>Return <tt class="xref xref docutils literal"><span class="pre">True</span></tt> if the bond order can be decreased by one without
+breaking.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.chem.Bond.canIncreaseOrder">
+<tt class="descname">canIncreaseOrder</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.chem.Bond.canIncreaseOrder" title="Permalink to this definition">¶</a></dt>
+<dd>Return <tt class="xref xref docutils literal"><span class="pre">True</span></tt> if the bond order can be increased by one.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.chem.Bond.copy">
+<tt class="descname">copy</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.chem.Bond.copy" title="Permalink to this definition">¶</a></dt>
+<dd>Generate a copy of the current bond.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.chem.Bond.decreaseOrder">
+<tt class="descname">decreaseOrder</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.chem.Bond.decreaseOrder" title="Permalink to this definition">¶</a></dt>
+<dd>Decrease the bond order by one.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.chem.Bond.equivalent">
+<tt class="descname">equivalent</tt><big>(</big><em>other</em><big>)</big><a class="headerlink" href="#rmg.chem.Bond.equivalent" title="Permalink to this definition">¶</a></dt>
+<dd>Return <tt class="xref xref docutils literal"><span class="pre">True</span></tt> if <cite>self</cite> and <cite>other</cite> are equivalent bonds, i.e.
+they have the same bond type.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.chem.Bond.increaseOrder">
+<tt class="descname">increaseOrder</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.chem.Bond.increaseOrder" title="Permalink to this definition">¶</a></dt>
+<dd>Increase the bond order by one.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.chem.Bond.isBenzene">
+<tt class="descname">isBenzene</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.chem.Bond.isBenzene" title="Permalink to this definition">¶</a></dt>
+<dd>Return <tt class="xref xref docutils literal"><span class="pre">True</span></tt> if the bond represents a benzene (aromatic) bond and
+<tt class="xref xref docutils literal"><span class="pre">False</span></tt> otherwise.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.chem.Bond.isDouble">
+<tt class="descname">isDouble</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.chem.Bond.isDouble" title="Permalink to this definition">¶</a></dt>
+<dd>Return <tt class="xref xref docutils literal"><span class="pre">True</span></tt> if the bond represents a double bond and
+<tt class="xref xref docutils literal"><span class="pre">False</span></tt> otherwise.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.chem.Bond.isSingle">
+<tt class="descname">isSingle</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.chem.Bond.isSingle" title="Permalink to this definition">¶</a></dt>
+<dd>Return <tt class="xref xref docutils literal"><span class="pre">True</span></tt> if the bond represents a single bond and
+<tt class="xref xref docutils literal"><span class="pre">False</span></tt> otherwise.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.chem.Bond.isTriple">
+<tt class="descname">isTriple</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.chem.Bond.isTriple" title="Permalink to this definition">¶</a></dt>
+<dd>Return <tt class="xref xref docutils literal"><span class="pre">True</span></tt> if the bond represents a triple bond and
+<tt class="xref xref docutils literal"><span class="pre">False</span></tt> otherwise.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.chem.Bond.setBondType">
+<tt class="descname">setBondType</tt><big>(</big><em>bondType</em><big>)</big><a class="headerlink" href="#rmg.chem.Bond.setBondType" title="Permalink to this definition">¶</a></dt>
+<dd>Set the bond type that this bond represents. The <cite>bondType</cite>
+parameter can be a <a title="rmg.chem.BondType" class="reference external" href="rmg.chem.BondType.html#rmg.chem.BondType"><tt class="xref docutils literal"><span class="pre">BondType</span></tt></a> object, a number representing
+the bond order, or a string representing the label of the desired bond
+type. In all cases <cite>bondType</cite> will be converted to and stored as a
+<a title="rmg.chem.BondType" class="reference external" href="rmg.chem.BondType.html#rmg.chem.BondType"><tt class="xref docutils literal"><span class="pre">BondType</span></tt></a> object.</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="rmg.chem.AtomType.html"
+                                  title="previous chapter">1.1.2. rmg.chem.AtomType</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="rmg.chem.BondType.html"
+                                  title="next chapter">1.1.4. rmg.chem.BondType</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../../_sources/documentation/api/rmg.chem.Bond.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <h3>Other links</h3>
+<ul>
+<li><a href="http://sourceforge.net/projects/rmg/">Sourceforge Project details</a></li>
+<li><a href="http://sourceforge.net/project/showfiles.php?group_id=191843&package_id=225575" onClick="javascript: pageTracker._trackPageview('/downloads/');">Download RMG</a> </li>
+<!--li><a href="../../RMG-manual.pdf" onClick="javascript: pageTracker._trackPageview('/documentation/RMG-manual.pdf');">View user manual as PDF</a></li-->
+<li><a href="http://apps.sourceforge.net/trac/rmg/">RMG-Python Trac</a></li>
+<li><a href="http://apps.sourceforge.net/trac/rmg/report/3" title="Trac Active Tickets by Milestone">Active Tickets</a></li>
+</ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../modindex.html" title="Global Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="rmg.chem.BondType.html" title="1.1.4. rmg.chem.BondType"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="rmg.chem.AtomType.html" title="1.1.2. rmg.chem.AtomType"
+             >previous</a> |</li>
+        <li><a href="../../index.html">RMG v0.0.1 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >RMG Documentation</a> &raquo;</li>
+          <li><a href="index.html" >RMG Developer&#8217;s Guide</a> &raquo;</li>
+          <li><a href="rmg-chem.html" >1. The <tt class="docutils literal docutils literal docutils literal"><span class="pre">rmg.chem</span></tt> Module</a> &raquo;</li>
+  <li><a href="">1.1.3. rmg.chem.Bond</a></li>
+
+      </ul>
+    </div>
+    <div class="footer">
+		<div id="sourceforgelogo">
+		<a href="http://sourceforge.net/projects/rmg"><img src="http://sflogo.sourceforge.net/sflogo.php?group_id=191843&type=12" width="120" height="30" border="0" alt="Get RMG - Reaction Mechanism Generator at SourceForge.net. Fast, secure and Free Open Source software downloads" /></a>
+		</div>
+      &copy; Copyright 2009, Prof. William H. Green and the RMG Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.2.
+    </div>
+  </body>
+</html>

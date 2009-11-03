@@ -1,0 +1,454 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>9. The rmg.species Module &mdash; RMG v0.0.1 documentation</title>
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.0.1',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="RMG v0.0.1 documentation" href="../../index.html" />
+    <link rel="up" title="RMG Developer’s Guide" href="index.html" />
+    <link rel="next" title="10. The rmg.structure Module" href="rmg-structure.html" />
+    <link rel="prev" title="8. The rmg.reaction Module" href="rmg-reaction.html" /> 
+ 
+<link rel="stylesheet" href="../../_static/RMG.css" type="text/css" />
+
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../modindex.html" title="Global Module Index"
+             accesskey="M">modules</a> |</li>
+        <li class="right" >
+          <a href="rmg-structure.html" title="10. The rmg.structure Module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="rmg-reaction.html" title="8. The rmg.reaction Module"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">RMG v0.0.1 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >RMG Documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">RMG Developer&#8217;s Guide</a> &raquo;</li>
+  <li><a href="">9. The <tt class="docutils literal"><span class="pre">rmg.species</span></tt> Module</a></li>
+
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-rmg.species">
+<h1>9. The <tt class="docutils literal"><span class="pre">rmg.species</span></tt> Module<a class="headerlink" href="#module-rmg.species" title="Permalink to this headline">¶</a></h1>
+<p>Contains classes describing chemical species and their thermodynamics.</p>
+<div class="section" id="classes-in-rmg-species">
+<h2>9.1. Classes in <tt class="docutils literal"><span class="pre">rmg.species</span></tt><a class="headerlink" href="#classes-in-rmg-species" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="species">
+<h3>9.1.1. Species<a class="headerlink" href="#species" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="rmg.species.Species">
+<em class="property">
+class </em><tt class="descclassname">rmg.species.</tt><tt class="descname">Species</tt><big>(</big><em>id=0</em>, <em>label=''</em>, <em>structure=None</em>, <em>reactive=True</em><big>)</big><a class="headerlink" href="#rmg.species.Species" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represent a chemical species (including all of its resonance forms). Each
+species has a unique integer <cite>id</cite> assigned automatically by RMG and a
+not-necessarily unique string <cite>label</cite>. The <cite>structure</cite> variable contains a
+list of <tt class="xref docutils literal"><span class="pre">Structure</span></tt> objects representing each resonance form. The
+<cite>reactive</cite> flag is <tt class="xref xref docutils literal"><span class="pre">True</span></tt> if the species can react and <tt class="xref xref docutils literal"><span class="pre">False</span></tt>
+if it is inert.</p>
+<dl class="method">
+<dt id="rmg.species.Species.findSubgraphIsomorphisms">
+<tt class="descname">findSubgraphIsomorphisms</tt><big>(</big><em>other</em><big>)</big><a class="headerlink" href="#rmg.species.Species.findSubgraphIsomorphisms" title="Permalink to this definition">¶</a></dt>
+<dd>Returns a list of the subgraph matches between the species and the
+functional group <cite>other</cite>.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.species.Species.fromAdjacencyList">
+<tt class="descname">fromAdjacencyList</tt><big>(</big><em>adjstr</em><big>)</big><a class="headerlink" href="#rmg.species.Species.fromAdjacencyList" title="Permalink to this definition">¶</a></dt>
+<dd>Convert an adjacency list string <cite>adjstr</cite> to a Species object.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.species.Species.fromCML">
+<tt class="descname">fromCML</tt><big>(</big><em>cmlstr</em><big>)</big><a class="headerlink" href="#rmg.species.Species.fromCML" title="Permalink to this definition">¶</a></dt>
+<dd>Convert a string of CML <cite>cmlstr</cite> to a Species object.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.species.Species.fromInChI">
+<tt class="descname">fromInChI</tt><big>(</big><em>inchistr</em><big>)</big><a class="headerlink" href="#rmg.species.Species.fromInChI" title="Permalink to this definition">¶</a></dt>
+<dd>Convert an InChI string <cite>inchistr</cite> to a Species object.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.species.Species.fromOBMol">
+<tt class="descname">fromOBMol</tt><big>(</big><em>obmol</em><big>)</big><a class="headerlink" href="#rmg.species.Species.fromOBMol" title="Permalink to this definition">¶</a></dt>
+<dd>Convert an OpenBabel OBMol object <cite>obmol</cite> to a Species object.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.species.Species.fromSMILES">
+<tt class="descname">fromSMILES</tt><big>(</big><em>smilesstr</em><big>)</big><a class="headerlink" href="#rmg.species.Species.fromSMILES" title="Permalink to this definition">¶</a></dt>
+<dd>Convert a SMILES string <cite>smilesstr</cite> to a Species object.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.species.Species.getEnthalpy">
+<tt class="descname">getEnthalpy</tt><big>(</big><em>T</em><big>)</big><a class="headerlink" href="#rmg.species.Species.getEnthalpy" title="Permalink to this definition">¶</a></dt>
+<dd>Return the enthalpy of the species at temperature <cite>T</cite>.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.species.Species.getEntropy">
+<tt class="descname">getEntropy</tt><big>(</big><em>T</em><big>)</big><a class="headerlink" href="#rmg.species.Species.getEntropy" title="Permalink to this definition">¶</a></dt>
+<dd>Return the entropy of the species at temperature <cite>T</cite>.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.species.Species.getFormula">
+<tt class="descname">getFormula</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.species.Species.getFormula" title="Permalink to this definition">¶</a></dt>
+<dd>Return the chemical formula for the species.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.species.Species.getFreeEnergy">
+<tt class="descname">getFreeEnergy</tt><big>(</big><em>T</em><big>)</big><a class="headerlink" href="#rmg.species.Species.getFreeEnergy" title="Permalink to this definition">¶</a></dt>
+<dd>Return the Gibbs free energy of the species at temperature <cite>T</cite>.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.species.Species.getHeatCapacity">
+<tt class="descname">getHeatCapacity</tt><big>(</big><em>T</em><big>)</big><a class="headerlink" href="#rmg.species.Species.getHeatCapacity" title="Permalink to this definition">¶</a></dt>
+<dd>Return the heat capacity of the species at temperature <cite>T</cite>.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.species.Species.getResonanceIsomers">
+<tt class="descname">getResonanceIsomers</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.species.Species.getResonanceIsomers" title="Permalink to this definition">¶</a></dt>
+<dd>Generate all of the resonance isomers of this species. The isomers are
+stored as a list in the <cite>structure</cite> attribute. If the length of
+<cite>structure</cite> is already greater than one, it is assumed that all of the
+resonance isomers have already been generated.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.species.Species.getThermoData">
+<tt class="descname">getThermoData</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.species.Species.getThermoData" title="Permalink to this definition">¶</a></dt>
+<dd>Generate thermodynamic data for the species by use of the thermo
+database.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.species.Species.isIsomorphic">
+<tt class="descname">isIsomorphic</tt><big>(</big><em>other</em><big>)</big><a class="headerlink" href="#rmg.species.Species.isIsomorphic" title="Permalink to this definition">¶</a></dt>
+<dd>Returns <tt class="xref xref docutils literal"><span class="pre">True</span></tt> if the two species are isomorphic and data:<cite>False</cite>
+otherwise.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.species.Species.isSubgraphIsomorphic">
+<tt class="descname">isSubgraphIsomorphic</tt><big>(</big><em>other</em><big>)</big><a class="headerlink" href="#rmg.species.Species.isSubgraphIsomorphic" title="Permalink to this definition">¶</a></dt>
+<dd>Returns <tt class="xref xref docutils literal"><span class="pre">True</span></tt> if the species is isomorphic with the other
+functional group and data:<cite>False</cite> otherwise.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.species.Species.toAdjacencyList">
+<tt class="descname">toAdjacencyList</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.species.Species.toAdjacencyList" title="Permalink to this definition">¶</a></dt>
+<dd>Convert a Species object to an adjacency list.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.species.Species.toCML">
+<tt class="descname">toCML</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.species.Species.toCML" title="Permalink to this definition">¶</a></dt>
+<dd>Convert a Species object to CML.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.species.Species.toInChI">
+<tt class="descname">toInChI</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.species.Species.toInChI" title="Permalink to this definition">¶</a></dt>
+<dd>Convert a Species object to an InChI string.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.species.Species.toOBMol">
+<tt class="descname">toOBMol</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.species.Species.toOBMol" title="Permalink to this definition">¶</a></dt>
+<dd>Convert a Species object to an OBMol object.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.species.Species.toSMILES">
+<tt class="descname">toSMILES</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.species.Species.toSMILES" title="Permalink to this definition">¶</a></dt>
+<dd>Convert a Species object to an InChI string.</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="thermodatabase">
+<h3>9.1.2. ThermoDatabase<a class="headerlink" href="#thermodatabase" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="rmg.species.ThermoDatabase">
+<em class="property">
+class </em><tt class="descclassname">rmg.species.</tt><tt class="descname">ThermoDatabase</tt><a class="headerlink" href="#rmg.species.ThermoDatabase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represent an RMG thermodynamics database.</p>
+<dl class="method">
+<dt id="rmg.species.ThermoDatabase.contains">
+<tt class="descname">contains</tt><big>(</big><em>structure</em><big>)</big><a class="headerlink" href="#rmg.species.ThermoDatabase.contains" title="Permalink to this definition">¶</a></dt>
+<dd>Search the dictionary for the specified <cite>structure</cite>. If found, the label
+corresponding to the structure is returned. If not found, <tt class="xref xref docutils literal"><span class="pre">None</span></tt>
+is returned.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.species.ThermoDatabase.getThermoData">
+<tt class="descname">getThermoData</tt><big>(</big><em>structure</em>, <em>atom</em><big>)</big><a class="headerlink" href="#rmg.species.ThermoDatabase.getThermoData" title="Permalink to this definition">¶</a></dt>
+<dd>Determine the group additivity thermodynamic data for the atom <cite>atom</cite>
+in the structure <cite>structure</cite>.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.species.ThermoDatabase.load">
+<tt class="descname">load</tt><big>(</big><em>dictstr</em>, <em>treestr</em>, <em>libstr</em><big>)</big><a class="headerlink" href="#rmg.species.ThermoDatabase.load" title="Permalink to this definition">¶</a></dt>
+<dd>Load a thermodynamics group additivity database. The database is stored
+in three files: <cite>dictstr</cite> is the path to the dictionary, <cite>treestr</cite> to
+the tree, and <cite>libstr</cite> to the library. The tree is optional, and should
+be set to &#8216;&#8217; if not desired.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.species.ThermoDatabase.toXML">
+<tt class="descname">toXML</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.species.ThermoDatabase.toXML" title="Permalink to this definition">¶</a></dt>
+<dd>Return an XML representation of the thermo database.</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="thermodatabaseset">
+<h3>9.1.3. ThermoDatabaseSet<a class="headerlink" href="#thermodatabaseset" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="rmg.species.ThermoDatabaseSet">
+<em class="property">
+class </em><tt class="descclassname">rmg.species.</tt><tt class="descname">ThermoDatabaseSet</tt><a class="headerlink" href="#rmg.species.ThermoDatabaseSet" title="Permalink to this definition">¶</a></dt>
+<dd><p>A set of thermodynamics group additivity databases, consisting of a primary
+database of functional groups and a number of secondary databases to provide
+corrections for 1,5-interactions, gauche interactions, radicals, rings,
+and other functionality. There is also a primary library containing data for
+individual species.</p>
+<dl class="method">
+<dt id="rmg.species.ThermoDatabaseSet.getThermoData">
+<tt class="descname">getThermoData</tt><big>(</big><em>struct</em><big>)</big><a class="headerlink" href="#rmg.species.ThermoDatabaseSet.getThermoData" title="Permalink to this definition">¶</a></dt>
+<dd>Determine the group additivity thermodynamic data for the structure
+<cite>structure</cite>.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.species.ThermoDatabaseSet.load">
+<tt class="descname">load</tt><big>(</big><em>datapath</em><big>)</big><a class="headerlink" href="#rmg.species.ThermoDatabaseSet.load" title="Permalink to this definition">¶</a></dt>
+<dd>Load a set of thermodynamics group additivity databases from the general
+database specified at <cite>datapath</cite>.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.species.ThermoDatabaseSet.saveXML">
+<tt class="descname">saveXML</tt><big>(</big><em>datapath</em><big>)</big><a class="headerlink" href="#rmg.species.ThermoDatabaseSet.saveXML" title="Permalink to this definition">¶</a></dt>
+<dd>Save the loaded databases in the set to XML files.</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="thermogadata">
+<h3>9.1.4. ThermoGAData<a class="headerlink" href="#thermogadata" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="rmg.species.ThermoGAData">
+<em class="property">
+class </em><tt class="descclassname">rmg.species.</tt><tt class="descname">ThermoGAData</tt><big>(</big><em>H298=0.0</em>, <em>S298=0.0</em>, <em>Cp=None</em>, <em>comment=''</em><big>)</big><a class="headerlink" href="#rmg.species.ThermoGAData" title="Permalink to this definition">¶</a></dt>
+<dd><p>A set of thermodynamic parameters as determined from Benson&#8217;s group
+additivity data. The attributes are:</p>
+<blockquote>
+<table border="1" class="docutils">
+<colgroup>
+<col width="14%" />
+<col width="86%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Attribute</th>
+<th class="head">Meaning</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td><cite>H298</cite></td>
+<td>the standard enthalpy of formation at 298 K in J/mol</td>
+</tr>
+<tr><td><cite>S298</cite></td>
+<td>the standard entropy of formation at 298 K in J/mol*K</td>
+</tr>
+<tr><td><cite>Cp300</cite></td>
+<td>the standard heat capacity at 300 K in J/mol*K</td>
+</tr>
+<tr><td><cite>Cp400</cite></td>
+<td>the standard heat capacity at 400 K in J/mol*K</td>
+</tr>
+<tr><td><cite>Cp500</cite></td>
+<td>the standard heat capacity at 500 K in J/mol*K</td>
+</tr>
+<tr><td><cite>Cp600</cite></td>
+<td>the standard heat capacity at 600 K in J/mol*K</td>
+</tr>
+<tr><td><cite>Cp800</cite></td>
+<td>the standard heat capacity at 800 K in J/mol*K</td>
+</tr>
+<tr><td><cite>Cp1000</cite></td>
+<td>the standard heat capacity at 1000 K in J/mol*K</td>
+</tr>
+<tr><td><cite>Cp1500</cite></td>
+<td>the standard heat capacity at 1500 K in J/mol*K</td>
+</tr>
+<tr><td><cite>comment</cite></td>
+<td>a string describing the source of the data</td>
+</tr>
+</tbody>
+</table>
+</blockquote>
+<dl class="method">
+<dt id="rmg.species.ThermoGAData.fromDatabase">
+<tt class="descname">fromDatabase</tt><big>(</big><em>data</em>, <em>comment</em><big>)</big><a class="headerlink" href="#rmg.species.ThermoGAData.fromDatabase" title="Permalink to this definition">¶</a></dt>
+<dd>Process a list of numbers <cite>data</cite> and associated description <cite>comment</cite>
+generated while reading from a thermodynamic database.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.species.ThermoGAData.getEnthalpy">
+<tt class="descname">getEnthalpy</tt><big>(</big><em>T</em><big>)</big><a class="headerlink" href="#rmg.species.ThermoGAData.getEnthalpy" title="Permalink to this definition">¶</a></dt>
+<dd>Return the enthalpy at temperature <cite>T</cite>.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.species.ThermoGAData.getEntropy">
+<tt class="descname">getEntropy</tt><big>(</big><em>T</em><big>)</big><a class="headerlink" href="#rmg.species.ThermoGAData.getEntropy" title="Permalink to this definition">¶</a></dt>
+<dd>Return the entropy at temperature <cite>T</cite>.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.species.ThermoGAData.getFreeEnergy">
+<tt class="descname">getFreeEnergy</tt><big>(</big><em>T</em><big>)</big><a class="headerlink" href="#rmg.species.ThermoGAData.getFreeEnergy" title="Permalink to this definition">¶</a></dt>
+<dd>Return the Gibbs free energy at temperature <cite>T</cite>.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.species.ThermoGAData.getHeatCapacity">
+<tt class="descname">getHeatCapacity</tt><big>(</big><em>T</em><big>)</big><a class="headerlink" href="#rmg.species.ThermoGAData.getHeatCapacity" title="Permalink to this definition">¶</a></dt>
+<dd>Return the heat capacity at temperature <cite>T</cite>.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.species.ThermoGAData.toXML">
+<tt class="descname">toXML</tt><big>(</big><em>dom</em>, <em>root</em><big>)</big><a class="headerlink" href="#rmg.species.ThermoGAData.toXML" title="Permalink to this definition">¶</a></dt>
+<dd>Generate an XML representation of the thermodynamic data using the
+<tt class="xref docutils literal"><span class="pre">xml.dom.minidom</span></tt> package. The <cite>dom</cite> and <cite>root</cite> parameters
+represent the DOM and the element in the DOM used as the parent of
+the generated XML.</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="methods-in-rmg-species">
+<h2>9.2. Methods in <tt class="docutils literal"><span class="pre">rmg.species</span></tt><a class="headerlink" href="#methods-in-rmg-species" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="rmg.species.getThermoData">
+<tt class="descclassname">rmg.species.</tt><tt class="descname">getThermoData</tt><big>(</big><em>structure</em><big>)</big><a class="headerlink" href="#rmg.species.getThermoData" title="Permalink to this definition">¶</a></dt>
+<dd>Get the thermodynamic data associated with <cite>structure</cite> by looking in the
+loaded thermodynamic database.</dd></dl>
+
+<dl class="function">
+<dt id="rmg.species.makeNewSpecies">
+<tt class="descclassname">rmg.species.</tt><tt class="descname">makeNewSpecies</tt><big>(</big><em>structure</em>, <em>label=''</em>, <em>reactive=True</em><big>)</big><a class="headerlink" href="#rmg.species.makeNewSpecies" title="Permalink to this definition">¶</a></dt>
+<dd><p>Attempt to make a new species based on a chemical <cite>structure</cite>, which is a
+<tt class="xref docutils literal"><span class="pre">Structure</span></tt> object.</p>
+<p>The proposed species is checked against the list of existing species; if the
+species already exists, this function returns
+the existing species. If the species does not exist, a <a title="rmg.species.Species" class="reference internal" href="#rmg.species.Species"><tt class="xref docutils literal"><span class="pre">Species</span></tt></a>
+object is created and returned after being appended to the global species
+list.</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h3><a href="../../index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="">9. The <tt class="docutils literal"><span class="pre">rmg.species</span></tt> Module</a><ul>
+<li><a class="reference external" href="#classes-in-rmg-species">9.1. Classes in <tt class="docutils literal"><span class="pre">rmg.species</span></tt></a><ul>
+<li><a class="reference external" href="#species">9.1.1. Species</a></li>
+<li><a class="reference external" href="#thermodatabase">9.1.2. ThermoDatabase</a></li>
+<li><a class="reference external" href="#thermodatabaseset">9.1.3. ThermoDatabaseSet</a></li>
+<li><a class="reference external" href="#thermogadata">9.1.4. ThermoGAData</a></li>
+</ul>
+</li>
+<li><a class="reference external" href="#methods-in-rmg-species">9.2. Methods in <tt class="docutils literal"><span class="pre">rmg.species</span></tt></a></li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="rmg-reaction.html"
+                                  title="previous chapter">8. The <tt class="docutils literal"><span class="pre">rmg.reaction</span></tt> Module</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="rmg-structure.html"
+                                  title="next chapter">10. The <tt class="docutils literal"><span class="pre">rmg.structure</span></tt> Module</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../../_sources/documentation/api/rmg-species.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <h3>Other links</h3>
+<ul>
+<li><a href="http://sourceforge.net/projects/rmg/">Sourceforge Project details</a></li>
+<li><a href="http://sourceforge.net/project/showfiles.php?group_id=191843&package_id=225575" onClick="javascript: pageTracker._trackPageview('/downloads/');">Download RMG</a> </li>
+<!--li><a href="../../RMG-manual.pdf" onClick="javascript: pageTracker._trackPageview('/documentation/RMG-manual.pdf');">View user manual as PDF</a></li-->
+<li><a href="http://apps.sourceforge.net/trac/rmg/">RMG-Python Trac</a></li>
+<li><a href="http://apps.sourceforge.net/trac/rmg/report/3" title="Trac Active Tickets by Milestone">Active Tickets</a></li>
+</ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../modindex.html" title="Global Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="rmg-structure.html" title="10. The rmg.structure Module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="rmg-reaction.html" title="8. The rmg.reaction Module"
+             >previous</a> |</li>
+        <li><a href="../../index.html">RMG v0.0.1 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >RMG Documentation</a> &raquo;</li>
+          <li><a href="index.html" >RMG Developer&#8217;s Guide</a> &raquo;</li>
+  <li><a href="">9. The <tt class="docutils literal"><span class="pre">rmg.species</span></tt> Module</a></li>
+
+      </ul>
+    </div>
+    <div class="footer">
+		<div id="sourceforgelogo">
+		<a href="http://sourceforge.net/projects/rmg"><img src="http://sflogo.sourceforge.net/sflogo.php?group_id=191843&type=12" width="120" height="30" border="0" alt="Get RMG - Reaction Mechanism Generator at SourceForge.net. Fast, secure and Free Open Source software downloads" /></a>
+		</div>
+      &copy; Copyright 2009, Prof. William H. Green and the RMG Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.2.
+    </div>
+  </body>
+</html>

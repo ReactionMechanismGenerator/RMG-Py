@@ -1,0 +1,207 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>4. The rmg.graph Module &mdash; RMG v0.0.1 documentation</title>
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.0.1',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="RMG v0.0.1 documentation" href="../../index.html" />
+    <link rel="up" title="RMG Developer’s Guide" href="index.html" />
+    <link rel="next" title="5. The rmg.io Module" href="rmg-io.html" />
+    <link rel="prev" title="3. The rmg.data Module" href="rmg-data.html" /> 
+ 
+<link rel="stylesheet" href="../../_static/RMG.css" type="text/css" />
+
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../modindex.html" title="Global Module Index"
+             accesskey="M">modules</a> |</li>
+        <li class="right" >
+          <a href="rmg-io.html" title="5. The rmg.io Module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="rmg-data.html" title="3. The rmg.data Module"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">RMG v0.0.1 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >RMG Documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">RMG Developer&#8217;s Guide</a> &raquo;</li>
+  <li><a href="">4. The <tt class="docutils literal docutils literal"><span class="pre">rmg.graph</span></tt> Module</a></li>
+
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-rmg.graph">
+<h1>4. The <tt class="docutils literal"><span class="pre">rmg.graph</span></tt> Module<a class="headerlink" href="#module-rmg.graph" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="classes-in-rmg-graph">
+<h2>4.1. Classes in <tt class="docutils literal"><span class="pre">rmg.graph</span></tt><a class="headerlink" href="#classes-in-rmg-graph" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="methods-in-rmg-graph">
+<h2>4.2. Methods in <tt class="docutils literal"><span class="pre">rmg.graph</span></tt><a class="headerlink" href="#methods-in-rmg-graph" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="rmg.graph.VF2_isomorphism">
+<tt class="descclassname">rmg.graph.</tt><tt class="descname">VF2_isomorphism</tt><big>(</big><em>graph1</em>, <em>graph2</em>, <em>map21</em>, <em>map12</em>, <em>subgraph=False</em>, <em>findAll=False</em><big>)</big><a class="headerlink" href="#rmg.graph.VF2_isomorphism" title="Permalink to this definition">¶</a></dt>
+<dd>Returns <tt class="xref xref docutils literal"><span class="pre">True</span></tt> if two graphs are isomorphic and <tt class="xref xref docutils literal"><span class="pre">False</span></tt>
+otherwise. Uses the VF2 algorithm of Vento and Foggia. <cite>subgraph</cite> is 
+<tt class="xref xref docutils literal"><span class="pre">True</span></tt> if graph2 is a potential subgraph of graph1. <cite>findAll</cite> is
+used to specify whether all isomorphisms should be returned, or only the
+first.</dd></dl>
+
+<dl class="function">
+<dt id="rmg.graph.__VF2_feasible">
+<tt class="descclassname">rmg.graph.</tt><tt class="descname">__VF2_feasible</tt><big>(</big><em>graph1</em>, <em>graph2</em>, <em>vertex1</em>, <em>vertex2</em>, <em>map21</em>, <em>map12</em>, <em>terminals1</em>, <em>terminals2</em>, <em>subgraph</em><big>)</big><a class="headerlink" href="#rmg.graph.__VF2_feasible" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns <tt class="xref xref docutils literal"><span class="pre">True</span></tt> if two vertices <cite>vertex1</cite> and <cite>vertex2</cite> from graphs
+<cite>graph1</cite> and <cite>graph2</cite>, respectively, are feasible matches. <cite>mapping21</cite> and
+<cite>mapping12</cite> are the current state of the mapping from <cite>graph1</cite> to <cite>graph2</cite>
+and vice versa, respectively. <cite>terminals1</cite> and <cite>terminals2</cite> are lists of 
+the vertices that are directly connected to the already-mapped vertices.
+<cite>subgraph</cite> is <tt class="xref xref docutils literal"><span class="pre">True</span></tt> if graph2 is to be treated as a potential 
+subgraph of graph1.</p>
+<p>Uses the VF2 algorithm of Vento and Foggia. The feasibility is assessed 
+through a series of semantic and structural checks. Only the combination
+of the semantic checks and the level 0 structural check are both
+necessary and sufficient to ensure feasibility. (This does <em>not</em> mean that
+vertex1 and vertex2 are always a match, although the level 1 and level 2
+checks preemptively eliminate a number of false positives.)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="rmg.graph.__VF2_match">
+<tt class="descclassname">rmg.graph.</tt><tt class="descname">__VF2_match</tt><big>(</big><em>graph1</em>, <em>graph2</em>, <em>map21</em>, <em>map12</em>, <em>terminals1</em>, <em>terminals2</em>, <em>subgraph</em>, <em>findAll</em>, <em>map21List</em>, <em>map12List</em><big>)</big><a class="headerlink" href="#rmg.graph.__VF2_match" title="Permalink to this definition">¶</a></dt>
+<dd><p>A recursive function used to explore two graphs <cite>graph1</cite> and <cite>graph2</cite> for 
+isomorphism by attempting to map them to one another. <cite>mapping21</cite> and
+<cite>mapping12</cite> are the current state of the mapping from <cite>graph1</cite> to <cite>graph2</cite>
+and vice versa, respectively. <cite>terminals1</cite> and <cite>terminals2</cite> are lists of 
+the vertices that are directly connected to the already-mapped vertices.
+<cite>subgraph</cite> is <tt class="xref xref docutils literal"><span class="pre">True</span></tt> if graph2 is to be treated as a potential 
+subgraph of graph1.</p>
+<p>Uses the VF2 algorithm of Vento and Foggia, which is O(N) in spatial complexity
+and O(N**2) (best-case) to O(N! * N) (worst-case) in temporal complexity.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="rmg.graph.__VF2_pairs">
+<tt class="descclassname">rmg.graph.</tt><tt class="descname">__VF2_pairs</tt><big>(</big><em>graph1</em>, <em>graph2</em>, <em>terminals1</em>, <em>terminals2</em><big>)</big><a class="headerlink" href="#rmg.graph.__VF2_pairs" title="Permalink to this definition">¶</a></dt>
+<dd>Create a list of pairs of candidates for inclusion in the VF2 mapping. If
+there are a nonzero number of terminals in each graph, the candidates are
+selected to be one terminal from the first graph and all terminals from the
+second graph. If there are no terminals, the candidates are     selected to be
+one vertex from the first graph and all vertices from the second graph.</dd></dl>
+
+<dl class="function">
+<dt id="rmg.graph.__VF2_terminals">
+<tt class="descclassname">rmg.graph.</tt><tt class="descname">__VF2_terminals</tt><big>(</big><em>graph</em>, <em>mapping</em><big>)</big><a class="headerlink" href="#rmg.graph.__VF2_terminals" title="Permalink to this definition">¶</a></dt>
+<dd>For a given graph <cite>graph</cite> and associated partial mapping <cite>mapping</cite>, 
+generate a list of terminals, vertices that are directly connected to
+vertices that have already been mapped.</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h3><a href="../../index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="">4. The <tt class="docutils literal"><span class="pre">rmg.graph</span></tt> Module</a><ul>
+<li><a class="reference external" href="#classes-in-rmg-graph">4.1. Classes in <tt class="docutils literal"><span class="pre">rmg.graph</span></tt></a></li>
+<li><a class="reference external" href="#methods-in-rmg-graph">4.2. Methods in <tt class="docutils literal"><span class="pre">rmg.graph</span></tt></a></li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="rmg-data.html"
+                                  title="previous chapter">3. The <tt class="docutils literal docutils literal docutils literal"><span class="pre">rmg.data</span></tt> Module</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="rmg-io.html"
+                                  title="next chapter">5. The <tt class="docutils literal"><span class="pre">rmg.io</span></tt> Module</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../../_sources/documentation/api/rmg-graph.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <h3>Other links</h3>
+<ul>
+<li><a href="http://sourceforge.net/projects/rmg/">Sourceforge Project details</a></li>
+<li><a href="http://sourceforge.net/project/showfiles.php?group_id=191843&package_id=225575" onClick="javascript: pageTracker._trackPageview('/downloads/');">Download RMG</a> </li>
+<!--li><a href="../../RMG-manual.pdf" onClick="javascript: pageTracker._trackPageview('/documentation/RMG-manual.pdf');">View user manual as PDF</a></li-->
+<li><a href="http://apps.sourceforge.net/trac/rmg/">RMG-Python Trac</a></li>
+<li><a href="http://apps.sourceforge.net/trac/rmg/report/3" title="Trac Active Tickets by Milestone">Active Tickets</a></li>
+</ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../modindex.html" title="Global Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="rmg-io.html" title="5. The rmg.io Module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="rmg-data.html" title="3. The rmg.data Module"
+             >previous</a> |</li>
+        <li><a href="../../index.html">RMG v0.0.1 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >RMG Documentation</a> &raquo;</li>
+          <li><a href="index.html" >RMG Developer&#8217;s Guide</a> &raquo;</li>
+  <li><a href="">4. The <tt class="docutils literal docutils literal"><span class="pre">rmg.graph</span></tt> Module</a></li>
+
+      </ul>
+    </div>
+    <div class="footer">
+		<div id="sourceforgelogo">
+		<a href="http://sourceforge.net/projects/rmg"><img src="http://sflogo.sourceforge.net/sflogo.php?group_id=191843&type=12" width="120" height="30" border="0" alt="Get RMG - Reaction Mechanism Generator at SourceForge.net. Fast, secure and Free Open Source software downloads" /></a>
+		</div>
+      &copy; Copyright 2009, Prof. William H. Green and the RMG Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.2.
+    </div>
+  </body>
+</html>
