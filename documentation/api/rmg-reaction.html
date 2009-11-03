@@ -5,7 +5,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>8. The rmg.reaction Module &mdash; RMG v0.0.1 documentation</title>
+    <title>9. The rmg.reaction Module &mdash; RMG v0.0.1 documentation</title>
     <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
@@ -21,8 +21,8 @@
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <link rel="top" title="RMG v0.0.1 documentation" href="../../index.html" />
     <link rel="up" title="RMG Developer’s Guide" href="index.html" />
-    <link rel="next" title="9. The rmg.species Module" href="rmg-species.html" />
-    <link rel="prev" title="7. The rmg.model Module" href="rmg-model.html" /> 
+    <link rel="next" title="10. The rmg.species Module" href="rmg-species.html" />
+    <link rel="prev" title="8. The rmg.model Module" href="rmg-model.html" /> 
  
 <link rel="stylesheet" href="../../_static/RMG.css" type="text/css" />
 
@@ -38,15 +38,15 @@
           <a href="../../modindex.html" title="Global Module Index"
              accesskey="M">modules</a> |</li>
         <li class="right" >
-          <a href="rmg-species.html" title="9. The rmg.species Module"
+          <a href="rmg-species.html" title="10. The rmg.species Module"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="rmg-model.html" title="7. The rmg.model Module"
+          <a href="rmg-model.html" title="8. The rmg.model Module"
              accesskey="P">previous</a> |</li>
         <li><a href="../../index.html">RMG v0.0.1 documentation</a> &raquo;</li>
           <li><a href="../index.html" >RMG Documentation</a> &raquo;</li>
           <li><a href="index.html" accesskey="U">RMG Developer&#8217;s Guide</a> &raquo;</li>
-  <li><a href="">8. The <tt class="docutils literal docutils literal"><span class="pre">rmg.reaction</span></tt> Module</a></li>
+  <li><a href="">9. The <tt class="docutils literal docutils literal"><span class="pre">rmg.reaction</span></tt> Module</a></li>
 
       </ul>
     </div>  
@@ -57,94 +57,18 @@
           <div class="body">
             
   <div class="section" id="module-rmg.reaction">
-<h1>8. The <tt class="docutils literal"><span class="pre">rmg.reaction</span></tt> Module<a class="headerlink" href="#module-rmg.reaction" title="Permalink to this headline">¶</a></h1>
-<p>Contains classes describing chemical reactions.</p>
+<h1>9. The <tt class="docutils literal"><span class="pre">rmg.reaction</span></tt> Module<a class="headerlink" href="#module-rmg.reaction" title="Permalink to this headline">¶</a></h1>
+<p>Contains classes describing chemical reactions:</p>
+<ul class="simple">
+<li><a title="rmg.reaction.Reaction" class="reference internal" href="#rmg.reaction.Reaction"><tt class="xref docutils literal"><span class="pre">Reaction</span></tt></a> - A general chemical reaction</li>
+<li><a title="rmg.reaction.ReactionRecipe" class="reference internal" href="#rmg.reaction.ReactionRecipe"><tt class="xref docutils literal"><span class="pre">ReactionRecipe</span></tt></a> - A set of actions to take when applying a reaction</li>
+<li><a title="rmg.reaction.ReactionFamily" class="reference internal" href="#rmg.reaction.ReactionFamily"><tt class="xref docutils literal"><span class="pre">ReactionFamily</span></tt></a> - A database of a general family of related reactions</li>
+<li><a title="rmg.reaction.ReactionFamilySet" class="reference internal" href="#rmg.reaction.ReactionFamilySet"><tt class="xref docutils literal"><span class="pre">ReactionFamilySet</span></tt></a> - A set of reaction families</li>
+</ul>
 <div class="section" id="classes-in-rmg-reaction">
-<h2>8.1. Classes in <tt class="docutils literal"><span class="pre">rmg.reaction</span></tt><a class="headerlink" href="#classes-in-rmg-reaction" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="arrheniusepkinetics">
-<h3>8.1.1. ArrheniusEPKinetics<a class="headerlink" href="#arrheniusepkinetics" title="Permalink to this headline">¶</a></h3>
-<dl class="class">
-<dt id="rmg.reaction.ArrheniusEPKinetics">
-<em class="property">
-class </em><tt class="descclassname">rmg.reaction.</tt><tt class="descname">ArrheniusEPKinetics</tt><big>(</big><em>A=0.0</em>, <em>E0=0.0</em>, <em>n=0.0</em>, <em>alpha=0.0</em><big>)</big><a class="headerlink" href="#rmg.reaction.ArrheniusEPKinetics" title="Permalink to this definition">¶</a></dt>
-<dd><p>Represent a set of modified Arrhenius kinetics with Evans-Polanyi data. The
-kinetic expression has the form</p>
-<div class="math">
-<p><img src="../../_images/math/36a7bc0fc095d1d802ab865412394bcb07f00956.png" alt="k(T) = A T^n \exp \left( - \frac{E_\mathrm{a}}{RT} \right)" />
-</div></p><p>The parameter <img class="math" src="../../_images/math/10f32377ac67d94f764f12a15ea987e88c85d3e1.png" alt="\alpha"/> is used to correct the activation energy
-<img class="math" src="../../_images/math/4ce11c146728432dc6f6416ccbb5790883eb7956.png" alt="E_\mathrm{a}"/> via the Evans-Polanyi formula</p>
-<div class="math">
-<p><img src="../../_images/math/3035778922bf37fe00eff53c96f8fc406634716b.png" alt="E_\mathrm{a} = E_0 + \alpha \Delta H_\mathrm{rxn}" />
-</div></p><dl class="method">
-<dt id="rmg.reaction.ArrheniusEPKinetics.fromDatabase">
-<tt class="descname">fromDatabase</tt><big>(</big><em>data</em>, <em>comment</em>, <em>numReactants</em><big>)</big><a class="headerlink" href="#rmg.reaction.ArrheniusEPKinetics.fromDatabase" title="Permalink to this definition">¶</a></dt>
-<dd>Process a list of numbers <cite>data</cite> and associated description <cite>comment</cite>
-generated while reading from a kinetics database. The <cite>numReactants</cite>
-parameter is used to interpret the units of the preexponential.</dd></dl>
-
-<dl class="method">
-<dt id="rmg.reaction.ArrheniusEPKinetics.getActivationEnergy">
-<tt class="descname">getActivationEnergy</tt><big>(</big><em>dHrxn</em><big>)</big><a class="headerlink" href="#rmg.reaction.ArrheniusEPKinetics.getActivationEnergy" title="Permalink to this definition">¶</a></dt>
-<dd>Return the activation energy using the enthalpy of reaction <cite>dHrxn</cite>.</dd></dl>
-
-<dl class="method">
-<dt id="rmg.reaction.ArrheniusEPKinetics.getArrhenius">
-<tt class="descname">getArrhenius</tt><big>(</big><em>dHrxn</em><big>)</big><a class="headerlink" href="#rmg.reaction.ArrheniusEPKinetics.getArrhenius" title="Permalink to this definition">¶</a></dt>
-<dd>Return the Arrhenius form of k(T) at temperature <cite>T</cite> by correcting E0
-to Ea using the enthalpy of reaction <cite>dHrxn</cite>.</dd></dl>
-
-<dl class="method">
-<dt id="rmg.reaction.ArrheniusEPKinetics.getRateConstant">
-<tt class="descname">getRateConstant</tt><big>(</big><em>T</em>, <em>dHrxn</em><big>)</big><a class="headerlink" href="#rmg.reaction.ArrheniusEPKinetics.getRateConstant" title="Permalink to this definition">¶</a></dt>
-<dd>Return the rate constant k(T) at temperature <cite>T</cite> by evaluating the
-Arrhenius expression. The reaction has an enthalpy of reaction <cite>dHrxn</cite>.</dd></dl>
-
-<dl class="method">
-<dt id="rmg.reaction.ArrheniusEPKinetics.toXML">
-<tt class="descname">toXML</tt><big>(</big><em>dom</em>, <em>root</em>, <em>numReactants</em><big>)</big><a class="headerlink" href="#rmg.reaction.ArrheniusEPKinetics.toXML" title="Permalink to this definition">¶</a></dt>
-<dd>Generate the XML for these kinetics using the <tt class="xref docutils literal"><span class="pre">xml.dom.minidom</span></tt>
-package. The <cite>dom</cite> and <cite>root</cite> parameters refer to the DOM and the
-point within the DOM to place this item.</dd></dl>
-
-</dd></dl>
-
-</div>
-<div class="section" id="arrheniuskinetics">
-<h3>8.1.2. ArrheniusKinetics<a class="headerlink" href="#arrheniuskinetics" title="Permalink to this headline">¶</a></h3>
-<dl class="class">
-<dt id="rmg.reaction.ArrheniusKinetics">
-<em class="property">
-class </em><tt class="descclassname">rmg.reaction.</tt><tt class="descname">ArrheniusKinetics</tt><big>(</big><em>A=0.0</em>, <em>Ea=0.0</em>, <em>n=0.0</em><big>)</big><a class="headerlink" href="#rmg.reaction.ArrheniusKinetics" title="Permalink to this definition">¶</a></dt>
-<dd><p>Represent a set of modified Arrhenius kinetics. The kinetic expression has
-the form</p>
-<div class="math">
-<p><img src="../../_images/math/36a7bc0fc095d1d802ab865412394bcb07f00956.png" alt="k(T) = A T^n \exp \left( - \frac{E_\mathrm{a}}{RT} \right)" />
-</div></p><dl class="method">
-<dt id="rmg.reaction.ArrheniusKinetics.getRateConstant">
-<tt class="descname">getRateConstant</tt><big>(</big><em>T</em><big>)</big><a class="headerlink" href="#rmg.reaction.ArrheniusKinetics.getRateConstant" title="Permalink to this definition">¶</a></dt>
-<dd>Return the rate constant k(T) at temperature <cite>T</cite> by evaluating the
-Arrhenius expression.</dd></dl>
-
-<dl class="method">
-<dt id="rmg.reaction.ArrheniusKinetics.getReverse">
-<tt class="descname">getReverse</tt><big>(</big><em>dHrxn</em>, <em>Keq</em>, <em>T</em><big>)</big><a class="headerlink" href="#rmg.reaction.ArrheniusKinetics.getReverse" title="Permalink to this definition">¶</a></dt>
-<dd>Generate the reverse of the current kinetics for a reaction with
-standard enthalpy of reaction <cite>dHrxn</cite> and equilibrium constant <cite>Keq</cite> at
-298 K, respectively, defined in the same direction that these kinetics
-are.</dd></dl>
-
-<dl class="method">
-<dt id="rmg.reaction.ArrheniusKinetics.toXML">
-<tt class="descname">toXML</tt><big>(</big><em>dom</em>, <em>root</em>, <em>numReactants</em><big>)</big><a class="headerlink" href="#rmg.reaction.ArrheniusKinetics.toXML" title="Permalink to this definition">¶</a></dt>
-<dd>Generate the XML for these kinetics using the <tt class="xref docutils literal"><span class="pre">xml.dom.minidom</span></tt>
-package. The <cite>dom</cite> and <cite>root</cite> parameters refer to the DOM and the
-point within the DOM to place this item.</dd></dl>
-
-</dd></dl>
-
-</div>
+<h2>9.1. Classes in <tt class="docutils literal"><span class="pre">rmg.reaction</span></tt><a class="headerlink" href="#classes-in-rmg-reaction" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="invalidactionexception">
-<h3>8.1.3. InvalidActionException<a class="headerlink" href="#invalidactionexception" title="Permalink to this headline">¶</a></h3>
+<h3>9.1.1. InvalidActionException<a class="headerlink" href="#invalidactionexception" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="rmg.reaction.InvalidActionException">
 <em class="property">
@@ -153,40 +77,63 @@ class </em><tt class="descclassname">rmg.reaction.</tt><tt class="descname">Inva
 reaction recipe.</dd></dl>
 
 </div>
-<div class="section" id="kinetics">
-<h3>8.1.4. Kinetics<a class="headerlink" href="#kinetics" title="Permalink to this headline">¶</a></h3>
-<dl class="class">
-<dt id="rmg.reaction.Kinetics">
-<em class="property">
-class </em><tt class="descclassname">rmg.reaction.</tt><tt class="descname">Kinetics</tt><big>(</big><em>Trange=None</em>, <em>rank=0</em>, <em>comment=''</em><big>)</big><a class="headerlink" href="#rmg.reaction.Kinetics" title="Permalink to this definition">¶</a></dt>
-<dd><p>Represent a set of kinetic data. No matter how the kinetic data is modeled,
-it should be accompanied by a temperature range over which it is valid,
-an integer rank denoting the degree of confidence in the data (1 = high,
-5 = low, 0 = none), and a comment describing the source of the data.</p>
-<dl class="method">
-<dt id="rmg.reaction.Kinetics.isTemperatureInRange">
-<tt class="descname">isTemperatureInRange</tt><big>(</big><em>T</em><big>)</big><a class="headerlink" href="#rmg.reaction.Kinetics.isTemperatureInRange" title="Permalink to this definition">¶</a></dt>
-<dd>Return <tt class="xref xref docutils literal"><span class="pre">True</span></tt> if temperature <cite>T</cite> is within the valid temperature
-range specified by self.Trange and <tt class="xref xref docutils literal"><span class="pre">False</span></tt> if not. If no
-temperature range is specified in self.Trange, the kinetic data is
-assumed to be valid at all temperatures.</dd></dl>
-
-</dd></dl>
-
-</div>
 <div class="section" id="reaction">
-<h3>8.1.5. Reaction<a class="headerlink" href="#reaction" title="Permalink to this headline">¶</a></h3>
+<h3>9.1.2. Reaction<a class="headerlink" href="#reaction" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="rmg.reaction.Reaction">
 <em class="property">
 class </em><tt class="descclassname">rmg.reaction.</tt><tt class="descname">Reaction</tt><big>(</big><em>reactants=None</em>, <em>products=None</em>, <em>family=None</em>, <em>kinetics=None</em><big>)</big><a class="headerlink" href="#rmg.reaction.Reaction" title="Permalink to this definition">¶</a></dt>
-<dd><p>Represent a generic chemical reaction. A reaction is defined by the set of
-reactants, set of products, and the transition state; thus both the forward
-and reverse reaction are represented by a single object since they share 
-the same transition state. By convention, the forward reaction is taken to
-be that for which the provided kinetics apply; the reverse kinetics are 
-taken from thermodynamic reversibility. A multiplier attribute is used when
-reactions involving equivalent reactive sites are used.</p>
+<dd><p>Represent a generic chemical reaction. The attributes are:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="19%" />
+<col width="81%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Attribute</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td><cite>atomLabels</cite></td>
+<td>A dictionary with the keys representing the labels and the
+values the atoms of the reactant or product species that
+were labeled at the time the reaction was generated</td>
+</tr>
+<tr><td><cite>bestKinetics</cite></td>
+<td>The best kinetics for the reaction, always a derived class
+of <tt class="xref docutils literal"><span class="pre">kinetics.Kinetics</span></tt></td>
+</tr>
+<tr><td><cite>family</cite></td>
+<td>The reaction family that this reaction represents, as a
+pointer to a <a title="rmg.reaction.ReactionFamily" class="reference internal" href="#rmg.reaction.ReactionFamily"><tt class="xref docutils literal"><span class="pre">ReactionFamily</span></tt></a> object</td>
+</tr>
+<tr><td><cite>kinetics</cite></td>
+<td>A list of all of the valid sets of kinetics for the reaction</td>
+</tr>
+<tr><td><cite>multiplier</cite></td>
+<td>A multiplier to use to increase the reaction rate for cases
+when the reaction is generated multiple times due to
+different parts of the reactants yielding the same behavior</td>
+</tr>
+<tr><td><cite>products</cite></td>
+<td>A list of the species that are produced by this reaction</td>
+</tr>
+<tr><td><cite>reactants</cite></td>
+<td>A list of the species that are consumed by this reaction</td>
+</tr>
+<tr><td><cite>reverse</cite></td>
+<td>A pointer to the reverse reaction, also a <a title="rmg.reaction.Reaction" class="reference internal" href="#rmg.reaction.Reaction"><tt class="xref docutils literal"><span class="pre">Reaction</span></tt></a>
+object</td>
+</tr>
+</tbody>
+</table>
+<p>By convention, the forward reaction is taken to be that for which the
+provided kinetics apply; the reverse kinetics are taken from thermodynamic
+reversibility. Lists of reactions in a model or mechanism should therefore
+only store the forward reaction. Note that the reverse reaction exists as a
+<a title="rmg.reaction.Reaction" class="reference internal" href="#rmg.reaction.Reaction"><tt class="xref docutils literal"><span class="pre">Reaction</span></tt></a> object in the <cite>reverse</cite> attribute because this is a
+convenient way to represent the reverse reaction.</p>
 <dl class="method">
 <dt id="rmg.reaction.Reaction.equivalent">
 <tt class="descname">equivalent</tt><big>(</big><em>other</em><big>)</big><a class="headerlink" href="#rmg.reaction.Reaction.equivalent" title="Permalink to this definition">¶</a></dt>
@@ -228,11 +175,13 @@ system with total concentration <cite>conc</cite>.</dd></dl>
 
 <dl class="method">
 <dt id="rmg.reaction.Reaction.getRate">
-<tt class="descname">getRate</tt><big>(</big><em>T</em>, <em>P</em>, <em>conc</em><big>)</big><a class="headerlink" href="#rmg.reaction.Reaction.getRate" title="Permalink to this definition">¶</a></dt>
-<dd>Return the net rate of reaction at temperature <cite>T</cite> and pressure <cite>P</cite>. The
+<tt class="descname">getRate</tt><big>(</big><em>T</em>, <em>P</em>, <em>conc</em>, <em>totalConc=None</em><big>)</big><a class="headerlink" href="#rmg.reaction.Reaction.getRate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the net rate of reaction at temperature <cite>T</cite> and pressure <cite>P</cite>. The
 parameter <cite>conc</cite> is a map with species as keys and concentrations as
 values. A reactant not found in the <cite>conc</cite> map is treated as having zero
-concentration.</dd></dl>
+concentration.</p>
+<p>If passed a <cite>totalConc</cite>, it won&#8217;t bother recalculating it.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="rmg.reaction.Reaction.getRateConstant">
@@ -262,16 +211,65 @@ as a reactant.</dd></dl>
 </dd></dl>
 
 </div>
+<div class="section" id="reactionexception">
+<h3>9.1.3. ReactionException<a class="headerlink" href="#reactionexception" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="rmg.reaction.ReactionException">
+<em class="property">
+class </em><tt class="descclassname">rmg.reaction.</tt><tt class="descname">ReactionException</tt><big>(</big><em>reaction</em>, <em>message=''</em><big>)</big><a class="headerlink" href="#rmg.reaction.ReactionException" title="Permalink to this definition">¶</a></dt>
+<dd>An base exception for reactions.
+Takes a reaction object, and optional message</dd></dl>
+
+</div>
 <div class="section" id="reactionfamily">
-<h3>8.1.6. ReactionFamily<a class="headerlink" href="#reactionfamily" title="Permalink to this headline">¶</a></h3>
+<h3>9.1.4. ReactionFamily<a class="headerlink" href="#reactionfamily" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="rmg.reaction.ReactionFamily">
 <em class="property">
 class </em><tt class="descclassname">rmg.reaction.</tt><tt class="descname">ReactionFamily</tt><big>(</big><em>label=''</em>, <em>template=''</em>, <em>recipe=None</em><big>)</big><a class="headerlink" href="#rmg.reaction.ReactionFamily" title="Permalink to this definition">¶</a></dt>
 <dd><p>Represent a reaction family: a set of reactions with similar chemistry, and
-therefore similar reaction rates. Attributes include the family name <cite>name</cite>,
-the reaction template <cite>template</cite>, a list <cite>actions</cite> of actions to take when
-reacting, and a dictionary-library-tree <cite>database</cite> of rate rules.</p>
+therefore similar reaction rates. Besides the dictionary, tree, and library
+inherited from <tt class="xref docutils literal"><span class="pre">data.Database</span></tt>, the attributes are:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="15%" />
+<col width="85%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Attribute</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td><cite>label</cite></td>
+<td>The name of the reaction family</td>
+</tr>
+<tr><td><cite>template</cite></td>
+<td>A <a title="rmg.reaction.Reaction" class="reference internal" href="#rmg.reaction.Reaction"><tt class="xref docutils literal"><span class="pre">Reaction</span></tt></a> object representing the forward reaction
+template</td>
+</tr>
+<tr><td><cite>recipe</cite></td>
+<td>A <a title="rmg.reaction.ReactionRecipe" class="reference internal" href="#rmg.reaction.ReactionRecipe"><tt class="xref docutils literal"><span class="pre">ReactionRecipe</span></tt></a> object representing the steps to
+take when applying the reaction to a set of reactants</td>
+</tr>
+<tr><td><cite>forbidden</cite></td>
+<td>(Optional) A dictionary of forbidden product structures</td>
+</tr>
+<tr><td><cite>reverse</cite></td>
+<td>A pointer to the reverse reaction family (or <tt class="xref xref docutils literal"><span class="pre">None</span></tt> if
+the family is its own reverse</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="rmg.reaction.ReactionFamily.applyRecipe">
+<tt class="descname">applyRecipe</tt><big>(</big><em>reactantStructures</em><big>)</big><a class="headerlink" href="#rmg.reaction.ReactionFamily.applyRecipe" title="Permalink to this definition">¶</a></dt>
+<dd>Apply the recipe for this reaction family to the list of
+<tt class="xref docutils literal"><span class="pre">structure.Structure</span></tt> objects <cite>reactantStructures</cite>. The atoms
+of the reactant structures must already be tagged with the appropriate
+labels. Returns a list of structures corresponding to the products
+after checking that the correct number of products was produced.</dd></dl>
+
 <dl class="method">
 <dt id="rmg.reaction.ReactionFamily.averageKinetics">
 <tt class="descname">averageKinetics</tt><big>(</big><em>kinetics</em><big>)</big><a class="headerlink" href="#rmg.reaction.ReactionFamily.averageKinetics" title="Permalink to this definition">¶</a></dt>
@@ -317,13 +315,22 @@ the list of <cite>reactants</cite>.</dd></dl>
 <tt class="descname">getTemplateLists</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.reaction.ReactionFamily.getTemplateLists" title="Permalink to this definition">¶</a></dt>
 <dd>Return lists containing the top-level nodes of each tree representing
 the reactants and the products. These lists are flattened versions of
-the lists available in self.template.reactants and 
+the lists available in self.template.reactants and
 self.template.products.</dd></dl>
 
 <dl class="method">
 <dt id="rmg.reaction.ReactionFamily.load">
 <tt class="descname">load</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#rmg.reaction.ReactionFamily.load" title="Permalink to this definition">¶</a></dt>
-<dd>Load a reaction family located in the directory <cite>path</cite>.</dd></dl>
+<dd><p>Load a reaction family located in the directory <cite>path</cite>.</p>
+<dl class="docutils">
+<dt>The family consists of the files::</dt>
+<dd>dictionary.txt
+tree.txt
+library.txt
+template.txt
+forbiddenGroups.txt</dd>
+</dl>
+</dd></dl>
 
 <dl class="method">
 <dt id="rmg.reaction.ReactionFamily.loadTemplate">
@@ -333,7 +340,7 @@ is part of every reaction family.</dd></dl>
 
 <dl class="method">
 <dt id="rmg.reaction.ReactionFamily.makeReaction">
-<tt class="descname">makeReaction</tt><big>(</big><em>reactants</em>, <em>structures</em>, <em>maps</em><big>)</big><a class="headerlink" href="#rmg.reaction.ReactionFamily.makeReaction" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">makeReaction</tt><big>(</big><em>reactants</em>, <em>reactantStructures</em>, <em>maps</em><big>)</big><a class="headerlink" href="#rmg.reaction.ReactionFamily.makeReaction" title="Permalink to this definition">¶</a></dt>
 <dd>Create a reaction involving a list of <cite>reactants</cite>. The <cite>reactantStructures</cite>
 parameter is a list of structures in the order the reactants are stored
 in the reaction family template, and the <cite>maps</cite> parameter is a list of
@@ -344,7 +351,7 @@ corresponding structure.</dd></dl>
 <dt id="rmg.reaction.ReactionFamily.processLibraryData">
 <tt class="descname">processLibraryData</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.reaction.ReactionFamily.processLibraryData" title="Permalink to this definition">¶</a></dt>
 <dd>Convert the data in the library from a string/unicode object to either
-an <a title="rmg.reaction.ArrheniusEPKinetics" class="reference internal" href="#rmg.reaction.ArrheniusEPKinetics"><tt class="xref docutils literal"><span class="pre">ArrheniusEPKinetics</span></tt></a> object or a list of [link, comment]
+an <tt class="xref docutils literal"><span class="pre">ArrheniusEPKinetics</span></tt> object or a list of [link, comment]
 string pairs. This function is generally called in the course of
 loading a database from files.</dd></dl>
 
@@ -367,12 +374,14 @@ template reactant and <tt class="xref xref docutils literal"><span class="pre">F
 
 </div>
 <div class="section" id="reactionfamilyset">
-<h3>8.1.7. ReactionFamilySet<a class="headerlink" href="#reactionfamilyset" title="Permalink to this headline">¶</a></h3>
+<h3>9.1.5. ReactionFamilySet<a class="headerlink" href="#reactionfamilyset" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="rmg.reaction.ReactionFamilySet">
 <em class="property">
 class </em><tt class="descclassname">rmg.reaction.</tt><tt class="descname">ReactionFamilySet</tt><a class="headerlink" href="#rmg.reaction.ReactionFamilySet" title="Permalink to this definition">¶</a></dt>
-<dd><p>Represent a set of reaction families.</p>
+<dd><p>Represent a set of reaction families. The <cite>families</cite> attribute stores a
+dictionary of <a title="rmg.reaction.ReactionFamily" class="reference internal" href="#rmg.reaction.ReactionFamily"><tt class="xref docutils literal"><span class="pre">ReactionFamily</span></tt></a> objects representing the families in
+the set.</p>
 <dl class="method">
 <dt id="rmg.reaction.ReactionFamilySet.getReactions">
 <tt class="descname">getReactions</tt><big>(</big><em>species</em><big>)</big><a class="headerlink" href="#rmg.reaction.ReactionFamilySet.getReactions" title="Permalink to this definition">¶</a></dt>
@@ -381,15 +390,16 @@ as a reactant or product.</dd></dl>
 
 <dl class="method">
 <dt id="rmg.reaction.ReactionFamilySet.load">
-<tt class="descname">load</tt><big>(</big><em>datapath</em><big>)</big><a class="headerlink" href="#rmg.reaction.ReactionFamilySet.load" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">load</tt><big>(</big><em>datapath</em>, <em>only_families=False</em><big>)</big><a class="headerlink" href="#rmg.reaction.ReactionFamilySet.load" title="Permalink to this definition">¶</a></dt>
 <dd>Load a set of reaction families from the general database
-specified at <cite>datapath</cite>.</dd></dl>
+specified at <cite>datapath</cite>. If only_families is present, families not in
+this list will not be loaded (e.g. only_families=[&#8216;H_Abstraction&#8217;] )</dd></dl>
 
 </dd></dl>
 
 </div>
 <div class="section" id="reactionrecipe">
-<h3>8.1.8. ReactionRecipe<a class="headerlink" href="#reactionrecipe" title="Permalink to this headline">¶</a></h3>
+<h3>9.1.6. ReactionRecipe<a class="headerlink" href="#reactionrecipe" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="rmg.reaction.ReactionRecipe">
 <em class="property">
@@ -397,15 +407,44 @@ class </em><tt class="descclassname">rmg.reaction.</tt><tt class="descname">Reac
 <dd><p>Represent a list of actions that, when executed, result in the conversion
 of a set of reactants to a set of products. There are currently five such
 actions:</p>
-<ul class="simple">
-<li>CHANGE_BOND {center1,order,center2} - change the bond order of the bond between center1 and center2 by order; do not break or form bonds</li>
-<li>FORM_BOND {center1,order,center2} - form a new bond between center1 and center2 of type order</li>
-<li>BREAK_BOND {center1,order,center2} - break the bond between center1 and center2, which should be of type order</li>
-<li>GAIN_RADICAL {center,radical} - Increase the number of free electrons on center by radical</li>
-<li>LOSE_RADICAL {center,radical} - Decrease the number of free electrons on center by radical</li>
-</ul>
-<p>Each action is a list of items; the first is the action name, while the
-rest are the action parameters as indicated above.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="9%" />
+<col width="17%" />
+<col width="74%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Action Name</th>
+<th class="head">Arguments</th>
+<th class="head">Action</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td>CHANGE_BOND</td>
+<td>center1, order, center2</td>
+<td>change the bond order of the bond between center1 and center2 by order; do not break or form bonds</td>
+</tr>
+<tr><td>FORM_BOND</td>
+<td>center1, order, center2</td>
+<td>form a new bond between center1 and center2 of type order</td>
+</tr>
+<tr><td>BREAK_BOND</td>
+<td>center1, order, center2</td>
+<td>break the bond between center1 and center2, which should be of type order</td>
+</tr>
+<tr><td>GAIN_RADICAL</td>
+<td>center, radical</td>
+<td>increase the number of free electrons on center by radical</td>
+</tr>
+<tr><td>LOSE_RADICAL</td>
+<td>center, radical</td>
+<td>decrease the number of free electrons on center by radical</td>
+</tr>
+</tbody>
+</table>
+<p>The actions are stored as a list in the <cite>actions</cite> attribute. Each action is
+a list of items; the first is the action name, while the rest are the
+action parameters as indicated above.</p>
 <dl class="method">
 <dt id="rmg.reaction.ReactionRecipe.addAction">
 <tt class="descname">addAction</tt><big>(</big><em>action</em><big>)</big><a class="headerlink" href="#rmg.reaction.ReactionRecipe.addAction" title="Permalink to this definition">¶</a></dt>
@@ -445,18 +484,18 @@ of the reaction that this is the recipe for.</dd></dl>
 
 </div>
 <div class="section" id="undeterminablekineticsexception">
-<h3>8.1.9. UndeterminableKineticsException<a class="headerlink" href="#undeterminablekineticsexception" title="Permalink to this headline">¶</a></h3>
+<h3>9.1.7. UndeterminableKineticsException<a class="headerlink" href="#undeterminablekineticsexception" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="rmg.reaction.UndeterminableKineticsException">
 <em class="property">
-class </em><tt class="descclassname">rmg.reaction.</tt><tt class="descname">UndeterminableKineticsException</tt><big>(</big><em>reaction</em><big>)</big><a class="headerlink" href="#rmg.reaction.UndeterminableKineticsException" title="Permalink to this definition">¶</a></dt>
+class </em><tt class="descclassname">rmg.reaction.</tt><tt class="descname">UndeterminableKineticsException</tt><big>(</big><em>reaction</em>, <em>message=''</em><big>)</big><a class="headerlink" href="#rmg.reaction.UndeterminableKineticsException" title="Permalink to this definition">¶</a></dt>
 <dd>An exception raised when attempts to select appropriate kinetic parameters
 for a chemical reaction are unsuccessful.</dd></dl>
 
 </div>
 </div>
 <div class="section" id="methods-in-rmg-reaction">
-<h2>8.2. Methods in <tt class="docutils literal"><span class="pre">rmg.reaction</span></tt><a class="headerlink" href="#methods-in-rmg-reaction" title="Permalink to this headline">¶</a></h2>
+<h2>9.2. Methods in <tt class="docutils literal"><span class="pre">rmg.reaction</span></tt><a class="headerlink" href="#methods-in-rmg-reaction" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="rmg.reaction.makeNewReaction">
 <tt class="descclassname">rmg.reaction.</tt><tt class="descname">makeNewReaction</tt><big>(</big><em>reactants</em>, <em>products</em>, <em>reactantStructures</em>, <em>productStructures</em>, <em>family</em><big>)</big><a class="headerlink" href="#rmg.reaction.makeNewReaction" title="Permalink to this definition">¶</a></dt>
@@ -482,30 +521,28 @@ list.</p>
         <div class="sphinxsidebarwrapper">
             <h3><a href="../../index.html">Table Of Contents</a></h3>
             <ul>
-<li><a class="reference external" href="">8. The <tt class="docutils literal"><span class="pre">rmg.reaction</span></tt> Module</a><ul>
-<li><a class="reference external" href="#classes-in-rmg-reaction">8.1. Classes in <tt class="docutils literal"><span class="pre">rmg.reaction</span></tt></a><ul>
-<li><a class="reference external" href="#arrheniusepkinetics">8.1.1. ArrheniusEPKinetics</a></li>
-<li><a class="reference external" href="#arrheniuskinetics">8.1.2. ArrheniusKinetics</a></li>
-<li><a class="reference external" href="#invalidactionexception">8.1.3. InvalidActionException</a></li>
-<li><a class="reference external" href="#kinetics">8.1.4. Kinetics</a></li>
-<li><a class="reference external" href="#reaction">8.1.5. Reaction</a></li>
-<li><a class="reference external" href="#reactionfamily">8.1.6. ReactionFamily</a></li>
-<li><a class="reference external" href="#reactionfamilyset">8.1.7. ReactionFamilySet</a></li>
-<li><a class="reference external" href="#reactionrecipe">8.1.8. ReactionRecipe</a></li>
-<li><a class="reference external" href="#undeterminablekineticsexception">8.1.9. UndeterminableKineticsException</a></li>
+<li><a class="reference external" href="">9. The <tt class="docutils literal"><span class="pre">rmg.reaction</span></tt> Module</a><ul>
+<li><a class="reference external" href="#classes-in-rmg-reaction">9.1. Classes in <tt class="docutils literal"><span class="pre">rmg.reaction</span></tt></a><ul>
+<li><a class="reference external" href="#invalidactionexception">9.1.1. InvalidActionException</a></li>
+<li><a class="reference external" href="#reaction">9.1.2. Reaction</a></li>
+<li><a class="reference external" href="#reactionexception">9.1.3. ReactionException</a></li>
+<li><a class="reference external" href="#reactionfamily">9.1.4. ReactionFamily</a></li>
+<li><a class="reference external" href="#reactionfamilyset">9.1.5. ReactionFamilySet</a></li>
+<li><a class="reference external" href="#reactionrecipe">9.1.6. ReactionRecipe</a></li>
+<li><a class="reference external" href="#undeterminablekineticsexception">9.1.7. UndeterminableKineticsException</a></li>
 </ul>
 </li>
-<li><a class="reference external" href="#methods-in-rmg-reaction">8.2. Methods in <tt class="docutils literal"><span class="pre">rmg.reaction</span></tt></a></li>
+<li><a class="reference external" href="#methods-in-rmg-reaction">9.2. Methods in <tt class="docutils literal"><span class="pre">rmg.reaction</span></tt></a></li>
 </ul>
 </li>
 </ul>
 
             <h4>Previous topic</h4>
             <p class="topless"><a href="rmg-model.html"
-                                  title="previous chapter">7. The <tt class="docutils literal docutils literal docutils literal"><span class="pre">rmg.model</span></tt> Module</a></p>
+                                  title="previous chapter">8. The <tt class="docutils literal docutils literal docutils literal"><span class="pre">rmg.model</span></tt> Module</a></p>
             <h4>Next topic</h4>
             <p class="topless"><a href="rmg-species.html"
-                                  title="next chapter">9. The <tt class="docutils literal"><span class="pre">rmg.species</span></tt> Module</a></p>
+                                  title="next chapter">10. The <tt class="docutils literal"><span class="pre">rmg.species</span></tt> Module</a></p>
             <h3>This Page</h3>
             <ul class="this-page-menu">
               <li><a href="../../_sources/documentation/api/rmg-reaction.txt"
@@ -546,15 +583,15 @@ list.</p>
           <a href="../../modindex.html" title="Global Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="rmg-species.html" title="9. The rmg.species Module"
+          <a href="rmg-species.html" title="10. The rmg.species Module"
              >next</a> |</li>
         <li class="right" >
-          <a href="rmg-model.html" title="7. The rmg.model Module"
+          <a href="rmg-model.html" title="8. The rmg.model Module"
              >previous</a> |</li>
         <li><a href="../../index.html">RMG v0.0.1 documentation</a> &raquo;</li>
           <li><a href="../index.html" >RMG Documentation</a> &raquo;</li>
           <li><a href="index.html" >RMG Developer&#8217;s Guide</a> &raquo;</li>
-  <li><a href="">8. The <tt class="docutils literal docutils literal"><span class="pre">rmg.reaction</span></tt> Module</a></li>
+  <li><a href="">9. The <tt class="docutils literal docutils literal"><span class="pre">rmg.reaction</span></tt> Module</a></li>
 
       </ul>
     </div>

@@ -7,6 +7,25 @@ The ``rmg.kinetics`` Module
 Classes in ``rmg.kinetics``
 ===========================
 
+Kinetics
+--------
+
+.. autoclass:: rmg.kinetics.Kinetics
+	:members:
+
+
+ArrheniusKinetics
+-----------------
+
+.. autoclass:: rmg.kinetics.ArrheniusKinetics
+	:members:
+
+ArrheniusEPKinetics
+-------------------
+
+.. autoclass:: rmg.kinetics.ArrheniusEPKinetics
+	:members:
+
 Methods in ``rmg.kinetics``
 ===========================
 

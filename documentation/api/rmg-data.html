@@ -58,7 +58,17 @@
             
   <div class="section" id="module-rmg.data">
 <h1>3. The <tt class="docutils literal"><span class="pre">rmg.data</span></tt> Module<a class="headerlink" href="#module-rmg.data" title="Permalink to this headline">¶</a></h1>
-<p>Contains classes and functions for working with the various RMG databases.</p>
+<p>Contains classes and functions for working with the various RMG databases. In
+RMG a database is composed of three parts:</p>
+<ul class="simple">
+<li>A <em>dictionary</em>, associating a string identifier with a chemical structure.</li>
+<li>A <em>tree</em>, providing a hierarchical and extensible organization of the chemical structures.</li>
+<li>A <em>library</em>, associating a chemical structure with some sort of physical information.</li>
+</ul>
+<p>These are implemented via the <a title="rmg.data.Dictionary" class="reference internal" href="#rmg.data.Dictionary"><tt class="xref docutils literal"><span class="pre">Dictionary</span></tt></a>, <a title="rmg.data.Tree" class="reference internal" href="#rmg.data.Tree"><tt class="xref docutils literal"><span class="pre">Tree</span></tt></a>, and
+<a title="rmg.data.Library" class="reference internal" href="#rmg.data.Library"><tt class="xref docutils literal"><span class="pre">Library</span></tt></a> classes, respectively. A base class for databases is
+implemented in the <a title="rmg.data.Database" class="reference internal" href="#rmg.data.Database"><tt class="xref docutils literal"><span class="pre">Database</span></tt></a> class, which is often overloaded to
+provide specific functionality for individual databases.</p>
 <div class="section" id="classes-in-rmg-data">
 <h2>3.1. Classes in <tt class="docutils literal"><span class="pre">rmg.data</span></tt><a class="headerlink" href="#classes-in-rmg-data" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="database">
@@ -105,7 +115,13 @@ be set to &#8216;&#8217; if not desired.</dd></dl>
 <dt id="rmg.data.Database.matchNodeToStructure">
 <tt class="descname">matchNodeToStructure</tt><big>(</big><em>node</em>, <em>structure</em>, <em>atoms</em><big>)</big><a class="headerlink" href="#rmg.data.Database.matchNodeToStructure" title="Permalink to this definition">¶</a></dt>
 <dd>Return <tt class="xref xref docutils literal"><span class="pre">True</span></tt> if the <cite>structure</cite> centered at <cite>atom</cite> matches the
-structure at <cite>node</cite> in the dictionary.</dd></dl>
+structure at <cite>node</cite> in the dictionary. The structure at <cite>node</cite> should
+have atoms with the appropriate labels because they are set on loading
+and never change. However, the atoms in <cite>structure</cite> may not have the
+correct labels, hence the <cite>atoms</cite> parameter. The <cite>atoms</cite> parameter may
+include extra labels, and so we only require that every labeled atom in
+the functional group represented by <cite>node</cite> has an equivalent labeled
+atom in <cite>structure</cite>.</dd></dl>
 
 <dl class="method">
 <dt id="rmg.data.Database.toXML">
@@ -122,7 +138,11 @@ structure at <cite>node</cite> in the dictionary.</dd></dl>
 <em class="property">
 class </em><tt class="descclassname">rmg.data.</tt><tt class="descname">Dictionary</tt><a class="headerlink" href="#rmg.data.Dictionary" title="Permalink to this definition">¶</a></dt>
 <dd><p>An RMG dictionary class, extended from the Python dictionary class to
-include functions for loading the dictionary from a file.</p>
+include functions for loading the dictionary from a file. The keys of the
+dictionary are strings that represent unique identifiers, while the
+corresponding values are either <tt class="xref docutils literal"><span class="pre">chem.Structure</span></tt> objects representing
+a chemical structure or the string &#8216;union&#8217; to indicate that the structure
+is a union of all of its child nodes in the corresponding tree.</p>
 <dl class="method">
 <dt id="rmg.data.Dictionary.load">
 <tt class="descname">load</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#rmg.data.Dictionary.load" title="Permalink to this definition">¶</a></dt>
@@ -134,9 +154,9 @@ record. Each record is separated by at least one empty line.</dd></dl>
 <dt id="rmg.data.Dictionary.toStructure">
 <tt class="descname">toStructure</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.data.Dictionary.toStructure" title="Permalink to this definition">¶</a></dt>
 <dd>Convert the values stored in the dictionary from adjacency list strings
-to <tt class="xref docutils literal"><span class="pre">structure.Structure</span></tt> objects. If a record is a union, it is stored
-as the string &#8216;union&#8217;, and automatically uses all immediate children of
-the node as the union.</dd></dl>
+to <tt class="xref docutils literal"><span class="pre">structure.Structure</span></tt> objects. If a record is a union, it is 
+stored as the string &#8216;union&#8217;, and automatically uses all immediate
+children of the node as the union.</dd></dl>
 
 <dl class="method">
 <dt id="rmg.data.Dictionary.toXML">
@@ -167,9 +187,10 @@ class </em><tt class="descclassname">rmg.data.</tt><tt class="descname">Library<
 to be able to handle an array of string labels.</p>
 <dl class="method">
 <dt id="rmg.data.Library.add">
-<tt class="descname">add</tt><big>(</big><em>labels</em>, <em>data</em><big>)</big><a class="headerlink" href="#rmg.data.Library.add" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">add</tt><big>(</big><em>index</em>, <em>labels</em>, <em>data</em><big>)</big><a class="headerlink" href="#rmg.data.Library.add" title="Permalink to this definition">¶</a></dt>
 <dd>Add an item of <cite>data</cite> to the library based on the value of the list
-of <cite>labels</cite>. Only add if there is not preexisting data.</dd></dl>
+of <cite>labels</cite>. Only add and return True if there is not preexisting data 
+with those labels, else return False.</dd></dl>
 
 <dl class="method">
 <dt id="rmg.data.Library.getData">
@@ -180,8 +201,13 @@ labels denoted by <cite>key</cite>.</dd></dl>
 <dl class="method">
 <dt id="rmg.data.Library.hashLabels">
 <tt class="descname">hashLabels</tt><big>(</big><em>labels</em><big>)</big><a class="headerlink" href="#rmg.data.Library.hashLabels" title="Permalink to this definition">¶</a></dt>
-<dd>Convert a list of string <cite>labels</cite> to a list of single strings that
-represent permutations of the individual strings in the <cite>labels</cite> list.</dd></dl>
+<dd><p>Convert a list of string <cite>labels</cite> to a list of single strings that
+represent permutations of the individual strings in the <cite>labels</cite> list:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">hashLabels</span><span class="p">([</span><span class="s">&#39;a&#39;</span><span class="p">,</span><span class="s">&#39;b&#39;</span><span class="p">])</span>
+<span class="go">[&#39;a;b&#39;, &#39;b;a&#39;]</span>
+</pre></div>
+</div>
+</dd></dl>
 
 <dl class="method">
 <dt id="rmg.data.Library.load">
@@ -191,7 +217,13 @@ represent permutations of the individual strings in the <cite>labels</cite> list
 <dl class="method">
 <dt id="rmg.data.Library.parse">
 <tt class="descname">parse</tt><big>(</big><em>lines</em>, <em>numLabels=1</em><big>)</big><a class="headerlink" href="#rmg.data.Library.parse" title="Permalink to this definition">¶</a></dt>
-<dd>Parse an RMG database library located at <cite>path</cite>.</dd></dl>
+<dd><p>Parse an RMG database library located at <cite>path</cite>.</p>
+<p>It splits lines on whitespace then treats tokens as:</p>
+<div class="highlight-python"><pre>&lt;index&gt; &lt;label1&gt; ... &lt;labelN&gt; &lt;data1&gt;  &lt;data2&gt; ...</pre>
+</div>
+<p><cite>numLabels</cite> determines how  many labels are assumed.
+All the data are concatenated to a single string with single spaces between items.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="rmg.data.Library.remove">
@@ -232,9 +264,25 @@ allowed range was T &gt;= 300 K.</dd></dl>
 <em class="property">
 class </em><tt class="descclassname">rmg.data.</tt><tt class="descname">Tree</tt><a class="headerlink" href="#rmg.data.Tree" title="Permalink to this definition">¶</a></dt>
 <dd><p>An implementation of an n-ary tree used for representing a hierarchy of
-data. Each instance contains dictionaries <cite>parent</cite> and <cite>children</cite> which use
-nodes as keys; the values are the node&#8217;s parent and a list of the node&#8217;s
-children, respectively.</p>
+data. The tree is represented as a pair of dictionaries:</p>
+<ul class="simple">
+<li>The <cite>parent</cite> dictionary. For a given identifier, returns the identifier
+corresponding to the parent.</li>
+<li>The <cite>children</cite> dictionary. For a given identifier, returns a list of
+identifiers corresponding to the children.</li>
+</ul>
+<p>The top-level node(s) of the tree are stored in a list in the <cite>top</cite>
+attribute.</p>
+<p>In constructing the tree, it is important to develop a hierarchy such that
+siblings are mutually exclusive, to ensure that there is a unique path of
+descent down a tree for each structure. If non-mutually exclusive siblings
+are encountered, a warning is raised and the parent of the siblings is
+returned.</p>
+<p>There is no requirement that the children of a node span the range of
+more specific permutations of the parent. As the database gets more complex,
+attempting to maintain complete sets of children for each parent in each
+database rapidly becomes untenable, and is against the spirit of
+extensibility behind the database development.</p>
 <dl class="method">
 <dt id="rmg.data.Tree.add">
 <tt class="descname">add</tt><big>(</big><em>node</em>, <em>parent</em><big>)</big><a class="headerlink" href="#rmg.data.Tree.add" title="Permalink to this definition">¶</a></dt>
@@ -261,6 +309,11 @@ n-ary tree representing the hierarchy of items in the dictionary.</dd></dl>
 <dt id="rmg.data.Tree.remove">
 <tt class="descname">remove</tt><big>(</big><em>node</em><big>)</big><a class="headerlink" href="#rmg.data.Tree.remove" title="Permalink to this definition">¶</a></dt>
 <dd>Remove <cite>node</cite> and all of its children from the tree.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.data.Tree.toDOT">
+<tt class="descname">toDOT</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.data.Tree.toDOT" title="Permalink to this definition">¶</a></dt>
+<dd>Create a DOT representation of the tree.</dd></dl>
 
 <dl class="method">
 <dt id="rmg.data.Tree.toXML">

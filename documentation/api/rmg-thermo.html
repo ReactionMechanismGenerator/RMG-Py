@@ -5,7 +5,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>The rmg.thermo Module &mdash; RMG v0.0.1 documentation</title>
+    <title>12. The rmg.thermo Module &mdash; RMG v0.0.1 documentation</title>
     <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
@@ -19,7 +19,10 @@
     </script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <link rel="top" title="RMG v0.0.1 documentation" href="../../index.html" /> 
+    <link rel="top" title="RMG v0.0.1 documentation" href="../../index.html" />
+    <link rel="up" title="RMG Developer’s Guide" href="index.html" />
+    <link rel="next" title="13. The rmg.cantera_loader Module" href="rmg-cantera_loader.html" />
+    <link rel="prev" title="11. The rmg.structure Module" href="rmg-structure.html" /> 
  
 <link rel="stylesheet" href="../../_static/RMG.css" type="text/css" />
 
@@ -34,8 +37,16 @@
         <li class="right" >
           <a href="../../modindex.html" title="Global Module Index"
              accesskey="M">modules</a> |</li>
+        <li class="right" >
+          <a href="rmg-cantera_loader.html" title="13. The rmg.cantera_loader Module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="rmg-structure.html" title="11. The rmg.structure Module"
+             accesskey="P">previous</a> |</li>
         <li><a href="../../index.html">RMG v0.0.1 documentation</a> &raquo;</li>
-  <li><a href="">The <tt class="docutils literal"><span class="pre">rmg.thermo</span></tt> Module</a></li>
+          <li><a href="../index.html" >RMG Documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">RMG Developer&#8217;s Guide</a> &raquo;</li>
+  <li><a href="">12. The <tt class="docutils literal docutils literal docutils literal"><span class="pre">rmg.thermo</span></tt> Module</a></li>
 
       </ul>
     </div>  
@@ -46,15 +57,288 @@
           <div class="body">
             
   <div class="section" id="module-rmg.thermo">
-<h1>The <tt class="docutils literal"><span class="pre">rmg.thermo</span></tt> Module<a class="headerlink" href="#module-rmg.thermo" title="Permalink to this headline">¶</a></h1>
+<h1>12. The <tt class="docutils literal"><span class="pre">rmg.thermo</span></tt> Module<a class="headerlink" href="#module-rmg.thermo" title="Permalink to this headline">¶</a></h1>
 <p>A module for working with the thermodynamics of chemical species. This module
 seeks to provide functionality for answering the question, &#8220;Given a species,
 what are its thermodynamics?&#8221;</p>
 <div class="section" id="classes-in-rmg-thermo">
-<h2>Classes in <tt class="docutils literal"><span class="pre">rmg.thermo</span></tt><a class="headerlink" href="#classes-in-rmg-thermo" title="Permalink to this headline">¶</a></h2>
+<h2>12.1. Classes in <tt class="docutils literal"><span class="pre">rmg.thermo</span></tt><a class="headerlink" href="#classes-in-rmg-thermo" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="thermodata">
+<h3>12.1.1. ThermoData<a class="headerlink" href="#thermodata" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="rmg.thermo.ThermoData">
+<em class="property">
+class </em><tt class="descclassname">rmg.thermo.</tt><tt class="descname">ThermoData</tt><a class="headerlink" href="#rmg.thermo.ThermoData" title="Permalink to this definition">¶</a></dt>
+<dd><p>A base class for all forms of thermodynamic data used by RMG. The common
+attributes are:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="13%" />
+<col width="87%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Attribute</th>
+<th class="head">Meaning</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td><cite>Trange</cite></td>
+<td>a list of length 2 containing the min and max temperature in K</td>
+</tr>
+<tr><td><cite>comment</cite></td>
+<td>a string describing the source of the data</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="rmg.thermo.ThermoData.isTemperatureValid">
+<tt class="descname">isTemperatureValid</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.thermo.ThermoData.isTemperatureValid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <tt class="xref xref docutils literal"><span class="pre">True</span></tt> if the temperature <cite>T</cite> in K is within the valid
+temperature range of the thermodynamic data, or <tt class="xref xref docutils literal"><span class="pre">False</span></tt> if not.</p>
+<p>If  Tmax == Tmin == 0 then returns <tt class="xref xref docutils literal"><span class="pre">True</span></tt>.
+(This case is for when the range is undefined. Tmax and Tmin must be
+:type:<a href="#id1"><span class="problematic" id="id2">`</span></a>float`s because of Cython declaration )</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="thermodatabase">
+<h3>12.1.2. ThermoDatabase<a class="headerlink" href="#thermodatabase" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="thermodatabaseset">
+<h3>12.1.3. ThermoDatabaseSet<a class="headerlink" href="#thermodatabaseset" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="thermogadata">
+<h3>12.1.4. ThermoGAData<a class="headerlink" href="#thermogadata" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="rmg.thermo.ThermoGAData">
+<em class="property">
+class </em><tt class="descclassname">rmg.thermo.</tt><tt class="descname">ThermoGAData</tt><a class="headerlink" href="#rmg.thermo.ThermoGAData" title="Permalink to this definition">¶</a></dt>
+<dd><p>A set of thermodynamic parameters as determined from Benson&#8217;s group
+additivity data. The attributes are:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="14%" />
+<col width="86%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Attribute</th>
+<th class="head">Meaning</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td><cite>H298</cite></td>
+<td>the standard enthalpy of formation at 298 K in J/mol</td>
+</tr>
+<tr><td><cite>S298</cite></td>
+<td>the standard entropy of formation at 298 K in J/mol*K</td>
+</tr>
+<tr><td><cite>Cp</cite></td>
+<td><dl class="first last docutils">
+<dt>the standard heat capacity in J/mol*K at 300, 400, 500,</dt>
+<dd>600, 800, 1000, and 1500 K</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="rmg.thermo.ThermoGAData.fromDatabase">
+<tt class="descname">fromDatabase</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.thermo.ThermoGAData.fromDatabase" title="Permalink to this definition">¶</a></dt>
+<dd>Process a list of numbers <cite>data</cite> and associated description <cite>comment</cite>
+generated while reading from a thermodynamic database.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.thermo.ThermoGAData.getEnthalpy">
+<tt class="descname">getEnthalpy</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.thermo.ThermoGAData.getEnthalpy" title="Permalink to this definition">¶</a></dt>
+<dd>Return the enthalpy in J/mol at temperature <cite>T</cite> in K.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.thermo.ThermoGAData.getEntropy">
+<tt class="descname">getEntropy</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.thermo.ThermoGAData.getEntropy" title="Permalink to this definition">¶</a></dt>
+<dd>Return the entropy in J/mol*K at temperature <cite>T</cite> in K.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.thermo.ThermoGAData.getFreeEnergy">
+<tt class="descname">getFreeEnergy</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.thermo.ThermoGAData.getFreeEnergy" title="Permalink to this definition">¶</a></dt>
+<dd>Return the Gibbs free energy in J/mol at temperature <cite>T</cite> in K.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.thermo.ThermoGAData.getHeatCapacity">
+<tt class="descname">getHeatCapacity</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.thermo.ThermoGAData.getHeatCapacity" title="Permalink to this definition">¶</a></dt>
+<dd>Return the heat capacity in J/mol*K at temperature <cite>T</cite> in K.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.thermo.ThermoGAData.toXML">
+<tt class="descname">toXML</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.thermo.ThermoGAData.toXML" title="Permalink to this definition">¶</a></dt>
+<dd>Generate an XML representation of the thermodynamic data using the
+<tt class="xref docutils literal"><span class="pre">xml.dom.minidom</span></tt> package. The <cite>dom</cite> and <cite>root</cite> parameters
+represent the DOM and the element in the DOM used as the parent of
+the generated XML.</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="thermonasadata">
+<h3>12.1.5. ThermoNASAData<a class="headerlink" href="#thermonasadata" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="rmg.thermo.ThermoNASAData">
+<em class="property">
+class </em><tt class="descclassname">rmg.thermo.</tt><tt class="descname">ThermoNASAData</tt><a class="headerlink" href="#rmg.thermo.ThermoNASAData" title="Permalink to this definition">¶</a></dt>
+<dd><p>A set of thermodynamic parameters given by NASA polynomials. This class
+stores a list of <a title="rmg.thermo.ThermoNASAPolynomial" class="reference internal" href="#rmg.thermo.ThermoNASAPolynomial"><tt class="xref docutils literal"><span class="pre">ThermoNASAPolynomial</span></tt></a> objects in the <cite>polynomials</cite>
+attribute. When evaluating a thermodynamic quantity, a polynomial that
+contains the desired temperature within its valid range will be used.</p>
+<dl class="method">
+<dt id="rmg.thermo.ThermoNASAData.getEnthalpy">
+<tt class="descname">getEnthalpy</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.thermo.ThermoNASAData.getEnthalpy" title="Permalink to this definition">¶</a></dt>
+<dd>Return the enthalpy in J/mol at temperature <cite>T</cite> in K.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.thermo.ThermoNASAData.getEntropy">
+<tt class="descname">getEntropy</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.thermo.ThermoNASAData.getEntropy" title="Permalink to this definition">¶</a></dt>
+<dd>Return the entropy in J/mol*K at temperature <cite>T</cite> in K.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.thermo.ThermoNASAData.getFreeEnergy">
+<tt class="descname">getFreeEnergy</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.thermo.ThermoNASAData.getFreeEnergy" title="Permalink to this definition">¶</a></dt>
+<dd>Return the Gibbs free energy in J/mol at temperature <cite>T</cite> in K.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.thermo.ThermoNASAData.getHeatCapacity">
+<tt class="descname">getHeatCapacity</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.thermo.ThermoNASAData.getHeatCapacity" title="Permalink to this definition">¶</a></dt>
+<dd>Return the heat capacity in J/mol*K at temperature <cite>T</cite> in K.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.thermo.ThermoNASAData.toCantera">
+<tt class="descname">toCantera</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.thermo.ThermoNASAData.toCantera" title="Permalink to this definition">¶</a></dt>
+<dd>Return a Cantera ctml_writer instance</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="thermonasapolynomial">
+<h3>12.1.6. ThermoNASAPolynomial<a class="headerlink" href="#thermonasapolynomial" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="rmg.thermo.ThermoNASAPolynomial">
+<em class="property">
+class </em><tt class="descclassname">rmg.thermo.</tt><tt class="descname">ThermoNASAPolynomial</tt><a class="headerlink" href="#rmg.thermo.ThermoNASAPolynomial" title="Permalink to this definition">¶</a></dt>
+<dd><p>A single NASA polynomial for thermodynamic data. The <cite>coeffs</cite> attribute
+stores the seven polynomial coefficients
+<img class="math" src="../../_images/math/d2e17f6f6aa851f083f1f4cdaa0a40cfa6a01b8a.png" alt="\mathbf{a} = \left[a_1\ a_2\ a_3\ a_4\ a_5\ a_6\ a_7 \right]"/>
+from which the relevant thermodynamic parameters are evaluated via the
+expressions</p>
+<div class="math">
+<p><img src="../../_images/math/e6625d90a8dd94847327e909d262d31fe58f840b.png" alt="\frac{C_\mathrm{p}(T)}{R} = a_1 + a_2 T + a_3 T^2 + a_4 T^3 + a_5 T^4" />
+</div></p><div class="math">
+<p><img src="../../_images/math/18dfdfb59ff7c7c153266f723f628b2f1ec5f5a8.png" alt="\frac{H(T)}{RT} = a_1 + \frac{1}{2} a_2 T + \frac{1}{3} a_3 T^2 + \frac{1}{4} a_4 T^3 + \frac{1}{5} a_5 T^4 + \frac{a_6}{T}" />
+</div></p><div class="math">
+<p><img src="../../_images/math/833b6577f932c9c3f37c91068c6aa35a6a32c25a.png" alt="\frac{S(T)}{R} = a_1 \ln T + a_2 T + \frac{1}{2} a_3 T^2 + \frac{1}{3} a_4 T^3 + \frac{1}{4} a_5 T^4 + a_7" />
+</div></p><p>The above was adapted from <a class="reference external" href="http://www.me.berkeley.edu/gri-mech/data/nasa_plnm.html">this page</a>.</p>
+<dl class="method">
+<dt id="rmg.thermo.ThermoNASAPolynomial.getEnthalpy">
+<tt class="descname">getEnthalpy</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.thermo.ThermoNASAPolynomial.getEnthalpy" title="Permalink to this definition">¶</a></dt>
+<dd>Return the enthalpy in J/mol at temperature <cite>T</cite> in K.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.thermo.ThermoNASAPolynomial.getEntropy">
+<tt class="descname">getEntropy</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.thermo.ThermoNASAPolynomial.getEntropy" title="Permalink to this definition">¶</a></dt>
+<dd>Return the entropy in J/mol*K at temperature <cite>T</cite> in K.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.thermo.ThermoNASAPolynomial.getFreeEnergy">
+<tt class="descname">getFreeEnergy</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.thermo.ThermoNASAPolynomial.getFreeEnergy" title="Permalink to this definition">¶</a></dt>
+<dd>Return the Gibbs free energy in J/mol at temperature <cite>T</cite> in K.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.thermo.ThermoNASAPolynomial.getHeatCapacity">
+<tt class="descname">getHeatCapacity</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.thermo.ThermoNASAPolynomial.getHeatCapacity" title="Permalink to this definition">¶</a></dt>
+<dd>Return the heat capacity in J/mol*K at temperature <cite>T</cite> in K.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.thermo.ThermoNASAPolynomial.toCantera">
+<tt class="descname">toCantera</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.thermo.ThermoNASAPolynomial.toCantera" title="Permalink to this definition">¶</a></dt>
+<dd>Return a Cantera ctml_writer instance</dd></dl>
+
+<dl class="method">
+<dt id="rmg.thermo.ThermoNASAPolynomial.toXML">
+<tt class="descname">toXML</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.thermo.ThermoNASAPolynomial.toXML" title="Permalink to this definition">¶</a></dt>
+<dd>Append to xml <cite>dom</cite> at node <cite>root</cite></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="thermowilhoitdata">
+<h3>12.1.7. ThermoWilhoitData<a class="headerlink" href="#thermowilhoitdata" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="rmg.thermo.ThermoWilhoitData">
+<em class="property">
+class </em><tt class="descclassname">rmg.thermo.</tt><tt class="descname">ThermoWilhoitData</tt><a class="headerlink" href="#rmg.thermo.ThermoWilhoitData" title="Permalink to this definition">¶</a></dt>
+<dd><p>A set of thermodynamic parameters given by Wilhoit polynomials, which have
+the form</p>
+<div class="math">
+<p><img src="../../_images/math/ec2afa8510f8e8aba5ffa41e511fee06063d2853.png" alt="C_\mathrm{p}(T) = C_\mathrm{p}(0) + \left[ C_\mathrm{p}(\infty) -
+C_\mathrm{p}(0) \right] y^2 \left[ 1 + (y - 1) \sum_{i=0}^3 a_i y^i \right]" />
+</div></p><p>where <img class="math" src="../../_images/math/e826963750316277953cf2540200864291ce2a3a.png" alt="y \equiv \frac{T}{T + B}"/> is a scaled temperature that ranges
+from zero to one. The characteristic temperature <img class="math" src="../../_images/math/ff5fb3d775862e2123b007eb4373ff6cc1a34d4e.png" alt="B"/> is chosen by
+default to be 500 K. This formulation has the advantage of correctly
+reproducting the heat capacity behavior as <img class="math" src="../../_images/math/3ed3cccf70b60d46263245cee8401597355e7cf4.png" alt="T \rightarrow 0"/> and
+<img class="math" src="../../_images/math/461ae57f2ff9324b7ad705ebb396db423c3de4d1.png" alt="T \rightarrow \infty"/>.   The low-temperature limit 
+<img class="math" src="../../_images/math/39e6e4d4577c99f443ce4542c53bf5d6beaf8c71.png" alt="C_\mathrm{p}(0)"/> is taken to be <img class="math" src="../../_images/math/5a71ee2dab5c99b58df89ac416af7e638e2c347b.png" alt="3.5R"/> for linear molecules
+and <img class="math" src="../../_images/math/763a9338d28d3828442e517b79bbc36acae90231.png" alt="4R"/> for nonlinear molecules. The high-temperature limit 
+<img class="math" src="../../_images/math/ed40b30c4a5dfa996a3e5541d7034750ce5bfd84.png" alt="C_\mathrm{p}(\infty)"/> is taken to be 
+<img class="math" src="../../_images/math/a09105a9c27d1304964cc92c065cf0128a73bb2a.png" alt="\left[ 3 N_\mathrm{atoms} - 1.5 \right] R"/> for linear molecules and
+<img class="math" src="../../_images/math/e3f35e9652ad843f00f9ce45a7c926a230a42027.png" alt="\left[ 3 N_\mathrm{atoms} - (2 + 0.5 N_\mathrm{rotors}) \right] R"/>
+for nonlinear molecules, for a molecule composed of <img class="math" src="../../_images/math/dcd1fb7cd882dbf1df8a980c9b05650011465015.png" alt="N_\mathrm{atoms}"/>
+atoms and <img class="math" src="../../_images/math/8310f00b584ab744bcf747702a56a50336215485.png" alt="N_\mathrm{rotors}"/> internal rotors.</p>
+<p>The Wilhoit parameters are stored in the attributes <cite>cp0</cite>, <cite>cpInf</cite>, <cite>a0</cite>,
+<cite>a1</cite>, <cite>a2</cite>, <cite>a3</cite>, and <cite>B</cite>. There are also integration constants <cite>H0</cite> and
+<cite>S0</cite> that are needed to evaluate the enthalpy and entropy, respectively.</p>
+<dl class="method">
+<dt id="rmg.thermo.ThermoWilhoitData.getEnthalpy">
+<tt class="descname">getEnthalpy</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.thermo.ThermoWilhoitData.getEnthalpy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the enthalpy in J/mol at temperature <cite>T</cite> in K. The formula used
+is</p>
+<div class="math">
+<p><img src="../../_images/math/4a54ecfdb594839bc9d54da9458b8ae8727f2b46.png" alt="H(T) = H_0 +
+C_\mathrm{p}(0) T + \left[ C_\mathrm{p}(\infty) - C_\mathrm{p}(0) \right] T
+\left\{ \left[ 2 + \sum_{i=0}^3 a_i \right]
+\left[ \frac{1}{2}y - 1 + \left( \frac{1}{y} - 1 \right) \ln \frac{T}{y} \right]
++ y^2 \sum_{i=0}^3 \frac{y^i}{(i+2)(i+3)} \sum_{j=0}^3 f_{ij} a_j
+\right\}" />
+</div></p><p>where <img class="math" src="../../_images/math/941c3745b1bebe8fce0ca5981db3fa2d403b28eb.png" alt="f_{ij} = 3 + j"/> if <img class="math" src="../../_images/math/3799ffcebc202623d060cc962304a9b0d851e15e.png" alt="i = j"/>, <img class="math" src="../../_images/math/9685a95090e0b03a3e882bca9acf9ca8d03e2cdd.png" alt="f_{ij} = 1"/> if
+<img class="math" src="../../_images/math/23166a59a6df7d262929f4e7e4803c9da65e6504.png" alt="i &gt; j"/>, and <img class="math" src="../../_images/math/fbafd15e6152f608dbb1a2f9640c450012a88f9b.png" alt="f_{ij} = 0"/> if <img class="math" src="../../_images/math/478f5d7d31a103e7a383486cdf317eb599ac9ebf.png" alt="i &lt; j"/>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmg.thermo.ThermoWilhoitData.getEntropy">
+<tt class="descname">getEntropy</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.thermo.ThermoWilhoitData.getEntropy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the entropy in J/mol*K at temperature <cite>T</cite> in K. The formula used
+is</p>
+<div class="math">
+<p><img src="../../_images/math/2273aa6d19fd60a95d6d6878abb573542b4ac4d1.png" alt="S(T) = S_0 +
+C_\mathrm{p}(0) \ln T - \left[ C_\mathrm{p}(\infty) - C_\mathrm{p}(0) \right]
+\left[ \ln y + \left( 1 + y \sum_{i=0}^3 \frac{a_i y^i}{2+i} \right) y
+\right]" />
+</div></p></dd></dl>
+
+<dl class="method">
+<dt id="rmg.thermo.ThermoWilhoitData.getFreeEnergy">
+<tt class="descname">getFreeEnergy</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.thermo.ThermoWilhoitData.getFreeEnergy" title="Permalink to this definition">¶</a></dt>
+<dd>Return the Gibbs free energy in J/mol at temperature <cite>T</cite> in K.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.thermo.ThermoWilhoitData.getHeatCapacity">
+<tt class="descname">getHeatCapacity</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.thermo.ThermoWilhoitData.getHeatCapacity" title="Permalink to this definition">¶</a></dt>
+<dd>Return the heat capacity in J/mol*K at temperature <cite>T</cite> in K.</dd></dl>
+
+</dd></dl>
+
+</div>
 </div>
 <div class="section" id="methods-in-rmg-thermo">
-<h2>Methods in <tt class="docutils literal"><span class="pre">rmg.thermo</span></tt><a class="headerlink" href="#methods-in-rmg-thermo" title="Permalink to this headline">¶</a></h2>
+<h2>12.2. Methods in <tt class="docutils literal"><span class="pre">rmg.thermo</span></tt><a class="headerlink" href="#methods-in-rmg-thermo" title="Permalink to this headline">¶</a></h2>
 </div>
 </div>
 
@@ -66,13 +350,28 @@ what are its thermodynamics?&#8221;</p>
         <div class="sphinxsidebarwrapper">
             <h3><a href="../../index.html">Table Of Contents</a></h3>
             <ul>
-<li><a class="reference external" href="">The <tt class="docutils literal"><span class="pre">rmg.thermo</span></tt> Module</a><ul>
-<li><a class="reference external" href="#classes-in-rmg-thermo">Classes in <tt class="docutils literal"><span class="pre">rmg.thermo</span></tt></a></li>
-<li><a class="reference external" href="#methods-in-rmg-thermo">Methods in <tt class="docutils literal"><span class="pre">rmg.thermo</span></tt></a></li>
+<li><a class="reference external" href="">12. The <tt class="docutils literal"><span class="pre">rmg.thermo</span></tt> Module</a><ul>
+<li><a class="reference external" href="#classes-in-rmg-thermo">12.1. Classes in <tt class="docutils literal"><span class="pre">rmg.thermo</span></tt></a><ul>
+<li><a class="reference external" href="#thermodata">12.1.1. ThermoData</a></li>
+<li><a class="reference external" href="#thermodatabase">12.1.2. ThermoDatabase</a></li>
+<li><a class="reference external" href="#thermodatabaseset">12.1.3. ThermoDatabaseSet</a></li>
+<li><a class="reference external" href="#thermogadata">12.1.4. ThermoGAData</a></li>
+<li><a class="reference external" href="#thermonasadata">12.1.5. ThermoNASAData</a></li>
+<li><a class="reference external" href="#thermonasapolynomial">12.1.6. ThermoNASAPolynomial</a></li>
+<li><a class="reference external" href="#thermowilhoitdata">12.1.7. ThermoWilhoitData</a></li>
+</ul>
+</li>
+<li><a class="reference external" href="#methods-in-rmg-thermo">12.2. Methods in <tt class="docutils literal"><span class="pre">rmg.thermo</span></tt></a></li>
 </ul>
 </li>
 </ul>
 
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="rmg-structure.html"
+                                  title="previous chapter">11. The <tt class="docutils literal docutils literal docutils literal"><span class="pre">rmg.structure</span></tt> Module</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="rmg-cantera_loader.html"
+                                  title="next chapter">13. The <tt class="docutils literal docutils literal"><span class="pre">rmg.cantera_loader</span></tt> Module</a></p>
             <h3>This Page</h3>
             <ul class="this-page-menu">
               <li><a href="../../_sources/documentation/api/rmg-thermo.txt"
@@ -112,8 +411,16 @@ what are its thermodynamics?&#8221;</p>
         <li class="right" >
           <a href="../../modindex.html" title="Global Module Index"
              >modules</a> |</li>
+        <li class="right" >
+          <a href="rmg-cantera_loader.html" title="13. The rmg.cantera_loader Module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="rmg-structure.html" title="11. The rmg.structure Module"
+             >previous</a> |</li>
         <li><a href="../../index.html">RMG v0.0.1 documentation</a> &raquo;</li>
-  <li><a href="">The <tt class="docutils literal"><span class="pre">rmg.thermo</span></tt> Module</a></li>
+          <li><a href="../index.html" >RMG Documentation</a> &raquo;</li>
+          <li><a href="index.html" >RMG Developer&#8217;s Guide</a> &raquo;</li>
+  <li><a href="">12. The <tt class="docutils literal docutils literal docutils literal"><span class="pre">rmg.thermo</span></tt> Module</a></li>
 
       </ul>
     </div>

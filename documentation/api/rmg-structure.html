@@ -5,7 +5,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>10. The rmg.structure Module &mdash; RMG v0.0.1 documentation</title>
+    <title>11. The rmg.structure Module &mdash; RMG v0.0.1 documentation</title>
     <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
@@ -21,8 +21,8 @@
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <link rel="top" title="RMG v0.0.1 documentation" href="../../index.html" />
     <link rel="up" title="RMG Developer’s Guide" href="index.html" />
-    <link rel="next" title="11. The rmg.cantera_loader Module" href="rmg-cantera_loader.html" />
-    <link rel="prev" title="9. The rmg.species Module" href="rmg-species.html" /> 
+    <link rel="next" title="12. The rmg.thermo Module" href="rmg-thermo.html" />
+    <link rel="prev" title="10. The rmg.species Module" href="rmg-species.html" /> 
  
 <link rel="stylesheet" href="../../_static/RMG.css" type="text/css" />
 
@@ -38,15 +38,15 @@
           <a href="../../modindex.html" title="Global Module Index"
              accesskey="M">modules</a> |</li>
         <li class="right" >
-          <a href="rmg-cantera_loader.html" title="11. The rmg.cantera_loader Module"
+          <a href="rmg-thermo.html" title="12. The rmg.thermo Module"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="rmg-species.html" title="9. The rmg.species Module"
+          <a href="rmg-species.html" title="10. The rmg.species Module"
              accesskey="P">previous</a> |</li>
         <li><a href="../../index.html">RMG v0.0.1 documentation</a> &raquo;</li>
           <li><a href="../index.html" >RMG Documentation</a> &raquo;</li>
           <li><a href="index.html" accesskey="U">RMG Developer&#8217;s Guide</a> &raquo;</li>
-  <li><a href="">10. The <tt class="docutils literal docutils literal docutils literal"><span class="pre">rmg.structure</span></tt> Module</a></li>
+  <li><a href="">11. The <tt class="docutils literal docutils literal"><span class="pre">rmg.structure</span></tt> Module</a></li>
 
       </ul>
     </div>  
@@ -57,12 +57,13 @@
           <div class="body">
             
   <div class="section" id="module-rmg.structure">
-<h1>10. The <tt class="docutils literal"><span class="pre">rmg.structure</span></tt> Module<a class="headerlink" href="#module-rmg.structure" title="Permalink to this headline">¶</a></h1>
-<p>Contains classes describing chemical entities: elements, atoms, bonds, species, etc.</p>
+<h1>11. The <tt class="docutils literal"><span class="pre">rmg.structure</span></tt> Module<a class="headerlink" href="#module-rmg.structure" title="Permalink to this headline">¶</a></h1>
+<p>Contains classes describing chemical structures, which are made up of atoms and
+bonds.</p>
 <div class="section" id="classes-in-rmg-structure">
-<h2>10.1. Classes in <tt class="docutils literal"><span class="pre">rmg.structure</span></tt><a class="headerlink" href="#classes-in-rmg-structure" title="Permalink to this headline">¶</a></h2>
+<h2>11.1. Classes in <tt class="docutils literal"><span class="pre">rmg.structure</span></tt><a class="headerlink" href="#classes-in-rmg-structure" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="invalidadjacencylistexception">
-<h3>10.1.1. InvalidAdjacencyListException<a class="headerlink" href="#invalidadjacencylistexception" title="Permalink to this headline">¶</a></h3>
+<h3>11.1.1. InvalidAdjacencyListException<a class="headerlink" href="#invalidadjacencylistexception" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="rmg.structure.InvalidAdjacencyListException">
 <em class="property">
@@ -72,13 +73,35 @@ invalid. The label of the adjacency list is stored in the <cite>label</cite> att
 
 </div>
 <div class="section" id="structure">
-<h3>10.1.2. Structure<a class="headerlink" href="#structure" title="Permalink to this headline">¶</a></h3>
+<h3>11.1.2. Structure<a class="headerlink" href="#structure" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="rmg.structure.Structure">
 <em class="property">
-class </em><tt class="descclassname">rmg.structure.</tt><tt class="descname">Structure</tt><big>(</big><em>atoms=None</em>, <em>bonds=None</em><big>)</big><a class="headerlink" href="#rmg.structure.Structure" title="Permalink to this definition">¶</a></dt>
+class </em><tt class="descclassname">rmg.structure.</tt><tt class="descname">Structure</tt><big>(</big><em>atoms=None</em>, <em>bonds=None</em>, <em>SMILES=None</em><big>)</big><a class="headerlink" href="#rmg.structure.Structure" title="Permalink to this definition">¶</a></dt>
 <dd><p>A representation of a chemical species using a graph data structure. The
-vertices represent atoms, while the edges represent bonds.</p>
+vertices represent atoms, while the edges represent bonds. The attributes
+are:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="22%" />
+<col width="78%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Attributes</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td><cite>graph</cite></td>
+<td>A graph representation of the atoms and bonds of the
+structure</td>
+</tr>
+<tr><td><cite>symmetryNumber</cite></td>
+<td>The combined external and internal symmetry number of the
+structure</td>
+</tr>
+</tbody>
+</table>
 <dl class="method">
 <dt id="rmg.structure.Structure.addAtom">
 <tt class="descname">addAtom</tt><big>(</big><em>atom</em><big>)</big><a class="headerlink" href="#rmg.structure.Structure.addAtom" title="Permalink to this definition">¶</a></dt>
@@ -100,6 +123,63 @@ no edges.</dd></dl>
 <dt id="rmg.structure.Structure.bonds">
 <tt class="descname">bonds</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.structure.Structure.bonds" title="Permalink to this definition">¶</a></dt>
 <dd>Return a list of the bonds in the structure.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.structure.Structure.calculateAtomSymmetryNumber">
+<tt class="descname">calculateAtomSymmetryNumber</tt><big>(</big><em>atom</em><big>)</big><a class="headerlink" href="#rmg.structure.Structure.calculateAtomSymmetryNumber" title="Permalink to this definition">¶</a></dt>
+<dd>Return the symmetry number centered at <cite>atom</cite> in the structure. The
+<cite>atom</cite> of interest must not be in a cycle.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.structure.Structure.calculateAxisSymmetryNumber">
+<tt class="descname">calculateAxisSymmetryNumber</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.structure.Structure.calculateAxisSymmetryNumber" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the axis symmetry number correction. The &#8220;axis&#8221; refers to a series
+of two or more cumulated double bonds (e.g. C=C=C, etc.). Corrections
+for single C=C bonds are handled in getBondSymmetryNumber().</p>
+<p>Each axis (C=C=C) has the potential to double the symmetry number.
+If an end has 0 or 1 groups (eg. =C=CJJ or =C=C-R) then it cannot 
+alter the axis symmetry and is disregarded:</p>
+<div class="highlight-python"><pre>A=C=C=C..        A-C=C=C=C-A
+
+  s=1                s=1</pre>
+</div>
+<p>If an end has 2 groups that are different then it breaks the symmetry 
+and the symmetry for that axis is 1, no matter what&#8217;s at the other end:</p>
+<div class="highlight-python"><pre>A\               A\         /A
+  T=C=C=C=C-A      T=C=C=C=T
+B/               A/         \B
+      s=1             s=1</pre>
+</div>
+<p>If you have one or more ends with 2 groups, and neither end breaks the 
+symmetry, then you have an axis symmetry number of 2:</p>
+<div class="highlight-python"><pre>A\         /B      A\         
+  C=C=C=C=C          C=C=C=C-B
+A/         \B      A/         
+      s=2                s=2</pre>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmg.structure.Structure.calculateBondSymmetryNumber">
+<tt class="descname">calculateBondSymmetryNumber</tt><big>(</big><em>bond</em><big>)</big><a class="headerlink" href="#rmg.structure.Structure.calculateBondSymmetryNumber" title="Permalink to this definition">¶</a></dt>
+<dd>Return the symmetry number centered at <cite>bond</cite> in the structure.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.structure.Structure.calculateCyclicSymmetryNumber">
+<tt class="descname">calculateCyclicSymmetryNumber</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.structure.Structure.calculateCyclicSymmetryNumber" title="Permalink to this definition">¶</a></dt>
+<dd>Get the symmetry number correction for cyclic regions of a molecule.
+For complicated fused rings the smallest set of smallest rings is used.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.structure.Structure.calculateNumberOfRotors">
+<tt class="descname">calculateNumberOfRotors</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.structure.Structure.calculateNumberOfRotors" title="Permalink to this definition">¶</a></dt>
+<dd>Return the number of rotors in the molecule.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.structure.Structure.calculateSymmetryNumber">
+<tt class="descname">calculateSymmetryNumber</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.structure.Structure.calculateSymmetryNumber" title="Permalink to this definition">¶</a></dt>
+<dd>Return the symmetry number for the structure. The symmetry number
+includes both external and internal modes.</dd></dl>
 
 <dl class="method">
 <dt id="rmg.structure.Structure.clearLabeledAtoms">
@@ -125,7 +205,7 @@ by <cite>atom1</cite>. Used to generate resonance isomers.</dd></dl>
 
 <dl class="method">
 <dt id="rmg.structure.Structure.findSubgraphIsomorphisms">
-<tt class="descname">findSubgraphIsomorphisms</tt><big>(</big><em>other</em><big>)</big><a class="headerlink" href="#rmg.structure.Structure.findSubgraphIsomorphisms" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">findSubgraphIsomorphisms</tt><big>(</big><em>other</em>, <em>map12=None</em>, <em>map21=None</em><big>)</big><a class="headerlink" href="#rmg.structure.Structure.findSubgraphIsomorphisms" title="Permalink to this definition">¶</a></dt>
 <dd>Returns <tt class="xref xref docutils literal"><span class="pre">True</span></tt> if <cite>other</cite> is subgraph isomorphic and <tt class="xref xref docutils literal"><span class="pre">False</span></tt>
 otherwise. Uses the VF2 algorithm of Vento and Foggia.</dd></dl>
 
@@ -160,6 +240,12 @@ otherwise. Uses the VF2 algorithm of Vento and Foggia.</dd></dl>
 <dd>Generate all of the resonance isomers formed by one allyl radical shift.</dd></dl>
 
 <dl class="method">
+<dt id="rmg.structure.Structure.getAllCycles">
+<tt class="descname">getAllCycles</tt><big>(</big><em>atom</em><big>)</big><a class="headerlink" href="#rmg.structure.Structure.getAllCycles" title="Permalink to this definition">¶</a></dt>
+<dd>Given a starting <cite>atom</cite>, return a list of all cycles this atom is found
+in.</dd></dl>
+
+<dl class="method">
 <dt id="rmg.structure.Structure.getBond">
 <tt class="descname">getBond</tt><big>(</big><em>atom1</em>, <em>atom2</em><big>)</big><a class="headerlink" href="#rmg.structure.Structure.getBond" title="Permalink to this definition">¶</a></dt>
 <dd>Returns the bond connecting atoms <cite>atom1</cite> and <cite>atom2</cite> if it exists, or
@@ -168,7 +254,11 @@ otherwise. Uses the VF2 algorithm of Vento and Foggia.</dd></dl>
 <dl class="method">
 <dt id="rmg.structure.Structure.getBonds">
 <tt class="descname">getBonds</tt><big>(</big><em>atom</em><big>)</big><a class="headerlink" href="#rmg.structure.Structure.getBonds" title="Permalink to this definition">¶</a></dt>
-<dd>Return a list of the bonds involving the specified <cite>atom</cite>.</dd></dl>
+<dd><p>Return a dictionary of neighbouring atoms and their bonds to the specified <cite>atom</cite>.</p>
+<p>The keys in the dictionary are the neighbouring atoms.
+The values are the bonds themselves.
+<cite>getBonds(atom).values()</cite> will return just the bonds</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="rmg.structure.Structure.getFormula">
@@ -210,10 +300,33 @@ are connected by a bond.</dd></dl>
 provided in <cite>atoms</cite> and <cite>bonds</cite>, respectively.</dd></dl>
 
 <dl class="method">
+<dt id="rmg.structure.Structure.isAtomInCycle">
+<tt class="descname">isAtomInCycle</tt><big>(</big><em>atom</em><big>)</big><a class="headerlink" href="#rmg.structure.Structure.isAtomInCycle" title="Permalink to this definition">¶</a></dt>
+<dd>Return <tt class="xref xref docutils literal"><span class="pre">True</span></tt> if <cite>atom</cite> is in one or more cycles in the structure,
+and <tt class="xref xref docutils literal"><span class="pre">False</span></tt> if not.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.structure.Structure.isBondInCycle">
+<tt class="descname">isBondInCycle</tt><big>(</big><em>bond</em><big>)</big><a class="headerlink" href="#rmg.structure.Structure.isBondInCycle" title="Permalink to this definition">¶</a></dt>
+<dd>Return <tt class="xref xref docutils literal"><span class="pre">True</span></tt> if <cite>atom</cite> is in one or more cycles in the structure,
+and <tt class="xref xref docutils literal"><span class="pre">False</span></tt> if not.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.structure.Structure.isCyclic">
+<tt class="descname">isCyclic</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.structure.Structure.isCyclic" title="Permalink to this definition">¶</a></dt>
+<dd>Return <tt class="xref xref docutils literal"><span class="pre">True</span></tt> if one or more cycles are present in the structure
+and <tt class="xref xref docutils literal"><span class="pre">False</span></tt> otherwise.</dd></dl>
+
+<dl class="method">
 <dt id="rmg.structure.Structure.isIsomorphic">
-<tt class="descname">isIsomorphic</tt><big>(</big><em>other</em><big>)</big><a class="headerlink" href="#rmg.structure.Structure.isIsomorphic" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">isIsomorphic</tt><big>(</big><em>other</em>, <em>map12=None</em>, <em>map21=None</em><big>)</big><a class="headerlink" href="#rmg.structure.Structure.isIsomorphic" title="Permalink to this definition">¶</a></dt>
 <dd>Returns <tt class="xref xref docutils literal"><span class="pre">True</span></tt> if two graphs are isomorphic and <tt class="xref xref docutils literal"><span class="pre">False</span></tt>
 otherwise. Uses the VF2 algorithm of Vento and Foggia.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.structure.Structure.isLinear">
+<tt class="descname">isLinear</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.structure.Structure.isLinear" title="Permalink to this definition">¶</a></dt>
+<dd>Return <tt class="xref xref docutils literal"><span class="pre">True</span></tt> if the structure is linear and <tt class="xref xref docutils literal"><span class="pre">False</span></tt> otherwise.</dd></dl>
 
 <dl class="method">
 <dt id="rmg.structure.Structure.isSubgraphIsomorphic">
@@ -238,6 +351,15 @@ bonds as a result of this removal.</dd></dl>
 <tt class="descname">removeBond</tt><big>(</big><em>bond</em><big>)</big><a class="headerlink" href="#rmg.structure.Structure.removeBond" title="Permalink to this definition">¶</a></dt>
 <dd>Remove <cite>bond</cite> from the graph. Does not remove atoms that no longer have
 any bonds as a result of this removal.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.structure.Structure.resetCachedStructureInfo">
+<tt class="descname">resetCachedStructureInfo</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.structure.Structure.resetCachedStructureInfo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reset any cached structural information.</p>
+<p>Call this method when you have modified the graph or structure,
+so that any information (eg. connectivity values, ring locations) that
+we are cacheing, is reset.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="rmg.structure.Structure.simplifyAtomTypes">
@@ -272,7 +394,7 @@ output is a string containing a graph in DOT format, which can be
 passed to graphviz to produce an image; neato is recommended.</p>
 <p>Atoms are visualized as vertices in the outputted graph. Vertices are
 labeled with the atom type(s) of each corresponding     atom. Labeled atoms
-(&#8216;*&#8217;, &#8216;<a href="#id1"><span class="problematic" id="id2">*</span></a>1&#8217;, etc.) are color-coded, with a unique color for each label.
+(&#8216;*&#8217;, &#8216;*1&#8217;, etc.) are color-coded, with a unique color for each label.
 Bonds are indicated with edges; multiple bonds are represented by
 multiple edges between the same pair of vertices. The edge line style is
 used to denote further semantic information: dashed lines indicate
@@ -311,7 +433,7 @@ environment) and complete (i.e. are as detailed as possible).</dd></dl>
 </div>
 </div>
 <div class="section" id="methods-in-rmg-structure">
-<h2>10.2. Methods in <tt class="docutils literal"><span class="pre">rmg.structure</span></tt><a class="headerlink" href="#methods-in-rmg-structure" title="Permalink to this headline">¶</a></h2>
+<h2>11.2. Methods in <tt class="docutils literal"><span class="pre">rmg.structure</span></tt><a class="headerlink" href="#methods-in-rmg-structure" title="Permalink to this headline">¶</a></h2>
 </div>
 </div>
 
@@ -323,23 +445,23 @@ environment) and complete (i.e. are as detailed as possible).</dd></dl>
         <div class="sphinxsidebarwrapper">
             <h3><a href="../../index.html">Table Of Contents</a></h3>
             <ul>
-<li><a class="reference external" href="">10. The <tt class="docutils literal"><span class="pre">rmg.structure</span></tt> Module</a><ul>
-<li><a class="reference external" href="#classes-in-rmg-structure">10.1. Classes in <tt class="docutils literal"><span class="pre">rmg.structure</span></tt></a><ul>
-<li><a class="reference external" href="#invalidadjacencylistexception">10.1.1. InvalidAdjacencyListException</a></li>
-<li><a class="reference external" href="#structure">10.1.2. Structure</a></li>
+<li><a class="reference external" href="">11. The <tt class="docutils literal"><span class="pre">rmg.structure</span></tt> Module</a><ul>
+<li><a class="reference external" href="#classes-in-rmg-structure">11.1. Classes in <tt class="docutils literal"><span class="pre">rmg.structure</span></tt></a><ul>
+<li><a class="reference external" href="#invalidadjacencylistexception">11.1.1. InvalidAdjacencyListException</a></li>
+<li><a class="reference external" href="#structure">11.1.2. Structure</a></li>
 </ul>
 </li>
-<li><a class="reference external" href="#methods-in-rmg-structure">10.2. Methods in <tt class="docutils literal"><span class="pre">rmg.structure</span></tt></a></li>
+<li><a class="reference external" href="#methods-in-rmg-structure">11.2. Methods in <tt class="docutils literal"><span class="pre">rmg.structure</span></tt></a></li>
 </ul>
 </li>
 </ul>
 
             <h4>Previous topic</h4>
             <p class="topless"><a href="rmg-species.html"
-                                  title="previous chapter">9. The <tt class="docutils literal docutils literal docutils literal"><span class="pre">rmg.species</span></tt> Module</a></p>
+                                  title="previous chapter">10. The <tt class="docutils literal docutils literal docutils literal"><span class="pre">rmg.species</span></tt> Module</a></p>
             <h4>Next topic</h4>
-            <p class="topless"><a href="rmg-cantera_loader.html"
-                                  title="next chapter">11. The <tt class="docutils literal docutils literal"><span class="pre">rmg.cantera_loader</span></tt> Module</a></p>
+            <p class="topless"><a href="rmg-thermo.html"
+                                  title="next chapter">12. The <tt class="docutils literal docutils literal"><span class="pre">rmg.thermo</span></tt> Module</a></p>
             <h3>This Page</h3>
             <ul class="this-page-menu">
               <li><a href="../../_sources/documentation/api/rmg-structure.txt"
@@ -380,15 +502,15 @@ environment) and complete (i.e. are as detailed as possible).</dd></dl>
           <a href="../../modindex.html" title="Global Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="rmg-cantera_loader.html" title="11. The rmg.cantera_loader Module"
+          <a href="rmg-thermo.html" title="12. The rmg.thermo Module"
              >next</a> |</li>
         <li class="right" >
-          <a href="rmg-species.html" title="9. The rmg.species Module"
+          <a href="rmg-species.html" title="10. The rmg.species Module"
              >previous</a> |</li>
         <li><a href="../../index.html">RMG v0.0.1 documentation</a> &raquo;</li>
           <li><a href="../index.html" >RMG Documentation</a> &raquo;</li>
           <li><a href="index.html" >RMG Developer&#8217;s Guide</a> &raquo;</li>
-  <li><a href="">10. The <tt class="docutils literal docutils literal docutils literal"><span class="pre">rmg.structure</span></tt> Module</a></li>
+  <li><a href="">11. The <tt class="docutils literal docutils literal"><span class="pre">rmg.structure</span></tt> Module</a></li>
 
       </ul>
     </div>

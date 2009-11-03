@@ -74,16 +74,19 @@
 <dt><a href="documentation/api/rmg-reaction.html#rmg.reaction.ReactionRecipe.addAction">addAction() (rmg.reaction.ReactionRecipe method)</a></dt>
 <dt><a href="documentation/api/rmg-structure.html#rmg.structure.Structure.addAtom">addAtom() (rmg.structure.Structure method)</a></dt>
 <dt><a href="documentation/api/rmg-structure.html#rmg.structure.Structure.addBond">addBond() (rmg.structure.Structure method)</a></dt>
+<dt><a href="documentation/api/rmg-graph.html#rmg.graph.Graph.addEdge">addEdge() (rmg.graph.Graph method)</a></dt>
 <dt><a href="documentation/api/rmg-model.html#rmg.model.CoreEdgeReactionModel.addReactionToCore">addReactionToCore() (rmg.model.CoreEdgeReactionModel method)</a></dt>
 <dt><a href="documentation/api/rmg-model.html#rmg.model.CoreEdgeReactionModel.addReactionToEdge">addReactionToEdge() (rmg.model.CoreEdgeReactionModel method)</a></dt>
 <dt><a href="documentation/api/rmg-model.html#rmg.model.CoreEdgeReactionModel.addSpeciesToCore">addSpeciesToCore() (rmg.model.CoreEdgeReactionModel method)</a></dt>
 <dt><a href="documentation/api/rmg-model.html#rmg.model.CoreEdgeReactionModel.addSpeciesToEdge">addSpeciesToEdge() (rmg.model.CoreEdgeReactionModel method)</a></dt>
-<dt><a href="documentation/api/rmg-data.html#rmg.data.Tree.ancestors">ancestors() (rmg.data.Tree method)</a></dt>
-<dt><a href="documentation/api/rmg-reaction.html#rmg.reaction.ReactionRecipe.apply">apply() (rmg.reaction.ReactionRecipe method)</a></dt></dl></td><td width="33%" valign="top"><dl>
+<dt><a href="documentation/api/rmg-graph.html#rmg.graph.Graph.addVertex">addVertex() (rmg.graph.Graph method)</a></dt>
+<dt><a href="documentation/api/rmg-data.html#rmg.data.Tree.ancestors">ancestors() (rmg.data.Tree method)</a></dt></dl></td><td width="33%" valign="top"><dl>
+<dt><a href="documentation/api/rmg-reaction.html#rmg.reaction.ReactionRecipe.apply">apply() (rmg.reaction.ReactionRecipe method)</a></dt>
 <dt><a href="documentation/api/rmg-reaction.html#rmg.reaction.ReactionRecipe.applyForward">applyForward() (rmg.reaction.ReactionRecipe method)</a></dt>
+<dt><a href="documentation/api/rmg-reaction.html#rmg.reaction.ReactionFamily.applyRecipe">applyRecipe() (rmg.reaction.ReactionFamily method)</a></dt>
 <dt><a href="documentation/api/rmg-reaction.html#rmg.reaction.ReactionRecipe.applyReverse">applyReverse() (rmg.reaction.ReactionRecipe method)</a></dt>
-<dt><a href="documentation/api/rmg-reaction.html#rmg.reaction.ArrheniusEPKinetics">ArrheniusEPKinetics (class in rmg.reaction)</a></dt>
-<dt><a href="documentation/api/rmg-reaction.html#rmg.reaction.ArrheniusKinetics">ArrheniusKinetics (class in rmg.reaction)</a></dt>
+<dt><a href="documentation/api/rmg-kinetics.html#rmg.kinetics.ArrheniusEPKinetics">ArrheniusEPKinetics (class in rmg.kinetics)</a></dt>
+<dt><a href="documentation/api/rmg-kinetics.html#rmg.kinetics.ArrheniusKinetics">ArrheniusKinetics (class in rmg.kinetics)</a></dt>
 <dt><a href="documentation/api/rmg-chem.html#rmg.chem.Atom">Atom (class in rmg.chem)</a></dt>
 <dt><a href="documentation/api/rmg-structure.html#rmg.structure.Structure.atoms">atoms() (rmg.structure.Structure method)</a></dt>
 <dt><a href="documentation/api/rmg-chem.html#rmg.chem.AtomType">AtomType (class in rmg.chem)</a></dt>
@@ -99,6 +102,7 @@
 <dt><a href="documentation/api/rmg-chem.html#rmg.chem.Bond">Bond (class in rmg.chem)</a></dt>
 <dt><a href="documentation/api/rmg-structure.html#rmg.structure.Structure.bonds">bonds() (rmg.structure.Structure method)</a></dt></dl></td><td width="33%" valign="top"><dl>
 <dt><a href="documentation/api/rmg-chem.html#rmg.chem.BondType">BondType (class in rmg.chem)</a></dt>
+<dt><a href="documentation/api/rmg-chem.html#rmg.chem.Bond.bondType">bondType (rmg.chem.Bond attribute)</a></dt>
 </dl></td></tr></table>
 
 <h2 id="C">C</h2>
@@ -106,16 +110,22 @@
 <dl>
 
 <dt><a href="documentation/api/rmg-constants.html#rmg.constants.c">c (in module rmg.constants)</a></dt>
+<dt><a href="documentation/api/rmg-structure.html#rmg.structure.Structure.calculateAtomSymmetryNumber">calculateAtomSymmetryNumber() (rmg.structure.Structure method)</a></dt>
+<dt><a href="documentation/api/rmg-structure.html#rmg.structure.Structure.calculateAxisSymmetryNumber">calculateAxisSymmetryNumber() (rmg.structure.Structure method)</a></dt>
+<dt><a href="documentation/api/rmg-structure.html#rmg.structure.Structure.calculateBondSymmetryNumber">calculateBondSymmetryNumber() (rmg.structure.Structure method)</a></dt>
+<dt><a href="documentation/api/rmg-structure.html#rmg.structure.Structure.calculateCyclicSymmetryNumber">calculateCyclicSymmetryNumber() (rmg.structure.Structure method)</a></dt>
+<dt><a href="documentation/api/rmg-structure.html#rmg.structure.Structure.calculateNumberOfRotors">calculateNumberOfRotors() (rmg.structure.Structure method)</a></dt>
+<dt><a href="documentation/api/rmg-structure.html#rmg.structure.Structure.calculateSymmetryNumber">calculateSymmetryNumber() (rmg.structure.Structure method)</a></dt>
 <dt><a href="documentation/api/rmg-chem.html#rmg.chem.Atom.canDecreaseFreeElectron">canDecreaseFreeElectron() (rmg.chem.Atom method)</a></dt>
 <dt><a href="documentation/api/rmg-chem.html#rmg.chem.Bond.canDecreaseOrder">canDecreaseOrder() (rmg.chem.Bond method)</a></dt>
-<dt><a href="documentation/api/rmg-chem.html#rmg.chem.Atom.canIncreaseFreeElectron">canIncreaseFreeElectron() (rmg.chem.Atom method)</a></dt>
+<dt><a href="documentation/api/rmg-chem.html#rmg.chem.Atom.canIncreaseFreeElectron">canIncreaseFreeElectron() (rmg.chem.Atom method)</a></dt></dl></td><td width="33%" valign="top"><dl>
 <dt><a href="documentation/api/rmg-chem.html#rmg.chem.Bond.canIncreaseOrder">canIncreaseOrder() (rmg.chem.Bond method)</a></dt>
 <dt><a href="documentation/api/rmg-structure.html#rmg.structure.Structure.clearLabeledAtoms">clearLabeledAtoms() (rmg.structure.Structure method)</a></dt>
-<dt><a href="documentation/api/rmg-species.html#rmg.species.ThermoDatabase.contains">contains() (rmg.species.ThermoDatabase method)</a></dt></dl></td><td width="33%" valign="top"><dl>
 <dt><a href="documentation/api/rmg-structure.html#rmg.structure.Structure.containsLabeledAtom">containsLabeledAtom() (rmg.structure.Structure method)</a></dt>
 <dt><a href="documentation/api/rmg-chem.html#rmg.chem.Atom.copy">copy() (rmg.chem.Atom method)</a></dt>
   <dd><dl>
     <dt><a href="documentation/api/rmg-chem.html#rmg.chem.Bond.copy">(rmg.chem.Bond method)</a></dt>
+    <dt><a href="documentation/api/rmg-graph.html#rmg.graph.Graph.copy">(rmg.graph.Graph method)</a></dt>
     <dt><a href="documentation/api/rmg-structure.html#rmg.structure.Structure.copy">(rmg.structure.Structure method)</a></dt>
   </dl></dd>
 <dt><a href="documentation/api/rmg-model.html#rmg.model.CoreEdgeReactionModel">CoreEdgeReactionModel (class in rmg.model)</a></dt>
@@ -140,6 +150,7 @@
 <table width="100%" class="indextable"><tr><td width="33%" valign="top">
 <dl>
 
+<dt><a href="documentation/api/rmg-graph.html#rmg.graph.Graph.edges">edges() (rmg.graph.Graph method)</a></dt>
 <dt><a href="documentation/api/rmg-chem.html#rmg.chem.ElectronState">ElectronState (class in rmg.chem)</a></dt>
 <dt><a href="documentation/api/rmg-chem.html#rmg.chem.Atom.electronState">electronState (rmg.chem.Atom attribute)</a></dt>
 <dt><a href="documentation/api/rmg-chem.html#rmg.chem.Element">Element (class in rmg.chem)</a></dt>
@@ -160,8 +171,9 @@
 <dl>
 
 <dt><a href="documentation/api/rmg-structure.html#rmg.structure.Structure.findAllDelocalizationPaths">findAllDelocalizationPaths() (rmg.structure.Structure method)</a></dt>
-<dt><a href="documentation/api/rmg-species.html#rmg.species.Species.findSubgraphIsomorphisms">findSubgraphIsomorphisms() (rmg.species.Species method)</a></dt>
+<dt><a href="documentation/api/rmg-graph.html#rmg.graph.Graph.findSubgraphIsomorphisms">findSubgraphIsomorphisms() (rmg.graph.Graph method)</a></dt>
   <dd><dl>
+    <dt><a href="documentation/api/rmg-species.html#rmg.species.Species.findSubgraphIsomorphisms">(rmg.species.Species method)</a></dt>
     <dt><a href="documentation/api/rmg-structure.html#rmg.structure.Structure.findSubgraphIsomorphisms">(rmg.structure.Structure method)</a></dt>
   </dl></dd>
 <dt><a href="documentation/api/rmg-species.html#rmg.species.Species.fromAdjacencyList">fromAdjacencyList() (rmg.species.Species method)</a></dt>
@@ -172,9 +184,9 @@
   <dd><dl>
     <dt><a href="documentation/api/rmg-structure.html#rmg.structure.Structure.fromCML">(rmg.structure.Structure method)</a></dt>
   </dl></dd>
-<dt><a href="documentation/api/rmg-reaction.html#rmg.reaction.ArrheniusEPKinetics.fromDatabase">fromDatabase() (rmg.reaction.ArrheniusEPKinetics method)</a></dt>
+<dt><a href="documentation/api/rmg-kinetics.html#rmg.kinetics.ArrheniusEPKinetics.fromDatabase">fromDatabase() (rmg.kinetics.ArrheniusEPKinetics method)</a></dt>
   <dd><dl>
-    <dt><a href="documentation/api/rmg-species.html#rmg.species.ThermoGAData.fromDatabase">(rmg.species.ThermoGAData method)</a></dt>
+    <dt><a href="documentation/api/rmg-thermo.html#rmg.thermo.ThermoGAData.fromDatabase">(rmg.thermo.ThermoGAData method)</a></dt>
   </dl></dd></dl></td><td width="33%" valign="top"><dl>
 <dt><a href="documentation/api/rmg-species.html#rmg.species.Species.fromInChI">fromInChI() (rmg.species.Species method)</a></dt>
   <dd><dl>
@@ -194,42 +206,84 @@
 <table width="100%" class="indextable"><tr><td width="33%" valign="top">
 <dl>
 
+<dt><a href="documentation/api/rmg-main.html#rmg.main.generateExecutionPlots">generateExecutionPlots() (in module rmg.main)</a></dt>
 <dt><a href="documentation/api/rmg-reaction.html#rmg.reaction.ReactionFamily.generateMissingEntriesFromAbove">generateMissingEntriesFromAbove() (rmg.reaction.ReactionFamily method)</a></dt>
 <dt><a href="documentation/api/rmg-reaction.html#rmg.reaction.ReactionFamily.generateMissingEntriesFromBelow">generateMissingEntriesFromBelow() (rmg.reaction.ReactionFamily method)</a></dt>
-<dt><a href="documentation/api/rmg-reaction.html#rmg.reaction.ArrheniusEPKinetics.getActivationEnergy">getActivationEnergy() (rmg.reaction.ArrheniusEPKinetics method)</a></dt>
+<dt><a href="documentation/api/rmg-species.html#rmg.species.Species.generateThermoData">generateThermoData() (rmg.species.Species method)</a></dt>
+<dt><a href="documentation/api/rmg-kinetics.html#rmg.kinetics.ArrheniusEPKinetics.getActivationEnergy">getActivationEnergy() (rmg.kinetics.ArrheniusEPKinetics method)</a></dt>
 <dt><a href="documentation/api/rmg-structure.html#rmg.structure.Structure.getAdjacentResonanceIsomers">getAdjacentResonanceIsomers() (rmg.structure.Structure method)</a></dt>
-<dt><a href="documentation/api/rmg-reaction.html#rmg.reaction.ArrheniusEPKinetics.getArrhenius">getArrhenius() (rmg.reaction.ArrheniusEPKinetics method)</a></dt>
+<dt><a href="documentation/api/rmg-graph.html#rmg.graph.Graph.getAllCycles">getAllCycles() (rmg.graph.Graph method)</a></dt>
+  <dd><dl>
+    <dt><a href="documentation/api/rmg-structure.html#rmg.structure.Structure.getAllCycles">(rmg.structure.Structure method)</a></dt>
+  </dl></dd>
+<dt><a href="documentation/api/rmg-kinetics.html#rmg.kinetics.ArrheniusEPKinetics.getArrhenius">getArrhenius() (rmg.kinetics.ArrheniusEPKinetics method)</a></dt>
 <dt><a href="documentation/api/rmg-chem.html#rmg.chem.Atom.getAtomType">getAtomType() (rmg.chem.Atom method)</a></dt>
 <dt><a href="documentation/api/rmg-reaction.html#rmg.reaction.Reaction.getBestKinetics">getBestKinetics() (rmg.reaction.Reaction method)</a></dt>
 <dt><a href="documentation/api/rmg-structure.html#rmg.structure.Structure.getBond">getBond() (rmg.structure.Structure method)</a></dt>
 <dt><a href="documentation/api/rmg-structure.html#rmg.structure.Structure.getBonds">getBonds() (rmg.structure.Structure method)</a></dt>
+<dt><a href="documentation/api/rmg-chem.html#rmg.chem.Bond.getBondType">getBondType() (rmg.chem.Bond method)</a></dt>
 <dt><a href="documentation/api/rmg-cantera_loader.html#rmg.cantera_loader.species.getCorrectNasaPoly">getCorrectNasaPoly() (rmg.cantera_loader.species method)</a></dt>
 <dt><a href="documentation/api/rmg-data.html#rmg.data.Library.getData">getData() (rmg.data.Library method)</a></dt>
 <dt><a href="documentation/api/rmg-cantera_loader.html#rmg.cantera_loader.reaction.getDeltaNu">getDeltaNu() (rmg.cantera_loader.reaction method)</a></dt>
 <dt><a href="documentation/api/rmg-model.html#rmg.model.IdealGas.getdPdNi">getdPdNi() (rmg.model.IdealGas method)</a></dt>
+  <dd><dl>
+    <dt><a href="documentation/api/rmg-model.html#rmg.model.IncompressibleLiquid.getdPdNi">(rmg.model.IncompressibleLiquid method)</a></dt>
+  </dl></dd>
 <dt><a href="documentation/api/rmg-model.html#rmg.model.IdealGas.getdPdT">getdPdT() (rmg.model.IdealGas method)</a></dt>
+  <dd><dl>
+    <dt><a href="documentation/api/rmg-model.html#rmg.model.IncompressibleLiquid.getdPdT">(rmg.model.IncompressibleLiquid method)</a></dt>
+  </dl></dd>
 <dt><a href="documentation/api/rmg-model.html#rmg.model.IdealGas.getdPdV">getdPdV() (rmg.model.IdealGas method)</a></dt>
+  <dd><dl>
+    <dt><a href="documentation/api/rmg-model.html#rmg.model.IncompressibleLiquid.getdPdV">(rmg.model.IncompressibleLiquid method)</a></dt>
+  </dl></dd>
 <dt><a href="documentation/api/rmg-model.html#rmg.model.IdealGas.getdTdNi">getdTdNi() (rmg.model.IdealGas method)</a></dt>
+  <dd><dl>
+    <dt><a href="documentation/api/rmg-model.html#rmg.model.IncompressibleLiquid.getdTdNi">(rmg.model.IncompressibleLiquid method)</a></dt>
+  </dl></dd>
 <dt><a href="documentation/api/rmg-model.html#rmg.model.IdealGas.getdTdP">getdTdP() (rmg.model.IdealGas method)</a></dt>
+  <dd><dl>
+    <dt><a href="documentation/api/rmg-model.html#rmg.model.IncompressibleLiquid.getdTdP">(rmg.model.IncompressibleLiquid method)</a></dt>
+  </dl></dd>
 <dt><a href="documentation/api/rmg-model.html#rmg.model.IdealGas.getdTdV">getdTdV() (rmg.model.IdealGas method)</a></dt>
+  <dd><dl>
+    <dt><a href="documentation/api/rmg-model.html#rmg.model.IncompressibleLiquid.getdTdV">(rmg.model.IncompressibleLiquid method)</a></dt>
+  </dl></dd>
 <dt><a href="documentation/api/rmg-model.html#rmg.model.IdealGas.getdVdNi">getdVdNi() (rmg.model.IdealGas method)</a></dt>
+  <dd><dl>
+    <dt><a href="documentation/api/rmg-model.html#rmg.model.IncompressibleLiquid.getdVdNi">(rmg.model.IncompressibleLiquid method)</a></dt>
+  </dl></dd>
 <dt><a href="documentation/api/rmg-model.html#rmg.model.IdealGas.getdVdP">getdVdP() (rmg.model.IdealGas method)</a></dt>
+  <dd><dl>
+    <dt><a href="documentation/api/rmg-model.html#rmg.model.IncompressibleLiquid.getdVdP">(rmg.model.IncompressibleLiquid method)</a></dt>
+  </dl></dd>
 <dt><a href="documentation/api/rmg-model.html#rmg.model.IdealGas.getdVdT">getdVdT() (rmg.model.IdealGas method)</a></dt>
+  <dd><dl>
+    <dt><a href="documentation/api/rmg-model.html#rmg.model.IncompressibleLiquid.getdVdT">(rmg.model.IncompressibleLiquid method)</a></dt>
+  </dl></dd>
+<dt><a href="documentation/api/rmg-graph.html#rmg.graph.Graph.getEdge">getEdge() (rmg.graph.Graph method)</a></dt>
+<dt><a href="documentation/api/rmg-graph.html#rmg.graph.Graph.getEdges">getEdges() (rmg.graph.Graph method)</a></dt>
 <dt><a href="documentation/api/rmg-chem.html#rmg.chem.Atom.getElectronState">getElectronState() (rmg.chem.Atom method)</a></dt>
 <dt><a href="documentation/api/rmg-chem.html#rmg.chem.Atom.getElement">getElement() (rmg.chem.Atom method)</a></dt>
 <dt><a href="documentation/api/rmg-io.html#rmg.io.getElements">getElements() (in module rmg.io)</a></dt>
 <dt><a href="documentation/api/rmg-io.html#rmg.io.getElementText">getElementText() (in module rmg.io)</a></dt>
 <dt><a href="documentation/api/rmg-species.html#rmg.species.Species.getEnthalpy">getEnthalpy() (rmg.species.Species method)</a></dt>
   <dd><dl>
-    <dt><a href="documentation/api/rmg-species.html#rmg.species.ThermoGAData.getEnthalpy">(rmg.species.ThermoGAData method)</a></dt>
+    <dt><a href="documentation/api/rmg-thermo.html#rmg.thermo.ThermoGAData.getEnthalpy">(rmg.thermo.ThermoGAData method)</a></dt>
+    <dt><a href="documentation/api/rmg-thermo.html#rmg.thermo.ThermoNASAData.getEnthalpy">(rmg.thermo.ThermoNASAData method)</a></dt>
+    <dt><a href="documentation/api/rmg-thermo.html#rmg.thermo.ThermoNASAPolynomial.getEnthalpy">(rmg.thermo.ThermoNASAPolynomial method)</a></dt>
+    <dt><a href="documentation/api/rmg-thermo.html#rmg.thermo.ThermoWilhoitData.getEnthalpy">(rmg.thermo.ThermoWilhoitData method)</a></dt>
   </dl></dd>
 <dt><a href="documentation/api/rmg-reaction.html#rmg.reaction.Reaction.getEnthalpyOfReaction">getEnthalpyOfReaction() (rmg.reaction.Reaction method)</a></dt>
 <dt><a href="documentation/api/rmg-species.html#rmg.species.Species.getEntropy">getEntropy() (rmg.species.Species method)</a></dt>
   <dd><dl>
-    <dt><a href="documentation/api/rmg-species.html#rmg.species.ThermoGAData.getEntropy">(rmg.species.ThermoGAData method)</a></dt>
+    <dt><a href="documentation/api/rmg-thermo.html#rmg.thermo.ThermoGAData.getEntropy">(rmg.thermo.ThermoGAData method)</a></dt>
+    <dt><a href="documentation/api/rmg-thermo.html#rmg.thermo.ThermoNASAData.getEntropy">(rmg.thermo.ThermoNASAData method)</a></dt>
+    <dt><a href="documentation/api/rmg-thermo.html#rmg.thermo.ThermoNASAPolynomial.getEntropy">(rmg.thermo.ThermoNASAPolynomial method)</a></dt>
+    <dt><a href="documentation/api/rmg-thermo.html#rmg.thermo.ThermoWilhoitData.getEntropy">(rmg.thermo.ThermoWilhoitData method)</a></dt>
   </dl></dd>
 <dt><a href="documentation/api/rmg-reaction.html#rmg.reaction.Reaction.getEntropyOfReaction">getEntropyOfReaction() (rmg.reaction.Reaction method)</a></dt>
-<dt><a href="documentation/api/rmg-reaction.html#rmg.reaction.Reaction.getEquilibriumConstant">getEquilibriumConstant() (rmg.reaction.Reaction method)</a></dt>
+<dt><a href="documentation/api/rmg-reaction.html#rmg.reaction.Reaction.getEquilibriumConstant">getEquilibriumConstant() (rmg.reaction.Reaction method)</a></dt></dl></td><td width="33%" valign="top"><dl>
 <dt><a href="documentation/api/rmg-io.html#rmg.io.getFirstChildElement">getFirstChildElement() (in module rmg.io)</a></dt>
 <dt><a href="documentation/api/rmg-species.html#rmg.species.Species.getFormula">getFormula() (rmg.species.Species method)</a></dt>
   <dd><dl>
@@ -238,24 +292,34 @@
 <dt><a href="documentation/api/rmg-chem.html#rmg.chem.Atom.getFreeElectronCount">getFreeElectronCount() (rmg.chem.Atom method)</a></dt>
 <dt><a href="documentation/api/rmg-species.html#rmg.species.Species.getFreeEnergy">getFreeEnergy() (rmg.species.Species method)</a></dt>
   <dd><dl>
-    <dt><a href="documentation/api/rmg-species.html#rmg.species.ThermoGAData.getFreeEnergy">(rmg.species.ThermoGAData method)</a></dt>
-  </dl></dd></dl></td><td width="33%" valign="top"><dl>
+    <dt><a href="documentation/api/rmg-thermo.html#rmg.thermo.ThermoGAData.getFreeEnergy">(rmg.thermo.ThermoGAData method)</a></dt>
+    <dt><a href="documentation/api/rmg-thermo.html#rmg.thermo.ThermoNASAData.getFreeEnergy">(rmg.thermo.ThermoNASAData method)</a></dt>
+    <dt><a href="documentation/api/rmg-thermo.html#rmg.thermo.ThermoNASAPolynomial.getFreeEnergy">(rmg.thermo.ThermoNASAPolynomial method)</a></dt>
+    <dt><a href="documentation/api/rmg-thermo.html#rmg.thermo.ThermoWilhoitData.getFreeEnergy">(rmg.thermo.ThermoWilhoitData method)</a></dt>
+  </dl></dd>
 <dt><a href="documentation/api/rmg-reaction.html#rmg.reaction.Reaction.getFreeEnergyOfReaction">getFreeEnergyOfReaction() (rmg.reaction.Reaction method)</a></dt>
 <dt><a href="documentation/api/rmg-species.html#rmg.species.Species.getHeatCapacity">getHeatCapacity() (rmg.species.Species method)</a></dt>
   <dd><dl>
-    <dt><a href="documentation/api/rmg-species.html#rmg.species.ThermoGAData.getHeatCapacity">(rmg.species.ThermoGAData method)</a></dt>
+    <dt><a href="documentation/api/rmg-thermo.html#rmg.thermo.ThermoGAData.getHeatCapacity">(rmg.thermo.ThermoGAData method)</a></dt>
+    <dt><a href="documentation/api/rmg-thermo.html#rmg.thermo.ThermoNASAData.getHeatCapacity">(rmg.thermo.ThermoNASAData method)</a></dt>
+    <dt><a href="documentation/api/rmg-thermo.html#rmg.thermo.ThermoNASAPolynomial.getHeatCapacity">(rmg.thermo.ThermoNASAPolynomial method)</a></dt>
+    <dt><a href="documentation/api/rmg-thermo.html#rmg.thermo.ThermoWilhoitData.getHeatCapacity">(rmg.thermo.ThermoWilhoitData method)</a></dt>
   </dl></dd>
+<dt><a href="documentation/api/rmg-model.html#rmg.model.BatchReactor.getJacobian">getJacobian() (rmg.model.BatchReactor method)</a></dt>
 <dt><a href="documentation/api/rmg-reaction.html#rmg.reaction.ReactionFamily.getKinetics">getKinetics() (rmg.reaction.ReactionFamily method)</a></dt>
 <dt><a href="documentation/api/rmg-structure.html#rmg.structure.Structure.getLabeledAtom">getLabeledAtom() (rmg.structure.Structure method)</a></dt>
 <dt><a href="documentation/api/rmg-structure.html#rmg.structure.Structure.getLabeledAtoms">getLabeledAtoms() (rmg.structure.Structure method)</a></dt>
 <dt><a href="documentation/api/rmg-model.html#rmg.model.CoreEdgeReactionModel.getLists">getLists() (rmg.model.CoreEdgeReactionModel method)</a></dt>
 <dt><a href="documentation/api/rmg-model.html#rmg.model.IdealGas.getPressure">getPressure() (rmg.model.IdealGas method)</a></dt>
+  <dd><dl>
+    <dt><a href="documentation/api/rmg-model.html#rmg.model.IncompressibleLiquid.getPressure">(rmg.model.IncompressibleLiquid method)</a></dt>
+  </dl></dd>
 <dt><a href="documentation/api/rmg-cantera_loader.html#rmg.cantera_loader.reaction.getProductNu">getProductNu() (rmg.cantera_loader.reaction method)</a></dt>
 <dt><a href="documentation/api/rmg-structure.html#rmg.structure.Structure.getRadicalCount">getRadicalCount() (rmg.structure.Structure method)</a></dt>
 <dt><a href="documentation/api/rmg-reaction.html#rmg.reaction.Reaction.getRate">getRate() (rmg.reaction.Reaction method)</a></dt>
-<dt><a href="documentation/api/rmg-reaction.html#rmg.reaction.ArrheniusEPKinetics.getRateConstant">getRateConstant() (rmg.reaction.ArrheniusEPKinetics method)</a></dt>
+<dt><a href="documentation/api/rmg-kinetics.html#rmg.kinetics.ArrheniusEPKinetics.getRateConstant">getRateConstant() (rmg.kinetics.ArrheniusEPKinetics method)</a></dt>
   <dd><dl>
-    <dt><a href="documentation/api/rmg-reaction.html#rmg.reaction.ArrheniusKinetics.getRateConstant">(rmg.reaction.ArrheniusKinetics method)</a></dt>
+    <dt><a href="documentation/api/rmg-kinetics.html#rmg.kinetics.ArrheniusKinetics.getRateConstant">(rmg.kinetics.ArrheniusKinetics method)</a></dt>
     <dt><a href="documentation/api/rmg-reaction.html#rmg.reaction.Reaction.getRateConstant">(rmg.reaction.Reaction method)</a></dt>
   </dl></dd>
 <dt><a href="documentation/api/rmg-cantera_loader.html#rmg.cantera_loader.reaction.getReactantNu">getReactantNu() (rmg.cantera_loader.reaction method)</a></dt>
@@ -267,25 +331,32 @@
 <dt><a href="documentation/api/rmg-reaction.html#rmg.reaction.ReactionFamilySet.getReactions">getReactions() (rmg.reaction.ReactionFamilySet method)</a></dt>
 <dt><a href="documentation/api/rmg-model.html#rmg.model.BatchReactor.getResidual">getResidual() (rmg.model.BatchReactor method)</a></dt>
 <dt><a href="documentation/api/rmg-species.html#rmg.species.Species.getResonanceIsomers">getResonanceIsomers() (rmg.species.Species method)</a></dt>
-<dt><a href="documentation/api/rmg-reaction.html#rmg.reaction.ArrheniusKinetics.getReverse">getReverse() (rmg.reaction.ArrheniusKinetics method)</a></dt>
+<dt><a href="documentation/api/rmg-kinetics.html#rmg.kinetics.ArrheniusKinetics.getReverse">getReverse() (rmg.kinetics.ArrheniusKinetics method)</a></dt>
   <dd><dl>
     <dt><a href="documentation/api/rmg-reaction.html#rmg.reaction.ReactionRecipe.getReverse">(rmg.reaction.ReactionRecipe method)</a></dt>
   </dl></dd>
 <dt><a href="documentation/api/rmg-cantera_loader.html#rmg.cantera_loader.NASA.getRmgPolynomial">getRmgPolynomial() (rmg.cantera_loader.NASA method)</a></dt>
 <dt><a href="documentation/api/rmg-cantera_loader.html#rmg.cantera_loader.reaction.getRmgReaction">getRmgReaction() (rmg.cantera_loader.reaction method)</a></dt>
 <dt><a href="documentation/api/rmg-cantera_loader.html#rmg.cantera_loader.species.getRmgSpecies">getRmgSpecies() (rmg.cantera_loader.species method)</a></dt>
-<dt><a href="documentation/api/rmg-structure.html#rmg.structure.Structure.getSmallestSetOfSmallestRings">getSmallestSetOfSmallestRings() (rmg.structure.Structure method)</a></dt>
-<dt><a href="documentation/api/rmg-cantera_loader.html#rmg.cantera_loader.getSpeciesByName">getSpeciesByName() (in module rmg.cantera_loader)</a></dt>
-<dt><a href="documentation/api/rmg-reaction.html#rmg.reaction.Reaction.getStoichiometricCoefficient">getStoichiometricCoefficient() (rmg.reaction.Reaction method)</a></dt>
-<dt><a href="documentation/api/rmg-model.html#rmg.model.IdealGas.getTemperature">getTemperature() (rmg.model.IdealGas method)</a></dt>
-<dt><a href="documentation/api/rmg-reaction.html#rmg.reaction.ReactionFamily.getTemplateLists">getTemplateLists() (rmg.reaction.ReactionFamily method)</a></dt>
-<dt><a href="documentation/api/rmg-species.html#rmg.species.getThermoData">getThermoData() (in module rmg.species)</a></dt>
+<dt><a href="documentation/api/rmg-graph.html#rmg.graph.Graph.getSmallestSetOfSmallestRings">getSmallestSetOfSmallestRings() (rmg.graph.Graph method)</a></dt>
   <dd><dl>
-    <dt><a href="documentation/api/rmg-species.html#rmg.species.Species.getThermoData">(rmg.species.Species method)</a></dt>
-    <dt><a href="documentation/api/rmg-species.html#rmg.species.ThermoDatabase.getThermoData">(rmg.species.ThermoDatabase method)</a></dt>
-    <dt><a href="documentation/api/rmg-species.html#rmg.species.ThermoDatabaseSet.getThermoData">(rmg.species.ThermoDatabaseSet method)</a></dt>
+    <dt><a href="documentation/api/rmg-structure.html#rmg.structure.Structure.getSmallestSetOfSmallestRings">(rmg.structure.Structure method)</a></dt>
   </dl></dd>
+<dt><a href="documentation/api/rmg-cantera_loader.html#rmg.cantera_loader.getSpeciesByName">getSpeciesByName() (in module rmg.cantera_loader)</a></dt>
+<dt><a href="documentation/api/rmg-model.html#rmg.model.BatchReactor.getSpeciesFluxes">getSpeciesFluxes() (rmg.model.BatchReactor method)</a></dt>
+<dt><a href="documentation/api/rmg-reaction.html#rmg.reaction.Reaction.getStoichiometricCoefficient">getStoichiometricCoefficient() (rmg.reaction.Reaction method)</a></dt>
+<dt><a href="documentation/api/rmg-model.html#rmg.model.CoreEdgeReactionModel.getStoichiometryMatrix">getStoichiometryMatrix() (rmg.model.CoreEdgeReactionModel method)</a></dt>
+<dt><a href="documentation/api/rmg-model.html#rmg.model.IdealGas.getTemperature">getTemperature() (rmg.model.IdealGas method)</a></dt>
+  <dd><dl>
+    <dt><a href="documentation/api/rmg-model.html#rmg.model.IncompressibleLiquid.getTemperature">(rmg.model.IncompressibleLiquid method)</a></dt>
+  </dl></dd>
+<dt><a href="documentation/api/rmg-reaction.html#rmg.reaction.ReactionFamily.getTemplateLists">getTemplateLists() (rmg.reaction.ReactionFamily method)</a></dt>
+<dt><a href="documentation/api/rmg-species.html#rmg.species.Species.getThermoData">getThermoData() (rmg.species.Species method)</a></dt>
 <dt><a href="documentation/api/rmg-model.html#rmg.model.IdealGas.getVolume">getVolume() (rmg.model.IdealGas method)</a></dt>
+  <dd><dl>
+    <dt><a href="documentation/api/rmg-model.html#rmg.model.IncompressibleLiquid.getVolume">(rmg.model.IncompressibleLiquid method)</a></dt>
+  </dl></dd>
+<dt><a href="documentation/api/rmg-graph.html#rmg.graph.Graph">Graph (class in rmg.graph)</a></dt>
 </dl></td></tr></table>
 
 <h2 id="H">H</h2>
@@ -294,7 +365,8 @@
 
 <dt><a href="documentation/api/rmg-constants.html#rmg.constants.h">h (in module rmg.constants)</a></dt>
 <dt><a href="documentation/api/rmg-structure.html#rmg.structure.Structure.hasBond">hasBond() (rmg.structure.Structure method)</a></dt>
-<dt><a href="documentation/api/rmg-chem.html#rmg.chem.Atom.hasFreeElectron">hasFreeElectron() (rmg.chem.Atom method)</a></dt></dl></td><td width="33%" valign="top"><dl>
+<dt><a href="documentation/api/rmg-graph.html#rmg.graph.Graph.hasEdge">hasEdge() (rmg.graph.Graph method)</a></dt></dl></td><td width="33%" valign="top"><dl>
+<dt><a href="documentation/api/rmg-chem.html#rmg.chem.Atom.hasFreeElectron">hasFreeElectron() (rmg.chem.Atom method)</a></dt>
 <dt><a href="documentation/api/rmg-data.html#rmg.data.Library.hashLabels">hashLabels() (rmg.data.Library method)</a></dt>
 </dl></td></tr></table>
 
@@ -303,6 +375,7 @@
 <dl>
 
 <dt><a href="documentation/api/rmg-model.html#rmg.model.IdealGas">IdealGas (class in rmg.model)</a></dt>
+<dt><a href="documentation/api/rmg-model.html#rmg.model.IncompressibleLiquid">IncompressibleLiquid (class in rmg.model)</a></dt>
 <dt><a href="documentation/api/rmg-chem.html#rmg.chem.Atom.increaseFreeElectron">increaseFreeElectron() (rmg.chem.Atom method)</a></dt>
 <dt><a href="documentation/api/rmg-chem.html#rmg.chem.Bond.increaseOrder">increaseOrder() (rmg.chem.Bond method)</a></dt>
 <dt><a href="documentation/api/rmg-model.html#rmg.model.CoreEdgeReactionModel.initialize">initialize() (rmg.model.CoreEdgeReactionModel method)</a></dt>
@@ -312,32 +385,41 @@
 <dt><a href="documentation/api/rmg-main.html#rmg.main.initializeLog">initializeLog() (in module rmg.main)</a></dt>
 <dt><a href="documentation/api/rmg-reaction.html#rmg.reaction.InvalidActionException">InvalidActionException (class in rmg.reaction)</a></dt>
 <dt><a href="documentation/api/rmg-structure.html#rmg.structure.InvalidAdjacencyListException">InvalidAdjacencyListException (class in rmg.structure)</a></dt>
+<dt><a href="documentation/api/rmg-chem.html#rmg.chem.InvalidChemicalActionException">InvalidChemicalActionException (class in rmg.chem)</a></dt>
 <dt><a href="documentation/api/rmg-data.html#rmg.data.InvalidDatabaseException">InvalidDatabaseException (class in rmg.data)</a></dt>
 <dt><a href="documentation/api/rmg-io.html#rmg.io.InvalidInputFileException">InvalidInputFileException (class in rmg.io)</a></dt>
 <dt><a href="documentation/api/rmg-model.html#rmg.model.InvalidReactionSystemException">InvalidReactionSystemException (class in rmg.model)</a></dt>
+<dt><a href="documentation/api/rmg-structure.html#rmg.structure.Structure.isAtomInCycle">isAtomInCycle() (rmg.structure.Structure method)</a></dt>
 <dt><a href="documentation/api/rmg-chem.html#rmg.chem.Bond.isBenzene">isBenzene() (rmg.chem.Bond method)</a></dt>
 <dt><a href="documentation/api/rmg-reaction.html#rmg.reaction.Reaction.isBimolecular">isBimolecular() (rmg.reaction.Reaction method)</a></dt>
+<dt><a href="documentation/api/rmg-structure.html#rmg.structure.Structure.isBondInCycle">isBondInCycle() (rmg.structure.Structure method)</a></dt>
 <dt><a href="documentation/api/rmg-chem.html#rmg.chem.Atom.isCarbon">isCarbon() (rmg.chem.Atom method)</a></dt>
 <dt><a href="documentation/api/rmg-chem.html#rmg.chem.Atom.isCenter">isCenter() (rmg.chem.Atom method)</a></dt>
+<dt><a href="documentation/api/rmg-structure.html#rmg.structure.Structure.isCyclic">isCyclic() (rmg.structure.Structure method)</a></dt>
 <dt><a href="documentation/api/rmg-chem.html#rmg.chem.Bond.isDouble">isDouble() (rmg.chem.Bond method)</a></dt></dl></td><td width="33%" valign="top"><dl>
 <dt><a href="documentation/api/rmg-chem.html#rmg.chem.Atom.isElement">isElement() (rmg.chem.Atom method)</a></dt>
 <dt><a href="documentation/api/rmg-chem.html#rmg.chem.Atom.isHydrogen">isHydrogen() (rmg.chem.Atom method)</a></dt>
-<dt><a href="documentation/api/rmg-species.html#rmg.species.Species.isIsomorphic">isIsomorphic() (rmg.species.Species method)</a></dt>
+<dt><a href="documentation/api/rmg-graph.html#rmg.graph.Graph.isIsomorphic">isIsomorphic() (rmg.graph.Graph method)</a></dt>
   <dd><dl>
+    <dt><a href="documentation/api/rmg-species.html#rmg.species.Species.isIsomorphic">(rmg.species.Species method)</a></dt>
     <dt><a href="documentation/api/rmg-structure.html#rmg.structure.Structure.isIsomorphic">(rmg.structure.Structure method)</a></dt>
   </dl></dd>
+<dt><a href="documentation/api/rmg-structure.html#rmg.structure.Structure.isLinear">isLinear() (rmg.structure.Structure method)</a></dt>
 <dt><a href="documentation/api/rmg-model.html#rmg.model.BatchReactor.isModelValid">isModelValid() (rmg.model.BatchReactor method)</a></dt>
 <dt><a href="documentation/api/rmg-chem.html#rmg.chem.Atom.isNonHydrogen">isNonHydrogen() (rmg.chem.Atom method)</a></dt>
 <dt><a href="documentation/api/rmg-chem.html#rmg.chem.Atom.isOxygen">isOxygen() (rmg.chem.Atom method)</a></dt>
 <dt><a href="documentation/api/rmg-chem.html#rmg.chem.Bond.isSingle">isSingle() (rmg.chem.Bond method)</a></dt>
-<dt><a href="documentation/api/rmg-species.html#rmg.species.Species.isSubgraphIsomorphic">isSubgraphIsomorphic() (rmg.species.Species method)</a></dt>
+<dt><a href="documentation/api/rmg-graph.html#rmg.graph.Graph.isSubgraphIsomorphic">isSubgraphIsomorphic() (rmg.graph.Graph method)</a></dt>
   <dd><dl>
+    <dt><a href="documentation/api/rmg-species.html#rmg.species.Species.isSubgraphIsomorphic">(rmg.species.Species method)</a></dt>
     <dt><a href="documentation/api/rmg-structure.html#rmg.structure.Structure.isSubgraphIsomorphic">(rmg.structure.Structure method)</a></dt>
   </dl></dd>
-<dt><a href="documentation/api/rmg-reaction.html#rmg.reaction.Kinetics.isTemperatureInRange">isTemperatureInRange() (rmg.reaction.Kinetics method)</a></dt>
+<dt><a href="documentation/api/rmg-kinetics.html#rmg.kinetics.Kinetics.isTemperatureInRange">isTemperatureInRange() (rmg.kinetics.Kinetics method)</a></dt>
+<dt><a href="documentation/api/rmg-thermo.html#rmg.thermo.ThermoData.isTemperatureValid">isTemperatureValid() (rmg.thermo.ThermoData method)</a></dt>
 <dt><a href="documentation/api/rmg-chem.html#rmg.chem.Bond.isTriple">isTriple() (rmg.chem.Bond method)</a></dt>
 <dt><a href="documentation/api/rmg-reaction.html#rmg.reaction.Reaction.isUnimolecular">isUnimolecular() (rmg.reaction.Reaction method)</a></dt>
-<dt><a href="documentation/api/rmg-model.html#rmg.model.CoreEdgeReactionModel.isValid">isValid() (rmg.model.CoreEdgeReactionModel method)</a></dt>
+<dt><a href="documentation/api/rmg-species.html#rmg.species.ThermoSnapshot.isValid">isValid() (rmg.species.ThermoSnapshot method)</a></dt>
+<dt><a href="documentation/api/rmg-graph.html#rmg.graph.Graph.isVertexInCycle">isVertexInCycle() (rmg.graph.Graph method)</a></dt>
 <dt><a href="documentation/api/rmg-data.html#rmg.data.Database.isWellFormed">isWellFormed() (rmg.data.Database method)</a></dt>
 </dl></td></tr></table>
 
@@ -346,7 +428,7 @@
 <dl>
 
 <dt><a href="documentation/api/rmg-constants.html#rmg.constants.kB">kB (in module rmg.constants)</a></dt>
-<dt><a href="documentation/api/rmg-reaction.html#rmg.reaction.Kinetics">Kinetics (class in rmg.reaction)</a></dt></dl></td><td width="33%" valign="top"><dl>
+<dt><a href="documentation/api/rmg-kinetics.html#rmg.kinetics.Kinetics">Kinetics (class in rmg.kinetics)</a></dt></dl></td><td width="33%" valign="top"><dl>
 </dl></td></tr></table>
 
 <h2 id="L">L</h2>
@@ -361,10 +443,8 @@
     <dt><a href="documentation/api/rmg-data.html#rmg.data.Tree.load">(rmg.data.Tree method)</a></dt>
     <dt><a href="documentation/api/rmg-reaction.html#rmg.reaction.ReactionFamily.load">(rmg.reaction.ReactionFamily method)</a></dt>
     <dt><a href="documentation/api/rmg-reaction.html#rmg.reaction.ReactionFamilySet.load">(rmg.reaction.ReactionFamilySet method)</a></dt>
-    <dt><a href="documentation/api/rmg-species.html#rmg.species.ThermoDatabase.load">(rmg.species.ThermoDatabase method)</a></dt>
-    <dt><a href="documentation/api/rmg-species.html#rmg.species.ThermoDatabaseSet.load">(rmg.species.ThermoDatabaseSet method)</a></dt>
-  </dl></dd></dl></td><td width="33%" valign="top"><dl>
-<dt><a href="documentation/api/rmg-chem.html#rmg.chem.loadAtomTypes">loadAtomTypes() (in module rmg.chem)</a></dt>
+  </dl></dd>
+<dt><a href="documentation/api/rmg-chem.html#rmg.chem.loadAtomTypes">loadAtomTypes() (in module rmg.chem)</a></dt></dl></td><td width="33%" valign="top"><dl>
 <dt><a href="documentation/api/rmg-chem.html#rmg.chem.loadBondTypes">loadBondTypes() (in module rmg.chem)</a></dt>
 <dt><a href="documentation/api/rmg-cantera_loader.html#rmg.cantera_loader.loadCanteraFile">loadCanteraFile() (in module rmg.cantera_loader)</a></dt>
 <dt><a href="documentation/api/rmg-cantera_loader.html#rmg.cantera_loader.loadChemkinFile">loadChemkinFile() (in module rmg.cantera_loader)</a></dt>
@@ -381,11 +461,14 @@
 <dt><a href="documentation/api/rmg-species.html#rmg.species.makeNewSpecies">makeNewSpecies() (in module rmg.species)</a></dt>
 <dt><a href="documentation/api/rmg-reaction.html#rmg.reaction.ReactionFamily.makeReaction">makeReaction() (rmg.reaction.ReactionFamily method)</a></dt>
 <dt><a href="documentation/api/rmg-cantera_loader.html#rmg.cantera_loader.reaction.makeRmgKinetics">makeRmgKinetics() (rmg.cantera_loader.reaction method)</a></dt>
-<dt><a href="documentation/api/rmg-cantera_loader.html#rmg.cantera_loader.NASA.makeRmgPolynomial">makeRmgPolynomial() (rmg.cantera_loader.NASA method)</a></dt></dl></td><td width="33%" valign="top"><dl>
-<dt><a href="documentation/api/rmg-cantera_loader.html#rmg.cantera_loader.reaction.makeRmgReaction">makeRmgReaction() (rmg.cantera_loader.reaction method)</a></dt>
+<dt><a href="documentation/api/rmg-cantera_loader.html#rmg.cantera_loader.NASA.makeRmgPolynomial">makeRmgPolynomial() (rmg.cantera_loader.NASA method)</a></dt>
+<dt><a href="documentation/api/rmg-cantera_loader.html#rmg.cantera_loader.reaction.makeRmgReaction">makeRmgReaction() (rmg.cantera_loader.reaction method)</a></dt></dl></td><td width="33%" valign="top"><dl>
 <dt><a href="documentation/api/rmg-cantera_loader.html#rmg.cantera_loader.species.makeRmgSpecies">makeRmgSpecies() (rmg.cantera_loader.species method)</a></dt>
 <dt><a href="documentation/api/rmg-data.html#rmg.data.Database.matchNodeToStructure">matchNodeToStructure() (rmg.data.Database method)</a></dt>
-<dt><a href="documentation/api/rmg-structure.html#rmg.structure.Structure.merge">merge() (rmg.structure.Structure method)</a></dt>
+<dt><a href="documentation/api/rmg-graph.html#rmg.graph.Graph.merge">merge() (rmg.graph.Graph method)</a></dt>
+  <dd><dl>
+    <dt><a href="documentation/api/rmg-structure.html#rmg.structure.Structure.merge">(rmg.structure.Structure method)</a></dt>
+  </dl></dd>
 </dl></td></tr></table>
 
 <h2 id="N">N</h2>
@@ -417,6 +500,7 @@
 <dt><a href="documentation/api/rmg-reaction.html#rmg.reaction.ReactionFamily.reactantMatch">reactantMatch() (rmg.reaction.ReactionFamily method)</a></dt>
 <dt><a href="documentation/api/rmg-cantera_loader.html#rmg.cantera_loader.reaction">reaction (class in rmg.cantera_loader)</a></dt>
 <dt><a href="documentation/api/rmg-reaction.html#rmg.reaction.Reaction">Reaction (class in rmg.reaction)</a></dt>
+<dt><a href="documentation/api/rmg-reaction.html#rmg.reaction.ReactionException">ReactionException (class in rmg.reaction)</a></dt>
 <dt><a href="documentation/api/rmg-reaction.html#rmg.reaction.ReactionFamily">ReactionFamily (class in rmg.reaction)</a></dt>
 <dt><a href="documentation/api/rmg-reaction.html#rmg.reaction.ReactionFamilySet">ReactionFamilySet (class in rmg.reaction)</a></dt>
 <dt><a href="documentation/api/rmg-model.html#rmg.model.ReactionModel">ReactionModel (class in rmg.model)</a></dt>
@@ -429,8 +513,15 @@
   </dl></dd>
 <dt><a href="documentation/api/rmg-structure.html#rmg.structure.Structure.removeAtom">removeAtom() (rmg.structure.Structure method)</a></dt>
 <dt><a href="documentation/api/rmg-structure.html#rmg.structure.Structure.removeBond">removeBond() (rmg.structure.Structure method)</a></dt>
-<dt><a href="documentation/api/rmg-data.html#rmg.data.removeCommentFromLine">removeCommentFromLine() (in module rmg.data)</a></dt></dl></td><td width="33%" valign="top"><dl>
-<dt><a href="documentation/api/rmg-data.html#rmg.data.Library.removeLinks">removeLinks() (rmg.data.Library method)</a></dt>
+<dt><a href="documentation/api/rmg-data.html#rmg.data.removeCommentFromLine">removeCommentFromLine() (in module rmg.data)</a></dt>
+<dt><a href="documentation/api/rmg-graph.html#rmg.graph.Graph.removeEdge">removeEdge() (rmg.graph.Graph method)</a></dt>
+<dt><a href="documentation/api/rmg-data.html#rmg.data.Library.removeLinks">removeLinks() (rmg.data.Library method)</a></dt></dl></td><td width="33%" valign="top"><dl>
+<dt><a href="documentation/api/rmg-model.html#rmg.model.CoreEdgeReactionModel.removeSpeciesFromEdge">removeSpeciesFromEdge() (rmg.model.CoreEdgeReactionModel method)</a></dt>
+<dt><a href="documentation/api/rmg-graph.html#rmg.graph.Graph.removeVertex">removeVertex() (rmg.graph.Graph method)</a></dt>
+<dt><a href="documentation/api/rmg-graph.html#rmg.graph.Graph.resetCachedStructureInfo">resetCachedStructureInfo() (rmg.graph.Graph method)</a></dt>
+  <dd><dl>
+    <dt><a href="documentation/api/rmg-structure.html#rmg.structure.Structure.resetCachedStructureInfo">(rmg.structure.Structure method)</a></dt>
+  </dl></dd>
 <dt><a href="documentation/api/rmg-cantera_loader.html#module-rmg.cantera_loader">rmg.cantera_loader (module)</a></dt>
 <dt><a href="documentation/api/rmg-chem.html#module-rmg.chem">rmg.chem (module)</a></dt>
 <dt><a href="documentation/api/rmg-constants.html#module-rmg.constants">rmg.constants (module)</a></dt>
@@ -450,16 +541,20 @@
 <table width="100%" class="indextable"><tr><td width="33%" valign="top">
 <dl>
 
-<dt><a href="documentation/api/rmg-species.html#rmg.species.ThermoDatabaseSet.saveXML">saveXML() (rmg.species.ThermoDatabaseSet method)</a></dt>
 <dt><a href="documentation/api/rmg-chem.html#rmg.chem.Atom.setAtomType">setAtomType() (rmg.chem.Atom method)</a></dt>
 <dt><a href="documentation/api/rmg-chem.html#rmg.chem.Bond.setBondType">setBondType() (rmg.chem.Bond method)</a></dt>
+<dt><a href="documentation/api/rmg-graph.html#rmg.graph.Graph.setConnectivityValues">setConnectivityValues() (rmg.graph.Graph method)</a></dt>
 <dt><a href="documentation/api/rmg-chem.html#rmg.chem.Atom.setElectronState">setElectronState() (rmg.chem.Atom method)</a></dt>
 <dt><a href="documentation/api/rmg-model.html#rmg.model.ReactionSystem.setModels">setModels() (rmg.model.ReactionSystem method)</a></dt>
-<dt><a href="documentation/api/rmg-structure.html#rmg.structure.Structure.simplifyAtomTypes">simplifyAtomTypes() (rmg.structure.Structure method)</a></dt></dl></td><td width="33%" valign="top"><dl>
-<dt><a href="documentation/api/rmg-model.html#rmg.model.BatchReactor.simulate">simulate() (rmg.model.BatchReactor method)</a></dt>
+<dt><a href="documentation/api/rmg-structure.html#rmg.structure.Structure.simplifyAtomTypes">simplifyAtomTypes() (rmg.structure.Structure method)</a></dt>
+<dt><a href="documentation/api/rmg-model.html#rmg.model.BatchReactor.simulate">simulate() (rmg.model.BatchReactor method)</a></dt></dl></td><td width="33%" valign="top"><dl>
+<dt><a href="documentation/api/rmg-graph.html#rmg.graph.Graph.sortAndLabelVertices">sortAndLabelVertices() (rmg.graph.Graph method)</a></dt>
 <dt><a href="documentation/api/rmg-cantera_loader.html#rmg.cantera_loader.species">species (class in rmg.cantera_loader)</a></dt>
 <dt><a href="documentation/api/rmg-species.html#rmg.species.Species">Species (class in rmg.species)</a></dt>
-<dt><a href="documentation/api/rmg-structure.html#rmg.structure.Structure.split">split() (rmg.structure.Structure method)</a></dt>
+<dt><a href="documentation/api/rmg-graph.html#rmg.graph.Graph.split">split() (rmg.graph.Graph method)</a></dt>
+  <dd><dl>
+    <dt><a href="documentation/api/rmg-structure.html#rmg.structure.Structure.split">(rmg.structure.Structure method)</a></dt>
+  </dl></dd>
 <dt><a href="documentation/api/rmg-structure.html#rmg.structure.Structure">Structure (class in rmg.structure)</a></dt>
 </dl></td></tr></table>
 
@@ -471,18 +566,28 @@
 <dt><a href="documentation/api/rmg-data.html#rmg.data.TemperatureOutOfRangeException">TemperatureOutOfRangeException (class in rmg.data)</a></dt>
 <dt><a href="documentation/api/rmg-model.html#rmg.model.TerminationConversion">TerminationConversion (class in rmg.model)</a></dt>
 <dt><a href="documentation/api/rmg-model.html#rmg.model.TerminationTime">TerminationTime (class in rmg.model)</a></dt>
-<dt><a href="documentation/api/rmg-species.html#rmg.species.ThermoDatabase">ThermoDatabase (class in rmg.species)</a></dt>
-<dt><a href="documentation/api/rmg-species.html#rmg.species.ThermoDatabaseSet">ThermoDatabaseSet (class in rmg.species)</a></dt>
-<dt><a href="documentation/api/rmg-species.html#rmg.species.ThermoGAData">ThermoGAData (class in rmg.species)</a></dt>
+<dt><a href="documentation/api/rmg-thermo.html#rmg.thermo.ThermoData">ThermoData (class in rmg.thermo)</a></dt>
+<dt><a href="documentation/api/rmg-thermo.html#rmg.thermo.ThermoGAData">ThermoGAData (class in rmg.thermo)</a></dt>
+<dt><a href="documentation/api/rmg-thermo.html#rmg.thermo.ThermoNASAData">ThermoNASAData (class in rmg.thermo)</a></dt>
+<dt><a href="documentation/api/rmg-thermo.html#rmg.thermo.ThermoNASAPolynomial">ThermoNASAPolynomial (class in rmg.thermo)</a></dt>
+<dt><a href="documentation/api/rmg-species.html#rmg.species.ThermoSnapshot">ThermoSnapshot (class in rmg.species)</a></dt>
+<dt><a href="documentation/api/rmg-thermo.html#rmg.thermo.ThermoWilhoitData">ThermoWilhoitData (class in rmg.thermo)</a></dt>
 <dt><a href="documentation/api/rmg-species.html#rmg.species.Species.toAdjacencyList">toAdjacencyList() (rmg.species.Species method)</a></dt>
   <dd><dl>
     <dt><a href="documentation/api/rmg-structure.html#rmg.structure.Structure.toAdjacencyList">(rmg.structure.Structure method)</a></dt>
+  </dl></dd>
+<dt><a href="documentation/api/rmg-thermo.html#rmg.thermo.ThermoNASAData.toCantera">toCantera() (rmg.thermo.ThermoNASAData method)</a></dt>
+  <dd><dl>
+    <dt><a href="documentation/api/rmg-thermo.html#rmg.thermo.ThermoNASAPolynomial.toCantera">(rmg.thermo.ThermoNASAPolynomial method)</a></dt>
   </dl></dd>
 <dt><a href="documentation/api/rmg-species.html#rmg.species.Species.toCML">toCML() (rmg.species.Species method)</a></dt>
   <dd><dl>
     <dt><a href="documentation/api/rmg-structure.html#rmg.structure.Structure.toCML">(rmg.structure.Structure method)</a></dt>
   </dl></dd>
-<dt><a href="documentation/api/rmg-structure.html#rmg.structure.Structure.toDOT">toDOT() (rmg.structure.Structure method)</a></dt>
+<dt><a href="documentation/api/rmg-data.html#rmg.data.Tree.toDOT">toDOT() (rmg.data.Tree method)</a></dt>
+  <dd><dl>
+    <dt><a href="documentation/api/rmg-structure.html#rmg.structure.Structure.toDOT">(rmg.structure.Structure method)</a></dt>
+  </dl></dd></dl></td><td width="33%" valign="top"><dl>
 <dt><a href="documentation/api/rmg-species.html#rmg.species.Species.toInChI">toInChI() (rmg.species.Species method)</a></dt>
   <dd><dl>
     <dt><a href="documentation/api/rmg-structure.html#rmg.structure.Structure.toInChI">(rmg.structure.Structure method)</a></dt>
@@ -490,7 +595,7 @@
 <dt><a href="documentation/api/rmg-species.html#rmg.species.Species.toOBMol">toOBMol() (rmg.species.Species method)</a></dt>
   <dd><dl>
     <dt><a href="documentation/api/rmg-structure.html#rmg.structure.Structure.toOBMol">(rmg.structure.Structure method)</a></dt>
-  </dl></dd></dl></td><td width="33%" valign="top"><dl>
+  </dl></dd>
 <dt><a href="documentation/api/rmg-species.html#rmg.species.Species.toSMILES">toSMILES() (rmg.species.Species method)</a></dt>
   <dd><dl>
     <dt><a href="documentation/api/rmg-structure.html#rmg.structure.Structure.toSMILES">(rmg.structure.Structure method)</a></dt>
@@ -501,11 +606,11 @@
     <dt><a href="documentation/api/rmg-data.html#rmg.data.Dictionary.toXML">(rmg.data.Dictionary method)</a></dt>
     <dt><a href="documentation/api/rmg-data.html#rmg.data.Library.toXML">(rmg.data.Library method)</a></dt>
     <dt><a href="documentation/api/rmg-data.html#rmg.data.Tree.toXML">(rmg.data.Tree method)</a></dt>
-    <dt><a href="documentation/api/rmg-reaction.html#rmg.reaction.ArrheniusEPKinetics.toXML">(rmg.reaction.ArrheniusEPKinetics method)</a></dt>
-    <dt><a href="documentation/api/rmg-reaction.html#rmg.reaction.ArrheniusKinetics.toXML">(rmg.reaction.ArrheniusKinetics method)</a></dt>
-    <dt><a href="documentation/api/rmg-species.html#rmg.species.ThermoDatabase.toXML">(rmg.species.ThermoDatabase method)</a></dt>
-    <dt><a href="documentation/api/rmg-species.html#rmg.species.ThermoGAData.toXML">(rmg.species.ThermoGAData method)</a></dt>
+    <dt><a href="documentation/api/rmg-kinetics.html#rmg.kinetics.ArrheniusEPKinetics.toXML">(rmg.kinetics.ArrheniusEPKinetics method)</a></dt>
+    <dt><a href="documentation/api/rmg-kinetics.html#rmg.kinetics.ArrheniusKinetics.toXML">(rmg.kinetics.ArrheniusKinetics method)</a></dt>
     <dt><a href="documentation/api/rmg-structure.html#rmg.structure.Structure.toXML">(rmg.structure.Structure method)</a></dt>
+    <dt><a href="documentation/api/rmg-thermo.html#rmg.thermo.ThermoGAData.toXML">(rmg.thermo.ThermoGAData method)</a></dt>
+    <dt><a href="documentation/api/rmg-thermo.html#rmg.thermo.ThermoNASAPolynomial.toXML">(rmg.thermo.ThermoNASAPolynomial method)</a></dt>
   </dl></dd>
 <dt><a href="documentation/api/rmg-data.html#rmg.data.Tree">Tree (class in rmg.data)</a></dt>
 </dl></td></tr></table>
@@ -515,13 +620,15 @@
 <dl>
 
 <dt><a href="documentation/api/rmg-reaction.html#rmg.reaction.UndeterminableKineticsException">UndeterminableKineticsException (class in rmg.reaction)</a></dt>
-<dt><a href="documentation/api/rmg-structure.html#rmg.structure.Structure.updateAtomTypes">updateAtomTypes() (rmg.structure.Structure method)</a></dt></dl></td><td width="33%" valign="top"><dl>
+<dt><a href="documentation/api/rmg-species.html#rmg.species.ThermoSnapshot.update">update() (rmg.species.ThermoSnapshot method)</a></dt></dl></td><td width="33%" valign="top"><dl>
+<dt><a href="documentation/api/rmg-structure.html#rmg.structure.Structure.updateAtomTypes">updateAtomTypes() (rmg.structure.Structure method)</a></dt>
 </dl></td></tr></table>
 
 <h2 id="V">V</h2>
 <table width="100%" class="indextable"><tr><td width="33%" valign="top">
 <dl>
 
+<dt><a href="documentation/api/rmg-graph.html#rmg.graph.Graph.vertices">vertices() (rmg.graph.Graph method)</a></dt>
 <dt><a href="documentation/api/rmg-graph.html#rmg.graph.VF2_isomorphism">VF2_isomorphism() (in module rmg.graph)</a></dt></dl></td><td width="33%" valign="top"><dl>
 </dl></td></tr></table>
 

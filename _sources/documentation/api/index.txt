@@ -13,18 +13,20 @@ Contents
 
 .. toctree::
 	:numbered:
-	:maxdepth: 2
+	:maxdepth: 1
 	
 	rmg-chem
 	rmg-constants
 	rmg-data
 	rmg-graph
 	rmg-io
+	rmg-kinetics
 	rmg-main
 	rmg-model
 	rmg-reaction
 	rmg-species
 	rmg-structure
+	rmg-thermo
 	rmg-cantera_loader
 	
 Indices and Tables
