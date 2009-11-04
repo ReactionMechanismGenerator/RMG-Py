@@ -1672,11 +1672,11 @@ def makeNewReaction(reactants, products, reactantStructures, productStructures, 
 	object is created and returned after being appended to the global reaction
 	list.
 	"""
-
+	
 	# Sort reactants and products (to make comparisons easier/faster)
 	reactants.sort()
 	products.sort()
-
+	
 	# Get atom labels of reactants
 	reactantLabels = {}; productLabels = {}
 	for structure in reactantStructures:
@@ -1696,55 +1696,28 @@ def makeNewReaction(reactants, products, reactantStructures, productStructures, 
 				else:
 					productLabels[atom.label] = [atom]
 			elif atom.label != '': productLabels[atom.label] = atom
-
+	
 	# Check that the reaction actually results in a different set of species
-	if len(reactants) == len(products):
-		match = True
-		for i in range(len(reactants)):
-			if reactants[i] != products[i]: match = False
-		if match: return None, False
-
+	if reactants == products:
+		return None, False
+	
 	# Check that the reaction is unique
 	matchReaction = None
 	for rxn in reactionList:
 		# Check forward reaction for match
 		if rxn.family is family or rxn.family is None or family is None:
-			if len(rxn.reactants) == len(reactants) and len(rxn.products) == len(products):
-				match = True
-				for i in range(len(reactants)):
-					if rxn.reactants[i] != reactants[i]: 
-						match = False
-						break # already different; stop checking reactants
-				else: # 'for' loop completed without breaking; they could still be the same
-					for i in range(len(products)):
-						if rxn.products[i] != products[i]: 
-							match = False
-							break # already different; stop checking products
-				if match: 
-					matchReaction = rxn
-					break # already found a matching reaction; stop checking reactionList
+			if rxn.reactants == reactants and rxn.products == products:
+				matchReaction = rxn
 		# Check reverse reaction for match
 		if rxn.reverse.family is family or rxn.reverse.family is None or family is None:
-			if len(rxn.reactants) == len(products) and len(rxn.products) == len(reactants):
-				match = True
-				for i in range(len(reactants)):
-					if rxn.products[i] != reactants[i]: 
-						match = False
-						break # already different; stop checking reactants
-				else: # 'for' loop completed without breaking; they could still be the same
-					for i in range(len(products)):
-						if rxn.reactants[i] != products[i]: 
-							match = False
-							break # already different; stop checking products
-				if match: 
-					matchReaction = rxn # << Josh, should this be rxn or rxn.reverse?
-					break # already found a matching reaction; stop checking reactionList
-
+			if rxn.reactants == products and rxn.products == reactants:
+				matchReaction = rxn
+	
 	# If a match was found, take an
 	if matchReaction is not None:
 		#matchReaction.multiplier += 1.0
 		return matchReaction, False
-
+	
 	# If this point is reached, the proposed reaction is new, so make new
 	# Reaction objects for forward and reverse reaction
 	forward = Reaction(reactants, products, family)
@@ -1753,7 +1726,7 @@ def makeNewReaction(reactants, products, reactantStructures, productStructures, 
 	reverse = Reaction(products, reactants, reverseFamily)
 	forward.reverse = reverse
 	reverse.reverse = forward
-
+	
 	# Dictionaries containing the labeled atoms for the reactants and products
 	forward.atomLabels = reactantLabels
 	reverse.atomLabels = productLabels
@@ -1761,7 +1734,7 @@ def makeNewReaction(reactants, products, reactantStructures, productStructures, 
 	if forward.family is None or reverse.family is None:
 		reactionList.insert(0, forward)
 		return forward, True
-
+	
 	# Attempt to get the kinetics of the forward and reverse reactions
 	forwardKinetics = forward.family.getKinetics(forward, reactantStructures)
 	reverseKinetics = reverse.family.getKinetics(reverse, productStructures)
