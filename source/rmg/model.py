@@ -663,7 +663,7 @@ class BatchReactor(ReactionSystem):
 		"""Creata a Cantera instance. Call this once"""
 		ctml_writer.units(length = "m", time = "s", quantity = "mol", act_energy = "J/mol")
 		phase = ctml_writer.ideal_gas(name = "chem",
-		      elements = " C H O N Ar He",
+		      elements = " C H O N Ar He Si",
 		      species = "all",
 		      reactions = "all",
 		      initial_state = ctml_writer.state(temperature = 1000 ,
@@ -1045,11 +1045,11 @@ class BatchReactor(ReactionSystem):
 		for i, u in enumerate(y):
 			for j, v in enumerate(u):
 				y0[i,j] = v
-		# Reshape dydt into a matrix rather than a list of lists
-		dydt0 = numpy.zeros((len(t), len(dydt[0])), float)
-		for i, u in enumerate(dydt):
-			for j, v in enumerate(u):
-				dydt0[i,j] = v
+		## Reshape dydt into a matrix rather than a list of lists
+		#dydt0 = numpy.zeros((len(t), len(dydt[0])), float)
+		#for i, u in enumerate(dydt):
+		#	for j, v in enumerate(u):
+		#		dydt0[i,j] = v
 
 		# Create the legend for the concentration profile
 		legend = []
@@ -1089,16 +1089,16 @@ class BatchReactor(ReactionSystem):
 		pylab.savefig(settings.outputDirectory + '/plot/concentrationProfile' + label + '.svg')
 		pylab.clf()
 
-		# Make species flux plot and save to file
-		try:
-			pylab.loglog(t[1:], abs(dydt0[1:,3:len(model.core.species)+3]))
-			pylab.xlabel('Time (s)')
-			pylab.ylabel('Species flux (mol/m^3*s)')
-			pylab.title('Species flux profiles for reaction system ' + label)
-			pylab.legend(legend)
-			pylab.savefig(settings.outputDirectory + '/plot/fluxProfile' + label + '.svg')
-		except OverflowError:
-			pass
+		## Make species flux plot and save to file
+		#try:
+		#	pylab.loglog(t[1:], abs(dydt0[1:,3:len(model.core.species)+3]))
+		#	pylab.xlabel('Time (s)')
+		#	pylab.ylabel('Species flux (mol/m^3*s)')
+		#	pylab.title('Species flux profiles for reaction system ' + label)
+		#	pylab.legend(legend)
+		#	pylab.savefig(settings.outputDirectory + '/plot/fluxProfile' + label + '.svg')
+		#except OverflowError:
+		#	pass
 		
 		pylab.clf()
 	
