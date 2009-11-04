@@ -1,7 +1,0 @@
-rmg.chem.AtomType
-=================
-
-.. currentmodule:: rmg.chem
-
-.. autoclass:: AtomType
-	:members:
