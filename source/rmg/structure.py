@@ -428,12 +428,12 @@ class Structure:
 		if label != '': adjlist += label + '\n'
 
 		def sortAtomsByConnectivity(atom1, atom2):
-			if atom1.connectivity[0] > atom2.connectivity[0]: return -1
-			elif atom1.connectivity[0] < atom2.connectivity[0]: return 1
-			elif atom1.connectivity[1] > atom2.connectivity[1]: return -1
-			elif atom1.connectivity[1] < atom2.connectivity[1]: return 1
-			elif atom1.connectivity[2] > atom2.connectivity[2]: return -1
-			elif atom1.connectivity[2] < atom2.connectivity[2]: return 1
+			if atom1.connectivity1 > atom2.connectivity1: return -1
+			elif atom1.connectivity1 < atom2.connectivity1: return 1
+			elif atom1.connectivity2 > atom2.connectivity2: return -1
+			elif atom1.connectivity2 < atom2.connectivity2: return 1
+			elif atom1.connectivity3 > atom2.connectivity3: return -1
+			elif atom1.connectivity3 < atom2.connectivity3: return 1
 			else: return 0
 
 		# Sort the atoms by connectivity value, from lowest to highest
