@@ -1,0 +1,7 @@
+rmg.chem.Atom
+=============
+
+.. currentmodule:: rmg.chem
+
+.. autoclass:: Atom
+	:members:

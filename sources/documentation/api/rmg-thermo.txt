@@ -1,0 +1,56 @@
+*************************
+The ``rmg.thermo`` Module
+*************************
+
+.. automodule:: rmg.thermo
+
+Classes in ``rmg.thermo``
+=========================
+
+ThermoData
+----------
+
+.. autoclass:: rmg.thermo.ThermoData
+	:members:
+
+ThermoDatabase
+--------------
+
+.. autoclass:: rmg.thermo.ThermoDatabase
+	:members:
+
+ThermoDatabaseSet
+-----------------
+
+.. autoclass:: rmg.thermo.ThermoDatabaseSet
+	:members:
+
+ThermoGAData
+------------
+
+.. autoclass:: rmg.thermo.ThermoGAData
+	:members:
+
+ThermoNASAData
+--------------
+
+.. autoclass:: rmg.thermo.ThermoNASAData
+	:members:
+
+ThermoNASAPolynomial
+--------------------
+
+.. autoclass:: rmg.thermo.ThermoNASAPolynomial
+	:members:
+	
+ThermoWilhoitData
+-----------------
+
+.. autoclass:: rmg.thermo.ThermoWilhoitData
+	:members:
+
+Methods in ``rmg.thermo``
+=========================
+
+.. autofunction:: rmg.thermo.getThermoData
+

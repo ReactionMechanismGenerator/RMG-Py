@@ -1,0 +1,7 @@
+rmg.chem.Bond
+=============
+
+.. currentmodule:: rmg.chem
+
+.. autoclass:: Bond
+	:members:

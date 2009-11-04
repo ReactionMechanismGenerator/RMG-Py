@@ -1,0 +1,26 @@
+**************************
+The ``rmg.species`` Module
+**************************
+
+.. automodule:: rmg.species
+
+Classes in ``rmg.species``
+==========================
+
+Species
+-------
+
+.. autoclass:: rmg.species.Species
+	:members:
+	
+ThermoSnapshot
+--------------
+
+.. autoclass:: rmg.species.ThermoSnapshot
+	:members:
+
+Methods in ``rmg.species``
+==========================
+
+.. autofunction:: rmg.species.makeNewSpecies
+
