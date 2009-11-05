@@ -43,6 +43,9 @@
 		<moveToCore>0.1</moveToCore>
 		<interruptSimulation>1.0</interruptSimulation>
 	</fluxTolerance>
+	<maximumModelSize>
+		<edgeSpecies>9999999</edgeSpecies>
+	</maximumModelSize>
 	<!-- Options -->
 	<drawMolecules>on</drawMolecules>
 	<generatePlots>on</generatePlots>
