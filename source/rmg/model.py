@@ -982,9 +982,9 @@ class BatchReactor(ReactionSystem):
 			if maxRelativeFluxes[i] > maxRelativeFlux:
 				maxRelativeFlux = maxRelativeFluxes[i]
 				maxSpecies = model.edge.species[i - len(model.core.species)]
-				# mark for removal those species whose flux is always too low
-				if maxRelativeFluxes[i] < model.fluxTolerance_keepInEdge:
-					speciesToRemove.append(model.edge.species[i - len(model.core.species)])
+			# mark for removal those species whose flux is always too low
+			if maxRelativeFluxes[i] < model.fluxTolerance_keepInEdge:
+				speciesToRemove.append(model.edge.species[i - len(model.core.species)])
 		
 		# trim the edge
 		logging.info("Removing from edge %d/%d species whose relative flux never exceeded %s"%( 

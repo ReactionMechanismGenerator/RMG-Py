@@ -1677,25 +1677,6 @@ def makeNewReaction(reactants, products, reactantStructures, productStructures, 
 	reactants.sort()
 	products.sort()
 	
-	# Get atom labels of reactants
-	reactantLabels = {}; productLabels = {}
-	for structure in reactantStructures:
-		for atom in structure.atoms():
-			if atom.label == '*': 
-				if atom.label in reactantLabels: 
-					reactantLabels[atom.label].append(atom)
-				else:
-					reactantLabels[atom.label] = [atom]
-			elif atom.label != '': reactantLabels[atom.label] = atom
-	# Get atom labels of products
-	for structure in productStructures:
-		for atom in structure.atoms():
-			if atom.label == '*':
-				if atom.label in productLabels:
-					productLabels[atom.label].append(atom)
-				else:
-					productLabels[atom.label] = [atom]
-			elif atom.label != '': productLabels[atom.label] = atom
 	
 	# Check that the reaction actually results in a different set of species
 	if reactants == products:
@@ -1729,6 +1710,26 @@ def makeNewReaction(reactants, products, reactantStructures, productStructures, 
 	forward.reverse = reverse
 	reverse.reverse = forward
 	
+	# Get atom labels of reactants
+	reactantLabels = {}; productLabels = {}
+	for structure in reactantStructures:
+		for atom in structure.atoms():
+			if atom.label == '*': 
+				if atom.label in reactantLabels: 
+					reactantLabels[atom.label].append(atom)
+				else:
+					reactantLabels[atom.label] = [atom]
+			elif atom.label != '': reactantLabels[atom.label] = atom
+	# Get atom labels of products
+	for structure in productStructures:
+		for atom in structure.atoms():
+			if atom.label == '*':
+				if atom.label in productLabels:
+					productLabels[atom.label].append(atom)
+				else:
+					productLabels[atom.label] = [atom]
+			elif atom.label != '': productLabels[atom.label] = atom
+			
 	# Dictionaries containing the labeled atoms for the reactants and products
 	forward.atomLabels = reactantLabels
 	reverse.atomLabels = productLabels
