@@ -342,10 +342,8 @@ class Structure:
 				elif bonddict[atom1][atom2] != bonddict[atom2][atom1]:
 					raise InvalidAdjacencyListException(label)
 
-
 		# Create and return functional group or species
 		self.initialize(atoms, bonds)
-
 
 
 	def fromCML(self, cmlstr):
@@ -418,38 +416,31 @@ class Structure:
 
 	def toAdjacencyList(self, label=''):
 		"""
-		Convert the structure object to an adjacency list. The `label` parameter
-		is an optional string to put as the first line of the adjacency list;
-		if set to the empty string, this line will be omitted.
+		Convert the structure object to an adjacency list. 
+		
+		The `label` parameter is an optional string to put as the first line of 
+		the adjacency list; if set to the empty string, this line will be omitted.
 		"""
-
+		
 		adjlist = ''
-
+		
 		if label != '': adjlist += label + '\n'
-
-		def sortAtomsByConnectivity(atom1, atom2):
-			if atom1.connectivity1 > atom2.connectivity1: return -1
-			elif atom1.connectivity1 < atom2.connectivity1: return 1
-			elif atom1.connectivity2 > atom2.connectivity2: return -1
-			elif atom1.connectivity2 < atom2.connectivity2: return 1
-			elif atom1.connectivity3 > atom2.connectivity3: return -1
-			elif atom1.connectivity3 < atom2.connectivity3: return 1
-			else: return 0
-
-		# Sort the atoms by connectivity value, from lowest to highest
+		
+		# Sort the atoms by graph.globalAtomSortValue 
+		# (some function of connectivity values), from lowest to highest
 		self.graph.setConnectivityValues()
 		atoms = self.atoms()
-		atoms.sort(sortAtomsByConnectivity)
+		atoms.sort(key=graph.globalAtomSortValue)
 
 		for i, atom in enumerate(atoms):
-
+			
 			# Atom number
 			adjlist += str(i+1) + ' '
-
+			
 			# Atom label
 			if atom.label != '':
 				adjlist += atom.label + ' '
-
+			
 			# Atom type(s)
 			if atom.atomType.__class__ == list:
 				adjlist += '{' + atom.atomType[0].label
@@ -458,7 +449,7 @@ class Structure:
 				adjlist += '} '
 			else:
 				adjlist += atom.atomType.label + ' '
-
+			
 			# Electron state(s)
 			if atom.electronState.__class__ == list:
 				adjlist += '{' + atom.electronState[0].label
@@ -470,7 +461,7 @@ class Structure:
 
 			# Bonds list
 			atoms2 = self.getBonds(atom).keys()
-			atoms2.sort(sortAtomsByConnectivity)
+			atoms2.sort(key=graph.globalAtomSortValue)
 
 			for atom2 in atoms2:
 				bond = self.getBond(atom, atom2)
@@ -496,9 +487,17 @@ class Structure:
 	def toOBMol(self):
 		"""
 		Convert a Structure object to an OpenBabel OBMol object.
+		
+		It first sorts the atoms by 
 		"""
 		atoms = self.atoms(); bonds = self.bonds()
-
+		# Sort the atoms by graph.globalAtomSortValue 
+		# (some function of connectivity values), from lowest to highest
+		# this doesn't necessarily lead to the prettiest SMILES but at least
+		# it will give the same SMILES every time the program is run.
+		self.graph.setConnectivityValues()
+		atoms.sort(key=graph.globalAtomSortValue)
+		
 		obmol = openbabel.OBMol()
 		for atom in atoms:
 			a = obmol.NewAtom()
