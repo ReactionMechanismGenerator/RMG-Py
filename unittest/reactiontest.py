@@ -95,7 +95,7 @@ class ReactionCheck(unittest.TestCase):
 		
 		self.assertTrue(reaction1 is reaction2)
 		self.assertFalse(isNew)
-				
+		
 		
 class ReactionSetCheck(unittest.TestCase): 
 	
@@ -246,7 +246,84 @@ class ReactionSetCheck(unittest.TestCase):
 
 
 ################################################################################
-
+from timeit import Timer
 if __name__ == '__main__':
+	
+	startup = """gc.enable() # enable garbage collection in timeit
+import sys
+sys.path.append('../source')
+from rmg.structure import Structure
+from rmg.species import makeNewSpecies
+from rmg.reaction import makeNewReaction
+structure1 = Structure()
+structure1.fromAdjacencyList('''
+1 C 0 {2,D} {7,S} {8,S}
+2 C 0 {1,D} {3,S} {9,S}
+3 C 0 {2,S} {4,D} {10,S}
+4 C 0 {3,D} {5,S} {11,S}
+5 *1 C 0 {4,S} {6,S} {12,S} {13,S}
+6 C 0 {5,S} {14,S} {15,S} {16,S}
+7 H 0 {1,S}
+8 H 0 {1,S}
+9 H 0 {2,S}
+10 H 0 {3,S}
+11 H 0 {4,S}
+12 *2 H 0 {5,S}
+13 H 0 {5,S}
+14 H 0 {6,S}
+15 H 0 {6,S}
+16 H 0 {6,S}
+''')
+
+structure2 = Structure()
+structure2.fromAdjacencyList('''
+1 *3 H 1
+''')
+
+structure3 = Structure()
+structure3.fromAdjacencyList('''
+1 C 0 {2,D} {7,S} {8,S}
+2 C 0 {1,D} {3,S} {9,S}
+3 C 0 {2,S} {4,D} {10,S}
+4 C 0 {3,D} {5,S} {11,S}
+5 *3 C 1 {4,S} {6,S} {12,S}
+6 C 0 {5,S} {13,S} {14,S} {15,S}
+7 H 0 {1,S}
+8 H 0 {1,S}
+9 H 0 {2,S}
+10 H 0 {3,S}
+11 H 0 {4,S}
+12 H 0 {5,S}
+13 H 0 {6,S}
+14 H 0 {6,S}
+15 H 0 {6,S}
+''')
+
+structure4 = Structure()
+structure4.fromAdjacencyList('''
+1 *1 H 0 {2,S}
+2 *2 H 0 {1,S}
+''')
+
+C6H10 = makeNewSpecies(structure1)
+H = makeNewSpecies(structure2)
+C6H9 = makeNewSpecies(structure3)
+H2 = makeNewSpecies(structure4)
+
+reaction1, isNew = makeNewReaction([C6H9, H2], [C6H10, H], \
+	[C6H9.structure[0], H2.structure[0]], \
+	[C6H10.structure[0], H.structure[0]], \
+	None)
+"""
+	test1 = "reaction1, isNew = makeNewReaction([C6H9, H2], [C6H10, H], [C6H9.structure[0], H2.structure[0]], [C6H10.structure[0], H.structure[0]], None)"
+	print "Timing makeNewReaction:"
+	t = Timer(test1,startup)
+	times = t.repeat(repeat=1,number=10000)
+	print " Test1 took %.3f microseconds (%s)"%(min(times)*1000/10, [tt*1000/10 for tt in times])
+	print "**************"
+	
+	# run a certain check without catching errors (turn on PDB debugger first)
 	ReactionSetCheck('testAllFamilies').debug()
+	
+	# now run all the unit tests
 	unittest.main( testRunner = unittest.TextTestRunner(verbosity=2) )
