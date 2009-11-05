@@ -46,6 +46,9 @@ import cython
 
 ################################################################################
 
+# this will be replaced with something in io.py
+forbiddenStructures = None
+
 class ThermoData:
 	"""
 	A base class for all forms of thermodynamic data used by RMG. The common
