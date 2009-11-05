@@ -27,11 +27,15 @@ def move_private_folders(app, e):
     """
     remove leading underscore from folders in in the output folder.
     
-    :todo: should only affect html built
+    Only does anything if output folder is 'html'
     """
+    import shutil
+    junk, outdirname = os.path.split(app.builder.outdir)
+    if outdirname != 'html': return
     def join(dir):
         return os.path.join(app.builder.outdir, dir)
-    
     for item in os.listdir(app.builder.outdir):
         if item.startswith('_') and os.path.isdir(join(item)):
+            if os.path.exists(join(item[1:])):
+                shutil.rmtree(join(item[1:]))
             shutil.move(join(item), join(item[1:]))
