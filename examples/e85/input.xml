@@ -46,17 +46,17 @@
 	<!-- Termination -->
 	<termination>
 		<target type="conversion" speciesID="C2H6On">0.9</target>
-		<target type="time" units="s">1e0</target>
+		<target type="time" units="s">2e2</target>
 	</termination>
 	<!-- Dynamic simulator -->
 	<simulator atol="1e-16" rtol="1e-8" />
 	<fluxTolerance>
 		<keepInEdge>1e-16</keepInEdge>
-		<moveToCore>0.1</moveToCore>
+		<moveToCore>0.01</moveToCore>
 		<interruptSimulation>1.0</interruptSimulation>
 	</fluxTolerance>
 	<maximumModelSize>
-		<edgeSpecies>100</edgeSpecies>
+		<edgeSpecies>1000</edgeSpecies>
 	</maximumModelSize>
 	<!-- Options -->
 	<drawMolecules>on</drawMolecules>
