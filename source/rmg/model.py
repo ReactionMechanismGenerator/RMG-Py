@@ -904,20 +904,29 @@ class BatchReactor(ReactionSystem):
 		maxSpecies = None
 		maxRelativeFlux = 0.0
 		speciesToRemove = []
+		maxRelativeFluxes_dict = {}
 		for i in range(len(model.core.species), len(maxRelativeFluxes)):
+			sp = model.edge.species[i - len(model.core.species)]
 			# pick out the single highest-flux edge species
 			if maxRelativeFluxes[i] > maxRelativeFlux:
 				maxRelativeFlux = maxRelativeFluxes[i]
-				maxSpecies = model.edge.species[i - len(model.core.species)]
+				maxSpecies = sp
 			# mark for removal those species whose flux is always too low
 			if maxRelativeFluxes[i] < model.fluxTolerance_keepInEdge:
-				speciesToRemove.append(model.edge.species[i - len(model.core.species)])
+				speciesToRemove.append(sp)
+			# put max relative flux in dictionary
+			maxRelativeFluxes_dict[sp] = maxRelativeFluxes[i]
+		
+		def removalSortKey(sp):
+			return maxRelativeFluxes_dict[sp]
+		speciesToRemove.sort(key=removalSortKey)
 		
 		# trim the edge
 		logging.info("Removing from edge %d/%d species whose relative flux never exceeded %s"%( 
 			len(speciesToRemove),len(model.edge.species),model.fluxTolerance_keepInEdge))
+		logging.info("Max. rel. flux.\tSpecies")
 		for sp in speciesToRemove:	
-			logging.info("Removing %s"%(sp))
+			logging.info("%-10.3g    \t%s"%(maxRelativeFluxes_dict[sp], sp))
 			model.removeSpeciesFromEdge(sp)
 		
 		if maxRelativeFlux > model.fluxTolerance_moveToCore:
