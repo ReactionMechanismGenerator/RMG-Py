@@ -244,8 +244,21 @@ def readInputFile(fstr):
 		element = getFirstChildElement(fluxtolerance, 'interruptSimulation')
 		reactionModel.fluxTolerance_interruptSimulation = float(getElementText(element))
 		
-		reactionModel.fluxTolerance = float(getElementText(element))
-		logging.debug('Model flux tolerance set to %s' % (reactionModel.fluxTolerance))
+		logging.debug('Model flux tolerances set to:')
+		logging.debug('\tKeep in edge:         %s' % (reactionModel.fluxTolerance_keepInEdge) )
+		logging.debug('\tMove to core:         %s' % (reactionModel.fluxTolerance_moveToCore) )
+		logging.debug('\tInterrupt simulation: %s' % (reactionModel.fluxTolerance_interruptSimulation) )
+		logging.debug('')
+		
+		# Read maximum model size
+		maxmodelsize = getFirstChildElement(root, 'maximumModelSize')
+		if maxmodelsize is None:
+			logging.debug('Maximum model size is not set')
+		else:
+			element = getFirstChildElement(maxmodelsize, 'edgeSpecies')
+			reactionModel.maxModelSize_EdgeSpecies = int(getElementText(element))
+			logging.debug('Maximum model size set to:')
+			logging.debug('\tEdge species:         %s' % (reactionModel.maxModelSize_EdgeSpecies) )
 		logging.debug('')
 
 		# Read dynamic simulator

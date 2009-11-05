@@ -921,13 +921,27 @@ class BatchReactor(ReactionSystem):
 			return maxRelativeFluxes_dict[sp]
 		speciesToRemove.sort(key=removalSortKey)
 		
-		# trim the edge
+		# trim the edge according to fluxTolerance_keepInEdge
 		logging.info("Removing from edge %d/%d species whose relative flux never exceeded %s"%( 
-			len(speciesToRemove),len(model.edge.species),model.fluxTolerance_keepInEdge))
+			len(speciesToRemove),len(model.edge.species),model.fluxTolerance_keepInEdge ) )
 		logging.info("Max. rel. flux.\tSpecies")
 		for sp in speciesToRemove:	
 			logging.info("%-10.3g    \t%s"%(maxRelativeFluxes_dict[sp], sp))
 			model.removeSpeciesFromEdge(sp)
+		
+		# trim the edge according to maxModelSize_EdgeSpecies
+		if len(model.edge.species)> model.maxModelSize_EdgeSpecies:
+			logging.info("Removing from edge %d/%d species to reach maximum edge size of %s species"%(
+				len(model.edge.species)-model.maxModelSize_EdgeSpecies, 
+				len(model.edge.species), 
+				model.maxModelSize_EdgeSpecies ) )
+			edgeSpeciesCopy = model.edge.species[:]
+			edgeSpeciesCopy.sort(key=removalSortKey)
+			logging.info("Max. rel. flux.\tSpecies")
+			while len(model.edge.species)>model.maxModelSize_EdgeSpecies:
+				sp = edgeSpeciesCopy.pop(0)
+				logging.info("%-10.3g    \t%s"%(maxRelativeFluxes_dict[sp], sp))
+				model.removeSpeciesFromEdge(sp)				
 		
 		if maxRelativeFlux > model.fluxTolerance_moveToCore:
 			logging.info('At some time the species flux for %s exceeded the critical flux\nrelative to the characteristic core flux at that time' % (maxSpecies))
