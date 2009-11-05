@@ -42,6 +42,7 @@ import settings
 import reaction
 
 import ctml_writer
+import os
 
 ################################################################################
 
@@ -675,7 +676,7 @@ class BatchReactor(ReactionSystem):
 			return 0
 		phase.has_species = has_species
 		#self._cantera = phase  # if we save it, we have to pickle it, and we can't pickle the has_species function
-	
+		ctml_writer.validate() # turns on validation
 	
 	def getResidual(self, t, y, model, stoichiometry):
 		"""
@@ -789,12 +790,13 @@ class BatchReactor(ReactionSystem):
 	def runCantera(self, model):
 		"""Write a cantera file, read it in cantera, and return a ReactorNet and Solution"""
 		
-		# Write the cantera file
-		import os
-		cti_file = os.path.join(settings.scratchDirectory,'cantera_input_%03d'%len(model.core.species) )
+		# Write the cantera file to scratch/cantera/ folder
+		cantera_folder = os.path.join(settings.scratchDirectory,'cantera')
+		os.path.exists(cantera_folder) or os.mkdir(cantera_folder)
+		cti_file = os.path.join(cantera_folder,'cantera_input_%03d'%len(model.core.species) )
 		logging.debug("Writing CTML file %s"%cti_file)
 		ctml_writer.dataset(cti_file) # change name
-		ctml_writer.validate()
+		
 		ctml_writer.write()
 		
 		import Cantera
