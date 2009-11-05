@@ -824,7 +824,7 @@ class BatchReactor(ReactionSystem):
 		header = 'Time          '
 		for target in model.termination:
 			if target.__class__ == TerminationConversion: header += 'Conv        '
-		header += 'Thresh. flux     Maximum flux to edge'
+		header += 'Char. flux     Max. rel. flux to edge'
 		logging.debug(header)
 #		self.printSimulationStatus(model, 0, y, y0, criticalFlux, maxSpeciesFlux, maxSpecies)
 #		tlist.append(0.0); ylist.append(y0)
@@ -873,7 +873,7 @@ class BatchReactor(ReactionSystem):
 				valid=False
 			
 			# Output information about simulation at current time
-			self.printSimulationStatus(model, time, solver.y, y0, criticalFlux, maxSpeciesFlux, maxSpecies)
+			self.printSimulationStatus(model, time, solver.y, y0, charFlux, maxSpeciesFlux/charFlux, maxSpecies)
 			tlist.append(time); ylist.append(solver.y)
 			dydtlist.append(self.getResidual(time, solver.y, model, stoichiometry))
 			
@@ -961,7 +961,7 @@ class BatchReactor(ReactionSystem):
 				index = model.core.species.index(target.species) + 3
 				conversion = 1.0 - y[index] / y0[index]
 				status += '    %8.4g' % (conversion)
-		status += '    %8.4e    %8.4e  %s' % (charFlux, maxSpeciesFlux, maxSpecies)
+		status += '    %8.4e    %8.4g  %s' % (charFlux, maxSpeciesFlux, maxSpecies)
 		logging.debug(status)
 		
 		#print t, P, V, T, Ni
