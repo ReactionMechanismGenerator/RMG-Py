@@ -108,7 +108,8 @@ def readInputFile(fstr):
 		
 		# Parse the RMG input XML file into a DOM tree
 		dom = xml.dom.minidom.parse(fstr)
-
+		
+		
 		# Process root element (must be a rmginput element)
 		root = dom.documentElement
 		if root.tagName != 'rmginput':
@@ -419,13 +420,17 @@ def readInputFile(fstr):
 				
 		logging.debug('')
 			
-	except InvalidInputFileException, e:
-		logging.exception(str(e))
-	except IOError, e:
-		logging.exception('Input file "' + e.filename + '" not found.')
-	finally:
 		# Unlink the DOM tree when finished
 		dom.unlink()
+	except InvalidInputFileException, e:
+		logging.exception(str(e))
+		raise e
+	except IOError, e:
+		logging.exception('Input file "' + e.filename + '" not found.')
+		raise e
+	except xml.parsers.expat.ExpatError, e:
+		logging.exception('Invalid XML file: '+e.message+'\n')
+		raise InvalidInputFileException('Invalid XML file: '+e.message)
 		
 	return reactionModel, coreSpecies, reactionSystems
 
