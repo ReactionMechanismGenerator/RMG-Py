@@ -36,16 +36,16 @@
 			<pressure units="bar">10.0</pressure>
 		</pressureModel>
 		<physicalPropertyModel type="idealGas" />
-		<moleFraction speciesID="O2">3.54301e-7</moleFraction>
-		<moleFraction speciesID="C8H18i">3.45781e-9</moleFraction> 
-		<moleFraction speciesID="C2H6On">9.33109e-8</moleFraction>  
-		<moleFraction speciesID="C7H8t">2.40544e-9</moleFraction> 
-		<moleFraction speciesID="C6H12n">1.05238e-9</moleFraction> 
-		<moleFraction speciesID="Ar">4.96587e-5 </moleFraction> 
+		<moleFraction speciesID="O2">    0.00707000960551 </moleFraction>  
+		<moleFraction speciesID="C8H18i">6.89999461306e-05</moleFraction>  
+		<moleFraction speciesID="C2H6On">0.0018620014036  </moleFraction>  
+		<moleFraction speciesID="C7H8t"> 4.80001013417e-05</moleFraction>  
+		<moleFraction speciesID="C6H12n">2.1000044337e-05 </moleFraction>  
+		<moleFraction speciesID="Ar">    0.990929988899    </moleFraction> 
 	</reactionSystem>
 	<!-- Termination -->
 	<termination>
-		<target type="conversion" speciesID="spec1">0.9</target>
+		<target type="conversion" speciesID="C2H6On">0.9</target>
 		<target type="time" units="s">1e0</target>
 	</termination>
 	<!-- Dynamic simulator -->
