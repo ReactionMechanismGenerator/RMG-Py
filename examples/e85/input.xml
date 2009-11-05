@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<!-- Tracks the consumption E85 (85% ethanol gasoline) surrogate. -->
+
+<rmginput>
+	<!-- The units to use for RMG output: si or cgs -->
+	<units>si</units>
+	<!-- Data sources -->
+	<database type="general">RMG_database</database>
+	<!-- List of initial species -->
+	<species id="O2" label="oxygen" reactive="yes">
+		<smiles>O=O</smiles>
+	</species>
+	<species id="C8H18i" label="iso-octane" reactive="yes">
+		<smiles>CC(C)CC(C)(C)C</smiles>
+	</species>
+	<species id="C2H6On" label="ethanol" reactive="yes">
+		<smiles>CCO</smiles>
+	</species>
+	<species id="C7H8t" label="toluene" reactive="yes">
+		<smiles>Cc1ccccc1</smiles>
+	</species>
+	<species id="C6H12n" label="hex-1-ene" reactive="yes">
+		<smiles>CCCCC=C</smiles>
+	</species>
+	<!-- Inert gases -->
+	<species id="Ar" label="argon" reactive="no">
+		<smiles>[Ar]</smiles>
+	</species>
+	<!-- List of reaction systems -->
+	<reactionSystem type="batch">
+		<temperatureModel type="isothermal">
+			<temperature units="K">900.0</temperature>
+		</temperatureModel>
+		<pressureModel type="isobaric">
+			<pressure units="bar">10.0</pressure>
+		</pressureModel>
+		<physicalPropertyModel type="idealGas" />
+		<moleFraction speciesID="O2">3.54301e-7</moleFraction>
+		<moleFraction speciesID="C8H18i">3.45781e-9</moleFraction> 
+		<moleFraction speciesID="C2H6On">9.33109e-8</moleFraction>  
+		<moleFraction speciesID="C7H8t">2.40544e-9</moleFraction> 
+		<moleFraction speciesID="C6H12n">1.05238e-9</moleFraction> 
+		<moleFraction speciesID="Ar">4.96587e-5 </moleFraction> 
+	</reactionSystem>
+	<!-- Termination -->
+	<termination>
+		<target type="conversion" speciesID="spec1">0.9</target>
+		<target type="time" units="s">1e0</target>
+	</termination>
+	<!-- Dynamic simulator -->
+	<simulator atol="1e-16" rtol="1e-8" />
+	<fluxTolerance>
+		<keepInEdge>1e-16</keepInEdge>
+		<moveToCore>0.1</moveToCore>
+		<interruptSimulation>1.0</interruptSimulation>
+	</fluxTolerance>
+	<maximumModelSize>
+		<edgeSpecies>100</edgeSpecies>
+	</maximumModelSize>
+	<!-- Options -->
+	<drawMolecules>on</drawMolecules>
+	<generatePlots>off</generatePlots>
+	<!--<inchiGeneration>off</inchiGeneration>
+	<spectralDataEstimation>off</spectralDataEstimation>
+	<activatedNetworks>off</activatedNetworks>-->
+	
+</rmginput>
