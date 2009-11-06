@@ -619,6 +619,8 @@ class Database:
 		# Load dictionary, library, and (optionally) tree
 		self.dictionary.load(dictstr)
 		self.dictionary.toStructure()
+		assert len(self.dictionary)>0
+		
 		if treestr != '':
 			self.tree.load(treestr)
 			# Check that all nodes in tree are also in dictionary
