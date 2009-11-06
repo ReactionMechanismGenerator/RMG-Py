@@ -979,7 +979,7 @@ class BatchReactor(ReactionSystem):
 				elif target.__class__ == TerminationTime:
 					if time > target.time: done = True
 		
-		print gas 
+		logging.info(str(gas))
 		
 		# Test for model validity once simulation complete
 		maxSpecies = None
