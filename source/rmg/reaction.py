@@ -1296,6 +1296,7 @@ class ReactionFamily(data.Database):
 			message += "Product structures: %s \n"%productStructures
 			message += "Template: %s"%self.template
 			logging.error(message)
+			return None # don't fail!!! muhahaha
 			raise Exception(message)
 		
 		# Recalculate atom types of product structures, since they may have
