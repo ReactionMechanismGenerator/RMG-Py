@@ -1584,9 +1584,11 @@ class ReactionFamilySet:
 		Generate a list of reactions that involve a list of one or two `species`
 		as a reactant or product.
 		"""
-
+		
 		log_text = ' + '.join([str(spec) for spec in species])
-
+		
+		logging.info('Looking for reactions of %s'%(log_text))
+		
 		rxnList = []
 		for key, family in self.families.iteritems():
 			rxnList.extend(family.getReactionList(species))

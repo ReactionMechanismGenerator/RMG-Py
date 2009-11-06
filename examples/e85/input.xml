@@ -51,9 +51,9 @@
 	<!-- Dynamic simulator -->
 	<simulator atol="1e-16" rtol="1e-8" />
 	<fluxTolerance>
-		<keepInEdge>1e-16</keepInEdge>
-		<moveToCore>0.01</moveToCore>
-		<interruptSimulation>1.0</interruptSimulation>
+		<keepInEdge>0.0</keepInEdge>
+		<moveToCore>0.001</moveToCore>
+		<interruptSimulation>0.1</interruptSimulation>
 	</fluxTolerance>
 	<maximumModelSize>
 		<edgeSpecies>1000</edgeSpecies>
