@@ -1719,7 +1719,8 @@ def makeNewReaction(reactants, products, reactantStructures, productStructures, 
 					reactantLabels[atom.label].append(atom)
 				else:
 					reactantLabels[atom.label] = [atom]
-			elif atom.label != '': reactantLabels[atom.label] = atom
+			elif atom.label != '': 
+				reactantLabels[atom.label] = atom
 	# Get atom labels of products
 	for structure in productStructures:
 		for atom in structure.atoms():
@@ -1728,7 +1729,8 @@ def makeNewReaction(reactants, products, reactantStructures, productStructures, 
 					productLabels[atom.label].append(atom)
 				else:
 					productLabels[atom.label] = [atom]
-			elif atom.label != '': productLabels[atom.label] = atom
+			elif atom.label != '':
+				productLabels[atom.label] = atom
 			
 	# Dictionaries containing the labeled atoms for the reactants and products
 	forward.atomLabels = reactantLabels

@@ -416,11 +416,16 @@ class Species:
 # The list is stored in reverse of the order in which the species are created;
 # when searching the list, it is more likely to match a recently created species
 # than an older species
+#: Global list of species currently in memory.
 speciesList = []
 
 # A cache of recently visited species
 speciesCache = []
 speciesCacheMaxSize = 4
+
+global speciesCounter 
+#: Used to label species uniquely. Incremented each time a new species is made.
+speciesCounter = 0 
 
 def makeNewSpecies(structure, label='', reactive=True):
 	"""
@@ -433,7 +438,7 @@ def makeNewSpecies(structure, label='', reactive=True):
 	object is created and returned after being appended to the global species
 	list.
 	"""
-
+	global speciesCounter 
 #	# Recalculate atom types for proposed structure (hopefully not necessary)
 #	structure.simplifyAtomTypes()
 #	structure.updateAtomTypes()
@@ -463,7 +468,9 @@ def makeNewSpecies(structure, label='', reactive=True):
 #		for atom in structure.atoms():
 #			if atom.hasFreeElectron(): label += 'J'
 		label = structure.toSMILES()
-	spec = Species(len(speciesList)+1, label, structure, reactive)
+	
+	speciesCounter += 1
+	spec = Species(speciesCounter, label, structure, reactive)
 	speciesList.insert(0, spec)
 	
 	spec.getResonanceIsomers()
