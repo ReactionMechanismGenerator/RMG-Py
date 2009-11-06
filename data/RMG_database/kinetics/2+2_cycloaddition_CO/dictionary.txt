@@ -37,30 +37,30 @@ four_ring
 Union {four_ring_CO, four_ring_OC, four_ring_CCO, four_ring_COC}
 
 four_ring_CO
-1 *1 CO 0 {2,S} {3,S}
+1 *1 Cs 0 {2,S} {3,S}
 2 *2 Os 0 {1,S} {4,S}
-3 *3 CO 0 {4,S} {1,S}
+3 *3 Cs 0 {4,S} {1,S}
 4 *4 Os 0 {3,S} {2,S}
 
 four_ring_OC
-1 *1 CO 0 {2,S} {3,S}
+1 *1 Cs 0 {2,S} {3,S}
 2 *2 Os 0 {1,S} {4,S}
 3 *3 Os 0 {4,S} {1,S}
-4 *4 CO 0 {3,S} {2,S}
+4 *4 Cs 0 {3,S} {2,S}
 
 four_ring_CCO
-1 *1 CO 0 {2,S} {3,S}
+1 *1 Cs 0 {2,S} {3,S}
 2 *2 Os 0 {1,S} {4,S}
-3 *3 C 0 {4,S} {1,S}
-4 *4 Cd 0 {3,S} {5,D} {2,S}
-5 Od 0 {4,D}
+3 *3 Cs 0 {4,S} {1,S}
+4 *4 CO 0 {3,S} {5,D} {2,S}
+5    Od 0 {4,D}
 
 four_ring_COC
-1 *1 CO 0 {2,S} {3,S}
+1 *1 Cs 0 {2,S} {3,S}
 2 *2 Os 0 {1,S} {4,S}
-3 *3 Cd 0 {4,S} {5,D} {1,S}
-4 *4 C 0 {3,S} {2,S}
-5 Od 0 {3,D}
+3 *3 CO 0 {4,S} {5,D} {1,S}
+4 *4 Cs 0 {3,S} {2,S}
+5    Od 0 {3,D}
 
 // Other nodes
 
