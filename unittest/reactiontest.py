@@ -181,7 +181,37 @@ class ReactionSetCheck(unittest.TestCase):
 		self.assertTrue(species2 in all_products, "None of the reactions made %s"%(species2))
 
 		#self.assertEqual(len(rxns),1, "Was expecting to make 1 reaction for %s"%(species1))
-	
+
+	def test12Cycloaddition(self):
+		"""Test 1+2_Cycloaddition reactions"""
+		self.loadDatabase(only_families=['1+2_Cycloaddition'])
+		
+		for smile in ['O1OO1'
+					]:
+			
+			structure1 = Structure(SMILES=smile)
+			species1 = makeNewSpecies(structure1)
+			print 'Reacting species',species1
+				
+			# wipe the reaction list
+			reaction.reactionList=[]
+			
+			rxns = reaction.kineticsDatabase.getReactions([species1])
+			for rxn in rxns:
+				print 'Reaction family:',rxn.family
+				print 'Reaction:',rxn
+				print 'Kinetics:',rxn.kinetics
+				print
+			
+			all_products = []
+			for rxn in rxns:
+				#self.assertEqual(rxn.family.label,'Cyclic colligation',"Was trying to test 'Cyclic colligation' but made a reaction from family %s"%rxn.family)
+				#self.assertEqual(len(rxn.reactants),1,"Reaction %s wasn't unimolecular"%rxn)
+				#self.assertEqual(len(rxn.products),1,"Reaction %s wasn't unimolecular"%rxn)
+				all_products.extend(rxn.products)
+			print "All products for reacting %s:"%species1, [p.structure[0] for p in all_products]
+			
+				
 			
 	def testCyclicColligation(self):
 		"""A test of a Birad_recombination  (Cyclic colligation) reactions"""
@@ -225,7 +255,9 @@ class ReactionSetCheck(unittest.TestCase):
 		Doesn't do (m)any actual tests, but hopefully won't cause any errors"""
 		self.loadDatabase()
 		
-		for smile in ['C1(C(CCCCCCCC)C(C(CCCCCC)C=C1)c1ccccc1)c1ccccc1',
+		for smile in ['O1OO1',
+					'C1(CC(C)(C)O1)(C)C',
+					'C1(C(CCCCCCCC)C(C(CCCCCC)C=C1)c1ccccc1)c1ccccc1',
 					]:
 			structure1 = Structure(SMILES=smile)
 			species1 = makeNewSpecies(structure1)
@@ -323,7 +355,8 @@ reaction1, isNew = makeNewReaction([C6H9, H2], [C6H10, H], \
 	print "**************"
 	
 	# run a certain check without catching errors (turn on PDB debugger first)
-	ReactionSetCheck('testAllFamilies').debug()
+	import pdb
+	ReactionSetCheck('test12Cycloaddition').debug()
 	
 	# now run all the unit tests
 	unittest.main( testRunner = unittest.TextTestRunner(verbosity=2) )
