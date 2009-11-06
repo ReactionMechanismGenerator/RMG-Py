@@ -41,6 +41,7 @@ import scipy.sparse
 import constants
 import settings
 import reaction
+import species
 
 ################################################################################
 
@@ -175,7 +176,7 @@ class CoreEdgeReactionModel:
 	
 	def removeSpeciesFromEdge(self, spec):
 		"""
-		Add a species `spec` to the reaction model edge.
+		Remove species `spec` from the reaction model edge.
 		"""
 		# remove the species
 		self.edge.species.remove(spec)
@@ -186,6 +187,9 @@ class CoreEdgeReactionModel:
 				rxnList.append(rxn)
 		# remove those reactions
 		self.edge.reactions.remove(rxn)
+		
+		# remove from the global list of species, to free memory
+		species.speciesList.remove(spec)
 	
 	def addReactionToCore(self, rxn):
 		"""
