@@ -96,13 +96,13 @@ class CoreEdgeReactionModel:
 		
 		# First add non-reactive species, to make Cantera simulations more stable
 		for spec in coreSpecies:
-			if spec.reactive: continue # skip reactive
+		#	if spec.reactive: continue # skip reactive
 			self.enlarge(spec)
 			
-		# Add all species present in input file to model core
-		for spec in coreSpecies:
-			if not spec.reactive: continue  # skip non-reactive
-			self.enlarge(spec)
+		## Add all species present in input file to model core
+		#for spec in coreSpecies:
+		#	if not spec.reactive: continue  # skip non-reactive
+		#	self.enlarge(spec)
 
 	def enlarge(self, newSpecies):
 		"""
@@ -917,10 +917,14 @@ class BatchReactor(ReactionSystem):
 			else:
 				# advance cantera one step, or two if the first didn't get there
 				nexttime = time*1.2589254117941673
-				if sim.step(endtime) < endtime:
-				 	if sim.step(endtime) < nexttime:
-						sim.advance(nexttime)
-				
+				try:
+					if sim.step(endtime) < endtime:
+						if sim.step(endtime) < nexttime:
+							sim.advance(nexttime)
+				except Exception, e:
+					logging.exception("Ignoring Cantera error")
+					logging.debug(e.message)
+					pass
 			time = sim.time()
 			P = gas.pressure()
 			V = sim.reactors()[0].volume()
