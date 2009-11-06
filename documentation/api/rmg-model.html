@@ -46,7 +46,7 @@
         <li><a href="../../index.html">RMG v0.1.1 documentation</a> &raquo;</li>
           <li><a href="../index.html" >RMG Documentation</a> &raquo;</li>
           <li><a href="index.html" accesskey="U">RMG Developer&#8217;s Guide</a> &raquo;</li>
-  <li><a href="">8. The <tt class="docutils literal docutils literal"><span class="pre">rmg.model</span></tt> Module</a></li>
+  <li><a href="">8. The <tt class="docutils literal"><span class="pre">rmg.model</span></tt> Module</a></li>
 
       </ul>
     </div>  
@@ -141,6 +141,11 @@ flux <cite>charFlux</cite>, the maximum species flux <cite>maxSpeciesFlux</cite>
 species with that flux <cite>maxSpecies</cite>.</dd></dl>
 
 <dl class="method">
+<dt id="rmg.model.BatchReactor.runCantera">
+<tt class="descname">runCantera</tt><big>(</big><em>model</em><big>)</big><a class="headerlink" href="#rmg.model.BatchReactor.runCantera" title="Permalink to this definition">¶</a></dt>
+<dd>Write a cantera file, read it in cantera, and return a ReactorNet and Solution</dd></dl>
+
+<dl class="method">
 <dt id="rmg.model.BatchReactor.simulate">
 <tt class="descname">simulate</tt><big>(</big><em>model</em><big>)</big><a class="headerlink" href="#rmg.model.BatchReactor.simulate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Conduct a simulation of the current reaction system using the core-edge
@@ -159,6 +164,11 @@ edge, along with the reactions that involve them.</p>
 <p>Returns:
 (tlist, ylist, dydtlist, valid?, Edge_species_with_highest_flux)</p>
 </dd></dl>
+
+<dl class="method">
+<dt id="rmg.model.BatchReactor.toCantera">
+<tt class="descname">toCantera</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.model.BatchReactor.toCantera" title="Permalink to this definition">¶</a></dt>
+<dd>Creata a Cantera instance. Call this once</dd></dl>
 
 </dd></dl>
 
@@ -238,7 +248,7 @@ start out with.</dd></dl>
 <dl class="method">
 <dt id="rmg.model.CoreEdgeReactionModel.removeSpeciesFromEdge">
 <tt class="descname">removeSpeciesFromEdge</tt><big>(</big><em>spec</em><big>)</big><a class="headerlink" href="#rmg.model.CoreEdgeReactionModel.removeSpeciesFromEdge" title="Permalink to this definition">¶</a></dt>
-<dd>Add a species <cite>spec</cite> to the reaction model edge.</dd></dl>
+<dd>Remove species <cite>spec</cite> from the reaction model edge.</dd></dl>
 
 </dd></dl>
 
@@ -568,7 +578,7 @@ has one attribute: the termination <cite>time</cite> in seconds.</dd></dl>
 
             <h4>Previous topic</h4>
             <p class="topless"><a href="rmg-main.html"
-                                  title="previous chapter">7. The <tt class="docutils literal docutils literal docutils literal"><span class="pre">rmg.main</span></tt> Module</a></p>
+                                  title="previous chapter">7. The <tt class="docutils literal"><span class="pre">rmg.main</span></tt> Module</a></p>
             <h4>Next topic</h4>
             <p class="topless"><a href="rmg-reaction.html"
                                   title="next chapter">9. The <tt class="docutils literal"><span class="pre">rmg.reaction</span></tt> Module</a></p>
@@ -620,7 +630,7 @@ has one attribute: the termination <cite>time</cite> in seconds.</dd></dl>
         <li><a href="../../index.html">RMG v0.1.1 documentation</a> &raquo;</li>
           <li><a href="../index.html" >RMG Documentation</a> &raquo;</li>
           <li><a href="index.html" >RMG Developer&#8217;s Guide</a> &raquo;</li>
-  <li><a href="">8. The <tt class="docutils literal docutils literal"><span class="pre">rmg.model</span></tt> Module</a></li>
+  <li><a href="">8. The <tt class="docutils literal"><span class="pre">rmg.model</span></tt> Module</a></li>
 
       </ul>
     </div>
