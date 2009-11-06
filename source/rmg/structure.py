@@ -80,7 +80,10 @@ class Structure:
 			self.fromSMILES(SMILES)
 
 	def __repr__(self):
-		message = "Structure(SMILES='%s')"%(self.toSMILES())
+		try:
+			message = "Structure(SMILES='%s')"%(self.toSMILES())
+		except AttributeError:
+			message = "<Structure containing %s>"%([ [at.label for at in a._atomType] for a in self.atoms() ])
 		return message
 
 	def atoms(self):
