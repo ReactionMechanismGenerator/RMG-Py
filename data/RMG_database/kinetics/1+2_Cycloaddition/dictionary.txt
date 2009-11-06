@@ -11,8 +11,9 @@ multiplebond
 2 *2 {C,O} 0 {1,D}
 
 elec_def
-1 *3 {C,O} 2
 Union {carbene, me_carbene, dime_carbene, ph_carbene, o_atom}
+// 1 *3 {C,O} 2
+
 
 // Top level nodes for reverse reaction
 
