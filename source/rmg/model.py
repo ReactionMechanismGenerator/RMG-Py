@@ -82,28 +82,19 @@ class CoreEdgeReactionModel:
 		self.absoluteTolerance = 1.0e-8
 		self.relativeTolerance = 1.0e-4
 		self.termination = []
-
+	
 	def initialize(self, coreSpecies):
 		"""
 		Initialize a reaction model with a list `coreSpecies` of species to
 		start out with.
-		
-		It adds the nonreactive species first, which seems to increase the 
-		chance of the Cantera simulations running correctly. 
 		"""
 		
 		logging.info('')
 		
-		# First add non-reactive species, to make Cantera simulations more stable
+		# Add all species present in input file to model core
 		for spec in coreSpecies:
-		#	if spec.reactive: continue # skip reactive
 			self.enlarge(spec)
-			
-		## Add all species present in input file to model core
-		#for spec in coreSpecies:
-		#	if not spec.reactive: continue  # skip non-reactive
-		#	self.enlarge(spec)
-
+	
 	def enlarge(self, newSpecies):
 		"""
 		Enlarge a reaction model by moving `newSpecies` from the edge to the
