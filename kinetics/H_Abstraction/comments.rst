@@ -2536,7 +2536,10 @@ MRH 31-Aug-2009
 248
 ---
 [137] Mayer, S.W.; Schieler, L. J. Phys. Chem. 1968, 72, 2628.
-H2O + O2 --> OH + HO2. C.D.W divided original rate expression by 2, to get rate expression per H atom.
+http://dx.doi.org/10.1021/j100853a066
+
+H2O + O2 --> OH + HO2. 
+C.D.W divided original rate expression by 2, to get rate expression per H atom.
 
 
 ---
