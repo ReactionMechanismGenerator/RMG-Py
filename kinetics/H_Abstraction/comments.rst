@@ -870,35 +870,47 @@ Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate express
 ---
 142
 ---
-[8] Curran, H.J.; Gaffuri, P.; Pit z, W.J.; Westbrook, C.K. Combust. Flame 2002, 129, 253.
-Rate expressions for H atom abstraction from fuels.
+[8] Curran, H.J.; Gaffuri, P.; Pit z, W.J.; Westbrook, C.K. Combust. Flame 2002, 129, 253. http://dx.doi.org/10.1016/S0010-2180(01)00373-X
 
+Rate expressions for H atom abstraction from fuels. 
 pg 257 A Comprehensive Modelling Study of iso-Octane Oxidation, Table 1. Radical:OH, Site: primary (a)
-
 Verified by Karma James
+
+**HOWEVER** This entry should probably use the numbers for primary(d) not primary(a).
+Primary(a) is for a primary on neopentane; primary(d) is for a primary on propane.
+-- Richard West
+
+These numbers reported by Curran et al. were apparently taken from
+N. Cohen, *Intl. J. Chem. Kinet.* 14 (1982), p. 1339 http://dx.doi.org/10.1002/kin.550141206
 
 
 ---
 143
 ---
 [8] Curran, H.J.; Gaffuri, P.; Pit z, W.J.; Westbrook, C.K. Combust. Flame 2002, 129, 253.
-Rate expressions for H atom abstraction from fuels.
+http://dx.doi.org/10.1016/S0010-2180(01)00373-X
 
+Rate expressions for H atom abstraction from fuels. 
 pg 257 A Comprehensive Modelling Study of iso-Octane Oxidation, Table 1. Radical:OH, Site: secondary (b)
 
 Verified by Karma James
 
+These numbers reported by Curran et al. were apparently taken from
+N. Cohen, *Intl. J. Chem. Kinet.* 14 (1982), p. 1339 http://dx.doi.org/10.1002/kin.550141206
 
 ---
 144
 ---
 [8] Curran, H.J.; Gaffuri, P.; Pit z, W.J.; Westbrook, C.K. Combust. Flame 2002, 129, 253.
-Rate expressions for H atom abstraction from fuels.
+http://dx.doi.org/10.1016/S0010-2180(01)00373-X
 
+Rate expressions for H atom abstraction from fuels.
 pg 257 A Comprehensive Modelling Study of iso-Octane Oxidation, Table 1. Radical:OH, Site: tertiary (c)
 
 Verified by Karma James
 
+These numbers reported by Curran et al. were apparently taken from
+N. Cohen, *Intl. J. Chem. Kinet.* 14 (1982), p. 1339 http://dx.doi.org/10.1002/kin.550141206
 
 ---
 145
@@ -909,7 +921,6 @@ Rate expressions for H atom abstraction from fuels.
 pg 257 A Comprehensive Modelling Study of iso-Octane Oxidation, Table 1. Radical:O, Site: primary (a)
 
 Verified by Karma James
-
 
 ---
 146
