@@ -7,15 +7,18 @@
 CO2
 Union {CO2_Od,CO2_Cdd}
 
+// *3 (H if there is one) bonds to the *1 
+// *4 (usually C) bonds on the *2
+
 CO2_Od
 1 *2 Cdd 0 {2,D} {3,D}
 2 *1 Od 0 {1,D}
-3 Od 0 {1,D}
+3    Od 0 {1,D}
 
 CO2_Cdd
 1 *1 Cdd 0 {2,D} {3,D}
-2 *2 Od 0 {1,D}
-3 Od 0 {1,D}
+2 *2 Od  0 {1,D}
+3    Od  0 {1,D}
 
 RR'
 Union {R_H,R_R'}
