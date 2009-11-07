@@ -878,7 +878,7 @@ Verified by Karma James
 
 **HOWEVER** This entry should probably use the numbers for primary(d) not primary(a).
 Primary(a) is for a primary on neopentane; primary(d) is for a primary on propane.
--- Richard West
+Richard West
 
 These numbers reported by Curran et al. were apparently taken from
 N. Cohen, *Intl. J. Chem. Kinet.* 14 (1982), p. 1339 http://dx.doi.org/10.1002/kin.550141206
