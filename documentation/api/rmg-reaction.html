@@ -208,11 +208,6 @@ as a reactant.</dd></dl>
 <dd>Return <tt class="xref xref docutils literal"><span class="pre">True</span></tt> if the forward reaction has one reactant and
 <tt class="xref xref docutils literal"><span class="pre">False</span></tt> otherwise.</dd></dl>
 
-<dl class="method">
-<dt id="rmg.reaction.Reaction.toCantera">
-<tt class="descname">toCantera</tt><big>(</big><em>T=1000</em><big>)</big><a class="headerlink" href="#rmg.reaction.Reaction.toCantera" title="Permalink to this definition">¶</a></dt>
-<dd>Return a Cantera ctml_writer instance</dd></dl>
-
 </dd></dl>
 
 </div>
@@ -268,7 +263,7 @@ the family is its own reverse</td>
 </table>
 <dl class="method">
 <dt id="rmg.reaction.ReactionFamily.applyRecipe">
-<tt class="descname">applyRecipe</tt><big>(</big><em>reactantStructures</em><big>)</big><a class="headerlink" href="#rmg.reaction.ReactionFamily.applyRecipe" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">applyRecipe</tt><big>(</big><em>reactantStructures</em>, <em>unique=True</em><big>)</big><a class="headerlink" href="#rmg.reaction.ReactionFamily.applyRecipe" title="Permalink to this definition">¶</a></dt>
 <dd>Apply the recipe for this reaction family to the list of
 <tt class="xref docutils literal"><span class="pre">structure.Structure</span></tt> objects <cite>reactantStructures</cite>. The atoms
 of the reactant structures must already be tagged with the appropriate
@@ -302,6 +297,13 @@ scheme.</dd></dl>
 <tt class="descname">generateMissingEntriesFromBelow</tt><big>(</big><em>nodes</em><big>)</big><a class="headerlink" href="#rmg.reaction.ReactionFamily.generateMissingEntriesFromBelow" title="Permalink to this definition">¶</a></dt>
 <dd>Generate a nonexisting entry in the library based on an averaging
 scheme.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.reaction.ReactionFamily.generateProductTemplate">
+<tt class="descname">generateProductTemplate</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.reaction.ReactionFamily.generateProductTemplate" title="Permalink to this definition">¶</a></dt>
+<dd>Generate the product structures by applying the reaction template to
+the top-level nodes. For reactants defined by multiple structures, only
+the first is used here; it is assumed to be the most generic.</dd></dl>
 
 <dl class="method">
 <dt id="rmg.reaction.ReactionFamily.getKinetics">
@@ -456,24 +458,15 @@ action parameters as indicated above.</p>
 <dd>Add an action to the reaction recipe.</dd></dl>
 
 <dl class="method">
-<dt id="rmg.reaction.ReactionRecipe.apply">
-<tt class="descname">apply</tt><big>(</big><em>struct</em>, <em>doForward</em><big>)</big><a class="headerlink" href="#rmg.reaction.ReactionRecipe.apply" title="Permalink to this definition">¶</a></dt>
-<dd>Apply the reaction recipe to the set of molecules contained in
-<cite>structure</cite>, a single Structure object that contains one or more
-structures. The <cite>doForward</cite> parameter is used to indicate
-whether the forward or reverse recipe should be applied. The atoms in
-the structure should be labeled with the appropriate atom centers.</dd></dl>
-
-<dl class="method">
 <dt id="rmg.reaction.ReactionRecipe.applyForward">
-<tt class="descname">applyForward</tt><big>(</big><em>struct</em><big>)</big><a class="headerlink" href="#rmg.reaction.ReactionRecipe.applyForward" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">applyForward</tt><big>(</big><em>struct</em>, <em>unique=True</em><big>)</big><a class="headerlink" href="#rmg.reaction.ReactionRecipe.applyForward" title="Permalink to this definition">¶</a></dt>
 <dd>Apply the reaction recipe to the set of molecules contained in
 <cite>structure</cite>, a single Structure object that contains one or more
 structures.</dd></dl>
 
 <dl class="method">
 <dt id="rmg.reaction.ReactionRecipe.applyReverse">
-<tt class="descname">applyReverse</tt><big>(</big><em>struct</em><big>)</big><a class="headerlink" href="#rmg.reaction.ReactionRecipe.applyReverse" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">applyReverse</tt><big>(</big><em>struct</em>, <em>unique=True</em><big>)</big><a class="headerlink" href="#rmg.reaction.ReactionRecipe.applyReverse" title="Permalink to this definition">¶</a></dt>
 <dd>Apply the reaction recipe to the set of molecules contained in
 <cite>structure</cite>, a single Structure object that contains one or more
 structures.</dd></dl>

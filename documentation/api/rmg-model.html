@@ -141,34 +141,24 @@ flux <cite>charFlux</cite>, the maximum species flux <cite>maxSpeciesFlux</cite>
 species with that flux <cite>maxSpecies</cite>.</dd></dl>
 
 <dl class="method">
-<dt id="rmg.model.BatchReactor.runCantera">
-<tt class="descname">runCantera</tt><big>(</big><em>model</em><big>)</big><a class="headerlink" href="#rmg.model.BatchReactor.runCantera" title="Permalink to this definition">¶</a></dt>
-<dd>Write a cantera file, read it in cantera, and return a ReactorNet and Solution</dd></dl>
-
-<dl class="method">
 <dt id="rmg.model.BatchReactor.simulate">
 <tt class="descname">simulate</tt><big>(</big><em>model</em><big>)</big><a class="headerlink" href="#rmg.model.BatchReactor.simulate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Conduct a simulation of the current reaction system using the core-edge
 reaction model <cite>model</cite>.</p>
 <p>Edge species fluxes are tracked, relative to the characteristic core 
 flux at that time, throughout the simulation. 
-If one exceeds <cite>model.fluxTolerance_interruptSimulation</cite> the simulation
+If one exceeds <cite>model.fluxToleranceInterrupt</cite> the simulation
 is interrupted, and that species is returned.
 The highest relative flux reached by each species during the simulation 
 is stored for later analysis.
-If one or more of these exceed <cite>model.fluxTolerance_moveToCore</cite> then the 
+If one or more of these exceed <cite>model.fluxToleranceMoveToCore</cite> then the
 species with the highest will be returned.</p>
 <p>If the simulation completes without interruption, then any that fall 
-below <cite>model.fluxTolerance_keepInEdge</cite> will be removed from the
+below <cite>model.fluxToleranceKeepInEdge</cite> will be removed from the
 edge, along with the reactions that involve them.</p>
 <p>Returns:
 (tlist, ylist, dydtlist, valid?, Edge_species_with_highest_flux)</p>
 </dd></dl>
-
-<dl class="method">
-<dt id="rmg.model.BatchReactor.toCantera">
-<tt class="descname">toCantera</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.model.BatchReactor.toCantera" title="Permalink to this definition">¶</a></dt>
-<dd>Creata a Cantera instance. Call this once</dd></dl>
 
 </dd></dl>
 
@@ -180,10 +170,49 @@ edge, along with the reactions that involve them.</p>
 <em class="property">
 class </em><tt class="descclassname">rmg.model.</tt><tt class="descname">CoreEdgeReactionModel</tt><big>(</big><em>core=None</em>, <em>edge=None</em><big>)</big><a class="headerlink" href="#rmg.model.CoreEdgeReactionModel" title="Permalink to this definition">¶</a></dt>
 <dd><p>Represent a reaction model constructed using a rate-based screening
-algorithm. The <cite>core</cite> is a reaction model that represents species and 
-reactions currently in the model, while the <cite>edge</cite> is a reaction model that
-represents species and reactions identified as candidates for addition to 
-the core.</p>
+algorithm. The species and reactions in the model itself are called the 
+<em>core</em>; the species and reactions identified as candidates for inclusion in 
+the model are called the <em>edge</em>. The attributes are:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="20%" />
+<col width="80%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Attribute</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td><cite>core</cite></td>
+<td>The species and reactions of the current model core</td>
+</tr>
+<tr><td><cite>edge</cite></td>
+<td>The species and reactions of the current model edge</td>
+</tr>
+<tr><td><cite>absoluteTolerance</cite></td>
+<td>The absolute tolerance used in the ODE/DAE solver</td>
+</tr>
+<tr><td><cite>relativeTolerance</cite></td>
+<td>The relative tolerance used in the ODE/DAE solver</td>
+</tr>
+<tr><td><cite>fluxToleranceKeepInEdge</cite></td>
+<td>The relative species flux below which species are discarded from the edge</td>
+</tr>
+<tr><td><cite>fluxToleranceMoveToCore</cite></td>
+<td>The relative species flux above which species are moved from the edge to the core</td>
+</tr>
+<tr><td><cite>fluxToleranceInterrupt</cite></td>
+<td>The relative species flux above which the simulation will halt</td>
+</tr>
+<tr><td><cite>maximumEdgeSpecies</cite></td>
+<td>The maximum number of edge species allowed at any time</td>
+</tr>
+<tr><td><cite>termination</cite></td>
+<td>A list of termination targets (i.e <a title="rmg.model.TerminationTime" class="reference internal" href="#rmg.model.TerminationTime"><tt class="xref docutils literal"><span class="pre">TerminationTime</span></tt></a> and <a title="rmg.model.TerminationConversion" class="reference internal" href="#rmg.model.TerminationConversion"><tt class="xref docutils literal"><span class="pre">TerminationConversion</span></tt></a> objects)</td>
+</tr>
+</tbody>
+</table>
 <dl class="method">
 <dt id="rmg.model.CoreEdgeReactionModel.addReactionToCore">
 <tt class="descname">addReactionToCore</tt><big>(</big><em>rxn</em><big>)</big><a class="headerlink" href="#rmg.model.CoreEdgeReactionModel.addReactionToCore" title="Permalink to this definition">¶</a></dt>

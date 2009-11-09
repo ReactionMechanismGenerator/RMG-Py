@@ -5,7 +5,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>RMG User’s Guide &mdash; RMG v0.1.1 documentation</title>
+    <title>RMG Features &mdash; RMG v0.1.1 documentation</title>
     <link rel="stylesheet" href="../../static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../static/pygments.css" type="text/css" />
     <script type="text/javascript">
@@ -20,9 +20,9 @@
     <script type="text/javascript" src="../../static/jquery.js"></script>
     <script type="text/javascript" src="../../static/doctools.js"></script>
     <link rel="top" title="RMG v0.1.1 documentation" href="../../index.html" />
-    <link rel="up" title="RMG Documentation" href="../index.html" />
-    <link rel="next" title="RMG Features" href="features.html" />
-    <link rel="prev" title="RMG Documentation" href="../index.html" /> 
+    <link rel="up" title="RMG User’s Guide" href="index.html" />
+    <link rel="next" title="RMG Installation" href="installation.html" />
+    <link rel="prev" title="RMG User’s Guide" href="index.html" /> 
  
 <link rel="stylesheet" href="../../static/RMG.css" type="text/css" />
 
@@ -38,14 +38,15 @@
           <a href="../../modindex.html" title="Global Module Index"
              accesskey="M">modules</a> |</li>
         <li class="right" >
-          <a href="features.html" title="RMG Features"
+          <a href="installation.html" title="RMG Installation"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="../index.html" title="RMG Documentation"
+          <a href="index.html" title="RMG User’s Guide"
              accesskey="P">previous</a> |</li>
         <li><a href="../../index.html">RMG v0.1.1 documentation</a> &raquo;</li>
-          <li><a href="../index.html" accesskey="U">RMG Documentation</a> &raquo;</li>
-  <li><a href="">RMG User&#8217;s Guide</a></li>
+          <li><a href="../index.html" >RMG Documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">RMG User&#8217;s Guide</a> &raquo;</li>
+  <li><a href="">RMG Features</a></li>
 
       </ul>
     </div>  
@@ -55,26 +56,17 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="rmg-user-s-guide">
-<h1>RMG User&#8217;s Guide<a class="headerlink" href="#rmg-user-s-guide" title="Permalink to this headline">¶</a></h1>
-<ul>
-<li class="toctree-l1"><a class="reference external" href="features.html">RMG Features</a></li>
-<li class="toctree-l1"><a class="reference external" href="installation.html">RMG Installation</a><ul>
-<li class="toctree-l2"><a class="reference external" href="installation.html#license-requirements">License Requirements</a></li>
-<li class="toctree-l2"><a class="reference external" href="installation.html#dependencies">Dependencies</a></li>
-<li class="toctree-l2"><a class="reference external" href="installation.html#installation">Installation</a></li>
-<li class="toctree-l2"><a class="reference external" href="installation.html#running-rmg">Running RMG</a></li>
-</ul>
-</li>
-</ul>
-<div class="section" id="indices-and-tables">
-<h2>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h2>
+  <div class="section" id="rmg-features">
+<h1>RMG Features<a class="headerlink" href="#rmg-features" title="Permalink to this headline">¶</a></h1>
 <ul class="simple">
-<li><a class="reference external" href="../../genindex.html"><em>Index</em></a></li>
-<li><a class="reference external" href="../../modindex.html"><em>Module Index</em></a></li>
-<li><a class="reference external" href="../../search.html"><em>Search Page</em></a></li>
+<li><strong>Automatic reaction generation.</strong> RMG will generate reactions of one or two reactant species using 22 reaction family templates, e.g. H abstraction, beta-scission, etc.</li>
+<li><strong>Extensible databases.</strong> The RMG databases are constructed in a dictionary-tree-library set to allow for easy extension as new data become available.</li>
+<li><strong>Rapid thermodynamics estimation using group additivity</strong>. Group additivity based on Benson&#8217;s groups provide fast and reliable thermochemistry estimates.</li>
+<li><strong>Dynamic simulation in a variety of reactors.</strong> This is acheived via connection to Cantera. Conversion and time targets can be specified.</li>
+<li><strong>Rate-based mechanism enlargement.</strong> Reactions are added to the mechanism based on their rate, fastest first.</li>
+<li><strong>Advanced tolerance controls.</strong> Multiple tolerances allow for easy control of the mechanism size.</li>
+<li><strong>Scriptable, modular interface.</strong> The RMG source code is designed to interface well with Python.</li>
 </ul>
-</div>
 </div>
 
 
@@ -83,23 +75,15 @@
       </div>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
-            <h3><a href="../../index.html">Table Of Contents</a></h3>
-            <ul>
-<li><a class="reference external" href="">RMG User&#8217;s Guide</a><ul>
-<li><a class="reference external" href="#indices-and-tables">Indices and tables</a></li>
-</ul>
-</li>
-</ul>
-
             <h4>Previous topic</h4>
-            <p class="topless"><a href="../index.html"
-                                  title="previous chapter">RMG Documentation</a></p>
+            <p class="topless"><a href="index.html"
+                                  title="previous chapter">RMG User&#8217;s Guide</a></p>
             <h4>Next topic</h4>
-            <p class="topless"><a href="features.html"
-                                  title="next chapter">RMG Features</a></p>
+            <p class="topless"><a href="installation.html"
+                                  title="next chapter">RMG Installation</a></p>
             <h3>This Page</h3>
             <ul class="this-page-menu">
-              <li><a href="../../sources/documentation/manual/index.txt"
+              <li><a href="../../sources/documentation/manual/features.txt"
                      rel="nofollow">Show Source</a></li>
             </ul>
           <h3>Other links</h3>
@@ -137,14 +121,15 @@
           <a href="../../modindex.html" title="Global Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="features.html" title="RMG Features"
+          <a href="installation.html" title="RMG Installation"
              >next</a> |</li>
         <li class="right" >
-          <a href="../index.html" title="RMG Documentation"
+          <a href="index.html" title="RMG User’s Guide"
              >previous</a> |</li>
         <li><a href="../../index.html">RMG v0.1.1 documentation</a> &raquo;</li>
           <li><a href="../index.html" >RMG Documentation</a> &raquo;</li>
-  <li><a href="">RMG User&#8217;s Guide</a></li>
+          <li><a href="index.html" >RMG User&#8217;s Guide</a> &raquo;</li>
+  <li><a href="">RMG Features</a></li>
 
       </ul>
     </div>

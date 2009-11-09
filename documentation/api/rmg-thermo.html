@@ -46,7 +46,7 @@
         <li><a href="../../index.html">RMG v0.1.1 documentation</a> &raquo;</li>
           <li><a href="../index.html" >RMG Documentation</a> &raquo;</li>
           <li><a href="index.html" accesskey="U">RMG Developer&#8217;s Guide</a> &raquo;</li>
-  <li><a href="">12. The <tt class="docutils literal docutils literal docutils literal"><span class="pre">rmg.thermo</span></tt> Module</a></li>
+  <li><a href="">12. The <tt class="docutils literal docutils literal"><span class="pre">rmg.thermo</span></tt> Module</a></li>
 
       </ul>
     </div>  
@@ -103,14 +103,8 @@ temperature range of the thermodynamic data, or <tt class="xref xref docutils li
 </dd></dl>
 
 </div>
-<div class="section" id="thermodatabase">
-<h3>12.1.2. ThermoDatabase<a class="headerlink" href="#thermodatabase" title="Permalink to this headline">¶</a></h3>
-</div>
-<div class="section" id="thermodatabaseset">
-<h3>12.1.3. ThermoDatabaseSet<a class="headerlink" href="#thermodatabaseset" title="Permalink to this headline">¶</a></h3>
-</div>
 <div class="section" id="thermogadata">
-<h3>12.1.4. ThermoGAData<a class="headerlink" href="#thermogadata" title="Permalink to this headline">¶</a></h3>
+<h3>12.1.2. ThermoGAData<a class="headerlink" href="#thermogadata" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="rmg.thermo.ThermoGAData">
 <em class="property">
@@ -181,7 +175,7 @@ the generated XML.</dd></dl>
 
 </div>
 <div class="section" id="thermonasadata">
-<h3>12.1.5. ThermoNASAData<a class="headerlink" href="#thermonasadata" title="Permalink to this headline">¶</a></h3>
+<h3>12.1.3. ThermoNASAData<a class="headerlink" href="#thermonasadata" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="rmg.thermo.ThermoNASAData">
 <em class="property">
@@ -219,7 +213,7 @@ contains the desired temperature within its valid range will be used.</p>
 
 </div>
 <div class="section" id="thermonasapolynomial">
-<h3>12.1.6. ThermoNASAPolynomial<a class="headerlink" href="#thermonasapolynomial" title="Permalink to this headline">¶</a></h3>
+<h3>12.1.4. ThermoNASAPolynomial<a class="headerlink" href="#thermonasapolynomial" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="rmg.thermo.ThermoNASAPolynomial">
 <em class="property">
@@ -270,7 +264,7 @@ expressions</p>
 
 </div>
 <div class="section" id="thermowilhoitdata">
-<h3>12.1.7. ThermoWilhoitData<a class="headerlink" href="#thermowilhoitdata" title="Permalink to this headline">¶</a></h3>
+<h3>12.1.5. ThermoWilhoitData<a class="headerlink" href="#thermowilhoitdata" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="rmg.thermo.ThermoWilhoitData">
 <em class="property">
@@ -339,6 +333,27 @@ C_\mathrm{p}(0) \ln T - \left[ C_\mathrm{p}(\infty) - C_\mathrm{p}(0) \right]
 </div>
 <div class="section" id="methods-in-rmg-thermo">
 <h2>12.2. Methods in <tt class="docutils literal"><span class="pre">rmg.thermo</span></tt><a class="headerlink" href="#methods-in-rmg-thermo" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="rmg.thermo.convertGAtoWilhoit">
+<tt class="descclassname">rmg.thermo.</tt><tt class="descname">convertGAtoWilhoit</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.thermo.convertGAtoWilhoit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert a Group Additivity thermo instance into a Wilhoit thermo instance.</p>
+<p>Takes a <cite>ThermoGAData</cite> instance of themochemical data, and some extra information 
+about the molecule used to calculate high- and low-temperature limits of Cp.
+These are the number of atoms (integer <cite>atoms</cite>), the number of rotors (integer <cite>rotors</cite>)
+and whether the molecule is linear (boolean <cite>linear</cite>)
+Returns a <cite>ThermoWilhoitData</cite> instance.</p>
+<p>cf. Paul Yelvington&#8217;s thesis, p. 185-186</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="rmg.thermo.convertWilhoitToNASA">
+<tt class="descclassname">rmg.thermo.</tt><tt class="descname">convertWilhoitToNASA</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.thermo.convertWilhoitToNASA" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert a Wilhoit thermo instance into a NASA polynomial thermo instance.</p>
+<p>Takes a <cite>ThermoWilhoitData</cite> instance of themochemical data.
+Returns a <cite>ThermoNASAData</cite> instance containing two <cite>ThermoNASAPolynomial</cite> 
+polynomials</p>
+</dd></dl>
+
 </div>
 </div>
 
@@ -353,12 +368,10 @@ C_\mathrm{p}(0) \ln T - \left[ C_\mathrm{p}(\infty) - C_\mathrm{p}(0) \right]
 <li><a class="reference external" href="">12. The <tt class="docutils literal"><span class="pre">rmg.thermo</span></tt> Module</a><ul>
 <li><a class="reference external" href="#classes-in-rmg-thermo">12.1. Classes in <tt class="docutils literal"><span class="pre">rmg.thermo</span></tt></a><ul>
 <li><a class="reference external" href="#thermodata">12.1.1. ThermoData</a></li>
-<li><a class="reference external" href="#thermodatabase">12.1.2. ThermoDatabase</a></li>
-<li><a class="reference external" href="#thermodatabaseset">12.1.3. ThermoDatabaseSet</a></li>
-<li><a class="reference external" href="#thermogadata">12.1.4. ThermoGAData</a></li>
-<li><a class="reference external" href="#thermonasadata">12.1.5. ThermoNASAData</a></li>
-<li><a class="reference external" href="#thermonasapolynomial">12.1.6. ThermoNASAPolynomial</a></li>
-<li><a class="reference external" href="#thermowilhoitdata">12.1.7. ThermoWilhoitData</a></li>
+<li><a class="reference external" href="#thermogadata">12.1.2. ThermoGAData</a></li>
+<li><a class="reference external" href="#thermonasadata">12.1.3. ThermoNASAData</a></li>
+<li><a class="reference external" href="#thermonasapolynomial">12.1.4. ThermoNASAPolynomial</a></li>
+<li><a class="reference external" href="#thermowilhoitdata">12.1.5. ThermoWilhoitData</a></li>
 </ul>
 </li>
 <li><a class="reference external" href="#methods-in-rmg-thermo">12.2. Methods in <tt class="docutils literal"><span class="pre">rmg.thermo</span></tt></a></li>
@@ -371,7 +384,7 @@ C_\mathrm{p}(0) \ln T - \left[ C_\mathrm{p}(\infty) - C_\mathrm{p}(0) \right]
                                   title="previous chapter">11. The <tt class="docutils literal docutils literal docutils literal"><span class="pre">rmg.structure</span></tt> Module</a></p>
             <h4>Next topic</h4>
             <p class="topless"><a href="rmg-cantera_loader.html"
-                                  title="next chapter">13. The <tt class="docutils literal docutils literal"><span class="pre">rmg.cantera_loader</span></tt> Module</a></p>
+                                  title="next chapter">13. The <tt class="docutils literal"><span class="pre">rmg.cantera_loader</span></tt> Module</a></p>
             <h3>This Page</h3>
             <ul class="this-page-menu">
               <li><a href="../../sources/documentation/api/rmg-thermo.txt"
@@ -420,7 +433,7 @@ C_\mathrm{p}(0) \ln T - \left[ C_\mathrm{p}(\infty) - C_\mathrm{p}(0) \right]
         <li><a href="../../index.html">RMG v0.1.1 documentation</a> &raquo;</li>
           <li><a href="../index.html" >RMG Documentation</a> &raquo;</li>
           <li><a href="index.html" >RMG Developer&#8217;s Guide</a> &raquo;</li>
-  <li><a href="">12. The <tt class="docutils literal docutils literal docutils literal"><span class="pre">rmg.thermo</span></tt> Module</a></li>
+  <li><a href="">12. The <tt class="docutils literal docutils literal"><span class="pre">rmg.thermo</span></tt> Module</a></li>
 
       </ul>
     </div>

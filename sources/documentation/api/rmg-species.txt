@@ -13,6 +13,18 @@ Species
 .. autoclass:: rmg.species.Species
 	:members:
 	
+ThermoDatabase
+--------------
+
+.. autoclass:: rmg.species.ThermoDatabase
+	:members:
+
+ThermoDatabaseSet
+-----------------
+
+.. autoclass:: rmg.species.ThermoDatabaseSet
+	:members:
+
 ThermoSnapshot
 --------------
 
@@ -22,5 +34,6 @@ ThermoSnapshot
 Methods in ``rmg.species``
 ==========================
 
-.. autofunction:: rmg.species.makeNewSpecies
+.. autofunction:: rmg.species.getThermoData
 
+.. autofunction:: rmg.species.makeNewSpecies

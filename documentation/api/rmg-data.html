@@ -124,6 +124,14 @@ the functional group represented by <cite>node</cite> has an equivalent labeled
 atom in <cite>structure</cite>.</dd></dl>
 
 <dl class="method">
+<dt id="rmg.data.Database.save">
+<tt class="descname">save</tt><big>(</big><em>dictstr</em>, <em>treestr</em>, <em>libstr</em><big>)</big><a class="headerlink" href="#rmg.data.Database.save" title="Permalink to this definition">¶</a></dt>
+<dd>Save a dictionary-tree-library based database. The database is stored
+in three files: <cite>dictstr</cite> is the path to the dictionary, <cite>treestr</cite> to
+the tree, and <cite>libstr</cite> to the library. If a file is not desired to be
+saved, its path should be set to &#8216;&#8217;.</dd></dl>
+
+<dl class="method">
 <dt id="rmg.data.Database.toXML">
 <tt class="descname">toXML</tt><big>(</big><em>dom</em>, <em>root</em><big>)</big><a class="headerlink" href="#rmg.data.Database.toXML" title="Permalink to this definition">¶</a></dt>
 <dd>Return an XML representation of the database.</dd></dl>
@@ -339,6 +347,16 @@ recursive writing.</dd></dl>
 <dd></dd></dl>
 
 <dl class="function">
+<dt id="rmg.data.getAllCombinations">
+<tt class="descclassname">rmg.data.</tt><tt class="descname">getAllCombinations</tt><big>(</big><em>nodeLists</em><big>)</big><a class="headerlink" href="#rmg.data.getAllCombinations" title="Permalink to this definition">¶</a></dt>
+<dd>Generate a list of all possible combinations of items in the list of
+lists <cite>nodeLists</cite>. Each combination takes one item from each list
+contained within <cite>nodeLists</cite>. The order of items in the returned lists 
+reflects the order of lists in <cite>nodeLists</cite>. For example, if <cite>nodeLists</cite> was
+[[A, B, C],     [N], [X, Y]], the returned combinations would be
+[[A, N, X], [A, N, Y], [B, N, X], [B, N, Y], [C, N, X], [C, N, Y]].</dd></dl>
+
+<dl class="function">
 <dt id="rmg.data.removeCommentFromLine">
 <tt class="descclassname">rmg.data.</tt><tt class="descname">removeCommentFromLine</tt><big>(</big><em>line</em><big>)</big><a class="headerlink" href="#rmg.data.removeCommentFromLine" title="Permalink to this definition">¶</a></dt>
 <dd>Remove a C++/Java style comment from a line of text.</dd></dl>
@@ -371,7 +389,7 @@ recursive writing.</dd></dl>
 
             <h4>Previous topic</h4>
             <p class="topless"><a href="rmg-constants.html"
-                                  title="previous chapter">2. The <tt class="docutils literal"><span class="pre">rmg.constants</span></tt> Module</a></p>
+                                  title="previous chapter">2. The <tt class="docutils literal docutils literal"><span class="pre">rmg.constants</span></tt> Module</a></p>
             <h4>Next topic</h4>
             <p class="topless"><a href="rmg-graph.html"
                                   title="next chapter">4. The <tt class="docutils literal"><span class="pre">rmg.graph</span></tt> Module</a></p>

@@ -1,0 +1,73 @@
+****************
+RMG Installation
+****************
+
+.. _licenserequirements:
+
+License Requirements
+====================
+
+RMG is an open source program, available to the general public free of charge. The primary RMG code is distributed under the terms of the `MIT/X11 License <http://www.opensource.org/licenses/mit-license.php>`_. However, RMG has a number of dependencies of various licenses, some of which may be more restrictive. **It is the user's responsibility to ensure these licenses have been obtained.**
+
+.. _dependencies:
+
+Dependencies
+============
+
+.. NOTE::
+	RMG has been tested on the Python 2.5.x and Python 2.6.x releases; it is unlikely to work with Python 3.0 and higher.
+
+
+RMG currently depends on the following Python packages:
+
+==========  ==========  =============  =========================================
+Package     Windows     easy_install?  Description     
+            Installer?   
+==========  ==========  =============  =========================================
+openbabel   yes         no             Converting between species formats
+numpy       yes         yes            Fast matrix operations
+scipy       yes         yes            Fast mathematical toolkit
+matplotlib  yes         yes            Generating plots
+quantities  yes         yes            Converting between units
+cython      yes         yes            Compiling Python modules to C 
+guppy       no          yes            Memory profiling tools
+sphinx      no          yes            Documentation generation
+pydot       no          yes            Python interface to Dot graph language
+nose        no          yes            Advanced unit test controls
+==========  ==========  =============  =========================================
+
+In addition, you will need a C compiler to build certain RMG modules. These modules will work without this compiling; however, compiling gives you a significant speed increase and is highly recommended. 
+
+Windows
+-------
+
+Our experience with Windows has been that you should use Windows installers for openbabel, numpy, scipy, and matplotlib, and easy_install for the remaining packages. Note that you will need to add certain directories to the PATH environment variable to allow for quick access to various executables on the command line. In particular, we had to do so for Python, easy_install, and the C compiler. We have successfully used the MinGW compiler; to make this work with Python you need to create/modify the file `Lib\\distutils\\distutils.cfg` in your Python installation directory with the lines::
+
+	[build]
+	compiler=mingw32
+
+Linux
+-----
+
+On Linux many of these packages are available within your distro's repository. Depending on your distro, however, you may want to use easy_install to get the latest versions of certain packages.
+
+Installation
+============
+
+#. **Compile the Cython modules.** A makefile has been provided in the source/ directory for this purpose. In general the procedure is to run Cython on each module to generate the C code, then run the setup.py script with the command::
+
+	$ python setup.py build_ext --inplace
+
+#. **Compile the documentation.** A makefile has been provided in the documentation/ directory for this purpose.
+
+Running RMG
+===========
+
+Once RMG is installed you can execute it by running rmg.py and passing it the path to an RMG input file. For example, to run the 1,3-hexadiene example, run::
+
+	$ python rmg.py ../examples/1,3-hexadiene/input.xml
+
+To see a list of the command-line options, run::
+
+	$ python rmg.py -h
+
