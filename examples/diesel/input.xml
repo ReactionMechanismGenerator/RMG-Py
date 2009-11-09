@@ -48,7 +48,7 @@
 			<temperature units="K">500.0</temperature>
 		</temperatureModel>
 		<pressureModel type="isobaric">
-			<pressure units="bar">1.0</pressure>
+			<pressure units="bar">201.0</pressure>
 		</pressureModel>
 		<physicalPropertyModel type="incompressibleLiquid" >
 		    <molarVolume units="cm^3/mol">162.0</molarVolume>
@@ -68,14 +68,14 @@
 	<!-- Termination -->
 	<termination>
 		<target type="conversion" speciesID="oxygen">0.5</target>
-		<target type="time" units="s">1e12</target>
+		<target type="time" units="s">3600</target>
 	</termination>
 	<!-- Dynamic simulator -->
 	<simulator atol="1e-16" rtol="1e-8" />
 	<fluxTolerance>
-		<keepInEdge>1e-5</keepInEdge>
+		<keepInEdge>0.0001</keepInEdge>
 		<moveToCore>0.01</moveToCore>
-		<interruptSimulation>0.1</interruptSimulation>
+		<interruptSimulation>0.5</interruptSimulation>
 	</fluxTolerance>
 	<maximumModelSize>
 		<edgeSpecies>1000</edgeSpecies>

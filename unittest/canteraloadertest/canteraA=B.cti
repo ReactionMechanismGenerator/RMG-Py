@@ -7,7 +7,7 @@ units(length = "cm", time = "s", quantity = "mol", act_energy = "kcal/mol")
 
 ideal_gas(name = "chem",
       elements = " H ",
-      species = """ A  B """,
+      species = """ all """,
       reactions = "all",
       initial_state = state(temperature = 300.0,
                         pressure = OneAtm)    )

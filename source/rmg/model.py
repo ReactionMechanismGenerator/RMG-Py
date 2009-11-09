@@ -36,12 +36,14 @@ import logging
 import math
 import numpy
 import scipy.integrate
-import scipy.sparse
 
 import constants
 import settings
 import reaction
 import species
+
+import ctml_writer
+import os
 
 ################################################################################
 
@@ -81,19 +83,19 @@ class CoreEdgeReactionModel:
 		self.absoluteTolerance = 1.0e-8
 		self.relativeTolerance = 1.0e-4
 		self.termination = []
-
+	
 	def initialize(self, coreSpecies):
 		"""
 		Initialize a reaction model with a list `coreSpecies` of species to
 		start out with.
 		"""
-
+		
 		logging.info('')
 		
 		# Add all species present in input file to model core
 		for spec in coreSpecies:
 			self.enlarge(spec)
-
+	
 	def enlarge(self, newSpecies):
 		"""
 		Enlarge a reaction model by moving `newSpecies` from the edge to the
@@ -148,6 +150,9 @@ class CoreEdgeReactionModel:
 		# Add the species to the core
 		self.core.species.append(spec)
 		
+		# Add it to the cantera list
+		spec.toCantera()
+		
 		if spec in self.edge.species:
 			
 			# If species was in edge, remove it
@@ -201,6 +206,9 @@ class CoreEdgeReactionModel:
 		self.core.reactions.append(rxn)
 		if rxn in self.edge.reactions:
 			self.edge.reactions.remove(rxn)
+		
+		# add it to the Cantera list
+		rxn.toCantera()
 	
 	def addReactionToEdge(self, rxn):
 		"""
@@ -232,28 +240,10 @@ class CoreEdgeReactionModel:
 		columns represent the reactions in the core and edge in order.
 		"""
 		speciesList, reactionList = self.getLists()
-		#stoichiometry = numpy.zeros((len(speciesList), len(reactionList)), float)
-		stoichiometry = scipy.sparse.lil_matrix((len(speciesList), len(reactionList)), dtype=float)
-		# sparse matrix examples at http://www.scipy.org/SciPy_Tutorial
+		stoichiometry = numpy.zeros((len(speciesList), len(reactionList)), float)
 		for j, rxn in enumerate(reactionList):
 			for i, spec in enumerate(speciesList):
 				stoichiometry[i,j] = rxn.getStoichiometricCoefficient(spec)
-		
-# Advantages of the LIL format
-#     - supports flexible slicing
-#     - changes to the matrix sparsity structure are efficient
-# 
-# Disadvantages of the LIL format
-#     - arithmetic operations LIL + LIL are slow (consider CSR or CSC)
-#     - slow column slicing (consider CSC)
-#     - slow matrix vector products (consider CSR or CSC)
-# 
-# Intended Usage
-#     - LIL is a convenient format for constructing sparse matrices
-#     - once a matrix has been constructed, convert to CSR or
-#       CSC format for fast arithmetic and matrix vector operations
-#     - consider using the COO format when constructing large matrices
-		stoichiometry.tocsc()  # convert to CSC format for faster matrix vector operations
 		return stoichiometry
 	
 	def getReactionRates(self, T, P, Ci):
@@ -614,7 +604,14 @@ class InvalidReactionSystemException(Exception):
 		return 'Invalid reaction system: ' + self.label
 
 ################################################################################
-
+class FakeSolver:
+	"""Used as a dummy solver, to contain t etc."""
+	def __init__(self):
+		self.t = 0
+		self.y = None
+	def successful(self):
+		return True # how can I fail?
+	
 class ReactionSystem:
 	"""
 	Represent a generic reaction system, e.g. a chemical reactor. A reaction
@@ -663,7 +660,28 @@ class BatchReactor(ReactionSystem):
 				 volumeModel=None, initialConcentration=None):
 		ReactionSystem.__init__(self, temperatureModel, pressureModel, \
 				volumeModel, initialConcentration)
+		
+		self.toCantera()
 
+	
+	def toCantera(self):
+		"""Creata a Cantera instance. Call this once"""
+		ctml_writer.units(length = "m", time = "s", quantity = "mol", act_energy = "J/mol")
+		phase = ctml_writer.ideal_gas(name = "chem",
+		      elements = " C H O N Ar He Si",
+		      species = "all",
+		      reactions = "all",
+		      initial_state = ctml_writer.state(temperature = 1000 ,
+		                        pressure = 101325 )    )
+		def has_species(sp):
+			"""Return 1 is a species with name 's' belongs to the phase,
+			or 0 otherwise. Redefined because the ctml_writer one doesn't work for us"""
+			if sp in ctml_writer._speciesnames: return 1
+			return 0
+		phase.has_species = has_species
+		#self._cantera = phase  # if we save it, we have to pickle it, and we can't pickle the has_species function
+		ctml_writer.validate() # turns on validation
+	
 	def getResidual(self, t, y, model, stoichiometry):
 		"""
 		Return the residual function for this reactor model, evaluated at
@@ -692,15 +710,8 @@ class BatchReactor(ReactionSystem):
 		rxnRate = self.getReactionRates(P, V, T, Ni, model)
 		
 		# Species balances
-		
-		# can't take a zero-width slice of a sparse matrix, so special-case it:
-		if not model.core.reactions:
-			dNidt = numpy.zeros([len(model.core.species)])
-		else:
-			dNidt = ( stoichiometry[0:len(model.core.species), 0:len(model.core.reactions)] * 
-				rxnRate[0:len(model.core.reactions)] ) # stoichiometry matrix is sparse
-		# old version for dense matrix:
-		# dNidt = numpy.dot(stoichiometry.todense()[0:len(model.core.species), 0:len(model.core.reactions)],rxnRate[0:len(model.core.reactions)])
+		dNidt = numpy.dot(stoichiometry[0:len(model.core.species), 0:len(model.core.reactions)],
+		 					rxnRate[0:len(model.core.reactions)])
 
 		# Energy balance (assume isothermal for now)
 		dTdt = 0.0
@@ -762,12 +773,7 @@ class BatchReactor(ReactionSystem):
 		matrix for the model.
 		"""
 		rxnRates = self.getReactionRates(P, V, T, Ni, model)
-		return stoichiometry * rxnRates
-		# seems to have the same result as this
-		return numpy.dot(stoichiometry.todense(),rxnRates)
-		# which is the same as this
 		return numpy.dot(stoichiometry, rxnRates)
-		# in the old days of a dense stoichiometry matrix 
 
 	def isModelValid(self, model, dNidt, criticalFlux):
 		"""
@@ -783,6 +789,57 @@ class BatchReactor(ReactionSystem):
 			return (maxSpeciesFlux < criticalFlux), speciesList[maxSpecies], maxSpeciesFlux
 		else:
 			return True, None, 0.0
+
+
+	def runCantera(self, model):
+		"""Write a cantera file, read it in cantera, and return a ReactorNet and Solution"""
+		
+		# Write the cantera file to scratch/cantera/ folder
+		cantera_folder = os.path.join(settings.scratchDirectory,'cantera')
+		os.path.exists(cantera_folder) or os.mkdir(cantera_folder)
+		cti_file = os.path.join(cantera_folder,'cantera_input_%03d'%len(model.core.species) )
+		logging.debug("Writing CTML file %s"%cti_file)
+		ctml_writer.dataset(cti_file) # change name
+		
+		ctml_writer.write()
+		
+		import Cantera
+		import Cantera.Reactor
+		
+		logging.info("Preparing Cantera simulation %d"%len(model.core.species))
+		Cantera.reset()
+		gas = Cantera.importPhase(cti_file+'.xml','chem', loglevel=1)
+		
+		concentrations = numpy.zeros(len(model.core.species))
+		for spec, conc in self.initialConcentration.iteritems():
+			concentrations[gas.speciesIndex(str(spec))] = conc
+		gas.setMoleFractions(concentrations) # it normalises it to 1
+		
+		gas.set( T = float(self.temperatureModel.getTemperature(0)),
+		         P = float(self.pressureModel.getPressure(0)) )
+		
+		# create a batch reactor
+		reactor = Cantera.Reactor.Reactor(gas, volume = 1.0)
+			
+		# set the inital environment conditions
+		gasAir = Cantera.Air()
+		gasAir.set(T=float(self.temperatureModel.getTemperature(0)), P=float(self.pressureModel.getPressure(0)))
+		# create a reservoir for the environment
+		environment = Cantera.Reactor.Reservoir(gasAir)
+		# Define a wall between the reactor and the environment, and
+		# make it flexible, so that the pressure in the reactor is held
+		# at the environment pressure, and conductive so the temperature likewise
+		wall = Cantera.Reactor.Wall(reactor,environment)
+		wall.set(K = 1.0e12)   # set expansion parameter. dV/dt = KA(P_1 - P_2)
+		wall.set(A = 1.0) # set wall area
+		wall.setHeatTransferCoeff(1.0e15) # W/m2/K
+		
+		# put reactor in a reactor network so it can be integrated
+		sim = Cantera.Reactor.ReactorNet([reactor])
+		
+		#import pdb; pdb.set_trace()
+		return sim, gas
+		
 
 	def simulate(self, model):
 		"""
@@ -805,6 +862,10 @@ class BatchReactor(ReactionSystem):
 		Returns:
 		(tlist, ylist, dydtlist, valid?, Edge_species_with_highest_flux)
 		"""
+		
+		# try writing cantera file
+		sim,gas = self.runCantera(model)
+		
 		# Assemble stoichiometry matrix for all core and edge species
 		# Rows are species (core, then edge); columns are reactions (core, then edge)
 		stoichiometry = model.getStoichiometryMatrix()
@@ -812,16 +873,20 @@ class BatchReactor(ReactionSystem):
 		tlist = []; ylist = []; dydtlist = []
 		maxRelativeFluxes = numpy.zeros(len(model.core.species) + len(model.edge.species), float)
 
+		endtime = 10.0 # default. check for user value:
+		for target in model.termination:
+			if target.__class__ == TerminationTime:
+				endtime = target.time
+			
 		# Set up initial conditions
-		P = float(self.pressureModel.getPressure(0))
-		T = float(self.temperatureModel.getTemperature(0))
-		V = 1.0 # [=] m**3
-		Ni = numpy.zeros(len(model.core.species), float)
-		for i, spec in enumerate(model.core.species):
-			if spec in self.initialConcentration:
-				Ni[i] = self.initialConcentration[spec] * V
-		Ni0 = Ni
+		P = gas.pressure()
+		V = sim.reactors()[0].volume()
+		T = gas.temperature()
+		# recall that Cantera returns molarDensity() in units of kmol/m3
+		# and this program thinks in mol/m3
+		Ni = gas.molarDensity()*1000.0 * gas.moleFractions() * V 
 		y = [P, V, T]; y.extend(Ni)
+		Ni0 = Ni
 		y0 = y
 
 #		# Output information about simulation at current time
@@ -834,11 +899,8 @@ class BatchReactor(ReactionSystem):
 #		tlist.append(0.0); ylist.append(y0)
 #		dydtlist.append(self.getResidual(0.0, y0, model, stoichiometry))
 		
-		# Set up solver
-		solver = scipy.integrate.ode(self.getResidual,None)
-		solver.set_integrator('vode', method='bdf', with_jacobian=True, atol=model.absoluteTolerance, rtol=model.relativeTolerance)
-		solver.set_f_params(model, stoichiometry)
-		solver.set_initial_value(y0,0.0)
+		
+		solver = FakeSolver()
 		
 		done = False
 		first_step = True
@@ -847,13 +909,25 @@ class BatchReactor(ReactionSystem):
 			# Conduct integration
 			if first_step: 
 				first_step = False # don't integrate on first time through, just do the validity checking and result reporting
-			elif solver.t == 0.0:
-				solver.integrate(1e-20)
 			else:
-				solver.integrate(solver.t * 1.2589254117941673) # 10**0.1 so ten steps increases time 10-fold
-			P, V, T = solver.y[0:3]
-			Ni = solver.y[3:]
-			time = solver.t
+				# advance cantera one step, or two if the first didn't get there
+				nexttime = time*1.2589254117941673
+				try:
+					if sim.step(endtime) < endtime:
+						if sim.step(endtime) < nexttime:
+							sim.advance(nexttime)
+				except Exception, e:
+					logging.exception("Ignoring Cantera error")
+					logging.debug(e.message)
+					pass
+			time = sim.time()
+			P = gas.pressure()
+			V = sim.reactors()[0].volume()
+			T = gas.temperature()
+			# recall that Cantera returns molarDensity() in units of kmol/m3
+			# and this program thinks in mol/m3
+			Ni = gas.molarDensity()*1000.0 * gas.moleFractions() * V 
+			solver.y = [P, V, T]; solver.y.extend(Ni)
 			
 			# Calculate species fluxes of all core and edge species at the
 			# current time
@@ -879,7 +953,7 @@ class BatchReactor(ReactionSystem):
 			# Output information about simulation at current time
 			self.printSimulationStatus(model, time, solver.y, y0, charFlux, maxSpeciesFlux/charFlux, maxSpecies)
 			tlist.append(time); ylist.append(solver.y)
-			dydtlist.append(self.getResidual(time, solver.y, model, stoichiometry))
+			#dydtlist.append(self.getResidual(time, solver.y, model, stoichiometry))
 			
 			# Exit simulation if model is not valid (exceeds interruption criterion)
 			if not valid:
@@ -893,6 +967,7 @@ class BatchReactor(ReactionSystem):
 				#		print model.core.species[i], maxSpeciesFluxes[i]
 				#	else:
 				#		print model.edge.species[i-len(model.core.species)], maxSpeciesFluxes[i]
+				print gas
 				return tlist, ylist, dydtlist, False, maxSpecies
 			
 			# Test for simulation completion
@@ -903,6 +978,8 @@ class BatchReactor(ReactionSystem):
 					if conversion > target.conversion: done = True
 				elif target.__class__ == TerminationTime:
 					if time > target.time: done = True
+		
+		logging.info(str(gas))
 		
 		# Test for model validity once simulation complete
 		maxSpecies = None
@@ -1001,11 +1078,11 @@ class BatchReactor(ReactionSystem):
 		for i, u in enumerate(y):
 			for j, v in enumerate(u):
 				y0[i,j] = v
-		# Reshape dydt into a matrix rather than a list of lists
-		dydt0 = numpy.zeros((len(t), len(dydt[0])), float)
-		for i, u in enumerate(dydt):
-			for j, v in enumerate(u):
-				dydt0[i,j] = v
+		## Reshape dydt into a matrix rather than a list of lists
+		#dydt0 = numpy.zeros((len(t), len(dydt[0])), float)
+		#for i, u in enumerate(dydt):
+		#	for j, v in enumerate(u):
+		#		dydt0[i,j] = v
 
 		# Create the legend for the concentration profile
 		legend = []
@@ -1045,16 +1122,16 @@ class BatchReactor(ReactionSystem):
 		pylab.savefig(settings.outputDirectory + '/plot/concentrationProfile' + label + '.svg')
 		pylab.clf()
 
-		# Make species flux plot and save to file
-		try:
-			pylab.loglog(t[1:], abs(dydt0[1:,3:len(model.core.species)+3]))
-			pylab.xlabel('Time (s)')
-			pylab.ylabel('Species flux (mol/m^3*s)')
-			pylab.title('Species flux profiles for reaction system ' + label)
-			pylab.legend(legend)
-			pylab.savefig(settings.outputDirectory + '/plot/fluxProfile' + label + '.svg')
-		except OverflowError:
-			pass
+		## Make species flux plot and save to file
+		#try:
+		#	pylab.loglog(t[1:], abs(dydt0[1:,3:len(model.core.species)+3]))
+		#	pylab.xlabel('Time (s)')
+		#	pylab.ylabel('Species flux (mol/m^3*s)')
+		#	pylab.title('Species flux profiles for reaction system ' + label)
+		#	pylab.legend(legend)
+		#	pylab.savefig(settings.outputDirectory + '/plot/fluxProfile' + label + '.svg')
+		#except OverflowError:
+		#	pass
 		
 		pylab.clf()
 	
