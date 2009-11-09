@@ -36,9 +36,18 @@ pydot       no          yes            Python interface to Dot graph language
 nose        no          yes            Advanced unit test controls
 ==========  ==========  =============  =========================================
 
-In addition, you will need a C compiler to build certain RMG modules. These modules will work without this compiling; however, compiling gives you a significant speed increase and is highly recommended.
+In addition, you will need a C compiler to build certain RMG modules. These modules will work without this compiling; however, compiling gives you a significant speed increase and is highly recommended. 
 
-Our experience with Windows has been that you should use Windows installers for openbabel, numpy, scipy, and matplotlib, and easy_install for the remaining packages. Note that you will need to add certain directories to the PATH environment variable to allow for quick access to various executables on the command line.
+Windows
+-------
+
+Our experience with Windows has been that you should use Windows installers for openbabel, numpy, scipy, and matplotlib, and easy_install for the remaining packages. Note that you will need to add certain directories to the PATH environment variable to allow for quick access to various executables on the command line. In particular, we had to do so for Python, easy_install, and the C compiler. We have successfully used the MinGW compiler; to make this work with Python you need to create/modify the file `Lib\\distutils\\distutils.cfg` in your Python installation directory with the lines::
+
+	[build]
+	compiler=mingw32
+
+Linux
+-----
 
 On Linux many of these packages are available within your distro's repository. Depending on your distro, however, you may want to use easy_install to get the latest versions of certain packages.
 
