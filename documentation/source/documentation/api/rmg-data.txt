@@ -50,5 +50,7 @@ Methods in ``rmg.data``
 
 .. autofunction:: rmg.data.createXMLQuantity
 
+.. autofunction:: rmg.data.getAllCombinations
+
 .. autofunction:: rmg.data.removeCommentFromLine
 

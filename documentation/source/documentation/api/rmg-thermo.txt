@@ -13,18 +13,6 @@ ThermoData
 .. autoclass:: rmg.thermo.ThermoData
 	:members:
 
-ThermoDatabase
---------------
-
-.. autoclass:: rmg.thermo.ThermoDatabase
-	:members:
-
-ThermoDatabaseSet
------------------
-
-.. autoclass:: rmg.thermo.ThermoDatabaseSet
-	:members:
-
 ThermoGAData
 ------------
 
@@ -52,5 +40,7 @@ ThermoWilhoitData
 Methods in ``rmg.thermo``
 =========================
 
-.. autofunction:: rmg.thermo.getThermoData
+.. autofunction:: rmg.thermo.convertGAtoWilhoit
+
+.. autofunction:: rmg.thermo.convertWilhoitToNASA
 

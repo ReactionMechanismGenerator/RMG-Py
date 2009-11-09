@@ -62,10 +62,25 @@ class ReactionModel:
 class CoreEdgeReactionModel:
 	"""
 	Represent a reaction model constructed using a rate-based screening
-	algorithm. The `core` is a reaction model that represents species and 
-	reactions currently in the model, while the `edge` is a reaction model that
-	represents species and reactions identified as candidates for addition to 
-	the core.
+	algorithm. The species and reactions in the model itself are called the 
+	*core*; the species and reactions identified as candidates for inclusion in 
+	the model are called the *edge*. The attributes are:
+
+	=========================  ==============================================================
+	Attribute                  Description
+	=========================  ==============================================================
+	`core`                     The species and reactions of the current model core
+	`edge`                     The species and reactions of the current model edge
+	`absoluteTolerance`        The absolute tolerance used in the ODE/DAE solver
+	`relativeTolerance`        The relative tolerance used in the ODE/DAE solver
+	`fluxToleranceKeepInEdge`  The relative species flux below which species are discarded from the edge
+	`fluxToleranceMoveToCore`  The relative species flux above which species are moved from the edge to the core
+	`fluxToleranceInterrupt`   The relative species flux above which the simulation will halt
+	`maximumEdgeSpecies`       The maximum number of edge species allowed at any time
+	`termination`              A list of termination targets (i.e :class:`TerminationTime` and :class:`TerminationConversion` objects)
+	=========================  ==============================================================
+
+
 	"""	
 	
 	def __init__(self, core=None, edge=None):
@@ -77,11 +92,15 @@ class CoreEdgeReactionModel:
 			self.edge = ReactionModel()
 		else:
 			self.edge = edge
-		self.fluxTolerance_keep_in_edge = 0.0
-		self.fluxTolerance_move_to_core = 1.0
-		self.fluxTolerance_interrupt_simulation = 1.0
+		# The default tolerances mimic the original RMG behavior; no edge
+		# pruning takes place, and the simulation is interrupted as soon as
+		# a species flux higher than the validity
+		self.fluxToleranceKeepInEdge = 0.0
+		self.fluxToleranceMoveToCore = 1.0
+		self.fluxToleranceInterrupt = 1.0
 		self.absoluteTolerance = 1.0e-8
 		self.relativeTolerance = 1.0e-4
+		self.maximumEdgeSpecies = 1000000
 		self.termination = []
 	
 	def initialize(self, coreSpecies):
@@ -848,15 +867,15 @@ class BatchReactor(ReactionSystem):
 		
 		Edge species fluxes are tracked, relative to the characteristic core 
 		flux at that time, throughout the simulation. 
-		If one exceeds `model.fluxTolerance_interruptSimulation` the simulation
+		If one exceeds `model.fluxToleranceInterrupt` the simulation
 		is interrupted, and that species is returned.
 		The highest relative flux reached by each species during the simulation 
 		is stored for later analysis.
-		If one or more of these exceed `model.fluxTolerance_moveToCore` then the 
+		If one or more of these exceed `model.fluxToleranceMoveToCore` then the
 		species with the highest will be returned.
 		
 		If the simulation completes without interruption, then any that fall 
-		below `model.fluxTolerance_keepInEdge` will be removed from the
+		below `model.fluxToleranceKeepInEdge` will be removed from the
 		edge, along with the reactions that involve them.
 		
 		Returns:
@@ -942,7 +961,7 @@ class BatchReactor(ReactionSystem):
 					maxRelativeFluxes[i] = abs(dNidt[i])/charFlux
 				
 			# Test for model validity
-			criticalFlux = charFlux * model.fluxTolerance_interruptSimulation
+			criticalFlux = charFlux * model.fluxToleranceInterrupt
 			valid, maxSpecies, maxSpeciesFlux = self.isModelValid(model, dNidt, criticalFlux)
 			
 			# invalid if core empty
@@ -959,7 +978,7 @@ class BatchReactor(ReactionSystem):
 			if not valid:
 				logging.info('At t = %s, an edge species flux exceeds the critical flux for simulation interruption' % (time))
 				logging.info('\tCharacteristic flux: %s' % (charFlux))
-				logging.info('\tCritical flux: %s (%s times charFlux)' % (criticalFlux, model.fluxTolerance_interruptSimulation))
+				logging.info('\tCritical flux: %s (%s times charFlux)' % (criticalFlux, model.fluxToleranceInterrupt))
 				logging.info('\tSpecies flux for %s: %s (%.2g times charFlux)' % (maxSpecies, maxSpeciesFlux, maxSpeciesFlux/charFlux))
 				logging.info('')
 				#for i in range(len(dNidt)):
@@ -993,7 +1012,7 @@ class BatchReactor(ReactionSystem):
 				maxRelativeFlux = maxRelativeFluxes[i]
 				maxSpecies = sp
 			# mark for removal those species whose flux is always too low
-			if maxRelativeFluxes[i] < model.fluxTolerance_keepInEdge:
+			if maxRelativeFluxes[i] < model.fluxToleranceKeepInEdge:
 				speciesToRemove.append(sp)
 			# put max relative flux in dictionary
 			maxRelativeFluxes_dict[sp] = maxRelativeFluxes[i]
@@ -1002,31 +1021,31 @@ class BatchReactor(ReactionSystem):
 			return maxRelativeFluxes_dict[sp]
 		speciesToRemove.sort(key=removalSortKey)
 		
-		# trim the edge according to fluxTolerance_keepInEdge
+		# trim the edge according to fluxToleranceKeepInEdge
 		logging.info("Removing from edge %d/%d species whose relative flux never exceeded %s"%( 
-			len(speciesToRemove),len(model.edge.species),model.fluxTolerance_keepInEdge ) )
+			len(speciesToRemove),len(model.edge.species),model.fluxToleranceKeepInEdge ) )
 		logging.info("Max. rel. flux.\tSpecies")
 		for sp in speciesToRemove:	
 			logging.info("%-10.3g    \t%s"%(maxRelativeFluxes_dict[sp], sp))
 			model.removeSpeciesFromEdge(sp)
 		
-		# trim the edge according to maxModelSize_EdgeSpecies
-		if len(model.edge.species)> model.maxModelSize_EdgeSpecies:
+		# trim the edge according to maximumEdgeSpecies
+		if len(model.edge.species)> model.maximumEdgeSpecies:
 			logging.info("Removing from edge %d/%d species to reach maximum edge size of %s species"%(
-				len(model.edge.species)-model.maxModelSize_EdgeSpecies, 
+				len(model.edge.species)-model.maximumEdgeSpecies,
 				len(model.edge.species), 
-				model.maxModelSize_EdgeSpecies ) )
+				model.maximumEdgeSpecies ) )
 			edgeSpeciesCopy = model.edge.species[:]
 			edgeSpeciesCopy.sort(key=removalSortKey)
 			logging.info("Max. rel. flux.\tSpecies")
-			while len(model.edge.species)>model.maxModelSize_EdgeSpecies:
+			while len(model.edge.species)>model.maximumEdgeSpecies:
 				sp = edgeSpeciesCopy.pop(0)
 				logging.info("%-10.3g    \t%s"%(maxRelativeFluxes_dict[sp], sp))
 				model.removeSpeciesFromEdge(sp)				
 		
-		if maxRelativeFlux > model.fluxTolerance_moveToCore:
+		if maxRelativeFlux > model.fluxToleranceMoveToCore:
 			logging.info('At some time the species flux for %s exceeded the critical flux\nrelative to the characteristic core flux at that time' % (maxSpecies))
-			logging.info('\tCritical Relative flux: %s' % (model.fluxTolerance_moveToCore))
+			logging.info('\tCritical Relative flux: %s' % (model.fluxToleranceMoveToCore))
 			logging.info('\tHighest Relative flux for %s: %s ' % (maxSpecies, maxRelativeFlux))
 			logging.info('')
 			
