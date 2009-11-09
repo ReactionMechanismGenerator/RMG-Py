@@ -75,8 +75,8 @@ class ThermoData:
 		temperature range of the thermodynamic data, or :data:`False` if not.
 		
 		If  Tmax == Tmin == 0 then returns :data:`True`.
-		(This case is for when the range is undefined. Tmax and Tmin must be
-		:type:`float`s because of Cython declaration )
+		(This case is for when the range is undefined. Tmax and Tmin must be of
+		type :data:`float` because of Cython declaration.)
 		"""
 		if self.Tmax == 0 and self.Tmin == 0:
 			return True

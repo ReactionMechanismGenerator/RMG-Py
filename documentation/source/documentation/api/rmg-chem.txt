@@ -76,7 +76,6 @@ Cd      carbon with one double bond and two single bonds
 Cdd     carbon with two double bonds
 Cb      carbon belonging to a benzene ring
 Cbf     carbon belonging to a fused benzene ring
-CO      non-central carbon bonded with a double bond to a non-central oxygen
 ------  ----------------------------------------------------------------------
     *Oxygen atom types*
 ------------------------------------------------------------------------------
@@ -91,7 +90,6 @@ Sids    silicon with one double bond and two single bonds
 Sidd    silicon with two double bonds
 Sib     silicon belonging to a benzene ring
 Sibf    silicon belonging to a fused benzene ring
-SiO     non-central silicon bonded with a double bond to a non-central oxygen
 ======  ======================================================================
 
 ElectronState

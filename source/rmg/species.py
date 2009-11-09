@@ -283,7 +283,7 @@ class Species:
 		
 		The specific type of thermo data returned is unknown, but it will be 
 		a subclass of :class:`thermo.ThermoData`.  If `self.thermoData` does 
-		not yet exist, it is created using :method:`self.generateThermoData()`
+		not yet exist, it is created using :func:`generateThermoData`.
 		"""
 		if not self.thermoData:
 			self.generateThermoData()
