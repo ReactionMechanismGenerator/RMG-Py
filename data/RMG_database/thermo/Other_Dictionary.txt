@@ -12,7 +12,7 @@
 // R!H means any atom, except H
 
 R
-1 *  R 0			
+1 *  R 0
 
 cis
 1  * C 0 {2,Dcis} {3,S} {4,S}
@@ -26,8 +26,8 @@ cis
 1  * C 0 {2,Dcis} {3,S} {4,S}
 2  * C 0 {1,Dcis} {5,S} {6,S}
 3    C 0 {1,S} {7,S} {8,S} {9,S}
-4    H 0 {1,S} 
-5    R!H 0 {2,S} 
+4    H 0 {1,S}
+5    R!H 0 {2,S}
 6    H 0 {2,S}
 7    H 0 {3,S}
 8    H 0 {3,S}
@@ -37,7 +37,7 @@ cis
 1  * C 0 {2,Dcis} {3,S} {4,S}
 2  * C 0 {1,Dcis} {5,S} {6,S}
 3    C 0 {1,S} {7,S} {8,S} {9,S}
-4    H 0 {1,S} 
+4    H 0 {1,S}
 5    C 0 {2,S} {10,S} {11,S} {12,S}
 6    H 0 {2,S}
 7    H 0 {3,S}
@@ -65,7 +65,7 @@ higher-ene_cis
 1  * C 0 {2,Dcis} {3,S} {4,S}
 2  * C 0 {1,Dcis} {5,S} {6,S}
 3    C 0 {1,S} {7,S} {8,S} {9,S}
-4    H 0 {1,S} 
+4    H 0 {1,S}
 5    C 0 {2,S} {10,S} {11,S} {12,S}
 6    H 0 {2,S}
 7    R!H 0 {3,S}
@@ -79,7 +79,7 @@ t-butyl_cis_t-butyl
 1  * C 0 {2,Dcis} {3,S} {4,S}
 2  * C 0 {1,Dcis} {5,S} {6,S}
 3    C 0 {1,S} {7,S} {8,S} {9,S}
-4    H 0 {1,S} 
+4    H 0 {1,S}
 5    C 0 {2,S} {10,S} {11,S} {12,S}
 6    H 0 {2,S}
 7    R!H 0 {3,S}
@@ -87,7 +87,7 @@ t-butyl_cis_t-butyl
 9    R!H 0 {3,S}
 10    R!H 0 {5,S}
 11    R!H 0 {5,S}
-12    R!H 0 {5,S}	
+12    R!H 0 {5,S}
 
 t-butyl_cis
 1  * C 0 {2,Dcis} {3,S} {4,S}

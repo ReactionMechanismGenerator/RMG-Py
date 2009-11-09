@@ -249,12 +249,3 @@ L1: multiplebond_intra
        L2: radadd_intra_Cb
        L2: radadd_intra_Ct
 
-
-////////////////////////////////////////////////////////////////////////////////
-
-L1: RnCycle
-	L2: R4Cycle
-	L2: R5Cycle
-	L2: R6Cycle
-	L2: R7Cycle
-	

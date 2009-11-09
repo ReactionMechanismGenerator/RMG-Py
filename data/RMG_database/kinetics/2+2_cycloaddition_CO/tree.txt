@@ -46,10 +46,3 @@ L1: doublebond
            L3: mb_COC_NdDe
            L3: mb_COC_De2
 
-////////////////////////////////////////////////////////////////////////////////
-
-L1: four_ring
-	L2: four_ring_CO
-	L2: four_ring_OC
-	L2: four_ring_CCO
-	L2: four_ring_COC

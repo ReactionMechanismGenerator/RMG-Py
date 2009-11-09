@@ -579,35 +579,75 @@ def drawAllTrees(root):
 		saveDOTAndImage(graph, root+os.sep+'kinetics'+os.sep+key, 'svg', 'neato')
 		print 'Created DOT for kinetics database %s' % (key)
 
-#
-#
-#	import rmg.structure
-#	s = rmg.structure.Structure()
-#	s.fromSMILES('C=CC=CCC')
-#	s.updateAtomTypes()
-#	graph = s.toDOT()
-#
-#	key = 'hxd13'
-#	print '\tCreating DOT file...'
-#	f=open(key+'.dot','w')
-#	f.write(graph.to_string())
-#	f.close()
-#
-#	print '\tCreating SVG file...'
-#	format='svg'
-#	prog='neato'
-#	filename=key+'.'+format
-#	if format=='svg':  # annoyingly, dot creates svg's without units on the font size attribute.
-#		st=graph.create_svg(prog=prog)
-#		st=re.sub(r"(font\-size\:[0-9]+\.*[0-9]*)([^p])",r"\1pt\2",st)
-#		f=open(filename,'w')
-#		f.write(st)
-#		f.close()
-#	else:
-#		graph.write(filename,format=format,prog=prog)
-#
-#	quit()
+################################################################################
 
+def printAtomTypeCounts():
+	"""
+	Iterates through all of the dictionaries of the thermo and kinetics
+	libraries and counts the number of atom types in each. In this counting
+	scheme, compound atom types are treated as different, e.g. {Cd,Cs} is
+	counted as one {Cd,Cs} and not as one Cd and one Cs.
+	"""
+
+	thermoDatabases = {'group': thermo.thermoDatabase.groupDatabase,
+		'1,5-interactions': thermo.thermoDatabase.int15Database,
+		'gauche': thermo.thermoDatabase.gaucheDatabase,
+		'other': thermo.thermoDatabase.otherDatabase,
+		'radical': thermo.thermoDatabase.radicalDatabase,
+		'primary': thermo.thermoDatabase.primaryDatabase,
+		'ring': thermo.thermoDatabase.ringDatabase}
+
+	# The total count of atom types
+	totalAtomTypeCount = {}
+
+	# Thermo databases
+	for key, database in thermoDatabases.iteritems():
+		localAtomTypeCount = {}
+		for label, struct in database.dictionary.iteritems():
+			if isinstance(struct, structure.Structure):
+				for atom in struct.atoms():
+					atomType = [atomType.label for atomType in atom._atomType]
+					atomType.sort()
+					atomType = ','.join(atomType)
+					if atomType in totalAtomTypeCount:
+						totalAtomTypeCount[atomType] += 1
+					else:
+						totalAtomTypeCount[atomType] = 1
+					if atomType in localAtomTypeCount:
+						localAtomTypeCount[atomType] += 1
+					else:
+						localAtomTypeCount[atomType] = 1
+		print '%s:' % key
+		for atomType, count in localAtomTypeCount.iteritems():
+			print '\t%i instances of %s' % (count, atomType)
+		print ''
+
+	# Kinetics databases
+	for key, database in reaction.kineticsDatabase.families.iteritems():
+		localAtomTypeCount = {}
+		for label, struct in database.dictionary.iteritems():
+			if isinstance(struct, structure.Structure):
+				for atom in struct.atoms():
+					atomType = [atomType.label for atomType in atom._atomType]
+					atomType.sort()
+					atomType = ','.join(atomType)
+					if atomType in totalAtomTypeCount:
+						totalAtomTypeCount[atomType] += 1
+					else:
+						totalAtomTypeCount[atomType] = 1
+					if atomType in localAtomTypeCount:
+						localAtomTypeCount[atomType] += 1
+					else:
+						localAtomTypeCount[atomType] = 1
+		print '%s:' % key
+		for atomType, count in localAtomTypeCount.iteritems():
+			print '\t%i instances of %s' % (count, atomType)
+		print ''
+
+	# Print the totals
+	print 'Totals:'
+	for atomType, count in totalAtomTypeCount.iteritems():
+		print '\t%i instances of %s' % (count, atomType)
 
 ################################################################################
 
@@ -641,32 +681,4 @@ if __name__ == '__main__':
 
 	# Draw trees in database
 	drawAllTrees('database')
-
-#	for key, family in reaction.kineticsDatabase.families.iteritems():
-#
-#		print '\tCreating DOT object...'
-#
-#		graph = family.tree.toDOT()
-#
-#		graph.set('fontsize','10')
-#		format='svg'
-#		prog='dot'
-#
-#		print '\tCreating DOT file...'
-#		f=open(key+'.dot','w')
-#		f.write(graph.to_string())
-#		f.close()
-#
-#		print '\tCreating SVG file...'
-#		filename=key+'.'+format
-#		if format=='svg':  # annoyingly, dot creates svg's without units on the font size attribute.
-#			st=graph.create_svg(prog=prog)
-#			st=re.sub(r"(font\-size\:[0-9]+\.*[0-9]*)([^p])",r"\1pt\2",st)
-#			f=open(filename,'w')
-#			f.write(st)
-#			f.close()
-#		else:
-#			graph.write(filename,format=format,prog=prog)
-#
-#		print 'Created DOT for reaction family %s' % (key)
 

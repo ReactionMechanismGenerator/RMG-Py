@@ -40,6 +40,13 @@ cdef class AtomType:
 	cdef public str label
 	cdef public Element element
 	cdef public str description
+	cdef public object doubleBonds
+	cdef public object tripleBonds
+	cdef public object benzeneBonds
+	cdef public object formBond
+	cdef public object breakBond
+	cdef public object incrementBond
+	cdef public object decrementBond
 
 	cpdef bint equivalent(AtomType self, AtomType other)
 
@@ -50,6 +57,8 @@ cdef class ElectronState:
 	cdef public str label
 	cdef public int order
 	cdef public list spin
+	cdef public ElectronState increment
+	cdef public ElectronState decrement
 
 	cpdef bint equivalent(ElectronState self, ElectronState other)
 

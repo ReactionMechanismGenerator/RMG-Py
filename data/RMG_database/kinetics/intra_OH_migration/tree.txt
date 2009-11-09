@@ -43,10 +43,3 @@ L1: Y_rad_out
 		L3: CdsingleND_rad_out
 		L3: CdsingleDe_rad_out
 	
-////////////////////////////////////////////////////////////////////////////////
-
-L1: HORnO.
-	L2: HORO.
-	L2: HOR2O.		
-	L2: HOR3O.
-	L2: HOR4O.		

@@ -18,7 +18,7 @@ RnH
 Union {R2H, R3H, R4H, R5H, R6H, R7H}
 
 Y_rad_out
-1 *1 {R!H} 1 
+1 *1 {R!H} 1
 
 XH_out
 1 *2 {R!H} 0 {2,S}
@@ -206,7 +206,7 @@ R3H_SS_OC
 4 *3 H 0 {3,S}
 
 R4H
-Union {R4H_RSR, R4H_SMS, R4H_SBB, R4H_BBS, R4H_BBB} 
+Union {R4H_RSR, R4H_SMS, R4H_SBB, R4H_BBS, R4H_BBB}
 
 R4H_RSR
 1 *1 {R!H} 1 {2,{S,D,T,B}}
@@ -431,10 +431,10 @@ R4H_BBB
 7 {Cb,Cbf} 0 {6,B}, {8,B}
 8 {Cb,Cbf} 0 {7,B}, {9,B}
 9 Cbf 0 {3,B}, {8,B}, {10,B}
-10 {Cb,Cbf} 0 {9,B}, {11,B} 
-11 {Cb,Cbf} 0 {10,B}, {12,B} 
-12 Cbf 0 {2,B}, {11,B}, {13,B} 
-13 {Cb,Cbf} 0 {12,B}, {14,B} 
+10 {Cb,Cbf} 0 {9,B}, {11,B}
+11 {Cb,Cbf} 0 {10,B}, {12,B}
+12 Cbf 0 {2,B}, {11,B}, {13,B}
+13 {Cb,Cbf} 0 {12,B}, {14,B}
 14 {Cb,Cbf} 0 {13,B}, {15,B}
 15 {Cb,Cbf} 0 {14,B}, {1,B}
 
@@ -1237,7 +1237,7 @@ R7H_OOCs4
 8 *3 H 0 {7,S}
 
 Y_rad_out
-1 *1 {R!H} 1 
+1 *1 {R!H} 1
 
 C_rad_out_single
 1 *1 C 1 {2,S}, {3,S}, {4,S}
@@ -1270,7 +1270,7 @@ C_rad_out_H/NonDeO
 C_rad_out_H/OneDe
 1 *1 C 1 {2,S}, {3,S}
 2 H 0 {1,S}
-3 {Cd,Ct,Cb,CO} 0 {1,S}
+3 {Cd,Ct,Cb} 0 {1,S}
 
 C_rad_out_noH
 1 *1 C 1 {2,S}, {3,S}, {4,S}
@@ -1313,23 +1313,23 @@ C_rad_out_NDMustO
 
 C_rad_out_OneDe
 1 *1 C 1 {2,S}, {3,S}
-2 {Cd,Ct,Cb,CO} 0 {1,S}
+2 {Cd,Ct,Cb} 0 {1,S}
 3 {Cs,O} 0 {1,S}
 
 C_rad_out_OneDe/Cs
 1 *1 C 1 {2,S}, {3,S}
-2 {Cd,Ct,Cb,CO} 0 {1,S}
+2 {Cd,Ct,Cb} 0 {1,S}
 3 Cs 0 {1,S}
 
 C_rad_out_OneDe/O
 1 *1 C 1 {2,S}, {3,S}
-2 {Cd,Ct,Cb,CO} 0 {1,S}
+2 {Cd,Ct,Cb} 0 {1,S}
 3 O 0 {1,S}
 
 C_rad_out_TwoDe
 1 *1 C 1 {2,S}, {3,S}
-2 {Cd,Ct,Cb,CO} 0 {1,S}
-3 {Cd,Ct,Cb,CO} 0 {1,S}
+2 {Cd,Ct,Cb} 0 {1,S}
+3 {Cd,Ct,Cb} 0 {1,S}
 
 Cd_rad_out_double
 1 *1 Cd 1 {2,D}
@@ -1349,7 +1349,7 @@ Cd_rad_out_singleNd
 
 Cd_rad_out_singleDe
 1 *1 Cd 1 {2,S}
-2 {Cd,Ct,Cb,CO} 0 {1,S}
+2 {Cd,Ct,Cb} 0 {1,S}
 
 Ct_rad_out
 1 *1 Ct 1 {2,T}
@@ -1475,7 +1475,7 @@ Cs_H_out_H/NonDeO
 Cs_H_out_H/OneDe
 1 *2 Cs 0 {2,S} {3,S} {4,S}
 2 *3 H 0 {1,S}
-3 {Cd,Ct,Cb,CO} 0 {1,S}
+3 {Cd,Ct,Cb} 0 {1,S}
 4 H 0 {1,S}
 
 Cs_H_out_noH
@@ -1528,13 +1528,13 @@ Cs_H_out_OneDe
 1 *2 Cs 0 {2,S} {3,S} {4,S}
 2 *3 H 0 {1,S}
 3 {Cs,O} 0 {1,S}
-4 {Cd,Ct,Cb,CO} 0 {1,S}
+4 {Cd,Ct,Cb} 0 {1,S}
 
 Cs_H_out_TwoDe
 1 *2 Cs 0 {2,S} {3,S} {4,S}
 2 *3 H 0 {1,S}
-3 {Cd,Ct,Cb,CO} 0 {1,S}
-4 {Cd,Ct,Cb,CO} 0 {1,S}
+3 {Cd,Ct,Cb} 0 {1,S}
+4 {Cd,Ct,Cb} 0 {1,S}
 
 Cd_H_out_double
 1 *2 Cd 0 {2,S} {3,D}
@@ -1569,11 +1569,12 @@ Cd_H_out_singleNd
 Cd_H_out_singleDe
 1 *2 Cd 0 {2,S} {3,S}
 2 *3 H 0 {1,S}
-3 {Cd,Ct,Cb,CO} 0 {1,S}
+3 {Cd,Ct,Cb} 0 {1,S}
 
 CO_H_out
-1 *2 CO 0 {2,S}
+1 *2 Cd 0 {2,S} {3,D}
 2 *3 H 0 {1,S}
+3 Od 0 {1,D}
 
 O_H_out
 1 *2 O 0 {2,S}

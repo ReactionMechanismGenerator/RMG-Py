@@ -644,6 +644,46 @@ class Database:
 			self.library.parse(lines, 1)
 
 
+	def save(self, dictstr, treestr, libstr):
+		"""
+		Save a dictionary-tree-library based database. The database is stored
+		in three files: `dictstr` is the path to the dictionary, `treestr` to
+		the tree, and `libstr` to the library. If a file is not desired to be
+		saved, its path should be set to ''.
+		"""
+
+		# Save dictionary
+		if dictstr != '':
+			f = open(dictstr, 'w')
+			f.write('////////////////////////////////////////////////////////////////////////////////\n')
+			f.write('//\n')
+			f.write('//\tDictionary\n')
+			f.write('//\n')
+			f.write('////////////////////////////////////////////////////////////////////////////////\n')
+			f.write('\n')
+			for label, struct in self.dictionary.iteritems():
+				f.write(label + '\n')
+				if isinstance(struct, structure.Structure):
+					f.write(struct.toAdjacencyList() + '\n')
+				elif struct == 'union':
+					union = 'Union {'
+					children = [child for child in self.tree.children[label]]
+					union += ','.join(children)
+					union += '}'
+					f.write(union + '\n\n')
+				else:
+					raise InvalidDatabaseException('Unexpected item with label %s encountered in dictionary while attempting to save.' % label)
+			f.close()
+
+		# Save tree
+		if treestr != '':
+			logging.warning('Tree saving not yet implemented.')
+
+		# Save library
+		if libstr != '':
+			logging.warning('Library saving not yet implemented.')
+
+
 	def toXML(self, dom, root):
 		"""
 		Return an XML representation of the database.
