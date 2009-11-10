@@ -114,6 +114,12 @@ class ThermoGAData(ThermoData):
 		self.Cp = Cp or [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 		self.index = index
 	
+	def __reduce__(self):
+		"""
+		Used for pickling.
+		"""
+		return (ThermoGAData, (self.H298, self.S298, self.Cp, self.comment, self.index))
+
 	# how do we cythonize 'special' methods?
 	# it's so confusing. This breaks pure python mode:
 	#@cython.locals(self=ThermoGAData, other=ThermoGAData, new=ThermoGAData, i=cython.int)
@@ -152,6 +158,19 @@ class ThermoGAData(ThermoData):
 		string += 'Index: %s\tComment: %s' % (self.index, self.comment)
 		return string
 	
+	def equals(self, other):
+		"""
+		Equality comparison.
+		"""
+		if self.Trange != other.Trange: return False
+		if self.comment != other.comment: return False
+		if self.H298 != other.H298: return False
+		if self.S298 != other.S298: return False
+		if len(self.Cp) != len(other.Cp): return False
+		for i in range(len(self.Cp)):
+			if self.Cp[i] != other.Cp[i]: return False
+		return True
+
 	def getHeatCapacity(self, T):
 		"""
 		Return the heat capacity in J/mol*K at temperature `T` in K.
@@ -296,6 +315,22 @@ class ThermoNASAPolynomial(ThermoData):
 		return "ThermoNASAPolynomial(%r,%r,'%s')"%(self.Trange,self.coeffs,self.comment)
 	def __reduce__(self):
 		return (ThermoNASAPolynomial,(self.Trange,(self.c0, self.c1, self.c2, self.c3, self.c4, self.c5, self.c6),self.comment))
+
+	def equals(self, other):
+		"""
+		Equality comparison.
+		"""
+		if self.Trange != other.Trange: return False
+		if self.comment != other.comment: return False
+		if self.c0 != other.c0: return False
+		if self.c1 != other.c1: return False
+		if self.c2 != other.c2: return False
+		if self.c3 != other.c3: return False
+		if self.c4 != other.c4: return False
+		if self.c5 != other.c5: return False
+		if self.c6 != other.c6: return False
+		return True
+
 	def getHeatCapacity(self, T):
 		"""
 		Return the heat capacity in J/mol*K at temperature `T` in K.
@@ -415,6 +450,16 @@ class ThermoNASAData(ThermoData):
 	def __reduce__(self):
 		return (ThermoNASAData,(self.polynomials,self.comment,self.Trange))
 		
+	def equals(self, other):
+		"""
+		Equality comparison.
+		"""
+		if self.Trange != other.Trange: return False
+		if self.comment != other.comment: return False
+		for i in range(len(self.polynomials)):
+			if not self.polynomials[i].equals(other.polynomials[i]): return False
+		return True
+
 	def addPolynomial(self, polynomial):
 		if not isinstance(polynomial,ThermoNASAPolynomial):
 			raise TypeError("Polynomial attribute should be instance of ThermoNASAPolynomial")
@@ -504,13 +549,13 @@ class ThermoWilhoitData(ThermoData):
 	"""
 
 	
-	def __init__(self, cp0, cpInf, a0, a1, a2, a3, H0, S0, comment='', ):
+	def __init__(self, cp0, cpInf, a0, a1, a2, a3, H0, S0, comment='', B=ThermoWilhoitDataB):
 		"""Initialise the Wilhoit polynomial. Trange is set to (0,9999.9)"""
 		Trange = (0,9999.9) # Wilhoit valid over all temperatures
 		ThermoData.__init__(self, Trange=Trange, comment=comment)
 		self.cp0 = cp0
 		self.cpInf = cpInf
-		self.B = ThermoWilhoitDataB
+		self.B = B
 		self.a0 = a0
 		self.a1 = a1
 		self.a2 = a2
@@ -521,6 +566,26 @@ class ThermoWilhoitData(ThermoData):
 	def __repr__(self):
 		return "ThermoWilhoitData(%.2g,%.2g,%.2g,%.2g,%.2g,%.2g,%.2g,%.2g,%.2g,'%s')"%(self.cp0, self.cpInf, self.B, self.a0, self.a1, self.a2, self.a3, self.H0, self.S0, self.comment)
 	
+	def __reduce__(self):
+		return (ThermoWilhoitData,(self.cp0, self.cpInf, self.a0, self.a1, self.a2, self.a3, self.H0, self.S0, self.comment, self.B))
+
+	def equals(self, other):
+		"""
+		Equality comparison.
+		"""
+		if self.Trange != other.Trange: return False
+		if self.comment != other.comment: return False
+		if self.cp0 != other.cp0: return False
+		if self.cpInf != other.cpInf: return False
+		if self.B != other.B: return False
+		if self.a0 != other.a0: return False
+		if self.a1 != other.a1: return False
+		if self.a2 != other.a2: return False
+		if self.a3 != other.a3: return False
+		if self.H0 != other.H0: return False
+		if self.S0 != other.S0: return False
+		return True
+
 	def toXML(self, dom, root):
 		pass
 	
