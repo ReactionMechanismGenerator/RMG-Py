@@ -348,7 +348,7 @@ class ElectronState:
 		"""
 		Return a representation that can be used to reconstruct the object.
 		"""
-		return "ElectronState('%s', %s, %s)" % (self.label, self.order, self.spin, self.increment, self.decrement)
+		return "ElectronState('%s', %s, %s)" % (self.label, self.order, self.spin)
 	
 	def __reduce__(self):
 		"""
@@ -558,6 +558,15 @@ class Atom(object):
 		Used for pickling.
 		"""
 		return (Atom, (self.atomType, self.electronState, self.charge, self.label))
+
+	def equals(self, other):
+		"""
+		Equality comparison.
+		"""
+		return (self.atomType.label == other.atomType.label and
+			self.electronState.label == other.electronState.label and
+			self.charge == other.charge and
+			self.label == other.label)
 
 	def getAtomType(self):
 		"""
@@ -882,6 +891,14 @@ class Bond(object):
 		Used for pickling.
 		"""
 		return (Bond, (self.atoms, self.bondType))
+
+	def equals(self, other):
+		"""
+		Equality comparison.
+		"""
+		return (((self.atoms[0].equals(other.atoms[0]) and self.atoms[1].equals(other.atoms[1])) or
+			(self.atoms[0].equals(other.atoms[1]) or self.atoms[1].equals(other.atoms[0]))) and
+			self.bondType.label == other.bondType.label)
 
 	def getBondType(self):
 		"""
