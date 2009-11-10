@@ -623,13 +623,6 @@ class InvalidReactionSystemException(Exception):
 		return 'Invalid reaction system: ' + self.label
 
 ################################################################################
-class FakeSolver:
-	"""Used as a dummy solver, to contain t etc."""
-	def __init__(self):
-		self.t = 0
-		self.y = None
-	def successful(self):
-		return True # how can I fail?
 	
 class ReactionSystem:
 	"""
@@ -884,7 +877,7 @@ class BatchReactor(ReactionSystem):
 		
 		# try writing cantera file
 		sim,gas = self.runCantera(model)
-		
+
 		# Assemble stoichiometry matrix for all core and edge species
 		# Rows are species (core, then edge); columns are reactions (core, then edge)
 		stoichiometry = model.getStoichiometryMatrix()
@@ -918,12 +911,9 @@ class BatchReactor(ReactionSystem):
 #		tlist.append(0.0); ylist.append(y0)
 #		dydtlist.append(self.getResidual(0.0, y0, model, stoichiometry))
 		
-		
-		solver = FakeSolver()
-		
 		done = False
 		first_step = True
-		while not done and solver.successful():
+		while not done:
 			
 			# Conduct integration
 			if first_step: 
@@ -946,7 +936,7 @@ class BatchReactor(ReactionSystem):
 			# recall that Cantera returns molarDensity() in units of kmol/m3
 			# and this program thinks in mol/m3
 			Ni = gas.molarDensity()*1000.0 * gas.moleFractions() * V 
-			solver.y = [P, V, T]; solver.y.extend(Ni)
+			y = [P, V, T]; y.extend(Ni)
 			
 			# Calculate species fluxes of all core and edge species at the
 			# current time
@@ -970,8 +960,8 @@ class BatchReactor(ReactionSystem):
 				valid=False
 			
 			# Output information about simulation at current time
-			self.printSimulationStatus(model, time, solver.y, y0, charFlux, maxSpeciesFlux/charFlux, maxSpecies)
-			tlist.append(time); ylist.append(solver.y)
+			self.printSimulationStatus(model, time, y, y0, charFlux, maxSpeciesFlux/charFlux, maxSpecies)
+			tlist.append(time); ylist.append(y)
 			#dydtlist.append(self.getResidual(time, solver.y, model, stoichiometry))
 			
 			# Exit simulation if model is not valid (exceeds interruption criterion)
@@ -993,7 +983,7 @@ class BatchReactor(ReactionSystem):
 			for target in model.termination:
 				if target.__class__ == TerminationConversion:
 					index = model.core.species.index(target.species) + 3
-					conversion = 1.0 - solver.y[index] / y0[index]
+					conversion = 1.0 - y[index] / y0[index]
 					if conversion > target.conversion: done = True
 				elif target.__class__ == TerminationTime:
 					if time > target.time: done = True
