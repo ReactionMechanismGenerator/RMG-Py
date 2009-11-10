@@ -919,23 +919,29 @@ class BatchReactor(ReactionSystem):
 			if first_step: 
 				first_step = False # don't integrate on first time through, just do the validity checking and result reporting
 			else:
-				# advance cantera one step, or two if the first didn't get there
+				# Uses a fixed (on a log scale) time step
 				nexttime = time*1.2589254117941673
 				try:
+					# advance cantera one step, or two if the first didn't get there
 					if sim.step(endtime) < endtime:
 						if sim.step(endtime) < nexttime:
 							sim.advance(nexttime)
+#				# Uses the same time steps that the Cantera solver used
+#				try:
+#					sim.step(endtime)
 				except Exception, e:
 					logging.exception("Ignoring Cantera error")
 					logging.debug(e.message)
 					pass
+
+			# Get state at current time
 			time = sim.time()
 			P = gas.pressure()
 			V = sim.reactors()[0].volume()
 			T = gas.temperature()
-			# recall that Cantera returns molarDensity() in units of kmol/m3
-			# and this program thinks in mol/m3
-			Ni = gas.molarDensity()*1000.0 * gas.moleFractions() * V 
+			# Note that, for molar density, Cantera thinks in kmol/m^3, while
+			# RMG thinks in mol/m^3
+			Ni = gas.molarDensity()*1000.0 * gas.moleFractions() * V
 			y = [P, V, T]; y.extend(Ni)
 			
 			# Calculate species fluxes of all core and edge species at the
