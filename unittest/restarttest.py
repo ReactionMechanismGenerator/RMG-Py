@@ -140,7 +140,7 @@ class RestartCheck(unittest.TestCase):
 		# Unpickle
 		f = open('test.pkl', 'rb'); spec = cPickle.load(f); f.close()
 		# Compare
-		self.assertTrue(spec0.id == spec.id == 1)
+		self.assertTrue(spec0.id == spec.id)
 		self.assertTrue(spec0.label == spec.label == smiles)
 		self.assertTrue(spec0.reactive == spec.reactive == True)
 		self.assertTrue(len(spec0.structure) == len(spec.structure) == 3)
@@ -212,7 +212,41 @@ class RestartCheck(unittest.TestCase):
 		"""
 		Restart tests for the :class:`rmg.reaction.Reaction` class.
 		"""
-		self.fail('Not yet implemented -- but it needs to be!')
+		import rmg.reaction as reaction
+		import rmg.structure as structure
+		import rmg.species as species
+
+		# Create
+		smiles = 'C'
+		struct0 = structure.Structure(SMILES=smiles)
+		methane = species.makeNewSpecies(struct0, label=smiles, reactive=True)
+		reactions = reaction.kineticsDatabase.getReactions([methane])
+		reaction0 = reactions[0]
+		# Pickle
+		f = open('test.pkl', 'wb'); cPickle.dump(reaction0, f); f.close()
+		# Unpickle
+		f = open('test.pkl', 'rb'); reaction = cPickle.load(f); f.close()
+		# Compare
+		for reactant0 in reaction0.reactants:
+			match = False
+			for reactant in reaction.reactants:
+				if reactant0.isIsomorphic(reactant): match = True
+			self.assertTrue(match)
+		for product0 in reaction0.products:
+			match = False
+			for product in reaction.products:
+				if product0.isIsomorphic(product): match = True
+			self.assertTrue(match)
+		for kin0 in reaction0.kinetics:
+			match = False
+			for kin in reaction.kinetics:
+				if kin0.equals(kin): match = True
+			self.assertTrue(match)
+		self.assertTrue(reaction0.family.label == reaction.family.label)
+		self.assertTrue(reaction0.atomLabels.keys() == reaction.atomLabels.keys())
+		self.assertTrue(reaction0.multiplier == reaction.multiplier)
+		self.assertTrue(reaction0.bestKinetics == reaction.bestKinetics)
+		#self.assertTrue(reaction0.reverse == reaction.reverse)
 
 ################################################################################
 
@@ -224,7 +258,7 @@ if __name__ == '__main__':
 	# Load databases
 	databasePath = '../data/RMG_database'
 	loadThermoDatabases(databasePath)
-	#loadKineticsDatabases(databasePath)
+	loadKineticsDatabases(databasePath, only_families=['R_Recombination'])
 	
 	# Show info messages during tests
 	main.initializeLog(20)
