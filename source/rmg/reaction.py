@@ -1745,12 +1745,12 @@ def makeNewReaction(reactants, products, reactantStructures, productStructures, 
 	matchReaction = None
 	for rxn in reactionList:
 		# Check forward reaction for match
-		if rxn.family is family or rxn.family is None or family is None:
+		if rxn.family.label == family.label:
 			if rxn.reactants == reactants and rxn.products == products:
 				matchReaction = rxn
 				break # found a match so stop checking other rxn
 		# Check reverse reaction for match
-		if rxn.reverse.family is family or rxn.reverse.family is None or family is None:
+		if rxn.reverse.family.label == family.label:
 			if rxn.reactants == products and rxn.products == reactants:
 				matchReaction = rxn
 				break # found a match so stop checking other rxn

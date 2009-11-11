@@ -101,6 +101,7 @@ def execute(inputFile, options):
 		logging.info('Loading previous restart file...')
 		f = open(os.path.join(settings.outputDirectory,'restart.pkl'), 'rb')
 		species.speciesList = cPickle.load(f)
+		species.speciesCounter = len(species.speciesList)
 		reaction.reactionList = cPickle.load(f)
 		reactionModel = cPickle.load(f)
 		reactionSystems = cPickle.load(f)
