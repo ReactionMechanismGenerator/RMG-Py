@@ -118,7 +118,9 @@ RsCH2r   // L2 Node: single-bonded to exactly one heavy atom
 4    H 0 {1,S}
 
 RdCHr //L2 Node: double-bonded to one heavy atom (vinylic) 
-Union {RdCHrx0,RdCHrx1,RdCHrx2}
+1  * C 1 {2,D} {3,S}
+2    R!H {0,1,2} {1,D}
+3    H 0 {1,S}
 
 CtCr //L2 Node: triple-bonded to one heavy atom (carbon) 
 1  * C 1 {2,T}

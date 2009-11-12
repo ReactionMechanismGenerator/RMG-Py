@@ -36,7 +36,7 @@ class CharacteristicFrequency:
 	"""
 	Represent a characteristic frequency in the frequency database. The
 	characteristic frequency has a real lower bound `lower`, a real upper bound
-	`upper`, and an integer `degeneracy`.
+	`upper`, an integer `degeneracy`.
 	"""
 
 	def __init__(self, lower=0.0, upper=0.0, degeneracy=1):
@@ -50,7 +50,12 @@ class CharacteristicFrequency:
 		self.degeneracy * count, and these are distributed linearly between
 		`self.lower` and `self.upper`.
 		"""
-		numFreqs = self.degeneracy * count
+		from numpy import linspace
+		number = self.degeneracy * count
+		if number == 1:
+			return [(self.lower + self.upper) / 2.0]
+		else:
+			return linspace(self.lower, self.upper, number, endpoint=True)
 
 ################################################################################
 
@@ -95,12 +100,14 @@ class FrequencyDatabase(data.Database):
 
 				items = item.split()
 
+				# First item is the symmetry correction 
+				frequencies = [int(items.pop(0))]
+
 				# Items should be a multiple of three (no comments allowed at the moment)
 				if len(items) % 3 != 0:
 					raise data.InvalidDatabaseException('Unexpected number of items encountered in frequencies library.')
 
 				# Convert list of data into a list of characteristic frequencies
-				frequencies = []
 				count = len(items) / 3
 				for i in range(count):
 					frequency = CharacteristicFrequency(
@@ -116,5 +123,62 @@ class FrequencyDatabase(data.Database):
 			raise data.InvalidDatabaseException('Database at "%s" is not well-formed.' % (dictstr))
 
 frequencyDatabase = None
+
+################################################################################
+
+def generateSpectralData(struct, thermoData):
+	"""
+	Generate the spectral data for a :class:`structure.Structure` object
+	`struct` with corresponding :class:`thermo.ThermoGAData` object `thermo`.
+	The group frequency method is used to do so; this method has two steps:
+
+	1.	Search the structure for certain functional groups for which
+		characteristic frequencies are known, and use those frequencies.
+	2.	For any remaining degrees of freedom, fit the parameters such that they
+		replicate the heat capacity.
+
+	This method only fits the internal modes (i.e. vibrations and hindered
+	rotors).
+	"""
+
+	# Determine linearity of structure
+	linear = struct.isLinear()
+
+	# Determine the number of internal modes for this structure
+	numModes = 3 * len(struct.atoms()) - (5 if linear else 6)
+
+	# Determine the number of vibrational and hindered rotor modes for this
+	# structure
+	numRotors = struct.countInternalRotors()
+	numVibrations = numModes - numRotors
+
+	print 'For %s, I found %i internal rotors and %i vibrations for a total of %i modes' % (struct, numRotors, numVibrations, numModes)
+
+	# For each group in library, find all subgraph isomorphisms
+	groupCount = {}
+	for node, data in frequencyDatabase.library.iteritems():
+		ismatch, map12List, map21List = struct.findSubgraphIsomorphisms(frequencyDatabase.dictionary[node])
+		if ismatch:
+			count = len(map12List)
+		else:
+			count = 0
+		if count % data[0] != 0:
+			raise Exception('Incorrect number of matches of node "%s" while estimating frequencies of %s.' % (node, struct))
+		groupCount[node] = count / data[0]
+
+	print 'Groups found:'
+	for node, count in groupCount.iteritems():
+		if count != 0: print '\t', node, count
+
+	# Get frequencies
+	frequencies = []
+	for node, count in groupCount.iteritems():
+		for charFreq in frequencyDatabase.library[node][1:]:
+			frequencies.extend(charFreq.generateFrequencies(count))
+
+	if len(frequencies) > numVibrations:
+		raise Exception('Too many vibrational frequencies estimated for %s from groups.' % struct)
+
+	return frequencies
 
 ################################################################################
