@@ -1,0 +1,45 @@
+////////////////////////////////////////////////////////////////////////////////
+//
+//	Functional group tree for frequency estimation
+//
+////////////////////////////////////////////////////////////////////////////////
+
+// Originally devised by C. Franklin Goldsmith and implemented by Greg Magoon 
+// on 13-18 Nov 2008
+
+L0: R!H
+	L1: C_R0
+		L2: RsCH3
+		L2: RdCH2
+		L2: CtCH
+		L2: RsCH2sR
+		L2: Aldehyde
+		L2: Ketene
+
+		L2: Cumulene
+		L2: CdCHsR
+		L2: CtCsR
+		L2: RsCHsR2
+		L2: CdCsR2
+		L2: Ketone
+		L2: RsCsR3
+	L1: C_R1
+		L2: RsCH2r
+		L2: RdCHr
+		L2: CtCr
+		L2: RsCHrsR
+		L2: OdCrsR
+		L2: CdCrsR
+		L2: RsCrsR2
+	L2: C_R2
+		L2: RsCHrr
+		L2: RdCrr
+		L2: RsCrrsR
+	L1: O_R0
+		L2: Alcohol
+		L2: Ether
+		L2: ROOH
+		L2: ROOR
+		L2: Peroxy
+	L1: O_R1
+		L2: Oxy
