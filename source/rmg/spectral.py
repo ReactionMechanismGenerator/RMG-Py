@@ -32,6 +32,362 @@ import data
 
 ################################################################################
 
+class Translation:
+	"""
+	A representation of translational modes. The `dimension` attribute is an
+	integer representing the dimension of the translation (2 or 3) and the
+	`mass` is the molar mass of the molecule in kg/mol.
+	"""
+
+	def __init__(self, mass=0.0, dimension=3):
+		self.mass = mass
+		self.dimension = dimension
+
+	def partitionFunction(self, Tlist, V=1.0):
+		"""
+		Return the value of the partition function at the specified temperatures
+		`Tlist` in K. The formula is
+
+		.. math:: q_\\mathrm{trans}(T, V) = \\left( \\frac{2 \\pi m k_\\mathrm{B} T}{h^2} \\right)^{d/2} V = q_\\mathrm{t} \\left( k_\\mathrm{B} T \\right)^{d/2}
+
+		where :math:`T` is temperature, :math:`V` is volume, :math:`m` is mass,
+		:math:`d` is dimensionality, :math:`k_\\mathrm{B}` is Boltzmann's
+		constant, and :math:`h` is Planck's constant.
+		"""
+
+		Q = np.zeros(len(Tlist), np.float64)
+		for i in range(len(Tlist)):
+			Q[i] = ((2 * math.pi * self.mass / constants.Na * constants.kB * Tlist[i]) / (constants.h * constants.h))**(self.dimension/2.0) * V
+		return Q
+
+	def densityOfStates(self, Elist, V=1.0):
+		"""
+		Return the density of states at the specified energlies `Elist` in J/mol
+		above the ground state. The formula is
+
+		.. math:: \\rho(E) = \\frac{q_\\mathrm{t} E^{d/2-1}}{(d/2-1)!}
+
+		where :math:`E` is energy, :math:`d` is dimensionality, and
+		:math:`q_\\mathrm{t}` is defined in the equation for the partition
+		function.
+		"""
+
+		qt = ((2 * math.pi * self.mass) / (constants.h * constants.h))**(self.dimension/2.0) * V
+
+		rho = np.zeros(len(Elist), np.float64)
+		if self.dimension == 2:
+			for i in range(len(Elist)):
+				rho[i] = qt
+		else:
+			for i in range(len(Elist)):
+				rho[i] = qt * math.sqrt(Elist[i]) / (math.sqrt(math.pi) / 2)		# qt * E^0.5 / 0.5!
+
+		return rho
+
+
+################################################################################
+
+class RigidRotor:
+	"""
+	A rigid rotor approximation of (external) rotational modes. The `linear`
+	attribute is :data:`True` if the associated molecule is linear, and
+	:data:`False` if nonlinear. For a linear molecule, `frequencies` stores a
+	list with one frequency, that of the rotation, in cm^-1. For a nonlinear
+	molecule, `frequencies` stores a list of the three frequencies of rotation,
+	even if two or three are equal, in cm^-1. Symmetry number corrections are
+	*not* applied by this class.
+	"""
+
+	def __init__(self, linear=False, frequencies=None):
+		self.linear = linear
+		self.frequencies = frequencies or []
+
+	def partitionFunction(self, Tlist):
+		"""
+		Return the value of the partition function at the specified temperatures
+		`Tlist` in K. The formula is
+
+		.. math:: q_\\mathrm{rot}(T) = \\frac{k_\\mathrm{B} T}{\\sigma h c \\tilde{\\omega}} = q_\\mathrm{r} k_\\mathrm{B} T
+
+		for linear rotors and
+
+		.. math:: q_\\mathrm{rot}(T) = \\frac{\\sqrt{\\pi}}{\\sigma} \\left[ \\frac{ \\left( k_\\mathrm{B} T \\right)^3 }{\\left( hc \\right)^3 \\tilde{\\omega_\\mathrm{A}} \\tilde{\\omega_\\mathrm{B}} \\tilde{\\omega_\\mathrm{C}} } \\right]^{1/2} = q_\\mathrm{r} \\left( k_\\mathrm{B} T \\right)^{3/2}
+
+		for nonlinear rotors. Above, :math:`T` is temperature,
+		:math:`\\tilde{\\omega}` is rotational frequency in cm^-1, :math:`c` is
+		the speed of light,	:math:`k_\\mathrm{B}` is Boltzmann's constant, and
+		:math:`h` is Planck's constant. :math:`\\sigma` is a placeholder for
+		the symmetry number.
+		"""
+
+		Q = np.zeros(len(Tlist), np.float64)
+		if self.linear:
+			freqProduct = constants.h * constants.c * 100.0 * self.frequencies[0]
+			for i in range(len(Tlist)):
+				Q[i] = constants.kB * Tlist[i] / freqProduct
+		else:
+			freqProduct = 1.0
+			for freq in self.frequencies:
+				freqProduct *= freq * constants.h * constants.c * 100.0
+			for i in range(len(Tlist)):
+				Q[i] = math.sqrt(math.pi) * (constants.kB * Tlist[i])**(len(self.frequencies)/2.0) / math.sqrt(freqProduct)
+
+		return Q
+
+	def densityOfStates(self, Elist):
+		"""
+		Return the density of states at the specified energlies `Elist` in J/mol
+		above the ground state. The formula is
+
+		.. math:: \\rho(E) = q_\\mathrm{r}
+
+		for linear rotors and
+
+		.. math:: \\rho(E) = \\frac{q_\\mathrm{r} E^{1/2}}{\\frac{1}{2}!}
+
+		for nonlinear rotors. Above,  :math:`E` is energy and
+		:math:`q_\\mathrm{r}` is defined in the	equation for the partition
+		function.
+		"""
+
+		rho = np.zeros(len(Elist), np.float64)
+		if self.linear:
+			freqProduct = constants.h * constants.c * 100.0 * self.frequencies[0] * constants.Na
+			for i in range(len(Elist)):
+				rho[i] = 1.0 / freqProduct
+		else:
+			freqProduct = 1.0
+			for freq in self.frequencies:
+				freqProduct *= freq * constants.h * constants.c * 100.0
+			qr = math.sqrt(math.pi) / math.sqrt(freqProduct)
+			for i in range(len(Elist)):
+				rho[i] = qr  * math.sqrt(Elist[i]) / (math.sqrt(math.pi) / 2)
+
+		return rho
+
+################################################################################
+
+class HinderedRotor:
+	"""
+	A one-dimensional hindered rotor approximation of (internal) rotational
+	modes. This class implements the Pitzer model of one-dimensional hindered
+	rotation, which utilizes a hindered potential function
+
+	.. math:: V(\\phi) = \\frac{1}{2} V_0 \\left[1 - \\cos \\left( \\sigma \\phi \\right) \\right]
+
+	where :math:`V_0` is the height of the potential barrier and :math:`\\sigma`
+	the number of minima or maxima in one revolution of angle :math:`\\phi`. The
+	hindered rotor is therefore described by two quantities: the `frequency` of
+	rotation in cm^-1, and the `barrier` height in cm^-1.
+	"""
+
+	def __init__(self, frequency=0.0, barrier=0.0):
+		self.frequency = frequency
+		self.barrier = barrier
+
+	def partitionFunction(self, Tlist):
+		"""
+		Return the value of the partition function at the specified temperatures
+		`Tlist` in K. The formula is
+
+		.. math:: q_\\mathrm{hind}(T) = \\frac{1}{\\sigma} \\left( \\frac{\\pi k_\\mathrm{B} T}{h c \\tilde{\\omega}} \\right)^{1/2} \\exp \\left( -\\frac{V_0}{2 k_\\mathrm{B} T} \\right) I_0 \\left( \\frac{V_0}{2 k_\\mathrm{B} T} \\right) = q_\\mathrm{1f} \\left( k_\\mathrm{B} T \\right)^{1/2} \\exp \\left( -\\frac{V_0}{2 k_\\mathrm{B} T} \\right) I_0 \\left( \\frac{V_0}{2 k_\\mathrm{B} T} \\right)
+
+		where :math:`T` is temperature, :math:`V_0` is the barrier height,
+		:math:`\\tilde{\\omega}` is rotational frequency in cm^-1, :math:`c` is
+		the speed of light,	:math:`k_\\mathrm{B}` is Boltzmann's constant, and
+		:math:`h` is Planck's constant. :math:`\\sigma` is a placeholder for
+		the symmetry number. :math:`I_0(x)` is the modified Bessel function of
+		order zero.
+		"""
+
+		import scipy.special
+
+		q1f = math.sqrt(math.pi / (constants.h * constants.c * 100.0 * self.frequency))
+
+		Q = np.zeros(len(Tlist), np.float64)
+		for i in range(len(Tlist)):
+			b = self.barrier * constants.h * constants.c * 100.0 / (2 * constants.kB * Tlist[i])
+			Q[i] = q1f * math.sqrt(constants.kB * Tlist[i]) * math.exp(-b) * scipy.special.i0(b)
+
+		return Q
+
+	def densityOfStates(self, Elist):
+		"""
+		Return the density of states at the specified energlies `Elist` in J/mol
+		above the ground state. The formula is
+
+		.. math:: \\rho(E) = \\frac{2 q_\\mathrm{1f}}{\\pi^{3/2} V_0^{1/2}} \\mathcal{K}(E / V_0) \\hspace{20pt} E < V_0
+
+		and
+
+		.. math:: \\rho(E) = \\frac{2 q_\\mathrm{1f}}{\\pi^{3/2} E^{1/2}} \\mathcal{K}(V_0 / E) \\hspace{20pt} E > V_0
+
+		where :math:`E` is energy, :math:`V_0` is barrier height, and
+		:math:`q_\\mathrm{1f}` is defined in the equation for the partition
+		function. :math:`\\mathcal{K}(x)` is the complete elliptic integral of the first
+		kind.
+		"""
+
+		import scipy.special
+
+		q1f = math.sqrt(math.pi / (constants.h * constants.c * 100.0 * self.frequency * constants.Na))
+		V0 = self.barrier * constants.h * constants.c * 100.0 * constants.Na
+
+		rho = np.zeros(len(Elist), np.float64)
+		for i in range(len(Elist)):
+			E = Elist[i]
+			if Elist[i] < V0:
+				rho[i] = 2 * q1f / (math.pi**1.5 * math.sqrt(V0)) * scipy.special.ellipk(E / V0)
+			else:
+				rho[i] = 2 * q1f / (math.pi**1.5 * math.sqrt(E)) * scipy.special.ellipk(V0 / E)
+
+		return rho
+
+################################################################################
+
+class HarmonicOscillator:
+	"""
+	A representation of a vibrational mode as a one-dimensional quantum harmonic
+	oscillator. The oscillator is defined by its `frequency` in cm^-1.
+	"""
+
+	def __init__(self, frequency=0.0):
+		self.frequency = frequency
+
+	def partitionFunction(self, Tlist):
+		"""
+		Return the value of the partition function at the specified temperatures
+		`Tlist` in K. The formula is
+
+		.. math:: q_\\mathrm{vib}(T) = \\frac{1.0}{1 - e^{- \\beta h c \\tilde{\\omega}}}
+
+		where :math:`T` is temperature, :math:`\\beta \\equiv (k_\\mathrm{B} T)^{-1}`,
+		:math:`\\tilde{\\omega}` is rotational frequency in cm^-1, :math:`c` is
+		the speed of light,	:math:`k_\\mathrm{B}` is Boltzmann's constant, and
+		:math:`h` is Planck's constant. Note that we have chosen our zero of
+		energy to be at the zero-point energy of the molecule, *not* the bottom
+		of the potential well.
+		"""
+
+		Q = np.zeros(len(Tlist), np.float64)
+		for i in range(len(Tlist)):
+			exponent = constants.h * constants.c * 100.0 * self.frequency / (constants.kB * Tlist[i])
+			Q[i] = 1.0 / (1 - math.exp(-exponent))
+		return Q
+
+	def densityOfStates(self, Elist):
+		"""
+		Return the density of states at the specified energies `Elist` in J/mol
+		above the ground state. The formula is
+
+		.. math:: \\rho(E) = ?
+
+		where :math:`E` is energy. Note that the Beyer-Swinehart algorithm
+		provides a far more efficient method of convolving vibrational modes
+		into a density of states expression, so this function should not be
+		called for that purpose.
+		"""
+		pass
+
+################################################################################
+
+class SpectralData:
+	"""
+	A set of spectroscopic data for a given molecule. The degrees of freedom of
+	the molecule are stored as a list in the `modes` attribute.
+	"""
+
+	def __init__(self, modes=None, symmetry=1):
+		self.modes = modes or []
+		self.symmetry = symmetry
+
+	def partitionFunction(self, Tlist):
+		"""
+		Return the value of the partition function at the specified temperatures
+		`Tlist` in K.
+		"""
+		Q = np.ones((len(Tlist)), np.float64) / self.symmetry
+		# Active K-rotor
+		rotors = [mode for mode in self.modes if isinstance(mode, RigidRotor)]
+		if len(rotors) == 0:
+			Trot = constants.h * constants.c * 100.0 * 1.0 / constants.kB
+			Q0 = [math.sqrt(T / Trot) for T in Tlist]
+			for i in range(len(Tlist)):
+				Q[i] *= Q0[i]
+		# Other modes
+		for mode in self.modes:
+			Q0 = mode.partitionFunction(Tlist)
+			for i in range(len(Tlist)):
+				Q[i] *= Q0[i]
+		return Q
+
+	def densityOfStates(self, Elist):
+		"""
+		Return the value of the density of states in mol/J at the specified
+		energies `Elist` in J/mol above the ground state.
+		"""
+
+		rho = np.zeros((len(Elist)), np.float64)
+
+		if len(self.modes) == 0:
+			return rho
+
+		# First convolve nonvibrational modes
+		for mode in self.modes:
+			if not isinstance(mode, HarmonicOscillator):
+				rho0 = mode.densityOfStates(Elist)
+				if not rho.any():
+					rho = rho0
+				else:
+					rho = convolve(rho, rho0, Elist)
+		# Use Beyer-Swinehart for vibrational modes
+		if not rho.any():
+			rho[0] = 1.0 / (Elist[1] - Elist[0])
+		rho = beyerSwinehart(Elist, [mode.frequency for mode in self.modes if isinstance(mode, HarmonicOscillator)], rho)
+		# Return result
+		return smooth(rho)
+
+	def phi(self, beta, E):
+		beta = float(beta)
+		T = 1.0 / (constants.R * beta)
+		Q = self.partitionFunction([T])[0]
+		return math.log(Q) + beta * float(E)
+
+	def densityOfStatesForst(self, Elist):
+
+		import scipy.optimize
+
+		# Initialize density of states array
+		rho = [0.0]
+
+		# Initial guess for first minimization
+		x = 1e-5
+
+		for E in Elist[1:]:
+
+			# Find minimum of phi
+
+			#                       func x0 arg xtol  ftol  maxi maxf  fullout disp retall  callback
+			x = scipy.optimize.fmin(self.phi, x, (), 1e-8, 1e-8, 100, 1000, False, False, False, None)
+			x = float(x)
+			dx = 1e-4 * x
+
+			# Apply first-order steepest descents approximation (accurate to 1-3%, smoother)
+			f = self.phi(x)
+			d2fdx2 = (self.phi(x+dx) - 2 * self.phi(x) + self.phi(x-dx)) / (dx**2)
+			i1 = math.exp(f) / math.sqrt(2 * math.pi * d2fdx2)
+
+			# Apply second-order steepest descents approximation (more accurate, less smooth)
+			#d3fdx3 = (self.phi(x+1.5*dx) - 3 * self.phi(x+0.5*dx) + 3 * self.phi(x-0.5*dx) - self.phi(x-1.5*dx)) / (dx**3)
+			#d4fdx4 = (self.phi(x+2*dx) - 4 * self.phi(x+dx) + 6 * self.phi(x) - 4 * self.phi(x-dx) + self.phi(x-2*dx)) / (dx**4)
+			#i2 = i1 * (1 + d4fdx4 / 8 / (d2fdx2**2) - 5 * (d3fdx3**2) / 24 / (d2fdx2**3))
+
+			rho.append(i1)
+
+		return rho
+
+################################################################################
+
 class CharacteristicFrequency:
 	"""
 	Represent a characteristic frequency in the frequency database. The
