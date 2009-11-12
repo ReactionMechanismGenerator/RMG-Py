@@ -77,6 +77,16 @@ class GroupFrequencyCheck(unittest.TestCase):
 		
 		self.assertTrue(frequencies0 == frequencies)
 
+#		import numpy
+#		modes = [spectral.HarmonicOscillator(frequency=freq) for freq in frequencies0]
+#		Tlist = numpy.arange(300.0, 10000.0, 100.0)
+#		Cp = numpy.zeros(len(Tlist), numpy.float64)
+#		for mode in modes:
+#			Cp += mode.heatCapacity(Tlist)
+#		import pylab
+#		pylab.plot(Tlist, Cp)
+#		pylab.show()
+
 	def testAcetylperoxy(self):
 		"""
 		Tests the acetylperoxy radical.

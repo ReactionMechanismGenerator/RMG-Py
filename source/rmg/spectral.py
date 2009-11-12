@@ -29,6 +29,7 @@
 ################################################################################
 
 import data
+import constants
 
 ################################################################################
 
@@ -59,6 +60,18 @@ class Translation:
 		for i in range(len(Tlist)):
 			Q[i] = ((2 * math.pi * self.mass / constants.Na * constants.kB * Tlist[i]) / (constants.h * constants.h))**(self.dimension/2.0) * V
 		return Q
+
+	def heatCapacity(self, Tlist, V=1.0):
+		"""
+		Return the contribution to the heat capacity due to translation. The 
+		formula is
+
+		.. math:: \\frac{C_\\mathrm{v}^\\mathrm{trans}(T)}{R} = \\frac{d}{2} R
+				
+		where :math:`T` is temperature, :math:`V` is volume,
+		:math:`d` is dimensionality, and :math:`R` is the gas law constant.
+		"""
+		return np.ones(len(Tlist), numpy.float64) * self.dimension / 2.0
 
 	def densityOfStates(self, Elist, V=1.0):
 		"""
@@ -133,6 +146,22 @@ class RigidRotor:
 				Q[i] = math.sqrt(math.pi) * (constants.kB * Tlist[i])**(len(self.frequencies)/2.0) / math.sqrt(freqProduct)
 
 		return Q
+
+	def heatCapacity(self, Tlist):
+		"""
+		Return the contribution to the heat capacity due to rigid rotation. The
+		formula is
+
+		.. math:: \\frac{C_\\mathrm{v}^\\mathrm{rot}(T)}{R} = \\frac{3}{2}
+
+		if nonlinear and
+
+		.. math:: \\frac{C_\\mathrm{v}^\\mathrm{rot}(T)}{R} = 1
+
+		if linear, where :math:`T` is temperature and :math:`R` is the gas law
+		constant.
+		"""
+		return np.ones(len(Tlist), numpy.float64) * (1.0 if self.linear else 1.5)
 
 	def densityOfStates(self, Elist):
 		"""
@@ -211,6 +240,27 @@ class HinderedRotor:
 
 		return Q
 
+	def heatCapacity(self, Tlist):
+		"""
+		Return the contribution to the heat capacity due to hindered rotation.
+		The formula is
+
+		.. math:: \\frac{C_\\mathrm{v}^\\mathrm{hind}(T)}{R} = \\frac{1}{2} + \\xi^2 - \\left[ \\xi \\frac{I_1(\\xi)}{I_0(\\xi)} \\right]^2 - \\xi \\frac{I_1(\\xi)}{I_0(\\xi)}
+
+		where
+
+		.. math:: \\xi \\equiv \\frac{V_0}{2 k_\\mathrm{B} T}
+
+		:math:`T` is temperature, :math:`V_0` is barrier height,
+		:math:`k_\\mathrm{B}` is Boltzmann's constant, and :math:`R` is the gas
+		law constant.
+		"""
+		import scipy.special
+		xi = self.barrier * constants.h * constants.c * 100.0 / (2.0 * constants.kB * Tlist)
+		I0 = scipy.special.i0(xi)
+		I1 = scipy.special.i1(xi)
+		return (0.5 + xi*xi - xi*xi*I1*I1/I0/I0 - xi*I1/I0)
+
 	def densityOfStates(self, Elist):
 		"""
 		Return the density of states at the specified energlies `Elist` in J/mol
@@ -274,6 +324,26 @@ class HarmonicOscillator:
 			exponent = constants.h * constants.c * 100.0 * self.frequency / (constants.kB * Tlist[i])
 			Q[i] = 1.0 / (1 - math.exp(-exponent))
 		return Q
+
+	def heatCapacity(self, Tlist):
+		"""
+		Return the contribution to the heat capacity due to hindered rotation.
+		The formula is
+
+		.. math:: \\frac{C_\\mathrm{v}^\\mathrm{vib}(T)}{R} = \\xi^2 \\frac{e^\\xi}{\\left( 1 - e^\\xi \\right)^2}
+
+		where
+
+		.. math:: \\xi \\equiv \\frac{h \\nu}{k_\\mathrm{B} T}
+
+		:math:`T` is temperature, :math:`\\nu` is the vibration frequency,
+		:math:`k_\\mathrm{B}` is Boltzmann's constant, and :math:`R` is the gas
+		law constant.
+		"""
+		from numpy import exp
+		xi = constants.h * constants.c * 100.0 * self.frequency / (constants.kB * Tlist)
+		exp_xi = exp(xi)
+		return (xi*xi * exp_xi / (1 - exp_xi) / (1 - exp_xi))
 
 	def densityOfStates(self, Elist):
 		"""
