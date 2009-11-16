@@ -51,8 +51,6 @@ subroutine fitSpectralData(Cv, Tlist, Ntemp, Nvib, Nhind, vib, hind)
 	!                   barrier pairs, both in cm^-1
 	! ========== ====== ========================================================
 
-	use cases
-
 	integer, intent(in) :: Ntemp
 	integer, intent(in) :: Nvib
 	integer, intent(in) :: Nhind
@@ -61,15 +59,14 @@ subroutine fitSpectralData(Cv, Tlist, Ntemp, Nvib, Nhind, vib, hind)
 	real(8), dimension(1:Nvib), intent(out) :: vib
 	real(8), dimension(1:Nhind,1:2), intent(out) :: hind
 	
-	real(8), dimension(1:0) :: totalCharFreq
-	
-	! Initialize output arrays to zero
-	vib = 0.0
-	hind = 0.0
-	
+	if (Ntemp /= 7) then
+		write (*,'(a)'), 'The number of temperatures must be exactly 7.'
+		stop
+	end if
+
 	! Fit the harmonic oscillator and hindered rotor modes to the heat capacity
-	! The function assign_cases is in calc_freq_code.f90
-	call assign_cases(Nhind, Nvib, totalCharFreq, vib, hind)
+	! The function fitSpectralDataToHeatCapacity is in calc_freq_code.f90
+	call fitSpectralDataToHeatCapacity(Cv, Tlist, Ntemp, Nvib, Nhind, vib, hind)
 
 end subroutine
 

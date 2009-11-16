@@ -7811,5 +7811,45 @@ PROGRAM main
 
 END PROGRAM main
 
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+subroutine fitSpectralDataToHeatCapacity(Cv, Tlist, Ntemp, Nvib, Nhind, vib, hind)
 
+	use cases
+
+	integer, intent(in) :: Ntemp
+	integer, intent(in) :: Nvib
+	integer, intent(in) :: Nhind
+	real(8), dimension(1:Ntemp), intent(in) :: Cv
+	real(8), dimension(1:Ntemp), intent(in) :: Tlist
+	real(8), dimension(1:Nvib), intent(out) :: vib
+	real(8), dimension(1:Nhind,1:2), intent(out) :: hind
+
+	real(8), dimension(1:0) :: totalCharFreq
+
+	integer :: N_vib, N_rot
+	real(8) :: nu_low, nu_mid, nu_high
+	real(8), dimension(7) :: cp_difference, CV_temps
+
+	! These variables are set to the common block
+	! They are required by the fitting routine within DQED
+	common N_vib, N_rot, nu_low, nu_high, nu_mid, cp_difference, CV_temps
+
+	! Initialize output arrays to zero
+	vib = 0.0
+	hind = 0.0
+
+	! Set common variables
+	N_vib = Nvib
+	N_rot = Nhind
+	nu_low = 100.0
+	nu_mid = 150.0
+	nu_high = 300.0
+	cp_difference = Cv
+	CV_temps = Tlist
+
+	! Fit the harmonic oscillator and hindered rotor modes to the heat capacity
+	! The function assign_cases is in calc_freq_code.f90
+	call assign_cases(Nhind, Nvib, totalCharFreq, vib, hind)
+
+end subroutine
