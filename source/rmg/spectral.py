@@ -30,6 +30,7 @@
 
 import data
 import constants
+import thermo
 
 ################################################################################
 
@@ -43,6 +44,9 @@ class Translation:
 	def __init__(self, mass=0.0, dimension=3):
 		self.mass = mass
 		self.dimension = dimension
+
+	def __repr__(self):
+		return '%s.Translation(%s, %s)' % (self.__module__, self.mass, self.dimension)
 
 	def partitionFunction(self, Tlist, V=1.0):
 		"""
@@ -114,6 +118,9 @@ class RigidRotor:
 	def __init__(self, linear=False, frequencies=None):
 		self.linear = linear
 		self.frequencies = frequencies or []
+
+	def __repr__(self):
+		return '%s.RigidRotor(%s, %s)' % (self.__module__, self.linear, self.frequencies)
 
 	def partitionFunction(self, Tlist):
 		"""
@@ -214,6 +221,9 @@ class HinderedRotor:
 		self.frequency = frequency
 		self.barrier = barrier
 
+	def __repr__(self):
+		return '%s.HinderedRotor(%s, %s)' % (self.__module__, self.frequency, self.barrier)
+
 	def partitionFunction(self, Tlist):
 		"""
 		Return the value of the partition function at the specified temperatures
@@ -303,6 +313,9 @@ class HarmonicOscillator:
 
 	def __init__(self, frequency=0.0):
 		self.frequency = frequency
+
+	def __repr__(self):
+		return '%s.HarmonicOscillator(%s)' % (self.__module__, self.frequency)
 
 	def partitionFunction(self, Tlist):
 		"""
@@ -596,7 +609,7 @@ def generateSpectralData(struct, thermoData):
 	for node, count in groupCount.iteritems():
 		if count != 0: print '\t', node, count
 
-	# Get frequencies
+	# Get characteristic frequencies
 	frequencies = []
 	for node, count in groupCount.iteritems():
 		for charFreq in frequencyDatabase.library[node][1:]:
@@ -605,6 +618,39 @@ def generateSpectralData(struct, thermoData):
 	if len(frequencies) > numVibrations:
 		raise Exception('Too many vibrational frequencies estimated for %s from groups.' % struct)
 
-	return frequencies
+	# Create spectral data object with characteristic frequencies
+	spectralData = SpectralData()
+	for freq in frequencies:
+		spectralData.modes.append(HarmonicOscillator(frequency=freq))
+
+	# Subtract out contributions to heat capacity from the characteristic modes
+	import numpy
+	Cv = numpy.array(thermoData.Cp) / constants.R
+	Tlist = numpy.array(thermo.ThermoGAData.CpTlist)
+	for mode in spectralData.modes:
+		Cv -= mode.heatCapacity(Tlist)
+	# Subtract out translational modes
+	Cv -= 1.5
+	# Subtract out external rotational modes
+	Cv -= (1.5 if not linear else 1.0)
+	# Subtract out PV term (Cp -> Cv)
+	Cv -= 1.0
+
+	print Cv
+
+	# Fit remaining frequencies and hindered rotors to the heat capacity data
+	import spectralfit
+	if numRotors == 0:
+		vib = spectralfit.fitspectraldatanorotors(Cv, Tlist, numVibrations - len(frequencies))
+		for v in vib:
+			spectralData.modes.append(HarmonicOscillator(frequency=v))
+	else:
+		vib, hind = spectralfit.fitspectraldata(Cv, Tlist, numVibrations - len(frequencies), numRotors)
+		for v in vib:
+			spectralData.modes.append(HarmonicOscillator(frequency=v))
+		for v, b in hind:
+			spectralData.modes.append(HinderedRotor(frequency=v, barrier=b))
+
+	return spectralData
 
 ################################################################################
