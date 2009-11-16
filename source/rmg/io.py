@@ -63,37 +63,155 @@ class InvalidInputFileException(Exception):
 
 ################################################################################
 
-def getFirstChildElement(parent, name):
+class InvalidXMLError(Exception):
 	"""
-	Returns the first child element of the XML `parent` element with a matching
-	`name`. The `parent` parameter comes from a node of a DOM tree as produced
-	via the :data:`xml.dom.minidom` module.
+	An exception to be raised when invalid XML is encountered. The
+	exception should be passed a string `msg` containing details about the
+	error.
 	"""
-	elements = getElements(parent, name)
-	if len(elements) > 0:
-		return elements[0]
-	else:
-		return None
 
-def getElements(parent, name):
-	"""
-	Returns a list of all child elements of the XML `parent` element with a 
-	matching `name`. The `parent` parameter comes from a node of a DOM tree as 
-	produced via the :data:`xml.dom.minidom` module.
-	"""
-	return parent.getElementsByTagName(name)
+	def __init__(self, msg=''):
+		self.msg = msg
 
-def getElementText(element):
+	def __str__(self):
+		return 'Invalid XML: %s' % self.msg
+
+################################################################################
+
+class XML:
 	"""
-	Returns the string text that is found between the open and close tags of
-	`element`, or an empty string if no text is found. The `element` parameter 
-	comes from a node of a DOM tree as produced via the 
-	:data:`xml.dom.minidom` module.
+	A class for manipulating an XML DOM tree as created by the xml.dom.minidom
+	package. The DOM is stored in the `document` attribute.
 	"""
-	for child in element.childNodes:
-		if child.nodeType == xml.dom.Node.TEXT_NODE:
-			return child.data
-	return ''
+
+	def __init__(self, document=None, path=''):
+		self.document = document
+		if path != '': self.load(path)
+
+	def load(self, path):
+		"""
+		Load a DOM from an XML file located at `path`.
+		"""
+		self.document = xml.dom.minidom.parse(path)
+
+	def save(self, path):
+		"""
+		Save a DOM to an XML file located at `path`.
+		"""
+		f = open(path, 'w')
+		self.document.writexml(f, indent='', addindent='\t')
+		f.close()
+
+	def cleanup(self):
+		"""
+		Clean up a DOM tree by unlinking. This should only be done when you
+		are finished working with the tree.
+		"""
+		self.document.unlink()
+
+	def getRootElement(self):
+		"""
+		Return the root element of the DOM tree.
+		"""
+		return self.document.documentElement
+
+	def getAttribute(self, root, name, required=True, default=None):
+		"""
+		Return the value of the attribute `name` of element `root`. If no
+		attribute is found and `required` is :data:`True`, an 
+		:class:`InvalidXMLError` is raised. If no attribute is found and
+		`required` is :data:`False`, `default` is returned.
+		"""
+		attribute = root.getAttribute(name)
+		if attribute != '':
+			return attribute
+		elif not required:
+			return default
+		else:
+			raise InvalidXMLError('No "%s" attribute found for  <%s> element.' % (attribute, rootElement.tagName))
+
+	def getChildElement(self, root, name, required=True):
+		"""
+		Return the child element of `root` with the name `name`. If no
+		suitable child element is found, :data:`None` is returned if `required`
+		is :data:`False` or an :class:`InvalidXMLError` is raised if `required`
+		is :data:`True`.
+		"""
+		elements = root.getElementsByTagName(name)
+		if len(elements) == 1:
+			return elements[0]
+		elif len(elements) > 1:
+			raise InvalidXMLError('Multiple <%s> elements found for <%s> element.' % (name, root.tagName))
+		elif not required:
+			return None
+		else:
+			raise InvalidXMLError('No <%s> element found in  <%s> element.' % (name, root.tagName))
+
+	def getChildElements(self, root, name, required=True):
+		"""
+		Return a list of child elements of `root` with the name `name`. If no
+		suitable child elements is found, an an :class:`InvalidXMLError` is
+		raised if `required` is :data:`True`.
+		"""
+		elements = root.getElementsByTagName(name)
+		if len(elements) > 0 or not required:
+			return elements
+		else:
+			raise InvalidXMLError('No <%s> elements found in  <%s> element.' % (name, root.tagName))
+
+	def getChildElementText(self, root, name, required=True, default=None):
+		"""
+		Return the text of the child element of `root` with the name
+		`name`. If multiple child elements are found, no text is found, or no
+		child element is found and `required` is :data:`True`, an 
+		:class:`InvalidXMLError` is raised.
+		"""
+		element = self.getChildElement(root, name, required)
+		if element:
+			return self.getElementText(element)
+		elif not required:
+			return default
+		else:
+			raise InvalidXMLError('No <%s> element found in  <%s> element.' % (name, root.tagName))
+
+	def getElementText(self, root):
+		"""
+		Return the text of the element `root`. If no text is found, an
+		:class:`InvalidXMLError` is raised.
+		"""
+		for child in root.childNodes:
+			if child.nodeType == xml.dom.Node.TEXT_NODE:
+				return child.data
+		raise InvalidXMLError('No text found in <%s> element.' % (name))
+
+	def createElement(self, elementName, parentElement):
+		"""
+		Create the element `elementName` as an immediate child of `parentElement`
+		in the DOM tree `document`. The created element is returned.
+		"""
+		element = self.document.createElement(elementName)
+		parentElement.appendChild(element)
+		return element
+
+	def createTextElement(self, elementName, parentElement, text):
+		"""
+		Create the element `elementName` as an immediate child of `parentElement`
+		in the DOM tree `document`. Set the text of the created element to `text`,
+		which is passed through a string conversion function along the way. The
+		created element is returned.
+		"""
+
+		element = self.createElement(elementName, parentElement)
+		textNode = self.document.createTextNode(str(text))
+		element.appendChild(textNode)
+		return element
+
+	def createAttribute(self, attributeName, parentElement, attributeValue):
+		"""
+		Create the attribute `attributeName` as an attribute of `parentElement`
+		with the value `attributeValue` in the DOM tree `document`.
+		"""
+		parentElement.setAttribute(attributeName, attributeValue)
 
 ################################################################################
 
@@ -107,122 +225,107 @@ def readInputFile(fstr):
 	try:
 		
 		# Parse the RMG input XML file into a DOM tree
-		dom = xml.dom.minidom.parse(fstr)
-		
-		
-		# Process root element (must be a rmginput element)
-		root = dom.documentElement
-		if root.tagName != 'rmginput':
-			raise InvalidInputFileException('Incorrect root element. Should be <rmginput>')
+		xml0 = XML(path=fstr)
+
+		# Make sure root element is a <rmginput> element
+		rootElement = xml0.getRootElement()
+		if rootElement.tagName != 'rmginput':
+			raise InvalidInputFileException('Incorrect root element; should be <rmginput>.')
 		
 		# Process units
-		element = getFirstChildElement(root, 'units')
-		if element is None: units = 'si'
-		else: units = getElementText(element)
+		units = xml0.getChildElementText(rootElement, 'units', required=False, default='si')
 		pq.set_default_units(units)
 
 		# Read draw molecules option
-		element = getFirstChildElement(root, 'drawMolecules')
-		drawMolecules = getElementText(element).lower()
-		if drawMolecules == 'on' or drawMolecules == 'true' or drawMolecules == 'yes':
-			settings.drawMolecules = True
-		else:
-			settings.drawMolecules = False
-		
+		drawMolecules = xml0.getChildElementText(rootElement, 'drawMolecules', required=False, default='off')
+		drawMolecules = drawMolecules.lower()
+		settings.drawMolecules = (drawMolecules == 'on' or drawMolecules == 'true' or drawMolecules == 'yes')
 		
 		# Read generate plots option
-		element = getFirstChildElement(root, 'generatePlots')
-		generatePlots = getElementText(element).lower()
-		if generatePlots == 'on' or generatePlots == 'true' or generatePlots == 'yes':
-			settings.generatePlots = True
-		else:
-			settings.generatePlots = False
-		
-		
+		generatePlots = xml0.getChildElementText(rootElement, 'generatePlots', required=False, default='off')
+		generatePlots = generatePlots.lower()
+		settings.generatePlots = (generatePlots == 'on' or generatePlots == 'true' or generatePlots == 'yes')
+
 		# Process databases
 		databases = []
-		elements = getElements(root, 'database')
-		for element in elements:
+		databaseElements = xml0.getChildElements(rootElement, 'database')
+		for element in databaseElements:
 			
 			# Get database type
-			databaseType = element.getAttribute('type').lower()
-			if databaseType == '': databaseType = 'general'
+			databaseType = xml0.getAttribute(element, 'type', required=True)
+			databaseType = databaseType.lower()
 			if databaseType != 'general':
-				raise InvalidInputFileException('Invalid database type "' + databaseType + '".')
+				raise InvalidInputFileException('Invalid database type "' + databaseType + '"; valid types are "general".')
 			
 			# Get database name and form path
-			databaseName = getElementText(element)
+			databaseName = xml0.getElementText(element)
 			databasePath = os.path.dirname(__file__)
-			databasePath = os.path.abspath(databasePath + '/../../data/' + databaseName)
+			databasePath = os.path.join(databasePath, '..')
+			databasePath = os.path.join(databasePath, '..')
+			databasePath = os.path.join(databasePath, 'data')
+			databasePath = os.path.join(databasePath, databaseName)
 			if not os.path.exists(databasePath):
-				raise InvalidInputFileException('Database "' + databaseName + '" not found.')
+				raise InvalidInputFileException('Database "%s" not found.' % databaseName)
 			
 			databases.append([databaseName, databaseType, databasePath])
 		
 		# Output info about databases
-		if len(databases) == 1:
-			logging.info('Found ' + str(len(databases)) + ' database')
-		else:
-			logging.info('Found ' + str(len(databases)) + ' databases')
-		
-		# Load databases
-		generalDatabaseCount = 0
-		for database in databases:
-			if database[1] == 'general':
-				if generalDatabaseCount == 0:
-					logging.debug('General database: ' + database[2])
-					# Load thermo databases
-					species.thermoDatabase = species.ThermoDatabaseSet()
-					species.thermoDatabase.load(database[2] + '/')
-					# Load forbidden structures
-					thermo.forbiddenStructures = data.Dictionary()
-					thermo.forbiddenStructures.load(database[2] + '/forbiddenStructure.txt')
-					thermo.forbiddenStructures.toStructure()
-					# Load kinetic databases (reaction families)
-					reaction.kineticsDatabase = reaction.ReactionFamilySet()
-					reaction.kineticsDatabase.load(database[2] + '/')
-				generalDatabaseCount += 1
-				
-		logging.debug('')
+		logging.info('Found %s database%s' % (len(databases), 's' if len(databases) > 1 else ''))
 		
 		# Check that exactly one general database was specified
+		generalDatabaseCount = sum([1 for database in databases if database[1] == 'general'])
 		if generalDatabaseCount == 0:
 			raise InvalidInputFileException('No general database specified; one must be present.')
 		elif generalDatabaseCount > 1:
 			raise InvalidInputFileException('Multiple general databases specified; only one is allowed.')
-	
+
+		# Load databases
+		for database in databases:
+			if database[1] == 'general':
+				logging.debug('General database: ' + database[2])
+				# Load thermo databases
+				species.thermoDatabase = species.ThermoDatabaseSet()
+				species.thermoDatabase.load(database[2] + os.sep)
+				# Load forbidden structures
+				thermo.forbiddenStructures = data.Dictionary()
+				thermo.forbiddenStructures.load(database[2] + os.sep + 'forbiddenStructure.txt')
+				thermo.forbiddenStructures.toStructure()
+				# Load kinetic databases (reaction families)
+				reaction.kineticsDatabase = reaction.ReactionFamilySet()
+				reaction.kineticsDatabase.load(database[2] + os.sep)
+				
+		logging.debug('')
+		
 		# Process species
 		coreSpecies = []; speciesDict = {}
-		elements = getElements(root, 'species')
-		logging.info('Found ' + str(len(elements)) + ' species')
-		for element in elements:
+		speciesElements = xml0.getChildElements(rootElement, 'species')
+		logging.info('Found ' + str(len(speciesElements)) + ' species')
+		for element in speciesElements:
 			
 			# Attributes of the species element
-			sid = element.getAttribute('id')
-			label = element.getAttribute('label')
-			reactive = element.getAttribute('reactive').lower()
-			if reactive == 'no' or reactive == 'false' or reactive == 'n':
-				reactive = False
-			else:
-				reactive = True		
+			sid = xml0.getAttribute(element, 'id')
+			label = xml0.getAttribute(element, 'label')
+			reactive = xml0.getAttribute(element, 'reactive', required=False, default='yes')
+			reactive = reactive.lower()
+			reactive = not (reactive == 'no' or reactive == 'false' or reactive == 'n')
 			
 			# Load structure
 			struct = structure.Structure()
 			
-			cml = getFirstChildElement(element, 'cml')
-			inchi = getFirstChildElement(element, 'inchi')
-			smiles = getFirstChildElement(element, 'smiles')
+			cml = xml0.getChildElement(element, 'cml', required=False)
+			inchi = xml0.getChildElement(element, 'inchi', required=False)
+			smiles = xml0.getChildElement(element, 'smiles', required=False)
 			if cml is not None:
-				cmlstr = str(getFirstChildElement(cml, 'molecule').toxml())
+				cmlstr = str(xml0.getChildElement(cml, 'molecule', required=True).toxml())
 				struct.fromCML(cmlstr)
 			elif inchi is not None:
-				inchistr = str(getElementText(inchi))
+				inchistr = str(xml0.getElementText(inchi))
 				struct.fromInChI(inchistr)
 			elif smiles is not None:
-				smilesstr = str(getElementText(smiles))
+				smilesstr = str(xml0.getElementText(smiles))
 				struct.fromSMILES(smilesstr)
 			else:
-				raise InvalidInputFileException('Species '+label+' missing structure information.' )
+				raise InvalidInputFileException('Species "%s" missing structure information.' % label)
 			
 			# Create a new species and append the species to the core
 			spec = species.makeNewSpecies(struct, label, reactive)
@@ -237,13 +340,10 @@ def readInputFile(fstr):
 		reactionModel = model.CoreEdgeReactionModel()
 		
 		# Read model flux tolerance
-		fluxtolerance = getFirstChildElement(root, 'fluxTolerance')
-		element = getFirstChildElement(fluxtolerance, 'keepInEdge')
-		reactionModel.fluxToleranceKeepInEdge = float(getElementText(element))
-		element = getFirstChildElement(fluxtolerance, 'moveToCore')
-		reactionModel.fluxToleranceMoveToCore = float(getElementText(element))
-		element = getFirstChildElement(fluxtolerance, 'interruptSimulation')
-		reactionModel.fluxToleranceInterrupt = float(getElementText(element))
+		fluxTolerance = xml0.getChildElement(rootElement, 'fluxTolerance')
+		reactionModel.fluxToleranceKeepInEdge = float(xml0.getChildElementText(fluxTolerance, 'keepInEdge'))
+		reactionModel.fluxToleranceMoveToCore = float(xml0.getChildElementText(fluxTolerance, 'moveToCore'))
+		reactionModel.fluxToleranceInterrupt = float(xml0.getChildElementText(fluxTolerance, 'interruptSimulation'))
 		
 		logging.debug('Model flux tolerances set to:')
 		logging.debug('\tKeep in edge:         %s' % (reactionModel.fluxToleranceKeepInEdge) )
@@ -252,20 +352,19 @@ def readInputFile(fstr):
 		logging.debug('')
 		
 		# Read maximum model size
-		maxmodelsize = getFirstChildElement(root, 'maximumModelSize')
-		if maxmodelsize is None:
+		maxModelSize = xml0.getChildElement(rootElement, 'maximumModelSize')
+		if maxModelSize is None:
 			logging.debug('Maximum model size is not set')
 		else:
-			element = getFirstChildElement(maxmodelsize, 'edgeSpecies')
-			reactionModel.maximumEdgeSpecies = int(getElementText(element))
+			reactionModel.maximumEdgeSpecies = int(xml0.getChildElementText(maxModelSize, 'edgeSpecies'))
 			logging.debug('Maximum model size set to:')
 			logging.debug('\tEdge species:         %s' % (reactionModel.maximumEdgeSpecies) )
 		logging.debug('')
 
 		# Read dynamic simulator
-		element = getFirstChildElement(root, 'simulator')
-		reactionModel.absoluteTolerance = float(element.getAttribute('atol'))
-		reactionModel.relativeTolerance = float(element.getAttribute('rtol'))
+		element = xml0.getChildElement(rootElement, 'simulator')
+		reactionModel.absoluteTolerance = float(xml0.getAttribute(element, 'atol'))
+		reactionModel.relativeTolerance = float(xml0.getAttribute(element, 'rtol'))
 		logging.info('Read dynamic simulator')
 		logging.debug('Simulator:')
 		logging.debug('\tAbsolute tolerance set to %s' % (reactionModel.absoluteTolerance))
@@ -273,21 +372,21 @@ def readInputFile(fstr):
 		logging.debug('')
 
 		# Read termination targets
-		termination = getFirstChildElement(root, 'termination')
-		elements = getElements(termination, 'target')
-		for element in elements:
+		termination = xml0.getChildElement(rootElement, 'termination')
+		targetElements = xml0.getChildElements(termination, 'target')
+		for element in targetElements:
 
-			targetType = element.getAttribute('type')
+			targetType = xml0.getAttribute(element, 'type')
 			if targetType == 'conversion':
-				sid = element.getAttribute('speciesID')
+				sid = xml0.getAttribute(element, 'speciesID')
 				spec = speciesDict[sid]
-				conv = float(getElementText(element))
+				conv = float(xml0.getElementText(element))
 				if conv < 0.0 or conv > 1.0:
 					raise InvalidInputFileException('Invalid value for termination fractional conversion.')
 				reactionModel.termination.append(model.TerminationConversion(spec, conv))
 			elif targetType == 'time':
-				units = str(element.getAttribute('units'))
-				time = float(getElementText(element))
+				units = str(xml0.getAttribute(element, 'units'))
+				time = float(xml0.getElementText(element))
 				time = pq.Quantity(time, units); time = float(time.simplified)
 				if time < 0.0:
 					raise InvalidInputFileException('Invalid value for termination time.')
@@ -314,25 +413,25 @@ def readInputFile(fstr):
 
 		# Process reaction systems
 		reactionSystems = []
-		elements = getElements(root, 'reactionSystem')
-		for element in elements:
+		systemElements = xml0.getChildElements(rootElement, 'reactionSystem')
+		for element in systemElements:
 		
 			# Create a new reaction system
-			rsType = element.getAttribute('type')
+			rsType = xml0.getAttribute(element, 'type')
 			if rsType == 'batch':
 				reactionSystem = model.BatchReactor()
 			else:
 				raise InvalidInputFileException('Invalid reaction system type "' + rsType + '".')
 			
 			# Temperature model
-			temperatureModel = getFirstChildElement(element, 'temperatureModel')
-			tempModelType = temperatureModel.getAttribute('type')
+			temperatureModel = xml0.getChildElement(element, 'temperatureModel')
+			tempModelType = xml0.getAttribute(temperatureModel, 'type')
 			if tempModelType == 'isothermal':
 				
 				# Read the (constant) temperature from the file
-				temperature = getFirstChildElement(temperatureModel, 'temperature')
-				value = float(getElementText(temperature))
-				units = str(temperature.getAttribute('units'))
+				temperature = xml0.getChildElement(temperatureModel, 'temperature')
+				value = float(xml0.getElementText(temperature))
+				units = str(xml0.getAttribute(temperature, 'units'))
 				T = pq.Quantity(value, units); T = float(T.simplified)
 				
 				# Set the reaction system's temperature model to isothermal
@@ -343,14 +442,14 @@ def readInputFile(fstr):
 				raise InvalidInputFileException('Invalid temperature model type "' + tempModelType + '".')
 			
 			# Pressure model
-			pressureModel = getFirstChildElement(element, 'pressureModel')
-			pressModelType = pressureModel.getAttribute('type')
+			pressureModel = xml0.getChildElement(element, 'pressureModel')
+			pressModelType = xml0.getAttribute(pressureModel, 'type')
 			if pressModelType == 'isobaric':
 				
 				# Read the (constant) pressure from the file
-				pressure = getFirstChildElement(pressureModel, 'pressure')
-				value = float(getElementText(pressure))
-				units = str(pressure.getAttribute('units'))
+				pressure = xml0.getChildElement(pressureModel, 'pressure')
+				value = float(xml0.getElementText(pressure))
+				units = str(xml0.getAttribute(pressure, 'units'))
 				P = pq.Quantity(value, units); P = float(P.simplified)
 				
 				# Set the reaction system's pressure model to isobaric
@@ -361,15 +460,15 @@ def readInputFile(fstr):
 				raise InvalidInputFileException('Invalid pressure model type "' + pressModelType + '".')
 
 			# Physical property model
-			propModel = getFirstChildElement(element, 'physicalPropertyModel')
-			propModelType = propModel.getAttribute('type')
+			propModel = xml0.getChildElement(element, 'physicalPropertyModel')
+			propModelType = xml0.getAttribute(propModel, 'type')
 			if propModelType.lower() == 'idealgas':
 				# Set the reaction system's pressure model to isobaric
 				reactionSystem.equationOfState = model.IdealGas()
 			elif propModelType.lower() == 'incompressibleliquid':
-				molarVolume = getFirstChildElement(element, 'molarVolume')
-				value = float(getElementText(molarVolume))
-				units = str(molarVolume.getAttribute('units'))
+				molarVolume = xml0.getFirstChildElement(element, 'molarVolume')
+				value = float(xml0.getElementText(molarVolume))
+				units = str(xml0.getAttribute(molarVolume, 'units'))
 				Vmol = float(pq.Quantity(value, units).simplified); 
 				
 				reactionSystem.equationOfState = model.IncompressibleLiquid( 
@@ -390,12 +489,12 @@ def readInputFile(fstr):
 				reactionSystem.initialConcentration[spec] = 0.0
 			
 			# List of initial concentrations
-			moleFractions = getElements(element, 'moleFraction')
+			moleFractions = xml0.getChildElements(element, 'moleFraction')
 			for moleFraction in moleFractions:
 			
 				# Read the concentration from the file
-				value = float(getElementText(moleFraction))
-				sid = moleFraction.getAttribute('speciesID')
+				value = float(xml0.getElementText(moleFraction))
+				sid = xml0.getAttribute(moleFraction, 'speciesID')
 				
 				reactionSystem.initialConcentration[speciesDict[sid]] = value * totalConc
 			
@@ -420,11 +519,15 @@ def readInputFile(fstr):
 				
 		logging.debug('')
 			
-		# Unlink the DOM tree when finished
-		dom.unlink()
+		# Cleanup the DOM tree when finished
+		xml0.cleanup()
+		
 	except InvalidInputFileException, e:
 		logging.exception(str(e))
 		raise e
+	except InvalidXMLError, e:
+		logging.exception(str(e))
+		raise InvalidInputFileException(e.msg)
 	except IOError, e:
 		logging.exception('Input file "' + e.filename + '" not found.')
 		raise e

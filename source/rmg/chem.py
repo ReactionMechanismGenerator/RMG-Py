@@ -557,7 +557,7 @@ class Atom(object):
 		"""
 		Used for pickling.
 		"""
-		return (Atom, (self.atomType, self.electronState, self.charge, self.label))
+		return (Atom, ([a.label for a in self._atomType], [e.label for e in self._electronState], self.charge, self.label))
 
 	def equals(self, other):
 		"""
@@ -890,7 +890,7 @@ class Bond(object):
 		"""
 		Used for pickling.
 		"""
-		return (Bond, (self.atoms, self.bondType))
+		return (Bond, (self.atoms, [b.label for b in self._bondType]))
 
 	def equals(self, other):
 		"""
