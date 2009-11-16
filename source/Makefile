@@ -22,7 +22,7 @@ rmg/thermo.so: rmg/thermo.c
 rmg/thermo.c: rmg/thermo.py rmg/thermo.pxd
 	cython -a rmg/thermo.py
 
-rmg/spectralfit.so:
+rmg/spectralfit.so: rmg/spectralfit/spectralfit.f90 rmg/spectralfit/calc_freq_code.f90 rmg/spectralfit/dqed.f90
 	make -C rmg/spectralfit
 
 clean:
