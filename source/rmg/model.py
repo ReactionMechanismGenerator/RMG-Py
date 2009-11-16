@@ -796,11 +796,23 @@ class BatchReactor(ReactionSystem):
 		
 		speciesList, reactionList = model.getLists()
 		
-		if len(model.edge.species) > 0:
-			maxSpeciesFlux, maxSpecies = max([ (value, i+len(model.core.species)) for i, value in enumerate(dNidt[len(model.core.species):]) ])
-			return (maxSpeciesFlux < criticalFlux), speciesList[maxSpecies], maxSpeciesFlux
-		else:
+		if len(model.edge.species) == 0:
+			# Nothing in edge - model must be valid!
 			return True, None, 0.0
+			
+		maxSpecies = None
+		maxSpeciesFlux = 0.0
+		for i in range(len(model.edge.species)): # edge species index
+			j = i+len(model.core.species) # global species index
+			if dNidt[j] > maxSpeciesFlux:
+				maxSpecies = speciesList[j]
+				maxSpeciesFlux = dNidt[j]
+		return (maxSpeciesFlux < criticalFlux), maxSpecies, maxSpeciesFlux
+		
+		# maxSpeciesFlux, maxSpeciesIndex = max([ (value, i+len(model.core.species)) for i, value in enumerate(dNidt[len(model.core.species):]) ])
+		# return (maxSpeciesFlux < criticalFlux), speciesList[maxSpeciesIndex], maxSpeciesFlux
+		
+			
 
 
 	def runCantera(self, model):
