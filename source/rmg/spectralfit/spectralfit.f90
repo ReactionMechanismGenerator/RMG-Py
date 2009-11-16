@@ -72,4 +72,40 @@ end subroutine
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+subroutine fitSpectralDataNoRotors(Cv, Tlist, Ntemp, Nvib, vib)
+	! Estimate the spectroscopic degrees of freedom by fitting parameters to
+	! heat capacity data.
+	!
+	! ========== ====== ========================================================
+	! Parameter  Intent Description
+	! ========== ====== ========================================================
+	! `Cv`       in     A list of heat capacities Cv/R at various temperatures
+	!                   for the unknown degrees of freedom (i.e. the known
+	!                   degrees of freedom should have already been removed)
+	! `Tlist`    in     The temperatures corresponding to the heat capacities
+	! `Ntemp`    in     The number of temperatures and heat capacities provided
+	! `Nvib`     in     The number of 1D quantum harmonic oscillators to fit
+	! `vib`      out    A vector of fitted 1D quantum harmonic oscillator
+	!                   frequencies in cm^-1
+	! ========== ====== ========================================================
 
+	integer, intent(in) :: Ntemp
+	integer, intent(in) :: Nvib
+	real(8), dimension(1:Ntemp), intent(in) :: Cv
+	real(8), dimension(1:Ntemp), intent(in) :: Tlist
+	real(8), dimension(1:Nvib), intent(out) :: vib
+
+	real(8), dimension(1:0,1:2) :: hind
+
+	if (Ntemp /= 7) then
+		write (*,'(a)'), 'The number of temperatures must be exactly 7.'
+		stop
+	end if
+
+	! Fit the harmonic oscillator and hindered rotor modes to the heat capacity
+	! The function fitSpectralDataToHeatCapacity is in calc_freq_code.f90
+	call fitSpectralDataToHeatCapacity(Cv, Tlist, Ntemp, Nvib, 0, vib, hind)
+
+end subroutine
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
