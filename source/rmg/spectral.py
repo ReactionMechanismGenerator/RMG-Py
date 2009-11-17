@@ -615,8 +615,35 @@ def generateSpectralData(struct, thermoData):
 		for charFreq in frequencyDatabase.library[node][1:]:
 			frequencies.extend(charFreq.generateFrequencies(count))
 
+	# Check that we have the right number of degrees of freedom specified
 	if len(frequencies) > numVibrations:
-		raise Exception('Too many vibrational frequencies estimated for %s from groups.' % struct)
+		# We have too many vibrational modes
+		difference = len(frequencies) - numVibrations
+		# First try to remove hindered rotor modes until the proper number of modes remains
+		if numRotors >= difference:
+			numRotors -= difference
+			logging.warning('For structure %s, more characteristic frequencies were generated than vibrational modes allowed. Removed %i internal rotors to compensate.' % (struct, difference))
+		# If that doesn't work, turn off functional groups until the problem is underspecified again
+		else:
+			groupsRemoved = 0
+			freqsRemoved = 0
+			freqCount = len(frequencies)
+			while freqCount > numVibrations:
+				minDegeneracy, minNode = min([(node.degeneracy, node) for node in groupCount.iteritems()])
+				if groupCount[minNode] > 1:
+					groupCount[minNode] -= 1
+				else:
+					del groupCount[minNode]
+				groupsRemoved += 1
+				freqsRemoved += minDegeneracy
+				freqCount -= minDegeneracy
+			# Log warning
+			logging.warning('For structure %s, more characteristic frequencies were generated than vibrational modes allowed. Removed %i groups (%i frequencies) to compensate.' % (struct, groupsRemoved, freqsRemoved))
+			# Regenerate characteristic frequencies
+			frequencies = []
+			for node, count in groupCount.iteritems():
+				for charFreq in frequencyDatabase.library[node][1:]:
+					frequencies.extend(charFreq.generateFrequencies(count))
 
 	# Create spectral data object with characteristic frequencies
 	spectralData = SpectralData()
