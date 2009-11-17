@@ -44,6 +44,7 @@ import thermo
 import os
 
 import ctml_writer
+import xml.sax.saxutils
 
 ################################################################################
 
@@ -182,7 +183,8 @@ class Species:
 		return ctml_writer.species(name = str(self),
 		    atoms = " %s "%atoms,
 		    thermo = self.thermoData.toCantera(),
-		    note = "%s (%s)"%(self.label,self.thermoData.comment)
+			# this escaping should really be done by ctml_writer, but it doesn't do it
+		    note = xml.sax.saxutils.escape("%s (%s)"%(self.label,self.thermoData.comment))
 		       )
 		
 	def getFormula(self):

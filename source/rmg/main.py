@@ -46,6 +46,7 @@ import settings
 import species
 import reaction
 
+
 ################################################################################
 
 def execute(inputFile, options):
@@ -98,14 +99,27 @@ def execute(inputFile, options):
 	# Initialize reaction model
 	if options.restart:
 		import cPickle
+		import ctml_writer
 		logging.info('Loading previous restart file...')
 		f = open(os.path.join(settings.outputDirectory,'restart.pkl'), 'rb')
 		species.speciesList = cPickle.load(f)
-		species.speciesCounter = len(species.speciesList)
+		species.speciesCounter = cPickle.load(f)
 		reaction.reactionList = cPickle.load(f)
 		reactionModel = cPickle.load(f)
 		reactionSystems = cPickle.load(f)
 		f.close()
+		# Cantera stuff
+		reload(ctml_writer) # ensure new empty ctml_writer._species and ._reactions lists
+		for reactor in reactionSystems:
+			# initialise the ctml_writer thing
+			reactor.toCantera()
+		for spec in reactionModel.core.species:
+			# add species to ctml_writer._species list
+			spec.toCantera() 
+		for rxn in reactionModel.core.reactions:
+			# add reaction to ctml_writer._reactions list
+			rxn.toCantera()
+		#print "enter 'c' to continue"; import pdb; pdb.set_trace()
 		options.restart = False # have already restarted
 	else:
 		reactionModel.initialize(coreSpecies)
@@ -151,6 +165,7 @@ def execute(inputFile, options):
 		logging.info('Saving restart file...')
 		f = open(os.path.join(settings.outputDirectory,'restart.pkl'), 'wb')
 		cPickle.dump(species.speciesList, f)
+		cPickle.dump(species.speciesCounter, f)
 		cPickle.dump(reaction.reactionList, f)
 		cPickle.dump(reactionModel, f)
 		cPickle.dump(reactionSystems, f)
