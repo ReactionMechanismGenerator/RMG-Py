@@ -1,0 +1,196 @@
+////////////////////////////////////////////////////////////////////////////////
+//
+//	Functional group dictionary for frequency estimation
+//
+////////////////////////////////////////////////////////////////////////////////
+
+// Originally devised by C. Franklin Goldsmith and implemented by Greg Magoon 
+// on 13-18 Nov 2008
+// Modified by Josh Allen on 11 Nov 2009 for RMG Py:
+//	- Removed hierarchy; all groups correspond to a characteristic frequency
+//	- Restored use of {} notation for radicals
+//	- Made RdCsR2 into CdCsR2 (a C=C bond to distinguish from Ketone C=O)
+
+////////////////////////////////////////////////////////////////////////////////
+
+R!H
+1  * R!H {0,1,2} 
+
+C_R0
+1  * C 0
+
+C_R1
+1  * C 1
+
+C_R2
+1  * C 2
+
+O_R0
+1  * O 0
+
+O_R1
+1  * O 1
+
+////////////////////////////////////////////////////////////////////////////////
+
+RsCH3   // L2 Node: single-bonded to exactly one heavy atom 
+1  * C 0 {2,S} {3,S} {4,S} {5,S}
+2    R!H {0,1,2} {1,S}
+3    H 0 {1,S}
+4    H 0 {1,S}
+5    H 0 {1,S}
+
+RdCH2 //L2 Node: double-bonded to one heavy atom 
+1  * C 0 {2,D} {3,S} {4,S}
+2    R!H {0,1,2} {1,D}
+3    H 0 {1,S}
+4    H 0 {1,S}
+
+CtCH //L2 Node: triple-bonded to one heavy atom (carbon) 
+1  * C 0 {2,T} {3,S}
+2    C {0,1} {1,T}
+3    H 0 {1,S}
+
+RsCH2sR   // L2 Node: single-bonded to exactly two heavy atoms 
+1  * C 0 {2,S} {3,S} {4,S} {5,S}
+2    R!H {0,1,2} {1,S}
+3    R!H {0,1,2} {1,S}
+4    H 0 {1,S}
+5    H 0 {1,S}
+
+Aldehyde   // L2 Node: double-bonded to oxygen, single bonded to something else 
+1  * C 0 {2,D} {3,S} {4,S}
+2    O 0 {1,D}
+3    R!H {0,1,2} {1,S}
+4    H 0 {1,S}
+
+Ketene  // L2 Node: double-bonded to oxygen, double bonded to something else 
+1  * C 0 {2,D} {3,D}
+2    O 0 {1,D}
+3    R!H {0,1,2} {1,D}
+
+Cumulene   // L2 Node: double bonded to two carbons (cumulene)  added by gmagoon
+1  * C 0 {2,D} {3,D}
+2    C {0,1,2} {1,D}
+3    C {0,1,2} {1,D}
+
+CdCHsR  // L2 Node: double-bonded to carbon, single bonded to something else 
+1  * C 0 {2,D} {3,S} {4,S}
+2    C {0,1,2} {1,D}
+3    R!H {0,1,2} {1,S}
+4    H 0 {1,S}
+
+CtCsR  // L2 Node: triple-bonded to carbon, single bonded to something else 
+1  * C 0 {2,T} {3,S}
+2    C {0,1} {1,T}
+3    R!H {0,1,2} {1,S}
+
+RsCHsR2   // L2 Node: single-bonded to exactly three heavy atoms and hydrogen 
+1  * C 0 {2,S} {3,S} {4,S} {5,S}
+2    R!H {0,1,2} {1,S}
+3    R!H {0,1,2} {1,S}
+4    R!H {0,1,2} {1,S}
+5    H 0 {1,S}
+
+CdCsR2   // L2 Node: single-bonded to exactly two heavy atoms and double bonded to another  added by gmagoon
+1  * C 0 {2,D} {3,S} {4,S}
+2    C {0,1,2} {1,D}
+3    R!H {0,1,2} {1,S}
+4    R!H {0,1,2} {1,S}
+
+Ketone   // L3 Node: single-bonded to two carbons and double bonded to oxygen  added by gmagoon; *this should be tested with RdCsR2 to make sure that deepest matching node is used
+1  * C 0 {2,D} {3,S} {4,S}
+2    O 0 {1,D}
+3    C {0,1,2} {1,S}
+4    C {0,1,2} {1,S} 
+
+RsCsR3   // L2 Node: single-bonded to four heavy atoms 
+1  * C 0 {2,S} {3,S} {4,S} {5,S}
+2    R!H {0,1,2} {1,S}
+3    R!H {0,1,2} {1,S}
+4    R!H {0,1,2} {1,S}
+5    R!H {0,1,2} {1,S}
+
+RsCH2r   // L2 Node: single-bonded to exactly one heavy atom 
+1  * C 1 {2,S} {3,S} {4,S}
+2    R!H {0,1,2} {1,S}
+3    H 0 {1,S}
+4    H 0 {1,S}
+
+RdCHr //L2 Node: double-bonded to one heavy atom (vinylic) 
+1  * C 1 {2,D} {3,S}
+2    R!H {0,1,2} {1,D}
+3    H 0 {1,S}
+
+CtCr //L2 Node: triple-bonded to one heavy atom (carbon) 
+1  * C 1 {2,T}
+2    C {0,1} {1,T}
+
+RsCHrsR   // L2 Node: single-bonded to exactly two heavy atoms 
+1  * C 1 {2,S} {3,S} {4,S}
+2    R!H {0,1,2} {1,S}
+3    R!H {0,1,2} {1,S}
+4    H 0 {1,S}
+
+OdCrsR   // L2 Node: double-bonded to oxygen, single bonded to something else 
+1  * C 1 {2,D} {3,S}
+2    O 0 {1,D}
+3    R!H {0,1,2} {1,S}
+
+CdCrsR  // L2 Node: double-bonded to carbon, single bonded to something else 
+1  * C 1 {2,D} {3,S}
+2    C {0,1,2} {1,D}
+3    R!H {0,1,2} {1,S}
+
+
+RsCrsR2   // L2 Node: single-bonded to exactly three heavy atoms 
+1  * C 1 {2,S} {3,S} {4,S}
+2    R!H {0,1,2} {1,S}
+3    R!H {0,1,2} {1,S}
+4    R!H {0,1,2} {1,S}
+
+RsCHrr   // L2 Node: single-bonded to exactly one heavy atom 
+1  * C 2 {2,S} {3,S}
+2    R!H {0,1,2} {1,S}
+3    H 0 {1,S}
+
+RdCrr //L2 Node: double-bonded to one heavy atom (vinylic) 
+1  * C 2 {2,D}
+2    R!H {0,1,2} {1,D}
+
+RsCrrsR   // L2 Node: single-bonded to exactly two heavy atoms 
+1  * C 2 {2,S} {3,S}
+2    R!H {0,1,2} {1,S}
+3    R!H {0,1,2} {1,S}
+
+Alcohol   // L2 Node: bound to hydrogen and one heavy atom (carbon) 
+1  * O 0 {2,S} {3,S}
+2    C {0,1,2} {1,S}
+3    H 0 {1,S}
+
+Ether   // L2 Node: bound to two carbons 
+1  * O 0 {2,S} {3,S}
+2    C {0,1,2} {1,S}
+3    C {0,1,2} {1,S}
+
+ROOH   // L2 Node: bound to carbon and OH  gmagoon: changed name from "Peroxide" to "ROOH" to distinguish from ROOR
+1  * O 0 {2,S} {3,S}
+2    C {0,1,2} {1,S}
+3    O 0 {1,S} {4,S}
+4    H 0 {3,S}
+
+ROOR   // L2 Node: bound to carbon and OC  gmagoon: this will be double counted, so Franklin's code must divide by two
+1  * O 0 {2,S} {3,S}
+2    C {0,1,2} {1,S}
+3    O 0 {1,S} {4,S}
+4    C {0,1,2} {3,S}
+
+Peroxy   // L2 Node: bound to carbon and O radical 
+1  * O 0 {2,S} {3,S}
+2    C {0,1,2} {1,S}
+3    O 1 {1,S}
+
+Oxy   // L2 Node: bound to carbon 
+1  * O 1 {2,S}
+2    C {0,1,2} {1,S}
+

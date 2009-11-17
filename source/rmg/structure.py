@@ -1228,6 +1228,20 @@ class Structure:
 
 		self.symmetryNumber = symmetryNumber
 
+	def countInternalRotors(self):
+		"""
+		Determine the number of internal rotors in the structure. Any single
+		bond not in a cycle and between two atoms that also have other bonds
+		are considered to be internal rotors.
+		"""
+		count = 0
+		for bond in self.bonds():
+			if bond.isSingle():
+				if len(self.getBonds(bond.atoms[0])) > 1 and len(self.getBonds(bond.atoms[1])) > 1:
+					if not self.isBondInCycle(bond):
+						count += 1
+		return count
+
 ################################################################################
 
 if __name__ == '__main__':
