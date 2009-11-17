@@ -23,8 +23,15 @@ help:
 	@echo "  changes   to make an overview over all changed/added/deprecated items"
 	@echo "  linkcheck to check all external links for integrity"
 
+
 clean:
+# set aside the git repository info used to push pages to github
+	mkdir build_temp
+	mv build/html/.git build_temp/.git
 	-rm -rf build/*
+	mkdir build/html
+	mv build_temp/.git build/html/
+	rm -rf build_temp
 
 html:
 	mkdir -p build/html build/doctrees
