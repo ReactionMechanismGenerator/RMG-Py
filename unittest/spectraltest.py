@@ -36,7 +36,6 @@ sys.path.append('../source')
 import logging
 
 import rmg.spectral as spectral
-import rmg.main as main
 import rmg.structure as structure
 import rmg.thermo as thermo
 
@@ -71,8 +70,7 @@ class GroupFrequencyCheck(unittest.TestCase):
 			Cp=[12.28*4.184, 14.34*4.184, 16.30*4.184, 18.05*4.184, 20.92*4.184, 23.08*4.184, 26.39*4.184])
 
 		spectralData = spectral.generateSpectralData(struct, thermoData)
-		for mode in spectralData.modes: print mode
-
+		
 		frequencies0 = [mode.frequency for mode in spectralData.modes if isinstance(mode, spectral.HarmonicOscillator)]
 		frequencies0.sort()
 		frequencies = [2750.0, 2800.0, 2850.0, 1350.0, 1500.0, 750.0, 1050.0, 1375.0, 1855.0, 455.0, 2761.6297]

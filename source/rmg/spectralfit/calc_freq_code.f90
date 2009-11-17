@@ -1399,7 +1399,7 @@ SUBROUTINE Bond_avg_6x2_2_1 (Number_of_bonds, &
   INTEGER                                      :: i,j, k
 
   IF (Number_of_bonds == 0 ) THEN
-!     WRITE (*,*) 'N = 0'
+!   ! WRITE (*,*) 'N = 0'
      predicted_frequencies = (/ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 /) 
   
  ELSEIF (Number_of_bonds == 1) THEN
@@ -1483,7 +1483,7 @@ SUBROUTINE Bond_avg_5x2_2_1 (Number_of_bonds, &
   INTEGER                                      :: i,j, k
 
   IF (Number_of_bonds == 0 ) THEN
-!     WRITE (*,*) 'N = 0'
+!   ! WRITE (*,*) 'N = 0'
      predicted_frequencies = (/ 0.0, 0.0, 0.0, 0.0, 0.0 /) 
   
  ELSEIF (Number_of_bonds == 1) THEN
@@ -1766,8 +1766,6 @@ SUBROUTINE Case_1(Total_char_freq, Total_harm_osc_freq, HR_params  )
   INTEGER :: N_vib, N_rot
  
  COMMON N_vib, N_rot, nu_low, nu_high, nu_mid, cp_difference, CV_temps
- CALL timestamp ( )
-
 ! Define the contraints on the target variables 
 
 ! x(1) corresponds to the harmonic oscillator pseudo-frequency
@@ -1797,26 +1795,24 @@ SUBROUTINE Case_1(Total_char_freq, Total_harm_osc_freq, HR_params  )
 
   CALL dqed ( Case_1_hd, mequa, nvars, mcon, ind, bl, bu, x, fj, ldfj, &
     fnorm, igo, iopt, ropt, iwork, work )
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) ' CASE 1 Baby Yea!'
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a,i6)' ) '  Output flag from DQED, IGO = ', igo
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) '  Computed X:'
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(g14.8)' ) x(1:nvars)
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a,g14.6)' ) '  L2 norm of the residual, FNORM = ', fnorm
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) 'Expected X:'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) ' CASE 1 Baby Yea!'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a,i6)' ) '  Output flag from DQED, IGO = ', igo
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) '  Computed X:'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(g14.8)' ) x(1:nvars)
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a,g14.6)' ) '  L2 norm of the residual, FNORM = ', fnorm
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) 'Expected X:'
  
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) 'DQED_PRB2'
-  WRITE ( *, '(a)' ) '  Normal end of execution.'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) 'DQED_PRB2'
+! WRITE ( *, '(a)' ) '  Normal end of execution.'
 
-  WRITE ( *, '(a)' ) ' '
-  CALL timestamp ( )
-
+! WRITE ( *, '(a)' ) ' '
   results = x
   Theta_1 = results(1)
   Total_harm_osc_freq( size(Total_char_freq ) + 1 ) = Theta_1
@@ -1936,8 +1932,6 @@ SUBROUTINE Case_2(Total_char_freq, Total_harm_osc_freq, HR_params  )
   INTEGER :: N_vib, N_rot
  
  COMMON N_vib, N_rot, nu_low, nu_high, nu_mid, cp_difference, CV_temps
- CALL timestamp ( )
-
 ! Define the contraints on the target variables 
 
 ! x(1) corresponds to the first harmonic oscillator pseudo-frequency
@@ -1972,26 +1966,24 @@ SUBROUTINE Case_2(Total_char_freq, Total_harm_osc_freq, HR_params  )
 
   CALL dqed ( Case_2_hd, mequa, nvars, mcon, ind, bl, bu, x, fj, ldfj, &
     fnorm, igo, iopt, ropt, iwork, work )
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) ' CASE 2 Baby Yea!'
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a,i6)' ) '  Output flag from DQED, IGO = ', igo
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) '  Computed X:'
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(g14.8)' ) x(1:nvars)
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a,g14.6)' ) '  L2 norm of the residual, FNORM = ', fnorm
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) 'Expected X:'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) ' CASE 2 Baby Yea!'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a,i6)' ) '  Output flag from DQED, IGO = ', igo
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) '  Computed X:'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(g14.8)' ) x(1:nvars)
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a,g14.6)' ) '  L2 norm of the residual, FNORM = ', fnorm
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) 'Expected X:'
  
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) 'DQED_PRB2'
-  WRITE ( *, '(a)' ) '  Normal end of execution.'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) 'DQED_PRB2'
+! WRITE ( *, '(a)' ) '  Normal end of execution.'
 
-  WRITE ( *, '(a)' ) ' '
-  CALL timestamp ( )
-  results = x
+! WRITE ( *, '(a)' ) ' '  results = x
   Theta_1 = results(1)
   Theta_2 = results(2)
   Total_harm_osc_freq( size(Total_char_freq ) +1 ) = Theta_1
@@ -2107,8 +2099,6 @@ SUBROUTINE Case_3(Total_char_freq, Total_harm_osc_freq, HR_params )
   INTEGER :: N_vib, N_rot
  
  COMMON N_vib, N_rot, nu_low, nu_high, nu_mid, cp_difference, CV_temps
- CALL timestamp ( )
-
 ! Define the contraints on the target variables 
 
 ! x(1) corresponds to the first harmonic oscillator pseudo-frequency
@@ -2149,26 +2139,24 @@ SUBROUTINE Case_3(Total_char_freq, Total_harm_osc_freq, HR_params )
 
   CALL dqed ( Case_3_hd, mequa, nvars, mcon, ind, bl, bu, x, fj, ldfj, &
     fnorm, igo, iopt, ropt, iwork, work )
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) ' CASE 3 Baby Yea!'
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a,i6)' ) '  Output flag from DQED, IGO = ', igo
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) '  Computed X:'
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(g14.8)' ) x(1:nvars)
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a,g14.6)' ) '  L2 norm of the residual, FNORM = ', fnorm
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) 'Expected X:'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) ' CASE 3 Baby Yea!'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a,i6)' ) '  Output flag from DQED, IGO = ', igo
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) '  Computed X:'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(g14.8)' ) x(1:nvars)
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a,g14.6)' ) '  L2 norm of the residual, FNORM = ', fnorm
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) 'Expected X:'
  
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) 'DQED_PRB2'
-  WRITE ( *, '(a)' ) '  Normal end of execution.'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) 'DQED_PRB2'
+! WRITE ( *, '(a)' ) '  Normal end of execution.'
 
-  WRITE ( *, '(a)' ) ' '
-  CALL timestamp ( )
-
+! WRITE ( *, '(a)' ) ' '
   results = x
   Theta_1 = results(1)
   Theta_2 = results(2)
@@ -2293,8 +2281,6 @@ SUBROUTINE Case_4(Total_char_freq, Total_harm_osc_freq, HR_params  )
   INTEGER :: N_vib, N_rot
  
  COMMON N_vib, N_rot, nu_low, nu_high, nu_mid, cp_difference, CV_temps
- CALL timestamp ( )
-
 ! Define the contraints on the target variables 
 
 ! x(1) corresponds to the first harmonic oscillator pseudo-frequency
@@ -2341,26 +2327,24 @@ SUBROUTINE Case_4(Total_char_freq, Total_harm_osc_freq, HR_params  )
 
   CALL dqed ( Case_4_hd, mequa, nvars, mcon, ind, bl, bu, x, fj, ldfj, &
     fnorm, igo, iopt, ropt, iwork, work )
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) ' CASE 4 Baby Yea!'
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a,i6)' ) '  Output flag from DQED, IGO = ', igo
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) '  Computed X:'
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(g14.8)' ) x(1:nvars)
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a,g14.6)' ) '  L2 norm of the residual, FNORM = ', fnorm
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) 'Expected X:'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) ' CASE 4 Baby Yea!'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a,i6)' ) '  Output flag from DQED, IGO = ', igo
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) '  Computed X:'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(g14.8)' ) x(1:nvars)
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a,g14.6)' ) '  L2 norm of the residual, FNORM = ', fnorm
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) 'Expected X:'
  
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) 'DQED_PRB2'
-  WRITE ( *, '(a)' ) '  Normal end of execution.'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) 'DQED_PRB2'
+! WRITE ( *, '(a)' ) '  Normal end of execution.'
 
-  WRITE ( *, '(a)' ) ' '
-  CALL timestamp ( )
-
+! WRITE ( *, '(a)' ) ' '
   results = x
   Theta_1 = results(1)
   Theta_2 = results(2)
@@ -2490,8 +2474,6 @@ SUBROUTINE Case_5(Total_char_freq, Total_harm_osc_freq, HR_params )
   INTEGER :: N_vib, N_rot
  
  COMMON N_vib, N_rot, nu_low, nu_high, nu_mid, cp_difference, CV_temps
- CALL timestamp ( )
-
 ! Define the contraints on the target variables 
 
 ! x(1) corresponds to the first harmonic oscillator pseudo-frequency
@@ -2544,26 +2526,24 @@ SUBROUTINE Case_5(Total_char_freq, Total_harm_osc_freq, HR_params )
 
   CALL dqed ( Case_5_hd, mequa, nvars, mcon, ind, bl, bu, x, fj, ldfj, &
     fnorm, igo, iopt, ropt, iwork, work )
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) ' CASE 5 Baby Yea!'
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a,i6)' ) '  Output flag from DQED, IGO = ', igo
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) '  Computed X:'
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(g14.8)' ) x(1:nvars)
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a,g14.6)' ) '  L2 norm of the residual, FNORM = ', fnorm
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) 'Expected X:'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) ' CASE 5 Baby Yea!'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a,i6)' ) '  Output flag from DQED, IGO = ', igo
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) '  Computed X:'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(g14.8)' ) x(1:nvars)
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a,g14.6)' ) '  L2 norm of the residual, FNORM = ', fnorm
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) 'Expected X:'
  
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) 'DQED_PRB2'
-  WRITE ( *, '(a)' ) '  Normal end of execution.'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) 'DQED_PRB2'
+! WRITE ( *, '(a)' ) '  Normal end of execution.'
 
-  WRITE ( *, '(a)' ) ' '
-  CALL timestamp ( )
-
+! WRITE ( *, '(a)' ) ' '
   results = x
   Theta_1 = results(1)
   Theta_2 = results(2)
@@ -2697,8 +2677,6 @@ SUBROUTINE Case_6(Total_char_freq, Total_harm_osc_freq, HR_params )
   INTEGER :: N_vib, N_rot
  
  COMMON N_vib, N_rot, nu_low, nu_high, nu_mid, cp_difference, CV_temps
- CALL timestamp ( )
-
 ! Define the contraints on the target variables 
 
 ! x(1) corresponds to the first harmonic oscillator pseudo-frequency
@@ -2757,26 +2735,24 @@ SUBROUTINE Case_6(Total_char_freq, Total_harm_osc_freq, HR_params )
 
   CALL dqed ( Case_6_hd, mequa, nvars, mcon, ind, bl, bu, x, fj, ldfj, &
     fnorm, igo, iopt, ropt, iwork, work )
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) ' CASE 6 Baby Yea!'
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a,i6)' ) '  Output flag from DQED, IGO = ', igo
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) '  Computed X:'
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(g14.8)' ) x(1:nvars)
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a,g14.6)' ) '  L2 norm of the residual, FNORM = ', fnorm
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) 'Expected X:'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) ' CASE 6 Baby Yea!'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a,i6)' ) '  Output flag from DQED, IGO = ', igo
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) '  Computed X:'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(g14.8)' ) x(1:nvars)
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a,g14.6)' ) '  L2 norm of the residual, FNORM = ', fnorm
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) 'Expected X:'
  
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) 'DQED_PRB2'
-  WRITE ( *, '(a)' ) '  Normal end of execution.'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) 'DQED_PRB2'
+! WRITE ( *, '(a)' ) '  Normal end of execution.'
 
-  WRITE ( *, '(a)' ) ' '
-  CALL timestamp ( )
-
+! WRITE ( *, '(a)' ) ' '
   results = x
   Theta_1 = results(1)
   Theta_2 = results(2)
@@ -2916,8 +2892,6 @@ SUBROUTINE Case_7(Total_char_freq, Total_harm_osc_freq, HR_params )
   INTEGER :: N_vib, N_rot
  
  COMMON N_vib, N_rot, nu_low, nu_high, nu_mid, cp_difference, CV_temps
- CALL timestamp ( )
-
 ! Define the contraints on the target variables 
 
 ! x(1) corresponds to the first harmonic oscillator pseudo-frequency
@@ -2977,26 +2951,24 @@ SUBROUTINE Case_7(Total_char_freq, Total_harm_osc_freq, HR_params )
 
   CALL dqed ( Case_7_hd, mequa, nvars, mcon, ind, bl, bu, x, fj, ldfj, &
     fnorm, igo, iopt, ropt, iwork, work )
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) ' CASE 7 Baby Yea!'
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a,i6)' ) '  Output flag from DQED, IGO = ', igo
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) '  Computed X:'
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(g14.8)' ) x(1:nvars)
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a,g14.6)' ) '  L2 norm of the residual, FNORM = ', fnorm
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) 'Expected X:'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) ' CASE 7 Baby Yea!'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a,i6)' ) '  Output flag from DQED, IGO = ', igo
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) '  Computed X:'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(g14.8)' ) x(1:nvars)
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a,g14.6)' ) '  L2 norm of the residual, FNORM = ', fnorm
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) 'Expected X:'
  
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) 'DQED_PRB2'
-  WRITE ( *, '(a)' ) '  Normal end of execution.'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) 'DQED_PRB2'
+! WRITE ( *, '(a)' ) '  Normal end of execution.'
 
-  WRITE ( *, '(a)' ) ' '
-  CALL timestamp ( )
-
+! WRITE ( *, '(a)' ) ' '
   results = x
   Theta_1 =      results(1)
   g_1     = NINT(results(2))
@@ -3140,8 +3112,6 @@ SUBROUTINE Case_8(Total_char_freq, Total_harm_osc_freq, HR_params )
   INTEGER :: N_vib, N_rot
  
  COMMON N_vib, N_rot, nu_low, nu_high, nu_mid, cp_difference, CV_temps
- CALL timestamp ( )
-
 ! Define the contraints on the target variables 
 
 ! x(1) corresponds to the hindered-rotor barrier height
@@ -3176,26 +3146,24 @@ SUBROUTINE Case_8(Total_char_freq, Total_harm_osc_freq, HR_params )
 
   CALL dqed ( Case_8_hd, mequa, nvars, mcon, ind, bl, bu, x, fj, ldfj, &
     fnorm, igo, iopt, ropt, iwork, work )
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) ' CASE 8 Baby Yea!'
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a,i6)' ) '  Output flag from DQED, IGO = ', igo
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) '  Computed X:'
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(g14.8)' ) x(1:nvars)
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a,g14.6)' ) '  L2 norm of the residual, FNORM = ', fnorm
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) 'Expected X:'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) ' CASE 8 Baby Yea!'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a,i6)' ) '  Output flag from DQED, IGO = ', igo
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) '  Computed X:'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(g14.8)' ) x(1:nvars)
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a,g14.6)' ) '  L2 norm of the residual, FNORM = ', fnorm
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) 'Expected X:'
  
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) 'DQED_PRB2'
-  WRITE ( *, '(a)' ) '  Normal end of execution.'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) 'DQED_PRB2'
+! WRITE ( *, '(a)' ) '  Normal end of execution.'
 
-  WRITE ( *, '(a)' ) ' '
-  CALL timestamp ( )
-
+! WRITE ( *, '(a)' ) ' '
   results = x
   V_1  = results(1)
   nu_1 = results(2)
@@ -3315,8 +3283,6 @@ SUBROUTINE Case_9(Total_char_freq, Total_harm_osc_freq, HR_params )
   INTEGER :: N_vib, N_rot
  
  COMMON N_vib, N_rot, nu_low, nu_high, nu_mid, cp_difference, CV_temps
- CALL timestamp ( )
-
 ! Define the contraints on the target variables 
 
 ! x(1) corresponds to the hindered-rotor barrier height
@@ -3358,26 +3324,24 @@ SUBROUTINE Case_9(Total_char_freq, Total_harm_osc_freq, HR_params )
 
   CALL dqed ( Case_9_hd, mequa, nvars, mcon, ind, bl, bu, x, fj, ldfj, &
     fnorm, igo, iopt, ropt, iwork, work )
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) ' CASE 9 Baby Yea!'
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a,i6)' ) '  Output flag from DQED, IGO = ', igo
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) '  Computed X:'
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(g14.8)' ) x(1:nvars)
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a,g14.6)' ) '  L2 norm of the residual, FNORM = ', fnorm
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) 'Expected X:'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) ' CASE 9 Baby Yea!'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a,i6)' ) '  Output flag from DQED, IGO = ', igo
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) '  Computed X:'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(g14.8)' ) x(1:nvars)
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a,g14.6)' ) '  L2 norm of the residual, FNORM = ', fnorm
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) 'Expected X:'
  
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) 'DQED_PRB2'
-  WRITE ( *, '(a)' ) '  Normal end of execution.'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) 'DQED_PRB2'
+! WRITE ( *, '(a)' ) '  Normal end of execution.'
 
-  WRITE ( *, '(a)' ) ' '
-  CALL timestamp ( )
-
+! WRITE ( *, '(a)' ) ' '
 results = x
 V_1     = results(1)
 nu_1    = results(2)
@@ -3502,8 +3466,6 @@ SUBROUTINE Case_10(Total_char_freq, Total_harm_osc_freq, HR_params )
   INTEGER :: N_vib, N_rot
  
  COMMON N_vib, N_rot, nu_low, nu_high, nu_mid, cp_difference, CV_temps
- CALL timestamp ( )
-
 ! Define the contraints on the target variables 
 
 ! x(1) corresponds to the hindered-rotor barrier height
@@ -3550,26 +3512,24 @@ SUBROUTINE Case_10(Total_char_freq, Total_harm_osc_freq, HR_params )
 
   CALL dqed ( Case_10_hd, mequa, nvars, mcon, ind, bl, bu, x, fj, ldfj, &
     fnorm, igo, iopt, ropt, iwork, work )
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) ' CASE 10 Baby Yea!'
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a,i6)' ) '  Output flag from DQED, IGO = ', igo
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) '  Computed X:'
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(g14.8)' ) x(1:nvars)
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a,g14.6)' ) '  L2 norm of the residual, FNORM = ', fnorm
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) 'Expected X:'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) ' CASE 10 Baby Yea!'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a,i6)' ) '  Output flag from DQED, IGO = ', igo
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) '  Computed X:'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(g14.8)' ) x(1:nvars)
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a,g14.6)' ) '  L2 norm of the residual, FNORM = ', fnorm
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) 'Expected X:'
  
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) 'DQED_PRB2'
-  WRITE ( *, '(a)' ) '  Normal end of execution.'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) 'DQED_PRB2'
+! WRITE ( *, '(a)' ) '  Normal end of execution.'
 
-  WRITE ( *, '(a)' ) ' '
-  CALL timestamp ( )
-
+! WRITE ( *, '(a)' ) ' '
   results = x
   V_1     = results(1)
   nu_1    = results(2)
@@ -3698,8 +3658,6 @@ SUBROUTINE Case_11(Total_char_freq, Total_harm_osc_freq, HR_params )
   INTEGER :: N_vib, N_rot
  
  COMMON N_vib, N_rot, nu_low, nu_high, nu_mid, cp_difference, CV_temps
- CALL timestamp ( )
-
 ! Define the contraints on the target variables 
 
 ! x(1) corresponds to the hindered-rotor barrier height
@@ -3752,26 +3710,24 @@ SUBROUTINE Case_11(Total_char_freq, Total_harm_osc_freq, HR_params )
 
   CALL dqed ( Case_11_hd, mequa, nvars, mcon, ind, bl, bu, x, fj, ldfj, &
     fnorm, igo, iopt, ropt, iwork, work )
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) ' CASE 11 Baby Yea!'
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a,i6)' ) '  Output flag from DQED, IGO = ', igo
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) '  Computed X:'
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(g14.8)' ) x(1:nvars)
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a,g14.6)' ) '  L2 norm of the residual, FNORM = ', fnorm
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) 'Expected X:'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) ' CASE 11 Baby Yea!'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a,i6)' ) '  Output flag from DQED, IGO = ', igo
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) '  Computed X:'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(g14.8)' ) x(1:nvars)
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a,g14.6)' ) '  L2 norm of the residual, FNORM = ', fnorm
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) 'Expected X:'
  
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) 'DQED_PRB2'
-  WRITE ( *, '(a)' ) '  Normal end of execution.'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) 'DQED_PRB2'
+! WRITE ( *, '(a)' ) '  Normal end of execution.'
 
-  WRITE ( *, '(a)' ) ' '
-  CALL timestamp ( )
-
+! WRITE ( *, '(a)' ) ' '
   results = x
   V_1     = results(1)
   nu_1    = results(2)
@@ -3906,8 +3862,6 @@ SUBROUTINE Case_12(Total_char_freq, Total_harm_osc_freq, HR_params )
   INTEGER :: N_vib, N_rot
  
  COMMON N_vib, N_rot, nu_low, nu_high, nu_mid, cp_difference, CV_temps
- CALL timestamp ( )
-
 ! Define the contraints on the target variables 
 
 ! x(1) corresponds to the hindered-rotor barrier height
@@ -3966,26 +3920,24 @@ SUBROUTINE Case_12(Total_char_freq, Total_harm_osc_freq, HR_params )
 
   CALL dqed ( Case_12_hd, mequa, nvars, mcon, ind, bl, bu, x, fj, ldfj, &
     fnorm, igo, iopt, ropt, iwork, work )
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) ' CASE 12 Baby Yea!'
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a,i6)' ) '  Output flag from DQED, IGO = ', igo
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) '  Computed X:'
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(g14.8)' ) x(1:nvars)
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a,g14.6)' ) '  L2 norm of the residual, FNORM = ', fnorm
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) 'Expected X:'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) ' CASE 12 Baby Yea!'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a,i6)' ) '  Output flag from DQED, IGO = ', igo
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) '  Computed X:'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(g14.8)' ) x(1:nvars)
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a,g14.6)' ) '  L2 norm of the residual, FNORM = ', fnorm
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) 'Expected X:'
  
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) 'DQED_PRB2'
-  WRITE ( *, '(a)' ) '  Normal end of execution.'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) 'DQED_PRB2'
+! WRITE ( *, '(a)' ) '  Normal end of execution.'
 
-  WRITE ( *, '(a)' ) ' '
-  CALL timestamp ( )
-
+! WRITE ( *, '(a)' ) ' '
   results = x
   V_1     = results(1)
   nu_1    = results(2)
@@ -4126,8 +4078,6 @@ SUBROUTINE Case_13(Total_char_freq, Total_harm_osc_freq, HR_params )
   INTEGER :: N_vib, N_rot
  
  COMMON N_vib, N_rot, nu_low, nu_high, nu_mid, cp_difference, CV_temps
- CALL timestamp ( )
-
 ! Define the contraints on the target variables 
 
 ! x(1) corresponds to the hindered-rotor barrier height
@@ -4186,26 +4136,24 @@ SUBROUTINE Case_13(Total_char_freq, Total_harm_osc_freq, HR_params )
 
   CALL dqed ( Case_13_hd, mequa, nvars, mcon, ind, bl, bu, x, fj, ldfj, &
     fnorm, igo, iopt, ropt, iwork, work )
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) ' CASE 13 Baby Yea!'
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a,i6)' ) '  Output flag from DQED, IGO = ', igo
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) '  Computed X:'
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(g14.8)' ) x(1:nvars)
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a,g14.6)' ) '  L2 norm of the residual, FNORM = ', fnorm
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) 'Expected X:'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) ' CASE 13 Baby Yea!'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a,i6)' ) '  Output flag from DQED, IGO = ', igo
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) '  Computed X:'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(g14.8)' ) x(1:nvars)
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a,g14.6)' ) '  L2 norm of the residual, FNORM = ', fnorm
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) 'Expected X:'
  
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) 'DQED_PRB2'
-  WRITE ( *, '(a)' ) '  Normal end of execution.'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) 'DQED_PRB2'
+! WRITE ( *, '(a)' ) '  Normal end of execution.'
 
-  WRITE ( *, '(a)' ) ' '
-  CALL timestamp ( )
-
+! WRITE ( *, '(a)' ) ' '
   results = x
   V_1     =      results(1)
   nu_1    =      results(2)
@@ -4348,8 +4296,6 @@ SUBROUTINE Case_14(Total_char_freq, Total_harm_osc_freq, HR_params )
   INTEGER :: N_vib, N_rot
  
  COMMON N_vib, N_rot, nu_low, nu_high, nu_mid, cp_difference, CV_temps
- CALL timestamp ( )
-
 ! Define the contraints on the target variables 
 
 ! x(1) corresponds to the first hindered-rotor barrier height
@@ -4396,26 +4342,24 @@ SUBROUTINE Case_14(Total_char_freq, Total_harm_osc_freq, HR_params )
 
   CALL dqed ( Case_14_hd, mequa, nvars, mcon, ind, bl, bu, x, fj, ldfj, &
     fnorm, igo, iopt, ropt, iwork, work )
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) ' CASE 14 Baby Yea!'
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a,i6)' ) '  Output flag from DQED, IGO = ', igo
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) '  Computed X:'
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(g14.8)' ) x(1:nvars)
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a,g14.6)' ) '  L2 norm of the residual, FNORM = ', fnorm
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) 'Expected X:'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) ' CASE 14 Baby Yea!'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a,i6)' ) '  Output flag from DQED, IGO = ', igo
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) '  Computed X:'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(g14.8)' ) x(1:nvars)
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a,g14.6)' ) '  L2 norm of the residual, FNORM = ', fnorm
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) 'Expected X:'
  
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) 'DQED_PRB2'
-  WRITE ( *, '(a)' ) '  Normal end of execution.'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) 'DQED_PRB2'
+! WRITE ( *, '(a)' ) '  Normal end of execution.'
 
-  WRITE ( *, '(a)' ) ' '
-  CALL timestamp ( )
-
+! WRITE ( *, '(a)' ) ' '
   results = x
   V_1  = results(1)
   nu_1 = results(2)
@@ -4542,8 +4486,6 @@ SUBROUTINE Case_15(Total_char_freq, Total_harm_osc_freq, HR_params )
   INTEGER :: N_vib, N_rot
  
  COMMON N_vib, N_rot, nu_low, nu_high, nu_mid, cp_difference, CV_temps
- CALL timestamp ( )
-
 ! Define the contraints on the target variables 
 
 ! x(1) corresponds to the first hindered-rotor barrier height
@@ -4596,26 +4538,24 @@ SUBROUTINE Case_15(Total_char_freq, Total_harm_osc_freq, HR_params )
 
   CALL dqed ( Case_15_hd, mequa, nvars, mcon, ind, bl, bu, x, fj, ldfj, &
     fnorm, igo, iopt, ropt, iwork, work )
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) ' CASE 15 Baby Yea!'
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a,i6)' ) '  Output flag from DQED, IGO = ', igo
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) '  Computed X:'
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(g14.8)' ) x(1:nvars)
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a,g14.6)' ) '  L2 norm of the residual, FNORM = ', fnorm
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) 'Expected X:'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) ' CASE 15 Baby Yea!'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a,i6)' ) '  Output flag from DQED, IGO = ', igo
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) '  Computed X:'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(g14.8)' ) x(1:nvars)
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a,g14.6)' ) '  L2 norm of the residual, FNORM = ', fnorm
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) 'Expected X:'
  
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) 'DQED_PRB2'
-  WRITE ( *, '(a)' ) '  Normal end of execution.'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) 'DQED_PRB2'
+! WRITE ( *, '(a)' ) '  Normal end of execution.'
 
-  WRITE ( *, '(a)' ) ' '
-  CALL timestamp ( )
-
+! WRITE ( *, '(a)' ) ' '
   results = x
   V_1     = results(1)
   nu_1    = results(2)
@@ -4749,8 +4689,6 @@ SUBROUTINE Case_16(Total_char_freq, Total_harm_osc_freq, HR_params )
   INTEGER :: N_vib, N_rot
  
  COMMON N_vib, N_rot, nu_low, nu_high, nu_mid, cp_difference, CV_temps
- CALL timestamp ( )
-
 ! Define the contraints on the target variables 
 
 ! x(1) corresponds to the first hindered-rotor barrier height
@@ -4809,26 +4747,24 @@ SUBROUTINE Case_16(Total_char_freq, Total_harm_osc_freq, HR_params )
 
   CALL dqed ( Case_16_hd, mequa, nvars, mcon, ind, bl, bu, x, fj, ldfj, &
     fnorm, igo, iopt, ropt, iwork, work )
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) ' CASE 16 Baby Yea!'
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a,i6)' ) '  Output flag from DQED, IGO = ', igo
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) '  Computed X:'
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(g14.8)' ) x(1:nvars)
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a,g14.6)' ) '  L2 norm of the residual, FNORM = ', fnorm
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) 'Expected X:'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) ' CASE 16 Baby Yea!'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a,i6)' ) '  Output flag from DQED, IGO = ', igo
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) '  Computed X:'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(g14.8)' ) x(1:nvars)
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a,g14.6)' ) '  L2 norm of the residual, FNORM = ', fnorm
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) 'Expected X:'
  
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) 'DQED_PRB2'
-  WRITE ( *, '(a)' ) '  Normal end of execution.'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) 'DQED_PRB2'
+! WRITE ( *, '(a)' ) '  Normal end of execution.'
 
-  WRITE ( *, '(a)' ) ' '
-  CALL timestamp ( )
-
+! WRITE ( *, '(a)' ) ' '
   results = x
   V_1     = results(1)
   nu_1    = results(2)
@@ -4966,9 +4902,6 @@ SUBROUTINE Case_17(Total_char_freq, Total_harm_osc_freq, HR_params )
   INTEGER :: N_vib, N_rot
 
  COMMON N_vib, N_rot, nu_low, nu_high, nu_mid, cp_difference, CV_temps
-
-  CALL timestamp ( )
-
 ! Define the contraints on the target variables 
 
 ! x(1) corresponds to the first harmonic oscillator pseudo-frequency
@@ -5031,26 +4964,24 @@ SUBROUTINE Case_17(Total_char_freq, Total_harm_osc_freq, HR_params )
   CALL dqed ( Case_17_hd, mequa, nvars, mcon, ind, bl, bu, x, fj, ldfj, &
     fnorm, igo, iopt, ropt, iwork, work )
 
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) ' CASE 17'
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a,i6)' ) '  Output flag from DQED, IGO = ', igo
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) '  Computed X:'
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(g14.8)' ) x(1:nvars)
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a,g14.6)' ) '  L2 norm of the residual, FNORM = ', fnorm
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) 'Expected X:'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) ' CASE 17'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a,i6)' ) '  Output flag from DQED, IGO = ', igo
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) '  Computed X:'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(g14.8)' ) x(1:nvars)
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a,g14.6)' ) '  L2 norm of the residual, FNORM = ', fnorm
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) 'Expected X:'
  
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) 'DQED_PRB2'
-  WRITE ( *, '(a)' ) '  Normal end of execution.'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) 'DQED_PRB2'
+! WRITE ( *, '(a)' ) '  Normal end of execution.'
 
-  WRITE ( *, '(a)' ) ' '
-  CALL timestamp ( )
-
+! WRITE ( *, '(a)' ) ' '
   results = x
   Theta_1 = results(1)
   Theta_2 = results(2)
@@ -5198,9 +5129,6 @@ SUBROUTINE Case_18(Total_char_freq, Total_harm_osc_freq, HR_params )
   INTEGER :: N_vib, N_rot
 
  COMMON N_vib, N_rot, nu_low, nu_high, nu_mid, cp_difference, CV_temps
-
-  CALL timestamp ( )
-
 ! Define the contraints on the target variables 
 
 ! x(1) corresponds to the degeneracy of the first harmonic oscillator
@@ -5263,26 +5191,24 @@ SUBROUTINE Case_18(Total_char_freq, Total_harm_osc_freq, HR_params )
   CALL dqed ( Case_18_hd, mequa, nvars, mcon, ind, bl, bu, x, fj, ldfj, &
     fnorm, igo, iopt, ropt, iwork, work )
 
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) ' CASE 18'
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a,i6)' ) '  Output flag from DQED, IGO = ', igo
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) '  Computed X:'
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(g14.8)' ) x(1:nvars)
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a,g14.6)' ) '  L2 norm of the residual, FNORM = ', fnorm
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) 'Expected X:'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) ' CASE 18'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a,i6)' ) '  Output flag from DQED, IGO = ', igo
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) '  Computed X:'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(g14.8)' ) x(1:nvars)
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a,g14.6)' ) '  L2 norm of the residual, FNORM = ', fnorm
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) 'Expected X:'
  
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) 'DQED_PRB2'
-  WRITE ( *, '(a)' ) '  Normal end of execution.'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) 'DQED_PRB2'
+! WRITE ( *, '(a)' ) '  Normal end of execution.'
 
-  WRITE ( *, '(a)' ) ' '
-  CALL timestamp ( )
-  
+! WRITE ( *, '(a)' ) ' '
   results = x
   g_1     = NINT(results(1))
   Theta_1 =      results(2)
@@ -5432,8 +5358,6 @@ SUBROUTINE Case_19(Total_char_freq, Total_harm_osc_freq, HR_params )
   INTEGER :: N_vib, N_rot
  
  COMMON N_vib, N_rot, nu_low, nu_high, nu_mid, cp_difference, CV_temps
- CALL timestamp ( )
-
 ! Define the contraints on the target variables 
 
 ! x(1) corresponds to the first hindered-rotor barrier height
@@ -5492,26 +5416,24 @@ SUBROUTINE Case_19(Total_char_freq, Total_harm_osc_freq, HR_params )
 
   CALL dqed ( Case_19_hd, mequa, nvars, mcon, ind, bl, bu, x, fj, ldfj, &
     fnorm, igo, iopt, ropt, iwork, work )
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) ' CASE 19 Baby Yea!'
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a,i6)' ) '  Output flag from DQED, IGO = ', igo
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) '  Computed X:'
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(g14.8)' ) x(1:nvars)
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a,g14.6)' ) '  L2 norm of the residual, FNORM = ', fnorm
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) 'Expected X:'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) ' CASE 19 Baby Yea!'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a,i6)' ) '  Output flag from DQED, IGO = ', igo
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) '  Computed X:'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(g14.8)' ) x(1:nvars)
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a,g14.6)' ) '  L2 norm of the residual, FNORM = ', fnorm
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) 'Expected X:'
  
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) 'DQED_PRB2'
-  WRITE ( *, '(a)' ) '  Normal end of execution.'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) 'DQED_PRB2'
+! WRITE ( *, '(a)' ) '  Normal end of execution.'
 
-  WRITE ( *, '(a)' ) ' '
-  CALL timestamp ( )
-
+! WRITE ( *, '(a)' ) ' '
   results = x
   V_1  = results(1)
   nu_1 = results(2)
@@ -5647,8 +5569,6 @@ SUBROUTINE Case_20(Total_char_freq, Total_harm_osc_freq, HR_params  )
   INTEGER :: N_vib, N_rot
  
  COMMON N_vib, N_rot, nu_low, nu_high, nu_mid, cp_difference, CV_temps
- CALL timestamp ( )
-
 ! Define the contraints on the target variables 
 
 ! x(1) corresponds to the harmonic oscillator pseudo-frequency
@@ -5709,26 +5629,24 @@ SUBROUTINE Case_20(Total_char_freq, Total_harm_osc_freq, HR_params  )
 
   CALL dqed ( Case_20_hd, mequa, nvars, mcon, ind, bl, bu, x, fj, ldfj, &
     fnorm, igo, iopt, ropt, iwork, work )
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) ' CASE 20 Baby Yea!'
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a,i6)' ) '  Output flag from DQED, IGO = ', igo
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) '  Computed X:'
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(g14.8)' ) x(1:nvars)
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a,g14.6)' ) '  L2 norm of the residual, FNORM = ', fnorm
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) 'Expected X:'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) ' CASE 20 Baby Yea!'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a,i6)' ) '  Output flag from DQED, IGO = ', igo
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) '  Computed X:'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(g14.8)' ) x(1:nvars)
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a,g14.6)' ) '  L2 norm of the residual, FNORM = ', fnorm
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) 'Expected X:'
  
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) 'DQED_PRB2'
-  WRITE ( *, '(a)' ) '  Normal end of execution.'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) 'DQED_PRB2'
+! WRITE ( *, '(a)' ) '  Normal end of execution.'
 
-  WRITE ( *, '(a)' ) ' '
-  CALL timestamp ( )
-  results = x
+! WRITE ( *, '(a)' ) ' '  results = x
 
   Theta_1  = results(1)
   nu_1     = results(2)
@@ -5866,9 +5784,6 @@ SUBROUTINE Case_21(Total_char_freq, Total_harm_osc_freq, HR_params )
   INTEGER :: N_vib, N_rot
 
  COMMON N_vib, N_rot, nu_low, nu_high, nu_mid, cp_difference, CV_temps
-
- CALL timestamp ( )
-
 ! Define the contraints on the target variables 
 
 ! x(1) corresponds to the first harmonic oscillator pseudo-frequency
@@ -5928,26 +5843,24 @@ SUBROUTINE Case_21(Total_char_freq, Total_harm_osc_freq, HR_params )
 
   CALL dqed ( Case_21_hd, mequa, nvars, mcon, ind, bl, bu, x, fj, ldfj, &
     fnorm, igo, iopt, ropt, iwork, work )
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) ' CASE 21 Baby Yea!'
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a,i6)' ) '  Output flag from DQED, IGO = ', igo
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) '  Computed X:'
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(g14.8)' ) x(1:nvars)
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a,g14.6)' ) '  L2 norm of the residual, FNORM = ', fnorm
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) 'Expected X:'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) ' CASE 21 Baby Yea!'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a,i6)' ) '  Output flag from DQED, IGO = ', igo
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) '  Computed X:'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(g14.8)' ) x(1:nvars)
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a,g14.6)' ) '  L2 norm of the residual, FNORM = ', fnorm
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) 'Expected X:'
  
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) 'DQED_PRB2'
-  WRITE ( *, '(a)' ) '  Normal end of execution.'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) 'DQED_PRB2'
+! WRITE ( *, '(a)' ) '  Normal end of execution.'
 
-  WRITE ( *, '(a)' ) ' '
-  CALL timestamp ( )
-
+! WRITE ( *, '(a)' ) ' '
   results = x
   Theta_1  = results(1)
   Theta_2  = results(2)
@@ -6097,8 +6010,6 @@ SUBROUTINE Case_22(Total_char_freq, Total_harm_osc_freq, HR_params )
   INTEGER :: N_vib, N_rot
  
  COMMON N_vib, N_rot, nu_low, nu_high, nu_mid, cp_difference, CV_temps
- CALL timestamp ( )
-
 ! Define the contraints on the target variables 
 
 ! x(1) corresponds to the first harmonic oscillator pseudo-frequency
@@ -6158,26 +6069,24 @@ SUBROUTINE Case_22(Total_char_freq, Total_harm_osc_freq, HR_params )
 
   CALL dqed ( Case_22_hd, mequa, nvars, mcon, ind, bl, bu, x, fj, ldfj, &
     fnorm, igo, iopt, ropt, iwork, work )
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) ' CASE 22 Baby Yea!'
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a,i6)' ) '  Output flag from DQED, IGO = ', igo
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) '  Computed X:'
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(g14.8)' ) x(1:nvars)
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a,g14.6)' ) '  L2 norm of the residual, FNORM = ', fnorm
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) 'Expected X:'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) ' CASE 22 Baby Yea!'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a,i6)' ) '  Output flag from DQED, IGO = ', igo
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) '  Computed X:'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(g14.8)' ) x(1:nvars)
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a,g14.6)' ) '  L2 norm of the residual, FNORM = ', fnorm
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) 'Expected X:'
  
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) 'DQED_PRB2'
-  WRITE ( *, '(a)' ) '  Normal end of execution.'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) 'DQED_PRB2'
+! WRITE ( *, '(a)' ) '  Normal end of execution.'
 
-  WRITE ( *, '(a)' ) ' '
-  CALL timestamp ( )
-
+! WRITE ( *, '(a)' ) ' '
   results = x
   Theta_1  =      results(1)
   g_1      = NINT(results(2) )
@@ -6331,9 +6240,6 @@ SUBROUTINE Case_23(Total_char_freq, Total_harm_osc_freq, HR_params )
   INTEGER :: N_vib, N_rot
 
  COMMON N_vib, N_rot, nu_low, nu_high, nu_mid, cp_difference, CV_temps
-
-  CALL timestamp ( )
-
 ! Define the contraints on the target variables 
 
 ! x(1) corresponds to the degeneracy of the first harmonic oscillator
@@ -6396,26 +6302,24 @@ SUBROUTINE Case_23(Total_char_freq, Total_harm_osc_freq, HR_params )
   CALL dqed ( Case_23_hd, mequa, nvars, mcon, ind, bl, bu, x, fj, ldfj, &
     fnorm, igo, iopt, ropt, iwork, work )
 
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) ' CASE 23'
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a,i6)' ) '  Output flag from DQED, IGO = ', igo
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) '  Computed X:'
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(g14.8)' ) x(1:nvars)
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a,g14.6)' ) '  L2 norm of the residual, FNORM = ', fnorm
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) 'Expected X:'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) ' CASE 23'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a,i6)' ) '  Output flag from DQED, IGO = ', igo
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) '  Computed X:'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(g14.8)' ) x(1:nvars)
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a,g14.6)' ) '  L2 norm of the residual, FNORM = ', fnorm
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) 'Expected X:'
  
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) 'DQED_PRB2'
-  WRITE ( *, '(a)' ) '  Normal end of execution.'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) 'DQED_PRB2'
+! WRITE ( *, '(a)' ) '  Normal end of execution.'
 
-  WRITE ( *, '(a)' ) ' '
-  CALL timestamp ( )
-
+! WRITE ( *, '(a)' ) ' '
   results = x
   g_1      = NINT(results(1) )
   Theta_1  =      results(2)
@@ -6575,9 +6479,6 @@ SUBROUTINE Case_24(Total_char_freq, Total_harm_osc_freq, HR_params )
   INTEGER :: N_vib, N_rot
 
  COMMON N_vib, N_rot, nu_low, nu_high, nu_mid, cp_difference, CV_temps
-
-  CALL timestamp ( )
-
 ! Define the contraints on the target variables 
 
 ! x(1) corresponds to the first hindered rotor pseudo-barrier
@@ -6640,26 +6541,24 @@ SUBROUTINE Case_24(Total_char_freq, Total_harm_osc_freq, HR_params )
   CALL dqed ( Case_24_hd, mequa, nvars, mcon, ind, bl, bu, x, fj, ldfj, &
     fnorm, igo, iopt, ropt, iwork, work )
 
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) ' CASE 24'
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a,i6)' ) '  Output flag from DQED, IGO = ', igo
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) '  Computed X:'
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(g14.8)' ) x(1:nvars)
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a,g14.6)' ) '  L2 norm of the residual, FNORM = ', fnorm
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) 'Expected X:'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) ' CASE 24'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a,i6)' ) '  Output flag from DQED, IGO = ', igo
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) '  Computed X:'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(g14.8)' ) x(1:nvars)
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a,g14.6)' ) '  L2 norm of the residual, FNORM = ', fnorm
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) 'Expected X:'
  
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) 'DQED_PRB2'
-  WRITE ( *, '(a)' ) '  Normal end of execution.'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) 'DQED_PRB2'
+! WRITE ( *, '(a)' ) '  Normal end of execution.'
 
-  WRITE ( *, '(a)' ) ' '
-  CALL timestamp ( )
-
+! WRITE ( *, '(a)' ) ' '
   results = x
   V_1  =      results(1)
   nu_1 =      results(2)
@@ -6823,9 +6722,6 @@ SUBROUTINE Case_25(Total_char_freq, Total_harm_osc_freq, HR_params )
   INTEGER :: N_vib, N_rot
 
  COMMON N_vib, N_rot, nu_low, nu_high, nu_mid, cp_difference, CV_temps
-
-  CALL timestamp ( )
-
 ! Define the contraints on the target variables 
 
 ! x(1) corresponds to the first hindered rotor pseudo-barrier
@@ -6888,26 +6784,24 @@ SUBROUTINE Case_25(Total_char_freq, Total_harm_osc_freq, HR_params )
   CALL dqed ( Case_25_hd, mequa, nvars, mcon, ind, bl, bu, x, fj, ldfj, &
     fnorm, igo, iopt, ropt, iwork, work )
 
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) ' CASE 25'
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a,i6)' ) '  Output flag from DQED, IGO = ', igo
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) '  Computed X:'
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(g14.8)' ) x(1:nvars)
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a,g14.6)' ) '  L2 norm of the residual, FNORM = ', fnorm
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) 'Expected X:'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) ' CASE 25'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a,i6)' ) '  Output flag from DQED, IGO = ', igo
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) '  Computed X:'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(g14.8)' ) x(1:nvars)
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a,g14.6)' ) '  L2 norm of the residual, FNORM = ', fnorm
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) 'Expected X:'
  
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) 'DQED_PRB2'
-  WRITE ( *, '(a)' ) '  Normal end of execution.'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) 'DQED_PRB2'
+! WRITE ( *, '(a)' ) '  Normal end of execution.'
 
-  WRITE ( *, '(a)' ) ' '
-  CALL timestamp ( )
-
+! WRITE ( *, '(a)' ) ' '
   results = x
   V_1     =      results(1)
   nu_1    =      results(2)
@@ -7057,9 +6951,6 @@ SUBROUTINE Case_26(Total_char_freq, Total_harm_osc_freq, HR_params )
   INTEGER :: N_vib, N_rot, i
 
  COMMON N_vib, N_rot, nu_low, nu_high, nu_mid, cp_difference, CV_temps
-
-  CALL timestamp ( )
-
 ! Define the contraints on the target variables 
 
 ! x(1) corresponds to the first harmonic oscillator pseudo-frequency
@@ -7122,26 +7013,24 @@ SUBROUTINE Case_26(Total_char_freq, Total_harm_osc_freq, HR_params )
   CALL dqed ( Case_26_hd, mequa, nvars, mcon, ind, bl, bu, x, fj, ldfj, &
     fnorm, igo, iopt, ropt, iwork, work )
 
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) ' CASE 26'
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a,i6)' ) '  Output flag from DQED, IGO = ', igo
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) '  Computed X:'
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(g14.8)' ) x(1:nvars)
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a,g14.6)' ) '  L2 norm of the residual, FNORM = ', fnorm
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) 'Expected X:'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) ' CASE 26'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a,i6)' ) '  Output flag from DQED, IGO = ', igo
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) '  Computed X:'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(g14.8)' ) x(1:nvars)
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a,g14.6)' ) '  L2 norm of the residual, FNORM = ', fnorm
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) 'Expected X:'
  
-  WRITE ( *, '(a)' ) ' '
-  WRITE ( *, '(a)' ) 'DQED_PRB2'
-  WRITE ( *, '(a)' ) '  Normal end of execution.'
+! WRITE ( *, '(a)' ) ' '
+! WRITE ( *, '(a)' ) 'DQED_PRB2'
+! WRITE ( *, '(a)' ) '  Normal end of execution.'
 
-  WRITE ( *, '(a)' ) ' '
-  CALL timestamp ( )
-
+! WRITE ( *, '(a)' ) ' '
   results = x
   Theta_1 =      results(1)
   Theta_2 =      results(2)
@@ -7265,42 +7154,42 @@ IMPLICIT NONE
   ELSE IF (N_rot==0) THEN
 
      IF (N_vib<0) THEN
-        WRITE(*,*) 'ERROR!  Number of unknown harmonic oscillator frequencies &
+       WRITE(*,*) 'ERROR!  Number of unknown harmonic oscillator frequencies &
                     &is negative!'
         
      ELSE IF (N_Vib==0) THEN
-        WRITE(*,*) 'CASE 0'
+!       WRITE(*,*) 'CASE 0'
         
      ELSE IF (N_vib==1) THEN
-        WRITE(*,*) 'CASE 1'
+!       WRITE(*,*) 'CASE 1'
         CALL Case_1(Total_char_freq, Total_harm_osc_freq, HR_params )
         
      ELSE IF (N_vib==2) THEN
-        WRITE(*,*) 'CASE 2'
+!       WRITE(*,*) 'CASE 2'
         CALL Case_2(Total_char_freq, Total_harm_osc_freq, HR_params )
         
      ELSE IF (N_vib==3) THEN
-        WRITE(*,*) 'CASE 3'
+!       WRITE(*,*) 'CASE 3'
         CALL Case_3(Total_char_freq, Total_harm_osc_freq, HR_params )
         
      ELSE IF (N_vib==4) THEN
-        WRITE(*,*) 'CASE 4'
+!       WRITE(*,*) 'CASE 4'
         CALL Case_4(Total_char_freq, Total_harm_osc_freq, HR_params )
        
      ELSE IF (N_vib==5) THEN
-        WRITE(*,*) 'CASE 5'
+!       WRITE(*,*) 'CASE 5'
         CALL Case_5(Total_char_freq, Total_harm_osc_freq, HR_params )
         
      ELSE IF (N_vib==6) THEN
-        WRITE(*,*) 'CASE 6'
+!       WRITE(*,*) 'CASE 6'
         CALL Case_6(Total_char_freq, Total_harm_osc_freq, HR_params )
 
      ELSE IF (N_vib>=7) THEN
-        WRITE(*,*) 'CASE 7'
+!       WRITE(*,*) 'CASE 7'
         CALL Case_7(Total_char_freq, Total_harm_osc_freq, HR_params )
   
      ELSE
-        WRITE(*,*) 'Something is wrong!'
+       WRITE(*,*) 'Something is wrong!'
         
      END IF
 
@@ -7308,35 +7197,35 @@ IMPLICIT NONE
   ELSE IF (N_rot==1) THEN
 
      IF (N_vib<0) THEN
-        WRITE(*,*) 'ERROR!  Number of unknown harmonic oscillator frequencies &
+       WRITE(*,*) 'ERROR!  Number of unknown harmonic oscillator frequencies &
                     &is negative!'
         
      ELSE IF (N_Vib==0) THEN
-        WRITE(*,*) 'CASE 8'
+!       WRITE(*,*) 'CASE 8'
         CALL Case_8(Total_char_freq, Total_harm_osc_freq, HR_params )
         
      ELSE IF (N_vib==1) THEN
-        WRITE(*,*) 'CASE 9'
+!       WRITE(*,*) 'CASE 9'
         CALL Case_9(Total_char_freq, Total_harm_osc_freq, HR_params )
         
      ELSE IF (N_vib==2) THEN
-        WRITE(*,*) 'CASE 10'
+!       WRITE(*,*) 'CASE 10'
         CALL Case_10(Total_char_freq, Total_harm_osc_freq, HR_params )
         
      ELSE IF (N_vib==3) THEN
-        WRITE(*,*) 'CASE 11'
+!       WRITE(*,*) 'CASE 11'
         CALL Case_11(Total_char_freq, Total_harm_osc_freq, HR_params )
         
      ELSE IF (N_vib==4) THEN
-        WRITE(*,*) 'CASE 12'
+!       WRITE(*,*) 'CASE 12'
         CALL Case_12(Total_char_freq, Total_harm_osc_freq, HR_params )
         
      ELSE IF (N_vib>=5) THEN
-        WRITE(*,*) 'CASE 13'
+!       WRITE(*,*) 'CASE 13'
         CALL Case_13(Total_char_freq, Total_harm_osc_freq, HR_params )
         
      ELSE
-        WRITE(*,*) 'Something is wrong!'
+       WRITE(*,*) 'Something is wrong!'
         
      END IF
   
@@ -7344,31 +7233,31 @@ IMPLICIT NONE
   ELSE IF (N_rot==2) THEN
 
      IF (N_vib<0) THEN
-        WRITE(*,*) 'ERROR!  Number of unknown harmonic oscillator frequencies &
+       WRITE(*,*) 'ERROR!  Number of unknown harmonic oscillator frequencies &
                     &is negative!'
         
      ELSE IF (N_Vib==0) THEN
-        WRITE(*,*) 'CASE 14'
+!       WRITE(*,*) 'CASE 14'
         CALL Case_14(Total_char_freq, Total_harm_osc_freq, HR_params )
 
      ELSE IF (N_vib==1) THEN
-        WRITE(*,*) 'CASE 15'
+!       WRITE(*,*) 'CASE 15'
         CALL Case_15(Total_char_freq, Total_harm_osc_freq, HR_params )
 
      ELSE IF (N_vib==2) THEN
-        WRITE(*,*) 'CASE 16'
+!       WRITE(*,*) 'CASE 16'
         CALL Case_16(Total_char_freq, Total_harm_osc_freq, HR_params )
        
      ELSE IF (N_vib==3) THEN
-        WRITE(*,*) 'CASE 17'
+!       WRITE(*,*) 'CASE 17'
         CALL Case_17(Total_char_freq, Total_harm_osc_freq, HR_params )
         
      ELSE IF (N_vib>=4) THEN
-        WRITE(*,*) 'CASE 18'
+!       WRITE(*,*) 'CASE 18'
         CALL Case_18(Total_char_freq, Total_harm_osc_freq, HR_params )
         
      ELSE
-        WRITE(*,*) 'Something is wrong!'
+       WRITE(*,*) 'Something is wrong!'
         
      END IF
 
@@ -7376,31 +7265,31 @@ IMPLICIT NONE
   ELSE IF (N_rot==3) THEN
 
      IF (N_vib<0) THEN
-        WRITE(*,*) 'ERROR!  Number of unknown harmonic oscillator frequencies &
+       WRITE(*,*) 'ERROR!  Number of unknown harmonic oscillator frequencies &
                     &is negative!'
         
      ELSE IF (N_Vib==0) THEN
-        WRITE(*,*) 'CASE 19'
+!       WRITE(*,*) 'CASE 19'
         CALL Case_19(Total_char_freq, Total_harm_osc_freq, HR_params )
 
      ELSE IF (N_vib==1) THEN
-        WRITE(*,*) 'CASE 20'
+!       WRITE(*,*) 'CASE 20'
         CALL Case_20(Total_char_freq, Total_harm_osc_freq, HR_params )
                
      ELSE IF (N_vib==2) THEN
-        WRITE(*,*) 'CASE 21'
+!       WRITE(*,*) 'CASE 21'
         CALL Case_21(Total_char_freq, Total_harm_osc_freq, HR_params )
 
      ELSE IF (N_vib==3) THEN
-        WRITE(*,*) 'CASE 22'
+!       WRITE(*,*) 'CASE 22'
         CALL Case_22(Total_char_freq, Total_harm_osc_freq, HR_params )
 
      ELSE IF (N_vib>=4) THEN
-        WRITE(*,*) 'CASE 23'
+!       WRITE(*,*) 'CASE 23'
         CALL Case_23(Total_char_freq, Total_harm_osc_freq, HR_params )
     
      ELSE
-        WRITE(*,*) 'Something is wrong!'
+       WRITE(*,*) 'Something is wrong!'
         
      END IF
 
@@ -7408,31 +7297,31 @@ IMPLICIT NONE
   ELSE IF (N_rot>=4) THEN
 
      IF (N_vib<0) THEN
-        WRITE(*,*) 'ERROR!  Number of unknown harmonic oscillator frequencies &
+       WRITE(*,*) 'ERROR!  Number of unknown harmonic oscillator frequencies &
                     &is negative!'
         
      ELSE IF (N_Vib==0) THEN
-        WRITE(*,*) 'CASE 24'
+!       WRITE(*,*) 'CASE 24'
         CALL Case_24(Total_char_freq, Total_harm_osc_freq, HR_params )
 
      ELSE IF (N_vib==1) THEN
-        WRITE(*,*) 'CASE 25'
+!       WRITE(*,*) 'CASE 25'
         CALL Case_25(Total_char_freq, Total_harm_osc_freq, HR_params )
         
      ELSE IF (N_vib==2) THEN
-        WRITE(*,*) 'CASE 26'
+!       WRITE(*,*) 'CASE 26'
         CALL Case_26(Total_char_freq, Total_harm_osc_freq, HR_params )
         
      ELSE IF (N_vib==3) THEN
-        WRITE(*,*) 'CASE 22'
+!       WRITE(*,*) 'CASE 22'
         CALL Case_22(Total_char_freq, Total_harm_osc_freq, HR_params )
         
      ELSE IF (N_vib>=4) THEN
-        WRITE(*,*) 'CASE 23'
-        CALL Case_23(Total_char_freq, Total_harm_osc_freq, HR_params )
+       WRITE(*,*) 'CASE 23'
+!        CALL Case_23(Total_char_freq, Total_harm_osc_freq, HR_params )
         
      ELSE
-        WRITE(*,*) 'Something is wrong!'
+       WRITE(*,*) 'Something is wrong!'
         
      END IF
 
@@ -7648,9 +7537,9 @@ IMPLICIT NONE
      trans_rot_cp_to_cv = 3.5
      N_vib = 3 * (N_atoms) - 5 - (N_rot) - (degeneracy)
      IF (N_vib < 0) THEN
-        WRITE(*,*) 'Something is wrong.  The system is over specified.'
-        WRITE(*,*) 'Either reduce the number of rotors or reduce the number of bond types.'
-        WRITE(*,*) 'Program will now exit to avoid crashing.'
+!       WRITE(*,*) 'Something is wrong.  The system is over specified.'
+!       WRITE(*,*) 'Either reduce the number of rotors or reduce the number of bond types.'
+!       WRITE(*,*) 'Program will now exit to avoid crashing.'
         STOP
      ENDIF
      ALLOCATE( Total_harm_osc_freq(3 * (N_atoms) - 5 - (N_rot) ) )
@@ -7659,9 +7548,9 @@ IMPLICIT NONE
      trans_rot_cp_to_cv = 4.0
      N_vib = 3 * (N_atoms) - 6 - (N_rot) - (degeneracy)
 	 IF (N_vib < 0) THEN
-        WRITE(*,*) 'Something is wrong.  The system is over specified.'
-        WRITE(*,*) 'Either reduce the number of rotors or reduce the number of bond types.'
-        WRITE(*,*) 'Program will now exit to avoid crashing.'
+!       WRITE(*,*) 'Something is wrong.  The system is over specified.'
+!       WRITE(*,*) 'Either reduce the number of rotors or reduce the number of bond types.'
+!       WRITE(*,*) 'Program will now exit to avoid crashing.'
         STOP
      ENDIF
      ALLOCATE( Total_harm_osc_freq(3 * (N_atoms) - 6 - (N_rot) ) )

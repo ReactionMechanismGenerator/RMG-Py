@@ -590,8 +590,7 @@ def generateSpectralData(struct, thermoData):
 	# structure
 	numRotors = struct.countInternalRotors()
 	numVibrations = numModes - numRotors
-
-	print 'For %s, I found %i internal rotors and %i vibrations for a total of %i modes' % (struct, numRotors, numVibrations, numModes)
+	#print 'For %s, I found %i internal rotors and %i vibrations for a total of %i modes' % (struct, numRotors, numVibrations, numModes)
 
 	# For each group in library, find all subgraph isomorphisms
 	groupCount = {}
@@ -605,9 +604,10 @@ def generateSpectralData(struct, thermoData):
 			raise Exception('Incorrect number of matches of node "%s" while estimating frequencies of %s.' % (node, struct))
 		groupCount[node] = count / data[0]
 
-	print 'Groups found:'
-	for node, count in groupCount.iteritems():
-		if count != 0: print '\t', node, count
+	# For debugging, print a list of the groups found
+	#print 'Groups found:'
+	#for node, count in groupCount.iteritems():
+	#	if count != 0: print '\t', node, count
 
 	# Get characteristic frequencies
 	frequencies = []
@@ -635,8 +635,9 @@ def generateSpectralData(struct, thermoData):
 	Cv -= (1.5 if not linear else 1.0)
 	# Subtract out PV term (Cp -> Cv)
 	Cv -= 1.0
-
-	print Cv
+	# Check that all Cv values are still positive
+	for C in Cv:
+		if C <= 0.0: raise Exception('Remaining heat capacity is negative.')
 
 	# Fit remaining frequencies and hindered rotors to the heat capacity data
 	import spectralfit
