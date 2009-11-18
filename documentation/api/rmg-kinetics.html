@@ -122,7 +122,7 @@ class </em><tt class="descclassname">rmg.kinetics.</tt><tt class="descname">Arrh
 <dd><p>Represent a set of modified Arrhenius kinetics. The kinetic expression has
 the form</p>
 <div class="math">
-<p><img src="../../_images/math/36a7bc0fc095d1d802ab865412394bcb07f00956.png" alt="k(T) = A T^n \exp \left( - \frac{E_\mathrm{a}}{RT} \right)" />
+<p><img src="../../images/math/36a7bc0fc095d1d802ab865412394bcb07f00956.png" alt="k(T) = A T^n \exp \left( - \frac{E_\mathrm{a}}{RT} \right)" />
 </div></p><p>The attributes are:</p>
 <table border="1" class="docutils">
 <colgroup>
@@ -146,6 +146,11 @@ the form</p>
 </tr>
 </tbody>
 </table>
+<dl class="method">
+<dt id="rmg.kinetics.ArrheniusKinetics.equals">
+<tt class="descname">equals</tt><big>(</big><em>other</em><big>)</big><a class="headerlink" href="#rmg.kinetics.ArrheniusKinetics.equals" title="Permalink to this definition">¶</a></dt>
+<dd>Equality comparison.</dd></dl>
+
 <dl class="method">
 <dt id="rmg.kinetics.ArrheniusKinetics.getRateConstant">
 <tt class="descname">getRateConstant</tt><big>(</big><em>T</em><big>)</big><a class="headerlink" href="#rmg.kinetics.ArrheniusKinetics.getRateConstant" title="Permalink to this definition">¶</a></dt>
@@ -179,7 +184,7 @@ class </em><tt class="descclassname">rmg.kinetics.</tt><tt class="descname">Arrh
 <dd><p>Represent a set of modified Arrhenius kinetics with Evans-Polanyi data. The
 kinetic expression has the form</p>
 <div class="math">
-<p><img src="../../_images/math/8f685600bfa42ab8677d5646fd46efba807ee3aa.png" alt="k(T) = A T^n \exp \left( - \frac{E_0 + \alpha \Delta H_\mathrm{rxn}}{RT} \right)" />
+<p><img src="../../images/math/8f685600bfa42ab8677d5646fd46efba807ee3aa.png" alt="k(T) = A T^n \exp \left( - \frac{E_0 + \alpha \Delta H_\mathrm{rxn}}{RT} \right)" />
 </div></p><p>The attributes are:</p>
 <table border="1" class="docutils">
 <colgroup>
@@ -208,12 +213,17 @@ reaction</td>
 </tbody>
 </table>
 <dl class="method">
+<dt id="rmg.kinetics.ArrheniusEPKinetics.equals">
+<tt class="descname">equals</tt><big>(</big><em>other</em><big>)</big><a class="headerlink" href="#rmg.kinetics.ArrheniusEPKinetics.equals" title="Permalink to this definition">¶</a></dt>
+<dd>Equality comparison.</dd></dl>
+
+<dl class="method">
 <dt id="rmg.kinetics.ArrheniusEPKinetics.fromDatabase">
 <tt class="descname">fromDatabase</tt><big>(</big><em>data</em>, <em>comment</em>, <em>numReactants</em><big>)</big><a class="headerlink" href="#rmg.kinetics.ArrheniusEPKinetics.fromDatabase" title="Permalink to this definition">¶</a></dt>
 <dd><p>Process a list of numbers <cite>data</cite> and associated description <cite>comment</cite>
 generated while reading from a kinetics database. The <cite>numReactants</cite>
 parameter is used to interpret the units of the preexponential.</p>
-<p>Database units for A are assumed to be <img class="math" src="../../_images/math/d1dd2bfb624ee35715d90d595533ace9d04f4859.png" alt="(cm^3/mol)^{(n-1)}/s"/>  where <img class="math" src="../../_images/math/174fadd07fd54c9afe288e96558c92e0c1da733a.png" alt="n"/> is <cite>numReactants</cite>
+<p>Database units for A are assumed to be <img class="math" src="../../images/math/d1dd2bfb624ee35715d90d595533ace9d04f4859.png" alt="(cm^3/mol)^{(n-1)}/s"/>  where <img class="math" src="../../images/math/174fadd07fd54c9afe288e96558c92e0c1da733a.png" alt="n"/> is <cite>numReactants</cite>
 Database units for E0 are kcal/mol.</p>
 </dd></dl>
 

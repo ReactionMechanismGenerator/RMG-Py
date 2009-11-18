@@ -46,7 +46,7 @@
         <li><a href="../../index.html">RMG v0.1.1 documentation</a> &raquo;</li>
           <li><a href="../index.html" >RMG Documentation</a> &raquo;</li>
           <li><a href="index.html" accesskey="U">RMG Developer&#8217;s Guide</a> &raquo;</li>
-  <li><a href="">8. The <tt class="docutils literal"><span class="pre">rmg.model</span></tt> Module</a></li>
+  <li><a href="">8. The <tt class="docutils literal docutils literal"><span class="pre">rmg.model</span></tt> Module</a></li>
 
       </ul>
     </div>  
@@ -78,12 +78,12 @@ specified; the remaining one is dependent on the choice of the other two.</p>
 time <cite>t</cite> and values of the dependent variables <cite>y</cite>. The Jacobean
 function is the right-hand side of the equation</p>
 <div class="math">
-<p><img src="../../_images/math/b79acd7d109d6913db65e65e35dd7f0a40f47234.png" alt="something" />
+<p><img src="../../images/math/b79acd7d109d6913db65e65e35dd7f0a40f47234.png" alt="something" />
 </div></p><p>The dependent variables are temperature, pressure, volume, and
 numbers of moles for each species.</p>
 <div class="math">
-<p><img src="../../_images/math/6939062620424ab79e6304107b194a5fcd660644.png" alt="\mathbf{y} \equiv \left[ P, V, T, N_1, N_2,\ldots, N_i \right]" />
-</div></p><p>Currently only models isothermal and isobaric reactors (<img class="math" src="../../_images/math/42db04666af960c557925b931f47ded5de485771.png" alt="dT/dt=dP/dt=0"/>)</p>
+<p><img src="../../images/math/6939062620424ab79e6304107b194a5fcd660644.png" alt="\mathbf{y} \equiv \left[ P, V, T, N_1, N_2,\ldots, N_i \right]" />
+</div></p><p>Currently only models isothermal and isobaric reactors (<img class="math" src="../../images/math/42db04666af960c557925b931f47ded5de485771.png" alt="dT/dt=dP/dt=0"/>)</p>
 </dd></dl>
 
 <dl class="method">
@@ -99,12 +99,12 @@ edge).</dd></dl>
 time <cite>t</cite> and values of the dependent variables <cite>y</cite>. The residual
 function is the right-hand side of the equation</p>
 <div class="math">
-<p><img src="../../_images/math/8789bd5cb2a72b34fcf6f22f964800f8fe70f48b.png" alt="\frac{d \mathbf{y}}{dt} = \mathbf{R}(\mathbf{y})" />
+<p><img src="../../images/math/8789bd5cb2a72b34fcf6f22f964800f8fe70f48b.png" alt="\frac{d \mathbf{y}}{dt} = \mathbf{R}(\mathbf{y})" />
 </div></p><p>The dependent variables are temperature, pressure, volume, and
 numbers of moles for each species.</p>
 <div class="math">
-<p><img src="../../_images/math/6939062620424ab79e6304107b194a5fcd660644.png" alt="\mathbf{y} \equiv \left[ P, V, T, N_1, N_2,\ldots, N_i \right]" />
-</div></p><p>Currently only models isothermal and isobaric reactors (<img class="math" src="../../_images/math/42db04666af960c557925b931f47ded5de485771.png" alt="dT/dt=dP/dt=0"/>)</p>
+<p><img src="../../images/math/6939062620424ab79e6304107b194a5fcd660644.png" alt="\mathbf{y} \equiv \left[ P, V, T, N_1, N_2,\ldots, N_i \right]" />
+</div></p><p>Currently only models isothermal and isobaric reactors (<img class="math" src="../../images/math/42db04666af960c557925b931f47ded5de485771.png" alt="dT/dt=dP/dt=0"/>)</p>
 </dd></dl>
 
 <dl class="method">
@@ -290,8 +290,8 @@ start out with.</dd></dl>
 class </em><tt class="descclassname">rmg.model.</tt><tt class="descname">IdealGas</tt><a class="headerlink" href="#rmg.model.IdealGas" title="Permalink to this definition">¶</a></dt>
 <dd><p>An equation of state based on the ideal gas approximation</p>
 <div class="math">
-<p><img src="../../_images/math/4226100413410eb2b52d100ed0df65159c0f465f.png" alt="f(P, V, T, \mathbf{N}) = NRT - PV" />
-</div></p><p>where <img class="math" src="../../_images/math/f4c5cbf84a24b428a1f386e90ff24e9f123ef232.png" alt="N \equiv \sum_i N_i"/> is the total number of moles.</p>
+<p><img src="../../images/math/4226100413410eb2b52d100ed0df65159c0f465f.png" alt="f(P, V, T, \mathbf{N}) = NRT - PV" />
+</div></p><p>where <img class="math" src="../../images/math/f4c5cbf84a24b428a1f386e90ff24e9f123ef232.png" alt="N \equiv \sum_i N_i"/> is the total number of moles.</p>
 <p>The ideal gas approximation is generally valid for gases at low pressures
 and moderate tempertaures; it does not predict the gas-liquid phase
 transition and is not applicable to liquids.</p>
@@ -316,7 +316,7 @@ numbers of moles <cite>N</cite> (which may be a list, in which case it&#8217;s s
 <dl class="method">
 <dt id="rmg.model.IdealGas.getdPdNi">
 <tt class="descname">getdPdNi</tt><big>(</big><em>P</em>, <em>V</em>, <em>T</em>, <em>N</em>, <em>i</em><big>)</big><a class="headerlink" href="#rmg.model.IdealGas.getdPdNi" title="Permalink to this definition">¶</a></dt>
-<dd>Return the derivative <img class="math" src="../../_images/math/4e429b1cf84784444e4d660244735f6248dcff97.png" alt="\frac{dP}{dN_i}\big|_{T, V,\mathbf{N}_{j \ne i}}"/>
+<dd>Return the derivative <img class="math" src="../../images/math/4e429b1cf84784444e4d660244735f6248dcff97.png" alt="\frac{dP}{dN_i}\big|_{T, V,\mathbf{N}_{j \ne i}}"/>
 evaluated at a given pressure <cite>P</cite>, volume <cite>V</cite>, temperature <cite>T</cite>, and
 numbers of moles <cite>N</cite>. The final parameter <cite>i</cite> is used to determine which
 species to use; if <cite>N</cite> is a list, then <cite>i</cite> is an index, while if <cite>N</cite> is
@@ -325,21 +325,21 @@ a dictionary, <cite>i</cite> is a key.</dd></dl>
 <dl class="method">
 <dt id="rmg.model.IdealGas.getdPdT">
 <tt class="descname">getdPdT</tt><big>(</big><em>P</em>, <em>V</em>, <em>T</em>, <em>N</em><big>)</big><a class="headerlink" href="#rmg.model.IdealGas.getdPdT" title="Permalink to this definition">¶</a></dt>
-<dd>Return the derivative <img class="math" src="../../_images/math/f2c160516ae9afeee63c39fe5ec2b61a99ed9f35.png" alt="\frac{dP}{dT}\big|_{V,\mathbf{N}}"/>
+<dd>Return the derivative <img class="math" src="../../images/math/f2c160516ae9afeee63c39fe5ec2b61a99ed9f35.png" alt="\frac{dP}{dT}\big|_{V,\mathbf{N}}"/>
 evaluated at a given pressure <cite>P</cite>, volume <cite>V</cite>, temperature <cite>T</cite>, and
 numbers of moles <cite>N</cite>.</dd></dl>
 
 <dl class="method">
 <dt id="rmg.model.IdealGas.getdPdV">
 <tt class="descname">getdPdV</tt><big>(</big><em>P</em>, <em>V</em>, <em>T</em>, <em>N</em><big>)</big><a class="headerlink" href="#rmg.model.IdealGas.getdPdV" title="Permalink to this definition">¶</a></dt>
-<dd>Return the derivative <img class="math" src="../../_images/math/b492a3fa6ff20f469288c98c9308f563d71e48fe.png" alt="\frac{dP}{dV}\big|_{T,\mathbf{N}}"/>
+<dd>Return the derivative <img class="math" src="../../images/math/b492a3fa6ff20f469288c98c9308f563d71e48fe.png" alt="\frac{dP}{dV}\big|_{T,\mathbf{N}}"/>
 evaluated at a given pressure <cite>P</cite>, volume <cite>V</cite>, temperature <cite>T</cite>, and
 numbers of moles <cite>N</cite>.</dd></dl>
 
 <dl class="method">
 <dt id="rmg.model.IdealGas.getdTdNi">
 <tt class="descname">getdTdNi</tt><big>(</big><em>P</em>, <em>V</em>, <em>T</em>, <em>N</em>, <em>i</em><big>)</big><a class="headerlink" href="#rmg.model.IdealGas.getdTdNi" title="Permalink to this definition">¶</a></dt>
-<dd>Return the derivative <img class="math" src="../../_images/math/e7340dd37883ac3d2db9b3076a92da131b827f08.png" alt="\frac{dT}{dN_i}\big|_{P, V,\mathbf{N}_{j \ne i}}"/>
+<dd>Return the derivative <img class="math" src="../../images/math/e7340dd37883ac3d2db9b3076a92da131b827f08.png" alt="\frac{dT}{dN_i}\big|_{P, V,\mathbf{N}_{j \ne i}}"/>
 evaluated at a given pressure <cite>P</cite>, volume <cite>V</cite>, temperature <cite>T</cite>, and
 numbers of moles <cite>N</cite>. The final parameter <cite>i</cite> is the index of the
 species of interest, corresponding to an index into the list <cite>N</cite>.</dd></dl>
@@ -347,21 +347,21 @@ species of interest, corresponding to an index into the list <cite>N</cite>.</dd
 <dl class="method">
 <dt id="rmg.model.IdealGas.getdTdP">
 <tt class="descname">getdTdP</tt><big>(</big><em>P</em>, <em>V</em>, <em>T</em>, <em>N</em><big>)</big><a class="headerlink" href="#rmg.model.IdealGas.getdTdP" title="Permalink to this definition">¶</a></dt>
-<dd>Return the derivative <img class="math" src="../../_images/math/f74a99d1cd100263be48056d89858dd90038e890.png" alt="\frac{dT}{dP}\big|_{V,\mathbf{N}}"/>
+<dd>Return the derivative <img class="math" src="../../images/math/f74a99d1cd100263be48056d89858dd90038e890.png" alt="\frac{dT}{dP}\big|_{V,\mathbf{N}}"/>
 evaluated at a given pressure <cite>P</cite>, volume <cite>V</cite>, temperature <cite>T</cite>, and
 numbers of moles <cite>N</cite>.</dd></dl>
 
 <dl class="method">
 <dt id="rmg.model.IdealGas.getdTdV">
 <tt class="descname">getdTdV</tt><big>(</big><em>P</em>, <em>V</em>, <em>T</em>, <em>N</em><big>)</big><a class="headerlink" href="#rmg.model.IdealGas.getdTdV" title="Permalink to this definition">¶</a></dt>
-<dd>Return the derivative <img class="math" src="../../_images/math/6e4227d3b5e84f9e990e410dab5c1c284649e934.png" alt="\frac{dT}{dV}\big|_{P,\mathbf{N}}"/>
+<dd>Return the derivative <img class="math" src="../../images/math/6e4227d3b5e84f9e990e410dab5c1c284649e934.png" alt="\frac{dT}{dV}\big|_{P,\mathbf{N}}"/>
 evaluated at a given pressure <cite>P</cite>, volume <cite>V</cite>, temperature <cite>T</cite>, and
 numbers of moles <cite>N</cite>.</dd></dl>
 
 <dl class="method">
 <dt id="rmg.model.IdealGas.getdVdNi">
 <tt class="descname">getdVdNi</tt><big>(</big><em>P</em>, <em>V</em>, <em>T</em>, <em>N</em>, <em>i</em><big>)</big><a class="headerlink" href="#rmg.model.IdealGas.getdVdNi" title="Permalink to this definition">¶</a></dt>
-<dd>Return the derivative <img class="math" src="../../_images/math/a3ae9e82ae5292b930c3922245075f25d87924de.png" alt="\frac{dV}{dN_i}\big|_{T, P,\mathbf{N}_{j \ne i}}"/>
+<dd>Return the derivative <img class="math" src="../../images/math/a3ae9e82ae5292b930c3922245075f25d87924de.png" alt="\frac{dV}{dN_i}\big|_{T, P,\mathbf{N}_{j \ne i}}"/>
 evaluated at a given pressure <cite>P</cite>, volume <cite>V</cite>, temperature <cite>T</cite>, and
 numbers of moles <cite>N</cite>. The final parameter <cite>i</cite> is the index of the
 species of interest, corresponding to an index into the list <cite>N</cite>.</dd></dl>
@@ -369,14 +369,14 @@ species of interest, corresponding to an index into the list <cite>N</cite>.</dd
 <dl class="method">
 <dt id="rmg.model.IdealGas.getdVdP">
 <tt class="descname">getdVdP</tt><big>(</big><em>P</em>, <em>V</em>, <em>T</em>, <em>N</em><big>)</big><a class="headerlink" href="#rmg.model.IdealGas.getdVdP" title="Permalink to this definition">¶</a></dt>
-<dd>Return the derivative <img class="math" src="../../_images/math/f810ad7f9c3f678c69b5be12f2837b1ee7cd01f6.png" alt="\frac{dV}{dP}\big|_{T,\mathbf{N}}"/>
+<dd>Return the derivative <img class="math" src="../../images/math/f810ad7f9c3f678c69b5be12f2837b1ee7cd01f6.png" alt="\frac{dV}{dP}\big|_{T,\mathbf{N}}"/>
 evaluated at a given pressure <cite>P</cite>, volume <cite>V</cite>, temperature <cite>T</cite>, and
 numbers of moles <cite>N</cite>.</dd></dl>
 
 <dl class="method">
 <dt id="rmg.model.IdealGas.getdVdT">
 <tt class="descname">getdVdT</tt><big>(</big><em>P</em>, <em>V</em>, <em>T</em>, <em>N</em><big>)</big><a class="headerlink" href="#rmg.model.IdealGas.getdVdT" title="Permalink to this definition">¶</a></dt>
-<dd>Return the derivative <img class="math" src="../../_images/math/fa7f71dbde82081b5d92d2e6b9624ccf2025cb20.png" alt="\frac{dV}{dT}\big|_{P,\mathbf{N}}"/>
+<dd>Return the derivative <img class="math" src="../../images/math/fa7f71dbde82081b5d92d2e6b9624ccf2025cb20.png" alt="\frac{dV}{dT}\big|_{P,\mathbf{N}}"/>
 evaluated at a given pressure <cite>P</cite>, volume <cite>V</cite>, temperature <cite>T</cite>, and
 numbers of moles <cite>N</cite>.</dd></dl>
 
@@ -391,8 +391,8 @@ numbers of moles <cite>N</cite>.</dd></dl>
 class </em><tt class="descclassname">rmg.model.</tt><tt class="descname">IncompressibleLiquid</tt><big>(</big><em>T=None</em>, <em>P=None</em>, <em>V=None</em>, <em>N=None</em>, <em>Vmol=None</em><big>)</big><a class="headerlink" href="#rmg.model.IncompressibleLiquid" title="Permalink to this definition">¶</a></dt>
 <dd><p>An equation of state for incompressible liquids</p>
 <div class="math">
-<p><img src="../../_images/math/8b4fafa5bba098d073f5b76c1267fba58b340a3d.png" alt="f(P, V, T, \mathbf{N}) = ?" />
-</div></p><p>where <img class="math" src="../../_images/math/f4c5cbf84a24b428a1f386e90ff24e9f123ef232.png" alt="N \equiv \sum_i N_i"/> is the total number of moles.</p>
+<p><img src="../../images/math/8b4fafa5bba098d073f5b76c1267fba58b340a3d.png" alt="f(P, V, T, \mathbf{N}) = ?" />
+</div></p><p>where <img class="math" src="../../images/math/f4c5cbf84a24b428a1f386e90ff24e9f123ef232.png" alt="N \equiv \sum_i N_i"/> is the total number of moles.</p>
 <dl class="docutils">
 <dt>Initialise with keyword arguments::</dt>
 <dd>il = IncompressibleLiquid(T=298, P=1E5, V=, N=, Vmol=)</dd>
@@ -418,7 +418,7 @@ numbers of moles <cite>N</cite> (which may be a list, in which case it&#8217;s s
 <dl class="method">
 <dt id="rmg.model.IncompressibleLiquid.getdPdNi">
 <tt class="descname">getdPdNi</tt><big>(</big><em>P</em>, <em>V</em>, <em>T</em>, <em>N</em>, <em>i</em><big>)</big><a class="headerlink" href="#rmg.model.IncompressibleLiquid.getdPdNi" title="Permalink to this definition">¶</a></dt>
-<dd>Return the derivative <img class="math" src="../../_images/math/4e429b1cf84784444e4d660244735f6248dcff97.png" alt="\frac{dP}{dN_i}\big|_{T, V,\mathbf{N}_{j \ne i}}"/>
+<dd>Return the derivative <img class="math" src="../../images/math/4e429b1cf84784444e4d660244735f6248dcff97.png" alt="\frac{dP}{dN_i}\big|_{T, V,\mathbf{N}_{j \ne i}}"/>
 evaluated at a given pressure <cite>P</cite>, volume <cite>V</cite>, temperature <cite>T</cite>, and
 numbers of moles <cite>N</cite>. The final parameter <cite>i</cite> is used to determine which
 species to use; if <cite>N</cite> is a list, then <cite>i</cite> is an index, while if <cite>N</cite> is
@@ -427,21 +427,21 @@ a dictionary, <cite>i</cite> is a key.</dd></dl>
 <dl class="method">
 <dt id="rmg.model.IncompressibleLiquid.getdPdT">
 <tt class="descname">getdPdT</tt><big>(</big><em>P</em>, <em>V</em>, <em>T</em>, <em>N</em><big>)</big><a class="headerlink" href="#rmg.model.IncompressibleLiquid.getdPdT" title="Permalink to this definition">¶</a></dt>
-<dd>Return the derivative <img class="math" src="../../_images/math/f2c160516ae9afeee63c39fe5ec2b61a99ed9f35.png" alt="\frac{dP}{dT}\big|_{V,\mathbf{N}}"/>
+<dd>Return the derivative <img class="math" src="../../images/math/f2c160516ae9afeee63c39fe5ec2b61a99ed9f35.png" alt="\frac{dP}{dT}\big|_{V,\mathbf{N}}"/>
 evaluated at a given pressure <cite>P</cite>, volume <cite>V</cite>, temperature <cite>T</cite>, and
 numbers of moles <cite>N</cite>.</dd></dl>
 
 <dl class="method">
 <dt id="rmg.model.IncompressibleLiquid.getdPdV">
 <tt class="descname">getdPdV</tt><big>(</big><em>P</em>, <em>V</em>, <em>T</em>, <em>N</em><big>)</big><a class="headerlink" href="#rmg.model.IncompressibleLiquid.getdPdV" title="Permalink to this definition">¶</a></dt>
-<dd>Return the derivative <img class="math" src="../../_images/math/b492a3fa6ff20f469288c98c9308f563d71e48fe.png" alt="\frac{dP}{dV}\big|_{T,\mathbf{N}}"/>
+<dd>Return the derivative <img class="math" src="../../images/math/b492a3fa6ff20f469288c98c9308f563d71e48fe.png" alt="\frac{dP}{dV}\big|_{T,\mathbf{N}}"/>
 evaluated at a given pressure <cite>P</cite>, volume <cite>V</cite>, temperature <cite>T</cite>, and
 numbers of moles <cite>N</cite>.</dd></dl>
 
 <dl class="method">
 <dt id="rmg.model.IncompressibleLiquid.getdTdNi">
 <tt class="descname">getdTdNi</tt><big>(</big><em>P</em>, <em>V</em>, <em>T</em>, <em>N</em>, <em>i</em><big>)</big><a class="headerlink" href="#rmg.model.IncompressibleLiquid.getdTdNi" title="Permalink to this definition">¶</a></dt>
-<dd>Return the derivative <img class="math" src="../../_images/math/e7340dd37883ac3d2db9b3076a92da131b827f08.png" alt="\frac{dT}{dN_i}\big|_{P, V,\mathbf{N}_{j \ne i}}"/>
+<dd>Return the derivative <img class="math" src="../../images/math/e7340dd37883ac3d2db9b3076a92da131b827f08.png" alt="\frac{dT}{dN_i}\big|_{P, V,\mathbf{N}_{j \ne i}}"/>
 evaluated at a given pressure <cite>P</cite>, volume <cite>V</cite>, temperature <cite>T</cite>, and
 numbers of moles <cite>N</cite>. The final parameter <cite>i</cite> is the index of the
 species of interest, corresponding to an index into the list <cite>N</cite>.</dd></dl>
@@ -449,21 +449,21 @@ species of interest, corresponding to an index into the list <cite>N</cite>.</dd
 <dl class="method">
 <dt id="rmg.model.IncompressibleLiquid.getdTdP">
 <tt class="descname">getdTdP</tt><big>(</big><em>P</em>, <em>V</em>, <em>T</em>, <em>N</em><big>)</big><a class="headerlink" href="#rmg.model.IncompressibleLiquid.getdTdP" title="Permalink to this definition">¶</a></dt>
-<dd>Return the derivative <img class="math" src="../../_images/math/1f0064517c9d62083a6a626c02f46177085da57a.png" alt="\frac{dT}{dP}\bigg|_{V,\mathbf{N}}"/>
+<dd>Return the derivative <img class="math" src="../../images/math/1f0064517c9d62083a6a626c02f46177085da57a.png" alt="\frac{dT}{dP}\bigg|_{V,\mathbf{N}}"/>
 evaluated at a given pressure <cite>P</cite>, volume <cite>V</cite>, temperature <cite>T</cite>, and
 numbers of moles <cite>N</cite>.</dd></dl>
 
 <dl class="method">
 <dt id="rmg.model.IncompressibleLiquid.getdTdV">
 <tt class="descname">getdTdV</tt><big>(</big><em>P</em>, <em>V</em>, <em>T</em>, <em>N</em><big>)</big><a class="headerlink" href="#rmg.model.IncompressibleLiquid.getdTdV" title="Permalink to this definition">¶</a></dt>
-<dd>Return the derivative <img class="math" src="../../_images/math/6e4227d3b5e84f9e990e410dab5c1c284649e934.png" alt="\frac{dT}{dV}\big|_{P,\mathbf{N}}"/>
+<dd>Return the derivative <img class="math" src="../../images/math/6e4227d3b5e84f9e990e410dab5c1c284649e934.png" alt="\frac{dT}{dV}\big|_{P,\mathbf{N}}"/>
 evaluated at a given pressure <cite>P</cite>, volume <cite>V</cite>, temperature <cite>T</cite>, and
 numbers of moles <cite>N</cite>.</dd></dl>
 
 <dl class="method">
 <dt id="rmg.model.IncompressibleLiquid.getdVdNi">
 <tt class="descname">getdVdNi</tt><big>(</big><em>P</em>, <em>V</em>, <em>T</em>, <em>N</em>, <em>i</em><big>)</big><a class="headerlink" href="#rmg.model.IncompressibleLiquid.getdVdNi" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the derivative <img class="math" src="../../_images/math/a3ae9e82ae5292b930c3922245075f25d87924de.png" alt="\frac{dV}{dN_i}\big|_{T, P,\mathbf{N}_{j \ne i}}"/>
+<dd><p>Return the derivative <img class="math" src="../../images/math/a3ae9e82ae5292b930c3922245075f25d87924de.png" alt="\frac{dV}{dN_i}\big|_{T, P,\mathbf{N}_{j \ne i}}"/>
 evaluated at a given pressure <cite>P</cite>, volume <cite>V</cite>, temperature <cite>T</cite>, and
 numbers of moles <cite>N</cite>. The final parameter <cite>i</cite> is the index of the
 species of interest, corresponding to an index into the list <cite>N</cite>.</p>
@@ -475,14 +475,14 @@ is equal to the average molar volume of the mixture as a whole.</p>
 <dl class="method">
 <dt id="rmg.model.IncompressibleLiquid.getdVdP">
 <tt class="descname">getdVdP</tt><big>(</big><em>P</em>, <em>V</em>, <em>T</em>, <em>N</em><big>)</big><a class="headerlink" href="#rmg.model.IncompressibleLiquid.getdVdP" title="Permalink to this definition">¶</a></dt>
-<dd>Return the derivative <img class="math" src="../../_images/math/f810ad7f9c3f678c69b5be12f2837b1ee7cd01f6.png" alt="\frac{dV}{dP}\big|_{T,\mathbf{N}}"/>
+<dd>Return the derivative <img class="math" src="../../images/math/f810ad7f9c3f678c69b5be12f2837b1ee7cd01f6.png" alt="\frac{dV}{dP}\big|_{T,\mathbf{N}}"/>
 evaluated at a given pressure <cite>P</cite>, volume <cite>V</cite>, temperature <cite>T</cite>, and
 numbers of moles <cite>N</cite>.</dd></dl>
 
 <dl class="method">
 <dt id="rmg.model.IncompressibleLiquid.getdVdT">
 <tt class="descname">getdVdT</tt><big>(</big><em>P</em>, <em>V</em>, <em>T</em>, <em>N</em><big>)</big><a class="headerlink" href="#rmg.model.IncompressibleLiquid.getdVdT" title="Permalink to this definition">¶</a></dt>
-<dd>Return the derivative <img class="math" src="../../_images/math/fa7f71dbde82081b5d92d2e6b9624ccf2025cb20.png" alt="\frac{dV}{dT}\big|_{P,\mathbf{N}}"/>
+<dd>Return the derivative <img class="math" src="../../images/math/fa7f71dbde82081b5d92d2e6b9624ccf2025cb20.png" alt="\frac{dV}{dT}\big|_{P,\mathbf{N}}"/>
 evaluated at a given pressure <cite>P</cite>, volume <cite>V</cite>, temperature <cite>T</cite>, and
 numbers of moles <cite>N</cite>.</dd></dl>
 
@@ -607,7 +607,7 @@ has one attribute: the termination <cite>time</cite> in seconds.</dd></dl>
 
             <h4>Previous topic</h4>
             <p class="topless"><a href="rmg-main.html"
-                                  title="previous chapter">7. The <tt class="docutils literal"><span class="pre">rmg.main</span></tt> Module</a></p>
+                                  title="previous chapter">7. The <tt class="docutils literal docutils literal docutils literal"><span class="pre">rmg.main</span></tt> Module</a></p>
             <h4>Next topic</h4>
             <p class="topless"><a href="rmg-reaction.html"
                                   title="next chapter">9. The <tt class="docutils literal"><span class="pre">rmg.reaction</span></tt> Module</a></p>
@@ -659,7 +659,7 @@ has one attribute: the termination <cite>time</cite> in seconds.</dd></dl>
         <li><a href="../../index.html">RMG v0.1.1 documentation</a> &raquo;</li>
           <li><a href="../index.html" >RMG Documentation</a> &raquo;</li>
           <li><a href="index.html" >RMG Developer&#8217;s Guide</a> &raquo;</li>
-  <li><a href="">8. The <tt class="docutils literal"><span class="pre">rmg.model</span></tt> Module</a></li>
+  <li><a href="">8. The <tt class="docutils literal docutils literal"><span class="pre">rmg.model</span></tt> Module</a></li>
 
       </ul>
     </div>

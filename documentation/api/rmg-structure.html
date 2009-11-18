@@ -5,7 +5,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>11. The rmg.structure Module &mdash; RMG v0.1.1 documentation</title>
+    <title>12. The rmg.structure Module &mdash; RMG v0.1.1 documentation</title>
     <link rel="stylesheet" href="../../static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../static/pygments.css" type="text/css" />
     <script type="text/javascript">
@@ -21,8 +21,8 @@
     <script type="text/javascript" src="../../static/doctools.js"></script>
     <link rel="top" title="RMG v0.1.1 documentation" href="../../index.html" />
     <link rel="up" title="RMG Developer’s Guide" href="index.html" />
-    <link rel="next" title="12. The rmg.thermo Module" href="rmg-thermo.html" />
-    <link rel="prev" title="10. The rmg.species Module" href="rmg-species.html" /> 
+    <link rel="next" title="13. The rmg.thermo Module" href="rmg-thermo.html" />
+    <link rel="prev" title="11. The rmg.spectral Module" href="rmg-spectral.html" /> 
  
 <link rel="stylesheet" href="../../static/RMG.css" type="text/css" />
 
@@ -38,15 +38,15 @@
           <a href="../../modindex.html" title="Global Module Index"
              accesskey="M">modules</a> |</li>
         <li class="right" >
-          <a href="rmg-thermo.html" title="12. The rmg.thermo Module"
+          <a href="rmg-thermo.html" title="13. The rmg.thermo Module"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="rmg-species.html" title="10. The rmg.species Module"
+          <a href="rmg-spectral.html" title="11. The rmg.spectral Module"
              accesskey="P">previous</a> |</li>
         <li><a href="../../index.html">RMG v0.1.1 documentation</a> &raquo;</li>
           <li><a href="../index.html" >RMG Documentation</a> &raquo;</li>
           <li><a href="index.html" accesskey="U">RMG Developer&#8217;s Guide</a> &raquo;</li>
-  <li><a href="">11. The <tt class="docutils literal docutils literal"><span class="pre">rmg.structure</span></tt> Module</a></li>
+  <li><a href="">12. The <tt class="docutils literal docutils literal"><span class="pre">rmg.structure</span></tt> Module</a></li>
 
       </ul>
     </div>  
@@ -57,13 +57,13 @@
           <div class="body">
             
   <div class="section" id="module-rmg.structure">
-<h1>11. The <tt class="docutils literal"><span class="pre">rmg.structure</span></tt> Module<a class="headerlink" href="#module-rmg.structure" title="Permalink to this headline">¶</a></h1>
+<h1>12. The <tt class="docutils literal"><span class="pre">rmg.structure</span></tt> Module<a class="headerlink" href="#module-rmg.structure" title="Permalink to this headline">¶</a></h1>
 <p>Contains classes describing chemical structures, which are made up of atoms and
 bonds.</p>
 <div class="section" id="classes-in-rmg-structure">
-<h2>11.1. Classes in <tt class="docutils literal"><span class="pre">rmg.structure</span></tt><a class="headerlink" href="#classes-in-rmg-structure" title="Permalink to this headline">¶</a></h2>
+<h2>12.1. Classes in <tt class="docutils literal"><span class="pre">rmg.structure</span></tt><a class="headerlink" href="#classes-in-rmg-structure" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="invalidadjacencylistexception">
-<h3>11.1.1. InvalidAdjacencyListException<a class="headerlink" href="#invalidadjacencylistexception" title="Permalink to this headline">¶</a></h3>
+<h3>12.1.1. InvalidAdjacencyListException<a class="headerlink" href="#invalidadjacencylistexception" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="rmg.structure.InvalidAdjacencyListException">
 <em class="property">
@@ -73,7 +73,7 @@ invalid. The label of the adjacency list is stored in the <cite>label</cite> att
 
 </div>
 <div class="section" id="structure">
-<h3>11.1.2. Structure<a class="headerlink" href="#structure" title="Permalink to this headline">¶</a></h3>
+<h3>12.1.2. Structure<a class="headerlink" href="#structure" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="rmg.structure.Structure">
 <em class="property">
@@ -196,6 +196,13 @@ includes both external and internal modes.</dd></dl>
 <dt id="rmg.structure.Structure.copy">
 <tt class="descname">copy</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.structure.Structure.copy" title="Permalink to this definition">¶</a></dt>
 <dd>Create a copy of the current Structure.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.structure.Structure.countInternalRotors">
+<tt class="descname">countInternalRotors</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.structure.Structure.countInternalRotors" title="Permalink to this definition">¶</a></dt>
+<dd>Determine the number of internal rotors in the structure. Any single
+bond not in a cycle and between two atoms that also have other bonds
+are considered to be internal rotors.</dd></dl>
 
 <dl class="method">
 <dt id="rmg.structure.Structure.findAllDelocalizationPaths">
@@ -436,7 +443,7 @@ environment) and complete (i.e. are as detailed as possible).</dd></dl>
 </div>
 </div>
 <div class="section" id="methods-in-rmg-structure">
-<h2>11.2. Methods in <tt class="docutils literal"><span class="pre">rmg.structure</span></tt><a class="headerlink" href="#methods-in-rmg-structure" title="Permalink to this headline">¶</a></h2>
+<h2>12.2. Methods in <tt class="docutils literal"><span class="pre">rmg.structure</span></tt><a class="headerlink" href="#methods-in-rmg-structure" title="Permalink to this headline">¶</a></h2>
 </div>
 </div>
 
@@ -448,23 +455,23 @@ environment) and complete (i.e. are as detailed as possible).</dd></dl>
         <div class="sphinxsidebarwrapper">
             <h3><a href="../../index.html">Table Of Contents</a></h3>
             <ul>
-<li><a class="reference external" href="">11. The <tt class="docutils literal"><span class="pre">rmg.structure</span></tt> Module</a><ul>
-<li><a class="reference external" href="#classes-in-rmg-structure">11.1. Classes in <tt class="docutils literal"><span class="pre">rmg.structure</span></tt></a><ul>
-<li><a class="reference external" href="#invalidadjacencylistexception">11.1.1. InvalidAdjacencyListException</a></li>
-<li><a class="reference external" href="#structure">11.1.2. Structure</a></li>
+<li><a class="reference external" href="">12. The <tt class="docutils literal"><span class="pre">rmg.structure</span></tt> Module</a><ul>
+<li><a class="reference external" href="#classes-in-rmg-structure">12.1. Classes in <tt class="docutils literal"><span class="pre">rmg.structure</span></tt></a><ul>
+<li><a class="reference external" href="#invalidadjacencylistexception">12.1.1. InvalidAdjacencyListException</a></li>
+<li><a class="reference external" href="#structure">12.1.2. Structure</a></li>
 </ul>
 </li>
-<li><a class="reference external" href="#methods-in-rmg-structure">11.2. Methods in <tt class="docutils literal"><span class="pre">rmg.structure</span></tt></a></li>
+<li><a class="reference external" href="#methods-in-rmg-structure">12.2. Methods in <tt class="docutils literal"><span class="pre">rmg.structure</span></tt></a></li>
 </ul>
 </li>
 </ul>
 
             <h4>Previous topic</h4>
-            <p class="topless"><a href="rmg-species.html"
-                                  title="previous chapter">10. The <tt class="docutils literal docutils literal docutils literal"><span class="pre">rmg.species</span></tt> Module</a></p>
+            <p class="topless"><a href="rmg-spectral.html"
+                                  title="previous chapter">11. The <tt class="docutils literal docutils literal docutils literal"><span class="pre">rmg.spectral</span></tt> Module</a></p>
             <h4>Next topic</h4>
             <p class="topless"><a href="rmg-thermo.html"
-                                  title="next chapter">12. The <tt class="docutils literal"><span class="pre">rmg.thermo</span></tt> Module</a></p>
+                                  title="next chapter">13. The <tt class="docutils literal docutils literal"><span class="pre">rmg.thermo</span></tt> Module</a></p>
             <h3>This Page</h3>
             <ul class="this-page-menu">
               <li><a href="../../sources/documentation/api/rmg-structure.txt"
@@ -505,15 +512,15 @@ environment) and complete (i.e. are as detailed as possible).</dd></dl>
           <a href="../../modindex.html" title="Global Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="rmg-thermo.html" title="12. The rmg.thermo Module"
+          <a href="rmg-thermo.html" title="13. The rmg.thermo Module"
              >next</a> |</li>
         <li class="right" >
-          <a href="rmg-species.html" title="10. The rmg.species Module"
+          <a href="rmg-spectral.html" title="11. The rmg.spectral Module"
              >previous</a> |</li>
         <li><a href="../../index.html">RMG v0.1.1 documentation</a> &raquo;</li>
           <li><a href="../index.html" >RMG Documentation</a> &raquo;</li>
           <li><a href="index.html" >RMG Developer&#8217;s Guide</a> &raquo;</li>
-  <li><a href="">11. The <tt class="docutils literal docutils literal"><span class="pre">rmg.structure</span></tt> Module</a></li>
+  <li><a href="">12. The <tt class="docutils literal docutils literal"><span class="pre">rmg.structure</span></tt> Module</a></li>
 
       </ul>
     </div>

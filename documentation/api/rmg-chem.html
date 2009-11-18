@@ -195,8 +195,8 @@ class </em><tt class="descclassname">rmg.chem.</tt><tt class="descname">AtomType
 about the local bonding structure. The attributes are:</p>
 <table border="1" class="docutils">
 <colgroup>
-<col width="17%" />
-<col width="83%" />
+<col width="20%" />
+<col width="80%" />
 </colgroup>
 <thead valign="bottom">
 <tr><th class="head">Attribute</th>
@@ -208,10 +208,34 @@ about the local bonding structure. The attributes are:</p>
 <td>A unique string identifier for the atom type</td>
 </tr>
 <tr><td><cite>element</cite></td>
-<td>The <a title="rmg.chem.Element" class="reference internal" href="#rmg.chem.Element"><tt class="xref docutils literal"><span class="pre">Element</span></tt></a> object this atom type represents, if any</td>
+<td>The <a title="rmg.chem.Element" class="reference internal" href="#rmg.chem.Element"><tt class="xref docutils literal"><span class="pre">Element</span></tt></a> object this atom type represents, if
+any</td>
 </tr>
 <tr><td><cite>description</cite></td>
 <td>A one-line description of the atom type</td>
+</tr>
+<tr><td><cite>doubleBonds</cite></td>
+<td>The number of double bonds to this atom type</td>
+</tr>
+<tr><td><cite>tripleBonds</cite></td>
+<td>The number of triple bonds to this atom type</td>
+</tr>
+<tr><td><cite>benzeneBonds</cite></td>
+<td>The number of benzene bonds to this atom type</td>
+</tr>
+<tr><td><cite>formBond</cite></td>
+<td>The atom type(s) resulting from an adjacent bond formation</td>
+</tr>
+<tr><td><cite>breakBond</cite></td>
+<td>The atom type(s) resulting from an adjacent bond breaking</td>
+</tr>
+<tr><td><cite>incrementBond</cite></td>
+<td>The atom type(s) resulting from an adjacent bond order
+increment</td>
+</tr>
+<tr><td><cite>decrementBond</cite></td>
+<td>The atom type(s) resulting from an adjacent bond order
+decrement</td>
 </tr>
 </tbody>
 </table>
@@ -223,6 +247,23 @@ atom type.</p>
 <tt class="descname">equivalent</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.chem.AtomType.equivalent" title="Permalink to this definition">¶</a></dt>
 <dd>Returns <tt class="xref xref docutils literal"><span class="pre">True</span></tt> if two atom types are equivalent or <tt class="xref xref docutils literal"><span class="pre">False</span></tt>
 otherwise. Respects wildcards, e.g. returns True for {R!H}=={C}</dd></dl>
+
+<dl class="method">
+<dt id="rmg.chem.AtomType.setActions">
+<tt class="descname">setActions</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.chem.AtomType.setActions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the atom types that result from the application of the
+relevant chemical actions. For atom types, these actions are:</p>
+<ul class="simple">
+<li>FORM_BOND - form a single bond between this atom and another atom</li>
+<li>BREAK_BOND - break a single bond between this atom and another atom</li>
+<li>INCREMENT_BOND - increment the order of a bond involving this atom by one</li>
+<li>DECREMENT_BOND - decrement the order of a bond involving this atom by one</li>
+</ul>
+<p>If an action cannot be applied to an atom type, it should be set
+to <tt class="xref xref docutils literal"><span class="pre">None</span></tt>. If multiple atom types can result from an action, a
+list should be used; RMG will eliminate atom types based on the
+resulting structure, if possible.</p>
+</dd></dl>
 
 </dd></dl>
 
@@ -347,8 +388,8 @@ class </em><tt class="descclassname">rmg.chem.</tt><tt class="descname">Electron
 <dd><p>A single free electron state for an atom. The attributes are:</p>
 <table border="1" class="docutils">
 <colgroup>
-<col width="10%" />
-<col width="90%" />
+<col width="15%" />
+<col width="85%" />
 </colgroup>
 <thead valign="bottom">
 <tr><th class="head">Attribute</th>
@@ -363,7 +404,16 @@ class </em><tt class="descclassname">rmg.chem.</tt><tt class="descname">Electron
 <td>The number of free electrons</td>
 </tr>
 <tr><td><cite>spin</cite></td>
-<td>A list of the allowed spin states for polyradicals (singlet = 1, doublet = 2, etc.)</td>
+<td>A list of the allowed spin states for polyradicals (singlet =
+1, doublet = 2, etc.)</td>
+</tr>
+<tr><td><cite>increment</cite></td>
+<td>The electron state that results from incrementing the radical
+count, if any</td>
+</tr>
+<tr><td><cite>decrement</cite></td>
+<td>The electron state that results from decrementing the radical
+count, if any</td>
 </tr>
 </tbody>
 </table>
@@ -375,6 +425,19 @@ electron state.</p>
 <tt class="descname">equivalent</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.chem.ElectronState.equivalent" title="Permalink to this definition">¶</a></dt>
 <dd>Returns <tt class="xref xref docutils literal"><span class="pre">True</span></tt> if two electron states are equivalent or
 <tt class="xref xref docutils literal"><span class="pre">False</span></tt> otherwise.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.chem.ElectronState.setActions">
+<tt class="descname">setActions</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.chem.ElectronState.setActions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the electron states that result from the application of the
+relevant chemical actions. For electron states, these actions are:</p>
+<ul class="simple">
+<li>INCREMENT_RADICAL - increment the free electron count by one</li>
+<li>DECREMENT_RADICAL - decrement the free electron count by one</li>
+</ul>
+<p>If an action cannot be applied to an electron state, it should be set
+to <tt class="xref xref docutils literal"><span class="pre">None</span></tt>.</p>
+</dd></dl>
 
 </dd></dl>
 
@@ -581,6 +644,12 @@ reactive sites</td>
 lone item in the list is returned instead.</dd></dl>
 
 <dl class="method">
+<dt id="rmg.chem.Atom.breakBond">
+<tt class="descname">breakBond</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.chem.Atom.breakBond" title="Permalink to this definition">¶</a></dt>
+<dd>Modify the atom type(s) of this atom in response to a BREAK_BOND
+chemical action.</dd></dl>
+
+<dl class="method">
 <dt id="rmg.chem.Atom.canDecreaseFreeElectron">
 <tt class="descname">canDecreaseFreeElectron</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.chem.Atom.canDecreaseFreeElectron" title="Permalink to this definition">¶</a></dt>
 <dd>Return <tt class="xref xref docutils literal"><span class="pre">True</span></tt> if the number of unpaired electrons on this atom can
@@ -604,11 +673,22 @@ fewer.</dd></dl>
 <tt class="descname">decreaseFreeElectron</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.chem.Atom.decreaseFreeElectron" title="Permalink to this definition">¶</a></dt>
 <dd>Decrease the number of unpaired electrons on this atom by one.</dd></dl>
 
+<dl class="method">
+<dt id="rmg.chem.Atom.decrementBond">
+<tt class="descname">decrementBond</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.chem.Atom.decrementBond" title="Permalink to this definition">¶</a></dt>
+<dd>Modify the atom type(s) of this atom in response to a DECREMENT_BOND
+chemical action.</dd></dl>
+
 <dl class="attribute">
 <dt id="rmg.chem.Atom.electronState">
 <tt class="descname">electronState</tt><a class="headerlink" href="#rmg.chem.Atom.electronState" title="Permalink to this definition">¶</a></dt>
 <dd>Get the list of allowed electronic states. If the list is of length 1,
 the lone item in the list is returned instead.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.chem.Atom.equals">
+<tt class="descname">equals</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.chem.Atom.equals" title="Permalink to this definition">¶</a></dt>
+<dd>Equality comparison.</dd></dl>
 
 <dl class="method">
 <dt id="rmg.chem.Atom.equivalent">
@@ -620,6 +700,12 @@ the atoms being tested for equivalence have multiple atom types,
 atom type in the other. This is also done for electron states. Both an
 atom types match and an electron state match must be found in order to
 return <tt class="xref xref docutils literal"><span class="pre">True</span></tt>.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.chem.Atom.formBond">
+<tt class="descname">formBond</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.chem.Atom.formBond" title="Permalink to this definition">¶</a></dt>
+<dd>Modify the atom type(s) of this atom in response to a FORM_BOND 
+chemical action.</dd></dl>
 
 <dl class="method">
 <dt id="rmg.chem.Atom.getAtomType">
@@ -654,6 +740,12 @@ atom types, then this method returns <tt class="xref xref docutils literal"><spa
 <dt id="rmg.chem.Atom.increaseFreeElectron">
 <tt class="descname">increaseFreeElectron</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.chem.Atom.increaseFreeElectron" title="Permalink to this definition">¶</a></dt>
 <dd>Increase the number of unpaired electrons on this atom by one.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.chem.Atom.incrementBond">
+<tt class="descname">incrementBond</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.chem.Atom.incrementBond" title="Permalink to this definition">¶</a></dt>
+<dd>Modify the atom type(s) of this atom in response to a INCREMENT_BOND
+chemical action.</dd></dl>
 
 <dl class="method">
 <dt id="rmg.chem.Atom.isCarbon">
@@ -775,6 +867,11 @@ breaking.</dd></dl>
 <dt id="rmg.chem.Bond.decreaseOrder">
 <tt class="descname">decreaseOrder</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.chem.Bond.decreaseOrder" title="Permalink to this definition">¶</a></dt>
 <dd>Decrease the bond order by one.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.chem.Bond.equals">
+<tt class="descname">equals</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.chem.Bond.equals" title="Permalink to this definition">¶</a></dt>
+<dd>Equality comparison.</dd></dl>
 
 <dl class="method">
 <dt id="rmg.chem.Bond.equivalent">
