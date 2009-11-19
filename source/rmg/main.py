@@ -112,7 +112,7 @@ def execute(inputFile, options):
 		reload(ctml_writer) # ensure new empty ctml_writer._species and ._reactions lists
 		for reactor in reactionSystems:
 			# initialise the ctml_writer thing
-			reactor.toCantera()
+			reactor.initializeCantera()
 		for spec in reactionModel.core.species:
 			# add species to ctml_writer._species list
 			spec.toCantera() 
