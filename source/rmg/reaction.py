@@ -1401,6 +1401,7 @@ class ReactionFamily(data.Database):
 		# Generate the product structures by applying the forward reaction recipe
 		try:
 			productStructures = self.applyRecipe(reactantStructures)
+			if not productStructures: return None
 		except chem.InvalidChemicalActionException, e:
 			print 'Unable to apply reaction recipe!'
 			print 'Reaction family is %s' % self

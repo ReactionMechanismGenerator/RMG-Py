@@ -81,9 +81,6 @@ class BatchReactor(ReactionSystem):
 
 	def fromXML(self, document, rootElement, speciesDict):
 
-		# Read physical property model
-		physicalPropertyModel = document.getChildElementText(rootElement, 'physicalPropertyModel', required=True)
-
 		# Read volume
 		self.volume = float(document.getChildQuantity(rootElement, 'volume', required=True).simplified)
 
@@ -131,6 +128,21 @@ class BatchReactor(ReactionSystem):
 		reservoirConditions = document.getChildElement(rootElement, 'reservoirConditions', required=True)
 		self.reservoirTemperature = float(document.getChildQuantity(reservoirConditions, 'temperature', required=True).simplified)
 		self.reservoirPressure = float(document.getChildQuantity(reservoirConditions, 'pressure', required=True).simplified)
+
+		# Read physical property model
+		element = document.getChildElement(rootElement, 'physicalPropertyModel', required=True)
+		propModelType = document.getAttribute(element, 'type', required=True)
+		if propModelType.lower() == 'idealgas':
+			# Set the reaction system's pressure model to isobaric
+			self.equationOfState = modelmodule.IdealGas()
+		elif propModelType.lower() == 'incompressibleliquid':
+			molarVolume = float(document.getChildQuantity(element, 'molarVolume', required=True).simplified)
+			self.equationOfState = modelmodule.IncompressibleLiquid(
+				P = self.initialPressure,
+				T = self.initialTemperature,
+				Vmol = molarVolume)
+		else:
+			raise InvalidInputFileException('Invalid physical property model type "' + propModelType + '".')
 
 	def initializeCantera(self):
 		"""Creata a Cantera instance. Call this once"""
