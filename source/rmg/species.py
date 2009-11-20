@@ -43,6 +43,9 @@ import data
 import thermo
 import os
 
+import ctml_writer
+import xml.sax.saxutils
+
 ################################################################################
 
 class ThermoSnapshot:
@@ -164,7 +167,26 @@ class Species:
 		species ID is used.
 		"""
 		return self.id
-
+		
+	def __str__(self):
+		"""
+		Return a string representation of the species, in the form 'label(id)'.
+		"""
+		return self.label + '(' + str(self.id) + ')'
+		
+	def toCantera(self):
+		"""Return a Cantera ctml_writer instance"""
+		# contrivedly get a list like ['C', '3', 'H', '9', 'Si', '1']
+		atoms = self.structure[0].toOBMol().GetSpacedFormula().split()
+		# magically turn that lst into a string like 'C:3 H:9 Si:1'
+		atoms = ' '.join([i+':'+j for i,j in zip(*[iter(atoms)]*2)])
+		return ctml_writer.species(name = str(self),
+		    atoms = " %s "%atoms,
+		    thermo = self.thermoData.toCantera(),
+			# this escaping should really be done by ctml_writer, but it doesn't do it
+		    note = xml.sax.saxutils.escape("%s (%s)"%(self.label,self.thermoData.comment))
+		       )
+		
 	def getFormula(self):
 		"""
 		Return the chemical formula for the species.
@@ -388,11 +410,7 @@ class Species:
 			maps21.extend(map21)
 		return (len(maps12) > 0), maps21, maps12
 
-	def __str__(self):
-		"""
-		Return a string representation of the species, in the form 'label(id)'.
-		"""
-		return self.label + '(' + str(self.id) + ')'
+
 
 ################################################################################
 
@@ -460,7 +478,14 @@ def makeNewSpecies(structure, label='', reactive=True):
 	spec.getResonanceIsomers()
 	if thermoDatabase is not None:
 		spec.getThermoData()
-	
+
+	# Generate spectral data
+	if settings.spectralDataEstimation and spec.thermoData:
+		import spectral
+		spec.spectralData = spectral.generateSpectralData(spec.structure[0], spec.thermoData)
+		if spec.spectralData:
+			print [mode.frequency for mode in spec.spectralData.modes if isinstance(mode, spectral.HarmonicOscillator)]
+
 	# Draw species
 	if settings.drawMolecules:
 		mol = pybel.Molecule(spec.toOBMol())

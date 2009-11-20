@@ -28,6 +28,8 @@
 #
 ################################################################################
 
+import logging
+
 import data
 import constants
 import thermo
@@ -565,6 +567,27 @@ frequencyDatabase = None
 
 ################################################################################
 
+def loadFrequencyDatabase(databasePath):
+	"""
+	Create and load the frequencies databases.
+	"""
+	import os.path
+	import logging
+
+	databasePath = os.path.join(databasePath, 'frequencies')
+
+	# Create and load thermo databases
+	database = FrequencyDatabase()
+	logging.debug('\tFrequencies database')
+	database.load(
+		dictstr=os.path.join(databasePath, 'Dictionary.txt'),
+		treestr=os.path.join(databasePath, 'Tree.txt'),
+		libstr=os.path.join(databasePath, 'Library.txt'))
+
+	return database
+
+################################################################################
+
 def generateSpectralData(struct, thermoData):
 	"""
 	Generate the spectral data for a :class:`structure.Structure` object
@@ -579,6 +602,10 @@ def generateSpectralData(struct, thermoData):
 	This method only fits the internal modes (i.e. vibrations and hindered
 	rotors).
 	"""
+
+	# No spectral data for single atoms
+	if len(struct.atoms()) < 2:
+		return None
 
 	# Determine linearity of structure
 	linear = struct.isLinear()
@@ -629,7 +656,7 @@ def generateSpectralData(struct, thermoData):
 			freqsRemoved = 0
 			freqCount = len(frequencies)
 			while freqCount > numVibrations:
-				minDegeneracy, minNode = min([(node.degeneracy, node) for node in groupCount.iteritems()])
+				minDegeneracy, minNode = min([(sum([charFreq.degeneracy for charFreq in frequencyDatabase.library[node][1:]]), node) for node in groupCount])
 				if groupCount[minNode] > 1:
 					groupCount[minNode] -= 1
 				else:
@@ -652,7 +679,8 @@ def generateSpectralData(struct, thermoData):
 
 	# Subtract out contributions to heat capacity from the characteristic modes
 	import numpy
-	Cv = numpy.array(thermoData.Cp) / constants.R
+	Cp = [thermoData.getHeatCapacity(T) for T in thermo.ThermoGAData.CpTlist]
+	Cv = numpy.array(Cp) / constants.R
 	Tlist = numpy.array(thermo.ThermoGAData.CpTlist)
 	for mode in spectralData.modes:
 		Cv -= mode.heatCapacity(Tlist)
@@ -662,20 +690,25 @@ def generateSpectralData(struct, thermoData):
 	Cv -= (1.5 if not linear else 1.0)
 	# Subtract out PV term (Cp -> Cv)
 	Cv -= 1.0
-	# Check that all Cv values are still positive
-	for C in Cv:
-		if C <= 0.0: raise Exception('Remaining heat capacity is negative.')
-
+	# Check that all Cv values are still positive (should we do this?)
+	#for C in Cv:
+	#	if C <= 0.0: raise Exception('Remaining heat capacity is negative.')
+	
 	# Fit remaining frequencies and hindered rotors to the heat capacity data
 	import spectralfit
-	if numRotors == 0:
-		vib = spectralfit.fitspectraldatanorotors(Cv, Tlist, numVibrations - len(frequencies))
+	freeVibrations = numVibrations - len(frequencies)
+	if freeVibrations > 0 and numRotors > 0:
+		vib, hind = spectralfit.fitspectraldata(Cv, Tlist, freeVibrations, numRotors)
 		for v in vib:
 			spectralData.modes.append(HarmonicOscillator(frequency=v))
-	else:
-		vib, hind = spectralfit.fitspectraldata(Cv, Tlist, numVibrations - len(frequencies), numRotors)
+		for v, b in hind:
+			spectralData.modes.append(HinderedRotor(frequency=v, barrier=b))
+	elif freeVibrations > 0 and numRotors == 0:
+		vib = spectralfit.fitspectraldatanorotors(Cv, Tlist, freeVibrations)
 		for v in vib:
 			spectralData.modes.append(HarmonicOscillator(frequency=v))
+	elif freeVibrations == 0 and numRotors > 0:
+		hind = spectralfit.fitspectraldatanooscillators(Cv, Tlist, numRotors)
 		for v, b in hind:
 			spectralData.modes.append(HinderedRotor(frequency=v, barrier=b))
 

@@ -3,46 +3,66 @@
 <!-- Tracks the consumption E85 (85% ethanol gasoline) surrogate. -->
 
 <rmginput>
-	<!-- The units to use for RMG output: si or cgs -->
-	<units>si</units>
 	<!-- Data sources -->
-	<database type="general">RMG_database</database>
-	<!-- List of initial species -->
-	<species id="O2" label="oxygen" reactive="yes">
-		<smiles>O=O</smiles>
-	</species>
-	<species id="C8H18i" label="iso-octane" reactive="yes">
-		<smiles>CC(C)CC(C)(C)C</smiles>
-	</species>
-	<species id="C2H6On" label="ethanol" reactive="yes">
-		<smiles>CCO</smiles>
-	</species>
-	<species id="C7H8t" label="toluene" reactive="yes">
-		<smiles>Cc1ccccc1</smiles>
-	</species>
-	<species id="C6H12n" label="hex-1-ene" reactive="yes">
-		<smiles>CCCCC=C</smiles>
-	</species>
-	<!-- Inert gases -->
-	<species id="Ar" label="argon" reactive="no">
-		<smiles>[Ar]</smiles>
-	</species>
+	<databaseList>
+		<database type="general">RMG_database</database>
+	</databaseList>
+	<!-- List of species -->
+	<speciesList>
+		<!-- List of initial species -->
+		<species id="O2" label="oxygen" reactive="yes">
+			<smiles>O=O</smiles>
+		</species>
+		<species id="C8H18i" label="iso-octane" reactive="yes">
+			<smiles>CC(C)CC(C)(C)C</smiles>
+		</species>
+		<species id="C2H6On" label="ethanol" reactive="yes">
+			<smiles>CCO</smiles>
+		</species>
+		<species id="C7H8t" label="toluene" reactive="yes">
+			<smiles>Cc1ccccc1</smiles>
+		</species>
+		<species id="C6H12n" label="hex-1-ene" reactive="yes">
+			<smiles>CCCCC=C</smiles>
+		</species>
+		<!-- Inert gases -->
+		<species id="Ar" label="argon" reactive="no">
+			<smiles>[Ar]</smiles>
+		</species>
+	</speciesList>
 	<!-- List of reaction systems -->
-	<reactionSystem type="batch">
-		<temperatureModel type="isothermal">
-			<temperature units="K">900.0</temperature>
-		</temperatureModel>
-		<pressureModel type="isobaric">
-			<pressure units="bar">10.0</pressure>
-		</pressureModel>
-		<physicalPropertyModel type="idealGas" />
-		<moleFraction speciesID="O2">    0.00707000960551 </moleFraction>  
-		<moleFraction speciesID="C8H18i">6.89999461306e-05</moleFraction>  
-		<moleFraction speciesID="C2H6On">0.0018620014036  </moleFraction>  
-		<moleFraction speciesID="C7H8t"> 4.80001013417e-05</moleFraction>  
-		<moleFraction speciesID="C6H12n">2.1000044337e-05 </moleFraction>  
-		<moleFraction speciesID="Ar">    0.990929988899    </moleFraction> 
-	</reactionSystem>
+	<reactionSystemList>
+		<reactionSystem class="BatchReactor">
+			<!-- Reactor dimensions -->
+			<volume units="m^3">1.0</volume>
+			<area units="m^2">1.0</area>
+			<!-- Physical property model -->
+			<physicalPropertyModel type="incompressibleLiquid" >
+				<molarVolume units="cm^3/mol">162.0</molarVolume>
+			</physicalPropertyModel>
+			<!-- Temperature model -->
+			<isothermal/>
+			<!-- Pressure model -->
+			<isobaric/>
+			<!-- Initial conditions -->
+			<initialConditions>
+				<temperature units="K">900.0</temperature>
+				<pressure units="bar">10.0</pressure>
+				<moleFraction speciesID="O2">    0.00707000960551 </moleFraction>
+				<moleFraction speciesID="C8H18i">6.89999461306e-05</moleFraction>
+				<moleFraction speciesID="C2H6On">0.0018620014036  </moleFraction>
+				<moleFraction speciesID="C7H8t"> 4.80001013417e-05</moleFraction>
+				<moleFraction speciesID="C6H12n">2.1000044337e-05 </moleFraction>
+				<moleFraction speciesID="Ar">    0.990929988899    </moleFraction>
+			</initialConditions>
+			<!-- Reservoir conditions -->
+			<reservoirConditions>
+				<temperature units="K">900.0</temperature>
+				<pressure units="bar">10.0</pressure>
+				<air/>
+			</reservoirConditions>
+		</reactionSystem>
+	</reactionSystemList>
 	<!-- Termination -->
 	<termination>
 		<target type="conversion" speciesID="C2H6On">0.9</target>
@@ -59,10 +79,10 @@
 		<edgeSpecies>1000</edgeSpecies>
 	</maximumModelSize>
 	<!-- Options -->
-	<drawMolecules>on</drawMolecules>
-	<generatePlots>off</generatePlots>
-	<!--<inchiGeneration>off</inchiGeneration>
-	<spectralDataEstimation>off</spectralDataEstimation>
-	<activatedNetworks>off</activatedNetworks>-->
-	
+	<optionList>
+		<units>si</units>
+		<drawMolecules>off</drawMolecules>
+		<generatePlots>off</generatePlots>
+		<spectralDataEstimation>off</spectralDataEstimation>
+	</optionList>
 </rmginput>
