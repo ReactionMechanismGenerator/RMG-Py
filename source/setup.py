@@ -34,6 +34,9 @@ This is the setup file for RMG.
 
 from distutils.core import setup
 from distutils.extension import Extension
+from Cython.Distutils import build_ext
+
+################################################################################
 
 # Stop wasting my time compiling PowerPC-compatible C extensions on my intel Mac
 import distutils.sysconfig  
@@ -44,6 +47,13 @@ for key,value in config.iteritems():
 		print "removing '-arch ppc' from %s"%(key)
 		config[key] = value.replace('-arch ppc ','')
 
+################################################################################
+
+ext_modules = [
+	Extension('rmg.chem', ['rmg/chem.py']),
+	Extension('rmg.graph', ['rmg/graph.py']),
+	Extension('rmg.thermo', ['rmg/thermo.py'])
+	]
 
 setup(name='RMG',
 	version='0.0.1',
@@ -52,8 +62,6 @@ setup(name='RMG',
 	author_email='whgreen@mit.edu, rmg_dev@mit.edu',
 	url='http://rmg.sourceforge.net/',
 	packages=['rmg'],
-	ext_modules = [	Extension('rmg.chem', ['rmg/chem.c']), 
-					Extension('rmg.graph', ['rmg/graph.c']),
-					Extension('rmg.thermo', ['rmg/thermo.c'])
-					]
+	cmdclass = {'build_ext': build_ext},
+	ext_modules = ext_modules
      )
