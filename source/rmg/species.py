@@ -478,7 +478,14 @@ def makeNewSpecies(structure, label='', reactive=True):
 	spec.getResonanceIsomers()
 	if thermoDatabase is not None:
 		spec.getThermoData()
-	
+
+	# Generate spectral data
+	if settings.spectralDataEstimation and spec.thermoData:
+		import spectral
+		spec.spectralData = spectral.generateSpectralData(spec.structure[0], spec.thermoData)
+		if spec.spectralData:
+			print [mode.frequency for mode in spec.spectralData.modes if isinstance(mode, spectral.HarmonicOscillator)]
+
 	# Draw species
 	if settings.drawMolecules:
 		mol = pybel.Molecule(spec.toOBMol())

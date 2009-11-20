@@ -7317,8 +7317,8 @@ IMPLICIT NONE
         CALL Case_22(Total_char_freq, Total_harm_osc_freq, HR_params )
         
      ELSE IF (N_vib>=4) THEN
-       WRITE(*,*) 'CASE 23'
-!        CALL Case_23(Total_char_freq, Total_harm_osc_freq, HR_params )
+!       WRITE(*,*) 'CASE 23'
+        CALL Case_23(Total_char_freq, Total_harm_osc_freq, HR_params )
         
      ELSE
        WRITE(*,*) 'Something is wrong!'

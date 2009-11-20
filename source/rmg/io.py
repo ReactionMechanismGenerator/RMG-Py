@@ -41,6 +41,7 @@ import data
 import species
 import reaction
 import thermo
+import spectral
 
 """
 Contains functions for manipulation of RMG input and output files.
@@ -272,7 +273,7 @@ def readInputFile(fstr):
 		spectralDataEstimation = xml0.getChildElementText(optionList, 'spectralDataEstimation', required=False, default='off')
 		spectralDataEstimation = spectralDataEstimation.lower()
 		settings.spectralDataEstimation = (spectralDataEstimation == 'on' or spectralDataEstimation == 'true' or spectralDataEstimation == 'yes')
-
+		
 		# Process databases
 		databases = []
 		databaseList = xml0.getChildElement(rootElement, 'databaseList')
@@ -321,7 +322,9 @@ def readInputFile(fstr):
 				# Load kinetic databases (reaction families)
 				reaction.kineticsDatabase = reaction.ReactionFamilySet()
 				reaction.kineticsDatabase.load(database[2] + os.sep)
-				
+				# Load frequency database
+				spectral.frequencyDatabase = spectral.loadFrequencyDatabase(database[2] + os.sep)
+
 		logging.debug('')
 		
 		# Process species
