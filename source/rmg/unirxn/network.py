@@ -150,3 +150,312 @@ class Isomer:
 			math.sqrt(8 * constants.kB * T / math.pi / mu) * math.pi * sigma**2 * gasConc
 
 ################################################################################
+
+class Network:
+	"""
+	A representation of a unimolecular reaction network. The attributes are:
+
+	=============== ============================================================
+	Attribute       Description
+	=============== ============================================================
+	`isomers`       A list of :class:`Isomer` objects that make up the network
+	`pathReactions` A list of :class:`Reaction` objects that connect adjacent
+	                isomers (the "path" reactions)
+	`netReactions`  A list of :class:`Reaction` objects that connect any pair of
+	                isomers (the "net" reactions)
+	=============== ============================================================
+
+	"""
+
+	def __init__(self):
+		self.isomers = []
+		self.pathReactions = []
+		self.netReactions = []
+
+	def numUniIsomers(self):
+		"""
+		Return the number of unimolecular isomers in the network.
+		"""
+		return sum([1 for isomer in self.isomers if isomer.isUnimolecular()])
+
+	def numMultiIsomers(self):
+		"""
+		Return the number of multimolecular isomers in the network.
+		"""
+		return sum([1 for isomer in self.isomers if isomer.isMultimolecular()])
+
+	def indexOf(self, object):
+		"""
+		Return the integer index associated with a given `object`, which can be
+		either an instance of :class:`Isomer` or :class:`Reaction`.
+		"""
+		if isinstance(object, Isomer):
+			for (index, isomer) in enumerate(self.isomers):
+				if isomer is object:
+					return index
+		elif isinstance(object, Reaction):
+			for (index, reaction) in enumerate(self.pathReactions):
+				if reaction is object:
+					return index
+		return -1
+
+	def calculateDensitiesOfStates(self, Elist):
+		"""
+		Calculate the density of states for all isomers in the network whose
+		species have spectral data. This is required for all unimolecular
+		isomers and for all multimolecular isomers that are reactants of a
+		path reaction with the forward reaction defined as the association.
+		Accuracy requires that this algorithm use a grain size no larger than
+		100 J/mol (8.36 cm^-1) for the calculation, regardless of the grain
+		size of the full calculation.
+		"""
+
+		# Must use grain size < 100 J/mol (8.36 cm^-1) for density of states
+		# estimation to ensure accuracy; this is caused by the Beyer-Swinehart
+		# algorithm
+		grainSize0 = Elist[1] - Elist[0]
+		grainSize = grainSize0; mult = 1
+		while grainSize > 100:
+			grainSize /= 2.0; mult *= 2
+
+		# Calculate the density of states for each species using the small
+		# grain size
+		self.setEnergyGrains(min(Elist), max(Elist), grainSize, 0)
+		for isomer in self.isomers:
+			isomer.calculateDensityOfStates(Elist)
+
+		# Only keep the grains that are used in the rest of the ME computation
+		self.setEnergyGrains(min(Elist), max(Elist), grainSize0, 0)
+		for isomer in self.isomers:
+			if isomer.densStates is not None:
+				isomer.densStates = isomer.densStates[::mult]
+
+	def shiftToZeroEnergy(self):
+		"""
+		Adjust the energies of the system (i.e. the `E0` attribute of isomers)
+		such that the lowest energy in the system is set to zero.
+		"""
+		Emin = 10000000.0
+		for isomer in self.isomers:
+			isomer.E0 = sum([species.E0 for species in isomer.species])
+			if isomer.E0 < Emin:
+				Emin = isomer.E0
+		for isomer in self.isomers:
+			isomer.E0 -= Emin
+
+	def __getEnergyGrains(self, Emin, Emax, dE0, nGrains0):
+		"""
+		Return an array of energy grains that have a minimum of `Emin`, a
+		maximum of `Emax`, and either a spacing of `dE0` or have number of
+		grains `nGrains0`. The first three parameters are in J/mol.
+		"""
+		if nGrains0 == 0:
+			nGrains = int((Emax - Emin) / dE0) + 1
+			dE = dE0
+		else:
+			nGrains = nGrains0
+			dE = (Emax - Emin) / (nGrains0 - 1)
+
+		return numpy.arange(Emin, Emax + dE, dE, numpy.float64)
+
+	def determineEnergyGrains(self, grainSize, numGrains, Tmax):
+		"""
+		Select a suitable list of energies to use for subsequent calculations.
+		The procedure is to (1) calculate the equilibrium distribution of the
+		highest-energy isomer at the largest temperature of interest (to get the
+		broadest distribution), (2) calculate the energy at which the tail of
+		the distribution is some fraction of the maximum, and (3) add the
+		difference between the ground-state energy of the isomer and the
+		highest ground-state energy in the system (either isomer or transition
+		state). Parameters are the desired grain size `grainSize` and number of
+		grains `numGrains` and the temperature to use for the equilibrium
+		calculation `Tmax`, which should be the highest temperature of interest.
+		"""
+
+		# For the purposes of finding the maximum energy we will use 4001 grains
+		nE = 4001
+		dE = 0.0
+
+		# Determine minimum energy and isomer with minimum ground-state energy
+		isomer = None
+		for i in self.isomers:
+			if isomer is None: isomer = i
+			elif i.E0 < isomer.E0:
+				isomer = i
+		Emin = math.floor(isomer.E0)
+
+		# Determine maximum energy and isomer with maximum ground-state energy
+		isomer = None
+		for i in self.isomers:
+			if i.isUnimolecular():
+				if isomer is None: isomer = i
+				elif i.E0 > isomer.E0: isomer = i
+		Emax0 = isomer.E0
+
+		# (Try to) purposely overestimate Emax using arbitrary multiplier
+		# This is to (hopefully) avoid multiple density of states calculations
+		mult = 50
+		done = False
+		while not done:
+
+			Emax = math.ceil(Emax0 + mult * constants.R * Tmax)
+
+			Elist = self.__getEnergyGrains(Emin, Emax, dE, nE)
+			isomer.calculateDensityOfStates(Elist)
+			isomer.calculateEqDist(Elist, Tmax)
+
+			# Find maximum of distribution
+			maxIndex = 0
+			value = 0.0
+			for r, E in enumerate(Elist):
+				if isomer.eqDist[r] > value:
+					value = isomer.eqDist[r]
+					maxIndex = r
+
+			# If tail of distribution is much lower than the maximum, then we've found bounds for Emax
+			tol = 1e-8
+			if isomer.eqDist[-1] / value < tol:
+				r = nE - 1
+				while r > 0 and not done:
+					if isomer.eqDist[r] / value > tol:
+						done = True
+					else:
+						r -= 1
+				Emax = Elist[r] + max([rxn.kinetics.Ea for rxn in self.reactions]) - Emax0
+			else:
+				mult += 50
+
+		# Add difference between isomer ground-state energy and highest
+		# transition state or isomer energy
+		Emax0_iso = max([isomer.E0 for isomer in self.isomers])
+		Emax0_rxn = max([reaction.E0 for reaction in self.reactions])
+		Emax += max([Emax0_iso, Emax0_rxn]) - isomer.E0
+
+		# Round Emax up to nearest integer
+		Emax = math.ceil(Emax)
+
+		# Return the chosen energy grains
+		return self.__getEnergyGrains(Emin, Emax, grainSize, numGrains)
+
+	def calculateRateCoefficients(self, Tlist, Plist, Elist, method):
+		"""
+		Calculate the phenomenological rate coefficients for the network.
+		"""
+
+		K = numpy.zeros([len(Tlist), len(Plist),\
+			len(self.isomers), len(self.isomers)], numpy.float64)
+
+		for t, T in enumerate(Tlist):
+
+			# Calculate equilibrium distributions
+			for isomer in self.isomers:
+				if isomer.densStates is not None:
+					isomer.calculateEqDist(Elist, T)
+
+			# Calculate microcanonical rates k(E)
+			# It might seem odd that this is dependent on temperature, and it
+			# isn't -- unless the Arrhenius expression has a negative n
+			for reaction in self.reactions:
+				reaction.calculateMicrocanonicalRate(Elist, T)
+
+			for p, P in enumerate(self.Plist):
+
+				# Calculate collision frequencies
+				for isomer in self.isomers:
+					if isomer.isUnimolecular():
+						isomer.calculateCollisionFrequency(T, P, self.bathGas)
+
+				# Determine phenomenological rate coefficients using approximate
+				# method
+				K[t,p,:,:] = self.applyApproximateMethod(T, P, method)
+
+		return K
+
+	def applyApproximateMethod(self, T, P, method):
+		"""
+		Apply the approximate method specified in `method` to estimate the
+		phenomenological rate coefficients for the network. This function
+		expects that all preparations have already been made, as in the
+		:meth:`calculateRateCoefficients` method.
+		"""
+
+		# Matrix and vector size indicators
+		nIsom = self.numUniIsomers()
+		nProd = self.numMultiIsomers()
+		nGrains = len(self.Elist)
+
+		# Equilibrium distribution of eash isomer
+		eqDist = numpy.zeros([nIsom,nGrains], numpy.float64)
+		for i in range(nIsom): eqDist[i,:] = self.isomers[i].eqDist
+
+		# Active-state energy of each isomer
+		Eres = numpy.zeros([nIsom+nProd], numpy.float64)
+		for i in range(nIsom+nProd):
+			Eres[i] = self.isomers[i].getActiveSpaceEnergy(self.reactions)
+
+		# Isomerization, dissociation, and association microcanonical rate
+		# coefficients, respectively
+		Kij = numpy.zeros([nIsom,nIsom,nGrains], numpy.float64)
+		Gnj = numpy.zeros([nProd,nIsom,nGrains], numpy.float64)
+		Fim = numpy.zeros([nIsom,nProd,nGrains], numpy.float64)
+		for reaction in self.reactions:
+			i = self.indexOf(reaction.reactant)
+			j = self.indexOf(reaction.product)
+			if reaction.isIsomerization():
+				Kij[j,i,:] = reaction.kf
+				Kij[i,j,:] = reaction.kb
+			elif reaction.isDissociation():
+				Gnj[j-nIsom,i,:] = reaction.kf
+				Fim[i,j-nIsom,:] = reaction.kb
+			elif reaction.isAssociation():
+				Fim[j,i-nIsom,:] = reaction.kf
+				Gnj[i-nIsom,j,:] = reaction.kb
+
+		if method.lower() == 'modifiedstrongcollision':
+
+			# Modified collision frequency of each isomer
+			collFreq = numpy.zeros([nIsom], numpy.float64)
+			for i in range(nIsom): collFreq[i] = self.isomers[i].collFreq * \
+				self.isomers[i].calculatecollisionEfficiency(T, self.reactions, self.bathGas.dEdown, self.Elist)
+
+			# Apply modified strong collision method
+			import msc
+			logging.debug('\tCalculating phenomenological rate coefficients %g K, %g bar...' % (T, P / 1e5))
+			K, msg = msc.estimateratecoefficients(T, P, self.Elist, collFreq, eqDist, Eres,
+				Kij, Fim, Gnj)
+			msg = msg.strip()
+			if msg != '':
+				raise Exception('Unable to apply modified strong collision method: %s' % msg)
+
+		elif method.lower() == 'reservoirstate':
+
+			# Average energy transferred in a deactivating collision
+			dEdown = self.bathGas.dEdown
+
+			# Ground-state energy for each isomer
+			E0 = numpy.zeros([nIsom], numpy.float64)
+			for i in range(nIsom): E0[i] = self.isomers[i].E0
+
+			# The full collision matrix for each isomer
+			import mastereqn
+			Mcoll = numpy.zeros([nIsom,nGrains,nGrains], numpy.float64)
+			for i in range(nIsom):
+				collFreq = self.isomers[i].collFreq
+				densStates = self.isomers[i].densStates
+				Mcoll[i,:,:], msg = mastereqn.collisionmatrix(T, P, self.Elist, collFreq, densStates, E0[i], dEdown)
+				msg = msg.strip()
+				if msg != '':
+					raise Exception('Unable to determine collision matrix for isomer %i: %s' % (i, msg))
+
+			# Apply reservoir state method
+			import rs
+			logging.debug('\tCalculating phenomenological rate coefficients %g K, %g bar...' % (T, P / 1e5))
+			K, msg = rs.estimateratecoefficients(T, P, self.Elist, Mcoll, eqDist, E0, Eres,
+				Kij, Fim, Gnj, dEdown)
+			msg = msg.strip()
+			if msg != '':
+				raise Exception('Unable to apply reservoir state method: %s' % msg)
+
+		return K
+
+################################################################################
