@@ -48,6 +48,25 @@ import ctml_writer
 
 ################################################################################
 
+class LennardJones:
+	"""
+	A set of Lennard-Jones parameters.
+
+	==============  ============================================================
+	Attribute       Description
+	==============  ============================================================
+	`sigma`         The Lennard-Jones sigma parameter in m
+	`epsilon`       The Lennard-Jones epsilon parameter in J
+	==============  ============================================================
+
+	"""
+
+	def __init__(self, sigma=0.0, epsilon=0.0):
+		self.sigma = sigma
+		self.epsilon = epsilon
+
+################################################################################
+
 class ThermoSnapshot:
 	"""
 	A set of thermodynamic state variables for a given state under a single

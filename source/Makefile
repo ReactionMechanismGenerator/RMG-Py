@@ -4,11 +4,33 @@
 #
 ################################################################################
 
-all: rmg/graph.py rmg/chem.py rmg/thermo.py rmg/spectralfit.so
+#F90=gfortran
+#F2PY_FCOMPILER=gnu95
+# Alternatively:
+F90=g95
+F2PY_FCOMPILER=g95
+
+LDFLAGS=-lblas -llapack
+
+################################################################################
+
+all: cython spectral unirxn rmg/spectralfit.so
 	python setup.py build_ext --inplace
 
-rmg/spectralfit.so: rmg/spectralfit/spectralfit.f90 rmg/spectralfit/calc_freq_code.f90 rmg/spectralfit/dqed.f90
-	make -C rmg/spectralfit
+cython: rmg/graph.py rmg/chem.py rmg/thermo.py 
+
+spectral: rmg/spectralfit.so
+
+unirxn: rmg/unirxn/states.so rmg/unirxn/mastereqn.so rmg/unirxn/msc.so rmg/unirxn/rs.so
+
+rmg/unirxn/%.so: rmg/unirxn/%.f90
+	make -C rmg/unirxn F90=$(F90) F2PY_FCOMPILER=$(F2PY_FCOMPILER) LDFLAGS=$(LDFLAGS)
+
+rmg/spectralfit.so: rmg/spectralfit/*.f90
+	make -C rmg/spectralfit F90=$(F90) F2PY_FCOMPILER=$(F2PY_FCOMPILER) LDFLAGS=$(LDFLAGS)
 
 clean:
+	make -C rmg/spectralfit clean
+	make -C rmg/unirxn clean
 	rm -rf rmg/*.so rmg/*.c build/
+	
