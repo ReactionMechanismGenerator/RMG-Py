@@ -48,12 +48,12 @@ rmg.chem.Bond.isBenzene method documentation/api/rmg-chem.html
 rmg.reaction.ReactionRecipe.applyForward method documentation/api/rmg-reaction.html
 rmg.spectral.CharacteristicFrequency class documentation/api/rmg-spectral.html
 rmg.data.Library.load method documentation/api/rmg-data.html
+rmg.reaction.Reaction.toCantera method documentation/api/rmg-reaction.html
 rmg.model.IdealGas.getdVdNi method documentation/api/rmg-model.html
 rmg.model.IdealGas.getdTdNi method documentation/api/rmg-model.html
 rmg.model.IncompressibleLiquid.getdPdNi method documentation/api/rmg-model.html
 rmg.species.Species.isSubgraphIsomorphic method documentation/api/rmg-species.html
 rmg.chem.Atom.formBond method documentation/api/rmg-chem.html
-rmg.model.BatchReactor.simulate method documentation/api/rmg-model.html
 rmg.model.ReactionSystem class documentation/api/rmg-model.html
 rmg.thermo.ThermoNASAData.getFreeEnergy method documentation/api/rmg-thermo.html
 rmg.data.Tree.load method documentation/api/rmg-data.html
@@ -116,7 +116,6 @@ rmg.reaction.ReactionFamily.makeReaction method documentation/api/rmg-reaction.h
 rmg.chem.Atom.getElectronState method documentation/api/rmg-chem.html
 rmg.structure.Structure.getBond method documentation/api/rmg-structure.html
 rmg.model.CoreEdgeReactionModel.getLists method documentation/api/rmg-model.html
-rmg.model.BatchReactor.isModelValid method documentation/api/rmg-model.html
 rmg.chem.Atom.getFreeElectronCount method documentation/api/rmg-chem.html
 rmg.model.CoreEdgeReactionModel.getStoichiometryMatrix method documentation/api/rmg-model.html
 rmg.cantera_loader.NASA class documentation/api/rmg-cantera_loader.html
@@ -130,7 +129,6 @@ rmg.model.IdealGas.getdVdP method documentation/api/rmg-model.html
 rmg.kinetics.Kinetics class documentation/api/rmg-kinetics.html
 rmg.species.Species.getFormula method documentation/api/rmg-species.html
 rmg.data.Library class documentation/api/rmg-data.html
-rmg.model.BatchReactor.getResidual method documentation/api/rmg-model.html
 rmg.structure.Structure.simplifyAtomTypes method documentation/api/rmg-structure.html
 rmg.chem.Bond.canIncreaseOrder method documentation/api/rmg-chem.html
 rmg.thermo.ThermoNASAData.equals method documentation/api/rmg-thermo.html
@@ -140,6 +138,7 @@ rmg.model.IdealGas.getdPdNi method documentation/api/rmg-model.html
 rmg.model.TerminationTime class documentation/api/rmg-model.html
 rmg.chem.loadElements function documentation/api/rmg-chem.html
 rmg.reaction.ReactionRecipe.getReverse method documentation/api/rmg-reaction.html
+rmg.species.Species.toCantera method documentation/api/rmg-species.html
 rmg.cantera_loader.reaction.getRmgReaction method documentation/api/rmg-cantera_loader.html
 rmg.data.Dictionary.toStructure method documentation/api/rmg-data.html
 rmg.chem.Bond class documentation/api/rmg-chem.html
@@ -177,12 +176,11 @@ rmg.species.ThermoDatabase.contains method documentation/api/rmg-species.html
 rmg.species.ThermoDatabase.getThermoData method documentation/api/rmg-species.html
 rmg.reaction.makeNewReaction function documentation/api/rmg-reaction.html
 rmg.model.IncompressibleLiquid.getdTdP method documentation/api/rmg-model.html
-rmg.model.TerminationConversion class documentation/api/rmg-model.html
-rmg.thermo.ThermoNASAPolynomial.getEnthalpy method documentation/api/rmg-thermo.html
 rmg.model.IncompressibleLiquid.getdTdV method documentation/api/rmg-model.html
+rmg.thermo.ThermoNASAPolynomial.getEnthalpy method documentation/api/rmg-thermo.html
+rmg.model.TerminationConversion class documentation/api/rmg-model.html
 rmg.spectral.Translation.densityOfStates method documentation/api/rmg-spectral.html
 rmg.data.Database.descendTree method documentation/api/rmg-data.html
-rmg.model.BatchReactor class documentation/api/rmg-model.html
 rmg.thermo.ThermoData class documentation/api/rmg-thermo.html
 rmg.spectral.FrequencyDatabase class documentation/api/rmg-spectral.html
 rmg.data.Library.parse method documentation/api/rmg-data.html
@@ -197,7 +195,6 @@ rmg.model.ReactionModel class documentation/api/rmg-model.html
 rmg.spectral.HinderedRotor.partitionFunction method documentation/api/rmg-spectral.html
 rmg.kinetics.ArrheniusEPKinetics.getRateConstant method documentation/api/rmg-kinetics.html
 rmg.cantera_loader.reaction.getProductNu method documentation/api/rmg-cantera_loader.html
-rmg.model.BatchReactor.postprocess method documentation/api/rmg-model.html
 rmg.structure.Structure.calculateAxisSymmetryNumber method documentation/api/rmg-structure.html
 rmg.species.Species.fromAdjacencyList method documentation/api/rmg-species.html
 rmg.model.IncompressibleLiquid.getPressure method documentation/api/rmg-model.html
@@ -223,7 +220,6 @@ rmg.graph.__VF2_match function documentation/api/rmg-graph.html
 rmg.chem.Atom.isNonHydrogen method documentation/api/rmg-chem.html
 rmg.graph.Graph.sortAndLabelVertices method documentation/api/rmg-graph.html
 rmg.species.Species class documentation/api/rmg-species.html
-rmg.model.BatchReactor.getSpeciesFluxes method documentation/api/rmg-model.html
 rmg.data.Database.toXML method documentation/api/rmg-data.html
 rmg.thermo.ThermoGAData class documentation/api/rmg-thermo.html
 rmg.spectral.Translation.partitionFunction method documentation/api/rmg-spectral.html
@@ -267,7 +263,6 @@ rmg.reaction.ReactionFamily.getKinetics method documentation/api/rmg-reaction.ht
 rmg.thermo.ThermoGAData.getEntropy method documentation/api/rmg-thermo.html
 rmg.structure.Structure.removeBond method documentation/api/rmg-structure.html
 rmg.chem.Atom.copy method documentation/api/rmg-chem.html
-rmg.model.BatchReactor.getJacobian method documentation/api/rmg-model.html
 rmg.structure.Structure.isSubgraphIsomorphic method documentation/api/rmg-structure.html
 rmg.species.ThermoDatabase class documentation/api/rmg-species.html
 rmg.reaction.ReactionFamily.getReactionList method documentation/api/rmg-reaction.html
@@ -338,7 +333,6 @@ rmg.species.ThermoDatabaseSet class documentation/api/rmg-species.html
 rmg.data.createXMLQuantity function documentation/api/rmg-data.html
 rmg.structure.Structure.getAllCycles method documentation/api/rmg-structure.html
 rmg.data.Tree.write method documentation/api/rmg-data.html
-rmg.model.BatchReactor.printSimulationStatus method documentation/api/rmg-model.html
 rmg.chem.Bond.isTriple method documentation/api/rmg-chem.html
 rmg.data.Database.matchNodeToStructure method documentation/api/rmg-data.html
 rmg.spectral.RigidRotor class documentation/api/rmg-spectral.html
@@ -393,7 +387,6 @@ rmg.reaction.ReactionRecipe class documentation/api/rmg-reaction.html
 rmg.chem.InvalidChemicalActionException class documentation/api/rmg-chem.html
 rmg.species.Species.toInChI method documentation/api/rmg-species.html
 rmg.data.Database.load method documentation/api/rmg-data.html
-rmg.model.BatchReactor.getReactionRates method documentation/api/rmg-model.html
 rmg.graph.Graph class documentation/api/rmg-graph.html
 rmg.model.CoreEdgeReactionModel.initialize method documentation/api/rmg-model.html
 rmg.reaction.ReactionFamily.reactantMatch method documentation/api/rmg-reaction.html
