@@ -35,16 +35,16 @@ Contains classes describing chemical species.
 import logging
 import math
 import pybel
+import os
+import xml.sax.saxutils
 
 import constants
 import settings
 import structure
-import data
 import thermo
-import os
-
+import data
+import spectral
 import ctml_writer
-import xml.sax.saxutils
 
 ################################################################################
 
@@ -335,6 +335,59 @@ class Species:
 				self.thermoData = tdata
 				lowestH298 = thisH298
 		return self.thermoData
+
+	def generateSpectralData(self):
+		"""
+		Generate spectral data for species using the frequency database. The
+		spectral data comprises the molecular degrees of freedom of the
+		molecule.
+		"""
+		# Calculate the thermo data if necessary
+		if not self.thermoData:
+			self.generateThermoData()
+		# Generate the spectral data
+		spectral.generateSpectralData(self.structure[0], self.thermoData)
+
+	def calculateDensityOfStates(self, Elist):
+		"""
+		Calculate and return the density of states in mol/J of the species at
+		the specified list of energies `Elist` in J/mol.
+		"""
+
+		import unirxn.states as states
+
+		# Make sure we have the necessary information to calculate the
+		# density of states
+		if not self.spectralData:
+			self.generateSpectralData()
+			
+		# Initialize density of states
+		densStates = numpy.zeros(len(Elist), numpy.float64)
+
+		# Create energies in cm^-1 at which to evaluate the density of states
+		conv = constants.h * constants.c * 100.0 * constants.Na # [=] J/mol/cm^-1
+		Emin = min(Elist) / conv
+		Emax = max(Elist) / conv
+		dE = (Elist[1] - Elist[0]) / conv
+		Elist0 = numpy.arange(Emin, Emax+dE/2, dE)
+
+		# Prepare inputs for density of states function
+		vib = numpy.array([mode.frequency for mode in species.spectralData.modes if isinstance(mode, spectral.HarmonicOscillator)])
+		rot = numpy.array([mode.frequencies for mode in species.spectralData.modes if isinstance(mode, spectral.RigidRotor)])
+		hind = numpy.array([[mode.frequency, mode.barrier] for mode in species.spectralData.modes if isinstance(mode, spectral.HinderedRotor)])
+		if len(hind) == 0: hind = numpy.zeros([0,2],numpy.float64)
+		linear = 1 if species.isLinear() else 0
+		symm = species.spectralData.symmetry
+
+		# Calculate the density of states
+		densStates, msg = states.densityofstates(Elist0, vib, rot, hind, symm, linear)
+		if msg != '':
+			raise Exception('Error while calculating the density of states for species %s: %s' % (self, msg))
+
+		# Convert density of states from (cm^-1)^-1 to mol/J
+		densStates /= conv
+
+		return densStates
 
 	def getHeatCapacity(self, T):
 		"""
