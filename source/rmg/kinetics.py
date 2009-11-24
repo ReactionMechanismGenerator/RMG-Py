@@ -154,6 +154,26 @@ class ArrheniusKinetics(Kinetics):
 		
 		return kinetics
 	
+	def fromXML(self, document, rootElement):
+		"""
+		Convert a <kinetics> element from a standard RMG-style XML input file
+		into an ArrheniusKinetics object. `document` is an :class:`io.XML` class
+		representing the XML DOM tree, and `rootElement` is the <kinetics>
+		element in that tree.
+		"""
+
+		# Read <preexponential> element
+		A = document.getChildQuantity(rootElement, 'preexponential', required=True)
+		self.A = float(A.simplified)
+
+		# Read <preexponential> element
+		n = document.getChildQuantity(rootElement, 'exponent', required=True)
+		self.n = float(n.simplified)
+
+		# Read <preexponential> element
+		Ea = document.getChildQuantity(rootElement, 'activationEnergy', required=True)
+		self.Ea = float(Ea.simplified)
+
 	def toXML(self, dom, root, numReactants):
 		"""
 		Generate the XML for these kinetics using the :data:`xml.dom.minidom`

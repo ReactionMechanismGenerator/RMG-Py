@@ -132,7 +132,38 @@ class Reaction:
 		#import pdb; pdb.set_trace()
 		return ctml_writer.reaction(rxnstring, ctml_writer.Arrhenius(A, n, Ea) )
 		
-	
+	def fromXML(self, document, rootElement):
+		"""
+		Convert a <reaction> element from a standard RMG-style XML input file
+		into a Reaction object. `document` is an :class:`io.XML` class
+		representing the XML DOM tree, and `rootElement` is the <reaction>
+		element in that tree.
+		"""
+
+		# Read <reactant> elements
+		self.reactants = []
+		reactantElements = document.getChildElements(rootElement, 'reactant', required=True)
+		for reactantElement in reactantElements:
+			spec = str(document.getAttribute(reactantElement, 'ref'))
+			self.reactants.append(spec)
+
+		# Read <product> elements
+		self.products = []
+		productElements = document.getChildElements(rootElement, 'product', required=True)
+		for productElement in productElements:
+			spec = str(document.getAttribute(productElement, 'ref'))
+			self.products.append(spec)
+
+		# Read <kinetics> element
+		self.kinetics = []
+		kineticsElement = document.getChildElement(rootElement, 'kinetics', required=False)
+		if kineticsElement:
+			format = str(document.getAttribute(kineticsElement, 'type', required=True)).lower()
+			if format == 'arrhenius':
+				self.kinetics = [ArrheniusKinetics()]
+				self.kinetics[0].fromXML(document, kineticsElement)
+			else:
+				raise io.InvalidInputFileException('Invalid type "%s" for kinetics element; allowed values are "Arrhenius".' % format)
 
 	def isUnimolecular(self):
 		"""
