@@ -285,7 +285,7 @@
 		</reaction>
 		<reaction id="rxn2">
 			<reactant ref="acetylperoxy"/>
-			<product ref="vinoxyhydroperoxide"/>
+			<product ref="hydroperoxylvinoxy"/>
 			<kinetics type="Arrhenius">
 				<preexponential units="s^-1">1.29e6</preexponential>
 				<exponent units="">2.00</exponent>
@@ -303,7 +303,7 @@
 			</kinetics>
 		</reaction>
 		<reaction id="rxn4">
-			<reactant ref="vinoxyhydroperoxide"/>
+			<reactant ref="hydroperoxylvinoxy"/>
 			<product ref="epoxide"/>
 			<product ref="hydroxyl"/>
 			<kinetics type="Arrhenius">
@@ -313,7 +313,7 @@
 			</kinetics>
 		</reaction>
 		<reaction id="rxn5">
-			<reactant ref="vinoxyhydroperoxide"/>
+			<reactant ref="hydroperoxylvinoxy"/>
 			<product ref="ketene"/>
 			<product ref="hydroperoxyl"/>
 			<kinetics type="Arrhenius">
@@ -323,7 +323,7 @@
 			</kinetics>
 		</reaction>
 		<reaction id="rxn6">
-			<reactant ref="vinoxyhydroperoxide"/>
+			<reactant ref="hydroperoxylvinoxy"/>
 			<product ref="lactone"/>
 			<product ref="hydroxyl"/>
 			<kinetics type="Arrhenius">

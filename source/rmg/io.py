@@ -226,7 +226,9 @@ class XML:
 		"""
 		units = str(self.getAttribute(element, 'units', required=False, default=''))
 		value = str(self.getElementText(element)).split()
-		return pq.Quantity([float(v) for v in value], units)
+		value = [float(v) for v in value]
+		if len(value) == 1: value = value[0]
+		return pq.Quantity(value, units)
 
 	def getChildQuantity(self, parentElement, name, required=True, default=0.0):
 		"""

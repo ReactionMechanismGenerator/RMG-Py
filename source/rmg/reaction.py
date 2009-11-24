@@ -140,6 +140,9 @@ class Reaction:
 		element in that tree.
 		"""
 
+		# Read label attribute
+		self.id = str(document.getAttribute(rootElement, 'id', required=True))
+
 		# Read <reactant> elements
 		self.reactants = []
 		reactantElements = document.getChildElements(rootElement, 'reactant', required=True)

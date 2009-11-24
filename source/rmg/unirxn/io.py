@@ -37,7 +37,7 @@ from rmg.io import *
 from rmg.species import Species
 from rmg.reaction import Reaction
 
-from network import Network
+from network import Network, Isomer
 
 def readInputFile(fstr):
 	"""
@@ -72,7 +72,6 @@ def readInputFile(fstr):
 		speciesDict = {}
 		speciesListElement = document.getChildElement(rootElement, 'speciesList')
 		speciesElements = document.getChildElements(speciesListElement, 'species')
-		logging.info('Found ' + str(len(speciesElements)) + ' species')
 		for element in speciesElements:
 			# Load species ID
 			sid = str(document.getAttribute(element, 'id', required=True))
@@ -81,20 +80,63 @@ def readInputFile(fstr):
 			species.fromXML(document, element)
 			# Add to local species dictionary (for matching with other parts of file)
 			speciesDict[sid] = species
-		logging.debug('')
-
+			logging.debug('\tCreated species "%s"' % species.label)
+		logging.info('Found ' + str(len(speciesElements)) + ' species')
+		
 		# Process reactions
 		reactionListElement = document.getChildElement(rootElement, 'reactionList')
 		reactionElements = document.getChildElements(reactionListElement, 'reaction')
-		logging.info('Found %i reactions' % (len(reactionElements)))
 		for reactionElement in reactionElements:
 			reaction = Reaction()
 			reaction.fromXML(document, reactionElement)
 			network.pathReactions.append(reaction)
-		logging.debug('')
+			logging.debug('\tCreated reaction "%s"' % reaction.id)
+		logging.info('Found %i reactions' % (len(reactionElements)))
+		
+		# Create isomers
+		for reaction in network.pathReactions:
 
+			# Create isomer for the reactant
+			isomer = None
+			for isom in network.isomers:
+				if all([species in isom.species for species in reaction.reactants]):
+					isomer = isom
+			if not isomer:
+				isomer = Isomer(reaction.reactants)
+				if isomer.isUnimolecular():
+					network.isomers.insert(network.numUniIsomers(), isomer)
+				else:
+					network.isomers.append(isomer)
+				logging.debug('\tCreated isomer "%s"' % (' + '.join(isomer.species)))
+			reaction.reactant = isomer
 
+			# Create isomer for the product
+			isomer = None
+			for isom in network.isomers:
+				if all([species in isom.species for species in reaction.products]):
+					isomer = isom
+			if not isomer:
+				isomer = Isomer(reaction.products)
+				if isomer.isUnimolecular():
+					network.isomers.insert(network.numUniIsomers(), isomer)
+				else:
+					network.isomers.append(isomer)
+				logging.debug('\tCreated isomer "%s"' % (' + '.join(isomer.species)))
+			reaction.product = isomer
 
+		# Convert string list to species list
+		for isomer in network.isomers:
+			isomer.species = [speciesDict[r] for r in isomer.species]
+		logging.info('Found %i isomers' % (len(network.isomers)))
+		
+		# Determine isomer ground-state energies
+		for isomer in network.isomers:
+			if all([species.spectralData for species in isomer.species]):
+				isomer.E0 = sum([species.spectralData.E0 for species in isomer.species])
+		# Determine transition state ground-state energies of the reactions
+		for reaction in network.pathReactions:
+			reaction.E0 = reaction.reactant.E0 + reaction.kinetics[0].Ea
+		
 
 		# Cleanup the DOM tree when finished
 		document.cleanup()
