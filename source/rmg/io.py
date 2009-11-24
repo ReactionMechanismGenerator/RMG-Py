@@ -79,6 +79,37 @@ class InvalidXMLError(Exception):
 
 ################################################################################
 
+def loadThermoDatabase(dstr):
+	"""
+	Load the RMG thermo database located at `dstr` into the global variable
+	`rmg.species.thermoDatabase`. Also loads the forbidden structures into
+	`rmg.thermo.forbiddenStructures`.
+	"""
+	species.thermoDatabase = species.ThermoDatabaseSet()
+	species.thermoDatabase.load(dstr )
+
+	thermo.forbiddenStructures = data.Dictionary()
+	thermo.forbiddenStructures.load(database[2] + os.sep + 'forbiddenStructure.txt')
+	thermo.forbiddenStructures.toStructure()
+
+def loadKineticsDatabase(dstr):
+	"""
+	Load the RMG kinetics database located at `dstr` into the global variable
+	`rmg.reaction.kineticsDatabase`.
+	"""
+	reaction.kineticsDatabase = reaction.ReactionFamilySet()
+	reaction.kineticsDatabase.load(dstr)
+
+def loadFrequencyDatabase(dstr):
+	"""
+	Load the RMG thermo database located at `dstr` into the global variable
+	`rmg.spectral.frequencyDatabase`.
+	"""
+	spectral.frequencyDatabase = spectral.FrequencyDatabase()
+	spectral.frequencyDatabase = spectral.loadFrequencyDatabase(dstr)
+
+################################################################################
+
 class XML:
 	"""
 	A class for manipulating an XML DOM tree as created by the xml.dom.minidom
@@ -312,19 +343,11 @@ def readInputFile(fstr):
 		for database in databases:
 			if database[1] == 'general':
 				logging.debug('General database: ' + database[2])
-				# Load thermo databases
-				species.thermoDatabase = species.ThermoDatabaseSet()
-				species.thermoDatabase.load(database[2] + os.sep)
-				# Load forbidden structures
-				thermo.forbiddenStructures = data.Dictionary()
-				thermo.forbiddenStructures.load(database[2] + os.sep + 'forbiddenStructure.txt')
-				thermo.forbiddenStructures.toStructure()
-				# Load kinetic databases (reaction families)
-				reaction.kineticsDatabase = reaction.ReactionFamilySet()
-				reaction.kineticsDatabase.load(database[2] + os.sep)
-				# Load frequency database
-				spectral.frequencyDatabase = spectral.loadFrequencyDatabase(database[2] + os.sep)
-
+				# Load all databases
+				loadThermoDatabase(database[2] + os.sep)
+				loadKineticsDatabase(database[2] + os.sep)
+				loadFrequencyDatabase(database[2] + os.sep)
+				
 		logging.debug('')
 		
 		# Process species
