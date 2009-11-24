@@ -286,16 +286,16 @@ class ThermoGAData(ThermoData):
 		ThermoData.fromXML(self, document, rootElement)
 
 		# Read <enthalpyOfFormation> element
-		self.H298 = document.getChildQuantity(rootElement, 'enthalpyOfFormation', required=True)
-		self.H298 = float(self.H298.simplified)
+		H298 = document.getChildQuantity(rootElement, 'enthalpyOfFormation', required=True)
+		self.H298 = float(H298.simplified)
 
 		# Read <entropyOfFormation> element
-		self.S298 = document.getChildQuantity(rootElement, 'entropyOfFormation', required=True)
-		self.S298 = float(self.S298.simplified)
+		S298 = document.getChildQuantity(rootElement, 'entropyOfFormation', required=True)
+		self.S298 = float(S298.simplified)
 
 		# Read <heatCapacities> element
-		self.Cp = document.getChildQuantity(rootElement, 'heatCapacities', required=True)
-		self.Cp = [float(Cp.simplified) for Cp in self.Cp]
+		Cp = document.getChildQuantity(rootElement, 'heatCapacities', required=True)
+		self.Cp = [float(C.simplified) for C in Cp]
 
 	def toXML(self, dom, root):
 		"""

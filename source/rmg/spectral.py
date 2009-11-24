@@ -531,21 +531,21 @@ class SpectralData:
 		self.E0 = document.getChildQuantity(rootElement, 'groundStateEnergy', required=True)
 
 		# Read <harmonicOscillator> elements
-		hoElements = document.getChildElements(rootElement, 'harmonicOscillator')
+		hoElements = document.getChildElements(rootElement, 'harmonicOscillator', required=False)
 		for hoElement in hoElements:
 			mode = HarmonicOscillator()
 			mode.fromXML(document, hoElement, frequencyScaleFactor)
 			self.modes.append(mode)
 
 		# Read <hinderedRotor> elements
-		hrElements = document.getChildElements(rootElement, 'hinderedRotor')
+		hrElements = document.getChildElements(rootElement, 'hinderedRotor', required=False)
 		for hrElement in hrElements:
 			mode = HinderedRotor()
 			mode.fromXML(document, hrElement, frequencyScaleFactor)
 			self.modes.append(mode)
 
 		# Read <rigidRotor> elements
-		rrElements = document.getChildElements(rootElement, 'rigidRotor')
+		rrElements = document.getChildElements(rootElement, 'rigidRotor', required=False)
 		for rrElement in rrElements:
 			mode = RigidRotor()
 			mode.fromXML(document, rrElement)

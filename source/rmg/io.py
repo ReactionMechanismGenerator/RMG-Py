@@ -86,10 +86,10 @@ def loadThermoDatabase(dstr):
 	`rmg.thermo.forbiddenStructures`.
 	"""
 	species.thermoDatabase = species.ThermoDatabaseSet()
-	species.thermoDatabase.load(dstr )
+	species.thermoDatabase.load(dstr)
 
 	thermo.forbiddenStructures = data.Dictionary()
-	thermo.forbiddenStructures.load(database[2] + os.sep + 'forbiddenStructure.txt')
+	thermo.forbiddenStructures.load(os.path.join(dstr, 'forbiddenStructure.txt'))
 	thermo.forbiddenStructures.toStructure()
 
 def loadKineticsDatabase(dstr):
@@ -160,7 +160,7 @@ class XML:
 		elif not required:
 			return default
 		else:
-			raise InvalidXMLError('No "%s" attribute found for  <%s> element.' % (attribute, element.tagName))
+			raise InvalidXMLError('No "%s" attribute found for  <%s> element.' % (name, element.tagName))
 
 	def getChildElement(self, parentElement, name, required=True):
 		"""
@@ -225,10 +225,10 @@ class XML:
 		and return the corresponding :class:`quantities.Quantity` object.
 		"""
 		units = str(self.getAttribute(element, 'units', required=False, default=''))
-		value = float(self.getElementText(element))
-		return pq.Quantity(value, units)
+		value = str(self.getElementText(element)).split()
+		return pq.Quantity([float(v) for v in value], units)
 
-	def getChildQuantity(self, parentElement, name, required=True):
+	def getChildQuantity(self, parentElement, name, required=True, default=0.0):
 		"""
 		Process an element of the form
 
@@ -237,7 +237,10 @@ class XML:
 		and return the corresponding :class:`quantities.Quantity` object.
 		"""
 		element = self.getChildElement(parentElement, name, required)
-		return self.getQuantity(element)
+		if element:
+			return self.getQuantity(element)
+		else:
+			return default
 		
 	def createElement(self, elementName, parentElement):
 		"""
@@ -269,6 +272,48 @@ class XML:
 		parentElement.setAttribute(attributeName, attributeValue)
 
 ################################################################################
+
+def readDatabaseList(xml0, rootElement):
+	"""
+	Parse the portion of the RMG input file that tells where the RMG database(s)
+	are that should be used, i.e. the <databaseList> element.
+	"""
+
+	# Process databases
+	databases = []
+	databaseList = xml0.getChildElement(rootElement, 'databaseList')
+	databaseElements = xml0.getChildElements(databaseList, 'database')
+	for element in databaseElements:
+
+		# Get database type
+		databaseType = xml0.getAttribute(element, 'type', required=True)
+		databaseType = databaseType.lower()
+		if databaseType != 'general':
+			raise InvalidInputFileException('Invalid database type "' + databaseType + '"; valid types are "general".')
+
+		# Get database name and form path
+		databaseName = xml0.getElementText(element)
+		databasePath = os.path.dirname(__file__)
+		databasePath = os.path.join(databasePath, '..')
+		databasePath = os.path.join(databasePath, '..')
+		databasePath = os.path.join(databasePath, 'data')
+		databasePath = os.path.join(databasePath, databaseName)
+		if not os.path.exists(databasePath):
+			raise InvalidInputFileException('Database "%s" not found.' % databaseName)
+
+		databases.append([databaseName, databaseType, databasePath])
+
+	# Output info about databases
+	logging.info('Found %s database%s' % (len(databases), 's' if len(databases) > 1 else ''))
+
+	# Check that exactly one general database was specified
+	generalDatabaseCount = sum([1 for database in databases if database[1] == 'general'])
+	if generalDatabaseCount == 0:
+		raise InvalidInputFileException('No general database specified; one must be present.')
+	elif generalDatabaseCount > 1:
+		raise InvalidInputFileException('Multiple general databases specified; only one is allowed.')
+
+	return databases
 
 def readInputFile(fstr):
 	"""
@@ -305,41 +350,8 @@ def readInputFile(fstr):
 		spectralDataEstimation = spectralDataEstimation.lower()
 		settings.spectralDataEstimation = (spectralDataEstimation == 'on' or spectralDataEstimation == 'true' or spectralDataEstimation == 'yes')
 		
-		# Process databases
-		databases = []
-		databaseList = xml0.getChildElement(rootElement, 'databaseList')
-		databaseElements = xml0.getChildElements(databaseList, 'database')
-		for element in databaseElements:
-			
-			# Get database type
-			databaseType = xml0.getAttribute(element, 'type', required=True)
-			databaseType = databaseType.lower()
-			if databaseType != 'general':
-				raise InvalidInputFileException('Invalid database type "' + databaseType + '"; valid types are "general".')
-			
-			# Get database name and form path
-			databaseName = xml0.getElementText(element)
-			databasePath = os.path.dirname(__file__)
-			databasePath = os.path.join(databasePath, '..')
-			databasePath = os.path.join(databasePath, '..')
-			databasePath = os.path.join(databasePath, 'data')
-			databasePath = os.path.join(databasePath, databaseName)
-			if not os.path.exists(databasePath):
-				raise InvalidInputFileException('Database "%s" not found.' % databaseName)
-			
-			databases.append([databaseName, databaseType, databasePath])
-		
-		# Output info about databases
-		logging.info('Found %s database%s' % (len(databases), 's' if len(databases) > 1 else ''))
-		
-		# Check that exactly one general database was specified
-		generalDatabaseCount = sum([1 for database in databases if database[1] == 'general'])
-		if generalDatabaseCount == 0:
-			raise InvalidInputFileException('No general database specified; one must be present.')
-		elif generalDatabaseCount > 1:
-			raise InvalidInputFileException('Multiple general databases specified; only one is allowed.')
-
 		# Load databases
+		databases = readDatabaseList(xml0, rootElement)
 		for database in databases:
 			if database[1] == 'general':
 				logging.debug('General database: ' + database[2])
