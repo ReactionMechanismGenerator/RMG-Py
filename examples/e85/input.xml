@@ -11,23 +11,23 @@
 	<speciesList>
 		<!-- List of initial species -->
 		<species id="O2" label="oxygen" reactive="yes">
-			<smiles>O=O</smiles>
+			<structure format="SMILES">O=O</structure>
 		</species>
 		<species id="C8H18i" label="iso-octane" reactive="yes">
-			<smiles>CC(C)CC(C)(C)C</smiles>
+			<structure format="SMILES">CC(C)CC(C)(C)C</structure>
 		</species>
 		<species id="C2H6On" label="ethanol" reactive="yes">
-			<smiles>CCO</smiles>
+			<structure format="SMILES">CCO</structure>
 		</species>
 		<species id="C7H8t" label="toluene" reactive="yes">
-			<smiles>Cc1ccccc1</smiles>
+			<structure format="SMILES">Cc1ccccc1</structure>
 		</species>
 		<species id="C6H12n" label="hex-1-ene" reactive="yes">
-			<smiles>CCCCC=C</smiles>
+			<structure format="SMILES">CCCCC=C</structure>
 		</species>
 		<!-- Inert gases -->
 		<species id="Ar" label="argon" reactive="no">
-			<smiles>[Ar]</smiles>
+			<structure format="SMILES">[Ar]</structure>
 		</species>
 	</speciesList>
 	<!-- List of reaction systems -->

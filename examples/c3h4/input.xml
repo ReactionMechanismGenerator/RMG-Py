@@ -10,14 +10,14 @@
 	<!-- List of species -->
 	<speciesList>
 		<species id="spec1" label="CH2" reactive="yes">
-			<smiles>[CH2]</smiles>
+			<structure format="SMILES">[CH2]</structure>
 		</species>
 		<species id="spec2" label="C2H2" reactive="yes">
-			<smiles>C#C</smiles>
+			<structure format="SMILES">C#C</structure>
 		</species>
 		<!-- Inert gases -->
 		<species id="spec0" label="N2" reactive="no">
-			<inchi>InChI=1/N2/c1-2</inchi>
+			<structure format="InChI">InChI=1/N2/c1-2</structure>
 		</species>
 	</speciesList>
 	<!-- List of reaction systems -->

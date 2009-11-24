@@ -11,7 +11,7 @@
 	<speciesList>
 		<!-- Initial reactive species -->
 		<species id="spec1" label="HXD13" reactive="yes">
-			<cml>
+			<structure format="cml">
 				<molecule>
 					<atomArray>
 						<atom id="a1" elementType="C" />
@@ -29,17 +29,17 @@
 						<bond atomRefs2="a5 a6" order="S" />
 					</bondArray>
 				</molecule>
-			</cml>
+			</structure>
 		</species>
 		<species id="spec3" label="CH4" reactive="yes">
-			<inchi>InChI=1/CH4/h1H4</inchi>
+			<structure format="InChI">InChI=1/CH4/h1H4</structure>
 		</species>
 		<species id="spec6" label="H2" reactive="yes">
-			<smiles>[H][H]</smiles>
+			<structure format="SMILES">[H][H]</structure>
 		</species>
 		<!-- Inert species -->
 		<species id="spec0" label="N2" reactive="no">
-			<inchi>InChI=1/N2/c1-2</inchi>
+			<structure format="InChI">InChI=1/N2/c1-2</structure>
 		</species>
 	</speciesList>
 	<!-- List of reaction systems -->

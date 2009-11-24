@@ -12,37 +12,37 @@
 	<speciesList>
 		<!-- List of initial species -->
 		<species id="n-decylbenzene" label="n-decylbz" reactive="yes">
-			<smiles>CCCCCCCCCCc1ccccc1</smiles>
+			<structure format="SMILES">CCCCCCCCCCc1ccccc1</structure>
 		</species>
 		<species id="n-undecane" label="n-C11" reactive="yes">
-			<smiles>CCCCCCCCCCC</smiles>
+			<structure format="SMILES">CCCCCCCCCCC</structure>
 		</species>
 		<species id="n-tridecane" label="n-C13" reactive="yes">
-			<smiles>CCCCCCCCCCCCC</smiles>
+			<structure format="SMILES">CCCCCCCCCCCCC</structure>
 		</species>
 		<species id="n-hexadecane" label="n-C16" reactive="yes">
-			<smiles>CCCCCCCCCCCCCCCC</smiles>
+			<structure format="SMILES">CCCCCCCCCCCCCCCC</structure>
 		</species>
 		<species id="n-nonadecane" label="n-C19" reactive="yes">
-			<smiles>CCCCCCCCCCCCCCCCCCC</smiles>
+			<structure format="SMILES">CCCCCCCCCCCCCCCCCCC</structure>
 		</species>
 		<species id="n-heneicosane" label="n-C21" reactive="yes">
-			<smiles>CCCCCCCCCCCCCCCCCCCCC</smiles>
+			<structure format="SMILES">CCCCCCCCCCCCCCCCCCCCC</structure>
 		</species>
 		<species id="1-methylnapthalene" label="1M-napthalene" reactive="yes">
-			<smiles>Cc1cccc2ccccc12</smiles>
+			<structure format="SMILES">Cc1cccc2ccccc12</structure>
 		</species>
 		<!--
 		<species id="linoleic acid methyl ester" label="M-linoleate" reactive="yes">
-			<smiles>CCCCC/C=C\C\C=C/CCCCCCCC(=O)OC</smiles>
+			<structure format="SMILES">CCCCC/C=C\C\C=C/CCCCCCCC(=O)OC</structure>
 		</species>
 		-->
 		<species id="oxygen" label="O2" reactive="yes">
-			<smiles>O=O</smiles>
+			<structure format="SMILES">O=O</structure>
 		</species>
 		<!-- Inert gases
 		<species id="spec0" label="N2" reactive="no">
-			<inchi>InChI=1/N2/c1-2</inchi>
+			<structure format="InChI">InChI=1/N2/c1-2</structure>
 		</species> -->
 	</speciesList>
 	<!-- List of reaction systems -->
