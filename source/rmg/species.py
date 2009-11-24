@@ -65,6 +65,22 @@ class LennardJones:
 		self.sigma = sigma
 		self.epsilon = epsilon
 
+	def fromXML(self, document, rootElement):
+		"""
+		Convert a <lennardJones> element from a standard RMG-style XML input
+		file into a SpecLennardJonesies object. `document` is an :class:`io.XML`
+		class representing the XML DOM tree, and `rootElement` is the
+		<lennardJones> element in that tree.
+		"""
+
+		# Read <sigma> element
+		self.sigma = document.getChildQuantity(rootElement, 'sigma', required=True)
+		self.sigma = float(self.sigma.simplified)
+
+		# Read <epsilon> element
+		self.epsilon = document.getChildQuantity(rootElement, 'epsilon', required=True)
+		self.epsilon = float(self.epsilon.simplified)
+
 ################################################################################
 
 class ThermoSnapshot:
@@ -212,6 +228,56 @@ class Species:
 		"""
 		return self.structure[0].getFormula()
 
+	def fromXML(self, document, rootElement):
+		"""
+		Convert a <species> element from a standard RMG-style XML input file
+		into a Species object. `document` is an :class:`io.XML` class
+		representing the XML DOM tree, and `rootElement` is the <structure>
+		element in that tree.
+		"""
+
+		# Read id attribute
+		self.id = str(document.getAttribute(rootElement, 'id', required=True))
+
+		# Read label attribute
+		self.label = str(document.getAttribute(rootElement, 'label', required=False, default=self.id))
+
+		# Read reactive attribute
+		self.reactive = str(document.getAttribute(rootElement, 'reactive', required=False, default='yes')).lower()
+		self.reactive = not (self.reactive == 'no' or self.reactive == 'false' or self.reactive == 'n')
+
+		# Read <structure> element
+		self.structure = []
+		structureElement = document.getChildElement(rootElement, 'structure', required=False)
+		if structureElement:
+			self.structure = [structure.Structure()]
+			self.structure[0].fromXML(document, structureElement)
+
+		# Read <thermoData> element
+		self.thermoData = None
+		thermoElement = document.getChildElement(rootElement, 'thermoData', required=False)
+		if thermoElement:
+			format = str(document.getAttribute(thermoElement, 'format', required=True)).lower()
+			if format == 'group additivity':
+				self.thermoData = thermo.ThermoGAData()
+				self.thermoData.fromXML(document, thermoElement)
+			else:
+				raise io.InvalidInputFileException('Invalid format "%s" for thermoData element; allowed values are "group additivity".' % format)
+
+		# Read <spectralData> element
+		self.spectralData = None
+		spectralElement = document.getChildElement(rootElement, 'spectralData', required=False)
+		if spectralElement:
+			self.spectralData = spectral.SpectralData()
+			self.spectralData.fromXML(document, spectralElement)
+
+		# Read <lennardJones> element
+		self.lennardJones = None
+		ljElement = document.getChildElement(rootElement, 'lennardJones', required=False)
+		if ljElement:
+			self.lennardJones = LennardJones()
+			self.lennardJones.fromXML(document, ljElement)
+			
 	def fromAdjacencyList(self, adjstr):
 		"""
 		Convert an adjacency list string `adjstr` to a Species object.
@@ -512,7 +578,7 @@ def makeNewSpecies(structure, label='', reactive=True):
 	object is created and returned after being appended to the global species
 	list.
 	"""
-	global speciesCounter 
+	global speciesCounter
 #	# Recalculate atom types for proposed structure (hopefully not necessary)
 #	structure.simplifyAtomTypes()
 #	structure.updateAtomTypes()
@@ -543,9 +609,19 @@ def makeNewSpecies(structure, label='', reactive=True):
 #			if atom.hasFreeElectron(): label += 'J'
 		label = structure.toSMILES()
 	
-	speciesCounter += 1
-	spec = Species(speciesCounter, label, structure, reactive)
+	spec = Species(speciesCounter+1, label, structure, reactive)
+	return processNewSpecies(spec)
+
+def processNewSpecies(spec):
+	"""
+	Once a species `spec` has been created (e.g. via :meth:`makeNewSpecies`),
+	this function handles other aspects	of preparing it for RMG.
+	"""
+	global speciesCounter
+
 	speciesList.insert(0, spec)
+	speciesCounter += 1
+	spec.id = speciesCounter
 	
 	spec.getResonanceIsomers()
 	if thermoDatabase is not None:

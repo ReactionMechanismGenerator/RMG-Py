@@ -334,35 +334,19 @@ def readInputFile(fstr):
 		logging.info('Found ' + str(len(speciesElements)) + ' species')
 		for element in speciesElements:
 			
-			# Attributes of the species element
-			sid = xml0.getAttribute(element, 'id')
-			label = xml0.getAttribute(element, 'label')
-			reactive = xml0.getAttribute(element, 'reactive', required=False, default='yes')
-			reactive = reactive.lower()
-			reactive = not (reactive == 'no' or reactive == 'false' or reactive == 'n')
-			
-			# Load structure
-			struct = structure.Structure()
-			
-			cml = xml0.getChildElement(element, 'cml', required=False)
-			inchi = xml0.getChildElement(element, 'inchi', required=False)
-			smiles = xml0.getChildElement(element, 'smiles', required=False)
-			if cml is not None:
-				cmlstr = str(xml0.getChildElement(cml, 'molecule', required=True).toxml())
-				struct.fromCML(cmlstr)
-			elif inchi is not None:
-				inchistr = str(xml0.getElementText(inchi))
-				struct.fromInChI(inchistr)
-			elif smiles is not None:
-				smilesstr = str(xml0.getElementText(smiles))
-				struct.fromSMILES(smilesstr)
-			else:
-				raise InvalidInputFileException('Species "%s" missing structure information.' % label)
-			
-			# Create a new species and append the species to the core
-			spec = species.makeNewSpecies(struct, label, reactive)
+			# Load species ID
+			sid = str(xml0.getAttribute(element, 'id', required=True))
+
+			# Load the species data from the file
+			spec = species.Species()
+			spec.fromXML(xml0, element)
+
+			# Handle other aspects of RMG species creation
+			species.processNewSpecies(spec)
+
+			# All species in RMG input file are immediately added to the core
 			coreSpecies.append(spec)
-			
+
 			# Add to local species dictionary (for matching with other parts of file)
 			speciesDict[sid] = spec
 

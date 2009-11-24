@@ -84,6 +84,22 @@ class ThermoData:
 		else:
 			return self.Tmin <= T and T <= self.Tmax
 
+	def fromXML(self, document, rootElement):
+		"""
+		Convert a <thermoData> element from a standard RMG-style XML input file
+		into a ThermoData object. `document` is an :class:`io.XML` class
+		representing the XML DOM tree, and `rootElement` is the <thermoData>
+		element in that tree.
+		"""
+
+		# Read comment attribute
+		self.comment = document.getAttribute(rootElement, 'enthalpyOfFormation', required=False, default='')
+
+		# Temperature range not currently read
+		self.Trange = [0.0, 0.0]
+		self.Tmin = 0.0
+		self.Tmax = 0.0
+
 ################################################################################
 
 class ThermoGAData(ThermoData):
@@ -258,6 +274,29 @@ class ThermoGAData(ThermoData):
 		for i in range(len(self.Cp)): self.Cp[i] = float(self.Cp[i])
 		self.comment = comment
 	
+	def fromXML(self, document, rootElement):
+		"""
+		Convert a <thermoData> element from a standard RMG-style XML input file
+		into a ThermoGAData object. `document` is an :class:`io.XML` class
+		representing the XML DOM tree, and `rootElement` is the <thermoData>
+		element in that tree.
+		"""
+
+		# 'comment' attribute parsed by base class
+		ThermoData.fromXML(self, document, rootElement)
+
+		# Read <enthalpyOfFormation> element
+		self.H298 = document.getChildQuantity(rootElement, 'enthalpyOfFormation', required=True)
+		self.H298 = float(self.H298.simplified)
+
+		# Read <entropyOfFormation> element
+		self.S298 = document.getChildQuantity(rootElement, 'entropyOfFormation', required=True)
+		self.S298 = float(self.S298.simplified)
+
+		# Read <heatCapacities> element
+		self.Cp = document.getChildQuantity(rootElement, 'heatCapacities', required=True)
+		self.Cp = [float(Cp.simplified) for Cp in self.Cp]
+
 	def toXML(self, dom, root):
 		"""
 		Generate an XML representation of the thermodynamic data using the

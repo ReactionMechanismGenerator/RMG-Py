@@ -254,6 +254,27 @@ class Structure:
 		mol = pybel.Molecule(self.toOBMol())
 		return mol.formula
 
+	def fromXML(self, document, rootElement):
+		"""
+		Convert a <structure> element from a standard RMG-style XML input file
+		into a Structure object. `document` is an :class:`io.XML` class
+		representing the XML DOM tree, and `rootElement` is the <structure>
+		element in that tree.
+		"""
+		
+		format = str(document.getAttribute(rootElement, 'format', required=True)).lower()
+		if format == 'cml':
+			cmlstr = str(document.getChildElement(rootElement, 'molecule', required=True).toxml())
+			self.fromCML(cmlstr)
+		elif format == 'inchi':
+			inchistr = str(document.getElementText(rootElement))
+			self.fromInChI(inchistr)
+		elif format == 'smiles':
+			smilesstr = str(document.getElementText(rootElement))
+			self.fromSMILES(smilesstr)
+		else:
+			raise io.InvalidInputFileException('Invalid format "%s" for structure element; allowed values are "cml", "inchi", and "smiles".' % format)
+
 	def fromAdjacencyList(self, adjlist):
 		"""
 		Convert a string adjacency list `adjlist` into a structure object.

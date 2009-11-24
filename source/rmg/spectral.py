@@ -203,6 +203,23 @@ class RigidRotor:
 
 		return rho
 
+	def fromXML(self, document, rootElement):
+		"""
+		Convert a <rigidRotor> element from a standard RMG-style XML
+		input file into a RigidRotor object. `document` is an
+		:class:`io.XML` class representing the XML DOM tree, and `rootElement`
+		is the <rigidRotor> element in that tree.
+		"""
+
+		# Read <frequencies> element
+		self.frequencies = document.getChildQuantity(rootElement, 'frequencies', required=True)
+		self.frequencies = [float(f) for f in self.frequency]
+
+		# Read <linear> attribute
+		self.linear = str(document.getAttribute(rootElement, 'linear', required=False, default='no')).lower()
+		self.linear = (self.linear == 'yes' or self.linear == 'y' or self.linear == 'true')
+
+
 ################################################################################
 
 class HinderedRotor:
@@ -305,6 +322,22 @@ class HinderedRotor:
 
 		return rho
 
+	def fromXML(self, document, rootElement, frequencyScaleFactor=1.0):
+		"""
+		Convert a <hinderedRotor> element from a standard RMG-style XML
+		input file into a HinderedRotor object. `document` is an
+		:class:`io.XML` class representing the XML DOM tree, and `rootElement`
+		is the <hinderedRotor> element in that tree.
+		"""
+
+		# Read <frequency> element
+		self.frequency = document.getChildQuantity(rootElement, 'frequency', required=True)
+		self.frequency = float(self.frequency) * frequencyScaleFactor
+
+		# Read <barrier> element
+		self.barrier = document.getChildQuantity(rootElement, 'barrier', required=True)
+		self.barrier = float(self.barrier)
+
 ################################################################################
 
 class HarmonicOscillator:
@@ -373,6 +406,18 @@ class HarmonicOscillator:
 		called for that purpose.
 		"""
 		pass
+
+	def fromXML(self, document, rootElement, frequencyScaleFactor=1.0):
+		"""
+		Convert a <harmonicOscillator> element from a standard RMG-style XML
+		input file into a HarmonicOscillator object. `document` is an
+		:class:`io.XML` class representing the XML DOM tree, and `rootElement`
+		is the <harmonicOscillator> element in that tree.
+		"""
+
+		# Read <frequency> element
+		self.frequency = document.getChildQuantity(rootElement, 'frequency', required=True)
+		self.frequency = float(self.frequency) * frequencyScaleFactor
 
 ################################################################################
 
@@ -470,6 +515,44 @@ class SpectralData:
 			rho.append(i1)
 
 		return rho
+
+	def fromXML(self, document, rootElement):
+		"""
+		Convert a <spectralData> element from a standard RMG-style XML input
+		file into a SpectralData object. `document` is an :class:`io.XML` class
+		representing the XML DOM tree, and `rootElement` is the <spectralData>
+		element in that tree.
+		"""
+
+		# Read <frequencyScaleFactor> element
+		frequencyScaleFactor = float(document.getChildQuantity(rootElement, 'frequencyScaleFactor', required=False, default=1.0))
+
+		# Read <groundStateEnergy> element
+		self.E0 = document.getChildQuantity(rootElement, 'groundStateEnergy', required=True)
+
+		# Read <harmonicOscillator> elements
+		hoElements = document.getChildElements(rootElement, 'harmonicOscillator')
+		for hoElement in hoElements:
+			mode = HarmonicOscillator()
+			mode.fromXML(document, hoElement, frequencyScaleFactor)
+			self.modes.append(mode)
+
+		# Read <hinderedRotor> elements
+		hrElements = document.getChildElements(rootElement, 'hinderedRotor')
+		for hrElement in hrElements:
+			mode = HinderedRotor()
+			mode.fromXML(document, hrElement, frequencyScaleFactor)
+			self.modes.append(mode)
+
+		# Read <rigidRotor> elements
+		rrElements = document.getChildElements(rootElement, 'rigidRotor')
+		for rrElement in rrElements:
+			mode = RigidRotor()
+			mode.fromXML(document, rrElement)
+			self.modes.append(mode)
+
+		# Read <symmetryNumber> element
+		self.symmetry = float(document.getChildQuantity(rootElement, 'symmetryNumber', required=False, default=1))
 
 ################################################################################
 
