@@ -136,10 +136,49 @@ def readInputFile(fstr):
 		# Determine transition state ground-state energies of the reactions
 		for reaction in network.pathReactions:
 			reaction.E0 = reaction.reactant.E0 + reaction.kinetics[0].Ea
-		
+
+		# Read bath gas
+		bathGasListElement = document.getChildElement(rootElement, 'bathGasList', required=True)
+		bathGasElements = document.getChildElements(bathGasListElement, 'bathGas', required=True)
+		for bathGasElement in bathGasElements:
+			ref = str(document.getAttribute(bathGasElement, 'ref', required=True))
+			network.bathGas = speciesDict[ref]
+		if not network.bathGas:
+			raise io.InvalidXMLError('No bath gas specified.')
+		logging.info('Set species "%s" as bath gas' % (network.bathGas.id))
+
+
+
+		# Read option list
+		optionListElement = document.getChildElement(rootElement, 'optionList', required=True)
+
+		# Read <temperatures>
+		temperatures = document.getChildQuantity(optionListElement, 'temperatures', required=True)
+		Tlist = [float(T.simplified) for T in temperatures]
+
+		# Read <pressures>
+		pressures = document.getChildQuantity(optionListElement, 'pressures', required=True)
+		Plist = [float(P.simplified) for P in pressures]
+
+		logging.info('Read %i temperatures and %i pressures' % (len(Tlist), len(Plist)))
+
+		# Read <grainSize>
+		grainSize = document.getChildQuantity(optionListElement, 'grainSize', required=False, default=0.0)
+		grainSize = float(grainSize.simplified)
+
+		# Read <numberOfGrains>
+		numGrains = int(document.getChildQuantity(optionListElement, 'numberOfGrains', required=False, default=0))
+
+		# Read <method>
+		method = str(document.getChildElementText(optionListElement, 'method', required=True))
+
+		# Read <interpolationModel>
+		model = str(document.getChildElementText(optionListElement, 'interpolationModel', required=True))
 
 		# Cleanup the DOM tree when finished
 		document.cleanup()
+
+		return network, (Tlist, Plist, grainSize, numGrains, method, model)
 
 	#except InvalidInputFileException, e:
 	#	logging.exception(str(e))

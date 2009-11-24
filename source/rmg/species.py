@@ -277,7 +277,12 @@ class Species:
 		if ljElement:
 			self.lennardJones = LennardJones()
 			self.lennardJones.fromXML(document, ljElement)
-			
+
+		# Read <expDownParam> element
+		expDownElement = document.getChildElement(rootElement, 'expDownParam', required=False)
+		if expDownElement:
+			self.expDownParam = float(document.getQuantity(expDownElement).simplified)
+
 	def fromAdjacencyList(self, adjstr):
 		"""
 		Convert an adjacency list string `adjstr` to a Species object.
