@@ -322,6 +322,8 @@ class Network:
 				Emin = isomer.E0
 		for isomer in self.isomers:
 			isomer.E0 -= Emin
+		for reaction in self.pathReactions:
+			reaction.E0 -= Emin
 
 	def __getEnergyGrains(self, Emin, Emax, dE0, nGrains0):
 		"""
@@ -432,11 +434,31 @@ class Network:
 				if isomer.densStates is not None:
 					isomer.calculateEqDist(Elist, T)
 
+#			# DEBUG: Plot equilibrium distributions
+#			import pylab
+#			for isomer in self.isomers:
+#				if isomer.densStates is not None:
+#					pylab.plot(Elist / 1000.0, isomer.eqDist, '-')
+#			pylab.xlabel('Energy (kJ/mol)')
+#			pylab.ylabel('Equilibrium distribution')
+#			pylab.show()
+
 			# Calculate microcanonical rates k(E)
 			# It might seem odd that this is dependent on temperature, and it
 			# isn't -- unless the Arrhenius expression has a negative n
 			for reaction in self.pathReactions:
-				reaction.kf, reaction.kb = reaction.calculateMicrocanonicalRate(Elist, T)
+				reaction.kf, reaction.kb = reaction.calculateMicrocanonicalRate(Elist,
+					T, reaction.reactant.densStates, reaction.product.densStates)
+				
+			# DEBUG: Plot microcanonical rates
+			import pylab
+			for reaction in self.pathReactions:
+				if reaction.isIsomerization():
+					pylab.semilogy(Elist / 1000.0, reaction.kf, '-')
+					pylab.semilogy(Elist / 1000.0, reaction.kb, '--')
+			pylab.xlabel('Energy (kJ/mol)')
+			pylab.ylabel('Microcanonical rate')
+			pylab.show()
 
 			for p, P in enumerate(Plist):
 

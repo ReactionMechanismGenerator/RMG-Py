@@ -411,7 +411,7 @@ class Reaction:
 		form :math:`\\mathrm{A} \\rightleftharpoons \\mathrm{B}`. 
 		Returns :data:`False` otherwise.
 		"""
-		return len(self.reactant.species) == 1 and len(self.product.species) == 1
+		return len(self.reactants) == 1 and len(self.products) == 1
 
 	def isDissociation(self):
 		"""
@@ -419,7 +419,7 @@ class Reaction:
 		form :math:`\\mathrm{A} \\rightleftharpoons \\mathrm{B} + \\mathrm{C}`.
 		Returns :data:`False` otherwise.
 		"""
-		return len(self.reactant.species) == 1 and len(self.product.species) > 1
+		return len(self.reactants) == 1 and len(self.products) > 1
 
 	def isAssociation(self):
 		"""
@@ -427,9 +427,9 @@ class Reaction:
 		form :math:`\\mathrm{A} + \\mathrm{B} \\rightleftharpoons \\mathrm{C}`.
 		Returns :data:`False` otherwise.
 		"""
-		return len(self.reactant.species) > 1 and len(self.product.species) == 1
+		return len(self.reactants) > 1 and len(self.products) == 1
 
-	def calculateMicrocanonicalRate(self, Elist, T):
+	def calculateMicrocanonicalRate(self, Elist, T, reacDensStates, prodDensStates=None):
 		"""
 		Calculate and return the microcanonical rate coefficients k(E) for the
 		forward and reverse reactions from the high-pressure limit canonical
@@ -446,33 +446,37 @@ class Reaction:
 
 		kinetics = self.getBestKinetics(T)
 
+		reacQ = numpy.sum(reacDensStates * numpy.exp(-Elist / constants.R / T))
+		if prodDensStates is not None:
+			prodQ = numpy.sum(prodDensStates * numpy.exp(-Elist / constants.R / T))
+
 		if self.isIsomerization():
 
-			kf = kineticsInverseLaplaceTransform(kinetics, self.E0, self.reactant.densStates, Elist, T)
+			kf = kineticsInverseLaplaceTransform(kinetics, self.E0, reacDensStates, Elist, T)
 			for r in range(len(Elist)):
-				if self.product.densStates[r] != 0:
-					kb[r] = kf[r] * self.reactant.densStates[r] / self.product.densStates[r]
+				if prodDensStates[r] != 0:
+					kb[r] = kf[r] * reacDensStates[r] / prodDensStates[r]
 
 		elif self.isDissociation():
 
-			kf = kineticsInverseLaplaceTransform(kinetics, self.E0, self.reactant.densStates, Elist, T)
-
+			kf = kineticsInverseLaplaceTransform(kinetics, self.E0, reacDensStates, Elist, T)
+			
 			Keq = self.getEquilibriumConstant(T, conc=1.0)
 			for r in range(len(Elist)):
-				kb[r] = kf[r] / Keq * self.reactant.densStates[r] * math.exp(-Elist[r] / constants.R / T) / self.reactant.Q * dE
+				kb[r] = kf[r] / Keq * reacDensStates[r] * math.exp(-Elist[r] / constants.R / T) / reacQ
 
 		elif self.isAssociation():
 
 			if self.reactant.densStates is None:
 				raise Exception('Unable to process association reaction; no density of states available for the reactant isomers.')
 
-			kf = kineticsInverseLaplaceTransform(kinetics, self.E0, self.reactant.densStates, Elist, T)
+			kf = kineticsInverseLaplaceTransform(kinetics, self.E0, reacDensStates, Elist, T)
 			for r in range(len(Elist)):
-				kf[r] *= self.reactant.densStates[r] * math.exp(-Elist[r] / constants.R / T) / self.reactant.Q * dE
+				kf[r] *= reacDensStates[r] * math.exp(-Elist[r] / constants.R / T) / reacQ
 
 			Keq = self.getEquilibriumConstant(T, conc=1.0)
 			for r in range(len(Elist)):
-				bn = self.product.densStates[r] * math.exp(-Elist[r] / constants.R / T) / self.product.Q * dE
+				bn = prodDensStates[r] * math.exp(-Elist[r] / constants.R / T) / prodQ
 				if bn != 0:
 					kb[r] = kf[r] / Keq / bn
 

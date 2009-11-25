@@ -108,8 +108,7 @@ def readInputFile(fstr):
 				else:
 					network.isomers.append(isomer)
 				logging.debug('\tCreated isomer "%s"' % (' + '.join(isomer.species)))
-			reaction.reactant = isomer
-
+			
 			# Create isomer for the product
 			isomer = None
 			for isom in network.isomers:
@@ -122,8 +121,7 @@ def readInputFile(fstr):
 				else:
 					network.isomers.append(isomer)
 				logging.debug('\tCreated isomer "%s"' % (' + '.join(isomer.species)))
-			reaction.product = isomer
-
+			
 		logging.info('Found %i isomers' % (len(network.isomers)))
 
 		# Convert string list to species list
@@ -138,8 +136,9 @@ def readInputFile(fstr):
 			isomer.E0 = sum([species.E0 for species in isomer.species])
 		# Determine transition state ground-state energies of the reactions
 		for reaction in network.pathReactions:
-			reaction.E0 = reaction.reactant.E0 + reaction.kinetics[0].Ea
-
+			E0 = sum([species.E0 for species in reaction.reactants])
+			reaction.E0 = E0 + reaction.kinetics[0].Ea
+		
 		# Read bath gas
 		bathGasListElement = document.getChildElement(rootElement, 'bathGasList', required=True)
 		bathGasElements = document.getChildElements(bathGasListElement, 'bathGas', required=True)
