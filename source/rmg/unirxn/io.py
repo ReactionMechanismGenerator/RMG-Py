@@ -175,8 +175,15 @@ def readInputFile(fstr):
 		method = str(document.getChildElementText(optionListElement, 'method', required=True))
 
 		# Read <interpolationModel>
-		model = str(document.getChildElementText(optionListElement, 'interpolationModel', required=True))
-
+		modelElement = document.getChildElement(optionListElement, 'interpolationModel', required=True)
+		modelType = str(document.getAttribute(modelElement, 'type', required=True))
+		if modelType.lower() == 'chebyshev':
+			degreeT = int(document.getChildElementText(modelElement, 'temperatureDegree', required=False, default='4'))
+			degreeP = int(document.getChildElementText(modelElement, 'pressureDegree', required=False, default='4'))
+			model = (modelType, degreeT, degreeP)
+		else:
+			model = (modelType)
+		
 		# Cleanup the DOM tree when finished
 		document.cleanup()
 

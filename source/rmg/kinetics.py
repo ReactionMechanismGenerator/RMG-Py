@@ -358,6 +358,118 @@ class ArrheniusEPKinetics(Kinetics):
 
 ################################################################################
 
+class ChebyshevKinetics(Kinetics):
+	"""
+	A kinetic model of a phenomenological rate coefficient k(T, P) using the
+	expression
+
+	.. math:: \\log k(T,P) = \\sum_{t=1}^{N_T} \\sum_{p=1}^{N_P} \\alpha_{tp} \\phi_t(\\tilde{T}) \\phi_p(\\tilde{P})
+
+	where :math:`\\alpha_{tp}` is a constant, :math:`\\phi_n(x)` is the
+	Chebyshev polynomial of degree :math:`n` evaluated at :math:`x`, and
+
+	.. math:: \\tilde{T} \\equiv \\frac{2T^{-1} - T_\\mathrm{min}^{-1} - T_\\mathrm{max}^{-1}}{T_\\mathrm{max}^{-1} - T_\\mathrm{min}^{-1}}
+
+	.. math:: \\tilde{P} \\equiv \\frac{2 \\log P - \\log P_\\mathrm{min} - \\log P_\\mathrm{max}}{\\log P_\\mathrm{max} - \\log P_\\mathrm{min}}
+
+	are reduced temperature and reduced pressures designed to map the ranges
+	:math:`(T_\\mathrm{min}, T_\\mathrm{max})` and
+	:math:`(P_\\mathrm{min}, P_\\mathrm{max})` to :math:`(-1, 1)`.
+	The attributes are:
+
+	==============  ============================================================
+	Attribute       Description
+	==============  ============================================================
+	`Tmin`          The minimum temperature in K
+	`Tmax`          The maximum temperature in K
+	`Pmin`          The minimum pressure in Pa
+	`Pmax`          The maximum pressure in Pa
+	`coeffs`        Matrix of Chebyshev coefficients
+	==============  ============================================================
+
+	"""
+
+	def __init__(self, Tmin=0.0, Tmax=0.0, Pmin=0.0, Pmax=0.0, coeffs=None):
+		self.Tmin = Tmin
+		self.Tmax = Tmax
+		self.Pmin = Pmin
+		self.Pmax = Pmax
+		self.coeffs = coeffs
+		self.degreeT = 0
+		self.degreeP = 0
+
+	def __chebyshev(self, n, x):
+		return math.cos(n * math.acos(x))
+
+	def __getReducedTemperature(self, T):
+		return (2.0/T - 1.0/self.Tmin - 1.0/self.Tmax) / (1.0/self.Tmax - 1.0/self.Tmin)
+	
+	def __getReducedPressure(self, P):
+		return (2.0*math.log(P) - math.log(self.Pmin) - math.log(self.Pmax)) / (math.log(self.Pmax) - math.log(self.Pmin))
+	
+	def getRateConstant(self, T, P):
+		"""
+		Return the rate constant k(T, P) at temperature `T` and pressure `P` by
+		evaluating the Chebyshev expression.
+		"""
+
+		Tred = self.__getReducedTemperature(T)
+		Pred = self.__getReducedPressure(P)
+
+		k = 0.0
+		for t in range(self.degreeT):
+			for p in range(self.degreeP):
+				k += self.coeffs[t,p] * self.__chebyshev(t, Tred) * self.__chebyshev(p, Pred)
+		return 10.0**k
+
+
+	def fitToData(self, Tlist, Plist, K, degreeT, degreeP):
+		"""
+		Fit a Chebyshev kinetic model to a set of rate coefficients `K`, which
+		is a matrix corresponding to the temperatures `Tlist` in K and pressures
+		`Plist` in Pa. `degreeT` and `degreeP` are the degree of the polynomials
+		in temperature and pressure.
+		"""
+
+		import numpy
+
+		nT = len(Tlist)
+		nP = len(Plist)
+
+		self.degreeT = degreeT
+		self.degreeP = degreeP
+
+		# Set temperature and pressure ranges
+		self.Tmin = min(Tlist)
+		self.Tmax = max(Tlist)
+		self.Pmin = min(Plist)
+		self.Pmax = max(Plist)
+
+		# Calculate reduced temperatures and pressures
+		Tred = [self.__getReducedTemperature(T) for T in Tlist]
+		Pred = [self.__getReducedPressure(P) for P in Plist]
+
+		# Create matrix and vector for coefficient fit (linear least-squares)
+		A = numpy.zeros((nT*nP, degreeT*degreeP), numpy.float64)
+		b = numpy.zeros((nT*nP), numpy.float64)
+		for t1, T in enumerate(Tred):
+			for p1, P in enumerate(Pred):
+				for t2 in range(degreeT):
+					for p2 in range(degreeP):
+						A[p1*nT+t1, p2*degreeT+t2] = self.__chebyshev(t2, T) * self.__chebyshev(p2, P)
+				b[p1*nT+t1] = math.log10(K[t1,p1])
+
+		# Do linear least-squares fit to get coefficients
+		x, residues, rank, s = numpy.linalg.lstsq(A, b)
+		
+		# Extract coefficients
+		self.coeffs = numpy.zeros((degreeT,degreeP), numpy.float64)
+		for t2 in range(degreeT):
+			for p2 in range(degreeP):
+				self.coeffs[t2,p2] = x[p2*degreeT+t2]
+
+################################################################################
+
 if __name__ == '__main__':
 	
 	pass

@@ -450,15 +450,15 @@ class Network:
 				reaction.kf, reaction.kb = reaction.calculateMicrocanonicalRate(Elist,
 					T, reaction.reactant.densStates, reaction.product.densStates)
 				
-			# DEBUG: Plot microcanonical rates
-			import pylab
-			for reaction in self.pathReactions:
-				if reaction.isIsomerization():
-					pylab.semilogy(Elist / 1000.0, reaction.kf, '-')
-					pylab.semilogy(Elist / 1000.0, reaction.kb, '--')
-			pylab.xlabel('Energy (kJ/mol)')
-			pylab.ylabel('Microcanonical rate')
-			pylab.show()
+#			# DEBUG: Plot microcanonical rates
+#			import pylab
+#			for reaction in self.pathReactions:
+#				if reaction.isIsomerization():
+#					pylab.semilogy(Elist / 1000.0, reaction.kf, '-')
+#					pylab.semilogy(Elist / 1000.0, reaction.kb, '--')
+#			pylab.xlabel('Energy (kJ/mol)')
+#			pylab.ylabel('Microcanonical rate')
+#			pylab.show()
 
 			for p, P in enumerate(Plist):
 

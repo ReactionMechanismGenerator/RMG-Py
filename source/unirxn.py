@@ -37,6 +37,7 @@ import logging
 
 from rmg.main import printRMGHeader, initializeLog
 import rmg.settings as settings
+import rmg.kinetics as kinetics
 import rmg.unirxn.io as io
 
 ################################################################################
@@ -95,15 +96,29 @@ def execute(inputFile, options):
 	logging.info('Calculating phenomenological rate coefficients...')
 	K = network.calculateRateCoefficients(Tlist, Plist, Elist, method)
 
-	for i in range(len(network.isomers)):
-		for j in range(len(network.isomers)):
-			if i != j:
-				print '%i --> %i' % (i, j)
-				for t in range(len(Tlist)):
-					for p in range(len(Plist)):
-						print '%12.3e' % K[t,p,j,i],
-					print ''
-				print ''
+	# Fit interpolation model
+	if model[0].lower() == 'chebyshev':
+		modelType, degreeT, degreeP = model
+		for i in range(len(network.isomers)):
+			for j in range(len(network.isomers)):
+				if i != j:
+					chebyshev = kinetics.ChebyshevKinetics()
+					chebyshev.fitToData(Tlist, Plist, K[:,:,j,i], degreeT, degreeP)
+	
+	elif model[0].lower() == 'pdeparrhenius':
+		pass
+	else:
+		pass
+
+#	for i in range(len(network.isomers)):
+#		for j in range(len(network.isomers)):
+#			if i != j:
+#				print '%i --> %i' % (i, j)
+#				for t in range(len(Tlist)):
+#					for p in range(len(Plist)):
+#						print '%12.3e' % K[t,p,j,i],
+#					print ''
+#				print ''
 
 	logging.info('')
 

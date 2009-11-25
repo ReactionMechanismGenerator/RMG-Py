@@ -353,8 +353,11 @@
 		<!--<method>modifiedStrongCollision</method>-->
 		<method>reservoirState</method>
 		<!-- Select one of the following interpolation models -->
-		<interpolationModel>None</interpolationModel>
-		<!--<interpolationModel>Chebyshev 4 4</interpolationModel>-->
-		<!--<interpolationModel>PDepArrhenius</interpolationModel>-->
+		<interpolationModel type="Chebyshev">
+			<temperatureDegree>4</temperatureDegree>
+			<pressureDegree>4</pressureDegree>
+		</interpolationModel>
+		<!--<interpolationModel type="None"/>-->
+		<!--<interpolationModel type="PDepArrhenius"/>-->
 	</optionList>
 </rmginput>
