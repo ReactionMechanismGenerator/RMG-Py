@@ -33,6 +33,13 @@ Contains classes that define an internal representation of a unimolecular
 reaction network.
 """
 
+import math
+import logging
+import numpy
+
+import rmg.constants as constants
+import states
+
 ################################################################################
 
 class Isomer:
@@ -97,14 +104,21 @@ class Isomer:
 		list of energies `Elist` in J/mol.
 		"""
 
+		# Only do for isomers where all species have spectral data
+		for species in self.species:
+			if not species.spectralData:
+				self.densStates = None
+				return
+
 		# Initialize density of states
 		self.densStates = numpy.zeros(len(Elist), numpy.float64)
+		densStates = numpy.zeros(len(Elist), numpy.float64)
 
 		# Calculate the density of states for each species, convolving when
 		# multiple species are present
 		for species in self.species:
-			densStates = species.calculateDensityOfStates(Elist)
-			states.convolve(self.densStates, densStates, Elist)
+			densStates0 = species.calculateDensityOfStates(Elist)
+			states.convolve(densStates, densStates0, Elist)
 
 		# Shift to appropriate energy grain using E0
 		index = -1
@@ -141,13 +155,80 @@ class Isomer:
 			-6.435/10000 * T**0.14874 * math.sin(18.0323 * T**(-0.76830) - 7.27371)
 
 		gasConc = P / constants.kB / T
-		mu = 1 / (1/self.species[0].molWt + 1/bathGas.molWt) / 6.022e23
+		mu = 1 / (1/self.species[0].getMolecularWeight() + 1/bathGas.getMolecularWeight()) / 6.022e23
 		sigma = 0.5 * (self.species[0].lennardJones.sigma + bathGas.lennardJones.sigma)
 		#epsilon = 0.5 * (self.species[0].lennardJones.epsilon + bathGas.lennardJones.epsilon)
 
 		# Evaluate collision frequency
 		self.collFreq = collisionIntegral * \
 			math.sqrt(8 * constants.kB * T / math.pi / mu) * math.pi * sigma**2 * gasConc
+
+	def __efficiency(self, T, E0, alpha, densStates, E):
+
+		dE = E[1] - E[0]
+
+		FeNum = 0; FeDen = 0
+		Delta1 = 0; Delta2 = 0; DeltaN = 0; Delta = 1
+
+		for r in range(0, len(E)):
+			value = densStates[r] * math.exp(-E[r] / constants.R / T)
+			if E[r] > E0:
+				FeNum += value * dE
+				if FeDen == 0:
+					FeDen = value * constants.R * T
+		if FeDen == 0: return 1.0
+		Fe = FeNum / FeDen
+
+		for r in range(0, len(E)):
+			value = densStates[r] * math.exp(-E[r] / constants.R / T)
+			# Delta
+			if E[r] < E0:
+				Delta1 += value * dE
+				Delta2 += value * dE * math.exp(-(E0 - E[r]) / (Fe * constants.R * T))
+			DeltaN += value * dE
+
+		Delta1 /= DeltaN
+		Delta2 /= DeltaN
+
+		Delta = Delta1 - (Fe * constants.R * T) / (alpha + Fe * constants.R * T) * Delta2
+
+		beta = (alpha / (alpha + Fe * constants.R * T))**2 / Delta
+
+		if beta < 0 or beta > 1:
+			raise Exception('Invalid collision efficiency calculated.')
+
+		return beta
+
+	def calculateCollisionEfficiency(self, T, reactions, dEdown, Elist):
+
+		if not self.isUnimolecular():
+			return
+
+		# Determine the "barrier height" as the minimum transition state energy connected to that well
+		E0 = 1.0e100
+		for reaction in reactions:
+			if reaction.reactant == self or reaction.product == self:
+				if reaction.E0 < E0:
+					E0 = reaction.E0
+
+		# Ensure that the barrier height is sufficiently above the ground state
+		# Otherwise invalid efficiencies are observed
+		if E0 - self.E0 < 100000:
+			E0 = self.E0 + 100000
+
+		# Calculate efficiency
+		return self.__efficiency(T, E0, dEdown, self.densStates, Elist)
+
+	def getActiveSpaceEnergy(self, reactions):
+
+		Eres = 1.0e100
+
+		for reaction in reactions:
+			if reaction.reactant == self or reaction.product == self:
+				if reaction.E0 < Eres:
+					Eres = reaction.E0
+
+		return Eres
 
 ################################################################################
 
@@ -220,12 +301,11 @@ class Network:
 
 		# Calculate the density of states for each species using the small
 		# grain size
-		self.setEnergyGrains(min(Elist), max(Elist), grainSize, 0)
+		Elist0 = self.__getEnergyGrains(min(Elist), max(Elist), grainSize, 0)
 		for isomer in self.isomers:
-			isomer.calculateDensityOfStates(Elist)
+			isomer.calculateDensityOfStates(Elist0)
 
 		# Only keep the grains that are used in the rest of the ME computation
-		self.setEnergyGrains(min(Elist), max(Elist), grainSize0, 0)
 		for isomer in self.isomers:
 			if isomer.densStates is not None:
 				isomer.densStates = isomer.densStates[::mult]
@@ -321,14 +401,14 @@ class Network:
 						done = True
 					else:
 						r -= 1
-				Emax = Elist[r] + max([rxn.kinetics.Ea for rxn in self.reactions]) - Emax0
+				Emax = Elist[r] + max([rxn.getBestKinetics(Tmax).Ea for rxn in self.pathReactions]) - Emax0
 			else:
 				mult += 50
 
 		# Add difference between isomer ground-state energy and highest
 		# transition state or isomer energy
 		Emax0_iso = max([isomer.E0 for isomer in self.isomers])
-		Emax0_rxn = max([reaction.E0 for reaction in self.reactions])
+		Emax0_rxn = max([reaction.E0 for reaction in self.pathReactions])
 		Emax += max([Emax0_iso, Emax0_rxn]) - isomer.E0
 
 		# Round Emax up to nearest integer
@@ -355,10 +435,10 @@ class Network:
 			# Calculate microcanonical rates k(E)
 			# It might seem odd that this is dependent on temperature, and it
 			# isn't -- unless the Arrhenius expression has a negative n
-			for reaction in self.reactions:
-				reaction.calculateMicrocanonicalRate(Elist, T)
+			for reaction in self.pathReactions:
+				reaction.kf, reaction.kb = reaction.calculateMicrocanonicalRate(Elist, T)
 
-			for p, P in enumerate(self.Plist):
+			for p, P in enumerate(Plist):
 
 				# Calculate collision frequencies
 				for isomer in self.isomers:
@@ -367,11 +447,11 @@ class Network:
 
 				# Determine phenomenological rate coefficients using approximate
 				# method
-				K[t,p,:,:] = self.applyApproximateMethod(T, P, method)
+				K[t,p,:,:] = self.applyApproximateMethod(T, P, Elist, method)
 
 		return K
 
-	def applyApproximateMethod(self, T, P, method):
+	def applyApproximateMethod(self, T, P, Elist, method):
 		"""
 		Apply the approximate method specified in `method` to estimate the
 		phenomenological rate coefficients for the network. This function
@@ -382,7 +462,7 @@ class Network:
 		# Matrix and vector size indicators
 		nIsom = self.numUniIsomers()
 		nProd = self.numMultiIsomers()
-		nGrains = len(self.Elist)
+		nGrains = len(Elist)
 
 		# Equilibrium distribution of eash isomer
 		eqDist = numpy.zeros([nIsom,nGrains], numpy.float64)
@@ -391,14 +471,14 @@ class Network:
 		# Active-state energy of each isomer
 		Eres = numpy.zeros([nIsom+nProd], numpy.float64)
 		for i in range(nIsom+nProd):
-			Eres[i] = self.isomers[i].getActiveSpaceEnergy(self.reactions)
+			Eres[i] = self.isomers[i].getActiveSpaceEnergy(self.pathReactions)
 
 		# Isomerization, dissociation, and association microcanonical rate
 		# coefficients, respectively
 		Kij = numpy.zeros([nIsom,nIsom,nGrains], numpy.float64)
 		Gnj = numpy.zeros([nProd,nIsom,nGrains], numpy.float64)
 		Fim = numpy.zeros([nIsom,nProd,nGrains], numpy.float64)
-		for reaction in self.reactions:
+		for reaction in self.pathReactions:
 			i = self.indexOf(reaction.reactant)
 			j = self.indexOf(reaction.product)
 			if reaction.isIsomerization():
@@ -416,12 +496,12 @@ class Network:
 			# Modified collision frequency of each isomer
 			collFreq = numpy.zeros([nIsom], numpy.float64)
 			for i in range(nIsom): collFreq[i] = self.isomers[i].collFreq * \
-				self.isomers[i].calculatecollisionEfficiency(T, self.reactions, self.bathGas.dEdown, self.Elist)
+				self.isomers[i].calculateCollisionEfficiency(T, self.pathReactions, self.bathGas.expDownParam, Elist)
 
 			# Apply modified strong collision method
 			import msc
 			logging.debug('\tCalculating phenomenological rate coefficients %g K, %g bar...' % (T, P / 1e5))
-			K, msg = msc.estimateratecoefficients(T, P, self.Elist, collFreq, eqDist, Eres,
+			K, msg = msc.estimateratecoefficients(T, P, Elist, collFreq, eqDist, Eres,
 				Kij, Fim, Gnj)
 			msg = msg.strip()
 			if msg != '':
@@ -430,7 +510,7 @@ class Network:
 		elif method.lower() == 'reservoirstate':
 
 			# Average energy transferred in a deactivating collision
-			dEdown = self.bathGas.dEdown
+			dEdown = self.bathGas.expDownParam
 
 			# Ground-state energy for each isomer
 			E0 = numpy.zeros([nIsom], numpy.float64)
@@ -442,7 +522,7 @@ class Network:
 			for i in range(nIsom):
 				collFreq = self.isomers[i].collFreq
 				densStates = self.isomers[i].densStates
-				Mcoll[i,:,:], msg = mastereqn.collisionmatrix(T, P, self.Elist, collFreq, densStates, E0[i], dEdown)
+				Mcoll[i,:,:], msg = mastereqn.collisionmatrix(T, P, Elist, collFreq, densStates, E0[i], dEdown)
 				msg = msg.strip()
 				if msg != '':
 					raise Exception('Unable to determine collision matrix for isomer %i: %s' % (i, msg))
@@ -450,7 +530,7 @@ class Network:
 			# Apply reservoir state method
 			import rs
 			logging.debug('\tCalculating phenomenological rate coefficients %g K, %g bar...' % (T, P / 1e5))
-			K, msg = rs.estimateratecoefficients(T, P, self.Elist, Mcoll, eqDist, E0, Eres,
+			K, msg = rs.estimateratecoefficients(T, P, Elist, Mcoll, eqDist, E0, Eres,
 				Kij, Fim, Gnj, dEdown)
 			msg = msg.strip()
 			if msg != '':

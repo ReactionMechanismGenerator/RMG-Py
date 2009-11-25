@@ -527,10 +527,6 @@ class SpectralData:
 		# Read <frequencyScaleFactor> element
 		frequencyScaleFactor = float(document.getChildQuantity(rootElement, 'frequencyScaleFactor', required=False, default=1.0))
 
-		# Read <groundStateEnergy> element
-		E0 = document.getChildQuantity(rootElement, 'groundStateEnergy', required=True)
-		self.E0 = float(E0.simplified)
-		
 		# Read <harmonicOscillator> elements
 		hoElements = document.getChildElements(rootElement, 'harmonicOscillator', required=False)
 		for hoElement in hoElements:

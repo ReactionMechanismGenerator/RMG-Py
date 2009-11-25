@@ -37,7 +37,9 @@ import math
 import pybel
 import os
 import xml.sax.saxutils
-
+import quantities as pq
+import numpy
+		
 import constants
 import settings
 import structure
@@ -264,6 +266,10 @@ class Species:
 			else:
 				raise io.InvalidInputFileException('Invalid format "%s" for thermoData element; allowed values are "group additivity".' % format)
 
+		# Read <groundStateEnergy> element
+		E0 = document.getChildQuantity(rootElement, 'groundStateEnergy', required=False, default=pq.Quantity(0.0))
+		self.E0 = float(E0.simplified)
+
 		# Read <spectralData> element
 		self.spectralData = None
 		spectralElement = document.getChildElement(rootElement, 'spectralData', required=False)
@@ -462,15 +468,16 @@ class Species:
 		Elist0 = numpy.arange(Emin, Emax+dE/2, dE)
 
 		# Prepare inputs for density of states function
-		vib = numpy.array([mode.frequency for mode in species.spectralData.modes if isinstance(mode, spectral.HarmonicOscillator)])
-		rot = numpy.array([mode.frequencies for mode in species.spectralData.modes if isinstance(mode, spectral.RigidRotor)])
-		hind = numpy.array([[mode.frequency, mode.barrier] for mode in species.spectralData.modes if isinstance(mode, spectral.HinderedRotor)])
+		vib = numpy.array([mode.frequency for mode in self.spectralData.modes if isinstance(mode, spectral.HarmonicOscillator)])
+		rot = numpy.array([mode.frequencies for mode in self.spectralData.modes if isinstance(mode, spectral.RigidRotor)])
+		hind = numpy.array([[mode.frequency, mode.barrier] for mode in self.spectralData.modes if isinstance(mode, spectral.HinderedRotor)])
 		if len(hind) == 0: hind = numpy.zeros([0,2],numpy.float64)
-		linear = 1 if species.isLinear() else 0
-		symm = species.spectralData.symmetry
+		linear = 1 if self.structure[0].isLinear() else 0
+		symm = self.spectralData.symmetry
 
 		# Calculate the density of states
 		densStates, msg = states.densityofstates(Elist0, vib, rot, hind, symm, linear)
+		msg = msg.strip()
 		if msg != '':
 			raise Exception('Error while calculating the density of states for species %s: %s' % (self, msg))
 
@@ -514,6 +521,12 @@ class Species:
 			return self.thermoSnapshot.freeEnergy
 		#if self.thermoData is None: self.getThermoData()
 		return self.thermoData.getFreeEnergy(T)
+
+	def getMolecularWeight(self):
+		"""
+		Return the molecular weight of the species in kg/mol.
+		"""
+		return self.structure[0].getMolecularWeight()
 
 	def isIsomorphic(self, other):
 		"""

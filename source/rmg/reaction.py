@@ -405,8 +405,80 @@ class Reaction:
 		# Return rate
 		return rateConstant * (forward - reverse / equilibriumConstant)
 
-################################################################################
+	def isIsomerization(self):
+		"""
+		Return :data:`True` if the reaction is an isomerization, i.e. has the
+		form :math:`\\mathrm{A} \\rightleftharpoons \\mathrm{B}`. 
+		Returns :data:`False` otherwise.
+		"""
+		return len(self.reactant.species) == 1 and len(self.product.species) == 1
 
+	def isDissociation(self):
+		"""
+		Return :data:`True` if the reaction is a dissocition, i.e. has the
+		form :math:`\\mathrm{A} \\rightleftharpoons \\mathrm{B} + \\mathrm{C}`.
+		Returns :data:`False` otherwise.
+		"""
+		return len(self.reactant.species) == 1 and len(self.product.species) > 1
+
+	def isAssociation(self):
+		"""
+		Return :data:`True` if the reaction is an association, i.e. has the
+		form :math:`\\mathrm{A} + \\mathrm{B} \\rightleftharpoons \\mathrm{C}`.
+		Returns :data:`False` otherwise.
+		"""
+		return len(self.reactant.species) > 1 and len(self.product.species) == 1
+
+	def calculateMicrocanonicalRate(self, Elist, T):
+		"""
+		Calculate and return the microcanonical rate coefficients k(E) for the
+		forward and reverse reactions from the high-pressure limit canonical
+		rate coefficient k(T) using the inverse Laplace transform method. For
+		dissociation reactions the reverse rate coefficient is actually the
+		product of the reverse rate and the product equilibrium distribution.
+		"""
+
+		dE = Elist[1] - Elist[0]
+
+		import numpy
+		kf = numpy.zeros(len(Elist), numpy.float64)
+		kb = numpy.zeros(len(Elist), numpy.float64)
+
+		kinetics = self.getBestKinetics(T)
+
+		if self.isIsomerization():
+
+			kf = kineticsInverseLaplaceTransform(kinetics, self.E0, self.reactant.densStates, Elist, T)
+			for r in range(len(Elist)):
+				if self.product.densStates[r] != 0:
+					kb[r] = kf[r] * self.reactant.densStates[r] / self.product.densStates[r]
+
+		elif self.isDissociation():
+
+			kf = kineticsInverseLaplaceTransform(kinetics, self.E0, self.reactant.densStates, Elist, T)
+
+			Keq = self.getEquilibriumConstant(T, conc=1.0)
+			for r in range(len(Elist)):
+				kb[r] = kf[r] / Keq * self.reactant.densStates[r] * math.exp(-Elist[r] / constants.R / T) / self.reactant.Q * dE
+
+		elif self.isAssociation():
+
+			if self.reactant.densStates is None:
+				raise Exception('Unable to process association reaction; no density of states available for the reactant isomers.')
+
+			kf = kineticsInverseLaplaceTransform(kinetics, self.E0, self.reactant.densStates, Elist, T)
+			for r in range(len(Elist)):
+				kf[r] *= self.reactant.densStates[r] * math.exp(-Elist[r] / constants.R / T) / self.reactant.Q * dE
+
+			Keq = self.getEquilibriumConstant(T, conc=1.0)
+			for r in range(len(Elist)):
+				bn = self.product.densStates[r] * math.exp(-Elist[r] / constants.R / T) / self.product.Q * dE
+				if bn != 0:
+					kb[r] = kf[r] / Keq / bn
+
+		return kf, kb
+
+################################################################################
 
 class InvalidActionException(Exception):
 	"""
@@ -1653,6 +1725,72 @@ class ReactionFamily(data.Database):
 		
 		return kinetics
 	
+################################################################################
+
+def kineticsInverseLaplaceTransform(kinetics, E0, densStates, Elist, T):
+	"""
+	Apply the inverse Laplace transform to the modified Arrhenius expression
+	`kinetics` for a reaction with reactant density of states `densStates` to
+	determine the microcanonical rate coefficient over the range of energies
+	`Elist`. For :math:`n = 0` the rate is given exactly by the equation
+
+	.. math:: k(E) = A \\frac{\\rho(E - E_\\mathrm{a})}{\\rho(E)}
+
+	For :math:`n > 0` an exact expression also exists, although it is the more
+	complicated equation
+
+	.. math:: k(E) = \\frac{A}{R \\Gamma(n)} \\frac{1}{\\rho(E)} \\int_0^E (E - x)^{n-1} \\rho(x) dx
+
+	For :math:`n < 0` we opt to use the very approximate equation
+
+	.. math:: k(E) = (A T^n) \\frac{\\rho(E - E_\\mathrm{a})}{\\rho(E)}
+
+	For this last equation we also need the temperature `T` of interest.
+	"""
+
+	import numpy
+	import unirxn.states as states
+
+	if kinetics.Ea < 0.0:
+		raise Exception('MEMURN cannot currently handle negative activation energies.')
+
+	dE = Elist[1] - Elist[0]
+	k = numpy.zeros(len(Elist), numpy.float64)
+
+	if kinetics.n == 0.0:
+		# Determine the microcanonical rate directly
+		s = int(math.floor(kinetics.Ea / dE))
+		for r in range(len(Elist)):
+			if Elist[r] > E0 and densStates[r] != 0:
+				k[r] = kinetics.A * densStates[r - s] / densStates[r]
+
+	elif kinetics.n > 0.0:
+		import scipy.special
+		# Evaluate the inverse Laplace transform of the T**n piece, which only
+		# exists for n >= 0
+		phi = numpy.zeros(len(Elist), numpy.float64)
+		for i, E in enumerate(Elist):
+			if E == 0.0:
+				phi[i] = 0.0
+			else:
+				phi[i] = E**(kinetics.n-1) / (constants.R**kinetics.n * scipy.special.gamma(kinetics.n))
+		# Evaluate the convolution
+		states.convolve(phi, densStates, Elist)
+		# Apply to determine the microcanonical rate
+		s = int(math.floor(kinetics.Ea / dE))
+		for r in range(len(Elist)):
+			if Elist[r] > E0:
+				k[r] = kinetics.A * phi[r - s] / densStates[r]
+
+	else:
+		# Use the cheating method for n < 0
+		s = int(math.floor(kinetics.Ea / dE))
+		for r in range(len(Elist)):
+			if Elist[r] > E0:
+				k[r] = kinetics.A * T**kinetics.n * densStates[r - s] / densStates[r]
+
+	return k
+
 ################################################################################
 
 class ReactionFamilySet:

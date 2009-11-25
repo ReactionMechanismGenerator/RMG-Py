@@ -254,6 +254,12 @@ class Structure:
 		mol = pybel.Molecule(self.toOBMol())
 		return mol.formula
 
+	def getMolecularWeight(self):
+		"""
+		Return the molecular weight of the structure in kg/mol.
+		"""
+		return sum([atom.atomType.element.mass for atom in self.atoms()])
+
 	def fromXML(self, document, rootElement):
 		"""
 		Convert a <structure> element from a standard RMG-style XML input file

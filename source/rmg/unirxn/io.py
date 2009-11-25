@@ -124,15 +124,18 @@ def readInputFile(fstr):
 				logging.debug('\tCreated isomer "%s"' % (' + '.join(isomer.species)))
 			reaction.product = isomer
 
+		logging.info('Found %i isomers' % (len(network.isomers)))
+
 		# Convert string list to species list
 		for isomer in network.isomers:
 			isomer.species = [speciesDict[r] for r in isomer.species]
-		logging.info('Found %i isomers' % (len(network.isomers)))
+		for reaction in network.pathReactions:
+			reaction.reactants = [speciesDict[s] for s in reaction.reactants]
+			reaction.products = [speciesDict[s] for s in reaction.products]
 		
 		# Determine isomer ground-state energies
 		for isomer in network.isomers:
-			if all([species.spectralData for species in isomer.species]):
-				isomer.E0 = sum([species.spectralData.E0 for species in isomer.species])
+			isomer.E0 = sum([species.E0 for species in isomer.species])
 		# Determine transition state ground-state energies of the reactions
 		for reaction in network.pathReactions:
 			reaction.E0 = reaction.reactant.E0 + reaction.kinetics[0].Ea
@@ -178,7 +181,7 @@ def readInputFile(fstr):
 		# Cleanup the DOM tree when finished
 		document.cleanup()
 
-		return network, (Tlist, Plist, grainSize, numGrains, method, model)
+		return network, Tlist, Plist, grainSize, numGrains, method, model
 
 	#except InvalidInputFileException, e:
 	#	logging.exception(str(e))
