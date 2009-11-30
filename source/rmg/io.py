@@ -351,7 +351,11 @@ def readInputFile(fstr):
 		spectralDataEstimation = xml0.getChildElementText(optionList, 'spectralDataEstimation', required=False, default='off')
 		spectralDataEstimation = spectralDataEstimation.lower()
 		settings.spectralDataEstimation = (spectralDataEstimation == 'on' or spectralDataEstimation == 'true' or spectralDataEstimation == 'yes')
-		
+		# Read unimolecular reaction network option
+		unimolecularReactionNetworks = xml0.getChildElementText(optionList, 'unimolecularReactionNetworks', required=False, default='off')
+		unimolecularReactionNetworks = unimolecularReactionNetworks.lower()
+		settings.unimolecularReactionNetworks = (unimolecularReactionNetworks == 'on' or unimolecularReactionNetworks == 'true' or unimolecularReactionNetworks == 'yes')
+
 		# Load databases
 		databases = readDatabaseList(xml0, rootElement)
 		for database in databases:

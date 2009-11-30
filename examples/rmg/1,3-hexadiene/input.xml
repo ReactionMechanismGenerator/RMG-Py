@@ -92,5 +92,6 @@
 		<drawMolecules>off</drawMolecules>
 		<generatePlots>off</generatePlots>
 		<spectralDataEstimation>off</spectralDataEstimation>
+		<unimolecularReactionNetworks>off</unimolecularReactionNetworks>
 	</optionList>
 </rmginput>

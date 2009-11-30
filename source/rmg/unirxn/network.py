@@ -244,6 +244,9 @@ class Network:
 	                isomers (the "path" reactions)
 	`netReactions`  A list of :class:`Reaction` objects that connect any pair of
 	                isomers (the "net" reactions)
+	`valid`         :data:`True` if the net reaction kinetics are up to date;
+	                :data:`False` if the kinetics are out of date and need to
+	                be recomputed
 	=============== ============================================================
 
 	"""
@@ -252,6 +255,7 @@ class Network:
 		self.isomers = []
 		self.pathReactions = []
 		self.netReactions = []
+		self.valid = True
 
 	def numUniIsomers(self):
 		"""
@@ -279,6 +283,41 @@ class Network:
 				if reaction is object:
 					return index
 		return -1
+
+	def containsSpecies(self, species):
+		"""
+		Return :data:`True` if the `species` is a *unimolecular* isomer in the
+		network, and :data:`False` if not.
+		"""
+		for rxn in self.pathReactions:
+			if rxn.isIsomerization() or rxn.isDissociation():
+				if rxn.reactants[0] is species: return True
+			if rxn.isIsomerization() or rxn.isAssociation():
+				if rxn.products[0] is species: return True
+		return False
+
+	def addPathReaction(self, rxn):
+		"""
+		Add the :class:`Reaction` object `rxn` to the network as a path 
+		reaction.
+		"""
+		# Add the reaction to the list of path reactions
+		self.pathReactions.append(rxn)
+		self.invalidate()
+	
+	def merge(self, other):
+		"""
+		Merge another :class:`Network` object `other` into this object.
+		"""
+		self.isomers.extend(other.isomers)
+		self.pathReactions.extend(other.pathReactions)
+		self.invalidate()
+	
+	def invalidate(self):
+		"""
+		Mark a network as in need of a new pressure-dependence calculation.
+		"""
+		self.valid = False
 
 	def calculateDensitiesOfStates(self, Elist):
 		"""

@@ -47,6 +47,7 @@ import os
 import os.path
 
 import constants
+import settings
 import chem
 import data
 import structure
@@ -338,9 +339,10 @@ class Reaction:
 		self.bestKinetics = bestKinetics
 		return self.bestKinetics
 	
-	def getRateConstant(self, T):
+	def getRateConstant(self, T, P=1.0e5):
 		"""
-		Return the value of the rate constant k(T) at the temperature `T`.
+		Return the value of the rate constant k(T) at the temperature `T`. The
+		pressure `P` in Pa is not required.
 		"""
 		kinetics = self.getBestKinetics(T)
 		if kinetics is None:
@@ -481,6 +483,24 @@ class Reaction:
 					kb[r] = kf[r] / Keq / bn
 
 		return kf, kb
+
+################################################################################
+
+class PDepReaction(Reaction):
+	"""
+	A reaction with kinetics that depend on both temperature and pressure.
+	"""
+
+	def __init__(self, reactants, products, family, kinetics):
+		Reaction.__init__(self, reactants, products, family)
+		self.kinetics = kinetics
+
+	def getRateConstant(self, T, P):
+		"""
+		Return the value of the rate constant k(T) at the temperature `T` in K
+		and pressure `P` in Pa.
+		"""
+		return self.kinetics.getRateConstant(T, P)
 
 ################################################################################
 
@@ -2024,8 +2044,72 @@ def makeNewReaction(reactants, products, reactantStructures, productStructures, 
 	# Note in the log
 	logging.debug('Created new ' + str(rxn.family) + ' reaction ' + str(rxn))
 	
+	# Update unimolecular reaction networks
+	if settings.unimolecularReactionNetworks:
+		addReactionToUnimolecularNetworks(rxn)
+
 	# Return newly created reaction
 	return rxn, True
+
+################################################################################
+
+networks = []
+
+def addReactionToUnimolecularNetworks(newReaction):
+	"""
+	Given a newly-created :class:`Reaction` object `newReaction`, update the
+	corresponding unimolecular reaction network. If no network exists, a new
+	one is created. If the new reaction is an isomerization that connects two
+	existing networks, the two networks are merged. This function is called
+	whenever a new high-pressure limit edge reaction is created. Returns the
+	network containing the new reaction.
+	"""
+
+	import unirxn.network
+
+	def getNetworkContainingSpecies(spec):
+		for network in networks:
+			if network.containsSpecies(spec): return network
+		return None
+
+	# If the reaction is not unimolecular, then there's nothing to do
+	# Return None because we haven't added newReaction to a network
+	if not newReaction.isIsomerization() and not newReaction.isDissociation() and not newReaction.isAssociation():
+		return None
+
+	# Find networks containing either the reactant or the product as a
+	# unimolecular isomer
+	reactantNetwork = None; productNetwork = None
+	if newReaction.isIsomerization() or newReaction.isDissociation():
+		reactantNetwork = getNetworkContainingSpecies(newReaction.reactants[0])
+	if newReaction.isIsomerization() or newReaction.isAssociation():
+		productNetwork = getNetworkContainingSpecies(newReaction.products[0])
+
+	# Action depends on results of above search
+	network = None
+	if reactantNetwork is not None and productNetwork is not None:
+		# Found two networks, so we need to merge
+		network = reactantNetwork
+		network.merge(productNetwork)
+		networks.remove(productNetwork)
+	elif reactantNetwork is not None and productNetwork is None:
+		# Found one network, so we add to it
+		network = reactantNetwork
+	elif reactantNetwork is None and productNetwork is not None:
+		# Found one network, so we add to it
+		network = productNetwork
+	else:
+		# Didn't find any networks, so we need to make a new one
+		network = unirxn.network.Network()
+		networks.append(network)
+
+	# Add the new reaction to whatever network was found/created above
+	network.addPathReaction(newReaction)
+
+	print "We've got %i unimolecular reaction networks" % len(networks)
+
+	# Return the network that the reaction was added to
+	return network
 
 ################################################################################
 
