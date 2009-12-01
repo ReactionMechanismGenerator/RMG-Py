@@ -156,6 +156,7 @@ class Species:
 	`reactive`        :data:`True` if the species is reactive, :data:`False` if
 	                  inert
 	`spectralData`    The spectral data (degrees of freedom) for the species
+	`E0`              The ground-state energy of the species in J/mol
 	`structure`       A list of :class:`structure.Structure` objects
 	                  representing the set of resonance isomers
 	`thermoData`      The thermodynamic parameters for the species, always a
@@ -187,6 +188,7 @@ class Species:
 		self.thermoSnapshot = ThermoSnapshot()
 		self.lennardJones = None
 		self.spectralData = None
+		self.E0 = None
 		
 		if SMILES is not None:
 			self.fromSMILES(SMILES)
@@ -452,6 +454,10 @@ class Species:
 
 		import unirxn.states as states
 
+		# Return None if the species consists of only one atom
+		if len(self.structure[0].atoms()) < 2:
+			return None
+
 		# Make sure we have the necessary information to calculate the
 		# density of states
 		if not self.spectralData:
@@ -566,7 +572,14 @@ class Species:
 			maps21.extend(map21)
 		return (len(maps12) > 0), maps21, maps12
 
-
+	def calculateLennardJonesParameters(self):
+		"""
+		Calculate the Lennard-Jones collision parameters for the species. The
+		parameters are not returned, but are instead stored in the 
+		`lennardJones` attribute.
+		"""
+		sigma, epsilon = self.structure[0].calculateLennardJonesParameters()
+		self.lennardJones = LennardJones(sigma, epsilon)
 
 ################################################################################
 
@@ -649,8 +662,9 @@ def processNewSpecies(spec):
 	if settings.spectralDataEstimation and spec.thermoData:
 		import spectral
 		spec.spectralData = spectral.generateSpectralData(spec.structure[0], spec.thermoData)
-		if spec.spectralData:
-			print [mode.frequency for mode in spec.spectralData.modes if isinstance(mode, spectral.HarmonicOscillator)]
+		
+	# Generate Lennard-Jones parameters
+	spec.calculateLennardJonesParameters()
 
 	# Draw species
 	if settings.drawMolecules:

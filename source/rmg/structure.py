@@ -37,6 +37,7 @@ import logging
 import pybel
 import openbabel
 
+import constants
 import chem
 import graph
 
@@ -1268,6 +1269,52 @@ class Structure:
 					if not self.isBondInCycle(bond):
 						count += 1
 		return count
+
+	def calculateLennardJonesParameters(self):
+		"""
+		Calculate approximate Lennard-Jones parameters for the structure. The
+		numbers for particular species were taken from
+
+		H. Hippler, J. Troe, and H. J. Wendelken. *J. Chem. Phys.* **78**, 6709 (1983).
+
+		via the MultiWell User's Manual (2009.3 edition) by J. R. Barker et al.
+		"""
+		# Count the number of heavy atoms in the structure
+		count = sum([1 for atom in self.atoms() if atom.isNonHydrogen()])
+
+		# Noble gases
+#		if self.isIsomorphic(Structure(SMILES='He')):
+#			sigma = 2.55;    epsilon = 10
+#		elif self.isIsomorphic(Structure(SMILES='Ne')):
+#			sigma = 2.82;    epsilon = 32
+#		elif self.isIsomorphic(Structure(SMILES='Ar')):
+#			sigma = 3.47;    epsilon = 114
+#		elif self.isIsomorphic(Structure(SMILES='Kr')):
+#			sigma = 3.66;    epsilon = 178
+#		elif self.isIsomorphic(Structure(SMILES='Xe')):
+#			sigma = 4.05;    epsilon = 230
+		# Other small molecule gases
+		if self.isIsomorphic(Structure(SMILES='[H][H]')):
+			sigma = 2.83;    epsilon = 60
+		elif self.isIsomorphic(Structure(SMILES='[C]=[O]')):
+			sigma = 3.70;    epsilon = 105
+		elif self.isIsomorphic(Structure(SMILES='N#N')):
+			sigma = 3.74;    epsilon = 82
+		elif self.isIsomorphic(Structure(SMILES='O=O')):
+			sigma = 3.48;    epsilon = 103
+		elif self.isIsomorphic(Structure(SMILES='O=C=O')):
+			sigma = 3.94;    epsilon = 201
+		elif self.isIsomorphic(Structure(SMILES='O')):
+			sigma = 2.71;    epsilon = 506
+		# General cases
+		elif count == 1:	sigma = 3.758;    epsilon = 148.6
+		elif count == 2:	sigma = 4.443;    epsilon = 110.7
+		elif count == 3:	sigma = 5.118;    epsilon = 237.1
+		elif count == 4:	sigma = 5.687;    epsilon = 531.4
+		elif count == 5:	sigma = 5.784;    epsilon = 341.1
+		else:				sigma = 5.949;    epsilon = 399.3
+
+		return sigma * 1e-10, epsilon * constants.kB
 
 ################################################################################
 

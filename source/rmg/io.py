@@ -510,9 +510,6 @@ def readInputFile(fstr):
 	except InvalidXMLError, e:
 		logging.exception(str(e))
 		raise InvalidInputFileException(e.msg)
-	except IOError, e:
-		logging.exception('Input file "' + e.filename + '" not found.')
-		raise e
 	except xml.parsers.expat.ExpatError, e:
 		logging.exception('Invalid XML file: '+e.message+'\n')
 		raise InvalidInputFileException('Invalid XML file: '+e.message)

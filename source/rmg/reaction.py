@@ -2106,10 +2106,109 @@ def addReactionToUnimolecularNetworks(newReaction):
 	# Add the new reaction to whatever network was found/created above
 	network.addPathReaction(newReaction)
 
-	print "We've got %i unimolecular reaction networks" % len(networks)
-
 	# Return the network that the reaction was added to
 	return network
+
+################################################################################
+
+def updateUnimolecularReactionNetworks(reactionModel):
+
+	from unirxn.network import Isomer
+
+	for networkIndex, network in enumerate(networks):
+		if not network.valid:
+
+			logging.debug('Updating unimolecular reaction network %i' % networkIndex+1)
+
+			# Other inputs
+			Tlist = [300.0, 400.0, 600.0, 900.0, 1200.0, 1500.0, 1800.0, 2100.0]
+			Plist = [1.0e3, 1.0e4, 1.0e5, 1.0e6, 1.0e7]
+			grainSize = 5000; numGrains = 0
+			method = 'modifiedstrongcollision'
+			model = ('chebyshev', 4, 4)
+
+			network.bathGas = [spec for spec in reactionModel.core.species if not spec.reactive][0]
+			network.bathGas.expDownParam = 4.86 * 4184
+
+			# Generate isomers
+			for reaction in network.pathReactions:
+
+				# Create isomer for the reactant
+				isomer = None
+				for isom in network.isomers:
+					if all([species in isom.species for species in reaction.reactants]):
+						isomer = isom
+				if isomer is None:
+					isomer = Isomer(reaction.reactants)
+					if isomer.isUnimolecular():
+						network.isomers.insert(network.numUniIsomers(), isomer)
+					else:
+						network.isomers.append(isomer)
+				reaction.reactant = isomer
+
+				# Create isomer for the product
+				isomer = None
+				for isom in network.isomers:
+					if all([species in isom.species for species in reaction.products]):
+						isomer = isom
+				if isomer is None:
+					isomer = Isomer(reaction.products)
+					if isomer.isUnimolecular():
+						network.isomers.insert(network.numUniIsomers(), isomer)
+					else:
+						network.isomers.append(isomer)
+				reaction.product = isomer
+
+			# Get list of species in network
+			speciesList = list(set([spec for isom in network.isomers for spec in isom.species]))
+
+			# Calculate ground-state energy of all species in network
+			# For now we assume that this is equal to the enthalpy of formation
+			# of the species
+			for spec in speciesList:
+				spec.E0 = spec.getEnthalpy(T=298)
+
+			# Determine isomer ground-state energies
+			for isomer in network.isomers:
+				isomer.E0 = sum([spec.E0 for spec in isomer.species])
+			# Determine transition state ground-state energies of the reactions
+			for reaction in network.pathReactions:
+				E0 = sum([spec.E0 for spec in reaction.reactants])
+				reaction.E0 = E0 + reaction.kinetics[0].getActivationEnergy(reaction.getEnthalpyOfReaction(T=298))
+
+			# Shift network such that lowest-energy isomer has a ground state of 0.0
+			network.shiftToZeroEnergy()
+
+			# Determine energy grains
+			Elist = network.determineEnergyGrains(grainSize, numGrains, max(Tlist))
+
+			# Calculate density of states for all isomers in network
+			network.calculateDensitiesOfStates(Elist)
+			
+			# Determine phenomenological rate coefficients
+			K = network.calculateRateCoefficients(Tlist, Plist, Elist, method)
+
+			# Fit interpolation model
+			if model[0].lower() == 'chebyshev':
+				modelType, degreeT, degreeP = model
+				for i in range(len(network.isomers)):
+					for j in range(len(network.isomers)):
+						if i != j:
+							chebyshev = ChebyshevKinetics()
+							chebyshev.fitToData(Tlist, Plist, K[:,:,j,i], degreeT, degreeP)
+			elif model[0].lower() == 'pdeparrhenius':
+				pass
+			else:
+				pass
+
+			for spec in speciesList:
+				del spec.E0
+			for reaction in network.pathReactions:
+				del reaction.reactant
+				del reaction.product
+				del reaction.E0
+			
+			network.valid = True
 
 ################################################################################
 

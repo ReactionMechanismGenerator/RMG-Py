@@ -104,12 +104,6 @@ class Isomer:
 		list of energies `Elist` in J/mol.
 		"""
 
-		# Only do for isomers where all species have spectral data
-		for species in self.species:
-			if not species.spectralData:
-				self.densStates = None
-				return
-
 		# Initialize density of states
 		self.densStates = numpy.zeros(len(Elist), numpy.float64)
 		densStates = numpy.zeros(len(Elist), numpy.float64)
@@ -118,7 +112,8 @@ class Isomer:
 		# multiple species are present
 		for species in self.species:
 			densStates0 = species.calculateDensityOfStates(Elist)
-			states.convolve(densStates, densStates0, Elist)
+			if densStates0 is not None:
+				states.convolve(densStates, densStates0, Elist)
 
 		# Shift to appropriate energy grain using E0
 		index = -1
@@ -195,8 +190,10 @@ class Isomer:
 		beta = (alpha / (alpha + Fe * constants.R * T))**2 / Delta
 
 		if beta < 0 or beta > 1:
-			raise Exception('Invalid collision efficiency calculated.')
-
+			logging.warning('Invalid collision efficiency %s calculated at %s K.' % (beta, T))
+			if beta < 0: beta = 0
+			elif beta > 1: beta = 1
+		
 		return beta
 
 	def calculateCollisionEfficiency(self, T, reactions, dEdown, Elist):
@@ -561,7 +558,6 @@ class Network:
 
 			# Apply modified strong collision method
 			import msc
-			logging.debug('\tCalculating phenomenological rate coefficients %g K, %g bar...' % (T, P / 1e5))
 			K, msg = msc.estimateratecoefficients(T, P, Elist, collFreq, eqDist, Eres,
 				Kij, Fim, Gnj)
 			msg = msg.strip()

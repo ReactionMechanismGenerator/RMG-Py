@@ -137,6 +137,10 @@ def execute(inputFile, options):
 	done = False
 	while not done:
 
+		# Handle unimolecualr (pressure dependent) reaction networks
+		if settings.unimolecularReactionNetworks:
+			reaction.updateUnimolecularReactionNetworks(reactionModel)
+
 		done = True
 		speciesToAdd = []
 		for index, reactionSystem in enumerate(reactionSystems):
