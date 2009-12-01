@@ -74,6 +74,10 @@ subroutine densityOfStates(E, Ngrains, vib, Nvib, rot, Nrot, hind, Nhind, &
 	integer r, i
 	integer found
 
+	real(8) :: dE_vib
+	integer :: mult, Ngrains_vib
+	real(8), dimension(:), allocatable :: E_vib, rho_vib
+
 	! Set msg to successful; will be changed later if an error occurs
 	msg = ""
 
@@ -117,10 +121,40 @@ subroutine densityOfStates(E, Ngrains, vib, Nvib, rot, Nrot, hind, Nhind, &
 
 	! Harmonic oscillator modes
 	if (Nvib > 0) then
+
+		! Must use grain size < 10 cm^-1 for convolution of vibrational modes
+		! into the density of states to ensure reasonable accuracy of the
+		! Beyer-Swinehart procedure
+		dE_vib = dE
+		mult = 1
+		do while (dE_vib > 10.0)
+			dE_vib = dE_vib / 2.0
+			mult = mult * 2
+		end do
+		Ngrains_vib = (Ngrains-1)*mult + 1
+
+		allocate( E_vib(1:Ngrains_vib), rho_vib(1:Ngrains_vib) )
+		do r = 1, Ngrains_vib
+			E_vib(r) = (r - 1) * dE_vib + minval(E)
+			i = (r - 1) / mult + 1
+			if (i == 1) then
+				rho_vib(r) = 0.0
+			elseif (r == mult + 1) then
+				rho_vib(r) = rho(i)
+			else
+				rho_vib(r) = rho(i) * ( rho(i+1) / rho(i)  ) ** ((E_vib(r) - E(i)) / dE)
+			end if
+		end do
+
 		! The Beyer-Swinehart algorithm is an efficient way to convolve in
 		! the vibrational modes
-		call beyerSwinehart(E, Ngrains, vib, Nvib, rho, msg)
+		call beyerSwinehart(E_vib, Ngrains_vib, vib, Nvib, rho_vib, msg)
 		if (msg(1:1) /= ' ') return
+
+		rho(1:Ngrains) = rho_vib(1:Ngrains_vib:mult)
+
+		deallocate( E_vib, rho_vib )
+
 	end if
 
 end subroutine

@@ -322,29 +322,12 @@ class Network:
 		species have spectral data. This is required for all unimolecular
 		isomers and for all multimolecular isomers that are reactants of a
 		path reaction with the forward reaction defined as the association.
-		Accuracy requires that this algorithm use a grain size no larger than
-		100 J/mol (8.36 cm^-1) for the calculation, regardless of the grain
-		size of the full calculation.
 		"""
 
-		# Must use grain size < 100 J/mol (8.36 cm^-1) for density of states
-		# estimation to ensure accuracy; this is caused by the Beyer-Swinehart
-		# algorithm
-		grainSize0 = Elist[1] - Elist[0]
-		grainSize = grainSize0; mult = 1
-		while grainSize > 100:
-			grainSize /= 2.0; mult *= 2
-
-		# Calculate the density of states for each species using the small
-		# grain size
-		Elist0 = self.__getEnergyGrains(min(Elist), max(Elist), grainSize, 0)
+		# Calculate the density of states for each isomer
+		Elist0 = self.__getEnergyGrains(min(Elist), max(Elist), Elist[1] - Elist[0], 0)
 		for isomer in self.isomers:
 			isomer.calculateDensityOfStates(Elist0)
-
-		# Only keep the grains that are used in the rest of the ME computation
-		for isomer in self.isomers:
-			if isomer.densStates is not None:
-				isomer.densStates = isomer.densStates[::mult]
 
 	def shiftToZeroEnergy(self):
 		"""

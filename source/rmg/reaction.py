@@ -2077,6 +2077,13 @@ def addReactionToUnimolecularNetworks(newReaction):
 	if not newReaction.isIsomerization() and not newReaction.isDissociation() and not newReaction.isAssociation():
 		return None
 
+	# Don't add reactions that are dissociation of a diatomic or association
+	# to form a diatomic
+	if newReaction.isDissociation() and len(newReaction.reactants[0].structure[0].atoms()) == 2:
+		return None
+	elif newReaction.isAssociation() and len(newReaction.products[0].structure[0].atoms()) == 2:
+		return None
+
 	# Find networks containing either the reactant or the product as a
 	# unimolecular isomer
 	reactantNetwork = None; productNetwork = None
@@ -2118,8 +2125,8 @@ def updateUnimolecularReactionNetworks(reactionModel):
 	for networkIndex, network in enumerate(networks):
 		if not network.valid:
 
-			logging.debug('Updating unimolecular reaction network %i' % networkIndex+1)
-
+			logging.debug('Updating unimolecular reaction network %i' % (networkIndex+1))
+				
 			# Other inputs
 			Tlist = [300.0, 400.0, 600.0, 900.0, 1200.0, 1500.0, 1800.0, 2100.0]
 			Plist = [1.0e3, 1.0e4, 1.0e5, 1.0e6, 1.0e7]

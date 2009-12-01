@@ -455,7 +455,7 @@ class Species:
 		import unirxn.states as states
 
 		# Return None if the species consists of only one atom
-		if len(self.structure[0].atoms()) < 2:
+		if len(self.structure[0].atoms()) < 2 or self.spectralData is None:
 			return None
 
 		# Make sure we have the necessary information to calculate the
