@@ -67,7 +67,7 @@ class Kinetics:
 	"""
 
 	def __init__(self, Trange=None, rank=0, comment=''):
-		self.Trange = Trange
+		self.Trange = Trange or [0.0, 10000.0]
 		self.rank = 0
 		self.comment = ''
 		self.numReactants = None
@@ -127,7 +127,7 @@ class ArrheniusKinetics(Kinetics):
 		"""
 		return (self.A == other.A and self.Ea == other.Ea and self.n == other.n)
 
-	def getRateConstant(self, T):
+	def getRateConstant(self, T, P=1.0e5):
 		"""
 		Return the rate constant k(T) at temperature `T` by evaluating the
 		Arrhenius expression.
@@ -358,6 +358,112 @@ class ArrheniusEPKinetics(Kinetics):
 
 ################################################################################
 
+class PDepArrheniusKinetics(Kinetics):
+	"""
+	A kinetic model of a phenomenological rate coefficient k(T, P) using the
+	expression
+
+	.. math:: k(T,P) = A(P) T^{n(P)} \\exp \\left[ \\frac{-E_\\mathrm{a}(T)}{RT} \\right]
+
+	where the modified Arrhenius parameters are stored at a variety of pressures
+	and interpolated between on a logarithmic scale. The attributes are:
+
+	==============  ============================================================
+	Attribute       Description
+	==============  ============================================================
+	`pressures`     The list of pressures in Pa
+	`arrhenius`     The list of :class:`ArrheniusKinetics` objects at each
+	                pressure
+	==============  ============================================================
+
+	"""
+
+	def __init__(self, pressures=None, arrhenius=None):
+		Kinetics.__init__(self)
+		self.pressures = pressures or []
+		self.arrhenius = arrhenius or []
+
+	def __getAdjacentExpressions(self, P):
+		"""
+		Returns the pressures and Arrhenius expressions for the pressures that
+		most closely bound the specified pressure `P` in Pa.
+		"""
+
+		if P < min(self.pressures) or P > max(self.pressures):
+			raise Exception('Attempted to evaluate PDepArrhenius expression at invalid pressure %s Pa; allowed range is %s to %s Pa.' % (P, min(self.pressures), max(self.pressures)))
+
+		if P in self.pressures:
+			arrh = self.arrhenius[self.pressures.index(P)]
+			return P, P, arrh, arrh
+		else:
+			ilow = None; ihigh = None; Plow = None; Phigh = None
+			for i in range(1, len(self.pressures)):
+				if self.pressures[i] <= P:
+					ilow = i; Plow = P
+				if self.pressures[i] > P and ihigh is None:
+					ihigh = i; Phigh = P
+
+			return Plow, Phigh, self.arrhenius[ilow], self.arrhenius[ihigh]
+
+	def getRateConstant(self, T, P):
+		"""
+		Return the rate constant k(T, P) at temperature `T` and pressure `P` by
+		evaluating the pressure-dependent Arrhenius expression.
+		"""
+		Plow, Phigh, alow, ahigh = self.__getAdjacentExpressions(P)
+		if Plow == Phigh: return alow.getRateConstant(T)
+		
+		klow = alow.getRateConstant(T)
+		khigh = ahigh.getRateConstant(T)
+		return 10**(math.log10(P/Plow)/math.log10(Phigh/Plow)*math.log(khigh/klow))
+
+	def fitToData(self, Tlist, Plist, K):
+		"""
+		Fit a pressure-dependent Arrhenius kinetic model to a set of rate
+		coefficients `K`, which is a matrix corresponding to the temperatures
+		`Tlist` in K and pressures `Plist` in Pa.
+		"""
+
+		import numpy
+
+		self.arrhenius = []
+		self.pressures = Plist[:]
+
+		for p, P in enumerate(Plist):
+
+			# Create matrix and vector for coefficient fit (linear least-squares)
+			A = numpy.zeros((len(Tlist), 3), numpy.float64)
+			b = numpy.zeros(len(Tlist), numpy.float64)
+			for t, T in enumerate(Tlist):
+				A[t,0] = 1.0
+				A[t,1] = math.log(T)
+				A[t,2] = -1.0 / constants.R / T
+				b[t] = math.log(K[t,p])
+
+			# Do linear least-squares fit to get coefficients
+			x, residues, rank, s = numpy.linalg.lstsq(A, b)
+
+			# Extract coefficients
+			arrh = ArrheniusKinetics(A=math.exp(float(x[0])), n=float(x[1]), Ea=float(x[2]))
+			self.arrhenius.append(arrh)
+
+	def getArrhenius(self, P):
+		"""
+		Return an :class:`ArrheniusKinetics` object at the specified pressure
+		`P` in Pa.
+		"""
+		Plow, Phigh, alow, ahigh = self.__getAdjacentExpressions(P)
+		if Plow == Phigh: return alow
+		
+		logPRatio = math.log10(P/Plow) / math.log10(Phigh/Plow)
+		A = 10**(logPRatio*math.log(ahigh.A/alow.A))
+		n = alow.n + (ahigh.n - alow.n) * logPRatio
+		Ea = alow.Ea + (ahigh.Ea - alow.Ea) * logPRatio
+
+		return ArrheniusKinetics(A=A, n=n, Ea=Ea)
+
+################################################################################
+
 class ChebyshevKinetics(Kinetics):
 	"""
 	A kinetic model of a phenomenological rate coefficient k(T, P) using the
@@ -390,6 +496,7 @@ class ChebyshevKinetics(Kinetics):
 	"""
 
 	def __init__(self, Tmin=0.0, Tmax=0.0, Pmin=0.0, Pmax=0.0, coeffs=None):
+		Kinetics.__init__(self)
 		self.Tmin = Tmin
 		self.Tmax = Tmax
 		self.Pmin = Pmin

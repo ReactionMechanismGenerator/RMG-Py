@@ -119,18 +119,19 @@ class Reaction:
 		string = string[0:-3]
 		return string
 	
-	def toCantera(self, T=1000):
+	def toCantera(self, T=1000, P=1.0e5):
 		"""Return a Cantera ctml_writer instance"""
 		#  Made up. Unimolecular rate constant 1/s 
 		#reaction(  "A <=> B",  [1.00000E+00, 0, 0])
 		rxnstring = ' + '.join([str(sp) for sp in self.reactants])
 		rxnstring += ' <=> '
 		rxnstring += ' + '.join([str(sp) for sp in self.products])
-		k = self.getBestKinetics(T)
+		k = self.getBestKinetics(T, P)
 		A = k.A
 		Ea= k.Ea 
 		n = k.n 
 		#import pdb; pdb.set_trace()
+		print rxnstring, A, n, Ea
 		return ctml_writer.reaction(rxnstring, ctml_writer.Arrhenius(A, n, Ea) )
 		
 	def fromXML(self, document, rootElement):
@@ -169,6 +170,17 @@ class Reaction:
 			else:
 				raise io.InvalidInputFileException('Invalid type "%s" for kinetics element; allowed values are "Arrhenius".' % format)
 
+	def hasTemplate(self, reactants, products):
+		"""
+		Return :data:`True` if the reaction matches the template of `reactants`
+		and `products`, which are both lists of :class:`species.Species`
+		objects.
+		"""
+		return ((all([spec in self.reactants for spec in reactants]) and 
+			all([spec in self.products for spec in products])) or
+			(all([spec in self.products for spec in reactants]) and 
+			all([spec in self.reactants for spec in products])))
+	
 	def isUnimolecular(self):
 		"""
 		Return :data:`True` if the forward reaction has one reactant and
@@ -275,7 +287,7 @@ class Reaction:
 		return K
 
 
-	def getBestKinetics(self, T):
+	def getBestKinetics(self, T, P=1.0e5):
 		"""
 		Return the best set of ArrheniusKinetics parameters for the forward reaction
 		evaluated at the temperature `T`. This function follows the convention
@@ -381,7 +393,7 @@ class Reaction:
 			totalConc=sum( conc.values() )
 
 		# Evaluate rate constant
-		rateConstant = self.getRateConstant(T)
+		rateConstant = self.getRateConstant(T, P)
 
 		# Evaluate equilibrium constant
 		equilibriumConstant = self.getEquilibriumConstant(T, totalConc)
@@ -491,9 +503,10 @@ class PDepReaction(Reaction):
 	A reaction with kinetics that depend on both temperature and pressure.
 	"""
 
-	def __init__(self, reactants, products, family, kinetics):
-		Reaction.__init__(self, reactants, products, family)
+	def __init__(self, reactants, products, network, kinetics):
+		Reaction.__init__(self, reactants, products, None)
 		self.kinetics = kinetics
+		self.network = network
 
 	def getRateConstant(self, T, P):
 		"""
@@ -501,6 +514,13 @@ class PDepReaction(Reaction):
 		and pressure `P` in Pa.
 		"""
 		return self.kinetics.getRateConstant(T, P)
+
+	def getBestKinetics(self, T, P):
+		"""
+		Return the best set of ArrheniusKinetics parameters for the forward
+		reaction evaluated at the temperature `T` and pressure `P`.
+		"""
+		return self.kinetics.getArrhenius(P)
 
 ################################################################################
 
@@ -1776,7 +1796,7 @@ def kineticsInverseLaplaceTransform(kinetics, E0, densStates, Elist, T):
 	import unirxn.states as states
 
 	if kinetics.Ea < 0.0:
-		raise Exception('MEMURN cannot currently handle negative activation energies.')
+		raise Exception('Cannot currently handle negative activation energies.')
 
 	dE = Elist[1] - Elist[0]
 	k = numpy.zeros(len(Elist), numpy.float64)
@@ -1803,14 +1823,14 @@ def kineticsInverseLaplaceTransform(kinetics, E0, densStates, Elist, T):
 		# Apply to determine the microcanonical rate
 		s = int(math.floor(kinetics.Ea / dE))
 		for r in range(len(Elist)):
-			if Elist[r] > E0:
+			if Elist[r] > E0 and densStates[r] != 0:
 				k[r] = kinetics.A * phi[r - s] / densStates[r]
 
 	else:
 		# Use the cheating method for n < 0
 		s = int(math.floor(kinetics.Ea / dE))
 		for r in range(len(Elist)):
-			if Elist[r] > E0:
+			if Elist[r] > E0 and densStates[r] != 0:
 				k[r] = kinetics.A * T**kinetics.n * densStates[r - s] / densStates[r]
 
 	return k
@@ -2044,9 +2064,12 @@ def makeNewReaction(reactants, products, reactantStructures, productStructures, 
 	# Note in the log
 	logging.debug('Created new ' + str(rxn.family) + ' reaction ' + str(rxn))
 	
-	# Update unimolecular reaction networks
 	if settings.unimolecularReactionNetworks:
-		addReactionToUnimolecularNetworks(rxn)
+		# Update unimolecular reaction networks
+		net = addReactionToUnimolecularNetworks(rxn)
+		# Return False so that reaction is not added to edge if it was added
+		# to a unimolecular reaction network
+		if net is not None: return rxn, False
 
 	# Return newly created reaction
 	return rxn, True
@@ -2132,7 +2155,7 @@ def updateUnimolecularReactionNetworks(reactionModel):
 			Plist = [1.0e3, 1.0e4, 1.0e5, 1.0e6, 1.0e7]
 			grainSize = 5000; numGrains = 0
 			method = 'modifiedstrongcollision'
-			model = ('chebyshev', 4, 4)
+			model = ('pdeparrhenius')
 
 			network.bathGas = [spec for spec in reactionModel.core.species if not spec.reactive][0]
 			network.bathGas.expDownParam = 4.86 * 4184
@@ -2195,18 +2218,31 @@ def updateUnimolecularReactionNetworks(reactionModel):
 			# Determine phenomenological rate coefficients
 			K = network.calculateRateCoefficients(Tlist, Plist, Elist, method)
 
-			# Fit interpolation model
-			if model[0].lower() == 'chebyshev':
-				modelType, degreeT, degreeP = model
-				for i in range(len(network.isomers)):
-					for j in range(len(network.isomers)):
-						if i != j:
-							chebyshev = ChebyshevKinetics()
-							chebyshev.fitToData(Tlist, Plist, K[:,:,j,i], degreeT, degreeP)
-			elif model[0].lower() == 'pdeparrhenius':
-				pass
-			else:
-				pass
+			# Generate PDepReaction objects
+			for i, reactant in enumerate(network.isomers):
+				for j, product in enumerate(network.isomers[0:i]):
+					# Find the path reaction
+					netReaction = None
+					for r in network.netReactions:
+						if r.hasTemplate(reactant.species, product.species):
+							netReaction = r
+					# If path reaction does not already exist, make a new one
+					if netReaction is None:
+						netReaction = PDepReaction(reactant.species, product.species, network, None)
+						network.netReactions.append(netReaction)
+						reactionModel.addReactionToEdge(netReaction)
+					# Set its kinetics using interpolation model
+					if model[0].lower() == 'chebyshev':
+						modelType, degreeT, degreeP = model
+						chebyshev = ChebyshevKinetics()
+						chebyshev.fitToData(Tlist, Plist, K[:,:,j,i], degreeT, degreeP)
+						netReaction.kinetics = chebyshev
+					elif model.lower() == 'pdeparrhenius':
+						pDepArrhenius = PDepArrheniusKinetics()
+						pDepArrhenius.fitToData(Tlist, Plist, K[:,:,j,i])
+						netReaction.kinetics = pDepArrhenius
+					else:
+						pass
 
 			for spec in speciesList:
 				del spec.E0

@@ -556,9 +556,10 @@ def writeOutputFile(fstr, reactionModel, reactionSystems):
 	root.appendChild(reactionList)
 	for rxn in reactionModel.core.reactions:
 
-		element = dom.createElement('reaction')
-		element.setAttribute('family', rxn.family.label)
-		reactionList.appendChild(element)
+		if rxn.family is not None:
+			element = dom.createElement('reaction')
+			element.setAttribute('family', rxn.family.label)
+			reactionList.appendChild(element)
 
 		for reac in rxn.reactants:
 			reactant = dom.createElement('reactant')
@@ -571,8 +572,11 @@ def writeOutputFile(fstr, reactionModel, reactionSystems):
 
 		kinetics = dom.createElement('kinetics')
 		element.appendChild(kinetics)
-		for k in rxn.kinetics:
-			k.toXML(dom, kinetics)
+		if isinstance(rxn, reaction.PDepReaction):
+			pass
+		else:
+			for k in rxn.kinetics:
+				k.toXML(dom, kinetics)
 
 	# Write output file
 	f = open(fstr, 'w')
