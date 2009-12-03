@@ -500,13 +500,39 @@ class Reaction:
 
 class PDepReaction(Reaction):
 	"""
-	A reaction with kinetics that depend on both temperature and pressure.
+	A reaction with kinetics that depend on both temperature and pressure. Much
+	of the functionality is inherited from :class:`Reaction`, with a few
+	notable exceptions:
+
+	* The kinetics are explicitly functions of pressure; therefore, pressure
+	  must be specified when calling :meth:`getRateConstant` and
+	  :meth:`getBestKinetics`.
+
+	* The kinetics of a pressure-dependent reaction are likely to change as
+	  partial pressure-dependent networks are explored. As such, we store the
+	  Cantera reaction object so that we can replace it when the kinetics are
+	  modified.
+
+	* We need to override the pickling procedure for this class due to the
+	  storing of the Cantera reaction object, which can't be pickled.
+	
 	"""
 
 	def __init__(self, reactants, products, network, kinetics):
 		Reaction.__init__(self, reactants, products, None)
 		self.kinetics = kinetics
 		self.network = network
+		self.canteraReaction = None
+
+	def __getstate__(self):
+		"""
+		Used to specify what should be pickled. In this case, we pickle
+		everything except the instance of the Cantera reaction, because that
+		isn't pickled properly (nor should it be).
+		"""
+		pickleMe = self.__dict__.copy()
+		del pickleMe['canteraReaction']
+		return pickleMe
 
 	def getRateConstant(self, T, P):
 		"""
@@ -521,6 +547,19 @@ class PDepReaction(Reaction):
 		reaction evaluated at the temperature `T` and pressure `P`.
 		"""
 		return self.kinetics.getArrhenius(P)
+
+	def toCantera(self, T=1000, P=1.0e5):
+		"""
+		Creates a Cantera reaction based on the PDepReaction object. A
+		temperature `T` in K and pressure `P` in bar can be provided to help
+		choose the most appropriate kinetics, but are optional.
+		"""
+		try:
+			if self.canteraReaction is not None:
+				ctml_writer._reactions.remove(self.canteraReaction)
+		except AttributeError:
+			pass
+		self.canteraReaction = Reaction.toCantera(self, T, P)
 
 ################################################################################
 
@@ -2142,6 +2181,13 @@ def addReactionToUnimolecularNetworks(newReaction):
 ################################################################################
 
 def updateUnimolecularReactionNetworks(reactionModel):
+	"""
+	Iterate through all of the currently-existing unimolecular reaction
+	networks, updating those that have been marked as invalid. In each update,
+	the phenomonological rate coefficients :math:`k(T,P)` are computed for
+	each net reaction in the network, and the resulting reactions added or
+	updated.
+	"""
 
 	from unirxn.network import Isomer
 
@@ -2243,6 +2289,10 @@ def updateUnimolecularReactionNetworks(reactionModel):
 						netReaction.kinetics = pDepArrhenius
 					else:
 						pass
+
+					# Update cantera if this is a core reaction
+					if netReaction in reactionModel.core.reactions:
+						netReaction.toCantera()
 
 			for spec in speciesList:
 				del spec.E0
