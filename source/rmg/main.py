@@ -45,7 +45,7 @@ import constants
 import settings
 import species
 import reaction
-
+import unirxn.network
 
 ################################################################################
 
@@ -142,12 +142,12 @@ def execute(inputFile, options):
 			reaction.updateUnimolecularReactionNetworks(reactionModel)
 
 		done = True
-		speciesToAdd = []
+		speciesToAdd = []; networksToEnlarge = []
 		for index, reactionSystem in enumerate(reactionSystems):
 			
 			# Conduct simulation
 			logging.info('Conducting simulation of reaction system %s...' % (index+1))
-			t, y, dydt, valid, spec = reactionSystem.simulate(reactionModel)
+			t, y, dydt, valid, obj = reactionSystem.simulate(reactionModel)
 
 			# Postprocess results
 			logging.info('Saving simulation results for reaction system %s...' % (index+1))
@@ -156,14 +156,22 @@ def execute(inputFile, options):
 			# If simulation is invalid, note which species should be added to
 			# the core
 			if not valid:
-				speciesToAdd.append(spec)
+				if isinstance(obj, species.Species):
+					speciesToAdd.append(obj)
+				elif isinstance(obj, unirxn.network.Network):
+					networksToEnlarge.append(obj)
 				done = False
 
-		# Add the notes species to the core
+		# Add the noted species to the core
 		speciesToAdd = list(set(speciesToAdd))
 		for spec in speciesToAdd:
 			reactionModel.enlarge(spec)
 		
+		# Update the noted networks
+		networksToEnlarge = list(set(networksToEnlarge))
+		for net in networksToEnlarge:
+			net.exploreOneIsomer()
+
 		# Save the restart file
 		import cPickle
 		logging.info('Saving restart file...')

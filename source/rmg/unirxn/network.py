@@ -244,6 +244,7 @@ class Network:
 	`valid`         :data:`True` if the net reaction kinetics are up to date;
 	                :data:`False` if the kinetics are out of date and need to
 	                be recomputed
+	`explored`      A list of all of the fully-explored unimolecular isomers
 	=============== ============================================================
 
 	"""
@@ -253,6 +254,10 @@ class Network:
 		self.pathReactions = []
 		self.netReactions = []
 		self.valid = True
+		self.explored = []
+
+	def __repr__(self):
+		return '<Network "%s">' % ([str(isomer.species[0]) for isomer in self.isomers if isomer.isUnimolecular()])
 
 	def numUniIsomers(self):
 		"""
@@ -308,6 +313,7 @@ class Network:
 		"""
 		self.isomers.extend(other.isomers)
 		self.pathReactions.extend(other.pathReactions)
+		self.explored.extend(other.explored)
 		self.invalidate()
 	
 	def invalidate(self):
@@ -315,6 +321,22 @@ class Network:
 		Mark a network as in need of a new pressure-dependence calculation.
 		"""
 		self.valid = False
+
+	def getLeakFlux(self, T, P, conc, totalConc=None):
+		"""
+		Return the leak flux of the network: the forward flux to all unexplored
+		unimolecular isomers in the network.
+		"""
+		leakFlux = 0.0
+		for rxn in self.netReactions:
+			rate = rxn.getRate(T, P, conc, totalConc)
+			if rxn.isIsomerization() or rxn.isDissociation():
+				if rxn.reactants[0] not in self.explored:
+					leakFlux -= rate
+			if rxn.isIsomerization() or rxn.isAssociation():
+				if rxn.products[0] not in self.explored:
+					leakFlux += rate
+		return leakFlux
 
 	def calculateDensitiesOfStates(self, Elist):
 		"""

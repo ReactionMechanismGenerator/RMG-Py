@@ -131,7 +131,6 @@ class Reaction:
 		Ea= k.Ea 
 		n = k.n 
 		#import pdb; pdb.set_trace()
-		print rxnstring, A, n, Ea
 		return ctml_writer.reaction(rxnstring, ctml_writer.Arrhenius(A, n, Ea) )
 		
 	def fromXML(self, document, rootElement):
@@ -2202,7 +2201,7 @@ def updateUnimolecularReactionNetworks(reactionModel):
 			grainSize = 5000; numGrains = 0
 			method = 'modifiedstrongcollision'
 			model = ('pdeparrhenius')
-
+			
 			network.bathGas = [spec for spec in reactionModel.core.species if not spec.reactive][0]
 			network.bathGas.expDownParam = 4.86 * 4184
 
@@ -2235,6 +2234,14 @@ def updateUnimolecularReactionNetworks(reactionModel):
 						network.isomers.append(isomer)
 				reaction.product = isomer
 
+			# Update list of explored isomers to include all species in core
+			for isom in network.isomers:
+				if isom.isUnimolecular():
+					spec = isom.species[0]
+					if spec not in network.explored:
+						if spec in reactionModel.core.species:
+							network.explored.append(spec)
+
 			# Get list of species in network
 			speciesList = list(set([spec for isom in network.isomers for spec in isom.species]))
 
@@ -2265,8 +2272,8 @@ def updateUnimolecularReactionNetworks(reactionModel):
 			K = network.calculateRateCoefficients(Tlist, Plist, Elist, method)
 
 			# Generate PDepReaction objects
-			for i, reactant in enumerate(network.isomers):
-				for j, product in enumerate(network.isomers[0:i]):
+			for i, product in enumerate(network.isomers):
+				for j, reactant in enumerate(network.isomers[0:i]):
 					# Find the path reaction
 					netReaction = None
 					for r in network.netReactions:
@@ -2281,11 +2288,11 @@ def updateUnimolecularReactionNetworks(reactionModel):
 					if model[0].lower() == 'chebyshev':
 						modelType, degreeT, degreeP = model
 						chebyshev = ChebyshevKinetics()
-						chebyshev.fitToData(Tlist, Plist, K[:,:,j,i], degreeT, degreeP)
+						chebyshev.fitToData(Tlist, Plist, K[:,:,i,j], degreeT, degreeP)
 						netReaction.kinetics = chebyshev
 					elif model.lower() == 'pdeparrhenius':
 						pDepArrhenius = PDepArrheniusKinetics()
-						pDepArrhenius.fitToData(Tlist, Plist, K[:,:,j,i])
+						pDepArrhenius.fitToData(Tlist, Plist, K[:,:,i,j])
 						netReaction.kinetics = pDepArrhenius
 					else:
 						pass
