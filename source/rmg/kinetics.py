@@ -121,6 +121,12 @@ class ArrheniusKinetics(Kinetics):
 		return '<ArrheniusKinetics A=%.0e E=%.0fkJ/mol n=%.1f >'%(self.A,
 			self.Ea/1000.0, self.n )
 	
+	def equals(self, other):
+		"""
+		Equality comparison.
+		"""
+		return (self.A == other.A and self.Ea == other.Ea and self.n == other.n)
+
 	def getRateConstant(self, T):
 		"""
 		Return the rate constant k(T) at temperature `T` by evaluating the
@@ -220,6 +226,13 @@ class ArrheniusEPKinetics(Kinetics):
 		"""How it looks on the console"""
 		return '<ArrheniusEPKinetics A=%.0e E0=%.0fkJ/mol n=%.1f alpha=%.1g>'%(
 			self.A, self.E0/1000.0, self.n, self.alpha)
+
+	def equals(self, other):
+		"""
+		Equality comparison.
+		"""
+		return (self.A == other.A and self.E0 == other.E0 and 
+			self.n == other.n and self.alpha == other.alpha)
 
 	def getActivationEnergy(self, dHrxn):
 		"""

@@ -43,6 +43,9 @@ import data
 import thermo
 import os
 
+import ctml_writer
+import xml.sax.saxutils
+
 ################################################################################
 
 class ThermoSnapshot:
@@ -164,7 +167,26 @@ class Species:
 		species ID is used.
 		"""
 		return self.id
-
+		
+	def __str__(self):
+		"""
+		Return a string representation of the species, in the form 'label(id)'.
+		"""
+		return self.label + '(' + str(self.id) + ')'
+		
+	def toCantera(self):
+		"""Return a Cantera ctml_writer instance"""
+		# contrivedly get a list like ['C', '3', 'H', '9', 'Si', '1']
+		atoms = self.structure[0].toOBMol().GetSpacedFormula().split()
+		# magically turn that lst into a string like 'C:3 H:9 Si:1'
+		atoms = ' '.join([i+':'+j for i,j in zip(*[iter(atoms)]*2)])
+		return ctml_writer.species(name = str(self),
+		    atoms = " %s "%atoms,
+		    thermo = self.thermoData.toCantera(),
+			# this escaping should really be done by ctml_writer, but it doesn't do it
+		    note = xml.sax.saxutils.escape("%s (%s)"%(self.label,self.thermoData.comment))
+		       )
+		
 	def getFormula(self):
 		"""
 		Return the chemical formula for the species.
@@ -283,7 +305,7 @@ class Species:
 		
 		The specific type of thermo data returned is unknown, but it will be 
 		a subclass of :class:`thermo.ThermoData`.  If `self.thermoData` does 
-		not yet exist, it is created using :method:`self.generateThermoData()`
+		not yet exist, it is created using :func:`generateThermoData`.
 		"""
 		if not self.thermoData:
 			self.generateThermoData()
@@ -388,11 +410,7 @@ class Species:
 			maps21.extend(map21)
 		return (len(maps12) > 0), maps21, maps12
 
-	def __str__(self):
-		"""
-		Return a string representation of the species, in the form 'label(id)'.
-		"""
-		return self.label + '(' + str(self.id) + ')'
+
 
 ################################################################################
 
@@ -400,11 +418,16 @@ class Species:
 # The list is stored in reverse of the order in which the species are created;
 # when searching the list, it is more likely to match a recently created species
 # than an older species
+#: Global list of species currently in memory.
 speciesList = []
 
 # A cache of recently visited species
 speciesCache = []
 speciesCacheMaxSize = 4
+
+global speciesCounter 
+#: Used to label species uniquely. Incremented each time a new species is made.
+speciesCounter = 0 
 
 def makeNewSpecies(structure, label='', reactive=True):
 	"""
@@ -417,7 +440,7 @@ def makeNewSpecies(structure, label='', reactive=True):
 	object is created and returned after being appended to the global species
 	list.
 	"""
-
+	global speciesCounter 
 #	# Recalculate atom types for proposed structure (hopefully not necessary)
 #	structure.simplifyAtomTypes()
 #	structure.updateAtomTypes()
@@ -447,13 +470,22 @@ def makeNewSpecies(structure, label='', reactive=True):
 #		for atom in structure.atoms():
 #			if atom.hasFreeElectron(): label += 'J'
 		label = structure.toSMILES()
-	spec = Species(len(speciesList)+1, label, structure, reactive)
+	
+	speciesCounter += 1
+	spec = Species(speciesCounter, label, structure, reactive)
 	speciesList.insert(0, spec)
 	
 	spec.getResonanceIsomers()
 	if thermoDatabase is not None:
 		spec.getThermoData()
-	
+
+	# Generate spectral data
+	if settings.spectralDataEstimation and spec.thermoData:
+		import spectral
+		spec.spectralData = spectral.generateSpectralData(spec.structure[0], spec.thermoData)
+		if spec.spectralData:
+			print [mode.frequency for mode in spec.spectralData.modes if isinstance(mode, spectral.HarmonicOscillator)]
+
 	# Draw species
 	if settings.drawMolecules:
 		mol = pybel.Molecule(spec.toOBMol())

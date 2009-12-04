@@ -49,6 +49,8 @@ cdef class Edge:
 
 cdef class Graph(dict):
 
+	cpdef resetCachedStructureInfo(Graph self)
+
 	cpdef list vertices(Graph self)
 
 	cpdef list edges(Graph self)
@@ -100,15 +102,15 @@ cpdef VF2_isomorphism(Graph graph1, Graph graph2, dict map12, dict map21,
 
 cpdef bint __VF2_feasible(Graph graph1, Graph graph2, chem.Atom vertex1,
 	chem.Atom vertex2, dict map21, dict map12, list terminals1, list terminals2,
-	bint subgraph)
+	bint subgraph) except -2 # bint should be 0 or 1
 
 cpdef bint __VF2_match(Graph graph1, Graph graph2, dict map21, dict map12,
 	list terminals1, list terminals2, bint subgraph, bint findAll,
-	list map21List, list map12List, int call_depth)
+	list map21List, list map12List, int call_depth) except -2 # bint should be 0 or 1
 
-cpdef int __getSortLabel(chem.Atom vertex)
+cpdef int __getSortLabel(chem.Atom vertex) except -2 # values should increment from 0
 
-cpdef int globalAtomSortValue(chem.Atom atom)
+cpdef short globalAtomSortValue(chem.Atom atom) except 1 # all values should be negative
 
 cpdef list __VF2_pairs(Graph graph1, Graph graph2, list terminals1,
 	list terminals2, dict map21, dict map12)

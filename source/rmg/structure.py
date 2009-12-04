@@ -80,7 +80,10 @@ class Structure:
 			self.fromSMILES(SMILES)
 
 	def __repr__(self):
-		message = "Structure(SMILES='%s')"%(self.toSMILES())
+		try:
+			message = "Structure(SMILES='%s')"%(self.toSMILES())
+		except AttributeError:
+			message = "<Structure containing %s>"%([ [at.label for at in a._atomType] for a in self.atoms() ])
 		return message
 
 	def atoms(self):
@@ -184,15 +187,15 @@ class Structure:
 		provided in `atoms` and `bonds`, respectively.
 		"""
 		self.graph = graph.Graph()
-
+		
 		if atoms is None or bonds is None:
 			return
-
+		
 		for atom in atoms:
 			self.addAtom(atom)
 		for bond in bonds:
 			self.addBond(bond)
-
+	
 	def copy(self):
 		"""
 		Create a copy of the current Structure.
@@ -206,7 +209,7 @@ class Structure:
 			index1 = self.atoms().index(bond.atoms[0])
 			index2 = self.atoms().index(bond.atoms[1])
 			newBond.atoms = [atoms[index1], atoms[index2]]
-
+		
 		return Structure(atoms, bonds)
 
 	def merge(self, other):
@@ -229,6 +232,14 @@ class Structure:
 			structure.graph = g
 			structures.append(structure)
 		return structures
+
+	def resetCachedStructureInfo(self):
+		"""Reset any cached structural information.
+		
+		Call this method when you have modified the graph or structure,
+		so that any information (eg. connectivity values, ring locations) that
+		we are cacheing, is reset."""
+		self.graph.resetCachedStructureInfo()
 
 	def getSmallestSetOfSmallestRings(self):
 		"""
@@ -334,10 +345,8 @@ class Structure:
 				elif bonddict[atom1][atom2] != bonddict[atom2][atom1]:
 					raise InvalidAdjacencyListException(label)
 
-
 		# Create and return functional group or species
 		self.initialize(atoms, bonds)
-
 
 
 	def fromCML(self, cmlstr):
@@ -410,38 +419,31 @@ class Structure:
 
 	def toAdjacencyList(self, label=''):
 		"""
-		Convert the structure object to an adjacency list. The `label` parameter
-		is an optional string to put as the first line of the adjacency list;
-		if set to the empty string, this line will be omitted.
+		Convert the structure object to an adjacency list. 
+		
+		The `label` parameter is an optional string to put as the first line of 
+		the adjacency list; if set to the empty string, this line will be omitted.
 		"""
-
+		
 		adjlist = ''
-
+		
 		if label != '': adjlist += label + '\n'
-
-		def sortAtomsByConnectivity(atom1, atom2):
-			if atom1.connectivity[0] > atom2.connectivity[0]: return -1
-			elif atom1.connectivity[0] < atom2.connectivity[0]: return 1
-			elif atom1.connectivity[1] > atom2.connectivity[1]: return -1
-			elif atom1.connectivity[1] < atom2.connectivity[1]: return 1
-			elif atom1.connectivity[2] > atom2.connectivity[2]: return -1
-			elif atom1.connectivity[2] < atom2.connectivity[2]: return 1
-			else: return 0
-
-		# Sort the atoms by connectivity value, from lowest to highest
+		
+		# Sort the atoms by graph.globalAtomSortValue 
+		# (some function of connectivity values), from lowest to highest
 		self.graph.setConnectivityValues()
 		atoms = self.atoms()
-		atoms.sort(sortAtomsByConnectivity)
+		atoms.sort(key=graph.globalAtomSortValue)
 
 		for i, atom in enumerate(atoms):
-
+			
 			# Atom number
 			adjlist += str(i+1) + ' '
-
+			
 			# Atom label
 			if atom.label != '':
 				adjlist += atom.label + ' '
-
+			
 			# Atom type(s)
 			if atom.atomType.__class__ == list:
 				adjlist += '{' + atom.atomType[0].label
@@ -450,19 +452,19 @@ class Structure:
 				adjlist += '} '
 			else:
 				adjlist += atom.atomType.label + ' '
-
+			
 			# Electron state(s)
 			if atom.electronState.__class__ == list:
 				adjlist += '{' + atom.electronState[0].label
 				for electronState in atom.electronState[1:]:
 					adjlist += ',' + electronState.label
-				adjlist += '}'
+				adjlist += '} '
 			else:
 				adjlist += atom.electronState.label + ' '
 
 			# Bonds list
 			atoms2 = self.getBonds(atom).keys()
-			atoms2.sort(sortAtomsByConnectivity)
+			atoms2.sort(key=graph.globalAtomSortValue)
 
 			for atom2 in atoms2:
 				bond = self.getBond(atom, atom2)
@@ -488,9 +490,17 @@ class Structure:
 	def toOBMol(self):
 		"""
 		Convert a Structure object to an OpenBabel OBMol object.
+		
+		It first sorts the atoms by 
 		"""
 		atoms = self.atoms(); bonds = self.bonds()
-
+		# Sort the atoms by graph.globalAtomSortValue 
+		# (some function of connectivity values), from lowest to highest
+		# this doesn't necessarily lead to the prettiest SMILES but at least
+		# it will give the same SMILES every time the program is run.
+		self.graph.setConnectivityValues()
+		atoms.sort(key=graph.globalAtomSortValue)
+		
 		obmol = openbabel.OBMol()
 		for atom in atoms:
 			a = obmol.NewAtom()
@@ -616,7 +626,7 @@ class Structure:
 			if atom1.atomType.__class__ == list:
 				continue
 			# Skip generic atom types
-			if atom1.atomType.label == 'R' or atom1.atomType.label == 'R!H':
+			if atom1.atomType.element is None:
 				continue
 			# Reset atom type to that of element
 			atom1.atomType = chem.atomTypes[atom1.atomType.element.symbol]
@@ -628,56 +638,43 @@ class Structure:
 		environment) and complete (i.e. are as detailed as possible).
 		"""
 
-		# NOTE: Does not yet process CO atom type!
-
 		for atom1 in self.atoms():
+
 			# Only works for single atom types, not lists
 			if atom1.atomType.__class__ == list:
 				continue
 			# Skip generic atom types
-			if atom1.atomType.label == 'R' or atom1.atomType.label == 'R!H':
+			if atom1.atomType.element is None:
 				continue
-			# Count numbers of each bond type
-			single = 0; double = 0; triple = 0; benzene = 0; carbonyl = False
+
+			# Get atom element
+			element = atom1.atomType.element
+			# Count numbers of each higher-order bond type
+			double = 0; triple = 0; benzene = 0
 			for atom2, bond12 in self.getBonds(atom1).iteritems():
-				if bond12.isSingle(): single += 1
-				elif bond12.isDouble(): double += 1
+				if bond12.isDouble(): double += 1
 				elif bond12.isTriple(): triple += 1
 				elif bond12.isBenzene(): benzene += 1
-				if atom1.isCarbon() and atom2.isOxygen() and bond12.isDouble():
-					carbonyl = True
 
-			# Use counts to determine proper atom type
-			atomType = atom1.atomType.element.symbol
-			if atomType == 'C':
-				if triple == 1: atomType = 'Ct'
-				elif single == 3 or single == 4: atomType = 'Cs'
-				elif double == 2: atomType = 'Cdd'
-				elif carbonyl: atomType = 'CO'
-				elif double == 1: atomType = 'Cd'
-				elif benzene == 1 or benzene == 2: atomType = 'Cb'
-				elif benzene == 3: atomType = 'Cbf'
-			elif atomType == 'O':
-				if single == 1 or single == 2: atomType = 'Os'
-				elif double == 1: atomType = 'Od'
-
-			# Do nothing if suggested and specified atom types are identical
-			if atom1.atomType.label == atomType:
-				pass
-			# Do nothing if specified atom type is 'Cbf' and suggested is 'Cb'
-			elif atom1.atomType.label == 'Cbf' and atomType == 'Cb':
-				pass
-			# Do nothing if specified atom type is 'Cdd' and suggested is 'CO'
-			elif atom1.atomType.label == 'Cdd' and atomType == 'CO':
-				pass
-			# Make change if specified atom type is element
-			elif atom1.atomType.label == atom1.atomType.element.symbol:
-				#logging.warning('Changed "' + atom1.atomType.label + '" to "' + atomType + '".')
-				atom1.atomType = chem.atomTypes[atomType]
-			# Else print warning
-			else:
-				logging.warning('Suggested atom type "' + atomType + '" does not match specified atom type "' + atom1.atomType.label + '".')
-
+			# Use element and counts to determine proper atom type
+			newAtomType = None
+			for label, atomType in chem.atomTypes.iteritems():
+				if ((element is atomType.element or atomType.element is None) and
+					(double == atomType.doubleBonds or atomType.doubleBonds is None) and
+					(triple == atomType.tripleBonds or atomType.tripleBonds is None) and
+					(benzene == atomType.benzeneBonds or atomType.benzeneBonds is None)):
+						
+					if newAtomType is None:
+						newAtomType = atomType
+					elif newAtomType.element is None and atomType.element is not None:
+						newAtomType = atomType
+					elif (newAtomType.doubleBonds is None or newAtomType.tripleBonds is None or newAtomType.benzeneBonds is None) and \
+						(atomType.doubleBonds is not None or atomType.tripleBonds is not None or atomType.benzeneBonds is not None):
+						newAtomType = atomType
+			
+			# Set the new atom type
+			atom1.setAtomType(newAtomType)
+		
 	def getRadicalCount(self):
 		"""
 		Get the number of radicals in the structure.
@@ -1230,6 +1227,20 @@ class Structure:
 		#	symmetryNumber *= self.calculateCyclicSymmetryNumber()
 
 		self.symmetryNumber = symmetryNumber
+
+	def countInternalRotors(self):
+		"""
+		Determine the number of internal rotors in the structure. Any single
+		bond not in a cycle and between two atoms that also have other bonds
+		are considered to be internal rotors.
+		"""
+		count = 0
+		for bond in self.bonds():
+			if bond.isSingle():
+				if len(self.getBonds(bond.atoms[0])) > 1 and len(self.getBonds(bond.atoms[1])) > 1:
+					if not self.isBondInCycle(bond):
+						count += 1
+		return count
 
 ################################################################################
 

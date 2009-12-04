@@ -25,6 +25,7 @@ Contents
 	rmg-model
 	rmg-reaction
 	rmg-species
+	rmg-spectral
 	rmg-structure
 	rmg-thermo
 	rmg-cantera_loader

@@ -9,24 +9,15 @@
 CO2
 1 *1 Cdd 0 {2,D} {3,D}
 2 *2 Od 0 {1,D}
-3 Od 0 {1,D}
+3    Od 0 {1,D}
 
 RR'
 1 *3 {C,H} 0 {2,S}
 2 *4 {C,H} 0 {1,S}
 
-// Top level nodes for reverse reaction
-
-R_CO2_R'
-1 *1 Cd 0 {2,S} {3,D} {4,S}
-2 *2 Os 0 {1,S} {5,S}
-3 Od 0 {1,D}
-4 *3 {C,H} 0 {1,S}
-5 *4 {C,H} 0 {2,S}
-
 // Other nodes
 
-R_H 
+R_H
 1 *3 {H,Cs,Cd,Cb} 0 {2,S}
 2 *4 H 0 {1,S}
 
@@ -74,7 +65,7 @@ C_pri/De
 2 *4 H 0 {1,S}
 3 H 0 {1,S}
 4 H 0 {1,S}
-5 {Cd,Ct,Cb,CO} 0 {1,S}
+5 {Cd,Ct,Cb} 0 {1,S}
 
 C_sec
 1 *3 Cs 0 {2,S}, {3,S}, {4,S}, {5,S}
@@ -115,29 +106,29 @@ C/H2/OneDe
 1 *3 Cs 0 {2,S}, {3,S}, {4,S}, {5,S}
 2 *4 H 0 {1,S}
 3 H 0 {1,S}
-4 {Cd,Ct,CO,Cb} 0 {1,S}
+4 {Cd,Ct,Cb} 0 {1,S}
 5 {Cs,O} 0 {1,S}
 
 C/H2/OneDeC
 1 *3 Cs 0 {2,S}, {3,S}, {4,S}, {5,S}
 2 *4 H 0 {1,S}
 3 H 0 {1,S}
-4 {Cd,Ct,CO,Cb} 0 {1,S}
+4 {Cd,Ct,Cb} 0 {1,S}
 5 Cs 0 {1,S}
 
 C/H2/OneDeO
 1 *3 Cs 0 {2,S}, {3,S}, {4,S}, {5,S}
 2 *4 H 0 {1,S}
 3 H 0 {1,S}
-4 {Cd,Ct,CO,Cb} 0 {1,S}
+4 {Cd,Ct,Cb} 0 {1,S}
 5 O 0 {1,S}
 
 C/H2/TwoDe
 1 *3 Cs 0 {2,S}, {3,S}, {4,S}, {5,S}
 2 *4 H 0 {1,S}
 3 H 0 {1,S}
-4 {Cd,Ct,CO,Cb} 0 {1,S}
-5 {Cd,Ct,CO,Cb} 0 {1,S}
+4 {Cd,Ct,Cb} 0 {1,S}
+5 {Cd,Ct,Cb} 0 {1,S}
 
 C_ter
 1 *3 Cs 0 {2,S}, {3,S}, {4,S}, {5,S}
@@ -170,55 +161,55 @@ C/H/NDMustO
 C/H/OneDe
 1 *3 Cs 0 {2,S}, {3,S}, {4,S}, {5,S}
 2 *4 H 0 {1,S}
-3 {Cd,Ct,Cb,CO} 0 {1,S}
+3 {Cd,Ct,Cb} 0 {1,S}
 4 {Cs,O} 0 {1,S}
 5 {Cs,O} 0 {1,S}
 
 C/H/Cs2
 1 *3 Cs 0 {2,S}, {3,S}, {4,S}, {5,S}
 2 *4 H 0 {1,S}
-3 {Cd,Ct,Cb,CO} 0 {1,S}
+3 {Cd,Ct,Cb} 0 {1,S}
 4 Cs 0 {1,S}
 5 Cs 0 {1,S}
 
 C/H/ODMustO
 1 *3 Cs 0 {2,S}, {3,S}, {4,S}, {5,S}
 2 *4 H 0 {1,S}
-3 {Cd,Ct,Cb,CO} 0 {1,S}
+3 {Cd,Ct,Cb} 0 {1,S}
 4 O 0 {1,S}
 5 {Cs,O} 0 {1,S}
 
 C/H/TwoDe
 1 *3 Cs 0 {2,S}, {3,S}, {4,S}, {5,S}
 2 *4 H 0 {1,S}
-3 {Cd,Ct,Cb,CO} 0 {1,S}
-4 {Cd,Ct,Cb,CO} 0 {1,S}
+3 {Cd,Ct,Cb} 0 {1,S}
+4 {Cd,Ct,Cb} 0 {1,S}
 5 {Cs,O} 0 {1,S}
 
 C/H/Cs
 1 *3 Cs 0 {2,S}, {3,S}, {4,S}, {5,S}
 2 *4 H 0 {1,S}
-3 {Cd,Ct,Cb,CO} 0 {1,S}
-4 {Cd,Ct,Cb,CO} 0 {1,S}
+3 {Cd,Ct,Cb} 0 {1,S}
+4 {Cd,Ct,Cb} 0 {1,S}
 5 Cs 0 {1,S}
 
 C/H/TDMustO
 1 *3 Cs 0 {2,S}, {3,S}, {4,S}, {5,S}
 2 *4 H 0 {1,S}
-3 {Cd,Ct,Cb,CO} 0 {1,S}
-4 {Cd,Ct,Cb,CO} 0 {1,S}
+3 {Cd,Ct,Cb} 0 {1,S}
+4 {Cd,Ct,Cb} 0 {1,S}
 5 O 0 {1,S}
 
 C/H/ThreeDe
 1 *3 Cs 0 {2,S}, {3,S}, {4,S}, {5,S}
 2 *4 H 0 {1,S}
-3 {Cd,Ct,Cb,CO} 0 {1,S}
-4 {Cd,Ct,Cb,CO} 0 {1,S}
-5 {Cd,Ct,Cb,CO} 0 {1,S}
+3 {Cd,Ct,Cb} 0 {1,S}
+4 {Cd,Ct,Cb} 0 {1,S}
+5 {Cd,Ct,Cb} 0 {1,S}
 
 Cd_H
 1 *3 Cd 0 {2,D}, {3,S}, {4,S}
-2 Cd 0 {1,D}    
+2 Cd 0 {1,D}
 3 *4 H 0 {1,S}
 4 R 0 {1,S}
 
@@ -250,11 +241,11 @@ Cd/H/OneDe
 1 *3 Cd 0 {2,D}, {3,S}, {4,S}
 2 Cd 0 {1,D}
 3 *4 H 0 {1,S}
-4 {Cd,Ct,Cb,CO} 0 {1,S}
+4 {Cd,Ct,Cb} 0 {1,S}
 
 Cb_H
 1 *3 Cb 0 {2,B}, {3,S}
-2 {Cb,Cbf} 0 {1,B}    
+2 {Cb,Cbf} 0 {1,B}
 3 *4 H 0 {1,S}
 
 R_R'

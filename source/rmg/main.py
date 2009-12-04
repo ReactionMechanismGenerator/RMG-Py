@@ -43,6 +43,9 @@ import sys
 
 import constants
 import settings
+import species
+import reaction
+
 
 ################################################################################
 
@@ -94,7 +97,32 @@ def execute(inputFile, options):
 	reactionModel, coreSpecies, reactionSystems = io.readInputFile(inputFile)
 	
 	# Initialize reaction model
-	reactionModel.initialize(coreSpecies)
+	if options.restart:
+		import cPickle
+		import ctml_writer
+		logging.info('Loading previous restart file...')
+		f = open(os.path.join(settings.outputDirectory,'restart.pkl'), 'rb')
+		species.speciesList = cPickle.load(f)
+		species.speciesCounter = cPickle.load(f)
+		reaction.reactionList = cPickle.load(f)
+		reactionModel = cPickle.load(f)
+		reactionSystems = cPickle.load(f)
+		f.close()
+		# Cantera stuff
+		reload(ctml_writer) # ensure new empty ctml_writer._species and ._reactions lists
+		for reactor in reactionSystems:
+			# initialise the ctml_writer thing
+			reactor.initializeCantera()
+		for spec in reactionModel.core.species:
+			# add species to ctml_writer._species list
+			spec.toCantera() 
+		for rxn in reactionModel.core.reactions:
+			# add reaction to ctml_writer._reactions list
+			rxn.toCantera()
+		#print "enter 'c' to continue"; import pdb; pdb.set_trace()
+		options.restart = False # have already restarted
+	else:
+		reactionModel.initialize(coreSpecies)
 
 	# RMG execution statistics
 	coreSpeciesCount = []
@@ -115,7 +143,7 @@ def execute(inputFile, options):
 			
 			# Conduct simulation
 			logging.info('Conducting simulation of reaction system %s...' % (index+1))
-			t, y, dydt, valid, species = reactionSystem.simulate(reactionModel)
+			t, y, dydt, valid, spec = reactionSystem.simulate(reactionModel)
 
 			# Postprocess results
 			logging.info('Saving simulation results for reaction system %s...' % (index+1))
@@ -124,29 +152,24 @@ def execute(inputFile, options):
 			# If simulation is invalid, note which species should be added to
 			# the core
 			if not valid:
-				speciesToAdd.append(species)
+				speciesToAdd.append(spec)
 				done = False
 
 		# Add the notes species to the core
 		speciesToAdd = list(set(speciesToAdd))
-		for species in speciesToAdd:
-			reactionModel.enlarge(species)
+		for spec in speciesToAdd:
+			reactionModel.enlarge(spec)
 		
+		# Save the restart file
 		import cPickle
-		if options.restart:
-			logging.info('Loading previous restart file...')
-			f = open(os.path.join(settings.outputDirectory,'restart.pkl'), 'rb')
-			reactionModel = cPickle.load( f)
-			reactionSystems = cPickle.load(f)
-			f.close()
-			options.restart = False # have already restarted
-		else:
-			# Save the restart file
-			logging.info('Saving restart file...')
-			f = open(os.path.join(settings.outputDirectory,'restart.pkl'), 'wb')
-			cPickle.dump(reactionModel, f)
-			cPickle.dump(reactionSystems, f)
-			f.close()
+		logging.info('Saving restart file...')
+		f = open(os.path.join(settings.outputDirectory,'restart.pkl'), 'wb')
+		cPickle.dump(species.speciesList, f)
+		cPickle.dump(species.speciesCounter, f)
+		cPickle.dump(reaction.reactionList, f)
+		cPickle.dump(reactionModel, f)
+		cPickle.dump(reactionSystems, f)
+		f.close()
 
 		if not done:
 			logging.info('Updating RMG execution statistics...')

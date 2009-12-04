@@ -7,19 +7,22 @@
 // Top level nodes for forward reaction
 
 CO
-1 *1 CO 0 {2,D}
+1 *1 Cdd 0 {2,D} {3,D}
 2 *2 Od 0 {1,D}
+3 Od 0 {1,D}
 
 doublebond
 Union {mb_CO, mb_OC, mb_CCO, mb_COC}
 
 mb_CO
-1 *3 CO 0 {2,D}
+1 *3 Cdd 0 {2,D} {3,D}
 2 *4 Od 0 {1,D}
+3 Od 0 {1,D}
 
 mb_OC
 1 *3 Od 0 {2,D}
-2 *4 CO 0 {1,D}
+2 *4 Cdd 0 {1,D} {3,D}
+3 Od 0 {2,D}
 
 mb_CCO
 1 *3 Cd 0 {2,D}
@@ -31,146 +34,115 @@ mb_COC
 2 *4 Cd 0 {1,D}
 3 Od 0 {1,D}
 
-// Top level nodes for reverse reaction
-
-four_ring
-Union {four_ring_CO, four_ring_OC, four_ring_CCO, four_ring_COC}
-
-four_ring_CO
-1 *1 CO 0 {2,S} {3,S}
-2 *2 Os 0 {1,S} {4,S}
-3 *3 CO 0 {4,S} {1,S}
-4 *4 Os 0 {3,S} {2,S}
-
-four_ring_OC
-1 *1 CO 0 {2,S} {3,S}
-2 *2 Os 0 {1,S} {4,S}
-3 *3 Os 0 {4,S} {1,S}
-4 *4 CO 0 {3,S} {2,S}
-
-four_ring_CCO
-1 *1 CO 0 {2,S} {3,S}
-2 *2 Os 0 {1,S} {4,S}
-3 *3 C 0 {4,S} {1,S}
-4 *4 Cd 0 {3,S} {5,D} {2,S}
-5 Od 0 {4,D}
-
-four_ring_COC
-1 *1 CO 0 {2,S} {3,S}
-2 *2 Os 0 {1,S} {4,S}
-3 *3 Cd 0 {4,S} {5,D} {1,S}
-4 *4 C 0 {3,S} {2,S}
-5 Od 0 {3,D}
-
 // Other nodes
 
 CO_2H
-1 *1 CO 0 {2,D} {3,S} {4,S}
+1 *1 Cd 0 {2,D} {3,S} {4,S}
 2 *2 Od 0 {1,D}
 3 H 0 {1,S}
 4 H 0 {1,S}
 
 CO_HNd
-1 *1 CO 0 {2,D} {3,S} {4,S}
+1 *1 Cd 0 {2,D} {3,S} {4,S}
 2 *2 Od 0 {1,D}
 3 H 0 {1,S}
 4 {Cs,O} 0 {1,S}
 
 CO_HDe
-1 *1 CO 0 {2,D} {3,S} {4,S}
+1 *1 Cd 0 {2,D} {3,S} {4,S}
 2 *2 Od 0 {1,D}
 3 H 0 {1,S}
-4 {Cd,Ct,Cb,CO} 0 {1,S}
+4 {Cd,Ct,Cb} 0 {1,S}
 
 CO_Nd2
-1 *1 CO 0 {2,D} {3,S} {4,S}
+1 *1 Cd 0 {2,D} {3,S} {4,S}
 2 *2 Od 0 {1,D}
 3 {Cs,O} 0 {1,S}
 4 {Cs,O} 0 {1,S}
 
 CO_NdDe
-1 *1 CO 0 {2,D} {3,S} {4,S}
+1 *1 Cd 0 {2,D} {3,S} {4,S}
 2 *2 Od 0 {1,D}
 3 {Cs,O} 0 {1,S}
-4 {Cd,Ct,Cb,CO} 0 {1,S}
+4 {Cd,Ct,Cb} 0 {1,S}
 
 CO_De2
-1 *1 CO 0 {2,D} {3,S} {4,S}
+1 *1 Cd 0 {2,D} {3,S} {4,S}
 2 *2 Od 0 {1,D}
-3 {Cd,Ct,Cb,CO} 0 {1,S}
-4 {Cd,Ct,Cb,CO} 0 {1,S}
+3 {Cd,Ct,Cb} 0 {1,S}
+4 {Cd,Ct,Cb} 0 {1,S}
 
 mb_CO_2H
-1 *3 CO 0 {2,D} {3,S} {4,S}
+1 *3 Cd 0 {2,D} {3,S} {4,S}
 2 *4 Od 0 {1,D}
 3 H 0 {1,S}
 4 H 0 {1,S}
 
 mb_CO_HNd
-1 *3 CO 0 {2,D} {3,S} {4,S}
+1 *3 Cd 0 {2,D} {3,S} {4,S}
 2 *4 Od 0 {1,D}
 3 H 0 {1,S}
 4 {Cs,O} 0 {1,S}
 
 mb_CO_HDe
-1 *3 CO 0 {2,D} {3,S} {4,S}
+1 *3 Cd 0 {2,D} {3,S} {4,S}
 2 *4 Od 0 {1,D}
 3 H 0 {1,S}
-4 {Cd,Ct,Cb,CO} 0 {1,S}
+4 {Cd,Ct,Cb} 0 {1,S}
 
 mb_CO_Nd2
-1 *3 CO 0 {2,D} {3,S} {4,S}
+1 *3 Cd 0 {2,D} {3,S} {4,S}
 2 *4 Od 0 {1,D}
 3 {Cs,O} 0 {1,S}
 4 {Cs,O} 0 {1,S}
 
 mb_CO_NdDe
-1 *3 CO 0 {2,D} {3,S} {4,S}
+1 *3 Cd 0 {2,D} {3,S} {4,S}
 2 *4 Od 0 {1,D}
 3 {Cs,O} 0 {1,S}
-4 {Cd,Ct,Cb,CO} 0 {1,S}
+4 {Cd,Ct,Cb} 0 {1,S}
 
 mb_CO_De2
-1 *3 CO 0 {2,D} {3,S} {4,S}
+1 *3 Cd 0 {2,D} {3,S} {4,S}
 2 *4 Od 0 {1,D}
-3 {Cd,Ct,Cb,CO} 0 {1,S}
-4 {Cd,Ct,Cb,CO} 0 {1,S}
+3 {Cd,Ct,Cb} 0 {1,S}
+4 {Cd,Ct,Cb} 0 {1,S}
 
 mb_OC_2H
 1 *3 Od 0 {2,D}
-2 *4 CO 0 {1,D} {3,S} {4,S}
+2 *4 Cd 0 {1,D} {3,S} {4,S}
 3 H 0 {2,S}
 4 H 0 {2,S}
 
 mb_OC_HNd
 1 *3 Od 0 {2,D}
-2 *4 CO 0 {1,D} {3,S} {4,S}
+2 *4 Cd 0 {1,D} {3,S} {4,S}
 3 H 0 {2,S}
 4 {Cs,O} 0 {2,S}
 
 mb_OC_HDe
 1 *3 Od 0 {2,D}
-2 *4 CO 0 {1,D} {3,S} {4,S}
+2 *4 Cd 0 {1,D} {3,S} {4,S}
 3 H 0 {2,S}
-4 {Cd,Ct,Cb,CO} 0 {2,S}
+4 {Cd,Ct,Cb} 0 {2,S}
 
 mb_OC_Nd2
 1 *3 Od 0 {2,D}
-2 *4 CO 0 {1,D} {3,S} {4,S}
+2 *4 Cd 0 {1,D} {3,S} {4,S}
 3 {Cs,O} 0 {2,S}
 4 {Cs,O} 0 {2,S}
 
 mb_OC_NdDe
 1 *3 Od 0 {2,D}
-2 *4 CO 0 {1,D} {3,S} {4,S}
+2 *4 Cd 0 {1,D} {3,S} {4,S}
 3 {Cs,O} 0 {2,S}
-4 {Cd,Ct,Cb,CO} 0 {2,S}
+4 {Cd,Ct,Cb} 0 {2,S}
 
 mb_OC_De2
 1 *3 Od 0 {2,D}
-2 *4 CO 0 {1,D} {3,S} {4,S}
-3 {Cd,Ct,Cb,CO} 0 {2,S}
-4 {Cd,Ct,Cb,CO} 0 {2,S}
+2 *4 Cd 0 {1,D} {3,S} {4,S}
+3 {Cd,Ct,Cb} 0 {2,S}
+4 {Cd,Ct,Cb} 0 {2,S}
 
 mb_CCO_2H
 1 *3 Cd 0 {2,D} {3,S} {4,S}
@@ -190,7 +162,7 @@ mb_CCO_HDe
 1 *3 Cd 0 {2,D} {3,S} {4,S}
 2 *4 Cdd 0 {1,D} {5,D}
 3 H 0 {1,S}
-4 {Cd,Ct,Cb,CO} 0 {1,S}
+4 {Cd,Ct,Cb} 0 {1,S}
 5 Od 0 {2,D}
 
 mb_CCO_Nd2
@@ -204,14 +176,14 @@ mb_CCO_NdDe
 1 *3 Cd 0 {2,D} {3,S} {4,S}
 2 *4 Cdd 0 {1,D}, {5,D}
 3 {Cs,O} 0 {1,S}
-4 {Cd,Ct,Cb,CO} 0 {1,S}
+4 {Cd,Ct,Cb} 0 {1,S}
 5 Od 0 {2,D}
 
 mb_CCO_De2
 1 *3 Cd 0 {2,D} {3,S} {4,S}
 2 *4 Cdd 0 {1,D} {5,D}
-3 {Cd,Ct,Cb,CO} 0 {1,S}
-4 {Cd,Ct,Cb,CO} 0 {1,S}
+3 {Cd,Ct,Cb} 0 {1,S}
+4 {Cd,Ct,Cb} 0 {1,S}
 5 Od 0 {2,D}
 
 mb_COC_2H
@@ -232,7 +204,7 @@ mb_COC_HDe
 1 *3 Cdd 0 {2,D} {5,D}
 2 *4 Cd 0 {1,D} {3,S} {4,S}
 3 H 0 {2,S}
-4 {Cd,Ct,Cb,CO} 0 {2,S}
+4 {Cd,Ct,Cb} 0 {2,S}
 5 Od 0 {1,D}
 
 mb_COC_Nd2
@@ -246,13 +218,13 @@ mb_COC_NdDe
 1 *3 Cdd 0 {2,D} {5,D}
 2 *4 Cd 0 {1,D} {3,S} {4,S}
 3 {Cs,O} 0 {2,S}
-4 {Cd,Ct,Cb,CO} 0 {2,S}
+4 {Cd,Ct,Cb} 0 {2,S}
 5 Od 0 {1,D}
 
 mb_COC_De2
 1 *3 Cdd 0 {2,D} {5,D}
 2 *4 Cd 0 {1,D} {3,S} {4,S}
-3 {Cd,Ct,Cb,CO} 0 {2,S}
-4 {Cd,Ct,Cb,CO} 0 {2,S}
+3 {Cd,Ct,Cb} 0 {2,S}
+4 {Cd,Ct,Cb} 0 {2,S}
 5 Od 0 {1,D}
 

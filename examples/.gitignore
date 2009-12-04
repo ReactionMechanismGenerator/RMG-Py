@@ -1,0 +1,9 @@
+RMG.log
+RMG.profile
+RMG_backup.log
+restart.pkl
+output.xml
+cantera
+plot
+species
+*.pdf

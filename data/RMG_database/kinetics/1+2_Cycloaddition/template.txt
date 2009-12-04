@@ -8,8 +8,8 @@
 Forward: [1+2]cycloaddition
 Reverse: [1+2]cycloelimination
 
-// Template for forward reaction
-multiplebond + elec_def <---> cycle
+// Template for forward reaction; order must be same as in library
+elec_def + multiplebond <---> cycle
 
 // Recipe for forward reaction
 CHANGE_BOND		{*1,-1,*2}

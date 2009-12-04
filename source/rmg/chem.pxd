@@ -38,8 +38,15 @@ cdef class Element:
 cdef class AtomType:
 
 	cdef public str label
-	cdef public object element
+	cdef public Element element
 	cdef public str description
+	cdef public object doubleBonds
+	cdef public object tripleBonds
+	cdef public object benzeneBonds
+	cdef public object formBond
+	cdef public object breakBond
+	cdef public object incrementBond
+	cdef public object decrementBond
 
 	cpdef bint equivalent(AtomType self, AtomType other)
 
@@ -50,6 +57,8 @@ cdef class ElectronState:
 	cdef public str label
 	cdef public int order
 	cdef public list spin
+	cdef public ElectronState increment
+	cdef public ElectronState decrement
 
 	cpdef bint equivalent(ElectronState self, ElectronState other)
 
@@ -76,9 +85,11 @@ cdef class Atom(object):
 	
 	# for Extended Connectivity; as introduced by Morgan (1965)
 	# http://dx.doi.org/10.1021/c160017a018
-	cdef public list connectivity
+	cdef public short connectivity1
+	cdef public short connectivity2
+	cdef public short connectivity3
 
-	cdef public int sorting_label
+	cdef public short sorting_label
 
 	cpdef bint equivalent(Atom self, Atom other)
 

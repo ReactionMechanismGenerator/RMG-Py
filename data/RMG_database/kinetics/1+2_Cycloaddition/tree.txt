@@ -50,7 +50,3 @@ L1: multiplebond
                L4: mb_db_tetrasub_threeDe
                L4: mb_db_tetrasub_fourDe
  
-
-////////////////////////////////////////////////////////////////////////////////
-
-L1: cycle

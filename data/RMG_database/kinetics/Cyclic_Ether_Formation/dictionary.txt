@@ -17,16 +17,16 @@ R2OOH
 5 H 0 {4,S}
 
 R3OOH
-1 *1 {Cd,Cs} 1 {2,{S,D}} 
-2 {Cd,Cs} 0 {1,{S,D}}, {3,{S,D}} 
+1 *1 {Cd,Cs} 1 {2,{S,D}}
+2 {Cd,Cs} 0 {1,{S,D}}, {3,{S,D}}
 3 {Cd,Cs} 0 {2,{S,D}}, {4,S}
 4 *2 O 0 {3,S}, {5,S}
 5 *3 O 0 {4,S}, {6,S}
 6  H 0 {5,S}
 
 R4OOH
-1 *1 {Cd,Cs} 1 {2,{S,D}} 
-2 {Cd,Cs} 0 {1,{S,D}}, {3,{S,D}} 
+1 *1 {Cd,Cs} 1 {2,{S,D}}
+2 {Cd,Cs} 0 {1,{S,D}}, {3,{S,D}}
 3 {Cd,Cs} 0 {2,{S,D}}, {4,{S,D}}
 4 {Cd,Cs} 0 {3,{S,D}}, {5,S}
 5 *2 O 0 {4,S}, {6,S}
@@ -34,8 +34,8 @@ R4OOH
 7 H 0 {6,S}
 
 R5OOH
-1 *1 {Cd,Cs} 1 {2,{S,D}} 
-2 {Cd,Cs} 0 {1,{S,D}}, {3,{S,D}} 
+1 *1 {Cd,Cs} 1 {2,{S,D}}
+2 {Cd,Cs} 0 {1,{S,D}}, {3,{S,D}}
 3 {Cd,Cs} 0 {2,{S,D}}, {4,{S,D}}
 4 {Cd,Cs} 0 {3,{S,D}}, {5,{S,D}}
 5 {Cd,Cs} 0 {4,{S,D}}, {6,S}
@@ -45,42 +45,6 @@ R5OOH
 
 Y_rad_intra
 1 *1 R 1
-
-// Top level nodes for reverse reaction
-
-OH
-1 *3 Os 1 {2,S}
-2 H 0 {1,S}
-
-RnO
-Union {R2O, R3O, R4O, R5O}
-
-R2O
-1 *1 {Cd,Cs} 0 {2,{S,D}} {3,S}
-2 {Cd,Cs} 0 {1,{S,D}}, {3,S}
-3 *2 O 0 {2,S} {1,S}
-
-R3O
-1 *1 {Cd,Cs} 0 {2,{S,D}} {4,S}
-2 {Cd,Cs} 0 {1,{S,D}} {3,{S,D}} 
-3 {Cd,Cs} 0 {2,{S,D}} {4,S}
-4 *2 O 0 {3,S} {1,S}
-
-
-R4O
-1 *1 {Cd,Cs} 1 {2,{S,D}} {5,S}
-2 {Cd,Cs} 0 {1,{S,D}} {3,{S,D}} 
-3 {Cd,Cs} 0 {2,{S,D}} {4,{S,D}}
-4 {Cd,Cs} 0 {3,{S,D}} {5,S}
-5 *2 O 0 {4,S} {1,S}
-
-R5O
-1 *1 {Cd,Cs} 0 {2,{S,D}} {6,S}
-2 {Cd,Cs} 0 {1,{S,D}}, {3,{S,D}} 
-3 {Cd,Cs} 0 {2,{S,D}}, {4,{S,D}}
-4 {Cd,Cs} 0 {3,{S,D}}, {5,{S,D}}
-5 {Cd,Cs} 0 {4,{S,D}}, {6,S}
-6 *2 O 0 {5,S} {1,S}
 
 // Other nodes
 
@@ -99,32 +63,32 @@ R2OOH_D
 5 H 0 {4,S}
 
 R3OOH_SS
-1 *1 {Cd,Cs} 1 {2,S} 
-2 *4 {Cd,Cs} 0 {1,S}, {3,S} 
+1 *1 {Cd,Cs} 1 {2,S}
+2 *4 {Cd,Cs} 0 {1,S}, {3,S}
 3 {Cd,Cs} 0 {2,S}, {4,S}
 4 *2 O 0 {3,S}, {5,S}
 5 *3 O 0 {4,S}, {6,S}
 6 H 0 {5,S}
 
 R3OOH_SD
-1 *1 {Cd,Cs} 1 {2,S} 
-2 *4 Cd 0 {1,S}, {3,D} 
+1 *1 {Cd,Cs} 1 {2,S}
+2 *4 Cd 0 {1,S}, {3,D}
 3 Cd 0 {2,D}, {4,S}
 4 *2 O 0 {3,S}, {5,S}
 5 *3 O 0 {4,S}, {6,S}
 6 H 0 {5,S}
 
 R3OOH_DS
-1 *1 Cd 1 {2,D} 
-2 *4 Cd 0 {1,D}, {3,S} 
+1 *1 Cd 1 {2,D}
+2 *4 Cd 0 {1,D}, {3,S}
 3 {Cd,Cs} 0 {2,S}, {4,S}
 4 *2 O 0 {3,S}, {5,S}
 5 *3 O 0 {4,S}, {6,S}
 6 H 0 {5,S}
 
 R4OOH_SSS
-1 *1 {Cd,Cs} 1 {2,S} 
-2 *4 {Cd,Cs} 0 {1,S}, {3,S} 
+1 *1 {Cd,Cs} 1 {2,S}
+2 *4 {Cd,Cs} 0 {1,S}, {3,S}
 3 {Cd,Cs} 0 {2,S}, {4,S}
 4 {Cd,Cs} 0 {3,S}, {5,S}
 5 *2 O 0 {4,S}, {6,S}
@@ -132,8 +96,8 @@ R4OOH_SSS
 7 H 0 {6,S}
 
 R4OOH_SSD
-1 *1 {Cd,Cs} 1 {2,S} 
-2 *4 {Cd,Cs} 0 {1,S}, {3,S} 
+1 *1 {Cd,Cs} 1 {2,S}
+2 *4 {Cd,Cs} 0 {1,S}, {3,S}
 3 Cd 0 {2,S}, {4,D}
 4 Cd 0 {3,D}, {5,S}
 5 *2 O 0 {4,S}, {6,S}
@@ -141,8 +105,8 @@ R4OOH_SSD
 7 H 0 {6,S}
 
 R4OOH_SDS
-1 *1 {Cd,Cs} 1 {2,S} 
-2 *4 Cd 0 {1,S}, {3,D} 
+1 *1 {Cd,Cs} 1 {2,S}
+2 *4 Cd 0 {1,S}, {3,D}
 3 Cd 0 {2,D}, {4,S}
 4 {Cd,Cs} 0 {3,S}, {5,S}
 5 *2 O 0 {4,S}, {6,S}
@@ -150,8 +114,8 @@ R4OOH_SDS
 7 H 0 {6,S}
 
 R4OOH_DSS
-1 *1 Cd 1 {2,D} 
-2 *4 Cd 0 {1,D}, {3,S} 
+1 *1 Cd 1 {2,D}
+2 *4 Cd 0 {1,D}, {3,S}
 3 {Cd,Cs} 0 {2,S}, {4,S}
 4 {Cd,Cs} 0 {3,S}, {5,S}
 5 *2 O 0 {4,S}, {6,S}
@@ -159,8 +123,8 @@ R4OOH_DSS
 7 H 0 {6,S}
 
 R4OOH_DSD
-1 *1 Cd 1 {2,D} 
-2 *4 Cd 0 {1,D}, {3,S} 
+1 *1 Cd 1 {2,D}
+2 *4 Cd 0 {1,D}, {3,S}
 3 Cd 0 {2,S}, {4,D}
 4 Cd 0 {3,D}, {5,S}
 5 *2 O 0 {4,S}, {6,S}
@@ -168,8 +132,8 @@ R4OOH_DSD
 7 H 0 {6,S}
 
 R5OOH_SSSS
-1 *1 {Cd,Cs} 1 {2,S} 
-2 *4 {Cd,Cs} 0 {1,S}, {3,S} 
+1 *1 {Cd,Cs} 1 {2,S}
+2 *4 {Cd,Cs} 0 {1,S}, {3,S}
 3 {Cd,Cs} 0 {2,S}, {4,S}
 4 {Cd,Cs} 0 {3,S}, {5,S}
 5 {Cd,Cs} 0 {4,S}, {6,S}
@@ -178,8 +142,8 @@ R5OOH_SSSS
 8 H 0 {7,S}
 
 R5OOH_SSSD
-1 *1 {Cd,Cs} 1 {2,S} 
-2 *4 {Cd,Cs} 0 {1,S}, {3,S} 
+1 *1 {Cd,Cs} 1 {2,S}
+2 *4 {Cd,Cs} 0 {1,S}, {3,S}
 3 {Cd,Cs} 0 {2,S}, {4,S}
 4 Cd 0 {3,S}, {5,D}
 5 Cd 0 {4,D}, {6,S}
@@ -188,8 +152,8 @@ R5OOH_SSSD
 8 H 0 {7,S}
 
 R5OOH_SSDS
-1 *1 {Cd,Cs} 1 {2,S} 
-2 *4 {Cd,Cs} 0 {1,S}, {3,S} 
+1 *1 {Cd,Cs} 1 {2,S}
+2 *4 {Cd,Cs} 0 {1,S}, {3,S}
 3 Cd 0 {2,S}, {4,D}
 4 Cd 0 {3,D}, {5,S}
 5 {Cd,Cs} 0 {4,S}, {6,S}
@@ -198,8 +162,8 @@ R5OOH_SSDS
 8 H 0 {7,S}
 
 R5OOH_SDSS
-1 *1 {Cd,Cs} 1 {2,S} 
-2 *4 Cd 0 {1,S}, {3,D} 
+1 *1 {Cd,Cs} 1 {2,S}
+2 *4 Cd 0 {1,S}, {3,D}
 3 Cd 0 {2,D}, {4,S}
 4 {Cd,Cs} 0 {3,S}, {5,S}
 5 {Cd,Cs} 0 {4,S}, {6,S}
@@ -208,8 +172,8 @@ R5OOH_SDSS
 8 H 0 {7,S}
 
 R5OOH_DSSS
-1 *1 Cd 1 {2,D} 
-2 *4 Cd 0 {1,D}, {3,S} 
+1 *1 Cd 1 {2,D}
+2 *4 Cd 0 {1,D}, {3,S}
 3 {Cd,Cs} 0 {2,S}, {4,S}
 4 {Cd,Cs} 0 {3,S}, {5,S}
 5 {Cd,Cs} 0 {4,S}, {6,S}
@@ -218,8 +182,8 @@ R5OOH_DSSS
 8 H 0 {7,S}
 
 R5OOH_SDSD
-1 *1 {Cd,Cs} 1 {2,S} 
-2 *4 Cd 0 {1,S}, {3,D} 
+1 *1 {Cd,Cs} 1 {2,S}
+2 *4 Cd 0 {1,S}, {3,D}
 3 Cd 0 {2,D}, {4,S}
 4 Cd 0 {3,S}, {5,D}
 5 Cd 0 {4,D}, {6,S}
@@ -228,8 +192,8 @@ R5OOH_SDSD
 8 H 0 {7,S}
 
 R5OOH_DSDS
-1 *1 Cd 1 {2,D} 
-2 *4 Cd 0 {1,D}, {3,S} 
+1 *1 Cd 1 {2,D}
+2 *4 Cd 0 {1,D}, {3,S}
 3 Cd 0 {2,S}, {4,D}
 4 Cd 0 {3,D}, {5,S}
 5 Cd 0 {4,S}, {6,S}
@@ -270,7 +234,7 @@ C_rad/H/NonDeO_intra
 C_rad/H/OneDe_intra
 1 *1 C 1 {2,S}, {3,S}, {4,S}
 2 H 0 {1,S}
-3 {Cd,Ct,Cb,CO} 0 {1,S}
+3 {Cd,Ct,Cb} 0 {1,S}
 4 *4 C 0 {1,S}
 
 C_ter_rad_intra
@@ -299,26 +263,26 @@ C_rad/NDMustO_intra
 
 C_rad/OneDe_intra
 1 *1 C 1 {2,S}, {3,S}, {4,S}
-2 {Cd,Ct,Cb,CO} 0 {1,S}
+2 {Cd,Ct,Cb} 0 {1,S}
 3 *4 C 0 {1,S}
 4 {Cs,O} 0 {1,S}
 
 C_rad/Cs2_intra
 1 *1 C 1 {2,S}, {3,S}, {4,S}
-2 {Cd,Ct,Cb,CO} 0 {1,S}
+2 {Cd,Ct,Cb} 0 {1,S}
 3 *4 C 0 {1,S}
 4 Cs 0 {1,S}
 
 C_rad/ODMustO_intra
 1 *1 C 1 {2,S}, {3,S}, {4,S}
-2 {Cd,Ct,Cb,CO} 0 {1,S}
+2 {Cd,Ct,Cb} 0 {1,S}
 3 *4 C 0 {1,S}
 4 O 0 {1,S}
 
 C_rad/TwoDe_intra
 1 *1 C 1 {2,S}, {3,S}, {4,S}
-2 {Cd,Ct,Cb,CO} 0 {1,S}
-3 {Cd,Ct,Cb,CO} 0 {1,S}
+2 {Cd,Ct,Cb} 0 {1,S}
+3 {Cd,Ct,Cb} 0 {1,S}
 4 *4 C 0 {1,S}
 
 Cd_rad_in
@@ -349,7 +313,7 @@ Cd_rad_in/NonDeO
 Cd_rad_in/OneDe
 1 *1 C 1 {2,D}, {3,S}
 2 *4 C 0 {1,D}
-3 {Cd,Ct,Cb,CO} 0 {1,S}
+3 {Cd,Ct,Cb} 0 {1,S}
 
 Cd_rad_out
 1 *1 C 1 {2,S}, {3,D}

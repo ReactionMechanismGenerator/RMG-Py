@@ -167,12 +167,3 @@ L1: radadd_intra
        L2: radadd_intra_Cb
        L2: radadd_intra_Ct
 
-
-////////////////////////////////////////////////////////////////////////////////
-
-L1: RnCyclic
-	L2: R3Cyclic
-	L2: R4Cyclic
-	L2: R5Cyclic
-	L2: R6Cyclic
-	

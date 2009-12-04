@@ -53,6 +53,8 @@ import structure
 import species
 from kinetics import *
 
+import ctml_writer
+
 ################################################################################
 
 class Reaction:
@@ -106,14 +108,31 @@ class Reaction:
 		"""
 		Return a string representation of the reaction.
 		"""
+		#string = ' + '.join([str(s) for s in self.reactants])
 		string = ''
 		for reactant in self.reactants:
 			string += str(reactant) + ' + '
-		string = string[0:-3] + ' <---> '
+		string = string[0:-3] + ' <=> '
 		for product in self.products:
 			string += str(product) + ' + '
 		string = string[0:-3]
 		return string
+	
+	def toCantera(self, T=1000):
+		"""Return a Cantera ctml_writer instance"""
+		#  Made up. Unimolecular rate constant 1/s 
+		#reaction(  "A <=> B",  [1.00000E+00, 0, 0])
+		rxnstring = ' + '.join([str(sp) for sp in self.reactants])
+		rxnstring += ' <=> '
+		rxnstring += ' + '.join([str(sp) for sp in self.products])
+		k = self.getBestKinetics(T)
+		A = k.A
+		Ea= k.Ea 
+		n = k.n 
+		#import pdb; pdb.set_trace()
+		return ctml_writer.reaction(rxnstring, ctml_writer.Arrhenius(A, n, Ea) )
+		
+	
 
 	def isUnimolecular(self):
 		"""
@@ -231,12 +250,12 @@ class Reaction:
 		Evans-Polyani ArrheniusEPKinetics are converted to ArrheniusKinetics 
 		using dHrxn(298K)
 		"""
-
+		
 		# Check cache first
 		if self.bestKinetics is not None:
 			if self.bestKinetics.isTemperatureInRange(T):
 				return self.bestKinetics
-
+		
 		# Check that self.kinetics is storing a list and not a single object
 		# If the latter, use that as the best kinetics without any other
 		# checking
@@ -262,12 +281,12 @@ class Reaction:
 #			kinetics = ArrheniusKinetics(A=0.0, Ea=0.0, n=0.0)
 #			kinetics.Trange = [0.0, 100000.0]
 #			return kinetics
-
+		
 		# If no kinetic parameters are left to choose from, ignore the
 		# temperature ranges
 		if len(kinetics) == 0:
 			kinetics = self.kinetics[:]
-
+		
 		# Choose kinetics based on rank (i.e. lowest non-zero rank)
 		bestRank = kinetics[0].rank
 		bestKinetics = kinetics[0]
@@ -284,7 +303,7 @@ class Reaction:
 			
 		self.bestKinetics = bestKinetics
 		return self.bestKinetics
-
+	
 	def getRateConstant(self, T):
 		"""
 		Return the value of the rate constant k(T) at the temperature `T`.
@@ -293,7 +312,7 @@ class Reaction:
 		if kinetics is None:
 			raise Exception('Unable to determine the rate constant of reaction ' + str(self) + '.')
 		return kinetics.getRateConstant(T)
-
+	
 	def getStoichiometricCoefficient(self, spec):
 		"""
 		Return the stoichiometric coefficient of species `spec` in the reaction.
@@ -419,7 +438,7 @@ class ReactionRecipe:
 				other.addAction(['LOSE_RADICAL', action[1], action[2]])
 		return other
 
-	def apply(self, struct, doForward):
+	def __apply(self, struct, doForward, unique):
 		"""
 		Apply the reaction recipe to the set of molecules contained in
 		`structure`, a single Structure object that contains one or more
@@ -441,19 +460,39 @@ class ReactionRecipe:
 					if atom1 is None or atom2 is None or atom1 is atom2:
 						raise InvalidActionException('Invalid atom labels encountered.')
 
-					# If found, change bond
+					# Find associated bond, if present
+					bond = struct.getBond(atom1, atom2)
+
+					# If found, apply action
 					if action[0] == 'CHANGE_BOND':
-						bond = struct.getBond(atom1, atom2)
+						if bond is None:
+							raise InvalidActionException('Attempted to change the bond order of a nonexistent bond.')
+
 						info = int(info)
-						if bond is None: raise InvalidActionException('Attempted to change the bond order of a nonexistent bond.')
-						for i in range(0, abs(info)):
-							if doForward:
-								if info > 0:	bond.increaseOrder()
-								elif info < 0:	bond.decreaseOrder()
-							else:
-								if info > 0:	bond.decreaseOrder()
-								elif info < 0:	bond.increaseOrder()
-					elif action[0] == 'FORM_BOND':
+						if abs(info) != 1:
+							raise InvalidActionException('Attempted to change the bond order of a bond by more than one at a time.')
+
+						if (info > 0 and doForward) or (info < 0 and not doForward):
+							# Increment bond order
+							bond.increaseOrder()
+							atom1.incrementBond(struct.getBonds(atom1), unique)
+							atom2.incrementBond(struct.getBonds(atom2), unique)
+						else:
+							# Decrement bond order
+							bond.decreaseOrder()
+							atom1.decrementBond(struct.getBonds(atom1), unique)
+							atom2.decrementBond(struct.getBonds(atom2), unique)
+
+					elif (action[0] == 'FORM_BOND' and doForward) or \
+						(action[0] == 'BREAK_BOND' and not doForward):
+						if bond is not None:
+							raise InvalidActionException('Attempted to form a bond that already exists.')
+						# Form single bond
+						bond = chem.Bond([atom1, atom2], 'S')
+						struct.addBond(bond)
+						atom1.formBond(struct.getBonds(atom1), unique)
+						atom2.formBond(struct.getBonds(atom2), unique)
+
 						if doForward:
 							bond = chem.Bond([atom1, atom2], info)
 							struct.addBond(bond)
@@ -461,40 +500,35 @@ class ReactionRecipe:
 							bond = struct.getBond(atom1, atom2)
 							if bond is None: raise InvalidActionException('Attempted to remove a nonexistent bond.')
 							struct.removeBond(bond)
-					elif action[0] == 'BREAK_BOND':
-						if doForward:
-							bond = struct.getBond(atom1, atom2)
-							if bond is None: raise InvalidActionException('Attempted to remove a nonexistent bond.')
-							struct.removeBond(bond)
-						else:
-							bond = chem.Bond([atom1, atom2], info)
-							struct.addBond(bond)
+
+					elif (action[0] == 'BREAK_BOND' and doForward) or \
+						(action[0] == 'FORM_BOND' and not doForward):
+						if bond is None: raise InvalidActionException('Attempted to remove a nonexistent bond.')
+						# Break single bond
+						struct.removeBond(bond)
+						atom1.breakBond(struct.getBonds(atom1), unique)
+						atom2.breakBond(struct.getBonds(atom2), unique)
 
 				elif action[0] == 'LOSE_RADICAL' or action[0] == 'GAIN_RADICAL':
 
 					label, change = action[1:]
-					change = int(change)
+
 					# Find associated atoms
 					atom = struct.getLabeledAtom(label)
 					if atom is None:
 						raise Exception('Invalid atom labels found while attempting to execute reaction recipe.')
-
-					# If found, adjust radical
-					for i in range(0, change):
-						if doForward:
-							if action[0] == 'LOSE_RADICAL':
-								if not atom.canDecreaseFreeElectron(): raise InvalidActionException('Attempted to decrease the number of free electrons below the minimum.')
-								atom.decreaseFreeElectron()
-							elif action[0] == 'GAIN_RADICAL':
-								if not atom.canIncreaseFreeElectron(): raise InvalidActionException('Attempted to increase the number of free electrons above the maximum.')
-								atom.increaseFreeElectron()
-						else:
-							if action[0] == 'LOSE_RADICAL':
-								if not atom.canIncreaseFreeElectron(): raise InvalidActionException('Attempted to increase the number of free electrons above the maximum.')
-								atom.increaseFreeElectron()
-							elif action[0] == 'GAIN_RADICAL':
-								if not atom.canDecreaseFreeElectron(): raise InvalidActionException('Attempted to decrease the number of free electrons below the minimum.')
-								atom.decreaseFreeElectron()
+					
+					change = int(change)
+					
+					for i in range(change):
+						if (action[0] == 'GAIN_RADICAL' and doForward) or \
+							(action[0] == 'LOSE_RADICAL' and not doForward):
+							# Increment radical count
+							atom.increaseFreeElectron()
+						elif (action[0] == 'LOSE_RADICAL' and doForward) or \
+							(action[0] == 'GAIN_RADICAL' and not doForward):
+							# Decrement radical count
+							atom.decreaseFreeElectron()
 
 				else:
 					raise InvalidActionException('Unknown action "' + action[0] + '" encountered.')
@@ -505,21 +539,21 @@ class ReactionRecipe:
 
 		return True
 
-	def applyForward(self, struct):
+	def applyForward(self, struct, unique=True):
 		"""
 		Apply the reaction recipe to the set of molecules contained in
 		`structure`, a single Structure object that contains one or more
 		structures.
 		"""
-		return self.apply(struct, True)
+		return self.__apply(struct, True, unique)
 
-	def applyReverse(self, struct):
+	def applyReverse(self, struct, unique=True):
 		"""
 		Apply the reaction recipe to the set of molecules contained in
 		`structure`, a single Structure object that contains one or more
 		structures.
 		"""
-		return self.apply(struct, False)
+		return self.__apply(struct, False, unique)
 
 ################################################################################
 
@@ -1135,21 +1169,75 @@ class ReactionFamily(data.Database):
 			self.reverse.forbidden = self.forbidden
 			self.reverse.reverse = self
 
-#		# Generate the product structures by applying the reaction template to
-#		# the top-level nodes (A1 and B1 above)
-#		# First, merge reactant structures into single structure
-#		reactantStructures = []
-#		for reactant in self.template.reactants:
-#			s = reactant[0] if isinstance(reactant, list) else reactant
-#			if self.dictionary[s] == 'union':
-#				print 'Cannot handle unions yet'
-#				return
-#			reactantStructures.append(self.dictionary[s])
-#		# Next, generate the product structures
-#		productStructures = self.applyRecipe(reactantStructures)
-#		for productStructure in productStructures:
-#			print productStructure.toAdjacencyList()
+		# If necessary, generate the product template structure(s)
+		# Don't need to do this if family is its own reverse
+		if reverse != self.label:
+			self.generateProductTemplate()
 
+	def generateProductTemplate(self):
+		"""
+		Generate the product structures by applying the reaction template to
+		the top-level nodes. For reactants defined by multiple structures, only
+		the first is used here; it is assumed to be the most generic.
+		"""
+
+		# First, generate a list of reactant structures that are actual
+		# structures, rather than unions
+		reactantStructures = []
+		for reactant in self.template.reactants:
+			if isinstance(reactant, list):	reactants = [reactant[0]]
+			else:							reactants = [reactant]
+			unionFound = True
+			while unionFound:
+				unionFound = False; reactantsToRemove = []; reactantsToAdd = []
+				for s in reactants:
+					if self.dictionary[s] == 'union':
+						reactantsToRemove.append(s)
+						reactantsToAdd.extend(self.tree.children[s])
+						unionFound = True
+				for s in reactantsToRemove: reactants.remove(s)
+				reactants.extend(reactantsToAdd)
+			reactantStructures.append([self.dictionary[s] for s in reactants])
+		
+		# Second, get all possible combinations of reactant structures
+		reactantStructures = data.getAllCombinations(reactantStructures)
+
+		# Third, generate all possible product structures by applying the
+		# recipe to each combination of reactant structures
+		# Note that bimolecular products are split by labeled atoms
+		productStructures = []
+		for reactantStructure in reactantStructures:
+			productStructure = self.applyRecipe(reactantStructure, unique=False)
+			productStructures.append(productStructure)
+		
+		# Fourth, remove duplicates from the lists
+		productStructureList = [[] for i in range(len(productStructures[0]))]
+		for productStructure in productStructures:
+			for i, struct in enumerate(productStructure):
+				found = False
+				for s in productStructureList[i]:
+					if s.isIsomorphic(struct): found = True
+				if not found:
+					productStructureList[i].append(struct)
+
+		# Fifth, associate structures with product template
+		for i in range(len(self.template.products)):
+			if len(productStructureList[i]) == 1:
+				self.dictionary[self.template.products[i]] = productStructureList[i][0]
+				self.tree.parent[self.template.products[i]] = None
+				self.tree.children[self.template.products[i]] = []
+			else:
+				self.dictionary[self.template.products[i]] = 'union'
+				children = []
+				for j in range(len(productStructureList[i])):
+					label = '%s_%i' % (self.template.products[i], j+1)
+					self.dictionary[label] = productStructureList[i][j]
+					children.append(label)
+					self.tree.parent[label] = self.template.products[i]
+					self.tree.children[label] = []
+
+				self.tree.parent[self.template.products[i]] = None
+				self.tree.children[self.template.products[i]] = children
 
 	def reactantMatch(self, reactant, templateReactant):
 		"""
@@ -1170,7 +1258,7 @@ class ReactionFamily(data.Database):
 
 		return len(maps12) > 0, maps21, maps12
 
-	def applyRecipe(self, reactantStructures):
+	def applyRecipe(self, reactantStructures, unique=True):
 		"""
 		Apply the recipe for this reaction family to the list of
 		:class:`structure.Structure` objects `reactantStructures`. The atoms
@@ -1205,7 +1293,7 @@ class ReactionFamily(data.Database):
 				raise Exception('Unable to change labels from "*" to "*1" and "*2" for reaction family %s.' % (label))
 
 		# Generate the product structure by applying the recipe
-		if not self.recipe.applyForward(reactantStructure):
+		if not self.recipe.applyForward(reactantStructure, unique):
 			return None
 		productStructure = reactantStructure.copy()
 
@@ -1277,14 +1365,19 @@ class ReactionFamily(data.Database):
 			message += "Product structures: %s \n"%productStructures
 			message += "Template: %s"%self.template
 			logging.error(message)
+			return None # don't fail!!! muhahaha
 			raise Exception(message)
-		
-		# Recalculate atom types of product structures, since they may have
-		# changed as a result of the reaction
+
+		# If there are two product structures, place the one containing '*1' first
+		if len(productStructures) == 2:
+			if not productStructures[0].containsLabeledAtom('*1') and \
+				productStructures[1].containsLabeledAtom('*1'):
+				productStructures.reverse()
+
+		# reset any cached structure information because it is now invalid
 		for struct in productStructures:
-			struct.simplifyAtomTypes()
-			struct.updateAtomTypes()
-		
+			struct.resetCachedStructureInfo()
+
 		# Return the product structures
 		return productStructures
 	
@@ -1306,10 +1399,17 @@ class ReactionFamily(data.Database):
 				reactantAtom.label = templateAtom.label
 		
 		# Generate the product structures by applying the forward reaction recipe
-		productStructures = self.applyRecipe(reactantStructures)
-		if productStructures is None: # then we have no valid reaction
-			return None
-		
+		try:
+			productStructures = self.applyRecipe(reactantStructures)
+			if not productStructures: return None
+		except chem.InvalidChemicalActionException, e:
+			print 'Unable to apply reaction recipe!'
+			print 'Reaction family is %s' % self
+			print 'Reactant structures are:'
+			for struct in reactantStructures:
+				print struct.toAdjacencyList()
+			raise e
+
 		# Check that reactant and product structures are allowed in this family
 		# If not, then stop
 		if self.forbidden is not None:
@@ -1579,9 +1679,11 @@ class ReactionFamilySet:
 		Generate a list of reactions that involve a list of one or two `species`
 		as a reactant or product.
 		"""
-
+		
 		log_text = ' + '.join([str(spec) for spec in species])
-
+		
+		logging.info('Looking for reactions of %s'%(log_text))
+		
 		rxnList = []
 		for key, family in self.families.iteritems():
 			rxnList.extend(family.getReactionList(species))
@@ -1649,11 +1751,44 @@ def makeNewReaction(reactants, products, reactantStructures, productStructures, 
 	object is created and returned after being appended to the global reaction
 	list.
 	"""
-
+	
 	# Sort reactants and products (to make comparisons easier/faster)
 	reactants.sort()
 	products.sort()
-
+	
+	
+	# Check that the reaction actually results in a different set of species
+	if reactants == products:
+		return None, False
+	
+	# Check that the reaction is unique
+	matchReaction = None
+	for rxn in reactionList:
+		# Check forward reaction for match
+		if rxn.family.label == family.label:
+			if rxn.reactants == reactants and rxn.products == products:
+				matchReaction = rxn
+				break # found a match so stop checking other rxn
+		# Check reverse reaction for match
+		if rxn.reverse.family.label == family.label:
+			if rxn.reactants == products and rxn.products == reactants:
+				matchReaction = rxn
+				break # found a match so stop checking other rxn
+	
+	# If a match was found, take an
+	if matchReaction is not None:
+		#matchReaction.multiplier += 1.0
+		return matchReaction, False
+	
+	# If this point is reached, the proposed reaction is new, so make new
+	# Reaction objects for forward and reverse reaction
+	forward = Reaction(reactants, products, family)
+	reverseFamily = None
+	if family is not None: reverseFamily = family.reverse or family
+	reverse = Reaction(products, reactants, reverseFamily)
+	forward.reverse = reverse
+	reverse.reverse = forward
+	
 	# Get atom labels of reactants
 	reactantLabels = {}; productLabels = {}
 	for structure in reactantStructures:
@@ -1663,7 +1798,8 @@ def makeNewReaction(reactants, products, reactantStructures, productStructures, 
 					reactantLabels[atom.label].append(atom)
 				else:
 					reactantLabels[atom.label] = [atom]
-			elif atom.label != '': reactantLabels[atom.label] = atom
+			elif atom.label != '': 
+				reactantLabels[atom.label] = atom
 	# Get atom labels of products
 	for structure in productStructures:
 		for atom in structure.atoms():
@@ -1672,65 +1808,9 @@ def makeNewReaction(reactants, products, reactantStructures, productStructures, 
 					productLabels[atom.label].append(atom)
 				else:
 					productLabels[atom.label] = [atom]
-			elif atom.label != '': productLabels[atom.label] = atom
-
-	# Check that the reaction actually results in a different set of species
-	if len(reactants) == len(products):
-		match = True
-		for i in range(len(reactants)):
-			if reactants[i] != products[i]: match = False
-		if match: return None, False
-
-	# Check that the reaction is unique
-	matchReaction = None
-	for rxn in reactionList:
-		# Check forward reaction for match
-		if rxn.family is family or rxn.family is None or family is None:
-			if len(rxn.reactants) == len(reactants) and len(rxn.products) == len(products):
-				match = True
-				for i in range(len(reactants)):
-					if rxn.reactants[i] != reactants[i]: 
-						match = False
-						break # already different; stop checking reactants
-				else: # 'for' loop completed without breaking; they could still be the same
-					for i in range(len(products)):
-						if rxn.products[i] != products[i]: 
-							match = False
-							break # already different; stop checking products
-				if match: 
-					matchReaction = rxn
-					break # already found a matching reaction; stop checking reactionList
-		# Check reverse reaction for match
-		if rxn.reverse.family is family or rxn.reverse.family is None or family is None:
-			if len(rxn.reactants) == len(products) and len(rxn.products) == len(reactants):
-				match = True
-				for i in range(len(reactants)):
-					if rxn.products[i] != reactants[i]: 
-						match = False
-						break # already different; stop checking reactants
-				else: # 'for' loop completed without breaking; they could still be the same
-					for i in range(len(products)):
-						if rxn.reactants[i] != products[i]: 
-							match = False
-							break # already different; stop checking products
-				if match: 
-					matchReaction = rxn # << Josh, should this be rxn or rxn.reverse?
-					break # already found a matching reaction; stop checking reactionList
-
-	# If a match was found, take an
-	if matchReaction is not None:
-		#matchReaction.multiplier += 1.0
-		return matchReaction, False
-
-	# If this point is reached, the proposed reaction is new, so make new
-	# Reaction objects for forward and reverse reaction
-	forward = Reaction(reactants, products, family)
-	reverseFamily = None
-	if family is not None: reverseFamily = family.reverse or family
-	reverse = Reaction(products, reactants, reverseFamily)
-	forward.reverse = reverse
-	reverse.reverse = forward
-
+			elif atom.label != '':
+				productLabels[atom.label] = atom
+			
 	# Dictionaries containing the labeled atoms for the reactants and products
 	forward.atomLabels = reactantLabels
 	reverse.atomLabels = productLabels
@@ -1738,7 +1818,7 @@ def makeNewReaction(reactants, products, reactantStructures, productStructures, 
 	if forward.family is None or reverse.family is None:
 		reactionList.insert(0, forward)
 		return forward, True
-
+	
 	# Attempt to get the kinetics of the forward and reverse reactions
 	forwardKinetics = forward.family.getKinetics(forward, reactantStructures)
 	reverseKinetics = reverse.family.getKinetics(reverse, productStructures)

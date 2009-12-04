@@ -1,10 +1,10 @@
 ################################################################################
 #
-#	Makefile to build Cython modules into compiled libraries
+#	Makefile to build Cython and Fortran modules into compiled libraries
 #
 ################################################################################
 
-all: rmg/graph.so rmg/chem.so rmg/thermo.so
+all: rmg/graph.so rmg/chem.so rmg/thermo.so rmg/spectralfit.so
 	python setup.py build_ext --inplace
 
 rmg/graph.so: rmg/graph.c
@@ -21,6 +21,9 @@ rmg/thermo.so: rmg/thermo.c
 
 rmg/thermo.c: rmg/thermo.py rmg/thermo.pxd
 	cython -a rmg/thermo.py
-	
+
+rmg/spectralfit.so: rmg/spectralfit/spectralfit.f90 rmg/spectralfit/calc_freq_code.f90 rmg/spectralfit/dqed.f90
+	make -C rmg/spectralfit
+
 clean:
 	rm -rf rmg/*.so rmg/*.c build/

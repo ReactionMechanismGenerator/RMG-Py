@@ -3,34 +3,51 @@
 <!-- Tracks the consumption of CH2.. reacting with H-C#C-H , in nitrogen. -->
 
 <rmginput>
-	<!-- The units to use for RMG output: si or cgs -->
-	<units>si</units>
 	<!-- Data sources -->
-	<database type="general">RMG_database</database>
-	<!-- List of initial species -->
-	<species id="spec1" label="CH2" reactive="yes">
-		<smiles>[CH2]</smiles>
-	</species>
-	<species id="spec2" label="C2H2" reactive="yes">
-		<smiles>C#C</smiles>
-	</species>
-	<!-- Inert gases -->
-	<species id="spec0" label="N2" reactive="no">
-		<inchi>InChI=1/N2/c1-2</inchi>
-	</species>
+	<databaseList>
+		<database type="general">RMG_database</database>
+	</databaseList>
+	<!-- List of species -->
+	<speciesList>
+		<species id="spec1" label="CH2" reactive="yes">
+			<smiles>[CH2]</smiles>
+		</species>
+		<species id="spec2" label="C2H2" reactive="yes">
+			<smiles>C#C</smiles>
+		</species>
+		<!-- Inert gases -->
+		<species id="spec0" label="N2" reactive="no">
+			<inchi>InChI=1/N2/c1-2</inchi>
+		</species>
+	</speciesList>
 	<!-- List of reaction systems -->
-	<reactionSystem type="batch">
-		<temperatureModel type="isothermal">
-			<temperature units="K">1350.0</temperature>
-		</temperatureModel>
-		<pressureModel type="isobaric">
-			<pressure units="bar">1.0</pressure>
-		</pressureModel>
-		<physicalPropertyModel type="idealGas" />
-		<moleFraction speciesID="spec1">0.001</moleFraction>
-		<moleFraction speciesID="spec2">0.099</moleFraction>
-		<moleFraction speciesID="spec0">0.9</moleFraction>
-	</reactionSystem>
+	<reactionSystemList>
+		<reactionSystem class="BatchReactor">
+			<!-- Reactor dimensions -->
+			<volume units="m^3">1.0</volume>
+			<area units="m^2">1.0</area>
+			<!-- Physical property model -->
+			<physicalPropertyModel type="idealGas"/>
+			<!-- Temperature model -->
+			<isothermal/>
+			<!-- Pressure model -->
+			<isobaric/>
+			<!-- Initial conditions -->
+			<initialConditions>
+				<temperature units="K">1350.0</temperature>
+				<pressure units="bar">1.0</pressure>
+				<moleFraction speciesID="spec1">0.001</moleFraction>
+				<moleFraction speciesID="spec2">0.099</moleFraction>
+				<moleFraction speciesID="spec0">0.9</moleFraction>
+			</initialConditions>
+			<!-- Reservoir conditions -->
+			<reservoirConditions>
+				<temperature units="K">1350.0</temperature>
+				<pressure units="bar">1.0</pressure>
+				<air/>
+			</reservoirConditions>
+		</reactionSystem>
+	</reactionSystemList>
 	<!-- Termination -->
 	<termination>
 		<target type="conversion" speciesID="spec2">0.9</target>
@@ -43,11 +60,14 @@
 		<moveToCore>0.01</moveToCore>
 		<interruptSimulation>0.1</interruptSimulation>
 	</fluxTolerance>
+	<maximumModelSize>
+		<edgeSpecies>9999999</edgeSpecies>
+	</maximumModelSize>
 	<!-- Options -->
-	<drawMolecules>on</drawMolecules>
-	<generatePlots>on</generatePlots>
-	<!--<inchiGeneration>off</inchiGeneration>
-	<spectralDataEstimation>off</spectralDataEstimation>
-	<activatedNetworks>off</activatedNetworks>-->
-	
+	<optionList>
+		<units>si</units>
+		<drawMolecules>off</drawMolecules>
+		<generatePlots>off</generatePlots>
+		<spectralDataEstimation>off</spectralDataEstimation>
+	</optionList>
 </rmginput>
