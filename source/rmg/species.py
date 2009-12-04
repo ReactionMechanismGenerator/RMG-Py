@@ -70,7 +70,7 @@ class LennardJones:
 	def fromXML(self, document, rootElement):
 		"""
 		Convert a <lennardJones> element from a standard RMG-style XML input
-		file into a SpecLennardJonesies object. `document` is an :class:`io.XML`
+		file into a LennardJones object. `document` is an :class:`io.XML`
 		class representing the XML DOM tree, and `rootElement` is the
 		<lennardJones> element in that tree.
 		"""
@@ -82,6 +82,18 @@ class LennardJones:
 		# Read <epsilon> element
 		self.epsilon = document.getChildQuantity(rootElement, 'epsilon', required=True)
 		self.epsilon = float(self.epsilon.simplified)
+
+	def toXML(self, document, rootElement):
+		"""
+		Add a <lennardJones> element as a child of `rootElement` using
+		RMG-style XML. `document` is an :class:`io.XML` class representing the
+		XML DOM tree.
+		"""
+
+		# Create <lennardJones> element as child of rootElement
+		ljElement = document.createElement('lennardJones', rootElement)
+		document.createQuantity('sigma', ljElement, self.sigma, 'm')
+		document.createQuantity('epsilon', ljElement, self.epsilon, 'J')
 
 ################################################################################
 

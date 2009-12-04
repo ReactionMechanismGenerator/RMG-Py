@@ -274,10 +274,10 @@ class Structure:
 			cmlstr = str(document.getChildElement(rootElement, 'molecule', required=True).toxml())
 			self.fromCML(cmlstr)
 		elif format == 'inchi':
-			inchistr = str(document.getElementText(rootElement))
+			inchistr = str(document.getElementText(rootElement)).strip()
 			self.fromInChI(inchistr)
 		elif format == 'smiles':
-			smilesstr = str(document.getElementText(rootElement))
+			smilesstr = str(document.getElementText(rootElement)).strip()
 			self.fromSMILES(smilesstr)
 		else:
 			raise io.InvalidInputFileException('Invalid format "%s" for structure element; allowed values are "cml", "inchi", and "smiles".' % format)
@@ -573,16 +573,12 @@ class Structure:
 		mol = pybel.Molecule(self.toOBMol())
 		return mol.write('smiles').strip()
 
-	def toXML(self, dom, root):
+	def toXML(self, document, rootElement):
 		"""
 		Convert a Structure object to an XML DOM tree.
 		"""
-		import xml.dom.minidom
-		cml = dom.createElement('cml')
-		root.appendChild(cml)
-
-		dom2 = xml.dom.minidom.parseString(self.toCML())
-		cml.appendChild(dom2.documentElement)
+		structureElement = document.createTextElement('structure', rootElement, self.toSMILES())
+		document.createAttribute('format', structureElement, 'SMILES')
 
 	def toDOT(self, label=''):
 		"""

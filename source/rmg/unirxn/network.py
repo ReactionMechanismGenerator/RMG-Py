@@ -42,6 +42,20 @@ import states
 
 ################################################################################
 
+class UnirxnNetworkException(Exception):
+	"""
+	An general exception used when an error is encountered while dealing with a
+	unimolecular reaction network.
+	"""
+
+	def __init__(self, msg):
+		self.msg = msg
+
+	def __str__(self):
+		return self.msg
+
+################################################################################
+
 class Isomer:
 	"""
 	An isomer well or product channel of a unimolecular reaction network. This
@@ -322,6 +336,19 @@ class Network:
 		"""
 		self.valid = False
 
+	def getSpeciesList(self):
+		"""
+		Return a list of all of the species in the network (excluding the bath
+		gas), in no particular order.
+		"""
+		speciesList = []
+		for reaction in self.pathReactions:
+			for reactant in reaction.reactants:
+				if reactant not in speciesList: speciesList.append(reactant)
+			for product in reaction.products:
+				if product not in speciesList: speciesList.append(product)
+		return speciesList
+
 	def getLeakFlux(self, T, P, conc, totalConc=None):
 		"""
 		Return the leak flux of the network: the forward flux to all unexplored
@@ -468,49 +495,70 @@ class Network:
 		K = numpy.zeros([len(Tlist), len(Plist),\
 			len(self.isomers), len(self.isomers)], numpy.float64)
 
-		for t, T in enumerate(Tlist):
+		try:
 
-			# Calculate equilibrium distributions
-			for isomer in self.isomers:
-				if isomer.densStates is not None:
-					isomer.calculateEqDist(Elist, T)
+			for t, T in enumerate(Tlist):
 
-#			# DEBUG: Plot equilibrium distributions
-#			import pylab
-#			for isomer in self.isomers:
-#				if isomer.densStates is not None:
-#					pylab.plot(Elist / 1000.0, isomer.eqDist, '-')
-#			pylab.xlabel('Energy (kJ/mol)')
-#			pylab.ylabel('Equilibrium distribution')
-#			pylab.show()
-
-			# Calculate microcanonical rates k(E)
-			# It might seem odd that this is dependent on temperature, and it
-			# isn't -- unless the Arrhenius expression has a negative n
-			for reaction in self.pathReactions:
-				reaction.kf, reaction.kb = reaction.calculateMicrocanonicalRate(Elist,
-					T, reaction.reactant.densStates, reaction.product.densStates)
-				
-#			# DEBUG: Plot microcanonical rates
-#			import pylab
-#			for reaction in self.pathReactions:
-#				if reaction.isIsomerization():
-#					pylab.semilogy(Elist / 1000.0, reaction.kf, '-')
-#					pylab.semilogy(Elist / 1000.0, reaction.kb, '--')
-#			pylab.xlabel('Energy (kJ/mol)')
-#			pylab.ylabel('Microcanonical rate')
-#			pylab.show()
-
-			for p, P in enumerate(Plist):
-
-				# Calculate collision frequencies
+				# Calculate equilibrium distributions
 				for isomer in self.isomers:
-					if isomer.isUnimolecular():
-						isomer.calculateCollisionFrequency(T, P, self.bathGas)
+					if isomer.densStates is not None:
+						isomer.calculateEqDist(Elist, T)
 
-				# Determine phenomenological rate coefficients using approximate
-				# method
-				K[t,p,:,:] = self.applyApproximateMethod(T, P, Elist, method)
+	#			# DEBUG: Plot equilibrium distributions
+	#			import pylab
+	#			for isomer in self.isomers:
+	#				if isomer.densStates is not None:
+	#					pylab.plot(Elist / 1000.0, isomer.eqDist, '-')
+	#			pylab.xlabel('Energy (kJ/mol)')
+	#			pylab.ylabel('Equilibrium distribution')
+	#			pylab.show()
+
+				# Calculate microcanonical rates k(E)
+				# It might seem odd that this is dependent on temperature, and it
+				# isn't -- unless the Arrhenius expression has a negative n
+				for reaction in self.pathReactions:
+					reaction.kf, reaction.kb = reaction.calculateMicrocanonicalRate(Elist,
+						T, reaction.reactant.densStates, reaction.product.densStates)
+
+	#			# DEBUG: Plot microcanonical rates
+	#			import pylab
+	#			for reaction in self.pathReactions:
+	#				if reaction.isIsomerization():
+	#					pylab.semilogy(Elist / 1000.0, reaction.kf, '-')
+	#					pylab.semilogy(Elist / 1000.0, reaction.kb, '--')
+	#			pylab.xlabel('Energy (kJ/mol)')
+	#			pylab.ylabel('Microcanonical rate')
+	#			pylab.show()
+
+				for p, P in enumerate(Plist):
+
+					# Calculate collision frequencies
+					for isomer in self.isomers:
+						if isomer.isUnimolecular():
+							isomer.calculateCollisionFrequency(T, P, self.bathGas)
+
+					# Determine phenomenological rate coefficients using approximate
+					# method
+					K[t,p,:,:] = self.applyApproximateMethod(T, P, Elist, method)
+
+		except UnirxnNetworkException, e:
+
+			if method.lower() == 'reservoirstate':
+				logging.warning(e.msg)
+			else:
+				logging.error(e.msg)
+
+			# Save network to file for later testing
+			fstr = 'unirxn_input.xml'
+			logging.info('Troublesome network saved to %s.' % fstr)
+			import io
+			io.writeInputFile(fstr, self, Tlist, Plist, Elist, method, 'none')
+
+			if method.lower() == 'reservoirstate':
+				logging.info('Falling back to modified strong collision for this network.')
+				return self.calculateRateCoefficients(Tlist, Plist, Elist, 'modifiedstrongcollision')
+			else:
+				raise e
 
 		return K
 
@@ -591,12 +639,16 @@ class Network:
 
 			# Apply reservoir state method
 			import rs
-			logging.debug('\tCalculating phenomenological rate coefficients %g K, %g bar...' % (T, P / 1e5))
 			K, msg = rs.estimateratecoefficients(T, P, Elist, Mcoll, eqDist, E0, Eres,
 				Kij, Fim, Gnj, dEdown)
 			msg = msg.strip()
-			if msg != '':
-				raise Exception('Unable to apply reservoir state method: %s' % msg)
+
+
+		if not numpy.isfinite(K).all():
+			print K
+			msg = 'Non-finite rate constant returned at %s K, %s Pa.' % (T, P)
+		if msg != '':
+			raise UnirxnNetworkException('Unable to apply method %s: %s' % (method, msg))
 
 		return K
 

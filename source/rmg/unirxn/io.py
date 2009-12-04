@@ -172,7 +172,7 @@ def readInputFile(fstr):
 		numGrains = int(document.getChildQuantity(optionListElement, 'numberOfGrains', required=False, default=0))
 
 		# Read <method>
-		method = str(document.getChildElementText(optionListElement, 'method', required=True))
+		method = str(document.getChildElementText(optionListElement, 'method', required=True)).strip()
 
 		# Read <interpolationModel>
 		modelElement = document.getChildElement(optionListElement, 'interpolationModel', required=True)
@@ -201,5 +201,125 @@ def readInputFile(fstr):
 	except xml.parsers.expat.ExpatError, e:
 		logging.exception('Invalid XML file: '+e.message+'\n')
 		raise InvalidInputFileException('Invalid XML file: '+e.message)
+
+################################################################################
+
+def writeInputFile(fstr, network, Tlist, Plist, Elist, method, model):
+	"""
+	Write an input file to `fstr`.
+	"""
+
+	# Initialize DOM tree
+	document = XML()
+
+	# Set root element to be a <rmginput> element
+	rootElement = document.initialize('rmginput')
+
+	# Write title
+	document.createTextElement('title', rootElement, 'Automatically-generated unimolecular reaction network')
+
+	# Write database list
+	databaseListElement = document.createElement('databaseList', rootElement)
+	databaseElement = document.createTextElement('database', databaseListElement, 'RMG_database')
+	document.createAttribute('type', databaseElement, 'general')
+
+	# Write species list
+	speciesListElement = document.createElement('speciesList', rootElement)
+	speciesList = network.getSpeciesList()
+	speciesList.append(network.bathGas)
+	for species in speciesList:
+
+		id = species.toSMILES()
+
+		# Write <species> element
+		speciesElement = document.createElement('species', speciesListElement)
+		document.createAttribute('id', speciesElement, id)
+
+		# Write structure
+		species.structure[0].toXML(document, speciesElement)
+
+		# Write Lennard-Jones data
+		species.lennardJones.toXML(document, speciesElement)
+
+		if species is network.bathGas:
+
+			# Write exponential down parameter
+			document.createQuantity('expDownParam', speciesElement, species.expDownParam/1000.0, 'kJ/mol')
+		
+		else:
+
+			# Write thermo data
+			thermoData = species.thermoData
+			if not isinstance(thermoData, thermo.ThermoGAData):
+				thermoData = thermo.ThermoGAData(
+					H298=thermoData.getEnthalpy(298.0),
+					S298=thermoData.getEntropy(298.0),
+					Cp=[thermoData.getHeatCapacity(T) for T in thermo.ThermoGAData.CpTlist]
+				)
+			thermoData.toXML(document, speciesElement)
+
+			# Write ground-state energy
+			document.createQuantity('groundStateEnergy', speciesElement, species.E0/1000.0, 'kJ/mol')
+			
+			# Write spectral data
+			if species.spectralData:
+				species.spectralData.toXML(document, speciesElement)
+
+	# Write path reaction list
+	reactionListElement = document.createElement('reactionList', rootElement)
+	for i, reaction in enumerate(network.pathReactions):
+
+		id = 'rxn%i' % (i+1)
+
+		# Write <reaction> element
+		reactionElement = document.createElement('reaction', reactionListElement)
+		document.createAttribute('id', reactionElement, id)
+
+		# Write reactants
+		for reactant in reaction.reactants:
+			reactantElement = document.createElement('reactant', reactionElement)
+			document.createAttribute('ref', reactantElement, reactant.toSMILES())
+
+		# Write products
+		for product in reaction.products:
+			productElement = document.createElement('product', reactionElement)
+			document.createAttribute('ref', productElement, product.toSMILES())
+
+		# Write kinetics
+		reaction.getBestKinetics(1000.0).toXML(document, reactionElement, len(reaction.reactants))
+
+	# Write bath gas list
+	bathGasListElement = document.createElement('bathGasList', rootElement)
+	bathGasElement = document.createElement('bathGas', bathGasListElement)
+	document.createAttribute('ref', bathGasElement, network.bathGas.toSMILES())
+
+	# Write option list
+	optionListElement = document.createElement('optionList', rootElement)
+
+	# Write temperature list
+	document.createQuantity('temperatures', optionListElement, Tlist, 'K')
+	
+	# Write pressure list
+	document.createQuantity('pressures', optionListElement, [P/1.0e5 for P in Plist], 'bar')
+
+	# Write grain size or number of grains
+	grainSize = Elist[1] - Elist[0]; numberOfGrains = 0
+	if grainSize != 0:
+		document.createQuantity('grainSize', optionListElement, grainSize/1000.0, 'kJ/mol')
+	else:
+		document.createTextElement('numberOfGrains', optionListElement, numberOfGrains)
+
+	# Write method
+	document.createTextElement('method', optionListElement, method)
+
+	# Write interpolation model
+	modelElement = document.createElement('interpolationModel', optionListElement)
+	document.createAttribute('type', modelElement, model)
+
+	# Save to file
+	document.save(fstr)
+
+	# Clean up DOM tree when finished
+	document.cleanup()
 
 ################################################################################

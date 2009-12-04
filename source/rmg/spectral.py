@@ -219,6 +219,17 @@ class RigidRotor:
 		self.linear = str(document.getAttribute(rootElement, 'linear', required=False, default='no')).lower()
 		self.linear = (self.linear == 'yes' or self.linear == 'y' or self.linear == 'true')
 
+	def toXML(self, document, rootElement):
+		"""
+		Add a <rigidRotor> element as a child of `rootElement` using
+		RMG-style XML. `document` is an :class:`io.XML` class representing the
+		XML DOM tree.
+		"""
+
+		rigidRotorElement = document.createElement('rigidRotor', rootElement)
+		linear = 'yes' if self.linear else 'no'
+		document.createAttribute('linear', rigidRotorElement, linear)
+		document.createQuantity('frequencies', rigidRotorElement, self.frequencies, 'cm^-1')
 
 ################################################################################
 
@@ -338,6 +349,16 @@ class HinderedRotor:
 		self.barrier = document.getChildQuantity(rootElement, 'barrier', required=True)
 		self.barrier = float(self.barrier)
 
+	def toXML(self, document, rootElement):
+		"""
+		Add a <hinderedRotor> element as a child of `rootElement` using
+		RMG-style XML. `document` is an :class:`io.XML` class representing the
+		XML DOM tree.
+		"""
+		hinderedRotorElement = document.createElement('hinderedRotor', rootElement)
+		document.createQuantity('frequency', hinderedRotorElement, self.frequency, 'cm^-1')
+		document.createQuantity('barrier', hinderedRotorElement, self.barrier, 'cm^-1')
+
 ################################################################################
 
 class HarmonicOscillator:
@@ -418,6 +439,15 @@ class HarmonicOscillator:
 		# Read <frequency> element
 		self.frequency = document.getChildQuantity(rootElement, 'frequency', required=True)
 		self.frequency = float(self.frequency) * frequencyScaleFactor
+
+	def toXML(self, document, rootElement):
+		"""
+		Add a <harmonicOscillator> element as a child of `rootElement` using
+		RMG-style XML. `document` is an :class:`io.XML` class representing the
+		XML DOM tree.
+		"""
+		harmonicOscillatorElement = document.createElement('harmonicOscillator', rootElement)
+		document.createQuantity('frequency', harmonicOscillatorElement, self.frequency, 'cm^-1')
 
 ################################################################################
 
@@ -550,6 +580,18 @@ class SpectralData:
 
 		# Read <symmetryNumber> element
 		self.symmetry = float(document.getChildQuantity(rootElement, 'symmetryNumber', required=False, default=1))
+
+	def toXML(self, document, rootElement):
+		"""
+		Add a <spectralData> element as a child of `rootElement` using
+		RMG-style XML. `document` is an :class:`io.XML` class representing the
+		XML DOM tree.
+		"""
+		
+		spectralDataElement = document.createElement('spectralData', rootElement)
+		for mode in self.modes:
+			mode.toXML(document, spectralDataElement)
+		document.createTextElement('symmetryNumber', spectralDataElement, str(self.symmetry))
 
 ################################################################################
 

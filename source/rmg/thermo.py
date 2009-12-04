@@ -93,7 +93,7 @@ class ThermoData:
 		"""
 
 		# Read comment attribute
-		self.comment = document.getAttribute(rootElement, 'enthalpyOfFormation', required=False, default='')
+		self.comment = document.getAttribute(rootElement, 'comment', required=False, default='')
 
 		# Temperature range not currently read
 		self.Trange = [0.0, 0.0]
@@ -297,34 +297,21 @@ class ThermoGAData(ThermoData):
 		Cp = document.getChildQuantity(rootElement, 'heatCapacities', required=True)
 		self.Cp = [float(C.simplified) for C in Cp]
 
-	def toXML(self, dom, root):
+	def toXML(self, document, rootElement):
 		"""
-		Generate an XML representation of the thermodynamic data using the
-		:data:`xml.dom.minidom` package. The `dom` and `root` parameters
-		represent the DOM and the element in the DOM used as the parent of
-		the generated XML.
+		Add a <thermoData> element as a child of `rootElement` using
+		RMG-style XML. `document` is an :class:`io.XML` class representing the
+		XML DOM tree.
 		"""
 		
-		thermo = dom.createElement('thermodynamics')
-		thermo.setAttribute('index', self.index)
-		thermo.setAttribute('comment', self.comment)
-		root.appendChild(thermo)
-		
-		enthalpy = dom.createElement('enthalpyOfFormation')
-		enthalpy.setAttribute('temperature', '298.0 K')
-		thermo.appendChild(enthalpy)
-		data.createXMLQuantity(dom, enthalpy, self.H298, 'J/mol')
-		
-		entropy = dom.createElement('entropyOfFormation')
-		entropy.setAttribute('temperature', '298.0 K')
-		thermo.appendChild(entropy)
-		data.createXMLQuantity(dom, entropy, self.S298, 'J/(mol*K)')
-		
-		for i, Cp in enumerate(self.Cp):
-			heatCapacity = dom.createElement('heatCapacity')
-			heatCapacity.setAttribute('temperature', '%s K' % (ThermoGAData.CpTlist[i]) )
-			thermo.appendChild(heatCapacity)
-			data.createXMLQuantity(dom, heatCapacity, Cp, 'J/(mol*K)')
+		# Create <thermoData> element
+		thermoDataElement = document.createElement('thermoData', rootElement)
+		document.createAttribute('format', thermoDataElement, 'group additivity')
+
+		document.createQuantity('enthalpyOfFormation', thermoDataElement, self.H298/1000.0, 'kJ/mol')
+		document.createQuantity('entropyOfFormation', thermoDataElement, self.S298, 'J/(mol*K)')
+		document.createQuantity('heatCapacities', thermoDataElement, self.Cp, 'J/(mol*K)')
+
 	
 ################################################################################
 

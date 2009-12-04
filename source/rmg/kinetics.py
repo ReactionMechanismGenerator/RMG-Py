@@ -174,34 +174,24 @@ class ArrheniusKinetics(Kinetics):
 		Ea = document.getChildQuantity(rootElement, 'activationEnergy', required=True)
 		self.Ea = float(Ea.simplified)
 
-	def toXML(self, dom, root, numReactants):
+	def toXML(self, document, rootElement, numReactants):
 		"""
-		Generate the XML for these kinetics using the :data:`xml.dom.minidom`
-		package. The `dom` and `root` parameters refer to the DOM and the
-		point within the DOM to place this item.
+		Add a <kinetics> element as a child of `rootElement` using
+		RMG-style XML. `document` is an :class:`io.XML` class representing the
+		XML DOM tree.
 		"""
-		kinetics = dom.createElement('arrheniusKinetics')
-		root.appendChild(kinetics)
-		kinetics.setAttribute('Trange', '%s-%s K' % (self.Trange[0], self.Trange[1]))
-		kinetics.setAttribute('rank', str(self.rank))
-		kinetics.setAttribute('comment', self.comment)
-		
-		preexponential = dom.createElement('preexponential')
-		kinetics.appendChild(preexponential)
-		preexponentialUnits = None
-		if len(self.reactants) == 1:
-			preexponentialUnits = 's^-1'
+
+		kineticsElement = document.createElement('kinetics', rootElement)
+		document.createAttribute('type', kineticsElement, 'Arrhenius')
+
+		if numReactants == 1:
+			Aunits = 's^-1'
 		else:
-			preexponentialUnits = 'm^%s/(mol^%s*s)' % ((numReactants-1)*3, numReactants-1)
-		data.createXMLQuantity(dom, preexponential, self.A, preexponentialUnits)
+			Aunits = 'm^%s/(mol^%s*s)' % ((numReactants-1)*3, numReactants-1)
 		
-		exponent = dom.createElement('exponent')
-		kinetics.appendChild(exponent)
-		data.createXMLQuantity(dom, exponent, self.n, '')
-		
-		activationEnergy = dom.createElement('activationEnergy')
-		kinetics.appendChild(activationEnergy)
-		data.createXMLQuantity(dom, activationEnergy, self.Ea, 'J/mol')
+		document.createQuantity('preexponential', kineticsElement, self.A, Aunits)
+		document.createQuantity('exponent', kineticsElement, self.n, '')
+		document.createQuantity('activationEnergy', kineticsElement, self.Ea/1000.0, 'kJ/mol')
 
 ################################################################################
 

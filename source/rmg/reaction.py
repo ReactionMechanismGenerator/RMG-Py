@@ -2199,7 +2199,7 @@ def updateUnimolecularReactionNetworks(reactionModel):
 			Tlist = [300.0, 400.0, 600.0, 900.0, 1200.0, 1500.0, 1800.0, 2100.0]
 			Plist = [1.0e3, 1.0e4, 1.0e5, 1.0e6, 1.0e7]
 			grainSize = 5000; numGrains = 0
-			method = 'modifiedstrongcollision'
+			method = 'reservoirstate'
 			model = ('pdeparrhenius')
 			
 			network.bathGas = [spec for spec in reactionModel.core.species if not spec.reactive][0]

@@ -131,7 +131,7 @@ class XML:
 		Save a DOM to an XML file located at `path`.
 		"""
 		f = open(path, 'w')
-		self.document.writexml(f, indent='', addindent='\t')
+		self.document.writexml(f, indent='', addindent='\t', newl='\n')
 		f.close()
 
 	def cleanup(self):
@@ -146,6 +146,14 @@ class XML:
 		Return the root element of the DOM tree.
 		"""
 		return self.document.documentElement
+
+	def initialize(self, elementName):
+		"""
+		Initializes a new DOM tree with the root element having the name
+		`elementName`. Returns the root element.
+		"""
+		self.document = xml.dom.minidom.getDOMImplementation().createDocument(None, elementName, None)
+		return self.getRootElement()
 
 	def getAttribute(self, element, name, required=True, default=None):
 		"""
@@ -273,6 +281,21 @@ class XML:
 		"""
 		parentElement.setAttribute(attributeName, attributeValue)
 
+	def createQuantity(self, elementName, parentElement, value, units):
+		"""
+		Create an element representing a quantity of a certain `value` (scalar
+		or list) and `units` (string) with the name `elementName` as a child of
+		`parentElement`.
+		"""
+
+		if isinstance(value, list):
+			quantityElement = self.createTextElement(elementName, parentElement, ' '.join([str(v) for v in value]))
+		else:
+			quantityElement = self.createTextElement(elementName, parentElement, str(value))
+		self.createAttribute('units', quantityElement, units)
+
+		return quantityElement
+
 ################################################################################
 
 def readDatabaseList(xml0, rootElement):
@@ -294,7 +317,7 @@ def readDatabaseList(xml0, rootElement):
 			raise InvalidInputFileException('Invalid database type "' + databaseType + '"; valid types are "general".')
 
 		# Get database name and form path
-		databaseName = xml0.getElementText(element)
+		databaseName = xml0.getElementText(element).strip()
 		databasePath = os.path.dirname(__file__)
 		databasePath = os.path.join(databasePath, '..')
 		databasePath = os.path.join(databasePath, '..')
