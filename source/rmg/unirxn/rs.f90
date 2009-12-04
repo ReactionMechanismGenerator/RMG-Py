@@ -89,6 +89,7 @@ Kij, Fim, Gnj, dEdown, nIsom, nProd, nGrains, K, msg)
 
 	! Pseudo-steady state grain populations
 	real(8), dimension(:,:,:), allocatable	:: 	pa
+	real(8) :: maxpa
 
 	! Variables for LAPACK
 	integer, dimension(:), allocatable				::	iPiv
@@ -119,13 +120,16 @@ Kij, Fim, Gnj, dEdown, nIsom, nProd, nGrains, K, msg)
 		if (msg(1:1) /= ' ') return
 	end if
 
-	! Check that PSSA populations are all nonnegative; fail if not
+	! Check that PSSA populations are all nonnegative or negligible; fail if not
 	do i = 1, nIsom
 		do n = 1, nIsom+nProd
+			maxpa = max(abs(maxval(pa(:,n,i))), abs(minval(pa(:,n,i))))
 			do r = 1, nGrains
 				if (pa(r,n,i) < 0.0) then
-					msg = 'Negative steady-state populations encountered.'
-					return
+					if (abs(pa(r,n,i) / maxpa) > 0.0001) then
+						msg = 'Significant negative steady-state populations encountered.'
+						return
+					end if
 				end if
 			end do
 		end do
@@ -142,7 +146,7 @@ Kij, Fim, Gnj, dEdown, nIsom, nProd, nGrains, K, msg)
 	do i = 1, nIsom
 		do n = 1, nIsom+nProd
 			do r = 1, nRes(i)
-				K(i,n) = K(i,n) + sum(Mcoll(i,r,:) * pa(:,n,i))
+				K(i,n) = K(i,n) + sum(Mcoll(i,r,nRes(i)+1:nGrains) * pa(nRes(i)+1:nGrains,n,i))
 			end do
 		end do
 	end do
@@ -150,7 +154,7 @@ Kij, Fim, Gnj, dEdown, nIsom, nProd, nGrains, K, msg)
 	do j = 1, nIsom+nProd
 		do n = 1, nProd
 			do i = 1, nIsom
-				K(n+nIsom,j) = K(n+nIsom,j) + sum(Gnj(n,i,:) * pa(:,j,i))
+				K(n+nIsom,j) = K(n+nIsom,j) + sum(Gnj(n,i,nRes(i)+1:nGrains) * pa(nRes(i)+1:nGrains,j,i))
 			end do
 		end do
 	end do

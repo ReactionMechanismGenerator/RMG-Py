@@ -339,7 +339,7 @@ class ThermoNASAPolynomial(ThermoData):
 		self.c0, self.c1, self.c2, self.c3, self.c4, self.c5, self.c6 = coeffs
 		
 	def __repr__(self):
-		return "ThermoNASAPolynomial(%r,%r,'%s')"%(self.Trange,self.coeffs,self.comment)
+		return "ThermoNASAPolynomial(%r,%r,'%s')"%(self.Trange,(self.c0, self.c1, self.c2, self.c3, self.c4, self.c5, self.c6),self.comment)
 	def __reduce__(self):
 		return (ThermoNASAPolynomial,(self.Trange,(self.c0, self.c1, self.c2, self.c3, self.c4, self.c5, self.c6),self.comment))
 
