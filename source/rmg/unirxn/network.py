@@ -307,9 +307,9 @@ class Network:
 		"""
 		for rxn in self.pathReactions:
 			if rxn.isIsomerization() or rxn.isDissociation():
-				if rxn.reactants[0] is species: return True
+				if rxn.reactants[0] == species: return True
 			if rxn.isIsomerization() or rxn.isAssociation():
-				if rxn.products[0] is species: return True
+				if rxn.products[0] == species: return True
 		return False
 
 	def addPathReaction(self, rxn):
@@ -353,17 +353,43 @@ class Network:
 		"""
 		Return the leak flux of the network: the forward flux to all unexplored
 		unimolecular isomers in the network.
-		"""
-		leakFlux = 0.0
+		"""	
+		# Get leak fluxes of all unexplored [unimolecular] isomers
+		self.leakFluxes = {}
 		for rxn in self.netReactions:
 			rate = rxn.getRate(T, P, conc, totalConc)
 			if rxn.isIsomerization() or rxn.isDissociation():
-				if rxn.reactants[0] not in self.explored:
-					leakFlux -= rate
+				spec = rxn.reactants[0]
+				if spec not in self.explored:
+					if spec in self.leakFluxes:
+						self.leakFluxes[spec] -= rate
+					else:
+						self.leakFluxes[spec] = -rate
 			if rxn.isIsomerization() or rxn.isAssociation():
-				if rxn.products[0] not in self.explored:
-					leakFlux += rate
-		return leakFlux
+				spec = rxn.reactants[0]
+				if spec not in self.explored:
+					if spec in self.leakFluxes:
+						self.leakFluxes[spec] += rate
+					else:
+						self.leakFluxes[spec] = rate
+		
+		return sum(self.leakFluxes.values())
+
+	def getMaximumLeakSpecies(self):
+		"""
+		Get the unexplored (unimolecular) isomer with the maximum leak flux.
+		"""
+		if len(self.leakFluxes) == 0:
+			raise UnirxnNetworkException('No unimolecular isomers left to explore!')
+
+		# Choose species with maximum leak flux
+		maxSpeciesFlux = 0.0; maxSpecies = None
+		for spec, flux in self.leakFluxes.iteritems():
+			if maxSpecies is None or flux > maxSpeciesFlux:
+				maxSpecies = spec; maxSpeciesFlux = flux
+
+		# Return the species and flux
+		return maxSpecies, maxSpeciesFlux
 
 	def calculateDensitiesOfStates(self, Elist):
 		"""
@@ -579,10 +605,14 @@ class Network:
 		eqDist = numpy.zeros([nIsom,nGrains], numpy.float64)
 		for i in range(nIsom): eqDist[i,:] = self.isomers[i].eqDist
 
+		# If there are no product channels, we must temporarily create a fake
+		# one; this is because f2py can't handle matrices with a dimension of zero
+		if nProd == 0: nProd = 1
+
 		# Active-state energy of each isomer
 		Eres = numpy.zeros([nIsom+nProd], numpy.float64)
-		for i in range(nIsom+nProd):
-			Eres[i] = self.isomers[i].getActiveSpaceEnergy(self.pathReactions)
+		for i, isomer in enumerate(self.isomers):
+			Eres[i] = isomer.getActiveSpaceEnergy(self.pathReactions)
 
 		# Isomerization, dissociation, and association microcanonical rate
 		# coefficients, respectively
@@ -650,6 +680,11 @@ class Network:
 		if msg != '':
 			raise UnirxnNetworkException('Unable to apply method %s: %s' % (method, msg))
 
-		return K
+		# If we had to create a temporary (fake) product channel, then don't
+		# return the last row and column of the rate coefficient matrix
+		if self.numMultiIsomers() == 0:
+			return K[:-1,:-1]
+		else:
+			return K
 
 ################################################################################

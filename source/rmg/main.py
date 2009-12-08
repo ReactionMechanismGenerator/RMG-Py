@@ -170,7 +170,35 @@ def execute(inputFile, options):
 		# Update the noted networks
 		networksToEnlarge = list(set(networksToEnlarge))
 		for net in networksToEnlarge:
-			net.exploreOneIsomer()
+			maxSpecies, maxSpeciesFlux = net.getMaximumLeakSpecies()
+			net.explored.append(maxSpecies)
+
+			# Find reactions involving the new species as unimolecular reactant or
+			# product (e.g. A <---> products)
+			rxnList = reaction.kineticsDatabase.getReactions([newSpecies])
+			
+			# Add new reactions
+			for rxn in rxnList:
+				allSpeciesInCore = True
+				for spec in rxn.reactants:
+					if spec not in self.core.species: allSpeciesInCore = False
+					if spec not in self.edge.species and spec not in self.core.species:
+						self.addSpeciesToEdge(spec)
+				for spec in rxn.products:
+					if spec not in self.core.species: allSpeciesInCore = False
+					if spec not in self.edge.species and spec not in self.core.species:
+						self.addSpeciesToEdge(spec)
+				if allSpeciesInCore:
+					self.addReactionToCore(rxn)
+				else:
+					self.addReactionToEdge(rxn)
+
+			logging.info('')
+			logging.info('After network enlargement:')
+			logging.info('\tThe model core has %s species and %s reactions' % (len(self.core.species), len(self.core.reactions)))
+			logging.info('\tThe model edge has %s species and %s reactions' % (len(self.edge.species), len(self.edge.reactions)))
+			logging.info('')
+
 
 		# Save the restart file
 		import cPickle
