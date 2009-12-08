@@ -120,13 +120,12 @@ def execute(inputFile, options):
 #					print ''
 #				print ''
 
+	# Save results to file
+	#logging.info('Saving results...')
+	#io.writeOutputFile(outputFile, network, Tlist, Plist, grainSize, numGrains, method, model)
+
 	logging.info('')
 
-	# Restore lists of species in path reactions
-	for reaction in network.pathReactions:
-		del reaction.reactant
-		del reaction.product
-		
 	# Log end timestamp
 	logging.info('RMG execution terminated at ' + time.asctime())
 

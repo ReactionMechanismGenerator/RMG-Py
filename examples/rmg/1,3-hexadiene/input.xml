@@ -74,13 +74,13 @@
 	<!-- Termination -->
 	<termination>
 		<target type="conversion" speciesID="spec1">0.9</target>
-		<target type="time" units="s">1e0</target>
+		<target type="time" units="s">1e6</target>
 	</termination>
 	<!-- Dynamic simulator -->
 	<simulator atol="1e-16" rtol="1e-8" />
 	<fluxTolerance>
 		<keepInEdge>1e-16</keepInEdge>
-		<moveToCore>0.1</moveToCore>
+		<moveToCore>0.01</moveToCore>
 		<interruptSimulation>1.0</interruptSimulation>
 	</fluxTolerance>
 	<maximumModelSize>
@@ -89,9 +89,22 @@
 	<!-- Options -->
 	<optionList>
 		<units>si</units>
-		<drawMolecules>off</drawMolecules>
-		<generatePlots>off</generatePlots>
-		<spectralDataEstimation>off</spectralDataEstimation>
-		<unimolecularReactionNetworks>off</unimolecularReactionNetworks>
+		<!-- Comment out to turn off -->
+		<!--<drawMolecules/>-->
+		<!--<generatePlots/>-->
+		<spectralDataEstimation/>
+		<unimolecularReactionNetworks>
+			<method>modifiedStrongCollision</method>
+			<!--<method>reservoirState</method>-->
+			<grainSize units="kJ/mol">8.0</grainSize>
+			<numberOfGrains>200</numberOfGrains>
+			<temperatures units="K">300.0 400.0 500.0 600.0 800.0 1000.0 1500.0 2000.0</temperatures>
+			<pressures units="bar">0.01 0.1 1.0 10.0 100.0</pressures>
+			<interpolationModel type="PDepArrhenius"/>
+			<!--<interpolationModel type="Chebyshev">
+				<numberOfTemperaturePolynomials>4</numberOfTemperaturePolynomials>
+				<numberOfPressurePolynomials>4</numberOfPressurePolynomials>
+			</interpolationModel>-->
+		</unimolecularReactionNetworks>
 	</optionList>
 </rmginput>

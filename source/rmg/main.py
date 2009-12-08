@@ -133,13 +133,13 @@ def execute(inputFile, options):
 	restartSize = []
 	memoryUse = []
 
+	# Handle unimolecualr (pressure dependent) reaction networks
+	if settings.unimolecularReactionNetworks:
+		reaction.updateUnimolecularReactionNetworks(reactionModel)
+
 	# Main RMG loop
 	done = False
 	while not done:
-
-		# Handle unimolecualr (pressure dependent) reaction networks
-		if settings.unimolecularReactionNetworks:
-			reaction.updateUnimolecularReactionNetworks(reactionModel)
 
 		done = True
 		speciesToAdd = []; networksToEnlarge = []
@@ -199,6 +199,10 @@ def execute(inputFile, options):
 			logging.info('\tThe model edge has %s species and %s reactions' % (len(self.edge.species), len(self.edge.reactions)))
 			logging.info('')
 
+
+		# Handle unimolecualr (pressure dependent) reaction networks
+		if settings.unimolecularReactionNetworks:
+			reaction.updateUnimolecularReactionNetworks(reactionModel)
 
 		# Save the restart file
 		import cPickle

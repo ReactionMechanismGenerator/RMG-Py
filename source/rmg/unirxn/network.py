@@ -398,11 +398,9 @@ class Network:
 		isomers and for all multimolecular isomers that are reactants of a
 		path reaction with the forward reaction defined as the association.
 		"""
-
 		# Calculate the density of states for each isomer
-		Elist0 = self.__getEnergyGrains(min(Elist), max(Elist), Elist[1] - Elist[0], 0)
 		for isomer in self.isomers:
-			isomer.calculateDensityOfStates(Elist0)
+			isomer.calculateDensityOfStates(Elist)
 
 	def shiftToZeroEnergy(self):
 		"""
@@ -425,7 +423,18 @@ class Network:
 		maximum of `Emax`, and either a spacing of `dE0` or have number of
 		grains `nGrains0`. The first three parameters are in J/mol.
 		"""
-		if nGrains0 == 0:
+		useGrainSize = False; useNumGrains = False
+		
+		if nGrains0 <= 0 and dE0 != 0.0:
+			useGrainSize = False; useNumGrains = True
+		elif nGrains0 != 0 and dE0 <= 0.0:
+			useGrainSize = True; useNumGrains = False
+		else:
+			# Choose the tighter constraint
+			dE1 = (Emax - Emin) / (nGrains0 - 1)
+			useNumGrains = (dE1 < dE0); useGrainSize = not useNumGrains
+
+		if useNumGrains:
 			nGrains = int((Emax - Emin) / dE0) + 1
 			dE = dE0
 		else:
@@ -448,8 +457,8 @@ class Network:
 		calculation `Tmax`, which should be the highest temperature of interest.
 		"""
 
-		# For the purposes of finding the maximum energy we will use 4001 grains
-		nE = 4001
+		# For the purposes of finding the maximum energy we will use 401 grains
+		nE = 401
 		dE = 0.0
 
 		# Determine minimum energy and isomer with minimum ground-state energy

@@ -2223,11 +2223,7 @@ def updateUnimolecularReactionNetworks(reactionModel):
 			logging.debug('Updating unimolecular reaction network %i' % (networkIndex+1))
 				
 			# Other inputs
-			Tlist = [300.0, 400.0, 600.0, 900.0, 1200.0, 1500.0, 1800.0, 2100.0]
-			Plist = [1.0e3, 1.0e4, 1.0e5, 1.0e6, 1.0e7]
-			grainSize = 8000; numGrains = 0
-			method = 'modifiedstrongcollision'
-			model = ('pdeparrhenius')
+			method, Tlist, Plist, grainSize, numGrains, model = settings.unimolecularReactionNetworks
 			
 			network.bathGas = [spec for spec in reactionModel.core.species if not spec.reactive][0]
 			network.bathGas.expDownParam = 4.86 * 4184

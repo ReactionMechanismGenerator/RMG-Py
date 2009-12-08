@@ -363,21 +363,54 @@ def readInputFile(fstr):
 		units = xml0.getChildElementText(optionList, 'units', required=False, default='si')
 		pq.set_default_units(units)
 		# Read draw molecules option
-		drawMolecules = xml0.getChildElementText(optionList, 'drawMolecules', required=False, default='off')
-		drawMolecules = drawMolecules.lower()
-		settings.drawMolecules = (drawMolecules == 'on' or drawMolecules == 'true' or drawMolecules == 'yes')
+		drawMolecules = xml0.getChildElement(optionList, 'drawMolecules', required=False)
+		settings.drawMolecules = (drawMolecules is not None)
 		# Read generate plots option
-		generatePlots = xml0.getChildElementText(optionList, 'generatePlots', required=False, default='off')
-		generatePlots = generatePlots.lower()
-		settings.generatePlots = (generatePlots == 'on' or generatePlots == 'true' or generatePlots == 'yes')
+		generatePlots = xml0.getChildElement(optionList, 'generatePlots', required=False)
+		settings.generatePlots = (generatePlots is not None)
 		# Read spectral data estimation option
-		spectralDataEstimation = xml0.getChildElementText(optionList, 'spectralDataEstimation', required=False, default='off')
-		spectralDataEstimation = spectralDataEstimation.lower()
-		settings.spectralDataEstimation = (spectralDataEstimation == 'on' or spectralDataEstimation == 'true' or spectralDataEstimation == 'yes')
+		spectralDataEstimation = xml0.getChildElement(optionList, 'spectralDataEstimation', required=False)
+		settings.spectralDataEstimation = (spectralDataEstimation is not None)
+
 		# Read unimolecular reaction network option
-		unimolecularReactionNetworks = xml0.getChildElementText(optionList, 'unimolecularReactionNetworks', required=False, default='off')
-		unimolecularReactionNetworks = unimolecularReactionNetworks.lower()
-		settings.unimolecularReactionNetworks = (unimolecularReactionNetworks == 'on' or unimolecularReactionNetworks == 'true' or unimolecularReactionNetworks == 'yes')
+		unirxnNetworks = xml0.getChildElement(optionList, 'unimolecularReactionNetworks', required=False)
+		if unirxnNetworks is not None:
+			# Read method
+			method = str(xml0.getChildElementText(unirxnNetworks, 'method', required=True))
+			allowed = ['modifiedstrongcollision', 'reservoirstate']
+			if method.lower() not in allowed:
+				raise InvalidInputFileException('Invalid unimolecular reaction networks method "%s"; allowed values are %s.' % (method, allowed))
+			# Read temperatures
+			temperatures = xml0.getChildQuantity(unirxnNetworks, 'temperatures', required=False,
+				default=pq.Quantity([300.0, 400.0, 500.0, 600.0, 800.0, 1000.0, 1500.0, 2000.0], 'K'))
+			temperatures = [float(T.simplified) for T in temperatures]
+			# Read pressures
+			pressures = xml0.getChildQuantity(unirxnNetworks, 'pressures', required=False,
+				default=pq.Quantity([1.0e3, 1.0e4, 1.0e5, 1.0e6, 1.0e7], 'Pa'))
+			pressures = [float(P.simplified) for P in pressures]
+			# Read grain size
+			grainSize = xml0.getChildQuantity(unirxnNetworks, 'grainSize', required=False,
+				default=pq.Quantity(0.0, 'J/mol'))
+			grainSize = float(grainSize.simplified)
+			# Read number of grains
+			numberOfGrains = int(xml0.getChildElementText(unirxnNetworks, 'numberOfGrains', required=False, default=0))
+			if grainSize == 0.0 and numberOfGrains == 0:
+				raise InvalidInputFileException('Must specify a grain size or number of grains for unimolecular reaction networks calculations.')
+			# Read interpolation model
+			interpolationModel = xml0.getChildElement(unirxnNetworks, 'interpolationModel', required=True)
+			modelType = str(xml0.getAttribute(interpolationModel, 'type', required=True))
+			allowed = ['none', 'chebyshev', 'pdeparrhenius']
+			if modelType.lower() not in allowed:
+				raise InvalidInputFileException('Invalid unimolecular reaction networks interpolation model "%s"; allowed values are %s.' % (method, allowed))
+			if modelType.lower() == 'chebyshev':
+				numTPolys = int(xml0.getChildElementText(interpolationModel, 'numberOfTemperaturePolynomials', required=False, default='4'))
+				numPPolys = int(xml0.getChildElementText(interpolationModel, 'numberOfPressurePolynomials', required=False, default='4'))
+				interpolationModel = (modelType, numTPolys, numPPolys)
+			else:
+				interpolationModel = (modelType)
+			settings.unimolecularReactionNetworks = (method, temperatures, pressures, grainSize, numberOfGrains, interpolationModel)
+		else:
+			settings.unimolecularReactionNetworks = None
 
 		# Load databases
 		databases = readDatabaseList(xml0, rootElement)

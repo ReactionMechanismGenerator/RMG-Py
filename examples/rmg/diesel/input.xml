@@ -99,8 +99,7 @@
 	<!-- Options -->
 	<optionList>
 		<units>si</units>
-		<drawMolecules>off</drawMolecules>
-		<generatePlots>off</generatePlots>
-		<spectralDataEstimation>off</spectralDataEstimation>
+		<!--<drawMolecules/>-->
+		<!--<generatePlots/>-->
 	</optionList>
 </rmginput>
