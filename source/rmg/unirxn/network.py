@@ -538,7 +538,7 @@ class Network:
 				for isomer in self.isomers:
 					if isomer.densStates is not None:
 						isomer.calculateEqDist(Elist, T)
-
+					
 	#			# DEBUG: Plot equilibrium distributions
 	#			import pylab
 	#			for isomer in self.isomers:
@@ -571,7 +571,7 @@ class Network:
 					for isomer in self.isomers:
 						if isomer.isUnimolecular():
 							isomer.calculateCollisionFrequency(T, P, self.bathGas)
-
+							
 					# Determine phenomenological rate coefficients using approximate
 					# method
 					K[t,p,:,:] = self.applyApproximateMethod(T, P, Elist, method)
@@ -610,10 +610,13 @@ class Network:
 		nProd = self.numMultiIsomers()
 		nGrains = len(Elist)
 
-		# Equilibrium distribution of eash isomer
-		eqDist = numpy.zeros([nIsom,nGrains], numpy.float64)
-		for i in range(nIsom): eqDist[i,:] = self.isomers[i].eqDist
+		dE = Elist[1] - Elist[0]
 
+		# Density of states per partition function (i.e. normalized density of
+		# states with respect to Boltzmann weighting factor) for each isomer
+		densStates = numpy.zeros([nIsom,nGrains], numpy.float64)
+		for i in range(nIsom): densStates[i,:] = self.isomers[i].densStates * dE / self.isomers[i].Q
+		
 		# If there are no product channels, we must temporarily create a fake
 		# one; this is because f2py can't handle matrices with a dimension of zero
 		if nProd == 0: nProd = 1
@@ -650,7 +653,7 @@ class Network:
 
 			# Apply modified strong collision method
 			import msc
-			K, msg = msc.estimateratecoefficients(T, P, Elist, collFreq, eqDist, Eres,
+			K, msg = msc.estimateratecoefficients(T, P, Elist, collFreq, densStates, Eres,
 				Kij, Fim, Gnj)
 			msg = msg.strip()
 			if msg != '':
@@ -670,22 +673,25 @@ class Network:
 			Mcoll = numpy.zeros([nIsom,nGrains,nGrains], numpy.float64)
 			for i in range(nIsom):
 				collFreq = self.isomers[i].collFreq
-				densStates = self.isomers[i].densStates
-				Mcoll[i,:,:], msg = mastereqn.collisionmatrix(T, P, Elist, collFreq, densStates, E0[i], dEdown)
+				densStates0 = self.isomers[i].densStates
+				Mcoll[i,:,:], msg = mastereqn.collisionmatrix(T, P, Elist, collFreq, densStates0, E0[i], dEdown)
 				msg = msg.strip()
 				if msg != '':
 					raise Exception('Unable to determine collision matrix for isomer %i: %s' % (i, msg))
 
 			# Apply reservoir state method
 			import rs
-			K, msg = rs.estimateratecoefficients(T, P, Elist, Mcoll, eqDist, E0, Eres,
+			K, msg = rs.estimateratecoefficients(T, P, Elist, Mcoll, densStates, E0, Eres,
 				Kij, Fim, Gnj, dEdown)
 			msg = msg.strip()
-
-
+			
 		if not numpy.isfinite(K).all():
 			print K
 			msg = 'Non-finite rate constant returned at %s K, %s Pa.' % (T, P)
+		elif 0.0 in K:
+			print K
+			msg = 'Zero rate constant returned at %s K, %s Pa.' % (T, P)
+
 		if msg != '':
 			raise UnirxnNetworkException('Unable to apply method %s: %s' % (method, msg))
 

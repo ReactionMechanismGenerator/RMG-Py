@@ -24,7 +24,7 @@
 ! 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-subroutine estimateRateCoefficients(T, P, E, Mcoll, eqDist, E0, Eres, &
+subroutine estimateRateCoefficients(T, P, E, Mcoll, densStates, E0, Eres, &
 Kij, Fim, Gnj, dEdown, nIsom, nProd, nGrains, K, msg)
 	! Estimate the phenomenological rate coefficients using the (modified) strong
 	! collision method. The parameters are:
@@ -36,7 +36,7 @@ Kij, Fim, Gnj, dEdown, nIsom, nProd, nGrains, K, msg)
 	! `P`        in     The pressure to evaluate k(T,P) at in Pa
 	! `E`        in     A 1D array of energies in J/mol
 	! `Mcoll`    in     The collision matrix for each isomer
-	! `eqDist`   in     The normalized equilibrium distributions for each isomer
+	! `densStates` in     The density of states for each isomer
 	! `E0`       in     The ground-state energy for each isomer in J/mol
 	! `Eres`     in     The active-state energy cutoffs for each isomer in J/mol
 	! `Kij`      in     The microcanonical isomerization rate coefficients in
@@ -64,9 +64,9 @@ Kij, Fim, Gnj, dEdown, nIsom, nProd, nGrains, K, msg)
 	integer, intent(in)	:: nGrains
 	real(8), dimension(1:nGrains), intent(in) :: E
 	real(8), dimension(1:nIsom,1:nGrains,1:nGrains), intent(in) :: Mcoll
+	real(8), dimension(1:nIsom,1:nGrains), intent(in) :: densStates
 	real(8), dimension(1:nIsom), intent(in) :: E0
 	real(8), dimension(1:nIsom+nProd), intent(in) :: Eres
-	real(8), dimension(1:nIsom,1:nGrains), intent(in) :: eqDist
 	real(8), dimension(1:nIsom,1:nIsom,1:nGrains), intent(in) :: Kij
 	real(8), dimension(1:nIsom,1:nProd,1:nGrains), intent(in) :: Fim
 	real(8), dimension(1:nProd,1:nIsom,1:nGrains), intent(in) :: Gnj
@@ -110,26 +110,23 @@ Kij, Fim, Gnj, dEdown, nIsom, nProd, nGrains, K, msg)
 	pa = 0 * pa
 	if (nUni == 1) then
 		! Not worth it to call banded solver when only one well
-		call activeStateFull(E, Mcoll, eqDist, Kij, Fim, Gnj, &
+		call activeStateFull(T, P, E, Mcoll, densStates, Kij, Fim, Gnj, &
 			nIsom, nProd, nGrains, nRes, nAct, pa, msg)
 		if (msg(1:1) /= ' ') return
 	else
 		! Very worth it to call banded solver when more than one well
-		call activeStateBanded(E, Mcoll, eqDist, Kij, Fim, Gnj, dEdown, &
+		call activeStateBanded(T, P, E, Mcoll, densStates, Kij, Fim, Gnj, dEdown, &
 			nIsom, nProd, nGrains, nRes, nAct, pa, msg)
 		if (msg(1:1) /= ' ') return
 	end if
 
-	! Check that PSSA populations are all nonnegative or negligible; fail if not
+	! Check that PSSA populations are all nonnegative; fail if not
 	do i = 1, nIsom
 		do n = 1, nIsom+nProd
-			maxpa = max(abs(maxval(pa(:,n,i))), abs(minval(pa(:,n,i))))
 			do r = 1, nGrains
 				if (pa(r,n,i) < 0.0) then
-					if (abs(pa(r,n,i) / maxpa) > 0.0001) then
-						msg = 'Significant negative steady-state populations encountered.'
-						return
-					end if
+					msg = 'One or more negative steady-state populations encountered.'
+					return
 				end if
 			end do
 		end do
@@ -227,7 +224,7 @@ end subroutine
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-subroutine activeStateFull(E, Mcoll, eqDist, Kij, Fim, Gnj, &
+subroutine activeStateFull(T, P, E, Mcoll, densStates, Kij, Fim, Gnj, &
 	nIsom, nProd, nGrains, nRes, nAct, pa, msg)
 	! Determine the pseudo-steady state populations for the active state
 	! grains using a full matrix linear solve.
@@ -237,7 +234,7 @@ subroutine activeStateFull(E, Mcoll, eqDist, Kij, Fim, Gnj, &
 	! ========== ====== ========================================================
 	! `E`        in     A 1D array of energies in J/mol
 	! `Mcoll`    in     The collision matrix for each isomer
-	! `eqDist`   in     The normalized equilibrium distributions for each isomer
+	! `densStates`   in     The density of states for each isomer
 	! `Kij`      in     The microcanonical isomerization rate coefficients in
 	!                   s^-1
 	! `Fim`      in     The microcanonical association rates (rate coefficients
@@ -259,9 +256,11 @@ subroutine activeStateFull(E, Mcoll, eqDist, Kij, Fim, Gnj, &
 	integer, intent(in)	:: nIsom
 	integer, intent(in)	:: nProd
 	integer, intent(in)	:: nGrains
+	real(8), intent(in) :: T
+	real(8), intent(in) :: P
 	real(8), dimension(1:nGrains), intent(in) :: E
 	real(8), dimension(1:nIsom,1:nGrains,1:nGrains), intent(in) :: Mcoll
-	real(8), dimension(1:nIsom,1:nGrains), intent(in) :: eqDist
+	real(8), dimension(1:nIsom,1:nGrains), intent(in) :: densStates
 	real(8), dimension(1:nIsom,1:nIsom,1:nGrains), intent(in) :: Kij
 	real(8), dimension(1:nIsom,1:nProd,1:nGrains), intent(in) :: Fim
 	real(8), dimension(1:nProd,1:nIsom,1:nGrains), intent(in) :: Gnj
@@ -300,7 +299,7 @@ subroutine activeStateFull(E, Mcoll, eqDist, Kij, Fim, Gnj, &
 			do s = nRes(i)+1, nGrains
 				L(indices(r,i), indices(s,i)) = Mcoll(i,r,s)
 			end do
-			Z(indices(r,i), i) = sum(Mcoll(i,r,1:nRes(i)) * eqDist(i,1:nRes(i)))
+			Z(indices(r,i), i) = sum(Mcoll(i,r,1:nRes(i)) * densStates(i,1:nRes(i)) * exp(-E(1:nRes(i)) / 8.314472 / T))
 		end do
 	end do
 
@@ -353,7 +352,7 @@ end subroutine
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-subroutine activeStateBanded(E, Mcoll, eqDist, Kij, Fim, Gnj, dEdown, &
+subroutine activeStateBanded(T, P, E, Mcoll, densStates, Kij, Fim, Gnj, dEdown, &
 	nIsom, nProd, nGrains, nRes, nAct, pa, msg)
 	! Determine the pseudo-steady state populations for the active state
 	! grains using a banded matrix linear solve.
@@ -387,9 +386,11 @@ subroutine activeStateBanded(E, Mcoll, eqDist, Kij, Fim, Gnj, dEdown, &
 	integer, intent(in)	:: nIsom
 	integer, intent(in)	:: nProd
 	integer, intent(in)	:: nGrains
+	real(8), intent(in) :: T
+	real(8), intent(in) :: P
 	real(8), dimension(1:nGrains), intent(in) :: E
 	real(8), dimension(1:nIsom,1:nGrains,1:nGrains), intent(in) :: Mcoll
-	real(8), dimension(1:nIsom,1:nGrains), intent(in) :: eqDist
+	real(8), dimension(1:nIsom,1:nGrains), intent(in) :: densStates
 	real(8), dimension(1:nIsom,1:nIsom,1:nGrains), intent(in) :: Kij
 	real(8), dimension(1:nIsom,1:nProd,1:nGrains), intent(in) :: Fim
 	real(8), dimension(1:nProd,1:nIsom,1:nGrains), intent(in) :: Gnj
@@ -439,7 +440,7 @@ subroutine activeStateBanded(E, Mcoll, eqDist, Kij, Fim, Gnj, dEdown, &
 			do r = max(nRes(i)+1, s - halfbandwidth), min(nGrains, s + halfbandwidth)
 				L(bandwidth + indices(r,i) - indices(s,i), indices(s,i)) = Mcoll(i,r,s)
 			end do
-			Z(indices(s,i), i) = sum(Mcoll(i,s,1:nRes(i)) * eqDist(i,1:nRes(i)))
+			Z(indices(s,i), i) = sum(Mcoll(i,s,1:nRes(i)) * densStates(i,1:nRes(i)) * exp(-E(1:nRes(i)) / 8.314472 / T))
 		end do
 	end do
 	

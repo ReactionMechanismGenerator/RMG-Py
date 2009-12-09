@@ -133,9 +133,10 @@ def execute(inputFile, options):
 	restartSize = []
 	memoryUse = []
 
-	# Handle unimolecualr (pressure dependent) reaction networks
+	# Handle unimolecular (pressure dependent) reaction networks
 	if settings.unimolecularReactionNetworks:
 		reaction.updateUnimolecularReactionNetworks(reactionModel)
+		logging.info('')
 
 	# Main RMG loop
 	done = False
@@ -200,9 +201,10 @@ def execute(inputFile, options):
 			logging.info('')
 
 
-		# Handle unimolecualr (pressure dependent) reaction networks
+		# Handle unimolecular (pressure dependent) reaction networks
 		if settings.unimolecularReactionNetworks:
 			reaction.updateUnimolecularReactionNetworks(reactionModel)
+			logging.info('')
 
 		# Save the restart file
 		import cPickle

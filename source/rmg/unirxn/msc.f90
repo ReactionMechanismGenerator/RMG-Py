@@ -24,7 +24,7 @@
 ! 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-subroutine estimateRateCoefficients(T, P, E, collFreq, eqDist, Eres, &
+subroutine estimateRateCoefficients(T, P, E, collFreq, densStates, Eres, &
 Kij, Fim, Gnj, nIsom, nProd, nGrains, K, msg)
 	! Estimate the phenomenological rate coefficients using the (modified) strong
 	! collision method. The parameters are:
@@ -63,7 +63,7 @@ Kij, Fim, Gnj, nIsom, nProd, nGrains, K, msg)
 	real(8), dimension(1:nGrains), intent(in) :: E
 	real(8), dimension(1:nIsom), intent(in) :: collFreq
 	real(8), dimension(1:nIsom+nProd), intent(in) :: Eres
-	real(8), dimension(1:nIsom,1:nGrains), intent(in) :: eqDist
+	real(8), dimension(1:nIsom,1:nGrains), intent(in) :: densStates
 	real(8), dimension(1:nIsom,1:nIsom,1:nGrains), intent(in) :: Kij
 	real(8), dimension(1:nIsom,1:nProd,1:nGrains), intent(in) :: Fim
 	real(8), dimension(1:nProd,1:nIsom,1:nGrains), intent(in) :: Gnj
@@ -164,7 +164,7 @@ Kij, Fim, Gnj, nIsom, nProd, nGrains, K, msg)
 			! Activation
 			if (src <= nIsom) then
 				! Thermal activation via collisions
-				b(src) = collFreq(src) * eqDist(src, r)
+				b(src) = collFreq(src) * densStates(src, r) * exp(-E(r) / 8.314472 / T)
 			else
 				! Chemical activation via association reaction
 				do j = 1, nIsom
