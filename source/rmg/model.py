@@ -37,6 +37,7 @@ import numpy
 import os
 
 import constants
+import settings
 import reaction
 import species
 
@@ -202,11 +203,44 @@ class CoreEdgeReactionModel:
 		# identify any reactions it's involved in
 		rxnList = []
 		for rxn in self.edge.reactions:
-			if spec not in rxn.reactants and spec not in rxn.products:
+			if spec in rxn.reactants or spec in rxn.products:
 				rxnList.append(rxn)
 		# remove those reactions
-		self.edge.reactions.remove(rxn)
+		for rxn in rxnList:
+			self.edge.reactions.remove(rxn)
 		
+		# Remove the species from any unirxn networks it is in
+		if settings.unimolecularReactionNetworks:
+			networksToDelete = []
+			for network in reaction.networks:
+				if spec in network.getSpeciesList():
+					# Delete all path reactions involving the species
+					rxnList = []
+					for rxn in network.pathReactions:
+						if spec in rxn.reactants or spec in rxn.products:
+							rxnList.append(rxn)
+					for rxn in rxnList:
+						network.pathReactions.remove(rxn)
+					# Delete all net reactions involving the species
+					rxnList = []
+					for rxn in network.netReactions:
+						if spec in rxn.reactants or spec in rxn.products:
+							rxnList.append(rxn)
+					for rxn in rxnList:
+						network.netReactions.remove(rxn)
+					# If no remaining reactions, delete the network (actually
+					# add to list of networks to be deleted in a subsequent
+					# step)
+					if len(network.pathReactions) == 0 and len(network.netReactions) == 0:
+						networksToDelete.append(network)
+
+			# Complete deletion of empty networks
+			for network in networksToDelete:
+				logging.debug('Deleting empty unirxn network %i' % (reaction.networks.index(network)+1))
+				reaction.networks.remove(network)
+
+
+
 		# remove from the global list of species, to free memory
 		species.speciesList.remove(spec)
 	
