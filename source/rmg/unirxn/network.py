@@ -96,7 +96,7 @@ class Isomer:
 		self.Q = 0.0
 
 	def __str__(self):
-		return ' + '.join(self.species)
+		return ' + '.join([str(spec) for spec in self.species])
 
 	def isUnimolecular(self):
 		"""
@@ -232,12 +232,17 @@ class Isomer:
 
 	def getActiveSpaceEnergy(self, reactions):
 
-		Eres = 1.0e100
+		Eres = None
 
 		for reaction in reactions:
 			if reaction.reactant == self or reaction.product == self:
-				if reaction.E0 < Eres:
+				if Eres is None:
 					Eres = reaction.E0
+				elif reaction.E0 < Eres:
+					Eres = reaction.E0
+		if Eres is None:
+			for rxn in reactions: print rxn
+			raise UnirxnNetworkException('Unable to determine active space energy cutoff for isomer %s.' % (self))
 
 		return Eres
 
@@ -288,7 +293,9 @@ class Network:
 	def indexOf(self, object):
 		"""
 		Return the integer index associated with a given `object`, which can be
-		either an instance of :class:`Isomer` or :class:`Reaction`.
+		either an instance of :class:`Isomer` or :class:`Reaction`. Raises a
+		KeyError if the object is not found in the network; thus you can assume
+		that the returned index is valid.
 		"""
 		if isinstance(object, Isomer):
 			for (index, isomer) in enumerate(self.isomers):
@@ -298,7 +305,7 @@ class Network:
 			for (index, reaction) in enumerate(self.pathReactions):
 				if reaction is object:
 					return index
-		return -1
+		raise KeyError('%s not found in network %s.' % (object, self))
 
 	def containsSpecies(self, species):
 		"""
@@ -476,7 +483,7 @@ class Network:
 				if isomer is None: isomer = i
 				elif i.E0 > isomer.E0: isomer = i
 		Emax0 = isomer.E0
-
+		
 		# (Try to) purposely overestimate Emax using arbitrary multiplier
 		# This is to (hopefully) avoid multiple density of states calculations
 		mult = 50
@@ -512,8 +519,8 @@ class Network:
 
 		# Add difference between isomer ground-state energy and highest
 		# transition state or isomer energy
-		Emax0_iso = max([isomer.E0 for isomer in self.isomers])
-		Emax0_rxn = max([reaction.E0 for reaction in self.pathReactions])
+		Emax0_iso = max([i.E0 for i in self.isomers])
+		Emax0_rxn = max([r.E0 for r in self.pathReactions])
 		Emax += max([Emax0_iso, Emax0_rxn]) - isomer.E0
 
 		# Round Emax up to nearest integer
@@ -625,7 +632,7 @@ class Network:
 		Eres = numpy.zeros([nIsom+nProd], numpy.float64)
 		for i, isomer in enumerate(self.isomers):
 			Eres[i] = isomer.getActiveSpaceEnergy(self.pathReactions)
-
+		
 		# Isomerization, dissociation, and association microcanonical rate
 		# coefficients, respectively
 		Kij = numpy.zeros([nIsom,nIsom,nGrains], numpy.float64)
@@ -657,7 +664,7 @@ class Network:
 				Kij, Fim, Gnj)
 			msg = msg.strip()
 			if msg != '':
-				raise Exception('Unable to apply modified strong collision method: %s' % msg)
+				raise UnirxnNetworkException('Unable to apply modified strong collision method: %s' % msg)
 
 		elif method.lower() == 'reservoirstate':
 
@@ -677,7 +684,7 @@ class Network:
 				Mcoll[i,:,:], msg = mastereqn.collisionmatrix(T, P, Elist, collFreq, densStates0, E0[i], dEdown)
 				msg = msg.strip()
 				if msg != '':
-					raise Exception('Unable to determine collision matrix for isomer %i: %s' % (i, msg))
+					raise UnirxnNetworkException('Unable to determine collision matrix for isomer %i: %s' % (i, msg))
 
 			# Apply reservoir state method
 			import rs

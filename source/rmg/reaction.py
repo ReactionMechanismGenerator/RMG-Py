@@ -2127,9 +2127,7 @@ def makeNewReaction(reactants, products, reactantStructures, productStructures, 
 	if settings.unimolecularReactionNetworks:
 		# Update unimolecular reaction networks
 		net = addReactionToUnimolecularNetworks(rxn)
-		# Return False so that reaction is not added to edge if it was added
-		# to a unimolecular reaction network
-		if net is not None: return rxn, False
+		if net is not None: return rxn, True
 
 	# Return newly created reaction
 	return rxn, True
@@ -2224,7 +2222,7 @@ def updateUnimolecularReactionNetworks(reactionModel):
 				
 			# Other inputs
 			method, Tlist, Plist, grainSize, numGrains, model = settings.unimolecularReactionNetworks
-			
+
 			network.bathGas = [spec for spec in reactionModel.core.species if not spec.reactive][0]
 			network.bathGas.expDownParam = 4.86 * 4184
 
@@ -2238,10 +2236,7 @@ def updateUnimolecularReactionNetworks(reactionModel):
 						isomer = isom
 				if isomer is None:
 					isomer = Isomer(reaction.reactants)
-					if isomer.isUnimolecular():
-						network.isomers.insert(network.numUniIsomers(), isomer)
-					else:
-						network.isomers.append(isomer)
+					network.isomers.append(isomer)
 				reaction.reactant = isomer
 
 				# Create isomer for the product
@@ -2251,10 +2246,7 @@ def updateUnimolecularReactionNetworks(reactionModel):
 						isomer = isom
 				if isomer is None:
 					isomer = Isomer(reaction.products)
-					if isomer.isUnimolecular():
-						network.isomers.insert(network.numUniIsomers(), isomer)
-					else:
-						network.isomers.append(isomer)
+					network.isomers.append(isomer)
 				reaction.product = isomer
 
 			# Update list of explored isomers to include all species in core
@@ -2264,6 +2256,27 @@ def updateUnimolecularReactionNetworks(reactionModel):
 					if spec not in network.explored:
 						if spec in reactionModel.core.species:
 							network.explored.append(spec)
+
+			# Remove any isomers that aren't found in any path reactions
+			# Ideally this block of code wouldn't be needed, but it's here
+			# just in case
+			isomerList = []
+			for isomer in network.isomers:
+				found = False
+				for reaction in network.pathReactions:
+					if reaction.reactant is isomer or reaction.product is isomer:
+						found = True
+						break
+				if not found:
+					isomerList.append(isomer)
+			if len(isomerList) > 0:
+				logging.debug('Removed %i isomer(s) from network %i.' % (len(isomerList), networkIndex))
+				for isomer in isomerList: network.isomers.remove(isomer)
+
+			# Sort isomers so that all unimolecular isomers come first
+			isomers = [isom for isom in network.isomers if isom.isUnimolecular()]
+			isomers.extend([isom for isom in network.isomers if isom.isMultimolecular()])
+			network.isomers = isomers
 
 			# Get list of species in network
 			speciesList = list(set([spec for isom in network.isomers for spec in isom.species]))
@@ -2290,7 +2303,7 @@ def updateUnimolecularReactionNetworks(reactionModel):
 
 			# Calculate density of states for all isomers in network
 			network.calculateDensitiesOfStates(Elist)
-			
+
 			# Determine phenomenological rate coefficients
 			K = network.calculateRateCoefficients(Tlist, Plist, Elist, method)
 
@@ -2330,7 +2343,7 @@ def updateUnimolecularReactionNetworks(reactionModel):
 				del reaction.reactant
 				del reaction.product
 				del reaction.E0
-			
+
 			network.valid = True
 
 ################################################################################

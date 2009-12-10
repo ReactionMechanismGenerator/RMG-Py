@@ -144,10 +144,15 @@ class CoreEdgeReactionModel:
 				if spec not in self.core.species: allSpeciesInCore = False
 				if spec not in self.edge.species and spec not in self.core.species:
 					self.addSpeciesToEdge(spec)
-			if allSpeciesInCore:
-				self.addReactionToCore(rxn)
-			else:
-				self.addReactionToEdge(rxn)
+			# We only add reactions that are not unimolecular if pressure
+			# dependence is on; unimolecular reactions will be added after 
+			# processing the associated networks
+			if not settings.unimolecularReactionNetworks or not (
+				rxn.isIsomerization() or rxn.isDissociation() or rxn.isAssociation()):
+				if allSpeciesInCore:
+					self.addReactionToCore(rxn)
+				else:
+					self.addReactionToEdge(rxn)
 		
 		logging.info('')
 		logging.info('After model enlargement:')
@@ -228,6 +233,13 @@ class CoreEdgeReactionModel:
 							rxnList.append(rxn)
 					for rxn in rxnList:
 						network.netReactions.remove(rxn)
+					# Delete all isomers involving the species
+					isomerList = []
+					for isomer in network.isomers:
+						if spec in isomer.species:
+							isomerList.append(isomer)
+					for isomer in isomerList:
+						network.isomers.remove(isomer)
 					# If no remaining reactions, delete the network (actually
 					# add to list of networks to be deleted in a subsequent
 					# step)

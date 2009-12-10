@@ -449,8 +449,6 @@ class BatchReactor(ReactionSystem):
 		else:
 			networksValid = True
 
-		print maxRelativeSpeciesFlux, maxSpecies, maxRelativeNetworkLeakFlux, maxNetwork
-
 		def removalSortKey(sp):
 			return maxRelativeFluxes_dict[sp]
 		speciesToRemove.sort(key=removalSortKey)

@@ -120,12 +120,16 @@ Kij, Fim, Gnj, nIsom, nProd, nGrains, K, msg)
 		! Determine the starting grain for the calculation based on the
 		! active-state cutoff energy
 		start = ceiling((Eres(src) - minval(E)) / (E(2) - E(1))) + 1
-
+		if (start < 1 .or. start > nGrains) then
+			msg = 'Unable to determine starting grain for an isomer; check active-state energies.'
+			return
+		end if
+		
 		! Zero the steady-state population vector for grains below the cutoff
 		do r = 1, start-1
 			do i = 1, nIsom
 				pa(r,i) = 0.0
-			end do
+		end do
 		end do
 
 		! Iterate over the grains, calculating the PSSA concentrations
