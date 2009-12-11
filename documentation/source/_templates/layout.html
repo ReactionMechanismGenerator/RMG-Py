@@ -2,7 +2,7 @@
 
 {%- block extrahead %} 
 {{ super() }}
-<link rel="stylesheet" href="{{ pathto('_static/' + 'RMG.css', 1) }}" type="text/css" />
+<link rel="stylesheet" href="{{ pathto('_static/' + 'rmg.css', 1) }}" type="text/css" />
 {% endblock %}
 
 {%- block relbaritems %}
@@ -24,7 +24,7 @@
 {% endblock %#}
 
 {# the relbar1 block appears immediately after the <body>, so we stick the analytics code in here. Beware of overwriting this block in an extending template. #}
-{######## GOOGLE ANALYTICS DISABLED FROM RMG-Py DOCUMENTATION ########
+
 {%- block relbar1 %}
 <script type="text/javascript">
 var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
@@ -37,14 +37,11 @@ pageTracker._trackPageview();
 } catch(err) {}</script>
 {{ super () }}
 {% endblock %}
-######## GOOGLE ANALYTICS DISABLED FROM RMG-Py DOCUMENTATION ########} 
+
 
 
 {%- block footer %}
     <div class="footer">
-		<div id="sourceforgelogo">
-		<a href="http://sourceforge.net/projects/rmg"><img src="http://sflogo.sourceforge.net/sflogo.php?group_id=191843&type=12" width="120" height="30" border="0" alt="Get RMG - Reaction Mechanism Generator at SourceForge.net. Fast, secure and Free Open Source software downloads" /></a>
-		</div>
     {%- if hasdoc('copyright') %}
       {% trans path=pathto('copyright'), copyright=copyright|e %}&copy; <a href="{{ path }}">Copyright</a> {{ copyright }}.{% endtrans %}
     {%- else %}

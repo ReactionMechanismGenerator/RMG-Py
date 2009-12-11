@@ -22,6 +22,8 @@ def change_pathto(app, pagename, templatename, context, doctree):
             otheruri = otheruri[1:]
         return pathto(otheruri, *args, **kw)
     context['pathto'] = gh_pathto
+    if context.has_key('body'):
+        context['body'] = context['body'].replace(u'_images/',u'images/')
     
 def move_private_folders(app, e):
     """
