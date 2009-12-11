@@ -37,6 +37,10 @@ Provides classes for working with the kinetics of chemical reactions:
 
 * :class:`ArrheniusEPKinetics` - A representation of an Arrhenius kinetic model with Evans-Polanyi correction
 
+* :class:`ChebyshevKinetics` - Pressure-dependent kinetics modeled with Chebyshev polynomials
+
+* :class:`PDepArrheniusKinetics` - Pressure-dependent kinetics modeled with Arrhenius expressions at multiple pressures
+
 """
 
 import math
@@ -192,6 +196,31 @@ class ArrheniusKinetics(Kinetics):
 		document.createQuantity('preexponential', kineticsElement, self.A, Aunits)
 		document.createQuantity('exponent', kineticsElement, self.n, '')
 		document.createQuantity('activationEnergy', kineticsElement, self.Ea/1000.0, 'kJ/mol')
+
+	def fitToData(self, Tlist, K):
+		"""
+		Fit an Arrhenius model to a set of rate coefficients `K`, which is a
+		list corresponding to the temperatures `Tlist` in K.
+		"""
+
+		import numpy
+
+		# Create matrix and vector for coefficient fit (linear least-squares)
+		A = numpy.zeros((len(Tlist), 3), numpy.float64)
+		b = numpy.zeros(len(Tlist), numpy.float64)
+		for t, T in enumerate(Tlist):
+			A[t,0] = 1.0
+			A[t,1] = math.log(T)
+			A[t,2] = -1.0 / constants.R / T
+			b[t] = math.log(K[t])
+
+		# Do linear least-squares fit to get coefficients
+		x, residues, rank, s = numpy.linalg.lstsq(A, b)
+
+		# Extract coefficients
+		self.A = math.exp(float(x[0]))
+		self.n = float(x[1])
+		self.Ea = float(x[2])
 
 ################################################################################
 
@@ -353,7 +382,7 @@ class PDepArrheniusKinetics(Kinetics):
 	A kinetic model of a phenomenological rate coefficient k(T, P) using the
 	expression
 
-	.. math:: k(T,P) = A(P) T^{n(P)} \\exp \\left[ \\frac{-E_\\mathrm{a}(T)}{RT} \\right]
+	.. math:: k(T,P) = A(P) T^{n(P)} \\exp \\left[ \\frac{-E_\\mathrm{a}(P)}{RT} \\right]
 
 	where the modified Arrhenius parameters are stored at a variety of pressures
 	and interpolated between on a logarithmic scale. The attributes are:
@@ -413,28 +442,15 @@ class PDepArrheniusKinetics(Kinetics):
 		coefficients `K`, which is a matrix corresponding to the temperatures
 		`Tlist` in K and pressures `Plist` in Pa.
 		"""
-
-		import numpy
-
+		# Initialize list of ArrheniusKinetics objects
 		self.arrhenius = []
+		# Create a copy of the list of pressures to store in the pressures attribute
 		self.pressures = Plist[:]
-
+		# Iterate over pressures, fitting Arrhenius parameters at each and
+		# appending to the list of Arrhenius expressions
 		for p, P in enumerate(Plist):
-
-			# Create matrix and vector for coefficient fit (linear least-squares)
-			A = numpy.zeros((len(Tlist), 3), numpy.float64)
-			b = numpy.zeros(len(Tlist), numpy.float64)
-			for t, T in enumerate(Tlist):
-				A[t,0] = 1.0
-				A[t,1] = math.log(T)
-				A[t,2] = -1.0 / constants.R / T
-				b[t] = math.log(K[t,p])
-
-			# Do linear least-squares fit to get coefficients
-			x, residues, rank, s = numpy.linalg.lstsq(A, b)
-
-			# Extract coefficients
-			arrh = ArrheniusKinetics(A=math.exp(float(x[0])), n=float(x[1]), Ea=float(x[2]))
+			arrh = ArrheniusKinetics()
+			arrh.fitToData(Tlist, K[:,p])
 			self.arrhenius.append(arrh)
 
 	def getArrhenius(self, P):
@@ -506,8 +522,8 @@ class ChebyshevKinetics(Kinetics):
 	
 	def getRateConstant(self, T, P):
 		"""
-		Return the rate constant k(T, P) at temperature `T` and pressure `P` by
-		evaluating the Chebyshev expression.
+		Return the rate constant k(T, P) in SI units at temperature `T` in K and
+		pressure `P` in Pa by evaluating the Chebyshev expression.
 		"""
 
 		Tred = self.__getReducedTemperature(T)
@@ -530,17 +546,13 @@ class ChebyshevKinetics(Kinetics):
 
 		import numpy
 
-		nT = len(Tlist)
-		nP = len(Plist)
+		nT = len(Tlist); nP = len(Plist)
 
-		self.degreeT = degreeT
-		self.degreeP = degreeP
+		self.degreeT = degreeT; self.degreeP = degreeP
 
 		# Set temperature and pressure ranges
-		self.Tmin = min(Tlist)
-		self.Tmax = max(Tlist)
-		self.Pmin = min(Plist)
-		self.Pmax = max(Plist)
+		self.Tmin = min(Tlist); self.Tmax = max(Tlist)
+		self.Pmin = min(Plist); self.Pmax = max(Plist)
 
 		# Calculate reduced temperatures and pressures
 		Tred = [self.__getReducedTemperature(T) for T in Tlist]
@@ -568,5 +580,4 @@ class ChebyshevKinetics(Kinetics):
 ################################################################################
 
 if __name__ == '__main__':
-	
 	pass
