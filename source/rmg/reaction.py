@@ -62,25 +62,27 @@ class Reaction:
 	"""
 	Represent a generic chemical reaction. The attributes are:
 	
-	==============  ============================================================
-	Attribute       Description
-	==============  ============================================================
-	`atomLabels`    A dictionary with the keys representing the labels and the
-	                values the atoms of the reactant or product species that
-	                were labeled at the time the reaction was generated
-	`bestKinetics`  The best kinetics for the reaction, always a derived class
-	                of :class:`kinetics.Kinetics`
-	`family`        The reaction family that this reaction represents, as a
-	                pointer to a :class:`ReactionFamily` object
-	`kinetics`      A list of all of the valid sets of kinetics for the reaction
-	`multiplier`    A multiplier to use to increase the reaction rate for cases
-	                when the reaction is generated multiple times due to
-	                different parts of the reactants yielding the same behavior
-	`products`      A list of the species that are produced by this reaction
-	`reactants`     A list of the species that are consumed by this reaction
-	`reverse`       A pointer to the reverse reaction, also a :class:`Reaction`
-	                object
-	==============  ============================================================
+	================= ==========================================================
+	Attribute         Description
+	================= ==========================================================
+	`atomLabels`      A dictionary with the keys representing the labels and the
+	                  values the atoms of the reactant or product species that
+	                  were labeled at the time the reaction was generated
+	`bestKinetics`    The best kinetics for the reaction, always a derived class
+	                  of :class:`kinetics.Kinetics`
+	`family`          The reaction family that this reaction represents, as a
+	                  pointer to a :class:`ReactionFamily` object
+	`kinetics`        A list of all of the valid sets of kinetics for the reaction
+	`multiplier`      A multiplier to use to increase the reaction rate for cases
+	                  when the reaction is generated multiple times due to
+	                  different parts of the reactants yielding the same behavior
+	`products`        A list of the species that are produced by this reaction
+	`reactants`       A list of the species that are consumed by this reaction
+	`reverse`         A pointer to the reverse reaction, also a :class:`Reaction`
+	                  object
+	`canteraReaction` A pointer to the corresponding reaction instance in
+	                  Cantera
+	================= ==========================================================
 
 	By convention, the forward reaction is taken to be that for which the
 	provided kinetics apply; the reverse kinetics are taken from thermodynamic
@@ -115,7 +117,7 @@ class Reaction:
 		isn't pickled properly (nor should it be).
 		"""
 		pickleMe = self.__dict__.copy()
-		del pickleMe['canteraReaction']
+		if 'canteraReaction' in pickleMe: del pickleMe['canteraReaction']
 		return pickleMe
 
 	def __str__(self):
@@ -147,7 +149,14 @@ class Reaction:
 
 		options = []
 
-		if self.canteraReaction is not None:
+		makeCanteraReaction = True
+		try:
+			if self.canteraReaction is not None:
+				makeCanteraReaction = False
+		except AttributeError:
+			pass
+		
+		if not makeCanteraReaction:
 			# If we're updating this reaction, then remove the original version
 			ctml_writer._reactions.remove(self.canteraReaction)
 			# If the old reaction was a duplicate, then the new one is too
@@ -546,21 +555,10 @@ class Reaction:
 class PDepReaction(Reaction):
 	"""
 	A reaction with kinetics that depend on both temperature and pressure. Much
-	of the functionality is inherited from :class:`Reaction`, with a few
-	notable exceptions:
-
-	* The kinetics are explicitly functions of pressure; therefore, pressure
-	  must be specified when calling :meth:`getRateConstant` and
-	  :meth:`getBestKinetics`.
-
-	* The kinetics of a pressure-dependent reaction are likely to change as
-	  partial pressure-dependent networks are explored. As such, we store the
-	  Cantera reaction object so that we can replace it when the kinetics are
-	  modified.
-
-	* We need to override the pickling procedure for this class due to the
-	  storing of the Cantera reaction object, which can't be pickled.
-	
+	of the functionality is inherited from :class:`Reaction`, with one
+	exception: as the kinetics are explicitly functions of pressure, the
+	pressure must be specified when calling :meth:`getRateConstant` and
+	:meth:`getBestKinetics`.
 	"""
 
 	def __init__(self, reactants, products, network, kinetics):
@@ -2124,227 +2122,8 @@ def makeNewReaction(reactants, products, reactantStructures, productStructures, 
 	# Note in the log
 	logging.debug('Created new ' + str(rxn.family) + ' reaction ' + str(rxn))
 	
-	if settings.unimolecularReactionNetworks:
-		# Update unimolecular reaction networks
-		net = addReactionToUnimolecularNetworks(rxn)
-		if net is not None: return rxn, True
-
 	# Return newly created reaction
 	return rxn, True
-
-################################################################################
-
-networks = []
-
-def addReactionToUnimolecularNetworks(newReaction):
-	"""
-	Given a newly-created :class:`Reaction` object `newReaction`, update the
-	corresponding unimolecular reaction network. If no network exists, a new
-	one is created. If the new reaction is an isomerization that connects two
-	existing networks, the two networks are merged. This function is called
-	whenever a new high-pressure limit edge reaction is created. Returns the
-	network containing the new reaction.
-	"""
-
-	import unirxn.network
-
-	def getNetworkContainingSpecies(spec):
-		for network in networks:
-			if network.containsSpecies(spec): return network
-		return None
-
-	# If the reaction is not unimolecular, then there's nothing to do
-	# Return None because we haven't added newReaction to a network
-	if not newReaction.isIsomerization() and not newReaction.isDissociation() and not newReaction.isAssociation():
-		return None
-
-	# Don't add reactions that are dissociation of a diatomic or association
-	# to form a diatomic
-	if newReaction.isDissociation() and len(newReaction.reactants[0].structure[0].atoms()) == 2:
-		return None
-	elif newReaction.isAssociation() and len(newReaction.products[0].structure[0].atoms()) == 2:
-		return None
-
-	# Find networks containing either the reactant or the product as a
-	# unimolecular isomer
-	reactantNetwork = None; productNetwork = None
-	if newReaction.isIsomerization() or newReaction.isDissociation():
-		reactantNetwork = getNetworkContainingSpecies(newReaction.reactants[0])
-	if newReaction.isIsomerization() or newReaction.isAssociation():
-		productNetwork = getNetworkContainingSpecies(newReaction.products[0])
-
-	# Action depends on results of above search
-	network = None
-	if reactantNetwork is not None and productNetwork is not None and reactantNetwork is productNetwork:
-		# Found the same network twice, so we don't need to merge
-		# This can happend when a net reaction is later generated by RMG as a
-		# path reaction
-		network = reactantNetwork
-	elif reactantNetwork is not None and productNetwork is not None:
-		# Found two different networks, so we need to merge
-		network = reactantNetwork
-		network.merge(productNetwork)
-		networks.remove(productNetwork)
-	elif reactantNetwork is not None and productNetwork is None:
-		# Found one network, so we add to it
-		network = reactantNetwork
-	elif reactantNetwork is None and productNetwork is not None:
-		# Found one network, so we add to it
-		network = productNetwork
-	else:
-		# Didn't find any networks, so we need to make a new one
-		network = unirxn.network.Network()
-		networks.append(network)
-
-	# Add the new reaction to whatever network was found/created above
-	network.addPathReaction(newReaction)
-
-	# Return the network that the reaction was added to
-	return network
-
-################################################################################
-
-def updateUnimolecularReactionNetworks(reactionModel):
-	"""
-	Iterate through all of the currently-existing unimolecular reaction
-	networks, updating those that have been marked as invalid. In each update,
-	the phenomonological rate coefficients :math:`k(T,P)` are computed for
-	each net reaction in the network, and the resulting reactions added or
-	updated.
-	"""
-
-	from unirxn.network import Isomer
-
-	for networkIndex, network in enumerate(networks):
-		if not network.valid:
-
-			logging.debug('Updating unimolecular reaction network %i' % (networkIndex+1))
-				
-			# Other inputs
-			method, Tlist, Plist, grainSize, numGrains, model = settings.unimolecularReactionNetworks
-
-			network.bathGas = [spec for spec in reactionModel.core.species if not spec.reactive][0]
-			network.bathGas.expDownParam = 4.86 * 4184
-
-			# Generate isomers
-			for reaction in network.pathReactions:
-
-				# Create isomer for the reactant
-				isomer = None
-				for isom in network.isomers:
-					if all([species in isom.species for species in reaction.reactants]):
-						isomer = isom
-				if isomer is None:
-					isomer = Isomer(reaction.reactants)
-					network.isomers.append(isomer)
-				reaction.reactant = isomer
-
-				# Create isomer for the product
-				isomer = None
-				for isom in network.isomers:
-					if all([species in isom.species for species in reaction.products]):
-						isomer = isom
-				if isomer is None:
-					isomer = Isomer(reaction.products)
-					network.isomers.append(isomer)
-				reaction.product = isomer
-
-			# Update list of explored isomers to include all species in core
-			for isom in network.isomers:
-				if isom.isUnimolecular():
-					spec = isom.species[0]
-					if spec not in network.explored:
-						if spec in reactionModel.core.species:
-							network.explored.append(spec)
-
-			# Remove any isomers that aren't found in any path reactions
-			# Ideally this block of code wouldn't be needed, but it's here
-			# just in case
-			isomerList = []
-			for isomer in network.isomers:
-				found = False
-				for reaction in network.pathReactions:
-					if reaction.reactant is isomer or reaction.product is isomer:
-						found = True
-						break
-				if not found:
-					isomerList.append(isomer)
-			if len(isomerList) > 0:
-				logging.debug('Removed %i isomer(s) from network %i.' % (len(isomerList), networkIndex))
-				for isomer in isomerList: network.isomers.remove(isomer)
-
-			# Sort isomers so that all unimolecular isomers come first
-			isomers = [isom for isom in network.isomers if isom.isUnimolecular()]
-			isomers.extend([isom for isom in network.isomers if isom.isMultimolecular()])
-			network.isomers = isomers
-
-			# Get list of species in network
-			speciesList = list(set([spec for isom in network.isomers for spec in isom.species]))
-
-			# Calculate ground-state energy of all species in network
-			# For now we assume that this is equal to the enthalpy of formation
-			# of the species
-			for spec in speciesList:
-				spec.E0 = spec.getEnthalpy(T=298)
-
-			# Determine isomer ground-state energies
-			for isomer in network.isomers:
-				isomer.E0 = sum([spec.E0 for spec in isomer.species])
-			# Determine transition state ground-state energies of the reactions
-			for reaction in network.pathReactions:
-				E0 = sum([spec.E0 for spec in reaction.reactants])
-				reaction.E0 = E0 + reaction.kinetics[0].getActivationEnergy(reaction.getEnthalpyOfReaction(T=298))
-
-			# Shift network such that lowest-energy isomer has a ground state of 0.0
-			network.shiftToZeroEnergy()
-
-			# Determine energy grains
-			Elist = network.determineEnergyGrains(grainSize, numGrains, max(Tlist))
-
-			# Calculate density of states for all isomers in network
-			network.calculateDensitiesOfStates(Elist)
-
-			# Determine phenomenological rate coefficients
-			K = network.calculateRateCoefficients(Tlist, Plist, Elist, method)
-
-			# Generate PDepReaction objects
-			for i, product in enumerate(network.isomers):
-				for j, reactant in enumerate(network.isomers[0:i]):
-					# Find the path reaction
-					netReaction = None
-					for r in network.netReactions:
-						if r.hasTemplate(reactant.species, product.species):
-							netReaction = r
-					# If path reaction does not already exist, make a new one
-					if netReaction is None:
-						netReaction = PDepReaction(reactant.species, product.species, network, None)
-						network.netReactions.append(netReaction)
-						reactionModel.addReactionToEdge(netReaction)
-					# Set its kinetics using interpolation model
-					if model[0].lower() == 'chebyshev':
-						modelType, degreeT, degreeP = model
-						chebyshev = ChebyshevKinetics()
-						chebyshev.fitToData(Tlist, Plist, K[:,:,i,j], degreeT, degreeP)
-						netReaction.kinetics = chebyshev
-					elif model.lower() == 'pdeparrhenius':
-						pDepArrhenius = PDepArrheniusKinetics()
-						pDepArrhenius.fitToData(Tlist, Plist, K[:,:,i,j])
-						netReaction.kinetics = pDepArrhenius
-					else:
-						pass
-
-					# Update cantera if this is a core reaction
-					if netReaction in reactionModel.core.reactions:
-						netReaction.toCantera()
-
-			for spec in speciesList:
-				del spec.E0
-			for reaction in network.pathReactions:
-				del reaction.reactant
-				del reaction.product
-				del reaction.E0
-
-			network.valid = True
 
 ################################################################################
 

@@ -284,7 +284,7 @@ class BatchReactor(ReactionSystem):
 		tlist = []; ylist = []; dydtlist = []
 		maxRelativeSpeciesFluxes = numpy.zeros(len(model.core.species) + len(model.edge.species), float)
 
-		maxRelativeNetworkLeakFluxes = numpy.zeros(len(reaction.networks), float)
+		maxRelativeNetworkLeakFluxes = numpy.zeros(len(model.unirxnNetworks), float)
 
 		endtime = 10.0 # default. check for user value:
 		for target in model.termination:
@@ -372,7 +372,7 @@ class BatchReactor(ReactionSystem):
 					if maxRelativeNetworkLeakFluxes[i] < abs(networkLeakFluxes[i]) / criticalFlux:
 						maxRelativeNetworkLeakFluxes[i] = abs(networkLeakFluxes[i]) / criticalFlux
 					if networkLeakFluxes[i] > maxNetworkFlux or maxNetwork is None:
-						maxNetwork = reaction.networks[i]
+						maxNetwork = model.unirxnNetworks[i]
 						maxNetworkFlux = networkLeakFluxes[i]
 				networksValid = (maxNetworkFlux <= criticalFlux)
 
@@ -440,11 +440,11 @@ class BatchReactor(ReactionSystem):
 		maxRelativeNetworkLeakFlux = 0.0; maxNetwork = None
 		if settings.unimolecularReactionNetworks:
 			# Compare maximum species fluxes
-			for i in range(len(reaction.networks)):
+			for i in range(len(model.unirxnNetworks)):
 				# pick out the single highest-flux edge species
 				if maxRelativeNetworkLeakFluxes[i] > maxRelativeNetworkLeakFlux or maxNetwork is None:
 					maxRelativeNetworkLeakFlux = maxRelativeNetworkLeakFluxes[i]
-					maxNetwork = reaction.networks[i]
+					maxNetwork = model.unirxnNetworks[i]
 			networksValid = maxRelativeNetworkLeakFlux < model.fluxToleranceMoveToCore
 		else:
 			networksValid = True
@@ -651,8 +651,8 @@ class BatchReactor(ReactionSystem):
 			conc[spec] = Ni[i] / V
 			totalConc += conc[spec]
 
-		leakFluxes = numpy.zeros(len(reaction.networks), numpy.float64)
-		for i, network in enumerate(reaction.networks):
+		leakFluxes = numpy.zeros(len(model.unirxnNetworks), numpy.float64)
+		for i, network in enumerate(model.unirxnNetworks):
 			leakFluxes[i] = network.getLeakFlux(T, P, conc, totalConc)
 		return leakFluxes
 		

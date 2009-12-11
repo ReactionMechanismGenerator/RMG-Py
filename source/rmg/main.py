@@ -135,7 +135,7 @@ def execute(inputFile, options):
 
 	# Handle unimolecular (pressure dependent) reaction networks
 	if settings.unimolecularReactionNetworks:
-		reaction.updateUnimolecularReactionNetworks(reactionModel)
+		reactionModel.updateUnimolecularReactionNetworks()
 		logging.info('')
 
 	# Main RMG loop
@@ -170,7 +170,7 @@ def execute(inputFile, options):
 		
 		# Handle unimolecular (pressure dependent) reaction networks
 		if settings.unimolecularReactionNetworks:
-			reaction.updateUnimolecularReactionNetworks(reactionModel)
+			reactionModel.updateUnimolecularReactionNetworks()
 			logging.info('')
 
 		# Save the restart file
