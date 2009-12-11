@@ -40,7 +40,8 @@ import constants
 import settings
 import reaction
 import species
-
+import unirxn.network
+		
 ################################################################################
 
 class ReactionModel:
@@ -111,29 +112,60 @@ class CoreEdgeReactionModel:
 		for spec in coreSpecies:
 			self.enlarge(spec)
 	
-	def enlarge(self, newSpecies):
+	def enlarge(self, newObject):
 		"""
-		Enlarge a reaction model by moving `newSpecies` from the edge to the
-		core.
+		Enlarge a reaction model by processing `newObject`. If `newObject` is a
+		:class:`rmg.species.Species` object, then the species is moved from
+		the edge to the core and reactions generated for that species, reacting
+		with itself and with all other species in the model core. If `newObject`
+		is a :class:`rmg.unirxn.network.Network` object, then reactions are
+		generated for the species in the network with the largest leak flux.
 		"""
 
 		rxnList = []
-		# Find reactions involving the new species as unimolecular reactant or
-		# product (e.g. A <---> products)
-		rxnList.extend(reaction.kineticsDatabase.getReactions([newSpecies]))
-		# Find reactions involving the new species as bimolecular reactants or
-		# products with itself (e.g. A + A <---> products)
-		rxnList.extend(reaction.kineticsDatabase.getReactions([newSpecies, newSpecies]))
-		# Find reactions involving the new species as bimolecular reactants or
-		# products with other core species (e.g. A + B <---> products)
-		for coreSpecies in self.core.species:
-			if coreSpecies.reactive:
-				rxnList.extend(reaction.kineticsDatabase.getReactions([newSpecies, coreSpecies]))
-		
-		# Add new species
-		self.addSpeciesToCore(newSpecies)
-		
-		# Add new reactions
+
+		if isinstance(newObject, species.Species):
+
+			newSpecies = newObject
+			# Find reactions involving the new species as unimolecular reactant
+			# or product (e.g. A <---> products)
+			rxnList.extend(reaction.kineticsDatabase.getReactions([newSpecies]))
+			# Find reactions involving the new species as bimolecular reactants
+			# or products with itself (e.g. A + A <---> products)
+			rxnList.extend(reaction.kineticsDatabase.getReactions([newSpecies, newSpecies]))
+			# Find reactions involving the new species as bimolecular reactants
+			# or products with other core species (e.g. A + B <---> products)
+			for coreSpecies in self.core.species:
+				if coreSpecies.reactive:
+					rxnList.extend(reaction.kineticsDatabase.getReactions([newSpecies, coreSpecies]))
+
+			# Add new species
+			self.addSpeciesToCore(newSpecies)
+
+			logging.info('')
+			logging.info('After model enlargement:')
+
+		elif isinstance(newObject, unirxn.network.Network) and settings.unimolecularReactionNetworks:
+			
+			network = newObject
+			# Determine the species with the maximum leak flux
+			maxSpecies, maxSpeciesFlux = network.getMaximumLeakSpecies()
+			network.explored.append(maxSpecies)
+			# Find reactions involving the found species as unimolecular 
+			# reactant or product (e.g. A <---> products)
+			rxnList = reaction.kineticsDatabase.getReactions([newSpecies])
+			# Don't find reactions involving the new species as bimolecular
+			# reactants or products with itself (e.g. A + A <---> products)
+			# Don't find reactions involving the new species as bimolecular
+			# reactants or products with other core species (e.g. A + B <---> products)
+			
+			logging.info('')
+			logging.info('After network enlargement:')
+
+		else:
+			raise TypeError('Unable to use object %s to enlarge reaction model; expecting an object of class rmg.species.Species or rmg.unirxn.network.Network.' % newObject)
+
+		# Add new reactions generated in above
 		for rxn in rxnList:
 			allSpeciesInCore = True
 			for spec in rxn.reactants:
@@ -154,8 +186,7 @@ class CoreEdgeReactionModel:
 				else:
 					self.addReactionToEdge(rxn)
 		
-		logging.info('')
-		logging.info('After model enlargement:')
+		# Output current model size information after enlargement
 		logging.info('\tThe model core has %s species and %s reactions' % (len(self.core.species), len(self.core.reactions)))
 		logging.info('\tThe model edge has %s species and %s reactions' % (len(self.edge.species), len(self.edge.reactions)))
 		logging.info('')

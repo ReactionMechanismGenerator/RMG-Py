@@ -406,7 +406,7 @@ class BatchReactor(ReactionSystem):
 					logging.info('At t = %s, a network leak flux exceeds the critical flux for simulation interruption' % (time))
 					logging.info('\tCharacteristic flux: %s' % (charFlux))
 					logging.info('\tCritical flux: %s (%s times charFlux)' % (criticalFlux, model.fluxToleranceInterrupt))
-					logging.info('\tSpecies flux for %s: %s (%.2g times charFlux)' % (maxNetwork, maxNetworkFlux, maxNetworkFlux/charFlux))
+					logging.info('\tNetwork leak flux for %s: %s (%.2g times charFlux)' % (maxNetwork, maxNetworkFlux, maxNetworkFlux/charFlux))
 					return tlist, ylist, dydtlist, False, maxNetwork
 
 			# Test for simulation completion
@@ -477,20 +477,21 @@ class BatchReactor(ReactionSystem):
 
 		# If model is not valid at these criteria, then return
 		if not edgeValid or not networksValid:
+			criticalFlux = charFlux * model.fluxToleranceMoveToCore
 			print gas
 			logging.info('')
 			# Choose the item with the maximum flux and act on it
 			if maxSpeciesFlux >= maxNetworkFlux:
 				logging.info('At some time the species flux for %s exceeded the critical flux\nrelative to the characteristic core flux at that time' % (maxSpecies))
 				logging.info('\tCharacteristic flux: %s' % (charFlux))
-				logging.info('\tCritical flux: %s (%s times charFlux)' % (criticalFlux, model.fluxToleranceInterrupt))
+				logging.info('\tCritical flux: %s (%s times charFlux)' % (criticalFlux, model.fluxToleranceMoveToCore))
 				logging.info('\tSpecies flux for %s: %s (%.2g times charFlux)' % (maxSpecies, maxSpeciesFlux, maxSpeciesFlux/charFlux))
 				return tlist, ylist, dydtlist, False, maxSpecies
 			else:
 				logging.info('At some time the network leak flux for %s exceeded the critical flux\nrelative to the characteristic core flux at that time' % (maxNetwork))
 				logging.info('\tCharacteristic flux: %s' % (charFlux))
-				logging.info('\tCritical flux: %s (%s times charFlux)' % (criticalFlux, model.fluxToleranceInterrupt))
-				logging.info('\tSpecies flux for %s: %s (%.2g times charFlux)' % (maxNetwork, maxNetworkFlux, maxNetworkFlux/charFlux))
+				logging.info('\tCritical flux: %s (%s times charFlux)' % (criticalFlux, model.fluxToleranceMoveToCore))
+				logging.info('\tNetwork leak flux for %s: %s (%.2g times charFlux)' % (maxNetwork, maxNetworkFlux, maxNetworkFlux/charFlux))
 				return tlist, ylist, dydtlist, False, maxNetwork
 
 		return tlist, ylist, dydtlist, True, None
