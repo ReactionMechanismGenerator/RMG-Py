@@ -102,11 +102,8 @@ def execute(inputFile, options):
 		import ctml_writer
 		logging.info('Loading previous restart file...')
 		f = open(os.path.join(settings.outputDirectory,'restart.pkl'), 'rb')
-		species.speciesList = cPickle.load(f)
-		species.speciesCounter = cPickle.load(f)
-		reaction.reactionList = cPickle.load(f)
-		reactionModel = cPickle.load(f)
-		reactionSystems = cPickle.load(f)
+		species.speciesList, species.speciesCounter, reaction.reactionList, \
+			reactionModel, reactionSystems = cPickle.load(f)
 		f.close()
 		# Cantera stuff
 		reload(ctml_writer) # ensure new empty ctml_writer._species and ._reactions lists
@@ -174,14 +171,19 @@ def execute(inputFile, options):
 			logging.info('')
 
 		# Save the restart file
+		# In order to get all the references preserved, you must pickle all of
+		# the objects in one concerted dump; this also has the added benefits
+		# of using less space and running faster
 		import cPickle
 		logging.info('Saving restart file...')
 		f = open(os.path.join(settings.outputDirectory,'restart.pkl'), 'wb')
-		cPickle.dump(species.speciesList, f)
-		cPickle.dump(species.speciesCounter, f)
-		cPickle.dump(reaction.reactionList, f)
-		cPickle.dump(reactionModel, f)
-		cPickle.dump(reactionSystems, f)
+		cPickle.dump((
+			species.speciesList,
+			species.speciesCounter,
+			reaction.reactionList,
+			reactionModel,
+			reactionSystems),
+			f)
 		f.close()
 
 		if not done:
