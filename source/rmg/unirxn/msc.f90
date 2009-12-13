@@ -24,7 +24,7 @@
 ! 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-subroutine estimateRateCoefficients(T, P, E, collFreq, densStates, Eres, &
+subroutine estimateRateCoefficients_MSC(T, P, E, collFreq, densStates, Eres, &
 Kij, Fim, Gnj, nIsom, nProd, nGrains, K, msg)
 	! Estimate the phenomenological rate coefficients using the (modified) strong
 	! collision method. The parameters are:

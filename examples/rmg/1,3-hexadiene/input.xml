@@ -94,8 +94,8 @@
 		<!--<generatePlots/>-->
 		<spectralDataEstimation/>
 		<unimolecularReactionNetworks>
-			<method>modifiedStrongCollision</method>
-			<!--<method>reservoirState</method>-->
+			<!--<method>modifiedStrongCollision</method>-->
+			<method>reservoirState</method>
 			<grainSize units="kJ/mol">8.0</grainSize>
 			<numberOfGrains>200</numberOfGrains>
 			<temperatures units="K">300.0 400.0 500.0 600.0 800.0 1000.0 1500.0 2000.0</temperatures>

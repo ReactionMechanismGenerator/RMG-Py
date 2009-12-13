@@ -41,14 +41,14 @@ import settings
 import reaction
 import species
 import unirxn.network
-		
+
 ################################################################################
 
 class ReactionModel:
 	"""
 	Represent a generic reaction model. A reaction model consists of `species`,
 	a list of species, and `reactions`, a list of reactions.
-	"""	
+	"""
 
 	def __init__(self, species=None, reactions=None):
 		self.species = species or []
@@ -59,8 +59,8 @@ class ReactionModel:
 class CoreEdgeReactionModel:
 	"""
 	Represent a reaction model constructed using a rate-based screening
-	algorithm. The species and reactions in the model itself are called the 
-	*core*; the species and reactions identified as candidates for inclusion in 
+	algorithm. The species and reactions in the model itself are called the
+	*core*; the species and reactions identified as candidates for inclusion in
 	the model are called the *edge*. The attributes are:
 
 	=========================  ==============================================================
@@ -79,8 +79,8 @@ class CoreEdgeReactionModel:
 	=========================  ==============================================================
 
 
-	"""	
-	
+	"""
+
 	def __init__(self, core=None, edge=None):
 		if core is None:
 			self.core = ReactionModel()
@@ -101,19 +101,19 @@ class CoreEdgeReactionModel:
 		self.maximumEdgeSpecies = 1000000
 		self.termination = []
 		self.unirxnNetworks = []
-	
+
 	def initialize(self, coreSpecies):
 		"""
 		Initialize a reaction model with a list `coreSpecies` of species to
 		start out with.
 		"""
-		
+
 		logging.info('')
-		
+
 		# Add all species present in input file to model core
 		for spec in coreSpecies:
 			self.enlarge(spec)
-	
+
 	def enlarge(self, newObject):
 		"""
 		Enlarge a reaction model by processing `newObject`. If `newObject` is a
@@ -148,19 +148,19 @@ class CoreEdgeReactionModel:
 			logging.info('After model enlargement:')
 
 		elif isinstance(newObject, unirxn.network.Network) and settings.unimolecularReactionNetworks:
-			
+
 			network = newObject
 			# Determine the species with the maximum leak flux
 			maxSpecies, maxSpeciesFlux = network.getMaximumLeakSpecies()
 			network.explored.append(maxSpecies)
-			# Find reactions involving the found species as unimolecular 
+			# Find reactions involving the found species as unimolecular
 			# reactant or product (e.g. A <---> products)
 			rxnList = reaction.kineticsDatabase.getReactions([newSpecies])
 			# Don't find reactions involving the new species as bimolecular
 			# reactants or products with itself (e.g. A + A <---> products)
 			# Don't find reactions involving the new species as bimolecular
 			# reactants or products with other core species (e.g. A + B <---> products)
-			
+
 			logging.info('')
 			logging.info('After network enlargement:')
 
@@ -179,7 +179,7 @@ class CoreEdgeReactionModel:
 				if spec not in self.edge.species and spec not in self.core.species:
 					self.addSpeciesToEdge(spec)
 			# We only add reactions that are not unimolecular if pressure
-			# dependence is on; unimolecular reactions will be added after 
+			# dependence is on; unimolecular reactions will be added after
 			# processing the associated networks
 			if not settings.unimolecularReactionNetworks or not (
 				rxn.isIsomerization() or rxn.isDissociation() or rxn.isAssociation()):
@@ -190,7 +190,7 @@ class CoreEdgeReactionModel:
 			else:
 				# Update unimolecular reaction networks
 				self.addReactionToUnimolecularNetworks(rxn)
-		
+
 		# Output current model size information after enlargement
 		logging.info('\tThe model core has %s species and %s reactions' % (len(self.core.species), len(self.core.reactions)))
 		logging.info('\tThe model edge has %s species and %s reactions' % (len(self.edge.species), len(self.edge.reactions)))
@@ -202,18 +202,18 @@ class CoreEdgeReactionModel:
 		necessary). This function also moves any reactions in the edge that gain
 		core status as a result of this change in status to the core.
 		"""
-		
+
 		# Add the species to the core
 		self.core.species.append(spec)
-		
+
 		# Add it to the cantera list
 		spec.toCantera()
-		
+
 		if spec in self.edge.species:
-			
+
 			# If species was in edge, remove it
 			self.edge.species.remove(spec)
-			
+
 			# Search edge for reactions that now contain only core species;
 			# these belong in the model core and will be moved there
 			rxnList = []
@@ -224,17 +224,17 @@ class CoreEdgeReactionModel:
 				for product in rxn.products:
 					if product not in self.core.species: allCore = False
 				if allCore: rxnList.append(rxn)
-				
+
 			# Move any identified reactions to the core
 			for rxn in rxnList:
 				self.addReactionToCore(rxn)
-	
+
 	def addSpeciesToEdge(self, spec):
 		"""
 		Add a species `spec` to the reaction model edge.
 		"""
 		self.edge.species.append(spec)
-	
+
 	def removeSpeciesFromEdge(self, spec):
 		"""
 		Remove species `spec` from the reaction model edge.
@@ -249,7 +249,7 @@ class CoreEdgeReactionModel:
 		# remove those reactions
 		for rxn in rxnList:
 			self.edge.reactions.remove(rxn)
-		
+
 		# Remove the species from any unirxn networks it is in
 		if settings.unimolecularReactionNetworks:
 			networksToDelete = []
@@ -291,7 +291,7 @@ class CoreEdgeReactionModel:
 
 		# remove from the global list of species, to free memory
 		species.speciesList.remove(spec)
-	
+
 	def addReactionToCore(self, rxn):
 		"""
 		Add a reaction `rxn` to the reaction model core (and remove from edge if
@@ -302,10 +302,10 @@ class CoreEdgeReactionModel:
 		self.core.reactions.append(rxn)
 		if rxn in self.edge.reactions:
 			self.edge.reactions.remove(rxn)
-		
+
 		# add it to the Cantera list
 		rxn.toCantera()
-	
+
 	def addReactionToEdge(self, rxn):
 		"""
 		Add a reaction `rxn` to the reaction model edge. This function assumes
@@ -315,7 +315,7 @@ class CoreEdgeReactionModel:
 		edge).
 		"""
 		self.edge.reactions.append(rxn)
-	
+
 	def getLists(self):
 		"""
 		Return lists of all of the species and reactions in the core and the
@@ -328,7 +328,7 @@ class CoreEdgeReactionModel:
 		reactionList.extend(self.core.reactions)
 		reactionList.extend(self.edge.reactions)
 		return speciesList, reactionList
-	
+
 	def getStoichiometryMatrix(self):
 		"""
 		Return the stoichiometry matrix for all core and edge species. The
@@ -341,7 +341,7 @@ class CoreEdgeReactionModel:
 			for i, spec in enumerate(speciesList):
 				stoichiometry[i,j] = rxn.getStoichiometricCoefficient(spec)
 		return stoichiometry
-	
+
 	def getReactionRates(self, T, P, Ci):
 		"""
 		Return an array of reaction rates for each reaction in the model core
@@ -498,7 +498,7 @@ class CoreEdgeReactionModel:
 
 				# Get list of species in network
 				speciesList = network.getSpeciesList()
-				
+
 				# Calculate ground-state energy of all species in network
 				# For now we assume that this is equal to the enthalpy of formation
 				# of the species
@@ -575,26 +575,26 @@ class TemperatureModel:
 	def __init__(self):
 		self.type = ''
 		self.temperatures = []
-		
+
 	def isIsothermal(self):
 		return self.type == 'isothermal'
-	
+
 	def setIsothermal(self, temperature):
 		self.type = 'isothermal'
 		self.temperatures = [ [0.0, temperature] ]
-	
+
 	def getTemperature(self, time=None):
 		if self.isIsothermal():
 			return self.temperatures[0][1]
 		else:
 			return None
-	
+
 	def __str__(self):
 		string = 'Temperature model: ' + self.type + ' '
 		if self.isIsothermal():
 			string += str(self.getTemperature(0))
 		return string
-	
+
 ################################################################################
 
 class PressureModel:
@@ -602,18 +602,18 @@ class PressureModel:
 	Represent a pressure profile. Currently the only implemented model is
 	isobaric (constant pressure).
 	"""
-	
+
 	def __init__(self):
 		self.type = ''
 		self.pressures = []
-		
+
 	def isIsobaric(self):
 		return self.type == 'isobaric'
-	
+
 	def setIsobaric(self, pressure):
 		self.type = 'isobaric'
 		self.pressures = [ [0.0, pressure] ]
-	
+
 	def getPressure(self, time=None):
 		if self.isIsobaric():
 			return self.pressures[0][1]
@@ -766,13 +766,13 @@ class IncompressibleLiquid:
 		self.V = V
 		self.N = N
 		self.Vmol = Vmol # Molar volume
-		
+
 	def getTemperature(self, P, V, N):
 		"""
 		Return the temperature associated with pressure `P`, volume `V`, and
 		numbers of moles `N`.
 		"""
-		if self.T: 
+		if self.T:
 			return self.T
 		else:
 			raise Exception("I'm a liquid, and can't deduce T from P,V,N.")
@@ -786,7 +786,7 @@ class IncompressibleLiquid:
 			return self.P
 		else:
 			raise Exception("I'm a liquid, and can't deduce P from T,V,N.")
-		
+
 	def getVolume(self, T, P, N):
 		"""
 		Return the volume associated with temperature `T`, pressure `P`, and
@@ -803,7 +803,7 @@ class IncompressibleLiquid:
 			return N * self.Vmol
 		else:
 			raise Exception("I'm a liquid with unknown molarVolume, and can't deduce V from T,P,N.")
-		
+
 	def getdPdV(self, P, V, T, N):
 		"""
 		Return the derivative :math:`\\frac{dP}{dV}\\big|_{T,\mathbf{N}}`
@@ -863,7 +863,7 @@ class IncompressibleLiquid:
 		return numpy.inf
 		### Warning: may be inconsistent with dVdNi and dVdP
 		## if dVdNi>0 and dVdP=0 then is'nt dPdNi = infinity ?
-		
+
 	def getdTdNi(self, P, V, T, N, i):
 		"""
 		Return the derivative :math:`\\frac{dT}{dN_i}\\big|_{P, V,\mathbf{N}_{j \\ne i}}`
@@ -872,22 +872,22 @@ class IncompressibleLiquid:
 		species of interest, corresponding to an index into the list `N`.
 		"""
 		return 0
-		
+
 	def getdVdNi(self, P, V, T, N, i):
 		"""
 		Return the derivative :math:`\\frac{dV}{dN_i}\\big|_{T, P,\mathbf{N}_{j \\ne i}}`
 		evaluated at a given pressure `P`, volume `V`, temperature `T`, and
 		numbers of moles `N`. The final parameter `i` is the index of the
 		species of interest, corresponding to an index into the list `N`.
-		
+
 		For lack of better information,
 		we assume that the partial molar volume of species `i`
 		is equal to the average molar volume of the mixture as a whole.
 		"""
-		
+
 		if self.Vmol: # molar volume is set; assume it's the same for all components, and use it
-			return self.Vmol 
-			
+			return self.Vmol
+
 		# Else assume that the partial molar volume of species i
 		# is equal to the average molar volume of all species
 		if type(N) is dict: return (V/numpy.sum(N.values()))
@@ -909,23 +909,23 @@ class InvalidReactionSystemException(Exception):
 		return 'Invalid reaction system: ' + self.label
 
 ################################################################################
-	
+
 class ReactionSystem:
 	"""
 	Represent a generic reaction system, e.g. a chemical reactor. A reaction
-	system is defined by a temperature model `temperatureModel`, a pressure 
-	model `pressureModel`, a volume model `volumeModel`, and a dictionary of 
+	system is defined by a temperature model `temperatureModel`, a pressure
+	model `pressureModel`, a volume model `volumeModel`, and a dictionary of
 	initial and constant concentrations `initialConcentration`. Only two of
 	`temperatureModel`, `pressureModel`, and `volumeModel` are independent; the
 	remaining one must be set to :data:`None`.
 
 	Each RMG job can handle multiple reaction systems; the resulting model
-	will generally be the union of the models that would have been generated 
+	will generally be the union of the models that would have been generated
 	via individual RMG jobs, and will therefore be valid across all reaction
-	systems provided.	
+	systems provided.
 	"""
 
-	def __init__(self, temperatureModel=None, pressureModel=None, 
+	def __init__(self, temperatureModel=None, pressureModel=None,
 				 volumeModel=None, initialConcentration=None):
 		self.setModels(temperatureModel, pressureModel, volumeModel)
 		self.initialConcentration = initialConcentration or {}
@@ -977,7 +977,7 @@ if __name__ == '__main__':
 	import species
 	import reaction
 	import thermo
-	
+
 	import os.path
 	import main
 	main.initializeLog(logging.DEBUG)
@@ -1023,5 +1023,5 @@ if __name__ == '__main__':
 	reactionSystem.initialConcentration[CH4] = pq.Quantity(1, 'mol/m**3')
 
 	reactionSystem.solve(0.0, 1.0e0, speciesList, reactionList)
-	
+
 	

@@ -24,7 +24,7 @@
 ! 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-subroutine estimateRateCoefficients(T, P, E, Mcoll, densStates, E0, Eres, &
+subroutine estimateRateCoefficients_RS(T, P, E, Mcoll, densStates, E0, Eres, &
 Kij, Fim, Gnj, dEdown, nIsom, nProd, nGrains, K, msg)
 	! Estimate the phenomenological rate coefficients using the (modified) strong
 	! collision method. The parameters are:
@@ -123,7 +123,7 @@ Kij, Fim, Gnj, dEdown, nIsom, nProd, nGrains, K, msg)
 	! Check that PSSA populations are all nonnegative; fail if not
 	do i = 1, nIsom
 		do n = 1, nIsom+nProd
-			do r = 1, nGrains
+			do r = nRes(i), nGrains
 				if (pa(r,n,i) < 0.0) then
 					msg = 'One or more negative steady-state populations encountered.'
 					return

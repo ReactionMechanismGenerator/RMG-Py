@@ -562,15 +562,16 @@ class Network:
 					reaction.kf, reaction.kb = reaction.calculateMicrocanonicalRate(Elist,
 						T, reaction.reactant.densStates, reaction.product.densStates)
 
-	#			# DEBUG: Plot microcanonical rates
-	#			import pylab
-	#			for reaction in self.pathReactions:
-	#				if reaction.isIsomerization():
-	#					pylab.semilogy(Elist / 1000.0, reaction.kf, '-')
-	#					pylab.semilogy(Elist / 1000.0, reaction.kb, '--')
-	#			pylab.xlabel('Energy (kJ/mol)')
-	#			pylab.ylabel('Microcanonical rate')
-	#			pylab.show()
+#				# DEBUG: Plot microcanonical rates
+#				import pylab
+#				for i, reaction in enumerate(self.pathReactions):
+#					if reaction.isIsomerization() or reaction.isDissociation():
+#						pylab.semilogy(Elist / 1000.0, reaction.kf, '-')
+#					if reaction.isIsomerization() or reaction.isAssociation():
+#						pylab.semilogy(Elist / 1000.0, reaction.kb, '--')
+#				pylab.xlabel('Energy (kJ/mol)')
+#				pylab.ylabel('Microcanonical rate')
+#				pylab.show()
 
 				for p, P in enumerate(Plist):
 
@@ -660,8 +661,8 @@ class Network:
 
 			# Apply modified strong collision method
 			import msc
-			K, msg = msc.estimateratecoefficients(T, P, Elist, collFreq, densStates, Eres,
-				Kij, Fim, Gnj)
+			K, msg = msc.estimateratecoefficients_msc(T, P, Elist, collFreq, densStates, Eres,
+				Kij, Fim, Gnj, nIsom, nProd, nGrains)
 			msg = msg.strip()
 			if msg != '':
 				raise UnirxnNetworkException('Unable to apply modified strong collision method: %s' % msg)
@@ -688,16 +689,17 @@ class Network:
 
 			# Apply reservoir state method
 			import rs
-			K, msg = rs.estimateratecoefficients(T, P, Elist, Mcoll, densStates, E0, Eres,
-				Kij, Fim, Gnj, dEdown)
+			K, msg = rs.estimateratecoefficients_rs(T, P, Elist, Mcoll, densStates, E0, Eres,
+				Kij, Fim, Gnj, dEdown, nIsom, nProd, nGrains)
 			msg = msg.strip()
 			
-		if not numpy.isfinite(K).all():
-			print K
-			msg = 'Non-finite rate constant returned at %s K, %s Pa.' % (T, P)
-		elif 0.0 in K:
-			print K
-			msg = 'Zero rate constant returned at %s K, %s Pa.' % (T, P)
+		if msg == '':
+			if not numpy.isfinite(K).all():
+				print K
+				msg = 'Non-finite rate constant returned at %s K, %s Pa.' % (T, P)
+			elif 0.0 in K:
+				print K
+				msg = 'Zero rate constant returned at %s K, %s Pa.' % (T, P)
 
 		if msg != '':
 			raise UnirxnNetworkException('Unable to apply method %s: %s' % (method, msg))
