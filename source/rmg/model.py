@@ -76,6 +76,7 @@ class CoreEdgeReactionModel:
 	`maximumEdgeSpecies`       The maximum number of edge species allowed at any time
 	`termination`              A list of termination targets (i.e :class:`TerminationTime` and :class:`TerminationConversion` objects)
 	`unirxnNetworks`           A list of unimolecular reaction networks (:class:`unirxn.network.Network` objects)
+	`networkCount`             A counter for the number of unirxn networks created
 	=========================  ==============================================================
 
 
@@ -101,6 +102,7 @@ class CoreEdgeReactionModel:
 		self.maximumEdgeSpecies = 1000000
 		self.termination = []
 		self.unirxnNetworks = []
+		self.networkCount = 0
 
 	def initialize(self, coreSpecies):
 		"""
@@ -284,7 +286,7 @@ class CoreEdgeReactionModel:
 
 			# Complete deletion of empty networks
 			for network in networksToDelete:
-				logging.debug('Deleting empty unirxn network %i' % (self.unirxnNetworks.index(network)+1))
+				logging.debug('Deleting empty unirxn network %s' % network.id)
 				self.unirxnNetworks.remove(network)
 
 
@@ -411,7 +413,8 @@ class CoreEdgeReactionModel:
 		else:
 			# Didn't find any networks, so we need to make a new one
 			import unirxn.network
-			network = unirxn.network.Network()
+			self.networkCount += 1
+			network = unirxn.network.Network(id=self.networkCount)
 			self.unirxnNetworks.append(network)
 
 		# Add the new reaction to whatever network was found/created above
@@ -433,10 +436,10 @@ class CoreEdgeReactionModel:
 		from reaction import PDepReaction
 		from kinetics import ChebyshevKinetics, PDepArrheniusKinetics
 
-		for networkIndex, network in enumerate(self.unirxnNetworks):
+		for network in self.unirxnNetworks:
 			if not network.valid:
 
-				logging.debug('Updating unimolecular reaction network %i' % (networkIndex+1))
+				logging.debug('Updating unimolecular reaction network %s' % network.id)
 
 				# Other inputs
 				method, Tlist, Plist, grainSize, numGrains, model = settings.unimolecularReactionNetworks
@@ -488,7 +491,7 @@ class CoreEdgeReactionModel:
 					if not found:
 						isomerList.append(isomer)
 				if len(isomerList) > 0:
-					logging.debug('Removed %i isomer(s) from network %i.' % (len(isomerList), networkIndex))
+					logging.debug('Removed %i isomer(s) from network %i.' % (len(isomerList), network.id))
 					for isomer in isomerList: network.isomers.remove(isomer)
 
 				# Sort isomers so that all unimolecular isomers come first

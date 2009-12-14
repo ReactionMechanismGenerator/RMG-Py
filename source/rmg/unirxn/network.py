@@ -255,6 +255,7 @@ class Network:
 	=============== ============================================================
 	Attribute       Description
 	=============== ============================================================
+	`id`            A unique identifier for the network
 	`isomers`       A list of :class:`Isomer` objects that make up the network
 	`pathReactions` A list of :class:`Reaction` objects that connect adjacent
 	                isomers (the "path" reactions)
@@ -268,7 +269,8 @@ class Network:
 
 	"""
 
-	def __init__(self):
+	def __init__(self, id=0):
+		self.id = id
 		self.isomers = []
 		self.pathReactions = []
 		self.netReactions = []
