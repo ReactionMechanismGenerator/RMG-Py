@@ -212,9 +212,9 @@ subroutine reservoirCutoffs(E0, Eres, nIsom, E, nGrains, dEdown, nRes)
 			! transition state energy
 			nRes(i) = ceiling((Eres(i) - Emin) / dE) - 4
 			if (nRes(i) < start) then
-				! If this is still too low, then just put the cutoff at the
-				! first excited energy
-				nRes(i) = start + 1
+				! If this is still too low, then just put the cutoff a few
+				! grains above the ground state
+				nRes(i) = start + 4
 			end if
 		end if
 	end do
