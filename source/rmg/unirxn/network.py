@@ -136,6 +136,9 @@ class Isomer:
 				index = i
 		if index >= 0:
 			self.densStates[index:len(densStates)] = densStates[0:len(densStates)-index]
+		else:
+			raise UnirxnNetworkException('Invalid energy range %s-%s kJ/mol for density of states calculation for %s with ground-state energy %s kJ/mol.'
+				% (min(Elist) / 1000.0, max(Elist) / 1000.0, self, self.E0 / 1000.0))
 
 	def calculateEqDist(self, Elist, T):
 		"""
@@ -523,8 +526,8 @@ class Network:
 		# transition state or isomer energy
 		Emax0_iso = max([i.E0 for i in self.isomers])
 		Emax0_rxn = max([r.E0 for r in self.pathReactions])
-		Emax += max([Emax0_iso, Emax0_rxn]) - isomer.E0
-
+		Emax += max([Emax0_iso, Emax0_rxn])
+		
 		# Round Emax up to nearest integer
 		Emax = math.ceil(Emax)
 
@@ -563,7 +566,7 @@ class Network:
 				for reaction in self.pathReactions:
 					reaction.kf, reaction.kb = reaction.calculateMicrocanonicalRate(Elist,
 						T, reaction.reactant.densStates, reaction.product.densStates)
-
+					
 #				# DEBUG: Plot microcanonical rates
 #				import pylab
 #				for i, reaction in enumerate(self.pathReactions):
