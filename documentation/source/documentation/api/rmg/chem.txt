@@ -47,13 +47,9 @@ The atom types defined in RMG, which can be accessed by label using the :data:`a
 ======  ======================================================================
 Label   Description
 ======  ======================================================================
-    *Generic atom types*
-------------------------------------------------------------------------------
 R       generic functional group
 R!H     generic non-hydrogen functional group
 ------  ----------------------------------------------------------------------
-    *Element atom types*
-------------------------------------------------------------------------------
 H       hydrogen
 C       carbon
 N       nitrogen
@@ -68,8 +64,6 @@ Ar      argon
 Br      bromine
 I       iodine
 ------  ----------------------------------------------------------------------
-    *Carbon atom types*
-------------------------------------------------------------------------------
 Ct      carbon with one triple bond and one single bond
 Cs      carbon with four single bonds
 Cd      carbon with one double bond and two single bonds
@@ -77,13 +71,9 @@ Cdd     carbon with two double bonds
 Cb      carbon belonging to a benzene ring
 Cbf     carbon belonging to a fused benzene ring
 ------  ----------------------------------------------------------------------
-    *Oxygen atom types*
-------------------------------------------------------------------------------
 Os      oxygen with two single bonds
 Od      oxygen with one double bond
 ------  ----------------------------------------------------------------------
-    *Silicon atom types*
-------------------------------------------------------------------------------
 Sit     silicon with one triple bond and one single bond
 Sis     silicon with four single bonds
 Sids    silicon with one double bond and two single bonds

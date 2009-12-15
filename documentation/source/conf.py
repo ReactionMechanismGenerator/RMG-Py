@@ -177,8 +177,8 @@ latex_font_size = '11pt'
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, document class [howto/manual]).
 latex_documents = [
-  ('index', 'RMG.tex', ur'RMG Documentation',
-   ur'Prof. William H. Green and the RMG Team', 'manual'),
+  ("documentation/manual/index", "RMG_users_guide.tex", ur"RMG User's Guide", ur"Prof. William H. Green and the RMG Team", "manual"),
+  ("documentation/api/index", "RMG_developers_guide.tex", ur"RMG Developer's Guide", ur"Prof. William H. Green and the RMG Team", "manual"),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of

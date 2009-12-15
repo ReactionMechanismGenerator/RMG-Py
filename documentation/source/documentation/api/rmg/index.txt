@@ -1,0 +1,23 @@
+*******************
+The ``rmg`` Package
+*******************
+
+.. toctree::
+	:numbered:
+	:maxdepth: 1
+	
+	cantera_loader
+	chem
+	constants
+	data
+	graph
+	io
+	kinetics
+	main
+	model
+	reaction
+	species
+	spectral
+	structure
+	thermo
+	
