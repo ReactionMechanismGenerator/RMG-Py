@@ -282,7 +282,7 @@ class Structure:
 		else:
 			raise io.InvalidInputFileException('Invalid format "%s" for structure element; allowed values are "cml", "inchi", and "smiles".' % format)
 
-	def fromAdjacencyList(self, adjlist):
+	def fromAdjacencyList(self, adjlist, addH=False):
 		"""
 		Convert a string adjacency list `adjlist` into a structure object.
 		"""
@@ -373,6 +373,26 @@ class Structure:
 				elif bonddict[atom1][atom2] != bonddict[atom2][atom1]:
 					raise InvalidAdjacencyListException(label)
 
+		# Add hydrogen atoms to complete structure
+		if addH:
+			newAtoms = []; newBonds = []
+			for atom in atoms:
+				valence = atom.atomType.element.valence
+				if len(valence) == 1: valence = valence[0]
+				else: raise Exception('Multiple valences encountered while padding structure with hydrogen atoms.')
+				radical = atom.electronState.order
+				order = 0
+				for bond in bonds:
+					if atom in bond.atoms:
+						order += bond.bondType.order
+				count = valence - radical - int(order)
+				for i in range(count):
+					a = chem.Atom('H', '0', 0, '')
+					b = chem.Bond([atom, a], 'S')
+					newAtoms.append(a)
+					newBonds.append(b)
+			atoms.extend(newAtoms); bonds.extend(newBonds)
+			
 		# Create and return functional group or species
 		self.initialize(atoms, bonds)
 

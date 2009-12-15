@@ -137,7 +137,7 @@ class Dictionary(dict):
 		finally:	
 			fdict.close()
 		
-	def toStructure(self):
+	def toStructure(self, addH=False):
 		"""
 		Convert the values stored in the dictionary from adjacency list strings
 		to :class:`structure.Structure` objects. If a record is a union, it is 
@@ -155,7 +155,7 @@ class Dictionary(dict):
 			else:
 				try:
 					struct = structure.Structure()
-					struct.fromAdjacencyList(record)
+					struct.fromAdjacencyList(record, addH)
 					self[label] = struct
 				except structure.InvalidAdjacencyListException, e:
 					logging.error('\t\t\t' + str(e))

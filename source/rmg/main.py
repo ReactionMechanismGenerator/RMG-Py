@@ -96,6 +96,8 @@ def execute(inputFile, options):
 	# Read input file
 	reactionModel, coreSpecies, reactionSystems = io.readInputFile(inputFile)
 	
+	#reactionModel.loadSeedMechanism('/files/research/rmgpy/devel/data/GRI-Mech3.0')
+	
 	# Initialize reaction model
 	if options.restart:
 		import cPickle

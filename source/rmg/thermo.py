@@ -112,8 +112,7 @@ class ThermoGAData(ThermoData):
 	========= ========================================================
 	`H298`    the standard enthalpy of formation at 298 K in J/mol
 	`S298`    the standard entropy of formation at 298 K in J/mol*K
-	`Cp`      the standard heat capacity in J/mol*K at 300, 400, 500,
-		      600, 800, 1000, and 1500 K
+	`Cp`      the standard heat capacity in J/mol*K at 300, 400, 500, 600, 800, 1000, and 1500 K
 	========= ========================================================
 	"""
 	# I think putting a comment with a colon just before the thing is defined

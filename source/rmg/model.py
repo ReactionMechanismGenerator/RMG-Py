@@ -157,7 +157,7 @@ class CoreEdgeReactionModel:
 			network.explored.append(maxSpecies)
 			# Find reactions involving the found species as unimolecular
 			# reactant or product (e.g. A <---> products)
-			rxnList = reaction.kineticsDatabase.getReactions([newSpecies])
+			rxnList = reaction.kineticsDatabase.getReactions([maxSpecies])
 			# Don't find reactions involving the new species as bimolecular
 			# reactants or products with itself (e.g. A + A <---> products)
 			# Don't find reactions involving the new species as bimolecular
@@ -204,6 +204,8 @@ class CoreEdgeReactionModel:
 		necessary). This function also moves any reactions in the edge that gain
 		core status as a result of this change in status to the core.
 		"""
+
+		if spec in self.core.species: return
 
 		# Add the species to the core
 		self.core.species.append(spec)
@@ -566,6 +568,62 @@ class CoreEdgeReactionModel:
 					del reaction.E0
 
 				network.valid = True
+
+	def loadSeedMechanism(self, path):
+		"""
+		Loads a seed mechanism from the folder indicated by `path` into the
+		core-edge reaction model.
+		"""
+
+		import os.path
+		import data
+		import species
+		import kinetics
+		import reaction
+
+		# Load the species list from the file species.txt
+		# This file has the format of a standard RMG dictionary
+		d = data.Dictionary()
+		d.load(os.path.join(path, 'species.txt'))
+		d.toStructure(addH=True)
+		speciesDict = {}
+		for label, struct in d.iteritems():
+			speciesDict[label] = species.makeNewSpecies(struct, label, reactive=True)
+		print species.speciesList
+		
+		# Load the non-pressure dependent reactions from the file reaction.txt
+		reactionList = []
+		f = open(os.path.join(path, 'reactions.txt'), 'r')
+		for line in f:
+			line = data.removeCommentFromLine(line)
+			line.strip()
+			if len(line) > 0:
+				items = line.split()
+				if len(items) > 0:
+					rxn = items[0:-6]
+					# Extract Arrhenius parameters
+					A = float(items[-6]) * 1.0e6	# mol/cm^3*s to mol/m^3*s
+					n = float(items[-5])			# dimensionless
+					Ea = float(items[-4]) * 4.184	# cal/mol to J/mol
+					kin = [kinetics.ArrheniusKinetics(A=A, n=n, Ea=Ea)]
+					# Extract reactants and products
+					if '<=>' in rxn: arrow = rxn.index('<=>')
+					elif '=>' in rxn: arrow = rxn.index('=>')
+					else: raise IOError('No arrow found in reaction equation from line %s' % line)
+					reactants = [speciesDict[r] for r in rxn[0:arrow:2]]
+					products = [speciesDict[r] for r in rxn[arrow+1::2]]
+					# Create reaction object and add to list
+					rxn = reaction.Reaction(reactants, products, 'seed', kin)
+					reaction.processNewReaction(rxn)
+					reactionList.append(rxn)
+		f.close()
+
+		# Add species to core
+		for label, spec in speciesDict.iteritems():
+			self.addSpeciesToCore(spec)
+		# Add reactions to core
+		for rxn in reactionList:
+			self.addReactionToCore(rxn)
 
 ################################################################################
 

@@ -410,7 +410,7 @@ def loadElectronStates():
 	electronStates['2S'].setActions(increment=electronStates['3'], decrement=electronStates['1'])
 	electronStates['2T'].setActions(increment=electronStates['3'], decrement=electronStates['1'])
 	electronStates['3'].setActions(increment=electronStates['4'], decrement=electronStates['2'])
-	electronStates['4'].setActions(decrement=electronStates['1'])
+	electronStates['4'].setActions(decrement=electronStates['3'])
 
 	return electronStates
 

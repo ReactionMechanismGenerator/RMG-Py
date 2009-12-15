@@ -1854,14 +1854,17 @@ def kineticsInverseLaplaceTransform(kinetics, E0, densStates, Elist, T):
 	import unirxn.states as states
 
 	if kinetics.Ea < 0.0:
-		raise Exception('Cannot currently handle negative activation energies.')
+		logging.warning('Negative activation energy of %s kJ/mol encountered during unirxn calculation; setting to zero.' % (kinetics.Ea / 1000.0))
+		Ea = 0.0
+	else:
+		Ea = kinetics.Ea
 
 	dE = Elist[1] - Elist[0]
 	k = numpy.zeros(len(Elist), numpy.float64)
 
 	if kinetics.n == 0.0:
 		# Determine the microcanonical rate directly
-		s = int(math.floor(kinetics.Ea / dE))
+		s = int(math.floor(Ea / dE))
 		for r in range(len(Elist)):
 			if Elist[r] > E0 and densStates[r] != 0:
 				k[r] = kinetics.A * densStates[r - s] / densStates[r]
@@ -1879,14 +1882,14 @@ def kineticsInverseLaplaceTransform(kinetics, E0, densStates, Elist, T):
 		# Evaluate the convolution
 		states.convolve(phi, densStates, Elist)
 		# Apply to determine the microcanonical rate
-		s = int(math.floor(kinetics.Ea / dE))
+		s = int(math.floor(Ea / dE))
 		for r in range(len(Elist)):
 			if Elist[r] > E0 and densStates[r] != 0:
 				k[r] = kinetics.A * phi[r - s] / densStates[r]
 
 	else:
 		# Use the cheating method for n < 0
-		s = int(math.floor(kinetics.Ea / dE))
+		s = int(math.floor(Ea / dE))
 		for r in range(len(Elist)):
 			if Elist[r] > E0 and densStates[r] != 0:
 				k[r] = kinetics.A * T**kinetics.n * densStates[r - s] / densStates[r]
@@ -2038,14 +2041,15 @@ def makeNewReaction(reactants, products, reactantStructures, productStructures, 
 	# Check that the reaction is unique
 	matchReaction = None
 	for rxn in reactionList:
-		# Check forward reaction for match
-		if rxn.family.label == family.label:
-			if rxn.reactants == reactants and rxn.products == products:
-				matchReaction = rxn
-				break # found a match so stop checking other rxn
-		# Check reverse reaction for match
-		if rxn.reverse.family.label == family.label:
-			if rxn.reactants == products and rxn.products == reactants:
+		if (rxn.reactants == reactants and rxn.products == products) or \
+			(rxn.reactants == products and rxn.products == reactants):
+			# If both families are ReactionFamily objects, then also check
+			# those for match; if not, assume a match
+			if isinstance(rxn.family, ReactionFamily) and isinstance(family, ReactionFamily):
+				if rxn.family.label == family.label:
+					matchReaction = rxn
+					break # found a match so stop checking other rxn
+			else:
 				matchReaction = rxn
 				break # found a match so stop checking other rxn
 	
@@ -2117,11 +2121,19 @@ def makeNewReaction(reactants, products, reactantStructures, productStructures, 
 	forward.kinetics = forwardKinetics
 	reverse.kinetics = reverseKinetics
 
+	return processNewReaction(rxn)
+
+def processNewReaction(rxn):
+	"""
+	Once a reaction `rxn` has been created (e.g. via :meth:`makeNewReaction`),
+	this function handles other aspects	of preparing it for RMG.
+	"""
+
 	reactionList.insert(0, rxn)
-	
+
 	# Note in the log
 	logging.debug('Created new ' + str(rxn.family) + ' reaction ' + str(rxn))
-	
+
 	# Return newly created reaction
 	return rxn, True
 
