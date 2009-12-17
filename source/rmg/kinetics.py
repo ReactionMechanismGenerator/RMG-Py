@@ -340,40 +340,28 @@ class ArrheniusEPKinetics(Kinetics):
 		self.comment = comment
 		self.numReactants = numReactants
 
-	def toXML(self, dom, root):
+	def toXML(self, document, rootElement, numReactants):
 		"""
-		Generate the XML for these kinetics using the :data:`xml.dom.minidom`
-		package. The `dom` and `root` parameters refer to the DOM and the
-		point within the DOM to place this item.
+		Add a <kinetics> element as a child of `rootElement` using
+		RMG-style XML. `document` is an :class:`io.XML` class representing the
+		XML DOM tree.
 		"""
-		kinetics = dom.createElement('arrheniusEPKinetics')
-		root.appendChild(kinetics)
-		kinetics.setAttribute('Trange', '%s-%s K' % (self.Trange[0], self.Trange[1]))
-		kinetics.setAttribute('rank', str(self.rank))
-		kinetics.setAttribute('comment', self.comment)
 
+		kineticsElement = document.createElement('kinetics', rootElement)
+		document.createAttribute('type', kineticsElement, 'ArrheniusEP')
+		document.createAttribute('Trange', kineticsElement, '%s-%s K' % (self.Trange[0], self.Trange[1]))
+		document.createAttribute('rank', kineticsElement, str(self.rank))
+		document.createAttribute('comment', kineticsElement, self.comment)
 
-		preexponential = dom.createElement('preexponential')
-		kinetics.appendChild(preexponential)
-		preexponentialUnits = None
-		numReactants = self.numReactants
 		if numReactants == 1:
-			preexponentialUnits = 's^-1'
+			Aunits = 's^-1'
 		else:
-			preexponentialUnits = 'm^%s/(mol^%s*s)' % ((numReactants-1)*3, numReactants-1)
-		data.createXMLQuantity(dom, preexponential, self.A, preexponentialUnits)
-
-		exponent = dom.createElement('exponent')
-		kinetics.appendChild(exponent)
-		data.createXMLQuantity(dom, exponent, self.n, '')
-
-		alpha = dom.createElement('evansPolanyiSlope')
-		kinetics.appendChild(alpha)
-		data.createXMLQuantity(dom, alpha, self.alpha, '')
-
-		activationEnergy = dom.createElement('evansPolanyiIntercept')
-		kinetics.appendChild(activationEnergy)
-		data.createXMLQuantity(dom, activationEnergy, self.E0, 'J/mol')
+			Aunits = 'm^%s/(mol^%s*s)' % ((numReactants-1)*3, numReactants-1)
+		
+		document.createQuantity('preexponential', kineticsElement, self.A, Aunits)
+		document.createQuantity('exponent', kineticsElement, self.n, '')
+		document.createQuantity('evansPolanyiSlope', kineticsElement, self.alpha, '')
+		document.createQuantity('evansPolanyiIntercept', kineticsElement, self.E0/1000.0, 'kJ/mol')
 
 ################################################################################
 

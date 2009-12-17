@@ -313,7 +313,7 @@ def readDatabaseList(xml0, rootElement):
 		# Get database type
 		databaseType = xml0.getAttribute(element, 'type', required=True)
 		databaseType = databaseType.lower()
-		if databaseType != 'general':
+		if databaseType not in ['general', 'seedmechanism']:
 			raise InvalidInputFileException('Invalid database type "' + databaseType + '"; valid types are "general".')
 
 		# Get database name and form path
@@ -412,6 +412,9 @@ def readInputFile(fstr):
 		else:
 			settings.unimolecularReactionNetworks = None
 
+		# Create an empty reaction model
+		reactionModel = model.CoreEdgeReactionModel()
+
 		# Load databases
 		databases = readDatabaseList(xml0, rootElement)
 		for database in databases:
@@ -421,9 +424,11 @@ def readInputFile(fstr):
 				loadThermoDatabase(database[2] + os.sep)
 				loadKineticsDatabase(database[2] + os.sep)
 				loadFrequencyDatabase(database[2] + os.sep)
-				
-		logging.debug('')
-		
+			elif database[1] == 'seedmechanism':
+				logging.debug('Seed mechanism: ' + database[2])
+				reactionModel.loadSeedMechanism(database[2])
+			logging.debug('')
+			
 		# Process species
 		coreSpecies = []; speciesDict = {}
 		speciesList = xml0.getChildElement(rootElement, 'speciesList')
@@ -448,9 +453,6 @@ def readInputFile(fstr):
 			speciesDict[sid] = spec
 
 		logging.debug('')
-		
-		# Create an empty reaction model
-		reactionModel = model.CoreEdgeReactionModel()
 		
 		# Read model flux tolerance
 		fluxTolerance = xml0.getChildElement(rootElement, 'fluxTolerance')
@@ -580,65 +582,52 @@ def writeOutputFile(fstr, reactionModel, reactionSystems):
 	`reactionModel` and `reactionSystems`.
 	"""
 
-	# Create document
-	dom = xml.dom.minidom.Document()
-
-	# Process root element
-	root = dom.createElement('rmgoutput')
-	dom.appendChild(root)
+	# Create document with root element <rmgoutput>
+	document = XML()
+	rootElement = document.initialize('rmgoutput')
 
 	# Process core species list
-	speciesList = dom.createElement('speciesList')
-	root.appendChild(speciesList)
+	speciesList = document.createElement('speciesList', rootElement)
 	for spec in reactionModel.core.species:
 
-		element = dom.createElement('species')
+		element = document.createElement('species', speciesList)
 		element.setAttribute('id', str(spec.id))
 		element.setAttribute('label', spec.label)
 		element.setAttribute('reactive', 'yes' if spec.reactive else 'no')
-		speciesList.appendChild(element)
-
+		
 		# Output the structure using CML
-		cml = dom.createElement('cml')
-		element.appendChild(cml)
+		cml = document.createElement('cml', element)
 		dom0 = xml.dom.minidom.parseString(spec.toCML())
 		cml.appendChild(dom0.documentElement)
 
 		# Output the thermo data
-		spec.thermoData.toXML(dom, element)
+		spec.thermoData.toXML(document, element)
 
 	# Process core reactions list
-	reactionList = dom.createElement('reactionList')
-	root.appendChild(reactionList)
+	reactionList = document.createElement('reactionList', rootElement)
 	for rxn in reactionModel.core.reactions:
 
-		if rxn.family is not None:
-			element = dom.createElement('reaction')
+		if isinstance(rxn.family, reaction.ReactionFamily):
+			element = document.createElement('reaction', reactionList)
 			element.setAttribute('family', rxn.family.label)
-			reactionList.appendChild(element)
-
+		
 		for reac in rxn.reactants:
-			reactant = dom.createElement('reactant')
+			reactant = document.createElement('reactant', element)
 			reactant.setAttribute('id', str(reac.id))
-			element.appendChild(reactant)
 		for prod in rxn.products:
-			product = dom.createElement('product')
+			product = document.createElement('product', element)
 			product.setAttribute('id', str(prod.id))
-			element.appendChild(product)
-
-		kinetics = dom.createElement('kinetics')
-		element.appendChild(kinetics)
+		
+		kinetics = document.createElement('kinetics', element)
 		if isinstance(rxn, reaction.PDepReaction):
 			pass
 		else:
 			for k in rxn.kinetics:
-				k.toXML(dom, kinetics)
+				k.toXML(document, kinetics, len(rxn.reactants))
 
 	# Write output file
-	f = open(fstr, 'w')
-	f.write('\n'.join([l for l in dom.toprettyxml().split('\n') if l.strip()]))
-	f.close()
-
+	document.save(fstr)
+	
 	# Print to log
 	logging.info('')
 	logging.info('Output written to ' + fstr)
