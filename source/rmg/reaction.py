@@ -82,6 +82,8 @@ class Reaction:
 	                  object
 	`canteraReaction` A pointer to the corresponding reaction instance in
 	                  Cantera
+	`thirdBody`       :data:`True` if the reaction kinetics imply a third body,
+	                  :data:`False` if not
 	================= ==========================================================
 
 	By convention, the forward reaction is taken to be that for which the
@@ -92,7 +94,7 @@ class Reaction:
 	convenient way to represent the reverse reaction.
 	"""
 	
-	def __init__(self, reactants=None, products=None, family=None, kinetics=None):
+	def __init__(self, reactants=None, products=None, family=None, kinetics=None, thirdBody=False):
 		"""Initialize a reaction object."""
 		self.reactants = reactants or []
 		self.products = products or []
@@ -100,6 +102,7 @@ class Reaction:
 		self.reverse = None
 		self.kinetics = kinetics or []
 		self.multiplier = 1.0
+		self.thirdBody = thirdBody
 
 		# A cache for the best kinetics for this reaction
 		self.bestKinetics = None
@@ -168,6 +171,17 @@ class Reaction:
 			# Get ID of each reactant and product of this reaction
 			reactants = [str(r) for r in self.reactants]; reactants.sort()
 			products = [str(p) for p in self.products]; products.sort()
+			# Remove any IDs that appear in both the reactant and product lists
+			# This is because Cantera treats A --> B + C and A + D --> B + C + D
+			# as requiring the duplicate tag
+			speciesToRemove = []
+			for spec in reactants:
+				if spec in products: speciesToRemove.append(spec)
+			speciesToRemove = list(set(speciesToRemove))
+			for spec in speciesToRemove:
+				reactants.remove(spec)
+				products.remove(spec)
+			# Iterate over all existing Cantera reactions
 			for rxn in ctml_writer._reactions:
 				# Get ID of each reactant and product
 				reac = []; prod = []
@@ -176,6 +190,14 @@ class Reaction:
 				for p, v in rxn._p.iteritems():
 					for i in range(int(v)): prod.append(p)
 				reac.sort(); prod.sort()
+				# Remove any IDs that appear in both the reactant and product lists
+				speciesToRemove = []
+				for spec in reac:
+					if spec in prod: speciesToRemove.append(spec)
+				speciesToRemove = list(set(speciesToRemove))
+				for spec in speciesToRemove:
+					reac.remove(spec)
+					prod.remove(spec)
 				# Compare with reactants and products of this reaction
 				if (reactants == reac and products == prod) or (reactants == prod and products == reac):
 					if 'duplicate' not in options or 'duplicate' not in rxn._options:
@@ -448,6 +470,7 @@ class Reaction:
 
 		# Evaluate rate constant
 		rateConstant = self.getRateConstant(T, P)
+		if self.thirdBody: rateConstant *= totalConc
 
 		# Evaluate equilibrium constant
 		equilibriumConstant = self.getEquilibriumConstant(T, totalConc)
@@ -1637,7 +1660,7 @@ class ReactionFamily(data.Database):
 			products.append(spec)
 		
 		# Create reaction and add if unique
-		rxn, isNew = makeNewReaction(reactants, products, reactantStructures, productStructures, self)
+		rxn, isNew = makeNewReaction(reactants[:], products, reactantStructures, productStructures, self)
 		if isNew:	return rxn
 		else:		return None
 	
@@ -2033,11 +2056,21 @@ def makeNewReaction(reactants, products, reactantStructures, productStructures, 
 	reactants.sort()
 	products.sort()
 	
-	
 	# Check that the reaction actually results in a different set of species
 	if reactants == products:
 		return None, False
 	
+	# If a species appears in both the reactants and products, then remove it
+	speciesToRemove = []
+	for spec in reactants:
+		if spec in products:
+			speciesToRemove.append(spec)
+	for spec in speciesToRemove:
+		reactants.remove(spec)
+		products.remove(spec)
+	if len(reactants) == 0 or len(products) == 0:
+		return None, False
+
 	# Check that the reaction is unique
 	matchReaction = None
 	for rxn in reactionList:

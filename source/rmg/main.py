@@ -96,7 +96,7 @@ def execute(inputFile, options):
 	# Read input file
 	reactionModel, coreSpecies, reactionSystems = io.readInputFile(inputFile)
 	
-	#reactionModel.loadSeedMechanism('/files/research/rmgpy/devel/data/GRI-Mech3.0')
+	reactionModel.loadSeedMechanism('/files/research/rmgpy/devel/data/GRI-Mech3.0')
 	
 	# Initialize reaction model
 	if options.restart:
@@ -212,9 +212,10 @@ def execute(inputFile, options):
 	logging.info('')
 	logging.info('The final model core has %s species and %s reactions' % (len(reactionModel.core.species), len(reactionModel.core.reactions)))
 	logging.info('The final model edge has %s species and %s reactions' % (len(reactionModel.edge.species), len(reactionModel.edge.reactions)))
-	io.writeOutputFile(os.path.join(settings.outputDirectory,'output.xml'), reactionModel, reactionSystems)
+	#io.writeOutputFile(os.path.join(settings.outputDirectory,'output.xml'), reactionModel, reactionSystems)
 
 	# Log end timestamp
+	logging.info('')
 	logging.info('RMG execution terminated at ' + time.asctime())
 	
 ################################################################################

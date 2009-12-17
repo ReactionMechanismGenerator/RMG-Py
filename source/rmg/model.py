@@ -576,11 +576,12 @@ class CoreEdgeReactionModel:
 		"""
 
 		import os.path
+		import quantities as pq
 		import data
 		import species
 		import kinetics
 		import reaction
-
+		
 		# Load the species list from the file species.txt
 		# This file has the format of a standard RMG dictionary
 		d = data.Dictionary()
@@ -591,7 +592,7 @@ class CoreEdgeReactionModel:
 			speciesDict[label] = species.makeNewSpecies(struct, label, reactive=True)
 		print species.speciesList
 		
-		# Load the non-pressure dependent reactions from the file reaction.txt
+		# Load the reactions from the file reaction.txt
 		reactionList = []
 		f = open(os.path.join(path, 'reactions.txt'), 'r')
 		for line in f:
@@ -601,23 +602,41 @@ class CoreEdgeReactionModel:
 				items = line.split()
 				if len(items) > 0:
 					rxn = items[0:-6]
-					# Extract Arrhenius parameters
-					A = float(items[-6]) * 1.0e6	# mol/cm^3*s to mol/m^3*s
-					n = float(items[-5])			# dimensionless
-					Ea = float(items[-4]) * 4.184	# cal/mol to J/mol
-					kin = [kinetics.ArrheniusKinetics(A=A, n=n, Ea=Ea)]
+
 					# Extract reactants and products
 					if '<=>' in rxn: arrow = rxn.index('<=>')
 					elif '=>' in rxn: arrow = rxn.index('=>')
 					else: raise IOError('No arrow found in reaction equation from line %s' % line)
-					reactants = [speciesDict[r] for r in rxn[0:arrow:2]]
-					products = [speciesDict[r] for r in rxn[arrow+1::2]]
+					reactants = rxn[0:arrow:2]
+					products = rxn[arrow+1::2]
+
+					# Remove third body 'M' if present
+					thirdBody = False
+					if 'M' in reactants and 'M' in products:
+						thirdBody = True
+						reactants.remove('M')
+						products.remove('M')
+					
+					# Convert strings to species objects
+					reactants = [speciesDict[r] for r in reactants]
+					products = [speciesDict[r] for r in products]
+
+					# Process Arrhenius parameters
+					order = len(reactants)
+					if (thirdBody): order += 1
+					Aunits = 'cm^%i/(mol^%i*s)' % (3*(order-1), order-1)
+					A = float(pq.Quantity(float(items[-6]), Aunits).simplified)
+					n = float(items[-5])			# dimensionless
+					Ea = float(pq.Quantity(float(items[-4]), 'cal/mol').simplified)
+					kin = [kinetics.ArrheniusKinetics(A=A, n=n, Ea=Ea)]
+
 					# Create reaction object and add to list
-					rxn = reaction.Reaction(reactants, products, 'seed', kin)
+					rxn = reaction.Reaction(reactants, products, 'seed', kin, thirdBody=thirdBody)
 					reaction.processNewReaction(rxn)
 					reactionList.append(rxn)
-		f.close()
 
+		f.close()
+		
 		# Add species to core
 		for label, spec in speciesDict.iteritems():
 			self.addSpeciesToCore(spec)

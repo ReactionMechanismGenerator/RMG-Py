@@ -199,7 +199,10 @@ class BatchReactor(ReactionSystem):
 		gas.set(T=self.initialTemperature, P=self.initialPressure)
 
 		# create a batch reactor
-		reactor = Cantera.Reactor.Reactor(gas, volume=self.volume)
+		if self.heatTransferCoeff == 1.0e100:
+			reactor = Cantera.Reactor.Reactor(gas, volume=self.volume, energy='off')
+		else:
+			reactor = Cantera.Reactor.Reactor(gas, volume=self.volume)
 
 		# set the inital environment conditions
 		gasAir = Cantera.Air()
@@ -228,7 +231,7 @@ class BatchReactor(ReactionSystem):
 		currently achieved by simply choosing a very large heat transfer
 		coefficient.
 		"""
-		self.heatTransferCoeff = 1.0e15
+		self.heatTransferCoeff = 1.0e100
 
 	def setAdiabatic(self):
 		"""
@@ -453,30 +456,31 @@ class BatchReactor(ReactionSystem):
 			return maxRelativeFluxes_dict[sp]
 		speciesToRemove.sort(key=removalSortKey)
 
-		# trim the edge according to fluxToleranceKeepInEdge
-		logging.info("Removing from edge %d/%d species whose relative flux never exceeded %s"%(
-			len(speciesToRemove),len(model.edge.species),model.fluxToleranceKeepInEdge ) )
-		logging.info("Max. rel. flux.\tSpecies")
-		for sp in speciesToRemove:
-			logging.info("%-10.3g    \t%s"%(maxRelativeFluxes_dict[sp], sp))
-			model.removeSpeciesFromEdge(sp)
+		# If model is not valid at these criteria, then return
+		if not edgeValid or not networksValid:
 
-		# trim the edge according to maximumEdgeSpecies
-		if len(model.edge.species)> model.maximumEdgeSpecies:
-			logging.info("Removing from edge %d/%d species to reach maximum edge size of %s species"%(
-				len(model.edge.species)-model.maximumEdgeSpecies,
-				len(model.edge.species),
-				model.maximumEdgeSpecies ) )
-			edgeSpeciesCopy = model.edge.species[:]
-			edgeSpeciesCopy.sort(key=removalSortKey)
+			# trim the edge according to fluxToleranceKeepInEdge
+			logging.info("Removing from edge %d/%d species whose relative flux never exceeded %s"%(
+				len(speciesToRemove),len(model.edge.species),model.fluxToleranceKeepInEdge ) )
 			logging.info("Max. rel. flux.\tSpecies")
-			while len(model.edge.species)>model.maximumEdgeSpecies:
-				sp = edgeSpeciesCopy.pop(0)
+			for sp in speciesToRemove:
 				logging.info("%-10.3g    \t%s"%(maxRelativeFluxes_dict[sp], sp))
 				model.removeSpeciesFromEdge(sp)
 
-		# If model is not valid at these criteria, then return
-		if not edgeValid or not networksValid:
+			# trim the edge according to maximumEdgeSpecies
+			if len(model.edge.species)> model.maximumEdgeSpecies:
+				logging.info("Removing from edge %d/%d species to reach maximum edge size of %s species"%(
+					len(model.edge.species)-model.maximumEdgeSpecies,
+					len(model.edge.species),
+					model.maximumEdgeSpecies ) )
+				edgeSpeciesCopy = model.edge.species[:]
+				edgeSpeciesCopy.sort(key=removalSortKey)
+				logging.info("Max. rel. flux.\tSpecies")
+				while len(model.edge.species)>model.maximumEdgeSpecies:
+					sp = edgeSpeciesCopy.pop(0)
+					logging.info("%-10.3g    \t%s"%(maxRelativeFluxes_dict[sp], sp))
+					model.removeSpeciesFromEdge(sp)
+
 			criticalFlux = charFlux * model.fluxToleranceMoveToCore
 			print gas
 			logging.info('')
@@ -514,8 +518,6 @@ class BatchReactor(ReactionSystem):
 				status += '    %8.4g' % (conversion)
 		status += '    %8.4e    %8.4g  %s' % (charFlux, maxSpeciesFlux, maxSpecies)
 		logging.debug(status)
-
-		#print t, P, V, T, Ni
 
 	def postprocess(self, model, t, y, dydt, label=''):
 		"""
@@ -578,7 +580,7 @@ class BatchReactor(ReactionSystem):
 		pylab.savefig(settings.outputDirectory + '/plot/concentrationProfile' + label + '.svg')
 		pylab.clf()
 
-		## Make species flux plot and save to file
+## Make species flux plot and save to file
 		#try:
 		#	pylab.loglog(t[1:], abs(dydt0[1:,3:len(model.core.species)+3]))
 		#	pylab.xlabel('Time (s)')
