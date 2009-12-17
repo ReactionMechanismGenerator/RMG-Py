@@ -3,7 +3,6 @@ The ``rmg`` Package
 *******************
 
 .. toctree::
-	:numbered:
 	:maxdepth: 1
 	
 	cantera_loader

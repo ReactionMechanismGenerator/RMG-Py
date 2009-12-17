@@ -8,6 +8,7 @@ The RMG Developer's Guide provides documentation for the application programming
 	:numbered:
 	:maxdepth: 2
 	
+	introduction/index
 	rmg/index
 
 * :ref:`genindex`
