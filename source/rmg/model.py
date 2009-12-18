@@ -434,7 +434,7 @@ class CoreEdgeReactionModel:
 		updated.
 		"""
 
-		from unirxn.network import Isomer
+		from unirxn.network import Isomer, UnirxnNetworkException
 		from reaction import PDepReaction
 		from kinetics import ChebyshevKinetics, PDepArrheniusKinetics
 
@@ -533,32 +533,35 @@ class CoreEdgeReactionModel:
 				# Generate PDepReaction objects
 				for i, product in enumerate(network.isomers):
 					for j, reactant in enumerate(network.isomers[0:i]):
-						# Find the path reaction
-						netReaction = None
-						for r in network.netReactions:
-							if r.hasTemplate(reactant.species, product.species):
-								netReaction = r
-						# If path reaction does not already exist, make a new one
-						if netReaction is None:
-							netReaction = PDepReaction(reactant.species, product.species, network, None)
-							network.netReactions.append(netReaction)
-							self.addReactionToEdge(netReaction)
-						# Set its kinetics using interpolation model
-						if model[0].lower() == 'chebyshev':
-							modelType, degreeT, degreeP = model
-							chebyshev = ChebyshevKinetics()
-							chebyshev.fitToData(Tlist, Plist, K[:,:,i,j], degreeT, degreeP)
-							netReaction.kinetics = chebyshev
-						elif model.lower() == 'pdeparrhenius':
-							pDepArrhenius = PDepArrheniusKinetics()
-							pDepArrhenius.fitToData(Tlist, Plist, K[:,:,i,j])
-							netReaction.kinetics = pDepArrhenius
-						else:
-							pass
+						if numpy.any(K[:,:,i,j]):
+							if not numpy.all(K[:,:,i,j]):
+								raise UnirxnNetworkException('Zero rate coefficient encountered while updating network %s.' % network)
+							# Find the path reaction
+							netReaction = None
+							for r in network.netReactions:
+								if r.hasTemplate(reactant.species, product.species):
+									netReaction = r
+							# If path reaction does not already exist, make a new one
+							if netReaction is None:
+								netReaction = PDepReaction(reactant.species, product.species, network, None)
+								network.netReactions.append(netReaction)
+								self.addReactionToEdge(netReaction)
+							# Set its kinetics using interpolation model
+							if model[0].lower() == 'chebyshev':
+								modelType, degreeT, degreeP = model
+								chebyshev = ChebyshevKinetics()
+								chebyshev.fitToData(Tlist, Plist, K[:,:,i,j], degreeT, degreeP)
+								netReaction.kinetics = chebyshev
+							elif model.lower() == 'pdeparrhenius':
+								pDepArrhenius = PDepArrheniusKinetics()
+								pDepArrhenius.fitToData(Tlist, Plist, K[:,:,i,j])
+								netReaction.kinetics = pDepArrhenius
+							else:
+								pass
 
-						# Update cantera if this is a core reaction
-						if netReaction in self.core.reactions:
-							netReaction.toCantera()
+							# Update cantera if this is a core reaction
+							if netReaction in self.core.reactions:
+								netReaction.toCantera()
 
 				for spec in speciesList:
 					del spec.E0

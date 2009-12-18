@@ -702,10 +702,7 @@ class Network:
 			if not numpy.isfinite(K).all():
 				print K
 				msg = 'Non-finite rate constant returned at %s K, %s Pa.' % (T, P)
-			elif 0.0 in K:
-				print K
-				msg = 'Zero rate constant returned at %s K, %s Pa.' % (T, P)
-
+				
 		if msg != '':
 			raise UnirxnNetworkException('Unable to apply method %s: %s' % (method, msg))
 

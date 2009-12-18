@@ -221,6 +221,7 @@ class BatchReactor(ReactionSystem):
 
 		# put reactor in a reactor network so it can be integrated
 		sim = Cantera.Reactor.ReactorNet([reactor])
+		sim.setTolerances(atol=model.absoluteTolerance, rtol=model.relativeTolerance)
 
 		#import pdb; pdb.set_trace()
 		return sim, gas
@@ -325,20 +326,14 @@ class BatchReactor(ReactionSystem):
 			else:
 				# Uses a fixed (on a log scale) time step
 				nexttime = min(endtime,time*1.2589254117941673)
-				try:
-					# advance cantera one step
-					if sim.step(endtime) < endtime:
-						# didn't get to endtime, so take another step
-						if sim.step(endtime) < nexttime:
-							# still didn't get to endtime, so advance to nextime
-							sim.advance(nexttime)
+				# advance cantera one step
+				if sim.step(endtime) < endtime:
+					# didn't get to endtime, so take another step
+					if sim.step(endtime) < nexttime:
+						# still didn't get to endtime, so advance to nextime
+						sim.advance(nexttime)
 #				# Uses the same time steps that the Cantera solver used
-#				try:
-#					sim.step(endtime)
-				except Exception, e:
-					logging.exception("Ignoring Cantera error")
-					logging.debug(e.message)
-					pass
+#				sim.step(endtime)
 
 			# Get state at current time
 			time = sim.time()
@@ -349,7 +344,7 @@ class BatchReactor(ReactionSystem):
 			# RMG thinks in mol/m^3
 			Ni = gas.molarDensity()*1000.0 * gas.moleFractions() * V
 			y = [P, V, T]; y.extend(Ni)
-
+			
 			# Calculate species fluxes of all core and edge species at the
 			# current time
 			dNidt = self.getSpeciesFluxes(model, P, V, T, Ni, stoichiometry)

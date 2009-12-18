@@ -285,7 +285,7 @@ class ArrheniusEPKinetics(Kinetics):
 		to Ea using the enthalpy of reaction `dHrxn`.
 		"""
 		
-		Ea = self.getActivationEnergy(dHrxn)
+		Ea = self.getActivationEnergy(float(dHrxn))
 		
 		kinetics = ArrheniusKinetics(self.A, Ea, self.n)
 		kinetics.Trange = self.Trange
@@ -403,7 +403,7 @@ class PDepArrheniusKinetics(Kinetics):
 			arrh = self.arrhenius[self.pressures.index(P)]
 			return P, P, arrh, arrh
 		else:
-			ilow = None; ihigh = None; Plow = None; Phigh = None
+			ilow = 0; ihigh = None; Plow = self.pressures[0]; Phigh = None
 			for i in range(1, len(self.pressures)):
 				if self.pressures[i] <= P:
 					ilow = i; Plow = P
