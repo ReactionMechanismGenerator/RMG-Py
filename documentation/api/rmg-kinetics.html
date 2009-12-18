@@ -77,6 +77,8 @@ pageTracker._trackPageview();
 <li><a title="rmg.kinetics.Kinetics" class="reference internal" href="#rmg.kinetics.Kinetics"><tt class="xref docutils literal"><span class="pre">Kinetics</span></tt></a> - A base class from which kinetics classes are derived</li>
 <li><a title="rmg.kinetics.ArrheniusKinetics" class="reference internal" href="#rmg.kinetics.ArrheniusKinetics"><tt class="xref docutils literal"><span class="pre">ArrheniusKinetics</span></tt></a> - A representation of an Arrhenius kinetic model</li>
 <li><a title="rmg.kinetics.ArrheniusEPKinetics" class="reference internal" href="#rmg.kinetics.ArrheniusEPKinetics"><tt class="xref docutils literal"><span class="pre">ArrheniusEPKinetics</span></tt></a> - A representation of an Arrhenius kinetic model with Evans-Polanyi correction</li>
+<li><tt class="xref docutils literal"><span class="pre">ChebyshevKinetics</span></tt> - Pressure-dependent kinetics modeled with Chebyshev polynomials</li>
+<li><tt class="xref docutils literal"><span class="pre">PDepArrheniusKinetics</span></tt> - Pressure-dependent kinetics modeled with Arrhenius expressions at multiple pressures</li>
 </ul>
 <div class="section" id="classes-in-rmg-kinetics">
 <h2>6.1. Classes in <tt class="docutils literal"><span class="pre">rmg.kinetics</span></tt><a class="headerlink" href="#classes-in-rmg-kinetics" title="Permalink to this headline">¶</a></h2>
@@ -166,8 +168,22 @@ the form</p>
 <dd>Equality comparison.</dd></dl>
 
 <dl class="method">
+<dt id="rmg.kinetics.ArrheniusKinetics.fitToData">
+<tt class="descname">fitToData</tt><big>(</big><em>Tlist</em>, <em>K</em><big>)</big><a class="headerlink" href="#rmg.kinetics.ArrheniusKinetics.fitToData" title="Permalink to this definition">¶</a></dt>
+<dd>Fit an Arrhenius model to a set of rate coefficients <cite>K</cite>, which is a
+list corresponding to the temperatures <cite>Tlist</cite> in K.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.kinetics.ArrheniusKinetics.fromXML">
+<tt class="descname">fromXML</tt><big>(</big><em>document</em>, <em>rootElement</em><big>)</big><a class="headerlink" href="#rmg.kinetics.ArrheniusKinetics.fromXML" title="Permalink to this definition">¶</a></dt>
+<dd>Convert a &lt;kinetics&gt; element from a standard RMG-style XML input file
+into an ArrheniusKinetics object. <cite>document</cite> is an <tt class="xref docutils literal"><span class="pre">io.XML</span></tt> class
+representing the XML DOM tree, and <cite>rootElement</cite> is the &lt;kinetics&gt;
+element in that tree.</dd></dl>
+
+<dl class="method">
 <dt id="rmg.kinetics.ArrheniusKinetics.getRateConstant">
-<tt class="descname">getRateConstant</tt><big>(</big><em>T</em><big>)</big><a class="headerlink" href="#rmg.kinetics.ArrheniusKinetics.getRateConstant" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">getRateConstant</tt><big>(</big><em>T</em>, <em>P=100000.0</em><big>)</big><a class="headerlink" href="#rmg.kinetics.ArrheniusKinetics.getRateConstant" title="Permalink to this definition">¶</a></dt>
 <dd>Return the rate constant k(T) at temperature <cite>T</cite> by evaluating the
 Arrhenius expression.</dd></dl>
 
@@ -181,10 +197,10 @@ are.</dd></dl>
 
 <dl class="method">
 <dt id="rmg.kinetics.ArrheniusKinetics.toXML">
-<tt class="descname">toXML</tt><big>(</big><em>dom</em>, <em>root</em>, <em>numReactants</em><big>)</big><a class="headerlink" href="#rmg.kinetics.ArrheniusKinetics.toXML" title="Permalink to this definition">¶</a></dt>
-<dd>Generate the XML for these kinetics using the <tt class="xref docutils literal"><span class="pre">xml.dom.minidom</span></tt>
-package. The <cite>dom</cite> and <cite>root</cite> parameters refer to the DOM and the
-point within the DOM to place this item.</dd></dl>
+<tt class="descname">toXML</tt><big>(</big><em>document</em>, <em>rootElement</em>, <em>numReactants</em><big>)</big><a class="headerlink" href="#rmg.kinetics.ArrheniusKinetics.toXML" title="Permalink to this definition">¶</a></dt>
+<dd>Add a &lt;kinetics&gt; element as a child of <cite>rootElement</cite> using
+RMG-style XML. <cite>document</cite> is an <tt class="xref docutils literal"><span class="pre">io.XML</span></tt> class representing the
+XML DOM tree.</dd></dl>
 
 </dd></dl>
 
@@ -299,7 +315,7 @@ point within the DOM to place this item.</dd></dl>
 
             <h4>Previous topic</h4>
             <p class="topless"><a href="rmg-io.html"
-                                  title="previous chapter">5. The <tt class="docutils literal docutils literal docutils literal"><span class="pre">rmg.io</span></tt> Module</a></p>
+                                  title="previous chapter">5. The <tt class="docutils literal docutils literal"><span class="pre">rmg.io</span></tt> Module</a></p>
             <h4>Next topic</h4>
             <p class="topless"><a href="rmg-main.html"
                                   title="next chapter">7. The <tt class="docutils literal"><span class="pre">rmg.main</span></tt> Module</a></p>

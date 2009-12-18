@@ -133,6 +133,14 @@ called for that purpose.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmg.spectral.HarmonicOscillator.fromXML">
+<tt class="descname">fromXML</tt><big>(</big><em>document</em>, <em>rootElement</em>, <em>frequencyScaleFactor=1.0</em><big>)</big><a class="headerlink" href="#rmg.spectral.HarmonicOscillator.fromXML" title="Permalink to this definition">¶</a></dt>
+<dd>Convert a &lt;harmonicOscillator&gt; element from a standard RMG-style XML
+input file into a HarmonicOscillator object. <cite>document</cite> is an
+<tt class="xref docutils literal"><span class="pre">io.XML</span></tt> class representing the XML DOM tree, and <cite>rootElement</cite>
+is the &lt;harmonicOscillator&gt; element in that tree.</dd></dl>
+
+<dl class="method">
 <dt id="rmg.spectral.HarmonicOscillator.heatCapacity">
 <tt class="descname">heatCapacity</tt><big>(</big><em>Tlist</em><big>)</big><a class="headerlink" href="#rmg.spectral.HarmonicOscillator.heatCapacity" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the contribution to the heat capacity due to hindered rotation.
@@ -161,6 +169,13 @@ the speed of light,     <img class="math" src="../../images/math/87660cb33b0d7f7
 energy to be at the zero-point energy of the molecule, <em>not</em> the bottom
 of the potential well.</p>
 </dd></dl>
+
+<dl class="method">
+<dt id="rmg.spectral.HarmonicOscillator.toXML">
+<tt class="descname">toXML</tt><big>(</big><em>document</em>, <em>rootElement</em><big>)</big><a class="headerlink" href="#rmg.spectral.HarmonicOscillator.toXML" title="Permalink to this definition">¶</a></dt>
+<dd>Add a &lt;harmonicOscillator&gt; element as a child of <cite>rootElement</cite> using
+RMG-style XML. <cite>document</cite> is an <tt class="xref docutils literal"><span class="pre">io.XML</span></tt> class representing the
+XML DOM tree.</dd></dl>
 
 </dd></dl>
 
@@ -197,6 +212,14 @@ kind.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmg.spectral.HinderedRotor.fromXML">
+<tt class="descname">fromXML</tt><big>(</big><em>document</em>, <em>rootElement</em>, <em>frequencyScaleFactor=1.0</em><big>)</big><a class="headerlink" href="#rmg.spectral.HinderedRotor.fromXML" title="Permalink to this definition">¶</a></dt>
+<dd>Convert a &lt;hinderedRotor&gt; element from a standard RMG-style XML
+input file into a HinderedRotor object. <cite>document</cite> is an
+<tt class="xref docutils literal"><span class="pre">io.XML</span></tt> class representing the XML DOM tree, and <cite>rootElement</cite>
+is the &lt;hinderedRotor&gt; element in that tree.</dd></dl>
+
+<dl class="method">
 <dt id="rmg.spectral.HinderedRotor.heatCapacity">
 <tt class="descname">heatCapacity</tt><big>(</big><em>Tlist</em><big>)</big><a class="headerlink" href="#rmg.spectral.HinderedRotor.heatCapacity" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the contribution to the heat capacity due to hindered rotation.
@@ -225,6 +248,13 @@ the speed of light,     <img class="math" src="../../images/math/87660cb33b0d7f7
 the symmetry number. <img class="math" src="../../images/math/9bdf205696717ccbab93931463d896f048cb7042.png" alt="I_0(x)"/> is the modified Bessel function of
 order zero.</p>
 </dd></dl>
+
+<dl class="method">
+<dt id="rmg.spectral.HinderedRotor.toXML">
+<tt class="descname">toXML</tt><big>(</big><em>document</em>, <em>rootElement</em><big>)</big><a class="headerlink" href="#rmg.spectral.HinderedRotor.toXML" title="Permalink to this definition">¶</a></dt>
+<dd>Add a &lt;hinderedRotor&gt; element as a child of <cite>rootElement</cite> using
+RMG-style XML. <cite>document</cite> is an <tt class="xref docutils literal"><span class="pre">io.XML</span></tt> class representing the
+XML DOM tree.</dd></dl>
 
 </dd></dl>
 
@@ -258,6 +288,14 @@ function.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmg.spectral.RigidRotor.fromXML">
+<tt class="descname">fromXML</tt><big>(</big><em>document</em>, <em>rootElement</em><big>)</big><a class="headerlink" href="#rmg.spectral.RigidRotor.fromXML" title="Permalink to this definition">¶</a></dt>
+<dd>Convert a &lt;rigidRotor&gt; element from a standard RMG-style XML
+input file into a RigidRotor object. <cite>document</cite> is an
+<tt class="xref docutils literal"><span class="pre">io.XML</span></tt> class representing the XML DOM tree, and <cite>rootElement</cite>
+is the &lt;rigidRotor&gt; element in that tree.</dd></dl>
+
+<dl class="method">
 <dt id="rmg.spectral.RigidRotor.heatCapacity">
 <tt class="descname">heatCapacity</tt><big>(</big><em>Tlist</em><big>)</big><a class="headerlink" href="#rmg.spectral.RigidRotor.heatCapacity" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the contribution to the heat capacity due to rigid rotation. The
@@ -288,6 +326,13 @@ the speed of light,     <img class="math" src="../../images/math/87660cb33b0d7f7
 the symmetry number.</p>
 </dd></dl>
 
+<dl class="method">
+<dt id="rmg.spectral.RigidRotor.toXML">
+<tt class="descname">toXML</tt><big>(</big><em>document</em>, <em>rootElement</em><big>)</big><a class="headerlink" href="#rmg.spectral.RigidRotor.toXML" title="Permalink to this definition">¶</a></dt>
+<dd>Add a &lt;rigidRotor&gt; element as a child of <cite>rootElement</cite> using
+RMG-style XML. <cite>document</cite> is an <tt class="xref docutils literal"><span class="pre">io.XML</span></tt> class representing the
+XML DOM tree.</dd></dl>
+
 </dd></dl>
 
 </div>
@@ -306,10 +351,25 @@ the molecule are stored as a list in the <cite>modes</cite> attribute.</p>
 energies <cite>Elist</cite> in J/mol above the ground state.</dd></dl>
 
 <dl class="method">
+<dt id="rmg.spectral.SpectralData.fromXML">
+<tt class="descname">fromXML</tt><big>(</big><em>document</em>, <em>rootElement</em><big>)</big><a class="headerlink" href="#rmg.spectral.SpectralData.fromXML" title="Permalink to this definition">¶</a></dt>
+<dd>Convert a &lt;spectralData&gt; element from a standard RMG-style XML input
+file into a SpectralData object. <cite>document</cite> is an <tt class="xref docutils literal"><span class="pre">io.XML</span></tt> class
+representing the XML DOM tree, and <cite>rootElement</cite> is the &lt;spectralData&gt;
+element in that tree.</dd></dl>
+
+<dl class="method">
 <dt id="rmg.spectral.SpectralData.partitionFunction">
 <tt class="descname">partitionFunction</tt><big>(</big><em>Tlist</em><big>)</big><a class="headerlink" href="#rmg.spectral.SpectralData.partitionFunction" title="Permalink to this definition">¶</a></dt>
 <dd>Return the value of the partition function at the specified temperatures
 <cite>Tlist</cite> in K.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.spectral.SpectralData.toXML">
+<tt class="descname">toXML</tt><big>(</big><em>document</em>, <em>rootElement</em><big>)</big><a class="headerlink" href="#rmg.spectral.SpectralData.toXML" title="Permalink to this definition">¶</a></dt>
+<dd>Add a &lt;spectralData&gt; element as a child of <cite>rootElement</cite> using
+RMG-style XML. <cite>document</cite> is an <tt class="xref docutils literal"><span class="pre">io.XML</span></tt> class representing the
+XML DOM tree.</dd></dl>
 
 </dd></dl>
 

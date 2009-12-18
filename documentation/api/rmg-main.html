@@ -70,44 +70,10 @@ pageTracker._trackPageview();
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="module-rmg.main">
-<h1>7. The <tt class="docutils literal"><span class="pre">rmg.main</span></tt> Module<a class="headerlink" href="#module-rmg.main" title="Permalink to this headline">¶</a></h1>
-<p>Contains the main function for RMG execution and several helper functions that
-support it.</p>
+  <div class="section" id="the-rmg-main-module">
+<h1>7. The <tt class="docutils literal"><span class="pre">rmg.main</span></tt> Module<a class="headerlink" href="#the-rmg-main-module" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="methods-in-rmg-main">
 <h2>7.1. Methods in <tt class="docutils literal"><span class="pre">rmg.main</span></tt><a class="headerlink" href="#methods-in-rmg-main" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
-<dt id="rmg.main.execute">
-<tt class="descclassname">rmg.main.</tt><tt class="descname">execute</tt><big>(</big><em>inputFile</em>, <em>options</em><big>)</big><a class="headerlink" href="#rmg.main.execute" title="Permalink to this definition">¶</a></dt>
-<dd>Generate a reaction model for the set of reaction systems specified in an 
-input file at location <cite>inputFile</cite>. Output and temporary files will be 
-placed in the directories <cite>outputDir</cite> and <cite>scratchDir</cite>, respectively; if
-either of these are empty strings, the corresponding files will be placed
-in the same directory as the input file. The <cite>libraryDir</cite> parameter can be
-used to specify additional directories to search for RMG databases. The
-<cite>verbose</cite> parameter is an integer specifying the amount of log text seen
-at the console; the levels correspond to those of the <tt class="xref docutils literal"><span class="pre">logging</span></tt> module.</dd></dl>
-
-<dl class="function">
-<dt id="rmg.main.generateExecutionPlots">
-<tt class="descclassname">rmg.main.</tt><tt class="descname">generateExecutionPlots</tt><big>(</big><em>execTime</em>, <em>coreSpeciesCount</em>, <em>coreReactionCount</em>, <em>edgeSpeciesCount</em>, <em>edgeReactionCount</em>, <em>memoryUse</em>, <em>restartSize</em><big>)</big><a class="headerlink" href="#rmg.main.generateExecutionPlots" title="Permalink to this definition">¶</a></dt>
-<dd>Generate a number of plots describing the statistics of the RMG job, 
-including the reaction model core and edge size and memory use versus
-execution time. These will be placed in the output directory in the plot/
-folder.</dd></dl>
-
-<dl class="function">
-<dt id="rmg.main.initializeLog">
-<tt class="descclassname">rmg.main.</tt><tt class="descname">initializeLog</tt><big>(</big><em>verbose</em><big>)</big><a class="headerlink" href="#rmg.main.initializeLog" title="Permalink to this definition">¶</a></dt>
-<dd>Set up a logger for RMG to use to print output to stdout. The
-<cite>verbose</cite> parameter is an integer specifying the amount of log text seen
-at the console; the levels correspond to those of the <tt class="xref docutils literal"><span class="pre">logging</span></tt> module.</dd></dl>
-
-<dl class="function">
-<dt id="rmg.main.printRMGHeader">
-<tt class="descclassname">rmg.main.</tt><tt class="descname">printRMGHeader</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.main.printRMGHeader" title="Permalink to this definition">¶</a></dt>
-<dd>Output a header containing identifying information about RMG to the log.</dd></dl>
-
 </div>
 </div>
 

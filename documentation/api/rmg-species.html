@@ -111,6 +111,9 @@ inert</td>
 <tr><td><cite>spectralData</cite></td>
 <td>The spectral data (degrees of freedom) for the species</td>
 </tr>
+<tr><td><cite>E0</cite></td>
+<td>The ground-state energy of the species in J/mol</td>
+</tr>
 <tr><td><cite>structure</cite></td>
 <td>A list of <tt class="xref docutils literal"><span class="pre">structure.Structure</span></tt> objects
 representing the set of resonance isomers</td>
@@ -125,6 +128,19 @@ simulation</td>
 </tr>
 </tbody>
 </table>
+<dl class="method">
+<dt id="rmg.species.Species.calculateDensityOfStates">
+<tt class="descname">calculateDensityOfStates</tt><big>(</big><em>Elist</em><big>)</big><a class="headerlink" href="#rmg.species.Species.calculateDensityOfStates" title="Permalink to this definition">¶</a></dt>
+<dd>Calculate and return the density of states in mol/J of the species at
+the specified list of energies <cite>Elist</cite> in J/mol.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.species.Species.calculateLennardJonesParameters">
+<tt class="descname">calculateLennardJonesParameters</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.species.Species.calculateLennardJonesParameters" title="Permalink to this definition">¶</a></dt>
+<dd>Calculate the Lennard-Jones collision parameters for the species. The
+parameters are not returned, but are instead stored in the 
+<cite>lennardJones</cite> attribute.</dd></dl>
+
 <dl class="method">
 <dt id="rmg.species.Species.findSubgraphIsomorphisms">
 <tt class="descname">findSubgraphIsomorphisms</tt><big>(</big><em>other</em><big>)</big><a class="headerlink" href="#rmg.species.Species.findSubgraphIsomorphisms" title="Permalink to this definition">¶</a></dt>
@@ -155,6 +171,21 @@ functional group <cite>other</cite>.</dd></dl>
 <dt id="rmg.species.Species.fromSMILES">
 <tt class="descname">fromSMILES</tt><big>(</big><em>smilesstr</em><big>)</big><a class="headerlink" href="#rmg.species.Species.fromSMILES" title="Permalink to this definition">¶</a></dt>
 <dd>Convert a SMILES string <cite>smilesstr</cite> to a Species object.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.species.Species.fromXML">
+<tt class="descname">fromXML</tt><big>(</big><em>document</em>, <em>rootElement</em><big>)</big><a class="headerlink" href="#rmg.species.Species.fromXML" title="Permalink to this definition">¶</a></dt>
+<dd>Convert a &lt;species&gt; element from a standard RMG-style XML input file
+into a Species object. <cite>document</cite> is an <tt class="xref docutils literal"><span class="pre">io.XML</span></tt> class
+representing the XML DOM tree, and <cite>rootElement</cite> is the &lt;structure&gt;
+element in that tree.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.species.Species.generateSpectralData">
+<tt class="descname">generateSpectralData</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.species.Species.generateSpectralData" title="Permalink to this definition">¶</a></dt>
+<dd>Generate spectral data for species using the frequency database. The
+spectral data comprises the molecular degrees of freedom of the
+molecule.</dd></dl>
 
 <dl class="method">
 <dt id="rmg.species.Species.generateThermoData">
@@ -188,6 +219,11 @@ picks that with lowest H298 value, and saves it to <cite>self.thermoData</cite>.
 <dt id="rmg.species.Species.getHeatCapacity">
 <tt class="descname">getHeatCapacity</tt><big>(</big><em>T</em><big>)</big><a class="headerlink" href="#rmg.species.Species.getHeatCapacity" title="Permalink to this definition">¶</a></dt>
 <dd>Return the heat capacity of the species at temperature <cite>T</cite>.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.species.Species.getMolecularWeight">
+<tt class="descname">getMolecularWeight</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.species.Species.getMolecularWeight" title="Permalink to this definition">¶</a></dt>
+<dd>Return the molecular weight of the species in kg/mol.</dd></dl>
 
 <dl class="method">
 <dt id="rmg.species.Species.getResonanceIsomers">

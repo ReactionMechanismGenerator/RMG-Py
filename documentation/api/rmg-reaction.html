@@ -100,8 +100,8 @@ class </em><tt class="descclassname">rmg.reaction.</tt><tt class="descname">Reac
 <dd><p>Represent a generic chemical reaction. The attributes are:</p>
 <table border="1" class="docutils">
 <colgroup>
-<col width="19%" />
-<col width="81%" />
+<col width="22%" />
+<col width="78%" />
 </colgroup>
 <thead valign="bottom">
 <tr><th class="head">Attribute</th>
@@ -140,6 +140,10 @@ different parts of the reactants yielding the same behavior</td>
 <td>A pointer to the reverse reaction, also a <a title="rmg.reaction.Reaction" class="reference internal" href="#rmg.reaction.Reaction"><tt class="xref docutils literal"><span class="pre">Reaction</span></tt></a>
 object</td>
 </tr>
+<tr><td><cite>canteraReaction</cite></td>
+<td>A pointer to the corresponding reaction instance in
+Cantera</td>
+</tr>
 </tbody>
 </table>
 <p>By convention, the forward reaction is taken to be that for which the
@@ -149,6 +153,15 @@ only store the forward reaction. Note that the reverse reaction exists as a
 <a title="rmg.reaction.Reaction" class="reference internal" href="#rmg.reaction.Reaction"><tt class="xref docutils literal"><span class="pre">Reaction</span></tt></a> object in the <cite>reverse</cite> attribute because this is a
 convenient way to represent the reverse reaction.</p>
 <dl class="method">
+<dt id="rmg.reaction.Reaction.calculateMicrocanonicalRate">
+<tt class="descname">calculateMicrocanonicalRate</tt><big>(</big><em>Elist</em>, <em>T</em>, <em>reacDensStates</em>, <em>prodDensStates=None</em><big>)</big><a class="headerlink" href="#rmg.reaction.Reaction.calculateMicrocanonicalRate" title="Permalink to this definition">¶</a></dt>
+<dd>Calculate and return the microcanonical rate coefficients k(E) for the
+forward and reverse reactions from the high-pressure limit canonical
+rate coefficient k(T) using the inverse Laplace transform method. For
+dissociation reactions the reverse rate coefficient is actually the
+product of the reverse rate and the product equilibrium distribution.</dd></dl>
+
+<dl class="method">
 <dt id="rmg.reaction.Reaction.equivalent">
 <tt class="descname">equivalent</tt><big>(</big><em>other</em><big>)</big><a class="headerlink" href="#rmg.reaction.Reaction.equivalent" title="Permalink to this definition">¶</a></dt>
 <dd>Return <tt class="xref xref docutils literal"><span class="pre">True</span></tt> if the two reactions are equivalent (i.e. they have
@@ -156,8 +169,16 @@ the same reactants and products and are of the same reaction family) and
 <tt class="xref xref docutils literal"><span class="pre">False</span></tt> otherwise.</dd></dl>
 
 <dl class="method">
+<dt id="rmg.reaction.Reaction.fromXML">
+<tt class="descname">fromXML</tt><big>(</big><em>document</em>, <em>rootElement</em><big>)</big><a class="headerlink" href="#rmg.reaction.Reaction.fromXML" title="Permalink to this definition">¶</a></dt>
+<dd>Convert a &lt;reaction&gt; element from a standard RMG-style XML input file
+into a Reaction object. <cite>document</cite> is an <tt class="xref docutils literal"><span class="pre">io.XML</span></tt> class
+representing the XML DOM tree, and <cite>rootElement</cite> is the &lt;reaction&gt;
+element in that tree.</dd></dl>
+
+<dl class="method">
 <dt id="rmg.reaction.Reaction.getBestKinetics">
-<tt class="descname">getBestKinetics</tt><big>(</big><em>T</em><big>)</big><a class="headerlink" href="#rmg.reaction.Reaction.getBestKinetics" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">getBestKinetics</tt><big>(</big><em>T</em>, <em>P=100000.0</em><big>)</big><a class="headerlink" href="#rmg.reaction.Reaction.getBestKinetics" title="Permalink to this definition">¶</a></dt>
 <dd>Return the best set of ArrheniusKinetics parameters for the forward reaction
 evaluated at the temperature <cite>T</cite>. This function follows the convention
 that the forward reaction is the one for which we are using the kinetic
@@ -199,8 +220,9 @@ concentration.</p>
 
 <dl class="method">
 <dt id="rmg.reaction.Reaction.getRateConstant">
-<tt class="descname">getRateConstant</tt><big>(</big><em>T</em><big>)</big><a class="headerlink" href="#rmg.reaction.Reaction.getRateConstant" title="Permalink to this definition">¶</a></dt>
-<dd>Return the value of the rate constant k(T) at the temperature <cite>T</cite>.</dd></dl>
+<tt class="descname">getRateConstant</tt><big>(</big><em>T</em>, <em>P=100000.0</em><big>)</big><a class="headerlink" href="#rmg.reaction.Reaction.getRateConstant" title="Permalink to this definition">¶</a></dt>
+<dd>Return the value of the rate constant k(T) at the temperature <cite>T</cite>. The
+pressure <cite>P</cite> in Pa is not required.</dd></dl>
 
 <dl class="method">
 <dt id="rmg.reaction.Reaction.getStoichiometricCoefficient">
@@ -211,10 +233,38 @@ appears as a product and decreased by one for each time <cite>spec</cite> appear
 as a reactant.</dd></dl>
 
 <dl class="method">
+<dt id="rmg.reaction.Reaction.hasTemplate">
+<tt class="descname">hasTemplate</tt><big>(</big><em>reactants</em>, <em>products</em><big>)</big><a class="headerlink" href="#rmg.reaction.Reaction.hasTemplate" title="Permalink to this definition">¶</a></dt>
+<dd>Return <tt class="xref xref docutils literal"><span class="pre">True</span></tt> if the reaction matches the template of <cite>reactants</cite>
+and <cite>products</cite>, which are both lists of <tt class="xref docutils literal"><span class="pre">species.Species</span></tt>
+objects.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.reaction.Reaction.isAssociation">
+<tt class="descname">isAssociation</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.reaction.Reaction.isAssociation" title="Permalink to this definition">¶</a></dt>
+<dd>Return <tt class="xref xref docutils literal"><span class="pre">True</span></tt> if the reaction is an association, i.e. has the
+form <img class="math" src="../../images/math/1d7042206c61c59aa93ff90e3a03bb70d63adde7.png" alt="\mathrm{A} + \mathrm{B} \rightleftharpoons \mathrm{C}"/>.
+Returns <tt class="xref xref docutils literal"><span class="pre">False</span></tt> otherwise.</dd></dl>
+
+<dl class="method">
 <dt id="rmg.reaction.Reaction.isBimolecular">
 <tt class="descname">isBimolecular</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.reaction.Reaction.isBimolecular" title="Permalink to this definition">¶</a></dt>
 <dd>Return <tt class="xref xref docutils literal"><span class="pre">True</span></tt> if the forward reaction has two reactants and
 <tt class="xref xref docutils literal"><span class="pre">False</span></tt> otherwise.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.reaction.Reaction.isDissociation">
+<tt class="descname">isDissociation</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.reaction.Reaction.isDissociation" title="Permalink to this definition">¶</a></dt>
+<dd>Return <tt class="xref xref docutils literal"><span class="pre">True</span></tt> if the reaction is a dissocition, i.e. has the
+form <img class="math" src="../../images/math/6c997fa7953b40ca5eccc73a77a51696309ea100.png" alt="\mathrm{A} \rightleftharpoons \mathrm{B} + \mathrm{C}"/>.
+Returns <tt class="xref xref docutils literal"><span class="pre">False</span></tt> otherwise.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.reaction.Reaction.isIsomerization">
+<tt class="descname">isIsomerization</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.reaction.Reaction.isIsomerization" title="Permalink to this definition">¶</a></dt>
+<dd>Return <tt class="xref xref docutils literal"><span class="pre">True</span></tt> if the reaction is an isomerization, i.e. has the
+form <img class="math" src="../../images/math/87442f90c7981554a0ebd73b8671bd78443129c6.png" alt="\mathrm{A} \rightleftharpoons \mathrm{B}"/>. 
+Returns <tt class="xref xref docutils literal"><span class="pre">False</span></tt> otherwise.</dd></dl>
 
 <dl class="method">
 <dt id="rmg.reaction.Reaction.isUnimolecular">
@@ -224,7 +274,7 @@ as a reactant.</dd></dl>
 
 <dl class="method">
 <dt id="rmg.reaction.Reaction.toCantera">
-<tt class="descname">toCantera</tt><big>(</big><em>T=1000</em><big>)</big><a class="headerlink" href="#rmg.reaction.Reaction.toCantera" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">toCantera</tt><big>(</big><em>T=1000</em>, <em>P=100000.0</em><big>)</big><a class="headerlink" href="#rmg.reaction.Reaction.toCantera" title="Permalink to this definition">¶</a></dt>
 <dd>Return a Cantera ctml_writer instance</dd></dl>
 
 </dd></dl>

@@ -185,6 +185,17 @@ A/         \B      A/
 For complicated fused rings the smallest set of smallest rings is used.</dd></dl>
 
 <dl class="method">
+<dt id="rmg.structure.Structure.calculateLennardJonesParameters">
+<tt class="descname">calculateLennardJonesParameters</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.structure.Structure.calculateLennardJonesParameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate approximate Lennard-Jones parameters for the structure. The
+numbers for particular species were taken from</p>
+<ol class="upperalpha simple" start="8">
+<li>Hippler, J. Troe, and H. J. Wendelken. <em>J. Chem. Phys.</em> <strong>78</strong>, 6709 (1983).</li>
+</ol>
+<p>via the MultiWell User&#8217;s Manual (2009.3 edition) by J. R. Barker et al.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmg.structure.Structure.calculateNumberOfRotors">
 <tt class="descname">calculateNumberOfRotors</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.structure.Structure.calculateNumberOfRotors" title="Permalink to this definition">¶</a></dt>
 <dd>Return the number of rotors in the molecule.</dd></dl>
@@ -256,6 +267,14 @@ otherwise. Uses the VF2 algorithm of Vento and Foggia.</dd></dl>
 <dd>Convert a SMILES string <cite>smilesstr</cite> to a Structure object.</dd></dl>
 
 <dl class="method">
+<dt id="rmg.structure.Structure.fromXML">
+<tt class="descname">fromXML</tt><big>(</big><em>document</em>, <em>rootElement</em><big>)</big><a class="headerlink" href="#rmg.structure.Structure.fromXML" title="Permalink to this definition">¶</a></dt>
+<dd>Convert a &lt;structure&gt; element from a standard RMG-style XML input file
+into a Structure object. <cite>document</cite> is an <tt class="xref docutils literal"><span class="pre">io.XML</span></tt> class
+representing the XML DOM tree, and <cite>rootElement</cite> is the &lt;structure&gt;
+element in that tree.</dd></dl>
+
+<dl class="method">
 <dt id="rmg.structure.Structure.getAdjacentResonanceIsomers">
 <tt class="descname">getAdjacentResonanceIsomers</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.structure.Structure.getAdjacentResonanceIsomers" title="Permalink to this definition">¶</a></dt>
 <dd>Generate all of the resonance isomers formed by one allyl radical shift.</dd></dl>
@@ -297,6 +316,11 @@ the center atoms in the structure.</dd></dl>
 <tt class="descname">getLabeledAtoms</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.structure.Structure.getLabeledAtoms" title="Permalink to this definition">¶</a></dt>
 <dd>Return the atoms in functional group structure that are labeled, i.e.
 the center atoms in the structure.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.structure.Structure.getMolecularWeight">
+<tt class="descname">getMolecularWeight</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.structure.Structure.getMolecularWeight" title="Permalink to this definition">¶</a></dt>
+<dd>Return the molecular weight of the structure in kg/mol.</dd></dl>
 
 <dl class="method">
 <dt id="rmg.structure.Structure.getRadicalCount">
@@ -442,7 +466,7 @@ optional higher-order bonds, while dotted lines indicate benzene bonds.</p>
 
 <dl class="method">
 <dt id="rmg.structure.Structure.toXML">
-<tt class="descname">toXML</tt><big>(</big><em>dom</em>, <em>root</em><big>)</big><a class="headerlink" href="#rmg.structure.Structure.toXML" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">toXML</tt><big>(</big><em>document</em>, <em>rootElement</em><big>)</big><a class="headerlink" href="#rmg.structure.Structure.toXML" title="Permalink to this definition">¶</a></dt>
 <dd>Convert a Structure object to an XML DOM tree.</dd></dl>
 
 <dl class="method">
@@ -488,7 +512,7 @@ environment) and complete (i.e. are as detailed as possible).</dd></dl>
                                   title="previous chapter">11. The <tt class="docutils literal docutils literal docutils literal"><span class="pre">rmg.spectral</span></tt> Module</a></p>
             <h4>Next topic</h4>
             <p class="topless"><a href="rmg-thermo.html"
-                                  title="next chapter">13. The <tt class="docutils literal docutils literal"><span class="pre">rmg.thermo</span></tt> Module</a></p>
+                                  title="next chapter">13. The <tt class="docutils literal"><span class="pre">rmg.thermo</span></tt> Module</a></p>
             <h3>This Page</h3>
             <ul class="this-page-menu">
               <li><a href="../../sources/documentation/api/rmg-structure.txt"
