@@ -847,9 +847,9 @@ class ReactionFamily(data.Database):
 
 	def load(self, path):
 		"""
-		Load a reaction family located in the directory `path`.
+		Load a reaction family located in the directory `path`. The family
+		consists of the files::
 		
-		The family consists of the files::
 			dictionary.txt
 			tree.txt
 			library.txt

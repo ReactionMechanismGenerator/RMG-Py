@@ -45,7 +45,7 @@ subroutine collisionMatrix(T, P, E, collFreq, densStates, E0, dEdown, Ngrains, &
 	! `msg`        out    If the subroutine was unsuccessful, this string will
 	!                     contain a brief message describing the error; the
 	!                     string will be empty if the subroutine was successful
-	! ========== ====== ========================================================
+	! ============ ====== ======================================================
 
 	! Type definitions of parameters
 	integer, intent(in) :: Ngrains

@@ -825,7 +825,9 @@ class Database:
 
 def removeCommentFromLine(line):
 	"""
-	Remove a C++/Java style comment from a line of text.
+	Remove a C++/Java style comment from a line of text. This refers
+	particularly to comments that begin with a double-slash '//' and continue
+	to the end of the line.
 	"""
 	
 	index = line.find('//')
@@ -834,17 +836,6 @@ def removeCommentFromLine(line):
 	return line
 
 ################################################################################
-
-def createXMLQuantity(dom, root, value, units=None, uncertainty=None):
-
-	quantity = dom.createElement('quantity')
-	if units is not None:
-		quantity.setAttribute('units', units)
-	if uncertainty is not None:
-		quantity.setAttribute('uncertainty', uncertainty)
-	root.appendChild(quantity)
-	text = dom.createTextNode(str(value))
-	quantity.appendChild(text)
 
 if __name__ == '__main__':
 	pass

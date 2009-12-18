@@ -19,23 +19,10 @@ Dictionary
 .. autoclass:: rmg.data.Dictionary
 	:members:
 
-InvalidDatabaseException
-------------------------
-
-.. autoclass:: rmg.data.InvalidDatabaseException
-	:members:
-
 Library
 -------
 
 .. autoclass:: rmg.data.Library
-	:members:
-
-
-TemperatureOutOfRangeException
-------------------------------
-
-.. autoclass:: rmg.data.TemperatureOutOfRangeException
 	:members:
 
 Tree
@@ -45,12 +32,21 @@ Tree
 	:members:
 
 
+
 Methods in ``rmg.data``
 =======================
-
-.. autofunction:: rmg.data.createXMLQuantity
 
 .. autofunction:: rmg.data.getAllCombinations
 
 .. autofunction:: rmg.data.removeCommentFromLine
 
+
+
+Exceptions in ``rmg.data``
+==========================
+
+.. autoexception:: rmg.data.InvalidDatabaseException
+	:members:
+
+.. autoexception:: rmg.data.TemperatureOutOfRangeException
+	:members:

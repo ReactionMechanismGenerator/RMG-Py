@@ -6,23 +6,11 @@ The ``rmg.reaction`` Module
 
 Classes in ``rmg.reaction``
 ===========================
-
-InvalidActionException
-----------------------
-
-.. autoclass:: rmg.reaction.InvalidActionException
-	:members:
 	
 Reaction
 --------
 
 .. autoclass:: rmg.reaction.Reaction
-	:members:
-
-ReactionException
------------------
-
-.. autoclass:: rmg.reaction.ReactionException
 	:members:
 
 ReactionFamily
@@ -43,13 +31,29 @@ ReactionRecipe
 .. autoclass:: rmg.reaction.ReactionRecipe
 	:members:
 
-UndeterminableKineticsException
--------------------------------
+PDepReaction
+------------
 
-.. autoclass:: rmg.reaction.UndeterminableKineticsException
+.. autoclass:: rmg.reaction.PDepReaction
 	:members:
+
+
 
 Methods in ``rmg.reaction``
 ===========================
 
 .. autofunction:: rmg.reaction.makeNewReaction
+
+
+
+Exceptions in ``rmg.reaction``
+==============================
+
+.. autoclass:: rmg.reaction.InvalidActionException
+	:members:
+
+.. autoclass:: rmg.reaction.ReactionException
+	:members:
+
+.. autoclass:: rmg.reaction.UndeterminableKineticsException
+	:members:

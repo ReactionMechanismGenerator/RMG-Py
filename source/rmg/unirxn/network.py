@@ -45,7 +45,8 @@ import states
 class UnirxnNetworkException(Exception):
 	"""
 	An general exception used when an error is encountered while dealing with a
-	unimolecular reaction network.
+	unimolecular reaction network. The `msg` attribute can be used to store
+	a string description of the cause of the exception.
 	"""
 
 	def __init__(self, msg):

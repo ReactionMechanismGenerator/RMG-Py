@@ -7,22 +7,37 @@ The ``rmg.io`` Module
 Classes in ``rmg.io``
 =====================
 
-InvalidInputFileException
--------------------------
+XML
+---
 
-.. autoclass:: rmg.io.InvalidInputFileException
+.. autoclass:: rmg.io.XML
 	:members:
+
+
 
 Methods in ``rmg.io``
 =====================
 
-.. autofunction:: rmg.io.getElements
+.. autofunction:: rmg.io.loadFrequencyDatabase
 
-.. autofunction:: rmg.io.getElementText
+.. autofunction:: rmg.io.loadKineticsDatabase
 
-.. autofunction:: rmg.io.getFirstChildElement
+.. autofunction:: rmg.io.loadThermoDatabase
+
+.. autofunction:: rmg.io.readDatabaseList
 
 .. autofunction:: rmg.io.readInputFile
 
 .. autofunction:: rmg.io.writeOutputFile
+
+
+
+Exceptions in ``rmg.io``
+========================
+
+.. autoexception:: rmg.io.InvalidInputFileException
+	:members:
+
+.. autoexception:: rmg.io.InvalidXMLError
+	:members:
 

@@ -121,12 +121,6 @@ T       triple        3      4             n/a
 B       benzene       1.5    1             n/a
 ======  ============  =====  ============  ============
 
-InvalidChemicalActionException
-------------------------------
-
-.. autoclass:: rmg.chem.InvalidChemicalActionException
-	:members:
-
 Atom
 ----
 
@@ -149,4 +143,10 @@ Methods in ``rmg.chem``
 .. autofunction:: rmg.chem.loadElectronStates
 
 .. autofunction:: rmg.chem.loadElements
+
+Exceptions in ``rmg.chem``
+==========================
+
+.. autoexception:: rmg.chem.InvalidChemicalActionException
+	:members:
 

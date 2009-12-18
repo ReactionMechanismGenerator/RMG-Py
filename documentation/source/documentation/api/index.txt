@@ -10,6 +10,8 @@ The RMG Developer's Guide provides documentation for the application programming
 	
 	introduction/index
 	rmg/index
+	rmg.system/index
+	rmg.unirxn/index
 
 * :ref:`genindex`
 * :ref:`modindex`

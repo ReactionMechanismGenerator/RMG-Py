@@ -15,8 +15,10 @@ The ``rmg`` Package
 	main
 	model
 	reaction
+	settings
 	species
 	spectral
+	spectralfit
 	structure
 	thermo
 	

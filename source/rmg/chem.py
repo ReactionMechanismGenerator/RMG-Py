@@ -43,6 +43,9 @@ Contains classes describing simple chemical entities:
 
 * :class:`Bond` - A chemical bond, combining one (or more) bond types
 
+This module can be compiled using Cython to a shared library, which provides a
+significant speed boost to running in pure Python mode.
+
 """
 
 import cython

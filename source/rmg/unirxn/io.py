@@ -30,7 +30,8 @@
 
 """
 This module handles the reading and writing of input and output files involving
-standalone called to the rmg.unirxn module.
+standalone calls to the ``rmg.unirxn`` module. Functions in this module utilize
+the :class:`rmg.io.XML` class to work with the input and output XML data.
 """
 
 from rmg.io import *
@@ -39,11 +40,15 @@ from rmg.reaction import Reaction
 
 from network import Network, Isomer
 
+################################################################################
+
 def readInputFile(fstr):
 	"""
 	Parse an input file found at `fstr`. If successful, this function returns
-	a :class:`Network` object containing the unimolecular reaction network and
-	a tuple of options.
+	a :class:`Network` object containing the unimolecular reaction network,
+	lists of temperatures in K and pressures in Pa, the maximum grain size in
+	J/mol, the minimum number of grains, the approximate method to use, and
+	the interpolation model to fit.
 	"""
 
 	try:
@@ -206,7 +211,11 @@ def readInputFile(fstr):
 
 def writeInputFile(fstr, network, Tlist, Plist, Elist, method, model):
 	"""
-	Write an input file to `fstr`.
+	Write an input file to `fstr`. Parameters are: `network`,
+	a :class:`Network` object containing the unimolecular reaction network;
+	`Tlist`, a list of temperatures in K; `Plist`, a list of pressures in Pa;
+	`Elist`, a list of energy grains in J/mol; `method`, the approximate method
+	to use; and `model`, the interpolation model to fit.
 	"""
 
 	# Initialize DOM tree

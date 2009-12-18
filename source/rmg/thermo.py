@@ -32,6 +32,9 @@
 A module for working with the thermodynamics of chemical species. This module
 seeks to provide functionality for answering the question, "Given a species,
 what are its thermodynamics?"
+
+This module can be compiled using Cython to a shared library, which provides a
+significant speed boost to running in pure Python mode.
 """
 
 import quantities as pq
