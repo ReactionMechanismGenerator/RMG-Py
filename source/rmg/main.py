@@ -146,7 +146,7 @@ def execute(inputFile, options):
 			# Conduct simulation
 			logging.info('Conducting simulation of reaction system %s...' % (index+1))
 			t, y, dydt, valid, obj = reactionSystem.simulate(reactionModel)
-
+			
 			# Postprocess results
 			logging.info('')
 			logging.info('Saving simulation results for reaction system %s...' % (index+1))

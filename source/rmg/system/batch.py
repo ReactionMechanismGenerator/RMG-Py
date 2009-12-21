@@ -317,23 +317,20 @@ class BatchReactor(ReactionSystem):
 #		dydtlist.append(self.getResidual(0.0, y0, model, stoichiometry))
 
 		done = False
-		first_step = True
+		time = 0.0
 		while not done:
 
 			# Conduct integration
-			if first_step:
-				first_step = False # don't integrate on first time through, just do the validity checking and result reporting
-			else:
-				# Uses a fixed (on a log scale) time step
-				nexttime = min(endtime,time*1.2589254117941673)
-				# advance cantera one step
-				if sim.step(endtime) < endtime:
-					# didn't get to endtime, so take another step
-					if sim.step(endtime) < nexttime:
-						# still didn't get to endtime, so advance to nextime
-						sim.advance(nexttime)
-#				# Uses the same time steps that the Cantera solver used
-#				sim.step(endtime)
+			# Uses a fixed (on a log scale) time step
+			nexttime = min(endtime,time*1.2589254117941673)
+			# advance cantera one step
+			if sim.step(endtime) < endtime:
+				# didn't get to endtime, so take another step
+				if sim.step(endtime) < nexttime:
+					# still didn't get to endtime, so advance to nextime
+					sim.advance(nexttime)
+#			# Uses the same time steps that the Cantera solver used
+#			sim.step(endtime)
 
 			# Get state at current time
 			time = sim.time()
@@ -379,11 +376,6 @@ class BatchReactor(ReactionSystem):
 				maxNetwork = None
 				maxNetworkFlux = 0.0
 
-			# invalid if core empty
-			if len(model.core.reactions)==0:
-				logging.info("No reactions in core yet. Not running simulation.")
-				edgeValid = False
-				
 			# Output information about simulation at current time
 			self.printSimulationStatus(model, time, y, y0, charFlux, maxSpeciesFlux/charFlux, maxSpecies)
 			tlist.append(time); ylist.append(y)
