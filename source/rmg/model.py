@@ -585,15 +585,30 @@ class CoreEdgeReactionModel:
 		import kinetics
 		import reaction
 		
-		# Load the species list from the file species.txt
+		# Load the species data from the file species.txt
 		# This file has the format of a standard RMG dictionary
 		d = data.Dictionary()
 		d.load(os.path.join(path, 'species.txt'))
 		d.toStructure(addH=True)
-		speciesDict = {}
+		
+		# Load the thermo data from the file thermo.txt
+		# This file has the format of a standard RMG thermo library
+		thermoData = species.ThermoDatabase()
+		thermoData.load(os.path.join(path, 'species.txt'), '', os.path.join(path, 'thermo.txt'))
+		# Populate the main primary thermo library with this thermo data
+		# This will overwrite keys (but not values), so the order that the
+		# seed mechanisms are loaded matters!
+		for key, value in d.iteritems():
+			species.thermoDatabase.primaryDatabase.dictionary[key] = value
+		for key, value in thermoData.library.iteritems():
+			species.thermoDatabase.primaryDatabase.library[key] = value
+
+		# Create new species based on items in species.txt
+		speciesDict = {}; speciesList = []
 		for label, struct in d.iteritems():
-			speciesDict[label] = species.makeNewSpecies(struct, label, reactive=True)
-		print species.speciesList
+			spec = species.makeNewSpecies(struct, label, reactive=True)
+			speciesDict[label] = spec
+			speciesList.append(spec)
 		
 		# Load the reactions from the file reaction.txt
 		reactionList = []
@@ -641,7 +656,7 @@ class CoreEdgeReactionModel:
 		f.close()
 		
 		# Add species to core
-		for label, spec in speciesDict.iteritems():
+		for spec in speciesList:
 			self.addSpeciesToCore(spec)
 		# Add reactions to core
 		for rxn in reactionList:

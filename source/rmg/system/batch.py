@@ -345,7 +345,7 @@ class BatchReactor(ReactionSystem):
 			# Calculate species fluxes of all core and edge species at the
 			# current time
 			dNidt = self.getSpeciesFluxes(model, P, V, T, Ni, stoichiometry)
-
+			
 			# Determine characteristic species flux
 			charFlux = math.sqrt(sum([x*x for x in dNidt[0:len(model.core.species)]]))
 
