@@ -1021,9 +1021,10 @@ class Structure:
 				else:
 					structure = Structure(self.atoms(), self.bonds())
 					structure.removeBond(bond)
-					structure1, structure2 = structure.split()
+					structures = structure.split()
+					if len(structures) != 2: return symmetryNumber
 
-
+					structure1, structure2 = structures
 					if bond.atoms[0] in structure1.atoms(): structure1.removeAtom(bond.atoms[0])
 					if bond.atoms[1] in structure1.atoms(): structure1.removeAtom(bond.atoms[1])
 					if bond.atoms[0] in structure2.atoms(): structure2.removeAtom(bond.atoms[0])
