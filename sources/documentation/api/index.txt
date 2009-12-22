@@ -1,37 +1,17 @@
-.. RMG documentation master file, created by sphinx-quickstart on Fri May 15 20:30:50 2009.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
 *********************
 RMG Developer's Guide
 *********************
 
 The RMG Developer's Guide provides documentation for the application programming interface (API) used by RMG. It is intended for readers who wish to understand the RMG source code, e.g. to learn how to *develop* with RMG.
 
-Contents
-========
-
 .. toctree::
 	:numbered:
-	:maxdepth: 1
+	:maxdepth: 2
 	
-	rmg-chem
-	rmg-constants
-	rmg-data
-	rmg-graph
-	rmg-io
-	rmg-kinetics
-	rmg-main
-	rmg-model
-	rmg-reaction
-	rmg-species
-	rmg-spectral
-	rmg-structure
-	rmg-thermo
-	rmg-cantera_loader
-	
-Indices and Tables
-==================
+	introduction/index
+	rmg/index
+	rmg.system/index
+	rmg.unirxn/index
 
 * :ref:`genindex`
 * :ref:`modindex`

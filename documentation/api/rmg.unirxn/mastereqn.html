@@ -1,0 +1,375 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>4.2. The rmg.unirxn.mastereqn Module &mdash; RMG-Py</title>
+    <link rel="stylesheet" href="../../../static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.2.0',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../static/jquery.js"></script>
+    <script type="text/javascript" src="../../../static/doctools.js"></script>
+    <link rel="search" type="application/opensearchdescription+xml"
+          title="Search within RMG-Py"
+          href="../../../static/opensearch.xml"/>
+    <link rel="top" title="RMG-Py" href="../../../index.html" />
+    <link rel="up" title="4. The rmg.unirxn Package" href="index.html" />
+    <link rel="next" title="4.3. The rmg.unirxn.msc Module" href="msc.html" />
+    <link rel="prev" title="4.1. The rmg.unirxn.io Module" href="io.html" /> 
+ 
+<link rel="stylesheet" href="../../../static/rmg.css" type="text/css" />
+
+  </head>
+  <body>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-7791083-1");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../modindex.html" title="Global Module Index"
+             accesskey="M">modules</a> |</li>
+        <li class="right" >
+          <a href="msc.html" title="4.3. The rmg.unirxn.msc Module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="io.html" title="4.1. The rmg.unirxn.io Module"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../../index.html">RMG-Py</a> &raquo;</li>
+          <li><a href="../../index.html" >RMG Documentation</a> &raquo;</li>
+          <li><a href="../index.html" >RMG Developer&#8217;s Guide</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">4. The <tt class="docutils literal docutils literal docutils literal docutils literal docutils literal"><span class="pre">rmg.unirxn</span></tt> Package</a> &raquo;</li>
+  <li><a href="">4.2. The <tt class="docutils literal docutils literal"><span class="pre">rmg.unirxn.mastereqn</span></tt> Module</a></li>
+
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-rmg.unirxn.mastereqn">
+<h1>4.2. The <tt class="docutils literal"><span class="pre">rmg.unirxn.mastereqn</span></tt> Module<a class="headerlink" href="#module-rmg.unirxn.mastereqn" title="Permalink to this headline">¶</a></h1>
+<p>This module contains functions for constructing a collisional transfer probabilities matrix and
+a full master equation matrix.</p>
+<div class="section" id="methods-in-rmg-unirxn-mastereqn">
+<h2>4.2.1. Methods in <tt class="docutils literal"><span class="pre">rmg.unirxn.mastereqn</span></tt><a class="headerlink" href="#methods-in-rmg-unirxn-mastereqn" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="rmg.unirxn.mastereqn.collisionmatrix">
+<tt class="descclassname">rmg.unirxn.mastereqn.</tt><tt class="descname">collisionmatrix</tt><big>(</big><em>T</em>, <em>P</em>, <em>E</em>, <em>collFreq</em>, <em>densStates</em>, <em>E0</em>, <em>dEdown</em>, <em>Ngrains</em>, <em>Mcoll</em>, <em>msg</em><big>)</big><a class="headerlink" href="#rmg.unirxn.mastereqn.collisionmatrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the collisional transfer rate matrix for a given isomer. The
+parameters are:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="16%" />
+<col width="8%" />
+<col width="76%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Parameter</th>
+<th class="head">Intent</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td><cite>T</cite></td>
+<td>in</td>
+<td>The temperature to evaluate k(T,P) at in K</td>
+</tr>
+<tr><td><cite>P</cite></td>
+<td>in</td>
+<td>The pressure to evaluate k(T,P) at in Pa</td>
+</tr>
+<tr><td><cite>E</cite></td>
+<td>in</td>
+<td>A 1D array of energies in J/mol</td>
+</tr>
+<tr><td><cite>collFreq</cite></td>
+<td>in</td>
+<td>The (modified) collision frequency for the isomer in
+Hz</td>
+</tr>
+<tr><td><cite>densStates</cite></td>
+<td>in</td>
+<td>The density of states for the isomer</td>
+</tr>
+<tr><td><cite>E0</cite></td>
+<td>in</td>
+<td>The ground-state energy for the isomer in J/mol</td>
+</tr>
+<tr><td><cite>dEdown</cite></td>
+<td>in</td>
+<td>The average energy transferred in a deactivating
+collision in J/mol</td>
+</tr>
+<tr><td><cite>Ngrains</cite></td>
+<td>in</td>
+<td>The number of energy grains being used</td>
+</tr>
+<tr><td><cite>Mcoll</cite></td>
+<td>out</td>
+<td>The collision matrix for the isomer</td>
+</tr>
+<tr><td><cite>msg</cite></td>
+<td>out</td>
+<td>If the subroutine was unsuccessful, this string will
+contain a brief message describing the error; the
+string will be empty if the subroutine was successful</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="rmg.unirxn.mastereqn.transferrate">
+<tt class="descclassname">rmg.unirxn.mastereqn.</tt><tt class="descname">transferrate</tt><big>(</big><em>i</em>, <em>j</em>, <em>Ei</em>, <em>Ej</em>, <em>alpha</em>, <em>E0</em>, <em>rho</em>, <em>Ngrains</em>, <em>T</em>, <em>rate</em><big>)</big><a class="headerlink" href="#rmg.unirxn.mastereqn.transferrate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the unnormalized probability of a collisional energy transfer
+from state j (with energy Ej) to state i (with energy Ei) using a
+single-exponental-down model.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="17%" />
+<col width="8%" />
+<col width="75%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Parameter</th>
+<th class="head">Intent</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td><cite>i</cite></td>
+<td>in</td>
+<td>index of destination state</td>
+</tr>
+<tr><td><cite>j</cite></td>
+<td>in</td>
+<td>index of source state</td>
+</tr>
+<tr><td><cite>Ei</cite></td>
+<td>in</td>
+<td>energy of destination state i in cm^-1</td>
+</tr>
+<tr><td><cite>Ej</cite></td>
+<td>in</td>
+<td>energy of source state j in cm^-1</td>
+</tr>
+<tr><td><cite>alpha</cite></td>
+<td>in</td>
+<td>parameter in exponential-down model in (cm^-1)^-1</td>
+</tr>
+<tr><td><cite>E0</cite></td>
+<td>in</td>
+<td>electronic + zero-point energy of ground state in
+cm^-1</td>
+</tr>
+<tr><td><cite>rho</cite></td>
+<td>in</td>
+<td>density of states</td>
+</tr>
+<tr><td><cite>Ngrains</cite></td>
+<td>in</td>
+<td>number of energy grains in density of states</td>
+</tr>
+<tr><td><cite>T</cite></td>
+<td>in</td>
+<td>temperature of interest in K</td>
+</tr>
+<tr><td><cite>rate</cite></td>
+<td>out</td>
+<td>collisional transfer probability in s^-1</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="rmg.unirxn.mastereqn.fullmematrix">
+<tt class="descclassname">rmg.unirxn.mastereqn.</tt><tt class="descname">fullmematrix</tt><big>(</big><em>E</em>, <em>E0</em>, <em>Mcoll0</em>, <em>Kij</em>, <em>Gnj</em>, <em>Fim</em>, <em>indices</em>, <em>nRows</em>, <em>nGrains</em>, <em>nIsom</em>, <em>nProd</em>, <em>Mcoll</em>, <em>Mrxn</em>, <em>msg</em><big>)</big><a class="headerlink" href="#rmg.unirxn.mastereqn.fullmematrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct the full master equation matrix. The parameters are:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="14%" />
+<col width="8%" />
+<col width="78%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Parameter</th>
+<th class="head">Intent</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td><cite>E</cite></td>
+<td>in</td>
+<td>A 1D array of energies in J/mol</td>
+</tr>
+<tr><td><cite>E0</cite></td>
+<td>in</td>
+<td>The active-state energy cutoffs for each isomer in J/mol</td>
+</tr>
+<tr><td><cite>Mcoll0</cite></td>
+<td>in</td>
+<td>The collision matrices for each isomer</td>
+</tr>
+<tr><td><cite>Kij</cite></td>
+<td>in</td>
+<td>The microcanonical isomerization rate coefficients in
+s^-1</td>
+</tr>
+<tr><td><cite>Fim</cite></td>
+<td>in</td>
+<td>The microcanonical association rates (rate coefficients
+times bimolecular equilibrium distributions) in s^-1</td>
+</tr>
+<tr><td><cite>Gnj</cite></td>
+<td>in</td>
+<td>The microcanonical dissociation rate coefficients in
+s^-1</td>
+</tr>
+<tr><td><cite>indices</cite></td>
+<td>in</td>
+<td>The indexing scheme to use</td>
+</tr>
+<tr><td><cite>nRows</cite></td>
+<td>in</td>
+<td>The number of rows and columns in the full matrix</td>
+</tr>
+<tr><td><cite>nGrains</cite></td>
+<td>in</td>
+<td>The number of energy grains being used</td>
+</tr>
+<tr><td><cite>nIsom</cite></td>
+<td>in</td>
+<td>The number of isomers in the network</td>
+</tr>
+<tr><td><cite>nProd</cite></td>
+<td>in</td>
+<td>The number of reactant/product channels in the network</td>
+</tr>
+<tr><td><cite>Mcoll</cite></td>
+<td>out</td>
+<td>The full master equation matrix - collision terms</td>
+</tr>
+<tr><td><cite>Mrxn</cite></td>
+<td>out</td>
+<td>The full master equation matrix - reaction terms</td>
+</tr>
+<tr><td><cite>msg</cite></td>
+<td>out</td>
+<td>If the subroutine was unsuccessful, this string will
+contain a brief message describing the error; the
+string will be empty if the subroutine was successful</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../../index.html">
+              <img class="logo" src="../../../static/rmg_logo.png" alt="Logo"/>
+            </a></p>
+            <h3><a href="../../../index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="">4.2. The <tt class="docutils literal"><span class="pre">rmg.unirxn.mastereqn</span></tt> Module</a><ul>
+<li><a class="reference external" href="#methods-in-rmg-unirxn-mastereqn">4.2.1. Methods in <tt class="docutils literal"><span class="pre">rmg.unirxn.mastereqn</span></tt></a></li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="io.html"
+                                  title="previous chapter">4.1. The <tt class="docutils literal docutils literal docutils literal"><span class="pre">rmg.unirxn.io</span></tt> Module</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="msc.html"
+                                  title="next chapter">4.3. The <tt class="docutils literal"><span class="pre">rmg.unirxn.msc</span></tt> Module</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../../../sources/documentation/api/rmg.unirxn/mastereqn.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <h3>Other links</h3>
+<ul>
+<li><a href="http://github.com/GreenGroup/RMG-Py/issues">Issue and Bug Tracker</a></li>
+<li><a href="http://github.com/GreenGroup/RMG-Py">Source Code</a> </li>
+<!--li><a href="../../../RMG-manual.pdf" onClick="javascript: pageTracker._trackPageview('/documentation/RMG-manual.pdf');">View user manual as PDF</a></li-->
+<li><a href="http://rmg.sourceforge.net/">RMG-Java on Sourceforge</a></li>
+</ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../modindex.html" title="Global Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="msc.html" title="4.3. The rmg.unirxn.msc Module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="io.html" title="4.1. The rmg.unirxn.io Module"
+             >previous</a> |</li>
+        <li><a href="../../../index.html">RMG-Py</a> &raquo;</li>
+          <li><a href="../../index.html" >RMG Documentation</a> &raquo;</li>
+          <li><a href="../index.html" >RMG Developer&#8217;s Guide</a> &raquo;</li>
+          <li><a href="index.html" >4. The <tt class="docutils literal docutils literal docutils literal docutils literal docutils literal"><span class="pre">rmg.unirxn</span></tt> Package</a> &raquo;</li>
+  <li><a href="">4.2. The <tt class="docutils literal docutils literal"><span class="pre">rmg.unirxn.mastereqn</span></tt> Module</a></li>
+
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2009, Prof. William H. Green and the RMG Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.2.
+    </div>
+  </body>
+</html>

@@ -7,6 +7,12 @@ The ``rmg.species`` Module
 Classes in ``rmg.species``
 ==========================
 
+LennardJones
+------------
+
+.. autoclass:: rmg.species.LennardJones
+	:members:
+
 Species
 -------
 
@@ -37,3 +43,5 @@ Methods in ``rmg.species``
 .. autofunction:: rmg.species.getThermoData
 
 .. autofunction:: rmg.species.makeNewSpecies
+
+.. autofunction:: rmg.species.processNewSpecies

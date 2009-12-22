@@ -7,18 +7,15 @@ The ``rmg.structure`` Module
 Classes in ``rmg.structure``
 ============================
 
-InvalidAdjacencyListException
------------------------------
-
-.. autoclass:: rmg.structure.InvalidAdjacencyListException
-	:members:
-
 Structure
 ---------
 
 .. autoclass:: rmg.structure.Structure
 	:members:
 
-Methods in ``rmg.structure``
-============================
+Exceptions in ``rmg.structure``
+===============================
+
+.. autoexception:: rmg.structure.InvalidAdjacencyListException
+	:members:
 

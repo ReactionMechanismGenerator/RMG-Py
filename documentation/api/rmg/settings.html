@@ -1,0 +1,209 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>2.11. The rmg.settings Module &mdash; RMG-Py</title>
+    <link rel="stylesheet" href="../../../static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.2.0',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../static/jquery.js"></script>
+    <script type="text/javascript" src="../../../static/doctools.js"></script>
+    <link rel="search" type="application/opensearchdescription+xml"
+          title="Search within RMG-Py"
+          href="../../../static/opensearch.xml"/>
+    <link rel="top" title="RMG-Py" href="../../../index.html" />
+    <link rel="up" title="2. The rmg Package" href="index.html" />
+    <link rel="next" title="2.12. The rmg.species Module" href="species.html" />
+    <link rel="prev" title="2.10. The rmg.reaction Module" href="reaction.html" /> 
+ 
+<link rel="stylesheet" href="../../../static/rmg.css" type="text/css" />
+
+  </head>
+  <body>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-7791083-1");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../modindex.html" title="Global Module Index"
+             accesskey="M">modules</a> |</li>
+        <li class="right" >
+          <a href="species.html" title="2.12. The rmg.species Module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="reaction.html" title="2.10. The rmg.reaction Module"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../../index.html">RMG-Py</a> &raquo;</li>
+          <li><a href="../../index.html" >RMG Documentation</a> &raquo;</li>
+          <li><a href="../index.html" >RMG Developer&#8217;s Guide</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">2. The <tt class="docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal"><span class="pre">rmg</span></tt> Package</a> &raquo;</li>
+  <li><a href="">2.11. The <tt class="docutils literal docutils literal"><span class="pre">rmg.settings</span></tt> Module</a></li>
+
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-rmg.settings">
+<h1>2.11. The <tt class="docutils literal"><span class="pre">rmg.settings</span></tt> Module<a class="headerlink" href="#module-rmg.settings" title="Permalink to this headline">¶</a></h1>
+<p>Contains a number of settings to be used throughout RMG.</p>
+<p>These can be modified at runtime, for example by reading in a settings file.
+Their values will be stored in this module.</p>
+<dl class="data">
+<dt id="rmg.settings.drawMolecules">
+<tt class="descclassname">rmg.settings.</tt><tt class="descname">drawMolecules</tt><a class="headerlink" href="#rmg.settings.drawMolecules" title="Permalink to this definition">¶</a></dt>
+<dd><p>Whether to draw pictures of the molecules.</p>
+<p><a title="rmg.settings.drawMolecules" class="reference internal" href="#rmg.settings.drawMolecules"><tt class="xref docutils literal"><span class="pre">rmg.settings.drawMolecules</span></tt></a> = False</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="rmg.settings.generatePlots">
+<tt class="descclassname">rmg.settings.</tt><tt class="descname">generatePlots</tt><a class="headerlink" href="#rmg.settings.generatePlots" title="Permalink to this definition">¶</a></dt>
+<dd><p>Whether to make plots of simulations.</p>
+<p><a title="rmg.settings.generatePlots" class="reference internal" href="#rmg.settings.generatePlots"><tt class="xref docutils literal"><span class="pre">rmg.settings.generatePlots</span></tt></a> = False</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="rmg.settings.initializationTime">
+<tt class="descclassname">rmg.settings.</tt><tt class="descname">initializationTime</tt><a class="headerlink" href="#rmg.settings.initializationTime" title="Permalink to this definition">¶</a></dt>
+<dd><p>Time at which the program execution was started (seconds since the epoch)</p>
+<p><a title="rmg.settings.initializationTime" class="reference internal" href="#rmg.settings.initializationTime"><tt class="xref docutils literal"><span class="pre">rmg.settings.initializationTime</span></tt></a> = 0.0</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="rmg.settings.libraryDirectory">
+<tt class="descclassname">rmg.settings.</tt><tt class="descname">libraryDirectory</tt><a class="headerlink" href="#rmg.settings.libraryDirectory" title="Permalink to this definition">¶</a></dt>
+<dd><p>The directory with libraries in?</p>
+<p><a title="rmg.settings.libraryDirectory" class="reference internal" href="#rmg.settings.libraryDirectory"><tt class="xref docutils literal"><span class="pre">rmg.settings.libraryDirectory</span></tt></a> = .</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="rmg.settings.outputDirectory">
+<tt class="descclassname">rmg.settings.</tt><tt class="descname">outputDirectory</tt><a class="headerlink" href="#rmg.settings.outputDirectory" title="Permalink to this definition">¶</a></dt>
+<dd><p>The directory used for output of results</p>
+<p><a title="rmg.settings.outputDirectory" class="reference internal" href="#rmg.settings.outputDirectory"><tt class="xref docutils literal"><span class="pre">rmg.settings.outputDirectory</span></tt></a> = .</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="rmg.settings.scratchDirectory">
+<tt class="descclassname">rmg.settings.</tt><tt class="descname">scratchDirectory</tt><a class="headerlink" href="#rmg.settings.scratchDirectory" title="Permalink to this definition">¶</a></dt>
+<dd><p>The directory used for temporary scratch files</p>
+<p><a title="rmg.settings.scratchDirectory" class="reference internal" href="#rmg.settings.scratchDirectory"><tt class="xref docutils literal"><span class="pre">rmg.settings.scratchDirectory</span></tt></a> = .</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="rmg.settings.spectralDataEstimation">
+<tt class="descclassname">rmg.settings.</tt><tt class="descname">spectralDataEstimation</tt><a class="headerlink" href="#rmg.settings.spectralDataEstimation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Whether to estimate spectral data for species.</p>
+<p><a title="rmg.settings.spectralDataEstimation" class="reference internal" href="#rmg.settings.spectralDataEstimation"><tt class="xref docutils literal"><span class="pre">rmg.settings.spectralDataEstimation</span></tt></a> = False</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="rmg.settings.unimolecularReactionNetworks">
+<tt class="descclassname">rmg.settings.</tt><tt class="descname">unimolecularReactionNetworks</tt><a class="headerlink" href="#rmg.settings.unimolecularReactionNetworks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Whether to process unimolecular (pressure-dependent) reaction networks.</p>
+<p><a title="rmg.settings.unimolecularReactionNetworks" class="reference internal" href="#rmg.settings.unimolecularReactionNetworks"><tt class="xref docutils literal"><span class="pre">rmg.settings.unimolecularReactionNetworks</span></tt></a> = False</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../../index.html">
+              <img class="logo" src="../../../static/rmg_logo.png" alt="Logo"/>
+            </a></p>
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="reaction.html"
+                                  title="previous chapter">2.10. The <tt class="docutils literal docutils literal docutils literal"><span class="pre">rmg.reaction</span></tt> Module</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="species.html"
+                                  title="next chapter">2.12. The <tt class="docutils literal"><span class="pre">rmg.species</span></tt> Module</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../../../sources/documentation/api/rmg/settings.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <h3>Other links</h3>
+<ul>
+<li><a href="http://github.com/GreenGroup/RMG-Py/issues">Issue and Bug Tracker</a></li>
+<li><a href="http://github.com/GreenGroup/RMG-Py">Source Code</a> </li>
+<!--li><a href="../../../RMG-manual.pdf" onClick="javascript: pageTracker._trackPageview('/documentation/RMG-manual.pdf');">View user manual as PDF</a></li-->
+<li><a href="http://rmg.sourceforge.net/">RMG-Java on Sourceforge</a></li>
+</ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../modindex.html" title="Global Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="species.html" title="2.12. The rmg.species Module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="reaction.html" title="2.10. The rmg.reaction Module"
+             >previous</a> |</li>
+        <li><a href="../../../index.html">RMG-Py</a> &raquo;</li>
+          <li><a href="../../index.html" >RMG Documentation</a> &raquo;</li>
+          <li><a href="../index.html" >RMG Developer&#8217;s Guide</a> &raquo;</li>
+          <li><a href="index.html" >2. The <tt class="docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal"><span class="pre">rmg</span></tt> Package</a> &raquo;</li>
+  <li><a href="">2.11. The <tt class="docutils literal docutils literal"><span class="pre">rmg.settings</span></tt> Module</a></li>
+
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2009, Prof. William H. Green and the RMG Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.2.
+    </div>
+  </body>
+</html>

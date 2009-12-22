@@ -1,0 +1,464 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>2.4. The rmg.data Module &mdash; RMG-Py</title>
+    <link rel="stylesheet" href="../../../static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.2.0',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../static/jquery.js"></script>
+    <script type="text/javascript" src="../../../static/doctools.js"></script>
+    <link rel="search" type="application/opensearchdescription+xml"
+          title="Search within RMG-Py"
+          href="../../../static/opensearch.xml"/>
+    <link rel="top" title="RMG-Py" href="../../../index.html" />
+    <link rel="up" title="2. The rmg Package" href="index.html" />
+    <link rel="next" title="2.5. The rmg.graph Module" href="graph.html" />
+    <link rel="prev" title="2.3. The rmg.constants Module" href="constants.html" /> 
+ 
+<link rel="stylesheet" href="../../../static/rmg.css" type="text/css" />
+
+  </head>
+  <body>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-7791083-1");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../modindex.html" title="Global Module Index"
+             accesskey="M">modules</a> |</li>
+        <li class="right" >
+          <a href="graph.html" title="2.5. The rmg.graph Module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="constants.html" title="2.3. The rmg.constants Module"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../../index.html">RMG-Py</a> &raquo;</li>
+          <li><a href="../../index.html" >RMG Documentation</a> &raquo;</li>
+          <li><a href="../index.html" >RMG Developer&#8217;s Guide</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">2. The <tt class="docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal"><span class="pre">rmg</span></tt> Package</a> &raquo;</li>
+  <li><a href="">2.4. The <tt class="docutils literal docutils literal"><span class="pre">rmg.data</span></tt> Module</a></li>
+
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-rmg.data">
+<h1>2.4. The <tt class="docutils literal"><span class="pre">rmg.data</span></tt> Module<a class="headerlink" href="#module-rmg.data" title="Permalink to this headline">¶</a></h1>
+<p>Contains classes and functions for working with the various RMG databases. In
+RMG a database is composed of three parts:</p>
+<ul class="simple">
+<li>A <em>dictionary</em>, associating a string identifier with a chemical structure.</li>
+<li>A <em>tree</em>, providing a hierarchical and extensible organization of the chemical structures.</li>
+<li>A <em>library</em>, associating a chemical structure with some sort of physical information.</li>
+</ul>
+<p>These are implemented via the <a title="rmg.data.Dictionary" class="reference internal" href="#rmg.data.Dictionary"><tt class="xref docutils literal"><span class="pre">Dictionary</span></tt></a>, <a title="rmg.data.Tree" class="reference internal" href="#rmg.data.Tree"><tt class="xref docutils literal"><span class="pre">Tree</span></tt></a>, and
+<a title="rmg.data.Library" class="reference internal" href="#rmg.data.Library"><tt class="xref docutils literal"><span class="pre">Library</span></tt></a> classes, respectively. A base class for databases is
+implemented in the <a title="rmg.data.Database" class="reference internal" href="#rmg.data.Database"><tt class="xref docutils literal"><span class="pre">Database</span></tt></a> class, which is often overloaded to
+provide specific functionality for individual databases.</p>
+<div class="section" id="classes-in-rmg-data">
+<h2>2.4.1. Classes in <tt class="docutils literal"><span class="pre">rmg.data</span></tt><a class="headerlink" href="#classes-in-rmg-data" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="database">
+<h3>2.4.1.1. Database<a class="headerlink" href="#database" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="rmg.data.Database">
+<em class="property">
+class </em><tt class="descclassname">rmg.data.</tt><tt class="descname">Database</tt><a class="headerlink" href="#rmg.data.Database" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represent an RMG database. An RMG database is structured as an n-ary tree,
+were each node has a chemical or functional group <cite>structure</cite> (that is a
+superset of its parent node) and a library of <cite>data</cite> values. This class is 
+intended to be generic and can be subclassed for specific databases if
+desired.</p>
+<p>Each Database object maintains its own internal dictionary of the nodes
+in the tree. Thus it is strongly recommended that you utilize the add()
+and remove() functions for manipulating the database.</p>
+<dl class="method">
+<dt id="rmg.data.Database.descendTree">
+<tt class="descname">descendTree</tt><big>(</big><em>structure</em>, <em>atoms</em>, <em>root=None</em><big>)</big><a class="headerlink" href="#rmg.data.Database.descendTree" title="Permalink to this definition">¶</a></dt>
+<dd>Descend the tree in search of the functional group node that best
+matches the local structure around <cite>atoms</cite> in <cite>structure</cite>.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.data.Database.isWellFormed">
+<tt class="descname">isWellFormed</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.data.Database.isWellFormed" title="Permalink to this definition">¶</a></dt>
+<dd>Return <tt class="xref xref docutils literal"><span class="pre">True</span></tt> if the database is well-formed. A well-formed
+database has an entry in the dictionary for every entry in the tree, and
+an entry in the tree for every entry in the library. If no tree is
+present (e.g. the primary libraries), then every entry in the library
+must have an entry in the dictionary. Finally, each entry in the
+library must have the same number of nodes as the number of top-level
+nodes in the tree, if the tree is present; this is for databases with
+multiple trees, e.g. the kinetics databases.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.data.Database.load">
+<tt class="descname">load</tt><big>(</big><em>dictstr</em>, <em>treestr</em>, <em>libstr</em><big>)</big><a class="headerlink" href="#rmg.data.Database.load" title="Permalink to this definition">¶</a></dt>
+<dd>Load a dictionary-tree-library based database. The database is stored
+in three files: <cite>dictstr</cite> is the path to the dictionary, <cite>treestr</cite> to
+the tree, and <cite>libstr</cite> to the library. The tree is optional, and should
+be set to &#8216;&#8217; if not desired.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.data.Database.matchNodeToStructure">
+<tt class="descname">matchNodeToStructure</tt><big>(</big><em>node</em>, <em>structure</em>, <em>atoms</em><big>)</big><a class="headerlink" href="#rmg.data.Database.matchNodeToStructure" title="Permalink to this definition">¶</a></dt>
+<dd>Return <tt class="xref xref docutils literal"><span class="pre">True</span></tt> if the <cite>structure</cite> centered at <cite>atom</cite> matches the
+structure at <cite>node</cite> in the dictionary. The structure at <cite>node</cite> should
+have atoms with the appropriate labels because they are set on loading
+and never change. However, the atoms in <cite>structure</cite> may not have the
+correct labels, hence the <cite>atoms</cite> parameter. The <cite>atoms</cite> parameter may
+include extra labels, and so we only require that every labeled atom in
+the functional group represented by <cite>node</cite> has an equivalent labeled
+atom in <cite>structure</cite>.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.data.Database.save">
+<tt class="descname">save</tt><big>(</big><em>dictstr</em>, <em>treestr</em>, <em>libstr</em><big>)</big><a class="headerlink" href="#rmg.data.Database.save" title="Permalink to this definition">¶</a></dt>
+<dd>Save a dictionary-tree-library based database. The database is stored
+in three files: <cite>dictstr</cite> is the path to the dictionary, <cite>treestr</cite> to
+the tree, and <cite>libstr</cite> to the library. If a file is not desired to be
+saved, its path should be set to &#8216;&#8217;.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.data.Database.toXML">
+<tt class="descname">toXML</tt><big>(</big><em>dom</em>, <em>root</em><big>)</big><a class="headerlink" href="#rmg.data.Database.toXML" title="Permalink to this definition">¶</a></dt>
+<dd>Return an XML representation of the database.</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="dictionary">
+<h3>2.4.1.2. Dictionary<a class="headerlink" href="#dictionary" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="rmg.data.Dictionary">
+<em class="property">
+class </em><tt class="descclassname">rmg.data.</tt><tt class="descname">Dictionary</tt><a class="headerlink" href="#rmg.data.Dictionary" title="Permalink to this definition">¶</a></dt>
+<dd><p>An RMG dictionary class, extended from the Python dictionary class to
+include functions for loading the dictionary from a file. The keys of the
+dictionary are strings that represent unique identifiers, while the
+corresponding values are either <tt class="xref docutils literal"><span class="pre">chem.Structure</span></tt> objects representing
+a chemical structure or the string &#8216;union&#8217; to indicate that the structure
+is a union of all of its child nodes in the corresponding tree.</p>
+<dl class="method">
+<dt id="rmg.data.Dictionary.load">
+<tt class="descname">load</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#rmg.data.Dictionary.load" title="Permalink to this definition">¶</a></dt>
+<dd>Parse an RMG database dictionary located at path. An RMG
+dictionary is a list of key-value pairs of a string     label and a string
+record. Each record is separated by at least one empty line.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.data.Dictionary.toStructure">
+<tt class="descname">toStructure</tt><big>(</big><em>addH=False</em><big>)</big><a class="headerlink" href="#rmg.data.Dictionary.toStructure" title="Permalink to this definition">¶</a></dt>
+<dd>Convert the values stored in the dictionary from adjacency list strings
+to <tt class="xref docutils literal"><span class="pre">structure.Structure</span></tt> objects. If a record is a union, it is 
+stored as the string &#8216;union&#8217;, and automatically uses all immediate
+children of the node as the union.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.data.Dictionary.toXML">
+<tt class="descname">toXML</tt><big>(</big><em>dom</em>, <em>root</em><big>)</big><a class="headerlink" href="#rmg.data.Dictionary.toXML" title="Permalink to this definition">¶</a></dt>
+<dd>Return an XML representation of the dictionary.</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="library">
+<h3>2.4.1.3. Library<a class="headerlink" href="#library" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="rmg.data.Library">
+<em class="property">
+class </em><tt class="descclassname">rmg.data.</tt><tt class="descname">Library</tt><a class="headerlink" href="#rmg.data.Library" title="Permalink to this definition">¶</a></dt>
+<dd><p>An RMG database library class, extended from the base RMG dictionary class
+to be able to handle an array of string labels.</p>
+<dl class="method">
+<dt id="rmg.data.Library.add">
+<tt class="descname">add</tt><big>(</big><em>index</em>, <em>labels</em>, <em>data</em><big>)</big><a class="headerlink" href="#rmg.data.Library.add" title="Permalink to this definition">¶</a></dt>
+<dd>Add an item of <cite>data</cite> to the library based on the value of the list
+of <cite>labels</cite>. Only add and return True if there is not preexisting data 
+with those labels, else return False.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.data.Library.getData">
+<tt class="descname">getData</tt><big>(</big><em>key</em><big>)</big><a class="headerlink" href="#rmg.data.Library.getData" title="Permalink to this definition">¶</a></dt>
+<dd>Return the data in the library associated with the label or list of
+labels denoted by <cite>key</cite>.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.data.Library.hashLabels">
+<tt class="descname">hashLabels</tt><big>(</big><em>labels</em><big>)</big><a class="headerlink" href="#rmg.data.Library.hashLabels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert a list of string <cite>labels</cite> to a list of single strings that
+represent permutations of the individual strings in the <cite>labels</cite> list:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">hashLabels</span><span class="p">([</span><span class="s">&#39;a&#39;</span><span class="p">,</span><span class="s">&#39;b&#39;</span><span class="p">])</span>
+<span class="go">[&#39;a;b&#39;, &#39;b;a&#39;]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmg.data.Library.load">
+<tt class="descname">load</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#rmg.data.Library.load" title="Permalink to this definition">¶</a></dt>
+<dd>Parse an RMG database library located at <cite>path</cite>.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.data.Library.parse">
+<tt class="descname">parse</tt><big>(</big><em>lines</em>, <em>numLabels=1</em><big>)</big><a class="headerlink" href="#rmg.data.Library.parse" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse an RMG database library located at <cite>path</cite>.</p>
+<p>It splits lines on whitespace then treats tokens as:</p>
+<div class="highlight-python"><pre>&lt;index&gt; &lt;label1&gt; ... &lt;labelN&gt; &lt;data1&gt;  &lt;data2&gt; ...</pre>
+</div>
+<p><cite>numLabels</cite> determines how  many labels are assumed.
+All the data are concatenated to a single string with single spaces between items.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmg.data.Library.remove">
+<tt class="descname">remove</tt><big>(</big><em>labels</em><big>)</big><a class="headerlink" href="#rmg.data.Library.remove" title="Permalink to this definition">¶</a></dt>
+<dd>Remove an item of data from the library based on the value of the list
+of <cite>labels</cite>.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.data.Library.removeLinks">
+<tt class="descname">removeLinks</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.data.Library.removeLinks" title="Permalink to this definition">¶</a></dt>
+<dd>Ensure all values in the library are either a 
+<tt class="xref docutils literal"><span class="pre">chem.ThermoGAValue</span></tt> object or None by following and replacing
+all string links.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.data.Library.toXML">
+<tt class="descname">toXML</tt><big>(</big><em>dom</em>, <em>root</em><big>)</big><a class="headerlink" href="#rmg.data.Library.toXML" title="Permalink to this definition">¶</a></dt>
+<dd>Return an XML representation of the library.</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="tree">
+<h3>2.4.1.4. Tree<a class="headerlink" href="#tree" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="rmg.data.Tree">
+<em class="property">
+class </em><tt class="descclassname">rmg.data.</tt><tt class="descname">Tree</tt><a class="headerlink" href="#rmg.data.Tree" title="Permalink to this definition">¶</a></dt>
+<dd><p>An implementation of an n-ary tree used for representing a hierarchy of
+data. The tree is represented as a pair of dictionaries:</p>
+<ul class="simple">
+<li>The <cite>parent</cite> dictionary. For a given identifier, returns the identifier
+corresponding to the parent.</li>
+<li>The <cite>children</cite> dictionary. For a given identifier, returns a list of
+identifiers corresponding to the children.</li>
+</ul>
+<p>The top-level node(s) of the tree are stored in a list in the <cite>top</cite>
+attribute.</p>
+<p>In constructing the tree, it is important to develop a hierarchy such that
+siblings are mutually exclusive, to ensure that there is a unique path of
+descent down a tree for each structure. If non-mutually exclusive siblings
+are encountered, a warning is raised and the parent of the siblings is
+returned.</p>
+<p>There is no requirement that the children of a node span the range of
+more specific permutations of the parent. As the database gets more complex,
+attempting to maintain complete sets of children for each parent in each
+database rapidly becomes untenable, and is against the spirit of
+extensibility behind the database development.</p>
+<dl class="method">
+<dt id="rmg.data.Tree.add">
+<tt class="descname">add</tt><big>(</big><em>node</em>, <em>parent</em><big>)</big><a class="headerlink" href="#rmg.data.Tree.add" title="Permalink to this definition">¶</a></dt>
+<dd>Add <cite>node</cite> to the tree as a child of <cite>parent</cite>, another node     already in 
+the tree.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.data.Tree.ancestors">
+<tt class="descname">ancestors</tt><big>(</big><em>node</em><big>)</big><a class="headerlink" href="#rmg.data.Tree.ancestors" title="Permalink to this definition">¶</a></dt>
+<dd>Returns all the ancestors of a node, climbing up the tree to the top.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.data.Tree.descendants">
+<tt class="descname">descendants</tt><big>(</big><em>node</em><big>)</big><a class="headerlink" href="#rmg.data.Tree.descendants" title="Permalink to this definition">¶</a></dt>
+<dd>Returns all the descendants of a node, climbing down the tree to the bottom.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.data.Tree.load">
+<tt class="descname">load</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#rmg.data.Tree.load" title="Permalink to this definition">¶</a></dt>
+<dd>Parse an RMG database tree located at <cite>path</cite>. An RMG tree is an 
+n-ary tree representing the hierarchy of items in the dictionary.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.data.Tree.remove">
+<tt class="descname">remove</tt><big>(</big><em>node</em><big>)</big><a class="headerlink" href="#rmg.data.Tree.remove" title="Permalink to this definition">¶</a></dt>
+<dd>Remove <cite>node</cite> and all of its children from the tree.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.data.Tree.toDOT">
+<tt class="descname">toDOT</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.data.Tree.toDOT" title="Permalink to this definition">¶</a></dt>
+<dd>Create a DOT representation of the tree.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.data.Tree.toXML">
+<tt class="descname">toXML</tt><big>(</big><em>dom</em>, <em>root</em><big>)</big><a class="headerlink" href="#rmg.data.Tree.toXML" title="Permalink to this definition">¶</a></dt>
+<dd>Return an XML representation of the tree.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.data.Tree.write">
+<tt class="descname">write</tt><big>(</big><em>children</em><big>)</big><a class="headerlink" href="#rmg.data.Tree.write" title="Permalink to this definition">¶</a></dt>
+<dd>Write the tree to a string in the syntax used by the RMG database. The
+<cite>children</cite> parameter is a list of the current children, used to enable
+recursive writing.</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="methods-in-rmg-data">
+<h2>2.4.2. Methods in <tt class="docutils literal"><span class="pre">rmg.data</span></tt><a class="headerlink" href="#methods-in-rmg-data" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="rmg.data.getAllCombinations">
+<tt class="descclassname">rmg.data.</tt><tt class="descname">getAllCombinations</tt><big>(</big><em>nodeLists</em><big>)</big><a class="headerlink" href="#rmg.data.getAllCombinations" title="Permalink to this definition">¶</a></dt>
+<dd>Generate a list of all possible combinations of items in the list of
+lists <cite>nodeLists</cite>. Each combination takes one item from each list
+contained within <cite>nodeLists</cite>. The order of items in the returned lists 
+reflects the order of lists in <cite>nodeLists</cite>. For example, if <cite>nodeLists</cite> was
+[[A, B, C],     [N], [X, Y]], the returned combinations would be
+[[A, N, X], [A, N, Y], [B, N, X], [B, N, Y], [C, N, X], [C, N, Y]].</dd></dl>
+
+<dl class="function">
+<dt id="rmg.data.removeCommentFromLine">
+<tt class="descclassname">rmg.data.</tt><tt class="descname">removeCommentFromLine</tt><big>(</big><em>line</em><big>)</big><a class="headerlink" href="#rmg.data.removeCommentFromLine" title="Permalink to this definition">¶</a></dt>
+<dd>Remove a C++/Java style comment from a line of text. This refers
+particularly to comments that begin with a double-slash &#8216;//&#8217; and continue
+to the end of the line.</dd></dl>
+
+</div>
+<div class="section" id="exceptions-in-rmg-data">
+<h2>2.4.3. Exceptions in <tt class="docutils literal"><span class="pre">rmg.data</span></tt><a class="headerlink" href="#exceptions-in-rmg-data" title="Permalink to this headline">¶</a></h2>
+<dl class="exception">
+<dt id="rmg.data.InvalidDatabaseException">
+<em class="property">
+exception </em><tt class="descclassname">rmg.data.</tt><tt class="descname">InvalidDatabaseException</tt><big>(</big><em>msg</em><big>)</big><a class="headerlink" href="#rmg.data.InvalidDatabaseException" title="Permalink to this definition">¶</a></dt>
+<dd>An exception used when parsing an RMG database to indicate that the
+database is invalid. The <cite>msg</cite> parameter is used to specify what about the 
+database caused the exception to be raised.</dd></dl>
+
+<dl class="exception">
+<dt id="rmg.data.TemperatureOutOfRangeException">
+<em class="property">
+exception </em><tt class="descclassname">rmg.data.</tt><tt class="descname">TemperatureOutOfRangeException</tt><big>(</big><em>msg</em><big>)</big><a class="headerlink" href="#rmg.data.TemperatureOutOfRangeException" title="Permalink to this definition">¶</a></dt>
+<dd>An exception used when parsing an RMG database to indicate that a
+temperature is outside the allowed range. At the time of this writing the
+allowed range was T &gt;= 300 K.</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../../index.html">
+              <img class="logo" src="../../../static/rmg_logo.png" alt="Logo"/>
+            </a></p>
+            <h3><a href="../../../index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="">2.4. The <tt class="docutils literal"><span class="pre">rmg.data</span></tt> Module</a><ul>
+<li><a class="reference external" href="#classes-in-rmg-data">2.4.1. Classes in <tt class="docutils literal"><span class="pre">rmg.data</span></tt></a><ul>
+<li><a class="reference external" href="#database">2.4.1.1. Database</a></li>
+<li><a class="reference external" href="#dictionary">2.4.1.2. Dictionary</a></li>
+<li><a class="reference external" href="#library">2.4.1.3. Library</a></li>
+<li><a class="reference external" href="#tree">2.4.1.4. Tree</a></li>
+</ul>
+</li>
+<li><a class="reference external" href="#methods-in-rmg-data">2.4.2. Methods in <tt class="docutils literal"><span class="pre">rmg.data</span></tt></a></li>
+<li><a class="reference external" href="#exceptions-in-rmg-data">2.4.3. Exceptions in <tt class="docutils literal"><span class="pre">rmg.data</span></tt></a></li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="constants.html"
+                                  title="previous chapter">2.3. The <tt class="docutils literal docutils literal docutils literal"><span class="pre">rmg.constants</span></tt> Module</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="graph.html"
+                                  title="next chapter">2.5. The <tt class="docutils literal"><span class="pre">rmg.graph</span></tt> Module</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../../../sources/documentation/api/rmg/data.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <h3>Other links</h3>
+<ul>
+<li><a href="http://github.com/GreenGroup/RMG-Py/issues">Issue and Bug Tracker</a></li>
+<li><a href="http://github.com/GreenGroup/RMG-Py">Source Code</a> </li>
+<!--li><a href="../../../RMG-manual.pdf" onClick="javascript: pageTracker._trackPageview('/documentation/RMG-manual.pdf');">View user manual as PDF</a></li-->
+<li><a href="http://rmg.sourceforge.net/">RMG-Java on Sourceforge</a></li>
+</ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../modindex.html" title="Global Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="graph.html" title="2.5. The rmg.graph Module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="constants.html" title="2.3. The rmg.constants Module"
+             >previous</a> |</li>
+        <li><a href="../../../index.html">RMG-Py</a> &raquo;</li>
+          <li><a href="../../index.html" >RMG Documentation</a> &raquo;</li>
+          <li><a href="../index.html" >RMG Developer&#8217;s Guide</a> &raquo;</li>
+          <li><a href="index.html" >2. The <tt class="docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal"><span class="pre">rmg</span></tt> Package</a> &raquo;</li>
+  <li><a href="">2.4. The <tt class="docutils literal docutils literal"><span class="pre">rmg.data</span></tt> Module</a></li>
+
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2009, Prof. William H. Green and the RMG Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.2.
+    </div>
+  </body>
+</html>

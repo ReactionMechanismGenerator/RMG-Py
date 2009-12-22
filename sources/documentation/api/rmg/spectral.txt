@@ -53,3 +53,6 @@ Methods in ``rmg.spectral``
 ===========================
 
 .. autofunction:: rmg.spectral.generateSpectralData
+
+.. autofunction:: rmg.spectral.loadFrequencyDatabase
+

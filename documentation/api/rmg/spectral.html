@@ -1,0 +1,542 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>2.13. The rmg.spectral Module &mdash; RMG-Py</title>
+    <link rel="stylesheet" href="../../../static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.2.0',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../static/jquery.js"></script>
+    <script type="text/javascript" src="../../../static/doctools.js"></script>
+    <link rel="search" type="application/opensearchdescription+xml"
+          title="Search within RMG-Py"
+          href="../../../static/opensearch.xml"/>
+    <link rel="top" title="RMG-Py" href="../../../index.html" />
+    <link rel="up" title="2. The rmg Package" href="index.html" />
+    <link rel="next" title="2.14. The rmg.spectralfit Module" href="spectralfit.html" />
+    <link rel="prev" title="2.12. The rmg.species Module" href="species.html" /> 
+ 
+<link rel="stylesheet" href="../../../static/rmg.css" type="text/css" />
+
+  </head>
+  <body>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-7791083-1");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../modindex.html" title="Global Module Index"
+             accesskey="M">modules</a> |</li>
+        <li class="right" >
+          <a href="spectralfit.html" title="2.14. The rmg.spectralfit Module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="species.html" title="2.12. The rmg.species Module"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../../index.html">RMG-Py</a> &raquo;</li>
+          <li><a href="../../index.html" >RMG Documentation</a> &raquo;</li>
+          <li><a href="../index.html" >RMG Developer&#8217;s Guide</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">2. The <tt class="docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal"><span class="pre">rmg</span></tt> Package</a> &raquo;</li>
+  <li><a href="">2.13. The <tt class="docutils literal docutils literal"><span class="pre">rmg.spectral</span></tt> Module</a></li>
+
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-rmg.spectral">
+<h1>2.13. The <tt class="docutils literal"><span class="pre">rmg.spectral</span></tt> Module<a class="headerlink" href="#module-rmg.spectral" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="classes-in-rmg-spectral">
+<h2>2.13.1. Classes in <tt class="docutils literal"><span class="pre">rmg.spectral</span></tt><a class="headerlink" href="#classes-in-rmg-spectral" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="characteristicfrequency">
+<h3>2.13.1.1. CharacteristicFrequency<a class="headerlink" href="#characteristicfrequency" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="rmg.spectral.CharacteristicFrequency">
+<em class="property">
+class </em><tt class="descclassname">rmg.spectral.</tt><tt class="descname">CharacteristicFrequency</tt><big>(</big><em>lower=0.0</em>, <em>upper=0.0</em>, <em>degeneracy=1</em><big>)</big><a class="headerlink" href="#rmg.spectral.CharacteristicFrequency" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represent a characteristic frequency in the frequency database. The
+characteristic frequency has a real lower bound <cite>lower</cite>, a real upper bound
+<cite>upper</cite>, an integer <cite>degeneracy</cite>.</p>
+<dl class="method">
+<dt id="rmg.spectral.CharacteristicFrequency.generateFrequencies">
+<tt class="descname">generateFrequencies</tt><big>(</big><em>count=1</em><big>)</big><a class="headerlink" href="#rmg.spectral.CharacteristicFrequency.generateFrequencies" title="Permalink to this definition">¶</a></dt>
+<dd>Generate a set of frequencies. The number of frequencies returned is
+self.degeneracy * count, and these are distributed linearly between
+<cite>self.lower</cite> and <cite>self.upper</cite>.</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="frequencydatabase">
+<h3>2.13.1.2. FrequencyDatabase<a class="headerlink" href="#frequencydatabase" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="rmg.spectral.FrequencyDatabase">
+<em class="property">
+class </em><tt class="descclassname">rmg.spectral.</tt><tt class="descname">FrequencyDatabase</tt><a class="headerlink" href="#rmg.spectral.FrequencyDatabase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represent an RMG frequency database.</p>
+<dl class="method">
+<dt id="rmg.spectral.FrequencyDatabase.load">
+<tt class="descname">load</tt><big>(</big><em>dictstr</em>, <em>treestr</em>, <em>libstr</em><big>)</big><a class="headerlink" href="#rmg.spectral.FrequencyDatabase.load" title="Permalink to this definition">¶</a></dt>
+<dd>Load a group frequency database. The database is stored
+in three files: <cite>dictstr</cite> is the path to the dictionary, <cite>treestr</cite> to
+the tree, and <cite>libstr</cite> to the library. The tree is optional, and should
+be set to &#8216;&#8217; if not desired.</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="harmonicoscillator">
+<h3>2.13.1.3. HarmonicOscillator<a class="headerlink" href="#harmonicoscillator" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="rmg.spectral.HarmonicOscillator">
+<em class="property">
+class </em><tt class="descclassname">rmg.spectral.</tt><tt class="descname">HarmonicOscillator</tt><big>(</big><em>frequency=0.0</em><big>)</big><a class="headerlink" href="#rmg.spectral.HarmonicOscillator" title="Permalink to this definition">¶</a></dt>
+<dd><p>A representation of a vibrational mode as a one-dimensional quantum harmonic
+oscillator. The oscillator is defined by its <cite>frequency</cite> in cm^-1.</p>
+<dl class="method">
+<dt id="rmg.spectral.HarmonicOscillator.densityOfStates">
+<tt class="descname">densityOfStates</tt><big>(</big><em>Elist</em><big>)</big><a class="headerlink" href="#rmg.spectral.HarmonicOscillator.densityOfStates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the density of states at the specified energies <cite>Elist</cite> in J/mol
+above the ground state. The formula is</p>
+<div class="math">
+<p><img src="../../../images/math/7390257b8aa25912fe3bff50e225d97efe82a65f.png" alt="\rho(E) = ?" />
+</div></p><p>where <img class="math" src="../../../images/math/fa2fa899f0afb05d6837885523503a2d4df434f9.png" alt="E"/> is energy. Note that the Beyer-Swinehart algorithm
+provides a far more efficient method of convolving vibrational modes
+into a density of states expression, so this function should not be
+called for that purpose.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmg.spectral.HarmonicOscillator.fromXML">
+<tt class="descname">fromXML</tt><big>(</big><em>document</em>, <em>rootElement</em>, <em>frequencyScaleFactor=1.0</em><big>)</big><a class="headerlink" href="#rmg.spectral.HarmonicOscillator.fromXML" title="Permalink to this definition">¶</a></dt>
+<dd>Convert a &lt;harmonicOscillator&gt; element from a standard RMG-style XML
+input file into a HarmonicOscillator object. <cite>document</cite> is an
+<tt class="xref docutils literal"><span class="pre">io.XML</span></tt> class representing the XML DOM tree, and <cite>rootElement</cite>
+is the &lt;harmonicOscillator&gt; element in that tree.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.spectral.HarmonicOscillator.heatCapacity">
+<tt class="descname">heatCapacity</tt><big>(</big><em>Tlist</em><big>)</big><a class="headerlink" href="#rmg.spectral.HarmonicOscillator.heatCapacity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the contribution to the heat capacity due to hindered rotation.
+The formula is</p>
+<div class="math">
+<p><img src="../../../images/math/1272148536489cd868840c93fc7241a8aa355cda.png" alt="\frac{C_\mathrm{v}^\mathrm{vib}(T)}{R} = \xi^2 \frac{e^\xi}{\left( 1 - e^\xi \right)^2}" />
+</div></p><p>where</p>
+<div class="math">
+<p><img src="../../../images/math/57f7225a7a39fc2352f172b0c8ccd917f5a0ce65.png" alt="\xi \equiv \frac{h \nu}{k_\mathrm{B} T}" />
+</div></p><p><img class="math" src="../../../images/math/2554b6496c3b678897e9b060ef00aa9f0a7d7ece.png" alt="T"/> is temperature, <img class="math" src="../../../images/math/d6a7ccf879c4a4fe694033606332cb83806db296.png" alt="\nu"/> is the vibration frequency,
+<img class="math" src="../../../images/math/87660cb33b0d7f77743b0d52822cfa1d50d2e469.png" alt="k_\mathrm{B}"/> is Boltzmann&#8217;s constant, and <img class="math" src="../../../images/math/eff43e84f8a3bcf7b6965f0a3248bc4d3a9d0cd4.png" alt="R"/> is the gas
+law constant.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmg.spectral.HarmonicOscillator.partitionFunction">
+<tt class="descname">partitionFunction</tt><big>(</big><em>Tlist</em><big>)</big><a class="headerlink" href="#rmg.spectral.HarmonicOscillator.partitionFunction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the value of the partition function at the specified temperatures
+<cite>Tlist</cite> in K. The formula is</p>
+<div class="math">
+<p><img src="../../../images/math/c74fc1c047aca6a821b2b7578576e889c10e9b3a.png" alt="q_\mathrm{vib}(T) = \frac{1.0}{1 - e^{- \beta h c \tilde{\omega}}}" />
+</div></p><p>where <img class="math" src="../../../images/math/2554b6496c3b678897e9b060ef00aa9f0a7d7ece.png" alt="T"/> is temperature, <img class="math" src="../../../images/math/2972853cb4efa1871d7b10af66bf3892a4bd222d.png" alt="\beta \equiv (k_\mathrm{B} T)^{-1}"/>,
+<img class="math" src="../../../images/math/def3185b4245fa1771eb11d7127280e88de4327f.png" alt="\tilde{\omega}"/> is rotational frequency in cm^-1, <img class="math" src="../../../images/math/3372c1cb6d68cf97c2d231acc0b47b95a9ed04cc.png" alt="c"/> is
+the speed of light,     <img class="math" src="../../../images/math/87660cb33b0d7f77743b0d52822cfa1d50d2e469.png" alt="k_\mathrm{B}"/> is Boltzmann&#8217;s constant, and
+<img class="math" src="../../../images/math/8189a5b5a0917b8c93350827be4038af1839139d.png" alt="h"/> is Planck&#8217;s constant. Note that we have chosen our zero of
+energy to be at the zero-point energy of the molecule, <em>not</em> the bottom
+of the potential well.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmg.spectral.HarmonicOscillator.toXML">
+<tt class="descname">toXML</tt><big>(</big><em>document</em>, <em>rootElement</em><big>)</big><a class="headerlink" href="#rmg.spectral.HarmonicOscillator.toXML" title="Permalink to this definition">¶</a></dt>
+<dd>Add a &lt;harmonicOscillator&gt; element as a child of <cite>rootElement</cite> using
+RMG-style XML. <cite>document</cite> is an <tt class="xref docutils literal"><span class="pre">io.XML</span></tt> class representing the
+XML DOM tree.</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="hinderedrotor">
+<h3>2.13.1.4. HinderedRotor<a class="headerlink" href="#hinderedrotor" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="rmg.spectral.HinderedRotor">
+<em class="property">
+class </em><tt class="descclassname">rmg.spectral.</tt><tt class="descname">HinderedRotor</tt><big>(</big><em>frequency=0.0</em>, <em>barrier=0.0</em><big>)</big><a class="headerlink" href="#rmg.spectral.HinderedRotor" title="Permalink to this definition">¶</a></dt>
+<dd><p>A one-dimensional hindered rotor approximation of (internal) rotational
+modes. This class implements the Pitzer model of one-dimensional hindered
+rotation, which utilizes a hindered potential function</p>
+<div class="math">
+<p><img src="../../../images/math/378a72af642c070c121d4de9402ca03f02909df7.png" alt="V(\phi) = \frac{1}{2} V_0 \left[1 - \cos \left( \sigma \phi \right) \right]" />
+</div></p><p>where <img class="math" src="../../../images/math/b4df5a1be0fe6fc35e2bcd0bf4b7e1733edcfd36.png" alt="V_0"/> is the height of the potential barrier and <img class="math" src="../../../images/math/fa35d9fc104207e09a712110ac81612c5b279a6c.png" alt="\sigma"/>
+the number of minima or maxima in one revolution of angle <img class="math" src="../../../images/math/2c175f60eecef1de7560c3bdea495d69f26f719d.png" alt="\phi"/>. The
+hindered rotor is therefore described by two quantities: the <cite>frequency</cite> of
+rotation in cm^-1, and the <cite>barrier</cite> height in cm^-1.</p>
+<dl class="method">
+<dt id="rmg.spectral.HinderedRotor.densityOfStates">
+<tt class="descname">densityOfStates</tt><big>(</big><em>Elist</em><big>)</big><a class="headerlink" href="#rmg.spectral.HinderedRotor.densityOfStates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the density of states at the specified energlies <cite>Elist</cite> in J/mol
+above the ground state. The formula is</p>
+<div class="math">
+<p><img src="../../../images/math/a7d5db943fb8cb83bdb2d40061aad35eaa7b1edc.png" alt="\rho(E) = \frac{2 q_\mathrm{1f}}{\pi^{3/2} V_0^{1/2}} \mathcal{K}(E / V_0) \hspace{20pt} E &lt; V_0" />
+</div></p><p>and</p>
+<div class="math">
+<p><img src="../../../images/math/ef5338f8475700f10deb94989769af5a6409e6ed.png" alt="\rho(E) = \frac{2 q_\mathrm{1f}}{\pi^{3/2} E^{1/2}} \mathcal{K}(V_0 / E) \hspace{20pt} E &gt; V_0" />
+</div></p><p>where <img class="math" src="../../../images/math/fa2fa899f0afb05d6837885523503a2d4df434f9.png" alt="E"/> is energy, <img class="math" src="../../../images/math/b4df5a1be0fe6fc35e2bcd0bf4b7e1733edcfd36.png" alt="V_0"/> is barrier height, and
+<img class="math" src="../../../images/math/c67df1bc9bb9084912081ee3c1d109e266a9e09a.png" alt="q_\mathrm{1f}"/> is defined in the equation for the partition
+function. <img class="math" src="../../../images/math/1922c02e8641da80f0d282fffdafdf744e956cf7.png" alt="\mathcal{K}(x)"/> is the complete elliptic integral of the first
+kind.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmg.spectral.HinderedRotor.fromXML">
+<tt class="descname">fromXML</tt><big>(</big><em>document</em>, <em>rootElement</em>, <em>frequencyScaleFactor=1.0</em><big>)</big><a class="headerlink" href="#rmg.spectral.HinderedRotor.fromXML" title="Permalink to this definition">¶</a></dt>
+<dd>Convert a &lt;hinderedRotor&gt; element from a standard RMG-style XML
+input file into a HinderedRotor object. <cite>document</cite> is an
+<tt class="xref docutils literal"><span class="pre">io.XML</span></tt> class representing the XML DOM tree, and <cite>rootElement</cite>
+is the &lt;hinderedRotor&gt; element in that tree.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.spectral.HinderedRotor.heatCapacity">
+<tt class="descname">heatCapacity</tt><big>(</big><em>Tlist</em><big>)</big><a class="headerlink" href="#rmg.spectral.HinderedRotor.heatCapacity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the contribution to the heat capacity due to hindered rotation.
+The formula is</p>
+<div class="math">
+<p><img src="../../../images/math/d779662a6daa17488bdffdcf6541f5ecfa1475ac.png" alt="\frac{C_\mathrm{v}^\mathrm{hind}(T)}{R} = \frac{1}{2} + \xi^2 - \left[ \xi \frac{I_1(\xi)}{I_0(\xi)} \right]^2 - \xi \frac{I_1(\xi)}{I_0(\xi)}" />
+</div></p><p>where</p>
+<div class="math">
+<p><img src="../../../images/math/2bbb55bf21d11e9858a34e1db17c16395bbcd5f1.png" alt="\xi \equiv \frac{V_0}{2 k_\mathrm{B} T}" />
+</div></p><p><img class="math" src="../../../images/math/2554b6496c3b678897e9b060ef00aa9f0a7d7ece.png" alt="T"/> is temperature, <img class="math" src="../../../images/math/b4df5a1be0fe6fc35e2bcd0bf4b7e1733edcfd36.png" alt="V_0"/> is barrier height,
+<img class="math" src="../../../images/math/87660cb33b0d7f77743b0d52822cfa1d50d2e469.png" alt="k_\mathrm{B}"/> is Boltzmann&#8217;s constant, and <img class="math" src="../../../images/math/eff43e84f8a3bcf7b6965f0a3248bc4d3a9d0cd4.png" alt="R"/> is the gas
+law constant.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmg.spectral.HinderedRotor.partitionFunction">
+<tt class="descname">partitionFunction</tt><big>(</big><em>Tlist</em><big>)</big><a class="headerlink" href="#rmg.spectral.HinderedRotor.partitionFunction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the value of the partition function at the specified temperatures
+<cite>Tlist</cite> in K. The formula is</p>
+<div class="math">
+<p><img src="../../../images/math/d387427c46cc5b9c283314c3a114f8b23d3113a2.png" alt="q_\mathrm{hind}(T) = \frac{1}{\sigma} \left( \frac{\pi k_\mathrm{B} T}{h c \tilde{\omega}} \right)^{1/2} \exp \left( -\frac{V_0}{2 k_\mathrm{B} T} \right) I_0 \left( \frac{V_0}{2 k_\mathrm{B} T} \right) = q_\mathrm{1f} \left( k_\mathrm{B} T \right)^{1/2} \exp \left( -\frac{V_0}{2 k_\mathrm{B} T} \right) I_0 \left( \frac{V_0}{2 k_\mathrm{B} T} \right)" />
+</div></p><p>where <img class="math" src="../../../images/math/2554b6496c3b678897e9b060ef00aa9f0a7d7ece.png" alt="T"/> is temperature, <img class="math" src="../../../images/math/b4df5a1be0fe6fc35e2bcd0bf4b7e1733edcfd36.png" alt="V_0"/> is the barrier height,
+<img class="math" src="../../../images/math/def3185b4245fa1771eb11d7127280e88de4327f.png" alt="\tilde{\omega}"/> is rotational frequency in cm^-1, <img class="math" src="../../../images/math/3372c1cb6d68cf97c2d231acc0b47b95a9ed04cc.png" alt="c"/> is
+the speed of light,     <img class="math" src="../../../images/math/87660cb33b0d7f77743b0d52822cfa1d50d2e469.png" alt="k_\mathrm{B}"/> is Boltzmann&#8217;s constant, and
+<img class="math" src="../../../images/math/8189a5b5a0917b8c93350827be4038af1839139d.png" alt="h"/> is Planck&#8217;s constant. <img class="math" src="../../../images/math/fa35d9fc104207e09a712110ac81612c5b279a6c.png" alt="\sigma"/> is a placeholder for
+the symmetry number. <img class="math" src="../../../images/math/9bdf205696717ccbab93931463d896f048cb7042.png" alt="I_0(x)"/> is the modified Bessel function of
+order zero.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmg.spectral.HinderedRotor.toXML">
+<tt class="descname">toXML</tt><big>(</big><em>document</em>, <em>rootElement</em><big>)</big><a class="headerlink" href="#rmg.spectral.HinderedRotor.toXML" title="Permalink to this definition">¶</a></dt>
+<dd>Add a &lt;hinderedRotor&gt; element as a child of <cite>rootElement</cite> using
+RMG-style XML. <cite>document</cite> is an <tt class="xref docutils literal"><span class="pre">io.XML</span></tt> class representing the
+XML DOM tree.</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="rigidrotor">
+<h3>2.13.1.5. RigidRotor<a class="headerlink" href="#rigidrotor" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="rmg.spectral.RigidRotor">
+<em class="property">
+class </em><tt class="descclassname">rmg.spectral.</tt><tt class="descname">RigidRotor</tt><big>(</big><em>linear=False</em>, <em>frequencies=None</em><big>)</big><a class="headerlink" href="#rmg.spectral.RigidRotor" title="Permalink to this definition">¶</a></dt>
+<dd><p>A rigid rotor approximation of (external) rotational modes. The <cite>linear</cite>
+attribute is <tt class="xref xref docutils literal"><span class="pre">True</span></tt> if the associated molecule is linear, and
+<tt class="xref xref docutils literal"><span class="pre">False</span></tt> if nonlinear. For a linear molecule, <cite>frequencies</cite> stores a
+list with one frequency, that of the rotation, in cm^-1. For a nonlinear
+molecule, <cite>frequencies</cite> stores a list of the three frequencies of rotation,
+even if two or three are equal, in cm^-1. Symmetry number corrections are
+<em>not</em> applied by this class.</p>
+<dl class="method">
+<dt id="rmg.spectral.RigidRotor.densityOfStates">
+<tt class="descname">densityOfStates</tt><big>(</big><em>Elist</em><big>)</big><a class="headerlink" href="#rmg.spectral.RigidRotor.densityOfStates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the density of states at the specified energlies <cite>Elist</cite> in J/mol
+above the ground state. The formula is</p>
+<div class="math">
+<p><img src="../../../images/math/5ea95869920b2278065ecc9a9adf2f0765637e27.png" alt="\rho(E) = q_\mathrm{r}" />
+</div></p><p>for linear rotors and</p>
+<div class="math">
+<p><img src="../../../images/math/cb5b3149dd5d9611ae1db402771cb291402c7a45.png" alt="\rho(E) = \frac{q_\mathrm{r} E^{1/2}}{\frac{1}{2}!}" />
+</div></p><p>for nonlinear rotors. Above,  <img class="math" src="../../../images/math/fa2fa899f0afb05d6837885523503a2d4df434f9.png" alt="E"/> is energy and
+<img class="math" src="../../../images/math/5af732d8dc21e4815d268b24a101b651f76b1431.png" alt="q_\mathrm{r}"/> is defined in the  equation for the partition
+function.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmg.spectral.RigidRotor.fromXML">
+<tt class="descname">fromXML</tt><big>(</big><em>document</em>, <em>rootElement</em><big>)</big><a class="headerlink" href="#rmg.spectral.RigidRotor.fromXML" title="Permalink to this definition">¶</a></dt>
+<dd>Convert a &lt;rigidRotor&gt; element from a standard RMG-style XML
+input file into a RigidRotor object. <cite>document</cite> is an
+<tt class="xref docutils literal"><span class="pre">io.XML</span></tt> class representing the XML DOM tree, and <cite>rootElement</cite>
+is the &lt;rigidRotor&gt; element in that tree.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.spectral.RigidRotor.heatCapacity">
+<tt class="descname">heatCapacity</tt><big>(</big><em>Tlist</em><big>)</big><a class="headerlink" href="#rmg.spectral.RigidRotor.heatCapacity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the contribution to the heat capacity due to rigid rotation. The
+formula is</p>
+<div class="math">
+<p><img src="../../../images/math/6685c8dc1e70287b7cf93f6f3b6912a3e116acf4.png" alt="\frac{C_\mathrm{v}^\mathrm{rot}(T)}{R} = \frac{3}{2}" />
+</div></p><p>if nonlinear and</p>
+<div class="math">
+<p><img src="../../../images/math/5910f21cc84c6a51ee93cde4f361fedd99eb9769.png" alt="\frac{C_\mathrm{v}^\mathrm{rot}(T)}{R} = 1" />
+</div></p><p>if linear, where <img class="math" src="../../../images/math/2554b6496c3b678897e9b060ef00aa9f0a7d7ece.png" alt="T"/> is temperature and <img class="math" src="../../../images/math/eff43e84f8a3bcf7b6965f0a3248bc4d3a9d0cd4.png" alt="R"/> is the gas law
+constant.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmg.spectral.RigidRotor.partitionFunction">
+<tt class="descname">partitionFunction</tt><big>(</big><em>Tlist</em><big>)</big><a class="headerlink" href="#rmg.spectral.RigidRotor.partitionFunction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the value of the partition function at the specified temperatures
+<cite>Tlist</cite> in K. The formula is</p>
+<div class="math">
+<p><img src="../../../images/math/4e75c40fb0ea3f14ee7b6511d057c0c99f995b30.png" alt="q_\mathrm{rot}(T) = \frac{k_\mathrm{B} T}{\sigma h c \tilde{\omega}} = q_\mathrm{r} k_\mathrm{B} T" />
+</div></p><p>for linear rotors and</p>
+<div class="math">
+<p><img src="../../../images/math/315b4080eb44921e5758dacee004cf5b5c66ac9c.png" alt="q_\mathrm{rot}(T) = \frac{\sqrt{\pi}}{\sigma} \left[ \frac{ \left( k_\mathrm{B} T \right)^3 }{\left( hc \right)^3 \tilde{\omega_\mathrm{A}} \tilde{\omega_\mathrm{B}} \tilde{\omega_\mathrm{C}} } \right]^{1/2} = q_\mathrm{r} \left( k_\mathrm{B} T \right)^{3/2}" />
+</div></p><p>for nonlinear rotors. Above, <img class="math" src="../../../images/math/2554b6496c3b678897e9b060ef00aa9f0a7d7ece.png" alt="T"/> is temperature,
+<img class="math" src="../../../images/math/def3185b4245fa1771eb11d7127280e88de4327f.png" alt="\tilde{\omega}"/> is rotational frequency in cm^-1, <img class="math" src="../../../images/math/3372c1cb6d68cf97c2d231acc0b47b95a9ed04cc.png" alt="c"/> is
+the speed of light,     <img class="math" src="../../../images/math/87660cb33b0d7f77743b0d52822cfa1d50d2e469.png" alt="k_\mathrm{B}"/> is Boltzmann&#8217;s constant, and
+<img class="math" src="../../../images/math/8189a5b5a0917b8c93350827be4038af1839139d.png" alt="h"/> is Planck&#8217;s constant. <img class="math" src="../../../images/math/fa35d9fc104207e09a712110ac81612c5b279a6c.png" alt="\sigma"/> is a placeholder for
+the symmetry number.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmg.spectral.RigidRotor.toXML">
+<tt class="descname">toXML</tt><big>(</big><em>document</em>, <em>rootElement</em><big>)</big><a class="headerlink" href="#rmg.spectral.RigidRotor.toXML" title="Permalink to this definition">¶</a></dt>
+<dd>Add a &lt;rigidRotor&gt; element as a child of <cite>rootElement</cite> using
+RMG-style XML. <cite>document</cite> is an <tt class="xref docutils literal"><span class="pre">io.XML</span></tt> class representing the
+XML DOM tree.</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="spectraldata">
+<h3>2.13.1.6. SpectralData<a class="headerlink" href="#spectraldata" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="rmg.spectral.SpectralData">
+<em class="property">
+class </em><tt class="descclassname">rmg.spectral.</tt><tt class="descname">SpectralData</tt><big>(</big><em>modes=None</em>, <em>symmetry=1</em><big>)</big><a class="headerlink" href="#rmg.spectral.SpectralData" title="Permalink to this definition">¶</a></dt>
+<dd><p>A set of spectroscopic data for a given molecule. The degrees of freedom of
+the molecule are stored as a list in the <cite>modes</cite> attribute.</p>
+<dl class="method">
+<dt id="rmg.spectral.SpectralData.densityOfStates">
+<tt class="descname">densityOfStates</tt><big>(</big><em>Elist</em><big>)</big><a class="headerlink" href="#rmg.spectral.SpectralData.densityOfStates" title="Permalink to this definition">¶</a></dt>
+<dd>Return the value of the density of states in mol/J at the specified
+energies <cite>Elist</cite> in J/mol above the ground state.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.spectral.SpectralData.fromXML">
+<tt class="descname">fromXML</tt><big>(</big><em>document</em>, <em>rootElement</em><big>)</big><a class="headerlink" href="#rmg.spectral.SpectralData.fromXML" title="Permalink to this definition">¶</a></dt>
+<dd>Convert a &lt;spectralData&gt; element from a standard RMG-style XML input
+file into a SpectralData object. <cite>document</cite> is an <tt class="xref docutils literal"><span class="pre">io.XML</span></tt> class
+representing the XML DOM tree, and <cite>rootElement</cite> is the &lt;spectralData&gt;
+element in that tree.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.spectral.SpectralData.partitionFunction">
+<tt class="descname">partitionFunction</tt><big>(</big><em>Tlist</em><big>)</big><a class="headerlink" href="#rmg.spectral.SpectralData.partitionFunction" title="Permalink to this definition">¶</a></dt>
+<dd>Return the value of the partition function at the specified temperatures
+<cite>Tlist</cite> in K.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.spectral.SpectralData.toXML">
+<tt class="descname">toXML</tt><big>(</big><em>document</em>, <em>rootElement</em><big>)</big><a class="headerlink" href="#rmg.spectral.SpectralData.toXML" title="Permalink to this definition">¶</a></dt>
+<dd>Add a &lt;spectralData&gt; element as a child of <cite>rootElement</cite> using
+RMG-style XML. <cite>document</cite> is an <tt class="xref docutils literal"><span class="pre">io.XML</span></tt> class representing the
+XML DOM tree.</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="translation">
+<h3>2.13.1.7. Translation<a class="headerlink" href="#translation" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="rmg.spectral.Translation">
+<em class="property">
+class </em><tt class="descclassname">rmg.spectral.</tt><tt class="descname">Translation</tt><big>(</big><em>mass=0.0</em>, <em>dimension=3</em><big>)</big><a class="headerlink" href="#rmg.spectral.Translation" title="Permalink to this definition">¶</a></dt>
+<dd><p>A representation of translational modes. The <cite>dimension</cite> attribute is an
+integer representing the dimension of the translation (2 or 3) and the
+<cite>mass</cite> is the molar mass of the molecule in kg/mol.</p>
+<dl class="method">
+<dt id="rmg.spectral.Translation.densityOfStates">
+<tt class="descname">densityOfStates</tt><big>(</big><em>Elist</em>, <em>V=1.0</em><big>)</big><a class="headerlink" href="#rmg.spectral.Translation.densityOfStates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the density of states at the specified energlies <cite>Elist</cite> in J/mol
+above the ground state. The formula is</p>
+<div class="math">
+<p><img src="../../../images/math/a1ca16a780c5a2915b7adb2ff648ea9312d7b748.png" alt="\rho(E) = \frac{q_\mathrm{t} E^{d/2-1}}{(d/2-1)!}" />
+</div></p><p>where <img class="math" src="../../../images/math/fa2fa899f0afb05d6837885523503a2d4df434f9.png" alt="E"/> is energy, <img class="math" src="../../../images/math/96ab646de7704969b91c76a214126b45f2b07b25.png" alt="d"/> is dimensionality, and
+<img class="math" src="../../../images/math/da89d28f6ba05608ce941eab34e388bae09de3b0.png" alt="q_\mathrm{t}"/> is defined in the equation for the partition
+function.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmg.spectral.Translation.heatCapacity">
+<tt class="descname">heatCapacity</tt><big>(</big><em>Tlist</em>, <em>V=1.0</em><big>)</big><a class="headerlink" href="#rmg.spectral.Translation.heatCapacity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the contribution to the heat capacity due to translation. The 
+formula is</p>
+<div class="math">
+<p><img src="../../../images/math/01e137914f4a6464906e1a9212b65af3f3ad4531.png" alt="\frac{C_\mathrm{v}^\mathrm{trans}(T)}{R} = \frac{d}{2} R" />
+</div></p><p>where <img class="math" src="../../../images/math/2554b6496c3b678897e9b060ef00aa9f0a7d7ece.png" alt="T"/> is temperature, <img class="math" src="../../../images/math/12d58aa29201da09d8e620f8698e3a37547f6b4a.png" alt="V"/> is volume,
+<img class="math" src="../../../images/math/96ab646de7704969b91c76a214126b45f2b07b25.png" alt="d"/> is dimensionality, and <img class="math" src="../../../images/math/eff43e84f8a3bcf7b6965f0a3248bc4d3a9d0cd4.png" alt="R"/> is the gas law constant.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmg.spectral.Translation.partitionFunction">
+<tt class="descname">partitionFunction</tt><big>(</big><em>Tlist</em>, <em>V=1.0</em><big>)</big><a class="headerlink" href="#rmg.spectral.Translation.partitionFunction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the value of the partition function at the specified temperatures
+<cite>Tlist</cite> in K. The formula is</p>
+<div class="math">
+<p><img src="../../../images/math/b808088f6742ea875af6acacaea080f7a04e1cfb.png" alt="q_\mathrm{trans}(T, V) = \left( \frac{2 \pi m k_\mathrm{B} T}{h^2} \right)^{d/2} V = q_\mathrm{t} \left( k_\mathrm{B} T \right)^{d/2}" />
+</div></p><p>where <img class="math" src="../../../images/math/2554b6496c3b678897e9b060ef00aa9f0a7d7ece.png" alt="T"/> is temperature, <img class="math" src="../../../images/math/12d58aa29201da09d8e620f8698e3a37547f6b4a.png" alt="V"/> is volume, <img class="math" src="../../../images/math/f5047d1e0cbb50ec208923a22cd517c55100fa7b.png" alt="m"/> is mass,
+<img class="math" src="../../../images/math/96ab646de7704969b91c76a214126b45f2b07b25.png" alt="d"/> is dimensionality, <img class="math" src="../../../images/math/87660cb33b0d7f77743b0d52822cfa1d50d2e469.png" alt="k_\mathrm{B}"/> is Boltzmann&#8217;s
+constant, and <img class="math" src="../../../images/math/8189a5b5a0917b8c93350827be4038af1839139d.png" alt="h"/> is Planck&#8217;s constant.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="methods-in-rmg-spectral">
+<h2>2.13.2. Methods in <tt class="docutils literal"><span class="pre">rmg.spectral</span></tt><a class="headerlink" href="#methods-in-rmg-spectral" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="rmg.spectral.generateSpectralData">
+<tt class="descclassname">rmg.spectral.</tt><tt class="descname">generateSpectralData</tt><big>(</big><em>struct</em>, <em>thermoData</em><big>)</big><a class="headerlink" href="#rmg.spectral.generateSpectralData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate the spectral data for a <tt class="xref docutils literal"><span class="pre">structure.Structure</span></tt> object
+<cite>struct</cite> with corresponding <tt class="xref docutils literal"><span class="pre">thermo.ThermoGAData</span></tt> object <cite>thermo</cite>.
+The group frequency method is used to do so; this method has two steps:</p>
+<ol class="arabic simple">
+<li>Search the structure for certain functional groups for which
+characteristic frequencies are known, and use those frequencies.</li>
+<li>For any remaining degrees of freedom, fit the parameters such that they
+replicate the heat capacity.</li>
+</ol>
+<p>This method only fits the internal modes (i.e. vibrations and hindered
+rotors).</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="rmg.spectral.loadFrequencyDatabase">
+<tt class="descclassname">rmg.spectral.</tt><tt class="descname">loadFrequencyDatabase</tt><big>(</big><em>databasePath</em><big>)</big><a class="headerlink" href="#rmg.spectral.loadFrequencyDatabase" title="Permalink to this definition">¶</a></dt>
+<dd>Create and load the frequencies databases.</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../../index.html">
+              <img class="logo" src="../../../static/rmg_logo.png" alt="Logo"/>
+            </a></p>
+            <h3><a href="../../../index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="">2.13. The <tt class="docutils literal"><span class="pre">rmg.spectral</span></tt> Module</a><ul>
+<li><a class="reference external" href="#classes-in-rmg-spectral">2.13.1. Classes in <tt class="docutils literal"><span class="pre">rmg.spectral</span></tt></a><ul>
+<li><a class="reference external" href="#characteristicfrequency">2.13.1.1. CharacteristicFrequency</a></li>
+<li><a class="reference external" href="#frequencydatabase">2.13.1.2. FrequencyDatabase</a></li>
+<li><a class="reference external" href="#harmonicoscillator">2.13.1.3. HarmonicOscillator</a></li>
+<li><a class="reference external" href="#hinderedrotor">2.13.1.4. HinderedRotor</a></li>
+<li><a class="reference external" href="#rigidrotor">2.13.1.5. RigidRotor</a></li>
+<li><a class="reference external" href="#spectraldata">2.13.1.6. SpectralData</a></li>
+<li><a class="reference external" href="#translation">2.13.1.7. Translation</a></li>
+</ul>
+</li>
+<li><a class="reference external" href="#methods-in-rmg-spectral">2.13.2. Methods in <tt class="docutils literal"><span class="pre">rmg.spectral</span></tt></a></li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="species.html"
+                                  title="previous chapter">2.12. The <tt class="docutils literal docutils literal docutils literal"><span class="pre">rmg.species</span></tt> Module</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="spectralfit.html"
+                                  title="next chapter">2.14. The <tt class="docutils literal"><span class="pre">rmg.spectralfit</span></tt> Module</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../../../sources/documentation/api/rmg/spectral.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <h3>Other links</h3>
+<ul>
+<li><a href="http://github.com/GreenGroup/RMG-Py/issues">Issue and Bug Tracker</a></li>
+<li><a href="http://github.com/GreenGroup/RMG-Py">Source Code</a> </li>
+<!--li><a href="../../../RMG-manual.pdf" onClick="javascript: pageTracker._trackPageview('/documentation/RMG-manual.pdf');">View user manual as PDF</a></li-->
+<li><a href="http://rmg.sourceforge.net/">RMG-Java on Sourceforge</a></li>
+</ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../modindex.html" title="Global Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="spectralfit.html" title="2.14. The rmg.spectralfit Module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="species.html" title="2.12. The rmg.species Module"
+             >previous</a> |</li>
+        <li><a href="../../../index.html">RMG-Py</a> &raquo;</li>
+          <li><a href="../../index.html" >RMG Documentation</a> &raquo;</li>
+          <li><a href="../index.html" >RMG Developer&#8217;s Guide</a> &raquo;</li>
+          <li><a href="index.html" >2. The <tt class="docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal"><span class="pre">rmg</span></tt> Package</a> &raquo;</li>
+  <li><a href="">2.13. The <tt class="docutils literal docutils literal"><span class="pre">rmg.spectral</span></tt> Module</a></li>
+
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2009, Prof. William H. Green and the RMG Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.2.
+    </div>
+  </body>
+</html>

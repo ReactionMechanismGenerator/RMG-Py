@@ -24,7 +24,7 @@
           href="../../static/opensearch.xml"/>
     <link rel="top" title="RMG-Py" href="../../index.html" />
     <link rel="up" title="RMG Documentation" href="../index.html" />
-    <link rel="next" title="1. The rmg.chem Module" href="rmg-chem.html" />
+    <link rel="next" title="1. Introduction to RMG Development" href="introduction/index.html" />
     <link rel="prev" title="RMG Installation" href="../manual/installation.html" /> 
  
 <link rel="stylesheet" href="../../static/rmg.css" type="text/css" />
@@ -51,7 +51,7 @@ pageTracker._trackPageview();
           <a href="../../modindex.html" title="Global Module Index"
              accesskey="M">modules</a> |</li>
         <li class="right" >
-          <a href="rmg-chem.html" title="1. The rmg.chem Module"
+          <a href="introduction/index.html" title="1. Introduction to RMG Development"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="../manual/installation.html" title="RMG Installation"
@@ -72,33 +72,51 @@ pageTracker._trackPageview();
   <div class="section" id="rmg-developer-s-guide">
 <h1>RMG Developer&#8217;s Guide<a class="headerlink" href="#rmg-developer-s-guide" title="Permalink to this headline">¶</a></h1>
 <p>The RMG Developer&#8217;s Guide provides documentation for the application programming interface (API) used by RMG. It is intended for readers who wish to understand the RMG source code, e.g. to learn how to <em>develop</em> with RMG.</p>
-<div class="section" id="contents">
-<h2>Contents<a class="headerlink" href="#contents" title="Permalink to this headline">¶</a></h2>
 <ul>
-<li class="toctree-l1"><a class="reference external" href="rmg-chem.html">1. The <tt class="docutils literal"><span class="pre">rmg.chem</span></tt> Module</a></li>
-<li class="toctree-l1"><a class="reference external" href="rmg-constants.html">2. The <tt class="docutils literal"><span class="pre">rmg.constants</span></tt> Module</a></li>
-<li class="toctree-l1"><a class="reference external" href="rmg-data.html">3. The <tt class="docutils literal"><span class="pre">rmg.data</span></tt> Module</a></li>
-<li class="toctree-l1"><a class="reference external" href="rmg-graph.html">4. The <tt class="docutils literal"><span class="pre">rmg.graph</span></tt> Module</a></li>
-<li class="toctree-l1"><a class="reference external" href="rmg-io.html">5. The <tt class="docutils literal"><span class="pre">rmg.io</span></tt> Module</a></li>
-<li class="toctree-l1"><a class="reference external" href="rmg-kinetics.html">6. The <tt class="docutils literal"><span class="pre">rmg.kinetics</span></tt> Module</a></li>
-<li class="toctree-l1"><a class="reference external" href="rmg-main.html">7. The <tt class="docutils literal"><span class="pre">rmg.main</span></tt> Module</a></li>
-<li class="toctree-l1"><a class="reference external" href="rmg-model.html">8. The <tt class="docutils literal"><span class="pre">rmg.model</span></tt> Module</a></li>
-<li class="toctree-l1"><a class="reference external" href="rmg-reaction.html">9. The <tt class="docutils literal"><span class="pre">rmg.reaction</span></tt> Module</a></li>
-<li class="toctree-l1"><a class="reference external" href="rmg-species.html">10. The <tt class="docutils literal"><span class="pre">rmg.species</span></tt> Module</a></li>
-<li class="toctree-l1"><a class="reference external" href="rmg-spectral.html">11. The <tt class="docutils literal"><span class="pre">rmg.spectral</span></tt> Module</a></li>
-<li class="toctree-l1"><a class="reference external" href="rmg-structure.html">12. The <tt class="docutils literal"><span class="pre">rmg.structure</span></tt> Module</a></li>
-<li class="toctree-l1"><a class="reference external" href="rmg-thermo.html">13. The <tt class="docutils literal"><span class="pre">rmg.thermo</span></tt> Module</a></li>
-<li class="toctree-l1"><a class="reference external" href="rmg-cantera_loader.html">14. The <tt class="docutils literal"><span class="pre">rmg.cantera_loader</span></tt> Module</a></li>
+<li class="toctree-l1"><a class="reference external" href="introduction/index.html">1. Introduction to RMG Development</a><ul>
+<li class="toctree-l2"><a class="reference external" href="introduction/motivation.html">1.1. Motivation</a></li>
+<li class="toctree-l2"><a class="reference external" href="introduction/code_overview.html">1.2. Code Overview</a></li>
 </ul>
-</div>
-<div class="section" id="indices-and-tables">
-<h2>Indices and Tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h2>
+</li>
+<li class="toctree-l1"><a class="reference external" href="rmg/index.html">2. The <tt class="docutils literal"><span class="pre">rmg</span></tt> Package</a><ul>
+<li class="toctree-l2"><a class="reference external" href="rmg/cantera_loader.html">2.1. The <tt class="docutils literal"><span class="pre">rmg.cantera_loader</span></tt> Module</a></li>
+<li class="toctree-l2"><a class="reference external" href="rmg/chem.html">2.2. The <tt class="docutils literal"><span class="pre">rmg.chem</span></tt> Module</a></li>
+<li class="toctree-l2"><a class="reference external" href="rmg/constants.html">2.3. The <tt class="docutils literal"><span class="pre">rmg.constants</span></tt> Module</a></li>
+<li class="toctree-l2"><a class="reference external" href="rmg/data.html">2.4. The <tt class="docutils literal"><span class="pre">rmg.data</span></tt> Module</a></li>
+<li class="toctree-l2"><a class="reference external" href="rmg/graph.html">2.5. The <tt class="docutils literal"><span class="pre">rmg.graph</span></tt> Module</a></li>
+<li class="toctree-l2"><a class="reference external" href="rmg/io.html">2.6. The <tt class="docutils literal"><span class="pre">rmg.io</span></tt> Module</a></li>
+<li class="toctree-l2"><a class="reference external" href="rmg/kinetics.html">2.7. The <tt class="docutils literal"><span class="pre">rmg.kinetics</span></tt> Module</a></li>
+<li class="toctree-l2"><a class="reference external" href="rmg/main.html">2.8. The <tt class="docutils literal"><span class="pre">rmg.main</span></tt> Module</a></li>
+<li class="toctree-l2"><a class="reference external" href="rmg/model.html">2.9. The <tt class="docutils literal"><span class="pre">rmg.model</span></tt> Module</a></li>
+<li class="toctree-l2"><a class="reference external" href="rmg/reaction.html">2.10. The <tt class="docutils literal"><span class="pre">rmg.reaction</span></tt> Module</a></li>
+<li class="toctree-l2"><a class="reference external" href="rmg/settings.html">2.11. The <tt class="docutils literal"><span class="pre">rmg.settings</span></tt> Module</a></li>
+<li class="toctree-l2"><a class="reference external" href="rmg/species.html">2.12. The <tt class="docutils literal"><span class="pre">rmg.species</span></tt> Module</a></li>
+<li class="toctree-l2"><a class="reference external" href="rmg/spectral.html">2.13. The <tt class="docutils literal"><span class="pre">rmg.spectral</span></tt> Module</a></li>
+<li class="toctree-l2"><a class="reference external" href="rmg/spectralfit.html">2.14. The <tt class="docutils literal"><span class="pre">rmg.spectralfit</span></tt> Module</a></li>
+<li class="toctree-l2"><a class="reference external" href="rmg/structure.html">2.15. The <tt class="docutils literal"><span class="pre">rmg.structure</span></tt> Module</a></li>
+<li class="toctree-l2"><a class="reference external" href="rmg/thermo.html">2.16. The <tt class="docutils literal"><span class="pre">rmg.thermo</span></tt> Module</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference external" href="rmg.system/index.html">3. The <tt class="docutils literal"><span class="pre">rmg.system</span></tt> Package</a><ul>
+<li class="toctree-l2"><a class="reference external" href="rmg.system/base.html">3.1. The <tt class="docutils literal"><span class="pre">rmg.system.base</span></tt> Module</a></li>
+<li class="toctree-l2"><a class="reference external" href="rmg.system/batch.html">3.2. The <tt class="docutils literal"><span class="pre">rmg.system.batch</span></tt> Module</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference external" href="rmg.unirxn/index.html">4. The <tt class="docutils literal"><span class="pre">rmg.unirxn</span></tt> Package</a><ul>
+<li class="toctree-l2"><a class="reference external" href="rmg.unirxn/io.html">4.1. The <tt class="docutils literal"><span class="pre">rmg.unirxn.io</span></tt> Module</a></li>
+<li class="toctree-l2"><a class="reference external" href="rmg.unirxn/mastereqn.html">4.2. The <tt class="docutils literal"><span class="pre">rmg.unirxn.mastereqn</span></tt> Module</a></li>
+<li class="toctree-l2"><a class="reference external" href="rmg.unirxn/msc.html">4.3. The <tt class="docutils literal"><span class="pre">rmg.unirxn.msc</span></tt> Module</a></li>
+<li class="toctree-l2"><a class="reference external" href="rmg.unirxn/network.html">4.4. The <tt class="docutils literal"><span class="pre">rmg.unirxn.network</span></tt> Module</a></li>
+<li class="toctree-l2"><a class="reference external" href="rmg.unirxn/rs.html">4.5. The <tt class="docutils literal"><span class="pre">rmg.unirxn.rs</span></tt> Module</a></li>
+<li class="toctree-l2"><a class="reference external" href="rmg.unirxn/states.html">4.6. The <tt class="docutils literal"><span class="pre">rmg.unirxn.states</span></tt> Module</a></li>
+</ul>
+</li>
+</ul>
 <ul class="simple">
 <li><a class="reference external" href="../../genindex.html"><em>Index</em></a></li>
 <li><a class="reference external" href="../../modindex.html"><em>Module Index</em></a></li>
 <li><a class="reference external" href="../../search.html"><em>Search Page</em></a></li>
 </ul>
-</div>
 </div>
 
 
@@ -110,23 +128,12 @@ pageTracker._trackPageview();
             <p class="logo"><a href="../../index.html">
               <img class="logo" src="../../static/rmg_logo.png" alt="Logo"/>
             </a></p>
-            <h3><a href="../../index.html">Table Of Contents</a></h3>
-            <ul>
-<li><a class="reference external" href="">RMG Developer&#8217;s Guide</a><ul>
-<li><a class="reference external" href="#contents">Contents</a><ul>
-</ul>
-</li>
-<li><a class="reference external" href="#indices-and-tables">Indices and Tables</a></li>
-</ul>
-</li>
-</ul>
-
             <h4>Previous topic</h4>
             <p class="topless"><a href="../manual/installation.html"
                                   title="previous chapter">RMG Installation</a></p>
             <h4>Next topic</h4>
-            <p class="topless"><a href="rmg-chem.html"
-                                  title="next chapter">1. The <tt class="docutils literal"><span class="pre">rmg.chem</span></tt> Module</a></p>
+            <p class="topless"><a href="introduction/index.html"
+                                  title="next chapter">1. Introduction to RMG Development</a></p>
             <h3>This Page</h3>
             <ul class="this-page-menu">
               <li><a href="../../sources/documentation/api/index.txt"
@@ -166,7 +173,7 @@ pageTracker._trackPageview();
           <a href="../../modindex.html" title="Global Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="rmg-chem.html" title="1. The rmg.chem Module"
+          <a href="introduction/index.html" title="1. Introduction to RMG Development"
              >next</a> |</li>
         <li class="right" >
           <a href="../manual/installation.html" title="RMG Installation"
