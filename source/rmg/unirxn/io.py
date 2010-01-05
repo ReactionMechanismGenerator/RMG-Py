@@ -192,6 +192,15 @@ def readInputFile(fstr):
 		# Cleanup the DOM tree when finished
 		document.cleanup()
 
+		# Temporarily replace the list of species in each path reaction with the
+		# corresponding isomer
+		for reaction in network.pathReactions:
+			for isomer in network.isomers:
+				if all([spec in reaction.reactants for spec in isomer.species]):
+					reaction.reactant = isomer
+				if all([spec in reaction.products for spec in isomer.species]):
+					reaction.product = isomer
+
 		return network, Tlist, Plist, grainSize, numGrains, method, model
 
 	#except InvalidInputFileException, e:

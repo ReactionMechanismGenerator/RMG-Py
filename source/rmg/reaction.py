@@ -2074,17 +2074,13 @@ def makeNewReaction(reactants, products, reactantStructures, productStructures, 
 	# Check that the reaction is unique
 	matchReaction = None
 	for rxn in reactionList:
+		if isinstance(rxn.family, ReactionFamily) and (rxn.family.label != family.label):
+			# rxn is not from seed, and families are different
+			continue # not a match, try next rxn
 		if (rxn.reactants == reactants and rxn.products == products) or \
 			(rxn.reactants == products and rxn.products == reactants):
-			# If both families are ReactionFamily objects, then also check
-			# those for match; if not, assume a match
-			if isinstance(rxn.family, ReactionFamily) and isinstance(family, ReactionFamily):
-				if rxn.family.label == family.label:
-					matchReaction = rxn
-					break # found a match so stop checking other rxn
-			else:
-				matchReaction = rxn
-				break # found a match so stop checking other rxn
+			matchReaction = rxn
+			break # found a match so stop checking other rxn
 	
 	# If a match was found, take an
 	if matchReaction is not None:

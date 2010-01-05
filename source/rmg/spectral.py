@@ -29,6 +29,7 @@
 ################################################################################
 
 import logging
+import numpy as np
 
 import data
 import constants
@@ -460,6 +461,17 @@ class SpectralData:
 	def __init__(self, modes=None, symmetry=1):
 		self.modes = modes or []
 		self.symmetry = symmetry
+
+	def heatCapacity(self, Tlist):
+		"""
+		Return the value of the heat capacity at the specified temperatures
+		`Tlist` in K. The heat capacity returned is divided by the Boltzmann
+		constant so as to be dimensionless.
+		"""
+		Cp = np.ones((len(Tlist)), np.float64)
+		for mode in self.modes:
+			Cp += mode.heatCapacity(Tlist)
+		return Cp
 
 	def partitionFunction(self, Tlist):
 		"""
