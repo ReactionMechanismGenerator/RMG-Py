@@ -31,6 +31,7 @@
 """
 RMG is an automatic chemical mechanism generator. It is awesomely awesome.
 """
+import os.path
 
 import time
 import logging
@@ -39,6 +40,7 @@ from rmg.main import printRMGHeader, initializeLog
 import rmg.settings as settings
 import rmg.kinetics as kinetics
 import rmg.unirxn.io as io
+import rmg.reaction as reaction
 
 ################################################################################
 
@@ -87,33 +89,30 @@ def execute(inputFile, options):
 	logging.info('Calculating phenomenological rate coefficients...')
 	K = network.calculateRateCoefficients(Tlist, Plist, Elist, method)
 
-	# Fit interpolation model
-	if model[0].lower() == 'chebyshev':
-		modelType, degreeT, degreeP = model
-		for i in range(len(network.isomers)):
-			for j in range(len(network.isomers)):
-				if i != j:
-					chebyshev = kinetics.ChebyshevKinetics()
-					chebyshev.fitToData(Tlist, Plist, K[:,:,j,i], degreeT, degreeP)
-	
-	elif model[0].lower() == 'pdeparrhenius':
-		pass
-	else:
-		pass
-
-#	for i in range(len(network.isomers)):
-#		for j in range(len(network.isomers)):
-#			if i != j:
-#				print '%i --> %i' % (i, j)
-#				for t in range(len(Tlist)):
-#					for p in range(len(Plist)):
-#						print '%12.3e' % K[t,p,j,i],
-#					print ''
-#				print ''
+	# Create net reaction objects
+	network.netReactions = []
+	index = 0
+	for i, reactantIsomer in enumerate(network.isomers):
+		for j, productIsomer in enumerate(network.isomers[0:i]):
+			netReaction = reaction.PDepReaction(reactantIsomer.species, productIsomer.species, network, None)
+			netReaction.id = 'netReaction%i' % (index+1)
+			index += 1
+			network.netReactions.append(netReaction)
+			# Fit interpolation model
+			if model[0].lower() == 'chebyshev':
+				modelType, degreeT, degreeP = model
+				chebyshev = kinetics.ChebyshevKinetics()
+				chebyshev.fitToData(Tlist, Plist, K[:,:,j,i], degreeT, degreeP)
+				netReaction.kinetics = [chebyshev]
+			elif model[0].lower() == 'pdeparrhenius':
+				pass
+			else:
+				pass
 
 	# Save results to file
-	#logging.info('Saving results...')
-	#io.writeOutputFile(outputFile, network, Tlist, Plist, grainSize, numGrains, method, model)
+	logging.info('Saving results...')
+	outputFile = os.path.join(os.path.dirname(inputFile), 'output.xml')
+	io.writeOutputFile(outputFile, network, Tlist, Plist, Elist, method, model)
 
 	logging.info('')
 
