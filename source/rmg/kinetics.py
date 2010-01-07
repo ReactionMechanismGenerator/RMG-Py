@@ -456,6 +456,22 @@ class PDepArrheniusKinetics(Kinetics):
 
 		return ArrheniusKinetics(A=A, n=n, Ea=Ea)
 
+	def toXML(self, document, rootElement, numReactants):
+		"""
+		Add a <kinetics> element as a child of `rootElement` using
+		RMG-style XML. `document` is an :class:`io.XML` class representing the
+		XML DOM tree.
+		"""
+
+		kineticsElement = document.createElement('kinetics', rootElement)
+		document.createAttribute('type', kineticsElement, 'pressure-dependent Arrhenius')
+
+		document.createQuantity('pressures', kineticsElement, [P / 1.0e5 for P in self.pressures], 'bar')
+
+		for arrh in self.arrhenius:
+			arrh.toXML(document, kineticsElement)
+
+
 ################################################################################
 
 class ChebyshevKinetics(Kinetics):
@@ -564,6 +580,25 @@ class ChebyshevKinetics(Kinetics):
 		for t2 in range(degreeT):
 			for p2 in range(degreeP):
 				self.coeffs[t2,p2] = x[p2*degreeT+t2]
+
+	def toXML(self, document, rootElement, numReactants):
+		"""
+		Add a <kinetics> element as a child of `rootElement` using
+		RMG-style XML. `document` is an :class:`io.XML` class representing the
+		XML DOM tree.
+		"""
+
+		kineticsElement = document.createElement('kinetics', rootElement)
+		document.createAttribute('type', kineticsElement, 'pressure-dependent Arrhenius')
+
+		document.createQuantity('Tmin', kineticsElement, self.Tmin, 'K')
+		document.createQuantity('Tmax', kineticsElement, self.Tmax, 'K')
+		document.createQuantity('Pmin', kineticsElement, self.Pmin / 1.0e5, 'bar')
+		document.createQuantity('Pmax', kineticsElement, self.Pmax / 1.0e5, 'bar')
+		document.createQuantity('degreeT', kineticsElement, self.degreeT)
+		document.createQuantity('degreeP', kineticsElement, self.degreeP)
+		for coeffs in self.coeffs:
+			document.createQuantity('coefficients', kineticsElement, list(coeffs))
 
 ################################################################################
 

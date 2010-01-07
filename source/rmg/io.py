@@ -281,7 +281,7 @@ class XML:
 		"""
 		parentElement.setAttribute(attributeName, attributeValue)
 
-	def createQuantity(self, elementName, parentElement, value, units):
+	def createQuantity(self, elementName, parentElement, value, units=''):
 		"""
 		Create an element representing a quantity of a certain `value` (scalar
 		or list) and `units` (string) with the name `elementName` as a child of
@@ -292,7 +292,8 @@ class XML:
 			quantityElement = self.createTextElement(elementName, parentElement, ' '.join([str(v) for v in value]))
 		else:
 			quantityElement = self.createTextElement(elementName, parentElement, str(value))
-		self.createAttribute('units', quantityElement, units)
+		if units != '':
+			self.createAttribute('units', quantityElement, units)
 
 		return quantityElement
 

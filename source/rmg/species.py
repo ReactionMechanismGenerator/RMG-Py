@@ -303,6 +303,46 @@ class Species:
 		if expDownElement:
 			self.expDownParam = float(document.getQuantity(expDownElement).simplified)
 
+	def toXML(self, document, rootElement):
+		"""
+		Create a <species> element as a child of `rootElement` in the XML DOM
+		tree represented by `document`, an :class:`io.XML` class. The format
+		matches the format of the :meth:`Species.fromXML()` function.
+		"""
+
+		# Create <species> element with id, label, and reactive attributes
+		speciesElement = document.createElement('species', rootElement)
+		document.createAttribute('id', speciesElement, self.id)
+		document.createAttribute('label', speciesElement, self.label)
+		document.createAttribute('reactive', speciesElement, 'yes' if self.reactive else 'no')
+
+		# Write structure (only the first resonance form if resonance is present)
+		self.structure[0].toXML(document, speciesElement)
+
+		# Write thermo data - the format attribute is written in toXML() of the
+		# corresponding ThermoData class
+		if self.thermoData: self.thermoData.toXML(document, speciesElement)
+		
+		# Write ground-state energy
+		try:
+			if self.E0: document.createQuantity('groundStateEnergy', speciesElement, self.E0 / 1000.0, 'kJ/mol')
+		except AttributeError:
+			pass
+		
+		# Write spectral data
+		if self.spectralData:
+			self.spectralData.toXML(document, speciesElement)
+
+		# Write Lennard-Jones parameters
+		if self.lennardJones:
+			self.lennardJones.toXML(document, speciesElement)
+		
+		# Write exponential down parameter
+		try:
+			if self.expDownParam: document.createQuantity('expDownParam', speciesElement, self.expDownParam / 1000.0, 'kJ/mol')
+		except AttributeError:
+			pass
+
 	def fromAdjacencyList(self, adjstr):
 		"""
 		Convert an adjacency list string `adjstr` to a Species object.

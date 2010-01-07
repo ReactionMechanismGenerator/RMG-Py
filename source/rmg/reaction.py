@@ -246,6 +246,31 @@ class Reaction:
 			else:
 				raise io.InvalidInputFileException('Invalid type "%s" for kinetics element; allowed values are "Arrhenius".' % format)
 
+	def toXML(self, document, rootElement):
+		"""
+		Create a <reaction> element as a child of `rootElement` in the XML DOM
+		tree represented by `document`, an :class:`io.XML` class. The format
+		matches the format of the :meth:`Reaction.fromXML()` function.
+		"""
+
+		# Create <species> element with id attribute
+		reactionElement = document.createElement('reaction', rootElement)
+		document.createAttribute('id', reactionElement, self.id)
+
+		# Write reactants
+		for reactant in self.reactants:
+			reactantElement = document.createElement('reactant', reactionElement)
+			document.createAttribute('ref', reactantElement, reactant.id)
+
+		# Write products
+		for product in self.products:
+			productElement = document.createElement('product', reactionElement)
+			document.createAttribute('ref', productElement, product.id)
+
+		# Write kinetics; format is to be added in kinetics class
+		for kinetics in self.kinetics:
+			kinetics.toXML(document, reactionElement, len(self.reactants))
+
 	def hasTemplate(self, reactants, products):
 		"""
 		Return :data:`True` if the reaction matches the template of `reactants`

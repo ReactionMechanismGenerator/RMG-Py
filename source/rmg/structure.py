@@ -266,7 +266,7 @@ class Structure:
 		Convert a <structure> element from a standard RMG-style XML input file
 		into a Structure object. `document` is an :class:`io.XML` class
 		representing the XML DOM tree, and `rootElement` is the <structure>
-		element in that tree.
+		element in that tree. 
 		"""
 		
 		format = str(document.getAttribute(rootElement, 'format', required=True)).lower()
@@ -281,6 +281,18 @@ class Structure:
 			self.fromSMILES(smilesstr)
 		else:
 			raise io.InvalidInputFileException('Invalid format "%s" for structure element; allowed values are "cml", "inchi", and "smiles".' % format)
+		
+	def toXML(self, document, rootElement):
+		"""
+		Create a <structure> element as a child of `rootElement` in the XML DOM
+		tree represented by `document`, an :class:`io.XML` class. The format
+		matches the format of the :meth:`Species.fromXML()` function. Currently
+		the structure is represented using InChI.
+		"""
+		
+		# Create <structure> element with format attribute
+		structureElement = document.createTextElement('structure', rootElement, self.toInChI())
+		document.createAttribute('format', structureElement, 'InChI')
 
 	def fromAdjacencyList(self, adjlist, addH=False):
 		"""
