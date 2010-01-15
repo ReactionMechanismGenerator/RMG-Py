@@ -624,9 +624,13 @@ class PDepReaction(Reaction):
 	def getBestKinetics(self, T, P):
 		"""
 		Return the best set of ArrheniusKinetics parameters for the forward
-		reaction evaluated at the temperature `T` and pressure `P`.
+		reaction evaluated at the temperature `T` and pressure `P`. Currently
+		this simply sets the prefactor to the value of :math:`k(T,P)` and
+		sets the other Arrhenius parameters to zero.
 		"""
-		return self.kinetics.getArrhenius(P)
+		k = float(self.getRateConstant(T, P))
+		return ArrheniusKinetics(A=k, n=0.0, Ea=0.0)
+		#return self.kinetics.getArrhenius(P)
 
 ################################################################################
 
