@@ -153,7 +153,8 @@ Arrhenius_EP
 139.	H2			C_rad/H2/Ct			300-1500	2.91E+12	0		0		23.0	0		0		0		0		3		Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.	
 140.	H2			C_rad/H/OneDeC		300-1500	5.34E+11	0		0		24.0	0		0		0		0		3		Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.	
 141.	H2			C_rad/Cs2			300-1500	4.20E+11	0		0		24.7	0		0		0		0		3		Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.	
-142.	C/H3/Cs		O_pri_rad			300-1500	2.63E+07	1.80	0		0.278	0		0		0		0		5		Curran et al. [8] Rate expressions for H atom abstraction from fuels.	
+142.	C/H3/Cs		O_pri_rad			300-1500	1.78E+07	1.80	0		1.431	0		0		0		0		5		Curran et al. [8] Rate expressions for H atom abstraction from fuels. Fixed by RWest
+//142.	C/H3/Cs		O_pri_rad			300-1500	2.63E+07	1.80	0		0.278	0		0		0		0		5		Curran et al. [8] Rate expressions for H atom abstraction from fuels.	
 143.	C/H2/NonDeC	O_pri_rad			300-1500	9.00E+05	2.00	0		-1.133	0		0		0		0		5		Curran et al. [8] Rate expressions for H atom abstraction from fuels.	
 144.	C/H/Cs3		O_pri_rad			300-1500	1.70E+06	1.90	0		-1.451	0		0		0		0		5		Curran et al. [8] Rate expressions for H atom abstraction from fuels.	
 145.	C/H3/Cs		O_atom_triplet		300-1500	8.55E+03	3.05	0		3.123	0		0		0		0		5		Curran et al. [8] Rate expressions for H atom abstraction from fuels.	
