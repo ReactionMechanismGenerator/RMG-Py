@@ -37,6 +37,7 @@ import logging
 import pybel
 import openbabel
 
+import constants
 import chem
 import graph
 
@@ -254,7 +255,46 @@ class Structure:
 		mol = pybel.Molecule(self.toOBMol())
 		return mol.formula
 
-	def fromAdjacencyList(self, adjlist):
+	def getMolecularWeight(self):
+		"""
+		Return the molecular weight of the structure in kg/mol.
+		"""
+		return sum([atom.atomType.element.mass for atom in self.atoms()])
+
+	def fromXML(self, document, rootElement):
+		"""
+		Convert a <structure> element from a standard RMG-style XML input file
+		into a Structure object. `document` is an :class:`io.XML` class
+		representing the XML DOM tree, and `rootElement` is the <structure>
+		element in that tree. 
+		"""
+		
+		format = str(document.getAttribute(rootElement, 'format', required=True)).lower()
+		if format == 'cml':
+			cmlstr = str(document.getChildElement(rootElement, 'molecule', required=True).toxml())
+			self.fromCML(cmlstr)
+		elif format == 'inchi':
+			inchistr = str(document.getElementText(rootElement)).strip()
+			self.fromInChI(inchistr)
+		elif format == 'smiles':
+			smilesstr = str(document.getElementText(rootElement)).strip()
+			self.fromSMILES(smilesstr)
+		else:
+			raise io.InvalidInputFileException('Invalid format "%s" for structure element; allowed values are "cml", "inchi", and "smiles".' % format)
+		
+	def toXML(self, document, rootElement):
+		"""
+		Create a <structure> element as a child of `rootElement` in the XML DOM
+		tree represented by `document`, an :class:`io.XML` class. The format
+		matches the format of the :meth:`Species.fromXML()` function. Currently
+		the structure is represented using InChI.
+		"""
+		
+		# Create <structure> element with format attribute
+		structureElement = document.createTextElement('structure', rootElement, self.toInChI())
+		document.createAttribute('format', structureElement, 'InChI')
+
+	def fromAdjacencyList(self, adjlist, addH=False):
 		"""
 		Convert a string adjacency list `adjlist` into a structure object.
 		"""
@@ -345,6 +385,26 @@ class Structure:
 				elif bonddict[atom1][atom2] != bonddict[atom2][atom1]:
 					raise InvalidAdjacencyListException(label)
 
+		# Add hydrogen atoms to complete structure
+		if addH:
+			newAtoms = []; newBonds = []
+			for atom in atoms:
+				valence = atom.atomType.element.valence
+				if len(valence) == 1: valence = valence[0]
+				else: raise Exception('Multiple valences encountered while padding structure with hydrogen atoms.')
+				radical = atom.electronState.order
+				order = 0
+				for bond in bonds:
+					if atom in bond.atoms:
+						order += bond.bondType.order
+				count = valence - radical - int(order)
+				for i in range(count):
+					a = chem.Atom('H', '0', 0, '')
+					b = chem.Bond([atom, a], 'S')
+					newAtoms.append(a)
+					newBonds.append(b)
+			atoms.extend(newAtoms); bonds.extend(newBonds)
+			
 		# Create and return functional group or species
 		self.initialize(atoms, bonds)
 
@@ -545,16 +605,12 @@ class Structure:
 		mol = pybel.Molecule(self.toOBMol())
 		return mol.write('smiles').strip()
 
-	def toXML(self, dom, root):
+	def toXML(self, document, rootElement):
 		"""
 		Convert a Structure object to an XML DOM tree.
 		"""
-		import xml.dom.minidom
-		cml = dom.createElement('cml')
-		root.appendChild(cml)
-
-		dom2 = xml.dom.minidom.parseString(self.toCML())
-		cml.appendChild(dom2.documentElement)
+		structureElement = document.createTextElement('structure', rootElement, self.toSMILES())
+		document.createAttribute('format', structureElement, 'SMILES')
 
 	def toDOT(self, label=''):
 		"""
@@ -977,9 +1033,10 @@ class Structure:
 				else:
 					structure = Structure(self.atoms(), self.bonds())
 					structure.removeBond(bond)
-					structure1, structure2 = structure.split()
+					structures = structure.split()
+					if len(structures) != 2: return symmetryNumber
 
-
+					structure1, structure2 = structures
 					if bond.atoms[0] in structure1.atoms(): structure1.removeAtom(bond.atoms[0])
 					if bond.atoms[1] in structure1.atoms(): structure1.removeAtom(bond.atoms[1])
 					if bond.atoms[0] in structure2.atoms(): structure2.removeAtom(bond.atoms[0])
@@ -1241,6 +1298,52 @@ class Structure:
 					if not self.isBondInCycle(bond):
 						count += 1
 		return count
+
+	def calculateLennardJonesParameters(self):
+		"""
+		Calculate approximate Lennard-Jones parameters for the structure. The
+		numbers for particular species were taken from
+
+		H. Hippler, J. Troe, and H. J. Wendelken. *J. Chem. Phys.* **78**, 6709 (1983).
+
+		via the MultiWell User's Manual (2009.3 edition) by J. R. Barker et al.
+		"""
+		# Count the number of heavy atoms in the structure
+		count = sum([1 for atom in self.atoms() if atom.isNonHydrogen()])
+
+		# Noble gases
+#		if self.isIsomorphic(Structure(SMILES='He')):
+#			sigma = 2.55;    epsilon = 10
+#		elif self.isIsomorphic(Structure(SMILES='Ne')):
+#			sigma = 2.82;    epsilon = 32
+#		elif self.isIsomorphic(Structure(SMILES='Ar')):
+#			sigma = 3.47;    epsilon = 114
+#		elif self.isIsomorphic(Structure(SMILES='Kr')):
+#			sigma = 3.66;    epsilon = 178
+#		elif self.isIsomorphic(Structure(SMILES='Xe')):
+#			sigma = 4.05;    epsilon = 230
+		# Other small molecule gases
+		if self.isIsomorphic(Structure(SMILES='[H][H]')):
+			sigma = 2.83;    epsilon = 60
+		elif self.isIsomorphic(Structure(SMILES='[C]=[O]')):
+			sigma = 3.70;    epsilon = 105
+		elif self.isIsomorphic(Structure(SMILES='N#N')):
+			sigma = 3.74;    epsilon = 82
+		elif self.isIsomorphic(Structure(SMILES='O=O')):
+			sigma = 3.48;    epsilon = 103
+		elif self.isIsomorphic(Structure(SMILES='O=C=O')):
+			sigma = 3.94;    epsilon = 201
+		elif self.isIsomorphic(Structure(SMILES='O')):
+			sigma = 2.71;    epsilon = 506
+		# General cases
+		elif count == 1:	sigma = 3.758;    epsilon = 148.6
+		elif count == 2:	sigma = 4.443;    epsilon = 110.7
+		elif count == 3:	sigma = 5.118;    epsilon = 237.1
+		elif count == 4:	sigma = 5.687;    epsilon = 531.4
+		elif count == 5:	sigma = 5.784;    epsilon = 341.1
+		else:				sigma = 5.949;    epsilon = 399.3
+
+		return sigma * 1e-10, epsilon * constants.kB
 
 ################################################################################
 

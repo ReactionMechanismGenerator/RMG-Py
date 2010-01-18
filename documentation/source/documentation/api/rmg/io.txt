@@ -1,0 +1,43 @@
+*********************
+The ``rmg.io`` Module
+*********************
+
+.. automodule:: rmg.io
+
+Classes in ``rmg.io``
+=====================
+
+XML
+---
+
+.. autoclass:: rmg.io.XML
+	:members:
+
+
+
+Methods in ``rmg.io``
+=====================
+
+.. autofunction:: rmg.io.loadFrequencyDatabase
+
+.. autofunction:: rmg.io.loadKineticsDatabase
+
+.. autofunction:: rmg.io.loadThermoDatabase
+
+.. autofunction:: rmg.io.readDatabaseList
+
+.. autofunction:: rmg.io.readInputFile
+
+.. autofunction:: rmg.io.writeOutputFile
+
+
+
+Exceptions in ``rmg.io``
+========================
+
+.. autoexception:: rmg.io.InvalidInputFileException
+	:members:
+
+.. autoexception:: rmg.io.InvalidXMLError
+	:members:
+

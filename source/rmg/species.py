@@ -35,16 +35,65 @@ Contains classes describing chemical species.
 import logging
 import math
 import pybel
-
+import os
+import xml.sax.saxutils
+import quantities as pq
+import numpy
+		
 import constants
 import settings
 import structure
-import data
 import thermo
-import os
-
+import data
+import spectral
 import ctml_writer
-import xml.sax.saxutils
+
+################################################################################
+
+class LennardJones:
+	"""
+	A set of Lennard-Jones parameters.
+
+	==============  ============================================================
+	Attribute       Description
+	==============  ============================================================
+	`sigma`         The Lennard-Jones sigma parameter in m
+	`epsilon`       The Lennard-Jones epsilon parameter in J
+	==============  ============================================================
+
+	"""
+
+	def __init__(self, sigma=0.0, epsilon=0.0):
+		self.sigma = sigma
+		self.epsilon = epsilon
+
+	def fromXML(self, document, rootElement):
+		"""
+		Convert a <lennardJones> element from a standard RMG-style XML input
+		file into a LennardJones object. `document` is an :class:`io.XML`
+		class representing the XML DOM tree, and `rootElement` is the
+		<lennardJones> element in that tree.
+		"""
+
+		# Read <sigma> element
+		self.sigma = document.getChildQuantity(rootElement, 'sigma', required=True)
+		self.sigma = float(self.sigma.simplified)
+
+		# Read <epsilon> element
+		self.epsilon = document.getChildQuantity(rootElement, 'epsilon', required=True)
+		self.epsilon = float(self.epsilon.simplified)
+
+	def toXML(self, document, rootElement):
+		"""
+		Add a <lennardJones> element as a child of `rootElement` using
+		RMG-style XML. `document` is an :class:`io.XML` class representing the
+		XML DOM tree.
+		"""
+
+		# Create <lennardJones> element as child of rootElement
+		ljElement = document.createElement('lennardJones', rootElement)
+		document.createQuantity('sigma', ljElement, self.sigma, 'm')
+		document.createQuantity('epsilon', ljElement, self.epsilon, 'J')
 
 ################################################################################
 
@@ -119,6 +168,7 @@ class Species:
 	`reactive`        :data:`True` if the species is reactive, :data:`False` if
 	                  inert
 	`spectralData`    The spectral data (degrees of freedom) for the species
+	`E0`              The ground-state energy of the species in J/mol
 	`structure`       A list of :class:`structure.Structure` objects
 	                  representing the set of resonance isomers
 	`thermoData`      The thermodynamic parameters for the species, always a
@@ -150,6 +200,7 @@ class Species:
 		self.thermoSnapshot = ThermoSnapshot()
 		self.lennardJones = None
 		self.spectralData = None
+		self.E0 = None
 		
 		if SMILES is not None:
 			self.fromSMILES(SMILES)
@@ -192,6 +243,105 @@ class Species:
 		Return the chemical formula for the species.
 		"""
 		return self.structure[0].getFormula()
+
+	def fromXML(self, document, rootElement):
+		"""
+		Convert a <species> element from a standard RMG-style XML input file
+		into a Species object. `document` is an :class:`io.XML` class
+		representing the XML DOM tree, and `rootElement` is the <structure>
+		element in that tree.
+		"""
+
+		# Read id attribute
+		self.id = str(document.getAttribute(rootElement, 'id', required=True))
+
+		# Read label attribute
+		self.label = str(document.getAttribute(rootElement, 'label', required=False, default=self.id))
+
+		# Read reactive attribute
+		self.reactive = str(document.getAttribute(rootElement, 'reactive', required=False, default='yes')).lower()
+		self.reactive = not (self.reactive == 'no' or self.reactive == 'false' or self.reactive == 'n')
+
+		# Read <structure> element
+		self.structure = []
+		structureElement = document.getChildElement(rootElement, 'structure', required=False)
+		if structureElement:
+			self.structure = [structure.Structure()]
+			self.structure[0].fromXML(document, structureElement)
+
+		# Read <thermoData> element
+		self.thermoData = None
+		thermoElement = document.getChildElement(rootElement, 'thermoData', required=False)
+		if thermoElement:
+			format = str(document.getAttribute(thermoElement, 'format', required=True)).lower()
+			if format == 'group additivity':
+				self.thermoData = thermo.ThermoGAData()
+				self.thermoData.fromXML(document, thermoElement)
+			else:
+				raise io.InvalidInputFileException('Invalid format "%s" for thermoData element; allowed values are "group additivity".' % format)
+
+		# Read <groundStateEnergy> element
+		E0 = document.getChildQuantity(rootElement, 'groundStateEnergy', required=False, default=pq.Quantity(0.0))
+		self.E0 = float(E0.simplified)
+
+		# Read <spectralData> element
+		self.spectralData = None
+		spectralElement = document.getChildElement(rootElement, 'spectralData', required=False)
+		if spectralElement:
+			self.spectralData = spectral.SpectralData()
+			self.spectralData.fromXML(document, spectralElement)
+
+		# Read <lennardJones> element
+		self.lennardJones = None
+		ljElement = document.getChildElement(rootElement, 'lennardJones', required=False)
+		if ljElement:
+			self.lennardJones = LennardJones()
+			self.lennardJones.fromXML(document, ljElement)
+
+		# Read <expDownParam> element
+		expDownElement = document.getChildElement(rootElement, 'expDownParam', required=False)
+		if expDownElement:
+			self.expDownParam = float(document.getQuantity(expDownElement).simplified)
+
+	def toXML(self, document, rootElement):
+		"""
+		Create a <species> element as a child of `rootElement` in the XML DOM
+		tree represented by `document`, an :class:`io.XML` class. The format
+		matches the format of the :meth:`Species.fromXML()` function.
+		"""
+
+		# Create <species> element with id, label, and reactive attributes
+		speciesElement = document.createElement('species', rootElement)
+		document.createAttribute('id', speciesElement, self.id)
+		document.createAttribute('label', speciesElement, self.label)
+		document.createAttribute('reactive', speciesElement, 'yes' if self.reactive else 'no')
+
+		# Write structure (only the first resonance form if resonance is present)
+		self.structure[0].toXML(document, speciesElement)
+
+		# Write thermo data - the format attribute is written in toXML() of the
+		# corresponding ThermoData class
+		if self.thermoData: self.thermoData.toXML(document, speciesElement)
+		
+		# Write ground-state energy
+		try:
+			if self.E0: document.createQuantity('groundStateEnergy', speciesElement, self.E0 / 1000.0, 'kJ/mol')
+		except AttributeError:
+			pass
+		
+		# Write spectral data
+		if self.spectralData:
+			self.spectralData.toXML(document, speciesElement)
+
+		# Write Lennard-Jones parameters
+		if self.lennardJones:
+			self.lennardJones.toXML(document, speciesElement)
+		
+		# Write exponential down parameter
+		try:
+			if self.expDownParam: document.createQuantity('expDownParam', speciesElement, self.expDownParam / 1000.0, 'kJ/mol')
+		except AttributeError:
+			pass
 
 	def fromAdjacencyList(self, adjstr):
 		"""
@@ -336,6 +486,64 @@ class Species:
 				lowestH298 = thisH298
 		return self.thermoData
 
+	def generateSpectralData(self):
+		"""
+		Generate spectral data for species using the frequency database. The
+		spectral data comprises the molecular degrees of freedom of the
+		molecule.
+		"""
+		# Calculate the thermo data if necessary
+		if not self.thermoData:
+			self.generateThermoData()
+		# Generate the spectral data
+		spectral.generateSpectralData(self.structure[0], self.thermoData)
+
+	def calculateDensityOfStates(self, Elist):
+		"""
+		Calculate and return the density of states in mol/J of the species at
+		the specified list of energies `Elist` in J/mol.
+		"""
+
+		import unirxn.states as states
+
+		# Return None if the species consists of only one atom
+		if len(self.structure[0].atoms()) < 2 or self.spectralData is None:
+			return None
+
+		# Make sure we have the necessary information to calculate the
+		# density of states
+		if not self.spectralData:
+			self.generateSpectralData()
+			
+		# Initialize density of states
+		densStates = numpy.zeros(len(Elist), numpy.float64)
+
+		# Create energies in cm^-1 at which to evaluate the density of states
+		conv = constants.h * constants.c * 100.0 * constants.Na # [=] J/mol/cm^-1
+		Emin = min(Elist) / conv
+		Emax = max(Elist) / conv
+		dE = (Elist[1] - Elist[0]) / conv
+		Elist0 = numpy.arange(Emin, Emax+dE/2, dE)
+
+		# Prepare inputs for density of states function
+		vib = numpy.array([mode.frequency for mode in self.spectralData.modes if isinstance(mode, spectral.HarmonicOscillator)])
+		rot = numpy.array([mode.frequencies for mode in self.spectralData.modes if isinstance(mode, spectral.RigidRotor)])
+		hind = numpy.array([[mode.frequency, mode.barrier] for mode in self.spectralData.modes if isinstance(mode, spectral.HinderedRotor)])
+		if len(hind) == 0: hind = numpy.zeros([0,2],numpy.float64)
+		linear = 1 if self.structure[0].isLinear() else 0
+		symm = self.spectralData.symmetry
+
+		# Calculate the density of states
+		densStates, msg = states.densityofstates(Elist0, vib, rot, hind, symm, linear)
+		msg = msg.strip()
+		if msg != '':
+			raise Exception('Error while calculating the density of states for species %s: %s' % (self, msg))
+
+		# Convert density of states from (cm^-1)^-1 to mol/J
+		densStates /= conv
+
+		return densStates
+
 	def getHeatCapacity(self, T):
 		"""
 		Return the heat capacity of the species at temperature `T`.
@@ -371,6 +579,12 @@ class Species:
 			return self.thermoSnapshot.freeEnergy
 		#if self.thermoData is None: self.getThermoData()
 		return self.thermoData.getFreeEnergy(T)
+
+	def getMolecularWeight(self):
+		"""
+		Return the molecular weight of the species in kg/mol.
+		"""
+		return self.structure[0].getMolecularWeight()
 
 	def isIsomorphic(self, other):
 		"""
@@ -410,7 +624,14 @@ class Species:
 			maps21.extend(map21)
 		return (len(maps12) > 0), maps21, maps12
 
-
+	def calculateLennardJonesParameters(self):
+		"""
+		Calculate the Lennard-Jones collision parameters for the species. The
+		parameters are not returned, but are instead stored in the 
+		`lennardJones` attribute.
+		"""
+		sigma, epsilon = self.structure[0].calculateLennardJonesParameters()
+		self.lennardJones = LennardJones(sigma, epsilon)
 
 ################################################################################
 
@@ -440,7 +661,7 @@ def makeNewSpecies(structure, label='', reactive=True):
 	object is created and returned after being appended to the global species
 	list.
 	"""
-	global speciesCounter 
+	global speciesCounter
 #	# Recalculate atom types for proposed structure (hopefully not necessary)
 #	structure.simplifyAtomTypes()
 #	structure.updateAtomTypes()
@@ -471,9 +692,19 @@ def makeNewSpecies(structure, label='', reactive=True):
 #			if atom.hasFreeElectron(): label += 'J'
 		label = structure.toSMILES()
 	
-	speciesCounter += 1
-	spec = Species(speciesCounter, label, structure, reactive)
+	spec = Species(speciesCounter+1, label, structure, reactive)
+	return processNewSpecies(spec)
+
+def processNewSpecies(spec):
+	"""
+	Once a species `spec` has been created (e.g. via :meth:`makeNewSpecies`),
+	this function handles other aspects	of preparing it for RMG.
+	"""
+	global speciesCounter
+
 	speciesList.insert(0, spec)
+	speciesCounter += 1
+	spec.id = speciesCounter
 	
 	spec.getResonanceIsomers()
 	if thermoDatabase is not None:
@@ -483,8 +714,9 @@ def makeNewSpecies(structure, label='', reactive=True):
 	if settings.spectralDataEstimation and spec.thermoData:
 		import spectral
 		spec.spectralData = spectral.generateSpectralData(spec.structure[0], spec.thermoData)
-		if spec.spectralData:
-			print [mode.frequency for mode in spec.spectralData.modes if isinstance(mode, spectral.HarmonicOscillator)]
+		
+	# Generate Lennard-Jones parameters
+	spec.calculateLennardJonesParameters()
 
 	# Draw species
 	if settings.drawMolecules:

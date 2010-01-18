@@ -1,0 +1,21 @@
+****************************
+The ``rmg.structure`` Module
+****************************
+
+.. automodule:: rmg.structure
+
+Classes in ``rmg.structure``
+============================
+
+Structure
+---------
+
+.. autoclass:: rmg.structure.Structure
+	:members:
+
+Exceptions in ``rmg.structure``
+===============================
+
+.. autoexception:: rmg.structure.InvalidAdjacencyListException
+	:members:
+

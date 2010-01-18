@@ -37,6 +37,10 @@ Provides classes for working with the kinetics of chemical reactions:
 
 * :class:`ArrheniusEPKinetics` - A representation of an Arrhenius kinetic model with Evans-Polanyi correction
 
+* :class:`ChebyshevKinetics` - Pressure-dependent kinetics modeled with Chebyshev polynomials
+
+* :class:`PDepArrheniusKinetics` - Pressure-dependent kinetics modeled with Arrhenius expressions at multiple pressures
+
 """
 
 import math
@@ -67,7 +71,7 @@ class Kinetics:
 	"""
 
 	def __init__(self, Trange=None, rank=0, comment=''):
-		self.Trange = Trange
+		self.Trange = Trange or [0.0, 10000.0]
 		self.rank = 0
 		self.comment = ''
 		self.numReactants = None
@@ -127,7 +131,7 @@ class ArrheniusKinetics(Kinetics):
 		"""
 		return (self.A == other.A and self.Ea == other.Ea and self.n == other.n)
 
-	def getRateConstant(self, T):
+	def getRateConstant(self, T, P=1.0e5):
 		"""
 		Return the rate constant k(T) at temperature `T` by evaluating the
 		Arrhenius expression.
@@ -154,34 +158,69 @@ class ArrheniusKinetics(Kinetics):
 		
 		return kinetics
 	
-	def toXML(self, dom, root, numReactants):
+	def fromXML(self, document, rootElement):
 		"""
-		Generate the XML for these kinetics using the :data:`xml.dom.minidom`
-		package. The `dom` and `root` parameters refer to the DOM and the
-		point within the DOM to place this item.
+		Convert a <kinetics> element from a standard RMG-style XML input file
+		into an ArrheniusKinetics object. `document` is an :class:`io.XML` class
+		representing the XML DOM tree, and `rootElement` is the <kinetics>
+		element in that tree.
 		"""
-		kinetics = dom.createElement('arrheniusKinetics')
-		root.appendChild(kinetics)
-		kinetics.setAttribute('Trange', '%s-%s K' % (self.Trange[0], self.Trange[1]))
-		kinetics.setAttribute('rank', str(self.rank))
-		kinetics.setAttribute('comment', self.comment)
-		
-		preexponential = dom.createElement('preexponential')
-		kinetics.appendChild(preexponential)
-		preexponentialUnits = None
-		if len(self.reactants) == 1:
-			preexponentialUnits = 's^-1'
+
+		# Read <preexponential> element
+		A = document.getChildQuantity(rootElement, 'preexponential', required=True)
+		self.A = float(A.simplified)
+
+		# Read <preexponential> element
+		n = document.getChildQuantity(rootElement, 'exponent', required=True)
+		self.n = float(n.simplified)
+
+		# Read <preexponential> element
+		Ea = document.getChildQuantity(rootElement, 'activationEnergy', required=True)
+		self.Ea = float(Ea.simplified)
+
+	def toXML(self, document, rootElement, numReactants):
+		"""
+		Add a <kinetics> element as a child of `rootElement` using
+		RMG-style XML. `document` is an :class:`io.XML` class representing the
+		XML DOM tree.
+		"""
+
+		kineticsElement = document.createElement('kinetics', rootElement)
+		document.createAttribute('type', kineticsElement, 'Arrhenius')
+
+		if numReactants == 1:
+			Aunits = 's^-1'
 		else:
-			preexponentialUnits = 'm^%s/(mol^%s*s)' % ((numReactants-1)*3, numReactants-1)
-		data.createXMLQuantity(dom, preexponential, self.A, preexponentialUnits)
+			Aunits = 'm^%s/(mol^%s*s)' % ((numReactants-1)*3, numReactants-1)
 		
-		exponent = dom.createElement('exponent')
-		kinetics.appendChild(exponent)
-		data.createXMLQuantity(dom, exponent, self.n, '')
-		
-		activationEnergy = dom.createElement('activationEnergy')
-		kinetics.appendChild(activationEnergy)
-		data.createXMLQuantity(dom, activationEnergy, self.Ea, 'J/mol')
+		document.createQuantity('preexponential', kineticsElement, self.A, Aunits)
+		document.createQuantity('exponent', kineticsElement, self.n, '')
+		document.createQuantity('activationEnergy', kineticsElement, self.Ea/1000.0, 'kJ/mol')
+
+	def fitToData(self, Tlist, K):
+		"""
+		Fit an Arrhenius model to a set of rate coefficients `K`, which is a
+		list corresponding to the temperatures `Tlist` in K.
+		"""
+
+		import numpy
+
+		# Create matrix and vector for coefficient fit (linear least-squares)
+		A = numpy.zeros((len(Tlist), 3), numpy.float64)
+		b = numpy.zeros(len(Tlist), numpy.float64)
+		for t, T in enumerate(Tlist):
+			A[t,0] = 1.0
+			A[t,1] = math.log(T)
+			A[t,2] = -1.0 / constants.R / T
+			b[t] = math.log(K[t])
+
+		# Do linear least-squares fit to get coefficients
+		x, residues, rank, s = numpy.linalg.lstsq(A, b)
+
+		# Extract coefficients
+		self.A = math.exp(float(x[0]))
+		self.n = float(x[1])
+		self.Ea = float(x[2])
 
 ################################################################################
 
@@ -246,7 +285,7 @@ class ArrheniusEPKinetics(Kinetics):
 		to Ea using the enthalpy of reaction `dHrxn`.
 		"""
 		
-		Ea = self.getActivationEnergy(dHrxn)
+		Ea = self.getActivationEnergy(float(dHrxn))
 		
 		kinetics = ArrheniusKinetics(self.A, Ea, self.n)
 		kinetics.Trange = self.Trange
@@ -301,43 +340,267 @@ class ArrheniusEPKinetics(Kinetics):
 		self.comment = comment
 		self.numReactants = numReactants
 
-	def toXML(self, dom, root):
+	def toXML(self, document, rootElement, numReactants):
 		"""
-		Generate the XML for these kinetics using the :data:`xml.dom.minidom`
-		package. The `dom` and `root` parameters refer to the DOM and the
-		point within the DOM to place this item.
+		Add a <kinetics> element as a child of `rootElement` using
+		RMG-style XML. `document` is an :class:`io.XML` class representing the
+		XML DOM tree.
 		"""
-		kinetics = dom.createElement('arrheniusEPKinetics')
-		root.appendChild(kinetics)
-		kinetics.setAttribute('Trange', '%s-%s K' % (self.Trange[0], self.Trange[1]))
-		kinetics.setAttribute('rank', str(self.rank))
-		kinetics.setAttribute('comment', self.comment)
 
+		kineticsElement = document.createElement('kinetics', rootElement)
+		document.createAttribute('type', kineticsElement, 'ArrheniusEP')
+		document.createAttribute('Trange', kineticsElement, '%s-%s K' % (self.Trange[0], self.Trange[1]))
+		document.createAttribute('rank', kineticsElement, str(self.rank))
+		document.createAttribute('comment', kineticsElement, self.comment)
 
-		preexponential = dom.createElement('preexponential')
-		kinetics.appendChild(preexponential)
-		preexponentialUnits = None
-		numReactants = self.numReactants
 		if numReactants == 1:
-			preexponentialUnits = 's^-1'
+			Aunits = 's^-1'
 		else:
-			preexponentialUnits = 'm^%s/(mol^%s*s)' % ((numReactants-1)*3, numReactants-1)
-		data.createXMLQuantity(dom, preexponential, self.A, preexponentialUnits)
+			Aunits = 'm^%s/(mol^%s*s)' % ((numReactants-1)*3, numReactants-1)
+		
+		document.createQuantity('preexponential', kineticsElement, self.A, Aunits)
+		document.createQuantity('exponent', kineticsElement, self.n, '')
+		document.createQuantity('evansPolanyiSlope', kineticsElement, self.alpha, '')
+		document.createQuantity('evansPolanyiIntercept', kineticsElement, self.E0/1000.0, 'kJ/mol')
 
-		exponent = dom.createElement('exponent')
-		kinetics.appendChild(exponent)
-		data.createXMLQuantity(dom, exponent, self.n, '')
+################################################################################
 
-		alpha = dom.createElement('evansPolanyiSlope')
-		kinetics.appendChild(alpha)
-		data.createXMLQuantity(dom, alpha, self.alpha, '')
+class PDepArrheniusKinetics(Kinetics):
+	"""
+	A kinetic model of a phenomenological rate coefficient k(T, P) using the
+	expression
 
-		activationEnergy = dom.createElement('evansPolanyiIntercept')
-		kinetics.appendChild(activationEnergy)
-		data.createXMLQuantity(dom, activationEnergy, self.E0, 'J/mol')
+	.. math:: k(T,P) = A(P) T^{n(P)} \\exp \\left[ \\frac{-E_\\mathrm{a}(P)}{RT} \\right]
+
+	where the modified Arrhenius parameters are stored at a variety of pressures
+	and interpolated between on a logarithmic scale. The attributes are:
+
+	==============  ============================================================
+	Attribute       Description
+	==============  ============================================================
+	`pressures`     The list of pressures in Pa
+	`arrhenius`     The list of :class:`ArrheniusKinetics` objects at each
+	                pressure
+	==============  ============================================================
+
+	"""
+
+	def __init__(self, pressures=None, arrhenius=None):
+		Kinetics.__init__(self)
+		self.pressures = pressures or []
+		self.arrhenius = arrhenius or []
+
+	def __getAdjacentExpressions(self, P):
+		"""
+		Returns the pressures and Arrhenius expressions for the pressures that
+		most closely bound the specified pressure `P` in Pa.
+		"""
+
+		if P < min(self.pressures) or P > max(self.pressures):
+			raise Exception('Attempted to evaluate PDepArrhenius expression at invalid pressure %s Pa; allowed range is %s to %s Pa.' % (P, min(self.pressures), max(self.pressures)))
+
+		if P in self.pressures:
+			arrh = self.arrhenius[self.pressures.index(P)]
+			return P, P, arrh, arrh
+		else:
+			ilow = 0; ihigh = None; Plow = self.pressures[0]; Phigh = None
+			for i in range(1, len(self.pressures)):
+				if self.pressures[i] <= P:
+					ilow = i; Plow = P
+				if self.pressures[i] > P and ihigh is None:
+					ihigh = i; Phigh = P
+
+			return Plow, Phigh, self.arrhenius[ilow], self.arrhenius[ihigh]
+
+	def getRateConstant(self, T, P):
+		"""
+		Return the rate constant k(T, P) at temperature `T` and pressure `P` by
+		evaluating the pressure-dependent Arrhenius expression.
+		"""
+		Plow, Phigh, alow, ahigh = self.__getAdjacentExpressions(P)
+		if Plow == Phigh: return alow.getRateConstant(T)
+		
+		klow = alow.getRateConstant(T)
+		khigh = ahigh.getRateConstant(T)
+		return 10**(math.log10(P/Plow)/math.log10(Phigh/Plow)*math.log(khigh/klow))
+
+	def fitToData(self, Tlist, Plist, K):
+		"""
+		Fit a pressure-dependent Arrhenius kinetic model to a set of rate
+		coefficients `K`, which is a matrix corresponding to the temperatures
+		`Tlist` in K and pressures `Plist` in Pa.
+		"""
+		# Initialize list of ArrheniusKinetics objects
+		self.arrhenius = []
+		# Create a copy of the list of pressures to store in the pressures attribute
+		self.pressures = Plist[:]
+		# Iterate over pressures, fitting Arrhenius parameters at each and
+		# appending to the list of Arrhenius expressions
+		for p, P in enumerate(Plist):
+			arrh = ArrheniusKinetics()
+			arrh.fitToData(Tlist, K[:,p])
+			self.arrhenius.append(arrh)
+
+	def getArrhenius(self, P):
+		"""
+		Return an :class:`ArrheniusKinetics` object at the specified pressure
+		`P` in Pa.
+		"""
+		Plow, Phigh, alow, ahigh = self.__getAdjacentExpressions(P)
+		if Plow == Phigh: return alow
+		
+		logPRatio = math.log10(P/Plow) / math.log10(Phigh/Plow)
+		A = 10**(logPRatio*math.log(ahigh.A/alow.A))
+		n = alow.n + (ahigh.n - alow.n) * logPRatio
+		Ea = alow.Ea + (ahigh.Ea - alow.Ea) * logPRatio
+
+		return ArrheniusKinetics(A=A, n=n, Ea=Ea)
+
+	def toXML(self, document, rootElement, numReactants):
+		"""
+		Add a <kinetics> element as a child of `rootElement` using
+		RMG-style XML. `document` is an :class:`io.XML` class representing the
+		XML DOM tree.
+		"""
+
+		kineticsElement = document.createElement('kinetics', rootElement)
+		document.createAttribute('type', kineticsElement, 'pressure-dependent Arrhenius')
+
+		document.createQuantity('pressures', kineticsElement, [P / 1.0e5 for P in self.pressures], 'bar')
+
+		for arrh in self.arrhenius:
+			arrh.toXML(document, kineticsElement)
+
+
+################################################################################
+
+class ChebyshevKinetics(Kinetics):
+	"""
+	A kinetic model of a phenomenological rate coefficient k(T, P) using the
+	expression
+
+	.. math:: \\log k(T,P) = \\sum_{t=1}^{N_T} \\sum_{p=1}^{N_P} \\alpha_{tp} \\phi_t(\\tilde{T}) \\phi_p(\\tilde{P})
+
+	where :math:`\\alpha_{tp}` is a constant, :math:`\\phi_n(x)` is the
+	Chebyshev polynomial of degree :math:`n` evaluated at :math:`x`, and
+
+	.. math:: \\tilde{T} \\equiv \\frac{2T^{-1} - T_\\mathrm{min}^{-1} - T_\\mathrm{max}^{-1}}{T_\\mathrm{max}^{-1} - T_\\mathrm{min}^{-1}}
+
+	.. math:: \\tilde{P} \\equiv \\frac{2 \\log P - \\log P_\\mathrm{min} - \\log P_\\mathrm{max}}{\\log P_\\mathrm{max} - \\log P_\\mathrm{min}}
+
+	are reduced temperature and reduced pressures designed to map the ranges
+	:math:`(T_\\mathrm{min}, T_\\mathrm{max})` and
+	:math:`(P_\\mathrm{min}, P_\\mathrm{max})` to :math:`(-1, 1)`.
+	The attributes are:
+
+	==============  ============================================================
+	Attribute       Description
+	==============  ============================================================
+	`Tmin`          The minimum temperature in K
+	`Tmax`          The maximum temperature in K
+	`Pmin`          The minimum pressure in Pa
+	`Pmax`          The maximum pressure in Pa
+	`coeffs`        Matrix of Chebyshev coefficients
+	==============  ============================================================
+
+	"""
+
+	def __init__(self, Tmin=0.0, Tmax=0.0, Pmin=0.0, Pmax=0.0, coeffs=None):
+		Kinetics.__init__(self)
+		self.Tmin = Tmin
+		self.Tmax = Tmax
+		self.Pmin = Pmin
+		self.Pmax = Pmax
+		self.coeffs = coeffs
+		self.degreeT = 0
+		self.degreeP = 0
+
+	def __chebyshev(self, n, x):
+		return math.cos(n * math.acos(x))
+
+	def __getReducedTemperature(self, T):
+		return (2.0/T - 1.0/self.Tmin - 1.0/self.Tmax) / (1.0/self.Tmax - 1.0/self.Tmin)
+	
+	def __getReducedPressure(self, P):
+		return (2.0*math.log(P) - math.log(self.Pmin) - math.log(self.Pmax)) / (math.log(self.Pmax) - math.log(self.Pmin))
+	
+	def getRateConstant(self, T, P):
+		"""
+		Return the rate constant k(T, P) in SI units at temperature `T` in K and
+		pressure `P` in Pa by evaluating the Chebyshev expression.
+		"""
+
+		Tred = self.__getReducedTemperature(T)
+		Pred = self.__getReducedPressure(P)
+
+		k = 0.0
+		for t in range(self.degreeT):
+			for p in range(self.degreeP):
+				k += self.coeffs[t,p] * self.__chebyshev(t, Tred) * self.__chebyshev(p, Pred)
+		return 10.0**k
+
+
+	def fitToData(self, Tlist, Plist, K, degreeT, degreeP):
+		"""
+		Fit a Chebyshev kinetic model to a set of rate coefficients `K`, which
+		is a matrix corresponding to the temperatures `Tlist` in K and pressures
+		`Plist` in Pa. `degreeT` and `degreeP` are the degree of the polynomials
+		in temperature and pressure.
+		"""
+
+		import numpy
+
+		nT = len(Tlist); nP = len(Plist)
+
+		self.degreeT = degreeT; self.degreeP = degreeP
+
+		# Set temperature and pressure ranges
+		self.Tmin = min(Tlist); self.Tmax = max(Tlist)
+		self.Pmin = min(Plist); self.Pmax = max(Plist)
+
+		# Calculate reduced temperatures and pressures
+		Tred = [self.__getReducedTemperature(T) for T in Tlist]
+		Pred = [self.__getReducedPressure(P) for P in Plist]
+
+		# Create matrix and vector for coefficient fit (linear least-squares)
+		A = numpy.zeros((nT*nP, degreeT*degreeP), numpy.float64)
+		b = numpy.zeros((nT*nP), numpy.float64)
+		for t1, T in enumerate(Tred):
+			for p1, P in enumerate(Pred):
+				for t2 in range(degreeT):
+					for p2 in range(degreeP):
+						A[p1*nT+t1, p2*degreeT+t2] = self.__chebyshev(t2, T) * self.__chebyshev(p2, P)
+				b[p1*nT+t1] = math.log10(K[t1,p1])
+
+		# Do linear least-squares fit to get coefficients
+		x, residues, rank, s = numpy.linalg.lstsq(A, b)
+		
+		# Extract coefficients
+		self.coeffs = numpy.zeros((degreeT,degreeP), numpy.float64)
+		for t2 in range(degreeT):
+			for p2 in range(degreeP):
+				self.coeffs[t2,p2] = x[p2*degreeT+t2]
+
+	def toXML(self, document, rootElement, numReactants):
+		"""
+		Add a <kinetics> element as a child of `rootElement` using
+		RMG-style XML. `document` is an :class:`io.XML` class representing the
+		XML DOM tree.
+		"""
+
+		kineticsElement = document.createElement('kinetics', rootElement)
+		document.createAttribute('type', kineticsElement, 'pressure-dependent Arrhenius')
+
+		document.createQuantity('Tmin', kineticsElement, self.Tmin, 'K')
+		document.createQuantity('Tmax', kineticsElement, self.Tmax, 'K')
+		document.createQuantity('Pmin', kineticsElement, self.Pmin / 1.0e5, 'bar')
+		document.createQuantity('Pmax', kineticsElement, self.Pmax / 1.0e5, 'bar')
+		document.createQuantity('degreeT', kineticsElement, self.degreeT)
+		document.createQuantity('degreeP', kineticsElement, self.degreeP)
+		for coeffs in self.coeffs:
+			document.createQuantity('coefficients', kineticsElement, list(coeffs))
 
 ################################################################################
 
 if __name__ == '__main__':
-	
 	pass

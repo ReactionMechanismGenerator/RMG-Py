@@ -47,6 +47,7 @@ import os
 import os.path
 
 import constants
+import settings
 import chem
 import data
 import structure
@@ -61,25 +62,29 @@ class Reaction:
 	"""
 	Represent a generic chemical reaction. The attributes are:
 	
-	==============  ============================================================
-	Attribute       Description
-	==============  ============================================================
-	`atomLabels`    A dictionary with the keys representing the labels and the
-	                values the atoms of the reactant or product species that
-	                were labeled at the time the reaction was generated
-	`bestKinetics`  The best kinetics for the reaction, always a derived class
-	                of :class:`kinetics.Kinetics`
-	`family`        The reaction family that this reaction represents, as a
-	                pointer to a :class:`ReactionFamily` object
-	`kinetics`      A list of all of the valid sets of kinetics for the reaction
-	`multiplier`    A multiplier to use to increase the reaction rate for cases
-	                when the reaction is generated multiple times due to
-	                different parts of the reactants yielding the same behavior
-	`products`      A list of the species that are produced by this reaction
-	`reactants`     A list of the species that are consumed by this reaction
-	`reverse`       A pointer to the reverse reaction, also a :class:`Reaction`
-	                object
-	==============  ============================================================
+	================= ==========================================================
+	Attribute         Description
+	================= ==========================================================
+	`atomLabels`      A dictionary with the keys representing the labels and the
+	                  values the atoms of the reactant or product species that
+	                  were labeled at the time the reaction was generated
+	`bestKinetics`    The best kinetics for the reaction, always a derived class
+	                  of :class:`kinetics.Kinetics`
+	`family`          The reaction family that this reaction represents, as a
+	                  pointer to a :class:`ReactionFamily` object
+	`kinetics`        A list of all of the valid sets of kinetics for the reaction
+	`multiplier`      A multiplier to use to increase the reaction rate for cases
+	                  when the reaction is generated multiple times due to
+	                  different parts of the reactants yielding the same behavior
+	`products`        A list of the species that are produced by this reaction
+	`reactants`       A list of the species that are consumed by this reaction
+	`reverse`         A pointer to the reverse reaction, also a :class:`Reaction`
+	                  object
+	`canteraReaction` A pointer to the corresponding reaction instance in
+	                  Cantera
+	`thirdBody`       :data:`True` if the reaction kinetics imply a third body,
+	                  :data:`False` if not
+	================= ==========================================================
 
 	By convention, the forward reaction is taken to be that for which the
 	provided kinetics apply; the reverse kinetics are taken from thermodynamic
@@ -89,7 +94,7 @@ class Reaction:
 	convenient way to represent the reverse reaction.
 	"""
 	
-	def __init__(self, reactants=None, products=None, family=None, kinetics=None):
+	def __init__(self, reactants=None, products=None, family=None, kinetics=None, thirdBody=False):
 		"""Initialize a reaction object."""
 		self.reactants = reactants or []
 		self.products = products or []
@@ -97,12 +102,26 @@ class Reaction:
 		self.reverse = None
 		self.kinetics = kinetics or []
 		self.multiplier = 1.0
+		self.thirdBody = thirdBody
 
 		# A cache for the best kinetics for this reaction
 		self.bestKinetics = None
 
 		# A dictionary of the labeled atoms for the reactants
 		self.atomLabels = {}
+
+		# A pointer to the corresponding reaction in Cantera, if one exists
+		self.canteraReaction = None
+
+	def __getstate__(self):
+		"""
+		Used to specify what should be pickled. In this case, we pickle
+		everything except the instance of the Cantera reaction, because that
+		isn't pickled properly (nor should it be).
+		"""
+		pickleMe = self.__dict__.copy()
+		if 'canteraReaction' in pickleMe: del pickleMe['canteraReaction']
+		return pickleMe
 
 	def __str__(self):
 		"""
@@ -118,22 +137,151 @@ class Reaction:
 		string = string[0:-3]
 		return string
 	
-	def toCantera(self, T=1000):
+	def toCantera(self, T=1000, P=1.0e5):
 		"""Return a Cantera ctml_writer instance"""
 		#  Made up. Unimolecular rate constant 1/s 
 		#reaction(  "A <=> B",  [1.00000E+00, 0, 0])
 		rxnstring = ' + '.join([str(sp) for sp in self.reactants])
 		rxnstring += ' <=> '
 		rxnstring += ' + '.join([str(sp) for sp in self.products])
-		k = self.getBestKinetics(T)
+		k = self.getBestKinetics(T, P)
 		A = k.A
 		Ea= k.Ea 
 		n = k.n 
 		#import pdb; pdb.set_trace()
-		return ctml_writer.reaction(rxnstring, ctml_writer.Arrhenius(A, n, Ea) )
-		
-	
 
+		options = []
+
+		makeCanteraReaction = True
+		try:
+			if self.canteraReaction is not None:
+				makeCanteraReaction = False
+		except AttributeError:
+			pass
+		
+		if not makeCanteraReaction:
+			# If we're updating this reaction, then remove the original version
+			ctml_writer._reactions.remove(self.canteraReaction)
+			# If the old reaction was a duplicate, then the new one is too
+			if 'duplicate' in self.canteraReaction._options:
+				options.append('duplicate')
+		else:
+			# If we're making this reaction for the first time then we need to
+			# check for duplicate reactions
+			# Get ID of each reactant and product of this reaction
+			reactants = [str(r) for r in self.reactants]; reactants.sort()
+			products = [str(p) for p in self.products]; products.sort()
+			# Remove any IDs that appear in both the reactant and product lists
+			# This is because Cantera treats A --> B + C and A + D --> B + C + D
+			# as requiring the duplicate tag
+			speciesToRemove = []
+			for spec in reactants:
+				if spec in products: speciesToRemove.append(spec)
+			speciesToRemove = list(set(speciesToRemove))
+			for spec in speciesToRemove:
+				reactants.remove(spec)
+				products.remove(spec)
+			# Iterate over all existing Cantera reactions
+			for rxn in ctml_writer._reactions:
+				# Get ID of each reactant and product
+				reac = []; prod = []
+				for r, v in rxn._r.iteritems():
+					for i in range(int(v)): reac.append(r)
+				for p, v in rxn._p.iteritems():
+					for i in range(int(v)): prod.append(p)
+				reac.sort(); prod.sort()
+				# Remove any IDs that appear in both the reactant and product lists
+				speciesToRemove = []
+				for spec in reac:
+					if spec in prod: speciesToRemove.append(spec)
+				speciesToRemove = list(set(speciesToRemove))
+				for spec in speciesToRemove:
+					reac.remove(spec)
+					prod.remove(spec)
+				# Compare with reactants and products of this reaction
+				if (reactants == reac and products == prod) or (reactants == prod and products == reac):
+					if 'duplicate' not in options or 'duplicate' not in rxn._options:
+						logging.debug('Marking reaction %s as duplicate' % (self))
+					if 'duplicate' not in options:
+						options.append('duplicate')
+					if 'duplicate' not in rxn._options:
+						rxn._options.append('duplicate')
+		
+		self.canteraReaction = ctml_writer.reaction(rxnstring, ctml_writer.Arrhenius(A, n, Ea), options=options)
+		return self.canteraReaction
+		
+	def fromXML(self, document, rootElement):
+		"""
+		Convert a <reaction> element from a standard RMG-style XML input file
+		into a Reaction object. `document` is an :class:`io.XML` class
+		representing the XML DOM tree, and `rootElement` is the <reaction>
+		element in that tree.
+		"""
+
+		# Read label attribute
+		self.id = str(document.getAttribute(rootElement, 'id', required=True))
+
+		# Read <reactant> elements
+		self.reactants = []
+		reactantElements = document.getChildElements(rootElement, 'reactant', required=True)
+		for reactantElement in reactantElements:
+			spec = str(document.getAttribute(reactantElement, 'ref'))
+			self.reactants.append(spec)
+
+		# Read <product> elements
+		self.products = []
+		productElements = document.getChildElements(rootElement, 'product', required=True)
+		for productElement in productElements:
+			spec = str(document.getAttribute(productElement, 'ref'))
+			self.products.append(spec)
+
+		# Read <kinetics> element
+		self.kinetics = []
+		kineticsElement = document.getChildElement(rootElement, 'kinetics', required=False)
+		if kineticsElement:
+			format = str(document.getAttribute(kineticsElement, 'type', required=True)).lower()
+			if format == 'arrhenius':
+				self.kinetics = [ArrheniusKinetics()]
+				self.kinetics[0].fromXML(document, kineticsElement)
+			else:
+				raise io.InvalidInputFileException('Invalid type "%s" for kinetics element; allowed values are "Arrhenius".' % format)
+
+	def toXML(self, document, rootElement):
+		"""
+		Create a <reaction> element as a child of `rootElement` in the XML DOM
+		tree represented by `document`, an :class:`io.XML` class. The format
+		matches the format of the :meth:`Reaction.fromXML()` function.
+		"""
+
+		# Create <species> element with id attribute
+		reactionElement = document.createElement('reaction', rootElement)
+		document.createAttribute('id', reactionElement, self.id)
+
+		# Write reactants
+		for reactant in self.reactants:
+			reactantElement = document.createElement('reactant', reactionElement)
+			document.createAttribute('ref', reactantElement, reactant.id)
+
+		# Write products
+		for product in self.products:
+			productElement = document.createElement('product', reactionElement)
+			document.createAttribute('ref', productElement, product.id)
+
+		# Write kinetics; format is to be added in kinetics class
+		for kinetics in self.kinetics:
+			kinetics.toXML(document, reactionElement, len(self.reactants))
+
+	def hasTemplate(self, reactants, products):
+		"""
+		Return :data:`True` if the reaction matches the template of `reactants`
+		and `products`, which are both lists of :class:`species.Species`
+		objects.
+		"""
+		return ((all([spec in self.reactants for spec in reactants]) and 
+			all([spec in self.products for spec in products])) or
+			(all([spec in self.products for spec in reactants]) and 
+			all([spec in self.reactants for spec in products])))
+	
 	def isUnimolecular(self):
 		"""
 		Return :data:`True` if the forward reaction has one reactant and
@@ -240,7 +388,7 @@ class Reaction:
 		return K
 
 
-	def getBestKinetics(self, T):
+	def getBestKinetics(self, T, P=1.0e5):
 		"""
 		Return the best set of ArrheniusKinetics parameters for the forward reaction
 		evaluated at the temperature `T`. This function follows the convention
@@ -304,9 +452,10 @@ class Reaction:
 		self.bestKinetics = bestKinetics
 		return self.bestKinetics
 	
-	def getRateConstant(self, T):
+	def getRateConstant(self, T, P=1.0e5):
 		"""
-		Return the value of the rate constant k(T) at the temperature `T`.
+		Return the value of the rate constant k(T) at the temperature `T`. The
+		pressure `P` in Pa is not required.
 		"""
 		kinetics = self.getBestKinetics(T)
 		if kinetics is None:
@@ -345,7 +494,8 @@ class Reaction:
 			totalConc=sum( conc.values() )
 
 		# Evaluate rate constant
-		rateConstant = self.getRateConstant(T)
+		rateConstant = self.getRateConstant(T, P)
+		if self.thirdBody: rateConstant *= totalConc
 
 		# Evaluate equilibrium constant
 		equilibriumConstant = self.getEquilibriumConstant(T, totalConc)
@@ -371,8 +521,118 @@ class Reaction:
 		# Return rate
 		return rateConstant * (forward - reverse / equilibriumConstant)
 
+	def isIsomerization(self):
+		"""
+		Return :data:`True` if the reaction is an isomerization, i.e. has the
+		form :math:`\\mathrm{A} \\rightleftharpoons \\mathrm{B}`. 
+		Returns :data:`False` otherwise.
+		"""
+		return len(self.reactants) == 1 and len(self.products) == 1
+
+	def isDissociation(self):
+		"""
+		Return :data:`True` if the reaction is a dissocition, i.e. has the
+		form :math:`\\mathrm{A} \\rightleftharpoons \\mathrm{B} + \\mathrm{C}`.
+		Returns :data:`False` otherwise.
+		"""
+		return len(self.reactants) == 1 and len(self.products) > 1
+
+	def isAssociation(self):
+		"""
+		Return :data:`True` if the reaction is an association, i.e. has the
+		form :math:`\\mathrm{A} + \\mathrm{B} \\rightleftharpoons \\mathrm{C}`.
+		Returns :data:`False` otherwise.
+		"""
+		return len(self.reactants) > 1 and len(self.products) == 1
+
+	def calculateMicrocanonicalRate(self, Elist, T, reacDensStates, prodDensStates=None):
+		"""
+		Calculate and return the microcanonical rate coefficients k(E) for the
+		forward and reverse reactions from the high-pressure limit canonical
+		rate coefficient k(T) using the inverse Laplace transform method. For
+		dissociation reactions the reverse rate coefficient is actually the
+		product of the reverse rate and the product equilibrium distribution.
+		"""
+
+		dE = Elist[1] - Elist[0]
+
+		import numpy
+		kf = numpy.zeros(len(Elist), numpy.float64)
+		kb = numpy.zeros(len(Elist), numpy.float64)
+
+		kinetics = self.getBestKinetics(T)
+
+		reacQ = numpy.sum(reacDensStates * numpy.exp(-Elist / constants.R / T))
+		if prodDensStates is not None:
+			prodQ = numpy.sum(prodDensStates * numpy.exp(-Elist / constants.R / T))
+
+		if self.isIsomerization():
+
+			kf = kineticsInverseLaplaceTransform(kinetics, self.E0, reacDensStates, Elist, T)
+			for r in range(len(Elist)):
+				if prodDensStates[r] != 0:
+					kb[r] = kf[r] * reacDensStates[r] / prodDensStates[r]
+
+		elif self.isDissociation():
+
+			kf = kineticsInverseLaplaceTransform(kinetics, self.E0, reacDensStates, Elist, T)
+			
+			Keq = self.getEquilibriumConstant(T, conc=1.0)
+			for r in range(len(Elist)):
+				kb[r] = kf[r] / Keq * reacDensStates[r] * math.exp(-Elist[r] / constants.R / T) / reacQ
+
+		elif self.isAssociation():
+
+			if self.reactant.densStates is None:
+				raise Exception('Unable to process association reaction; no density of states available for the reactant isomers.')
+
+			kf = kineticsInverseLaplaceTransform(kinetics, self.E0, reacDensStates, Elist, T)
+			for r in range(len(Elist)):
+				kf[r] *= reacDensStates[r] * math.exp(-Elist[r] / constants.R / T) / reacQ
+
+			Keq = self.getEquilibriumConstant(T, conc=1.0)
+			for r in range(len(Elist)):
+				bn = prodDensStates[r] * math.exp(-Elist[r] / constants.R / T) / prodQ
+				if bn != 0:
+					kb[r] = kf[r] / Keq / bn
+
+		return kf, kb
+
 ################################################################################
 
+class PDepReaction(Reaction):
+	"""
+	A reaction with kinetics that depend on both temperature and pressure. Much
+	of the functionality is inherited from :class:`Reaction`, with one
+	exception: as the kinetics are explicitly functions of pressure, the
+	pressure must be specified when calling :meth:`getRateConstant` and
+	:meth:`getBestKinetics`.
+	"""
+
+	def __init__(self, reactants, products, network, kinetics):
+		Reaction.__init__(self, reactants, products, None)
+		self.kinetics = kinetics
+		self.network = network
+
+	def getRateConstant(self, T, P):
+		"""
+		Return the value of the rate constant k(T) at the temperature `T` in K
+		and pressure `P` in Pa.
+		"""
+		return self.kinetics.getRateConstant(T, P)
+
+	def getBestKinetics(self, T, P):
+		"""
+		Return the best set of ArrheniusKinetics parameters for the forward
+		reaction evaluated at the temperature `T` and pressure `P`. Currently
+		this simply sets the prefactor to the value of :math:`k(T,P)` and
+		sets the other Arrhenius parameters to zero.
+		"""
+		k = float(self.getRateConstant(T, P))
+		return ArrheniusKinetics(A=k, n=0.0, Ea=0.0)
+		#return self.kinetics.getArrhenius(P)
+
+################################################################################
 
 class InvalidActionException(Exception):
 	"""
@@ -616,9 +876,9 @@ class ReactionFamily(data.Database):
 
 	def load(self, path):
 		"""
-		Load a reaction family located in the directory `path`.
+		Load a reaction family located in the directory `path`. The family
+		consists of the files::
 		
-		The family consists of the files::
 			dictionary.txt
 			tree.txt
 			library.txt
@@ -1429,7 +1689,7 @@ class ReactionFamily(data.Database):
 			products.append(spec)
 		
 		# Create reaction and add if unique
-		rxn, isNew = makeNewReaction(reactants, products, reactantStructures, productStructures, self)
+		rxn, isNew = makeNewReaction(reactants[:], products, reactantStructures, productStructures, self)
 		if isNew:	return rxn
 		else:		return None
 	
@@ -1621,6 +1881,75 @@ class ReactionFamily(data.Database):
 	
 ################################################################################
 
+def kineticsInverseLaplaceTransform(kinetics, E0, densStates, Elist, T):
+	"""
+	Apply the inverse Laplace transform to the modified Arrhenius expression
+	`kinetics` for a reaction with reactant density of states `densStates` to
+	determine the microcanonical rate coefficient over the range of energies
+	`Elist`. For :math:`n = 0` the rate is given exactly by the equation
+
+	.. math:: k(E) = A \\frac{\\rho(E - E_\\mathrm{a})}{\\rho(E)}
+
+	For :math:`n > 0` an exact expression also exists, although it is the more
+	complicated equation
+
+	.. math:: k(E) = \\frac{A}{R \\Gamma(n)} \\frac{1}{\\rho(E)} \\int_0^E (E - x)^{n-1} \\rho(x) dx
+
+	For :math:`n < 0` we opt to use the very approximate equation
+
+	.. math:: k(E) = (A T^n) \\frac{\\rho(E - E_\\mathrm{a})}{\\rho(E)}
+
+	For this last equation we also need the temperature `T` of interest.
+	"""
+
+	import numpy
+	import unirxn.states as states
+
+	if kinetics.Ea < 0.0:
+		logging.warning('Negative activation energy of %s kJ/mol encountered during unirxn calculation; setting to zero.' % (kinetics.Ea / 1000.0))
+		Ea = 0.0
+	else:
+		Ea = kinetics.Ea
+
+	dE = Elist[1] - Elist[0]
+	k = numpy.zeros(len(Elist), numpy.float64)
+
+	if kinetics.n == 0.0:
+		# Determine the microcanonical rate directly
+		s = int(math.floor(Ea / dE))
+		for r in range(len(Elist)):
+			if Elist[r] > E0 and densStates[r] != 0:
+				k[r] = kinetics.A * densStates[r - s] / densStates[r]
+
+	elif kinetics.n > 0.0:
+		import scipy.special
+		# Evaluate the inverse Laplace transform of the T**n piece, which only
+		# exists for n >= 0
+		phi = numpy.zeros(len(Elist), numpy.float64)
+		for i, E in enumerate(Elist):
+			if E == 0.0:
+				phi[i] = 0.0
+			else:
+				phi[i] = E**(kinetics.n-1) / (constants.R**kinetics.n * scipy.special.gamma(kinetics.n))
+		# Evaluate the convolution
+		states.convolve(phi, densStates, Elist)
+		# Apply to determine the microcanonical rate
+		s = int(math.floor(Ea / dE))
+		for r in range(len(Elist)):
+			if Elist[r] > E0 and densStates[r] != 0:
+				k[r] = kinetics.A * phi[r - s] / densStates[r]
+
+	else:
+		# Use the cheating method for n < 0
+		s = int(math.floor(Ea / dE))
+		for r in range(len(Elist)):
+			if Elist[r] > E0 and densStates[r] != 0:
+				k[r] = kinetics.A * T**kinetics.n * densStates[r - s] / densStates[r]
+
+	return k
+
+################################################################################
+
 class ReactionFamilySet:
 	"""
 	Represent a set of reaction families. The `families` attribute stores a
@@ -1756,24 +2085,31 @@ def makeNewReaction(reactants, products, reactantStructures, productStructures, 
 	reactants.sort()
 	products.sort()
 	
-	
 	# Check that the reaction actually results in a different set of species
 	if reactants == products:
 		return None, False
 	
+	# If a species appears in both the reactants and products, then remove it
+	speciesToRemove = []
+	for spec in reactants:
+		if spec in products:
+			speciesToRemove.append(spec)
+	for spec in speciesToRemove:
+		reactants.remove(spec)
+		products.remove(spec)
+	if len(reactants) == 0 or len(products) == 0:
+		return None, False
+
 	# Check that the reaction is unique
 	matchReaction = None
 	for rxn in reactionList:
-		# Check forward reaction for match
-		if rxn.family.label == family.label:
-			if rxn.reactants == reactants and rxn.products == products:
-				matchReaction = rxn
-				break # found a match so stop checking other rxn
-		# Check reverse reaction for match
-		if rxn.reverse.family.label == family.label:
-			if rxn.reactants == products and rxn.products == reactants:
-				matchReaction = rxn
-				break # found a match so stop checking other rxn
+		if isinstance(rxn.family, ReactionFamily) and (rxn.family.label != family.label):
+			# rxn is not from seed, and families are different
+			continue # not a match, try next rxn
+		if (rxn.reactants == reactants and rxn.products == products) or \
+			(rxn.reactants == products and rxn.products == reactants):
+			matchReaction = rxn
+			break # found a match so stop checking other rxn
 	
 	# If a match was found, take an
 	if matchReaction is not None:
@@ -1843,11 +2179,19 @@ def makeNewReaction(reactants, products, reactantStructures, productStructures, 
 	forward.kinetics = forwardKinetics
 	reverse.kinetics = reverseKinetics
 
+	return processNewReaction(rxn)
+
+def processNewReaction(rxn):
+	"""
+	Once a reaction `rxn` has been created (e.g. via :meth:`makeNewReaction`),
+	this function handles other aspects	of preparing it for RMG.
+	"""
+
 	reactionList.insert(0, rxn)
-	
+
 	# Note in the log
 	logging.debug('Created new ' + str(rxn.family) + ' reaction ' + str(rxn))
-	
+
 	# Return newly created reaction
 	return rxn, True
 

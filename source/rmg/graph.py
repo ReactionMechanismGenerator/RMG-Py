@@ -31,6 +31,10 @@
 """
 Contains an implementation of a graph data structure (the :class:`Graph` class)
 and functions for manipulating that graph, including isomorphism functions.
+
+This module can be compiled using Cython to a shared library, which provides a
+significant speed boost to running in pure Python mode.
+
 """
 
 import chem

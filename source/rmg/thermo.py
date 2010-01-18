@@ -32,6 +32,9 @@
 A module for working with the thermodynamics of chemical species. This module
 seeks to provide functionality for answering the question, "Given a species,
 what are its thermodynamics?"
+
+This module can be compiled using Cython to a shared library, which provides a
+significant speed boost to running in pure Python mode.
 """
 
 import quantities as pq
@@ -84,6 +87,22 @@ class ThermoData:
 		else:
 			return self.Tmin <= T and T <= self.Tmax
 
+	def fromXML(self, document, rootElement):
+		"""
+		Convert a <thermoData> element from a standard RMG-style XML input file
+		into a ThermoData object. `document` is an :class:`io.XML` class
+		representing the XML DOM tree, and `rootElement` is the <thermoData>
+		element in that tree.
+		"""
+
+		# Read comment attribute
+		self.comment = document.getAttribute(rootElement, 'comment', required=False, default='')
+
+		# Temperature range not currently read
+		self.Trange = [0.0, 0.0]
+		self.Tmin = 0.0
+		self.Tmax = 0.0
+
 ################################################################################
 
 class ThermoGAData(ThermoData):
@@ -96,8 +115,7 @@ class ThermoGAData(ThermoData):
 	========= ========================================================
 	`H298`    the standard enthalpy of formation at 298 K in J/mol
 	`S298`    the standard entropy of formation at 298 K in J/mol*K
-	`Cp`      the standard heat capacity in J/mol*K at 300, 400, 500,
-		      600, 800, 1000, and 1500 K
+	`Cp`      the standard heat capacity in J/mol*K at 300, 400, 500, 600, 800, 1000, and 1500 K
 	========= ========================================================
 	"""
 	# I think putting a comment with a colon just before the thing is defined
@@ -258,34 +276,44 @@ class ThermoGAData(ThermoData):
 		for i in range(len(self.Cp)): self.Cp[i] = float(self.Cp[i])
 		self.comment = comment
 	
-	def toXML(self, dom, root):
+	def fromXML(self, document, rootElement):
 		"""
-		Generate an XML representation of the thermodynamic data using the
-		:data:`xml.dom.minidom` package. The `dom` and `root` parameters
-		represent the DOM and the element in the DOM used as the parent of
-		the generated XML.
+		Convert a <thermoData> element from a standard RMG-style XML input file
+		into a ThermoGAData object. `document` is an :class:`io.XML` class
+		representing the XML DOM tree, and `rootElement` is the <thermoData>
+		element in that tree.
+		"""
+
+		# 'comment' attribute parsed by base class
+		ThermoData.fromXML(self, document, rootElement)
+
+		# Read <enthalpyOfFormation> element
+		H298 = document.getChildQuantity(rootElement, 'enthalpyOfFormation', required=True)
+		self.H298 = float(H298.simplified)
+
+		# Read <entropyOfFormation> element
+		S298 = document.getChildQuantity(rootElement, 'entropyOfFormation', required=True)
+		self.S298 = float(S298.simplified)
+
+		# Read <heatCapacities> element
+		Cp = document.getChildQuantity(rootElement, 'heatCapacities', required=True)
+		self.Cp = [float(C.simplified) for C in Cp]
+
+	def toXML(self, document, rootElement):
+		"""
+		Create a <thermoData> element as a child of `rootElement` in the XML DOM
+		tree represented by `document`, an :class:`io.XML` class. The format
+		matches the format of the :meth:`ThermoGAData.fromXML()` function.
 		"""
 		
-		thermo = dom.createElement('thermodynamics')
-		thermo.setAttribute('index', self.index)
-		thermo.setAttribute('comment', self.comment)
-		root.appendChild(thermo)
-		
-		enthalpy = dom.createElement('enthalpyOfFormation')
-		enthalpy.setAttribute('temperature', '298.0 K')
-		thermo.appendChild(enthalpy)
-		data.createXMLQuantity(dom, enthalpy, self.H298, 'J/mol')
-		
-		entropy = dom.createElement('entropyOfFormation')
-		entropy.setAttribute('temperature', '298.0 K')
-		thermo.appendChild(entropy)
-		data.createXMLQuantity(dom, entropy, self.S298, 'J/(mol*K)')
-		
-		for i, Cp in enumerate(self.Cp):
-			heatCapacity = dom.createElement('heatCapacity')
-			heatCapacity.setAttribute('temperature', '%s K' % (ThermoGAData.CpTlist[i]) )
-			thermo.appendChild(heatCapacity)
-			data.createXMLQuantity(dom, heatCapacity, Cp, 'J/(mol*K)')
+		# Create <thermoData> element
+		thermoDataElement = document.createElement('thermoData', rootElement)
+		document.createAttribute('format', thermoDataElement, 'group additivity')
+
+		document.createQuantity('enthalpyOfFormation', thermoDataElement, self.H298/1000.0, 'kJ/mol')
+		document.createQuantity('entropyOfFormation', thermoDataElement, self.S298, 'J/(mol*K)')
+		document.createQuantity('heatCapacities', thermoDataElement, self.Cp, 'J/(mol*K)')
+
 	
 ################################################################################
 
@@ -313,7 +341,7 @@ class ThermoNASAPolynomial(ThermoData):
 		self.c0, self.c1, self.c2, self.c3, self.c4, self.c5, self.c6 = coeffs
 		
 	def __repr__(self):
-		return "ThermoNASAPolynomial(%r,%r,'%s')"%(self.Trange,self.coeffs,self.comment)
+		return "ThermoNASAPolynomial(%r,%r,'%s')"%(self.Trange,(self.c0, self.c1, self.c2, self.c3, self.c4, self.c5, self.c6),self.comment)
 	def __reduce__(self):
 		return (ThermoNASAPolynomial,(self.Trange,(self.c0, self.c1, self.c2, self.c3, self.c4, self.c5, self.c6),self.comment))
 

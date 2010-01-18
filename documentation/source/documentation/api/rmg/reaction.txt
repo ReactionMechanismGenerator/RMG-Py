@@ -1,0 +1,59 @@
+***************************
+The ``rmg.reaction`` Module
+***************************
+
+.. automodule:: rmg.reaction
+
+Classes in ``rmg.reaction``
+===========================
+	
+Reaction
+--------
+
+.. autoclass:: rmg.reaction.Reaction
+	:members:
+
+ReactionFamily
+--------------
+
+.. autoclass:: rmg.reaction.ReactionFamily
+	:members:
+	
+ReactionFamilySet
+-----------------
+
+.. autoclass:: rmg.reaction.ReactionFamilySet
+	:members:
+	
+ReactionRecipe
+--------------
+
+.. autoclass:: rmg.reaction.ReactionRecipe
+	:members:
+
+PDepReaction
+------------
+
+.. autoclass:: rmg.reaction.PDepReaction
+	:members:
+
+
+
+Methods in ``rmg.reaction``
+===========================
+
+.. autofunction:: rmg.reaction.makeNewReaction
+
+
+
+Exceptions in ``rmg.reaction``
+==============================
+
+.. autoclass:: rmg.reaction.InvalidActionException
+	:members:
+
+.. autoclass:: rmg.reaction.ReactionException
+	:members:
+
+.. autoclass:: rmg.reaction.UndeterminableKineticsException
+	:members:

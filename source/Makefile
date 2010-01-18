@@ -4,26 +4,31 @@
 #
 ################################################################################
 
-all: rmg/graph.so rmg/chem.so rmg/thermo.so rmg/spectralfit.so
+#F90=gfortran
+#F2PY_FCOMPILER=gnu95
+# Alternatively:
+F90=g95
+F2PY_FCOMPILER=g95
+
+################################################################################
+
+all: cython spectral unirxn rmg/spectralfit.so
 	python setup.py build_ext --inplace
 
-rmg/graph.so: rmg/graph.c
+cython: rmg/graph.py rmg/chem.py rmg/thermo.py 
 
-rmg/graph.c: rmg/graph.py rmg/graph.pxd rmg/chem.pxd
-	cython -a rmg/graph.py
+spectral: rmg/spectralfit.so
 
-rmg/chem.so: rmg/chem.c
+unirxn: rmg/unirxn/states.so rmg/unirxn/mastereqn.so rmg/unirxn/msc.so rmg/unirxn/rs.so
 
-rmg/chem.c: rmg/chem.py rmg/chem.pxd
-	cython -a rmg/chem.py
+rmg/unirxn/%.so: rmg/unirxn/%.f90
+	make -C rmg/unirxn F90=$(F90) F2PY_FCOMPILER=$(F2PY_FCOMPILER)
 
-rmg/thermo.so: rmg/thermo.c 
-
-rmg/thermo.c: rmg/thermo.py rmg/thermo.pxd
-	cython -a rmg/thermo.py
-
-rmg/spectralfit.so: rmg/spectralfit/spectralfit.f90 rmg/spectralfit/calc_freq_code.f90 rmg/spectralfit/dqed.f90
-	make -C rmg/spectralfit
+rmg/spectralfit.so: rmg/spectralfit/*.f90
+	make -C rmg/spectralfit F90=$(F90) F2PY_FCOMPILER=$(F2PY_FCOMPILER) LDFLAGS=$(LDFLAGS)
 
 clean:
+	make -C rmg/spectralfit clean
+	make -C rmg/unirxn clean
 	rm -rf rmg/*.so rmg/*.c build/
+	

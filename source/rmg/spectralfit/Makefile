@@ -4,16 +4,6 @@
 #
 ################################################################################
 
-F90=gfortran
-F2PY_FCOMPILER=gnu95
-# Alternatively:
-# F90=g95
-# F2PY_FCOMPILER=g95
-
-LDFLAGS=-lblas -llapack
-
-################################################################################
-
 all: spectralfit.so 
 
 spectralfit.so: spectralfit.f90 calc_freq_code.o dqed.o

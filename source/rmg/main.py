@@ -45,7 +45,7 @@ import constants
 import settings
 import species
 import reaction
-
+import unirxn.network
 
 ################################################################################
 
@@ -102,11 +102,8 @@ def execute(inputFile, options):
 		import ctml_writer
 		logging.info('Loading previous restart file...')
 		f = open(os.path.join(settings.outputDirectory,'restart.pkl'), 'rb')
-		species.speciesList = cPickle.load(f)
-		species.speciesCounter = cPickle.load(f)
-		reaction.reactionList = cPickle.load(f)
-		reactionModel = cPickle.load(f)
-		reactionSystems = cPickle.load(f)
+		species.speciesList, species.speciesCounter, reaction.reactionList, \
+			reactionModel, reactionSystems = cPickle.load(f)
 		f.close()
 		# Cantera stuff
 		reload(ctml_writer) # ensure new empty ctml_writer._species and ._reactions lists
@@ -133,42 +130,60 @@ def execute(inputFile, options):
 	restartSize = []
 	memoryUse = []
 
+	# Handle unimolecular (pressure dependent) reaction networks
+	if settings.unimolecularReactionNetworks:
+		reactionModel.updateUnimolecularReactionNetworks()
+		logging.info('')
+
 	# Main RMG loop
 	done = False
 	while not done:
 
 		done = True
-		speciesToAdd = []
+		objectsToEnlarge = []
 		for index, reactionSystem in enumerate(reactionSystems):
 			
 			# Conduct simulation
 			logging.info('Conducting simulation of reaction system %s...' % (index+1))
-			t, y, dydt, valid, spec = reactionSystem.simulate(reactionModel)
-
+			t, y, dydt, valid, obj = reactionSystem.simulate(reactionModel)
+			
 			# Postprocess results
+			logging.info('')
 			logging.info('Saving simulation results for reaction system %s...' % (index+1))
 			reactionSystem.postprocess(reactionModel, t, y, dydt, str(index+1))
 
 			# If simulation is invalid, note which species should be added to
 			# the core
 			if not valid:
-				speciesToAdd.append(spec)
+				objectsToEnlarge.append(obj)
 				done = False
 
-		# Add the notes species to the core
-		speciesToAdd = list(set(speciesToAdd))
-		for spec in speciesToAdd:
-			reactionModel.enlarge(spec)
+		# Enlarge objects identified by the simulation for enlarging
+		# These should be Species or Network objects
+		logging.info('')
+		objectsToEnlarge = list(set(objectsToEnlarge))
+		for object in objectsToEnlarge:
+			reactionModel.enlarge(object)
 		
+		# Handle unimolecular (pressure dependent) reaction networks
+		if settings.unimolecularReactionNetworks:
+			reactionModel.updateUnimolecularReactionNetworks()
+			logging.info('')
+
 		# Save the restart file
+		# In order to get all the references preserved, you must pickle all of
+		# the objects in one concerted dump; this also has the added benefits
+		# of using less space and running faster
 		import cPickle
 		logging.info('Saving restart file...')
 		f = open(os.path.join(settings.outputDirectory,'restart.pkl'), 'wb')
-		cPickle.dump(species.speciesList, f)
-		cPickle.dump(species.speciesCounter, f)
-		cPickle.dump(reaction.reactionList, f)
-		cPickle.dump(reactionModel, f)
-		cPickle.dump(reactionSystems, f)
+		cPickle.dump((
+			species.speciesList,
+			species.speciesCounter,
+			reaction.reactionList,
+			reactionModel,
+			reactionSystems),
+			f)
 		f.close()
 
 		if not done:
@@ -198,6 +213,7 @@ def execute(inputFile, options):
 	io.writeOutputFile(os.path.join(settings.outputDirectory,'output.xml'), reactionModel, reactionSystems)
 
 	# Log end timestamp
+	logging.info('')
 	logging.info('RMG execution terminated at ' + time.asctime())
 	
 ################################################################################

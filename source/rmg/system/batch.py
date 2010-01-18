@@ -38,8 +38,10 @@ import math
 import logging
 import numpy
 
-from .. import settings, ctml_writer, model
-from .. import model as modelmodule
+import rmg.settings as settings
+import rmg.ctml_writer as ctml_writer
+import rmg.model as modelmodule
+import rmg.reaction as reaction
 from base import ReactionSystem
 
 ################################################################################
@@ -197,7 +199,10 @@ class BatchReactor(ReactionSystem):
 		gas.set(T=self.initialTemperature, P=self.initialPressure)
 
 		# create a batch reactor
-		reactor = Cantera.Reactor.Reactor(gas, volume=self.volume)
+		if self.heatTransferCoeff == 1.0e100:
+			reactor = Cantera.Reactor.Reactor(gas, volume=self.volume, energy='off')
+		else:
+			reactor = Cantera.Reactor.Reactor(gas, volume=self.volume)
 
 		# set the inital environment conditions
 		gasAir = Cantera.Air()
@@ -216,6 +221,7 @@ class BatchReactor(ReactionSystem):
 
 		# put reactor in a reactor network so it can be integrated
 		sim = Cantera.Reactor.ReactorNet([reactor])
+		sim.setTolerances(atol=model.absoluteTolerance, rtol=model.relativeTolerance)
 
 		#import pdb; pdb.set_trace()
 		return sim, gas
@@ -226,7 +232,7 @@ class BatchReactor(ReactionSystem):
 		currently achieved by simply choosing a very large heat transfer
 		coefficient.
 		"""
-		self.heatTransferCoeff = 1.0e15
+		self.heatTransferCoeff = 1.0e100
 
 	def setAdiabatic(self):
 		"""
@@ -280,7 +286,9 @@ class BatchReactor(ReactionSystem):
 		stoichiometry = model.getStoichiometryMatrix()
 
 		tlist = []; ylist = []; dydtlist = []
-		maxRelativeFluxes = numpy.zeros(len(model.core.species) + len(model.edge.species), float)
+		maxRelativeSpeciesFluxes = numpy.zeros(len(model.core.species) + len(model.edge.species), float)
+
+		maxRelativeNetworkLeakFluxes = numpy.zeros(len(model.unirxnNetworks), float)
 
 		endtime = 10.0 # default. check for user value:
 		for target in model.termination:
@@ -309,29 +317,20 @@ class BatchReactor(ReactionSystem):
 #		dydtlist.append(self.getResidual(0.0, y0, model, stoichiometry))
 
 		done = False
-		first_step = True
+		time = 0.0
 		while not done:
 
 			# Conduct integration
-			if first_step:
-				first_step = False # don't integrate on first time through, just do the validity checking and result reporting
-			else:
-				# Uses a fixed (on a log scale) time step
-				nexttime = min(endtime,time*1.2589254117941673)
-				try:
-					# advance cantera one step
-					if sim.step(endtime) < endtime:
-						# didn't get to endtime, so take another step
-						if sim.step(endtime) < nexttime:
-							# still didn't get to endtime, so advance to nextime
-							sim.advance(nexttime)
-#				# Uses the same time steps that the Cantera solver used
-#				try:
-#					sim.step(endtime)
-				except Exception, e:
-					logging.exception("Ignoring Cantera error")
-					logging.debug(e.message)
-					pass
+			# Uses a fixed (on a log scale) time step
+			nexttime = min(endtime,time*1.2589254117941673)
+			# advance cantera one step
+			if sim.step(endtime) < endtime:
+				# didn't get to endtime, so take another step
+				if sim.step(endtime) < nexttime:
+					# still didn't get to endtime, so advance to nextime
+					sim.advance(nexttime)
+#			# Uses the same time steps that the Cantera solver used
+#			sim.step(endtime)
 
 			# Get state at current time
 			time = sim.time()
@@ -342,27 +341,40 @@ class BatchReactor(ReactionSystem):
 			# RMG thinks in mol/m^3
 			Ni = gas.molarDensity()*1000.0 * gas.moleFractions() * V
 			y = [P, V, T]; y.extend(Ni)
-
+			
 			# Calculate species fluxes of all core and edge species at the
 			# current time
 			dNidt = self.getSpeciesFluxes(model, P, V, T, Ni, stoichiometry)
-
+			
 			# Determine characteristic species flux
 			charFlux = math.sqrt(sum([x*x for x in dNidt[0:len(model.core.species)]]))
 
 			# Store the highest relative flux for each species
 			for i in range(len(dNidt)):
-				if maxRelativeFluxes[i] < abs(dNidt[i])/charFlux:
-					maxRelativeFluxes[i] = abs(dNidt[i])/charFlux
+				if maxRelativeSpeciesFluxes[i] < abs(dNidt[i])/charFlux:
+					maxRelativeSpeciesFluxes[i] = abs(dNidt[i])/charFlux
 
 			# Test for model validity
 			criticalFlux = charFlux * model.fluxToleranceInterrupt
-			valid, maxSpecies, maxSpeciesFlux = self.isModelValid(model, dNidt, criticalFlux)
+			edgeValid, maxSpecies, maxSpeciesFlux = self.isModelValid(model, dNidt, criticalFlux)
 
-			# invalid if core empty
-			if len(model.core.reactions)==0:
-				logging.info("No reactions in core yet. Not running simulation.")
-				valid=False
+			# Test leak fluxes of unimolecular networks
+			if settings.unimolecularReactionNetworks:
+				maxNetwork = None; maxNetworkFlux = 0.0
+				# Get current leak fluxes of all unimolecular reaction networks
+				networkLeakFluxes = self.getNetworkLeakFluxes(model, P, V, T, Ni, criticalFlux)
+				for i in range(len(networkLeakFluxes)):
+					if maxRelativeNetworkLeakFluxes[i] < abs(networkLeakFluxes[i]) / criticalFlux:
+						maxRelativeNetworkLeakFluxes[i] = abs(networkLeakFluxes[i]) / criticalFlux
+					if networkLeakFluxes[i] > maxNetworkFlux or maxNetwork is None:
+						maxNetwork = model.unirxnNetworks[i]
+						maxNetworkFlux = networkLeakFluxes[i]
+				networksValid = (maxNetworkFlux <= criticalFlux)
+
+			else:
+				networksValid = True
+				maxNetwork = None
+				maxNetworkFlux = 0.0
 
 			# Output information about simulation at current time
 			self.printSimulationStatus(model, time, y, y0, charFlux, maxSpeciesFlux/charFlux, maxSpecies)
@@ -370,19 +382,22 @@ class BatchReactor(ReactionSystem):
 			#dydtlist.append(self.getResidual(time, solver.y, model, stoichiometry))
 
 			# Exit simulation if model is not valid (exceeds interruption criterion)
-			if not valid:
-				logging.info('At t = %s, an edge species flux exceeds the critical flux for simulation interruption' % (time))
-				logging.info('\tCharacteristic flux: %s' % (charFlux))
-				logging.info('\tCritical flux: %s (%s times charFlux)' % (criticalFlux, model.fluxToleranceInterrupt))
-				logging.info('\tSpecies flux for %s: %s (%.2g times charFlux)' % (maxSpecies, maxSpeciesFlux, maxSpeciesFlux/charFlux))
-				logging.info('')
-				#for i in range(len(dNidt)):
-				#	if i < len(model.core.species):
-				#		print model.core.species[i], maxSpeciesFluxes[i]
-				#	else:
-				#		print model.edge.species[i-len(model.core.species)], maxSpeciesFluxes[i]
+			if not edgeValid or not networksValid:
 				print gas
-				return tlist, ylist, dydtlist, False, maxSpecies
+				logging.info('')
+				# Choose the item with the maximum flux and act on it
+				if maxSpeciesFlux >= maxNetworkFlux:
+					logging.info('At t = %s, an edge species flux exceeds the critical flux for simulation interruption' % (time))
+					logging.info('\tCharacteristic flux: %s' % (charFlux))
+					logging.info('\tCritical flux: %s (%s times charFlux)' % (criticalFlux, model.fluxToleranceInterrupt))
+					logging.info('\tSpecies flux for %s: %s (%.2g times charFlux)' % (maxSpecies, maxSpeciesFlux, maxSpeciesFlux/charFlux))
+					return tlist, ylist, dydtlist, False, maxSpecies
+				else:
+					logging.info('At t = %s, a network leak flux exceeds the critical flux for simulation interruption' % (time))
+					logging.info('\tCharacteristic flux: %s' % (charFlux))
+					logging.info('\tCritical flux: %s (%s times charFlux)' % (criticalFlux, model.fluxToleranceInterrupt))
+					logging.info('\tNetwork leak flux for %s: %s (%.2g times charFlux)' % (maxNetwork, maxNetworkFlux, maxNetworkFlux/charFlux))
+					return tlist, ylist, dydtlist, False, maxNetwork
 
 			# Test for simulation completion
 			for target in model.termination:
@@ -395,62 +410,80 @@ class BatchReactor(ReactionSystem):
 
 		logging.info(str(gas))
 
-		# Test for model validity once simulation complete
-		maxSpecies = None
-		maxRelativeFlux = 0.0
-		speciesToRemove = []
-		maxRelativeFluxes_dict = {}
-		for i in range(len(model.core.species), len(maxRelativeFluxes)):
-			sp = model.edge.species[i - len(model.core.species)]
+		# Compare maximum species fluxes
+		maxRelativeSpeciesFlux = 0.0; maxSpecies = None
+		speciesToRemove = []; maxRelativeFluxes_dict = {}
+		for i in range(len(model.core.species), len(maxRelativeSpeciesFluxes)):
+			spec = model.edge.species[i - len(model.core.species)]
 			# pick out the single highest-flux edge species
-			if maxRelativeFluxes[i] > maxRelativeFlux:
-				maxRelativeFlux = maxRelativeFluxes[i]
-				maxSpecies = sp
+			if maxRelativeSpeciesFluxes[i] > maxRelativeSpeciesFlux:
+				maxRelativeSpeciesFlux = maxRelativeSpeciesFluxes[i]
+				maxSpecies = spec
 			# mark for removal those species whose flux is always too low
-			if maxRelativeFluxes[i] < model.fluxToleranceKeepInEdge:
-				speciesToRemove.append(sp)
+			if maxRelativeSpeciesFluxes[i] < model.fluxToleranceKeepInEdge:
+				speciesToRemove.append(spec)
 			# put max relative flux in dictionary
-			maxRelativeFluxes_dict[sp] = maxRelativeFluxes[i]
+			maxRelativeFluxes_dict[spec] = maxRelativeSpeciesFluxes[i]
+		edgeValid = maxRelativeSpeciesFlux <= model.fluxToleranceMoveToCore
+
+		# Compare maximum network leak fluxes
+		maxRelativeNetworkLeakFlux = 0.0; maxNetwork = None
+		if settings.unimolecularReactionNetworks:
+			# Compare maximum species fluxes
+			for i in range(len(model.unirxnNetworks)):
+				# pick out the single highest-flux edge species
+				if maxRelativeNetworkLeakFluxes[i] > maxRelativeNetworkLeakFlux or maxNetwork is None:
+					maxRelativeNetworkLeakFlux = maxRelativeNetworkLeakFluxes[i]
+					maxNetwork = model.unirxnNetworks[i]
+			networksValid = maxRelativeNetworkLeakFlux < model.fluxToleranceMoveToCore
+		else:
+			networksValid = True
 
 		def removalSortKey(sp):
 			return maxRelativeFluxes_dict[sp]
 		speciesToRemove.sort(key=removalSortKey)
 
-		# trim the edge according to fluxToleranceKeepInEdge
-		logging.info("Removing from edge %d/%d species whose relative flux never exceeded %s"%(
-			len(speciesToRemove),len(model.edge.species),model.fluxToleranceKeepInEdge ) )
-		logging.info("Max. rel. flux.\tSpecies")
-		for sp in speciesToRemove:
-			logging.info("%-10.3g    \t%s"%(maxRelativeFluxes_dict[sp], sp))
-			model.removeSpeciesFromEdge(sp)
+		# If model is not valid at these criteria, then return
+		if not edgeValid or not networksValid:
 
-		# trim the edge according to maximumEdgeSpecies
-		if len(model.edge.species)> model.maximumEdgeSpecies:
-			logging.info("Removing from edge %d/%d species to reach maximum edge size of %s species"%(
-				len(model.edge.species)-model.maximumEdgeSpecies,
-				len(model.edge.species),
-				model.maximumEdgeSpecies ) )
-			edgeSpeciesCopy = model.edge.species[:]
-			edgeSpeciesCopy.sort(key=removalSortKey)
+			# trim the edge according to fluxToleranceKeepInEdge
+			logging.info("Removing from edge %d/%d species whose relative flux never exceeded %s"%(
+				len(speciesToRemove),len(model.edge.species),model.fluxToleranceKeepInEdge ) )
 			logging.info("Max. rel. flux.\tSpecies")
-			while len(model.edge.species)>model.maximumEdgeSpecies:
-				sp = edgeSpeciesCopy.pop(0)
+			for sp in speciesToRemove:
 				logging.info("%-10.3g    \t%s"%(maxRelativeFluxes_dict[sp], sp))
 				model.removeSpeciesFromEdge(sp)
 
-		if maxRelativeFlux > model.fluxToleranceMoveToCore:
-			logging.info('At some time the species flux for %s exceeded the critical flux\nrelative to the characteristic core flux at that time' % (maxSpecies))
-			logging.info('\tCritical Relative flux: %s' % (model.fluxToleranceMoveToCore))
-			logging.info('\tHighest Relative flux for %s: %s ' % (maxSpecies, maxRelativeFlux))
+			# trim the edge according to maximumEdgeSpecies
+			if len(model.edge.species)> model.maximumEdgeSpecies:
+				logging.info("Removing from edge %d/%d species to reach maximum edge size of %s species"%(
+					len(model.edge.species)-model.maximumEdgeSpecies,
+					len(model.edge.species),
+					model.maximumEdgeSpecies ) )
+				edgeSpeciesCopy = model.edge.species[:]
+				edgeSpeciesCopy.sort(key=removalSortKey)
+				logging.info("Max. rel. flux.\tSpecies")
+				while len(model.edge.species)>model.maximumEdgeSpecies:
+					sp = edgeSpeciesCopy.pop(0)
+					logging.info("%-10.3g    \t%s"%(maxRelativeFluxes_dict[sp], sp))
+					model.removeSpeciesFromEdge(sp)
+
+			criticalFlux = charFlux * model.fluxToleranceMoveToCore
+			print gas
 			logging.info('')
-
-			return tlist, ylist, dydtlist, False, maxSpecies
-
-		#for i in range(len(model.core.species), len(dNidt)):
-			#		if i < len(model.core.species):
-			#			print model.core.species[i], maxSpeciesFluxes[i]
-			#		else:
-			#			print model.edge.species[i-len(model.core.species)], maxSpeciesFluxes[i]
+			# Choose the item with the maximum flux and act on it
+			if maxSpeciesFlux >= maxNetworkFlux:
+				logging.info('At some time the species flux for %s exceeded the critical flux\nrelative to the characteristic core flux at that time' % (maxSpecies))
+				logging.info('\tCharacteristic flux: %s' % (charFlux))
+				logging.info('\tCritical flux: %s (%s times charFlux)' % (criticalFlux, model.fluxToleranceMoveToCore))
+				logging.info('\tSpecies flux for %s: %s (%.2g times charFlux)' % (maxSpecies, maxSpeciesFlux, maxSpeciesFlux/charFlux))
+				return tlist, ylist, dydtlist, False, maxSpecies
+			else:
+				logging.info('At some time the network leak flux for %s exceeded the critical flux\nrelative to the characteristic core flux at that time' % (maxNetwork))
+				logging.info('\tCharacteristic flux: %s' % (charFlux))
+				logging.info('\tCritical flux: %s (%s times charFlux)' % (criticalFlux, model.fluxToleranceMoveToCore))
+				logging.info('\tNetwork leak flux for %s: %s (%.2g times charFlux)' % (maxNetwork, maxNetworkFlux, maxNetworkFlux/charFlux))
+				return tlist, ylist, dydtlist, False, maxNetwork
 
 		return tlist, ylist, dydtlist, True, None
 
@@ -472,8 +505,6 @@ class BatchReactor(ReactionSystem):
 				status += '    %8.4g' % (conversion)
 		status += '    %8.4e    %8.4g  %s' % (charFlux, maxSpeciesFlux, maxSpecies)
 		logging.debug(status)
-
-		#print t, P, V, T, Ni
 
 	def postprocess(self, model, t, y, dydt, label=''):
 		"""
@@ -536,7 +567,7 @@ class BatchReactor(ReactionSystem):
 		pylab.savefig(settings.outputDirectory + '/plot/concentrationProfile' + label + '.svg')
 		pylab.clf()
 
-		## Make species flux plot and save to file
+## Make species flux plot and save to file
 		#try:
 		#	pylab.loglog(t[1:], abs(dydt0[1:,3:len(model.core.species)+3]))
 		#	pylab.xlabel('Time (s)')
@@ -595,4 +626,22 @@ class BatchReactor(ReactionSystem):
 		# maxSpeciesFlux, maxSpeciesIndex = max([ (value, i+len(model.core.species)) for i, value in enumerate(dNidt[len(model.core.species):]) ])
 		# return (maxSpeciesFlux < criticalFlux), speciesList[maxSpeciesIndex], maxSpeciesFlux
 
+	def getNetworkLeakFluxes(self, model, P, V, T, Ni, criticalFlux):
+		"""
+		Returns :data:`True` if `model` is valid given the set of species fluxes
+		`dNidt` and the critical flux `criticalFlux`.
+		Also returns the edge species whose flux is greatest, and that flux.
+		"""
 
+		import rmg.reaction as reaction
+
+		conc = {}; totalConc = 0.0
+		for i, spec in enumerate(model.core.species):
+			conc[spec] = Ni[i] / V
+			totalConc += conc[spec]
+
+		leakFluxes = numpy.zeros(len(model.unirxnNetworks), numpy.float64)
+		for i, network in enumerate(model.unirxnNetworks):
+			leakFluxes[i] = network.getLeakFlux(T, P, conc, totalConc)
+		return leakFluxes
+		

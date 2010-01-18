@@ -1,0 +1,363 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<rmginput>
+	<!-- A title for the job -->
+	<title>acetyl + oxygen atmospheric reaction</title>
+	<!-- Data sources -->
+	<databaseList>
+		<database type="general">RMG_database</database>
+	</databaseList>
+	<!-- A list of all of the species involved -->
+	<speciesList>
+		<species id="acetylperoxy" label="acetylperoxy" reactive="yes">
+			<structure format="smiles">CC(=O)O[O]</structure>
+			<thermoData format="group additivity">
+				<enthalpyOfFormation units="kcal/mol">-38.57</enthalpyOfFormation>
+				<entropyOfFormation units="cal/(mol*K)">75.56</entropyOfFormation>
+				<heatCapacities units="cal/(mol*K)">19.31 22.60 25.48 27.86 31.40 33.82 37.27</heatCapacities>
+			</thermoData>
+			<lennardJones>
+				<sigma units="m">5.09e-10</sigma>
+				<epsilon units="J">6.53e-21</epsilon>
+			</lennardJones>	
+			<groundStateEnergy units="kcal/mol">-38.57</groundStateEnergy>
+			<spectralData>
+				<frequencyScaleFactor>0.9954</frequencyScaleFactor>
+				<harmonicOscillator>
+					<frequency units="cm^-1">321.607</frequency>
+				</harmonicOscillator>
+				<harmonicOscillator>
+					<frequency units="cm^-1">503.468</frequency>
+				</harmonicOscillator>
+				<harmonicOscillator>
+					<frequency units="cm^-1">539.885</frequency>
+				</harmonicOscillator>
+				<harmonicOscillator>
+					<frequency units="cm^-1">547.148</frequency>
+				</harmonicOscillator>
+				<harmonicOscillator>
+					<frequency units="cm^-1">731.506</frequency>
+				</harmonicOscillator>
+				<harmonicOscillator>
+					<frequency units="cm^-1">979.187</frequency>
+				</harmonicOscillator>
+				<harmonicOscillator>
+					<frequency units="cm^-1">1043.981</frequency>
+				</harmonicOscillator>
+				<harmonicOscillator>
+					<frequency units="cm^-1">1126.416</frequency>
+				</harmonicOscillator>
+				<harmonicOscillator>
+					<frequency units="cm^-1">1188.619</frequency>
+				</harmonicOscillator>
+				<harmonicOscillator>
+					<frequency units="cm^-1">1399.432</frequency>
+				</harmonicOscillator>
+				<harmonicOscillator>
+					<frequency units="cm^-1">1458.200</frequency>
+				</harmonicOscillator>
+				<harmonicOscillator>
+					<frequency units="cm^-1">1463.423</frequency>
+				</harmonicOscillator>
+				<harmonicOscillator>
+					<frequency units="cm^-1">1881.701</frequency>
+				</harmonicOscillator>
+				<harmonicOscillator>
+					<frequency units="cm^-1">3055.285</frequency>
+				</harmonicOscillator>
+				<harmonicOscillator>
+					<frequency units="cm^-1">3115.447</frequency>
+				</harmonicOscillator>
+				<harmonicOscillator>
+					<frequency units="cm^-1">3155.144</frequency>
+				</harmonicOscillator>
+				<hinderedRotor>
+					<frequency units="cm^-1">139.4</frequency>
+					<barrier units="cm^-1">2139.3</barrier>
+				</hinderedRotor>
+				<hinderedRotor>
+					<frequency units="cm^-1">159.2</frequency>
+					<barrier units="cm^-1">425.8</barrier>
+				</hinderedRotor>
+				<symmetryNumber>3</symmetryNumber>
+			</spectralData>
+		</species>
+		<species id="hydroperoxylvinoxy" label="hydroperoxylvinoxy" reactive="yes">
+			<structure format="smiles">[CH2]C(=O)OO</structure>
+			<thermoData format="group additivity">
+				<enthalpyOfFormation units="kcal/mol">-32.95</enthalpyOfFormation>
+				<entropyOfFormation units="cal/(mol*K)">79.25</entropyOfFormation>
+				<heatCapacities units="cal/(mol*K)">21.56 25.12 28.02 30.26 33.35 35.37 38.23</heatCapacities>
+			</thermoData>
+			<lennardJones>
+				<sigma units="m">5.09e-10</sigma>
+				<epsilon units="J">6.53e-21</epsilon>
+			</lennardJones>
+			<groundStateEnergy units="kcal/mol">-32.95</groundStateEnergy>
+			<spectralData>
+				<frequencyScaleFactor>0.9954</frequencyScaleFactor>
+				<harmonicOscillator>
+					<frequency units="cm^-1">320.665</frequency>
+				</harmonicOscillator>
+				<harmonicOscillator>
+					<frequency units="cm^-1">423.425</frequency>
+				</harmonicOscillator>
+				<harmonicOscillator>
+					<frequency units="cm^-1">670.208</frequency>
+				</harmonicOscillator>
+				<harmonicOscillator>
+					<frequency units="cm^-1">680.006</frequency>
+				</harmonicOscillator>
+				<harmonicOscillator>
+					<frequency units="cm^-1">757.327</frequency>
+				</harmonicOscillator>
+				<harmonicOscillator>
+					<frequency units="cm^-1">869.833</frequency>
+				</harmonicOscillator>
+				<harmonicOscillator>
+					<frequency units="cm^-1">1004.445</frequency>
+				</harmonicOscillator>
+				<harmonicOscillator>
+					<frequency units="cm^-1">1025.639</frequency>
+				</harmonicOscillator>
+				<harmonicOscillator>
+					<frequency units="cm^-1">1243.606</frequency>
+				</harmonicOscillator>
+				<harmonicOscillator>
+					<frequency units="cm^-1">1446.509</frequency>
+				</harmonicOscillator>
+				<harmonicOscillator>
+					<frequency units="cm^-1">1494.622</frequency>
+				</harmonicOscillator>
+				<harmonicOscillator>
+					<frequency units="cm^-1">1697.996</frequency>
+				</harmonicOscillator>
+				<harmonicOscillator>
+					<frequency units="cm^-1">3164.246</frequency>
+				</harmonicOscillator>
+				<harmonicOscillator>
+					<frequency units="cm^-1">3282.391</frequency>
+				</harmonicOscillator>
+				<harmonicOscillator>
+					<frequency units="cm^-1">3454.878</frequency>
+				</harmonicOscillator>
+				<hinderedRotor>
+					<frequency units="cm^-1">336.8470</frequency>
+					<barrier units="cm^-1">2189.5</barrier>
+				</hinderedRotor>
+				<hinderedRotor>
+					<frequency units="cm^-1">205.3497</frequency>
+					<barrier units="cm^-1">5153.4</barrier>
+				</hinderedRotor>
+				<hinderedRotor>
+					<frequency units="cm^-1">321.8729</frequency>
+					<barrier units="cm^-1">1672.3</barrier>
+				</hinderedRotor>
+				<symmetryNumber>3</symmetryNumber>
+			</spectralData>
+		</species>
+		<species id="acetyl" label="acetyl" reactive="yes">
+			<structure format="smiles">C[C]=O</structure>
+			<thermoData format="group additivity">
+				<enthalpyOfFormation units="kcal/mol">-3.08</enthalpyOfFormation>
+				<entropyOfFormation units="cal/(mol*K)">64.27</entropyOfFormation>
+				<heatCapacities units="cal/(mol*K)">12.03 14.03 15.98 17.72 20.56 22.72 26.09</heatCapacities>
+			</thermoData>
+			<groundStateEnergy units="kcal/mol">-3.08</groundStateEnergy>
+			<spectralData>
+				<frequencyScaleFactor>0.9954</frequencyScaleFactor>
+				<harmonicOscillator>
+					<frequency units="cm^-1">468.721</frequency>
+				</harmonicOscillator>
+				<harmonicOscillator>
+					<frequency units="cm^-1">850.542</frequency>
+				</harmonicOscillator>
+				<harmonicOscillator>
+					<frequency units="cm^-1">1019.780</frequency>
+				</harmonicOscillator>
+				<harmonicOscillator>
+					<frequency units="cm^-1">1047.618</frequency>
+				</harmonicOscillator>
+				<harmonicOscillator>
+					<frequency units="cm^-1">1356.471</frequency>
+				</harmonicOscillator>
+				<harmonicOscillator>
+					<frequency units="cm^-1">1447.023</frequency>
+				</harmonicOscillator>
+				<harmonicOscillator>
+					<frequency units="cm^-1">1455.521</frequency>
+				</harmonicOscillator>
+				<harmonicOscillator>
+					<frequency units="cm^-1">1917.998</frequency>
+				</harmonicOscillator>
+				<harmonicOscillator>
+					<frequency units="cm^-1">3010.250</frequency>
+				</harmonicOscillator>
+				<harmonicOscillator>
+					<frequency units="cm^-1">3099.408</frequency>
+				</harmonicOscillator>
+				<harmonicOscillator>
+					<frequency units="cm^-1">3102.216</frequency>
+				</harmonicOscillator>
+				<hinderedRotor>
+					<frequency units="cm^-1">112.4</frequency>
+					<barrier units="cm^-1">176.4</barrier>
+				</hinderedRotor>
+				<symmetryNumber>3</symmetryNumber>
+			</spectralData>
+		</species>
+		<species id="ketene" label="ketene" reactive="no">
+			<structure format="smiles">C=C=O</structure>
+			<thermoData format="group additivity">
+				<enthalpyOfFormation units="kcal/mol">-11.8</enthalpyOfFormation>
+				<entropyOfFormation units="cal/(mol*K)">57.57</entropyOfFormation>
+				<heatCapacities units="cal/(mol*K)">12.26 14.10 15.61 16.85 18.81 20.29 22.61</heatCapacities>
+			</thermoData>
+			<groundStateEnergy units="kcal/mol">-11.8</groundStateEnergy>
+		</species>
+		<species id="lactone" label="lactone" reactive="no">
+			<structure format="smiles">[CH2]C(=O)[O]</structure>
+			<thermoData format="group additivity">
+				<enthalpyOfFormation units="kcal/mol">-14.87</enthalpyOfFormation>
+				<entropyOfFormation units="cal/(mol*K)">66.14</entropyOfFormation>
+				<heatCapacities units="cal/(mol*K)">14.53 17.17 19.34 21.10 23.69 25.50 28.17</heatCapacities>
+			</thermoData>
+			<groundStateEnergy units="kcal/mol">-14.87</groundStateEnergy>
+		</species>
+		<species id="epoxide" label="epoxide" reactive="no">
+			<structure format="smiles">C1OC1(=O)</structure>
+			<thermoData format="group additivity">
+				<enthalpyOfFormation units="kcal/mol">-44.42</enthalpyOfFormation>
+				<entropyOfFormation units="cal/(mol*K)">62.29</entropyOfFormation>
+				<heatCapacities units="cal/(mol*K)">11.95 14.65 17.06 19.06 22.10 24.24 27.42</heatCapacities>
+			</thermoData>
+			<groundStateEnergy units="kcal/mol">-44.42</groundStateEnergy>
+		</species>
+		<species id="oxygen" label="oxygen" reactive="yes">
+			<structure format="smiles">O=O</structure>
+			<thermoData format="group additivity">
+				<enthalpyOfFormation units="kcal/mol">0.00</enthalpyOfFormation>
+				<entropyOfFormation units="cal/(mol*K)">49.03</entropyOfFormation>
+				<heatCapacities units="cal/(mol*K)">7.00 7.22 7.44 7.65 8.07 8.35 8.72</heatCapacities>
+			</thermoData>
+			<groundStateEnergy units="kcal/mol">0.00</groundStateEnergy>
+			<spectralData>
+				<frequencyScaleFactor>0.9954</frequencyScaleFactor>
+				<harmonicOscillator>
+					<frequency units="cm^-1">1635.12</frequency>
+				</harmonicOscillator>
+				<symmetryNumber>2</symmetryNumber>
+			</spectralData>
+		</species>
+		<species id="hydroxyl" label="hydroxyl" reactive="no">
+			<structure format="smiles">[OH]</structure>
+			<thermoData format="group additivity">
+				<enthalpyOfFormation units="kcal/mol">8.91</enthalpyOfFormation>
+				<entropyOfFormation units="cal/(mol*K)">43.91</entropyOfFormation>
+				<heatCapacities units="cal/(mol*K)">7.16 7.09 7.06 7.06 7.15 7.33 7.88</heatCapacities>
+			</thermoData>
+			<groundStateEnergy units="kcal/mol">8.91</groundStateEnergy>
+		</species>
+		<species id="hydroperoxyl" label="hydroperoxyl" reactive="no">
+			<structure format="smiles">O[O]</structure>
+			<thermoData format="group additivity">
+				<enthalpyOfFormation units="kcal/mol">2.32</enthalpyOfFormation>
+				<entropyOfFormation units="cal/(mol*K)">54.76</entropyOfFormation>
+				<heatCapacities units="cal/(mol*K)">8.43 8.76 9.27 10.02 10.75 11.56 12.96</heatCapacities>
+			</thermoData>
+			<groundStateEnergy units="kcal/mol">2.32</groundStateEnergy>
+		</species>
+		<species id="nitrogen" label="nitrogen" reactive="no">
+			<structure format="smiles">N#N</structure>
+			<lennardJones>
+				<sigma units="m">3.70e-10</sigma>
+				<epsilon units="J">1.31e-21</epsilon>
+			</lennardJones>
+			<expDownParam units="kcal/mol">4.86</expDownParam>
+		</species>
+	</speciesList>
+	<!-- A list of all of the path reactions in the network -->
+	<reactionList>
+		<reaction id="rxn1">
+			<reactant ref="acetyl"/>
+			<reactant ref="oxygen"/>
+			<product ref="acetylperoxy"/>
+			<kinetics type="Arrhenius">
+				<preexponential units="m^3/(mol*s)">2.65e6</preexponential>
+				<exponent units="">0.00</exponent>
+				<activationEnergy units="kcal/mol">0.0</activationEnergy>
+			</kinetics>
+		</reaction>
+		<reaction id="rxn2">
+			<reactant ref="acetylperoxy"/>
+			<product ref="hydroperoxylvinoxy"/>
+			<kinetics type="Arrhenius">
+				<preexponential units="s^-1">1.29e6</preexponential>
+				<exponent units="">2.00</exponent>
+				<activationEnergy units="kcal/mol">24.57</activationEnergy>
+			</kinetics>
+		</reaction>
+		<reaction id="rxn3">
+			<reactant ref="acetylperoxy"/>
+			<product ref="ketene"/>
+			<product ref="hydroperoxyl"/>
+			<kinetics type="Arrhenius">
+				<preexponential units="s^-1">9.47e9</preexponential>
+				<exponent units="">1.17</exponent>
+				<activationEnergy units="kcal/mol">34.45</activationEnergy>
+			</kinetics>
+		</reaction>
+		<reaction id="rxn4">
+			<reactant ref="hydroperoxylvinoxy"/>
+			<product ref="epoxide"/>
+			<product ref="hydroxyl"/>
+			<kinetics type="Arrhenius">
+				<preexponential units="s^-1">4.87e13</preexponential>
+				<exponent units="">-0.29</exponent>
+				<activationEnergy units="kcal/mol">20.77</activationEnergy>
+			</kinetics>
+		</reaction>
+		<reaction id="rxn5">
+			<reactant ref="hydroperoxylvinoxy"/>
+			<product ref="ketene"/>
+			<product ref="hydroperoxyl"/>
+			<kinetics type="Arrhenius">
+				<preexponential units="s^-1">5.98e11</preexponential>
+				<exponent units="">0.52</exponent>
+				<activationEnergy units="kcal/mol">31.79</activationEnergy>
+			</kinetics>
+		</reaction>
+		<reaction id="rxn6">
+			<reactant ref="hydroperoxylvinoxy"/>
+			<product ref="lactone"/>
+			<product ref="hydroxyl"/>
+			<kinetics type="Arrhenius">
+				<preexponential units="s^-1">4.50e15</preexponential>
+				<exponent units="">0.00</exponent>
+				<activationEnergy units="kcal/mol">24.59</activationEnergy>
+			</kinetics>
+		</reaction>
+	</reactionList>
+	<!-- The bath gas -->
+	<bathGasList>
+		<bathGas ref="nitrogen"/>
+	</bathGasList>
+	<!-- A list of options -->
+	<optionList>
+		<temperatures units="K">300.0 400.0 600.0 900.0 1200.0 1500.0 1800.0 2100.0</temperatures>
+		<pressures units="bar">0.01 0.1 1.0 10.0 100.0</pressures>
+		<!-- Specify one of grain size or number of grains -->
+		<grainSize units="kcal/mol">0.5</grainSize>
+		<!--<numberOfGrains>250</numberOfGrains>-->
+		<!-- Select one of the following methods -->
+		<!--<method>modifiedStrongCollision</method>-->
+		<method>reservoirState</method>
+		<!-- Select one of the following interpolation models -->
+		<interpolationModel type="Chebyshev">
+			<temperatureDegree>4</temperatureDegree>
+			<pressureDegree>4</pressureDegree>
+		</interpolationModel>
+		<!--<interpolationModel type="None"/>-->
+		<!--<interpolationModel type="PDepArrhenius"/>-->
+	</optionList>
+</rmginput>
