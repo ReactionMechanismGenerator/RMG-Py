@@ -552,7 +552,15 @@ class ThermoNASAData(ThermoData):
 		"""
 		poly = self.selectPolynomialForTemperature(T)
 		return poly.getFreeEnergy(T)
-	
+
+#	def toCHEMKIN(self):
+#                """Return the latter ~half of the first line of a CHEMKIN thermo line and the other three full lines for a case with two polynomials; note, this is a quick and dirty implementation; there is an extra zero in each exponent that must be manually deleted"""
+#                #potential fix to avoid need to manually delete zeroes: replace "+0" and "-0" substrings with "+" and "-", respectively
+#                line1 = "G  %8.3F  %8.3F  %8.3F    1\n"%(self.Tmin,self.Tmax, self.polynomials[0].Tmax)
+#                line2 = "% 15.8E% 15.8E% 15.8E% 15.8E% 15.8E    2\n"%(self.polynomials[0].c0,self.polynomials[0].c1,self.polynomials[0].c2,self.polynomials[0].c3,self.polynomials[0].c4)
+#                line3 = "% 15.8E% 15.8E% 15.8E% 15.8E% 15.8E    3\n"%(self.polynomials[0].c5,self.polynomials[0].c6,self.polynomials[1].c0,self.polynomials[1].c1,self.polynomials[1].c2)
+#                line4 = "% 15.8E% 15.8E% 15.8E% 15.8E                   4"%(self.polynomials[0].c3,self.polynomials[0].c4,self.polynomials[1].c5,self.polynomials[1].c6)
+#                return line1 + line2 + line3 + line4
 
 ################################################################################
 
@@ -902,7 +910,7 @@ def convertGAtoWilhoit(GAthermo, atoms, rotors, linear):
 	WilhoitThermo.S0 = S0
 	
 	err = WilhoitThermo.rmsErrWilhoit(T_list, Cp_list)/R #rms Error (J/mol-K units until it is divided by R) (not needed, but it is useful in comment)
-	WilhoitThermo.comment = WilhoitThermo.comment + 'Fitted to GA data with Cp0=%2g and Cp_inf=%2g. RMS error = %.3f*R. '%(cp0,cpInf,err) + GAthermo.comment
+	WilhoitThermo.comment = WilhoitThermo.comment + 'Wilhoit function fitted to GA data with Cp0=%2g and Cp_inf=%2g. RMS error = %.3f*R. '%(cp0,cpInf,err) + GAthermo.comment
 	
 	return WilhoitThermo
 
@@ -934,7 +942,7 @@ def convertWilhoitToNASA(Wilhoit, fixed=1, weighting=1, Tintg=1000.0, Tmin = 298
 	polynomials
 	"""
 	
-        # below two sections moved to arguments for function
+        #gmagoon 1/18/10 below two sections moved to arguments for function
 	# Temperature ranges for resulting polynomials
 	#Tmin = 298.0
 	#Tintg = 1000.0
@@ -961,11 +969,17 @@ def convertWilhoitToNASA(Wilhoit, fixed=1, weighting=1, Tintg=1000.0, Tmin = 298
 	if(fixed == 1):
 		nasa_low, nasa_high = Wilhoit2NASA(wilhoit_scaled, Tmin, Tmax, Tintg, weighting)
                 tint = Tintg
-		err = TintOpt_objFun(tint, wilhoit_scaled, Tmin, Tmax, weighting)
+		
 	else:
 		nasa_low, nasa_high, tint = Wilhoit2NASA_TintOpt(wilhoit_scaled, Tmin, Tmax, Tintg, weighting)
-		err = TintOpt_objFun(tint, wilhoit_scaled, Tmin, Tmax, weighting)
-		# rmsErr = rmsErrNASA(t, cp, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, tint) #this needs group data
+	iseUnw = TintOpt_objFun(tint, wilhoit_scaled, Tmin, Tmax, 0) #the scaled, unweighted ISE (integral of squared error)
+	rmsUnw = math.sqrt(iseUnw/(Tmax-Tmin))
+	rmsStr = '(Unweighted) RMS error = %.3f*R;'%(rmsUnw)
+        if(weighting == 1):
+                iseWei= TintOpt_objFun(tint, wilhoit_scaled, Tmin, Tmax, 1) #the scaled, weighted ISE
+                rmsWei = math.sqrt(iseWei/math.log(Tmax/Tmin))
+                rmsStr = 'Weighted RMS error = %.3f*R;'%(rmsWei)+rmsStr
+	# rmsErr = rmsErrNASA(t, cp, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, tint) #this needs group data
 		
 	#restore to conventional units of K for Tint and units based on K rather than kK in NASA polynomial coefficients
 	tint=tint*1000.
@@ -982,13 +996,12 @@ def convertWilhoitToNASA(Wilhoit, fixed=1, weighting=1, Tintg=1000.0, Tmin = 298
 	nasa_high.c3 /= 1000000000.
 	nasa_high.c4 /= 1000000000000.
 	
-	# could we include fitting accuracy in the expression below?
 	# output comment
-	comment = 'Fitted to Wilhoit data. Weighted, scaled ISE: %s; '%(err)+Wilhoit.comment
+	comment = 'NASA function fitted to Wilhoit function. ' + rmsStr + Wilhoit.comment
 	nasa_low.Trange = (Tmin,tint); nasa_low.Tmin = Tmin; nasa_low.Tmax = tint
-	nasa_low.comment = comment
+	nasa_low.comment = 'Low temperature range polynomial'
 	nasa_high.Trange = (tint,Tmax); nasa_high.Tmin = tint; nasa_high.Tmax = Tmax
-	nasa_high.comment = comment
+	nasa_high.comment = 'High temperature range polynomial'
 	
 	#for the low polynomial, we want the results to match the Wilhoit value at 298.15K
 	#low polynomial enthalpy:
