@@ -1205,7 +1205,7 @@ def Wilhoit2NASA(wilhoit, tmin, tmax, tint, weighting):
 def Wilhoit2NASA_TintOpt(wilhoit, tmin, tmax, tintg, weighting):
 	#input: Wilhoit parameters, Cp0/R, CpInf/R, and B (kK), a0, a1, a2, a3, Tmin (minimum temperature (in kiloKelvin), Tmax (maximum temperature (in kiloKelvin), Tintg (guess intermediate temperature, in kiloKelvin)
 	#output: NASA parameters for Cp/R, b1, b2, b3, b4, b5 (low temp parameters) and b6, b7, b8, b9, b10 (high temp parameters), and Tint
-	#1. vary Tint, using Tintg as a starting guess, to minimize TintOpt_objFun
+	#1. vary Tint, bounded by tmin and tmax, to minimize TintOpt_objFun
 	#from optimize import fminbound
 	tint = optimize.fminbound(TintOpt_objFun, tmin, tmax, args=(wilhoit, tmin, tmax, weighting))
 	#note that we have not used the specified guess, tintg when using this minimization routine
