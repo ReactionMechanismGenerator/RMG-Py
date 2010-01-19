@@ -610,7 +610,7 @@ class ThermoWilhoitData(ThermoData):
 		self.S0 = S0
 	
 	def __repr__(self):
-		return "ThermoWilhoitData(%.2g,%.2g,%.2g,%.2g,%.2g,%.2g,%.2g,%.2g,%.2g,'%s')"%(self.cp0, self.cpInf, self.B, self.a0, self.a1, self.a2, self.a3, self.H0, self.S0, self.comment)
+		return "ThermoWilhoitData(%.4g,%.4g,%.4g,%.4g,%.4g,%.4g,%.4g,%.4g,%.4g,'%s')"%(self.cp0, self.cpInf, self.B, self.a0, self.a1, self.a2, self.a3, self.H0, self.S0, self.comment)
 	
 	def __reduce__(self):
 		return (ThermoWilhoitData,(self.cp0, self.cpInf, self.a0, self.a1, self.a2, self.a3, self.H0, self.S0, self.comment, self.B))
@@ -878,11 +878,12 @@ def convertGAtoWilhoit(GAthermo, atoms, rotors, linear):
 		b[i] = Cp_list[i]-cp0 - y*y*(cpInf-cp0)
 		
 	#solve least squares problem A*x = b; http://docs.scipy.org/doc/scipy/reference/tutorial/linalg.html#solving-linear-least-squares-problems-and-pseudo-inverses
-	x,resid,rank,sigma = linalg.lstsq(A,b)
+	x,resid,rank,sigma = linalg.lstsq(A,b, overwrite_a=1, overwrite_b=1)
 	a0 = x[0]
 	a1 = x[1]
 	a2 = x[2]
 	a3 = x[3]
+	err = math.sqrt(resid/m) # gmagoon 1/19/10: this is a (probably) faster alternative to using rmsErrWilhoit, and it fits better within a scheme where we modify B
 	
 	# scale everything back
 	T_list = [t*1000. for t in T_list] 
@@ -909,7 +910,7 @@ def convertGAtoWilhoit(GAthermo, atoms, rotors, linear):
 	WilhoitThermo.H0 = H0
 	WilhoitThermo.S0 = S0
 	
-	err = WilhoitThermo.rmsErrWilhoit(T_list, Cp_list)/R #rms Error (J/mol-K units until it is divided by R) (not needed, but it is useful in comment)
+	#err = WilhoitThermo.rmsErrWilhoit(T_list, Cp_list)/R #rms Error (J/mol-K units until it is divided by R) (not needed, but it is useful in comment)
 	WilhoitThermo.comment = WilhoitThermo.comment + 'Wilhoit function fitted to GA data with Cp0=%2g and Cp_inf=%2g. RMS error = %.3f*R. '%(cp0,cpInf,err) + GAthermo.comment
 	
 	return WilhoitThermo
