@@ -941,6 +941,7 @@ def BOpt_objFun(B, T_list, Cp_list, cp0, cpInf):
 	#output: the sum of squared errors between Wilhoit and GA data (dimensionless)
 
         (a0, a1, a2, a3, resid) = GA2Wilhoit(B, T_list, Cp_list, cp0, cpInf)
+        #print B, resid
 
 	return resid
 
@@ -1235,7 +1236,7 @@ def Wilhoit2NASA_TintOpt(wilhoit, tmin, tmax, weighting):
 	#input: Wilhoit parameters, Cp0/R, CpInf/R, and B (kK), a0, a1, a2, a3, Tmin (minimum temperature (in kiloKelvin), Tmax (maximum temperature (in kiloKelvin)
 	#output: NASA parameters for Cp/R, b1, b2, b3, b4, b5 (low temp parameters) and b6, b7, b8, b9, b10 (high temp parameters), and Tint
 	#1. vary Tint, bounded by tmin and tmax, to minimize TintOpt_objFun
-	#from optimize import fminbound
+	#cf. http://docs.scipy.org/doc/scipy/reference/tutorial/optimize.html and http://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.fminbound.html#scipy.optimize.fminbound)
 	tint = optimize.fminbound(TintOpt_objFun, tmin, tmax, args=(wilhoit, tmin, tmax, weighting))
 	#note that we have not used any guess when using this minimization routine
 	#2. determine the bi parameters based on the optimized Tint (alternatively, maybe we could have TintOpt_objFun also return these parameters, along with the objective function, which would avoid an extra calculation)
