@@ -834,7 +834,7 @@ class ThermoWilhoitData(ThermoData):
 
 ################################################################################
 
-def convertGAtoWilhoit(GAthermo, atoms, rotors, linear):
+def convertGAtoWilhoit(GAthermo, atoms, rotors, linear, fixedB=1, Bmin=300.0, Bmax=6000.0):
 	"""Convert a Group Additivity thermo instance into a Wilhoit thermo instance.
 	
 	Takes a `ThermoGAData` instance of themochemical data, and some extra information 
@@ -852,17 +852,60 @@ def convertGAtoWilhoit(GAthermo, atoms, rotors, linear):
 	Cp_list = GAthermo.Cp
 	T_list = ThermoGAData.CpTlist  # usually [300, 400, 500, 600, 800, 1000, 1500] but why assume?
 	R = constants.R
-	B = ThermoWilhoitDataB # Constant, set once in the class def.
+	B = ThermoWilhoitDataB # Constant (if fixed=1), set once in the class def.
 	
 	# convert from K to kK
 	T_list = [t/1000. for t in T_list] 
-	B = B/1000.  
+	B = B/1000.
+	Bmin=Bmin/1000.
+	Bmax=Bmax/1000.
 	
 	Cp_list = [x/R for x in Cp_list] # convert to Cp/R
 	
 	(cp0, cpInf) = CpLimits(atoms, rotors, linear) # determine the heat capacity limits (non-dimensional)
 	
-	#create matrices for linear least squares problem
+        if(fixedB == 1):
+		(a0, a1, a2, a3, resid) = GA2Wilhoit(B, T_list, Cp_list, cp0, cpInf)		
+	else:
+                (a0, a1, a2, a3, B, resid) = GA2Wilhoit_BOpt(T_list, Cp_list, cp0, cpInf, Bmin, Bmax)
+        m = len(T_list)
+	err = math.sqrt(resid/m) # gmagoon 1/19/10: this is a (probably) faster alternative to using rmsErrWilhoit, and it fits better within a scheme where we modify B
+
+	# scale everything back
+	T_list = [t*1000. for t in T_list]
+	B = B*1000.
+	Cp_list = [x*R for x in Cp_list]
+	
+	# cp0 and cpInf should be in units of J/mol-K
+	cp0 = cp0*R
+	cpInf = cpInf*R
+	
+	# output comment
+	comment = ''
+	
+	# first set H0 = S0 = 0, then calculate what they should be
+	# by referring to H298, S298
+	H0 = 0
+	S0 = 0
+	# create Wilhoit instance
+	WilhoitThermo = ThermoWilhoitData( cp0, cpInf, a0, a1, a2, a3, H0, S0, B=B, comment=comment)
+	# calculate correct I, J (integration constants for H, S, respectively)
+	H0 = H298 - WilhoitThermo.getEnthalpy(298.15)
+	S0 = S298 - WilhoitThermo.getEntropy(298.15)
+	# update Wilhoit instance with correct I,J
+	WilhoitThermo.H0 = H0
+	WilhoitThermo.S0 = S0
+	
+	#err = WilhoitThermo.rmsErrWilhoit(T_list, Cp_list)/R #rms Error (J/mol-K units until it is divided by R) (not needed, but it is useful in comment)
+	WilhoitThermo.comment = WilhoitThermo.comment + 'Wilhoit function fitted to GA data with Cp0=%2g and Cp_inf=%2g. RMS error = %.3f*R. '%(cp0,cpInf,err) + GAthermo.comment
+	
+	return WilhoitThermo
+
+def GA2Wilhoit(B, T_list, Cp_list, cp0, cpInf):
+	#input: B (in kiloKelvin), GA temperature and Cp_list (non-dimensionalized), Wilhoit parameters, Cp0/R and CpInf/R
+	#output: Wilhoit parameters a0-a3, and the sum of squared errors between Wilhoit and GA data
+
+        #create matrices for linear least squares problem
 	m = len(T_list)  # probably m=7
 	# A = mx4
 	# b = mx1
@@ -882,38 +925,25 @@ def convertGAtoWilhoit(GAthermo, atoms, rotors, linear):
 	a0 = x[0]
 	a1 = x[1]
 	a2 = x[2]
-	a3 = x[3]
-	err = math.sqrt(resid/m) # gmagoon 1/19/10: this is a (probably) faster alternative to using rmsErrWilhoit, and it fits better within a scheme where we modify B
+	a3 = x[3]	
 	
-	# scale everything back
-	T_list = [t*1000. for t in T_list] 
-	# B = B*1000. # not needed because stored elsewhere
-	Cp_list = [x*R for x in Cp_list]
+	return a0, a1, a2, a3, resid
 	
-	# cp0 and cpInf should be in units of J/mol-K
-	cp0 = cp0*R
-	cpInf = cpInf*R
-	
-	# output comment
-	comment = ''
-	
-	# first set H0 = S0 = 0, then calculate what they should be
-	# by referring to H298, S298
-	H0 = 0
-	S0 = 0
-	# create Wilhoit instance
-	WilhoitThermo = ThermoWilhoitData( cp0, cpInf, a0, a1, a2, a3, H0, S0, comment=comment)
-	# calculate correct I, J (integration constants for H, S, respectively)
-	H0 = H298 - WilhoitThermo.getEnthalpy(298.15)
-	S0 = S298 - WilhoitThermo.getEntropy(298.15)
-	# update Wilhoit instance with correct I,J
-	WilhoitThermo.H0 = H0
-	WilhoitThermo.S0 = S0
-	
-	#err = WilhoitThermo.rmsErrWilhoit(T_list, Cp_list)/R #rms Error (J/mol-K units until it is divided by R) (not needed, but it is useful in comment)
-	WilhoitThermo.comment = WilhoitThermo.comment + 'Wilhoit function fitted to GA data with Cp0=%2g and Cp_inf=%2g. RMS error = %.3f*R. '%(cp0,cpInf,err) + GAthermo.comment
-	
-	return WilhoitThermo
+def GA2Wilhoit_BOpt(T_list, Cp_list, cp0, cpInf, Bmin, Bmax):
+        #input: B (in kiloKelvin), GA temperature and Cp_list (scaled/non-dimensionalized), Wilhoit parameters, Cp0/R and CpInf/R, and maximum and minimum bounds for B (in kK)
+	#output: Wilhoit parameters, including optimized B value (in kK), and the sum of squared errors between Wilhoit and GA data (dimensionless)
+	B = optimize.fminbound(BOpt_objFun, Bmin, Bmax, args=(T_list, Cp_list, cp0, cpInf))
+        (a0, a1, a2, a3, resid) = GA2Wilhoit(B[0], T_list, Cp_list, cp0, cpInf)
+	return a0, a1, a2, a3, B[0], resid
+
+def BOpt_objFun(B, T_list, Cp_list, cp0, cpInf):
+	#input: B (in kiloKelvin), GA temperature and Cp_list (scaled/non-dimensionalized), Wilhoit parameters, Cp0/R and CpInf/R
+	#output: the sum of squared errors between Wilhoit and GA data (dimensionless)
+
+        (a0, a1, a2, a3, resid) = GA2Wilhoit(B, T_list, Cp_list, cp0, cpInf)
+
+	return resid
+
 
 def CpLimits(atoms, rotors, linear):
 	"""Calculate the zero and infinity limits for heat capacity.
@@ -969,8 +999,7 @@ def convertWilhoitToNASA(Wilhoit, fixed=1, weighting=1, Tintg=1000.0, Tmin = 298
 	#if we are using fixed tint, set tint equal to Tintg and do not allow tint to float
 	if(fixed == 1):
 		nasa_low, nasa_high = Wilhoit2NASA(wilhoit_scaled, Tmin, Tmax, Tintg, weighting)
-                tint = Tintg
-		
+                tint = Tintg #1/20/10 gmagoon: we probably don't need a distinction between Tint and Tintg (see Bopt in GA2Wilhoit conversions), but I will leave it for now, since it doesn't seem to be causing any problems; similarly, Tintg should not need to be passed to _TintOpt function 		
 	else:
 		nasa_low, nasa_high, tint = Wilhoit2NASA_TintOpt(wilhoit_scaled, Tmin, Tmax, Tintg, weighting)
 	iseUnw = TintOpt_objFun(tint, wilhoit_scaled, Tmin, Tmax, 0) #the scaled, unweighted ISE (integral of squared error)
