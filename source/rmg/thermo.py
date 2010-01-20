@@ -939,9 +939,8 @@ def GA2Wilhoit_BOpt(T_list, Cp_list, cp0, cpInf, Bmin, Bmax):
 def BOpt_objFun(B, T_list, Cp_list, cp0, cpInf):
 	#input: B (in kiloKelvin), GA temperature and Cp_list (scaled/non-dimensionalized), Wilhoit parameters, Cp0/R and CpInf/R
 	#output: the sum of squared errors between Wilhoit and GA data (dimensionless)
-        (a0, a1, a2, a3, resid) = GA2Wilhoit(B, T_list, Cp_list, cp0, cpInf)
-        #print B, resid
-
+	(a0, a1, a2, a3, resid) = GA2Wilhoit(B, T_list, Cp_list, cp0, cpInf)
+	#print B, resid
 	return resid
 
 
