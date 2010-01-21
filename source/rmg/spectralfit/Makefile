@@ -4,8 +4,6 @@
 #
 ################################################################################
 
-F90FLAGS=-fPIC -r8
-
 all: spectralfit.so 
 
 spectralfit.so: spectralfit.f90 calc_freq_code.o dqed.o

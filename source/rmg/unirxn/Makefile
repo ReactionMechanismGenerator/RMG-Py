@@ -4,8 +4,6 @@
 #
 ################################################################################
 
-F90FLAGS=-fPIC -r8
-
 all: states.so mastereqn.so msc.so rs.so
 
 states.so: states.f90
