@@ -557,9 +557,9 @@ class ThermoNASAData(ThermoData):
 #                """Return the latter ~half of the first line of a CHEMKIN thermo line and the other three full lines for a case with two polynomials; note, this is a quick and dirty implementation; there is an extra zero in each exponent that must be manually deleted"""
 #                #potential fix to avoid need to manually delete zeroes: replace "+0" and "-0" substrings with "+" and "-", respectively
 #                line1 = "G  %8.3F  %8.3F  %8.3F    1\n"%(self.Tmin,self.Tmax, self.polynomials[0].Tmax)
-#                line2 = "% 15.8E% 15.8E% 15.8E% 15.8E% 15.8E    2\n"%(self.polynomials[0].c0,self.polynomials[0].c1,self.polynomials[0].c2,self.polynomials[0].c3,self.polynomials[0].c4)
-#                line3 = "% 15.8E% 15.8E% 15.8E% 15.8E% 15.8E    3\n"%(self.polynomials[0].c5,self.polynomials[0].c6,self.polynomials[1].c0,self.polynomials[1].c1,self.polynomials[1].c2)
-#                line4 = "% 15.8E% 15.8E% 15.8E% 15.8E                   4"%(self.polynomials[0].c3,self.polynomials[0].c4,self.polynomials[1].c5,self.polynomials[1].c6)
+#                line2 = "% 15.8E% 15.8E% 15.8E% 15.8E% 15.8E    2\n"%(self.polynomials[1].c0,self.polynomials[1].c1,self.polynomials[1].c2,self.polynomials[1].c3,self.polynomials[1].c4)
+#                line3 = "% 15.8E% 15.8E% 15.8E% 15.8E% 15.8E    3\n"%(self.polynomials[1].c5,self.polynomials[1].c6,self.polynomials[0].c0,self.polynomials[0].c1,self.polynomials[0].c2)
+#                line4 = "% 15.8E% 15.8E% 15.8E% 15.8E                   4"%(self.polynomials[0].c3,self.polynomials[0].c4,self.polynomials[0].c5,self.polynomials[0].c6)
 #                return line1 + line2 + line3 + line4
 
 ################################################################################
