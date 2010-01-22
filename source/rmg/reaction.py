@@ -628,9 +628,11 @@ class PDepReaction(Reaction):
 		this simply sets the prefactor to the value of :math:`k(T,P)` and
 		sets the other Arrhenius parameters to zero.
 		"""
-		k = float(self.getRateConstant(T, P))
-		return ArrheniusKinetics(A=k, n=0.0, Ea=0.0)
-		#return self.kinetics.getArrhenius(P)
+		if isinstance(self.kinetics, PDepArrheniusKinetics):
+			return self.kinetics.getArrhenius(P)
+		else:
+			k = float(self.getRateConstant(T, P))
+			return ArrheniusKinetics(A=k, n=0.0, Ea=0.0)
 
 ################################################################################
 

@@ -104,8 +104,10 @@ def execute(inputFile, options):
 				chebyshev = kinetics.ChebyshevKinetics()
 				chebyshev.fitToData(Tlist, Plist, K[:,:,j,i], degreeT, degreeP)
 				netReaction.kinetics = [chebyshev]
-			elif model[0].lower() == 'pdeparrhenius':
-				pass
+			elif model.lower() == 'pdeparrhenius':
+				pDepArrhenius = kinetics.PDepArrheniusKinetics()
+				pDepArrhenius.fitToData(Tlist, Plist, K[:,:,j,i])
+				netReaction.kinetics = [pDepArrhenius]
 			else:
 				pass
 
