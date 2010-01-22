@@ -1399,7 +1399,7 @@ SUBROUTINE Bond_avg_6x2_2_1 (Number_of_bonds, &
   INTEGER                                      :: i,j, k
 
   IF (Number_of_bonds == 0 ) THEN
-!   ! WRITE (*,*) 'N = 0'
+!     WRITE (*,*) 'N = 0'
      predicted_frequencies = (/ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 /) 
   
  ELSEIF (Number_of_bonds == 1) THEN
@@ -1483,7 +1483,7 @@ SUBROUTINE Bond_avg_5x2_2_1 (Number_of_bonds, &
   INTEGER                                      :: i,j, k
 
   IF (Number_of_bonds == 0 ) THEN
-!   ! WRITE (*,*) 'N = 0'
+!     WRITE (*,*) 'N = 0'
      predicted_frequencies = (/ 0.0, 0.0, 0.0, 0.0, 0.0 /) 
   
  ELSEIF (Number_of_bonds == 1) THEN
@@ -1770,7 +1770,7 @@ SUBROUTINE Case_1(Total_char_freq, Total_harm_osc_freq, HR_params  )
 
 ! x(1) corresponds to the harmonic oscillator pseudo-frequency
   ind(1) = 3        ! Has both an upper and lower bound
-  bl(1)  = 400.     ! Lower bound is 400 cm^-1
+  bl(1)  = 180.     ! Lower bound is 180 cm^-1
   bu(1)  = 4000.    ! Upper bound is 4000 cm^-1
 
 
@@ -1936,17 +1936,17 @@ SUBROUTINE Case_2(Total_char_freq, Total_harm_osc_freq, HR_params  )
 
 ! x(1) corresponds to the first harmonic oscillator pseudo-frequency
   ind(1) = 3        ! Has both an upper and lower bound
-  bl(1)  = 400.     ! Lower bound is 400 cm^-1
+  bl(1)  = 180.     ! Lower bound is 180 cm^-1
   bu(1)  = 4000.    ! Upper bound is 4000 cm^-1
 
 ! x(2) corresponds to the second harmonic oscillator pseudo-frequency
   ind(2) = 3        ! Has both an upper and lower bound
-  bl(2)  = 400.     ! Lower bound is 400 cm^-1
+  bl(2)  = 180.     ! Lower bound is 180 cm^-1
   bu(2)  = 4000.    ! Upper bound is 4000 cm^-1
 
 !  Define the initial guess for the solution
-  x(1) = 800.0 !Harm. osc. frequency
-  x(2) = 1200.0 !Harm. osc. frequency
+  x(1) = 300.0 !Harm. osc. frequency
+  x(2) = 2000.0 !Harm. osc. frequency
 
 !  Tell how much storage we gave the solver.
   iwork(1) = lwork
@@ -2103,23 +2103,23 @@ SUBROUTINE Case_3(Total_char_freq, Total_harm_osc_freq, HR_params )
 
 ! x(1) corresponds to the first harmonic oscillator pseudo-frequency
   ind(1) = 3        ! Has both an upper and lower bound
-  bl(1)  = 400.     ! Lower bound is 400 cm^-1
+  bl(1)  = 180.     ! Lower bound is 180 cm^-1
   bu(1)  = 4000.    ! Upper bound is 4000 cm^-1
 
 ! x(2) corresponds to the second harmonic oscillator pseudo-frequency
   ind(2) = 3        ! Has both an upper and lower bound
-  bl(2)  = 400.     ! Lower bound is 400 cm^-1
+  bl(2)  = 180.     ! Lower bound is 180 cm^-1
   bu(2)  = 4000.    ! Upper bound is 4000 cm^-1
 
 ! x(3) corresponds to the third harmonic oscillator pseudo-frequency
   ind(3) = 3        ! Has both an upper and lower bound
-  bl(3)  = 400.     ! Lower bound is 400 cm^-1
+  bl(3)  = 180.     ! Lower bound is 180 cm^-1
   bu(3)  = 4000.    ! Upper bound is 4000 cm^-1
 
 !  Define the initial guess for the solution
-  x(1) = 500.0 !Harm. osc. frequency
-  x(2) = 800.0 !Harm. osc. frequency
-  x(3) = 1200.0 !Harm. osc. frequency
+  x(1) = 300.0 !Harm. osc. frequency
+  x(2) = 1000.0 !Harm. osc. frequency
+  x(3) = 2000.0 !Harm. osc. frequency
 
 !  Tell how much storage we gave the solver.
   iwork(1) = lwork
@@ -2285,29 +2285,29 @@ SUBROUTINE Case_4(Total_char_freq, Total_harm_osc_freq, HR_params  )
 
 ! x(1) corresponds to the first harmonic oscillator pseudo-frequency
   ind(1) = 3        ! Has both an upper and lower bound
-  bl(1)  = 400.     ! Lower bound is 400 cm^-1
+  bl(1)  = 180.     ! Lower bound is 180 cm^-1
   bu(1)  = 4000.    ! Upper bound is 4000 cm^-1
 
 ! x(2) corresponds to the second harmonic oscillator pseudo-frequency
   ind(2) = 3        ! Has both an upper and lower bound
-  bl(2)  = 400.     ! Lower bound is 400 cm^-1
+  bl(2)  = 180.     ! Lower bound is 180 cm^-1
   bu(2)  = 4000.    ! Upper bound is 4000 cm^-1
 
 ! x(3) corresponds to the third harmonic oscillator pseudo-frequency
   ind(3) = 3        ! Has both an upper and lower bound
-  bl(3)  = 400.     ! Lower bound is 400 cm^-1
+  bl(3)  = 180.     ! Lower bound is 180 cm^-1
   bu(3)  = 4000.    ! Upper bound is 4000 cm^-1
 
 ! x(4) corresponds to the fourth harmonic oscillator pseudo-frequency
   ind(4) = 3        ! Has both an upper and lower bound
-  bl(4)  = 400.     ! Lower bound is 400 cm^-1
+  bl(4)  = 180.     ! Lower bound is 180 cm^-1
   bu(4)  = 4000.    ! Upper bound is 4000 cm^-1
 
 !  Define the initial guess for the solution
-  x(1) = 500.0 !Harm. osc. frequency
-  x(2) = 800.0 !Harm. osc. frequency
-  x(3) = 1200.0 !Harm. osc. frequency
-  x(4) = 2000.0 !Harm. osc. frequency
+  x(1) = 300.0 !Harm. osc. frequency
+  x(2) = 1000.0 !Harm. osc. frequency
+  x(3) = 2000.0 !Harm. osc. frequency
+  x(4) = 3000.0 !Harm. osc. frequency
 
 !  Tell how much storage we gave the solver.
   iwork(1) = lwork
@@ -2478,35 +2478,35 @@ SUBROUTINE Case_5(Total_char_freq, Total_harm_osc_freq, HR_params )
 
 ! x(1) corresponds to the first harmonic oscillator pseudo-frequency
   ind(1) = 3        ! Has both an upper and lower bound
-  bl(1)  = 400.     ! Lower bound is 400 cm^-1
+  bl(1)  = 180.     ! Lower bound is 180 cm^-1
   bu(1)  = 4000.    ! Upper bound is 4000 cm^-1
 
 ! x(2) corresponds to the second harmonic oscillator pseudo-frequency
   ind(2) = 3        ! Has both an upper and lower bound
-  bl(2)  = 400.     ! Lower bound is 400 cm^-1
+  bl(2)  = 180.     ! Lower bound is 180 cm^-1
   bu(2)  = 4000.    ! Upper bound is 4000 cm^-1
 
 ! x(3) corresponds to the third harmonic oscillator pseudo-frequency
   ind(3) = 3        ! Has both an upper and lower bound
-  bl(3)  = 400.     ! Lower bound is 400 cm^-1
+  bl(3)  = 180.     ! Lower bound is 180 cm^-1
   bu(3)  = 4000.    ! Upper bound is 4000 cm^-1
 
 ! x(4) corresponds to the fourth harmonic oscillator pseudo-frequency
   ind(4) = 3        ! Has both an upper and lower bound
-  bl(4)  = 400.     ! Lower bound is 400 cm^-1
+  bl(4)  = 180.     ! Lower bound is 180 cm^-1
   bu(4)  = 4000.    ! Upper bound is 4000 cm^-1
 
 ! x(5) corresponds to the fifth harmonic oscillator pseudo-frequency
   ind(5) = 3        ! Has both an upper and lower bound
-  bl(5)  = 400.     ! Lower bound is 400 cm^-1
+  bl(5)  = 180.     ! Lower bound is 180 cm^-1
   bu(5)  = 4000.    ! Upper bound is 4000 cm^-1
 
 !  Define the initial guess for the solution
-  x(1) = 400.0 !Harm. osc. frequency
-  x(2) = 600.0 !Harm. osc. frequency
-  x(3) = 1000.0 !Harm. osc. frequency
-  x(4) = 1500.0 !Harm. osc. frequency
-  x(5) = 2000.0 !Harm. osc. frequency
+  x(1) = 250.0 !Harm. osc. frequency
+  x(2) = 1000.0 !Harm. osc. frequency
+  x(3) = 2000.0 !Harm. osc. frequency
+  x(4) = 3000.0 !Harm. osc. frequency
+  x(5) = 4000.0 !Harm. osc. frequency
 
 !  Tell how much storage we gave the solver.
   iwork(1) = lwork
@@ -2681,41 +2681,41 @@ SUBROUTINE Case_6(Total_char_freq, Total_harm_osc_freq, HR_params )
 
 ! x(1) corresponds to the first harmonic oscillator pseudo-frequency
   ind(1) = 3        ! Has both an upper and lower bound
-  bl(1)  = 400.     ! Lower bound is 400 cm^-1
+  bl(1)  = 180.     ! Lower bound is 180 cm^-1
   bu(1)  = 4000.    ! Upper bound is 4000 cm^-1
 
 ! x(2) corresponds to the second harmonic oscillator pseudo-frequency
   ind(2) = 3        ! Has both an upper and lower bound
-  bl(2)  = 400.     ! Lower bound is 400 cm^-1
+  bl(2)  = 180.     ! Lower bound is 180 cm^-1
   bu(2)  = 4000.    ! Upper bound is 4000 cm^-1
 
 ! x(3) corresponds to the third harmonic oscillator pseudo-frequency
   ind(3) = 3        ! Has both an upper and lower bound
-  bl(3)  = 400.     ! Lower bound is 400 cm^-1
+  bl(3)  = 180.     ! Lower bound is 180 cm^-1
   bu(3)  = 4000.    ! Upper bound is 4000 cm^-1
 
 ! x(4) corresponds to the fourth harmonic oscillator pseudo-frequency
   ind(4) = 3        ! Has both an upper and lower bound
-  bl(4)  = 400.     ! Lower bound is 400 cm^-1
+  bl(4)  = 180.     ! Lower bound is 180 cm^-1
   bu(4)  = 4000.    ! Upper bound is 4000 cm^-1
 
 ! x(5) corresponds to the fifth harmonic oscillator pseudo-frequency
   ind(5) = 3        ! Has both an upper and lower bound
-  bl(5)  = 400.     ! Lower bound is 400 cm^-1
+  bl(5)  = 180.     ! Lower bound is 180 cm^-1
   bu(5)  = 4000.    ! Upper bound is 4000 cm^-1
 
 ! x(6) corresponds to the sixth harmonic oscillator pseudo-frequency
   ind(6) = 3        ! Has both an upper and lower bound
-  bl(6)  = 400.     ! Lower bound is 400 cm^-1
+  bl(6)  = 180.     ! Lower bound is 180 cm^-1
   bu(6)  = 4000.    ! Upper bound is 4000 cm^-1
 
 !  Define the initial guess for the solution
-  x(1) = 500.0 !Harm. osc. frequency
+  x(1) = 250.0 !Harm. osc. frequency
   x(2) = 800.0 !Harm. osc. frequency
   x(3) = 1200.0 !Harm. osc. frequency
-  x(4) = 1500.0 !Harm. osc. frequency
-  x(5) = 2000.0 !Harm. osc. frequency
-  x(5) = 3000.0 !Harm. osc. frequency
+  x(4) = 2000.0 !Harm. osc. frequency
+  x(5) = 2500.0 !Harm. osc. frequency
+  x(5) = 4000.0 !Harm. osc. frequency
 
 !  Tell how much storage we gave the solver.
   iwork(1) = lwork
@@ -2896,7 +2896,7 @@ SUBROUTINE Case_7(Total_char_freq, Total_harm_osc_freq, HR_params )
 
 ! x(1) corresponds to the first harmonic oscillator pseudo-frequency
   ind(1) = 3        ! Has both an upper and lower bound
-  bl(1)  = 400.     ! Lower bound is 400 cm^-1
+  bl(1)  = 180.     ! Lower bound is 180 cm^-1
   bu(1)  = 4000.    ! Upper bound is 4000 cm^-1
 
 ! x(2) corresponds to the first degeneracy
@@ -2906,7 +2906,7 @@ SUBROUTINE Case_7(Total_char_freq, Total_harm_osc_freq, HR_params )
 
 ! x(3) corresponds to the second harmonic oscillator pseudo-frequency
   ind(3) = 3        ! Has both an upper and lower bound
-  bl(3)  = 400.     ! Lower bound is 400 cm^-1
+  bl(3)  = 180.     ! Lower bound is 180 cm^-1
   bu(3)  = 4000.    ! Upper bound is 4000 cm^-1
 
 ! x(4) corresponds to the second degeneracy
@@ -2917,21 +2917,21 @@ SUBROUTINE Case_7(Total_char_freq, Total_harm_osc_freq, HR_params )
 
 ! x(5) corresponds to the third harmonic oscillator pseudo-frequency
   ind(5) = 3        ! Has both an upper and lower bound
-  bl(5)  = 400.     ! Lower bound is 400 cm^-1
+  bl(5)  = 180.     ! Lower bound is 180 cm^-1
   bu(5)  = 4000.    ! Upper bound is 4000 cm^-1
 
 ! x(6) corresponds to the fourth harmonic oscillator pseudo-frequency
   ind(6) = 3        ! Has both an upper and lower bound
-  bl(6)  = 400.     ! Lower bound is 400 cm^-1
+  bl(6)  = 180.     ! Lower bound is 180 cm^-1
   bu(6)  = 4000.    ! Upper bound is 4000 cm^-1
 
 !  Define the initial guess for the solution
-  x(1) = 500.0 !Harm. osc. frequency
+  x(1) = 250.0 !Harm. osc. frequency
   x(2) = FLOOR(REAL(N_vib)/3.) !Degeneracy
-  x(3) = 1000.0 !Harm. osc. frequency
+  x(3) = 800.0 !Harm. osc. frequency
   x(4) = FLOOR(REAL(N_vib)/3.) !Degeneracy
-  x(5) = 1500.0 !Harm. osc. frequency
-  x(5) = 2000.0 !Harm. osc. frequency
+  x(5) = 1600.0 !Harm. osc. frequency
+  x(5) = 4000.0 !Harm. osc. frequency
 
 !  Tell how much storage we gave the solver.
   iwork(1) = lwork
@@ -3126,7 +3126,7 @@ SUBROUTINE Case_8(Total_char_freq, Total_harm_osc_freq, HR_params )
 
 !  Define the initial guess for the solution
   x(1) = 1200.0 !Barrier Height
-  x(2) = 150.0 !Hind. Freq
+  x(2) = 50.0 !Hind. Freq
 
 !  Tell how much storage we gave the solver.
   iwork(1) = lwork
@@ -3297,7 +3297,7 @@ SUBROUTINE Case_9(Total_char_freq, Total_harm_osc_freq, HR_params )
 
 ! x(3) corresponds to the harmonic oscillator pseudo-frequency
   ind(3) = 3        ! Has both an upper and lower bound
-  bl(3)  = 400.     ! Lower bound is 400 cm^-1
+  bl(3)  = 180.     ! Lower bound is 180 cm^-1
   bu(3)  = 4000.    ! Upper bound is 4000 cm^-1
 
 !  Define the initial guess for the solution
@@ -3480,19 +3480,19 @@ SUBROUTINE Case_10(Total_char_freq, Total_harm_osc_freq, HR_params )
 
 ! x(3) corresponds to the first harmonic oscillator pseudo-frequency
   ind(3) = 3        ! Has both an upper and lower bound
-  bl(3)  = 400.     ! Lower bound is 400 cm^-1
+  bl(3)  = 180.     ! Lower bound is 180 cm^-1
   bu(3)  = 4000.    ! Upper bound is 4000 cm^-1
 
 ! x(4) corresponds to the second harmonic oscillator pseudo-frequency
   ind(4) = 3        ! Has both an upper and lower bound
-  bl(4)  = 400.     ! Lower bound is 400 cm^-1
+  bl(4)  = 180.     ! Lower bound is 180 cm^-1
   bu(4)  = 4000.    ! Upper bound is 4000 cm^-1
 
 !  Define the initial guess for the solution
   x(1) = 1200.0 !Barrier Height
-  x(2) = 150.0 !Hind freq
-  x(3) = 800.0 !Harm. Osc. Freq
-  x(4) = 1200.0 !Harm. Osc. Freq
+  x(2) = 100.0 !Hind freq
+  x(3) = 300.0 !Harm. Osc. Freq
+  x(4) = 2000.0 !Harm. Osc. Freq
 
 !  Tell how much storage we gave the solver.
   iwork(1) = lwork
@@ -3672,24 +3672,24 @@ SUBROUTINE Case_11(Total_char_freq, Total_harm_osc_freq, HR_params )
 
 ! x(3) corresponds to the first harmonic oscillator pseudo-frequency
   ind(3) = 3        ! Has both an upper and lower bound
-  bl(3)  = 400.     ! Lower bound is 400 cm^-1
+  bl(3)  = 180.     ! Lower bound is 180 cm^-1
   bu(3)  = 4000.    ! Upper bound is 4000 cm^-1
 
 ! x(4) corresponds to the second harmonic oscillator pseudo-frequency
   ind(4) = 3        ! Has both an upper and lower bound
-  bl(4)  = 400.     ! Lower bound is 400 cm^-1
+  bl(4)  = 180.     ! Lower bound is 180 cm^-1
   bu(4)  = 4000.    ! Upper bound is 4000 cm^-1
 
 ! x(5) corresponds to the third harmonic oscillator pseudo-frequency
   ind(5) = 3        ! Has both an upper and lower bound
-  bl(5)  = 400.     ! Lower bound is 400 cm^-1
+  bl(5)  = 180.     ! Lower bound is 180 cm^-1
   bu(5)  = 4000.    ! Upper bound is 4000 cm^-1
 
 !  Define the initial guess for the solution
   x(1) = 1200.0 !Barrier Height
   x(2) = 150.0 !Hind freq
-  x(3) = 800.0 !Harm. Osc. Freq
-  x(4) = 1200.0 !Harm. Osc. Freq
+  x(3) = 300.0 !Harm. Osc. Freq
+  x(4) = 1000.0 !Harm. Osc. Freq
   x(5) = 2000.0 !Harm. Osc. Freq
 
 !  Tell how much storage we gave the solver.
@@ -3876,31 +3876,31 @@ SUBROUTINE Case_12(Total_char_freq, Total_harm_osc_freq, HR_params )
 
 ! x(3) corresponds to the first harmonic oscillator pseudo-frequency
   ind(3) = 3        ! Has both an upper and lower bound
-  bl(3)  = 400.     ! Lower bound is 400 cm^-1
+  bl(3)  = 180.     ! Lower bound is 180 cm^-1
   bu(3)  = 4000.    ! Upper bound is 4000 cm^-1
 
 ! x(4) corresponds to the second harmonic oscillator pseudo-frequency
   ind(4) = 3        ! Has both an upper and lower bound
-  bl(4)  = 400.     ! Lower bound is 400 cm^-1
+  bl(4)  = 180.     ! Lower bound is 180 cm^-1
   bu(4)  = 4000.    ! Upper bound is 4000 cm^-1
 
 ! x(5) corresponds to the third harmonic oscillator pseudo-frequency
   ind(5) = 3        ! Has both an upper and lower bound
-  bl(5)  = 400.     ! Lower bound is 400 cm^-1
+  bl(5)  = 180.     ! Lower bound is 180 cm^-1
   bu(5)  = 4000.    ! Upper bound is 4000 cm^-1
 
 ! x(6) corresponds to the fourth harmonic oscillator pseudo-frequency
   ind(6) = 3        ! Has both an upper and lower bound
-  bl(6)  = 400.     ! Lower bound is 400 cm^-1
+  bl(6)  = 180.     ! Lower bound is 180 cm^-1
   bu(6)  = 4000.    ! Upper bound is 4000 cm^-1
 
 !  Define the initial guess for the solution
   x(1) = 1200.0 !Barrier Height
   x(2) = 150.0 !Hind freq
-  x(3) = 500.0 !Harm. Osc. Freq
+  x(3) = 300.0 !Harm. Osc. Freq
   x(4) = 1000.0 !Harm. Osc. Freq
-  x(5) = 1500.0 !Harm. Osc. Freq
-  x(6) = 2000.0 !Harm. Osc. Freq
+  x(5) = 2000.0 !Harm. Osc. Freq
+  x(6) = 3000.0 !Harm. Osc. Freq
 
 !  Tell how much storage we gave the solver.
   iwork(1) = lwork
@@ -4092,7 +4092,7 @@ SUBROUTINE Case_13(Total_char_freq, Total_harm_osc_freq, HR_params )
 
 ! x(3) corresponds to the first harmonic oscillator pseudo-frequency
   ind(3) = 3        ! Has both an upper and lower bound
-  bl(3)  = 400.     ! Lower bound is 400 cm^-1
+  bl(3)  = 180.     ! Lower bound is 180 cm^-1
   bu(3)  = 4000.    ! Upper bound is 4000 cm^-1
 
 ! x(4) corresponds to the harmonic oscillator degeneracy
@@ -4102,21 +4102,21 @@ SUBROUTINE Case_13(Total_char_freq, Total_harm_osc_freq, HR_params )
 
 ! x(5) corresponds to the second harmonic oscillator pseudo-frequency
   ind(5) = 3        ! Has both an upper and lower bound
-  bl(5)  = 400.     ! Lower bound is 400 cm^-1
+  bl(5)  = 180.     ! Lower bound is 180 cm^-1
   bu(5)  = 4000.    ! Upper bound is 4000 cm^-1
 
 ! x(6) corresponds to the third harmonic oscillator pseudo-frequency
   ind(6) = 3        ! Has both an upper and lower bound
-  bl(6)  = 400.     ! Lower bound is 400 cm^-1
+  bl(6)  = 180.     ! Lower bound is 180 cm^-1
   bu(6)  = 4000.    ! Upper bound is 4000 cm^-1
 
 !  Define the initial guess for the solution
   x(1) = 1200.0 !Barrier Height
   x(2) = 150.0 !Hind freq
-  x(3) = 500.0 !Harm. Osc. Freq
+  x(3) = 300.0 !Harm. Osc. Freq
   x(4) = FLOOR(REAL(N_vib)/2.) !Degeneracy
-  x(5) = 1500.0 !Harm. Osc. Freq
-  x(6) = 2000.0 !Harm. Osc. Freq
+  x(5) = 1000.0 !Harm. Osc. Freq
+  x(6) = 3000.0 !Harm. Osc. Freq
 
 !  Tell how much storage we gave the solver.
   iwork(1) = lwork
@@ -4510,7 +4510,7 @@ SUBROUTINE Case_15(Total_char_freq, Total_harm_osc_freq, HR_params )
 
 ! x(5) corresponds to the harmonic oscillator pseudo-frequency
   ind(5) = 3        ! Has both an upper and lower bound
-  bl(5)  = 400.     ! Lower bound is 400 cm^-1
+  bl(5)  = 180.     ! Lower bound is 180 cm^-1
   bu(5)  = 4000.    ! Upper bound is 4000 cm^-1
 
 !  Define the initial guess for the solution
@@ -4713,12 +4713,12 @@ SUBROUTINE Case_16(Total_char_freq, Total_harm_osc_freq, HR_params )
 
 ! x(5) corresponds to the first harmonic oscillator pseudo-frequency
   ind(5) = 3        ! Has both an upper and lower bound
-  bl(5)  = 400.     ! Lower bound is 400 cm^-1
+  bl(5)  = 180.     ! Lower bound is 180 cm^-1
   bu(5)  = 4000.    ! Upper bound is 4000 cm^-1
 
 ! x(6) corresponds to the second harmonic oscillator pseudo-frequency
   ind(6) = 3        ! Has both an upper and lower bound
-  bl(6)  = 400.     ! Lower bound is 400 cm^-1
+  bl(6)  = 180.     ! Lower bound is 180 cm^-1
   bu(6)  = 4000.    ! Upper bound is 4000 cm^-1
 
 !  Define the initial guess for the solution
@@ -4726,8 +4726,8 @@ SUBROUTINE Case_16(Total_char_freq, Total_harm_osc_freq, HR_params )
   x(2) = 80.0 !Hind. Freq
   x(3) = 5000.0 !Barrier Height
   x(4) = 160.0 !Hind. Freq
-  x(5) = 800.0 !Harm Osc
-  x(6) = 1200.0 !Harm Osc
+  x(5) = 300.0 !Harm Osc
+  x(6) = 2000.0 !Harm Osc
 
 !  Tell how much storage we gave the solver.
   iwork(1) = lwork
@@ -4906,17 +4906,17 @@ SUBROUTINE Case_17(Total_char_freq, Total_harm_osc_freq, HR_params )
 
 ! x(1) corresponds to the first harmonic oscillator pseudo-frequency
   ind(1) = 3        ! Has both an upper and lower bound
-  bl(1)  = 400.     ! Lower bound is 400 cm^-1
+  bl(1)  = 180.     ! Lower bound is 180 cm^-1
   bu(1)  = 4000.    ! Upper bound is 4000 cm^-1
 
 ! x(2) corresponds to the second harmonic oscillator pseudo-frequency
   ind(2) = 3        ! Has both an upper and lower bound
-  bl(2)  = 400.     ! Lower bound is 400 cm^-1
+  bl(2)  = 180.     ! Lower bound is 180 cm^-1
   bu(2)  = 4000.    ! Upper bound is 4000 cm^-1
 
 ! x(3) corresponds to the third harmonic oscillator pseudo-frequency
   ind(3) = 3        ! Has both an upper and lower bound
-  bl(3)  = 400.     ! Lower bound is 400 cm^-1
+  bl(3)  = 180.     ! Lower bound is 180 cm^-1
   bu(3)  = 4000.    ! Upper bound is 4000 cm^-1
 
 ! x(4) corresponds to the first hindered rotor pseudo-barrier
@@ -4927,7 +4927,7 @@ SUBROUTINE Case_17(Total_char_freq, Total_harm_osc_freq, HR_params )
 ! x(5) corresponds to the first hindered rotor oscillator frequency
   ind(5) = 3        ! Has both an upper and lower bound
   bl(5)  = 40.      ! Has lower bound of 40 cm^-1
-  bu(5)  = 400.   ! Has upper bound of 400 cm^-1
+  bu(5)  = 180.   ! Has upper bound of 180 cm^-1
 
 ! x(6) corresponds to the second hindered rotor pseudo-barrier
   ind(6) = 3        ! Has both an upper and lower bound
@@ -4937,9 +4937,9 @@ SUBROUTINE Case_17(Total_char_freq, Total_harm_osc_freq, HR_params )
 !  Define the initial guess for the solution
 !  Note that the two pseudo-frequencies should be different so that the
 !  Jacobian of x(1) is not automatically zero
-  x(1) = 500.0      ! First harm. osc. pseudo-frequency: 500 cm^-1
-  x(2) = 1000.0      ! Second harm. osc. pseudo-frequency: 500 cm^-1
-  x(3) = 1500.0     ! Third harm. osc. pseudo-frequency: 1500 cm^-1
+  x(1) = 300.0      ! First harm. osc. pseudo-frequency: 500 cm^-1
+  x(2) = 1500.0      ! Second harm. osc. pseudo-frequency: 500 cm^-1
+  x(3) = 3000.0     ! Third harm. osc. pseudo-frequency: 1500 cm^-1
   x(4) = 1000.0     ! First hind. rot. pseudo-barrier: 500 cm^-1
   x(5) = 100.0      ! First hind. rot. osc. freq. : 100 cm^-1
   x(6) = 2000.0     ! Second hind. rot. pseudo-barrier: 1500 cm^-1
@@ -5138,12 +5138,12 @@ SUBROUTINE Case_18(Total_char_freq, Total_harm_osc_freq, HR_params )
 
 ! x(2) corresponds to the first harmonic oscillator pseudo-frequency
   ind(2) = 3        ! Has both an upper and lower bound
-  bl(2)  = 400.     ! Lower bound is 400 cm^-1
+  bl(2)  = 180.     ! Lower bound is 180 cm^-1
   bu(2)  = 4000.    ! Upper bound is 4000 cm^-1
 
 ! x(3) corresponds to the second harmonic oscillator pseudo-frequency
   ind(3) = 3        ! Has both an upper and lower bound
-  bl(3)  = 400.     ! Lower bound is 400 cm^-1
+  bl(3)  = 180.     ! Lower bound is 180 cm^-1
   bu(3)  = 4000.    ! Upper bound is 4000 cm^-1
 
 ! x(4) corresponds to the first hindered rotor pseudo-barrier
@@ -5154,7 +5154,7 @@ SUBROUTINE Case_18(Total_char_freq, Total_harm_osc_freq, HR_params )
 ! x(5) corresponds to the first hindered rotor oscillator frequency
   ind(5) = 3        ! Has both an upper and lower bound
   bl(5)  = 40.      ! Has lower bound of 40 cm^-1
-  bu(5)  = 400.   ! Has upper bound of 400 cm^-1
+  bu(5)  = 180.   ! Has upper bound of 180 cm^-1
 
 ! x(6) corresponds to the second hindered rotor pseudo-barrier
   ind(6) = 3        ! Has both an upper and lower bound
@@ -5165,11 +5165,11 @@ SUBROUTINE Case_18(Total_char_freq, Total_harm_osc_freq, HR_params )
 !  Note that the two pseudo-frequencies should be different so that the
 !  Jacobian of x(1) is not automatically zero
   x(1) = floor(REAL(N_vib)/2.) !Harm. osc. degen.:  1/2 the # of unknown osc
-  x(2) = 500.0      ! First harm. osc. pseudo-frequency: 500 cm^-1
-  x(3) = 1500.0     ! Second harm. osc. pseudo-frequency: 1500 cm^-1
+  x(2) = 300.0      ! First harm. osc. pseudo-frequency: 500 cm^-1
+  x(3) = 3000.0     ! Second harm. osc. pseudo-frequency: 1500 cm^-1
   x(4) = 1000.0     ! First hind. rot. pseudo-barrier: 500 cm^-1
   x(5) = 100.0      ! First hind. rot. osc. freq. : 100 cm^-1
-  x(6) = 2000.0     ! Second hind. rot. pseudo-barrier: 1500 cm^-1
+  x(6) = 3000.0     ! Second hind. rot. pseudo-barrier: 1500 cm^-1
 
 !  Tell how much storage we gave the solver.
   iwork(1) = lwork
@@ -5391,9 +5391,9 @@ SUBROUTINE Case_19(Total_char_freq, Total_harm_osc_freq, HR_params )
   bu(6)  = 600.    ! Upper bound is 600 cm^-1
 
 !  Define the initial guess for the solution
-  x(1) = 1000.0 !Barrier Height
+  x(1) = 3000.0 !Barrier Height
   x(2) = 80.0 !Hind. Freq
-  x(3) = 2000.0 !Barrier Height
+  x(3) = 1000.0 !Barrier Height
   x(4) = 150.0 !Hind. Freq
   x(5) = 3000.0 !Barrier Height
   x(6) = 300.0 !Hind. Freq
@@ -5573,7 +5573,7 @@ SUBROUTINE Case_20(Total_char_freq, Total_harm_osc_freq, HR_params  )
 
 ! x(1) corresponds to the harmonic oscillator pseudo-frequency
   ind(1) = 3        ! Has both an upper and lower bound
-  bl(1)  = 400.     ! Lower bound is 400 cm^-1
+  bl(1)  = 180.     ! Lower bound is 180 cm^-1
   bu(1)  = 4000.    ! Upper bound is 4000 cm^-1
 
 ! x(2) corresponds to the harm. osc. freq. of  the first hindered rotor
@@ -5602,7 +5602,7 @@ SUBROUTINE Case_20(Total_char_freq, Total_harm_osc_freq, HR_params  )
   bu(6)  = 10000.0  ! Upper bound is 10000 cm^-1
 
 !  Define the initial guess for the solution
-  x(1) = 800.0 !Harm. osc. frequency
+  x(1) = 300.0 !Harm. osc. frequency
   x(2) = 80.0 !Hind. Freq
   x(3) = 1000.0 !Barrier Height
   x(4) = 250.0 !Hind. Freq
@@ -5788,12 +5788,12 @@ SUBROUTINE Case_21(Total_char_freq, Total_harm_osc_freq, HR_params )
 
 ! x(1) corresponds to the first harmonic oscillator pseudo-frequency
   ind(1) = 3        ! Has both an upper and lower bound
-  bl(1)  = 400.     ! Lower bound is 400 cm^-1
+  bl(1)  = 180.     ! Lower bound is 180 cm^-1
   bu(1)  = 4000.    ! Upper bound is 4000 cm^-1
 
 ! x(2) corresponds to the second harmonic oscillator pseudo-frequency
   ind(2) = 3        ! Has both an upper and lower bound
-  bl(2)  = 400.     ! Lower bound is 400 cm^-1
+  bl(2)  = 180.     ! Lower bound is 180 cm^-1
   bu(2)  = 4000.    ! Upper bound is 4000 cm^-1
 
 ! x(3) corresponds to the harm. osc. freq. of the first hindered rotor
@@ -5813,12 +5813,12 @@ SUBROUTINE Case_21(Total_char_freq, Total_harm_osc_freq, HR_params )
 
 ! x(6) corresponds to the third harmonic oscillator pseudo-frequency
   ind(6) = 3        ! Has both an upper and lower bound
-  bl(6)  = 10.     ! Lower bound is 400 cm^-1
+  bl(6)  = 10.     ! Lower bound is 180 cm^-1
   bu(6)  = 10000.    ! Upper bound is 4000 cm^-1
 
 !  Define the initial guess for the solution
-  x(1) = 800.0 !Harm. osc. frequency
-  x(2) = 1200.0 !Harm. osc. frequency
+  x(1) = 300.0 !Harm. osc. frequency
+  x(2) = 3000.0 !Harm. osc. frequency
   x(3) = 150. !Hind Rot. Harm osc. freq. 
   x(4) = 1000. ! First pseudo-barrier height: 500 cm^-1
   x(5) = 2000. ! Second pseudo-barrier height: 3000 cm^-1
@@ -6014,7 +6014,7 @@ SUBROUTINE Case_22(Total_char_freq, Total_harm_osc_freq, HR_params )
 
 ! x(1) corresponds to the first harmonic oscillator pseudo-frequency
   ind(1) = 3        ! Has both an upper and lower bound
-  bl(1)  = 400.     ! Lower bound is 400 cm^-1
+  bl(1)  = 180.     ! Lower bound is 180 cm^-1
   bu(1)  = 4000.    ! Upper bound is 4000 cm^-1
 
 ! x(2) corresponds to the degeneracy of the first hindered rotor
@@ -6034,21 +6034,21 @@ SUBROUTINE Case_22(Total_char_freq, Total_harm_osc_freq, HR_params )
 
 ! x(5) corresponds to the second harmonic oscillator pseudo-frequency
   ind(5) = 3        ! Has both an upper and lower bound
-  bl(5)  = 400.     ! Lower bound is 400 cm^-1
+  bl(5)  = 180.     ! Lower bound is 180 cm^-1
   bu(5)  = 4000.    ! Upper bound is 4000 cm^-1
 
 ! x(6) corresponds to the third harmonic oscillator pseudo-frequency
   ind(6) = 3        ! Has both an upper and lower bound
-  bl(6)  = 400.     ! Lower bound is 400 cm^-1
+  bl(6)  = 180.     ! Lower bound is 180 cm^-1
   bu(6)  = 4000.    ! Upper bound is 4000 cm^-1
 
 !  Define the initial guess for the solution
-  x(1) = 800.0 !Harm. osc. frequency
+  x(1) = 300.0 !Harm. osc. frequency
   x(2) = FLOOR(REAL(N_rot)/2.) !Degeneracy of first pseudo-frequency: 1/2 N_rot
   x(3) = 500.0 ! First pseudo-barrier height: 500 cm^-1
   x(4) = 3000. ! Second pseudo-barrier height: 3000 cm^-1
-  x(5) = 1200.0 !Harm. osc. frequency
-  x(6) = 1600.0 !Harm. osc. frequency
+  x(5) = 1500.0 !Harm. osc. frequency
+  x(6) = 3000.0 !Harm. osc. frequency
 
 !  Tell how much storage we gave the solver.
   iwork(1) = lwork
@@ -6249,12 +6249,12 @@ SUBROUTINE Case_23(Total_char_freq, Total_harm_osc_freq, HR_params )
 
 ! x(2) corresponds to the first harmonic oscillator pseudo-frequency
   ind(2) = 3        ! Has both an upper and lower bound
-  bl(2)  = 400.     ! Lower bound is 400 cm^-1
+  bl(2)  = 180.     ! Lower bound is 180 cm^-1
   bu(2)  = 4000.    ! Upper bound is 4000 cm^-1
 
 ! x(3) corresponds to the second harmonic oscillator pseudo-frequency
   ind(3) = 3        ! Has both an upper and lower bound
-  bl(3)  = 400.     ! Lower bound is 400 cm^-1
+  bl(3)  = 180.     ! Lower bound is 180 cm^-1
   bu(3)  = 4000.    ! Upper bound is 4000 cm^-1
 
 ! x(4) corresponds to the degeneracy of the first hindered rotor
@@ -6276,11 +6276,11 @@ SUBROUTINE Case_23(Total_char_freq, Total_harm_osc_freq, HR_params )
 !  Note that the two pseudo-frequencies should be different so that the
 !  Jacobian of x(1) is not automatically zero
   x(1) = floor(REAL(N_vib)/2.) !Harm. osc. degen.:  1/2 the # of unknown osc
-  x(2) = 500.0      ! First harm. osc. pseudo-frequency: 500 cm^-1
-  x(3) = 1500.0     ! Second harm. osc. pseudo-frequency: 1500 cm^-1
+  x(2) = 300.0      ! First harm. osc. pseudo-frequency: 500 cm^-1
+  x(3) = 3000.0     ! Second harm. osc. pseudo-frequency: 1500 cm^-1
   x(4) = floor(REAL(N_rot)/2.) ! Hind. rot. degen.:  1/2 the # of hind. rot.
   x(5) = 500.0      ! First hind. rot. pseudo-barrier: 500 cm^-1
-  x(6) = 1500.0     ! Second hind. rot. pseudo-barrier: 1500 cm^-1
+  x(6) = 4000.0     ! Second hind. rot. pseudo-barrier: 1500 cm^-1
 
 !  Tell how much storage we gave the solver.
   iwork(1) = lwork
@@ -6514,12 +6514,12 @@ SUBROUTINE Case_24(Total_char_freq, Total_harm_osc_freq, HR_params )
 !  Define the initial guess for the solution
 !  Note that the two pseudo-frequencies should be different so that the
 !  Jacobian of x(1) is not automatically zero
-  x(1) = 1000.0      ! First hind. rot. pseudo-barrier: 1000 cm^-1
+  x(1) = 3000.0      ! First hind. rot. pseudo-barrier: 1000 cm^-1
   x(2) = 100.0      ! First hind. rot osc. frequency: 150 cm^-1
   x(3) = floor(REAL(N_rot)/2.) -1.! Hind. rot. degen.:  1/2 the # of hind. rot.
   x(4) = 500.0      ! second hind. rot. pseudo-barrier: 500 cm^-1
   x(5) = 1500.0     ! third hind. rot. pseudo-barrier: 1500 cm^-1
-  x(2) = 200.0      ! First hind. rot osc. frequency: 150 cm^-1
+  x(2) = 100.0      ! First hind. rot osc. frequency: 150 cm^-1
 
 !  Tell how much storage we gave the solver.
   iwork(1) = lwork
@@ -6751,18 +6751,18 @@ SUBROUTINE Case_25(Total_char_freq, Total_harm_osc_freq, HR_params )
 
 ! x(6) corresponds to the first harmonic oscillator pseudo-frequency
   ind(6) = 3        ! Has both an upper and lower bound
-  bl(6)  = 400.     ! Lower bound is 400 cm^-1
+  bl(6)  = 180.     ! Lower bound is 180 cm^-1
   bu(6)  = 4000.    ! Upper bound is 4000 cm^-1
 
 !  Define the initial guess for the solution
 !  Note that the two pseudo-frequencies should be different so that the
 !  Jacobian of x(1) is not automatically zero
-  x(1) = 1000.0      ! First hind. rot. pseudo-barrier: 1000 cm^-1
+  x(1) = 3000.0      ! First hind. rot. pseudo-barrier: 1000 cm^-1
   x(2) = 150.0      ! First hind. rot osc. frequency: 150 cm^-1
   x(3) = floor(REAL(N_rot)/2.) -1.! Hind. rot. degen.:  1/2 the # of hind. rot.
   x(4) = 500.0      ! second hind. rot. pseudo-barrier: 500 cm^-1
   x(5) = 1500.0     ! third hind. rot. pseudo-barrier: 1500 cm^-1
-  x(6) = 1200.0      ! First harm. osc.: 1200 cm^-1
+  x(6) = 300.0      ! First harm. osc.: 1200 cm^-1
 
 !  Tell how much storage we gave the solver.
   iwork(1) = lwork
@@ -6955,12 +6955,12 @@ SUBROUTINE Case_26(Total_char_freq, Total_harm_osc_freq, HR_params )
 
 ! x(1) corresponds to the first harmonic oscillator pseudo-frequency
   ind(1) = 3        ! Has both an upper and lower bound
-  bl(1)  = 400.     ! Lower bound is 400 cm^-1
+  bl(1)  = 180.     ! Lower bound is 180 cm^-1
   bu(1)  = 4000.    ! Upper bound is 4000 cm^-1
 
 ! x(2) corresponds to the second harmonic oscillator pseudo-frequency
   ind(2) = 3        ! Has both an upper and lower bound
-  bl(2)  = 400.     ! Lower bound is 400 cm^-1
+  bl(2)  = 180.     ! Lower bound is 180 cm^-1
   bu(2)  = 4000.    ! Upper bound is 4000 cm^-1
 
 ! x(3) corresponds to the degeneracy of the first hindered rotor
@@ -6986,12 +6986,12 @@ SUBROUTINE Case_26(Total_char_freq, Total_harm_osc_freq, HR_params )
 !  Define the initial guess for the solution
 !  Note that the two pseudo-frequencies should be different so that the
 !  Jacobian of x(1) is not automatically zero
-  x(1) = 800.0      !First harm osc. frequency: 800 cm^-1
-  x(2) = 1200.0      ! Second harm osc. frequency: 1200 cm^-1
+  x(1) = 300.0      !First harm osc. frequency: 800 cm^-1
+  x(2) = 3000.0      ! Second harm osc. frequency: 1200 cm^-1
   x(3) = floor(REAL(N_rot)/2.)! Hind. rot. degen.:  1/2 the # of hind. rot.
   x(4) = 1000.0      ! First hind. rot. pseudo-barrier: 1000 cm^-1
   x(5) = 100.0     ! First hind. rot.osc. freq: 100 cm^-1
-  x(6) = 2000.0      ! Second hind. rot. pseudo-barrier: 2000 cm^-1
+  x(6) = 4000.0      ! Second hind. rot. pseudo-barrier: 2000 cm^-1
 
 !  Tell how much storage we gave the solver.
   iwork(1) = lwork
@@ -7501,7 +7501,7 @@ IMPLICIT NONE
 
   !  Set the common block varibles:
   CV_temps = (/ 300.0, 400.0, 500.0, 600.0, 800.0, 1000.0, 1500.0 /)
-  nu_low = 100.0
+  nu_low = 50.0
   nu_mid = 150.0
   nu_high = 300.0
 
