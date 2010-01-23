@@ -72,8 +72,7 @@ subroutine densityOfStates(E, Ngrains, vib, Nvib, rot, Nrot, hind, Nhind, &
 	real(8), dimension(1:Ngrains) :: rho0
 	! Some integer indices
 	integer r, i
-	integer found
-
+	
 	real(8) :: dE_vib
 	integer :: mult, Ngrains_vib
 	real(8), dimension(:), allocatable :: E_vib, rho_vib
@@ -141,6 +140,8 @@ subroutine densityOfStates(E, Ngrains, vib, Nvib, rot, Nrot, hind, Nhind, &
 				rho_vib(r) = 0.0
 			elseif (r == mult + 1) then
 				rho_vib(r) = rho(i)
+			elseif (i >= Ngrains) then
+				rho_vib(r) = rho(Ngrains)
 			else
 				rho_vib(r) = rho(i) * ( rho(i+1) / rho(i)  ) ** ((E_vib(r) - E(i)) / dE)
 			end if
@@ -204,7 +205,7 @@ subroutine rigidRotorDensityOfStates(E, Ngrains, rot, Nrot, linear, rho, msg)
 	! A temporary for real variables
 	real(8) qr
 	! Some integer indices
-	integer i, r
+	integer r
 
 	! Set constants
 	pi = 3.141592654

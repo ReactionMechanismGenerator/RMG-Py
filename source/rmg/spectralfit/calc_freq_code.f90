@@ -1983,7 +1983,9 @@ SUBROUTINE Case_2(Total_char_freq, Total_harm_osc_freq, HR_params  )
 ! WRITE ( *, '(a)' ) 'DQED_PRB2'
 ! WRITE ( *, '(a)' ) '  Normal end of execution.'
 
-! WRITE ( *, '(a)' ) ' '  results = x
+! WRITE ( *, '(a)' ) ' '  
+  results = x
+
   Theta_1 = results(1)
   Theta_2 = results(2)
   Total_harm_osc_freq( size(Total_char_freq ) +1 ) = Theta_1
@@ -5646,7 +5648,8 @@ SUBROUTINE Case_20(Total_char_freq, Total_harm_osc_freq, HR_params  )
 ! WRITE ( *, '(a)' ) 'DQED_PRB2'
 ! WRITE ( *, '(a)' ) '  Normal end of execution.'
 
-! WRITE ( *, '(a)' ) ' '  results = x
+! WRITE ( *, '(a)' ) ' '
+  results = x
 
   Theta_1  = results(1)
   nu_1     = results(2)
@@ -7354,9 +7357,10 @@ SUBROUTINE read_bonds(data, bond_info, bond_degeneracy)
   INTEGER :: Alcohol, Ether, ROOH, ROOR, Peroxy
   INTEGER :: Rings
   
-  INTEGER :: N_atom, N_rot, linearity, bond_degeneracy
+  INTEGER :: N_atom, N_rot, linearity
   INTEGER, INTENT(IN), DIMENSION(:) :: data
   INTEGER, INTENT(OUT), DIMENSION(:) :: bond_info
+  INTEGER, INTENT(OUT) :: bond_degeneracy
 
   N_atom = data(1)
   N_rot =  data(2)
