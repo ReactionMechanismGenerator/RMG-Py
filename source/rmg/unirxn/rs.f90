@@ -420,6 +420,7 @@ subroutine activeStateBanded(T, P, E, Mcoll, densStates, Kij, Fim, Gnj, dEdown, 
 	Z = 0 * Z
 	
 	! Collisional terms in active-state matrix and RHS vectors
+	halfbandwidth = halfbandwidth / nIsom
 	do i = 1, nIsom
 		do s = nRes(i)+1, nGrains
 			do r = max(nRes(i)+1, s - halfbandwidth), min(nGrains, s + halfbandwidth)
@@ -428,7 +429,8 @@ subroutine activeStateBanded(T, P, E, Mcoll, densStates, Kij, Fim, Gnj, dEdown, 
 			Z(indices(s,i), i) = sum(Mcoll(i,s,1:nRes(i)) * densStates(i,1:nRes(i)) * exp(-E(1:nRes(i)) / 8.314472 / T))
 		end do
 	end do
-	
+	halfbandwidth = halfbandwidth * nIsom
+
 	! Isomerization terms in active-state matrix and RHS vectors
 	do i = 1, nIsom
 		do j = 1, i-1
@@ -495,7 +497,7 @@ subroutine accountingMatrix(nGrains, nIsom, nRes, indices)
 
 	! Construct accounting matrix
 	row = 1
-	do r = minval(nRes)+1, nGrains
+	do r = 1, nGrains
 		do i = 1, nIsom
 			if (r > nRes(i)) then
 				indices(r,i) = row
