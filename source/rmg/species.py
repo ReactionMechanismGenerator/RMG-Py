@@ -692,7 +692,9 @@ def makeNewSpecies(structure, label='', reactive=True):
 #			if atom.hasFreeElectron(): label += 'J'
 		label = structure.toSMILES()
 	
+	# Note in the log
 	spec = Species(speciesCounter+1, label, structure, reactive)
+	logging.debug('Creating new species %s' % str(spec))
 	return processNewSpecies(spec)
 
 def processNewSpecies(spec):
@@ -723,9 +725,6 @@ def processNewSpecies(spec):
 		mol = pybel.Molecule(spec.toOBMol())
 		mol.draw(False, os.path.join(settings.outputDirectory, 'species/' + str(spec) + '.png'))
 
-	# Note in the log
-	logging.debug('Created new species ' + str(spec) )# + ': ' + spec.toInChI())
-	
 	# Return the newly created species
 	speciesCache.insert(0, spec)
 	if len(speciesCache) > speciesCacheMaxSize: speciesCache.pop()
