@@ -9,7 +9,7 @@
 # Alternatively:
 F90=g95
 F2PY_FCOMPILER=g95
-F90FLAGS=-fPIC -r8 -fbounds-check -Wall
+F90FLAGS=-fPIC -ftrace=full -fbounds-check -Wall
 
 ################################################################################
 
