@@ -331,7 +331,7 @@ subroutine hinderedRotorDensityOfStates(E, Ngrains, hind, rho, msg)
 	! Some integer indices
 	integer r
 
-	real(8) q1f, tol, K
+	real(8) q1f, tol, K, V0
 	
 	msg = ''
 
