@@ -41,7 +41,7 @@ import data
 import species
 import reaction
 import thermo
-import spectral
+import spectral.data
 
 """
 Contains functions for manipulation of RMG input and output files.
@@ -103,10 +103,10 @@ def loadKineticsDatabase(dstr):
 def loadFrequencyDatabase(dstr):
 	"""
 	Load the RMG thermo database located at `dstr` into the global variable
-	`rmg.spectral.frequencyDatabase`.
+	`rmg.spectral.data.frequencyDatabase`.
 	"""
-	spectral.frequencyDatabase = spectral.FrequencyDatabase()
-	spectral.frequencyDatabase = spectral.loadFrequencyDatabase(dstr)
+	spectral.data.frequencyDatabase = spectral.data.FrequencyDatabase()
+	spectral.data.frequencyDatabase = spectral.data.loadFrequencyDatabase(dstr)
 
 ################################################################################
 
