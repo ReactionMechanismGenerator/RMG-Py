@@ -258,24 +258,14 @@ def generateSpectralData(struct, thermoData):
 	# Check that all Cv values are still positive (should we do this?)
 	#for C in Cv:
 	#	if C <= 0.0: raise Exception('Remaining heat capacity is negative.')
-	
+
 	# Fit remaining frequencies and hindered rotors to the heat capacity data
 	import fit
-	freeVibrations = numVibrations - len(frequencies)
-	if freeVibrations > 0 and numRotors > 0:
-		vib, hind = fit.fitspectraldata(Cv, Tlist, freeVibrations, numRotors)
-		for v in vib:
-			spectralData.modes.append(HarmonicOscillator(frequency=v))
-		for v, b in hind:
-			spectralData.modes.append(HinderedRotor(frequency=v, barrier=b))
-	elif freeVibrations > 0 and numRotors == 0:
-		vib = fit.fitspectraldatanorotors(Cv, Tlist, freeVibrations)
-		for v in vib:
-			spectralData.modes.append(HarmonicOscillator(frequency=v))
-	elif freeVibrations == 0 and numRotors > 0:
-		hind = fit.fitspectraldatanooscillators(Cv, Tlist, numRotors)
-		for v, b in hind:
-			spectralData.modes.append(HinderedRotor(frequency=v, barrier=b))
+	vib, hind = fit.fitSpectralDataToHeatCapacity(Tlist, Cv, numVibrations - len(frequencies), numRotors)
+	for v in vib:
+		spectralData.modes.append(HarmonicOscillator(frequency=v))
+	for v, b in hind:
+		spectralData.modes.append(HinderedRotor(frequency=v, barrier=b))
 
 	return spectralData
 

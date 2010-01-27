@@ -28,6 +28,8 @@
 #
 ################################################################################
 
+import numpy as np
+
 import _modes
 
 ################################################################################
@@ -378,7 +380,7 @@ class SpectralData:
 		self.modes = modes or []
 		self.symmetry = symmetry
 
-	def heatCapacity(self, Tlist):
+	def getHeatCapacity(self, Tlist):
 		"""
 		Return the value of the heat capacity at the specified temperatures
 		`Tlist` in K. The heat capacity returned is divided by the Boltzmann
@@ -386,10 +388,10 @@ class SpectralData:
 		"""
 		Cp = np.ones((len(Tlist)), np.float64)
 		for mode in self.modes:
-			Cp += mode.heatCapacity(Tlist)
+			Cp += mode.getHeatCapacity(Tlist)
 		return Cp
 
-	def partitionFunction(self, Tlist):
+	def getPartitionFunction(self, Tlist):
 		"""
 		Return the value of the partition function at the specified temperatures
 		`Tlist` in K.
@@ -404,12 +406,12 @@ class SpectralData:
 				Q[i] *= Q0[i]
 		# Other modes
 		for mode in self.modes:
-			Q0 = mode.partitionFunction(Tlist)
+			Q0 = mode.getPartitionFunction(Tlist)
 			for i in range(len(Tlist)):
 				Q[i] *= Q0[i]
 		return Q
 
-	def densityOfStates(self, Elist):
+	def getDensityOfStates(self, Elist):
 		"""
 		Return the value of the density of states in mol/J at the specified
 		energies `Elist` in J/mol above the ground state.
@@ -423,7 +425,7 @@ class SpectralData:
 		# First convolve nonvibrational modes
 		for mode in self.modes:
 			if not isinstance(mode, HarmonicOscillator):
-				rho0 = mode.densityOfStates(Elist)
+				rho0 = mode.getDensityOfStates(Elist)
 				if not rho.any():
 					rho = rho0
 				else:
@@ -441,7 +443,7 @@ class SpectralData:
 		Q = self.partitionFunction([T])[0]
 		return math.log(Q) + beta * float(E)
 
-	def densityOfStatesForst(self, Elist):
+	def getDensityOfStatesForst(self, Elist):
 
 		import scipy.optimize
 
