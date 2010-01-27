@@ -28,9 +28,7 @@
 #
 ################################################################################
 
-import numpy as np
-
-import rmg.constants as constants
+import _modes
 
 ################################################################################
 
@@ -48,7 +46,7 @@ class Translation:
 	def __repr__(self):
 		return '%s.Translation(%s, %s)' % (self.__module__, self.mass, self.dimension)
 
-	def partitionFunction(self, Tlist, V=1.0):
+	def getPartitionFunction(self, Tlist, V=1.0):
 		"""
 		Return the value of the partition function at the specified temperatures
 		`Tlist` in K. The formula is
@@ -59,25 +57,21 @@ class Translation:
 		:math:`d` is dimensionality, :math:`k_\\mathrm{B}` is Boltzmann's
 		constant, and :math:`h` is Planck's constant.
 		"""
+		return _modes.translation_partitionfunction(Tlist, self.mass, self.dimension, V)
 
-		Q = np.zeros(len(Tlist), np.float64)
-		for i in range(len(Tlist)):
-			Q[i] = ((2 * math.pi * self.mass / constants.Na * constants.kB * Tlist[i]) / (constants.h * constants.h))**(self.dimension/2.0) * V
-		return Q
-
-	def heatCapacity(self, Tlist, V=1.0):
+	def getHeatCapacity(self, Tlist, V=1.0):
 		"""
-		Return the contribution to the heat capacity due to translation. The 
+		Return the contribution to the heat capacity due to translation. The
 		formula is
 
 		.. math:: \\frac{C_\\mathrm{v}^\\mathrm{trans}(T)}{R} = \\frac{d}{2} R
-				
+
 		where :math:`T` is temperature, :math:`V` is volume,
 		:math:`d` is dimensionality, and :math:`R` is the gas law constant.
 		"""
-		return np.ones(len(Tlist), numpy.float64) * self.dimension / 2.0
+		return _modes.translation_heatcapacity(Tlist, self.mass, self.dimension, V)
 
-	def densityOfStates(self, Elist, V=1.0):
+	def getDensityOfStates(self, Elist, V=1.0):
 		"""
 		Return the density of states at the specified energlies `Elist` in J/mol
 		above the ground state. The formula is
@@ -88,19 +82,7 @@ class Translation:
 		:math:`q_\\mathrm{t}` is defined in the equation for the partition
 		function.
 		"""
-
-		qt = ((2 * math.pi * self.mass) / (constants.h * constants.h))**(self.dimension/2.0) * V
-
-		rho = np.zeros(len(Elist), np.float64)
-		if self.dimension == 2:
-			for i in range(len(Elist)):
-				rho[i] = qt
-		else:
-			for i in range(len(Elist)):
-				rho[i] = qt * math.sqrt(Elist[i]) / (math.sqrt(math.pi) / 2)		# qt * E^0.5 / 0.5!
-
-		return rho
-
+		return _modes.translation_densityofstates(Elist, self.mass, self.dimension, V)
 
 ################################################################################
 
@@ -122,7 +104,7 @@ class RigidRotor:
 	def __repr__(self):
 		return '%s.RigidRotor(%s, %s)' % (self.__module__, self.linear, self.frequencies)
 
-	def partitionFunction(self, Tlist):
+	def getPartitionFunction(self, Tlist):
 		"""
 		Return the value of the partition function at the specified temperatures
 		`Tlist` in K. The formula is
@@ -139,22 +121,9 @@ class RigidRotor:
 		:math:`h` is Planck's constant. :math:`\\sigma` is a placeholder for
 		the symmetry number.
 		"""
+		return _modes.freerotor_partitionfunction(Tlist, self.frequencies, 1 if self.linear else 0)
 
-		Q = np.zeros(len(Tlist), np.float64)
-		if self.linear:
-			freqProduct = constants.h * constants.c * 100.0 * self.frequencies[0]
-			for i in range(len(Tlist)):
-				Q[i] = constants.kB * Tlist[i] / freqProduct
-		else:
-			freqProduct = 1.0
-			for freq in self.frequencies:
-				freqProduct *= freq * constants.h * constants.c * 100.0
-			for i in range(len(Tlist)):
-				Q[i] = math.sqrt(math.pi) * (constants.kB * Tlist[i])**(len(self.frequencies)/2.0) / math.sqrt(freqProduct)
-
-		return Q
-
-	def heatCapacity(self, Tlist):
+	def getHeatCapacity(self, Tlist):
 		"""
 		Return the contribution to the heat capacity due to rigid rotation. The
 		formula is
@@ -168,9 +137,9 @@ class RigidRotor:
 		if linear, where :math:`T` is temperature and :math:`R` is the gas law
 		constant.
 		"""
-		return np.ones(len(Tlist), numpy.float64) * (1.0 if self.linear else 1.5)
+		return _modes.freerotor_heatcapacity(Tlist, self.frequencies, 1 if self.linear else 0)
 
-	def densityOfStates(self, Elist):
+	def getDensityOfStates(self, Elist):
 		"""
 		Return the density of states at the specified energlies `Elist` in J/mol
 		above the ground state. The formula is
@@ -185,21 +154,7 @@ class RigidRotor:
 		:math:`q_\\mathrm{r}` is defined in the	equation for the partition
 		function.
 		"""
-
-		rho = np.zeros(len(Elist), np.float64)
-		if self.linear:
-			freqProduct = constants.h * constants.c * 100.0 * self.frequencies[0] * constants.Na
-			for i in range(len(Elist)):
-				rho[i] = 1.0 / freqProduct
-		else:
-			freqProduct = 1.0
-			for freq in self.frequencies:
-				freqProduct *= freq * constants.h * constants.c * 100.0
-			qr = math.sqrt(math.pi) / math.sqrt(freqProduct)
-			for i in range(len(Elist)):
-				rho[i] = qr  * math.sqrt(Elist[i]) / (math.sqrt(math.pi) / 2)
-
-		return rho
+		return _modes.freerotor_densityofstates(Elist, self.frequencies, 1 if self.linear else 0)
 
 	def fromXML(self, document, rootElement):
 		"""
@@ -252,7 +207,7 @@ class HinderedRotor:
 	def __repr__(self):
 		return '%s.HinderedRotor(%s, %s)' % (self.__module__, self.frequency, self.barrier)
 
-	def partitionFunction(self, Tlist):
+	def getPartitionFunction(self, Tlist):
 		"""
 		Return the value of the partition function at the specified temperatures
 		`Tlist` in K. The formula is
@@ -266,19 +221,9 @@ class HinderedRotor:
 		the symmetry number. :math:`I_0(x)` is the modified Bessel function of
 		order zero.
 		"""
+		return _modes.hinderedrotor_partitionfunction(Tlist, self.frequency, self.barrier)
 
-		import scipy.special
-
-		q1f = math.sqrt(math.pi / (constants.h * constants.c * 100.0 * self.frequency))
-
-		Q = np.zeros(len(Tlist), np.float64)
-		for i in range(len(Tlist)):
-			b = self.barrier * constants.h * constants.c * 100.0 / (2 * constants.kB * Tlist[i])
-			Q[i] = q1f * math.sqrt(constants.kB * Tlist[i]) * math.exp(-b) * scipy.special.i0(b)
-
-		return Q
-
-	def heatCapacity(self, Tlist):
+	def getHeatCapacity(self, Tlist):
 		"""
 		Return the contribution to the heat capacity due to hindered rotation.
 		The formula is
@@ -293,13 +238,9 @@ class HinderedRotor:
 		:math:`k_\\mathrm{B}` is Boltzmann's constant, and :math:`R` is the gas
 		law constant.
 		"""
-		import scipy.special
-		xi = self.barrier * constants.h * constants.c * 100.0 / (2.0 * constants.kB * Tlist)
-		I0 = scipy.special.i0(xi)
-		I1 = scipy.special.i1(xi)
-		return (0.5 + xi*xi - xi*xi*I1*I1/I0/I0 - xi*I1/I0)
+		return _modes.hinderedrotor_heatcapacity(Tlist, self.frequency, self.barrier)
 
-	def densityOfStates(self, Elist):
+	def getDensityOfStates(self, Elist):
 		"""
 		Return the density of states at the specified energlies `Elist` in J/mol
 		above the ground state. The formula is
@@ -315,21 +256,7 @@ class HinderedRotor:
 		function. :math:`\\mathcal{K}(x)` is the complete elliptic integral of the first
 		kind.
 		"""
-
-		import scipy.special
-
-		q1f = math.sqrt(math.pi / (constants.h * constants.c * 100.0 * self.frequency * constants.Na))
-		V0 = self.barrier * constants.h * constants.c * 100.0 * constants.Na
-
-		rho = np.zeros(len(Elist), np.float64)
-		for i in range(len(Elist)):
-			E = Elist[i]
-			if Elist[i] < V0:
-				rho[i] = 2 * q1f / (math.pi**1.5 * math.sqrt(V0)) * scipy.special.ellipk(E / V0)
-			else:
-				rho[i] = 2 * q1f / (math.pi**1.5 * math.sqrt(E)) * scipy.special.ellipk(V0 / E)
-
-		return rho
+		return _modes.hinderedrotor_densityofstates(Elist, self.frequency, self.barrier)
 
 	def fromXML(self, document, rootElement, frequencyScaleFactor=1.0):
 		"""
@@ -371,7 +298,7 @@ class HarmonicOscillator:
 	def __repr__(self):
 		return '%s.HarmonicOscillator(%s)' % (self.__module__, self.frequency)
 
-	def partitionFunction(self, Tlist):
+	def getPartitionFunction(self, Tlist):
 		"""
 		Return the value of the partition function at the specified temperatures
 		`Tlist` in K. The formula is
@@ -385,14 +312,9 @@ class HarmonicOscillator:
 		energy to be at the zero-point energy of the molecule, *not* the bottom
 		of the potential well.
 		"""
+		return _modes.harmonicoscillator_partitionfunction(Tlist, self.frequency)
 
-		Q = np.zeros(len(Tlist), np.float64)
-		for i in range(len(Tlist)):
-			exponent = constants.h * constants.c * 100.0 * self.frequency / (constants.kB * Tlist[i])
-			Q[i] = 1.0 / (1 - math.exp(-exponent))
-		return Q
-
-	def heatCapacity(self, Tlist):
+	def getHeatCapacity(self, Tlist):
 		"""
 		Return the contribution to the heat capacity due to hindered rotation.
 		The formula is
@@ -407,12 +329,9 @@ class HarmonicOscillator:
 		:math:`k_\\mathrm{B}` is Boltzmann's constant, and :math:`R` is the gas
 		law constant.
 		"""
-		from numpy import exp
-		xi = constants.h * constants.c * 100.0 * self.frequency / (constants.kB * Tlist)
-		exp_xi = exp(xi)
-		return (xi*xi * exp_xi / (1 - exp_xi) / (1 - exp_xi))
+		return _modes.harmonicoscillator_heatcapacity(Tlist, self.frequency)
 
-	def densityOfStates(self, Elist):
+	def getDensityOfStates(self, Elist):
 		"""
 		Return the density of states at the specified energies `Elist` in J/mol
 		above the ground state. The formula is
@@ -596,7 +515,7 @@ class SpectralData:
 		RMG-style XML. `document` is an :class:`io.XML` class representing the
 		XML DOM tree.
 		"""
-		
+
 		spectralDataElement = document.createElement('spectralData', rootElement)
 		for mode in self.modes:
 			mode.toXML(document, spectralDataElement)

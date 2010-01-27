@@ -248,7 +248,7 @@ def generateSpectralData(struct, thermoData):
 	Cv = numpy.array(Cp) / constants.R
 	Tlist = numpy.array(thermo.ThermoGAData.CpTlist)
 	for mode in spectralData.modes:
-		Cv -= mode.heatCapacity(Tlist)
+		Cv -= mode.getHeatCapacity(Tlist)
 	# Subtract out translational modes
 	Cv -= 1.5
 	# Subtract out external rotational modes
