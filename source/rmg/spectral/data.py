@@ -177,7 +177,7 @@ def generateSpectralData(struct, thermoData):
 
 	# Determine the number of internal modes for this structure
 	numModes = 3 * len(struct.atoms()) - (5 if linear else 6)
-
+	
 	# Determine the number of vibrational and hindered rotor modes for this
 	# structure
 	numRotors = struct.countInternalRotors()
@@ -197,9 +197,9 @@ def generateSpectralData(struct, thermoData):
 		groupCount[node] = count / data[0]
 
 	# For debugging, print a list of the groups found
-	#print 'Groups found:'
-	#for node, count in groupCount.iteritems():
-	#	if count != 0: print '\t', node, count
+#	print 'Groups found:'
+#	for node, count in groupCount.iteritems():
+#		if count != 0: print '\t', node, count
 
 	# Get characteristic frequencies
 	frequencies = []
@@ -262,10 +262,10 @@ def generateSpectralData(struct, thermoData):
 	# Fit remaining frequencies and hindered rotors to the heat capacity data
 	import fit
 	vib, hind = fit.fitSpectralDataToHeatCapacity(Tlist, Cv, numVibrations - len(frequencies), numRotors)
-	for v in vib:
-		spectralData.modes.append(HarmonicOscillator(frequency=v))
-	for v, b in hind:
-		spectralData.modes.append(HinderedRotor(frequency=v, barrier=b))
+	for freq, degen in vib:
+		spectralData.modes.append(HarmonicOscillator(frequency=freq, degeneracy=degen))
+	for freq, barr, degen in hind:
+		spectralData.modes.append(HinderedRotor(frequency=freq, barrier=barr, degeneracy=degen))
 
 	return spectralData
 

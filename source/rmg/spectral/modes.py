@@ -202,12 +202,13 @@ class HinderedRotor:
 	rotation in cm^-1, and the `barrier` height in cm^-1.
 	"""
 
-	def __init__(self, frequency=0.0, barrier=0.0):
+	def __init__(self, frequency=0.0, barrier=0.0, degeneracy=1):
 		self.frequency = frequency
 		self.barrier = barrier
+		self.degeneracy = degeneracy
 
 	def __repr__(self):
-		return '%s.HinderedRotor(%s, %s)' % (self.__module__, self.frequency, self.barrier)
+		return '%s.HinderedRotor(%s, %s, %s)' % (self.__module__, self.frequency, self.barrier, self.degeneracy)
 
 	def getPartitionFunction(self, Tlist):
 		"""
@@ -223,7 +224,7 @@ class HinderedRotor:
 		the symmetry number. :math:`I_0(x)` is the modified Bessel function of
 		order zero.
 		"""
-		return _modes.hinderedrotor_partitionfunction(Tlist, self.frequency, self.barrier)
+		return _modes.hinderedrotor_partitionfunction(Tlist, self.frequency, self.barrier) ** self.degeneracy
 
 	def getHeatCapacity(self, Tlist):
 		"""
@@ -240,7 +241,7 @@ class HinderedRotor:
 		:math:`k_\\mathrm{B}` is Boltzmann's constant, and :math:`R` is the gas
 		law constant.
 		"""
-		return _modes.hinderedrotor_heatcapacity(Tlist, self.frequency, self.barrier)
+		return _modes.hinderedrotor_heatcapacity(Tlist, self.frequency, self.barrier) * self.degeneracy
 
 	def getDensityOfStates(self, Elist):
 		"""
@@ -258,7 +259,11 @@ class HinderedRotor:
 		function. :math:`\\mathcal{K}(x)` is the complete elliptic integral of the first
 		kind.
 		"""
-		return _modes.hinderedrotor_densityofstates(Elist, self.frequency, self.barrier)
+		rho = np.zeros((len(Elist)), np.float64)
+		rho0 = _modes.hinderedrotor_densityofstates(Elist, self.frequency, self.barrier)
+		for i in range(self.degeneracy):
+			rho = convolve(rho, rho0, Elist)
+		return rho
 
 	def fromXML(self, document, rootElement, frequencyScaleFactor=1.0):
 		"""
@@ -276,6 +281,9 @@ class HinderedRotor:
 		self.barrier = document.getChildQuantity(rootElement, 'barrier', required=True)
 		self.barrier = float(self.barrier)
 
+		# Read <degeneracy> element
+		self.degeneracy = int(document.getTextElement(rootElement, 'degeneracy', required=False, default='1'))
+
 	def toXML(self, document, rootElement):
 		"""
 		Add a <hinderedRotor> element as a child of `rootElement` using
@@ -285,6 +293,7 @@ class HinderedRotor:
 		hinderedRotorElement = document.createElement('hinderedRotor', rootElement)
 		document.createQuantity('frequency', hinderedRotorElement, self.frequency, 'cm^-1')
 		document.createQuantity('barrier', hinderedRotorElement, self.barrier, 'cm^-1')
+		document.createTextElement('degeneracy', hinderedRotorElement, str(self.degeneracy))
 
 ################################################################################
 
@@ -294,11 +303,12 @@ class HarmonicOscillator:
 	oscillator. The oscillator is defined by its `frequency` in cm^-1.
 	"""
 
-	def __init__(self, frequency=0.0):
+	def __init__(self, frequency=0.0, degeneracy=1):
 		self.frequency = frequency
+		self.degeneracy = degeneracy
 
 	def __repr__(self):
-		return '%s.HarmonicOscillator(%s)' % (self.__module__, self.frequency)
+		return '%s.HarmonicOscillator(%s, %s)' % (self.__module__, self.frequency, self.degeneracy)
 
 	def getPartitionFunction(self, Tlist):
 		"""
@@ -314,7 +324,7 @@ class HarmonicOscillator:
 		energy to be at the zero-point energy of the molecule, *not* the bottom
 		of the potential well.
 		"""
-		return _modes.harmonicoscillator_partitionfunction(Tlist, self.frequency)
+		return _modes.harmonicoscillator_partitionfunction(Tlist, self.frequency) ** self.degeneracy
 
 	def getHeatCapacity(self, Tlist):
 		"""
@@ -331,7 +341,7 @@ class HarmonicOscillator:
 		:math:`k_\\mathrm{B}` is Boltzmann's constant, and :math:`R` is the gas
 		law constant.
 		"""
-		return _modes.harmonicoscillator_heatcapacity(Tlist, self.frequency)
+		return _modes.harmonicoscillator_heatcapacity(Tlist, self.frequency) * self.degeneracy
 
 	def getDensityOfStates(self, Elist):
 		"""
@@ -359,6 +369,9 @@ class HarmonicOscillator:
 		self.frequency = document.getChildQuantity(rootElement, 'frequency', required=True)
 		self.frequency = float(self.frequency) * frequencyScaleFactor
 
+		# Read <degeneracy> element
+		self.degeneracy = int(document.getTextElement(rootElement, 'degeneracy', required=False, default='1'))
+	
 	def toXML(self, document, rootElement):
 		"""
 		Add a <harmonicOscillator> element as a child of `rootElement` using
@@ -367,6 +380,7 @@ class HarmonicOscillator:
 		"""
 		harmonicOscillatorElement = document.createElement('harmonicOscillator', rootElement)
 		document.createQuantity('frequency', harmonicOscillatorElement, self.frequency, 'cm^-1')
+		document.createTextElement('degeneracy', harmonicOscillatorElement, str(self.degeneracy))
 
 ################################################################################
 

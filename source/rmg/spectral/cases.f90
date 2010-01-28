@@ -60,10 +60,10 @@ subroutine caseNvibNrot(x, fj, ldfj, igo, iopt, ropt)
 	! There is a minimization objective for each temperature
 	! First calculate the least-squares objective at each temperature
 	! This goes in the last column of the fj matrix
-	diff = x(1) * Cv1 + (nvib - x(1)) * Cv2 + x(1) * Cv3 + (nrot - x(1)) * Cv4 - Cvlist
+	diff = x(1) * Cv1 + (nvib - x(1)) * Cv2 + x(4) * Cv3 + (nrot - x(4)) * Cv4 - Cvlist
 	fj(mcon+1:mcon+mequa,nvars+1) = diff * diff
 	
-	! We also need the Jacobian of the objective functions if igo is nonzer
+	! We also need the Jacobian of the objective functions if igo is nonzero
 	if (igo /= 0) then
 		do i = 1, mequa
 			! The first harmonic oscillator degeneracy
@@ -71,15 +71,14 @@ subroutine caseNvibNrot(x, fj, ldfj, igo, iopt, ropt)
 			! The first harmonic oscillator pseudo-frequency
 			fj(mcon+i,2) = 2.0 * diff(i) * (x(1) * dCv1(i))
 			! The second harmonic oscillator pseudo-frequency
-			fj(mcon+i,3) = 2.0 * diff(i) * ((nvib - x(1)) * dCv1(i))
+			fj(mcon+i,3) = 2.0 * diff(i) * ((real(nvib) - x(1)) * dCv2(i))
 			! The first hindered rotor degeneracy
 			fj(mcon+i,4) = 2.0 * diff(i) * (Cv3(i) - Cv4(i))
 			! The first hindered rotor pseudo-barrier
 			fj(mcon+i,5) = 2.0 * diff(i) * (x(4) * dCv3(i))
 			! The second hindered rotor pseudo-barrier
-			fj(mcon+i,5) = 2.0 * diff(i) * ((nrot - x(4)) * dCv4(i))
+			fj(mcon+i,5) = 2.0 * diff(i) * ((real(nrot) - x(4)) * dCv4(i))
 		end do
 	end if
 
 end subroutine
-

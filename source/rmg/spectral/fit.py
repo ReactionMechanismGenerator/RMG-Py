@@ -139,17 +139,17 @@ def setupCaseNvibNrot(Nvib, Nrot):
 
 def postprocessCaseNvibNrot(Nvib, Nrot, x):
 
-	vib = []; rot = [];
-
-	Nvib1 = int(x[0])
+	Nvib1 = int(round(x[0]))
 	Nvib2 = Nvib - Nvib1
-	Nrot1 = int(x[3])
+	Nrot1 = int(round(x[3]))
 	Nrot2 = Nrot - Nrot1
 
-	for i in range(Nvib1): vib.append(x[1])
-	for i in range(Nvib2): vib.append(x[2])
-	for i in range(Nrot1): rot.append([hrFreqLow, x[4]])
-	for i in range(Nrot2): rot.append([hrFreqHigh, x[5]])
+	vib = []
+	if Nvib1 > 0: vib.append([x[1], Nvib1])
+	if Nvib2 > 0: vib.append([x[2], Nvib2])
+	rot = []
+	if Nrot1 > 0: rot.append([hrFreqLow, x[4], Nrot1])
+	if Nrot2 > 0: rot.append([hrFreqHigh, x[5], Nrot2])
 
 	return vib, rot
 

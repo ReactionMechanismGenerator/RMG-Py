@@ -231,7 +231,7 @@ subroutine harmonicOscillator_heatCapacity(Tlist, nT, freq, Cvlist)
 	real(8) x, exp_x, one_minus_exp_x
 
 	do i = 1, nT
-		x = 6.626e-34 * 2.9979e10 * freq / (1.381e-23 * Tlist(i))
+		x = freq / (0.695039 * Tlist(i))		! kB = 0.695039 cm^-1/K
 		
 		exp_x = exp(x)
 		one_minus_exp_x = 1.0 - exp_x
@@ -253,13 +253,13 @@ subroutine harmonicOscillator_d_heatCapacity_d_freq(Tlist, nT, freq, dCvlist)
 	real(8) x, exp_x, one_minus_exp_x
 
 	do i = 1, nT
-		x = 6.626e-34 * 2.9979e10 * freq / 1.381e-23 / Tlist(i)
+		x = freq / (0.695039 * Tlist(i))		! kB = 0.695039 cm^-1/K
 
 		exp_x = exp(x)
 		one_minus_exp_x = 1.0 - exp_x
 
-		dCvlist(i) = x * x * exp_x / one_minus_exp_x / one_minus_exp_x * &
-			(2 + x + 2 * x * exp_x * one_minus_exp_x) / freq
+		dCvlist(i) = x * exp_x / one_minus_exp_x / one_minus_exp_x * &
+			(2.0 + x + 2.0 * x * exp_x / one_minus_exp_x) * x / freq
 	end do
 
 end subroutine
@@ -360,8 +360,8 @@ subroutine hinderedRotor_d_heatCapacity_d_freq(Tlist, nT, freq, barr, dCvlist)
 		exp_x = exp(x)
 		one_minus_exp_x = 1.0 - exp_x
 		
-		dCvlist(i) = x * x * exp_x / one_minus_exp_x / one_minus_exp_x * &
-			(2 + x + 2 * x * exp_x * one_minus_exp_x) / freq
+		dCvlist(i) = x * exp_x / one_minus_exp_x / one_minus_exp_x * &
+			(2 + x + 2 * x * exp_x / one_minus_exp_x) * x / freq
 	end do
 
 end subroutine
@@ -384,7 +384,7 @@ subroutine hinderedRotor_d_heatCapacity_d_barr(Tlist, nT, freq, barr, dCvlist)
 
 		BB = besseli(1, z) / besseli(0, z)
 
-		dCvlist(i) = z * z * (1 - 2 * z * BB + BB * BB + 2 * z * BB * BB * BB) / barr
+		dCvlist(i) = z * (1 - 2 * z * BB + BB * BB + 2 * z * BB * BB * BB) * z / barr
 	end do
 
 end subroutine
