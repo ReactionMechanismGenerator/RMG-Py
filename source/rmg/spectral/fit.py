@@ -107,6 +107,8 @@ def fitSpectralDataToHeatCapacity(Tlist, Cvlist, Nvib, Nrot):
 	#		pseudo-oscillators and/or pseudo-rotors
 	if Nvib + 2 * Nrot < len(Tlist):
 		x0, bl, bu, ind = setupCaseDirect(Nvib, Nrot)
+	elif Nvib + 2 < len(Tlist):
+		x0, bl, bu, ind = setupCasePseudoRot(Nvib, Nrot)
 	elif len(Tlist) < 7:
 		raise Exception('Unable to fit spectral data; you need to specify at least 7 heat capacity points.')
 	else:
@@ -141,7 +143,7 @@ def fitSpectralDataToHeatCapacity(Tlist, Cvlist, Nvib, Nrot):
 	if not numpy.isfinite(x).all():
 		raise SpectralFitException('Returned solution vector is nonsensical: x = %s.' % (x))
 	if igo == 8:
-		raise SpectralFitException('Maximum number of iterations reached; solution may be invalid.')
+		raise SpectralFitException('Maximum number of iterations reached; solution may be invalid.\nI was trying to fit %s oscillators and %s rotors.' % (Nvib, Nrot))
 	
 	# Convert the solution vector into sets of oscillators and rotors
 	# The procedure for doing this depends on the content of the solution
@@ -149,6 +151,8 @@ def fitSpectralDataToHeatCapacity(Tlist, Cvlist, Nvib, Nrot):
 	# being fitted
 	if Nvib + 2 * Nrot < len(Tlist):
 		vib, rot = postprocessCaseDirect(Nvib, Nrot, x)
+	elif Nvib + 2 < len(Tlist):
+		vib, rot = postprocessCasePseudoRot(Nvib, Nrot, x)
 	else:
 		vib, rot = postprocessCasePseudo(Nvib, Nrot, x)
 	
@@ -199,7 +203,7 @@ def setupCaseDirect(Nvib, Nrot):
 	if Nrot > 0:
 		x0[Nvib] = 100.0
 		x0[Nvib+1] = 100.0
-		for i in range(1, Nvib):
+		for i in range(1, Nrot):
 			x0[Nvib+2*i] = x0[Nvib+2*i-2] + 20.0
 			x0[Nvib+2*i+1] = x0[Nvib+2*i-1] + 100.0
 
@@ -295,6 +299,63 @@ def postprocessCasePseudo(Nvib, Nrot, x):
 	if Nvib3 > 0: vib.append([x[3], Nvib3])
 	rot = []
 	if Nrot > 0: rot.append([x[4], x[5], Nrot])
+
+	return vib, rot
+
+################################################################################
+
+def setupCasePseudoRot(Nvib, Nrot):
+	"""
+	Fit an arbitrary number of harmonic oscillator and hindered rotor modes to
+	the heat capacity data. This case will fit `Nvib` real oscillators and two
+	pseudo-rotors such that their degeneracies sum to `Nrot`.
+	"""
+
+	# Initialize the variables that are set by this function
+	ind = numpy.zeros(Nvib+2, numpy.float64)		# Indicates type of bounds to apply (1 = lower, 2 = upper, 3 = both, 4 = neither)
+	lb = numpy.zeros(Nvib+2, numpy.float64)		# Lower bounds
+	ub = numpy.zeros(Nvib+2, numpy.float64)		# Upper bounds
+	x0 = numpy.zeros(Nvib+2, numpy.float64)		# Initial guess
+
+	# x[0] corresponds to the first harmonic oscillator (real) frequency
+	for i in range(Nvib):
+		ind[i] = 3
+		lb[i]  = hoFreqLowerBound
+		ub[i]  = hoFreqUpperBound
+
+	# x[Nvib] corresponds to the hindered rotor pseudo-frequency
+	ind[Nvib] = 3
+	lb[Nvib]  = hrFreqLowerBound
+	ub[Nvib]  = hrFreqUpperBound
+
+	# x[Nvib+1] corresponds to the hindered rotor pseudo-barrier
+	ind[Nvib+1] = 3
+	lb[Nvib+1]  = hrBarrLowerBound
+	ub[Nvib+1]  = hrBarrUpperBound
+
+	# Initial guess for harmonic oscillators
+	if Nvib > 0:
+		x0[0] = 200.0
+		for i in range(1, Nvib):
+			x0[i] = x0[i-1] + 400.0
+	# Initial guess for hindered pseudo-rotors
+	x0[-2] = 100.0
+	x0[-1] = 100.0
+
+	return x0, lb, ub, ind
+
+def postprocessCasePseudoRot(Nvib, Nrot, x):
+	"""
+	Convert the optimization solution vector `x` to a set of harmonic
+	oscillators and a set of hindered rotors for the case of real oscillator
+	and pseudo rotor modes `Nvib` and `Nrot`, respectively.
+	"""
+
+	vib = []
+	for i in range(Nvib):
+		vib.append([x[i], 1])
+	rot = []
+	if Nrot > 0: rot.append([x[-2], x[-1], Nrot])
 
 	return vib, rot
 

@@ -104,6 +104,7 @@ subroutine fitModes(x0, nx, bl, bu, ind, maxiter, xout, igo)
 
 	external caseDirect
 	external casePseudo
+	external casePseudoRot
 
 	! These variables are required by the nonlinear solver
 	integer, parameter :: lwork = 785
@@ -142,107 +143,13 @@ subroutine fitModes(x0, nx, bl, bu, ind, maxiter, xout, igo)
 	if (nvib + 2 * nrot < nT) then
 		call dqed(caseDirect, mequa, nvars, mcon, ind, bl, bu, &
 			x, fj, ldfj, fnorm, igo, iopt, ropt, iwork, work)
+	elseif (nvib + 2 < nT) then
+		call dqed(casePseudoRot, mequa, nvars, mcon, ind, bl, bu, &
+			x, fj, ldfj, fnorm, igo, iopt, ropt, iwork, work)
 	else
 		call dqed(casePseudo, mequa, nvars, mcon, ind, bl, bu, &
 			x, fj, ldfj, fnorm, igo, iopt, ropt, iwork, work)
 	end if
-!	if (nrot == 0) then
-!		if (nvib == 0) then
-!
-!		elseif (nvib == 1) then
-!			call dqed(case1vib0rot, mequa, nvars, mcon, ind, bl, bu, &
-!				x, fj, ldfj, fnorm, igo, iopt, ropt, iwork, work)
-!		elseif (nvib == 2) then
-!			call dqed(case2vib0rot, mequa, nvars, mcon, ind, bl, bu, &
-!				x, fj, ldfj, fnorm, igo, iopt, ropt, iwork, work)
-!		elseif (nvib == 3) then
-!			call dqed(case3vib0rot, mequa, nvars, mcon, ind, bl, bu, &
-!				x, fj, ldfj, fnorm, igo, iopt, ropt, iwork, work)
-!		elseif (nvib == 4) then
-!			call dqed(case4vib0rot, mequa, nvars, mcon, ind, bl, bu, &
-!				x, fj, ldfj, fnorm, igo, iopt, ropt, iwork, work)
-!		elseif (nvib == 5) then
-!			call dqed(case5vib0rot, mequa, nvars, mcon, ind, bl, bu, &
-!				x, fj, ldfj, fnorm, igo, iopt, ropt, iwork, work)
-!		elseif (nvib == 6) then
-!			call dqed(case6vib0rot, mequa, nvars, mcon, ind, bl, bu, &
-!				x, fj, ldfj, fnorm, igo, iopt, ropt, iwork, work)
-!		elseif (nvib >= 7) then
-!			call dqed(caseNvib0rot, mequa, nvars, mcon, ind, bl, bu, &
-!				x, fj, ldfj, fnorm, igo, iopt, ropt, iwork, work)
-!		end if
-!	elseif (nrot == 1) then
-!		if (nvib == 0) then
-!			call dqed(case0vib1rot, mequa, nvars, mcon, ind, bl, bu, &
-!				x, fj, ldfj, fnorm, igo, iopt, ropt, iwork, work)
-!		elseif (nvib == 1) then
-!			call dqed(case1vib1rot, mequa, nvars, mcon, ind, bl, bu, &
-!				x, fj, ldfj, fnorm, igo, iopt, ropt, iwork, work)
-!		elseif (nvib == 2) then
-!			call dqed(case2vib1rot, mequa, nvars, mcon, ind, bl, bu, &
-!				x, fj, ldfj, fnorm, igo, iopt, ropt, iwork, work)
-!		elseif (nvib == 3) then
-!			call dqed(case3vib1rot, mequa, nvars, mcon, ind, bl, bu, &
-!				x, fj, ldfj, fnorm, igo, iopt, ropt, iwork, work)
-!		elseif (nvib == 4) then
-!			call dqed(case4vib1rot, mequa, nvars, mcon, ind, bl, bu, &
-!				x, fj, ldfj, fnorm, igo, iopt, ropt, iwork, work)
-!		elseif (nvib >= 5) then
-!			call dqed(caseNvib1rot, mequa, nvars, mcon, ind, bl, bu, &
-!				x, fj, ldfj, fnorm, igo, iopt, ropt, iwork, work)
-!		end if
-!	elseif (nrot == 2) then
-!		if (nvib == 0) then
-!			call dqed(case0vib2rot, mequa, nvars, mcon, ind, bl, bu, &
-!				x, fj, ldfj, fnorm, igo, iopt, ropt, iwork, work)
-!		elseif (nvib == 1) then
-!			call dqed(case1vib2rot, mequa, nvars, mcon, ind, bl, bu, &
-!				x, fj, ldfj, fnorm, igo, iopt, ropt, iwork, work)
-!		elseif (nvib == 2) then
-!			call dqed(case2vib2rot, mequa, nvars, mcon, ind, bl, bu, &
-!				x, fj, ldfj, fnorm, igo, iopt, ropt, iwork, work)
-!		elseif (nvib == 3) then
-!			call dqed(case3vib2rot, mequa, nvars, mcon, ind, bl, bu, &
-!				x, fj, ldfj, fnorm, igo, iopt, ropt, iwork, work)
-!		elseif (nvib >= 4) then
-!			call dqed(caseNvib2rot, mequa, nvars, mcon, ind, bl, bu, &
-!				x, fj, ldfj, fnorm, igo, iopt, ropt, iwork, work)
-!		end if
-!	elseif (nrot == 3) then
-!		if (nvib == 0) then
-!			call dqed(case0vib3rot, mequa, nvars, mcon, ind, bl, bu, &
-!				x, fj, ldfj, fnorm, igo, iopt, ropt, iwork, work)
-!		elseif (nvib == 1) then
-!			call dqed(case1vib3rot, mequa, nvars, mcon, ind, bl, bu, &
-!				x, fj, ldfj, fnorm, igo, iopt, ropt, iwork, work)
-!		elseif (nvib == 2) then
-!			call dqed(case2vib3rot, mequa, nvars, mcon, ind, bl, bu, &
-!				x, fj, ldfj, fnorm, igo, iopt, ropt, iwork, work)
-!		elseif (nvib == 3) then
-!			call dqed(case3vibNrot, mequa, nvars, mcon, ind, bl, bu, &
-!				x, fj, ldfj, fnorm, igo, iopt, ropt, iwork, work)
-!		elseif (nvib >= 4) then
-!			call dqed(caseNvibNrot, mequa, nvars, mcon, ind, bl, bu, &
-!				x, fj, ldfj, fnorm, igo, iopt, ropt, iwork, work)
-!		end if
-!	elseif (nrot >= 4) then
-!		if (nvib == 0) then
-!			call dqed(case0vibNrot, mequa, nvars, mcon, ind, bl, bu, &
-!				x, fj, ldfj, fnorm, igo, iopt, ropt, iwork, work)
-!		elseif (nvib == 1) then
-!			call dqed(case1vibNrot, mequa, nvars, mcon, ind, bl, bu, &
-!				x, fj, ldfj, fnorm, igo, iopt, ropt, iwork, work)
-!		elseif (nvib == 2) then
-!			call dqed(case2vibNrot, mequa, nvars, mcon, ind, bl, bu, &
-!				x, fj, ldfj, fnorm, igo, iopt, ropt, iwork, work)
-!		elseif (nvib == 3) then
-!			call dqed(case3vibNrot, mequa, nvars, mcon, ind, bl, bu, &
-!				x, fj, ldfj, fnorm, igo, iopt, ropt, iwork, work)
-!		elseif (nvib >= 4) then
-!			call dqed(caseNvibNrot, mequa, nvars, mcon, ind, bl, bu, &
-!				x, fj, ldfj, fnorm, igo, iopt, ropt, iwork, work)
-!		end if
-!	end if
 
 	! Store the results in the output vector
 	! We defer interpreting them until after returning to Python

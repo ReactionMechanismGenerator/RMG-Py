@@ -142,3 +142,61 @@ subroutine casePseudo(x, fj, ldfj, igo, iopt, ropt)
 	end if
 
 end subroutine
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+subroutine casePseudoRot(x, fj, ldfj, igo, iopt, ropt)
+	! Objective function and its Jacobian for the case of many real oscillators
+	! and many pseudo-rotors.
+
+	use params
+	implicit none
+
+	! Input/output parameters
+	integer, intent(in) :: ldfj
+	real(8), dimension(1:nvars), intent(out) :: x
+	real(8), dimension(1:ldfj,1:nvars+1), intent(out) :: fj
+	integer, intent(inout) :: igo
+	integer, dimension(1:24), intent(in) :: iopt
+	real(8), dimension(1:1), intent(in) :: ropt
+
+	real(8), dimension(1:nT) :: diff
+	real(8), dimension(1:Nvib+1,1:nT) :: Cv
+	real(8), dimension(1:Nvib+2,1:nT) :: dCv
+
+	integer i, j
+
+	! Calculate the heat capacities and derivatives at each temperature
+	do i = 1, Nvib
+		call harmonicOscillator_heatCapacity(Tlist, nT, x(i), Cv(i,:))
+		call harmonicOscillator_d_heatCapacity_d_freq(Tlist, nT, x(i), dCv(i,:))
+	end do
+	call hinderedRotor_heatCapacity(Tlist, nT, x(Nvib+1), x(Nvib+2), Cv(Nvib+1,:))
+	call hinderedRotor_d_heatCapacity_d_freq(Tlist, nT, x(Nvib+1), x(Nvib+2), dCv(Nvib+1,:))
+	call hinderedRotor_d_heatCapacity_d_barr(Tlist, nT, x(Nvib+1), x(Nvib+2), dCv(Nvib+2,:))
+	Cv(Nvib+1,:) = Nrot * Cv(Nvib+1,:)
+	dCv(Nvib+1,:) = Nrot * dCv(Nvib+1,:)
+	dCv(Nvib+2,:) = Nrot * dCv(Nvib+2,:)
+
+	! There are no constraints other than the bounds, so we don't need to
+	! calculate the values of the constraints or their Jacobian
+
+	! There is a minimization objective for each temperature
+	! First calculate the least-squares objective at each temperature
+	! This goes in the last column of the fj matrix
+	diff = -Cvlist
+	do i = 1, Nvib+1
+		diff = diff + Cv(i,:)
+	end do
+	fj(mcon+1:mcon+mequa,nvars+1) = diff * diff
+
+	! We also need the Jacobian of the objective functions if igo is nonzero
+	if (igo /= 0) then
+		do j = 1, mequa
+			do i = 1, Nvib+2
+				fj(mcon+j,i) = 2.0 * diff(j) * dCv(i,j)
+			end do
+		end do
+	end if
+
+end subroutine
