@@ -113,6 +113,7 @@ subroutine fitModes(x0, nx, bl, bu, ind, maxiter, xout, igo)
 
 	real(8), dimension(1:nx) :: x
 
+	external caseDirect
 	external caseNvibNrot
 
 	! These variables are required by the nonlinear solver
@@ -149,8 +150,13 @@ subroutine fitModes(x0, nx, bl, bu, ind, maxiter, xout, igo)
 	! Execute the optimization
 	! We use a different helper function based on the number of oscillators
 	! and rotors we are trying to fit
-	call dqed(caseNvibNrot, mequa, nvars, mcon, ind, bl, bu, &
-		x, fj, ldfj, fnorm, igo, iopt, ropt, iwork, work)
+	if (nvib + 2 * nrot < nT) then
+		call dqed(caseDirect, mequa, nvars, mcon, ind, bl, bu, &
+			x, fj, ldfj, fnorm, igo, iopt, ropt, iwork, work)
+	else
+		call dqed(caseNvibNrot, mequa, nvars, mcon, ind, bl, bu, &
+			x, fj, ldfj, fnorm, igo, iopt, ropt, iwork, work)
+	end if
 !	if (nrot == 0) then
 !		if (nvib == 0) then
 !

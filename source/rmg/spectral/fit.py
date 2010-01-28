@@ -96,7 +96,12 @@ def fitSpectralDataToHeatCapacity(Tlist, Cvlist, Nvib, Nrot):
 	#	-	For high values of Nvib and/or Nrot we are limited by the number of
 	#		temperatures we are fitting at, and so we can only fit 
 	#		pseudo-oscillators and/or pseudo-rotors
-	x0, bl, bu, ind = setupCaseNvibNrot(Nvib, Nrot)
+	if Nvib + 2 * Nrot < len(Tlist):
+		x0, bl, bu, ind = setupCaseDirect(Nvib, Nrot)
+	elif len(Tlist) < 7:
+		raise SpectralFitError('Unable to fit spectral data; you need to specify at least 7 heat capacity points.')
+	else:
+		x0, bl, bu, ind = setupCaseNvibNrot(Nvib, Nrot)
 	
 	# Set parameters that are not needed by the solver but are needed to 
 	# evaluate the objective function and its Jacobian
@@ -134,8 +139,78 @@ def fitSpectralDataToHeatCapacity(Tlist, Cvlist, Nvib, Nrot):
 	# The procedure for doing this depends on the content of the solution
 	# vector, which itself depends on the number of oscillators and rotors
 	# being fitted
-	vib, rot = postprocessCaseNvibNrot(Nvib, Nrot, x)
+	if Nvib + 2 * Nrot < len(Tlist):
+		vib, rot = postprocessCaseDirect(Nvib, Nrot, x)
+	else:
+		vib, rot = postprocessCaseNvibNrot(Nvib, Nrot, x)
 	
+	return vib, rot
+
+################################################################################
+
+def setupCaseDirect(Nvib, Nrot):
+	"""
+	Fit a known number of harmonic oscillator and hindered rotor modes to
+	the heat capacity data. This case is to be called when the total number of
+	variables is less than the number of data points used in the fit. For this
+	case, we can fit the oscillator frequencies and rotor frequency-barrier
+	pairs directly.
+	"""
+
+	# Initialize the variables that are set by this function
+	count = Nvib + 2 * Nrot
+	ind = numpy.zeros(count, numpy.float64)		# Indicates type of bounds to apply (1 = lower, 2 = upper, 3 = both, 4 = neither)
+	lb = numpy.zeros(count, numpy.float64)		# Lower bounds
+	ub = numpy.zeros(count, numpy.float64)		# Upper bounds
+	x0 = numpy.zeros(count, numpy.float64)		# Initial guess
+
+	# The first Nvib variables correspond to real harmonic oscillator frequencies
+	for i in range(Nvib):
+		ind[i] = 3
+		lb[i]  = hoFreqLowerBound
+		ub[i]  = hoFreqUpperBound
+
+	# The remaining 2 * Nrot variables correspond to real hindered rotor frequencies and barrier heights
+	for i in range(Nrot):
+		ind[Nvib+2*i] = 3
+		lb[Nvib+2*i]  = hrFreqLowerBound
+		ub[Nvib+2*i]  = hrFreqUpperBound
+		ind[Nvib+2*i+1] = 3
+		lb[Nvib+2*i+1]  = hrBarrLowerBound
+		ub[Nvib+2*i+1]  = hrBarrUpperBound
+
+	# Initial guesses within each mode type must be distinct or else the 
+	# optimization will fail
+	
+	# Initial guess for harmonic oscillators
+	x0[0] = 200.0
+	for i in range(1, Nvib):
+		x0[i] = x0[i-1] + 400.0
+	# Initial guess for hindered rotors
+	x0[Nvib] = 100.0
+	x0[Nvib+1] = 100.0
+	for i in range(1, Nvib):
+		x0[Nvib+2*i] = x0[Nvib+2*i-2] + 20.0
+		x0[Nvib+2*i+1] = x0[Nvib+2*i-1] + 100.0
+
+	return x0, lb, ub, ind
+
+def postprocessCaseDirect(Nvib, Nrot, x):
+	"""
+	Convert the optimization solution vector `x` to a set of harmonic
+	oscillators and a set of hindered rotors. This case is to be called when
+	the total number of variables is less than the number of data points used
+	in the fit. For this case, we have fitted the oscillator frequencies and
+	rotor frequency-barrier pairs directly.
+	"""
+
+	vib = []
+	for i in range(Nvib):
+		vib.append([x[i], 1])
+	rot = []
+	for i in range(Nrot):
+		rot.append([x[Nvib+2*i], x[Nvib+2*i+1], 1])
+
 	return vib, rot
 
 ################################################################################
@@ -143,7 +218,9 @@ def fitSpectralDataToHeatCapacity(Tlist, Cvlist, Nvib, Nrot):
 def setupCaseNvibNrot(Nvib, Nrot):
 	"""
 	Fit an arbitrary number of harmonic oscillator and hindered rotor modes to
-	the heat capacity data.
+	the heat capacity data. This case will fit two pseudo-oscillators and two
+	pseudo-rotors such that their degeneracies sum to `Nvib` and `Nrot`,
+	respectively.
 	"""
 
 	# Initialize the variables that are set by this function
