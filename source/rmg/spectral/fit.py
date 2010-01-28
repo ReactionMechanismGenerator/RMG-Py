@@ -64,15 +64,24 @@ hrBarrLowerBound = 10.0
 # The upper bound for hindered rotor barrier heights in cm^-1
 hrBarrUpperBound = 10000.0
 
-# A characteristic low hindered hindered rotor frequency in cm^-1
-hrFreqLow = 100.0
-# A characteristic mid hindered hindered rotor frequency in cm^-1
-hrFreqMid = 150.0
-# A characteristic high hindered hindered rotor frequency in cm^-1
-hrFreqHigh = 300.0
-
 # The maximum number of iterations for the optimization solver to use
 maxIter = 1000
+
+################################################################################
+
+class SpectralFitException(Exception):
+
+	"""
+	An exception used when attempting to fit molecular degrees of freedom to
+	heat capacity data. Use the `msg` attribute to describe the cause of the
+	exception.
+	"""
+
+	def __init__(self, msg):
+		self.msg = msg
+
+	def __str__(self):
+		return self.msg
 
 ################################################################################
 
@@ -99,7 +108,7 @@ def fitSpectralDataToHeatCapacity(Tlist, Cvlist, Nvib, Nrot):
 	if Nvib + 2 * Nrot < len(Tlist):
 		x0, bl, bu, ind = setupCaseDirect(Nvib, Nrot)
 	elif len(Tlist) < 7:
-		raise SpectralFitError('Unable to fit spectral data; you need to specify at least 7 heat capacity points.')
+		raise Exception('Unable to fit spectral data; you need to specify at least 7 heat capacity points.')
 	else:
 		x0, bl, bu, ind = setupCasePseudo(Nvib, Nrot)
 	
@@ -113,10 +122,7 @@ def fitSpectralDataToHeatCapacity(Tlist, Cvlist, Nvib, Nrot):
 		p_mequa = len(Tlist),
 		p_nvars = len(x0),
 		p_nvib = Nvib,
-		p_nrot = Nrot,
-		p_nu_low = hrFreqLow,
-		p_nu_mid = hrFreqMid,
-		p_nu_high = hrFreqHigh,
+		p_nrot = Nrot
 		)
 
 	# Execute the optimization, passing the initial guess and bounds and other
@@ -132,9 +138,11 @@ def fitSpectralDataToHeatCapacity(Tlist, Cvlist, Nvib, Nrot):
 	# Clean up the temporary variables stored via _fit.setparams() earlier
 	_fit.params.cleanup()
 
-	print 'x =', list(x)
-	print 'igo =', igo
-
+	if not numpy.isfinite(x).all():
+		raise SpectralFitException('Returned solution vector is nonsensical: x = %s.' % (x))
+	if igo == 8:
+		raise SpectralFitException('Maximum number of iterations reached; solution may be invalid.')
+	
 	# Convert the solution vector into sets of oscillators and rotors
 	# The procedure for doing this depends on the content of the solution
 	# vector, which itself depends on the number of oscillators and rotors
@@ -183,15 +191,17 @@ def setupCaseDirect(Nvib, Nrot):
 	# optimization will fail
 	
 	# Initial guess for harmonic oscillators
-	x0[0] = 200.0
-	for i in range(1, Nvib):
-		x0[i] = x0[i-1] + 400.0
+	if Nvib > 0:
+		x0[0] = 200.0
+		for i in range(1, Nvib):
+			x0[i] = x0[i-1] + 400.0
 	# Initial guess for hindered rotors
-	x0[Nvib] = 100.0
-	x0[Nvib+1] = 100.0
-	for i in range(1, Nvib):
-		x0[Nvib+2*i] = x0[Nvib+2*i-2] + 20.0
-		x0[Nvib+2*i+1] = x0[Nvib+2*i-1] + 100.0
+	if Nrot > 0:
+		x0[Nvib] = 100.0
+		x0[Nvib+1] = 100.0
+		for i in range(1, Nvib):
+			x0[Nvib+2*i] = x0[Nvib+2*i-2] + 20.0
+			x0[Nvib+2*i+1] = x0[Nvib+2*i-1] + 100.0
 
 	return x0, lb, ub, ind
 
@@ -229,43 +239,43 @@ def setupCasePseudo(Nvib, Nrot):
 	ub = numpy.zeros(6, numpy.float64)		# Upper bounds
 	x0 = numpy.zeros(6, numpy.float64)		# Initial guess
 
-	# x[0] corresponds to the degeneracy of the first harmonic oscillator
+	# x[0] corresponds to the first harmonic oscillator (real) frequency
 	ind[0] = 3
-	lb[0]  = 0.0
-	ub[0]  = float(Nvib)
-
-	# x[1] corresponds to the first harmonic oscillator pseudo-frequency
+	lb[0]  = hoFreqLowerBound
+	ub[0]  = hoFreqUpperBound
+	
+	# x[1] corresponds to the degeneracy of the second harmonic oscillator
 	ind[1] = 3
-	lb[1]  = hoFreqLowerBound
-	ub[1]  = hoFreqUpperBound
+	lb[1]  = 0.0
+	ub[1]  = float(Nvib - 1)
 
 	# x[2] corresponds to the second harmonic oscillator pseudo-frequency
 	ind[2] = 3
 	lb[2]  = hoFreqLowerBound
 	ub[2]  = hoFreqUpperBound
 
-	# x[3] corresponds to the degeneracy of the first hindered rotor
+	# x[3] corresponds to the third harmonic oscillator pseudo-frequency
 	ind[3] = 3
-	lb[3]  = 0.0
-	ub[3]  = float(Nrot)
+	lb[3]  = hoFreqLowerBound
+	ub[3]  = hoFreqUpperBound
 
-	# x[4] corresponds to the first hindered rotor pseudo-barrier
+	# x[4] corresponds to the hindered rotor pseudo-frequency
 	ind[4] = 3
-	lb[4]  = hrBarrLowerBound
-	ub[4]  = hrBarrUpperBound
+	lb[4]  = hrFreqLowerBound
+	ub[4]  = hrFreqUpperBound
 
-	# x[5] corresponds to the second hindered rotor pseudo-barrier
+	# x[5] corresponds to the hindered rotor pseudo-barrier
 	ind[5] = 3
 	lb[5]  = hrBarrLowerBound
 	ub[5]  = hrBarrUpperBound
 
 	# Initial guess
-	x0[0] = float(math.floor(Nvib / 2.0))
-	x0[1] = 300.0
-	x0[2] = 3000.0
-	x0[3] = float(math.floor(Nrot / 2.0))
-	x0[4] = 500.0
-	x0[5] = 4000.0
+	x0[0] = 300.0
+	x0[1] = float(math.floor((Nvib - 1) / 2.0))
+	x0[2] = 800.0
+	x0[3] = 1200.0
+	x0[4] = 100.0
+	x0[5] = 100.0
 
 	return x0, lb, ub, ind
 
@@ -276,17 +286,15 @@ def postprocessCasePseudo(Nvib, Nrot, x):
 	number of oscillator and rotor modes `Nvib` and `Nrot`, respectively.
 	"""
 
-	Nvib1 = int(round(x[0]))
-	Nvib2 = Nvib - Nvib1
-	Nrot1 = int(round(x[3]))
-	Nrot2 = Nrot - Nrot1
-
+	Nvib2 = int(round(x[1]))
+	Nvib3 = Nvib - Nvib2 - 1
+	
 	vib = []
-	if Nvib1 > 0: vib.append([x[1], Nvib1])
+	vib.append([x[0], 1])
 	if Nvib2 > 0: vib.append([x[2], Nvib2])
+	if Nvib3 > 0: vib.append([x[3], Nvib3])
 	rot = []
-	if Nrot1 > 0: rot.append([hrFreqLow, x[4], Nrot1])
-	if Nrot2 > 0: rot.append([hrFreqHigh, x[5], Nrot2])
+	if Nrot > 0: rot.append([x[4], x[5], Nrot])
 
 	return vib, rot
 

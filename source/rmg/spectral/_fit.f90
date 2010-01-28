@@ -43,15 +43,11 @@ module params
 
 	integer :: nvib
 	integer :: nrot
-
-	real(8) :: nu_low
-	real(8) :: nu_mid
-	real(8) :: nu_high
-
+	
 contains
 
 	subroutine setParams(p_nT, p_Tlist, p_Cvlist, p_mcon, p_mequa, p_nvars, &
-		p_nvib, p_nrot, p_nu_low, p_nu_mid, p_nu_high)
+		p_nvib, p_nrot)
 		! Set the module parameters based on the values in the parameter list.
 
 		integer, intent(in) :: p_nT								! The number of temperatures at which Cv data is given
@@ -62,9 +58,6 @@ contains
 		integer, intent(in) :: p_nvars							! The number of variables used in the fitting
 		integer, intent(in) :: p_nvib							! The number of harmonic oscillators to fit
 		integer, intent(in) :: p_nrot							! The number of hindered rotors to fit
-		real(8), intent(in) :: p_nu_low
-		real(8), intent(in) :: p_nu_mid
-		real(8), intent(in) :: p_nu_high
 		
 		nT = p_nT
 		allocate( Tlist(1:nT), Cvlist(1:nT) )
@@ -77,10 +70,6 @@ contains
 		
 		nvib = p_nvib
 		nrot = p_nrot
-
-		nu_low = p_nu_low
-		nu_mid = p_nu_mid
-		nu_high = p_nu_high
 
 	end subroutine
 	
