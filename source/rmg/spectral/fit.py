@@ -28,6 +28,17 @@
 #
 ################################################################################
 
+"""
+Contains functions for fitting of molecular degrees of freedom from
+macroscopic properties, particularly the heat capacity. The primary function
+of interest is :meth:`fitSpectralDataToHeatCapacity`, which does exactly this.
+This function utilizes a number of helper functions that are called based on
+the numbers and types of modes that should be fitted. The helper functions
+are divided into those that setup the initial guess and bounds (named
+``setupCase?vib?rot``) and those that convert the fitted results into
+mode objects (named ``postprocessCase?vib?rot``).
+"""
+
 import math
 import numpy
 
@@ -35,27 +46,61 @@ import _fit
 
 ################################################################################
 
+# This block contains a number of global constants that control various
+# aspects of the optimization (bounds, iterations, etc.)
+
+# The lower bound for harmonic oscillator frequencies in cm^-1
 hoFreqLowerBound = 180.0
+# The upper bound for harmonic oscillator frequencies in cm^-1
 hoFreqUpperBound = 4000.0
 
+# The lower bound for hindered rotor frequencies in cm^-1
 hrFreqLowerBound = 180.0
+# The upper bound for hindered rotor frequencies in cm^-1
 hrFreqUpperBound = 4000.0
 
+# The lower bound for hindered rotor barrier heights in cm^-1
 hrBarrLowerBound = 10.0
+# The upper bound for hindered rotor barrier heights in cm^-1
 hrBarrUpperBound = 10000.0
 
+# A characteristic low hindered hindered rotor frequency in cm^-1
 hrFreqLow = 100.0
+# A characteristic mid hindered hindered rotor frequency in cm^-1
 hrFreqMid = 150.0
+# A characteristic high hindered hindered rotor frequency in cm^-1
 hrFreqHigh = 300.0
 
+# The maximum number of iterations for the optimization solver to use
 maxIter = 1000
 
 ################################################################################
 
 def fitSpectralDataToHeatCapacity(Tlist, Cvlist, Nvib, Nrot):
+	"""
+	For a given set of dimensionless heat capacity data `Cvlist` corresponding
+	to temperature list `Tlist` in K, fit `Nvib` harmonic oscillator and `Nrot`
+	hindered internal rotor modes. The fitting is done by calling into Fortran
+	in order to use the DQED nonlinear constrained optimization code. This
+	function returns two lists: the first contains lists of frequency-degeneracy
+	pairs representing fitted harmonic oscillator modes, and the second contains
+	lists of frequency-barrier-degeneracy triples representing fitted hindered
+	rotor modes.
+	"""
 
+	# Setup the initial guess and the bounds for the solver variables
+	# The format of the variables depends on the numbers of oscillators and 
+	# rotors being fitted:
+	#	-	For low values of Nvib and Nrot, we can fit the individual  
+	#		parameters directly
+	#	-	For high values of Nvib and/or Nrot we are limited by the number of
+	#		temperatures we are fitting at, and so we can only fit 
+	#		pseudo-oscillators and/or pseudo-rotors
 	x0, bl, bu, ind = setupCaseNvibNrot(Nvib, Nrot)
 	
+	# Set parameters that are not needed by the solver but are needed to 
+	# evaluate the objective function and its Jacobian
+	# These are stored in a Fortran 90 module called params
 	_fit.params.setparams(
 		p_tlist = numpy.array(Tlist),
 		p_cvlist = numpy.array(Cvlist),
@@ -69,6 +114,8 @@ def fitSpectralDataToHeatCapacity(Tlist, Cvlist, Nvib, Nrot):
 		p_nu_high = hrFreqHigh,
 		)
 
+	# Execute the optimization, passing the initial guess and bounds and other
+	# solver options
 	x, igo = _fit.fitmodes(
 		x0 = numpy.array(x0),
 		bl = numpy.array(bl),
@@ -76,10 +123,17 @@ def fitSpectralDataToHeatCapacity(Tlist, Cvlist, Nvib, Nrot):
 		ind = numpy.array(ind),
 		maxiter = maxIter,
 		)
-		
+
+	# Clean up the temporary variables stored via _fit.setparams() earlier
+	_fit.params.cleanup()
+
 	print 'x =', list(x)
 	print 'igo =', igo
 
+	# Convert the solution vector into sets of oscillators and rotors
+	# The procedure for doing this depends on the content of the solution
+	# vector, which itself depends on the number of oscillators and rotors
+	# being fitted
 	vib, rot = postprocessCaseNvibNrot(Nvib, Nrot, x)
 	
 	return vib, rot
@@ -92,6 +146,7 @@ def setupCaseNvibNrot(Nvib, Nrot):
 	the heat capacity data.
 	"""
 
+	# Initialize the variables that are set by this function
 	ind = numpy.zeros(6, numpy.float64)		# Indicates type of bounds to apply (1 = lower, 2 = upper, 3 = both, 4 = neither)
 	lb = numpy.zeros(6, numpy.float64)		# Lower bounds
 	ub = numpy.zeros(6, numpy.float64)		# Upper bounds
@@ -138,6 +193,11 @@ def setupCaseNvibNrot(Nvib, Nrot):
 	return x0, lb, ub, ind
 
 def postprocessCaseNvibNrot(Nvib, Nrot, x):
+	"""
+	Convert the optimization solution vector `x` to a set of harmonic
+	oscillators and a set of hindered rotors for the case of an arbitrary
+	number of oscillator and rotor modes `Nvib` and `Nrot`, respectively.
+	"""
 
 	Nvib1 = int(round(x[0]))
 	Nvib2 = Nvib - Nvib1

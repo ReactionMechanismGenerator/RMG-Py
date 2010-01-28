@@ -52,6 +52,7 @@ contains
 
 	subroutine setParams(p_nT, p_Tlist, p_Cvlist, p_mcon, p_mequa, p_nvars, &
 		p_nvib, p_nrot, p_nu_low, p_nu_mid, p_nu_high)
+		! Set the module parameters based on the values in the parameter list.
 
 		integer, intent(in) :: p_nT								! The number of temperatures at which Cv data is given
 		real(8), dimension(1:p_nT), intent(in) :: p_Tlist		! The list of temperatures in K at which Cv data is given
@@ -84,6 +85,7 @@ contains
 	end subroutine
 	
 	subroutine cleanup()
+		! Clean up arrays allocated when setting up the module parameters.
 	
 		deallocate( Tlist, Cvlist )
 		
@@ -94,6 +96,8 @@ end module
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 subroutine fitModes(x0, nx, bl, bu, ind, maxiter, xout, igo)
+	! Execute a constrained nonlinear optimization to fit molecular degrees of
+	! freedom to heat capacity data.
 
 	use params
 	implicit none
@@ -102,10 +106,10 @@ subroutine fitModes(x0, nx, bl, bu, ind, maxiter, xout, igo)
 	real(8), dimension(1:nx), intent(in) :: x0			! The initial guess to the solver for each variable
 	real(8), dimension(1:nx), intent(in) :: bl			! The lower bounds for each variable
 	real(8), dimension(1:nx), intent(in) :: bu			! The lower bounds for each variable
-	integer, dimension(1:nx), intent(in) :: ind		! The type of bounds for each variable
-	integer, intent(in) :: maxiter					! The maximum number of iterations to try
+	integer, dimension(1:nx), intent(in) :: ind			! The type of bounds for each variable
+	integer, intent(in) :: maxiter						! The maximum number of iterations to try
 	real(8), dimension(1:nx), intent(out) :: xout		! The returned solution vector
-	integer, intent(out) :: igo						! The returned solution status
+	integer, intent(out) :: igo							! The returned solution status
 
 	real(8), dimension(1:nx) :: x
 
