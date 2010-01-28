@@ -101,7 +101,7 @@ def fitSpectralDataToHeatCapacity(Tlist, Cvlist, Nvib, Nrot):
 	elif len(Tlist) < 7:
 		raise SpectralFitError('Unable to fit spectral data; you need to specify at least 7 heat capacity points.')
 	else:
-		x0, bl, bu, ind = setupCaseNvibNrot(Nvib, Nrot)
+		x0, bl, bu, ind = setupCasePseudo(Nvib, Nrot)
 	
 	# Set parameters that are not needed by the solver but are needed to 
 	# evaluate the objective function and its Jacobian
@@ -142,7 +142,7 @@ def fitSpectralDataToHeatCapacity(Tlist, Cvlist, Nvib, Nrot):
 	if Nvib + 2 * Nrot < len(Tlist):
 		vib, rot = postprocessCaseDirect(Nvib, Nrot, x)
 	else:
-		vib, rot = postprocessCaseNvibNrot(Nvib, Nrot, x)
+		vib, rot = postprocessCasePseudo(Nvib, Nrot, x)
 	
 	return vib, rot
 
@@ -215,7 +215,7 @@ def postprocessCaseDirect(Nvib, Nrot, x):
 
 ################################################################################
 
-def setupCaseNvibNrot(Nvib, Nrot):
+def setupCasePseudo(Nvib, Nrot):
 	"""
 	Fit an arbitrary number of harmonic oscillator and hindered rotor modes to
 	the heat capacity data. This case will fit two pseudo-oscillators and two
@@ -269,7 +269,7 @@ def setupCaseNvibNrot(Nvib, Nrot):
 
 	return x0, lb, ub, ind
 
-def postprocessCaseNvibNrot(Nvib, Nrot, x):
+def postprocessCasePseudo(Nvib, Nrot, x):
 	"""
 	Convert the optimization solution vector `x` to a set of harmonic
 	oscillators and a set of hindered rotors for the case of an arbitrary

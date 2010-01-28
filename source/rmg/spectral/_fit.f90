@@ -114,7 +114,7 @@ subroutine fitModes(x0, nx, bl, bu, ind, maxiter, xout, igo)
 	real(8), dimension(1:nx) :: x
 
 	external caseDirect
-	external caseNvibNrot
+	external casePseudo
 
 	! These variables are required by the nonlinear solver
 	integer, parameter :: lwork = 785
@@ -154,7 +154,7 @@ subroutine fitModes(x0, nx, bl, bu, ind, maxiter, xout, igo)
 		call dqed(caseDirect, mequa, nvars, mcon, ind, bl, bu, &
 			x, fj, ldfj, fnorm, igo, iopt, ropt, iwork, work)
 	else
-		call dqed(caseNvibNrot, mequa, nvars, mcon, ind, bl, bu, &
+		call dqed(casePseudo, mequa, nvars, mcon, ind, bl, bu, &
 			x, fj, ldfj, fnorm, igo, iopt, ropt, iwork, work)
 	end if
 !	if (nrot == 0) then

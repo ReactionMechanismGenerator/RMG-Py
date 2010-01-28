@@ -82,7 +82,7 @@ end subroutine
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-subroutine caseNvibNrot(x, fj, ldfj, igo, iopt, ropt)
+subroutine casePseudo(x, fj, ldfj, igo, iopt, ropt)
 	! Objective function and its Jacobian for the case of many oscillators and
 	! many rotors.
 	
