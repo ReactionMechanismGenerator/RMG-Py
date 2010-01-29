@@ -484,6 +484,12 @@ class Species:
 			if thisH298 < lowestH298:
 				self.thermoData = tdata
 				lowestH298 = thisH298
+
+		# Put the most stable structure first in the list of structures
+		i = thermoData.index(self.thermoData)
+		s = self.structure.pop(i)
+		self.structure.insert(0, s)
+		
 		return self.thermoData
 
 	def generateSpectralData(self):
@@ -713,7 +719,7 @@ def processNewSpecies(spec):
 		spec.getThermoData()
 
 	# Generate spectral data
-	if settings.spectralDataEstimation and spec.thermoData:
+	if settings.spectralDataEstimation and spec.thermoData and spec.reactive:
 		import spectral
 		spec.spectralData = spectral.data.generateSpectralData(spec.structure[0], spec.thermoData)
 		
