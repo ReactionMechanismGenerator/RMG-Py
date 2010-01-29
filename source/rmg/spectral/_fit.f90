@@ -126,7 +126,7 @@ subroutine fitModes(x0, nx, bl, bu, ind, maxiter, xout, igo)
 	! Additional solver options
 	iopt(1)=4         ! Set the option to change the value of TOLF
 	iopt(2)=1         ! Where in ROPT to look for the new value
-	ropt(1)=1.E-9     ! New value for TOLF
+	ropt(1)=1.E-5     ! New value for TOLF
 	iopt(3)=2         ! Change the number of interations
 	iopt(4)=maxiter   ! Maximum number of iterations
 	iopt(5)=17        ! Do not allow the flag IGO to return the value IGO=3

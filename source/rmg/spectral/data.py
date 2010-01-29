@@ -214,14 +214,15 @@ def generateSpectralData(struct, thermoData):
 		# First try to remove hindered rotor modes until the proper number of modes remains
 		if numRotors >= difference:
 			numRotors -= difference
-			logging.warning('For structure %s, more characteristic frequencies were generated than vibrational modes allowed. Removed %i internal rotors to compensate.' % (struct, difference))
-		# If that doesn't work, turn off functional groups until the problem is underspecified again
+			numVibrations = len(frequencies)
+			logging.warning('For %s, more characteristic frequencies were generated than vibrational modes allowed. Removed %i internal rotors to compensate.' % (struct, difference))
+		# If that won't work, turn off functional groups until the problem is underspecified again
 		else:
 			groupsRemoved = 0
 			freqsRemoved = 0
 			freqCount = len(frequencies)
 			while freqCount > numVibrations:
-				minDegeneracy, minNode = min([(sum([charFreq.degeneracy for charFreq in frequencyDatabase.library[node][1:]]), node) for node in groupCount])
+				minDegeneracy, minNode = min([(sum([charFreq.degeneracy for charFreq in frequencyDatabase.library[node][1:]]), node) for node in groupCount if groupCount[node] > 0])
 				if groupCount[minNode] > 1:
 					groupCount[minNode] -= 1
 				else:
@@ -230,13 +231,13 @@ def generateSpectralData(struct, thermoData):
 				freqsRemoved += minDegeneracy
 				freqCount -= minDegeneracy
 			# Log warning
-			logging.warning('For structure %s, more characteristic frequencies were generated than vibrational modes allowed. Removed %i groups (%i frequencies) to compensate.' % (struct, groupsRemoved, freqsRemoved))
+			logging.warning('For %s, more characteristic frequencies were generated than vibrational modes allowed. Removed %i groups (%i frequencies) to compensate.' % (struct, groupsRemoved, freqsRemoved))
 			# Regenerate characteristic frequencies
 			frequencies = []
 			for node, count in groupCount.iteritems():
 				for charFreq in frequencyDatabase.library[node][1:]:
 					frequencies.extend(charFreq.generateFrequencies(count))
-
+			
 	# Create spectral data object with characteristic frequencies
 	spectralData = SpectralData()
 	for freq in frequencies:
@@ -261,11 +262,29 @@ def generateSpectralData(struct, thermoData):
 
 	# Fit remaining frequencies and hindered rotors to the heat capacity data
 	import fit
-	vib, hind = fit.fitSpectralDataToHeatCapacity(Tlist, Cv, numVibrations - len(frequencies), numRotors)
-	for freq, degen in vib:
-		spectralData.modes.append(HarmonicOscillator(frequency=freq, degeneracy=degen))
-	for freq, barr, degen in hind:
-		spectralData.modes.append(HinderedRotor(frequency=freq, barrier=barr, degeneracy=degen))
+	try:
+		vib, hind = fit.fitSpectralDataToHeatCapacity(struct, Tlist, Cv, numVibrations - len(frequencies), numRotors)
+		for freq, degen in vib:
+			spectralData.modes.append(HarmonicOscillator(frequency=freq, degeneracy=degen))
+		for freq, barr, degen in hind:
+			spectralData.modes.append(HinderedRotor(frequency=freq, barrier=barr, degeneracy=degen))
+
+		# Check: Does the fitted data reproduce the Cv data?
+		# We use root mean square error per data point as our basis for judging
+		Cp_fit = spectralData.getHeatCapacity(Tlist) + (3.0 if not linear else 2.5)
+		Cp_data = [thermoData.getHeatCapacity(T) / 8.314472 for T in Tlist]
+		rms = 0.0
+		for i in range(len(Tlist)):
+			rms += (Cp_fit[i] - Cp_data[i]) * (Cp_fit[i] - Cp_data[i])
+		rms /= len(Tlist)
+		if rms > 1.0:
+			logging.warning('Fitted spectral data may not reproduce heat capacity data to within tolerance. RMS/point = %s' % rms)
+			#if rms > 3.0:
+			#	raise fit.SpectralFitException('Fitted spectral data does not reproduce heat capacity data to within tolerance. RMS = %s\nModel heat capacity is %s\nData heat capacity is %s' % (rms, Cp_fit, Cp_data))
+		
+	except fit.SpectralFitException, e:
+		e.msg += '\nThe species I was fitting spectral data to was %s' % str(struct)
+		raise
 
 	return spectralData
 

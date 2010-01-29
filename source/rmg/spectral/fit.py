@@ -41,6 +41,7 @@ mode objects (named ``postprocessCase?vib?rot``).
 
 import math
 import numpy
+import logging
 
 import _fit
 
@@ -85,7 +86,7 @@ class SpectralFitException(Exception):
 
 ################################################################################
 
-def fitSpectralDataToHeatCapacity(Tlist, Cvlist, Nvib, Nrot):
+def fitSpectralDataToHeatCapacity(struct, Tlist, Cvlist, Nvib, Nrot):
 	"""
 	For a given set of dimensionless heat capacity data `Cvlist` corresponding
 	to temperature list `Tlist` in K, fit `Nvib` harmonic oscillator and `Nrot`
@@ -105,7 +106,9 @@ def fitSpectralDataToHeatCapacity(Tlist, Cvlist, Nvib, Nrot):
 	#	-	For high values of Nvib and/or Nrot we are limited by the number of
 	#		temperatures we are fitting at, and so we can only fit 
 	#		pseudo-oscillators and/or pseudo-rotors
-	if Nvib + 2 * Nrot < len(Tlist):
+	if Nvib <= 0 and Nrot <= 0:
+		return [], []
+	elif Nvib + 2 * Nrot < len(Tlist):
 		x0, bl, bu, ind = setupCaseDirect(Nvib, Nrot)
 	elif Nvib + 2 < len(Tlist):
 		x0, bl, bu, ind = setupCasePseudoRot(Nvib, Nrot)
@@ -113,7 +116,7 @@ def fitSpectralDataToHeatCapacity(Tlist, Cvlist, Nvib, Nrot):
 		raise Exception('Unable to fit spectral data; you need to specify at least 7 heat capacity points.')
 	else:
 		x0, bl, bu, ind = setupCasePseudo(Nvib, Nrot)
-	
+
 	# Set parameters that are not needed by the solver but are needed to 
 	# evaluate the objective function and its Jacobian
 	# These are stored in a Fortran 90 module called params
@@ -143,7 +146,8 @@ def fitSpectralDataToHeatCapacity(Tlist, Cvlist, Nvib, Nrot):
 	if not numpy.isfinite(x).all():
 		raise SpectralFitException('Returned solution vector is nonsensical: x = %s.' % (x))
 	if igo == 8:
-		raise SpectralFitException('Maximum number of iterations reached; solution may be invalid.\nI was trying to fit %s oscillators and %s rotors.' % (Nvib, Nrot))
+		logging.warning('Maximum number of iterations reached when fitting spectral data for %s.' % str(struct))
+		#raise SpectralFitException('Maximum number of iterations reached; solution may be invalid.\nI was trying to fit %s oscillators and %s rotors.' % (Nvib, Nrot))
 	
 	# Convert the solution vector into sets of oscillators and rotors
 	# The procedure for doing this depends on the content of the solution
@@ -197,8 +201,7 @@ def setupCaseDirect(Nvib, Nrot):
 	# Initial guess for harmonic oscillators
 	if Nvib > 0:
 		x0[0] = 200.0
-		for i in range(1, Nvib):
-			x0[i] = x0[i-1] + 400.0
+		x0[1:Nvib] = numpy.linspace(800.0, 1600.0, Nvib-1)
 	# Initial guess for hindered rotors
 	if Nrot > 0:
 		x0[Nvib] = 100.0
@@ -292,7 +295,9 @@ def postprocessCasePseudo(Nvib, Nrot, x):
 
 	Nvib2 = int(round(x[1]))
 	Nvib3 = Nvib - Nvib2 - 1
-	
+	if Nvib2 < 0 or Nvib2 > Nvib-1 or Nvib3 < 0 or Nvib3 > Nvib-1:
+		raise SpectralFitException('Invalid degeneracies %s and %s fitted for pseudo-frequencies.' % (Nvib2, Nvib3))
+
 	vib = []
 	vib.append([x[0], 1])
 	if Nvib2 > 0: vib.append([x[2], Nvib2])
