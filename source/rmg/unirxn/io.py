@@ -192,6 +192,15 @@ def readInputFile(fstr):
 		# Cleanup the DOM tree when finished
 		document.cleanup()
 
+		# Temporarily replace the list of species in each path reaction with the
+		# corresponding isomer
+		for reaction in network.pathReactions:
+			for isomer in network.isomers:
+				if all([spec in reaction.reactants for spec in isomer.species]):
+					reaction.reactant = isomer
+				if all([spec in reaction.products for spec in isomer.species]):
+					reaction.product = isomer
+
 		return network, Tlist, Plist, grainSize, numGrains, method, model
 
 	#except InvalidInputFileException, e:
@@ -316,7 +325,7 @@ def writeInputFile(fstr, network, Tlist, Plist, Elist, method, model):
 	if grainSize != 0:
 		document.createQuantity('grainSize', optionListElement, grainSize/1000.0, 'kJ/mol')
 	else:
-		document.createTextElement('numberOfGrains', optionListElement, numberOfGrains)
+		document.createTextElement('numberOfGrains', optionListElement, str(numberOfGrains))
 
 	# Write method
 	document.createTextElement('method', optionListElement, method)
@@ -332,3 +341,75 @@ def writeInputFile(fstr, network, Tlist, Plist, Elist, method, model):
 	document.cleanup()
 
 ################################################################################
+
+def writeOutputFile(fstr, network, Tlist, Plist, Elist, method, model): 
+	"""
+	Write an output file to `fstr`. Parameters are: `network`,
+	a :class:`Network` object containing the unimolecular reaction network;
+	`Tlist`, a list of temperatures in K; `Plist`, a list of pressures in Pa;
+	`Elist`, a list of energy grains in J/mol; `method`, the approximate method
+	to use; and `model`, the interpolation model to fit.
+	"""
+
+	# Initialize DOM tree
+	document = XML()
+
+	# Set root element to be a <rmgoutput> element
+	rootElement = document.initialize('rmgoutput')
+
+	# Write title
+	document.createTextElement('title', rootElement, '')
+
+	# Write species list
+	speciesListElement = document.createElement('speciesList', rootElement)
+	speciesList = network.getSpeciesList()
+	speciesList.append(network.bathGas)
+	for species in speciesList:
+		species.toXML(document, speciesListElement)
+
+	# Write path reaction list
+	pathReactionListElement = document.createElement('pathReactionList', rootElement)
+	for reaction in network.pathReactions:
+		reaction.toXML(document, pathReactionListElement)
+
+	# Write net reaction list
+	netReactionListElement = document.createElement('netReactionList', rootElement)
+	for reaction in network.netReactions:
+		reaction.toXML(document, netReactionListElement)
+		
+	# Write bath gas list
+	bathGasListElement = document.createElement('bathGasList', rootElement)
+	bathGasElement = document.createElement('bathGas', bathGasListElement)
+	document.createAttribute('ref', bathGasElement, network.bathGas.toSMILES())
+
+	# Write option list
+	optionListElement = document.createElement('optionList', rootElement)
+
+	# Write temperature list
+	document.createQuantity('temperatures', optionListElement, Tlist, 'K')
+
+	# Write pressure list
+	document.createQuantity('pressures', optionListElement, [P/1.0e5 for P in Plist], 'bar')
+
+	# Write grain size or number of grains
+	grainSize = Elist[1] - Elist[0]; numberOfGrains = 0
+	if grainSize != 0:
+		document.createQuantity('grainSize', optionListElement, grainSize/1000.0, 'kJ/mol')
+	else:
+		document.createTextElement('numberOfGrains', optionListElement, str(numberOfGrains))
+
+	# Write method
+	document.createTextElement('method', optionListElement, method)
+
+	# Write interpolation model
+#	modelElement = document.createElement('interpolationModel', optionListElement)
+#	document.createAttribute('type', modelElement, model)
+
+	# Save to file
+	document.save(fstr)
+
+	# Clean up DOM tree when finished
+	document.cleanup()
+
+################################################################################
+

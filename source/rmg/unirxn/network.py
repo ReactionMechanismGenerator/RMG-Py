@@ -430,7 +430,7 @@ class Network:
 		for reaction in self.pathReactions:
 			reaction.E0 -= Emin
 
-	def __getEnergyGrains(self, Emin, Emax, dE0, nGrains0):
+	def getEnergyGrains(self, Emin, Emax, dE0, nGrains0):
 		"""
 		Return an array of energy grains that have a minimum of `Emin`, a
 		maximum of `Emax`, and either a spacing of `dE0` or have number of
@@ -498,7 +498,7 @@ class Network:
 
 			Emax = math.ceil(Emax0 + mult * constants.R * Tmax)
 
-			Elist = self.__getEnergyGrains(Emin, Emax, dE, nE)
+			Elist = self.getEnergyGrains(Emin, Emax, dE, nE)
 			isomer.calculateDensityOfStates(Elist)
 			isomer.calculateEqDist(Elist, Tmax)
 
@@ -533,7 +533,7 @@ class Network:
 		Emax = math.ceil(Emax)
 
 		# Return the chosen energy grains
-		return self.__getEnergyGrains(Emin, Emax, grainSize, numGrains)
+		return self.getEnergyGrains(Emin, Emax, grainSize, numGrains)
 
 	def calculateRateCoefficients(self, Tlist, Plist, Elist, method):
 		"""

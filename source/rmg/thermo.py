@@ -301,9 +301,9 @@ class ThermoGAData(ThermoData):
 
 	def toXML(self, document, rootElement):
 		"""
-		Add a <thermoData> element as a child of `rootElement` using
-		RMG-style XML. `document` is an :class:`io.XML` class representing the
-		XML DOM tree.
+		Create a <thermoData> element as a child of `rootElement` in the XML DOM
+		tree represented by `document`, an :class:`io.XML` class. The format
+		matches the format of the :meth:`ThermoGAData.fromXML()` function.
 		"""
 		
 		# Create <thermoData> element

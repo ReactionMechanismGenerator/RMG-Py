@@ -59,23 +59,16 @@ subroutine collisionMatrix(T, P, E, collFreq, densStates, E0, dEdown, Ngrains, &
 	real(8), dimension(1:Ngrains,1:Ngrains), intent(out) :: Mcoll
 	character(len=128), intent(out) :: msg
 	
-	! Gas concentration in molecules/m^3
-	real(8)			:: gasConc			
-
-	real(8), dimension(:,:), allocatable	::	prob
 	real(8), dimension(:), allocatable		::	C		! Vector of normalization coefficients
 
-	real(8) Emin, Emax, dE
+	real(8) dE
 
-	integer			:: bandwidth, halfbandwidth
+	integer			:: halfbandwidth
 	integer			:: lb, ub, start
 	integer			:: r, s
 
 	! Initialize msg to empty string
 	msg = ''
-
-	! Determine (ideal) gas concentration
-	gasConc = P / 1.381e-23 / T
 
 	! Zero collision matrix
 	do r = 1, Ngrains
@@ -89,15 +82,12 @@ subroutine collisionMatrix(T, P, E, collFreq, densStates, E0, dEdown, Ngrains, &
 	C = 0 * C
 
 	! Get minimum and maximum energies and grain size
-	Emin = minval(E)
-	Emax = maxval(E)
 	dE = E(2) - E(1)
 
 	! Determine bandwidth (at which transfer probabilities are so low that they can be truncated
 	! with negligible error)
 	halfbandwidth = ceiling(16 * dEdown / dE)
-	bandwidth = 2 * halfbandwidth + 1
-
+	
 	! Determine start grain (corresponding to isomer ground-state energy)
 	start = 0
 	do r = 1, Ngrains
@@ -259,7 +249,7 @@ subroutine fullMEMatrix(E, E0, Mcoll0, Kij, Gnj, Fim, indices, &
 	real(8), dimension(1:nRows,1:nRows), intent(out) :: Mrxn
 	character(len=128), intent(out) :: msg
 
-	integer row, i, j, n, r, s, u, v
+	integer i, j, n, r, s, u, v
 
 	! Initialize msg to empty string
 	msg = ''

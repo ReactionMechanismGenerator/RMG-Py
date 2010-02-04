@@ -28,11 +28,9 @@
 #
 ################################################################################
 
-import logging
+import numpy as np
 
-import data
-import constants
-import thermo
+import _modes
 
 ################################################################################
 
@@ -50,7 +48,7 @@ class Translation:
 	def __repr__(self):
 		return '%s.Translation(%s, %s)' % (self.__module__, self.mass, self.dimension)
 
-	def partitionFunction(self, Tlist, V=1.0):
+	def getPartitionFunction(self, Tlist, V=1.0):
 		"""
 		Return the value of the partition function at the specified temperatures
 		`Tlist` in K. The formula is
@@ -61,25 +59,21 @@ class Translation:
 		:math:`d` is dimensionality, :math:`k_\\mathrm{B}` is Boltzmann's
 		constant, and :math:`h` is Planck's constant.
 		"""
+		return _modes.translation_partitionfunction(Tlist, self.mass, self.dimension, V)
 
-		Q = np.zeros(len(Tlist), np.float64)
-		for i in range(len(Tlist)):
-			Q[i] = ((2 * math.pi * self.mass / constants.Na * constants.kB * Tlist[i]) / (constants.h * constants.h))**(self.dimension/2.0) * V
-		return Q
-
-	def heatCapacity(self, Tlist, V=1.0):
+	def getHeatCapacity(self, Tlist, V=1.0):
 		"""
-		Return the contribution to the heat capacity due to translation. The 
+		Return the contribution to the heat capacity due to translation. The
 		formula is
 
 		.. math:: \\frac{C_\\mathrm{v}^\\mathrm{trans}(T)}{R} = \\frac{d}{2} R
-				
+
 		where :math:`T` is temperature, :math:`V` is volume,
 		:math:`d` is dimensionality, and :math:`R` is the gas law constant.
 		"""
-		return np.ones(len(Tlist), numpy.float64) * self.dimension / 2.0
+		return _modes.translation_heatcapacity(Tlist, self.mass, self.dimension, V)
 
-	def densityOfStates(self, Elist, V=1.0):
+	def getDensityOfStates(self, Elist, V=1.0):
 		"""
 		Return the density of states at the specified energlies `Elist` in J/mol
 		above the ground state. The formula is
@@ -90,19 +84,7 @@ class Translation:
 		:math:`q_\\mathrm{t}` is defined in the equation for the partition
 		function.
 		"""
-
-		qt = ((2 * math.pi * self.mass) / (constants.h * constants.h))**(self.dimension/2.0) * V
-
-		rho = np.zeros(len(Elist), np.float64)
-		if self.dimension == 2:
-			for i in range(len(Elist)):
-				rho[i] = qt
-		else:
-			for i in range(len(Elist)):
-				rho[i] = qt * math.sqrt(Elist[i]) / (math.sqrt(math.pi) / 2)		# qt * E^0.5 / 0.5!
-
-		return rho
-
+		return _modes.translation_densityofstates(Elist, self.mass, self.dimension, V)
 
 ################################################################################
 
@@ -124,7 +106,7 @@ class RigidRotor:
 	def __repr__(self):
 		return '%s.RigidRotor(%s, %s)' % (self.__module__, self.linear, self.frequencies)
 
-	def partitionFunction(self, Tlist):
+	def getPartitionFunction(self, Tlist):
 		"""
 		Return the value of the partition function at the specified temperatures
 		`Tlist` in K. The formula is
@@ -141,22 +123,9 @@ class RigidRotor:
 		:math:`h` is Planck's constant. :math:`\\sigma` is a placeholder for
 		the symmetry number.
 		"""
+		return _modes.freerotor_partitionfunction(Tlist, self.frequencies, 1 if self.linear else 0)
 
-		Q = np.zeros(len(Tlist), np.float64)
-		if self.linear:
-			freqProduct = constants.h * constants.c * 100.0 * self.frequencies[0]
-			for i in range(len(Tlist)):
-				Q[i] = constants.kB * Tlist[i] / freqProduct
-		else:
-			freqProduct = 1.0
-			for freq in self.frequencies:
-				freqProduct *= freq * constants.h * constants.c * 100.0
-			for i in range(len(Tlist)):
-				Q[i] = math.sqrt(math.pi) * (constants.kB * Tlist[i])**(len(self.frequencies)/2.0) / math.sqrt(freqProduct)
-
-		return Q
-
-	def heatCapacity(self, Tlist):
+	def getHeatCapacity(self, Tlist):
 		"""
 		Return the contribution to the heat capacity due to rigid rotation. The
 		formula is
@@ -170,9 +139,9 @@ class RigidRotor:
 		if linear, where :math:`T` is temperature and :math:`R` is the gas law
 		constant.
 		"""
-		return np.ones(len(Tlist), numpy.float64) * (1.0 if self.linear else 1.5)
+		return _modes.freerotor_heatcapacity(Tlist, self.frequencies, 1 if self.linear else 0)
 
-	def densityOfStates(self, Elist):
+	def getDensityOfStates(self, Elist):
 		"""
 		Return the density of states at the specified energlies `Elist` in J/mol
 		above the ground state. The formula is
@@ -187,21 +156,7 @@ class RigidRotor:
 		:math:`q_\\mathrm{r}` is defined in the	equation for the partition
 		function.
 		"""
-
-		rho = np.zeros(len(Elist), np.float64)
-		if self.linear:
-			freqProduct = constants.h * constants.c * 100.0 * self.frequencies[0] * constants.Na
-			for i in range(len(Elist)):
-				rho[i] = 1.0 / freqProduct
-		else:
-			freqProduct = 1.0
-			for freq in self.frequencies:
-				freqProduct *= freq * constants.h * constants.c * 100.0
-			qr = math.sqrt(math.pi) / math.sqrt(freqProduct)
-			for i in range(len(Elist)):
-				rho[i] = qr  * math.sqrt(Elist[i]) / (math.sqrt(math.pi) / 2)
-
-		return rho
+		return _modes.freerotor_densityofstates(Elist, self.frequencies, 1 if self.linear else 0)
 
 	def fromXML(self, document, rootElement):
 		"""
@@ -247,14 +202,15 @@ class HinderedRotor:
 	rotation in cm^-1, and the `barrier` height in cm^-1.
 	"""
 
-	def __init__(self, frequency=0.0, barrier=0.0):
+	def __init__(self, frequency=0.0, barrier=0.0, degeneracy=1):
 		self.frequency = frequency
 		self.barrier = barrier
+		self.degeneracy = degeneracy
 
 	def __repr__(self):
-		return '%s.HinderedRotor(%s, %s)' % (self.__module__, self.frequency, self.barrier)
+		return '%s.HinderedRotor(%s, %s, %s)' % (self.__module__, self.frequency, self.barrier, self.degeneracy)
 
-	def partitionFunction(self, Tlist):
+	def getPartitionFunction(self, Tlist):
 		"""
 		Return the value of the partition function at the specified temperatures
 		`Tlist` in K. The formula is
@@ -268,19 +224,9 @@ class HinderedRotor:
 		the symmetry number. :math:`I_0(x)` is the modified Bessel function of
 		order zero.
 		"""
+		return _modes.hinderedrotor_partitionfunction(Tlist, self.frequency, self.barrier) ** self.degeneracy
 
-		import scipy.special
-
-		q1f = math.sqrt(math.pi / (constants.h * constants.c * 100.0 * self.frequency))
-
-		Q = np.zeros(len(Tlist), np.float64)
-		for i in range(len(Tlist)):
-			b = self.barrier * constants.h * constants.c * 100.0 / (2 * constants.kB * Tlist[i])
-			Q[i] = q1f * math.sqrt(constants.kB * Tlist[i]) * math.exp(-b) * scipy.special.i0(b)
-
-		return Q
-
-	def heatCapacity(self, Tlist):
+	def getHeatCapacity(self, Tlist):
 		"""
 		Return the contribution to the heat capacity due to hindered rotation.
 		The formula is
@@ -295,13 +241,9 @@ class HinderedRotor:
 		:math:`k_\\mathrm{B}` is Boltzmann's constant, and :math:`R` is the gas
 		law constant.
 		"""
-		import scipy.special
-		xi = self.barrier * constants.h * constants.c * 100.0 / (2.0 * constants.kB * Tlist)
-		I0 = scipy.special.i0(xi)
-		I1 = scipy.special.i1(xi)
-		return (0.5 + xi*xi - xi*xi*I1*I1/I0/I0 - xi*I1/I0)
+		return _modes.hinderedrotor_heatcapacity(Tlist, self.frequency, self.barrier) * self.degeneracy
 
-	def densityOfStates(self, Elist):
+	def getDensityOfStates(self, Elist):
 		"""
 		Return the density of states at the specified energlies `Elist` in J/mol
 		above the ground state. The formula is
@@ -317,20 +259,10 @@ class HinderedRotor:
 		function. :math:`\\mathcal{K}(x)` is the complete elliptic integral of the first
 		kind.
 		"""
-
-		import scipy.special
-
-		q1f = math.sqrt(math.pi / (constants.h * constants.c * 100.0 * self.frequency * constants.Na))
-		V0 = self.barrier * constants.h * constants.c * 100.0 * constants.Na
-
-		rho = np.zeros(len(Elist), np.float64)
-		for i in range(len(Elist)):
-			E = Elist[i]
-			if Elist[i] < V0:
-				rho[i] = 2 * q1f / (math.pi**1.5 * math.sqrt(V0)) * scipy.special.ellipk(E / V0)
-			else:
-				rho[i] = 2 * q1f / (math.pi**1.5 * math.sqrt(E)) * scipy.special.ellipk(V0 / E)
-
+		rho = np.zeros((len(Elist)), np.float64)
+		rho0 = _modes.hinderedrotor_densityofstates(Elist, self.frequency, self.barrier)
+		for i in range(self.degeneracy):
+			rho = convolve(rho, rho0, Elist)
 		return rho
 
 	def fromXML(self, document, rootElement, frequencyScaleFactor=1.0):
@@ -349,6 +281,9 @@ class HinderedRotor:
 		self.barrier = document.getChildQuantity(rootElement, 'barrier', required=True)
 		self.barrier = float(self.barrier)
 
+		# Read <degeneracy> element
+		self.degeneracy = int(document.getTextElement(rootElement, 'degeneracy', required=False, default='1'))
+
 	def toXML(self, document, rootElement):
 		"""
 		Add a <hinderedRotor> element as a child of `rootElement` using
@@ -358,6 +293,7 @@ class HinderedRotor:
 		hinderedRotorElement = document.createElement('hinderedRotor', rootElement)
 		document.createQuantity('frequency', hinderedRotorElement, self.frequency, 'cm^-1')
 		document.createQuantity('barrier', hinderedRotorElement, self.barrier, 'cm^-1')
+		document.createTextElement('degeneracy', hinderedRotorElement, str(self.degeneracy))
 
 ################################################################################
 
@@ -367,13 +303,14 @@ class HarmonicOscillator:
 	oscillator. The oscillator is defined by its `frequency` in cm^-1.
 	"""
 
-	def __init__(self, frequency=0.0):
+	def __init__(self, frequency=0.0, degeneracy=1):
 		self.frequency = frequency
+		self.degeneracy = degeneracy
 
 	def __repr__(self):
-		return '%s.HarmonicOscillator(%s)' % (self.__module__, self.frequency)
+		return '%s.HarmonicOscillator(%s, %s)' % (self.__module__, self.frequency, self.degeneracy)
 
-	def partitionFunction(self, Tlist):
+	def getPartitionFunction(self, Tlist):
 		"""
 		Return the value of the partition function at the specified temperatures
 		`Tlist` in K. The formula is
@@ -387,14 +324,9 @@ class HarmonicOscillator:
 		energy to be at the zero-point energy of the molecule, *not* the bottom
 		of the potential well.
 		"""
+		return _modes.harmonicoscillator_partitionfunction(Tlist, self.frequency) ** self.degeneracy
 
-		Q = np.zeros(len(Tlist), np.float64)
-		for i in range(len(Tlist)):
-			exponent = constants.h * constants.c * 100.0 * self.frequency / (constants.kB * Tlist[i])
-			Q[i] = 1.0 / (1 - math.exp(-exponent))
-		return Q
-
-	def heatCapacity(self, Tlist):
+	def getHeatCapacity(self, Tlist):
 		"""
 		Return the contribution to the heat capacity due to hindered rotation.
 		The formula is
@@ -409,12 +341,9 @@ class HarmonicOscillator:
 		:math:`k_\\mathrm{B}` is Boltzmann's constant, and :math:`R` is the gas
 		law constant.
 		"""
-		from numpy import exp
-		xi = constants.h * constants.c * 100.0 * self.frequency / (constants.kB * Tlist)
-		exp_xi = exp(xi)
-		return (xi*xi * exp_xi / (1 - exp_xi) / (1 - exp_xi))
+		return _modes.harmonicoscillator_heatcapacity(Tlist, self.frequency) * self.degeneracy
 
-	def densityOfStates(self, Elist):
+	def getDensityOfStates(self, Elist):
 		"""
 		Return the density of states at the specified energies `Elist` in J/mol
 		above the ground state. The formula is
@@ -440,6 +369,9 @@ class HarmonicOscillator:
 		self.frequency = document.getChildQuantity(rootElement, 'frequency', required=True)
 		self.frequency = float(self.frequency) * frequencyScaleFactor
 
+		# Read <degeneracy> element
+		self.degeneracy = int(document.getTextElement(rootElement, 'degeneracy', required=False, default='1'))
+	
 	def toXML(self, document, rootElement):
 		"""
 		Add a <harmonicOscillator> element as a child of `rootElement` using
@@ -448,6 +380,7 @@ class HarmonicOscillator:
 		"""
 		harmonicOscillatorElement = document.createElement('harmonicOscillator', rootElement)
 		document.createQuantity('frequency', harmonicOscillatorElement, self.frequency, 'cm^-1')
+		document.createTextElement('degeneracy', harmonicOscillatorElement, str(self.degeneracy))
 
 ################################################################################
 
@@ -461,7 +394,18 @@ class SpectralData:
 		self.modes = modes or []
 		self.symmetry = symmetry
 
-	def partitionFunction(self, Tlist):
+	def getHeatCapacity(self, Tlist):
+		"""
+		Return the value of the heat capacity at the specified temperatures
+		`Tlist` in K. The heat capacity returned is divided by the Boltzmann
+		constant so as to be dimensionless.
+		"""
+		Cp = np.ones((len(Tlist)), np.float64)
+		for mode in self.modes:
+			Cp += mode.getHeatCapacity(Tlist)
+		return Cp
+
+	def getPartitionFunction(self, Tlist):
 		"""
 		Return the value of the partition function at the specified temperatures
 		`Tlist` in K.
@@ -476,12 +420,12 @@ class SpectralData:
 				Q[i] *= Q0[i]
 		# Other modes
 		for mode in self.modes:
-			Q0 = mode.partitionFunction(Tlist)
+			Q0 = mode.getPartitionFunction(Tlist)
 			for i in range(len(Tlist)):
 				Q[i] *= Q0[i]
 		return Q
 
-	def densityOfStates(self, Elist):
+	def getDensityOfStates(self, Elist):
 		"""
 		Return the value of the density of states in mol/J at the specified
 		energies `Elist` in J/mol above the ground state.
@@ -495,7 +439,7 @@ class SpectralData:
 		# First convolve nonvibrational modes
 		for mode in self.modes:
 			if not isinstance(mode, HarmonicOscillator):
-				rho0 = mode.densityOfStates(Elist)
+				rho0 = mode.getDensityOfStates(Elist)
 				if not rho.any():
 					rho = rho0
 				else:
@@ -513,7 +457,7 @@ class SpectralData:
 		Q = self.partitionFunction([T])[0]
 		return math.log(Q) + beta * float(E)
 
-	def densityOfStatesForst(self, Elist):
+	def getDensityOfStatesForst(self, Elist):
 
 		import scipy.optimize
 
@@ -587,253 +531,10 @@ class SpectralData:
 		RMG-style XML. `document` is an :class:`io.XML` class representing the
 		XML DOM tree.
 		"""
-		
+
 		spectralDataElement = document.createElement('spectralData', rootElement)
 		for mode in self.modes:
 			mode.toXML(document, spectralDataElement)
 		document.createTextElement('symmetryNumber', spectralDataElement, str(self.symmetry))
-
-################################################################################
-
-class CharacteristicFrequency:
-	"""
-	Represent a characteristic frequency in the frequency database. The
-	characteristic frequency has a real lower bound `lower`, a real upper bound
-	`upper`, an integer `degeneracy`.
-	"""
-
-	def __init__(self, lower=0.0, upper=0.0, degeneracy=1):
-		self.lower = lower
-		self.upper = upper
-		self.degeneracy = degeneracy
-
-	def generateFrequencies(self, count=1):
-		"""
-		Generate a set of frequencies. The number of frequencies returned is
-		self.degeneracy * count, and these are distributed linearly between
-		`self.lower` and `self.upper`.
-		"""
-		from numpy import linspace
-		number = self.degeneracy * count
-		if number == 1:
-			return [(self.lower + self.upper) / 2.0]
-		else:
-			return linspace(self.lower, self.upper, number, endpoint=True)
-
-################################################################################
-
-class FrequencyDatabase(data.Database):
-	"""
-	Represent an RMG frequency database.
-	"""
-
-	def __init__(self):
-		"""
-		Call the generic `data.Database.__init__()` method. This in turn creates
-			* self.dictionary = Dictionary()
-			* self.library = Library()
-			* self.tree = Tree()
-		"""
-		data.Database.__init__(self)
-
-
-	def load(self, dictstr, treestr, libstr):
-		"""
-		Load a group frequency database. The database is stored
-		in three files: `dictstr` is the path to the dictionary, `treestr` to
-		the tree, and `libstr` to the library. The tree is optional, and should
-		be set to '' if not desired.
-		"""
-
-		# Load dictionary, library, and (optionally) tree
-		data.Database.load(self, dictstr, treestr, libstr)
-
-		# Convert data in library to ThermoData objects or lists of
-		# [link, comment] pairs
-		for label, item in self.library.iteritems():
-
-			if item is None:
-				pass
-			elif not item.__class__ is tuple:
-				raise data.InvalidDatabaseException('Frequencies library should be tuple at this point. Instead got %r'%data)
-			else:
-				index, item = item
-				if not (item.__class__ is str or item.__class__ is unicode):
-					raise data.InvalidDatabaseException('Frequencies library data format is unrecognized.')
-
-				items = item.split()
-
-				# First item is the symmetry correction 
-				frequencies = [int(items.pop(0))]
-
-				# Items should be a multiple of three (no comments allowed at the moment)
-				if len(items) % 3 != 0:
-					raise data.InvalidDatabaseException('Unexpected number of items encountered in frequencies library.')
-
-				# Convert list of data into a list of characteristic frequencies
-				count = len(items) / 3
-				for i in range(count):
-					frequency = CharacteristicFrequency(
-						lower=float(items[3*i+1]),
-						upper=float(items[3*i+2]),
-						degeneracy=int(items[3*i]))
-					frequencies.append(frequency)
-
-				self.library[label] = frequencies
-
-		# Check for well-formedness
-		if not self.isWellFormed():
-			raise data.InvalidDatabaseException('Database at "%s" is not well-formed.' % (dictstr))
-
-frequencyDatabase = None
-
-################################################################################
-
-def loadFrequencyDatabase(databasePath):
-	"""
-	Create and load the frequencies databases.
-	"""
-	import os.path
-	import logging
-
-	databasePath = os.path.join(databasePath, 'frequencies')
-
-	# Create and load thermo databases
-	database = FrequencyDatabase()
-	logging.debug('\tFrequencies database')
-	database.load(
-		dictstr=os.path.join(databasePath, 'Dictionary.txt'),
-		treestr=os.path.join(databasePath, 'Tree.txt'),
-		libstr=os.path.join(databasePath, 'Library.txt'))
-
-	return database
-
-################################################################################
-
-def generateSpectralData(struct, thermoData):
-	"""
-	Generate the spectral data for a :class:`structure.Structure` object
-	`struct` with corresponding :class:`thermo.ThermoGAData` object `thermo`.
-	The group frequency method is used to do so; this method has two steps:
-
-	1.	Search the structure for certain functional groups for which
-		characteristic frequencies are known, and use those frequencies.
-	2.	For any remaining degrees of freedom, fit the parameters such that they
-		replicate the heat capacity.
-
-	This method only fits the internal modes (i.e. vibrations and hindered
-	rotors).
-	"""
-
-	# No spectral data for single atoms
-	if len(struct.atoms()) < 2:
-		return None
-
-	# Determine linearity of structure
-	linear = struct.isLinear()
-
-	# Determine the number of internal modes for this structure
-	numModes = 3 * len(struct.atoms()) - (5 if linear else 6)
-
-	# Determine the number of vibrational and hindered rotor modes for this
-	# structure
-	numRotors = struct.countInternalRotors()
-	numVibrations = numModes - numRotors
-	#print 'For %s, I found %i internal rotors and %i vibrations for a total of %i modes' % (struct, numRotors, numVibrations, numModes)
-
-	# For each group in library, find all subgraph isomorphisms
-	groupCount = {}
-	for node, data in frequencyDatabase.library.iteritems():
-		ismatch, map12List, map21List = struct.findSubgraphIsomorphisms(frequencyDatabase.dictionary[node])
-		if ismatch:
-			count = len(map12List)
-		else:
-			count = 0
-		if count % data[0] != 0:
-			raise Exception('Incorrect number of matches of node "%s" while estimating frequencies of %s.' % (node, struct))
-		groupCount[node] = count / data[0]
-
-	# For debugging, print a list of the groups found
-	#print 'Groups found:'
-	#for node, count in groupCount.iteritems():
-	#	if count != 0: print '\t', node, count
-
-	# Get characteristic frequencies
-	frequencies = []
-	for node, count in groupCount.iteritems():
-		for charFreq in frequencyDatabase.library[node][1:]:
-			frequencies.extend(charFreq.generateFrequencies(count))
-
-	# Check that we have the right number of degrees of freedom specified
-	if len(frequencies) > numVibrations:
-		# We have too many vibrational modes
-		difference = len(frequencies) - numVibrations
-		# First try to remove hindered rotor modes until the proper number of modes remains
-		if numRotors >= difference:
-			numRotors -= difference
-			logging.warning('For structure %s, more characteristic frequencies were generated than vibrational modes allowed. Removed %i internal rotors to compensate.' % (struct, difference))
-		# If that doesn't work, turn off functional groups until the problem is underspecified again
-		else:
-			groupsRemoved = 0
-			freqsRemoved = 0
-			freqCount = len(frequencies)
-			while freqCount > numVibrations:
-				minDegeneracy, minNode = min([(sum([charFreq.degeneracy for charFreq in frequencyDatabase.library[node][1:]]), node) for node in groupCount])
-				if groupCount[minNode] > 1:
-					groupCount[minNode] -= 1
-				else:
-					del groupCount[minNode]
-				groupsRemoved += 1
-				freqsRemoved += minDegeneracy
-				freqCount -= minDegeneracy
-			# Log warning
-			logging.warning('For structure %s, more characteristic frequencies were generated than vibrational modes allowed. Removed %i groups (%i frequencies) to compensate.' % (struct, groupsRemoved, freqsRemoved))
-			# Regenerate characteristic frequencies
-			frequencies = []
-			for node, count in groupCount.iteritems():
-				for charFreq in frequencyDatabase.library[node][1:]:
-					frequencies.extend(charFreq.generateFrequencies(count))
-
-	# Create spectral data object with characteristic frequencies
-	spectralData = SpectralData()
-	for freq in frequencies:
-		spectralData.modes.append(HarmonicOscillator(frequency=freq))
-
-	# Subtract out contributions to heat capacity from the characteristic modes
-	import numpy
-	Cp = [thermoData.getHeatCapacity(T) for T in thermo.ThermoGAData.CpTlist]
-	Cv = numpy.array(Cp) / constants.R
-	Tlist = numpy.array(thermo.ThermoGAData.CpTlist)
-	for mode in spectralData.modes:
-		Cv -= mode.heatCapacity(Tlist)
-	# Subtract out translational modes
-	Cv -= 1.5
-	# Subtract out external rotational modes
-	Cv -= (1.5 if not linear else 1.0)
-	# Subtract out PV term (Cp -> Cv)
-	Cv -= 1.0
-	# Check that all Cv values are still positive (should we do this?)
-	#for C in Cv:
-	#	if C <= 0.0: raise Exception('Remaining heat capacity is negative.')
-	
-	# Fit remaining frequencies and hindered rotors to the heat capacity data
-	import spectralfit
-	freeVibrations = numVibrations - len(frequencies)
-	if freeVibrations > 0 and numRotors > 0:
-		vib, hind = spectralfit.fitspectraldata(Cv, Tlist, freeVibrations, numRotors)
-		for v in vib:
-			spectralData.modes.append(HarmonicOscillator(frequency=v))
-		for v, b in hind:
-			spectralData.modes.append(HinderedRotor(frequency=v, barrier=b))
-	elif freeVibrations > 0 and numRotors == 0:
-		vib = spectralfit.fitspectraldatanorotors(Cv, Tlist, freeVibrations)
-		for v in vib:
-			spectralData.modes.append(HarmonicOscillator(frequency=v))
-	elif freeVibrations == 0 and numRotors > 0:
-		hind = spectralfit.fitspectraldatanooscillators(Cv, Tlist, numRotors)
-		for v, b in hind:
-			spectralData.modes.append(HinderedRotor(frequency=v, barrier=b))
-
-	return spectralData
 
 ################################################################################

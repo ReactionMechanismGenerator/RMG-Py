@@ -45,7 +45,7 @@ import settings
 import structure
 import thermo
 import data
-import spectral
+import spectral.modes
 import ctml_writer
 
 ################################################################################
@@ -288,7 +288,7 @@ class Species:
 		self.spectralData = None
 		spectralElement = document.getChildElement(rootElement, 'spectralData', required=False)
 		if spectralElement:
-			self.spectralData = spectral.SpectralData()
+			self.spectralData = spectral.modes.SpectralData()
 			self.spectralData.fromXML(document, spectralElement)
 
 		# Read <lennardJones> element
@@ -302,6 +302,46 @@ class Species:
 		expDownElement = document.getChildElement(rootElement, 'expDownParam', required=False)
 		if expDownElement:
 			self.expDownParam = float(document.getQuantity(expDownElement).simplified)
+
+	def toXML(self, document, rootElement):
+		"""
+		Create a <species> element as a child of `rootElement` in the XML DOM
+		tree represented by `document`, an :class:`io.XML` class. The format
+		matches the format of the :meth:`Species.fromXML()` function.
+		"""
+
+		# Create <species> element with id, label, and reactive attributes
+		speciesElement = document.createElement('species', rootElement)
+		document.createAttribute('id', speciesElement, self.id)
+		document.createAttribute('label', speciesElement, self.label)
+		document.createAttribute('reactive', speciesElement, 'yes' if self.reactive else 'no')
+
+		# Write structure (only the first resonance form if resonance is present)
+		self.structure[0].toXML(document, speciesElement)
+
+		# Write thermo data - the format attribute is written in toXML() of the
+		# corresponding ThermoData class
+		if self.thermoData: self.thermoData.toXML(document, speciesElement)
+		
+		# Write ground-state energy
+		try:
+			if self.E0: document.createQuantity('groundStateEnergy', speciesElement, self.E0 / 1000.0, 'kJ/mol')
+		except AttributeError:
+			pass
+		
+		# Write spectral data
+		if self.spectralData:
+			self.spectralData.toXML(document, speciesElement)
+
+		# Write Lennard-Jones parameters
+		if self.lennardJones:
+			self.lennardJones.toXML(document, speciesElement)
+		
+		# Write exponential down parameter
+		try:
+			if self.expDownParam: document.createQuantity('expDownParam', speciesElement, self.expDownParam / 1000.0, 'kJ/mol')
+		except AttributeError:
+			pass
 
 	def fromAdjacencyList(self, adjstr):
 		"""
@@ -444,6 +484,12 @@ class Species:
 			if thisH298 < lowestH298:
 				self.thermoData = tdata
 				lowestH298 = thisH298
+
+		# Put the most stable structure first in the list of structures
+		i = thermoData.index(self.thermoData)
+		s = self.structure.pop(i)
+		self.structure.insert(0, s)
+		
 		return self.thermoData
 
 	def generateSpectralData(self):
@@ -456,7 +502,7 @@ class Species:
 		if not self.thermoData:
 			self.generateThermoData()
 		# Generate the spectral data
-		spectral.generateSpectralData(self.structure[0], self.thermoData)
+		spectral.fit.generateSpectralData(self.structure[0], self.thermoData)
 
 	def calculateDensityOfStates(self, Elist):
 		"""
@@ -486,9 +532,9 @@ class Species:
 		Elist0 = numpy.arange(Emin, Emax+dE/2, dE)
 
 		# Prepare inputs for density of states function
-		vib = numpy.array([mode.frequency for mode in self.spectralData.modes if isinstance(mode, spectral.HarmonicOscillator)])
-		rot = numpy.array([mode.frequencies for mode in self.spectralData.modes if isinstance(mode, spectral.RigidRotor)])
-		hind = numpy.array([[mode.frequency, mode.barrier] for mode in self.spectralData.modes if isinstance(mode, spectral.HinderedRotor)])
+		vib = numpy.array([mode.frequency for mode in self.spectralData.modes if isinstance(mode, spectral.modes.HarmonicOscillator)])
+		rot = numpy.array([mode.frequencies for mode in self.spectralData.modes if isinstance(mode, spectral.modes.RigidRotor)])
+		hind = numpy.array([[mode.frequency, mode.barrier] for mode in self.spectralData.modes if isinstance(mode, spectral.modes.HinderedRotor)])
 		if len(hind) == 0: hind = numpy.zeros([0,2],numpy.float64)
 		linear = 1 if self.structure[0].isLinear() else 0
 		symm = self.spectralData.symmetry
@@ -652,7 +698,9 @@ def makeNewSpecies(structure, label='', reactive=True):
 #			if atom.hasFreeElectron(): label += 'J'
 		label = structure.toSMILES()
 	
+	# Note in the log
 	spec = Species(speciesCounter+1, label, structure, reactive)
+	logging.debug('Creating new species %s' % str(spec))
 	return processNewSpecies(spec)
 
 def processNewSpecies(spec):
@@ -671,9 +719,9 @@ def processNewSpecies(spec):
 		spec.getThermoData()
 
 	# Generate spectral data
-	if settings.spectralDataEstimation and spec.thermoData:
+	if settings.spectralDataEstimation and spec.thermoData and spec.reactive:
 		import spectral
-		spec.spectralData = spectral.generateSpectralData(spec.structure[0], spec.thermoData)
+		spec.spectralData = spectral.data.generateSpectralData(spec.structure[0], spec.thermoData)
 		
 	# Generate Lennard-Jones parameters
 	spec.calculateLennardJonesParameters()
@@ -683,9 +731,6 @@ def processNewSpecies(spec):
 		mol = pybel.Molecule(spec.toOBMol())
 		mol.draw(False, os.path.join(settings.outputDirectory, 'species/' + str(spec) + '.png'))
 
-	# Note in the log
-	logging.debug('Created new species ' + str(spec) )# + ': ' + spec.toInChI())
-	
 	# Return the newly created species
 	speciesCache.insert(0, spec)
 	if len(speciesCache) > speciesCacheMaxSize: speciesCache.pop()

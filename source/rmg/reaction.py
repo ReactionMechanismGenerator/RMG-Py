@@ -246,6 +246,31 @@ class Reaction:
 			else:
 				raise io.InvalidInputFileException('Invalid type "%s" for kinetics element; allowed values are "Arrhenius".' % format)
 
+	def toXML(self, document, rootElement):
+		"""
+		Create a <reaction> element as a child of `rootElement` in the XML DOM
+		tree represented by `document`, an :class:`io.XML` class. The format
+		matches the format of the :meth:`Reaction.fromXML()` function.
+		"""
+
+		# Create <species> element with id attribute
+		reactionElement = document.createElement('reaction', rootElement)
+		document.createAttribute('id', reactionElement, self.id)
+
+		# Write reactants
+		for reactant in self.reactants:
+			reactantElement = document.createElement('reactant', reactionElement)
+			document.createAttribute('ref', reactantElement, reactant.id)
+
+		# Write products
+		for product in self.products:
+			productElement = document.createElement('product', reactionElement)
+			document.createAttribute('ref', productElement, product.id)
+
+		# Write kinetics; format is to be added in kinetics class
+		for kinetics in self.kinetics:
+			kinetics.toXML(document, reactionElement, len(self.reactants))
+
 	def hasTemplate(self, reactants, products):
 		"""
 		Return :data:`True` if the reaction matches the template of `reactants`
@@ -599,9 +624,15 @@ class PDepReaction(Reaction):
 	def getBestKinetics(self, T, P):
 		"""
 		Return the best set of ArrheniusKinetics parameters for the forward
-		reaction evaluated at the temperature `T` and pressure `P`.
+		reaction evaluated at the temperature `T` and pressure `P`. Currently
+		this simply sets the prefactor to the value of :math:`k(T,P)` and
+		sets the other Arrhenius parameters to zero.
 		"""
-		return self.kinetics.getArrhenius(P)
+		if isinstance(self.kinetics, PDepArrheniusKinetics):
+			return self.kinetics.getArrhenius(P)
+		else:
+			k = float(self.getRateConstant(T, P))
+			return ArrheniusKinetics(A=k, n=0.0, Ea=0.0)
 
 ################################################################################
 
@@ -2074,17 +2105,13 @@ def makeNewReaction(reactants, products, reactantStructures, productStructures, 
 	# Check that the reaction is unique
 	matchReaction = None
 	for rxn in reactionList:
+		if isinstance(rxn.family, ReactionFamily) and (rxn.family.label != family.label):
+			# rxn is not from seed, and families are different
+			continue # not a match, try next rxn
 		if (rxn.reactants == reactants and rxn.products == products) or \
 			(rxn.reactants == products and rxn.products == reactants):
-			# If both families are ReactionFamily objects, then also check
-			# those for match; if not, assume a match
-			if isinstance(rxn.family, ReactionFamily) and isinstance(family, ReactionFamily):
-				if rxn.family.label == family.label:
-					matchReaction = rxn
-					break # found a match so stop checking other rxn
-			else:
-				matchReaction = rxn
-				break # found a match so stop checking other rxn
+			matchReaction = rxn
+			break # found a match so stop checking other rxn
 	
 	# If a match was found, take an
 	if matchReaction is not None:
@@ -2154,6 +2181,9 @@ def makeNewReaction(reactants, products, reactantStructures, productStructures, 
 	forward.kinetics = forwardKinetics
 	reverse.kinetics = reverseKinetics
 
+	# Note in the log
+	logging.debug('Creating new ' + str(rxn.family) + ' reaction ' + str(rxn))
+
 	return processNewReaction(rxn)
 
 def processNewReaction(rxn):
@@ -2163,9 +2193,6 @@ def processNewReaction(rxn):
 	"""
 
 	reactionList.insert(0, rxn)
-
-	# Note in the log
-	logging.debug('Created new ' + str(rxn.family) + ' reaction ' + str(rxn))
 
 	# Return newly created reaction
 	return rxn, True
