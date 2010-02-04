@@ -599,7 +599,7 @@ class BatchReactor(ReactionSystem):
 		matrix for the model.
 		"""
 		rxnRates = self.getReactionRates(P, V, T, Ni, model)
-		return numpy.dot(stoichiometry, rxnRates)
+		return stoichiometry * rxnRates
 
 	def isModelValid(self, model, dNidt, criticalFlux):
 		"""

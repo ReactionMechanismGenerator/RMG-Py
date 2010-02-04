@@ -340,11 +340,15 @@ class CoreEdgeReactionModel:
 		columns represent the reactions in the core and edge in order.
 		"""
 		speciesList, reactionList = self.getLists()
-		stoichiometry = numpy.zeros((len(speciesList), len(reactionList)), float)
+		from scipy import sparse
+		stoichiometry = sparse.dok_matrix((len(speciesList), len(reactionList)), float)
 		for j, rxn in enumerate(reactionList):
-			for i, spec in enumerate(speciesList):
-				stoichiometry[i,j] = rxn.getStoichiometricCoefficient(spec)
-		return stoichiometry
+			specList = rxn.reactants[:]; specList.extend(rxn.products)
+			for spec in specList:
+				i = speciesList.index(spec)
+				nu = rxn.getStoichiometricCoefficient(spec)
+				if nu != 0: stoichiometry[i,j] = nu
+		return stoichiometry.tocsr()
 
 	def getReactionRates(self, T, P, Ci):
 		"""
