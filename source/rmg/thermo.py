@@ -552,7 +552,15 @@ class ThermoNASAData(ThermoData):
 		"""
 		poly = self.selectPolynomialForTemperature(T)
 		return poly.getFreeEnergy(T)
-	
+
+#	def toCHEMKIN(self):
+#                """Return the latter ~half of the first line of a CHEMKIN thermo line and the other three full lines for a case with two polynomials; note, this is a quick and dirty implementation; there is an extra zero in each exponent that must be manually deleted"""
+#                #potential fix to avoid need to manually delete zeroes: replace "+0" and "-0" substrings with "+" and "-", respectively
+#                line1 = "G  %8.3F  %8.3F  %8.3F    1\n"%(self.Tmin,self.Tmax, self.polynomials[0].Tmax)
+#                line2 = "% 15.8E% 15.8E% 15.8E% 15.8E% 15.8E    2\n"%(self.polynomials[1].c0,self.polynomials[1].c1,self.polynomials[1].c2,self.polynomials[1].c3,self.polynomials[1].c4)
+#                line3 = "% 15.8E% 15.8E% 15.8E% 15.8E% 15.8E    3\n"%(self.polynomials[1].c5,self.polynomials[1].c6,self.polynomials[0].c0,self.polynomials[0].c1,self.polynomials[0].c2)
+#                line4 = "% 15.8E% 15.8E% 15.8E% 15.8E                   4"%(self.polynomials[0].c3,self.polynomials[0].c4,self.polynomials[0].c5,self.polynomials[0].c6)
+#                return line1 + line2 + line3 + line4
 
 ################################################################################
 
@@ -602,7 +610,7 @@ class ThermoWilhoitData(ThermoData):
 		self.S0 = S0
 	
 	def __repr__(self):
-		return "ThermoWilhoitData(%.2g,%.2g,%.2g,%.2g,%.2g,%.2g,%.2g,%.2g,%.2g,'%s')"%(self.cp0, self.cpInf, self.B, self.a0, self.a1, self.a2, self.a3, self.H0, self.S0, self.comment)
+		return "ThermoWilhoitData(%.4g,%.4g,%.4g,%.4g,%.4g,%.4g,%.4g,%.4g,%.4g,'%s')"%(self.cp0, self.cpInf, self.B, self.a0, self.a1, self.a2, self.a3, self.H0, self.S0, self.comment)
 	
 	def __reduce__(self):
 		return (ThermoWilhoitData,(self.cp0, self.cpInf, self.a0, self.a1, self.a2, self.a3, self.H0, self.S0, self.comment, self.B))
@@ -826,7 +834,7 @@ class ThermoWilhoitData(ThermoData):
 
 ################################################################################
 
-def convertGAtoWilhoit(GAthermo, atoms, rotors, linear):
+def convertGAtoWilhoit(GAthermo, atoms, rotors, linear, fixedB=1, Bmin=300.0, Bmax=6000.0):
 	"""Convert a Group Additivity thermo instance into a Wilhoit thermo instance.
 	
 	Takes a `ThermoGAData` instance of themochemical data, and some extra information 
@@ -844,17 +852,61 @@ def convertGAtoWilhoit(GAthermo, atoms, rotors, linear):
 	Cp_list = GAthermo.Cp
 	T_list = ThermoGAData.CpTlist  # usually [300, 400, 500, 600, 800, 1000, 1500] but why assume?
 	R = constants.R
-	B = ThermoWilhoitDataB # Constant, set once in the class def.
+	B = ThermoWilhoitDataB # Constant (if fixed=1), set once in the class def.
 	
 	# convert from K to kK
 	T_list = [t/1000. for t in T_list] 
-	B = B/1000.  
+	B = B/1000.
+	Bmin=Bmin/1000.
+	Bmax=Bmax/1000.
 	
 	Cp_list = [x/R for x in Cp_list] # convert to Cp/R
 	
 	(cp0, cpInf) = CpLimits(atoms, rotors, linear) # determine the heat capacity limits (non-dimensional)
 	
-	#create matrices for linear least squares problem
+        if(fixedB == 1):
+		(a0, a1, a2, a3, resid) = GA2Wilhoit(B, T_list, Cp_list, cp0, cpInf)		
+	else:
+                (a0, a1, a2, a3, B, resid) = GA2Wilhoit_BOpt(T_list, Cp_list, cp0, cpInf, Bmin, Bmax)
+        m = len(T_list)
+	err = math.sqrt(resid/m) # gmagoon 1/19/10: this is a (probably) faster alternative to using rmsErrWilhoit, and it fits better within a scheme where we modify B
+
+	# scale everything back
+	T_list = [t*1000. for t in T_list]
+	B = B*1000.
+	Cp_list = [x*R for x in Cp_list]
+	
+	# cp0 and cpInf should be in units of J/mol-K
+	cp0 = cp0*R
+	cpInf = cpInf*R
+	
+	# output comment
+	comment = ''
+	
+	# first set H0 = S0 = 0, then calculate what they should be
+	# by referring to H298, S298
+	H0 = 0
+	S0 = 0
+	# create Wilhoit instance
+	WilhoitThermo = ThermoWilhoitData( cp0, cpInf, a0, a1, a2, a3, H0, S0, B=B, comment=comment)
+	# calculate correct I, J (integration constants for H, S, respectively)
+	H0 = H298 - WilhoitThermo.getEnthalpy(298.15)
+	S0 = S298 - WilhoitThermo.getEntropy(298.15)
+	# update Wilhoit instance with correct I,J
+	WilhoitThermo.H0 = H0
+	WilhoitThermo.S0 = S0
+	
+	#err2 = WilhoitThermo.rmsErrWilhoit(T_list, Cp_list)/R #rms Error (J/mol-K units until it is divided by R) (not needed, but it is useful in comment)
+        #print (err2-err) #three tests give deviation of less than 4E-15(*R)
+	WilhoitThermo.comment = WilhoitThermo.comment + 'Wilhoit function fitted to GA data with Cp0=%2g and Cp_inf=%2g. RMS error = %.3f*R. '%(cp0,cpInf,err) + GAthermo.comment
+	
+	return WilhoitThermo
+
+def GA2Wilhoit(B, T_list, Cp_list, cp0, cpInf):
+	#input: B (in kiloKelvin), GA temperature and Cp_list (non-dimensionalized), Wilhoit parameters, Cp0/R and CpInf/R
+	#output: Wilhoit parameters a0-a3, and the sum of squared errors between Wilhoit and GA data
+
+        #create matrices for linear least squares problem
 	m = len(T_list)  # probably m=7
 	# A = mx4
 	# b = mx1
@@ -870,41 +922,28 @@ def convertGAtoWilhoit(GAthermo, atoms, rotors, linear):
 		b[i] = Cp_list[i]-cp0 - y*y*(cpInf-cp0)
 		
 	#solve least squares problem A*x = b; http://docs.scipy.org/doc/scipy/reference/tutorial/linalg.html#solving-linear-least-squares-problems-and-pseudo-inverses
-	x,resid,rank,sigma = linalg.lstsq(A,b)
+	x,resid,rank,sigma = linalg.lstsq(A,b, overwrite_a=1, overwrite_b=1)
 	a0 = x[0]
 	a1 = x[1]
 	a2 = x[2]
-	a3 = x[3]
+	a3 = x[3]	
 	
-	# scale everything back
-	T_list = [t*1000. for t in T_list] 
-	# B = B*1000. # not needed because stored elsewhere
-	Cp_list = [x*R for x in Cp_list]
+	return a0, a1, a2, a3, resid
 	
-	# cp0 and cpInf should be in units of J/mol-K
-	cp0 = cp0*R
-	cpInf = cpInf*R
-	
-	# output comment
-	comment = ''
-	
-	# first set H0 = S0 = 0, then calculate what they should be
-	# by referring to H298, S298
-	H0 = 0
-	S0 = 0
-	# create Wilhoit instance
-	WilhoitThermo = ThermoWilhoitData( cp0, cpInf, a0, a1, a2, a3, H0, S0, comment=comment)
-	# calculate correct I, J (integration constants for H, S, respectively)
-	H0 = H298 - WilhoitThermo.getEnthalpy(298.15)
-	S0 = S298 - WilhoitThermo.getEntropy(298.15)
-	# update Wilhoit instance with correct I,J
-	WilhoitThermo.H0 = H0
-	WilhoitThermo.S0 = S0
-	
-	err = WilhoitThermo.rmsErrWilhoit(T_list, Cp_list)/R #rms Error (J/mol-K units until it is divided by R) (not needed, but it is useful in comment)
-	WilhoitThermo.comment = WilhoitThermo.comment + 'Fitted to GA data with Cp0=%2g and Cp_inf=%2g. RMS error = %.3f*R. '%(cp0,cpInf,err) + GAthermo.comment
-	
-	return WilhoitThermo
+def GA2Wilhoit_BOpt(T_list, Cp_list, cp0, cpInf, Bmin, Bmax):
+        #input: GA temperature and Cp_list (scaled/non-dimensionalized), Wilhoit parameters, Cp0/R and CpInf/R, and maximum and minimum bounds for B (in kK)
+	#output: Wilhoit parameters, including optimized B value (in kK), and the sum of squared errors between Wilhoit and GA data (dimensionless)
+	B = optimize.fminbound(BOpt_objFun, Bmin, Bmax, args=(T_list, Cp_list, cp0, cpInf))
+	(a0, a1, a2, a3, resid) = GA2Wilhoit(B[0], T_list, Cp_list, cp0, cpInf)
+	return a0, a1, a2, a3, B[0], resid
+
+def BOpt_objFun(B, T_list, Cp_list, cp0, cpInf):
+	#input: B (in kiloKelvin), GA temperature and Cp_list (scaled/non-dimensionalized), Wilhoit parameters, Cp0/R and CpInf/R
+	#output: the sum of squared errors between Wilhoit and GA data (dimensionless)
+	(a0, a1, a2, a3, resid) = GA2Wilhoit(B, T_list, Cp_list, cp0, cpInf)
+	#print B, resid
+	return resid
+
 
 def CpLimits(atoms, rotors, linear):
 	"""Calculate the zero and infinity limits for heat capacity.
@@ -926,7 +965,7 @@ def CpLimits(atoms, rotors, linear):
 	return cp0, cpInf
 
 ################################################################################
-def convertWilhoitToNASA(Wilhoit):
+def convertWilhoitToNASA(Wilhoit, fixed=1, weighting=1, tint=1000.0, Tmin = 298.0, Tmax=6000.0):
 	"""Convert a Wilhoit thermo instance into a NASA polynomial thermo instance.
 	
 	Takes a `ThermoWilhoitData` instance of themochemical data.
@@ -934,30 +973,42 @@ def convertWilhoitToNASA(Wilhoit):
 	polynomials
 	"""
 	
+        #gmagoon 1/18/10 below two sections moved to arguments for function
 	# Temperature ranges for resulting polynomials
-	Tmin = 298.0
-	Tintg = 1000.0
-	Tmax = 6000.0
+	#Tmin = 298.0
+	#tint = 1000.0
+	#Tmax = 6000.0
 	
 	#for now, do not allow tint to float so tint = Tint(guess)
-	fixed = 1	
+	#fixed = 1	
 	#for now, use weighting of 1/T
-	weighting = 1
+	#weighting = 1
 	
 	# Scale the temperatures to kK
 	Tmin = Tmin/1000
-	Tintg = Tintg/1000
+	tint = tint/1000
 	Tmax = Tmax/1000
+
+	# Make copy of Wilhoit data so we don't modify the original
+	wilhoit_scaled = ThermoWilhoitData(Wilhoit.cp0, Wilhoit.cpInf, Wilhoit.a0, Wilhoit.a1, Wilhoit.a2, Wilhoit.a3, Wilhoit.H0, Wilhoit.S0, Wilhoit.comment)
+	# Rescale Wilhoit parameters
+	wilhoit_scaled.cp0 /= constants.R
+	wilhoit_scaled.cpInf /= constants.R
+	wilhoit_scaled.B /= 1000.
 	
-	# do your clever maths here
-	#if we are using fixed tint, set tint equal to Tintg and do not allow tint to float
+	#if we are using fixed tint, do not allow tint to float
 	if(fixed == 1):
-		nasa_low, nasa_high = Wilhoit2NASA(Wilhoit, Tmin, Tmax, Tintg, weighting)
-		err = TintOpt_objFun(Tintg, Wilhoit, Tmin, Tmax, weighting) #to print the objective function value
-		tint = Tintg
+		nasa_low, nasa_high = Wilhoit2NASA(wilhoit_scaled, Tmin, Tmax, tint, weighting)	
 	else:
-		nasa_low, nasa_high, tint = Wilhoit2NASA_TintOpt(Wilhoit, Tmin, Tmax, Tintg, weighting)
-		# rmsErr = rmsErrNASA(t, cp, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, tint) #this needs group data
+		nasa_low, nasa_high, tint = Wilhoit2NASA_TintOpt(wilhoit_scaled, Tmin, Tmax, weighting)
+	iseUnw = TintOpt_objFun(tint, wilhoit_scaled, Tmin, Tmax, 0) #the scaled, unweighted ISE (integral of squared error)
+	rmsUnw = math.sqrt(iseUnw/(Tmax-Tmin))
+	rmsStr = '(Unweighted) RMS error = %.3f*R;'%(rmsUnw)
+        if(weighting == 1):
+                iseWei= TintOpt_objFun(tint, wilhoit_scaled, Tmin, Tmax, 1) #the scaled, weighted ISE
+                rmsWei = math.sqrt(iseWei/math.log(Tmax/Tmin))
+                rmsStr = 'Weighted RMS error = %.3f*R;'%(rmsWei)+rmsStr
+	# rmsErr = rmsErrNASA(t, cp, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, tint) #this needs group data
 		
 	#restore to conventional units of K for Tint and units based on K rather than kK in NASA polynomial coefficients
 	tint=tint*1000.
@@ -974,13 +1025,12 @@ def convertWilhoitToNASA(Wilhoit):
 	nasa_high.c3 /= 1000000000.
 	nasa_high.c4 /= 1000000000000.
 	
-	# could we include fitting accuracy in the expression below?
 	# output comment
-	comment = 'Fitted to Wilhoit data. '+Wilhoit.comment
+	comment = 'NASA function fitted to Wilhoit function. ' + rmsStr + Wilhoit.comment
 	nasa_low.Trange = (Tmin,tint); nasa_low.Tmin = Tmin; nasa_low.Tmax = tint
-	nasa_low.comment = comment
+	nasa_low.comment = 'Low temperature range polynomial'
 	nasa_high.Trange = (tint,Tmax); nasa_high.Tmin = tint; nasa_high.Tmax = Tmax
-	nasa_high.comment = comment
+	nasa_high.comment = 'High temperature range polynomial'
 	
 	#for the low polynomial, we want the results to match the Wilhoit value at 298.15K
 	#low polynomial enthalpy:
@@ -1036,13 +1086,6 @@ def NASA_CpR(t, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, tint):
 def Wilhoit2NASA(wilhoit, tmin, tmax, tint, weighting):
 	#input: Wilhoit parameters, Cp0/R, CpInf/R, and B (kK), a0, a1, a2, a3, Tmin (minimum temperature (in kiloKelvin), Tmax (maximum temperature (in kiloKelvin), Tint (intermediate temperature, in kiloKelvin)
 	#output: NASA parameters for Cp/R, b1, b2, b3, b4, b5 (low temp parameters) and b6, b7, b8, b9, b10 (high temp parameters)
-
-	# Make copy of Wilhoit data so we don't modify the original
-	wilhoit = ThermoWilhoitData(wilhoit.cp0, wilhoit.cpInf, wilhoit.a0, wilhoit.a1, wilhoit.a2, wilhoit.a3, wilhoit.H0, wilhoit.S0, wilhoit.comment)
-	# Rescale Wilhoit parameters
-	wilhoit.cp0 /= constants.R
-	wilhoit.cpInf /= constants.R
-	wilhoit.B /= 1000.
 
 	#construct 13*13 symmetric A matrix (in A*x = b); other elements will be zero
 	A = scipy.zeros([13,13])
@@ -1182,21 +1225,22 @@ def Wilhoit2NASA(wilhoit, tmin, tmax, tint, weighting):
 	#from linalg import solve
 	#print A
 	x = linalg.solve(A,b,overwrite_a=1,overwrite_b=1)
+
 	nasa_low = ThermoNASAPolynomial(T_range=(0,0), coeffs=[x[0], x[1], x[2], x[3], x[4], 0.0, 0.0], comment='')
 	nasa_high = ThermoNASAPolynomial(T_range=(0,0), coeffs=[x[5], x[6], x[7], x[8], x[9], 0.0, 0.0], comment='')
 
 	return nasa_low, nasa_high
 	
-def Wilhoit2NASA_TintOpt(cp0, cpInf, B, a0, a1, a2, a3, tmin, tmax, tintg, weighting):
-	#input: Wilhoit parameters, Cp0/R, CpInf/R, and B (kK), a0, a1, a2, a3, Tmin (minimum temperature (in kiloKelvin), Tmax (maximum temperature (in kiloKelvin), Tintg (guess intermediate temperature, in kiloKelvin)
+def Wilhoit2NASA_TintOpt(wilhoit, tmin, tmax, weighting):
+	#input: Wilhoit parameters, Cp0/R, CpInf/R, and B (kK), a0, a1, a2, a3, Tmin (minimum temperature (in kiloKelvin), Tmax (maximum temperature (in kiloKelvin)
 	#output: NASA parameters for Cp/R, b1, b2, b3, b4, b5 (low temp parameters) and b6, b7, b8, b9, b10 (high temp parameters), and Tint
-	#1. vary Tint, using Tintg as a starting guess, to minimize TintOpt_objFun
-	#from optimize import fminbound
-	tint = optimize.fminbound(TintOpt_objFun, tmin, tmax, args=(cp0, cpInf,B,a0,a1,a2,a3,tmin,tmax,weighting))
-	#note that we have not used the specified guess, tintg when using this minimization routine
+	#1. vary Tint, bounded by tmin and tmax, to minimize TintOpt_objFun
+	#cf. http://docs.scipy.org/doc/scipy/reference/tutorial/optimize.html and http://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.fminbound.html#scipy.optimize.fminbound)
+	tint = optimize.fminbound(TintOpt_objFun, tmin, tmax, args=(wilhoit, tmin, tmax, weighting))
+	#note that we have not used any guess when using this minimization routine
 	#2. determine the bi parameters based on the optimized Tint (alternatively, maybe we could have TintOpt_objFun also return these parameters, along with the objective function, which would avoid an extra calculation)
-	(b1, b2, b3, b4, b5, b6, b7, b8, b9, b10) = Wilhoit2NASA(cp0,cpInf,B,a0,a1,a2,a3,tmin,tmax,tint,weighting)
-	return b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, tint
+	(nasa1, nasa2) = Wilhoit2NASA(wilhoit, tmin, tmax, tint[0] ,weighting)
+	return nasa1, nasa2, tint[0]
 
 def TintOpt_objFun(tint, wilhoit, tmin, tmax, weighting):
 	#input: Tint (intermediate temperature, in kiloKelvin); Wilhoit parameters, Cp0/R, CpInf/R, and B (kK), a0, a1, a2, a3, Tmin (minimum temperature (in kiloKelvin), Tmax (maximum temperature (in kiloKelvin)
@@ -1212,7 +1256,7 @@ def TintOpt_objFun(tint, wilhoit, tmin, tmax, weighting):
 def TintOpt_objFun_NW(tint, wilhoit, tmin, tmax):
 	#input: Tint (intermediate temperature, in kiloKelvin); Wilhoit parameters, Cp0/R, CpInf/R, and B (kK), a0, a1, a2, a3, Tmin (minimum temperature (in kiloKelvin), Tmax (maximum temperature (in kiloKelvin)
 	#output: the quantity Integrate[(Cp(Wilhoit)/R-Cp(NASA)/R)^2, {t, tmin, tmax}]
-	nasa_low, nasa_high = Wilhoit2NASA(wilhoit,tmin,tmax,tint, 1)
+	nasa_low, nasa_high = Wilhoit2NASA(wilhoit,tmin,tmax,tint, 0)
 	b1, b2, b3, b4, b5 = nasa_low.c0, nasa_low.c1, nasa_low.c2, nasa_low.c3, nasa_low.c4
 	b6, b7, b8, b9, b10 = nasa_high.c0, nasa_high.c1, nasa_high.c2, nasa_high.c3, nasa_high.c4
 	result = (wilhoit.integral2_T0(tmax) - wilhoit.integral2_T0(tmin) +
