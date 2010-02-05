@@ -1020,7 +1020,7 @@ def convertWilhoitToNASA(Wilhoit, fixed=1, weighting=1, tint=1000.0, Tmin = 298.
         print nasa_high
         if iseUnw < 0 :
                 rmsUnw = 0
-        else
+        else :
                 rmsUnw = math.sqrt(iseUnw/(Tmax-Tmin))
 	rmsStr = '(Unweighted) RMS error = %.3f*R;'%(rmsUnw)
         if(weighting == 1):
