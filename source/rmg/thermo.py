@@ -573,6 +573,27 @@ class ThermoNASAData(ThermoData):
 		line4 = "% 15.8E% 15.8E% 15.8E% 15.8E                   4"%(low.c3,low.c4,low.c5,low.c6)
 		return line1 + line2 + line3 + line4
 
+	def rmsErr(self, thermoGAdata):
+		"""
+		Calculate the RMS error between the NASA polynomial and training data points
+
+		input: thermoGAdata
+		output: value is in non-dimensional units (/R);
+		"""
+		t=thermoGAdata.CpTList
+		cp=thermoGAdata.Cp
+		R = constants.R
+		m = len(t)
+		assert (len(cp)==m), 'cp and t are different lengths'
+		rms = 0.0
+		for i in range(m):
+			err = (cp[i]-self.getHeatCapacity(t[i]))/R
+			rms += err*err
+		rms = rms/m
+		rms = math.sqrt(rms)
+
+		return rms
+
 ################################################################################
 
 #: The default temperature in K
@@ -1033,7 +1054,6 @@ def convertWilhoitToNASA(Wilhoit, fixed=1, weighting=1, tint=1000.0, Tmin = 298.
 	#print a warning if the rms fit is worse that 0.25*R
 	if(rmsUnw > 0.25 or rmsWei > 0.25):
 	    logging.warning("Poor Wilhoit-to-NASA fit quality: "+rmsStr)
-	# rmsErr = rmsErrNASA(t, cp, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, tint) #this needs group data
 		
 	#restore to conventional units of K for Tint and units based on K rather than kK in NASA polynomial coefficients
 	tint=tint*1000.
@@ -1084,40 +1104,6 @@ def convertWilhoitToNASA(Wilhoit, fixed=1, weighting=1, tint=1000.0, Tmin = 298.
 	return NASAthermo
 
 ################################################################################
-def rmsErrNASA(t, cp, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, tint):
-	"""
-	Calculate the RMS error between the NASA polynomial and training data points 
-	
-	input: t and cp are vectors
-	       cp is Cp/R
-	       units of tint, t, and bi should be consistent, based, for example on kK or K 
-	output: value is in non-dimensional units (/R);
-	"""
-	m = len(t)
-	assert (len(cp)==m), 'cp and t are different lengths'
-	rms = 0.0
-	for i in range(m):
-		err = cp[i]-NASA_CpR(t[i],b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, tint)
-		rms += err*err
-	rms = rms/m
-	rms = math.sqrt(rms)
-	
-	return rms
-
-
-def NASA_CpR(t, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, tint):
-	"""
-	Calculate Cp/R based on NASA polynomial; 
-	Units of tint, t, and bi should be consistent, based, for example on kK or K; 
-	does not take into account lower and upper temperature limits, and will extrapolate
-	"""
-	if(t < tint):
-		cp = b1 + b2*t + b3*t*t + b4*t*t*t + b5*t*t*t*t
-	else:
-		cp = b6 + b7*t + b8*t*t + b9*t*t*t + b10*t*t*t*t
-	
-	return cp
-
 
 def Wilhoit2NASA(wilhoit, tmin, tmax, tint, weighting):
 	"""
