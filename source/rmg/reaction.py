@@ -2011,11 +2011,16 @@ class ReactionFamilySet:
 		as a reactant or product.
 		"""
 		
+		rxnList = []
+
+		# Don't bother if any or all of the species are marked as nonreactive
+		if not all([spec.reactive for spec in species]):
+			return rxnList
+
 		log_text = ' + '.join([str(spec) for spec in species])
 		
 		logging.info('Looking for reactions of %s'%(log_text))
 		
-		rxnList = []
 		for key, family in self.families.iteritems():
 			rxnList.extend(family.getReactionList(species))
 
