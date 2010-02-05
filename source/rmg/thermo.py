@@ -1295,6 +1295,12 @@ def TintOpt_objFun(tint, wilhoit, tmin, tmax, weighting):
 		result = TintOpt_objFun_NW(tint, wilhoit, tmin, tmax)
 	#print tint
 	#print result
+
+        # numerical errors could accumulate to give a slightly negative result
+	# this is unphysical (it's the integral of a *squared* error) so we
+	# set it to zero to avoid later problems when we try find the square root.
+	if result<0:
+		result = 0
 	return result
 
 def TintOpt_objFun_NW(tint, wilhoit, tmin, tmax):
@@ -1317,11 +1323,7 @@ def TintOpt_objFun_NW(tint, wilhoit, tmin, tmax):
 				 +b8*wilhoit.integral_T2(tmax)+(b3-b8)*wilhoit.integral_T2(tint) - b3*wilhoit.integral_T2(tmin)
 				 +b9*wilhoit.integral_T3(tmax)+(b4-b9)*wilhoit.integral_T3(tint) - b4*wilhoit.integral_T3(tmin)
 				 +b10*wilhoit.integral_T4(tmax)+(b5-b10)*wilhoit.integral_T4(tint) - b5*wilhoit.integral_T4(tmin)))
-	# numerical errors could accumulate to give a slightly negative result
-	# this is unphysical (it's the integral of a *squared* error) so we 
-	# set it to zero to avoid later problems when we try find the square root.
-	if result<0: 
-		result = 0
+                                 
 	return result
 
 def TintOpt_objFun_W(tint, wilhoit, tmin, tmax):
@@ -1345,11 +1347,6 @@ def TintOpt_objFun_W(tint, wilhoit, tmin, tmax):
 				 +b8*wilhoit.integral_T1(tmax)+(b3-b8)*wilhoit.integral_T1(tint) - b3*wilhoit.integral_T1(tmin)
 				 +b9*wilhoit.integral_T2(tmax)+(b4-b9)*wilhoit.integral_T2(tint) - b4*wilhoit.integral_T2(tmin)
 				 +b10*wilhoit.integral_T3(tmax)+(b5-b10)*wilhoit.integral_T3(tint) - b5*wilhoit.integral_T3(tmin)))
-	# numerical errors could accumulate to give a slightly negative result
-	# this is unphysical (it's the integral of a *squared* error) so we 
-	# set it to zero to avoid later problems when we try find the square root.
-	if result<0: 
-		result = 0
 	return result
 
 ################################################################################
