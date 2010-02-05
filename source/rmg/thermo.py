@@ -864,7 +864,13 @@ def convertGAtoWilhoit(GAthermo, atoms, rotors, linear, fixedB=1, Bmin=300.0, Bm
 	
 	(cp0, cpInf) = CpLimits(atoms, rotors, linear) # determine the heat capacity limits (non-dimensional)
 	
-        if(fixedB == 1):
+        if (cp0==cpInf):
+                a0=0.0
+                a1=0.0
+                a2=0.0
+                a3=0.0
+                resid = 0.0
+        elif(fixedB == 1):
 		(a0, a1, a2, a3, resid) = GA2Wilhoit(B, T_list, Cp_list, cp0, cpInf)		
 	else:
                 (a0, a1, a2, a3, B, resid) = GA2Wilhoit_BOpt(T_list, Cp_list, cp0, cpInf, Bmin, Bmax)
@@ -895,9 +901,10 @@ def convertGAtoWilhoit(GAthermo, atoms, rotors, linear, fixedB=1, Bmin=300.0, Bm
 	# update Wilhoit instance with correct I,J
 	WilhoitThermo.H0 = H0
 	WilhoitThermo.S0 = S0
-	
-	#err2 = WilhoitThermo.rmsErrWilhoit(T_list, Cp_list)/R #rms Error (J/mol-K units until it is divided by R) (not needed, but it is useful in comment)
-        #print (err2-err) #three tests give deviation of less than 4E-15(*R)
+
+        # calculate the correct err for the monoatomic case; there seems to be a bug in linalg.lstsq() where resid is incorrectly returned as [] when A matrix is all zeroes (this is also the reason for the check above for cp0==cpInf, where we set resid = 0)
+	if(atoms==1):
+                err = WilhoitThermo.rmsErrWilhoit(T_list, Cp_list)/R #rms Error (J/mol-K units until it is divided by R)
 	WilhoitThermo.comment = WilhoitThermo.comment + 'Wilhoit function fitted to GA data with Cp0=%2g and Cp_inf=%2g. RMS error = %.3f*R. '%(cp0,cpInf,err) + GAthermo.comment
 	
 	return WilhoitThermo
@@ -922,7 +929,13 @@ def GA2Wilhoit(B, T_list, Cp_list, cp0, cpInf):
 		b[i] = Cp_list[i]-cp0 - y*y*(cpInf-cp0)
 		
 	#solve least squares problem A*x = b; http://docs.scipy.org/doc/scipy/reference/tutorial/linalg.html#solving-linear-least-squares-problems-and-pseudo-inverses
+#       print A
+#       print b
 	x,resid,rank,sigma = linalg.lstsq(A,b, overwrite_a=1, overwrite_b=1)
+#	print x
+#	print resid
+#	print rank
+#	print sigma
 	a0 = x[0]
 	a1 = x[1]
 	a2 = x[2]
@@ -1002,11 +1015,20 @@ def convertWilhoitToNASA(Wilhoit, fixed=1, weighting=1, tint=1000.0, Tmin = 298.
 	else:
 		nasa_low, nasa_high, tint = Wilhoit2NASA_TintOpt(wilhoit_scaled, Tmin, Tmax, weighting)
 	iseUnw = TintOpt_objFun(tint, wilhoit_scaled, Tmin, Tmax, 0) #the scaled, unweighted ISE (integral of squared error)
-	rmsUnw = math.sqrt(iseUnw/(Tmax-Tmin))
+        print iseUnw
+        print nasa_low
+        print nasa_high
+        if iseUnw < 0 :
+                rmsUnw = 0
+        else
+                rmsUnw = math.sqrt(iseUnw/(Tmax-Tmin))
 	rmsStr = '(Unweighted) RMS error = %.3f*R;'%(rmsUnw)
         if(weighting == 1):
                 iseWei= TintOpt_objFun(tint, wilhoit_scaled, Tmin, Tmax, 1) #the scaled, weighted ISE
-                rmsWei = math.sqrt(iseWei/math.log(Tmax/Tmin))
+                if iseWei < 0:
+                        rmsWei = 0
+                else:
+                        rmsWei = math.sqrt(iseWei/math.log(Tmax/Tmin))
                 rmsStr = 'Weighted RMS error = %.3f*R;'%(rmsWei)+rmsStr
 	# rmsErr = rmsErrNASA(t, cp, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, tint) #this needs group data
 		
@@ -1254,8 +1276,12 @@ def TintOpt_objFun(tint, wilhoit, tmin, tmax, weighting):
 	return result
 
 def TintOpt_objFun_NW(tint, wilhoit, tmin, tmax):
-	#input: Tint (intermediate temperature, in kiloKelvin); Wilhoit parameters, Cp0/R, CpInf/R, and B (kK), a0, a1, a2, a3, Tmin (minimum temperature (in kiloKelvin), Tmax (maximum temperature (in kiloKelvin)
-	#output: the quantity Integrate[(Cp(Wilhoit)/R-Cp(NASA)/R)^2, {t, tmin, tmax}]
+	"""
+        Evaluate the objective function - the integral of the square of the error in the fit.
+        If fit is close to perfect, result may be slightly negative due to numerical errors in evaluating this integral.
+        input: Tint (intermediate temperature, in kiloKelvin); Wilhoit parameters, Cp0/R, CpInf/R, and B (kK), a0, a1, a2, a3, Tmin (minimum temperature (in kiloKelvin), Tmax (maximum temperature (in kiloKelvin)
+	output: the quantity Integrate[(Cp(Wilhoit)/R-Cp(NASA)/R)^2, {t, tmin, tmax}]
+	"""
 	nasa_low, nasa_high = Wilhoit2NASA(wilhoit,tmin,tmax,tint, 0)
 	b1, b2, b3, b4, b5 = nasa_low.c0, nasa_low.c1, nasa_low.c2, nasa_low.c3, nasa_low.c4
 	b6, b7, b8, b9, b10 = nasa_high.c0, nasa_high.c1, nasa_high.c2, nasa_high.c3, nasa_high.c4
@@ -1269,8 +1295,12 @@ def TintOpt_objFun_NW(tint, wilhoit, tmin, tmax):
 	return result
 
 def TintOpt_objFun_W(tint, wilhoit, tmin, tmax):
+        """
+        Evaluate the objective function - the integral of the square of the error in the fit.
+        If fit is close to perfect, result may be slightly negative due to numerical errors in evaluating this integral.
 	#input: Tint (intermediate temperature, in kiloKelvin); Wilhoit parameters, Cp0/R, CpInf/R, and B (kK), a0, a1, a2, a3, Tmin (minimum temperature (in kiloKelvin), Tmax (maximum temperature (in kiloKelvin)
-	#output: the quantity Integrate[(Cp(Wilhoit)/R-Cp(NASA)/R)^2, {t, tmin, tmax}]
+	#output: the quantity Integrate[1/t*(Cp(Wilhoit)/R-Cp(NASA)/R)^2, {t, tmin, tmax}]
+	"""
 	nasa_low, nasa_high = Wilhoit2NASA(wilhoit,tmin,tmax,tint, 1)
 	b1, b2, b3, b4, b5 = nasa_low.c0, nasa_low.c1, nasa_low.c2, nasa_low.c3, nasa_low.c4
 	b6, b7, b8, b9, b10 = nasa_high.c0, nasa_high.c1, nasa_high.c2, nasa_high.c3, nasa_high.c4
