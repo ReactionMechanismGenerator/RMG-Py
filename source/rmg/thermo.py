@@ -45,6 +45,7 @@ import scipy
 from scipy import linalg
 from scipy import optimize
 import cython
+import logging
 
 import ctml_writer
 
@@ -916,7 +917,11 @@ def convertGAtoWilhoit(GAthermo, atoms, rotors, linear, fixedB=1, Bmin=300.0, Bm
 	if(atoms==1):
 		err = WilhoitThermo.rmsErrWilhoit(T_list, Cp_list)/R #rms Error (J/mol-K units until it is divided by R)
 	WilhoitThermo.comment = WilhoitThermo.comment + 'Wilhoit function fitted to GA data with Cp0=%2g and Cp_inf=%2g. RMS error = %.3f*R. '%(cp0,cpInf,err) + GAthermo.comment
-	
+
+	#print a warning if the rms fit is worse that 0.25*R
+	if (err>0.25):
+	    logging.warning("Poor GA-to-Wilhoit fit quality: "+WilhoitThermo.comment)	
+
 	return WilhoitThermo
 
 def GA2Wilhoit(B, T_list, Cp_list, cp0, cpInf):
@@ -1024,6 +1029,10 @@ def convertWilhoitToNASA(Wilhoit, fixed=1, weighting=1, tint=1000.0, Tmin = 298.
 		iseWei= TintOpt_objFun(tint, wilhoit_scaled, Tmin, Tmax, weighting) #the scaled, weighted ISE
 		rmsWei = math.sqrt(iseWei/math.log(Tmax/Tmin))
 		rmsStr = 'Weighted RMS error = %.3f*R;'%(rmsWei)+rmsStr
+
+	#print a warning if the rms fit is worse that 0.25*R
+	if(rmsUnw > 0.25 or rmsWei > 0.25):
+	    logging.warning("Poor Wilhoit-to-NASA fit quality: "+rmsStr)
 	# rmsErr = rmsErrNASA(t, cp, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, tint) #this needs group data
 		
 	#restore to conventional units of K for Tint and units based on K rather than kK in NASA polynomial coefficients
@@ -1287,12 +1296,12 @@ def TintOpt_objFun(tint, wilhoit, tmin, tmax, weighting):
 	# this is unphysical (it's the integral of a *squared* error) so we
 	# set it to zero to avoid later problems when we try find the square root.
 	if result<0:
-		print "Greg thought he fixed the numerical problem, but apparently it is still an issue; please e-mail him with the following results:"
-		print tint
-		print wilhoit
-		print tmin
-		print tmax
-		print weighting
+		logging.error("Greg thought he fixed the numerical problem, but apparently it is still an issue; please e-mail him with the following results:")
+		logging.error(tint)
+		logging.error(wilhoit)
+		logging.error(tmin)
+		logging.error(tmax)
+		logging.error(weighting)
 		result = 0
 
 	return result
