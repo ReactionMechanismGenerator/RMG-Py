@@ -590,7 +590,7 @@ class ThermoWilhoitData(ThermoData):
 	from zero to one. The characteristic temperature :math:`B` is chosen by
 	default to be 500 K. This formulation has the advantage of correctly
 	reproducting the heat capacity behavior as :math:`T \\rightarrow 0` and
-	:math:`T \\rightarrow \\infty`.	The low-temperature limit 
+	:math:`T \\rightarrow \\infty`. The low-temperature limit 
 	:math:`C_\\mathrm{p}(0)` is taken to be :math:`3.5R` for linear molecules
 	and :math:`4R` for nonlinear molecules. The high-temperature limit 
 	:math:`C_\\mathrm{p}(\\infty)` is taken to be 
@@ -874,17 +874,17 @@ def convertGAtoWilhoit(GAthermo, atoms, rotors, linear, fixedB=1, Bmin=300.0, Bm
 	
 	(cp0, cpInf) = CpLimits(atoms, rotors, linear) # determine the heat capacity limits (non-dimensional)
 	
-        if (cp0==cpInf):
-                a0=0.0
-                a1=0.0
-                a2=0.0
-                a3=0.0
-                resid = 0.0
-        elif(fixedB == 1):
+	if (cp0==cpInf):
+		a0=0.0
+		a1=0.0
+		a2=0.0
+		a3=0.0
+		resid = 0.0
+	elif(fixedB == 1):
 		(a0, a1, a2, a3, resid) = GA2Wilhoit(B, T_list, Cp_list, cp0, cpInf)		
 	else:
-                (a0, a1, a2, a3, B, resid) = GA2Wilhoit_BOpt(T_list, Cp_list, cp0, cpInf, Bmin, Bmax)
-        m = len(T_list)
+		(a0, a1, a2, a3, B, resid) = GA2Wilhoit_BOpt(T_list, Cp_list, cp0, cpInf, Bmin, Bmax)
+	m = len(T_list)
 	err = math.sqrt(resid/m) # gmagoon 1/19/10: this is a (probably) faster alternative to using rmsErrWilhoit, and it fits better within a scheme where we modify B
 
 	# scale everything back
@@ -912,9 +912,9 @@ def convertGAtoWilhoit(GAthermo, atoms, rotors, linear, fixedB=1, Bmin=300.0, Bm
 	WilhoitThermo.H0 = H0
 	WilhoitThermo.S0 = S0
 
-        # calculate the correct err for the monoatomic case; there seems to be a bug in linalg.lstsq() where resid is incorrectly returned as [] when A matrix is all zeroes (this is also the reason for the check above for cp0==cpInf, where we set resid = 0)
+	# calculate the correct err for the monoatomic case; there seems to be a bug in linalg.lstsq() where resid is incorrectly returned as [] when A matrix is all zeroes (this is also the reason for the check above for cp0==cpInf, where we set resid = 0)
 	if(atoms==1):
-                err = WilhoitThermo.rmsErrWilhoit(T_list, Cp_list)/R #rms Error (J/mol-K units until it is divided by R)
+		err = WilhoitThermo.rmsErrWilhoit(T_list, Cp_list)/R #rms Error (J/mol-K units until it is divided by R)
 	WilhoitThermo.comment = WilhoitThermo.comment + 'Wilhoit function fitted to GA data with Cp0=%2g and Cp_inf=%2g. RMS error = %.3f*R. '%(cp0,cpInf,err) + GAthermo.comment
 	
 	return WilhoitThermo
@@ -923,8 +923,8 @@ def GA2Wilhoit(B, T_list, Cp_list, cp0, cpInf):
 	#input: B (in kiloKelvin), GA temperature and Cp_list (non-dimensionalized), Wilhoit parameters, Cp0/R and CpInf/R
 	#output: Wilhoit parameters a0-a3, and the sum of squared errors between Wilhoit and GA data
 
-        #create matrices for linear least squares problem
-	m = len(T_list)  # probably m=7
+	#create matrices for linear least squares problem
+	m = len(T_list)	 # probably m=7
 	# A = mx4
 	# b = mx1
 	# x = 4x1
@@ -939,8 +939,8 @@ def GA2Wilhoit(B, T_list, Cp_list, cp0, cpInf):
 		b[i] = Cp_list[i]-cp0 - y*y*(cpInf-cp0)
 		
 	#solve least squares problem A*x = b; http://docs.scipy.org/doc/scipy/reference/tutorial/linalg.html#solving-linear-least-squares-problems-and-pseudo-inverses
-#       print A
-#       print b
+#	print A
+#	print b
 	x,resid,rank,sigma = linalg.lstsq(A,b, overwrite_a=1, overwrite_b=1)
 #	print x
 #	print resid
@@ -954,7 +954,7 @@ def GA2Wilhoit(B, T_list, Cp_list, cp0, cpInf):
 	return a0, a1, a2, a3, resid
 	
 def GA2Wilhoit_BOpt(T_list, Cp_list, cp0, cpInf, Bmin, Bmax):
-        #input: GA temperature and Cp_list (scaled/non-dimensionalized), Wilhoit parameters, Cp0/R and CpInf/R, and maximum and minimum bounds for B (in kK)
+	#input: GA temperature and Cp_list (scaled/non-dimensionalized), Wilhoit parameters, Cp0/R and CpInf/R, and maximum and minimum bounds for B (in kK)
 	#output: Wilhoit parameters, including optimized B value (in kK), and the sum of squared errors between Wilhoit and GA data (dimensionless)
 	B = optimize.fminbound(BOpt_objFun, Bmin, Bmax, args=(T_list, Cp_list, cp0, cpInf))
 	(a0, a1, a2, a3, resid) = GA2Wilhoit(B[0], T_list, Cp_list, cp0, cpInf)
@@ -996,7 +996,7 @@ def convertWilhoitToNASA(Wilhoit, fixed=1, weighting=1, tint=1000.0, Tmin = 298.
 	polynomials
 	"""
 	
-        #gmagoon 1/18/10 below two sections moved to arguments for function
+	#gmagoon 1/18/10 below two sections moved to arguments for function
 	# Temperature ranges for resulting polynomials
 	#Tmin = 298.0
 	#tint = 1000.0
@@ -1021,25 +1021,19 @@ def convertWilhoitToNASA(Wilhoit, fixed=1, weighting=1, tint=1000.0, Tmin = 298.
 	
 	#if we are using fixed tint, do not allow tint to float
 	if(fixed == 1):
-		nasa_low, nasa_high = Wilhoit2NASA(wilhoit_scaled, Tmin, Tmax, tint, weighting)	
+		nasa_low, nasa_high = Wilhoit2NASA(wilhoit_scaled, Tmin, Tmax, tint, weighting) 
 	else:
 		nasa_low, nasa_high, tint = Wilhoit2NASA_TintOpt(wilhoit_scaled, Tmin, Tmax, weighting)
 	iseUnw = TintOpt_objFun(tint, wilhoit_scaled, Tmin, Tmax, 0) #the scaled, unweighted ISE (integral of squared error)
-        print iseUnw
-        print nasa_low
-        print nasa_high
-        if iseUnw < 0 :
-                rmsUnw = 0
-        else :
-                rmsUnw = math.sqrt(iseUnw/(Tmax-Tmin))
+	print iseUnw
+	print nasa_low
+	print nasa_high
+	rmsUnw = math.sqrt(iseUnw/(Tmax-Tmin))
 	rmsStr = '(Unweighted) RMS error = %.3f*R;'%(rmsUnw)
-        if(weighting == 1):
-                iseWei= TintOpt_objFun(tint, wilhoit_scaled, Tmin, Tmax, 1) #the scaled, weighted ISE
-                if iseWei < 0:
-                        rmsWei = 0
-                else:
-                        rmsWei = math.sqrt(iseWei/math.log(Tmax/Tmin))
-                rmsStr = 'Weighted RMS error = %.3f*R;'%(rmsWei)+rmsStr
+	if(weighting == 1):
+		iseWei= TintOpt_objFun(tint, wilhoit_scaled, Tmin, Tmax, weighting) #the scaled, weighted ISE
+		rmsWei = math.sqrt(iseWei/math.log(Tmax/Tmin))
+		rmsStr = 'Weighted RMS error = %.3f*R;'%(rmsWei)+rmsStr
 	# rmsErr = rmsErrNASA(t, cp, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, tint) #this needs group data
 		
 	#restore to conventional units of K for Tint and units based on K rather than kK in NASA polynomial coefficients
@@ -1092,8 +1086,16 @@ def convertWilhoitToNASA(Wilhoit, fixed=1, weighting=1, tint=1000.0, Tmin = 298.
 
 ################################################################################
 def rmsErrNASA(t, cp, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, tint):
-	#calculate the RMS error between the NASA polynomial and training data points in non-dimensional units (/R); cp is Cp/R; units of tint, t, and bi should be consistent, based, for example on kK or K 
+	"""
+	Calculate the RMS error between the NASA polynomial and training data points 
+	
+	input: t and cp are vectors
+	       cp is Cp/R
+	       units of tint, t, and bi should be consistent, based, for example on kK or K 
+	output: value is in non-dimensional units (/R);
+	"""
 	m = len(t)
+	assert (len(cp)==m), 'cp and t are different lengths'
 	rms = 0.0
 	for i in range(m):
 		err = cp[i]-NASA_CpR(t[i],b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, tint)
@@ -1105,7 +1107,11 @@ def rmsErrNASA(t, cp, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, tint):
 
 
 def NASA_CpR(t, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, tint):
-	#calculate Cp/R based on NASA polynomial; cp is Cp/R; units of tint, t, and bi should be consistent, based, for example on kK or K; does not take into account lower and upper temperature limits, and will extrapolate
+	"""
+	Calculate Cp/R based on NASA polynomial; 
+	Units of tint, t, and bi should be consistent, based, for example on kK or K; 
+	does not take into account lower and upper temperature limits, and will extrapolate
+	"""
 	if(t < tint):
 		cp = b1 + b2*t + b3*t*t + b4*t*t*t + b5*t*t*t*t
 	else:
@@ -1114,11 +1120,15 @@ def NASA_CpR(t, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, tint):
 	return cp
 
 
-
 def Wilhoit2NASA(wilhoit, tmin, tmax, tint, weighting):
-	#input: Wilhoit parameters, Cp0/R, CpInf/R, and B (kK), a0, a1, a2, a3, Tmin (minimum temperature (in kiloKelvin), Tmax (maximum temperature (in kiloKelvin), Tint (intermediate temperature, in kiloKelvin)
-	#output: NASA parameters for Cp/R, b1, b2, b3, b4, b5 (low temp parameters) and b6, b7, b8, b9, b10 (high temp parameters)
-
+	"""
+	input: Wilhoit parameters, Cp0/R, CpInf/R, and B (kK), a0, a1, a2, a3, 
+	       Tmin (minimum temperature (in kiloKelvin), 
+	       Tmax (maximum temperature (in kiloKelvin), 
+	       Tint (intermediate temperature, in kiloKelvin)
+	       weighting (boolean: should the fit be weighted by T?)
+	output: NASA polynomials (nasa_low, nasa_high)
+	"""
 	#construct 13*13 symmetric A matrix (in A*x = b); other elements will be zero
 	A = scipy.zeros([13,13])
 	b = scipy.zeros([13])
@@ -1253,7 +1263,9 @@ def Wilhoit2NASA(wilhoit, tmin, tmax, tint, weighting):
 		b[8] = 2*(w3max - w3int)
 		b[9] = 2*(w4max - w4int)
 
-	#solve A*x=b for x (note that factor of 2 in b vector and 10*10 submatrix of A matrix is not required; not including it should give same result, except Lagrange multipliers will differ by a factor of two)
+	# solve A*x=b for x (note that factor of 2 in b vector and 10*10 submatrix of A
+	# matrix is not required; not including it should give same result, except
+	# Lagrange multipliers will differ by a factor of two)
 	#from linalg import solve
 	#print A
 	x = linalg.solve(A,b,overwrite_a=1,overwrite_b=1)
@@ -1287,9 +1299,12 @@ def TintOpt_objFun(tint, wilhoit, tmin, tmax, weighting):
 
 def TintOpt_objFun_NW(tint, wilhoit, tmin, tmax):
 	"""
-        Evaluate the objective function - the integral of the square of the error in the fit.
-        If fit is close to perfect, result may be slightly negative due to numerical errors in evaluating this integral.
-        input: Tint (intermediate temperature, in kiloKelvin); Wilhoit parameters, Cp0/R, CpInf/R, and B (kK), a0, a1, a2, a3, Tmin (minimum temperature (in kiloKelvin), Tmax (maximum temperature (in kiloKelvin)
+	Evaluate the objective function - the integral of the square of the error in the fit.
+	
+	input: Tint (intermediate temperature, in kiloKelvin)
+			Wilhoit parameters, Cp0/R, CpInf/R, and B (kK), a0, a1, a2, a3, 
+			Tmin (minimum temperature (in kiloKelvin), 
+			Tmax (maximum temperature (in kiloKelvin)
 	output: the quantity Integrate[(Cp(Wilhoit)/R-Cp(NASA)/R)^2, {t, tmin, tmax}]
 	"""
 	nasa_low, nasa_high = Wilhoit2NASA(wilhoit,tmin,tmax,tint, 0)
@@ -1302,14 +1317,23 @@ def TintOpt_objFun_NW(tint, wilhoit, tmin, tmax):
 				 +b8*wilhoit.integral_T2(tmax)+(b3-b8)*wilhoit.integral_T2(tint) - b3*wilhoit.integral_T2(tmin)
 				 +b9*wilhoit.integral_T3(tmax)+(b4-b9)*wilhoit.integral_T3(tint) - b4*wilhoit.integral_T3(tmin)
 				 +b10*wilhoit.integral_T4(tmax)+(b5-b10)*wilhoit.integral_T4(tint) - b5*wilhoit.integral_T4(tmin)))
+	# numerical errors could accumulate to give a slightly negative result
+	# this is unphysical (it's the integral of a *squared* error) so we 
+	# set it to zero to avoid later problems when we try find the square root.
+	if result<0: 
+		result = 0
 	return result
 
 def TintOpt_objFun_W(tint, wilhoit, tmin, tmax):
-        """
-        Evaluate the objective function - the integral of the square of the error in the fit.
-        If fit is close to perfect, result may be slightly negative due to numerical errors in evaluating this integral.
-	#input: Tint (intermediate temperature, in kiloKelvin); Wilhoit parameters, Cp0/R, CpInf/R, and B (kK), a0, a1, a2, a3, Tmin (minimum temperature (in kiloKelvin), Tmax (maximum temperature (in kiloKelvin)
-	#output: the quantity Integrate[1/t*(Cp(Wilhoit)/R-Cp(NASA)/R)^2, {t, tmin, tmax}]
+	"""
+	Evaluate the objective function - the integral of the square of the error in the fit.
+	
+	If fit is close to perfect, result may be slightly negative due to numerical errors in evaluating this integral.
+	input: Tint (intermediate temperature, in kiloKelvin)
+			Wilhoit parameters: Cp0/R, CpInf/R, and B (kK), a0, a1, a2, a3, 
+			Tmin (minimum temperature (in kiloKelvin), 
+			Tmax (maximum temperature (in kiloKelvin)
+	output: the quantity Integrate[1/t*(Cp(Wilhoit)/R-Cp(NASA)/R)^2, {t, tmin, tmax}]
 	"""
 	nasa_low, nasa_high = Wilhoit2NASA(wilhoit,tmin,tmax,tint, 1)
 	b1, b2, b3, b4, b5 = nasa_low.c0, nasa_low.c1, nasa_low.c2, nasa_low.c3, nasa_low.c4
@@ -1321,6 +1345,11 @@ def TintOpt_objFun_W(tint, wilhoit, tmin, tmax):
 				 +b8*wilhoit.integral_T1(tmax)+(b3-b8)*wilhoit.integral_T1(tint) - b3*wilhoit.integral_T1(tmin)
 				 +b9*wilhoit.integral_T2(tmax)+(b4-b9)*wilhoit.integral_T2(tint) - b4*wilhoit.integral_T2(tmin)
 				 +b10*wilhoit.integral_T3(tmax)+(b5-b10)*wilhoit.integral_T3(tint) - b5*wilhoit.integral_T3(tmin)))
+	# numerical errors could accumulate to give a slightly negative result
+	# this is unphysical (it's the integral of a *squared* error) so we 
+	# set it to zero to avoid later problems when we try find the square root.
+	if result<0: 
+		result = 0
 	return result
 
 ################################################################################
