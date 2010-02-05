@@ -41,7 +41,7 @@ import data
 import species
 import reaction
 import thermo
-import spectral
+import spectral.data
 
 """
 Contains functions for manipulation of RMG input and output files.
@@ -103,10 +103,10 @@ def loadKineticsDatabase(dstr):
 def loadFrequencyDatabase(dstr):
 	"""
 	Load the RMG thermo database located at `dstr` into the global variable
-	`rmg.spectral.frequencyDatabase`.
+	`rmg.spectral.data.frequencyDatabase`.
 	"""
-	spectral.frequencyDatabase = spectral.FrequencyDatabase()
-	spectral.frequencyDatabase = spectral.loadFrequencyDatabase(dstr)
+	spectral.data.frequencyDatabase = spectral.data.FrequencyDatabase()
+	spectral.data.frequencyDatabase = spectral.data.loadFrequencyDatabase(dstr)
 
 ################################################################################
 
@@ -444,8 +444,22 @@ def readInputFile(fstr):
 			spec = species.Species()
 			spec.fromXML(xml0, element)
 
-			# Handle other aspects of RMG species creation
-			species.processNewSpecies(spec)
+			# Check that the species isn't already in the core (e.g. from a seed mechanism)
+			existingSpecies = None
+			for s in reactionModel.core.species:
+				if s.isIsomorphic(spec):
+					existingSpecies = s
+					break
+
+			if existingSpecies is not None:
+				# Point to existing species rather than newly created species
+				# This means that any information about the species in the
+				# input file will be discarded in favor of the existing species
+				# data
+				spec = existingSpecies
+			else:
+				# Handle other aspects of RMG species creation
+				species.processNewSpecies(spec)
 
 			# All species in RMG input file are immediately added to the core
 			coreSpecies.append(spec)

@@ -628,9 +628,11 @@ class PDepReaction(Reaction):
 		this simply sets the prefactor to the value of :math:`k(T,P)` and
 		sets the other Arrhenius parameters to zero.
 		"""
-		k = float(self.getRateConstant(T, P))
-		return ArrheniusKinetics(A=k, n=0.0, Ea=0.0)
-		#return self.kinetics.getArrhenius(P)
+		if isinstance(self.kinetics, PDepArrheniusKinetics):
+			return self.kinetics.getArrhenius(P)
+		else:
+			k = float(self.getRateConstant(T, P))
+			return ArrheniusKinetics(A=k, n=0.0, Ea=0.0)
 
 ################################################################################
 
@@ -2009,11 +2011,16 @@ class ReactionFamilySet:
 		as a reactant or product.
 		"""
 		
+		rxnList = []
+
+		# Don't bother if any or all of the species are marked as nonreactive
+		if not all([spec.reactive for spec in species]):
+			return rxnList
+
 		log_text = ' + '.join([str(spec) for spec in species])
 		
 		logging.info('Looking for reactions of %s'%(log_text))
 		
-		rxnList = []
 		for key, family in self.families.iteritems():
 			rxnList.extend(family.getReactionList(species))
 
@@ -2179,6 +2186,9 @@ def makeNewReaction(reactants, products, reactantStructures, productStructures, 
 	forward.kinetics = forwardKinetics
 	reverse.kinetics = reverseKinetics
 
+	# Note in the log
+	logging.debug('Creating new ' + str(rxn.family) + ' reaction ' + str(rxn))
+
 	return processNewReaction(rxn)
 
 def processNewReaction(rxn):
@@ -2188,9 +2198,6 @@ def processNewReaction(rxn):
 	"""
 
 	reactionList.insert(0, rxn)
-
-	# Note in the log
-	logging.debug('Created new ' + str(rxn.family) + ' reaction ' + str(rxn))
 
 	# Return newly created reaction
 	return rxn, True

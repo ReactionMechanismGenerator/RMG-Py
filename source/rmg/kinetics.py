@@ -205,22 +205,71 @@ class ArrheniusKinetics(Kinetics):
 
 		import numpy
 
+		# Step 1: Fit normal Arrhenius expression
+
 		# Create matrix and vector for coefficient fit (linear least-squares)
-		A = numpy.zeros((len(Tlist), 3), numpy.float64)
+		A = numpy.zeros((len(Tlist), 2), numpy.float64)
+		b = numpy.zeros(len(Tlist), numpy.float64)
+		for t, T in enumerate(Tlist):
+			A[t,0] = 1.0
+			A[t,1] = -1.0 / constants.R / T
+			b[t] = math.log(K[t])
+		# Do linear least-squares fit to get coefficients
+		x, residues, rank, s = numpy.linalg.lstsq(A, b)
+		# Extract coefficients
+		A0 = math.exp(float(x[0]))
+		Ea0 = float(x[1])
+
+		K1 = [k / (math.exp(-Ea0 / constants.R / T)) for k in K]
+
+		# Step 2: Fit preexponential factor to data with normal Arrhenius
+		# removed
+
+		A = numpy.zeros((len(Tlist), 2), numpy.float64)
 		b = numpy.zeros(len(Tlist), numpy.float64)
 		for t, T in enumerate(Tlist):
 			A[t,0] = 1.0
 			A[t,1] = math.log(T)
-			A[t,2] = -1.0 / constants.R / T
-			b[t] = math.log(K[t])
-
+			b[t] = math.log(K1[t])
 		# Do linear least-squares fit to get coefficients
 		x, residues, rank, s = numpy.linalg.lstsq(A, b)
+		# Extract coefficients
+		A1 = math.exp(float(x[0]))
+		n1 = float(x[1])
 
+		# Step 3: Re-fit normal Arrhenius expression using exponent from step 2
+
+		# Create matrix and vector for coefficient fit (linear least-squares)
+		A = numpy.zeros((len(Tlist), 2), numpy.float64)
+		b = numpy.zeros(len(Tlist), numpy.float64)
+		for t, T in enumerate(Tlist):
+			A[t,0] = 1.0
+			A[t,1] = -1.0 / constants.R / T
+			b[t] = math.log(K[t]) - n1 * math.log(T)
+		# Do linear least-squares fit to get coefficients
+		x, residues, rank, s = numpy.linalg.lstsq(A, b)
 		# Extract coefficients
 		self.A = math.exp(float(x[0]))
-		self.n = float(x[1])
-		self.Ea = float(x[2])
+		self.n = n1
+		self.Ea = float(x[1])
+
+		# Create matrix and vector for coefficient fit (linear least-squares)
+#		A = numpy.zeros((len(Tlist), 3), numpy.float64)
+#		b = numpy.zeros(len(Tlist), numpy.float64)
+#		for t, T in enumerate(Tlist):
+#			A[t,0] = 1.0
+#			A[t,1] = math.log(T)
+#			A[t,2] = -1.0 / constants.R / T
+#			b[t] = math.log(K[t])
+#
+#		# Do linear least-squares fit to get coefficients
+#		x, residues, rank, s = numpy.linalg.lstsq(A, b)
+#
+#		# Extract coefficients
+#		self.A = math.exp(float(x[0]))
+#		self.n = float(x[1])
+#		self.Ea = float(x[2])
+
 
 ################################################################################
 
@@ -469,7 +518,7 @@ class PDepArrheniusKinetics(Kinetics):
 		document.createQuantity('pressures', kineticsElement, [P / 1.0e5 for P in self.pressures], 'bar')
 
 		for arrh in self.arrhenius:
-			arrh.toXML(document, kineticsElement)
+			arrh.toXML(document, kineticsElement, numReactants)
 
 
 ################################################################################

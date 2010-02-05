@@ -77,26 +77,11 @@ Kij, Fim, Gnj, dEdown, nIsom, nProd, nGrains, K, msg)
 	! Number of reservoir and active-state energy grains for each isomer
 	integer, dimension(:), allocatable			:: 	nRes, nAct
 
-	! Number of unimolecular wells
-	integer nUni, row
-
-	! Accounting matrix
-	integer, dimension(:,:), allocatable		::	indices
-
-	! Active state grain matrix and RHS vectors
-	real(8), dimension(:,:), allocatable	:: 	L
-	real(8), dimension(:,:), allocatable	:: 	Z
-
 	! Pseudo-steady state grain populations
 	real(8), dimension(:,:,:), allocatable	:: 	pa
-	real(8) :: maxpa
-
-	! Variables for LAPACK
-	integer, dimension(:), allocatable				::	iPiv
-	integer											::	info
-
+	
 	! Indices
-	integer i, n, r, s, reac, prod
+	integer i, n, r
 
 	! Determine reservoir cutoff grains for each unimolecular isomer
 	allocate( nRes(1:nIsom), nAct(1:nIsom) )
@@ -108,7 +93,7 @@ Kij, Fim, Gnj, dEdown, nIsom, nProd, nGrains, K, msg)
 	! Determine pseudo-steady state populations of active state
 	allocate( pa(1:nGrains, 1:nIsom+nProd, 1:nIsom) )
 	pa = 0 * pa
-	if (nUni == 1) then
+	if (nIsom == 1) then
 		! Not worth it to call banded solver when only one well
 		call activeStateFull(T, P, E, Mcoll, densStates, Kij, Fim, Gnj, &
 			nIsom, nProd, nGrains, nRes, nAct, pa, msg)
@@ -281,7 +266,7 @@ subroutine activeStateFull(T, P, E, Mcoll, densStates, Kij, Fim, Gnj, &
 	integer											::	info
 
 	! Indices
-	integer i, n, r, s, reac, prod
+	integer i, n, r, s
 
 	! Construct accounting matrix
 	! Row is grain number, column is well number, value is index into active-state matrix
@@ -415,7 +400,7 @@ subroutine activeStateBanded(T, P, E, Mcoll, densStates, Kij, Fim, Gnj, dEdown, 
 	integer										::	info
 
 	! Indices
-	integer i, j, n, r, s, reac, prod
+	integer i, j, n, r, s
 
 	! Construct accounting matrix
 	! Row is grain number, column is well number, value is index into active-state matrix
@@ -435,6 +420,7 @@ subroutine activeStateBanded(T, P, E, Mcoll, densStates, Kij, Fim, Gnj, dEdown, 
 	Z = 0 * Z
 	
 	! Collisional terms in active-state matrix and RHS vectors
+	halfbandwidth = halfbandwidth / nIsom
 	do i = 1, nIsom
 		do s = nRes(i)+1, nGrains
 			do r = max(nRes(i)+1, s - halfbandwidth), min(nGrains, s + halfbandwidth)
@@ -443,7 +429,8 @@ subroutine activeStateBanded(T, P, E, Mcoll, densStates, Kij, Fim, Gnj, dEdown, 
 			Z(indices(s,i), i) = sum(Mcoll(i,s,1:nRes(i)) * densStates(i,1:nRes(i)) * exp(-E(1:nRes(i)) / 8.314472 / T))
 		end do
 	end do
-	
+	halfbandwidth = halfbandwidth * nIsom
+
 	! Isomerization terms in active-state matrix and RHS vectors
 	do i = 1, nIsom
 		do j = 1, i-1
@@ -510,7 +497,7 @@ subroutine accountingMatrix(nGrains, nIsom, nRes, indices)
 
 	! Construct accounting matrix
 	row = 1
-	do r = minval(nRes)+1, nGrains
+	do r = 1, nGrains
 		do i = 1, nIsom
 			if (r > nRes(i)) then
 				indices(r,i) = row

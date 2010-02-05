@@ -939,13 +939,7 @@ def GA2Wilhoit(B, T_list, Cp_list, cp0, cpInf):
 		b[i] = Cp_list[i]-cp0 - y*y*(cpInf-cp0)
 		
 	#solve least squares problem A*x = b; http://docs.scipy.org/doc/scipy/reference/tutorial/linalg.html#solving-linear-least-squares-problems-and-pseudo-inverses
-#	print A
-#	print b
 	x,resid,rank,sigma = linalg.lstsq(A,b, overwrite_a=1, overwrite_b=1)
-#	print x
-#	print resid
-#	print rank
-#	print sigma
 	a0 = x[0]
 	a1 = x[1]
 	a2 = x[2]
@@ -964,7 +958,6 @@ def BOpt_objFun(B, T_list, Cp_list, cp0, cpInf):
 	#input: B (in kiloKelvin), GA temperature and Cp_list (scaled/non-dimensionalized), Wilhoit parameters, Cp0/R and CpInf/R
 	#output: the sum of squared errors between Wilhoit and GA data (dimensionless)
 	(a0, a1, a2, a3, resid) = GA2Wilhoit(B, T_list, Cp_list, cp0, cpInf)
-	#print B, resid
 	return resid
 
 
@@ -1025,9 +1018,6 @@ def convertWilhoitToNASA(Wilhoit, fixed=1, weighting=1, tint=1000.0, Tmin = 298.
 	else:
 		nasa_low, nasa_high, tint = Wilhoit2NASA_TintOpt(wilhoit_scaled, Tmin, Tmax, weighting)
 	iseUnw = TintOpt_objFun(tint, wilhoit_scaled, Tmin, Tmax, 0) #the scaled, unweighted ISE (integral of squared error)
-	#print iseUnw
-	#print nasa_low
-	#print nasa_high
 	rmsUnw = math.sqrt(iseUnw/(Tmax-Tmin))
 	rmsStr = '(Unweighted) RMS error = %.3f*R;'%(rmsUnw)
 	if(weighting == 1):
@@ -1267,7 +1257,6 @@ def Wilhoit2NASA(wilhoit, tmin, tmax, tint, weighting):
 	# matrix is not required; not including it should give same result, except
 	# Lagrange multipliers will differ by a factor of two)
 	#from linalg import solve
-	#print A
 	x = linalg.solve(A,b,overwrite_a=1,overwrite_b=1)
 
 	nasa_low = ThermoNASAPolynomial(T_range=(0,0), coeffs=[x[0], x[1], x[2], x[3], x[4], 0.0, 0.0], comment='')
@@ -1293,10 +1282,8 @@ def TintOpt_objFun(tint, wilhoit, tmin, tmax, weighting):
 		result = TintOpt_objFun_W(tint, wilhoit, tmin, tmax)
 	else:
 		result = TintOpt_objFun_NW(tint, wilhoit, tmin, tmax)
-	#print tint
-	#print result
 
-        # numerical errors could accumulate to give a slightly negative result
+	# numerical errors could accumulate to give a slightly negative result
 	# this is unphysical (it's the integral of a *squared* error) so we
 	# set it to zero to avoid later problems when we try find the square root.
 	if result<0:

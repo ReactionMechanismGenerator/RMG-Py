@@ -76,15 +76,12 @@ Kij, Fim, Gnj, nIsom, nProd, nGrains, K, msg)
 	! Steady-state matrix and vector
 	real(8), dimension(:,:), allocatable		:: 	A
 	real(8), dimension(:), allocatable			:: 	b
-	! Number of active-state energy grains for each unimolecular isomer
-	integer, dimension(:), allocatable			:: 	nAct
 	! Indices i and j represent sums over unimolecular wells
 	integer										::	i, j
 	! Indices m and n represent sums over bimolecular sources/sinks
-	integer										::	m, n
+	integer										::	n
 	! Indices r and s represent sums over energy grains
-	integer										::	r, s
-	integer										::	u
+	integer										::	r
 	! Variables for BLAS and LAPACK
 	integer, dimension(:), allocatable			::	iPiv
 	integer										::	info
