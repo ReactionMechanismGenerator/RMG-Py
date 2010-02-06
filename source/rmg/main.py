@@ -66,6 +66,24 @@ def execute(inputFile, options):
 	settings.scratchDirectory = options.scratchDirectory
 	settings.libraryDirectory = options.libraryDirectory
 
+	# Set wall time
+	if options.wallTime == '0': settings.wallTime = 0
+	else:
+		try:
+			data = options.wallTime.split(':')
+			if len(data) == 1:
+				settings.wallTime = int(data[-1])
+			elif len(data) == 2:
+				settings.wallTime = int(data[-1]) + 60 * int(data[-2])
+			elif len(data) == 3:
+				settings.wallTime = int(data[-1]) + 60 * int(data[-2]) + 3600 * int(data[-3])
+			elif len(data) == 4:
+				settings.wallTime = int(data[-1]) + 60 * int(data[-2]) + 3600 * int(data[-3]) + 86400 * int(data[-4])
+			else:
+				raise ValueError('Invalid format for wall time; should be HH:MM:SS.')
+		except ValueError, e:
+			raise ValueError('Invalid format for wall time; should be HH:MM:SS.')
+
 	# Save initialization time
 	settings.initializationTime = time.time()
 
@@ -204,7 +222,22 @@ def execute(inputFile, options):
 			generateExecutionPlots(execTime, coreSpeciesCount, coreReactionCount, edgeSpeciesCount, edgeReactionCount, memoryUse, restartSize)
 
 		logging.info('')
-
+		
+		# Consider stopping gracefully if the next iteration might take us
+		# past the wall time
+		if settings.wallTime > 0 and len(execTime) > 1:
+			t = execTime[-1]
+			dt = execTime[-1] - execTime[-2]
+			if t + 2 * dt > settings.wallTime:
+				logging.info('MODEL GENERATION TERMINATED')
+				logging.info('')
+				logging.info('There is not enough time to complete the next iteration before the wall time is reached.')
+				logging.info('The output model may be incomplete.')
+				logging.info('')
+				logging.info('The current model core has %s species and %s reactions' % (len(reactionModel.core.species), len(reactionModel.core.reactions)))
+				logging.info('The current model edge has %s species and %s reactions' % (len(reactionModel.edge.species), len(reactionModel.edge.reactions)))
+				io.writeOutputFile(os.path.join(settings.outputDirectory,'output.xml'), reactionModel, reactionSystems)
+				return
 
 	# Write output file
 	logging.info('MODEL GENERATION COMPLETED')
