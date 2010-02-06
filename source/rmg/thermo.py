@@ -587,10 +587,10 @@ class ThermoNASAData(ThermoData):
 		assert (len(cp)==m), 'cp and t are different lengths'
 		rms = 0.0
 		for i in range(m):
-			err = (cp[i]-self.getHeatCapacity(t[i]))/R
+			err = cp[i]-self.getHeatCapacity(t[i])
 			rms += err*err
 		rms = rms/m
-		rms = math.sqrt(rms)
+		rms = math.sqrt(rms)/R
 
 		return rms
 
