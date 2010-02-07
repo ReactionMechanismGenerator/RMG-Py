@@ -1326,14 +1326,6 @@ def TintOpt_objFun_NW(tint, wilhoit, tmin, tmax):
 				 +b9*(wilhoit.integral_T3(tmax) - q3) +b4*(q3 - wilhoit.integral_T3(tmin))
 				 +b10*(wilhoit.integral_T4(tmax) - q4)+b5*(q4 - wilhoit.integral_T4(tmin))))
 
-
-	#print wilhoit.integral2_T0(tmax) - wilhoit.integral2_T0(tmin)
-	#print nasa_low.integral2_T0(tint)-nasa_low.integral2_T0(tmin) + nasa_high.integral2_T0(tmax) - nasa_high.integral2_T0(tint)
-	#print - 2* (b6*wilhoit.integral_T0(tmax)+(b1-b6)*wilhoit.integral_T0(tint) - b1*wilhoit.integral_T0(tmin)
-	#			 +b7*wilhoit.integral_T1(tmax)+(b2-b7)*wilhoit.integral_T1(tint) - b2*wilhoit.integral_T1(tmin)
-	#			 +b8*wilhoit.integral_T2(tmax)+(b3-b8)*wilhoit.integral_T2(tint) - b3*wilhoit.integral_T2(tmin)
-	#			 +b9*wilhoit.integral_T3(tmax)+(b4-b9)*wilhoit.integral_T3(tint) - b4*wilhoit.integral_T3(tmin)
-	#			 +b10*wilhoit.integral_T4(tmax)+(b5-b10)*wilhoit.integral_T4(tint) - b5*wilhoit.integral_T4(tmin))
 	#print result
 	return result
 
