@@ -66,6 +66,24 @@ def execute(inputFile, options):
 	settings.scratchDirectory = options.scratchDirectory
 	settings.libraryDirectory = options.libraryDirectory
 
+	# Set wall time
+	if options.wallTime == '0': settings.wallTime = 0
+	else:
+		try:
+			data = options.wallTime.split(':')
+			if len(data) == 1:
+				settings.wallTime = int(data[-1])
+			elif len(data) == 2:
+				settings.wallTime = int(data[-1]) + 60 * int(data[-2])
+			elif len(data) == 3:
+				settings.wallTime = int(data[-1]) + 60 * int(data[-2]) + 3600 * int(data[-3])
+			elif len(data) == 4:
+				settings.wallTime = int(data[-1]) + 60 * int(data[-2]) + 3600 * int(data[-3]) + 86400 * int(data[-4])
+			else:
+				raise ValueError('Invalid format for wall time; should be HH:MM:SS.')
+		except ValueError, e:
+			raise ValueError('Invalid format for wall time; should be HH:MM:SS.')
+
 	# Save initialization time
 	settings.initializationTime = time.time()
 
@@ -200,10 +218,26 @@ def execute(inputFile, options):
 			logging.debug('Execution time: %s s' % (execTime[-1]))
 			logging.debug('Memory used: %s MB' % (memoryUse[-1]))
 			restartSize.append(os.path.getsize(os.path.join(settings.outputDirectory,'restart.pkl')) / 1.0e6)
+			saveExecutionStatistics(execTime, coreSpeciesCount, coreReactionCount, edgeSpeciesCount, edgeReactionCount, memoryUse, restartSize)
 			generateExecutionPlots(execTime, coreSpeciesCount, coreReactionCount, edgeSpeciesCount, edgeReactionCount, memoryUse, restartSize)
 
 		logging.info('')
-
+		
+		# Consider stopping gracefully if the next iteration might take us
+		# past the wall time
+		if settings.wallTime > 0 and len(execTime) > 1:
+			t = execTime[-1]
+			dt = execTime[-1] - execTime[-2]
+			if t + 2 * dt > settings.wallTime:
+				logging.info('MODEL GENERATION TERMINATED')
+				logging.info('')
+				logging.info('There is not enough time to complete the next iteration before the wall time is reached.')
+				logging.info('The output model may be incomplete.')
+				logging.info('')
+				logging.info('The current model core has %s species and %s reactions' % (len(reactionModel.core.species), len(reactionModel.core.reactions)))
+				logging.info('The current model edge has %s species and %s reactions' % (len(reactionModel.edge.species), len(reactionModel.edge.reactions)))
+				io.writeOutputFile(os.path.join(settings.outputDirectory,'output.xml'), reactionModel, reactionSystems)
+				return
 
 	# Write output file
 	logging.info('MODEL GENERATION COMPLETED')
@@ -264,7 +298,69 @@ def initializeLog(verbose):
 	
 ################################################################################
 
-def generateExecutionPlots(execTime, coreSpeciesCount, coreReactionCount, \
+def saveExecutionStatistics(execTime, coreSpeciesCount, coreReactionCount, \
+	edgeSpeciesCount, edgeReactionCount, memoryUse, restartSize):
+	"""
+	Save the statistics of the RMG job to an Excel spreadsheet for easy viewing
+	after the run is complete. The statistics are saved to the file
+	`statistics.xls` in the output directory. The ``xlwt`` package is used to
+	create the spreadsheet file; if this package is not installed, no file is
+	saved.
+	"""
+
+	# Attempt to import the xlwt package; return if not installed
+	try:
+		import xlwt
+	except ImportError:
+		logging.warning('Package xlwt not found. Unable to save execution statistics.')
+		return
+
+	# Create workbook and sheet for statistics to be places
+	workbook = xlwt.Workbook()
+	sheet = workbook.add_sheet('Statistics')
+
+	# First column is execution time
+	sheet.write(0,0,'Execution time (s)')
+	for i, etime in enumerate(execTime):
+		sheet.write(i+1,0,etime)
+
+	# Second column is number of core species
+	sheet.write(0,1,'Core species')
+	for i, count in enumerate(coreSpeciesCount):
+		sheet.write(i+1,1,count)
+
+	# Third column is number of core reactions
+	sheet.write(0,2,'Core reactions')
+	for i, count in enumerate(coreReactionCount):
+		sheet.write(i+1,2,count)
+
+	# Fourth column is number of edge species
+	sheet.write(0,3,'Edge species')
+	for i, count in enumerate(edgeSpeciesCount):
+		sheet.write(i+1,3,count)
+
+	# Fifth column is number of edge reactions
+	sheet.write(0,4,'Edge reactions')
+	for i, count in enumerate(edgeReactionCount):
+		sheet.write(i+1,4,count)
+
+	# Sixth column is memory used
+	sheet.write(0,5,'Memory used (MB)')
+	for i, memory in enumerate(memoryUse):
+		sheet.write(i+1,5,memory)
+
+	# Seventh column is restart file size
+	sheet.write(0,6,'Restart file size (MB)')
+	for i, memory in enumerate(restartSize):
+		sheet.write(i+1,6,memory)
+
+	# Save workbook to file
+	fstr = os.path.join(settings.outputDirectory, 'statistics.xls')
+	workbook.save(fstr)
+
+################################################################################
+
+def generateExecutionPlots(execTime, coreSpeciesCount, coreReactionCount,
 	edgeSpeciesCount, edgeReactionCount, memoryUse, restartSize):
 	"""
 	Generate a number of plots describing the statistics of the RMG job, 

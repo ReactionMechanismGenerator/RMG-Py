@@ -104,6 +104,9 @@ if __name__ == '__main__':
 	parser.add_option('-P', '--postprocess',
 					action="store_true", dest="postprocess_only", default=False,
 					help="postprocess profiling statistics from previous [failed] run. Does not run the simulation.")
+	parser.add_option('-t', '--walltime',
+					action="store", type="string", dest="wallTime", default="0",
+					help="set the maximum execution time (HH:MM:SS)")
 
 	# Parse the command-line arguments
 	options, args = parser.parse_args()

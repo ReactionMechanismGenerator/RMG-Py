@@ -580,7 +580,7 @@ class ThermoNASAData(ThermoData):
 		input: thermoGAdata
 		output: value is in non-dimensional units (/R);
 		"""
-		t=thermoGAdata.CpTList
+		t=ThermoGAData.CpTlist
 		cp=thermoGAdata.Cp
 		R = constants.R
 		m = len(t)
@@ -941,7 +941,7 @@ def convertGAtoWilhoit(GAthermo, atoms, rotors, linear, fixedB=1, Bmin=300.0, Bm
 
 	#print a warning if the rms fit is worse that 0.25*R
 	if (err>0.25):
-	    logging.warning("Poor GA-to-Wilhoit fit quality: "+WilhoitThermo.comment)	
+		logging.warning("Poor GA-to-Wilhoit fit quality: "+WilhoitThermo.comment)
 
 	return WilhoitThermo
 
@@ -1053,7 +1053,7 @@ def convertWilhoitToNASA(Wilhoit, fixed=1, weighting=1, tint=1000.0, Tmin = 298.
 
 	#print a warning if the rms fit is worse that 0.25*R
 	if(rmsUnw > 0.25 or rmsWei > 0.25):
-	    logging.warning("Poor Wilhoit-to-NASA fit quality: "+rmsStr)
+		logging.warning("Poor Wilhoit-to-NASA fit quality: "+rmsStr)
 		
 	#restore to conventional units of K for Tint and units based on K rather than kK in NASA polynomial coefficients
 	tint=tint*1000.
