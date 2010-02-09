@@ -32,7 +32,7 @@ all: cython spectral unirxn
 
 cython: rmg/graph.py rmg/chem.py rmg/thermo.py 
 
-spectral: rmg/spectral/fit.so
+spectral: rmg/spectral/_modes.so rmg/spectral/_fit.so
 
 unirxn: rmg/unirxn/states.so rmg/unirxn/mastereqn.so rmg/unirxn/msc.so rmg/unirxn/rs.so
 
