@@ -359,7 +359,7 @@ class ThermoWilhoitToNASACheck(unittest.TestCase):
 			limit = 2000.0 # J/mol  # the wilhoit should be more accurate then trapezoid integration of GA, so wouldn't want them to be exactly the same
 			self.assertTrue(err<limit,"GA (%.1f) and NASA (%.1f) differ by more than %s J/mol at %dK"%(ga,nasa,limit,T))
 
-	def testOxygenWithObjectiveFunction(self):
+	def testObjectiveFunctionForOxygen(self):
 		"""Check weighted objective function encountered during Wilhoit-to-NASA conversion for molecular oxygen)
 		"""
 
