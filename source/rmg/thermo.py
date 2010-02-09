@@ -642,7 +642,7 @@ class ThermoWilhoitData(ThermoData):
 		self.S0 = S0
 	
 	def __repr__(self):
-		return "ThermoWilhoitData(%.4g,%.4g,%.4g,%.4g,%.4g,%.4g,%.4g,%.4g,%.4g,'%s')"%(self.cp0, self.cpInf, self.B, self.a0, self.a1, self.a2, self.a3, self.H0, self.S0, self.comment)
+		return "ThermoWilhoitData(%.4g,%.4g,%.4g,%.4g,%.4g,%.4g,%.4g,%.4g,'%s',B=%.4g)"%(self.cp0, self.cpInf, self.a0, self.a1, self.a2, self.a3, self.H0, self.S0, self.comment, self.B)
 	
 	def __reduce__(self):
 		return (ThermoWilhoitData,(self.cp0, self.cpInf, self.a0, self.a1, self.a2, self.a3, self.H0, self.S0, self.comment, self.B))
