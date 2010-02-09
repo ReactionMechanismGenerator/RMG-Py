@@ -1288,6 +1288,7 @@ def TintOpt_objFun(tint, wilhoit, tmin, tmax, weighting):
 		logging.error(tmin)
 		logging.error(tmax)
 		logging.error(weighting)
+		logging.error(result)
 		result = 0
 
 	return result
