@@ -19,7 +19,7 @@
 
 # Alternatively, use G95:
 
-MAKE=make
+MAKE=mingw32-make
 
 F90=g95
 F2PY_FCOMPILER=g95
