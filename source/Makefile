@@ -24,8 +24,6 @@
 
 # Alternatively, use G95:
 
-MAKE=mingw32-make
-
 F90=g95
 F2PY_FCOMPILER=g95
 F90FLAGS=-fPIC -r8 -ftrace=full -fbounds-check -Wall
