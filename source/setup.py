@@ -32,7 +32,15 @@
 This is the setup file for RMG.
 """
 
-def setupCythonModules():
+def setupCythonModules(name, version, description, author, author_email, 
+	url, packages):
+	"""
+	Compile Cython modules into shared binary libraries. These appear to the
+	end-user as normal Python modules, but execute much more rapidly because
+	they are compiled rather than interpreted. Furthermore, the Cython modules
+	add type information in certain places, which really gives Cython modules
+	a speed boost when compiled.
+	"""
 	
 	from distutils.core import setup
 	from distutils.extension import Extension
@@ -54,13 +62,13 @@ def setupCythonModules():
 		Extension('rmg.thermo', ['rmg/thermo.py'])
 	]
 
-	setup(name='RMG',
-		version='0.0.1',
-		description='Reaction Mechanism Generator',
-		author='Prof. William H. Green and the RMG Team',
-		author_email='whgreen@mit.edu, rmg_dev@mit.edu',
-		url='http://rmg.sourceforge.net/',
-		packages=['rmg'],
+	setup(name=name,
+		version=version,
+		description=description,
+		author=author,
+		author_email=author_email,
+		url=url,
+		packages=packages,
 		cmdclass = {'build_ext': build_ext},
 		ext_modules = ext_modules
 	)
@@ -85,17 +93,23 @@ def configuration(parent_package='',top_path=None):
 	
 	return config
 
-def setupFortranModules():
-
+def setupFortranModules(name, version, description, author, author_email, 
+	url, packages):
+	"""
+	Compile Fortran files into shared binary libraries. These appear to the
+	end-user as normal Python modules, but execute much more rapidly because
+	they are compiled rather than interpreted.
+	"""
+	
 	from numpy.distutils.core import setup
 	
-	setup(name='RMG',
-		version='0.0.1',
-		description='Reaction Mechanism Generator',
-		author='Prof. William H. Green and the RMG Team',
-		author_email='whgreen@mit.edu, rmg_dev@mit.edu',
-		url='http://rmg.sourceforge.net/',
-		packages=['rmg'],
+	setup(name=name,
+		version=version,
+		description=description,
+		author=author,
+		author_email=author_email,
+		url=url,
+		packages=packages,
 		configuration = configuration
 	)
 
@@ -103,7 +117,20 @@ def setupFortranModules():
 
 if __name__ == '__main__':
 	
-	setupFortranModules()
+	# Package details (passed to both setup() calls)
+	name = 'RMG'
+	version = '0.0.1'
+	description = 'Reaction Mechanism Generator'
+	author = 'Prof. William H. Green and the RMG Team'
+	author_email = 'whgreen@mit.edu, rmg_dev@mit.edu'
+	url = 'http://rmg.sourceforge.net/'
+	packages = ['rmg']
 	
-	setupCythonModules()
+	# Use f2py (in numpy) to compile the Fortran modules
+	setupFortranModules(name, version, description, author, author_email, 
+		url, packages)
+	
+	# Use Cython to compile the C modules
+	setupCythonModules(name, version, description, author, author_email, 
+		url, packages)
 	
