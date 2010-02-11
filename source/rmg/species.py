@@ -1094,9 +1094,9 @@ def getThermoData(struct, required_class=thermo.ThermoNASAData): # ThermoGAData
 	# compute the error for the entire conversion, printing it as info or warning (if it is sufficiently high)
 	rmsErr = NASAthermoData.rmsErr(GAthermoData)
 	if(rmsErr > 0.35):
-	    logging.warning("Poor overall GA-to-NASA fit: Overall RMS error in heat capacity fit = %.3f*R;"%(rmsErr) + " Struct: "+struct+" GAthermoData: "+ GAthermoData)
+	    logging.warning("Poor overall GA-to-NASA fit: Overall RMS error in heat capacity fit = %.3f*R;"%(rmsErr) + " Struct: "+str(struct)+" GAthermoData: "+ str(GAthermoData))
 	else:
-	    logging.info("Overall RMS error in heat capacity fit = %.3f*R;"%(rmsErr)+ " Struct: "+struct+" GAthermoData: "+ GAthermoData)
+	    logging.info("Overall RMS error in heat capacity fit = %.3f*R;"%(rmsErr)+ " Struct: "+str(struct)+" GAthermoData: "+ str(GAthermoData))
 
 	if required_class==thermo.ThermoNASAData:
 		return NASAthermoData
