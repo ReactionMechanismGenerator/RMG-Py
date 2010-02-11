@@ -378,6 +378,7 @@ class ThermoWilhoitToNASACheck(unittest.TestCase):
 		oxygen.updateAtomTypes()
 		GAthermoData = species.getThermoData(oxygen,required_class=thermo.ThermoGAData)
 		WilhoitData = thermo.convertGAtoWilhoit(GAthermoData, atoms=2, rotors=0, linear=True)
+		print WilhoitData
 		NASAthermoData = thermo.convertWilhoitToNASA(WilhoitData)
 		#if not working properly, this may produce an error in logging
 ################################################################################
