@@ -358,7 +358,28 @@ class ThermoWilhoitToNASACheck(unittest.TestCase):
 			err = abs(ga-nasa)
 			limit = 2000.0 # J/mol  # the wilhoit should be more accurate then trapezoid integration of GA, so wouldn't want them to be exactly the same
 			self.assertTrue(err<limit,"GA (%.1f) and NASA (%.1f) differ by more than %s J/mol at %dK"%(ga,nasa,limit,T))
-			
+
+	def testObjectiveFunctionForOxygen(self):
+		"""Check weighted objective function encountered during Wilhoit-to-NASA conversion for molecular oxygen)
+		"""
+
+		wilhoit = thermo.ThermoWilhoitData(3.5,4.5,-2.343,32.54,-79.26,47.75,8951,-18.19, B=0.5) #this is the scaled version
+		q=thermo.TintOpt_objFun(1.0, wilhoit, .298, 6.0, 1)#these are also scaled values
+		expectedVal = 0.00018295170781357228 #taken from running in pure-python mode
+		relErr = abs(q-expectedVal)/expectedVal
+		limit = 0.01 #relative error limit (0.01=1%)
+		self.assertTrue(relErr<limit,"Actual (%.8f) and expected (%.8f) differ by more than %s"%(q,expectedVal,limit*expectedVal))
+
+	def testOxygenFromGA(self):
+		"""Check conversion of GA values for molecular oxygen to NASA form
+		"""
+
+		oxygen = structure.Structure(SMILES='O=O')
+		oxygen.updateAtomTypes()
+		GAthermoData = species.getThermoData(oxygen,required_class=thermo.ThermoGAData)
+		WilhoitData = thermo.convertGAtoWilhoit(GAthermoData, atoms=2, rotors=0, linear=True)
+		NASAthermoData = thermo.convertWilhoitToNASA(WilhoitData)
+		#if not working properly, this may produce an error in logging
 ################################################################################
 
 		

@@ -11,15 +11,20 @@
 #          'linker_so'    : ["<F90>", "-Wall"],
 #    with this:
 #          'linker_so'    : ["<F90>", "-Wall -dynamiclib -L/opt/local/lib -lpython2.5"],
+#    and line  121
+#           opt.extend(['-undefined', 'dynamic_lookup', '-bundle'])
+#    with this:
+#           opt.extend(['-undefined', 'dynamic_lookup' ])
+#   ...or something like that
 #F90=gfortran
 #F2PY_FCOMPILER=gnu95
-#F90FLAGS=-fPIC -r8 -fbounds-check -W -Wall -Werror # -ftrace=full 
+#F90FLAGS=-fPIC -fdefault-real-8 -fbounds-check -W -Wall -Werror # -ftrace=full 
 
 # Richard currently can't get this to work, so just leaving Josh's g95 version hopefully unbroken:
 
 # Alternatively, use G95:
 
-MAKE=make
+MAKE=mingw32-make
 
 F90=g95
 F2PY_FCOMPILER=g95

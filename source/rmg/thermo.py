@@ -642,7 +642,7 @@ class ThermoWilhoitData(ThermoData):
 		self.S0 = S0
 	
 	def __repr__(self):
-		return "ThermoWilhoitData(%.4g,%.4g,%.4g,%.4g,%.4g,%.4g,%.4g,%.4g,%.4g,'%s')"%(self.cp0, self.cpInf, self.B, self.a0, self.a1, self.a2, self.a3, self.H0, self.S0, self.comment)
+		return "ThermoWilhoitData(%.4g,%.4g,%.4g,%.4g,%.4g,%.4g,%.4g,%.4g,'%s',B=%.4g)"%(self.cp0, self.cpInf, self.a0, self.a1, self.a2, self.a3, self.H0, self.S0, self.comment, self.B)
 	
 	def __reduce__(self):
 		return (ThermoWilhoitData,(self.cp0, self.cpInf, self.a0, self.a1, self.a2, self.a3, self.H0, self.S0, self.comment, self.B))
@@ -935,13 +935,13 @@ def convertGAtoWilhoit(GAthermo, atoms, rotors, linear, fixedB=1, Bmin=300.0, Bm
 	WilhoitThermo.S0 = S0
 
 	# calculate the correct err for the monoatomic case; there seems to be a bug in linalg.lstsq() where resid is incorrectly returned as [] when A matrix is all zeroes (this is also the reason for the check above for cp0==cpInf, where we set resid = 0)
-	if(atoms==1):
+	if(cp0==cpInf):
 		err = WilhoitThermo.rmsErrWilhoit(T_list, Cp_list)/R #rms Error (J/mol-K units until it is divided by R)
 	WilhoitThermo.comment = WilhoitThermo.comment + 'Wilhoit function fitted to GA data with Cp0=%2g and Cp_inf=%2g. RMS error = %.3f*R. '%(cp0,cpInf,err) + GAthermo.comment
 
 	#print a warning if the rms fit is worse that 0.25*R
 	if (err>0.25):
-		logging.warning("Poor GA-to-Wilhoit fit quality: "+WilhoitThermo.comment)
+		logging.warning("Poor GA-to-Wilhoit fit quality: "+WilhoitThermo.comment + " GAthermo: "+ GAthermo)
 
 	return WilhoitThermo
 
@@ -1053,7 +1053,7 @@ def convertWilhoitToNASA(Wilhoit, fixed=1, weighting=1, tint=1000.0, Tmin = 298.
 
 	#print a warning if the rms fit is worse that 0.25*R
 	if(rmsUnw > 0.25 or rmsWei > 0.25):
-		logging.warning("Poor Wilhoit-to-NASA fit quality: "+rmsStr)
+		logging.warning("Poor Wilhoit-to-NASA fit quality: "+rmsStr + " Wilhoit: "+ Wilhoit)
 		
 	#restore to conventional units of K for Tint and units based on K rather than kK in NASA polynomial coefficients
 	tint=tint*1000.
@@ -1288,6 +1288,7 @@ def TintOpt_objFun(tint, wilhoit, tmin, tmax, weighting):
 		logging.error(tmin)
 		logging.error(tmax)
 		logging.error(weighting)
+		logging.error(result)
 		result = 0
 
 	return result
