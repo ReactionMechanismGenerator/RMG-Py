@@ -381,6 +381,47 @@ class ThermoWilhoitToNASACheck(unittest.TestCase):
 		print WilhoitData
 		NASAthermoData = thermo.convertWilhoitToNASA(WilhoitData)
 		#if not working properly, this may produce an error in logging
+
+	def testOxygenFromGA2(self):
+		"""Check conversion of current GA values for molecular oxygen to Wilhoit form
+
+		This is an attempt to test a discrepancy between results on Greg's Windows computer (same in both C- and pure-python modes) and Josh's Linux computer (C-mode)
+		Discrepancy could be during the numerically intensive step (which this tests) or the computation of the group values
+		"""
+		#the following values come from Greg's Windows computer; Josh's scaled result for thermoWilhoitData is thermo.ThermoWilhoitData(3.5,4.5,-2.343,32.54,-79.26,47.75,8951,-18.19, B=0.5)
+		GAthermoData = thermo.ThermoGAData(H298=0.0, S298=205.026767175, Cp=[29.288, 30.208480000000002, 31.128960000000003, 32.007600000000004, 33.764880000000005, 34.936399999999999, 36.484480000000005], index="+1096+++0+1096+++0")
+		WilhoitData = thermo.convertGAtoWilhoit(GAthermoData, atoms=2, rotors=0, linear=True)
+		limit = 0.01 #relative error limit (0.01=1%)
+		a0e = -0.9324
+		a0re = abs(WilhoitData.a0-a0e)/a0e
+		self.assertTrue(a0re<limit,"Actual (%.8f) and expected (%.8f) differ by more than %s"%(WilhoitData.a0,a0e,limit*a0e))
+		a1e = 26.18
+		a1re = abs(WilhoitData.a1-a1e)/a1e
+		self.assertTrue(a1re<limit,"Actual (%.8f) and expected (%.8f) differ by more than %s"%(WilhoitData.a1,a1e,limit*a1e))
+		a2e = -70.47
+		a2re = abs(WilhoitData.a2-a2e)/a2e
+		self.assertTrue(a2re<limit,"Actual (%.8f) and expected (%.8f) differ by more than %s"%(WilhoitData.a2,a2e,limit*a2e))
+		a3e = 44.12
+		a3re = abs(WilhoitData.a3-a3e)/a3e
+		self.assertTrue(a3re<limit,"Actual (%.8f) and expected (%.8f) differ by more than %s"%(WilhoitData.a3,a3e,limit*a3e))
+
+	def testOxygenGA(self):
+		"""Check molecular oxygen GA heat capacity values
+
+		"""
+
+		oxygen = structure.Structure(SMILES='O=O')
+		oxygen.updateAtomTypes()
+		GAthermoData = species.getThermoData(oxygen,required_class=thermo.ThermoGAData)
+		#the following values come from Greg's Windows computer
+		Cpe = [29.288, 30.208480000000002, 31.128960000000003, 32.007600000000004, 33.764880000000005, 34.936399999999999, 36.484480000000005]
+		self.assertTrue(GAthermoData.Cp[0]==Cpe[0],"Actual (%.8f) and expected (%.8f) are different"%(GAthermoData.Cp[0],Cpe[0]))
+		self.assertTrue(GAthermoData.Cp[1]==Cpe[1],"Actual (%.8f) and expected (%.8f) are different"%(GAthermoData.Cp[1],Cpe[1]))
+		self.assertTrue(GAthermoData.Cp[2]==Cpe[2],"Actual (%.8f) and expected (%.8f) are different"%(GAthermoData.Cp[2],Cpe[2]))
+		self.assertTrue(GAthermoData.Cp[3]==Cpe[3],"Actual (%.8f) and expected (%.8f) are different"%(GAthermoData.Cp[3],Cpe[3]))
+		self.assertTrue(GAthermoData.Cp[4]==Cpe[4],"Actual (%.8f) and expected (%.8f) are different"%(GAthermoData.Cp[4],Cpe[4]))
+		self.assertTrue(GAthermoData.Cp[5]==Cpe[5],"Actual (%.8f) and expected (%.8f) are different"%(GAthermoData.Cp[5],Cpe[5]))
+		self.assertTrue(GAthermoData.Cp[6]==Cpe[6],"Actual (%.8f) and expected (%.8f) are different"%(GAthermoData.Cp[6],Cpe[6]))
 ################################################################################
 
 		
