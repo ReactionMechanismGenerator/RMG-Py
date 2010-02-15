@@ -386,7 +386,7 @@ class ThermoWilhoitToNASACheck(unittest.TestCase):
 		"""Check conversion of current GA values for molecular oxygen to Wilhoit form
 
 		This is an attempt to test a discrepancy between results on Greg's Windows computer (same in both C- and pure-python modes) and Josh's Linux computer (C-mode)
-		Discrepancy could be during the numerically intensive step (which this tests) or the computation of the group values
+		Discrepancy could be during the numerically intensive step (which this tests) or the computation of the group values (which a unit test below tests)
 		"""
 		#the following values come from Greg's Windows computer; Josh's scaled result for thermoWilhoitData is thermo.ThermoWilhoitData(3.5,4.5,-2.343,32.54,-79.26,47.75,8951,-18.19, B=0.5)
 		GAthermoData = thermo.ThermoGAData(H298=0.0, S298=205.026767175, Cp=[29.288, 30.208480000000002, 31.128960000000003, 32.007600000000004, 33.764880000000005, 34.936399999999999, 36.484480000000005], index="+1096+++0+1096+++0")
