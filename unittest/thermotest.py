@@ -422,6 +422,88 @@ class ThermoWilhoitToNASACheck(unittest.TestCase):
 		self.assertTrue(GAthermoData.Cp[4]==Cpe[4],"Actual (%.8f) and expected (%.8f) are different"%(GAthermoData.Cp[4],Cpe[4]))
 		self.assertTrue(GAthermoData.Cp[5]==Cpe[5],"Actual (%.8f) and expected (%.8f) are different"%(GAthermoData.Cp[5],Cpe[5]))
 		self.assertTrue(GAthermoData.Cp[6]==Cpe[6],"Actual (%.8f) and expected (%.8f) are different"%(GAthermoData.Cp[6],Cpe[6]))
+
+	#in the below integral tests, the expected values come from running in pure-python mode
+	def testWilhoitIntegralTM1(self):
+		"""Check Wilhoit.IntegralTM1
+
+		"""
+		w = thermo.ThermoWilhoitData(3.0,6.0,1.0,-2.0,3.0,-4.0,1234.5,789.0,B=0.5)
+		ans = w.integral_TM1(6.0) - w.integral_TM1(.298)
+		self.assertAlmostEqual(ans, 14.05184933947314, 16)
+
+	def testWilhoitIntegralT0(self):
+		"""Check Wilhoit.IntegralT0
+
+		"""
+		w = thermo.ThermoWilhoitData(3.0,6.0,1.0,-2.0,3.0,-4.0,1234.5,789.0,B=0.5)
+		ans = w.integral_T0(6.0) - w.integral_T0(.298)
+		self.assertAlmostEqual(ans, 30.156466842356952, 16)
+
+	def testWilhoitIntegralT1(self):
+		"""Check Wilhoit.IntegralT1
+
+		"""
+		w = thermo.ThermoWilhoitData(3.0,6.0,1.0,-2.0,3.0,-4.0,1234.5,789.0,B=0.5)
+		ans = w.integral_T1(6.0) - w.integral_T1(.298)
+		self.assertAlmostEqual(ans, 100.16557858116997, 16)
+
+	def testWilhoitIntegralT2(self):
+		"""Check Wilhoit.IntegralT2
+
+		"""
+		w = thermo.ThermoWilhoitData(3.0,6.0,1.0,-2.0,3.0,-4.0,1234.5,789.0,B=0.5)
+		ans = w.integral_T2(6.0) - w.integral_T2(.298)
+		self.assertAlmostEqual(ans, 409.65039004796273, 16)
+
+	def testWilhoitIntegralT3(self):
+		"""Check Wilhoit.IntegralT3
+
+		"""
+		w = thermo.ThermoWilhoitData(3.0,6.0,1.0,-2.0,3.0,-4.0,1234.5,789.0,B=0.5)
+		ans = w.integral_T3(6.0) - w.integral_T3(.298)
+		self.assertAlmostEqual(ans, 1859.5032978322745, 16)
+
+	def testWilhoitIntegralT4(self):
+		"""Check Wilhoit.IntegralT4
+
+		"""
+		w = thermo.ThermoWilhoitData(3.0,6.0,1.0,-2.0,3.0,-4.0,1234.5,789.0,B=0.5)
+		ans = w.integral_T4(6.0) - w.integral_T4(.298)
+		self.assertAlmostEqual(ans, 8965.5578894745959, 16)
+
+	def testWilhoitIntegral2TM1(self):
+		"""Check Wilhoit.Integral2_TM1
+
+		"""
+		w = thermo.ThermoWilhoitData(3.0,6.0,1.0,-2.0,3.0,-4.0,1234.5,789.0,B=0.5)
+		ans = w.integral2_TM1(6.0) - w.integral2_TM1(.298)
+		self.assertAlmostEqual(ans, 67.864846008944539, 16)
+
+	def testWilhoitIntegral2T0(self):
+		"""Check Wilhoit.Integral2_T0
+
+		"""
+		w = thermo.ThermoWilhoitData(3.0,6.0,1.0,-2.0,3.0,-4.0,1234.5,789.0,B=0.5)
+		ans = w.integral2_T0(6.0) - w.integral2_T0(.298)
+		self.assertAlmostEqual(ans, 161.77012800697503, 16)
+
+	def testNASAIntegral2TM1(self):
+		"""Check NASA.Integral2_TM1
+
+		"""
+		n = thermo.ThermoNASAPolynomial(T_range=[.298,1.000], coeffs = [1, -.2, .3, -.4, .5, -6, 7])
+		ans = n.integral2_TM1(1.0) - n.integral2_TM1(.298)
+		self.assertAlmostEqual(ans, 1.1958658319514555, 16)
+
+	def testNASAIntegral2T0(self):
+		"""Check NASA.Integral2_T0
+
+		"""
+		n = thermo.ThermoNASAPolynomial(T_range=[.298,1.000], coeffs = [1, -.2, .3, -.4, .5, -6, 7])
+		ans = n.integral2_T0(1.0) - n.integral2_T0(.298)
+		self.assertAlmostEqual(ans, 0.71887383097545454, 16)
+
 ################################################################################
 
 		
