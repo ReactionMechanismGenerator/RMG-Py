@@ -393,16 +393,16 @@ class ThermoWilhoitToNASACheck(unittest.TestCase):
 		WilhoitData = thermo.convertGAtoWilhoit(GAthermoData, atoms=2, rotors=0, linear=True)
 		limit = 0.01 #relative error limit (0.01=1%)
 		a0e = -0.9324
-		a0re = abs(WilhoitData.a0-a0e)/a0e
+		a0re = abs(WilhoitData.a0-a0e)/abs(a0e)
 		self.assertTrue(a0re<limit,"Actual (%.8f) and expected (%.8f) differ by more than %s"%(WilhoitData.a0,a0e,limit*a0e))
 		a1e = 26.18
-		a1re = abs(WilhoitData.a1-a1e)/a1e
+		a1re = abs(WilhoitData.a1-a1e)/abs(a1e)
 		self.assertTrue(a1re<limit,"Actual (%.8f) and expected (%.8f) differ by more than %s"%(WilhoitData.a1,a1e,limit*a1e))
 		a2e = -70.47
-		a2re = abs(WilhoitData.a2-a2e)/a2e
+		a2re = abs(WilhoitData.a2-a2e)/abs(a2e)
 		self.assertTrue(a2re<limit,"Actual (%.8f) and expected (%.8f) differ by more than %s"%(WilhoitData.a2,a2e,limit*a2e))
 		a3e = 44.12
-		a3re = abs(WilhoitData.a3-a3e)/a3e
+		a3re = abs(WilhoitData.a3-a3e)/abs(a3e)
 		self.assertTrue(a3re<limit,"Actual (%.8f) and expected (%.8f) differ by more than %s"%(WilhoitData.a3,a3e,limit*a3e))
 
 	def testOxygenGA(self):
