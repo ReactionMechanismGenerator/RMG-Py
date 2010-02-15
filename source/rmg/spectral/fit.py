@@ -120,7 +120,7 @@ def fitSpectralDataToHeatCapacity(struct, Tlist, Cvlist, Nvib, Nrot):
 	# Set parameters that are not needed by the solver but are needed to 
 	# evaluate the objective function and its Jacobian
 	# These are stored in a Fortran 90 module called params
-	_fit.params.setparams(
+	_fit.setparams(
 		p_tlist = numpy.array(Tlist),
 		p_cvlist = numpy.array(Cvlist),
 		p_mcon = 0,
@@ -141,7 +141,7 @@ def fitSpectralDataToHeatCapacity(struct, Tlist, Cvlist, Nvib, Nrot):
 		)
 
 	# Clean up the temporary variables stored via _fit.setparams() earlier
-	_fit.params.cleanup()
+	_fit.cleanup()
 
 	if not numpy.isfinite(x).all():
 		raise SpectralFitException('Returned solution vector is nonsensical: x = %s.' % (x))
