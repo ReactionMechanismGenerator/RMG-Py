@@ -54,6 +54,11 @@ def setupCythonModules(name, version, description, author, author_email,
 		if location>=0:
 			print "removing '-arch ppc' from %s"%(key)
 			config[key] = value.replace('-arch ppc ','')
+	# Tip from Lisandro Dalcin:
+	# FYI, in Py>=2.6 the ARCHFLAGS environ var is honored by distutils, so
+	# you should be able to
+	#  export ARCHFLAGS='-arch i386' # or '-arch x86_64'
+	# and get your job done.
 	
 	# The Cython modules to setup
 	ext_modules = [
