@@ -45,7 +45,7 @@ provide specific functionality for individual databases.
 """
 
 import os
-import logging
+import log as logging
 import quantities as pq
 
 import structure

@@ -35,7 +35,7 @@ Contains classes that represent batch reaction systems.
 import os
 import os.path
 import math
-import logging
+import rmg.log as logging
 import numpy
 
 import rmg.settings as settings

@@ -45,7 +45,7 @@ import scipy
 from scipy import linalg
 from scipy import optimize
 import cython
-import logging
+import log as logging
 
 import ctml_writer
 

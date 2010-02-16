@@ -41,7 +41,8 @@ mode objects (named ``postprocessCase?vib?rot``).
 
 import math
 import numpy
-import logging
+
+import rmg.log as logging
 
 import _fit
 

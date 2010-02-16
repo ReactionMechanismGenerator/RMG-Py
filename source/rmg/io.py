@@ -30,7 +30,7 @@
 
 import xml.dom.minidom
 import quantities as pq
-import logging
+import log as logging
 import os
 
 import constants

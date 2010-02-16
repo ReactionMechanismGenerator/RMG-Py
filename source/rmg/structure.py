@@ -33,7 +33,7 @@ Contains classes describing chemical structures, which are made up of atoms and
 bonds.
 """
 
-import logging
+import log as logging
 import pybel
 import openbabel
 

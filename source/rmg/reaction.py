@@ -42,7 +42,7 @@ Contains classes describing chemical reactions:
 """
 
 import math
-import logging
+import log as logging
 import os
 import os.path
 

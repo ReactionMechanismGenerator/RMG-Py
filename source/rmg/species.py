@@ -32,7 +32,7 @@
 Contains classes describing chemical species.
 """
 
-import logging
+import log as logging
 import math
 import pybel
 import os
@@ -883,7 +883,6 @@ class ThermoDatabaseSet:
 		Load a set of thermodynamics group additivity databases from the general
 		database specified at `datapath`.
 		"""
-		import logging
 
 		logging.debug('\tThermodynamics databases:')
 

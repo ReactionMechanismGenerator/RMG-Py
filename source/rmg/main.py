@@ -37,7 +37,7 @@ support it.
 import os
 import os.path
 import time
-import logging
+import rmg.log as logging
 import io
 import sys
 
@@ -88,13 +88,13 @@ def execute(inputFile, options):
 	settings.initializationTime = time.time()
 
 	# Set up log (uses stdout and a file)
-	initializeLog(options.verbose)
-	
+	logging.initialize(options.verbose, os.path.join(settings.outputDirectory,'RMG.log'))
+
 	# Log start timestamp
 	logging.info('RMG execution initiated at ' + time.asctime() + '\n')
 	
 	# Print out RMG header
-	printRMGHeader()
+	logging.logHeader()
 	
 	# Make output subdirectories
 	plotDir = os.path.join(settings.outputDirectory, 'plot')
@@ -252,52 +252,6 @@ def execute(inputFile, options):
 	
 ################################################################################
 
-def initializeLog(verbose):
-	"""
-	Set up a logger for RMG to use to print output to stdout. The
-	`verbose` parameter is an integer specifying the amount of log text seen
-	at the console; the levels correspond to those of the :data:`logging` module.
-	"""
-	# Create logger
-	logger = logging.getLogger()
-	logger.setLevel(verbose)
-	
-	# Create console handler and set level to debug; send everything to stdout
-	# rather than stderr
-	ch = logging.StreamHandler(sys.stdout)
-	ch.setLevel(verbose)
-	
-	# Create formatter and add to console handler
-	#formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s', '%Y-%m-%d %H:%M:%S')
-	formatter = logging.Formatter('%(message)s', '%Y-%m-%d %H:%M:%S')
-	ch.setFormatter(formatter)
-	
-	# create file handler
-	log_file_name = os.path.join(settings.outputDirectory,'RMG.log')
-	if os.path.exists(log_file_name):
-		backup_name = '_backup'.join(os.path.splitext(log_file_name))
-		if os.path.exists(backup_name):
-			print "Removing old file %s"%backup_name
-			os.remove(backup_name)
-		print "Renaming %s to %s"%(log_file_name, backup_name)
-		os.rename(log_file_name, backup_name)
-	fh = logging.FileHandler(filename=log_file_name) #, backupCount=3)
-	fh.setLevel(logging.DEBUG) # always verbose in the file
-	fh.setFormatter(formatter)
-	# notice that STDERR does not get saved to the log file
-	# so errors from underlying libraries (eg. openbabel) etc. that report
-	# on stderr will not be logged to disk.
-	
-	# remove old handlers!
-	while logger.handlers:
-		logger.removeHandler(logger.handlers[0])
-	
-	# Add ch to logger
-	logger.addHandler(ch)
-	logger.addHandler(fh)
-	
-################################################################################
-
 def saveExecutionStatistics(execTime, coreSpeciesCount, coreReactionCount, \
 	edgeSpeciesCount, edgeReactionCount, memoryUse, restartSize):
 	"""
@@ -408,18 +362,3 @@ def generateExecutionPlots(execTime, coreSpeciesCount, coreReactionCount,
 
 ################################################################################
 
-def printRMGHeader():
-	"""
-	Output a header containing identifying information about RMG to the log.
-	"""
-
-	logging.info('################################################################')
-	logging.info('#                                                              #')
-	logging.info('#              RMG - Reaction Mechanism Generator              #')
-	logging.info('#                    Python Version 0.0.1                      #')
-	logging.info('#                         14 May 2009                          #')
-	logging.info('#                                                              #')
-	logging.info('#                 http://rmg.sourceforge.net/                  #')
-	logging.info('#                                                              #')
-	logging.info('################################################################\n')
-	

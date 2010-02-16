@@ -34,7 +34,7 @@ RMG is an automatic chemical mechanism generator. It is awesomely awesome.
 import os.path
 
 import time
-import logging
+import rmg.log as logging
 
 from rmg.main import printRMGHeader, initializeLog
 import rmg.settings as settings

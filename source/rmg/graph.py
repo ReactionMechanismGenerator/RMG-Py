@@ -40,7 +40,7 @@ significant speed boost to running in pure Python mode.
 import chem
 
 import cython
-import logging
+import log as logging
 
 ################################################################################
 

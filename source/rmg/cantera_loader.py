@@ -30,7 +30,7 @@
 
 import rmg
 import math
-import logging
+import log as logging
 import sys
 
 # get quantities package from http://pypi.python.org/pypi/quantities

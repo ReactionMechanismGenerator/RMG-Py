@@ -28,8 +28,7 @@
 #
 ################################################################################
 
-import logging
-
+import rmg.log as logging
 import rmg.data as data
 import rmg.constants as constants
 import rmg.thermo as thermo
@@ -137,8 +136,7 @@ def loadFrequencyDatabase(databasePath):
 	Create and load the frequencies databases.
 	"""
 	import os.path
-	import logging
-
+	
 	databasePath = os.path.join(databasePath, 'frequencies')
 
 	# Create and load thermo databases

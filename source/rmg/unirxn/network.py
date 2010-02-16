@@ -34,7 +34,7 @@ reaction network.
 """
 
 import math
-import logging
+import rmg.log as logging
 import numpy
 
 import rmg.constants as constants

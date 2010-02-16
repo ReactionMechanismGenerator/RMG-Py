@@ -37,7 +37,7 @@ import rmg.structure as structure
 import rmg.reaction as reaction
 import rmg.thermo as thermo
 
-import logging
+import rmg.log as logging
 
 ################################################################################
 

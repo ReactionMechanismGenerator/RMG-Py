@@ -84,8 +84,11 @@ if __name__ == '__main__':
 					  action='store_const', const=30, default=20, dest='verbose',
 					  help='quiet mode; only log errors and warnings')
 	parser.add_option('-v', '--verbose',
+					  action='store_const', const=15, default=20, dest='verbose',
+					  help='verbose mode; add extra details to log')
+	parser.add_option('-d', '--debug',
 					  action='store_const', const=10, default=20, dest='verbose',
-					  help='verbose mode; log debug info')
+					  help='debug mode; log debug info (very verbose)')
 	parser.add_option('-o', '--output-directory', default='',
 					  action="store", type="string", dest="outputDirectory",
 					  help='use DIR as output directory', metavar='DIR')
