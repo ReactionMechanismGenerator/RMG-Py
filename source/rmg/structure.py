@@ -1030,6 +1030,11 @@ class Structure:
 				if bond.atoms[0].atomType.label == 'Os' and bond.atoms[1].atomType.label == 'Os' and \
 					bond.atoms[0].getFreeElectronCount() == 0 and bond.atoms[1].getFreeElectronCount() == 0:
 					pass
+				# If the molecule is diatomic, then we don't have to check the
+				# ligands on the two atoms in this bond (since we know there
+				# aren't any)
+				elif len(self.atoms()) == 2:
+					symmetryNumber = 2
 				else:
 					structure = Structure(self.atoms(), self.bonds())
 					structure.removeBond(bond)
