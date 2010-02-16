@@ -31,88 +31,88 @@ cdef extern from "dictobject.h":
 
 
 cdef extern from "math.h":
-	cdef float log(float theta)
+	cdef double log(double theta)
 ################################################################################
 
 cdef class ThermoData:
 	
 	cdef public object Trange # to be removed
 	cdef public str comment
-	cdef public float Tmin
-	cdef public float Tmax
+	cdef public double Tmin
+	cdef public double Tmax
 	
-	cpdef bint isTemperatureValid(ThermoData self, float T) except -2
+	cpdef bint isTemperatureValid(ThermoData self, double T) except -2
 
 ################################################################################
 
 cdef class ThermoGAData(ThermoData):
 
-	cdef public float H298, S298
+	cdef public double H298, S298
 	cdef public list Cp
 	cdef public str index
 	
 	# can't cpdef special methods like __add__ :-(
 	#cpdef ThermoGAData __add__(ThermoGAData self, ThermoGAData other)
 	
-	cpdef float getHeatCapacity(ThermoGAData self, float T)
+	cpdef double getHeatCapacity(ThermoGAData self, double T)
 	
-	cpdef float getEnthalpy(ThermoGAData self, float T)
+	cpdef double getEnthalpy(ThermoGAData self, double T)
 
 ################################################################################
 
 cdef class ThermoWilhoitData(ThermoData):
 
-	cdef public float cp0
-	cdef public float cpInf
-	cdef public float B
-	cdef public float a0
-	cdef public float a1
-	cdef public float a2
-	cdef public float a3
-	cdef public float H0
-	cdef public float S0
+	cdef public double cp0
+	cdef public double cpInf
+	cdef public double B
+	cdef public double a0
+	cdef public double a1
+	cdef public double a2
+	cdef public double a3
+	cdef public double H0
+	cdef public double S0
 
-	cpdef float getHeatCapacity(ThermoWilhoitData self, float T)
+	cpdef double getHeatCapacity(ThermoWilhoitData self, double T)
 
-	cpdef float getEnthalpy(ThermoWilhoitData self, float T)
+	cpdef double getEnthalpy(ThermoWilhoitData self, double T)
 
-	cpdef float getEntropy(ThermoWilhoitData self, float T)
+	cpdef double getEntropy(ThermoWilhoitData self, double T)
 
-	cpdef float getFreeEnergy(ThermoWilhoitData self, float T)
+	cpdef double getFreeEnergy(ThermoWilhoitData self, double T)
 
-	cpdef float integral_T0(ThermoWilhoitData self, float t)
+	cpdef double integral_T0(ThermoWilhoitData self, double t)
 
-	cpdef float integral_TM1(ThermoWilhoitData self, float t)
+	cpdef double integral_TM1(ThermoWilhoitData self, double t)
 
-	cpdef float integral_T1(ThermoWilhoitData self, float t)
+	cpdef double integral_T1(ThermoWilhoitData self, double t)
 
-	cpdef float integral_T2(ThermoWilhoitData self, float t)
+	cpdef double integral_T2(ThermoWilhoitData self, double t)
 
-	cpdef float integral_T3(ThermoWilhoitData self, float t)
+	cpdef double integral_T3(ThermoWilhoitData self, double t)
 
-	cpdef float integral_T4(ThermoWilhoitData self, float t)
+	cpdef double integral_T4(ThermoWilhoitData self, double t)
 
-	cpdef float integral2_T0(ThermoWilhoitData self, float t)
+	cpdef double integral2_T0(ThermoWilhoitData self, double t)
 
-	cpdef float integral2_TM1(ThermoWilhoitData self, float t)
+	cpdef double integral2_TM1(ThermoWilhoitData self, double t)
 
 ################################################################################
 
 cdef class ThermoNASAPolynomial(ThermoData):
 	
-	cdef public float c0, c1, c2, c3, c4, c5, c6 
+	cdef public double c0, c1, c2, c3, c4, c5, c6
 	
-	cpdef float getHeatCapacity(ThermoNASAPolynomial self, float T)
+	cpdef double getHeatCapacity(ThermoNASAPolynomial self, double T)
 	
-	cpdef float getEnthalpy(ThermoNASAPolynomial self, float T)
+	cpdef double getEnthalpy(ThermoNASAPolynomial self, double T)
 	
-	cpdef float getEntropy(ThermoNASAPolynomial self, float T)
+	cpdef double getEntropy(ThermoNASAPolynomial self, double T)
 	
-	cpdef float getFreeEnergy(ThermoNASAPolynomial self, float T)
+	cpdef double getFreeEnergy(ThermoNASAPolynomial self, double T)
 	
-	cpdef float integral2_T0(ThermoNASAPolynomial self, float t)
+	cpdef double integral2_T0(ThermoNASAPolynomial self, double t)
 	
-	cpdef float integral2_TM1(ThermoNASAPolynomial self, float t)
+	cpdef double integral2_TM1(ThermoNASAPolynomial self, double t)
 	
 
 ################################################################################
