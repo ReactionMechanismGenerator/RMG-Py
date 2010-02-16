@@ -941,7 +941,7 @@ def convertGAtoWilhoit(GAthermo, atoms, rotors, linear, fixedB=1, Bmin=300.0, Bm
 
 	#print a warning if the rms fit is worse that 0.25*R
 	if (err>0.25):
-		logging.warning("Poor GA-to-Wilhoit fit qualityy: err = %s" % err)
+		logging.warning("Poor GA-to-Wilhoit fit quality: err = %s" % err)
 	
 	return WilhoitThermo
 
