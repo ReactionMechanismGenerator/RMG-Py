@@ -504,7 +504,7 @@ class BatchReactor(ReactionSystem):
 				conversion = 1.0 - y[index] / y0[index]
 				status += '    %8.4g' % (conversion)
 		status += '    %8.4e    %8.4g  %s' % (charFlux, maxSpeciesFlux, maxSpecies)
-		logging.debug(status)
+		logging.verbose(status)
 
 	def postprocess(self, model, t, y, dydt, label=''):
 		"""

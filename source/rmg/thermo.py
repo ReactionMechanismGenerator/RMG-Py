@@ -941,8 +941,8 @@ def convertGAtoWilhoit(GAthermo, atoms, rotors, linear, fixedB=1, Bmin=300.0, Bm
 
 	#print a warning if the rms fit is worse that 0.25*R
 	if (err>0.25):
-		logging.warning("Poor GA-to-Wilhoit fit quality: "+WilhoitThermo.comment + " GAthermo: "+ str(GAthermo))
-
+		logging.warning("Poor GA-to-Wilhoit fit qualityy: err = %s" % err)
+	
 	return WilhoitThermo
 
 def GA2Wilhoit(B, T_list, Cp_list, cp0, cpInf):
@@ -1053,7 +1053,7 @@ def convertWilhoitToNASA(Wilhoit, fixed=1, weighting=1, tint=1000.0, Tmin = 298.
 
 	#print a warning if the rms fit is worse that 0.25*R
 	if(rmsUnw > 0.25 or rmsWei > 0.25):
-		logging.warning("Poor Wilhoit-to-NASA fit quality: "+rmsStr + " Wilhoit: "+ str(Wilhoit))
+		logging.warning("Poor Wilhoit-to-NASA fit quality: RMS error = %s" % (rmsWei if weighting == 1 else rmsUnw))
 		
 	#restore to conventional units of K for Tint and units based on K rather than kK in NASA polynomial coefficients
 	tint=tint*1000.

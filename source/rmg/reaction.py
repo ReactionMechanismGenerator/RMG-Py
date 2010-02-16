@@ -1969,7 +1969,9 @@ class ReactionFamilySet:
 		this list will not be loaded (e.g. only_families=['H_Abstraction'] )
 		"""
 		
-		logging.debug('\tLoading reaction families:')
+		datapath = os.path.abspath(datapath)
+
+		logging.info('Loading reaction family databases from %s...' % datapath)
 		
 		# Load the families from kinetics/families.txt
 		familyList = []
@@ -1995,16 +1997,17 @@ class ReactionFamilySet:
 		for index, status, label in familyList:
 			path = os.path.join(datapath, 'kinetics', label)
 			if os.path.isdir(path) and status.lower() == 'on':
+
 				# skip families not in only_families, if it's set
 				if only_families and label not in only_families: continue
+
+				logging.info('Loading reaction family %s from %s...' % (label, datapath))
 				family = ReactionFamily(label)
 				family.load(path)
 				self.families[family.label] = family
-				logging.debug('\t\t' + family.label)
 				if family.reverse is not None:
 					self.families[family.reverse.label] = family.reverse
-					logging.debug('\t\t' + family.reverse.label)
-	
+
 	def getReactions(self, species):
 		"""
 		Generate a list of reactions that involve a list of one or two `species`
@@ -2187,7 +2190,7 @@ def makeNewReaction(reactants, products, reactantStructures, productStructures, 
 	reverse.kinetics = reverseKinetics
 
 	# Note in the log
-	logging.debug('Creating new ' + str(rxn.family) + ' reaction ' + str(rxn))
+	logging.verbose('Creating new %s reaction %s' % (rxn.family, rxn))
 
 	return processNewReaction(rxn)
 

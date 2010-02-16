@@ -442,10 +442,13 @@ class CoreEdgeReactionModel:
 		from reaction import PDepReaction
 		from kinetics import ChebyshevKinetics, PDepArrheniusKinetics
 
+		count = sum([1 for network in self.unirxnNetworks if not network.valid])
+		logging.info('Updating %i modified unimolecular reaction networks...' % count)
+
 		for network in self.unirxnNetworks:
 			if not network.valid:
 
-				logging.debug('Updating unimolecular reaction network %s' % network.id)
+				logging.verbose('Updating unimolecular reaction network %s' % network.id)
 
 				# Other inputs
 				method, Tlist, Plist, grainSize, numGrains, model = settings.unimolecularReactionNetworks

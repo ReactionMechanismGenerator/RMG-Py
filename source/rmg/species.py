@@ -700,7 +700,7 @@ def makeNewSpecies(structure, label='', reactive=True):
 	
 	# Note in the log
 	spec = Species(speciesCounter+1, label, structure, reactive)
-	logging.debug('Creating new species %s' % str(spec))
+	logging.verbose('Creating new species %s' % str(spec))
 	return processNewSpecies(spec)
 
 def processNewSpecies(spec):
@@ -884,42 +884,44 @@ class ThermoDatabaseSet:
 		database specified at `datapath`.
 		"""
 
-		logging.debug('\tThermodynamics databases:')
+		datapath = os.path.abspath(datapath)
 
-		self.groupDatabase.load(datapath + 'thermo/Group_Dictionary.txt', \
-			datapath + 'thermo/Group_Tree.txt', \
-			datapath + 'thermo/Group_Library.txt')
-		logging.debug('\t\tFunctional groups')
+		logging.info('Loading thermodynamics databases from %s...' % datapath)
 
-		self.int15Database.load(datapath + 'thermo/15_Dictionary.txt', \
-			datapath + 'thermo/15_Tree.txt', \
-			datapath + 'thermo/15_Library.txt')
-		logging.debug('\t\t1,5 interactions')
+		logging.verbose('Loading functional group thermo database from %s...' % datapath)
+		self.groupDatabase.load(datapath + '/thermo/Group_Dictionary.txt', \
+			datapath + '/thermo/Group_Tree.txt', \
+			datapath + '/thermo/Group_Library.txt')
+		
+		logging.verbose('Loading 1,5 interactions thermo database from %s...' % datapath)
+		self.int15Database.load(datapath + '/thermo/15_Dictionary.txt', \
+			datapath + '/thermo/15_Tree.txt', \
+			datapath + '/thermo/15_Library.txt')
+		
+		logging.verbose('Loading gauche interactions thermo database from %s...' % datapath)
+		self.gaucheDatabase.load(datapath + '/thermo/Gauche_Dictionary.txt', \
+			datapath + '/thermo/Gauche_Tree.txt', \
+			datapath + '/thermo/Gauche_Library.txt')
+		
+		logging.verbose('Loading radical corrections thermo database from %s...' % datapath)
+		self.radicalDatabase.load(datapath + '/thermo/Radical_Dictionary.txt', \
+			datapath + '/thermo/Radical_Tree.txt', \
+			datapath + '/thermo/Radical_Library.txt')
+		
+		logging.verbose('Loading ring corrections thermo database from %s...' % datapath)
+		self.ringDatabase.load(datapath + '/thermo/Ring_Dictionary.txt', \
+			datapath + '/thermo/Ring_Tree.txt', \
+			datapath + '/thermo/Ring_Library.txt')
+		
+		logging.verbose('Loading other corrections thermo database from %s...' % datapath)
+		self.otherDatabase.load(datapath + '/thermo/Other_Dictionary.txt', \
+			datapath + '/thermo/Other_Tree.txt', \
+			datapath + '/thermo/Other_Library.txt')
 
-		self.gaucheDatabase.load(datapath + 'thermo/Gauche_Dictionary.txt', \
-			datapath + 'thermo/Gauche_Tree.txt', \
-			datapath + 'thermo/Gauche_Library.txt')
-		logging.debug('\t\tGauche interactions')
-
-		self.otherDatabase.load(datapath + 'thermo/Other_Dictionary.txt', \
-			datapath + 'thermo/Other_Tree.txt', \
-			datapath + 'thermo/Other_Library.txt')
-		logging.debug('\t\tOther corrections')
-
-		self.radicalDatabase.load(datapath + 'thermo/Radical_Dictionary.txt', \
-			datapath + 'thermo/Radical_Tree.txt', \
-			datapath + 'thermo/Radical_Library.txt')
-		logging.debug('\t\tRadical corrections')
-
-		self.ringDatabase.load(datapath + 'thermo/Ring_Dictionary.txt', \
-			datapath + 'thermo/Ring_Tree.txt', \
-			datapath + 'thermo/Ring_Library.txt')
-		logging.debug('\t\tRing corrections')
-
-		self.primaryDatabase.load(datapath + 'thermo/Primary_Dictionary.txt', \
+		logging.verbose('Loading primary thermo database from %s...' % datapath)
+		self.primaryDatabase.load(datapath + '/thermo/Primary_Dictionary.txt', \
 			'', \
-			datapath + 'thermo/Primary_Library.txt')
-		logging.debug('\t\tPrimary thermo database')
+			datapath + '/thermo/Primary_Library.txt')
 
 	def saveXML(self, datapath):
 		"""
@@ -1075,6 +1077,8 @@ def getThermoData(struct, required_class=thermo.ThermoNASAData): # ThermoGAData
 	struct.calculateSymmetryNumber()
 	GAthermoData.S298 -= constants.R * math.log(struct.symmetryNumber)
 
+	logging.debug('Group-additivity thermo data: %s' % GAthermoData)
+
 	if required_class==thermo.ThermoGAData:
 		return GAthermoData  # return here because Wilhoit conversion not wanted
 
@@ -1084,18 +1088,22 @@ def getThermoData(struct, required_class=thermo.ThermoNASAData): # ThermoGAData
 	linear = struct.isLinear()
 	WilhoitData = thermo.convertGAtoWilhoit(GAthermoData,atoms,rotors,linear)
 
+	logging.debug('Wilhoit thermo data: %s' % WilhoitData)
+
 	if required_class==thermo.ThermoWilhoitData:
 		return WilhoitData
 
 	# Convert to NASA
 	NASAthermoData = thermo.convertWilhoitToNASA(WilhoitData)
 
+	logging.debug('NASA thermo data: %s' % NASAthermoData)
+
 	# compute the error for the entire conversion, printing it as info or warning (if it is sufficiently high)
 	rmsErr = NASAthermoData.rmsErr(GAthermoData)
 	if(rmsErr > 0.35):
-	    logging.warning("Poor overall GA-to-NASA fit: Overall RMS error in heat capacity fit = %.3f*R;"%(rmsErr) + " Struct: "+str(struct)+" GAthermoData: "+ str(GAthermoData))
+	    logging.warning("Poor overall GA-to-NASA fit: Overall RMS error in heat capacity fit = %.3f*R." % (rmsErr))
 	else:
-	    logging.info("Overall RMS error in heat capacity fit = %.3f*R;"%(rmsErr)+ " Struct: "+str(struct)+" GAthermoData: "+ str(GAthermoData))
+	    logging.debug("Overall RMS error in heat capacity fit = %.3f*R" % (rmsErr))
 
 	if required_class==thermo.ThermoNASAData:
 		return NASAthermoData

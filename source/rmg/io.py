@@ -420,15 +420,15 @@ def readInputFile(fstr):
 		databases = readDatabaseList(xml0, rootElement)
 		for database in databases:
 			if database[1] == 'general':
-				logging.debug('General database: ' + database[2])
+				logging.verbose('General database: ' + database[2])
 				# Load all databases
 				loadThermoDatabase(database[2] + os.sep)
 				loadKineticsDatabase(database[2] + os.sep)
 				loadFrequencyDatabase(database[2] + os.sep)
 			elif database[1] == 'seedmechanism':
-				logging.debug('Seed mechanism: ' + database[2])
+				logging.verbose('Seed mechanism: ' + database[2])
 				reactionModel.loadSeedMechanism(database[2])
-			logging.debug('')
+			logging.verbose('')
 			
 		# Process species
 		coreSpecies = []; speciesDict = {}
@@ -459,6 +459,7 @@ def readInputFile(fstr):
 				spec = existingSpecies
 			else:
 				# Handle other aspects of RMG species creation
+				logging.verbose('Creating new species %s' % str(spec))
 				species.processNewSpecies(spec)
 
 			# All species in RMG input file are immediately added to the core
@@ -467,7 +468,7 @@ def readInputFile(fstr):
 			# Add to local species dictionary (for matching with other parts of file)
 			speciesDict[sid] = spec
 
-		logging.debug('')
+		logging.verbose('')
 		
 		# Read model flux tolerance
 		fluxTolerance = xml0.getChildElement(rootElement, 'fluxTolerance')

@@ -176,37 +176,37 @@ def execute(inputFile, options):
 				objectsToEnlarge.append(obj)
 				done = False
 
-		# Enlarge objects identified by the simulation for enlarging
-		# These should be Species or Network objects
-		logging.info('')
-		objectsToEnlarge = list(set(objectsToEnlarge))
-		for object in objectsToEnlarge:
-			reactionModel.enlarge(object)
-		
-		# Handle unimolecular (pressure dependent) reaction networks
-		if settings.unimolecularReactionNetworks:
-			reactionModel.updateUnimolecularReactionNetworks()
-			logging.info('')
-
-		# Save the restart file
-		# In order to get all the references preserved, you must pickle all of
-		# the objects in one concerted dump; this also has the added benefits
-		# of using less space and running faster
-		import cPickle
-		logging.info('Saving restart file...')
-		f = open(os.path.join(settings.outputDirectory,'restart.pkl'), 'wb')
-		cPickle.dump((
-			species.speciesList,
-			species.speciesCounter,
-			reaction.reactionList,
-			reactionModel,
-			reactionSystems),
-			f)
-		f.close()
-
 		if not done:
-			logging.info('Updating RMG execution statistics...')
+			# Enlarge objects identified by the simulation for enlarging
+			# These should be Species or Network objects
+			logging.info('')
+			objectsToEnlarge = list(set(objectsToEnlarge))
+			for object in objectsToEnlarge:
+				reactionModel.enlarge(object)
+
+			# Handle unimolecular (pressure dependent) reaction networks
+			if settings.unimolecularReactionNetworks:
+				reactionModel.updateUnimolecularReactionNetworks()
+				logging.info('')
+
+			# Save the restart file
+			# In order to get all the references preserved, you must pickle all of
+			# the objects in one concerted dump; this also has the added benefits
+			# of using less space and running faster
+			import cPickle
+			logging.info('Saving restart file...')
+			f = open(os.path.join(settings.outputDirectory,'restart.pkl'), 'wb')
+			cPickle.dump((
+				species.speciesList,
+				species.speciesCounter,
+				reaction.reactionList,
+				reactionModel,
+				reactionSystems),
+				f)
+			f.close()
+
 			# Update RMG execution statistics
+			logging.info('Updating RMG execution statistics...')
 			coreSpeciesCount.append(len(reactionModel.core.species))
 			coreReactionCount.append(len(reactionModel.core.reactions))
 			edgeSpeciesCount.append(len(reactionModel.edge.species))

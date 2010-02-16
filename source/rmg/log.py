@@ -65,10 +65,19 @@ from logging import critical, error, warning, info, debug, log, \
 ################################################################################
 
 VERBOSE = 15
-addLevelName(VERBOSE, 'VERBOSE')
 
-def verbose(msg, *args, **kwargs):
-	log(15, msg, args, kwargs)
+addLevelName(CRITICAL, 'Critical: ')
+addLevelName(ERROR, 'Error: ')
+addLevelName(WARNING, 'Warning: ')
+addLevelName(INFO, '')
+addLevelName(VERBOSE, '')
+addLevelName(DEBUG, '')
+
+#def verbose(msg, *args, **kwargs):
+#	log(15, msg, args, kwargs)
+
+def verbose(msg):
+	log(15, msg)
 
 ################################################################################
 
@@ -89,7 +98,8 @@ def initialize(verbose, fstr):
 
 	# Create formatter and add to console handler
 	#formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s', '%Y-%m-%d %H:%M:%S')
-	formatter = Formatter('%(message)s', '%Y-%m-%d %H:%M:%S')
+	#formatter = Formatter('%(message)s', '%Y-%m-%d %H:%M:%S')
+	formatter = Formatter('%(levelname)s%(message)s')
 	ch.setFormatter(formatter)
 
 	# create file handler
