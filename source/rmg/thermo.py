@@ -1306,14 +1306,7 @@ def TintOpt_objFun_NW(tint, wilhoit, tmin, tmax):
 	nasa_low, nasa_high = Wilhoit2NASA(wilhoit,tmin,tmax,tint, 0)
 	b1, b2, b3, b4, b5 = nasa_low.c0, nasa_low.c1, nasa_low.c2, nasa_low.c3, nasa_low.c4
 	b6, b7, b8, b9, b10 = nasa_high.c0, nasa_high.c1, nasa_high.c2, nasa_high.c3, nasa_high.c4
-	#this is the old version of the integral; I have replaced with the version below to better handle cases where result is close to zero (e.g. when heat capacity is constant and b2-b5 and b7-b10 are close to zero; otherwise, there can be numerical difficulties); change I made was to group difference in integrals rather than difference in b values in the final terms in the computation
-	#result = (wilhoit.integral2_T0(tmax) - wilhoit.integral2_T0(tmin) +
-	#			 nasa_low.integral2_T0(tint)-nasa_low.integral2_T0(tmin) + nasa_high.integral2_T0(tmax) - nasa_high.integral2_T0(tint)
-	#			 - 2* (b6*wilhoit.integral_T0(tmax)+(b1-b6)*wilhoit.integral_T0(tint) - b1*wilhoit.integral_T0(tmin)
-	#			 +b7*wilhoit.integral_T1(tmax)+(b2-b7)*wilhoit.integral_T1(tint) - b2*wilhoit.integral_T1(tmin)
-	#			 +b8*wilhoit.integral_T2(tmax)+(b3-b8)*wilhoit.integral_T2(tint) - b3*wilhoit.integral_T2(tmin)
-	#			 +b9*wilhoit.integral_T3(tmax)+(b4-b9)*wilhoit.integral_T3(tint) - b4*wilhoit.integral_T3(tmin)
-	#			 +b10*wilhoit.integral_T4(tmax)+(b5-b10)*wilhoit.integral_T4(tint) - b5*wilhoit.integral_T4(tmin)))
+
 	q0=wilhoit.integral_T0(tint)
 	q1=wilhoit.integral_T1(tint)
 	q2=wilhoit.integral_T2(tint)
@@ -1327,7 +1320,6 @@ def TintOpt_objFun_NW(tint, wilhoit, tmin, tmax):
 				 +b9*(wilhoit.integral_T3(tmax) - q3) +b4*(q3 - wilhoit.integral_T3(tmin))
 				 +b10*(wilhoit.integral_T4(tmax) - q4)+b5*(q4 - wilhoit.integral_T4(tmin))))
 
-	#print result
 	return result
 
 def TintOpt_objFun_W(tint, wilhoit, tmin, tmax):
@@ -1344,14 +1336,7 @@ def TintOpt_objFun_W(tint, wilhoit, tmin, tmax):
 	nasa_low, nasa_high = Wilhoit2NASA(wilhoit,tmin,tmax,tint, 1)
 	b1, b2, b3, b4, b5 = nasa_low.c0, nasa_low.c1, nasa_low.c2, nasa_low.c3, nasa_low.c4
 	b6, b7, b8, b9, b10 = nasa_high.c0, nasa_high.c1, nasa_high.c2, nasa_high.c3, nasa_high.c4
-	#see analogous comment in TintOpt_objFun_NW
-	#result = (wilhoit.integral2_TM1(tmax) - wilhoit.integral2_TM1(tmin) +
-	#			 nasa_low.integral2_TM1(tint)-nasa_low.integral2_TM1(tmin) + nasa_high.integral2_TM1(tmax) - nasa_high.integral2_TM1(tint)
-	#			 - 2* (b6*wilhoit.integral_TM1(tmax)+(b1-b6)*wilhoit.integral_TM1(tint) - b1*wilhoit.integral_TM1(tmin)
-	#			 +b7*wilhoit.integral_T0(tmax)+(b2-b7)*wilhoit.integral_T0(tint) - b2*wilhoit.integral_T0(tmin)
-	#			 +b8*wilhoit.integral_T1(tmax)+(b3-b8)*wilhoit.integral_T1(tint) - b3*wilhoit.integral_T1(tmin)
-	#			 +b9*wilhoit.integral_T2(tmax)+(b4-b9)*wilhoit.integral_T2(tint) - b4*wilhoit.integral_T2(tmin)
-	#			 +b10*wilhoit.integral_T3(tmax)+(b5-b10)*wilhoit.integral_T3(tint) - b5*wilhoit.integral_T3(tmin)))
+
 	qM1=wilhoit.integral_TM1(tint)
 	q0=wilhoit.integral_T0(tint)
 	q1=wilhoit.integral_T1(tint)
@@ -1365,7 +1350,6 @@ def TintOpt_objFun_W(tint, wilhoit, tmin, tmax):
 				 +b9*(wilhoit.integral_T2(tmax)-q2)+b4*(q2 - wilhoit.integral_T2(tmin))
 				 +b10*(wilhoit.integral_T3(tmax)-q3)+b5*(q3 - wilhoit.integral_T3(tmin))))
 
-	#print result
 	return result
 
 ################################################################################
