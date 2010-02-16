@@ -430,7 +430,7 @@ class ThermoWilhoitToNASACheck(unittest.TestCase):
 		"""
 		w = thermo.ThermoWilhoitData(3.0,6.0,1.0,-2.0,3.0,-4.0,1234.5,789.0,B=0.5)
 		ans = w.integral_TM1(6.0) - w.integral_TM1(.298)
-		self.assertAlmostEqual(ans, 14.05184933947314, 16)
+		self.assertAlmostEqual(ans, 14.05184933947314, 14)
 
 	def testWilhoitIntegralT0(self):
 		"""Check Wilhoit.IntegralT0
@@ -438,7 +438,7 @@ class ThermoWilhoitToNASACheck(unittest.TestCase):
 		"""
 		w = thermo.ThermoWilhoitData(3.0,6.0,1.0,-2.0,3.0,-4.0,1234.5,789.0,B=0.5)
 		ans = w.integral_T0(6.0) - w.integral_T0(.298)
-		self.assertAlmostEqual(ans, 30.156466842356952, 16)
+		self.assertAlmostEqual(ans, 30.156466842356952, 14)
 
 	def testWilhoitIntegralT1(self):
 		"""Check Wilhoit.IntegralT1
@@ -478,7 +478,7 @@ class ThermoWilhoitToNASACheck(unittest.TestCase):
 		"""
 		w = thermo.ThermoWilhoitData(3.0,6.0,1.0,-2.0,3.0,-4.0,1234.5,789.0,B=0.5)
 		ans = w.integral2_TM1(6.0) - w.integral2_TM1(.298)
-		self.assertAlmostEqual(ans, 67.864846008944539, 16)
+		self.assertAlmostEqual(ans, 67.864846008944539, 13)
 
 	def testWilhoitIntegral2T0(self):
 		"""Check Wilhoit.Integral2_T0
@@ -486,7 +486,7 @@ class ThermoWilhoitToNASACheck(unittest.TestCase):
 		"""
 		w = thermo.ThermoWilhoitData(3.0,6.0,1.0,-2.0,3.0,-4.0,1234.5,789.0,B=0.5)
 		ans = w.integral2_T0(6.0) - w.integral2_T0(.298)
-		self.assertAlmostEqual(ans, 161.77012800697503, 16)
+		self.assertAlmostEqual(ans, 161.77012800697503, 13)
 
 	def testNASAIntegral2TM1(self):
 		"""Check NASA.Integral2_TM1
@@ -494,7 +494,7 @@ class ThermoWilhoitToNASACheck(unittest.TestCase):
 		"""
 		n = thermo.ThermoNASAPolynomial(T_range=[.298,1.000], coeffs = [1, -.2, .3, -.4, .5, -6, 7])
 		ans = n.integral2_TM1(1.0) - n.integral2_TM1(.298)
-		self.assertAlmostEqual(ans, 1.1958658319514555, 16)
+		self.assertAlmostEqual(ans, 1.1958658319514555, 15)
 
 	def testNASAIntegral2T0(self):
 		"""Check NASA.Integral2_T0
@@ -502,7 +502,7 @@ class ThermoWilhoitToNASACheck(unittest.TestCase):
 		"""
 		n = thermo.ThermoNASAPolynomial(T_range=[.298,1.000], coeffs = [1, -.2, .3, -.4, .5, -6, 7])
 		ans = n.integral2_T0(1.0) - n.integral2_T0(.298)
-		self.assertAlmostEqual(ans, 0.71887383097545454, 16)
+		self.assertAlmostEqual(ans, 0.71887383097545454, 15)
 
 ################################################################################
 
