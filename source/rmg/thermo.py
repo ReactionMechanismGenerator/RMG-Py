@@ -202,7 +202,7 @@ class ThermoGAData(ThermoData):
 		elif T > ThermoGAData.CpTlist[-1]:
 			return self.Cp[-1]
 		else:
-			cython.declare(Tmin=cython.float, Tmax=cython.float, Cpmin=cython.float, Cpmax=cython.float)
+			cython.declare(Tmin=cython.double, Tmax=cython.double, Cpmin=cython.double, Cpmax=cython.double)
 			for Tmin, Tmax, Cpmin, Cpmax in zip(ThermoGAData.CpTlist[:-1], \
 					ThermoGAData.CpTlist[1:], self.Cp[:-1], self.Cp[1:]):
 				if Tmin <= T and T <= Tmax:
@@ -213,8 +213,8 @@ class ThermoGAData(ThermoData):
 		Return the enthalpy in J/mol at temperature `T` in K.
 		"""	
 		
-		cython.declare(H=cython.float, slope=cython.float, intercept=cython.float,
-		     Tmin=cython.float, Tmax=cython.float, Cpmin=cython.float, Cpmax=cython.float)
+		cython.declare(H=cython.double, slope=cython.double, intercept=cython.double,
+		     Tmin=cython.double, Tmax=cython.double, Cpmin=cython.double, Cpmax=cython.double)
 		
 		H = self.H298
 		if not self.isTemperatureValid(T):
@@ -367,8 +367,8 @@ class ThermoNASAPolynomial(ThermoData):
 		"""
 		if not self.isTemperatureValid(T):
 			raise data.TemperatureOutOfRangeException('Invalid temperature for heat capacity estimation from NASA polynomial.')
-		T2 = cython.declare(cython.float)
-		HeatCapacityOverR = cython.declare(cython.float)
+		T2 = cython.declare(cython.double)
+		HeatCapacityOverR = cython.declare(cython.double)
 		
 		T2 = T*T
 		# Cp/R = a1 + a2 T + a3 T^2 + a4 T^3 + a5 T^4
@@ -382,9 +382,9 @@ class ThermoNASAPolynomial(ThermoData):
 		"""
 		if not self.isTemperatureValid(T):
 			raise data.TemperatureOutOfRangeException('Invalid temperature for enthalpy estimation from NASA polynomial.')
-		T2 = cython.declare(cython.float)
-		T4 = cython.declare(cython.float)
-		EnthalpyOverR = cython.declare(cython.float)
+		T2 = cython.declare(cython.double)
+		T4 = cython.declare(cython.double)
+		EnthalpyOverR = cython.declare(cython.double)
 		
 		T2 = T*T
 		T4 = T2*T2
@@ -400,9 +400,9 @@ class ThermoNASAPolynomial(ThermoData):
 		if not self.isTemperatureValid(T):
 			raise data.TemperatureOutOfRangeException('Invalid temperature for entropy estimation from NASA polynomial.')
 		# S/R  = a1 lnT + a2 T + a3 T^2 /2 + a4 T^3 /3 + a5 T^4 /4 + a7
-		T2 = cython.declare(cython.float)
-		T4 = cython.declare(cython.float)
-		EntropyOverR = cython.declare(cython.float)
+		T2 = cython.declare(cython.double)
+		T4 = cython.declare(cython.double)
+		EntropyOverR = cython.declare(cython.double)
 		
 		T2 = T*T
 		T4 = T2*T2
@@ -449,8 +449,8 @@ class ThermoNASAPolynomial(ThermoData):
 		#input: NASA parameters for Cp/R, c1, c2, c3, c4, c5 (either low or high temp parameters), temperature t (in kiloKelvin; an endpoint of the low or high temp range
 		#output: the quantity Integrate[(Cp(NASA)/R)^2, t'] evaluated at t'=t 
 		#can speed further by precomputing and storing e.g. thigh^2, tlow^2, etc.
-		cython.declare(c1=cython.float, c2=cython.float,c3=cython.float,c4=cython.float,c5=cython.float)
-		cython.declare(result=cython.float)
+		cython.declare(c1=cython.double, c2=cython.double,c3=cython.double,c4=cython.double,c5=cython.double)
+		cython.declare(result=cython.double)
 		c1, c2, c3, c4, c5 = self.c0, self.c1, self.c2, self.c3, self.c4
 		result = c1*c1*t + c1*c2*t*t + (2*c1*c3+c2*c2)/3*t*t*t + (c1*c4+c2*c3)/2*t*t*t*t + (2*c1*c5 + 2*c2*c4 + c3*c3)/5*t*t*t*t*t + (c2*c5 + c3*c4)/3*t*t*t*t*t*t + (2*c3*c5 + c4*c4)/7*t*t*t*t*t*t*t + c4*c5/4*t*t*t*t*t*t*t*t + c5*c5/9*t*t*t*t*t*t*t*t*t
 		return result
@@ -459,8 +459,8 @@ class ThermoNASAPolynomial(ThermoData):
 		#input: NASA parameters for Cp/R, c1, c2, c3, c4, c5 (either low or high temp parameters), temperature t (in kiloKelvin; an endpoint of the low or high temp range
 		#output: the quantity Integrate[(Cp(NASA)/R)^2*t^-1, t'] evaluated at t'=t 
 		#can speed further by precomputing and storing e.g. thigh^2, tlow^2, etc.
-		cython.declare(c1=cython.float, c2=cython.float,c3=cython.float,c4=cython.float,c5=cython.float)
-		cython.declare(result=cython.float)
+		cython.declare(c1=cython.double, c2=cython.double,c3=cython.double,c4=cython.double,c5=cython.double)
+		cython.declare(result=cython.double)
 		c1, c2, c3, c4, c5 = self.c0, self.c1, self.c2, self.c3, self.c4
 		if cython.compiled: # we've imported log from math.h in the pxd file
 			result = c1*c1*log(t)
@@ -728,8 +728,8 @@ class ThermoWilhoitData(ThermoData):
 	#a faster version of the integral based on H from Yelvington's thesis; it differs from the original (see above) by a constant (dependent on parameters but independent of t)
 	def integral_T0(self, t):
 		#output: the quantity Integrate[Cp(Wilhoit)/R, t'] evaluated at t'=t
-		cython.declare(cp0=cython.float, cpInf=cython.float, B=cython.float, a0=cython.float, a1=cython.float, a2=cython.float, a3=cython.float)
-		cython.declare(y=cython.float, y2=cython.float, logBplust=cython.float, result=cython.float)
+		cython.declare(cp0=cython.double, cpInf=cython.double, B=cython.double, a0=cython.double, a1=cython.double, a2=cython.double, a3=cython.double)
+		cython.declare(y=cython.double, y2=cython.double, logBplust=cython.double, result=cython.double)
 		cp0, cpInf, B, a0, a1, a2, a3 = self.cp0, self.cpInf, self.B, self.a0, self.a1, self.a2, self.a3
 		y = t/(t+B)
 		y2 = y*y
@@ -743,8 +743,8 @@ class ThermoWilhoitData(ThermoData):
 	#a faster version of the integral based on S from Yelvington's thesis; it differs from the original by a constant (dependent on parameters but independent of t)
 	def integral_TM1(self, t):
 		#output: the quantity Integrate[Cp(Wilhoit)/R*t^-1, t'] evaluated at t'=t
-		cython.declare(cp0=cython.float, cpInf=cython.float, B=cython.float, a0=cython.float, a1=cython.float, a2=cython.float, a3=cython.float)
-		cython.declare(y=cython.float, logt=cython.float, logy=cython.float, result=cython.float)
+		cython.declare(cp0=cython.double, cpInf=cython.double, B=cython.double, a0=cython.double, a1=cython.double, a2=cython.double, a3=cython.double)
+		cython.declare(y=cython.double, logt=cython.double, logy=cython.double, result=cython.double)
 		cp0, cpInf, B, a0, a1, a2, a3 = self.cp0, self.cpInf, self.B, self.a0, self.a1, self.a2, self.a3
 		y = t/(t+B)
 		if cython.compiled:
@@ -756,8 +756,8 @@ class ThermoWilhoitData(ThermoData):
 	
 	def integral_T1(self, t):
 		#output: the quantity Integrate[Cp(Wilhoit)/R*t, t'] evaluated at t'=t
-		cython.declare(cp0=cython.float, cpInf=cython.float, B=cython.float, a0=cython.float, a1=cython.float, a2=cython.float, a3=cython.float)
-		cython.declare(logBplust=cython.float, result=cython.float)
+		cython.declare(cp0=cython.double, cpInf=cython.double, B=cython.double, a0=cython.double, a1=cython.double, a2=cython.double, a3=cython.double)
+		cython.declare(logBplust=cython.double, result=cython.double)
 		cp0, cpInf, B, a0, a1, a2, a3 = self.cp0, self.cpInf, self.B, self.a0, self.a1, self.a2, self.a3
 		if cython.compiled:
 			logBplust = log(B + t)
@@ -770,8 +770,8 @@ class ThermoWilhoitData(ThermoData):
 	
 	def integral_T2(self, t):
 		#output: the quantity Integrate[Cp(Wilhoit)/R*t^2, t'] evaluated at t'=t
-		cython.declare(cp0=cython.float, cpInf=cython.float, B=cython.float, a0=cython.float, a1=cython.float, a2=cython.float, a3=cython.float)
-		cython.declare(logBplust=cython.float, result=cython.float)
+		cython.declare(cp0=cython.double, cpInf=cython.double, B=cython.double, a0=cython.double, a1=cython.double, a2=cython.double, a3=cython.double)
+		cython.declare(logBplust=cython.double, result=cython.double)
 		cp0, cpInf, B, a0, a1, a2, a3 = self.cp0, self.cpInf, self.B, self.a0, self.a1, self.a2, self.a3
 		if cython.compiled:
 			logBplust = log(B + t)
@@ -784,8 +784,8 @@ class ThermoWilhoitData(ThermoData):
 
 	def integral_T3(self, t):
 		#output: the quantity Integrate[Cp(Wilhoit)/R*t^3, t'] evaluated at t'=t
-		cython.declare(cp0=cython.float, cpInf=cython.float, B=cython.float, a0=cython.float, a1=cython.float, a2=cython.float, a3=cython.float)
-		cython.declare(logBplust=cython.float, result=cython.float)
+		cython.declare(cp0=cython.double, cpInf=cython.double, B=cython.double, a0=cython.double, a1=cython.double, a2=cython.double, a3=cython.double)
+		cython.declare(logBplust=cython.double, result=cython.double)
 		cp0, cpInf, B, a0, a1, a2, a3 = self.cp0, self.cpInf, self.B, self.a0, self.a1, self.a2, self.a3
 		if cython.compiled:
 			logBplust = log(B + t)
@@ -799,8 +799,8 @@ class ThermoWilhoitData(ThermoData):
 
 	def integral_T4(self, t):
 		#output: the quantity Integrate[Cp(Wilhoit)/R*t^4, t'] evaluated at t'=t
-		cython.declare(cp0=cython.float, cpInf=cython.float, B=cython.float, a0=cython.float, a1=cython.float, a2=cython.float, a3=cython.float)
-		cython.declare(logBplust=cython.float, result=cython.float)
+		cython.declare(cp0=cython.double, cpInf=cython.double, B=cython.double, a0=cython.double, a1=cython.double, a2=cython.double, a3=cython.double)
+		cython.declare(logBplust=cython.double, result=cython.double)
 		cp0, cpInf, B, a0, a1, a2, a3 = self.cp0, self.cpInf, self.B, self.a0, self.a1, self.a2, self.a3
 		if cython.compiled:
 			logBplust = log(B + t)
@@ -814,8 +814,8 @@ class ThermoWilhoitData(ThermoData):
 
 	def integral2_T0(self, t):
 		#output: the quantity Integrate[(Cp(Wilhoit)/R)^2, t'] evaluated at t'=t
-		cython.declare(cp0=cython.float, cpInf=cython.float, B=cython.float, a0=cython.float, a1=cython.float, a2=cython.float, a3=cython.float)
-		cython.declare(logBplust=cython.float, result=cython.float)
+		cython.declare(cp0=cython.double, cpInf=cython.double, B=cython.double, a0=cython.double, a1=cython.double, a2=cython.double, a3=cython.double)
+		cython.declare(logBplust=cython.double, result=cython.double)
 		cp0, cpInf, B, a0, a1, a2, a3 = self.cp0, self.cpInf, self.B, self.a0, self.a1, self.a2, self.a3
 		if cython.compiled:
 			logBplust = log(B + t)
@@ -840,8 +840,8 @@ class ThermoWilhoitData(ThermoData):
 
 	def integral2_TM1(self, t):
 		#output: the quantity Integrate[(Cp(Wilhoit)/R)^2*t^-1, t'] evaluated at t'=t
-		cython.declare(cp0=cython.float, cpInf=cython.float, B=cython.float, a0=cython.float, a1=cython.float, a2=cython.float, a3=cython.float)
-		cython.declare(logBplust=cython.float, logt=cython.float, result=cython.float)
+		cython.declare(cp0=cython.double, cpInf=cython.double, B=cython.double, a0=cython.double, a1=cython.double, a2=cython.double, a3=cython.double)
+		cython.declare(logBplust=cython.double, logt=cython.double, result=cython.double)
 		cp0, cpInf, B, a0, a1, a2, a3 = self.cp0, self.cpInf, self.B, self.a0, self.a1, self.a2, self.a3
 		if cython.compiled:
 			logBplust = log(B + t); logt = log(t)
