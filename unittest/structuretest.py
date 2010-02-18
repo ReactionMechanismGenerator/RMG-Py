@@ -272,6 +272,12 @@ class StructureCheck(unittest.TestCase):
 					('C(=CC(c1ccccc1)C([CH]CCCCCC)C=Cc1ccccc1)[CH]CCCCCC', 1),
 					('[OH]', 1),#hydroxyl radical
 					('O=O', 2)#molecular oxygen
+					('[C][C]', 2)#C2
+					('[H][H]', 2)#H2
+					('C#C', 2)#acetylene
+					('C#CC#C', 2)#1,3-butadiyne
+					('C', 12)#methane
+					('C=O', 2)#formaldehyde
 					]
 		fail_message = ''
 		for smile,should_be in test_set:
