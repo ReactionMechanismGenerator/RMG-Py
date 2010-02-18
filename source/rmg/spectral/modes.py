@@ -282,7 +282,7 @@ class HinderedRotor:
 		self.barrier = float(self.barrier)
 
 		# Read <degeneracy> element
-		self.degeneracy = int(document.getTextElement(rootElement, 'degeneracy', required=False, default='1'))
+		self.degeneracy = int(document.getChildElementText(rootElement, 'degeneracy', required=False, default='1'))
 
 	def toXML(self, document, rootElement):
 		"""
@@ -370,7 +370,7 @@ class HarmonicOscillator:
 		self.frequency = float(self.frequency) * frequencyScaleFactor
 
 		# Read <degeneracy> element
-		self.degeneracy = int(document.getTextElement(rootElement, 'degeneracy', required=False, default='1'))
+		self.degeneracy = int(document.getChildElementText(rootElement, 'degeneracy', required=False, default='1'))
 	
 	def toXML(self, document, rootElement):
 		"""

@@ -257,7 +257,8 @@ def writeInputFile(fstr, network, Tlist, Plist, Elist, method, model):
 		species.structure[0].toXML(document, speciesElement)
 
 		# Write Lennard-Jones data
-		species.lennardJones.toXML(document, speciesElement)
+		if species.lennardJones:
+			species.lennardJones.toXML(document, speciesElement)
 
 		if species is network.bathGas:
 
