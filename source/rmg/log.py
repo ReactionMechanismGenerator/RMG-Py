@@ -58,7 +58,7 @@ import os
 import os.path
 import sys
 
-from logging import critical, error, warning, info, debug, log, \
+from logging import critical, exception, error, warning, info, debug, log, \
 	CRITICAL, ERROR, WARNING, INFO, DEBUG, \
 	addLevelName, getLogger, StreamHandler, Formatter, FileHandler
 
