@@ -46,18 +46,82 @@ function besseli(v, z) result(res)
     integer k, factorial
     real(8) term
     res = 0.0
-    do k = 0, 16 - v
-        term = (0.5 * z)**(v+2*k) / (factorial(k) * factorial(k+v))
+    do k = 0, 25 - v
+        term = (0.25 * z * z)**k / factorial(k) / factorial(k + v)
         res = res + term
-        if (abs(term / res) < 1.0e-8) return
+        if (abs(term / res) < 1.0e-8) then
+            res = res * (0.5 * z)**v
+            return
+        end if
     end do
+    ! If we're here, then we didn't reach that tolerance
+    ! Let's try a looser tolerance
+    res = 0.0
+    do k = 0, 25 - v
+        term = (0.25 * z * z)**k / factorial(k) / factorial(k + v)
+        res = res + term
+        if (abs(term / res) < 1.0e-6) then
+            res = res * (0.5 * z)**v
+            return
+        end if
+    end do
+    ! If we're here, then we didn't reach that tolerance either
+    ! Let's try one more looser tolerance
+    res = 0.0
+    do k = 0, 25 - v
+        term = (0.25 * z * z)**k / factorial(k) / factorial(k + v)
+        res = res + term
+        if (abs(term / res) < 1.0e-4) then
+            res = res * (0.5 * z)**v
+            return
+        end if
+    end do
+    ! If we're here, then something's really gone bad
+    ! Let's give up
+    write (*,*) 'Warning: Unable to determine value of modified Bessel function for v =', v, 'z =', z
+end function
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+recursive function besselratioperron(x, n) result(res)
+    ! Recursively evaluates Perron's continued fraction for the modified
+    ! Bessel function ratio I_1(x) / I_0(x) to 25 terms. A relevant citation is
+    !
+    ! W. Gautschi and J. Slavic. "On the Computation of Modified Bessel
+    ! Function Ratios." Mathematics of Computation 32 (143), p. 865-875 (1978).
+    
+    implicit none
+    real(8), intent(in) :: x
+    integer, intent(in) :: n
+    real(8) :: res
+
+    if (n >= 25) then
+        res = 0
+    else
+        res = (2 * n + 1) * x / (n + 2 + 2 * x - besselratioperron(x, n+1))
+    end if
+    
+end function
+
+function besselratio(x) result(res)
+    ! Computes the ratio of modified bessel functions I_1(x) / I_0(x) using
+    ! Perron's continued fraction.
+
+    implicit none
+    real(8), intent(in) :: x
+    real(8) :: res
+    
+    real(8) :: besselratioperron
+
+    res = x / (2 + x - besselratioperron(x, 1))
+
 end function
 
 function cellipk(x)
     implicit none
     real(8), intent(in) :: x
     real(8) :: cellipk
-    
+
     real(8) A0, B0, A, B
     integer n
 

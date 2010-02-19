@@ -326,7 +326,7 @@ subroutine hinderedRotor_heatCapacity(Tlist, nT, freq, barr, Cvlist)
 
     integer i
     real(8) x, z, exp_x, one_minus_exp_x, BB
-    real(8) besseli
+    real(8) besselratio
 
     do i = 1, nT
         x = 6.626e-34 * 2.9979e10 * freq / 1.381e-23 / Tlist(i)
@@ -334,7 +334,7 @@ subroutine hinderedRotor_heatCapacity(Tlist, nT, freq, barr, Cvlist)
         
         exp_x = exp(x)
         one_minus_exp_x = 1.0 - exp_x
-        BB = besseli(1, z) / besseli(0, z)
+        BB = besselratio(z)      !besseli(1, z) / besseli(0, z)
         
         Cvlist(i) = x * x * exp_x / one_minus_exp_x / one_minus_exp_x - 0.5 + &
             z * (z - BB - z * BB * BB)
