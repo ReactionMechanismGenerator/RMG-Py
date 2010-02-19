@@ -275,8 +275,16 @@ subroutine activeStateFull(T, P, E, Mcoll, densStates, Kij, Fim, Gnj, &
 
     ! Create and zero active-state matrix and RHS vectors
     allocate( L(1:sum(nAct), 1:sum(nAct)), Z(1:sum(nAct), nIsom+nProd) )
-    L = 0 * L
-    Z = 0 * Z
+    do i = 1, sum(nAct)
+        do j = 1, sum(nAct)
+            L(i,j) = 0.0
+        end do
+    end do
+    do i = 1, sum(nAct)
+        do j = 1, nIsom+nProd
+            Z(i,j) = 0.0
+        end do
+    end do
 
     ! Collisional terms in active-state matrix and RHS vectors
     do i = 1, nIsom
@@ -416,9 +424,17 @@ subroutine activeStateBanded(T, P, E, Mcoll, densStates, Kij, Fim, Gnj, dEdown, 
 
     ! Create and zero active-state matrix and RHS vectors
     allocate( L(3 * halfbandwidth + 1, 1:sum(nAct)), Z(1:sum(nAct), 1:nIsom+nProd) )
-    L = 0 * L
-    Z = 0 * Z
-    
+    do i = 1, 3 * halfbandwidth + 1
+        do j = 1, sum(nAct)
+            L(i,j) = 0.0
+        end do
+    end do
+    do i = 1, sum(nAct)
+        do j = 1, nIsom+nProd
+            Z(i,j) = 0.0
+        end do
+    end do
+
     ! Collisional terms in active-state matrix and RHS vectors
     halfbandwidth = halfbandwidth / nIsom
     do i = 1, nIsom
