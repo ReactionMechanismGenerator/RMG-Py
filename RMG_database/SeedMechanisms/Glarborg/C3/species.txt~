@@ -1,0 +1,356 @@
+/// H,O species
+O
+1 O 2T
+
+H
+1  H 1
+
+OH
+1  O 1 {2,S}
+2  H 0 {1,S}
+
+H2
+1  H 0 {2,S}
+2  H 0 {1,S}
+
+H2O
+1  O 0 {2,S} {3,S}
+2  H 0 {1,S}
+3  H 0 {1,S}
+
+O2
+1  O 0 {2,D}
+2  O 0 {1,D}
+
+HO2
+1  O 0 {2,S} {3,S}
+2  O 1 {1,S}
+3  H 0 {1,S}
+
+H2O2
+1  O 0 {2,S}
+2  O 0 {1,S}
+
+// CO species
+
+CO
+1 C 2T {2,D}
+2 O 0 {1,D}
+
+CO2
+1 C 0 {2,D} {3,D}
+2 O 0 {1,D}
+3 O 0 {1,D}
+
+HOCO
+1  C 1 {2,D} {3,S}
+2  O 0 {1,D}
+3  O 0 {1,S}
+
+// C1 species
+
+CH4
+1  C 0
+
+CH3
+1  C 1 
+
+
+CH2
+1 C 2T
+
+CH2(S)
+1 C 2S
+
+
+CH
+1 C 3
+
+C
+1 C 4
+
+// C2 species
+
+C2H6
+1  C 0 {2,S}
+2  C 0 {1,S}
+
+
+C2H5
+1  C 1 {2,S}
+2  C 0 {1,S}
+
+C2H4
+1  C 0 {2,D} 
+2  C 0 {1,D}
+
+C2H3
+1  C 1 {2,D} 
+2  C 0 {1,D}
+
+
+C2H2
+1 C 0 {2,T}
+2 C 0 {1,T}
+
+H2CC
+1  C 2 {2,D}
+2  C 0 {1,D}
+
+C2H
+1  C 1 {2,T} 
+2  C 0 {1,T}
+
+C2
+1  C 1 {2,T}
+2  C 1 {1,T}
+
+// C1,O1 species
+
+CH3OH
+1  C 0 {2,S}
+2  O 0 {1,S}
+
+CH3O
+1  O 1 {2,S}
+2  C 0 {1,S} 
+
+
+CH2OH
+1  C 1 {2,S}
+2  O 0 {1,S}
+
+CH2O
+1  C 0 {2,D} 
+2  O 0 {1,D}
+
+HCO
+1  C 1 {2,D} 
+2  O 0 {1,D}
+
+// C1, O2 species
+
+CH3OOH
+1  C 0 {2,S}
+2  O 0 {1,S} {3,S}
+3  O 0 {2,S}
+
+CH3OO
+1  O 1 {2,S}
+2  O 0 {1,S} {3,S}
+3  C 0 {2,S}
+
+CH2OOH
+1  C 1 {2,S}
+2  O 0 {1,S} {3,S}
+3  O 0 {2,S}
+
+// C2,O1 species
+
+CH3CHOH
+1  C 1 {2,S} {3,S}
+2  C 0 {1,S}
+3  O 0 {1,S}
+
+CH2CH2OH
+1  C 1 {2,S}
+2  C 0 {1,S} {3,S}
+3  O 0 {2,S}
+
+CH2CHOH
+1  C 0 {2,D}
+2  C 0 {1,D} {3,S}
+3  O 0 {2,S}
+
+CHCHOH
+1  C 1 {2,D}
+2  C 0 {1,D} {3,S}
+3  O 0 {2,S}
+
+HCCOH
+1  C 0 {2,T}
+2  C 0 {1,T} {3,S}
+3  O 0 {2,S}
+
+CH3CHO
+1  C 0 {2,S}
+2  C 0 {1,S} {3,D}
+3  O 0 {2,D}
+
+CH3CO
+1  C 0 {2,S}
+2  C 1 {1,S} {3,D}
+3  O 0 {2,D}
+
+CH2CHO
+1  C 1 {2,S}
+2  C 0 {1,S} {3,D}
+3  O 0 {2,D}
+
+CH2CO
+1  C 0 {2,D}
+2  C 0 {1,D} {3,D}
+3  O 0 {2,D}
+
+HCCO
+1  C 1 {2,D}
+2  C 0 {1,D} {3,D}
+3  O 0 {2,D}
+
+// Is this a diradical or an cyclic yne?
+//C2O
+//1  C 1 {2,D}
+//2  C 0 {1,D} {3,D}
+//3  O 0 {2,D}
+C2O
+1  C 0 {2,T} {3,S}
+2  C 0 {1,T} {3,S}
+3  O 0 {1,S} {2,S}
+
+OCHCHO
+1  O 0 {2,D}
+2  C 0 {1,D} {3,S}
+3  C 0 {2,S} {4,D}
+4  O 0 {3,D}
+
+// C2, O2 species
+
+C2H5OOH
+1  O 0 {2,S}
+2  O 0 {1,S} {3,S}
+3  C 0 {2,S} {4,S}
+4  C 0 {3,S}
+
+C2H5OO
+1  O 1 {2,S}
+2  O 0 {1,S} {3,S}
+3  C 0 {2,S} {4,S}
+4  C 0 {3,S}
+
+C2H5OH
+1  C 0 {2,S}
+2  C 0 {1,S} {3,S}
+3  O 0 {2,S}
+
+C2H5O
+1  C 0 {2,S}
+2  C 0 {1,S} {3,S}
+3  O 1 {2,S}
+
+SC2H4OOH
+1  O 0 {2,S}
+2  O 0 {1,S} {3,S}
+3  C 1 {2,S} {4,S}
+4  C 0 {3,S}
+
+CH2CHOOH
+1  O 0 {2,S}
+2  O 0 {1,S} {3,S}
+3  C 0 {2,S} {4,D}
+4  C 0 {3,D}
+
+CH2CHOO
+1  O 1 {2,S}
+2  O 0 {1,S} {3,S}
+3  C 0 {2,S} {4,D}
+4  C 0 {3,D}
+
+// what is this?!?
+//CYCOOC.
+
+HOCH2CH2OO
+1  O 1 {2,S}
+2  O 0 {1,S} {3,S}
+3  C 0 {2,S} {4,S}
+4  C 0 {3,S} {5,S}
+5  O 0 {4,S}
+
+// C3 speceis
+
+C3H6
+1  C 0 {2,D} 
+2  C 0 {1,D} {3,S}
+3  C 0 {2,S}
+
+CH2CHCH2
+1  C 1 {2,S}
+2  C 0 {1,S} {3,D}
+3  C 0 {2,D} 
+
+CH2CCH3
+1  C 0 {2,D} 
+2  C 1 {1,D} {3,S}
+3  C 0 {2,S}
+
+CH3CHCH
+1  C 1 {2,D} 
+2  C 0 {1,D} {3,S}
+3  C 0 {2,S}
+
+//how is this any different than ch2cch3
+//CH3CCH2
+
+H2CCCH2
+1  C 0 {2,D} 
+2  C 0 {1,D} {3,D}
+3  C 0 {2,D}
+
+H3CCCH
+1  C 0 {2,1} 
+2  C 0 {1,S} {3,T}
+3  C 0 {2,T}
+
+cC3H4
+1  C 0 {2,S} {3,S}
+2  C 0 {1,S} {3,D}
+3  C 0 {1,S} {2,D}
+
+H2CCCH
+1  C 1 {2,1} 
+2  C 0 {1,S} {3,T}
+3  C 0 {2,T}
+
+C3H2
+1  C 2 {2,1} 
+2  C 0 {1,S} {3,T}
+3  C 0 {2,T}
+
+C3H
+1  C 1 {2,D} {3,S}
+2  C 0 {1,D} {3,D}
+3  C 0 {1,S} {2,D}
+
+C2H5CHO
+1  C 0 {2,S}
+2  C 0 {1,S} {3,S}
+3  C 0 {2,S} {4,D}
+4  O 0 {3,D}
+
+
+C2H5CO
+1  C 0 {2,S}
+2  C 0 {1,S} {3,S}
+3  C 1 {2,S} {4,D}
+4  O 0 {3,D}
+
+
+CH2CHCHO
+1  C 0 {2,D}
+2  C 0 {1,D} {3,S}
+3  C 0 {2,S} {4,D}
+4  O 0 {3,D}
+
+CH3CHCO
+1  C 0 {2,S}
+2  C 0 {1,S} {3,D}
+3  C 0 {2,D} {4,D}
+4  O 0 {3,D}
+
+CH2CHCO
+1  C 0 {2,D}
+2  C 0 {1,D} {3,S}
+3  C 1 {2,S} {4,D}
+4  O 0 {3,D}
+
+
+

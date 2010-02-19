@@ -1,0 +1,8 @@
+// CFG from Glarborg
+
+Unit:
+A: mol/cm3/s
+E: cal/mol
+
+Reactions:
+
