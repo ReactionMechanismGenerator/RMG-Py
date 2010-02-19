@@ -269,7 +269,18 @@ class StructureCheck(unittest.TestCase):
 		"""Overall symmetry number"""
 		test_set = [('CC', 18), # ethane
 					('C=C=[C]C(C)(C)[C]=C=C', 'Who knows?'),
-					('C(=CC(c1ccccc1)C([CH]CCCCCC)C=Cc1ccccc1)[CH]CCCCCC', 1)
+					('C(=CC(c1ccccc1)C([CH]CCCCCC)C=Cc1ccccc1)[CH]CCCCCC', 1),
+					('[OH]', 1),#hydroxyl radical
+					('O=O', 2),#molecular oxygen
+					('[C]#[C]', 2),#C2
+					('[H][H]', 2),#H2
+					('C#C', 2),#acetylene
+					('C#CC#C', 2),#1,3-butadiyne
+					('C', 12),#methane
+					('C=O', 2),#formaldehyde
+					('[CH3]', 6),#methyl radical
+					('O', 2),#water
+					('C=C',4),#ethylene
 					]
 		fail_message = ''
 		for smile,should_be in test_set:
