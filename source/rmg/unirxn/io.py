@@ -85,7 +85,22 @@ def readInputFile(fstr):
 			species.fromXML(document, element)
 			# Add to local species dictionary (for matching with other parts of file)
 			speciesDict[sid] = species
+			# Convert group additivity thermo data to Wilhoit
+			if species.thermoData:
+				struct = species.structure[0]
+				rotors = struct.calculateNumberOfRotors()
+				atoms = len(struct.atoms())
+				linear = struct.isLinear()
+				species.thermoData = thermo.convertGAtoWilhoit(species.thermoData,atoms,rotors,linear)
+
+				# Use the Wilhoit thermo data to get the ground-state energy
+				# But don't overwrite a ground-state energy specified in the
+				# input file
+				if species.E0 is None:
+					species.E0 = species.thermoData.getGroundStateEnergy()
+				
 			logging.debug('\tCreated species "%s"' % species.label)
+				
 		logging.info('Found ' + str(len(speciesElements)) + ' species')
 		
 		# Process reactions

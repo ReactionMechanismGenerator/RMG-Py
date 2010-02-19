@@ -281,8 +281,12 @@ class Species:
 				raise io.InvalidInputFileException('Invalid format "%s" for thermoData element; allowed values are "group additivity".' % format)
 
 		# Read <groundStateEnergy> element
-		E0 = document.getChildQuantity(rootElement, 'groundStateEnergy', required=False, default=pq.Quantity(0.0))
-		self.E0 = float(E0.simplified)
+		groundStateEnergyElement = document.getChildElement(rootElement, 'groundStateEnergy', required=False)
+		if groundStateEnergyElement:
+			E0 = document.getChildQuantity(rootElement, 'groundStateEnergy', required=False, default=pq.Quantity(0.0))
+			self.E0 = float(E0.simplified)
+		else:
+			self.E0 = None
 
 		# Read <spectralData> element
 		self.spectralData = None

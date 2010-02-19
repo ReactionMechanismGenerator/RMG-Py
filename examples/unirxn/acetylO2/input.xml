@@ -20,7 +20,6 @@
 				<sigma units="m">5.09e-10</sigma>
 				<epsilon units="J">6.53e-21</epsilon>
 			</lennardJones>	
-			<groundStateEnergy units="kcal/mol">-38.57</groundStateEnergy>
 			<spectralData>
 				<frequencyScaleFactor>0.9954</frequencyScaleFactor>
 				<harmonicOscillator>
@@ -93,7 +92,6 @@
 				<sigma units="m">5.09e-10</sigma>
 				<epsilon units="J">6.53e-21</epsilon>
 			</lennardJones>
-			<groundStateEnergy units="kcal/mol">-32.95</groundStateEnergy>
 			<spectralData>
 				<frequencyScaleFactor>0.9954</frequencyScaleFactor>
 				<harmonicOscillator>
@@ -163,7 +161,6 @@
 				<entropyOfFormation units="cal/(mol*K)">64.27</entropyOfFormation>
 				<heatCapacities units="cal/(mol*K)">12.03 14.03 15.98 17.72 20.56 22.72 26.09</heatCapacities>
 			</thermoData>
-			<groundStateEnergy units="kcal/mol">-3.08</groundStateEnergy>
 			<spectralData>
 				<frequencyScaleFactor>0.9954</frequencyScaleFactor>
 				<harmonicOscillator>
@@ -213,7 +210,6 @@
 				<entropyOfFormation units="cal/(mol*K)">57.57</entropyOfFormation>
 				<heatCapacities units="cal/(mol*K)">12.26 14.10 15.61 16.85 18.81 20.29 22.61</heatCapacities>
 			</thermoData>
-			<groundStateEnergy units="kcal/mol">-11.8</groundStateEnergy>
 		</species>
 		<species id="lactone" label="lactone" reactive="no">
 			<structure format="smiles">[CH2]C(=O)[O]</structure>
@@ -222,7 +218,6 @@
 				<entropyOfFormation units="cal/(mol*K)">66.14</entropyOfFormation>
 				<heatCapacities units="cal/(mol*K)">14.53 17.17 19.34 21.10 23.69 25.50 28.17</heatCapacities>
 			</thermoData>
-			<groundStateEnergy units="kcal/mol">-14.87</groundStateEnergy>
 		</species>
 		<species id="epoxide" label="epoxide" reactive="no">
 			<structure format="smiles">C1OC1(=O)</structure>
@@ -231,7 +226,6 @@
 				<entropyOfFormation units="cal/(mol*K)">62.29</entropyOfFormation>
 				<heatCapacities units="cal/(mol*K)">11.95 14.65 17.06 19.06 22.10 24.24 27.42</heatCapacities>
 			</thermoData>
-			<groundStateEnergy units="kcal/mol">-44.42</groundStateEnergy>
 		</species>
 		<species id="oxygen" label="oxygen" reactive="yes">
 			<structure format="smiles">O=O</structure>
@@ -240,7 +234,6 @@
 				<entropyOfFormation units="cal/(mol*K)">49.03</entropyOfFormation>
 				<heatCapacities units="cal/(mol*K)">7.00 7.22 7.44 7.65 8.07 8.35 8.72</heatCapacities>
 			</thermoData>
-			<groundStateEnergy units="kcal/mol">0.00</groundStateEnergy>
 			<spectralData>
 				<frequencyScaleFactor>0.9954</frequencyScaleFactor>
 				<harmonicOscillator>
@@ -256,7 +249,6 @@
 				<entropyOfFormation units="cal/(mol*K)">43.91</entropyOfFormation>
 				<heatCapacities units="cal/(mol*K)">7.16 7.09 7.06 7.06 7.15 7.33 7.88</heatCapacities>
 			</thermoData>
-			<groundStateEnergy units="kcal/mol">8.91</groundStateEnergy>
 		</species>
 		<species id="hydroperoxyl" label="hydroperoxyl" reactive="no">
 			<structure format="smiles">O[O]</structure>
@@ -265,7 +257,6 @@
 				<entropyOfFormation units="cal/(mol*K)">54.76</entropyOfFormation>
 				<heatCapacities units="cal/(mol*K)">8.43 8.76 9.27 10.02 10.75 11.56 12.96</heatCapacities>
 			</thermoData>
-			<groundStateEnergy units="kcal/mol">2.32</groundStateEnergy>
 		</species>
 		<species id="nitrogen" label="nitrogen" reactive="no">
 			<structure format="smiles">N#N</structure>

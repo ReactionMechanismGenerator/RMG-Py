@@ -104,6 +104,16 @@ class ThermoData:
 		self.Tmin = 0.0
 		self.Tmax = 0.0
 
+	def getGroundStateEnergy(self):
+		"""
+		Calculate and return the ground-state energy using this thermo model.
+		This is done by calculating the enthalpy at 0 K. The returned energy
+		has units of J/mol.
+		"""
+		# We may not be able to evaluate the Cp(T) model at exactly 0 K
+		# Instead, we just evaluate it very close to 0 K
+		return self.getEnthalpy(0.001)
+
 ################################################################################
 
 class ThermoGAData(ThermoData):
