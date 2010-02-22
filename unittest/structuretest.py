@@ -281,6 +281,7 @@ class StructureCheck(unittest.TestCase):
 					('[CH3]', 6),#methyl radical
 					('O', 2),#water
 					('C=C',4),#ethylene
+					('C1=C=C=1', '6?')#cyclic, cumulenic C3 species
 					]
 		fail_message = ''
 		for smile,should_be in test_set:
