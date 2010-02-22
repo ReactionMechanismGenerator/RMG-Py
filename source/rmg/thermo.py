@@ -1113,7 +1113,7 @@ def Wilhoit2NASA(wilhoit, tmin, tmax, tint, weighting, contCons=3):
 	       Tint (intermediate temperature, in kiloKelvin)
 	       weighting (boolean: should the fit be weighted by 1/T?)
 	       contCons: a measure of the continutity constraints on the fitted NASA polynomials; possible values are:
-		    5: constrain Cp, dCp/dT, d2Cp/dT2, d3Cp/dT3, and d4Cp/dT4 to be continuous at tint
+		    5: constrain Cp, dCp/dT, d2Cp/dT2, d3Cp/dT3, and d4Cp/dT4 to be continuous at tint; note: this effectively constrains all the coefficients to be equal and should be equivalent to fitting only one polynomial (rather than two)
 		    4: constrain Cp, dCp/dT, d2Cp/dT2, and d3Cp/dT3 to be continuous at tint
 		    3 (default): constrain Cp, dCp/dT, and d2Cp/dT2 to be continuous at tint
 		    2: constrain Cp and dCp/dT to be continuous at tint
