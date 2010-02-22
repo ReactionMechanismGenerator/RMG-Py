@@ -36,7 +36,6 @@ import os.path
 import time
 import rmg.log as logging
 
-from rmg.main import printRMGHeader, initializeLog
 import rmg.settings as settings
 import rmg.kinetics as kinetics
 import rmg.unirxn.io as io
@@ -50,13 +49,13 @@ def execute(inputFile, options):
 	settings.libraryDirectory = options.libraryDirectory
 
 	# Set up log (uses stdout and a file)
-	initializeLog(options.verbose)
+	logging.initialize(options.verbose, os.path.join(settings.outputDirectory,'RMG.log'))
 
 	# Log start timestamp
 	logging.info('RMG execution initiated at ' + time.asctime() + '\n')
 
 	# Print out RMG header
-	printRMGHeader()
+	logging.logHeader()
 
 	# Read input file
 	network, Tlist, Plist, grainSize, numGrains, method, model = io.readInputFile(inputFile)

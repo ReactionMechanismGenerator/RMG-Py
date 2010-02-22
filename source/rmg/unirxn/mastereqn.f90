@@ -69,13 +69,6 @@ subroutine collisionMatrix(T, P, E, collFreq, densStates, E0, dEdown, Ngrains, &
 
     ! Initialize msg to empty string
     msg = ''
-
-    ! Zero collision matrix
-    do r = 1, Ngrains
-        do s = 1, Ngrains
-            Mcoll(r,s) = 0.0
-        end do
-    end do
     
     ! Allocate/zero vector of normalization coefficients
     allocate( C(1:Ngrains) )
@@ -114,24 +107,18 @@ subroutine collisionMatrix(T, P, E, collFreq, densStates, E0, dEdown, Ngrains, &
     end do
 
     ! Normalize using detailed balance
-    do r = Ngrains, start, -1
-        C(r) = (1 - sum(C(r+1:Ngrains) * Mcoll(r+1:Ngrains,r))) / sum(Mcoll(1:r,r))
-    end do
-    !do r = start, Ngrains
-    !   C(r) = (1 - sum(C(start:r) * Mcoll(start:r,r))) / sum(Mcoll(r:size(net%E),r))
-    !end do
-
-    ! Check for normalization consistency (i.e. all numbers are positive)
     do r = start, Ngrains
+        C(r) = (1 - sum(C(start:r-1) * Mcoll(start:r-1,r))) / sum(Mcoll(r:Ngrains,r))
+        ! Check for normalization consistency (i.e. all numbers are positive)
         if (C(r) <= 0) then
             msg = 'Error normalizing collisional transfer probabilities matrix.'
             return
         end if
-    end do
 
+    end do
     do r = start, Ngrains
-        Mcoll(r,1:r-1) = Mcoll(r,1:r-1) * C(r)
-        Mcoll(1:r-1,r) = Mcoll(1:r-1,r) * C(r)
+        Mcoll(r,r+1:Ngrains) = Mcoll(r,r+1:Ngrains) * C(r)
+        Mcoll(r+1:Ngrains,r) = Mcoll(r+1:Ngrains,r) * C(r)
         Mcoll(r,r) = Mcoll(r,r) * C(r) - 1
     end do
 
@@ -183,22 +170,12 @@ subroutine transferRate(i, j, Ei, Ej, alpha, E0, rho, Ngrains, T, rate)
     R = 8.314472
 
     ! Evaluate collisional transfer probability - theoretically correct way
-    !if (Ej < E0 .or. Ei < E0 .or. rho(j) .eq. 0) then
-    !   rate = 0.
-    !elseif (Ej >= Ei) then
-    !   rate = exp(-(Ej - Ei) / alpha)
-    !else
-    !   rate = exp(-(Ei - Ej) / alpha) * rho(i) / rho(j) * exp( -(Ei - Ej) / (R * T))
-    !end if
-
-    ! Evaluate collisional transfer probability - move density of states ratio to other side
-    ! so that it is always less than 1
     if (Ej < E0 .or. Ei < E0 .or. rho(j) .eq. 0) then
-        rate = 0.
+       rate = 0.
     elseif (Ej >= Ei) then
-        rate = exp(-(Ej - Ei) / alpha) * rho(i) / rho(j)
+       rate = exp(-(Ej - Ei) / alpha)
     else
-        rate = exp(-(Ei - Ej) / alpha) * exp( -(Ei - Ej) / (R * T))
+       rate = exp(-(Ei - Ej) / alpha) * rho(i) / rho(j) * exp( -(Ei - Ej) / (R * T))
     end if
 
 end subroutine
