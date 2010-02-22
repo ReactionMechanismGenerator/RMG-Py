@@ -1143,7 +1143,8 @@ class Structure:
 						if atom2 in bond.atoms: atom2 = None
 				if atom1 is not None: terminalAtoms.append(atom1)	
 				if atom2 is not None: terminalAtoms.append(atom2)
-			if len(terminalAtoms) != 2: continue # when does this occur??
+			if len(terminalAtoms) != 2: continue # Q: when does this occur??
+			                  # A: perhaps in cyclic (C1=C=C=C=C=C=1) species?
 			
 			# Remove axis from (copy of) structure
 			structure = Structure(self.atoms(), self.bonds())
@@ -1187,6 +1188,11 @@ class Structure:
 						
 			# If there are end fragments left that can contribute to symmetry,
 			# and none of them broke it, then double the symmetry number
+			# NB>> This assumes coordination number of 4 (eg. Carbon).
+			#      And would be wrong if we had /B
+			#                         =C=C=C=C=T-B
+			#                                   \B
+			#      (for some T with coordination number 5).
 			if end_fragments and not symmetry_broken:
 				symmetryNumber *= 2
 					
