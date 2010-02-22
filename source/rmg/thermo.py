@@ -1132,7 +1132,7 @@ def Wilhoit2NASA(wilhoit, tmin, tmax, tint, weighting, contCons=3):
 		    note: 5th (and higher) derivatives of NASA Cp(T) are zero and hence will automatically be continuous at tint by the form of the Cp(T) function
 	output: NASA polynomials (nasa_low, nasa_high) with scaled parameters
 	"""
-	#construct 13*13 (typically) symmetric A matrix (in A*x = b); other elements will be zero
+	#construct (typically 13*13) symmetric A matrix (in A*x = b); other elements will be zero
 	A = scipy.zeros([10+contCons,10+contCons])
 	b = scipy.zeros([10+contCons])
 
