@@ -1105,18 +1105,26 @@ def convertWilhoitToNASA(Wilhoit, fixed=1, weighting=1, tint=1000.0, Tmin = 298.
 
 ################################################################################
 
-def Wilhoit2NASA(wilhoit, tmin, tmax, tint, weighting):
+def Wilhoit2NASA(wilhoit, tmin, tmax, tint, weighting, contCons=3):
 	"""
 	input: Wilhoit parameters, Cp0/R, CpInf/R, and B (kK), a0, a1, a2, a3, 
 	       Tmin (minimum temperature (in kiloKelvin), 
 	       Tmax (maximum temperature (in kiloKelvin), 
 	       Tint (intermediate temperature, in kiloKelvin)
-	       weighting (boolean: should the fit be weighted by T?)
+	       weighting (boolean: should the fit be weighted by 1/T?)
+	       contCons: a measure of the continutity constraints on the fitted NASA polynomials; possible values are:
+		    5: constrain Cp, dCp/dT, d2Cp/dT2, d3Cp/dT3, and d4Cp/dT4 to be continuous at tint
+		    4: constrain Cp, dCp/dT, d2Cp/dT2, and d3Cp/dT3 to be continuous at tint
+		    3 (default): constrain Cp, dCp/dT, and d2Cp/dT2 to be continuous at tint
+		    2: constrain Cp and dCp/dT to be continuous at tint
+		    1: constrain Cp to be continous at tint
+		    0: no constraints on continuity of Cp(T) at tint
+		    note: 5th (and higher) derivatives of NASA Cp(T) are zero and hence will automatically be continuous at tint by the form of the Cp(T) function
 	output: NASA polynomials (nasa_low, nasa_high)
 	"""
-	#construct 13*13 symmetric A matrix (in A*x = b); other elements will be zero
-	A = scipy.zeros([13,13])
-	b = scipy.zeros([13])
+	#construct 13*13 (typically) symmetric A matrix (in A*x = b); other elements will be zero
+	A = scipy.zeros([10+contCons,10+contCons])
+	b = scipy.zeros([10+contCons])
 
 	if weighting:
 		A[0,0] = 2*math.log(tint/tmin)
@@ -1172,34 +1180,44 @@ def Wilhoit2NASA(wilhoit, tmin, tmax, tint, weighting):
 	A[7,8] = A[6,9]
 	A[8,8] = A[7,9]
 
-	A[0,10] = 1.
-	A[1,10] = tint
-	A[1,11] = 1.
-	A[2,10] = tint*tint
-	A[2,11] = 2*tint
-	A[2,12] = 2.
-	A[3,10] = A[2,10]*tint
-	A[3,11] = 3*A[2,10]
-	A[3,12] = 6*tint
-	A[4,10] = A[3,10]*tint
-	A[4,11] = 4*A[3,10]
-	A[4,12] = 12*A[2,10]
-
-	A[5,10] = -A[0,10]
-	A[6,10] = -A[1,10]
-	A[6,11] = -A[1,11]
-	A[7,10] = -A[2,10]
-	A[7,11] = -A[2,11]
-	A[7,12] = -A[2,12]
-	A[8,10] = -A[3,10]
-	A[8,11] = -A[3,11]
-	A[8,12] = -A[3,12]
-	A[9,10] = -A[4,10]
-	A[9,11] = -A[4,11]
-	A[9,12] = -A[4,12]
+	if(contCons > 0):#set non-zero elements in the 11th column for Cp(T) continuity contraint
+		A[0,10] = 1.
+		A[1,10] = tint
+		A[2,10] = tint*tint
+		A[3,10] = A[2,10]*tint
+		A[4,10] = A[3,10]*tint
+		A[5,10] = -A[0,10]
+		A[6,10] = -A[1,10]
+		A[7,10] = -A[2,10]
+		A[8,10] = -A[3,10]
+		A[9,10] = -A[4,10]
+		if(contCons > 1): #set non-zero elements in the 12th column for dCp/dT continuity constraint
+			A[1,11] = 1.
+			A[2,11] = 2*tint
+			A[3,11] = 3*A[2,10]
+			A[4,11] = 4*A[3,10]
+			A[6,11] = -A[1,11]
+			A[7,11] = -A[2,11]
+			A[8,11] = -A[3,11]
+			A[9,11] = -A[4,11]
+			if(contCons > 2): #set non-zero elements in the 13th column for d2Cp/dT2 continuity constraint
+				A[2,12] = 2.
+				A[3,12] = 6*tint
+				A[4,12] = 12*A[2,10]
+				A[7,12] = -A[2,12]
+				A[8,12] = -A[3,12]
+				A[9,12] = -A[4,12]
+				if(contCons > 3): #set non-zero elements in the 14th column for d3Cp/dT3 continuity constraint
+					A[3,13] = 6
+					A[4,13] = 24*tint
+					A[8,13] = -A[3,13]
+					A[9,13] = -A[4,13]
+					if(contCons > 4): #set non-zero elements in the 15th column for d4Cp/dT4 continuity constraint
+						A[4,14] = 24
+						A[9,14] = -A[4,14]
 
 	# make the matrix symmetric
-	for i in range(1,13):
+	for i in range(1,10+contCons):
 		for j in range(0, i):
 			A[i,j] = A[j,i]
 
