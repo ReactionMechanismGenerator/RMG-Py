@@ -8,11 +8,9 @@ sys.path.append('../source')
 
 import math
 		
-import rmg.main as main
 import rmg.data as data
 import rmg.species as species
 import rmg.structure as structure
-import rmg.reaction as reaction
 import rmg.thermo as thermo
 import rmg.log as logging
 
