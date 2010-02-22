@@ -14,6 +14,7 @@ import rmg.species as species
 import rmg.structure as structure
 import rmg.reaction as reaction
 import rmg.thermo as thermo
+import rmg.log as logging
 
 # Run this whether being run as __main__ or called by other unit test suite:
 # Load databases
@@ -541,5 +542,5 @@ NASAthermoData = thermo.convertWilhoitToNASA(WilhoitData)
 	print "****\n\nContinuing with tests..."
 	
 	# Show debug messages (as databases are loading)
-	main.initializeLog(10)	
+	logging.initialize(10,'RMG.log')
 	unittest.main( testRunner = unittest.TextTestRunner(verbosity=2) )
