@@ -1269,7 +1269,6 @@ def Wilhoit2NASA(wilhoit, tmin, tmax, tint, weighting, contCons=3):
 	# solve A*x=b for x (note that factor of 2 in b vector and 10*10 submatrix of A
 	# matrix is not required; not including it should give same result, except
 	# Lagrange multipliers will differ by a factor of two)
-	#from linalg import solve
 	x = linalg.solve(A,b,overwrite_a=1,overwrite_b=1)
 
 	nasa_low = ThermoNASAPolynomial(T_range=(0,0), coeffs=[x[0], x[1], x[2], x[3], x[4], 0.0, 0.0], comment='')
@@ -1614,7 +1613,6 @@ def CpOverR2NASA(CpOverR, tmin, tmax, tint, weighting, contCons=3):
 	# solve A*x=b for x (note that factor of 2 in b vector and 10*10 submatrix of A
 	# matrix is not required; not including it should give same result, except
 	# Lagrange multipliers will differ by a factor of two)
-	#from linalg import solve
 	x = linalg.solve(A,b,overwrite_a=1,overwrite_b=1)
 
 	nasa_low = ThermoNASAPolynomial(T_range=(0,0), coeffs=[x[0], x[1], x[2], x[3], x[4], 0.0, 0.0], comment='')
@@ -1705,7 +1703,7 @@ def CpOverR_TintOpt_objFun_W(tint, CpOverR, tmin, tmax):
 
 	return result
 
-#the numerical integrals (note: we could probably relatively easily combine these into one or two functions, with an argument specifying the exponent on T and whether to square or not)
+#the numerical integrals:
 
 def Nintegral_T0(CpOverR, tmin, tmax):
     #units of input and output are same as Nintegral
