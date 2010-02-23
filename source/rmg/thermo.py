@@ -1388,18 +1388,16 @@ def convertCpOverRToNASA(CpOverR, H298, S298, fixed=1, weighting=1, tint=1000.0,
 	tint = tint/1000
 	Tmax = Tmax/1000
 
-	CpOverRreduced = CpOverR_reduce(CpOverR) #convert the
-
 	#if we are using fixed tint, do not allow tint to float
 	if(fixed == 1):
-		nasa_low, nasa_high = CpOverR2NASA(CpOverRreduced, Tmin, Tmax, tint, weighting)
+		nasa_low, nasa_high = CpOverR2NASA(CpOverR, Tmin, Tmax, tint, weighting)
 	else:
-		nasa_low, nasa_high, tint = CpOverR2NASA_TintOpt(CpOverRreduced, Tmin, Tmax, weighting)
-	iseUnw = CpOverR_TintOpt_objFun(tint, CpOverRreduced, Tmin, Tmax, 0) #the scaled, unweighted ISE (integral of squared error)
+		nasa_low, nasa_high, tint = CpOverR2NASA_TintOpt(CpOverR, Tmin, Tmax, weighting)
+	iseUnw = CpOverR_TintOpt_objFun(tint, CpOverR, Tmin, Tmax, 0) #the scaled, unweighted ISE (integral of squared error)
 	rmsUnw = math.sqrt(iseUnw/(Tmax-Tmin))
 	rmsStr = '(Unweighted) RMS error = %.3f*R;'%(rmsUnw)
 	if(weighting == 1):
-		iseWei= CpOverR_TintOpt_objFun(tint, CpOverRreduced, Tmin, Tmax, weighting) #the scaled, weighted ISE
+		iseWei= CpOverR_TintOpt_objFun(tint, CpOverR, Tmin, Tmax, weighting) #the scaled, weighted ISE
 		rmsWei = math.sqrt(iseWei/math.log(Tmax/Tmin))
 		rmsStr = 'Weighted RMS error = %.3f*R;'%(rmsWei)+rmsStr
 
