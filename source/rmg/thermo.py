@@ -44,6 +44,7 @@ import math
 import scipy
 from scipy import linalg
 from scipy import optimize
+from scipy import integrate
 import cython
 import log as logging
 
@@ -1025,17 +1026,6 @@ def convertWilhoitToNASA(Wilhoit, fixed=1, weighting=1, tint=1000.0, Tmin = 298.
 	polynomials
 	"""
 	
-	#gmagoon 1/18/10 below two sections moved to arguments for function
-	# Temperature ranges for resulting polynomials
-	#Tmin = 298.0
-	#tint = 1000.0
-	#Tmax = 6000.0
-	
-	#for now, do not allow tint to float so tint = Tint(guess)
-	#fixed = 1	
-	#for now, use weighting of 1/T
-	#weighting = 1
-	
 	# Scale the temperatures to kK
 	Tmin = Tmin/1000
 	tint = tint/1000
@@ -1380,6 +1370,395 @@ def TintOpt_objFun_W(tint, wilhoit, tmin, tmax):
 
 	return result
 
+####################################################################################################
+#below are functions for conversion of general Cp to NASA polynomials
+#because they use numerical integration, they are, in general, likely to be slower and less accurate than versions with analytical integrals for the starting Cp form (e.g. Wilhoit polynomials)
+#therefore, this should only be used when no analytic alternatives are available
+def convertCpOverRToNASA(CpOverR, H298, S298, fixed=1, weighting=1, tint=1000.0, Tmin = 298.0, Tmax=6000.0):
+	"""Convert a CpOverR function into a NASA polynomial thermo instance (using numerical integration)
+
+	Takes: a CpOverR function that will return Cp/R when given argument T (in K)
+		H298: enthalpy at 298.15 K (in J/mol)
+		S298: entropy at 298.15 K (in J/mol-K)
+	Returns a `ThermoNASAData` instance containing two `ThermoNASAPolynomial`
+	polynomials
+	"""
+
+	# Scale the temperatures to kK
+	Tmin = Tmin/1000
+	tint = tint/1000
+	Tmax = Tmax/1000
+
+	CpOverRreduced = CpOverR_reduce(CpOverR) #convert the
+
+	#if we are using fixed tint, do not allow tint to float
+	if(fixed == 1):
+		nasa_low, nasa_high = CpOverR2NASA(CpOverRreduced, Tmin, Tmax, tint, weighting)
+	else:
+		nasa_low, nasa_high, tint = CpOverR2NASA_TintOpt(CpOverRreduced, Tmin, Tmax, weighting)
+	iseUnw = CpOverR_TintOpt_objFun(tint, CpOverRreduced, Tmin, Tmax, 0) #the scaled, unweighted ISE (integral of squared error)
+	rmsUnw = math.sqrt(iseUnw/(Tmax-Tmin))
+	rmsStr = '(Unweighted) RMS error = %.3f*R;'%(rmsUnw)
+	if(weighting == 1):
+		iseWei= CpOverR_TintOpt_objFun(tint, CpOverRreduced, Tmin, Tmax, weighting) #the scaled, weighted ISE
+		rmsWei = math.sqrt(iseWei/math.log(Tmax/Tmin))
+		rmsStr = 'Weighted RMS error = %.3f*R;'%(rmsWei)+rmsStr
+
+	#print a warning if the rms fit is worse that 0.25*R
+	if(rmsUnw > 0.25 or rmsWei > 0.25):
+		logging.warning("Poor CpOverR-to-NASA fit quality: RMS error = %.3f*R" % (rmsWei if weighting == 1 else rmsUnw))
+
+	#restore to conventional units of K for Tint and units based on K rather than kK in NASA polynomial coefficients
+	tint=tint*1000.
+	Tmin = Tmin*1000
+	Tmax = Tmax*1000
+
+	nasa_low.c1 /= 1000.
+	nasa_low.c2 /= 1000000.
+	nasa_low.c3 /= 1000000000.
+	nasa_low.c4 /= 1000000000000.
+
+	nasa_high.c1 /= 1000.
+	nasa_high.c2 /= 1000000.
+	nasa_high.c3 /= 1000000000.
+	nasa_high.c4 /= 1000000000000.
+
+	# output comment
+	comment = 'CpOverR function fitted to NASA function. ' + rmsStr
+	nasa_low.Trange = (Tmin,tint); nasa_low.Tmin = Tmin; nasa_low.Tmax = tint
+	nasa_low.comment = 'Low temperature range polynomial'
+	nasa_high.Trange = (tint,Tmax); nasa_high.Tmin = tint; nasa_high.Tmax = Tmax
+	nasa_high.comment = 'High temperature range polynomial'
+
+	#for the low polynomial, we want the results to match the given values at 298.15K
+	#low polynomial enthalpy:
+	Hlow = (H298 - nasa_low.getEnthalpy(298.15))/constants.R
+	#low polynomial entropy:
+	Slow = (S298 - nasa_low.getEntropy(298.15))/constants.R
+
+	# update last two coefficients
+	nasa_low.c5 = Hlow
+	nasa_low.c6 = Slow
+
+	#for the high polynomial, we want the results to match the low polynomial value at tint
+	#high polynomial enthalpy:
+	Hhigh = (nasa_low.getEnthalpy(tint) - nasa_high.getEnthalpy(tint))/constants.R
+	#high polynomial entropy:
+	Shigh = (nasa_low.getEntropy(tint) - nasa_high.getEntropy(tint))/constants.R
+
+	# update last two coefficients
+	#polynomial_high.coeffs = (b6,b7,b8,b9,b10,Hhigh,Shigh)
+	nasa_high.c5 = Hhigh
+	nasa_high.c6 = Shigh
+
+	NASAthermo = ThermoNASAData( Trange=(Tmin,Tmax), polynomials=[nasa_low,nasa_high], comment=comment)
+	return NASAthermo
+
+################################################################################
+
+def CpOverR2NASA(CpOverR, tmin, tmax, tint, weighting, contCons=3):
+	"""
+	input: CpOverR function that will return Cp/R when given argument T (in kiloKelvin)
+	       Tmin (minimum temperature (in kiloKelvin),
+	       Tmax (maximum temperature (in kiloKelvin),
+	       Tint (intermediate temperature, in kiloKelvin)
+	       weighting (boolean: should the fit be weighted by 1/T?)
+	       contCons: a measure of the continutity constraints on the fitted NASA polynomials; possible values are:
+		    5: constrain Cp, dCp/dT, d2Cp/dT2, d3Cp/dT3, and d4Cp/dT4 to be continuous at tint; note: this effectively constrains all the coefficients to be equal and should be equivalent to fitting only one polynomial (rather than two)
+		    4: constrain Cp, dCp/dT, d2Cp/dT2, and d3Cp/dT3 to be continuous at tint
+		    3 (default): constrain Cp, dCp/dT, and d2Cp/dT2 to be continuous at tint
+		    2: constrain Cp and dCp/dT to be continuous at tint
+		    1: constrain Cp to be continous at tint
+		    0: no constraints on continuity of Cp(T) at tint
+		    note: 5th (and higher) derivatives of NASA Cp(T) are zero and hence will automatically be continuous at tint by the form of the Cp(T) function
+	output: NASA polynomials (nasa_low, nasa_high) with scaled parameters
+	"""
+	#construct (typically 13*13) symmetric A matrix (in A*x = b); other elements will be zero
+	A = scipy.zeros([10+contCons,10+contCons])
+	b = scipy.zeros([10+contCons])
+
+	if weighting:
+		A[0,0] = 2*math.log(tint/tmin)
+		A[0,1] = 2*(tint - tmin)
+		A[0,2] = tint*tint - tmin*tmin
+		A[0,3] = 2.*(tint*tint*tint - tmin*tmin*tmin)/3
+		A[0,4] = (tint*tint*tint*tint - tmin*tmin*tmin*tmin)/2
+		A[1,4] = 2.*(tint*tint*tint*tint*tint - tmin*tmin*tmin*tmin*tmin)/5
+		A[2,4] = (tint*tint*tint*tint*tint*tint - tmin*tmin*tmin*tmin*tmin*tmin)/3
+		A[3,4] = 2.*(tint*tint*tint*tint*tint*tint*tint - tmin*tmin*tmin*tmin*tmin*tmin*tmin)/7
+		A[4,4] = (tint*tint*tint*tint*tint*tint*tint*tint - tmin*tmin*tmin*tmin*tmin*tmin*tmin*tmin)/4
+	else:
+		A[0,0] = 2*(tint - tmin)
+		A[0,1] = tint*tint - tmin*tmin
+		A[0,2] = 2.*(tint*tint*tint - tmin*tmin*tmin)/3
+		A[0,3] = (tint*tint*tint*tint - tmin*tmin*tmin*tmin)/2
+		A[0,4] = 2.*(tint*tint*tint*tint*tint - tmin*tmin*tmin*tmin*tmin)/5
+		A[1,4] = (tint*tint*tint*tint*tint*tint - tmin*tmin*tmin*tmin*tmin*tmin)/3
+		A[2,4] = 2.*(tint*tint*tint*tint*tint*tint*tint - tmin*tmin*tmin*tmin*tmin*tmin*tmin)/7
+		A[3,4] = (tint*tint*tint*tint*tint*tint*tint*tint - tmin*tmin*tmin*tmin*tmin*tmin*tmin*tmin)/4
+		A[4,4] = 2.*(tint*tint*tint*tint*tint*tint*tint*tint*tint - tmin*tmin*tmin*tmin*tmin*tmin*tmin*tmin*tmin)/9
+	A[1,1] = A[0,2]
+	A[1,2] = A[0,3]
+	A[1,3] = A[0,4]
+	A[2,2] = A[0,4]
+	A[2,3] = A[1,4]
+	A[3,3] = A[2,4]
+
+	if weighting:
+		A[5,5] = 2*math.log(tmax/tint)
+		A[5,6] = 2*(tmax - tint)
+		A[5,7] = tmax*tmax - tint*tint
+		A[5,8] = 2.*(tmax*tmax*tmax - tint*tint*tint)/3
+		A[5,9] = (tmax*tmax*tmax*tmax - tint*tint*tint*tint)/2
+		A[6,9] = 2.*(tmax*tmax*tmax*tmax*tmax - tint*tint*tint*tint*tint)/5
+		A[7,9] = (tmax*tmax*tmax*tmax*tmax*tmax - tint*tint*tint*tint*tint*tint)/3
+		A[8,9] = 2.*(tmax*tmax*tmax*tmax*tmax*tmax*tmax - tint*tint*tint*tint*tint*tint*tint)/7
+		A[9,9] = (tmax*tmax*tmax*tmax*tmax*tmax*tmax*tmax - tint*tint*tint*tint*tint*tint*tint*tint)/4
+	else:
+		A[5,5] = 2*(tmax - tint)
+		A[5,6] = tmax*tmax - tint*tint
+		A[5,7] = 2.*(tmax*tmax*tmax - tint*tint*tint)/3
+		A[5,8] = (tmax*tmax*tmax*tmax - tint*tint*tint*tint)/2
+		A[5,9] = 2.*(tmax*tmax*tmax*tmax*tmax - tint*tint*tint*tint*tint)/5
+		A[6,9] = (tmax*tmax*tmax*tmax*tmax*tmax - tint*tint*tint*tint*tint*tint)/3
+		A[7,9] = 2.*(tmax*tmax*tmax*tmax*tmax*tmax*tmax - tint*tint*tint*tint*tint*tint*tint)/7
+		A[8,9] = (tmax*tmax*tmax*tmax*tmax*tmax*tmax*tmax - tint*tint*tint*tint*tint*tint*tint*tint)/4
+		A[9,9] = 2.*(tmax*tmax*tmax*tmax*tmax*tmax*tmax*tmax*tmax - tint*tint*tint*tint*tint*tint*tint*tint*tint)/9
+	A[6,6] = A[5,7]
+	A[6,7] = A[5,8]
+	A[6,8] = A[5,9]
+	A[7,7] = A[5,9]
+	A[7,8] = A[6,9]
+	A[8,8] = A[7,9]
+
+	if(contCons > 0):#set non-zero elements in the 11th column for Cp(T) continuity contraint
+		A[0,10] = 1.
+		A[1,10] = tint
+		A[2,10] = tint*tint
+		A[3,10] = A[2,10]*tint
+		A[4,10] = A[3,10]*tint
+		A[5,10] = -A[0,10]
+		A[6,10] = -A[1,10]
+		A[7,10] = -A[2,10]
+		A[8,10] = -A[3,10]
+		A[9,10] = -A[4,10]
+		if(contCons > 1): #set non-zero elements in the 12th column for dCp/dT continuity constraint
+			A[1,11] = 1.
+			A[2,11] = 2*tint
+			A[3,11] = 3*A[2,10]
+			A[4,11] = 4*A[3,10]
+			A[6,11] = -A[1,11]
+			A[7,11] = -A[2,11]
+			A[8,11] = -A[3,11]
+			A[9,11] = -A[4,11]
+			if(contCons > 2): #set non-zero elements in the 13th column for d2Cp/dT2 continuity constraint
+				A[2,12] = 2.
+				A[3,12] = 6*tint
+				A[4,12] = 12*A[2,10]
+				A[7,12] = -A[2,12]
+				A[8,12] = -A[3,12]
+				A[9,12] = -A[4,12]
+				if(contCons > 3): #set non-zero elements in the 14th column for d3Cp/dT3 continuity constraint
+					A[3,13] = 6
+					A[4,13] = 24*tint
+					A[8,13] = -A[3,13]
+					A[9,13] = -A[4,13]
+					if(contCons > 4): #set non-zero elements in the 15th column for d4Cp/dT4 continuity constraint
+						A[4,14] = 24
+						A[9,14] = -A[4,14]
+
+	# make the matrix symmetric
+	for i in range(1,10+contCons):
+		for j in range(0, i):
+			A[i,j] = A[j,i]
+
+	#construct b vector
+	w0low = Nintegral_T0(CpOverR,tmin,tint)
+	w1low = Nintegral_T1(CpOverR,tmin,tint)
+	w2low = Nintegral_T2(CpOverR,tmin,tint)
+	w3low = Nintegral_T3(CpOverR,tmin,tint)
+	w0high = Nintegral_T0(CpOverR,tint,tmax)
+	w1high = Nintegral_T1(CpOverR,tint,tmax)
+	w2high = Nintegral_T2(CpOverR,tint,tmax)
+	w3high = Nintegral_T3(CpOverR,tint,tmax)
+	if weighting:
+		wM1low = Nintegral_TM1(CpOverR,tmin,tint)
+		wM1high = Nintegral_TM1(CpOverR,tint,tmax)
+	else:
+		w4low = Nintegral_T4(CpOverR,tmin,tint)
+		w4high = Nintegral_T4(CpOverR,tint,tmax)
+
+	if weighting:
+		b[0] = 2*wM1low
+		b[1] = 2*w0low
+		b[2] = 2*w1low
+		b[3] = 2*w2low
+		b[4] = 2*w3low
+		b[5] = 2*wM1high
+		b[6] = 2*w0high
+		b[7] = 2*w1high
+		b[8] = 2*w2high
+		b[9] = 2*w3high
+	else:
+		b[0] = 2*w0low
+		b[1] = 2*w1low
+		b[2] = 2*w2low
+		b[3] = 2*w3low
+		b[4] = 2*w4low
+		b[5] = 2*w0high
+		b[6] = 2*w1high
+		b[7] = 2*w2high
+		b[8] = 2*w3high
+		b[9] = 2*w4high
+
+	# solve A*x=b for x (note that factor of 2 in b vector and 10*10 submatrix of A
+	# matrix is not required; not including it should give same result, except
+	# Lagrange multipliers will differ by a factor of two)
+	#from linalg import solve
+	x = linalg.solve(A,b,overwrite_a=1,overwrite_b=1)
+
+	nasa_low = ThermoNASAPolynomial(T_range=(0,0), coeffs=[x[0], x[1], x[2], x[3], x[4], 0.0, 0.0], comment='')
+	nasa_high = ThermoNASAPolynomial(T_range=(0,0), coeffs=[x[5], x[6], x[7], x[8], x[9], 0.0, 0.0], comment='')
+
+	return nasa_low, nasa_high
+
+def CpOverR2NASA_TintOpt(CpOverR, tmin, tmax, weighting):
+	#input: CpOverR function that will return Cp/R when given argument T (in kiloKelvin),  Tmin (minimum temperature (in kiloKelvin), Tmax (maximum temperature (in kiloKelvin)
+	#output: NASA parameters for Cp/R, b1, b2, b3, b4, b5 (low temp parameters) and b6, b7, b8, b9, b10 (high temp parameters), and Tint
+	#1. vary Tint, bounded by tmin and tmax, to minimize TintOpt_objFun
+	#cf. http://docs.scipy.org/doc/scipy/reference/tutorial/optimize.html and http://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.fminbound.html#scipy.optimize.fminbound)
+	tint = optimize.fminbound(CpOverR_TintOpt_objFun, tmin, tmax, args=(CpOverR, tmin, tmax, weighting))
+	#note that we have not used any guess when using this minimization routine
+	#2. determine the bi parameters based on the optimized Tint (alternatively, maybe we could have TintOpt_objFun also return these parameters, along with the objective function, which would avoid an extra calculation)
+	(nasa1, nasa2) = CpOverR2NASA(CpOverR, tmin, tmax, tint[0] ,weighting)
+	return nasa1, nasa2, tint[0]
+
+def CpOverR_TintOpt_objFun(tint, CpOverR, tmin, tmax, weighting):
+	#input: Tint (intermediate temperature, in kiloKelvin); CpOverR function that will return Cp/R when given argument T (in kiloKelvin), Tmin (minimum temperature (in kiloKelvin), Tmax (maximum temperature (in kiloKelvin)
+	#output: the quantity Integrate[(Cp/R-Cp(NASA)/R)^2, {t, tmin, tmax}]
+	if (weighting == 1):
+		result = CpOverR_TintOpt_objFun_W(tint, CpOverR, tmin, tmax)
+	else:
+		result = CpOverR_TintOpt_objFun_NW(tint, CpOverR, tmin, tmax)
+
+	# numerical errors could accumulate to give a slightly negative result
+	# this is unphysical (it's the integral of a *squared* error) so we
+	# set it to zero to avoid later problems when we try find the square root.
+	if result<0:
+		logging.error("Numerical integral results suggest sum of squared errors is negative; please e-mail Greg with the following results:")
+		logging.error(tint)
+		logging.error(CpOverR)
+		logging.error(tmin)
+		logging.error(tmax)
+		logging.error(weighting)
+		logging.error(result)
+		result = 0
+
+	return result
+
+def CpOverR_TintOpt_objFun_NW(tint, CpOverR, tmin, tmax):
+	"""
+	Evaluate the objective function - the integral of the square of the error in the fit.
+
+	input: Tint (intermediate temperature, in kiloKelvin)
+			CpOverR function that will return Cp/R when given argument T (in kiloKelvin)
+			Tmin (minimum temperature (in kiloKelvin),
+			Tmax (maximum temperature (in kiloKelvin)
+	output: the quantity Integrate[(Cp/R-Cp(NASA)/R)^2, {t, tmin, tmax}]
+	"""
+	nasa_low, nasa_high = CpOverR2NASA(CpOverR,tmin,tmax,tint, 0)
+	b1, b2, b3, b4, b5 = nasa_low.c0, nasa_low.c1, nasa_low.c2, nasa_low.c3, nasa_low.c4
+	b6, b7, b8, b9, b10 = nasa_high.c0, nasa_high.c1, nasa_high.c2, nasa_high.c3, nasa_high.c4
+
+	result = (Nintegral2_T0(CpOverR,tmin,tmax) +
+				 nasa_low.integral2_T0(tint)-nasa_low.integral2_T0(tmin) + nasa_high.integral2_T0(tmax) - nasa_high.integral2_T0(tint)
+				 - 2* (b6*Nintegral_T0(CpOverR,tint,tmax)+b1*Nintegral_T0(CpOverR,tmin,tint)
+				 +b7*Nintegral_T1(CpOverR,tint,tmax) +b2*Nintegral_T1(CpOverR,tmin,tint)
+				 +b8*Nintegral_T2(CpOverR,tint,tmax) +b3*Nintegral_T2(CpOverR,tmin,tint)
+				 +b9*Nintegral_T3(CpOverR,tint,tmax) +b4*Nintegral_T3(CpOverR,tmin,tint)
+				 +b10*Nintegral_T4(CpOverR,tint,tmax)+b5*Nintegral_T4(CpOverR,tmin,tint)))
+
+	return result
+
+def CpOverR_TintOpt_objFun_W(tint, CpOverR, tmin, tmax):
+	"""
+	Evaluate the objective function - the integral of the square of the error in the fit.
+
+	If fit is close to perfect, result may be slightly negative due to numerical errors in evaluating this integral.
+	input: Tint (intermediate temperature, in kiloKelvin)
+			CpOverR function that will return Cp/R when given argument T (in kiloKelvin)
+			Tmin (minimum temperature (in kiloKelvin),
+			Tmax (maximum temperature (in kiloKelvin)
+	output: the quantity Integrate[1/t*(Cp/R-Cp(NASA)/R)^2, {t, tmin, tmax}]
+	"""
+	nasa_low, nasa_high = CpOverR2NASA(CpOverR,tmin,tmax,tint, 1)
+	b1, b2, b3, b4, b5 = nasa_low.c0, nasa_low.c1, nasa_low.c2, nasa_low.c3, nasa_low.c4
+	b6, b7, b8, b9, b10 = nasa_high.c0, nasa_high.c1, nasa_high.c2, nasa_high.c3, nasa_high.c4
+
+	result = (Nintegral2_TM1(CpOverR,tmin,tmax) +
+				 nasa_low.integral2_TM1(tint)-nasa_low.integral2_TM1(tmin) + nasa_high.integral2_TM1(tmax) - nasa_high.integral2_TM1(tint)
+				 - 2* (b6*Nintegral_TM1(CpOverR,tint,tmax)+b1*Nintegral_TM1(CpOverR,tmin,tint)
+				 +b7*Nintegral_T0(CpOverR,tint,tmax) +b2*Nintegral_T0(CpOverR,tmin,tint)
+				 +b8*Nintegral_T1(CpOverR,tint,tmax) +b3*Nintegral_T1(CpOverR,tmin,tint)
+				 +b9*Nintegral_T2(CpOverR,tint,tmax) +b4*Nintegral_T2(CpOverR,tmin,tint)
+				 +b10*Nintegral_T3(CpOverR,tint,tmax)+b5*Nintegral_T3(CpOverR,tmin,tint)))
+
+	return result
+
+#the numerical integrals (note: we could probably relatively easily combine these into one or two functions, with an argument specifying the exponent on T and whether to square or not)
+
+def Nintegral_T0(CpOverR, tmin, tmax):
+    #units of input and output are same as Nintegral
+    return Nintegral(CpOverR,tmin,tmax,0,0)
+
+def Nintegral_TM1(CpOverR, tmin, tmax):
+    #units of input and output are same as Nintegral
+    return Nintegral(CpOverR,tmin,tmax,-1,0)
+
+def Nintegral_T1(CpOverR, tmin, tmax):
+    #units of input and output are same as Nintegral
+    return Nintegral(CpOverR,tmin,tmax,1,0)
+
+def Nintegral_T2(CpOverR, tmin, tmax):
+    #units of input and output are same as Nintegral
+    return Nintegral(CpOverR,tmin,tmax,2,0)
+
+def Nintegral_T3(CpOverR, tmin, tmax):
+    #units of input and output are same as Nintegral
+    return Nintegral(CpOverR,tmin,tmax,3,0)
+
+def Nintegral_T4(CpOverR, tmin, tmax):
+    #units of input and output are same as Nintegral
+    return Nintegral(CpOverR,tmin,tmax,4,0)
+
+def Nintegral2_T0(CpOverR, tmin, tmax):
+    #units of input and output are same as Nintegral
+    return Nintegral(CpOverR,tmin,tmax,0,1)
+
+def Nintegral2_TM1(CpOverR, tmin, tmax):
+    #units of input and output are same as Nintegral
+    return Nintegral(CpOverR,tmin,tmax,-1,1)
+
+def Nintegral(CpOverR, tmin, tmax, n, squared):
+	#inputs:CpOverR function that will return Cp/R when given argument T (in kiloKelvin)
+	#	tmin, tmax: limits of integration in kiloKelvin
+	#	n: integeer exponent on t (see below), typically -1 to 4
+	#	squared: 0 if integrating Cp/R(t)*t^n; 1 if integrating Cp/R(t)^2*t^n
+	#output: a numerical approximation to the quantity Integrate[Cp/R(t)*t^n, {t, tmin, tmax}] or Integrate[Cp/R(t)^2*t^n, {t, tmin, tmax}], in units based on kiloKelvin
+
+	return integrate.quad(integrand,tmin,tmax,args=(CpOverR,n,squared))[0]
+
+def integrand(t, CpOverR , n, squared):
+	result = CpOverR(t)
+	if(squared):
+		result = result*CpOverR(t)
+	if(n < 0):
+		for i in range(0,abs(n)):#divide by t, |n| times
+			result = result/t
+	else:
+		for i in range(0,n):#multiply by t, n times
+			result = result*t
+	return result
 ################################################################################
 
 if __name__ == '__main__':
