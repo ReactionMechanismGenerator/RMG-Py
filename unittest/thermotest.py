@@ -289,7 +289,7 @@ class ThermoGAtoWilhoitCheck(unittest.TestCase):
 			
 			
 class ThermoWilhoitToNASACheck(unittest.TestCase):                          
-	"""Test conversion to NASA polynomials"""
+	"""Test conversion from Wilhoit to NASA polynomials"""
 	def testNASAcreated(self):
 		"""Can we make NASA polynomial data"""
 		cp0, cpInf, a0, a1, a2, a3, I, J = (1.0,1.0,1.0,1.0,1.0,1.0, 1.0, 1.0)
@@ -502,6 +502,31 @@ class ThermoWilhoitToNASACheck(unittest.TestCase):
 		n = thermo.ThermoNASAPolynomial(T_range=[.298,1.000], coeffs = [1, -.2, .3, -.4, .5, -6, 7])
 		ans = n.integral2_T0(1.0) - n.integral2_T0(.298)
 		self.assertAlmostEqual(ans, 0.71887383097545454, 15)
+
+class ThermoCpOverRToNASACheck(unittest.TestCase):
+	"""Test conversion from Cp/R to NASA polynomials (using numerical integrals)"""
+	def testNASAcreated(self):
+		"""Can we make NASA polynomial data from a CpOverR function"""
+
+		NASAthermoData = thermo.convertCpOverRToNASA(CpFunction, 1.0, 2.0)
+		self.assertAlmostEqual(NASAthermoData.getEnthalpy(298.15), 1.0, 4)
+		self.assertAlmostEqual(NASAthermoData.getEntropy(298.15), 2.0, 4)
+		self.assertAlmostEqual(NASAthermoData.polynomials[0].c0, 2.5, 4)
+		self.assertAlmostEqual(NASAthermoData.polynomials[0].c1, 3.0, 4)
+		self.assertAlmostEqual(NASAthermoData.polynomials[0].c2, 7.0, 4)
+		self.assertAlmostEqual(NASAthermoData.polynomials[0].c3, 0.0, 4)
+		self.assertAlmostEqual(NASAthermoData.polynomials[0].c4, 0.0, 4)
+		self.assertAlmostEqual(NASAthermoData.polynomials[1].c0, 2.5, 4)
+		self.assertAlmostEqual(NASAthermoData.polynomials[1].c1, 3.0, 4)
+		self.assertAlmostEqual(NASAthermoData.polynomials[1].c2, 7.0, 4)
+		self.assertAlmostEqual(NASAthermoData.polynomials[1].c3, 0.0, 4)
+		self.assertAlmostEqual(NASAthermoData.polynomials[1].c4, 0.0, 4)
+
+	def CpFunction(T):
+		"""Heat capacity function used to test conversion of Cp/R to NASA polynomial (using numerical integrals)"""
+
+		return 2.5 + 3.0*T + 7.0*T*T
+
 
 ################################################################################
 
