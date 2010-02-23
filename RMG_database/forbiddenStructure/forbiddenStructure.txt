@@ -55,3 +55,9 @@ CO3.
 2 O 0 {1,D}
 3 O 1 {1,S}
 4 O 0 {1,S}
+
+//gmagoon 2/22/10: forbid physically unlikely cyclic cumulenic C3 species to prevent infinite recursion error in getToEndOfAxis; UPDATE: this issue should be fixed by my updates to ChemGraph, so we don't need to make this a forbiddenStructure
+//cC3
+//1 C 0 {2,D} {3,D}
+//2 C 0 {1,D} {3,D}
+//3 C 0 {1,D} {2,D}
