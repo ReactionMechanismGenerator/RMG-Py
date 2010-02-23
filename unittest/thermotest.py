@@ -508,24 +508,25 @@ class ThermoCpOverRToNASACheck(unittest.TestCase):
 	def testNASAcreated(self):
 		"""Can we make NASA polynomial data from a CpOverR function"""
 
+		def CpFunction(T):
+			"""Heat capacity function used to test conversion of Cp/R to NASA polynomial (using numerical integrals)"""
+			return 2.5 + 3.0*T + 7.0*T*T
+
 		NASAthermoData = thermo.convertCpOverRToNASA(CpFunction, 1.0, 2.0)
+		#print NASAthermoData
 		self.assertAlmostEqual(NASAthermoData.getEnthalpy(298.15), 1.0, 4)
 		self.assertAlmostEqual(NASAthermoData.getEntropy(298.15), 2.0, 4)
 		self.assertAlmostEqual(NASAthermoData.polynomials[0].c0, 2.5, 4)
-		self.assertAlmostEqual(NASAthermoData.polynomials[0].c1, 3.0, 4)
-		self.assertAlmostEqual(NASAthermoData.polynomials[0].c2, 7.0, 4)
+		self.assertAlmostEqual(NASAthermoData.polynomials[0].c1, 3.0/1000, 4)
+		self.assertAlmostEqual(NASAthermoData.polynomials[0].c2, 7.0/1000000, 4)
 		self.assertAlmostEqual(NASAthermoData.polynomials[0].c3, 0.0, 4)
 		self.assertAlmostEqual(NASAthermoData.polynomials[0].c4, 0.0, 4)
 		self.assertAlmostEqual(NASAthermoData.polynomials[1].c0, 2.5, 4)
-		self.assertAlmostEqual(NASAthermoData.polynomials[1].c1, 3.0, 4)
-		self.assertAlmostEqual(NASAthermoData.polynomials[1].c2, 7.0, 4)
+		self.assertAlmostEqual(NASAthermoData.polynomials[1].c1, 3.0/1000, 4)
+		self.assertAlmostEqual(NASAthermoData.polynomials[1].c2, 7.0/1000000, 4)
 		self.assertAlmostEqual(NASAthermoData.polynomials[1].c3, 0.0, 4)
 		self.assertAlmostEqual(NASAthermoData.polynomials[1].c4, 0.0, 4)
 
-	def CpFunction(T):
-		"""Heat capacity function used to test conversion of Cp/R to NASA polynomial (using numerical integrals)"""
-
-		return 2.5 + 3.0*T + 7.0*T*T
 
 
 ################################################################################
