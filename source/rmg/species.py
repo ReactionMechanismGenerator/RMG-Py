@@ -516,15 +516,23 @@ class Species:
 
 		import unirxn.states as states
 
-		# Return None if the species consists of only one atom
-		if len(self.structure[0].atoms()) < 2 or self.spectralData is None:
-			return None
-
-		# Make sure we have the necessary information to calculate the
-		# density of states
-		if not self.spectralData:
+		# Do we have what we need to do the density of states calculation?
+		if self.spectralData is not None:
+			# We already have what we need, so don't do anything
+			pass
+		elif self.structure is not None and len(self.structure) > 0 and \
+			len(self.structure[0].atoms()) > 1:
+			# We have valid structure data, so we can generate spectral data
 			self.generateSpectralData()
-			
+		elif self.structure is not None and len(self.structure) > 0:
+			# It doesn't make sense to calculate the density of states for
+			# this species, so just return None
+			return None
+		else:
+			# We don't have what we need and have no way to generate, so raise
+			# an exception
+			raise Exception('Unable to calculate density of states for species %s; no structure information or spectral data available.' % self)
+
 		# Initialize density of states
 		densStates = numpy.zeros(len(Elist), numpy.float64)
 
@@ -540,7 +548,7 @@ class Species:
 		rot = numpy.array([mode.frequencies for mode in self.spectralData.modes if isinstance(mode, spectral.modes.RigidRotor)])
 		hind = numpy.array([[mode.frequency, mode.barrier] for mode in self.spectralData.modes if isinstance(mode, spectral.modes.HinderedRotor)])
 		if len(hind) == 0: hind = numpy.zeros([0,2],numpy.float64)
-		linear = 1 if self.structure[0].isLinear() else 0
+		linear = 1 if self.structure and len(self.structure) > 0 and self.structure[0].isLinear() else 0
 		symm = self.spectralData.symmetry
 
 		# Calculate the density of states
@@ -594,7 +602,13 @@ class Species:
 		"""
 		Return the molecular weight of the species in kg/mol.
 		"""
-		return self.structure[0].getMolecularWeight()
+		# If we have structure data, use that to calculate the molecular weight
+		if self.structure and len(self.structure) > 0:
+			return self.structure[0].getMolecularWeight()
+		# If not, try to return the 'molWt' attribute; this will raise an
+		# AttributeError if it is undefined
+		else:
+			return self.molWt
 
 	def isIsomorphic(self, other):
 		"""
