@@ -1373,10 +1373,10 @@ def TintOpt_objFun_W(tint, wilhoit, tmin, tmax):
 #below are functions for conversion of general Cp to NASA polynomials
 #because they use numerical integration, they are, in general, likely to be slower and less accurate than versions with analytical integrals for the starting Cp form (e.g. Wilhoit polynomials)
 #therefore, this should only be used when no analytic alternatives are available
-def convertCpOverRToNASA(CpOverR, H298, S298, fixed=1, weighting=1, tint=1000.0, Tmin = 298.0, Tmax=6000.0):
-	"""Convert a CpOverR function into a NASA polynomial thermo instance (using numerical integration)
+def convertCpToNASA(CpObject, H298, S298, fixed=1, weighting=1, tint=1000.0, Tmin = 298.0, Tmax=6000.0):
+	"""Convert an arbitrary heat capacity function into a NASA polynomial thermo instance (using numerical integration)
 
-	Takes: a CpOverR function that will return Cp/R when given argument T (in K)
+	Takes:  CpObject: an object with method "getCp(self,T) that will return Cp in J/mol-K with argument T in K
 		H298: enthalpy at 298.15 K (in J/mol)
 		S298: entropy at 298.15 K (in J/mol-K)
 	Returns a `ThermoNASAData` instance containing two `ThermoNASAPolynomial`
@@ -1390,20 +1390,20 @@ def convertCpOverRToNASA(CpOverR, H298, S298, fixed=1, weighting=1, tint=1000.0,
 
 	#if we are using fixed tint, do not allow tint to float
 	if(fixed == 1):
-		nasa_low, nasa_high = CpOverR2NASA(CpOverR, Tmin, Tmax, tint, weighting)
+		nasa_low, nasa_high = Cp2NASA(CpObject, Tmin, Tmax, tint, weighting)
 	else:
-		nasa_low, nasa_high, tint = CpOverR2NASA_TintOpt(CpOverR, Tmin, Tmax, weighting)
-	iseUnw = CpOverR_TintOpt_objFun(tint, CpOverR, Tmin, Tmax, 0) #the scaled, unweighted ISE (integral of squared error)
+		nasa_low, nasa_high, tint = Cp2NASA_TintOpt(CpObject, Tmin, Tmax, weighting)
+	iseUnw = Cp_TintOpt_objFun(tint, CpObject, Tmin, Tmax, 0) #the scaled, unweighted ISE (integral of squared error)
 	rmsUnw = math.sqrt(iseUnw/(Tmax-Tmin))
 	rmsStr = '(Unweighted) RMS error = %.3f*R;'%(rmsUnw)
 	if(weighting == 1):
-		iseWei= CpOverR_TintOpt_objFun(tint, CpOverR, Tmin, Tmax, weighting) #the scaled, weighted ISE
+		iseWei= Cp_TintOpt_objFun(tint, CpObject, Tmin, Tmax, weighting) #the scaled, weighted ISE
 		rmsWei = math.sqrt(iseWei/math.log(Tmax/Tmin))
 		rmsStr = 'Weighted RMS error = %.3f*R;'%(rmsWei)+rmsStr
 
 	#print a warning if the rms fit is worse that 0.25*R
 	if(rmsUnw > 0.25 or rmsWei > 0.25):
-		logging.warning("Poor CpOverR-to-NASA fit quality: RMS error = %.3f*R" % (rmsWei if weighting == 1 else rmsUnw))
+		logging.warning("Poor Cp-to-NASA fit quality: RMS error = %.3f*R" % (rmsWei if weighting == 1 else rmsUnw))
 
 	#restore to conventional units of K for Tint and units based on K rather than kK in NASA polynomial coefficients
 	tint=tint*1000.
@@ -1421,7 +1421,7 @@ def convertCpOverRToNASA(CpOverR, H298, S298, fixed=1, weighting=1, tint=1000.0,
 	nasa_high.c4 /= 1000000000000.
 
 	# output comment
-	comment = 'CpOverR function fitted to NASA function. ' + rmsStr
+	comment = 'Cp function fitted to NASA function. ' + rmsStr
 	nasa_low.Trange = (Tmin,tint); nasa_low.Tmin = Tmin; nasa_low.Tmax = tint
 	nasa_low.comment = 'Low temperature range polynomial'
 	nasa_high.Trange = (tint,Tmax); nasa_high.Tmin = tint; nasa_high.Tmax = Tmax
@@ -1432,6 +1432,7 @@ def convertCpOverRToNASA(CpOverR, H298, S298, fixed=1, weighting=1, tint=1000.0,
 	Hlow = (H298 - nasa_low.getEnthalpy(298.15))/constants.R
 	#low polynomial entropy:
 	Slow = (S298 - nasa_low.getEntropy(298.15))/constants.R
+	#***consider changing this to use getEnthalpy and getEntropy methods of thermoObject
 
 	# update last two coefficients
 	nasa_low.c5 = Hlow
@@ -1453,9 +1454,9 @@ def convertCpOverRToNASA(CpOverR, H298, S298, fixed=1, weighting=1, tint=1000.0,
 
 ################################################################################
 
-def CpOverR2NASA(CpOverR, tmin, tmax, tint, weighting, contCons=3):
+def Cp2NASA(CpObject, tmin, tmax, tint, weighting, contCons=3):
 	"""
-	input: CpOverR function that will return Cp/R when given argument T (in kiloKelvin)
+	input: CpObject: an object with method "getCp(self,T) that will return Cp in J/mol-K with argument T in K
 	       Tmin (minimum temperature (in kiloKelvin),
 	       Tmax (maximum temperature (in kiloKelvin),
 	       Tint (intermediate temperature, in kiloKelvin)
@@ -1570,20 +1571,20 @@ def CpOverR2NASA(CpOverR, tmin, tmax, tint, weighting, contCons=3):
 			A[i,j] = A[j,i]
 
 	#construct b vector
-	w0low = Nintegral_T0(CpOverR,tmin,tint)
-	w1low = Nintegral_T1(CpOverR,tmin,tint)
-	w2low = Nintegral_T2(CpOverR,tmin,tint)
-	w3low = Nintegral_T3(CpOverR,tmin,tint)
-	w0high = Nintegral_T0(CpOverR,tint,tmax)
-	w1high = Nintegral_T1(CpOverR,tint,tmax)
-	w2high = Nintegral_T2(CpOverR,tint,tmax)
-	w3high = Nintegral_T3(CpOverR,tint,tmax)
+	w0low = Nintegral_T0(CpObject,tmin,tint)
+	w1low = Nintegral_T1(CpObject,tmin,tint)
+	w2low = Nintegral_T2(CpObject,tmin,tint)
+	w3low = Nintegral_T3(CpObject,tmin,tint)
+	w0high = Nintegral_T0(CpObject,tint,tmax)
+	w1high = Nintegral_T1(CpObject,tint,tmax)
+	w2high = Nintegral_T2(CpObject,tint,tmax)
+	w3high = Nintegral_T3(CpObject,tint,tmax)
 	if weighting:
-		wM1low = Nintegral_TM1(CpOverR,tmin,tint)
-		wM1high = Nintegral_TM1(CpOverR,tint,tmax)
+		wM1low = Nintegral_TM1(CpObject,tmin,tint)
+		wM1high = Nintegral_TM1(CpObject,tint,tmax)
 	else:
-		w4low = Nintegral_T4(CpOverR,tmin,tint)
-		w4high = Nintegral_T4(CpOverR,tint,tmax)
+		w4low = Nintegral_T4(CpObject,tmin,tint)
+		w4high = Nintegral_T4(CpObject,tint,tmax)
 
 	if weighting:
 		b[0] = 2*wM1low
@@ -1618,24 +1619,24 @@ def CpOverR2NASA(CpOverR, tmin, tmax, tint, weighting, contCons=3):
 
 	return nasa_low, nasa_high
 
-def CpOverR2NASA_TintOpt(CpOverR, tmin, tmax, weighting):
-	#input: CpOverR function that will return Cp/R when given argument T (in kiloKelvin),  Tmin (minimum temperature (in kiloKelvin), Tmax (maximum temperature (in kiloKelvin)
+def Cp2NASA_TintOpt(CpObject, tmin, tmax, weighting):
+	#input: CpObject: an object with method "getCp(self,T) that will return Cp in J/mol-K with argument T in K
 	#output: NASA parameters for Cp/R, b1, b2, b3, b4, b5 (low temp parameters) and b6, b7, b8, b9, b10 (high temp parameters), and Tint
 	#1. vary Tint, bounded by tmin and tmax, to minimize TintOpt_objFun
 	#cf. http://docs.scipy.org/doc/scipy/reference/tutorial/optimize.html and http://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.fminbound.html#scipy.optimize.fminbound)
-	tint = optimize.fminbound(CpOverR_TintOpt_objFun, tmin, tmax, args=(CpOverR, tmin, tmax, weighting))
+	tint = optimize.fminbound(Cp_TintOpt_objFun, tmin, tmax, args=(CpObject, tmin, tmax, weighting))
 	#note that we have not used any guess when using this minimization routine
 	#2. determine the bi parameters based on the optimized Tint (alternatively, maybe we could have TintOpt_objFun also return these parameters, along with the objective function, which would avoid an extra calculation)
-	(nasa1, nasa2) = CpOverR2NASA(CpOverR, tmin, tmax, tint[0] ,weighting)
+	(nasa1, nasa2) = Cp2NASA(CpObject, tmin, tmax, tint[0] ,weighting)
 	return nasa1, nasa2, tint[0]
 
-def CpOverR_TintOpt_objFun(tint, CpOverR, tmin, tmax, weighting):
-	#input: Tint (intermediate temperature, in kiloKelvin); CpOverR function that will return Cp/R when given argument T (in kiloKelvin), Tmin (minimum temperature (in kiloKelvin), Tmax (maximum temperature (in kiloKelvin)
+def Cp_TintOpt_objFun(tint, CpObject, tmin, tmax, weighting):
+	#input: Tint (intermediate temperature, in kiloKelvin); CpObject: an object with method "getCp(self,T) that will return Cp in J/mol-K with argument T in K, Tmin (minimum temperature (in kiloKelvin), Tmax (maximum temperature (in kiloKelvin)
 	#output: the quantity Integrate[(Cp/R-Cp(NASA)/R)^2, {t, tmin, tmax}]
 	if (weighting == 1):
-		result = CpOverR_TintOpt_objFun_W(tint, CpOverR, tmin, tmax)
+		result = Cp_TintOpt_objFun_W(tint, CpObject, tmin, tmax)
 	else:
-		result = CpOverR_TintOpt_objFun_NW(tint, CpOverR, tmin, tmax)
+		result = Cp_TintOpt_objFun_NW(tint, CpObject, tmin, tmax)
 
 	# numerical errors could accumulate to give a slightly negative result
 	# this is unphysical (it's the integral of a *squared* error) so we
@@ -1643,7 +1644,7 @@ def CpOverR_TintOpt_objFun(tint, CpOverR, tmin, tmax, weighting):
 	if result<0:
 		logging.error("Numerical integral results suggest sum of squared errors is negative; please e-mail Greg with the following results:")
 		logging.error(tint)
-		logging.error(CpOverR)
+		logging.error(CpObject)
 		logging.error(tmin)
 		logging.error(tmax)
 		logging.error(weighting)
@@ -1652,102 +1653,103 @@ def CpOverR_TintOpt_objFun(tint, CpOverR, tmin, tmax, weighting):
 
 	return result
 
-def CpOverR_TintOpt_objFun_NW(tint, CpOverR, tmin, tmax):
+def Cp_TintOpt_objFun_NW(tint, CpObject, tmin, tmax):
 	"""
 	Evaluate the objective function - the integral of the square of the error in the fit.
 
 	input: Tint (intermediate temperature, in kiloKelvin)
-			CpOverR function that will return Cp/R when given argument T (in kiloKelvin)
+			CpObject: an object with method "getCp(self,T) that will return Cp in J/mol-K with argument T in K
 			Tmin (minimum temperature (in kiloKelvin),
 			Tmax (maximum temperature (in kiloKelvin)
 	output: the quantity Integrate[(Cp/R-Cp(NASA)/R)^2, {t, tmin, tmax}]
 	"""
-	nasa_low, nasa_high = CpOverR2NASA(CpOverR,tmin,tmax,tint, 0)
+	nasa_low, nasa_high = Cp2NASA(CpObject,tmin,tmax,tint, 0)
 	b1, b2, b3, b4, b5 = nasa_low.c0, nasa_low.c1, nasa_low.c2, nasa_low.c3, nasa_low.c4
 	b6, b7, b8, b9, b10 = nasa_high.c0, nasa_high.c1, nasa_high.c2, nasa_high.c3, nasa_high.c4
 
-	result = (Nintegral2_T0(CpOverR,tmin,tmax) +
+	result = (Nintegral2_T0(CpObject,tmin,tmax) +
 				 nasa_low.integral2_T0(tint)-nasa_low.integral2_T0(tmin) + nasa_high.integral2_T0(tmax) - nasa_high.integral2_T0(tint)
-				 - 2* (b6*Nintegral_T0(CpOverR,tint,tmax)+b1*Nintegral_T0(CpOverR,tmin,tint)
-				 +b7*Nintegral_T1(CpOverR,tint,tmax) +b2*Nintegral_T1(CpOverR,tmin,tint)
-				 +b8*Nintegral_T2(CpOverR,tint,tmax) +b3*Nintegral_T2(CpOverR,tmin,tint)
-				 +b9*Nintegral_T3(CpOverR,tint,tmax) +b4*Nintegral_T3(CpOverR,tmin,tint)
-				 +b10*Nintegral_T4(CpOverR,tint,tmax)+b5*Nintegral_T4(CpOverR,tmin,tint)))
+				 - 2* (b6*Nintegral_T0(CpObject,tint,tmax)+b1*Nintegral_T0(CpObject,tmin,tint)
+				 +b7*Nintegral_T1(CpObject,tint,tmax) +b2*Nintegral_T1(CpObject,tmin,tint)
+				 +b8*Nintegral_T2(CpObject,tint,tmax) +b3*Nintegral_T2(CpObject,tmin,tint)
+				 +b9*Nintegral_T3(CpObject,tint,tmax) +b4*Nintegral_T3(CpObject,tmin,tint)
+				 +b10*Nintegral_T4(CpObject,tint,tmax)+b5*Nintegral_T4(CpObject,tmin,tint)))
 
 	return result
 
-def CpOverR_TintOpt_objFun_W(tint, CpOverR, tmin, tmax):
+def Cp_TintOpt_objFun_W(tint, CpObject, tmin, tmax):
 	"""
 	Evaluate the objective function - the integral of the square of the error in the fit.
 
 	If fit is close to perfect, result may be slightly negative due to numerical errors in evaluating this integral.
 	input: Tint (intermediate temperature, in kiloKelvin)
-			CpOverR function that will return Cp/R when given argument T (in kiloKelvin)
+			CpObject: an object with method "getCp(self,T) that will return Cp in J/mol-K with argument T in K
 			Tmin (minimum temperature (in kiloKelvin),
 			Tmax (maximum temperature (in kiloKelvin)
 	output: the quantity Integrate[1/t*(Cp/R-Cp(NASA)/R)^2, {t, tmin, tmax}]
 	"""
-	nasa_low, nasa_high = CpOverR2NASA(CpOverR,tmin,tmax,tint, 1)
+	nasa_low, nasa_high = Cp2NASA(CpObject,tmin,tmax,tint, 1)
 	b1, b2, b3, b4, b5 = nasa_low.c0, nasa_low.c1, nasa_low.c2, nasa_low.c3, nasa_low.c4
 	b6, b7, b8, b9, b10 = nasa_high.c0, nasa_high.c1, nasa_high.c2, nasa_high.c3, nasa_high.c4
 
-	result = (Nintegral2_TM1(CpOverR,tmin,tmax) +
+	result = (Nintegral2_TM1(CpObject,tmin,tmax) +
 				 nasa_low.integral2_TM1(tint)-nasa_low.integral2_TM1(tmin) + nasa_high.integral2_TM1(tmax) - nasa_high.integral2_TM1(tint)
-				 - 2* (b6*Nintegral_TM1(CpOverR,tint,tmax)+b1*Nintegral_TM1(CpOverR,tmin,tint)
-				 +b7*Nintegral_T0(CpOverR,tint,tmax) +b2*Nintegral_T0(CpOverR,tmin,tint)
-				 +b8*Nintegral_T1(CpOverR,tint,tmax) +b3*Nintegral_T1(CpOverR,tmin,tint)
-				 +b9*Nintegral_T2(CpOverR,tint,tmax) +b4*Nintegral_T2(CpOverR,tmin,tint)
-				 +b10*Nintegral_T3(CpOverR,tint,tmax)+b5*Nintegral_T3(CpOverR,tmin,tint)))
+				 - 2* (b6*Nintegral_TM1(CpObject,tint,tmax)+b1*Nintegral_TM1(CpObject,tmin,tint)
+				 +b7*Nintegral_T0(CpObject,tint,tmax) +b2*Nintegral_T0(CpObject,tmin,tint)
+				 +b8*Nintegral_T1(CpObject,tint,tmax) +b3*Nintegral_T1(CpObject,tmin,tint)
+				 +b9*Nintegral_T2(CpObject,tint,tmax) +b4*Nintegral_T2(CpObject,tmin,tint)
+				 +b10*Nintegral_T3(CpObject,tint,tmax)+b5*Nintegral_T3(CpObject,tmin,tint)))
 
 	return result
 
 #the numerical integrals:
 
-def Nintegral_T0(CpOverR, tmin, tmax):
+def Nintegral_T0(CpObject, tmin, tmax):
 	#units of input and output are same as Nintegral
-	return Nintegral(CpOverR,tmin,tmax,0,0)
+	return Nintegral(CpObject,tmin,tmax,0,0)
 
-def Nintegral_TM1(CpOverR, tmin, tmax):
+def Nintegral_TM1(CpObject, tmin, tmax):
 	#units of input and output are same as Nintegral
-	return Nintegral(CpOverR,tmin,tmax,-1,0)
+	return Nintegral(CpObject,tmin,tmax,-1,0)
 
-def Nintegral_T1(CpOverR, tmin, tmax):
+def Nintegral_T1(CpObject, tmin, tmax):
 	#units of input and output are same as Nintegral
-	return Nintegral(CpOverR,tmin,tmax,1,0)
+	return Nintegral(CpObject,tmin,tmax,1,0)
 
-def Nintegral_T2(CpOverR, tmin, tmax):
+def Nintegral_T2(CpObject, tmin, tmax):
 	#units of input and output are same as Nintegral
-	return Nintegral(CpOverR,tmin,tmax,2,0)
+	return Nintegral(CpObject,tmin,tmax,2,0)
 
-def Nintegral_T3(CpOverR, tmin, tmax):
+def Nintegral_T3(CpObject, tmin, tmax):
 	#units of input and output are same as Nintegral
-	return Nintegral(CpOverR,tmin,tmax,3,0)
+	return Nintegral(CpObject,tmin,tmax,3,0)
 
-def Nintegral_T4(CpOverR, tmin, tmax):
+def Nintegral_T4(CpObject, tmin, tmax):
 	#units of input and output are same as Nintegral
-	return Nintegral(CpOverR,tmin,tmax,4,0)
+	return Nintegral(CpObject,tmin,tmax,4,0)
 
-def Nintegral2_T0(CpOverR, tmin, tmax):
+def Nintegral2_T0(CpObject, tmin, tmax):
 	#units of input and output are same as Nintegral
-	return Nintegral(CpOverR,tmin,tmax,0,1)
+	return Nintegral(CpObject,tmin,tmax,0,1)
 
-def Nintegral2_TM1(CpOverR, tmin, tmax):
+def Nintegral2_TM1(CpObject, tmin, tmax):
 	#units of input and output are same as Nintegral
-	return Nintegral(CpOverR,tmin,tmax,-1,1)
+	return Nintegral(CpObject,tmin,tmax,-1,1)
 
-def Nintegral(CpOverR, tmin, tmax, n, squared):
-	#inputs:CpOverR function that will return Cp/R when given argument T (in kiloKelvin)
+def Nintegral(CpObject, tmin, tmax, n, squared):
+	#inputs:CpObject: an object with method "getCp(self,T) that will return Cp in J/mol-K with argument T in K
 	#	tmin, tmax: limits of integration in kiloKelvin
 	#	n: integeer exponent on t (see below), typically -1 to 4
 	#	squared: 0 if integrating Cp/R(t)*t^n; 1 if integrating Cp/R(t)^2*t^n
 	#output: a numerical approximation to the quantity Integrate[Cp/R(t)*t^n, {t, tmin, tmax}] or Integrate[Cp/R(t)^2*t^n, {t, tmin, tmax}], in units based on kiloKelvin
 
-	return integrate.quad(integrand,tmin,tmax,args=(CpOverR,n,squared))[0]
+	return integrate.quad(integrand,tmin,tmax,args=(CpObject,n,squared))[0]
 
-def integrand(t, CpOverR , n, squared):
-	result = CpOverR(t)
+def integrand(t, CpObject , n, squared):
+	#input requirements same as Nintegral above
+	result = CpObject.getHeatCapacity(t*1000)/constants.R#note that we multiply t by 1000, since the Cp function uses Kelvin rather than kiloKelvin; also, we divide by R to get the dimensionless Cp/R
 	if(squared):
-		result = result*CpOverR(t)
+		result = result*result
 	if(n < 0):
 		for i in range(0,abs(n)):#divide by t, |n| times
 			result = result/t

@@ -503,16 +503,13 @@ class ThermoWilhoitToNASACheck(unittest.TestCase):
 		ans = n.integral2_T0(1.0) - n.integral2_T0(.298)
 		self.assertAlmostEqual(ans, 0.71887383097545454, 15)
 
-class ThermoCpOverRToNASACheck(unittest.TestCase):
+class ThermoCpToNASACheck(unittest.TestCase):
 	"""Test conversion from Cp/R to NASA polynomials (using numerical integrals)"""
-	def testNASAfromCpOverR(self):
-		"""Can we make NASA polynomial data from a CpOverR function"""
+	def testNASAfromCp(self):
+		"""Can we make NASA polynomial data from an arbitrary Cp function"""
 
-		def CpFunction(T):
-			#Heat capacity function used to test conversion of Cp/R to NASA polynomial (using numerical integrals); note that T here is in kiloKelvin
-			return 2.5 + 3.0*T + 7.0*T*T
-
-		NASAthermoData = thermo.convertCpOverRToNASA(CpFunction, 1.0, 2.0)
+		CpObject = thermo.ThermoNASAPolynomial(T_range=[0,8000], coeffs = [2.5, 3.0/1000, 7.0/1000000, 0.0, 0.0, 0, 0])
+		NASAthermoData = thermo.convertCpToNASA(CpObject, 1.0, 2.0)
 		#print NASAthermoData
 		self.assertAlmostEqual(NASAthermoData.getEnthalpy(298.15), 1.0, 4)
 		self.assertAlmostEqual(NASAthermoData.getEntropy(298.15), 2.0, 4)
