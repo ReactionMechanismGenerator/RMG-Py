@@ -204,7 +204,7 @@ class ThermoGAData(ThermoData):
 
 	def getHeatCapacity(self, T):
 		"""
-		Return the heat capacity in J/mol*K at temperature `T` in K.
+		Return the constant-pressure heat capacity (Cp) in J/mol*K at temperature `T` in K.
 		"""
 		if not self.isTemperatureValid(T):
 			raise data.TemperatureOutOfRangeException('Invalid temperature for heat capacity estimation from group additivity.')
@@ -374,7 +374,7 @@ class ThermoNASAPolynomial(ThermoData):
 
 	def getHeatCapacity(self, T):
 		"""
-		Return the heat capacity in J/mol*K at temperature `T` in K.
+		Return the constant-pressure heat capacity (Cp) in J/mol*K at temperature `T` in K.
 		"""
 		if not self.isTemperatureValid(T):
 			raise data.TemperatureOutOfRangeException('Invalid temperature for heat capacity estimation from NASA polynomial.')
@@ -539,7 +539,7 @@ class ThermoNASAData(ThermoData):
 	
 	def getHeatCapacity(self, T):
 		"""
-		Return the heat capacity in J/mol*K at temperature `T` in K.
+		Return the constant-pressure heat capacity (Cp) in J/mol*K at temperature `T` in K.
 		"""
 		poly = self.selectPolynomialForTemperature(T)
 		return poly.getHeatCapacity(T)
@@ -680,7 +680,7 @@ class ThermoWilhoitData(ThermoData):
 	
 	def getHeatCapacity(self, T):
 		"""
-		Return the heat capacity in J/mol*K at temperature `T` in K.
+		Return the constant-pressure heat capacity (Cp) in J/mol*K at temperature `T` in K.
 		"""
 		y = T/(T+self.B)
 		return self.cp0+(self.cpInf-self.cp0)*y*y*( 1 +
@@ -1376,7 +1376,7 @@ def TintOpt_objFun_W(tint, wilhoit, tmin, tmax):
 def convertCpToNASA(CpObject, H298, S298, fixed=1, weighting=1, tint=1000.0, Tmin = 298.0, Tmax=6000.0):
 	"""Convert an arbitrary heat capacity function into a NASA polynomial thermo instance (using numerical integration)
 
-	Takes:  CpObject: an object with method "getCp(self,T) that will return Cp in J/mol-K with argument T in K
+	Takes:  CpObject: an object with method "getHeatCapacity(self,T) that will return Cp in J/mol-K with argument T in K
 		H298: enthalpy at 298.15 K (in J/mol)
 		S298: entropy at 298.15 K (in J/mol-K)
 	Returns a `ThermoNASAData` instance containing two `ThermoNASAPolynomial`
@@ -1456,7 +1456,7 @@ def convertCpToNASA(CpObject, H298, S298, fixed=1, weighting=1, tint=1000.0, Tmi
 
 def Cp2NASA(CpObject, tmin, tmax, tint, weighting, contCons=3):
 	"""
-	input: CpObject: an object with method "getCp(self,T) that will return Cp in J/mol-K with argument T in K
+	input: CpObject: an object with method "getHeatCapacity(self,T) that will return Cp in J/mol-K with argument T in K
 	       Tmin (minimum temperature (in kiloKelvin),
 	       Tmax (maximum temperature (in kiloKelvin),
 	       Tint (intermediate temperature, in kiloKelvin)
@@ -1620,7 +1620,7 @@ def Cp2NASA(CpObject, tmin, tmax, tint, weighting, contCons=3):
 	return nasa_low, nasa_high
 
 def Cp2NASA_TintOpt(CpObject, tmin, tmax, weighting):
-	#input: CpObject: an object with method "getCp(self,T) that will return Cp in J/mol-K with argument T in K
+	#input: CpObject: an object with method "getHeatCapacity(self,T) that will return Cp in J/mol-K with argument T in K
 	#output: NASA parameters for Cp/R, b1, b2, b3, b4, b5 (low temp parameters) and b6, b7, b8, b9, b10 (high temp parameters), and Tint
 	#1. vary Tint, bounded by tmin and tmax, to minimize TintOpt_objFun
 	#cf. http://docs.scipy.org/doc/scipy/reference/tutorial/optimize.html and http://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.fminbound.html#scipy.optimize.fminbound)
@@ -1631,7 +1631,7 @@ def Cp2NASA_TintOpt(CpObject, tmin, tmax, weighting):
 	return nasa1, nasa2, tint[0]
 
 def Cp_TintOpt_objFun(tint, CpObject, tmin, tmax, weighting):
-	#input: Tint (intermediate temperature, in kiloKelvin); CpObject: an object with method "getCp(self,T) that will return Cp in J/mol-K with argument T in K, Tmin (minimum temperature (in kiloKelvin), Tmax (maximum temperature (in kiloKelvin)
+	#input: Tint (intermediate temperature, in kiloKelvin); CpObject: an object with method "getHeatCapacity(self,T) that will return Cp in J/mol-K with argument T in K, Tmin (minimum temperature (in kiloKelvin), Tmax (maximum temperature (in kiloKelvin)
 	#output: the quantity Integrate[(Cp/R-Cp(NASA)/R)^2, {t, tmin, tmax}]
 	if (weighting == 1):
 		result = Cp_TintOpt_objFun_W(tint, CpObject, tmin, tmax)
@@ -1658,7 +1658,7 @@ def Cp_TintOpt_objFun_NW(tint, CpObject, tmin, tmax):
 	Evaluate the objective function - the integral of the square of the error in the fit.
 
 	input: Tint (intermediate temperature, in kiloKelvin)
-			CpObject: an object with method "getCp(self,T) that will return Cp in J/mol-K with argument T in K
+			CpObject: an object with method "getHeatCapacity(self,T) that will return Cp in J/mol-K with argument T in K
 			Tmin (minimum temperature (in kiloKelvin),
 			Tmax (maximum temperature (in kiloKelvin)
 	output: the quantity Integrate[(Cp/R-Cp(NASA)/R)^2, {t, tmin, tmax}]
@@ -1683,7 +1683,7 @@ def Cp_TintOpt_objFun_W(tint, CpObject, tmin, tmax):
 
 	If fit is close to perfect, result may be slightly negative due to numerical errors in evaluating this integral.
 	input: Tint (intermediate temperature, in kiloKelvin)
-			CpObject: an object with method "getCp(self,T) that will return Cp in J/mol-K with argument T in K
+			CpObject: an object with method "getHeatCapacity(self,T) that will return Cp in J/mol-K with argument T in K
 			Tmin (minimum temperature (in kiloKelvin),
 			Tmax (maximum temperature (in kiloKelvin)
 	output: the quantity Integrate[1/t*(Cp/R-Cp(NASA)/R)^2, {t, tmin, tmax}]
@@ -1737,7 +1737,7 @@ def Nintegral2_TM1(CpObject, tmin, tmax):
 	return Nintegral(CpObject,tmin,tmax,-1,1)
 
 def Nintegral(CpObject, tmin, tmax, n, squared):
-	#inputs:CpObject: an object with method "getCp(self,T) that will return Cp in J/mol-K with argument T in K
+	#inputs:CpObject: an object with method "getHeatCapacity(self,T) that will return Cp in J/mol-K with argument T in K
 	#	tmin, tmax: limits of integration in kiloKelvin
 	#	n: integeer exponent on t (see below), typically -1 to 4
 	#	squared: 0 if integrating Cp/R(t)*t^n; 1 if integrating Cp/R(t)^2*t^n
