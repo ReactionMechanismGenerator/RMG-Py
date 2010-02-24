@@ -1380,7 +1380,8 @@ def convertCpToNASA(CpObject, H298, S298, fixed=1, weighting=0, tint=1000.0, Tmi
 		H298: enthalpy at 298.15 K (in J/mol)
 		S298: entropy at 298.15 K (in J/mol-K)
 		fixed: 1 (default) to fix tint; 0 to allow it to float to get a better fit
-		weighting: 0 (default) to not weight the fit by 1/T; 1 to weight by 1/T (unlikely to be useful outside of RMG's GA->Wilhoit->NASA conversion workflow, where we "train" the Wilhoit polynomial with low-temperature heat capacity data)
+		weighting: 0 (default) to not weight the fit by 1/T; 1 to weight by 1/T to emphasize good fit at lower temperatures
+		Tint, Tmin, Tmax: intermediate, minimum, and maximum temperatures in Kelvin
 	Returns a `ThermoNASAData` instance containing two `ThermoNASAPolynomial` polynomials
 	"""
 
