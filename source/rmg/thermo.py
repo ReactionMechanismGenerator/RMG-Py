@@ -1373,14 +1373,15 @@ def TintOpt_objFun_W(tint, wilhoit, tmin, tmax):
 #below are functions for conversion of general Cp to NASA polynomials
 #because they use numerical integration, they are, in general, likely to be slower and less accurate than versions with analytical integrals for the starting Cp form (e.g. Wilhoit polynomials)
 #therefore, this should only be used when no analytic alternatives are available
-def convertCpToNASA(CpObject, H298, S298, fixed=1, weighting=1, tint=1000.0, Tmin = 298.0, Tmax=6000.0):
+def convertCpToNASA(CpObject, H298, S298, fixed=1, weighting=0, tint=1000.0, Tmin = 298.0, Tmax=6000.0):
 	"""Convert an arbitrary heat capacity function into a NASA polynomial thermo instance (using numerical integration)
 
 	Takes:  CpObject: an object with method "getHeatCapacity(self,T) that will return Cp in J/mol-K with argument T in K
 		H298: enthalpy at 298.15 K (in J/mol)
 		S298: entropy at 298.15 K (in J/mol-K)
-	Returns a `ThermoNASAData` instance containing two `ThermoNASAPolynomial`
-	polynomials
+		fixed: 1 (default) to fix tint; 0 to allow it to float to get a better fit
+		weighting: 0 (default) to not weight the fit by 1/T; 1 to weight by 1/T (unlikely to be useful outside of RMG's GA->Wilhoit->NASA conversion workflow, where we "train" the Wilhoit polynomial with low-temperature heat capacity data)
+	Returns a `ThermoNASAData` instance containing two `ThermoNASAPolynomial` polynomials
 	"""
 
 	# Scale the temperatures to kK
