@@ -46,6 +46,7 @@ import structure
 import thermo
 import data
 import spectral.modes
+import spectral.data
 import ctml_writer
 
 ################################################################################
@@ -465,7 +466,7 @@ class Species:
 			self.generateThermoData()
 		return self.thermoData
 		
-	def generateThermoData(self):
+	def generateThermoData(self, thermoClass=thermo.ThermoNASAData):
 		"""
 		Generate thermodynamic data for the species using the thermo database.
 		
@@ -476,7 +477,7 @@ class Species:
 		thermoData = []
 		for structure in self.structure:
 			structure.updateAtomTypes()
-			thermoData.append(getThermoData(structure))
+			thermoData.append(getThermoData(structure, thermoClass))
 		
 		# If multiple resonance isomers are present, use the thermo data of
 		# the most stable isomer (i.e. one with lowest enthalpy of formation)
@@ -506,7 +507,7 @@ class Species:
 		if not self.thermoData:
 			self.generateThermoData()
 		# Generate the spectral data
-		spectral.fit.generateSpectralData(self.structure[0], self.thermoData)
+		return spectral.data.generateSpectralData(self.structure[0], self.thermoData)
 
 	def calculateDensityOfStates(self, Elist):
 		"""
@@ -738,7 +739,7 @@ def processNewSpecies(spec):
 
 	# Generate spectral data
 	if settings.spectralDataEstimation and spec.thermoData and spec.reactive:
-		import spectral
+		import spectral.data
 		spec.spectralData = spectral.data.generateSpectralData(spec.structure[0], spec.thermoData)
 		
 	# Generate Lennard-Jones parameters
@@ -1078,12 +1079,12 @@ forbiddenStructures = None
 
 ################################################################################
 
-def getThermoData(struct, required_class=thermo.ThermoNASAData): # ThermoGAData
+def getThermoData(struct, thermoClass=thermo.ThermoNASAData): # ThermoGAData
 	"""
 	Get the thermodynamic data associated with `structure` by looking in the
 	loaded thermodynamic database.
 
-	`required_class` is the class of thermo object you want returning; default
+	`thermoClass` is the class of thermo object you want returning; default
 	is :class:`ThermoNASAData`
 	"""
 	import constants
@@ -1097,7 +1098,7 @@ def getThermoData(struct, required_class=thermo.ThermoNASAData): # ThermoGAData
 
 	logging.debug('Group-additivity thermo data: %s' % GAthermoData)
 
-	if required_class==thermo.ThermoGAData:
+	if thermoClass == thermo.ThermoGAData:
 		return GAthermoData  # return here because Wilhoit conversion not wanted
 
 	# Convert to Wilhoit
@@ -1108,7 +1109,7 @@ def getThermoData(struct, required_class=thermo.ThermoNASAData): # ThermoGAData
 
 	logging.debug('Wilhoit thermo data: %s' % WilhoitData)
 
-	if required_class==thermo.ThermoWilhoitData:
+	if thermoClass == thermo.ThermoWilhoitData:
 		return WilhoitData
 
 	# Convert to NASA
@@ -1123,7 +1124,7 @@ def getThermoData(struct, required_class=thermo.ThermoNASAData): # ThermoGAData
 	else:
 	    logging.debug("Overall RMS error in heat capacity fit = %.3f*R" % (rmsErr))
 
-	if required_class==thermo.ThermoNASAData:
+	if thermoClass == thermo.ThermoNASAData:
 		return NASAthermoData
 
 	# Still not returned?

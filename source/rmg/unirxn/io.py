@@ -66,7 +66,8 @@ def readInputFile(fstr):
 		for database in databases:
 			if database[1] == 'general':
 				logging.debug('General database: ' + database[2])
-				# Load only frequency database
+				# Load only thermo and frequency databases
+				loadThermoDatabase(database[2] + os.sep)
 				loadFrequencyDatabase(database[2] + os.sep)
 		logging.debug('')
 
@@ -85,19 +86,33 @@ def readInputFile(fstr):
 			species.fromXML(document, element)
 			# Add to local species dictionary (for matching with other parts of file)
 			speciesDict[sid] = species
-			# Convert group additivity thermo data to Wilhoit
-			if species.thermoData:
-				struct = species.structure[0]
-				rotors = struct.calculateNumberOfRotors()
-				atoms = len(struct.atoms())
-				linear = struct.isLinear()
-				species.thermoData = thermo.convertGAtoWilhoit(species.thermoData,atoms,rotors,linear)
 
-				# Use the Wilhoit thermo data to get the ground-state energy
-				# But don't overwrite a ground-state energy specified in the
-				# input file
-				if species.E0 is None:
-					species.E0 = species.thermoData.getGroundStateEnergy()
+			# Generate thermo data if needed (this won't work if there is no
+			# general database loaded)
+			if not species.thermoData:
+				species.thermoData = species.generateThermoData(thermoClass=thermo.ThermoGAData)
+
+			# Generate spectral data if needed (this won't work if there is no
+			# general database loaded)
+			if not species.spectralData:
+				species.spectralData = species.generateSpectralData()
+
+			# Generate Lennard-Jones parameters if needed
+			if not species.lennardJones:
+				species.calculateLennardJonesParameters()
+
+			# Convert group additivity thermo data to Wilhoit
+			struct = species.structure[0]
+			rotors = struct.calculateNumberOfRotors()
+			atoms = len(struct.atoms())
+			linear = struct.isLinear()
+			species.thermoData = thermo.convertGAtoWilhoit(species.thermoData,atoms,rotors,linear)
+
+			# Use the Wilhoit thermo data to get the ground-state energy
+			# But don't overwrite a ground-state energy specified in the
+			# input file
+			if species.E0 is None:
+				species.E0 = species.thermoData.getGroundStateEnergy()
 				
 			logging.debug('\tCreated species "%s"' % species.label)
 				

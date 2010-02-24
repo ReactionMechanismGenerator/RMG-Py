@@ -191,7 +191,7 @@ def generateSpectralData(struct, thermoData):
 		else:
 			count = 0
 		if count % data[0] != 0:
-			raise Exception('Incorrect number of matches of node "%s" while estimating frequencies of %s.' % (node, struct))
+			raise Exception('Incorrect number of matches of node "%s" while estimating frequencies of %s; expected a multiple of %s, got %s.' % (node, struct, data[0], count))
 		groupCount[node] = count / data[0]
 
 	# For debugging, print a list of the groups found
