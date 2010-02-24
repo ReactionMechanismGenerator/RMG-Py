@@ -1018,10 +1018,21 @@ def CpLimits(atoms, rotors, linear):
 	return cp0, cpInf
 
 ################################################################################
-def convertWilhoitToNASA(Wilhoit, fixed=1, weighting=1, tint=1000.0, Tmin = 298.0, Tmax=6000.0):
+def convertWilhoitToNASA(Wilhoit, fixed=1, weighting=1, tint=1000.0, Tmin = 298.0, Tmax=6000.0, contCons=3):
 	"""Convert a Wilhoit thermo instance into a NASA polynomial thermo instance.
 	
-	Takes a `ThermoWilhoitData` instance of themochemical data.
+	Takes: a `ThermoWilhoitData` instance of themochemical data.
+		fixed: 1 (default) to fix tint; 0 to allow it to float to get a better fit
+		weighting: 0 (default) to not weight the fit by 1/T; 1 to weight by 1/T to emphasize good fit at lower temperatures
+		tint, Tmin, Tmax: intermediate, minimum, and maximum temperatures in Kelvin
+		contCons: a measure of the continutity constraints on the fitted NASA polynomials; possible values are:
+			    5: constrain Cp, dCp/dT, d2Cp/dT2, d3Cp/dT3, and d4Cp/dT4 to be continuous at tint; note: this effectively constrains all the coefficients to be equal and should be equivalent to fitting only one polynomial (rather than two)
+			    4: constrain Cp, dCp/dT, d2Cp/dT2, and d3Cp/dT3 to be continuous at tint
+			    3 (default): constrain Cp, dCp/dT, and d2Cp/dT2 to be continuous at tint
+			    2: constrain Cp and dCp/dT to be continuous at tint
+			    1: constrain Cp to be continous at tint
+			    0: no constraints on continuity of Cp(T) at tint
+			    note: 5th (and higher) derivatives of NASA Cp(T) are zero and hence will automatically be continuous at tint by the form of the Cp(T) function
 	Returns a `ThermoNASAData` instance containing two `ThermoNASAPolynomial` 
 	polynomials
 	"""
@@ -1040,14 +1051,14 @@ def convertWilhoitToNASA(Wilhoit, fixed=1, weighting=1, tint=1000.0, Tmin = 298.
 	
 	#if we are using fixed tint, do not allow tint to float
 	if(fixed == 1):
-		nasa_low, nasa_high = Wilhoit2NASA(wilhoit_scaled, Tmin, Tmax, tint, weighting) 
+		nasa_low, nasa_high = Wilhoit2NASA(wilhoit_scaled, Tmin, Tmax, tint, weighting, contCons)
 	else:
-		nasa_low, nasa_high, tint = Wilhoit2NASA_TintOpt(wilhoit_scaled, Tmin, Tmax, weighting)
-	iseUnw = TintOpt_objFun(tint, wilhoit_scaled, Tmin, Tmax, 0) #the scaled, unweighted ISE (integral of squared error)
+		nasa_low, nasa_high, tint = Wilhoit2NASA_TintOpt(wilhoit_scaled, Tmin, Tmax, weighting, contCons)
+	iseUnw = TintOpt_objFun(tint, wilhoit_scaled, Tmin, Tmax, 0, contCons) #the scaled, unweighted ISE (integral of squared error)
 	rmsUnw = math.sqrt(iseUnw/(Tmax-Tmin))
 	rmsStr = '(Unweighted) RMS error = %.3f*R;'%(rmsUnw)
 	if(weighting == 1):
-		iseWei= TintOpt_objFun(tint, wilhoit_scaled, Tmin, Tmax, weighting) #the scaled, weighted ISE
+		iseWei= TintOpt_objFun(tint, wilhoit_scaled, Tmin, Tmax, weighting, contCons) #the scaled, weighted ISE
 		rmsWei = math.sqrt(iseWei/math.log(Tmax/Tmin))
 		rmsStr = 'Weighted RMS error = %.3f*R;'%(rmsWei)+rmsStr
 
@@ -1105,7 +1116,7 @@ def convertWilhoitToNASA(Wilhoit, fixed=1, weighting=1, tint=1000.0, Tmin = 298.
 
 ################################################################################
 
-def Wilhoit2NASA(wilhoit, tmin, tmax, tint, weighting, contCons=3):
+def Wilhoit2NASA(wilhoit, tmin, tmax, tint, weighting, contCons):
 	"""
 	input: Wilhoit parameters, Cp0/R, CpInf/R, and B (kK), a0, a1, a2, a3, 
 	       Tmin (minimum temperature (in kiloKelvin), 
@@ -1276,24 +1287,24 @@ def Wilhoit2NASA(wilhoit, tmin, tmax, tint, weighting, contCons=3):
 
 	return nasa_low, nasa_high
 	
-def Wilhoit2NASA_TintOpt(wilhoit, tmin, tmax, weighting):
+def Wilhoit2NASA_TintOpt(wilhoit, tmin, tmax, weighting, contCons):
 	#input: Wilhoit parameters, Cp0/R, CpInf/R, and B (kK), a0, a1, a2, a3, Tmin (minimum temperature (in kiloKelvin), Tmax (maximum temperature (in kiloKelvin)
 	#output: NASA parameters for Cp/R, b1, b2, b3, b4, b5 (low temp parameters) and b6, b7, b8, b9, b10 (high temp parameters), and Tint
 	#1. vary Tint, bounded by tmin and tmax, to minimize TintOpt_objFun
 	#cf. http://docs.scipy.org/doc/scipy/reference/tutorial/optimize.html and http://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.fminbound.html#scipy.optimize.fminbound)
-	tint = optimize.fminbound(TintOpt_objFun, tmin, tmax, args=(wilhoit, tmin, tmax, weighting))
+	tint = optimize.fminbound(TintOpt_objFun, tmin, tmax, args=(wilhoit, tmin, tmax, weighting, contCons))
 	#note that we have not used any guess when using this minimization routine
 	#2. determine the bi parameters based on the optimized Tint (alternatively, maybe we could have TintOpt_objFun also return these parameters, along with the objective function, which would avoid an extra calculation)
-	(nasa1, nasa2) = Wilhoit2NASA(wilhoit, tmin, tmax, tint[0] ,weighting)
+	(nasa1, nasa2) = Wilhoit2NASA(wilhoit, tmin, tmax, tint[0] ,weighting, contCons)
 	return nasa1, nasa2, tint[0]
 
-def TintOpt_objFun(tint, wilhoit, tmin, tmax, weighting):
+def TintOpt_objFun(tint, wilhoit, tmin, tmax, weighting, contCons):
 	#input: Tint (intermediate temperature, in kiloKelvin); Wilhoit parameters, Cp0/R, CpInf/R, and B (kK), a0, a1, a2, a3, Tmin (minimum temperature (in kiloKelvin), Tmax (maximum temperature (in kiloKelvin)
 	#output: the quantity Integrate[(Cp(Wilhoit)/R-Cp(NASA)/R)^2, {t, tmin, tmax}]
 	if (weighting == 1):
-		result = TintOpt_objFun_W(tint, wilhoit, tmin, tmax)
+		result = TintOpt_objFun_W(tint, wilhoit, tmin, tmax, contCons)
 	else:
-		result = TintOpt_objFun_NW(tint, wilhoit, tmin, tmax)
+		result = TintOpt_objFun_NW(tint, wilhoit, tmin, tmax, contCons)
 
 	# numerical errors could accumulate to give a slightly negative result
 	# this is unphysical (it's the integral of a *squared* error) so we
@@ -1310,7 +1321,7 @@ def TintOpt_objFun(tint, wilhoit, tmin, tmax, weighting):
 
 	return result
 
-def TintOpt_objFun_NW(tint, wilhoit, tmin, tmax):
+def TintOpt_objFun_NW(tint, wilhoit, tmin, tmax, contCons):
 	"""
 	Evaluate the objective function - the integral of the square of the error in the fit.
 	
@@ -1320,7 +1331,7 @@ def TintOpt_objFun_NW(tint, wilhoit, tmin, tmax):
 			Tmax (maximum temperature (in kiloKelvin)
 	output: the quantity Integrate[(Cp(Wilhoit)/R-Cp(NASA)/R)^2, {t, tmin, tmax}]
 	"""
-	nasa_low, nasa_high = Wilhoit2NASA(wilhoit,tmin,tmax,tint, 0)
+	nasa_low, nasa_high = Wilhoit2NASA(wilhoit,tmin,tmax,tint, 0, contCons)
 	b1, b2, b3, b4, b5 = nasa_low.c0, nasa_low.c1, nasa_low.c2, nasa_low.c3, nasa_low.c4
 	b6, b7, b8, b9, b10 = nasa_high.c0, nasa_high.c1, nasa_high.c2, nasa_high.c3, nasa_high.c4
 
@@ -1339,7 +1350,7 @@ def TintOpt_objFun_NW(tint, wilhoit, tmin, tmax):
 
 	return result
 
-def TintOpt_objFun_W(tint, wilhoit, tmin, tmax):
+def TintOpt_objFun_W(tint, wilhoit, tmin, tmax, contCons):
 	"""
 	Evaluate the objective function - the integral of the square of the error in the fit.
 	
@@ -1350,7 +1361,7 @@ def TintOpt_objFun_W(tint, wilhoit, tmin, tmax):
 			Tmax (maximum temperature (in kiloKelvin)
 	output: the quantity Integrate[1/t*(Cp(Wilhoit)/R-Cp(NASA)/R)^2, {t, tmin, tmax}]
 	"""
-	nasa_low, nasa_high = Wilhoit2NASA(wilhoit,tmin,tmax,tint, 1)
+	nasa_low, nasa_high = Wilhoit2NASA(wilhoit,tmin,tmax,tint, 1, contCons)
 	b1, b2, b3, b4, b5 = nasa_low.c0, nasa_low.c1, nasa_low.c2, nasa_low.c3, nasa_low.c4
 	b6, b7, b8, b9, b10 = nasa_high.c0, nasa_high.c1, nasa_high.c2, nasa_high.c3, nasa_high.c4
 
@@ -1373,7 +1384,7 @@ def TintOpt_objFun_W(tint, wilhoit, tmin, tmax):
 #below are functions for conversion of general Cp to NASA polynomials
 #because they use numerical integration, they are, in general, likely to be slower and less accurate than versions with analytical integrals for the starting Cp form (e.g. Wilhoit polynomials)
 #therefore, this should only be used when no analytic alternatives are available
-def convertCpToNASA(CpObject, H298, S298, fixed=1, weighting=0, tint=1000.0, Tmin = 298.0, Tmax=6000.0):
+def convertCpToNASA(CpObject, H298, S298, fixed=1, weighting=0, tint=1000.0, Tmin = 298.0, Tmax=6000.0, contCons=3):
 	"""Convert an arbitrary heat capacity function into a NASA polynomial thermo instance (using numerical integration)
 
 	Takes:  CpObject: an object with method "getHeatCapacity(self,T) that will return Cp in J/mol-K with argument T in K
@@ -1382,6 +1393,14 @@ def convertCpToNASA(CpObject, H298, S298, fixed=1, weighting=0, tint=1000.0, Tmi
 		fixed: 1 (default) to fix tint; 0 to allow it to float to get a better fit
 		weighting: 0 (default) to not weight the fit by 1/T; 1 to weight by 1/T to emphasize good fit at lower temperatures
 		tint, Tmin, Tmax: intermediate, minimum, and maximum temperatures in Kelvin
+		contCons: a measure of the continutity constraints on the fitted NASA polynomials; possible values are:
+			    5: constrain Cp, dCp/dT, d2Cp/dT2, d3Cp/dT3, and d4Cp/dT4 to be continuous at tint; note: this effectively constrains all the coefficients to be equal and should be equivalent to fitting only one polynomial (rather than two)
+			    4: constrain Cp, dCp/dT, d2Cp/dT2, and d3Cp/dT3 to be continuous at tint
+			    3 (default): constrain Cp, dCp/dT, and d2Cp/dT2 to be continuous at tint
+			    2: constrain Cp and dCp/dT to be continuous at tint
+			    1: constrain Cp to be continous at tint
+			    0: no constraints on continuity of Cp(T) at tint
+			    note: 5th (and higher) derivatives of NASA Cp(T) are zero and hence will automatically be continuous at tint by the form of the Cp(T) function
 	Returns a `ThermoNASAData` instance containing two `ThermoNASAPolynomial` polynomials
 	"""
 
@@ -1392,14 +1411,14 @@ def convertCpToNASA(CpObject, H298, S298, fixed=1, weighting=0, tint=1000.0, Tmi
 
 	#if we are using fixed tint, do not allow tint to float
 	if(fixed == 1):
-		nasa_low, nasa_high = Cp2NASA(CpObject, Tmin, Tmax, tint, weighting)
+		nasa_low, nasa_high = Cp2NASA(CpObject, Tmin, Tmax, tint, weighting, contCons)
 	else:
-		nasa_low, nasa_high, tint = Cp2NASA_TintOpt(CpObject, Tmin, Tmax, weighting)
-	iseUnw = Cp_TintOpt_objFun(tint, CpObject, Tmin, Tmax, 0) #the scaled, unweighted ISE (integral of squared error)
+		nasa_low, nasa_high, tint = Cp2NASA_TintOpt(CpObject, Tmin, Tmax, weighting, contCons)
+	iseUnw = Cp_TintOpt_objFun(tint, CpObject, Tmin, Tmax, 0, contCons) #the scaled, unweighted ISE (integral of squared error)
 	rmsUnw = math.sqrt(iseUnw/(Tmax-Tmin))
 	rmsStr = '(Unweighted) RMS error = %.3f*R;'%(rmsUnw)
 	if(weighting == 1):
-		iseWei= Cp_TintOpt_objFun(tint, CpObject, Tmin, Tmax, weighting) #the scaled, weighted ISE
+		iseWei= Cp_TintOpt_objFun(tint, CpObject, Tmin, Tmax, weighting, contCons) #the scaled, weighted ISE
 		rmsWei = math.sqrt(iseWei/math.log(Tmax/Tmin))
 		rmsStr = 'Weighted RMS error = %.3f*R;'%(rmsWei)+rmsStr
 
@@ -1456,7 +1475,7 @@ def convertCpToNASA(CpObject, H298, S298, fixed=1, weighting=0, tint=1000.0, Tmi
 
 ################################################################################
 
-def Cp2NASA(CpObject, tmin, tmax, tint, weighting, contCons=3):
+def Cp2NASA(CpObject, tmin, tmax, tint, weighting, contCons):
 	"""
 	input: CpObject: an object with method "getHeatCapacity(self,T) that will return Cp in J/mol-K with argument T in K
 	       Tmin (minimum temperature (in kiloKelvin),
@@ -1621,24 +1640,24 @@ def Cp2NASA(CpObject, tmin, tmax, tint, weighting, contCons=3):
 
 	return nasa_low, nasa_high
 
-def Cp2NASA_TintOpt(CpObject, tmin, tmax, weighting):
+def Cp2NASA_TintOpt(CpObject, tmin, tmax, weighting, contCons):
 	#input: CpObject: an object with method "getHeatCapacity(self,T) that will return Cp in J/mol-K with argument T in K
 	#output: NASA parameters for Cp/R, b1, b2, b3, b4, b5 (low temp parameters) and b6, b7, b8, b9, b10 (high temp parameters), and Tint
 	#1. vary Tint, bounded by tmin and tmax, to minimize TintOpt_objFun
 	#cf. http://docs.scipy.org/doc/scipy/reference/tutorial/optimize.html and http://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.fminbound.html#scipy.optimize.fminbound)
-	tint = optimize.fminbound(Cp_TintOpt_objFun, tmin, tmax, args=(CpObject, tmin, tmax, weighting))
+	tint = optimize.fminbound(Cp_TintOpt_objFun, tmin, tmax, args=(CpObject, tmin, tmax, weighting, contCons))
 	#note that we have not used any guess when using this minimization routine
 	#2. determine the bi parameters based on the optimized Tint (alternatively, maybe we could have TintOpt_objFun also return these parameters, along with the objective function, which would avoid an extra calculation)
-	(nasa1, nasa2) = Cp2NASA(CpObject, tmin, tmax, tint[0] ,weighting)
+	(nasa1, nasa2) = Cp2NASA(CpObject, tmin, tmax, tint[0] ,weighting, contCons)
 	return nasa1, nasa2, tint[0]
 
-def Cp_TintOpt_objFun(tint, CpObject, tmin, tmax, weighting):
+def Cp_TintOpt_objFun(tint, CpObject, tmin, tmax, weighting, contCons):
 	#input: Tint (intermediate temperature, in kiloKelvin); CpObject: an object with method "getHeatCapacity(self,T) that will return Cp in J/mol-K with argument T in K, Tmin (minimum temperature (in kiloKelvin), Tmax (maximum temperature (in kiloKelvin)
 	#output: the quantity Integrate[(Cp/R-Cp(NASA)/R)^2, {t, tmin, tmax}]
 	if (weighting == 1):
-		result = Cp_TintOpt_objFun_W(tint, CpObject, tmin, tmax)
+		result = Cp_TintOpt_objFun_W(tint, CpObject, tmin, tmax, contCons)
 	else:
-		result = Cp_TintOpt_objFun_NW(tint, CpObject, tmin, tmax)
+		result = Cp_TintOpt_objFun_NW(tint, CpObject, tmin, tmax, contCons)
 
 	# numerical errors could accumulate to give a slightly negative result
 	# this is unphysical (it's the integral of a *squared* error) so we
@@ -1655,7 +1674,7 @@ def Cp_TintOpt_objFun(tint, CpObject, tmin, tmax, weighting):
 
 	return result
 
-def Cp_TintOpt_objFun_NW(tint, CpObject, tmin, tmax):
+def Cp_TintOpt_objFun_NW(tint, CpObject, tmin, tmax, contCons):
 	"""
 	Evaluate the objective function - the integral of the square of the error in the fit.
 
@@ -1665,7 +1684,7 @@ def Cp_TintOpt_objFun_NW(tint, CpObject, tmin, tmax):
 			Tmax (maximum temperature (in kiloKelvin)
 	output: the quantity Integrate[(Cp/R-Cp(NASA)/R)^2, {t, tmin, tmax}]
 	"""
-	nasa_low, nasa_high = Cp2NASA(CpObject,tmin,tmax,tint, 0)
+	nasa_low, nasa_high = Cp2NASA(CpObject,tmin,tmax,tint, 0, contCons)
 	b1, b2, b3, b4, b5 = nasa_low.c0, nasa_low.c1, nasa_low.c2, nasa_low.c3, nasa_low.c4
 	b6, b7, b8, b9, b10 = nasa_high.c0, nasa_high.c1, nasa_high.c2, nasa_high.c3, nasa_high.c4
 
@@ -1679,7 +1698,7 @@ def Cp_TintOpt_objFun_NW(tint, CpObject, tmin, tmax):
 
 	return result
 
-def Cp_TintOpt_objFun_W(tint, CpObject, tmin, tmax):
+def Cp_TintOpt_objFun_W(tint, CpObject, tmin, tmax, contCons):
 	"""
 	Evaluate the objective function - the integral of the square of the error in the fit.
 
@@ -1690,7 +1709,7 @@ def Cp_TintOpt_objFun_W(tint, CpObject, tmin, tmax):
 			Tmax (maximum temperature (in kiloKelvin)
 	output: the quantity Integrate[1/t*(Cp/R-Cp(NASA)/R)^2, {t, tmin, tmax}]
 	"""
-	nasa_low, nasa_high = Cp2NASA(CpObject,tmin,tmax,tint, 1)
+	nasa_low, nasa_high = Cp2NASA(CpObject,tmin,tmax,tint, 1, contCons)
 	b1, b2, b3, b4, b5 = nasa_low.c0, nasa_low.c1, nasa_low.c2, nasa_low.c3, nasa_low.c4
 	b6, b7, b8, b9, b10 = nasa_high.c0, nasa_high.c1, nasa_high.c2, nasa_high.c3, nasa_high.c4
 

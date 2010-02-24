@@ -363,7 +363,7 @@ class ThermoWilhoitToNASACheck(unittest.TestCase):
 		"""
 
 		wilhoit = thermo.ThermoWilhoitData(3.5,4.5,-2.343,32.54,-79.26,47.75,8951,-18.19, B=0.5) #this is the scaled version
-		q=thermo.TintOpt_objFun(1.0, wilhoit, .298, 6.0, 1)#these are also scaled values
+		q=thermo.TintOpt_objFun(1.0, wilhoit, .298, 6.0, 1, 3)#these are also scaled values
 		expectedVal = 0.00018295170781357228 #taken from running in pure-python mode
 		relErr = abs(q-expectedVal)/expectedVal
 		limit = 0.01 #relative error limit (0.01=1%)
