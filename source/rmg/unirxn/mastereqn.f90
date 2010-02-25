@@ -72,8 +72,10 @@ subroutine collisionMatrix(T, P, E, collFreq, densStates, E0, dEdown, Ngrains, &
     
     ! Allocate/zero vector of normalization coefficients
     allocate( C(1:Ngrains) )
-    C = 0 * C
-
+    do i = 1, Ngrains
+        C(i) = 0.0
+    end do
+    
     ! Get minimum and maximum energies and grain size
     dE = E(2) - E(1)
 
@@ -108,19 +110,49 @@ subroutine collisionMatrix(T, P, E, collFreq, densStates, E0, dEdown, Ngrains, &
 
     ! Normalize using detailed balance
     do r = start, Ngrains
-        C(r) = (1 - sum(C(start:r-1) * Mcoll(start:r-1,r))) / sum(Mcoll(r:Ngrains,r))
+        C(r) = (1 - sum(Mcoll(start:r-1,r))) / sum(Mcoll(r:Ngrains,r))
         ! Check for normalization consistency (i.e. all numbers are positive)
         if (C(r) <= 0) then
             msg = 'Error normalizing collisional transfer probabilities matrix.'
             return
         end if
-
-    end do
-    do r = start, Ngrains
         Mcoll(r,r+1:Ngrains) = Mcoll(r,r+1:Ngrains) * C(r)
-        Mcoll(r+1:Ngrains,r) = Mcoll(r+1:Ngrains,r) * C(r)
-        Mcoll(r,r) = Mcoll(r,r) * C(r) - 1
+        Mcoll(r:Ngrains,r) = Mcoll(r:Ngrains,r) * C(r)
+        Mcoll(r,r) = Mcoll(r,r) - 1
     end do
+
+    ! Normalize using detailed balance
+    ! This is the way described by Pilling and Holbrook
+!    do r = Ngrains, start, -1
+!        C(r) = (1 - sum(Mcoll(r+1:Ngrains,r))) / sum(Mcoll(1:r,r))
+!        ! Check for normalization consistency (i.e. all numbers are positive)
+!        if (C(r) <= 0) then
+!            msg = 'Error normalizing collisional transfer probabilities matrix.'
+!            return
+!        end if
+!        ! Apply normalization condition
+!        Mcoll(r,1:r-1) = Mcoll(r,1:r-1) * C(r)
+!        Mcoll(1:r,r) = Mcoll(1:r,r) * C(r)
+!        Mcoll(r,r) = Mcoll(r,r) - 1
+!    end do
+
+    ! DEBUG: Check that both our constraints are satisfied
+!    do r = 1, Ngrains
+!        if (sum(Mcoll(:,r)) > 0.0001) then
+!            msg = 'Error: Column not normalized properly!'
+!            return
+!        end if
+!    end do
+!    do r = start, Ngrains
+!        do s = start, r - 1
+!            if (abs(Mcoll(r,s) * densStates(s) * exp(-E(s) / 8.314472 / T) &
+!                - Mcoll(s,r) * densStates(r) * exp(-E(r) / 8.314472 / T)) > &
+!                0.0001 * Mcoll(r,s) * densStates(s) * exp(-E(s) / 8.314472 / T)) then
+!                msg = 'Error: Detailed balance not satisfied!'
+!                return
+!            end if
+!        end do
+!    end do
 
     ! Multiply by collision frequency to determine collision rates
     Mcoll = collFreq * Mcoll
