@@ -6,6 +6,7 @@
 	<!-- Data sources -->
 	<databaseList>
 		<database type="general">RMG_database</database>
+		<database type="seedMechanism">GRI-Mech3.0</database>
 	</databaseList>
 	<!-- List of species -->
 	<speciesList>
