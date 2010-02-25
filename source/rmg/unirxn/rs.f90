@@ -313,7 +313,7 @@ subroutine activeStateFull(T, P, E, Mcoll, densStates, Kij, Fim, Gnj, &
         do n = 1, nProd
             do r = nRes(i)+1, nGrains
                 L(indices(r,i), indices(r,i)) = L(indices(r,i), indices(r,i)) - Gnj(n,i,r)
-                Z(indices(r,i), n) = Fim(i,n,r)
+                Z(indices(r,i), n+nIsom) = Fim(i,n,r)
             end do
         end do
     end do
