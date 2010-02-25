@@ -8,12 +8,11 @@ sys.path.append('../source')
 
 import math
 		
-import rmg.main as main
 import rmg.data as data
 import rmg.species as species
 import rmg.structure as structure
-import rmg.reaction as reaction
 import rmg.thermo as thermo
+import rmg.log as logging
 
 # Run this whether being run as __main__ or called by other unit test suite:
 # Load databases
@@ -290,7 +289,7 @@ class ThermoGAtoWilhoitCheck(unittest.TestCase):
 			
 			
 class ThermoWilhoitToNASACheck(unittest.TestCase):                          
-	"""Test conversion to NASA polynomials"""
+	"""Test conversion from Wilhoit to NASA polynomials"""
 	def testNASAcreated(self):
 		"""Can we make NASA polynomial data"""
 		cp0, cpInf, a0, a1, a2, a3, I, J = (1.0,1.0,1.0,1.0,1.0,1.0, 1.0, 1.0)
@@ -364,7 +363,7 @@ class ThermoWilhoitToNASACheck(unittest.TestCase):
 		"""
 
 		wilhoit = thermo.ThermoWilhoitData(3.5,4.5,-2.343,32.54,-79.26,47.75,8951,-18.19, B=0.5) #this is the scaled version
-		q=thermo.TintOpt_objFun(1.0, wilhoit, .298, 6.0, 1)#these are also scaled values
+		q=thermo.TintOpt_objFun(1.0, wilhoit, .298, 6.0, 1, 3)#these are also scaled values
 		expectedVal = 0.00018295170781357228 #taken from running in pure-python mode
 		relErr = abs(q-expectedVal)/expectedVal
 		limit = 0.01 #relative error limit (0.01=1%)
@@ -504,6 +503,29 @@ class ThermoWilhoitToNASACheck(unittest.TestCase):
 		ans = n.integral2_T0(1.0) - n.integral2_T0(.298)
 		self.assertAlmostEqual(ans, 0.71887383097545454, 15)
 
+class ThermoCpToNASACheck(unittest.TestCase):
+	"""Test conversion from Cp/R to NASA polynomials (using numerical integrals)"""
+	def testNASAfromCp(self):
+		"""Can we make NASA polynomial data from an arbitrary Cp function"""
+
+		CpObject = thermo.ThermoNASAPolynomial(T_range=[0,8000], coeffs = [2.5, 3.0/1000, 7.0/1000000, 0.0, 0.0, 0, 0])
+		NASAthermoData = thermo.convertCpToNASA(CpObject, 1.0, 2.0)
+		#print NASAthermoData
+		self.assertAlmostEqual(NASAthermoData.getEnthalpy(298.15), 1.0, 4)
+		self.assertAlmostEqual(NASAthermoData.getEntropy(298.15), 2.0, 4)
+		self.assertAlmostEqual(NASAthermoData.polynomials[0].c0, 2.5, 4)
+		self.assertAlmostEqual(NASAthermoData.polynomials[0].c1, 3.0/1000, 7)
+		self.assertAlmostEqual(NASAthermoData.polynomials[0].c2, 7.0/1000000, 10)
+		self.assertAlmostEqual(NASAthermoData.polynomials[0].c3, 0.0, 4)
+		self.assertAlmostEqual(NASAthermoData.polynomials[0].c4, 0.0, 4)
+		self.assertAlmostEqual(NASAthermoData.polynomials[1].c0, 2.5, 4)
+		self.assertAlmostEqual(NASAthermoData.polynomials[1].c1, 3.0/1000, 7)
+		self.assertAlmostEqual(NASAthermoData.polynomials[1].c2, 7.0/1000000, 10)
+		self.assertAlmostEqual(NASAthermoData.polynomials[1].c3, 0.0, 4)
+		self.assertAlmostEqual(NASAthermoData.polynomials[1].c4, 0.0, 4)
+
+
+
 ################################################################################
 
 		
@@ -541,5 +563,5 @@ NASAthermoData = thermo.convertWilhoitToNASA(WilhoitData)
 	print "****\n\nContinuing with tests..."
 	
 	# Show debug messages (as databases are loading)
-	main.initializeLog(10)	
+	logging.initialize(10,'RMG.log')
 	unittest.main( testRunner = unittest.TextTestRunner(verbosity=2) )
