@@ -83,6 +83,62 @@ end function
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+function besseli0(x)
+    implicit none
+
+    real(8) x, besseli0
+
+    real(8) Y,P1,P2,P3,P4,P5,P6,P7,Q1,Q2,Q3,Q4,Q5,Q6,Q7,Q8,Q9,AX,BX
+
+    data P1,P2,P3,P4,P5,P6,P7/1.D0,3.5156229D0,3.0899424D0,1.2067429D0,  &
+    0.2659732D0,0.360768D-1,0.45813D-2/
+
+    data Q1,Q2,Q3,Q4,Q5,Q6,Q7,Q8,Q9/0.39894228D0,0.1328592D-1, &
+    0.225319D-2,-0.157565D-2,0.916281D-2,-0.2057706D-1,  &
+    0.2635537D-1,-0.1647633D-1,0.392377D-2/
+
+    if (abs(x) < 3.75) then
+        Y = x * x / 3.75 / 3.75
+        besseli0 = P1+Y*(P2+Y*(P3+Y*(P4+Y*(P5+Y*(P6+Y*P7)))))
+    else
+        AX = abs(x)
+        Y = 3.75 / AX
+        BX = exp(AX)/sqrt(AX)
+        AX = Q1+Y*(Q2+Y*(Q3+Y*(Q4+Y*(Q5+Y*(Q6+Y*(Q7+Y*(Q8+Y*Q9)))))))
+        besseli0 = AX*BX
+    end if
+
+end function
+
+function besseli1(x)
+    implicit none
+
+    real(8) x, besseli1
+
+    real(8) Y,P1,P2,P3,P4,P5,P6,P7,Q1,Q2,Q3,Q4,Q5,Q6,Q7,Q8,Q9,AX,BX
+
+    data P1,P2,P3,P4,P5,P6,P7/0.5D0,0.87890594D0,0.51498869D0,  &
+    0.15084934D0,0.2658733D-1,0.301532D-2,0.32411D-3/
+
+    data Q1,Q2,Q3,Q4,Q5,Q6,Q7,Q8,Q9/0.39894228D0,-0.3988024D-1, &
+    -0.362018D-2,0.163801D-2,-0.1031555D-1,0.2282967D-1, &
+    -0.2895312D-1,0.1787654D-1,-0.420059D-2/
+
+    if (abs(x) < 3.75) then
+        Y = x * x / 3.75 / 3.75
+        besseli1 = P1+Y*(P2+Y*(P3+Y*(P4+Y*(P5+Y*(P6+Y*P7)))))
+    else
+        AX = abs(x)
+        Y = 3.75 / AX
+        BX = exp(AX)/sqrt(AX)
+        AX = Q1+Y*(Q2+Y*(Q3+Y*(Q4+Y*(Q5+Y*(Q6+Y*(Q7+Y*(Q8+Y*Q9)))))))
+        besseli1 = AX*BX
+    end if
+
+end function
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 recursive function besselratioperron(x, n) result(res)
     ! Recursively evaluates Perron's continued fraction for the modified
     ! Bessel function ratio I_1(x) / I_0(x) to 25 terms. A relevant citation is

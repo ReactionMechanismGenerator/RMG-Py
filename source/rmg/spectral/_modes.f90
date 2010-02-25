@@ -304,13 +304,13 @@ subroutine hinderedRotor_partitionFunction(Tlist, nT, freq, barr, Q)
 
     integer i
     real(8) x, z
-    real(8) besseli
+    real(8) besseli0
 
     do i = 1, nT
         x = 6.626e-34 * 2.9979e10 * freq / 1.381e-23 / Tlist(i)
         z = 0.5 * 6.626e-34 * 2.9979e10 * barr / 1.381e-23 / Tlist(i)
         Q(i) = exp(-0.5 * x) * (1 - exp(-x)) * sqrt(2 * 3.141592654 * z) * &
-            exp(-z) * besseli(0, z) * exp(x / (2 + 32 * z / x))
+            exp(-z) * besseli0(z) * exp(x / (2 + 32 * z / x))
     end do
 
 end subroutine
@@ -377,12 +377,12 @@ subroutine hinderedRotor_d_heatCapacity_d_barr(Tlist, nT, freq, barr, dCvlist)
 
     integer i
     real(8) z, BB
-    real(8) besseli
+    real(8) besselratio
     
     do i = 1, nT
         z = 0.5 * 6.626e-34 * 2.9979e10 * barr / 1.381e-23 / Tlist(i)
 
-        BB = besseli(1, z) / besseli(0, z)
+        BB = besselratio(z)      !besseli(1, z) / besseli(0, z)
 
         dCvlist(i) = z * (1 - 2 * z * BB + BB * BB + 2 * z * BB * BB * BB) * z / barr
     end do
