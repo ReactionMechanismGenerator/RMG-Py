@@ -549,9 +549,12 @@ class Reaction:
 		"""
 		Calculate and return the microcanonical rate coefficients k(E) for the
 		forward and reverse reactions from the high-pressure limit canonical
-		rate coefficient k(T) using the inverse Laplace transform method. For
-		dissociation reactions the reverse rate coefficient is actually the
-		product of the reverse rate and the product equilibrium distribution.
+		rate coefficient k(T) using the inverse Laplace transform method. The
+		reverse microcanonical rate is calculated using the canonical 
+		equilibrium constant to ensure that the thermodynamics is correct, even
+		when there are small errors in the density of states. For dissociation
+		reactions the reverse rate coefficient is actually the product of the
+		reverse rate and the product equilibrium distribution.
 		"""
 
 		dE = Elist[1] - Elist[0]
@@ -566,18 +569,19 @@ class Reaction:
 		if prodDensStates is not None:
 			prodQ = numpy.sum(prodDensStates * numpy.exp(-Elist / constants.R / T))
 
+		Keq = self.getEquilibriumConstant(T, conc=1.0)
+
 		if self.isIsomerization():
 
 			kf = kineticsInverseLaplaceTransform(kinetics, self.E0, reacDensStates, Elist, T)
 			for r in range(len(Elist)):
 				if prodDensStates[r] != 0:
-					kb[r] = kf[r] * reacDensStates[r] / prodDensStates[r]
-
+					kb[r] = kf[r] / Keq * (reacDensStates[r] / reacQ) / (prodDensStates[r] / prodQ)
+		
 		elif self.isDissociation():
 
 			kf = kineticsInverseLaplaceTransform(kinetics, self.E0, reacDensStates, Elist, T)
 			
-			Keq = self.getEquilibriumConstant(T, conc=1.0)
 			for r in range(len(Elist)):
 				kb[r] = kf[r] / Keq * reacDensStates[r] * math.exp(-Elist[r] / constants.R / T) / reacQ
 
@@ -590,7 +594,6 @@ class Reaction:
 			for r in range(len(Elist)):
 				kf[r] *= reacDensStates[r] * math.exp(-Elist[r] / constants.R / T) / reacQ
 
-			Keq = self.getEquilibriumConstant(T, conc=1.0)
 			for r in range(len(Elist)):
 				bn = prodDensStates[r] * math.exp(-Elist[r] / constants.R / T) / prodQ
 				if bn != 0:
