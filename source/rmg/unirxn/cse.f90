@@ -79,15 +79,15 @@ subroutine estimateRateCoefficients_CSE(T, P, E, Mcoll0, E0, densStates, &
     integer, dimension(1:nGrains,1:nIsom) :: indices
     
     ! Intermediate matrices
-    real(8), dimension(:,:), allocatable :: Mcoll, Mrxn, M, p0, dXij
-    real(8), dimension(:), allocatable :: S, Sinv, V, Cj
-    
+    real(8), dimension(:,:), allocatable :: Mcoll, Mrxn, M, X, Xinv
+    real(8), dimension(:), allocatable :: S, Sinv, V0, V
+
     ! BLAS and LAPACK temporary variables
-    real(8), dimension(:), allocatable :: work
+    real(8), dimension(:), allocatable :: work, iPiv
     integer info
 
     ! Indices
-    integer i, j, r, index, start
+    integer i, j, r, index, count
 
     ! Construct accounting matrix
 	! Row is grain number, column is well number, value is index into matrix
@@ -148,16 +148,11 @@ subroutine estimateRateCoefficients_CSE(T, P, E, Mcoll0, E0, densStates, &
         end do
     end do
 
-    ! Zero output rate constant matrix
-    do i = 1, nIsom+nProd
-        do j = 1, nIsom+nProd
-            K(i,j) = 0.0
-        end do
-    end do
+    K = 0.0 * K
 
     ! Calculate the eigenvalues and eigenvectors
-    allocate( V(1:nRows), work(1:6*nRows) )
-    call DSYEV('V', 'U', nRows, M, nRows, V, work, 6*nRows, info)
+    allocate( V0(1:nRows), work(1:6*nRows) )
+    call DSYEV('V', 'U', nRows, M, nRows, V0, work, 6*nRows, info)
     if (info > 0) then
         msg = 'DSYEV eigenvalue algorithm failed to converge.'
         return
@@ -166,53 +161,74 @@ subroutine estimateRateCoefficients_CSE(T, P, E, Mcoll0, E0, densStates, &
         return
     end if
 
-    ! Assemble post-internal-energy-relaxation initial condition vector
-    ! using each isomer/product channel as a starting point
-    ! For isomers this is a normalized Boltzmann distribution
-    allocate(p0(1:nRows,1:nIsom+nProd))
-    do r = 1, nGrains
-        do i = 1, nIsom
-            index = indices(r,i)
-            if (index > 0) then
-                do j = 1, nIsom+nProd
-                    p0(index,j) = 0.0
-                end do
-                p0(index,i) = densStates(i,r) * exp(-E(r) / 8.314472 / T)
-            end if
+    ! Calculate unsymmetrized eigenvectors
+    do i = 1, nRows
+        do j = 1, nRows
+            M(i,j) = Sinv(i) * M(i,j)
         end do
     end do
-    ! For products this is simply unity
-    do i = 1, nProd
-        index = nRows - nProd + i
-        do j = 1, nIsom+nProd
-            p0(index,j) = 0.0
+    ! Also normalize the eigenvectors
+    do j = 1, nRows
+        M(:,j) = M(:,j) / sum(M(:,j))
+    end do
+
+    ! Extract the chemically-significant eigenvalues and eigenvectors
+    ! These are the last nIsom+nProd columns of M
+    allocate( X(1:nIsom+nProd, 1:nIsom+nProd), V(1:nIsom+nProd), Xinv(1:nIsom+nProd, 1:nIsom+nProd))
+    do i = 1, nIsom + nProd
+        do j = 1, nIsom + nProd
+            X(i,j) = 0.0
         end do
-        p0(index,i+nIsom) = 1.0
+    end do
+    do j = 1, nIsom + nProd
+        count = nRows - (nIsom + nProd) + j
+        V(j) = V0(count)
+        do r = 1, nGrains
+            do i = 1, nIsom
+                index = indices(r,i)
+                if (index > 0) then
+                    X(i,j) = X(i,j) + M(index,count)
+                end if
+            end do
+        end do
+        do i = 1, nProd
+            index = nRows - nProd + i
+            X(i+nIsom,j) = M(index,count)
+        end do
     end do
     
-    ! Iterate over each isomer/product channel as the starting point
-    allocate( Cj(1:nIsom+nProd), dXij(1:nIsom+nProd,1:nIsom+nProd) )
-    do start = 1, nIsom+nProd
-        ! Iterate over the chemically-significant eigenvalue-eigenvector pairs
+    ! Invert the chemical eigenvector matrix
+    Xinv = X
+    allocate(iPiv(1:nIsom+nProd))
+    call DGETRF(nIsom+nProd, nIsom+nProd, Xinv, nIsom+nProd, ipiv, info)
+    if (info > 0) then
+        msg = 'Chemical eigenvector matrix is singular.'
+        return
+    elseif (info < 0) then
+        msg = 'Illegal argument passed to DGETRF.'
+        return
+    end if
+    call DGETRI(nIsom+nProd, Xinv, nIsom+nProd, ipiv, work, 6*nRows, info)
+    if (info > 0) then
+        msg = 'Chemical eigenvector matrix is singular.'
+        return
+    elseif (info < 0) then
+        msg = 'Illegal argument passed to DGETRI.'
+        return
+    end if
+
+    ! Construct the rate constant matrix
+    do i = 1, nIsom+nProd
         do j = 1, nIsom+nProd
-            index = nRows - (nIsom+nProd) + j
-            ! Calculate initial constant for each chemically-significant 
-            ! eigenvector j (using isomer `start` as the starting position)
-            Cj(j) = sum(M(:,index) * p0(:,start))
-            ! Calculate dXij for isomer/product i and chemically-significant
-            ! eigenvector j (using isomer `start` as the starting position)
-            do i = 1, nIsom+nProd
-                dXij(i,j) = - Cj(j) * sum(M(:,index) * p0(:,i))
-            end do
-            ! Add to rate constants
-            do i = 1, nIsom+nProd
-                K(i,start) = K(i,start) - V(index) * dXij(i,j)
+            K(i,j) = 0.0
+            do r = 1, nIsom+nProd
+                K(i,j) = K(i,j) + X(i,r) * V(r) * Xinv(r,j)
             end do
         end do
     end do
 
     ! Clean up
-    deallocate( Mcoll, Mrxn, M, S, Sinv, V, work, p0, Cj, dXij )
+    deallocate( Mcoll, Mrxn, M, S, Sinv, V0, work, iPiv, X, V, Xinv )
 
 end subroutine
 
