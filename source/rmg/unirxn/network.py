@@ -619,6 +619,8 @@ class Network:
 		:meth:`calculateRateCoefficients` method.
 		"""
 
+		logging.debug('Applying %s method at %g K, %g bar...' % (method, T, P*1e-5))
+
 		# Matrix and vector size indicators
 		nIsom = self.numUniIsomers()
 		nProd = self.numMultiIsomers()
@@ -673,7 +675,7 @@ class Network:
 			if msg != '':
 				raise UnirxnNetworkException('Unable to apply modified strong collision method: %s' % msg)
 
-		elif method.lower() == 'reservoirstate':
+		elif method.lower() == 'reservoirstate' or method.lower() == 'chemicaleigenvalues':
 
 			# Average energy transferred in a deactivating collision
 			dEdown = self.bathGas.expDownParam
@@ -693,12 +695,32 @@ class Network:
 				if msg != '':
 					raise UnirxnNetworkException('Unable to determine collision matrix for isomer %i: %s' % (i, msg))
 
-			# Apply reservoir state method
-			import rs
-			K, msg = rs.estimateratecoefficients_rs(T, P, Elist, Mcoll, densStates, E0, Eres,
-				Kij, Fim, Gnj, dEdown, nIsom, nProd, nGrains)
-			msg = msg.strip()
+			if method.lower() == 'reservoirstate':
+
+				# Apply reservoir state method
+				import rs
+				K, msg = rs.estimateratecoefficients_rs(T, P, Elist, Mcoll, densStates, E0, Eres,
+					Kij, Fim, Gnj, dEdown, nIsom, nProd, nGrains)
+				msg = msg.strip()
 			
+			elif method.lower() == 'chemicaleigenvalues':
+
+				# Ground-state energy for each isomer
+				E0 = numpy.zeros([nIsom+nProd], numpy.float64)
+				for i in range(nIsom+nProd): E0[i] = self.isomers[i].E0
+
+				# Use free energy to determine equilibrium ratios of each isomer and product channel
+				eqRatios = numpy.zeros(nIsom+nProd, numpy.float64)
+				for i, isom in enumerate(self.isomers):
+					G = sum([spec.getFreeEnergy(T) for spec in isom.species])
+					eqRatios[i] = math.exp(-G / constants.R / T)
+
+				# Apply chemically-significant eigenvalue method
+				import cse
+				K, msg = cse.estimateratecoefficients_cse(T, P, Elist, Mcoll, E0,
+					densStates, eqRatios, Kij, Fim, Gnj, nIsom, nProd, nGrains)
+				msg = msg.strip()
+
 		if msg == '':
 			if not numpy.isfinite(K).all():
 				print K
