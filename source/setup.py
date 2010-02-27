@@ -91,11 +91,13 @@ def configuration(parent_package='',top_path=None):
 	config.add_extension('spectral._modes', sources=['rmg/spectral/_modes.f90'], libraries=['rmg_spectral_math'])
 	config.add_extension('spectral._fit', sources=['rmg/spectral/_fit.f90'], libraries=['rmg_spectral_cases', 'rmg_spectral_dqed', 'rmg_spectral_modes', 'rmg_spectral_math'])
 	
+	config.add_library('rmg_unirxn_mastereqn', sources=['rmg/unirxn/mastereqn.f90'])
 	config.add_extension('unirxn.states', sources=['rmg/unirxn/states.f90'], libraries=['blas', 'lapack'])
 	config.add_extension('unirxn.mastereqn', sources=['rmg/unirxn/mastereqn.f90'], libraries=['blas', 'lapack'])
 	config.add_extension('unirxn.msc', sources=['rmg/unirxn/msc.f90'], libraries=['blas', 'lapack'])
 	config.add_extension('unirxn.rs', sources=['rmg/unirxn/rs.f90'], libraries=['blas', 'lapack'])
-	
+	config.add_extension('unirxn.cse', sources=['rmg/unirxn/cse.f90'], libraries=['rmg_unirxn_mastereqn', 'blas', 'lapack'])
+
 	return config
 
 def setupFortranModules(name, version, description, author, author_email, 
