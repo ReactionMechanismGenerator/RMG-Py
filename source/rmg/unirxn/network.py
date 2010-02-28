@@ -535,7 +535,7 @@ class Network:
 		# Return the chosen energy grains
 		return self.getEnergyGrains(Emin, Emax, grainSize, numGrains)
 
-	def calculateRateCoefficients(self, Tlist, Plist, Elist, method):
+	def calculateRateCoefficients(self, Tlist, Plist, Elist, method, errorCheck=True):
 		"""
 		Calculate the phenomenological rate coefficients for the network.
 		"""
@@ -588,7 +588,7 @@ class Network:
 							
 					# Determine phenomenological rate coefficients using approximate
 					# method
-					K[t,p,:,:] = self.applyApproximateMethod(T, P, Elist, method)
+					K[t,p,:,:] = self.applyApproximateMethod(T, P, Elist, method, errorCheck)
 
 		except UnirxnNetworkException, e:
 
@@ -611,7 +611,7 @@ class Network:
 
 		return K
 
-	def applyApproximateMethod(self, T, P, Elist, method):
+	def applyApproximateMethod(self, T, P, Elist, method, errorCheck=True):
 		"""
 		Apply the approximate method specified in `method` to estimate the
 		phenomenological rate coefficients for the network. This function
@@ -714,20 +714,25 @@ class Network:
 				for i, isom in enumerate(self.isomers):
 					G = sum([spec.getFreeEnergy(T) for spec in isom.species])
 					eqRatios[i] = math.exp(-G / constants.R / T)
-
+				eqRatios /= numpy.sum(eqRatios)
+				
 				# Apply chemically-significant eigenvalue method
 				import cse
 				K, msg = cse.estimateratecoefficients_cse(T, P, Elist, Mcoll, E0,
 					densStates, eqRatios, Kij, Fim, Gnj, nIsom, nProd, nGrains)
 				msg = msg.strip()
 
-		if msg == '':
-			if not numpy.isfinite(K).all():
-				print K
-				msg = 'Non-finite rate constant returned at %s K, %s Pa.' % (T, P)
-				
-		if msg != '':
-			raise UnirxnNetworkException('Unable to apply method %s: %s' % (method, msg))
+				#print K
+				#quit()
+
+		if errorCheck:
+			if msg == '':
+				if not numpy.isfinite(K).all():
+					print K
+					msg = 'Non-finite rate constant returned at %s K, %s Pa.' % (T, P)
+
+			if msg != '':
+				raise UnirxnNetworkException('Unable to apply method %s: %s' % (method, msg))
 
 		# If we had to create a temporary (fake) product channel, then don't
 		# return the last row and column of the rate coefficient matrix
