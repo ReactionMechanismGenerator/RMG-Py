@@ -77,7 +77,7 @@ subroutine estimateRateCoefficients_CSE(T, P, E, Mcoll0, E0, densStates, &
     
     ! The indices of the master equation matrix
     integer, dimension(1:nGrains,1:nIsom) :: indices
-    
+
     ! Intermediate matrices
     real(8), dimension(:,:), allocatable :: Mcoll, Mrxn, M, X, Xinv
     real(8), dimension(:), allocatable :: S, Sinv, V0, V
@@ -138,17 +138,22 @@ subroutine estimateRateCoefficients_CSE(T, P, E, Mcoll0, E0, densStates, &
     end do
 
 	! DEBUG: Check that the matrix has been properly symmetrized
-    do i = 1, nRows
-        do j = 1, i
-            if (M(i,j) /= 0.0) then
-                if (abs(M(i,j) - M(j,i)) / M(i,j) > 0.001) then
-                    write (*,*) i, j, M(i,j), M(j,i)
-                end if
-            end if
+    !do i = 1, nRows
+    !    do j = 1, i
+    !        if (M(i,j) /= 0.0) then
+    !            if (abs(M(i,j) - M(j,i)) / M(i,j) > 0.01) then
+    !                write (*,*) i, j, M(i,j), M(j,i)
+    !            end if
+    !        end if
+    !    end do
+    !end do
+
+    ! Zero phenomenological rate constant matrix
+    do i = 1, nIsom + nProd
+        do j = 1, nIsom + nProd
+            K(i,j) = 0.0
         end do
     end do
-
-    K = 0.0 * K
 
     ! Calculate the eigenvalues and eigenvectors
     allocate( V0(1:nRows), work(1:6*nRows) )
@@ -158,6 +163,28 @@ subroutine estimateRateCoefficients_CSE(T, P, E, Mcoll0, E0, densStates, &
         return
     elseif (info < 0) then
         msg = 'Illegal argument passed to DSYEV.'
+        return
+    end if
+
+    ! Check for proper separation of chemical timescales
+    if (abs(V0(nRows-nIsom-nProd) / V0(nRows-nIsom-nProd+1)) < 2.0) then
+        write (*,fmt='(A)') 'Error: Chemical eigenvalues are not distinct from internal energy eigenvalues.'
+        write (*,fmt='(A,ES12.4E2,A,ES12.4E2,A,F7.4)') &
+            'last IERE =', V0(nRows-nIsom-nProd), &
+            ', first CSE =',V0(nRows-nIsom-nProd+1), &
+            ', ratio =',abs(V0(nRows-nIsom-nProd) / V0(nRows-nIsom-nProd+1))
+        msg = 'Chemical eigenvalues not distinct from internal energy eigenvalues.'
+        return
+    end if
+    
+    ! Check for zero eigenvalue
+    if (abs(V0(nRows) / V0(nRows-1)) > 0.001) then
+        write (*,fmt='(A)') 'Error: Zero eigenvalue not found.'
+        write (*,fmt='(A,ES12.4E2,A,ES12.4E2,A,F9.6)') &
+            'zero CSE =', V0(nRows), &
+            ', last CSE =',V0(nRows-1), &
+            ', ratio =',abs(V0(nRows) / V0(nRows-1))
+        msg = 'Zero eigenvalue not found.'
         return
     end if
 
@@ -197,6 +224,14 @@ subroutine estimateRateCoefficients_CSE(T, P, E, Mcoll0, E0, densStates, &
         end do
     end do
     
+    ! Check: The eigenvector corresponding to the zero eigenvalue should
+    ! be identical to eqRatios
+    !do j = 1, nIsom+nProd
+    !    if (abs(X(j,nIsom+nProd) - eqRatios(j)) / eqRatios(j) > 0.001) then
+    !        return
+    !    end if
+    !end do
+
     ! Invert the chemical eigenvector matrix
     Xinv = X
     allocate(iPiv(1:nIsom+nProd))
