@@ -8,12 +8,10 @@ Arrhenius_EP
 //2.	R. A. Caldwell, Laser flash photolysis studies of intersystem crossing in biradicals and alkene triplets, p. 110, in Kinetics and spectroscopy of carbenes and biradicals, ed. M. S. Platz, 1990.
 //3.	D. J. Unett and R. A. Caldwell, The triplet state of alkenes: structure, dynamics, energetics and chemistry, Res. Chem. Intermed., 21 (1995) 665-709
 //4.	T. Ni, R. A. Caldwell, and L. A. Melton, The relaxed and spectroscopic energies of olefin triplets, J. Am. Chem. Soc., 111 (1989) 457-464.
-//to extrapolate to other groups, I will assume that substituent effect on lifetime is primarily due to electronic stabilization; note however, that in ref. 1, the authors suggest that polar substituent effects are small and the effect is instead related to substituent mass
-//alcohol-type oxygen, Os, treated as an electron releasing group (see p. 496 of Carey, Org. Chem. 5th ed.) assumed to be similar to vinyl/aryl groups; Ct also treated as vinyl
-//CO, however, probably has opposite effect (partial positive charge on carbon, (see Carey, p. 498); I have treated it like H (no stabilization effect)
-//to summarize, my assumptions are: no stabilization: H, CO
-//						m stabilization: Cs
-//						n stabilization: Cd, Ct, Os
+//to extrapolate to other groups, I am basing my (rough) assignments on the author's argument in Ref. 1, that effect is mainly related to number of hydrogens and mass of substituents, rather than electronic stabilization/polar effects; note however, that this will not correctly account for large mass of extended groups like large alkyl chains (in any case, the effect is relatively small, and the resulting estimate should still be within an order or magnitude or so of what we would obtain if we assigned groups differently)
+//the assignments I use are:  no slow-down: H
+//					m slow-down: Cs, Os
+//					n slow-down: Cd, Ct, Cb, CO
 //it is assumed that k = 1/tau(s)
 //nomenclature used is Y_12_mn where m and n are defined as above
 
