@@ -1,388 +1,197 @@
-//f07 : biradical recombination to form cyclic structure 
+//f24 : 1,2-biradical to alkene 
 
-Rn
-Union {R3, R4, R5, R6}
+//below is the group I want to treat in principle; note that I have restricted to Cs, as I don't know how well this extrapolates to Cd radicals, O radicals, etc.; in practice, I am instead using the Union syntax to define this group in order to avoid "Rate constant not found"-type errors is the 
+//Y_12birad
+//1 *1 Cs 1 {2,S}
+//2 *2 Cs 1 {1,S}
 
-R3
-1 *1 {Cs,Cd,CO,Os} 1 {2,{S,D}}
-2 *3 {Cs,Cd,CO,Os} 0 {1,{S,D}}, {3,{S,D}}
-3 *2 {Cs,Cd,CO,Os} 1 {2,{S,D}}
+Y_12birad
+Union {Y_12_00,Y_12_10,Y_12_20,Y_12_30,Y_12_40,Y_12_01,Y_12_02,Y_12_03,Y_12_04,Y_12_11,Y_12_12,Y_12_21,Y_12_22,Y_12_13,Y_12_31}
 
-R3_SS
-1 *1 {Cs,Cd,CO,Os} 1 {2,S}
-2 *3 {Cs,Cd,CO,Os} 0 {1,S}, {3,S}
-3 *2 {Cs,Cd,CO,Os} 1 {2,S}
-
-R3_SD
-1 *1 {Cs,Cd,CO,Os} 1 {2,S}
-2 *3 Cd 0 {1,S}, {3,D}
-3 *2 Cd 1 {2,D}
-
-R4
-1 *1 {Cs,Cd,CO,Os} 1 {2,{S,D}}
-2 *3 {Cs,Cd,CO,Os} 0 {1,{S,D}}, {3,{S,D}}
-3 *4 {Cs,Cd,CO,Os} 0 {2,{S,D}}, {4,{S,D}}
-4 *2 {Cs,Cd,CO,Os} 1 {3,{S,D}}
-
-R4_SSS
-1 *1 {Cs,Cd,CO,Os} 1 {2,S}
-2 *3 {Cs,Cd,CO,Os} 0 {1,S}, {3,S}
-3 *4 {Cs,Cd,CO,Os} 0 {2,S}, {4,S}
-4 *2 {Cs,Cd,CO,Os} 1 {3,S}
-
-R4_SSD
-1 *1 {Cs,Cd,CO,Os} 1 {2,S}
-2 *3 {Cs,Cd,CO,Os} 0 {1,S}, {3,S}
-3 *4 Cd 0 {2,S}, {4,D}
-4 *2 Cd 1 {3,D}
-
-R4_SDS
-1 *1 {Cs,Cd,CO,Os} 1 {2,S}
-2 *3 Cd 0 {1,S}, {3,D}
-3 *4 Cd 0 {2,D}, {4,S}
-4 *2 {Cs,Cd,CO,Os} 1 {3,S}
-
-R4_DSD
-1 *1 Cd 1 {2,D}
-2 *3 Cd 0 {1,D}, {3,S}
-3 *4 Cd 0 {2,S}, {4,D}
-4 *2 Cd 1 {3,D}
-
-R5
-1 *1 {Cs,Cd,CO,Os} 1 {2,{S,D}}
-2 *3 {Cs,Cd,CO,Os} 0 {1,{S,D}}, {3,{S,D}}
-3    {Cs,Cd,CO,Os} 0 {2,{S,D}}, {4,{S,D}}
-4 *4 {Cs,Cd,CO,Os} 0 {3,{S,D}}, {5,{S,D}}
-5 *2 {Cs,Cd,CO,Os} 1 {4,{S,D}}
-
-R5_SSSS
-1 *1 {Cs,Cd,CO,Os} 1 {2,S}
-2 *3 {Cs,Cd,CO,Os} 0 {1,S}, {3,S}
-3 {Cs,Cd,CO,Os} 0 {2,S}, {4,S}
-4 *4 {Cs,Cd,CO,Os} 0 {3,S}, {5,S}
-5 *2 {Cs,Cd,CO,Os} 1 {4,S}
-
-R5_SSSD
-1 *1 {Cs,Cd,CO,Os} 1 {2,S}
-2 *3 {Cs,Cd,CO,Os} 0 {1,S}, {3,S}
-3 {Cs,Cd,CO,Os} 0 {2,S}, {4,S}
-4 *4 Cd 0 {3,S}, {5,D}
-5 *2 Cd 1 {4,D}
-
-R5_SSDS
-1 *1 {Cs,Cd,CO,Os} 1 {2,S}
-2 *3 {Cs,Cd,CO,Os} 0 {1,S}, {3,S}
-3 Cd 0 {2,S}, {4,D}
-4 *4 Cd 0 {3,D}, {5,S}
-5 *2 {Cs,Cd,CO,Os} 1 {4,S}
-
-R5_SDSD
-1 *1 {Cs,Cd,CO,Os} 1 {2,S}
-2 *3 Cd 0 {1,S}, {3,D}
-3 Cd 0 {2,D}, {4,S}
-4 *4 Cd 0 {3,S}, {5,D}
-5 *2 Cd 1 {4,D}
-
-R5_DSSD
-1 *1 Cd 1 {2,D}
-2 *3 Cd 0 {1,D}, {3,S}
-3 {Cs,Cd,CO,Os} 0 {2,S}, {4,S}
-4 *4 Cd 0 {3,S}, {5,D}
-5 *2 Cd 1 {4,D}
-
-R6
-1 *1 {Cs,Cd,CO,Os} 1 {2,{S,D}}
-2 *3 {Cs,Cd,CO,Os} 0 {1,{S,D}}, {3,{S,D}}
-3    {Cs,Cd,CO,Os} 0 {2,{S,D}}, {4,{S,D}}
-4    {Cs,Cd,CO,Os} 0 {3,{S,D}}, {5,{S,D}}
-5 *4 {Cs,Cd,CO,Os} 0 {4,{S,D}}, {6,{S,D}}
-6 *2 {Cs,Cd,CO,Os} 1 {5,{S,D}}
-
-R6_SSSSS
-1 *1 {Cs,Cd,CO,Os} 1 {2,S}
-2 *3 {Cs,Cd,CO,Os} 0 {1,S}, {3,S}
-3 {Cs,Cd,CO,Os} 0 {2,S}, {4,S}
-4 {Cs,Cd,CO,Os} 0 {3,S}, {5,S}
-5 *4 {Cs,Cd,CO,Os} 0 {4,S}, {6,S}
-6 *2 {Cs,Cd,CO,Os} 1 {5,S}
-
-R6_SSSSD
-1 *1 {Cs,Cd,CO,Os} 1 {2,S}
-2 *3 {Cs,Cd,CO,Os} 0 {1,S}, {3,S}
-3 {Cs,Cd,CO,Os} 0 {2,S}, {4,S}
-4 {Cs,Cd,CO,Os} 0 {3,S}, {5,S}
-5 *4 Cd 0 {4,S}, {6,D}
-6 *2 Cd 1 {5,D}
-
-R6_SSSDS
-1 *1 {Cs,Cd,CO,Os} 1 {2,S}
-2 *3 {Cs,Cd,CO,Os} 0 {1,S}, {3,S}
-3 {Cs,Cd,CO,Os} 0 {2,S}, {4,S}
-4 Cd 0 {3,S}, {5,D}
-5 *4 Cd 0 {4,D}, {6,S}
-6 *2 {Cs,Cd,CO,Os} 1 {5,S}
-
-R6_SSDSS
-1 *1 {Cs,Cd,CO,Os} 1 {2,S}
-2 *3 {Cs,Cd,CO,Os} 0 {1,S}, {3,S}
-3 Cd 0 {2,S}, {4,D}
-4 Cd 0 {3,D}, {5,S}
-5 *4 {Cs,Cd,CO,Os} 0 {4,S}, {6,S}
-6 *2 {Cs,Cd,CO,Os} 1 {5,S}
-
-R6_SSDSD
-1 *1 {Cs,Cd,CO,Os} 1 {2,S}
-2 *3 {Cs,Cd,CO,Os} 0 {1,S}, {3,S}
-3 Cd 0 {2,S}, {4,D}
-4 Cd 0 {3,D}, {5,S}
-5 *4 Cd 0 {4,S}, {6,D}
-6 *2 Cd 1 {5,D}
-
-R6_SDSDS
-1 *1 {Cs,Cd,CO,Os} 1 {2,S}
-2 *3 Cd 0 {1,S}, {3,D}
-3 Cd 0 {2,D}, {4,S}
-4 Cd 0 {3,S}, {5,D}
-5 *4 Cd 0 {4,D}, {6,S}
-6 *2 {Cs,Cd,CO,Os} 1 {5,S}
-
-R6_SDSSD
-1 *1 {Cs,Cd,CO,Os} 1 {2,S}
-2 *3 Cd 0 {1,S}, {3,D}
-3 Cd 0 {2,D}, {4,S}
-4 {Cs,Cd,CO,Os} 0 {3,S}, {5,S}
-5 *4 Cd 0 {4,S}, {6,D}
-6 *2 Cd 1 {5,D}
-
-R6_DSSSD
-1 *1 Cd 1 {2,D}
-2 *3 Cd 0 {1,D}, {3,S}
-3 {Cs,Cd,CO,Os} 0 {2,S}, {4,S}
-4 {Cs,Cd,CO,Os} 0 {3,S}, {5,S}
-5 *4 Cd 0 {4,S}, {6,D}
-6 *2 Cd 1 {5,D}
-
-R6_DSDSD 
-1 *1 Cd 1 {2,D}
-2 *3 Cd 0 {1,D}, {3,S}
-3 Cd 0 {2,S}, {4,D}
-4 Cd 0 {3,D}, {5,S}
-5 *4 Cd 0 {4,S}, {6,D}
-6 *2 Cd 1 {5,D}
-
-Y_rad_out
-1 *1 {R!H} 1 
-
-C_rad_out_single
-1 *1 C 1 {2,S}, {3,S}
-2 R 0 {1,S}
-3 R 0 {1,S}
-
-C_rad_out_2H
-1 *1 C 1 {2,S}, {3,S}
-2 H 0 {1,S}
+Y_12_00
+1 *1 Cs 1 {2,S}, {3,S}, {4,S}
+2 *2 Cs 1 {1,S}, {5,S}, {6,S}
 3 H 0 {1,S}
+4 H 0 {1,S}
+5 H 0 {2,S}
+6 H 0 {2,S}
 
-C_rad_out_1H
-1 *1 C 1 {2,S}, {3,S}
-2 H 0 {1,S}
-3 {R!H} 0 {1,S}
+Y_12_10
+1 *1 Cs 1 {2,S}, {3,S}, {4,S}
+2 *2 Cs 1 {1,S}, {5,S}, {6,S}
+3 {Cs,Os} 0 {1,S}
+4 H 0 {1,S}
+5 H 0 {2,S}
+6 H 0 {2,S}
 
-C_rad_out_H/NonDeC
-1 *1 C 1 {2,S}, {3,S}
-2 H 0 {1,S}
-3 Cs 0 {1,S}
+Y_12_20
+Union {Y_12_20a, Y_12_20b}
 
-C_rad_out_H/NonDeO
-1 *1 C 1 {2,S}, {3,S}
-2 H 0 {1,S}
-3 O 0 {1,S}
+Y_12_20a
+1 *1 Cs 1 {2,S}, {3,S}, {4,S}
+2 *2 Cs 1 {1,S}, {5,S}, {6,S}
+3 {Cs,Os} 0 {1,S}
+4 {Cs,Os} 0 {1,S}
+5 H 0 {2,S}
+6 H 0 {2,S}
 
-C_rad_out_H/OneDe
-1 *1 C 1 {2,S}, {3,S}
-2 H 0 {1,S}
+Y_12_20b
+1 *1 Cs 1 {2,S}, {3,S}, {4,S}
+2 *2 Cs 1 {1,S}, {5,S}, {6,S}
+3 {Cs,Os} 0 {1,S}
+4 H 0 {1,S}
+5 {Cs,Os} 0 {2,S}
+6 H 0 {2,S}
+
+Y_12_30
+1 *1 Cs 1 {2,S}, {3,S}, {4,S}
+2 *2 Cs 1 {1,S}, {5,S}, {6,S}
+3 {Cs,Os} 0 {1,S}
+4 {Cs,Os} 0 {1,S}
+5 {Cs,Os} 0 {2,S}
+6 H 0 {2,S}
+
+Y_12_40
+1 *1 Cs 1 {2,S}, {3,S}, {4,S}
+2 *2 Cs 1 {1,S}, {5,S}, {6,S}
+3 {Cs,Os} 0 {1,S}
+4 {Cs,Os} 0 {1,S}
+5 {Cs,Os} 0 {2,S}
+6 {Cs,Os} 0 {2,S}
+
+Y_12_01
+1 *1 Cs 1 {2,S}, {3,S}, {4,S}
+2 *2 Cs 1 {1,S}, {5,S}, {6,S}
 3 {Cd,Ct,Cb,CO} 0 {1,S}
+4 H 0 {1,S}
+5 H 0 {2,S}
+6 H 0 {2,S}
 
-C_rad_out_noH
-1 *1 C 1 {2,S}, {3,S}
-2 {R!H} 0 {1,S}
-3 {R!H} 0 {1,S}
+Y_12_02
+Union {Y_12_02a, Y_12_02b}
 
-C_rad_out_NonDe
-1 *1 C 1 {2,S}, {3,S}
-2 {Cs,Os} 0 {1,S}
-3 {Cs,Os} 0 {1,S}
-
-C_rad_out_Cs2
-1 *1 C 1 {2,S}, {3,S}
-2 Cs 0 {1,S}
-3 Cs 0 {1,S}
-
-C_rad_out_NDMustO
-1 *1 C 1 {2,S}, {3,S}
-2 Os 0 {1,S}
-3 {Cs,Os} 0 {1,S}
-
-C_rad_out_OneDe
-1 *1 C 1 {2,S}, {3,S}
-2 {Cd,Ct,Cb,CO} 0 {1,S}
-3 {Cs,Os} 0 {1,S}
-
-C_rad_out_OneDe/Cs
-1 *1 C 1 {2,S}, {3,S}
-2 {Cd,Ct,Cb,CO} 0 {1,S}
-3 Cs 0 {1,S}
-
-C_rad_out_OneDe/O
-1 *1 C 1 {2,S}, {3,S}
-2 {Cd,Ct,Cb,CO} 0 {1,S}
-3 O 0 {1,S}
-
-C_rad_out_TwoDe
-1 *1 C 1 {2,S}, {3,S}
-2 {Cd,Ct,Cb,CO} 0 {1,S}
+Y_12_02a
+1 *1 Cs 1 {2,S}, {3,S}, {4,S}
+2 *2 Cs 1 {1,S}, {5,S}, {6,S}
 3 {Cd,Ct,Cb,CO} 0 {1,S}
+4 {Cd,Ct,Cb,CO} 0 {1,S}
+5 H 0 {2,S}
+6 H 0 {2,S}
 
-Cd_rad_out
-1 *1 C 1 {2,D}
-2 {C,O} 0 {1,D}
-
-Cd_rad_out_C
-1 *1 C 1 {2,D}
-2 C 0 {1,D}
-
-Cd_rad_out_O
-1 *1 C 1 {2,D}
-2 O 0 {1,D}
-
-Cdsingle_rad_out
-1 *1 Cd 1 {2,S}
-2 R 0 {1,S}
-
-CdsingleH_rad_out
-1 *1 Cd 1 {2,S}
-2 H 0 {1,S}
-
-CdsingleND_rad_out
-1 *1 Cd 1 {2,S}
-2 {Cs,Os} 0 {1,S}
-
-CdsingleDe_rad_out
-1 *1 Cd 1 {2,S}
-2 {Cd,Ct,Cb,Os} 0 {1,S}
-
-O_rad
-1 *1 Os 1
-
-Ypri_rad_out
-1 *2 {R!H} 1 
-
-Cpri_rad_out_single
-1 *2 C 1 {2,S}, {3,S}
-2 R 0 {1,S}
-3 R 0 {1,S}
-
-Cpri_rad_out_2H
-1 *2 C 1 {2,S}, {3,S}
-2 H 0 {1,S}
-3 H 0 {1,S}
-
-Cpri_rad_out_1H
-1 *2 C 1 {2,S}, {3,S}
-2 H 0 {1,S}
-3 {R!H} 0 {1,S}
-
-Cpri_rad_out_H/NonDeC
-1 *2 C 1 {2,S}, {3,S}
-2 H 0 {1,S}
-3 Cs 0 {1,S}
-
-Cpri_rad_out_H/NonDeO
-1 *2 C 1 {2,S}, {3,S}
-2 H 0 {1,S}
-3 Os 0 {1,S}
-
-Cpri_rad_out_H/OneDe
-1 *2 C 1 {2,S}, {3,S}
-2 H 0 {1,S}
+Y_12_02b
+1 *1 Cs 1 {2,S}, {3,S}, {4,S}
+2 *2 Cs 1 {1,S}, {5,S}, {6,S}
 3 {Cd,Ct,Cb,CO} 0 {1,S}
+4 H 0 {1,S}
+5 {Cd,Ct,Cb,CO} 0 {2,S}
+6 H 0 {2,S}
 
-Cpri_rad_out_noH
-1 *2 C 1 {2,S}, {3,S}
-2 {R!H} 0 {1,S}
-3 {R!H} 0 {1,S}
-
-Cpri_rad_out_NonDe
-1 *2 C 1 {2,S}, {3,S}
-2 {Cs,Os} 0 {1,S}
-3 {Cs,Os} 0 {1,S}
-
-Cpri_rad_out_Cs2
-1 *2 C 1 {2,S}, {3,S}
-2 Cs 0 {1,S}
-3 Cs 0 {1,S}
-
-Cpri_rad_out_NDMustO
-1 *2 C 1 {2,S}, {3,S}
-2 O 0 {1,S}
-3 {Cs,Os} 0 {1,S}
-
-Cpri_rad_out_OneDe
-1 *2 C 1 {2,S}, {3,S}
-2 {Cd,Ct,Cb,CO} 0 {1,S}
-3 {Cs,Os} 0 {1,S}
-
-Cpri_rad_out_OneDe/Cs
-1 *2 C 1 {2,S}, {3,S}
-2 {Cd,Ct,Cb,CO} 0 {1,S}
-3 Cs 0 {1,S}
-
-Cpri_rad_out_OneDe/O
-1 *2 C 1 {2,S}, {3,S}
-2 {Cd,Ct,Cb,CO} 0 {1,S}
-3 Os 0 {1,S}
-
-Cpri_rad_out_TwoDe
-1 *2 C 1 {2,S}, {3,S}
-2 {Cd,Ct,Cb,CO} 0 {1,S}
+Y_12_03
+1 *1 Cs 1 {2,S}, {3,S}, {4,S}
+2 *2 Cs 1 {1,S}, {5,S}, {6,S}
 3 {Cd,Ct,Cb,CO} 0 {1,S}
+4 {Cd,Ct,Cb,CO} 0 {1,S}
+5 {Cd,Ct,Cb,CO} 0 {2,S}
+6 H 0 {2,S}
 
-Cdpri_rad_out
-1 *2 C 1 {2,D}
-2 {C,O} 0 {1,D}
+Y_12_04
+1 *1 Cs 1 {2,S}, {3,S}, {4,S}
+2 *2 Cs 1 {1,S}, {5,S}, {6,S}
+3 {Cd,Ct,Cb,CO} 0 {1,S}
+4 {Cd,Ct,Cb,CO} 0 {1,S}
+5 {Cd,Ct,Cb,CO} 0 {2,S}
+6 {Cd,Ct,Cb,CO} 0 {2,S}
 
-Cdpri_rad_out_C
-1 *2 C 1 {2,D}
-2 C 0 {1,D}
+Y_12_11
+Union {Y_12_11a, Y_12_11b}
 
-Cdpri_rad_out_O
-1 *2 C 1 {2,D}
-2 O 0 {1,D}
+Y_12_11a
+1 *1 Cs 1 {2,S}, {3,S}, {4,S}
+2 *2 Cs 1 {1,S}, {5,S}, {6,S}
+3 {Cd,Ct,Cb,CO} 0 {1,S}
+4 {Cs,Os} 0 {1,S}
+5 H 0 {2,S}
+6 H 0 {2,S}
 
-Cdsinglepri_rad_out
-1 *2 Cd 1 {2,S}
-2 R 0 {1,S}
+Y_12_11b
+1 *1 Cs 1 {2,S}, {3,S}, {4,S}
+2 *2 Cs 1 {1,S}, {5,S}, {6,S}
+3 {Cd,Ct,Cb,CO} 0 {1,S}
+4 H 0 {1,S}
+5 {Cs,Os} 0 {2,S}
+6 H 0 {2,S}
 
-CdsinglepriH_rad_out
-1 *2 Cd 1 {2,S}
-2 H 0 {1,S}
+Y_12_12
+Union {Y_12_12a, Y_12_12b}
 
-CdsinglepriND_rad_out
-1 *2 Cd 1 {2,S}
-2 {Cs,Os} 0 {1,S}
+Y_12_12a
+1 *1 Cs 1 {2,S}, {3,S}, {4,S}
+2 *2 Cs 1 {1,S}, {5,S}, {6,S}
+3 {Cd,Ct,Cb,CO} 0 {1,S}
+4 {Cd,Ct,Cb,CO} 0 {1,S}
+5 {Cs,Os} 0 {2,S}
+6 H 0 {2,S}
 
-CdsinglepriDe_rad_out
-1 *2 Cd 1 {2,S}
-2 {Cd,Ct,Cb,Os} 0 {1,S}
+Y_12_12b
+1 *1 Cs 1 {2,S}, {3,S}, {4,S}
+2 *2 Cs 1 {1,S}, {5,S}, {6,S}
+3 {Cd,Ct,Cb,CO} 0 {1,S}
+4 {Cs,Os} 0 {1,S}
+5 {Cd,Ct,Cb,CO} 0 {2,S}
+6 H 0 {2,S}
 
-Opri_rad
-1 *2 Os 1
+Y_12_21
+Union {Y_12_21a, Y_12_21b}
 
+Y_12_21a
+1 *1 Cs 1 {2,S}, {3,S}, {4,S}
+2 *2 Cs 1 {1,S}, {5,S}, {6,S}
+3 {Cs,Os} 0 {1,S}
+4 {Cs,Os} 0 {1,S}
+5 {Cd,Ct,Cb,CO} 0 {2,S}
+6 H 0 {2,S}
 
+Y_12_21b
+1 *1 Cs 1 {2,S}, {3,S}, {4,S}
+2 *2 Cs 1 {1,S}, {5,S}, {6,S}
+3 {Cs,Os} 0 {1,S}
+4 {Cd,Ct,Cb,CO} 0 {1,S}
+5 {Cs,Os} 0 {2,S}
+6 H 0 {2,S}
 
+Y_12_22
+Union {Y_12_22a, Y_12_22b}
 
+Y_12_22a
+1 *1 Cs 1 {2,S}, {3,S}, {4,S}
+2 *2 Cs 1 {1,S}, {5,S}, {6,S}
+3 {Cd,Ct,Cb,CO} 0 {1,S}
+4 {Cd,Ct,Cb,CO} 0 {1,S}
+5 {Cs,Os} 0 {2,S}
+6 {Cs,Os} 0 {2,S}
 
+Y_12_22b
+1 *1 Cs 1 {2,S}, {3,S}, {4,S}
+2 *2 Cs 1 {1,S}, {5,S}, {6,S}
+3 {Cd,Ct,Cb,CO} 0 {1,S}
+4 {Cs,Os} 0 {1,S}
+5 {Cd,Ct,Cb,CO} 0 {2,S}
+6 {Cs,Os} 0 {2,S}
 
+Y_12_13
+1 *1 Cs 1 {2,S}, {3,S}, {4,S}
+2 *2 Cs 1 {1,S}, {5,S}, {6,S}
+3 {Cd,Ct,Cb,CO} 0 {1,S}
+4 {Cd,Ct,Cb,CO} 0 {1,S}
+5 {Cd,Ct,Cb,CO} 0 {2,S}
+6 {Cs,Os} 0 {2,S}
 
+Y_12_31
+1 *1 Cs 1 {2,S}, {3,S}, {4,S}
+2 *2 Cs 1 {1,S}, {5,S}, {6,S}
+3 {Cs,Os} 0 {1,S}
+4 {Cs,Os} 0 {1,S}
+5 {Cs,Os} 0 {2,S}
+6 {Cd,Ct,Cb,CO} 0 {2,S}
 
  
