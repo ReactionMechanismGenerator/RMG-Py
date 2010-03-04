@@ -75,6 +75,9 @@ subroutine estimateRateCoefficients_CSE(T, P, E, Mcoll0, E0, densStates, &
     ! The size of the master equation matrix
     integer nRows
     
+    ! The number of chemically-significant eigenvalues
+    integer nCSE
+
     ! The indices of the master equation matrix
     integer, dimension(1:nGrains,1:nIsom) :: indices
 
@@ -166,8 +169,34 @@ subroutine estimateRateCoefficients_CSE(T, P, E, Mcoll0, E0, densStates, &
         return
     end if
 
+!    ! Calculate the eigenvalues and eigenvectors
+!    ! Only calculate the ones we need, which are a small subset of the total
+!    ! This doesn't seem to work properly; it only gives one eigenvector
+!    allocate( V0(1:nRows), X0(1:nRows, 1:nRows) )
+!    allocate( work(1:6*nRows), iwork(1:8*nRows), ifail(1:5*nRows) )
+!    call DSYEVX('V', 'I', 'U', nRows, M, nRows, 0.0, 0.0, &
+!        nRows-nIsom-nProd, nRows, 1.0e-8, nCSE, V0, X0, nRows, &
+!        work, 8*nRows, iwork, ifail, info)
+!    if (info > 0) then
+!        msg = 'DSYEVX eigenvalue algorithm failed to converge.'
+!        return
+!    elseif (info < 0) then
+!        msg = 'Illegal argument passed to DSYEVX.'
+!        return
+!    end if
+    
+    ! Count the number of chemically distinct eigenvalues
+    ! This will be ideally be nIsom+nProd, but might be lower if one or more
+    ! chemical eigenmodes is blended with the internal energy eigenmodes
+    nCSE = 1
+    do i = 1, nIsom+nProd-1
+        if (abs(V0(nRows-nIsom-nProd) / V0(nRows-i)) > 3.0) then
+            nCSE = nCSE + 1
+        end if
+    end do
+
     ! Check for proper separation of chemical timescales
-    if (abs(V0(nRows-nIsom-nProd) / V0(nRows-nIsom-nProd+1)) < 2.0) then
+    if (nCSE /= nIsom + nProd) then
         write (*,fmt='(A)') 'Error: Chemical eigenvalues are not distinct from internal energy eigenvalues.'
         write (*,fmt='(A,ES12.4E2,A,ES12.4E2,A,F7.4)') &
             'last IERE =', V0(nRows-nIsom-nProd), &
@@ -176,7 +205,7 @@ subroutine estimateRateCoefficients_CSE(T, P, E, Mcoll0, E0, densStates, &
         msg = 'Chemical eigenvalues not distinct from internal energy eigenvalues.'
         return
     end if
-    
+
     ! Check for zero eigenvalue
     if (abs(V0(nRows) / V0(nRows-1)) > 0.001) then
         write (*,fmt='(A)') 'Error: Zero eigenvalue not found.'
@@ -188,39 +217,30 @@ subroutine estimateRateCoefficients_CSE(T, P, E, Mcoll0, E0, densStates, &
         return
     end if
 
-    ! Calculate unsymmetrized eigenvectors
-    do i = 1, nRows
-        do j = 1, nRows
-            M(i,j) = Sinv(i) * M(i,j)
-        end do
-    end do
-    ! Also normalize the eigenvectors
-    do j = 1, nRows
-        M(:,j) = M(:,j) / sum(M(:,j))
-    end do
-
     ! Extract the chemically-significant eigenvalues and eigenvectors
     ! These are the last nIsom+nProd columns of M
-    allocate( X(1:nIsom+nProd, 1:nIsom+nProd), V(1:nIsom+nProd), Xinv(1:nIsom+nProd, 1:nIsom+nProd))
+    allocate( X(1:nIsom+nProd, 1:nCSE), V(1:nCSE), Xinv(1:nCSE, 1:nIsom+nProd))
     do i = 1, nIsom + nProd
-        do j = 1, nIsom + nProd
+        do j = 1, nCSE
             X(i,j) = 0.0
         end do
     end do
-    do j = 1, nIsom + nProd
+    do j = 1, nCSE
         count = nRows - (nIsom + nProd) + j
         V(j) = V0(count)
         do r = 1, nGrains
             do i = 1, nIsom
                 index = indices(r,i)
                 if (index > 0) then
-                    X(i,j) = X(i,j) + M(index,count)
+                    ! Unsymmetrize as we go
+                    X(i,j) = X(i,j) + Sinv(index) * M(index,count)
                 end if
             end do
         end do
         do i = 1, nProd
             index = nRows - nProd + i
-            X(i+nIsom,j) = M(index,count)
+            ! Unsymmetrize as we go
+            X(i+nIsom,j) = Sinv(index) * M(index,count)
         end do
     end do
     
