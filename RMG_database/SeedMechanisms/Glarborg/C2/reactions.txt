@@ -420,13 +420,13 @@ CH3OOH = CH3O + OH                       1.1E28  -4.150   46190  0.0 0.0 0.0
 //CH3OOH = CH3O + OH                       2.2E17  -0.420   44622  0.0 0.0 0.0  
 
 
- CH3OOH + H = CH2OOH + H2                   5.4E10   0.000    1860  0.0 0.0 0.0  
+ CH3OOH + H = CH2O + OH + H2                   5.4E10   0.000    1860  0.0 0.0 0.0  
  CH3OOH + H = CH3OO + H2                    5.4E10   0.000    1860  0.0 0.0 0.0  
  CH3OOH + H = CH3O + H2O                    1.2E10   0.000    1860  0.0 0.0 0.0  
- CH3OOH + O = CH2OOH + OH                   1.6E13   0.000    4750  0.0 0.0 0.0  
+ CH3OOH + O = CH2O + OH + OH                   1.6E13   0.000    4750  0.0 0.0 0.0  
  CH3OOH + O = CH3OO + OH                    8.7E12   0.000    4750  0.0 0.0 0.0  
  CH3OOH + OH = CH3OO + H2O                  1.1E12   0.000    -437  0.0 0.0 0.0  
- CH3OOH + OH = CH2OOH + H2O                 7.2E11   0.000    -258  0.0 0.0 0.0  
+ CH3OOH + OH = CH2O + OH + H2O                 7.2E11   0.000    -258  0.0 0.0 0.0  
  CH3OOH + HO2 = CH3OO + H2O2                4.1E04   2.500   10206  0.0 0.0 0.0  
 
  CH3OO + H = CH3O + OH                      1.0E14   0.000       0  0.0 0.0 0.0  
@@ -451,9 +451,9 @@ CH3OOH = CH3O + OH                       1.1E28  -4.150   46190  0.0 0.0 0.0
  CH3OO + C2H6 = CH3OOH + C2H5               1.9E01   3.640   17100  0.0 0.0 0.0  
 
 // 1 atm
-// CH2OOH => CH2O + OH                      2.4E12  -0.925    1567  0.0 0.0 0.0  
+// CH2O + OH => CH2O + OH                      2.4E12  -0.925    1567  0.0 0.0 0.0  
 // 10 atm
-CH2OOH => CH2O + OH                      2.5E13  -0.927    1579  0.0 0.0 0.0  
+//CH2OOH => CH2O + OH                      2.5E13  -0.927    1579  0.0 0.0 0.0  
 // 100 atm
 //CH2OOH => CH2O + OH                      7.0E14  -1.064    1744  0.0 0.0 0.0  
 
@@ -892,12 +892,12 @@ CH3CH2OOH = CH3CH2O + OH                 1.1E28  -4.150   46190  0.0 0.0 0.0
 // ( = CH3OOH = CH3O + OH[ZHU/LIN01b],high P limit)
 //CH3CH2OOH = CH3CH2O + OH                 2.2E17  -0.420   44622  0.0 0.0 0.0  
 
- CH3CH2OOH + H = CH3CHOOH + H2              6.5E10   0.000    1860  0.0 0.0 0.0  
+ CH3CH2OOH + H = CH3CHO+OH + H2              6.5E10   0.000    1860  0.0 0.0 0.0  
  CH3CH2OOH + H = CH3CH2OO + H2              4.3E10   0.000    1860  0.0 0.0 0.0  
  CH3CH2OOH + H = CH3CH2O + H2O              1.2E10   0.000    1860  0.0 0.0 0.0  
- CH3CH2OOH + O = CH3CHOOH + OH              1.6E13   0.000    4750  0.0 0.0 0.0  
+ CH3CH2OOH + O = CH3CHO+OH + OH              1.6E13   0.000    4750  0.0 0.0 0.0  
  CH3CH2OOH + O = CH3CH2OO + OH              8.7E12   0.000    4750  0.0 0.0 0.0  
- CH3CH2OOH + OH = CH3CHOOH + H2O            7.2E11   0.000    -258  0.0 0.0 0.0  
+ CH3CH2OOH + OH = CH3CHO+OH + H2O            7.2E11   0.000    -258  0.0 0.0 0.0  
  CH3CH2OOH + OH = CH3CH2OO + H2O            1.1E12   0.000    -437  0.0 0.0 0.0  
  CH3CH2OOH + HO2 = CH3CH2OO + H2O2          4.1E04   2.500   10206  0.0 0.0 0.0  
                                   
@@ -920,11 +920,11 @@ CH3CH2OOH = CH3CH2O + OH                 1.1E28  -4.150   46190  0.0 0.0 0.0
  CH3CH2OO + CH3CH2OO = CH3CHO + CH3CH2OH + O2 4.3E09   0.000    -850  0.0 0.0 0.0  
 
 //    1 atm
-// CH3CHOOH = CH3CHO + OH                   3.5E12  -0.947     979  0.0 0.0 0.0  
+// CH3CHO+OH = CH3CHO + OH                   3.5E12  -0.947     979  0.0 0.0 0.0  
 //   10 atm
-CH3CHOOH = CH3CHO + OH                   3.5E13  -0.947     980  0.0 0.0 0.0  
+//CH3CHO+OH = CH3CHO + OH                   3.5E13  -0.947     980  0.0 0.0 0.0  
 //  100 atm
-//CH3CHOOH = CH3CHO + OH                   5.8E14  -1.012    1068  0.0 0.0 0.0  
+//CH3CHO+OH = CH3CHO + OH                   5.8E14  -1.012    1068  0.0 0.0 0.0  
 
  CH2CH2OOH = cC2H4O + OH                  1.3E10   0.720   15380  0.0 0.0 0.0  
  CH2CH2OOH = CH3CH2OO                   1.2E07   1.040   17980  0.0 0.0 0.0  
@@ -981,9 +981,9 @@ CH2CHOOH = CH2CHO + OH                   1.1E28  -4.150   46190  0.0 0.0 0.0
 //HOCH2CH2OO + HO2 = HOCH2CH2OOH + O2        2.5E11   0.000   -1490  0.0 0.0 0.0  
 //HOCH2CH2OO + HO2 => HOCH2CH2O + OH + O2      2.5E11   0.000   -1490  0.0 0.0 0.0  
 //HOCH2CH2OO + HO2 => CH2O + CH2OH + OH + O2     2.5E11   0.000   -1490  0.0 0.0 0.0  
-// HOCH2CH2OO + HO2 => CH2OOH + CH2OH + O2      2.5E11   0.000   -1490  0.0 0.0 0.0  
+// HOCH2CH2OO + HO2 => CH2O + OH + CH2OH + O2      2.5E11   0.000   -1490  0.0 0.0 0.0  
 //HOCH2CH2OO + CH2O => HOCH2CH2OOH + HCO     4.1E04   2.500   10206  0.0 0.0 0.0  
 //HOCH2CH2OO + CH2O => CH2O + CH2OH + OH + HCO   4.1E04   2.500   10206  0.0 0.0 0.0  
-// HOCH2CH2OO + CH2O => CH2OOH + CH2OH + HCO    4.1E04   2.500   10206  0.0 0.0 0.0  
+// HOCH2CH2OO + CH2O => CH2O + OH + CH2OH + HCO    4.1E04   2.500   10206  0.0 0.0 0.0  
 //HOCH2CH2OO + C2H4 => HOCH2CH2O + CH3CHO    2.2E12   0.000   17200  0.0 0.0 0.0  
 // HOCH2CH2OO + C2H4 => CH2O + CH2OH + CH3CHO   2.2E12   0.000   17200  0.0 0.0 0.0  
