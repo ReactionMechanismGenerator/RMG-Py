@@ -25,7 +25,7 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 subroutine estimateRateCoefficients_MSC(T, P, E, collFreq, densStates, Eres, &
-Kij, Fim, Gnj, nIsom, nProd, nGrains, K, msg)
+    Kij, Fim, Gnj, nIsom, nReac, nProd, nGrains, K, msg)
     ! Estimate the phenomenological rate coefficients using the (modified) strong
     ! collision method. The parameters are:
     !
@@ -46,7 +46,8 @@ Kij, Fim, Gnj, nIsom, nProd, nGrains, K, msg)
     ! `Gnj`      in     The microcanonical dissociation rate coefficients in
     !                   s^-1
     ! `nIsom`    in     The number of isomers in the network
-    ! `nProd`    in     The number of reactant/product channels in the network
+    ! `nReac`    in     The number of reactant channels in the network (both A + B <=> C)
+    ! `nProd`    in     The number of product channels in the network (A -> B + C only)
     ! `nGrains`  in     The number of energy grains being used
     ! `K`        out    The matrix of phenomenological rate coefficients k(T,P)
     ! `msg`      out    If the subroutine was unsuccessful, this string will
@@ -58,16 +59,17 @@ Kij, Fim, Gnj, nIsom, nProd, nGrains, K, msg)
     real(8), intent(in) :: T
     real(8), intent(in) :: P
     integer, intent(in) :: nIsom
+    integer, intent(in) :: nReac
     integer, intent(in) :: nProd
     integer, intent(in) :: nGrains
     real(8), dimension(1:nGrains), intent(in) :: E
     real(8), dimension(1:nIsom), intent(in) :: collFreq
-    real(8), dimension(1:nIsom+nProd), intent(in) :: Eres
+    real(8), dimension(1:nIsom+nReac+nProd), intent(in) :: Eres
     real(8), dimension(1:nIsom,1:nGrains), intent(in) :: densStates
     real(8), dimension(1:nIsom,1:nIsom,1:nGrains), intent(in) :: Kij
-    real(8), dimension(1:nIsom,1:nProd,1:nGrains), intent(in) :: Fim
-    real(8), dimension(1:nProd,1:nIsom,1:nGrains), intent(in) :: Gnj
-    real(8), dimension(1:nIsom+nProd,1:nIsom+nProd), intent(out) :: K
+    real(8), dimension(1:nIsom,1:nReac,1:nGrains), intent(in) :: Fim
+    real(8), dimension(1:nReac+nProd,1:nIsom,1:nGrains), intent(in) :: Gnj
+    real(8), dimension(1:nIsom+nReac+nProd,1:nIsom+nReac+nProd), intent(out) :: K
     character(len=128), intent(out) :: msg
 
     ! Steady-state populations
@@ -99,8 +101,8 @@ Kij, Fim, Gnj, nIsom, nProd, nGrains, K, msg)
     allocate( pa(1:nGrains, 1:nIsom) )
 
     ! Zero the phenomenological rate coefficient matrix
-    do i = 1, nIsom + nProd
-        do j = 1, nIsom + nProd
+    do i = 1, nIsom + nReac + nProd
+        do j = 1, nIsom + nReac + nProd
             K(i,j) = 0.0
         end do
     end do
@@ -112,7 +114,7 @@ Kij, Fim, Gnj, nIsom, nProd, nGrains, K, msg)
     ! Each iteration fills in one column of the phenomenological rate  
     ! coefficient matrix with the rates of that isomer/channel to all others
     ! in the network
-    do src = 1, nIsom + nProd
+    do src = 1, nIsom + nReac
         
         ! Determine the starting grain for the calculation based on the
         ! active-state cutoff energy
@@ -156,7 +158,7 @@ Kij, Fim, Gnj, nIsom, nProd, nGrains, K, msg)
             end do
             
             ! Dissociation reactions
-            do n = 1, nProd
+            do n = 1, nReac+nProd
                 do j = 1, nIsom
                     A(j,j) = A(j,j) - Gnj(n,j,r)
                 end do
@@ -201,7 +203,7 @@ Kij, Fim, Gnj, nIsom, nProd, nGrains, K, msg)
         end do
         
         ! Calculate dissociation rates (i.e.) R + R' --> Bn + Cn or M --> Bn + Cn
-        do n = 1, nProd
+        do n = 1, nReac+nProd
             do j = 1, nIsom
                 if (n+nIsom /= src) then
                     val = sum(Gnj(n,j,:) * pa(:,j))

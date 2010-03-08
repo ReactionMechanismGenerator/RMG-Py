@@ -215,7 +215,7 @@ end subroutine
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 subroutine fullMEMatrix(E, E0, Mcoll0, Kij, Gnj, Fim, indices, &
-    nRows, nGrains, nIsom, nProd, Mcoll, Mrxn, msg)
+    nRows, nGrains, nIsom, nReac, nProd, Mcoll, Mrxn, msg)
     ! Construct the full master equation matrix. The parameters are:
     !
     ! ========== ====== ========================================================
@@ -234,7 +234,8 @@ subroutine fullMEMatrix(E, E0, Mcoll0, Kij, Gnj, Fim, indices, &
     ! `nRows`    in     The number of rows and columns in the full matrix
     ! `nGrains`  in     The number of energy grains being used
     ! `nIsom`    in     The number of isomers in the network
-    ! `nProd`    in     The number of reactant/product channels in the network
+    ! `nReac`    in     The number of reactant channels in the network (both A + B <=> C)
+    ! `nProd`    in     The number of product channels in the network (A -> B + C only)
     ! `Mcoll`    out    The full master equation matrix - collision terms
     ! `Mrxn`     out    The full master equation matrix - reaction terms
     ! `msg`      out    If the subroutine was unsuccessful, this string will
@@ -245,14 +246,15 @@ subroutine fullMEMatrix(E, E0, Mcoll0, Kij, Gnj, Fim, indices, &
     ! Type definitions of parameters
     integer, intent(in) :: nRows
     integer, intent(in) :: nIsom
+    integer, intent(in) :: nReac
     integer, intent(in) :: nProd
     integer, intent(in) :: nGrains
     real(8), dimension(1:nGrains), intent(in) :: E
     real(8), dimension(1:nIsom+nProd), intent(in) :: E0
     real(8), dimension(1:nIsom,1:nGrains,1:nGrains), intent(in) :: Mcoll0
     real(8), dimension(1:nIsom,1:nIsom,1:nGrains), intent(in) :: Kij
-    real(8), dimension(1:nIsom,1:nProd,1:nGrains), intent(in) :: Fim
-    real(8), dimension(1:nProd,1:nIsom,1:nGrains), intent(in) :: Gnj
+    real(8), dimension(1:nIsom,1:nReac,1:nGrains), intent(in) :: Fim
+    real(8), dimension(1:nReac+nProd,1:nIsom,1:nGrains), intent(in) :: Gnj
     integer, dimension(1:nGrains,1:nIsom), intent(in) :: indices
     real(8), dimension(1:nRows,1:nRows), intent(out) :: Mcoll
     real(8), dimension(1:nRows,1:nRows), intent(out) :: Mrxn
@@ -303,16 +305,18 @@ subroutine fullMEMatrix(E, E0, Mcoll0, Kij, Gnj, Fim, indices, &
     end do
     ! Construct reactive matrix - dissocation/association reactions
     do i = 1, nIsom
-        do n = 1, nProd
+        do n = 1, nReac+nProd
             if (Gnj(n,i,nGrains) > 0 .or. Fim(i,n,nGrains) > 0) then
                 do r = 1, nGrains
                     u = indices(r,i)
-                    v = nRows - nProd + n
+                    v = nRows - nReac + n
                     if (u > 0) then
-                        Mrxn(v, u) = Gnj(n,i,r)
                         Mrxn(u, u) = Mrxn(u, u) - Gnj(n,i,r)
-                        Mrxn(u, v) = Fim(i,n,r)
-                        Mrxn(v, v) = Mrxn(v, v) - Fim(i,n,r)
+                        if (n <= nReac) then
+                            Mrxn(v, u) = Gnj(n,i,r)
+                            Mrxn(u, v) = Fim(i,n,r)
+                            Mrxn(v, v) = Mrxn(v, v) - Fim(i,n,r)
+                        end if
                     end if
                 end do
             end if

@@ -25,7 +25,7 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 subroutine estimateRateCoefficients_RS(T, P, E, Mcoll, densStates, E0, Eres, &
-Kij, Fim, Gnj, dEdown, nIsom, nProd, nGrains, K, msg)
+Kij, Fim, Gnj, dEdown, nIsom, nReac, nProd, nGrains, K, msg)
     ! Estimate the phenomenological rate coefficients using the (modified) strong
     ! collision method. The parameters are:
     !
@@ -48,7 +48,8 @@ Kij, Fim, Gnj, dEdown, nIsom, nProd, nGrains, K, msg)
     ! `dEdown`   in     The average energy transferred in a deactivating
     !                   collision in J/mol
     ! `nIsom`    in     The number of isomers in the network
-    ! `nProd`    in     The number of reactant/product channels in the network
+    ! `nReac`    in     The number of reactant channels in the network (both A + B <=> C)
+    ! `nProd`    in     The number of product channels in the network (A -> B + C only)
     ! `nGrains`  in     The number of energy grains being used
     ! `K`        out    The matrix of phenomenological rate coefficients k(T,P)
     ! `msg`      out    If the subroutine was unsuccessful, this string will
@@ -60,18 +61,19 @@ Kij, Fim, Gnj, dEdown, nIsom, nProd, nGrains, K, msg)
     real(8), intent(in) :: T
     real(8), intent(in) :: P
     integer, intent(in) :: nIsom
+    integer, intent(in) :: nReac
     integer, intent(in) :: nProd
     integer, intent(in) :: nGrains
     real(8), dimension(1:nGrains), intent(in) :: E
     real(8), dimension(1:nIsom,1:nGrains,1:nGrains), intent(in) :: Mcoll
     real(8), dimension(1:nIsom,1:nGrains), intent(in) :: densStates
     real(8), dimension(1:nIsom), intent(in) :: E0
-    real(8), dimension(1:nIsom+nProd), intent(in) :: Eres
+    real(8), dimension(1:nIsom+nReac+nProd), intent(in) :: Eres
     real(8), dimension(1:nIsom,1:nIsom,1:nGrains), intent(in) :: Kij
-    real(8), dimension(1:nIsom,1:nProd,1:nGrains), intent(in) :: Fim
-    real(8), dimension(1:nProd,1:nIsom,1:nGrains), intent(in) :: Gnj
+    real(8), dimension(1:nIsom,1:nReac,1:nGrains), intent(in) :: Fim
+    real(8), dimension(1:nReac+nProd,1:nIsom,1:nGrains), intent(in) :: Gnj
     real(8), intent(in) :: dEdown
-    real(8), dimension(1:nIsom+nProd,1:nIsom+nProd), intent(out) :: K
+    real(8), dimension(1:nIsom+nReac+nProd,1:nIsom+nReac+nProd), intent(out) :: K
     character(len=128), intent(out) :: msg
 
     ! Number of reservoir and active-state energy grains for each isomer
@@ -91,23 +93,23 @@ Kij, Fim, Gnj, dEdown, nIsom, nProd, nGrains, K, msg)
     end do
 
     ! Determine pseudo-steady state populations of active state
-    allocate( pa(1:nGrains, 1:nIsom+nProd, 1:nIsom) )
+    allocate( pa(1:nGrains, 1:nIsom+nReac, 1:nIsom) )
     pa = 0 * pa
     if (nIsom == 1) then
         ! Not worth it to call banded solver when only one well
         call activeStateFull(T, P, E, Mcoll, densStates, Kij, Fim, Gnj, &
-            nIsom, nProd, nGrains, nRes, nAct, pa, msg)
+            nIsom, nReac, nProd, nGrains, nRes, nAct, pa, msg)
         if (msg(1:1) /= ' ') return
     else
         ! Very worth it to call banded solver when more than one well
         call activeStateBanded(T, P, E, Mcoll, densStates, Kij, Fim, Gnj, dEdown, &
-            nIsom, nProd, nGrains, nRes, nAct, pa, msg)
+            nIsom, nReac, nProd, nGrains, nRes, nAct, pa, msg)
         if (msg(1:1) /= ' ') return
     end if
 
     ! Check that PSSA populations are all nonnegative; fail if not
     do i = 1, nIsom
-        do n = 1, nIsom+nProd
+        do n = 1, nIsom+nReac
             do r = nRes(i), nGrains
                 if (pa(r,n,i) < 0.0) then
                     msg = 'One or more negative steady-state populations encountered.'
@@ -118,30 +120,30 @@ Kij, Fim, Gnj, dEdown, nIsom, nProd, nGrains, K, msg)
     end do
 
     ! Initialize phenomenological rate coefficient matrix
-    do i = 1, nIsom+nProd
-        do n = 1, nIsom+nProd
+    do i = 1, nIsom+nReac+nProd
+        do n = 1, nIsom+nReac+nProd
             K(i,n) = 0
         end do
     end do
 
     ! Determine phenomenological rate coefficients
     do i = 1, nIsom
-        do n = 1, nIsom+nProd
+        do n = 1, nIsom+nReac
             do r = 1, nRes(i)
                 K(i,n) = K(i,n) + sum(Mcoll(i,r,nRes(i)+1:nGrains) * pa(nRes(i)+1:nGrains,n,i))
             end do
         end do
     end do
     
-    do j = 1, nIsom+nProd
-        do n = 1, nProd
+    do j = 1, nIsom+nReac
+        do n = 1, nReac+nProd
             do i = 1, nIsom
                 K(n+nIsom,j) = K(n+nIsom,j) + sum(Gnj(n,i,nRes(i)+1:nGrains) * pa(nRes(i)+1:nGrains,j,i))
             end do
         end do
     end do
 
-    do n = 1, nIsom+nProd
+    do n = 1, nIsom+nReac+nProd
         K(n,n) = -sum(K(1:n-1,n)) - sum(K(n+1:nIsom+nProd,n))
     end do
 
@@ -210,7 +212,7 @@ end subroutine
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 subroutine activeStateFull(T, P, E, Mcoll, densStates, Kij, Fim, Gnj, &
-    nIsom, nProd, nGrains, nRes, nAct, pa, msg)
+    nIsom, nReac, nProd, nGrains, nRes, nAct, pa, msg)
     ! Determine the pseudo-steady state populations for the active state
     ! grains using a full matrix linear solve.
     !
@@ -227,7 +229,7 @@ subroutine activeStateFull(T, P, E, Mcoll, densStates, Kij, Fim, Gnj, &
     ! `Gnj`      in     The microcanonical dissociation rate coefficients in
     !                   s^-1
     ! `nIsom`    in     The number of isomers in the network
-    ! `nProd`    in     The number of reactant/product channels in the network
+    ! `nReac`    in     The number of reactant channels in the network
     ! `nGrains`  in     The number of energy grains being used
     ! `nRes`     out    The number of reservoir grains for each isomer
     ! `nAct`     out    The number of active-state grains for each isomer
@@ -239,6 +241,7 @@ subroutine activeStateFull(T, P, E, Mcoll, densStates, Kij, Fim, Gnj, &
 
     ! Type definitions of parameters
     integer, intent(in) :: nIsom
+    integer, intent(in) :: nReac
     integer, intent(in) :: nProd
     integer, intent(in) :: nGrains
     real(8), intent(in) :: T
@@ -247,11 +250,11 @@ subroutine activeStateFull(T, P, E, Mcoll, densStates, Kij, Fim, Gnj, &
     real(8), dimension(1:nIsom,1:nGrains,1:nGrains), intent(in) :: Mcoll
     real(8), dimension(1:nIsom,1:nGrains), intent(in) :: densStates
     real(8), dimension(1:nIsom,1:nIsom,1:nGrains), intent(in) :: Kij
-    real(8), dimension(1:nIsom,1:nProd,1:nGrains), intent(in) :: Fim
-    real(8), dimension(1:nProd,1:nIsom,1:nGrains), intent(in) :: Gnj
+    real(8), dimension(1:nIsom,1:nReac,1:nGrains), intent(in) :: Fim
+    real(8), dimension(1:nReac+nProd,1:nIsom,1:nGrains), intent(in) :: Gnj
     integer, dimension(1:nIsom), intent(in) :: nRes
     integer, dimension(1:nIsom), intent(in) :: nAct
-    real(8), dimension(1:nGrains,1:nIsom+nProd,1:nIsom), intent(out) :: pa
+    real(8), dimension(1:nGrains,1:nIsom+nReac,1:nIsom), intent(out) :: pa
     character(len=128), intent(out) :: msg
 
     !! Accounting matrix
@@ -274,14 +277,14 @@ subroutine activeStateFull(T, P, E, Mcoll, densStates, Kij, Fim, Gnj, &
     call accountingMatrix(nGrains, nIsom, nRes, indices)
 
     ! Create and zero active-state matrix and RHS vectors
-    allocate( L(1:sum(nAct), 1:sum(nAct)), Z(1:sum(nAct), nIsom+nProd) )
+    allocate( L(1:sum(nAct), 1:sum(nAct)), Z(1:sum(nAct), nIsom+nReac) )
     do i = 1, sum(nAct)
         do j = 1, sum(nAct)
             L(i,j) = 0.0
         end do
     end do
     do i = 1, sum(nAct)
-        do j = 1, nIsom+nProd
+        do j = 1, nIsom+nReac
             Z(i,j) = 0.0
         end do
     end do
@@ -310,9 +313,13 @@ subroutine activeStateFull(T, P, E, Mcoll, densStates, Kij, Fim, Gnj, &
 
     ! Dissociation/association terms in active-state matrix and RHS vectors
     do i = 1, nIsom
-        do n = 1, nProd
+        do n = 1, nReac+nProd
             do r = nRes(i)+1, nGrains
                 L(indices(r,i), indices(r,i)) = L(indices(r,i), indices(r,i)) - Gnj(n,i,r)
+            end do
+        end do
+        do n = 1, nReac
+            do r = nRes(i)+1, nGrains
                 Z(indices(r,i), n+nIsom) = Fim(i,n,r)
             end do
         end do
@@ -322,7 +329,7 @@ subroutine activeStateFull(T, P, E, Mcoll, densStates, Kij, Fim, Gnj, &
 
     ! Solve for pseudo-steady state populations of active state
     allocate( iPiv(1:sum(nAct)) )
-    call DGESV(sum(nAct), nIsom+nProd, L, sum(nAct), iPiv, Z, sum(nAct), info)
+    call DGESV(sum(nAct), nIsom+nReac, L, sum(nAct), iPiv, Z, sum(nAct), info)
     if (info /= 0) then
         msg = 'Active-state matrix is singular.'
         return
@@ -331,7 +338,7 @@ subroutine activeStateFull(T, P, E, Mcoll, densStates, Kij, Fim, Gnj, &
 
     ! Convert solution to pseudo-steady state populations
     do r = minval(nRes)+1, nGrains
-        do n = 1, nIsom+nProd
+        do n = 1, nIsom+nReac
             do i = 1, nIsom
                 if (indices(r,i) > 0) pa(r,n,i) = Z(indices(r,i), n)
             end do
@@ -346,7 +353,7 @@ end subroutine
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 subroutine activeStateBanded(T, P, E, Mcoll, densStates, Kij, Fim, Gnj, dEdown, &
-    nIsom, nProd, nGrains, nRes, nAct, pa, msg)
+    nIsom, nReac, nProd, nGrains, nRes, nAct, pa, msg)
     ! Determine the pseudo-steady state populations for the active state
     ! grains using a banded matrix linear solve.
     !
@@ -377,6 +384,7 @@ subroutine activeStateBanded(T, P, E, Mcoll, densStates, Kij, Fim, Gnj, dEdown, 
 
     ! Type definitions of parameters
     integer, intent(in) :: nIsom
+    integer, intent(in) :: nReac
     integer, intent(in) :: nProd
     integer, intent(in) :: nGrains
     real(8), intent(in) :: T
@@ -385,12 +393,12 @@ subroutine activeStateBanded(T, P, E, Mcoll, densStates, Kij, Fim, Gnj, dEdown, 
     real(8), dimension(1:nIsom,1:nGrains,1:nGrains), intent(in) :: Mcoll
     real(8), dimension(1:nIsom,1:nGrains), intent(in) :: densStates
     real(8), dimension(1:nIsom,1:nIsom,1:nGrains), intent(in) :: Kij
-    real(8), dimension(1:nIsom,1:nProd,1:nGrains), intent(in) :: Fim
-    real(8), dimension(1:nProd,1:nIsom,1:nGrains), intent(in) :: Gnj
+    real(8), dimension(1:nIsom,1:nReac,1:nGrains), intent(in) :: Fim
+    real(8), dimension(1:nReac+nProd,1:nIsom,1:nGrains), intent(in) :: Gnj
     real(8), intent(in) :: dEdown
     integer, dimension(1:nIsom), intent(in) :: nRes
     integer, dimension(1:nIsom), intent(in) :: nAct
-    real(8), dimension(1:nGrains,1:nIsom+nProd,1:nIsom), intent(out) :: pa
+    real(8), dimension(1:nGrains,1:nIsom+nReac,1:nIsom), intent(out) :: pa
     character(len=128), intent(out) :: msg
 
     ! Accounting matrix
@@ -423,14 +431,14 @@ subroutine activeStateBanded(T, P, E, Mcoll, densStates, Kij, Fim, Gnj, dEdown, 
     bandwidth = 2 * halfbandwidth + 1
 
     ! Create and zero active-state matrix and RHS vectors
-    allocate( L(3 * halfbandwidth + 1, 1:sum(nAct)), Z(1:sum(nAct), 1:nIsom+nProd) )
+    allocate( L(3 * halfbandwidth + 1, 1:sum(nAct)), Z(1:sum(nAct), 1:nIsom+nReac) )
     do i = 1, 3 * halfbandwidth + 1
         do j = 1, sum(nAct)
             L(i,j) = 0.0
         end do
     end do
     do i = 1, sum(nAct)
-        do j = 1, nIsom+nProd
+        do j = 1, nIsom+nReac
             Z(i,j) = 0.0
         end do
     end do
@@ -461,9 +469,13 @@ subroutine activeStateBanded(T, P, E, Mcoll, densStates, Kij, Fim, Gnj, dEdown, 
     
     ! Dissociation/association terms in active-state matrix and RHS vectors
     do i = 1, nIsom
-        do n = 1, nProd
+        do n = 1, nReac+nProd
             do r = nRes(i)+1, nGrains
                 L(bandwidth, indices(r,i)) = L(bandwidth, indices(r,i)) - Gnj(n,i,r)
+            end do
+        end do
+        do n = 1, nReac
+            do r = nRes(i)+1, nGrains
                 Z(indices(r,i), n+nIsom) = Fim(i,n,r)
             end do
         end do
@@ -473,7 +485,7 @@ subroutine activeStateBanded(T, P, E, Mcoll, densStates, Kij, Fim, Gnj, dEdown, 
 
     ! Solve for pseudo-steady state populations of active state
     allocate( iPiv(1:sum(nAct)) )
-    call DGBSV(sum(nAct), halfbandwidth, halfbandwidth, nIsom+nProd, &
+    call DGBSV(sum(nAct), halfbandwidth, halfbandwidth, nIsom+nReac, &
         L, 3 * halfbandwidth + 1, iPiv, Z, sum(nAct), info)
     if (info /= 0) then
         msg = 'Active-state matrix is singular.'
@@ -483,7 +495,7 @@ subroutine activeStateBanded(T, P, E, Mcoll, densStates, Kij, Fim, Gnj, dEdown, 
 
     ! Convert solution to pseudo-steady state populations
     do r = minval(nRes)+1, nGrains
-        do n = 1, nIsom+nProd
+        do n = 1, nIsom+nReac
             do i = 1, nIsom
                 if (indices(r,i) > 0) pa(r,n,i) = Z(indices(r,i), n)
             end do

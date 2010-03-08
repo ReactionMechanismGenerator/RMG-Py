@@ -25,7 +25,7 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 subroutine estimateRateCoefficients_CSE(T, P, E, Mcoll0, E0, densStates, &
-    eqRatios, Kij, Fim, Gnj, nIsom, nProd, nGrains, K, msg)
+    eqRatios, Kij, Fim, Gnj, nIsom, nReac, nProd, nGrains, K, msg)
     ! Estimate the phenomenological rate coefficients using the chemically-
     ! significant eigenvalues method. The parameters are:
     !
@@ -45,7 +45,8 @@ subroutine estimateRateCoefficients_CSE(T, P, E, Mcoll0, E0, densStates, &
     ! `Gnj`      in     The microcanonical dissociation rate coefficients in
     !                   s^-1
     ! `nIsom`    in     The number of isomers in the network
-    ! `nProd`    in     The number of reactant/product channels in the network
+    ! `nReac`    in     The number of reactant channels in the network (both A + B <=> C)
+    ! `nProd`    in     The number of product channels in the network (A -> B + C only)
     ! `nGrains`  in     The number of energy grains being used
     ! `K`        out    The matrix of phenomenological rate coefficients k(T,P)
     ! `msg`      out    If the subroutine was unsuccessful, this string will
@@ -59,17 +60,18 @@ subroutine estimateRateCoefficients_CSE(T, P, E, Mcoll0, E0, densStates, &
     real(8), intent(in) :: T
     real(8), intent(in) :: P
     integer, intent(in) :: nIsom
+    integer, intent(in) :: nReac
     integer, intent(in) :: nProd
     integer, intent(in) :: nGrains
     real(8), dimension(1:nGrains), intent(in) :: E
     real(8), dimension(1:nIsom,1:nGrains,1:nGrains), intent(in) :: Mcoll0
-    real(8), dimension(1:nIsom+nProd), intent(in) :: E0
+    real(8), dimension(1:nIsom+nReac+nProd), intent(in) :: E0
     real(8), dimension(1:nIsom,1:nGrains), intent(in) :: densStates
-    real(8), dimension(1:nIsom+nProd), intent(in) :: eqRatios
+    real(8), dimension(1:nIsom+nReac+nProd), intent(in) :: eqRatios
     real(8), dimension(1:nIsom,1:nIsom,1:nGrains), intent(in) :: Kij
-    real(8), dimension(1:nIsom,1:nProd,1:nGrains), intent(in) :: Fim
-    real(8), dimension(1:nProd,1:nIsom,1:nGrains), intent(in) :: Gnj
-    real(8), dimension(1:nIsom+nProd,1:nIsom+nProd), intent(out) :: K
+    real(8), dimension(1:nIsom,1:nReac,1:nGrains), intent(in) :: Fim
+    real(8), dimension(1:nReac+nProd,1:nIsom,1:nGrains), intent(in) :: Gnj
+    real(8), dimension(1:nIsom+nReac+nProd,1:nIsom+nReac+nProd), intent(out) :: K
     character(len=128), intent(out) :: msg
 
     ! The size of the master equation matrix
@@ -105,8 +107,9 @@ subroutine estimateRateCoefficients_CSE(T, P, E, Mcoll0, E0, densStates, &
             end if
         end do
     end do
-    ! Product wells are appended to matrix, one row each
-    nRows = nRows + nProd
+    ! Reactant wells are appended to matrix, one row each
+    ! Product wells are NOT added because we are neglecting reassociation
+    nRows = nRows + nReac
 
     ! Allocate intermediate matrices
     allocate( Mcoll(1:nRows, 1:nRows), Mrxn(1:nRows, 1:nRows), M(1:nRows, 1:nRows) )
@@ -114,9 +117,9 @@ subroutine estimateRateCoefficients_CSE(T, P, E, Mcoll0, E0, densStates, &
 
 	! Generate full unsymmetrized master equation matrix (dimension nRows x nRows)
     call fullMEMatrix(E, E0, Mcoll0, Kij, Gnj, Fim, indices, &
-        nRows, nGrains, nIsom, nProd, Mcoll, Mrxn, msg)
+        nRows, nGrains, nIsom, nReac, nProd, Mcoll, Mrxn, msg)
 
-	! Generate symmetrization matrix and its inverse
+    ! Generate symmetrization matrix and its inverse
     do r = 1, nGrains
         do i = 1, nIsom
             index = indices(r,i)
@@ -126,8 +129,8 @@ subroutine estimateRateCoefficients_CSE(T, P, E, Mcoll0, E0, densStates, &
             end if
         end do
     end do
-    do i = 1, nProd
-        index = nRows - nProd + i
+    do i = 1, nReac
+        index = nRows - nReac + i
         S(index) = sqrt(1.0 * eqRatios(nIsom+i))
         Sinv(index) = 1.0 / S(index)
     end do
@@ -152,8 +155,8 @@ subroutine estimateRateCoefficients_CSE(T, P, E, Mcoll0, E0, densStates, &
     !end do
 
     ! Zero phenomenological rate constant matrix
-    do i = 1, nIsom + nProd
-        do j = 1, nIsom + nProd
+    do i = 1, nIsom + nReac + nProd
+        do j = 1, nIsom + nReac + nProd
             K(i,j) = 0.0
         end do
     end do
@@ -189,19 +192,19 @@ subroutine estimateRateCoefficients_CSE(T, P, E, Mcoll0, E0, densStates, &
     ! This will be ideally be nIsom+nProd, but might be lower if one or more
     ! chemical eigenmodes is blended with the internal energy eigenmodes
     nCSE = 1
-    do i = 1, nIsom+nProd-1
-        if (abs(V0(nRows-nIsom-nProd) / V0(nRows-i)) > 10.0) then
+    do i = 1, nIsom+nReac-1
+        if (abs(V0(nRows-nIsom-nReac) / V0(nRows-i)) > 5.0) then
             nCSE = nCSE + 1
         end if
     end do
 
     ! Check for proper separation of chemical timescales
-    if (nCSE /= nIsom + nProd) then
+    if (nCSE /= nIsom + nReac) then
         write (*,fmt='(A)') 'Error: Chemical eigenvalues are not distinct from internal energy eigenvalues.'
         write (*,fmt='(A,ES12.4E2,A,ES12.4E2,A,F7.4)') &
-            'last IERE =', V0(nRows-nIsom-nProd), &
-            ', first CSE =',V0(nRows-nIsom-nProd+1), &
-            ', ratio =',abs(V0(nRows-nIsom-nProd) / V0(nRows-nIsom-nProd+1))
+            'last IERE =', V0(nRows-nIsom-nReac), &
+            ', first CSE =',V0(nRows-nIsom-nReac+1), &
+            ', ratio =',abs(V0(nRows-nIsom-nReac) / V0(nRows-nIsom-nReac+1))
         msg = 'Chemical eigenvalues not distinct from internal energy eigenvalues.'
         return
     end if
@@ -223,7 +226,7 @@ subroutine estimateRateCoefficients_CSE(T, P, E, Mcoll0, E0, densStates, &
     allocate( X(1:nRows, 1:nCSE), V(1:nCSE), Xinv(1:nCSE, 1:nRows) )
     do j = 1, nCSE
         ! Find index in full matrix
-        count = nRows - (nIsom + nProd) + j
+        count = nRows - (nIsom + nReac) + j
         ! Eigenvalue matrix V
         V(j) = V0(count)
         ! Eigenvector matrix and its inverse/transpose
@@ -237,8 +240,8 @@ subroutine estimateRateCoefficients_CSE(T, P, E, Mcoll0, E0, densStates, &
                 end if
             end do
         end do
-        do i = 1, nProd
-            index = nRows - nProd + i
+        do i = 1, nReac
+            index = nRows - nReac + i
             ! Unsymmetrize as we go
             X(index,j) = S(index) * M(index,count)
             Xinv(j,index) = M(index,count) * Sinv(index)
@@ -253,9 +256,9 @@ subroutine estimateRateCoefficients_CSE(T, P, E, Mcoll0, E0, densStates, &
         end do
     end do
 
-    ! Generate set of initial condition vectors (one per isomer and product)
-    allocate( eqDist(1:nRows, 1:nIsom+nProd) )
-    do j = 1, nIsom + nProd
+    ! Generate set of initial condition vectors (one per isomer and reactant)
+    allocate( eqDist(1:nRows, 1:nIsom+nReac) )
+    do j = 1, nIsom + nReac
         do r = 1, nRows
             eqDist(r,j) = 0.0
         end do
@@ -268,13 +271,13 @@ subroutine estimateRateCoefficients_CSE(T, P, E, Mcoll0, E0, densStates, &
             end if
         end do
     end do
-    do i = 1, nProd
-        index = nRows - nProd + i
+    do i = 1, nReac
+        index = nRows - nReac + i
         eqDist(index,i+nIsom) = 1.0
     end do
 
     ! Construct the rate constant matrix
-    do j = 1, nIsom+nProd
+    do j = 1, nIsom+nReac
         do r = 1, nGrains
             do i = 1, nIsom
                 index = indices(r,i)
@@ -283,8 +286,8 @@ subroutine estimateRateCoefficients_CSE(T, P, E, Mcoll0, E0, densStates, &
                 end if
             end do
         end do
-        do i = 1, nProd
-            index = nRows - nProd + i
+        do i = 1, nReac
+            index = nRows - nReac + i
             K(i+nIsom,j) = sum(M(index,:) * eqDist(:,j))
         end do
     end do
