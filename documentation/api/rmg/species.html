@@ -6,8 +6,8 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
     <title>2.12. The rmg.species Module &mdash; RMG-Py</title>
-    <link rel="stylesheet" href="../../../static/default.css" type="text/css" />
-    <link rel="stylesheet" href="../../../static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
@@ -17,17 +17,17 @@
         HAS_SOURCE:  true
       };
     </script>
-    <script type="text/javascript" src="../../../static/jquery.js"></script>
-    <script type="text/javascript" src="../../../static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
     <link rel="search" type="application/opensearchdescription+xml"
           title="Search within RMG-Py"
-          href="../../../static/opensearch.xml"/>
+          href="../../../_static/opensearch.xml"/>
     <link rel="top" title="RMG-Py" href="../../../index.html" />
     <link rel="up" title="2. The rmg Package" href="index.html" />
     <link rel="next" title="2.13. The rmg.spectral Module" href="spectral.html" />
     <link rel="prev" title="2.11. The rmg.settings Module" href="settings.html" /> 
  
-<link rel="stylesheet" href="../../../static/rmg.css" type="text/css" />
+<link rel="stylesheet" href="../../../_static/rmg.css" type="text/css" />
 
   </head>
   <body>
@@ -59,7 +59,7 @@ pageTracker._trackPageview();
         <li><a href="../../../index.html">RMG-Py</a> &raquo;</li>
           <li><a href="../../index.html" >RMG Documentation</a> &raquo;</li>
           <li><a href="../index.html" >RMG Developer&#8217;s Guide</a> &raquo;</li>
-          <li><a href="index.html" accesskey="U">2. The <tt class="docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal"><span class="pre">rmg</span></tt> Package</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">2. The <tt class="docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal"><span class="pre">rmg</span></tt> Package</a> &raquo;</li>
   <li><a href="">2.12. The <tt class="docutils literal docutils literal"><span class="pre">rmg.species</span></tt> Module</a></li>
 
       </ul>
@@ -234,7 +234,7 @@ molecule.</dd></dl>
 
 <dl class="method">
 <dt id="rmg.species.Species.generateThermoData">
-<tt class="descname">generateThermoData</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.species.Species.generateThermoData" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">generateThermoData</tt><big>(</big><em>thermoClass=&lt;class 'rmg.thermo.ThermoNASAData'&gt;</em><big>)</big><a class="headerlink" href="#rmg.species.Species.generateThermoData" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate thermodynamic data for the species using the thermo database.</p>
 <p>Generates the thermo data for each structure (resonance isomer), 
 picks that with lowest H298 value, and saves it to <cite>self.thermoData</cite>.</p>
@@ -328,6 +328,13 @@ functional group and data:<cite>False</cite> otherwise.</dd></dl>
 <dt id="rmg.species.Species.toSMILES">
 <tt class="descname">toSMILES</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.species.Species.toSMILES" title="Permalink to this definition">¶</a></dt>
 <dd>Convert a Species object to an InChI string.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.species.Species.toXML">
+<tt class="descname">toXML</tt><big>(</big><em>document</em>, <em>rootElement</em><big>)</big><a class="headerlink" href="#rmg.species.Species.toXML" title="Permalink to this definition">¶</a></dt>
+<dd>Create a &lt;species&gt; element as a child of <cite>rootElement</cite> in the XML DOM
+tree represented by <cite>document</cite>, an <tt class="xref docutils literal"><span class="pre">io.XML</span></tt> class. The format
+matches the format of the <a title="rmg.species.Species.fromXML" class="reference internal" href="#rmg.species.Species.fromXML"><tt class="xref docutils literal"><span class="pre">Species.fromXML()</span></tt></a> function.</dd></dl>
 
 </dd></dl>
 
@@ -462,10 +469,10 @@ and getFreeEnergy() methods.</dd></dl>
 <h2>2.12.2. Methods in <tt class="docutils literal"><span class="pre">rmg.species</span></tt><a class="headerlink" href="#methods-in-rmg-species" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="rmg.species.getThermoData">
-<tt class="descclassname">rmg.species.</tt><tt class="descname">getThermoData</tt><big>(</big><em>struct</em>, <em>required_class=&lt;class 'rmg.thermo.ThermoNASAData'&gt;</em><big>)</big><a class="headerlink" href="#rmg.species.getThermoData" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">rmg.species.</tt><tt class="descname">getThermoData</tt><big>(</big><em>struct</em>, <em>thermoClass=&lt;class 'rmg.thermo.ThermoNASAData'&gt;</em><big>)</big><a class="headerlink" href="#rmg.species.getThermoData" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the thermodynamic data associated with <cite>structure</cite> by looking in the
 loaded thermodynamic database.</p>
-<p><cite>required_class</cite> is the class of thermo object you want returning; default
+<p><cite>thermoClass</cite> is the class of thermo object you want returning; default
 is <tt class="xref docutils literal"><span class="pre">ThermoNASAData</span></tt></p>
 </dd></dl>
 
@@ -497,7 +504,7 @@ this function handles other aspects     of preparing it for RMG.</dd></dl>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
             <p class="logo"><a href="../../../index.html">
-              <img class="logo" src="../../../static/rmg_logo.png" alt="Logo"/>
+              <img class="logo" src="../../../_static/rmg_logo.png" alt="Logo"/>
             </a></p>
             <h3><a href="../../../index.html">Table Of Contents</a></h3>
             <ul>
@@ -523,7 +530,7 @@ this function handles other aspects     of preparing it for RMG.</dd></dl>
                                   title="next chapter">2.13. The <tt class="docutils literal"><span class="pre">rmg.spectral</span></tt> Module</a></p>
             <h3>This Page</h3>
             <ul class="this-page-menu">
-              <li><a href="../../../sources/documentation/api/rmg/species.txt"
+              <li><a href="../../../_sources/documentation/api/rmg/species.txt"
                      rel="nofollow">Show Source</a></li>
             </ul>
           <h3>Other links</h3>
@@ -568,7 +575,7 @@ this function handles other aspects     of preparing it for RMG.</dd></dl>
         <li><a href="../../../index.html">RMG-Py</a> &raquo;</li>
           <li><a href="../../index.html" >RMG Documentation</a> &raquo;</li>
           <li><a href="../index.html" >RMG Developer&#8217;s Guide</a> &raquo;</li>
-          <li><a href="index.html" >2. The <tt class="docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal"><span class="pre">rmg</span></tt> Package</a> &raquo;</li>
+          <li><a href="index.html" >2. The <tt class="docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal"><span class="pre">rmg</span></tt> Package</a> &raquo;</li>
   <li><a href="">2.12. The <tt class="docutils literal docutils literal"><span class="pre">rmg.species</span></tt> Module</a></li>
 
       </ul>

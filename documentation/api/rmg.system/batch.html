@@ -6,8 +6,8 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
     <title>3.2. The rmg.system.batch Module &mdash; RMG-Py</title>
-    <link rel="stylesheet" href="../../../static/default.css" type="text/css" />
-    <link rel="stylesheet" href="../../../static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
@@ -17,17 +17,17 @@
         HAS_SOURCE:  true
       };
     </script>
-    <script type="text/javascript" src="../../../static/jquery.js"></script>
-    <script type="text/javascript" src="../../../static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
     <link rel="search" type="application/opensearchdescription+xml"
           title="Search within RMG-Py"
-          href="../../../static/opensearch.xml"/>
+          href="../../../_static/opensearch.xml"/>
     <link rel="top" title="RMG-Py" href="../../../index.html" />
     <link rel="up" title="3. The rmg.system Package" href="index.html" />
     <link rel="next" title="4. The rmg.unirxn Package" href="../rmg.unirxn/index.html" />
     <link rel="prev" title="3.1. The rmg.system.base Module" href="base.html" /> 
  
-<link rel="stylesheet" href="../../../static/rmg.css" type="text/css" />
+<link rel="stylesheet" href="../../../_static/rmg.css" type="text/css" />
 
   </head>
   <body>
@@ -71,12 +71,175 @@ pageTracker._trackPageview();
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="the-rmg-system-batch-module">
-<h1>3.2. The <tt class="docutils literal"><span class="pre">rmg.system.batch</span></tt> Module<a class="headerlink" href="#the-rmg-system-batch-module" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="module-rmg.system.batch">
+<h1>3.2. The <tt class="docutils literal"><span class="pre">rmg.system.batch</span></tt> Module<a class="headerlink" href="#module-rmg.system.batch" title="Permalink to this headline">¶</a></h1>
+<p>Contains classes that represent batch reaction systems.</p>
 <div class="section" id="classes-in-rmg-system-batch">
 <h2>3.2.1. Classes in <tt class="docutils literal"><span class="pre">rmg.system.batch</span></tt><a class="headerlink" href="#classes-in-rmg-system-batch" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="batchreactor">
 <h3>3.2.1.1. BatchReactor<a class="headerlink" href="#batchreactor" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="rmg.system.batch.BatchReactor">
+<em class="property">
+class </em><tt class="descclassname">rmg.system.batch.</tt><tt class="descname">BatchReactor</tt><a class="headerlink" href="#rmg.system.batch.BatchReactor" title="Permalink to this definition">¶</a></dt>
+<dd><p>A reaction system consisting of a single well-mixed batch reactor. The
+reactor can be configured to be isothermal, adiabatic, or having a known
+overall heat transfer coefficient; isobaric, isochoric, or having a known
+coefficient of expansion.</p>
+<div class="math">
+<p><img src="../../../_images/math/3da8bb9b4550b99349f57abd3f0d6a01d14721a8.png" alt="\rho \hat{C}_\mathrm{p} \frac{dT}{dt} = U A \left( T_1 - T_2 \right)" />
+</div></p><div class="math">
+<p><img src="../../../_images/math/0fbe51da95a3172664e91849c08adec27c003080.png" alt="\frac{dV}{dt} = K A \left( P_1 - P_2 \right)" />
+</div></p><p>The attributes are:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="30%" />
+<col width="70%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Attribute</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td><cite>volume</cite></td>
+<td>The reactor volume in m^3</td>
+</tr>
+<tr><td><cite>area</cite></td>
+<td>The total surface area of the reactor in m^2</td>
+</tr>
+<tr><td><cite>heatTransferCoeff</cite></td>
+<td>The overall heat transfer coefficient of the reactor
+in W/m^2*K</td>
+</tr>
+<tr><td><cite>expansionCoeff</cite></td>
+<td>The coefficient of expansion in m/s*Pa</td>
+</tr>
+<tr><td><cite>initialTemperature</cite></td>
+<td>The initial temperature in K</td>
+</tr>
+<tr><td><cite>initialPressure</cite></td>
+<td>The initial pressure in Pa</td>
+</tr>
+<tr><td><cite>initialMoleFraction</cite></td>
+<td>Dictionary of initial mole fraction for each
+species; those not in dictionary have initial
+mole fraction of zero</td>
+</tr>
+<tr><td><cite>reservoirTemperature</cite></td>
+<td>The reservoir temperature in K</td>
+</tr>
+<tr><td><cite>reservoirPressure</cite></td>
+<td>The reservoir pressure in Pa</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="rmg.system.batch.BatchReactor.getNetworkLeakFluxes">
+<tt class="descname">getNetworkLeakFluxes</tt><big>(</big><em>model</em>, <em>P</em>, <em>V</em>, <em>T</em>, <em>Ni</em>, <em>criticalFlux</em><big>)</big><a class="headerlink" href="#rmg.system.batch.BatchReactor.getNetworkLeakFluxes" title="Permalink to this definition">¶</a></dt>
+<dd>Returns <tt class="xref xref docutils literal"><span class="pre">True</span></tt> if <cite>model</cite> is valid given the set of species fluxes
+<cite>dNidt</cite> and the critical flux <cite>criticalFlux</cite>.
+Also returns the edge species whose flux is greatest, and that flux.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.system.batch.BatchReactor.getReactionRates">
+<tt class="descname">getReactionRates</tt><big>(</big><em>P</em>, <em>V</em>, <em>T</em>, <em>Ni</em>, <em>model</em><big>)</big><a class="headerlink" href="#rmg.system.batch.BatchReactor.getReactionRates" title="Permalink to this definition">¶</a></dt>
+<dd>Evaluate the reaction rates for all reactions in the model (core and
+edge).</dd></dl>
+
+<dl class="method">
+<dt id="rmg.system.batch.BatchReactor.getSpeciesFluxes">
+<tt class="descname">getSpeciesFluxes</tt><big>(</big><em>model</em>, <em>P</em>, <em>V</em>, <em>T</em>, <em>Ni</em>, <em>stoichiometry</em><big>)</big><a class="headerlink" href="#rmg.system.batch.BatchReactor.getSpeciesFluxes" title="Permalink to this definition">¶</a></dt>
+<dd>Determine the species fluxes of all species in the model core and edge
+at the specified pressure <cite>P</cite>, volume <cite>V</cite>, temperature <cite>T</cite>, and numbers
+of moles <cite>Ni</cite>. The <cite>stoichiometry</cite> parameter is the stoichiometry
+matrix for the model.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.system.batch.BatchReactor.initializeCantera">
+<tt class="descname">initializeCantera</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.system.batch.BatchReactor.initializeCantera" title="Permalink to this definition">¶</a></dt>
+<dd>Creata a Cantera instance. Call this once</dd></dl>
+
+<dl class="method">
+<dt id="rmg.system.batch.BatchReactor.isModelValid">
+<tt class="descname">isModelValid</tt><big>(</big><em>model</em>, <em>dNidt</em>, <em>criticalFlux</em><big>)</big><a class="headerlink" href="#rmg.system.batch.BatchReactor.isModelValid" title="Permalink to this definition">¶</a></dt>
+<dd>Returns <tt class="xref xref docutils literal"><span class="pre">True</span></tt> if <cite>model</cite> is valid given the set of species fluxes
+<cite>dNidt</cite> and the critical flux <cite>criticalFlux</cite>.
+Also returns the edge species whose flux is greatest, and that flux.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.system.batch.BatchReactor.postprocess">
+<tt class="descname">postprocess</tt><big>(</big><em>model</em>, <em>t</em>, <em>y</em>, <em>dydt</em>, <em>label=''</em><big>)</big><a class="headerlink" href="#rmg.system.batch.BatchReactor.postprocess" title="Permalink to this definition">¶</a></dt>
+<dd>Postprocess the results of a simulation. This function generates a
+number of plots: temperature, pressure, volume, and concentration
+profiles. The parameters are the reaction <cite>model</cite>, the list of times
+<cite>t</cite>, the list of state vectors <cite>y</cite>, and an optional <cite>label</cite> for the
+reaction system.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.system.batch.BatchReactor.printSimulationStatus">
+<tt class="descname">printSimulationStatus</tt><big>(</big><em>model</em>, <em>t</em>, <em>y</em>, <em>y0</em>, <em>charFlux</em>, <em>maxSpeciesFlux</em>, <em>maxSpecies</em><big>)</big><a class="headerlink" href="#rmg.system.batch.BatchReactor.printSimulationStatus" title="Permalink to this definition">¶</a></dt>
+<dd>Log a line of text describing the current status of the simulation. The
+information logged is the current time <cite>t</cite>, the current conversion of
+all species being monitored for conversion targets, the characteristic
+flux <cite>charFlux</cite>, the maximum species flux <cite>maxSpeciesFlux</cite>, and the
+species with that flux <cite>maxSpecies</cite>.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.system.batch.BatchReactor.runCantera">
+<tt class="descname">runCantera</tt><big>(</big><em>model</em><big>)</big><a class="headerlink" href="#rmg.system.batch.BatchReactor.runCantera" title="Permalink to this definition">¶</a></dt>
+<dd>Execute a simulation of the reaction system in Cantera. The procedure:
+(1) write a CTML (Cantera) file, (2) read it into Cantera, (3) create
+the reactor in Cantera, and (4) return the simulation results.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.system.batch.BatchReactor.setAdiabatic">
+<tt class="descname">setAdiabatic</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.system.batch.BatchReactor.setAdiabatic" title="Permalink to this definition">¶</a></dt>
+<dd>Sets the reactor to use an adiabatic model for temperature. This is
+achieved by setting the overall heat transfer coefficient to zero.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.system.batch.BatchReactor.setIsobaric">
+<tt class="descname">setIsobaric</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.system.batch.BatchReactor.setIsobaric" title="Permalink to this definition">¶</a></dt>
+<dd>Sets the reactor to use an isobaric model for pressure. This is
+currently achieved by simply choosing a very large coefficient of
+expansion.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.system.batch.BatchReactor.setIsochoric">
+<tt class="descname">setIsochoric</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.system.batch.BatchReactor.setIsochoric" title="Permalink to this definition">¶</a></dt>
+<dd>Sets the reactor to use an isochoric model for volume. This is
+achieved by setting the  coefficient of expansion to zero.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.system.batch.BatchReactor.setIsothermal">
+<tt class="descname">setIsothermal</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.system.batch.BatchReactor.setIsothermal" title="Permalink to this definition">¶</a></dt>
+<dd>Sets the reactor to use an isothermal model for temperature. This is
+currently achieved by simply choosing a very large heat transfer
+coefficient.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.system.batch.BatchReactor.simulate">
+<tt class="descname">simulate</tt><big>(</big><em>model</em><big>)</big><a class="headerlink" href="#rmg.system.batch.BatchReactor.simulate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Conduct a simulation of the current reaction system using the core-edge
+reaction model <cite>model</cite>.</p>
+<p>Edge species fluxes are tracked, relative to the characteristic core
+flux at that time, throughout the simulation.
+If one exceeds <cite>model.fluxToleranceInterrupt</cite> the simulation
+is interrupted, and that species is returned.
+The highest relative flux reached by each species during the simulation
+is stored for later analysis.
+If one or more of these exceed <cite>model.fluxToleranceMoveToCore</cite> then the
+species with the highest will be returned.</p>
+<p>If the simulation completes without interruption, then any that fall
+below <cite>model.fluxToleranceKeepInEdge</cite> will be removed from the
+edge, along with the reactions that involve them.</p>
+<p>Returns:
+(tlist, ylist, dydtlist, valid?, Edge_species_with_highest_flux)</p>
+</dd></dl>
+
+</dd></dl>
+
 </div>
 </div>
 </div>
@@ -88,7 +251,7 @@ pageTracker._trackPageview();
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
             <p class="logo"><a href="../../../index.html">
-              <img class="logo" src="../../../static/rmg_logo.png" alt="Logo"/>
+              <img class="logo" src="../../../_static/rmg_logo.png" alt="Logo"/>
             </a></p>
             <h3><a href="../../../index.html">Table Of Contents</a></h3>
             <ul>
@@ -109,7 +272,7 @@ pageTracker._trackPageview();
                                   title="next chapter">4. The <tt class="docutils literal"><span class="pre">rmg.unirxn</span></tt> Package</a></p>
             <h3>This Page</h3>
             <ul class="this-page-menu">
-              <li><a href="../../../sources/documentation/api/rmg.system/batch.txt"
+              <li><a href="../../../_sources/documentation/api/rmg.system/batch.txt"
                      rel="nofollow">Show Source</a></li>
             </ul>
           <h3>Other links</h3>

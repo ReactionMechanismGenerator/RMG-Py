@@ -6,8 +6,8 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
     <title>3.1. The rmg.system.base Module &mdash; RMG-Py</title>
-    <link rel="stylesheet" href="../../../static/default.css" type="text/css" />
-    <link rel="stylesheet" href="../../../static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
@@ -17,17 +17,17 @@
         HAS_SOURCE:  true
       };
     </script>
-    <script type="text/javascript" src="../../../static/jquery.js"></script>
-    <script type="text/javascript" src="../../../static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
     <link rel="search" type="application/opensearchdescription+xml"
           title="Search within RMG-Py"
-          href="../../../static/opensearch.xml"/>
+          href="../../../_static/opensearch.xml"/>
     <link rel="top" title="RMG-Py" href="../../../index.html" />
     <link rel="up" title="3. The rmg.system Package" href="index.html" />
     <link rel="next" title="3.2. The rmg.system.batch Module" href="batch.html" />
     <link rel="prev" title="3. The rmg.system Package" href="index.html" /> 
  
-<link rel="stylesheet" href="../../../static/rmg.css" type="text/css" />
+<link rel="stylesheet" href="../../../_static/rmg.css" type="text/css" />
 
   </head>
   <body>
@@ -71,12 +71,21 @@ pageTracker._trackPageview();
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="the-rmg-system-base-module">
-<h1>3.1. The <tt class="docutils literal"><span class="pre">rmg.system.base</span></tt> Module<a class="headerlink" href="#the-rmg-system-base-module" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="module-rmg.system.base">
+<h1>3.1. The <tt class="docutils literal"><span class="pre">rmg.system.base</span></tt> Module<a class="headerlink" href="#module-rmg.system.base" title="Permalink to this headline">¶</a></h1>
+<p>Contains the base class <a title="rmg.system.base.ReactionSystem" class="reference internal" href="#rmg.system.base.ReactionSystem"><tt class="xref docutils literal"><span class="pre">ReactionSystem</span></tt></a> from which all user-defined
+reaction systems should derive.</p>
 <div class="section" id="classes-in-rmg-system-base">
 <h2>3.1.1. Classes in <tt class="docutils literal"><span class="pre">rmg.system.base</span></tt><a class="headerlink" href="#classes-in-rmg-system-base" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="reactionsystem">
 <h3>3.1.1.1. ReactionSystem<a class="headerlink" href="#reactionsystem" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="rmg.system.base.ReactionSystem">
+<em class="property">
+class </em><tt class="descclassname">rmg.system.base.</tt><tt class="descname">ReactionSystem</tt><a class="headerlink" href="#rmg.system.base.ReactionSystem" title="Permalink to this definition">¶</a></dt>
+<dd>An abstract base class for a reaction system. Derived classes must implement
+the <tt class="xref docutils literal"><span class="pre">fromXML()</span></tt> and <tt class="xref docutils literal"><span class="pre">toCantera()</span></tt> functions.</dd></dl>
+
 </div>
 </div>
 </div>
@@ -88,7 +97,7 @@ pageTracker._trackPageview();
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
             <p class="logo"><a href="../../../index.html">
-              <img class="logo" src="../../../static/rmg_logo.png" alt="Logo"/>
+              <img class="logo" src="../../../_static/rmg_logo.png" alt="Logo"/>
             </a></p>
             <h3><a href="../../../index.html">Table Of Contents</a></h3>
             <ul>
@@ -109,7 +118,7 @@ pageTracker._trackPageview();
                                   title="next chapter">3.2. The <tt class="docutils literal"><span class="pre">rmg.system.batch</span></tt> Module</a></p>
             <h3>This Page</h3>
             <ul class="this-page-menu">
-              <li><a href="../../../sources/documentation/api/rmg.system/base.txt"
+              <li><a href="../../../_sources/documentation/api/rmg.system/base.txt"
                      rel="nofollow">Show Source</a></li>
             </ul>
           <h3>Other links</h3>

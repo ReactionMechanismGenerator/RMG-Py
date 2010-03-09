@@ -6,8 +6,8 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
     <title>2.10. The rmg.reaction Module &mdash; RMG-Py</title>
-    <link rel="stylesheet" href="../../../static/default.css" type="text/css" />
-    <link rel="stylesheet" href="../../../static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
@@ -17,17 +17,17 @@
         HAS_SOURCE:  true
       };
     </script>
-    <script type="text/javascript" src="../../../static/jquery.js"></script>
-    <script type="text/javascript" src="../../../static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
     <link rel="search" type="application/opensearchdescription+xml"
           title="Search within RMG-Py"
-          href="../../../static/opensearch.xml"/>
+          href="../../../_static/opensearch.xml"/>
     <link rel="top" title="RMG-Py" href="../../../index.html" />
     <link rel="up" title="2. The rmg Package" href="index.html" />
     <link rel="next" title="2.11. The rmg.settings Module" href="settings.html" />
     <link rel="prev" title="2.9. The rmg.model Module" href="model.html" /> 
  
-<link rel="stylesheet" href="../../../static/rmg.css" type="text/css" />
+<link rel="stylesheet" href="../../../_static/rmg.css" type="text/css" />
 
   </head>
   <body>
@@ -59,7 +59,7 @@ pageTracker._trackPageview();
         <li><a href="../../../index.html">RMG-Py</a> &raquo;</li>
           <li><a href="../../index.html" >RMG Documentation</a> &raquo;</li>
           <li><a href="../index.html" >RMG Developer&#8217;s Guide</a> &raquo;</li>
-          <li><a href="index.html" accesskey="U">2. The <tt class="docutils literal docutils literal docutils literal docutils literal docutils literal"><span class="pre">rmg</span></tt> Package</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">2. The <tt class="docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal"><span class="pre">rmg</span></tt> Package</a> &raquo;</li>
   <li><a href="">2.10. The <tt class="docutils literal docutils literal"><span class="pre">rmg.reaction</span></tt> Module</a></li>
 
       </ul>
@@ -152,9 +152,12 @@ convenient way to represent the reverse reaction.</p>
 <tt class="descname">calculateMicrocanonicalRate</tt><big>(</big><em>Elist</em>, <em>T</em>, <em>reacDensStates</em>, <em>prodDensStates=None</em><big>)</big><a class="headerlink" href="#rmg.reaction.Reaction.calculateMicrocanonicalRate" title="Permalink to this definition">¶</a></dt>
 <dd>Calculate and return the microcanonical rate coefficients k(E) for the
 forward and reverse reactions from the high-pressure limit canonical
-rate coefficient k(T) using the inverse Laplace transform method. For
-dissociation reactions the reverse rate coefficient is actually the
-product of the reverse rate and the product equilibrium distribution.</dd></dl>
+rate coefficient k(T) using the inverse Laplace transform method. The
+reverse microcanonical rate is calculated using the canonical 
+equilibrium constant to ensure that the thermodynamics is correct, even
+when there are small errors in the density of states. For dissociation
+reactions the reverse rate coefficient is actually the product of the
+reverse rate and the product equilibrium distribution.</dd></dl>
 
 <dl class="method">
 <dt id="rmg.reaction.Reaction.equivalent">
@@ -238,7 +241,7 @@ objects.</dd></dl>
 <dt id="rmg.reaction.Reaction.isAssociation">
 <tt class="descname">isAssociation</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.reaction.Reaction.isAssociation" title="Permalink to this definition">¶</a></dt>
 <dd>Return <tt class="xref xref docutils literal"><span class="pre">True</span></tt> if the reaction is an association, i.e. has the
-form <img class="math" src="../../../images/math/1d7042206c61c59aa93ff90e3a03bb70d63adde7.png" alt="\mathrm{A} + \mathrm{B} \rightleftharpoons \mathrm{C}"/>.
+form <img class="math" src="../../../_images/math/1d7042206c61c59aa93ff90e3a03bb70d63adde7.png" alt="\mathrm{A} + \mathrm{B} \rightleftharpoons \mathrm{C}"/>.
 Returns <tt class="xref xref docutils literal"><span class="pre">False</span></tt> otherwise.</dd></dl>
 
 <dl class="method">
@@ -251,14 +254,14 @@ Returns <tt class="xref xref docutils literal"><span class="pre">False</span></t
 <dt id="rmg.reaction.Reaction.isDissociation">
 <tt class="descname">isDissociation</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.reaction.Reaction.isDissociation" title="Permalink to this definition">¶</a></dt>
 <dd>Return <tt class="xref xref docutils literal"><span class="pre">True</span></tt> if the reaction is a dissocition, i.e. has the
-form <img class="math" src="../../../images/math/6c997fa7953b40ca5eccc73a77a51696309ea100.png" alt="\mathrm{A} \rightleftharpoons \mathrm{B} + \mathrm{C}"/>.
+form <img class="math" src="../../../_images/math/6c997fa7953b40ca5eccc73a77a51696309ea100.png" alt="\mathrm{A} \rightleftharpoons \mathrm{B} + \mathrm{C}"/>.
 Returns <tt class="xref xref docutils literal"><span class="pre">False</span></tt> otherwise.</dd></dl>
 
 <dl class="method">
 <dt id="rmg.reaction.Reaction.isIsomerization">
 <tt class="descname">isIsomerization</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.reaction.Reaction.isIsomerization" title="Permalink to this definition">¶</a></dt>
 <dd>Return <tt class="xref xref docutils literal"><span class="pre">True</span></tt> if the reaction is an isomerization, i.e. has the
-form <img class="math" src="../../../images/math/87442f90c7981554a0ebd73b8671bd78443129c6.png" alt="\mathrm{A} \rightleftharpoons \mathrm{B}"/>. 
+form <img class="math" src="../../../_images/math/87442f90c7981554a0ebd73b8671bd78443129c6.png" alt="\mathrm{A} \rightleftharpoons \mathrm{B}"/>. 
 Returns <tt class="xref xref docutils literal"><span class="pre">False</span></tt> otherwise.</dd></dl>
 
 <dl class="method">
@@ -271,6 +274,13 @@ Returns <tt class="xref xref docutils literal"><span class="pre">False</span></t
 <dt id="rmg.reaction.Reaction.toCantera">
 <tt class="descname">toCantera</tt><big>(</big><em>T=1000</em>, <em>P=100000.0</em><big>)</big><a class="headerlink" href="#rmg.reaction.Reaction.toCantera" title="Permalink to this definition">¶</a></dt>
 <dd>Return a Cantera ctml_writer instance</dd></dl>
+
+<dl class="method">
+<dt id="rmg.reaction.Reaction.toXML">
+<tt class="descname">toXML</tt><big>(</big><em>document</em>, <em>rootElement</em><big>)</big><a class="headerlink" href="#rmg.reaction.Reaction.toXML" title="Permalink to this definition">¶</a></dt>
+<dd>Create a &lt;reaction&gt; element as a child of <cite>rootElement</cite> in the XML DOM
+tree represented by <cite>document</cite>, an <tt class="xref docutils literal"><span class="pre">io.XML</span></tt> class. The format
+matches the format of the <a title="rmg.reaction.Reaction.fromXML" class="reference internal" href="#rmg.reaction.Reaction.fromXML"><tt class="xref docutils literal"><span class="pre">Reaction.fromXML()</span></tt></a> function.</dd></dl>
 
 </dd></dl>
 
@@ -550,7 +560,9 @@ pressure must be specified when calling <a title="rmg.reaction.PDepReaction.getR
 <dt id="rmg.reaction.PDepReaction.getBestKinetics">
 <tt class="descname">getBestKinetics</tt><big>(</big><em>T</em>, <em>P</em><big>)</big><a class="headerlink" href="#rmg.reaction.PDepReaction.getBestKinetics" title="Permalink to this definition">¶</a></dt>
 <dd>Return the best set of ArrheniusKinetics parameters for the forward
-reaction evaluated at the temperature <cite>T</cite> and pressure <cite>P</cite>.</dd></dl>
+reaction evaluated at the temperature <cite>T</cite> and pressure <cite>P</cite>. Currently
+this simply sets the prefactor to the value of <img class="math" src="../../../_images/math/c93ef2271f42445cc7a12cf6322aeca7a868d826.png" alt="k(T,P)"/> and
+sets the other Arrhenius parameters to zero.</dd></dl>
 
 <dl class="method">
 <dt id="rmg.reaction.PDepReaction.getRateConstant">
@@ -612,7 +624,7 @@ for a chemical reaction are unsuccessful.</dd></dl>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
             <p class="logo"><a href="../../../index.html">
-              <img class="logo" src="../../../static/rmg_logo.png" alt="Logo"/>
+              <img class="logo" src="../../../_static/rmg_logo.png" alt="Logo"/>
             </a></p>
             <h3><a href="../../../index.html">Table Of Contents</a></h3>
             <ul>
@@ -639,7 +651,7 @@ for a chemical reaction are unsuccessful.</dd></dl>
                                   title="next chapter">2.11. The <tt class="docutils literal"><span class="pre">rmg.settings</span></tt> Module</a></p>
             <h3>This Page</h3>
             <ul class="this-page-menu">
-              <li><a href="../../../sources/documentation/api/rmg/reaction.txt"
+              <li><a href="../../../_sources/documentation/api/rmg/reaction.txt"
                      rel="nofollow">Show Source</a></li>
             </ul>
           <h3>Other links</h3>
@@ -684,7 +696,7 @@ for a chemical reaction are unsuccessful.</dd></dl>
         <li><a href="../../../index.html">RMG-Py</a> &raquo;</li>
           <li><a href="../../index.html" >RMG Documentation</a> &raquo;</li>
           <li><a href="../index.html" >RMG Developer&#8217;s Guide</a> &raquo;</li>
-          <li><a href="index.html" >2. The <tt class="docutils literal docutils literal docutils literal docutils literal docutils literal"><span class="pre">rmg</span></tt> Package</a> &raquo;</li>
+          <li><a href="index.html" >2. The <tt class="docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal"><span class="pre">rmg</span></tt> Package</a> &raquo;</li>
   <li><a href="">2.10. The <tt class="docutils literal docutils literal"><span class="pre">rmg.reaction</span></tt> Module</a></li>
 
       </ul>

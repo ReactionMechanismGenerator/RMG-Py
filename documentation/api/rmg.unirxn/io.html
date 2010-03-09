@@ -6,8 +6,8 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
     <title>4.1. The rmg.unirxn.io Module &mdash; RMG-Py</title>
-    <link rel="stylesheet" href="../../../static/default.css" type="text/css" />
-    <link rel="stylesheet" href="../../../static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
@@ -17,17 +17,17 @@
         HAS_SOURCE:  true
       };
     </script>
-    <script type="text/javascript" src="../../../static/jquery.js"></script>
-    <script type="text/javascript" src="../../../static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
     <link rel="search" type="application/opensearchdescription+xml"
           title="Search within RMG-Py"
-          href="../../../static/opensearch.xml"/>
+          href="../../../_static/opensearch.xml"/>
     <link rel="top" title="RMG-Py" href="../../../index.html" />
     <link rel="up" title="4. The rmg.unirxn Package" href="index.html" />
     <link rel="next" title="4.2. The rmg.unirxn.mastereqn Module" href="mastereqn.html" />
     <link rel="prev" title="4. The rmg.unirxn Package" href="index.html" /> 
  
-<link rel="stylesheet" href="../../../static/rmg.css" type="text/css" />
+<link rel="stylesheet" href="../../../_static/rmg.css" type="text/css" />
 
   </head>
   <body>
@@ -71,10 +71,31 @@ pageTracker._trackPageview();
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="the-rmg-unirxn-io-module">
-<h1>4.1. The <tt class="docutils literal"><span class="pre">rmg.unirxn.io</span></tt> Module<a class="headerlink" href="#the-rmg-unirxn-io-module" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="module-rmg.unirxn.io">
+<h1>4.1. The <tt class="docutils literal"><span class="pre">rmg.unirxn.io</span></tt> Module<a class="headerlink" href="#module-rmg.unirxn.io" title="Permalink to this headline">¶</a></h1>
+<p>This module handles the reading and writing of input and output files involving
+standalone calls to the <tt class="docutils literal"><span class="pre">rmg.unirxn</span></tt> module. Functions in this module utilize
+the <a title="rmg.io.XML" class="reference external" href="../rmg/io.html#rmg.io.XML"><tt class="xref docutils literal"><span class="pre">rmg.io.XML</span></tt></a> class to work with the input and output XML data.</p>
 <div class="section" id="methods-in-rmg-unirxn-io">
 <h2>4.1.1. Methods in <tt class="docutils literal"><span class="pre">rmg.unirxn.io</span></tt><a class="headerlink" href="#methods-in-rmg-unirxn-io" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="rmg.unirxn.io.readInputFile">
+<tt class="descclassname">rmg.unirxn.io.</tt><tt class="descname">readInputFile</tt><big>(</big><em>fstr</em><big>)</big><a class="headerlink" href="#rmg.unirxn.io.readInputFile" title="Permalink to this definition">¶</a></dt>
+<dd>Parse an input file found at <cite>fstr</cite>. If successful, this function returns
+a <tt class="xref docutils literal"><span class="pre">Network</span></tt> object containing the unimolecular reaction network,
+lists of temperatures in K and pressures in Pa, the maximum grain size in
+J/mol, the minimum number of grains, the approximate method to use, and
+the interpolation model to fit.</dd></dl>
+
+<dl class="function">
+<dt id="rmg.unirxn.io.writeInputFile">
+<tt class="descclassname">rmg.unirxn.io.</tt><tt class="descname">writeInputFile</tt><big>(</big><em>fstr</em>, <em>network</em>, <em>Tlist</em>, <em>Plist</em>, <em>Elist</em>, <em>method</em>, <em>model</em><big>)</big><a class="headerlink" href="#rmg.unirxn.io.writeInputFile" title="Permalink to this definition">¶</a></dt>
+<dd>Write an input file to <cite>fstr</cite>. Parameters are: <cite>network</cite>,
+a <tt class="xref docutils literal"><span class="pre">Network</span></tt> object containing the unimolecular reaction network;
+<cite>Tlist</cite>, a list of temperatures in K; <cite>Plist</cite>, a list of pressures in Pa;
+<cite>Elist</cite>, a list of energy grains in J/mol; <cite>method</cite>, the approximate method
+to use; and <cite>model</cite>, the interpolation model to fit.</dd></dl>
+
 </div>
 </div>
 
@@ -85,7 +106,7 @@ pageTracker._trackPageview();
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
             <p class="logo"><a href="../../../index.html">
-              <img class="logo" src="../../../static/rmg_logo.png" alt="Logo"/>
+              <img class="logo" src="../../../_static/rmg_logo.png" alt="Logo"/>
             </a></p>
             <h3><a href="../../../index.html">Table Of Contents</a></h3>
             <ul>
@@ -103,7 +124,7 @@ pageTracker._trackPageview();
                                   title="next chapter">4.2. The <tt class="docutils literal"><span class="pre">rmg.unirxn.mastereqn</span></tt> Module</a></p>
             <h3>This Page</h3>
             <ul class="this-page-menu">
-              <li><a href="../../../sources/documentation/api/rmg.unirxn/io.txt"
+              <li><a href="../../../_sources/documentation/api/rmg.unirxn/io.txt"
                      rel="nofollow">Show Source</a></li>
             </ul>
           <h3>Other links</h3>

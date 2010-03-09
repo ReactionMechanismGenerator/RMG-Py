@@ -1,0 +1,15 @@
+**************************
+The ``rmg.unirxn`` Package
+**************************
+
+The ``rmg.unirxn`` package contains classes and functions for working with unimolecular reaction networks. These networks are unusual in that there are pressure-dependent phenomenological rate coefficients :math:`k(T,P)` for each isomer or product channel -- local minima on the potential energy surface -- to every other isomer and product channel in the network, not just those directly adjacent.
+
+.. toctree::
+	:maxdepth: 1
+	
+	io
+	mastereqn
+	msc
+	network
+	rs
+	states

@@ -6,8 +6,8 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
     <title>2.8. The rmg.main Module &mdash; RMG-Py</title>
-    <link rel="stylesheet" href="../../../static/default.css" type="text/css" />
-    <link rel="stylesheet" href="../../../static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
@@ -17,17 +17,17 @@
         HAS_SOURCE:  true
       };
     </script>
-    <script type="text/javascript" src="../../../static/jquery.js"></script>
-    <script type="text/javascript" src="../../../static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
     <link rel="search" type="application/opensearchdescription+xml"
           title="Search within RMG-Py"
-          href="../../../static/opensearch.xml"/>
+          href="../../../_static/opensearch.xml"/>
     <link rel="top" title="RMG-Py" href="../../../index.html" />
     <link rel="up" title="2. The rmg Package" href="index.html" />
     <link rel="next" title="2.9. The rmg.model Module" href="model.html" />
     <link rel="prev" title="2.7. The rmg.kinetics Module" href="kinetics.html" /> 
  
-<link rel="stylesheet" href="../../../static/rmg.css" type="text/css" />
+<link rel="stylesheet" href="../../../_static/rmg.css" type="text/css" />
 
   </head>
   <body>
@@ -59,7 +59,7 @@ pageTracker._trackPageview();
         <li><a href="../../../index.html">RMG-Py</a> &raquo;</li>
           <li><a href="../../index.html" >RMG Documentation</a> &raquo;</li>
           <li><a href="../index.html" >RMG Developer&#8217;s Guide</a> &raquo;</li>
-          <li><a href="index.html" accesskey="U">2. The <tt class="docutils literal docutils literal docutils literal"><span class="pre">rmg</span></tt> Package</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">2. The <tt class="docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal"><span class="pre">rmg</span></tt> Package</a> &raquo;</li>
   <li><a href="">2.8. The <tt class="docutils literal docutils literal"><span class="pre">rmg.main</span></tt> Module</a></li>
 
       </ul>
@@ -71,10 +71,32 @@ pageTracker._trackPageview();
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="the-rmg-main-module">
-<h1>2.8. The <tt class="docutils literal"><span class="pre">rmg.main</span></tt> Module<a class="headerlink" href="#the-rmg-main-module" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="module-rmg.main">
+<h1>2.8. The <tt class="docutils literal"><span class="pre">rmg.main</span></tt> Module<a class="headerlink" href="#module-rmg.main" title="Permalink to this headline">¶</a></h1>
+<p>Contains the main function for RMG execution and several helper functions that
+support it.</p>
 <div class="section" id="methods-in-rmg-main">
 <h2>2.8.1. Methods in <tt class="docutils literal"><span class="pre">rmg.main</span></tt><a class="headerlink" href="#methods-in-rmg-main" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="rmg.main.execute">
+<tt class="descclassname">rmg.main.</tt><tt class="descname">execute</tt><big>(</big><em>inputFile</em>, <em>options</em><big>)</big><a class="headerlink" href="#rmg.main.execute" title="Permalink to this definition">¶</a></dt>
+<dd>Generate a reaction model for the set of reaction systems specified in an 
+input file at location <cite>inputFile</cite>. Output and temporary files will be 
+placed in the directories <cite>outputDir</cite> and <cite>scratchDir</cite>, respectively; if
+either of these are empty strings, the corresponding files will be placed
+in the same directory as the input file. The <cite>libraryDir</cite> parameter can be
+used to specify additional directories to search for RMG databases. The
+<cite>verbose</cite> parameter is an integer specifying the amount of log text seen
+at the console; the levels correspond to those of the <tt class="xref docutils literal"><span class="pre">logging</span></tt> module.</dd></dl>
+
+<dl class="function">
+<dt id="rmg.main.generateExecutionPlots">
+<tt class="descclassname">rmg.main.</tt><tt class="descname">generateExecutionPlots</tt><big>(</big><em>execTime</em>, <em>coreSpeciesCount</em>, <em>coreReactionCount</em>, <em>edgeSpeciesCount</em>, <em>edgeReactionCount</em>, <em>memoryUse</em>, <em>restartSize</em><big>)</big><a class="headerlink" href="#rmg.main.generateExecutionPlots" title="Permalink to this definition">¶</a></dt>
+<dd>Generate a number of plots describing the statistics of the RMG job, 
+including the reaction model core and edge size and memory use versus
+execution time. These will be placed in the output directory in the plot/
+folder.</dd></dl>
+
 </div>
 </div>
 
@@ -85,7 +107,7 @@ pageTracker._trackPageview();
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
             <p class="logo"><a href="../../../index.html">
-              <img class="logo" src="../../../static/rmg_logo.png" alt="Logo"/>
+              <img class="logo" src="../../../_static/rmg_logo.png" alt="Logo"/>
             </a></p>
             <h3><a href="../../../index.html">Table Of Contents</a></h3>
             <ul>
@@ -97,13 +119,13 @@ pageTracker._trackPageview();
 
             <h4>Previous topic</h4>
             <p class="topless"><a href="kinetics.html"
-                                  title="previous chapter">2.7. The <tt class="docutils literal docutils literal"><span class="pre">rmg.kinetics</span></tt> Module</a></p>
+                                  title="previous chapter">2.7. The <tt class="docutils literal docutils literal docutils literal"><span class="pre">rmg.kinetics</span></tt> Module</a></p>
             <h4>Next topic</h4>
             <p class="topless"><a href="model.html"
                                   title="next chapter">2.9. The <tt class="docutils literal"><span class="pre">rmg.model</span></tt> Module</a></p>
             <h3>This Page</h3>
             <ul class="this-page-menu">
-              <li><a href="../../../sources/documentation/api/rmg/main.txt"
+              <li><a href="../../../_sources/documentation/api/rmg/main.txt"
                      rel="nofollow">Show Source</a></li>
             </ul>
           <h3>Other links</h3>
@@ -148,7 +170,7 @@ pageTracker._trackPageview();
         <li><a href="../../../index.html">RMG-Py</a> &raquo;</li>
           <li><a href="../../index.html" >RMG Documentation</a> &raquo;</li>
           <li><a href="../index.html" >RMG Developer&#8217;s Guide</a> &raquo;</li>
-          <li><a href="index.html" >2. The <tt class="docutils literal docutils literal docutils literal"><span class="pre">rmg</span></tt> Package</a> &raquo;</li>
+          <li><a href="index.html" >2. The <tt class="docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal"><span class="pre">rmg</span></tt> Package</a> &raquo;</li>
   <li><a href="">2.8. The <tt class="docutils literal docutils literal"><span class="pre">rmg.main</span></tt> Module</a></li>
 
       </ul>

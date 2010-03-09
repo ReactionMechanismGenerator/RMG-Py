@@ -6,8 +6,8 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
     <title>4.4. The rmg.unirxn.network Module &mdash; RMG-Py</title>
-    <link rel="stylesheet" href="../../../static/default.css" type="text/css" />
-    <link rel="stylesheet" href="../../../static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
@@ -17,17 +17,17 @@
         HAS_SOURCE:  true
       };
     </script>
-    <script type="text/javascript" src="../../../static/jquery.js"></script>
-    <script type="text/javascript" src="../../../static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
     <link rel="search" type="application/opensearchdescription+xml"
           title="Search within RMG-Py"
-          href="../../../static/opensearch.xml"/>
+          href="../../../_static/opensearch.xml"/>
     <link rel="top" title="RMG-Py" href="../../../index.html" />
     <link rel="up" title="4. The rmg.unirxn Package" href="index.html" />
     <link rel="next" title="4.5. The rmg.unirxn.rs Module" href="rs.html" />
     <link rel="prev" title="4.3. The rmg.unirxn.msc Module" href="msc.html" /> 
  
-<link rel="stylesheet" href="../../../static/rmg.css" type="text/css" />
+<link rel="stylesheet" href="../../../_static/rmg.css" type="text/css" />
 
   </head>
   <body>
@@ -71,21 +71,262 @@ pageTracker._trackPageview();
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="the-rmg-unirxn-network-module">
-<h1>4.4. The <tt class="docutils literal"><span class="pre">rmg.unirxn.network</span></tt> Module<a class="headerlink" href="#the-rmg-unirxn-network-module" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="module-rmg.unirxn.network">
+<h1>4.4. The <tt class="docutils literal"><span class="pre">rmg.unirxn.network</span></tt> Module<a class="headerlink" href="#module-rmg.unirxn.network" title="Permalink to this headline">¶</a></h1>
+<p>Contains classes that define an internal representation of a unimolecular
+reaction network.</p>
 <div class="section" id="classes-in-rmg-unirxn-network">
 <h2>4.4.1. Classes in <tt class="docutils literal"><span class="pre">rmg.unirxn.network</span></tt><a class="headerlink" href="#classes-in-rmg-unirxn-network" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="isomer">
 <h3>4.4.1.1. Isomer<a class="headerlink" href="#isomer" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="rmg.unirxn.network.Isomer">
+<em class="property">
+class </em><tt class="descclassname">rmg.unirxn.network.</tt><tt class="descname">Isomer</tt><big>(</big><em>species=None</em><big>)</big><a class="headerlink" href="#rmg.unirxn.network.Isomer" title="Permalink to this definition">¶</a></dt>
+<dd><p>An isomer well or product channel of a unimolecular reaction network. This
+represents a single local minimum on the corresponding potential energy
+surface, and is composed of one or two chemical species. The attributes are:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="19%" />
+<col width="81%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Attribute</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td><cite>species</cite></td>
+<td>A list of the species that make up the isomer; items in the
+list are <tt class="xref docutils literal"><span class="pre">Species</span></tt> objects</td>
+</tr>
+<tr><td><cite>E0</cite></td>
+<td>The ground-state energy of the isomer</td>
+</tr>
+<tr><td><cite>collFreq</cite></td>
+<td>For unimolecular isomers, the collision frequency in s^-1</td>
+</tr>
+<tr><td><cite>densStates</cite></td>
+<td>The density of states for the isomer in mol/J</td>
+</tr>
+<tr><td><cite>eqDist</cite></td>
+<td>The equilibrium distribution for the isomer</td>
+</tr>
+<tr><td><cite>Q</cite></td>
+<td>The partition function for the isomer</td>
+</tr>
+</tbody>
+</table>
+<p>The entries in the lower half of the above table are used for temporary
+storage while conducting a pressure-dependent rate coefficient calculation.</p>
+<dl class="method">
+<dt id="rmg.unirxn.network.Isomer.calculateCollisionFrequency">
+<tt class="descname">calculateCollisionFrequency</tt><big>(</big><em>T</em>, <em>P</em>, <em>bathGas</em><big>)</big><a class="headerlink" href="#rmg.unirxn.network.Isomer.calculateCollisionFrequency" title="Permalink to this definition">¶</a></dt>
+<dd>Calculate the collision frequency for the isomer (unimolecular only)
+at the given temperature <cite>T</cite> in K, pressure <cite>P</cite> in Pa, and using
+species <cite>bathGas</cite> as the bath gas.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.unirxn.network.Isomer.calculateDensityOfStates">
+<tt class="descname">calculateDensityOfStates</tt><big>(</big><em>Elist</em><big>)</big><a class="headerlink" href="#rmg.unirxn.network.Isomer.calculateDensityOfStates" title="Permalink to this definition">¶</a></dt>
+<dd>Calculate the density of states in mol/J of the isomer at the specified
+list of energies <cite>Elist</cite> in J/mol.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.unirxn.network.Isomer.calculateEqDist">
+<tt class="descname">calculateEqDist</tt><big>(</big><em>Elist</em>, <em>T</em><big>)</big><a class="headerlink" href="#rmg.unirxn.network.Isomer.calculateEqDist" title="Permalink to this definition">¶</a></dt>
+<dd>Calculate the equilibrium (Boltzmann) distribution of the isomer using
+the stored density of states which corresponds to the list of energies
+<cite>Elist</cite> in J/mol and at the temperature <cite>T</cite> in K. The partition function
+at that temperature is also determined. The equilibrium distribution is
+not returned, but is instead stored in the <cite>eqDist</cite> attribute.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.unirxn.network.Isomer.clean">
+<tt class="descname">clean</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.unirxn.network.Isomer.clean" title="Permalink to this definition">¶</a></dt>
+<dd>Free some memory by deleting temporary variables used only during a
+single phenomenological rate coefficient estimation. This should be
+called at the end of that calculation.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.unirxn.network.Isomer.isMultimolecular">
+<tt class="descname">isMultimolecular</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.unirxn.network.Isomer.isMultimolecular" title="Permalink to this definition">¶</a></dt>
+<dd>Return <tt class="xref xref docutils literal"><span class="pre">True</span></tt> if the isomer represents a multimolecular reactant
+or product channel or <tt class="xref xref docutils literal"><span class="pre">False</span></tt> otherwise.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.unirxn.network.Isomer.isUnimolecular">
+<tt class="descname">isUnimolecular</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.unirxn.network.Isomer.isUnimolecular" title="Permalink to this definition">¶</a></dt>
+<dd>Return <tt class="xref xref docutils literal"><span class="pre">True</span></tt> if the isomer represents a unimolecular isomer well
+or <tt class="xref xref docutils literal"><span class="pre">False</span></tt> otherwise.</dd></dl>
+
+</dd></dl>
+
 </div>
 <div class="section" id="network">
 <h3>4.4.1.2. Network<a class="headerlink" href="#network" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="rmg.unirxn.network.Network">
+<em class="property">
+class </em><tt class="descclassname">rmg.unirxn.network.</tt><tt class="descname">Network</tt><big>(</big><em>id=0</em><big>)</big><a class="headerlink" href="#rmg.unirxn.network.Network" title="Permalink to this definition">¶</a></dt>
+<dd><p>A representation of a unimolecular reaction network. The attributes are:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="20%" />
+<col width="80%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Attribute</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td><cite>id</cite></td>
+<td>A unique identifier for the network</td>
+</tr>
+<tr><td><cite>isomers</cite></td>
+<td>A list of <a title="rmg.unirxn.network.Isomer" class="reference internal" href="#rmg.unirxn.network.Isomer"><tt class="xref docutils literal"><span class="pre">Isomer</span></tt></a> objects that make up the network</td>
+</tr>
+<tr><td><cite>pathReactions</cite></td>
+<td>A list of <tt class="xref docutils literal"><span class="pre">Reaction</span></tt> objects that connect adjacent
+isomers (the &#8220;path&#8221; reactions)</td>
+</tr>
+<tr><td><cite>netReactions</cite></td>
+<td>A list of <tt class="xref docutils literal"><span class="pre">Reaction</span></tt> objects that connect any pair of
+isomers (the &#8220;net&#8221; reactions)</td>
+</tr>
+<tr><td><cite>valid</cite></td>
+<td><tt class="xref xref docutils literal"><span class="pre">True</span></tt> if the net reaction kinetics are up to date;
+<tt class="xref xref docutils literal"><span class="pre">False</span></tt> if the kinetics are out of date and need to
+be recomputed</td>
+</tr>
+<tr><td><cite>explored</cite></td>
+<td>A list of all of the fully-explored unimolecular isomers</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="rmg.unirxn.network.Network.addPathReaction">
+<tt class="descname">addPathReaction</tt><big>(</big><em>rxn</em><big>)</big><a class="headerlink" href="#rmg.unirxn.network.Network.addPathReaction" title="Permalink to this definition">¶</a></dt>
+<dd>Add the <tt class="xref docutils literal"><span class="pre">Reaction</span></tt> object <cite>rxn</cite> to the network as a path 
+reaction.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.unirxn.network.Network.applyApproximateMethod">
+<tt class="descname">applyApproximateMethod</tt><big>(</big><em>T</em>, <em>P</em>, <em>Elist</em>, <em>method</em>, <em>errorCheck=True</em><big>)</big><a class="headerlink" href="#rmg.unirxn.network.Network.applyApproximateMethod" title="Permalink to this definition">¶</a></dt>
+<dd>Apply the approximate method specified in <cite>method</cite> to estimate the
+phenomenological rate coefficients for the network. This function
+expects that all preparations have already been made, as in the
+<a title="rmg.unirxn.network.Network.calculateRateCoefficients" class="reference internal" href="#rmg.unirxn.network.Network.calculateRateCoefficients"><tt class="xref docutils literal"><span class="pre">calculateRateCoefficients()</span></tt></a> method.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.unirxn.network.Network.calculateDensitiesOfStates">
+<tt class="descname">calculateDensitiesOfStates</tt><big>(</big><em>Elist</em><big>)</big><a class="headerlink" href="#rmg.unirxn.network.Network.calculateDensitiesOfStates" title="Permalink to this definition">¶</a></dt>
+<dd>Calculate the density of states for all isomers in the network whose
+species have spectral data. This is required for all unimolecular
+isomers and for all multimolecular isomers that are reactants of a
+path reaction with the forward reaction defined as the association.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.unirxn.network.Network.calculateRateCoefficients">
+<tt class="descname">calculateRateCoefficients</tt><big>(</big><em>Tlist</em>, <em>Plist</em>, <em>Elist</em>, <em>method</em>, <em>errorCheck=True</em><big>)</big><a class="headerlink" href="#rmg.unirxn.network.Network.calculateRateCoefficients" title="Permalink to this definition">¶</a></dt>
+<dd>Calculate the phenomenological rate coefficients for the network.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.unirxn.network.Network.containsSpecies">
+<tt class="descname">containsSpecies</tt><big>(</big><em>species</em><big>)</big><a class="headerlink" href="#rmg.unirxn.network.Network.containsSpecies" title="Permalink to this definition">¶</a></dt>
+<dd>Return <tt class="xref xref docutils literal"><span class="pre">True</span></tt> if the <cite>species</cite> is a <em>unimolecular</em> isomer in the
+network, and <tt class="xref xref docutils literal"><span class="pre">False</span></tt> if not.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.unirxn.network.Network.determineEnergyGrains">
+<tt class="descname">determineEnergyGrains</tt><big>(</big><em>grainSize</em>, <em>numGrains</em>, <em>Tmax</em><big>)</big><a class="headerlink" href="#rmg.unirxn.network.Network.determineEnergyGrains" title="Permalink to this definition">¶</a></dt>
+<dd>Select a suitable list of energies to use for subsequent calculations.
+The procedure is to (1) calculate the equilibrium distribution of the
+highest-energy isomer at the largest temperature of interest (to get the
+broadest distribution), (2) calculate the energy at which the tail of
+the distribution is some fraction of the maximum, and (3) add the
+difference between the ground-state energy of the isomer and the
+highest ground-state energy in the system (either isomer or transition
+state). Parameters are the desired grain size <cite>grainSize</cite> and number of
+grains <cite>numGrains</cite> and the temperature to use for the equilibrium
+calculation <cite>Tmax</cite>, which should be the highest temperature of interest.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.unirxn.network.Network.getEnergyGrains">
+<tt class="descname">getEnergyGrains</tt><big>(</big><em>Emin</em>, <em>Emax</em>, <em>dE0</em>, <em>nGrains0</em><big>)</big><a class="headerlink" href="#rmg.unirxn.network.Network.getEnergyGrains" title="Permalink to this definition">¶</a></dt>
+<dd>Return an array of energy grains that have a minimum of <cite>Emin</cite>, a
+maximum of <cite>Emax</cite>, and either a spacing of <cite>dE0</cite> or have number of
+grains <cite>nGrains0</cite>. The first three parameters are in J/mol.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.unirxn.network.Network.getLeakFlux">
+<tt class="descname">getLeakFlux</tt><big>(</big><em>T</em>, <em>P</em>, <em>conc</em>, <em>totalConc=None</em><big>)</big><a class="headerlink" href="#rmg.unirxn.network.Network.getLeakFlux" title="Permalink to this definition">¶</a></dt>
+<dd>Return the leak flux of the network: the forward flux to all unexplored
+unimolecular isomers in the network.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.unirxn.network.Network.getMaximumLeakSpecies">
+<tt class="descname">getMaximumLeakSpecies</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.unirxn.network.Network.getMaximumLeakSpecies" title="Permalink to this definition">¶</a></dt>
+<dd>Get the unexplored (unimolecular) isomer with the maximum leak flux.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.unirxn.network.Network.getSpeciesList">
+<tt class="descname">getSpeciesList</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.unirxn.network.Network.getSpeciesList" title="Permalink to this definition">¶</a></dt>
+<dd>Return a list of all of the species in the network (excluding the bath
+gas), in no particular order.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.unirxn.network.Network.indexOf">
+<tt class="descname">indexOf</tt><big>(</big><em>object</em><big>)</big><a class="headerlink" href="#rmg.unirxn.network.Network.indexOf" title="Permalink to this definition">¶</a></dt>
+<dd>Return the integer index associated with a given <cite>object</cite>, which can be
+either an instance of <a title="rmg.unirxn.network.Isomer" class="reference internal" href="#rmg.unirxn.network.Isomer"><tt class="xref docutils literal"><span class="pre">Isomer</span></tt></a> or <tt class="xref docutils literal"><span class="pre">Reaction</span></tt>. Raises a
+KeyError if the object is not found in the network; thus you can assume
+that the returned index is valid.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.unirxn.network.Network.invalidate">
+<tt class="descname">invalidate</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.unirxn.network.Network.invalidate" title="Permalink to this definition">¶</a></dt>
+<dd>Mark a network as in need of a new pressure-dependence calculation.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.unirxn.network.Network.merge">
+<tt class="descname">merge</tt><big>(</big><em>other</em><big>)</big><a class="headerlink" href="#rmg.unirxn.network.Network.merge" title="Permalink to this definition">¶</a></dt>
+<dd>Merge another <a title="rmg.unirxn.network.Network" class="reference internal" href="#rmg.unirxn.network.Network"><tt class="xref docutils literal"><span class="pre">Network</span></tt></a> object <cite>other</cite> into this object.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.unirxn.network.Network.numMultiIsomers">
+<tt class="descname">numMultiIsomers</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.unirxn.network.Network.numMultiIsomers" title="Permalink to this definition">¶</a></dt>
+<dd>Return the number of multimolecular isomers in the network.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.unirxn.network.Network.numUniIsomers">
+<tt class="descname">numUniIsomers</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.unirxn.network.Network.numUniIsomers" title="Permalink to this definition">¶</a></dt>
+<dd>Return the number of unimolecular isomers in the network.</dd></dl>
+
+<dl class="method">
+<dt id="rmg.unirxn.network.Network.shiftToZeroEnergy">
+<tt class="descname">shiftToZeroEnergy</tt><big>(</big><big>)</big><a class="headerlink" href="#rmg.unirxn.network.Network.shiftToZeroEnergy" title="Permalink to this definition">¶</a></dt>
+<dd>Adjust the energies of the system (i.e. the <cite>E0</cite> attribute of isomers)
+such that the lowest energy in the system is set to zero.</dd></dl>
+
+</dd></dl>
+
 </div>
 </div>
 <div class="section" id="exceptions-in-rmg-unirxn-network">
 <h2>4.4.2. Exceptions in <tt class="docutils literal"><span class="pre">rmg.unirxn.network</span></tt><a class="headerlink" href="#exceptions-in-rmg-unirxn-network" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="unirxnnetworkexception">
 <h3>4.4.2.1. UnirxnNetworkException<a class="headerlink" href="#unirxnnetworkexception" title="Permalink to this headline">¶</a></h3>
+<dl class="exception">
+<dt id="rmg.unirxn.network.UnirxnNetworkException">
+<em class="property">
+exception </em><tt class="descclassname">rmg.unirxn.network.</tt><tt class="descname">UnirxnNetworkException</tt><big>(</big><em>msg</em><big>)</big><a class="headerlink" href="#rmg.unirxn.network.UnirxnNetworkException" title="Permalink to this definition">¶</a></dt>
+<dd>An general exception used when an error is encountered while dealing with a
+unimolecular reaction network. The <cite>msg</cite> attribute can be used to store
+a string description of the cause of the exception.</dd></dl>
+
 </div>
 </div>
 </div>
@@ -97,7 +338,7 @@ pageTracker._trackPageview();
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
             <p class="logo"><a href="../../../index.html">
-              <img class="logo" src="../../../static/rmg_logo.png" alt="Logo"/>
+              <img class="logo" src="../../../_static/rmg_logo.png" alt="Logo"/>
             </a></p>
             <h3><a href="../../../index.html">Table Of Contents</a></h3>
             <ul>
@@ -123,7 +364,7 @@ pageTracker._trackPageview();
                                   title="next chapter">4.5. The <tt class="docutils literal"><span class="pre">rmg.unirxn.rs</span></tt> Module</a></p>
             <h3>This Page</h3>
             <ul class="this-page-menu">
-              <li><a href="../../../sources/documentation/api/rmg.unirxn/network.txt"
+              <li><a href="../../../_sources/documentation/api/rmg.unirxn/network.txt"
                      rel="nofollow">Show Source</a></li>
             </ul>
           <h3>Other links</h3>

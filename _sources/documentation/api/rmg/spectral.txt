@@ -1,0 +1,58 @@
+***************************
+The ``rmg.spectral`` Module
+***************************
+
+.. automodule:: rmg.spectral
+
+Classes in ``rmg.spectral``
+===========================
+
+CharacteristicFrequency
+-----------------------
+
+.. autoclass:: rmg.spectral.CharacteristicFrequency
+	:members:
+	
+FrequencyDatabase
+-----------------
+
+.. autoclass:: rmg.spectral.FrequencyDatabase
+	:members:
+
+HarmonicOscillator
+------------------
+
+.. autoclass:: rmg.spectral.HarmonicOscillator
+	:members:
+
+HinderedRotor
+-------------
+
+.. autoclass:: rmg.spectral.HinderedRotor
+	:members:
+
+RigidRotor
+----------
+
+.. autoclass:: rmg.spectral.RigidRotor
+	:members:
+	
+SpectralData
+------------
+
+.. autoclass:: rmg.spectral.SpectralData
+	:members:
+	
+Translation
+-----------
+
+.. autoclass:: rmg.spectral.Translation
+	:members:
+
+Methods in ``rmg.spectral``
+===========================
+
+.. autofunction:: rmg.spectral.generateSpectralData
+
+.. autofunction:: rmg.spectral.loadFrequencyDatabase
+

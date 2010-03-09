@@ -6,8 +6,8 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
     <title>4.3. The rmg.unirxn.msc Module &mdash; RMG-Py</title>
-    <link rel="stylesheet" href="../../../static/default.css" type="text/css" />
-    <link rel="stylesheet" href="../../../static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
@@ -17,17 +17,17 @@
         HAS_SOURCE:  true
       };
     </script>
-    <script type="text/javascript" src="../../../static/jquery.js"></script>
-    <script type="text/javascript" src="../../../static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
     <link rel="search" type="application/opensearchdescription+xml"
           title="Search within RMG-Py"
-          href="../../../static/opensearch.xml"/>
+          href="../../../_static/opensearch.xml"/>
     <link rel="top" title="RMG-Py" href="../../../index.html" />
     <link rel="up" title="4. The rmg.unirxn Package" href="index.html" />
     <link rel="next" title="4.4. The rmg.unirxn.network Module" href="network.html" />
     <link rel="prev" title="4.2. The rmg.unirxn.mastereqn Module" href="mastereqn.html" /> 
  
-<link rel="stylesheet" href="../../../static/rmg.css" type="text/css" />
+<link rel="stylesheet" href="../../../_static/rmg.css" type="text/css" />
 
   </head>
   <body>
@@ -79,7 +79,7 @@ pageTracker._trackPageview();
 in which the only significant collisions are deactivating. The frequency of these strong collisions is modified by a collision efficiency.</li>
 <li>High-energy grains are approximated as existing in pseudo-steady state.</li>
 </ul>
-<p>Applying the MSC method requires designation of an isomer or product channel as the <em>entrant</em> state and neglecting all reassociation of other product channels. This results in a linear system of algebraic equations of size <img class="math" src="../../../images/math/caeef03d68ed7fe095e2cb366e009ced5f5023c6.png" alt="N_\mathrm{isom} \times N_\mathrm{isom}"/> to be solved at each active energy (that is, energy above the lowest activation barrier). Solving these systems gives, after a final manipulation, the phenomenological rate coefficients from the entrant isomer/channel to all other isomers and product channels in the network. Repeating this procedure using each isomer/channel as the entrant state gives all of the phenomenological rates in the system.</p>
+<p>Applying the MSC method requires designation of an isomer or product channel as the <em>entrant</em> state and neglecting all reassociation of other product channels. This results in a linear system of algebraic equations of size <img class="math" src="../../../_images/math/caeef03d68ed7fe095e2cb366e009ced5f5023c6.png" alt="N_\mathrm{isom} \times N_\mathrm{isom}"/> to be solved at each active energy (that is, energy above the lowest activation barrier). Solving these systems gives, after a final manipulation, the phenomenological rate coefficients from the entrant isomer/channel to all other isomers and product channels in the network. Repeating this procedure using each isomer/channel as the entrant state gives all of the phenomenological rates in the system.</p>
 <p>Of the approximate master equation methods implemented, this is the most robust, and is the fallback when other approximate methods are unsuccessful. However, it is also usually the least accurate of the methods due to the nature of the approximations utilized.</p>
 <div class="section" id="methods-in-rmg-unirxn-msc">
 <h2>4.3.1. Methods in <tt class="docutils literal"><span class="pre">rmg.unirxn.msc</span></tt><a class="headerlink" href="#methods-in-rmg-unirxn-msc" title="Permalink to this headline">¶</a></h2>
@@ -177,7 +177,7 @@ string will be empty if the subroutine was successful</td>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
             <p class="logo"><a href="../../../index.html">
-              <img class="logo" src="../../../static/rmg_logo.png" alt="Logo"/>
+              <img class="logo" src="../../../_static/rmg_logo.png" alt="Logo"/>
             </a></p>
             <h3><a href="../../../index.html">Table Of Contents</a></h3>
             <ul>
@@ -195,7 +195,7 @@ string will be empty if the subroutine was successful</td>
                                   title="next chapter">4.4. The <tt class="docutils literal"><span class="pre">rmg.unirxn.network</span></tt> Module</a></p>
             <h3>This Page</h3>
             <ul class="this-page-menu">
-              <li><a href="../../../sources/documentation/api/rmg.unirxn/msc.txt"
+              <li><a href="../../../_sources/documentation/api/rmg.unirxn/msc.txt"
                      rel="nofollow">Show Source</a></li>
             </ul>
           <h3>Other links</h3>

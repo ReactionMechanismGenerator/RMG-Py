@@ -1,0 +1,16 @@
+**********
+Motivation
+**********
+
+Why Python?
+===========
+
+The Python programming language offers a number of features that are attractive to the field of cheminformatics in general and to RMG in particular.
+
+Many software packages in cheminformatics, including RMG, are developed in academic research groups by students and faculty whose academic speciality is in a field other than computer science. For large software projects like RMG, the codebase will necessarily pass through the hands of many developers of a wide variety of programming skill. This underscores the importance of generating readable, understandable code, which is one of Python's strengths. Python also has a good system of including in-code documentation, which can in turn be extracted into HTML and PDF documentation using Sphinx. (This developer's guide is written entirely in Sphinx, and large portions of it are taken directly from the Python source code.)
+
+The development philosophy encouraged by Python is also useful for cheminformatics software. The straightforward, readable Python language syntax encourages rapid, incremental development of features. A wide variety of existing modules encourages the reuse of existing code. In addition, Python code can be connected to existing software written in other languages, especially C/C++ and Fortran. Finally, as the codebase matures, Python provides tools for identifying bottlenecks of performance and several options for optimization.
+
+A nice `visual summary of common cheminformatics packages <http://dalkescientific.com/writings/Python-EuroQSAR2008.pdf>`_ through 2008 was created by Andrew Dalke and can be viewed at the above link.
+
+

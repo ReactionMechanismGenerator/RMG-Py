@@ -1,0 +1,6 @@
+****************************
+The ``rmg.constants`` Module
+****************************
+
+.. automodule:: rmg.constants
+	:members:

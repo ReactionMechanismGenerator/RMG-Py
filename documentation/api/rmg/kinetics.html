@@ -6,8 +6,8 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
     <title>2.7. The rmg.kinetics Module &mdash; RMG-Py</title>
-    <link rel="stylesheet" href="../../../static/default.css" type="text/css" />
-    <link rel="stylesheet" href="../../../static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
@@ -17,17 +17,17 @@
         HAS_SOURCE:  true
       };
     </script>
-    <script type="text/javascript" src="../../../static/jquery.js"></script>
-    <script type="text/javascript" src="../../../static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
     <link rel="search" type="application/opensearchdescription+xml"
           title="Search within RMG-Py"
-          href="../../../static/opensearch.xml"/>
+          href="../../../_static/opensearch.xml"/>
     <link rel="top" title="RMG-Py" href="../../../index.html" />
     <link rel="up" title="2. The rmg Package" href="index.html" />
     <link rel="next" title="2.8. The rmg.main Module" href="main.html" />
     <link rel="prev" title="2.6. The rmg.io Module" href="io.html" /> 
  
-<link rel="stylesheet" href="../../../static/rmg.css" type="text/css" />
+<link rel="stylesheet" href="../../../_static/rmg.css" type="text/css" />
 
   </head>
   <body>
@@ -59,8 +59,8 @@ pageTracker._trackPageview();
         <li><a href="../../../index.html">RMG-Py</a> &raquo;</li>
           <li><a href="../../index.html" >RMG Documentation</a> &raquo;</li>
           <li><a href="../index.html" >RMG Developer&#8217;s Guide</a> &raquo;</li>
-          <li><a href="index.html" accesskey="U">2. The <tt class="docutils literal docutils literal"><span class="pre">rmg</span></tt> Package</a> &raquo;</li>
-  <li><a href="">2.7. The <tt class="docutils literal"><span class="pre">rmg.kinetics</span></tt> Module</a></li>
+          <li><a href="index.html" accesskey="U">2. The <tt class="docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal"><span class="pre">rmg</span></tt> Package</a> &raquo;</li>
+  <li><a href="">2.7. The <tt class="docutils literal docutils literal"><span class="pre">rmg.kinetics</span></tt> Module</a></li>
 
       </ul>
     </div>
@@ -139,7 +139,7 @@ class </em><tt class="descclassname">rmg.kinetics.</tt><tt class="descname">Arrh
 <dd><p>Represent a set of modified Arrhenius kinetics. The kinetic expression has
 the form</p>
 <div class="math">
-<p><img src="../../../images/math/36a7bc0fc095d1d802ab865412394bcb07f00956.png" alt="k(T) = A T^n \exp \left( - \frac{E_\mathrm{a}}{RT} \right)" />
+<p><img src="../../../_images/math/36a7bc0fc095d1d802ab865412394bcb07f00956.png" alt="k(T) = A T^n \exp \left( - \frac{E_\mathrm{a}}{RT} \right)" />
 </div></p><p>The attributes are:</p>
 <table border="1" class="docutils">
 <colgroup>
@@ -215,7 +215,7 @@ class </em><tt class="descclassname">rmg.kinetics.</tt><tt class="descname">Arrh
 <dd><p>Represent a set of modified Arrhenius kinetics with Evans-Polanyi data. The
 kinetic expression has the form</p>
 <div class="math">
-<p><img src="../../../images/math/8f685600bfa42ab8677d5646fd46efba807ee3aa.png" alt="k(T) = A T^n \exp \left( - \frac{E_0 + \alpha \Delta H_\mathrm{rxn}}{RT} \right)" />
+<p><img src="../../../_images/math/8f685600bfa42ab8677d5646fd46efba807ee3aa.png" alt="k(T) = A T^n \exp \left( - \frac{E_0 + \alpha \Delta H_\mathrm{rxn}}{RT} \right)" />
 </div></p><p>The attributes are:</p>
 <table border="1" class="docutils">
 <colgroup>
@@ -254,7 +254,7 @@ reaction</td>
 <dd><p>Process a list of numbers <cite>data</cite> and associated description <cite>comment</cite>
 generated while reading from a kinetics database. The <cite>numReactants</cite>
 parameter is used to interpret the units of the preexponential.</p>
-<p>Database units for A are assumed to be <img class="math" src="../../../images/math/d1dd2bfb624ee35715d90d595533ace9d04f4859.png" alt="(cm^3/mol)^{(n-1)}/s"/>  where <img class="math" src="../../../images/math/174fadd07fd54c9afe288e96558c92e0c1da733a.png" alt="n"/> is <cite>numReactants</cite>
+<p>Database units for A are assumed to be <img class="math" src="../../../_images/math/d1dd2bfb624ee35715d90d595533ace9d04f4859.png" alt="(cm^3/mol)^{(n-1)}/s"/>  where <img class="math" src="../../../_images/math/174fadd07fd54c9afe288e96558c92e0c1da733a.png" alt="n"/> is <cite>numReactants</cite>
 Database units for E0 are kcal/mol.</p>
 </dd></dl>
 
@@ -294,16 +294,16 @@ class </em><tt class="descclassname">rmg.kinetics.</tt><tt class="descname">Cheb
 <dd><p>A kinetic model of a phenomenological rate coefficient k(T, P) using the
 expression</p>
 <div class="math">
-<p><img src="../../../images/math/1b11755888d3dd8a2e476d156596ca185a9f67a3.png" alt="\log k(T,P) = \sum_{t=1}^{N_T} \sum_{p=1}^{N_P} \alpha_{tp} \phi_t(\tilde{T}) \phi_p(\tilde{P})" />
-</div></p><p>where <img class="math" src="../../../images/math/3aec7d34f435ea07e6bf4a62f788b40d7e49c7c0.png" alt="\alpha_{tp}"/> is a constant, <img class="math" src="../../../images/math/3039842d9e2c0ed4091c97ce04a95f5e81a8eb21.png" alt="\phi_n(x)"/> is the
-Chebyshev polynomial of degree <img class="math" src="../../../images/math/174fadd07fd54c9afe288e96558c92e0c1da733a.png" alt="n"/> evaluated at <img class="math" src="../../../images/math/26eeb5258ca5099acf8fe96b2a1049c48c89a5e6.png" alt="x"/>, and</p>
+<p><img src="../../../_images/math/1b11755888d3dd8a2e476d156596ca185a9f67a3.png" alt="\log k(T,P) = \sum_{t=1}^{N_T} \sum_{p=1}^{N_P} \alpha_{tp} \phi_t(\tilde{T}) \phi_p(\tilde{P})" />
+</div></p><p>where <img class="math" src="../../../_images/math/3aec7d34f435ea07e6bf4a62f788b40d7e49c7c0.png" alt="\alpha_{tp}"/> is a constant, <img class="math" src="../../../_images/math/3039842d9e2c0ed4091c97ce04a95f5e81a8eb21.png" alt="\phi_n(x)"/> is the
+Chebyshev polynomial of degree <img class="math" src="../../../_images/math/174fadd07fd54c9afe288e96558c92e0c1da733a.png" alt="n"/> evaluated at <img class="math" src="../../../_images/math/26eeb5258ca5099acf8fe96b2a1049c48c89a5e6.png" alt="x"/>, and</p>
 <div class="math">
-<p><img src="../../../images/math/7e29b851b42056a93cd658a6dd1ee0c9cd2dfdda.png" alt="\tilde{T} \equiv \frac{2T^{-1} - T_\mathrm{min}^{-1} - T_\mathrm{max}^{-1}}{T_\mathrm{max}^{-1} - T_\mathrm{min}^{-1}}" />
+<p><img src="../../../_images/math/7e29b851b42056a93cd658a6dd1ee0c9cd2dfdda.png" alt="\tilde{T} \equiv \frac{2T^{-1} - T_\mathrm{min}^{-1} - T_\mathrm{max}^{-1}}{T_\mathrm{max}^{-1} - T_\mathrm{min}^{-1}}" />
 </div></p><div class="math">
-<p><img src="../../../images/math/3484f5d3e9da5cfccf95077d3614a56c5c58bef0.png" alt="\tilde{P} \equiv \frac{2 \log P - \log P_\mathrm{min} - \log P_\mathrm{max}}{\log P_\mathrm{max} - \log P_\mathrm{min}}" />
+<p><img src="../../../_images/math/3484f5d3e9da5cfccf95077d3614a56c5c58bef0.png" alt="\tilde{P} \equiv \frac{2 \log P - \log P_\mathrm{min} - \log P_\mathrm{max}}{\log P_\mathrm{max} - \log P_\mathrm{min}}" />
 </div></p><p>are reduced temperature and reduced pressures designed to map the ranges
-<img class="math" src="../../../images/math/7bd064adf1a85b606366c64e9c00208cdb9d7a47.png" alt="(T_\mathrm{min}, T_\mathrm{max})"/> and
-<img class="math" src="../../../images/math/64fd2009f1d7807399580469785022fc9e205287.png" alt="(P_\mathrm{min}, P_\mathrm{max})"/> to <img class="math" src="../../../images/math/149f6a15ba033bfb273e7af037a90ffe9dbaa218.png" alt="(-1, 1)"/>.
+<img class="math" src="../../../_images/math/7bd064adf1a85b606366c64e9c00208cdb9d7a47.png" alt="(T_\mathrm{min}, T_\mathrm{max})"/> and
+<img class="math" src="../../../_images/math/64fd2009f1d7807399580469785022fc9e205287.png" alt="(P_\mathrm{min}, P_\mathrm{max})"/> to <img class="math" src="../../../_images/math/149f6a15ba033bfb273e7af037a90ffe9dbaa218.png" alt="(-1, 1)"/>.
 The attributes are:</p>
 <table border="1" class="docutils">
 <colgroup>
@@ -347,6 +347,13 @@ in temperature and pressure.</dd></dl>
 <dd>Return the rate constant k(T, P) in SI units at temperature <cite>T</cite> in K and
 pressure <cite>P</cite> in Pa by evaluating the Chebyshev expression.</dd></dl>
 
+<dl class="method">
+<dt id="rmg.kinetics.ChebyshevKinetics.toXML">
+<tt class="descname">toXML</tt><big>(</big><em>document</em>, <em>rootElement</em>, <em>numReactants</em><big>)</big><a class="headerlink" href="#rmg.kinetics.ChebyshevKinetics.toXML" title="Permalink to this definition">¶</a></dt>
+<dd>Add a &lt;kinetics&gt; element as a child of <cite>rootElement</cite> using
+RMG-style XML. <cite>document</cite> is an <tt class="xref docutils literal"><span class="pre">io.XML</span></tt> class representing the
+XML DOM tree.</dd></dl>
+
 </dd></dl>
 
 </div>
@@ -359,7 +366,7 @@ class </em><tt class="descclassname">rmg.kinetics.</tt><tt class="descname">PDep
 <dd><p>A kinetic model of a phenomenological rate coefficient k(T, P) using the
 expression</p>
 <div class="math">
-<p><img src="../../../images/math/7856d8715faa1f64ad00b9365b329c4e285c2adb.png" alt="k(T,P) = A(P) T^{n(P)} \exp \left[ \frac{-E_\mathrm{a}(P)}{RT} \right]" />
+<p><img src="../../../_images/math/7856d8715faa1f64ad00b9365b329c4e285c2adb.png" alt="k(T,P) = A(P) T^{n(P)} \exp \left[ \frac{-E_\mathrm{a}(P)}{RT} \right]" />
 </div></p><p>where the modified Arrhenius parameters are stored at a variety of pressures
 and interpolated between on a logarithmic scale. The attributes are:</p>
 <table border="1" class="docutils">
@@ -401,6 +408,13 @@ coefficients <cite>K</cite>, which is a matrix corresponding to the temperatures
 <dd>Return the rate constant k(T, P) at temperature <cite>T</cite> and pressure <cite>P</cite> by
 evaluating the pressure-dependent Arrhenius expression.</dd></dl>
 
+<dl class="method">
+<dt id="rmg.kinetics.PDepArrheniusKinetics.toXML">
+<tt class="descname">toXML</tt><big>(</big><em>document</em>, <em>rootElement</em>, <em>numReactants</em><big>)</big><a class="headerlink" href="#rmg.kinetics.PDepArrheniusKinetics.toXML" title="Permalink to this definition">¶</a></dt>
+<dd>Add a &lt;kinetics&gt; element as a child of <cite>rootElement</cite> using
+RMG-style XML. <cite>document</cite> is an <tt class="xref docutils literal"><span class="pre">io.XML</span></tt> class representing the
+XML DOM tree.</dd></dl>
+
 </dd></dl>
 
 </div>
@@ -417,7 +431,7 @@ evaluating the pressure-dependent Arrhenius expression.</dd></dl>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
             <p class="logo"><a href="../../../index.html">
-              <img class="logo" src="../../../static/rmg_logo.png" alt="Logo"/>
+              <img class="logo" src="../../../_static/rmg_logo.png" alt="Logo"/>
             </a></p>
             <h3><a href="../../../index.html">Table Of Contents</a></h3>
             <ul>
@@ -437,13 +451,13 @@ evaluating the pressure-dependent Arrhenius expression.</dd></dl>
 
             <h4>Previous topic</h4>
             <p class="topless"><a href="io.html"
-                                  title="previous chapter">2.6. The <tt class="docutils literal"><span class="pre">rmg.io</span></tt> Module</a></p>
+                                  title="previous chapter">2.6. The <tt class="docutils literal docutils literal docutils literal"><span class="pre">rmg.io</span></tt> Module</a></p>
             <h4>Next topic</h4>
             <p class="topless"><a href="main.html"
                                   title="next chapter">2.8. The <tt class="docutils literal"><span class="pre">rmg.main</span></tt> Module</a></p>
             <h3>This Page</h3>
             <ul class="this-page-menu">
-              <li><a href="../../../sources/documentation/api/rmg/kinetics.txt"
+              <li><a href="../../../_sources/documentation/api/rmg/kinetics.txt"
                      rel="nofollow">Show Source</a></li>
             </ul>
           <h3>Other links</h3>
@@ -488,8 +502,8 @@ evaluating the pressure-dependent Arrhenius expression.</dd></dl>
         <li><a href="../../../index.html">RMG-Py</a> &raquo;</li>
           <li><a href="../../index.html" >RMG Documentation</a> &raquo;</li>
           <li><a href="../index.html" >RMG Developer&#8217;s Guide</a> &raquo;</li>
-          <li><a href="index.html" >2. The <tt class="docutils literal docutils literal"><span class="pre">rmg</span></tt> Package</a> &raquo;</li>
-  <li><a href="">2.7. The <tt class="docutils literal"><span class="pre">rmg.kinetics</span></tt> Module</a></li>
+          <li><a href="index.html" >2. The <tt class="docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal"><span class="pre">rmg</span></tt> Package</a> &raquo;</li>
+  <li><a href="">2.7. The <tt class="docutils literal docutils literal"><span class="pre">rmg.kinetics</span></tt> Module</a></li>
 
       </ul>
     </div>
