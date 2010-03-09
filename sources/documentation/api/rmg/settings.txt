@@ -1,6 +1,0 @@
-***************************
-The ``rmg.settings`` Module
-***************************
-
-.. automodule:: rmg.settings
-	:members:
