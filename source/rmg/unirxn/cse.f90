@@ -1,19 +1,19 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-! 
+!
 !   MEMURN - Master Equation Model for Unimolecular Reaction Networks
-! 
+!
 !   Copyright (c) 2009 by Josh Allen (chemejosh@gmail.com)
-! 
+!
 !   Permission is hereby granted, free of charge, to any person obtaining a
 !   copy of this software and associated documentation files (the 'Software'),
 !   to deal in the Software without restriction, including without limitation
 !   the rights to use, copy, modify, merge, publish, distribute, sublicense,
 !   and/or sell copies of the Software, and to permit persons to whom the
 !   Software is furnished to do so, subject to the following conditions:
-! 
+!
 !   The above copyright notice and this permission notice shall be included in
 !   all copies or substantial portions of the Software.
-! 
+!
 !   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 !   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 !   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,7 +21,7 @@
 !   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 !   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 !   DEALINGS IN THE SOFTWARE.
-! 
+!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 subroutine estimateRateCoefficients_CSE(T, P, E, Mcoll0, E0, densStates, &
@@ -76,7 +76,7 @@ subroutine estimateRateCoefficients_CSE(T, P, E, Mcoll0, E0, densStates, &
 
     ! The size of the master equation matrix
     integer nRows
-    
+
     ! The number of chemically-significant eigenvalues
     integer nCSE
 
@@ -84,15 +84,15 @@ subroutine estimateRateCoefficients_CSE(T, P, E, Mcoll0, E0, densStates, &
     integer, dimension(1:nGrains,1:nIsom) :: indices
 
     ! Intermediate matrices
-    real(8), dimension(:,:), allocatable :: Mcoll, Mrxn, M, X, Xinv, eqDist
-    real(8), dimension(:), allocatable :: S, Sinv, V0, V
+    real(8), dimension(:,:), allocatable :: Mcoll, Mrxn, M, X, Xinv, eqDist, dXij
+    real(8), dimension(:), allocatable :: S, Sinv, V0, V, C
 
     ! BLAS and LAPACK temporary variables
     real(8), dimension(:), allocatable :: work
     integer info
 
     ! Indices
-    integer i, j, r, index, count
+    integer i, j, n, r, h, index, count
 
     ! Construct accounting matrix
 	! Row is grain number, column is well number, value is index into matrix
@@ -249,14 +249,6 @@ subroutine estimateRateCoefficients_CSE(T, P, E, Mcoll0, E0, densStates, &
         end do
     end do
 
-    ! Generate new M containing only chemically-significant eigenmodes via
-    ! multiplication of the above matrices
-    do i = 1, nRows
-        do j = 1, nRows
-            M(i,j) = sum(X(i,:) * (V * Xinv(:,j)))
-        end do
-    end do
-
     ! Generate set of initial condition vectors (one per isomer and reactant)
     allocate( eqDist(1:nRows, 1:nIsom+nReac) )
     do j = 1, nIsom + nReac
@@ -277,24 +269,49 @@ subroutine estimateRateCoefficients_CSE(T, P, E, Mcoll0, E0, densStates, &
         eqDist(index,i+nIsom) = 1.0
     end do
 
-    ! Construct the rate constant matrix
-    do j = 1, nIsom+nReac
-        do r = 1, nGrains
-            do i = 1, nIsom
-                index = indices(r,i)
-                if (index > 0) then
-                    K(i,j) = K(i,j) + sum(M(index,:) * eqDist(:,j))
-                end if
+    ! Calculate the phenomenological rate constants
+    ! This version is intended to follow the notation of Miller and Klippenstein
+    allocate( dXij(1:nIsom+nReac+nProd, 1:nCSE), C(1:nRows) )
+    do n = 1, nIsom+nReac
+        do j = 1, nCSE
+
+            do i = 1, nIsom+nReac+nProd
+                dXij(i,j) = 0.0
             end do
+
+            do r = 1, nRows
+                C(r) = X(r,j) * sum(Xinv(j,:) * eqDist(:,n))
+            end do
+
+            do r = 1, nGrains
+                do i = 1, nIsom
+                    index = indices(r,i)
+                    if (index > 0) then
+                        ! Isomers
+                        dXij(i,j) = dXij(i,j) + C(index)
+                        ! Products
+                        do h = nReac+1, nReac+nProd
+                            dXij(nIsom+h,j) = dXij(nIsom+h,j) + C(index) * Gnj(h,i,r) / V(j)
+                        end do
+                    end if
+                end do
+            end do
+            do i = 1, nReac
+                index = nRows - nReac + i
+                dXij(nIsom+i,j) = dXij(nIsom+i,j) + C(index)
+            end do
+
+            ! The isomers and reactant
+            do i = 1, nIsom+nReac+nProd
+                K(i,n) = K(i,n) + V(j) * dXij(i,j)
+            end do
+
         end do
-        do i = 1, nReac
-            index = nRows - nReac + i
-            K(i+nIsom,j) = sum(M(index,:) * eqDist(:,j))
-        end do
+
     end do
 
     ! Clean up
-    deallocate( Mcoll, Mrxn, M, S, Sinv, V0, work, eqDist, X, V, Xinv )
+    deallocate( Mcoll, Mrxn, M, S, Sinv, V0, work, eqDist, X, V, Xinv, dXij, C )
 
 end subroutine
 
