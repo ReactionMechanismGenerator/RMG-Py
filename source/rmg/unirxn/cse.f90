@@ -209,19 +209,20 @@ subroutine estimateRateCoefficients_CSE(T, P, E, Mcoll0, E0, densStates, &
         return
     end if
 
-    ! Check for zero eigenvalue
-    if (abs(V0(nRows) / V0(nRows-1)) > 0.001) then
-        write (*,fmt='(A)') 'Error: Zero eigenvalue not found.'
-        write (*,fmt='(A,ES12.4E2,A,ES12.4E2,A,F9.6)') &
-            'zero CSE =', V0(nRows), &
-            ', last CSE =',V0(nRows-1), &
-            ', ratio =',abs(V0(nRows) / V0(nRows-1))
-        msg = 'Zero eigenvalue not found.'
-        return
+    ! Check for zero eigenvalue (only if there are no product channels (sinks))
+    if (nProd == 0) then
+        if (abs(V0(nRows) / V0(nRows-1)) > 0.001) then
+            write (*,fmt='(A)') 'Error: Zero eigenvalue not found.'
+            write (*,fmt='(A,ES12.4E2,A,ES12.4E2,A,F9.6)') &
+                'zero CSE =', V0(nRows), &
+                ', last CSE =',V0(nRows-1), &
+                ', ratio =',abs(V0(nRows) / V0(nRows-1))
+            msg = 'Zero eigenvalue not found.'
+            return
+        end if
+        ! Force largest eigenvalue to be zero (might be small numerical artifact)
+        !V0(nRows) = 0.0
     end if
-    
-    ! Force largest eigenvalue to be zero (might be small numerical artifact)
-    !V0(nRows) = 0.0
 
     allocate( X(1:nRows, 1:nCSE), V(1:nCSE), Xinv(1:nCSE, 1:nRows) )
     do j = 1, nCSE
