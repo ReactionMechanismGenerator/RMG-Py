@@ -4,5 +4,5 @@
 cd build/html
 git add -A
 git add .
-git commit -m "Auto-committed by sphinx makefile"
+git commit -m "Auto-committed by upload.sh (after sphinx build)"
 git push official gh-pages

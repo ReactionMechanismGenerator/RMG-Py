@@ -31,8 +31,9 @@ extensions = ['sphinx.ext.autodoc', 'sphinx.ext.pngmath']
 # github-tools extension from http://github.com/dinoboff/github-tools/
 # removes leading underscore from _static folder, to allow hosting
 # on github pages
-sys.path.append(os.path.abspath('_extensions'))
-extensions.append('github-tools')
+## No longer needed because adding .nojekyll file now prevents jekyll processing
+# sys.path.append(os.path.abspath('_extensions'))
+# extensions.append('github-tools')
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
