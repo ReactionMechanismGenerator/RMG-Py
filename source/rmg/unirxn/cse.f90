@@ -249,7 +249,11 @@ subroutine estimateRateCoefficients_CSE(T, P, E, Mcoll0, E0, densStates, &
         end do
     end do
 
-    ! Generate set of initial condition vectors (one per isomer and reactant)
+    ! Generate set of initial condition vectors, one per isomer and reactant
+    ! Each initial condition vector corresponds to a case where a Boltzmann
+    ! distribution of only one isomer or reactant is present
+    ! The Boltzmann distribution occurs as a result of the fast relaxation of
+    ! internal energy modes, which is separable from the chemical modes
     allocate( eqDist(1:nRows, 1:nIsom+nReac) )
     do j = 1, nIsom + nReac
         do r = 1, nRows
@@ -270,11 +274,16 @@ subroutine estimateRateCoefficients_CSE(T, P, E, Mcoll0, E0, densStates, &
     end do
 
     ! Calculate the phenomenological rate constants
-    ! This version is intended to follow the notation of Miller and Klippenstein
+    ! This version follows the notation of Miller and Klippenstein
     allocate( dXij(1:nIsom+nReac+nProd, 1:nCSE), C(1:nRows) )
+    ! Iterate over isomers and reactants to determine k(T,P) with each as the
+    ! reactant
     do n = 1, nIsom+nReac
         do j = 1, nCSE
 
+            ! dXij contains the change in isomer/reactant/product i as a result 
+            ! of the jth eigenmode, using isomer/reactant n as the starting 
+            ! point
             do i = 1, nIsom+nReac+nProd
                 dXij(i,j) = 0.0
             end do
@@ -298,10 +307,12 @@ subroutine estimateRateCoefficients_CSE(T, P, E, Mcoll0, E0, densStates, &
             end do
             do i = 1, nReac
                 index = nRows - nReac + i
+                ! Reactants
                 dXij(nIsom+i,j) = dXij(nIsom+i,j) + C(index)
             end do
 
-            ! The isomers and reactant
+            ! Convert the dXij information for eigenmode j into phenomenological
+            ! rate coefficients
             do i = 1, nIsom+nReac+nProd
                 K(i,n) = K(i,n) + V(j) * dXij(i,j)
             end do
