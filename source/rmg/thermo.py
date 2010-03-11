@@ -1023,7 +1023,7 @@ def convertWilhoitToNASA(Wilhoit, fixed=1, weighting=1, tint=1000.0, Tmin = 298.
 	
 	Takes: a `ThermoWilhoitData` instance of themochemical data.
 		fixed: 1 (default) to fix tint; 0 to allow it to float to get a better fit
-		weighting: 0 (default) to not weight the fit by 1/T; 1 to weight by 1/T to emphasize good fit at lower temperatures
+		weighting: 0 to not weight the fit by 1/T; 1 (default) to weight by 1/T to emphasize good fit at lower temperatures
 		tint, Tmin, Tmax: intermediate, minimum, and maximum temperatures in Kelvin
 		contCons: a measure of the continutity constraints on the fitted NASA polynomials; possible values are:
 			    5: constrain Cp, dCp/dT, d2Cp/dT2, d3Cp/dT3, and d4Cp/dT4 to be continuous at tint; note: this effectively constrains all the coefficients to be equal and should be equivalent to fitting only one polynomial (rather than two)
