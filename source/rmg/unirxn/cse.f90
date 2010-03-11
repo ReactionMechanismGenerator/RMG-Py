@@ -75,15 +75,18 @@ subroutine estimateRateCoefficients_CSE(T, P, E, Mcoll0, E0, densStates, &
     ! The size of the master equation matrix
     integer nRows
     
+    ! The number of chemically-significant eigenvalues
+    integer nCSE
+
     ! The indices of the master equation matrix
     integer, dimension(1:nGrains,1:nIsom) :: indices
 
     ! Intermediate matrices
-    real(8), dimension(:,:), allocatable :: Mcoll, Mrxn, M, X, Xinv
+    real(8), dimension(:,:), allocatable :: Mcoll, Mrxn, M, X, Xinv, eqDist
     real(8), dimension(:), allocatable :: S, Sinv, V0, V
 
     ! BLAS and LAPACK temporary variables
-    real(8), dimension(:), allocatable :: work, iPiv
+    real(8), dimension(:), allocatable :: work
     integer info
 
     ! Indices
@@ -112,28 +115,28 @@ subroutine estimateRateCoefficients_CSE(T, P, E, Mcoll0, E0, densStates, &
 	! Generate full unsymmetrized master equation matrix (dimension nRows x nRows)
     call fullMEMatrix(E, E0, Mcoll0, Kij, Gnj, Fim, indices, &
         nRows, nGrains, nIsom, nProd, Mcoll, Mrxn, msg)
-    
+
 	! Generate symmetrization matrix and its inverse
     do r = 1, nGrains
         do i = 1, nIsom
             index = indices(r,i)
             if (index > 0) then
-                Sinv(index) = sqrt(densStates(i,r) * exp(-E(r) / 8.314472 / T) * eqRatios(i))
-                S(index) = 1.0 / Sinv(index)
+                S(index) = sqrt(densStates(i,r) * exp(-E(r) / 8.314472 / T) * eqRatios(i))
+                Sinv(index) = 1.0 / S(index)
             end if
         end do
     end do
     do i = 1, nProd
         index = nRows - nProd + i
-        Sinv(index) = sqrt(1.0 * eqRatios(nIsom+i))
-        S(index) = 1.0 / Sinv(index)
+        S(index) = sqrt(1.0 * eqRatios(nIsom+i))
+        Sinv(index) = 1.0 / S(index)
     end do
 
-    ! Symmetrize master equation matrix: Msymm = S * M * Sinv
+    ! Symmetrize master equation matrix: M = S * Msymm * Sinv
     ! Since S and Sinv are diagonal we can do this very efficiently
     do i = 1, nRows
         do j = 1, nRows
-            M(i,j) = S(i) * (Mcoll(i,j) + Mrxn(i,j)) * Sinv(j)
+            M(i,j) = Sinv(i) * (Mcoll(i,j) + Mrxn(i,j)) * S(j)
         end do
     end do
 
@@ -166,8 +169,34 @@ subroutine estimateRateCoefficients_CSE(T, P, E, Mcoll0, E0, densStates, &
         return
     end if
 
+!    ! Calculate the eigenvalues and eigenvectors
+!    ! Only calculate the ones we need, which are a small subset of the total
+!    ! This doesn't seem to work properly; it only gives one eigenvector
+!    allocate( V0(1:nRows), X0(1:nRows, 1:nRows) )
+!    allocate( work(1:6*nRows), iwork(1:8*nRows), ifail(1:5*nRows) )
+!    call DSYEVX('V', 'I', 'U', nRows, M, nRows, 0.0, 0.0, &
+!        nRows-nIsom-nProd, nRows, 1.0e-8, nCSE, V0, X0, nRows, &
+!        work, 8*nRows, iwork, ifail, info)
+!    if (info > 0) then
+!        msg = 'DSYEVX eigenvalue algorithm failed to converge.'
+!        return
+!    elseif (info < 0) then
+!        msg = 'Illegal argument passed to DSYEVX.'
+!        return
+!    end if
+
+    ! Count the number of chemically distinct eigenvalues
+    ! This will be ideally be nIsom+nProd, but might be lower if one or more
+    ! chemical eigenmodes is blended with the internal energy eigenmodes
+    nCSE = 1
+    do i = 1, nIsom+nProd-1
+        if (abs(V0(nRows-nIsom-nProd) / V0(nRows-i)) > 10.0) then
+            nCSE = nCSE + 1
+        end if
+    end do
+
     ! Check for proper separation of chemical timescales
-    if (abs(V0(nRows-nIsom-nProd) / V0(nRows-nIsom-nProd+1)) < 2.0) then
+    if (nCSE /= nIsom + nProd) then
         write (*,fmt='(A)') 'Error: Chemical eigenvalues are not distinct from internal energy eigenvalues.'
         write (*,fmt='(A,ES12.4E2,A,ES12.4E2,A,F7.4)') &
             'last IERE =', V0(nRows-nIsom-nProd), &
@@ -176,7 +205,7 @@ subroutine estimateRateCoefficients_CSE(T, P, E, Mcoll0, E0, densStates, &
         msg = 'Chemical eigenvalues not distinct from internal energy eigenvalues.'
         return
     end if
-    
+
     ! Check for zero eigenvalue
     if (abs(V0(nRows) / V0(nRows-1)) > 0.001) then
         write (*,fmt='(A)') 'Error: Zero eigenvalue not found.'
@@ -187,83 +216,81 @@ subroutine estimateRateCoefficients_CSE(T, P, E, Mcoll0, E0, densStates, &
         msg = 'Zero eigenvalue not found.'
         return
     end if
+    
+    ! Force largest eigenvalue to be zero (might be small numerical artifact)
+    !V0(nRows) = 0.0
 
-    ! Calculate unsymmetrized eigenvectors
-    do i = 1, nRows
-        do j = 1, nRows
-            M(i,j) = Sinv(i) * M(i,j)
-        end do
-    end do
-    ! Also normalize the eigenvectors
-    do j = 1, nRows
-        M(:,j) = M(:,j) / sum(M(:,j))
-    end do
-
-    ! Extract the chemically-significant eigenvalues and eigenvectors
-    ! These are the last nIsom+nProd columns of M
-    allocate( X(1:nIsom+nProd, 1:nIsom+nProd), V(1:nIsom+nProd), Xinv(1:nIsom+nProd, 1:nIsom+nProd))
-    do i = 1, nIsom + nProd
-        do j = 1, nIsom + nProd
-            X(i,j) = 0.0
-        end do
-    end do
-    do j = 1, nIsom + nProd
+    allocate( X(1:nRows, 1:nCSE), V(1:nCSE), Xinv(1:nCSE, 1:nRows) )
+    do j = 1, nCSE
+        ! Find index in full matrix
         count = nRows - (nIsom + nProd) + j
+        ! Eigenvalue matrix V
         V(j) = V0(count)
+        ! Eigenvector matrix and its inverse/transpose
         do r = 1, nGrains
             do i = 1, nIsom
                 index = indices(r,i)
                 if (index > 0) then
-                    X(i,j) = X(i,j) + M(index,count)
+                    ! Unsymmetrize as we go
+                    X(index,j) = S(index) * M(index,count)
+                    Xinv(j,index) = M(index,count) * Sinv(index)
                 end if
             end do
         end do
         do i = 1, nProd
             index = nRows - nProd + i
-            X(i+nIsom,j) = M(index,count)
+            ! Unsymmetrize as we go
+            X(index,j) = S(index) * M(index,count)
+            Xinv(j,index) = M(index,count) * Sinv(index)
         end do
     end do
-    
-    ! Check: The eigenvector corresponding to the zero eigenvalue should
-    ! be identical to eqRatios
-    !do j = 1, nIsom+nProd
-    !    if (abs(X(j,nIsom+nProd) - eqRatios(j)) / eqRatios(j) > 0.001) then
-    !        return
-    !    end if
-    !end do
 
-    ! Invert the chemical eigenvector matrix
-    Xinv = X
-    allocate(iPiv(1:nIsom+nProd))
-    call DGETRF(nIsom+nProd, nIsom+nProd, Xinv, nIsom+nProd, ipiv, info)
-    if (info > 0) then
-        msg = 'Chemical eigenvector matrix is singular.'
-        return
-    elseif (info < 0) then
-        msg = 'Illegal argument passed to DGETRF.'
-        return
-    end if
-    call DGETRI(nIsom+nProd, Xinv, nIsom+nProd, ipiv, work, 6*nRows, info)
-    if (info > 0) then
-        msg = 'Chemical eigenvector matrix is singular.'
-        return
-    elseif (info < 0) then
-        msg = 'Illegal argument passed to DGETRI.'
-        return
-    end if
+    ! Generate new M containing only chemically-significant eigenmodes via
+    ! multiplication of the above matrices
+    do i = 1, nRows
+        do j = 1, nRows
+            M(i,j) = sum(X(i,:) * (V * Xinv(:,j)))
+        end do
+    end do
+
+    ! Generate set of initial condition vectors (one per isomer and product)
+    allocate( eqDist(1:nRows, 1:nIsom+nProd) )
+    do j = 1, nIsom + nProd
+        do r = 1, nRows
+            eqDist(r,j) = 0.0
+        end do
+    end do
+    do r = 1, nGrains
+        do i = 1, nIsom
+            index = indices(r,i)
+            if (index > 0) then
+                eqDist(index,i) = densStates(i,r) * exp(-E(r) / 8.314472 / T)
+            end if
+        end do
+    end do
+    do i = 1, nProd
+        index = nRows - nProd + i
+        eqDist(index,i+nIsom) = 1.0
+    end do
 
     ! Construct the rate constant matrix
-    do i = 1, nIsom+nProd
-        do j = 1, nIsom+nProd
-            K(i,j) = 0.0
-            do r = 1, nIsom+nProd
-                K(i,j) = K(i,j) + X(i,r) * V(r) * Xinv(r,j)
+    do j = 1, nIsom+nProd
+        do r = 1, nGrains
+            do i = 1, nIsom
+                index = indices(r,i)
+                if (index > 0) then
+                    K(i,j) = K(i,j) + sum(M(index,:) * eqDist(:,j))
+                end if
             end do
+        end do
+        do i = 1, nProd
+            index = nRows - nProd + i
+            K(i+nIsom,j) = sum(M(index,:) * eqDist(:,j))
         end do
     end do
 
     ! Clean up
-    deallocate( Mcoll, Mrxn, M, S, Sinv, V0, work, iPiv, X, V, Xinv )
+    deallocate( Mcoll, Mrxn, M, S, Sinv, V0, work, eqDist, X, V, Xinv )
 
 end subroutine
 
