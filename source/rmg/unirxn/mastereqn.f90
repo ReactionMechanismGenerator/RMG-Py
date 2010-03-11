@@ -250,7 +250,7 @@ subroutine fullMEMatrix(E, E0, Mcoll0, Kij, Gnj, Fim, indices, &
     integer, intent(in) :: nProd
     integer, intent(in) :: nGrains
     real(8), dimension(1:nGrains), intent(in) :: E
-    real(8), dimension(1:nIsom+nProd), intent(in) :: E0
+    real(8), dimension(1:nIsom+nReac), intent(in) :: E0
     real(8), dimension(1:nIsom,1:nGrains,1:nGrains), intent(in) :: Mcoll0
     real(8), dimension(1:nIsom,1:nIsom,1:nGrains), intent(in) :: Kij
     real(8), dimension(1:nIsom,1:nReac,1:nGrains), intent(in) :: Fim

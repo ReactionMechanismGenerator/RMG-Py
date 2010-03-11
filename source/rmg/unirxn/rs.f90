@@ -144,7 +144,7 @@ Kij, Fim, Gnj, dEdown, nIsom, nReac, nProd, nGrains, K, msg)
     end do
 
     do n = 1, nIsom+nReac+nProd
-        K(n,n) = -sum(K(1:n-1,n)) - sum(K(n+1:nIsom+nProd,n))
+        K(n,n) = -sum(K(1:n-1,n)) - sum(K(n+1:nIsom+nReac+nProd,n))
     end do
 
     ! Clean up
