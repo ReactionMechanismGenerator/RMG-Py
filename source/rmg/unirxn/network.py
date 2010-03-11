@@ -535,7 +535,7 @@ class Network:
 		# Return the chosen energy grains
 		return self.getEnergyGrains(Emin, Emax, grainSize, numGrains)
 
-	def calculateRateCoefficients(self, Tlist, Plist, Elist, method, errorCheck=True):
+	def calculateRateCoefficients(self, Tlist, Plist, Elist, method, errorCheck=True, nProd=0):
 		"""
 		Calculate the phenomenological rate coefficients for the network.
 		"""
@@ -588,7 +588,7 @@ class Network:
 							
 					# Determine phenomenological rate coefficients using approximate
 					# method
-					K[t,p,:,:] = self.applyApproximateMethod(T, P, Elist, method, errorCheck)
+					K[t,p,:,:] = self.applyApproximateMethod(T, P, Elist, method, errorCheck, nProd)
 
 		except UnirxnNetworkException, e:
 
