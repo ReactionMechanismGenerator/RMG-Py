@@ -84,19 +84,19 @@ def configuration(parent_package='',top_path=None):
 	from numpy.distutils.misc_util import Configuration
 	
 	config = Configuration('rmg',parent_package,top_path)
-	config.add_library('rmg_spectral_math', sources=['rmg/spectral/math.f90'])
-	config.add_library('rmg_spectral_cases', sources=['rmg/spectral/cases.f90'])
-	config.add_library('rmg_spectral_dqed', sources=['rmg/spectral/dqed.f90'])
-	config.add_library('rmg_spectral_modes', sources=['rmg/spectral/_modes.f90'])
-	config.add_extension('spectral._modes', sources=['rmg/spectral/_modes.f90'], libraries=['rmg_spectral_math'])
-	config.add_extension('spectral._fit', sources=['rmg/spectral/_fit.f90'], libraries=['rmg_spectral_cases', 'rmg_spectral_dqed', 'rmg_spectral_modes', 'rmg_spectral_math'])
+	config.add_library('rmg_spectral_math', sources=['rmg/spectral/math.f90'], extra_compiler_args=['-fbounds-check'] )
+	config.add_library('rmg_spectral_cases', sources=['rmg/spectral/cases.f90'], extra_compiler_args=['-fbounds-check'])
+	config.add_library('rmg_spectral_dqed', sources=['rmg/spectral/dqed.f90'], extra_compiler_args=['-fbounds-check'])
+	config.add_library('rmg_spectral_modes', sources=['rmg/spectral/_modes.f90'], extra_compiler_args=['-fbounds-check'])
+	config.add_extension('spectral._modes', sources=['rmg/spectral/_modes.f90'], libraries=['rmg_spectral_math'], extra_compile_args=['-fbounds-check'])
+	config.add_extension('spectral._fit', sources=['rmg/spectral/_fit.f90'], libraries=['rmg_spectral_cases', 'rmg_spectral_dqed', 'rmg_spectral_modes', 'rmg_spectral_math'], extra_compile_args=['-fbounds-check'])
 	
-	config.add_library('rmg_unirxn_mastereqn', sources=['rmg/unirxn/mastereqn.f90'])
-	config.add_extension('unirxn.states', sources=['rmg/unirxn/states.f90'], libraries=['blas', 'lapack'])
-	config.add_extension('unirxn.mastereqn', sources=['rmg/unirxn/mastereqn.f90'], libraries=['blas', 'lapack'])
-	config.add_extension('unirxn.msc', sources=['rmg/unirxn/msc.f90'], libraries=['blas', 'lapack'])
-	config.add_extension('unirxn.rs', sources=['rmg/unirxn/rs.f90'], libraries=['blas', 'lapack'])
-	config.add_extension('unirxn.cse', sources=['rmg/unirxn/cse.f90'], libraries=['rmg_unirxn_mastereqn', 'blas', 'lapack'])
+	config.add_library('rmg_unirxn_mastereqn', sources=['rmg/unirxn/mastereqn.f90'], extra_compiler_args=['-fbounds-check'])
+	config.add_extension('unirxn.states', sources=['rmg/unirxn/states.f90'], libraries=['blas', 'lapack'], extra_compile_args=['-fbounds-check'])
+	config.add_extension('unirxn.mastereqn', sources=['rmg/unirxn/mastereqn.f90'], libraries=['blas', 'lapack'], extra_compile_args=['-fbounds-check'])
+	config.add_extension('unirxn.msc', sources=['rmg/unirxn/msc.f90'], libraries=['blas', 'lapack'], extra_compile_args=['-fbounds-check'])
+	config.add_extension('unirxn.rs', sources=['rmg/unirxn/rs.f90'], libraries=['blas', 'lapack'], extra_compile_args=['-fbounds-check'])
+	config.add_extension('unirxn.cse', sources=['rmg/unirxn/cse.f90'], libraries=['rmg_unirxn_mastereqn', 'blas', 'lapack'], extra_compile_args=['-fbounds-check'])
 
 	return config
 
