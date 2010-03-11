@@ -1309,14 +1309,16 @@ def TintOpt_objFun(tint, wilhoit, tmin, tmax, weighting, contCons):
 	# numerical errors could accumulate to give a slightly negative result
 	# this is unphysical (it's the integral of a *squared* error) so we
 	# set it to zero to avoid later problems when we try find the square root.
-	if result<0:
-		logging.error("Greg thought he fixed the numerical problem, but apparently it is still an issue; please e-mail him with the following results:")
-		logging.error(tint)
-		logging.error(wilhoit)
-		logging.error(tmin)
-		logging.error(tmax)
-		logging.error(weighting)
-		logging.error(result)
+	if result < 0:
+		if result<-1E-13:
+			logging.error("Greg thought he fixed the numerical problem, but apparently it is still an issue; please e-mail him with the following results:")
+			logging.error(tint)
+			logging.error(wilhoit)
+			logging.error(tmin)
+			logging.error(tmax)
+			logging.error(weighting)
+			logging.error(result)
+		logging.info("Negative ISE of %f reset to zero."%(result))
 		result = 0
 
 	return result
