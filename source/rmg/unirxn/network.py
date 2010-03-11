@@ -611,7 +611,7 @@ class Network:
 
 		return K
 
-	def applyApproximateMethod(self, T, P, Elist, method, errorCheck=True):
+	def applyApproximateMethod(self, T, P, Elist, method, errorCheck=True, nProd=0):
 		"""
 		Apply the approximate method specified in `method` to estimate the
 		phenomenological rate coefficients for the network. This function
@@ -623,8 +623,7 @@ class Network:
 
 		# Matrix and vector size indicators
 		nIsom = self.numUniIsomers()
-		nReac = self.numMultiIsomers()
-		nProd = 0
+		nReac = self.numMultiIsomers() - nProd
 		nGrains = len(Elist)
 
 		dE = Elist[1] - Elist[0]
@@ -636,7 +635,10 @@ class Network:
 		
 		# If there are no product channels, we must temporarily create a fake
 		# one; this is because f2py can't handle matrices with a dimension of zero
-		if nReac == 0: nReac = 1
+		usingFakeProduct = False
+		if nReac == 0 and nProd == 0:
+			nReac = 1
+			usingFakeProduct = True
 
 		# Active-state energy of each isomer
 		Eres = numpy.zeros([nIsom+nReac+nProd], numpy.float64)
@@ -739,7 +741,7 @@ class Network:
 
 		# If we had to create a temporary (fake) product channel, then don't
 		# return the last row and column of the rate coefficient matrix
-		if self.numMultiIsomers() == 0:
+		if usingFakeProduct:
 			return K[:-1,:-1]
 		else:
 			return K
