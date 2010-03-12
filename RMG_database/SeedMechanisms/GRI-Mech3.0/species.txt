@@ -242,7 +242,7 @@ HO2
 O
 //1 O 0 
 // Not sure why InChI couldn't convert this to 1 O 2
-1 O 2
+1 O 2T
 
 O2
 1 O 0 {2,D} 
