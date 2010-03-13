@@ -87,7 +87,7 @@ Kij, Fim, Gnj, dEdown, nIsom, nReac, nProd, nGrains, K, msg)
 
     ! Determine reservoir cutoff grains for each unimolecular isomer
     allocate( nRes(1:nIsom), nAct(1:nIsom) )
-    call reservoirCutoffs(E0(1:nIsom), Eres, nIsom, E, nGrains, dEdown, nRes)
+    call reservoirCutoffs(E0(1:nIsom), Eres, nIsom, E, nGrains, dEdown, densStates, nRes)
     do i = 1, nIsom
         nAct(i) = nGrains - nRes(i)
     end do
@@ -154,7 +154,7 @@ end subroutine
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-subroutine reservoirCutoffs(E0, Eres, nIsom, E, nGrains, dEdown, nRes)
+subroutine reservoirCutoffs(E0, Eres, nIsom, E, nGrains, dEdown, densStates, nRes)
     ! Determines the grain below which the reservoir approximation will be used
     ! and above which the pseudo-steady state approximation will be used by
     ! examining the energies of the transition states connected to each
@@ -180,28 +180,37 @@ subroutine reservoirCutoffs(E0, Eres, nIsom, E, nGrains, dEdown, nRes)
     real(8), dimension(1:nIsom), intent(in) :: Eres
     real(8), dimension(1:nGrains), intent(in) :: E
     real(8), intent(in) :: dEdown
+    real(8), dimension(1:nIsom,1:nGrains), intent(in) :: densStates
     integer, dimension(1:nIsom), intent(out) :: nRes
 
     real(8) Emin, dE
-    integer i, start
+    integer, dimension(1:nIsom) :: start
+    integer i, r
 
     Emin = minval(E)
     dE = E(2) - E(1)
 
     ! Determine reservoir cutoffs by looking at transition state energies
     do i = 1, nIsom
+        ! Find the ground-state energy grain for this isomer
+        start(i) = 0
+        do r = 1, nGrains
+            if (densStates(i,r) > 0 .and. start(i) == 0) then
+                start(i) = r
+            end if
+        end do
+        ! Now find the reservoir cutoff grain for this isomer
         nRes(i) = ceiling((Eres(i) - 10 * dEdown - Emin) / dE)
-        start = ceiling((E0(i) - Emin) / dE)
         ! Sometimes the above will result in nRes(i) < start (i.e. a cutoff
         ! below the ground state); we need to handle this if it happends
-        if (nRes(i) < start) then
+        if (nRes(i) < start(i)) then
             ! First try to place the cutoff a few grains below the lowest
             ! transition state energy
             nRes(i) = ceiling((Eres(i) - Emin) / dE) - 4
-            if (nRes(i) < start) then
+            if (nRes(i) < start(i)) then
                 ! If this is still too low, then just put the cutoff a few
                 ! grains above the ground state
-                nRes(i) = start + 4
+                nRes(i) = start(i) + 4
             end if
         end if
     end do
