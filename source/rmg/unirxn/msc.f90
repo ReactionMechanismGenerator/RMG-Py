@@ -73,11 +73,11 @@ subroutine estimateRateCoefficients_MSC(T, P, E, collFreq, densStates, Eres, &
     character(len=128), intent(out) :: msg
 
     ! Steady-state populations
-    real(8), dimension(:,:), allocatable        ::  pa
+    real(8), dimension(:,:,:), allocatable      ::  pa
     
     ! Steady-state matrix and vector
     real(8), dimension(:,:), allocatable        ::  A
-    real(8), dimension(:), allocatable          ::  b
+    real(8), dimension(:,:), allocatable        ::  b
     ! Indices i and j represent sums over unimolecular wells
     integer                                     ::  i, j
     ! Indices m and n represent sums over bimolecular sources/sinks
@@ -96,9 +96,9 @@ subroutine estimateRateCoefficients_MSC(T, P, E, collFreq, densStates, Eres, &
 
     ! Allocate matrices and vectors used in this subroutine
     allocate( A(1:nIsom, 1:nIsom) )
-    allocate( b(1:nIsom) )
+    allocate( b(1:nIsom, 1:nIsom+nReac) )
     allocate( iPiv(1:nIsom) )
-    allocate( pa(1:nGrains, 1:nIsom) )
+    allocate( pa(1:nGrains, 1:nIsom, 1:nIsom+nReac) )
 
     ! Zero the phenomenological rate coefficient matrix
     do i = 1, nIsom + nReac + nProd
@@ -110,103 +110,108 @@ subroutine estimateRateCoefficients_MSC(T, P, E, collFreq, densStates, Eres, &
     ! Set msg to successful; will be changed later if an error occurs
     msg = ""
 
-    ! Iterate over all isomers and channels in the network
-    ! Each iteration fills in one column of the phenomenological rate  
-    ! coefficient matrix with the rates of that isomer/channel to all others
-    ! in the network
-    do src = 1, nIsom + nReac
+    ! Determine the starting grain for the calculation based on the
+    ! active-state cutoff energy
+    start = ceiling((minval(Eres) - minval(E)) / (E(2) - E(1))) + 1
+    if (start < 1 .or. start > nGrains) then
+        msg = 'Unable to determine starting grain; check active-state energies.'
+        return
+    end if
         
-        ! Determine the starting grain for the calculation based on the
-        ! active-state cutoff energy
-        start = ceiling((Eres(src) - minval(E)) / (E(2) - E(1))) + 1
-        if (start < 1 .or. start > nGrains) then
-            msg = 'Unable to determine starting grain for an isomer; check active-state energies.'
-            return
-        end if
-        
-        ! Zero the steady-state population vector for grains below the cutoff
-        do r = 1, start-1
-            do i = 1, nIsom
-                pa(r,i) = 0.0
+    ! Zero the steady-state population vector for grains below the cutoff
+    do r = 1, start-1
+        do i = 1, nIsom
+            do n = 1, nIsom+nReac
+                pa(r,i,n) = 0.0
+            end do
         end do
+    end do
+
+    ! Iterate over the grains, calculating the PSSA concentrations
+    do r = start, nGrains
+
+        ! Zero A matrix and b vector
+        do i = 1, nIsom
+            do j = 1, nIsom
+                A(i,j) = 0.0
+            end do
+            do n = 1, nIsom+nReac
+                b(i,n) = 0.0
+            end do
         end do
 
-        ! Iterate over the grains, calculating the PSSA concentrations
-        do r = start, nGrains
+        ! Collisional deactivation
+        do i = 1, nIsom
+            A(i,i) = A(i,i) - collFreq(i)
+        end do
 
-            ! Zero A matrix and b vector
-            do i = 1, nIsom
-                do j = 1, nIsom
-                    A(i,j) = 0.0
-                end do
-                b(i) = 0.0
+        ! Isomerization reactions
+        do i = 1, nIsom
+            do j = 1, i - 1
+                A(i,j) = Kij(i,j,r)
+                A(j,j) = A(j,j) - Kij(i,j,r)
+                A(j,i) = Kij(j,i,r)
+                A(i,i) = A(i,i) - Kij(j,i,r)
             end do
-            
-            ! Collisional deactivation
-            do i = 1, nIsom
-                A(i,i) = A(i,i) - collFreq(i)
+        end do
+
+        ! Dissociation reactions
+        do n = 1, nReac+nProd
+            do j = 1, nIsom
+                A(j,j) = A(j,j) - Gnj(n,j,r)
             end do
-            
-            ! Isomerization reactions
-            do i = 1, nIsom
-                do j = 1, i - 1
-                    A(i,j) = Kij(i,j,r)
-                    A(j,j) = A(j,j) - Kij(i,j,r)
-                    A(j,i) = Kij(j,i,r)
-                    A(i,i) = A(i,i) - Kij(j,i,r)
-                end do
-            end do
-            
-            ! Dissociation reactions
-            do n = 1, nReac+nProd
-                do j = 1, nIsom
-                    A(j,j) = A(j,j) - Gnj(n,j,r)
-                end do
-            end do
-            
-            ! Activation
-            if (src <= nIsom) then
+        end do
+
+        ! Populate RHS vectors, one per isomer and reactant
+        do n = 1, nIsom + nReac
+            if (n <= nIsom) then
                 ! Thermal activation via collisions
-                b(src) = collFreq(src) * densStates(src, r) * exp(-E(r) / 8.314472 / T)
+                b(n,n) = collFreq(n) * densStates(n, r) * exp(-E(r) / 8.314472 / T)
             else
                 ! Chemical activation via association reaction
                 do j = 1, nIsom
-                    b(j) = b(j) + Fim(j,src-nIsom,r)
+                    b(j,n) = Fim(j,n-nIsom,r)
                 end do
             end if
+        end do
 
-            ! Solve for steady-state population
-            call DGESV( nIsom, 1, A, nIsom, iPiv, b, nIsom, info )
-            if (info > 0) then
-                msg = "A singular matrix was encountered."
-                return
-            end if
-            pa(r,:) = -b
+        ! Solve for steady-state population
+        call DGESV( nIsom, nIsom+nReac, A, nIsom, iPiv, b, nIsom, info )
+        if (info > 0) then
+            msg = "A singular matrix was encountered."
+            return
+        end if
+        pa(r,:,:) = -b
 
-            ! Check that our populations are all positive
-            do i = 1, nIsom
-                if (pa(r,i) < 0.0) then
+        ! Check that our populations are all positive
+        do i = 1, nIsom
+            do n = 1, nIsom+nReac
+                if (pa(r,i,n) < 0.0) then
                     msg = "A negative steady-state concentration was encountered."
                     return
                 end if
             end do
-
         end do
+
+    end do
+
+
+    do src = 1, nIsom + nReac
 
         ! Calculate stabilization rates (i.e.) R + R' --> Ai or M --> Ai
         do i = 1, nIsom
             if (i /= src) then
-                val = collFreq(i) * sum(pa(:,i))
+                val = collFreq(i) * sum(pa(:,i,src))
                 K(i,src) = K(i,src) + val
                 K(src,src) = K(src,src) - val
             end if
         end do
-        
+
         ! Calculate dissociation rates (i.e.) R + R' --> Bn + Cn or M --> Bn + Cn
         do n = 1, nReac+nProd
             do j = 1, nIsom
                 if (n+nIsom /= src) then
-                    val = sum(Gnj(n,j,:) * pa(:,j))
+                    val = sum(Gnj(n,j,:) * pa(:,j,src))
                     K(n+nIsom,src) = K(n+nIsom,src) + val
                     K(src,src) = K(src,src) - val
                 end if
