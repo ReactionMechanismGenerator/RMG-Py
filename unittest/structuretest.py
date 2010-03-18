@@ -344,7 +344,27 @@ class StructureCheck(unittest.TestCase):
 				fail_message+="Got linearity %s for %s (expected %s)\n"%(symmetryNumber,struct,should_be)
 		self.assertEqual(fail_message,'',fail_message)
 		
-				
+	def testH(self):
+		"""
+		Make sure that H radicals are produced properly from various shorthands.
+		"""
+
+		# InChI
+		struct = Structure()
+		struct.fromInChI('InChI=1/H')
+		self.assertTrue(len(struct.atoms()) == 1)
+		H = struct.atoms()[0]
+		self.assertTrue(H.isHydrogen())
+		self.assertTrue(H.getFreeElectronCount() == 1)
+
+		# SMILES
+		struct = Structure(SMILES='[H]')
+		self.assertTrue(len(struct.atoms()) == 1)
+		H = struct.atoms()[0]
+		self.assertTrue(H.isHydrogen())
+		self.assertTrue(H.getFreeElectronCount() == 1)
+
+
 ################################################################################
 from timeit import Timer
 

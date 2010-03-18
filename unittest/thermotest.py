@@ -124,7 +124,7 @@ class ThermoEstimationCheck(unittest.TestCase):
 		
 		C2H6 = species.Species()
 		C2H6.fromSMILES('CC')
-		C2H6.getThermoData()
+		C2H6.generateThermoData(thermoClass=thermo.ThermoGAData)
 #		print 'ethane'
 #		print 'H(298 K) = %s' % (C2H6.getEnthalpy(298) / 4184)
 #		print 'S(298 K) = %s' % (C2H6.getEntropy(298) / 4.184)
@@ -139,7 +139,7 @@ class ThermoEstimationCheck(unittest.TestCase):
 		
 		CH3 = species.Species()
 		CH3.fromSMILES('[CH3]')
-		CH3.getThermoData()
+		CH3.generateThermoData(thermoClass=thermo.ThermoGAData)
 #		print 'methyl'
 #		print 'H(298 K) = %s' % (CH3.getEnthalpy(298) / 4184)
 #		print 'S(298 K) = %s' % (CH3.getEntropy(298) / 4.184)
@@ -162,7 +162,7 @@ class ThermoEstimationCheck(unittest.TestCase):
 		C6H10 = species.Species()
 		C6H10.fromSMILES('C=CC=CCC')
 		C6H10.getResonanceIsomers()
-		C6H10.getThermoData()
+		C6H10.generateThermoData(thermoClass=thermo.ThermoGAData)
 		self.assertAlmostEqual(C6H10.getEnthalpy(298) / 4184, 13.45, 1)
 		self.assertAlmostEqual(C6H10.getEntropy(298) / 4.184, 86.37, 1)
 		self.assertAlmostEqual(C6H10.getFreeEnergy(298) / 4184, -12.3, 1)
@@ -171,7 +171,7 @@ class ThermoEstimationCheck(unittest.TestCase):
 		C6H9 = species.Species()
 		C6H9.fromSMILES('[CH]=CC=CCC')
 		C6H9.getResonanceIsomers()
-		C6H9.getThermoData()
+		C6H9.generateThermoData(thermoClass=thermo.ThermoGAData)
 		self.assertAlmostEqual(C6H9.getEnthalpy(298) / 4184, 72.55, 1)
 		self.assertAlmostEqual(C6H9.getEntropy(298) / 4.184, 87.76, 1)
 		self.assertAlmostEqual(C6H9.getHeatCapacity(298) / 4.184, 29.30, 1)
@@ -179,7 +179,7 @@ class ThermoEstimationCheck(unittest.TestCase):
 		C6H9 = species.Species()
 		C6H9.fromSMILES('C=[C]C=CCC')
 		C6H9.getResonanceIsomers()
-		C6H9.getThermoData()
+		C6H9.generateThermoData(thermoClass=thermo.ThermoGAData)
 		self.assertAlmostEqual(C6H9.getEnthalpy(298) / 4184, 61.15, 1)
 		self.assertAlmostEqual(C6H9.getEntropy(298) / 4.184, 87.07, 1)
 		self.assertAlmostEqual(C6H9.getHeatCapacity(298) / 4.184, 29.68, 1)
@@ -187,7 +187,7 @@ class ThermoEstimationCheck(unittest.TestCase):
 		C6H9 = species.Species()
 		C6H9.fromSMILES('C=C[C]=CCC')
 		C6H9.getResonanceIsomers()
-		C6H9.getThermoData()
+		C6H9.generateThermoData(thermoClass=thermo.ThermoGAData)
 		self.assertAlmostEqual(C6H9.getEnthalpy(298) / 4184, 61.15, 1)
 		self.assertAlmostEqual(C6H9.getEntropy(298) / 4.184, 87.07, 1)
 		self.assertAlmostEqual(C6H9.getHeatCapacity(298) / 4.184, 29.68, 1)
@@ -195,7 +195,7 @@ class ThermoEstimationCheck(unittest.TestCase):
 		C6H9 = species.Species()
 		C6H9.fromSMILES('C=CC=[C]CC')
 		C6H9.getResonanceIsomers()
-		C6H9.getThermoData()
+		C6H9.generateThermoData(thermoClass=thermo.ThermoGAData)
 		self.assertAlmostEqual(C6H9.getEnthalpy(298) / 4184, 70.35, 1)
 		self.assertAlmostEqual(C6H9.getEntropy(298) / 4.184, 88.18, 1)
 		self.assertAlmostEqual(C6H9.getHeatCapacity(298) / 4.184, 29.15, 1)
@@ -203,7 +203,7 @@ class ThermoEstimationCheck(unittest.TestCase):
 		C6H9 = species.Species()
 		C6H9.fromSMILES('C=CC=C[CH]C')
 		C6H9.getResonanceIsomers()
-		C6H9.getThermoData()
+		C6H9.generateThermoData(thermoClass=thermo.ThermoGAData)
 		self.assertAlmostEqual(C6H9.getEnthalpy(298) / 4184, 38.24, 1)
 		self.assertAlmostEqual(C6H9.getEntropy(298) / 4.184, 84.41, 1)
 		self.assertAlmostEqual(C6H9.getHeatCapacity(298) / 4.184, 27.79, 1)
@@ -211,10 +211,26 @@ class ThermoEstimationCheck(unittest.TestCase):
 		C6H9 = species.Species()
 		C6H9.fromSMILES('C=CC=CC[CH2]')
 		C6H9.getResonanceIsomers()
-		C6H9.getThermoData()
+		C6H9.generateThermoData(thermoClass=thermo.ThermoGAData)
 		self.assertAlmostEqual(C6H9.getEnthalpy(298) / 4184, 62.44, 1)
 		self.assertAlmostEqual(C6H9.getEntropy(298) / 4.184, 89.78, 1)
 		self.assertAlmostEqual(C6H9.getHeatCapacity(298) / 4.184, 28.72, 1)
+
+	def test4H(self):
+		"""
+		This tests the lookup of thermo data from the primary thermo library
+		using H as a test species. The comparison is done in units of kcal/mol
+		for enthalpy and free energy and cal/mol*K for entropy and heat
+		capacity.
+		"""
+
+		H = species.Species()
+		H.fromSMILES('[H]')
+		H.getResonanceIsomers()
+		H.generateThermoData(thermoClass=thermo.ThermoGAData)
+		self.assertAlmostEqual(H.getEnthalpy(298) / 4184, 52.103, 1)
+		self.assertAlmostEqual(H.getEntropy(298) / 4.184, 27.419, 1)
+		self.assertAlmostEqual(H.getHeatCapacity(298) / 4.184, 4.968, 1)
 
 ################################################################################
 
