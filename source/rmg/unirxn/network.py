@@ -723,7 +723,7 @@ class Network:
 				
 				# Apply chemically-significant eigenvalue method
 				import cse
-				K, msg = cse.estimateratecoefficients_cse(T, P, Elist, Mcoll, E0,
+				K, msg, eig = cse.estimateratecoefficients_cse(T, P, Elist, Mcoll, E0,
 					densStates, eqRatios, Kij, Fim, Gnj, nisom=nIsom, nreac=nReac, nprod=nProd, ngrains=nGrains)
 				msg = msg.strip()
 

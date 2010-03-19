@@ -25,7 +25,7 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 subroutine estimateRateCoefficients_CSE(T, P, E, Mcoll0, E0, densStates, &
-    eqRatios, Kij, Fim, Gnj, nIsom, nReac, nProd, nGrains, K, msg)
+    eqRatios, Kij, Fim, Gnj, nIsom, nReac, nProd, nGrains, K, msg, eig)
     ! Estimate the phenomenological rate coefficients using the chemically-
     ! significant eigenvalues method. The parameters are:
     !
@@ -52,6 +52,8 @@ subroutine estimateRateCoefficients_CSE(T, P, E, Mcoll0, E0, densStates, &
     ! `msg`      out    If the subroutine was unsuccessful, this string will
     !                   contain a brief message describing the error; the
     !                   string will be empty if the subroutine was successful
+    ! `eig`      out    An array of the nIsom + nReac + 1 eigenvalues of 
+    !                   smallest magnitude (least negative)
     ! ========== ====== ========================================================
 
     implicit none
@@ -73,6 +75,7 @@ subroutine estimateRateCoefficients_CSE(T, P, E, Mcoll0, E0, densStates, &
     real(8), dimension(1:nReac+nProd,1:nIsom,1:nGrains), intent(in) :: Gnj
     real(8), dimension(1:nIsom+nReac+nProd,1:nIsom+nReac+nProd), intent(out) :: K
     character(len=128), intent(out) :: msg
+    real(8), dimension(1:nIsom+nReac+1), intent(out) :: eig
 
     ! The size of the master equation matrix
     integer nRows
@@ -171,6 +174,11 @@ subroutine estimateRateCoefficients_CSE(T, P, E, Mcoll0, E0, densStates, &
         msg = 'Illegal argument passed to DSYEV.'
         return
     end if
+
+    ! Place eigenvalues in output
+    do i = 1, nIsom + nReac + 1
+        eig(i) = V0(nRows-nIsom-nReac-1+i)
+    end do
 
 !    ! Calculate the eigenvalues and eigenvectors
 !    ! Only calculate the ones we need, which are a small subset of the total
