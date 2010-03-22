@@ -77,23 +77,35 @@ Kij, Fim, Gnj, dEdown, nIsom, nReac, nProd, nGrains, K, msg)
     character(len=128), intent(out) :: msg
 
     ! Number of reservoir and active-state energy grains for each isomer
-    integer, dimension(:), allocatable          ::  nRes, nAct
+    integer, dimension(1:nIsom)          ::  nRes, nAct
 
     ! Pseudo-steady state grain populations
-    real(8), dimension(:,:,:), allocatable  ::  pa
-    
+    real(8), dimension(1:nGrains, 1:nIsom+nReac, 1:nIsom)  ::  pa
+
     ! Indices
     integer i, n, r
 
+    real(8), dimension(1:nIsom,1:nGrains) :: eqDist
+    real(8), dimension(1:nIsom) :: bres
+    
     ! Determine reservoir cutoff grains for each unimolecular isomer
-    allocate( nRes(1:nIsom), nAct(1:nIsom) )
     call reservoirCutoffs(E0(1:nIsom), Eres, nIsom, E, nGrains, dEdown, densStates, nRes)
     do i = 1, nIsom
         nAct(i) = nGrains - nRes(i)
     end do
 
+    ! Calculate equilibrium distributions
+    do i = 1, nIsom
+        do r = 1, nGrains
+            eqDist(i,r) = densStates(i,r) * exp(-E(r) / 8.314472 / T)
+        end do
+    end do
+    ! Determine fraction of equilibrium distribution in reservoir for each isomer
+    do i = 1, nIsom
+        bres(i) = sum(eqDist(i,1:nRes(i)))
+    end do
+    
     ! Determine pseudo-steady state populations of active state
-    allocate( pa(1:nGrains, 1:nIsom+nReac, 1:nIsom) )
     pa = 0 * pa
     if (nIsom == 1) then
         ! Not worth it to call banded solver when only one well
@@ -126,29 +138,46 @@ Kij, Fim, Gnj, dEdown, nIsom, nReac, nProd, nGrains, K, msg)
         end do
     end do
 
-    ! Determine phenomenological rate coefficients
+    ! Determine phenomenological rate coefficients from pa(1:nGrains, 1:nIsom+nReac, 1:nIsom)
+    ! Rows relating to isomers
     do i = 1, nIsom
-        do n = 1, nIsom+nReac
+        do r = 1, nRes(i)
+            K(i,i) = K(i,i) + sum(Mcoll(i,r,1:nRes(i)) * eqDist(i,1:nRes(i)))
+        end do
+        do j = 1, nIsom
+            do r = 1, nRes(i)
+                K(i,j) = K(i,j) + sum(Mcoll(i,r,nRes(i)+1:nGrains) * pa(nRes(i)+1:nGrains,j,i))
+            end do
+        end do
+        do n = nIsom+1, nIsom+nReac
             do r = 1, nRes(i)
                 K(i,n) = K(i,n) + sum(Mcoll(i,r,nRes(i)+1:nGrains) * pa(nRes(i)+1:nGrains,n,i))
             end do
         end do
     end do
-    
-    do j = 1, nIsom+nReac
-        do n = 1, nReac+nProd
+    ! Rows relating to reactants
+    do n = 1, nReac
+        do i = 1, nIsom
+            K(nIsom+n,nIsom+n) = K(nIsom+n,nIsom+n) - sum(Fim(i,n,:))
+        end do
+        do j = 1, nIsom+nReac
+            do i = 1, nIsom
+                K(n+nIsom,j) = K(n+nIsom,j) + sum(Gnj(n,i,nRes(i)+1:nGrains) * pa(nRes(i)+1:nGrains,j,i))
+            end do
+        end do
+    end do
+    ! Rows relating to products
+    do n = nReac+1, nReac+nProd
+        do j = 1, nIsom+nReac
             do i = 1, nIsom
                 K(n+nIsom,j) = K(n+nIsom,j) + sum(Gnj(n,i,nRes(i)+1:nGrains) * pa(nRes(i)+1:nGrains,j,i))
             end do
         end do
     end do
 
-    do n = 1, nIsom+nReac+nProd
-        K(n,n) = -sum(K(1:n-1,n)) - sum(K(n+1:nIsom+nReac+nProd,n))
+    do i = 1, nIsom+nReac
+        write (*,*) i, K(i,i), - sum(K(1:i-1,i)) - sum(K(i+1:nIsom+nReac+nProd,i))
     end do
-
-    ! Clean up
-    deallocate( nRes, nAct, pa )
 
 end subroutine
 
