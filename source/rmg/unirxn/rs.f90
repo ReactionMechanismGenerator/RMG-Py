@@ -83,7 +83,7 @@ Kij, Fim, Gnj, dEdown, nIsom, nReac, nProd, nGrains, K, msg)
     real(8), dimension(1:nGrains, 1:nIsom+nReac, 1:nIsom)  ::  pa
 
     ! Indices
-    integer i, n, r
+    integer i, j, m, n, r
 
     real(8), dimension(1:nIsom,1:nGrains) :: eqDist
     real(8), dimension(1:nIsom) :: bres
@@ -104,7 +104,7 @@ Kij, Fim, Gnj, dEdown, nIsom, nReac, nProd, nGrains, K, msg)
     do i = 1, nIsom
         bres(i) = sum(eqDist(i,1:nRes(i)))
     end do
-    
+
     ! Determine pseudo-steady state populations of active state
     if (nIsom == 1) then
         ! Not worth it to call banded solver when only one well
@@ -130,6 +130,12 @@ Kij, Fim, Gnj, dEdown, nIsom, nReac, nProd, nGrains, K, msg)
         end do
     end do
 
+    ! Renormalize
+    do i = 1, nIsom
+        pa(:,i,:) = pa(:,i,:) / bres(i)
+        eqDist(i,:) = eqDist(i,:) / bres(i)
+    end do
+
     ! Initialize phenomenological rate coefficient matrix
     do i = 1, nIsom+nReac+nProd
         do n = 1, nIsom+nReac+nProd
@@ -140,14 +146,17 @@ Kij, Fim, Gnj, dEdown, nIsom, nReac, nProd, nGrains, K, msg)
     ! Determine phenomenological rate coefficients from pa(1:nGrains, 1:nIsom+nReac, 1:nIsom)
     ! Rows relating to isomers
     do i = 1, nIsom
+        ! Collisional rearrangement within the reservoir of isomer i
         do r = 1, nRes(i)
             K(i,i) = K(i,i) + sum(Mcoll(i,r,1:nRes(i)) * eqDist(i,1:nRes(i)))
         end do
+        ! Isomerization from isomer j to isomer i
         do j = 1, nIsom
             do r = 1, nRes(i)
                 K(i,j) = K(i,j) + sum(Mcoll(i,r,nRes(i)+1:nGrains) * pa(nRes(i)+1:nGrains,j,i))
             end do
         end do
+        ! Association from reactant n to isomer i
         do n = nIsom+1, nIsom+nReac
             do r = 1, nRes(i)
                 K(i,n) = K(i,n) + sum(Mcoll(i,r,nRes(i)+1:nGrains) * pa(nRes(i)+1:nGrains,n,i))
@@ -159,6 +168,7 @@ Kij, Fim, Gnj, dEdown, nIsom, nReac, nProd, nGrains, K, msg)
         do i = 1, nIsom
             K(nIsom+n,nIsom+n) = K(nIsom+n,nIsom+n) - sum(Fim(i,n,:))
         end do
+        ! Reaction from isomer or reactant j to reactant n
         do j = 1, nIsom+nReac
             do i = 1, nIsom
                 K(n+nIsom,j) = K(n+nIsom,j) + sum(Gnj(n,i,nRes(i)+1:nGrains) * pa(nRes(i)+1:nGrains,j,i))
@@ -167,11 +177,16 @@ Kij, Fim, Gnj, dEdown, nIsom, nReac, nProd, nGrains, K, msg)
     end do
     ! Rows relating to products
     do n = nReac+1, nReac+nProd
+        ! Reaction from isomer or reactant j to product n
         do j = 1, nIsom+nReac
             do i = 1, nIsom
                 K(n+nIsom,j) = K(n+nIsom,j) + sum(Gnj(n,i,nRes(i)+1:nGrains) * pa(nRes(i)+1:nGrains,j,i))
             end do
         end do
+    end do
+
+    do i = 1, nIsom
+        K(:,i) = K(:,i) * bres(i)
     end do
 
 end subroutine
