@@ -106,7 +106,6 @@ Kij, Fim, Gnj, dEdown, nIsom, nReac, nProd, nGrains, K, msg)
     end do
     
     ! Determine pseudo-steady state populations of active state
-    pa = 0 * pa
     if (nIsom == 1) then
         ! Not worth it to call banded solver when only one well
         call activeStateFull(T, P, E, Mcoll, densStates, Kij, Fim, Gnj, &
@@ -173,10 +172,6 @@ Kij, Fim, Gnj, dEdown, nIsom, nReac, nProd, nGrains, K, msg)
                 K(n+nIsom,j) = K(n+nIsom,j) + sum(Gnj(n,i,nRes(i)+1:nGrains) * pa(nRes(i)+1:nGrains,j,i))
             end do
         end do
-    end do
-
-    do i = 1, nIsom+nReac
-        write (*,*) i, K(i,i), - sum(K(1:i-1,i)) - sum(K(i+1:nIsom+nReac+nProd,i))
     end do
 
 end subroutine
@@ -374,6 +369,15 @@ subroutine activeStateFull(T, P, E, Mcoll, densStates, Kij, Fim, Gnj, &
     end if
     deallocate( iPiv )
 
+    ! Zero active-state population vectors
+    do n = 1, nIsom+nReac
+        do i = 1, nIsom
+            do r = 1, nGrains
+                pa(r,n,i) = 0 * pa(r,n,i)
+            end do
+        end do
+    end do
+
     ! Convert solution to pseudo-steady state populations
     do r = minval(nRes)+1, nGrains
         do n = 1, nIsom+nReac
@@ -530,6 +534,15 @@ subroutine activeStateBanded(T, P, E, Mcoll, densStates, Kij, Fim, Gnj, dEdown, 
         return
     end if
     deallocate( iPiv )
+
+    ! Zero active-state population vectors
+    do n = 1, nIsom+nReac
+        do i = 1, nIsom
+            do r = 1, nGrains
+                pa(r,n,i) = 0 * pa(r,n,i)
+            end do
+        end do
+    end do
 
     ! Convert solution to pseudo-steady state populations
     do r = minval(nRes)+1, nGrains
