@@ -73,11 +73,11 @@ subroutine estimateRateCoefficients_MSC(T, P, E, collFreq, densStates, Eres, &
     character(len=128), intent(out) :: msg
 
     ! Steady-state populations
-    real(8), dimension(:,:,:), allocatable      ::  pa
+    real(8), dimension(1:nGrains, 1:nIsom, 1:nIsom+nReac)      ::  pa
     
     ! Steady-state matrix and vector
-    real(8), dimension(:,:), allocatable        ::  A
-    real(8), dimension(:,:), allocatable        ::  b
+    real(8), dimension(1:nIsom, 1:nIsom)        ::  A
+    real(8), dimension(1:nIsom, 1:nIsom+nReac)  ::  b
     ! Indices i and j represent sums over unimolecular wells
     integer                                     ::  i, j
     ! Indices m and n represent sums over bimolecular sources/sinks
@@ -85,7 +85,7 @@ subroutine estimateRateCoefficients_MSC(T, P, E, collFreq, densStates, Eres, &
     ! Indices r and s represent sums over energy grains
     integer                                     ::  r
     ! Variables for BLAS and LAPACK
-    integer, dimension(:), allocatable          ::  iPiv
+    integer, dimension(1:nIsom)                 ::  iPiv
     integer                                     ::  info
     ! The isomer or channel of current interest
     integer                                     ::  src
@@ -93,13 +93,7 @@ subroutine estimateRateCoefficients_MSC(T, P, E, collFreq, densStates, Eres, &
     integer                                     ::  start
     ! A temporary used to store double-precision values
     real(8)                                     ::  val
-
-    ! Allocate matrices and vectors used in this subroutine
-    allocate( A(1:nIsom, 1:nIsom) )
-    allocate( b(1:nIsom, 1:nIsom+nReac) )
-    allocate( iPiv(1:nIsom) )
-    allocate( pa(1:nGrains, 1:nIsom, 1:nIsom+nReac) )
-
+    
     ! Zero the phenomenological rate coefficient matrix
     do i = 1, nIsom + nReac + nProd
         do j = 1, nIsom + nReac + nProd
@@ -219,9 +213,6 @@ subroutine estimateRateCoefficients_MSC(T, P, E, collFreq, densStates, Eres, &
         end do
 
     end do
-
-    ! Clean up
-    deallocate( A, b, iPiv, pa )
 
 end subroutine
 
