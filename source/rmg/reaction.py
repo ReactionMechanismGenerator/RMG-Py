@@ -2116,7 +2116,8 @@ def makeNewReaction(reactants, products, reactantStructures, productStructures, 
 	# Check that the reaction is unique
 	matchReaction = None
 	for rxn in reactionList:
-		if isinstance(rxn.family, ReactionFamily) and (rxn.family.label != family.label):
+		if isinstance(rxn.family, ReactionFamily) and (
+			rxn.family.label != family.label and rxn.family.reverse.label != family.label):
 			# rxn is not from seed, and families are different
 			continue # not a match, try next rxn
 		if (rxn.reactants == reactants and rxn.products == products) or \
