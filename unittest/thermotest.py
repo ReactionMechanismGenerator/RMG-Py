@@ -253,7 +253,7 @@ class ThermoGAtoWilhoitCheck(unittest.TestCase):
 		
 		propane = structure.Structure(SMILES='CCC')
 		propane.updateAtomTypes()
-		GAthermoData = species.getThermoData(propane,required_class=thermo.ThermoGAData)
+		GAthermoData = species.getThermoData(propane,thermoClass=thermo.ThermoGAData)
 		WilhoitData = thermo.convertGAtoWilhoit(GAthermoData, atoms=11, rotors=2, linear=False)
 		
 		Tlist = thermo.ThermoGAData.CpTlist # just check at defined data points
@@ -272,7 +272,7 @@ class ThermoGAtoWilhoitCheck(unittest.TestCase):
 		
 		propane = structure.Structure(SMILES='CCC')
 		propane.updateAtomTypes()
-		GAthermoData = species.getThermoData(propane,required_class=thermo.ThermoGAData)
+		GAthermoData = species.getThermoData(propane,thermoClass=thermo.ThermoGAData)
 		WilhoitData = thermo.convertGAtoWilhoit(GAthermoData, atoms=11, rotors=2, linear=False)
 		
 		Tlist = thermo.ThermoGAData.CpTlist # just check at defined data points
@@ -291,7 +291,7 @@ class ThermoGAtoWilhoitCheck(unittest.TestCase):
 		
 		propane = structure.Structure(SMILES='CCC')
 		propane.updateAtomTypes()
-		GAthermoData = species.getThermoData(propane,required_class=thermo.ThermoGAData)
+		GAthermoData = species.getThermoData(propane,thermoClass=thermo.ThermoGAData)
 		WilhoitData = thermo.convertGAtoWilhoit(GAthermoData, atoms=11, rotors=2, linear=False)
 		
 		Tlist = thermo.ThermoGAData.CpTlist # just check at defined data points
@@ -322,7 +322,7 @@ class ThermoWilhoitToNASACheck(unittest.TestCase):
 		
 		propane = structure.Structure(SMILES='CCC')
 		propane.updateAtomTypes()
-		GAthermoData = species.getThermoData(propane,required_class=thermo.ThermoGAData)
+		GAthermoData = species.getThermoData(propane,thermoClass=thermo.ThermoGAData)
 		WilhoitData = thermo.convertGAtoWilhoit(GAthermoData, atoms=11, rotors=2, linear=False)
 		NASAthermoData = thermo.convertWilhoitToNASA(WilhoitData)
 		
@@ -342,7 +342,7 @@ class ThermoWilhoitToNASACheck(unittest.TestCase):
 		
 		propane = structure.Structure(SMILES='CCC')
 		propane.updateAtomTypes()
-		GAthermoData = species.getThermoData(propane,required_class=thermo.ThermoGAData)
+		GAthermoData = species.getThermoData(propane,thermoClass=thermo.ThermoGAData)
 		WilhoitData = thermo.convertGAtoWilhoit(GAthermoData, atoms=11, rotors=2, linear=False)
 		NASAthermoData = thermo.convertWilhoitToNASA(WilhoitData)
 		
@@ -362,7 +362,7 @@ class ThermoWilhoitToNASACheck(unittest.TestCase):
 		
 		propane = structure.Structure(SMILES='CCC')
 		propane.updateAtomTypes()
-		GAthermoData = species.getThermoData(propane,required_class=thermo.ThermoGAData)
+		GAthermoData = species.getThermoData(propane,thermoClass=thermo.ThermoGAData)
 		WilhoitData = thermo.convertGAtoWilhoit(GAthermoData, atoms=11, rotors=2, linear=False)
 		NASAthermoData = thermo.convertWilhoitToNASA(WilhoitData)
 		
@@ -391,7 +391,7 @@ class ThermoWilhoitToNASACheck(unittest.TestCase):
 
 		oxygen = structure.Structure(SMILES='O=O')
 		oxygen.updateAtomTypes()
-		GAthermoData = species.getThermoData(oxygen,required_class=thermo.ThermoGAData)
+		GAthermoData = species.getThermoData(oxygen,thermoClass=thermo.ThermoGAData)
 		WilhoitData = thermo.convertGAtoWilhoit(GAthermoData, atoms=2, rotors=0, linear=True)
 		print WilhoitData
 		NASAthermoData = thermo.convertWilhoitToNASA(WilhoitData)
@@ -427,7 +427,7 @@ class ThermoWilhoitToNASACheck(unittest.TestCase):
 
 		oxygen = structure.Structure(SMILES='O=O')
 		oxygen.updateAtomTypes()
-		GAthermoData = species.getThermoData(oxygen,required_class=thermo.ThermoGAData)
+		GAthermoData = species.getThermoData(oxygen,thermoClass=thermo.ThermoGAData)
 		#the following values come from Greg's Windows computer
 		Cpe = [29.288, 30.208480000000002, 31.128960000000003, 32.007600000000004, 33.764880000000005, 34.936399999999999, 36.484480000000005]
 		self.assertTrue(GAthermoData.Cp[0]==Cpe[0],"Actual (%.8f) and expected (%.8f) are different"%(GAthermoData.Cp[0],Cpe[0]))
@@ -558,7 +558,7 @@ import rmg.structure as structure
 from rmg.structure import Structure
 propane = structure.Structure(SMILES='CCC')
 propane.updateAtomTypes()
-GAthermoData = species.getThermoData(propane,required_class=thermo.ThermoGAData)
+GAthermoData = species.getThermoData(propane,thermoClass=thermo.ThermoGAData)
 WilhoitData = thermo.convertGAtoWilhoit(GAthermoData, atoms=11, rotors=2, linear=False)
 NASAthermoData = thermo.convertWilhoitToNASA(WilhoitData)
 """

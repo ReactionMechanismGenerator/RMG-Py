@@ -14,6 +14,7 @@ from rmg.species import *
 from rmg.reaction import *
 from rmg.model import *
 from rmg.thermo import *
+from rmg.system.batch import *
 
 ################################################################################
 

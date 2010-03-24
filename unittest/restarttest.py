@@ -41,6 +41,7 @@ import rmg.species as species
 import rmg.reaction as reaction
 import rmg.structure as structure
 import rmg.thermo as thermo
+import rmg.log as log
 
 def loadThermoDatabases(databasePath):
 	"""
@@ -253,7 +254,7 @@ class RestartCheck(unittest.TestCase):
 if __name__ == '__main__':
 
 	# Show debug messages as databases are loading
-	main.initializeLog(10)
+	log.initialize(10, 'RMG.log')
 
 	# Load databases
 	databasePath = '../data/RMG_database'
@@ -261,7 +262,7 @@ if __name__ == '__main__':
 	loadKineticsDatabases(databasePath, only_families=['R_Recombination'])
 	
 	# Show info messages during tests
-	main.initializeLog(20)
+	log.initialize(20, 'RMG.log')
 
 	# Conduct tests
 	unittest.main( testRunner = unittest.TextTestRunner(verbosity=2) )

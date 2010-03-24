@@ -6,6 +6,7 @@ import unittest
 import sys
 sys.path.append('../source')
 
+import rmg.thermo
 from rmg.structure import Structure
 from rmg.species import makeNewSpecies
 from rmg.reaction import *

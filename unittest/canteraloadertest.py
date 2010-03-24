@@ -125,7 +125,7 @@ class CanteraLoaderCheck(unittest.TestCase):
 
 	def setUp(self):
 		"""setUp gets called before each test"""
-		from rmg import constants
+		from rmg import constants, log
 		import rmg.cantera_loader
 		import ctml_writer as cti
 		
@@ -137,7 +137,7 @@ class CanteraLoaderCheck(unittest.TestCase):
 			reload(cti)
 		if rmg.cantera_loader._species:
 			reload(rmg.cantera_loader)
-		rmg.initializeLog(verbose=20)
+		log.initialize(verbose=20, fstr='RMG.log')
 		
 		#pylab.figure(1)
 	
