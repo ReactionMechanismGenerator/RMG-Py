@@ -439,7 +439,7 @@ class CoreEdgeReactionModel:
 		"""
 
 		from unirxn.network import Isomer, UnirxnNetworkException
-		from reaction import PDepReaction
+		from reaction import PDepReaction, makeNewPDepReaction
 		from kinetics import ChebyshevKinetics, PDepArrheniusKinetics
 
 		count = sum([1 for network in self.unirxnNetworks if not network.valid])
@@ -457,27 +457,27 @@ class CoreEdgeReactionModel:
 				network.bathGas.expDownParam = 4.86 * 4184
 
 				# Generate isomers
-				for reaction in network.pathReactions:
+				for rxn in network.pathReactions:
 
 					# Create isomer for the reactant
 					isomer = None
 					for isom in network.isomers:
-						if all([spec in isom.species for spec in reaction.reactants]):
+						if all([spec in isom.species for spec in rxn.reactants]):
 							isomer = isom
 					if isomer is None:
-						isomer = Isomer(reaction.reactants)
+						isomer = Isomer(rxn.reactants)
 						network.isomers.append(isomer)
-					reaction.reactant = isomer
+					rxn.reactant = isomer
 
 					# Create isomer for the product
 					isomer = None
 					for isom in network.isomers:
-						if all([spec in isom.species for spec in reaction.products]):
+						if all([spec in isom.species for spec in rxn.products]):
 							isomer = isom
 					if isomer is None:
-						isomer = Isomer(reaction.products)
+						isomer = Isomer(rxn.products)
 						network.isomers.append(isomer)
-					reaction.product = isomer
+					rxn.product = isomer
 
 				# Update list of explored isomers to include all species in core
 				for isom in network.isomers:
@@ -493,8 +493,8 @@ class CoreEdgeReactionModel:
 				isomerList = []
 				for isomer in network.isomers:
 					found = False
-					for reaction in network.pathReactions:
-						if reaction.reactant is isomer or reaction.product is isomer:
+					for rxn in network.pathReactions:
+						if rxn.reactant is isomer or rxn.product is isomer:
 							found = True
 							break
 					if not found:
@@ -521,9 +521,9 @@ class CoreEdgeReactionModel:
 				for isomer in network.isomers:
 					isomer.E0 = sum([spec.E0 for spec in isomer.species])
 				# Determine transition state ground-state energies of the reactions
-				for reaction in network.pathReactions:
-					E0 = sum([spec.E0 for spec in reaction.reactants])
-					reaction.E0 = E0 + reaction.kinetics[0].getActivationEnergy(reaction.getEnthalpyOfReaction(T=298))
+				for rxn in network.pathReactions:
+					E0 = sum([spec.E0 for spec in rxn.reactants])
+					rxn.E0 = E0 + rxn.kinetics[0].getActivationEnergy(rxn.getEnthalpyOfReaction(T=298))
 
 				# Shift network such that lowest-energy isomer has a ground state of 0.0
 				network.shiftToZeroEnergy()
@@ -550,7 +550,7 @@ class CoreEdgeReactionModel:
 									netReaction = r
 							# If path reaction does not already exist, make a new one
 							if netReaction is None:
-								netReaction = PDepReaction(reactant.species, product.species, network, None)
+								netReaction = makeNewPDepReaction(reactant.species, product.species, network, None)
 								network.netReactions.append(netReaction)
 								self.addReactionToEdge(netReaction)
 							# Set its kinetics using interpolation model
@@ -572,10 +572,10 @@ class CoreEdgeReactionModel:
 
 				for spec in speciesList:
 					del spec.E0
-				for reaction in network.pathReactions:
-					del reaction.reactant
-					del reaction.product
-					del reaction.E0
+				for rxn in network.pathReactions:
+					del rxn.reactant
+					del rxn.product
+					del rxn.E0
 
 				network.valid = True
 
@@ -656,7 +656,7 @@ class CoreEdgeReactionModel:
 					kin = [kinetics.ArrheniusKinetics(A=A, n=n, Ea=Ea)]
 
 					# Create reaction object and add to list
-					rxn = reaction.Reaction(reactants, products, 'seed', kin, thirdBody=thirdBody)
+					rxn = reaction.Reaction(id=0, reactants=reactants, products=products, family='seed', kinetics=kin, thirdBody=thirdBody)
 					reaction.processNewReaction(rxn)
 					reactionList.append(rxn)
 
@@ -1107,8 +1107,8 @@ if __name__ == '__main__':
 	structure = chem.Structure(); structure.fromSMILES('[CH3]')
 	CH3 = species.makeNewSpecies(structure)
 
-	forward = reaction.Reaction([CH3, H], [CH4])
-	reverse = reaction.Reaction([CH4], [CH3, H])
+	forward = reaction.Reaction(id=0, reactants=[CH3, H], products=[CH4])
+	reverse = reaction.Reaction(id=0, reactants=[CH4], products=[CH3, H])
 	forward.reverse = reverse
 	reverse.reverse = forward
 

@@ -65,6 +65,7 @@ class Reaction:
 	================= ==========================================================
 	Attribute         Description
 	================= ==========================================================
+	`id`              A unique integer identifier
 	`atomLabels`      A dictionary with the keys representing the labels and the
 	                  values the atoms of the reactant or product species that
 	                  were labeled at the time the reaction was generated
@@ -94,8 +95,9 @@ class Reaction:
 	convenient way to represent the reverse reaction.
 	"""
 	
-	def __init__(self, reactants=None, products=None, family=None, kinetics=None, thirdBody=False):
+	def __init__(self, id=0, reactants=None, products=None, family=None, kinetics=None, thirdBody=False):
 		"""Initialize a reaction object."""
+		self.id = id
 		self.reactants = reactants or []
 		self.products = products or []
 		self.family = family
@@ -612,8 +614,8 @@ class PDepReaction(Reaction):
 	:meth:`getBestKinetics`.
 	"""
 
-	def __init__(self, reactants, products, network, kinetics):
-		Reaction.__init__(self, reactants, products, None)
+	def __init__(self, id=0, reactants=None, products=None, network=None, kinetics=None):
+		Reaction.__init__(self, id=id, reactants=reactants, products=products, family=None)
 		self.kinetics = kinetics
 		self.network = network
 
@@ -1403,7 +1405,7 @@ class ReactionFamily(data.Database):
 				species.append(item)
 
 		# Set template reaction
-		self.template = Reaction(reactants, products)
+		self.template = Reaction(reactants=reactants, products=products)
 
 		# Remaining lines are reaction recipe for forward reaction
 		self.recipe = ReactionRecipe()
@@ -1426,7 +1428,7 @@ class ReactionFamily(data.Database):
 
 		# Generate the reverse template
 		if reverse != self.label:
-			template = Reaction(self.template.products, self.template.reactants)
+			template = Reaction(reactants=self.template.products, products=self.template.reactants)
 			self.reverse = ReactionFamily(reverse, template, self.recipe.getReverse())
 			self.reverse.dictionary = self.dictionary
 			self.reverse.tree = self.tree
@@ -2080,6 +2082,10 @@ class UndeterminableKineticsException(ReactionException):
 # reaction than an older reaction
 reactionList = []
 
+global reactionCounter
+#: Used to label reactions uniquely. Incremented each time a new reaction is made.
+reactionCounter = 0 
+
 def makeNewReaction(reactants, products, reactantStructures, productStructures, family):
 	"""
 	Attempt to make a new reaction based on a list of `reactants` and a list of
@@ -2137,10 +2143,10 @@ def makeNewReaction(reactants, products, reactantStructures, productStructures, 
 	
 	# If this point is reached, the proposed reaction is new, so make new
 	# Reaction objects for forward and reverse reaction
-	forward = Reaction(reactants, products, family)
+	forward = Reaction(id=reactionCounter+1, reactants=reactants, products=products, family=family)
 	reverseFamily = None
 	if family is not None: reverseFamily = family.reverse or family
-	reverse = Reaction(products, reactants, reverseFamily)
+	reverse = Reaction(id=reactionCounter+1, reactants=products, products=reactants, family=reverseFamily)
 	forward.reverse = reverse
 	reverse.reverse = forward
 	
@@ -2209,10 +2215,42 @@ def processNewReaction(rxn):
 	this function handles other aspects	of preparing it for RMG.
 	"""
 
+	global reactionCounter
+
+	# Add to global list of existing reactions and update counter
 	reactionList.insert(0, rxn)
+	reactionCounter += 1
+	rxn.id = reactionCounter
 
 	# Return newly created reaction
 	return rxn, True
+
+def makeNewPDepReaction(reactants, products, network, kinetics):
+	"""
+	Make a new pressure-dependent reaction based on a list of `reactants` and a
+	list of `products`. The reaction belongs to the specified `network` and
+	has pressure-dependent kinetics given by `kinetics`.
+
+	No checking for existing reactions is made here. The returned PDepReaction
+	object is not added to the global list of reactions, as that is intended
+	to represent only the high-pressure-limit set. The reactionCounter is
+	incremented, however, since the returned reaction can and will exist in
+	the model edge and/or core.
+	"""
+
+	global reactionCounter
+
+	# Sort reactants and products (to make comparisons easier/faster)
+	reactants.sort()
+	products.sort()
+
+	forward = PDepReaction(id=reactionCounter+1, reactants=reactants, products=products, network=network, kinetics=kinetics)
+	reverse = PDepReaction(id=reactionCounter+1, reactants=products, products=reactants, network=network, kinetics=None)
+	forward.reverse = reverse
+	reverse.reverse = forward
+	
+	reactionCounter += 1
+	return forward
 
 ################################################################################
 
