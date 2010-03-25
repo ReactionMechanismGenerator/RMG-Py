@@ -345,13 +345,15 @@ class BatchReactor(ReactionSystem):
 
 			# Calculate species fluxes of all core and edge species at the
 			# current time
-			dNidt = self.getSpeciesFluxes(model, P, V, T, Ni, stoichiometry)
-
+			rxnRates = self.getReactionRates(P, V, T, Ni, model)
+			dNidt = stoichiometry * rxnRates
+			
 			# Determine characteristic species flux
-			charFlux = self.getCharacteristicFlux(model, P, V, T, Ni, stoichiometry)
+			charFlux = self.getCharacteristicFlux(model, stoichiometry, rxnRates)
 
 			# Store the highest relative flux for each species
-			for spec in model.core.species:
+			speciesList = model.core.species[:]; speciesList.extend(model.edge.species)
+			for spec in speciesList:
 				i = spec.id - 1
 				if maxRelativeSpeciesFluxes[i] < abs(dNidt[i])/charFlux:
 					maxRelativeSpeciesFluxes[i] = abs(dNidt[i])/charFlux
@@ -593,17 +595,7 @@ class BatchReactor(ReactionSystem):
 
 		return model.getReactionRates(T, P, Ci)
 
-	def getSpeciesFluxes(self, model, P, V, T, Ni, stoichiometry):
-		"""
-		Determine the species fluxes of all species in the model core and edge
-		at the specified pressure `P`, volume `V`, temperature `T`, and numbers
-		of moles `Ni`. The `stoichiometry` parameter is the stoichiometry
-		matrix for the model.
-		"""
-		rxnRates = self.getReactionRates(P, V, T, Ni, model)
-		return stoichiometry * rxnRates
-
-	def getCharacteristicFlux(self, model, P, V, T, Ni, stoichiometry):
+	def getCharacteristicFlux(self, model, stoichiometry, rxnRates0):
 		"""
 		Determine the characteristic flux for the system given a `model` at
 		the specified pressure `P`, volume `V`, temperature `T`, and numbers
@@ -614,7 +606,6 @@ class BatchReactor(ReactionSystem):
 		"""
 
 		# Generate core species fluxes based on core reactions only
-		rxnRates0 = self.getReactionRates(P, V, T, Ni, model)
 		rxnRates = numpy.zeros(rxnRates0.shape, numpy.float64)
 		for rxn in model.core.reactions:
 			j = rxn.id - 1
