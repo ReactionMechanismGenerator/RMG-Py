@@ -41,6 +41,7 @@ import numpy
 import rmg.settings as settings
 import rmg.ctml_writer as ctml_writer
 import rmg.model as modelmodule
+import rmg.species as species
 import rmg.reaction as reaction
 from base import ReactionSystem
 
@@ -282,11 +283,11 @@ class BatchReactor(ReactionSystem):
 		sim,gas = self.runCantera(model)
 
 		# Assemble stoichiometry matrix for all core and edge species
-		# Rows are species (core, then edge); columns are reactions (core, then edge)
+		# Rows are species by id, columns are reactions by id
 		stoichiometry = model.getStoichiometryMatrix()
 
 		tlist = []; ylist = []; dydtlist = []
-		maxRelativeSpeciesFluxes = numpy.zeros(len(model.core.species) + len(model.edge.species), float)
+		maxRelativeSpeciesFluxes = numpy.zeros(species.speciesCounter, float)
 
 		maxRelativeNetworkLeakFluxes = numpy.zeros(len(model.unirxnNetworks), float)
 
@@ -345,19 +346,20 @@ class BatchReactor(ReactionSystem):
 			# Calculate species fluxes of all core and edge species at the
 			# current time
 			dNidt = self.getSpeciesFluxes(model, P, V, T, Ni, stoichiometry)
-			
+
 			# Determine characteristic species flux
 			charFlux = math.sqrt(sum([x*x for x in dNidt[0:len(model.core.species)]]))
-
+			
 			# Store the highest relative flux for each species
-			for i in range(len(dNidt)):
+			for spec in model.core.species:
+				i = spec.id - 1
 				if maxRelativeSpeciesFluxes[i] < abs(dNidt[i])/charFlux:
 					maxRelativeSpeciesFluxes[i] = abs(dNidt[i])/charFlux
 
 			# Test for model validity
 			criticalFlux = charFlux * model.fluxToleranceInterrupt
 			edgeValid, maxSpecies, maxSpeciesFlux = self.isModelValid(model, dNidt, criticalFlux)
-
+			
 			# Test leak fluxes of unimolecular networks
 			if settings.unimolecularReactionNetworks:
 				maxNetwork = None; maxNetworkFlux = 0.0
@@ -413,8 +415,8 @@ class BatchReactor(ReactionSystem):
 		# Compare maximum species fluxes
 		maxRelativeSpeciesFlux = 0.0; maxSpecies = None
 		speciesToRemove = []; maxRelativeFluxes_dict = {}
-		for i in range(len(model.core.species), len(maxRelativeSpeciesFluxes)):
-			spec = model.edge.species[i - len(model.core.species)]
+		for spec in model.edge.species:
+			i = spec.id - 1
 			# pick out the single highest-flux edge species
 			if maxRelativeSpeciesFluxes[i] > maxRelativeSpeciesFlux:
 				maxRelativeSpeciesFlux = maxRelativeSpeciesFluxes[i]
@@ -425,7 +427,7 @@ class BatchReactor(ReactionSystem):
 			# put max relative flux in dictionary
 			maxRelativeFluxes_dict[spec] = maxRelativeSpeciesFluxes[i]
 		edgeValid = maxRelativeSpeciesFlux <= model.fluxToleranceMoveToCore
-
+		
 		# Compare maximum network leak fluxes
 		maxRelativeNetworkLeakFlux = 0.0; maxNetwork = None
 		if settings.unimolecularReactionNetworks:
@@ -608,18 +610,16 @@ class BatchReactor(ReactionSystem):
 		Also returns the edge species whose flux is greatest, and that flux.
 		"""
 
-		speciesList, reactionList = model.getLists()
-
 		if len(model.edge.species) == 0:
 			# Nothing in edge - model must be valid!
 			return True, None, 0.0
 
 		maxSpecies = None
 		maxSpeciesFlux = 0.0
-		for i in range(len(model.edge.species)): # edge species index
-			j = i+len(model.core.species) # global species index
+		for spec in model.edge.species:
+			j = spec.id - 1
 			if dNidt[j] > maxSpeciesFlux:
-				maxSpecies = speciesList[j]
+				maxSpecies = spec
 				maxSpeciesFlux = dNidt[j]
 		return (maxSpeciesFlux < criticalFlux), maxSpecies, maxSpeciesFlux
 

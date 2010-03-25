@@ -335,17 +335,18 @@ class CoreEdgeReactionModel:
 
 	def getStoichiometryMatrix(self):
 		"""
-		Return the stoichiometry matrix for all core and edge species. The
-		rows represent the species in the core and edge in order, while the
-		columns represent the reactions in the core and edge in order.
+		Return the stoichiometry matrix for all generated species and reactions.
+		The id of each species and reaction is the corresponding row and column,
+		respectively, in the matrix.
 		"""
 		speciesList, reactionList = self.getLists()
 		from scipy import sparse
-		stoichiometry = sparse.dok_matrix((len(speciesList), len(reactionList)), float)
-		for j, rxn in enumerate(reactionList):
+		stoichiometry = sparse.dok_matrix((species.speciesCounter, reaction.reactionCounter), float)
+		for rxn in reactionList:
+			j = rxn.id - 1
 			specList = rxn.reactants[:]; specList.extend(rxn.products)
 			for spec in specList:
-				i = speciesList.index(spec)
+				i = spec.id - 1
 				nu = rxn.getStoichiometricCoefficient(spec)
 				if nu != 0: stoichiometry[i,j] = nu
 		return stoichiometry.tocsr()
@@ -353,13 +354,13 @@ class CoreEdgeReactionModel:
 	def getReactionRates(self, T, P, Ci):
 		"""
 		Return an array of reaction rates for each reaction in the model core
-		and edge. The core reactions occupy the first rows of the array, while
-		the edge reactions occupy the last rows.
+		and edge. The id of the reaction is the index into the vector.
 		"""
 		speciesList, reactionList = self.getLists()
-		rxnRate = numpy.zeros(len(reactionList), float)
+		rxnRate = numpy.zeros(reaction.reactionCounter, float)
 		totalConc = sum( Ci.values() )
-		for j, rxn in enumerate(reactionList):
+		for rxn in reactionList:
+			j = rxn.id - 1
 			rxnRate[j] = rxn.getRate(T, P, Ci, totalConc)
 		return rxnRate
 
