@@ -175,7 +175,7 @@ class BatchReactor(ReactionSystem):
 		# Create a folder in the scratch directory for Cantera files if needed
 		cantera_folder = os.path.join(settings.scratchDirectory,'cantera')
 		os.path.exists(cantera_folder) or os.mkdir(cantera_folder)
-		
+
 		# Write the CTML file to scratch/cantera/ folder
 		cti_file = os.path.join(cantera_folder, 'cantera_input_%03d' % len(model.core.species))
 		logging.debug("Writing CTML file %s" % cti_file)
@@ -342,14 +342,14 @@ class BatchReactor(ReactionSystem):
 			# RMG thinks in mol/m^3
 			Ni = gas.molarDensity()*1000.0 * gas.moleFractions() * V
 			y = [P, V, T]; y.extend(Ni)
-			
+
 			# Calculate species fluxes of all core and edge species at the
 			# current time
 			dNidt = self.getSpeciesFluxes(model, P, V, T, Ni, stoichiometry)
 
 			# Determine characteristic species flux
-			charFlux = math.sqrt(sum([x*x for x in dNidt[0:len(model.core.species)]]))
-			
+			charFlux = self.getCharacteristicFlux(model, P, V, T, Ni, stoichiometry)
+
 			# Store the highest relative flux for each species
 			for spec in model.core.species:
 				i = spec.id - 1
@@ -359,7 +359,7 @@ class BatchReactor(ReactionSystem):
 			# Test for model validity
 			criticalFlux = charFlux * model.fluxToleranceInterrupt
 			edgeValid, maxSpecies, maxSpeciesFlux = self.isModelValid(model, dNidt, criticalFlux)
-			
+
 			# Test leak fluxes of unimolecular networks
 			if settings.unimolecularReactionNetworks:
 				maxNetwork = None; maxNetworkFlux = 0.0
@@ -427,7 +427,7 @@ class BatchReactor(ReactionSystem):
 			# put max relative flux in dictionary
 			maxRelativeFluxes_dict[spec] = maxRelativeSpeciesFluxes[i]
 		edgeValid = maxRelativeSpeciesFlux <= model.fluxToleranceMoveToCore
-		
+
 		# Compare maximum network leak fluxes
 		maxRelativeNetworkLeakFlux = 0.0; maxNetwork = None
 		if settings.unimolecularReactionNetworks:
@@ -603,6 +603,31 @@ class BatchReactor(ReactionSystem):
 		rxnRates = self.getReactionRates(P, V, T, Ni, model)
 		return stoichiometry * rxnRates
 
+	def getCharacteristicFlux(self, model, P, V, T, Ni, stoichiometry):
+		"""
+		Determine the characteristic flux for the system given a `model` at
+		the specified pressure `P`, volume `V`, temperature `T`, and numbers
+		of moles `Ni`. The `stoichiometry` parameter is the stoichiometry
+		matrix for the model. The characteristic flux is the root mean square
+		of the *net* flux in mol/m^3*s of each core species due to the core
+		reactions only.
+		"""
+
+		# Generate core species fluxes based on core reactions only
+		rxnRates0 = self.getReactionRates(P, V, T, Ni, model)
+		rxnRates = numpy.zeros(rxnRates0.shape, numpy.float64)
+		for rxn in model.core.reactions:
+			j = rxn.id - 1
+			rxnRates[j] = rxnRates0[j]
+		speciesRates = stoichiometry * rxnRates
+
+		# Characteristic flux is root mean square of core species fluxes
+		charFlux = 0.0
+		for spec in model.core.species:
+			flux = speciesRates[spec.id - 1]
+			charFlux += flux * flux
+		return math.sqrt(charFlux)
+
 	def isModelValid(self, model, dNidt, criticalFlux):
 		"""
 		Returns :data:`True` if `model` is valid given the set of species fluxes
@@ -644,4 +669,4 @@ class BatchReactor(ReactionSystem):
 		for i, network in enumerate(model.unirxnNetworks):
 			leakFluxes[i] = network.getLeakFlux(T, P, conc, totalConc)
 		return leakFluxes
-		
+
