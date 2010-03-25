@@ -103,8 +103,8 @@ class ReactionSetCheck(unittest.TestCase):
 	def loadDatabase(self,only_families=[]):
 		# Load database
 		databasePath = '../data/RMG_database'
-		if only_families: 
-			print "Only loading reaction families %s"%only_families
+		#if only_families: 
+		#	print "Only loading reaction families %s"%only_families
 		reaction.kineticsDatabase = reaction.ReactionFamilySet()
 		reaction.kineticsDatabase.load(databasePath, only_families=only_families)
 

@@ -11,8 +11,12 @@ from structuretest import *
 from thermotest import *
 from speciestest import *
 from reactiontest import *
-from simulationtest import *
-from canteraloadertest import *
+## Now that we use cantera, this no longer works 
+## (it used to compare our simulation solver with a cantera one)
+# from simulationtest import *
+## Also, this is broken, since now you can't make a species without a structure,
+## and a chemkin or cantera mechanism does not include species structures
+# from canteraloadertest import *
 
 ################################################################################
 
