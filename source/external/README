@@ -10,6 +10,9 @@ It comes from http://jrfonseca.googlecode.com/svn/trunk/gprof2dot
 It comes under GNU Lesser General Public License 3 or later
 http://www.gnu.org/licenses/
 (using the Lesser GPL permits use of the library in proprietary programs)
+To use it, do something like:
+  python ../../source/external/gprof2dot/gprof2dot.py -f pstats RMG.profile  | dot -Tpdf -o RMG_profile.pdf
+
 
 ctml_writer.py 
 comes from Cantera 1.7 (https://sourceforge.net/projects/cantera/)
