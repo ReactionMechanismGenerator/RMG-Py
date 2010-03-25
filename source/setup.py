@@ -60,6 +60,11 @@ def setupCythonModules(name, version, description, author, author_email,
 	#  export ARCHFLAGS='-arch i386' # or '-arch x86_64'
 	# and get your job done.
 	
+	# Create annotated .html files for each of the cython modules
+	# These show which bits of the code are not very C-friendly and help you optimize
+	import Cython.Compiler
+	Cython.Compiler.Options.annotate = True
+	
 	# The Cython modules to setup
 	ext_modules = [
 		Extension('rmg.chem', ['rmg/chem.py']),
