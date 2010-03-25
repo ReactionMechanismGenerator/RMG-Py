@@ -1023,7 +1023,7 @@ def convertWilhoitToNASA(Wilhoit, fixed=1, weighting=1, tint=1000.0, Tmin = 298.
 	
 	Takes: a `ThermoWilhoitData` instance of themochemical data.
 		fixed: 1 (default) to fix tint; 0 to allow it to float to get a better fit
-		weighting: 0 (default) to not weight the fit by 1/T; 1 to weight by 1/T to emphasize good fit at lower temperatures
+		weighting: 0 to not weight the fit by 1/T; 1 (default) to weight by 1/T to emphasize good fit at lower temperatures
 		tint, Tmin, Tmax: intermediate, minimum, and maximum temperatures in Kelvin
 		contCons: a measure of the continutity constraints on the fitted NASA polynomials; possible values are:
 			    5: constrain Cp, dCp/dT, d2Cp/dT2, d3Cp/dT3, and d4Cp/dT4 to be continuous at tint; note: this effectively constrains all the coefficients to be equal and should be equivalent to fitting only one polynomial (rather than two)
@@ -1043,7 +1043,7 @@ def convertWilhoitToNASA(Wilhoit, fixed=1, weighting=1, tint=1000.0, Tmin = 298.
 	Tmax = Tmax/1000
 
 	# Make copy of Wilhoit data so we don't modify the original
-	wilhoit_scaled = ThermoWilhoitData(Wilhoit.cp0, Wilhoit.cpInf, Wilhoit.a0, Wilhoit.a1, Wilhoit.a2, Wilhoit.a3, Wilhoit.H0, Wilhoit.S0, Wilhoit.comment)
+	wilhoit_scaled = ThermoWilhoitData(Wilhoit.cp0, Wilhoit.cpInf, Wilhoit.a0, Wilhoit.a1, Wilhoit.a2, Wilhoit.a3, Wilhoit.H0, Wilhoit.S0, Wilhoit.comment, B=Wilhoit.B)
 	# Rescale Wilhoit parameters
 	wilhoit_scaled.cp0 /= constants.R
 	wilhoit_scaled.cpInf /= constants.R
@@ -1309,14 +1309,16 @@ def TintOpt_objFun(tint, wilhoit, tmin, tmax, weighting, contCons):
 	# numerical errors could accumulate to give a slightly negative result
 	# this is unphysical (it's the integral of a *squared* error) so we
 	# set it to zero to avoid later problems when we try find the square root.
-	if result<0:
-		logging.error("Greg thought he fixed the numerical problem, but apparently it is still an issue; please e-mail him with the following results:")
-		logging.error(tint)
-		logging.error(wilhoit)
-		logging.error(tmin)
-		logging.error(tmax)
-		logging.error(weighting)
-		logging.error(result)
+	if result < 0:
+		if result<-1E-13:
+			logging.error("Greg thought he fixed the numerical problem, but apparently it is still an issue; please e-mail him with the following results:")
+			logging.error(tint)
+			logging.error(wilhoit)
+			logging.error(tmin)
+			logging.error(tmax)
+			logging.error(weighting)
+			logging.error(result)
+		logging.info("Negative ISE of %f reset to zero."%(result))
 		result = 0
 
 	return result
