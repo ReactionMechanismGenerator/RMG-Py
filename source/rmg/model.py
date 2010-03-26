@@ -358,10 +358,9 @@ class CoreEdgeReactionModel:
 		"""
 		speciesList, reactionList = self.getLists()
 		rxnRate = numpy.zeros(reaction.reactionCounter, float)
-		totalConc = sum( Ci.values() )
 		for rxn in reactionList:
 			j = rxn.id - 1
-			rxnRate[j] = rxn.getRate(T, P, Ci, totalConc)
+			rxnRate[j] = rxn.getRate(T, P, Ci)
 		return rxnRate
 
 	def addReactionToUnimolecularNetworks(self, newReaction):

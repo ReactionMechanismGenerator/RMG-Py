@@ -378,14 +378,16 @@ class Reaction:
 			dGrxn += product.getFreeEnergy(T)
 		return dGrxn
 
-	def getEquilibriumConstant(self, T, conc):
+	def getEquilibriumConstant(self, T):
 		"""
-		Return the equilibrium constant K(T) evaluated at temperature `T` in a
-		system with total concentration `conc`.
+		Return the equilibrium constant K(T) with respect to concentration
+		:math:`K_\\mathrm{c}` evaluated at temperature `T` in K. The returned
+		equilibrium constant has units related to concentration (mol, m^3).
 		"""
 		dGrxn = self.getFreeEnergyOfReaction(T)
 		K = math.exp(-dGrxn / constants.R / T)
-		# Convert from Ka to Kc
+		# Convert from Ka to Kc; conc is the reference concentration
+		conc = 1e5 / constants.R / T
 		K *= conc ** (len(self.products) - len(self.reactants))
 		return K
 
@@ -484,14 +486,11 @@ class Reaction:
 		parameter `conc` is a map with species as keys and concentrations as
 		values. A reactant not found in the `conc` map is treated as having zero
 		concentration.
-		
+
 		If passed a `totalConc`, it won't bother recalculating it.
 		"""
 
 		# Calculate total concentration
-		#totalConc = 0.0
-		#for spec in conc:
-		#	totalConc += conc[spec]
 		if totalConc is None:
 			totalConc=sum( conc.values() )
 
@@ -500,7 +499,7 @@ class Reaction:
 		if self.thirdBody: rateConstant *= totalConc
 
 		# Evaluate equilibrium constant
-		equilibriumConstant = self.getEquilibriumConstant(T, totalConc)
+		equilibriumConstant = self.getEquilibriumConstant(T)
 
 		# Evaluate forward concentration product
 		forward = 1.0
@@ -571,7 +570,7 @@ class Reaction:
 		if prodDensStates is not None:
 			prodQ = numpy.sum(prodDensStates * numpy.exp(-Elist / constants.R / T))
 
-		Keq = self.getEquilibriumConstant(T, conc=1.0)
+		Keq = self.getEquilibriumConstant(T)
 
 		if self.isIsomerization():
 

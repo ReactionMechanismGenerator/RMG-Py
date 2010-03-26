@@ -182,7 +182,7 @@ class BatchReactor(ReactionSystem):
 		ctml_writer.dataset(cti_file) # change name
 		# update the T and P used to convert PdepRate coefficients into rate constants
 		ctml_writer._temperature = self.initialTemperature
-		ctml_writer._pressure = self.initialTemperature
+		ctml_writer._pressure = self.initialPressure
 		ctml_writer.write()
 
 		import Cantera
@@ -350,7 +350,25 @@ class BatchReactor(ReactionSystem):
 			# current time
 			rxnRates = self.getReactionRates(P, V, T, Ni, model)
 			dNidt = stoichiometry * rxnRates
-			
+
+#			# DEBUG: Compare Cantera rates with our rates to make sure they agree
+#			rxnRates1 = numpy.zeros(rxnRates.shape, numpy.float64)
+#			for rxn in model.core.reactions:
+#				j = rxn.id - 1
+#				rxnRates1[j] = rxnRates[j]
+#			dNidt1 = stoichiometry * rxnRates1
+#			print 'Reaction rates:'
+#			rxnRates0 = gas.netRatesOfProgress()*1000.0
+#			for i, rxn in enumerate(model.core.reactions):
+#				j = rxn.id - 1
+#				print i, rxnRates0[i], rxnRates1[j]
+#			print 'Species rates:'
+#			dNidt0 = gas.netProductionRates()*1000.0
+#			for i, spec in enumerate(model.core.species):
+#				j = spec.id - 1
+#				print i, dNidt0[i], dNidt1[j]
+#			import pdb; pdb.set_trace()
+
 			# Determine characteristic species flux
 			charFlux = self.getCharacteristicFlux(model, stoichiometry, rxnRates)
 
@@ -654,13 +672,12 @@ class BatchReactor(ReactionSystem):
 
 		import rmg.reaction as reaction
 
-		conc = {}; totalConc = 0.0
+		conc = {}
 		for i, spec in enumerate(model.core.species):
 			conc[spec] = Ni[i] / V
-			totalConc += conc[spec]
-
+		
 		leakFluxes = numpy.zeros(len(model.unirxnNetworks), numpy.float64)
 		for i, network in enumerate(model.unirxnNetworks):
-			leakFluxes[i] = network.getLeakFlux(T, P, conc, totalConc)
+			leakFluxes[i] = network.getLeakFlux(T, P, conc)
 		return leakFluxes
 
