@@ -407,11 +407,15 @@ class Species:
 		"""
 		return self.structure[0].toSMILES()
 
-	def toAdjacencyList(self):
+	def toAdjacencyList(self, strip_hydrogens=False):
 		"""
 		Convert a Species object to an adjacency list.
+		
+		If strip_hydrogens=True then Hydrogen atoms are not reported 
+		(this is a valid shorthand: they will be replaced on importing such an
+		adjacency list, provided that the free electron numbers are accurate)
 		"""
-		return str(self) + '\n' + self.structure[0].toAdjacencyList()
+		return str(self) + '\n' + self.structure[0].toAdjacencyList(strip_hydrogens=strip_hydrogens)
 
 	def getResonanceIsomers(self):
 		"""
