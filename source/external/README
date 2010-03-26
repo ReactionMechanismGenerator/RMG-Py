@@ -24,3 +24,7 @@ comes from Pydot (http://www.dkbza.org/pydot.html)
 which uses the MIT license
 http://opensource.org/licenses/mit-license.html
 the version here is based on 1.0.2 but contains a bug fix patch
+
+
+cinfony/webel.py
+from http://cinfony.googlecode.com/svn/trunk/cinfony/webel.py
