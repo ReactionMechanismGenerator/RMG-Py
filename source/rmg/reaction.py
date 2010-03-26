@@ -638,6 +638,15 @@ class PDepReaction(Reaction):
 		else:
 			k = float(self.getRateConstant(T, P))
 			return ArrheniusKinetics(A=k, n=0.0, Ea=0.0)
+			
+	def toCantera(self,T=1000,P=1.0e5):
+		"""Add this to Cantera ctml_writer"""
+		# create a cantera Reaction 
+		self.canteraReaction = Reaction.toCantera(self,T,P)
+		# replace the forward rate coefficient
+		rate_function_of_T_P = self.getRateConstant #(T, P)
+		self.canteraReaction._kf = ctml_writer.PdepRate(rate_function_of_T_P)
+		return self.canteraReaction
 
 ################################################################################
 

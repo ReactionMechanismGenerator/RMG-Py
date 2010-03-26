@@ -154,8 +154,8 @@ class BatchReactor(ReactionSystem):
 		      elements = " C H O N Ar He Si",
 		      species = "all",
 		      reactions = "all",
-		      initial_state = ctml_writer.state(temperature = 1000 ,
-		                        pressure = 101325 )    )
+		      initial_state = ctml_writer.state(temperature = self.initialTemperature ,
+		                        pressure = self.initialPressure )    )
 		def has_species(sp):
 			"""Return 1 is a species with name 's' belongs to the phase,
 			or 0 otherwise. Redefined because the ctml_writer one doesn't work for us"""
@@ -180,6 +180,9 @@ class BatchReactor(ReactionSystem):
 		cti_file = os.path.join(cantera_folder, 'cantera_input_%03d' % len(model.core.species))
 		logging.debug("Writing CTML file %s" % cti_file)
 		ctml_writer.dataset(cti_file) # change name
+		# update the T and P used to convert PdepRate coefficients into rate constants
+		ctml_writer._temperature = self.initialTemperature
+		ctml_writer._pressure = self.initialTemperature
 		ctml_writer.write()
 
 		import Cantera
