@@ -404,12 +404,13 @@ def fit_groups(family_names = None):
 			kinetics.key = key
 		rates = family.library.values()
 		rates.sort(cmp=lambda x,y: cmp(x.RMS_error, y.RMS_error))
-		print "Rate expressions sorted by how well they are predicted by their group combinations"
+		logging.info( "Rate expressions sorted by how well they are predicted by their group combinations")
 		
 		rates_1000 = []
 		rates_err = []
 		for k in rates:
-			print "%-5s %-30s\tRMS error: %.2f  Rates: %s  %.30s"%(k.index, k.key, k.RMS_error, rates_string(k), k.comment )
+			logging.info( "%-5s %-30s\tRMS error: %.2f  Rates: %s  %.30s"%(
+				k.index, k.key, k.RMS_error, rates_string(k), k.comment ) )
 			rates_1000.append( math.log10(k.getRateConstant(1000,Hrxn)) )
 			rates_err.append( k.RMS_error )  # [Ts.index(T)]
 		rates_1000 = numpy.array(rates_1000)
@@ -423,7 +424,7 @@ def fit_groups(family_names = None):
 		pylab.show()
 		
 		def print_node_tree(node,indent=0):
-			print (' '*indent +
+			logging.info(' '*indent +
 					node.ljust(17-indent) + 
 					("\t%7.2g"*len(group_values[node])) % group_values[node]  +
 					"\t%6.2g\t%d"%(group_error[node],group_count[node]) + 
@@ -436,7 +437,7 @@ def fit_groups(family_names = None):
 					# recurse!
 					print_node_tree(child,indent+1)
 					
-		print ("Log10(k) at T=   " + ("\t%7g"*len(Ts)) % tuple(Ts) + 
+		logging.info("Log10(k) at T=   " + ("\t%7g"*len(Ts)) % tuple(Ts) + 
 				'\t RMS\tcount' + 
 				("\tMAD @ %d"*len(Ts)) % tuple(Ts) 
 			)
@@ -452,6 +453,8 @@ def fit_groups(family_names = None):
 		xvals = numpy.array([ group_count[group] for group in group_names ])
 		yvals = numpy.array([ group_error[group] for group in group_names ])
 		pylab.semilogx(xvals,yvals,'o',picker=5) # 5 points tolerance
+		pylab.xlabel('Number of groups training')
+		pylab.ylabel('RMSE')
 		pylab.title(family_name)
 		
 		def onpick(event):
@@ -460,27 +463,26 @@ def fit_groups(family_names = None):
 			ydata = thisline.get_ydata()
 			for ind in event.ind:
 				group_name = group_names[ind]
-				print "#%d Name: %s \tRates:%d \tNode-Rates:%d \tRMS error: %g"%(ind, group_name, len(kinetics_used_in[group_name]) , xvals[ind], yvals[ind])
-				print "MAD errors:"+("  %.2f"*len(Ts))%group_error_MAD_by_T[group_name]
-				print "Kinetics taken from:"
+				logging.info("#%d Name: %s \tRates:%d \tNode-Rates:%d \tRMS error: %g"%(
+					ind, group_name, len(kinetics_used_in[group_name]) , xvals[ind], yvals[ind]))
+				logging.info("MAD errors:"+("  %.2f"*len(Ts))%group_error_MAD_by_T[group_name])
+				logging.info("Kinetics taken from:")
 				rates = kinetics_used_in[group_name]
 				rates.sort(cmp=lambda x,y: cmp(x.RMS_error, y.RMS_error))
 				for k in rates:
-					print "%s\tIndex:%s \t%s "%(k.key,k.index,repr(k))
-					print "RMS error: %.2f"%(k.RMS_error), 
-					print "Rates: ",rates_string(k)
+					logging.info("%s\tIndex:%s \t%s "%(k.key,k.index,repr(k)))
+					logging.info("RMS error: %.2f"%(k.RMS_error) + " Rates: " + rates_string(k) )
 					for combo in k.used_in_combinations:
-						#print "A[%d,%d] ="%(combo,ind),A[combo,ind]
+						#logging.info( "A[%d,%d] ="%(combo,ind),A[combo,ind] )
 						if not A[combo,ind]:
-							#print "Rate didn't use the node in question (presumably used an ancestor)"
+							#logging.info("Rate didn't use the node in question (presumably used an ancestor)")
 							continue
-						print "Using",
 						used_nodes = [ group_names[i] for i in A[combo,:].nonzero()[0] ]
 						used_nodes.remove(group_name)
-						print group_name + ' with ' + ' + '.join(used_nodes) + '\t',
 						rms = numpy.sqrt( errors_sum_squared[combo] / len(Ts) )
-						print "RMSE: %.2f  Err(T):"%(rms), errors[combo]
-					print 
+						logging.info("Using" + group_name + ' with ' + ' + '.join(used_nodes) +
+							"\t RMSE: %.2f  Err(T):"%rms + str(errors[combo]) )
+					logging.info("") 
 				#print 'check %g:'%ind, zip(xdata[ind], ydata[ind])
 				
 		connection_id = fig.canvas.mpl_connect('pick_event', onpick)
@@ -524,7 +526,7 @@ def drawAllTrees(root):
 	placed in the folder specified by `root`.
 	"""
 
-	import os
+	import os, os.path
 
 	thermoDatabases = {'group': species.thermoDatabase.groupDatabase,
 		'1,5-interactions': species.thermoDatabase.int15Database,
@@ -537,13 +539,12 @@ def drawAllTrees(root):
 	# Create directories
 	try:
 		os.makedirs(root)
-		os.makedirs(root+os.sep+'thermo')
-		os.makedirs(root+os.sep+'kinetics')
+		os.makedirs(os.path.join(root,'thermo'))
+		os.makedirs(os.path.join(root,'kinetics'))
 		for key in thermoDatabases:
-			os.makedirs(root+os.sep+'thermo'+os.sep+key)
+			os.makedirs(os.path.join(root,'thermo',key))
 		for key in reaction.kineticsDatabase.families:
-			os.makedirs(root+os.sep+'kinetics'+os.sep+key)
-
+			os.makedirs(os.path.join(root,'kinetics',key))
 	except OSError:
 		raise
 
@@ -552,12 +553,12 @@ def drawAllTrees(root):
 		# Process all structures in dictionary
 		for label, node in thermoDatabase.dictionary.iteritems():
 			if isinstance(node, structure.Structure):
-				print '\t'+ label
+				logging.info('\t'+ label)
 				graph = node.toDOT()
 				graph.set('fontsize','10')
 				saveDOTAndImage(graph, root+os.sep+'thermo'+os.sep+key+os.sep+label, 'svg', 'neato')
 		# Process tree itself
-		print '\t'+key
+		logging.info('\t'+key)
 		graph = thermoDatabase.tree.toDOT()
 		graph.set('fontsize','10')
 		saveDOTAndImage(graph, root+os.sep+'thermo'+os.sep+key, 'svg', 'dot')
@@ -568,16 +569,16 @@ def drawAllTrees(root):
 		# Process all structures in dictionary
 		for label, node in family.dictionary.iteritems():
 			if isinstance(node, structure.Structure):
-				print '\t'+ label
+				logging.info('\t'+ label)
 				graph = node.toDOT()
 				graph.set('fontsize','10')
 				saveDOTAndImage(graph, root+os.sep+'thermo'+os.sep+key+os.sep+label, 'svg', 'neato')
 		# Process tree itself
-		print '\t'+key
+		logging.info('\t'+key)
 		graph = family.tree.toDOT()
 		graph.set('fontsize','10')
 		saveDOTAndImage(graph, root+os.sep+'kinetics'+os.sep+key, 'svg', 'neato')
-		print 'Created DOT for kinetics database %s' % (key)
+		logging.info('Created DOT for kinetics database %s'%(key) )
 
 ################################################################################
 
@@ -617,10 +618,10 @@ def printAtomTypeCounts():
 						localAtomTypeCount[atomType] += 1
 					else:
 						localAtomTypeCount[atomType] = 1
-		print '%s:' % key
+		logging.info('%s:'%key)
 		for atomType, count in localAtomTypeCount.iteritems():
-			print '\t%i instances of %s' % (count, atomType)
-		print ''
+			logging.info('\t%i instances of %s' % (count, atomType))
+		logging.info('')
 
 	# Kinetics databases
 	for key, database in reaction.kineticsDatabase.families.iteritems():
@@ -639,15 +640,15 @@ def printAtomTypeCounts():
 						localAtomTypeCount[atomType] += 1
 					else:
 						localAtomTypeCount[atomType] = 1
-		print '%s:' % key
+		logging.info( '%s:' % key )
 		for atomType, count in localAtomTypeCount.iteritems():
-			print '\t%i instances of %s' % (count, atomType)
-		print ''
+			logging.info( '\t%i instances of %s' % (count, atomType) )
+		logging.info( '' )
 
 	# Print the totals
-	print 'Totals:'
+	logging.info( 'Totals:' )
 	for atomType, count in totalAtomTypeCount.iteritems():
-		print '\t%i instances of %s' % (count, atomType)
+		logging.info( '\t%i instances of %s' % (count, atomType) )
 
 ################################################################################
 
@@ -655,7 +656,7 @@ if __name__ == '__main__':
 
 	import math
 	# Show debug messages (as databases are loading)
-	main.initializeLog(10)
+	logging.initialize(10,'database.log')
 
 	# Load databases
 	databasePath = '../data/RMG_database'
@@ -680,5 +681,5 @@ if __name__ == '__main__':
 	#drawKineticsTrees()
 
 	# Draw trees in database
-	drawAllTrees('database')
+#	drawAllTrees('database')
 

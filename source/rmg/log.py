@@ -81,7 +81,7 @@ def verbose(msg):
 
 ################################################################################
 
-def initialize(verbose, fstr):
+def initialize(verbose, log_file_name):
 	"""
 	Set up a logger for RMG to use to print output to stdout. The
 	`verbose` parameter is an integer specifying the amount of log text seen
@@ -103,7 +103,6 @@ def initialize(verbose, fstr):
 	ch.setFormatter(formatter)
 
 	# create file handler
-	log_file_name = fstr
 	if os.path.exists(log_file_name):
 		backup_name = '_backup'.join(os.path.splitext(log_file_name))
 		if os.path.exists(backup_name):
