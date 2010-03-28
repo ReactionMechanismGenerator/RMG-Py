@@ -294,9 +294,12 @@ class Structure:
 		structureElement = document.createTextElement('structure', rootElement, self.toInChI())
 		document.createAttribute('format', structureElement, 'InChI')
 
-	def fromAdjacencyList(self, adjlist, addH=False):
+	def fromAdjacencyList(self, adjlist, addH=False, withLabel=True):
 		"""
 		Convert a string adjacency list `adjlist` into a structure object.
+		
+		Skips the first line (assuming it's a label) unless withLabel=False.
+		Only adds Hydrogens if addH=True.
 		"""
 
 		try:
@@ -304,10 +307,11 @@ class Structure:
 			atoms = []; bonds = []; atomdict = {}; bonddict = {}
 
 			lines = adjlist.splitlines()
+			
+			if withLabel:
+				label = lines.pop(0)
 
-			label = lines[0]
-
-			for line in lines[1:]:
+			for line in lines:
 
 				data = line.split()
 
