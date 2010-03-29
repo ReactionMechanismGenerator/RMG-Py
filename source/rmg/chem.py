@@ -602,7 +602,7 @@ class Atom(object):
 			if atom.__class__ == AtomType:
 				self._atomType.append(atom)
 			else:
-				raise Exception('Invalid atom type "' + str(atomType) + '".')
+				raise Exception('Invalid atom type "%s" in %s.'%(str(atom), str(atomType)))
 		
 	atomType = property(getAtomType, setAtomType)
 

@@ -377,7 +377,7 @@ class Structure:
 					bonddict[aid][aid2] = btype
 
 		except Exception, e:
-			raise InvalidAdjacencyListException(label)
+			raise InvalidAdjacencyListException(label + ". Invalid because of "+e.message)
 
 		# Check consistency using bonddict
 		for atom1 in bonddict:
