@@ -477,12 +477,16 @@ class Structure:
 		# Create the graph from the atom and bond lists
 		self.initialize(atoms, bonds)
 
-	def toAdjacencyList(self, label=''):
+	def toAdjacencyList(self, label='', strip_hydrogens=False):
 		"""
 		Convert the structure object to an adjacency list. 
 		
 		The `label` parameter is an optional string to put as the first line of 
 		the adjacency list; if set to the empty string, this line will be omitted.
+		
+		If strip_hydrogens=True then Hydrogen atoms are not reported 
+		(this is a valid shorthand: they will be replaced on importing such an
+		adjacency list, provided that the free electron numbers are accurate)
 		"""
 		
 		adjlist = ''
@@ -494,8 +498,11 @@ class Structure:
 		self.graph.setConnectivityValues()
 		atoms = self.atoms()
 		atoms.sort(key=graph.globalAtomSortValue)
-
+		# now make sure the hydrogens come last, in case we wish to strip them!
+		atoms.sort(key=chem.Atom.isHydrogen )
+		
 		for i, atom in enumerate(atoms):
+			if strip_hydrogens and atom.isHydrogen(): continue 
 			
 			# Atom number
 			adjlist += str(i+1) + ' '
@@ -527,6 +534,7 @@ class Structure:
 			atoms2.sort(key=graph.globalAtomSortValue)
 
 			for atom2 in atoms2:
+				if strip_hydrogens and atom2.isHydrogen(): continue
 				bond = self.getBond(atom, atom2)
 				adjlist += '{' + str(atoms.index(atom2)+1) + ','
 
