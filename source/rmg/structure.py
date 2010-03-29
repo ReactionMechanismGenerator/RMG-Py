@@ -514,6 +514,7 @@ class Structure:
 			# Atom label
 			if atom.label != '':
 				adjlist += atom.label + ' '
+			else: adjlist += '   '
 			
 			# Atom type(s)
 			if atom.atomType.__class__ == list:
@@ -522,7 +523,7 @@ class Structure:
 					adjlist += ',' + atomType.label
 				adjlist += '} '
 			else:
-				adjlist += atom.atomType.label + ' '
+				adjlist += "%-3s "%atom.atomType.label
 			
 			# Electron state(s)
 			if atom.electronState.__class__ == list:
@@ -535,8 +536,9 @@ class Structure:
 
 			# Bonds list
 			atoms2 = self.getBonds(atom).keys()
-			atoms2.sort(key=graph.globalAtomSortValue)
-
+			# sort them the same way as the atoms
+			atoms2.sort(key=atoms.index)
+			
 			for atom2 in atoms2:
 				if strip_hydrogens and atom2.isHydrogen(): continue
 				bond = self.getBond(atom, atom2)
