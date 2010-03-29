@@ -1920,23 +1920,29 @@ def kineticsInverseLaplaceTransform(kinetics, E0, densStates, Elist, T):
 	import numpy
 	import unirxn.states as states
 
-	if kinetics.Ea < 0.0:
-		logging.warning('Negative activation energy of %s kJ/mol encountered during unirxn calculation; setting to zero.' % (kinetics.Ea / 1000.0))
-		Ea = 0.0
-	else:
-		Ea = kinetics.Ea
+	# Extract the Arrhenius parameters (so we only look them up once; also
+	# useful in case we modify them (e.g. for negative Ea))
+	A = kinetics.A
+	n = kinetics.n
+	Ea = kinetics.Ea
 
+	# The ILT method cannot handle negative activation energies, so we move
+	# this contribution from the exponential to the preexponential
+	if Ea < 0.0:
+		A *= math.exp(-Ea / constants.R / T)
+		Ea = 0.0
+	
 	dE = Elist[1] - Elist[0]
 	k = numpy.zeros(len(Elist), numpy.float64)
 
-	if kinetics.n == 0.0:
+	if n == 0.0:
 		# Determine the microcanonical rate directly
 		s = int(math.floor(Ea / dE))
 		for r in range(len(Elist)):
 			if Elist[r] > E0 and densStates[r] != 0:
-				k[r] = kinetics.A * densStates[r - s] / densStates[r]
+				k[r] = A * densStates[r - s] / densStates[r]
 
-	elif kinetics.n > 0.0:
+	elif n > 0.0:
 		import scipy.special
 		# Evaluate the inverse Laplace transform of the T**n piece, which only
 		# exists for n >= 0
@@ -1945,21 +1951,21 @@ def kineticsInverseLaplaceTransform(kinetics, E0, densStates, Elist, T):
 			if E == 0.0:
 				phi[i] = 0.0
 			else:
-				phi[i] = E**(kinetics.n-1) / (constants.R**kinetics.n * scipy.special.gamma(kinetics.n))
+				phi[i] = E**(n-1) / (constants.R**n * scipy.special.gamma(n))
 		# Evaluate the convolution
 		states.convolve(phi, densStates, Elist)
 		# Apply to determine the microcanonical rate
 		s = int(math.floor(Ea / dE))
 		for r in range(len(Elist)):
 			if Elist[r] > E0 and densStates[r] != 0:
-				k[r] = kinetics.A * phi[r - s] / densStates[r]
+				k[r] = A * phi[r - s] / densStates[r]
 
 	else:
 		# Use the cheating method for n < 0
 		s = int(math.floor(Ea / dE))
 		for r in range(len(Elist)):
 			if Elist[r] > E0 and densStates[r] != 0:
-				k[r] = kinetics.A * T**kinetics.n * densStates[r - s] / densStates[r]
+				k[r] = A * T**n * densStates[r - s] / densStates[r]
 
 	return k
 
