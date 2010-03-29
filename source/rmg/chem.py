@@ -276,6 +276,8 @@ def loadAtomTypes():
 	atomTypes['Cb'] 	= AtomType('Cb', 	elements['C'], 	doubleBonds=0, tripleBonds=0, benzeneBonds=2, description='carbon belonging to a benzene ring')
 	atomTypes['Cbf'] 	= AtomType('Cbf', 	elements['C'], 	doubleBonds=0, tripleBonds=0, benzeneBonds=3, description='carbon belonging to a fused benzene ring')
 
+	atomTypes['CO']		= AtomType('CO', 	None, 			description='To allow me to read the RMG-Java database, without understanding it.')
+	
 	atomTypes['Os'] 	= AtomType('Os', 	elements['O'], 	doubleBonds=0, tripleBonds=0, benzeneBonds=0, description='oxygen with two single bonds')
 	atomTypes['Od'] 	= AtomType('Od', 	elements['O'], 	doubleBonds=1, tripleBonds=0, benzeneBonds=0, description='oxygen with one double bond')
 
