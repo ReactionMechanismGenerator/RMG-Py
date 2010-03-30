@@ -390,3 +390,36 @@ subroutine hinderedRotor_d_heatCapacity_d_barr(Tlist, nT, freq, barr, dCvlist)
 end subroutine
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+subroutine kRotor_densityOfStates(E, Ngrains, rho)
+    ! Determine the density of states for an arbitrary active K-rotor at the
+    ! specified energies. The parameters are:
+    !
+    ! ========== ====== ========================================================
+    ! Parameter  Intent Description
+    ! ========== ====== ========================================================
+    ! `E`        in     The energies to determine the density of states at in
+    !                   cm^-1
+    ! `Ngrains`  in     The number of energy grains
+    ! `rho`      out    The density of states at the specified energies in
+    !                   (cm^-1)^-1
+    ! ========== ====== ========================================================
+
+    ! Type definitions of parameters
+    integer :: Ngrains
+    real(8), dimension(1:Ngrains), intent(in) :: E
+    real(8), dimension(1:Ngrains), intent(out) :: rho
+    
+    integer r
+
+    do r = 1, Ngrains
+        if (E(r) == 0) then
+            rho(r) = 0.0
+        else
+            rho(r) = 1.0 / sqrt(1.0 * E(r))
+        end if
+    end do
+
+end subroutine
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

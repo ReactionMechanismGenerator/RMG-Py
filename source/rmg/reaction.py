@@ -1918,7 +1918,7 @@ def kineticsInverseLaplaceTransform(kinetics, E0, densStates, Elist, T):
 	"""
 
 	import numpy
-	import unirxn.states as states
+	import spectral.states as states
 
 	# Extract the Arrhenius parameters (so we only look them up once; also
 	# useful in case we modify them (e.g. for negative Ea))

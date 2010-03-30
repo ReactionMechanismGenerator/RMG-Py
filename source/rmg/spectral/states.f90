@@ -93,7 +93,7 @@ subroutine densityOfStates(E, Ngrains, vib, Nvib, rot, Nrot, hind, Nhind, &
 
     ! Rigid rotor modes
     if (Nrot > 0) then
-        call rigidRotorDensityOfStates(E, Ngrains, rot, Nrot, linear, rho0, msg)
+        call freeRotor_densityOfStates(E, Ngrains, rot, Nrot, linear, rho0)
         if (msg(1:1) /= ' ') return
         call convolve(rho, rho0, E, Ngrains)
     else
@@ -101,14 +101,14 @@ subroutine densityOfStates(E, Ngrains, vib, Nvib, rot, Nrot, hind, Nhind, &
         ! The rotational constant cancels out in subsequent calculations, so we
         ! arbitrarily choose 1.0
         ! This also helps to smooth the density of states
-        call kRotorDensityOfStates(E, Ngrains, rho0, msg)
+        call kRotor_densityOfStates(E, Ngrains, rho0)
         if (msg(1:1) /= ' ') return
         call convolve(rho, rho0, E, Ngrains)
     end if
 
     ! Hindered rotor modes
     do i = 1, Nhind
-        call hinderedRotorDensityOfStates(E, Ngrains, hind(i,:), rho0, msg)
+        call hinderedRotor_densityOfStates(E, Ngrains, hind(i,1), hind(i,2), rho0)
         if (msg(1:1) /= ' ') return
         call convolve(rho, rho0, E, Ngrains)
     end do
@@ -157,256 +157,6 @@ subroutine densityOfStates(E, Ngrains, vib, Nvib, rot, Nrot, hind, Nhind, &
         deallocate( E_vib, rho_vib )
 
     end if
-
-end subroutine
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-subroutine rigidRotorDensityOfStates(E, Ngrains, rot, Nrot, linear, rho, msg)
-    ! Determine the rigid rotor density of states at the specified energies. The
-    ! formula is
-    !
-    ! .. math:: \\rho(E) = q_\\mathrm{r} = \\frac{1}{\\sigma \\tilde{\\omega}}
-    !
-    ! for linear rotors and
-    !
-    ! .. math:: \\rho(E) = \\frac{q_\\mathrm{r} E^{1/2}}{\\frac{1}{2}!} =
-    !           \\frac{\\sqrt{\\pi}}{\\sigma} \\left[ \\frac{1}{\\tilde{\\omega_\\mathrm{A}} \\tilde{\\omega_\\mathrm{B}} \\tilde{\\omega_\\mathrm{C}} } \\right]^{1/2} \\frac{E^{1/2}}{\\frac{1}{2}!}
-    !
-    ! for nonlinear rotors. The parameters are:
-    !
-    ! ========== ====== ========================================================
-    ! Parameter  Intent Description
-    ! ========== ====== ========================================================
-    ! `E`        in     The energies to determine the density of states at in
-    !                   cm^-1
-    ! `Ngrains`  in     The number of energy grains
-    ! `rot`      in     An array of rigid rotor frequencies in cm^-1
-    ! `Nrot`     in     The number of rigid rotor modes
-    ! `linear`   in     1 if the molecule is linear, 0 if nonlinear
-    ! `rho`      out    The density of states at the specified energies in
-    !                   (cm^-1)^-1
-    ! `msg`      out    If the subroutine was unsuccessful, this string will
-    !                   contain a brief message describing the error; the
-    !                   string will be empty if the subroutine was successful
-    ! ========== ====== ========================================================
-
-    ! Type definitions of parameters
-    integer :: Ngrains
-    integer :: Nrot
-    integer :: linear
-    real(8), dimension(1:Ngrains), intent(in) :: E
-    real(8), dimension(1:Nrot), intent(in) :: rot
-    real(8), dimension(1:Ngrains), intent(out) :: rho
-    character(len=128), intent(out) :: msg
-
-    ! Physical and mathematical constants
-    real(8) pi
-    ! A temporary for real variables
-    real(8) qr
-    ! Some integer indices
-    integer r
-
-    ! Set constants
-    pi = 3.141592654
-
-    ! Zero the output density of states array
-    do r = 1, Ngrains
-        rho(r) = 0.0
-    end do
-
-    ! Calculate the rigid rotor density of states
-    if (linear /= 0 .and. Nrot == 1) then
-        ! Linear rotors have one doubly-degenerate frequency
-        do r = 1, Ngrains
-            rho(r) = 1.0 / rot(1)
-        end do
-    elseif (linear == 0 .and. Nrot == 3) then
-        ! Nonlinear rotors have three frequencies
-        qr = sqrt(pi) / sqrt(product(rot))
-        do r = 1, Ngrains
-            rho(r) = qr * sqrt(E(r)) / (0.5 * sqrt(pi))
-        end do
-    else
-        ! Got bad combination of linear/nonlinear and number of rotational modes
-        if (linear /= 0) then
-            msg = 'Invalid number of rigid rotor frequencies for nonlinear molecule.'
-        else
-            msg = 'Invalid number of rigid rotor frequencies for linear molecule.'
-        end if
-    end if
-
-end subroutine
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-subroutine kRotorDensityOfStates(E, Ngrains, rho, msg)
-    ! Determine the rigid rotor density of states at the specified energies. The
-    ! formula is
-    !
-    ! .. math:: \\rho(E) = q_\\mathrm{r} = \\frac{1}{\\sigma \\tilde{\\omega}}
-    !
-    ! for linear rotors and
-    !
-    ! .. math:: \\rho(E) = \\frac{q_\\mathrm{r} E^{1/2}}{\\frac{1}{2}!} =
-    !           \\frac{\\sqrt{\\pi}}{\\sigma} \\left[ \\frac{1}{\\tilde{\\omega_\\mathrm{A}} \\tilde{\\omega_\\mathrm{B}} \\tilde{\\omega_\\mathrm{C}} } \\right]^{1/2} \\frac{E^{1/2}}{\\frac{1}{2}!}
-    !
-    ! for nonlinear rotors. The parameters are:
-    !
-    ! ========== ====== ========================================================
-    ! Parameter  Intent Description
-    ! ========== ====== ========================================================
-    ! `E`        in     The energies to determine the density of states at in
-    !                   cm^-1
-    ! `Ngrains`  in     The number of energy grains
-    ! `rho`      out    The density of states at the specified energies in
-    !                   (cm^-1)^-1
-    ! `msg`      out    If the subroutine was unsuccessful, this string will
-    !                   contain a brief message describing the error; the
-    !                   string will be empty if the subroutine was successful
-    ! ========== ====== ========================================================
-
-    ! Type definitions of parameters
-    integer :: Ngrains
-    real(8), dimension(1:Ngrains), intent(in) :: E
-    real(8), dimension(1:Ngrains), intent(out) :: rho
-    character(len=128), intent(out) :: msg
-
-    integer r
-
-    msg = ''
-
-    do r = 1, Ngrains
-        if (E(r) == 0) then
-            rho(r) = 0.0
-        else
-            rho(r) = 1.0 / sqrt(1.0 * E(r))
-        end if
-    end do
-
-end subroutine
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-subroutine hinderedRotorDensityOfStates(E, Ngrains, hind, rho, msg)
-    ! Determine the density of states for the internal hindered rotor modes at
-    ! specified energies. The 1D Pitzer model of a hindered rotor is used; the
-    ! formula is
-    !
-    ! .. math:: \\rho(E) = \\frac{2 q_\\mathrm{1f}}{\\pi^{3/2} V_0^{1/2}} \\mathcal{K}(E / V_0) \\hspace{20pt} E < V_0
-    !
-    ! and
-    !
-    ! .. math:: \\rho(E) = \\frac{2 q_\\mathrm{1f}}{\\pi^{3/2} E^{1/2}} \\mathcal{K}(V_0 / E) \\hspace{20pt} E > V_0
-    !
-    ! for
-    !
-    ! .. math:: q_\\mathrm{1f} = \\frac{1}{\\sigma} \\left( \\frac{\\pi}{h c \\tilde{\\omega}} \\right)^{1/2}
-    !
-    ! The parameters are:
-    !
-    ! ========== ====== ========================================================
-    ! Parameter  Intent Description
-    ! ========== ====== ========================================================
-    ! `E`        in     The energies to determine the density of states at in
-    !                   cm^-1
-    ! `Ngrains`  in     The number of energy grains
-    ! `hind`     in     A hindered rotor frequency-barrier pair, both in cm^-1
-    ! `rho`      out    The density of states at the specified energies in
-    !                   (cm^-1)^-1
-    ! `msg`      out    If the subroutine was unsuccessful, this string will
-    !                   contain a brief message describing the error; the
-    !                   string will be empty if the subroutine was successful
-    ! ========== ====== ========================================================
-
-    ! Type definitions of parameters
-    integer :: Ngrains
-    real(8), dimension(1:Ngrains), intent(in) :: E
-    real(8), dimension(1:2), intent(in) :: hind
-    real(8), dimension(1:Ngrains), intent(out) :: rho
-    character(len=128), intent(out) :: msg
-
-    ! Physical and mathematical constants
-    real(8) pi
-    ! Some integer indices
-    integer r
-
-    real(8) q1f, tol, K, V0
-    
-    msg = ''
-
-    tol = 1.0e-7
-    
-    ! Set constants
-    pi = 3.141592654
-
-    ! Zero the output density of states array
-    do r = 1, Ngrains
-        rho(r) = 0.0
-    end do
-
-    ! Calculate intermediate quantities
-    q1f = sqrt(pi / hind(1))
-    V0 = hind(2)
-
-    do r = 1, Ngrains
-        if (E(r) < V0) then
-            call ellipk(E(r) / V0, tol, K)
-            rho(r) = 2.0 * q1f / (sqrt(pi*pi*pi) * sqrt(V0)) * K
-        else
-            call ellipk(V0 / E(r), tol, K)
-            rho(r) = 2.0 * q1f / (sqrt(pi*pi*pi) * sqrt(E(r))) * K
-        end if
-    end do
-
-end subroutine
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-subroutine ellipk(m, tol, K)
-    ! Evaluate the complete elliptic integral of the first kind at the value
-    ! `m` (such that 0 <= m < 1) to a desired tolerance of `tol`.
-
-    ! Type definitions of parameters
-    real(8), intent(in) :: m
-    real(8), intent(in) :: tol
-    real(8), intent(out) :: K
-    
-    real(8) A0, B0, A, B
-    real(8) pi
-
-    integer n
-
-    ! Initialize return value to zero
-    K = 0.0
-
-    ! Skip if m is outside of range (0, 1) or tolerance is negative
-    if (m < 0 .or. m > 1 .or. tol < 0) then
-        return
-    end if
-
-    ! Set constants
-    pi = 3.14159265358979323846
-
-    ! Set starting point for evaluation of elliptic integral
-    !A = 1 + m
-    !B = 1 - m
-    A = 1
-    B = sqrt(1 - m)
-    
-    ! Iteratively refine value until convergence is achieved
-    n = 0
-    do while (abs(A - B) > tol .and. n < 1000)
-        n = n + 1
-        ! Generate improved values
-        A0 = A
-        B0 = B
-        A = (A0 + B0) / 2.0
-        B = sqrt(A0 * B0)
-    end do
-
-    ! Result of integral
-    K = pi / 2.0 / A
 
 end subroutine
 

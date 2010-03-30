@@ -38,7 +38,7 @@ import rmg.log as logging
 import numpy
 
 import rmg.constants as constants
-import states
+import rmg.spectral.states as states
 
 ################################################################################
 

@@ -30,6 +30,8 @@
 
 import numpy as np
 
+import rmg.constants as constants
+
 import _modes
 
 ################################################################################
@@ -262,7 +264,7 @@ class HinderedRotor:
 		rho = np.zeros((len(Elist)), np.float64)
 		rho0 = _modes.hinderedrotor_densityofstates(Elist, self.frequency, self.barrier)
 		for i in range(self.degeneracy):
-			rho = convolve(rho, rho0, Elist)
+			rho = _modes.convolve(rho, rho0, Elist)
 		return rho
 
 	def fromXML(self, document, rootElement, frequencyScaleFactor=1.0):
@@ -425,31 +427,40 @@ class SpectralData:
 				Q[i] *= Q0[i]
 		return Q
 
-	def getDensityOfStates(self, Elist):
+	def getDensityOfStates(self, Elist, linear):
 		"""
 		Return the value of the density of states in mol/J at the specified
 		energies `Elist` in J/mol above the ground state.
 		"""
 
-		rho = np.zeros((len(Elist)), np.float64)
+		import states
 
-		if len(self.modes) == 0:
-			return rho
+		# Create energies in cm^-1 at which to evaluate the density of states
+		conv = constants.h * constants.c * 100.0 * constants.Na # [=] J/mol/cm^-1
+		Emin = min(Elist) / conv
+		Emax = max(Elist) / conv
+		dE = (Elist[1] - Elist[0]) / conv
+		Elist0 = np.arange(Emin, Emax+dE/2, dE)
 
-		# First convolve nonvibrational modes
-		for mode in self.modes:
-			if not isinstance(mode, HarmonicOscillator):
-				rho0 = mode.getDensityOfStates(Elist)
-				if not rho.any():
-					rho = rho0
-				else:
-					rho = convolve(rho, rho0, Elist)
-		# Use Beyer-Swinehart for vibrational modes
-		if not rho.any():
-			rho[0] = 1.0 / (Elist[1] - Elist[0])
-		rho = beyerSwinehart(Elist, [mode.frequency for mode in self.modes if isinstance(mode, HarmonicOscillator)], rho)
+		# Prepare inputs for density of states function
+		vib = np.array([mode.frequency for mode in self.modes if isinstance(mode, HarmonicOscillator)])
+		rot = np.array([mode.frequencies for mode in self.modes if isinstance(mode, RigidRotor)])
+		hind = np.array([[mode.frequency, mode.barrier] for mode in self.modes if isinstance(mode, HinderedRotor)])
+		if len(hind) == 0: hind = np.zeros([0,2],np.float64)
+		linear = 1 if linear else 0
+		symm = self.symmetry
+
+		# Calculate the density of states
+		densStates, msg = states.densityofstates(Elist0, vib, rot, hind, symm, linear)
+		msg = msg.strip()
+		if msg != '':
+			raise Exception('Error while calculating the density of states for species %s: %s' % (self, msg))
+
+		# Convert density of states from (cm^-1)^-1 to mol/J
+		densStates /= conv
+
 		# Return result
-		return smooth(rho)
+		return densStates
 
 	def phi(self, beta, E):
 		beta = float(beta)

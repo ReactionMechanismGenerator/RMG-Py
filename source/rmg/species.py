@@ -519,8 +519,6 @@ class Species:
 		the specified list of energies `Elist` in J/mol.
 		"""
 
-		import unirxn.states as states
-
 		# Do we have what we need to do the density of states calculation?
 		if self.spectralData is not None:
 			# We already have what we need, so don't do anything
@@ -538,32 +536,9 @@ class Species:
 			# an exception
 			raise Exception('Unable to calculate density of states for species %s; no structure information or spectral data available.' % self)
 
-		# Initialize density of states
-		densStates = numpy.zeros(len(Elist), numpy.float64)
-
-		# Create energies in cm^-1 at which to evaluate the density of states
-		conv = constants.h * constants.c * 100.0 * constants.Na # [=] J/mol/cm^-1
-		Emin = min(Elist) / conv
-		Emax = max(Elist) / conv
-		dE = (Elist[1] - Elist[0]) / conv
-		Elist0 = numpy.arange(Emin, Emax+dE/2, dE)
-
-		# Prepare inputs for density of states function
-		vib = numpy.array([mode.frequency for mode in self.spectralData.modes if isinstance(mode, spectral.modes.HarmonicOscillator)])
-		rot = numpy.array([mode.frequencies for mode in self.spectralData.modes if isinstance(mode, spectral.modes.RigidRotor)])
-		hind = numpy.array([[mode.frequency, mode.barrier] for mode in self.spectralData.modes if isinstance(mode, spectral.modes.HinderedRotor)])
-		if len(hind) == 0: hind = numpy.zeros([0,2],numpy.float64)
-		linear = 1 if self.structure and len(self.structure) > 0 and self.structure[0].isLinear() else 0
-		symm = self.spectralData.symmetry
-
-		# Calculate the density of states
-		densStates, msg = states.densityofstates(Elist0, vib, rot, hind, symm, linear)
-		msg = msg.strip()
-		if msg != '':
-			raise Exception('Error while calculating the density of states for species %s: %s' % (self, msg))
-
-		# Convert density of states from (cm^-1)^-1 to mol/J
-		densStates /= conv
+		# Calculate density of states
+		linear = (self.structure and len(self.structure) > 0 and self.structure[0].isLinear())
+		densStates = self.spectralData.getDensityOfStates(Elist, linear)
 
 		return densStates
 
