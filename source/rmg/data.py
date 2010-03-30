@@ -800,13 +800,21 @@ class Database:
 		"""
 		Descend the tree in search of the functional group node that best
 		matches the local structure around `atoms` in `structure`.
+		
+		If root=None then uses the first matching top node.
+		
+		Returns None if there is no matching root.
 		"""
-
-		if root is None: root = self.tree.top[0]
-
-		if not self.matchNodeToStructure(root, structure, atoms):
+		
+		if root is None:
+			for root in self.tree.top:
+				if self.matchNodeToStructure(root, structure, atoms):
+					break # We've found a matching root
+			else: # didn't break - matched no top nodes
+				return None
+		elif not self.matchNodeToStructure(root, structure, atoms):
 			return None
-
+			
 		next = []
 		for child in self.tree.children[root]:
 			if self.matchNodeToStructure(child, structure, atoms):
