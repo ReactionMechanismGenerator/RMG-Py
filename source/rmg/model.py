@@ -146,9 +146,6 @@ class CoreEdgeReactionModel:
 			# Add new species
 			self.addSpeciesToCore(newSpecies)
 
-			logging.info('')
-			logging.info('After model enlargement:')
-
 		elif isinstance(newObject, unirxn.network.Network) and settings.unimolecularReactionNetworks:
 
 			network = newObject
@@ -162,9 +159,6 @@ class CoreEdgeReactionModel:
 			# reactants or products with itself (e.g. A + A <---> products)
 			# Don't find reactions involving the new species as bimolecular
 			# reactants or products with other core species (e.g. A + B <---> products)
-
-			logging.info('')
-			logging.info('After network enlargement:')
 
 		else:
 			raise TypeError('Unable to use object %s to enlarge reaction model; expecting an object of class rmg.species.Species or rmg.unirxn.network.Network.' % newObject)
@@ -180,9 +174,8 @@ class CoreEdgeReactionModel:
 				if spec not in self.core.species: allSpeciesInCore = False
 				if spec not in self.edge.species and spec not in self.core.species:
 					self.addSpeciesToEdge(spec)
-			# We only add reactions that are not unimolecular if pressure
-			# dependence is on; unimolecular reactions will be added after
-			# processing the associated networks
+			# If pressure dependence is on, we only add reactions that are not unimolecular;
+			# unimolecular reactions will be added after processing the associated networks
 			if not settings.unimolecularReactionNetworks or not (
 				rxn.isIsomerization() or rxn.isDissociation() or rxn.isAssociation()):
 				if allSpeciesInCore:
@@ -194,6 +187,8 @@ class CoreEdgeReactionModel:
 				self.addReactionToUnimolecularNetworks(rxn)
 
 		# Output current model size information after enlargement
+		logging.info('')
+		logging.info('After network enlargement:')
 		logging.info('\tThe model core has %s species and %s reactions' % (len(self.core.species), len(self.core.reactions)))
 		logging.info('\tThe model edge has %s species and %s reactions' % (len(self.edge.species), len(self.edge.reactions)))
 		logging.info('')
