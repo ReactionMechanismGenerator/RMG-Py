@@ -96,9 +96,10 @@ class species():
 		return dictentry, libraryentry
 		
 def WriteRMGjava(list_of_species):
-	os.path.exists('RMG_Database') or os.makedirs('RMG_Database')
-	dictionary = file('Dictionary.txt','w')
-	library = file('Library.txt','w')
+	folder = os.path.join('RMG_Database','themo_libraries','latest')
+	os.path.exists(folder) or os.makedirs(folder)
+	dictionary = file(os.path.join(folder,'Dictionary.txt'),'w')
+	library = file(os.path.join(folder,'Library.txt'),'w')
 	for s in list_of_species:
 		dictentry, thermoentry = s.toRMGjava()
 		dictionary.write(dictentry+"\n")
