@@ -1994,6 +1994,7 @@ class ReactionFamilySet:
 		
 		# Load the families from kinetics/families.txt
 		familyList = []
+		ffam = None
 		try:
 			ffam = open(os.path.join(datapath,'kinetics_groups','families.txt'), 'r')
 			for line in ffam:
@@ -2007,9 +2008,9 @@ class ReactionFamilySet:
 			return
 		except IOError, e:
 			logging.exception('Database file "' + e.filename + '" not found.')
-			return
+			raise
 		finally:
-			ffam.close()
+			if ffam: ffam.close()
 		
 		# Load the reaction families (if they exist and status is 'on')
 		self.families = {}
