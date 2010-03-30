@@ -134,7 +134,7 @@ class Dictionary(dict):
 			return
 		except IOError, e:
 			logging.exception('Database dictionary file "' + e.filename + '" not found.')
-			return
+			raise
 		finally:	
 			if fdict: fdict.close()
 		
