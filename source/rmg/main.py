@@ -116,10 +116,11 @@ def execute(inputFile, options):
 	
 	# Initialize reaction model
 	if options.restart:
+		import gzip
 		import cPickle
 		import ctml_writer
 		logging.info('Loading previous restart file...')
-		f = open(os.path.join(settings.outputDirectory,'restart.pkl'), 'rb')
+		f = gzip.GzipFile(os.path.join(settings.outputDirectory,'restart.pkl'), 'rb')
 		species.speciesList, species.speciesCounter, reaction.reactionList, \
 			reactionModel, reactionSystems = cPickle.load(f)
 		f.close()
@@ -193,9 +194,12 @@ def execute(inputFile, options):
 			# In order to get all the references preserved, you must pickle all of
 			# the objects in one concerted dump; this also has the added benefits
 			# of using less space and running faster
+			# We also compress the restart file to save space (and lower the
+			# disk read/write time)
+			import gzip
 			import cPickle
 			logging.info('Saving restart file...')
-			f = open(os.path.join(settings.outputDirectory,'restart.pkl'), 'wb')
+			f = gzip.GzipFile(os.path.join(settings.outputDirectory,'restart.pkl'), 'wb')
 			cPickle.dump((
 				species.speciesList,
 				species.speciesCounter,
