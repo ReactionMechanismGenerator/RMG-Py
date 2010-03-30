@@ -167,13 +167,15 @@ class CoreEdgeReactionModel:
 		for rxn in rxnList:
 			allSpeciesInCore = True
 			for spec in rxn.reactants:
-				if spec not in self.core.species: allSpeciesInCore = False
-				if spec not in self.edge.species and spec not in self.core.species:
-					self.addSpeciesToEdge(spec)
+				if spec not in self.core.species:
+					allSpeciesInCore = False
+					if spec not in self.edge.species:
+						self.addSpeciesToEdge(spec)
 			for spec in rxn.products:
-				if spec not in self.core.species: allSpeciesInCore = False
-				if spec not in self.edge.species and spec not in self.core.species:
-					self.addSpeciesToEdge(spec)
+				if spec not in self.core.species:
+					allSpeciesInCore = False
+					if spec not in self.edge.species:
+						self.addSpeciesToEdge(spec)
 			# If pressure dependence is on, we only add reactions that are not unimolecular;
 			# unimolecular reactions will be added after processing the associated networks
 			if not settings.unimolecularReactionNetworks or not (
