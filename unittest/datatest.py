@@ -9,7 +9,7 @@ sys.path.append('../source')
 from rmg.data import *
 from rmg.structure import *
 
-thermoDatabase = '../data/RMG_database/thermo'
+thermoDatabase = '../data/RMG_database/thermo_groups'
 
 ################################################################################
 

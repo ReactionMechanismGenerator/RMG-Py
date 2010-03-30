@@ -54,7 +54,7 @@ def loadThermoDatabases(databasePath):
 
 	# Create and load forbidden structures
 	thermo.forbiddenStructures = data.Dictionary()
-	thermo.forbiddenStructures.load(os.path.join(databasePath, 'forbiddenStructure.txt'))
+	thermo.forbiddenStructures.load(os.path.join(databasePath, 'ForbiddenStructures.txt'))
 	thermo.forbiddenStructures.toStructure()
 
 def loadKineticsDatabases(databasePath, only_families=False):
@@ -121,7 +121,6 @@ def write_xml(family_names = None):
 	root = dom.createElement('rmgoutput')
 	dom.appendChild(root)
 	
-	
 	if not family_names: 
 		family_names = reaction.kineticsDatabase.families.keys()
 		
@@ -186,8 +185,7 @@ def findCatchallNodes():
 				 'other': species.thermoDatabase.otherDatabase }
 
 	#families = reaction.kineticsDatabase.families
-
-
+	
 	for key, family in families.iteritems():
 		for parent, children in family.tree.children.iteritems():
 			for child in children:
@@ -287,7 +285,7 @@ def fit_groups(family_names = None):
 			if kinetics.alpha:
 				logging.warning("Warning: %s %s has EP alpha = %g"%(kinetics.index, kinetics.label, kinetics.alpha))
 				to_delete.append(key)
-				
+		
 			#if re.search('O2b',kinetics.label): 
 			#	logging.warning("Removing %s %s because I don't like O2b"%(kinetics.index, kinetics.label))
 			#	to_delete.append(key)
@@ -295,8 +293,7 @@ def fit_groups(family_names = None):
 		for key in to_delete:
 			del family.library[key]
 			logging.warning("Deleting %s from kinetics library!"%key)
-				
-				
+		
 		for key, kinetics in family.library.iteritems():
 			nodes = key.split(';')
 			# example:
@@ -349,7 +346,7 @@ def fit_groups(family_names = None):
 				# Add on a column at the end for constant C which is always there
 				A_row.append(1)
 				
-				kinetics.used_in_combinations.append(len(A_list))
+				kinetics.used_in_combinations.append(len(A_list)) # is this right?
 				A_list.append(A_row)
 				b_list.append(b_row)
 				

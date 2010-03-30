@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
  
 import unittest
-
+import os
 import sys
 sys.path.append('../source')
 
@@ -24,7 +24,7 @@ species.thermoDatabase.load(databasePath + '/')
 
 # Create and load forbidden structures
 thermo.forbiddenStructures = data.Dictionary()
-thermo.forbiddenStructures.load(databasePath + '/forbiddenStructure.txt')
+thermo.forbiddenStructures.load(os.path.join(databasePath,'ForbiddenStructures.txt'))
 thermo.forbiddenStructures.toStructure()
 	
 

@@ -881,45 +881,39 @@ class ThermoDatabaseSet:
 		Load a set of thermodynamics group additivity databases from the general
 		database specified at `datapath`.
 		"""
-
+		datapath = os.path.join(datapath,'thermo_groups')
 		datapath = os.path.abspath(datapath)
+		def DTLpaths(prefix):
+			"""Get a tuple of Dictionary, Tree, and Library paths for a given prefix"""
+			dict_path = os.path.join(datapath, prefix+'_Dictionary.txt')
+			tree_path = os.path.join(datapath, prefix+'_Tree.txt')
+			libr_path = os.path.join(datapath, prefix+'_Library.txt')
+			return dict_path, tree_path, libr_path
 
 		logging.info('Loading thermodynamics databases from %s...' % datapath)
 
 		logging.verbose('Loading functional group thermo database from %s...' % datapath)
-		self.groupDatabase.load(datapath + '/thermo/Group_Dictionary.txt', \
-			datapath + '/thermo/Group_Tree.txt', \
-			datapath + '/thermo/Group_Library.txt')
+		self.groupDatabase.load(*DTLpaths('Group')) # the '*' unpacks the tuple into three separate arguments
 		
 		logging.verbose('Loading 1,5 interactions thermo database from %s...' % datapath)
-		self.int15Database.load(datapath + '/thermo/15_Dictionary.txt', \
-			datapath + '/thermo/15_Tree.txt', \
-			datapath + '/thermo/15_Library.txt')
+		self.int15Database.load(*DTLpaths('15'))
 		
 		logging.verbose('Loading gauche interactions thermo database from %s...' % datapath)
-		self.gaucheDatabase.load(datapath + '/thermo/Gauche_Dictionary.txt', \
-			datapath + '/thermo/Gauche_Tree.txt', \
-			datapath + '/thermo/Gauche_Library.txt')
+		self.gaucheDatabase.load(*DTLpaths('Gauche'))
 		
 		logging.verbose('Loading radical corrections thermo database from %s...' % datapath)
-		self.radicalDatabase.load(datapath + '/thermo/Radical_Dictionary.txt', \
-			datapath + '/thermo/Radical_Tree.txt', \
-			datapath + '/thermo/Radical_Library.txt')
+		self.radicalDatabase.load(*DTLpaths('Radical'))
 		
 		logging.verbose('Loading ring corrections thermo database from %s...' % datapath)
-		self.ringDatabase.load(datapath + '/thermo/Ring_Dictionary.txt', \
-			datapath + '/thermo/Ring_Tree.txt', \
-			datapath + '/thermo/Ring_Library.txt')
+		self.ringDatabase.load(*DTLpaths('Ring'))
 		
 		logging.verbose('Loading other corrections thermo database from %s...' % datapath)
-		self.otherDatabase.load(datapath + '/thermo/Other_Dictionary.txt', \
-			datapath + '/thermo/Other_Tree.txt', \
-			datapath + '/thermo/Other_Library.txt')
+		self.otherDatabase.load(*DTLpaths('Other'))
 
 		logging.verbose('Loading primary thermo database from %s...' % datapath)
-		self.primaryDatabase.load(datapath + '/thermo/Primary_Dictionary.txt', \
+		self.primaryDatabase.load(os.path.join(datapath, 'Primary_Dictionary.txt'), \
 			'', \
-			datapath + '/thermo/Primary_Library.txt')
+			os.path.join(datapath, 'Primary_Library.txt'))
 
 	def saveXML(self, datapath):
 		"""
