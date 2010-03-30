@@ -68,7 +68,7 @@ def readInputFile(fstr):
 				logging.debug('General database: ' + database[2])
 				# Load only thermo and frequency databases
 				loadThermoDatabase(database[2] + os.sep)
-				loadFrequencyDatabase(database[2] + os.sep)
+				loadFrequencyDatabase(database[2])
 		logging.debug('')
 
 		# Create Network object

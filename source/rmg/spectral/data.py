@@ -131,21 +131,21 @@ frequencyDatabase = None
 
 ################################################################################
 
-def loadFrequencyDatabase(databasePath):
+def loadFrequencyDatabase(frequenciesDatabasePath):
 	"""
-	Create and load the frequencies databases.
+	Create and load the frequencies databases from the given path. 
+	
+	The path should be the folder containing Dictionary.txt, Tree.txt, Library.txt
 	"""
 	import os.path
 	
-	databasePath = os.path.join(databasePath, 'frequencies')
-
 	# Create and load thermo databases
 	database = FrequencyDatabase()
-	logging.debug('\tFrequencies database')
+	logging.debug('\tFrequencies database from '+frequenciesDatabasePath)
 	database.load(
-		dictstr=os.path.join(databasePath, 'Dictionary.txt'),
-		treestr=os.path.join(databasePath, 'Tree.txt'),
-		libstr=os.path.join(databasePath, 'Library.txt'))
+		dictstr=os.path.join(frequenciesDatabasePath, 'Dictionary.txt'),
+		treestr=os.path.join(frequenciesDatabasePath, 'Tree.txt'),
+		libstr=os.path.join(frequenciesDatabasePath, 'Library.txt'))
 
 	return database
 

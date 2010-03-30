@@ -1995,7 +1995,7 @@ class ReactionFamilySet:
 		# Load the families from kinetics/families.txt
 		familyList = []
 		try:
-			ffam = open(os.path.join(datapath,'kinetics','families.txt'), 'r')
+			ffam = open(os.path.join(datapath,'kinetics_groups','families.txt'), 'r')
 			for line in ffam:
 				line = data.removeCommentFromLine(line).strip()
 				if len(line) > 0:
@@ -2014,7 +2014,7 @@ class ReactionFamilySet:
 		# Load the reaction families (if they exist and status is 'on')
 		self.families = {}
 		for index, status, label in familyList:
-			path = os.path.join(datapath, 'kinetics', label)
+			path = os.path.join(datapath, 'kinetics_groups', label)
 			if os.path.isdir(path) and status.lower() == 'on':
 
 				# skip families not in only_families, if it's set
