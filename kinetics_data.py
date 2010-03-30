@@ -6,146 +6,48 @@ rmgpy_dir = os.environ.get('RMGpy')
 if rmgpy_dir is None: raise RuntimeError("Please set RMGpy environment variable")
 sys.path.append(os.path.join(rmgpy_dir,'source'))
 
-
 import rmg
 import rmg.thermo, rmg.structure, rmg.species, rmg.data, rmg.reaction
 import rmg.log as logging
 
 
+_rates = []
+
+
 def loadKineticsDatabases(databasePath, only_families=False):
-	"""
-	Create and load the kinetics databases (reaction families).
-	If only_families is a list like ['H_Abstraction'] then only families in this
-	list will be loaded.
-	
-	Currently incompatible with RMG(java) database syntax.
-	"""
-	rmg.reaction.kineticsDatabase = rmg.reaction.ReactionFamilySet()
-	rmg.reaction.kineticsDatabase.load(databasePath, only_families=only_families)
-	
+    """
+    Create and load the kinetics databases (reaction families).
+    If only_families is a list like ['H_Abstraction'] then only families in this
+    list will be loaded.
+    
+    Currently incompatible with RMG(java) database syntax.
+    """
+    rmg.reaction.kineticsDatabase = rmg.reaction.ReactionFamilySet()
+    rmg.reaction.kineticsDatabase.load(databasePath, only_families=only_families)
+    
 
 def removeCommentFromLine(line):
-	"""
-	Remove a C++/Java style comment from a line of text.
-	"""
-	index = line.find('//')
-	if index >= 0:
-		line = line[0:index]
-	return line
-	
+    """
+    Remove a C++/Java style comment from a line of text.
+    """
+    index = line.find('//')
+    if index >= 0:
+        line = line[0:index]
+    return line
+    
 
 def loadKineticsDatabases(databasePath, only_families=False):
-	"""
-	Create and load the kinetics databases (reaction families).
-	If only_families is a list like ['H_Abstraction'] then only families in this
-	list will be loaded.
-	"""
-	rmg.reaction.kineticsDatabase = rmg.reaction.ReactionFamilySet()
-	rmg.reaction.kineticsDatabase.load(databasePath, only_families=only_families)
-	db = rmg.reaction.kineticsDatabase
-	return db
-		
+    """
+    Create and load the kinetics databases (reaction families).
+    If only_families is a list like ['H_Abstraction'] then only families in this
+    list will be loaded.
+    """
+    rmg.reaction.kineticsDatabase = rmg.reaction.ReactionFamilySet()
+    rmg.reaction.kineticsDatabase.load(databasePath, only_families=only_families)
+    db = rmg.reaction.kineticsDatabase
+    return db
+        
 
-
-_speciesnames = []
-_specieslist = []
-
-class structure():
-	def __init__(self, chemgraph=None, SMILES=None):
-		s = rmg.structure.Structure()
-		if chemgraph is not None:
-			s.fromAdjacencyList(chemgraph.strip(),addH=True, withLabel=False)
-		if SMILES is not None:
-			s.fromSMILES(SMILES)
-		self._Structure = s
-	def __repr__(self):
-		return repr(self._Structure)
-	def getFormula(self):
-		return self._Structure.getFormula()
-	def getSMILES(self):
-		return self._Structure.toSMILES()
-	def getChemgraph(self):
-		return self._Structure.toAdjacencyList(strip_hydrogens=True)
-
-## this creates the NASA class
-from rmg.cantera_loader import NASA 
-	# one of the methods is getRmgPolynomial()
-		
-class species():
-	name=""
-	structure=None
-	note=""
-	def __init__(self, 
-				name,
-				chemgraph=None,
-				SMILES=None,
-				thermo=None,
-				note=None ):
-		if name:
-			global _speciesnames
-			assert name not in _speciesnames, "Species %s already exists"%name
-			self.name = name
-		if chemgraph:
-			self.structure = structure(chemgraph=chemgraph)
-			for lin,lout in zip(chemgraph.split(),self.chemgraph.split()):
-				if lin!=lout: 
-					print "Warning - chemgraph has been changed from \n%s\n to\n%s\n"%(chemgraph,self.chemgraph)
-					break
-		if SMILES:
-			self.structure = structure(SMILES=SMILES)
-		if thermo:
-			self.thermo = self.getRmgThermo(thermo)
-		if note:
-			self.note = note
-			
-		global _specieslist
-		_specieslist.append(self)
-
-	def getFormula(self):
-		return self.structure.getFormula()
-	formula = property(getFormula)
-	def getSMILES(self):
-		return self.structure.getSMILES()
-	SMILES = property(getSMILES)
-	def getChemgraph(self):
-		return self.structure.getChemgraph()
-	chemgraph = property(getChemgraph)
-		
-	def getRmgThermo(self,thermo):
-		if all([isinstance(t, NASA) for t in thermo]): # all entries are NASA
-			thermoData = rmg.thermo.ThermoNASAData(comment="Umm,")
-			for thermoentry in thermo:
-				poly = thermoentry.getRmgPolynomial()
-				thermoData.addPolynomial(poly)
-			return thermoData
-		raise Exception("Can only deal with NASA thermo data")
-
-	def toRMGjava(self):
-		"""Get (dictionary_entry, library_entry) suitable for RMG Java"""
-		dictentry = "%s\n"%self.name.strip()
-		dictentry += self.chemgraph
-		#//Name	H298	S298	Cp300	Cp400	Cp500	Cp600	Cp800	Cp1000	Cp1500	dH	dS	dCp	Comments
-		J_to_cal = 0.239005736
-		numbers = [self.thermo.getEnthalpy(298.15) * J_to_cal / 1000 ,
-					self.thermo.getEntropy(298.15) * J_to_cal]
-		numbers.extend([self.thermo.getHeatCapacity(T)*J_to_cal for T in [300, 400, 500, 600, 800, 1000, 1500]])
-		numbers.extend([0, 0, 0])  # uncertainties!
-		numbers_string = ("%8.3g"*12)%tuple(numbers)
-		libraryentry = ("%-15s  %s %s")%(self.name, numbers_string, self.note)
-		return dictentry, libraryentry
-		
-def WriteRMGjava(list_of_species):
-	folder = os.path.join('RMG_Database','themo_libraries','latest')
-	os.path.exists(folder) or os.makedirs(folder)
-	dictionary = file(os.path.join(folder,'Dictionary.txt'),'w')
-	library = file(os.path.join(folder,'Library.txt'),'w')
-	for s in list_of_species:
-		dictentry, thermoentry = s.toRMGjava()
-		dictionary.write(dictentry+"\n")
-		library.write(thermoentry)
-		print thermoentry
-	dictionary.close()
-	library.close()
 
 # Some Python code for parsing the kinetics library entries
 
@@ -156,19 +58,31 @@ class group:
         s.fromAdjacencyList(chemgraph.strip(),addH=False, withLabel=True)
         self._structure = s
         self.name = chemgraph.strip().split('\n')[0]
+        self.node_name = None
+        
     def __str__(self):
         return self._structure.toAdjacencyList(label=self.name)
     def __repr__(self):
         return 'group("""%s""")'%self.__str__()
+    def toSource(self):
+        return '"""%s"""'%self.__str__()
+    source = property(toSource)
+        
+    def toRMGjava(self):
+        if self.node_name is None:
+            raise Exception("Location in family tree has not been found. Please call locateInFamily(reaction_family)")
+        return self.node_name
+    java = property(toRMGjava)
         
     def locateInFamily(self,family):
         """
-        Locate this group in the family tree and set self.node_name to the node's name.
+        Locate this group in the family tree; set self.node_name to the node's name, and return it.
+        Return None if not found.
         """
         s = self._structure
         node_name = family.descendTree(s,s.getLabeledAtoms())
         logging.debug("I think this %s belongs at %s"%(s.toAdjacencyList(label=group.name), node_name) )
-        if node_name is not None: logging.debug( "and its ancestors are"+str(fam.tree.ancestors(node_name)) )
+        if node_name is not None: logging.debug( "and its ancestors are"+str(family.tree.ancestors(node_name)) )
         logging.debug("")
         
         if node_name != self.name:
@@ -176,9 +90,15 @@ class group:
         
         self.node_name = node_name
         return node_name
-            
-        
-_rates = []
+
+def indent(n,string):
+    """Indent the string by n tabs (of 2 spaces each)"""
+    out = ""
+    for line in string.split('\n'):
+        out+="    "*n + line + '\n'
+    out = out[:-1] # remove the final '\n'
+    return out
+
 class rate:
     """
    
@@ -203,7 +123,7 @@ class rate:
     """
 
     def __init__(self, 
-                group1 = None,
+                 group1 = None,
                  group2 = None,
                  group3 = None,
                  reactant1 = None,
@@ -219,30 +139,175 @@ class rate:
         if group1: self.group1 = group(group1)
         if group2: self.group2 = group(group2)
         if group3: self.group3 = group(group3)
-        if kf: self.kf = kf
+        if reactant1: self.reactant1 = reactant(reactant1)
+        if reactant2: self.reactant2 = reactant(reactant2)
+        
+        self.kf = kf
+        self.rank = rank
+        self.old_id = old_id
+        self.short_comment = short_comment
+        if short_comment.find('\n')>=0:
+            logging.error("Line break found in short_comment: %s"%short_comment)
+            raise Exception("No line breaks in short_comments please!")
+        self.long_comment = long_comment
+        
         global _rates
         _rates.append(self)
-    
+        
+        
+    def toRMGjava(self):
+        out = ""
+        for group in self.groups:
+            out+="%-20s"%group.node_name
+        out += self.kf.toRMGjava()
+        out += '    '+self.short_comment
+        return out
+    java = property(toRMGjava)
+        
+    def toSource(self):
+        out='rate(\n'
+        # groups
+        for i,group in enumerate(self.groups):
+            out+='    group%d=""""\n%s           """",\n'%(i+1,group)
+        out+='    kf = %r\n'%self.kf
+        if self.rank:
+            out+='    rank = %s,\n'%self.rank
+        if self.old_id:
+            out+='    old_id = "%s",\n'%self.old_id
+        if self.short_comment:
+            out+='    short_comment = "%s",\n'%self.short_comment
+        if self.long_comment:
+            out+='    long_comment = """%s\n                   """,\n'%self.long_comment.rstrip()
+        out+=')'
+        return out
+    source = property(toSource)
+        
     def getGroups(self):
         """Return a list of the groups: [group1, group2, (group3)]"""
-        groups=[group1, group2]
-        if group3: groups.append(group3)
+        groups=[self.group1, self.group2]
+        if hasattr(self,'group3'): groups.append(self.group3)
         return groups
     groups = property(getGroups)
 
+class Parameter:
+    """A parameter, with units, and uncertainties"""
+    def __init__(self, *args):
+        if args[0].__class__ is tuple: # unpack if double-packed
+            args = args[0]
+        nargs = len(args)
+        self.value = args[0]
+        self.units = None
+        self.uncertainty_type = None
+        self.uncertainty = None
+        if nargs>1:
+            self.units = args[1]
+        if nargs>2:
+            self.uncertainty_type = args[2]
+            if nargs<4: raise Exception("Can't have uncertainty type without uncertainty or vice versa:"+str(args))
+            self.uncertainty = args[3]
+    def toSource(self):
+        if self.uncertainty is not None:
+            return '(%s, "%s", "%s", %s)'%(self.value, self.units, self.uncertainty_type, self.uncertainty)
+        if self.units:
+            return '(%s, "%s")'%(self.value, self.units)
+        return '%s'%self.value
+    source = property(toSource)
+    def toRMGjava(self, unitfactor = 1.0):
+        """Returns a tuple of strings (value, uncertainty), multiplied by unitfactor if set"""
+        v = float(self.value) * unitfactor
+        v = '%8.3g'%v
+        if self.uncertainty is None:
+            u = '%8s'%0
+        elif self.uncertainty_type == '+-':
+            u = float(self.uncertainty) * unitfactor
+            u = '%8.3g'%u
+        elif self.uncertainty_type == '*/':
+            u = '*%.4g'%self.uncertainty
+            u = '%8s'%u # make it 8 wide
+        else: 
+            raise Exception("Unknown uncertainty type %r in %r"%(self.uncertainty_type,self))
+        return v,u
+    java = property(toRMGjava)
+        
+    def __repr__(self):
+        return "Parameter(%s)"%self.source.strip('()')
+        
 class Arrhenius:   
     """
     specify (A,n,Ea) or (A,n,alpha,E0)
     """
     def __init__(self, *args, **kw):
-        if kw.has_key('A'): self.A = kw['A']
-        if kw.has_key('n'): self.n = kw['n']
+        self.A = None
+        self.n = None
+        self.Ea = None
+        self.alpha = None
+        self.E0 = None
+        if kw.has_key('A'): self.A = Parameter(kw['A'])
+        if kw.has_key('n'): self.n = Parameter(kw['n'])
+        if kw.has_key('Ea'): self.Ea = Parameter(kw['Ea'])
+        if kw.has_key('alpha'): self.alpha = Parameter(kw['alpha'])
+        if kw.has_key('E0'): self.E0 = Parameter(kw['E0'])
+        
+    def __repr__(self):
+        if self.Ea is not None:
+            out = """Arrhenius( A=%s,
+               n=%s,
+               Ea=%s
+              )"""%(self.A.source, self.n.source, self.Ea.source)
+        if self.E0 is not None:
+            out = """Arrhenius( A=%s,
+               n=%s,
+               alpha=%s
+               E0=%s
+              )"""%(self.A.source,self.n.source, self.alpha.source, self.E0.source)
+        return out
 
+    def toRMGjava(self):
+        if self.alpha is None:
+            alpha = Parameter(0)
+            E0 = self.Ea
+            logging.debug("Converting Arrhenius into Evans-Polyani")
+        else:
+            alpha = self.alpha
+            E0 = self.E0
+            
+        if self.A.units == "cm^3/mol/s":
+            Aunitscale = 1.0
+        else:
+            raise NotImplementedError("Unit conversion not yet implemented")
+        Av,Au = self.A.toRMGjava(Aunitscale)
+        # n and alpha have no units to convert 
+        assert self.n.units is None
+        nv,nu = self.n.toRMGjava(1)
+        assert alpha.units is None
+        alphav, alphau = alpha.toRMGjava(1)
+        # Activation energy
+        if E0.units == "kcal/mol":
+            Eunitscale = 1.0
+        else:
+            raise NotImplementedError("Unit conversion not yet implemented")
+        E0v, E0u = E0.toRMGjava(Eunitscale)
+        
+        out = ('%s '*8)%( Av, nv, alphav, E0v,
+                          Au, nu, alphau, E0u )
+        return out
+    java = property(toRMGjava)
 
+     
+     
+     
+def WriteRMGjava(list_of_rates, family_name):
+    folder = os.path.join('RMG_Database','kinetics_groups',family_name)
+    os.path.exists(folder) or os.makedirs(folder)
+    library = file(os.path.join(folder,'rateLibrary.txt'),'w')
+    logging.verbose("Writing library to "+folder)
+    for r in list_of_rates:
+        line = r.toRMGjava()
+        library.write(line+'\n')
+        logging.verbose(line)
+    library.close()
+    
 
-
-
-      
 G3CANTHERM = 2.8 # for example
 QUANTUM = 3
 GUESS = 5
@@ -349,15 +414,24 @@ logging.initialize(20,'database.log')
 logger = logging.getLogger()
 old_level = logger.getEffectiveLevel()
 logger.setLevel(40)
-db = loadKineticsDatabases( os.path.join('kinetics_groups_source'))
+data_source = os.path.join('kinetics_groups_source')
+db = loadKineticsDatabases( data_source )
 logger.setLevel(old_level)
 
 
-family = db.families['H abstraction']
+family_name = 'H abstraction'
+family = db.families[family_name]
 
 for r in _rates:
-    for group in [r.group1, r.group2]:
+    for group in r.groups:
         group.locateInFamily(family)
-        
-    
+        #group._structure.updateAtomTypes()
 
+    logging.info("="*80)
+    logging.info(r.source)
+    logging.info(r.toRMGjava())
+
+#import shutil
+#shutil.copy(os.path.join(data_source,'kinetics_groups',family_name,'tree.txt'),os.path.join('RMG_Database','kinetics_groups',family_name,''))
+
+WriteRMGjava(_rates, family_name)
