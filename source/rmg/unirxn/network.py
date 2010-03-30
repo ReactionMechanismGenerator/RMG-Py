@@ -362,7 +362,7 @@ class Network:
 				if product not in speciesList: speciesList.append(product)
 		return speciesList
 
-	def getLeakFlux(self, T, P, conc, totalConc=None):
+	def getLeakFlux(self, T, P, conc):
 		"""
 		Return the leak flux of the network: the forward flux to all unexplored
 		unimolecular isomers in the network.
@@ -370,7 +370,7 @@ class Network:
 		# Get leak fluxes of all unexplored [unimolecular] isomers
 		self.leakFluxes = {}
 		for rxn in self.netReactions:
-			rate = rxn.getRate(T, P, conc, totalConc)
+			rate = rxn.getRate(T, P, conc)
 			if rxn.isIsomerization() or rxn.isDissociation():
 				spec = rxn.reactants[0]
 				if spec not in self.explored:

@@ -65,6 +65,7 @@ class Reaction:
 	================= ==========================================================
 	Attribute         Description
 	================= ==========================================================
+	`id`              A unique integer identifier
 	`atomLabels`      A dictionary with the keys representing the labels and the
 	                  values the atoms of the reactant or product species that
 	                  were labeled at the time the reaction was generated
@@ -94,8 +95,9 @@ class Reaction:
 	convenient way to represent the reverse reaction.
 	"""
 	
-	def __init__(self, reactants=None, products=None, family=None, kinetics=None, thirdBody=False):
+	def __init__(self, id=0, reactants=None, products=None, family=None, kinetics=None, thirdBody=False):
 		"""Initialize a reaction object."""
+		self.id = id
 		self.reactants = reactants or []
 		self.products = products or []
 		self.family = family
@@ -376,14 +378,16 @@ class Reaction:
 			dGrxn += product.getFreeEnergy(T)
 		return dGrxn
 
-	def getEquilibriumConstant(self, T, conc):
+	def getEquilibriumConstant(self, T):
 		"""
-		Return the equilibrium constant K(T) evaluated at temperature `T` in a
-		system with total concentration `conc`.
+		Return the equilibrium constant K(T) with respect to concentration
+		:math:`K_\\mathrm{c}` evaluated at temperature `T` in K. The returned
+		equilibrium constant has units related to concentration (mol, m^3).
 		"""
 		dGrxn = self.getFreeEnergyOfReaction(T)
 		K = math.exp(-dGrxn / constants.R / T)
-		# Convert from Ka to Kc
+		# Convert from Ka to Kc; conc is the reference concentration
+		conc = 1e5 / constants.R / T
 		K *= conc ** (len(self.products) - len(self.reactants))
 		return K
 
@@ -482,14 +486,11 @@ class Reaction:
 		parameter `conc` is a map with species as keys and concentrations as
 		values. A reactant not found in the `conc` map is treated as having zero
 		concentration.
-		
+
 		If passed a `totalConc`, it won't bother recalculating it.
 		"""
 
 		# Calculate total concentration
-		#totalConc = 0.0
-		#for spec in conc:
-		#	totalConc += conc[spec]
 		if totalConc is None:
 			totalConc=sum( conc.values() )
 
@@ -498,7 +499,7 @@ class Reaction:
 		if self.thirdBody: rateConstant *= totalConc
 
 		# Evaluate equilibrium constant
-		equilibriumConstant = self.getEquilibriumConstant(T, totalConc)
+		equilibriumConstant = self.getEquilibriumConstant(T)
 
 		# Evaluate forward concentration product
 		forward = 1.0
@@ -569,7 +570,7 @@ class Reaction:
 		if prodDensStates is not None:
 			prodQ = numpy.sum(prodDensStates * numpy.exp(-Elist / constants.R / T))
 
-		Keq = self.getEquilibriumConstant(T, conc=1.0)
+		Keq = self.getEquilibriumConstant(T)
 
 		if self.isIsomerization():
 
@@ -612,8 +613,8 @@ class PDepReaction(Reaction):
 	:meth:`getBestKinetics`.
 	"""
 
-	def __init__(self, reactants, products, network, kinetics):
-		Reaction.__init__(self, reactants, products, None)
+	def __init__(self, id=0, reactants=None, products=None, network=None, kinetics=None):
+		Reaction.__init__(self, id=id, reactants=reactants, products=products, family=None)
 		self.kinetics = kinetics
 		self.network = network
 
@@ -636,6 +637,15 @@ class PDepReaction(Reaction):
 		else:
 			k = float(self.getRateConstant(T, P))
 			return ArrheniusKinetics(A=k, n=0.0, Ea=0.0)
+			
+	def toCantera(self,T=1000,P=1.0e5):
+		"""Add this to Cantera ctml_writer"""
+		# create a cantera Reaction 
+		self.canteraReaction = Reaction.toCantera(self,T,P)
+		# replace the forward rate coefficient
+		rate_function_of_T_P = self.getRateConstant #(T, P)
+		self.canteraReaction._kf = ctml_writer.PdepRate(rate_function_of_T_P)
+		return self.canteraReaction
 
 ################################################################################
 
@@ -1403,7 +1413,7 @@ class ReactionFamily(data.Database):
 				species.append(item)
 
 		# Set template reaction
-		self.template = Reaction(reactants, products)
+		self.template = Reaction(reactants=reactants, products=products)
 
 		# Remaining lines are reaction recipe for forward reaction
 		self.recipe = ReactionRecipe()
@@ -1426,7 +1436,7 @@ class ReactionFamily(data.Database):
 
 		# Generate the reverse template
 		if reverse != self.label:
-			template = Reaction(self.template.products, self.template.reactants)
+			template = Reaction(reactants=self.template.products, products=self.template.reactants)
 			self.reverse = ReactionFamily(reverse, template, self.recipe.getReverse())
 			self.reverse.dictionary = self.dictionary
 			self.reverse.tree = self.tree
@@ -1910,23 +1920,29 @@ def kineticsInverseLaplaceTransform(kinetics, E0, densStates, Elist, T):
 	import numpy
 	import unirxn.states as states
 
-	if kinetics.Ea < 0.0:
-		logging.warning('Negative activation energy of %s kJ/mol encountered during unirxn calculation; setting to zero.' % (kinetics.Ea / 1000.0))
-		Ea = 0.0
-	else:
-		Ea = kinetics.Ea
+	# Extract the Arrhenius parameters (so we only look them up once; also
+	# useful in case we modify them (e.g. for negative Ea))
+	A = kinetics.A
+	n = kinetics.n
+	Ea = kinetics.Ea
 
+	# The ILT method cannot handle negative activation energies, so we move
+	# this contribution from the exponential to the preexponential
+	if Ea < 0.0:
+		A *= math.exp(-Ea / constants.R / T)
+		Ea = 0.0
+	
 	dE = Elist[1] - Elist[0]
 	k = numpy.zeros(len(Elist), numpy.float64)
 
-	if kinetics.n == 0.0:
+	if n == 0.0:
 		# Determine the microcanonical rate directly
 		s = int(math.floor(Ea / dE))
 		for r in range(len(Elist)):
 			if Elist[r] > E0 and densStates[r] != 0:
-				k[r] = kinetics.A * densStates[r - s] / densStates[r]
+				k[r] = A * densStates[r - s] / densStates[r]
 
-	elif kinetics.n > 0.0:
+	elif n > 0.0:
 		import scipy.special
 		# Evaluate the inverse Laplace transform of the T**n piece, which only
 		# exists for n >= 0
@@ -1935,21 +1951,21 @@ def kineticsInverseLaplaceTransform(kinetics, E0, densStates, Elist, T):
 			if E == 0.0:
 				phi[i] = 0.0
 			else:
-				phi[i] = E**(kinetics.n-1) / (constants.R**kinetics.n * scipy.special.gamma(kinetics.n))
+				phi[i] = E**(n-1) / (constants.R**n * scipy.special.gamma(n))
 		# Evaluate the convolution
 		states.convolve(phi, densStates, Elist)
 		# Apply to determine the microcanonical rate
 		s = int(math.floor(Ea / dE))
 		for r in range(len(Elist)):
 			if Elist[r] > E0 and densStates[r] != 0:
-				k[r] = kinetics.A * phi[r - s] / densStates[r]
+				k[r] = A * phi[r - s] / densStates[r]
 
 	else:
 		# Use the cheating method for n < 0
 		s = int(math.floor(Ea / dE))
 		for r in range(len(Elist)):
 			if Elist[r] > E0 and densStates[r] != 0:
-				k[r] = kinetics.A * T**kinetics.n * densStates[r - s] / densStates[r]
+				k[r] = A * T**n * densStates[r - s] / densStates[r]
 
 	return k
 
@@ -2080,6 +2096,10 @@ class UndeterminableKineticsException(ReactionException):
 # reaction than an older reaction
 reactionList = []
 
+global reactionCounter
+#: Used to label reactions uniquely. Incremented each time a new reaction is made.
+reactionCounter = 0 
+
 def makeNewReaction(reactants, products, reactantStructures, productStructures, family):
 	"""
 	Attempt to make a new reaction based on a list of `reactants` and a list of
@@ -2137,10 +2157,10 @@ def makeNewReaction(reactants, products, reactantStructures, productStructures, 
 	
 	# If this point is reached, the proposed reaction is new, so make new
 	# Reaction objects for forward and reverse reaction
-	forward = Reaction(reactants, products, family)
+	forward = Reaction(id=reactionCounter+1, reactants=reactants, products=products, family=family)
 	reverseFamily = None
 	if family is not None: reverseFamily = family.reverse or family
-	reverse = Reaction(products, reactants, reverseFamily)
+	reverse = Reaction(id=reactionCounter+1, reactants=products, products=reactants, family=reverseFamily)
 	forward.reverse = reverse
 	reverse.reverse = forward
 	
@@ -2209,10 +2229,42 @@ def processNewReaction(rxn):
 	this function handles other aspects	of preparing it for RMG.
 	"""
 
+	global reactionCounter
+
+	# Add to global list of existing reactions and update counter
 	reactionList.insert(0, rxn)
+	reactionCounter += 1
+	rxn.id = reactionCounter
 
 	# Return newly created reaction
 	return rxn, True
+
+def makeNewPDepReaction(reactants, products, network, kinetics):
+	"""
+	Make a new pressure-dependent reaction based on a list of `reactants` and a
+	list of `products`. The reaction belongs to the specified `network` and
+	has pressure-dependent kinetics given by `kinetics`.
+
+	No checking for existing reactions is made here. The returned PDepReaction
+	object is not added to the global list of reactions, as that is intended
+	to represent only the high-pressure-limit set. The reactionCounter is
+	incremented, however, since the returned reaction can and will exist in
+	the model edge and/or core.
+	"""
+
+	global reactionCounter
+
+	# Sort reactants and products (to make comparisons easier/faster)
+	reactants.sort()
+	products.sort()
+
+	forward = PDepReaction(id=reactionCounter+1, reactants=reactants, products=products, network=network, kinetics=kinetics)
+	reverse = PDepReaction(id=reactionCounter+1, reactants=products, products=reactants, network=network, kinetics=None)
+	forward.reverse = reverse
+	reverse.reverse = forward
+	
+	reactionCounter += 1
+	return forward
 
 ################################################################################
 

@@ -212,6 +212,11 @@ _valrxn = ''
 _valexport = ''
 _valfmt = ''
 
+# these are used to evaluate pressure dependent rate coefficients and convert them to constants
+_temperature = None
+_pressure = None
+
+
 def export_species(file, fmt = 'CSV'):
     global _valexport
     global _valfmt
@@ -631,6 +636,18 @@ class gas_transport:
         addFloat(t, "polarizability", (self._polar, 'A3'),'%8.3f')
         addFloat(t, "rotRelax", self._rot_relax,'%8.3f')        
 
+class PdepRate:
+    def __init__(self, rate_function_of_T_P):
+        """Pass it a function that when called with T and P, will return k"""
+        self._kTP = rate_function_of_T_P
+    def build(self, p, units_factor = 1.0,
+              gas_species = [], name = '', rxn_phase = None):
+        # Make an Arrhenius with this k, and build that!
+        global _temperature
+        global _pressure
+        k = float(self._kTP(T=_temperature, P=_pressure))
+        a = Arrhenius(A=k)
+        a.build(p, units_factor, gas_species, name, rxn_phase)
         
 class Arrhenius:
     def __init__(self,

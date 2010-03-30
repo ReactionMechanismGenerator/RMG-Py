@@ -41,6 +41,7 @@ import numpy
 import rmg.settings as settings
 import rmg.ctml_writer as ctml_writer
 import rmg.model as modelmodule
+import rmg.species as species
 import rmg.reaction as reaction
 from base import ReactionSystem
 
@@ -153,8 +154,8 @@ class BatchReactor(ReactionSystem):
 		      elements = " C H O N Ar He Si",
 		      species = "all",
 		      reactions = "all",
-		      initial_state = ctml_writer.state(temperature = 1000 ,
-		                        pressure = 101325 )    )
+		      initial_state = ctml_writer.state(temperature = self.initialTemperature ,
+		                        pressure = self.initialPressure )    )
 		def has_species(sp):
 			"""Return 1 is a species with name 's' belongs to the phase,
 			or 0 otherwise. Redefined because the ctml_writer one doesn't work for us"""
@@ -174,11 +175,14 @@ class BatchReactor(ReactionSystem):
 		# Create a folder in the scratch directory for Cantera files if needed
 		cantera_folder = os.path.join(settings.scratchDirectory,'cantera')
 		os.path.exists(cantera_folder) or os.mkdir(cantera_folder)
-		
+
 		# Write the CTML file to scratch/cantera/ folder
 		cti_file = os.path.join(cantera_folder, 'cantera_input_%03d' % len(model.core.species))
 		logging.debug("Writing CTML file %s" % cti_file)
 		ctml_writer.dataset(cti_file) # change name
+		# update the T and P used to convert PdepRate coefficients into rate constants
+		ctml_writer._temperature = self.initialTemperature
+		ctml_writer._pressure = self.initialPressure
 		ctml_writer.write()
 
 		import Cantera
@@ -282,11 +286,11 @@ class BatchReactor(ReactionSystem):
 		sim,gas = self.runCantera(model)
 
 		# Assemble stoichiometry matrix for all core and edge species
-		# Rows are species (core, then edge); columns are reactions (core, then edge)
+		# Rows are species by id, columns are reactions by id
 		stoichiometry = model.getStoichiometryMatrix()
 
 		tlist = []; ylist = []; dydtlist = []
-		maxRelativeSpeciesFluxes = numpy.zeros(len(model.core.species) + len(model.edge.species), float)
+		maxRelativeSpeciesFluxes = numpy.zeros(species.speciesCounter, float)
 
 		maxRelativeNetworkLeakFluxes = numpy.zeros(len(model.unirxnNetworks), float)
 
@@ -341,16 +345,37 @@ class BatchReactor(ReactionSystem):
 			# RMG thinks in mol/m^3
 			Ni = gas.molarDensity()*1000.0 * gas.moleFractions() * V
 			y = [P, V, T]; y.extend(Ni)
-			
+
 			# Calculate species fluxes of all core and edge species at the
 			# current time
-			dNidt = self.getSpeciesFluxes(model, P, V, T, Ni, stoichiometry)
-			
+			rxnRates = self.getReactionRates(P, V, T, Ni, model)
+			dNidt = stoichiometry * rxnRates
+
+#			# DEBUG: Compare Cantera rates with our rates to make sure they agree
+#			rxnRates1 = numpy.zeros(rxnRates.shape, numpy.float64)
+#			for rxn in model.core.reactions:
+#				j = rxn.id - 1
+#				rxnRates1[j] = rxnRates[j]
+#			dNidt1 = stoichiometry * rxnRates1
+#			print 'Reaction rates:'
+#			rxnRates0 = gas.netRatesOfProgress()*1000.0
+#			for i, rxn in enumerate(model.core.reactions):
+#				j = rxn.id - 1
+#				print i, rxnRates0[i], rxnRates1[j]
+#			print 'Species rates:'
+#			dNidt0 = gas.netProductionRates()*1000.0
+#			for i, spec in enumerate(model.core.species):
+#				j = spec.id - 1
+#				print i, dNidt0[i], dNidt1[j]
+#			import pdb; pdb.set_trace()
+
 			# Determine characteristic species flux
-			charFlux = math.sqrt(sum([x*x for x in dNidt[0:len(model.core.species)]]))
+			charFlux = self.getCharacteristicFlux(model, stoichiometry, rxnRates)
 
 			# Store the highest relative flux for each species
-			for i in range(len(dNidt)):
+			speciesList = model.core.species[:]; speciesList.extend(model.edge.species)
+			for spec in speciesList:
+				i = spec.id - 1
 				if maxRelativeSpeciesFluxes[i] < abs(dNidt[i])/charFlux:
 					maxRelativeSpeciesFluxes[i] = abs(dNidt[i])/charFlux
 
@@ -413,8 +438,8 @@ class BatchReactor(ReactionSystem):
 		# Compare maximum species fluxes
 		maxRelativeSpeciesFlux = 0.0; maxSpecies = None
 		speciesToRemove = []; maxRelativeFluxes_dict = {}
-		for i in range(len(model.core.species), len(maxRelativeSpeciesFluxes)):
-			spec = model.edge.species[i - len(model.core.species)]
+		for spec in model.edge.species:
+			i = spec.id - 1
 			# pick out the single highest-flux edge species
 			if maxRelativeSpeciesFluxes[i] > maxRelativeSpeciesFlux:
 				maxRelativeSpeciesFlux = maxRelativeSpeciesFluxes[i]
@@ -591,15 +616,29 @@ class BatchReactor(ReactionSystem):
 
 		return model.getReactionRates(T, P, Ci)
 
-	def getSpeciesFluxes(self, model, P, V, T, Ni, stoichiometry):
+	def getCharacteristicFlux(self, model, stoichiometry, rxnRates0):
 		"""
-		Determine the species fluxes of all species in the model core and edge
-		at the specified pressure `P`, volume `V`, temperature `T`, and numbers
+		Determine the characteristic flux for the system given a `model` at
+		the specified pressure `P`, volume `V`, temperature `T`, and numbers
 		of moles `Ni`. The `stoichiometry` parameter is the stoichiometry
-		matrix for the model.
+		matrix for the model. The characteristic flux is the root mean square
+		of the *net* flux in mol/m^3*s of each core species due to the core
+		reactions only.
 		"""
-		rxnRates = self.getReactionRates(P, V, T, Ni, model)
-		return stoichiometry * rxnRates
+
+		# Generate core species fluxes based on core reactions only
+		rxnRates = numpy.zeros(rxnRates0.shape, numpy.float64)
+		for rxn in model.core.reactions:
+			j = rxn.id - 1
+			rxnRates[j] = rxnRates0[j]
+		speciesRates = stoichiometry * rxnRates
+
+		# Characteristic flux is root mean square of core species fluxes
+		charFlux = 0.0
+		for spec in model.core.species:
+			flux = speciesRates[spec.id - 1]
+			charFlux += flux * flux
+		return math.sqrt(charFlux)
 
 	def isModelValid(self, model, dNidt, criticalFlux):
 		"""
@@ -608,18 +647,16 @@ class BatchReactor(ReactionSystem):
 		Also returns the edge species whose flux is greatest, and that flux.
 		"""
 
-		speciesList, reactionList = model.getLists()
-
 		if len(model.edge.species) == 0:
 			# Nothing in edge - model must be valid!
 			return True, None, 0.0
 
 		maxSpecies = None
 		maxSpeciesFlux = 0.0
-		for i in range(len(model.edge.species)): # edge species index
-			j = i+len(model.core.species) # global species index
+		for spec in model.edge.species:
+			j = spec.id - 1
 			if dNidt[j] > maxSpeciesFlux:
-				maxSpecies = speciesList[j]
+				maxSpecies = spec
 				maxSpeciesFlux = dNidt[j]
 		return (maxSpeciesFlux < criticalFlux), maxSpecies, maxSpeciesFlux
 
@@ -635,13 +672,12 @@ class BatchReactor(ReactionSystem):
 
 		import rmg.reaction as reaction
 
-		conc = {}; totalConc = 0.0
+		conc = {}
 		for i, spec in enumerate(model.core.species):
 			conc[spec] = Ni[i] / V
-			totalConc += conc[spec]
-
+		
 		leakFluxes = numpy.zeros(len(model.unirxnNetworks), numpy.float64)
 		for i, network in enumerate(model.unirxnNetworks):
-			leakFluxes[i] = network.getLeakFlux(T, P, conc, totalConc)
+			leakFluxes[i] = network.getLeakFlux(T, P, conc)
 		return leakFluxes
-		
+

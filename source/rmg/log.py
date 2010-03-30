@@ -135,9 +135,32 @@ def logHeader(level=INFO):
 	log(level, '################################################################')
 	log(level, '#                                                              #')
 	log(level, '#              RMG - Reaction Mechanism Generator              #')
-	log(level, '#                    Python Version 0.0.1                      #')
-	log(level, '#                         14 May 2009                          #')
 	log(level, '#                                                              #')
 	log(level, '#                 http://rmg.sourceforge.net/                  #')
 	log(level, '#                                                              #')
+	log(level, '#   Authors: William H. Green (whgreen@mit.edu)                #')
+	log(level, '#            RMG Team (rmg_dev@mit.edu)                        #')
+	log(level, '#                                                              #')
 	log(level, '################################################################\n')
+
+	import os
+
+	def getGitCommit():
+		try:
+			f = os.popen('git log --format="%H %n %cd" -1')
+			lines = []
+			for line in f: lines.append(line)
+			f.close()
+			head = lines[0].strip()
+			date = lines[1].strip()
+			return head, date
+		except IndexError:
+			return '', ''
+
+	head, date = getGitCommit()
+	if head != '' and date != '':
+		log(level, 'The current git HEAD is:')
+		log(level, '\t%s' % head)
+		log(level, '\t%s' % date)
+		
+	log(level, '')
