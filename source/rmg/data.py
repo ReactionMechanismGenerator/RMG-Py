@@ -104,6 +104,7 @@ class Dictionary(dict):
 		# The current record
 		record = ''
 		
+		fdict=None
 		# Process the dictionary
 		try:
 			fdict = open(path, 'r')
@@ -135,7 +136,7 @@ class Dictionary(dict):
 			logging.exception('Database dictionary file "' + e.filename + '" not found.')
 			return
 		finally:	
-			fdict.close()
+			if fdict: fdict.close()
 		
 	def toStructure(self, addH=False):
 		"""
