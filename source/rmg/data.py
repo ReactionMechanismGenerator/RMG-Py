@@ -139,7 +139,7 @@ class Dictionary(dict):
 			
 		except InvalidDatabaseException, e:
 			logging.exception(str(e))
-			return
+			raise
 		except IOError, e:
 			logging.exception('Database dictionary file "' + e.filename + '" not found.')
 			raise
@@ -502,6 +502,7 @@ class Library(dict):
 		lines = []
 		
 		# Process the library
+		flib = None
 		try:
 			flib = open(path, 'r')
 			for line in flib:
@@ -511,8 +512,9 @@ class Library(dict):
 					
 		except IOError, e:
 			logging.exception('Database library file "' + e.filename + '" not found.')
+			raise
 		finally:	
-			flib.close()
+			if flib: flib.close()
 		
 		return lines
 

@@ -1359,6 +1359,7 @@ class ReactionFamily(data.Database):
 		
 		# Process the template file, removing comments and empty lines
 		info = ''
+		frec = None
 		try:
 			frec = open(path, 'r')
 			for line in frec:
@@ -1370,9 +1371,9 @@ class ReactionFamily(data.Database):
 			return
 		except IOError, e:
 			logging.exception('Database file "' + e.filename + '" not found.')
-			return
+			raise
 		finally:
-			frec.close()
+			if frec: frec.close()
 			
 		lines = info.splitlines()
 		
@@ -2017,16 +2018,16 @@ class ReactionFamilySet:
 		for index, status, label in familyList:
 			path = os.path.join(datapath, 'kinetics_groups', label)
 			if os.path.isdir(path) and status.lower() == 'on':
-
 				# skip families not in only_families, if it's set
 				if only_families and label not in only_families: continue
-
+				
 				logging.info('Loading reaction family %s from %s...' % (label, datapath))
 				family = ReactionFamily(label)
 				family.load(path)
 				self.families[family.label] = family
 				if family.reverse is not None:
 					self.families[family.reverse.label] = family.reverse
+			else: logging.info("NOT loading family %s."%label)
 
 	def getReactions(self, species):
 		"""
