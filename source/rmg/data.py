@@ -129,6 +129,14 @@ class Dictionary(dict):
 				elif len(line) > 0:
 					record += line + '\n'
 			
+			# process the last record! (after end of for loop)
+			# Label is first line of record
+			if record:
+				lines = record.splitlines()
+				label = lines[0]
+				# Add record to dictionary
+				self[label] = record
+			
 		except InvalidDatabaseException, e:
 			logging.exception(str(e))
 			return
