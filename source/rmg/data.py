@@ -47,7 +47,7 @@ provide specific functionality for individual databases.
 import os
 import log as logging
 import quantities as pq
-
+import re
 import structure
 
 pq.UnitQuantity('kilocalories', pq.cal*1e3, symbol='kcal')
@@ -160,6 +160,8 @@ class Dictionary(dict):
 			# By definition a union includes all of its immediate children
 			if record.lower().find('union') > -1:
 				self[label] = 'union'
+			elif re.match('\s*OR|AND|NOT',record.splitlines()[1]):
+			    self[label] = 'boolean'
 			# Otherwise convert adjacency list to structure
 			else:
 				try:
