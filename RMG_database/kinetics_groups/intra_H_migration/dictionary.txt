@@ -48,6 +48,9 @@ R2H_S_cy5
 5 {R!H} 0 {4,{S,D,B}}, {6,{S,D,B}}
 6 {R!H} 0 {5,{S,D,B}}, {1,{S,D,B}}
 
+Others-R2H_S
+AND{R2H_S, NOT OR{R2H_S,R2H_S_cy3,R2H_S_cy4,R2H_S_cy5}}
+
 R2H_D
 1 *1 Cd 1 {2,D}
 2 *2 Cd 0 {1,D}, {3,S}
@@ -195,6 +198,10 @@ R3H_SS_OC
 2 *4 Os 0 {1,S}, {3,S}
 3 *2 Cs 0 {2,S}, {4,S}
 4 *3 H 0 {3,S}
+
+Others-R3H_SS
+AND{ R3H_SS, NOT OR{R3H_SS_12cy3, R3H_SS_23cy3, R3H_SS_12cy4, R3H_SS_23cy4, R3H_SS_13cy4, R3H_SS_12cy5, R3H_SS_23cy5, R3H_SS_13cy5, R3H_SS_2Cd, R3H_SS_OC }}
+
 
 R4H
 Union {R4H_RSR, R4H_SMS, R4H_SBB, R4H_BBS, R4H_BBB} 
@@ -1293,6 +1300,9 @@ C_rad_out_Cs2_cy5
 4 {Cs,Cd,Cb,Ct} 0 {2,S}, {5,{S,D,T,B}}
 5 {Cs,Cd,Cb,Ct} 0 {3,S}, {4,{S,D,T,B}}
 
+Others-C_rad_out_Cs2
+AND{C_rad_out_Cs2, NOT OR{C_rad_out_Cs2_cy3, C_rad_out_Cs2_cy4, C_rad_out_Cs2_cy5 }}
+
 C_rad_out_NDMustO
 1 *1 C 1 {2,S}, {3,S}
 2 O 0 {1,S}
@@ -1500,6 +1510,9 @@ Cs_H_out_Cs2_cy5
 4 Cs 0 {1,S}, {6,S}
 5 Cs 0 {3,S}, {6,S}
 6 Cs 0 {4,S}, {5,S}
+
+Others-Cs_H_out_Cs2
+AND{ Cs_H_out_Cs2, NOT OR{Cs_H_out_Cs2_cy3, Cs_H_out_Cs2_cy4, Cs_H_out_Cs2_cy5}}
 
 Cs_H_out_NDMustO
 1 *2 Cs 0 {2,S} {3,S} {4,S}
