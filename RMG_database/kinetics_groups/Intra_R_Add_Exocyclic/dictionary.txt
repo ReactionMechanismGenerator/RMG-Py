@@ -620,12 +620,12 @@ R6_SMS_D
 6 *3 Cd 0 {5,D}
 
 R6_SMS_T
-1 *1 {R!H} 1 {2,S}
+1 *1 {R!H}      1 {2,S}
 2 *4 {Cd,Ct,Cb} 0 {1,S} {3,{D,T,B}}
-3 {Cd,Ct,Cb} 0 {2,{D,T,B} {4,S}
-4 *5 {R!H} 0 {3,S} {5,S}
-5 *2 Ct 0 {4,S} {6,T}
-6 *3 Ct 0 {5,T}
+3    {Cd,Ct,Cb} 0 {2,{D,T,B}} {4,S}
+4 *5 {R!H}      0 {3,S} {5,S}
+5 *2 Ct         0 {4,S} {6,T}
+6 *3 Ct         0 {5,T}
 
 R6_SMS_CO
 1 *1 {R!H} 1 {2,S}
@@ -1352,8 +1352,8 @@ R7_BBSM_CO
 
 R7_RSBB
 1 *1 {R!H} 1 {2,{S,D,T,B}}
-2 *4 {R!H} 0 {1,{S,D,T,B} {3,S}
-3 Cb 0 {2,S} {4,B}
+2 *4 {R!H} 0 {1,{S,D,T,B}} {3,S}
+3 Cb 0  {2,S} {4,B}
 4 Cbf 0 {3,B} {5,B}
 5 *5 Cb 0 {4,B} {6,S}
 6 *2 {Cd,Ct,CO} 0 {5,S} {7,{D,T}}
@@ -1549,7 +1549,7 @@ doublebond_intra
 
 doublebond_intra_2H
 1 *2 Cd 0 {2,D}
-2 *3 Cd 0 {1,D} {4,S} {5,S}
+2 *3 Cd 0 {1,D} {3,S} {4,S}
 3 H 0 {2,S}
 4 H 0 {2,S}
 

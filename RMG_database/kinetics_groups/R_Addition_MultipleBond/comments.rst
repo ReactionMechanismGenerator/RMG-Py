@@ -14,7 +14,7 @@ by rwest@mit.edu  7-Sep-2009
 Agreement with experimental data from Cobos et al. 
 (C. J. Cobos, H. Hippler, and J. Troe, *J. Phys. Chem.* 89, 342, 1985)
 was promising **at low pressures**, but 
-"Signiﬁcant deviations are observed between theory and experiment as the 
+"Significant deviations are observed between theory and experiment as the 
 high-pressure limit is approached."
     
 E.g., at 298 K
