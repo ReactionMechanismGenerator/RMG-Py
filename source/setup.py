@@ -95,7 +95,7 @@ def configuration(parent_package='',top_path=None):
 	config.add_library('rmg_spectral_modes', sources=['rmg/spectral/_modes.f90'], extra_compiler_args=['-fbounds-check'])
 	config.add_extension('spectral._modes', sources=['rmg/spectral/_modes.f90'], libraries=['rmg_spectral_math'], extra_compile_args=['-fbounds-check'])
 	config.add_extension('spectral._fit', sources=['rmg/spectral/_fit.f90'], libraries=['rmg_spectral_cases', 'rmg_spectral_dqed', 'rmg_spectral_modes', 'rmg_spectral_math'], extra_compile_args=['-fbounds-check'])
-	config.add_extension('spectral.states', sources=['rmg/spectral/states.f90'], libraries=['rmg_spectral_modes'], extra_compile_args=['-fbounds-check'])
+	config.add_extension('spectral.states', sources=['rmg/spectral/states.f90'], libraries=['rmg_spectral_modes','rmg_spectral_math'], extra_compile_args=['-fbounds-check'])
 
 	config.add_library('rmg_unirxn_mastereqn', sources=['rmg/unirxn/mastereqn.f90'], extra_compiler_args=['-fbounds-check'])
 	config.add_extension('unirxn.mastereqn', sources=['rmg/unirxn/mastereqn.f90'], libraries=['blas', 'lapack'], extra_compile_args=['-fbounds-check'])
