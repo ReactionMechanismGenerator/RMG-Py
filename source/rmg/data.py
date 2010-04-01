@@ -168,6 +168,7 @@ class Dictionary(dict):
 					self[label] = struct
 				except structure.InvalidAdjacencyListException, e:
 					logging.error('\t\t\t' + str(e))
+					raise
 
 	def toXML(self, dom, root):
 		"""
