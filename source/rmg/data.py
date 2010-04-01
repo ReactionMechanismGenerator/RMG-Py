@@ -638,7 +638,10 @@ class Database:
 			# Check that all nodes in tree are also in dictionary
 			for node in self.tree.children:
 				if node not in self.dictionary:
-					raise InvalidDatabaseException('Node "' + node + '" found in tree "' + os.path.abspath(treestr) + '", but not in corresponding dictionary "' + os.path.abspath(dictstr) + '".')
+					if node.startswith('Others-'):
+						logging.warning("Node %s found in tree but not dictionary %s. Letting it through for now because it's an 'Others-' node!"%(node,os.path.abspath(treestr)))
+					else: 
+						raise InvalidDatabaseException('Node "' + node + '" found in tree "' + os.path.abspath(treestr) + '", but not in corresponding dictionary "' + os.path.abspath(dictstr) + '".')
 			# Sort children by decreasing size; the algorithm returns the first
 			# match of each children, so this makes it less likely to miss a
 			# more detailed functional group
