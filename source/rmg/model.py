@@ -448,7 +448,7 @@ class CoreEdgeReactionModel:
 				logging.verbose('Updating unimolecular reaction network %s' % network.id)
 
 				# Other inputs
-				method, Tlist, Plist, grainSize, numGrains, model = settings.unimolecularReactionNetworks
+				method, Tmin, Tmax, Tlist, Pmin, Pmax, Plist, grainSize, numGrains, model = settings.unimolecularReactionNetworks
 
 				network.bathGas = [spec for spec in self.core.species if not spec.reactive][0]
 				network.bathGas.expDownParam = 4.86 * 4184
@@ -562,6 +562,12 @@ class CoreEdgeReactionModel:
 								netReaction.kinetics = pDepArrhenius
 							else:
 								pass
+
+							# Set temperature and pressure ranges explicitly
+							netReaction.kinetics.Tmin = Tmin
+							netReaction.kinetics.Tmax = Tmax
+							netReaction.kinetics.Pmin = Pmin
+							netReaction.kinetics.Pmax = Pmax
 
 							# Update cantera if this is a core reaction
 							if netReaction in self.core.reactions:

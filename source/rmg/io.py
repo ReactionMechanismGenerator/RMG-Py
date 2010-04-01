@@ -32,6 +32,7 @@ import xml.dom.minidom
 import quantities as pq
 import log as logging
 import os
+import math
 
 import constants
 import settings
@@ -376,19 +377,13 @@ def readInputFile(fstr):
 		# Read unimolecular reaction network option
 		unirxnNetworks = xml0.getChildElement(optionList, 'unimolecularReactionNetworks', required=False)
 		if unirxnNetworks is not None:
+
 			# Read method
 			method = str(xml0.getChildElementText(unirxnNetworks, 'method', required=True))
 			allowed = ['modifiedstrongcollision', 'reservoirstate']
 			if method.lower() not in allowed:
 				raise InvalidInputFileException('Invalid unimolecular reaction networks method "%s"; allowed values are %s.' % (method, allowed))
-			# Read temperatures
-			temperatures = xml0.getChildQuantity(unirxnNetworks, 'temperatures', required=False,
-				default=pq.Quantity([300.0, 400.0, 500.0, 600.0, 800.0, 1000.0, 1500.0, 2000.0], 'K'))
-			temperatures = [float(T.simplified) for T in temperatures]
-			# Read pressures
-			pressures = xml0.getChildQuantity(unirxnNetworks, 'pressures', required=False,
-				default=pq.Quantity([1.0e3, 1.0e4, 1.0e5, 1.0e6, 1.0e7], 'Pa'))
-			pressures = [float(P.simplified) for P in pressures]
+
 			# Read grain size
 			grainSize = xml0.getChildQuantity(unirxnNetworks, 'grainSize', required=False,
 				default=pq.Quantity(0.0, 'J/mol'))
@@ -397,6 +392,7 @@ def readInputFile(fstr):
 			numberOfGrains = int(xml0.getChildElementText(unirxnNetworks, 'numberOfGrains', required=False, default=0))
 			if grainSize == 0.0 and numberOfGrains == 0:
 				raise InvalidInputFileException('Must specify a grain size or number of grains for unimolecular reaction networks calculations.')
+
 			# Read interpolation model
 			interpolationModel = xml0.getChildElement(unirxnNetworks, 'interpolationModel', required=True)
 			modelType = str(xml0.getAttribute(interpolationModel, 'type', required=True))
@@ -409,7 +405,77 @@ def readInputFile(fstr):
 				interpolationModel = (modelType, numTPolys, numPPolys)
 			else:
 				interpolationModel = (modelType)
-			settings.unimolecularReactionNetworks = (method, temperatures, pressures, grainSize, numberOfGrains, interpolationModel)
+
+			temperatures = None
+			pressures = None
+			
+			# Read temperature range
+			temperatureRange = xml0.getChildElement(unirxnNetworks, 'temperatureRange', required=False)
+			if temperatureRange:
+				Tnumber = int(xml0.getAttribute(temperatureRange, 'number', required=True))
+				units = str(xml0.getAttribute(temperatureRange, 'units', required=True))
+				Tmin = float(xml0.getAttribute(temperatureRange, 'min', required=True))
+				Tmin = pq.Quantity(Tmin, units)
+				Tmin = float(Tmin.simplified)
+				Tmax = float(xml0.getAttribute(temperatureRange, 'max', required=True))
+				Tmax = pq.Quantity(Tmax, units)
+				Tmax = float(Tmax.simplified)
+
+			# Read pressure range
+			pressureRange = xml0.getChildElement(unirxnNetworks, 'pressureRange', required=False)
+			if pressureRange:
+				Pnumber = int(xml0.getAttribute(pressureRange, 'number', required=True))
+				units = str(xml0.getAttribute(pressureRange, 'units', required=True))
+				Pmin = float(xml0.getAttribute(pressureRange, 'min', required=True))
+				Pmin = pq.Quantity(Pmin, units)
+				Pmin = float(Pmin.simplified)
+				Pmax = float(xml0.getAttribute(pressureRange, 'max', required=True))
+				Pmax = pq.Quantity(Pmax, units)
+				Pmax = float(Pmax.simplified)
+
+			# Determine actual temperatures to use based on interpolation model
+			# For Chebyshev polynomials a Gauss-Chebyshev grid should be used
+			# Otherwise an even spacing on a T^-1 basis is used
+			if interpolationModel[0].lower() == 'chebyshev':
+				# The formula for the Gauss-Chebyshev points was taken from
+				# the Chemkin theory manual
+				temperatures = [-math.cos((2 * x - 1) * math.pi / (2 * Tnumber)) for x in range(1, Tnumber+1)]
+				temperatures = [2.0 / ((1.0/Tmax - 1.0/Tmin) * t + 1.0/Tmax + 1.0/Tmin) for t in temperatures]
+			else:
+				slope = (1.0/Tmax - 1.0/Tmin) / (Tnumber - 1)
+				temperatures = [1.0/(slope * x + 1.0/Tmin) for x in range(Tnumber)]
+
+			# Determine actual pressures to use based on interpolation model
+			# For Chebyshev polynomials a Gauss-Chebyshev grid should be used
+			# Otherwise an even spacing on a log(P) basis is used
+			if interpolationModel[0].lower() == 'chebyshev':
+				# The formula for the Gauss-Chebyshev points was taken from
+				# the Chemkin theory manual
+				pressures = [-math.cos((2 * x - 1) * math.pi / (2 * Pnumber)) for x in range(1, Pnumber+1)]
+				pressures = [10**(0.5 * ((math.log10(Pmax) - math.log10(Pmin)) * p + math.log10(Pmax) + math.log10(Pmin))) for p in pressures]
+			else:
+				slope = (math.log10(Pmax) - math.log10(Pmin)) / (Pnumber - 1)
+				pressures = [10**(slope * x + math.log10(Pmin)) for x in range(Pnumber)]
+
+			# Read temperatures (overriding <temperatureRange>)
+			temperatureList = xml0.getChildQuantity(unirxnNetworks, 'temperatures', required=False, default=None)
+			if temperatureList:
+				temperatures = [float(T.simplified) for T in temperatureList]
+				Tmin = min(temperatures)
+				Tmax = max(temperatures)
+			# Read pressures (overriding <pressureRange>)
+			pressureList = xml0.getChildQuantity(unirxnNetworks, 'pressures', required=False, default=None)
+			if pressureList:
+				pressures = [float(P.simplified) for P in pressureList]
+				Pmin = min(pressures)
+				Pmax = max(pressures)
+
+			if not temperatures:
+				raise InvalidInputFileException('Must specify a <temperatureRange> or a <temperatures> element as a child of <unimolecularReactionNetworks>.')
+			if not pressures:
+				raise InvalidInputFileException('Must specify a <pressureRange> or a <pressures> element as a child of <unimolecularReactionNetworks>.')
+
+			settings.unimolecularReactionNetworks = (method, Tmin, Tmax, temperatures, Pmin, Pmax, pressures, grainSize, numberOfGrains, interpolationModel)
 		else:
 			settings.unimolecularReactionNetworks = None
 
