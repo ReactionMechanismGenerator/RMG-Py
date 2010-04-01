@@ -14,18 +14,6 @@ import rmg.log as logging
 _rates = []
 
 
-def loadKineticsDatabases(databasePath, only_families=False):
-    """
-    Create and load the kinetics databases (reaction families).
-    If only_families is a list like ['H_Abstraction'] then only families in this
-    list will be loaded.
-    
-    Currently incompatible with RMG(java) database syntax.
-    """
-    rmg.reaction.kineticsDatabase = rmg.reaction.ReactionFamilySet()
-    rmg.reaction.kineticsDatabase.load(databasePath, only_families=only_families)
-    
-
 def removeCommentFromLine(line):
     """
     Remove a C++/Java style comment from a line of text.
@@ -42,8 +30,51 @@ def loadKineticsDatabases(databasePath, only_families=False):
     If only_families is a list like ['H_Abstraction'] then only families in this
     list will be loaded.
     """
-    rmg.reaction.kineticsDatabase = rmg.reaction.ReactionFamilySet()
-    rmg.reaction.kineticsDatabase.load(databasePath, only_families=only_families)
+    
+    db = rmg.reaction.ReactionFamilySet()
+    rmg.reaction.kineticsDatabase = db
+    
+    datapath = os.path.abspath(databasePath)
+    logging.info('Loading reaction family databases from %s.' % datapath)
+    
+    # Load the families from kinetics/families.txt
+    familyList = []
+    ffam = open(os.path.join(datapath,'kinetics_groups','families.txt'), 'r')
+    for line in ffam:
+        line = rmg.data.removeCommentFromLine(line).strip()
+        if len(line) > 0:
+            items = line.split()
+            items[0] = int(items[0])
+            familyList.append(items)
+    ffam.close()
+    
+    # loop through the families
+    families = {}
+    for index, status, label in familyList:
+        path = os.path.join(datapath, 'kinetics_groups', label)
+        if os.path.isdir(path): # and status.lower() == 'on':
+            # skip families not in only_families, if it's set
+            if only_families and label not in only_families: continue
+            
+            logging.verbose('Loading reaction family %s from %s...' % (label, datapath))
+            family = rmg.reaction.ReactionFamily(label)
+            #family.load(path)  # this would load the whole family. We just want the dictionary and tree
+            
+            # Generate paths to files in the database
+            dictstr = os.path.join(path, 'dictionary.txt')
+            treestr = os.path.join(path, 'tree.txt')
+            #: The path of the database that was loaded.
+            family._path = path
+            
+            rmg.data.Database.load(family, dictstr, treestr, '')
+            
+            # Check for well-formedness
+            if not family.isWellFormed():
+                raise data.InvalidDatabaseException('Database at "%s" is not well-formed.' % (path))                
+                    
+            db.families[family.label] = family
+
+    # rmg.reaction.kineticsDatabase.load(databasePath, only_families=only_families)
     db = rmg.reaction.kineticsDatabase
     return db
         
@@ -52,13 +83,20 @@ def loadKineticsDatabases(databasePath, only_families=False):
 # Some Python code for parsing the kinetics library entries
 
 
-class group:
+class Group:
     def __init__(self, chemgraph):
+        chemgraph = chemgraph.strip()
+        self.name = chemgraph.splitlines()[0]
+        self.node_name = None
+        if not chemgraph.splitlines()[1].strip().startswith('1'):
+            logging.debug("I think this is a compound structure: %s"%chemgraph)
+            self.compound_structure=True
+            return
+        else:
+            self.compound_structure=False
         s = rmg.structure.Structure()
         s.fromAdjacencyList(chemgraph.strip(),addH=False, withLabel=True)
         self._structure = s
-        self.name = chemgraph.strip().split('\n')[0]
-        self.node_name = None
         
     def __str__(self):
         return self._structure.toAdjacencyList(label=self.name)
@@ -79,6 +117,12 @@ class group:
         Locate this group in the family tree; set self.node_name to the node's name, and return it.
         Return None if not found.
         """
+        
+        if self.compound_structure:
+            logging.info("This is a compound group so I'm just using its name and trusting that's right: %s"%self.name)
+            self.node_name = self.name
+            return self.node_name
+        
         s = self._structure
         node_name = family.descendTree(s,s.getLabeledAtoms())
         logging.debug("I think this %s belongs at %s"%(s.toAdjacencyList(label=group.name), node_name) )
@@ -129,6 +173,7 @@ class rate:
                  reactant1 = None,
                  reactant2 = None,
                  kf = None,
+                 temperature_range = None,
                  rank = None,
                  old_id = None,
                  short_comment = None,
@@ -136,13 +181,14 @@ class rate:
                  history = None
                 ):
                 
-        if group1: self.group1 = group(group1)
-        if group2: self.group2 = group(group2)
-        if group3: self.group3 = group(group3)
+        if group1: self.group1 = Group(group1)
+        if group2: self.group2 = Group(group2)
+        if group3: self.group3 = Group(group3)
         if reactant1: self.reactant1 = reactant(reactant1)
         if reactant2: self.reactant2 = reactant(reactant2)
         
         self.kf = kf
+        self.temperature_range = temperature_range
         self.rank = rank
         self.old_id = old_id
         self.short_comment = short_comment
@@ -159,10 +205,20 @@ class rate:
         out = ""
         for group in self.groups:
             out+="%-20s"%group.node_name
+        if self.temperature_range[1] is None:
+            out += "  %6d    "%self.temperature_range[0]
+        else:
+            out += " %4d-%-5d "%self.temperature_range
+            
         out += self.kf.toRMGjava()
         out += '    '+self.short_comment
         return out
     java = property(toRMGjava)
+    header =( "//#  %-17s"%'Group1' + 
+              "%-20s"%'Group2' +
+              " TempRange  " +
+              ("%8s "*8)%('A','n','alpha','E0','DA','Dn','Dalpha','DE0') +
+              " Comment" )
         
     def toSource(self):
         out='rate(\n'
@@ -183,8 +239,9 @@ class rate:
     source = property(toSource)
         
     def getGroups(self):
-        """Return a list of the groups: [group1, group2, (group3)]"""
-        groups=[self.group1, self.group2]
+        """Return a list of the groups: [group1, group2, group3] or as few as exist"""
+        groups=[self.group1]
+        if hasattr(self,'group2'): groups.append(self.group2)
         if hasattr(self,'group3'): groups.append(self.group3)
         return groups
     groups = property(getGroups)
@@ -270,39 +327,40 @@ class Arrhenius:
         else:
             alpha = self.alpha
             E0 = self.E0
-            
         if self.A.units == "cm^3/mol/s":
             Aunitscale = 1.0
         else:
             raise NotImplementedError("Unit conversion not yet implemented")
-        Av,Au = self.A.toRMGjava(Aunitscale)
+        A_val,A_unc = self.A.toRMGjava(Aunitscale)
         # n and alpha have no units to convert 
         assert self.n.units is None
-        nv,nu = self.n.toRMGjava(1)
+        n_val,n_unc = self.n.toRMGjava(1)
         assert alpha.units is None
-        alphav, alphau = alpha.toRMGjava(1)
+        alpha_val, alpha_unc = alpha.toRMGjava(1)
         # Activation energy
         if E0.units == "kcal/mol":
             Eunitscale = 1.0
         else:
             raise NotImplementedError("Unit conversion not yet implemented")
-        E0v, E0u = E0.toRMGjava(Eunitscale)
+        E0_val, E0_unc = E0.toRMGjava(Eunitscale)
         
-        out = ('%s '*8)%( Av, nv, alphav, E0v,
-                          Au, nu, alphau, E0u )
+        out = ("%8s "*8)%(
+                    A_val, n_val, alpha_val, E0_val, A_unc, n_unc, alpha_unc, E0_unc )
         return out
     java = property(toRMGjava)
 
      
-     
-     
-def WriteRMGjava(list_of_rates, family_name):
-    folder = os.path.join('RMG_Database','kinetics_groups',family_name)
-    os.path.exists(folder) or os.makedirs(folder)
-    library = file(os.path.join(folder,'rateLibrary.txt'),'w')
-    logging.verbose("Writing library to "+folder)
-    for r in list_of_rates:
-        line = r.toRMGjava()
+def WriteRMGjava(list_of_rates, output_folder, unread_lines=None, header=None):
+    os.path.exists(output_folder) or os.makedirs(output_folder)
+    library = file(os.path.join(output_folder,'rateLibrary.txt'),'w')
+    logging.verbose("Writing library to "+output_folder)
+    if unread_lines:
+        library.write(unread_lines+'\n')
+    if header:
+        library.write(header+'\n')
+    for index,r in enumerate(list_of_rates):
+        line = '%-4d '%index
+        line += r.toRMGjava()
         library.write(line+'\n')
         logging.verbose(line)
     library.close()
@@ -409,29 +467,78 @@ Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate express
 )
 
 
-logging.initialize(20,'database.log')
-# shut it up for loading the database!
+rate(
+  group1 = 
+"""
+Rn
+Union {R4, R5, R6, R7}
+""",
+  group2 = 
+"""
+multiplebond_intra
+1 *2 {Cd,Ct,CO} 0 {2,{D,T}}
+2 *3 {Cd,Ct,Od} 0 {1,{D,T}}
+""",
+  group3 = 
+"""
+radadd_intra
+1 *1 {R!H} 1
+""",
+  kf = Arrhenius(A=(1E+10,"cm^3/mol/s","+-",0.0),
+                 n=(1E+10,None,"+-",0.0),
+                 alpha=(0,None,"+-",0.0),
+                 E0=(5,"kcal/mol","+-",0.0)),
+  temperature_range = (300,1500),
+  rank = 0,
+  old_id = "807",
+  short_comment = "",
+   )
+
+
+import shutil
+
+logging.initialize(15,'database.log')  # <<< level in general
+
+
 logger = logging.getLogger()
 old_level = logger.getEffectiveLevel()
-logger.setLevel(40)
-data_source = os.path.join('kinetics_groups_source')
+logger.setLevel(15)  # <<< level while reading database 
+data_source = os.path.expanduser('~/XCodeProjects/DjangoSite/RMG_site/RMG_database')
 db = loadKineticsDatabases( data_source )
 logger.setLevel(old_level)
 
-
-family_name = 'H abstraction'
-family = db.families[family_name]
-
-for r in _rates:
-    for group in r.groups:
-        group.locateInFamily(family)
-        #group._structure.updateAtomTypes()
-
-    logging.info("="*80)
-    logging.info(r.source)
-    logging.info(r.toRMGjava())
-
-#import shutil
-#shutil.copy(os.path.join(data_source,'kinetics_groups',family_name,'tree.txt'),os.path.join('RMG_Database','kinetics_groups',family_name,''))
-
-WriteRMGjava(_rates, family_name)
+for family_name,family in db.families.iteritems():
+    logging.info("Now processing family: %s"%family_name)
+    _rates = []
+    
+    library_file_name = os.path.join(data_source,'kinetics_groups',family_name,'library.py')
+    library_file = open(library_file_name)
+    context = { '_rates': _rates,
+              'rate': rate,
+              'Arrhenius':Arrhenius,
+              'Parameter':Parameter
+              }
+    logging.info("Importing %s"%library_file_name)
+    exec library_file in context
+    library_file.close()
+    _rates = context['_rates']
+    unread_lines = context['unread_lines']
+    
+    assert family_name==context['reaction_family_name']
+    
+    for r in _rates:
+        for group in r.groups:
+            group.locateInFamily(family)
+            #group._structure.updateAtomTypes()
+    
+        #logging.verbose("="*80)
+        #logging.verbose(r.source)
+        logging.verbose(r.toRMGjava())
+    output_folder = os.path.join('RMG_Database_output','kinetics_groups',family_name)
+    os.path.exists(output_folder) or os.makedirs(output_folder)
+    WriteRMGjava(_rates, output_folder, unread_lines=unread_lines, header = rate.header)
+    
+    for file_to_copy in ['tree.txt', 'dictionary.txt', 'reactionAdjList.txt']:
+        logging.debug("Copying %s into destination folder"%file_to_copy)
+        shutil.copy( os.path.join(data_source,'kinetics_groups',family_name,file_to_copy),
+                    output_folder)
