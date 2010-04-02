@@ -16,6 +16,7 @@ Reverse name: HO2_Addition
 
 
 Generated on 7th April 2010 at 17:08
+Generated on 22nd June 2010 at 10:34
 """
 
 reaction_family_name = "Disproportionation_O2d"
@@ -82,7 +83,7 @@ XH_Rrad
   long_comment = 
 """
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
 # Number 2
@@ -102,7 +103,7 @@ Cmethyl_Csrad
 4. H 0 {1,S}
 5. H 0 {1,S}
 """,
-  kf = Arrhenius(A=(1.26E+11,A_UNITS,"*/",3.0),
+  kf = Arrhenius(A=(1.05833E+10,A_UNITS,"*/",3.0),
                  n=(0,None,"+-",0.0),
                  alpha=(0,None,"+-",0.0),
                  E0=(0,E_UNITS,"+-",0.0)
@@ -126,8 +127,11 @@ For the time being, the author decided to recommend the only experimentally
 reported rate coefficient, only for temperatures above 700K, as they note the
 addition rxn should be the predominant rxn at lower temperatures.
 MRH 30-Aug-2009
+
+Divide the rate constant by 12 to account for symmetry of 2 (O2) and 6 (i-C3H7, carbons #1 and 3).  The final result is 1.05833e+10 cm3/mol/s.
+JDM 31-Mar-2010
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
 # Number 3
@@ -147,7 +151,7 @@ C/H2/Nd_Csrad
 4. H 0 {1,S}
 5. {Cs,O} 0 {1,S}
 """,
-  kf = Arrhenius(A=(9.04E+10,A_UNITS,"*/",3.0),
+  kf = Arrhenius(A=(2.25825E+10,A_UNITS,"*/",3.0),
                  n=(0,None,"+-",0.0),
                  alpha=(0,None,"+-",0.0),
                  E0=(0,E_UNITS,"+-",0.0)
@@ -170,8 +174,11 @@ the formation of C3H6 is controlled by the addition rxn.  The author further
 notes that it is surprising that p-dependence effects are not observed for
 C3H6 formation.
 MRH 30-Aug-2009
+
+Divide the rate constant by 4 to account for symmetry of 2 (O2) and 2 (n-C3H7, carbon #2).  The final result is 2.25825e+10 cm3/mol/s.
+JDM 31-Mar-2010
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
 # Number 4
@@ -191,7 +198,7 @@ C/H/NdNd_Csrad
 4. {Cs,O} 0 {1,S}
 5. {Cs,O} 0 {1,S}
 """,
-  kf = Arrhenius(A=(2.41E+10,A_UNITS,"*/",5.0),
+  kf = Arrhenius(A=(1.2044E+10,A_UNITS,"*/",5.0),
                  n=(0,None,"+-",0.0),
                  alpha=(0,None,"+-",0.0),
                  E0=(0,E_UNITS,"+-",0.0)
@@ -212,8 +219,11 @@ Entry 45,3 (a): The author recommends a rate coefficient based on the experiment
 by Baker et al. (yielding a disproportionation-to-decomposition ratio) and the
 current (Tsang) study\'s recommended iC4H9 unimolecular decomposition rate.
 MRH 31-Aug-2009
+
+Divide the rate constant by 2 to account for symmetry of 2 (O2) and 1 (i-C4H9, carbon #2).  The final result is 1.2044e+10 cm3/mol/s.
+JDM 31-Mar-2010
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
 # Number 5
@@ -231,7 +241,7 @@ Cdpri_Csrad
 2. *3 Cs 1 {1,S}
 3. *4 H 0 {1,S}
 """,
-  kf = Arrhenius(A=(1.21E+12,A_UNITS,"+-",0.0),
+  kf = Arrhenius(A=(6.022E+11,A_UNITS,"+-",0.0),
                  n=(0,None,"+-",0.0),
                  alpha=(0,None,"+-",0.0),
                  E0=(13.55,E_UNITS,"+-",0.0)
@@ -258,8 +268,11 @@ cm3/molecule/s.  The author further notes that this upper limit assumes no
 contribution from a complex rearrangement of the adduct.  Finally, the author
 notes that this rxn should not be significant in combustion situations.
 MRH 31-Aug-2009
+
+Divide the rate constant by 2 to account for symmetry of 2 (O2) and 1 (allyl, carbon #2). The final result is 6.022e+11 cm3/mol/s, Ea = 13.55 kcal/mol.
+JDM 31-Mar-2010
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
 # Number 6
@@ -277,7 +290,7 @@ O_Csrad
 2. *3 Cs 1 {1,S}
 3. *4 H 0 {1,S}
 """,
-  kf = Arrhenius(A=(1.14E+13,A_UNITS,"*/",2.0),
+  kf = Arrhenius(A=(5.7209E+12,A_UNITS,"*/",2.0),
                  n=(0,None,"+-",0.0),
                  alpha=(0,None,"+-",0.0),
                  E0=(0,E_UNITS,"+-",0.0)
@@ -295,8 +308,11 @@ Recommended value is k298.  This reference just gives a table of results,
 
 with no discussion on how the preferred numbers were arrived at.
 MRH 31-Aug-2009
+
+Divide the rate constant by 2 to account for symmetry of 2 (O2) and 1 (CH3CHOH, oxygen atom). The final result is 5.7209e+12 cm3/mol/s.
+JDM 31-Mar-2010
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
 # Number 7
@@ -314,7 +330,7 @@ O_Csrad
 2. *3 Cs 1 {1,S}
 3. *4 H 0 {1,S}
 """,
-  kf = Arrhenius(A=(5.78E+12,A_UNITS,"*/",1.3),
+  kf = Arrhenius(A=(2.92067E+12,A_UNITS,"*/",1.3),
                  n=(0,None,"+-",0.0),
                  alpha=(0,None,"+-",0.0),
                  E0=(0,E_UNITS,"+-",0.0)
@@ -332,8 +348,11 @@ Recommended value is k298.  This reference just gives a table of results,
 
 with no discussion on how the preferred numbers were arrived at.
 MRH 31-Aug-2009
+
+Divide the rate constant by 2 to account for symmetry of 2 (O2) and 1 (CH2OH, oxygen atom). The final result is 2.92067e+12 cm3/mol/s.
+JDM 31-Mar-2010
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
 # Number 8
@@ -351,7 +370,7 @@ O_Csrad
 2. *3 Cs 1 {1,S}
 3. *4 H 0 {1,S}
 """,
-  kf = Arrhenius(A=(5.48E+12,A_UNITS,"*/",1.3),
+  kf = Arrhenius(A=(2.74001E+12,A_UNITS,"*/",1.3),
                  n=(0,None,"+-",0.0),
                  alpha=(0,None,"+-",0.0),
                  E0=(0,E_UNITS,"+-",0.4)
@@ -362,7 +381,7 @@ O_Csrad
   short_comment = "DeMore et al [183] literature review.",
   long_comment = 
 """
-[183] DeMore, W.B.; Golden, D.M.; Hampson, R.F.; Howard, C.J.; Kolb, C.E.; Molina, M.J.; JPL Publication 97-4
+[183] DeMore, W.B.; Sander, S.P.; Golden, D.M.; Hampson, R.F.; Kurylo, M.J.; Howard, C.J.; Ravishankara, A.R.; Kolb, C.E.; Molina, M.J.; JPL Publication 97-4
 Literature review: CH2OH + O2 --> CH2O + HO2
 
 pg.62 D38: Discussion on evaluated data
@@ -370,8 +389,11 @@ pg.62 D38: Discussion on evaluated data
 pg.22: Recommended A-factor and E/R parameter values
 
 MRH 1-Sept-2009
+
+Divide the rate constant by 2 to account for symmetry of 2 (O2) and 1 (CH2OH, oxygen atom). The final result is 2.74001e+12 cm3/mol/s.
+JDM 31-Mar-2010
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
 

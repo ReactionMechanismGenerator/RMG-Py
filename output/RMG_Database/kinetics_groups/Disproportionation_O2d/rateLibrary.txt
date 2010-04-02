@@ -22,10 +22,10 @@ Arrhenius_EP
 
 //#  Group1             Group2                TempRange         A        n    alpha       E0       DA       Dn   Dalpha      DE0  Rank  Comment
 0    O2d                  XH_Rrad                300-1500     3e+11        0        0        0        0        0        0        0  0     
-1    O2d                  Cmethyl_Csrad          700-2500  1.26e+11        0        0        0       *3        0        0        0  4     Tsang [91] Literature review.
-2    O2d                  C/H2/Nd_Csrad          500-900   9.04e+10        0        0        0       *3        0        0        0  4     Tsang [91] Literature review.
-3    O2d                  C/H/NdNd_Csrad         600-1000  2.41e+10        0        0        0       *5        0        0        0  4     Tsang [92] Literature review.
-4    O2d                  Cdpri_Csrad            300-2500  1.21e+12        0        0     13.6        0        0        0        0  4     Tsang [93] Literature review.
-5    O2d                  O_Csrad                   298    1.14e+13        0        0        0       *2        0        0        0  4     Atkinson et al [98] literature review.
-6    O2d                  O_Csrad                   298    5.78e+12        0        0        0     *1.3        0        0        0  4     Atkinson et al [98] literature review.
-7    O2d                  O_Csrad                200-300   5.48e+12        0        0        0     *1.3        0        0      0.4  4     DeMore et al [183] literature review.
+1    O2d                  Cmethyl_Csrad          700-2500  1.06e+10        0        0        0       *3        0        0        0  4     Tsang [91] Literature review.
+2    O2d                  C/H2/Nd_Csrad          500-900   2.26e+10        0        0        0       *3        0        0        0  4     Tsang [91] Literature review.
+3    O2d                  C/H/NdNd_Csrad         600-1000   1.2e+10        0        0        0       *5        0        0        0  4     Tsang [92] Literature review.
+4    O2d                  Cdpri_Csrad            300-2500  6.02e+11        0        0     13.6        0        0        0        0  4     Tsang [93] Literature review.
+5    O2d                  O_Csrad                   298    5.72e+12        0        0        0       *2        0        0        0  4     Atkinson et al [98] literature review.
+6    O2d                  O_Csrad                   298    2.92e+12        0        0        0     *1.3        0        0        0  4     Atkinson et al [98] literature review.
+7    O2d                  O_Csrad                200-300   2.74e+12        0        0        0     *1.3        0        0      0.4  4     DeMore et al [183] literature review.
