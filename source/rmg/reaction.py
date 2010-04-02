@@ -1684,7 +1684,7 @@ class ReactionFamily(data.Database):
 			print 'Reactant structures are:'
 			for struct in reactantStructures:
 				print struct.toAdjacencyList()
-			raise e
+			raise
 
 		# Check that reactant and product structures are allowed in this family
 		# If not, then stop

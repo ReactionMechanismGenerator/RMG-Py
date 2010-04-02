@@ -250,7 +250,7 @@ class AtomType:
 		or they are mutually exclusive.
 		"""
 		# if they're equal, return true
-		if other.label is other.label: return True
+		if self.label is other.label: return True
 		
 		# If other is a generic atom type, then always return True
 		if other.label is AtomType_R: 
@@ -269,8 +269,10 @@ class AtomType:
 				return False
 		
 		# If other represents an element without surrounding bond info,
-		# match self to any with the same element
-		if other.label is self.element.symbol is other.element.symbol:
+		# self can be anything with the same element.
+		if ( self.element and other.element and         # both have elements (i.e. are not 'R' or 'R!H')
+			 other.label is other.element.symbol and    # other is just it's element (e.g. 'C' not 'Cs')
+			 self.element.symbol is other.label):       # self has the same element (e.g. C)
 			#logging.debug('I think %s is a specific case of %s'%(self.label, other.label))
 			return True
 		
@@ -310,7 +312,7 @@ def loadAtomTypes():
 	atomTypes['Cb'] 	= AtomType('Cb', 	elements['C'], 	doubleBonds=0, tripleBonds=0, benzeneBonds=2, description='carbon belonging to a benzene ring')
 	atomTypes['Cbf'] 	= AtomType('Cbf', 	elements['C'], 	doubleBonds=0, tripleBonds=0, benzeneBonds=3, description='carbon belonging to a fused benzene ring')
 
-	atomTypes['CO']		= AtomType('CO', 	None, 			description='To allow me to read the RMG-Java database, without understanding it.')
+	atomTypes['CO']		= AtomType('CO', 	elements['C'], 			description='To allow me to read the RMG-Java database, without understanding it.')
 	
 	atomTypes['Os'] 	= AtomType('Os', 	elements['O'], 	doubleBonds=0, tripleBonds=0, benzeneBonds=0, description='oxygen with two single bonds')
 	atomTypes['Od'] 	= AtomType('Od', 	elements['O'], 	doubleBonds=1, tripleBonds=0, benzeneBonds=0, description='oxygen with one double bond')
