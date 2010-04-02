@@ -242,6 +242,40 @@ class AtomType:
 			return True
 		return False
 
+	def isSpecificCaseOf(self,other):
+		"""
+		Returns True if `self` is the same as `other`
+		or `self` is a more specific case of `other`.
+		Returns False if some of `self` is not included in `other`,
+		or they are mutually exclusive.
+		"""
+		# if they're equal, return true
+		if other.label is other.label: return True
+		
+		# If other is a generic atom type, then always return True
+		if other.label is AtomType_R: 
+			return True
+		# but if it's not, and self is, then return False
+		elif self.label is AtomType_R:
+			return False
+		
+		# If other is a generic non-hydrogen atom type, 
+		# then return True if self is non-hydrogen
+		if other.label is AtomType_RnotH:
+			if not self.label is AtomType_H:
+				#logging.debug('I think %s is a specific case of %s'%(self.label, other.label))
+				return True
+			else: 
+				return False
+		
+		# If other represents an element without surrounding bond info,
+		# match self to any with the same element
+		if other.label is self.element.symbol is other.element.symbol:
+			#logging.debug('I think %s is a specific case of %s'%(self.label, other.label))
+			return True
+		
+		return False
+
 ################################################################################
 
 def loadAtomTypes():
@@ -384,9 +418,23 @@ class ElectronState:
 
 		if self.label == '2' and (other.label == '2' or other.label == '2S' or other.label == '2T'):
 			return True
-		elif (self.label == '2' or self.label == '2S' or self.label == '2T') and other.label == '2':
+		if (self.label == '2' or self.label == '2S' or self.label == '2T') and other.label == '2':
 			return True
-		elif self.label == other.label:
+		if self.label == other.label:
+			return True
+		
+		return False
+
+	def isSpecificCaseOf(self,other):
+		"""
+		Returns True if `self` is the same as `other`
+		or `self` is a more specific case of `other`.
+		Returns False if some of `self` is not included in `other`,
+		or they are mutually exclusive.
+		"""
+		if other.label == '2' and (self.label == '2' or self.label == '2S' or self.label == '2T'):
+			return True
+		if self.label == other.label:
 			return True
 		
 		return False
@@ -479,6 +527,21 @@ class BondType:
 		'Dtrans').
 		"""
 		return self.label == other.label
+	
+	def isSpecificCaseOf(self,other):
+		"""
+		Returns True if `self` is the same as `other`
+		or `self` is a more specific case of `other`.
+		Returns False if some of `self` is not included in `other`,
+		or they are mutually exclusive.
+		"""
+		# return true if equal
+		if self.label == other.label: return True
+		
+		# if other is generic double, and self is any of (D, Dcis, Dtrans) return True
+		if other.label == 'D' and self.order == 2: return True
+		
+		return False # as not already returned True 
 
 ################################################################################
 
@@ -671,6 +734,40 @@ class Atom(object):
 				if elecState1.equivalent(elecState2): electronStatesMatch = True
 
 		return (atomTypesMatch and electronStatesMatch)
+		
+	def isSpecificCaseOf(self, other):
+		"""
+		Returns True if `self` is the same as `other`
+		or `self` is a more specific case of `other`.
+		Returns False if some of `self` is not included in `other`,
+		or they are mutually exclusive.
+		
+		If `self` has multiple atom types, they must *all* be within `other`'s 
+		set of atom types. This is also done for electron states. Both an
+		atom types match and an electron state match must be found in order to
+		return :data:`True`.
+		"""
+		atomTypesMatch = cython.declare(cython.bint, False)
+		electronStatesMatch = cython.declare(cython.bint, False)
+		
+		atomType1 = cython.declare(AtomType)
+		atomType2 = cython.declare(AtomType)
+		elecState1 = cython.declare(ElectronState)
+		elecState2 = cython.declare(ElectronState)
+		
+		for atomType1 in self._atomType: # all these must match
+			for atomType2 in other._atomType: # can match any of these
+				if atomType1.isSpecificCaseOf(atomType2): break # on match
+			else: # did not break
+				return False # because we didn't match
+		
+		for elecState1 in self._electronState: # all these must match
+			for elecState2 in other._electronState: # can match any of these
+				if elecState1.isSpecificCaseOf(elecState2): break # on match
+			else: # did not break
+				return False # because we didn't match
+		
+		return True
 	
 	def copy(self):
 		"""
@@ -956,6 +1053,26 @@ class Bond(object):
 			for bondType2 in other._bondType:
 				if bondType1.equivalent(bondType2): return True
 		return False
+
+	def isSpecificCaseOf(self,other):
+		"""
+		Returns True if `self` is the same as `other`
+		or `self` is a more specific case of `other`.
+		Returns False if some of `self` is not included in `other`,
+		or they are mutually exclusive.
+		"""
+		# return true if equal
+		bondType1 = cython.declare(BondType)
+		bondType2 = cython.declare(BondType)
+		
+		for bondType1 in self._bondType: # all of these must match
+			for bondType2 in other._bondType: # can match any of these 
+				if bondType1.isSpecificCaseOf(bondType2): break # on match
+			else: # did not break
+				return False # because we didn't match
+		
+		return True # as we matched all of self's bond types
+		
 
 	def copy(self):
 		"""
