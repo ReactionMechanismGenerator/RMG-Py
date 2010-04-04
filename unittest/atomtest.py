@@ -78,6 +78,10 @@ class AtomTypeEquivalencyCheck(unittest.TestCase):
 				self.assertFalse(atomTypes['R!H'].isSpecificCaseOf(a))
 			
 			# maybe there are others I should test
+			if a.element and a.element.symbol is 'C':
+				self.assertTrue(a.isSpecificCaseOf(atomTypes['C']))
+				if name != 'C': # then something specific like 'Cd'
+					self.assertFalse(atomTypes['C'].isSpecificCaseOf(a))
 					
 
 ################################################################################
@@ -195,6 +199,6 @@ class AtomCheck(unittest.TestCase):
 ################################################################################
 
 if __name__ == '__main__':
-	AtomTypeEquivalencyCheck('testSelfEquivalence').debug()
+	AtomTypeEquivalencyCheck('testIsSpecificCaseOf').debug()
 	
 	unittest.main( testRunner = unittest.TextTestRunner(verbosity=2) )
