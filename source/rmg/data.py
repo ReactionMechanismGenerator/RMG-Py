@@ -793,18 +793,22 @@ class Database:
 					if center is None or atom is None:
 						return False
 					# Semantic check #1: atoms with same label are equivalent
-					elif not atom.equivalent(center):
+					elif not atom.isSpecificCaseOf(center):
 						return False
 					# Semantic check #2: labeled atoms that share bond in one
 					# also share equivalent bond in the other
 					for atom1, atom2 in map21_0.iteritems():
 						if group.hasBond(center, atom1) and structure.hasBond(atom, atom2):
-							bond1 = group.getBond(center, atom1)
-							bond2 = structure.getBond(atom, atom2)
-							if not bond1.equivalent(bond2):
+							bond1 = group.getBond(center, atom1)   # bond1 is group
+							bond2 = structure.getBond(atom, atom2) # bond2 is structure
+							if not bond2.isSpecificCaseOf(bond1):
 								return False
-						elif group.hasBond(center, atom1) or structure.hasBond(atom, atom2):
+						elif group.hasBond(center, atom1): # but structure doesn't 
 							return False
+						# but we don't mind if...
+						elif structure.hasBond(atom, atom2): # but group doesn't
+							logging.debug("We don't mind that structure %s has bond but group %s doesn't"%(str(structure),node))
+						
 					# Passed semantic checks, so add to maps of already-matched
 					# atoms
 					map21_0[center] = atom; map12_0[atom] = center
