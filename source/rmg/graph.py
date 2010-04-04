@@ -662,8 +662,9 @@ def __VF2_feasible(graph1, graph2, vertex1, vertex2, map21, map12, terminals1,
 	for vert1 in edges1:
 		if vert1 in map21:
 			vert2 = map21[vert1]
-			if not vert2 in edges2:
-				return False
+			if not vert2 in edges2: # atoms not joined in graph2
+				if subgraph: continue # but we don't care if subgraph matching!
+				return False 
 			edge1 = edges1[vert1]
 			edge2 = edges2[vert2]
 			if subgraph:
