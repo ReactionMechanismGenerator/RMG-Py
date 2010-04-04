@@ -49,6 +49,7 @@ cdef class AtomType:
 	cdef public object decrementBond
 
 	cpdef bint equivalent(AtomType self, AtomType other)
+	cpdef bint isSpecificCaseOf(AtomType self, AtomType other)
 
 ################################################################################
 
@@ -61,6 +62,7 @@ cdef class ElectronState:
 	cdef public ElectronState decrement
 
 	cpdef bint equivalent(ElectronState self, ElectronState other)
+	cpdef bint isSpecificCaseOf(ElectronState self, ElectronState other)
 
 ################################################################################
 
@@ -73,6 +75,7 @@ cdef class BondType:
 	cdef public str location
 
 	cpdef bint equivalent(BondType self, BondType other)
+	cpdef bint isSpecificCaseOf(BondType self, BondType other)
 
 ################################################################################
 
@@ -92,6 +95,7 @@ cdef class Atom(object):
 	cdef public short sorting_label
 
 	cpdef bint equivalent(Atom self, Atom other)
+	cpdef bint isSpecificCaseOf(Atom self, Atom other)
 
 ################################################################################
 
@@ -101,6 +105,7 @@ cdef class Bond(object):
 	cdef public list _bondType
 	
 	cpdef bint equivalent(Bond self, Bond other)
+	cpdef bint isSpecificCaseOf(Bond self, Bond other)
 
 ################################################################################
 
