@@ -187,7 +187,8 @@ class Graph(dict):
 		otherwise. Uses the VF2 algorithm of Vento and Foggia.
 		"""
 		if len(self) != len(other): return False
-		ismatch, map21, map12 = VF2_isomorphism(self, other, map21_0, map12_0, False, False)
+		ismatch, map21, map12 = VF2_isomorphism(self, other, map21_0, map12_0,
+			subgraph=False, findAll=False)
 		return ismatch
 
 	def isSubgraphIsomorphic(self, other, map12_0, map21_0):
@@ -195,15 +196,19 @@ class Graph(dict):
 		Returns :data:`True` if `other` is subgraph isomorphic and :data:`False`
 		otherwise. Uses the VF2 algorithm of Vento and Foggia.
 		"""
-		ismatch, map21, map12 = VF2_isomorphism(self, other, map21_0, map12_0, True, False)
+		ismatch, map21, map12 = VF2_isomorphism(self, other, map21_0, map12_0,
+			subgraph=True, findAll=False)
 		return ismatch
 
 	def findSubgraphIsomorphisms(self, other, map12_0, map21_0):
 		"""
 		Returns :data:`True` if `other` is subgraph isomorphic and :data:`False`
-		otherwise. Uses the VF2 algorithm of Vento and Foggia.
+		otherwise. Also returns the lists all of valid mappings.
+		
+		Uses the VF2 algorithm of Vento and Foggia.
 		"""
-		return VF2_isomorphism(self, other, map21_0, map12_0, True, True)
+		return VF2_isomorphism(self, other, map21_0, map12_0, 
+			subgraph=True, findAll=True)
 
 	def copy(self):
 		"""
@@ -731,6 +736,9 @@ def __VF2_match(graph1, graph2, map21, map12, terminals1, terminals2, subgraph,
 	the vertices that are directly connected to the already-mapped vertices.
 	`subgraph` is :data:`True` if graph2 is to be treated as a potential
 	subgraph of graph1. i.e. graph1 is a specific case of graph2.
+	
+	If findAll=True then it adds valid mappings to map21List and 
+	map12List, but returns False when done (or True if the initial mapping is complete)
 
 	Uses the VF2 algorithm of Vento and Foggia, which is O(N) in spatial complexity
 	and O(N**2) (best-case) to O(N! * N) (worst-case) in temporal complexity.
@@ -753,8 +761,18 @@ def __VF2_match(graph1, graph2, map21, map12, terminals1, terminals2, subgraph,
 			logging.error('******************************************')
 			return True
 	
-	# Done if we have mapped to all vertices in graph2
-	if len(map12) >= len(graph2) or len(map21) >= len(graph1):
+	# Done if we have mapped to all vertices in graph
+	if len(map21) >= len(graph1):
+		if findAll:
+			map21List.append(map21.copy())
+			map12List.append(map12.copy())
+			logging.verbose("Adding valid mapping to mapList")
+		return True
+	if len(map12) >= len(graph2) and subgraph:
+		if findAll:
+			map21List.append(map21.copy())
+			map12List.append(map12.copy())
+			logging.verbose("Adding valid mapping to mapList")
 		return True
 	
 	# Create list of pairs of candidates for inclusion in mapping
@@ -777,10 +795,7 @@ def __VF2_match(graph1, graph2, map21, map12, terminals1, terminals2, subgraph,
 				map21, map12, new_terminals1, new_terminals2, subgraph, findAll, \
 				map21List, map12List, call_depth-1)
 			if ismatch:
-				if findAll:
-					map21List.append(map21.copy())
-					map12List.append(map12.copy())
-				else:
+				if not findAll:
 					return True
 			# Undo proposed match
 			del map21[vertex1]
