@@ -152,16 +152,15 @@ class Dictionary(dict):
 		to :class:`structure.Structure` objects. If a record is a union, it is 
 		stored as the string 'union', and automatically uses all immediate
 		children of the node as the union.
+		If a record is a logical node, it is converted into the appropriate class.
 		"""
 	
 		for label, record in self.iteritems():
 		
-			# If record is a union, then store as string 'union'
-			# By definition a union includes all of its immediate children
-			if record.lower().find('union') > -1:
-				self[label] = 'union'
-			elif re.match('\s*OR|AND|NOT',record.splitlines()[1]):
-			    self[label] = 'boolean'
+			# If record is a union, 
+			# If record is a logical node, make it into one.
+			if re.match('(?i)\s*OR|AND|NOT|UNION',record.splitlines()[1] ):
+				self[label] = makeLogicNode(' '.join(record.splitlines()[1:]) )
 			# Otherwise convert adjacency list to structure
 			else:
 				try:
@@ -601,6 +600,121 @@ class Library(dict):
 			
 ################################################################################
 
+def makeLogicNode(string):
+	"""
+	Creates and returns a node in the tree which is a logic node.
+	
+	String should be of the form:
+	
+	* OR{}
+	* AND{}
+	* NOT OR{}
+	* NOT AND{} 
+	
+	And the returned object will be of class LogicOr or LogicAnd
+	"""
+	
+	match = re.match("(?i)\s*(NOT)?\s*(OR|AND|UNION)\s*(.*)",string)  # the (?i) makes it case-insensitive
+	if not match:
+		raise Exception("Unexpected string for Logic Node: %s"%string)
+		
+	if match.group(1): invert = True
+	else: invert = False
+	
+	logic = match.group(2)  # OR or AND
+	
+	contents = match.group(3).strip()
+	while contents.startswith('{'):
+		if not contents.endswith('}'):
+			raise Exception("Unbalanced braces in Logic Node: %s"%string)
+		contents = contents[1:-1]
+	
+	items=[]
+	chars=[]
+	brace_depth = 0
+	for character in contents:
+		if character == '{':
+			brace_depth += 1
+		if character == '}':
+			brace_depth -= 1
+		if character == ',' and brace_depth == 0:
+			items.append(''.join(chars).lstrip().rstrip() )
+			chars = []
+		else: 
+			chars.append(character)
+	if brace_depth != 0: raise Exception("Unbalanced braces in Logic Node: %s"%string)
+		
+	logging.debug("Creating %s Logic Node with items: %s"%(logic,items))
+	
+	if logic.upper() in ['OR', 'UNION']:
+		return LogicOr(items, invert)
+	if logic == 'AND':
+		return LogicAnd(items, invert)
+		
+	raise Exception("Could not create Logic Node from %s"%string)
+		
+
+class LogicNode():
+	"""
+	A base class for AND and OR logic nodes. 
+	"""
+	symbol="<TBD>" # To be redefined by subclass
+	def __init__(self,items,invert):
+		self.components = []
+		for item in items:
+			if re.match('(?i)\s*OR|AND|NOT|UNION',item):
+				component = makeLogicNode(item)
+			else:
+				component = item
+		self.components.append(component)
+		self.invert = bool(invert)
+	def __str__(self):
+		result = ''
+		if self.invert: self += 'NOT '
+		result += self.symbol
+		result += "{%s}"%(', '.join([str(c) for c in self.components]))
+		return result
+
+class LogicOr(LogicNode):
+	"""
+	A logical OR node. Structure can match any component.
+	
+	Initialize with a list of component items and a boolean instruction to invert the answer.
+	"""
+	symbol = "OR"
+	def matchToStructure(self,database,structure,atoms):
+		"""
+		Does this node in the given database match the given structure with the labeled atoms?
+		"""
+		for node in self.components:
+			if isinstance(node,LogicNode):
+				match = node.matchToStructure(database,structure,atoms)
+			else:
+				match = database.matchNodeToStructure(node, structure, atoms)
+			if match:
+				return True != self.invert
+		return False != self.invert
+	
+class LogicAnd(LogicNode):
+	"""A logical AND node. Structure must match all components."""
+	symbol = "AND"
+	def matchToStructure(self,database,structure,atoms):
+		"""
+		Does this node in the given database match the given structure with the labeled atoms?
+		"""
+		for node in self.components:
+			if isinstance(node,LogicNode):
+				match = node.matchToStructure(database,structure,atoms)
+			else:
+				match = database.matchNodeToStructure(node, structure, atoms)
+			if not match:
+				return False != self.invert
+		return True != self.invert 
+	
+		
+			
+################################################################################
+
 class Database:
 	"""
 	Represent an RMG database. An RMG database is structured as an n-ary tree,
@@ -776,15 +890,18 @@ class Database:
 	#	if node in ['CH2_triplet', 'Y_1centerbirad']:
 	#		logging.debug("Trying to match structure with node %s"%node)
 		group = self.dictionary[node]
-		if group.__class__ == str or group.__class__ == unicode:
-			if group.lower() == 'union':
-				match = False
-				for child in self.tree.children[node]:
-					if self.matchNodeToStructure(child, structure, atoms):
-						match = True
-				return match
-			else:
-				return False
+		if isinstance(group, LogicNode):
+			return group.matchToStructure(self, structure, atoms)
+			
+		#if group.__class__ == str or group.__class__ == unicode:
+		#	if group.lower() == 'union':
+		#		match = False
+		#		for child in self.tree.children[node]:
+		#			if self.matchNodeToStructure(child, structure, atoms):
+		#				match = True
+		#		return match
+		#	else:
+		#		return False
 		else:
 			# try to pair up labeled atoms
 			centers = group.getLabeledAtoms()
