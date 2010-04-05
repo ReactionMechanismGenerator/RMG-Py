@@ -773,6 +773,8 @@ class Database:
 		the functional group represented by `node` has an equivalent labeled
 		atom in `structure`.
 		"""
+	#	if node in ['CH2_triplet', 'Y_1centerbirad']:
+	#		logging.debug("Trying to match structure with node %s"%node)
 		group = self.dictionary[node]
 		if group.__class__ == str or group.__class__ == unicode:
 			if group.lower() == 'union':
@@ -784,36 +786,38 @@ class Database:
 			else:
 				return False
 		else:
+			# try to pair up labeled atoms
 			centers = group.getLabeledAtoms()
 			map12_0 = {}; map21_0 = {}
 			for label in centers.keys():
-				if label in centers and label in atoms:
-					center = centers[label]; atom = atoms[label]
-					# Make sure labels actually pointed to atoms
-					if center is None or atom is None:
-						return False
-					# Semantic check #1: atoms with same label are equivalent
-					elif not atom.isSpecificCaseOf(center):
-						return False
-					# Semantic check #2: labeled atoms that share bond in one
-					# also share equivalent bond in the other
-					for atom1, atom2 in map21_0.iteritems():
-						if group.hasBond(center, atom1) and structure.hasBond(atom, atom2):
-							bond1 = group.getBond(center, atom1)   # bond1 is group
-							bond2 = structure.getBond(atom, atom2) # bond2 is structure
-							if not bond2.isSpecificCaseOf(bond1):
-								return False
-						elif group.hasBond(center, atom1): # but structure doesn't 
-							return False
-						# but we don't mind if...
-						elif structure.hasBond(atom, atom2): # but group doesn't
-							logging.debug("We don't mind that structure %s has bond but group %s doesn't"%(str(structure),node))
-						
-					# Passed semantic checks, so add to maps of already-matched
-					# atoms
-					map21_0[center] = atom; map12_0[atom] = center
-				else:
+				# Make sure the labels are in both group and structure.
+				if not (label in centers and label in atoms):
+					return False 
+				center = centers[label]
+				atom = atoms[label]
+				# Make sure labels actually point to atoms.
+				if center is None or atom is None:
 					return False
+				# Semantic check #1: atoms with same label are equivalent
+				elif not atom.isSpecificCaseOf(center):
+					return False
+				# Semantic check #2: labeled atoms that share bond in the group (node)
+				# also share equivalent (or more specific) bond in the structure
+				for atom1, atom2 in map21_0.iteritems():
+					if group.hasBond(center, atom1) and structure.hasBond(atom, atom2):
+						bond1 = group.getBond(center, atom1)   # bond1 is group
+						bond2 = structure.getBond(atom, atom2) # bond2 is structure
+						if not bond2.isSpecificCaseOf(bond1):
+							return False
+					elif group.hasBond(center, atom1): # but structure doesn't 
+						return False
+					# but we don't mind if...
+					elif structure.hasBond(atom, atom2): # but group doesn't
+						logging.debug("We don't mind that structure %s has bond"+
+							" but group %s doesn't"%(str(structure),node))
+				# Passed semantic checks, so add to maps of already-matched atoms
+				map21_0[center] = atom; map12_0[atom] = center
+			# use mapped (labeled) atoms to try to match subgraph
 			return structure.isSubgraphIsomorphic(group, map12_0, map21_0)
 
 	def descendTree(self, structure, atoms, root=None):
