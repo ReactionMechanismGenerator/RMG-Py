@@ -279,7 +279,38 @@ class ReactionSetCheck(unittest.TestCase):
 				
 			print "All products for reacting %s:"%species1, [p.structure[0] for p in all_products]
 			
-
+	def testDisproportionation(self):
+		"""A test of a Disproportionation (Radical alpha H abstraction) reactions"""
+		self.loadDatabase(only_families=['Disproportionation'])
+		
+		for smile in ['C(=[CH])[CH2]',
+					]:
+			
+			structure1 = Structure(SMILES=smile)
+			species1 = makeNewSpecies(structure1)
+			print 'Reacting species',species1, 'with itself'
+				
+			# wipe the reaction list
+			reaction.reactionList=[]
+			
+			rxns = reaction.kineticsDatabase.getReactions([species1,species1])
+			for rxn in rxns:
+				print 'Reaction family:',rxn.family
+				print 'Reaction:',rxn
+				print 'Kinetics:',rxn.kinetics
+				print
+				
+			self.assertTrue(len(rxns)>0,"Didn't make any reactions!")
+			
+			all_products = []
+			for rxn in rxns:
+				#self.assertEqual(rxn.family.label,'Cyclic colligation',"Was trying to test 'Cyclic colligation' but made a reaction from family %s"%rxn.family)
+				self.assertEqual(len(rxn.reactants),2,"Reaction %s wasn't bimolecular"%rxn)
+				self.assertEqual(len(rxn.products),2,"Reaction %s wasn't bimolecular"%rxn)
+				all_products.extend(rxn.products)
+				
+			print "All products for reacting %s:"%species1, [p.structure[0] for p in all_products]
+			
 	
 	def testAllFamilies(self):
 		"""A test of all reaction families

@@ -1854,8 +1854,8 @@ class ReactionFamily(data.Database):
 		# forwardTemplate is a list of the top level nodes that should be matched
 		if len(template) != len(forwardTemplate):
 			logging.warning('Warning: Unable to find matching template for reaction %s in reaction family %s' % (str(reaction), str(self)) )
-			logging.warning(" Trying to match",forwardTemplate)
-			logging.warning(" Matched",template)
+			logging.warning(" Trying to match " + str(forwardTemplate))
+			logging.warning(" Matched "+str(template))
 			raise UndeterminableKineticsException(reaction)
 			print str(self), template, forwardTemplate, reverseTemplate
 			for reactant in reaction.reactants:

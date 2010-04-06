@@ -7,12 +7,12 @@
 L1: Y_rad_birad
 	L2: Y_2centeradjbirad
 		L3: C2b
-      	L2: Y_1centerbirad
-           	L3: O_atom_triplet
-           	L3: CH2_triplet
-       	L2: Y_rad
-	   	L3: H_rad
-	   	L3: Cs_rad
+	L2: Y_1centerbirad
+		L3: O_atom_triplet
+		L3: CH2_triplet
+	L2: Y_rad
+		L3: H_rad
+		L3: Cs_rad
 			L4: C_methyl
 			L4: C_pri_rad
 				L5: C_rad/H2/Cs
