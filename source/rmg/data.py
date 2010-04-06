@@ -642,6 +642,8 @@ def makeLogicNode(string):
 			chars = []
 		else: 
 			chars.append(character)
+	if chars: # add last item
+		items.append(''.join(chars).lstrip().rstrip() ) 
 	if brace_depth != 0: raise Exception("Unbalanced braces in Logic Node: %s"%string)
 		
 	logging.debug("Creating %s Logic Node with items: %s"%(logic,items))
@@ -666,8 +668,9 @@ class LogicNode():
 				component = makeLogicNode(item)
 			else:
 				component = item
-		self.components.append(component)
+			self.components.append(component)
 		self.invert = bool(invert)
+		logging.debug("Created Logic Node: "+str(self) )
 	def __str__(self):
 		result = ''
 		if self.invert: self += 'NOT '
