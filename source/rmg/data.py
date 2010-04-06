@@ -670,7 +670,7 @@ class LogicNode():
 		logging.debug("Created Logic Node: "+str(self) )
 	def __str__(self):
 		result = ''
-		if self.invert: self += 'NOT '
+		if self.invert: result += 'NOT '
 		result += self.symbol
 		result += "{%s}"%(', '.join([str(c) for c in self.components]))
 		return result
