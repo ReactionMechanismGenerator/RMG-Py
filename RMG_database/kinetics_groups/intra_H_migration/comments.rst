@@ -1132,114 +1132,313 @@ Curran's estimation in reaction type 19, QOOH = cyclic ether + OH
 ---
 CBS-QB3 calculations (Catherina Wijaya). Treatment of hindered rotor included; hindered rotor PES are done at B3LYP/6-31g(d) level.
 
+The rate was added by Sandeep Sharma on Feb 01 2006 (713a0f98f91) with message "I have added the rate rules given to me by Sumathy which are present in Pitz.xls file in the Acads directory of my laptop."
+The node was commented out of the tree, disabling the rate, by Sandeep Sharma on Feb 13 2006 (2e7b38d367c9) with the message "Removed nodes Cs_H_out_H/(CCCOOH) and the others from under node Cs_H_out_H/NonDeC as it is not a subnode anyway."
+
+On 6 April 2010, Josh Allen, Mike Harper and Richard West spent quite a while trying to put these nodes in the right place in the tree and to make the definitions valid and consistent.
+Unfortunately it was not clear what they were intended to mean because many of the definitions overlap. We gave up, and they remain commented out.
+
 ---
 828
 ---
 CBS-QB3 calculations (Catherina Wijaya). Treatment of hindered rotor included; hindered rotor PES are done at B3LYP/6-31g(d) level.
+
+The rate was added by Sandeep Sharma on Feb 01 2006 (713a0f98f91) with message "I have added the rate rules given to me by Sumathy which are present in Pitz.xls file in the Acads directory of my laptop."
+The node was commented out of the tree, disabling the rate, by Sandeep Sharma on Feb 13 2006 (2e7b38d367c9) with the message "Removed nodes Cs_H_out_H/(CCCOOH) and the others from under node Cs_H_out_H/NonDeC as it is not a subnode anyway."
+
+On 6 April 2010, Josh Allen, Mike Harper and Richard West spent quite a while trying to put these nodes in the right place in the tree and to make the definitions valid and consistent.
+Unfortunately it was not clear what they were intended to mean because many of the definitions overlap. We gave up, and they remain commented out.
 
 ---
 829
 ---
 CBS-QB3 calculations (Catherina Wijaya). Treatment of hindered rotor included; hindered rotor PES are done at B3LYP/6-31g(d) level.
 
+The rate was added by Sandeep Sharma on Feb 01 2006 (713a0f98f91) with message "I have added the rate rules given to me by Sumathy which are present in Pitz.xls file in the Acads directory of my laptop."
+The node was commented out of the tree, disabling the rate, by Sandeep Sharma on Feb 13 2006 (2e7b38d367c9) with the message "Removed nodes Cs_H_out_H/(CCCOOH) and the others from under node Cs_H_out_H/NonDeC as it is not a subnode anyway."
+
+On 6 April 2010, Josh Allen, Mike Harper and Richard West spent quite a while trying to put these nodes in the right place in the tree and to make the definitions valid and consistent.
+Unfortunately it was not clear what they were intended to mean because many of the definitions overlap. We gave up, and they remain commented out.
+
 ---
 830
 ---
 CBS-QB3 calculations (Catherina Wijaya). Treatment of hindered rotor included; hindered rotor PES are done at B3LYP/6-31g(d) level.
+
+The rate was added by Sandeep Sharma on Feb 01 2006 (713a0f98f91) with message "I have added the rate rules given to me by Sumathy which are present in Pitz.xls file in the Acads directory of my laptop."
+The node was commented out of the tree, disabling the rate, by Sandeep Sharma on Feb 13 2006 (2e7b38d367c9) with the message "Removed nodes Cs_H_out_H/(CCCOOH) and the others from under node Cs_H_out_H/NonDeC as it is not a subnode anyway."
+
+On 6 April 2010, Josh Allen, Mike Harper and Richard West spent quite a while trying to put these nodes in the right place in the tree and to make the definitions valid and consistent.
+Unfortunately it was not clear what they were intended to mean because many of the definitions overlap. We gave up, and they remain commented out.
 
 ---
 831
 ---
 CBS-QB3 calculations (Catherina Wijaya). Treatment of hindered rotor included; hindered rotor PES are done at B3LYP/6-31g(d) level.
 
+The rate was added by Sandeep Sharma on Feb 01 2006 (713a0f98f91) with message "I have added the rate rules given to me by Sumathy which are present in Pitz.xls file in the Acads directory of my laptop."
+The node was commented out of the tree, disabling the rate, by Sandeep Sharma on Feb 13 2006 (2e7b38d367c9) with the message "Removed nodes Cs_H_out_H/(CCCOOH) and the others from under node Cs_H_out_H/NonDeC as it is not a subnode anyway."
+
+On 6 April 2010, Josh Allen, Mike Harper and Richard West spent quite a while trying to put these nodes in the right place in the tree and to make the definitions valid and consistent.
+Unfortunately it was not clear what they were intended to mean because many of the definitions overlap. We gave up, and they remain commented out.
+
 ---
 832
 ---
 CBS-QB3 calculations (Catherina Wijaya). Treatment of hindered rotor included; hindered rotor PES are done at B3LYP/6-31g(d) level.
+
+The rate was added by Sandeep Sharma on Feb 01 2006 (713a0f98f91) with message "I have added the rate rules given to me by Sumathy which are present in Pitz.xls file in the Acads directory of my laptop."
+The node was commented out of the tree, disabling the rate, by Sandeep Sharma on Feb 13 2006 (2e7b38d367c9) with the message "Removed nodes Cs_H_out_H/(CCCOOH) and the others from under node Cs_H_out_H/NonDeC as it is not a subnode anyway."
+
+On 6 April 2010, Josh Allen, Mike Harper and Richard West spent quite a while trying to put these nodes in the right place in the tree and to make the definitions valid and consistent.
+Unfortunately it was not clear what they were intended to mean because many of the definitions overlap. We gave up, and they remain commented out.
 
 ---
 833
 ---
 CBS-QB3 calculations (Catherina Wijaya). Treatment of hindered rotor included; hindered rotor PES are done at B3LYP/6-31g(d) level.
 
+The rate was added by Sandeep Sharma on Feb 01 2006 (713a0f98f91) with message "I have added the rate rules given to me by Sumathy which are present in Pitz.xls file in the Acads directory of my laptop."
+The node was commented out of the tree, disabling the rate, by Sandeep Sharma on Feb 13 2006 (2e7b38d367c9) with the message "Removed nodes Cs_H_out_H/(CCCOOH) and the others from under node Cs_H_out_H/NonDeC as it is not a subnode anyway."
+
+On 6 April 2010, Josh Allen, Mike Harper and Richard West spent quite a while trying to put these nodes in the right place in the tree and to make the definitions valid and consistent.
+Unfortunately it was not clear what they were intended to mean because many of the definitions overlap. We gave up, and they remain commented out.
+
 ---
 834
 ---
 CBS-QB3 calculations (Catherina Wijaya). Treatment of hindered rotor included; hindered rotor PES are done at B3LYP/6-31g(d) level.
+
+The rate was added by Sandeep Sharma on Feb 01 2006 (713a0f98f91) with message "I have added the rate rules given to me by Sumathy which are present in Pitz.xls file in the Acads directory of my laptop."
+The node was commented out of the tree, disabling the rate, by Sandeep Sharma on Feb 13 2006 (2e7b38d367c9) with the message "Removed nodes Cs_H_out_H/(CCCOOH) and the others from under node Cs_H_out_H/NonDeC as it is not a subnode anyway."
+
+On 6 April 2010, Josh Allen, Mike Harper and Richard West spent quite a while trying to put these nodes in the right place in the tree and to make the definitions valid and consistent.
+Unfortunately it was not clear what they were intended to mean because many of the definitions overlap. We gave up, and they remain commented out.
 
 ---
 835
 ---
 Sumathy's CBS-QB3 calculations. Treatment of hindered rotor included; hindered rotor PES are done at B3LYP/6-31g(d') level.
 
+The rate was added by Sandeep Sharma on Feb 01 2006 (713a0f98f91) with message "I have added the rate rules given to me by Sumathy which are present in Pitz.xls file in the Acads directory of my laptop."
+The node was commented out of the tree, disabling the rate, by Sandeep Sharma on Feb 13 2006 (2e7b38d367c9) with the message "Removed nodes Cs_H_out_H/(CCCOOH) and the others from under node Cs_H_out_H/NonDeC as it is not a subnode anyway."
+
+On 6 April 2010, Josh Allen, Mike Harper and Richard West spent quite a while trying to put these nodes in the right place in the tree and to make the definitions valid and consistent.
+Unfortunately it was not clear what they were intended to mean because many of the definitions overlap. We gave up, and they remain commented out.
+
 ---
 836
 ---
 Sumathy's CBS-QB3 calculations. Treatment of hindered rotor included; hindered rotor PES are done at B3LYP/6-31g(d') level.
+
+The rate was added by Sandeep Sharma on Feb 01 2006 (713a0f98f91) with message "I have added the rate rules given to me by Sumathy which are present in Pitz.xls file in the Acads directory of my laptop."
+The node was commented out of the tree, disabling the rate, by Sandeep Sharma on Feb 13 2006 (2e7b38d367c9) with the message "Removed nodes Cs_H_out_H/(CCCOOH) and the others from under node Cs_H_out_H/NonDeC as it is not a subnode anyway."
+
+On 6 April 2010, Josh Allen, Mike Harper and Richard West spent quite a while trying to put these nodes in the right place in the tree and to make the definitions valid and consistent.
+Unfortunately it was not clear what they were intended to mean because many of the definitions overlap. We gave up, and they remain commented out.
 
 ---
 837
 ---
 Sumathy's CBS-QB3 calculations. Treatment of hindered rotor included; hindered rotor PES are done at B3LYP/6-31g(d') level.
 
+The rate was added by Sandeep Sharma on Feb 01 2006 (713a0f98f91) with message "I have added the rate rules given to me by Sumathy which are present in Pitz.xls file in the Acads directory of my laptop."
+The node was commented out of the tree, disabling the rate, by Sandeep Sharma on Feb 13 2006 (2e7b38d367c9) with the message "Removed nodes Cs_H_out_H/(CCCOOH) and the others from under node Cs_H_out_H/NonDeC as it is not a subnode anyway."
+
+On 6 April 2010, Josh Allen, Mike Harper and Richard West spent quite a while trying to put these nodes in the right place in the tree and to make the definitions valid and consistent.
+Unfortunately it was not clear what they were intended to mean because many of the definitions overlap. We gave up, and they remain commented out.
+
 ---
 838
 ---
 Sumathy's CBS-QB3 calculations. Treatment of hindered rotor included; hindered rotor PES are done at B3LYP/6-31g(d') level.
+
+The rate was added by Sandeep Sharma on Feb 01 2006 (713a0f98f91) with message "I have added the rate rules given to me by Sumathy which are present in Pitz.xls file in the Acads directory of my laptop."
+The node was commented out of the tree, disabling the rate, by Sandeep Sharma on Feb 13 2006 (2e7b38d367c9) with the message "Removed nodes Cs_H_out_H/(CCCOOH) and the others from under node Cs_H_out_H/NonDeC as it is not a subnode anyway."
+
+On 6 April 2010, Josh Allen, Mike Harper and Richard West spent quite a while trying to put these nodes in the right place in the tree and to make the definitions valid and consistent.
+Unfortunately it was not clear what they were intended to mean because many of the definitions overlap. We gave up, and they remain commented out.
 
 ---
 839
 ---
 Sumathy's CBS-QB3 calculations. Treatment of hindered rotor included; hindered rotor PES are done at B3LYP/6-31g(d') level.
 
+The rate was added by Sandeep Sharma on Feb 01 2006 (713a0f98f91) with message "I have added the rate rules given to me by Sumathy which are present in Pitz.xls file in the Acads directory of my laptop."
+The node was commented out of the tree, disabling the rate, by Sandeep Sharma on Feb 13 2006 (2e7b38d367c9) with the message "Removed nodes Cs_H_out_H/(CCCOOH) and the others from under node Cs_H_out_H/NonDeC as it is not a subnode anyway."
+
+On 6 April 2010, Josh Allen, Mike Harper and Richard West spent quite a while trying to put these nodes in the right place in the tree and to make the definitions valid and consistent.
+Unfortunately it was not clear what they were intended to mean because many of the definitions overlap. We gave up, and they remain commented out.
+
 ---
 840
 ---
 Sumathy's CBS-QB3 calculations. Treatment of hindered rotor included; hindered rotor PES are done at B3LYP/6-31g(d') level.
+
+The rate was added by Sandeep Sharma on Feb 01 2006 (713a0f98f91) with message "I have added the rate rules given to me by Sumathy which are present in Pitz.xls file in the Acads directory of my laptop."
+The node was commented out of the tree, disabling the rate, by Sandeep Sharma on Feb 13 2006 (2e7b38d367c9) with the message "Removed nodes Cs_H_out_H/(CCCOOH) and the others from under node Cs_H_out_H/NonDeC as it is not a subnode anyway."
+
+On 6 April 2010, Josh Allen, Mike Harper and Richard West spent quite a while trying to put these nodes in the right place in the tree and to make the definitions valid and consistent.
+Unfortunately it was not clear what they were intended to mean because many of the definitions overlap. We gave up, and they remain commented out.
 
 ---
 841
 ---
 Sumathy's CBS-QB3 calculations. Treatment of hindered rotor included; hindered rotor PES are done at B3LYP/6-31g(d') level.
 
+The rate was added by Sandeep Sharma on Feb 01 2006 (713a0f98f91) with message "I have added the rate rules given to me by Sumathy which are present in Pitz.xls file in the Acads directory of my laptop."
+The node was commented out of the tree, disabling the rate, by Sandeep Sharma on Feb 13 2006 (2e7b38d367c9) with the message "Removed nodes Cs_H_out_H/(CCCOOH) and the others from under node Cs_H_out_H/NonDeC as it is not a subnode anyway."
+
+On 6 April 2010, Josh Allen, Mike Harper and Richard West spent quite a while trying to put these nodes in the right place in the tree and to make the definitions valid and consistent.
+Unfortunately it was not clear what they were intended to mean because many of the definitions overlap. We gave up, and they remain commented out.
+
 ---
 842
 ---
 Sumathy's CBS-QB3 calculations. Treatment of hindered rotor included; hindered rotor PES are done at B3LYP/6-31g(d') level.
+
+The rate was added by Sandeep Sharma on Feb 01 2006 (713a0f98f91) with message "I have added the rate rules given to me by Sumathy which are present in Pitz.xls file in the Acads directory of my laptop."
+The node was commented out of the tree, disabling the rate, by Sandeep Sharma on Feb 13 2006 (2e7b38d367c9) with the message "Removed nodes Cs_H_out_H/(CCCOOH) and the others from under node Cs_H_out_H/NonDeC as it is not a subnode anyway."
+
+On 6 April 2010, Josh Allen, Mike Harper and Richard West spent quite a while trying to put these nodes in the right place in the tree and to make the definitions valid and consistent.
+Unfortunately it was not clear what they were intended to mean because many of the definitions overlap. We gave up, and they remain commented out.
 
 ---
 843
 ---
 Sumathy's CBS-QB3 calculations. Treatment of hindered rotor included; hindered rotor PES are done at B3LYP/6-31g(d') level.
 
+The rate was added by Sandeep Sharma on Feb 01 2006 (713a0f98f91) with message "I have added the rate rules given to me by Sumathy which are present in Pitz.xls file in the Acads directory of my laptop."
+The node was commented out of the tree, disabling the rate, by Sandeep Sharma on Feb 13 2006 (2e7b38d367c9) with the message "Removed nodes Cs_H_out_H/(CCCOOH) and the others from under node Cs_H_out_H/NonDeC as it is not a subnode anyway."
+
+On 6 April 2010, Josh Allen, Mike Harper and Richard West spent quite a while trying to put these nodes in the right place in the tree and to make the definitions valid and consistent.
+Unfortunately it was not clear what they were intended to mean because many of the definitions overlap. We gave up, and they remain commented out.
+
 ---
 844
 ---
 Sumathy's CBS-QB3 calculations. Treatment of hindered rotor included; hindered rotor PES are done at B3LYP/6-31g(d') level.
 
+The rate was added by Sandeep Sharma on Feb 01 2006 (713a0f98f91) with message "I have added the rate rules given to me by Sumathy which are present in Pitz.xls file in the Acads directory of my laptop."
+The node was commented out of the tree, disabling the rate, by Sandeep Sharma on Feb 13 2006 (2e7b38d367c9) with the message "Removed nodes Cs_H_out_H/(CCCOOH) and the others from under node Cs_H_out_H/NonDeC as it is not a subnode anyway."
+
+On 6 April 2010, Josh Allen, Mike Harper and Richard West spent quite a while trying to put these nodes in the right place in the tree and to make the definitions valid and consistent.
+Unfortunately it was not clear what they were intended to mean because many of the definitions overlap. We gave up, and they remain commented out.
+
 ---
 845
 ---
+
+The rate was added by Sandeep Sharma on Feb 01 2006 (713a0f98f91) with message "I have added the rate rules given to me by Sumathy which are present in Pitz.xls file in the Acads directory of my laptop."
+The node was commented out of the tree, disabling the rate, by Sandeep Sharma on Feb 13 2006 (2e7b38d367c9) with the message "Removed nodes Cs_H_out_H/(CCCOOH) and the others from under node Cs_H_out_H/NonDeC as it is not a subnode anyway."
+
+On 6 April 2010, Josh Allen, Mike Harper and Richard West spent quite a while trying to put these nodes in the right place in the tree and to make the definitions valid and consistent.
+Unfortunately it was not clear what they were intended to mean because many of the definitions overlap. We gave up, and they remain commented out.
 
 
 ---
 846
 ---
 
+The rate was added by Sandeep Sharma on Feb 01 2006 (713a0f98f91) with message "I have added the rate rules given to me by Sumathy which are present in Pitz.xls file in the Acads directory of my laptop."
+The node was commented out of the tree, disabling the rate, by Sandeep Sharma on Feb 13 2006 (2e7b38d367c9) with the message "Removed nodes Cs_H_out_H/(CCCOOH) and the others from under node Cs_H_out_H/NonDeC as it is not a subnode anyway."
+
+On 6 April 2010, Josh Allen, Mike Harper and Richard West spent quite a while trying to put these nodes in the right place in the tree and to make the definitions valid and consistent.
+Unfortunately it was not clear what they were intended to mean because many of the definitions overlap. We gave up, and they remain commented out.
+
 
 ---
 847
 ---
+
+The rate was added by Sandeep Sharma on Feb 01 2006 (713a0f98f91) with message "I have added the rate rules given to me by Sumathy which are present in Pitz.xls file in the Acads directory of my laptop."
+The node was commented out of the tree, disabling the rate, by Sandeep Sharma on Feb 13 2006 (2e7b38d367c9) with the message "Removed nodes Cs_H_out_H/(CCCOOH) and the others from under node Cs_H_out_H/NonDeC as it is not a subnode anyway."
+
+On 6 April 2010, Josh Allen, Mike Harper and Richard West spent quite a while trying to put these nodes in the right place in the tree and to make the definitions valid and consistent.
+Unfortunately it was not clear what they were intended to mean because many of the definitions overlap. We gave up, and they remain commented out.
 
 
 ---
 848
 ---
 
+The rate was added by Sandeep Sharma on Feb 01 2006 (713a0f98f91) with message "I have added the rate rules given to me by Sumathy which are present in Pitz.xls file in the Acads directory of my laptop."
+The node was commented out of the tree, disabling the rate, by Sandeep Sharma on Feb 13 2006 (2e7b38d367c9) with the message "Removed nodes Cs_H_out_H/(CCCOOH) and the others from under node Cs_H_out_H/NonDeC as it is not a subnode anyway."
+
+On 6 April 2010, Josh Allen, Mike Harper and Richard West spent quite a while trying to put these nodes in the right place in the tree and to make the definitions valid and consistent.
+Unfortunately it was not clear what they were intended to mean because many of the definitions overlap. We gave up, and they remain commented out.
+
 
 ---
 849
 ---
+
+The rate was added by Sandeep Sharma on Feb 01 2006 (713a0f98f91) with message "I have added the rate rules given to me by Sumathy which are present in Pitz.xls file in the Acads directory of my laptop."
+The node was commented out of the tree, disabling the rate, by Sandeep Sharma on Feb 13 2006 (2e7b38d367c9) with the message "Removed nodes Cs_H_out_H/(CCCOOH) and the others from under node Cs_H_out_H/NonDeC as it is not a subnode anyway."
+
+On 6 April 2010, Josh Allen, Mike Harper and Richard West spent quite a while trying to put these nodes in the right place in the tree and to make the definitions valid and consistent.
+Unfortunately it was not clear what they were intended to mean because many of the definitions overlap. We gave up, and they remain commented out.
+
+
+---
+8441
+---
+
+The rate was added by Sandeep Sharma on Feb 01 2006 (713a0f98f91) with message "I have added the rate rules given to me by Sumathy which are present in Pitz.xls file in the Acads directory of my laptop."
+The node was commented out of the tree, disabling the rate, by Sandeep Sharma on Feb 13 2006 (2e7b38d367c9) with the message "Removed nodes Cs_H_out_H/(CCCOOH) and the others from under node Cs_H_out_H/NonDeC as it is not a subnode anyway."
+
+On 6 April 2010, Josh Allen, Mike Harper and Richard West spent quite a while trying to put these nodes in the right place in the tree and to make the definitions valid and consistent.
+Unfortunately it was not clear what they were intended to mean because many of the definitions overlap. We gave up, and they remain commented out.
+
+---
+8451
+---
+
+The rate was added by Sandeep Sharma on Feb 01 2006 (713a0f98f91) with message "I have added the rate rules given to me by Sumathy which are present in Pitz.xls file in the Acads directory of my laptop."
+The node was commented out of the tree, disabling the rate, by Sandeep Sharma on Feb 13 2006 (2e7b38d367c9) with the message "Removed nodes Cs_H_out_H/(CCCOOH) and the others from under node Cs_H_out_H/NonDeC as it is not a subnode anyway."
+
+On 6 April 2010, Josh Allen, Mike Harper and Richard West spent quite a while trying to put these nodes in the right place in the tree and to make the definitions valid and consistent.
+Unfortunately it was not clear what they were intended to mean because many of the definitions overlap. We gave up, and they remain commented out.
+
+---
+8461
+---
+
+The rate was added by Sandeep Sharma on Feb 01 2006 (713a0f98f91) with message "I have added the rate rules given to me by Sumathy which are present in Pitz.xls file in the Acads directory of my laptop."
+The node was commented out of the tree, disabling the rate, by Sandeep Sharma on Feb 13 2006 (2e7b38d367c9) with the message "Removed nodes Cs_H_out_H/(CCCOOH) and the others from under node Cs_H_out_H/NonDeC as it is not a subnode anyway."
+
+On 6 April 2010, Josh Allen, Mike Harper and Richard West spent quite a while trying to put these nodes in the right place in the tree and to make the definitions valid and consistent.
+Unfortunately it was not clear what they were intended to mean because many of the definitions overlap. We gave up, and they remain commented out.
+
+---
+8471
+---
+
+The rate was added by Sandeep Sharma on Feb 01 2006 (713a0f98f91) with message "I have added the rate rules given to me by Sumathy which are present in Pitz.xls file in the Acads directory of my laptop."
+The node was commented out of the tree, disabling the rate, by Sandeep Sharma on Feb 13 2006 (2e7b38d367c9) with the message "Removed nodes Cs_H_out_H/(CCCOOH) and the others from under node Cs_H_out_H/NonDeC as it is not a subnode anyway."
+
+On 6 April 2010, Josh Allen, Mike Harper and Richard West spent quite a while trying to put these nodes in the right place in the tree and to make the definitions valid and consistent.
+Unfortunately it was not clear what they were intended to mean because many of the definitions overlap. We gave up, and they remain commented out.
+
+---
+8481
+---
+
+The rate was added by Sandeep Sharma on Feb 01 2006 (713a0f98f91) with message "I have added the rate rules given to me by Sumathy which are present in Pitz.xls file in the Acads directory of my laptop."
+The node was commented out of the tree, disabling the rate, by Sandeep Sharma on Feb 13 2006 (2e7b38d367c9) with the message "Removed nodes Cs_H_out_H/(CCCOOH) and the others from under node Cs_H_out_H/NonDeC as it is not a subnode anyway."
+
+On 6 April 2010, Josh Allen, Mike Harper and Richard West spent quite a while trying to put these nodes in the right place in the tree and to make the definitions valid and consistent.
+Unfortunately it was not clear what they were intended to mean because many of the definitions overlap. We gave up, and they remain commented out.
+
+---
+8491
+---
+
+The rate was added by Sandeep Sharma on Feb 01 2006 (713a0f98f91) with message "I have added the rate rules given to me by Sumathy which are present in Pitz.xls file in the Acads directory of my laptop."
+The node was commented out of the tree, disabling the rate, by Sandeep Sharma on Feb 13 2006 (2e7b38d367c9) with the message "Removed nodes Cs_H_out_H/(CCCOOH) and the others from under node Cs_H_out_H/NonDeC as it is not a subnode anyway."
+
+On 6 April 2010, Josh Allen, Mike Harper and Richard West spent quite a while trying to put these nodes in the right place in the tree and to make the definitions valid and consistent.
+Unfortunately it was not clear what they were intended to mean because many of the definitions overlap. We gave up, and they remain commented out.
 
 
 ---

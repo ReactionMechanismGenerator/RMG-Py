@@ -205,6 +205,12 @@ L1: XH_out
 				L5: Cs_H_out_H/(NonDeC/Cs)
 					L6: Cs_H_out_H/(NonDeC/Cs/Cs)
 						L7: Cs_H_out_H/(NonDeC/Cs/Cs/Cs)
+// The following nodes were added by Sandeep on Feb 01 2006.
+// He commented them out on Feb 13 2006.
+// On 6 April 2010, Josh, Mike and Richard
+// spent a while trying to put these nodes in the right place in the tree
+// but it is not clear what in fact they were meant to mean because many
+// of the definitions overlap. We gave up, and they remain commented out:
 //				L5: Cs_H_out_H/(NonDeC/Os/Os)
 //				L5: Cs_H_out_H/(CCCOOH)
 //				L5: Cs_H_out_H/((C/C)CCOOH)
