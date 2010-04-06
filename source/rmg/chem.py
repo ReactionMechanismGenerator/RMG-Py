@@ -448,6 +448,8 @@ def loadElectronStates():
 	Loads entries into a dictionary of free electron states. The dictionary
 	created by this function is always available at
 	:data:`rmg.chem.electronStates`.
+	
+	Note that incrementing a 1 or decrementing a 3 always gives a 2T not a 2 or 2S.
 	"""
 	electronStates = {}
 	electronStates['0'] = ElectronState('0', 0, [1])
@@ -460,11 +462,11 @@ def loadElectronStates():
 
 	# Set increment and decrement attributes
 	electronStates['0'].setActions(increment=electronStates['1'])
-	electronStates['1'].setActions(increment=electronStates['2'], decrement=electronStates['0'])
+	electronStates['1'].setActions(increment=electronStates['2T'], decrement=electronStates['0'])
 	electronStates['2'].setActions(increment=electronStates['3'], decrement=electronStates['1'])
 	electronStates['2S'].setActions(increment=electronStates['3'], decrement=electronStates['1'])
 	electronStates['2T'].setActions(increment=electronStates['3'], decrement=electronStates['1'])
-	electronStates['3'].setActions(increment=electronStates['4'], decrement=electronStates['2'])
+	electronStates['3'].setActions(increment=electronStates['4'], decrement=electronStates['2T'])
 	electronStates['4'].setActions(decrement=electronStates['3'])
 
 	return electronStates
