@@ -362,6 +362,16 @@ def readInputFile(fstr):
 		
 		# Process option list
 		optionList = xml0.getChildElement(rootElement, 'optionList')
+		# Process restart option
+		saveRestart = xml0.getChildElement(optionList, 'saveRestart', required=False)
+		if saveRestart:
+			frequency = str(xml0.getAttribute(saveRestart, 'frequency', required=False, default='always')).lower()
+			if frequency not in ['always', 'hourly', 'daily', 'weekly', 'monthly']:
+				raise InvalidInputFileException('Invalid value for attribute frequency in <saveRestart> element; should be one of "always", "hourly", "daily", "weekly", "monthly".')
+			iterations = int(xml0.getAttribute(saveRestart, 'iterations', required=False, default='0'))
+			settings.saveRestart = [frequency, iterations, 0, 0]
+		else:
+			settings.saveRestart = None
 		# Process units option
 		units = xml0.getChildElementText(optionList, 'units', required=False, default='si')
 		pq.set_default_units(units)

@@ -48,6 +48,11 @@ libraryDirectory = '.'
 
 # Global variables: options
 
+#: Parameters for saving the restart file
+# None = never save restart
+# [frequency, iterations, lastSaveTime, lastSaveIteration]
+saveRestart = None
+
 #: Whether to draw pictures of the molecules.
 drawMolecules = False
 

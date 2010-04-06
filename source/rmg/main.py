@@ -196,18 +196,11 @@ def execute(inputFile, options):
 			# of using less space and running faster
 			# We also compress the restart file to save space (and lower the
 			# disk read/write time)
-			import gzip
-			import cPickle
-			logging.info('Saving restart file...')
-			f = gzip.GzipFile(os.path.join(settings.outputDirectory,'restart.pkl'), 'wb')
-			cPickle.dump((
-				species.speciesList,
-				species.speciesCounter,
-				reaction.reactionDict,
-				reactionModel,
-				reactionSystems),
-				f)
-			f.close()
+			if settings.saveRestart:
+				frequency, iterations, lastSaveTime, lastSaveIteration = settings.saveRestart
+				settings.saveRestart[-2], settings.saveRestart[-1] = \
+					saveRestartFile(frequency, iterations, lastSaveTime, lastSaveIteration,
+					reactionModel, reactionSystems)
 
 			# Update RMG execution statistics
 			logging.info('Updating RMG execution statistics...')
@@ -254,6 +247,57 @@ def execute(inputFile, options):
 	logging.info('')
 	logging.info('RMG execution terminated at ' + time.asctime())
 	
+################################################################################
+
+def saveRestartFile(frequency, iterations, lastSaveTime, lastSaveIteration, reactionModel, reactionSystems):
+	"""
+	Save a restart file if out of date. Parameters are the `frequency` in time
+	('always', 'hourly', 'daily', 'weekly', or 'monthly'), the number of
+	`iterations` after which a save is forced (or 0 to not use), the time
+	`lastSaveTime` in s at which the last save was performed, and the iteration
+	number `lastSaveIteration` corresponding to the last save. If no save is
+	performed, returns `lastSaveTime` and `lastSaveIteration`; if a save is
+	performed, returns the current time and iteration. All times are to be
+	referenced to the time at which the job was initiated.
+	"""
+
+	import gzip
+	import cPickle
+
+	currentTime = time.time() - settings.initializationTime
+	timeSinceLastSave = lastSaveTime - currentTime
+	currentIteration = len(reactionModel.core.species)
+	itersSinceLastSave = lastSaveIteration - currentIteration
+
+	# If not using iterations option, set it to absurdly high so it never is
+	# triggered
+	if iterations <= 0: iterations = 1000000000
+
+	# Determine if we need to do a save, return if not
+	if frequency == 'hourly' and timeSinceLastSave < 3600 and itersSinceLastSave < iterations:
+		return lastSaveTime, lastSaveIteration
+	elif frequency == 'daily' and timeSinceLastSave < 86400 and itersSinceLastSave < iterations:
+		return lastSaveTime, lastSaveIteration
+	elif frequency == 'weekly' and timeSinceLastSave < 604800 and itersSinceLastSave < iterations:
+		return lastSaveTime, lastSaveIteration
+	elif frequency == 'monthly' and timeSinceLastSave < 18144000 and itersSinceLastSave < iterations:
+		return lastSaveTime, lastSaveIteration
+
+	# If we've reached this point, then we have determined that we do in fact
+	# need to save the restart file, so let's do it
+	logging.info('Saving restart file...')
+	f = gzip.GzipFile(os.path.join(settings.outputDirectory,'restart.pkl'), 'wb')
+	cPickle.dump((
+		species.speciesList,
+		species.speciesCounter,
+		reaction.reactionDict,
+		reactionModel,
+		reactionSystems),
+		f)
+	f.close()
+
+	return currentTime, currentIteration
+
 ################################################################################
 
 def saveExecutionStatistics(execTime, coreSpeciesCount, coreReactionCount, \

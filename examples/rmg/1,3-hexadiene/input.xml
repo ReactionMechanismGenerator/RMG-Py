@@ -89,6 +89,7 @@
 	<!-- Options -->
 	<optionList>
 		<units>si</units>
+		<saveRestart frequency="daily"/>
 		<!-- Comment out to turn off -->
 		<!--<drawMolecules/>-->
 		<!--<generatePlots/>-->
