@@ -664,11 +664,10 @@ def __VF2_feasible(graph1, graph2, vertex1, vertex2, map21, map12, terminals1,
 	edges1 = graph1[vertex1]
 	edges2 = graph2[vertex2]
 		
-	for vert1 in edges1:
-		if vert1 in map21:
-			vert2 = map21[vert1]
-			if not vert2 in edges2: # atoms not joined in graph2
-				if subgraph: continue # but we don't care if subgraph matching!
+	for vert2 in edges2:  # nb. 1 is specific case of 2
+		if vert2 in map12:
+			vert1 = map12[vert2]
+			if not vert1 in edges1: # atoms not joined in graph1
 				return False 
 			edge1 = edges1[vert1]
 			edge2 = edges2[vert2]
@@ -679,7 +678,18 @@ def __VF2_feasible(graph1, graph2, vertex1, vertex2, map21, map12, terminals1,
 				if not edge1.equivalent(edge2):
 				# Warning - I think bond.equivalent() returns True too often
 					return False
-		
+	
+	# there could still be edges in graph1 that aren't in graph2.
+	# this is ok for subgraph matching, but not for exact matching
+	if not subgraph:
+		for vert1 in edges1:
+			if vert1 in map21:
+				vert2 = map21[vert1]
+				if not vert2 in edges2: # atoms not joined in graph1
+					return False 
+				# if they exist in graph2, then 
+				# we've already checked they're the same type as in graph1
+	
 	# Count number of terminals adjacent to vertex1 and vertex2
 	term1Count = cython.declare(cython.int)
 	term2Count = cython.declare(cython.int)
@@ -717,13 +727,21 @@ def __VF2_feasible(graph1, graph2, vertex1, vertex2, map21, map12, terminals1,
 		if term1Count != term2Count:
 			return False
 
-	# Level 0 look-ahead: all adjacent vertices of vertex1 already in the
-	# mapping must map to adjacent vertices of vertex2
-	for vert1 in edges1:
-		if vert1 in map21:
-			vert2 = map21[vert1]
-			if vert2 not in edges2:
+	# Level 0 look-ahead: all adjacent vertices of vertex2 already in the
+	# mapping must map to adjacent vertices of vertex1
+	for vert2 in edges2:
+		if vert2 in map12:
+			vert1 = map12[vert2]
+			if vert1 not in edges1:
 				return False
+	# ...AND all adjacent vertices of vertex1 already in the
+	# mapping must map to adjacent vertices of vertex2, unless we are subgraph matching.
+	if not subgraph:
+		for vert1 in edges1:
+			if vert1 in map21:
+				vert2 = map21[vert1]
+				if vert2 not in edges2:
+					return False
 	return True
 
 def __VF2_match(graph1, graph2, map21, map12, terminals1, terminals2, subgraph,

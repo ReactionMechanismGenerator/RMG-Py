@@ -118,30 +118,16 @@ class StructureCheck(unittest.TestCase):
 	def testSubgraphIsomorphismManyLabels(self):
 		structure1 = Structure() # specific case (species)
 		structure1.fromAdjacencyList("""
-		1 *1 C 0 {2,D} {7,S} {8,S}
-		2 *2 C 0 {1,D} {3,S} {9,S}
-		3    C 0 {2,S} {4,D} {10,S}
-		4    C 0 {3,D} {5,S} {11,S}
-		5    C 0 {4,S} {6,S} {12,S} {13,S}
-		6    C 0 {5,S} {14,S} {15,S} {16,S}
-		7    H 0 {1,S}
-		8    H 0 {1,S}
-		9    H 0 {2,S}
-		10   H 0 {3,S}
-		11   H 0 {4,S}
-		12   H 0 {5,S}
-		13   H 0 {5,S}
-		14   H 0 {6,S}
-		15   H 0 {6,S}
-		16   H 0 {6,S}
+1 *1 C   1 {2,S} {3,S} 
+2    Cs  0 {1,S} {3,S} 
+3    Cs  0 {1,S} {2,S} 
 		""")
 		
 		structure2 = Structure() # general case (functional group)
 		structure2.fromAdjacencyList("""
-		1 *1 C 0 {2,D} {3,S} {4,S}
-		2 *2 C 0 {1,D}
-		3    H 0 {1,S}
-		4    H 0 {1,S}
+1 *1 C 1 {2,S}, {3,S} 
+2    R 0 {1,S}
+3    R 0 {1,S}
 		""")
 		
 		labeled1 = structure1.getLabeledAtoms()
