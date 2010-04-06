@@ -698,6 +698,22 @@ class LogicOr(LogicNode):
 				return True != self.invert
 		return False != self.invert
 	
+	def getPossibleStructures(self,dictionary):
+		"""
+		Return a list of the possible structures below this node.
+		"""
+		if self.invert: raise NotImplementedError("Finding possible structures of NOT OR nodes not implemented.")
+		structures = []
+		for item in self.components:
+			struct = dictionary[item]
+			if isinstance(struct, LogicNode):
+				structures.extend(struct.getPossibleStructures(dictionary))
+			else:
+				structures.append(struct)
+		for struct in structures: # check this worked
+			assert isinstance(struct,structure.Structure)
+		return structures
+	
 class LogicAnd(LogicNode):
 	"""A logical AND node. Structure must match all components."""
 	symbol = "AND"
