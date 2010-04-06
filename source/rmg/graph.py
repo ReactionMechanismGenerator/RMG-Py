@@ -766,13 +766,13 @@ def __VF2_match(graph1, graph2, map21, map12, terminals1, terminals2, subgraph,
 		if findAll:
 			map21List.append(map21.copy())
 			map12List.append(map12.copy())
-			logging.verbose("Adding valid mapping to mapList")
+			#logging.verbose("Adding valid mapping to mapList")
 		return True
 	if len(map12) >= len(graph2) and subgraph:
 		if findAll:
 			map21List.append(map21.copy())
 			map12List.append(map12.copy())
-			logging.verbose("Adding valid mapping to mapList")
+			#logging.verbose("Adding valid mapping to mapList")
 		return True
 	
 	# Create list of pairs of candidates for inclusion in mapping

@@ -267,6 +267,8 @@ class ReactionSetCheck(unittest.TestCase):
 				print 'Reaction:',rxn
 				print 'Kinetics:',rxn.kinetics
 				print
+				
+			self.assertTrue(len(rxns)>0,"Didn't make any reactions!")
 			
 			all_products = []
 			for rxn in rxns:
@@ -277,7 +279,6 @@ class ReactionSetCheck(unittest.TestCase):
 				
 			print "All products for reacting %s:"%species1, [p.structure[0] for p in all_products]
 			
-		
 
 	
 	def testAllFamilies(self):
@@ -311,6 +312,7 @@ class ReactionSetCheck(unittest.TestCase):
 ################################################################################
 from timeit import Timer
 if __name__ == '__main__':
+	
 	
 	startup = """gc.enable() # enable garbage collection in timeit
 import sys
@@ -386,8 +388,10 @@ reaction1, isNew = makeNewReaction([C6H9, H2], [C6H10, H], \
 	print "**************"
 	
 	# run a certain check without catching errors (turn on PDB debugger first)
-	import pdb
-	ReactionSetCheck('test22CycloadditionCd').debug()
+	import rmg.log as logging
+	logging.initialize(5,'reactiontest.log') 
+	#import pdb
+	ReactionSetCheck('testAllFamilies').debug()
 	
 	# now run all the unit tests
 	unittest.main( testRunner = unittest.TextTestRunner(verbosity=2) )

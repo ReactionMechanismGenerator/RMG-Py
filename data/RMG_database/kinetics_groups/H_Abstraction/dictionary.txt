@@ -339,15 +339,15 @@ O/H/OneDe
 
 Y_2centeradjbirad
 1 *3 {Ct,Os} 1 {2,{S,T}}
-2 {Ct,Os} 1 {1,{S,T}}
+2    {Ct,Os} 1 {1,{S,T}}
 
 O2b
-1 *3 O 1 {2,S}
-2 O 1 {1,S}
+1 *3 Os 1 {2,S}
+2    Os 1 {1,S}
 
 C2b
-1 *3 C 1 {2,T}
-2 C 1 {1,T}
+1 *3 Ct 1 {2,T}
+2    Ct 1 {1,T}
 
 Y_1centerbirad
 1 *3 {Cs,Cd,O} 2T

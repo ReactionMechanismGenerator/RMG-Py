@@ -156,7 +156,6 @@ class Dictionary(dict):
 		"""
 	
 		for label, record in self.iteritems():
-		
 			# If record is a union, 
 			# If record is a logical node, make it into one.
 			if re.match('(?i)\s*OR|AND|NOT|UNION',record.splitlines()[1] ):
@@ -621,7 +620,7 @@ def makeLogicNode(string):
 	if match.group(1): invert = True
 	else: invert = False
 	
-	logic = match.group(2)  # OR or AND
+	logic = match.group(2)  # OR or AND (or Union)
 	
 	contents = match.group(3).strip()
 	while contents.startswith('{'):
@@ -646,8 +645,6 @@ def makeLogicNode(string):
 		items.append(''.join(chars).lstrip().rstrip() ) 
 	if brace_depth != 0: raise Exception("Unbalanced braces in Logic Node: %s"%string)
 		
-	logging.debug("Creating %s Logic Node with items: %s"%(logic,items))
-	
 	if logic.upper() in ['OR', 'UNION']:
 		return LogicOr(items, invert)
 	if logic == 'AND':
@@ -951,8 +948,8 @@ class Database:
 						return False
 					# but we don't mind if...
 					elif structure.hasBond(atom, atom2): # but group doesn't
-						logging.debug("We don't mind that structure %s has bond"+
-							" but group %s doesn't"%(str(structure),node))
+						logging.debug("We don't mind that structure "+ str(structure) +
+							" has bond but group %s doesn't"%node )
 				# Passed semantic checks, so add to maps of already-matched atoms
 				map21_0[center] = atom; map12_0[atom] = center
 			# use mapped (labeled) atoms to try to match subgraph
