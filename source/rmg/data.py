@@ -927,8 +927,10 @@ class Database:
 			map12_0 = {}; map21_0 = {}
 			for label in centers.keys():
 				# Make sure the labels are in both group and structure.
-				if not (label in centers and label in atoms):
-					return False 
+				if label not in atoms:
+					logging.warning("Label %s is in group but not in structure"%(label))
+					continue # with the next label - ring structures might not have all labeled atoms
+					# return False # force it to have all the labeled atoms
 				center = centers[label]
 				atom = atoms[label]
 				# Make sure labels actually point to atoms.
