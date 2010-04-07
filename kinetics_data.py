@@ -130,8 +130,23 @@ class Group:
         logging.debug("")
         
         if node_name != self.name:
-            logging.warning("I think %s is actulaly %s"%(group.name, node_name))
-        
+            logging.warning("WARNING! in %s family I think %s is actually at node %s"%(family.label, self.name, node_name))
+            if node_name:
+                logging.verbose(node_name + ":")
+                if family.dictionary[node_name].__class__ is rmg.structure.Structure:
+                    logging.verbose(family.dictionary[node_name].toAdjacencyList())
+                else: 
+                    logging.verbose(str(family.dictionary[node_name]))
+                #import pdb; pdb.set_trace()
+            if family.dictionary.has_key(self.name):
+                logging.warning("There's a node called '%s' so I'm using that."%self.name)
+                node_name = self.name
+                if family.tree.parent.has_key(node_name):
+                    logging.warning( "Its ancestors are"+str(family.tree.ancestors(node_name)) )
+                else:
+                    logging.warning("It is not in the tree!!!")
+                logging.verbose(self.name+": \n"+family.dictionary[self.name].toAdjacencyList() )
+
         self.node_name = node_name
         return node_name
 
