@@ -149,6 +149,80 @@ class Group:
 
         self.node_name = node_name
         return node_name
+        
+class Parameter:
+    """A parameter, with units, and uncertainties"""
+    def __init__(self, *args):
+        if args[0].__class__ is tuple: # unpack if double-packed
+            args = args[0]
+        nargs = len(args)
+        self.value = args[0]
+        self.units = None
+        self.uncertainty_type = None
+        self.uncertainty = None
+        if nargs>1:
+            self.units = args[1]
+        if nargs>2:
+            self.uncertainty_type = args[2]
+            if nargs<4: raise Exception("Can't have uncertainty type without uncertainty or vice versa:"+str(args))
+            self.uncertainty = args[3]
+    def toSource(self):
+        if self.uncertainty:
+            return '(%g, "%s", "%s", %g)'%(self.value, self.units, self.uncertainty_type, self.uncertainty)
+        if self.units:
+            return '(%g, "%s")'%(self.value, self.units)
+        return '%s'%self.value
+    source = property(toSource)
+    def toRMGjava(self, unitfactor = 1.0):
+        """Returns a tuple of strings (value, uncertainty), multiplied by unitfactor if set"""
+        v = float(self.value) * unitfactor
+        v = '%8.3g'%v
+        if self.uncertainty is None:
+            u = '%8s'%0
+        elif self.uncertainty_type == '+-':
+            u = float(self.uncertainty) * unitfactor
+            u = '%8.3g'%u
+        elif self.uncertainty_type == '*/':
+            u = '*%.4g'%self.uncertainty
+            u = '%8s'%u # make it 8 wide
+        else: 
+            raise Exception("Unknown uncertainty type %r in %r"%(self.uncertainty_type,self))
+        return v,u
+    java = property(toRMGjava)
+        
+    def __repr__(self):
+        return "Parameter(%s)"%self.source.strip('()')
+        
+        
+class Arrhenius:   
+    """
+    specify (A,n,Ea) or (A,n,alpha,E0)
+    """
+    def __init__(self, *args, **kw):
+        self.A = None
+        self.n = None
+        self.Ea = None
+        self.alpha = None
+        self.E0 = None
+        if kw.has_key('A'): self.A = Parameter(kw['A'])
+        if kw.has_key('n'): self.n = Parameter(kw['n'])
+        if kw.has_key('Ea'): self.Ea = Parameter(kw['Ea'])
+        if kw.has_key('alpha'): self.alpha = Parameter(kw['alpha'])
+        if kw.has_key('E0'): self.E0 = Parameter(kw['E0'])
+        
+    def __repr__(self):
+        if self.Ea is not None:
+            out = """Arrhenius( A=%s,
+               n=%s,
+               Ea=%s
+              )"""%(self.A.source, self.n.source, self.Ea.source)
+        if self.E0 is not None:
+            out = """Arrhenius( A=%s,
+               n=%s,
+               alpha=%s
+               E0=%s
+              )"""%(self.A.source,self.n.source, self.alpha.source, self.E0.source)
+        return out
 
 def indent(n,string):
     """Indent the string by n tabs (of 2 spaces each)"""
@@ -261,78 +335,6 @@ class rate:
         return groups
     groups = property(getGroups)
 
-class Parameter:
-    """A parameter, with units, and uncertainties"""
-    def __init__(self, *args):
-        if args[0].__class__ is tuple: # unpack if double-packed
-            args = args[0]
-        nargs = len(args)
-        self.value = args[0]
-        self.units = None
-        self.uncertainty_type = None
-        self.uncertainty = None
-        if nargs>1:
-            self.units = args[1]
-        if nargs>2:
-            self.uncertainty_type = args[2]
-            if nargs<4: raise Exception("Can't have uncertainty type without uncertainty or vice versa:"+str(args))
-            self.uncertainty = args[3]
-    def toSource(self):
-        if self.uncertainty is not None:
-            return '(%s, "%s", "%s", %s)'%(self.value, self.units, self.uncertainty_type, self.uncertainty)
-        if self.units:
-            return '(%s, "%s")'%(self.value, self.units)
-        return '%s'%self.value
-    source = property(toSource)
-    def toRMGjava(self, unitfactor = 1.0):
-        """Returns a tuple of strings (value, uncertainty), multiplied by unitfactor if set"""
-        v = float(self.value) * unitfactor
-        v = '%8.3g'%v
-        if self.uncertainty is None:
-            u = '%8s'%0
-        elif self.uncertainty_type == '+-':
-            u = float(self.uncertainty) * unitfactor
-            u = '%8.3g'%u
-        elif self.uncertainty_type == '*/':
-            u = '*%.4g'%self.uncertainty
-            u = '%8s'%u # make it 8 wide
-        else: 
-            raise Exception("Unknown uncertainty type %r in %r"%(self.uncertainty_type,self))
-        return v,u
-    java = property(toRMGjava)
-        
-    def __repr__(self):
-        return "Parameter(%s)"%self.source.strip('()')
-        
-class Arrhenius:   
-    """
-    specify (A,n,Ea) or (A,n,alpha,E0)
-    """
-    def __init__(self, *args, **kw):
-        self.A = None
-        self.n = None
-        self.Ea = None
-        self.alpha = None
-        self.E0 = None
-        if kw.has_key('A'): self.A = Parameter(kw['A'])
-        if kw.has_key('n'): self.n = Parameter(kw['n'])
-        if kw.has_key('Ea'): self.Ea = Parameter(kw['Ea'])
-        if kw.has_key('alpha'): self.alpha = Parameter(kw['alpha'])
-        if kw.has_key('E0'): self.E0 = Parameter(kw['E0'])
-        
-    def __repr__(self):
-        if self.Ea is not None:
-            out = """Arrhenius( A=%s,
-               n=%s,
-               Ea=%s
-              )"""%(self.A.source, self.n.source, self.Ea.source)
-        if self.E0 is not None:
-            out = """Arrhenius( A=%s,
-               n=%s,
-               alpha=%s
-               E0=%s
-              )"""%(self.A.source,self.n.source, self.alpha.source, self.E0.source)
-        return out
 
     def toRMGjava(self):
         if self.alpha is None:
