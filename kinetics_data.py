@@ -91,6 +91,7 @@ class Group:
         if not chemgraph.splitlines()[1].strip().startswith('1'):
             logging.debug("I think this is a compound structure: %s"%chemgraph)
             self.compound_structure=True
+            self.chemgraph = chemgraph
             return
         else:
             self.compound_structure=False
@@ -99,6 +100,8 @@ class Group:
         self._structure = s
         
     def __str__(self):
+        if self.compound_structure:
+            return self.chemgraph+'\n'
         return self._structure.toAdjacencyList(label=self.name)
     def __repr__(self):
         return 'group("""%s""")'%self.__str__()
@@ -119,13 +122,18 @@ class Group:
         """
         
         if self.compound_structure:
-            logging.info("This is a compound group so I'm just using its name and trusting that's right: %s"%self.name)
-            self.node_name = self.name
+            if family.dictionary.has_key(self.name):
+                logging.info("%s is a compound group so I'm just using its name and trusting that's right."%self.name)
+                self.node_name = self.name
+            else:
+                logging.warning("%s is a compound group but there's no node of the same name, so I'm setting it to None!"%self.name)
+                self.node_name = None
             return self.node_name
-        
+        if self.name in ['R6_SSSDS']:
+            logging.debug("I'm about to try and match "+self.name)
         s = self._structure
         node_name = family.descendTree(s,s.getLabeledAtoms())
-        logging.debug("I think this %s belongs at %s"%(s.toAdjacencyList(label=group.name), node_name) )
+        logging.debug("I think this %s belongs at %s"%(s.toAdjacencyList(label=self.name), node_name) )
         if node_name is not None: logging.debug( "and its ancestors are"+str(family.tree.ancestors(node_name)) )
         logging.debug("")
         
@@ -266,6 +274,7 @@ def indent(n,string):
 
 class rate:
     """
+    Class used to define reaction rates in the kinetics library.
    
     ==================  ========================================
     Attribute           Description
@@ -316,6 +325,7 @@ class rate:
         if short_comment.find('\n')>=0:
             logging.error("Line break found in short_comment: %s"%short_comment)
             raise Exception("No line breaks in short_comments please!")
+        self.history = history
         self.long_comment = long_comment
         
         global _rates
@@ -325,36 +335,42 @@ class rate:
     def toRMGjava(self):
         out = ""
         for group in self.groups:
-            out+="%-20s"%group.node_name
+            out+="%-20s "%group.node_name
         if self.temperature_range[1] is None:
             out += "  %6d    "%self.temperature_range[0]
         else:
             out += " %4d-%-5d "%self.temperature_range
             
         out += self.kf.toRMGjava()
+        out += " %d "%int(self.rank or 0)
         out += '    '+self.short_comment
         return out
     java = property(toRMGjava)
-    header =( "//#  %-17s"%'Group1' + 
-              "%-20s"%'Group2' +
+    header =( "//#  %-18s "%'Group1' + 
+              "%-20s "%'Group2' +
               " TempRange  " +
-              ("%8s "*8)%('A','n','alpha','E0','DA','Dn','Dalpha','DE0') +
+              Arrhenius.header +
+              " Rank " +
               " Comment" )
         
     def toSource(self):
         out='rate(\n'
         # groups
         for i,group in enumerate(self.groups):
-            out+='    group%d=""""\n%s           """",\n'%(i+1,group)
+            out+='    group%d =\n"""\n%s""",\n'%(i+1,group)
         out+='    kf = %r\n'%self.kf
-        if self.rank:
-            out+='    rank = %s,\n'%self.rank
+        if self.temperature_range:
+            out+='    temperature_range = %s,\n'%repr(self.temperature_range)
+        if self.rank is not None:
+            out+='    rank = %r,\n'%self.rank
         if self.old_id:
-            out+='    old_id = "%s",\n'%self.old_id
+            out+='    old_id = %r,\n'%self.old_id
         if self.short_comment:
-            out+='    short_comment = "%s",\n'%self.short_comment
+            out+='    short_comment = %r,\n'%self.short_comment
         if self.long_comment:
-            out+='    long_comment = """%s\n                   """,\n'%self.long_comment.rstrip()
+            out+='    long_comment =\n"""\n%s\n""",\n'%self.long_comment.strip()
+        if self.history:
+            out+='    history = %s\n'%str(self.history)
         out+=')'
         return out
     source = property(toSource)
@@ -371,7 +387,7 @@ class rate:
 
 
      
-def WriteRMGjava(list_of_rates, output_folder, unread_lines=None, header=None):
+def WriteRMGjava(list_of_rates, output_folder, unread_lines=None, header=None ):
     os.path.exists(output_folder) or os.makedirs(output_folder)
     library = file(os.path.join(output_folder,'rateLibrary.txt'),'w')
     logging.verbose("Writing library to "+output_folder)
@@ -424,9 +440,7 @@ def main():
     
 
 import shutil
-
-logging.initialize(15,'database.log')  # <<< level in general
-
+logging.initialize(5,'database.log')  # <<< level in general
 
 logger = logging.getLogger()
 old_level = logger.getEffectiveLevel()
@@ -444,24 +458,36 @@ for family_name,family in db.families.iteritems():
     context = { '_rates': _rates,
               'rate': rate,
               'Arrhenius':Arrhenius,
-              'Parameter':Parameter
+              'Parameter':Parameter,
+              "__builtins__":None
               }
     logging.info("Importing %s"%library_file_name)
-    exec library_file in context
-    library_file.close()
+    # TODO: check library_file is safe. Perhaps with http://code.activestate.com/recipes/496746-restricted-safe-eval/
+    # although I think limiting the context may be ample protection:
+    try:
+        exec library_file in {"__builtins__":None}, context
+    except NameError, e:
+        logging.error("Looks like the file %s had an illegal operator in it:"%library_file_name)
+        logging.error(e)
+        raise
+    finally:
+        library_file.close()
     _rates = context['_rates']
     unread_lines = context['unread_lines']
+    file_header = context['header']
     
     assert family_name==context['reaction_family_name']
     
     for r in _rates:
+        #logging.verbose("="*80)
+        
         for group in r.groups:
             group.locateInFamily(family)
             #group._structure.updateAtomTypes()
-    
-        #logging.verbose("="*80)
+            
         #logging.verbose(r.source)
-        logging.verbose(r.toRMGjava())
+        #logging.verbose('#RMG-Java: '+r.toRMGjava())
+        
     output_folder = os.path.join('RMG_Database_output','kinetics_groups',family_name)
     os.path.exists(output_folder) or os.makedirs(output_folder)
     WriteRMGjava(_rates, output_folder, unread_lines=unread_lines, header = rate.header)
