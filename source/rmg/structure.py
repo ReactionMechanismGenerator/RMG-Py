@@ -488,7 +488,7 @@ class Structure:
 		The `label` parameter is an optional string to put as the first line of 
 		the adjacency list; if set to the empty string, this line will be omitted.
 		
-		If strip_hydrogens=True then Hydrogen atoms are not reported 
+		If strip_hydrogens=True then Hydrogen atoms (that do not have labels) are not reported 
 		(this is a valid shorthand: they will be replaced on importing such an
 		adjacency list, provided that the free electron numbers are accurate)
 		"""
@@ -496,25 +496,31 @@ class Structure:
 		adjlist = ''
 		
 		if label != '': adjlist += label + '\n'
-		
+	
+		self.graph.setConnectivityValues() # so we can sort by them
+		atoms = self.atoms()
+		# weakest sort first (will be over-ruled by later sorts)
+		# some function of connectivity values), from lowest to highest
+		atoms.sort(key=graph.globalAtomSortValue)
+		#  sort by label
+		atoms.sort(key=lambda atom: atom.label )
+		# then bring labeled atoms to the top (else '' will be before '*1')
+		atoms.sort(key=chem.Atom.isCenter, reverse=True) 
 		# Sort the atoms by graph.globalAtomSortValue 
 		# (some function of connectivity values), from lowest to highest
-		self.graph.setConnectivityValues()
-		atoms = self.atoms()
-		atoms.sort(key=graph.globalAtomSortValue)
+		atoms.sort(key=lambda atom: atom.connectivity1, reverse=True)
+		#atoms.sort(key=graph.globalAtomSortValue)
 		# now make sure the hydrogens come last, in case we wish to strip them!
 		atoms.sort(key=chem.Atom.isHydrogen )
 		
 		for i, atom in enumerate(atoms):
-			if strip_hydrogens and atom.isHydrogen(): continue 
+			if strip_hydrogens and atom.isHydrogen() and atom.label=='': continue 
 			
 			# Atom number
-			adjlist += str(i+1) + ' '
+			adjlist += '%-2d '%(i+1)
 			
 			# Atom label
-			if atom.label != '':
-				adjlist += atom.label + ' '
-			else: adjlist += '   '
+			adjlist += "%-2s "%atom.label
 			
 			# Atom type(s)
 			if atom.atomType.__class__ == list:
@@ -523,7 +529,7 @@ class Structure:
 					adjlist += ',' + atomType.label
 				adjlist += '} '
 			else:
-				adjlist += "%-3s "%atom.atomType.label
+				adjlist += "%-5s "%atom.atomType.label
 			
 			# Electron state(s)
 			if atom.electronState.__class__ == list:
@@ -532,8 +538,8 @@ class Structure:
 					adjlist += ',' + electronState.label
 				adjlist += '} '
 			else:
-				adjlist += atom.electronState.label + ' '
-
+				adjlist += atom.electronState.label + '  '
+			
 			# Bonds list
 			atoms2 = self.getBonds(atom).keys()
 			# sort them the same way as the atoms
