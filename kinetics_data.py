@@ -382,6 +382,32 @@ def WriteRMGjava(list_of_rates, output_folder, unread_lines=None, header=None):
         logging.verbose(line)
     library.close()
     
+def WriteSource(list_of_rates, output_folder, family_name=None, file_header='', unread_lines=None):
+    os.path.exists(output_folder) or os.makedirs(output_folder)
+    library = file(os.path.join(output_folder,'library.py'),'w')
+    logging.verbose("Writing library to "+output_folder)
+    
+    library.write('# encoding: utf-8\n')
+    library.write('header = """\n%s\n"""\n\n'%file_header.replace('"','\\"').strip())
+    
+    library.write('reaction_family_name = "%s"\n'%family_name)
+    
+    library.write('# These lines were in the RMG library file but were not translated into anything useful:\n')
+    library.write('unread_lines = ')
+    if unread_lines:
+        library.write('"""'+unread_lines.replace('"','\\"')+'"""\n')
+    else:
+        library.write('None\n')
+    
+    
+    for index,r in enumerate(list_of_rates):
+        library.write("# Number %d\n"%index)
+        library.write(r.source+'\n\n')
+        #logging.verbose(line)
+        
+    library.write('\n')
+    library.close()
+    
 
 G3CANTHERM = 2.8 # for example
 QUANTUM = 3
@@ -435,6 +461,7 @@ for family_name,family in db.families.iteritems():
     output_folder = os.path.join('RMG_Database_output','kinetics_groups',family_name)
     os.path.exists(output_folder) or os.makedirs(output_folder)
     WriteRMGjava(_rates, output_folder, unread_lines=unread_lines, header = rate.header)
+    WriteSource(_rates, output_folder, file_header=file_header, unread_lines=unread_lines, family_name=family_name)
     
     for file_to_copy in ['tree.txt', 'dictionary.txt', 'reactionAdjList.txt']:
         logging.debug("Copying %s into destination folder"%file_to_copy)
