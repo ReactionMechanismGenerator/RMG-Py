@@ -111,7 +111,7 @@ def initialize(verbose, log_file_name):
 		print "Renaming %s to %s"%(log_file_name, backup_name)
 		os.rename(log_file_name, backup_name)
 	fh = FileHandler(filename=log_file_name) #, backupCount=3)
-	fh.setLevel(VERBOSE) # always verbose in the file
+	fh.setLevel(min(VERBOSE,verbose)) # always at least VERBOSE in the file
 	fh.setFormatter(formatter)
 	# notice that STDERR does not get saved to the log file
 	# so errors from underlying libraries (eg. openbabel) etc. that report
