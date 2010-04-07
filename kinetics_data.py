@@ -446,6 +446,7 @@ logger = logging.getLogger()
 old_level = logger.getEffectiveLevel()
 logger.setLevel(15)  # <<< level while reading database 
 data_source = os.path.join('input','RMG_database')
+data_destination = os.path.join('output','RMG_database')
 db = loadKineticsDatabases( data_source )
 logger.setLevel(old_level)
 
@@ -487,7 +488,7 @@ for family_name,family in db.families.iteritems():
         #logging.verbose(r.source)
         #logging.verbose('#RMG-Java: '+r.toRMGjava())
         
-    output_folder = os.path.join('output','RMG_Database','kinetics_groups',family_name)
+    output_folder = os.path.join(data_destination,'kinetics_groups',family_name)
     os.path.exists(output_folder) or os.makedirs(output_folder)
     WriteRMGjava(_rates, output_folder, unread_lines=unread_lines, header = rate.header)
     WriteSource(_rates, output_folder, file_header=file_header, unread_lines=unread_lines, family_name=family_name)
@@ -496,3 +497,7 @@ for family_name,family in db.families.iteritems():
         logging.debug("Copying %s into destination folder"%file_to_copy)
         shutil.copy( os.path.join(data_source,'kinetics_groups',family_name,file_to_copy),
                     output_folder)
+for file_to_copy in ['families.txt']:
+    logging.debug("Copying %s into destination folder"%file_to_copy)
+    shutil.copy( os.path.join(data_source,'kinetics_groups',file_to_copy),
+                os.path.join(data_destination,'kinetics_groups') )
