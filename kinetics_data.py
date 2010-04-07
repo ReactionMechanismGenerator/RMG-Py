@@ -89,7 +89,7 @@ class Group:
         self.name = chemgraph.splitlines()[0]
         self.node_name = None
         if not chemgraph.splitlines()[1].strip().startswith('1'):
-            logging.debug("I think this is a compound structure: %s"%chemgraph)
+            #logging.debug("I think this is a compound structure: %s"%chemgraph)
             self.compound_structure=True
             self.chemgraph = chemgraph
             return
@@ -440,12 +440,12 @@ def main():
     
 
 import shutil
-logging.initialize(5,'database.log')  # <<< level in general
+logging.initialize(5,'kinetics_data.log')  # <<< level in general
 
 logger = logging.getLogger()
 old_level = logger.getEffectiveLevel()
 logger.setLevel(15)  # <<< level while reading database 
-data_source = os.path.expanduser('~/XCodeProjects/DjangoSite/RMG_site/RMG_database')
+data_source = os.path.join('input','RMG_database')
 db = loadKineticsDatabases( data_source )
 logger.setLevel(old_level)
 
@@ -480,7 +480,6 @@ for family_name,family in db.families.iteritems():
     
     for r in _rates:
         #logging.verbose("="*80)
-        
         for group in r.groups:
             group.locateInFamily(family)
             #group._structure.updateAtomTypes()
@@ -488,7 +487,7 @@ for family_name,family in db.families.iteritems():
         #logging.verbose(r.source)
         #logging.verbose('#RMG-Java: '+r.toRMGjava())
         
-    output_folder = os.path.join('RMG_Database_output','kinetics_groups',family_name)
+    output_folder = os.path.join('output','RMG_Database','kinetics_groups',family_name)
     os.path.exists(output_folder) or os.makedirs(output_folder)
     WriteRMGjava(_rates, output_folder, unread_lines=unread_lines, header = rate.header)
     WriteSource(_rates, output_folder, file_header=file_header, unread_lines=unread_lines, family_name=family_name)
