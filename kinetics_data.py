@@ -224,6 +224,38 @@ class Arrhenius:
               )"""%(self.A.source,self.n.source, self.alpha.source, self.E0.source)
         return out
 
+    def toRMGjava(self):
+        if self.alpha is None:
+            alpha = Parameter(0)
+            E0 = self.Ea
+            logging.debug("Converting Arrhenius into Evans-Polyani")
+        else:
+            alpha = self.alpha
+            E0 = self.E0
+        if self.A.units == "cm^3/mol/s":
+            Aunitscale = 1.0
+        else:
+            raise NotImplementedError("Unit conversion not yet implemented")
+        A_val,A_unc = self.A.toRMGjava(Aunitscale)
+        # n and alpha have no units to convert 
+        assert self.n.units is None
+        n_val,n_unc = self.n.toRMGjava(1)
+        assert alpha.units is None
+        alpha_val, alpha_unc = alpha.toRMGjava(1)
+        # Activation energy
+        if E0.units == "kcal/mol":
+            Eunitscale = 1.0
+        else:
+            raise NotImplementedError("Unit conversion not yet implemented")
+        E0_val, E0_unc = E0.toRMGjava(Eunitscale)
+        
+        out = ("%8s "*8)%(
+                    A_val, n_val, alpha_val, E0_val, A_unc, n_unc, alpha_unc, E0_unc )
+        return out
+    java = property(toRMGjava)
+    header = ("%8s "*8)%('A','n','alpha','E0','DA','Dn','Dalpha','DE0')
+    
+
 def indent(n,string):
     """Indent the string by n tabs (of 2 spaces each)"""
     out = ""
@@ -336,35 +368,7 @@ class rate:
     groups = property(getGroups)
 
 
-    def toRMGjava(self):
-        if self.alpha is None:
-            alpha = Parameter(0)
-            E0 = self.Ea
-            logging.debug("Converting Arrhenius into Evans-Polyani")
-        else:
-            alpha = self.alpha
-            E0 = self.E0
-        if self.A.units == "cm^3/mol/s":
-            Aunitscale = 1.0
-        else:
-            raise NotImplementedError("Unit conversion not yet implemented")
-        A_val,A_unc = self.A.toRMGjava(Aunitscale)
-        # n and alpha have no units to convert 
-        assert self.n.units is None
-        n_val,n_unc = self.n.toRMGjava(1)
-        assert alpha.units is None
-        alpha_val, alpha_unc = alpha.toRMGjava(1)
-        # Activation energy
-        if E0.units == "kcal/mol":
-            Eunitscale = 1.0
-        else:
-            raise NotImplementedError("Unit conversion not yet implemented")
-        E0_val, E0_unc = E0.toRMGjava(Eunitscale)
-        
-        out = ("%8s "*8)%(
-                    A_val, n_val, alpha_val, E0_val, A_unc, n_unc, alpha_unc, E0_unc )
-        return out
-    java = property(toRMGjava)
+
 
      
 def WriteRMGjava(list_of_rates, output_folder, unread_lines=None, header=None):
