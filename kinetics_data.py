@@ -176,9 +176,10 @@ class Parameter:
             self.uncertainty = args[3]
     def toSource(self):
         if self.uncertainty:
-            return '(%g, "%s", "%s", %g)'%(self.value, self.units, self.uncertainty_type, self.uncertainty)
+            
+            return '(%g, %r, "%s", %g)'%(self.value, self.units, self.uncertainty_type, self.uncertainty)
         if self.units:
-            return '(%g, "%s")'%(self.value, self.units)
+            return '(%g, %r)'%(self.value, self.units)
         return '%s'%self.value
     source = property(toSource)
     def toRMGjava(self, unitfactor = 1.0):
@@ -227,7 +228,7 @@ class Arrhenius:
         if self.E0 is not None:
             out = """Arrhenius( A=%s,
                n=%s,
-               alpha=%s
+               alpha=%s,
                E0=%s
               )"""%(self.A.source,self.n.source, self.alpha.source, self.E0.source)
         return out
@@ -306,7 +307,7 @@ class rate:
                  temperature_range = None,
                  rank = None,
                  old_id = None,
-                 short_comment = None,
+                 short_comment = '',
                  long_comment = None,
                  history = None
                 ):
@@ -358,7 +359,7 @@ class rate:
         # groups
         for i,group in enumerate(self.groups):
             out+='    group%d =\n"""\n%s""",\n'%(i+1,group)
-        out+='    kf = %r\n'%self.kf
+        out+='    kf = %r,\n'%self.kf
         if self.temperature_range:
             out+='    temperature_range = %s,\n'%repr(self.temperature_range)
         if self.rank is not None:
