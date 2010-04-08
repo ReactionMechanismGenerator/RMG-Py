@@ -17,6 +17,9 @@ Generated on 7th April 2010 at 17:08
 
 reaction_family_name = "1,2-Birad_to_alkene"
 
+# determines permitted units for rate expression:
+reaction_order = 1
+
 # These lines were in the RMG library file but were not translated into anything useful:
 unread_lines= """
 //f24 : 1,2-biradical to alkene 
@@ -43,7 +46,7 @@ Arrhenius_EP
 
 # Set some units for all the rates in this file
 
-A_UNITS = "cm^3/mol/s"
+A_UNITS = "1/s"
 E_UNITS = "kcal/mol"
 
 # And these are the rates...

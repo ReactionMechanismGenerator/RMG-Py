@@ -19,6 +19,9 @@ Generated on 7th April 2010 at 17:08
 
 reaction_family_name = "Disproportionation"
 
+# determines permitted units for rate expression:
+reaction_order = 2
+
 # These lines were in the RMG library file but were not translated into anything useful:
 unread_lines= """
 // rate library for f09a: Disproportionation reaction

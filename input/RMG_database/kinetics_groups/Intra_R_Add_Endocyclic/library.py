@@ -18,6 +18,9 @@ Generated on 7th April 2010 at 17:08
 
 reaction_family_name = "Intra_R_Add_Endocyclic"
 
+# determines permitted units for rate expression:
+reaction_order = 1
+
 # These lines were in the RMG library file but were not translated into anything useful:
 unread_lines= """
 // rate library for f29: intra radical addition to form endocyclic radical
@@ -39,7 +42,7 @@ Arrhenius_EP
 
 # Set some units for all the rates in this file
 
-A_UNITS = "cm^3/mol/s"
+A_UNITS = "1/s"
 E_UNITS = "kcal/mol"
 
 # And these are the rates...
