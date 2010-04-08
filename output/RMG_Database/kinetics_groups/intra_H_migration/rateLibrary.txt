@@ -1,0 +1,284 @@
+
+// rate library for f33: intra hydroxyl migration
+// Originally from rate library.doc by CDW
+
+// "jing," define key word for format of the rate: either Arrhenius or Arrhenius_EP
+Arrhenius_EP
+
+// #690 has a conflict of the name and the catogery in sumathy's original excel "file," should ask her about it. Cath and "Jing," 3/7/2028
+// make change of "#673," "#675," #676 according to sumathy's "correction," "JS," 3/8/2026
+
+// Catherine Wijaya Thesis, pg 133, 159.
+
+//f25_intra_H_migration
+//No	RnH				Y_rad_out				XH_out					Temp		A			n		Alpha	E		DA	DN	DAlpha	DE	Rank	Comments
+//690.	R2H_S_cy4		C_rad_out_				Cs_H_out_				300-1500	2.38E+11	0.5		0		40.60	0	0	0		0	2		Sumathy B3LYP/CCPVDZ calculations
+//From 850 to 869 added by Sandeep. The rate rules are from DFT/CBSB7 level of calculations.
+//// rwest 2008/10/22: these commented out because functional group R6H_SSSSS_(Cs/Cs)OO is not recognised
+//867 R6H_SSSSS_(Cs/Cs)OO		O_rad_out		Cs_H_out_H/NonDeO		300-1500	1.6e4		1.89	0		14.38	0	0	0		0	3		Sandeep's DFT/CBSB7 level of calculations.
+//867	R6H_SSSSS_(Cs/Cs)OO		O_rad_out		Cs_H_out_NDMustO		300-1500	1.03e5		1.26	0		12.02	0	0	0		0	3		Sandeep's DFT/CBSB7 level of calculations.
+//From 870 to 875 added by sandeep based on the work done on 1,3-hexadiene chemistry cbs-qb3
+
+
+//#  Group1             Group2                TempRange         A        n    alpha       E0       DA       Dn   Dalpha      DE0  Rank  Comment
+0    RnH                  Y_rad_out            XH_out                 300-1500     1e+10        0        0       25        0        0        0        0  0     default
+1    R2H_S                C_rad_out_single     Cs_H_out_2H            300-1500  5.48e+08     1.62        0     38.8        0        0        0        0  5     Currans's estimation [5] in his reaction type 5.
+2    R2H_S                C_rad_out_single     Cs_H_out_1H            300-1500  9.59e+08     1.39        0     39.7        0        0        0        0  5     Currans's estimation [5] in his reaction type 5.
+3    R3H_SS               C_rad_out_single     Cs_H_out_2H            300-1500  1.39e+09     0.98        0     33.8        0        0        0        0  5     Currans's estimation [5] in his reaction type 5.
+4    R3H_SS               C_rad_out_single     Cs_H_out_1H            300-1500  1.76e+09     0.76        0     34.7        0        0        0        0  5     Currans's estimation [5] in his reaction type 5.
+5    R4H_SSS              C_rad_out_single     Cs_H_out_2H            300-1500  2.54e+09     0.35        0     19.8        0        0        0        0  5     Currans's estimation [5] in his reaction type 5.
+6    R4H_SSS              C_rad_out_single     Cs_H_out_1H            300-1500  3.22e+09     0.13        0     20.7        0        0        0        0  5     Currans's estimation [5] in his reaction type 5.
+7    R4H_SSS              C_rad_out_single     Cs_H_out_noH           300-1500  1.86e+10     0.58        0     26.2        0        0        0        0  5     Currans's estimation [5] in his reaction type 5.
+8    R5H_SSSS             C_rad_out_single     Cs_H_out_2H            300-1500  4.28e+11    -1.05        0     11.8        0        0        0        0  5     Currans's estimation [5] in his reaction type 5.
+9    R5H_SSSS             C_rad_out_single     Cs_H_out_1H            300-1500  1.36e+10    -0.66        0     14.3        0        0        0        0  5     Currans's estimation [5] in his reaction type 5.
+10   R4H_SSS              O_rad_out            Cs_H_out_2H            300-1500     1e+11        0        0     29.4        0        0        0        0  5     Curran's estimstion [8] in his reaction type 12 RO2 isomerization.
+11   R4H_SSS              O_rad_out            Cs_H_out_1H            300-1500     1e+11        0        0     26.9        0        0        0        0  5     Curran's estimstion [8] in his reaction type 12 RO2 isomerization.
+12   R4H_SSS              O_rad_out            Cs_H_out_noH           300-1500     1e+11        0        0     24.1        0        0        0        0  5     Curran's estimstion [8] in his reaction type 12 RO2 isomerization.
+13   R5H_SSSS             O_rad_out            Cs_H_out_2H            300-1500  1.25e+10        0        0     24.4        0        0        0        0  5     Curran's estimstion [8] in his reaction type 12 RO2 isomerization.
+14   R5H_SSSS             O_rad_out            Cs_H_out_1H            300-1500  1.25e+10        0        0     20.9        0        0        0        0  5     Curran's estimstion [8] in his reaction type 12 RO2 isomerization.
+15   R5H_SSSS             O_rad_out            Cs_H_out_noH           300-1500  1.25e+10        0        0     19.1        0        0        0        0  5     Curran's estimstion [8] in his reaction type 12 RO2 isomerization.
+16   R6H_SSSSS            O_rad_out            Cs_H_out_2H            300-1500  1.56e+09        0        0     22.4        0        0        0        0  5     Curran's estimstion [8] in his reaction type 12 RO2 isomerization.
+17   R6H_SSSSS            O_rad_out            Cs_H_out_1H            300-1500  1.56e+09        0        0     19.1        0        0        0        0  5     Curran's estimstion [8] in his reaction type 12 RO2 isomerization.
+18   R6H_SSSSS            O_rad_out            Cs_H_out_noH           300-1500  1.56e+09        0        0     17.1        0        0        0        0  5     Curran's estimstion [8] in his reaction type 12 RO2 isomerization.
+19   R7H                  O_rad_out            Cs_H_out_2H            300-1500  1.95e+08        0        0     25.6        0        0        0        0  5     Curran's estimstion [8] in his reaction type 12 RO2 isomerization.
+20   R7H                  O_rad_out            Cs_H_out_1H            300-1500  1.95e+08        0        0     25.6        0        0        0        0  5     Curran's estimstion [8] in his reaction type 12 RO2 isomerization.
+21   R7H                  O_rad_out            Cs_H_out_noH           300-1500  1.95e+08        0        0     25.6        0        0        0        0  5     Curran's estimstion [8] in his reaction type 12 RO2 isomerization.
+22   Others-R2H_S         C_rad_out_2H         Cs_H_out_2H            300-1500  4.45e+09     1.12        0     38.7        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+23   Others-R2H_S         C_rad_out_H/NonDeC   Cs_H_out_2H            300-1500   8.1e+08     1.32        0     40.3        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+24   Others-R2H_S         C_rad_out_2H         Cs_H_out_H/NonDeC      300-1500  9.69e+09     0.89        0     35.8        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+25   Others-R2H_S         Others-C_rad_out_Cs2 Cs_H_out_2H            300-1500  8.12e+07     1.66        0     40.6        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+26   Others-R2H_S         C_rad_out_2H         Others-Cs_H_out_Cs2    300-1500  4.04e+10     0.64        0     33.9        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+27   Others-R2H_S         Others-C_rad_out_Cs2 Others-Cs_H_out_Cs2    300-1500  1.28e+10     0.97        0     38.5        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+28   Others-R2H_S         C_rad_out_H/NonDeC   Cs_H_out_H/NonDeC      300-1500  3.38e+09     0.88        0       38        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+29   Others-R2H_S         C_rad_out_H/NonDeC   Others-Cs_H_out_Cs2    300-1500  7.25e+10      0.6        0     36.9        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+30   Others-R2H_S         Others-C_rad_out_Cs2 Cs_H_out_H/NonDeC      300-1500  1.12e+09     1.19        0       39        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+31   Others-R2H_S         Cd_rad_out_double    Cs_H_out_2H            300-1500  2.44e+09     1.12        0     41.3        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+32   Others-R2H_S         C_rad_out_2H         Cd_H_out_doubleC       300-1500  2.68e+11     0.63        0     62.2        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+33   Others-R2H_S         Cd_rad_out_double    Cs_H_out_H/OneDe       300-1500  7.24e+09     0.82        0     37.5        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+34   Others-R2H_S         C_rad_out_H/OneDe    Cd_H_out_doubleC       300-1500  9.38e+10     0.71        0     62.8        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+35   Others-R2H_S         Cd_rad_out_double    Cs_H_out_OneDe         300-1500  1.67e+10     0.79        0     35.8        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+36   Others-R2H_S         C_rad_out_OneDe/Cs   Cd_H_out_doubleC       300-1500  1.03e+09     1.31        0     62.9        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+37   Others-R2H_S         C_rad_out_H/OneDe    Cs_H_out_2H            300-1500  2.06e+09     1.22        0     47.8        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+38   Others-R2H_S         C_rad_out_2H         Cs_H_out_H/OneDe       300-1500  1.41e+08     1.28        0     27.9        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+39   Others-R2H_S         C_rad_out_H/OneDe    Cs_H_out_H/NonDeC      300-1500  3.45e+10     0.75        0     45.6        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+40   Others-R2H_S         C_rad_out_H/NonDeC   Cs_H_out_H/OneDe       300-1500  8.41e+09     0.35        0     29.9        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+41   Others-R2H_S         C_rad_out_H/OneDe    Others-Cs_H_out_Cs2    300-1500  1.01e+12     0.33        0     42.3        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+42   Others-R2H_S         Others-C_rad_out_Cs2 Cs_H_out_H/OneDe       300-1500  1.47e+08     1.27        0     30.1        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+43   Others-R2H_S         C_rad_out_OneDe/Cs   Cs_H_out_2H            300-1500  7.69e+08     1.31        0     48.6        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+44   Others-R2H_S         C_rad_out_2H         Cs_H_out_OneDe         300-1500  4.89e+09     0.81        0     25.7        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+45   Others-R2H_S         C_rad_out_OneDe/Cs   Cs_H_out_H/NonDeC      300-1500  2.13e+10     0.77        0       46        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+46   Others-R2H_S         C_rad_out_H/NonDeC   Cs_H_out_OneDe         300-1500  8.83e+10      0.3        0     29.1        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+47   Others-R2H_S         C_rad_out_OneDe/Cs   Others-Cs_H_out_Cs2    300-1500  3.62e+13    -0.14        0       44        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+48   Others-R2H_S         Others-C_rad_out_Cs2 Cs_H_out_OneDe         300-1500   8.2e+09     0.65        0     31.4        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+49   R2H_D                Cd_rad_out_singleH   Cd_H_out_singleH       300-1500  7.28e+10     0.86        0     45.7        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+50   R2H_D                Cd_rad_out_singleH   Cd_H_out_singleNd      300-1500  3.24e+11     0.73        0     42.4        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+51   R2H_D                Cd_rad_out_singleNd  Cd_H_out_singleH       300-1500  1.62e+11      0.8        0     47.5        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+52   R2H_D                Cd_rad_out_singleNd  Cd_H_out_singleNd      300-1500  3.94e+11     0.69        0     44.6        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+53   Others-R2H_S         C_rad_out_Cs2_cy3    Cs_H_out_2H            300-1500  4.58e+09     1.08        0     40.4        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+54   Others-R2H_S         C_rad_out_2H         Cs_H_out_Cs2_cy3       300-1500  1.14e+10     0.81        0     46.1        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+55   Others-R2H_S         C_rad_out_Cs2_cy3    Cs_H_out_H/NonDeC      300-1500  6.33e+10     0.65        0     38.7        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+56   Others-R2H_S         C_rad_out_H/NonDeC   Cs_H_out_Cs2_cy3       300-1500  2.74e+09     0.98        0     46.6        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+57   Others-R2H_S         C_rad_out_Cs2_cy3    Others-Cs_H_out_Cs2    300-1500   5.9e+11     0.36        0     35.8        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+58   Others-R2H_S         Others-C_rad_out_Cs2 Cs_H_out_Cs2_cy3       300-1500  1.44e+08     1.39        0     47.2        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+59   Others-R2H_S         C_rad_out_2H         Cs_H_out_Cs2_cy4       300-1500  9.75e+09     0.98        0     36.6        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+60   Others-R2H_S         C_rad_out_Cs2_cy4    Cs_H_out_2H            300-1500  7.44e+08      1.2        0     41.7        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+61   Others-R2H_S         C_rad_out_H/NonDeC   Cs_H_out_Cs2_cy4       300-1500  5.64e+09        1        0     38.8        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+62   Others-R2H_S         C_rad_out_Cs2_cy4    Cs_H_out_H/NonDeC      300-1500  6.56e+09     0.81        0     39.7        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+63   Others-R2H_S         Others-C_rad_out_Cs2 Cs_H_out_Cs2_cy4       300-1500  9.31e+08     1.21        0     38.9        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+64   Others-R2H_S         C_rad_out_Cs2_cy4    Others-Cs_H_out_Cs2    300-1500  4.86e+10     0.58        0     38.2        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+65   Others-R2H_S         C_rad_out_Cs2_cy5    Cs_H_out_2H            300-1500  1.07e+09     1.19        0     42.8        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+66   Others-R2H_S         C_rad_out_2H         Cs_H_out_Cs2_cy5       300-1500  3.35e+09     0.99        0     33.7        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+67   Others-R2H_S         C_rad_out_H/NonDeC   Cs_H_out_Cs2_cy5       300-1500  3.29e+09     0.89        0     36.4        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+68   Others-R2H_S         C_rad_out_Cs2_cy5    Cs_H_out_H/NonDeC      300-1500  1.08e+10     0.81        0     41.2        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+69   Others-R2H_S         Others-C_rad_out_Cs2 Cs_H_out_Cs2_cy5       300-1500  7.48e+07     1.45        0     37.4        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+70   Others-R2H_S         C_rad_out_Cs2_cy5    Others-Cs_H_out_Cs2    300-1500  1.24e+11     1.47        0     39.8        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+71   R2H_S_cy3            C_rad_out_H/NonDeC   Cs_H_out_H/NonDeC      300-1500  2.25e+11      0.6        0       44        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+72   R2H_S_cy3            C_rad_out_H/NonDeC   Others-Cs_H_out_Cs2    300-1500  1.72e+12     0.37        0     41.6        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+73   R2H_S_cy3            Others-C_rad_out_Cs2 Others-Cs_H_out_Cs2    300-1500  5.69e+11     0.51        0     43.3        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+74   R2H_S_cy4            C_rad_out_H/NonDeC   Others-Cs_H_out_Cs2    300-1500  1.56e+12     0.24        0       39        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+75   R2H_S_cy4            Others-C_rad_out_Cs2 Cs_H_out_H/NonDeC      300-1500  1.49e+10     0.79        0     42.6        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+76   R2H_S_cy5            C_rad_out_H/NonDeC   Cs_H_out_H/NonDeC      300-1500  1.71e+11     0.61        0     41.9        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+77   R2H_S_cy5            C_rad_out_H/NonDeC   Others-Cs_H_out_Cs2    300-1500  3.72e+12     0.26        0     39.2        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+78   R2H_S_cy5            Others-C_rad_out_Cs2 Cs_H_out_H/NonDeC      300-1500  5.88e+11     0.51        0     41.7        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+79   Others-R3H_SS        C_rad_out_2H         Cs_H_out_2H            300-1500  5.76e+08     1.17        0     36.7        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+80   Others-R3H_SS        C_rad_out_2H         Cs_H_out_H/NonDeC      300-1500   5.9e+09     0.82        0     35.1        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+81   Others-R3H_SS        C_rad_out_H/NonDeC   Cs_H_out_2H            300-1500  1.19e+08     1.32        0     38.6        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+82   Others-R3H_SS        C_rad_out_H/NonDeC   Cs_H_out_H/NonDeC      300-1500   5.5e+08     1.01        0     36.4        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+83   Others-R3H_SS        C_rad_out_2H         Others-Cs_H_out_Cs2    300-1500  2.25e+10     0.66        0     32.9        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+84   Others-R3H_SS        Others-C_rad_out_Cs2 Cs_H_out_2H            300-1500  3.89e+06     1.77        0     37.9        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+85   Others-R3H_SS        C_rad_out_H/NonDeC   Others-Cs_H_out_Cs2    300-1500  7.27e+09     0.66        0     34.6        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+86   Others-R3H_SS        Others-C_rad_out_Cs2 Cs_H_out_H/NonDeC      300-1500  1.71e+07     1.41        0     36.1        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+87   Others-R3H_SS        Others-C_rad_out_Cs2 Others-Cs_H_out_Cs2    300-1500  6.78e+08        1        0     35.3        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+88   R3H_DS               Cd_rad_out_singleH   Cs_H_out_2H            300-1500   5.1e+09     0.97        0     37.7        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+89   R3H_SD               C_rad_out_2H         Cd_H_out_singleH       300-1500  2.11e+11     0.58        0     38.3        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+90   R3H_DS               Cd_rad_out_singleH   Cs_H_out_H/NonDeC      300-1500  9.23e+09     0.74        0     34.7        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+91   R3H_SD               C_rad_out_H/NonDeC   Cd_H_out_singleH       300-1500  4.16e+10     0.77        0     64.1        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+92   R3H_DS               Cd_rad_out_singleH   Others-Cs_H_out_Cs2    300-1500  6.04e+10     0.59        0     32.5        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+93   R3H_SD               Others-C_rad_out_Cs2 Cd_H_out_singleH       300-1500  8.53e+08     1.27        0     63.9        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+94   R3H_DS               Cd_rad_out_singleNd  Cs_H_out_2H            300-1500  2.58e+09     1.08        0     38.7        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+95   R3H_SD               C_rad_out_2H         Cd_H_out_singleNd      300-1500  1.91e+11     0.63        0       61        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+96   R3H_DS               Cd_rad_out_singleNd  Cs_H_out_H/NonDeC      300-1500  5.91e+09     0.86        0     35.7        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+97   R3H_SD               C_rad_out_H/NonDeC   Cd_H_out_singleNd      300-1500  3.96e+10     0.83        0     61.6        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+98   R3H_DS               Cd_rad_out_singleNd  Others-Cs_H_out_Cs2    300-1500  8.05e+09     0.86        0     33.4        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+99   R3H_SD               Others-C_rad_out_Cs2 Cd_H_out_singleNd      300-1500  6.05e+10     0.79        0       61        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+100  Others-R3H_SS        Cd_rad_out_double    Cs_H_out_2H            300-1500  7.68e+08     1.24        0     36.3        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+101  Others-R3H_SS        C_rad_out_2H         Cd_H_out_doubleC       300-1500  3.24e+08     1.14        0     41.3        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+102  Others-R3H_SS        Cd_rad_out_double    Cs_H_out_H/NonDeC      300-1500  1.66e+09     0.99        0     33.8        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+103  Others-R3H_SS        C_rad_out_H/NonDeC   Cd_H_out_doubleC       300-1500  3.37e+07     1.41        0     42.5        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+104  Others-R3H_SS        Cd_rad_out_double    Others-Cs_H_out_Cs2    300-1500   1.1e+10     0.78        0     31.7        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+105  Others-R3H_SS        Others-C_rad_out_Cs2 Cd_H_out_doubleC       300-1500   3.5e+06     1.68        0     42.3        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+106  R3H_SS_2Cd           C_rad_out_2H         Cs_H_out_2H            300-1500  3.93e+09     1.26        0     52.9        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+107  R3H_SS_2Cd           C_rad_out_2H         Cs_H_out_H/NonDeC      300-1500   4.2e+10     0.82        0     49.2        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+108  R3H_SS_2Cd           C_rad_out_H/NonDeC   Cs_H_out_2H            300-1500  5.64e+08     1.47        0     53.3        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+109  R3H_SS_2Cd           C_rad_out_2H         Others-Cs_H_out_Cs2    300-1500  1.43e+11     0.65        0     47.5        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+110  R3H_SS_2Cd           Others-C_rad_out_Cs2 Cs_H_out_2H            300-1500  7.12e+07     1.72        0     51.8        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+111  R3H_SS_2Cd           C_rad_out_H/NonDeC   Cs_H_out_H/NonDeC      300-1500  1.21e+10     0.91        0       49        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+112  R3H_SS_2Cd           C_rad_out_H/NonDeC   Others-Cs_H_out_Cs2    300-1500  3.46e+10     0.76        0     47.7        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+113  R3H_SS_2Cd           Others-C_rad_out_Cs2 Cs_H_out_H/NonDeC      300-1500  6.14e+10      0.8        0     48.1        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+114  R3H_SS_2Cd           Others-C_rad_out_Cs2 Others-Cs_H_out_Cs2    300-1500  1.76e+09     1.18        0     43.8        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+115  Others-R3H_SS        C_rad_out_H/OneDe    Cs_H_out_2H            300-1500   3.8e+09     0.99        0     48.7        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+116  Others-R3H_SS        C_rad_out_2H         Cs_H_out_H/OneDe       300-1500  1.66e+08      1.1        0     29.4        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+117  Others-R3H_SS        C_rad_out_H/OneDe    Cs_H_out_H/NonDeC      300-1500  6.77e+09     0.74        0     46.1        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+118  Others-R3H_SS        C_rad_out_H/NonDeC   Cs_H_out_H/OneDe       300-1500  3.41e+09     0.73        0     30.5        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+119  Others-R3H_SS        C_rad_out_H/OneDe    Others-Cs_H_out_Cs2    300-1500  9.06e+10     0.44        0     43.6        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+120  Others-R3H_SS        Others-C_rad_out_Cs2 Cs_H_out_H/OneDe       300-1500   6.4e+06     1.56        0     30.3        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+121  R3H_SS_12cy3         C_rad_out_H/NonDeC   Cs_H_out_2H            300-1500  2.62e+10     0.69        0     35.1        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+122  R3H_SS_23cy3         C_rad_out_2H         Cs_H_out_H/NonDeC      300-1500  1.04e+10     0.71        0     34.9        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+123  R3H_SS_12cy3         C_rad_out_H/NonDeC   Cs_H_out_H/NonDeC      300-1500  3.16e+11     0.26        0     33.5        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+124  R3H_SS_23cy3         C_rad_out_H/NonDeC   Cs_H_out_H/NonDeC      300-1500  5.63e+08     1.01        0     45.4        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+125  R3H_SS_12cy3         C_rad_out_H/NonDeC   Others-Cs_H_out_Cs2    300-1500  2.26e+13     0.26        0     32.1        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+126  R3H_SS_23cy3         Others-C_rad_out_Cs2 Cs_H_out_H/NonDeC      300-1500  2.68e+07     1.42        0     46.3        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+127  Others-R3H_SS        C_rad_out_Cs2_cy3    Cs_H_out_2H            300-1500  1.78e+09     1.04        0     36.3        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+128  Others-R3H_SS        C_rad_out_2H         Cs_H_out_Cs2_cy3       300-1500  9.72e+09     0.78        0     39.3        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+129  Others-R3H_SS        C_rad_out_Cs2_cy3    Cs_H_out_H/NonDeC      300-1500  3.39e+09     0.77        0     33.8        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+130  Others-R3H_SS        C_rad_out_H/NonDeC   Cs_H_out_Cs2_cy3       300-1500  1.73e+08     1.14        0     40.4        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+131  Others-R3H_SS        C_rad_out_Cs2_cy3    Others-Cs_H_out_Cs2    300-1500  9.08e+10     0.36        0     31.8        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+132  Others-R3H_SS        Others-C_rad_out_Cs2 Cs_H_out_Cs2_cy3       300-1500  3.86e+06     1.65        0        0        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+133  R3H_SS_12cy4         C_rad_out_H/NonDeC   Cs_H_out_2H            300-1500   2.9e+10     0.57        0     39.8        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+134  R3H_SS_23cy4         C_rad_out_2H         Cs_H_out_H/NonDeC      300-1500  3.43e+09     0.93        0     38.3        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+135  R3H_SS_12cy4         C_rad_out_H/NonDeC   Cs_H_out_H/NonDeC      300-1500   1.9e+11     0.27        0     37.9        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+136  R3H_SS_23cy4         C_rad_out_H/NonDeC   Cs_H_out_H/NonDeC      300-1500  2.59e+08      1.2        0     39.7        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+137  R3H_SS_12cy4         C_rad_out_H/NonDeC   Others-Cs_H_out_Cs2    300-1500  1.63e+12    -0.04        0       37        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+138  R3H_SS_23cy4         Others-C_rad_out_Cs2 Cs_H_out_H/NonDeC      300-1500  2.19e+07     1.55        0     40.1        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+139  Others-R3H_SS        C_rad_out_Cs2_cy4    Cs_H_out_2H            300-1500  1.08e+08     1.25        0     39.6        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+140  Others-R3H_SS        C_rad_out_2H         Cs_H_out_Cs2_cy4       300-1500  5.09e+09     0.84        0     34.5        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+141  Others-R3H_SS        C_rad_out_Cs2_cy4    Cs_H_out_H/NonDeC      300-1500  3.05e+08     0.99        0     37.5        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+142  Others-R3H_SS        C_rad_out_H/NonDeC   Cs_H_out_Cs2_cy4       300-1500  5.69e+08     0.97        0     35.9        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+143  Others-R3H_SS        C_rad_out_Cs2_cy4    Others-Cs_H_out_Cs2    300-1500   8.2e+09     0.54        0     35.5        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+144  Others-R3H_SS        Others-C_rad_out_Cs2 Cs_H_out_Cs2_cy4       300-1500  3.49e+07     1.38        0     35.4        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+145  R3H_SS_12cy5         C_rad_out_H/NonDeC   Cs_H_out_2H            300-1500  6.85e+10      0.6        0     40.8        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+146  R3H_SS_23cy5         C_rad_out_2H         Cs_H_out_H/NonDeC      300-1500  1.25e+09     0.99        0     34.8        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+147  R3H_SS_12cy5         C_rad_out_H/NonDeC   Cs_H_out_H/NonDeC      300-1500  3.67e+11     0.29        0     38.2        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+148  R3H_SS_23cy5         C_rad_out_H/NonDeC   Cs_H_out_H/NonDeC      300-1500  2.42e+08     1.14        0       36        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+149  R3H_SS_12cy5         C_rad_out_H/NonDeC   Others-Cs_H_out_Cs2    300-1500  9.42e+11     0.12        0     37.4        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+150  R3H_SS_23cy5         Others-C_rad_out_Cs2 Cs_H_out_H/NonDeC      300-1500  1.58e+06     1.78        0     39.7        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+151  Others-R3H_SS        C_rad_out_Cs2_cy5    Cs_H_out_2H            300-1500  3.14e+08     1.26        0     41.1        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+152  Others-R3H_SS        C_rad_out_2H         Cs_H_out_Cs2_cy5       300-1500   6.9e+09     0.82        0     32.9        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+153  Others-R3H_SS        C_rad_out_Cs2_cy5    Cs_H_out_H/NonDeC      300-1500  4.25e+08     1.01        0     39.1        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+154  Others-R3H_SS        C_rad_out_H/NonDeC   Cs_H_out_Cs2_cy5       300-1500   7.5e+08      0.9        0     34.2        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+155  Others-R3H_SS        C_rad_out_Cs2_cy5    Others-Cs_H_out_Cs2    300-1500  1.97e+10     0.46        0     37.3        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+156  Others-R3H_SS        Others-C_rad_out_Cs2 Cs_H_out_Cs2_cy5       300-1500  2.21e+08     1.04        0     34.2        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+157  R3H_SS_12cy3         Others-C_rad_out_Cs2 Cs_H_out_2H            300-1500  8.64e+09     0.84        0      6.5        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+158  R3H_SS_23cy3         C_rad_out_2H         Others-Cs_H_out_Cs2    300-1500  5.02e+10     0.56        0     42.7        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+159  R3H_SS_12cy3         Others-C_rad_out_Cs2 Cs_H_out_H/NonDeC      300-1500  1.22e+11      0.4        0     34.8        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+160  R3H_SS_23cy3         C_rad_out_H/NonDeC   Others-Cs_H_out_Cs2    300-1500  4.34e+09     0.81        0     43.6        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+161  R3H_SS_12cy3         Others-C_rad_out_Cs2 Others-Cs_H_out_Cs2    300-1500  2.72e+12    -0.04        0     33.4        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+162  R3H_SS_23cy3         Others-C_rad_out_Cs2 Others-Cs_H_out_Cs2    300-1500  1.61e+08     1.26        0       42        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+163  R3H_SS_13cy4         C_rad_out_H/NonDeC   Cs_H_out_H/NonDeC      300-1500  1.78e+11     0.29        0     54.3        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+164  R3H_SS_13cy4         Others-C_rad_out_Cs2 Cs_H_out_H/NonDeC      300-1500  2.48e+10      0.6        0     54.6        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+165  R3H_SS_13cy4         C_rad_out_H/NonDeC   Others-Cs_H_out_Cs2    300-1500  2.66e+12        0        0     51.4        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+166  R3H_SS_13cy4         Others-C_rad_out_Cs2 Others-Cs_H_out_Cs2    300-1500  3.55e+11     0.37        0     51.7        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+167  R3H_SS_13cy5         C_rad_out_H/NonDeC   Cs_H_out_H/NonDeC      300-1500  1.36e+11     0.46        0     47.2        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+168  R3H_SS_13cy5         Others-C_rad_out_Cs2 Cs_H_out_H/NonDeC      300-1500  5.72e+09     0.86        0     47.2        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+169  R3H_SS_13cy5         C_rad_out_H/NonDeC   Others-Cs_H_out_Cs2    300-1500   1.1e+12     0.23        0     44.4        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+170  R3H_SS_13cy5         Others-C_rad_out_Cs2 Others-Cs_H_out_Cs2    300-1500  6.07e+10     0.62        0     43.4        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+171  R3H_SS_12cy5         Others-C_rad_out_Cs2 Cs_H_out_2H            300-1500  1.84e+09     1.05        0     41.1        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+172  R3H_SS_23cy5         C_rad_out_2H         Others-Cs_H_out_Cs2    300-1500  4.51e+09     0.86        0     33.5        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+173  R3H_SS_12cy5         Others-C_rad_out_Cs2 Cs_H_out_H/NonDeC      300-1500  5.04e+09     0.74        0     38.8        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+174  R3H_SS_23cy5         C_rad_out_H/NonDeC   Others-Cs_H_out_Cs2    300-1500  1.95e+09     0.88        0     35.1        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+175  R3H_SS_12cy5         Others-C_rad_out_Cs2 Others-Cs_H_out_Cs2    300-1500  1.44e+10     0.74        0     37.5        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+176  R3H_SS_23cy5         Others-C_rad_out_Cs2 Others-Cs_H_out_Cs2    300-1500  2.85e+07     1.46        0     36.4        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+177  R3H_SS_12cy4         Others-C_rad_out_Cs2 Cs_H_out_2H            300-1500  8.28e+08     1.07        0     40.7        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+178  R3H_SS_23cy4         C_rad_out_2H         Others-Cs_H_out_Cs2    300-1500  1.93e+10     0.75        0     36.5        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+179  R3H_SS_12cy4         Others-C_rad_out_Cs2 Cs_H_out_H/NonDeC      300-1500  4.41e+09     0.77        0     38.8        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+180  R3H_SS_23cy4         C_rad_out_H/NonDeC   Others-Cs_H_out_Cs2    300-1500  1.96e+09     0.96        0     38.4        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+181  R3H_SS_12cy4         Others-C_rad_out_Cs2 Others-Cs_H_out_Cs2    300-1500  2.37e+10     0.62        0     37.6        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+182  R3H_SS_23cy4         Others-C_rad_out_Cs2 Others-Cs_H_out_Cs2    300-1500  4.96e+07     1.46        0     39.4        0        0        0        0  2     Sumathy B3LYP/CCPVDZ calculations
+183  R3H_SS_OC            O_rad_out            Cs_H_out_2H            300-1500  4.71e+08     1.45        0     42.3        0        0        0        0  2     Sumathy CBS-Q calculations
+184  R3H_SS_OC            O_rad_out            Cs_H_out_H/NonDeC      300-1500  6.66e+08     1.28        0     39.7        0        0        0        0  2     Sumathy CBS-Q calculations
+185  R3H_SS_OC            O_rad_out            Cs_H_out_H/(NonDeC/Cs)   300-1500  2.43e+09     1.17        0     39.7        0        0        0        0  2     Sumathy CBS-Q calculations
+186  R3H_SS_OC            O_rad_out            Cs_H_out_H/(NonDeC/Cs/Cs)   300-1500  1.07e+10     0.98        0     39.6        0        0        0        0  2     Sumathy CBS-Q calculations
+187  R3H_SS_OC            O_rad_out            Cs_H_out_H/(NonDeC/Cs/Cs/Cs)   300-1500  6.62e+09     1.04        0     39.3        0        0        0        0  2     Sumathy CBS-Q calculations
+188  R3H_SS_OC            O_rad_out            Others-Cs_H_out_Cs2    300-1500  4.97e+09     1.01        0     38.5        0        0        0        0  2     Sumathy CBS-Q calculations
+189  R4H_SSS_OOCsCs       O_rad_out            Cs_H_out_2H            300-1500  1.99e+11     0.15        0     34.2        0        0        0        0  2     Sumathy CBS-Q calculations
+190  R4H_SSS_OO(Cs/Cs)Cs  O_rad_out            Cs_H_out_2H            300-1500  6.38e+08     1.06        0     33.5        0        0        0        0  2     Sumathy CBS-Q calculations
+191  R4H_SSS_OO(Cs/Cs/Cs)Cs O_rad_out            Cs_H_out_2H            300-1500  5.06e+08      1.2        0     33.5        0        0        0        0  2     Sumathy CBS-Q calculations
+192  R4H_SSS_OOCsCs       O_rad_out            Cs_H_out_H/NonDeC      300-1500     2e+08      1.1        0     30.1        0        0        0        0  2     
+193  R4H_SSS_OO(Cs/Cs)Cs  O_rad_out            Cs_H_out_H/NonDeC      300-1500  9.81e+08     0.88        0     29.5        0        0        0        0  2     
+194  R4H_SSS_OO(Cs/Cs/Cs)Cs O_rad_out            Cs_H_out_H/NonDeC      300-1500  3.53e+09     0.69        0     30.1        0        0        0        0  2     
+195  R4H_SSS_OOCsCs       O_rad_out            Others-Cs_H_out_Cs2    300-1500  2.64e+09     0.78        0     27.1        0        0        0        0  2     
+196  R4H_SSS_OO(Cs/Cs)Cs  O_rad_out            Others-Cs_H_out_Cs2    300-1500  9.25e+09     0.57        0     27.3        0        0        0        0  2     
+197  R4H_SSS_OO(Cs/Cs/Cs)Cs O_rad_out            Others-Cs_H_out_Cs2    300-1500  4.87e+10     0.35        0     26.4        0        0        0        0  2     
+198  R5H_SSSS_OOCCC       O_rad_out            Cs_H_out_2H            300-1500  1.69e+06     1.55        0       21        0        0        0        0  2     CBS-QB3 and BH&HLYP calculations (Catherina Wijaya & Sumathy Raman).
+199  R5H_SSSS_OO(Cs/Cs)Cs O_rad_out            Cs_H_out_2H            300-1500  6.78e+06     1.35        0     20.8        0        0        0        0  2     CBS-QB3 and BH&HLYP calculations (Catherina Wijaya & Sumathy Raman).
+200  R5H_SSSS_OO(Cs/Cs/Cs)Cs O_rad_out            Cs_H_out_2H            300-1500  4.35e+07     1.12        0     21.9        0        0        0        0  2     CBS-QB3 and BH&HLYP calculations (Catherina Wijaya & Sumathy Raman).
+201  R5H_SSSS_OOCs(Cs/Cs) O_rad_out            Cs_H_out_2H            300-1500  1.41e+07     1.32        0     21.5        0        0        0        0  2     CBS-QB3 and BH&HLYP calculations (Catherina Wijaya & Sumathy Raman).
+202  R5H_SSSS_OOCs(Cs/Cs/Cs) O_rad_out            Cs_H_out_2H            300-1500  1.09e+08     1.23        0     21.6        0        0        0        0  2     CBS-QB3 and BH&HLYP calculations (Catherina Wijaya & Sumathy Raman).
+203  R5H_SSSS_OOCCC       O_rad_out            Cs_H_out_H/NonDeC      300-1500  8.94e+06     1.26        0     18.2        0        0        0        0  2     CBS-QB3 and BH&HLYP calculations (Catherina Wijaya & Sumathy Raman).
+204  R5H_SSSS_OO(Cs/Cs)Cs O_rad_out            Cs_H_out_H/NonDeC      300-1500  3.38e+10     0.21        0     18.5        0        0        0        0  2     CBS-QB3 and BH&HLYP calculations (Catherina Wijaya & Sumathy Raman).
+205  R5H_SSSS_OOCCC       O_rad_out            Others-Cs_H_out_Cs2    300-1500  3.17e+08     1.15        0     15.4        0        0        0        0  2     CBS-QB3 and BH&HLYP calculations (Catherina Wijaya & Sumathy Raman).
+206  R6H_SSSSS_OO         O_rad_out            Cs_H_out_2H            300-1500  3.69e+05     1.52        0     20.1        0        0        0        0  2     CBS-QB3 and BH&HLYP calculations (Catherina Wijaya & Sumathy Raman).
+207  R6H_SSSSS_OO         O_rad_out            Cs_H_out_H/NonDeC      300-1500  1.62e+06     1.22        0     16.6        0        0        0        0  2     Curran's [8] estimation in reaction type 19, QOOH = cyclic ether + OH
+208  R6H_SSSSS_OO         O_rad_out            Others-Cs_H_out_Cs2    300-1500  1.48e+06     1.22        0     13.8        0        0        0        0  2     Curran's [8] estimation in reaction type 19, QOOH = cyclic ether + OH
+209  R7H_OOCs4            O_rad_out            Cs_H_out_2H            300-1500  9.06e+04     1.51        0     19.9        0        0        0        0  2     Curran's [8] estimation in reaction type 19, QOOH = cyclic ether + OH
+210  R7H_OOCs4            O_rad_out            Cs_H_out_H/NonDeC      300-1500  1.37e+06     0.99        0     18.2        0        0        0        0  2     Curran's [8] estimation in reaction type 19, QOOH = cyclic ether + OH
+211  R7H_OOCs4            O_rad_out            Others-Cs_H_out_Cs2    300-1500  5.62e+05     1.09        0     14.3        0        0        0        0  2     
+212  Others-R2H_S         C_rad_out_2H         Cs_H_out_H/(CCCOOH)    300-1500  4.07e+09     0.99        0     37.3        0        0        0        0  2     CBS-QB3 calculations (Catherina Wijaya).
+213  Others-R2H_S         C_rad_out_H/NonDeC   Cs_H_out_H/(CCCOOH)    300-1500   6.7e+08     1.15        0       39        0        0        0        0  2     CBS-QB3 calculations (Catherina Wijaya).
+214  Others-R2H_S         Others-C_rad_out_Cs2 Cs_H_out_H/(CCCOOH)    300-1500  3.56e+07     1.53        0     40.6        0        0        0        0  2     CBS-QB3 calculations (Catherina Wijaya).
+215  Others-R2H_S         C_rad_out_2H         Cs_H_out_H/((C/C)CCOOH)   300-1500  2.83e+11     0.45        0     35.9        0        0        0        0  2     CBS-QB3 calculations (Catherina Wijaya).
+216  Others-R2H_S         C_rad_out_H/NonDeC   Cs_H_out_H/((C/C)CCOOH)   300-1500  6.89e+10     0.43        0     38.9        0        0        0        0  2     CBS-QB3 calculations (Catherina Wijaya).
+217  Others-R2H_S         C_rad_out_2H         Cs_H_out_H/(CCOOH)     300-1500  5.87e+08     1.28        0     36.7        0        0        0        0  2     CBS-QB3 calculations (Catherina Wijaya).
+218  Others-R2H_S         C_rad_out_H/NonDeC   Cs_H_out_H/(CCOOH)     300-1500  1.75e+08     1.29        0     37.9        0        0        0        0  2     CBS-QB3 calculations (Catherina Wijaya).
+219  Others-R2H_S         Others-C_rad_out_Cs2 Cs_H_out_H/(CCOOH)     300-1500  2.14e+08     1.42        0     38.7        0        0        0        0  2     CBS-QB3 calculations (Catherina Wijaya).
+220  Others-R2H_S         C_rad_out_2H         Cs_H_out_H/((C/C)COOH)   300-1500  4.28e+09     1.12        0     34.7        0        0        0        0  2     Sumathy's CBS-QB3 calculations.
+221  Others-R2H_S         C_rad_out_H/NonDeC   Cs_H_out_H/((C/C)COOH)   300-1500  3.53e+10     0.68        0     37.4        0        0        0        0  2     Sumathy's CBS-QB3 calculations.
+222  Others-R2H_S         Others-C_rad_out_Cs2 Cs_H_out_H/((C/C)COOH)   300-1500  1.24e+09     1.11        0     39.4        0        0        0        0  2     Sumathy's CBS-QB3 calculations.
+223  Others-R3H_SS        C_rad_out_2H         Cs_H_out_H/(CCOOH)     300-1500  6.02e+08     1.11        0     36.6        0        0        0        0  2     Sumathy's CBS-QB3 calculations.
+224  Others-R3H_SS        C_rad_out_H/NonDeC   Cs_H_out_H/(CCOOH)     300-1500  1.63e+07     1.54        0     37.3        0        0        0        0  2     Sumathy's CBS-QB3 calculations.
+225  Others-R3H_SS        Others-C_rad_out_Cs2 Cs_H_out_H/(CCOOH)     300-1500  3.13e+05     2.04        0     36.6        0        0        0        0  2     Sumathy's CBS-QB3 calculations.
+226  Others-R3H_SS        C_rad_out_2H         Cs_H_out_H/((C/C)COOH)   300-1500  6.95e+09     0.79        0     34.7        0        0        0        0  2     Sumathy's CBS-QB3 calculations.
+227  Others-R3H_SS        C_rad_out_H/NonDeC   Cs_H_out_H/((C/C)COOH)   300-1500  3.53e+10     0.68        0     37.4        0        0        0        0  2     Sumathy's CBS-QB3 calculations.
+228  Others-R3H_SS        Others-C_rad_out_Cs2 Cs_H_out_H/((C/C)COOH)   300-1500  4.44e+09      0.8        0     35.8        0        0        0        0  2     Sumathy's CBS-QB3 calculations.
+229  Others-R3H_SS        C_rad_out_2H         Cs_H_out_H/(COOH)      300-1500  1.51e+08     1.16        0     36.2        0        0        0        0  2     Sumathy's CBS-QB3 calculations.
+230  Others-R3H_SS        C_rad_out_H/NonDeC   Cs_H_out_H/(COOH)      300-1500  1.37e+07     1.36        0     37.1        0        0        0        0  2     
+231  Others-R3H_SS        Others-C_rad_out_Cs2 Cs_H_out_H/(COOH)      300-1500  4.08e+06     1.55        0     36.7        0        0        0        0  2     
+232  Others-R3H_SS        C_rad_out_2H         Cs_H_out_H/((C/C)OOH)   300-1500  4.69e+09     0.68        0     34.8        0        0        0        0  2     
+233  Others-R3H_SS        C_rad_out_H/NonDeC   Cs_H_out_H/((C/C)OOH)   300-1500  5.18e+08     0.87        0     36.1        0        0        0        0  2     
+234  Others-R3H_SS        Others-C_rad_out_Cs2 Cs_H_out_H/((C/C)OOH)   300-1500  1.07e+07     1.37        0     35.7        0        0        0        0  2     
+235  R4H_SSS              C_rad_out_2H         Cs_H_out_H/(COOH)      300-1500  8.73e+06     1.13        0     18.9        0        0        0        0  2     
+236  R4H_SSS              C_rad_out_H/NonDeC   Cs_H_out_H/(COOH)      300-1500  6.95e+05     1.38        0     19.7        0        0        0        0  2     
+237  R4H_SSS              Others-C_rad_out_Cs2 Cs_H_out_H/(COOH)      300-1500  1.74e+04     1.89        0     18.5        0        0        0        0  2     
+238  R4H_SSS              C_rad_out_2H         Cs_H_out_H/((C/C)OOH)   300-1500  1.09e+09     0.55        0     17.4        0        0        0        0  2     
+239  R4H_SSS              C_rad_out_H/NonDeC   Cs_H_out_H/((C/C)OOH)   300-1500  7.86e+07     0.84        0     15.4        0        0        0        0  2     
+240  R4H_SSS              Others-C_rad_out_Cs2 Cs_H_out_H/((C/C)OOH)   300-1500  1.05e+06     1.39        0     16.2        0        0        0        0  2     
+241  R3H_SS_OC            O_rad_out            Cs_H_out_H/NonDeO      300-1500     3e+08     1.23        0     36.9        0        0        0        0  3     Sandeep's DFT/CBSB7 level of calculations.
+242  R3H_SS_OC            O_rad_out            Cs_H_out_NDMustO       300-1500     3e+08     1.23        0     36.9        0        0        0        0  3     Sandeep's DFT/CBSB7 level of calculations.
+243  R4H_SSS_OOCsCs       O_rad_out            Cs_H_out_H/NonDeO      300-1500  1.61e+08     1.09        0     26.1        0        0        0        0  3     Sandeep's DFT/CBSB7 level of calculations.
+244  R4H_SSS_OOCsCs       O_rad_out            Cs_H_out_NDMustO       300-1500  5.29e+09     0.75        0     24.8        0        0        0        0  3     Sandeep's DFT/CBSB7 level of calculations.
+245  R4H_SSS_OO(Cs/Cs)Cs  O_rad_out            Cs_H_out_H/NonDeO      300-1500   9.2e+08     0.82        0     26.3        0        0        0        0  3     Sandeep's DFT/CBSB7 level of calculations.
+246  R4H_SSS_OO(Cs/Cs)Cs  O_rad_out            Cs_H_out_NDMustO       300-1500  1.18e+11     0.51        0     26.2        0        0        0        0  3     Sandeep's DFT/CBSB7 level of calculations.
+247  R5H_SSSS_OOCCC       O_rad_out            Cs_H_out_H/NonDeO      300-1500  1.15e+04     2.11        0     15.5        0        0        0        0  3     Sandeep's DFT/CBSB7 level of calculations.
+248  R5H_SSSS_OOCCC       O_rad_out            Cs_H_out_NDMustO       300-1500   1.9e+07      1.1        0     15.4        0        0        0        0  3     Sandeep's DFT/CBSB7 level of calculations.
+249  R5H_SSSS_OO(Cs/Cs)Cs O_rad_out            Cs_H_out_H/NonDeO      300-1500  2.29e+08     1.12        0     15.4        0        0        0        0  3     Sandeep's DFT/CBSB7 level of calculations.
+250  R5H_SSSS_OO(Cs/Cs)Cs O_rad_out            Cs_H_out_NDMustO       300-1500  1.17e+11     0.43        0     15.4        0        0        0        0  3     Sandeep's DFT/CBSB7 level of calculations.
+251  R6H_SSSSS_OO         O_rad_out            Cs_H_out_H/NonDeO      300-1500       549     2.21        0     14.4        0        0        0        0  3     Sandeep's DFT/CBSB7 level of calculations.
+252  R6H_SSSSS_OO         O_rad_out            Cs_H_out_NDMustO       300-1500  7.23e+04     1.65        0       12        0        0        0        0  3     Sandeep's DFT/CBSB7 level of calculations.
+253  R7H_OOCs4            O_rad_out            Cs_H_out_H/NonDeO      300-1500  9.33e+05     0.75        0     12.8        0        0        0        0  3     Sandeep's DFT/CBSB7 level of calculations.
+254  R7H_OOCs4            O_rad_out            Cs_H_out_NDMustO       300-1500  3.41e+06     1.09        0     12.5        0        0        0        0  3     Sandeep's DFT/CBSB7 level of calculations.
+255  R4H_SDS              C_rad_out_2H         Cd_H_out_doubleC       300-1600  1.32e+06     1.62        0     44.1        0        0        0        0  3     Sandeep's CBS-QB3 calculations.
+256  R4H_SDS              Cd_rad_out_double    Cs_H_out_2H            300-1600  1.11e+08     1.19        0     24.8        0        0        0        0  3     Sandeep's CBS-QB3 calculations.
+257  R5H_SMSD             C_rad_out_2H         Cd_H_out_singleH       300-1600  2.19e+05     1.76        0     38.3        0        0        0        0  3     Sandeep's CBS-QB3 calculations.
+258  R5H_DSMS             Cd_rad_out_singleH   Cs_H_out_2H            300-1600  1.36e+05     1.92        0      7.9        0        0        0        0  3     Sandeep's CBS-QB3 calculations.
+259  R3H_SD               C_rad_out_2H         Cd_H_out_singleDe      300-1600  1.59e+07     1.46        0     66.3        0        0        0        0  3     Sandeep's CBS-QB3 calculations.
+260  R3H_DS               Cd_rad_out_singleDe  Cs_H_out_2H            300-1600  1.28e+09     1.05        0     46.1        0        0        0        0  3     Sandeep's CBS-QB3 calculations.

@@ -1,0 +1,71 @@
+
+// rate library for f06: radical recombination
+// Originally from rate_library_4.txt, Cath, 03/07/28
+
+// jing, define key word for format of the rate: either Arrhenius or Arrhenius_EP
+Arrhenius_EP
+
+// Catherina Wijaya thesis pg 156
+//f06_radical_recombination
+
+//No.		Y_rad			Y_rad			Temp.		A			n	a		E0		DA		Dn		Da		DE0		Rank	Comments
+//441.		C_methyl		C_rad/Cs3		300-2500	1.63E+13	0		0		-0.60	*2.0	0		0		0		4	Tsang [92] literature review.
+	
+
+//#  Group1             Group2                TempRange         A        n    alpha       E0       DA       Dn   Dalpha      DE0  Rank  Comment
+0    Y_rad                Y_rad                  300-1500     1e+13        0        0        0        0        0        0        0  0     Default
+1    H_rad                H_rad                  278-372   1.09e+11        0        0      1.5        0        0        0        0  5     Dingle et al. [167]
+2    H_rad                C_methyl               300-2000  1.93e+14        0        0     0.27        0        0        0        0  3     Takahashi et al. [168] Transition state theory.
+3    H_rad                C_methyl               300-1000  2.11e+14        0        0        0       *2        0        0        0  4     Baulch et al. [94] literature review.
+4    H_rad                C_rad/H2/Cs               298       1e+14        0        0        0    1e+13        0        0        0  5     Sillensen et al [169]
+5    H_rad                C_rad/H/NonDeC         300-2000     2e+13        0        0        0    *3.16        0        0        0  4     Warnatz [134] literature review.
+6    H_rad                C_rad/H/NonDeC            298     1.5e+14        0        0        0    3e+13        0        0        0  5     Munk et al. [170]
+7    H_rad                Cd_pri_rad                298    1.21e+14        0        0        0 4.82e+13        0        0        0  3     Fahr et al. [171]
+8    H_rad                Cd_pri_rad             700-1300  5.36e+14        0        0     0.98        0        0        0        0  3     Duran et al. [165]
+9    H_rad                Ct_rad                 300-2500  1.81e+14        0        0        0       *3        0        0        0  4     Tsang [89] literature review.
+10   H_rad                Cb_rad                 300-1200   2.2e+14        0        0        0    8e+13        0        0        0  3     Davis et al. [172] Ackermann et al. [173] Emdee et al. [172b]
+11   H_rad                CO_pri_rad            1500-1900  4.68e+10        0        0    -4.53        0        0        0        0  4     Tsuboi et al. [174]
+12   H_rad                O_pri_rad              300-2100  1.62e+14        0        0     0.15        0        0        0        0  3     Cobos et al. [106]
+13   C_methyl             C_methyl               300-2000  8.26e+17     -1.4        0        1        0        0        0        0  3     Pesa et al. [175]
+14   C_methyl             C_methyl               300-2000  3.61e+13        0        0        0       *2        0        0        0  4     Baulch et al. [94] literature review.
+15   C_methyl             C_rad/H2/Cs            300-2000  3.37e+13        0        0        0       *2        0        0        0  4     Baulch et al. [94] literature review.
+16   C_methyl             C_rad/H/NonDeC         713-1800  6.64e+14    -0.57        0        0        0        0        0        0  4     Tsang [176] RRK(M) extrapolation.
+17   C_methyl             C_rad/Cs3              300-2500  4.88e+15       -1        0        0       *2        0        0        0  4     Tsang [92] literature review.
+18   C_methyl             Cd_pri_rad                298    7.23e+13        0        0        0 1.81e+13        0        0        0  3     Fahr et al. [171]
+19   C_methyl             Cb_rad                 300-980   1.38e+13        0        0    0.046    8e+11        0        0    0.072  3     Tokmakov et al. [177]
+20   C_methyl             Cb_rad                 424-972   1.39e+13        0        0     0.03    7e+11        0        0     0.07  3     Park et al. [178]
+21   C_methyl             CO_pri_rad             300-2500  1.81e+13        0        0        0       *2        0        0        0  4     Tsang [89] literature review.
+22   C_methyl             CO_rad/NonDe              298     4.2e+13        0        0        0  8.4e+12        0        0        0  4     Hassinen et al [179]
+23   C_methyl             CO_rad/NonDe           300-2500  4.04e+15     -0.8        0        0     *1.5        0        0        0  4     Tsang [89] literature review.
+24   C_methyl             O_pri_rad              300-2000  6.03e+13        0        0        0       *2        0        0        0  4     Baulch et al. [94] literature review.
+25   C_methyl             O_rad/NonDe            300-2500  1.21e+13        0        0        0       *5        0        0        0  4     Tsang [89] literature review.
+26   C_rad/H2/Cs          C_rad/H2/Cs            300-1200  1.15e+13        0        0        0       *2        0        0        0  4     Baulch et al. [95] literature review.
+27   C_rad/H2/Cs          C_rad/H/NonDeC         300-2500  1.15e+14    -0.35        0        0       *2        0        0        0  4     Tsang [91] literature review.
+28   C_rad/H2/Cs          C_rad/Cs3              300-2500  6.91e+14    -0.75        0        0       *2        0        0        0  4     Tsang [92] literature review.
+29   C_rad/H2/Cs          CO_pri_rad             300-2500  1.81e+13        0        0        0       *3        0        0        0  4     Tsang [89] literature review.
+30   C_rad/H2/Cs          CO_rad/NonDe           300-2500  3.12e+14     -0.5        0        0       *3        0        0        0  4     Tsang [89] literature review.
+31   C_rad/H2/Cs          O_pri_rad              200-400    7.7e+13        0        0        0    1e+13        0        0        0  4     Fagerstrom et al. [180]
+32   C_rad/H/NonDeC       C_rad/H/NonDeC         300-2500  3.25e+14     -0.7        0        0       *2        0        0        0  4     Tsang [91] literature review.
+33   C_rad/H/NonDeC       C_rad/Cs3              300-2500  4.12e+15     -1.1        0        0     *1.5        0        0        0  4     Tsang [92] literature review.
+34   C_rad/H/NonDeC       CO_rad/NonDe           300-2500  6.64e+13    -0.35        0        0       *2        0        0        0  4     Tsang [91] literature review.
+35   C_rad/H/NonDeC       O_rad/NonDe            300-2500  6.03e+12        0        0        0       *5        0        0        0  4     Tsang [91] literature review.
+36   C_rad/Cs3            C_rad/Cs3              300-2500  1.24e+16     -1.5        0        0       *2        0        0        0  4     Tsang [92] literature review.
+37   C_rad/Cs3            CO_pri_rad             300-2500  1.21e+13        0        0        0       *5        0        0        0  4     Tsang [92] literature review.
+38   C_rad/Cs3            CO_rad/NonDe           300-2500  7.75e+14    -0.75        0        0       *2        0        0        0  4     Tsang [92] literature review.
+39   C_rad/Cs3            O_rad/NonDe            300-2500  9.04e+12        0        0        0       *3        0        0        0  4     Tsang [92] literature review.
+40   Cd_pri_rad           Cd_pri_rad                298    7.23e+13        0        0        0  1.2e+13        0        0        0  4     Fahr et al. [171]
+41   Cd_pri_rad           Ct_rad                 700-1300     1e+14        0        0        0        0        0        0        0  3     Duran et al. [165]
+42   Cd_pri_rad           CO_pri_rad             300-2500  1.81e+13        0        0        0       *3        0        0        0  4     Tsang [89] literature review.
+43   Cb_rad               Cb_rad                1100-1400   5.7e+12        0        0        0        0        0        0        0  3     Heckmann et al. [124]
+44   Cb_rad               Cb_rad                 300-500   1.39e+13        0        0     0.11  1.1e+12        0        0    0.072  3     Park et al. [181]
+45   CO_pri_rad           CO_pri_rad                298    1.51e+13        0        0        0 6.02e+12        0        0        0  3     Stoeckel et al. [182]
+46   CO_pri_rad           CO_rad/NonDe           300-2500  1.81e+13        0        0        0       *3        0        0        0  4     Tsang [89] literature review.
+47   CO_rad/NonDe         CO_rad/NonDe           300-2500  1.21e+13        0        0        0       *2        0        0        0  4     Tsang [89] literature review.
+48   O_pri_rad            O_pri_rad              200-400   1.57e+13        0        0        0 6.02e+12      0.5        0        0  4     DeMore et al. [183] literature review.
+49   O_rad/NonDe          O_rad/NonDe            300-2500  1.81e+12        0        0        0       *5        0        0        0  4     Tsang [89] literature review.
+50   H_rad                Cs_rad                 300-1500     5e+13        0        0        0        0        0        0        0  5     Curran's [8] estimation.
+51   C_methyl             C_ter_rad              300-1500  1.63e+13        0        0    0.596        0        0        0        0  5     Curran's [8] estimation.
+52   C_methyl             C_sec_rad              300-1500   6.8e+14    -0.68        0        0        0        0        0        0  5     Curran's [8] estimation.
+53   C_pri_rad            C_sec_rad              300-1500  4.79e+14    -0.75        0        0        0        0        0        0  5     Curran's [8] estimation.
+54   C_pri_rad            C_ter_rad              300-1500  3.59e+14    -0.75        0        0        0        0        0        0  5     Curran's [8] estimation.
+55   O_pri_rad            O_sec_rad              300-1500     2e+13        0        0        0        0        0        0        0  5     Curran's [159] estimation.
