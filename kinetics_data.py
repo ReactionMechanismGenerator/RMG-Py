@@ -219,6 +219,8 @@ class Arrhenius:
         if kw.has_key('alpha'): self.alpha = Parameter(kw['alpha'])
         if kw.has_key('E0'): self.E0 = Parameter(kw['E0'])
         
+        self.reaction_order = None # this has to be set later, due to scope of variables
+        
     def __repr__(self):
         if self.Ea is not None:
             out = """Arrhenius( A=%s,
@@ -241,7 +243,9 @@ class Arrhenius:
         else:
             alpha = self.alpha
             E0 = self.E0
-        if self.A.units == "cm^3/mol/s":
+        if self.reaction_order==2 and self.A.units=='cm^3/mol/s':
+            Aunitscale = 1.0
+        elif self.reaction_order==1 and self.A.units=='1/s':
             Aunitscale = 1.0
         else:
             raise NotImplementedError("Unit conversion not yet implemented")
@@ -451,41 +455,51 @@ data_destination = os.path.join('output','RMG_database')
 db = loadKineticsDatabases( data_source )
 logger.setLevel(old_level)
 
+
+
 for family_name,family in db.families.iteritems():
     logging.info("Now processing family: %s"%family_name)
     _rates = []
     
     library_file_name = os.path.join(data_source,'kinetics_groups',family_name,'library.py')
     library_file = open(library_file_name)
-    context = { '_rates': _rates,
-              'rate': rate,
-              'Arrhenius':Arrhenius,
-              'Parameter':Parameter,
-              "__builtins__":None
-              }
+    global reaction_order
+    local_context = { '__builtins__':None,
+                      '_rates': _rates,
+                      'rate': rate,
+                      'Arrhenius':Arrhenius,
+                      'Parameter':Parameter,
+                    }
+    global_context = {'__builtins__':None,
+                      }
     logging.info("Importing %s"%library_file_name)
     # TODO: check library_file is safe. Perhaps with http://code.activestate.com/recipes/496746-restricted-safe-eval/
     # although I think limiting the context may be ample protection:
     try:
-        exec library_file in {"__builtins__":None}, context
+        exec library_file in global_context, local_context
     except NameError, e:
         logging.error("Looks like the file %s had an illegal operator in it:"%library_file_name)
         logging.error(e)
         raise
     finally:
         library_file.close()
-    _rates = context['_rates']
-    unread_lines = context['unread_lines']
-    file_header = context['header']
+    _rates = local_context['_rates']
+    unread_lines = local_context['unread_lines']
+    file_header = local_context['header']
+    reaction_order = local_context['reaction_order']
     
-    assert family_name==context['reaction_family_name']
+    assert family_name==local_context['reaction_family_name']
+    
+    # set reaction orders
+    for r in _rates:
+        r.kf.reaction_order = reaction_order
     
     for r in _rates:
         #logging.verbose("="*80)
         for group in r.groups:
             group.locateInFamily(family)
             #group._structure.updateAtomTypes()
-            
+        ## print output
         #logging.verbose(r.source)
         #logging.verbose('#RMG-Java: '+r.toRMGjava())
         
