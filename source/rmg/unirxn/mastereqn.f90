@@ -81,7 +81,7 @@ subroutine collisionMatrix(T, P, E, collFreq, densStates, E0, dEdown, Ngrains, &
 
     ! Determine bandwidth (at which transfer probabilities are so low that they can be truncated
     ! with negligible error)
-    halfbandwidth = ceiling(16 * dEdown / dE)
+    halfbandwidth = ceiling(6 * dEdown / dE)
     
     ! Determine start grain (corresponding to isomer ground-state energy)
     start = 0
