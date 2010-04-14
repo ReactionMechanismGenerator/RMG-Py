@@ -1664,7 +1664,9 @@ class ReactionFamily(data.Database):
 		`reactantStructures` parameter should be given in the order the
 		reactants are stored in the reaction family template. The `maps`
 		parameter is a list of mappings of the top-level tree node of each
-		*template* reactant to the corresponding *structure*.
+		*template* reactant to the corresponding *structure*. This function
+		returns the product structures, species, and a boolean that tells
+		whether any species are new.
 		"""
 
 		# Clear any previous atom labeling from all reactant structures
@@ -1692,21 +1694,23 @@ class ReactionFamily(data.Database):
 		if self.forbidden is not None:
 			for label, struct2 in self.forbidden.iteritems():
 				for struct in reactantStructures:
-					if struct.isSubgraphIsomorphic(struct2): return None, None
+					if struct.isSubgraphIsomorphic(struct2): return None, None, False
 				for struct in productStructures:
-					if struct.isSubgraphIsomorphic(struct2): return None, None
+					if struct.isSubgraphIsomorphic(struct2): return None, None, False
 
 		# Convert product structures to product species
+		newSpecies = False
 		products = []
 		for product in productStructures:
-			spec = species.makeNewSpecies(product)
+			spec, isNew = species.makeNewSpecies(product)
 			# Don't make a new reaction if no species was returned from
 			# makeNewSpecies() (e.g. due to forbidden structure)
-			if spec is None: return None, None
+			if spec is None: return None, None, False
 			products.append(spec)
+			if isNew: newSpecies = True
 
 		# Return the product species and structures
-		return products, productStructures
+		return products, productStructures, newSpecies
 
 	def getReactionList(self, reactants):
 		"""
@@ -1728,7 +1732,7 @@ class ReactionFamily(data.Database):
 				ismatch, map21, map12 = self.reactantMatch(structure, self.template.reactants[0])
 				if ismatch:
 					for map in map12:
-						products, productStructures = self.generateProductStructures(reactantStructures, [map])
+						products, productStructures, isNew = self.generateProductStructures(reactantStructures, [map])
 						if products:
 							# Create reaction and add if unique
 							rxn, isNew = makeNewReaction(reactants[:], products, reactantStructures, productStructures, self)
@@ -1761,7 +1765,7 @@ class ReactionFamily(data.Database):
 					if ismatch_A and ismatch_B:
 						for mapA in map12_A:
 							for mapB in map12_B:
-								products, productStructures = self.generateProductStructures(reactantStructures, [mapA, mapB])
+								products, productStructures, isNew = self.generateProductStructures(reactantStructures, [mapA, mapB])
 								if products:
 									# Create reaction and add if unique
 									rxn, isNew = makeNewReaction(reactants[:], products, reactantStructures, productStructures, self)
@@ -1779,7 +1783,7 @@ class ReactionFamily(data.Database):
 						if ismatch_A and ismatch_B:
 							for mapA in map12_A:
 								for mapB in map12_B:
-									products, productStructures = self.generateProductStructures(reactantStructures, [mapA, mapB])
+									products, productStructures, isNew = self.generateProductStructures(reactantStructures, [mapA, mapB])
 									if products:
 										# Create reaction and add if unique
 										rxn, isNew = makeNewReaction(reactants[:], products, reactantStructures, productStructures, self)
@@ -2279,52 +2283,3 @@ def makeNewPDepReaction(reactants, products, network, kinetics):
 	reactionCounter += 1
 	return forward
 
-################################################################################
-
-if __name__ == '__main__':
-	
-	import os.path
-	import main
-	main.initializeLog(logging.DEBUG)
-
-	import thermo
-
-	datapath = '../data/RMG_database/'
-
-	logging.debug('General database: ' + os.path.abspath(datapath))
-	species.thermoDatabase = species.ThermoDatabaseSet()
-	species.thermoDatabase.load(datapath)
-	kineticsDatabase = ReactionFamilySet()
-	kineticsDatabase.load(datapath)
-
-	structure1 = structure.Structure()
-	structure1.fromAdjacencyList("""HXD13
-1 C 0 {2,D} {7,S} {8,S}
-2 C 0 {1,D} {3,S} {9,S}
-3 C 0 {2,S} {4,D} {10,S}
-4 C 0 {3,D} {5,S} {11,S}
-5 C 1 {4,S} {6,S} {12,S}
-6 C 0 {5,S} {14,S} {15,S} {16,S}
-7 H 0 {1,S}
-8 H 0 {1,S}
-9 H 0 {2,S}
-10 H 0 {3,S}
-11 H 0 {4,S}
-12 H 0 {5,S}
-14 H 0 {6,S}
-15 H 0 {6,S}
-16 H 0 {6,S}
-""")
-
-	species1 = species.makeNewSpecies(structure1, 'C6H9J', True)
-
-	#print len(species1.structure)
-
-	structure2 = structure.Structure()
-	structure2.fromSMILES('[H][H]')
-	species2 = species.makeNewSpecies(structure2, 'H2', True)
-
-	rxnList = kineticsDatabase.getReactions([species1])
-	#rxnList = kineticsDatabase.getReactions([species1, species2])
-	for rxn in rxnList:
-		print rxn
