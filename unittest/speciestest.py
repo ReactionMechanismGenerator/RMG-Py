@@ -40,8 +40,8 @@ class SpeciesCheck(unittest.TestCase):
 		structure2 = Structure()
 		structure2.fromSMILES('C[CH]C=CC=C')
 		
-		species1 = makeNewSpecies(structure1)
-		species2 = makeNewSpecies(structure2)
+		species1, isNew = makeNewSpecies(structure1)
+		species2, isNew = makeNewSpecies(structure2)
 		
 		self.assertTrue(species1 is species2)
 				

@@ -675,19 +675,19 @@ def makeNewSpecies(structure, label='', reactive=True):
 		if spec.isIsomorphic(structure):
 			speciesCache.pop(i)
 			speciesCache.insert(0, spec)
-			return spec
+			return spec, False
 
 	# Return an existing species if a match is found
 	for spec in speciesList:
 		if spec.isIsomorphic(structure):
 			speciesCache.insert(0, spec)
 			if len(speciesCache) > speciesCacheMaxSize: speciesCache.pop()
-			return spec
+			return spec, False
 
 	# Return None if the species has a forbidden structure
 	if thermo.forbiddenStructures is not None:
 		for lbl, struct in thermo.forbiddenStructures.iteritems():
-			if structure.isSubgraphIsomorphic(struct): return None
+			if structure.isSubgraphIsomorphic(struct): return None, False
 
 	# Otherwise make a new species
 	if label == '':
@@ -699,7 +699,7 @@ def makeNewSpecies(structure, label='', reactive=True):
 	# Note in the log
 	spec = Species(speciesCounter+1, label, structure, reactive)
 	logging.verbose('Creating new species %s' % str(spec))
-	return processNewSpecies(spec)
+	return processNewSpecies(spec), True
 
 def processNewSpecies(spec):
 	"""
