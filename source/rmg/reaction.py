@@ -1657,27 +1657,28 @@ class ReactionFamily(data.Database):
 		# Return the product structures
 		return productStructures
 	
-	def makeReaction(self, reactants, reactantStructures, maps):
+	def generateProductStructures(self, reactantStructures, maps):
 		"""
-		Create a reaction involving a list of `reactants`. The `reactantStructures`
-		parameter is a list of structures in the order the reactants are stored
-		in the reaction family template, and the `maps` parameter is a list of
-		mappings of the top-level tree node of each template reactant to the
-		corresponding structure.
+		For a given set of `reactantStructures` and a given set of `maps`,
+		generate and return the corresponding product structures. The
+		`reactantStructures` parameter should be given in the order the
+		reactants are stored in the reaction family template. The `maps`
+		parameter is a list of mappings of the top-level tree node of each
+		*template* reactant to the corresponding *structure*.
 		"""
-		
+
 		# Clear any previous atom labeling from all reactant structures
 		for struct in reactantStructures: struct.clearLabeledAtoms()
-		
+
 		# Tag atoms with labels
 		for map in maps:
 			for templateAtom, reactantAtom in map.iteritems():
 				reactantAtom.label = templateAtom.label
-		
+
 		# Generate the product structures by applying the forward reaction recipe
 		try:
 			productStructures = self.applyRecipe(reactantStructures)
-			if not productStructures: return None
+			if not productStructures: return None, None
 		except chem.InvalidChemicalActionException, e:
 			print 'Unable to apply reaction recipe!'
 			print 'Reaction family is %s' % self
@@ -1691,43 +1692,47 @@ class ReactionFamily(data.Database):
 		if self.forbidden is not None:
 			for label, struct2 in self.forbidden.iteritems():
 				for struct in reactantStructures:
-					if struct.isSubgraphIsomorphic(struct2): return None
+					if struct.isSubgraphIsomorphic(struct2): return None, None
 				for struct in productStructures:
-					if struct.isSubgraphIsomorphic(struct2): return None
-		
-		# Convert structure(s) to products
+					if struct.isSubgraphIsomorphic(struct2): return None, None
+
+		# Convert product structures to product species
 		products = []
 		for product in productStructures:
 			spec = species.makeNewSpecies(product)
 			# Don't make a new reaction if no species was returned from
 			# makeNewSpecies() (e.g. due to forbidden structure)
-			if spec is None: return None
+			if spec is None: return None, None
 			products.append(spec)
-		
-		# Create reaction and add if unique
-		rxn, isNew = makeNewReaction(reactants[:], products, reactantStructures, productStructures, self)
-		if isNew:	return rxn
-		else:		return None
-	
+
+		# Return the product species and structures
+		return products, productStructures
+
 	def getReactionList(self, reactants):
 		"""
 		Generate a list of all of the possible reactions of this family between
-		the list of `reactants`.
+		the list of `reactants`. The number of reactants provided must match
+		the number of reactants expected by the template, or this function
+		will return an empty list.
 		"""
+
 		rxnList = []
-		# If the number of reactants provided does not match the number of
-		# reactants in the template, return False
+
+		# Unimolecular reactants: A --> products
 		if len(reactants) == 1 and self.template.isUnimolecular():
 
 			# Iterate over all resonance isomers of the reactant
 			for structure in reactants[0].structure:
 
+				reactantStructures = [structure]
 				ismatch, map21, map12 = self.reactantMatch(structure, self.template.reactants[0])
 				if ismatch:
 					for map in map12:
-						rxn = self.makeReaction(reactants, [structure], [map])
-						if rxn is not None:
-							rxnList.append(rxn)
+						products, productStructures = self.generateProductStructures(reactantStructures, [map])
+						if products:
+							# Create reaction and add if unique
+							rxn, isNew = makeNewReaction(reactants[:], products, reactantStructures, productStructures, self)
+							if isNew: rxnList.append(rxn)
 			
 		# Bimolecular reactants: A + B --> products
 		elif len(reactants) == 2 and self.template.isBimolecular():
@@ -1751,13 +1756,16 @@ class ReactionFamily(data.Database):
 					ismatch_A, map21_A, map12_A = self.reactantMatch(structureA, self.template.reactants[0])
 					ismatch_B, map21_B, map12_B = self.reactantMatch(structureB, self.template.reactants[1])
 					
+					reactantStructures = [structureA, structureB]
 					# Iterate over each pair of matches (A, B)
 					if ismatch_A and ismatch_B:
 						for mapA in map12_A:
 							for mapB in map12_B:
-								rxn = self.makeReaction(reactants, [structureA, structureB], [mapA, mapB])
-								if rxn is not None:
-									rxnList.append(rxn)
+								products, productStructures = self.generateProductStructures(reactantStructures, [mapA, mapB])
+								if products:
+									# Create reaction and add if unique
+									rxn, isNew = makeNewReaction(reactants[:], products, reactantStructures, productStructures, self)
+									if isNew: rxnList.append(rxn)
 									
 					# Only check for swapped reactants if they are different
 					if reactants[0].id != reactants[1].id:
@@ -1766,13 +1774,16 @@ class ReactionFamily(data.Database):
 						ismatch_A, map21_A, map12_A = self.reactantMatch(structureA, self.template.reactants[1])
 						ismatch_B, map21_B, map12_B = self.reactantMatch(structureB, self.template.reactants[0])
 						
+						reactantStructures = [structureA, structureB]
 						# Iterate over each pair of matches (A, B)
 						if ismatch_A and ismatch_B:
 							for mapA in map12_A:
 								for mapB in map12_B:
-									rxn = self.makeReaction(reactants, [structureB, structureA], [mapB, mapA])
-									if rxn is not None:
-										rxnList.append(rxn)
+									products, productStructures = self.generateProductStructures(reactantStructures, [mapA, mapB])
+									if products:
+										# Create reaction and add if unique
+										rxn, isNew = makeNewReaction(reactants[:], products, reactantStructures, productStructures, self)
+										if isNew: rxnList.append(rxn)
 		
 		return rxnList
 	
