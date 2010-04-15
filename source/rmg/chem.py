@@ -650,6 +650,10 @@ class Atom(graph.Vertex):
 		return :data:`True`.
 		"""
 
+		if not isinstance(other, Atom): return False
+		other1 = cython.declare(Atom)
+		other1 = other
+
 		atomTypesMatch = cython.declare(cython.bint, False)
 		electronStatesMatch = cython.declare(cython.bint, False)
 		
@@ -659,11 +663,11 @@ class Atom(graph.Vertex):
 		elecState2 = cython.declare(ElectronState)
 		
 		for atomType1 in self._atomType:
-			for atomType2 in other._atomType:
+			for atomType2 in other1._atomType:
 				if atomType1.equivalent(atomType2): atomTypesMatch = True
 
 		for elecState1 in self._electronState:
-			for elecState2 in other._electronState:
+			for elecState2 in other1._electronState:
 				if elecState1.equivalent(elecState2): electronStatesMatch = True
 
 		return (atomTypesMatch and electronStatesMatch)
@@ -946,11 +950,16 @@ class Bond(graph.Edge):
 		for equivalence have multiple bond types, :data:`True` is returned if
 		*any* bond type in one bond matches *any* bond type in the other.
 		"""
+
+		if not isinstance(other, Bond): return False
+		other1 = cython.declare(Bond)
+		other1 = other
+
 		bondType1 = cython.declare(BondType)
 		bondType2 = cython.declare(BondType)
 		
 		for bondType1 in self._bondType:
-			for bondType2 in other._bondType:
+			for bondType2 in other1._bondType:
 				if bondType1.equivalent(bondType2): return True
 		return False
 
