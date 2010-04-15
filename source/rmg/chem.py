@@ -50,6 +50,8 @@ significant speed boost to running in pure Python mode.
 
 import cython
 
+import graph
+
 ################################################################################
 
 class Element:
@@ -518,7 +520,7 @@ class InvalidChemicalActionException(Exception):
 
 ################################################################################
 
-class Atom(object):
+class Atom(graph.Vertex):
 	"""
 	Represent an atom in a chemical species or functional group. The attributes
 	are:
@@ -540,17 +542,11 @@ class Atom(object):
 		"""
 		Initialize an atom object.
 		"""
+		graph.Vertex.__init__(self)
 		self.atomType = atomType
 		self.electronState = electronState
 		self.charge = charge
 		self.label = label
-
-		# for Extended Connectivity; as introduced by Morgan (1965)
-		# http://dx.doi.org/10.1021/c160017a018
-		self.connectivity1 = -1
-		self.connectivity2 = -1
-		self.connectivity3 = -1
-		self.sorting_label = -1
 	
 	def __repr__(self):
 		"""
@@ -654,6 +650,10 @@ class Atom(object):
 		return :data:`True`.
 		"""
 
+		if not isinstance(other, Atom): return False
+		other1 = cython.declare(Atom)
+		other1 = other
+
 		atomTypesMatch = cython.declare(cython.bint, False)
 		electronStatesMatch = cython.declare(cython.bint, False)
 		
@@ -663,11 +663,11 @@ class Atom(object):
 		elecState2 = cython.declare(ElectronState)
 		
 		for atomType1 in self._atomType:
-			for atomType2 in other._atomType:
+			for atomType2 in other1._atomType:
 				if atomType1.equivalent(atomType2): atomTypesMatch = True
 
 		for elecState1 in self._electronState:
-			for elecState2 in other._electronState:
+			for elecState2 in other1._electronState:
 				if elecState1.equivalent(elecState2): electronStatesMatch = True
 
 		return (atomTypesMatch and electronStatesMatch)
@@ -868,7 +868,7 @@ class Atom(object):
 
 ################################################################################
 
-class Bond(object):
+class Bond(graph.Edge):
 	"""
 	A chemical bond between atoms. The attributes are:
 
@@ -882,6 +882,7 @@ class Bond(object):
 	"""
 
 	def __init__(self, atoms=[None, None], bondType='S'):
+		graph.Edge.__init__(self)
 		self.bondType = bondType
 		self.atoms = atoms
 
@@ -949,11 +950,16 @@ class Bond(object):
 		for equivalence have multiple bond types, :data:`True` is returned if
 		*any* bond type in one bond matches *any* bond type in the other.
 		"""
+
+		if not isinstance(other, Bond): return False
+		other1 = cython.declare(Bond)
+		other1 = other
+
 		bondType1 = cython.declare(BondType)
 		bondType2 = cython.declare(BondType)
 		
 		for bondType1 in self._bondType:
-			for bondType2 in other._bondType:
+			for bondType2 in other1._bondType:
 				if bondType1.equivalent(bondType2): return True
 		return False
 
