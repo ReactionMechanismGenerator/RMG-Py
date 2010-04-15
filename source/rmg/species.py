@@ -654,6 +654,35 @@ global speciesCounter
 #: Used to label species uniquely. Incremented each time a new species is made.
 speciesCounter = 0 
 
+def speciesExists(structure):
+	"""
+	Check to see if an existing species contains the same 
+	:class:`structure.Structure` as `structure`. Returns :data:`True` or
+	:data:`False`, the matched species (if found), structure (if found), and
+	mapping.
+	"""
+	
+	# First check cache and return if species is found
+	for i, spec in enumerate(speciesCache):
+		for struct in spec.structure:
+			found, map12, map21 = structure.findIsomorphism(struct)
+			if found:
+				speciesCache.pop(i)
+				speciesCache.insert(0, spec)
+				return True, spec, struct, map21
+
+	# Return an existing species if a match is found
+	for spec in speciesList:
+		for struct in spec.structure:
+			found, map12, map21 = structure.findIsomorphism(struct)
+			if found:
+				speciesCache.pop(i)
+				speciesCache.insert(0, spec)
+				return True, spec, struct, map21
+
+	# At this point we can conclude that the structure does not exist
+	return False, None, None, None
+
 def makeNewSpecies(structure, label='', reactive=True):
 	"""
 	Attempt to make a new species based on a chemical `structure`, which is a
@@ -670,19 +699,10 @@ def makeNewSpecies(structure, label='', reactive=True):
 #	structure.simplifyAtomTypes()
 #	structure.updateAtomTypes()
 
-	# First check cache and return if species is found
-	for i, spec in enumerate(speciesCache):
-		if spec.isIsomorphic(structure):
-			speciesCache.pop(i)
-			speciesCache.insert(0, spec)
-			return spec, False
-
-	# Return an existing species if a match is found
-	for spec in speciesList:
-		if spec.isIsomorphic(structure):
-			speciesCache.insert(0, spec)
-			if len(speciesCache) > speciesCacheMaxSize: speciesCache.pop()
-			return spec, False
+	# Check to ensure that the species is new; return the existing species if
+	# not new
+	found, spec, struct, map = speciesExists(structure)
+	if found: return spec, False
 
 	# Return None if the species has a forbidden structure
 	if thermo.forbiddenStructures is not None:
