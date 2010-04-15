@@ -164,6 +164,15 @@ class Structure:
 		if map21 is None: map21 = dict()
 		return self.graph.isIsomorphic(other.graph, map12, map21)
 
+	def findIsomorphism(self, other, map12=None, map21=None):
+		"""
+		Returns :data:`True` if `other` is subgraph isomorphic and :data:`False`
+		otherwise. Uses the VF2 algorithm of Vento and Foggia.
+		"""
+		if map12 is None: map12 = dict()
+		if map21 is None: map21 = dict()
+		return self.graph.findIsomorphism(other.graph, map12, map21)
+
 	def isSubgraphIsomorphic(self, other, map12=None, map21=None):
 		"""
 		Returns :data:`True` if `other` is subgraph isomorphic and :data:`False`

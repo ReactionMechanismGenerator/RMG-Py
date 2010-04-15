@@ -75,6 +75,8 @@ cdef class Graph(dict):
 
 	cpdef isIsomorphic(Graph self, Graph other, dict map12_0, dict map21_0)
 
+	cpdef findIsomorphism(Graph self, Graph other, dict map12_0, dict map21_0)
+
 	cpdef isSubgraphIsomorphic(Graph self, Graph other, dict map12_0, dict map21_0)
 
 	cpdef findSubgraphIsomorphisms(Graph self, Graph other, dict map12_0, dict map21_0)

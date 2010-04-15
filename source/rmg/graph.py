@@ -191,6 +191,13 @@ class Graph(dict):
 		ismatch, map21, map12 = VF2_isomorphism(self, other, map21_0, map12_0, False, False)
 		return ismatch
 
+	def findIsomorphism(self, other, map12_0, map21_0):
+		"""
+		Returns :data:`True` if `other` is subgraph isomorphic and :data:`False`
+		otherwise. Uses the VF2 algorithm of Vento and Foggia.
+		"""
+		return VF2_isomorphism(self, other, map21_0, map12_0, False, False)
+
 	def isSubgraphIsomorphic(self, other, map12_0, map21_0):
 		"""
 		Returns :data:`True` if `other` is subgraph isomorphic and :data:`False`
