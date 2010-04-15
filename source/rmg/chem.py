@@ -50,6 +50,8 @@ significant speed boost to running in pure Python mode.
 
 import cython
 
+import graph
+
 ################################################################################
 
 class Element:
@@ -518,7 +520,7 @@ class InvalidChemicalActionException(Exception):
 
 ################################################################################
 
-class Atom(object):
+class Atom(graph.Vertex):
 	"""
 	Represent an atom in a chemical species or functional group. The attributes
 	are:
@@ -540,17 +542,11 @@ class Atom(object):
 		"""
 		Initialize an atom object.
 		"""
+		graph.Vertex.__init__(self)
 		self.atomType = atomType
 		self.electronState = electronState
 		self.charge = charge
 		self.label = label
-
-		# for Extended Connectivity; as introduced by Morgan (1965)
-		# http://dx.doi.org/10.1021/c160017a018
-		self.connectivity1 = -1
-		self.connectivity2 = -1
-		self.connectivity3 = -1
-		self.sorting_label = -1
 	
 	def __repr__(self):
 		"""
@@ -868,7 +864,7 @@ class Atom(object):
 
 ################################################################################
 
-class Bond(object):
+class Bond(graph.Edge):
 	"""
 	A chemical bond between atoms. The attributes are:
 
@@ -882,6 +878,7 @@ class Bond(object):
 	"""
 
 	def __init__(self, atoms=[None, None], bondType='S'):
+		graph.Edge.__init__(self)
 		self.bondType = bondType
 		self.atoms = atoms
 
