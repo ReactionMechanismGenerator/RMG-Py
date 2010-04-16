@@ -809,7 +809,7 @@ class ReactionRecipe:
 					raise InvalidActionException('Unknown action "' + action[0] + '" encountered.')
 
 		except InvalidActionException, e:
-			logging.warning('Warning: ' + e.msg)
+			logging.warning(e.msg)
 			return False
 
 		return True
@@ -1571,7 +1571,7 @@ class ReactionFamily(data.Database):
 		# Generate the product structure by applying the recipe
 		if not self.recipe.applyForward(reactantStructure, unique):
 			return None
-		productStructure = reactantStructure.copy()
+		productStructure = reactantStructure
 
 		# Hardcoding of reaction family for reverse of radical recombination
 		# (Unimolecular homolysis)
@@ -1672,6 +1672,13 @@ class ReactionFamily(data.Database):
 		# Clear any previous atom labeling from all reactant structures
 		for struct in reactantStructures: struct.clearLabeledAtoms()
 
+		# If there are two structures and they are the same, then make a copy
+		# of the second one and adjust the second map to point to its atoms
+		# This is for the case where A + A --> products
+		if len(reactantStructures) == 2 and reactantStructures[0] == reactantStructures[1]:
+			reactantStructures[1], newMap = reactantStructures[1].copy(returnMap=True)
+			maps[1] = dict([(templateAtom,newMap[reactantAtom]) for templateAtom, reactantAtom in maps[1].iteritems()])
+			
 		# Tag atoms with labels
 		for map in maps:
 			for templateAtom, reactantAtom in map.iteritems():
@@ -1728,10 +1735,10 @@ class ReactionFamily(data.Database):
 			# Iterate over all resonance isomers of the reactant
 			for structure in reactants[0].structure:
 
-				reactantStructures = [structure]
 				ismatch, map21, map12 = self.reactantMatch(structure, self.template.reactants[0])
 				if ismatch:
 					for map in map12:
+						reactantStructures = [structure]
 						products, productStructures, isNew = self.generateProductStructures(reactantStructures, [map])
 						if products:
 							# Create reaction and add if unique
@@ -1741,16 +1748,8 @@ class ReactionFamily(data.Database):
 		# Bimolecular reactants: A + B --> products
 		elif len(reactants) == 2 and self.template.isBimolecular():
 			
-			# Make copies of the structure lists of the two reactants
-			# This is a workaround for an issue in which the two reactant
-			# structure lists were getting swapped around, resulting in
-			# unbalanced reactions
-			# The copy is needed for cases where A and B are the same
-			structuresA = []; structuresB = []
-			for structureA in reactants[0].structure:
-				structuresA.append(structureA.copy())
-			for structureB in reactants[1].structure:
-				structuresB.append(structureB.copy())
+			structuresA = reactants[0].structure
+			structuresB = reactants[1].structure
 			
 			# Iterate over all resonance isomers of the reactant
 			for structureA in structuresA:
@@ -1760,11 +1759,11 @@ class ReactionFamily(data.Database):
 					ismatch_A, map21_A, map12_A = self.reactantMatch(structureA, self.template.reactants[0])
 					ismatch_B, map21_B, map12_B = self.reactantMatch(structureB, self.template.reactants[1])
 					
-					reactantStructures = [structureA, structureB]
 					# Iterate over each pair of matches (A, B)
 					if ismatch_A and ismatch_B:
 						for mapA in map12_A:
 							for mapB in map12_B:
+								reactantStructures = [structureA, structureB]
 								products, productStructures, isNew = self.generateProductStructures(reactantStructures, [mapA, mapB])
 								if products:
 									# Create reaction and add if unique
@@ -1778,11 +1777,11 @@ class ReactionFamily(data.Database):
 						ismatch_A, map21_A, map12_A = self.reactantMatch(structureA, self.template.reactants[1])
 						ismatch_B, map21_B, map12_B = self.reactantMatch(structureB, self.template.reactants[0])
 						
-						reactantStructures = [structureA, structureB]
 						# Iterate over each pair of matches (A, B)
 						if ismatch_A and ismatch_B:
 							for mapA in map12_A:
 								for mapB in map12_B:
+									reactantStructures = [structureA, structureB]
 									products, productStructures, isNew = self.generateProductStructures(reactantStructures, [mapA, mapB])
 									if products:
 										# Create reaction and add if unique
