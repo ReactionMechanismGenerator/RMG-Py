@@ -654,12 +654,12 @@ global speciesCounter
 #: Used to label species uniquely. Incremented each time a new species is made.
 speciesCounter = 0 
 
-def speciesExists(structure):
+def checkForExistingSpecies(structure):
 	"""
 	Check to see if an existing species contains the same 
 	:class:`structure.Structure` as `structure`. Returns :data:`True` or
 	:data:`False`, the matched species (if found), structure (if found), and
-	mapping.
+	mapping (if found).
 	"""
 	
 	# First check cache and return if species is found
@@ -683,7 +683,7 @@ def speciesExists(structure):
 	# At this point we can conclude that the structure does not exist
 	return False, None, None, None
 
-def makeNewSpecies(structure, label='', reactive=True):
+def makeNewSpecies(structure, label='', reactive=True, checkExisting=True):
 	"""
 	Attempt to make a new species based on a chemical `structure`, which is a
 	:class:`Structure` object.
@@ -701,8 +701,9 @@ def makeNewSpecies(structure, label='', reactive=True):
 
 	# Check to ensure that the species is new; return the existing species if
 	# not new
-	found, spec, struct, map = speciesExists(structure)
-	if found: return spec, False
+	if checkExisting:
+		found, spec, struct, map = checkForExistingSpecies(structure)
+		if found: return spec, False
 
 	# Return None if the species has a forbidden structure
 	if thermo.forbiddenStructures is not None:

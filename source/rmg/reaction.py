@@ -1723,7 +1723,7 @@ class ReactionFamily(data.Database):
 		# Convert product structures to product species
 		products = []
 		for i, struct0 in enumerate(productStructures):
-			found, spec, struct, map = species.speciesExists(struct0)
+			found, spec, struct, map = species.checkForExistingSpecies(struct0)
 			if found:
 				# Adjust atom labels mapping accordingly
 				for label, atom in productAtomLabels[i].iteritems():
@@ -1733,7 +1733,7 @@ class ReactionFamily(data.Database):
 				# Append product species to list of products
 				products.append(spec)
 			else:
-				product, isNew = species.makeNewSpecies(struct0)
+				product, isNew = species.makeNewSpecies(struct0, checkExisting=False)
 				# Don't make a new reaction if no species was returned from
 				# makeNewSpecies() (e.g. due to forbidden structure)
 				if product is None: return None
@@ -1780,14 +1780,14 @@ class ReactionFamily(data.Database):
 				if ismatch:
 					for map in map12:
 
-						atomLabels = [{}]
+						reactantAtomLabels = [{}]
 						for atom1, atom2 in map.iteritems():
-							atomLabels[0][atom1.label] = atom2
+							reactantAtomLabels[0][atom1.label] = atom2
 
 						reactantStructures = [structure]
 						productStructures = self.generateProductStructures(reactantStructures, [map])
 						if productStructures:
-							rxn = self.createReaction(reactants, reactantStructures, productStructures, atomLabels)
+							rxn = self.createReaction(reactants, reactantStructures, productStructures, reactantAtomLabels)
 							if rxn: rxnList.append(rxn)
 
 		# Bimolecular reactants: A + B --> products
@@ -1809,16 +1809,16 @@ class ReactionFamily(data.Database):
 						for mapA in map12_A:
 							for mapB in map12_B:
 
-								atomLabels = [{},{}]
+								reactantAtomLabels = [{},{}]
 								for atom1, atom2 in mapA.iteritems():
-									atomLabels[0][atom1.label] = atom2
+									reactantAtomLabels[0][atom1.label] = atom2
 								for atom1, atom2 in mapB.iteritems():
-									atomLabels[1][atom1.label] = atom2
+									reactantAtomLabels[1][atom1.label] = atom2
 
 								reactantStructures = [structureA, structureB]
 								productStructures = self.generateProductStructures(reactantStructures, [mapA, mapB])
 								if productStructures:
-									rxn = self.createReaction(reactants, reactantStructures, productStructures, atomLabels)
+									rxn = self.createReaction(reactants, reactantStructures, productStructures, reactantAtomLabels)
 									if rxn: rxnList.append(rxn)
 
 					# Only check for swapped reactants if they are different
@@ -1833,16 +1833,16 @@ class ReactionFamily(data.Database):
 							for mapA in map12_A:
 								for mapB in map12_B:
 
-									atomLabels = [{},{}]
+									reactantAtomLabels = [{},{}]
 									for atom1, atom2 in mapA.iteritems():
-										atomLabels[0][atom1.label] = atom2
+										reactantAtomLabels[0][atom1.label] = atom2
 									for atom1, atom2 in mapB.iteritems():
-										atomLabels[1][atom1.label] = atom2
+										reactantAtomLabels[1][atom1.label] = atom2
 
 									reactantStructures = [structureA, structureB]
 									productStructures = self.generateProductStructures(reactantStructures, [mapA, mapB])
 									if productStructures:
-										rxn = self.createReaction(reactants, reactantStructures, productStructures, atomLabels)
+										rxn = self.createReaction(reactants, reactantStructures, productStructures, reactantAtomLabels)
 										if rxn: rxnList.append(rxn)
 
 		# Merge duplicate reactions and increment multiplier
