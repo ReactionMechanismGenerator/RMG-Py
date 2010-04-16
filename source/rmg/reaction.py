@@ -1865,32 +1865,16 @@ class ReactionFamily(data.Database):
 			for rxn in rxnList:
 				rxn.multiplier /= 2
 
-		# Now we must check the global reaction list for duplicates
-		# Here we must check the family, reactants, and products for matches
-		# For this we don't increment the multiplier
-		# Check that the reaction is unique
+		# Formally make the new reactions
 		reactionsToRemove = []
-		for rxn in rxnList:
-			for rxn0 in reactionList:
-				if isinstance(rxn0.family, ReactionFamily):
-					if rxn0.family.reverse:
-						if rxn0.family.label != rxn.family.label and rxn0.family.reverse.label != rxn.family.label:
-							# rxn is not from seed, and families are different
-							continue
-					else:
-						if rxn0.family.label != rxn.family.label:
-							# rxn is not from seed, and families are different
-							continue
-				if (rxn0.reactants == rxn.reactants and rxn0.products == rxn.products) or \
-					(rxn0.reactants == rxn.products and rxn0.products == rxn.reactants):
-					reactionsToRemove.append(rxn)
-					break # found a match so stop checking other rxn
+		for i in range(len(rxnList)):
+			rxn, isNew = makeNewReaction(rxnList[i])
+			if isNew:
+				rxnList[i] = rxn
+			else:
+				reactionsToRemove.append(rxnList[i])
 		for rxn in reactionsToRemove:
 			rxnList.remove(rxn)
-
-		# Formally make the new reactions
-		for i in range(len(rxnList)):
-			rxnList[i], isNew = makeNewReaction(rxnList[i])
 
 		return rxnList
 
@@ -2220,7 +2204,30 @@ global reactionCounter
 #: Used to label reactions uniquely. Incremented each time a new reaction is made.
 reactionCounter = 0
 
-def makeNewReaction(forward):
+def checkForExistingReaction(rxn):
+	"""
+	Check to see if an existing reaction has the same reactants, products, and
+	family as `rxn`. Returns :data:`True` or :data:`False` and the matched
+	reaction (if found).
+	"""
+
+	for rxn0 in reactionList:
+		if isinstance(rxn0.family, ReactionFamily):
+			if rxn0.family.reverse:
+				if rxn0.family.label != rxn.family.label and rxn0.family.reverse.label != rxn.family.label:
+					# rxn is not from seed, and families are different
+					continue
+			else:
+				if rxn0.family.label != rxn.family.label:
+					# rxn is not from seed, and families are different
+					continue
+		if (rxn0.reactants == rxn.reactants and rxn0.products == rxn.products) or \
+			(rxn0.reactants == rxn.products and rxn0.products == rxn.reactants):
+			return True, rxn0
+	
+	return False, None
+
+def makeNewReaction(forward, checkExisting=True):
 	"""
 	Make a new reaction given a :class:`Reaction` object `forward`. The kinetics
 	of the reaction are estimated and the reaction is added to the global list
@@ -2230,6 +2237,10 @@ def makeNewReaction(forward):
 	"""
 
 	reverse = forward.reverse
+
+	if checkExisting:
+		found, rxn = checkForExistingReaction(forward)
+		if found: return rxn, False
 
 	# Set the reaction identifier (on both forward and reverse)
 	forward.id = reverse.id = reactionCounter+1
