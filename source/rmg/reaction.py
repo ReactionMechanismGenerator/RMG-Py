@@ -1707,22 +1707,27 @@ class ReactionFamily(data.Database):
 
 		return productStructures
 
-	def createReaction(self, reactants, reactantStructures, productStructures):
+	def createReaction(self, reactants, reactantStructures, productStructures, reactantAtomLabels):
 		"""
 		Create a :class:`Reaction` object representing the reaction that
 		converts the structures in `reactantStructures` corresponding to the
-		species in `reactants` to the structures in `productStructures`.
+		species in `reactants` to the structures in `productStructures`. The
+		atom labels for the reactants should already be known, and they are
+		passed in the `reactantAtomLabels` parameter.
 		"""
 
+		productAtomLabels = []
+		for struct in productStructures:
+			productAtomLabels.append(struct.getLabeledAtoms())
+		
 		# Convert product structures to product species
 		products = []
 		for i, struct0 in enumerate(productStructures):
 			found, spec, struct, map = species.speciesExists(struct0)
 			if found:
-				# Label struct with labels in struct0
-				struct.clearLabeledAtoms()
-				for label, atom in struct0.getLabeledAtoms().iteritems():
-					map[atom].label = label
+				# Adjust atom labels mapping accordingly
+				for label, atom in productAtomLabels[i].iteritems():
+					productAtomLabels[i][label] = map[atom]
 				# Save struct rather than struct0
 				productStructures[i] = struct
 				# Append product species to list of products
@@ -1748,31 +1753,9 @@ class ReactionFamily(data.Database):
 		forward.reverse = reverse
 		reverse.reverse = forward
 
-		# Get atom labels of reactants
-		reactantLabels = {}; productLabels = {}
-		for structure in reactantStructures:
-			for atom in structure.atoms():
-				if atom.label == '*':
-					if atom.label in reactantLabels:
-						reactantLabels[atom.label].append(atom)
-					else:
-						reactantLabels[atom.label] = [atom]
-				elif atom.label != '':
-					reactantLabels[atom.label] = atom
-		# Get atom labels of products
-		for structure in productStructures:
-			for atom in structure.atoms():
-				if atom.label == '*':
-					if atom.label in productLabels:
-						productLabels[atom.label].append(atom)
-					else:
-						productLabels[atom.label] = [atom]
-				elif atom.label != '':
-					productLabels[atom.label] = atom
-
 		# Dictionaries containing the labeled atoms for the reactants and products
-		forward.atomLabels = reactantLabels
-		reverse.atomLabels = productLabels
+		forward.atomLabels = reactantAtomLabels
+		reverse.atomLabels = productAtomLabels
 
 		# Return the created reaction (forward direction only)
 		return forward
@@ -1796,18 +1779,19 @@ class ReactionFamily(data.Database):
 				ismatch, map21, map12 = self.reactantMatch(structure, self.template.reactants[0])
 				if ismatch:
 					for map in map12:
+
+						atomLabels = [{}]
+						for atom1, atom2 in map.iteritems():
+							atomLabels[0][atom1.label] = atom2
+
 						reactantStructures = [structure]
 						productStructures = self.generateProductStructures(reactantStructures, [map])
 						if productStructures:
-							rxn = self.createReaction(reactants, reactantStructures, productStructures)
+							rxn = self.createReaction(reactants, reactantStructures, productStructures, atomLabels)
 							if rxn: rxnList.append(rxn)
 
 		# Bimolecular reactants: A + B --> products
 		elif len(reactants) == 2 and self.template.isBimolecular():
-
-			if reactants[0] == reactants[1]:
-				logging.warning('Need to implement fix for A + A --> products!')
-				return rxnList
 
 			structuresA = reactants[0].structure
 			structuresB = reactants[1].structure
@@ -1824,10 +1808,17 @@ class ReactionFamily(data.Database):
 					if ismatch_A and ismatch_B:
 						for mapA in map12_A:
 							for mapB in map12_B:
+
+								atomLabels = [{},{}]
+								for atom1, atom2 in mapA.iteritems():
+									atomLabels[0][atom1.label] = atom2
+								for atom1, atom2 in mapB.iteritems():
+									atomLabels[1][atom1.label] = atom2
+
 								reactantStructures = [structureA, structureB]
 								productStructures = self.generateProductStructures(reactantStructures, [mapA, mapB])
 								if productStructures:
-									rxn = self.createReaction(reactants, reactantStructures, productStructures)
+									rxn = self.createReaction(reactants, reactantStructures, productStructures, atomLabels)
 									if rxn: rxnList.append(rxn)
 
 					# Only check for swapped reactants if they are different
@@ -1841,10 +1832,17 @@ class ReactionFamily(data.Database):
 						if ismatch_A and ismatch_B:
 							for mapA in map12_A:
 								for mapB in map12_B:
+
+									atomLabels = [{},{}]
+									for atom1, atom2 in mapA.iteritems():
+										atomLabels[0][atom1.label] = atom2
+									for atom1, atom2 in mapB.iteritems():
+										atomLabels[1][atom1.label] = atom2
+
 									reactantStructures = [structureA, structureB]
 									productStructures = self.generateProductStructures(reactantStructures, [mapA, mapB])
 									if productStructures:
-										rxn = self.createReaction(reactants, reactantStructures, productStructures)
+										rxn = self.createReaction(reactants, reactantStructures, productStructures, atomLabels)
 										if rxn: rxnList.append(rxn)
 
 		# Merge duplicate reactions and increment multiplier
@@ -2240,66 +2238,53 @@ def makeNewReaction(forward):
 		reactionList.insert(0, forward)
 		return forward, True
 
-	# Reconstruct the reactant structures (so we can assign the kinetics)
-	reactantStructures = []
-	for reactant in forward.reactants:
-		for struct in reactant.structure:
-			struct.clearLabeledAtoms()
-		# Find the structure
-		found = False
-		for struct in reactant.structure:
-			for atom in forward.atomLabels.values():
-				if isinstance(atom, list):
-					for a in atom:
-						if not found and a in struct.atoms():
-							reactantStructures.append(struct)
+	def prepareStructures(forward, reverse, speciesList, atomLabels):
+	
+		speciesList = speciesList[:]
+
+		for spec in speciesList:
+			for struct in spec.structure:
+				struct.clearLabeledAtoms()
+
+		structures = []
+		for labels in atomLabels:
+			found = False
+			for spec in speciesList:
+				for struct in spec.structure:
+					atom = labels.values()[0]
+					if isinstance(atom, list):
+						for a in atom:
+							if not found and a in struct.atoms():
+								structures.append(struct)
+								found = True
+					else:
+						if not found and atom in struct.atoms():
+							structures.append(struct)
 							found = True
-				else:
-					if not found and atom in struct.atoms():
-						reactantStructures.append(struct)
-						found = True
-	if len(reactantStructures) != len(forward.reactants):
-		raise UndeterminableKineticsException(forward)
-	# Apply atom labels
-	for label, atom in forward.atomLabels.iteritems():
-		if isinstance(atom, list):
-			for a in atom: a.label = label
-		else:
-			atom.label = label
+				if found:
+					speciesList.remove(spec)
+					break
+		if len(speciesList) != 0:
+			raise UndeterminableKineticsException(forward)
+	
+		if len(structures) == 2 and structures[0] == structures[1]:
+			structures[1], map = structures[1].copy(returnMap=True)
+			for label, atom in atomLabels[1].iteritems():
+				atomLabels[1][label] = map[atom]
 
-	# Reconstruct the product structures (so we can assign the kinetics)
-	productStructures = []
-	for product in forward.products:
-		for struct in product.structure:
-			struct.clearLabeledAtoms()
-		# Find the structure
-		found = False
-		for struct in product.structure:
-			for atom in reverse.atomLabels.values():
-				if isinstance(atom, list):
-					for a in atom:
-						if not found and a in struct.atoms():
-							productStructures.append(struct)
-							found = True
-				else:
-					if not found and atom in struct.atoms():
-						productStructures.append(struct)
-						found = True
-	if len(productStructures) != len(forward.products):
-		print productStructures
-		raise UndeterminableKineticsException(forward)
-
-	# Apply atom labels
-	for struct in productStructures:
-		struct.clearLabeledAtoms()
-	for label, atom in reverse.atomLabels.iteritems():
-		if isinstance(atom, list):
-			for a in atom: a.label = label
-		else:
-			atom.label = label
-
-	# Attempt to get the kinetics of the forward and reverse reactions
+		# Apply atom labels to structures
+		for labels in atomLabels:
+			for label, atom in labels.iteritems():
+				atom.label = label
+		
+		return structures
+	
+	forwardAtomLabels = [labels.copy() for labels in forward.atomLabels]
+	reactantStructures = prepareStructures(forward, reverse, forward.reactants, forwardAtomLabels)
 	forwardKinetics = forward.family.getKinetics(forward, reactantStructures)
+
+	reverseAtomLabels = [labels.copy() for labels in reverse.atomLabels]
+	productStructures = prepareStructures(forward, reverse, reverse.reactants, reverseAtomLabels)
 	reverseKinetics = reverse.family.getKinetics(reverse, productStructures)
 
 	# By convention, we only work with the reaction in the direction for which
