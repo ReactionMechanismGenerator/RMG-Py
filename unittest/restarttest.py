@@ -134,7 +134,7 @@ class RestartCheck(unittest.TestCase):
 		# Create
 		smiles = 'C=CC=C[CH]C'
 		struct0 = structure.Structure(SMILES=smiles)
-		spec0 = species.makeNewSpecies(struct0, label=smiles, reactive=True)
+		spec0, isNew = species.makeNewSpecies(struct0, label=smiles, reactive=True)
 
 		# Pickle
 		f = open('test.pkl', 'wb'); cPickle.dump(spec0, f); f.close()
@@ -220,7 +220,7 @@ class RestartCheck(unittest.TestCase):
 		# Create
 		smiles = 'C'
 		struct0 = structure.Structure(SMILES=smiles)
-		methane = species.makeNewSpecies(struct0, label=smiles, reactive=True)
+		methane, isNew = species.makeNewSpecies(struct0, label=smiles, reactive=True)
 		reactions = reaction.kineticsDatabase.getReactions([methane])
 		reaction0 = reactions[0]
 		# Pickle
