@@ -224,7 +224,7 @@ HO2
 // No N in RMG yet
 
 O
-1 O 2
+1 O 2T
 
 O2
 1 O 0 {2,D} 
