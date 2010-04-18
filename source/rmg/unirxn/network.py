@@ -716,9 +716,10 @@ class Network:
 
 				# Use free energy to determine equilibrium ratios of each isomer and product channel
 				eqRatios = numpy.zeros(nIsom+nReac+nProd, numpy.float64)
+				conc = 1e5 / constants.R / T
 				for i, isom in enumerate(self.isomers):
 					G = sum([spec.getFreeEnergy(T) for spec in isom.species])
-					eqRatios[i] = math.exp(-G / constants.R / T)
+					eqRatios[i] = math.exp(-G / constants.R / T) * conc ** (len(isom.species) - 1)
 				eqRatios /= numpy.sum(eqRatios)
 				
 				# Apply chemically-significant eigenvalue method

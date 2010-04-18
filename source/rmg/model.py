@@ -448,7 +448,7 @@ class CoreEdgeReactionModel:
 				logging.verbose('Updating unimolecular reaction network %s' % network.id)
 
 				# Other inputs
-				method, Tlist, Plist, grainSize, numGrains, model = settings.unimolecularReactionNetworks
+				method, Tmin, Tmax, Tlist, Pmin, Pmax, Plist, grainSize, numGrains, model = settings.unimolecularReactionNetworks
 
 				network.bathGas = [spec for spec in self.core.species if not spec.reactive][0]
 				network.bathGas.expDownParam = 4.86 * 4184
@@ -563,6 +563,12 @@ class CoreEdgeReactionModel:
 							else:
 								pass
 
+							# Set temperature and pressure ranges explicitly
+							netReaction.kinetics.Tmin = Tmin
+							netReaction.kinetics.Tmax = Tmax
+							netReaction.kinetics.Pmin = Pmin
+							netReaction.kinetics.Pmax = Pmax
+
 							# Update cantera if this is a core reaction
 							if netReaction in self.core.reactions:
 								netReaction.toCantera()
@@ -610,7 +616,7 @@ class CoreEdgeReactionModel:
 		# Create new species based on items in species.txt
 		speciesDict = {}; speciesList = []
 		for label, struct in d.iteritems():
-			spec = species.makeNewSpecies(struct, label, reactive=True)
+			spec, isNew = species.makeNewSpecies(struct, label, reactive=True)
 			speciesDict[label] = spec
 			speciesList.append(spec)
 		
@@ -1069,61 +1075,4 @@ class TerminationConversion:
 	def __init__(self, spec=None, conv=0.0):
 		self.species = spec
 		self.conversion = conv
-
-################################################################################
-
-if __name__ == '__main__':
-
-	import chem
-	import data
-	import species
-	import reaction
-	import thermo
-
-	import os.path
-	import main
-	main.initializeLog(logging.DEBUG)
-
-	datapath = '../data/RMG_database/'
-
-	logging.debug('General database: ' + os.path.abspath(datapath))
-	species.thermoDatabase = species.ThermoDatabaseSet()
-	species.thermoDatabase.load(datapath)
-	thermo.forbiddenStructures = data.Dictionary()
-	thermo.forbiddenStructures.load(datapath + 'forbiddenStructure.txt')
-	thermo.forbiddenStructures.toStructure()
-	#reaction.kineticsDatabase = reaction.ReactionFamilySet()
-	#reaction.kineticsDatabase.load(datapath)
-
-	structure = chem.Structure(); structure.fromSMILES('C')
-	CH4 = species.makeNewSpecies(structure)
-
-	structure = chem.Structure(); structure.fromSMILES('[H]')
-	H = species.makeNewSpecies(structure)
-
-	structure = chem.Structure(); structure.fromSMILES('[CH3]')
-	CH3 = species.makeNewSpecies(structure)
-
-	forward = reaction.Reaction(id=0, reactants=[CH3, H], products=[CH4])
-	reverse = reaction.Reaction(id=0, reactants=[CH4], products=[CH3, H])
-	forward.reverse = reverse
-	reverse.reverse = forward
-
-	kinetics = reaction.ArrheniusEPKinetics()
-	kinetics.fromDatabase([300, 2000, 1.93E14, 0, 0, 0.27, 0, 0, 0, 0, 3], '', 2)
-	forward.kinetics = [kinetics]
-
-	speciesList = [CH3, H, CH4]
-	reactionList = [forward]
-
-	reactionSystem = BatchReactor()
-	reactionSystem.temperatureModel = TemperatureModel()
-	reactionSystem.temperatureModel.setIsothermal(pq.Quantity(1000, 'K'))
-	reactionSystem.pressureModel = PressureModel()
-	reactionSystem.pressureModel.setIsobaric(pq.Quantity(1, 'bar'))
-	reactionSystem.equationOfState = IdealGas()
-	reactionSystem.initialConcentration[CH4] = pq.Quantity(1, 'mol/m**3')
-
-	reactionSystem.solve(0.0, 1.0e0, speciesList, reactionList)
-
 	

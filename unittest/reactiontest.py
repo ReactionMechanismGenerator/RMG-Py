@@ -74,10 +74,10 @@ class ReactionCheck(unittest.TestCase):
 		2 *2 H 0 {1,S}
 		""")
 		
-		C6H10 = makeNewSpecies(structure1)
-		H = makeNewSpecies(structure2)
-		C6H9 = makeNewSpecies(structure3)
-		H2 = makeNewSpecies(structure4)
+		C6H10, isNew = makeNewSpecies(structure1)
+		H, isNew = makeNewSpecies(structure2)
+		C6H9, isNew = makeNewSpecies(structure3)
+		H2, isNew = makeNewSpecies(structure4)
 		
 		# wipe the reaction list
 		reaction.reactionList=[]
@@ -114,15 +114,15 @@ class ReactionSetCheck(unittest.TestCase):
 		self.loadDatabase(only_families=['1,3_Insertion_ROR'])
 		structure1 = Structure()
 		structure1.fromSMILES("c1c([CH]C(C=CCCCCCC)OOCc2c3ccccc3ccc2)cccc1")
-		species1 = makeNewSpecies(structure1)
+		species1, isNew = makeNewSpecies(structure1)
 		
 		structure2 = Structure()
 		structure2.fromSMILES("c1ccc(c2ccccc12)COO")
-		species2 = makeNewSpecies(structure2)
+		species2, isNew = makeNewSpecies(structure2)
 		
 		structure3 = Structure()
 		structure3.fromSMILES("c1cc(C=C[C]=CCCCCCC)ccc1")
-		species3 = makeNewSpecies(structure3)
+		species3, isNew = makeNewSpecies(structure3)
 		
 		# wipe the reaction list
 		reaction.reactionList=[]
@@ -157,11 +157,11 @@ class ReactionSetCheck(unittest.TestCase):
 		self.loadDatabase(only_families=['intra_H_migration'])
 		structure1 = Structure()
 		structure1.fromSMILES("[CH](CCCc1ccccc1)CCCCCC")
-		species1 = makeNewSpecies(structure1)
+		species1, isNew = makeNewSpecies(structure1)
 
 		structure2 = Structure()
 		structure2.fromSMILES("C(CCCC[CH]c1ccccc1)CCCC")
-		species2 = makeNewSpecies(structure2)
+		species2, isNew = makeNewSpecies(structure2)
 			
 		# wipe the reaction list
 		reaction.reactionList=[]
@@ -191,7 +191,7 @@ class ReactionSetCheck(unittest.TestCase):
 					]:
 			
 			structure1 = Structure(SMILES=smile)
-			species1 = makeNewSpecies(structure1)
+			species1, isNew = makeNewSpecies(structure1)
 			print 'Reacting species',species1
 				
 			# wipe the reaction list
@@ -239,7 +239,7 @@ class ReactionSetCheck(unittest.TestCase):
 					]:
 			
 			structure1 = Structure(SMILES=smile)
-			species1 = makeNewSpecies(structure1)
+			species1, isNew = makeNewSpecies(structure1)
 			print 'Reacting species',species1
 				
 			# wipe the reaction list
@@ -273,7 +273,7 @@ class ReactionSetCheck(unittest.TestCase):
 					]:
 			
 			structure1 = Structure(SMILES=smile)
-			species1 = makeNewSpecies(structure1)
+			species1, isNew = makeNewSpecies(structure1)
 			print 'Reacting species',species1
 				
 			# wipe the reaction list
@@ -341,7 +341,7 @@ class ReactionSetCheck(unittest.TestCase):
 					'C1(C(CCCCCCCC)C(C(CCCCCC)C=C1)c1ccccc1)c1ccccc1',
 					'C(C)(C)(C)C(=O)OCC(C)C']:
 			structure1 = Structure(SMILES=smile)
-			species1 = makeNewSpecies(structure1)
+			species1, isNew = makeNewSpecies(structure1)
 			print 'Reacting species',species1
 				
 			# wipe the reaction list
@@ -419,10 +419,10 @@ structure4.fromAdjacencyList('''
 2 *2 H 0 {1,S}
 ''')
 
-C6H10 = makeNewSpecies(structure1)
-H = makeNewSpecies(structure2)
-C6H9 = makeNewSpecies(structure3)
-H2 = makeNewSpecies(structure4)
+C6H10, isNew = makeNewSpecies(structure1)
+H, isNew = makeNewSpecies(structure2)
+C6H9, isNew = makeNewSpecies(structure3)
+H2, isNew = makeNewSpecies(structure4)
 
 reaction1, isNew = makeNewReaction([C6H9, H2], [C6H10, H], \
 	[C6H9.structure[0], H2.structure[0]], \

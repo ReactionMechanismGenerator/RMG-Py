@@ -654,7 +654,36 @@ global speciesCounter
 #: Used to label species uniquely. Incremented each time a new species is made.
 speciesCounter = 0 
 
-def makeNewSpecies(structure, label='', reactive=True):
+def checkForExistingSpecies(structure):
+	"""
+	Check to see if an existing species contains the same 
+	:class:`structure.Structure` as `structure`. Returns :data:`True` or
+	:data:`False`, the matched species (if found), structure (if found), and
+	mapping (if found).
+	"""
+	
+	# First check cache and return if species is found
+	for i, spec in enumerate(speciesCache):
+		for struct in spec.structure:
+			found, map12, map21 = structure.findIsomorphism(struct)
+			if found:
+				speciesCache.pop(i)
+				speciesCache.insert(0, spec)
+				return True, spec, struct, map21
+
+	# Return an existing species if a match is found
+	for spec in speciesList:
+		for struct in spec.structure:
+			found, map12, map21 = structure.findIsomorphism(struct)
+			if found:
+				speciesCache.pop(i)
+				speciesCache.insert(0, spec)
+				return True, spec, struct, map21
+
+	# At this point we can conclude that the structure does not exist
+	return False, None, None, None
+
+def makeNewSpecies(structure, label='', reactive=True, checkExisting=True):
 	"""
 	Attempt to make a new species based on a chemical `structure`, which is a
 	:class:`Structure` object.
@@ -670,24 +699,16 @@ def makeNewSpecies(structure, label='', reactive=True):
 #	structure.simplifyAtomTypes()
 #	structure.updateAtomTypes()
 
-	# First check cache and return if species is found
-	for i, spec in enumerate(speciesCache):
-		if spec.isIsomorphic(structure):
-			speciesCache.pop(i)
-			speciesCache.insert(0, spec)
-			return spec
-
-	# Return an existing species if a match is found
-	for spec in speciesList:
-		if spec.isIsomorphic(structure):
-			speciesCache.insert(0, spec)
-			if len(speciesCache) > speciesCacheMaxSize: speciesCache.pop()
-			return spec
+	# Check to ensure that the species is new; return the existing species if
+	# not new
+	if checkExisting:
+		found, spec, struct, map = checkForExistingSpecies(structure)
+		if found: return spec, False
 
 	# Return None if the species has a forbidden structure
 	if thermo.forbiddenStructures is not None:
 		for lbl, struct in thermo.forbiddenStructures.iteritems():
-			if structure.isSubgraphIsomorphic(struct): return None
+			if structure.isSubgraphIsomorphic(struct): return None, False
 
 	# Otherwise make a new species
 	if label == '':
@@ -699,7 +720,7 @@ def makeNewSpecies(structure, label='', reactive=True):
 	# Note in the log
 	spec = Species(speciesCounter+1, label, structure, reactive)
 	logging.verbose('Creating new species %s' % str(spec))
-	return processNewSpecies(spec)
+	return processNewSpecies(spec), True
 
 def processNewSpecies(spec):
 	"""

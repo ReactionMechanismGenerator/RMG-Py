@@ -164,6 +164,15 @@ class Structure:
 		if map21 is None: map21 = dict()
 		return self.graph.isIsomorphic(other.graph, map12, map21)
 
+	def findIsomorphism(self, other, map12=None, map21=None):
+		"""
+		Returns :data:`True` if `other` is subgraph isomorphic and :data:`False`
+		otherwise. Uses the VF2 algorithm of Vento and Foggia.
+		"""
+		if map12 is None: map12 = dict()
+		if map21 is None: map21 = dict()
+		return self.graph.findIsomorphism(other.graph, map12, map21)
+
 	def isSubgraphIsomorphic(self, other, map12=None, map21=None):
 		"""
 		Returns :data:`True` if `other` is subgraph isomorphic and :data:`False`
@@ -197,9 +206,11 @@ class Structure:
 		for bond in bonds:
 			self.addBond(bond)
 	
-	def copy(self):
+	def copy(self, returnMap=False):
 		"""
-		Create a copy of the current Structure.
+		Create a deep copy of the current structure. Return the deep copy and,
+		if `returnMap` is set, a map that associates the atoms in the copy with
+		the atoms in the original.
 		"""
 		atoms = []; bonds = []
 		for atom in self.atoms():
@@ -211,7 +222,12 @@ class Structure:
 			index2 = self.atoms().index(bond.atoms[1])
 			newBond.atoms = [atoms[index1], atoms[index2]]
 		
-		return Structure(atoms, bonds)
+		s = Structure(atoms, bonds)
+
+		if returnMap:
+			return s, dict([(a1, a2) for a1, a2 in zip(self.atoms(), atoms)])
+		else:
+			return s
 
 	def merge(self, other):
 		"""

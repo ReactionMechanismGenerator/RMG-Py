@@ -2,3 +2,5 @@
 *.c
 *.so
 *.pyc
+*.pyd
+*.html

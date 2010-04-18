@@ -25,6 +25,8 @@
 #
 ################################################################################
 
+cimport graph
+
 cdef class Element:
 
 	cdef public int number
@@ -79,33 +81,25 @@ cdef class BondType:
 
 ################################################################################
 
-cdef class Atom(object):
+cdef class Atom(graph.Vertex):
 	
 	cdef public list _atomType
 	cdef public list _electronState
 	cdef public int charge
 	cdef public str label
-	
-	# for Extended Connectivity; as introduced by Morgan (1965)
-	# http://dx.doi.org/10.1021/c160017a018
-	cdef public short connectivity1
-	cdef public short connectivity2
-	cdef public short connectivity3
 
-	cdef public short sorting_label
-
-	cpdef bint equivalent(Atom self, Atom other)
-	cpdef bint isSpecificCaseOf(Atom self, Atom other)
+	cpdef bint equivalent(Atom self, graph.Vertex other)
+	cpdef bint isSpecificCaseOf(Atom self, graph.Vertex other)
 
 ################################################################################
 
-cdef class Bond(object):
+cdef class Bond(graph.Edge):
 	
 	cdef public list atoms
 	cdef public list _bondType
-	
-	cpdef bint equivalent(Bond self, Bond other)
-	cpdef bint isSpecificCaseOf(Bond self, Bond other)
+
+	cpdef bint equivalent(Bond self, graph.Edge other)
+	cpdef bint isSpecificCaseOf(Bond self, graph.Edge other)
 
 ################################################################################
 

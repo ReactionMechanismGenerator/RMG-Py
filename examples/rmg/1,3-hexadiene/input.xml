@@ -98,8 +98,8 @@
 			<method>reservoirState</method>
 			<grainSize units="kJ/mol">8.0</grainSize>
 			<numberOfGrains>200</numberOfGrains>
-			<temperatures units="K">300.0 400.0 500.0 600.0 800.0 1000.0 1500.0 2000.0</temperatures>
-			<pressures units="bar">0.01 0.1 1.0 10.0 100.0</pressures>
+			<temperatureRange units="K" min="300.0" max="2000.0" number="8"/>
+			<pressureRange units="bar" min="0.01" max="100.0" number="5"/>-->
 			<!--<interpolationModel type="PDepArrhenius"/>-->
 			<interpolationModel type="Chebyshev">
 				<numberOfTemperaturePolynomials>4</numberOfTemperaturePolynomials>

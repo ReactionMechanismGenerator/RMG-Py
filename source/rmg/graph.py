@@ -37,8 +37,6 @@ significant speed boost to running in pure Python mode.
 
 """
 
-import chem
-
 import cython
 import log as logging
 
@@ -47,7 +45,10 @@ import log as logging
 class Vertex:
 
 	def __init__(self):
-		self.connectivity = [0, 0, 0]
+		self.connectivity1 = -1
+		self.connectivity2 = -1
+		self.connectivity3 = -1
+		self.sorting_label = -1
 	
 	def equivalent(self, other):
 		return True
@@ -88,7 +89,7 @@ class Graph(dict):
 		Call this method when you have modified the graph or structure,
 		so that any information (eg. connectivity values, ring locations) that
 		we are cacheing, is reset."""
-		vert = cython.declare(chem.Atom)
+		vert = cython.declare(Vertex)
 		for vert in self:
 			vert.connectivity1 = -1
 			vert.connectivity2 = -1
@@ -190,6 +191,13 @@ class Graph(dict):
 		ismatch, map21, map12 = VF2_isomorphism(self, other, map21_0, map12_0,
 			subgraph=False, findAll=False)
 		return ismatch
+
+	def findIsomorphism(self, other, map12_0, map21_0):
+		"""
+		Returns :data:`True` if `other` is subgraph isomorphic and :data:`False`
+		otherwise. Uses the VF2 algorithm of Vento and Foggia.
+		"""
+		return VF2_isomorphism(self, other, map21_0, map12_0, False, False)
 
 	def isSubgraphIsomorphic(self, other, map12_0, map21_0):
 		"""
@@ -320,8 +328,8 @@ class Graph(dict):
 		verticesToRemove = cython.declare(list)
 		cycleList = cython.declare(list)
 		cycles = cython.declare(list)
-		vertex = cython.declare(chem.Atom)
-		rootVertex = cython.declare(chem.Atom)
+		vertex = cython.declare(Vertex)
+		rootVertex = cython.declare(Vertex)
 		found = cython.declare(cython.bint)
 		cycle = cython.declare(list)
 		graphs = cython.declare(list)
@@ -422,8 +430,8 @@ class Graph(dict):
 		Recursively calls itself
 		"""
 		# Note that this function no longer returns the cycle; just True/False
-		vertex2 = cython.declare(chem.Atom)
-		edge = cython.declare(chem.Bond)
+		vertex2 = cython.declare(Vertex)
+		edge = cython.declare(Edge)
 		found = cython.declare(cython.bint)
 		
 		for vertex2, edge in self[chain[-1]].iteritems():
@@ -466,8 +474,8 @@ class Graph(dict):
 		and the function is called again. This recursively spiders outwards
 		from the starting chain, finding all the cycles.
 		"""
-		vertex2 = cython.declare(chem.Atom)
-		edge = cython.declare(chem.Bond)
+		vertex2 = cython.declare(Vertex)
+		edge = cython.declare(Edge)
 		
 		# chainLabels = cython.declare(list)
 		# chainLabels=[self.keys().index(v) for v in chain] 
@@ -499,8 +507,8 @@ class Graph(dict):
 		"""
 		
 		count = cython.declare(cython.short)
-		vert1 = cython.declare(chem.Atom)
-		vert2 = cython.declare(chem.Atom)
+		vert1 = cython.declare(Vertex)
+		vert2 = cython.declare(Vertex)
 		
 		vertices = cython.declare(list)
 		vertices = self.vertices()
@@ -534,7 +542,7 @@ class Graph(dict):
 		# an arbitary order, as long as it remains constant
 		# so we record the ordering index ON the vertices
 		i = cython.declare(cython.int)
-		vertex = cython.declare(chem.Atom)
+		vertex = cython.declare(Vertex)
 		for i in range(len(ordered_vertices)):
 			vertex=ordered_vertices[i]
 			vertex.sorting_label = i
@@ -589,7 +597,7 @@ def VF2_isomorphism(graph1, graph2, map12, map21, subgraph=False, findAll=False)
 	# update the connectivity values (before sorting by them)
 	# sort the vertices according to something wise (based on connectivity value), and 
 	# record the sorting order on each vertex (as vertex.sorting_label)
-	cython.declare(vert=chem.Atom)
+	cython.declare(vert=Vertex)
 	vert = graph1.iterkeys().next() # just check the first atom in the graph
 	if vert.sorting_label < 0:
 		graph1.setConnectivityValues()
@@ -635,10 +643,10 @@ def __VF2_feasible(graph1, graph2, vertex1, vertex2, map21, map12, terminals1,
 	checks preemptively eliminate a number of false positives.)
 	"""
 
-	vert1 = cython.declare(chem.Atom)
-	vert2 = cython.declare(chem.Atom)
-	edge1 = cython.declare(chem.Bond)
-	edge2 = cython.declare(chem.Bond)
+	vert1 = cython.declare(Vertex)
+	vert2 = cython.declare(Vertex)
+	edge1 = cython.declare(Edge)
+	edge2 = cython.declare(Edge)
 	edges1 = cython.declare(dict)
 	edges2 = cython.declare(dict)
 	i = cython.declare(cython.int)
@@ -764,8 +772,8 @@ def __VF2_match(graph1, graph2, map21, map12, terminals1, terminals2, subgraph,
 
 	new_terminals1 = cython.declare(list)
 	new_terminals2 = cython.declare(list)
-	vertex1 = cython.declare(chem.Atom)
-	vertex2 = cython.declare(chem.Atom)
+	vertex1 = cython.declare(Vertex)
+	vertex2 = cython.declare(Vertex)
 	ismatch = cython.declare(cython.bint)
 	pairs = cython.declare(list)
 
@@ -854,10 +862,10 @@ def __VF2_pairs(graph1, graph2, terminals1, terminals2, map21, map12):
 	one vertex from the first graph and all vertices from the second graph.
 	"""
 	pairs = cython.declare(list)
-	vertex1 = cython.declare(chem.Atom)
-	vertex2 = cython.declare(chem.Atom)
-	terminal1 = cython.declare(chem.Atom)
-	terminal2 = cython.declare(chem.Atom)
+	vertex1 = cython.declare(Vertex)
+	vertex2 = cython.declare(Vertex)
+	terminal1 = cython.declare(Vertex)
+	terminal2 = cython.declare(Vertex)
 	list_to_sort = cython.declare(list)
 	lowest_label = cython.declare(cython.short)
 	this_label = cython.declare(cython.short)
@@ -906,8 +914,8 @@ def __VF2_terminals(graph, mapping):
 	"""
 	
 	terminals = cython.declare(list)
-	vertex = cython.declare(chem.Atom)
-	vert = cython.declare(chem.Atom)
+	vertex = cython.declare(Vertex)
+	vert = cython.declare(Vertex)
 	
 	terminals = []# list()
 	
@@ -928,8 +936,8 @@ def __VF2_new_terminals(graph, mapping, old_terminals, new_vertex):
 	to the mapping. Returns a new COPY of the terminals.
 	"""
 	
-	vertex = cython.declare(chem.Atom)
-	vertex2 = cython.declare(chem.Atom)
+	vertex = cython.declare(Vertex)
+	vertex2 = cython.declare(Vertex)
 	sorting_label = cython.declare(cython.short)
 	sorting_label2 = cython.declare(cython.short)
 	terminals = cython.declare(list)
