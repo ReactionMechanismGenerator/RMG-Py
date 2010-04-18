@@ -212,6 +212,24 @@ class ReactionSetCheck(unittest.TestCase):
 				all_products.extend(rxn.products)
 			print "All products for reacting %s:"%species1, [p.structure[0] for p in all_products]
 			
+
+		structure2 = Structure()
+		structure2.fromAdjacencyList("O2\n1 O 0 {2,D}\n2 O 0 {1,D}\n")
+		species2 = makeNewSpecies(structure2)
+		structure3 = Structure()
+		structure3.fromAdjacencyList("O\n1 O 2\n")
+		species3 = makeNewSpecies(structure3)
+		reaction.reactionList=[]
+		print "Now reacting %s with %s:"%(species2, species3)
+		for sp in (species2, species3):
+			print sp.toAdjacencyList()
+		rxns = reaction.kineticsDatabase.getReactions([species2,species3])
+		for rxn in rxns:
+			print 'Reaction family:',rxn.family
+			print 'Reaction:',rxn
+			print 'Kinetics:',rxn.kinetics
+		self.assertEqual(len(rxns),1, "Made %d 1+2_Cycloaddition reactions instead of 1"%(len(rxns)))
+			
 	def test22CycloadditionCd(self):
 		"""Test 2+2_cycloaddition_Cd reactions"""
 		self.loadDatabase(only_families=['2+2_cycloaddition_Cd'])
@@ -414,15 +432,15 @@ reaction1, isNew = makeNewReaction([C6H9, H2], [C6H10, H], \
 	test1 = "reaction1, isNew = makeNewReaction([C6H9, H2], [C6H10, H], [C6H9.structure[0], H2.structure[0]], [C6H10.structure[0], H.structure[0]], None)"
 	print "Timing makeNewReaction:"
 	t = Timer(test1,startup)
-	times = t.repeat(repeat=1,number=10000)
-	print " Test1 took %.3f microseconds (%s)"%(min(times)*1000/10, [tt*1000/10 for tt in times])
+#	times = t.repeat(repeat=1,number=10000)
+#	print " Test1 took %.3f microseconds (%s)"%(min(times)*1000/10, [tt*1000/10 for tt in times])
 	print "**************"
 	
 	# run a certain check without catching errors (turn on PDB debugger first)
 	import rmg.log as logging
 	logging.initialize(5,'reactiontest.log') 
 	#import pdb
-	ReactionSetCheck('testAllFamilies').debug()
+	ReactionSetCheck('test12Cycloaddition').debug()
 	
 	# now run all the unit tests
 	unittest.main( testRunner = unittest.TextTestRunner(verbosity=2) )
