@@ -925,7 +925,7 @@ class Database:
 			for label in centers.keys():
 				# Make sure the labels are in both group and structure.
 				if label not in atoms:
-					logging.warning("Label %s is in group but not in structure"%(label))
+					logging.debug("Label %s is in group %s but not in structure"%(label, node))
 					continue # with the next label - ring structures might not have all labeled atoms
 					# return False # force it to have all the labeled atoms
 				center = centers[label]

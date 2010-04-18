@@ -1428,6 +1428,7 @@ class ReactionFamily(data.Database):
 			  items[0] != 'BREAK_BOND' and items[0] != 'GAIN_RADICAL' and \
 			  items[0] != 'LOSE_RADICAL':
 				print items[0]
+			assert action[0] in ['CHANGE_BOND','FORM_BOND','BREAK_BOND','GAIN_RADICAL','LOSE_RADICAL']
 
 			# Remaining items are comma-delimited list of parameters enclosed by
 			# {}, which we will split into individual parameters
@@ -1461,18 +1462,18 @@ class ReactionFamily(data.Database):
 		# structures, rather than unions
 		reactantStructures = []
 		
-
+		logging.debug("Generating template for products.")
 		for reactant in self.template.reactants:
 			if isinstance(reactant, list):	reactants = [reactant[0]]
 			else:							reactants = [reactant]
 			
-			logging.info("Reactants:%s"%reactants)
+			logging.debug("Reactants:%s"%reactants)
 			for s in reactants: #
 				struct = self.dictionary[s]
-				logging.info("Reactant %s is class %s"%(str(s),struct.__class__))
+				#logging.debug("Reactant %s is class %s"%(str(s),struct.__class__))
 				if isinstance(struct, data.LogicNode):
 					all_structures = struct.getPossibleStructures(self.dictionary) 
-					logging.info('Expanding node %s to %s'%(s, all_structures))
+					logging.debug('Expanding node %s to %s'%(s, all_structures))
 					reactantStructures.append(all_structures)
 				else:
 					reactantStructures.append([struct])
