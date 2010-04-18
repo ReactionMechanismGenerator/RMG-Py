@@ -50,6 +50,39 @@ class AtomTypeEquivalencyCheck(unittest.TestCase):
 					self.assertTrue(atomTypes['R!H'].equivalent(value))
 		self.assertFalse(atomTypes['H'].equivalent(atomTypes['R!H']))
 		self.assertFalse(atomTypes['R!H'].equivalent(atomTypes['H']))
+		
+	
+	def testIsSpecificCaseOf(self):
+		"""
+		Check the isSpecificCaseOf() method.
+		"""
+		
+		for name, a in atomTypes.iteritems():
+			
+			# everything is in R and itself
+			self.assertTrue(a.isSpecificCaseOf(atomTypes['R']) )
+			self.assertTrue(a.isSpecificCaseOf(a) )
+			
+			# R is in nothing but R
+			if name is not 'R':
+				self.assertFalse(atomTypes['R'].isSpecificCaseOf(a), "R should not be specific case of %s"%name)
+				
+			# H is not in R!H
+			if name is 'H': 
+				self.assertFalse(a.isSpecificCaseOf(atomTypes['R!H']))
+			elif name is not 'R': # but everything else is, except R
+				self.assertTrue(a.isSpecificCaseOf(atomTypes['R!H']))
+				
+			# R!H is in nothing but R and itself
+			if name not in ['R','R!H']:
+				self.assertFalse(atomTypes['R!H'].isSpecificCaseOf(a))
+			
+			# maybe there are others I should test
+			if a.element and a.element.symbol is 'C':
+				self.assertTrue(a.isSpecificCaseOf(atomTypes['C']))
+				if name != 'C': # then something specific like 'Cd'
+					self.assertFalse(atomTypes['C'].isSpecificCaseOf(a))
+					
 
 ################################################################################
 
@@ -166,4 +199,6 @@ class AtomCheck(unittest.TestCase):
 ################################################################################
 
 if __name__ == '__main__':
+	AtomTypeEquivalencyCheck('testIsSpecificCaseOf').debug()
+	
 	unittest.main( testRunner = unittest.TextTestRunner(verbosity=2) )

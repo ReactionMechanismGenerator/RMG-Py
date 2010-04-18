@@ -22,7 +22,7 @@ Y_2centeradjbirad
 
 C2b
 1 *1 C 1 {2,T}
-2 C 1 {1,T}
+2    C 1 {1,T}
 
 Y_1centerbirad
 1 *1 {Cs,Cd,O} 2T
@@ -32,8 +32,8 @@ O_atom_triplet
 
 CH2_triplet
 1 *1 C 2T {2,S}, {3,S}
-2 H 0 {1,S}
-3 H 0 {1,S}
+2    H 0 {1,S}
+3    H 0 {1,S}
 
 Y_rad
 1 *1 R 1

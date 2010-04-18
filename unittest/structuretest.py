@@ -64,9 +64,7 @@ class StructureCheck(unittest.TestCase):
 				self.assertTrue(value in structure1.atoms())
 
 	def testSubgraphIsomorphismAgain(self):
-
 		structure1 = Structure()
-		#structure1.fromSMILES('C=CC=CCC')
 		structure1.fromAdjacencyList("""
 		1 * C 0 {2,D} {7,S} {8,S}
 		2 C 0 {1,D} {3,S} {9,S}
@@ -89,9 +87,9 @@ class StructureCheck(unittest.TestCase):
 		structure2 = Structure()
 		structure2.fromAdjacencyList("""
 		1 * C 0 {2,D} {3,S} {4,S}
-		2 C 0 {1,D}
-		3 H 0 {1,S}
-		4 H 0 {1,S}
+		2   C 0 {1,D}
+		3   H 0 {1,S}
+		4   H 0 {1,S}
 		""")
 
 		labeled1 = structure1.getLabeledAtoms().values()[0]
@@ -117,6 +115,48 @@ class StructureCheck(unittest.TestCase):
 				self.assertTrue(key in structure2.atoms())
 				self.assertTrue(value in structure1.atoms())
 
+	def testSubgraphIsomorphismManyLabels(self):
+		structure1 = Structure() # specific case (species)
+		structure1.fromAdjacencyList("""
+1 *1 C   1 {2,S} {3,S} 
+2    Cs  0 {1,S} {3,S} 
+3    Cs  0 {1,S} {2,S} 
+		""")
+		
+		structure2 = Structure() # general case (functional group)
+		structure2.fromAdjacencyList("""
+1 *1 C 1 {2,S}, {3,S} 
+2    R 0 {1,S}
+3    R 0 {1,S}
+		""")
+		
+		labeled1 = structure1.getLabeledAtoms()
+		labeled2 = structure2.getLabeledAtoms()
+		map21_0 = {}
+		map12_0 = {}
+		for label,atom1 in labeled1.iteritems():
+			atom2 = labeled2[label]
+			map21_0[atom2] = atom1
+			map12_0[atom1] = atom2
+		self.assertTrue(structure1.isSubgraphIsomorphic(structure2, map12_0, map21_0))
+
+		match, map21, map12 = structure1.findSubgraphIsomorphisms(structure2, map12_0, map21_0)
+		self.assertTrue(match)
+		self.assertTrue(len(map21) == len(map12) == 1)
+		for mapA, mapB in zip(map21, map12):
+			self.assertTrue(len(mapA) == len(mapB) == min(len(structure1.atoms()), len(structure2.atoms())))
+			for key, value in mapA.iteritems():
+				self.assertTrue(value in mapB)
+				self.assertTrue(key is mapB[value])
+				self.assertTrue(key in structure1.atoms())
+				self.assertTrue(value in structure2.atoms())
+			for key, value in mapB.iteritems():
+				self.assertTrue(value in mapA)
+				self.assertTrue(key is mapA[value])
+				self.assertTrue(key in structure2.atoms())
+				self.assertTrue(value in structure1.atoms())
+				
+				
 	def testIsInCycle(self):
 
 		# ethane
@@ -372,6 +412,8 @@ from timeit import Timer
 
 if __name__ == '__main__':
 	
+	StructureCheck('testSubgraphIsomorphismManyLabels').debug()
+	
 	startup = """gc.enable() # enable garbage collection in timeit
 import sys
 sys.path.append('../source')
@@ -389,10 +431,10 @@ structure4.fromSMILES('C(CCC)CCCC(CC(C(OOC(c1ccccc1)CCCCCCCCC)c1ccccc1)CCCCCC=CC
 	test2 = "structure3.isIsomorphic(structure4)"
 	print "Timing isIsomorphic:"
 	t = Timer(test1,startup)
-	times = t.repeat(repeat=20,number=1000)
+	times = t.repeat(repeat=20,number=1)#000)
 	print " Test1 took %.3f milliseconds (%s)"%(min(times), times)
 	t = Timer(test2,startup)
-	times = t.repeat(repeat=20,number=1000)
+	times = t.repeat(repeat=20,number=1)#000)
 	print " Test2 took %.3f milliseconds (%s)"%(min(times),times )
 	
 	unittest.main( testRunner = unittest.TextTestRunner(verbosity=2) )

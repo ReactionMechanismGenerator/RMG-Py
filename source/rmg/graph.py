@@ -188,7 +188,8 @@ class Graph(dict):
 		otherwise. Uses the VF2 algorithm of Vento and Foggia.
 		"""
 		if len(self) != len(other): return False
-		ismatch, map21, map12 = VF2_isomorphism(self, other, map21_0, map12_0, False, False)
+		ismatch, map21, map12 = VF2_isomorphism(self, other, map21_0, map12_0,
+			subgraph=False, findAll=False)
 		return ismatch
 
 	def findIsomorphism(self, other, map12_0, map21_0):
@@ -203,15 +204,19 @@ class Graph(dict):
 		Returns :data:`True` if `other` is subgraph isomorphic and :data:`False`
 		otherwise. Uses the VF2 algorithm of Vento and Foggia.
 		"""
-		ismatch, map21, map12 = VF2_isomorphism(self, other, map21_0, map12_0, True, False)
+		ismatch, map21, map12 = VF2_isomorphism(self, other, map21_0, map12_0,
+			subgraph=True, findAll=False)
 		return ismatch
 
 	def findSubgraphIsomorphisms(self, other, map12_0, map21_0):
 		"""
 		Returns :data:`True` if `other` is subgraph isomorphic and :data:`False`
-		otherwise. Uses the VF2 algorithm of Vento and Foggia.
+		otherwise. Also returns the lists all of valid mappings.
+		
+		Uses the VF2 algorithm of Vento and Foggia.
 		"""
-		return VF2_isomorphism(self, other, map21_0, map12_0, True, True)
+		return VF2_isomorphism(self, other, map21_0, map12_0, 
+			subgraph=True, findAll=True)
 
 	def copy(self):
 		"""
@@ -549,13 +554,16 @@ class Graph(dict):
 def VF2_isomorphism(graph1, graph2, map12, map21, subgraph=False, findAll=False):
 	"""
 	Returns :data:`True` if two :class:`Graph` objects are isomorphic and
-	:data:`False` otherwise. Uses the VF2 algorithm of Vento and Foggia. If
-	`subgraph` is :data:`True` then graph2 is checked for being a potential
-	subgraph of graph1. `findAll` is used to specify whether all isomorphisms
-	should be returned,  or only the first.
-	
-	Returns tuple (is_match, map12, map21)
-	"""
+	:data:`False` otherwise. Uses the VF2 algorithm of Vento and Foggia. 
+
+	If `subgraph` is :data:`True` then graph2 is checked for being a potential
+	subgraph of graph1. i.e. graph1 is a specific case of graph2. 
+
+	`findAll` is used to specify whether all isomorphisms should be returned, or
+	only the first.
+
+ 	Returns tuple (is_match, map12, map21)  or if `findAll` is :data:`True` 
+	then it returns tuple (is_match, list_of_map12s, list_of_map21s)"""
 
 	map12List = cython.declare(list)
 	map21List = cython.declare(list)
@@ -625,7 +633,7 @@ def __VF2_feasible(graph1, graph2, vertex1, vertex2, map21, map12, terminals1,
 	and vice versa, respectively. `terminals1` and `terminals2` are lists of
 	the vertices that are directly connected to the already-mapped vertices.
 	`subgraph` is :data:`True` if graph2 is to be treated as a potential
-	subgraph of graph1.
+	subgraph of graph1. i.e. graph1 is a specific case of graph2.
 
 	Uses the VF2 algorithm of Vento and Foggia. The feasibility is assessed
 	through a series of semantic and structural checks. Only the combination
@@ -645,29 +653,50 @@ def __VF2_feasible(graph1, graph2, vertex1, vertex2, map21, map12, terminals1,
 
 	# Richard's Connectivity Value check
 	# not sure where this is best done. Is it more specific or more general?
-	if not subgraph:
+	if not subgraph: # then exact match required.
 		if vertex1.connectivity1 != vertex2.connectivity1: return False
 		if vertex1.connectivity2 != vertex2.connectivity2: return False
 		if vertex1.connectivity3 != vertex2.connectivity3: return False
+		
 	# Semantic check #1: vertex1 and vertex2 must be equivalent
-	if not vertex1.equivalent(vertex2):
-		return False
-	
+	if subgraph:
+		if not vertex1.isSpecificCaseOf(vertex2):
+			return False		
+	else: # exact match required
+		if not vertex1.equivalent(vertex2): 
+		# Warning - I think current atom.equivalent returns True too often
+			return False
+		
 	# Semantic check #2: adjacent vertices to vertex1 and vertex2 that are
 	# already mapped should be connected by equivalent edges
 	edges1 = graph1[vertex1]
 	edges2 = graph2[vertex2]
 		
-	for vert1 in edges1:
-	# for vert1, edge1 in edges1.iteritems(): # if you uncomment this..**
-		if vert1 in map21:
-			vert2 = map21[vert1]
-			if not vert2 in edges2:
-				return False
-			edge1 = edges1[vert1] # **..then remove this
+	for vert2 in edges2:  # nb. 1 is specific case of 2
+		if vert2 in map12:
+			vert1 = map12[vert2]
+			if not vert1 in edges1: # atoms not joined in graph1
+				return False 
+			edge1 = edges1[vert1]
 			edge2 = edges2[vert2]
-			if not edge1.equivalent(edge2):
-				return False
+			if subgraph:
+				if not edge1.isSpecificCaseOf(edge2):
+					return False
+			else: # exact match required
+				if not edge1.equivalent(edge2):
+				# Warning - I think bond.equivalent() returns True too often
+					return False
+	
+	# there could still be edges in graph1 that aren't in graph2.
+	# this is ok for subgraph matching, but not for exact matching
+	if not subgraph:
+		for vert1 in edges1:
+			if vert1 in map21:
+				vert2 = map21[vert1]
+				if not vert2 in edges2: # atoms not joined in graph1
+					return False 
+				# if they exist in graph2, then 
+				# we've already checked they're the same type as in graph1
 	
 	# Count number of terminals adjacent to vertex1 and vertex2
 	term1Count = cython.declare(cython.int)
@@ -706,13 +735,21 @@ def __VF2_feasible(graph1, graph2, vertex1, vertex2, map21, map12, terminals1,
 		if term1Count != term2Count:
 			return False
 
-	# Level 0 look-ahead: all adjacent vertices of vertex1 already in the
-	# mapping must map to adjacent vertices of vertex2
-	for vert1 in edges1:
-		if vert1 in map21:
-			vert2 = map21[vert1]
-			if vert2 not in edges2:
+	# Level 0 look-ahead: all adjacent vertices of vertex2 already in the
+	# mapping must map to adjacent vertices of vertex1
+	for vert2 in edges2:
+		if vert2 in map12:
+			vert1 = map12[vert2]
+			if vert1 not in edges1:
 				return False
+	# ...AND all adjacent vertices of vertex1 already in the
+	# mapping must map to adjacent vertices of vertex2, unless we are subgraph matching.
+	if not subgraph:
+		for vert1 in edges1:
+			if vert1 in map21:
+				vert2 = map21[vert1]
+				if vert2 not in edges2:
+					return False
 	return True
 
 def __VF2_match(graph1, graph2, map21, map12, terminals1, terminals2, subgraph,
@@ -724,7 +761,10 @@ def __VF2_match(graph1, graph2, map21, map12, terminals1, terminals2, subgraph,
 	and vice versa, respectively. `terminals1` and `terminals2` are lists of
 	the vertices that are directly connected to the already-mapped vertices.
 	`subgraph` is :data:`True` if graph2 is to be treated as a potential
-	subgraph of graph1.
+	subgraph of graph1. i.e. graph1 is a specific case of graph2.
+	
+	If findAll=True then it adds valid mappings to map21List and 
+	map12List, but returns False when done (or True if the initial mapping is complete)
 
 	Uses the VF2 algorithm of Vento and Foggia, which is O(N) in spatial complexity
 	and O(N**2) (best-case) to O(N! * N) (worst-case) in temporal complexity.
@@ -747,8 +787,18 @@ def __VF2_match(graph1, graph2, map21, map12, terminals1, terminals2, subgraph,
 			logging.error('******************************************')
 			return True
 	
-	# Done if we have mapped to all vertices in graph2
-	if len(map12) >= len(graph2) or len(map21) >= len(graph1):
+	# Done if we have mapped to all vertices in graph
+	if len(map21) >= len(graph1):
+		if findAll:
+			map21List.append(map21.copy())
+			map12List.append(map12.copy())
+			#logging.verbose("Adding valid mapping to mapList")
+		return True
+	if len(map12) >= len(graph2) and subgraph:
+		if findAll:
+			map21List.append(map21.copy())
+			map12List.append(map12.copy())
+			#logging.verbose("Adding valid mapping to mapList")
 		return True
 	
 	# Create list of pairs of candidates for inclusion in mapping
@@ -771,10 +821,7 @@ def __VF2_match(graph1, graph2, map21, map12, terminals1, terminals2, subgraph,
 				map21, map12, new_terminals1, new_terminals2, subgraph, findAll, \
 				map21List, map12List, call_depth-1)
 			if ismatch:
-				if findAll:
-					map21List.append(map21.copy())
-					map12List.append(map12.copy())
-				else:
+				if not findAll:
 					return True
 			# Undo proposed match
 			del map21[vertex1]
@@ -794,7 +841,7 @@ def __getSortLabel(vertex):
 		
 def globalAtomSortValue(atom):
 	"""
-	Used to sort atoms prior to poposing candidate pairs in :method:`__VF2_pairs` 
+	Used to sort atoms prior to proposing candidate pairs in :method:`__VF2_pairs` 
 	The lowest (or most negative) values will be first in the list when you sort, 
 	so should be given to the atoms you want to explore first. 
 	For now, that is (roughly speaking) the most connected atoms. This definitely helps for large graphs
@@ -804,7 +851,6 @@ def globalAtomSortValue(atom):
 	"""
 	#return hash(atom)  # apparently random?
 	#return (atom.connectivity[0] ) # not unique enough
-	
 	return ( -256*atom.connectivity1 - 16*atom.connectivity2 - atom.connectivity3 )
 	
 def __VF2_pairs(graph1, graph2, terminals1, terminals2, map21, map12):
@@ -815,7 +861,6 @@ def __VF2_pairs(graph1, graph2, terminals1, terminals2, map21, map12):
 	second graph. If there are no terminals, the candidates are	selected to be
 	one vertex from the first graph and all vertices from the second graph.
 	"""
-	
 	pairs = cython.declare(list)
 	vertex1 = cython.declare(Vertex)
 	vertex2 = cython.declare(Vertex)

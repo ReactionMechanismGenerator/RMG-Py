@@ -51,6 +51,7 @@ cdef class AtomType:
 	cdef public object decrementBond
 
 	cpdef bint equivalent(AtomType self, AtomType other)
+	cpdef bint isSpecificCaseOf(AtomType self, AtomType other)
 
 ################################################################################
 
@@ -63,6 +64,7 @@ cdef class ElectronState:
 	cdef public ElectronState decrement
 
 	cpdef bint equivalent(ElectronState self, ElectronState other)
+	cpdef bint isSpecificCaseOf(ElectronState self, ElectronState other)
 
 ################################################################################
 
@@ -75,6 +77,7 @@ cdef class BondType:
 	cdef public str location
 
 	cpdef bint equivalent(BondType self, BondType other)
+	cpdef bint isSpecificCaseOf(BondType self, BondType other)
 
 ################################################################################
 
@@ -84,8 +87,9 @@ cdef class Atom(graph.Vertex):
 	cdef public list _electronState
 	cdef public int charge
 	cdef public str label
-	
+
 	cpdef bint equivalent(Atom self, graph.Vertex other)
+	cpdef bint isSpecificCaseOf(Atom self, graph.Vertex other)
 
 ################################################################################
 
@@ -93,8 +97,9 @@ cdef class Bond(graph.Edge):
 	
 	cdef public list atoms
 	cdef public list _bondType
-	
+
 	cpdef bint equivalent(Bond self, graph.Edge other)
+	cpdef bint isSpecificCaseOf(Bond self, graph.Edge other)
 
 ################################################################################
 

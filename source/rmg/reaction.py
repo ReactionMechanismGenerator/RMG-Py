@@ -1029,9 +1029,9 @@ class ReactionFamily(data.Database):
 					candidate = False
 				# We will also keep a node that is the child of a union in case
 				# unions need the children explicitly defined in the tree
-				elif self.dictionary[parent] == 'union':
+				elif isinstance(self.dictionary[parent],data.LogicNode):
 						candidate = False
-
+				
 				if candidate:
 					pruneList.append(node)
 
@@ -1428,6 +1428,7 @@ class ReactionFamily(data.Database):
 			  items[0] != 'BREAK_BOND' and items[0] != 'GAIN_RADICAL' and \
 			  items[0] != 'LOSE_RADICAL':
 				print items[0]
+			assert action[0] in ['CHANGE_BOND','FORM_BOND','BREAK_BOND','GAIN_RADICAL','LOSE_RADICAL']
 
 			# Remaining items are comma-delimited list of parameters enclosed by
 			# {}, which we will split into individual parameters
@@ -1460,21 +1461,23 @@ class ReactionFamily(data.Database):
 		# First, generate a list of reactant structures that are actual
 		# structures, rather than unions
 		reactantStructures = []
+		
+		logging.debug("Generating template for products.")
 		for reactant in self.template.reactants:
 			if isinstance(reactant, list):	reactants = [reactant[0]]
 			else:							reactants = [reactant]
-			unionFound = True
-			while unionFound:
-				unionFound = False; reactantsToRemove = []; reactantsToAdd = []
-				for s in reactants:
-					if self.dictionary[s] == 'union':
-						reactantsToRemove.append(s)
-						reactantsToAdd.extend(self.tree.children[s])
-						unionFound = True
-				for s in reactantsToRemove: reactants.remove(s)
-				reactants.extend(reactantsToAdd)
-			reactantStructures.append([self.dictionary[s] for s in reactants])
-
+			
+			logging.debug("Reactants:%s"%reactants)
+			for s in reactants: #
+				struct = self.dictionary[s]
+				#logging.debug("Reactant %s is class %s"%(str(s),struct.__class__))
+				if isinstance(struct, data.LogicNode):
+					all_structures = struct.getPossibleStructures(self.dictionary) 
+					logging.debug('Expanding node %s to %s'%(s, all_structures))
+					reactantStructures.append(all_structures)
+				else:
+					reactantStructures.append([struct])
+		
 		# Second, get all possible combinations of reactant structures
 		reactantStructures = data.getAllCombinations(reactantStructures)
 
@@ -1503,7 +1506,6 @@ class ReactionFamily(data.Database):
 				self.tree.parent[self.template.products[i]] = None
 				self.tree.children[self.template.products[i]] = []
 			else:
-				self.dictionary[self.template.products[i]] = 'union'
 				children = []
 				for j in range(len(productStructureList[i])):
 					label = '%s_%i' % (self.template.products[i], j+1)
@@ -1514,25 +1516,29 @@ class ReactionFamily(data.Database):
 
 				self.tree.parent[self.template.products[i]] = None
 				self.tree.children[self.template.products[i]] = children
+				
+				self.dictionary[self.template.products[i]] = data.LogicOr(children,invert=False)
 
 	def reactantMatch(self, reactant, templateReactant):
 		"""
 		Return :data:`True` if the provided reactant matches the provided
 		template reactant and :data:`False` if not.
+		
+		Also returns complete lists of mappings
 		"""
 		maps12 = []; maps21 = []
 		if templateReactant.__class__ == list: templateReactant = templateReactant[0]
 		struct = self.dictionary[templateReactant]
-		if struct.__class__ == str or struct.__class__ == unicode:
-			if struct.lower() == 'union':
-				for child in self.tree.children[templateReactant]:
-					ismatch, map21, map12 = self.reactantMatch(reactant, child)
-					if ismatch:
-						maps12.extend(map12); maps21.extend(map21)
+		
+		if isinstance(struct, data.LogicNode):
+			for child_structure in struct.getPossibleStructures(self.dictionary):
+				ismatch, map21, map12 = reactant.findSubgraphIsomorphisms(child_structure)
+				if ismatch:
+					maps12.extend(map12); maps21.extend(map21)
+			return len(maps12) > 0, maps21, maps12
+			
 		elif struct.__class__ == structure.Structure:
 			return reactant.findSubgraphIsomorphisms(struct)
-
-		return len(maps12) > 0, maps21, maps12
 
 	def applyRecipe(self, reactantStructures, unique=True):
 		"""
@@ -1694,7 +1700,7 @@ class ReactionFamily(data.Database):
 			print 'Reactant structures are:'
 			for struct in reactantStructures:
 				print struct.toAdjacencyList()
-			raise e
+			raise
 
 		# Check that reactant and product structures are allowed in this family
 		# If not, then stop
@@ -1904,13 +1910,18 @@ class ReactionFamily(data.Database):
 		for forward in forwardTemplate:
 			# 'forward' is a head node that should be matched.
 			# Get labeled atoms of forward
+			
+			#if forward=='Rn':
+			#	import pdb
+			#	pdb.set_trace()
 			node = forward
 			group = self.dictionary[node]
 			# to sort out "union" groups:
-			# descends to the first child that's not a union
-			while isinstance(group,str) or isinstance(group,unicode):
-				node = self.tree.children[node][0]
-				group = self.dictionary[node]
+			# descends to the first child that's not a logical node
+			if isinstance(group,data.LogicNode):
+				all_structures = group.getPossibleStructures(self.dictionary)
+				group = all_structures[0]
+				node = 'First sub-structure of '+node
 			# ...but this child may not match the structure.
 			# eg. an R3 ring node will not match an R4 ring structure.
 			# (but at least the first such child will contain fewest labels - we hope)
@@ -1946,8 +1957,8 @@ class ReactionFamily(data.Database):
 		# forwardTemplate is a list of the top level nodes that should be matched
 		if len(template) != len(forwardTemplate):
 			logging.warning('Warning: Unable to find matching template for reaction %s in reaction family %s' % (str(reaction), str(self)) )
-			logging.warning(" Trying to match",forwardTemplate)
-			logging.warning(" Matched",template)
+			logging.warning(" Trying to match " + str(forwardTemplate))
+			logging.warning(" Matched "+str(template))
 			raise UndeterminableKineticsException(reaction)
 			print str(self), template, forwardTemplate, reverseTemplate
 			for reactant in reaction.reactants:

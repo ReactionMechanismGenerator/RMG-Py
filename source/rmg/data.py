@@ -47,7 +47,7 @@ provide specific functionality for individual databases.
 import os
 import log as logging
 import quantities as pq
-
+import re
 import structure
 
 pq.UnitQuantity('kilocalories', pq.cal*1e3, symbol='kcal')
@@ -152,14 +152,14 @@ class Dictionary(dict):
 		to :class:`structure.Structure` objects. If a record is a union, it is 
 		stored as the string 'union', and automatically uses all immediate
 		children of the node as the union.
+		If a record is a logical node, it is converted into the appropriate class.
 		"""
 	
 		for label, record in self.iteritems():
-		
-			# If record is a union, then store as string 'union'
-			# By definition a union includes all of its immediate children
-			if record.lower().find('union') > -1:
-				self[label] = 'union'
+			# If record is a union, 
+			# If record is a logical node, make it into one.
+			if re.match('(?i)\s*OR|AND|NOT|UNION',record.splitlines()[1] ):
+				self[label] = makeLogicNode(' '.join(record.splitlines()[1:]) )
 			# Otherwise convert adjacency list to structure
 			else:
 				try:
@@ -599,6 +599,138 @@ class Library(dict):
 			
 ################################################################################
 
+def makeLogicNode(string):
+	"""
+	Creates and returns a node in the tree which is a logic node.
+	
+	String should be of the form:
+	
+	* OR{}
+	* AND{}
+	* NOT OR{}
+	* NOT AND{} 
+	
+	And the returned object will be of class LogicOr or LogicAnd
+	"""
+	
+	match = re.match("(?i)\s*(NOT)?\s*(OR|AND|UNION)\s*(.*)",string)  # the (?i) makes it case-insensitive
+	if not match:
+		raise Exception("Unexpected string for Logic Node: %s"%string)
+		
+	if match.group(1): invert = True
+	else: invert = False
+	
+	logic = match.group(2)  # OR or AND (or Union)
+	
+	contents = match.group(3).strip()
+	while contents.startswith('{'):
+		if not contents.endswith('}'):
+			raise Exception("Unbalanced braces in Logic Node: %s"%string)
+		contents = contents[1:-1]
+	
+	items=[]
+	chars=[]
+	brace_depth = 0
+	for character in contents:
+		if character == '{':
+			brace_depth += 1
+		if character == '}':
+			brace_depth -= 1
+		if character == ',' and brace_depth == 0:
+			items.append(''.join(chars).lstrip().rstrip() )
+			chars = []
+		else: 
+			chars.append(character)
+	if chars: # add last item
+		items.append(''.join(chars).lstrip().rstrip() ) 
+	if brace_depth != 0: raise Exception("Unbalanced braces in Logic Node: %s"%string)
+		
+	if logic.upper() in ['OR', 'UNION']:
+		return LogicOr(items, invert)
+	if logic == 'AND':
+		return LogicAnd(items, invert)
+		
+	raise Exception("Could not create Logic Node from %s"%string)
+		
+
+class LogicNode():
+	"""
+	A base class for AND and OR logic nodes. 
+	"""
+	symbol="<TBD>" # To be redefined by subclass
+	def __init__(self,items,invert):
+		self.components = []
+		for item in items:
+			if re.match('(?i)\s*OR|AND|NOT|UNION',item):
+				component = makeLogicNode(item)
+			else:
+				component = item
+			self.components.append(component)
+		self.invert = bool(invert)
+		logging.debug("Created Logic Node: "+str(self) )
+	def __str__(self):
+		result = ''
+		if self.invert: result += 'NOT '
+		result += self.symbol
+		result += "{%s}"%(', '.join([str(c) for c in self.components]))
+		return result
+
+class LogicOr(LogicNode):
+	"""
+	A logical OR node. Structure can match any component.
+	
+	Initialize with a list of component items and a boolean instruction to invert the answer.
+	"""
+	symbol = "OR"
+	def matchToStructure(self,database,structure,atoms):
+		"""
+		Does this node in the given database match the given structure with the labeled atoms?
+		"""
+		for node in self.components:
+			if isinstance(node,LogicNode):
+				match = node.matchToStructure(database,structure,atoms)
+			else:
+				match = database.matchNodeToStructure(node, structure, atoms)
+			if match:
+				return True != self.invert
+		return False != self.invert
+	
+	def getPossibleStructures(self,dictionary):
+		"""
+		Return a list of the possible structures below this node.
+		"""
+		if self.invert: raise NotImplementedError("Finding possible structures of NOT OR nodes not implemented.")
+		structures = []
+		for item in self.components:
+			struct = dictionary[item]
+			if isinstance(struct, LogicNode):
+				structures.extend(struct.getPossibleStructures(dictionary))
+			else:
+				structures.append(struct)
+		for struct in structures: # check this worked
+			assert isinstance(struct,structure.Structure)
+		return structures
+	
+class LogicAnd(LogicNode):
+	"""A logical AND node. Structure must match all components."""
+	symbol = "AND"
+	def matchToStructure(self,database,structure,atoms):
+		"""
+		Does this node in the given database match the given structure with the labeled atoms?
+		"""
+		for node in self.components:
+			if isinstance(node,LogicNode):
+				match = node.matchToStructure(database,structure,atoms)
+			else:
+				match = database.matchNodeToStructure(node, structure, atoms)
+			if not match:
+				return False != self.invert
+		return True != self.invert 
+	
+		
+			
+################################################################################
+
 class Database:
 	"""
 	Represent an RMG database. An RMG database is structured as an n-ary tree,
@@ -638,7 +770,10 @@ class Database:
 			# Check that all nodes in tree are also in dictionary
 			for node in self.tree.children:
 				if node not in self.dictionary:
-					raise InvalidDatabaseException('Node "' + node + '" found in tree "' + os.path.abspath(treestr) + '", but not in corresponding dictionary "' + os.path.abspath(dictstr) + '".')
+					if node.startswith('Others-'):
+						logging.warning("Node %s found in tree but not dictionary %s. Letting it through for now because it's an 'Others-' node!"%(node,os.path.abspath(treestr)))
+					else: 
+						raise InvalidDatabaseException('Node "' + node + '" found in tree "' + os.path.abspath(treestr) + '", but not in corresponding dictionary "' + os.path.abspath(dictstr) + '".')
 			# Sort children by decreasing size; the algorithm returns the first
 			# match of each children, so this makes it less likely to miss a
 			# more detailed functional group
@@ -768,43 +903,56 @@ class Database:
 		the functional group represented by `node` has an equivalent labeled
 		atom in `structure`.
 		"""
+	#	if node in ['CH2_triplet', 'Y_1centerbirad']:
+	#		logging.debug("Trying to match structure with node %s"%node)
 		group = self.dictionary[node]
-		if group.__class__ == str or group.__class__ == unicode:
-			if group.lower() == 'union':
-				match = False
-				for child in self.tree.children[node]:
-					if self.matchNodeToStructure(child, structure, atoms):
-						match = True
-				return match
-			else:
-				return False
+		if isinstance(group, LogicNode):
+			return group.matchToStructure(self, structure, atoms)
+			
+		#if group.__class__ == str or group.__class__ == unicode:
+		#	if group.lower() == 'union':
+		#		match = False
+		#		for child in self.tree.children[node]:
+		#			if self.matchNodeToStructure(child, structure, atoms):
+		#				match = True
+		#		return match
+		#	else:
+		#		return False
 		else:
+			# try to pair up labeled atoms
 			centers = group.getLabeledAtoms()
 			map12_0 = {}; map21_0 = {}
 			for label in centers.keys():
-				if label in centers and label in atoms:
-					center = centers[label]; atom = atoms[label]
-					# Make sure labels actually pointed to atoms
-					if center is None or atom is None:
-						return False
-					# Semantic check #1: atoms with same label are equivalent
-					elif not atom.equivalent(center):
-						return False
-					# Semantic check #2: labeled atoms that share bond in one
-					# also share equivalent bond in the other
-					for atom1, atom2 in map21_0.iteritems():
-						if group.hasBond(center, atom1) and structure.hasBond(atom, atom2):
-							bond1 = group.getBond(center, atom1)
-							bond2 = structure.getBond(atom, atom2)
-							if not bond1.equivalent(bond2):
-								return False
-						elif group.hasBond(center, atom1) or structure.hasBond(atom, atom2):
-							return False
-					# Passed semantic checks, so add to maps of already-matched
-					# atoms
-					map21_0[center] = atom; map12_0[atom] = center
-				else:
+				# Make sure the labels are in both group and structure.
+				if label not in atoms:
+					logging.debug("Label %s is in group %s but not in structure"%(label, node))
+					continue # with the next label - ring structures might not have all labeled atoms
+					# return False # force it to have all the labeled atoms
+				center = centers[label]
+				atom = atoms[label]
+				# Make sure labels actually point to atoms.
+				if center is None or atom is None:
 					return False
+				# Semantic check #1: atoms with same label are equivalent
+				elif not atom.isSpecificCaseOf(center):
+					return False
+				# Semantic check #2: labeled atoms that share bond in the group (node)
+				# also share equivalent (or more specific) bond in the structure
+				for atom1, atom2 in map21_0.iteritems():
+					if group.hasBond(center, atom1) and structure.hasBond(atom, atom2):
+						bond1 = group.getBond(center, atom1)   # bond1 is group
+						bond2 = structure.getBond(atom, atom2) # bond2 is structure
+						if not bond2.isSpecificCaseOf(bond1):
+							return False
+					elif group.hasBond(center, atom1): # but structure doesn't 
+						return False
+					# but we don't mind if...
+					elif structure.hasBond(atom, atom2): # but group doesn't
+						logging.debug("We don't mind that structure "+ str(structure) +
+							" has bond but group %s doesn't"%node )
+				# Passed semantic checks, so add to maps of already-matched atoms
+				map21_0[center] = atom; map12_0[atom] = center
+			# use mapped (labeled) atoms to try to match subgraph
 			return structure.isSubgraphIsomorphic(group, map12_0, map21_0)
 
 	def descendTree(self, structure, atoms, root=None):

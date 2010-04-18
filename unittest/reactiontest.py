@@ -212,6 +212,24 @@ class ReactionSetCheck(unittest.TestCase):
 				all_products.extend(rxn.products)
 			print "All products for reacting %s:"%species1, [p.structure[0] for p in all_products]
 			
+
+		structure2 = Structure()
+		structure2.fromAdjacencyList("O2\n1 O 0 {2,D}\n2 O 0 {1,D}\n")
+		species2 = makeNewSpecies(structure2)
+		structure3 = Structure()
+		structure3.fromAdjacencyList("O\n1 O 2\n")
+		species3 = makeNewSpecies(structure3)
+		reaction.reactionList=[]
+		print "Now reacting %s with %s:"%(species2, species3)
+		for sp in (species2, species3):
+			print sp.toAdjacencyList()
+		rxns = reaction.kineticsDatabase.getReactions([species2,species3])
+		for rxn in rxns:
+			print 'Reaction family:',rxn.family
+			print 'Reaction:',rxn
+			print 'Kinetics:',rxn.kinetics
+		self.assertEqual(len(rxns),1, "Made %d 1+2_Cycloaddition reactions instead of 1"%(len(rxns)))
+			
 	def test22CycloadditionCd(self):
 		"""Test 2+2_cycloaddition_Cd reactions"""
 		self.loadDatabase(only_families=['2+2_cycloaddition_Cd'])
@@ -267,6 +285,8 @@ class ReactionSetCheck(unittest.TestCase):
 				print 'Reaction:',rxn
 				print 'Kinetics:',rxn.kinetics
 				print
+				
+			self.assertTrue(len(rxns)>0,"Didn't make any reactions!")
 			
 			all_products = []
 			for rxn in rxns:
@@ -277,8 +297,38 @@ class ReactionSetCheck(unittest.TestCase):
 				
 			print "All products for reacting %s:"%species1, [p.structure[0] for p in all_products]
 			
+	def testDisproportionation(self):
+		"""A test of a Disproportionation (Radical alpha H abstraction) reactions"""
+		self.loadDatabase(only_families=['Disproportionation'])
 		
-
+		for smile in ['C(=[CH])[CH2]',
+					]:
+			
+			structure1 = Structure(SMILES=smile)
+			species1 = makeNewSpecies(structure1)
+			print 'Reacting species',species1, 'with itself'
+				
+			# wipe the reaction list
+			reaction.reactionList=[]
+			
+			rxns = reaction.kineticsDatabase.getReactions([species1,species1])
+			for rxn in rxns:
+				print 'Reaction family:',rxn.family
+				print 'Reaction:',rxn
+				print 'Kinetics:',rxn.kinetics
+				print
+				
+			self.assertTrue(len(rxns)>0,"Didn't make any reactions!")
+			
+			all_products = []
+			for rxn in rxns:
+				#self.assertEqual(rxn.family.label,'Cyclic colligation',"Was trying to test 'Cyclic colligation' but made a reaction from family %s"%rxn.family)
+				self.assertEqual(len(rxn.reactants),2,"Reaction %s wasn't bimolecular"%rxn)
+				self.assertEqual(len(rxn.products),2,"Reaction %s wasn't bimolecular"%rxn)
+				all_products.extend(rxn.products)
+				
+			print "All products for reacting %s:"%species1, [p.structure[0] for p in all_products]
+			
 	
 	def testAllFamilies(self):
 		"""A test of all reaction families
@@ -311,6 +361,7 @@ class ReactionSetCheck(unittest.TestCase):
 ################################################################################
 from timeit import Timer
 if __name__ == '__main__':
+	
 	
 	startup = """gc.enable() # enable garbage collection in timeit
 import sys
@@ -381,13 +432,15 @@ reaction1, isNew = makeNewReaction([C6H9, H2], [C6H10, H], \
 	test1 = "reaction1, isNew = makeNewReaction([C6H9, H2], [C6H10, H], [C6H9.structure[0], H2.structure[0]], [C6H10.structure[0], H.structure[0]], None)"
 	print "Timing makeNewReaction:"
 	t = Timer(test1,startup)
-	times = t.repeat(repeat=1,number=10000)
-	print " Test1 took %.3f microseconds (%s)"%(min(times)*1000/10, [tt*1000/10 for tt in times])
+#	times = t.repeat(repeat=1,number=10000)
+#	print " Test1 took %.3f microseconds (%s)"%(min(times)*1000/10, [tt*1000/10 for tt in times])
 	print "**************"
 	
 	# run a certain check without catching errors (turn on PDB debugger first)
-	import pdb
-	ReactionSetCheck('test22CycloadditionCd').debug()
+	import rmg.log as logging
+	logging.initialize(5,'reactiontest.log') 
+	#import pdb
+	ReactionSetCheck('test12Cycloaddition').debug()
 	
 	# now run all the unit tests
 	unittest.main( testRunner = unittest.TextTestRunner(verbosity=2) )
