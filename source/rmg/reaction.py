@@ -319,9 +319,9 @@ class Reaction:
 		elif len(self.reactants) == 3:
 			indices = [[0, 1, 2], [0, 2, 1], [1, 0, 2], [1, 2, 0], [2, 0, 1], [2, 1, 0]]
 		for index in indices:
-			if reactantsMatch: continue
+			if reactantsMatch: break
 			match = True
-			for i in range(len(self.reactants)):
+			for i in range(len(index)):
 				if not self.reactants[i].isIsomorphic(other.reactants[index[i]]):
 					match = False
 			if match:
@@ -335,9 +335,9 @@ class Reaction:
 		elif len(self.products) == 3:
 			indices = [[0, 1, 2], [0, 2, 1], [1, 0, 2], [1, 2, 0], [2, 0, 1], [2, 1, 0]]
 		for index in indices:
-			if productsMatch: continue
+			if productsMatch: break
 			match = True
-			for i in range(len(self.reactants)):
+			for i in range(len(index)):
 				if not self.products[i].isIsomorphic(other.products[index[i]]):
 					match = False
 			if match:
