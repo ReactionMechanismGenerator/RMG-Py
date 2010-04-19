@@ -864,6 +864,7 @@ class ReactionFamily(data.Database):
 		self.recipe = recipe
 		self.forbidden = None
 		self.reverse = None
+		self.is_reverse = False
 
 	def __str__(self):
 		return '<ReactionFamily(%s) from %s>'%(self.label,os.path.basename(self._path))
@@ -1445,6 +1446,7 @@ class ReactionFamily(data.Database):
 			self.reverse.library = data.Library()
 			self.reverse.forbidden = self.forbidden
 			self.reverse.reverse = self
+			self.reverse.is_reverse = True
 
 		# If necessary, generate the product template structure(s)
 		# Don't need to do this if family is its own reverse
@@ -2242,12 +2244,28 @@ def makeNewReaction(forward, checkExisting=True):
 	"""
 	Make a new reaction given a :class:`Reaction` object `forward`. The kinetics
 	of the reaction are estimated and the reaction is added to the global list
-	of reactions. Returns the direction of the reaction that corresponds to the
+	of reactions. Returns the reaction in the direction that corresponds to the
 	estimated kinetics, along with whether or not the reaction is new to the
 	global reaction list.
+	
+	The forward direction is determined using the "is_reverse" attribute of the 
+	reaction's family.  If the reaction family is its own reverse, then it is 
+	made such that the forward reaction is exothermic at 298K.
 	"""
-
-	reverse = forward.reverse
+	
+	# switch it around if it's in the reverse direction
+	if forward.family.is_reverse:
+		reverse = forward
+		forward = reverse.reverse
+	else:
+		reverse = forward.reverse
+	# now forward family is not marked as a reverse family. 
+	# if backwards isn't either then it's its own reverse, 
+	# and we should ensure the forward is exothermic.
+	if not reverse.family.is_reverse:
+		if forward.getEnthalpyOfReaction(298) > 0:
+			reverse = forward
+			forward = reverse.reverse
 
 	if checkExisting:
 		found, rxn = checkForExistingReaction(forward)
@@ -2314,6 +2332,7 @@ def makeNewReaction(forward, checkExisting=True):
 	# reverse of that reaction come from thermodynamics
 	# If we have assigned kinetics in both directions, then (for now) choose the
 	# kinetics for the forward reaction
+	# ...which we set to be exothermic above.
 	rxn = forward
 	if forwardKinetics is not None and reverseKinetics is not None:
 		rxn = forward
@@ -2324,12 +2343,11 @@ def makeNewReaction(forward, checkExisting=True):
 		rxn = reverse
 	else:
 		raise UndeterminableKineticsException(forward)
-		
+	
+	assert rxn == forward, "The reaction should already have been put into the forward direction."
+	
 	forward.kinetics = forwardKinetics
 	reverse.kinetics = reverseKinetics
-
-	# Note in the log
-	logging.verbose('Creating new %s reaction %s' % (rxn.family, rxn))
 
 	return processNewReaction(rxn)
 
