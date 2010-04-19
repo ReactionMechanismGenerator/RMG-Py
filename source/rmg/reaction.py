@@ -2143,6 +2143,10 @@ class ReactionFamilySet:
 				if family.reverse is not None:
 					self.families[family.reverse.label] = family.reverse
 			else: logging.info("NOT loading family %s."%label)
+			
+		# initialize the global reactionDict with family names
+		for key in self.families.values():
+			reactionDict[key] = dict()
 
 	def getReactions(self, species):
 		"""
@@ -2211,7 +2215,7 @@ class UndeterminableKineticsException(ReactionException):
 # The list is stored in reverse of the order in which the reactions are created;
 # when searching the list, it is more likely to match a recently created
 # reaction than an older reaction
-reactionList = []
+reactionDict = {'seed':{}}
 
 global reactionCounter
 #: Used to label reactions uniquely. Incremented each time a new reaction is made.
@@ -2223,20 +2227,43 @@ def checkForExistingReaction(rxn):
 	family as `rxn`. Returns :data:`True` or :data:`False` and the matched
 	reaction (if found).
 	"""
-
-	for rxn0 in reactionList:
-		if isinstance(rxn0.family, ReactionFamily):
-			if rxn0.family.reverse:
-				if rxn0.family.label != rxn.family.label and rxn0.family.reverse.label != rxn.family.label:
-					# rxn is not from seed, and families are different
-					continue
-			else:
-				if rxn0.family.label != rxn.family.label:
-					# rxn is not from seed, and families are different
-					continue
+	
+	# Get the short-list of reactions with the same family, reactant1 and reactant2
+	r1 = rxn.reactants[0]
+	if len(rxn.reactants)==1: r2 = None
+	else: r2 = rxn.reactants[1]
+	try:
+		my_reactionList = reactionDict[rxn.family][r1][r2]
+	except KeyError: # no such short-list: must be new, unless in seed.
+		my_reactionList = []
+	
+	# Now use short-list to check for matches. All should be in same forward direction.
+	for rxn0 in my_reactionList:
+		if (rxn0.reactants == rxn.reactants and rxn0.products == rxn.products):
+			return True, rxn0
+		
+	# Now check seed reactions.
+	# First check seed short-list in forward direction
+	try:
+		my_reactionList = reactionDict['seed'][r1][r2]
+	except KeyError:
+		my_reactionList = []
+	for rxn0 in my_reactionList:
 		if (rxn0.reactants == rxn.reactants and rxn0.products == rxn.products) or \
 			(rxn0.reactants == rxn.products and rxn0.products == rxn.reactants):
 			return True, rxn0
+	# Now get the seed short-list of the reverse reaction
+	r1 = rxn.products[0]
+	if len(rxn.products)==1: r2 = None
+	else: r2 = rxn.products[1]
+	try:
+		my_reactionList = reactionDict['seed'][r1][r2]
+	except KeyError:
+		my_reactionList = []
+	for rxn0 in my_reactionList:
+		if (rxn0.reactants == rxn.reactants and rxn0.products == rxn.products) or \
+			(rxn0.reactants == rxn.products and rxn0.products == rxn.reactants):
+			return True, rxn0		
 	
 	return False, None
 
@@ -2271,13 +2298,9 @@ def makeNewReaction(forward, checkExisting=True):
 		found, rxn = checkForExistingReaction(forward)
 		if found: return rxn, False
 
-	# Set the reaction identifier (on both forward and reverse)
-	forward.id = reverse.id = reactionCounter+1
-
-	if forward.family is None or reverse.family is None:
-		reactionList.insert(0, forward)
-		return forward, True
-
+	# Note in the log
+	logging.verbose('Creating new %s reaction %s' % (forward.family, forward))
+	
 	def prepareStructures(forward, reverse, speciesList, atomLabels):
 	
 		speciesList = speciesList[:]
@@ -2355,14 +2378,30 @@ def processNewReaction(rxn):
 	"""
 	Once a reaction `rxn` has been created (e.g. via :meth:`makeNewReaction`),
 	this function handles other aspects	of preparing it for RMG.
+	
+	It increments the global reactionCounter, assigns this to the id of the 
+	forward and reverse reactions, and stores the forward reaction in the 
+	global list of reactions, which is now a dictionary of short-lists 
+	(to speed up searching through it).
 	"""
-
+	
+	# Update counter
 	global reactionCounter
-
-	# Add to global list of existing reactions and update counter
-	reactionList.insert(0, rxn)
 	reactionCounter += 1
-	rxn.id = reactionCounter
+	rxn.id = rxn.reverse.id = reactionCounter
+	
+	# Add to the global dict/list of existing reactions (a list broken down by family, r1, r2)
+	# identify r1 and r2
+	r1 = rxn.reactants[0]
+	if len(rxn.reactants)==1: r2 = None
+	else: r2 = rxn.reactants[1]
+	# make dictionary entries if necessary
+	if not reactionDict[rxn.family].has_key(r1):
+		reactionDict[rxn.family][r1] = dict()
+	if not reactionDict[rxn.family][r1].has_key(r2):
+		reactionDict[rxn.family][r1][r2] = list()
+	# store this reaction at the top of the relevent short-list
+	reactionDict[rxn.family][r1][r2].insert(0, rxn)
 
 	# Return newly created reaction
 	return rxn, True
