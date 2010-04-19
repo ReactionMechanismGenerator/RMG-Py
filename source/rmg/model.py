@@ -614,14 +614,14 @@ class CoreEdgeReactionModel:
 			species.thermoDatabase.primaryDatabase.library[key] = value
 
 		# Create new species based on items in species.txt
-		speciesDict = {}; speciesList = []
+		seedSpeciesDict = {}; seedSpeciesList = []
 		for label, struct in d.iteritems():
 			spec, isNew = species.makeNewSpecies(struct, label, reactive=True)
-			speciesDict[label] = spec
-			speciesList.append(spec)
+			seedSpeciesDict[label] = spec
+			seedSpeciesList.append(spec)
 		
 		# Load the reactions from the file reaction.txt
-		reactionList = []
+		seedReactionList = []
 		f = open(os.path.join(path, 'reactions.txt'), 'r')
 		for line in f:
 			line = data.removeCommentFromLine(line)
@@ -646,8 +646,8 @@ class CoreEdgeReactionModel:
 						products.remove('M')
 					
 					# Convert strings to species objects
-					reactants = [speciesDict[r] for r in reactants]
-					products = [speciesDict[r] for r in products]
+					reactants = [seedSpeciesDict[r] for r in reactants]
+					products = [seedSpeciesDict[r] for r in products]
 
 					# Process Arrhenius parameters
 					order = len(reactants)
@@ -661,15 +661,15 @@ class CoreEdgeReactionModel:
 					# Create reaction object and add to list
 					rxn = reaction.Reaction(id=0, reactants=reactants, products=products, family='seed', kinetics=kin, thirdBody=thirdBody)
 					reaction.processNewReaction(rxn)
-					reactionList.append(rxn)
-
+					seedReactionList.append(rxn)
+					
 		f.close()
 		
 		# Add species to core
-		for spec in speciesList:
+		for spec in seedSpeciesList:
 			self.addSpeciesToCore(spec)
 		# Add reactions to core
-		for rxn in reactionList:
+		for rxn in seedReactionList:
 			self.addReactionToCore(rxn)
 
 ################################################################################
