@@ -121,7 +121,7 @@ def execute(inputFile, options):
 		import ctml_writer
 		logging.info('Loading previous restart file...')
 		f = gzip.GzipFile(os.path.join(settings.outputDirectory,'restart.pkl'), 'rb')
-		species.speciesList, species.speciesCounter, reaction.reactionList, \
+		species.speciesList, species.speciesCounter, reaction.reactionDict, \
 			reactionModel, reactionSystems = cPickle.load(f)
 		f.close()
 		# Cantera stuff
@@ -203,7 +203,7 @@ def execute(inputFile, options):
 			cPickle.dump((
 				species.speciesList,
 				species.speciesCounter,
-				reaction.reactionList,
+				reaction.reactionDict,
 				reactionModel,
 				reactionSystems),
 				f)

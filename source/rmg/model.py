@@ -250,6 +250,8 @@ class CoreEdgeReactionModel:
 		# remove those reactions
 		for rxn in rxnList:
 			self.edge.reactions.remove(rxn)
+			# also remove it from the global list of reactions
+			reaction.removeFromGlobalList(rxn)
 
 		# Remove the species from any unirxn networks it is in
 		if settings.unimolecularReactionNetworks:
@@ -263,6 +265,7 @@ class CoreEdgeReactionModel:
 							rxnList.append(rxn)
 					for rxn in rxnList:
 						network.pathReactions.remove(rxn)
+						reaction.removeFromGlobalList(rxn)
 					# Delete all net reactions involving the species
 					rxnList = []
 					for rxn in network.netReactions:
@@ -270,6 +273,9 @@ class CoreEdgeReactionModel:
 							rxnList.append(rxn)
 					for rxn in rxnList:
 						network.netReactions.remove(rxn)
+						# net reactions are not in global reaction list
+						# so don't reaction.removeFromGlobalList(rxn)
+						
 					# Delete all isomers involving the species
 					isomerList = []
 					for isomer in network.isomers:
@@ -287,8 +293,6 @@ class CoreEdgeReactionModel:
 			for network in networksToDelete:
 				logging.debug('Deleting empty unirxn network %s' % network.id)
 				self.unirxnNetworks.remove(network)
-
-
 
 		# remove from the global list of species, to free memory
 		species.speciesList.remove(spec)
@@ -614,14 +618,14 @@ class CoreEdgeReactionModel:
 			species.thermoDatabase.primaryDatabase.library[key] = value
 
 		# Create new species based on items in species.txt
-		speciesDict = {}; speciesList = []
+		seedSpeciesDict = {}; seedSpeciesList = []
 		for label, struct in d.iteritems():
 			spec, isNew = species.makeNewSpecies(struct, label, reactive=True)
-			speciesDict[label] = spec
-			speciesList.append(spec)
+			seedSpeciesDict[label] = spec
+			seedSpeciesList.append(spec)
 		
 		# Load the reactions from the file reaction.txt
-		reactionList = []
+		seedReactionList = []
 		f = open(os.path.join(path, 'reactions.txt'), 'r')
 		for line in f:
 			line = data.removeCommentFromLine(line)
@@ -646,8 +650,10 @@ class CoreEdgeReactionModel:
 						products.remove('M')
 					
 					# Convert strings to species objects
-					reactants = [speciesDict[r] for r in reactants]
-					products = [speciesDict[r] for r in products]
+					reactants = [seedSpeciesDict[r] for r in reactants]
+					products = [seedSpeciesDict[r] for r in products]
+					reactants.sort()
+					products.sort()
 
 					# Process Arrhenius parameters
 					order = len(reactants)
@@ -660,16 +666,18 @@ class CoreEdgeReactionModel:
 
 					# Create reaction object and add to list
 					rxn = reaction.Reaction(id=0, reactants=reactants, products=products, family='seed', kinetics=kin, thirdBody=thirdBody)
+					rxn.reverse = reaction.Reaction(id=0, reactants=products, products=reactants, family='seed', kinetics=None, thirdBody=thirdBody)
+					rxn.reverse.reverse = rxn
 					reaction.processNewReaction(rxn)
-					reactionList.append(rxn)
-
+					seedReactionList.append(rxn)
+					
 		f.close()
 		
 		# Add species to core
-		for spec in speciesList:
+		for spec in seedSpeciesList:
 			self.addSpeciesToCore(spec)
 		# Add reactions to core
-		for rxn in reactionList:
+		for rxn in seedReactionList:
 			self.addReactionToCore(rxn)
 
 ################################################################################

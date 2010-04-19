@@ -864,6 +864,7 @@ class ReactionFamily(data.Database):
 		self.recipe = recipe
 		self.forbidden = None
 		self.reverse = None
+		self.is_reverse = False
 
 	def __str__(self):
 		return '<ReactionFamily(%s) from %s>'%(self.label,os.path.basename(self._path))
@@ -1445,6 +1446,7 @@ class ReactionFamily(data.Database):
 			self.reverse.library = data.Library()
 			self.reverse.forbidden = self.forbidden
 			self.reverse.reverse = self
+			self.reverse.is_reverse = True
 
 		# If necessary, generate the product template structure(s)
 		# Don't need to do this if family is its own reverse
@@ -2141,6 +2143,10 @@ class ReactionFamilySet:
 				if family.reverse is not None:
 					self.families[family.reverse.label] = family.reverse
 			else: logging.info("NOT loading family %s."%label)
+			
+		# initialize the global reactionDict with family names
+		for key in self.families.values():
+			reactionDict[key] = dict()
 
 	def getReactions(self, species):
 		"""
@@ -2209,7 +2215,7 @@ class UndeterminableKineticsException(ReactionException):
 # The list is stored in reverse of the order in which the reactions are created;
 # when searching the list, it is more likely to match a recently created
 # reaction than an older reaction
-reactionList = []
+reactionDict = {'seed':{}}
 
 global reactionCounter
 #: Used to label reactions uniquely. Incremented each time a new reaction is made.
@@ -2221,20 +2227,43 @@ def checkForExistingReaction(rxn):
 	family as `rxn`. Returns :data:`True` or :data:`False` and the matched
 	reaction (if found).
 	"""
-
-	for rxn0 in reactionList:
-		if isinstance(rxn0.family, ReactionFamily):
-			if rxn0.family.reverse:
-				if rxn0.family.label != rxn.family.label and rxn0.family.reverse.label != rxn.family.label:
-					# rxn is not from seed, and families are different
-					continue
-			else:
-				if rxn0.family.label != rxn.family.label:
-					# rxn is not from seed, and families are different
-					continue
+	
+	# Get the short-list of reactions with the same family, reactant1 and reactant2
+	r1 = rxn.reactants[0]
+	if len(rxn.reactants)==1: r2 = None
+	else: r2 = rxn.reactants[1]
+	try:
+		my_reactionList = reactionDict[rxn.family][r1][r2]
+	except KeyError: # no such short-list: must be new, unless in seed.
+		my_reactionList = []
+	
+	# Now use short-list to check for matches. All should be in same forward direction.
+	for rxn0 in my_reactionList:
+		if (rxn0.reactants == rxn.reactants and rxn0.products == rxn.products):
+			return True, rxn0
+		
+	# Now check seed reactions.
+	# First check seed short-list in forward direction
+	try:
+		my_reactionList = reactionDict['seed'][r1][r2]
+	except KeyError:
+		my_reactionList = []
+	for rxn0 in my_reactionList:
 		if (rxn0.reactants == rxn.reactants and rxn0.products == rxn.products) or \
 			(rxn0.reactants == rxn.products and rxn0.products == rxn.reactants):
 			return True, rxn0
+	# Now get the seed short-list of the reverse reaction
+	r1 = rxn.products[0]
+	if len(rxn.products)==1: r2 = None
+	else: r2 = rxn.products[1]
+	try:
+		my_reactionList = reactionDict['seed'][r1][r2]
+	except KeyError:
+		my_reactionList = []
+	for rxn0 in my_reactionList:
+		if (rxn0.reactants == rxn.reactants and rxn0.products == rxn.products) or \
+			(rxn0.reactants == rxn.products and rxn0.products == rxn.reactants):
+			return True, rxn0		
 	
 	return False, None
 
@@ -2242,24 +2271,36 @@ def makeNewReaction(forward, checkExisting=True):
 	"""
 	Make a new reaction given a :class:`Reaction` object `forward`. The kinetics
 	of the reaction are estimated and the reaction is added to the global list
-	of reactions. Returns the direction of the reaction that corresponds to the
+	of reactions. Returns the reaction in the direction that corresponds to the
 	estimated kinetics, along with whether or not the reaction is new to the
 	global reaction list.
+	
+	The forward direction is determined using the "is_reverse" attribute of the 
+	reaction's family.  If the reaction family is its own reverse, then it is 
+	made such that the forward reaction is exothermic at 298K.
 	"""
-
-	reverse = forward.reverse
+	
+	# switch it around if it's in the reverse direction
+	if forward.family.is_reverse:
+		reverse = forward
+		forward = reverse.reverse
+	else:
+		reverse = forward.reverse
+	# now forward family is not marked as a reverse family. 
+	# if backwards isn't either then it's its own reverse, 
+	# and we should ensure the forward is exothermic.
+	if not reverse.family.is_reverse:
+		if forward.getEnthalpyOfReaction(298) > 0:
+			reverse = forward
+			forward = reverse.reverse
 
 	if checkExisting:
 		found, rxn = checkForExistingReaction(forward)
 		if found: return rxn, False
 
-	# Set the reaction identifier (on both forward and reverse)
-	forward.id = reverse.id = reactionCounter+1
-
-	if forward.family is None or reverse.family is None:
-		reactionList.insert(0, forward)
-		return forward, True
-
+	# Note in the log
+	logging.verbose('Creating new %s reaction %s' % (forward.family, forward))
+	
 	def prepareStructures(forward, reverse, speciesList, atomLabels):
 	
 		speciesList = speciesList[:]
@@ -2301,53 +2342,67 @@ def makeNewReaction(forward, checkExisting=True):
 		
 		return structures
 	
+	# By convention, we only work with the reaction in the direction for which
+	# we have assigned kinetics from the kinetics database; the kinetics of the
+	# reverse of that reaction come from thermodynamics
+	
 	forwardAtomLabels = [labels.copy() for labels in forward.atomLabels]
 	reactantStructures = prepareStructures(forward, reverse, forward.reactants, forwardAtomLabels)
 	forwardKinetics = forward.family.getKinetics(forward, reactantStructures)
 
-	reverseAtomLabels = [labels.copy() for labels in reverse.atomLabels]
-	productStructures = prepareStructures(forward, reverse, reverse.reactants, reverseAtomLabels)
-	reverseKinetics = reverse.family.getKinetics(reverse, productStructures)
-
-	# By convention, we only work with the reaction in the direction for which
-	# we have assigned kinetics from the kinetics database; the kinetics of the
-	# reverse of that reaction come from thermodynamics
-	# If we have assigned kinetics in both directions, then (for now) choose the
-	# kinetics for the forward reaction
-	rxn = forward
-	if forwardKinetics is not None and reverseKinetics is not None:
-		rxn = forward
-		reverseKinetics = []
-	elif forwardKinetics is not None:
-		rxn = forward
-	elif reverseKinetics is not None:
-		rxn = reverse
-	else:
+	if forwardKinetics is None:
 		raise UndeterminableKineticsException(forward)
 		
 	forward.kinetics = forwardKinetics
-	reverse.kinetics = reverseKinetics
-
-	# Note in the log
-	logging.verbose('Creating new %s reaction %s' % (rxn.family, rxn))
-
-	return processNewReaction(rxn)
+	
+	return processNewReaction(forward)
 
 def processNewReaction(rxn):
 	"""
 	Once a reaction `rxn` has been created (e.g. via :meth:`makeNewReaction`),
 	this function handles other aspects	of preparing it for RMG.
+	
+	It increments the global reactionCounter, assigns this to the id of the 
+	forward and reverse reactions, and stores the forward reaction in the 
+	global list of reactions, which is now a dictionary of short-lists 
+	(to speed up searching through it).
 	"""
-
+	
+	# Update counter
 	global reactionCounter
-
-	# Add to global list of existing reactions and update counter
-	reactionList.insert(0, rxn)
 	reactionCounter += 1
-	rxn.id = reactionCounter
+	rxn.id = rxn.reverse.id = reactionCounter
+	
+	# Add to the global dict/list of existing reactions (a list broken down by family, r1, r2)
+	# identify r1 and r2
+	r1 = rxn.reactants[0]
+	if len(rxn.reactants)==1: r2 = None
+	else: r2 = rxn.reactants[1]
+	# make dictionary entries if necessary
+	if not reactionDict[rxn.family].has_key(r1):
+		reactionDict[rxn.family][r1] = dict()
+	if not reactionDict[rxn.family][r1].has_key(r2):
+		reactionDict[rxn.family][r1][r2] = list()
+	# store this reaction at the top of the relevent short-list
+	reactionDict[rxn.family][r1][r2].insert(0, rxn)
 
 	# Return newly created reaction
 	return rxn, True
+
+def removeFromGlobalList(rxn):
+	"""
+	Remove a reaction from the global list of reactions (eg. because we 
+	just discarded it from the edge)
+	"""
+	# Get the short-list of reactions with the same family, reactant1 and reactant2
+	r1 = rxn.reactants[0]
+	if len(rxn.reactants)==1: r2 = None
+	else: r2 = rxn.reactants[1]
+	try:
+		my_reactionList = reactionDict[rxn.family][r1][r2]
+		reactionDict[rxn.family][r1][r2].remove(rxn)
+	except KeyError, ValueError: 
+		raise Exception("Reaction %s wasn't in the global reaction list to be removed"%rxn)
 
 def makeNewPDepReaction(reactants, products, network, kinetics):
 	"""
