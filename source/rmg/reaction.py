@@ -2342,37 +2342,20 @@ def makeNewReaction(forward, checkExisting=True):
 		
 		return structures
 	
+	# By convention, we only work with the reaction in the direction for which
+	# we have assigned kinetics from the kinetics database; the kinetics of the
+	# reverse of that reaction come from thermodynamics
+	
 	forwardAtomLabels = [labels.copy() for labels in forward.atomLabels]
 	reactantStructures = prepareStructures(forward, reverse, forward.reactants, forwardAtomLabels)
 	forwardKinetics = forward.family.getKinetics(forward, reactantStructures)
 
-	reverseAtomLabels = [labels.copy() for labels in reverse.atomLabels]
-	productStructures = prepareStructures(forward, reverse, reverse.reactants, reverseAtomLabels)
-	reverseKinetics = reverse.family.getKinetics(reverse, productStructures)
-
-	# By convention, we only work with the reaction in the direction for which
-	# we have assigned kinetics from the kinetics database; the kinetics of the
-	# reverse of that reaction come from thermodynamics
-	# If we have assigned kinetics in both directions, then (for now) choose the
-	# kinetics for the forward reaction
-	# ...which we set to be exothermic above.
-	rxn = forward
-	if forwardKinetics is not None and reverseKinetics is not None:
-		rxn = forward
-		reverseKinetics = []
-	elif forwardKinetics is not None:
-		rxn = forward
-	elif reverseKinetics is not None:
-		rxn = reverse
-	else:
+	if forwardKinetics is None:
 		raise UndeterminableKineticsException(forward)
-	
-	assert rxn == forward, "The reaction should already have been put into the forward direction."
-	
+		
 	forward.kinetics = forwardKinetics
-	reverse.kinetics = reverseKinetics
-
-	return processNewReaction(rxn)
+	
+	return processNewReaction(forward)
 
 def processNewReaction(rxn):
 	"""
