@@ -2162,9 +2162,9 @@ class ReactionFamilySet:
 			rxnList.extend(family.getReactionList(species))
 
 		if len(rxnList) == 1:
-			logging.info('Found %s reaction for %s'%(len(rxnList), log_text))
+			logging.info('Found %s new reaction for %s'%(len(rxnList), log_text))
 		else:
-			logging.info('Found %s reactions for %s'%(len(rxnList), log_text))
+			logging.info('Found %s new reactions for %s'%(len(rxnList), log_text))
 
 		return rxnList
 
