@@ -648,6 +648,8 @@ class CoreEdgeReactionModel:
 					# Convert strings to species objects
 					reactants = [seedSpeciesDict[r] for r in reactants]
 					products = [seedSpeciesDict[r] for r in products]
+					reactants.sort()
+					products.sort()
 
 					# Process Arrhenius parameters
 					order = len(reactants)
@@ -660,6 +662,8 @@ class CoreEdgeReactionModel:
 
 					# Create reaction object and add to list
 					rxn = reaction.Reaction(id=0, reactants=reactants, products=products, family='seed', kinetics=kin, thirdBody=thirdBody)
+					rxn.reverse = reaction.Reaction(id=0, reactants=products, products=reactants, family='seed', kinetics=None, thirdBody=thirdBody)
+					rxn.reverse.reverse = rxn
 					reaction.processNewReaction(rxn)
 					seedReactionList.append(rxn)
 					
