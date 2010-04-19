@@ -2406,6 +2406,21 @@ def processNewReaction(rxn):
 	# Return newly created reaction
 	return rxn, True
 
+def removeFromGlobalList(rxn):
+	"""
+	Remove a reaction from the global list of reactions (eg. because we 
+	just discarded it from the edge)
+	"""
+	# Get the short-list of reactions with the same family, reactant1 and reactant2
+	r1 = rxn.reactants[0]
+	if len(rxn.reactants)==1: r2 = None
+	else: r2 = rxn.reactants[1]
+	try:
+		my_reactionList = reactionDict[rxn.family][r1][r2]
+		reactionDict[rxn.family][r1][r2].remove(rxn)
+	except KeyError, ValueError: 
+		raise Exception("Reaction %s wasn't in the global reaction list to be removed"%rxn)
+
 def makeNewPDepReaction(reactants, products, network, kinetics):
 	"""
 	Make a new pressure-dependent reaction based on a list of `reactants` and a

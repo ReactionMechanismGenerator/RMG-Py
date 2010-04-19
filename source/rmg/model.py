@@ -250,6 +250,8 @@ class CoreEdgeReactionModel:
 		# remove those reactions
 		for rxn in rxnList:
 			self.edge.reactions.remove(rxn)
+			# also remove it from the global list of reactions
+			reaction.removeFromGlobalList(rxn)
 
 		# Remove the species from any unirxn networks it is in
 		if settings.unimolecularReactionNetworks:
@@ -263,6 +265,7 @@ class CoreEdgeReactionModel:
 							rxnList.append(rxn)
 					for rxn in rxnList:
 						network.pathReactions.remove(rxn)
+						reaction.removeFromGlobalList(rxn)
 					# Delete all net reactions involving the species
 					rxnList = []
 					for rxn in network.netReactions:
@@ -270,6 +273,9 @@ class CoreEdgeReactionModel:
 							rxnList.append(rxn)
 					for rxn in rxnList:
 						network.netReactions.remove(rxn)
+						# net reactions are not in global reaction list
+						# so don't reaction.removeFromGlobalList(rxn)
+						
 					# Delete all isomers involving the species
 					isomerList = []
 					for isomer in network.isomers:
@@ -287,8 +293,6 @@ class CoreEdgeReactionModel:
 			for network in networksToDelete:
 				logging.debug('Deleting empty unirxn network %s' % network.id)
 				self.unirxnNetworks.remove(network)
-
-
 
 		# remove from the global list of species, to free memory
 		species.speciesList.remove(spec)
