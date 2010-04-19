@@ -195,7 +195,8 @@ class Graph(dict):
 	def findIsomorphism(self, other, map12_0, map21_0):
 		"""
 		Returns :data:`True` if `other` is subgraph isomorphic and :data:`False`
-		otherwise. Uses the VF2 algorithm of Vento and Foggia.
+		otherwise, and the matching mapping.
+		Uses the VF2 algorithm of Vento and Foggia.
 		"""
 		return VF2_isomorphism(self, other, map21_0, map12_0, False, False)
 
@@ -577,7 +578,7 @@ def VF2_isomorphism(graph1, graph2, map12, map21, subgraph=False, findAll=False)
 	
 	if not subgraph:
 		if len(graph2) != len(graph1):
-			logging.debug("Tried matching graphs of different sizes!")
+			#logging.debug("Tried matching graphs of different sizes!")
 			return False, None, None # is_match, map12, map21
 		elif len(graph2) == 0 == len(graph1):
 			logging.warning("Tried matching empty graphs (returning True)")
