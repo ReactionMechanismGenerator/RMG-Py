@@ -31,7 +31,6 @@
 import rmg.log as logging
 import rmg.data as data
 import rmg.constants as constants
-import rmg.thermo as thermo
 
 from modes import *
 
@@ -90,7 +89,7 @@ class FrequencyDatabase(data.Database):
 		# Load dictionary, library, and (optionally) tree
 		data.Database.load(self, dictstr, treestr, libstr)
 
-		# Convert data in library to ThermoData objects or lists of
+		# Convert data in library to CharacteristicFrequency objects or lists of
 		# [link, comment] pairs
 		for label, item in self.library.iteritems():
 
@@ -139,7 +138,7 @@ def loadFrequencyDatabase(frequenciesDatabasePath):
 	"""
 	import os.path
 	
-	# Create and load thermo databases
+	# Create and load frequency databases
 	database = FrequencyDatabase()
 	logging.debug('\tFrequencies database from '+frequenciesDatabasePath)
 	database.load(
@@ -154,7 +153,7 @@ def loadFrequencyDatabase(frequenciesDatabasePath):
 def generateSpectralData(struct, thermoData):
 	"""
 	Generate the spectral data for a :class:`structure.Structure` object
-	`struct` with corresponding :class:`thermo.ThermoGAData` object `thermo`.
+	`struct` with corresponding :class:`ThermoModel` object `thermoData`.
 	The group frequency method is used to do so; this method has two steps:
 
 	1.	Search the structure for certain functional groups for which
@@ -243,9 +242,9 @@ def generateSpectralData(struct, thermoData):
 
 	# Subtract out contributions to heat capacity from the characteristic modes
 	import numpy
-	Cp = [thermoData.getHeatCapacity(T) for T in thermo.ThermoGAData.CpTlist]
+	Tlist = numpy.array([300.0, 400.0, 500.0, 600.0, 800.0, 1000.0, 1500.0])
+	Cp = [thermoData.getHeatCapacity(T) for T in Tlist]
 	Cv = numpy.array(Cp) / constants.R
-	Tlist = numpy.array(thermo.ThermoGAData.CpTlist)
 	for mode in spectralData.modes:
 		Cv -= mode.getHeatCapacity(Tlist)
 	# Subtract out translational modes

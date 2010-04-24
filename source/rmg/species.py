@@ -41,6 +41,7 @@ import quantities as pq
 import settings
 import structure
 import thermo.model
+import thermo.data
 import spectral.modes
 import spectral.data
 import ctml_writer
@@ -477,7 +478,7 @@ class Species:
 		thermoData = []
 		for structure in self.structure:
 			structure.updateAtomTypes()
-			thermoData.append(getThermoData(structure, thermoClass))
+			thermoData.append(thermo.data.generateThermoData(structure, thermoClass))
 		
 		# If multiple resonance isomers are present, use the thermo data of
 		# the most stable isomer (i.e. one with lowest enthalpy of formation)
@@ -702,10 +703,8 @@ def makeNewSpecies(structure, label='', reactive=True, checkExisting=True):
 		if found: return spec, False
 
 	# Return None if the species has a forbidden structure
-	if thermo.forbiddenStructures is not None:
-		for lbl, struct in thermo.forbiddenStructures.iteritems():
-			if structure.isSubgraphIsomorphic(struct): return None, False
-
+	if thermo.data.isStructureForbidden(structure): return None, False
+	
 	# Otherwise make a new species
 	if label == '':
 #		label = structure.getFormula()
@@ -730,8 +729,7 @@ def processNewSpecies(spec):
 	spec.id = speciesCounter
 	
 	spec.getResonanceIsomers()
-	if thermoDatabase is not None:
-		spec.getThermoData()
+	spec.generateThermoData()
 
 	# Generate spectral data
 	if settings.spectralDataEstimation and spec.thermoData and spec.reactive:

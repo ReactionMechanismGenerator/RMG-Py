@@ -41,7 +41,7 @@ import structure
 import data
 import species
 import reaction
-import thermo
+import thermo.data
 import spectral.data
 
 """
@@ -79,19 +79,6 @@ class InvalidXMLError(Exception):
 		return 'Invalid XML: %s' % self.msg
 
 ################################################################################
-
-def loadThermoDatabase(dstr):
-	"""
-	Load the RMG thermo database located at `dstr` into the global variable
-	`rmg.species.thermoDatabase`. Also loads the forbidden structures into
-	`rmg.thermo.forbiddenStructures`.
-	"""
-	species.thermoDatabase = species.ThermoDatabaseSet()
-	species.thermoDatabase.load(dstr)
-
-	thermo.forbiddenStructures = data.Dictionary()
-	thermo.forbiddenStructures.load(os.path.join(dstr, 'ForbiddenStructures.txt'))
-	thermo.forbiddenStructures.toStructure()
 
 def loadKineticsDatabase(dstr):
 	"""
@@ -499,7 +486,7 @@ def readInputFile(fstr):
 			if database[1] == 'general':
 				logging.verbose('General database: ' + database[2])
 				# Load all databases
-				loadThermoDatabase(database[2] + os.sep)
+				thermo.data.loadThermoDatabase(database[2] + os.sep)
 				loadKineticsDatabase(database[2] + os.sep)
 				loadFrequencyDatabase(database[2])
 			elif database[1] == 'seedmechanism':

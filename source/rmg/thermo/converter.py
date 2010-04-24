@@ -37,11 +37,14 @@ This module can be compiled using Cython to a shared library, which provides a
 significant speed boost to running in pure Python mode.
 """
 
-import constants
 import math
 import scipy
 from scipy import linalg, optimize, integrate
-import log as logging
+
+import rmg.constants
+import rmg.log as logging
+
+from model import *
 
 ################################################################################
 
@@ -186,6 +189,7 @@ def CpLimits(atoms, rotors, linear):
 	return cp0, cpInf
 
 ################################################################################
+
 def convertWilhoitToNASA(Wilhoit, fixed=1, weighting=1, tint=1000.0, Tmin = 298.0, Tmax=6000.0, contCons=3):
 	"""Convert a Wilhoit thermo instance into a NASA polynomial thermo instance.
 	
@@ -281,8 +285,6 @@ def convertWilhoitToNASA(Wilhoit, fixed=1, weighting=1, tint=1000.0, Tmin = 298.
 	
 	NASAthermo = NASAModel(Tmin=Tmin, Tmax=Tmax, polynomials=[nasa_low,nasa_high], comment=comment)
 	return NASAthermo
-
-################################################################################
 
 def Wilhoit2NASA(wilhoit, tmin, tmax, tint, weighting, contCons):
 	"""
@@ -551,6 +553,7 @@ def TintOpt_objFun_W(tint, wilhoit, tmin, tmax, contCons):
 	return result
 
 ####################################################################################################
+
 #below are functions for conversion of general Cp to NASA polynomials
 #because they use numerical integration, they are, in general, likely to be slower and less accurate than versions with analytical integrals for the starting Cp form (e.g. Wilhoit polynomials)
 #therefore, this should only be used when no analytic alternatives are available
@@ -642,8 +645,6 @@ def convertCpToNASA(CpObject, H298, S298, fixed=1, weighting=0, tint=1000.0, Tmi
 
 	NASAthermo = NASAModel(Tmin=Tmin, Tmax=Tmax, polynomials=[nasa_low,nasa_high], comment=comment)
 	return NASAthermo
-
-################################################################################
 
 def Cp2NASA(CpObject, tmin, tmax, tint, weighting, contCons):
 	"""
@@ -948,7 +949,3 @@ def integrand(t, CpObject , n, squared):
 		for i in range(0,n):#multiply by t, n times
 			result = result*t
 	return result
-################################################################################
-
-if __name__ == '__main__':
-	pass

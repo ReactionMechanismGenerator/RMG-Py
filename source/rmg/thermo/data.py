@@ -28,17 +28,17 @@
 #
 ################################################################################
 
+import os
 import math
 
 import rmg.constants as constants
 import rmg.data as data
+import rmg.log as logging
+import rmg.chem as chem
+import rmg.structure as structure
 
 from model import *
-
-################################################################################
-
-# this will be replaced with something in io.py
-forbiddenStructures = None
+from converter import *
 
 ################################################################################
 
@@ -69,20 +69,20 @@ class ThermoDatabase(data.Database):
 		# Load dictionary, library, and (optionally) tree
 		data.Database.load(self, dictstr, treestr, libstr)
 
-		# Convert data in library to ThermoData objects or lists of
+		# Convert data in library to ThermoGAModel objects or lists of
 		# [link, comment] pairs
 		for label, item in self.library.iteritems():
 
 			if item is None:
 				pass
 			elif not item.__class__ is tuple:
-				raise data.InvalidDatabaseException('Kinetics library should be tuple at this point. Instead got %r'%data)
+				raise data.InvalidDatabaseException('Thermo library should be tuple at this point. Instead got %r'%data)
 			else:
 				index,item = item # break apart tuple, recover the 'index' - the beginning of the line in the library file.
 				# Is't it dangerous having a local variable with the same name as a module?
 				# what if we want to raise another data.InvalidDatabaseException() ?
 				if not ( item.__class__ is str or item.__class__ is unicode) :
-					raise data.InvalidDatabaseException('Kinetics library data format is unrecognized.')
+					raise data.InvalidDatabaseException('Thermo library data format is unrecognized.')
 
 				items = item.split()
 				try:
@@ -94,7 +94,7 @@ class ThermoDatabase(data.Database):
 					for i in range(12, len(items)):
 						comment += items[i] + ' '
 
-					thermoGAData = thermo.ThermoGAData()
+					thermoGAData = ThermoGAModel()
 					thermoGAData.fromDatabase(thermoData, comment)
 					thermoGAData.index = index
 					self.library[label] = thermoGAData
@@ -133,11 +133,11 @@ class ThermoDatabase(data.Database):
 
 		if node not in self.library:
 			# No data present (e.g. bath gas)
-			data = thermo.ThermoGAData()
+			data = ThermoGAModel()
 		else:
 			data = self.library[node]
 
-		while data.__class__ != thermo.ThermoGAData and data is not None:
+		while data.__class__ != ThermoGAModel and data is not None:
 			if data[0].__class__ == str or data[0].__class__ == unicode:
 				data = self.library[data[0]]
 
@@ -260,15 +260,12 @@ class ThermoDatabaseSet:
 		`structure`.
 		"""
 
-		import chem
-		import structure
-
 		# First check to see if structure is in primary thermo library
 		label = self.primaryDatabase.contains(struct)
 		if label is not None:
 			return self.primaryDatabase.library[label]
 
-		thermoData = thermo.ThermoGAData()
+		thermoData = ThermoGAModel()
 
 		if struct.getRadicalCount() > 0:
 			# Make a copy of the structure so we don't change the original
@@ -353,21 +350,36 @@ class ThermoDatabaseSet:
 
 		return thermoData
 
+################################################################################
+
 thermoDatabase = None
+
 forbiddenStructures = None
+
+def loadThermoDatabase(dstr):
+	"""
+	Load the RMG thermo database located at `dstr` into the global variable
+	`rmg.species.thermoDatabase`. Also loads the forbidden structures into
+	`rmg.thermo.forbiddenStructures`.
+	"""
+	global thermoDatabase
+	global forbiddenStructures
+	
+	thermoDatabase = ThermoDatabaseSet()
+	thermoDatabase.load(dstr)
+
+	forbiddenStructures = data.Dictionary()
+	forbiddenStructures.load(os.path.join(dstr, 'ForbiddenStructures.txt'))
+	forbiddenStructures.toStructure()
 
 ################################################################################
 
-def getThermoData(struct, thermoClass=NASAModel):
+def generateThermoData(struct, thermoClass=NASAModel):
 	"""
 	Get the thermodynamic data associated with `structure` by looking in the
-	loaded thermodynamic database.
-
-	`thermoClass` is the class of thermo object you want returning; default
-	is :class:`ThermoNASAData`
+	loaded thermodynamic database. The parameter `thermoClass` is the class of
+	thermo object you want returning; default is :class:`NASAModel`.
 	"""
-	import constants
-	import math
 
 	GAthermoData = thermoDatabase.getThermoData(struct)
 
@@ -384,7 +396,7 @@ def getThermoData(struct, thermoClass=NASAModel):
 	rotors = struct.calculateNumberOfRotors()
 	atoms = len(struct.atoms())
 	linear = struct.isLinear()
-	WilhoitData = thermo.convertGAtoWilhoit(GAthermoData,atoms,rotors,linear)
+	WilhoitData = convertGAtoWilhoit(GAthermoData,atoms,rotors,linear)
 
 	logging.debug('Wilhoit thermo data: %s' % WilhoitData)
 
@@ -392,7 +404,7 @@ def getThermoData(struct, thermoClass=NASAModel):
 		return WilhoitData
 
 	# Convert to NASA
-	NASAthermoData = thermo.convertWilhoitToNASA(WilhoitData)
+	NASAthermoData = convertWilhoitToNASA(WilhoitData)
 
 	logging.debug('NASA thermo data: %s' % NASAthermoData)
 
@@ -408,3 +420,18 @@ def getThermoData(struct, thermoClass=NASAModel):
 
 	# Still not returned?
 	raise Exception("Cannot convert themo data into class %r"%(required_class))
+
+################################################################################
+
+def isStructureForbidden(struct):
+	"""
+	Return :data:`True` if the structure `struct` contains any of the subgraphs
+	listed in the forbidden structures database, or :data:`False` if not.
+	"""
+
+	if forbiddenStructures:
+		for lbl, s in forbiddenStructures.iteritems():
+			if struct.isSubgraphIsomorphic(s):
+				return True
+
+	return False
