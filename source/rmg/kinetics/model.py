@@ -31,15 +31,15 @@
 """
 Provides classes for working with the kinetics of chemical reactions:
 
-* :class:`Kinetics` - A base class from which kinetics classes are derived
+* :class:`KineticsModel` - A base class from which kinetics model classes are derived
 
-* :class:`ArrheniusKinetics` - A representation of an Arrhenius kinetic model
+* :class:`ArrheniusModel` - A representation of an Arrhenius kinetic model
 
-* :class:`ArrheniusEPKinetics` - A representation of an Arrhenius kinetic model with Evans-Polanyi correction
+* :class:`ArrheniusEPModel` - A representation of an Arrhenius kinetic model with Evans-Polanyi correction
 
-* :class:`ChebyshevKinetics` - Pressure-dependent kinetics modeled with Chebyshev polynomials
+* :class:`ChebyshevModel` - Pressure-dependent kinetics modeled with Chebyshev polynomials
 
-* :class:`PDepArrheniusKinetics` - Pressure-dependent kinetics modeled with Arrhenius expressions at multiple pressures
+* :class:`PDepArrheniusModel` - Pressure-dependent kinetics modeled with Arrhenius expressions at multiple pressures
 
 """
 
@@ -50,7 +50,7 @@ import rmg.constants as constants
 
 ################################################################################
 
-class Kinetics:
+class KineticsModel:
 	"""
 	Represent a set of kinetic data. The details of the form of the kinetic
 	data are left to a derived class. The attributes are:
@@ -58,7 +58,10 @@ class Kinetics:
 	===============  ===========================================================
 	Attribute        Description
 	===============  ===========================================================
-	`Trange`         A list of the minimum and maximum valid temperatures in K
+	`Tmin`           The minimum temperature in K at which the model is valid
+	`Tmax`           The maximum temperature in K at which the model is valid
+	`Pmin`           The minimum pressure in Pa at which the model is valid
+	`Pmax`           The maximum pressure in Pa at which the model is valid
 	`rank`           An integer rank denoting the degree of confidence in the
 	                 data (1 = high, 5 = low, 0 = none)
 	`comment`        Comments, including but not limited to the source of the
@@ -69,8 +72,11 @@ class Kinetics:
 
 	"""
 
-	def __init__(self, Trange=None, rank=0, comment=''):
-		self.Trange = Trange or [0.0, 10000.0]
+	def __init__(self, Tmin=0.0, Tmax=10000.0, Pmin=0.0, Pmax=1.0e100, rank=0, comment=''):
+		self.Tmin = Tmin
+		self.Tmax = Tmax
+		self.Pmin = Pmin
+		self.Pmax = Pmax
 		self.rank = 0
 		self.comment = ''
 		self.numReactants = None
@@ -78,18 +84,20 @@ class Kinetics:
 	def isTemperatureInRange(self, T):
 		"""
 		Return :data:`True` if temperature `T` is within the valid temperature
-		range specified by self.Trange and :data:`False` if not. If no
-		temperature range is specified in self.Trange, the kinetic data is
-		assumed to be valid at all temperatures.
+		range and :data:`False` if not. 
 		"""
-		if self.Trange is not None:
-			if T < self.Trange[0] or T > self.Trange[1]:
-				return False
-		return True
+		return (self.Tmin < T and T < self.Tmax)
+
+	def isPressureInRange(self, P):
+		"""
+		Return :data:`True` if pressure `P` is within the valid pressure
+		range, and :data:`False` if not.
+		"""
+		return (self.Pmin < P and P < self.Pmax)
 
 ################################################################################
 
-class ArrheniusKinetics(Kinetics):
+class ArrheniusModel(KineticsModel):
 	"""
 	Represent a set of modified Arrhenius kinetics. The kinetic expression has
 	the form
@@ -111,17 +119,17 @@ class ArrheniusKinetics(Kinetics):
 	def __init__(self, A=0.0, Ea=0.0, n=0.0):
 		"""If calling without keyword arguments be careful of the order!"""
 		# in fact, should (can?) we enforce keyword calling?
-		Kinetics.__init__(self)
+		KineticsModel.__init__(self)
 		self.A = A
 		self.Ea = Ea
 		self.n = n
 	
 	def __str__(self):
-		return 'k(T) = %s * T ** %s * math.exp(-%s / constants.R / T)\t%s < T < %s' % (self.A, self.n, self.Ea, self.Trange[0], self.Trange[1])
+		return 'k(T) = %s * T ** %s * math.exp(-%s / constants.R / T)\t%s < T < %s' % (self.A, self.n, self.Ea, self.Tmin, self.Tmax)
 	
 	def __repr__(self):
 		"""How it looks on the console"""
-		return '<ArrheniusKinetics A=%.0e E=%.0fkJ/mol n=%.1f >'%(self.A,
+		return '<ArrheniusModel A=%.0e E=%.0fkJ/mol n=%.1f >'%(self.A,
 			self.Ea/1000.0, self.n )
 	
 	def equals(self, other):
@@ -133,7 +141,7 @@ class ArrheniusKinetics(Kinetics):
 	def getRateConstant(self, T, P=1.0e5):
 		"""
 		Return the rate constant k(T) at temperature `T` by evaluating the
-		Arrhenius expression.
+		ArrheniusModel expression.
 		"""
 		
 		# Raise exception if T is outside of valid temperature range
@@ -150,7 +158,7 @@ class ArrheniusKinetics(Kinetics):
 		are.
 		"""
 		
-		kinetics = ArrheniusKinetics(self.A / Keq * math.exp(-dHrxn / constants.R / T), self.Ea - dHrxn, self.n)
+		kinetics = ArrheniusModel(self.A / Keq * math.exp(-dHrxn / constants.R / T), self.Ea - dHrxn, self.n)
 		kinetics.Trange = self.Trange
 		kinetics.rank = self.rank
 		kinetics.comment = self.comment
@@ -160,7 +168,7 @@ class ArrheniusKinetics(Kinetics):
 	def fromXML(self, document, rootElement):
 		"""
 		Convert a <kinetics> element from a standard RMG-style XML input file
-		into an ArrheniusKinetics object. `document` is an :class:`io.XML` class
+		into an ArrheniusModel object. `document` is an :class:`io.XML` class
 		representing the XML DOM tree, and `rootElement` is the <kinetics>
 		element in that tree.
 		"""
@@ -185,7 +193,7 @@ class ArrheniusKinetics(Kinetics):
 		"""
 
 		kineticsElement = document.createElement('kinetics', rootElement)
-		document.createAttribute('type', kineticsElement, 'Arrhenius')
+		document.createAttribute('type', kineticsElement, 'ArrheniusModel')
 
 		if numReactants == 1:
 			Aunits = 's^-1'
@@ -198,13 +206,13 @@ class ArrheniusKinetics(Kinetics):
 
 	def fitToData(self, Tlist, K):
 		"""
-		Fit an Arrhenius model to a set of rate coefficients `K`, which is a
+		Fit an ArrheniusModel model to a set of rate coefficients `K`, which is a
 		list corresponding to the temperatures `Tlist` in K.
 		"""
 
 		import numpy
 
-		# Step 1: Fit normal Arrhenius expression
+		# Step 1: Fit normal ArrheniusModel expression
 
 		# Create matrix and vector for coefficient fit (linear least-squares)
 		A = numpy.zeros((len(Tlist), 2), numpy.float64)
@@ -221,7 +229,7 @@ class ArrheniusKinetics(Kinetics):
 
 		K1 = [k / (math.exp(-Ea0 / constants.R / T)) for k in K]
 
-		# Step 2: Fit preexponential factor to data with normal Arrhenius
+		# Step 2: Fit preexponential factor to data with normal ArrheniusModel
 		# removed
 
 		A = numpy.zeros((len(Tlist), 2), numpy.float64)
@@ -236,7 +244,7 @@ class ArrheniusKinetics(Kinetics):
 		A1 = math.exp(float(x[0]))
 		n1 = float(x[1])
 
-		# Step 3: Re-fit normal Arrhenius expression using exponent from step 2
+		# Step 3: Re-fit normal ArrheniusModel expression using exponent from step 2
 
 		# Create matrix and vector for coefficient fit (linear least-squares)
 		A = numpy.zeros((len(Tlist), 2), numpy.float64)
@@ -272,7 +280,7 @@ class ArrheniusKinetics(Kinetics):
 
 ################################################################################
 
-class ArrheniusEPKinetics(Kinetics):
+class ArrheniusEPModel(KineticsModel):
 	"""
 	Represent a set of modified Arrhenius kinetics with Evans-Polanyi data. The
 	kinetic expression has the form
@@ -295,14 +303,14 @@ class ArrheniusEPKinetics(Kinetics):
 
 	def __init__(self, A=0.0, E0=0.0, n=0.0, alpha=0.0):
 		"""If calling without keyword arguments be careful of the order!"""
-		Kinetics.__init__(self)
+		KineticsModel.__init__(self)
 		self.A = A
 		self.E0 = E0
 		self.n = n
 		self.alpha = alpha
 
 	def __str__(self):
-		string = 'k(T) = %s * T ** %s * math.exp(-(%s + %s * DHrxn) / constants.R / T)\t%s < T < %s' % (self.A, self.n, self.E0, self.alpha, self.Trange[0], self.Trange[1])
+		string = 'k(T) = %s * T ** %s * math.exp(-(%s + %s * DHrxn) / constants.R / T)\t%s < T < %s' % (self.A, self.n, self.E0, self.alpha, self.Tmin, self.Tmax)
 		if self.family and self.label:
 			string += '/nFrom %s Item %s'%(self.family.label, self.label)
 		if self.comment:
@@ -311,7 +319,7 @@ class ArrheniusEPKinetics(Kinetics):
 		
 	def __repr__(self):
 		"""How it looks on the console"""
-		return '<ArrheniusEPKinetics A=%.0e E0=%.0fkJ/mol n=%.1f alpha=%.1g>'%(
+		return '<ArrheniusEPModel A=%.0e E0=%.0fkJ/mol n=%.1f alpha=%.1g>'%(
 			self.A, self.E0/1000.0, self.n, self.alpha)
 
 	def equals(self, other):
@@ -329,14 +337,17 @@ class ArrheniusEPKinetics(Kinetics):
 
 	def getArrhenius(self, dHrxn):
 		"""
-		Return the Arrhenius form of k(T) at temperature `T` by correcting E0
+		Return the ArrheniusModel form of k(T) at temperature `T` by correcting E0
 		to Ea using the enthalpy of reaction `dHrxn`.
 		"""
 		
 		Ea = self.getActivationEnergy(float(dHrxn))
 		
-		kinetics = ArrheniusKinetics(self.A, Ea, self.n)
-		kinetics.Trange = self.Trange
+		kinetics = ArrheniusModel(self.A, Ea, self.n)
+		kinetics.Tmin = self.Tmin
+		kinetics.Tmax = self.Tmax
+		kinetics.Pmin = self.Pmin
+		kinetics.Pmax = self.Pmax
 		kinetics.rank = self.rank
 		kinetics.comment = self.comment + 'Used dHrxn=%.0fkJ/mol to evaluate Ea.'%(dHrxn/1000.0)
 		return kinetics
@@ -344,7 +355,7 @@ class ArrheniusEPKinetics(Kinetics):
 	def getRateConstant(self, T, dHrxn):
 		"""
 		Return the rate constant k(T) at temperature `T` by evaluating the
-		Arrhenius expression. The reaction has an enthalpy of reaction `dHrxn`.
+		ArrheniusModel expression. The reaction has an enthalpy of reaction `dHrxn`.
 		"""
 
 		# Raise exception if T is outside of valid temperature range
@@ -376,9 +387,9 @@ class ArrheniusEPKinetics(Kinetics):
 		elif numReactants > 2:
 			originalUnits = 'cm^%s/(mol^%s*s)' % ((numReactants-1)*3, numReactants-1)
 
-		self.Trange = pq.Quantity([Tmin, Tmax], 'K').simplified
-		self.Trange = [float(self.Trange[0]), float(self.Trange[1])]
-
+		self.Tmin = float(pq.Quantity(Tmin, 'K').simplified)
+		self.Tmax = float(pq.Quantity(Tmax, 'K').simplified)
+		
 		self.A = float(pq.Quantity(A, originalUnits).simplified)
 		self.E0 = float(pq.Quantity(E0, 'kcal/mol').simplified)
 		self.n = float(pq.Quantity(n, '').simplified)
@@ -397,7 +408,8 @@ class ArrheniusEPKinetics(Kinetics):
 
 		kineticsElement = document.createElement('kinetics', rootElement)
 		document.createAttribute('type', kineticsElement, 'ArrheniusEP')
-		document.createAttribute('Trange', kineticsElement, '%s-%s K' % (self.Trange[0], self.Trange[1]))
+		document.createAttribute('Tmin', kineticsElement, '%s K' % (self.Tmin))
+		document.createAttribute('Tmax', kineticsElement, '%s K' % (self.Tmax))
 		document.createAttribute('rank', kineticsElement, str(self.rank))
 		document.createAttribute('comment', kineticsElement, self.comment)
 
@@ -413,39 +425,39 @@ class ArrheniusEPKinetics(Kinetics):
 
 ################################################################################
 
-class PDepArrheniusKinetics(Kinetics):
+class PDepArrheniusModel(KineticsModel):
 	"""
 	A kinetic model of a phenomenological rate coefficient k(T, P) using the
 	expression
 
 	.. math:: k(T,P) = A(P) T^{n(P)} \\exp \\left[ \\frac{-E_\\mathrm{a}(P)}{RT} \\right]
 
-	where the modified Arrhenius parameters are stored at a variety of pressures
+	where the modified ArrheniusModel parameters are stored at a variety of pressures
 	and interpolated between on a logarithmic scale. The attributes are:
 
 	==============  ============================================================
 	Attribute       Description
 	==============  ============================================================
 	`pressures`     The list of pressures in Pa
-	`arrhenius`     The list of :class:`ArrheniusKinetics` objects at each
+	`arrhenius`     The list of :class:`ArrheniusModel` objects at each
 	                pressure
 	==============  ============================================================
 
 	"""
 
 	def __init__(self, pressures=None, arrhenius=None):
-		Kinetics.__init__(self)
+		KineticsModel.__init__(self)
 		self.pressures = pressures or []
 		self.arrhenius = arrhenius or []
 
 	def __getAdjacentExpressions(self, P):
 		"""
-		Returns the pressures and Arrhenius expressions for the pressures that
+		Returns the pressures and ArrheniusModel expressions for the pressures that
 		most closely bound the specified pressure `P` in Pa.
 		"""
 
 		if P < min(self.pressures) or P > max(self.pressures):
-			raise Exception('Attempted to evaluate PDepArrhenius expression at invalid pressure %s Pa; allowed range is %s to %s Pa.' % (P, min(self.pressures), max(self.pressures)))
+			raise Exception('Attempted to evaluate PDepArrheniusModel expression at invalid pressure %s Pa; allowed range is %s to %s Pa.' % (P, min(self.pressures), max(self.pressures)))
 
 		if P in self.pressures:
 			arrh = self.arrhenius[self.pressures.index(P)]
@@ -463,7 +475,7 @@ class PDepArrheniusKinetics(Kinetics):
 	def getRateConstant(self, T, P):
 		"""
 		Return the rate constant k(T, P) at temperature `T` and pressure `P` by
-		evaluating the pressure-dependent Arrhenius expression.
+		evaluating the pressure-dependent ArrheniusModel expression.
 		"""
 		Plow, Phigh, alow, ahigh = self.__getAdjacentExpressions(P)
 		if Plow == Phigh: return alow.getRateConstant(T)
@@ -474,24 +486,24 @@ class PDepArrheniusKinetics(Kinetics):
 
 	def fitToData(self, Tlist, Plist, K):
 		"""
-		Fit a pressure-dependent Arrhenius kinetic model to a set of rate
+		Fit a pressure-dependent ArrheniusModel kinetic model to a set of rate
 		coefficients `K`, which is a matrix corresponding to the temperatures
 		`Tlist` in K and pressures `Plist` in Pa.
 		"""
-		# Initialize list of ArrheniusKinetics objects
+		# Initialize list of ArrheniusModel objects
 		self.arrhenius = []
 		# Create a copy of the list of pressures to store in the pressures attribute
 		self.pressures = Plist[:]
-		# Iterate over pressures, fitting Arrhenius parameters at each and
-		# appending to the list of Arrhenius expressions
+		# Iterate over pressures, fitting ArrheniusModel parameters at each and
+		# appending to the list of ArrheniusModel expressions
 		for p, P in enumerate(Plist):
-			arrh = ArrheniusKinetics()
+			arrh = ArrheniusModel()
 			arrh.fitToData(Tlist, K[:,p])
 			self.arrhenius.append(arrh)
 
 	def getArrhenius(self, P):
 		"""
-		Return an :class:`ArrheniusKinetics` object at the specified pressure
+		Return an :class:`ArrheniusModel` object at the specified pressure
 		`P` in Pa.
 		"""
 		Plow, Phigh, alow, ahigh = self.__getAdjacentExpressions(P)
@@ -502,7 +514,7 @@ class PDepArrheniusKinetics(Kinetics):
 		n = alow.n + (ahigh.n - alow.n) * logPRatio
 		Ea = alow.Ea + (ahigh.Ea - alow.Ea) * logPRatio
 
-		return ArrheniusKinetics(A=A, n=n, Ea=Ea)
+		return ArrheniusModel(A=A, n=n, Ea=Ea)
 
 	def toXML(self, document, rootElement, numReactants):
 		"""
@@ -512,7 +524,7 @@ class PDepArrheniusKinetics(Kinetics):
 		"""
 
 		kineticsElement = document.createElement('kinetics', rootElement)
-		document.createAttribute('type', kineticsElement, 'pressure-dependent Arrhenius')
+		document.createAttribute('type', kineticsElement, 'pressure-dependent ArrheniusModel')
 
 		document.createQuantity('pressures', kineticsElement, [P / 1.0e5 for P in self.pressures], 'bar')
 
@@ -522,7 +534,7 @@ class PDepArrheniusKinetics(Kinetics):
 
 ################################################################################
 
-class ChebyshevKinetics(Kinetics):
+class ChebyshevModel(KineticsModel):
 	"""
 	A kinetic model of a phenomenological rate coefficient k(T, P) using the
 	expression
@@ -544,21 +556,15 @@ class ChebyshevKinetics(Kinetics):
 	==============  ============================================================
 	Attribute       Description
 	==============  ============================================================
-	`Tmin`          The minimum temperature in K
-	`Tmax`          The maximum temperature in K
-	`Pmin`          The minimum pressure in Pa
-	`Pmax`          The maximum pressure in Pa
 	`coeffs`        Matrix of Chebyshev coefficients
+	`degreeT`       The number of terms in the inverse temperature direction
+	`degreeP`       The number of terms in the log pressure direction
 	==============  ============================================================
 
 	"""
 
 	def __init__(self, Tmin=0.0, Tmax=0.0, Pmin=0.0, Pmax=0.0, coeffs=None):
-		Kinetics.__init__(self)
-		self.Tmin = Tmin
-		self.Tmax = Tmax
-		self.Pmin = Pmin
-		self.Pmax = Pmax
+		KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax)
 		self.coeffs = coeffs
 		self.degreeT = 0
 		self.degreeP = 0
@@ -637,7 +643,7 @@ class ChebyshevKinetics(Kinetics):
 		"""
 
 		kineticsElement = document.createElement('kinetics', rootElement)
-		document.createAttribute('type', kineticsElement, 'pressure-dependent Arrhenius')
+		document.createAttribute('type', kineticsElement, 'pressure-dependent ArrheniusModel')
 
 		document.createQuantity('Tmin', kineticsElement, self.Tmin, 'K')
 		document.createQuantity('Tmax', kineticsElement, self.Tmax, 'K')
