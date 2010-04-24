@@ -30,18 +30,16 @@
 
 import xml.dom.minidom
 import quantities as pq
-import log as logging
 import os
 import math
 
-import constants
+import log as logging
 import settings
 import model
-import structure
-import data
 import species
 import reaction
 import thermo.data
+import kinetics.data
 import spectral.data
 
 """
@@ -77,16 +75,6 @@ class InvalidXMLError(Exception):
 
 	def __str__(self):
 		return 'Invalid XML: %s' % self.msg
-
-################################################################################
-
-def loadKineticsDatabase(dstr):
-	"""
-	Load the RMG kinetics database located at `dstr` into the global variable
-	`rmg.reaction.kineticsDatabase`.
-	"""
-	reaction.kineticsDatabase = reaction.ReactionFamilySet()
-	reaction.kineticsDatabase.load(dstr)
 
 ################################################################################
 
@@ -478,7 +466,7 @@ def readInputFile(fstr):
 				logging.verbose('General database: ' + database[2])
 				# Load all databases
 				thermo.data.loadThermoDatabase(database[2] + os.sep)
-				loadKineticsDatabase(database[2] + os.sep)
+				kinetics.data.loadKineticsDatabase(database[2] + os.sep)
 				spectral.data.loadFrequencyDatabase(database[2])
 			elif database[1] == 'seedmechanism':
 				logging.verbose('Seed mechanism: ' + database[2])

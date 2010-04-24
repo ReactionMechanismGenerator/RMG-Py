@@ -37,7 +37,7 @@ import time
 import rmg.log as logging
 
 import rmg.settings as settings
-import rmg.kinetics as kinetics
+import rmg.kinetics.model as kineticsModel
 import rmg.unirxn.io as io
 import rmg.reaction as reaction
 
@@ -100,11 +100,11 @@ def execute(inputFile, options):
 			# Fit interpolation model
 			if model[0].lower() == 'chebyshev':
 				modelType, degreeT, degreeP = model
-				chebyshev = kinetics.ChebyshevKinetics()
+				chebyshev = kineticsModel.ChebyshevModel()
 				chebyshev.fitToData(Tlist, Plist, K[:,:,j,i], degreeT, degreeP)
 				netReaction.kinetics = [chebyshev]
 			elif model.lower() == 'pdeparrhenius':
-				pDepArrhenius = kinetics.PDepArrheniusKinetics()
+				pDepArrhenius = kineticsModel.PDepArrheniusModel()
 				pDepArrhenius.fitToData(Tlist, Plist, K[:,:,j,i])
 				netReaction.kinetics = [pDepArrhenius]
 			else:

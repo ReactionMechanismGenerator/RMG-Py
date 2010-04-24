@@ -40,6 +40,8 @@ import constants
 import settings
 import reaction
 import species
+import kinetics.model
+import kinetics.data
 import unirxn.network
 
 ################################################################################
@@ -133,15 +135,15 @@ class CoreEdgeReactionModel:
 			newSpecies = newObject
 			# Find reactions involving the new species as unimolecular reactant
 			# or product (e.g. A <---> products)
-			rxnList.extend(reaction.kineticsDatabase.getReactions([newSpecies]))
+			rxnList.extend(kinetics.data.kineticsDatabase.getReactions([newSpecies]))
 			# Find reactions involving the new species as bimolecular reactants
 			# or products with itself (e.g. A + A <---> products)
-			rxnList.extend(reaction.kineticsDatabase.getReactions([newSpecies, newSpecies]))
+			rxnList.extend(kinetics.data.kineticsDatabase.getReactions([newSpecies, newSpecies]))
 			# Find reactions involving the new species as bimolecular reactants
 			# or products with other core species (e.g. A + B <---> products)
 			for coreSpecies in self.core.species:
 				if coreSpecies.reactive:
-					rxnList.extend(reaction.kineticsDatabase.getReactions([newSpecies, coreSpecies]))
+					rxnList.extend(kinetics.data.kineticsDatabase.getReactions([newSpecies, coreSpecies]))
 
 			# Add new species
 			self.addSpeciesToCore(newSpecies)
@@ -154,7 +156,7 @@ class CoreEdgeReactionModel:
 			network.explored.append(maxSpecies)
 			# Find reactions involving the found species as unimolecular
 			# reactant or product (e.g. A <---> products)
-			rxnList = reaction.kineticsDatabase.getReactions([maxSpecies])
+			rxnList = kinetics.data.kineticsDatabase.getReactions([maxSpecies])
 			# Don't find reactions involving the new species as bimolecular
 			# reactants or products with itself (e.g. A + A <---> products)
 			# Don't find reactions involving the new species as bimolecular
@@ -441,7 +443,7 @@ class CoreEdgeReactionModel:
 
 		from unirxn.network import Isomer, UnirxnNetworkException
 		from reaction import PDepReaction, makeNewPDepReaction
-		from kinetics import ChebyshevKinetics, PDepArrheniusKinetics
+		from kinetics.model import ChebyshevModel, PDepArrheniusModel
 
 		count = sum([1 for network in self.unirxnNetworks if not network.valid])
 		logging.info('Updating %i modified unimolecular reaction networks...' % count)
@@ -557,11 +559,11 @@ class CoreEdgeReactionModel:
 							# Set its kinetics using interpolation model
 							if model[0].lower() == 'chebyshev':
 								modelType, degreeT, degreeP = model
-								chebyshev = ChebyshevKinetics()
+								chebyshev = ChebyshevModel()
 								chebyshev.fitToData(Tlist, Plist, K[:,:,i,j], degreeT, degreeP)
 								netReaction.kinetics = chebyshev
 							elif model.lower() == 'pdeparrhenius':
-								pDepArrhenius = PDepArrheniusKinetics()
+								pDepArrhenius = PDepArrheniusModel()
 								pDepArrhenius.fitToData(Tlist, Plist, K[:,:,i,j])
 								netReaction.kinetics = pDepArrhenius
 							else:
@@ -662,7 +664,7 @@ class CoreEdgeReactionModel:
 					A = float(pq.Quantity(float(items[-6]), Aunits).simplified)
 					n = float(items[-5])			# dimensionless
 					Ea = float(pq.Quantity(float(items[-4]), 'cal/mol').simplified)
-					kin = [kinetics.ArrheniusKinetics(A=A, n=n, Ea=Ea)]
+					kin = [kinetics.model.ArrheniusModel(A=A, n=n, Ea=Ea)]
 
 					# Create reaction object and add to list
 					rxn = reaction.Reaction(id=0, reactants=reactants, products=products, family='seed', kinetics=kin, thirdBody=thirdBody)

@@ -542,7 +542,7 @@ class ReactionFamily(data.Database):
 		n /= len(kinetics)
 		alpha /= len(kinetics)
 
-		kin = ArrheniusEPKinetics(math.exp(lnA), E0, n, alpha)
+		kin = ArrheniusEPModel(math.exp(lnA), E0, n, alpha)
 		kin.Trange = [0.0, 0.0]
 		return kin
 
@@ -729,7 +729,7 @@ class ReactionFamily(data.Database):
 	def processLibraryData(self):
 		"""
 		Convert the data in the library from a string/unicode object to either
-		an :class:`ArrheniusEPKinetics` object or a list of [link, comment]
+		an :class:`ArrheniusEPModel` object or a list of [link, comment]
 		string pairs. This function is generally called in the course of
 		loading a database from files.
 		"""
@@ -772,7 +772,7 @@ class ReactionFamily(data.Database):
 					# Everything else is a comment
 					comment = ' '.join(items[10:])
 
-					kinetics = ArrheniusEPKinetics()
+					kinetics = ArrheniusEPModel()
 					kinetics.fromDatabase(kineticData, comment, len(self.template.reactants))
 					kinetics.family = self
 					kinetics.label = label

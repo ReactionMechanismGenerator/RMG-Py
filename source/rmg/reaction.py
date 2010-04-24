@@ -240,7 +240,7 @@ class Reaction:
 		if kineticsElement:
 			format = str(document.getAttribute(kineticsElement, 'type', required=True)).lower()
 			if format == 'arrhenius':
-				self.kinetics = [ArrheniusKinetics()]
+				self.kinetics = [ArrheniusModel()]
 				self.kinetics[0].fromXML(document, kineticsElement)
 			else:
 				raise io.InvalidInputFileException('Invalid type "%s" for kinetics element; allowed values are "Arrhenius".' % format)
@@ -435,7 +435,7 @@ class Reaction:
 		# This may not be the best course of action
 #		if len(kinetics) == 0:
 #			#logging.warning('Warning: No kinetics available for reaction ' + str(self) + ' at ' + str(T) + ' K.')
-#			kinetics = ArrheniusKinetics(A=0.0, Ea=0.0, n=0.0)
+#			kinetics = ArrheniusModel(A=0.0, Ea=0.0, n=0.0)
 #			kinetics.Trange = [0.0, 100000.0]
 #			return kinetics
 
@@ -451,7 +451,7 @@ class Reaction:
 			if k.rank < bestRank and k.rank != 0:
 				bestRank = k.rank
 				bestKinetics = k
-		if isinstance(bestKinetics, ArrheniusEPKinetics):
+		if isinstance(bestKinetics, ArrheniusEPModel):
 			# Convert to ArrheniusKinetics
 			# Use T = 298 K to calculate enthalpy and free energy of reaction
 			T = 298.0
@@ -637,11 +637,11 @@ class PDepReaction(Reaction):
 		this simply sets the prefactor to the value of :math:`k(T,P)` and
 		sets the other Arrhenius parameters to zero.
 		"""
-		if isinstance(self.kinetics, PDepArrheniusKinetics):
+		if isinstance(self.kinetics, PDepArrheniusModel):
 			return self.kinetics.getArrhenius(P)
 		else:
 			k = float(self.getRateConstant(T, P))
-			return ArrheniusKinetics(A=k, n=0.0, Ea=0.0)
+			return ArrheniusModel(A=k, n=0.0, Ea=0.0)
 
 	def toCantera(self,T=1000,P=1.0e5):
 		"""Add this to Cantera ctml_writer"""
