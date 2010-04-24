@@ -29,14 +29,13 @@ cdef extern from "dictobject.h":
 	ctypedef class __builtin__.dict [object PyDictObject]:
 		pass
 
-
 cdef extern from "math.h":
 	cdef double log(double theta)
+
 ################################################################################
 
 cdef class ThermoData:
 	
-	cdef public object Trange # to be removed
 	cdef public str comment
 	cdef public double Tmin
 	cdef public double Tmax

@@ -57,32 +57,29 @@ forbiddenStructures = None
 
 class ThermoData:
 	"""
-	A base class for all forms of thermodynamic data used by RMG. The common
-	attributes are:
+	A base class for thermodynamics models, containing several attributes
+	common to all models:
 	
-	========= ==============================================================
+	========= ==================================================================
 	Attribute Meaning
-	========= ==============================================================
-	`Trange`  a list of length 2 containing the min and max temperature in K
-	`comment` a string describing the source of the data
-	========= ==============================================================
+	========= ==================================================================
+	`Tmin`    The minimum temperature in K at which the model is valid
+	`Tmax`    The maximum temperature in K at which the model is valid
+	`comment` A string containing information about the model (e.g. its source)
+	========= ==================================================================
 	"""
 	
-	def __init__(self, Trange=None, comment=''):
-		Trange = Trange or [0.0, 0.0]
-		self.Trange=Trange
-		self.Tmin = Trange[0]
-		self.Tmax = Trange[1]
+	def __init__(self, Tmin=0.0, Tmax=0.0, comment=''):
+		self.Tmin = Tmin
+		self.Tmax = Tmax
 		self.comment = comment
 	
 	def isTemperatureValid(self, T):
 		"""
 		Return :data:`True` if the temperature `T` in K is within the valid
 		temperature range of the thermodynamic data, or :data:`False` if not.
-		
-		If  Tmax == Tmin == 0 then returns :data:`True`.
-		(This case is for when the range is undefined. Tmax and Tmin must be of
-		type :data:`float` because of Cython declaration.)
+		Returns :data:`True` if the valid range is undefined (internally
+		represented by `Tmin` == `Tmax` == 0.
 		"""
 		if self.Tmax == 0 and self.Tmin == 0:
 			return True
@@ -91,9 +88,9 @@ class ThermoData:
 
 	def fromXML(self, document, rootElement):
 		"""
-		Convert a <thermoData> element from a standard RMG-style XML input file
+		Convert a <ThermoData> element from a standard RMG-style XML input file
 		into a ThermoData object. `document` is an :class:`io.XML` class
-		representing the XML DOM tree, and `rootElement` is the <thermoData>
+		representing the XML DOM tree, and `rootElement` is the <ThermoData>
 		element in that tree.
 		"""
 
@@ -101,15 +98,13 @@ class ThermoData:
 		self.comment = document.getAttribute(rootElement, 'comment', required=False, default='')
 
 		# Temperature range not currently read
-		self.Trange = [0.0, 0.0]
 		self.Tmin = 0.0
 		self.Tmax = 0.0
 
 	def getGroundStateEnergy(self):
 		"""
-		Calculate and return the ground-state energy using this thermo model.
-		This is done by calculating the enthalpy at 0 K. The returned energy
-		has units of J/mol.
+		Calculate and return the ground-state energy in J/mol using this thermo
+		model. This is done by calculating the enthalpy at 0 K.
 		"""
 		# We may not be able to evaluate the Cp(T) model at exactly 0 K
 		# Instead, we just evaluate it very close to 0 K
@@ -139,7 +134,7 @@ class ThermoGAData(ThermoData):
 	
 	def __init__(self, H298=0.0, S298=0.0, Cp=None, comment='', index=''):
 		"""Initialize a set of group additivity thermodynamic data."""
-		ThermoData.__init__(self, Trange=(298.0, 2500.0), comment=comment)
+		ThermoData.__init__(self, Tmin=298.0, Tmax=2500.0, comment=comment)
 		self.H298 = H298
 		self.S298 = S298
 		self.Cp = Cp or [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
@@ -193,7 +188,8 @@ class ThermoGAData(ThermoData):
 		"""
 		Equality comparison.
 		"""
-		if self.Trange != other.Trange: return False
+		if self.Tmin != other.Tmin: return False
+		if self.Tmax != other.Tmax: return False
 		if self.comment != other.comment: return False
 		if self.H298 != other.H298: return False
 		if self.S298 != other.S298: return False
@@ -290,9 +286,9 @@ class ThermoGAData(ThermoData):
 	
 	def fromXML(self, document, rootElement):
 		"""
-		Convert a <thermoData> element from a standard RMG-style XML input file
+		Convert a <ThermoData> element from a standard RMG-style XML input file
 		into a ThermoGAData object. `document` is an :class:`io.XML` class
-		representing the XML DOM tree, and `rootElement` is the <thermoData>
+		representing the XML DOM tree, and `rootElement` is the <ThermoData>
 		element in that tree.
 		"""
 
@@ -313,18 +309,18 @@ class ThermoGAData(ThermoData):
 
 	def toXML(self, document, rootElement):
 		"""
-		Create a <thermoData> element as a child of `rootElement` in the XML DOM
+		Create a <ThermoData> element as a child of `rootElement` in the XML DOM
 		tree represented by `document`, an :class:`io.XML` class. The format
 		matches the format of the :meth:`ThermoGAData.fromXML()` function.
 		"""
 		
-		# Create <thermoData> element
-		thermoDataElement = document.createElement('thermoData', rootElement)
-		document.createAttribute('format', thermoDataElement, 'group additivity')
+		# Create <ThermoData> element
+		ThermoDataElement = document.createElement('ThermoData', rootElement)
+		document.createAttribute('format', ThermoDataElement, 'group additivity')
 
-		document.createQuantity('enthalpyOfFormation', thermoDataElement, self.H298/1000.0, 'kJ/mol')
-		document.createQuantity('entropyOfFormation', thermoDataElement, self.S298, 'J/(mol*K)')
-		document.createQuantity('heatCapacities', thermoDataElement, self.Cp, 'J/(mol*K)')
+		document.createQuantity('enthalpyOfFormation', ThermoDataElement, self.H298/1000.0, 'kJ/mol')
+		document.createQuantity('entropyOfFormation', ThermoDataElement, self.S298, 'J/(mol*K)')
+		document.createQuantity('heatCapacities', ThermoDataElement, self.Cp, 'J/(mol*K)')
 
 	
 ################################################################################
@@ -346,22 +342,22 @@ class ThermoNASAPolynomial(ThermoData):
 	The above was adapted from `this page <http://www.me.berkeley.edu/gri-mech/data/nasa_plnm.html>`_.
 	"""
 	
-	def __init__(self, T_range=None, coeffs=None, comment=''):
-		ThermoData.__init__(self, Trange=T_range, comment=comment)
+	def __init__(self, Tmin=0.0, Tmax=0.0, coeffs=None, comment=''):
+		ThermoData.__init__(self, Tmin=Tmin, Tmax=Tmax, comment=comment)
 		coeffs = coeffs or (0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
-		
 		self.c0, self.c1, self.c2, self.c3, self.c4, self.c5, self.c6 = coeffs
 		
 	def __repr__(self):
-		return "ThermoNASAPolynomial(%r,%r,'%s')"%(self.Trange,(self.c0, self.c1, self.c2, self.c3, self.c4, self.c5, self.c6),self.comment)
+		return "ThermoNASAPolynomial(%r,%r,%r,'%s')"%(self.Tmin,self.Tmax,(self.c0, self.c1, self.c2, self.c3, self.c4, self.c5, self.c6),self.comment)
 	def __reduce__(self):
-		return (ThermoNASAPolynomial,(self.Trange,(self.c0, self.c1, self.c2, self.c3, self.c4, self.c5, self.c6),self.comment))
+		return (ThermoNASAPolynomial,(self.Tmin,self.Tmax,(self.c0, self.c1, self.c2, self.c3, self.c4, self.c5, self.c6),self.comment))
 
 	def equals(self, other):
 		"""
 		Equality comparison.
 		"""
-		if self.Trange != other.Trange: return False
+		if self.Tmin != other.Tmin: return False
+		if self.Tmax != other.Tmax: return False
 		if self.comment != other.comment: return False
 		if self.c0 != other.c0: return False
 		if self.c1 != other.c1: return False
@@ -490,17 +486,18 @@ class ThermoNASAData(ThermoData):
 	contains the desired temperature within its valid range will be used.
 	"""
 	
-	def __init__(self, polynomials=None, comment='', Trange=None):
-		ThermoData.__init__(self, Trange=Trange, comment=comment)
+	def __init__(self, polynomials=None, Tmin=0.0, Tmax=0.0, comment=''):
+		ThermoData.__init__(self, Tmin=Tmin, Tmax=Tmax, comment=comment)
 		self.polynomials = polynomials or []
 	def __reduce__(self):
-		return (ThermoNASAData,(self.polynomials,self.comment,self.Trange))
+		return (ThermoNASAData,(self.polynomials,self.Tmin,self.Tmax,self.comment))
 		
 	def equals(self, other):
 		"""
 		Equality comparison.
 		"""
-		if self.Trange != other.Trange: return False
+		if self.Tmin != other.Tmin: return False
+		if self.Tmax != other.Tmax: return False
 		if self.comment != other.comment: return False
 		for i in range(len(self.polynomials)):
 			if not self.polynomials[i].equals(other.polynomials[i]): return False
@@ -639,9 +636,8 @@ class ThermoWilhoitData(ThermoData):
 
 	
 	def __init__(self, cp0, cpInf, a0, a1, a2, a3, H0, S0, comment='', B=ThermoWilhoitDataB):
-		"""Initialise the Wilhoit polynomial. Trange is set to (0,9999.9)"""
-		Trange = (0,9999.9) # Wilhoit valid over all temperatures
-		ThermoData.__init__(self, Trange=Trange, comment=comment)
+		"""Initialise the Wilhoit polynomial. (Tmin,Tmax) is set to (0,9999.9)"""
+		ThermoData.__init__(self, Tmin=0.0, Tmax=9999.9, comment=comment)
 		self.cp0 = cp0
 		self.cpInf = cpInf
 		self.B = B
@@ -662,7 +658,8 @@ class ThermoWilhoitData(ThermoData):
 		"""
 		Equality comparison.
 		"""
-		if self.Trange != other.Trange: return False
+		if self.Tmin != other.Tmin: return False
+		if self.Tmax != other.Tmax: return False
 		if self.comment != other.comment: return False
 		if self.cp0 != other.cp0: return False
 		if self.cpInf != other.cpInf: return False
@@ -1083,9 +1080,9 @@ def convertWilhoitToNASA(Wilhoit, fixed=1, weighting=1, tint=1000.0, Tmin = 298.
 	
 	# output comment
 	comment = 'NASA function fitted to Wilhoit function. ' + rmsStr + Wilhoit.comment
-	nasa_low.Trange = (Tmin,tint); nasa_low.Tmin = Tmin; nasa_low.Tmax = tint
+	nasa_low.Tmin = Tmin; nasa_low.Tmax = tint
 	nasa_low.comment = 'Low temperature range polynomial'
-	nasa_high.Trange = (tint,Tmax); nasa_high.Tmin = tint; nasa_high.Tmax = Tmax
+	nasa_high.Tmin = tint; nasa_high.Tmax = Tmax
 	nasa_high.comment = 'High temperature range polynomial'
 	
 	#for the low polynomial, we want the results to match the Wilhoit value at 298.15K
@@ -1111,7 +1108,7 @@ def convertWilhoitToNASA(Wilhoit, fixed=1, weighting=1, tint=1000.0, Tmin = 298.
 	nasa_high.c5 = Hhigh
 	nasa_high.c6 = Shigh
 	
-	NASAthermo = ThermoNASAData( Trange=(Tmin,Tmax), polynomials=[nasa_low,nasa_high], comment=comment)
+	NASAthermo = ThermoNASAData(Tmin=Tmin, Tmax=Tmax, polynomials=[nasa_low,nasa_high], comment=comment)
 	return NASAthermo
 
 ################################################################################
@@ -1282,8 +1279,8 @@ def Wilhoit2NASA(wilhoit, tmin, tmax, tint, weighting, contCons):
 	# Lagrange multipliers will differ by a factor of two)
 	x = linalg.solve(A,b,overwrite_a=1,overwrite_b=1)
 
-	nasa_low = ThermoNASAPolynomial(T_range=(0,0), coeffs=[x[0], x[1], x[2], x[3], x[4], 0.0, 0.0], comment='')
-	nasa_high = ThermoNASAPolynomial(T_range=(0,0), coeffs=[x[5], x[6], x[7], x[8], x[9], 0.0, 0.0], comment='')
+	nasa_low = ThermoNASAPolynomial(Tmin=0, Tmax=0, coeffs=[x[0], x[1], x[2], x[3], x[4], 0.0, 0.0], comment='')
+	nasa_high = ThermoNASAPolynomial(Tmin=0, Tmax=0, coeffs=[x[5], x[6], x[7], x[8], x[9], 0.0, 0.0], comment='')
 
 	return nasa_low, nasa_high
 	
@@ -1445,9 +1442,9 @@ def convertCpToNASA(CpObject, H298, S298, fixed=1, weighting=0, tint=1000.0, Tmi
 
 	# output comment
 	comment = 'Cp function fitted to NASA function. ' + rmsStr
-	nasa_low.Trange = (Tmin,tint); nasa_low.Tmin = Tmin; nasa_low.Tmax = tint
+	nasa_low.Tmin = Tmin; nasa_low.Tmax = tint
 	nasa_low.comment = 'Low temperature range polynomial'
-	nasa_high.Trange = (tint,Tmax); nasa_high.Tmin = tint; nasa_high.Tmax = Tmax
+	nasa_high.Tmin = tint; nasa_high.Tmax = Tmax
 	nasa_high.comment = 'High temperature range polynomial'
 
 	#for the low polynomial, we want the results to match the given values at 298.15K
@@ -1472,7 +1469,7 @@ def convertCpToNASA(CpObject, H298, S298, fixed=1, weighting=0, tint=1000.0, Tmi
 	nasa_high.c5 = Hhigh
 	nasa_high.c6 = Shigh
 
-	NASAthermo = ThermoNASAData( Trange=(Tmin,Tmax), polynomials=[nasa_low,nasa_high], comment=comment)
+	NASAthermo = ThermoNASAData(Tmin=Tmin, Tmax=Tmax, polynomials=[nasa_low,nasa_high], comment=comment)
 	return NASAthermo
 
 ################################################################################
@@ -1637,8 +1634,8 @@ def Cp2NASA(CpObject, tmin, tmax, tint, weighting, contCons):
 	# Lagrange multipliers will differ by a factor of two)
 	x = linalg.solve(A,b,overwrite_a=1,overwrite_b=1)
 
-	nasa_low = ThermoNASAPolynomial(T_range=(0,0), coeffs=[x[0], x[1], x[2], x[3], x[4], 0.0, 0.0], comment='')
-	nasa_high = ThermoNASAPolynomial(T_range=(0,0), coeffs=[x[5], x[6], x[7], x[8], x[9], 0.0, 0.0], comment='')
+	nasa_low = ThermoNASAPolynomial(Tmin=0, Tmax=0, coeffs=[x[0], x[1], x[2], x[3], x[4], 0.0, 0.0], comment='')
+	nasa_high = ThermoNASAPolynomial(Tmin=0, Tmax=0, coeffs=[x[5], x[6], x[7], x[8], x[9], 0.0, 0.0], comment='')
 
 	return nasa_low, nasa_high
 
