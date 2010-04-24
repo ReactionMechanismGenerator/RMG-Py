@@ -46,8 +46,7 @@ Provides classes for working with the kinetics of chemical reactions:
 import math
 import quantities as pq
 
-import constants
-import data
+import rmg.constants as constants
 
 ################################################################################
 
