@@ -48,11 +48,11 @@ import log as logging
 def convertGAtoWilhoit(GAthermo, atoms, rotors, linear, fixedB=1, Bmin=300.0, Bmax=6000.0):
 	"""Convert a Group Additivity thermo instance into a Wilhoit thermo instance.
 	
-	Takes a `ThermoGAData` instance of themochemical data, and some extra information 
+	Takes a `ThermoGAModel` instance of themochemical data, and some extra information
 	about the molecule used to calculate high- and low-temperature limits of Cp.
 	These are the number of atoms (integer `atoms`), the number of rotors (integer `rotors`)
 	and whether the molecule is linear (boolean `linear`)
-	Returns a `ThermoWilhoitData` instance.
+	Returns a `WilhoitModel` instance.
 	
 	cf. Paul Yelvington's thesis, p. 185-186
 	"""
@@ -61,9 +61,9 @@ def convertGAtoWilhoit(GAthermo, atoms, rotors, linear, fixedB=1, Bmin=300.0, Bm
 	H298 = GAthermo.H298
 	S298 = GAthermo.S298
 	Cp_list = GAthermo.Cp
-	T_list = ThermoGAData.CpTlist  # usually [300, 400, 500, 600, 800, 1000, 1500] but why assume?
+	T_list = ThermoGAModel.CpTlist  # usually [300, 400, 500, 600, 800, 1000, 1500] but why assume?
 	R = constants.R
-	B = ThermoWilhoitDataB # Constant (if fixed=1), set once in the class def.
+	B = WilhoitModelB # Constant (if fixed=1), set once in the class def.
 	
 	# convert from K to kK
 	T_list = [t/1000. for t in T_list] 
@@ -105,7 +105,7 @@ def convertGAtoWilhoit(GAthermo, atoms, rotors, linear, fixedB=1, Bmin=300.0, Bm
 	H0 = 0
 	S0 = 0
 	# create Wilhoit instance
-	WilhoitThermo = ThermoWilhoitData( cp0, cpInf, a0, a1, a2, a3, H0, S0, B=B, comment=comment)
+	WilhoitThermo = WilhoitModel( cp0, cpInf, a0, a1, a2, a3, H0, S0, B=B, comment=comment)
 	# calculate correct I, J (integration constants for H, S, respectively)
 	H0 = H298 - WilhoitThermo.getEnthalpy(298.15)
 	S0 = S298 - WilhoitThermo.getEntropy(298.15)
@@ -189,7 +189,7 @@ def CpLimits(atoms, rotors, linear):
 def convertWilhoitToNASA(Wilhoit, fixed=1, weighting=1, tint=1000.0, Tmin = 298.0, Tmax=6000.0, contCons=3):
 	"""Convert a Wilhoit thermo instance into a NASA polynomial thermo instance.
 	
-	Takes: a `ThermoWilhoitData` instance of themochemical data.
+	Takes: a `WilhoitModel` instance of themochemical data.
 		fixed: 1 (default) to fix tint; 0 to allow it to float to get a better fit
 		weighting: 0 to not weight the fit by 1/T; 1 (default) to weight by 1/T to emphasize good fit at lower temperatures
 		tint, Tmin, Tmax: intermediate, minimum, and maximum temperatures in Kelvin
@@ -201,7 +201,7 @@ def convertWilhoitToNASA(Wilhoit, fixed=1, weighting=1, tint=1000.0, Tmin = 298.
 			    1: constrain Cp to be continous at tint
 			    0: no constraints on continuity of Cp(T) at tint
 			    note: 5th (and higher) derivatives of NASA Cp(T) are zero and hence will automatically be continuous at tint by the form of the Cp(T) function
-	Returns a `ThermoNASAData` instance containing two `ThermoNASAPolynomial` 
+	Returns a `NASAModel` instance containing two `NASAPolynomial`
 	polynomials
 	"""
 	
@@ -211,7 +211,7 @@ def convertWilhoitToNASA(Wilhoit, fixed=1, weighting=1, tint=1000.0, Tmin = 298.
 	Tmax = Tmax/1000
 
 	# Make copy of Wilhoit data so we don't modify the original
-	wilhoit_scaled = ThermoWilhoitData(Wilhoit.cp0, Wilhoit.cpInf, Wilhoit.a0, Wilhoit.a1, Wilhoit.a2, Wilhoit.a3, Wilhoit.H0, Wilhoit.S0, Wilhoit.comment, B=Wilhoit.B)
+	wilhoit_scaled = WilhoitModel(Wilhoit.cp0, Wilhoit.cpInf, Wilhoit.a0, Wilhoit.a1, Wilhoit.a2, Wilhoit.a3, Wilhoit.H0, Wilhoit.S0, Wilhoit.comment, B=Wilhoit.B)
 	# Rescale Wilhoit parameters
 	wilhoit_scaled.cp0 /= constants.R
 	wilhoit_scaled.cpInf /= constants.R
@@ -279,7 +279,7 @@ def convertWilhoitToNASA(Wilhoit, fixed=1, weighting=1, tint=1000.0, Tmin = 298.
 	nasa_high.c5 = Hhigh
 	nasa_high.c6 = Shigh
 	
-	NASAthermo = ThermoNASAData(Tmin=Tmin, Tmax=Tmax, polynomials=[nasa_low,nasa_high], comment=comment)
+	NASAthermo = NASAModel(Tmin=Tmin, Tmax=Tmax, polynomials=[nasa_low,nasa_high], comment=comment)
 	return NASAthermo
 
 ################################################################################
@@ -450,8 +450,8 @@ def Wilhoit2NASA(wilhoit, tmin, tmax, tint, weighting, contCons):
 	# Lagrange multipliers will differ by a factor of two)
 	x = linalg.solve(A,b,overwrite_a=1,overwrite_b=1)
 
-	nasa_low = ThermoNASAPolynomial(Tmin=0, Tmax=0, coeffs=[x[0], x[1], x[2], x[3], x[4], 0.0, 0.0], comment='')
-	nasa_high = ThermoNASAPolynomial(Tmin=0, Tmax=0, coeffs=[x[5], x[6], x[7], x[8], x[9], 0.0, 0.0], comment='')
+	nasa_low = NASAPolynomial(Tmin=0, Tmax=0, coeffs=[x[0], x[1], x[2], x[3], x[4], 0.0, 0.0], comment='')
+	nasa_high = NASAPolynomial(Tmin=0, Tmax=0, coeffs=[x[5], x[6], x[7], x[8], x[9], 0.0, 0.0], comment='')
 
 	return nasa_low, nasa_high
 	
@@ -571,7 +571,7 @@ def convertCpToNASA(CpObject, H298, S298, fixed=1, weighting=0, tint=1000.0, Tmi
 			    1: constrain Cp to be continous at tint
 			    0: no constraints on continuity of Cp(T) at tint
 			    note: 5th (and higher) derivatives of NASA Cp(T) are zero and hence will automatically be continuous at tint by the form of the Cp(T) function
-	Returns a `ThermoNASAData` instance containing two `ThermoNASAPolynomial` polynomials
+	Returns a `NASAModel` instance containing two `NASAPolynomial` polynomials
 	"""
 
 	# Scale the temperatures to kK
@@ -640,7 +640,7 @@ def convertCpToNASA(CpObject, H298, S298, fixed=1, weighting=0, tint=1000.0, Tmi
 	nasa_high.c5 = Hhigh
 	nasa_high.c6 = Shigh
 
-	NASAthermo = ThermoNASAData(Tmin=Tmin, Tmax=Tmax, polynomials=[nasa_low,nasa_high], comment=comment)
+	NASAthermo = NASAModel(Tmin=Tmin, Tmax=Tmax, polynomials=[nasa_low,nasa_high], comment=comment)
 	return NASAthermo
 
 ################################################################################
@@ -805,8 +805,8 @@ def Cp2NASA(CpObject, tmin, tmax, tint, weighting, contCons):
 	# Lagrange multipliers will differ by a factor of two)
 	x = linalg.solve(A,b,overwrite_a=1,overwrite_b=1)
 
-	nasa_low = ThermoNASAPolynomial(Tmin=0, Tmax=0, coeffs=[x[0], x[1], x[2], x[3], x[4], 0.0, 0.0], comment='')
-	nasa_high = ThermoNASAPolynomial(Tmin=0, Tmax=0, coeffs=[x[5], x[6], x[7], x[8], x[9], 0.0, 0.0], comment='')
+	nasa_low = NASAPolynomial(Tmin=0, Tmax=0, coeffs=[x[0], x[1], x[2], x[3], x[4], 0.0, 0.0], comment='')
+	nasa_high = NASAPolynomial(Tmin=0, Tmax=0, coeffs=[x[5], x[6], x[7], x[8], x[9], 0.0, 0.0], comment='')
 
 	return nasa_low, nasa_high
 

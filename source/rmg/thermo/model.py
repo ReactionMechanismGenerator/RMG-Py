@@ -29,25 +29,23 @@
 ################################################################################
 
 """
-A module for working with the thermodynamics of chemical species. This module
-seeks to provide functionality for answering the question, "Given a species,
-what are its thermodynamics?"
-
-This module can be compiled using Cython to a shared library, which provides a
-significant speed boost to running in pure Python mode.
+Provides a set of thermodynamics models. A thermodynamics model is defined as
+a model that provides a way of estimating the heat capacity, enthalpy, entropy,
+and free energy for some sort of system. All thermodynamics models should derive
+from the :class:`ThermoModel` base class.
 """
 
 import quantities as pq
-import constants
-import data
 import math
 import cython
 
-import ctml_writer
+import rmg.constants as constants
+import rmg.data as data
+import rmg.ctml_writer as ctml_writer
 
 ################################################################################
 
-class ThermoData:
+class ThermoModel:
 	"""
 	A base class for thermodynamics models, containing several attributes
 	common to all models:
@@ -80,9 +78,9 @@ class ThermoData:
 
 	def fromXML(self, document, rootElement):
 		"""
-		Convert a <ThermoData> element from a standard RMG-style XML input file
-		into a ThermoData object. `document` is an :class:`io.XML` class
-		representing the XML DOM tree, and `rootElement` is the <ThermoData>
+		Convert a <ThermoModel> element from a standard RMG-style XML input file
+		into a ThermoModel object. `document` is an :class:`io.XML` class
+		representing the XML DOM tree, and `rootElement` is the <ThermoModel>
 		element in that tree.
 		"""
 
@@ -104,7 +102,7 @@ class ThermoData:
 
 ################################################################################
 
-class ThermoGAData(ThermoData):
+class ThermoGAModel(ThermoModel):
 	"""
 	A set of thermodynamic parameters as determined from Benson's group
 	additivity data. The attributes are:
@@ -122,11 +120,11 @@ class ThermoGAData(ThermoData):
 	#: The list of temperatures at which heat capacity is defined = [300,400,500,600,800,1000,1500]
 	CpTlist = list(pq.Quantity([300.0, 400.0, 500.0, 600.0, 800.0, 1000.0, 1500.0], 'K').simplified)
 	CpTlist = [float(T) for T in CpTlist]
-	# refer to it as ThermoGAData.CpTlist, even when calling it from methods within this Class.
+	# refer to it as ThermoGAModel.CpTlist, even when calling it from methods within this Class.
 	
 	def __init__(self, H298=0.0, S298=0.0, Cp=None, comment='', index=''):
 		"""Initialize a set of group additivity thermodynamic data."""
-		ThermoData.__init__(self, Tmin=298.0, Tmax=2500.0, comment=comment)
+		ThermoModel.__init__(self, Tmin=298.0, Tmax=2500.0, comment=comment)
 		self.H298 = H298
 		self.S298 = S298
 		self.Cp = Cp or [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
@@ -136,19 +134,19 @@ class ThermoGAData(ThermoData):
 		"""
 		Used for pickling.
 		"""
-		return (ThermoGAData, (self.H298, self.S298, self.Cp, self.comment, self.index))
+		return (ThermoGAModel, (self.H298, self.S298, self.Cp, self.comment, self.index))
 
 	# how do we cythonize 'special' methods?
 	# it's so confusing. This breaks pure python mode:
-	#@cython.locals(self=ThermoGAData, other=ThermoGAData, new=ThermoGAData, i=cython.int)
+	#@cython.locals(self=ThermoGAModel, other=ThermoGAModel, new=ThermoGAModel, i=cython.int)
 	def __add__(self, other):
 		"""
 		Add two sets of thermodynamic data together. All parameters are
-		considered additive. Returns a new :class:`ThermoGAData` object that is
+		considered additive. Returns a new :class:`ThermoGAModel` object that is
 		the sum of the two sets of thermodynamic data.
 		"""
-		cython.declare(i=int, new=ThermoGAData)
-		new = ThermoGAData()
+		cython.declare(i=int, new=ThermoGAModel)
+		new = ThermoGAModel()
 		new.H298 = self.H298 + other.H298
 		new.S298 = self.S298 + other.S298
 		new.Cp = [self.Cp[i] + other.Cp[i] for i in range(len(self.Cp))]
@@ -159,7 +157,7 @@ class ThermoGAData(ThermoData):
 		return new
 	
 	def __repr__(self):
-		string = 'ThermoGAData(H298=%s, S298=%s, Cp=%s, index="%s")'%(self.H298,self.S298,self.Cp,self.index)
+		string = 'ThermoGAModel(H298=%s, S298=%s, Cp=%s, index="%s")'%(self.H298,self.S298,self.Cp,self.index)
 		return string
 	
 	def __str__(self):
@@ -170,7 +168,7 @@ class ThermoGAData(ThermoData):
 		string += 'Enthalpy of formation: %s J/mol\n' % (self.H298)
 		string += 'Entropy of formation: %s J/mol*K\n' % (self.S298)
 		string += 'Heat capacity (J/mol*K): '
-		for T, Cp in zip(ThermoGAData.CpTlist, self.Cp):
+		for T, Cp in zip(ThermoGAModel.CpTlist, self.Cp):
 			string += '%s(%sK) ' % (Cp,T)
 		string += '\n'
 		string += 'Index: %s\tComment: %s' % (self.index, self.comment)
@@ -198,12 +196,12 @@ class ThermoGAData(ThermoData):
 			raise data.TemperatureOutOfRangeException('Invalid temperature for heat capacity estimation from group additivity.')
 		if T < 300.0:
 			return self.Cp[0]
-		elif T > ThermoGAData.CpTlist[-1]:
+		elif T > ThermoGAModel.CpTlist[-1]:
 			return self.Cp[-1]
 		else:
 			cython.declare(Tmin=cython.double, Tmax=cython.double, Cpmin=cython.double, Cpmax=cython.double)
-			for Tmin, Tmax, Cpmin, Cpmax in zip(ThermoGAData.CpTlist[:-1], \
-					ThermoGAData.CpTlist[1:], self.Cp[:-1], self.Cp[1:]):
+			for Tmin, Tmax, Cpmin, Cpmax in zip(ThermoGAModel.CpTlist[:-1], \
+					ThermoGAModel.CpTlist[1:], self.Cp[:-1], self.Cp[1:]):
 				if Tmin <= T and T <= Tmax:
 					return (Cpmax - Cpmin) * ((T - Tmin) / (Tmax - Tmin)) + Cpmin
 	
@@ -218,15 +216,15 @@ class ThermoGAData(ThermoData):
 		H = self.H298
 		if not self.isTemperatureValid(T):
 			raise data.TemperatureOutOfRangeException('Invalid temperature for enthalpy estimation from group additivity.')
-		for Tmin, Tmax, Cpmin, Cpmax in zip(ThermoGAData.CpTlist[:-1], \
-				ThermoGAData.CpTlist[1:], self.Cp[:-1], self.Cp[1:]):
+		for Tmin, Tmax, Cpmin, Cpmax in zip(ThermoGAModel.CpTlist[:-1], \
+				ThermoGAModel.CpTlist[1:], self.Cp[:-1], self.Cp[1:]):
 			if T > Tmin:
 				slope = (Cpmax - Cpmin) / (Tmax - Tmin)
 				intercept = (Cpmin * Tmax - Cpmax * Tmin) / (Tmax - Tmin)
 				if T < Tmax:	H += 0.5 * slope * (T*T - Tmin*Tmin) + intercept * (T - Tmin)
 				else:			H += 0.5 * slope * (Tmax*Tmax - Tmin*Tmin) + intercept * (Tmax - Tmin)
-		if T > ThermoGAData.CpTlist[-1]:
-			H += self.Cp[-1] * (T - ThermoGAData.CpTlist[-1])
+		if T > ThermoGAModel.CpTlist[-1]:
+			H += self.Cp[-1] * (T - ThermoGAModel.CpTlist[-1])
 		return H
 	
 	def getEntropy(self, T):
@@ -237,15 +235,15 @@ class ThermoGAData(ThermoData):
 		S = self.S298
 		if not self.isTemperatureValid(T):
 			raise data.TemperatureOutOfRangeException('Invalid temperature for entropy estimation from group additivity.')
-		for Tmin, Tmax, Cpmin, Cpmax in zip(ThermoGAData.CpTlist[:-1], \
-				ThermoGAData.CpTlist[1:], self.Cp[:-1], self.Cp[1:]):
+		for Tmin, Tmax, Cpmin, Cpmax in zip(ThermoGAModel.CpTlist[:-1], \
+				ThermoGAModel.CpTlist[1:], self.Cp[:-1], self.Cp[1:]):
 			if T > Tmin:
 				slope = (Cpmax - Cpmin) / (Tmax - Tmin)
 				intercept = (Cpmin * Tmax - Cpmax * Tmin) / (Tmax - Tmin)
 				if T < Tmax:	S += slope * (T - Tmin) + intercept * math.log(T/Tmin)
 				else:			S += slope * (Tmax - Tmin) + intercept * math.log(Tmax/Tmin)
-		if T > ThermoGAData.CpTlist[-1]:
-			S += self.Cp[-1] * math.log(T / ThermoGAData.CpTlist[-1])
+		if T > ThermoGAModel.CpTlist[-1]:
+			S += self.Cp[-1] * math.log(T / ThermoGAModel.CpTlist[-1])
 		return S
 	
 	def getFreeEnergy(self, T):
@@ -278,14 +276,14 @@ class ThermoGAData(ThermoData):
 	
 	def fromXML(self, document, rootElement):
 		"""
-		Convert a <ThermoData> element from a standard RMG-style XML input file
-		into a ThermoGAData object. `document` is an :class:`io.XML` class
-		representing the XML DOM tree, and `rootElement` is the <ThermoData>
+		Convert a <ThermoModel> element from a standard RMG-style XML input file
+		into a ThermoGAModel object. `document` is an :class:`io.XML` class
+		representing the XML DOM tree, and `rootElement` is the <ThermoModel>
 		element in that tree.
 		"""
 
 		# 'comment' attribute parsed by base class
-		ThermoData.fromXML(self, document, rootElement)
+		ThermoModel.fromXML(self, document, rootElement)
 
 		# Read <enthalpyOfFormation> element
 		H298 = document.getChildQuantity(rootElement, 'enthalpyOfFormation', required=True)
@@ -301,23 +299,23 @@ class ThermoGAData(ThermoData):
 
 	def toXML(self, document, rootElement):
 		"""
-		Create a <ThermoData> element as a child of `rootElement` in the XML DOM
+		Create a <ThermoModel> element as a child of `rootElement` in the XML DOM
 		tree represented by `document`, an :class:`io.XML` class. The format
-		matches the format of the :meth:`ThermoGAData.fromXML()` function.
+		matches the format of the :meth:`ThermoGAModel.fromXML()` function.
 		"""
 		
-		# Create <ThermoData> element
-		ThermoDataElement = document.createElement('ThermoData', rootElement)
-		document.createAttribute('format', ThermoDataElement, 'group additivity')
+		# Create <ThermoModel> element
+		ThermoModelElement = document.createElement('ThermoModel', rootElement)
+		document.createAttribute('format', ThermoModelElement, 'group additivity')
 
-		document.createQuantity('enthalpyOfFormation', ThermoDataElement, self.H298/1000.0, 'kJ/mol')
-		document.createQuantity('entropyOfFormation', ThermoDataElement, self.S298, 'J/(mol*K)')
-		document.createQuantity('heatCapacities', ThermoDataElement, self.Cp, 'J/(mol*K)')
+		document.createQuantity('enthalpyOfFormation', ThermoModelElement, self.H298/1000.0, 'kJ/mol')
+		document.createQuantity('entropyOfFormation', ThermoModelElement, self.S298, 'J/(mol*K)')
+		document.createQuantity('heatCapacities', ThermoModelElement, self.Cp, 'J/(mol*K)')
 
 	
 ################################################################################
 
-class ThermoNASAPolynomial(ThermoData):
+class NASAPolynomial(ThermoModel):
 	"""
 	A single NASA polynomial for thermodynamic data. The `coeffs` attribute
 	stores the seven polynomial coefficients
@@ -335,14 +333,14 @@ class ThermoNASAPolynomial(ThermoData):
 	"""
 	
 	def __init__(self, Tmin=0.0, Tmax=0.0, coeffs=None, comment=''):
-		ThermoData.__init__(self, Tmin=Tmin, Tmax=Tmax, comment=comment)
+		ThermoModel.__init__(self, Tmin=Tmin, Tmax=Tmax, comment=comment)
 		coeffs = coeffs or (0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
 		self.c0, self.c1, self.c2, self.c3, self.c4, self.c5, self.c6 = coeffs
 		
 	def __repr__(self):
-		return "ThermoNASAPolynomial(%r,%r,%r,'%s')"%(self.Tmin,self.Tmax,(self.c0, self.c1, self.c2, self.c3, self.c4, self.c5, self.c6),self.comment)
+		return "NASAPolynomial(%r,%r,%r,'%s')"%(self.Tmin,self.Tmax,(self.c0, self.c1, self.c2, self.c3, self.c4, self.c5, self.c6),self.comment)
 	def __reduce__(self):
-		return (ThermoNASAPolynomial,(self.Tmin,self.Tmax,(self.c0, self.c1, self.c2, self.c3, self.c4, self.c5, self.c6),self.comment))
+		return (NASAPolynomial,(self.Tmin,self.Tmax,(self.c0, self.c1, self.c2, self.c3, self.c4, self.c5, self.c6),self.comment))
 
 	def equals(self, other):
 		"""
@@ -470,19 +468,19 @@ class ThermoNASAPolynomial(ThermoData):
 
 ################################################################################
 
-class ThermoNASAData(ThermoData):
+class NASAModel(ThermoModel):
 	"""
 	A set of thermodynamic parameters given by NASA polynomials. This class
-	stores a list of :class:`ThermoNASAPolynomial` objects in the `polynomials`
+	stores a list of :class:`NASAPolynomial` objects in the `polynomials`
 	attribute. When evaluating a thermodynamic quantity, a polynomial that
 	contains the desired temperature within its valid range will be used.
 	"""
 	
 	def __init__(self, polynomials=None, Tmin=0.0, Tmax=0.0, comment=''):
-		ThermoData.__init__(self, Tmin=Tmin, Tmax=Tmax, comment=comment)
+		ThermoModel.__init__(self, Tmin=Tmin, Tmax=Tmax, comment=comment)
 		self.polynomials = polynomials or []
 	def __reduce__(self):
-		return (ThermoNASAData,(self.polynomials,self.Tmin,self.Tmax,self.comment))
+		return (NASAModel,(self.polynomials,self.Tmin,self.Tmax,self.comment))
 		
 	def equals(self, other):
 		"""
@@ -496,8 +494,8 @@ class ThermoNASAData(ThermoData):
 		return True
 
 	def addPolynomial(self, polynomial):
-		if not isinstance(polynomial,ThermoNASAPolynomial):
-			raise TypeError("Polynomial attribute should be instance of ThermoNASAPolynomial")
+		if not isinstance(polynomial,NASAPolynomial):
+			raise TypeError("Polynomial attribute should be instance of NASAPolynomial")
 		self.polynomials.append(polynomial)
 	
 	def selectPolynomialForTemperature(self, T):
@@ -508,7 +506,7 @@ class ThermoNASAData(ThermoData):
 		return poly
 	
 	def __repr__(self):
-		return "ThermoNASAData(%s, '%s')"%(repr(self.polynomials),self.comment)
+		return "NASAModel(%s, '%s')"%(repr(self.polynomials),self.comment)
 	
 	def toXML(self, dom, root):
 ### prime-like: 
@@ -573,15 +571,15 @@ class ThermoNASAData(ThermoData):
 		line4 = "% 15.8E% 15.8E% 15.8E% 15.8E                   4"%(low.c3,low.c4,low.c5,low.c6)
 		return line1 + line2 + line3 + line4
 
-	def rmsErr(self, thermoGAdata):
+	def rmsErr(self, ThermoGAModel):
 		"""
 		Calculate the RMS error between the NASA polynomial and training data points
 
-		input: thermoGAdata
+		input: ThermoGAModel
 		output: value is in non-dimensional units (/R);
 		"""
-		t=ThermoGAData.CpTlist
-		cp=thermoGAdata.Cp
+		t=ThermoGAModel.CpTlist
+		cp=ThermoGAModel.Cp
 		R = constants.R
 		m = len(t)
 		assert (len(cp)==m), 'cp and t are different lengths'
@@ -597,9 +595,9 @@ class ThermoNASAData(ThermoData):
 ################################################################################
 
 #: The default temperature in K
-ThermoWilhoitDataB = 500.0
+WilhoitModelB = 500.0
 
-class ThermoWilhoitData(ThermoData):
+class WilhoitModel(ThermoModel):
 	"""
 	A set of thermodynamic parameters given by Wilhoit polynomials, which have
 	the form
@@ -627,9 +625,9 @@ class ThermoWilhoitData(ThermoData):
 	"""
 
 	
-	def __init__(self, cp0, cpInf, a0, a1, a2, a3, H0, S0, comment='', B=ThermoWilhoitDataB):
+	def __init__(self, cp0, cpInf, a0, a1, a2, a3, H0, S0, comment='', B=WilhoitModelB):
 		"""Initialise the Wilhoit polynomial. (Tmin,Tmax) is set to (0,9999.9)"""
-		ThermoData.__init__(self, Tmin=0.0, Tmax=9999.9, comment=comment)
+		ThermoModel.__init__(self, Tmin=0.0, Tmax=9999.9, comment=comment)
 		self.cp0 = cp0
 		self.cpInf = cpInf
 		self.B = B
@@ -641,10 +639,10 @@ class ThermoWilhoitData(ThermoData):
 		self.S0 = S0
 	
 	def __repr__(self):
-		return "ThermoWilhoitData(%.4g,%.4g,%.4g,%.4g,%.4g,%.4g,%.4g,%.4g,'%s',B=%.4g)"%(self.cp0, self.cpInf, self.a0, self.a1, self.a2, self.a3, self.H0, self.S0, self.comment, self.B)
+		return "WilhoitModel(%.4g,%.4g,%.4g,%.4g,%.4g,%.4g,%.4g,%.4g,'%s',B=%.4g)"%(self.cp0, self.cpInf, self.a0, self.a1, self.a2, self.a3, self.H0, self.S0, self.comment, self.B)
 	
 	def __reduce__(self):
-		return (ThermoWilhoitData,(self.cp0, self.cpInf, self.a0, self.a1, self.a2, self.a3, self.H0, self.S0, self.comment, self.B))
+		return (WilhoitModel,(self.cp0, self.cpInf, self.a0, self.a1, self.a2, self.a3, self.H0, self.S0, self.comment, self.B))
 
 	def equals(self, other):
 		"""

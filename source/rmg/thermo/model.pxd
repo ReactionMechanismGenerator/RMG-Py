@@ -34,32 +34,32 @@ cdef extern from "math.h":
 
 ################################################################################
 
-cdef class ThermoData:
+cdef class ThermoModel:
 	
 	cdef public str comment
 	cdef public double Tmin
 	cdef public double Tmax
 	
-	cpdef bint isTemperatureValid(ThermoData self, double T) except -2
+	cpdef bint isTemperatureValid(ThermoModel self, double T) except -2
 
 ################################################################################
 
-cdef class ThermoGAData(ThermoData):
+cdef class ThermoGAModel(ThermoModel):
 
 	cdef public double H298, S298
 	cdef public list Cp
 	cdef public str index
 	
 	# can't cpdef special methods like __add__ :-(
-	#cpdef ThermoGAData __add__(ThermoGAData self, ThermoGAData other)
+	#cpdef ThermoGAModel __add__(ThermoGAModel self, ThermoGAModel other)
 	
-	cpdef double getHeatCapacity(ThermoGAData self, double T)
+	cpdef double getHeatCapacity(ThermoGAModel self, double T)
 	
-	cpdef double getEnthalpy(ThermoGAData self, double T)
+	cpdef double getEnthalpy(ThermoGAModel self, double T)
 
 ################################################################################
 
-cdef class ThermoWilhoitData(ThermoData):
+cdef class WilhoitModel(ThermoModel):
 
 	cdef public double cp0
 	cdef public double cpInf
@@ -71,47 +71,47 @@ cdef class ThermoWilhoitData(ThermoData):
 	cdef public double H0
 	cdef public double S0
 
-	cpdef double getHeatCapacity(ThermoWilhoitData self, double T)
+	cpdef double getHeatCapacity(WilhoitModel self, double T)
 
-	cpdef double getEnthalpy(ThermoWilhoitData self, double T)
+	cpdef double getEnthalpy(WilhoitModel self, double T)
 
-	cpdef double getEntropy(ThermoWilhoitData self, double T)
+	cpdef double getEntropy(WilhoitModel self, double T)
 
-	cpdef double getFreeEnergy(ThermoWilhoitData self, double T)
+	cpdef double getFreeEnergy(WilhoitModel self, double T)
 
-	cpdef double integral_T0(ThermoWilhoitData self, double t)
+	cpdef double integral_T0(WilhoitModel self, double t)
 
-	cpdef double integral_TM1(ThermoWilhoitData self, double t)
+	cpdef double integral_TM1(WilhoitModel self, double t)
 
-	cpdef double integral_T1(ThermoWilhoitData self, double t)
+	cpdef double integral_T1(WilhoitModel self, double t)
 
-	cpdef double integral_T2(ThermoWilhoitData self, double t)
+	cpdef double integral_T2(WilhoitModel self, double t)
 
-	cpdef double integral_T3(ThermoWilhoitData self, double t)
+	cpdef double integral_T3(WilhoitModel self, double t)
 
-	cpdef double integral_T4(ThermoWilhoitData self, double t)
+	cpdef double integral_T4(WilhoitModel self, double t)
 
-	cpdef double integral2_T0(ThermoWilhoitData self, double t)
+	cpdef double integral2_T0(WilhoitModel self, double t)
 
-	cpdef double integral2_TM1(ThermoWilhoitData self, double t)
+	cpdef double integral2_TM1(WilhoitModel self, double t)
 
 ################################################################################
 
-cdef class ThermoNASAPolynomial(ThermoData):
+cdef class NASAPolynomial(ThermoModel):
 	
 	cdef public double c0, c1, c2, c3, c4, c5, c6
 	
-	cpdef double getHeatCapacity(ThermoNASAPolynomial self, double T)
+	cpdef double getHeatCapacity(NASAPolynomial self, double T)
 	
-	cpdef double getEnthalpy(ThermoNASAPolynomial self, double T)
+	cpdef double getEnthalpy(NASAPolynomial self, double T)
 	
-	cpdef double getEntropy(ThermoNASAPolynomial self, double T)
+	cpdef double getEntropy(NASAPolynomial self, double T)
 	
-	cpdef double getFreeEnergy(ThermoNASAPolynomial self, double T)
+	cpdef double getFreeEnergy(NASAPolynomial self, double T)
 	
-	cpdef double integral2_T0(ThermoNASAPolynomial self, double t)
+	cpdef double integral2_T0(NASAPolynomial self, double t)
 	
-	cpdef double integral2_TM1(ThermoNASAPolynomial self, double t)
+	cpdef double integral2_TM1(NASAPolynomial self, double t)
 	
 
 ################################################################################
