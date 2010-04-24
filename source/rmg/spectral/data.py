@@ -28,6 +28,8 @@
 #
 ################################################################################
 
+import os.path
+
 import rmg.log as logging
 import rmg.data as data
 import rmg.constants as constants
@@ -130,23 +132,22 @@ frequencyDatabase = None
 
 ################################################################################
 
-def loadFrequencyDatabase(frequenciesDatabasePath):
+def loadFrequencyDatabase(dstr):
 	"""
-	Create and load the frequencies databases from the given path. 
-	
-	The path should be the folder containing Dictionary.txt, Tree.txt, Library.txt
+	Load the RMG thermo database located at `dstr` into the global variable
+	`rmg.spectral.data.frequencyDatabase`.
 	"""
-	import os.path
+	global frequencyDatabase
+
+	frequenciesDatabasePath = os.path.join(dstr,'frequencies_groups')
 	
 	# Create and load frequency databases
-	database = FrequencyDatabase()
+	frequencyDatabase = FrequencyDatabase()
 	logging.debug('\tFrequencies database from '+frequenciesDatabasePath)
-	database.load(
+	frequencyDatabase.load(
 		dictstr=os.path.join(frequenciesDatabasePath, 'Dictionary.txt'),
 		treestr=os.path.join(frequenciesDatabasePath, 'Tree.txt'),
 		libstr=os.path.join(frequenciesDatabasePath, 'Library.txt'))
-
-	return database
 
 ################################################################################
 

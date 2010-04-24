@@ -88,15 +88,6 @@ def loadKineticsDatabase(dstr):
 	reaction.kineticsDatabase = reaction.ReactionFamilySet()
 	reaction.kineticsDatabase.load(dstr)
 
-def loadFrequencyDatabase(dstr):
-	"""
-	Load the RMG thermo database located at `dstr` into the global variable
-	`rmg.spectral.data.frequencyDatabase`.
-	"""
-	frequenciesDatabasePath = os.path.join(dstr,'frequencies_groups')
-	spectral.data.frequencyDatabase = spectral.data.FrequencyDatabase()
-	spectral.data.frequencyDatabase = spectral.data.loadFrequencyDatabase(frequenciesDatabasePath)
-
 ################################################################################
 
 class XML:
@@ -488,7 +479,7 @@ def readInputFile(fstr):
 				# Load all databases
 				thermo.data.loadThermoDatabase(database[2] + os.sep)
 				loadKineticsDatabase(database[2] + os.sep)
-				loadFrequencyDatabase(database[2])
+				spectral.data.loadFrequencyDatabase(database[2])
 			elif database[1] == 'seedmechanism':
 				logging.verbose('Seed mechanism: ' + database[2])
 				reactionModel.loadSeedMechanism(database[2])
