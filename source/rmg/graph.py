@@ -42,25 +42,85 @@ import log as logging
 
 ################################################################################
 
-class Vertex:
+class Vertex(object):
+	"""
+	A base class for vertices in a graph. Contains several attributes useful
+	for accelerating isomorphism searches, as proposed by Morgan (1965); see
+	http://dx.doi.org/10.1021/c160017a018 for more information.
+
+	==================  ========================================================
+	Attribute           Description
+	==================  ========================================================
+	`connectivity1`     The number of nearest neighbors
+	`connectivity2`     The sum of the neighbors' `connectivity1` values
+	`connectivity3`     The sum of the neighbors' `connectivity2` values
+	`sorting_label`     An integer label useful for sorting vertices in a
+	                    desired manner
+	==================  ========================================================
+
+	"""
 
 	def __init__(self):
+		self.resetCachedStructureInfo()
+	
+	def equivalent(self, other):
+		"""
+		Return :data:`True` if two vertices `self` and `other` are semantically
+		equivalent, or :data:`False` if not. You should reimplement this
+		function in a derived class if your vertices have semantic information.
+		"""
+		return True
+
+	def resetCachedStructureInfo(self):
+		"""
+		Reset the cached structure information for this vertex.
+		"""
 		self.connectivity1 = -1
 		self.connectivity2 = -1
 		self.connectivity3 = -1
 		self.sorting_label = -1
-	
-	def equivalent(self, other):
-		return True
+
+def __getSortLabel(vertex):
+	"""
+	Used to sort vertices prior to poposing candidate pairs in :method:`__VF2_pairs`
+
+	This returns the `sorting_label` that is stored on the vertex. It should have been
+	put there recently by a call to :method:`Graph.sortAndLabelVertices()`
+	"""
+	return vertex.sorting_label
+
+def globalAtomSortValue(atom):
+	"""
+	Used to sort atoms prior to proposing candidate pairs in :method:`__VF2_pairs`
+	The lowest (or most negative) values will be first in the list when you sort,
+	so should be given to the atoms you want to explore first.
+	For now, that is (roughly speaking) the most connected atoms. This definitely helps for large graphs
+	but bizarrely the opposite ordering seems to help small graphs. Not sure about subggraphs...
+
+	Assumes that atom.connictivityN (N=1..3) are all up to date.
+	"""
+	#return hash(atom)  # apparently random?
+	#return (atom.connectivity[0] ) # not unique enough
+	return ( -256*atom.connectivity1 - 16*atom.connectivity2 - atom.connectivity3 )
 
 ################################################################################
 
-class Edge:
+class Edge(object):
+	"""
+	A base class for edges in a graph. This class does *not* store the vertex
+	pair that comprises the edge; that functionality would need to be included
+	in the derived class.
+	"""
 
 	def __init__(self):
 		pass
 
 	def equivalent(self, other):
+		"""
+		Return :data:`True` if two edges `self` and `other` are semantically
+		equivalent, or :data:`False` if not. You should reimplement this
+		function in a derived class if your edges have semantic information.
+		"""
 		return True
 
 ################################################################################
@@ -90,11 +150,7 @@ class Graph(dict):
 		so that any information (eg. connectivity values, ring locations) that
 		we are cacheing, is reset."""
 		vert = cython.declare(Vertex)
-		for vert in self:
-			vert.connectivity1 = -1
-			vert.connectivity2 = -1
-			vert.connectivity3 = -1
-			vert.sorting_label = -1
+		for vert in self: vert.resetCachedStructureInfo()
 		
 	def vertices(self):
 		"""
@@ -499,20 +555,13 @@ class Graph(dict):
 
 	def setConnectivityValues(self):
 		"""
-		Sets the Extended Connectivity values as introduced by Morgan (1965)
-		http://dx.doi.org/10.1021/c160017a018
-		
-		First CV1 is the number of neighbours  (Morgan proposed non-Hydrogen neighbours)
-		CV2 is the sum of neighbouring CV1 values
-		CV3 is the sum of neighbouring CV2 values
+		Set the connectivity values for each vertex in the graph. These are
+		used to accelerate the isomorphism checking.
 		"""
 		
 		count = cython.declare(cython.short)
 		vert1 = cython.declare(Vertex)
 		vert2 = cython.declare(Vertex)
-		
-		vertices = cython.declare(list)
-		vertices = self.vertices()
 		
 		for vert1 in self:
 			count = 0
@@ -830,29 +879,6 @@ def __VF2_match(graph1, graph2, map21, map12, terminals1, terminals2, subgraph,
 			# changes to 'new_terminals' will be discarded and 'terminals' is unchanged
 			
 	return False
-
-def __getSortLabel(vertex):
-	"""
-	Used to sort vertices prior to poposing candidate pairs in :method:`__VF2_pairs`
-
-	This returns the `sorting_label` that is stored on the vertex. It should have been
-	put there recently by a call to :method:`Graph.sortAndLabelVertices()`
-	"""
-	return vertex.sorting_label
-		
-def globalAtomSortValue(atom):
-	"""
-	Used to sort atoms prior to proposing candidate pairs in :method:`__VF2_pairs` 
-	The lowest (or most negative) values will be first in the list when you sort, 
-	so should be given to the atoms you want to explore first. 
-	For now, that is (roughly speaking) the most connected atoms. This definitely helps for large graphs
-	but bizarrely the opposite ordering seems to help small graphs. Not sure about subggraphs...
-	
-	Assumes that atom.connictivityN (N=1..3) are all up to date.
-	"""
-	#return hash(atom)  # apparently random?
-	#return (atom.connectivity[0] ) # not unique enough
-	return ( -256*atom.connectivity1 - 16*atom.connectivity2 - atom.connectivity3 )
 	
 def __VF2_pairs(graph1, graph2, terminals1, terminals2, map21, map12):
 	"""
@@ -979,4 +1005,3 @@ def __VF2_new_terminals(graph, mapping, old_terminals, new_vertex):
 	return terminals
 
 ################################################################################
-
