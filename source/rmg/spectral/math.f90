@@ -186,14 +186,14 @@ function cellipk(x)
         return
     end if
 
-    A = 1.0 + x
-    B = 1.0 - x
+    A = 1.0
+    B = sqrt(1.0 - x)
     do n = 0, 100
         A0 = A
         B0 = B
         A = (A0 + B0) / 2
         B = sqrt(A0 * B0)
-        if (abs(A - B) < 1.0e-8) then
+        if (abs(A - B) < 1.0e-12) then
             cellipk = 3.141592654 / 2.0 / A
             return
         end if

@@ -34,7 +34,7 @@ subroutine densityOfStates(E, Ngrains, vib, Nvib, rot, Nrot, hind, Nhind, &
     ! Parameter  Intent Description
     ! ========== ====== ========================================================
     ! `E`        in     The energies to determine the density of states at in
-    !                   cm^-1
+    !                   J/mol
     ! `Ngrains`  in     The number of energy grains
     ! `vib`      in     An array of harmonic oscillator frequencies in cm^-1
     ! `Nvib`     in     The number of harmonic oscillator modes
@@ -46,7 +46,7 @@ subroutine densityOfStates(E, Ngrains, vib, Nvib, rot, Nrot, hind, Nhind, &
     ! `symm`     in     The combined external + internal symmetry number
     ! `linear`   in     1 if the molecule is linear, 0 if nonlinear
     ! `rho`      out    The density of states at the specified energies in
-    !                   (cm^-1)^-1
+    !                   mol/J
     ! `msg`      out    If the subroutine was unsuccessful, this string will
     !                   contain a brief message describing the error; the
     !                   string will be empty if the subroutine was successful
@@ -126,7 +126,7 @@ subroutine densityOfStates(E, Ngrains, vib, Nvib, rot, Nrot, hind, Nhind, &
         ! Beyer-Swinehart procedure
         dE_vib = dE
         mult = 1
-        do while (dE_vib > 10.0)
+        do while (dE_vib > 100.0)
             dE_vib = dE_vib / 2.0
             mult = mult * 2
         end do
@@ -199,7 +199,7 @@ subroutine beyerSwinehart(E, Ngrains, vib, Nvib, rho, msg)
 
     ! The Beyer-Swinehart algorithm
     do i = 1, Nvib
-        dn = nint(vib(i) / dE)
+        dn = nint(vib(i) * 6.626e-34 * 2.9979e10 * 6.022e23 / dE)
         do n = dn+1, Ngrains
             rho(n) = rho(n) + rho(n-dn)
         end do
@@ -251,7 +251,7 @@ subroutine beyerSwinehartSR(E, Ngrains, vib, Nvib, rho, msg)
 
     ! The Beyer-Swinehart algorithm with the Stein-Rabinovitch modification
     do i = 1, Nvib
-        dn0 = nint(vib(i) / dE)
+        dn0 = nint(vib(i) * 6.626e-34 * 2.9979e10 * 6.022e23 / dE)
         dn = dn0
         do while (dn < Ngrains)
             do n = 1, Ngrains-dn

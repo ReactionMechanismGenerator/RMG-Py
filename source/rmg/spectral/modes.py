@@ -435,13 +435,6 @@ class SpectralData:
 
 		import states
 
-		# Create energies in cm^-1 at which to evaluate the density of states
-		conv = constants.h * constants.c * 100.0 * constants.Na # [=] J/mol/cm^-1
-		Emin = min(Elist) / conv
-		Emax = max(Elist) / conv
-		dE = (Elist[1] - Elist[0]) / conv
-		Elist0 = np.arange(Emin, Emax+dE/2, dE)
-
 		# Prepare inputs for density of states function
 		vib = np.array([mode.frequency for mode in self.modes if isinstance(mode, HarmonicOscillator)])
 		rot = np.array([mode.frequencies for mode in self.modes if isinstance(mode, RigidRotor)])
@@ -451,13 +444,10 @@ class SpectralData:
 		symm = self.symmetry
 
 		# Calculate the density of states
-		densStates, msg = states.densityofstates(Elist0, vib, rot, hind, symm, linear)
+		densStates, msg = states.densityofstates(Elist, vib, rot, hind, symm, linear)
 		msg = msg.strip()
 		if msg != '':
 			raise Exception('Error while calculating the density of states for species %s: %s' % (self, msg))
-
-		# Convert density of states from (cm^-1)^-1 to mol/J
-		densStates /= conv
 
 		# Return result
 		return densStates
