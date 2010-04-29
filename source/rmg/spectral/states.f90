@@ -85,9 +85,6 @@ subroutine densityOfStates(E, Ngrains, vib, Nvib, rot, Nrot, hind, Nhind, &
         rho(r) = 0.0
     end do
 
-    ! Return if no degrees of freedom were specified
-    if (Nvib + Nrot + Nhind == 0) return
-
     ! Set the energy grain size
     dE = E(2) - E(1)
 

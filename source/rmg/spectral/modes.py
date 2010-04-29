@@ -29,6 +29,7 @@
 ################################################################################
 
 import numpy as np
+import math
 
 import rmg.constants as constants
 
@@ -261,11 +262,7 @@ class HinderedRotor:
 		function. :math:`\\mathcal{K}(x)` is the complete elliptic integral of the first
 		kind.
 		"""
-		rho = np.zeros((len(Elist)), np.float64)
-		rho0 = _modes.hinderedrotor_densityofstates(Elist, self.frequency, self.barrier)
-		for i in range(self.degeneracy):
-			rho = _modes.convolve(rho, rho0, Elist)
-		return rho
+		return _modes.hinderedrotor_densityofstates(Elist, self.frequency, self.barrier)
 
 	def fromXML(self, document, rootElement, frequencyScaleFactor=1.0):
 		"""
@@ -416,7 +413,7 @@ class SpectralData:
 		# Active K-rotor
 		rotors = [mode for mode in self.modes if isinstance(mode, RigidRotor)]
 		if len(rotors) == 0:
-			Trot = constants.h * constants.c * 100.0 * 1.0 / constants.kB
+			Trot = 1.0 / constants.R / 3.141592654
 			Q0 = [math.sqrt(T / Trot) for T in Tlist]
 			for i in range(len(Tlist)):
 				Q[i] *= Q0[i]

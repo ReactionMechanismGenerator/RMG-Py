@@ -309,8 +309,8 @@ subroutine hinderedRotor_partitionFunction(Tlist, nT, freq, barr, Q)
     do i = 1, nT
         x = 6.626e-34 * 2.9979e10 * freq / 1.381e-23 / Tlist(i)
         z = 0.5 * 6.626e-34 * 2.9979e10 * barr / 1.381e-23 / Tlist(i)
-        Q(i) = exp(-0.5 * x) * (1 - exp(-x)) * sqrt(2 * 3.141592654 * z) * &
-            exp(-z) * besseli0(z) * exp(x / (2 + 32 * z / x))
+        ! The following is only valid in the classical limit
+        Q(i) = sqrt(2.0 * 3.141592654 * z) / x * exp(-z) * besseli0(z)
     end do
 
 end subroutine
@@ -338,6 +338,7 @@ subroutine hinderedRotor_heatCapacity(Tlist, nT, freq, barr, Cvlist)
         
         Cvlist(i) = x * x * exp_x / one_minus_exp_x / one_minus_exp_x - 0.5 + &
             z * (z - BB - z * BB * BB)
+            
     end do
 
 end subroutine
