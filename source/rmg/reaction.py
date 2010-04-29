@@ -106,6 +106,8 @@ class Reaction:
 		self.multiplier = 1.0
 		self.thirdBody = thirdBody
 
+		self.E0 = None
+
 		# A cache for the best kinetics for this reaction
 		self.bestKinetics = None
 
@@ -247,6 +249,14 @@ class Reaction:
 				self.kinetics[0].fromXML(document, kineticsElement)
 			else:
 				raise io.InvalidInputFileException('Invalid type "%s" for kinetics element; allowed values are "Arrhenius".' % format)
+
+		# Read <groundStateEnergy> element
+		groundStateEnergyElement = document.getChildElement(rootElement, 'groundStateEnergy', required=False)
+		if groundStateEnergyElement:
+			E0 = document.getChildQuantity(rootElement, 'groundStateEnergy', required=False, default=pq.Quantity(0.0))
+			self.E0 = float(E0.simplified)
+		else:
+			self.E0 = None
 
 	def toXML(self, document, rootElement):
 		"""

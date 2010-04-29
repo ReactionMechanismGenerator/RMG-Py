@@ -169,10 +169,13 @@ def readInputFile(fstr):
 		# Determine isomer ground-state energies
 		for isomer in network.isomers:
 			isomer.E0 = sum([species.E0 for species in isomer.species])
-		# Determine transition state ground-state energies of the reactions
+		# Estimate transition state ground-state energies of the reactions (if
+		# not provided in the input file) using the E0 of the reactants and the
+		# activation energy
 		for reaction in network.pathReactions:
-			E0 = sum([species.E0 for species in reaction.reactants])
-			reaction.E0 = E0 + reaction.kinetics[0].Ea
+			if not reaction.E0:
+				E0 = sum([species.E0 for species in reaction.reactants])
+				reaction.E0 = E0 + reaction.kinetics[0].Ea
 		
 		# Read bath gas
 		bathGasListElement = document.getChildElement(rootElement, 'bathGasList', required=True)
