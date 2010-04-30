@@ -253,8 +253,11 @@ class CoreEdgeReactionModel:
 		for rxn in rxnList:
 			self.edge.reactions.remove(rxn)
 			# also remove it from the global list of reactions
-			reaction.removeFromGlobalList(rxn)
-
+			# the PDepReactions on the edge aren't in the global list, so we
+			# should not try to remove them
+			if not isinstance(rxn, reaction.PDepReaction):
+				reaction.removeFromGlobalList(rxn)
+		
 		# Remove the species from any unirxn networks it is in
 		if settings.unimolecularReactionNetworks:
 			networksToDelete = []
