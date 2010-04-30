@@ -13,7 +13,7 @@ import math
 from rmg.species import *
 from rmg.reaction import *
 from rmg.model import *
-from rmg.thermo import *
+from rmg.thermo.model import *
 from rmg.system.batch import *
 
 ################################################################################
@@ -88,11 +88,11 @@ class SimulationCheck(unittest.TestCase):
 		initializeRMGSimulation(T=self.T, P=self.P, tf=self.tf, model=model, system=system)
 
 		speciesA = Species(1, 'A')
-		speciesA.thermoData = ThermoGAData(500000.0, 0.0, [0, 0, 0, 0, 0, 0, 0])
+		speciesA.thermoData = ThermoGAModel(500000.0, 0.0, [0, 0, 0, 0, 0, 0, 0])
 		model.addSpeciesToCore(speciesA)
 
 		speciesB = Species(2, 'B')
-		speciesB.thermoData = ThermoGAData(-500000.0, 0.0, [0, 0, 0, 0, 0, 0, 0])
+		speciesB.thermoData = ThermoGAModel(-500000.0, 0.0, [0, 0, 0, 0, 0, 0, 0])
 		model.addSpeciesToCore(speciesB)
 
 		reactionAB = Reaction([speciesA], [speciesB])
@@ -129,11 +129,11 @@ class SimulationCheck(unittest.TestCase):
 		initializeRMGSimulation(T=self.T, P=self.P, tf=self.tf, model=model, system=system)
 
 		speciesA = Species(1, 'A')
-		speciesA.thermoData = ThermoGAData(500000.0, 0.0, [0, 0, 0, 0, 0, 0, 0])
+		speciesA.thermoData = ThermoGAModel(500000.0, 0.0, [0, 0, 0, 0, 0, 0, 0])
 		model.addSpeciesToCore(speciesA)
 
 		speciesB = Species(2, 'B')
-		speciesB.thermoData = ThermoGAData(500000.0, 0.0, [0, 0, 0, 0, 0, 0, 0])
+		speciesB.thermoData = ThermoGAModel(500000.0, 0.0, [0, 0, 0, 0, 0, 0, 0])
 		model.addSpeciesToCore(speciesB)
 
 		reactionAB = Reaction([speciesA], [speciesB])
@@ -163,11 +163,11 @@ class SimulationCheck(unittest.TestCase):
 		initializeRMGSimulation(T=self.T, P=self.P, tf=self.tf, model=model, system=system)
 
 		speciesA = Species(1, 'A')
-		speciesA.thermoData = ThermoGAData(500000.0, 0.0, [0, 0, 0, 0, 0, 0, 0])
+		speciesA.thermoData = ThermoGAModel(500000.0, 0.0, [0, 0, 0, 0, 0, 0, 0])
 		model.addSpeciesToCore(speciesA)
 
 		speciesB = Species(2, 'B')
-		speciesB.thermoData = ThermoGAData(494237.0, 0.0, [0, 0, 0, 0, 0, 0, 0])
+		speciesB.thermoData = ThermoGAModel(494237.0, 0.0, [0, 0, 0, 0, 0, 0, 0])
 		model.addSpeciesToCore(speciesB)
 
 		reactionAB = Reaction([speciesA], [speciesB])
@@ -197,11 +197,11 @@ class SimulationCheck(unittest.TestCase):
 		initializeRMGSimulation(T=self.T, P=self.P, tf=self.tf, model=model, system=system)
 
 		speciesA = Species(1, 'A')
-		speciesA.thermoData = ThermoGAData(500000.0, 0.0, [0, 0, 0, 0, 0, 0, 0])
+		speciesA.thermoData = ThermoGAModel(500000.0, 0.0, [0, 0, 0, 0, 0, 0, 0])
 		model.addSpeciesToCore(speciesA)
 
 		speciesB = Species(2, 'B')
-		speciesB.thermoData = ThermoGAData(-500000.0, 0.0, [0, 0, 0, 0, 0, 0, 0])
+		speciesB.thermoData = ThermoGAModel(-500000.0, 0.0, [0, 0, 0, 0, 0, 0, 0])
 		model.addSpeciesToCore(speciesB)
 
 		reactionAB = Reaction([speciesA, speciesA], [speciesB])
@@ -232,11 +232,11 @@ class SimulationCheck(unittest.TestCase):
 		initializeRMGSimulation(T=self.T, P=self.P, tf=self.tf, model=model, system=system)
 
 		speciesA = Species(1, 'A')
-		speciesA.thermoData = ThermoGAData(250000.0, 0.0, [0, 0, 0, 0, 0, 0, 0])
+		speciesA.thermoData = ThermoGAModel(250000.0, 0.0, [0, 0, 0, 0, 0, 0, 0])
 		model.addSpeciesToCore(speciesA)
 
 		speciesB = Species(2, 'B')
-		speciesB.thermoData = ThermoGAData(500000.0, 0.0, [0, 0, 0, 0, 0, 0, 0])
+		speciesB.thermoData = ThermoGAModel(500000.0, 0.0, [0, 0, 0, 0, 0, 0, 0])
 		model.addSpeciesToCore(speciesB)
 
 		reactionAB = Reaction([speciesA, speciesA], [speciesB])
@@ -262,11 +262,11 @@ class SimulationCheck(unittest.TestCase):
 		initializeRMGSimulation(T=self.T, P=self.P, tf=self.tf, model=model, system=system)
 
 		speciesA = Species(1, 'A')
-		speciesA.thermoData = ThermoGAData(500000.0, 0.0, [0, 0, 0, 0, 0, 0, 0])
+		speciesA.thermoData = ThermoGAModel(500000.0, 0.0, [0, 0, 0, 0, 0, 0, 0])
 		model.addSpeciesToCore(speciesA)
 
 		speciesB = Species(2, 'B')
-		speciesB.thermoData = ThermoGAData(-500000.0, 0.0, [0, 0, 0, 0, 0, 0, 0])
+		speciesB.thermoData = ThermoGAModel(-500000.0, 0.0, [0, 0, 0, 0, 0, 0, 0])
 		model.addSpeciesToCore(speciesB)
 
 		reactionAB = Reaction([speciesA], [speciesB, speciesB])

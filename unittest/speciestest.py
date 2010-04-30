@@ -6,7 +6,7 @@ import unittest
 import sys
 sys.path.append('../source')
 
-import rmg.thermo
+import rmg.thermo.data
 from rmg.structure import *
 from rmg.species import *
 

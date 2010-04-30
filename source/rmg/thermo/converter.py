@@ -38,8 +38,7 @@ significant speed boost to running in pure Python mode.
 """
 
 import math
-import scipy
-from scipy import linalg, optimize, integrate
+from scipy import zeros, linalg, optimize, integrate
 
 import rmg.constants
 import rmg.log as logging
@@ -136,8 +135,8 @@ def GA2Wilhoit(B, T_list, Cp_list, cp0, cpInf):
 	# A = mx4
 	# b = mx1
 	# x = 4x1
-	A = scipy.zeros([m,4])
-	b = scipy.zeros([m])
+	A = zeros([m,4])
+	b = zeros([m])
 	for i in range(m):
 		y = T_list[i]/(T_list[i]+B)
 		A[i,0] = (cpInf-cp0) * y*y*(y-1)
@@ -304,8 +303,8 @@ def Wilhoit2NASA(wilhoit, tmin, tmax, tint, weighting, contCons):
 	output: NASA polynomials (nasa_low, nasa_high) with scaled parameters
 	"""
 	#construct (typically 13*13) symmetric A matrix (in A*x = b); other elements will be zero
-	A = scipy.zeros([10+contCons,10+contCons])
-	b = scipy.zeros([10+contCons])
+	A = zeros([10+contCons,10+contCons])
+	b = zeros([10+contCons])
 
 	if weighting:
 		A[0,0] = 2*math.log(tint/tmin)
@@ -594,7 +593,9 @@ def convertCpToNASA(CpObject, H298, S298, fixed=1, weighting=0, tint=1000.0, Tmi
 		iseWei= Cp_TintOpt_objFun(tint, CpObject, Tmin, Tmax, weighting, contCons) #the scaled, weighted ISE
 		rmsWei = math.sqrt(iseWei/math.log(Tmax/Tmin))
 		rmsStr = 'Weighted RMS error = %.3f*R;'%(rmsWei)+rmsStr
-
+	else:
+		rmsWei = 0.0
+		
 	#print a warning if the rms fit is worse that 0.25*R
 	if(rmsUnw > 0.25 or rmsWei > 0.25):
 		logging.warning("Poor Cp-to-NASA fit quality: RMS error = %.3f*R" % (rmsWei if weighting == 1 else rmsUnw))
@@ -664,8 +665,8 @@ def Cp2NASA(CpObject, tmin, tmax, tint, weighting, contCons):
 	output: NASA polynomials (nasa_low, nasa_high) with scaled parameters
 	"""
 	#construct (typically 13*13) symmetric A matrix (in A*x = b); other elements will be zero
-	A = scipy.zeros([10+contCons,10+contCons])
-	b = scipy.zeros([10+contCons])
+	A = zeros([10+contCons,10+contCons])
+	b = zeros([10+contCons])
 
 	if weighting:
 		A[0,0] = 2*math.log(tint/tmin)

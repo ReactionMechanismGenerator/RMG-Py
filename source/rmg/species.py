@@ -37,7 +37,7 @@ import pybel
 import os
 import xml.sax.saxutils
 import quantities as pq
-		
+
 import settings
 import structure
 import thermo.model

@@ -11,22 +11,18 @@ import math
 import rmg.data as data
 import rmg.species as species
 import rmg.structure as structure
-import rmg.thermo as thermo
 import rmg.log as logging
+
+from rmg.thermo.model import *
+from rmg.thermo.converter import *
+from rmg.thermo.data import *
 
 # Run this whether being run as __main__ or called by other unit test suite:
 # Load databases
 databasePath = '../data/RMG_database'
 
-# Create and load thermo databases
-species.thermoDatabase = species.ThermoDatabaseSet()
-species.thermoDatabase.load(databasePath + '/')
-
-# Create and load forbidden structures
-thermo.forbiddenStructures = data.Dictionary()
-thermo.forbiddenStructures.load(os.path.join(databasePath,'ForbiddenStructures.txt'))
-thermo.forbiddenStructures.toStructure()
-	
+# Create and load thermo databases and forbidden structures
+rmg.thermo.data.loadThermoDatabase(databasePath + '/')
 
 ################################################################################
 
@@ -47,7 +43,7 @@ class ThermoGACheck(unittest.TestCase):
 		# Heat capacity: 
 		#		Cp = 0.1 * T - 20.0		300.0 < T < 1500.0
 		#		Cp = 130.0				T > 1500.0
-		thermoData = thermo.ThermoGAData(0, 0, [10, 20, 30, 40, 60, 80, 130.0])
+		thermoData = ThermoGAModel(0, 0, [10, 20, 30, 40, 60, 80, 130.0])
 		
 		Tlist = [T for T in range(300, 1500, 10)]
 		for T in Tlist:
@@ -75,7 +71,7 @@ class ThermoGACheck(unittest.TestCase):
 		
 		H0 = 800000.0
 		
-		thermoData = thermo.ThermoGAData(H0, 0, [10, 20, 30, 40, 60, 80, 130.0])
+		thermoData = ThermoGAModel(H0, 0, [10, 20, 30, 40, 60, 80, 130.0])
 		
 		Tlist = [T for T in range(300, 1500, 10)]
 		for T in Tlist:
@@ -103,7 +99,7 @@ class ThermoGACheck(unittest.TestCase):
 		"""
 		
 		S0 = 500.0
-		thermoData = thermo.ThermoGAData(0, S0, [10, 20, 30, 40, 60, 80, 130.0])
+		thermoData = ThermoGAModel(0, S0, [10, 20, 30, 40, 60, 80, 130.0])
 		
 		Tlist = [T for T in range(300, 1500, 10)]
 		for T in Tlist:
@@ -124,7 +120,7 @@ class ThermoEstimationCheck(unittest.TestCase):
 		
 		C2H6 = species.Species()
 		C2H6.fromSMILES('CC')
-		C2H6.generateThermoData(thermoClass=thermo.ThermoGAData)
+		C2H6.generateThermoData(thermoClass=ThermoGAModel)
 #		print 'ethane'
 #		print 'H(298 K) = %s' % (C2H6.getEnthalpy(298) / 4184)
 #		print 'S(298 K) = %s' % (C2H6.getEntropy(298) / 4.184)
@@ -139,7 +135,7 @@ class ThermoEstimationCheck(unittest.TestCase):
 		
 		CH3 = species.Species()
 		CH3.fromSMILES('[CH3]')
-		CH3.generateThermoData(thermoClass=thermo.ThermoGAData)
+		CH3.generateThermoData(thermoClass=ThermoGAModel)
 #		print 'methyl'
 #		print 'H(298 K) = %s' % (CH3.getEnthalpy(298) / 4184)
 #		print 'S(298 K) = %s' % (CH3.getEntropy(298) / 4.184)
@@ -162,7 +158,7 @@ class ThermoEstimationCheck(unittest.TestCase):
 		C6H10 = species.Species()
 		C6H10.fromSMILES('C=CC=CCC')
 		C6H10.getResonanceIsomers()
-		C6H10.generateThermoData(thermoClass=thermo.ThermoGAData)
+		C6H10.generateThermoData(thermoClass=ThermoGAModel)
 		self.assertAlmostEqual(C6H10.getEnthalpy(298) / 4184, 13.45, 1)
 		self.assertAlmostEqual(C6H10.getEntropy(298) / 4.184, 86.37, 1)
 		self.assertAlmostEqual(C6H10.getFreeEnergy(298) / 4184, -12.3, 1)
@@ -171,7 +167,7 @@ class ThermoEstimationCheck(unittest.TestCase):
 		C6H9 = species.Species()
 		C6H9.fromSMILES('[CH]=CC=CCC')
 		C6H9.getResonanceIsomers()
-		C6H9.generateThermoData(thermoClass=thermo.ThermoGAData)
+		C6H9.generateThermoData(thermoClass=ThermoGAModel)
 		self.assertAlmostEqual(C6H9.getEnthalpy(298) / 4184, 72.55, 1)
 		self.assertAlmostEqual(C6H9.getEntropy(298) / 4.184, 87.76, 1)
 		self.assertAlmostEqual(C6H9.getHeatCapacity(298) / 4.184, 29.30, 1)
@@ -179,7 +175,7 @@ class ThermoEstimationCheck(unittest.TestCase):
 		C6H9 = species.Species()
 		C6H9.fromSMILES('C=[C]C=CCC')
 		C6H9.getResonanceIsomers()
-		C6H9.generateThermoData(thermoClass=thermo.ThermoGAData)
+		C6H9.generateThermoData(thermoClass=ThermoGAModel)
 		self.assertAlmostEqual(C6H9.getEnthalpy(298) / 4184, 61.15, 1)
 		self.assertAlmostEqual(C6H9.getEntropy(298) / 4.184, 87.07, 1)
 		self.assertAlmostEqual(C6H9.getHeatCapacity(298) / 4.184, 29.68, 1)
@@ -187,7 +183,7 @@ class ThermoEstimationCheck(unittest.TestCase):
 		C6H9 = species.Species()
 		C6H9.fromSMILES('C=C[C]=CCC')
 		C6H9.getResonanceIsomers()
-		C6H9.generateThermoData(thermoClass=thermo.ThermoGAData)
+		C6H9.generateThermoData(thermoClass=ThermoGAModel)
 		self.assertAlmostEqual(C6H9.getEnthalpy(298) / 4184, 61.15, 1)
 		self.assertAlmostEqual(C6H9.getEntropy(298) / 4.184, 87.07, 1)
 		self.assertAlmostEqual(C6H9.getHeatCapacity(298) / 4.184, 29.68, 1)
@@ -195,7 +191,7 @@ class ThermoEstimationCheck(unittest.TestCase):
 		C6H9 = species.Species()
 		C6H9.fromSMILES('C=CC=[C]CC')
 		C6H9.getResonanceIsomers()
-		C6H9.generateThermoData(thermoClass=thermo.ThermoGAData)
+		C6H9.generateThermoData(thermoClass=ThermoGAModel)
 		self.assertAlmostEqual(C6H9.getEnthalpy(298) / 4184, 70.35, 1)
 		self.assertAlmostEqual(C6H9.getEntropy(298) / 4.184, 88.18, 1)
 		self.assertAlmostEqual(C6H9.getHeatCapacity(298) / 4.184, 29.15, 1)
@@ -203,7 +199,7 @@ class ThermoEstimationCheck(unittest.TestCase):
 		C6H9 = species.Species()
 		C6H9.fromSMILES('C=CC=C[CH]C')
 		C6H9.getResonanceIsomers()
-		C6H9.generateThermoData(thermoClass=thermo.ThermoGAData)
+		C6H9.generateThermoData(thermoClass=ThermoGAModel)
 		self.assertAlmostEqual(C6H9.getEnthalpy(298) / 4184, 38.24, 1)
 		self.assertAlmostEqual(C6H9.getEntropy(298) / 4.184, 84.41, 1)
 		self.assertAlmostEqual(C6H9.getHeatCapacity(298) / 4.184, 27.79, 1)
@@ -211,7 +207,7 @@ class ThermoEstimationCheck(unittest.TestCase):
 		C6H9 = species.Species()
 		C6H9.fromSMILES('C=CC=CC[CH2]')
 		C6H9.getResonanceIsomers()
-		C6H9.generateThermoData(thermoClass=thermo.ThermoGAData)
+		C6H9.generateThermoData(thermoClass=ThermoGAModel)
 		self.assertAlmostEqual(C6H9.getEnthalpy(298) / 4184, 62.44, 1)
 		self.assertAlmostEqual(C6H9.getEntropy(298) / 4.184, 89.78, 1)
 		self.assertAlmostEqual(C6H9.getHeatCapacity(298) / 4.184, 28.72, 1)
@@ -227,7 +223,7 @@ class ThermoEstimationCheck(unittest.TestCase):
 		H = species.Species()
 		H.fromSMILES('[H]')
 		H.getResonanceIsomers()
-		H.generateThermoData(thermoClass=thermo.ThermoGAData)
+		H.generateThermoData(thermoClass=ThermoGAModel)
 		self.assertAlmostEqual(H.getEnthalpy(298) / 4184, 52.103, 1)
 		self.assertAlmostEqual(H.getEntropy(298) / 4.184, 27.419, 1)
 		self.assertAlmostEqual(H.getHeatCapacity(298) / 4.184, 4.968, 1)
@@ -239,10 +235,10 @@ class ThermoGAtoWilhoitCheck(unittest.TestCase):
 	"""Test conversion of Group Additivity thermo to Wilhoit thermo"""
 	def testWilhoitCreated(self):
 		"""Can we make Wilhoit polynomial data"""
-		GAthermoData = thermo.ThermoGAData(0, 0, [10, 20, 30, 40, 60, 80, 130.0])
-		WilhoitData = thermo.convertGAtoWilhoit(GAthermoData, atoms=2, rotors=0, linear=True )
-		self.assertTrue(isinstance(WilhoitData,thermo.ThermoWilhoitData),"Didn't make ThermoWilhoitData instance")
-		self.assertTrue(isinstance(WilhoitData,thermo.ThermoData),"Didn't make any kind of ThermoData instance")
+		GAthermoData = ThermoGAModel(0, 0, [10, 20, 30, 40, 60, 80, 130.0])
+		WilhoitData = convertGAtoWilhoit(GAthermoData, atoms=2, rotors=0, linear=True )
+		self.assertTrue(isinstance(WilhoitData,WilhoitModel),"Didn't make ThermoWilhoitData instance")
+		self.assertTrue(isinstance(WilhoitData,ThermoModel),"Didn't make any kind of ThermoData instance")
 		# well, if we didn't cause an error, I guess that's good enough for now.
 
 	def testHeatCapacity(self):
@@ -253,10 +249,10 @@ class ThermoGAtoWilhoitCheck(unittest.TestCase):
 		
 		propane = structure.Structure(SMILES='CCC')
 		propane.updateAtomTypes()
-		GAthermoData = species.getThermoData(propane,thermoClass=thermo.ThermoGAData)
-		WilhoitData = thermo.convertGAtoWilhoit(GAthermoData, atoms=11, rotors=2, linear=False)
+		GAthermoData = generateThermoData(propane,thermoClass=ThermoGAModel)
+		WilhoitData = convertGAtoWilhoit(GAthermoData, atoms=11, rotors=2, linear=False)
 		
-		Tlist = thermo.ThermoGAData.CpTlist # just check at defined data points
+		Tlist = ThermoGAModel.CpTlist # just check at defined data points
 		for T in Tlist:
 			ga = GAthermoData.getHeatCapacity(T)
 			wil = WilhoitData.getHeatCapacity(T)
@@ -272,10 +268,10 @@ class ThermoGAtoWilhoitCheck(unittest.TestCase):
 		
 		propane = structure.Structure(SMILES='CCC')
 		propane.updateAtomTypes()
-		GAthermoData = species.getThermoData(propane,thermoClass=thermo.ThermoGAData)
-		WilhoitData = thermo.convertGAtoWilhoit(GAthermoData, atoms=11, rotors=2, linear=False)
+		GAthermoData = generateThermoData(propane,thermoClass=ThermoGAModel)
+		WilhoitData = convertGAtoWilhoit(GAthermoData, atoms=11, rotors=2, linear=False)
 		
-		Tlist = thermo.ThermoGAData.CpTlist # just check at defined data points
+		Tlist = ThermoGAModel.CpTlist # just check at defined data points
 		for T in Tlist:
 			ga = GAthermoData.getEnthalpy(T)
 			wil = WilhoitData.getEnthalpy(T)
@@ -291,10 +287,10 @@ class ThermoGAtoWilhoitCheck(unittest.TestCase):
 		
 		propane = structure.Structure(SMILES='CCC')
 		propane.updateAtomTypes()
-		GAthermoData = species.getThermoData(propane,thermoClass=thermo.ThermoGAData)
-		WilhoitData = thermo.convertGAtoWilhoit(GAthermoData, atoms=11, rotors=2, linear=False)
+		GAthermoData = generateThermoData(propane,thermoClass=ThermoGAModel)
+		WilhoitData = convertGAtoWilhoit(GAthermoData, atoms=11, rotors=2, linear=False)
 		
-		Tlist = thermo.ThermoGAData.CpTlist # just check at defined data points
+		Tlist = ThermoGAModel.CpTlist # just check at defined data points
 		for T in Tlist:
 			ga = GAthermoData.getEntropy(T)
 			wil = WilhoitData.getEntropy(T)
@@ -310,8 +306,8 @@ class ThermoWilhoitToNASACheck(unittest.TestCase):
 		"""Can we make NASA polynomial data"""
 		cp0, cpInf, a0, a1, a2, a3, I, J = (1.0,1.0,1.0,1.0,1.0,1.0, 1.0, 1.0)
 		comment = "Stupid thermo."
-		WilhoitData = thermo.ThermoWilhoitData( cp0, cpInf, a0, a1, a2, a3, I, J, comment=comment)
-		NASAthermoData = thermo.convertWilhoitToNASA(WilhoitData)
+		WilhoitData = WilhoitModel( cp0, cpInf, a0, a1, a2, a3, I, J, comment=comment)
+		NASAthermoData = convertWilhoitToNASA(WilhoitData)
 		# well, if we didn't cause an error, I guess that's good enough for now.
 
 	def testHeatCapacity(self):
@@ -322,11 +318,11 @@ class ThermoWilhoitToNASACheck(unittest.TestCase):
 		
 		propane = structure.Structure(SMILES='CCC')
 		propane.updateAtomTypes()
-		GAthermoData = species.getThermoData(propane,thermoClass=thermo.ThermoGAData)
-		WilhoitData = thermo.convertGAtoWilhoit(GAthermoData, atoms=11, rotors=2, linear=False)
-		NASAthermoData = thermo.convertWilhoitToNASA(WilhoitData)
+		GAthermoData = generateThermoData(propane,thermoClass=ThermoGAModel)
+		WilhoitData = convertGAtoWilhoit(GAthermoData, atoms=11, rotors=2, linear=False)
+		NASAthermoData = convertWilhoitToNASA(WilhoitData)
 		
-		Tlist = thermo.ThermoGAData.CpTlist # just check at defined data points
+		Tlist = ThermoGAModel.CpTlist # just check at defined data points
 		for T in Tlist:
 			ga = GAthermoData.getHeatCapacity(T)
 			nasa = NASAthermoData.getHeatCapacity(T)
@@ -342,11 +338,11 @@ class ThermoWilhoitToNASACheck(unittest.TestCase):
 		
 		propane = structure.Structure(SMILES='CCC')
 		propane.updateAtomTypes()
-		GAthermoData = species.getThermoData(propane,thermoClass=thermo.ThermoGAData)
-		WilhoitData = thermo.convertGAtoWilhoit(GAthermoData, atoms=11, rotors=2, linear=False)
-		NASAthermoData = thermo.convertWilhoitToNASA(WilhoitData)
+		GAthermoData = generateThermoData(propane,thermoClass=ThermoGAModel)
+		WilhoitData = convertGAtoWilhoit(GAthermoData, atoms=11, rotors=2, linear=False)
+		NASAthermoData = convertWilhoitToNASA(WilhoitData)
 		
-		Tlist = thermo.ThermoGAData.CpTlist # just check at defined data points
+		Tlist = ThermoGAModel.CpTlist # just check at defined data points
 		for T in Tlist:
 			ga = GAthermoData.getEntropy(T)
 			nasa = NASAthermoData.getEntropy(T)
@@ -362,11 +358,11 @@ class ThermoWilhoitToNASACheck(unittest.TestCase):
 		
 		propane = structure.Structure(SMILES='CCC')
 		propane.updateAtomTypes()
-		GAthermoData = species.getThermoData(propane,thermoClass=thermo.ThermoGAData)
-		WilhoitData = thermo.convertGAtoWilhoit(GAthermoData, atoms=11, rotors=2, linear=False)
-		NASAthermoData = thermo.convertWilhoitToNASA(WilhoitData)
+		GAthermoData = generateThermoData(propane,thermoClass=ThermoGAModel)
+		WilhoitData = convertGAtoWilhoit(GAthermoData, atoms=11, rotors=2, linear=False)
+		NASAthermoData = convertWilhoitToNASA(WilhoitData)
 		
-		Tlist = thermo.ThermoGAData.CpTlist # just check at defined data points
+		Tlist = ThermoGAModel.CpTlist # just check at defined data points
 		for T in Tlist:
 			ga = GAthermoData.getEnthalpy(T)
 			nasa = NASAthermoData.getEnthalpy(T)
@@ -378,8 +374,8 @@ class ThermoWilhoitToNASACheck(unittest.TestCase):
 		"""Check weighted objective function encountered during Wilhoit-to-NASA conversion for molecular oxygen)
 		"""
 
-		wilhoit = thermo.ThermoWilhoitData(3.5,4.5,-2.343,32.54,-79.26,47.75,8951,-18.19, B=0.5) #this is the scaled version
-		q=thermo.TintOpt_objFun(1.0, wilhoit, .298, 6.0, 1, 3)#these are also scaled values
+		wilhoit = WilhoitModel(3.5,4.5,-2.343,32.54,-79.26,47.75,8951,-18.19, B=0.5) #this is the scaled version
+		q=TintOpt_objFun(1.0, wilhoit, .298, 6.0, 1, 3)#these are also scaled values
 		expectedVal = 0.00018295170781357228 #taken from running in pure-python mode
 		relErr = abs(q-expectedVal)/expectedVal
 		limit = 0.01 #relative error limit (0.01=1%)
@@ -391,10 +387,10 @@ class ThermoWilhoitToNASACheck(unittest.TestCase):
 
 		oxygen = structure.Structure(SMILES='O=O')
 		oxygen.updateAtomTypes()
-		GAthermoData = species.getThermoData(oxygen,thermoClass=thermo.ThermoGAData)
-		WilhoitData = thermo.convertGAtoWilhoit(GAthermoData, atoms=2, rotors=0, linear=True)
+		GAthermoData = generateThermoData(oxygen,thermoClass=ThermoGAModel)
+		WilhoitData = convertGAtoWilhoit(GAthermoData, atoms=2, rotors=0, linear=True)
 		print WilhoitData
-		NASAthermoData = thermo.convertWilhoitToNASA(WilhoitData)
+		NASAthermoData = convertWilhoitToNASA(WilhoitData)
 		#if not working properly, this may produce an error in logging
 
 	def testOxygenFromGA2(self):
@@ -404,8 +400,8 @@ class ThermoWilhoitToNASACheck(unittest.TestCase):
 		Discrepancy could be during the numerically intensive step (which this tests) or the computation of the group values (which a unit test below tests)
 		"""
 		#the following values come from Greg's Windows computer; Josh's scaled result for thermoWilhoitData is thermo.ThermoWilhoitData(3.5,4.5,-2.343,32.54,-79.26,47.75,8951,-18.19, B=0.5)
-		GAthermoData = thermo.ThermoGAData(H298=0.0, S298=205.026767175, Cp=[29.288, 30.208480000000002, 31.128960000000003, 32.007600000000004, 33.764880000000005, 34.936399999999999, 36.484480000000005], index="+1096+++0+1096+++0")
-		WilhoitData = thermo.convertGAtoWilhoit(GAthermoData, atoms=2, rotors=0, linear=True)
+		GAthermoData = ThermoGAModel(H298=0.0, S298=205.026767175, Cp=[29.288, 30.208480000000002, 31.128960000000003, 32.007600000000004, 33.764880000000005, 34.936399999999999, 36.484480000000005], index="+1096+++0+1096+++0")
+		WilhoitData = convertGAtoWilhoit(GAthermoData, atoms=2, rotors=0, linear=True)
 		limit = 0.01 #relative error limit (0.01=1%)
 		a0e = -0.9324
 		a0re = abs(WilhoitData.a0-a0e)/abs(a0e)
@@ -427,7 +423,7 @@ class ThermoWilhoitToNASACheck(unittest.TestCase):
 
 		oxygen = structure.Structure(SMILES='O=O')
 		oxygen.updateAtomTypes()
-		GAthermoData = species.getThermoData(oxygen,thermoClass=thermo.ThermoGAData)
+		GAthermoData = generateThermoData(oxygen,thermoClass=ThermoGAModel)
 		#the following values come from Greg's Windows computer
 		Cpe = [29.288, 30.208480000000002, 31.128960000000003, 32.007600000000004, 33.764880000000005, 34.936399999999999, 36.484480000000005]
 		self.assertTrue(GAthermoData.Cp[0]==Cpe[0],"Actual (%.8f) and expected (%.8f) are different"%(GAthermoData.Cp[0],Cpe[0]))
@@ -443,7 +439,7 @@ class ThermoWilhoitToNASACheck(unittest.TestCase):
 		"""Check Wilhoit.IntegralTM1
 
 		"""
-		w = thermo.ThermoWilhoitData(3.0,6.0,1.0,-2.0,3.0,-4.0,1234.5,789.0,B=0.5)
+		w = WilhoitModel(3.0,6.0,1.0,-2.0,3.0,-4.0,1234.5,789.0,B=0.5)
 		ans = w.integral_TM1(6.0) - w.integral_TM1(.298)
 		self.assertAlmostEqual(ans, 14.05184933947314, 14)
 
@@ -451,7 +447,7 @@ class ThermoWilhoitToNASACheck(unittest.TestCase):
 		"""Check Wilhoit.IntegralT0
 
 		"""
-		w = thermo.ThermoWilhoitData(3.0,6.0,1.0,-2.0,3.0,-4.0,1234.5,789.0,B=0.5)
+		w = WilhoitModel(3.0,6.0,1.0,-2.0,3.0,-4.0,1234.5,789.0,B=0.5)
 		ans = w.integral_T0(6.0) - w.integral_T0(.298)
 		self.assertAlmostEqual(ans, 30.156466842356952, 14)
 
@@ -459,7 +455,7 @@ class ThermoWilhoitToNASACheck(unittest.TestCase):
 		"""Check Wilhoit.IntegralT1
 
 		"""
-		w = thermo.ThermoWilhoitData(3.0,6.0,1.0,-2.0,3.0,-4.0,1234.5,789.0,B=0.5)
+		w = WilhoitModel(3.0,6.0,1.0,-2.0,3.0,-4.0,1234.5,789.0,B=0.5)
 		ans = w.integral_T1(6.0) - w.integral_T1(.298)
 		self.assertAlmostEqual(ans, 100.16557858116997, 16)
 
@@ -467,7 +463,7 @@ class ThermoWilhoitToNASACheck(unittest.TestCase):
 		"""Check Wilhoit.IntegralT2
 
 		"""
-		w = thermo.ThermoWilhoitData(3.0,6.0,1.0,-2.0,3.0,-4.0,1234.5,789.0,B=0.5)
+		w = WilhoitModel(3.0,6.0,1.0,-2.0,3.0,-4.0,1234.5,789.0,B=0.5)
 		ans = w.integral_T2(6.0) - w.integral_T2(.298)
 		self.assertAlmostEqual(ans, 409.65039004796273, 16)
 
@@ -475,7 +471,7 @@ class ThermoWilhoitToNASACheck(unittest.TestCase):
 		"""Check Wilhoit.IntegralT3
 
 		"""
-		w = thermo.ThermoWilhoitData(3.0,6.0,1.0,-2.0,3.0,-4.0,1234.5,789.0,B=0.5)
+		w = WilhoitModel(3.0,6.0,1.0,-2.0,3.0,-4.0,1234.5,789.0,B=0.5)
 		ans = w.integral_T3(6.0) - w.integral_T3(.298)
 		self.assertAlmostEqual(ans, 1859.5032978322745, 16)
 
@@ -483,7 +479,7 @@ class ThermoWilhoitToNASACheck(unittest.TestCase):
 		"""Check Wilhoit.IntegralT4
 
 		"""
-		w = thermo.ThermoWilhoitData(3.0,6.0,1.0,-2.0,3.0,-4.0,1234.5,789.0,B=0.5)
+		w = WilhoitModel(3.0,6.0,1.0,-2.0,3.0,-4.0,1234.5,789.0,B=0.5)
 		ans = w.integral_T4(6.0) - w.integral_T4(.298)
 		self.assertAlmostEqual(ans, 8965.5578894745959, 16)
 
@@ -491,7 +487,7 @@ class ThermoWilhoitToNASACheck(unittest.TestCase):
 		"""Check Wilhoit.Integral2_TM1
 
 		"""
-		w = thermo.ThermoWilhoitData(3.0,6.0,1.0,-2.0,3.0,-4.0,1234.5,789.0,B=0.5)
+		w = WilhoitModel(3.0,6.0,1.0,-2.0,3.0,-4.0,1234.5,789.0,B=0.5)
 		ans = w.integral2_TM1(6.0) - w.integral2_TM1(.298)
 		self.assertAlmostEqual(ans, 67.864846008944539, 13)
 
@@ -499,7 +495,7 @@ class ThermoWilhoitToNASACheck(unittest.TestCase):
 		"""Check Wilhoit.Integral2_T0
 
 		"""
-		w = thermo.ThermoWilhoitData(3.0,6.0,1.0,-2.0,3.0,-4.0,1234.5,789.0,B=0.5)
+		w = WilhoitModel(3.0,6.0,1.0,-2.0,3.0,-4.0,1234.5,789.0,B=0.5)
 		ans = w.integral2_T0(6.0) - w.integral2_T0(.298)
 		self.assertAlmostEqual(ans, 161.77012800697503, 13)
 
@@ -507,7 +503,7 @@ class ThermoWilhoitToNASACheck(unittest.TestCase):
 		"""Check NASA.Integral2_TM1
 
 		"""
-		n = thermo.ThermoNASAPolynomial(T_range=[.298,1.000], coeffs = [1, -.2, .3, -.4, .5, -6, 7])
+		n = NASAPolynomial(Tmin=.298, Tmax=1.000, coeffs = [1, -.2, .3, -.4, .5, -6, 7])
 		ans = n.integral2_TM1(1.0) - n.integral2_TM1(.298)
 		self.assertAlmostEqual(ans, 1.1958658319514555, 15)
 
@@ -515,7 +511,7 @@ class ThermoWilhoitToNASACheck(unittest.TestCase):
 		"""Check NASA.Integral2_T0
 
 		"""
-		n = thermo.ThermoNASAPolynomial(T_range=[.298,1.000], coeffs = [1, -.2, .3, -.4, .5, -6, 7])
+		n = NASAPolynomial(Tmin=.298, Tmax=1.000, coeffs = [1, -.2, .3, -.4, .5, -6, 7])
 		ans = n.integral2_T0(1.0) - n.integral2_T0(.298)
 		self.assertAlmostEqual(ans, 0.71887383097545454, 15)
 
@@ -524,8 +520,8 @@ class ThermoCpToNASACheck(unittest.TestCase):
 	def testNASAfromCp(self):
 		"""Can we make NASA polynomial data from an arbitrary Cp function"""
 
-		CpObject = thermo.ThermoNASAPolynomial(T_range=[0,8000], coeffs = [2.5, 3.0/1000, 7.0/1000000, 0.0, 0.0, 0, 0])
-		NASAthermoData = thermo.convertCpToNASA(CpObject, 1.0, 2.0)
+		CpObject = NASAPolynomial(Tmin=0, Tmax=8000, coeffs = [2.5, 3.0/1000, 7.0/1000000, 0.0, 0.0, 0, 0])
+		NASAthermoData = convertCpToNASA(CpObject, 1.0, 2.0)
 		#print NASAthermoData
 		self.assertAlmostEqual(NASAthermoData.getEnthalpy(298.15), 1.0, 4)
 		self.assertAlmostEqual(NASAthermoData.getEntropy(298.15), 2.0, 4)
@@ -552,15 +548,17 @@ if __name__ == '__main__':
 	startup = """gc.enable() # enable garbage collection in timeit
 import sys
 sys.path.append('../source')
-import rmg.thermo as thermo
+from rmg.thermo.model import ThermoGAModel
+from rmg.thermo.converter import convertGAtoWilhoit, convertWilhoitToNASA
+from rmg.thermo.data import generateThermoData
 import rmg.species as species
 import rmg.structure as structure
 from rmg.structure import Structure
 propane = structure.Structure(SMILES='CCC')
 propane.updateAtomTypes()
-GAthermoData = species.getThermoData(propane,thermoClass=thermo.ThermoGAData)
-WilhoitData = thermo.convertGAtoWilhoit(GAthermoData, atoms=11, rotors=2, linear=False)
-NASAthermoData = thermo.convertWilhoitToNASA(WilhoitData)
+GAthermoData = generateThermoData(propane,thermoClass=ThermoGAModel)
+WilhoitData = convertGAtoWilhoit(GAthermoData, atoms=11, rotors=2, linear=False)
+NASAthermoData = convertWilhoitToNASA(WilhoitData)
 """
 	test1 = "for T in range(600,1100,100):\n\tGAthermoData.getEnthalpy(T)"
 	test2 = "for T in range(600,1100,100):\n\tWilhoitData.getEnthalpy(T)"

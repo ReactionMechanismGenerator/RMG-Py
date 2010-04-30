@@ -6,17 +6,11 @@ import unittest
 import sys
 sys.path.append('../source')
 
-import rmg.thermo
+import rmg.thermo.model as thermo
 from rmg.structure import Structure
 from rmg.species import makeNewSpecies
-from rmg.reaction import *
 import rmg.reaction as reaction
-
-# Run this whether being run as __main__ or called by other unit test suite:
-
-
-
-	
+from rmg.kinetics.data import ReactionFamilySet
 	
 ################################################################################
 
@@ -80,7 +74,7 @@ class ReactionCheck(unittest.TestCase):
 		H2, isNew = makeNewSpecies(structure4)
 		
 		# wipe the reaction list
-		reaction.reactionList=[]
+		reaction.reactionDict={}
 		
 		reaction1, isNew = makeNewReaction([C6H9, H2], [C6H10, H], \
 			[C6H9.structure[0], H2.structure[0]], \
@@ -105,7 +99,7 @@ class ReactionSetCheck(unittest.TestCase):
 		databasePath = '../data/RMG_database'
 		#if only_families: 
 		#	print "Only loading reaction families %s"%only_families
-		reaction.kineticsDatabase = reaction.ReactionFamilySet()
+		reaction.kineticsDatabase = ReactionFamilySet()
 		reaction.kineticsDatabase.load(databasePath, only_families=only_families)
 
 	
@@ -125,7 +119,7 @@ class ReactionSetCheck(unittest.TestCase):
 		species3, isNew = makeNewSpecies(structure3)
 		
 		# wipe the reaction list
-		reaction.reactionList=[]
+		reaction.reactionDict = {}
 		#print "FORWARD"
 		rxns = reaction.kineticsDatabase.getReactions([species2,species3])
 		#for rxn in rxns:
@@ -137,7 +131,7 @@ class ReactionSetCheck(unittest.TestCase):
 		self.assertEqual(len(rxns),18, "Was expecting to make 18 reactions for %s + %s"%(species2,species3))
 			
 		# wipe the reaction list
-		reaction.reactionList=[]
+		reaction.reactionDict = {}
 		#print "REVERSE"
 		rxns = reaction.kineticsDatabase.getReactions([species1])
 		#for rxn in rxns:
@@ -164,8 +158,8 @@ class ReactionSetCheck(unittest.TestCase):
 		species2, isNew = makeNewSpecies(structure2)
 			
 		# wipe the reaction list
-		reaction.reactionList=[]
-
+		reaction.reactionDict = {}
+		
 		rxns = reaction.kineticsDatabase.getReactions([species1])
 		#for rxn in rxns:
 		#	print 'Reaction family:',rxn.family
@@ -195,8 +189,8 @@ class ReactionSetCheck(unittest.TestCase):
 			print 'Reacting species',species1
 				
 			# wipe the reaction list
-			reaction.reactionList=[]
-			
+			reaction.reactionDict = {}
+		
 			rxns = reaction.kineticsDatabase.getReactions([species1])
 			for rxn in rxns:
 				print 'Reaction family:',rxn.family
@@ -219,7 +213,7 @@ class ReactionSetCheck(unittest.TestCase):
 		structure3 = Structure()
 		structure3.fromAdjacencyList("O\n1 O 2\n")
 		species3 = makeNewSpecies(structure3)
-		reaction.reactionList=[]
+		reaction.reactionDict = {}
 		print "Now reacting %s with %s:"%(species2, species3)
 		for sp in (species2, species3):
 			print sp.toAdjacencyList()
@@ -243,8 +237,8 @@ class ReactionSetCheck(unittest.TestCase):
 			print 'Reacting species',species1
 				
 			# wipe the reaction list
-			reaction.reactionList=[]
-			
+			reaction.reactionDict = {}
+		
 			rxns = reaction.kineticsDatabase.getReactions([species1])
 			for rxn in rxns:
 				print 'Reaction family:',rxn.family
@@ -277,8 +271,8 @@ class ReactionSetCheck(unittest.TestCase):
 			print 'Reacting species',species1
 				
 			# wipe the reaction list
-			reaction.reactionList=[]
-			
+			reaction.reactionDict = {}
+		
 			rxns = reaction.kineticsDatabase.getReactions([species1])
 			for rxn in rxns:
 				print 'Reaction family:',rxn.family
@@ -309,8 +303,8 @@ class ReactionSetCheck(unittest.TestCase):
 			print 'Reacting species',species1, 'with itself'
 				
 			# wipe the reaction list
-			reaction.reactionList=[]
-			
+			reaction.reactionDict = {}
+		
 			rxns = reaction.kineticsDatabase.getReactions([species1,species1])
 			for rxn in rxns:
 				print 'Reaction family:',rxn.family
@@ -345,8 +339,8 @@ class ReactionSetCheck(unittest.TestCase):
 			print 'Reacting species',species1
 				
 			# wipe the reaction list
-			reaction.reactionList=[]
-			
+			reaction.reactionDict = {}
+		
 			rxns = reaction.kineticsDatabase.getReactions([species1])
 			
 			all_products = []

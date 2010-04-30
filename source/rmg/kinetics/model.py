@@ -86,14 +86,14 @@ class KineticsModel:
 		Return :data:`True` if temperature `T` is within the valid temperature
 		range and :data:`False` if not. 
 		"""
-		return (self.Tmin < T and T < self.Tmax)
+		return (self.Tmin <= T and T <= self.Tmax)
 
 	def isPressureInRange(self, P):
 		"""
 		Return :data:`True` if pressure `P` is within the valid pressure
 		range, and :data:`False` if not.
 		"""
-		return (self.Pmin < P and P < self.Pmax)
+		return (self.Pmin <= P and P <= self.Pmax)
 
 ################################################################################
 
