@@ -273,7 +273,7 @@ class Species:
 		if thermoElement:
 			format = str(document.getAttribute(thermoElement, 'format', required=True)).lower()
 			if format == 'group additivity':
-				self.thermoData = thermo.ThermoGAData()
+				self.thermoData = thermo.model.ThermoGAModel()
 				self.thermoData.fromXML(document, thermoElement)
 			else:
 				raise io.InvalidInputFileException('Invalid format "%s" for thermoData element; allowed values are "group additivity".' % format)

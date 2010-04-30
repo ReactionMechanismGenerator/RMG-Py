@@ -37,6 +37,8 @@ the :class:`rmg.io.XML` class to work with the input and output XML data.
 from rmg.io import *
 from rmg.species import Species
 from rmg.reaction import Reaction
+from rmg.thermo.model import ThermoGAModel
+from rmg.thermo.converter import convertGAtoWilhoit
 
 from network import Network, Isomer
 
@@ -65,10 +67,10 @@ def readInputFile(fstr):
 		databases = readDatabaseList(document, rootElement)
 		for database in databases:
 			if database[1] == 'general':
-				logging.debug('General database: ' + database[2])
+				logging.verbose('General database: ' + database[2])
 				# Load only thermo and frequency databases
-				loadThermoDatabase(database[2] + os.sep)
-				loadFrequencyDatabase(database[2])
+				thermo.data.loadThermoDatabase(database[2] + os.sep)
+				spectral.data.loadFrequencyDatabase(database[2])
 		logging.debug('')
 
 		# Create Network object
@@ -90,7 +92,7 @@ def readInputFile(fstr):
 			# Generate thermo data if needed (this won't work if there is no
 			# general database loaded)
 			if not species.thermoData:
-				species.thermoData = species.generateThermoData(thermoClass=thermo.ThermoGAData)
+				species.thermoData = species.generateThermoData(thermoClass=ThermoGAModel)
 
 			# Generate spectral data if needed (this won't work if there is no
 			# general database loaded)
@@ -106,7 +108,7 @@ def readInputFile(fstr):
 			rotors = struct.calculateNumberOfRotors()
 			atoms = len(struct.atoms())
 			linear = struct.isLinear()
-			species.thermoData = thermo.convertGAtoWilhoit(species.thermoData,atoms,rotors,linear)
+			species.thermoData = convertGAtoWilhoit(species.thermoData,atoms,rotors,linear)
 
 			# Use the Wilhoit thermo data to get the ground-state energy
 			# But don't overwrite a ground-state energy specified in the
@@ -302,11 +304,11 @@ def writeInputFile(fstr, network, Tlist, Plist, Elist, method, model):
 
 			# Write thermo data
 			thermoData = species.thermoData
-			if not isinstance(thermoData, thermo.ThermoGAData):
-				thermoData = thermo.ThermoGAData(
+			if not isinstance(thermoData, ThermoGAModel):
+				thermoData = ThermoGAModel(
 					H298=thermoData.getEnthalpy(298.0),
 					S298=thermoData.getEntropy(298.0),
-					Cp=[thermoData.getHeatCapacity(T) for T in thermo.ThermoGAData.CpTlist]
+					Cp=[thermoData.getHeatCapacity(T) for T in ThermoGAModel.CpTlist]
 				)
 			thermoData.toXML(document, speciesElement)
 
