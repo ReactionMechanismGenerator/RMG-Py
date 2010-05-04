@@ -140,7 +140,7 @@ def fitSpectralDataToHeatCapacity(struct, Tlist, Cvlist, Nvib, Nrot):
 		ind = numpy.array(ind),
 		maxiter = maxIter,
 		)
-
+	
 	# Clean up the temporary variables stored via _fit.setparams() earlier
 	_fit.cleanup()
 
@@ -254,8 +254,8 @@ def setupCasePseudo(Nvib, Nrot):
 	
 	# x[1] corresponds to the degeneracy of the second harmonic oscillator
 	ind[1] = 3
-	lb[1]  = 0.0
-	ub[1]  = float(Nvib - 1)
+	lb[1]  = 1.0
+	ub[1]  = float(Nvib - 2)
 
 	# x[2] corresponds to the second harmonic oscillator pseudo-frequency
 	ind[2] = 3
@@ -281,9 +281,9 @@ def setupCasePseudo(Nvib, Nrot):
 	x0[0] = 300.0
 	x0[1] = float(math.floor((Nvib - 1) / 2.0))
 	x0[2] = 800.0
-	x0[3] = 1200.0
+	x0[3] = 1600.0
 	x0[4] = 100.0
-	x0[5] = 100.0
+	x0[5] = 300.0
 
 	return x0, lb, ub, ind
 

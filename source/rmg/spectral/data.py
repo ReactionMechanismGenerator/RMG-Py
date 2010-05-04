@@ -263,9 +263,11 @@ def generateSpectralData(struct, thermoData):
 	try:
 		vib, hind = fit.fitSpectralDataToHeatCapacity(struct, Tlist, Cv, numVibrations - len(frequencies), numRotors)
 		for freq, degen in vib:
-			spectralData.modes.append(HarmonicOscillator(frequency=freq, degeneracy=degen))
+			for d in range(degen):
+				spectralData.modes.append(HarmonicOscillator(frequency=freq, degeneracy=1))
 		for freq, barr, degen in hind:
-			spectralData.modes.append(HinderedRotor(frequency=freq, barrier=barr, degeneracy=degen))
+			for d in range(degen):
+				spectralData.modes.append(HinderedRotor(frequency=freq, barrier=barr, degeneracy=1))
 
 		# Check: Does the fitted data reproduce the Cv data?
 		# We use root mean square error per data point as our basis for judging
