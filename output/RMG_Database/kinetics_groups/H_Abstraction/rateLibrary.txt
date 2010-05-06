@@ -23,7 +23,9 @@ Arrhenius_EP
 //257.	O_pri		O_pri_rad			200-700		6.45E-06	5.01	0		0.61	0		0		0		0		3		Masgrau et al. [141] Transition state theory w/tunneling correction.
 //263.	O/H/NonDeC	C_rad/H/NonDeC		300-2500	1.45E+01	3.10	0		10.33	*5.0	0		0		0		4		Tsang [90] literature review.
 //264.	O/H/NonDeC	C_rad/Cs3			300-2500	1.51E+03	1.80	0		9.36	*10.0	0		0		0		4		Tsang [90] literature review.
-
+// (Reverse) Rates for nButanol+HO2=H2O2+radicals
+// (Reverse) Rates for sButanol+HO2=H2O2+radicals
+// (Reverse) Rates for tButanol+HO2=H2O2+radicals
 
 
 //#  Group1             Group2                TempRange         A        n    alpha       E0       DA       Dn   Dalpha      DE0  Rank  Comment
@@ -295,3 +297,12 @@ Arrhenius_EP
 265  O/H/NonDeC           Ct_rad                 300-2500  1.21e+12        0        0        0       *5        0        0        0  4     Tsang [90] literature review.
 266  O/H/NonDeC           O_pri_rad              300-2000      17.3      3.4        0    -1.14        0        0        0        0  2     Jodkowski et al. [100] ab initio calculations.
 267  O/H/NonDeC           O_pri_rad              300-2000     1e+13        0        0      1.7    *3.16        0        0        0  4     Warnatz [134] literature review
+268  H2O2                 InChI=1/C4H9O/c1-2-3-4-5/h5H,1-4H2   600-2000      2.88     3.16        0     0.75        0        0        0        0  3     MRH CBS-QB3 calculations w/o HR corrections
+269  H2O2                 InChI=1/C4H9O/c1-2-3-4-5/h2,5H,3-4H2,1H3   600-2000     0.675     3.42        0     1.43        0        0        0        0  3     MRH CBS-QB3 calculations w/o HR corrections
+270  H2O2                 InChI=1/C4H9O/c1-2-3-4-5/h3,5H,2,4H2,1H3   600-2000     0.315     3.52        0     1.61        0        0        0        0  3     MRH CBS-QB3 calculations w/o HR corrections
+271  H2O2                 InChI=1/C4H9O/c1-2-3-4-5/h4-5H,2-3H2,1H3   600-2000      1.49     3.39        0      1.4        0        0        0        0  3     MRH CBS-QB3 calculations w/o HR corrections
+272  H2O2                 InChI=1/C4H9O/c1-3-4(2)5/h4-5H,1,3H2,2H3   600-2000      5.75     2.94        0     0.46        0        0        0        0  3     MRH CBS-QB3 calculations w/o HR corrections
+273  H2O2                 InChI=1/C4H9O/c1-3-4(2)5/h3-5H,1-2H3   600-2000     0.875     2.91        0    -0.41        0        0        0        0  3     MRH CBS-QB3 calculations w/o HR corrections
+274  H2O2                 InChI=1/C4H9O/c1-3-4(2)5/h5H,3H2,1-2H3   600-2000      17.3     3.05        0     1.02        0        0        0        0  3     MRH CBS-QB3 calculations w/o HR corrections
+275  H2O2                 InChI=1/C4H9O/c1-3-4(2)5/h4-5H,2-3H2,1H3   600-2000     0.305     3.53        0     1.52        0        0        0        0  3     MRH CBS-QB3 calculations w/o HR corrections
+276  H2O2                 InChI=1/C4H9O/c1-4(2,3)5/h5H,1H2,2-3H3   600-2000      0.21     3.53        0     1.56        0        0        0        0  3     MRH CBS-QB3 calculations w/o HR corrections

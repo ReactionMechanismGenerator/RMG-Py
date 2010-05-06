@@ -12,6 +12,7 @@ X_H + Y_rad_birad -> X_rad + Y_H
 
 
 Generated on 7th April 2010 at 17:08
+Generated on 22nd June 2010 at 11:22
 """
 
 reaction_family_name = "H_Abstraction"
@@ -45,7 +46,9 @@ Arrhenius_EP
 //257.	O_pri		O_pri_rad			200-700		6.45E-06	5.01	0		0.61	0		0		0		0		3		Masgrau et al. [141] Transition state theory w/tunneling correction.
 //263.	O/H/NonDeC	C_rad/H/NonDeC		300-2500	1.45E+01	3.10	0		10.33	*5.0	0		0		0		4		Tsang [90] literature review.
 //264.	O/H/NonDeC	C_rad/Cs3			300-2500	1.51E+03	1.80	0		9.36	*10.0	0		0		0		4		Tsang [90] literature review.
-
+// (Reverse) Rates for nButanol+HO2=H2O2+radicals
+// (Reverse) Rates for sButanol+HO2=H2O2+radicals
+// (Reverse) Rates for tButanol+HO2=H2O2+radicals
 
 """
 
@@ -10245,6 +10248,506 @@ O_pri_rad
 CH3OH + OH --> CH3O + H2O
 """,
    history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+)
+
+# Number 269
+rate(
+  group1 = 
+"""
+H2O2
+1 *1 O 0 {2,S} {3,S}
+2 O 0 {1,S} {4,S}
+3 *2 H 0 {1,S}
+4 H 0 {2,S}
+""",
+  group2 = 
+"""
+InChI=1/C4H9O/c1-2-3-4-5/h5H,1-4H2
+1 *3 C 1 {2,S} {6,S} {7,S}
+2 C 0 {1,S} {3,S} {8,S} {9,S}
+3 C 0 {2,S} {4,S} {10,S} {11,S}
+4 C 0 {3,S} {5,S} {12,S} {13,S}
+5 O 0 {4,S} {14,S}
+6 H 0 {1,S}
+7 H 0 {1,S}
+8 H 0 {2,S}
+9 H 0 {2,S}
+10 H 0 {3,S}
+11 H 0 {3,S}
+12 H 0 {4,S}
+13 H 0 {4,S}
+14 H 0 {5,S}
+""",
+  kf = Arrhenius(A=(2.88E+00,A_UNITS,"+-",0.0),
+                 n=(3.16,None,"+-",0.0),
+                 alpha=(0.0,None,"+-",0.0),
+                 E0=(0.75,E_UNITS,"+-",0.0)
+                 ),
+  temperature_range = (600,2000),
+  rank = 3,
+  old_id = "301",
+  short_comment = "MRH CBS-QB3 calculations w/o HR corrections",
+  long_comment = 
+"""
+MRH CBS-QB3 calculations w/o HR corrections
+H2O2 + *CH2CH2CH2CH2OH = nButanol + HO2
+
+CBS-QB3 method was used to calculate electronic energy of reactants, products, and TS; frequencies were
+calculated using B3LYP/CBSB7 method.  Arrhenius expression was computed using CanTherm: an asymmetric Eckart
+tunneling correction was employed and the frequencies were scaled by 0.99 (as suggested by Montgomery et al.
+J.Chem.Phys. 110 (1999) 2822-2827).  The external symmetry number for H2O2 was 2; the external symmetry number
+for the remaining species and TS were set to 1.  The rate coefficient was computed at 600-2000K (in 200 K increments).
+The computed pre-exponential factor was divided by 2 and this is the reported value.
+
+For nButanol+HO2=H2O2+*CH2CH2CH2CH2OH:
+Moc et al. (AIP Conference Proceedings (2009) 1148 161-164 \"The Unimolecular Decomposition
+and H Abstraction Reactions by HO and HO2 from n-Butanol\") report reaction barriers and
+enthalpies(0 K); our CBS-QB3 calculations are shown in comparison (all units are kcal/mol).
+				G3		CCSD(T)/cc-pVTZ		CBS-QB3
+Barrier:		18.8		19.62			17.57
+Enthalpy:		14.25		14.66			13.70
+""",
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
+)
+
+# Number 270
+rate(
+  group1 = 
+"""
+H2O2
+1 *1 O 0 {2,S} {3,S}
+2 O 0 {1,S} {4,S}
+3 *2 H 0 {1,S}
+4 H 0 {2,S}
+""",
+  group2 = 
+"""
+InChI=1/C4H9O/c1-2-3-4-5/h2,5H,3-4H2,1H3
+1 C 0 {2,S} {6,S} {7,S} {8,S}
+2 *3 C 1 {1,S} {3,S} {9,S}
+3 C 0 {2,S} {4,S} {10,S} {11,S}
+4 C 0 {3,S} {5,S} {12,S} {13,S}
+5 O 0 {4,S} {14,S}
+6 H 0 {1,S}
+7 H 0 {1,S}
+8 H 0 {1,S}
+9 H 0 {2,S}
+10 H 0 {3,S}
+11 H 0 {3,S}
+12 H 0 {4,S}
+13 H 0 {4,S}
+14 H 0 {5,S}
+""",
+  kf = Arrhenius(A=(6.75E-01,A_UNITS,"+-",0.0),
+                 n=(3.42,None,"+-",0.0),
+                 alpha=(0.0,None,"+-",0.0),
+                 E0=(1.43,E_UNITS,"+-",0.0)
+                 ),
+  temperature_range = (600,2000),
+  rank = 3,
+  old_id = "302",
+  short_comment = "MRH CBS-QB3 calculations w/o HR corrections",
+  long_comment = 
+"""
+MRH CBS-QB3 calculations w/o HR corrections
+H2O2 + CH3*CHCH2CH2OH = nButanol + HO2
+
+CBS-QB3 method was used to calculate electronic energy of reactants, products, and TS; frequencies were
+calculated using B3LYP/CBSB7 method.  Arrhenius expression was computed using CanTherm: an asymmetric Eckart
+tunneling correction was employed and the frequencies were scaled by 0.99 (as suggested by Montgomery et al.
+J.Chem.Phys. 110 (1999) 2822-2827).  The external symmetry number for H2O2 was 2; the external symmetry number
+for the remaining species and TS were set to 1.  The rate coefficient was computed at 600-2000K (in 200 K increments).
+The computed pre-exponential factor was divided by 2 and this is the reported value.
+
+For nButanol+HO2=H2O2+CH3*CHCH2CH2OH:
+Moc et al. (AIP Conference Proceedings (2009) 1148 161-164 \"The Unimolecular Decomposition
+and H Abstraction Reactions by HO and HO2 from n-Butanol\") report reaction barriers and
+enthalpies(0 K); our CBS-QB3 calculations are shown in comparison (all units are kcal/mol).
+				G3		CCSD(T)/cc-pVTZ		CBS-QB3
+Barrier:		14.64		15.47			14.72
+Enthalpy:		11.05		12.41			10.11
+""",
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
+)
+
+# Number 271
+rate(
+  group1 = 
+"""
+H2O2
+1 *1 O 0 {2,S} {3,S}
+2 O 0 {1,S} {4,S}
+3 *2 H 0 {1,S}
+4 H 0 {2,S}
+""",
+  group2 = 
+"""
+InChI=1/C4H9O/c1-2-3-4-5/h3,5H,2,4H2,1H3
+1 C 0 {2,S} {6,S} {7,S} {8,S}
+2 C 0 {1,S} {3,S} {9,S} {10,S}
+3 *3 C 1 {2,S} {4,S} {11,S}
+4 C 0 {3,S} {5,S} {12,S} {13,S}
+5 O 0 {4,S} {14,S}
+6 H 0 {1,S}
+7 H 0 {1,S}
+8 H 0 {1,S}
+9 H 0 {2,S}
+10 H 0 {2,S}
+11 H 0 {3,S}
+12 H 0 {4,S}
+13 H 0 {4,S}
+14 H 0 {5,S}
+""",
+  kf = Arrhenius(A=(3.145E-01,A_UNITS,"+-",0.0),
+                 n=(3.52,None,"+-",0.0),
+                 alpha=(0.0,None,"+-",0.0),
+                 E0=(1.61,E_UNITS,"+-",0.0)
+                 ),
+  temperature_range = (600,2000),
+  rank = 3,
+  old_id = "303",
+  short_comment = "MRH CBS-QB3 calculations w/o HR corrections",
+  long_comment = 
+"""
+MRH CBS-QB3 calculations w/o HR corrections
+H2O2 + CH3CH2*CHCH2OH = nButanol + HO2
+
+CBS-QB3 method was used to calculate electronic energy of reactants, products, and TS; frequencies were
+calculated using B3LYP/CBSB7 method.  Arrhenius expression was computed using CanTherm: an asymmetric Eckart
+tunneling correction was employed and the frequencies were scaled by 0.99 (as suggested by Montgomery et al.
+J.Chem.Phys. 110 (1999) 2822-2827).  The external symmetry number for H2O2 was 2; the external symmetry number
+for the remaining species and TS were set to 1.  The rate coefficient was computed at 600-2000K (in 200 K increments).
+The computed pre-exponential factor was divided by 2 and this is the reported value.
+
+For nButanol+HO2=H2O2+CH3CH2*CHCH2OH:
+Moc et al. (AIP Conference Proceedings (2009) 1148 161-164 \"The Unimolecular Decomposition
+and H Abstraction Reactions by HO and HO2 from n-Butanol\") report reaction barriers and
+enthalpies(0 K); our CBS-QB3 calculations are shown in comparison (all units are kcal/mol).
+				G3		CCSD(T)/cc-pVTZ		CBS-QB3
+Barrier:		15.43		16.37			16.33
+Enthalpy:		13.53		14.02			11.48
+""",
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
+)
+
+# Number 272
+rate(
+  group1 = 
+"""
+H2O2
+1 *1 O 0 {2,S} {3,S}
+2 O 0 {1,S} {4,S}
+3 *2 H 0 {1,S}
+4 H 0 {2,S}
+""",
+  group2 = 
+"""
+InChI=1/C4H9O/c1-2-3-4-5/h4-5H,2-3H2,1H3
+1 C 0 {2,S} {6,S} {7,S} {8,S}
+2 C 0 {1,S} {3,S} {9,S} {10,S}
+3 C 0 {2,S} {4,S} {11,S} {12,S}
+4 *3 C 1 {3,S} {5,S} {13,S}
+5 O 0 {4,S} {14,S}
+6 H 0 {1,S}
+7 H 0 {1,S}
+8 H 0 {1,S}
+9 H 0 {2,S}
+10 H 0 {2,S}
+11 H 0 {3,S}
+12 H 0 {3,S}
+13 H 0 {4,S}
+14 H 0 {5,S}
+""",
+  kf = Arrhenius(A=(1.485E+00,A_UNITS,"+-",0.0),
+                 n=(3.39,None,"+-",0.0),
+                 alpha=(0.0,None,"+-",0.0),
+                 E0=(1.40,E_UNITS,"+-",0.0)
+                 ),
+  temperature_range = (600,2000),
+  rank = 3,
+  old_id = "304",
+  short_comment = "MRH CBS-QB3 calculations w/o HR corrections",
+  long_comment = 
+"""
+MRH CBS-QB3 calculations w/o HR corrections
+H2O2 + CH3CH2CH2*CHOH = nButanol + HO2
+
+CBS-QB3 method was used to calculate electronic energy of reactants, products, and TS; frequencies were
+calculated using B3LYP/CBSB7 method.  Arrhenius expression was computed using CanTherm: an asymmetric Eckart
+tunneling correction was employed and the frequencies were scaled by 0.99 (as suggested by Montgomery et al.
+J.Chem.Phys. 110 (1999) 2822-2827).  The external symmetry number for H2O2 was 2; the external symmetry number
+for the remaining species and TS were set to 1.  The rate coefficient was computed at 600-2000K (in 200 K increments).
+The computed pre-exponential factor was divided by 2 and this is the reported value.
+
+For nButanol+HO2=H2O2+CH3CH2CH2*CHOH:
+Moc et al. (AIP Conference Proceedings (2009) 1148 161-164 \"The Unimolecular Decomposition
+and H Abstraction Reactions by HO and HO2 from n-Butanol\") report reaction barriers and
+enthalpies(0 K); our CBS-QB3 calculations are shown in comparison (all units are kcal/mol).
+				G3		CCSD(T)/cc-pVTZ		CBS-QB3
+Barrier:		12.62		13.23			11.74
+Enthalpy:		 8.35		 8.63			 7.17
+""",
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
+)
+
+# Number 273
+rate(
+  group1 = 
+"""
+H2O2
+1 *1 O 0 {2,S} {3,S}
+2 O 0 {1,S} {4,S}
+3 *2 H 0 {1,S}
+4 H 0 {2,S}
+""",
+  group2 = 
+"""
+InChI=1/C4H9O/c1-3-4(2)5/h4-5H,1,3H2,2H3
+1 *3 C 1 {3,S} {6,S} {7,S}
+2 C 0 {4,S} {8,S} {9,S} {10,S}
+3 C 0 {1,S} {4,S} {11,S} {12,S}
+4 C 0 {2,S} {3,S} {5,S} {13,S}
+5 O 0 {4,S} {14,S}
+6 H 0 {1,S}
+7 H 0 {1,S}
+8 H 0 {2,S}
+9 H 0 {2,S}
+10 H 0 {2,S}
+11 H 0 {3,S}
+12 H 0 {3,S}
+13 H 0 {4,S}
+14 H 0 {5,S}
+""",
+  kf = Arrhenius(A=(5.75E+00,A_UNITS,"+-",0.0),
+                 n=(2.94,None,"+-",0.0),
+                 alpha=(0.0,None,"+-",0.0),
+                 E0=(0.46,E_UNITS,"+-",0.0)
+                 ),
+  temperature_range = (600,2000),
+  rank = 3,
+  old_id = "305",
+  short_comment = "MRH CBS-QB3 calculations w/o HR corrections",
+  long_comment = 
+"""
+MRH CBS-QB3 calculations w/o HR corrections
+H2O2 + *CH2CH2CH[OH]CH3 = 2-Butanol + HO2
+
+CBS-QB3 method was used to calculate electronic energy of reactants, products, and TS; frequencies were
+calculated using B3LYP/CBSB7 method.  Arrhenius expression was computed using CanTherm: an asymmetric Eckart
+tunneling correction was employed and the frequencies were scaled by 0.99 (as suggested by Montgomery et al.
+J.Chem.Phys. 110 (1999) 2822-2827).  The external symmetry number for H2O2 was 2; the external symmetry number
+for the remaining species and TS were set to 1.  The rate coefficient was computed at 600-2000K (in 200 K increments).
+The computed pre-exponential factor was divided by 2 and this is the reported value.
+""",
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
+)
+
+# Number 274
+rate(
+  group1 = 
+"""
+H2O2
+1 *1 O 0 {2,S} {3,S}
+2 O 0 {1,S} {4,S}
+3 *2 H 0 {1,S}
+4 H 0 {2,S}
+""",
+  group2 = 
+"""
+InChI=1/C4H9O/c1-3-4(2)5/h3-5H,1-2H3
+1 C 0 {3,S} {6,S} {7,S} {8,S}
+2 C 0 {4,S} {9,S} {10,S} {11,S}
+3 *3 C 1 {1,S} {4,S} {12,S}
+4 C 0 {2,S} {3,S} {5,S} {13,S}
+5 O 0 {4,S} {14,S}
+6 H 0 {1,S}
+7 H 0 {1,S}
+8 H 0 {1,S}
+9 H 0 {2,S}
+10 H 0 {2,S}
+11 H 0 {2,S}
+12 H 0 {3,S}
+13 H 0 {4,S}
+14 H 0 {5,S}
+""",
+  kf = Arrhenius(A=(8.75E-01,A_UNITS,"+-",0.0),
+                 n=(2.91,None,"+-",0.0),
+                 alpha=(0.0,None,"+-",0.0),
+                 E0=(-0.41,E_UNITS,"+-",0.0)
+                 ),
+  temperature_range = (600,2000),
+  rank = 3,
+  old_id = "306",
+  short_comment = "MRH CBS-QB3 calculations w/o HR corrections",
+  long_comment = 
+"""
+MRH CBS-QB3 calculations w/o HR corrections
+H2O2 + CH3*CHCH[OH]CH3 = 2-Butanol + HO2
+
+CBS-QB3 method was used to calculate electronic energy of reactants, products, and TS; frequencies were
+calculated using B3LYP/CBSB7 method.  Arrhenius expression was computed using CanTherm: an asymmetric Eckart
+tunneling correction was employed and the frequencies were scaled by 0.99 (as suggested by Montgomery et al.
+J.Chem.Phys. 110 (1999) 2822-2827).  The external symmetry number for H2O2 was 2; the external symmetry number
+for the remaining species and TS were set to 1.  The rate coefficient was computed at 600-2000K (in 200 K increments).
+The computed pre-exponential factor was divided by 2 and this is the reported value.
+""",
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
+)
+
+# Number 275
+rate(
+  group1 = 
+"""
+H2O2
+1 *1 O 0 {2,S} {3,S}
+2 O 0 {1,S} {4,S}
+3 *2 H 0 {1,S}
+4 H 0 {2,S}
+""",
+  group2 = 
+"""
+InChI=1/C4H9O/c1-3-4(2)5/h5H,3H2,1-2H3
+1 C 0 {3,S} {6,S} {7,S} {8,S}
+2 C 0 {4,S} {9,S} {10,S} {11,S}
+3 C 0 {1,S} {4,S} {12,S} {13,S}
+4 *3 C 1 {2,S} {3,S} {5,S}
+5 O 0 {4,S} {14,S}
+6 H 0 {1,S}
+7 H 0 {1,S}
+8 H 0 {1,S}
+9 H 0 {2,S}
+10 H 0 {2,S}
+11 H 0 {2,S}
+12 H 0 {3,S}
+13 H 0 {3,S}
+14 H 0 {5,S}
+""",
+  kf = Arrhenius(A=(1.73E+01,A_UNITS,"+-",0.0),
+                 n=(3.05,None,"+-",0.0),
+                 alpha=(0.0,None,"+-",0.0),
+                 E0=(1.02,E_UNITS,"+-",0.0)
+                 ),
+  temperature_range = (600,2000),
+  rank = 3,
+  old_id = "307",
+  short_comment = "MRH CBS-QB3 calculations w/o HR corrections",
+  long_comment = 
+"""
+MRH CBS-QB3 calculations w/o HR corrections
+H2O2 + CH3CH2*C[OH]CH3 = 2-Butanol + HO2
+
+CBS-QB3 method was used to calculate electronic energy of reactants, products, and TS; frequencies were
+calculated using B3LYP/CBSB7 method.  Arrhenius expression was computed using CanTherm: an asymmetric Eckart
+tunneling correction was employed and the frequencies were scaled by 0.99 (as suggested by Montgomery et al.
+J.Chem.Phys. 110 (1999) 2822-2827).  The external symmetry number for H2O2 was 2; the external symmetry number
+for the remaining species and TS were set to 1.  The rate coefficient was computed at 600-2000K (in 200 K increments).
+The computed pre-exponential factor was divided by 2 and this is the reported value.
+""",
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
+)
+
+# Number 276
+rate(
+  group1 = 
+"""
+H2O2
+1 *1 O 0 {2,S} {3,S}
+2 O 0 {1,S} {4,S}
+3 *2 H 0 {1,S}
+4 H 0 {2,S}
+""",
+  group2 = 
+"""
+InChI=1/C4H9O/c1-3-4(2)5/h4-5H,2-3H2,1H3
+1 C 0 {3,S} {6,S} {7,S} {8,S}
+2 *3 C 1 {4,S} {9,S} {10,S}
+3 C 0 {1,S} {4,S} {11,S} {12,S}
+4 C 0 {2,S} {3,S} {5,S} {13,S}
+5 O 0 {4,S} {14,S}
+6 H 0 {1,S}
+7 H 0 {1,S}
+8 H 0 {1,S}
+9 H 0 {2,S}
+10 H 0 {2,S}
+11 H 0 {3,S}
+12 H 0 {3,S}
+13 H 0 {4,S}
+14 H 0 {5,S}
+""",
+  kf = Arrhenius(A=(3.055E-01,A_UNITS,"+-",0.0),
+                 n=(3.53,None,"+-",0.0),
+                 alpha=(0.0,None,"+-",0.0),
+                 E0=(1.52,E_UNITS,"+-",0.0)
+                 ),
+  temperature_range = (600,2000),
+  rank = 3,
+  old_id = "308",
+  short_comment = "MRH CBS-QB3 calculations w/o HR corrections",
+  long_comment = 
+"""
+MRH CBS-QB3 calculations w/o HR corrections
+H2O2 + CH3CH2CH[OH]*CH2 = 2-Butanol + HO2
+
+CBS-QB3 method was used to calculate electronic energy of reactants, products, and TS; frequencies were
+calculated using B3LYP/CBSB7 method.  Arrhenius expression was computed using CanTherm: an asymmetric Eckart
+tunneling correction was employed and the frequencies were scaled by 0.99 (as suggested by Montgomery et al.
+J.Chem.Phys. 110 (1999) 2822-2827).  The external symmetry number for H2O2 was 2; the external symmetry number
+for the remaining species and TS were set to 1.  The rate coefficient was computed at 600-2000K (in 200 K increments).
+The computed pre-exponential factor was divided by 2 and this is the reported value.
+""",
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
+)
+
+# Number 277
+rate(
+  group1 = 
+"""
+H2O2
+1 *1 O 0 {2,S} {3,S}
+2 O 0 {1,S} {4,S}
+3 *2 H 0 {1,S}
+4 H 0 {2,S}
+""",
+  group2 = 
+"""
+InChI=1/C4H9O/c1-4(2,3)5/h5H,1H2,2-3H3
+1 *3 C 1 {4,S} {6,S} {7,S}
+2 C 0 {4,S} {8,S} {9,S} {10,S}
+3 C 0 {4,S} {11,S} {12,S} {13,S}
+4 C 0 {1,S} {2,S} {3,S} {5,S}
+5 O 0 {4,S} {14,S}
+6 H 0 {1,S}
+7 H 0 {1,S}
+8 H 0 {2,S}
+9 H 0 {2,S}
+10 H 0 {2,S}
+11 H 0 {3,S}
+12 H 0 {3,S}
+13 H 0 {3,S}
+14 H 0 {5,S}
+""",
+  kf = Arrhenius(A=(2.100E-01,A_UNITS,"+-",0.0),
+                 n=(3.53,None,"+-",0.0),
+                 alpha=(0.0,None,"+-",0.0),
+                 E0=(1.56,E_UNITS,"+-",0.0)
+                 ),
+  temperature_range = (600,2000),
+  rank = 3,
+  old_id = "309",
+  short_comment = "MRH CBS-QB3 calculations w/o HR corrections",
+  long_comment = 
+"""
+MRH CBS-QB3 calculations w/o HR corrections
+H2O2 + HOC[*CH2][CH3][CH3] = tert-Butanol + HO2
+
+CBS-QB3 method was used to calculate electronic energy of reactants, products, and TS; frequencies were
+calculated using B3LYP/CBSB7 method.  Arrhenius expression was computed using CanTherm: an asymmetric Eckart
+tunneling correction was employed and the frequencies were scaled by 0.99 (as suggested by Montgomery et al.
+J.Chem.Phys. 110 (1999) 2822-2827).  The external symmetry number for H2O2 was 2; the external symmetry number
+for the remaining species and TS were set to 1.  The rate coefficient was computed at 600-2000K (in 200 K increments).
+The computed pre-exponential factor was divided by 2 and this is the reported value.
+""",
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
 
