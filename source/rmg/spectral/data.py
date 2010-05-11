@@ -243,7 +243,7 @@ def generateSpectralData(struct, thermoData):
 
 	# Subtract out contributions to heat capacity from the characteristic modes
 	import numpy
-	Tlist = numpy.array([300.0, 400.0, 500.0, 600.0, 800.0, 1000.0, 1500.0])
+	Tlist = numpy.arange(300.0, 1501.0, 100.0, numpy.float64)
 	Cp = [thermoData.getHeatCapacity(T) for T in Tlist]
 	Cv = numpy.array(Cp) / constants.R
 	for mode in spectralData.modes:

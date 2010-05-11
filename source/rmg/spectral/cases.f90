@@ -111,8 +111,8 @@ subroutine fit_modes(x0, nx, bl, bu, ind, maxiter, xout, igo)
     external casePseudoRot
 
     ! These variables are required by the nonlinear solver
-    integer, parameter :: lwork = 785
-    integer, parameter :: liwork = 103
+    integer, parameter :: lwork = 3000
+    integer, parameter :: liwork = 500
     real(8) :: fj(nT,nvars+1)
     real(8) :: fnorm
     integer :: iopt(24)

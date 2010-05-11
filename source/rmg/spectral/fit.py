@@ -99,6 +99,18 @@ def fitSpectralDataToHeatCapacity(struct, Tlist, Cvlist, Nvib, Nrot):
 	rotor modes.
 	"""
 
+	# You must specify at least 7 heat capacity points to use in the fitting;
+	# you can specify as many as you like above that minimum
+	if len(Tlist) < 7:
+		raise Exception('Unable to fit spectral data; you need to specify at least 7 heat capacity points.')
+
+	# The number of optimization variables available is constrained to be less
+	# than the number of heat capacity points
+	# This is also capped to a (somewhat arbitrarily chosen) maximum of 16
+	maxVariables = len(Tlist) - 1
+	if maxVariables > 16:
+		maxVariables = 16
+
 	# Setup the initial guess and the bounds for the solver variables
 	# The format of the variables depends on the numbers of oscillators and 
 	# rotors being fitted:
@@ -109,12 +121,11 @@ def fitSpectralDataToHeatCapacity(struct, Tlist, Cvlist, Nvib, Nrot):
 	#		pseudo-oscillators and/or pseudo-rotors
 	if Nvib <= 0 and Nrot <= 0:
 		return [], []
-	elif Nvib + 2 * Nrot < len(Tlist):
+	elif Nvib + 2 * Nrot <= maxVariables:
+		print 'Using case direct for %s' % struct
 		x0, bl, bu, ind = setupCaseDirect(Nvib, Nrot)
-	elif Nvib + 2 < len(Tlist):
+	elif Nvib + 2 <= maxVariables:
 		x0, bl, bu, ind = setupCasePseudoRot(Nvib, Nrot)
-	elif len(Tlist) < 7:
-		raise Exception('Unable to fit spectral data; you need to specify at least 7 heat capacity points.')
 	else:
 		x0, bl, bu, ind = setupCasePseudo(Nvib, Nrot)
 
@@ -154,9 +165,9 @@ def fitSpectralDataToHeatCapacity(struct, Tlist, Cvlist, Nvib, Nrot):
 	# The procedure for doing this depends on the content of the solution
 	# vector, which itself depends on the number of oscillators and rotors
 	# being fitted
-	if Nvib + 2 * Nrot < len(Tlist):
+	if Nvib + 2 * Nrot <= maxVariables:
 		vib, rot = postprocessCaseDirect(Nvib, Nrot, x)
-	elif Nvib + 2 < len(Tlist):
+	elif Nvib + 2 <= maxVariables:
 		vib, rot = postprocessCasePseudoRot(Nvib, Nrot, x)
 	else:
 		vib, rot = postprocessCasePseudo(Nvib, Nrot, x)
@@ -342,11 +353,10 @@ def setupCasePseudoRot(Nvib, Nrot):
 	# Initial guess for harmonic oscillators
 	if Nvib > 0:
 		x0[0] = 200.0
-		for i in range(1, Nvib):
-			x0[i] = x0[i-1] + 400.0
+		x0[1:Nvib] = numpy.linspace(800.0, 1600.0, Nvib-1)
 	# Initial guess for hindered pseudo-rotors
 	x0[-2] = 100.0
-	x0[-1] = 100.0
+	x0[-1] = 300.0
 
 	return x0, lb, ub, ind
 
