@@ -600,8 +600,8 @@ class CoreEdgeReactionModel:
 		import os.path
 		import quantities as pq
 		import data
-		import species
-		import kinetics
+		import thermo.data
+		import kinetics.data
 		import reaction
 		
 		# Load the species data from the file species.txt
@@ -612,15 +612,15 @@ class CoreEdgeReactionModel:
 		
 		# Load the thermo data from the file thermo.txt
 		# This file has the format of a standard RMG thermo library
-		thermoData = species.ThermoDatabase()
+		thermoData = thermo.data.ThermoDatabase()
 		thermoData.load(os.path.join(path, 'species.txt'), '', os.path.join(path, 'thermo.txt'))
 		# Populate the main primary thermo library with this thermo data
 		# This will overwrite keys (but not values), so the order that the
 		# seed mechanisms are loaded matters!
 		for key, value in d.iteritems():
-			species.thermoDatabase.primaryDatabase.dictionary[key] = value
+			thermo.data.thermoDatabase.primaryDatabase.dictionary[key] = value
 		for key, value in thermoData.library.iteritems():
-			species.thermoDatabase.primaryDatabase.library[key] = value
+			thermo.data.thermoDatabase.primaryDatabase.library[key] = value
 
 		# Create new species based on items in species.txt
 		seedSpeciesDict = {}; seedSpeciesList = []
