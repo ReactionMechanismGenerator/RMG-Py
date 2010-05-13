@@ -883,6 +883,8 @@ Richard West. (Updated accordingly).
 These numbers reported by Curran et al. were apparently taken from
 N. Cohen, *Intl. J. Chem. Kinet.* 14 (1982), p. 1339 http://dx.doi.org/10.1002/kin.550141206
 
+Rate expression is changed to per H.(divided by 3)
+Yushi Suzuki
 
 ---
 143
@@ -897,6 +899,10 @@ Verified by Karma James
 
 These numbers reported by Curran et al. were apparently taken from
 N. Cohen, *Intl. J. Chem. Kinet.* 14 (1982), p. 1339 http://dx.doi.org/10.1002/kin.550141206
+
+
+Rate expression is changed to per H.(divided by 2)
+Yushi Suzuki
 
 ---
 144
@@ -922,6 +928,10 @@ pg 257 A Comprehensive Modelling Study of iso-Octane Oxidation, Table 1. Radical
 
 Verified by Karma James
 
+Rate expression is changed to per H.(divided by 9)
+Yushi Suzuki
+
+
 ---
 146
 ---
@@ -932,6 +942,9 @@ pg 257 A Comprehensive Modelling Study of iso-Octane Oxidation, Table 1. Radical
 
 Verified by Karma James
 
+
+Rate expression is changed to per H.(divided by 2)
+Yushi Suzuki
 
 ---
 147
@@ -944,6 +957,12 @@ pg 257 A Comprehensive Modelling Study of iso-Octane Oxidation, Table 1. Radical
 Verified by Karma James
 
 
+This rate parameter actually comes from following new mechanism for PRF.
+
+https://www-pls.llnl.gov/data/docs/science_and_technology/chemistry/combustion/prf_2d_mech.txt
+
+Yushi Suzuki
+
 ---
 148
 ---
@@ -953,6 +972,8 @@ Rate expressions for H atom abstraction from fuels.
 pg 257 A Comprehensive Modelling Study of iso-Octane Oxidation, Table 1. Radical:HO2, Site: primary (a)
 Verified by Karma James
 
+Rate expression is changed to per H.(divided by 9)
+Yushi Suzuki
 
 ---
 149
@@ -964,6 +985,8 @@ pg 257 A Comprehensive Modelling Study of iso-Octane Oxidation, Table 1. Radical
 
 Verified by Karma James
 
+Rate expression is changed to per H.(divided by 2)
+Yushi Suzuki
 
 ---
 150
@@ -986,6 +1009,8 @@ pg 257 A Comprehensive Modelling Study of iso-Octane Oxidation, Table 1. Radical
 
 Verified by Karma James
 
+Rate expression is changed to per H.(divided by 9)
+Yushi Suzuki
 
 ---
 152
@@ -997,6 +1022,8 @@ pg 257 A Comprehensive Modelling Study of iso-Octane Oxidation, Table 1. Radical
 
 Verified by Karma James
 
+Rate expression is changed to per H.(divided by 2)
+Yushi Suzuki
 
 ---
 153
@@ -1009,6 +1036,7 @@ pg 257 A Comprehensive Modelling Study of iso-Octane Oxidation, Table 1. Radical
 Verified by Karma James	 
 
 
+
 ---
 154
 ---
@@ -1019,6 +1047,8 @@ pg 257 A Comprehensive Modelling Study of iso-Octane Oxidation, Table 1. Radical
 
 Verified by Karma James
 
+Rate expression is changed to per H.(divided by 9)
+Yushi Suzuki
 
 ---
 155
@@ -1030,6 +1060,8 @@ pg 257 A Comprehensive Modelling Study of iso-Octane Oxidation, Table 1. Radical
 
 Verified by Karma James
 
+Rate expression is changed to per H.(divided by 2)
+Yushi Suzuki
 
 ---
 156

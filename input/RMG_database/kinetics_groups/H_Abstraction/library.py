@@ -13,6 +13,7 @@ X_H + Y_rad_birad -> X_rad + Y_H
 
 Generated on 7th April 2010 at 17:08
 Generated on 22nd June 2010 at 11:22
+Generated on 22nd June 2010 at 12:28
 """
 
 reaction_family_name = "H_Abstraction"
@@ -35,7 +36,7 @@ Arrhenius_EP
 
 //f01_intermolecular_HA
 //No.	XH			Y_rad				Temp.		A			n		a		E0		DA		Dn		Da		DE0		Rank	Comments
-//142.	C/H3/Cs		O_pri_rad			300-1500	2.63E+07	1.80	0		0.278	0		0		0		0		5		Curran et al. [8] Rate expressions for H atom abstraction from fuels.	
+//142.	C/H3/Cs		O_pri_rad			300-1500	2.92E+06	1.80	0		0.278	0		0		0		0		5		Curran et al. [8] Rate expressions for H atom abstraction from fuels. (changed to per H)	
 //208.	Cd_pri		CO_birad			300-2500	3.78E+13	0		0		90.62	*5.0	0		0		0		4		Tsang [89] literature review.
 //213.	Cd/H/NonDeC	H_rad				300-2500	2.37E+00	0		0		7.31	*5.0	0		0		0		4		Tsang [93] literature review.
 //214.	Cd/H/NonDeC	C_methyl			300-2500	3.8E-01		0		0		5.98	*100.0	0		0		0		4		Tsang [93] literature review.
@@ -4958,7 +4959,7 @@ O_pri_rad
 1 *3 O 1 {2,S}
 2 H 0 {1,S}
 """,
-  kf = Arrhenius(A=(1.78E+07,A_UNITS,"+-",0.0),
+  kf = Arrhenius(A=(5.93E+06,A_UNITS,"+-",0.0),
                  n=(1.80,None,"+-",0.0),
                  alpha=(0,None,"+-",0.0),
                  E0=(1.431,E_UNITS,"+-",0.0)
@@ -4966,7 +4967,7 @@ O_pri_rad
   temperature_range = (300,1500),
   rank = 5,
   old_id = "142",
-  short_comment = "Curran et al. [8] Rate expressions for H atom abstraction from fuels. Fixed by RWest",
+  short_comment = "Curran et al. [8] Rate expressions for H atom abstraction from fuels. Fixed by RWest (changed to per H)",
   long_comment = 
 """
 [8] Curran, H.J.; Gaffuri, P.; Pit z, W.J.; Westbrook, C.K. Combust. Flame 2002, 129, 253. http://dx.doi.org/10.1016/S0010-2180(01)00373-X
@@ -4981,8 +4982,11 @@ Richard West. (Updated accordingly).
 
 These numbers reported by Curran et al. were apparently taken from
 N. Cohen, *Intl. J. Chem. Kinet.* 14 (1982), p. 1339 http://dx.doi.org/10.1002/kin.550141206
+
+Rate expression is changed to per H.(divided by 3)
+Yushi Suzuki
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
 # Number 144
@@ -5002,7 +5006,7 @@ O_pri_rad
 1 *3 O 1 {2,S}
 2 H 0 {1,S}
 """,
-  kf = Arrhenius(A=(9.00E+05,A_UNITS,"+-",0.0),
+  kf = Arrhenius(A=(4.50E+05,A_UNITS,"+-",0.0),
                  n=(2.00,None,"+-",0.0),
                  alpha=(0,None,"+-",0.0),
                  E0=(-1.133,E_UNITS,"+-",0.0)
@@ -5010,7 +5014,7 @@ O_pri_rad
   temperature_range = (300,1500),
   rank = 5,
   old_id = "143",
-  short_comment = "Curran et al. [8] Rate expressions for H atom abstraction from fuels.",
+  short_comment = "Curran et al. [8] Rate expressions for H atom abstraction from fuels. (changed to per H)",
   long_comment = 
 """
 [8] Curran, H.J.; Gaffuri, P.; Pit z, W.J.; Westbrook, C.K. Combust. Flame 2002, 129, 253.
@@ -5023,8 +5027,12 @@ Verified by Karma James
 
 These numbers reported by Curran et al. were apparently taken from
 N. Cohen, *Intl. J. Chem. Kinet.* 14 (1982), p. 1339 http://dx.doi.org/10.1002/kin.550141206
+
+
+Rate expression is changed to per H.(divided by 2)
+Yushi Suzuki
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
 # Number 145
@@ -5085,7 +5093,7 @@ C/H3/Cs
 O_atom_triplet
 1 *3 O 2T
 """,
-  kf = Arrhenius(A=(8.55E+03,A_UNITS,"+-",0.0),
+  kf = Arrhenius(A=(9.50E+02,A_UNITS,"+-",0.0),
                  n=(3.05,None,"+-",0.0),
                  alpha=(0,None,"+-",0.0),
                  E0=(3.123,E_UNITS,"+-",0.0)
@@ -5093,7 +5101,7 @@ O_atom_triplet
   temperature_range = (300,1500),
   rank = 5,
   old_id = "145",
-  short_comment = "Curran et al. [8] Rate expressions for H atom abstraction from fuels.",
+  short_comment = "Curran et al. [8] Rate expressions for H atom abstraction from fuels. (changed to per H)",
   long_comment = 
 """
 [8] Curran, H.J.; Gaffuri, P.; Pit z, W.J.; Westbrook, C.K. Combust. Flame 2002, 129, 253.
@@ -5102,8 +5110,11 @@ Rate expressions for H atom abstraction from fuels.
 pg 257 A Comprehensive Modelling Study of iso-Octane Oxidation, Table 1. Radical:O, Site: primary (a)
 
 Verified by Karma James
+
+Rate expression is changed to per H.(divided by 9)
+Yushi Suzuki
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
 # Number 147
@@ -5122,7 +5133,7 @@ C/H2/NonDeC
 O_atom_triplet
 1 *3 O 2T
 """,
-  kf = Arrhenius(A=(4.77E+04,A_UNITS,"+-",0.0),
+  kf = Arrhenius(A=(2.39E+04,A_UNITS,"+-",0.0),
                  n=(2.71,None,"+-",0.0),
                  alpha=(0,None,"+-",0.0),
                  E0=(2.106,E_UNITS,"+-",0.0)
@@ -5130,7 +5141,7 @@ O_atom_triplet
   temperature_range = (300,1500),
   rank = 5,
   old_id = "146",
-  short_comment = "Curran et al. [8] Rate expressions for H atom abstraction from fuels.",
+  short_comment = "Curran et al. [8] Rate expressions for H atom abstraction from fuels. (changed to per H)",
   long_comment = 
 """
 [8] Curran, H.J.; Gaffuri, P.; Pit z, W.J.; Westbrook, C.K. Combust. Flame 2002, 129, 253.
@@ -5139,8 +5150,12 @@ Rate expressions for H atom abstraction from fuels.
 pg 257 A Comprehensive Modelling Study of iso-Octane Oxidation, Table 1. Radical:O, Site: secondary (b)
 
 Verified by Karma James
+
+
+Rate expression is changed to per H.(divided by 2)
+Yushi Suzuki
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
 # Number 148
@@ -5162,7 +5177,7 @@ O_atom_triplet
   kf = Arrhenius(A=(3.83E+05,A_UNITS,"+-",0.0),
                  n=(2.41,None,"+-",0.0),
                  alpha=(0,None,"+-",0.0),
-                 E0=(0.893,E_UNITS,"+-",0.0)
+                 E0=(1.140,E_UNITS,"+-",0.0)
                  ),
   temperature_range = (300,1500),
   rank = 5,
@@ -5176,8 +5191,15 @@ Rate expressions for H atom abstraction from fuels.
 pg 257 A Comprehensive Modelling Study of iso-Octane Oxidation, Table 1. Radical:O, Site: tertiary (c)
 
 Verified by Karma James
+
+
+This rate parameter actually comes from following new mechanism for PRF.
+
+https://www-pls.llnl.gov/data/docs/science_and_technology/chemistry/combustion/prf_2d_mech.txt
+
+Yushi Suzuki
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
 # Number 149
@@ -5197,7 +5219,7 @@ O_rad/NonDeO
 1 *3 O 1 {2,S}
 2    O 0 {1,S}
 """,
-  kf = Arrhenius(A=(2.52E+13,A_UNITS,"+-",0.0),
+  kf = Arrhenius(A=(2.80E+12,A_UNITS,"+-",0.0),
                  n=(0,None,"+-",0.0),
                  alpha=(0,None,"+-",0.0),
                  E0=(20.435,E_UNITS,"+-",0.0)
@@ -5205,7 +5227,7 @@ O_rad/NonDeO
   temperature_range = (300,1500),
   rank = 5,
   old_id = "148",
-  short_comment = "Curran et al. [8] Rate expressions for H atom abstraction from fuels.",
+  short_comment = "Curran et al. [8] Rate expressions for H atom abstraction from fuels. (changed to per H)",
   long_comment = 
 """
 [8] Curran, H.J.; Gaffuri, P.; Pit z, W.J.; Westbrook, C.K. Combust. Flame 2002, 129, 253.
@@ -5213,8 +5235,11 @@ Rate expressions for H atom abstraction from fuels.
 
 pg 257 A Comprehensive Modelling Study of iso-Octane Oxidation, Table 1. Radical:HO2, Site: primary (a)
 Verified by Karma James
+
+Rate expression is changed to per H.(divided by 9)
+Yushi Suzuki
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
 # Number 150
@@ -5234,7 +5259,7 @@ O_rad/NonDeO
 1 *3 O 1 {2,S}
 2    O 0 {1,S}
 """,
-  kf = Arrhenius(A=(5.60E+12,A_UNITS,"+-",0.0),
+  kf = Arrhenius(A=(2.80E+12,A_UNITS,"+-",0.0),
                  n=(0,None,"+-",0.0),
                  alpha=(0,None,"+-",0.0),
                  E0=(17.686,E_UNITS,"+-",0.0)
@@ -5242,7 +5267,7 @@ O_rad/NonDeO
   temperature_range = (300,1500),
   rank = 5,
   old_id = "149",
-  short_comment = "Curran et al. [8] Rate expressions for H atom abstraction from fuels.",
+  short_comment = "Curran et al. [8] Rate expressions for H atom abstraction from fuels. (changed to per H)",
   long_comment = 
 """
 [8] Curran, H.J.; Gaffuri, P.; Pit z, W.J.; Westbrook, C.K. Combust. Flame 2002, 129, 253.
@@ -5251,8 +5276,11 @@ Rate expressions for H atom abstraction from fuels.
 pg 257 A Comprehensive Modelling Study of iso-Octane Oxidation, Table 1. Radical:HO2, Site: secondary (b)
 
 Verified by Karma James
+
+Rate expression is changed to per H.(divided by 2)
+Yushi Suzuki
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
 # Number 151
@@ -5310,7 +5338,7 @@ O_rad/NonDeC
 1 *3 O 1 {2,S}
 2 Cs 0 {1,S}
 """,
-  kf = Arrhenius(A=(4.74E+11,A_UNITS,"+-",0.0),
+  kf = Arrhenius(A=(5.27E+10,A_UNITS,"+-",0.0),
                  n=(0,None,"+-",0.0),
                  alpha=(0,None,"+-",0.0),
                  E0=(7.000,E_UNITS,"+-",0.0)
@@ -5318,7 +5346,7 @@ O_rad/NonDeC
   temperature_range = (300,1500),
   rank = 5,
   old_id = "151",
-  short_comment = "Curran et al. [8] Rate expressions for H atom abstraction from fuels.",
+  short_comment = "Curran et al. [8] Rate expressions for H atom abstraction from fuels. (changed to per H)",
   long_comment = 
 """
 [8] Curran, H.J.; Gaffuri, P.; Pit z, W.J.; Westbrook, C.K. Combust. Flame 2002, 129, 253.
@@ -5327,8 +5355,11 @@ Rate expressions for H atom abstraction from fuels.
 pg 257 A Comprehensive Modelling Study of iso-Octane Oxidation, Table 1. Radical:CH3O, Site: primary (a)
 
 Verified by Karma James
+
+Rate expression is changed to per H.(divided by 9)
+Yushi Suzuki
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
 # Number 153
@@ -5348,7 +5379,7 @@ O_rad/NonDeC
 1 *3 O 1 {2,S}
 2 Cs 0 {1,S}
 """,
-  kf = Arrhenius(A=(1.10E+11,A_UNITS,"+-",0.0),
+  kf = Arrhenius(A=(5.50E+10,A_UNITS,"+-",0.0),
                  n=(0,None,"+-",0.0),
                  alpha=(0,None,"+-",0.0),
                  E0=(5.000,E_UNITS,"+-",0.0)
@@ -5356,7 +5387,7 @@ O_rad/NonDeC
   temperature_range = (300,1500),
   rank = 5,
   old_id = "152",
-  short_comment = "Curran et al. [8] Rate expressions for H atom abstraction from fuels.",
+  short_comment = "Curran et al. [8] Rate expressions for H atom abstraction from fuels. (changed to per H)",
   long_comment = 
 """
 [8] Curran, H.J.; Gaffuri, P.; Pit z, W.J.; Westbrook, C.K. Combust. Flame 2002, 129, 253.
@@ -5365,8 +5396,11 @@ Rate expressions for H atom abstraction from fuels.
 pg 257 A Comprehensive Modelling Study of iso-Octane Oxidation, Table 1. Radical:CH3O, Site: secondary (b)
 
 Verified by Karma James
+
+Rate expression is changed to per H.(divided by 2)
+Yushi Suzuki
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
 # Number 154
@@ -5424,7 +5458,7 @@ O2b
 1 *3 O 1 {2,S}
 2    O 1 {1,S}
 """,
-  kf = Arrhenius(A=(6.30E+13,A_UNITS,"+-",0.0),
+  kf = Arrhenius(A=(7.00E+12,A_UNITS,"+-",0.0),
                  n=(0,None,"+-",0.0),
                  alpha=(0,None,"+-",0.0),
                  E0=(50.76,E_UNITS,"+-",0.0)
@@ -5432,7 +5466,7 @@ O2b
   temperature_range = (300,1500),
   rank = 5,
   old_id = "154",
-  short_comment = "Curran et al. [8] Rate expressions for H atom abstraction from fuels.",
+  short_comment = "Curran et al. [8] Rate expressions for H atom abstraction from fuels. (changed to per H)",
   long_comment = 
 """
 [8] Curran, H.J.; Gaffuri, P.; Pit z, W.J.; Westbrook, C.K. Combust. Flame 2002, 129, 253.
@@ -5441,8 +5475,11 @@ Rate expressions for H atom abstraction from fuels.
 pg 257 A Comprehensive Modelling Study of iso-Octane Oxidation, Table 1. Radical:O2, Site: primary (a)
 
 Verified by Karma James
+
+Rate expression is changed to per H.(divided by 9)
+Yushi Suzuki
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
 # Number 156
@@ -5462,7 +5499,7 @@ O2b
 1 *3 O 1 {2,S}
 2    O 1 {1,S}
 """,
-  kf = Arrhenius(A=(1.40E+13,A_UNITS,"+-",0.0),
+  kf = Arrhenius(A=(7.00E+12,A_UNITS,"+-",0.0),
                  n=(0,None,"+-",0.0),
                  alpha=(0,None,"+-",0.0),
                  E0=(48.21,E_UNITS,"+-",0.0)
@@ -5470,7 +5507,7 @@ O2b
   temperature_range = (300,1500),
   rank = 5,
   old_id = "155",
-  short_comment = "Curran et al. [8] Rate expressions for H atom abstraction from fuels.",
+  short_comment = "Curran et al. [8] Rate expressions for H atom abstraction from fuels. (changed to per H)",
   long_comment = 
 """
 [8] Curran, H.J.; Gaffuri, P.; Pit z, W.J.; Westbrook, C.K. Combust. Flame 2002, 129, 253.
@@ -5479,8 +5516,11 @@ Rate expressions for H atom abstraction from fuels.
 pg 257 A Comprehensive Modelling Study of iso-Octane Oxidation, Table 1. Radical:O2, Site: secondary (b)
 
 Verified by Karma James
+
+Rate expression is changed to per H.(divided by 2)
+Yushi Suzuki
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
 # Number 157
