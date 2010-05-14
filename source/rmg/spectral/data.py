@@ -145,9 +145,9 @@ def loadFrequencyDatabase(dstr):
 	frequencyDatabase = FrequencyDatabase()
 	logging.debug('\tFrequencies database from '+frequenciesDatabasePath)
 	frequencyDatabase.load(
-		dictstr=os.path.join(frequenciesDatabasePath, 'Dictionary.txt'),
-		treestr=os.path.join(frequenciesDatabasePath, 'Tree.txt'),
-		libstr=os.path.join(frequenciesDatabasePath, 'Library.txt'))
+		dictstr=os.path.join(frequenciesDatabasePath, 'Group_Dictionary.txt'),
+		treestr=os.path.join(frequenciesDatabasePath, 'Group_Tree.txt'),
+		libstr=os.path.join(frequenciesDatabasePath, 'Group_Library.txt'))
 
 ################################################################################
 
