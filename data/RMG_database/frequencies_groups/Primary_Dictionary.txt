@@ -1,0 +1,90 @@
+////////////////////////////////////////////////////////////////////////////////
+//
+//	Primary dictionary for frequency estimation
+//
+////////////////////////////////////////////////////////////////////////////////
+
+// These small molecule species are overpredicted by the degeneracies used
+// So instead we just give the actual calculated modes
+// This has the added benefit of being more accurate as well
+
+ethane
+1 C 0 {2,S}
+2 C 0 {1,S}
+
+ethyl
+1 C 1 {2,S}
+2 C 0 {1,S}
+
+acetaldehyde
+1 C 0 {2,S}
+2 C 0 {1,S} {3,D}
+3 O 0 {2,D}
+
+methanol
+1 C 0 {2,S}
+2 O 0 {1,S}
+
+methylhydroperoxide
+1 C 0 {2,S}
+2 O 0 {1,S} {3,S}
+3 O 0 {2,S}
+
+methylperoxy
+1 C 0 {2,S}
+2 O 0 {1,S} {3,S}
+3 O 1 {2,S}
+
+C2H4JJ
+1 C 1 {2,S}
+2 C 1 {1,S}
+
+vinoxy
+1 C 1 {2,S}
+2 C 0 {1,S} {3,D}
+3 O 0 {2,D}
+
+CH2OH
+1 C 1 {2,S}
+2 O 0 {1,S}
+
+glyoxal
+1 O 1 {2,D}
+2 C 0 {1,D} {3,S}
+3 C 1 {2,S} {4,D}
+4 O 0 {3,D}
+
+formic_acid
+1 O 1 {2,D}
+2 C 0 {1,D} {3,S}
+3 O 0 {2,S}
+
+formylhydroperoxide
+1 O 1 {2,D}
+2 C 0 {1,D} {3,S}
+3 O 0 {2,S} {4,S}
+4 O 0 {3,S}
+
+formylperoxy
+1 O 1 {2,D}
+2 C 0 {1,D} {3,S}
+3 O 0 {2,S} {4,S}
+4 O 1 {3,S}
+
+ethylene
+1 C 0 {2,D}
+2 C 0 {1,D}
+
+vinyl
+1 C 0 {2,D}
+2 C 1 {1,D}
+  
+C2H2JJ
+1 C 1 {2,D}
+2 C 1 {1,D}
+
+acetylene
+1 C 0 {2,T}
+2 C 0 {1,T}
+
+
