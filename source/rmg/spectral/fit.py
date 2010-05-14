@@ -122,7 +122,6 @@ def fitSpectralDataToHeatCapacity(struct, Tlist, Cvlist, Nvib, Nrot):
 	if Nvib <= 0 and Nrot <= 0:
 		return [], []
 	elif Nvib + 2 * Nrot <= maxVariables:
-		print 'Using case direct for %s' % struct
 		x0, bl, bu, ind = setupCaseDirect(Nvib, Nrot)
 	elif Nvib + 2 <= maxVariables:
 		x0, bl, bu, ind = setupCasePseudoRot(Nvib, Nrot)
