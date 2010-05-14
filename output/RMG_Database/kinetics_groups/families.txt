@@ -35,6 +35,6 @@
 18      on      Birad_recombination
 19      on      Oa_R_Recombination
 20      on      R_Addition_COm
-21      off     Intra_R_Add_Exocyclic
-22      off     Intra_R_Add_Endocyclic
+21      on      Intra_R_Add_Exocyclic
+22      on      Intra_R_Add_Endocyclic
 23      on      1,2-Birad_to_alkene
