@@ -36,6 +36,14 @@ acetaldehyde
 6 H 0 {1,S}
 7 H 0 {2,S}
 
+acetyl
+1 C 0 {2,S} {4,S} {5,S} {6,S}
+2 C 1 {1,S} {3,D}
+3 O 0 {2,D}
+4 H 0 {1,S}
+5 H 0 {1,S}
+6 H 0 {1,S}
+
 methanol
 1 C 0 {2,S} {3,S} {4,S} {5,S}
 2 O 0 {1,S} {6,S}
