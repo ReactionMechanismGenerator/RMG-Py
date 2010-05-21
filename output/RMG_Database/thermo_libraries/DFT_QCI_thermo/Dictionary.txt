@@ -52,6 +52,33 @@ formylperoxyl
 4 O 1 {3,S}
 
 
+OCHCH2CH2OOH
+1 O 0 {2,D}
+2 C 0 {1,D} {3,S}
+3 C 0 {2,S} {4,S}
+4 C 0 {3,S} {5,S}
+5 O 0 {4,S} {6,S}
+6 O 0 {5,S}
+
+
+CH3COCH2OOH
+1 C 0 {2,S}
+2 C 0 {1,S} {3,S} {4,D}
+3 C 0 {2,S} {5,S}
+4 O 0 {2,D} 
+5 O 0 {3,S} {6,S}
+6 O 0 {5,S} 
+
+
+cC2H3OCH2OOH
+1 O 0 {2,S} {3,S}
+2 C 0 {1,S} {3,S} 
+3 C 0 {1,S} {2,S} {4,S}
+4 C 0 {3,S} {5,S} 
+5 O 0 {4,S} {6,S} 
+6 O 0 {5,S} 
+
+
 HCO
 1 C 1 {2,D}
 2 O 0 {1,D}
@@ -241,8 +268,8 @@ CH3OCO
 
 
 cC2H3O2
-1 O 0 {2,D}
-2 C 0 {1,D} {3,S} {4,S}
+1 O 1 {2,S}
+2 C 0 {1,S} {3,S} {4,S}
 3 C 0 {2,S} {4,S}
 4 O 0 {2,S} {3,S}
 
@@ -259,6 +286,13 @@ CH2COOH
 2 C 0 {1,S} {3,D} {4,S}
 3 O 0 {2,D}
 4 O 0 {2,S}
+
+
+OCHOOH
+1 C 0 {2,D} {3,S}
+2 O 0 {1,D}
+3 O 0 {1,S} {4,S}
+4 O 0 {3,S}
 
 
 ethanol
@@ -313,6 +347,11 @@ C2H2
 2 C 0 {1,T}
 
 
+C2H2JJ
+1 C 1 {2,D}
+2 C 1 {1,D}
+
+
 C2H3
 1 C 1 {2,D}
 2 C 0 {1,D}
@@ -342,11 +381,25 @@ lactone
 4 O 0 {2,S} {3,S}
 
 
+hydroxyketene
+1 O 0 {2,S}
+2 C 0 {1,S} {3,D}
+3 C 0 {2,D} {4,D}
+4 O 0 {3,D} 
+
+
 C32CH2OOH
 1 C 0 {2,S}
 2 C 0 {1,S} {3,S}
 3 O 0 {2,S} {4,S}
 4 O 0 {3,S}
+
+
+CH3OOCH3
+1 C 0 {2,S}
+2 O 0 {1,S} {3,S}
+3 O 0 {2,S} {4,S}
+4 C 0 {3,S}
 
 
 CH2CHCH2OOH
@@ -508,6 +561,12 @@ oxirene
 3 O 0 {1,S} {2,S}
 
 
+CHCHOjj
+1  C 1 {2,D} 
+2  C 0 {1,D} {3,S} 
+3  O 1 {2,S}
+
+
 allyl
 1 C 0 {2,D}
 2 C 0 {1,D} {3,S}
@@ -551,6 +610,110 @@ methyl_formate
 2 O 0 {1,S} {3,S}
 3 C 0 {2,S} {4,D}
 4 O 0 {3,D}
+
+
+HOOCH2CH2CH2OO
+1 O 0 {2,S}
+2 O 0 {1,S} {3,S} 
+3 C 0 {2,S} {4,S} 
+4 C 0 {3,S} {5,S}
+5 C 0 {4,S} {6,S}
+6 O 0 {5,S} {7,S}
+7 O 1 {6,S}
+
+
+CH3CHOOCH2OOH
+1 C 0 {2,S}
+2 C 0 {1,S} {3,S} {6,S}
+3 C 0 {2,S} {4,S} 
+4 O 0 {3,S} {5,S} 
+5 O 0 {4,S}
+6 O 0 {2,S} {7,S}
+7 O 1 {6,S}
+
+
+CH3CHOOHCH2OO
+1 C 0 {2,S}
+2 C 0 {1,S} {3,S} {6,S}
+3 C 0 {2,S} {4,S} 
+4 O 0 {3,S} {5,S} 
+5 O 1 {4,S}
+6 O 0 {2,S} {7,S}
+7 O 0 {6,S}
+
+
+HOOCH2CHCH2OOH
+1 O 0 {2,S}
+2 O 0 {1,S} {3,S}
+3 C 0 {2,S} {4,S}
+4 C 1 {3,S} {5,S}
+5 C 0 {4,S} {6,S}
+6 O 0 {5,S} {7,S} 
+7 O 0 {6,S} 
+
+
+CH2CHOOHCH2OOH
+1 C 1 {2,S}
+2 C 0 {1,S} {3,S} {6,S}
+3 C 0 {2,S} {4,S} 
+4 O 0 {3,S} {5,S} 
+5 O 0 {4,S}
+6 O 0 {2,S} {7,S}
+7 O 0 {6,S}
+
+
+OHCH2CH2OO
+1 O 0 {2,D}
+2 C 0 {1,D} {3,S} 
+3 C 0 {2,S} {4,S} 
+4 C 0 {3,S} {5,S}
+5 O 0 {4,S} {6,S}
+6 O 1 {5,S} 
+
+
+CH3CHOOHCHO
+1 C 0 {2,S}
+2 C 0 {1,S} {3,S} {4,S}
+3 C 0 {2,S} {6,D}
+4 O 0 {2,S} {5,S}
+5 O 0 {4,S} 
+6 O 0 {3,D}
+
+
+oxiranylmethylperoxy
+1  O 1 {2,S}
+2  O 0 {1,S} {3,S}
+3  C 0 {2,S} {4,S} 
+4  C 0 {5,S} {6,S} {3,S} 
+5  C 0 {4,S} {6,S} 
+6  O 0 {4,S} {5,S}
+
+
+HOOCH2CH2OOH
+1 O 1 {2,S}
+2 O 0 {1,S} {3,S}
+3 C 0 {2,S} {4,S}
+4 C 0 {3,S} {5,S}
+5 O 0 {4,S} {6,S}
+6 O 0 {5,S} 
+
+
+CH3CHOOCHO
+1 C 0 {2,S}
+2 C 0 {1,S} {3,S} {5,S}
+3 C 0 {2,S} {4,D}
+4 O 0 {3,D} 
+5 O 0 {2,S} {6,S} 
+6 O 1 {5,S}
+
+
+CH3COCH2OO
+1 C 0 {2,S}
+2 C 0 {1,S} {3,S} {4,D}
+3 C 0 {2,S} {5,S}
+4 O 0 {2,D} 
+5 O 0 {3,S} {6,S}
+6 O 1 {5,S} 
 
 
 ketenylperoxy
@@ -780,7 +943,7 @@ propen2ol
 1 C 0 {2,D}
 2 C 0 {1,D} {3,S} {4,S}
 3 C 0 {2,S}
-4 O 0 {1,S}
+4 O 0 {2,S}
 
 
 cC3H6O
@@ -874,10 +1037,18 @@ OCHCH2CH2O
 
 CH3COCH2O
 1 C 0 {2,S}
-2 C 0 {1,S} {3,S} {4,S}
+2 C 0 {1,S} {3,S} {4,D}
 3 C 0 {2,S} {5,S}
-4 O 0 {2,S}
+4 O 0 {2,D}
 5 O 1 {3,S}
+
+
+oxiranylmethoxy
+1  O 1 {2,S}
+2  C 0 {1,S} {3,S} 
+3  C 0 {4,S} {5,S} {2,S} 
+4  C 0 {3,S} {5,S} 
+5  O 0 {3,S} {4,S}
 
 
 npropylperoxy
@@ -924,6 +1095,13 @@ ipropylperoxy
 3 C 0 {2,S}
 4 O 0 {2,S} {5,S}
 5 O 1 {4,S}
+
+
+OCH2OOH
+1 O 1 {2,S}
+2 C 0 {1,S} {3,S}
+3 O 0 {2,S} {4,S}
+4 O 0 {3,S} 
 
 
 CH4
@@ -1064,14 +1242,14 @@ butene_1
 4 C 0 {3,S}
 
 
-butene_2
-1 C 0 {2,S}
-2 C 0 {1,S} {3,D}
-3 C 0 {2,D} {4,S}
-4 C 0 {3,S}
+// cis_butene_2
+//1 C 0 {2,S}
+//2 C 0 {1,S} {3,D}
+//3 C 0 {2,D} {4,S}
+//4 C 0 {3,S}
 
 
-butene_2
+trans_butene_2
 1 C 0 {2,S}
 2 C 0 {1,S} {3,D}
 3 C 0 {2,D} {4,S}
