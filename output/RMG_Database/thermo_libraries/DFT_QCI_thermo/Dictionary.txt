@@ -783,8 +783,12 @@ C3H4OJJ
 
 
 O2
-1 O 0 {2,D}
-2 O 0 {1,D}
+1 O 1 {2,S}
+2 O 1 {1,S}
+// 25-May-2010: MRH changing definition of O2 from singlet to triplet
+//	in accordance w/personal communication with CFG
+//1 O 0 {2,D}
+//2 O 0 {1,D}
 
 
 H
