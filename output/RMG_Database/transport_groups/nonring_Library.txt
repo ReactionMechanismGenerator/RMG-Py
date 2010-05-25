@@ -28,3 +28,6 @@ Ester_Ccentered		0.0481	0.0005	82	81.10	1
 Ester_Ocentered1	0		0		0	0		1
 Ester_Ocentered2	0		0		0	0		1
 Od					0.0143	0.0101	36	-10.50	0
+
+Thiol				0.0031	0.0084	63	63.56	1
+Thioether			0.0119	0.0049	54	68.78	1

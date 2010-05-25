@@ -156,3 +156,16 @@ C_centered
 
 O_centered
 1 * O 0
+
+S_centered
+1 * S 0
+
+Thiol
+1 * S 0 {2,S} {3,S}
+2 R!H 0 {1,S}
+3 H 0 {1,S}
+
+Thioether
+1 * S 0 {2,S} {3,S}
+2 R!H 0 {1,S}
+3 R!H 0 {1,S}

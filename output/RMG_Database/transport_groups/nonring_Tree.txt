@@ -30,3 +30,7 @@ L0: R
 			L3: Aldehyde_Ocentered
 			L3: Acid_Ocentered2
 			L3: Ester_Ocentered2
+			
+	L1: S_centered
+		L2: Thiol
+		L2: Thioether

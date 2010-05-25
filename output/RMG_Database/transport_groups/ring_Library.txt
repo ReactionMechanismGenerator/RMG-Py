@@ -15,3 +15,5 @@ Ketone_ring			0.0284	0.0028	55	94.97	1
 // How do I handle the oxygen of a O=C< group in a ring?
 // Currently, RMG would identify the *O=R as not being part of a ring,
 //	and would therefore grab the Od fg in the nonring_Library.txt
+
+Thioether_ring		0.0019	0.0051	38	52.10	1

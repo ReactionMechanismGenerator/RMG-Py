@@ -54,3 +54,11 @@ C_centered_ring
 
 O_centered_ring
 1 * O 0
+
+S_centered_ring
+1 * S 0
+
+Thioether_ring
+1 * S 0 {2,S} {3,S}
+2 R!H 0 {1,S}
+3 R!H 0 {1,S}
