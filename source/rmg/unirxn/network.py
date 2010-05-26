@@ -365,28 +365,44 @@ class Network:
 	def getLeakFlux(self, T, P, conc):
 		"""
 		Return the leak flux of the network: the forward flux to all unexplored
-		unimolecular isomers in the network.
+		unimolecular isomers in the network. If there is only one path (and
+		therefore net) reaction and its unimolecular reactants and/or products
+		have not been explored, then it uses the high-pressure-limit rate to
+		ensure it is considering the maximum possible rate.
 		"""	
-		# Get leak fluxes of all unexplored [unimolecular] isomers
+
 		self.leakFluxes = {}
-		for rxn in self.netReactions:
-			rate = rxn.getRate(T, P, conc)
-			if rxn.isIsomerization() or rxn.isDissociation():
-				spec = rxn.reactants[0]
-				if spec not in self.explored:
-					if spec in self.leakFluxes:
-						self.leakFluxes[spec] -= rate
-					else:
-						self.leakFluxes[spec] = -rate
-			if rxn.isIsomerization() or rxn.isAssociation():
-				spec = rxn.reactants[0]
-				if spec not in self.explored:
-					if spec in self.leakFluxes:
-						self.leakFluxes[spec] += rate
-					else:
-						self.leakFluxes[spec] = rate
+
+		# If only one path/net reaction and it contains an isomer that has not
+		# been explored, then use the high-pressure-limit k(T) to calculate
+		# the flux rather than the phenomenological k(T,P) value
+		if len(self.netReactions) == 1 and len(self.pathReactions) == 1:
+			rxn = self.netReactions[0]
+			rate = self.pathReactions[0].getRate(T, P, conc)
+			if (rxn.isIsomerization() or rxn.isDissociation()) and rxn.reactants[0] not in self.explored:
+				self.leakFluxes[rxn.reactants[0]] = -rate
+			if (rxn.isIsomerization() or rxn.isAssociation()) and rxn.products[0] not in self.explored:
+				self.leakFluxes[rxn.products[0]] = rate
+		# Otherwise get leak fluxes of all unexplored [unimolecular] isomers
+		else:
+			for rxn in self.netReactions:
+				rate = rxn.getRate(T, P, conc)
+				if rxn.isIsomerization() or rxn.isDissociation():
+					spec = rxn.reactants[0]
+					if spec not in self.explored:
+						if spec in self.leakFluxes:
+							self.leakFluxes[spec] -= rate
+						else:
+							self.leakFluxes[spec] = -rate
+				if rxn.isIsomerization() or rxn.isAssociation():
+					spec = rxn.reactants[0]
+					if spec not in self.explored:
+						if spec in self.leakFluxes:
+							self.leakFluxes[spec] += rate
+						else:
+							self.leakFluxes[spec] = rate
 		
-		return sum(self.leakFluxes.values())
+		return sum([abs(v) for v in self.leakFluxes.values()])
 
 	def getMaximumLeakSpecies(self):
 		"""
