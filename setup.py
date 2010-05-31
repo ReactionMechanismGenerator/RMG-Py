@@ -40,6 +40,7 @@ ext_modules = [
 	Extension('chempy.constants', ['chempy/constants.py']),
 	Extension('chempy.reaction', ['chempy/reaction.py']),
 	Extension('chempy.species', ['chempy/species.py']),
+	Extension('chempy.thermo', ['chempy/thermo.py']),
 ]
 
 setup(name='ChemPy',
