@@ -70,3 +70,10 @@ class InvalidKineticsModelError(ChemPyError):
 	something went wrong while doing so.
 	"""
 	pass
+
+class InvalidStatesModelError(ChemPyError):
+	"""
+	An exception used when working with a states model to indicate that
+	something went wrong while doing so.
+	"""
+	pass

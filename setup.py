@@ -41,6 +41,7 @@ ext_modules = [
 	Extension('chempy.kinetics', ['chempy/kinetics.py']),
 	Extension('chempy.reaction', ['chempy/reaction.py']),
 	Extension('chempy.species', ['chempy/species.py']),
+	Extension('chempy.states', ['chempy/states.py']),
 	Extension('chempy.thermo', ['chempy/thermo.py']),
 ]
 
