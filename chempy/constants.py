@@ -32,6 +32,19 @@ This module contains a number of physical constants to be made available
 throughout ChemPy. ChemPy uses SI units throughout; accordingly, all of the
 constants in this module are stored in combinations of meters, seconds,
 kilograms, moles, etc.
+
+The constants available are:
+
+=============== ================================================================
+Variable        Description
+=============== ================================================================
+`Na`            Avogadro constant
+`kB`            Boltzmann constant
+`R`             Gas law constant
+`h`             Planck constant
+`c`             Speed of light in vacuum
+=============== ================================================================
+
 """
 
 import quantities as pq
