@@ -38,6 +38,7 @@ Cython.Compiler.Options.annotate = True
 # The Cython modules to setup
 ext_modules = [
 	Extension('chempy.constants', ['chempy/constants.py']),
+	Extension('chempy.kinetics', ['chempy/kinetics.py']),
 	Extension('chempy.reaction', ['chempy/reaction.py']),
 	Extension('chempy.species', ['chempy/species.py']),
 	Extension('chempy.thermo', ['chempy/thermo.py']),
