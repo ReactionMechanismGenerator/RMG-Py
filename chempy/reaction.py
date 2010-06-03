@@ -206,3 +206,67 @@ class Reaction:
 		# Return rate
 		return rateConstant * (forward - reverse / equilibriumConstant)
 
+################################################################################
+
+class ReactionModel:
+	"""
+	A chemical reaction model, composed of a list of species and a list of
+	reactions.
+
+	=============== =========================== ================================
+	Attribute       Type                        Description
+	=============== =========================== ================================
+	`species`       :class:`list`               The species involved in the reaction model
+	`reactions`     :class:`list`               The reactions comprising the reaction model
+	`stoichiometry` :class:`numpy.ndarray`      The stoichiometric matrix for the reaction model, stored as a sparse matrix
+	=============== =========================== ================================
+
+	"""
+
+	def __init__(self, species=None, reactions=None):
+		self.species = species or []
+		self.reactions = reactions or []
+		self.stoichiometry = None
+
+	def generateStoichiometryMatrix(self):
+		"""
+		Generate the stoichiometry matrix corresponding to the current
+		reaction system. The stoichiometry matrix is defined such that the
+		rows correspond to the `index` attribute of each species object, while
+		the columns correspond to the `index` attribute of each reaction object.
+		The generated matrix is not returned, but is instead stored in the
+		`stoichiometry` attribute for future use.
+		"""
+		cython.declare(rxn=Reaction, spec=Species, i=cython.int, j=cython.int, nu=cython.int)
+		from scipy import sparse
+
+		# Use dictionary-of-keys format to efficiently assemble stoichiometry matrix
+		self.stoichiometry = sparse.dok_matrix((len(self.species), len(self.reactions)), numpy.float64)
+		for rxn in self.reactions:
+			j = rxn.index - 1
+			# Only need to iterate over the species involved in the reaction,
+			# not all species in the reaction model
+			for spec in rxn.reactants:
+				i = spec.index - 1
+				nu = rxn.getStoichiometricCoefficient(spec)
+				if nu != 0: self.stoichiometry[i,j] = nu
+			for spec in rxn.products:
+				i = spec.index - 1
+				nu = rxn.getStoichiometricCoefficient(spec)
+				if nu != 0: self.stoichiometry[i,j] = nu
+
+		# Convert to compressed-sparse-row format for efficient use in matrix operations
+		self.stoichiometry.tocsr()
+
+	def getReactionRates(self, T, P, Ci):
+		"""
+		Return an array of reaction rates for each reaction in the model core
+		and edge. The id of the reaction is the index into the vector.
+		"""
+		cython.declare(rxnRates=numpy.ndarray, rxn=Reaction, j=cython.int)
+		rxnRates = numpy.zeros(len(self.reactions), numpy.float64)
+		for rxn in self.reactions:
+			j = rxn.index - 1
+			rxnRates[j] = rxn.getRate(T, P, Ci)
+		return rxnRates
+

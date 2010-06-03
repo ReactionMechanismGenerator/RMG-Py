@@ -27,6 +27,8 @@
 from species cimport Species
 from kinetics cimport KineticsModel
 
+cimport numpy
+
 ################################################################################
 
 cdef class Reaction:
@@ -49,3 +51,14 @@ cdef class Reaction:
 	cpdef int getStoichiometricCoefficient(self, Species spec)
 
 	cpdef double getRate(self, double T, double P, dict conc)
+
+################################################################################
+
+cdef class ReactionModel:
+
+	cdef public list species
+	cdef public list reactions
+
+	cpdef generateStoichiometryMatrix(self)
+
+	cpdef numpy.ndarray getReactionRates(self, double T, double P, dict Ci)
