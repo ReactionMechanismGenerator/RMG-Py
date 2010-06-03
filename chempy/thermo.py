@@ -69,6 +69,18 @@ class ThermoModel:
 		"""
 		return self.Tmin <= T and T <= self.Tmax
 
+	def getHeatCapacity(self, T):
+		raise InvalidThermoModelError('Unexpected call to ThermoModel.getHeatCapacity(); you should be using a class derived from ThermoModel.')
+
+	def getEnthalpy(self, T):
+		raise InvalidThermoModelError('Unexpected call to ThermoModel.getEnthalpy(); you should be using a class derived from ThermoModel.')
+
+	def getEntropy(self, T):
+		raise InvalidThermoModelError('Unexpected call to ThermoModel.getEntropy(); you should be using a class derived from ThermoModel.')
+
+	def getFreeEnergy(self, T):
+		raise InvalidThermoModelError('Unexpected call to ThermoModel.getFreeEnergy(); you should be using a class derived from ThermoModel.')
+
 ################################################################################
 
 class WilhoitModel(ThermoModel):

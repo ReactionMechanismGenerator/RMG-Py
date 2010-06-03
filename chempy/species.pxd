@@ -24,7 +24,22 @@
 #
 ################################################################################
 
+from thermo cimport ThermoModel
+from states cimport StatesModel
+
+################################################################################
+
 cdef class Species:
 	
 	cdef public int index
 	cdef public str label
+	cdef public ThermoModel thermo
+	cdef public StatesModel states
+
+	cpdef double getHeatCapacity(self, double T)
+
+	cpdef double getEnthalpy(self, double T)
+
+	cpdef double getEntropy(self, double T)
+
+	cpdef double getFreeEnergy(self, double T)

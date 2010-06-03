@@ -37,6 +37,14 @@ cdef class ThermoModel:
 	
 	cpdef bint isTemperatureValid(ThermoModel self, double T) except -2
 
+	cpdef double getHeatCapacity(self, double T)
+
+	cpdef double getEnthalpy(self, double T)
+
+	cpdef double getEntropy(self, double T)
+
+	cpdef double getFreeEnergy(self, double T)
+	
 ################################################################################
 
 cdef class WilhoitModel(ThermoModel):

@@ -24,9 +24,28 @@
 #
 ################################################################################
 
+from species cimport Species
+from kinetics cimport KineticsModel
+
+################################################################################
+
 cdef class Reaction:
 	
 	cdef public int index
 	cdef public list reactants
 	cdef public list products
-	
+	cdef public KineticsModel kinetics
+
+	cpdef double getEnthalpyOfReaction(self, double T)
+
+	cpdef double getEntropyOfReaction(self, double T)
+
+	cpdef double getFreeEnergyOfReaction(self, double T)
+
+	cpdef double getEquilibriumConstant(self, double T, str type=?)
+
+	cpdef double getRateConstant(self, double T, double P)
+
+	cpdef int getStoichiometricCoefficient(self, Species spec)
+
+	cpdef double getRate(self, double T, double P, dict conc)
