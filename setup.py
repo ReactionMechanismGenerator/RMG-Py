@@ -39,6 +39,7 @@ Cython.Compiler.Options.annotate = True
 ext_modules = [
 	Extension('chempy.constants', ['chempy/constants.py']),
 	Extension('chempy.element', ['chempy/element.py']),
+	Extension('chempy.graph', ['chempy/graph.py']),
 	Extension('chempy.kinetics', ['chempy/kinetics.py']),
 	Extension('chempy.reaction', ['chempy/reaction.py']),
 	Extension('chempy.species', ['chempy/species.py']),
