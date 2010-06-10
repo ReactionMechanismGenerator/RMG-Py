@@ -320,9 +320,9 @@ class Network:
 		"""
 		for rxn in self.pathReactions:
 			if rxn.isIsomerization() or rxn.isDissociation():
-				if rxn.reactants[0] == species: return True
+				if rxn.reactants[0] == species and species in self.explored: return True
 			if rxn.isIsomerization() or rxn.isAssociation():
-				if rxn.products[0] == species: return True
+				if rxn.products[0] == species and species in self.explored: return True
 		return False
 
 	def addPathReaction(self, rxn):

@@ -188,7 +188,9 @@ class CoreEdgeReactionModel:
 					self.addReactionToEdge(rxn)
 			else:
 				# Update unimolecular reaction networks
-				self.addReactionToUnimolecularNetworks(rxn)
+				net = self.addReactionToUnimolecularNetworks(rxn)
+				if net is not None and isinstance(newObject, species.Species):
+					net.explored.append(newObject)
 
 		# Output current model size information after enlargement
 		logging.info('')
