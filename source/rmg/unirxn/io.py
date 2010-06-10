@@ -179,6 +179,12 @@ def readInputFile(fstr):
 				E0 = sum([species.E0 for species in reaction.reactants])
 				reaction.E0 = E0 + reaction.kinetics[0].Ea
 		
+		# For standalone unirxn jobs, assume all unimolecular isomers are
+		# fully explored
+		for isomer in network.isomers:
+			if isomer.isUnimolecular():
+				network.explored.append(isomer.species[0])
+		
 		# Read bath gas
 		bathGasListElement = document.getChildElement(rootElement, 'bathGasList', required=True)
 		bathGasElements = document.getChildElements(bathGasListElement, 'bathGas', required=True)

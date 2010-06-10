@@ -509,9 +509,16 @@ class CoreEdgeReactionModel:
 					logging.debug('Removed %i isomer(s) from network %i.' % (len(isomerList), network.id))
 					for isomer in isomerList: network.isomers.remove(isomer)
 
-				# Sort isomers so that all unimolecular isomers come first
-				isomers = [isom for isom in network.isomers if isom.isUnimolecular()]
+				# Sort isomers such that the order is:
+				#	1. Explored unimolecular isomers
+				#	2. Bimolecular reactant/product channels
+				#	3. Unexplored unimolecular isomers (treated as product channels)
+				isomers = [isom for isom in network.isomers if isom.isUnimolecular() and isom.species[0] in network.explored]
+				nIsom = len(isomers)
 				isomers.extend([isom for isom in network.isomers if isom.isMultimolecular()])
+				nReac = len(isomers) - nIsom
+				isomers.extend([isom for isom in network.isomers if isom.isUnimolecular() and isom.species[0] not in network.explored])
+				nProd = len(isomers) - nIsom - nReac
 				network.isomers = isomers
 
 				# Get list of species in network
@@ -541,7 +548,7 @@ class CoreEdgeReactionModel:
 				network.calculateDensitiesOfStates(Elist)
 
 				# Determine phenomenological rate coefficients
-				K = network.calculateRateCoefficients(Tlist, Plist, Elist, method)
+				K = network.calculateRateCoefficients(Tlist, Plist, Elist, method, nProd=nProd)
 
 				# Generate PDepReaction objects
 				for i, product in enumerate(network.isomers):

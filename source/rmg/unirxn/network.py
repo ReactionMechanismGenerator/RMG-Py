@@ -559,6 +559,29 @@ class Network:
 		K = numpy.zeros([len(Tlist), len(Plist),\
 			len(self.isomers), len(self.isomers)], numpy.float64)
 
+		# Matrix and vector size indicators
+		# This counting method assumes the isomers are sorted
+		nIsom = 0; nReac = 0; done = False
+		for isom in self.isomers:
+			if isom.isUnimolecular() and not done:
+				nIsom += 1
+			elif isom.isMultimolecular():
+				done = True
+				nReac += 1
+			else:
+				nReac += 1
+		nReac -= nProd
+		# If the network doesn't have any explored unimolecular isomers (e.g.
+		# if of the form A + B --> C with C unexplored), then we temporarily
+		# treat all unimolecular isomers as if explored so that we have at least
+		# one such isomer to compute the k(T,P) values with
+		if nIsom == 0:
+			if nProd > 0:
+				nIsom = nProd; nProd = 0
+				self.isomers.reverse()
+			else:
+				raise UnirxnNetworkException('No unimoleclar isomers found in network %s; at least one is required.' % self)
+		
 		try:
 
 			for t, T in enumerate(Tlist):
@@ -604,7 +627,7 @@ class Network:
 							
 					# Determine phenomenological rate coefficients using approximate
 					# method
-					K[t,p,:,:] = self.applyApproximateMethod(T, P, Elist, method, errorCheck, nProd)
+					K[t,p,:,:] = self.applyApproximateMethod(T, P, Elist, method, nIsom, nReac, nProd, errorCheck)
 
 		except UnirxnNetworkException, e:
 
@@ -627,7 +650,7 @@ class Network:
 
 		return K
 
-	def applyApproximateMethod(self, T, P, Elist, method, errorCheck=True, nProd=0):
+	def applyApproximateMethod(self, T, P, Elist, method, nIsom, nReac, nProd=0, errorCheck=True):
 		"""
 		Apply the approximate method specified in `method` to estimate the
 		phenomenological rate coefficients for the network. This function
@@ -637,11 +660,7 @@ class Network:
 
 		logging.debug('Applying %s method at %g K, %g bar...' % (method, T, P*1e-5))
 
-		# Matrix and vector size indicators
-		nIsom = self.numUniIsomers()
-		nReac = self.numMultiIsomers() - nProd
 		nGrains = len(Elist)
-
 		dE = Elist[1] - Elist[0]
 
 		# Density of states per partition function (i.e. normalized density of
@@ -663,20 +682,21 @@ class Network:
 		
 		# Isomerization, dissociation, and association microcanonical rate
 		# coefficients, respectively
+		# This again assumes that the isomers are sorted properly
 		Kij = numpy.zeros([nIsom,nIsom,nGrains], numpy.float64)
 		Gnj = numpy.zeros([nReac+nProd,nIsom,nGrains], numpy.float64)
 		Fim = numpy.zeros([nIsom,nReac,nGrains], numpy.float64)
 		for reaction in self.pathReactions:
 			i = self.indexOf(reaction.reactant)
 			j = self.indexOf(reaction.product)
-			if reaction.isIsomerization():
+			if i < nIsom and j < nIsom:
 				Kij[j,i,:] = reaction.kf
 				Kij[i,j,:] = reaction.kb
-			elif reaction.isDissociation():
+			elif i < nIsom and j >= nIsom:
 				Gnj[j-nIsom,i,:] = reaction.kf
 				if j - nIsom < nReac:
 					Fim[i,j-nIsom,:] = reaction.kb
-			elif reaction.isAssociation():
+			elif i >= nIsom and j < nIsom:
 				if i - nIsom < nReac:
 					Fim[j,i-nIsom,:] = reaction.kf
 				Gnj[i-nIsom,j,:] = reaction.kb
