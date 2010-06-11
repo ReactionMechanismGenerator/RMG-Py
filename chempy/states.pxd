@@ -54,11 +54,15 @@ cdef class RigidRotor(Mode):
 	cdef public list frequencies
 	cdef public bint linear
 	
-	cpdef getPartitionFunction(RigidRotor self, Tlist)
+	cpdef getPartitionFunction(self, numpy.ndarray Tlist)
 	
-	cpdef getHeatCapacity(RigidRotor self, Tlist)
+	cpdef getHeatCapacity(self, numpy.ndarray Tlist)
 	
-	cpdef getDensityOfStates(RigidRotor self, Elist)
+	cpdef getEnthalpy(self, numpy.ndarray Tlist)
+	
+	cpdef getEntropy(self, numpy.ndarray Tlist)
+	
+	cpdef getDensityOfStates(self, numpy.ndarray Elist)
 
 ################################################################################
 

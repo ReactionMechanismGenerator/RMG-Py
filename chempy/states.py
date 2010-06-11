@@ -158,7 +158,7 @@ class RigidRotor(Mode):
 		self.frequencies = frequencies or []
 
 	def __repr__(self):
-		return '%s.RigidRotor(%s, %s)' % (self.__module__, self.linear, self.frequencies)
+		return 'RigidRotor(linear=%s, frequencies=%s)' % (self.linear, self.frequencies)
 
 	def getPartitionFunction(self, Tlist):
 		"""
@@ -177,46 +177,63 @@ class RigidRotor(Mode):
 		:math:`h` is Planck's constant. :math:`\\sigma` is a placeholder for
 		the symmetry number.
 		"""
-		Q = []
+		Q = numpy.zeros_like(Tlist)
 		if self.linear:
 			theta = constants.h * constants.c * 100 * self.frequencies[0] / constants.kB
-			for T in Tlist:
-				Q.append(T / theta)
+			Q = Tlist / theta
 		else:
 			theta = 1.0
 			for freq in self.frequencies:
 				theta = theta * constants.h * constants.c * 100 * freq / constants.kB
-			for T in Tlist:
-				Q.append(math.sqrt(constants.pi * T**len(self.frequencies) / theta))
+			Q = numpy.sqrt(constants.pi * Tlist**len(self.frequencies) / theta)
 		return Q
 		
 	def getHeatCapacity(self, Tlist):
 		"""
-		Return the contribution to the heat capacity due to rigid rotation. The
-		formula is
+		Return the contribution to the heat capacity due to rigid rotation in
+		J/mol*K. The formula is
 
-		.. math:: \\frac{C_\\mathrm{v}^\\mathrm{rot}(T)}{R} = \\frac{3}{2}
+		.. math:: C_\\mathrm{v}^\\mathrm{rot}(T) = \\frac{3}{2} R
 
 		if nonlinear and
 
-		.. math:: \\frac{C_\\mathrm{v}^\\mathrm{rot}(T)}{R} = 1
+		.. math:: C_\\mathrm{v}^\\mathrm{rot}(T) = R
 
 		if linear, where :math:`T` is temperature and :math:`R` is the gas law
 		constant.
 		"""
-		Cv = []
-		if self.linear:
-			for T in Tlist:
-				Cv.append(1.0)
-		else:
-			for T in Tlist:
-				Cv.append(1.5)
+		Cv = constants.R * numpy.ones_like(Tlist)
+		if not self.linear:
+			Cv = 1.5 * Cv
 		return Cv
 
+	def getEnthalpy(self, Tlist):
+		"""
+		Return the contribution to the enthalpy due to rigid rotation in 
+		J/mol. The formula is
+
+		.. math:: H^\\mathrm{rot}(T) = \\frac{3}{2} RT
+
+		where :math:`T` is temperature and :math:`R` is the gas law constant.
+		"""
+		return 1.5 * Tlist
+	
+	def getEntropy(self, Tlist):
+		"""
+		Return the contribution to the entropy due to rigid rotation in 
+		J/mol*K. The formula is
+
+		.. math:: S^\\mathrm{rot}(T) = R \\left( \\ln Q^\\mathrm{rot} + \\frac{3}{2} \\right)
+		
+		where :math:`Q^\\mathrm{rot}` is the partition function for a rigid 
+		rotor and :math:`R` is the gas law constant.
+		"""
+		return constants.R * (numpy.log(self.getPartitionFunction(Tlist)) + 1.5)
+	
 	def getDensityOfStates(self, Elist):
 		"""
 		Return the density of states at the specified energlies `Elist` in J/mol
-		above the ground state. The formula is
+		above the ground state in mol/J. The formula is
 
 		.. math:: \\rho(E) = q_\\mathrm{r}
 
@@ -228,17 +245,15 @@ class RigidRotor(Mode):
 		:math:`q_\\mathrm{r}` is defined in the	equation for the partition
 		function.
 		"""
-		rho = []
+		rho = numpy.zeros_like(Elist)
 		if self.linear:
 			theta = constants.h * constants.c * 100 * self.frequencies[0] * constants.Na
-			for E in Elist:
-				rho.append(1.0 / theta)
+			rho = 1.0 / theta
 		else:
 			theta = 1.0
 			for freq in self.frequencies:
 				theta = theta * constants.h * constants.c * 100 * freq * constants.Na
-			for E in Elist:
-				rho.append(2.0 * math.sqrt(E / theta))
+			rho = 2.0 * numpy.sqrt(Elist / theta)
 		return rho
 
 ################################################################################
