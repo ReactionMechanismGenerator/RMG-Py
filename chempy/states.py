@@ -37,7 +37,7 @@ molecular degrees of freedom can be stored in a :class:`StatesModel` object.
 
 import math
 import cython
-import numpy as np
+import numpy
 
 import constants
 from exception import InvalidStatesModelError
@@ -62,7 +62,7 @@ class Translation(Mode):
 		self.dimension = dimension
 
 	def __repr__(self):
-		return '%s.Translation(%s, %s, %s)' % (self.__module__, self.mass, self.volume, self.dimension)
+		return 'Translation(mass=%s, volume=%s, dimension=%s)' % (self.mass, self.volume, self.dimension)
 
 	def getPartitionFunction(self, Tlist):
 		"""
@@ -73,29 +73,52 @@ class Translation(Mode):
 
 		where :math:`T` is temperature, :math:`V` is volume, :math:`m` is mass,
 		:math:`d` is dimensionality, :math:`k_\\mathrm{B}` is Boltzmann's
-		constant, and :math:`h` is Planck's constant.
+		cone-27stant, and :math:`h` is Planck's constant.
 		"""
-		Q = []
-		qt = ((2 * constants.pi * self.mass) / (constants.h * constants.h))**(self.dimension/2.0) * self.volume
-		for T in Tlist:
-			Q.append(qt * (constants.R * T)**(self.dimension/2.0))
+		Q = numpy.zeros_like(Tlist)
+		qt = ((2 * constants.pi * self.mass / constants.Na) / (constants.h * constants.h))**(self.dimension/2.0) * self.volume
+		Q = qt * (constants.kB * Tlist)**(self.dimension/2.0)
 		return Q
 
 	def getHeatCapacity(self, Tlist):
 		"""
-		Return the contribution to the heat capacity due to translation. The
-		formula is
+		Return the contribution to the heat capacity due to translation in 
+		J/mol*K. The formula is
 
-		.. math:: \\frac{C_\\mathrm{v}^\\mathrm{trans}(T)}{R} = \\frac{d}{2} R
+		.. math:: C_\\mathrm{v}^\\mathrm{trans}(T) = \\frac{d}{2} R
 
 		where :math:`T` is temperature, :math:`V` is volume,
 		:math:`d` is dimensionality, and :math:`R` is the gas law constant.
 		"""
-		Cv = []
-		for T in Tlist:
-			Cv.append(0.5 * self.dimension)
-		return Cv
+		return 0.5 * constants.R * self.dimension * numpy.ones_like(Tlist)
+	
+	def getEnthalpy(self, Tlist):
+		"""
+		Return the contribution to the enthalpy due to translation in 
+		J/mol. The formula is
 
+		.. math:: H^\\mathrm{trans}(T) = \\frac{d}{2} RT
+
+		where :math:`T` is temperature, :math:`V` is volume,
+		:math:`d` is dimensionality, and :math:`R` is the gas law constant.
+		"""
+		return 0.5 * self.dimension * Tlist
+	
+	def getEntropy(self, Tlist):
+		"""
+		Return the contribution to the entropy due to translation in 
+		J/mol*K. The formula is
+
+		.. math:: S^\\mathrm{trans}(T) = R \\ln \\left[ q_\\mathrm{t} \\left( k_\\mathrm{B} T \\right)^{d/2} e^{d/2} \\right]
+		
+		where :math:`T` is temperature, :math:`m` is mass, :math:`V` is volume,
+		:math:`d` is dimensionality, and :math:`R` is the gas law constant.
+		"""
+		S = numpy.zeros_like(Tlist)
+		qt = ((2 * constants.pi * self.mass / constants.Na) / (constants.h * constants.h))**(self.dimension/2.0) * self.volume
+		S = constants.R * numpy.log( qt * (math.e * constants.R * Tlist)**(self.dimension/2.0) )
+		return S
+	
 	def getDensityOfStates(self, Elist):
 		"""
 		Return the density of states at the specified energlies `Elist` in J/mol
@@ -107,14 +130,12 @@ class Translation(Mode):
 		:math:`q_\\mathrm{t}` is defined in the equation for the partition
 		function.
 		"""
-		rho = []
-		qt = ((2 * constants.pi * self.mass) / (constants.h * constants.h))**(self.dimension/2.0) * self.volume
+		rho = numpy.zeros_like(Elist)
+		qt = ((2 * constants.pi * self.mass / constants.Na / constants.Na) / (constants.h * constants.h))**(self.dimension/2.0) * self.volume
 		if self.dimension == 2: # Dimension is 2
-			for E in Elist:
-				rho.append(qt)
+			rho = qt
 		elif self.dimension == 3: # Dimension is 3
-			for E in Elist:
-				rho.append(qt * math.sqrt(E / constants.pi) * 0.5)     # qt * E^0.5 / 0.5!
+			rho = qt * numpy.sqrt(Elist / math.pi) * 0.5
 		else:
 			raise InvalidStatesModelError('Unexpected dimensionality "%i" encountered while evaluating translation density of states.')
 		return rho
@@ -455,7 +476,7 @@ class StatesModel:
 		`Tlist` in K. The heat capacity returned is divided by the Boltzmann
 		constant so as to be dimensionless.
 		"""
-		Cp = np.ones((len(Tlist)), np.float64)
+		Cp = numpy.ones((len(Tlist)), numpy.float64)
 		for mode in self.modes:
 			Cp += mode.getHeatCapacity(Tlist)
 		return Cp
@@ -465,7 +486,7 @@ class StatesModel:
 		Return the value of the partition function at the specified temperatures
 		`Tlist` in K.
 		"""
-		Q = np.ones((len(Tlist)), np.float64) / self.symmetry
+		Q = numpy.ones((len(Tlist)), numpy.float64) / self.symmetry
 		# Active K-rotor
 		rotors = [mode for mode in self.modes if isinstance(mode, RigidRotor)]
 		if len(rotors) == 0:
@@ -489,10 +510,10 @@ class StatesModel:
 		import states
 		
 		# Prepare inputs for density of states function
-		vib = np.array([mode.frequency for mode in self.modes if isinstance(mode, HarmonicOscillator)])
-		rot = np.array([mode.frequencies for mode in self.modes if isinstance(mode, RigidRotor)])
-		hind = np.array([[mode.frequency, mode.barrier] for mode in self.modes if isinstance(mode, HinderedRotor)])
-		if len(hind) == 0: hind = np.zeros([0,2],np.float64)
+		vib = numpy.array([mode.frequency for mode in self.modes if isinstance(mode, HarmonicOscillator)])
+		rot = numpy.array([mode.frequencies for mode in self.modes if isinstance(mode, RigidRotor)])
+		hind = numpy.array([[mode.frequency, mode.barrier] for mode in self.modes if isinstance(mode, HinderedRotor)])
+		if len(hind) == 0: hind = numpy.zeros([0,2],numpy.float64)
 		linear = 1 if linear else 0
 		symm = self.symmetry
 

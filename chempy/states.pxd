@@ -24,6 +24,8 @@
 #
 ################################################################################
 
+cimport numpy
+
 cdef class Mode:
 	pass
 
@@ -35,11 +37,15 @@ cdef class Translation(Mode):
 	cdef public double volume
 	cdef public int dimension
 	
-	cpdef getPartitionFunction(Translation self, Tlist)
+	cpdef getPartitionFunction(self, numpy.ndarray Tlist)
 	
-	cpdef getHeatCapacity(Translation self, Tlist)
+	cpdef getHeatCapacity(self, numpy.ndarray Tlist)
 	
-	cpdef getDensityOfStates(Translation self, Elist)
+	cpdef getEnthalpy(self, numpy.ndarray Tlist)
+	
+	cpdef getEntropy(self, numpy.ndarray Tlist)
+	
+	cpdef getDensityOfStates(self, numpy.ndarray Elist)
 
 ################################################################################
 
