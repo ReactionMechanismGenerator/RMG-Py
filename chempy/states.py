@@ -406,72 +406,123 @@ def cellipk(x):
 
 class HarmonicOscillator(Mode):
 	"""
-	A representation of a vibrational mode as a one-dimensional quantum harmonic
-	oscillator. The oscillator is defined by its `frequency` in cm^-1.
+	A representation of a set of vibrational modes as one-dimensional quantum 
+	harmonic oscillator. The oscillators are defined by their `frequencies` in 
+	cm^-1.
 	"""
 
-	def __init__(self, frequency=0.0):
-		self.frequency = frequency
+	def __init__(self, frequencies=None):
+		self.frequencies = frequencies or []
 	
 	def __repr__(self):
-		return '%s.HarmonicOscillator(%s)' % (self.__module__, self.frequency)
+		return 'HarmonicOscillator(frequencies=%s)' % (self.frequencies)
 
 	def getPartitionFunction(self, Tlist):
 		"""
 		Return the value of the partition function at the specified temperatures
 		`Tlist` in K. The formula is
 
-		.. math:: q_\\mathrm{vib}(T) = \\frac{1.0}{1 - e^{- \\beta h c \\tilde{\\omega}}}
+		.. math:: q_\\mathrm{vib}(T) = \\prod_i \\frac{1}{1 - e^{-\\xi_i}}
+		
+		where
 
-		where :math:`T` is temperature, :math:`\\beta \\equiv (k_\\mathrm{B} T)^{-1}`,
-		:math:`\\tilde{\\omega}` is rotational frequency in cm^-1, :math:`c` is
-		the speed of light,	:math:`k_\\mathrm{B}` is Boltzmann's constant, and
-		:math:`h` is Planck's constant. Note that we have chosen our zero of
-		energy to be at the zero-point energy of the molecule, *not* the bottom
-		of the potential well.
+		.. math:: \\xi_i \\equiv \\frac{h \\nu_i}{k_\\mathrm{B} T}
+
+		:math:`T` is temperature, :math:`\\nu_i` is the frequency of vibration
+		:math:`i`, :math:`k_\\mathrm{B}` is the Boltzmann constant, :math:`h` 
+		is the Planck constant, and :math:`R` is the gas law constant. Note 
+		that we have chosen our zero of energy to be at the zero-point energy
+		of the molecule, *not* the bottom of the potential well.
 		"""
-		Q = []
-		for T in Tlist:
-			xi = self.frequency / (0.695039 * T)	# kB = 0.695039 cm^-1/K
-			Q.append(1.0 / (1 - math.exp(-xi)))
+		Q = numpy.ones_like(Tlist)
+		for freq in self.frequencies:
+			Q = Q / (1 - numpy.exp(-freq / (0.695039 * Tlist)))  # kB = 0.695039 cm^-1/K
 		return Q
 	
 	def getHeatCapacity(self, Tlist):
 		"""
-		Return the contribution to the heat capacity due to hindered rotation.
-		The formula is
+		Return the contribution to the heat capacity due to vibrations in 
+		J/mol*K. The formula is
 
-		.. math:: \\frac{C_\\mathrm{v}^\\mathrm{vib}(T)}{R} = \\xi^2 \\frac{e^\\xi}{\\left( 1 - e^\\xi \\right)^2}
+		.. math:: C_\\mathrm{v}^\\mathrm{vib}(T) = R \\sum_i \\xi_i^2 \\frac{e^\\xi_i}{\\left( 1 - e^\\xi_i \\right)^2}
 
 		where
 
-		.. math:: \\xi \\equiv \\frac{h \\nu}{k_\\mathrm{B} T}
+		.. math:: \\xi_i \\equiv \\frac{h \\nu_i}{k_\\mathrm{B} T}
 
-		:math:`T` is temperature, :math:`\\nu` is the vibration frequency,
-		:math:`k_\\mathrm{B}` is Boltzmann's constant, and :math:`R` is the gas
-		law constant.
+		:math:`T` is temperature, :math:`\\nu_i` is the frequency of vibration
+		:math:`i`, :math:`k_\\mathrm{B}` is the Boltzmann constant, :math:`h` 
+		is the Planck constant, and :math:`R` is the gas law constant. 
 		"""
-		Cv = []
-		for T in Tlist:
-			x = self.frequency / (0.695039 * T)	# kB = 0.695039 cm^-1/K
-			exp_x = math.exp(x)
+		Cv = numpy.zeros_like(Tlist)
+		for freq in self.frequencies:
+			x = freq / (0.695039 * Tlist)	# kB = 0.695039 cm^-1/K
+			exp_x = numpy.exp(x)
 			one_minus_exp_x = 1.0 - exp_x
-			Cv.append(x * x * exp_x / one_minus_exp_x / one_minus_exp_x)
-		return Cv
+			Cv = Cv + x * x * exp_x / one_minus_exp_x / one_minus_exp_x
+		return Cv * constants.R
 
-	def getDensityOfStates(self, Elist):
+	def getEnthalpy(self, Tlist):
+		"""
+		Return the contribution to the enthalpy due to vibrations in J/mol.
+		The formula is
+
+		.. math:: H^\\mathrm{vib}(T) = RT \\sum_i \\frac{\\xi_i}{e^{\\xi_i} - 1}
+		
+		where
+
+		.. math:: \\xi_i \\equiv \\frac{h \\nu_i}{k_\\mathrm{B} T}
+
+		:math:`T` is temperature, :math:`\\nu_i` is the frequency of vibration
+		:math:`i`, :math:`k_\\mathrm{B}` is the Boltzmann constant, :math:`h` 
+		is the Planck constant, and :math:`R` is the gas law constant. 
+		"""
+		H = numpy.zeros_like(Tlist)
+		for freq in self.frequencies:
+			x = freq / (0.695039 * Tlist)	# kB = 0.695039 cm^-1/K
+			exp_x = numpy.exp(x)
+			one_minus_exp_x = 1.0 - exp_x
+			H = H + x / (exp_x - 1)
+		return H * constants.R * Tlist
+
+	def getEntropy(self, Tlist):
+		"""
+		Return the contribution to the entropy due to vibrations in J/mol*K.
+		The formula is
+
+		.. math:: S^\\mathrm{vib}(T) = R \\sum_i \\left[ - \\ln \\left(1 - e^{-\\xi_i} \\right) + \\frac{\\xi}{e^{\\xi_i} - 1} \\right]
+		
+		where
+
+		.. math:: \\xi_i \\equiv \\frac{h \\nu_i}{k_\\mathrm{B} T}
+
+		:math:`T` is temperature, :math:`\\nu_i` is the frequency of vibration
+		:math:`i`, :math:`k_\\mathrm{B}` is the Boltzmann constant, :math:`h` 
+		is the Planck constant, and :math:`R` is the gas law constant. 
+		"""
+		S = numpy.log(self.getPartitionFunction(Tlist))
+		for freq in self.frequencies:
+			x = freq / (0.695039 * Tlist)	# kB = 0.695039 cm^-1/K
+			exp_x = numpy.exp(x)
+			S = S + x / (exp_x - 1)
+		return S * constants.R
+
+	def getDensityOfStates(self, Elist, rho0=None):
 		"""
 		Return the density of states at the specified energies `Elist` in J/mol
-		above the ground state. The formula is
-
-		.. math:: \\rho(E) = ?
-
-		where :math:`E` is energy. Note that the Beyer-Swinehart algorithm
-		provides a far more efficient method of convolving vibrational modes
-		into a density of states expression, so this function should not be
-		called for that purpose.
+		above the ground state. The Beyer-Swinehart method is used to 
+		efficiently convolve the vibrational density of states into the
+		density of states of other modes. To be accurate, this requires a small
+		(:math:`1-10 cm^-1` or so) energy spacing.
 		"""
-		pass
+		rho = rho0 or numpy.zeros_like(Elist)
+		dE = Elist[1] - Elist[0]
+		nE = len(Elist)
+		for freq in self.frequencies:
+			dn = int(freq * constants.h * constants.c * 100 * constants.Na / dE)
+			for n in range(dn+1, nE):
+				rho[n] = rho[n] + rho[n-dn]
+		return rho
 
 ################################################################################
 

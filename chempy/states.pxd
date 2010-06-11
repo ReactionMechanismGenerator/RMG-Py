@@ -85,13 +85,17 @@ cdef double cellipk(double x)
 
 cdef class HarmonicOscillator(Mode):
 	
-	cdef public double frequency
+	cdef public list frequencies
 	
-	cpdef getPartitionFunction(HarmonicOscillator self, Tlist)
+	cpdef getPartitionFunction(self, numpy.ndarray Tlist)
 	
-	cpdef getHeatCapacity(HarmonicOscillator self, Tlist)
+	cpdef getHeatCapacity(self, numpy.ndarray Tlist)
 	
-	cpdef getDensityOfStates(HarmonicOscillator self, Elist)
+	cpdef getEnthalpy(self, numpy.ndarray Tlist)
+	
+	cpdef getEntropy(self, numpy.ndarray Tlist)
+	
+	cpdef getDensityOfStates(self, numpy.ndarray Elist, numpy.ndarray rho0=?)
 
 ################################################################################
 
