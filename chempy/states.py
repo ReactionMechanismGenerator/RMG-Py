@@ -260,75 +260,101 @@ class RigidRotor(Mode):
 
 class HinderedRotor(Mode):
 	"""
-	A one-dimensional hindered rotor approximation of (internal) rotational
-	modes. This class implements the Pitzer model of one-dimensional hindered
-	rotation, which utilizes a hindered potential function
+	A one-dimensional hindered rotor using the simple potential function
 
 	.. math:: V(\\phi) = \\frac{1}{2} V_0 \\left[1 - \\cos \\left( \\sigma \\phi \\right) \\right]
 
-	where :math:`V_0` is the height of the potential barrier and :math:`\\sigma`
-	the number of minima or maxima in one revolution of angle :math:`\\phi`. The
-	hindered rotor is therefore described by two quantities: the `frequency` of
-	rotation in cm^-1, and the `barrier` height in cm^-1.
+	where :math:`V_0` is the height of the potential barrier and
+	:math:`\\sigma` is the number of minima or maxima in one revolution of
+	angle :math:`\\phi`, equivalent to the symmetry number of that rotor. The
+	hindered rotor is therefore described by three quantities: the moment of
+	`inertia` in kg*m^2, the `barrier` height in J/mol, and the `symmetry`
+	number.
 	"""
 
-	def __init__(self, frequency=0.0, barrier=0.0):
-		self.frequency = frequency
+	def __init__(self, inertia=None, barrier=None, symmetry=None):
+		self.inertia = inertia
 		self.barrier = barrier
-	
+		self.symmetry = symmetry
+
 	def __repr__(self):
-		return '%s.HinderedRotor(%s, %s, %s)' % (self.__module__, self.frequency, self.barrier)
+		return 'HinderedRotor(inertia=%s, barrier=%s, symmetry=%s)' % (self.inertia, self.barrier, self.symmetry)
 
 	def getPartitionFunction(self, Tlist):
 		"""
 		Return the value of the partition function at the specified temperatures
-		`Tlist` in K. The formula is
+		`Tlist` in K. The formula makes use of the Pitzer-Gwynn approximation:
 
-		.. math:: q_\\mathrm{hind}(T) = \\frac{1}{\\sigma} \\left( \\frac{\\pi k_\\mathrm{B} T}{h c \\tilde{\\omega}} \\right)^{1/2} \\exp \\left( -\\frac{V_0}{2 k_\\mathrm{B} T} \\right) I_0 \\left( \\frac{V_0}{2 k_\\mathrm{B} T} \\right) = q_\\mathrm{1f} \\left( k_\\mathrm{B} T \\right)^{1/2} \\exp \\left( -\\frac{V_0}{2 k_\\mathrm{B} T} \\right) I_0 \\left( \\frac{V_0}{2 k_\\mathrm{B} T} \\right)
+		.. math:: q_\\mathrm{hind}(T) = \\frac{q_\\mathrm{vib}^\\mathrm{quant}(T)}{q_\\mathrm{vib}^\\mathrm{class}(T)} q_\\mathrm{hind}^\\mathrm{class}(T)
 
-		where :math:`T` is temperature, :math:`V_0` is the barrier height,
-		:math:`\\tilde{\\omega}` is rotational frequency in cm^-1, :math:`c` is
-		the speed of light,	:math:`k_\\mathrm{B}` is Boltzmann's constant, and
-		:math:`h` is Planck's constant. :math:`\\sigma` is a placeholder for
-		the symmetry number. :math:`I_0(x)` is the modified Bessel function of
-		order zero.
+		Substituting in for the right-hand side partition functions gives
+
+		.. math:: q_\\mathrm{hind}(T) = \\frac{h \\nu}{k_\\mathrm{B} T} \\frac{1}{1 - \\exp \\left(- h \\nu / k_\\mathrm{B} T \\right)} \\left( \\frac{2 \\pi I k_\\mathrm{B} T}{h^2} \\right)^{1/2} \\frac{2 \\pi}{\\sigma} \\exp \\left( -\\frac{V_0}{2 k_\\mathrm{B} T} \\right) I_0 \\left( \\frac{V_0}{2 k_\\mathrm{B} T} \\right)
+
+		where
+		
+		.. math:: \\nu = \\sigma \\sqrt{\\frac{V_0}{2 I}}
+
+		:math:`T` is temperature, :math:`V_0` is the barrier height,
+		:math:`I` is the moment of inertia, :math:`\\sigma` is the symmetry
+		number, :math:`k_\\mathrm{B}` is the Boltzmann constant, and :math:`h`
+		is the Planck constant. :math:`I_0(x)` is the modified Bessel function
+		of order zero for argument :math:`x`.
 		"""
-		Q = []
-		for T in Tlist:
-			x = constants.h * constants.c * 100 * self.frequency / (constants.kB * T)
-			z = 0.5 * constants.h * constants.c * 100 * self.barrier / (constants.kB * T)
-			# The following is only valid in the classical limit
-			Q.append(math.sqrt(2.0 * constants.pi * z) / x * math.exp(-z) * besseli0(z))
-		return Q
+		frequency = self.symmetry * math.sqrt(self.barrier / constants.Na / 2 / self.inertia)
+		x = constants.h * frequency / (constants.kB * Tlist)
+		z = 0.5 * self.barrier / (constants.R * Tlist)
+		return x / (1 - numpy.exp(-x)) * numpy.sqrt(2 * math.pi * self.inertia * constants.kB * Tlist / constants.h / constants.h) * (2 * math.pi / self.symmetry) * numpy.exp(-z) * besseli0(z)
 	
 	def getHeatCapacity(self, Tlist):
 		"""
-		Return the contribution to the heat capacity due to hindered rotation.
-		The formula is
+		Return the contribution to the heat capacity due to hindered rotation in
+		J/mol*K. The formula is
 
 		.. math:: \\frac{C_\\mathrm{v}^\\mathrm{hind}(T)}{R} = \\frac{1}{2} + \\xi^2 - \\left[ \\xi \\frac{I_1(\\xi)}{I_0(\\xi)} \\right]^2 - \\xi \\frac{I_1(\\xi)}{I_0(\\xi)}
 
 		where
 
-		.. math:: \\xi \\equiv \\frac{V_0}{2 k_\\mathrm{B} T}
+		.. math:: \\xi \\equiv \\frac{\\nu}{2 k_\\mathrm{B} T}
 
-		:math:`T` is temperature, :math:`V_0` is barrier height,
-		:math:`k_\\mathrm{B}` is Boltzmann's constant, and :math:`R` is the gas
-		law constant.
+		:math:`T` is temperature, :math:`V_0` is the barrier height,
+		:math:`k_\\mathrm{B}` is the Boltzmann constant, and :math:`R` is the
+		gas law constant. The functional form for :math:`\\nu` is given in
+		the definition of the partition function.
 		"""
-		Cv = []
-		for T in Tlist:
-			x = constants.h * constants.c * 100 * self.frequency / (constants.kB * T)
-			z = 0.5 * constants.h * constants.c * 100 * self.barrier / (constants.kB * T)
-			
-			exp_x = math.exp(x)
-			one_minus_exp_x = 1.0 - exp_x
-			BB = besseli1(z) / besseli0(z)
+		Cv = numpy.zeros_like(Tlist)
+		frequency = self.symmetry * math.sqrt(self.barrier / constants.Na / 2 / self.inertia)
+		x = constants.h * frequency / (constants.kB * Tlist)
+		z = 0.5 * self.barrier / (constants.R * Tlist)
+		exp_x = numpy.exp(x)
+		one_minus_exp_x = 1.0 - exp_x
+		BB = besseli1(z) / besseli0(z)
+		return x * x * exp_x / one_minus_exp_x / one_minus_exp_x - 0.5 + z * (z - BB - z * BB * BB)
 		
-			Cv.append(x * x * exp_x / one_minus_exp_x / one_minus_exp_x - 0.5 + z * (z - BB - z * BB * BB))
-		
-		return Cv
-		
+	def getEnthalpy(self, Tlist):
+		"""
+		Return the contribution to the enthalpy due to hindered rotation in
+		J/mol. This is calculated numerically from the partition function.
+		"""
+		Tlist_low = Tlist * 0.999
+		Tlist_high = Tlist * 1.001
+		return constants.R * (Tlist * Tlist *
+			(numpy.log(self.getPartitionFunction(Tlist_high)) -
+			numpy.log(self.getPartitionFunction(Tlist_low))) /
+			(Tlist_high - Tlist_low) + Tlist)
+
+	def getEntropy(self, Tlist):
+		"""
+		Return the contribution to the entropy due to hindered rotation in
+		J/mol*K. This is calculated numerically from the partition function.
+		"""
+		Tlist_low = Tlist * 0.999
+		Tlist_high = Tlist * 1.001
+		return constants.R * (numpy.log(self.getPartitionFunction(Tlist_high)) +
+			Tlist * (numpy.log(self.getPartitionFunction(Tlist_high)) -
+			numpy.log(self.getPartitionFunction(Tlist_low))) /
+			(Tlist_high - Tlist_low))
+
 	def getDensityOfStates(self, Elist):
 		"""
 		Return the density of states at the specified energlies `Elist` in J/mol
@@ -340,50 +366,60 @@ class HinderedRotor(Mode):
 
 		.. math:: \\rho(E) = \\frac{2 q_\\mathrm{1f}}{\\pi^{3/2} E^{1/2}} \\mathcal{K}(V_0 / E) \\hspace{20pt} E > V_0
 
-		where :math:`E` is energy, :math:`V_0` is barrier height, and
+		where
+
+		.. math:: q_\\mathrm{1f} = \\frac{\\pi^{1/2}}{\\sigma} \\left( \\frac{8 \\pi^2 I}{h^2} \\right)^{1/2}
+
+		:math:`E` is energy, :math:`V_0` is barrier height, and
 		:math:`q_\\mathrm{1f}` is defined in the equation for the partition
 		function. :math:`\\mathcal{K}(x)` is the complete elliptic integral of the first
 		kind.
 		"""
-		
+		rho = numpy.zeros_like(Elist)
+		q1f = math.sqrt(8 * math.pi * math.pi * math.pi * self.inertia / constants.h / constants.h) / self.symmetry
+		pre = 2.0 * q1f / math.sqrt(math.pi * math.pi * math.pi * self.barrier)
+		V0 = self.barrier
 		# The following is only valid in the classical limit
-		rho = []
-		pre = 2.0 / constants.pi / (constants.h * constants.c * 100 * self.frequency * constants.Na)
-		V0 = constants.h * constants.c * 100 * self.barrier * constants.Na
-		for E in Elist:
-			if E / V0 <= 1:
-				rho.append(pre * cellipk(E / V0))
+		for i in range(len(Elist)):
+			if Elist[i] / V0 <= 1:
+				rho[i] = pre * cellipk(Elist[i] / V0)
 			else:
-				rho.append(pre * math.sqrt(V0 / E) * cellipk(V0 / E))
+				rho[i] = pre * math.sqrt(V0 / Elist[i]) * cellipk(V0 / Elist[i])
 		return rho
 
-def besseli0(x):
+def besseli0(xlist):
 	"""
 	Return the value of the zeroth-order modified Bessel function at `x`.
 	"""
-	if math.abs(x) < 3.75:
-		Y = x * x / 3.75 / 3.75
-		return 1.0+Y*(3.5156229+Y*(3.0899424+Y*(1.2067429+Y*(0.2659732+Y*(0.0360768+Y*0.0045813)))))
-	else:
-		AX = math.abs(x)
-		Y = 3.75 / AX
-		BX = math.exp(AX) / math.sqrt(AX)
-		AX = 0.39894228+Y*(0.01328592+Y*(0.00225319+Y*(-0.00157565+Y*(0.00916281+Y*(-0.02057706+Y*(0.02635537+Y*(-0.01647633+Y*0.00392377)))))))
-		return AX * BX
+	flist = numpy.zeros_like(xlist)
+	for i, x in enumerate(xlist):
+		if abs(x) < 3.75:
+			Y = x * x / 3.75 / 3.75
+			flist[i] = 1.0+Y*(3.5156229+Y*(3.0899424+Y*(1.2067429+Y*(0.2659732+Y*(0.0360768+Y*0.0045813)))))
+		else:
+			AX = abs(x)
+			Y = 3.75 / AX
+			BX = math.exp(AX) / math.sqrt(AX)
+			AX = 0.39894228+Y*(0.01328592+Y*(0.00225319+Y*(-0.00157565+Y*(0.00916281+Y*(-0.02057706+Y*(0.02635537+Y*(-0.01647633+Y*0.00392377)))))))
+			flist[i] = AX * BX
+	return flist
 
-def besseli1(x):
+def besseli1(xlist):
 	"""
 	Return the value of the first-order modified Bessel function at `x`.
 	"""
-	if math.abs(x) < 3.75:
-		Y = x * x / 3.75 / 3.75
-		return 0.5+Y*(0.87890594+Y*(0.51498869+Y*(0.15084934+Y*(0.02658733+Y*(0.00301532+Y*0.00032411)))))
-	else:
-		AX = math.abs(x)
-		Y = 3.75 / AX
-		BX = math.exp(AX) / math.sqrt(AX)
-		AX = 0.39894228+Y*(-0.03988024+Y*(-0.00362018+Y*(0.00163801+Y*(-0.01031555+Y*(0.02282967+Y*(-0.02895312+Y*(0.01787654+Y*-0.00420059)))))))
-		return AX * BX
+	flist = numpy.zeros_like(xlist)
+	for i, x in enumerate(xlist):
+		if abs(x) < 3.75:
+			Y = x * x / 3.75 / 3.75
+			flist[i] = 0.5+Y*(0.87890594+Y*(0.51498869+Y*(0.15084934+Y*(0.02658733+Y*(0.00301532+Y*0.00032411)))))
+		else:
+			AX = abs(x)
+			Y = 3.75 / AX
+			BX = math.exp(AX) / math.sqrt(AX)
+			AX = 0.39894228+Y*(-0.03988024+Y*(-0.00362018+Y*(0.00163801+Y*(-0.01031555+Y*(0.02282967+Y*(-0.02895312+Y*(0.01787654+Y*-0.00420059)))))))
+			flist[i] = AX * BX
+	return flist
 
 def cellipk(x):
 	"""
@@ -397,7 +433,7 @@ def cellipk(x):
 		B0 = B
 		A = (A0 + B0) / 2
 		B = math.sqrt(A0 * B0)
-		if math.abs(A - B) < 1.0e-12:
+		if abs(A - B) < 1.0e-12:
 			break
 			
 	return 3.141592654 / 2.0 / A

@@ -68,17 +68,22 @@ cdef class RigidRotor(Mode):
 
 cdef class HinderedRotor(Mode):
 	
-	cdef public double frequency
+	cdef public double inertia
 	cdef public double barrier
+	cdef public int symmetry
 	
-	cpdef getPartitionFunction(HinderedRotor self, Tlist)
-	
-	cpdef getHeatCapacity(HinderedRotor self, Tlist)
-	
-	cpdef getDensityOfStates(HinderedRotor self, Elist)
+	cpdef getPartitionFunction(self, numpy.ndarray Tlist)
 
-cdef double besseli0(double x)
-cdef double besseli1(double x)
+	cpdef getHeatCapacity(self, numpy.ndarray Tlist)
+
+	cpdef getEnthalpy(self, numpy.ndarray Tlist)
+
+	cpdef getEntropy(self, numpy.ndarray Tlist)
+
+	cpdef getDensityOfStates(self, numpy.ndarray Elist)
+
+cdef besseli0(numpy.ndarray xlist)
+cdef besseli1(numpy.ndarray xlist)
 cdef double cellipk(double x)
 
 ################################################################################
