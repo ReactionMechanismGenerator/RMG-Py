@@ -7,20 +7,35 @@
 .. autoclass:: chempy.states.StatesModel
     :members:
 
-Molecular Degrees of Freedom
-============================
-
 .. autoclass:: chempy.states.Mode
     :members:
+
+External Degrees of Freedom
+===========================
+
+Translation
+-----------
 
 .. autoclass:: chempy.states.Translation
     :members:
 
-.. autoclass:: chempy.states.HarmonicOscillator
-    :members:
+Rotation
+--------
 
 .. autoclass:: chempy.states.RigidRotor
     :members:
+
+Internal Degrees of Freedom
+===========================
+
+Vibration
+---------
+
+.. autoclass:: chempy.states.HarmonicOscillator
+    :members:
+
+Torsion
+-------
 
 .. autoclass:: chempy.states.HinderedRotor
     :members:
