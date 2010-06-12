@@ -125,71 +125,73 @@ class Translation(Mode):
 		Return the value of the partition function at the specified temperatures
 		`Tlist` in K. The formula is
 
-		.. math:: q_\\mathrm{trans}(T, V) = \\left( \\frac{2 \\pi m k_\\mathrm{B} T}{h^2} \\right)^{d/2} V = q_\\mathrm{t} \\left( k_\\mathrm{B} T \\right)^{d/2}
+		.. math:: q_\\mathrm{trans}(T, V) = \\left( \\frac{2 \\pi m k_\\mathrm{B} T}{h^2} \\right)^{d/2} V
 
 		where :math:`T` is temperature, :math:`V` is volume, :math:`m` is mass,
-		:math:`d` is dimensionality, :math:`k_\\mathrm{B}` is Boltzmann's
-		cone-27stant, and :math:`h` is Planck's constant.
+		:math:`d` is dimensionality, :math:`k_\\mathrm{B}` is the Boltzmann
+		constant, and :math:`h` is the Planck constant.
 		"""
-		Q = numpy.zeros_like(Tlist)
+		cython.declare(qt=cython.double)
 		qt = ((2 * constants.pi * self.mass / constants.Na) / (constants.h * constants.h))**(self.dimension/2.0) * self.volume
-		Q = qt * (constants.kB * Tlist)**(self.dimension/2.0)
-		return Q
-
+		return qt * (constants.kB * Tlist)**(self.dimension/2.0)
+	
 	def getHeatCapacity(self, Tlist):
 		"""
-		Return the contribution to the heat capacity due to translation in 
-		J/mol*K. The formula is
+		Return the contribution to the heat capacity due to translation scaled
+		by the gas law constant at the specified temperatures `Tlist` in K. The
+		formula is
 
-		.. math:: C_\\mathrm{v}^\\mathrm{trans}(T) = \\frac{d}{2} R
+		.. math:: \\frac{C_\\mathrm{v}^\\mathrm{trans}(T)}{R} = \\frac{d}{2}
 
-		where :math:`T` is temperature, :math:`V` is volume,
-		:math:`d` is dimensionality, and :math:`R` is the gas law constant.
+		where :math:`T` is temperature,	:math:`d` is dimensionality, and
+		:math:`R` is the gas law constant.
 		"""
-		return 0.5 * constants.R * self.dimension * numpy.ones_like(Tlist)
+		return 0.5 * self.dimension * numpy.ones_like(Tlist)
 	
 	def getEnthalpy(self, Tlist):
 		"""
-		Return the contribution to the enthalpy due to translation in 
-		J/mol. The formula is
+		Return the contribution to the enthalpy due to translation scaled by
+		:math:`RT` at the specified temperatures `Tlist` in K. The formula is
 
-		.. math:: H^\\mathrm{trans}(T) = \\frac{d}{2} RT
+		.. math:: \\frac{H^\\mathrm{trans}(T)}{RT} = \\frac{d}{2}
 
-		where :math:`T` is temperature, :math:`V` is volume,
-		:math:`d` is dimensionality, and :math:`R` is the gas law constant.
+		where :math:`T` is temperature, :math:`d` is dimensionality, and
+		:math:`R` is the gas law constant.
 		"""
-		return 0.5 * self.dimension * Tlist
+		return 0.5 * self.dimension * numpy.ones_like(Tlist)
 	
 	def getEntropy(self, Tlist):
 		"""
-		Return the contribution to the entropy due to translation in 
-		J/mol*K. The formula is
+		Return the contribution to the entropy due to translation scaled by the
+		gas law constant at the specified temperatures `Tlist` in K. The formula
+		is
 
-		.. math:: S^\\mathrm{trans}(T) = R \\ln \\left[ q_\\mathrm{t} \\left( k_\\mathrm{B} T \\right)^{d/2} e^{d/2} \\right]
+		.. math:: \\frac{S^\\mathrm{trans}(T)}{R} = \\frac{d}{2} \\ln \\left( \\frac{2 \\pi m k_\\mathrm{B} T}{h^2} e \\right)
 		
-		where :math:`T` is temperature, :math:`m` is mass, :math:`V` is volume,
-		:math:`d` is dimensionality, and :math:`R` is the gas law constant.
+		where :math:`T` is temperature, :math:`m` is mass, :math:`d` is
+		dimensionality, :math:`k_\\mathrm{B}` is the Boltzmann constant, and
+		:math:`R` is the gas law constant.
 		"""
-		S = numpy.zeros_like(Tlist)
+		cython.declare(qt=cython.double)
 		qt = ((2 * constants.pi * self.mass / constants.Na) / (constants.h * constants.h))**(self.dimension/2.0) * self.volume
-		S = constants.R * numpy.log( qt * (math.e * constants.R * Tlist)**(self.dimension/2.0) )
-		return S
+		return numpy.log( qt * (math.e * constants.kB * Tlist)**(self.dimension/2.0) )
 	
 	def getDensityOfStates(self, Elist):
 		"""
 		Return the density of states at the specified energlies `Elist` in J/mol
 		above the ground state. The formula is
 
-		.. math:: \\rho(E) = \\frac{q_\\mathrm{t} E^{d/2-1}}{(d/2-1)!}
+		.. math:: \\rho(E) = \\left( \\frac{2 \\pi m}{h^2} \\right)^{d/2} \\frac{E^{d/2-1}}{(d/2-1)!} V
 
-		where :math:`E` is energy, :math:`d` is dimensionality, and
-		:math:`q_\\mathrm{t}` is defined in the equation for the partition
-		function.
+		where :math:`E` is energy, :math:`m` is mass, :math:`d` is
+		dimensionality, :math:`k_\\mathrm{B}` is the Boltzmann constant, and
+		:math:`R` is the gas law constant.
 		"""
+		cython.declare(rho=numpy.ndarray, qt=cython.double)
 		rho = numpy.zeros_like(Elist)
 		qt = ((2 * constants.pi * self.mass / constants.Na / constants.Na) / (constants.h * constants.h))**(self.dimension/2.0) * self.volume
 		if self.dimension == 2: # Dimension is 2
-			rho = qt
+			rho = qt * numpy.ones_like(Elist)
 		elif self.dimension == 3: # Dimension is 3
 			rho = qt * numpy.sqrt(Elist / math.pi) * 0.5
 		else:
@@ -202,116 +204,134 @@ class RigidRotor(Mode):
 	"""
 	A rigid rotor approximation of (external) rotational modes. The `linear`
 	attribute is :data:`True` if the associated molecule is linear, and
-	:data:`False` if nonlinear. For a linear molecule, `frequencies` stores a
-	list with one frequency, that of the rotation, in cm^-1. For a nonlinear
-	molecule, `frequencies` stores a list of the three frequencies of rotation,
-	even if two or three are equal, in cm^-1. Symmetry number corrections are
+	:data:`False` if nonlinear. For a linear molecule, `inertia` stores a
+	list with one moment of inertia in kg*m^2. For a nonlinear
+	molecule, `frequencies` stores a list of the three moments of inertia,
+	even if two or three are equal, in kg*m^2. The symmetry number of the
+	rotation is stored in the `symmetry` attribute.
+	Symmetry number corrections are
 	*not* applied by this class.
 	"""
 
-	def __init__(self, linear=False, frequencies=None):
+	def __init__(self, linear=False, inertia=None, symmetry=1):
 		self.linear = linear
-		self.frequencies = frequencies or []
+		self.inertia = inertia or []
+		self.symmetry = symmetry
 
 	def __repr__(self):
-		return 'RigidRotor(linear=%s, frequencies=%s)' % (self.linear, self.frequencies)
+		return 'RigidRotor(linear=%s, inertia=%s, symmetry=%s)' % (self.linear, self.inertia, self.symmetry)
 
 	def getPartitionFunction(self, Tlist):
 		"""
 		Return the value of the partition function at the specified temperatures
 		`Tlist` in K. The formula is
 
-		.. math:: q_\\mathrm{rot}(T) = \\frac{k_\\mathrm{B} T}{\\sigma h c \\tilde{\\omega}} = q_\\mathrm{r} k_\\mathrm{B} T
+		.. math:: q_\\mathrm{rot}(T) = \\frac{8 \\pi^2 I k_\\mathrm{B} T}{\\sigma h^2}
 
 		for linear rotors and
 
-		.. math:: q_\\mathrm{rot}(T) = \\frac{\\sqrt{\\pi}}{\\sigma} \\left[ \\frac{ \\left( k_\\mathrm{B} T \\right)^3 }{\\left( hc \\right)^3 \\tilde{\\omega_\\mathrm{A}} \\tilde{\\omega_\\mathrm{B}} \\tilde{\\omega_\\mathrm{C}} } \\right]^{1/2} = q_\\mathrm{r} \\left( k_\\mathrm{B} T \\right)^{3/2}
+		.. math:: q_\\mathrm{rot}(T) = \\frac{\\sqrt{\\pi}}{\\sigma} \\left( \\frac{8 \\pi^2 k_\\mathrm{B} T}{h^2} \\right)^{3/2} \\sqrt{I_\\mathrm{A} I_\\mathrm{B} I_\\mathrm{C}}
 
-		for nonlinear rotors. Above, :math:`T` is temperature,
-		:math:`\\tilde{\\omega}` is rotational frequency in cm^-1, :math:`c` is
-		the speed of light,	:math:`k_\\mathrm{B}` is Boltzmann's constant, and
-		:math:`h` is Planck's constant. :math:`\\sigma` is a placeholder for
-		the symmetry number.
+		for nonlinear rotors. Above, :math:`T` is temperature, :math:`\\sigma`
+		is the symmetry number, :math:`I` is the moment of inertia, 
+		:math:`k_\\mathrm{B}` is the Boltzmann constant, and :math:`h` is the
+		Planck constant.
 		"""
-		Q = numpy.zeros_like(Tlist)
+		cython.declare(theta=cython.double, inertia=cython.double)
 		if self.linear:
-			theta = constants.h * constants.c * 100 * self.frequencies[0] / constants.kB
-			Q = Tlist / theta
+			theta = constants.h * constants.h / (8 * constants.pi * constants.pi * self.inertia[0] * constants.kB)
+			return Tlist / theta / self.symmetry
 		else:
 			theta = 1.0
-			for freq in self.frequencies:
-				theta = theta * constants.h * constants.c * 100 * freq / constants.kB
-			Q = numpy.sqrt(constants.pi * Tlist**len(self.frequencies) / theta)
-		return Q
+			for inertia in self.inertia:
+				theta *= constants.h * constants.h / (8 * constants.pi * constants.pi * inertia * constants.kB)
+			return numpy.sqrt(constants.pi * Tlist**len(self.inertia) / theta) / self.symmetry
 		
 	def getHeatCapacity(self, Tlist):
 		"""
-		Return the contribution to the heat capacity due to rigid rotation in
-		J/mol*K. The formula is
+		Return the contribution to the heat capacity due to rigid rotation
+		scaled by the gas law constant at the specified temperatures `Tlist`
+		in K. The formula is
 
-		.. math:: C_\\mathrm{v}^\\mathrm{rot}(T) = \\frac{3}{2} R
+		.. math:: \\frac{C_\\mathrm{v}^\\mathrm{rot}(T)}{R} = 1
 
-		if nonlinear and
+		if linear and
 
-		.. math:: C_\\mathrm{v}^\\mathrm{rot}(T) = R
+		.. math:: \\frac{C_\\mathrm{v}^\\mathrm{rot}(T)}{R} = \\frac{3}{2}
 
-		if linear, where :math:`T` is temperature and :math:`R` is the gas law
-		constant.
+		if nonlinear, where :math:`T` is temperature and :math:`R` is the gas
+		law constant.
 		"""
-		Cv = constants.R * numpy.ones_like(Tlist)
-		if not self.linear:
-			Cv = 1.5 * Cv
-		return Cv
+		if self.linear:
+			return numpy.ones_like(Tlist)
+		else:
+			return 1.5 * numpy.ones_like(Tlist)
 
 	def getEnthalpy(self, Tlist):
 		"""
-		Return the contribution to the enthalpy due to rigid rotation in 
-		J/mol. The formula is
+		Return the contribution to the enthalpy due to rigid rotation scaled
+		by :math:`RT` at the specified temperatures `Tlist` in K. The formula is
 
-		.. math:: H^\\mathrm{rot}(T) = \\frac{3}{2} RT
+		.. math:: \\frac{H^\\mathrm{rot}(T)}{RT} = 1
 
-		where :math:`T` is temperature and :math:`R` is the gas law constant.
+		for linear rotors and
+
+		.. math:: \\frac{H^\\mathrm{rot}(T)}{RT} = \\frac{3}{2}
+
+		for nonlinear rotors, where :math:`T` is temperature and :math:`R` is
+		the gas law constant.
 		"""
-		return 1.5 * Tlist
+		if self.linear:
+			return numpy.ones_like(Tlist)
+		else:
+			return 1.5 * numpy.ones_like(Tlist)
 	
 	def getEntropy(self, Tlist):
 		"""
-		Return the contribution to the entropy due to rigid rotation in 
-		J/mol*K. The formula is
+		Return the contribution to the entropy due to rigid rotation scaled by
+		the gas law constant at the specified temperatures `Tlist` in K. The
+		formula is
 
-		.. math:: S^\\mathrm{rot}(T) = R \\left( \\ln Q^\\mathrm{rot} + \\frac{3}{2} \\right)
+		.. math:: \\frac{S^\\mathrm{rot}(T)}{R} = \\ln Q^\\mathrm{rot} + 1
 		
-		where :math:`Q^\\mathrm{rot}` is the partition function for a rigid 
-		rotor and :math:`R` is the gas law constant.
+		for linear rotors and
+
+		.. math:: \\frac{S^\\mathrm{rot}(T)}{R} = \\ln Q^\\mathrm{rot} + \\frac{3}{2}
+
+		for nonlinear rotors, where :math:`Q^\\mathrm{rot}` is the partition 
+		function for a rigid rotor and :math:`R` is the gas law constant.
 		"""
-		return constants.R * (numpy.log(self.getPartitionFunction(Tlist)) + 1.5)
+		if self.linear:
+			return numpy.log(self.getPartitionFunction(Tlist)) + 1.0
+		else:
+			return numpy.log(self.getPartitionFunction(Tlist)) + 1.5
 	
 	def getDensityOfStates(self, Elist):
 		"""
 		Return the density of states at the specified energlies `Elist` in J/mol
 		above the ground state in mol/J. The formula is
 
-		.. math:: \\rho(E) = q_\\mathrm{r}
+		.. math:: \\rho(E) = \\frac{8 \\pi^2 I}{\\sigma h^2}
 
 		for linear rotors and
 
-		.. math:: \\rho(E) = \\frac{q_\\mathrm{r} E^{1/2}}{\\frac{1}{2}!}
+		.. math:: \\rho(E) = \\frac{\\sqrt{\\pi}}{\\sigma} \\left( \\frac{8 \\pi^2}{h^2} \\right)^{3/2} \\sqrt{I_\\mathrm{A} I_\\mathrm{B} I_\\mathrm{C}} \\frac{E^{1/2}}{\\frac{1}{2}!}
 
-		for nonlinear rotors. Above,  :math:`E` is energy and
-		:math:`q_\\mathrm{r}` is defined in the	equation for the partition
-		function.
+		for nonlinear rotors. Above, :math:`E` is energy, :math:`\\sigma`
+		is the symmetry number, :math:`I` is the moment of inertia,
+		:math:`k_\\mathrm{B}` is the Boltzmann constant, and :math:`h` is the
+		Planck constant.
 		"""
-		rho = numpy.zeros_like(Elist)
+		cython.declare(theta=cython.double, inertia=cython.double)
 		if self.linear:
-			theta = constants.h * constants.c * 100 * self.frequencies[0] * constants.Na
-			rho = 1.0 / theta
+			theta = constants.h * constants.h / (8 * constants.pi * constants.pi * self.inertia[0] * constants.kB)
+			return 1.0 / theta / self.symmetry
 		else:
 			theta = 1.0
-			for freq in self.frequencies:
-				theta = theta * constants.h * constants.c * 100 * freq * constants.Na
-			rho = 2.0 * numpy.sqrt(Elist / theta)
-		return rho
-
+			for inertia in self.inertia:
+				theta *= constants.h * constants.h / (8 * constants.pi * constants.pi * inertia * constants.kB)
+			return 2.0 * numpy.sqrt(Elist / theta) / self.symmetry
+		
 ################################################################################
 
 class HinderedRotor(Mode):
@@ -357,6 +377,7 @@ class HinderedRotor(Mode):
 		is the Planck constant. :math:`I_0(x)` is the modified Bessel function
 		of order zero for argument :math:`x`.
 		"""
+		cython.declare(frequency=cython.double, x=numpy.ndarray, z=numpy.ndarray)
 		frequency = self.symmetry * math.sqrt(self.barrier / constants.Na / 2 / self.inertia)
 		x = constants.h * frequency / (constants.kB * Tlist)
 		z = 0.5 * self.barrier / (constants.R * Tlist)
@@ -364,21 +385,19 @@ class HinderedRotor(Mode):
 	
 	def getHeatCapacity(self, Tlist):
 		"""
-		Return the contribution to the heat capacity due to hindered rotation in
-		J/mol*K. The formula is
+		Return the contribution to the heat capacity due to hindered rotation
+		scaled by the gas law constant at the specified temperatures `Tlist`
+		in K. The formula is
 
-		.. math:: \\frac{C_\\mathrm{v}^\\mathrm{hind}(T)}{R} = \\frac{1}{2} + \\xi^2 - \\left[ \\xi \\frac{I_1(\\xi)}{I_0(\\xi)} \\right]^2 - \\xi \\frac{I_1(\\xi)}{I_0(\\xi)}
+		.. math:: \\frac{C_\\mathrm{v}^\\mathrm{hind}(T)}{R} = \\frac{C_\\mathrm{v}^\\mathrm{vib}(T)}{R} -\\frac{1}{2} + \\zeta^2 - \\left[ \\zeta \\frac{I_1(\\zeta)}{I_0(\\zeta)} \\right]^2 - \\zeta \\frac{I_1(\\zeta)}{I_0(\\zeta)}
 
-		where
-
-		.. math:: \\xi \\equiv \\frac{\\nu}{2 k_\\mathrm{B} T}
-
+		where :math:`\\zeta \\equiv V_0 / 2 k_\\mathrm{B} T`,
 		:math:`T` is temperature, :math:`V_0` is the barrier height,
 		:math:`k_\\mathrm{B}` is the Boltzmann constant, and :math:`R` is the
-		gas law constant. The functional form for :math:`\\nu` is given in
-		the definition of the partition function.
+		gas law constant.
 		"""
-		Cv = numpy.zeros_like(Tlist)
+		cython.declare(frequency=cython.double, x=numpy.ndarray, z=numpy.ndarray)
+		cython.declare(exp_x=numpy.ndarray, one_minus_exp_x=numpy.ndarray, BB=numpy.ndarray)
 		frequency = self.symmetry * math.sqrt(self.barrier / constants.Na / 2 / self.inertia)
 		x = constants.h * frequency / (constants.kB * Tlist)
 		z = 0.5 * self.barrier / (constants.R * Tlist)
@@ -389,24 +408,26 @@ class HinderedRotor(Mode):
 		
 	def getEnthalpy(self, Tlist):
 		"""
-		Return the contribution to the enthalpy due to hindered rotation in
-		J/mol. This is calculated numerically from the partition function.
+		Return the contribution to the heat capacity due to hindered rotation
+		scaled by :math:`RT` at the specified temperatures `Tlist`
+		in K. This is calculated numerically from the partition function.
 		"""
 		Tlist_low = Tlist * 0.999
 		Tlist_high = Tlist * 1.001
-		return constants.R * (Tlist * Tlist *
+		return (Tlist *
 			(numpy.log(self.getPartitionFunction(Tlist_high)) -
 			numpy.log(self.getPartitionFunction(Tlist_low))) /
-			(Tlist_high - Tlist_low) + Tlist)
+			(Tlist_high - Tlist_low) + 1.0)
 
 	def getEntropy(self, Tlist):
 		"""
-		Return the contribution to the entropy due to hindered rotation in
-		J/mol*K. This is calculated numerically from the partition function.
+		Return the contribution to the heat capacity due to hindered rotation
+		scaled by the gas law constant at the specified temperatures `Tlist`
+		in K. This is calculated numerically from the partition function.
 		"""
 		Tlist_low = Tlist * 0.999
 		Tlist_high = Tlist * 1.001
-		return constants.R * (numpy.log(self.getPartitionFunction(Tlist_high)) +
+		return (numpy.log(self.getPartitionFunction(Tlist_high)) +
 			Tlist * (numpy.log(self.getPartitionFunction(Tlist_high)) -
 			numpy.log(self.getPartitionFunction(Tlist_low))) /
 			(Tlist_high - Tlist_low))
@@ -427,10 +448,10 @@ class HinderedRotor(Mode):
 		.. math:: q_\\mathrm{1f} = \\frac{\\pi^{1/2}}{\\sigma} \\left( \\frac{8 \\pi^2 I}{h^2} \\right)^{1/2}
 
 		:math:`E` is energy, :math:`V_0` is barrier height, and
-		:math:`q_\\mathrm{1f}` is defined in the equation for the partition
-		function. :math:`\\mathcal{K}(x)` is the complete elliptic integral of the first
+		:math:`\\mathcal{K}(x)` is the complete elliptic integral of the first
 		kind.
 		"""
+		cython.declare(rho=numpy.ndarray, q1f=cython.double, pre=cython.double, V0=cython.double, i=cython.int)
 		rho = numpy.zeros_like(Elist)
 		q1f = math.sqrt(8 * math.pi * math.pi * math.pi * self.inertia / constants.h / constants.h) / self.symmetry
 		pre = 2.0 * q1f / math.sqrt(math.pi * math.pi * math.pi * self.barrier)
@@ -447,6 +468,8 @@ def besseli0(xlist):
 	"""
 	Return the value of the zeroth-order modified Bessel function at `x`.
 	"""
+	cython.declare(flist=numpy.ndarray, i=cython.int, x=cython.double)
+	cython.declare(Y=cython.double, AX=cython.double, BX=cython.double)
 	flist = numpy.zeros_like(xlist)
 	for i, x in enumerate(xlist):
 		if abs(x) < 3.75:
@@ -464,6 +487,8 @@ def besseli1(xlist):
 	"""
 	Return the value of the first-order modified Bessel function at `x`.
 	"""
+	cython.declare(flist=numpy.ndarray, i=cython.int, x=cython.double)
+	cython.declare(Y=cython.double, AX=cython.double, BX=cython.double)
 	flist = numpy.zeros_like(xlist)
 	for i, x in enumerate(xlist):
 		if abs(x) < 3.75:
@@ -481,6 +506,8 @@ def cellipk(x):
 	"""
 	Return the value of the complete elliptic integral of the first kind at `x`.
 	"""
+	cython.declare(n=cython.int)
+	cython.declare(A=cython.double, B=cython.double, A0=cython.double, B0=cython.double)
 	if x < 0 or x > 1: return 0.0
 	A = 1.0
 	B = math.sqrt(1.0 - x)
@@ -516,16 +543,14 @@ class HarmonicOscillator(Mode):
 
 		.. math:: q_\\mathrm{vib}(T) = \\prod_i \\frac{1}{1 - e^{-\\xi_i}}
 		
-		where
-
-		.. math:: \\xi_i \\equiv \\frac{h \\nu_i}{k_\\mathrm{B} T}
-
+		where :math:`\\xi_i \\equiv h \\nu_i / k_\\mathrm{B} T`,
 		:math:`T` is temperature, :math:`\\nu_i` is the frequency of vibration
 		:math:`i`, :math:`k_\\mathrm{B}` is the Boltzmann constant, :math:`h` 
 		is the Planck constant, and :math:`R` is the gas law constant. Note 
 		that we have chosen our zero of energy to be at the zero-point energy
 		of the molecule, *not* the bottom of the potential well.
 		"""
+		cython.declare(Q=numpy.ndarray, freq=cython.double)
 		Q = numpy.ones_like(Tlist)
 		for freq in self.frequencies:
 			Q = Q / (1 - numpy.exp(-freq / (0.695039 * Tlist)))  # kB = 0.695039 cm^-1/K
@@ -533,71 +558,70 @@ class HarmonicOscillator(Mode):
 	
 	def getHeatCapacity(self, Tlist):
 		"""
-		Return the contribution to the heat capacity due to vibrations in 
-		J/mol*K. The formula is
+		Return the contribution to the heat capacity due to vibration
+		scaled by the gas law constant at the specified temperatures `Tlist`
+		in K. The formula is
 
-		.. math:: C_\\mathrm{v}^\\mathrm{vib}(T) = R \\sum_i \\xi_i^2 \\frac{e^\\xi_i}{\\left( 1 - e^\\xi_i \\right)^2}
+		.. math:: \\frac{C_\\mathrm{v}^\\mathrm{vib}(T)}{R} = \\sum_i \\xi_i^2 \\frac{e^{\\xi_i}}{\\left( 1 - e^{\\xi_i} \\right)^2}
 
-		where
-
-		.. math:: \\xi_i \\equiv \\frac{h \\nu_i}{k_\\mathrm{B} T}
-
+		where :math:`\\xi_i \\equiv h \\nu_i / k_\\mathrm{B} T`,
 		:math:`T` is temperature, :math:`\\nu_i` is the frequency of vibration
 		:math:`i`, :math:`k_\\mathrm{B}` is the Boltzmann constant, :math:`h` 
 		is the Planck constant, and :math:`R` is the gas law constant. 
 		"""
+		cython.declare(Cv=numpy.ndarray, freq=cython.double)
+		cython.declare(x=numpy.ndarray, exp_x=numpy.ndarray, one_minus_exp_x=numpy.ndarray)
 		Cv = numpy.zeros_like(Tlist)
 		for freq in self.frequencies:
 			x = freq / (0.695039 * Tlist)	# kB = 0.695039 cm^-1/K
 			exp_x = numpy.exp(x)
 			one_minus_exp_x = 1.0 - exp_x
 			Cv = Cv + x * x * exp_x / one_minus_exp_x / one_minus_exp_x
-		return Cv * constants.R
+		return Cv
 
 	def getEnthalpy(self, Tlist):
 		"""
-		Return the contribution to the enthalpy due to vibrations in J/mol.
-		The formula is
+		Return the contribution to the enthalpy due to vibration
+		scaled by :math:`RT` at the specified temperatures `Tlist`
+		in K. The formula is
 
-		.. math:: H^\\mathrm{vib}(T) = RT \\sum_i \\frac{\\xi_i}{e^{\\xi_i} - 1}
+		.. math:: \\frac{H^\\mathrm{vib}(T)}{RT} = \\sum_i \\frac{\\xi_i}{e^{\\xi_i} - 1}
 		
-		where
-
-		.. math:: \\xi_i \\equiv \\frac{h \\nu_i}{k_\\mathrm{B} T}
-
+		where :math:`\\xi_i \\equiv h \\nu_i / k_\\mathrm{B} T`,
 		:math:`T` is temperature, :math:`\\nu_i` is the frequency of vibration
 		:math:`i`, :math:`k_\\mathrm{B}` is the Boltzmann constant, :math:`h` 
 		is the Planck constant, and :math:`R` is the gas law constant. 
 		"""
+		cython.declare(H=numpy.ndarray, freq=cython.double)
+		cython.declare(x=numpy.ndarray, exp_x=numpy.ndarray)
 		H = numpy.zeros_like(Tlist)
 		for freq in self.frequencies:
 			x = freq / (0.695039 * Tlist)	# kB = 0.695039 cm^-1/K
 			exp_x = numpy.exp(x)
-			one_minus_exp_x = 1.0 - exp_x
 			H = H + x / (exp_x - 1)
-		return H * constants.R * Tlist
+		return H
 
 	def getEntropy(self, Tlist):
 		"""
-		Return the contribution to the entropy due to vibrations in J/mol*K.
-		The formula is
+		Return the contribution to the entropy due to vibration
+		scaled by the gas law constant at the specified temperatures `Tlist`
+		in K. The formula is
 
-		.. math:: S^\\mathrm{vib}(T) = R \\sum_i \\left[ - \\ln \\left(1 - e^{-\\xi_i} \\right) + \\frac{\\xi}{e^{\\xi_i} - 1} \\right]
+		.. math:: \\frac{S^\\mathrm{vib}(T)}{R} = \\sum_i \\left[ - \\ln \\left(1 - e^{-\\xi_i} \\right) + \\frac{\\xi_i}{e^{\\xi_i} - 1} \\right]
 		
-		where
-
-		.. math:: \\xi_i \\equiv \\frac{h \\nu_i}{k_\\mathrm{B} T}
-
+		where :math:`\\xi_i \\equiv h \\nu_i / k_\\mathrm{B} T`,
 		:math:`T` is temperature, :math:`\\nu_i` is the frequency of vibration
 		:math:`i`, :math:`k_\\mathrm{B}` is the Boltzmann constant, :math:`h` 
 		is the Planck constant, and :math:`R` is the gas law constant. 
 		"""
+		cython.declare(S=numpy.ndarray, freq=cython.double)
+		cython.declare(x=numpy.ndarray, exp_x=numpy.ndarray)
 		S = numpy.log(self.getPartitionFunction(Tlist))
 		for freq in self.frequencies:
 			x = freq / (0.695039 * Tlist)	# kB = 0.695039 cm^-1/K
 			exp_x = numpy.exp(x)
 			S = S + x / (exp_x - 1)
-		return S * constants.R
+		return S
 
 	def getDensityOfStates(self, Elist, rho0=None):
 		"""
@@ -605,8 +629,10 @@ class HarmonicOscillator(Mode):
 		above the ground state. The Beyer-Swinehart method is used to 
 		efficiently convolve the vibrational density of states into the
 		density of states of other modes. To be accurate, this requires a small
-		(:math:`1-10 cm^-1` or so) energy spacing.
+		(:math:`1-10 \\ \\mathrm{cm^{-1}}` or so) energy spacing.
 		"""
+		cython.declare(rho=numpy.ndarray, freq=cython.double)
+		cython.declare(dE=cython.double, nE=cython.int, dn=cython.int, n=cython.int)
 		rho = rho0 or numpy.zeros_like(Elist)
 		dE = Elist[1] - Elist[0]
 		nE = len(Elist)
