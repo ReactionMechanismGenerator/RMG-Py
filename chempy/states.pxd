@@ -73,18 +73,18 @@ cdef class HinderedRotor(Mode):
 	cdef public double barrier
 	cdef public int symmetry
 	
-	cpdef getPartitionFunction(self, numpy.ndarray Tlist)
+	cpdef numpy.ndarray getPartitionFunction(self, numpy.ndarray Tlist)
 
-	cpdef getHeatCapacity(self, numpy.ndarray Tlist)
+	cpdef numpy.ndarray getHeatCapacity(self, numpy.ndarray Tlist)
 
-	cpdef getEnthalpy(self, numpy.ndarray Tlist)
+	cpdef numpy.ndarray getEnthalpy(self, numpy.ndarray Tlist)
 
-	cpdef getEntropy(self, numpy.ndarray Tlist)
+	cpdef numpy.ndarray getEntropy(self, numpy.ndarray Tlist)
 
-	cpdef getDensityOfStates(self, numpy.ndarray Elist)
+	cpdef numpy.ndarray getDensityOfStates(self, numpy.ndarray Elist)
 
-cdef besseli0(numpy.ndarray xlist)
-cdef besseli1(numpy.ndarray xlist)
+cdef numpy.ndarray besseli0(numpy.ndarray xlist)
+cdef numpy.ndarray besseli1(numpy.ndarray xlist)
 cdef double cellipk(double x)
 
 ################################################################################
@@ -93,24 +93,33 @@ cdef class HarmonicOscillator(Mode):
 	
 	cdef public list frequencies
 	
-	cpdef getPartitionFunction(self, numpy.ndarray Tlist)
+	cpdef numpy.ndarray getPartitionFunction(self, numpy.ndarray Tlist)
 	
-	cpdef getHeatCapacity(self, numpy.ndarray Tlist)
+	cpdef numpy.ndarray getHeatCapacity(self, numpy.ndarray Tlist)
 	
-	cpdef getEnthalpy(self, numpy.ndarray Tlist)
+	cpdef numpy.ndarray getEnthalpy(self, numpy.ndarray Tlist)
 	
-	cpdef getEntropy(self, numpy.ndarray Tlist)
+	cpdef numpy.ndarray getEntropy(self, numpy.ndarray Tlist)
 	
-	cpdef getDensityOfStates(self, numpy.ndarray Elist, numpy.ndarray rho0=?)
+	cpdef numpy.ndarray getDensityOfStates(self, numpy.ndarray Elist, numpy.ndarray rho0=?)
 
 ################################################################################
 
 cdef class StatesModel:
 	
 	cdef public list modes
+	cdef public double E0
+	cdef public int spinMultiplicity
+
+	cpdef numpy.ndarray getHeatCapacity(self, numpy.ndarray Tlist)
 	
-	cpdef getHeatCapacity(StatesModel self, Tlist)
+	cpdef numpy.ndarray getEnthalpy(self, numpy.ndarray Tlist)
 	
-	cpdef getPartitionFunction(StatesModel self, Tlist)
+	cpdef numpy.ndarray getEntropy(self, numpy.ndarray Tlist)
 	
-	cpdef getDensityOfStates(StatesModel self, Elist, bint linear)
+	cpdef numpy.ndarray getPartitionFunction(self, numpy.ndarray Tlist)
+	
+	cpdef numpy.ndarray getDensityOfStates(self, numpy.ndarray Elist)
+
+cdef numpy.ndarray convolve(numpy.ndarray rho1, numpy.ndarray rho2, numpy.ndarray Elist)
+

@@ -79,7 +79,7 @@ capacity, respectively.
 The partition function for a molecular configuration is the product of the
 partition functions for each invidual degree of freedom:
 
-	.. math:: q = q_\\mathrm{trans} q_\\mathrm{rot} q_\\mathrm{vib} q_\\mathrm{tors} q_\\mathrm{elec}
+	.. math:: Q = Q_\\mathrm{trans} Q_\\mathrm{rot} Q_\\mathrm{vib} Q_\\mathrm{tors} Q_\\mathrm{elec}
 
 This means that the contributions to each thermodynamic quantity from each
 molecular degree of freedom are additive.
@@ -646,68 +646,125 @@ class HarmonicOscillator(Mode):
 
 class StatesModel:
 	"""
-	A set of spectroscopic data for a given molecule. The degrees of freedom of
-	the molecule are stored as a list in the `modes` attribute.
+	A set of molecular degrees of freedom data for a given molecule, comprising
+	the results of a quantum chemistry calculation.
+
+	=================== =================== ====================================
+	Attribute           Type                Description
+	=================== =================== ====================================
+	`modes`             ``list``            A list of the degrees of freedom
+	`E0`                ``double``          The ground-state energy in J/mol
+	`spinMultiplicity`  ``int``             The spin multiplicity of the molecule
+	=================== =================== ====================================
+
 	"""
 
-	def __init__(self, modes=None, symmetry=1):
+	def __init__(self, modes=None, E0=0.0, spinMultiplicity=1):
 		self.modes = modes or []
-		self.symmetry = symmetry
+		self.E0 = E0
+		self.spinMultiplicity = spinMultiplicity
 
 	def getHeatCapacity(self, Tlist):
 		"""
-		Return the value of the heat capacity at the specified temperatures
-		`Tlist` in K. The heat capacity returned is divided by the Boltzmann
-		constant so as to be dimensionless.
+		Return the constant-pressure heat capacity scaled by the gas law
+		constant at the specified temperatures `Tlist` in K.
 		"""
-		Cp = numpy.ones((len(Tlist)), numpy.float64)
+		cython.declare(Cp=numpy.ndarray)
+		Cp = numpy.ones_like(Tlist)
 		for mode in self.modes:
 			Cp += mode.getHeatCapacity(Tlist)
 		return Cp
 
-	def getPartitionFunction(self, Tlist):
+	def getEnthalpy(self, Tlist):
 		"""
-		Return the value of the partition function at the specified temperatures
+		Return the enthalpy scaled by :math:`RT` at the specified temperatures
 		`Tlist` in K.
 		"""
-		Q = numpy.ones((len(Tlist)), numpy.float64) / self.symmetry
+		cython.declare(H=numpy.ndarray)
+		H = numpy.ones_like(Tlist)
+		for mode in self.modes:
+			H += mode.getEnthalpy(Tlist)
+		return H
+
+	def getEntropy(self, Tlist):
+		"""
+		Return the entropy scaled by the gas law constant at the specified
+		temperatures `Tlist` in K.
+		"""
+		cython.declare(S=numpy.ndarray)
+		S = numpy.zeros_like(Tlist)
+		for mode in self.modes:
+			S += mode.getEntropy(Tlist)
+		return S
+
+	def getPartitionFunction(self, Tlist):
+		"""
+		Return the the partition function at the specified temperatures
+		`Tlist` in K. An active K-rotor is automatically included if there are
+		no external rotational modes.
+		"""
+		cython.declare(Q=numpy.ndarray, Trot=cython.double)
+		Q = numpy.ones_like(Tlist)
 		# Active K-rotor
 		rotors = [mode for mode in self.modes if isinstance(mode, RigidRotor)]
 		if len(rotors) == 0:
 			Trot = 1.0 / constants.R / 3.141592654
-			Q0 = [math.sqrt(T / Trot) for T in Tlist]
-			for i in range(len(Tlist)):
-				Q[i] *= Q0[i]
+			Q *= numpy.sqrt(Tlist / Trot)
 		# Other modes
 		for mode in self.modes:
-			Q0 = mode.getPartitionFunction(Tlist)
-			for i in range(len(Tlist)):
-				Q[i] *= Q0[i]
+			Q *= mode.getPartitionFunction(Tlist)
 		return Q
 
-	def getDensityOfStates(self, Elist, linear):
+	def getDensityOfStates(self, Elist):
 		"""
 		Return the value of the density of states in mol/J at the specified
-		energies `Elist` in J/mol above the ground state.
+		energies `Elist` in J/mol above the ground state. An active K-rotor is
+		automatically included if there are no external rotational modes.
 		"""
-		
-		import states
-		
-		# Prepare inputs for density of states function
-		vib = numpy.array([mode.frequency for mode in self.modes if isinstance(mode, HarmonicOscillator)])
-		rot = numpy.array([mode.frequencies for mode in self.modes if isinstance(mode, RigidRotor)])
-		hind = numpy.array([[mode.frequency, mode.barrier] for mode in self.modes if isinstance(mode, HinderedRotor)])
-		if len(hind) == 0: hind = numpy.zeros([0,2],numpy.float64)
-		linear = 1 if linear else 0
-		symm = self.symmetry
+		cython.declare(rho=numpy.ndarray, i=cython.int, E=cython.double)
+		rho = numpy.zeros_like(Elist)
+		# Active K-rotor
+		rotors = [mode for mode in self.modes if isinstance(mode, RigidRotor)]
+		if len(rotors) == 0:
+			for i, E in enumerate(Elist):
+				if E == 0: rho[i] = 0.0
+				else: rho[i] = 1.0 / math.sqrt(1.0 * E)
+		# Other non-vibrational modes
+		for mode in self.modes:
+			if not isinstance(mode, HarmonicOscillator):
+				rho = convolve(rho, mode.getDensityOfStates(Elist), Elist)
+		# Vibrational modes
+		for mode in self.modes:
+			if isinstance(mode, HarmonicOscillator):
+				rho = mode.getDensityOfStates(Elist, rho)
+		return rho
 
-		# Calculate the density of states
-		densStates, msg = states.densityofstates(Elist, vib, rot, hind, symm, linear)
-		msg = msg.strip()
-		if msg != '':
-			raise Exception('Error while calculating the density of states for species %s: %s' % (self, msg))
+def convolve(rho1, rho2, Elist):
+	"""
+	Convolutes two density of states arrays `rho1` and `rho2` with corresponding
+	energies `Elist` together using the equation
 
-		# Return result
-		return densStates
+	.. math:: \\rho(E) = \\int_0^E \\rho_1(x) \\rho_2(E-x) \\, dx
 
-	
+	The units of the parameters do not matter so long as they are consistent.
+	"""
+
+	cython.declare(rho=numpy.ndarray, found1=cython.bint, found2=cython.bint)
+	cython.declare(dE=cython.double, nE=cython.int, i=cython.int, j=cython.int)
+	rho = numpy.zeros_like(Elist)
+
+	found1 = rho1.any(); found2 = rho2.any()
+	if not found1 and not found2:
+		pass
+	elif found1 and not found2:
+		rho = rho1
+	elif not found1 and found2:
+		rho = rho2
+	else:
+		dE = Elist[1] - Elist[0]
+		nE = len(Elist)
+		for i in range(nE):
+			for j in range(i+1):
+				rho[i] += rho2[i-j] * rho1[i] * dE
+
+	return rho
