@@ -172,9 +172,7 @@ class Translation(Mode):
 		dimensionality, :math:`k_\\mathrm{B}` is the Boltzmann constant, and
 		:math:`R` is the gas law constant.
 		"""
-		cython.declare(qt=cython.double)
-		qt = ((2 * constants.pi * self.mass / constants.Na) / (constants.h * constants.h))**(self.dimension/2.0) * self.volume
-		return numpy.log( qt * (math.e * constants.kB * Tlist)**(self.dimension/2.0) )
+		return numpy.log(self.getPartitionFunction(Tlist)) + 2.5
 	
 	def getDensityOfStates(self, Elist):
 		"""
@@ -324,12 +322,12 @@ class RigidRotor(Mode):
 		"""
 		cython.declare(theta=cython.double, inertia=cython.double)
 		if self.linear:
-			theta = constants.h * constants.h / (8 * constants.pi * constants.pi * self.inertia[0] * constants.kB)
-			return 1.0 / theta / self.symmetry
+			theta = constants.h * constants.h / (8 * constants.pi * constants.pi * self.inertia[0]) * constants.Na
+			return numpy.ones_like(Elist) / theta / self.symmetry
 		else:
 			theta = 1.0
 			for inertia in self.inertia:
-				theta *= constants.h * constants.h / (8 * constants.pi * constants.pi * inertia * constants.kB)
+				theta *= constants.h * constants.h / (8 * constants.pi * constants.pi * inertia) * constants.Na
 			return 2.0 * numpy.sqrt(Elist / theta) / self.symmetry
 		
 ################################################################################
@@ -633,7 +631,10 @@ class HarmonicOscillator(Mode):
 		"""
 		cython.declare(rho=numpy.ndarray, freq=cython.double)
 		cython.declare(dE=cython.double, nE=cython.int, dn=cython.int, n=cython.int)
-		rho = rho0 or numpy.zeros_like(Elist)
+		if rho0 is not None:
+			rho = rho0
+		else:
+			rho = numpy.zeros_like(Elist)
 		dE = Elist[1] - Elist[0]
 		nE = len(Elist)
 		for freq in self.frequencies:
