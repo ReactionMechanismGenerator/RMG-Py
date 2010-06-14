@@ -5,7 +5,7 @@
 //Sandeep included Y_birad in Y_rad. This enables Oa to react with multiple bond
 
 XZ
-Union {CZ,O2d,OCO,OCddO,OSi,OSiddO}
+Union {CZ,OCO,OCddO,OSi,OSiddO}
 
 CZ
 1 *1 {Cd,Cdd,Ct,CO,Sid,Sidd,Sit} 0 {2,{D,T}}

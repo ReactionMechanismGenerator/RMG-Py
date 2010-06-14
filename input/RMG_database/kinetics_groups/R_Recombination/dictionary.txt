@@ -261,3 +261,6 @@ O_rad/OneDe
 1 * O 1 {2,S}
 2 {Cd,Ct,Cb,CO} 0 {1,S}
 
+O2_birad
+1 * O 1 {2,S}
+2 O 1 {1,S}

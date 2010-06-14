@@ -7,17 +7,6 @@ Arrhenius_EP
 //f02_Radical_Addition
 //No.		XZ				Y_rad			Temp.		A			N		a	E0		DA		Dn		Da	DE0		Rank	Comments
 269.		XZ				Y_rad_birad		300-1500	1E+13		0		0	0.5		0		0		0	0		0		Default
-270.		O2d				H_rad			298-6000	4.395E+10	1.00	0	0.45	0		0		0	0		4		Duchovic et al. [142] RRK(M) extrapolation. Probably could do better.
-271.		O2d				H_rad			300-1500	8.15E+12	0		0	0.76	0		0		0	0		3		Cobos, C.J and Troe, J. [106] Transition state theory.
-272.		O2d				C_methyl		300-1500	2.26E+12	0		0	0		4.2E11	0		0	0		5		Curran et al. [8] From Lenhardt et al. [143]. (Measured at 300K) (n-butyl not methyl)
-273.		O2d				C_pri_rad		300-1500	2.26E+12	0		0	0		4.2E11	0		0	0		5		Curran et al. [8] From Lenhardt et al. [143]. (Measured at 300K)
-274.		O2d				C_sec_rad		300-1500	3.77E+12	0		0	0		1.0E12	0		0	0		5		Curran et al. [8]. (Estimated at 300K)
-275.		O2d				C_ter_rad		300-1500	7.05E+12	0		0	0		1.17E12	0		0	0		5		Curran et al. [8] From Lenhardt et al. [143]. (Measured at 300K)
-276.		O2d				Cd_pri_rad		300-1500	3.0E+12		0		0	0		0		0		0	0		4		Bozzelli et al. [144] RRKM extrapolation ( adjusted to match data).
-//277.		O2d				Ct_rad			300-1500	3.0E+12		0		0	0		0		0		0	0		0		estimated to be the same as Cd_pri_rad + O2.
-278.		O2d				Cb_rad			297-473		3.015E+12	0		0	0.32	*1.2	0		0	0.13	3		Yu, T. and Lin, M.C. [145]
-279.		O2d				CO_pri_rad		300-2500	3.5E+12		0		0	0		0		0		0	0		4		Bozzelli et al. [144] RRKM extrapolation.
-280.		O2d				CO_rad/NonDe	200-300		1.505E+12	0		0	0		*3.16	0		0	0		4		Atkinson et al [96] literature review.
 281.		Cd/H2			H_rad			300-1500	1E+13		0		0	1.2		0		0		0	0		5		Curran et al. [8] in his reaction type 3. Based on recommendations of Allara and Shaw [146] 
 282.		Cd/H/Nd			H_rad			300-1500	1E+13		0		0	2.9		0		0		0	0		5		Curran et al. [8] in his reaction type 3. Based on recommendations of Allara and Shaw [146] 
 283.		Cd/Nd2			H_rad			300-1500	1E+13		0		0	2.9		0		0		0	0		5		Curran et al. [8] in his reaction type 3. Based on recommendations of Allara and Shaw [146] 

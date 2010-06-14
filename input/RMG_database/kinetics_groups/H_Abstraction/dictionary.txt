@@ -338,6 +338,11 @@ O/H/OneDe
 2 *2 H 0 {1,S}
 3 {Cd,Ct,Cb,CO} 0 {1,S}
 
+Orad_O_H
+1 *1 O 0 {2,S}, {3,S}
+2 *2 H 0 {1,S}
+3    O 1 {1,S}
+
 Y_rad_birad
 Union {Y_2centeradjbirad, Y_1centerbirad, Y_rad}
 

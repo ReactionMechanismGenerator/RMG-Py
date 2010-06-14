@@ -306,3 +306,4 @@ Arrhenius_EP
 274  H2O2                 InChI=1/C4H9O/c1-3-4(2)5/h5H,3H2,1-2H3   600-2000      17.3     3.05        0     1.02        0        0        0        0  3     MRH CBS-QB3 calculations w/o HR corrections
 275  H2O2                 InChI=1/C4H9O/c1-3-4(2)5/h4-5H,2-3H2,1H3   600-2000     0.305     3.53        0     1.52        0        0        0        0  3     MRH CBS-QB3 calculations w/o HR corrections
 276  H2O2                 InChI=1/C4H9O/c1-4(2,3)5/h5H,1H2,2-3H3   600-2000      0.21     3.53        0     1.56        0        0        0        0  3     MRH CBS-QB3 calculations w/o HR corrections
+277  Orad_O_H             O_rad/NonDeO           300-1500  1.75e+10        0        0    -3.27        0        0        0        0  5     [8] Curran's estimation in reaction type 13, RO2 + HO2 --> RO2H + O2

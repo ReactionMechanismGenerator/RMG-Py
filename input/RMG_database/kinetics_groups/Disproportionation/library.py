@@ -15,6 +15,7 @@ Reverse name: Molecular_Addition
 
 
 Generated on 7th April 2010 at 17:08
+Generated on 22nd June 2010 at 12:58
 """
 
 reaction_family_name = "Disproportionation"
@@ -55,7 +56,6 @@ Arrhenius_EP
 //491.		C_methyl		Cmethyl_Csrad		300-2500	9.41E+10	0.68	0		0		*1.5	0		0		0		4		Tsang [91] Literature review.
 //514.		CH2_triplet		C/H/NdNd_Csrad		300-2500	6.03E+12	0		0		0		*3.0	0		0		0		4		Tsang [92] Literature review. C2H + iso-C4H9--> C2H2 + iso-C4H8
 
-
 """
 
 # Set some units for all the rates in this file
@@ -92,40 +92,10 @@ XH_Rrad
   long_comment = 
 """
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
 # Number 2
-rate(
-  group1 = 
-"""
-O_sec_rad
-1 *1 O 1 {2,S}
-2 {R!H} 0 {1,S}
-""",
-  group2 = 
-"""
-O_Orad
-1. *2 O 0 {2,S}, {3,S}
-2. *3 O 1 {1,S}
-3. *4 H 0 {1,S}
-""",
-  kf = Arrhenius(A=(1.75E+10,A_UNITS,"+-",0.0),
-                 n=(0,None,"+-",0.0),
-                 alpha=(0,None,"+-",0.0),
-                 E0=(-3.275,E_UNITS,"+-",0.0)
-                 ),
-  temperature_range = (300,1500),
-  rank = 5,
-  old_id = "486",
-  short_comment = "[8] Curran\'s estimation in reaction type 13, RO2 + HO2 --> RO2H + O2",
-  long_comment = 
-"""
-""",
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
-)
-
-# Number 3
 rate(
   group1 = 
 """
@@ -165,10 +135,10 @@ stating the main process should be combination, leading to chemically activated
 i-butyl radical.  Rate coefficient is estimate.
 MRH 30-Aug-2009
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 4
+# Number 3
 rate(
   group1 = 
 """
@@ -205,10 +175,10 @@ Entry 42,4 (a): No data available at the time.  Author recommends a rate coeffic
 expression equal to double the rate expression of H+C2H5=H2+C2H4.
 MRH 30-Aug-2009
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 5
+# Number 4
 rate(
   group1 = 
 """
@@ -245,10 +215,10 @@ Entry 17,4 (c): Author recommends rate coefficient from study performed by
 Camilleri, et al. (1974)
 MRH 30-Aug-2009
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 6
+# Number 5
 rate(
   group1 = 
 """
@@ -304,10 +274,10 @@ These are the values that now reside in the database.  The online NIST database
 (kinetics.nist.gov) agree with what I have calculated.
 MRH 30-Aug-2009
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 7
+# Number 6
 rate(
   group1 = 
 """
@@ -349,10 +319,10 @@ the combination rxn is computed using the geometric mean rule and is reported as
 disproportionation to addition is that reported by Gibian and Corley (1973).
 MRH 30-Aug-2009
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 8
+# Number 7
 rate(
   group1 = 
 """
@@ -395,10 +365,10 @@ to-addition ratio of 0.2.  The addition rate expression was derived using the ge
 mean rule for the rxns C3H5+C3H5-->adduct and iC3H7+iC3H7-->adduct.
 MRH 31-Aug-2009
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 9
+# Number 8
 rate(
   group1 = 
 """
@@ -438,10 +408,10 @@ Entry 42,39 (c): No data available at the time.  Author recommends a rate coeffi
 of 4.8x10^-12 based on the rate expression of i-C3H7+C2H5=C2H6+C3H6
 MRH 30-Aug-2009
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 10
+# Number 9
 rate(
   group1 = 
 """
@@ -482,10 +452,10 @@ expression for addition rxn to 4 sets of experimental data.  Recommended branchi
 ratio agrees well with most of the experimental data.
 MRH 30-Aug-2009
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 11
+# Number 10
 rate(
   group1 = 
 """
@@ -527,10 +497,10 @@ disproportionation rate coefficient expression was then computed using the
 reported branching ratio.
 MRH 30-Aug-2009
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 12
+# Number 11
 rate(
   group1 = 
 """
@@ -571,10 +541,10 @@ recommends the branching ratio of disproportionation to addition of the
 C2H5+i-C3H7 system for the C2H3+i-C3H7 system.
 MRH 30-Aug-2009
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 13
+# Number 12
 rate(
   group1 = 
 """
@@ -612,10 +582,10 @@ Entry 42,21 (a): No data available at the time.  Author recommends a rate coeffi
 of 6x10^-12 cm3/molecule/s, a \"typical\" disproportionation rate.
 MRH 30-Aug-2009
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 14
+# Number 13
 rate(
   group1 = 
 """
@@ -653,10 +623,10 @@ Entry 42,6: No data available at the time.  Author notes that both a H-atom abst
 rxn and an addition + hot adduct decomposition rxn will result in the same products.
 MRH 30-Aug-2009
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 15
+# Number 14
 rate(
   group1 = 
 """
@@ -692,10 +662,10 @@ MRH assumes the recommended value comes from a previous review article published
 by authors.  In any case, recommended data fits the reported data well.
 MRH 31-Aug-2009
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 16
+# Number 15
 rate(
   group1 = 
 """
@@ -736,10 +706,10 @@ rate coefficient not exceed 10% of the combination rate.  Thus, the rate coeffic
 is an upper limit.
 MRH 30-Aug-2009
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 17
+# Number 16
 rate(
   group1 = 
 """
@@ -776,10 +746,10 @@ Entry 41,4 (a): No data available at the time.  Author recommends the rate coeff
 of the H+C2H5=C2H4+H2 rxn for the H+n-C3H7=C3H6+H2 rxn.
 MRH 30-Aug-2009
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 18
+# Number 17
 rate(
   group1 = 
 """
@@ -823,10 +793,10 @@ addition of 0.06 (which appears to MRH to be consistent with the experimentally
 measured branching ratios)
 MRH 30-Aug-2009
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 19
+# Number 18
 rate(
   group1 = 
 """
@@ -870,10 +840,10 @@ addition of 0.073 (which is an average of the 2 experimentally determined
 branching ratios)
 MRH 30-Aug-2009
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 20
+# Number 19
 rate(
   group1 = 
 """
@@ -916,10 +886,10 @@ to-addition ratio of 0.07.  The addition rate expression was derived using the g
 mean rule for the rxns C3H5+C3H5-->adduct and nC3H7+nC3H7-->adduct.
 MRH 31-Aug-2009
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 21
+# Number 20
 rate(
   group1 = 
 """
@@ -960,10 +930,10 @@ for the addition rxn to be similar to the rate for n-C3H7+n-C3H7=>adduct.  Autho
 also estimates the branching ratio of disproportionation to addition as 0.051
 MRH 30-Aug-2009
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 22
+# Number 21
 rate(
   group1 = 
 """
@@ -1006,10 +976,10 @@ the branching ratio of disproportionation to addition reported by Gibian and
 Corley (1973).
 MRH 30-Aug-2009
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 23
+# Number 22
 rate(
   group1 = 
 """
@@ -1052,10 +1022,10 @@ rate expression using the branching ratio; the branching ratio is from \"analogo
 processes\".
 MRH 30-Aug-2009
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 24
+# Number 23
 rate(
   group1 = 
 """
@@ -1094,10 +1064,10 @@ Entry 41,19 (a): No data available at the time.  Author estimates the rate coeff
 based on the rxn C2H5+n-C3H7=C3H6=C2H6.
 MRH 30-Aug-2009
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 25
+# Number 24
 rate(
   group1 = 
 """
@@ -1136,10 +1106,10 @@ than the rxn CH3+n-C3H7=C3H6+CH4 and suggests a rate coefficient 3x larger,
 namely 1.0x10^-11 cm3/molecule/s.
 MRH 30-Aug-2009
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 26
+# Number 25
 rate(
   group1 = 
 """
@@ -1177,10 +1147,10 @@ Entry 41,6 (a): No data available at the time.  Author estimates rate coefficien
 on the rate coefficient for OH+C2H5=C2H4+H2O, namely 4.0x10^-11 cm3/molecule/s.
 MRH 30-Aug-2009
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 27
+# Number 26
 rate(
   group1 = 
 """
@@ -1220,10 +1190,10 @@ disproportionation to be 1x10^-11 cm3/molecule/s.
 
 MRH 30-Aug-2009
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 28
+# Number 27
 rate(
   group1 = 
 """
@@ -1263,10 +1233,10 @@ The author also states that the branching ratio is pressure-dependent and suppli
 fall-off tables and collisional efficiencies.
 MRH 30-Aug-2009
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 29
+# Number 28
 rate(
   group1 = 
 """
@@ -1307,10 +1277,10 @@ rate coefficient as half the rate of CH3+n-C3H7=C3H6+H2 (due to half as many H-a
 on the alpha-carbon).
 MRH 30-Aug-2009
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 30
+# Number 29
 rate(
   group1 = 
 """
@@ -1353,10 +1323,10 @@ coefficient was computed using the disproportionation-to-combination ratio repor
 by Gibian and Corley (1973).
 MRH 30-Aug-2009
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 31
+# Number 30
 rate(
   group1 = 
 """
@@ -1402,10 +1372,10 @@ references and the online NIST database (kinetics.nist.gov).  I am therefore
 cutting the A in the RMG_database in two. ***
 MRH 30-Aug-2009
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 32
+# Number 31
 rate(
   group1 = 
 """
@@ -1447,10 +1417,10 @@ to-addition ratio of 0.04.  The addition rate expression was derived using the g
 mean rule for the rxns C3H5+C3H5-->adduct and iC4H9+iC4H9-->adduct.
 MRH 31-Aug-2009
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 33
+# Number 32
 rate(
   group1 = 
 """
@@ -1495,10 +1465,10 @@ not 0.58x10^-11 * (300/T)^0.35.  However, there may be a reason for the relative
 small discrepancy between the author\'s stated and implemented calculation. ***
 MRH 30-Aug-2009
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 34
+# Number 33
 rate(
   group1 = 
 """
@@ -1544,10 +1514,10 @@ references and the online NIST database (kinetics.nist.gov).  I am therefore
 cutting the A in the RMG_database in two. ***
 MRH 30-Aug-2009
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 35
+# Number 34
 rate(
   group1 = 
 """
@@ -1586,10 +1556,10 @@ Entry 45,19 (b): No data available at the time.  Author estimates the disproport
 coefficient based on the rate of C2H5+i-C4H9=i-C4H8+C2H6.
 MRH 30-Aug-2009
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 36
+# Number 35
 rate(
   group1 = 
 """
@@ -1628,10 +1598,10 @@ coefficient as half the rate of OH+n-C3H7=C3H6+H2O (due to half as many H-atoms
 on the alpha-carbon).
 MRH 30-Aug-2009
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 37
+# Number 36
 rate(
   group1 = 
 """
@@ -1666,10 +1636,10 @@ Entry 47,4(c): No data available at the time.  Author assigns a rate coefficient
 3x10^-11 cm3/molecule/s for the disproportionation rxn.
 MRH 31-Aug-2009
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 38
+# Number 37
 rate(
   group1 = 
 """
@@ -1716,10 +1686,10 @@ combination rxn (1.68x10^-9 * T^-0.64) to obtain 1.69x10^-11 * T^-0.32 * exp(66/
 Multiplying by 0.03 results in the recommended rate coefficient expression.
 MRH 31-Aug-2009
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 39
+# Number 38
 rate(
   group1 = 
 """
@@ -1759,10 +1729,10 @@ and the addition rate rule (C2H5+C3H5-->adduct) calculated using the geometric
 mean rule of the rxns C2H5+C2H5-->adduct and C3H5+C3H5-->adduct.
 MRH 31-Aug-2009
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 40
+# Number 39
 rate(
   group1 = 
 """
@@ -1802,10 +1772,10 @@ and the addition rate rule (C3H5+C3H5-->adduct) calculated based on the results
 of Tulloch et al.
 MRH 31-Aug-2009
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 41
+# Number 40
 rate(
   group1 = 
 """
@@ -1846,10 +1816,10 @@ to-addition ratio of 0.04.  The addition rate expression was derived using the g
 mean rule for the rxns C3H5+C3H5-->adduct and iC3H7+iC3H7-->adduct.
 MRH 31-Aug-2009
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 42
+# Number 41
 rate(
   group1 = 
 """
@@ -1890,10 +1860,10 @@ to-addition ratio of 0.04.  The addition rate expression was derived using the g
 mean rule for the rxns C3H5+C3H5-->adduct and tC4H9+tC4H9-->adduct.
 MRH 31-Aug-2009
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 43
+# Number 42
 rate(
   group1 = 
 """
@@ -1930,10 +1900,10 @@ Entry 47,19(d): No data available at the time.  Author recommends a rate coeffic
 of 4x10^-12 cm3/molecule/s for the disproportionation rxn.
 MRH 31-Aug-2009
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 44
+# Number 43
 rate(
   group1 = 
 """
@@ -1969,10 +1939,10 @@ Entry 47,6(a): No data available at the time.  Author recommends a rate coeffici
 of 1x10^-11 cm3/molecule/s, based on \"comparable rxns\".
 MRH 31-Aug-2009
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 45
+# Number 44
 rate(
   group1 = 
 """
@@ -2010,10 +1980,10 @@ pg.965-967: Discussion on measured rate coefficients.
 
 MRH 1-Sept-2009
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 46
+# Number 45
 rate(
   group1 = 
 """
@@ -2051,10 +2021,10 @@ Author estimates the rate of disproportionation as 2.0x10^-12 cm3/molecule/s.  N
 
 MRH 30-Aug-2009
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 47
+# Number 46
 rate(
   group1 = 
 """
@@ -2095,10 +2065,10 @@ was calculated based on the rate coefficient of the rxn C2H5+H --> CH3+CH3; the
 value the authors used was 3.6x10^13 cm3/mol/s.
 MRH 1-Sept-2009
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 48
+# Number 47
 rate(
   group1 = 
 """
@@ -2135,10 +2105,10 @@ Author estimates disproportionation rate will be faster than the H+C2H5=H2+C2H4 
 and reports rate coefficient as 1.0x10^-11 cm3/molecule/s.  No data at the time.
 MRH 30-Aug-2009
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 49
+# Number 48
 rate(
   group1 = 
 """
@@ -2183,10 +2153,10 @@ nor do the authors address whether other channels besides -->CH4+CH2O exist / ar
 The value of A in the database is consistent with that reported in Table 2.
 MRH 1-Sept-2009
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 50
+# Number 49
 rate(
   group1 = 
 """
@@ -2226,10 +2196,10 @@ Author estimates ratio of disproportionation rate to addition rate to be 0.2,
 namely 4x10^-12 cm3/molecule/s.  No data at the time.
 MRH 30-Aug-2009
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 51
+# Number 50
 rate(
   group1 = 
 """
@@ -2269,10 +2239,10 @@ Author estimates the disproportionation rate coefficient as 4x10^-12 cm3/molecul
 No data at the time.
 MRH 30-Aug-2009
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 52
+# Number 51
 rate(
   group1 = 
 """
@@ -2312,10 +2282,10 @@ to form C3H6 + CH2O (same products).  The author therefore recommends a rate
 coefficient of 3x10^-11 cm3/molecule/s.
 MRH 31-Aug-2009
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 53
+# Number 52
 rate(
   group1 = 
 """
@@ -2362,10 +2332,10 @@ MRH 30-Aug-2009
 
 *** NEED TO INVESTIGATE ***
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 54
+# Number 53
 rate(
   group1 = 
 """
@@ -2403,10 +2373,10 @@ Entry 42,39 (b): No data available at the time.  Author suggests rate coefficien
 on rxn C2H5+i-C3H7=C3H8+C2H4, namely 3.9x10^-12 cm3/molecule/s
 MRH 30-Aug-2009
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 55
+# Number 54
 rate(
   group1 = 
 """
@@ -2449,10 +2419,10 @@ expression.
 the rate for the disproportionation rxn. ***
 MRH 30-Aug-2009
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 56
+# Number 55
 rate(
   group1 = 
 """
@@ -2491,10 +2461,10 @@ Author suggests a disproportionation rate coefficient near the collision limit, 
 to rxn\'s exothermicity.  No data available at the time.
 MRH 30-Aug-2009
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 57
+# Number 56
 rate(
   group1 = 
 """
@@ -2532,10 +2502,10 @@ Author suggest a disproportionation rate coefficient of 6.0x10^-11 cm3/molecule/
 to very exothermic rxn.  No data available at the time.
 MRH 30-Aug-2009
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 58
+# Number 57
 rate(
   group1 = 
 """
@@ -2574,10 +2544,10 @@ Author estimates a disproportionation rate coefficient of 3x10^-11 cm3/molecule/
 No data available at the time.
 MRH 30-Aug-2009
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 59
+# Number 58
 rate(
   group1 = 
 """
@@ -2615,10 +2585,10 @@ Author estimates a disproportionation rate coefficient of 4x10^-11 cm3/molecule/
 No data available at the time.
 MRH 30-Aug-2009
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 60
+# Number 59
 rate(
   group1 = 
 """
@@ -2656,10 +2626,10 @@ Author estimates a disproportionation rate coefficient of 4x10^-11 cm3/molecule/
 No data available at the time.
 MRH 30-Aug-2009
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 61
+# Number 60
 rate(
   group1 = 
 """
@@ -2697,21 +2667,22 @@ Author recommends a disproportionation rate coefficient of 2x10^-11 cm3/molecule
 No data available at the time.
 MRH 30-Aug-2009
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 62
+# Number 61
 rate(
   group1 = 
 """
-Y_rad
-1 *1 R 1
+O2_birad
+1 *1 O 1 {2,S}
+2 O 1 {1,S}
 """,
   group2 = 
 """
-O_Orad
-1. *2 O 0 {2,S}, {3,S}
-2. *3 O 1 {1,S}
+XH_Rrad
+1. *2 {R!H} 0 {2,S}, {3,S}
+2. *3 {R!H} 1 {1,S}
 3. *4 H 0 {1,S}
 """,
   kf = Arrhenius(A=(3E+11,A_UNITS,"+-",0.0),
@@ -2721,12 +2692,322 @@ O_Orad
                  ),
   temperature_range = (300,1500),
   rank = 0,
-  old_id = "10001",
+  old_id = "20001",
   short_comment = "",
   long_comment = 
 """
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
+)
+
+# Number 62
+rate(
+  group1 = 
+"""
+O2_birad
+1 *1 O 1 {2,S}
+2 O 1 {1,S}
+""",
+  group2 = 
+"""
+Cmethyl_Csrad
+1. *2 C 0 {2,S}, {3,S}, {4,S}, {5,S}
+2. *3 Cs 1 {1,S}
+3. *4 H 0 {1,S}
+4. H 0 {1,S}
+5. H 0 {1,S}
+""",
+  kf = Arrhenius(A=(1.05833E+10,A_UNITS,"*/",3.0),
+                 n=(0,None,"+-",0.0),
+                 alpha=(0,None,"+-",0.0),
+                 E0=(0,E_UNITS,"+-",0.0)
+                 ),
+  temperature_range = (700,2500),
+  rank = 4,
+  old_id = "487",
+  short_comment = "Tsang [91] Literature review.",
+  long_comment = 
+"""
+[91] Tsang, W.; Journal of Physical and Chemical Reference Data (1988), 17(2), 887-951.
+Literature review: i-C3H7 + O2 = HO2 + C3H6
+
+pg. 931-932: Discussion on evaluated data
+
+Entry 42,3 (a): Author appears to be skeptical of the only experimentally reported
+
+value.  Author notes that more recent work on C2H5+O2 suggested that the
+addition and disproportionation rxns may be coupled through a common intermediate.
+For the time being, the author decided to recommend the only experimentally
+reported rate coefficient, only for temperatures above 700K, as they note the
+addition rxn should be the predominant rxn at lower temperatures.
+MRH 30-Aug-2009
+
+Divide the rate constant by 12 to account for symmetry of 2 (O2) and 6 (i-C3H7, carbons #1 and 3).  The final result is 1.05833e+10 cm3/mol/s.
+JDM 31-Mar-2010
+""",
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
+)
+
+# Number 63
+rate(
+  group1 = 
+"""
+O2_birad
+1 *1 O 1 {2,S}
+2 O 1 {1,S}
+""",
+  group2 = 
+"""
+C/H2/Nd_Csrad
+1. *2 C 0 {2,S}, {3,S}, {4,S}, {5,S}
+2. *3 Cs 1 {1,S}
+3. *4 H 0 {1,S}
+4. H 0 {1,S}
+5. {Cs,O} 0 {1,S}
+""",
+  kf = Arrhenius(A=(2.25825E+10,A_UNITS,"*/",3.0),
+                 n=(0,None,"+-",0.0),
+                 alpha=(0,None,"+-",0.0),
+                 E0=(0,E_UNITS,"+-",0.0)
+                 ),
+  temperature_range = (500,900),
+  rank = 4,
+  old_id = "501",
+  short_comment = "Tsang [91] Literature review.",
+  long_comment = 
+"""
+[91] Tsang, W.; Journal of Physical and Chemical Reference Data (1988), 17(2), 887-951.
+Literature review: n-C3H7 + O2 = HO2 + C3H6
+
+pg. 914-915: Discussion on evaluated data
+
+Entry 41,3 (a): The author suggests a rate coefficient based on those reported in the
+
+literature.  The author notes that the data reported in the literature suggests
+the formation of C3H6 is controlled by the addition rxn.  The author further
+notes that it is surprising that p-dependence effects are not observed for
+C3H6 formation.
+MRH 30-Aug-2009
+
+Divide the rate constant by 4 to account for symmetry of 2 (O2) and 2 (n-C3H7, carbon #2).  The final result is 2.25825e+10 cm3/mol/s.
+JDM 31-Mar-2010
+""",
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
+)
+
+# Number 64
+rate(
+  group1 = 
+"""
+O2_birad
+1 *1 O 1 {2,S}
+2 O 1 {1,S}
+""",
+  group2 = 
+"""
+C/H/NdNd_Csrad
+1. *2 C 0 {2,S}, {3,S}, {4,S}, {5,S}
+2. *3 Cs 1 {1,S}
+3. *4 H 0 {1,S}
+4. {Cs,O} 0 {1,S}
+5. {Cs,O} 0 {1,S}
+""",
+  kf = Arrhenius(A=(1.2044E+10,A_UNITS,"*/",5.0),
+                 n=(0,None,"+-",0.0),
+                 alpha=(0,None,"+-",0.0),
+                 E0=(0,E_UNITS,"+-",0.0)
+                 ),
+  temperature_range = (600,1000),
+  rank = 4,
+  old_id = "513",
+  short_comment = "Tsang [92] Literature review.",
+  long_comment = 
+"""
+[92] Tsang, W.; Journal of Physical and Chemical Reference Data (1990), 19(1), 1-68.
+Literature review: O2 + iC4H9 --> iC4H8 + HO2
+
+pg. 52-53: Discussion on evaluated data
+
+Entry 45,3 (a): The author recommends a rate coefficient based on the experiments performed
+
+by Baker et al. (yielding a disproportionation-to-decomposition ratio) and the
+current (Tsang) study\'s recommended iC4H9 unimolecular decomposition rate.
+MRH 31-Aug-2009
+
+Divide the rate constant by 2 to account for symmetry of 2 (O2) and 1 (i-C4H9, carbon #2).  The final result is 1.2044e+10 cm3/mol/s.
+JDM 31-Mar-2010
+""",
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
+)
+
+# Number 65
+rate(
+  group1 = 
+"""
+O2_birad
+1 *1 O 1 {2,S}
+2 O 1 {1,S}
+""",
+  group2 = 
+"""
+Cdpri_Csrad
+1. *2 Cd 0 {2,S}, {3,S}
+2. *3 Cs 1 {1,S}
+3. *4 H 0 {1,S}
+""",
+  kf = Arrhenius(A=(6.022E+11,A_UNITS,"+-",0.0),
+                 n=(0,None,"+-",0.0),
+                 alpha=(0,None,"+-",0.0),
+                 E0=(13.55,E_UNITS,"+-",0.0)
+                 ),
+  temperature_range = (300,2500),
+  rank = 4,
+  old_id = "524",
+  short_comment = "Tsang [93] Literature review.",
+  long_comment = 
+"""
+[93] Tsang, W.; Journal of Physical and Chemical Reference Data (1991), 20(2), 221-273.
+Literature review: O2 + C3H5 --> H2C=C=CH2 + HO2
+
+pg.251: Discussion on evaluated data
+
+*** UPPER LIMIT ***
+
+Entry 47,3(b): The author states that there is uncertainty whether this rxn is appreciable
+
+at high temperatures.  There were conflicting results published regarding the
+significance above 461K (Morgan et al. and Slagle and Gutman).  The author thus
+decides to place an upper limit on the rate coefficient of 2x10^-12 * exp(-6820/T)
+cm3/molecule/s.  The author further notes that this upper limit assumes no
+contribution from a complex rearrangement of the adduct.  Finally, the author
+notes that this rxn should not be significant in combustion situations.
+MRH 31-Aug-2009
+
+Divide the rate constant by 2 to account for symmetry of 2 (O2) and 1 (allyl, carbon #2). The final result is 6.022e+11 cm3/mol/s, Ea = 13.55 kcal/mol.
+JDM 31-Mar-2010
+""",
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
+)
+
+# Number 66
+rate(
+  group1 = 
+"""
+O2_birad
+1 *1 O 1 {2,S}
+2 O 1 {1,S}
+""",
+  group2 = 
+"""
+O_Csrad
+1. *2 O 0 {2,S}, {3,S}
+2. *3 Cs 1 {1,S}
+3. *4 H 0 {1,S}
+""",
+  kf = Arrhenius(A=(5.7209E+12,A_UNITS,"*/",2.0),
+                 n=(0,None,"+-",0.0),
+                 alpha=(0,None,"+-",0.0),
+                 E0=(0,E_UNITS,"+-",0.0)
+                 ),
+  temperature_range = (298,None),
+  rank = 4,
+  old_id = "533",
+  short_comment = "Atkinson et al [98] literature review.",
+  long_comment = 
+"""
+[98] Atkinson, R.; Baulch, D.L.; Cox, R.A.; Crowley, J.N.; Hampson, R.F., Jr.; Kerr, J.A.; Rossi, M.J.; Troe, J. \"Summary of Evaluated Kinetic and Photochemical Data for Atmospheric Chemistry,\", 2001.
+Literature review: CH3CHOH + O2 --> CH3CHO + HO2
+
+Recommended value is k298.  This reference just gives a table of results,
+
+with no discussion on how the preferred numbers were arrived at.
+MRH 31-Aug-2009
+
+Divide the rate constant by 2 to account for symmetry of 2 (O2) and 1 (CH3CHOH, oxygen atom). The final result is 5.7209e+12 cm3/mol/s.
+JDM 31-Mar-2010
+""",
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
+)
+
+# Number 67
+rate(
+  group1 = 
+"""
+O2_birad
+1 *1 O 1 {2,S}
+2 O 1 {1,S}
+""",
+  group2 = 
+"""
+O_Csrad
+1. *2 O 0 {2,S}, {3,S}
+2. *3 Cs 1 {1,S}
+3. *4 H 0 {1,S}
+""",
+  kf = Arrhenius(A=(2.92067E+12,A_UNITS,"*/",1.3),
+                 n=(0,None,"+-",0.0),
+                 alpha=(0,None,"+-",0.0),
+                 E0=(0,E_UNITS,"+-",0.0)
+                 ),
+  temperature_range = (298,None),
+  rank = 4,
+  old_id = "534",
+  short_comment = "Atkinson et al [98] literature review.",
+  long_comment = 
+"""
+[98] Atkinson, R.; Baulch, D.L.; Cox, R.A.; Crowley, J.N.; Hampson, R.F., Jr.; Kerr, J.A.; Rossi, M.J.; Troe, J. \"Summary of Evaluated Kinetic and Photochemical Data for Atmospheric Chemistry,\", 2001.
+Literature review: CH2OH + O2 --> CH2O + HO2
+
+Recommended value is k298.  This reference just gives a table of results,
+
+with no discussion on how the preferred numbers were arrived at.
+MRH 31-Aug-2009
+
+Divide the rate constant by 2 to account for symmetry of 2 (O2) and 1 (CH2OH, oxygen atom). The final result is 2.92067e+12 cm3/mol/s.
+JDM 31-Mar-2010
+""",
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
+)
+
+# Number 68
+rate(
+  group1 = 
+"""
+O2_birad
+1 *1 O 1 {2,S}
+2 O 1 {1,S}
+""",
+  group2 = 
+"""
+O_Csrad
+1. *2 O 0 {2,S}, {3,S}
+2. *3 Cs 1 {1,S}
+3. *4 H 0 {1,S}
+""",
+  kf = Arrhenius(A=(2.74001E+12,A_UNITS,"*/",1.3),
+                 n=(0,None,"+-",0.0),
+                 alpha=(0,None,"+-",0.0),
+                 E0=(0,E_UNITS,"+-",0.4)
+                 ),
+  temperature_range = (200,300),
+  rank = 4,
+  old_id = "535",
+  short_comment = "DeMore et al [183] literature review.",
+  long_comment = 
+"""
+[183] DeMore, W.B.; Sander, S.P.; Golden, D.M.; Hampson, R.F.; Kurylo, M.J.; Howard, C.J.; Ravishankara, A.R.; Kolb, C.E.; Molina, M.J.; JPL Publication 97-4
+Literature review: CH2OH + O2 --> CH2O + HO2
+
+pg.62 D38: Discussion on evaluated data
+
+pg.22: Recommended A-factor and E/R parameter values
+
+MRH 1-Sept-2009
+
+Divide the rate constant by 2 to account for symmetry of 2 (O2) and 1 (CH2OH, oxygen atom). The final result is 2.74001e+12 cm3/mol/s.
+JDM 31-Mar-2010
+""",
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
 

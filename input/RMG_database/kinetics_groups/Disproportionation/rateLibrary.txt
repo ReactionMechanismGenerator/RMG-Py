@@ -27,7 +27,6 @@ Arrhenius_EP
  
 //No.		Y_rad_birad		XH_Rrad				Temp.		A			n		a		E0		DA		Dn		Da		DE0		Rank	Comments
 485.		Y_rad_birad		XH_Rrad				300-1500	3E+11		0		0		0		0		0		0		0		0		Default
-486.		O_sec_rad		O_Orad				300-1500	1.75E+10	0		0		-3.275	0		0		0		0		5		[8] Curran's estimation in reaction type 13, RO2 + HO2 --> RO2H + O2
 488.		CH2_triplet		Cmethyl_Csrad		300-2500	3.01E+13	0		0		0		*2.0	0		0		0		4		Tsang [91] Literature review.
 489.		H_rad			Cmethyl_Csrad		300-2500	3.61E+12	0		0		0		*2.0	0		0		0		4		Tsang [91] Literature review.
 490.		H_rad			Cmethyl_Csrad		300-2500	1.81E+12	0		0		0		*3.0	0		0		0		4		Tsang [89] Literature review.
@@ -89,5 +88,11 @@ Arrhenius_EP
 550.		O_pri_rad		O_Csrad				300-2500	2.41E+13	0		0		0		*2.0	0		0		0		4		Tsang [90] Literature review.
 551.		O_rad/NonDeC	O_Csrad				300-2500	2.41E+13	0		0		0		*2.0	0		0		0		4		Tsang [90] Literature review.
 552.		O_rad/NonDeO	O_Csrad				300-2500	1.21E+13	0		0		0		*2.0	0		0		0		4		Tsang [90] Literature review.
-10001		Y_rad			O_Orad				300-1500	3E+11		0		0		0		0		0		0		0		0
-
+20001.		O2_birad		XH_Rrad        300-1500    3E+11        0    0    0        0        0    0    0    0
+487.		O2_birad		Cmethyl_Csrad    700-2500    1.05833E+10    0    0    0        *3.0        0    0    0    4    Tsang [91] Literature review.
+501.		O2_birad		C/H2/Nd_Csrad    500-900    2.25825E+10    0    0    0        *3.0        0    0    0    4    Tsang [91] Literature review.
+513.		O2_birad		C/H/NdNd_Csrad    600-1000    1.2044E+10    0    0    0        *5.0        0    0    0    4    Tsang [92] Literature review.
+524.		O2_birad		Cdpri_Csrad        300-2500    6.022E+11    0    0    13.55        0        0    0    0    4    Tsang [93] Literature review.
+533.		O2_birad		O_Csrad        298        5.7209E+12    0    0    0        *2.0        0    0    0    4    Atkinson et al [98] literature review.
+534.		O2_birad		O_Csrad        298        2.92067E+12    0    0    0        *1.3        0    0    0    4    Atkinson et al [98] literature review.
+535.		O2_birad		O_Csrad        200-300    2.74001E+12    0    0    0        *1.3        0    0    0.40    4    DeMore et al [183] literature review.

@@ -18,7 +18,7 @@ Arrhenius_EP
 //No.		elec_def	multiplebond		Temp.		A			n		a		E0		DA		Dn		Da		DE0		Rank	Comments
 576.		elec_def	multiplebond		300-1500	1E+12		0		0		0		0		0		0		0		0		Default
 577.		carbene		mb_db_unsub			296-728		1.98E+12	0		0		5.29	*3.2	0		0		0.26	3		Frey et al [192] 
-578.		o_atom		mb_o2_doublebond	300-2100	3.49E+12	0		0		0.46	0		0		0		0		3		Cobos et al [106] Transition state theory. (pages 3-4)
+//578.		o_atom		mb_o2_doublebond	300-2100	3.49E+12	0		0		0.46	0		0		0		0		3		Cobos et al [106] Transition state theory. (pages 3-4)
 579.		o_atom		mb_db_unsub			300			7.0E+11		0		0		0		0		0		0		0		4		Gaedtke et al [194] 
 580.		o_atom		mb_db_monosub_Nd	300			2.9E+12		0		0		0		0		0		0		0		4		Gaedtke et al [194] 
 581.		o_atom		mb_db_monosub_Nd	275-360		4.2E+12		0		0		0.50	0		0		0		0		4		Herbrechtsmeier et al [195] 

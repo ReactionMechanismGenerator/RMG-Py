@@ -14,6 +14,7 @@ X_H + Y_rad_birad -> X_rad + Y_H
 Generated on 7th April 2010 at 17:08
 Generated on 22nd June 2010 at 11:22
 Generated on 22nd June 2010 at 12:28
+Generated on 22nd June 2010 at 12:58
 """
 
 reaction_family_name = "H_Abstraction"
@@ -10786,6 +10787,36 @@ tunneling correction was employed and the frequencies were scaled by 0.99 (as su
 J.Chem.Phys. 110 (1999) 2822-2827).  The external symmetry number for H2O2 was 2; the external symmetry number
 for the remaining species and TS were set to 1.  The rate coefficient was computed at 600-2000K (in 200 K increments).
 The computed pre-exponential factor was divided by 2 and this is the reported value.
+""",
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
+)
+
+# Number 278
+rate(
+  group1 = 
+"""
+Orad_O_H
+1 *1 O 0 {2,S}, {3,S}
+2 *2 H 0 {1,S}
+3    O 1 {1,S}
+""",
+  group2 = 
+"""
+O_rad/NonDeO
+1 *3 O 1 {2,S}
+2    O 0 {1,S}
+""",
+  kf = Arrhenius(A=(1.75E+10,A_UNITS,"+-",0.0),
+                 n=(0,None,"+-",0.0),
+                 alpha=(0,None,"+-",0.0),
+                 E0=(-3.275,E_UNITS,"+-",0.0)
+                 ),
+  temperature_range = (300,1500),
+  rank = 5,
+  old_id = "486",
+  short_comment = "[8] Curran\'s estimation in reaction type 13, RO2 + HO2 --> RO2H + O2",
+  long_comment = 
+"""
 """,
    history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )

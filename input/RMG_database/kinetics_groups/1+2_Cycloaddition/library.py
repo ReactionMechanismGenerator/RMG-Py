@@ -14,6 +14,7 @@ Reverse name: Three_Ring_Cleavage
 
 
 Generated on 7th April 2010 at 17:08
+Generated on 22nd June 2010 at 12:58
 """
 
 reaction_family_name = "1+2_Cycloaddition"
@@ -41,6 +42,7 @@ Arrhenius_EP
 // rate constants from rate_library_4.txt, Cath, 03/07/28
 
 //No.		elec_def	multiplebond		Temp.		A			n		a		E0		DA		Dn		Da		DE0		Rank	Comments
+//578.		o_atom		mb_o2_doublebond	300-2100	3.49E+12	0		0		0.46	0		0		0		0		3		Cobos et al [106] Transition state theory. (pages 3-4)
 
 """
 
@@ -62,7 +64,7 @@ Union {carbene, me_carbene, dime_carbene, ph_carbene, o_atom}
   group2 = 
 """
 multiplebond
-1 *1 {Cd,CO,O} 0 {2,D}
+1 *1 {Cd,CO} 0 {2,D}
 2 *2 {Cd,O} 0 {1,D}
 """,
   kf = Arrhenius(A=(1E+12,A_UNITS,"+-",0.0),
@@ -123,34 +125,6 @@ o_atom
 """,
   group2 = 
 """
-mb_o2_doublebond
-1 *1 O 0 {2,D}
-2 *2 O 0 {1,D}
-""",
-  kf = Arrhenius(A=(3.49E+12,A_UNITS,"+-",0.0),
-                 n=(0,None,"+-",0.0),
-                 alpha=(0,None,"+-",0.0),
-                 E0=(0.46,E_UNITS,"+-",0.0)
-                 ),
-  temperature_range = (300,2100),
-  rank = 3,
-  old_id = "578",
-  short_comment = "Cobos et al [106] Transition state theory. (pages 3-4)",
-  long_comment = 
-"""
-""",
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
-)
-
-# Number 4
-rate(
-  group1 = 
-"""
-o_atom
-1 *3 O 2
-""",
-  group2 = 
-"""
 mb_db_unsub
 1 *1 Cd 0 {2,D} {3,S} {4,S}
 2 *2 Cd 0 {1,D} {5,S} {6,S}
@@ -176,7 +150,7 @@ Excitation: direct photolysis, analysis: UV-Vis absorption, Pressure 0.1 - 1000 
    history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 5
+# Number 4
 rate(
   group1 = 
 """
@@ -210,7 +184,7 @@ Excitation: direct photolysis, analysis: UV-Vis absorption, Pressure 0.1 - 1000 
    history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 6
+# Number 5
 rate(
   group1 = 
 """
@@ -244,7 +218,7 @@ Absolute values measured directly. Excitation: discharge, analysis :GC, Pressure
    history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 7
+# Number 6
 rate(
   group1 = 
 """
@@ -280,7 +254,7 @@ O + 1-C4H8 --> ethyloxirane. Original uncertainty 3.0E+11
    history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 8
+# Number 7
 rate(
   group1 = 
 """
@@ -316,7 +290,7 @@ O + iso-C4H8 --> 2,2- dimethyloxirane. Original uncertainty 1.2E+12
    history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 9
+# Number 8
 rate(
   group1 = 
 """
@@ -352,7 +326,7 @@ Pressure 0.39 atm. Excitation : sensitized photolysis, analysis :GC.
    history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 10
+# Number 9
 rate(
   group1 = 
 """
