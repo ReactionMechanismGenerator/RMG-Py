@@ -25,7 +25,7 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 subroutine estimateRateCoefficients_MSC(T, P, E, collFreq, densStates, Eres, &
-    Kij, Fim, Gnj, nIsom, nReac, nProd, nGrains, K, msg)
+    Kij, Fim, Gnj, nIsom, nReac, nProd, nGrains, K, msg, pa)
     ! Estimate the phenomenological rate coefficients using the (modified) strong
     ! collision method. The parameters are:
     !
@@ -71,10 +71,8 @@ subroutine estimateRateCoefficients_MSC(T, P, E, collFreq, densStates, Eres, &
     real(8), dimension(1:nReac+nProd,1:nIsom,1:nGrains), intent(in) :: Gnj
     real(8), dimension(1:nIsom+nReac+nProd,1:nIsom+nReac+nProd), intent(out) :: K
     character(len=128), intent(out) :: msg
+	real(8), dimension(1:nGrains, 1:nIsom+nReac, 1:nIsom), intent(out)     ::  pa
 
-    ! Steady-state populations
-    real(8), dimension(1:nGrains, 1:nIsom, 1:nIsom+nReac)      ::  pa
-    
     ! Steady-state matrix and vector
     real(8), dimension(1:nIsom, 1:nIsom)        ::  A
     real(8), dimension(1:nIsom, 1:nIsom+nReac)  ::  b
@@ -116,7 +114,7 @@ subroutine estimateRateCoefficients_MSC(T, P, E, collFreq, densStates, Eres, &
     do r = 1, start-1
         do i = 1, nIsom
             do n = 1, nIsom+nReac
-                pa(r,i,n) = 0.0
+                pa(r,n,i) = 0.0
             end do
         end do
     end do
@@ -175,12 +173,16 @@ subroutine estimateRateCoefficients_MSC(T, P, E, collFreq, densStates, Eres, &
             msg = "A singular matrix was encountered."
             return
         end if
-        pa(r,:,:) = -b
+        do i = 1, nIsom
+            do n = 1, nIsom+nReac
+				pa(r,n,i) = -b(i,n)
+			end do
+		end do
 
         ! Check that our populations are all positive
         do i = 1, nIsom
             do n = 1, nIsom+nReac
-                if (pa(r,i,n) < 0.0) then
+                if (pa(r,n,i) < 0.0) then
                     msg = "A negative steady-state concentration was encountered."
                     return
                 end if
@@ -195,7 +197,7 @@ subroutine estimateRateCoefficients_MSC(T, P, E, collFreq, densStates, Eres, &
         ! Calculate stabilization rates (i.e.) R + R' --> Ai or M --> Ai
         do i = 1, nIsom
             if (i /= src) then
-                val = collFreq(i) * sum(pa(:,i,src))
+                val = collFreq(i) * sum(pa(:,src,i))
                 K(i,src) = K(i,src) + val
                 K(src,src) = K(src,src) - val
             end if
@@ -205,7 +207,7 @@ subroutine estimateRateCoefficients_MSC(T, P, E, collFreq, densStates, Eres, &
         do n = 1, nReac+nProd
             do j = 1, nIsom
                 if (n+nIsom /= src) then
-                    val = sum(Gnj(n,j,:) * pa(:,j,src))
+                    val = sum(Gnj(n,j,:) * pa(:,src,j))
                     K(n+nIsom,src) = K(n+nIsom,src) + val
                     K(src,src) = K(src,src) - val
                 end if
@@ -213,6 +215,13 @@ subroutine estimateRateCoefficients_MSC(T, P, E, collFreq, densStates, Eres, &
         end do
 
     end do
+
+	! To complete pa we need the Boltzmann distribution at low energies
+	do i = 1, nIsom
+		do r = 1, nGrains
+			if (pa(r,i,i) == 0) pa(r,i,i) = densStates(i, r) * exp(-E(r) / 8.314472 / T)
+		end do
+	end do
 
 end subroutine
 

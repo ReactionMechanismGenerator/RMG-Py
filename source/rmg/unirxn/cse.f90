@@ -25,7 +25,7 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 subroutine estimateRateCoefficients_CSE(T, P, E, Mcoll0, E0, densStates, &
-    eqRatios, Kij, Fim, Gnj, nIsom, nReac, nProd, nGrains, K, msg, eig)
+    eqRatios, Kij, Fim, Gnj, nIsom, nReac, nProd, nGrains, K, msg, pa, eig)
     ! Estimate the phenomenological rate coefficients using the chemically-
     ! significant eigenvalues method. The parameters are:
     !
@@ -75,6 +75,7 @@ subroutine estimateRateCoefficients_CSE(T, P, E, Mcoll0, E0, densStates, &
     real(8), dimension(1:nReac+nProd,1:nIsom,1:nGrains), intent(in) :: Gnj
     real(8), dimension(1:nIsom+nReac+nProd,1:nIsom+nReac+nProd), intent(out) :: K
     character(len=128), intent(out) :: msg
+    real(8), dimension(1:nGrains, 1:nIsom+nReac, 1:nIsom), intent(out)  ::  pa
     real(8), dimension(1:nIsom+nReac+1), intent(out) :: eig
 
     ! The size of the master equation matrix
@@ -232,7 +233,7 @@ subroutine estimateRateCoefficients_CSE(T, P, E, Mcoll0, E0, densStates, &
         !V0(nRows) = 0.0
     end if
 
-    allocate( X(1:nRows, 1:nCSE), V(1:nCSE), Xinv(1:nCSE, 1:nRows) )
+	allocate( X(1:nRows, 1:nCSE), V(1:nCSE), Xinv(1:nCSE, 1:nRows) )
     do j = 1, nCSE
         ! Find index in full matrix
         count = nRows - (nIsom + nReac) + j
@@ -281,6 +282,15 @@ subroutine estimateRateCoefficients_CSE(T, P, E, Mcoll0, E0, densStates, &
         eqDist(index,i+nIsom) = 1.0
     end do
 
+    ! Zero population distribution vector
+	do r = 1, nGrains
+		do n = 1, nIsom+nReac
+			do i = 1, nIsom
+				pa(r,n,i) = 0.0
+			end do
+		end do
+	end do
+
     ! Calculate the phenomenological rate constants
     ! This version follows the notation of Miller and Klippenstein
     allocate( dXij(1:nIsom+nReac+nProd, 1:nCSE), C(1:nRows) )
@@ -306,6 +316,7 @@ subroutine estimateRateCoefficients_CSE(T, P, E, Mcoll0, E0, densStates, &
                     if (index > 0) then
                         ! Isomers
                         dXij(i,j) = dXij(i,j) + C(index)
+						pa(r,n,i) = pa(r,n,i) + C(index)
                         ! Products
                         do h = nReac+1, nReac+nProd
                             dXij(nIsom+h,j) = dXij(nIsom+h,j) + C(index) * Gnj(h,i,r) / V(j)

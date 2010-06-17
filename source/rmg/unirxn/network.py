@@ -627,7 +627,7 @@ class Network:
 							
 					# Determine phenomenological rate coefficients using approximate
 					# method
-					K[t,p,:,:] = self.applyApproximateMethod(T, P, Elist, method, nIsom, nReac, nProd, errorCheck)
+					K[t,p,:,:], p0 = self.applyApproximateMethod(T, P, Elist, method, nIsom, nReac, nProd, errorCheck)
 
 		except UnirxnNetworkException, e:
 
@@ -662,6 +662,10 @@ class Network:
 
 		nGrains = len(Elist)
 		dE = Elist[1] - Elist[0]
+
+		# The p vector can be used to reconstruct the p(E, t) data given a
+		# set of x(t) data
+		p = numpy.zeros((nGrains,nIsom+nReac,nIsom), numpy.float64)
 
 		# Density of states per partition function (i.e. normalized density of
 		# states with respect to Boltzmann weighting factor) for each isomer
@@ -710,7 +714,7 @@ class Network:
 
 			# Apply modified strong collision method
 			import msc
-			K, msg = msc.estimateratecoefficients_msc(T, P, Elist, collFreq, densStates, Eres,
+			K, msg, p = msc.estimateratecoefficients_msc(T, P, Elist, collFreq, densStates, Eres,
 				Kij, Fim, Gnj, nisom=nIsom, nreac=nReac, nprod=nProd, ngrains=nGrains)
 			msg = msg.strip()
 			if msg != '':
@@ -740,10 +744,10 @@ class Network:
 
 				# Apply reservoir state method
 				import rs
-				K, msg = rs.estimateratecoefficients_rs(T, P, Elist, Mcoll, densStates, E0, Eres,
+				K, msg, p = rs.estimateratecoefficients_rs(T, P, Elist, Mcoll, densStates, E0, Eres,
 					Kij, Fim, Gnj, dEdown, nisom=nIsom, nreac=nReac, nprod=nProd, ngrains=nGrains)
 				msg = msg.strip()
-			
+				
 			elif method.lower() == 'chemicaleigenvalues':
 
 				# Ground-state energy for each isomer
@@ -760,7 +764,7 @@ class Network:
 				
 				# Apply chemically-significant eigenvalue method
 				import cse
-				K, msg, eig = cse.estimateratecoefficients_cse(T, P, Elist, Mcoll, E0,
+				K, msg, p, eig = cse.estimateratecoefficients_cse(T, P, Elist, Mcoll, E0,
 					densStates, eqRatios, Kij, Fim, Gnj, nisom=nIsom, nreac=nReac, nprod=nProd, ngrains=nGrains)
 				msg = msg.strip()
 
@@ -779,8 +783,8 @@ class Network:
 		# If we had to create a temporary (fake) product channel, then don't
 		# return the last row and column of the rate coefficient matrix
 		if usingFakeProduct:
-			return K[:-1,:-1]
+			return K[:-1,:-1], p
 		else:
-			return K
+			return K, p
 
 ################################################################################

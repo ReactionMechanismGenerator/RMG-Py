@@ -25,7 +25,7 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 subroutine estimateRateCoefficients_RS(T, P, E, Mcoll, densStates, E0, Eres, &
-Kij, Fim, Gnj, dEdown, nIsom, nReac, nProd, nGrains, K, msg)
+Kij, Fim, Gnj, dEdown, nIsom, nReac, nProd, nGrains, K, msg, pa)
     ! Estimate the phenomenological rate coefficients using the (modified) strong
     ! collision method. The parameters are:
     !
@@ -75,12 +75,10 @@ Kij, Fim, Gnj, dEdown, nIsom, nReac, nProd, nGrains, K, msg)
     real(8), intent(in) :: dEdown
     real(8), dimension(1:nIsom+nReac+nProd,1:nIsom+nReac+nProd), intent(out) :: K
     character(len=128), intent(out) :: msg
+    real(8), dimension(1:nGrains, 1:nIsom+nReac, 1:nIsom), intent(out)  ::  pa
 
     ! Number of reservoir and active-state energy grains for each isomer
     integer, dimension(1:nIsom)          ::  nRes, nAct
-
-    ! Pseudo-steady state grain populations
-    real(8), dimension(1:nGrains, 1:nIsom+nReac, 1:nIsom)  ::  pa
 
     ! Indices
     integer i, j, m, n, r
@@ -130,11 +128,11 @@ Kij, Fim, Gnj, dEdown, nIsom, nReac, nProd, nGrains, K, msg)
         end do
     end do
 
-    ! Renormalize
-    do i = 1, nIsom
-        pa(:,i,:) = pa(:,i,:) / bres(i)
-        eqDist(i,:) = eqDist(i,:) / bres(i)
-    end do
+	! Put the reservoir populations into pa as well
+	! This means that x_i * pa_i gives the p(E,t) predicted by this method
+	do i = 1, nIsom
+		pa(1:nRes(i),i,i) = eqDist(i,1:nRes(i))
+	end do
 
     ! Initialize phenomenological rate coefficient matrix
     do i = 1, nIsom+nReac+nProd
@@ -183,10 +181,6 @@ Kij, Fim, Gnj, dEdown, nIsom, nReac, nProd, nGrains, K, msg)
                 K(n+nIsom,j) = K(n+nIsom,j) + sum(Gnj(n,i,nRes(i)+1:nGrains) * pa(nRes(i)+1:nGrains,j,i))
             end do
         end do
-    end do
-
-    do i = 1, nIsom
-        K(:,i) = K(:,i) * bres(i)
     end do
 
 end subroutine
