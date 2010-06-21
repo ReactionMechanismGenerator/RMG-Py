@@ -780,11 +780,87 @@ class Network:
 			if msg != '':
 				raise UnirxnNetworkException('Unable to apply method %s: %s' % (method, msg))
 
+#		# Optionally, use the p values to evaluate the k(T,P) values
+#		# This is redundant because they are returned from the various methods
+#		# already (using more efficient code), and so is commented out
+#		import mastereqn
+#		dEdown = self.bathGas.expDownParam
+#		E0 = numpy.zeros([nIsom+nReac], numpy.float64)
+#		for i in range(nIsom+nReac): E0[i] = self.isomers[i].E0
+#		Mcoll0 = numpy.zeros([nIsom,nGrains,nGrains], numpy.float64)
+#		for i in range(nIsom):
+#			collFreq = self.isomers[i].collFreq
+#			densStates0 = self.isomers[i].densStates
+#			Mcoll0[i,:,:], msg = mastereqn.collisionmatrix(T, P, Elist, collFreq, densStates0, E0[i], dEdown)
+#			msg = msg.strip()
+#			if msg != '':
+#				raise UnirxnNetworkException('Unable to determine collision matrix for isomer %i: %s' % (i, msg))
+#		K = self.__calculateRatesFromPopulationVectors(p, Mcoll0, Kij, Gnj, Fim, nIsom, nReac, nProd)
+		
 		# If we had to create a temporary (fake) product channel, then don't
 		# return the last row and column of the rate coefficient matrix
 		if usingFakeProduct:
 			return K[:-1,:-1], p
 		else:
 			return K, p
+
+	def __calculateRatesFromPopulationVectors(self, p, Mcoll, Kij, Gnj, Fim, nIsom, nReac, nProd):
+		"""
+		Given a set of time-independent population distribution vectors `p`
+		as returned from the MSC, RS, and CSE methods, calculate and return a
+		matrix of phenomenological rate coefficients k(T,P). This can be done
+		for any of the three methods, as they can all be expressed in terms of
+		the same formalism. However, it is more efficient to allow each method
+		to evaluate its k(T,P) values by its own optimized procedure.
+		"""
+
+		K = numpy.zeros((nIsom+nReac+nProd,nIsom+nReac+nProd), numpy.float64)
+
+		# Setting an isomer well as the unit source gives the k(T,P) values
+		# from that channel to all others in the network (thermal activation)
+		for src in range(nIsom):
+			for j in range(nIsom):
+				# Mi
+				K[j,src] += numpy.sum(numpy.dot(Mcoll[j,:,:], p[:,src,j]))
+				for l in range(nIsom):
+					K[j,src] -= numpy.sum(Kij[l,j,:] * p[:,src,j])
+				for l in range(nReac+nProd):
+					K[j,src] -= numpy.sum(Gnj[l,j,:] * p[:,src,j])
+				# Kij
+				for l in range(nIsom):
+					if j != l: K[j,src] += numpy.sum(Kij[j,l,:] * p[:,src,l])
+				# Fim - not used since y_mA = 0 for unit isomer source
+			for n in range(nReac+nProd):
+				# Hn - not used since y_mA = 0 for unit isomer source
+				# Gnj
+				for j in range(nIsom):
+					K[n+nIsom,src] += numpy.sum(Gnj[n,j,:] * p[:,src,j])
+
+		# Setting a reactant channel as the unit source gives the k(T,P) values
+		# from that channel to all others in the network (chemical activation)
+		for src in range(nIsom, nIsom+nReac):
+			for j in range(nIsom):
+				# Mi
+				K[j,src] += numpy.sum(numpy.dot(Mcoll[j,:,:], p[:,src,j]))
+				for l in range(nIsom):
+					K[j,src] -= numpy.sum(Kij[l,j,:] * p[:,src,j])
+				for l in range(nReac+nProd):
+					K[j,src] -= numpy.sum(Gnj[l,j,:] * p[:,src,j])
+				# Kij
+				for l in range(nIsom):
+					if j != l: K[j,src] += numpy.sum(Kij[j,l,:] * p[:,src,l])
+				# Fim
+				K[j,src] += numpy.sum(Fim[j,src-nIsom,:])
+			for n in range(nReac+nProd):
+				# Gnj
+				for j in range(nIsom):
+					K[n+nIsom,src] += numpy.sum(Gnj[n,j,:] * p[:,src,j])
+
+		# Ensure K matrix is conservative (the above doesn't do the diagonal
+		# entries properly anyway!)
+		for src in range(nIsom+nReac):
+			K[src,src] -= numpy.sum(K[:,src])
+
+		return K
 
 ################################################################################
