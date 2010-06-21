@@ -7,10 +7,10 @@ Union {O2_birad, Y_1centerbirad, Y_rad}
 // Y_2centeradjbirad
 // 1 *1 {Os, Ct} 1 {2,{S,T}}
 // 2    {Os, Ct} 1 {1,{S,T}}
-// 
-// C2b
-// 1 *1 C 1 {2,T}
-// 2    C 1 {1,T}
+ 
+C2b
+1 *1 C 1 {2,T}
+2    C 1 {1,T}
 
 O2_birad
 1 *1 O 1 {2,S}
