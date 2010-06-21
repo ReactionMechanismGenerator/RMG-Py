@@ -1,8 +1,9 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! 
-!   MEMURN - Master Equation Model for Unimolecular Reaction Networks
-! 
-!   Copyright (c) 2009 by Josh Allen (chemejosh@gmail.com)
+!   RMG - Reaction Mechanism Generator
+!
+!   Copyright (c) 2002-2009 Prof. William H. Green (whgreen@mit.edu) and the
+!   RMG Team (rmg_dev@mit.edu)
 ! 
 !   Permission is hereby granted, free of charge, to any person obtaining a
 !   copy of this software and associated documentation files (the 'Software'),
@@ -128,11 +129,11 @@ Kij, Fim, Gnj, dEdown, nIsom, nReac, nProd, nGrains, K, msg, pa)
         end do
     end do
 
-	! Put the reservoir populations into pa as well
-	! This means that x_i * pa_i gives the p(E,t) predicted by this method
-	do i = 1, nIsom
-		pa(1:nRes(i),i,i) = eqDist(i,1:nRes(i))
-	end do
+    ! Put the reservoir populations into pa as well
+    ! This means that x_i * pa_i gives the p(E,t) predicted by this method
+    do i = 1, nIsom
+        pa(1:nRes(i),i,i) = eqDist(i,1:nRes(i))
+    end do
 
     ! Initialize phenomenological rate coefficient matrix
     do i = 1, nIsom+nReac+nProd
@@ -181,6 +182,11 @@ Kij, Fim, Gnj, dEdown, nIsom, nReac, nProd, nGrains, K, msg, pa)
                 K(n+nIsom,j) = K(n+nIsom,j) + sum(Gnj(n,i,nRes(i)+1:nGrains) * pa(nRes(i)+1:nGrains,j,i))
             end do
         end do
+    end do
+
+    ! Ensure matrix is conservative
+    do n = 1, nIsom+nReac
+        K(n,n) = K(n,n) - sum(K(:,n))
     end do
 
 end subroutine
@@ -340,7 +346,7 @@ subroutine activeStateFull(T, P, E, Mcoll, densStates, Kij, Fim, Gnj, &
             Z(indices(r,i), i) = sum(Mcoll(i,r,1:nRes(i)) * densStates(i,1:nRes(i)) * exp(-E(1:nRes(i)) / 8.314472 / T))
         end do
     end do
-
+    
     ! Isomerization terms in active-state matrix and RHS vectors
     do i = 1, nIsom
         do j = 1, i-1
@@ -478,7 +484,7 @@ subroutine activeStateBanded(T, P, E, Mcoll, densStates, Kij, Fim, Gnj, dEdown, 
     ! Determine bandwidth (at which transfer probabilities are so low that they can be truncated
     ! with negligible error)
     dE = E(2) - E(1)
-    halfbandwidth = ceiling(16 * dEdown / dE) * nIsom
+    halfbandwidth = ceiling(6 * dEdown / dE) * nIsom
     bandwidth = 2 * halfbandwidth + 1
 
     ! Create and zero active-state matrix and RHS vectors
@@ -493,7 +499,7 @@ subroutine activeStateBanded(T, P, E, Mcoll, densStates, Kij, Fim, Gnj, dEdown, 
             Z(i,j) = 0.0
         end do
     end do
-
+    
     ! Collisional terms in active-state matrix and RHS vectors
     halfbandwidth = halfbandwidth / nIsom
     do i = 1, nIsom

@@ -1,19 +1,20 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! 
+!   RMG - Reaction Mechanism Generator
 !
-!   MEMURN - Master Equation Model for Unimolecular Reaction Networks
-!
-!   Copyright (c) 2009 by Josh Allen (chemejosh@gmail.com)
-!
+!   Copyright (c) 2002-2009 Prof. William H. Green (whgreen@mit.edu) and the
+!   RMG Team (rmg_dev@mit.edu)
+! 
 !   Permission is hereby granted, free of charge, to any person obtaining a
 !   copy of this software and associated documentation files (the 'Software'),
 !   to deal in the Software without restriction, including without limitation
 !   the rights to use, copy, modify, merge, publish, distribute, sublicense,
 !   and/or sell copies of the Software, and to permit persons to whom the
 !   Software is furnished to do so, subject to the following conditions:
-!
+! 
 !   The above copyright notice and this permission notice shall be included in
 !   all copies or substantial portions of the Software.
-!
+! 
 !   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 !   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 !   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,7 +22,7 @@
 !   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 !   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 !   DEALINGS IN THE SOFTWARE.
-!
+! 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 subroutine estimateRateCoefficients_CSE(T, P, E, Mcoll0, E0, densStates, &
@@ -99,7 +100,7 @@ subroutine estimateRateCoefficients_CSE(T, P, E, Mcoll0, E0, densStates, &
     integer i, j, n, r, h, index, count
 
     ! Construct accounting matrix
-	! Row is grain number, column is well number, value is index into matrix
+    ! Row is grain number, column is well number, value is index into matrix
     nRows = 0
     do r = 1, nGrains
         do i = 1, nIsom
@@ -119,7 +120,7 @@ subroutine estimateRateCoefficients_CSE(T, P, E, Mcoll0, E0, densStates, &
     allocate( Mcoll(1:nRows, 1:nRows), Mrxn(1:nRows, 1:nRows), M(1:nRows, 1:nRows) )
     allocate( S(1:nRows), Sinv(1:nRows) )
 
-	! Generate full unsymmetrized master equation matrix (dimension nRows x nRows)
+    ! Generate full unsymmetrized master equation matrix (dimension nRows x nRows)
     call fullMEMatrix(E, E0, Mcoll0, Kij, Gnj, Fim, indices, &
         nRows, nGrains, nIsom, nReac, nProd, Mcoll, Mrxn, msg)
 
@@ -147,7 +148,7 @@ subroutine estimateRateCoefficients_CSE(T, P, E, Mcoll0, E0, densStates, &
         end do
     end do
 
-	! DEBUG: Check that the matrix has been properly symmetrized
+    ! DEBUG: Check that the matrix has been properly symmetrized
     !do i = 1, nRows
     !    do j = 1, i
     !        if (M(i,j) /= 0.0) then
@@ -233,7 +234,7 @@ subroutine estimateRateCoefficients_CSE(T, P, E, Mcoll0, E0, densStates, &
         !V0(nRows) = 0.0
     end if
 
-	allocate( X(1:nRows, 1:nCSE), V(1:nCSE), Xinv(1:nCSE, 1:nRows) )
+    allocate( X(1:nRows, 1:nCSE), V(1:nCSE), Xinv(1:nCSE, 1:nRows) )
     do j = 1, nCSE
         ! Find index in full matrix
         count = nRows - (nIsom + nReac) + j
@@ -283,13 +284,13 @@ subroutine estimateRateCoefficients_CSE(T, P, E, Mcoll0, E0, densStates, &
     end do
 
     ! Zero population distribution vector
-	do r = 1, nGrains
-		do n = 1, nIsom+nReac
-			do i = 1, nIsom
-				pa(r,n,i) = 0.0
-			end do
-		end do
-	end do
+    do r = 1, nGrains
+        do n = 1, nIsom+nReac
+            do i = 1, nIsom
+                pa(r,n,i) = 0.0
+            end do
+        end do
+    end do
 
     ! Calculate the phenomenological rate constants
     ! This version follows the notation of Miller and Klippenstein
@@ -316,7 +317,7 @@ subroutine estimateRateCoefficients_CSE(T, P, E, Mcoll0, E0, densStates, &
                     if (index > 0) then
                         ! Isomers
                         dXij(i,j) = dXij(i,j) + C(index)
-						pa(r,n,i) = pa(r,n,i) + C(index)
+                        pa(r,n,i) = pa(r,n,i) + C(index)
                         ! Products
                         do h = nReac+1, nReac+nProd
                             dXij(nIsom+h,j) = dXij(nIsom+h,j) + C(index) * Gnj(h,i,r) / V(j)

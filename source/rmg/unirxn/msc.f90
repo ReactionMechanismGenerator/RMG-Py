@@ -1,8 +1,9 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! 
-!   MEMURN - Master Equation Model for Unimolecular Reaction Networks
-! 
-!   Copyright (c) 2009 by Josh Allen (chemejosh@gmail.com)
+!   RMG - Reaction Mechanism Generator
+!
+!   Copyright (c) 2002-2009 Prof. William H. Green (whgreen@mit.edu) and the
+!   RMG Team (rmg_dev@mit.edu)
 ! 
 !   Permission is hereby granted, free of charge, to any person obtaining a
 !   copy of this software and associated documentation files (the 'Software'),
@@ -71,7 +72,7 @@ subroutine estimateRateCoefficients_MSC(T, P, E, collFreq, densStates, Eres, &
     real(8), dimension(1:nReac+nProd,1:nIsom,1:nGrains), intent(in) :: Gnj
     real(8), dimension(1:nIsom+nReac+nProd,1:nIsom+nReac+nProd), intent(out) :: K
     character(len=128), intent(out) :: msg
-	real(8), dimension(1:nGrains, 1:nIsom+nReac, 1:nIsom), intent(out)     ::  pa
+    real(8), dimension(1:nGrains, 1:nIsom+nReac, 1:nIsom), intent(out)     ::  pa
 
     ! Steady-state matrix and vector
     real(8), dimension(1:nIsom, 1:nIsom)        ::  A
@@ -175,9 +176,9 @@ subroutine estimateRateCoefficients_MSC(T, P, E, collFreq, densStates, Eres, &
         end if
         do i = 1, nIsom
             do n = 1, nIsom+nReac
-				pa(r,n,i) = -b(i,n)
-			end do
-		end do
+                pa(r,n,i) = -b(i,n)
+            end do
+        end do
 
         ! Check that our populations are all positive
         do i = 1, nIsom
@@ -216,12 +217,12 @@ subroutine estimateRateCoefficients_MSC(T, P, E, collFreq, densStates, Eres, &
 
     end do
 
-	! To complete pa we need the Boltzmann distribution at low energies
-	do i = 1, nIsom
-		do r = 1, nGrains
-			if (pa(r,i,i) == 0) pa(r,i,i) = densStates(i, r) * exp(-E(r) / 8.314472 / T)
-		end do
-	end do
+    ! To complete pa we need the Boltzmann distribution at low energies
+    do i = 1, nIsom
+        do r = 1, nGrains
+            if (pa(r,i,i) == 0) pa(r,i,i) = densStates(i, r) * exp(-E(r) / 8.314472 / T)
+        end do
+    end do
 
 end subroutine
 
