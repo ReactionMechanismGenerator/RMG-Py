@@ -1908,6 +1908,7 @@ MRH 31-Aug-2009
 ---
 207
 ---
+FORMER RATES
 [89] Tsang, W.; Hampson, R.F. J. Phys. Chem. Ref. Data 1986, 15, 1087.
 C2H4 + O2 --> C2H3 + HO2 C.D.W divided original rate expression by 4, to get rate expression per H atom.
 
@@ -1922,6 +1923,15 @@ Recommended data follows Walker's estimates for O2+alkane
 Note: The authors note that a lower lying channel, involving addition and
 rearrangement prior to decomposition, may exist.
 MRH 28-Aug-2009
+
+
+CURRENT RATES
+Hua, H.; B. Ruscic; B. Wang.  Chemical Physics 2005, 311, 335-341.
+C2H4 + O2 --> C2H3 + HO2.
+
+Divided rate expression by 4 to get the rate expression per H atom.  See page 338.
+Overall, this agrees with the earlier rate that we used.
+JDM 15-Jun-2010.
 
 
 ---

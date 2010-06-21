@@ -15,6 +15,7 @@ Generated on 7th April 2010 at 17:08
 Generated on 22nd June 2010 at 11:22
 Generated on 22nd June 2010 at 12:28
 Generated on 22nd June 2010 at 12:58
+Generated on 22nd June 2010 at 15:39
 """
 
 reaction_family_name = "H_Abstraction"
@@ -7795,17 +7796,18 @@ O2b
 1 *3 O 1 {2,S}
 2    O 1 {1,S}
 """,
-  kf = Arrhenius(A=(1.055E+13,A_UNITS,"*/",10.0),
+  kf = Arrhenius(A=(1.792E+13,A_UNITS,"+-",0.0),
                  n=(0,None,"+-",0.0),
                  alpha=(0,None,"+-",0.0),
-                 E0=(57.63,E_UNITS,"+-",0.0)
+                 E0=(60.01,E_UNITS,"+-",0.0)
                  ),
   temperature_range = (300,2500),
   rank = 4,
   old_id = "207",
-  short_comment = "Tsang [89] literature review.",
+  short_comment = "Hua, Ruscic, and Wang 2005, transition state theory.",
   long_comment = 
 """
+FORMER RATES
 [89] Tsang, W.; Hampson, R.F. J. Phys. Chem. Ref. Data 1986, 15, 1087.
 C2H4 + O2 --> C2H3 + HO2 C.D.W divided original rate expression by 4, to get rate expression per H atom.
 
@@ -7820,8 +7822,17 @@ Recommended data follows Walker\'s estimates for O2+alkane
 Note: The authors note that a lower lying channel, involving addition and
 rearrangement prior to decomposition, may exist.
 MRH 28-Aug-2009
+
+
+CURRENT RATES
+Hua, H.; B. Ruscic; B. Wang.  Chemical Physics 2005, 311, 335-341.
+C2H4 + O2 --> C2H3 + HO2.
+
+Divided rate expression by 4 to get the rate expression per H atom.  See page 338.
+Overall, this agrees with the earlier rate that we used.
+JDM 15-Jun-2010.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
 # Number 210

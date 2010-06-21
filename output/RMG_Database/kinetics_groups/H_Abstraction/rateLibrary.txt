@@ -237,7 +237,7 @@ Arrhenius_EP
 205  C/H/Cs3              CO_rad/NonDe           300-2500  3.43e+04      2.5        0     13.5      *10        0        0        0  4     Tsang [92] literature review.
 206  C/H/Cs3              O_pri_rad              298-1150  2.57e+06      1.9        0     1.45        0        0        0        0  3     Cohen et al. [101] Transition state theory.
 207  C/H/Cs3              O_rad/NonDeC           300-2500  2.29e+10        0        0     2.88      *10        0        0        0  4     Tsang [92] literature review.
-208  Cd_pri               O2b                    300-2500  1.06e+13        0        0     57.6      *10        0        0        0  4     Tsang [89] literature review.
+208  Cd_pri               O2b                    300-2500  1.79e+13        0        0       60        0        0        0        0  4     Hua, Ruscic, and Wang 2005, transition state theory.
 209  Cd_pri               O_atom_triplet         290-1510  3.78e+06     1.91        0     3.74        0        0        0        0  3     Mahmud et al. [128] Transition state theory
 210  Cd_pri               C_rad/H2/Cs            300-2500       158     3.13        0       18      *10        0        0        0  4     Tsang [89] literature review.
 211  Cd_pri               O_pri_rad              650-1500  5.13e+12        0        0     5.94    *3.16        0        0        0  4     Baulch et al. [95] literature review.
