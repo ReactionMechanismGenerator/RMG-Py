@@ -16,6 +16,7 @@ Reverse name: Molecular_Addition
 
 Generated on 7th April 2010 at 17:08
 Generated on 22nd June 2010 at 12:58
+Generated on 22nd June 2010 at 14:45
 """
 
 reaction_family_name = "Disproportionation"
@@ -71,7 +72,7 @@ rate(
   group1 = 
 """
 Y_rad_birad
-Union {Y_2centeradjbirad, Y_1centerbirad, Y_rad}
+Union {O2_birad, Y_1centerbirad, Y_rad}
 """,
   group2 = 
 """
@@ -101,8 +102,8 @@ rate(
 """
 CH2_triplet
 1 *1 C 2T {2,S}, {3,S}
-2 H 0 {1,S}
-3 H 0 {1,S}
+2    H 0 {1,S}
+3    H 0 {1,S}
 """,
   group2 = 
 """
@@ -671,8 +672,8 @@ rate(
 """
 CH2_triplet
 1 *1 C 2T {2,S}, {3,S}
-2 H 0 {1,S}
-3 H 0 {1,S}
+2    H 0 {1,S}
+3    H 0 {1,S}
 """,
   group2 = 
 """
@@ -1989,8 +1990,8 @@ rate(
 """
 CH2_triplet
 1 *1 C 2T {2,S}, {3,S}
-2 H 0 {1,S}
-3 H 0 {1,S}
+2    H 0 {1,S}
+3    H 0 {1,S}
 """,
   group2 = 
 """
@@ -2676,7 +2677,7 @@ rate(
 """
 O2_birad
 1 *1 O 1 {2,S}
-2 O 1 {1,S}
+2    O 1 {1,S}
 """,
   group2 = 
 """
@@ -2706,7 +2707,7 @@ rate(
 """
 O2_birad
 1 *1 O 1 {2,S}
-2 O 1 {1,S}
+2    O 1 {1,S}
 """,
   group2 = 
 """
@@ -2754,7 +2755,7 @@ rate(
 """
 O2_birad
 1 *1 O 1 {2,S}
-2 O 1 {1,S}
+2    O 1 {1,S}
 """,
   group2 = 
 """
@@ -2801,7 +2802,7 @@ rate(
 """
 O2_birad
 1 *1 O 1 {2,S}
-2 O 1 {1,S}
+2    O 1 {1,S}
 """,
   group2 = 
 """
@@ -2846,7 +2847,7 @@ rate(
 """
 O2_birad
 1 *1 O 1 {2,S}
-2 O 1 {1,S}
+2    O 1 {1,S}
 """,
   group2 = 
 """
@@ -2895,7 +2896,7 @@ rate(
 """
 O2_birad
 1 *1 O 1 {2,S}
-2 O 1 {1,S}
+2    O 1 {1,S}
 """,
   group2 = 
 """
@@ -2935,7 +2936,7 @@ rate(
 """
 O2_birad
 1 *1 O 1 {2,S}
-2 O 1 {1,S}
+2    O 1 {1,S}
 """,
   group2 = 
 """
@@ -2975,7 +2976,7 @@ rate(
 """
 O2_birad
 1 *1 O 1 {2,S}
-2 O 1 {1,S}
+2    O 1 {1,S}
 """,
   group2 = 
 """
