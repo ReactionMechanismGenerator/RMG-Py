@@ -508,10 +508,17 @@ for family_name,family in db.families.iteritems():
     WriteRMGjava(_rates, output_folder, unread_lines=unread_lines, header = rate.header)
     WriteSource(_rates, output_folder, file_header=file_header, unread_lines=unread_lines, family_name=family_name)
     
-    for file_to_copy in ['tree.txt', 'dictionary.txt', 'reactionAdjList.txt']:
+    for file_to_copy in ['tree.txt', 'dictionary.txt', 'reactionAdjList.txt']: # mandatory files
         logging.debug("Copying %s into destination folder"%file_to_copy)
         shutil.copy( os.path.join(data_source,'kinetics_groups',family_name,file_to_copy),
                     output_folder)
+    for file_to_copy in ['forbiddenGroups.txt']: # optional files
+        if not os.path.exists( os.path.join(data_source,'kinetics_groups',family_name,file_to_copy) ):
+            continue # file doesn't exist so don't copy it.
+        logging.debug("Copying %s into destination folder"%file_to_copy)
+        shutil.copy( os.path.join(data_source,'kinetics_groups',family_name,file_to_copy),
+                    output_folder)    
+    
 for file_to_copy in ['families.txt']:
     logging.debug("Copying %s into destination folder"%file_to_copy)
     shutil.copy( os.path.join(data_source,'kinetics_groups',file_to_copy),
