@@ -56,7 +56,7 @@ o_atom
 1 *3 O 2 
 
 multiplebond
-1 *1 {Cd,CO,O} 0 {2,D}
+1 *1 {Cd,CO} 0 {2,D}
 2 *2 {Cd,O} 0 {1,D}
 
 mb_carbonyl
@@ -98,10 +98,6 @@ mb_carbonyl_DeDe
 2 *2 O 0 {1,D}
 3 {Cd,Ct,Cb,CO} 0 {1,S}
 4 {Cd,Ct,Cb,CO} 0 {1,S}
-
-mb_o2_doublebond
-1 *1 O 0 {2,D}
-2 *2 O 0 {1,D}
 
 mb_db
 1 *1 Cd 0 {2,D}

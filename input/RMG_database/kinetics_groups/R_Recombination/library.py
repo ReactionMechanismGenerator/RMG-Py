@@ -13,6 +13,7 @@ Reverse name: Bond_Dissociation
 
 
 Generated on 7th April 2010 at 17:08
+Generated on 22nd June 2010 at 12:58
 """
 
 reaction_family_name = "R_Recombination"
@@ -33,7 +34,8 @@ Arrhenius_EP
 
 //No.		Y_rad			Y_rad			Temp.		A			n	a		E0		DA		Dn		Da		DE0		Rank	Comments
 //441.		C_methyl		C_rad/Cs3		300-2500	1.63E+13	0		0		-0.60	*2.0	0		0		0		4	Tsang [92] literature review.
-	
+//487.		O2_birad		Ct_rad			300-1500	3.0E+12	0	0	0	0		0	0	0	0	estimated to be the same as Cd_pri_rad + O2.
+
 """
 
 # Set some units for all the rates in this file
@@ -2422,6 +2424,479 @@ Verified by Greg Magoon; it is not immediately clear whether this rate constant 
 *NHP = Not necessarily at high pressure limit	 
 """,
    history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+)
+
+# Number 57
+rate(
+  group1 = 
+"""
+O2_birad
+1 * O 1 {2,S}
+2 O 1 {1,S}
+""",
+  group2 = 
+"""
+H_rad
+1 * H 1
+""",
+  kf = Arrhenius(A=(4.395E+10,A_UNITS,"+-",0.0),
+                 n=(1.00,None,"+-",0.0),
+                 alpha=(0,None,"+-",0.0),
+                 E0=(0.45,E_UNITS,"+-",0.0)
+                 ),
+  temperature_range = (298,6000),
+  rank = 4,
+  old_id = "480",
+  short_comment = "Duchovic et al. [142] RRK(M) extrapolation. Probably could do better.",
+  long_comment = 
+"""
+[142] Duchovic,R.J; Pettigrew,J D; Welling B; Shipchandler,T. *J. Chem Phys.* **105**, 10367 (1996) http://dx.doi.org/10.1063/1.472992
+
+RRK(M) extrapolation. H + O2 --> OH + O
+
+C.D.W. divided rate expression by 2, to get rate of addition per site.
+
+Values (4.395E+10	1.00	0	0.45) confirmed to fit table (divided by 2) 
+by rwest@mit.edu  7-Sep-2009
+
+Agreement with experimental data from Cobos et al. 
+(C. J. Cobos, H. Hippler, and J. Troe, *J. Phys. Chem.* 89, 342, 1985)
+was promising **at low pressures**, but 
+\"Significant deviations are observed between theory and experiment as the 
+high-pressure limit is approached.\"
+    
+E.g., at 298 K
+
+    \"However, the value of 
+    the high-pressure limit rate coefficient at 298.15 K for the
+    termolecular process computed with TST, model I, and 
+    model II does not agree with the estimated high-pressure 
+    limit value of Cobos et al. at that temperature. TST, 
+    model I, and model II agree with one another, predicting a 
+    value of Log10(k)=-10.7 where the value of the limiting 
+    high-pressure rate coefficient k=2E-11 cm3/molecule/s at 298.15 K, 
+    while Cobos et al. estimate a value of Log10(k)=-10.12 
+    (that is, k=7.5E-11 cm3/molecule/s)\"
+    
+The calculations used the *ab initio* PES of Walch et al., which was the best available in 1991.
+(63) Walch, S. P.; Rohlfing, C. M.; Melius, C. F.; Bauschlicher, C. W. J. Chem. Phys. 1988, 88, 6273. 
+(64) Walch, S. P.; Rohlfing, C. M. J. Chem. Phys. 1989, 91, 2373. 
+(67) Walch, S. P.; Duchovic, R. J. J. Chem. Phys. 1991, 94, 7068. 
+
+Many extensions and improvements are suggested for future work, which may well 
+have happened since the paper was published in 1996. Revision of this rate is recommended.
+
+Moved from R_Addition_MultipleBond on 3-Jun-2010, JDM.
+""",
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
+)
+
+# Number 58
+rate(
+  group1 = 
+"""
+O2_birad
+1 * O 1 {2,S}
+2 O 1 {1,S}
+""",
+  group2 = 
+"""
+H_rad
+1 * H 1
+""",
+  kf = Arrhenius(A=(8.15E+12,A_UNITS,"+-",0.0),
+                 n=(0,None,"+-",0.0),
+                 alpha=(0,None,"+-",0.0),
+                 E0=(0.76,E_UNITS,"+-",0.0)
+                 ),
+  temperature_range = (300,1500),
+  rank = 3,
+  old_id = "481",
+  short_comment = "Cobos, C.J and Troe, J. [106] Transition state theory.",
+  long_comment = 
+"""
+[106] Cobos,C.J.;Troe,J.J. Chem. Phys 1985, 83,1010.
+
+Transition state theory. H+O2 -->HO2 
+
+C.D.W. divided rate expression by 2, to get rate of addition per site 
+
+Moved from R_Addition_MultipleBond on 3-Jun-2010, JDM.
+""",
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
+)
+
+# Number 59
+rate(
+  group1 = 
+"""
+O2_birad
+1 * O 1 {2,S}
+2 O 1 {1,S}
+""",
+  group2 = 
+"""
+C_methyl
+1 * C 1 {2,S}, {3,S}, {4,S}
+2 H 0 {1,S}
+3 H 0 {1,S}
+4 H 0 {1,S}
+""",
+  kf = Arrhenius(A=(2.26E+12,A_UNITS,"+-",420000000000.0),
+                 n=(0,None,"+-",0.0),
+                 alpha=(0,None,"+-",0.0),
+                 E0=(0,E_UNITS,"+-",0.0)
+                 ),
+  temperature_range = (300,1500),
+  rank = 5,
+  old_id = "482",
+  short_comment = "Curran et al. [8] From Lenhardt et al. [143]. (Measured at 300K) (n-butyl not methyl)",
+  long_comment = 
+"""
+We are using a primary R. radical as a methyl radical. The rate comes from n-butyl.
+
+[8]   Curran, H.J.; Gaffuri, P.; Pit z, W.J.; Westbrook, C.K. *Combust. Flame* 2002, 129, 253-280. http://dx.doi.org/10.1016/S0010-2180(01)00373-X
+
+In their study modelling iso-octane oxidation, Curran et al [8] chose to use the rate measured by Lenhardt et al [143] described below.
+
+[143] Lenhardt, T.M.; McDade, C.E.; Bayes, K.D.; *J. Chem. Phys.* 1980, 72,304 http://dx.doi.org/10.1063/1.438848
+
+Rates measurement of **n-butyl** + O2 at 300 K. High pressure limit from flash photolysis experiments.
+
+C.D.W. divided rate expression by 2, to get rate of addition rate per site,
+giving  (2.26±0.42)E12 cm3/mole/sec.
+
+    Rate constants for the reaction of four different butyl radicals with molecular oxygen 
+    have been measured **at room temperature**. The radicals were generated by flash photolysis 
+    and their time decay was followed with a photoionization mass spectrometer. The radical 
+    concentrations were kept low to avoid complications from radical–radical reactions. 
+    Radical lifetimes were long, up to 50 msec, thus assuring that thermalized radicals were being studied. 
+    
+    The rate constants, in units of 10E−11 cm3/molecule/sec, are:
+    
+     * **n-butyl (0.75±0.14); (gives (2.26±0.42)E12 cm3/mole/sec when divided by 2 to get rate per site)**
+     * s-butyl (1.66±0.22); (gives (5.00±0.66)E12 cm3/mole/sec when divided by 2 to get rate per site)
+     * t-butyl (2.34±0.39); (gives (7.05±1.17)E12 cm3/mole/sec when divided by 2 to get rate per site)
+     * 3-hydroxy s-butyl (2.8±1.8). (gives (8.43±5.42)E12 cm3/mole/sec when divided by 2 to get rate per site)
+     
+    No pressure dependence of the rate constants was observed over the range 1 to 4 Torr. 
+
+Because radical addition to a double bond is probably barrierless, the temperature range 300-1500K
+has been assigned although the rate was only measured at 300K. 
+rwest@mit.edu  7-Sep-2009
+
+Moved from R_Addition_MultipleBond on 3-Jun-2010, JDM.
+""",
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
+)
+
+# Number 60
+rate(
+  group1 = 
+"""
+O2_birad
+1 * O 1 {2,S}
+2 O 1 {1,S}
+""",
+  group2 = 
+"""
+C_pri_rad
+1 * C 1 {2,S}, {3,S}, {4,S}
+2 H 0 {1,S}
+3 H 0 {1,S}
+4 {R!H} 0 {1,S}
+""",
+  kf = Arrhenius(A=(2.26E+12,A_UNITS,"+-",420000000000.0),
+                 n=(0,None,"+-",0.0),
+                 alpha=(0,None,"+-",0.0),
+                 E0=(0,E_UNITS,"+-",0.0)
+                 ),
+  temperature_range = (300,1500),
+  rank = 5,
+  old_id = "483",
+  short_comment = "Curran et al. [8] From Lenhardt et al. [143]. (Measured at 300K)",
+  long_comment = 
+"""
+[8]   Curran, H.J.; Gaffuri, P.; Pit z, W.J.; Westbrook, C.K. *Combust. Flame* 2002, 129, 253-280. http://dx.doi.org/10.1016/S0010-2180(01)00373-X
+
+In their study modelling iso-octane oxidation, Curran et al [8] chose to use the rate measured by Lenhardt et al [143] described below.
+
+[143] Lenhardt, T.M.; McDade, C.E.; Bayes, K.D.; *J. Chem. Phys.* 1980, 72,304 http://dx.doi.org/10.1063/1.438848
+
+Rates measurement of **n-butyl** + O2 at 300 K. High pressure limit from flash photolysis experiments.
+C.D.W. divided rate expression by 2, to get rate of addition rate per site, 
+giving  (2.26±0.42)E12 cm3/mole/sec.
+
+    Rate constants for the reaction of four different butyl radicals with molecular oxygen 
+    have been measured **at room temperature**. The radicals were generated by flash photolysis 
+    and their time decay was followed with a photoionization mass spectrometer. The radical 
+    concentrations were kept low to avoid complications from radical–radical reactions. 
+    Radical lifetimes were long, up to 50 msec, thus assuring that thermalized radicals were being studied. 
+    
+    The rate constants, in units of 10E−11 cm3/molecule/sec, are:
+    
+     * n-butyl (0.75±0.14); (gives (2.26±0.42)E12 cm3/mole/sec when divided by 2 to get rate per site)
+     * s-butyl (1.66±0.22); (gives (5.00±0.66)E12 cm3/mole/sec when divided by 2 to get rate per site)
+     * t-butyl (2.34±0.39); (gives (7.05±1.17)E12 cm3/mole/sec when divided by 2 to get rate per site)
+     * 3-hydroxy s-butyl (2.8±1.8). (gives (8.43±5.42)E12 cm3/mole/sec when divided by 2 to get rate per site)
+     
+    No pressure dependence of the rate constants was observed over the range 1 to 4 Torr. 
+
+Because radical addition to a double bond is probably barrierless, the temperature range 300-1500K
+has been assigned although the rate was only measured at 300K. 
+
+rwest@mit.edu  7-Sep-2009
+
+Moved from R_Addition_MultipleBond on 3-Jun-2010, JDM.
+""",
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
+)
+
+# Number 61
+rate(
+  group1 = 
+"""
+O2_birad
+1 * O 1 {2,S}
+2 O 1 {1,S}
+""",
+  group2 = 
+"""
+C_sec_rad
+1 * C 1 {2,S}, {3,S}, {4,S}
+2 H 0 {1,S}
+3 {R!H} 0 {1,S}
+4 {R!H} 0 {1,S}
+""",
+  kf = Arrhenius(A=(3.77E+12,A_UNITS,"+-",1e+12),
+                 n=(0,None,"+-",0.0),
+                 alpha=(0,None,"+-",0.0),
+                 E0=(0,E_UNITS,"+-",0.0)
+                 ),
+  temperature_range = (300,1500),
+  rank = 5,
+  old_id = "484",
+  short_comment = "Curran et al. [8]. (Estimated at 300K)",
+  long_comment = 
+"""
+
+Lenhardt [143] measured (10.0±1.3)E12 cm3/mole/sec (at 300K, high pressure limit, from flash photolysis experiments.)
+Atkinson [96], in their review, recommend 6.62E12 cm3/mole/sec. (according to Curran [8]).
+Curran [8], in their modelling paper, refer to both these and chose and \"intermediate\" value of 7.54E12 cm3/mol/sec.
+
+Curran [8] is the rate adopted here, giving 3.77E+12 cm3/mole/sec when divided by two to give the rate of addition per site.
+The uncertainty of 1E12 cm3/mole/sec was estimated from these values
+
+ * [8] Curran, H.J.; Gaffuri, P.; Pit z, W.J.; Westbrook, C.K. *Combust. Flame* 2002, 129, 253-280. http://dx.doi.org/10.1016/S0010-2180(01)00373-X
+ * [96] Atkinson,R; Baulch,D. L.; Cox R.A.;Hampson,R.F.,Jr.;Kerr,J.A;Rossi,M.J.;Troe,J. *J Phys. Chem. Ref. Data* 1997,26,521.
+ * [143] Lenhardt,T.M.;McDade,C.E.;Bayes,K.D.; *J. Chem Phys* 1980, 72,304 http://dx.doi.org/10.1063/1.438848
+
+Because radical addition to a double bond is probably barrierless, the temperature range 300-1500K
+has been assigned although the rate was only measured/estimated at 300K. 
+
+rwest@mit.edu  7-Sep-2009
+
+Moved from R_Addition_MultipleBond on 3-Jun-2010, JDM.
+""",
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
+)
+
+# Number 62
+rate(
+  group1 = 
+"""
+O2_birad
+1 * O 1 {2,S}
+2 O 1 {1,S}
+""",
+  group2 = 
+"""
+C_ter_rad
+1 * C 1 {2,S}, {3,S}, {4,S}
+2 {R!H} 0 {1,S}
+3 {R!H} 0 {1,S}
+4 {R!H} 0 {1,S}
+""",
+  kf = Arrhenius(A=(7.05E+12,A_UNITS,"+-",1.17e+12),
+                 n=(0,None,"+-",0.0),
+                 alpha=(0,None,"+-",0.0),
+                 E0=(0,E_UNITS,"+-",0.0)
+                 ),
+  temperature_range = (300,1500),
+  rank = 5,
+  old_id = "485",
+  short_comment = "Curran et al. [8] From Lenhardt et al. [143]. (Measured at 300K)",
+  long_comment = 
+"""
+[8]   Curran, H.J.; Gaffuri, P.; Pit z, W.J.; Westbrook, C.K. *Combust. Flame* 2002, 129, 253-280. http://dx.doi.org/10.1016/S0010-2180(01)00373-X
+
+In their study modelling iso-octane oxidation, Curran et al [8] chose to use the rate measured by Lenhardt et al [143] described below.
+
+[143] Lenhardt, T.M.; McDade, C.E.; Bayes, K.D.; *J. Chem. Phys.* 1980, 72,304 http://dx.doi.org/10.1063/1.438848
+
+Rates measurement of **t-butyl** + O2 at 300 K. High pressure limit from flash photolysis experiments.
+C.D.W. divided rate expression by 2, to get rate of addition rate per site, 
+giving  (7.05±1.17)E12 cm3/mole/sec.
+
+    Rate constants for the reaction of four different butyl radicals with molecular oxygen 
+    have been measured **at room temperature**. The radicals were generated by flash photolysis 
+    and their time decay was followed with a photoionization mass spectrometer. The radical 
+    concentrations were kept low to avoid complications from radical–radical reactions. 
+    Radical lifetimes were long, up to 50 msec, thus assuring that thermalized radicals were being studied. 
+    
+    The rate constants, in units of 10E−11 cm3/molecule/sec, are:
+    
+     * n-butyl (0.75±0.14); (gives (2.26±0.42)E12 cm3/mole/sec when divided by 2 to get rate per site)
+     * s-butyl (1.66±0.22); (gives (5.00±0.66)E12 cm3/mole/sec when divided by 2 to get rate per site)
+     * **t-butyl (2.34±0.39); (gives (7.05±1.17)E12 cm3/mole/sec when divided by 2 to get rate per site)**
+     * 3-hydroxy s-butyl (2.8±1.8). (gives (8.43±5.42)E12 cm3/mole/sec when divided by 2 to get rate per site)
+     
+    No pressure dependence of the rate constants was observed over the range 1 to 4 Torr. 
+
+Because radical addition to a double bond is probably barrierless, the temperature range 300-1500K
+has been assigned although the rate was only measured at 300K. 
+
+rwest@mit.edu  7-Sep-2009
+
+Moved from R_Addition_MultipleBond on 3-Jun-2010, JDM.
+""",
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
+)
+
+# Number 63
+rate(
+  group1 = 
+"""
+O2_birad
+1 * O 1 {2,S}
+2 O 1 {1,S}
+""",
+  group2 = 
+"""
+Cd_pri_rad
+1 * C 1 {2,D}, {3,S}
+2 C 0 {1,D}
+3 H 0 {1,S}
+""",
+  kf = Arrhenius(A=(3.0E+12,A_UNITS,"+-",0.0),
+                 n=(0,None,"+-",0.0),
+                 alpha=(0,None,"+-",0.0),
+                 E0=(0,E_UNITS,"+-",0.0)
+                 ),
+  temperature_range = (300,1500),
+  rank = 4,
+  old_id = "486",
+  short_comment = "Bozzelli et al. [144] RRKM extrapolation ( adjusted to match data).",
+  long_comment = 
+"""
+[144] Bozzelli,J.W. J phys. Chem 1993, 97,4427.
+RRKM extrapolation (adjusted to match data).O2 +CH = CH2CHOO. C.D.W. divided rate expression by 2, to get rate of addition per site
+
+Moved from R_Addition_MultipleBond on 3-Jun-2010, JDM.
+""",
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
+)
+
+# Number 64
+rate(
+  group1 = 
+"""
+O2_birad
+1 * O 1 {2,S}
+2 O 1 {1,S}
+""",
+  group2 = 
+"""
+Cb_rad
+1 * Cb 1 {2,B}, {3,B}
+2 {Cb,Cbf} 0 {1,B}
+3 {Cb,Cbf} 0 {1,B}
+""",
+  kf = Arrhenius(A=(3.015E+12,A_UNITS,"*/",1.2),
+                 n=(0,None,"+-",0.0),
+                 alpha=(0,None,"+-",0.0),
+                 E0=(0.32,E_UNITS,"+-",0.13)
+                 ),
+  temperature_range = (297,473),
+  rank = 3,
+  old_id = "488",
+  short_comment = "Yu, T. and Lin, M.C. [145]",
+  long_comment = 
+"""
+[145] Yu,T.; Lin, M.C.J. Am. Chem.Soc.1994,116,9571.
+O2+ phenyl --> phenyl dioxy. Absolute value measured directly. Pressure 0.03-0.11 atm. Excitation: Flash photolysis, analysis: Vis- UV absorption. C.D.W. divided rate epxression by 2, to get rate of addition per site
+
+Moved from R_Addition_MultipleBond on 3-Jun-2010, JDM.
+""",
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
+)
+
+# Number 65
+rate(
+  group1 = 
+"""
+O2_birad
+1 * O 1 {2,S}
+2 O 1 {1,S}
+""",
+  group2 = 
+"""
+CO_pri_rad
+1 * C 1 {2,D}, {3,S}
+2 O 0 {1,D}
+3 H 0 {1,S}
+""",
+  kf = Arrhenius(A=(3.5E+12,A_UNITS,"+-",0.0),
+                 n=(0,None,"+-",0.0),
+                 alpha=(0,None,"+-",0.0),
+                 E0=(0,E_UNITS,"+-",0.0)
+                 ),
+  temperature_range = (300,2500),
+  rank = 4,
+  old_id = "489",
+  short_comment = "Bozzelli et al. [144] RRKM extrapolation.",
+  long_comment = 
+"""
+[144] Bozzelli,J.W. J Phys. Chem. 1993, 97 , 4427.
+RRKM extrapolation. O2 +HCO -->HC(O)O2. C.D.W. divided rate expression by 2, to get rate of addition per site
+
+Moved from R_Addition_MultipleBond on 3-Jun-2010, JDM.
+""",
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
+)
+
+# Number 66
+rate(
+  group1 = 
+"""
+O2_birad
+1 * O 1 {2,S}
+2 O 1 {1,S}
+""",
+  group2 = 
+"""
+CO_rad/NonDe
+1 * C 1 {2,D}, {3,S}
+2 O 0 {1,D}
+3 {Cs,O} 0 {1,S}
+""",
+  kf = Arrhenius(A=(1.505E+12,A_UNITS,"*/",3.16),
+                 n=(0,None,"+-",0.0),
+                 alpha=(0,None,"+-",0.0),
+                 E0=(0,E_UNITS,"+-",0.0)
+                 ),
+  temperature_range = (200,300),
+  rank = 4,
+  old_id = "490",
+  short_comment = "Atkinson et al [96] literature review.",
+  long_comment = 
+"""
+[96] Atkinson,R; Baulch,D. L.; Cox R.A.;Hampson,R.F.,Jr.;Kerr,J.A;Rossi,M.J.;Troe,J.J Phys. Chem. Ref. Data 1997,26,521.
+literature review. Rate constant is high pressure limit. O2+ CH3CO --> CH3C(O)OO C.D.W. divided rate expression by 2, to get rate of addition per site
+
+Moved from R_Addition_MultipleBond on 3-Jun-2010, JDM.
+""",
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
 

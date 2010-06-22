@@ -65,4 +65,14 @@ Arrhenius_EP
 477.		C_pri_rad		C_sec_rad		300-1500	4.79E+14	-0.75	0		0		0		0		0		0		5	Curran's [8] estimation.
 478.		C_pri_rad		C_ter_rad		300-1500	3.59E+14	-0.75	0		0		0		0		0		0		5	Curran's [8] estimation. 
 479.		O_pri_rad		O_sec_rad		300-1500	2.0E+13		0		0		0		0		0		0		0		5	Curran's [159] estimation.
-	
+480.		O2_birad		H_rad			298-6000	4.395E+10	1.00	0	0.45	0		0	0	0	4	Duchovic et al. [142] RRK(M) extrapolation. Probably could do better.
+481.		O2_birad		H_rad			300-1500	8.15E+12	0	0	0.76	0		0	0	0	3	Cobos, C.J and Troe, J. [106] Transition state theory.
+482.		O2_birad		C_methyl		300-1500	2.26E+12	0	0	0	4.2E11	0	0	0	5	Curran et al. [8] From Lenhardt et al. [143]. (Measured at 300K) (n-butyl not methyl)
+483.		O2_birad		C_pri_rad		300-1500	2.26E+12	0	0	0	4.2E11	0	0	0	5	Curran et al. [8] From Lenhardt et al. [143]. (Measured at 300K)
+484.		O2_birad		C_sec_rad		300-1500	3.77E+12	0	0	0	1.0E12	0	0	0	5	Curran et al. [8]. (Estimated at 300K)
+485.		O2_birad		C_ter_rad		300-1500	7.05E+12	0	0	0	1.17E12	0	0	0	5	Curran et al. [8] From Lenhardt et al. [143]. (Measured at 300K)
+486.		O2_birad		Cd_pri_rad		300-1500	3.0E+12	0	0	0	0		0	0	0	4	Bozzelli et al. [144] RRKM extrapolation ( adjusted to match data).
+//487.		O2_birad		Ct_rad			300-1500	3.0E+12	0	0	0	0		0	0	0	0	estimated to be the same as Cd_pri_rad + O2.
+488.		O2_birad		Cb_rad			297-473		3.015E+12	0	0	0.32	*1.2		0	0	0.13	3	Yu, T. and Lin, M.C. [145]
+489.		O2_birad		CO_pri_rad		300-2500	3.5E+12	0	0	0	0		0	0	0	4	Bozzelli et al. [144] RRKM extrapolation.
+490.		O2_birad		CO_rad/NonDe	200-300		1.505E+12	0	0	0	*3.16		0	0	0	4	Atkinson et al [96] literature review.	

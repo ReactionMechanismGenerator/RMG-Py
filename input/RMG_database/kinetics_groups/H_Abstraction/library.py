@@ -12,6 +12,10 @@ X_H + Y_rad_birad -> X_rad + Y_H
 
 
 Generated on 7th April 2010 at 17:08
+Generated on 22nd June 2010 at 11:22
+Generated on 22nd June 2010 at 12:28
+Generated on 22nd June 2010 at 12:58
+Generated on 22nd June 2010 at 15:39
 """
 
 reaction_family_name = "H_Abstraction"
@@ -34,7 +38,7 @@ Arrhenius_EP
 
 //f01_intermolecular_HA
 //No.	XH			Y_rad				Temp.		A			n		a		E0		DA		Dn		Da		DE0		Rank	Comments
-//142.	C/H3/Cs		O_pri_rad			300-1500	2.63E+07	1.80	0		0.278	0		0		0		0		5		Curran et al. [8] Rate expressions for H atom abstraction from fuels.	
+//142.	C/H3/Cs		O_pri_rad			300-1500	2.92E+06	1.80	0		0.278	0		0		0		0		5		Curran et al. [8] Rate expressions for H atom abstraction from fuels. (changed to per H)	
 //208.	Cd_pri		CO_birad			300-2500	3.78E+13	0		0		90.62	*5.0	0		0		0		4		Tsang [89] literature review.
 //213.	Cd/H/NonDeC	H_rad				300-2500	2.37E+00	0		0		7.31	*5.0	0		0		0		4		Tsang [93] literature review.
 //214.	Cd/H/NonDeC	C_methyl			300-2500	3.8E-01		0		0		5.98	*100.0	0		0		0		4		Tsang [93] literature review.
@@ -45,7 +49,9 @@ Arrhenius_EP
 //257.	O_pri		O_pri_rad			200-700		6.45E-06	5.01	0		0.61	0		0		0		0		3		Masgrau et al. [141] Transition state theory w/tunneling correction.
 //263.	O/H/NonDeC	C_rad/H/NonDeC		300-2500	1.45E+01	3.10	0		10.33	*5.0	0		0		0		4		Tsang [90] literature review.
 //264.	O/H/NonDeC	C_rad/Cs3			300-2500	1.51E+03	1.80	0		9.36	*10.0	0		0		0		4		Tsang [90] literature review.
-
+// (Reverse) Rates for nButanol+HO2=H2O2+radicals
+// (Reverse) Rates for sButanol+HO2=H2O2+radicals
+// (Reverse) Rates for tButanol+HO2=H2O2+radicals
 
 """
 
@@ -4955,7 +4961,7 @@ O_pri_rad
 1 *3 O 1 {2,S}
 2 H 0 {1,S}
 """,
-  kf = Arrhenius(A=(1.78E+07,A_UNITS,"+-",0.0),
+  kf = Arrhenius(A=(5.93E+06,A_UNITS,"+-",0.0),
                  n=(1.80,None,"+-",0.0),
                  alpha=(0,None,"+-",0.0),
                  E0=(1.431,E_UNITS,"+-",0.0)
@@ -4963,7 +4969,7 @@ O_pri_rad
   temperature_range = (300,1500),
   rank = 5,
   old_id = "142",
-  short_comment = "Curran et al. [8] Rate expressions for H atom abstraction from fuels. Fixed by RWest",
+  short_comment = "Curran et al. [8] Rate expressions for H atom abstraction from fuels. Fixed by RWest (changed to per H)",
   long_comment = 
 """
 [8] Curran, H.J.; Gaffuri, P.; Pit z, W.J.; Westbrook, C.K. Combust. Flame 2002, 129, 253. http://dx.doi.org/10.1016/S0010-2180(01)00373-X
@@ -4978,8 +4984,11 @@ Richard West. (Updated accordingly).
 
 These numbers reported by Curran et al. were apparently taken from
 N. Cohen, *Intl. J. Chem. Kinet.* 14 (1982), p. 1339 http://dx.doi.org/10.1002/kin.550141206
+
+Rate expression is changed to per H.(divided by 3)
+Yushi Suzuki
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
 # Number 144
@@ -4999,7 +5008,7 @@ O_pri_rad
 1 *3 O 1 {2,S}
 2 H 0 {1,S}
 """,
-  kf = Arrhenius(A=(9.00E+05,A_UNITS,"+-",0.0),
+  kf = Arrhenius(A=(4.50E+05,A_UNITS,"+-",0.0),
                  n=(2.00,None,"+-",0.0),
                  alpha=(0,None,"+-",0.0),
                  E0=(-1.133,E_UNITS,"+-",0.0)
@@ -5007,7 +5016,7 @@ O_pri_rad
   temperature_range = (300,1500),
   rank = 5,
   old_id = "143",
-  short_comment = "Curran et al. [8] Rate expressions for H atom abstraction from fuels.",
+  short_comment = "Curran et al. [8] Rate expressions for H atom abstraction from fuels. (changed to per H)",
   long_comment = 
 """
 [8] Curran, H.J.; Gaffuri, P.; Pit z, W.J.; Westbrook, C.K. Combust. Flame 2002, 129, 253.
@@ -5020,8 +5029,12 @@ Verified by Karma James
 
 These numbers reported by Curran et al. were apparently taken from
 N. Cohen, *Intl. J. Chem. Kinet.* 14 (1982), p. 1339 http://dx.doi.org/10.1002/kin.550141206
+
+
+Rate expression is changed to per H.(divided by 2)
+Yushi Suzuki
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
 # Number 145
@@ -5082,7 +5095,7 @@ C/H3/Cs
 O_atom_triplet
 1 *3 O 2T
 """,
-  kf = Arrhenius(A=(8.55E+03,A_UNITS,"+-",0.0),
+  kf = Arrhenius(A=(9.50E+02,A_UNITS,"+-",0.0),
                  n=(3.05,None,"+-",0.0),
                  alpha=(0,None,"+-",0.0),
                  E0=(3.123,E_UNITS,"+-",0.0)
@@ -5090,7 +5103,7 @@ O_atom_triplet
   temperature_range = (300,1500),
   rank = 5,
   old_id = "145",
-  short_comment = "Curran et al. [8] Rate expressions for H atom abstraction from fuels.",
+  short_comment = "Curran et al. [8] Rate expressions for H atom abstraction from fuels. (changed to per H)",
   long_comment = 
 """
 [8] Curran, H.J.; Gaffuri, P.; Pit z, W.J.; Westbrook, C.K. Combust. Flame 2002, 129, 253.
@@ -5099,8 +5112,11 @@ Rate expressions for H atom abstraction from fuels.
 pg 257 A Comprehensive Modelling Study of iso-Octane Oxidation, Table 1. Radical:O, Site: primary (a)
 
 Verified by Karma James
+
+Rate expression is changed to per H.(divided by 9)
+Yushi Suzuki
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
 # Number 147
@@ -5119,7 +5135,7 @@ C/H2/NonDeC
 O_atom_triplet
 1 *3 O 2T
 """,
-  kf = Arrhenius(A=(4.77E+04,A_UNITS,"+-",0.0),
+  kf = Arrhenius(A=(2.39E+04,A_UNITS,"+-",0.0),
                  n=(2.71,None,"+-",0.0),
                  alpha=(0,None,"+-",0.0),
                  E0=(2.106,E_UNITS,"+-",0.0)
@@ -5127,7 +5143,7 @@ O_atom_triplet
   temperature_range = (300,1500),
   rank = 5,
   old_id = "146",
-  short_comment = "Curran et al. [8] Rate expressions for H atom abstraction from fuels.",
+  short_comment = "Curran et al. [8] Rate expressions for H atom abstraction from fuels. (changed to per H)",
   long_comment = 
 """
 [8] Curran, H.J.; Gaffuri, P.; Pit z, W.J.; Westbrook, C.K. Combust. Flame 2002, 129, 253.
@@ -5136,8 +5152,12 @@ Rate expressions for H atom abstraction from fuels.
 pg 257 A Comprehensive Modelling Study of iso-Octane Oxidation, Table 1. Radical:O, Site: secondary (b)
 
 Verified by Karma James
+
+
+Rate expression is changed to per H.(divided by 2)
+Yushi Suzuki
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
 # Number 148
@@ -5159,7 +5179,7 @@ O_atom_triplet
   kf = Arrhenius(A=(3.83E+05,A_UNITS,"+-",0.0),
                  n=(2.41,None,"+-",0.0),
                  alpha=(0,None,"+-",0.0),
-                 E0=(0.893,E_UNITS,"+-",0.0)
+                 E0=(1.140,E_UNITS,"+-",0.0)
                  ),
   temperature_range = (300,1500),
   rank = 5,
@@ -5173,8 +5193,15 @@ Rate expressions for H atom abstraction from fuels.
 pg 257 A Comprehensive Modelling Study of iso-Octane Oxidation, Table 1. Radical:O, Site: tertiary (c)
 
 Verified by Karma James
+
+
+This rate parameter actually comes from following new mechanism for PRF.
+
+https://www-pls.llnl.gov/data/docs/science_and_technology/chemistry/combustion/prf_2d_mech.txt
+
+Yushi Suzuki
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
 # Number 149
@@ -5194,7 +5221,7 @@ O_rad/NonDeO
 1 *3 O 1 {2,S}
 2    O 0 {1,S}
 """,
-  kf = Arrhenius(A=(2.52E+13,A_UNITS,"+-",0.0),
+  kf = Arrhenius(A=(2.80E+12,A_UNITS,"+-",0.0),
                  n=(0,None,"+-",0.0),
                  alpha=(0,None,"+-",0.0),
                  E0=(20.435,E_UNITS,"+-",0.0)
@@ -5202,7 +5229,7 @@ O_rad/NonDeO
   temperature_range = (300,1500),
   rank = 5,
   old_id = "148",
-  short_comment = "Curran et al. [8] Rate expressions for H atom abstraction from fuels.",
+  short_comment = "Curran et al. [8] Rate expressions for H atom abstraction from fuels. (changed to per H)",
   long_comment = 
 """
 [8] Curran, H.J.; Gaffuri, P.; Pit z, W.J.; Westbrook, C.K. Combust. Flame 2002, 129, 253.
@@ -5210,8 +5237,11 @@ Rate expressions for H atom abstraction from fuels.
 
 pg 257 A Comprehensive Modelling Study of iso-Octane Oxidation, Table 1. Radical:HO2, Site: primary (a)
 Verified by Karma James
+
+Rate expression is changed to per H.(divided by 9)
+Yushi Suzuki
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
 # Number 150
@@ -5231,7 +5261,7 @@ O_rad/NonDeO
 1 *3 O 1 {2,S}
 2    O 0 {1,S}
 """,
-  kf = Arrhenius(A=(5.60E+12,A_UNITS,"+-",0.0),
+  kf = Arrhenius(A=(2.80E+12,A_UNITS,"+-",0.0),
                  n=(0,None,"+-",0.0),
                  alpha=(0,None,"+-",0.0),
                  E0=(17.686,E_UNITS,"+-",0.0)
@@ -5239,7 +5269,7 @@ O_rad/NonDeO
   temperature_range = (300,1500),
   rank = 5,
   old_id = "149",
-  short_comment = "Curran et al. [8] Rate expressions for H atom abstraction from fuels.",
+  short_comment = "Curran et al. [8] Rate expressions for H atom abstraction from fuels. (changed to per H)",
   long_comment = 
 """
 [8] Curran, H.J.; Gaffuri, P.; Pit z, W.J.; Westbrook, C.K. Combust. Flame 2002, 129, 253.
@@ -5248,8 +5278,11 @@ Rate expressions for H atom abstraction from fuels.
 pg 257 A Comprehensive Modelling Study of iso-Octane Oxidation, Table 1. Radical:HO2, Site: secondary (b)
 
 Verified by Karma James
+
+Rate expression is changed to per H.(divided by 2)
+Yushi Suzuki
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
 # Number 151
@@ -5307,7 +5340,7 @@ O_rad/NonDeC
 1 *3 O 1 {2,S}
 2 Cs 0 {1,S}
 """,
-  kf = Arrhenius(A=(4.74E+11,A_UNITS,"+-",0.0),
+  kf = Arrhenius(A=(5.27E+10,A_UNITS,"+-",0.0),
                  n=(0,None,"+-",0.0),
                  alpha=(0,None,"+-",0.0),
                  E0=(7.000,E_UNITS,"+-",0.0)
@@ -5315,7 +5348,7 @@ O_rad/NonDeC
   temperature_range = (300,1500),
   rank = 5,
   old_id = "151",
-  short_comment = "Curran et al. [8] Rate expressions for H atom abstraction from fuels.",
+  short_comment = "Curran et al. [8] Rate expressions for H atom abstraction from fuels. (changed to per H)",
   long_comment = 
 """
 [8] Curran, H.J.; Gaffuri, P.; Pit z, W.J.; Westbrook, C.K. Combust. Flame 2002, 129, 253.
@@ -5324,8 +5357,11 @@ Rate expressions for H atom abstraction from fuels.
 pg 257 A Comprehensive Modelling Study of iso-Octane Oxidation, Table 1. Radical:CH3O, Site: primary (a)
 
 Verified by Karma James
+
+Rate expression is changed to per H.(divided by 9)
+Yushi Suzuki
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
 # Number 153
@@ -5345,7 +5381,7 @@ O_rad/NonDeC
 1 *3 O 1 {2,S}
 2 Cs 0 {1,S}
 """,
-  kf = Arrhenius(A=(1.10E+11,A_UNITS,"+-",0.0),
+  kf = Arrhenius(A=(5.50E+10,A_UNITS,"+-",0.0),
                  n=(0,None,"+-",0.0),
                  alpha=(0,None,"+-",0.0),
                  E0=(5.000,E_UNITS,"+-",0.0)
@@ -5353,7 +5389,7 @@ O_rad/NonDeC
   temperature_range = (300,1500),
   rank = 5,
   old_id = "152",
-  short_comment = "Curran et al. [8] Rate expressions for H atom abstraction from fuels.",
+  short_comment = "Curran et al. [8] Rate expressions for H atom abstraction from fuels. (changed to per H)",
   long_comment = 
 """
 [8] Curran, H.J.; Gaffuri, P.; Pit z, W.J.; Westbrook, C.K. Combust. Flame 2002, 129, 253.
@@ -5362,8 +5398,11 @@ Rate expressions for H atom abstraction from fuels.
 pg 257 A Comprehensive Modelling Study of iso-Octane Oxidation, Table 1. Radical:CH3O, Site: secondary (b)
 
 Verified by Karma James
+
+Rate expression is changed to per H.(divided by 2)
+Yushi Suzuki
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
 # Number 154
@@ -5421,7 +5460,7 @@ O2b
 1 *3 O 1 {2,S}
 2    O 1 {1,S}
 """,
-  kf = Arrhenius(A=(6.30E+13,A_UNITS,"+-",0.0),
+  kf = Arrhenius(A=(7.00E+12,A_UNITS,"+-",0.0),
                  n=(0,None,"+-",0.0),
                  alpha=(0,None,"+-",0.0),
                  E0=(50.76,E_UNITS,"+-",0.0)
@@ -5429,7 +5468,7 @@ O2b
   temperature_range = (300,1500),
   rank = 5,
   old_id = "154",
-  short_comment = "Curran et al. [8] Rate expressions for H atom abstraction from fuels.",
+  short_comment = "Curran et al. [8] Rate expressions for H atom abstraction from fuels. (changed to per H)",
   long_comment = 
 """
 [8] Curran, H.J.; Gaffuri, P.; Pit z, W.J.; Westbrook, C.K. Combust. Flame 2002, 129, 253.
@@ -5438,8 +5477,11 @@ Rate expressions for H atom abstraction from fuels.
 pg 257 A Comprehensive Modelling Study of iso-Octane Oxidation, Table 1. Radical:O2, Site: primary (a)
 
 Verified by Karma James
+
+Rate expression is changed to per H.(divided by 9)
+Yushi Suzuki
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
 # Number 156
@@ -5459,7 +5501,7 @@ O2b
 1 *3 O 1 {2,S}
 2    O 1 {1,S}
 """,
-  kf = Arrhenius(A=(1.40E+13,A_UNITS,"+-",0.0),
+  kf = Arrhenius(A=(7.00E+12,A_UNITS,"+-",0.0),
                  n=(0,None,"+-",0.0),
                  alpha=(0,None,"+-",0.0),
                  E0=(48.21,E_UNITS,"+-",0.0)
@@ -5467,7 +5509,7 @@ O2b
   temperature_range = (300,1500),
   rank = 5,
   old_id = "155",
-  short_comment = "Curran et al. [8] Rate expressions for H atom abstraction from fuels.",
+  short_comment = "Curran et al. [8] Rate expressions for H atom abstraction from fuels. (changed to per H)",
   long_comment = 
 """
 [8] Curran, H.J.; Gaffuri, P.; Pit z, W.J.; Westbrook, C.K. Combust. Flame 2002, 129, 253.
@@ -5476,8 +5518,11 @@ Rate expressions for H atom abstraction from fuels.
 pg 257 A Comprehensive Modelling Study of iso-Octane Oxidation, Table 1. Radical:O2, Site: secondary (b)
 
 Verified by Karma James
+
+Rate expression is changed to per H.(divided by 2)
+Yushi Suzuki
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
 # Number 157
@@ -7751,17 +7796,18 @@ O2b
 1 *3 O 1 {2,S}
 2    O 1 {1,S}
 """,
-  kf = Arrhenius(A=(1.055E+13,A_UNITS,"*/",10.0),
+  kf = Arrhenius(A=(1.792E+13,A_UNITS,"+-",0.0),
                  n=(0,None,"+-",0.0),
                  alpha=(0,None,"+-",0.0),
-                 E0=(57.63,E_UNITS,"+-",0.0)
+                 E0=(60.01,E_UNITS,"+-",0.0)
                  ),
   temperature_range = (300,2500),
   rank = 4,
   old_id = "207",
-  short_comment = "Tsang [89] literature review.",
+  short_comment = "Hua, Ruscic, and Wang 2005, transition state theory.",
   long_comment = 
 """
+FORMER RATES
 [89] Tsang, W.; Hampson, R.F. J. Phys. Chem. Ref. Data 1986, 15, 1087.
 C2H4 + O2 --> C2H3 + HO2 C.D.W divided original rate expression by 4, to get rate expression per H atom.
 
@@ -7776,8 +7822,17 @@ Recommended data follows Walker\'s estimates for O2+alkane
 Note: The authors note that a lower lying channel, involving addition and
 rearrangement prior to decomposition, may exist.
 MRH 28-Aug-2009
+
+
+CURRENT RATES
+Hua, H.; B. Ruscic; B. Wang.  Chemical Physics 2005, 311, 335-341.
+C2H4 + O2 --> C2H3 + HO2.
+
+Divided rate expression by 4 to get the rate expression per H atom.  See page 338.
+Overall, this agrees with the earlier rate that we used.
+JDM 15-Jun-2010.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
 # Number 210
@@ -10245,6 +10300,536 @@ O_pri_rad
 CH3OH + OH --> CH3O + H2O
 """,
    history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+)
+
+# Number 269
+rate(
+  group1 = 
+"""
+H2O2
+1 *1 O 0 {2,S} {3,S}
+2 O 0 {1,S} {4,S}
+3 *2 H 0 {1,S}
+4 H 0 {2,S}
+""",
+  group2 = 
+"""
+InChI=1/C4H9O/c1-2-3-4-5/h5H,1-4H2
+1 *3 C 1 {2,S} {6,S} {7,S}
+2 C 0 {1,S} {3,S} {8,S} {9,S}
+3 C 0 {2,S} {4,S} {10,S} {11,S}
+4 C 0 {3,S} {5,S} {12,S} {13,S}
+5 O 0 {4,S} {14,S}
+6 H 0 {1,S}
+7 H 0 {1,S}
+8 H 0 {2,S}
+9 H 0 {2,S}
+10 H 0 {3,S}
+11 H 0 {3,S}
+12 H 0 {4,S}
+13 H 0 {4,S}
+14 H 0 {5,S}
+""",
+  kf = Arrhenius(A=(2.88E+00,A_UNITS,"+-",0.0),
+                 n=(3.16,None,"+-",0.0),
+                 alpha=(0.0,None,"+-",0.0),
+                 E0=(0.75,E_UNITS,"+-",0.0)
+                 ),
+  temperature_range = (600,2000),
+  rank = 3,
+  old_id = "301",
+  short_comment = "MRH CBS-QB3 calculations w/o HR corrections",
+  long_comment = 
+"""
+MRH CBS-QB3 calculations w/o HR corrections
+H2O2 + *CH2CH2CH2CH2OH = nButanol + HO2
+
+CBS-QB3 method was used to calculate electronic energy of reactants, products, and TS; frequencies were
+calculated using B3LYP/CBSB7 method.  Arrhenius expression was computed using CanTherm: an asymmetric Eckart
+tunneling correction was employed and the frequencies were scaled by 0.99 (as suggested by Montgomery et al.
+J.Chem.Phys. 110 (1999) 2822-2827).  The external symmetry number for H2O2 was 2; the external symmetry number
+for the remaining species and TS were set to 1.  The rate coefficient was computed at 600-2000K (in 200 K increments).
+The computed pre-exponential factor was divided by 2 and this is the reported value.
+
+For nButanol+HO2=H2O2+*CH2CH2CH2CH2OH:
+Moc et al. (AIP Conference Proceedings (2009) 1148 161-164 \"The Unimolecular Decomposition
+and H Abstraction Reactions by HO and HO2 from n-Butanol\") report reaction barriers and
+enthalpies(0 K); our CBS-QB3 calculations are shown in comparison (all units are kcal/mol).
+				G3		CCSD(T)/cc-pVTZ		CBS-QB3
+Barrier:		18.8		19.62			17.57
+Enthalpy:		14.25		14.66			13.70
+""",
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
+)
+
+# Number 270
+rate(
+  group1 = 
+"""
+H2O2
+1 *1 O 0 {2,S} {3,S}
+2 O 0 {1,S} {4,S}
+3 *2 H 0 {1,S}
+4 H 0 {2,S}
+""",
+  group2 = 
+"""
+InChI=1/C4H9O/c1-2-3-4-5/h2,5H,3-4H2,1H3
+1 C 0 {2,S} {6,S} {7,S} {8,S}
+2 *3 C 1 {1,S} {3,S} {9,S}
+3 C 0 {2,S} {4,S} {10,S} {11,S}
+4 C 0 {3,S} {5,S} {12,S} {13,S}
+5 O 0 {4,S} {14,S}
+6 H 0 {1,S}
+7 H 0 {1,S}
+8 H 0 {1,S}
+9 H 0 {2,S}
+10 H 0 {3,S}
+11 H 0 {3,S}
+12 H 0 {4,S}
+13 H 0 {4,S}
+14 H 0 {5,S}
+""",
+  kf = Arrhenius(A=(6.75E-01,A_UNITS,"+-",0.0),
+                 n=(3.42,None,"+-",0.0),
+                 alpha=(0.0,None,"+-",0.0),
+                 E0=(1.43,E_UNITS,"+-",0.0)
+                 ),
+  temperature_range = (600,2000),
+  rank = 3,
+  old_id = "302",
+  short_comment = "MRH CBS-QB3 calculations w/o HR corrections",
+  long_comment = 
+"""
+MRH CBS-QB3 calculations w/o HR corrections
+H2O2 + CH3*CHCH2CH2OH = nButanol + HO2
+
+CBS-QB3 method was used to calculate electronic energy of reactants, products, and TS; frequencies were
+calculated using B3LYP/CBSB7 method.  Arrhenius expression was computed using CanTherm: an asymmetric Eckart
+tunneling correction was employed and the frequencies were scaled by 0.99 (as suggested by Montgomery et al.
+J.Chem.Phys. 110 (1999) 2822-2827).  The external symmetry number for H2O2 was 2; the external symmetry number
+for the remaining species and TS were set to 1.  The rate coefficient was computed at 600-2000K (in 200 K increments).
+The computed pre-exponential factor was divided by 2 and this is the reported value.
+
+For nButanol+HO2=H2O2+CH3*CHCH2CH2OH:
+Moc et al. (AIP Conference Proceedings (2009) 1148 161-164 \"The Unimolecular Decomposition
+and H Abstraction Reactions by HO and HO2 from n-Butanol\") report reaction barriers and
+enthalpies(0 K); our CBS-QB3 calculations are shown in comparison (all units are kcal/mol).
+				G3		CCSD(T)/cc-pVTZ		CBS-QB3
+Barrier:		14.64		15.47			14.72
+Enthalpy:		11.05		12.41			10.11
+""",
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
+)
+
+# Number 271
+rate(
+  group1 = 
+"""
+H2O2
+1 *1 O 0 {2,S} {3,S}
+2 O 0 {1,S} {4,S}
+3 *2 H 0 {1,S}
+4 H 0 {2,S}
+""",
+  group2 = 
+"""
+InChI=1/C4H9O/c1-2-3-4-5/h3,5H,2,4H2,1H3
+1 C 0 {2,S} {6,S} {7,S} {8,S}
+2 C 0 {1,S} {3,S} {9,S} {10,S}
+3 *3 C 1 {2,S} {4,S} {11,S}
+4 C 0 {3,S} {5,S} {12,S} {13,S}
+5 O 0 {4,S} {14,S}
+6 H 0 {1,S}
+7 H 0 {1,S}
+8 H 0 {1,S}
+9 H 0 {2,S}
+10 H 0 {2,S}
+11 H 0 {3,S}
+12 H 0 {4,S}
+13 H 0 {4,S}
+14 H 0 {5,S}
+""",
+  kf = Arrhenius(A=(3.145E-01,A_UNITS,"+-",0.0),
+                 n=(3.52,None,"+-",0.0),
+                 alpha=(0.0,None,"+-",0.0),
+                 E0=(1.61,E_UNITS,"+-",0.0)
+                 ),
+  temperature_range = (600,2000),
+  rank = 3,
+  old_id = "303",
+  short_comment = "MRH CBS-QB3 calculations w/o HR corrections",
+  long_comment = 
+"""
+MRH CBS-QB3 calculations w/o HR corrections
+H2O2 + CH3CH2*CHCH2OH = nButanol + HO2
+
+CBS-QB3 method was used to calculate electronic energy of reactants, products, and TS; frequencies were
+calculated using B3LYP/CBSB7 method.  Arrhenius expression was computed using CanTherm: an asymmetric Eckart
+tunneling correction was employed and the frequencies were scaled by 0.99 (as suggested by Montgomery et al.
+J.Chem.Phys. 110 (1999) 2822-2827).  The external symmetry number for H2O2 was 2; the external symmetry number
+for the remaining species and TS were set to 1.  The rate coefficient was computed at 600-2000K (in 200 K increments).
+The computed pre-exponential factor was divided by 2 and this is the reported value.
+
+For nButanol+HO2=H2O2+CH3CH2*CHCH2OH:
+Moc et al. (AIP Conference Proceedings (2009) 1148 161-164 \"The Unimolecular Decomposition
+and H Abstraction Reactions by HO and HO2 from n-Butanol\") report reaction barriers and
+enthalpies(0 K); our CBS-QB3 calculations are shown in comparison (all units are kcal/mol).
+				G3		CCSD(T)/cc-pVTZ		CBS-QB3
+Barrier:		15.43		16.37			16.33
+Enthalpy:		13.53		14.02			11.48
+""",
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
+)
+
+# Number 272
+rate(
+  group1 = 
+"""
+H2O2
+1 *1 O 0 {2,S} {3,S}
+2 O 0 {1,S} {4,S}
+3 *2 H 0 {1,S}
+4 H 0 {2,S}
+""",
+  group2 = 
+"""
+InChI=1/C4H9O/c1-2-3-4-5/h4-5H,2-3H2,1H3
+1 C 0 {2,S} {6,S} {7,S} {8,S}
+2 C 0 {1,S} {3,S} {9,S} {10,S}
+3 C 0 {2,S} {4,S} {11,S} {12,S}
+4 *3 C 1 {3,S} {5,S} {13,S}
+5 O 0 {4,S} {14,S}
+6 H 0 {1,S}
+7 H 0 {1,S}
+8 H 0 {1,S}
+9 H 0 {2,S}
+10 H 0 {2,S}
+11 H 0 {3,S}
+12 H 0 {3,S}
+13 H 0 {4,S}
+14 H 0 {5,S}
+""",
+  kf = Arrhenius(A=(1.485E+00,A_UNITS,"+-",0.0),
+                 n=(3.39,None,"+-",0.0),
+                 alpha=(0.0,None,"+-",0.0),
+                 E0=(1.40,E_UNITS,"+-",0.0)
+                 ),
+  temperature_range = (600,2000),
+  rank = 3,
+  old_id = "304",
+  short_comment = "MRH CBS-QB3 calculations w/o HR corrections",
+  long_comment = 
+"""
+MRH CBS-QB3 calculations w/o HR corrections
+H2O2 + CH3CH2CH2*CHOH = nButanol + HO2
+
+CBS-QB3 method was used to calculate electronic energy of reactants, products, and TS; frequencies were
+calculated using B3LYP/CBSB7 method.  Arrhenius expression was computed using CanTherm: an asymmetric Eckart
+tunneling correction was employed and the frequencies were scaled by 0.99 (as suggested by Montgomery et al.
+J.Chem.Phys. 110 (1999) 2822-2827).  The external symmetry number for H2O2 was 2; the external symmetry number
+for the remaining species and TS were set to 1.  The rate coefficient was computed at 600-2000K (in 200 K increments).
+The computed pre-exponential factor was divided by 2 and this is the reported value.
+
+For nButanol+HO2=H2O2+CH3CH2CH2*CHOH:
+Moc et al. (AIP Conference Proceedings (2009) 1148 161-164 \"The Unimolecular Decomposition
+and H Abstraction Reactions by HO and HO2 from n-Butanol\") report reaction barriers and
+enthalpies(0 K); our CBS-QB3 calculations are shown in comparison (all units are kcal/mol).
+				G3		CCSD(T)/cc-pVTZ		CBS-QB3
+Barrier:		12.62		13.23			11.74
+Enthalpy:		 8.35		 8.63			 7.17
+""",
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
+)
+
+# Number 273
+rate(
+  group1 = 
+"""
+H2O2
+1 *1 O 0 {2,S} {3,S}
+2 O 0 {1,S} {4,S}
+3 *2 H 0 {1,S}
+4 H 0 {2,S}
+""",
+  group2 = 
+"""
+InChI=1/C4H9O/c1-3-4(2)5/h4-5H,1,3H2,2H3
+1 *3 C 1 {3,S} {6,S} {7,S}
+2 C 0 {4,S} {8,S} {9,S} {10,S}
+3 C 0 {1,S} {4,S} {11,S} {12,S}
+4 C 0 {2,S} {3,S} {5,S} {13,S}
+5 O 0 {4,S} {14,S}
+6 H 0 {1,S}
+7 H 0 {1,S}
+8 H 0 {2,S}
+9 H 0 {2,S}
+10 H 0 {2,S}
+11 H 0 {3,S}
+12 H 0 {3,S}
+13 H 0 {4,S}
+14 H 0 {5,S}
+""",
+  kf = Arrhenius(A=(5.75E+00,A_UNITS,"+-",0.0),
+                 n=(2.94,None,"+-",0.0),
+                 alpha=(0.0,None,"+-",0.0),
+                 E0=(0.46,E_UNITS,"+-",0.0)
+                 ),
+  temperature_range = (600,2000),
+  rank = 3,
+  old_id = "305",
+  short_comment = "MRH CBS-QB3 calculations w/o HR corrections",
+  long_comment = 
+"""
+MRH CBS-QB3 calculations w/o HR corrections
+H2O2 + *CH2CH2CH[OH]CH3 = 2-Butanol + HO2
+
+CBS-QB3 method was used to calculate electronic energy of reactants, products, and TS; frequencies were
+calculated using B3LYP/CBSB7 method.  Arrhenius expression was computed using CanTherm: an asymmetric Eckart
+tunneling correction was employed and the frequencies were scaled by 0.99 (as suggested by Montgomery et al.
+J.Chem.Phys. 110 (1999) 2822-2827).  The external symmetry number for H2O2 was 2; the external symmetry number
+for the remaining species and TS were set to 1.  The rate coefficient was computed at 600-2000K (in 200 K increments).
+The computed pre-exponential factor was divided by 2 and this is the reported value.
+""",
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
+)
+
+# Number 274
+rate(
+  group1 = 
+"""
+H2O2
+1 *1 O 0 {2,S} {3,S}
+2 O 0 {1,S} {4,S}
+3 *2 H 0 {1,S}
+4 H 0 {2,S}
+""",
+  group2 = 
+"""
+InChI=1/C4H9O/c1-3-4(2)5/h3-5H,1-2H3
+1 C 0 {3,S} {6,S} {7,S} {8,S}
+2 C 0 {4,S} {9,S} {10,S} {11,S}
+3 *3 C 1 {1,S} {4,S} {12,S}
+4 C 0 {2,S} {3,S} {5,S} {13,S}
+5 O 0 {4,S} {14,S}
+6 H 0 {1,S}
+7 H 0 {1,S}
+8 H 0 {1,S}
+9 H 0 {2,S}
+10 H 0 {2,S}
+11 H 0 {2,S}
+12 H 0 {3,S}
+13 H 0 {4,S}
+14 H 0 {5,S}
+""",
+  kf = Arrhenius(A=(8.75E-01,A_UNITS,"+-",0.0),
+                 n=(2.91,None,"+-",0.0),
+                 alpha=(0.0,None,"+-",0.0),
+                 E0=(-0.41,E_UNITS,"+-",0.0)
+                 ),
+  temperature_range = (600,2000),
+  rank = 3,
+  old_id = "306",
+  short_comment = "MRH CBS-QB3 calculations w/o HR corrections",
+  long_comment = 
+"""
+MRH CBS-QB3 calculations w/o HR corrections
+H2O2 + CH3*CHCH[OH]CH3 = 2-Butanol + HO2
+
+CBS-QB3 method was used to calculate electronic energy of reactants, products, and TS; frequencies were
+calculated using B3LYP/CBSB7 method.  Arrhenius expression was computed using CanTherm: an asymmetric Eckart
+tunneling correction was employed and the frequencies were scaled by 0.99 (as suggested by Montgomery et al.
+J.Chem.Phys. 110 (1999) 2822-2827).  The external symmetry number for H2O2 was 2; the external symmetry number
+for the remaining species and TS were set to 1.  The rate coefficient was computed at 600-2000K (in 200 K increments).
+The computed pre-exponential factor was divided by 2 and this is the reported value.
+""",
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
+)
+
+# Number 275
+rate(
+  group1 = 
+"""
+H2O2
+1 *1 O 0 {2,S} {3,S}
+2 O 0 {1,S} {4,S}
+3 *2 H 0 {1,S}
+4 H 0 {2,S}
+""",
+  group2 = 
+"""
+InChI=1/C4H9O/c1-3-4(2)5/h5H,3H2,1-2H3
+1 C 0 {3,S} {6,S} {7,S} {8,S}
+2 C 0 {4,S} {9,S} {10,S} {11,S}
+3 C 0 {1,S} {4,S} {12,S} {13,S}
+4 *3 C 1 {2,S} {3,S} {5,S}
+5 O 0 {4,S} {14,S}
+6 H 0 {1,S}
+7 H 0 {1,S}
+8 H 0 {1,S}
+9 H 0 {2,S}
+10 H 0 {2,S}
+11 H 0 {2,S}
+12 H 0 {3,S}
+13 H 0 {3,S}
+14 H 0 {5,S}
+""",
+  kf = Arrhenius(A=(1.73E+01,A_UNITS,"+-",0.0),
+                 n=(3.05,None,"+-",0.0),
+                 alpha=(0.0,None,"+-",0.0),
+                 E0=(1.02,E_UNITS,"+-",0.0)
+                 ),
+  temperature_range = (600,2000),
+  rank = 3,
+  old_id = "307",
+  short_comment = "MRH CBS-QB3 calculations w/o HR corrections",
+  long_comment = 
+"""
+MRH CBS-QB3 calculations w/o HR corrections
+H2O2 + CH3CH2*C[OH]CH3 = 2-Butanol + HO2
+
+CBS-QB3 method was used to calculate electronic energy of reactants, products, and TS; frequencies were
+calculated using B3LYP/CBSB7 method.  Arrhenius expression was computed using CanTherm: an asymmetric Eckart
+tunneling correction was employed and the frequencies were scaled by 0.99 (as suggested by Montgomery et al.
+J.Chem.Phys. 110 (1999) 2822-2827).  The external symmetry number for H2O2 was 2; the external symmetry number
+for the remaining species and TS were set to 1.  The rate coefficient was computed at 600-2000K (in 200 K increments).
+The computed pre-exponential factor was divided by 2 and this is the reported value.
+""",
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
+)
+
+# Number 276
+rate(
+  group1 = 
+"""
+H2O2
+1 *1 O 0 {2,S} {3,S}
+2 O 0 {1,S} {4,S}
+3 *2 H 0 {1,S}
+4 H 0 {2,S}
+""",
+  group2 = 
+"""
+InChI=1/C4H9O/c1-3-4(2)5/h4-5H,2-3H2,1H3
+1 C 0 {3,S} {6,S} {7,S} {8,S}
+2 *3 C 1 {4,S} {9,S} {10,S}
+3 C 0 {1,S} {4,S} {11,S} {12,S}
+4 C 0 {2,S} {3,S} {5,S} {13,S}
+5 O 0 {4,S} {14,S}
+6 H 0 {1,S}
+7 H 0 {1,S}
+8 H 0 {1,S}
+9 H 0 {2,S}
+10 H 0 {2,S}
+11 H 0 {3,S}
+12 H 0 {3,S}
+13 H 0 {4,S}
+14 H 0 {5,S}
+""",
+  kf = Arrhenius(A=(3.055E-01,A_UNITS,"+-",0.0),
+                 n=(3.53,None,"+-",0.0),
+                 alpha=(0.0,None,"+-",0.0),
+                 E0=(1.52,E_UNITS,"+-",0.0)
+                 ),
+  temperature_range = (600,2000),
+  rank = 3,
+  old_id = "308",
+  short_comment = "MRH CBS-QB3 calculations w/o HR corrections",
+  long_comment = 
+"""
+MRH CBS-QB3 calculations w/o HR corrections
+H2O2 + CH3CH2CH[OH]*CH2 = 2-Butanol + HO2
+
+CBS-QB3 method was used to calculate electronic energy of reactants, products, and TS; frequencies were
+calculated using B3LYP/CBSB7 method.  Arrhenius expression was computed using CanTherm: an asymmetric Eckart
+tunneling correction was employed and the frequencies were scaled by 0.99 (as suggested by Montgomery et al.
+J.Chem.Phys. 110 (1999) 2822-2827).  The external symmetry number for H2O2 was 2; the external symmetry number
+for the remaining species and TS were set to 1.  The rate coefficient was computed at 600-2000K (in 200 K increments).
+The computed pre-exponential factor was divided by 2 and this is the reported value.
+""",
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
+)
+
+# Number 277
+rate(
+  group1 = 
+"""
+H2O2
+1 *1 O 0 {2,S} {3,S}
+2 O 0 {1,S} {4,S}
+3 *2 H 0 {1,S}
+4 H 0 {2,S}
+""",
+  group2 = 
+"""
+InChI=1/C4H9O/c1-4(2,3)5/h5H,1H2,2-3H3
+1 *3 C 1 {4,S} {6,S} {7,S}
+2 C 0 {4,S} {8,S} {9,S} {10,S}
+3 C 0 {4,S} {11,S} {12,S} {13,S}
+4 C 0 {1,S} {2,S} {3,S} {5,S}
+5 O 0 {4,S} {14,S}
+6 H 0 {1,S}
+7 H 0 {1,S}
+8 H 0 {2,S}
+9 H 0 {2,S}
+10 H 0 {2,S}
+11 H 0 {3,S}
+12 H 0 {3,S}
+13 H 0 {3,S}
+14 H 0 {5,S}
+""",
+  kf = Arrhenius(A=(2.100E-01,A_UNITS,"+-",0.0),
+                 n=(3.53,None,"+-",0.0),
+                 alpha=(0.0,None,"+-",0.0),
+                 E0=(1.56,E_UNITS,"+-",0.0)
+                 ),
+  temperature_range = (600,2000),
+  rank = 3,
+  old_id = "309",
+  short_comment = "MRH CBS-QB3 calculations w/o HR corrections",
+  long_comment = 
+"""
+MRH CBS-QB3 calculations w/o HR corrections
+H2O2 + HOC[*CH2][CH3][CH3] = tert-Butanol + HO2
+
+CBS-QB3 method was used to calculate electronic energy of reactants, products, and TS; frequencies were
+calculated using B3LYP/CBSB7 method.  Arrhenius expression was computed using CanTherm: an asymmetric Eckart
+tunneling correction was employed and the frequencies were scaled by 0.99 (as suggested by Montgomery et al.
+J.Chem.Phys. 110 (1999) 2822-2827).  The external symmetry number for H2O2 was 2; the external symmetry number
+for the remaining species and TS were set to 1.  The rate coefficient was computed at 600-2000K (in 200 K increments).
+The computed pre-exponential factor was divided by 2 and this is the reported value.
+""",
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
+)
+
+# Number 278
+rate(
+  group1 = 
+"""
+Orad_O_H
+1 *1 O 0 {2,S}, {3,S}
+2 *2 H 0 {1,S}
+3    O 1 {1,S}
+""",
+  group2 = 
+"""
+O_rad/NonDeO
+1 *3 O 1 {2,S}
+2    O 0 {1,S}
+""",
+  kf = Arrhenius(A=(1.75E+10,A_UNITS,"+-",0.0),
+                 n=(0,None,"+-",0.0),
+                 alpha=(0,None,"+-",0.0),
+                 E0=(-3.275,E_UNITS,"+-",0.0)
+                 ),
+  temperature_range = (300,1500),
+  rank = 5,
+  old_id = "486",
+  short_comment = "[8] Curran\'s estimation in reaction type 13, RO2 + HO2 --> RO2H + O2",
+  long_comment = 
+"""
+""",
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
 

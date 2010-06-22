@@ -153,21 +153,21 @@ Arrhenius_EP
 139.	H2			C_rad/H2/Ct			300-1500	2.91E+12	0		0		23.0	0		0		0		0		3		Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.	
 140.	H2			C_rad/H/OneDeC		300-1500	5.34E+11	0		0		24.0	0		0		0		0		3		Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.	
 141.	H2			C_rad/Cs2			300-1500	4.20E+11	0		0		24.7	0		0		0		0		3		Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment. Rate expression per H atom.	
-142.	C/H3/Cs		O_pri_rad			300-1500	1.78E+07	1.80	0		1.431	0		0		0		0		5		Curran et al. [8] Rate expressions for H atom abstraction from fuels. Fixed by RWest
-//142.	C/H3/Cs		O_pri_rad			300-1500	2.63E+07	1.80	0		0.278	0		0		0		0		5		Curran et al. [8] Rate expressions for H atom abstraction from fuels.	
-143.	C/H2/NonDeC	O_pri_rad			300-1500	9.00E+05	2.00	0		-1.133	0		0		0		0		5		Curran et al. [8] Rate expressions for H atom abstraction from fuels.	
+142.	C/H3/Cs		O_pri_rad			300-1500	5.93E+06	1.80	0		1.431	0		0		0		0		5		Curran et al. [8] Rate expressions for H atom abstraction from fuels. Fixed by RWest (changed to per H)
+//142.	C/H3/Cs		O_pri_rad			300-1500	2.92E+06	1.80	0		0.278	0		0		0		0		5		Curran et al. [8] Rate expressions for H atom abstraction from fuels. (changed to per H)	
+143.	C/H2/NonDeC	O_pri_rad			300-1500	4.50E+05	2.00	0		-1.133	0		0		0		0		5		Curran et al. [8] Rate expressions for H atom abstraction from fuels. (changed to per H)	
 144.	C/H/Cs3		O_pri_rad			300-1500	1.70E+06	1.90	0		-1.451	0		0		0		0		5		Curran et al. [8] Rate expressions for H atom abstraction from fuels.	
-145.	C/H3/Cs		O_atom_triplet		300-1500	8.55E+03	3.05	0		3.123	0		0		0		0		5		Curran et al. [8] Rate expressions for H atom abstraction from fuels.	
-146.	C/H2/NonDeC	O_atom_triplet		300-1500	4.77E+04	2.71	0		2.106	0		0		0		0		5		Curran et al. [8] Rate expressions for H atom abstraction from fuels.	
-147.	C/H/Cs3		O_atom_triplet		300-1500	3.83E+05	2.41	0		0.893	0		0		0		0		5		Curran et al. [8] Rate expressions for H atom abstraction from fuels.	
-148.	C/H3/Cs		O_rad/NonDeO		300-1500	2.52E+13	0		0		20.435	0		0		0		0		5		Curran et al. [8] Rate expressions for H atom abstraction from fuels.	
-149.	C/H2/NonDeC	O_rad/NonDeO		300-1500	5.60E+12	0		0		17.686	0		0		0		0		5		Curran et al. [8] Rate expressions for H atom abstraction from fuels.	
+145.	C/H3/Cs		O_atom_triplet		300-1500	9.50E+02	3.05	0		3.123	0		0		0		0		5		Curran et al. [8] Rate expressions for H atom abstraction from fuels.	 (changed to per H)
+146.	C/H2/NonDeC	O_atom_triplet		300-1500	2.39E+04	2.71	0		2.106	0		0		0		0		5		Curran et al. [8] Rate expressions for H atom abstraction from fuels.	 (changed to per H)
+147.	C/H/Cs3		O_atom_triplet		300-1500	3.83E+05	2.41	0		1.140	0		0		0		0		5		Curran et al. [8] Rate expressions for H atom abstraction from fuels.	
+148.	C/H3/Cs		O_rad/NonDeO		300-1500	2.80E+12	0		0		20.435	0		0		0		0		5		Curran et al. [8] Rate expressions for H atom abstraction from fuels.	 (changed to per H)
+149.	C/H2/NonDeC	O_rad/NonDeO		300-1500	2.80E+12	0		0		17.686	0		0		0		0		5		Curran et al. [8] Rate expressions for H atom abstraction from fuels.	 (changed to per H)
 150.	C/H/Cs3		O_rad/NonDeO		300-1500	2.80E+12	0		0		16.013	0		0		0		0		5		Curran et al. [8] Rate expressions for H atom abstraction from fuels.	
-151.	C/H3/Cs		O_rad/NonDeC		300-1500	4.74E+11	0		0		7.000	0		0		0		0		5		Curran et al. [8] Rate expressions for H atom abstraction from fuels.	
-152.	C/H2/NonDeC	O_rad/NonDeC		300-1500	1.10E+11	0		0		5.000	0		0		0		0		5		Curran et al. [8] Rate expressions for H atom abstraction from fuels.	
+151.	C/H3/Cs		O_rad/NonDeC		300-1500	5.27E+10	0		0		7.000	0		0		0		0		5		Curran et al. [8] Rate expressions for H atom abstraction from fuels.	 (changed to per H)
+152.	C/H2/NonDeC	O_rad/NonDeC		300-1500	5.50E+10	0		0		5.000	0		0		0		0		5		Curran et al. [8] Rate expressions for H atom abstraction from fuels.	 (changed to per H)
 153.	C/H/Cs3		O_rad/NonDeC		300-1500	1.90E+10	0		0		2.800	0		0		0		0		5		Curran et al. [8] Rate expressions for H atom abstraction from fuels.	
-154.	C/H3/Cs		O2b					300-1500	6.30E+13	0		0		50.76	0		0		0		0		5		Curran et al. [8] Rate expressions for H atom abstraction from fuels.	
-155.	C/H2/NonDeC	O2b					300-1500	1.40E+13	0		0		48.21	0		0		0		0		5		Curran et al. [8] Rate expressions for H atom abstraction from fuels.	
+154.	C/H3/Cs		O2b					300-1500	7.00E+12	0		0		50.76	0		0		0		0		5		Curran et al. [8] Rate expressions for H atom abstraction from fuels. (changed to per H)	
+155.	C/H2/NonDeC	O2b					300-1500	7.00E+12	0		0		48.21	0		0		0		0		5		Curran et al. [8] Rate expressions for H atom abstraction from fuels. (changed to per H)	
 156.	C/H/Cs3		O2b					300-1500	7.00E+12	0		0		46.06	0		0		0		0		5		Curran et al. [8] Rate expressions for H atom abstraction from fuels.	
 157.	H2			O2b					300-800	7.25E+13	0		0		56.64	*5.0	0		0		0		4		Tsang et al. [89] literature review. 
 158.	H2			Cd_pri_rad			200-3000	4.73E+03	2.56	0		5.03	0		0		0		0		3		Knyazev et al. [119] Transition state theory.
@@ -220,7 +220,7 @@ Arrhenius_EP
 204.	C/H/Cs3		CO_rad/NonDe		300-2500	3.43E+04	2.50	0		13.51	*10.0	0		0		0		4		Tsang [92] literature review.
 205.	C/H/Cs3		O_pri_rad			298-1150	2.57E+06	1.90	0		1.45	0		0		0		0		3		Cohen et al. [101] Transition state theory.
 206.	C/H/Cs3		O_rad/NonDeC		300-2500	2.29E+10	0		0		2.88	*10.0	0		0		0		4		Tsang [92] literature review.
-207.	Cd_pri		O2b					300-2500	1.055E+13	0		0		57.63	*10.0	0		0		0		4		Tsang [89] literature review.
+207.	Cd_pri		O2b					300-2500	1.792E+13	0		0		60.01	0	0		0		0		4		Hua, Ruscic, and Wang 2005, transition state theory.
 //208.	Cd_pri		CO_birad			300-2500	3.78E+13	0		0		90.62	*5.0	0		0		0		4		Tsang [89] literature review.
 209.	Cd_pri		O_atom_triplet		290-1510	3.78E+06	1.91	0		3.74	0		0		0		0		3		Mahmud et al. [128] Transition state theory
 210.	Cd_pri		C_rad/H2/Cs			300-2500	1.58E+02	3.13	0		18.00	*10.0	0		0		0		4		Tsang [89] literature review.
@@ -290,4 +290,16 @@ Arrhenius_EP
 266.	O/H/NonDeC	Ct_rad				300-2500	1.21E+12	0		0		0		*5.0	0		0		0		4		Tsang [90] literature review.
 267.	O/H/NonDeC	O_pri_rad			300-2000	1.73E+01	3.40	0		-1.14	0		0		0		0		2		Jodkowski et al. [100] ab initio calculations.
 268.	O/H/NonDeC	O_pri_rad			300-2000	1.0E+13		0		0		1.70	*3.16	0		0		0		4		Warnatz [134] literature review
-
+// (Reverse) Rates for nButanol+HO2=H2O2+radicals
+301.	H2O2	InChI=1/C4H9O/c1-2-3-4-5/h5H,1-4H2			600-2000	2.88E+00	3.16	0.0	0.75	0	0	0	0	3	MRH CBS-QB3 calculations w/o HR corrections
+302.	H2O2	InChI=1/C4H9O/c1-2-3-4-5/h2,5H,3-4H2,1H3	600-2000	6.75E-01	3.42	0.0	1.43	0	0	0	0	3	MRH CBS-QB3 calculations w/o HR corrections
+303.	H2O2	InChI=1/C4H9O/c1-2-3-4-5/h3,5H,2,4H2,1H3	600-2000	3.145E-01	3.52	0.0	1.61	0	0	0	0	3	MRH CBS-QB3 calculations w/o HR corrections
+304.	H2O2	InChI=1/C4H9O/c1-2-3-4-5/h4-5H,2-3H2,1H3	600-2000	1.485E+00	3.39	0.0	1.40	0	0	0	0	3	MRH CBS-QB3 calculations w/o HR corrections
+// (Reverse) Rates for sButanol+HO2=H2O2+radicals
+305.	H2O2	InChI=1/C4H9O/c1-3-4(2)5/h4-5H,1,3H2,2H3	600-2000	5.75E+00	2.94	0.0	0.46	0	0	0	0	3	MRH CBS-QB3 calculations w/o HR corrections
+306.	H2O2	InChI=1/C4H9O/c1-3-4(2)5/h3-5H,1-2H3		600-2000	8.75E-01	2.91	0.0	-0.41	0	0	0	0	3	MRH CBS-QB3 calculations w/o HR corrections
+307.	H2O2	InChI=1/C4H9O/c1-3-4(2)5/h5H,3H2,1-2H3		600-2000	1.73E+01	3.05	0.0	1.02	0	0	0	0	3	MRH CBS-QB3 calculations w/o HR corrections
+308.	H2O2	InChI=1/C4H9O/c1-3-4(2)5/h4-5H,2-3H2,1H3	600-2000	3.055E-01	3.53	0.0	1.52	0	0	0	0	3	MRH CBS-QB3 calculations w/o HR corrections
+// (Reverse) Rates for tButanol+HO2=H2O2+radicals
+309.	H2O2	InChI=1/C4H9O/c1-4(2,3)5/h5H,1H2,2-3H3		600-2000	2.100E-01	3.53	0.0	1.56	0	0	0	0	3	MRH CBS-QB3 calculations w/o HR corrections
+486.	Orad_O_H		O_rad/NonDeO	300-1500	1.75E+10	0	0	-3.275	0	0	0	0	5	[8] Curran's estimation in reaction type 13, RO2 + HO2 --> RO2H + O2

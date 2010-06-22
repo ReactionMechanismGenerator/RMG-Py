@@ -28,7 +28,7 @@ Reactions:
  //  DUPLICATE                                                 
  HO2 + OH = H2O + O2                        2.0E15  -0.600       0  0.0 0.0 0.0  
  //  DUPLICATE                                                 
-// HO2 + OH = H2O + O2                       -2.2E96 -24.000   49000  0.0 0.0 0.0
+ HO2 + OH = H2O + O2                       -2.2E96 -24.000   49000  0.0 0.0 0.0
  //  DUPLICATE                                                 
 
  HO2 + HO2 = H2O2 + O2                      1.9E11   0.000   -1408  0.0 0.0 0.0  

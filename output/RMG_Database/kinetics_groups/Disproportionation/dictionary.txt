@@ -2,15 +2,19 @@
 // JS, change y_1centerbirad definition, so that it wont have CO as child, Aug 22, 2003
 
 Y_rad_birad
-Union {Y_2centeradjbirad, Y_1centerbirad, Y_rad}
+Union {O2_birad, Y_1centerbirad, Y_rad}
 
-Y_2centeradjbirad
-1 *1 {Ct,Os} 1 {2,{S,T}}
-2 {Ct,Os} 1 {1,{S,T}}
-
+// Y_2centeradjbirad
+// 1 *1 {Os, Ct} 1 {2,{S,T}}
+// 2    {Os, Ct} 1 {1,{S,T}}
+ 
 C2b
 1 *1 C 1 {2,T}
-2 C 1 {1,T}
+2    C 1 {1,T}
+
+O2_birad
+1 *1 O 1 {2,S}
+2    O 1 {1,S}
 
 Y_1centerbirad
 1 *1 {Cs,Cd,O} 2T
@@ -20,8 +24,8 @@ O_atom_triplet
 
 CH2_triplet
 1 *1 C 2T {2,S}, {3,S}
-2 H 0 {1,S}
-3 H 0 {1,S}
+2    H 0 {1,S}
+3    H 0 {1,S}
 
 Y_rad
 1 *1 R 1
@@ -31,9 +35,9 @@ H_rad
 
 Cs_rad
 1 *1 C 1 {2,S}, {3,S}, {4,S}  
-2 R 0 {1,S}
-3 R 0 {1,S}
-4 R 0 {1,S}
+2    R 0 {1,S}
+3    R 0 {1,S}
+4    R 0 {1,S}
 
 C_methyl
 1 *1 C 1 {2,S}, {3,S}, {4,S}
@@ -572,7 +576,7 @@ COpri_Orad
 
 O_Rrad
 1. *2 O 0 {2,S}, {3,S}
-2. *3 {Cs,Cd,CO,O} 1 {1,S}
+2. *3 {Cs,Cd,CO} 1 {1,S}
 3. *4 H 0 {1,S}
 
 O_Csrad
@@ -589,14 +593,3 @@ O_COrad
 1. *2 O 0 {2,S}, {3,S}
 2. *3 CO 1 {1,S}
 3. *4 H 0 {1,S}
-
-O_Orad
-1. *2 O 0 {2,S}, {3,S}
-2. *3 O 1 {1,S}
-3. *4 H 0 {1,S}
-
-
-
-
-
-

@@ -14,6 +14,7 @@ Reverse name: Beta_Scission
 
 
 Generated on 7th April 2010 at 17:08
+Generated on 22nd June 2010 at 12:58
 """
 
 reaction_family_name = "R_Addition_MultipleBond"
@@ -31,7 +32,6 @@ Arrhenius_EP
 
 //f02_Radical_Addition
 //No.		XZ				Y_rad			Temp.		A			N		a	E0		DA		Dn		Da	DE0		Rank	Comments
-//277.		O2d				Ct_rad			300-1500	3.0E+12		0		0	0		0		0		0	0		0		estimated to be the same as Cd_pri_rad + O2.
 //416 Added by sandeep taken from the stufy of 1,3-Hexadiene dont at CBS-QB3 level
 
 """
@@ -49,7 +49,7 @@ rate(
   group1 = 
 """
 XZ
-Union {CZ,O2d,OCO,OCddO,OSi,OSiddO}
+Union {CZ,OCO,OCddO,OSi,OSiddO}
 """,
   group2 = 
 """
@@ -68,463 +68,10 @@ Union {Y_rad, Y_birad}
   long_comment = 
 """
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
 # Number 2
-rate(
-  group1 = 
-"""
-O2d
-1 *1 Od 0 {2,D}
-2 *2 Od 0 {1,D}
-""",
-  group2 = 
-"""
-H_rad
-1 *3 H 1
-""",
-  kf = Arrhenius(A=(4.395E+10,A_UNITS,"+-",0.0),
-                 n=(1.00,None,"+-",0.0),
-                 alpha=(0,None,"+-",0.0),
-                 E0=(0.45,E_UNITS,"+-",0.0)
-                 ),
-  temperature_range = (298,6000),
-  rank = 4,
-  old_id = "270",
-  short_comment = "Duchovic et al. [142] RRK(M) extrapolation. Probably could do better.",
-  long_comment = 
-"""
-[142] Duchovic,R.J; Pettigrew,J D; Welling B; Shipchandler,T. *J. Chem Phys.* **105**, 10367 (1996) http://dx.doi.org/10.1063/1.472992
-
-RRK(M) extrapolation. H + O2 --> OH + O
-
-C.D.W. divided rate expression by 2, to get rate of addition per site.
-
-Values (4.395E+10	1.00	0	0.45) confirmed to fit table (divided by 2) 
-by rwest@mit.edu  7-Sep-2009
-
-Agreement with experimental data from Cobos et al. 
-(C. J. Cobos, H. Hippler, and J. Troe, *J. Phys. Chem.* 89, 342, 1985)
-was promising **at low pressures**, but 
-\"Significant deviations are observed between theory and experiment as the 
-high-pressure limit is approached.\"
-    
-E.g., at 298 K
-
-    \"However, the value of 
-    the high-pressure limit rate coefficient at 298.15 K for the
-    termolecular process computed with TST, model I, and 
-    model II does not agree with the estimated high-pressure 
-    limit value of Cobos et al. at that temperature. TST, 
-    model I, and model II agree with one another, predicting a 
-    value of Log10(k)=-10.7 where the value of the limiting 
-    high-pressure rate coefficient k=2E-11 cm3/molecule/s at 298.15 K, 
-    while Cobos et al. estimate a value of Log10(k)=-10.12 
-    (that is, k=7.5E-11 cm3/molecule/s)\"
-    
-The calculations used the *ab initio* PES of Walch et al., which was the best available in 1991.
-(63) Walch, S. P.; Rohlfing, C. M.; Melius, C. F.; Bauschlicher, C. W. J. Chem. Phys. 1988, 88, 6273. 
-(64) Walch, S. P.; Rohlfing, C. M. J. Chem. Phys. 1989, 91, 2373. 
-(67) Walch, S. P.; Duchovic, R. J. J. Chem. Phys. 1991, 94, 7068. 
-
-Many extensions and improvements are suggested for future work, which may well 
-have happened since the paper was published in 1996. Revision of this rate is recommended.
-""",
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
-)
-
-# Number 3
-rate(
-  group1 = 
-"""
-O2d
-1 *1 Od 0 {2,D}
-2 *2 Od 0 {1,D}
-""",
-  group2 = 
-"""
-H_rad
-1 *3 H 1
-""",
-  kf = Arrhenius(A=(8.15E+12,A_UNITS,"+-",0.0),
-                 n=(0,None,"+-",0.0),
-                 alpha=(0,None,"+-",0.0),
-                 E0=(0.76,E_UNITS,"+-",0.0)
-                 ),
-  temperature_range = (300,1500),
-  rank = 3,
-  old_id = "271",
-  short_comment = "Cobos, C.J and Troe, J. [106] Transition state theory.",
-  long_comment = 
-"""
-[106] Cobos,C.J.;Troe,J.J. Chem. Phys 1985, 83,1010.
-
-Transition state theory. H+O2 -->HO2 
-
-C.D.W. divided rate expression by 2, to get rate of addition per site 
-""",
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
-)
-
-# Number 4
-rate(
-  group1 = 
-"""
-O2d
-1 *1 Od 0 {2,D}
-2 *2 Od 0 {1,D}
-""",
-  group2 = 
-"""
-C_methyl
-1 *3 C 1 {2,S}, {3,S}, {4,S}
-2 H 0 {1,S}
-3 H 0 {1,S}
-4 H 0 {1,S}
-""",
-  kf = Arrhenius(A=(2.26E+12,A_UNITS,"+-",420000000000.0),
-                 n=(0,None,"+-",0.0),
-                 alpha=(0,None,"+-",0.0),
-                 E0=(0,E_UNITS,"+-",0.0)
-                 ),
-  temperature_range = (300,1500),
-  rank = 5,
-  old_id = "272",
-  short_comment = "Curran et al. [8] From Lenhardt et al. [143]. (Measured at 300K) (n-butyl not methyl)",
-  long_comment = 
-"""
-We are using a primary R. radical as a methyl radical. The rate comes from n-butyl.
-
-[8]   Curran, H.J.; Gaffuri, P.; Pit z, W.J.; Westbrook, C.K. *Combust. Flame* 2002, 129, 253-280. http://dx.doi.org/10.1016/S0010-2180(01)00373-X
-
-In their study modelling iso-octane oxidation, Curran et al [8] chose to use the rate measured by Lenhardt et al [143] described below.
-
-[143] Lenhardt, T.M.; McDade, C.E.; Bayes, K.D.; *J. Chem. Phys.* 1980, 72,304 http://dx.doi.org/10.1063/1.438848
-
-Rates measurement of **n-butyl** + O2 at 300 K. High pressure limit from flash photolysis experiments.
-
-C.D.W. divided rate expression by 2, to get rate of addition rate per site,
-giving  (2.26±0.42)E12 cm3/mole/sec.
-
-    Rate constants for the reaction of four different butyl radicals with molecular oxygen 
-    have been measured **at room temperature**. The radicals were generated by flash photolysis 
-    and their time decay was followed with a photoionization mass spectrometer. The radical 
-    concentrations were kept low to avoid complications from radical–radical reactions. 
-    Radical lifetimes were long, up to 50 msec, thus assuring that thermalized radicals were being studied. 
-    
-    The rate constants, in units of 10E−11 cm3/molecule/sec, are:
-    
-     * **n-butyl (0.75±0.14); (gives (2.26±0.42)E12 cm3/mole/sec when divided by 2 to get rate per site)**
-     * s-butyl (1.66±0.22); (gives (5.00±0.66)E12 cm3/mole/sec when divided by 2 to get rate per site)
-     * t-butyl (2.34±0.39); (gives (7.05±1.17)E12 cm3/mole/sec when divided by 2 to get rate per site)
-     * 3-hydroxy s-butyl (2.8±1.8). (gives (8.43±5.42)E12 cm3/mole/sec when divided by 2 to get rate per site)
-     
-    No pressure dependence of the rate constants was observed over the range 1 to 4 Torr. 
-
-Because radical addition to a double bond is probably barrierless, the temperature range 300-1500K
-has been assigned although the rate was only measured at 300K. 
-rwest@mit.edu  7-Sep-2009
-""",
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
-)
-
-# Number 5
-rate(
-  group1 = 
-"""
-O2d
-1 *1 Od 0 {2,D}
-2 *2 Od 0 {1,D}
-""",
-  group2 = 
-"""
-C_pri_rad
-1 *3 C 1 {2,S}, {3,S}, {4,S}
-2 H 0 {1,S}
-3 H 0 {1,S}
-4 {R!H} 0 {1,S}
-""",
-  kf = Arrhenius(A=(2.26E+12,A_UNITS,"+-",420000000000.0),
-                 n=(0,None,"+-",0.0),
-                 alpha=(0,None,"+-",0.0),
-                 E0=(0,E_UNITS,"+-",0.0)
-                 ),
-  temperature_range = (300,1500),
-  rank = 5,
-  old_id = "273",
-  short_comment = "Curran et al. [8] From Lenhardt et al. [143]. (Measured at 300K)",
-  long_comment = 
-"""
-[8]   Curran, H.J.; Gaffuri, P.; Pit z, W.J.; Westbrook, C.K. *Combust. Flame* 2002, 129, 253-280. http://dx.doi.org/10.1016/S0010-2180(01)00373-X
-
-In their study modelling iso-octane oxidation, Curran et al [8] chose to use the rate measured by Lenhardt et al [143] described below.
-
-[143] Lenhardt, T.M.; McDade, C.E.; Bayes, K.D.; *J. Chem. Phys.* 1980, 72,304 http://dx.doi.org/10.1063/1.438848
-
-Rates measurement of **n-butyl** + O2 at 300 K. High pressure limit from flash photolysis experiments.
-C.D.W. divided rate expression by 2, to get rate of addition rate per site, 
-giving  (2.26±0.42)E12 cm3/mole/sec.
-
-    Rate constants for the reaction of four different butyl radicals with molecular oxygen 
-    have been measured **at room temperature**. The radicals were generated by flash photolysis 
-    and their time decay was followed with a photoionization mass spectrometer. The radical 
-    concentrations were kept low to avoid complications from radical–radical reactions. 
-    Radical lifetimes were long, up to 50 msec, thus assuring that thermalized radicals were being studied. 
-    
-    The rate constants, in units of 10E−11 cm3/molecule/sec, are:
-    
-     * n-butyl (0.75±0.14); (gives (2.26±0.42)E12 cm3/mole/sec when divided by 2 to get rate per site)
-     * s-butyl (1.66±0.22); (gives (5.00±0.66)E12 cm3/mole/sec when divided by 2 to get rate per site)
-     * t-butyl (2.34±0.39); (gives (7.05±1.17)E12 cm3/mole/sec when divided by 2 to get rate per site)
-     * 3-hydroxy s-butyl (2.8±1.8). (gives (8.43±5.42)E12 cm3/mole/sec when divided by 2 to get rate per site)
-     
-    No pressure dependence of the rate constants was observed over the range 1 to 4 Torr. 
-
-Because radical addition to a double bond is probably barrierless, the temperature range 300-1500K
-has been assigned although the rate was only measured at 300K. 
-
-rwest@mit.edu  7-Sep-2009
-""",
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
-)
-
-# Number 6
-rate(
-  group1 = 
-"""
-O2d
-1 *1 Od 0 {2,D}
-2 *2 Od 0 {1,D}
-""",
-  group2 = 
-"""
-C_sec_rad
-1 *3 C 1 {2,S}, {3,S}, {4,S}
-2 H 0 {1,S}
-3 {R!H} 0 {1,S}
-4 {R!H} 0 {1,S}
-""",
-  kf = Arrhenius(A=(3.77E+12,A_UNITS,"+-",1e+12),
-                 n=(0,None,"+-",0.0),
-                 alpha=(0,None,"+-",0.0),
-                 E0=(0,E_UNITS,"+-",0.0)
-                 ),
-  temperature_range = (300,1500),
-  rank = 5,
-  old_id = "274",
-  short_comment = "Curran et al. [8]. (Estimated at 300K)",
-  long_comment = 
-"""
-
-Lenhardt [143] measured (10.0±1.3)E12 cm3/mole/sec (at 300K, high pressure limit, from flash photolysis experiments.)
-Atkinson [96], in their review, recommend 6.62E12 cm3/mole/sec. (according to Curran [8]).
-Curran [8], in their modelling paper, refer to both these and chose and \"intermediate\" value of 7.54E12 cm3/mol/sec.
-
-Curran [8] is the rate adopted here, giving 3.77E+12 cm3/mole/sec when divided by two to give the rate of addition per site.
-The uncertainty of 1E12 cm3/mole/sec was estimated from these values
-
- * [8] Curran, H.J.; Gaffuri, P.; Pit z, W.J.; Westbrook, C.K. *Combust. Flame* 2002, 129, 253-280. http://dx.doi.org/10.1016/S0010-2180(01)00373-X
- * [96] Atkinson,R; Baulch,D. L.; Cox R.A.;Hampson,R.F.,Jr.;Kerr,J.A;Rossi,M.J.;Troe,J. *J Phys. Chem. Ref. Data* 1997,26,521.
- * [143] Lenhardt,T.M.;McDade,C.E.;Bayes,K.D.; *J. Chem Phys* 1980, 72,304 http://dx.doi.org/10.1063/1.438848
-
-Because radical addition to a double bond is probably barrierless, the temperature range 300-1500K
-has been assigned although the rate was only measured/estimated at 300K. 
-
-rwest@mit.edu  7-Sep-2009
-""",
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
-)
-
-# Number 7
-rate(
-  group1 = 
-"""
-O2d
-1 *1 Od 0 {2,D}
-2 *2 Od 0 {1,D}
-""",
-  group2 = 
-"""
-C_ter_rad
-1 *3 C 1 {2,S}, {3,S}, {4,S}
-2 {R!H} 0 {1,S}
-3 {R!H} 0 {1,S}
-4 {R!H} 0 {1,S}
-""",
-  kf = Arrhenius(A=(7.05E+12,A_UNITS,"+-",1.17e+12),
-                 n=(0,None,"+-",0.0),
-                 alpha=(0,None,"+-",0.0),
-                 E0=(0,E_UNITS,"+-",0.0)
-                 ),
-  temperature_range = (300,1500),
-  rank = 5,
-  old_id = "275",
-  short_comment = "Curran et al. [8] From Lenhardt et al. [143]. (Measured at 300K)",
-  long_comment = 
-"""
-[8]   Curran, H.J.; Gaffuri, P.; Pit z, W.J.; Westbrook, C.K. *Combust. Flame* 2002, 129, 253-280. http://dx.doi.org/10.1016/S0010-2180(01)00373-X
-
-In their study modelling iso-octane oxidation, Curran et al [8] chose to use the rate measured by Lenhardt et al [143] described below.
-
-[143] Lenhardt, T.M.; McDade, C.E.; Bayes, K.D.; *J. Chem. Phys.* 1980, 72,304 http://dx.doi.org/10.1063/1.438848
-
-Rates measurement of **t-butyl** + O2 at 300 K. High pressure limit from flash photolysis experiments.
-C.D.W. divided rate expression by 2, to get rate of addition rate per site, 
-giving  (7.05±1.17)E12 cm3/mole/sec.
-
-    Rate constants for the reaction of four different butyl radicals with molecular oxygen 
-    have been measured **at room temperature**. The radicals were generated by flash photolysis 
-    and their time decay was followed with a photoionization mass spectrometer. The radical 
-    concentrations were kept low to avoid complications from radical–radical reactions. 
-    Radical lifetimes were long, up to 50 msec, thus assuring that thermalized radicals were being studied. 
-    
-    The rate constants, in units of 10E−11 cm3/molecule/sec, are:
-    
-     * n-butyl (0.75±0.14); (gives (2.26±0.42)E12 cm3/mole/sec when divided by 2 to get rate per site)
-     * s-butyl (1.66±0.22); (gives (5.00±0.66)E12 cm3/mole/sec when divided by 2 to get rate per site)
-     * **t-butyl (2.34±0.39); (gives (7.05±1.17)E12 cm3/mole/sec when divided by 2 to get rate per site)**
-     * 3-hydroxy s-butyl (2.8±1.8). (gives (8.43±5.42)E12 cm3/mole/sec when divided by 2 to get rate per site)
-     
-    No pressure dependence of the rate constants was observed over the range 1 to 4 Torr. 
-
-Because radical addition to a double bond is probably barrierless, the temperature range 300-1500K
-has been assigned although the rate was only measured at 300K. 
-
-rwest@mit.edu  7-Sep-2009
-""",
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
-)
-
-# Number 8
-rate(
-  group1 = 
-"""
-O2d
-1 *1 Od 0 {2,D}
-2 *2 Od 0 {1,D}
-""",
-  group2 = 
-"""
-Cd_pri_rad
-1 *3 Cd 1 {2,D}, {3,S}
-2 Cd 0 {1,D}
-3 H 0 {1,S}
-""",
-  kf = Arrhenius(A=(3.0E+12,A_UNITS,"+-",0.0),
-                 n=(0,None,"+-",0.0),
-                 alpha=(0,None,"+-",0.0),
-                 E0=(0,E_UNITS,"+-",0.0)
-                 ),
-  temperature_range = (300,1500),
-  rank = 4,
-  old_id = "276",
-  short_comment = "Bozzelli et al. [144] RRKM extrapolation ( adjusted to match data).",
-  long_comment = 
-"""
-[144] Bozzelli,J.W. J phys. Chem 1993, 97,4427.
-RRKM extrapolation (adjusted to match data).O2 +CH = CH2CHOO. C.D.W. divided rate expression by 2, to get rate of addition per site
-""",
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
-)
-
-# Number 9
-rate(
-  group1 = 
-"""
-O2d
-1 *1 Od 0 {2,D}
-2 *2 Od 0 {1,D}
-""",
-  group2 = 
-"""
-Cb_rad
-1 *3 Cb 1 {2,B}, {3,B}
-2 {Cb,Cbf} 0 {1,B}
-3 {Cb,Cbf} 0 {1,B}
-""",
-  kf = Arrhenius(A=(3.015E+12,A_UNITS,"*/",1.2),
-                 n=(0,None,"+-",0.0),
-                 alpha=(0,None,"+-",0.0),
-                 E0=(0.32,E_UNITS,"+-",0.13)
-                 ),
-  temperature_range = (297,473),
-  rank = 3,
-  old_id = "278",
-  short_comment = "Yu, T. and Lin, M.C. [145]",
-  long_comment = 
-"""
-[145] Yu,T.; Lin, M.C.J. Am. Chem.Soc.1994,116,9571.
-O2+ phenyl --> phenyl dioxy. Absolute value measured directly. Pressure 0.03-0.11 atm. Excitation: Flash photolysis, analysis: Vis- UV absorption. C.D.W. divided rate epxression by 2, to get rate of addition per site
-""",
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
-)
-
-# Number 10
-rate(
-  group1 = 
-"""
-O2d
-1 *1 Od 0 {2,D}
-2 *2 Od 0 {1,D}
-""",
-  group2 = 
-"""
-CO_pri_rad
-1 *3 C 1 {2,D}, {3,S}
-2 O 0 {1,D}
-3 H 0 {1,S}
-""",
-  kf = Arrhenius(A=(3.5E+12,A_UNITS,"+-",0.0),
-                 n=(0,None,"+-",0.0),
-                 alpha=(0,None,"+-",0.0),
-                 E0=(0,E_UNITS,"+-",0.0)
-                 ),
-  temperature_range = (300,2500),
-  rank = 4,
-  old_id = "279",
-  short_comment = "Bozzelli et al. [144] RRKM extrapolation.",
-  long_comment = 
-"""
-[144] Bozzelli,J.W. J Phys. Chem. 1993, 97 , 4427.
-RRKM extrapolation. O2 +HCO -->HC(O)O2. C.D.W. divided rate expression by 2, to get rate of addition per site
-""",
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
-)
-
-# Number 11
-rate(
-  group1 = 
-"""
-O2d
-1 *1 Od 0 {2,D}
-2 *2 Od 0 {1,D}
-""",
-  group2 = 
-"""
-CO_rad/NonDe
-1 *3 C 1 {2,D}, {3,S}
-2 O 0 {1,D}
-3 {Cs,O} 0 {1,S}
-""",
-  kf = Arrhenius(A=(1.505E+12,A_UNITS,"*/",3.16),
-                 n=(0,None,"+-",0.0),
-                 alpha=(0,None,"+-",0.0),
-                 E0=(0,E_UNITS,"+-",0.0)
-                 ),
-  temperature_range = (200,300),
-  rank = 4,
-  old_id = "280",
-  short_comment = "Atkinson et al [96] literature review.",
-  long_comment = 
-"""
-[96] Atkinson,R; Baulch,D. L.; Cox R.A.;Hampson,R.F.,Jr.;Kerr,J.A;Rossi,M.J.;Troe,J.J Phys. Chem. Ref. Data 1997,26,521.
-literature review. Rate constant is high pressure limit. O2+ CH3CO --> CH3C(O)OO C.D.W. divided rate expression by 2, to get rate of addition per site
-""",
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
-)
-
-# Number 12
 rate(
   group1 = 
 """
@@ -554,10 +101,10 @@ H_rad
 in his reaction type 3. Based on the recommendations of
 [146] Allara, D.L.; Shaw, R. J Phys. Chem. Ref. Data 1980,9,523.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 13
+# Number 3
 rate(
   group1 = 
 """
@@ -587,10 +134,10 @@ H_rad
 in his reaction type 3. Based on the recommendations of
 [146] Allara, D.L.; Shaw, R. J Phys. Chem. Ref. Data 1980,9,523.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 14
+# Number 4
 rate(
   group1 = 
 """
@@ -620,10 +167,10 @@ H_rad
 in his reaction type 3. Based on the recommendations of
 [146] Allara, D.L.; Shaw, R. J Phys. Chem. Ref. Data 1980,9,523.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 15
+# Number 5
 rate(
   group1 = 
 """
@@ -656,10 +203,10 @@ Cs_rad
 in his reaction type 3. Based on the recommendations of
 [146] Allara, D.L.; Shaw, R. J Phys. Chem. Ref. Data 1980,9,523.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 16
+# Number 6
 rate(
   group1 = 
 """
@@ -692,10 +239,10 @@ Cs_rad
 in his reaction type 3. Based on the recommendations of
 [146] Allara, D.L.; Shaw, R. J Phys. Chem. Ref. Data 1980,9,523.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 17
+# Number 7
 rate(
   group1 = 
 """
@@ -728,10 +275,10 @@ Cs_rad
 in his reaction type 3. Based on the recommendations of
 [146] Allara, D.L.; Shaw, R. J Phys. Chem. Ref. Data 1980,9,523.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 18
+# Number 8
 rate(
   group1 = 
 """
@@ -762,10 +309,10 @@ O_rad/NonDe
 in his reaction type 20. Based on the recommendations of
 [146] Allara, D.L.; Shaw, R. J Phys. Chem. Ref. Data 1980,9,523.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 19
+# Number 9
 rate(
   group1 = 
 """
@@ -796,10 +343,10 @@ O_rad/NonDe
 in his reaction type 20. Based on the recommendations of
 [146] Allara, D.L.; Shaw, R. J Phys. Chem. Ref. Data 1980,9,523.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 20
+# Number 10
 rate(
   group1 = 
 """
@@ -830,10 +377,10 @@ O_rad/NonDe
 in his reaction type 20. Based on the recommendations of
 [146] Allara, D.L.; Shaw, R. J Phys. Chem. Ref. Data 1980,9,523.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 21
+# Number 11
 rate(
   group1 = 
 """
@@ -872,10 +419,10 @@ using a rxn threshold of 154.78 kJ/mol.\"  The rate coefficient stored in RMG
 is the high-pressure limit, k_inf.
 MRH 31-Aug-2009
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 22
+# Number 12
 rate(
   group1 = 
 """
@@ -916,10 +463,10 @@ Recommended data is from other Review paper by Kerr and Parsonage (1972)
 
 MRH 28-Aug-2009
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 23
+# Number 13
 rate(
   group1 = 
 """
@@ -953,10 +500,10 @@ C_rad/H2/Cs
 [147] Knyazev,V.D.;Slagle,I.R. J Phys. Chem. 1996 100, 5318.
 Pressure up to 10 atm. Excitation; thermal, analysis: mass spectrometry. C2H4 + C2H5--> n-C4H9. C.D.W. divided rate expression by 2, to get rate of addtion per site
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 24
+# Number 14
 rate(
   group1 = 
 """
@@ -997,10 +544,10 @@ of 8.0x10^-14 * exp(-3500/T) cm3/molecule/s noting rates of alkyl radical additi
 to ethylene are similar (Kerr, J.A., Trotman-Dickenson, A.F.)
 MRH 30-Aug-2009
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 25
+# Number 15
 rate(
   group1 = 
 """
@@ -1033,10 +580,10 @@ Cd_pri_rad
 [148] Weissman and Benson. Estimated values. Activation energy is a lower limit. Pressure 1.00 atm. 
 C2H4 + C2H3 --> CH2=CHCH2CH2 C.D.W. divided rate expression by 2, to get rate of addition per site
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 26
+# Number 16
 rate(
   group1 = 
 """
@@ -1082,10 +629,10 @@ Table states rxn is pressure-dependent: C2H4+OH(+M)=C2H4OH(+M)
 Only data available in table is k=9.0x10^-12
 MRH 28-Aug-2009
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 27
+# Number 17
 rate(
   group1 = 
 """
@@ -1115,10 +662,10 @@ H_rad
 """
 [149] Tsang experiments and limited review. CH3CH=CH2 + H --> iso-C3H7
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 28
+# Number 18
 rate(
   group1 = 
 """
@@ -1152,10 +699,10 @@ C_methyl
 [150] Knayzev et al. Data derived from fitting to a complex mechanism. Pressure up to 10 atm. Excitation : flash photolysis, analysis : mass spectrometry
 CH3CH=CH2 + CH3 --> sec-C4H9 
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 29
+# Number 19
 rate(
   group1 = 
 """
@@ -1195,10 +742,10 @@ Author notes that rxn is pressure dependent and lists fall-off ratios and
 collision efficiencies; these are not stored in RMG.
 MRH 31-Aug-2009
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 30
+# Number 20
 rate(
   group1 = 
 """
@@ -1231,10 +778,10 @@ C_rad/H2/Cd
 """
 [151] Barbe et al. Data is estimated. Pressure 0.04-0.26 atm. CH3CH=CH2 + .CH2CH=CH2 --> CH3CH(.)CH2CH2CH=CH2
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 31
+# Number 21
 rate(
   group1 = 
 """
@@ -1273,10 +820,10 @@ Entry 46,44(terminal): Recommended rate coefficient is based on summary of data 
 radical addition to olefins (Kerr and Parsonage, 1972).
 MRH 31-Aug-2009
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 32
+# Number 22
 rate(
   group1 = 
 """
@@ -1310,10 +857,10 @@ C_methyl
 [152] Perrin et al. Data is estimated. Pressure 0.01-0.13 atm. 
 CH2=CHCH=CH2 + .CH3 --> CH2CH=CHCH2CH3 C.D.W. divied rate expression by 2, to get rate of addition per site.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 33
+# Number 23
 rate(
   group1 = 
 """
@@ -1343,10 +890,10 @@ H_rad
 """
 [153] Knayzev et al. Pressure ~ 0.01 atm. Excitation : thermal, analysis : GC Iso-C4H8 + CH3 --> (CH3)2CCH2CH3
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 34
+# Number 24
 rate(
   group1 = 
 """
@@ -1379,10 +926,10 @@ C_methyl
 """
 [303] Seres et al. Data derived from fitting to a complex mechanism. Excitation : thermal, analysis : GC Iso-C4H8 + CH3 --> (CH3)2CCH2CH3
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 35
+# Number 25
 rate(
   group1 = 
 """
@@ -1412,10 +959,10 @@ H_rad
 """
 [149] Tsang experiments and limited review. CH3CH=CH2 + H --> n-C3H7
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 36
+# Number 26
 rate(
   group1 = 
 """
@@ -1449,10 +996,10 @@ C_methyl
 [147] Knyazev et al. Pressure up to 10 atm. Excitation : thermal, analysis : mass spectrometry. 
 CH3CH=CH2 + CH3 --> iso-C4H9
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 37
+# Number 27
 rate(
   group1 = 
 """
@@ -1492,10 +1039,10 @@ Author notes that rxn is pressure dependent and lists fall-off ratios and
 collision efficiencies; these are not stored in RMG.
 MRH 31-Aug-2009
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 38
+# Number 28
 rate(
   group1 = 
 """
@@ -1529,10 +1076,10 @@ C_methyl
 [155] Slagle et al. Data deriver from detailed balance/reverse rate. Pressure ~ 0.01 atm. 
 Iso-C4H8 + .CH3 --> (CH3)3CCH2
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 39
+# Number 29
 rate(
   group1 = 
 """
@@ -1561,10 +1108,10 @@ H_rad
 """
 [8] Curran et al. in his reaction type 3. Based on recommendations of Allara and Shaw. [146] 
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 40
+# Number 30
 rate(
   group1 = 
 """
@@ -1593,10 +1140,10 @@ H_rad
 """
 [8] Curran et al. in his reaction type 3. Based on recommendations of Allara and Shaw. [146] 
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 41
+# Number 31
 rate(
   group1 = 
 """
@@ -1625,10 +1172,10 @@ H_rad
 """
 [8] Curran et al. in his reaction type 3. Based on recommendations of Allara and Shaw. [146] 
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 42
+# Number 32
 rate(
   group1 = 
 """
@@ -1660,10 +1207,10 @@ Cs_rad
 """
 [8] Curran et al. in his reaction type 3. Based on recommendations of Allara and Shaw. [146] 
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 43
+# Number 33
 rate(
   group1 = 
 """
@@ -1695,10 +1242,10 @@ Cs_rad
 """
 [8] Curran et al. in his reaction type 3. Based on recommendations of Allara and Shaw. [146] 
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 44
+# Number 34
 rate(
   group1 = 
 """
@@ -1729,10 +1276,10 @@ Cs_rad
   long_comment = 
 """
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 45
+# Number 35
 rate(
   group1 = 
 """
@@ -1765,10 +1312,10 @@ C_methyl
 [156] Scherzer et al. Data derived from fitting to a complex mechanism. Pressure 0.04 atm. Excitation: thermal, analysis: GC.
 CH2=C=CH2 + .CH3 --> CH3CH2C=CH2
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 46
+# Number 36
 rate(
   group1 = 
 """
@@ -1798,10 +1345,10 @@ H_rad
 [157] Tsang et al. Absolute Value Measured directly. Pressure 2 - 7 atm. Excitation: thermal, analysis : GC. 
 CH2=C=CH2 + H --> .CH2CH=CH2
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 47
+# Number 37
 rate(
   group1 = 
 """
@@ -1833,10 +1380,10 @@ C_methyl
 """
 [158] Tsang. Data is estimated. Pressure 1.50-5.00 atm. CH2=C=CH2 + CH3 --> CH2C(CH3)=CH2
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 48
+# Number 38
 rate(
   group1 = 
 """
@@ -1862,10 +1409,10 @@ H_rad
 """
 [8] Curran et al. In his reaction type 18. 
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 49
+# Number 39
 rate(
   group1 = 
 """
@@ -1894,10 +1441,10 @@ Cs_rad
 """
 [8] Curran et al. In his reaction type 18. 
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 50
+# Number 40
 rate(
   group1 = 
 """
@@ -1925,10 +1472,10 @@ CO_pri_rad
 """
 [144] Bozzelli et al. Based upon CH3 addition to CO (Anastasi and Maw)
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 51
+# Number 41
 rate(
   group1 = 
 """
@@ -1958,10 +1505,10 @@ H2CO + HCO2. (formic acid radical) --> +  .OCH2OCHO (ester) (Rxn. 338, p. 234)
 
 Verified by Greg Magoon; it is not immediately clear whether this rate constant is for high pressure limit, but based on other references to high pressure limit in the paper, I suspect that it is a high pressure limit value; also, note that CO_O group is used for H2CO...MRH and I have interpreted CO_O as referring to any carbonyl group
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 52
+# Number 42
 rate(
   group1 = 
 """
@@ -1993,10 +1540,10 @@ C_rad/H2/Cs
 [160] Knoll et al. Data derived from fitting to a complex mechanism. Pressure 0.08 atm. Excitation : direct photolysis, analysis : mass spectrometry.
 N-C3H7 + C2HO --> N-C4H9O 
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 53
+# Number 43
 rate(
   group1 = 
 """
@@ -2028,10 +1575,10 @@ C_methyl
 [161] Knoll et al. Absolute value measured directly. Pressure 0.28 - 1.17 atm. Excitation : thermal, analysis : mass spectrometry. 
 (CH3)2CO + .CH3 --> (CH3)3CO
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 54
+# Number 44
 rate(
   group1 = 
 """
@@ -2060,10 +1607,10 @@ H_rad
 [134] Warnatz literature review. C.D.W divided rate expression by 2, to get rate of addition per site.
 C2H2 + H --> C2H3
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 55
+# Number 45
 rate(
   group1 = 
 """
@@ -2095,10 +1642,10 @@ C_methyl
 [162] E.W.Diau and M.C.Lin. RRK(M) extrapolation. C.D.W divided rate expression by 2, to get rate of addition per site. 
 C2H2 + CH3 --> CH3CH=CH
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 56
+# Number 46
 rate(
   group1 = 
 """
@@ -2130,10 +1677,10 @@ C_rad/H2/Cs
 [163] Kerr et al. literature review. Pressure 0.03-0.20 atm. C.D.W divided rate expression by 2, to get rate of addition per site.
 C2H2 + .C2H5 --> CH3CH2CH=CH 
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 57
+# Number 47
 rate(
   group1 = 
 """
@@ -2173,10 +1720,10 @@ radicals to C2H2.  Author notes that this could be used as an upper limit for
 cyclopentadiene formation.
 MRH 31-Aug-2009
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 58
+# Number 48
 rate(
   group1 = 
 """
@@ -2208,10 +1755,10 @@ C_rad/H/NonDeC
 [163] Kerr et al. literature review. Pressure 0.07-0.13 atm. C.D.W divided rate expression by 2, to get rate of addition per site.
 C2H2 + Iso-C3H7 --> (CH3)2CHCH=CH
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 59
+# Number 49
 rate(
   group1 = 
 """
@@ -2243,10 +1790,10 @@ C_rad/Cs3
 [164] Dominguez et al. Data derived from fitting to a complex mechanism. Pressure 0.01-0.32 atm. Excitation : direct photolysis, analysis : GC. 
 C2H2 + Tert-C4H9 --> (CH3)3CCH=CH C.D.W divided rate expression by 2, to get rate of addition per site.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 60
+# Number 50
 rate(
   group1 = 
 """
@@ -2277,10 +1824,10 @@ Cd_pri_rad
 [121] Weissman et al. Transition state theory. C.D.W divided rate expression by 2, to get rate of addition per site.	
 C2H2 + C2H3 --> CH2=CHCH=CH.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 61
+# Number 51
 rate(
   group1 = 
 """
@@ -2313,10 +1860,10 @@ C2H2 + C2H3 --> CH2=CHCH=CH. (Rxn. -5?)
 
 Verified by Greg Magoon: note: NIST seems to have values (http://kinetics.nist.gov/kinetics/Detail?id=1988DUR/AMO636:5 , which agree with RMG\'s original values) that are slightly diferent than this paper\'s values (p. 637); I can\'t seem to figure out where the NIST values are coming from (maybe Table 3?); therefore, I have changed rateLibrary to use paper parameters of 10^8.8 (/2) and 4.9 kcal/mol (these values seem to actually be taken from other publications, however), which I am assuming to be high-pressure values; also note that values from other sources are available in the NIST Kinetics Database
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 62
+# Number 52
 rate(
   group1 = 
 """
@@ -2349,10 +1896,10 @@ C2H2 + CCH --> HC(tb)CCH=CH. (Rxn. 18?)
 NIST Record: http://kinetics.nist.gov/kinetics/Detail?id=1988DUR/AMO636:4
 Verified by Greg Magoon: it looks like value is taken from Rxn 18 of Table 3 (1E10), and is apparently non-pressure dependent (and non-temp dependent); based on the table, it looks like Ref. 42 in this paper may be the ultimate source of the value?
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 63
+# Number 53
 rate(
   group1 = 
 """
@@ -2393,10 +1940,10 @@ RMG stores the recommended high-pressure limit rate coefficient, k_inf.
 
 MRH 31-Aug-2009
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 64
+# Number 54
 rate(
   group1 = 
 """
@@ -2428,10 +1975,10 @@ Same reaction as #332, #333 ranked as more accurate in rate library than #332, b
 
 C2H2 + .OH --> HOCH=CH
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 65
+# Number 55
 rate(
   group1 = 
 """
@@ -2460,10 +2007,10 @@ O_sec_rad
 """
 [144] Bozzelli et al. Based upon CH3 addition to C2H2 (NIST)
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 66
+# Number 56
 rate(
   group1 = 
 """
@@ -2496,10 +2043,10 @@ C_methyl
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment. 
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 67
+# Number 57
 rate(
   group1 = 
 """
@@ -2532,10 +2079,10 @@ C_rad/H2/Cs
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 68
+# Number 58
 rate(
   group1 = 
 """
@@ -2568,10 +2115,10 @@ C_rad/H2/Cs
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 69
+# Number 59
 rate(
   group1 = 
 """
@@ -2604,10 +2151,10 @@ C_rad/H2/Cs
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 70
+# Number 60
 rate(
   group1 = 
 """
@@ -2640,10 +2187,10 @@ C_rad/H2/Cs
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 71
+# Number 61
 rate(
   group1 = 
 """
@@ -2676,10 +2223,10 @@ C_rad/H2/Cs
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 72
+# Number 62
 rate(
   group1 = 
 """
@@ -2712,10 +2259,10 @@ C_rad/H/NonDeC
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 73
+# Number 63
 rate(
   group1 = 
 """
@@ -2748,10 +2295,10 @@ C_rad/Cs3
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 74
+# Number 64
 rate(
   group1 = 
 """
@@ -2784,10 +2331,10 @@ C_rad/Cs3
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 75
+# Number 65
 rate(
   group1 = 
 """
@@ -2820,10 +2367,10 @@ C_rad/Cs3
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 76
+# Number 66
 rate(
   group1 = 
 """
@@ -2856,10 +2403,10 @@ C_rad/H2/Cd
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 77
+# Number 67
 rate(
   group1 = 
 """
@@ -2892,10 +2439,10 @@ C_rad/H2/Cd
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 78
+# Number 68
 rate(
   group1 = 
 """
@@ -2928,10 +2475,10 @@ C_rad/H/OneDeC
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 79
+# Number 69
 rate(
   group1 = 
 """
@@ -2964,10 +2511,10 @@ C_rad/H/TwoDe
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 80
+# Number 70
 rate(
   group1 = 
 """
@@ -3000,10 +2547,10 @@ C_rad/Cs2
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 81
+# Number 71
 rate(
   group1 = 
 """
@@ -3036,10 +2583,10 @@ C_rad/Cs
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 82
+# Number 72
 rate(
   group1 = 
 """
@@ -3072,10 +2619,10 @@ C_rad/H2/Cb
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 83
+# Number 73
 rate(
   group1 = 
 """
@@ -3108,10 +2655,10 @@ C_rad/H2/Ct
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 84
+# Number 74
 rate(
   group1 = 
 """
@@ -3144,10 +2691,10 @@ C_rad/H/OneDeC
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 85
+# Number 75
 rate(
   group1 = 
 """
@@ -3180,10 +2727,10 @@ C_rad/Cs2
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 86
+# Number 76
 rate(
   group1 = 
 """
@@ -3215,10 +2762,10 @@ Cd_pri_rad
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 87
+# Number 77
 rate(
   group1 = 
 """
@@ -3250,10 +2797,10 @@ Cd_rad/NonDe
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 88
+# Number 78
 rate(
   group1 = 
 """
@@ -3285,10 +2832,10 @@ Cb_rad
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 89
+# Number 79
 rate(
   group1 = 
 """
@@ -3321,10 +2868,10 @@ C_methyl
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 90
+# Number 80
 rate(
   group1 = 
 """
@@ -3357,10 +2904,10 @@ C_methyl
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 91
+# Number 81
 rate(
   group1 = 
 """
@@ -3393,10 +2940,10 @@ C_methyl
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 92
+# Number 82
 rate(
   group1 = 
 """
@@ -3429,10 +2976,10 @@ C_methyl
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 93
+# Number 83
 rate(
   group1 = 
 """
@@ -3465,10 +3012,10 @@ C_methyl
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 94
+# Number 84
 rate(
   group1 = 
 """
@@ -3500,10 +3047,10 @@ C_methyl
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 95
+# Number 85
 rate(
   group1 = 
 """
@@ -3536,10 +3083,10 @@ C_methyl
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 96
+# Number 86
 rate(
   group1 = 
 """
@@ -3571,10 +3118,10 @@ C_methyl
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 97
+# Number 87
 rate(
   group1 = 
 """
@@ -3605,10 +3152,10 @@ C_methyl
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 98
+# Number 88
 rate(
   group1 = 
 """
@@ -3639,10 +3186,10 @@ C_methyl
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 99
+# Number 89
 rate(
   group1 = 
 """
@@ -3674,10 +3221,10 @@ C_methyl
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 100
+# Number 90
 rate(
   group1 = 
 """
@@ -3710,10 +3257,10 @@ C_methyl
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 101
+# Number 91
 rate(
   group1 = 
 """
@@ -3746,10 +3293,10 @@ C_methyl
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 102
+# Number 92
 rate(
   group1 = 
 """
@@ -3782,10 +3329,10 @@ C_methyl
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 103
+# Number 93
 rate(
   group1 = 
 """
@@ -3816,10 +3363,10 @@ C_methyl
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 104
+# Number 94
 rate(
   group1 = 
 """
@@ -3852,10 +3399,10 @@ C_methyl
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment. 
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 105
+# Number 95
 rate(
   group1 = 
 """
@@ -3888,10 +3435,10 @@ C_methyl
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 106
+# Number 96
 rate(
   group1 = 
 """
@@ -3924,10 +3471,10 @@ C_methyl
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 107
+# Number 97
 rate(
   group1 = 
 """
@@ -3960,10 +3507,10 @@ C_methyl
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 108
+# Number 98
 rate(
   group1 = 
 """
@@ -3996,10 +3543,10 @@ C_methyl
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 109
+# Number 99
 rate(
   group1 = 
 """
@@ -4032,10 +3579,10 @@ C_methyl
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 110
+# Number 100
 rate(
   group1 = 
 """
@@ -4068,10 +3615,10 @@ C_methyl
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 111
+# Number 101
 rate(
   group1 = 
 """
@@ -4104,10 +3651,10 @@ C_methyl
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 112
+# Number 102
 rate(
   group1 = 
 """
@@ -4138,10 +3685,10 @@ C_methyl
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 113
+# Number 103
 rate(
   group1 = 
 """
@@ -4174,10 +3721,10 @@ C_methyl
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 114
+# Number 104
 rate(
   group1 = 
 """
@@ -4210,10 +3757,10 @@ C_methyl
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 115
+# Number 105
 rate(
   group1 = 
 """
@@ -4244,10 +3791,10 @@ C_methyl
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 116
+# Number 106
 rate(
   group1 = 
 """
@@ -4278,10 +3825,10 @@ C_methyl
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 117
+# Number 107
 rate(
   group1 = 
 """
@@ -4314,10 +3861,10 @@ C_methyl
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 118
+# Number 108
 rate(
   group1 = 
 """
@@ -4347,10 +3894,10 @@ H_rad
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 119
+# Number 109
 rate(
   group1 = 
 """
@@ -4380,10 +3927,10 @@ H_rad
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 120
+# Number 110
 rate(
   group1 = 
 """
@@ -4413,10 +3960,10 @@ H_rad
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 121
+# Number 111
 rate(
   group1 = 
 """
@@ -4446,10 +3993,10 @@ H_rad
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 122
+# Number 112
 rate(
   group1 = 
 """
@@ -4479,10 +4026,10 @@ H_rad
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 123
+# Number 113
 rate(
   group1 = 
 """
@@ -4512,10 +4059,10 @@ H_rad
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 124
+# Number 114
 rate(
   group1 = 
 """
@@ -4545,10 +4092,10 @@ H_rad
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 125
+# Number 115
 rate(
   group1 = 
 """
@@ -4576,10 +4123,10 @@ H_rad
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 126
+# Number 116
 rate(
   group1 = 
 """
@@ -4607,10 +4154,10 @@ H_rad
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 127
+# Number 117
 rate(
   group1 = 
 """
@@ -4639,10 +4186,10 @@ H_rad
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 128
+# Number 118
 rate(
   group1 = 
 """
@@ -4671,10 +4218,10 @@ H_rad
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 129
+# Number 119
 rate(
   group1 = 
 """
@@ -4704,10 +4251,10 @@ H_rad
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 130
+# Number 120
 rate(
   group1 = 
 """
@@ -4737,10 +4284,10 @@ H_rad
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 131
+# Number 121
 rate(
   group1 = 
 """
@@ -4768,10 +4315,10 @@ H_rad
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 132
+# Number 122
 rate(
   group1 = 
 """
@@ -4799,10 +4346,10 @@ H_rad
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 133
+# Number 123
 rate(
   group1 = 
 """
@@ -4830,10 +4377,10 @@ H_rad
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 134
+# Number 124
 rate(
   group1 = 
 """
@@ -4862,10 +4409,10 @@ H_rad
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 135
+# Number 125
 rate(
   group1 = 
 """
@@ -4894,10 +4441,10 @@ H_rad
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 136
+# Number 126
 rate(
   group1 = 
 """
@@ -4927,10 +4474,10 @@ H_rad
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 137
+# Number 127
 rate(
   group1 = 
 """
@@ -4960,10 +4507,10 @@ H_rad
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 138
+# Number 128
 rate(
   group1 = 
 """
@@ -4993,10 +4540,10 @@ H_rad
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 139
+# Number 129
 rate(
   group1 = 
 """
@@ -5026,10 +4573,10 @@ H_rad
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 140
+# Number 130
 rate(
   group1 = 
 """
@@ -5057,10 +4604,10 @@ H_rad
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 141
+# Number 131
 rate(
   group1 = 
 """
@@ -5090,10 +4637,10 @@ H_rad
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 142
+# Number 132
 rate(
   group1 = 
 """
@@ -5123,10 +4670,10 @@ H_rad
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 143
+# Number 133
 rate(
   group1 = 
 """
@@ -5156,10 +4703,10 @@ H_rad
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 144
+# Number 134
 rate(
   group1 = 
 """
@@ -5189,10 +4736,10 @@ H_rad
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 145
+# Number 135
 rate(
   group1 = 
 """
@@ -5220,10 +4767,10 @@ H_rad
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 146
+# Number 136
 rate(
   group1 = 
 """
@@ -5251,10 +4798,10 @@ H_rad
 """
 Mark Saeys, CBS-QB3 calculations,without hindered rotor treatment.
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
-# Number 147
+# Number 137
 rate(
   group1 = 
 """
@@ -5287,7 +4834,7 @@ Cd_pri_rad-Cd/Cd
 """
 Sandeep CBS-QB3 calculations 
 """,
-   history = [("2010-04-07","Generated from current RMG library.","rwest@mit.edu")]
+   history = [("2010-06-22","Generated from current RMG library.","rwest@mit.edu")]
 )
 
 

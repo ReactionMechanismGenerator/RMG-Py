@@ -17,7 +17,6 @@ L1: multiplebond
            L3: mb_carbonyl_NdNd
            L3: mb_carbonyl_NdDe
            L3: mb_carbonyl_DeDe
-     L2: mb_o2_doublebond
      L2: mb_db
            L3: mb_db_unsub
            L3: mb_db_monosub
