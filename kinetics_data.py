@@ -7,7 +7,7 @@ if rmgpy_dir is None: raise RuntimeError("Please set RMGpy environment variable"
 sys.path.append(os.path.join(rmgpy_dir,'source'))
 
 import rmg
-import rmg.thermo, rmg.structure, rmg.species, rmg.data, rmg.reaction
+import rmg.thermo, rmg.structure, rmg.species, rmg.data, rmg.reaction, rmg.kinetics.data
 import rmg.log as logging
 
 
@@ -31,8 +31,8 @@ def loadKineticsDatabases(databasePath, only_families=False):
     list will be loaded.
     """
     
-    db = rmg.reaction.ReactionFamilySet()
-    rmg.reaction.kineticsDatabase = db
+    db = rmg.kinetics.data.ReactionFamilySet()
+    rmg.kinetics.data.kineticsDatabase = db
     
     datapath = os.path.abspath(databasePath)
     logging.info('Loading reaction family databases from %s.' % datapath)
@@ -57,7 +57,7 @@ def loadKineticsDatabases(databasePath, only_families=False):
             if only_families and label not in only_families: continue
             
             logging.verbose('Loading reaction family %s from %s...' % (label, datapath))
-            family = rmg.reaction.ReactionFamily(label)
+            family = rmg.kinetics.data.ReactionFamily(label)
             #family.load(path)  # this would load the whole family. We just want the dictionary and tree
             
             # Generate paths to files in the database
@@ -75,7 +75,7 @@ def loadKineticsDatabases(databasePath, only_families=False):
             db.families[family.label] = family
 
     # rmg.reaction.kineticsDatabase.load(databasePath, only_families=only_families)
-    db = rmg.reaction.kineticsDatabase
+    db = rmg.kinetics.data.kineticsDatabase
     return db
         
 
