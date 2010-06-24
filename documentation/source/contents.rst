@@ -11,6 +11,7 @@ ChemPy documentation contents
     introduction
     constants
     exception
+    geometry
     thermo
     states
     kinetics

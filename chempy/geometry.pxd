@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 ################################################################################
 #
 #   ChemPy - A chemistry toolkit for Python
@@ -26,37 +23,23 @@
 #   DEALINGS IN THE SOFTWARE.
 #
 ################################################################################
-	
-from distutils.core import setup
-from distutils.extension import Extension
-from Cython.Distutils import build_ext
-import Cython.Compiler
 
-# Create annotated HTML files for each of the Cython modules
-Cython.Compiler.Options.annotate = True
+cimport numpy
+import numpy
 
-# The Cython modules to setup
-ext_modules = [
-	Extension('chempy.constants', ['chempy/constants.py']),
-	Extension('chempy.element', ['chempy/element.py']),
-	Extension('chempy.graph', ['chempy/graph.py']),
-	Extension('chempy.geometry', ['chempy/geometry.py']),
-	Extension('chempy.kinetics', ['chempy/kinetics.py']),
-	Extension('chempy.molecule', ['chempy/molecule.py']),
-	Extension('chempy.reaction', ['chempy/reaction.py']),
-	Extension('chempy.species', ['chempy/species.py']),
-	Extension('chempy.states', ['chempy/states.py']),
-	Extension('chempy.thermo', ['chempy/thermo.py']),
-]
+################################################################################
 
-setup(name='ChemPy',
-	version='0.1.0',
-	description='A chemistry toolkit for Python',
-	author='Joshua W. Allen',
-	author_email='jwallen@mit.edu',
-	url='',
-	packages=['chempy'],
-	cmdclass = {'build_ext': build_ext},
-	ext_modules = ext_modules,
-)
+cdef class Geometry:
 
+	cdef public list coordinates
+	cdef public list mass
+
+	cpdef double getTotalMass(self, list atoms=?)
+
+	cpdef numpy.ndarray getCenterOfMass(self, list atoms=?)
+
+	cpdef numpy.ndarray getMomentOfInertiaTensor(self)
+
+	cpdef getPrincipalMomentsOfInertia(self)
+
+	cpdef double getInternalReducedMomentOfInertia(self, list pivots, list top1)
