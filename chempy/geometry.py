@@ -44,13 +44,13 @@ from exception import ChemPyError
 class Geometry:
 	"""
 	The three-dimensional geometry of a molecular configuration. The attribute
-	`coordinates` is a list mapping atoms (by index) to numpy coordinate arrays.
-	The attribute `mass` is a list of the masses of each atom in kg/mol.
+	`coordinates` is an array mapping atoms (by index) to numpy coordinate arrays.
+	The attribute `mass` is an array of the masses of each atom in kg/mol.
 	"""
 	
 	def __init__(self, coordinates=None, mass=None):
-		self.coordinates = coordinates or []
-		self.mass = coordinates or []
+		self.coordinates = coordinates
+		self.mass = mass
 	
 	def getTotalMass(self, atoms=None):
 		"""

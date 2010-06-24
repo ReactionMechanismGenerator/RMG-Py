@@ -31,8 +31,8 @@ import numpy
 
 cdef class Geometry:
 
-	cdef public list coordinates
-	cdef public list mass
+	cdef public numpy.ndarray coordinates
+	cdef public numpy.ndarray mass
 
 	cpdef double getTotalMass(self, list atoms=?)
 
