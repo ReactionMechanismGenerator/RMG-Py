@@ -24,27 +24,19 @@
 #
 ################################################################################
 
-cdef extern from "dictobject.h":
-	ctypedef class __builtin__.dict [object PyDictObject]:
-		pass
-
-################################################################################
-
 cdef class Vertex(object):
 
 	cdef public short connectivity1
 	cdef public short connectivity2
 	cdef public short connectivity3
 
-	cdef public short sorting_label
+	cpdef bint equivalent(self, Vertex other)
 
-	cpdef bint equivalent(Vertex self, Vertex other)
+	cpdef bint isSpecificCaseOf(self, Vertex other)
 
-	cpdef resetCachedStructureInfo(Vertex self)
+	cpdef resetConnectivityValues(self)
 
-cpdef int __getSortLabel(Vertex vertex) except -2 # values should increment from 0
-
-cpdef short globalAtomSortValue(Vertex atom) except 1 # all values should be negative
+cpdef short getVertexSortValue(Vertex vertex) except 1 # all values should be negative
 
 ################################################################################
 
@@ -52,64 +44,55 @@ cdef class Edge(object):
 
 	cpdef bint equivalent(Edge self, Edge other)
 
-################################################################################
-
-cdef class Graph(dict):
-
-	cpdef resetCachedStructureInfo(Graph self)
-
-	cpdef list vertices(Graph self)
-
-	cpdef list edges(Graph self)
-
-	cpdef addVertex(Graph self, vertex)
-
-	cpdef addEdge(Graph self, vertices, edge)
-
-	cpdef dict getEdges(Graph self, vertex)
-
-	cpdef getEdge(Graph self, tuple vertices)
-
-	cpdef bint hasEdge(self, tuple vertices)
-
-	cpdef removeVertex(Graph self, vertex1)
-
-	cpdef removeEdge(Graph self, vertices)
-
-	cpdef __isomorphism(Graph self, Graph other, bint subgraph, bint findAll, dict map12_0=?, dict map21_0=?)
-
-	cpdef isIsomorphic(Graph self, Graph other, dict map12_0=?, dict map21_0=?)
-
-	cpdef findIsomorphism(Graph self, Graph other, dict map12_0=?, dict map21_0=?)
-
-	cpdef isSubgraphIsomorphic(Graph self, Graph other, dict map12_0=?, dict map21_0=?)
-
-	cpdef findSubgraphIsomorphisms(Graph self, Graph other, dict map12_0=?, dict map21_0=?)
-
-	cpdef Graph copy(Graph self)
-
-	cpdef Graph merge(Graph self, Graph other)
-
-	cpdef list split(Graph self)
-
-	cpdef list getSmallestSetOfSmallestRings(Graph self)
-
-	cpdef bint isVertexInCycle(Graph self, Vertex vertex)
-
-	cpdef bint __isChainInCycle(Graph self, list chain)
-
-	cpdef list getAllCycles(Graph self, Vertex startingVertex)
-
-	cpdef list __exploreCyclesRecursively(Graph self, list chain, list cycleList)
-
-	cpdef setConnectivityValues(Graph self)
-
-	cpdef sortAndLabelVertices(Graph self)
+	cpdef bint isSpecificCaseOf(self, Edge other)
 
 ################################################################################
 
-cpdef VF2_isomorphism(Graph graph1, Graph graph2, dict map12, dict map21,
-	bint subgraph=?, bint findAll=?)
+cdef class Graph:
+
+	cdef public list vertices
+	cdef public dict edges
+
+	cpdef Vertex addVertex(self, Vertex vertex)
+
+	cpdef Edge addEdge(self, Vertex vertex1, Vertex vertex2, Edge edge)
+
+	cpdef dict getEdges(self, Vertex vertex)
+
+	cpdef Edge getEdge(self, Vertex vertex1, Vertex vertex2)
+
+	cpdef bint hasVertex(self, Vertex vertex)
+
+	cpdef bint hasEdge(self, Vertex vertex1, Vertex vertex2)
+
+	cpdef removeVertex(self, Vertex vertex)
+
+	cpdef removeEdge(self, Vertex vertex1, Vertex vertex2)
+
+	cpdef Graph copy(self, bint deep=?)
+
+	cpdef Graph merge(self, other)
+
+	cpdef list split(self)
+
+	cpdef resetConnectivityValues(self)
+
+	cpdef updateConnectivityValues(self)
+
+	cpdef sortVertices(self)
+
+	cpdef bint isIsomorphic(self, Graph other, dict initialMap=?)
+
+	cpdef tuple findIsomorphism(self, Graph other, dict initialMap=?)
+
+	cpdef bint isSubgraphIsomorphic(self, Graph other, dict initialMap=?)
+
+	cpdef tuple findSubgraphIsomorphisms(self, Graph other, dict initialMap=?)
+
+################################################################################
+
+cpdef VF2_isomorphism(Graph graph1, Graph graph2, bint subgraph=?, 
+	bint findAll=?, dict initialMap=?)
 
 cpdef bint __VF2_feasible(Graph graph1, Graph graph2, Vertex vertex1,
 	Vertex vertex2, dict map21, dict map12, list terminals1, list terminals2,
@@ -124,5 +107,5 @@ cpdef list __VF2_pairs(Graph graph1, Graph graph2, list terminals1,
 
 cpdef list __VF2_terminals(Graph graph, dict mapping)
 
-cpdef list __VF2_new_terminals(Graph graph, dict mapping, list old_terminals,
+cpdef list __VF2_updateTerminals(Graph graph, dict mapping, list old_terminals,
 	new_vertex)
