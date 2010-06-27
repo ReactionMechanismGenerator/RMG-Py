@@ -30,3 +30,5 @@ cdef class Element:
 	cdef public str name
 	cdef public str symbol
 	cdef public float mass
+
+cpdef Element getElement(int number=?, str symbol=?)

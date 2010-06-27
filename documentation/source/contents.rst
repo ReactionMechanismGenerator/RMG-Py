@@ -15,6 +15,7 @@ ChemPy documentation contents
     states
     kinetics
     graph
+    molecule
     species
     reaction
     

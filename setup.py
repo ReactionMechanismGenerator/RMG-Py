@@ -41,6 +41,7 @@ ext_modules = [
 	Extension('chempy.element', ['chempy/element.py']),
 	Extension('chempy.graph', ['chempy/graph.py']),
 	Extension('chempy.kinetics', ['chempy/kinetics.py']),
+	Extension('chempy.molecule', ['chempy/molecule.py']),
 	Extension('chempy.reaction', ['chempy/reaction.py']),
 	Extension('chempy.species', ['chempy/species.py']),
 	Extension('chempy.states', ['chempy/states.py']),

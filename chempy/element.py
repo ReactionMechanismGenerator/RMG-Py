@@ -39,6 +39,8 @@ should be used in most cases to conserve memory.
 
 import cython
 
+from exception import ChemPyError
+
 ################################################################################
 
 class Element:
@@ -76,6 +78,22 @@ class Element:
 		"""
 		return "Element(%s, '%s', '%s', %s)" % (self.number, self.symbol, self.name, self.mass)
 	
+################################################################################
+
+def getElement(number=0, symbol=''):
+	"""
+	Return the :class:`Element` object with attributes defined by the given
+	parameters. Only the parameters explicitly given will be used, so you can
+	search by atomic `number` or by `symbol` independently.
+	"""
+	cython.declare(element=Element)
+	for element in elementList:
+		if (number == 0 or element.number == number) and (symbol == '' or element.symbol == symbol):
+			return element
+	# If we reach this point that means we did not find an appropriate element,
+	# so we raise an exception
+	raise ChemPyError("No element found with number %i and symbol '%s'." % (number, symbol))
+
 ################################################################################
 
 # Declare an instance of each element (1 to 112)
@@ -209,3 +227,14 @@ Mt = Element(109, 'Mt', 'meitnerium'    , 0.268)
 Ds = Element(110, 'Ds', 'darmstadtium'  , 0.281)
 Rg = Element(111, 'Rg', 'roentgenium'   , 0.272)
 Cn = Element(112, 'Cn', 'copernicum'    , 0.285)
+
+# A list of the elements, sorted by increasing atomic number
+elementList = [
+	H, He,
+	Li, Be, B, C, N, O, F, Ne,
+	Na, Mg, Al, Si, P, S, Cl, Ar,
+	K, Ca, Sc, Ti, V, Cr, Mn, Fe, Co, Ni, Cu, Zn, Ga, Ge, As, Se, Br, Kr,
+	Rb, Sr, Y, Zr, Nb, Mo, Tc, Ru, Rh, Pd, Ag, Cd, In, Sn, Sb, Te, I, Xe,
+	Cs, Ba, La, Ce, Pr, Nd, Pm, Sm, Eu, Gd, Tb, Dy, Ho, Er, Tm, Yb, Lu, Hf, Ta, W, Re, Os, Ir, Pt, Au, Hg, Tl, Pb, Bi, Po, At, Rn,
+	Fr, Ra, Ac, Th, Pa, U, Np, Pu, Am, Cm, Bk, Cf, Es, Fm, Md, No, Lr, Rf, Db, Sg, Bh, Hs, Mt, Ds, Rg, Cn
+]
