@@ -14,6 +14,8 @@ ChemPy documentation contents
     thermo
     states
     kinetics
+    graph
+    molecule
     species
     reaction
     
