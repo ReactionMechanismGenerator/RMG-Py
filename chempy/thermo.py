@@ -196,6 +196,73 @@ class WilhoitModel(ThermoModel):
 		logy = numpy.log(y); logt = numpy.log(Tlist)
 		result = cpInf*logt-(cpInf-cp0)*(logy+y*(1+y*(a0/2+y*(a1/3 + y*(a2/4 + y*a3/5)))))
 		return result
+	
+	def __residual(self, B, Tlist, Cplist, linear, nFreq, nRotors):
+		# The residual corresponding to the fitToData() method
+		# Parameters are the same as for that method
+		cython.declare(Cp_fit=numpy.ndarray)
+		self.fitToDataForConstantB(Tlist, Cplist, linear, nFreq, nRotors, B)
+		Cp_fit = self.getHeatCapacity(Tlist)
+		# Objective function is linear least-squares
+		return numpy.sum( (Cp_fit - Cplist) * (Cp_fit - Cplist) )
+	
+	def fitToData(self, Tlist, Cplist, linear, nFreq, nRotors, B0=500.0):
+		"""
+		Fit a Wilhoit model to the data points provided, allowing the 
+		characteristic temperature `B` to vary so as to improve the fit. This
+		procedure requires an optimization, using the ``fminbound`` function
+		in the ``scipy.optimize`` module. The data consists of a set
+		of dimensionless heat capacity points `Cplist` at a given set of
+		temperatures `Tlist` in K. The linearity of the molecule, number of
+		vibrational frequencies, and number of internal rotors (`linear`,
+		`nFreq`, and `nRotors`, respectively) is used to set the limits at
+		zero and infinite temperature.
+		"""
+		self.B = B0
+		import scipy.optimize
+		scipy.optimize.fminbound(self.__residual, 300.0, 3000.0, args=(Tlist, Cplist, linear, nFreq, nRotors))
+		return self
+	
+	def fitToDataForConstantB(self, Tlist, Cplist, linear, nFreq, nRotors, B):
+		"""
+		Fit a Wilhoit model to the data points provided using a specified value
+		of the characteristic temperature `B`. The data consists of a set
+		of dimensionless heat capacity points `Cplist` at a given set of
+		temperatures `Tlist` in K. The linearity of the molecule, number of
+		vibrational frequencies, and number of internal rotors (`linear`,
+		`nFreq`, and `nRotors`, respectively) is used to set the limits at
+		zero and infinite temperature.
+		"""
+		
+		cython.declare(Cp_red=numpy.ndarray, y=numpy.ndarray, Y=numpy.ndarray, X=numpy.ndarray)
+		cython.declare(XtX=numpy.ndarray, XtY=numpy.ndarray, z=numpy.ndarray)
+
+		# Set the Cp(T) limits as T -> and T -> infinity
+		self.cp0 = 3.5 if linear else 4.0
+		self.cpInf = self.cp0 + nFreq + 0.5 * nRotors
+		
+		# What remains is to fit the polynomial coefficients (a0, a1, a2, a3)
+		# This can be done directly - no iteration required
+		Cp_red = (Cplist - self.cp0) / (self.cpInf - self.cp0)
+		y = Tlist / (Tlist + B)
+		
+		Y = numpy.zeros((len(Cplist),1), numpy.float64)
+		X = numpy.zeros((len(Cplist),4), numpy.float64)
+		Y[:,0] = Cp_red - y * y
+		for j in range(4):
+			X[:,j] = (y*y*y - y*y) * y**j
+		
+		XtX = numpy.dot(X.transpose(), X)
+		XtY = numpy.dot(X.transpose(), Y)
+		z = numpy.dot(numpy.linalg.inv(XtX), XtY)
+		
+		self.B = float(B)
+		self.a0 = float(z[0])
+		self.a1 = float(z[1])
+		self.a2 = float(z[2])
+		self.a3 = float(z[3])
+		
+		return self
 
 ################################################################################
 

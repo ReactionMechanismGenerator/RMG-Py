@@ -70,8 +70,14 @@ cdef class WilhoitModel(ThermoModel):
 	
 	cpdef numpy.ndarray __integral_TM1(self, numpy.ndarray Tlist)
 
+	cpdef double __residual(self, double B, numpy.ndarray Tlist, numpy.ndarray Cplist, 
+	    bint linear, int nFreq, int nRotors)
 	
+	cpdef WilhoitModel fitToData(self, numpy.ndarray Tlist, numpy.ndarray Cplist,
+		bint linear, int nFreq, int nRotors, double B0=?)
 	
+	cpdef WilhoitModel fitToDataForConstantB(self, numpy.ndarray Tlist, numpy.ndarray Cplist,
+	    bint linear, int nFreq, int nRotors, double B)
 	
 ################################################################################
 
