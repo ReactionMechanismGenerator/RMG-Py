@@ -35,6 +35,7 @@ All such models derive from the :class:`ThermoModel` base class.
 ################################################################################
 
 import math
+import numpy
 import cython
 
 import constants
@@ -69,16 +70,16 @@ class ThermoModel:
 		"""
 		return self.Tmin <= T and T <= self.Tmax
 
-	def getHeatCapacity(self, T):
+	def getHeatCapacity(self, Tlist):
 		raise InvalidThermoModelError('Unexpected call to ThermoModel.getHeatCapacity(); you should be using a class derived from ThermoModel.')
 
-	def getEnthalpy(self, T):
+	def getEnthalpy(self, Tlist):
 		raise InvalidThermoModelError('Unexpected call to ThermoModel.getEnthalpy(); you should be using a class derived from ThermoModel.')
 
-	def getEntropy(self, T):
+	def getEntropy(self, Tlist):
 		raise InvalidThermoModelError('Unexpected call to ThermoModel.getEntropy(); you should be using a class derived from ThermoModel.')
 
-	def getFreeEnergy(self, T):
+	def getFreeEnergy(self, Tlist):
 		raise InvalidThermoModelError('Unexpected call to ThermoModel.getFreeEnergy(); you should be using a class derived from ThermoModel.')
 
 ################################################################################
@@ -109,8 +110,7 @@ class WilhoitModel(ThermoModel):
 	`S0` that are needed to evaluate the enthalpy and entropy, respectively.
 	"""
 
-	
-	def __init__(self, cp0, cpInf, a0, a1, a2, a3, H0, S0, comment='', B=500.0):
+	def __init__(self, cp0=0.0, cpInf=0.0, a0=0.0, a1=0.0, a2=0.0, a3=0.0, H0=0.0, S0=0.0, comment='', B=500.0):
 		"""Initialise the Wilhoit polynomial. (Tmin,Tmax) is set to (0,9999.9)"""
 		ThermoModel.__init__(self, comment=comment)
 		self.cp0 = cp0
@@ -123,19 +123,20 @@ class WilhoitModel(ThermoModel):
 		self.H0 = H0
 		self.S0 = S0
 	
-	def getHeatCapacity(self, T):
+	def getHeatCapacity(self, Tlist):
 		"""
-		Return the constant-pressure heat capacity (Cp) in J/mol*K at temperature `T` in K.
+		Return the constant-pressure heat capacity (Cp) scaled by the gas law
+		constant at the specified temperatures `Tlist` in K.
 		"""
-		cython.declare(y=cython.double)
-		y = T/(T+self.B)
+		cython.declare(y=numpy.ndarray)
+		y = Tlist/(Tlist+self.B)
 		return self.cp0+(self.cpInf-self.cp0)*y*y*( 1 +
 			(y-1)*(self.a0 + y*(self.a1 + y*(self.a2 + y*self.a3))) )
 	
-	def getEnthalpy(self, T):
+	def getEnthalpy(self, Tlist):
 		"""
-		Return the enthalpy in J/mol at temperature `T` in K. The formula used
-		is
+		Return the enthalpy divided by :math:`RT` at the specified temperatures
+		`Tlist` in K. The formula is
 
 		.. math::
 			H(T) = H_0 +
@@ -148,12 +149,12 @@ class WilhoitModel(ThermoModel):
 		where :math:`f_{ij} = 3 + j` if :math:`i = j`, :math:`f_{ij} = 1` if
 		:math:`i > j`, and :math:`f_{ij} = 0` if :math:`i < j`.
 		"""
-		return self.H0 + self.__integral_T0(T)
+		return self.H0 + self.__integral_T0(Tlist)
 	
-	def getEntropy(self, T):
+	def getEntropy(self, Tlist):
 		"""
-		Return the entropy in J/mol*K at temperature `T` in K. The formula used
-		is
+		Return the entropy scaled by the gas law constant at the specified
+		temperatures `Tlist` in K. The formula is
 
 		.. math::
 			S(T) = S_0 +
@@ -162,40 +163,37 @@ class WilhoitModel(ThermoModel):
 			\\right]
 
 		"""
-		return self.S0 + self.__integral_TM1(T)
+		return self.S0 + self.__integral_TM1(Tlist)
 	
-	def getFreeEnergy(self, T):
+	def getFreeEnergy(self, Tlist):
 		"""
-		Return the Gibbs free energy in J/mol at temperature `T` in K.
+		Return the Gibbs free energy divided by :math:`RT` at the specified
+		temperatures `Tlist` in K.
 		"""
-		return self.getEnthalpy(T) - T * self.getEntropy(T)
+		return self.getEnthalpy(Tlist) - Tlist * self.getEntropy(Tlist)
 	
 	#a faster version of the integral based on H from Yelvington's thesis; it differs from the original (see above) by a constant (dependent on parameters but independent of t)
-	def __integral_T0(self, t):
+	def __integral_T0(self, Tlist):
 		#output: the quantity Integrate[Cp(Wilhoit)/R, t'] evaluated at t'=t
 		cython.declare(cp0=cython.double, cpInf=cython.double, B=cython.double, a0=cython.double, a1=cython.double, a2=cython.double, a3=cython.double)
-		cython.declare(y=cython.double, y2=cython.double, logBplust=cython.double, result=cython.double)
+		cython.declare(y=numpy.ndarray, y2=numpy.ndarray, logBplust=numpy.ndarray, result=numpy.ndarray)
 		cp0, cpInf, B, a0, a1, a2, a3 = self.cp0, self.cpInf, self.B, self.a0, self.a1, self.a2, self.a3
-		y = t/(t+B)
+		y = Tlist/(Tlist+B)
 		y2 = y*y
-		if cython.compiled:
-			logBplust = log(B + t)
-		else:
-			logBplust = math.log(B + t)
-		result = cp0*t - (cpInf-cp0)*t*(y2*((3*a0 + a1 + a2 + a3)/6. + (4*a1 + a2 + a3)*y/12. + (5*a2 + a3)*y2/20. + a3*y2*y/5.) + (2 + a0 + a1 + a2 + a3)*( y/2. - 1 + (1/y-1)*logBplust))
+		logBplust = numpy.log(B + Tlist)
+		result = cp0*Tlist - (cpInf-cp0)*Tlist*(y2*((3*a0 + a1 + a2 + a3)/6. + (4*a1 + a2 + a3)*y/12. + (5*a2 + a3)*y2/20. + a3*y2*y/5.) + (2 + a0 + a1 + a2 + a3)*( y/2. - 1 + (1/y-1)*logBplust))
 		return result
 	
 	#a faster version of the integral based on S from Yelvington's thesis; it differs from the original by a constant (dependent on parameters but independent of t)
-	def __integral_TM1(self, t):
+	def __integral_TM1(self, Tlist):
 		#output: the quantity Integrate[Cp(Wilhoit)/R*t^-1, t'] evaluated at t'=t
 		cython.declare(cp0=cython.double, cpInf=cython.double, B=cython.double, a0=cython.double, a1=cython.double, a2=cython.double, a3=cython.double)
-		cython.declare(y=cython.double, logt=cython.double, logy=cython.double, result=cython.double)
+		cython.declare(y=numpy.ndarray, logt=numpy.ndarray, logy=numpy.ndarray, result=numpy.ndarray)
 		cp0, cpInf, B, a0, a1, a2, a3 = self.cp0, self.cpInf, self.B, self.a0, self.a1, self.a2, self.a3
-		y = t/(t+B)
-		if cython.compiled:
-			logy = log(y); logt = log(t)
-		else:
-			logy = math.log(y); logt = math.log(t)
+		y = Tlist/(Tlist+B)
+		y2 = y*y
+		logBplust = numpy.log(B + Tlist)
+		logy = numpy.log(y); logt = numpy.log(Tlist)
 		result = cpInf*logt-(cpInf-cp0)*(logy+y*(1+y*(a0/2+y*(a1/3 + y*(a2/4 + y*a3/5)))))
 		return result
 
@@ -223,54 +221,43 @@ class NASAPolynomial(ThermoModel):
 		coeffs = coeffs or (0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
 		self.c0, self.c1, self.c2, self.c3, self.c4, self.c5, self.c6 = coeffs
 		
-	def getHeatCapacity(self, T):
+	def getHeatCapacity(self, Tlist):
 		"""
-		Return the constant-pressure heat capacity (Cp) in J/mol*K at temperature `T` in K.
+		Return the constant-pressure heat capacity (Cp) scaled by the gas law
+		constant at the specified temperatures `Tlist` in K.
 		"""
-		if not self.isTemperatureValid(T):
-			raise InvalidThermoModelError('Invalid temperature for heat capacity estimation from NASA polynomial.')
 		# Cp/R = a1 + a2 T + a3 T^2 + a4 T^3 + a5 T^4
-		return (self.c0 + T*(self.c1 + T*(self.c2 + T*(self.c3 + self.c4*T)))) * constants.R
+		return self.c0 + Tlist*(self.c1 + Tlist*(self.c2 + Tlist*(self.c3 + self.c4*Tlist)))
 	
-	def getEnthalpy(self, T):
+	def getEnthalpy(self, Tlist):
 		"""
-		Return the enthalpy in J/mol at temperature `T` in K.
+		Return the enthalpy divided by :math:`RT` at the specified temperatures
+		`Tlist` in K.
 		"""
-		if not self.isTemperatureValid(T):
-			raise InvalidThermoModelError('Invalid temperature for enthalpy estimation from NASA polynomial.')
-		T2 = cython.declare(cython.double)
-		T4 = cython.declare(cython.double)
-		T2 = T*T
+		cython.declare(T2=numpy.ndarray, T4=numpy.ndarray)
+		T2 = Tlist*Tlist
 		T4 = T2*T2
 		# H/RT = a1 + a2 T /2 + a3 T^2 /3 + a4 T^3 /4 + a5 T^4 /5 + a6/T
-		return ( self.c0*T + self.c1*T2/2 + self.c2*T2*T/3 + self.c3*T4/4 +
-						  self.c4*T4*T/5 + self.c5 ) * constants.R
+		return self.c0 + self.c1*Tlist/2 + self.c2*T2/3 + self.c3*T2*Tlist/4 + self.c4*T4/5 + self.c5/Tlist
 	
-	def getEntropy(self, T):
+	def getEntropy(self, Tlist):
 		"""
-		Return the entropy in J/mol*K at temperature `T` in K.
+		Return the entropy scaled by the gas law constant at the specified
+		temperatures `Tlist` in K.
 		"""
-		if not self.isTemperatureValid(T):
-			raise InvalidThermoModelError('Invalid temperature for entropy estimation from NASA polynomial.')
-		# S/R  = a1 lnT + a2 T + a3 T^2 /2 + a4 T^3 /3 + a5 T^4 /4 + a7
-		T2 = cython.declare(cython.double)
-		T4 = cython.declare(cython.double)
-		T2 = T*T
+		cython.declare(T2=numpy.ndarray, T4=numpy.ndarray)
+		T2 = Tlist*Tlist
 		T4 = T2*T2
-		if cython.compiled: # we've imported log from math.h in the pxd file
-			return ( self.c0*log(T) + self.c1*T + self.c2*T2/2 +
-					self.c3*T2*T/3 + self.c4*T4/4 + self.c6 ) * constants.R
-		else:
-			return ( self.c0*math.log(T) + self.c1*T + self.c2*T2/2 +
-					self.c3*T2*T/3 + self.c4*T4/4 + self.c6 ) * constants.R
+		# S/R  = a1 lnT + a2 T + a3 T^2 /2 + a4 T^3 /3 + a5 T^4 /4 + a7
+		return ( self.c0*numpy.log(Tlist) + self.c1*Tlist + self.c2*T2/2 +
+			self.c3*T2*Tlist/3 + self.c4*T4/4 + self.c6 ) * constants.R
 	
-	def getFreeEnergy(self, T):
+	def getFreeEnergy(self, Tlist):
 		"""
-		Return the Gibbs free energy in J/mol at temperature `T` in K.
+		Return the Gibbs free energy divided by :math:`RT` at the specified
+		temperatures `Tlist` in K.
 		"""
-		if not self.isTemperatureValid(T):
-			raise InvalidThermoModelError('Invalid temperature for free energy estimation from NASA polynomial.')
-		return self.getEnthalpy(T) - T * self.getEntropy(T)
+		return self.getEnthalpy(Tlist) - Tlist * self.getEntropy(Tlist)
 
 ################################################################################
 
@@ -286,37 +273,53 @@ class NASAModel(ThermoModel):
 		ThermoModel.__init__(self, Tmin=Tmin, Tmax=Tmax, comment=comment)
 		self.polynomials = polynomials or []
 	
-	def getHeatCapacity(self, T):
+	def getHeatCapacity(self, Tlist):
 		"""
-		Return the constant-pressure heat capacity (Cp) in J/mol*K at temperature `T` in K.
+		Return the constant-pressure heat capacity (Cp) scaled by the gas law
+		constant at the specified temperatures `Tlist` in K.
 		"""
-		poly = cython.declare(NASAPolynomial)
-		poly = self.__selectPolynomialForTemperature(T)
-		return poly.getHeatCapacity(T)
+		cython.declare(poly=NASAPolynomial, Cp=numpy.ndarray)
+		Cp = numpy.zeros_like(Tlist)
+		for i in range(len(Tlist)):
+			poly = self.__selectPolynomialForTemperature(Tlist[i])
+			Cp[i] = poly.getHeatCapacity(Tlist[i])
+		return Cp
 	
-	def getEnthalpy(self, T):
+	def getEnthalpy(self, Tlist):
 		"""
-		Return the enthalpy in J/mol at temperature `T` in K.
+		Return the enthalpy divided by :math:`RT` at the specified temperatures
+		`Tlist` in K.
 		"""
-		poly = cython.declare(NASAPolynomial)
-		poly = self.__selectPolynomialForTemperature(T)
-		return poly.getEnthalpy(T)
+		cython.declare(poly=NASAPolynomial, H=numpy.ndarray)
+		H = numpy.zeros_like(Tlist)
+		for i in range(len(Tlist)):
+			poly = self.__selectPolynomialForTemperature(Tlist[i])
+			H[i] = poly.getEnthalpy(Tlist[i])
+		return H
 	
-	def getEntropy(self, T):
+	def getEntropy(self, Tlist):
 		"""
-		Return the entropy in J/mol*K at temperature `T` in K.
+		Return the entropy scaled by the gas law constant at the specified
+		temperatures `Tlist` in K.
 		"""
-		poly = cython.declare(NASAPolynomial)
-		poly = self.__selectPolynomialForTemperature(T)
-		return poly.getEntropy(T)
+		cython.declare(poly=NASAPolynomial, S=numpy.ndarray)
+		S = numpy.zeros_like(Tlist)
+		for i in range(len(Tlist)):
+			poly = self.__selectPolynomialForTemperature(Tlist[i])
+			S[i] = poly.getEntropy(Tlist[i])
+		return S
 	
-	def getFreeEnergy(self, T):
+	def getFreeEnergy(self, Tlist):
 		"""
-		Return the Gibbs free energy in J/mol at temperature `T` in K.
+		Return the Gibbs free energy divided by :math:`RT` at the specified
+		temperatures `Tlist` in K.
 		"""
-		poly = cython.declare(NASAPolynomial)
-		poly = self.__selectPolynomialForTemperature(T)
-		return poly.getFreeEnergy(T)
+		cython.declare(poly=NASAPolynomial, G=numpy.ndarray)
+		G = numpy.zeros_like(Tlist)
+		for i in range(len(Tlist)):
+			poly = self.__selectPolynomialForTemperature(Tlist[i])
+			G[i] = poly.getFreeEnergy(Tlist[i])
+		return G
 	
 	def __selectPolynomialForTemperature(self, T):
 		poly = cython.declare(NASAPolynomial)
