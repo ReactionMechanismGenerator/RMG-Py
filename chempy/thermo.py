@@ -111,7 +111,6 @@ class WilhoitModel(ThermoModel):
 	"""
 
 	def __init__(self, cp0=0.0, cpInf=0.0, a0=0.0, a1=0.0, a2=0.0, a3=0.0, H0=0.0, S0=0.0, comment='', B=500.0):
-		"""Initialise the Wilhoit polynomial. (Tmin,Tmax) is set to (0,9999.9)"""
 		ThermoModel.__init__(self, comment=comment)
 		self.cp0 = cp0
 		self.cpInf = cpInf
@@ -122,6 +121,13 @@ class WilhoitModel(ThermoModel):
 		self.a3 = a3
 		self.H0 = H0
 		self.S0 = S0
+	
+	def __repr__(self):
+		"""
+		Return a string representation that can be used to reconstruct the 
+		object.
+		"""
+		return 'WilhoitModel(cp0=%g, cpInf=%g, a0=%g, a1=%g, a2=%g, a3=%g, H0=%g, S0=%g, B=%g)' % (self.cp0, self.cpInf, self.a0, self.a1, self.a2, self.a3, self.H0, self.S0, self.B)
 	
 	def getHeatCapacity(self, Tlist):
 		"""
@@ -288,6 +294,13 @@ class NASAPolynomial(ThermoModel):
 		coeffs = coeffs or (0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
 		self.c0, self.c1, self.c2, self.c3, self.c4, self.c5, self.c6 = coeffs
 		
+	def __repr__(self):
+		"""
+		Return a string representation that can be used to reconstruct the 
+		object.
+		"""
+		return 'NASAPolynomial(Tmin=%g, Tmax=%g, coeffs=[%g, %g, %g, %g, %g, %g, %g])' % (self.Tmin, self.Tmax, self.c0, self.c1, self.c2, self.c3, self.c4, self.c5, self.c6)
+	
 	def getHeatCapacity(self, Tlist):
 		"""
 		Return the constant-pressure heat capacity (Cp) scaled by the gas law
@@ -339,6 +352,13 @@ class NASAModel(ThermoModel):
 	def __init__(self, polynomials=None, Tmin=0.0, Tmax=0.0, comment=''):
 		ThermoModel.__init__(self, Tmin=Tmin, Tmax=Tmax, comment=comment)
 		self.polynomials = polynomials or []
+	
+	def __repr__(self):
+		"""
+		Return a string representation that can be used to reconstruct the 
+		object.
+		"""
+		return 'NASAPolynomial(Tmin=%g, Tmax=%g, polynomials=%s)' % (self.Tmin, self.Tmax, self.polynomials)
 	
 	def getHeatCapacity(self, Tlist):
 		"""

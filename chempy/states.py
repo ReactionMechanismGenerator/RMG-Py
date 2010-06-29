@@ -118,7 +118,11 @@ class Translation(Mode):
 		self.dimension = dimension
 
 	def __repr__(self):
-		return 'Translation(mass=%s, volume=%s, dimension=%s)' % (self.mass, self.volume, self.dimension)
+		"""
+		Return a string representation that can be used to reconstruct the 
+		object.
+		"""
+		return 'Translation(mass=%g, volume=%g, dimension=%g)' % (self.mass, self.volume, self.dimension)
 
 	def getPartitionFunction(self, Tlist):
 		"""
@@ -217,7 +221,12 @@ class RigidRotor(Mode):
 		self.symmetry = symmetry
 
 	def __repr__(self):
-		return 'RigidRotor(linear=%s, inertia=%s, symmetry=%s)' % (self.linear, self.inertia, self.symmetry)
+		"""
+		Return a string representation that can be used to reconstruct the 
+		object.
+		"""
+		inertia = ', '.join(['%g' % i for i in self.inertia])
+		return 'RigidRotor(linear=%s, inertia=[%s], symmetry=%s)' % (self.linear, inertia, self.symmetry)
 
 	def getPartitionFunction(self, Tlist):
 		"""
@@ -352,7 +361,11 @@ class HinderedRotor(Mode):
 		self.symmetry = symmetry
 
 	def __repr__(self):
-		return 'HinderedRotor(inertia=%s, barrier=%s, symmetry=%s)' % (self.inertia, self.barrier, self.symmetry)
+		"""
+		Return a string representation that can be used to reconstruct the 
+		object.
+		"""
+		return 'HinderedRotor(inertia=%g, barrier=%g, symmetry=%g)' % (self.inertia, self.barrier, self.symmetry)
 
 	def getPartitionFunction(self, Tlist):
 		"""
@@ -496,7 +509,12 @@ class HarmonicOscillator(Mode):
 		self.frequencies = frequencies or []
 	
 	def __repr__(self):
-		return 'HarmonicOscillator(frequencies=%s)' % (self.frequencies)
+		"""
+		Return a string representation that can be used to reconstruct the 
+		object.
+		"""
+		frequencies = ', '.join(['%g' % freq for freq in self.frequencies])
+		return 'HarmonicOscillator(frequencies=[%s])' % (frequencies)
 
 	def getPartitionFunction(self, Tlist):
 		"""
