@@ -35,6 +35,7 @@ All such models derive from the :class:`KineticsModel` base class.
 ################################################################################
 
 import math
+import numpy
 import cython
 
 import constants
@@ -70,14 +71,14 @@ class KineticsModel:
 
 	def isTemperatureValid(self, T):
 		"""
-		Return :data:`True` if temperature `T` is within the valid temperature
-		range and :data:`False` if not. 
+		Return :data:`True` if temperature `T` in K is within the valid 
+		temperature range and :data:`False` if not. 
 		"""
 		return (self.Tmin <= T and T <= self.Tmax)
 
 	def isPressureValid(self, P):
 		"""
-		Return :data:`True` if pressure `P` is within the valid pressure
+		Return :data:`True` if pressure `P` in Pa is within the valid pressure
 		range, and :data:`False` if not.
 		"""
 		return (self.Pmin <= P and P <= self.Pmax)
@@ -103,29 +104,24 @@ class ArrheniusModel(KineticsModel):
 	
 	"""
 	
-	def __init__(self, A=0.0, Ea=0.0, n=0.0):
+	def __init__(self, A=0.0, n=0.0, Ea=0.0):
 		KineticsModel.__init__(self)
 		self.A = A
-		self.Ea = Ea
 		self.n = n
+		self.Ea = Ea
 	
 	def __str__(self):
 		return 'k(T) = %s * T ** %s * math.exp(-%s / constants.R / T)\t%s < T < %s' % (self.A, self.n, self.Ea, self.Tmin, self.Tmax)
 	
 	def __repr__(self):
-		return '<ArrheniusModel A=%.0e Ea=%.0f kJ/mol n=%.1f>' % (self.A,self.Ea/1000.0, self.n)
+		return '<ArrheniusModel A=%g Ea=%g kJ/mol n=%g>' % (self.A,self.Ea/1000.0, self.n)
 	
-	def getRateConstant(self, T):
+	def getRateCoefficient(self, Tlist):
 		"""
-		Return the rate constant k(T) at temperature `T` in K by evaluating the
-		Arrhenius expression.
+		Return the rate coefficient k(T) in SI units at a set of temperatures 
+		`Tlist` in K.
 		"""
-		if not self.isTemperatureValid(T):
-			raise InvalidKineticsModelError('Invalid temperature for rate coefficient evaluation from ArrheniusModel.')
-		if cython.compiled:
-			return self.A * pow(T, self.n) * exp(-self.Ea / constants.R / T)
-		else:
-			return self.A * (T ** self.n) * math.exp(-self.Ea / constants.R / T)
+		return self.A * (Tlist ** self.n) * numpy.exp(-self.Ea / constants.R / Tlist)
 
 ################################################################################
 
@@ -160,7 +156,7 @@ class ArrheniusEPModel(KineticsModel):
 		return 'k(T) = %s * T ** %s * math.exp(-(%s + %s * DHrxn) / constants.R / T)\t%s < T < %s' % (self.A, self.n, self.E0, self.alpha, self.Tmin, self.Tmax)
 		
 	def __repr__(self):
-		return '<ArrheniusEPModel A=%.0e E0=%.0f kJ/mol n=%.1f alpha=%.1g>' % (self.A, self.E0/1000.0, self.n, self.alpha)
+		return '<ArrheniusEPModel A=%g E0=%g kJ/mol n=%g alpha=%.1g>' % (self.A, self.E0/1000.0, self.n, self.alpha)
 	
 	def getActivationEnergy(self, dHrxn):
 		"""
@@ -169,20 +165,15 @@ class ArrheniusEPModel(KineticsModel):
 		"""
 		return self.E0 + self.alpha * dHrxn
 	
-	def getRateConstant(self, T, dHrxn):
+	def getRateCoefficient(self, Tlist, dHrxn):
 		"""
-		Return the rate constant k(T) at temperature `T` by evaluating the
-		ArrheniusModel expression for a reaction having an enthalpy of reaction
+		Return the rate coefficient k(T, P) in SI units at a set of  
+		temperatures `Tlist` in K for a reaction having an enthalpy of reaction 
 		`dHrxn` in J/mol.
 		"""
-		if not self.isTemperatureValid(T):
-			raise InvalidKineticsModelError('Invalid temperature for rate coefficient evaluation from ArrheniusEPModel.')
 		Ea = cython.declare(cython.double)
 		Ea = self.getActivationEnergy(dHrxn)
-		if cython.compiled:
-			return self.A * pow(T, self.n) * exp(-self.Ea / constants.R / T)
-		else:
-			return self.A * (T ** self.n) * math.exp(-self.Ea / constants.R / T)
+		return self.A * (Tlist ** self.n) * numpy.exp(-self.Ea / constants.R / Tlist)
 
 ################################################################################
 
@@ -232,29 +223,27 @@ class PDepArrheniusModel(KineticsModel):
 			
 			return Plow, Phigh, self.arrhenius[ilow], self.arrhenius[ihigh]
 	
-	def getRateConstant(self, T, P):
+	def getRateCoefficient(self, Tlist, Plist):
 		"""
-		Return the rate constant k(T, P) at temperature `T` in K and pressure 
-		`P` in Pa by evaluating the pressure-dependent Arrhenius expression.
+		Return the rate constant k(T, P) in SI units at a set of temperatures 
+		`Tlist` in K and pressures `Plist` in Pa by evaluating the pressure-
+		dependent Arrhenius expression.
 		"""
-		if not self.isTemperatureValid(T):
-			raise InvalidKineticsModelError('Invalid temperature for rate coefficient evaluation from PDepArrheniusModel.')
-		if not self.isPressureValid(P):
-			raise InvalidKineticsModelError('Invalid pressure for rate coefficient evaluation from PDepArrheniusModel.')
-		
 		cython.declare(Plow=cython.double, Phigh=cython.double)
 		cython.declare(alow=ArrheniusModel, ahigh=ArrheniusModel)
-		cython.declare(klow=cython.double, khigh=cython.double)
+		cython.declare(j=cython.int, klist=numpy.ndarray, klow=numpy.ndarray, khigh=numpy.ndarray)
 		
-		Plow, Phigh, alow, ahigh = self.__getAdjacentExpressions(P)
-		if Plow == Phigh: return alow.getRateConstant(T)
-		klow = alow.getRateConstant(T)
-		khigh = ahigh.getRateConstant(T)
-		if cython.compiled:
-			return pow(log10(P/Plow)/log10(Phigh/Plow)*log10(khigh/klow), 10)
-		else:
-			return 10**(math.log10(P/Plow)/math.log10(Phigh/Plow)*math.log10(khigh/klow))
-
+		klist = numpy.zeros((len(Tlist), len(Plist)), numpy.float64)
+		for j in range(len(Plist)):
+			Plow, Phigh, alow, ahigh = self.__getAdjacentExpressions(Plist[j])
+			if Plow == Phigh: 
+				klist[:,j] = alow.getRateCoefficient(Tlist)
+			else:
+				klow = alow.getRateCoefficient(Tlist)
+				khigh = ahigh.getRateCoefficient(Tlist)
+				klist[:,j] = 10**(math.log10(Plist[j]/Plow)/math.log10(Phigh/Plow)*numpy.log10(khigh/klow))
+		return klist
+		
 ################################################################################
 
 class ChebyshevModel(KineticsModel):
@@ -307,29 +296,23 @@ class ChebyshevModel(KineticsModel):
 		else:
 			return (2.0*math.log(P) - math.log(self.Pmin) - math.log(self.Pmax)) / (math.log(self.Pmax) - math.log(self.Pmin))
 	
-	def getRateConstant(self, T, P):
+	def getRateCoefficient(self, Tlist, Plist):
 		"""
-		Return the rate constant k(T, P) in SI units at temperature `T` in K and
-		pressure `P` in Pa by evaluating the Chebyshev expression.
+		Return the rate constant k(T, P) in SI units at a set of temperatures 
+		`Tlist` in K and pressures `Plist` in Pa by evaluating the Chebyshev 
+		expression.
 		"""
 		
-		if not self.isTemperatureValid(T):
-			raise InvalidKineticsModelError('Invalid temperature for rate coefficient evaluation from ChebyshevModel.')
-		if not self.isPressureValid(P):
-			raise InvalidKineticsModelError('Invalid pressure for rate coefficient evaluation from ChebyshevModel.')
+		cython.declare(Tred=cython.double, Pred=cython.double, klist=numpy.ndarray)
+		cython.declare(i=cython.int, j=cython.int, t=cython.int, p=cython.int)
 		
-		cython.declare(Tred=cython.double, Pred=cython.double, k=cython.double)
-		cython.declare(t=cython.int, p=cython.int)
-		
-		Tred = self.__getReducedTemperature(T)
-		Pred = self.__getReducedPressure(P)
-		
-		k = 0.0
-		for t in range(self.degreeT):
-			for p in range(self.degreeP):
-				k += self.coeffs[t,p] * self.__chebyshev(t, Tred) * self.__chebyshev(p, Pred)
-		
-		if cython.compiled:
-			return pow(k, 10.0)
-		else:
-			return 10.0**k
+		klist = numpy.zeros((len(Tlist),len(Plist)), numpy.float64)
+		for i in range(len(Tlist)):
+			for j in range(len(Plist)):
+				Tred = self.__getReducedTemperature(Tlist[i])
+				Pred = self.__getReducedPressure(Plist[j])
+				for t in range(self.degreeT):
+					for p in range(self.degreeP):
+						klist[i,j] += self.coeffs[t,p] * self.__chebyshev(t, Tred) * self.__chebyshev(p, Pred)
+				
+		return 10.0**klist

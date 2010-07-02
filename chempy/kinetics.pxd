@@ -24,6 +24,8 @@
 #
 ################################################################################
 
+cimport numpy
+
 cdef extern from "math.h":
 	cdef double acos(double x)
 	cdef double cos(double x)
@@ -43,9 +45,9 @@ cdef class KineticsModel:
 	cdef public int numReactants
 	cdef public str comment
 	
-	cpdef bint isTemperatureValid(KineticsModel self, double T) except -2
+	cpdef bint isTemperatureValid(self, double T) except -2
 	
-	cpdef bint isPressureValid(KineticsModel self, double P) except -2
+	cpdef bint isPressureValid(self, double P) except -2
 
 ################################################################################
 
@@ -55,7 +57,7 @@ cdef class ArrheniusModel(KineticsModel):
 	cdef public double Ea
 	cdef public double n
 	
-	cpdef double getRateConstant(ArrheniusModel self, double T)
+	cpdef numpy.ndarray getRateCoefficient(self, numpy.ndarray Tlist)
 
 ################################################################################
 
@@ -66,9 +68,9 @@ cdef class ArrheniusEPModel(KineticsModel):
 	cdef public double n
 	cdef public double alpha
 	
-	cpdef double getActivationEnergy(ArrheniusEPModel self, double dHrxn)
+	cpdef double getActivationEnergy(self, double dHrxn)
 	
-	cpdef double getRateConstant(ArrheniusEPModel self, double T, double dHrxn)
+	cpdef numpy.ndarray getRateCoefficient(self, numpy.ndarray Tlist, double dHrxn)
 
 ################################################################################
 
@@ -77,9 +79,9 @@ cdef class PDepArrheniusModel(KineticsModel):
 	cdef public list pressures
 	cdef public list arrhenius
 	
-	cpdef tuple __getAdjacentExpressions(PDepArrheniusModel self, double P)
+	cpdef tuple __getAdjacentExpressions(self, double P)
 	
-	cpdef getRateConstant(PDepArrheniusModel self, double T, double P)
+	cpdef numpy.ndarray getRateCoefficient(self, numpy.ndarray Tlist, numpy.ndarray Plist)
 
 ################################################################################
 
@@ -89,11 +91,11 @@ cdef class ChebyshevModel(KineticsModel):
 	cdef public int degreeT
 	cdef public int degreeP
 	
-	cpdef double __chebyshev(ChebyshevModel self, double n, double x)
+	cpdef double __chebyshev(self, double n, double x)
 	
-	cpdef double __getReducedTemperature(ChebyshevModel self, double T)
+	cpdef double __getReducedTemperature(self, double T)
 	
-	cpdef double __getReducedPressure(ChebyshevModel self, double P)
+	cpdef double __getReducedPressure(self, double P)
 	
-	cpdef double getRateConstant(ChebyshevModel self, double T, double P)
+	cpdef numpy.ndarray getRateCoefficient(self, numpy.ndarray Tlist, numpy.ndarray Plist)
 	
