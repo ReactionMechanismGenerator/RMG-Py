@@ -122,7 +122,27 @@ class ArrheniusModel(KineticsModel):
 		`Tlist` in K.
 		"""
 		return self.A * (Tlist ** self.n) * numpy.exp(-self.Ea / constants.R / Tlist)
-
+	
+	def fitToData(self, Tlist, klist):
+		"""
+		Fit the Arrhenius parameters to a set of rate coefficient data `klist`
+		corresponding to a set of temperatures `Tlist` in K. A linear least-
+		squares fit is used, which guarantees that the resulting parameters
+		provide the best possible approximation to the data.
+		"""
+		import numpy.linalg
+		A = numpy.zeros((len(Tlist),3), numpy.float64)
+		A[:,0] = numpy.ones_like(Tlist)
+		A[:,1] = numpy.log(Tlist)
+		A[:,2] = -1.0 / constants.R / Tlist
+		b = numpy.log(klist)
+		x = numpy.linalg.lstsq(A,b)[0]
+		
+		self.A = math.exp(x[0])
+		self.n = x[1]
+		self.Ea = x[2]
+		return self
+	
 ################################################################################
 
 class ArrheniusEPModel(KineticsModel):
