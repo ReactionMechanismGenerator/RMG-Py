@@ -40,6 +40,7 @@ memory as an instance of the :class:`Reaction` class.
 
 import cython
 import math
+import numpy
 
 import constants
 from exception import ChemPyError
@@ -206,6 +207,174 @@ class Reaction:
 		# Return rate
 		return rateConstant * (forward - reverse / equilibriumConstant)
 
+	def calculateTSTRateCoefficient(self, Tlist, TS, tunneling=''):
+		"""
+		Evaluate the forward rate coefficient for the reaction
+		with corresponding transition state `TS` at the list of temperatures
+		`Tlist` in K using (canonical) transition state theory. The TST equation is
+
+		.. math:: k(T) = \\kappa(T) \\frac{k_\\mathrm{B} T}{h} \\frac{Q^\\ddagger(T)}{Q^\\mathrm{A}(T) Q^\\mathrm{B}(T)} \\exp \\left( -\\frac{E_0}{k_\\mathrm{B} T} \\right)
+
+		where :math:`Q^\\ddagger` is the partition function of the transition state,
+		:math:`Q^\\mathrm{A}` and :math:`Q^\\mathrm{B}` are the partition function
+		of the reactants, :math:`E_0` is the ground-state energy difference from
+		the transition state to the reactants, :math:`T` is the absolute
+		temperature, :math:`k_\\mathrm{B}` is the Boltzmann constant, and :math:`h`
+		is the Planck constant. :math:`\\kappa(T)` is an optional tunneling
+		correction.
+		"""
+		cython.declare(E0=cython.double)
+		# Determine barrier height
+		E0 = TS.states.E0 - sum([spec.states.E0 for spec in self.reactants])
+		# Determine TST rate constant at each temperature
+		Qreac = numpy.ones_like(Tlist)
+		for spec in self.reactants: Qreac *= spec.states.getPartitionFunction(Tlist) / constants.Na
+		Qts = TS.states.getPartitionFunction(Tlist) / constants.Na
+		k = (constants.kB * Tlist / constants.h * Qts / Qreac *	numpy.exp(-E0 / constants.R / Tlist))
+		# Apply tunneling correction
+		if tunneling.lower() == 'wigner':
+			k *= self.calculateWignerTunnelingCorrection(Tlist, TS)
+		elif tunneling.lower() == 'eckart':
+			k *= self.calculateEckartTunnelingCorrection(Tlist, TS)
+		return k
+	
+	def calculateWignerTunnelingCorrection(self, Tlist, TS):
+		"""
+		Calculate and return the value of the Wigner tunneling correction for
+		the reaction with corresponding transition state `TS` at the list of
+		temperatures `Tlist` in K. The Wigner formula is
+		
+		.. math:: \\kappa(T) = 1 + \\frac{1}{24} \\left( \\frac{h | \\nu_\\mathrm{TS} |}{ k_\\mathrm{B} T} \\right)^2
+		
+		where :math:`h` is the Planck constant, :math:`\\nu_\\mathrm{TS}` is the
+		negative frequency, :math:`k_\\mathrm{B}` is the Boltzmann constant, and
+		:math:`T` is the absolute temperature. 
+		The Wigner correction only requires information about the transition 
+		state, not the reactants or products, but is also generally less 
+		accurate than the Eckart correction.
+		"""
+		frequency = abs(TS.frequency)
+		return 1.0 + (constants.h * constants.c * 100.0 * abs(frequency) / constants.kB / Tlist)**2 / 24.0
+	
+	def calculateEckartTunnelingCorrection(self, Tlist, TS):
+		"""
+		Calculate and return the value of the Eckart tunneling correction for
+		the reaction with corresponding transition state `TS` at the list of
+		temperatures `Tlist` in K. The Eckart formula is
+		
+		.. math:: \\kappa(T) = e^{\\beta \\Delta V_1} \\int_0^\\infty 
+		    \\left[ 1 - \\frac{\\cosh (2 \\pi a - 2 \\pi b) + \\cosh (2 \\pi d)}{\\cosh (2 \\pi a + 2 \\pi b) + \\cosh (2 \\pi d)} \\right] e^{- \\beta E} \\ d(\\beta E)
+		
+		where
+		
+		.. math:: 2 \\pi a = \\frac{2 \\sqrt{\\alpha_1 \\xi}}{\\alpha_1^{-1/2} + \\alpha_2^{-1/2}}
+		
+		.. math:: 2 \\pi b = \\frac{2 \\sqrt{| (\\xi - 1) \\alpha_1 + \\alpha_2|}}{\\alpha_1^{-1/2} + \\alpha_2^{-1/2}}
+		
+		.. math:: 2 \\pi d = 2 \\sqrt{| \\alpha_1 \\alpha_2 - 4 \\pi^2 / 16|}
+		
+		.. math:: \\alpha_1 = 2 \\pi \\frac{\\Delta V_1}{h | \\nu_\\mathrm{TS} |}
+		
+		.. math:: \\alpha_2 = 2 \\pi \\frac{\\Delta V_2}{h | \\nu_\\mathrm{TS} |}
+		
+		.. math:: \\xi = \\frac{E}{\\Delta V_1}
+		
+		:math:`\\Delta V_1` and :math:`\\Delta V_2` are the thermal energy 
+		difference between the transition state and the reactants and products,
+		respectively; :math:`\\nu_\\mathrm{TS}` is the negative frequency, 
+		:math:`h` is the Planck constant, :math:`k_\\mathrm{B}` is the 
+		Boltzmann constant, and :math:`T` is the absolute temperature. If 
+		product data is not available, then it is assumed that 
+		:math:`\\alpha_2 \\approx \\alpha_1`.
+		The Eckart correction requires information about the reactants as well
+		as the transition state. For best results, information about the 
+		products should also be given. (The former is called the symmetric
+		Eckart correction, the latter the asymmetric Eckart correction.) This
+		extra information allows the Eckart correction to generally give a
+		better result than the Wignet correction.
+		"""
+		
+		cython.declare(frequency=cython.double, alpha1=cython.double, alpha2=cython.double, dV1=cython.double, dV2=cython.double)
+		cython.declare(kappa=numpy.ndarray, E_kT=numpy.ndarray, f=numpy.ndarray, integral=cython.double)
+		cython.declare(i=cython.int, tol=cython.double, fcrit=cython.double, E_kTmin=cython.double, E_kTmax=cython.double)
+		
+		frequency = abs(TS.frequency)
+		
+		# Calculate intermediate constants
+		dV1 = TS.states.E0 - sum([spec.states.E0 for spec in self.reactants]) # [=] J/mol
+		if all([spec.states is not None for spec in self.products]):
+			# Product data available, so use asymmetric Eckart correction
+			dV2 = TS.states.E0 - sum([spec.states.E0 for spec in self.products]) # [=] J/mol
+		else:
+			# Product data not available, so use asymmetric Eckart correction
+			dV2 = dV1
+		alpha1 = 2 * math.pi * dV1 / constants.Na / (constants.h * constants.c * 100.0 * frequency)
+		alpha2 = 2 * math.pi * dV2 / constants.Na / (constants.h * constants.c * 100.0 * frequency)
+
+		# Integrate to get Eckart correction
+		kappa = numpy.zeros_like(Tlist)
+		for i in range(len(Tlist)):
+		
+			# First we need to determine the lower and upper bounds at which to
+			# truncate the integral
+			tol = 1e-3
+			E_kT = numpy.arange(0.0, 1000.01, 0.1)
+			f = numpy.zeros_like(E_kT)
+			for j in range(len(E_kT)):
+				f[j] = self.__eckartIntegrand(E_kT[j], constants.R * Tlist[i], dV1, alpha1, alpha2)
+			# Find the cutoff values of the integrand
+			fcrit = tol * f.max()
+			x = (f > fcrit).nonzero()
+			E_kTmin = E_kT[x[0][0]]
+			E_kTmax = E_kT[x[0][-1]]
+			
+			# Now that we know the bounds we can formally integrate
+			import scipy.integrate
+			integral = scipy.integrate.quad(self.__eckartIntegrand, E_kTmin, E_kTmax,
+				args=(constants.R * Tlist[i],dV1,alpha1,alpha2,))[0]
+			kappa[i] = integral * math.exp(dV1 / constants.R / Tlist[i])
+		
+		# Return the calculated Eckart correction
+		return kappa
+	
+	def __eckartIntegrand(self, E_kT, kT, dV1, alpha1, alpha2):
+		# Evaluate the integrand of the Eckart tunneling correction integral
+		# for the given values
+		#    E_kT = energy scaled by kB * T (dimensionless)
+		#    kT = Boltzmann constant * T [=] J/mol
+		#    dV1 = energy difference between TS and reactants [=] J/mol
+		#    alpha1, alpha2 dimensionless
+		
+		cython.declare(xi=cython.double, twopia=cython.double, twopib=cython.double, twopid=cython.double, kappaE=cython.double)
+		from math import sqrt, exp, cosh, pi
+		
+		xi = E_kT * kT / dV1
+		# 2 * pi * a
+		twopia = 2*sqrt(alpha1*xi)/(1/sqrt(alpha1)+1/sqrt(alpha2))
+		# 2 * pi * b
+		twopib = 2*sqrt(abs((xi-1)*alpha1+alpha2))/(1/sqrt(alpha1)+1/sqrt(alpha2))
+		# 2 * pi * d
+		twopid = 2*sqrt(abs(alpha1*alpha2-4*pi*pi/16))
+		
+		# We use different approximate versions of the integrand to avoid
+		# domain errors when evaluating cosh(x) for large x
+		# If all of 2*pi*a, 2*pi*b, and 2*pi*d are sufficiently small,
+		# compute as normal
+		if twopia < 200 and twopib < 200 and twopid < 200:
+			kappaE = 1 - (cosh(twopia-twopib)+cosh(twopid)) / (cosh(twopia+twopib)+cosh(twopid))
+		# If one of the following is true, then we can eliminate most of the
+		# exponential terms after writing out the definition of cosh and
+		# dividing all terms by exp(2*pi*d)
+		elif twopia-twopib-twopid > 10 or twopib-twopia-twopid > 10 or twopia+twopib-twopid > 10:
+			kappaE = 1 - exp(-2*twopia) - exp(-2*twopib) - exp(-twopia-twopib+twopid) - exp(-twopia-twopib-twopid)
+		# Otherwise expand each cosh(x) in terms of its exponentials and divide
+		# all terms by exp(2*pi*d) before evaluating
+		else:
+			kappaE = 1 - (exp(twopia-twopib-twopid) + exp(-twopia+twopib-twopid) + 1 + exp(-2*twopid)) / (exp(twopia+twopib-twopid) + exp(-twopia-twopib-twopid) + 1 + exp(-2*twopid))
+
+		# Complete and return integrand
+		return exp(-E_kT) * kappaE
+    
 ################################################################################
 
 class ReactionModel:

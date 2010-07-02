@@ -26,6 +26,7 @@
 
 from thermo cimport ThermoModel
 from states cimport StatesModel
+from geometry cimport Geometry
 
 ################################################################################
 
@@ -35,11 +36,12 @@ cdef class Species:
 	cdef public str label
 	cdef public ThermoModel thermo
 	cdef public StatesModel states
+	cdef public Geometry geometry
 
-	cpdef double getHeatCapacity(self, double T)
+################################################################################
 
-	cpdef double getEnthalpy(self, double T)
-
-	cpdef double getEntropy(self, double T)
-
-	cpdef double getFreeEnergy(self, double T)
+cdef class TransitionState:
+	
+	cdef public str label
+	cdef public StatesModel states
+	cdef public Geometry geometry

@@ -53,15 +53,17 @@ class Species:
 	`label`         :class:`str`                A descriptive string label
 	`thermo`        :class:`ThermoModel`        The thermodynamics model for the species
 	`states`        :class:`StatesModel`        The molecular degrees of freedom model for the species
+	`geometry`      :class:`Geometry`           The 3D geometry of the molecule
 	=============== =========================== ================================
 	
 	"""
 	
-	def __init__(self, index=-1, label='', thermo=None, states=None):
+	def __init__(self, index=-1, label='', thermo=None, states=None, geometry=None):
 		self.index = index
 		self.label = label
 		self.thermo = thermo
 		self.states = states
+		self.geometry = geometry
 
 	def __repr__(self):
 		"""
@@ -75,29 +77,33 @@ class Species:
 		"""
 		return '%s(%i)' % (self.label, self.index)
 
-	def getHeatCapacity(self, T):
-		"""
-		Return the heat capacity of the species in J/mol*K at temperature `T`
-		in K.
-		"""
-		return self.thermo.getHeatCapacity(T)
+################################################################################
 
-	def getEnthalpy(self, T):
-		"""
-		Return the enthalpy of the species in J/mol at temperature `T` in K.
-		"""
-		return self.thermo.getEnthalpy(T)
+class TransitionState:
+	"""
+	A chemical transition state, representing a first-order saddle point on a
+	potential energy surface.
 
-	def getEntropy(self, T):
-		"""
-		Return the entropy of the species in J/mol*K at temperature `T` in K.
-		"""
-		return self.thermo.getEntropy(T)
+	=============== =========================== ================================
+	Attribute       Type                        Description
+	=============== =========================== ================================
+	`label`         :class:`str`                A descriptive string label
+	`states`        :class:`StatesModel`        The molecular degrees of freedom model for the species
+	`geometry`      :class:`Geometry`           The 3D geometry of the molecule
+	`frequency`     ``double``                  The negative frequency of the first-order saddle point in cm^-1
+	=============== =========================== ================================
 
-	def getFreeEnergy(self, T):
-		"""
-		Return the Gibbs free energy of the species in J/mol at temperature `T`
-		in K.
-		"""
-		return self.thermo.getFreeEnergy(T)
+	"""
 
+	def __init__(self, label='', states=None, geometry=None, frequency=0.0):
+		self.label = label
+		self.states = states
+		self.geometry = geometry
+		self.frequency = frequency
+
+	def __repr__(self):
+		"""
+		Return a string representation of the species, suitable for console output.
+		"""
+		return "<TransitionState '%s'>" % (self.label)
+	

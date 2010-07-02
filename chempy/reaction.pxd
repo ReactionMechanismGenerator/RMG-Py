@@ -24,7 +24,7 @@
 #
 ################################################################################
 
-from species cimport Species
+from species cimport Species, TransitionState
 from kinetics cimport KineticsModel
 
 cimport numpy
@@ -52,6 +52,14 @@ cdef class Reaction:
 
 	cpdef double getRate(self, double T, double P, dict conc)
 
+	cpdef numpy.ndarray calculateTSTRateCoefficient(self, numpy.ndarray Tlist, TransitionState TS, str tunneling=?)
+	
+	cpdef numpy.ndarray calculateWignerTunnelingCorrection(self, numpy.ndarray Tlist, TransitionState TS)
+	
+	cpdef numpy.ndarray calculateEckartTunnelingCorrection(self, numpy.ndarray Tlist, TransitionState TS)
+
+	cpdef double __eckartIntegrand(self, double E_kT, double kT, double dV1, double alpha1, double alpha2)
+
 ################################################################################
 
 cdef class ReactionModel:
@@ -62,3 +70,5 @@ cdef class ReactionModel:
 	cpdef generateStoichiometryMatrix(self)
 
 	cpdef numpy.ndarray getReactionRates(self, double T, double P, dict Ci)
+
+################################################################################
