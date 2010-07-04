@@ -36,6 +36,7 @@ cdef class Reaction:
 	cdef public int index
 	cdef public list reactants
 	cdef public list products
+	cdef public TransitionState transitionState
 	cdef public KineticsModel kinetics
 
 	cpdef double getEnthalpyOfReaction(self, double T)

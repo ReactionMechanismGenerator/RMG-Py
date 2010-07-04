@@ -30,6 +30,13 @@ from geometry cimport Geometry
 
 ################################################################################
 
+cdef class LennardJones:
+
+	cdef public double sigma
+	cdef public double epsilon
+
+################################################################################
+
 cdef class Species:
 	
 	cdef public int index
@@ -37,6 +44,7 @@ cdef class Species:
 	cdef public ThermoModel thermo
 	cdef public StatesModel states
 	cdef public Geometry geometry
+	cdef public LennardJones lennardJones
 
 ################################################################################
 

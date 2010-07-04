@@ -42,6 +42,31 @@ memory as an instance of the :class:`Species` class.
 
 ################################################################################
 
+class LennardJones:
+	"""
+	A set of Lennard-Jones collision parameters. The Lennard-Jones parameters
+	:math:`\\sigma` and :math:`\\epsilon` correspond to the potential
+
+	.. math:: V(r) = 4 \\epsilon \\left[ \\left( \\frac{\\sigma}{r} \\right)^{12} - \\left( \\frac{\\sigma}{r} \\right)^{6} \\right]
+
+	where the first term represents repulsion of overlapping orbitals and the
+	second represents attraction due to van der Waals forces.
+
+	=============== =============== ============================================
+	Attribute       Type            Description
+	=============== =============== ============================================
+	`sigma`         ``double``      Distance at which the inter-particle potential is zero
+	`epsilon`       ``double``      Depth of the potential well in J
+	=============== =============== ============================================
+
+	"""
+
+	def __init__(self, sigma=0.0, epsilon=0.0):
+		self.sigma = sigma
+		self.epsilon = epsilon
+
+################################################################################
+
 class Species:
 	"""
 	A chemical species.
@@ -54,16 +79,18 @@ class Species:
 	`thermo`        :class:`ThermoModel`        The thermodynamics model for the species
 	`states`        :class:`StatesModel`        The molecular degrees of freedom model for the species
 	`geometry`      :class:`Geometry`           The 3D geometry of the molecule
+	`lennardJones`  :class:`LennardJones`       A set of Lennard-Jones collision parameters
 	=============== =========================== ================================
 	
 	"""
 	
-	def __init__(self, index=-1, label='', thermo=None, states=None, geometry=None):
+	def __init__(self, index=-1, label='', thermo=None, states=None, geometry=None, lennardJones=None):
 		self.index = index
 		self.label = label
 		self.thermo = thermo
 		self.states = states
 		self.geometry = geometry
+		self.lennardJones = lennardJones
 
 	def __repr__(self):
 		"""

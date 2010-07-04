@@ -51,23 +51,25 @@ class Reaction:
 	"""
 	A chemical reaction.
 	
-	=============== =========================== ================================
-	Attribute       Type                        Description
-	=============== =========================== ================================
-	`index`         :class:`int`                A unique nonnegative integer index
-	`reactants`     :class:`list`               The reactant species (as :class:`Species` objects)
-	`products`      :class:`list`               The product species (as :class:`Species` objects)
-	`kinetics`      :class:`KineticsModel`      The kinetics model to use for the reaction
-	=============== =========================== ================================
+	=================== =========================== ============================
+	Attribute           Type                        Description
+	=================== =========================== ============================
+	`index`             :class:`int`                A unique nonnegative integer index
+	`reactants`         :class:`list`               The reactant species (as :class:`Species` objects)
+	`products`          :class:`list`               The product species (as :class:`Species` objects)
+	`kinetics`          :class:`KineticsModel`      The kinetics model to use for the reaction
+	`transitionState`   :class:`TransitionState`    The transition state
+	=================== =========================== ============================
 	
 	"""
 	
-	def __init__(self, index=-1, reactants=None, products=None, kinetics=None):
+	def __init__(self, index=-1, reactants=None, products=None, kinetics=None, transitionState=None):
 		self.index = index
 		self.reactants = reactants
 		self.products = products
 		self.kinetics = kinetics
-	
+		self.transitionState = transitionState
+
 	def __repr__(self):
 		"""
 		Return a string representation of the reaction, suitable for console output.
