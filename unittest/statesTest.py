@@ -32,17 +32,17 @@ class StatesTest(unittest.TestCase):
 		self.assertAlmostEqual(rot.getPartitionFunction(Tlist) / 2.59622e3, 1.0, 3)
 		self.assertAlmostEqual(vib.getPartitionFunction(Tlist) / 1.0481e0, 1.0, 3)
 
-		self.assertAlmostEqual(trans.getHeatCapacity(Tlist) * 1.987 / 2.981, 1.0, 3)
-		self.assertAlmostEqual(rot.getHeatCapacity(Tlist) * 1.987 / 2.981, 1.0, 3)
-		self.assertAlmostEqual(vib.getHeatCapacity(Tlist) * 1.987 / 2.133, 1.0, 3)
+		self.assertAlmostEqual(trans.getHeatCapacity(Tlist) / 4.184 / 2.981, 1.0, 3)
+		self.assertAlmostEqual(rot.getHeatCapacity(Tlist) / 4.184 / 2.981, 1.0, 3)
+		self.assertAlmostEqual(vib.getHeatCapacity(Tlist) / 4.184 / 2.133, 1.0, 3)
 
-		self.assertAlmostEqual(trans.getEnthalpy(Tlist) / 1.5, 1.0, 3)
-		self.assertAlmostEqual(rot.getEnthalpy(Tlist) / 1.5, 1.0, 3)
-		self.assertAlmostEqual(vib.getEnthalpy(Tlist) / 0.221258, 1.0, 3)
+		self.assertAlmostEqual(trans.getEnthalpy(Tlist) / 8.314472 / Tlist / 1.5, 1.0, 3)
+		self.assertAlmostEqual(rot.getEnthalpy(Tlist) / 8.314472 / Tlist / 1.5, 1.0, 3)
+		self.assertAlmostEqual(vib.getEnthalpy(Tlist) / 8.314472 / Tlist / 0.221258, 1.0, 3)
 
-		self.assertAlmostEqual(trans.getEntropy(Tlist) * 1.987 / 152.094, 1.0, 3)
-		self.assertAlmostEqual(rot.getEntropy(Tlist) * 1.987 / 18.604, 1.0, 3)
-		self.assertAlmostEqual(vib.getEntropy(Tlist) * 1.987 / 0.533, 1.0, 3)
+		self.assertAlmostEqual(trans.getEntropy(Tlist) / 4.184 / 152.094, 1.0, 3)
+		self.assertAlmostEqual(rot.getEntropy(Tlist) / 4.184 / 18.604, 1.0, 3)
+		self.assertAlmostEqual(vib.getEntropy(Tlist) / 4.184 / 0.533, 1.0, 3)
 
 		states = StatesModel()
 		states.modes = [rot, vib]
@@ -68,17 +68,17 @@ class StatesTest(unittest.TestCase):
 		self.assertAlmostEqual(rot.getPartitionFunction(Tlist) / 7.13316e1, 1.0, 3)
 		self.assertAlmostEqual(vib.getPartitionFunction(Tlist) / 1.000037e0, 1.0, 3)
 
-		self.assertAlmostEqual(trans.getHeatCapacity(Tlist) * 1.987 / 2.981, 1.0, 3)
-		self.assertAlmostEqual(rot.getHeatCapacity(Tlist) * 1.987 / 1.987, 1.0, 3)
-		self.assertAlmostEqual(vib.getHeatCapacity(Tlist) * 1.987 / 0.046, 1.0, 2)
+		self.assertAlmostEqual(trans.getHeatCapacity(Tlist) / 4.184 / 2.981, 1.0, 3)
+		self.assertAlmostEqual(rot.getHeatCapacity(Tlist) / 4.184 / 1.987, 1.0, 3)
+		self.assertAlmostEqual(vib.getHeatCapacity(Tlist) / 4.184 / 0.046, 1.0, 2)
 
-		self.assertAlmostEqual(trans.getEnthalpy(Tlist) / 1.5, 1.0, 3)
-		self.assertAlmostEqual(rot.getEnthalpy(Tlist) / 1.0, 1.0, 3)
-		self.assertAlmostEqual(vib.getEnthalpy(Tlist) / 0.0029199, 1.0, 3)
+		self.assertAlmostEqual(trans.getEnthalpy(Tlist) / 8.314472 / Tlist / 1.5, 1.0, 3)
+		self.assertAlmostEqual(rot.getEnthalpy(Tlist) / 8.314472 / Tlist / 1.0, 1.0, 3)
+		self.assertAlmostEqual(vib.getEnthalpy(Tlist) / 8.314472 / Tlist / 0.0029199, 1.0, 3)
 
-		self.assertAlmostEqual(trans.getEntropy(Tlist) * 1.987 / 152.488, 1.0, 3)
-		self.assertAlmostEqual(rot.getEntropy(Tlist) * 1.987 / 10.467, 1.0, 3)
-		self.assertAlmostEqual(vib.getEntropy(Tlist) * 1.987 / 0.00654, 1.0, 2)
+		self.assertAlmostEqual(trans.getEntropy(Tlist) / 4.184 / 152.488, 1.0, 3)
+		self.assertAlmostEqual(rot.getEntropy(Tlist) / 4.184 / 10.467, 1.0, 3)
+		self.assertAlmostEqual(vib.getEntropy(Tlist) / 4.184 / 0.00654, 1.0, 2)
 
 		states = StatesModel()
 		states.modes = [rot, vib]

@@ -141,34 +141,32 @@ class Translation(Mode):
 	
 	def getHeatCapacity(self, Tlist):
 		"""
-		Return the contribution to the heat capacity due to translation scaled
-		by the gas law constant at the specified temperatures `Tlist` in K. The
-		formula is
+		Return the contribution to the heat capacity due to translation in
+		J/mol*K at the specified temperatures `Tlist` in K. The formula is
 
 		.. math:: \\frac{C_\\mathrm{v}^\\mathrm{trans}(T)}{R} = \\frac{d}{2}
 
 		where :math:`T` is temperature,	:math:`d` is dimensionality, and
 		:math:`R` is the gas law constant.
 		"""
-		return 0.5 * self.dimension * numpy.ones_like(Tlist)
+		return 0.5 * self.dimension * numpy.ones_like(Tlist) * constants.R
 	
 	def getEnthalpy(self, Tlist):
 		"""
-		Return the contribution to the enthalpy due to translation scaled by
-		:math:`RT` at the specified temperatures `Tlist` in K. The formula is
+		Return the contribution to the enthalpy due to translation in J/mol
+		at the specified temperatures `Tlist` in K. The formula is
 
 		.. math:: \\frac{H^\\mathrm{trans}(T)}{RT} = \\frac{d}{2}
 
 		where :math:`T` is temperature, :math:`d` is dimensionality, and
 		:math:`R` is the gas law constant.
 		"""
-		return 0.5 * self.dimension * numpy.ones_like(Tlist)
+		return 0.5 * self.dimension * constants.R * Tlist
 	
 	def getEntropy(self, Tlist):
 		"""
-		Return the contribution to the entropy due to translation scaled by the
-		gas law constant at the specified temperatures `Tlist` in K. The formula
-		is
+		Return the contribution to the entropy due to translation in J/mol*K
+		at the specified temperatures `Tlist` in K. The formula	is
 
 		.. math:: \\frac{S^\\mathrm{trans}(T)}{R} = \\frac{d}{2} \\ln \\left( \\frac{2 \\pi m k_\\mathrm{B} T}{h^2} e \\right)
 		
@@ -176,7 +174,7 @@ class Translation(Mode):
 		dimensionality, :math:`k_\\mathrm{B}` is the Boltzmann constant, and
 		:math:`R` is the gas law constant.
 		"""
-		return numpy.log(self.getPartitionFunction(Tlist)) + 2.5
+		return (numpy.log(self.getPartitionFunction(Tlist)) + 2.5) * constants.R
 	
 	def getDensityOfStates(self, Elist):
 		"""
@@ -207,12 +205,10 @@ class RigidRotor(Mode):
 	A rigid rotor approximation of (external) rotational modes. The `linear`
 	attribute is :data:`True` if the associated molecule is linear, and
 	:data:`False` if nonlinear. For a linear molecule, `inertia` stores a
-	list with one moment of inertia in kg*m^2. For a nonlinear
-	molecule, `frequencies` stores a list of the three moments of inertia,
-	even if two or three are equal, in kg*m^2. The symmetry number of the
-	rotation is stored in the `symmetry` attribute.
-	Symmetry number corrections are
-	*not* applied by this class.
+	list with one moment of inertia in kg*m^2. For a nonlinear molecule,
+	`frequencies` stores a list of the three moments of inertia, even if two or
+	three are equal, in kg*m^2. The symmetry number of the rotation is stored
+	in the `symmetry` attribute.
 	"""
 
 	def __init__(self, linear=False, inertia=None, symmetry=1):
@@ -257,8 +253,7 @@ class RigidRotor(Mode):
 	def getHeatCapacity(self, Tlist):
 		"""
 		Return the contribution to the heat capacity due to rigid rotation
-		scaled by the gas law constant at the specified temperatures `Tlist`
-		in K. The formula is
+		in J/mol*K at the specified temperatures `Tlist` in K. The formula is
 
 		.. math:: \\frac{C_\\mathrm{v}^\\mathrm{rot}(T)}{R} = 1
 
@@ -270,14 +265,14 @@ class RigidRotor(Mode):
 		law constant.
 		"""
 		if self.linear:
-			return numpy.ones_like(Tlist)
+			return numpy.ones_like(Tlist) * constants.R
 		else:
-			return 1.5 * numpy.ones_like(Tlist)
+			return 1.5 * numpy.ones_like(Tlist) * constants.R
 
 	def getEnthalpy(self, Tlist):
 		"""
-		Return the contribution to the enthalpy due to rigid rotation scaled
-		by :math:`RT` at the specified temperatures `Tlist` in K. The formula is
+		Return the contribution to the enthalpy due to rigid rotation in J/mol
+		at the specified temperatures `Tlist` in K. The formula is
 
 		.. math:: \\frac{H^\\mathrm{rot}(T)}{RT} = 1
 
@@ -289,15 +284,14 @@ class RigidRotor(Mode):
 		the gas law constant.
 		"""
 		if self.linear:
-			return numpy.ones_like(Tlist)
+			return constants.R * Tlist
 		else:
-			return 1.5 * numpy.ones_like(Tlist)
+			return 1.5 * constants.R * Tlist
 	
 	def getEntropy(self, Tlist):
 		"""
-		Return the contribution to the entropy due to rigid rotation scaled by
-		the gas law constant at the specified temperatures `Tlist` in K. The
-		formula is
+		Return the contribution to the entropy due to rigid rotation in J/mol*K
+		at the specified temperatures `Tlist` in K. The formula is
 
 		.. math:: \\frac{S^\\mathrm{rot}(T)}{R} = \\ln Q^\\mathrm{rot} + 1
 		
@@ -309,9 +303,9 @@ class RigidRotor(Mode):
 		function for a rigid rotor and :math:`R` is the gas law constant.
 		"""
 		if self.linear:
-			return numpy.log(self.getPartitionFunction(Tlist)) + 1.0
+			return (numpy.log(self.getPartitionFunction(Tlist)) + 1.0) * constants.R
 		else:
-			return numpy.log(self.getPartitionFunction(Tlist)) + 1.5
+			return (numpy.log(self.getPartitionFunction(Tlist)) + 1.5) * constants.R
 	
 	def getDensityOfStates(self, Elist):
 		"""
@@ -397,7 +391,7 @@ class HinderedRotor(Mode):
 	def getHeatCapacity(self, Tlist):
 		"""
 		Return the contribution to the heat capacity due to hindered rotation
-		scaled by the gas law constant at the specified temperatures `Tlist`
+		in J/mol*K at the specified temperatures `Tlist`
 		in K. The formula is
 
 		.. math:: \\frac{C_\\mathrm{v}^\\mathrm{hind}(T)}{R} = \\frac{C_\\mathrm{v}^\\mathrm{vib}(T)}{R} -\\frac{1}{2} + \\zeta^2 - \\left[ \\zeta \\frac{I_1(\\zeta)}{I_0(\\zeta)} \\right]^2 - \\zeta \\frac{I_1(\\zeta)}{I_0(\\zeta)}
@@ -415,33 +409,33 @@ class HinderedRotor(Mode):
 		exp_x = numpy.exp(x)
 		one_minus_exp_x = 1.0 - exp_x
 		BB = besseli1(z) / besseli0(z)
-		return x * x * exp_x / one_minus_exp_x / one_minus_exp_x - 0.5 + z * (z - BB - z * BB * BB)
+		return (x * x * exp_x / one_minus_exp_x / one_minus_exp_x - 0.5 + z * (z - BB - z * BB * BB)) * constants.R
 		
 	def getEnthalpy(self, Tlist):
 		"""
 		Return the contribution to the heat capacity due to hindered rotation
-		scaled by :math:`RT` at the specified temperatures `Tlist`
-		in K. This is calculated numerically from the partition function.
+		in J/mol at the specified temperatures `Tlist` in K. This is calculated
+		numerically from the partition function.
 		"""
 		Tlist_low = Tlist * 0.999
 		Tlist_high = Tlist * 1.001
 		return (Tlist *
 			(numpy.log(self.getPartitionFunction(Tlist_high)) -
 			numpy.log(self.getPartitionFunction(Tlist_low))) /
-			(Tlist_high - Tlist_low) + 1.0)
+			(Tlist_high - Tlist_low) + 1.0) * constants.R * Tlist
 
 	def getEntropy(self, Tlist):
 		"""
 		Return the contribution to the heat capacity due to hindered rotation
-		scaled by the gas law constant at the specified temperatures `Tlist`
-		in K. This is calculated numerically from the partition function.
+		in J/mol*K at the specified temperatures `Tlist` in K. This is
+		calculated numerically from the partition function.
 		"""
 		Tlist_low = Tlist * 0.999
 		Tlist_high = Tlist * 1.001
 		return (numpy.log(self.getPartitionFunction(Tlist_high)) +
 			Tlist * (numpy.log(self.getPartitionFunction(Tlist_high)) -
 			numpy.log(self.getPartitionFunction(Tlist_low))) /
-			(Tlist_high - Tlist_low))
+			(Tlist_high - Tlist_low)) * constants.R
 
 	def getDensityOfStates(self, Elist):
 		"""
@@ -539,8 +533,7 @@ class HarmonicOscillator(Mode):
 	def getHeatCapacity(self, Tlist):
 		"""
 		Return the contribution to the heat capacity due to vibration
-		scaled by the gas law constant at the specified temperatures `Tlist`
-		in K. The formula is
+		in J/mol*K at the specified temperatures `Tlist` in K. The formula is
 
 		.. math:: \\frac{C_\\mathrm{v}^\\mathrm{vib}(T)}{R} = \\sum_i \\xi_i^2 \\frac{e^{\\xi_i}}{\\left( 1 - e^{\\xi_i} \\right)^2}
 
@@ -557,13 +550,12 @@ class HarmonicOscillator(Mode):
 			exp_x = numpy.exp(x)
 			one_minus_exp_x = 1.0 - exp_x
 			Cv = Cv + x * x * exp_x / one_minus_exp_x / one_minus_exp_x
-		return Cv
+		return Cv * constants.R
 
 	def getEnthalpy(self, Tlist):
 		"""
-		Return the contribution to the enthalpy due to vibration
-		scaled by :math:`RT` at the specified temperatures `Tlist`
-		in K. The formula is
+		Return the contribution to the enthalpy due to vibration in J/mol at
+		the specified temperatures `Tlist` in K. The formula is
 
 		.. math:: \\frac{H^\\mathrm{vib}(T)}{RT} = \\sum_i \\frac{\\xi_i}{e^{\\xi_i} - 1}
 		
@@ -579,13 +571,12 @@ class HarmonicOscillator(Mode):
 			x = freq / (0.695039 * Tlist)	# kB = 0.695039 cm^-1/K
 			exp_x = numpy.exp(x)
 			H = H + x / (exp_x - 1)
-		return H
+		return H * constants.R * Tlist
 
 	def getEntropy(self, Tlist):
 		"""
-		Return the contribution to the entropy due to vibration
-		scaled by the gas law constant at the specified temperatures `Tlist`
-		in K. The formula is
+		Return the contribution to the entropy due to vibration in J/mol*K at
+		the specified temperatures `Tlist` in K. The formula is
 
 		.. math:: \\frac{S^\\mathrm{vib}(T)}{R} = \\sum_i \\left[ - \\ln \\left(1 - e^{-\\xi_i} \\right) + \\frac{\\xi_i}{e^{\\xi_i} - 1} \\right]
 		
@@ -601,7 +592,7 @@ class HarmonicOscillator(Mode):
 			x = freq / (0.695039 * Tlist)	# kB = 0.695039 cm^-1/K
 			exp_x = numpy.exp(x)
 			S = S + x / (exp_x - 1)
-		return S
+		return S * constants.R
 
 	def getDensityOfStates(self, Elist, rho0=None):
 		"""
@@ -649,8 +640,8 @@ class StatesModel:
 
 	def getHeatCapacity(self, Tlist):
 		"""
-		Return the constant-pressure heat capacity scaled by the gas law
-		constant at the specified temperatures `Tlist` in K.
+		Return the constant-pressure heat capacity in J/mol*K at the specified
+		temperatures `Tlist` in K.
 		"""
 		cython.declare(Cp=numpy.ndarray)
 		Cp = numpy.ones_like(Tlist)
@@ -660,8 +651,7 @@ class StatesModel:
 
 	def getEnthalpy(self, Tlist):
 		"""
-		Return the enthalpy scaled by :math:`RT` at the specified temperatures
-		`Tlist` in K.
+		Return the enthalpy in J/mol at the specified temperatures `Tlist` in K.
 		"""
 		cython.declare(H=numpy.ndarray)
 		H = numpy.ones_like(Tlist)
@@ -671,8 +661,8 @@ class StatesModel:
 
 	def getEntropy(self, Tlist):
 		"""
-		Return the entropy scaled by the gas law constant at the specified
-		temperatures `Tlist` in K.
+		Return the entropy in J/mol*K at the specified temperatures `Tlist` in
+		K.
 		"""
 		cython.declare(S=numpy.ndarray)
 		S = numpy.zeros_like(Tlist)

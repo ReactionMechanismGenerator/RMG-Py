@@ -45,6 +45,8 @@ import numpy
 import constants
 from exception import ChemPyError
 
+from species import Species
+
 ################################################################################
 
 class Reaction:
@@ -82,46 +84,46 @@ class Reaction:
 		"""
 		return ' <=> '.join([' + '.join([str(s) for s in self.reactants]), ' + '.join([str(s) for s in self.products])])
 
-	def getEnthalpyOfReaction(self, T):
+	def getEnthalpyOfReaction(self, Tlist):
 		"""
-		Return the enthalpy of reaction in J/mol evaluated at temperature `T`
-		in K.
+		Return the enthalpy of reaction in J/mol evaluated at temperatures
+		`Tlist` in K.
 		"""
-		cython.declare(dHrxn=cython.double, reactant=Species, product=Species)
-		dHrxn = -self.reactants[0].getEnthalpy(T)
-		for reactant in self.reactants[1:]:
-			dHrxn -= reactant.getEnthalpy(T)
+		cython.declare(dHrxn=numpy.ndarray, reactant=Species, product=Species)
+		dHrxn = numpy.zeros_like(Tlist)
+		for reactant in self.reactants:
+			dHrxn -= reactant.thermo.getEnthalpy(Tlist)
 		for product in self.products:
-			dHrxn += product.getEnthalpy(T)
+			dHrxn += product.thermo.getEnthalpy(Tlist)
 		return dHrxn
 
-	def getEntropyOfReaction(self, T):
+	def getEntropyOfReaction(self, Tlist):
 		"""
 		Return the entropy of reaction in J/mol*K evaluated at temperature `T`
 		in K.
 		"""
-		cython.declare(dSrxn=cython.double, reactant=Species, product=Species)
-		dSrxn = -self.reactants[0].getEntropy(T)
-		for reactant in self.reactants[1:]:
-			dSrxn -= reactant.getEntropy(T)
+		cython.declare(dSrxn=numpy.ndarray, reactant=Species, product=Species)
+		dSrxn = numpy.zeros_like(Tlist)
+		for reactant in self.reactants:
+			dSrxn -= reactant.thermo.getEntropy(Tlist)
 		for product in self.products:
-			dSrxn += product.getEntropy(T)
+			dSrxn += product.thermo.getEntropy(Tlist)
 		return dSrxn
 
-	def getFreeEnergyOfReaction(self, T):
+	def getFreeEnergyOfReaction(self, Tlist):
 		"""
 		Return the Gibbs free energy of reaction in J/mol evaluated at
 		temperature `T` in K.
 		"""
-		cython.declare(dGrxn=cython.double, reactant=Species, product=Species)
-		dGrxn = -self.reactants[0].getFreeEnergy(T)
-		for reactant in self.reactants[1:]:
-			dGrxn -= reactant.getFreeEnergy(T)
+		cython.declare(dGrxn=numpy.ndarray, reactant=Species, product=Species)
+		dGrxn = numpy.zeros_like(Tlist)
+		for reactant in self.reactants:
+			dGrxn -= reactant.thermo.getFreeEnergy(Tlist)
 		for product in self.products:
-			dGrxn += product.getFreeEnergy(T)
+			dGrxn += product.thermo.getFreeEnergy(Tlist)
 		return dGrxn
 
-	def getEquilibriumConstant(self, T, type='Kc'):
+	def getEquilibriumConstant(self, Tlist, type='Kc'):
 		"""
 		Return the equilibrium constant for the reaction at the specified
 		temperature `T` in K. The `type` parameter lets	you specify the
@@ -129,30 +131,22 @@ class Reaction:
 		``Kc`` for concentrations (default), or ``Kp`` for pressures. Note that
 		this function currently assumes an ideal gas mixture.
 		"""
-		cython.declare(dGrxn=cython.double, K=cython.double, C0=cython.double, P0=cython.double)
+		cython.declare(dGrxn=numpy.ndarray, K=numpy.ndarray, C0=numpy.ndarray, P0=cython.double)
 		# Use free energy of reaction to calculate Ka
-		dGrxn = self.getFreeEnergyOfReaction(T)
-		K = math.exp(-dGrxn / constants.R / T)
+		dGrxn = self.getFreeEnergyOfReaction(Tlist)
+		K = numpy.exp(-dGrxn / constants.R / Tlist)
 		# Convert Ka to Kc or Kp if specified
+		P0 = 1e5
 		if type == 'Kc':
 			# Convert from Ka to Kc; C0 is the reference concentration
-			C0 = 1e5 / constants.R / T
+			C0 = P0 / constants.R / Tlist
 			K *= C0 ** (len(self.products) - len(self.reactants))
 		elif type == 'Kp':
 			# Convert from Ka to Kp; P0 is the reference pressure
-			P0 = 1e5
 			K *= P0 ** (len(self.products) - len(self.reactants))
-		elif type != 'Ka' or type != '':
+		elif type != 'Ka' and type != '':
 			raise ChemPyError('Invalid type "%s" passed to Reaction.getEquilibriumConstant(); should be "Ka", "Kc", or "Kp".')
 		return K
-
-	def getRateConstant(self, T, P):
-		"""
-		Return the value of the rate constant at the temperature `T` in K and
-		pressure `P` in Pa. The units of the returned rate constant depend on
-		the number of reactants, but are some combination of moles, m^3, and s.
-		"""
-		return self.kinetics.getRateConstant(T, P)
 
 	def getStoichiometricCoefficient(self, spec):
 		"""
@@ -168,46 +162,6 @@ class Reaction:
 		for product in self.products:
 			if product is spec: stoich += 1
 		return stoich
-
-	def getRate(self, T, P, conc):
-		"""
-		Return the net rate of reaction in mol/m^3*s at temperature `T` in K
-		and pressure `P` in Pa. The parameter `conc` is a dict with species as
-		keys and concentrations as values. A reactant not found in the `conc`
-		map is treated as having zero concentration.
-		"""
-
-		cython.declare(rateConstant=cython.double, equilibriumConstant=cython.double)
-		cython.declare(forward=cython.double, reverse=cython.double)
-		cython.declare(reactant=Species, product=Species)
-
-		# Evaluate rate constant
-		rateConstant = self.getRateConstant(T, P)
-		if self.thirdBody: rateConstant *= sum(conc.values())
-
-		# Evaluate equilibrium constant
-		equilibriumConstant = self.getEquilibriumConstant(T)
-
-		# Evaluate forward concentration product
-		forward = 1.0
-		for reactant in self.reactants:
-			if reactant in conc:
-				forward = forward * conc[reactant]
-			else:
-				forward = 0.0
-				break
-
-		# Evaluate reverse concentration product
-		reverse = 1.0
-		for product in self.products:
-			if product in conc:
-				reverse = reverse * conc[product]
-			else:
-				reverse = 0.0
-				break
-
-		# Return rate
-		return rateConstant * (forward - reverse / equilibriumConstant)
 
 	def calculateTSTRateCoefficient(self, Tlist, TS, tunneling=''):
 		"""

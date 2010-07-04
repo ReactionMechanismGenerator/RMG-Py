@@ -39,19 +39,15 @@ cdef class Reaction:
 	cdef public TransitionState transitionState
 	cdef public KineticsModel kinetics
 
-	cpdef double getEnthalpyOfReaction(self, double T)
+	cpdef numpy.ndarray getEnthalpyOfReaction(self, numpy.ndarray Tlist)
 
-	cpdef double getEntropyOfReaction(self, double T)
+	cpdef numpy.ndarray getEntropyOfReaction(self, numpy.ndarray Tlist)
 
-	cpdef double getFreeEnergyOfReaction(self, double T)
+	cpdef numpy.ndarray getFreeEnergyOfReaction(self, numpy.ndarray Tlist)
 
-	cpdef double getEquilibriumConstant(self, double T, str type=?)
-
-	cpdef double getRateConstant(self, double T, double P)
+	cpdef numpy.ndarray getEquilibriumConstant(self, numpy.ndarray Tlist, str type=?)
 
 	cpdef int getStoichiometricCoefficient(self, Species spec)
-
-	cpdef double getRate(self, double T, double P, dict conc)
 
 	cpdef numpy.ndarray calculateTSTRateCoefficient(self, numpy.ndarray Tlist, TransitionState TS, str tunneling=?)
 	

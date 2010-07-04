@@ -131,8 +131,8 @@ class WilhoitModel(ThermoModel):
 	
 	def getHeatCapacity(self, Tlist):
 		"""
-		Return the constant-pressure heat capacity (Cp) scaled by the gas law
-		constant at the specified temperatures `Tlist` in K.
+		Return the constant-pressure heat capacity (Cp) in J/mol*K at the
+		specified temperatures `Tlist` in K.
 		"""
 		cython.declare(y=numpy.ndarray)
 		y = Tlist/(Tlist+self.B)
@@ -141,8 +141,8 @@ class WilhoitModel(ThermoModel):
 	
 	def getEnthalpy(self, Tlist):
 		"""
-		Return the enthalpy divided by :math:`RT` at the specified temperatures
-		`Tlist` in K. The formula is
+		Return the enthalpy in J/mol at the specified temperatures `Tlist` in
+		K. The formula is
 
 		.. math::
 			H(T) = H_0 +
@@ -159,8 +159,8 @@ class WilhoitModel(ThermoModel):
 	
 	def getEntropy(self, Tlist):
 		"""
-		Return the entropy scaled by the gas law constant at the specified
-		temperatures `Tlist` in K. The formula is
+		Return the entropy in J/mol*K at the specified temperatures `Tlist` in
+		K. The formula is
 
 		.. math::
 			S(T) = S_0 +
@@ -173,8 +173,8 @@ class WilhoitModel(ThermoModel):
 	
 	def getFreeEnergy(self, Tlist):
 		"""
-		Return the Gibbs free energy divided by :math:`RT` at the specified
-		temperatures `Tlist` in K.
+		Return the Gibbs free energy in J/mol at the specified temperatures
+		`Tlist` in K.
 		"""
 		return self.getEnthalpy(Tlist) - Tlist * self.getEntropy(Tlist)
 	
@@ -303,27 +303,27 @@ class NASAPolynomial(ThermoModel):
 	
 	def getHeatCapacity(self, Tlist):
 		"""
-		Return the constant-pressure heat capacity (Cp) scaled by the gas law
-		constant at the specified temperatures `Tlist` in K.
+		Return the constant-pressure heat capacity (Cp) in J/mol*K at the
+		specified temperatures `Tlist` in K.
 		"""
 		# Cp/R = a1 + a2 T + a3 T^2 + a4 T^3 + a5 T^4
-		return self.c0 + Tlist*(self.c1 + Tlist*(self.c2 + Tlist*(self.c3 + self.c4*Tlist)))
+		return (self.c0 + Tlist*(self.c1 + Tlist*(self.c2 + Tlist*(self.c3 + self.c4*Tlist)))) * constants.R
 	
 	def getEnthalpy(self, Tlist):
 		"""
-		Return the enthalpy divided by :math:`RT` at the specified temperatures
-		`Tlist` in K.
+		Return the enthalpy in J/mol at the specified temperatures `Tlist` in
+		K.
 		"""
 		cython.declare(T2=numpy.ndarray, T4=numpy.ndarray)
 		T2 = Tlist*Tlist
 		T4 = T2*T2
 		# H/RT = a1 + a2 T /2 + a3 T^2 /3 + a4 T^3 /4 + a5 T^4 /5 + a6/T
-		return self.c0 + self.c1*Tlist/2 + self.c2*T2/3 + self.c3*T2*Tlist/4 + self.c4*T4/5 + self.c5/Tlist
+		return (self.c0 + self.c1*Tlist/2 + self.c2*T2/3 + self.c3*T2*Tlist/4 + self.c4*T4/5 + self.c5/Tlist) * constants.R * Tlist
 	
 	def getEntropy(self, Tlist):
 		"""
-		Return the entropy scaled by the gas law constant at the specified
-		temperatures `Tlist` in K.
+		Return the entropy in J/mol*K at the specified temperatures `Tlist` in
+		K.
 		"""
 		cython.declare(T2=numpy.ndarray, T4=numpy.ndarray)
 		T2 = Tlist*Tlist
@@ -334,8 +334,8 @@ class NASAPolynomial(ThermoModel):
 	
 	def getFreeEnergy(self, Tlist):
 		"""
-		Return the Gibbs free energy divided by :math:`RT` at the specified
-		temperatures `Tlist` in K.
+		Return the Gibbs free energy in J/mol at the specified temperatures
+		`Tlist` in K.
 		"""
 		return self.getEnthalpy(Tlist) - Tlist * self.getEntropy(Tlist)
 
@@ -362,8 +362,8 @@ class NASAModel(ThermoModel):
 	
 	def getHeatCapacity(self, Tlist):
 		"""
-		Return the constant-pressure heat capacity (Cp) scaled by the gas law
-		constant at the specified temperatures `Tlist` in K.
+		Return the constant-pressure heat capacity (Cp) in J/mol*K at the
+		specified temperatures `Tlist` in K.
 		"""
 		cython.declare(poly=NASAPolynomial, Cp=numpy.ndarray)
 		Cp = numpy.zeros_like(Tlist)
@@ -374,8 +374,8 @@ class NASAModel(ThermoModel):
 	
 	def getEnthalpy(self, Tlist):
 		"""
-		Return the enthalpy divided by :math:`RT` at the specified temperatures
-		`Tlist` in K.
+		Return the enthalpy in J/mol at the specified temperatures `Tlist` in
+		K.
 		"""
 		cython.declare(poly=NASAPolynomial, H=numpy.ndarray)
 		H = numpy.zeros_like(Tlist)
@@ -386,8 +386,8 @@ class NASAModel(ThermoModel):
 	
 	def getEntropy(self, Tlist):
 		"""
-		Return the entropy scaled by the gas law constant at the specified
-		temperatures `Tlist` in K.
+		Return the entropy in J/mol*K at the specified temperatures `Tlist` in
+		K.
 		"""
 		cython.declare(poly=NASAPolynomial, S=numpy.ndarray)
 		S = numpy.zeros_like(Tlist)
@@ -398,8 +398,8 @@ class NASAModel(ThermoModel):
 	
 	def getFreeEnergy(self, Tlist):
 		"""
-		Return the Gibbs free energy divided by :math:`RT` at the specified
-		temperatures `Tlist` in K.
+		Return the Gibbs free energy in J/mol at the specified temperatures
+		`Tlist` in K.
 		"""
 		cython.declare(poly=NASAPolynomial, G=numpy.ndarray)
 		G = numpy.zeros_like(Tlist)
