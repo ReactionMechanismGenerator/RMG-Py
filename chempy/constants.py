@@ -33,17 +33,7 @@ throughout ChemPy. ChemPy uses SI units throughout; accordingly, all of the
 constants in this module are stored in combinations of meters, seconds,
 kilograms, moles, etc.
 
-The constants available are:
-
-=============== ================================================================
-Variable        Description
-=============== ================================================================
-`Na`            Avogadro constant
-`kB`            Boltzmann constant
-`R`             Gas law constant
-`h`             Planck constant
-`c`             Speed of light in vacuum
-=============== ================================================================
+The constants available are listed below.
 
 """
 
@@ -56,44 +46,25 @@ import cython
 # RMG uses SI units throughout
 pq.set_default_units('si')
 
-if __name__ == "__main__":
-	print 'Constants available:'
-	print ''
-
-#: The Avogadro constant
 value = pq.constants.Avogadro_constant.simplified
-if __name__ == "__main__":
-	print 'Avogadro constant: Na = %s' % (value)
+#: The Avogadro constant
 Na = float(value)
 
-#: The Boltzmann constant
 value = pq.constants.Boltzmann_constant.simplified
-if __name__ == "__main__":
-	print 'Boltzmann constant: kB = %s' % (value)
+#: The Boltzmann constant
 kB = float(value)
 
-#: The gas law constant
 value = pq.constants.R.simplified
-if __name__ == "__main__":
-	print 'Gas law constant: R = %s' % (value)
+#: The gas law constant
 R = float(value)
 
-#: The Planck constant
 value = pq.constants.Planck_constant.simplified
-if __name__ == "__main__":
-	print 'Planck constant: h = %s' % (value)
+#: The Planck constant
 h = float(value)
 
-#: The speed of light in a vacuum
 value = pq.constants.natural_unit_of_velocity.simplified
-if __name__ == "__main__":
-	print 'Speed of light in a vacuum: c = %s' % (value)
+#: The speed of light in a vacuum
 c = float(value)
 
 #: pi
 pi = float(math.pi)
-
-################################################################################
-
-if __name__ == "__main__":
-	print ''
