@@ -43,4 +43,4 @@ class ThermoTest(unittest.TestCase):
 			self.assertAlmostEqual( Glist[i] /  Glist0[i], 1.0, 4)
 
 if __name__ == '__main__':
-	unittest.main()
+	unittest.main( testRunner = unittest.TextTestRunner(verbosity=2) )

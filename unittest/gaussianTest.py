@@ -6,6 +6,7 @@ import unittest
 import sys
 sys.path.append('.')
 
+from chempy.io.gaussian import *
 from chempy.states import *
 
 ################################################################################
@@ -22,8 +23,8 @@ class GaussianTest(unittest.TestCase):
 		molecular degrees of freedom can be properly read.
 		"""
 
-		s = StatesModel()
-		s.loadFromGaussianLog('unittest/ethylene.log')
+		log = GaussianLog('unittest/ethylene.log')
+		s = log.loadStates()
 		self.assertTrue(len([mode for mode in s.modes if isinstance(mode,Translation)]) == 1)
 		self.assertTrue(len([mode for mode in s.modes if isinstance(mode,RigidRotor)]) == 1)
 		self.assertTrue(len([mode for mode in s.modes if isinstance(mode,HarmonicOscillator)]) == 1)
@@ -46,8 +47,8 @@ class GaussianTest(unittest.TestCase):
 		molecular degrees of freedom can be properly read.
 		"""
 
-		s = StatesModel()
-		s.loadFromGaussianLog('unittest/oxygen.log')
+		log = GaussianLog('unittest/oxygen.log')
+		s = log.loadStates()
 		self.assertTrue(len([mode for mode in s.modes if isinstance(mode,Translation)]) == 1)
 		self.assertTrue(len([mode for mode in s.modes if isinstance(mode,RigidRotor)]) == 1)
 		self.assertTrue(len([mode for mode in s.modes if isinstance(mode,HarmonicOscillator)]) == 1)
@@ -62,7 +63,7 @@ class GaussianTest(unittest.TestCase):
 		self.assertAlmostEqual(vib.getPartitionFunction(Tlist) / 1.000037e0, 1.0, 3)
 
 		self.assertAlmostEqual(s.E0 / 6.02214179e23 / 4.35974394e-18 / -150.374756, 1.0, 4)
-		self.assertEqual(s.spinMultiplicity, 2)
+		self.assertEqual(s.spinMultiplicity, 3)
 
 if __name__ == '__main__':
-	unittest.main()
+	unittest.main( testRunner = unittest.TextTestRunner(verbosity=2) )

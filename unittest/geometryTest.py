@@ -93,4 +93,4 @@ class GeometryTest(unittest.TestCase):
 		self.assertAlmostEqual(I / 2.97944840397, 1.0, 3)
 
 if __name__ == '__main__':
-	unittest.main()
+	unittest.main( testRunner = unittest.TextTestRunner(verbosity=2) )

@@ -90,4 +90,4 @@ class StatesTest(unittest.TestCase):
 	
 
 if __name__ == '__main__':
-	unittest.main()
+	unittest.main( testRunner = unittest.TextTestRunner(verbosity=2) )
