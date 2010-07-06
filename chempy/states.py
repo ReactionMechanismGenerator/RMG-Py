@@ -644,7 +644,7 @@ class StatesModel:
 		temperatures `Tlist` in K.
 		"""
 		cython.declare(Cp=numpy.ndarray)
-		Cp = numpy.ones_like(Tlist)
+		Cp = numpy.ones_like(Tlist) * constants.R
 		for mode in self.modes:
 			Cp += mode.getHeatCapacity(Tlist)
 		return Cp
@@ -654,7 +654,7 @@ class StatesModel:
 		Return the enthalpy in J/mol at the specified temperatures `Tlist` in K.
 		"""
 		cython.declare(H=numpy.ndarray)
-		H = numpy.ones_like(Tlist)
+		H = constants.R * Tlist
 		for mode in self.modes:
 			H += mode.getEnthalpy(Tlist)
 		return H

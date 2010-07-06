@@ -244,8 +244,8 @@ class WilhoitModel(ThermoModel):
 		cython.declare(XtX=numpy.ndarray, XtY=numpy.ndarray, z=numpy.ndarray)
 
 		# Set the Cp(T) limits as T -> and T -> infinity
-		self.cp0 = 3.5 if linear else 4.0
-		self.cpInf = self.cp0 + nFreq + 0.5 * nRotors
+		self.cp0 = 3.5 * constants.R if linear else 4.0 * constants.R
+		self.cpInf = self.cp0 + (nFreq + 0.5 * nRotors) * constants.R
 		
 		# What remains is to fit the polynomial coefficients (a0, a1, a2, a3)
 		# This can be done directly - no iteration required
