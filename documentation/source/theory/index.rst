@@ -9,6 +9,7 @@ MEASURE Theory Guide
     :numbered:
     
     introduction
+    master_equation
     
 * :ref:`genindex`
 * :ref:`modindex`

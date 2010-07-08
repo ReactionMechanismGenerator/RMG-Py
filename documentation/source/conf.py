@@ -188,7 +188,10 @@ latex_documents = [
 
 # Additional stuff for the LaTeX preamble.
 latex_preamble = """
-\usepackage{mhchem}
+\usepackage[version=3]{mhchem}
+
+\\renewcommand{\\vector}[1]{\\ensuremath{\\boldsymbol{\\mathbf{#1}}}}
+\\renewcommand{\\matrix}[1]{\\ensuremath{\\boldsymbol{\\mathbf{#1}}}}
 """
 pngmath_latex_preamble = latex_preamble
 
