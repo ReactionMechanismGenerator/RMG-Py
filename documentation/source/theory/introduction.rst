@@ -62,6 +62,32 @@ pressures the collision rate will be slow, and activated molecules will
 tend to isomerize and dissociate, often traversing multiple reactive events
 before collisional stabilization can occur.
 
+The onset of the pressure-dependent regime varies with both temperature and
+molecular size. The figure below shows the approximate pressure at which 
+pressure-dependence becomes important as a function of temperature and
+molecular size. The parameter :math:`m \equiv N_\mathrm{vib} + \frac{1}{2} N_\mathrm{rot}`
+represents a count of the internal degrees of freedom (vibrations and hindered
+rotors, respectively). The ranges of the x-axis and y-axis suggest that
+pressure dependence is in fact important over a wide regime of conditions of
+practical interest, particularly in high-temperature processes such as
+pyrolysis and combustion.
+
+.. figure:: images/switchover_pressure.*
+    :width: 67%
+    
+    Plot of the switchover pressure -- indicating the onset of pressure
+    dependence -- as a function of temperature and molecular size. The
+    value :math:`m \equiv N_\mathrm{vib} + \frac{1}{2} N_\mathrm{rot}`
+    represents a count of the internal degrees of freedom. Over a wide
+    variety of conditions of practical interest, even very large
+    molecules exhibit significant pressure dependence. Figure adapted from
+    [Wong2003]_.
+
+.. [Wong2003] B. M. Wong, D. M. Matheu, and W. H. Green. *J. Phys. Chem. A* 
+   **107**, p. 6206-6211 (2003).
+   `doi:10.1021/jp034165g <http://dx.doi.org/10.1021/jp034165g>`_
+
+
 Historical Context
 ==================
 
