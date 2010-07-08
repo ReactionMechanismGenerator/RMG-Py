@@ -89,72 +89,72 @@ them numerically by discretizing the integrals over energy.
 
 .. [Hinshelwood1926] C. N. Hinshelwood. *Proc. Royal Soc. A* **17**,
    p. 230-233 (1926).
-   `JSTOR <http://www.jstor.org/stable/94593>`_
+   `JSTOR:94593 <http://www.jstor.org/stable/94593>`_
 
 .. [Rice1927] O. K. Rice and H. C. Ramsperger. *J. Am. Chem. Soc.* **49**,
    p. 1617-1629 (1927).
-   `DOI <http://dx.doi.org/10.1021/ja01406a001>`_
+   `doi:10.1021/ja01406a001 <http://dx.doi.org/10.1021/ja01406a001>`_
 
 .. [Kassel1928] L. S. Kassel. *J. Phys. Chem.* **32**, 
    p. 1065-1079 (1928).
-   `DOI <http://dx.doi.org/10.1021/j150289a011>`_
+   `doi:10.1021/j150289a011 <http://dx.doi.org/10.1021/j150289a011>`_
 
 .. [Marcus1951] R. A. Marcus and O. K. Rice. *J. Phys. Coll. Chem.* **55**,
    p. 894-908 (1951).
-   `DOI <http://dx.doi.org/10.1021/j150489a013>`_
+   `doi:10.1021/j150489a013 <http://dx.doi.org/10.1021/j150489a013>`_
 
 .. [Siegert1949] A. J. F. Siegert. *Phys. Rev.* **76**,
    p. 1708-1714 (1949).
-   `DOI <http://dx.doi.org/10.1103/PhysRev.76.1708>`_
+   `doi:10.1103/PhysRev.76.1708 <http://dx.doi.org/10.1103/PhysRev.76.1708>`_
 
 .. [Bartholomay1958] A. F. Bartholomay. *Bull. Math. Biophys.* **20**,
    p. 175-190 (1958).
-   `DOI <http://dx.doi.org/10.1007/BF02478297>`_
+   `doi:10.1007/BF02478297 <http://dx.doi.org/10.1007/BF02478297>`_
    
 .. [Montroll1958] E. W. Montroll and K. E. Shuler. *Adv. Chem. Phys.* **1**,
    p. 361-399 (1958).
 
 .. [Krieger1960] I. M. Krieger and P. J. Gans. *J. Chem. Phys.* **32**,
    p. 247-250 (1960).
-   `DOI <http://dx.doi.org/10.1063/1.1700909>`_
+   `doi:10.1063/1.1700909 <http://dx.doi.org/10.1063/1.1700909>`_
 
 .. [Gans1960] P. J. Gans. *J. Chem. Phys.* **33**,
    p. 691-694 (1960).
-   `DOI <http://dx.doi.org/10.1063/1.1731239>`_
+   `doi:10.1063/1.1731239 <http://dx.doi.org/10.1063/1.1731239>`_
 
 .. [Widom1959] B. Widom. *J. Chem. Phys.* **31**, 
    p. 1387-1394 (1959).
-   `DOI <http://dx.doi.org/10.1063/1.1730604>`_
+   `doi:10.1063/1.1730604 <http://dx.doi.org/10.1063/1.1730604>`_
 
 .. [Keck1965] J. Keck and G. Carrier. *J. Chem. Phys.* **43**, 
    p. 2284-2298 (1965).
-   `DOI <http://dx.doi.org/10.1063/1.1697125>`_
+   `doi:10.1063/1.1697125 <http://dx.doi.org/10.1063/1.1697125>`_
 
 .. [Troe1967] J. Troe and H. Gg. Wagner. *Ber. Bunsenges. Phys. Chem.* **71**,
    p. 937 (1967).
-   `DOI <http://dx.doi.org/10.1002/bbpc.19670710904>`_
+   `doi:10.1002/bbpc.19670710904 <http://dx.doi.org/10.1002/bbpc.19670710904>`_
 
 .. [Troe1973] J. Troe. *Ber. Bunsenges. Phys. Chem.* **77**,
    p. 665 (1973).
-   `DOI <http://dx.doi.org/10.1002/bbpc.19730770903>`_
+   `doi:10.1002/bbpc.19730770903 <http://dx.doi.org/10.1002/bbpc.19730770903>`_
 
 .. [Tardy1966] D. C. Tardy and B. S. Rabinovitch. *J. Chem. Phys.*
    **45**, p. 3720-3730 (1966).
-   `DOI <http://dx.doi.org/10.1063/1.1727392>`_
+   `doi:10.1063/1.1727392 <http://dx.doi.org/10.1063/1.1727392>`_
 
 .. [Gear1971] C. W. Gear. *Commun. ACM* **14**,
    p. 176-179 (1971).
-   `DOI <http://doi.acm.org/10.1145/362566.362571>`_
+   `doi:10.1145/362566.362571 <http://dx.doi.org/10.1145/362566.362571>`_
 
 .. [Beyer1973] T. Beyer and D. F. Swinehart. *Commun. ACM* **16**,
    p. 379 (1973).
-   `DOI <http://doi.acm.org/10.1145/362248.362275>`_
+   `doi:10.1145/362248.362275 <http://dx.doi.org/10.1145/362248.362275>`_
 
 .. [Stein1973] S. E. Stein and B. S. Rabinovitch. *J. Chem. Phys.* **58**,
    p. 2438-2444 (1973).
-   `DOI <http://dx.doi.org/10.1063/1.1679522>`_
+   `doi:10.1063/1.1679522 <http://dx.doi.org/10.1063/1.1679522>`_
 
 .. [Astholz1979] D. C. Astholz, J. Troe, and W. Wieters. *J. Chem. Phys.* 
    **70**, p. 5107-5116 (1979).
-   `DOI <http://dx.doi.org/10.1063/1.437352>`_
+   `doi:10.1063/1.437352 <http://dx.doi.org/10.1063/1.437352>`_
 
