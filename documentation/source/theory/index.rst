@@ -8,8 +8,8 @@ MEASURE Theory Guide
     :maxdepth: 2
     :numbered:
     
-
-
+    introduction
+    
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
