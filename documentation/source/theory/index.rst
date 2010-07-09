@@ -10,6 +10,7 @@ MEASURE Theory Guide
     
     introduction
     master_equation
+    methods
     
 * :ref:`genindex`
 * :ref:`modindex`
