@@ -31,15 +31,15 @@ import numpy
 
 cdef class Geometry:
 
-	cdef public numpy.ndarray coordinates
-	cdef public numpy.ndarray mass
+    cdef public numpy.ndarray coordinates
+    cdef public numpy.ndarray mass
 
-	cpdef double getTotalMass(self, list atoms=?)
+    cpdef double getTotalMass(self, list atoms=?)
 
-	cpdef numpy.ndarray getCenterOfMass(self, list atoms=?)
+    cpdef numpy.ndarray getCenterOfMass(self, list atoms=?)
 
-	cpdef numpy.ndarray getMomentOfInertiaTensor(self)
+    cpdef numpy.ndarray getMomentOfInertiaTensor(self)
 
-	cpdef getPrincipalMomentsOfInertia(self)
+    cpdef getPrincipalMomentsOfInertia(self)
 
-	cpdef double getInternalReducedMomentOfInertia(self, list pivots, list top1)
+    cpdef double getInternalReducedMomentOfInertia(self, list pivots, list top1)

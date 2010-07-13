@@ -32,40 +32,40 @@ cimport numpy
 ################################################################################
 
 cdef class Reaction:
-	
-	cdef public int index
-	cdef public list reactants
-	cdef public list products
-	cdef public TransitionState transitionState
-	cdef public KineticsModel kinetics
+    
+    cdef public int index
+    cdef public list reactants
+    cdef public list products
+    cdef public TransitionState transitionState
+    cdef public KineticsModel kinetics
 
-	cpdef numpy.ndarray getEnthalpyOfReaction(self, numpy.ndarray Tlist)
+    cpdef numpy.ndarray getEnthalpyOfReaction(self, numpy.ndarray Tlist)
 
-	cpdef numpy.ndarray getEntropyOfReaction(self, numpy.ndarray Tlist)
+    cpdef numpy.ndarray getEntropyOfReaction(self, numpy.ndarray Tlist)
 
-	cpdef numpy.ndarray getFreeEnergyOfReaction(self, numpy.ndarray Tlist)
+    cpdef numpy.ndarray getFreeEnergyOfReaction(self, numpy.ndarray Tlist)
 
-	cpdef numpy.ndarray getEquilibriumConstant(self, numpy.ndarray Tlist, str type=?)
+    cpdef numpy.ndarray getEquilibriumConstant(self, numpy.ndarray Tlist, str type=?)
 
-	cpdef int getStoichiometricCoefficient(self, Species spec)
+    cpdef int getStoichiometricCoefficient(self, Species spec)
 
-	cpdef numpy.ndarray calculateTSTRateCoefficient(self, numpy.ndarray Tlist, TransitionState TS, str tunneling=?)
-	
-	cpdef numpy.ndarray calculateWignerTunnelingCorrection(self, numpy.ndarray Tlist, TransitionState TS)
-	
-	cpdef numpy.ndarray calculateEckartTunnelingCorrection(self, numpy.ndarray Tlist, TransitionState TS)
+    cpdef numpy.ndarray calculateTSTRateCoefficient(self, numpy.ndarray Tlist, TransitionState TS, str tunneling=?)
+    
+    cpdef numpy.ndarray calculateWignerTunnelingCorrection(self, numpy.ndarray Tlist, TransitionState TS)
+    
+    cpdef numpy.ndarray calculateEckartTunnelingCorrection(self, numpy.ndarray Tlist, TransitionState TS)
 
-	cpdef double __eckartIntegrand(self, double E_kT, double kT, double dV1, double alpha1, double alpha2)
+    cpdef double __eckartIntegrand(self, double E_kT, double kT, double dV1, double alpha1, double alpha2)
 
 ################################################################################
 
 cdef class ReactionModel:
 
-	cdef public list species
-	cdef public list reactions
+    cdef public list species
+    cdef public list reactions
 
-	cpdef generateStoichiometryMatrix(self)
+    cpdef generateStoichiometryMatrix(self)
 
-	cpdef numpy.ndarray getReactionRates(self, double T, double P, dict Ci)
+    cpdef numpy.ndarray getReactionRates(self, double T, double P, dict Ci)
 
 ################################################################################

@@ -26,9 +26,9 @@
 
 cdef class Element:
 
-	cdef public int number
-	cdef public str name
-	cdef public str symbol
-	cdef public float mass
+    cdef public int number
+    cdef public str name
+    cdef public str symbol
+    cdef public float mass
 
 cpdef Element getElement(int number=?, str symbol=?)

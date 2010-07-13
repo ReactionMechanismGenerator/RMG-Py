@@ -43,94 +43,95 @@ memory as an instance of the :class:`Species` class.
 ################################################################################
 
 class LennardJones:
-	"""
-	A set of Lennard-Jones collision parameters. The Lennard-Jones parameters
-	:math:`\\sigma` and :math:`\\epsilon` correspond to the potential
+    """
+    A set of Lennard-Jones collision parameters. The Lennard-Jones parameters
+    :math:`\\sigma` and :math:`\\epsilon` correspond to the potential
 
-	.. math:: V(r) = 4 \\epsilon \\left[ \\left( \\frac{\\sigma}{r} \\right)^{12} - \\left( \\frac{\\sigma}{r} \\right)^{6} \\right]
+    .. math:: V(r) = 4 \\epsilon \\left[ \\left( \\frac{\\sigma}{r} \\right)^{12} - \\left( \\frac{\\sigma}{r} \\right)^{6} \\right]
 
-	where the first term represents repulsion of overlapping orbitals and the
-	second represents attraction due to van der Waals forces.
+    where the first term represents repulsion of overlapping orbitals and the
+    second represents attraction due to van der Waals forces.
 
-	=============== =============== ============================================
-	Attribute       Type            Description
-	=============== =============== ============================================
-	`sigma`         ``double``      Distance at which the inter-particle potential is zero
-	`epsilon`       ``double``      Depth of the potential well in J
-	=============== =============== ============================================
+    =============== =============== ============================================
+    Attribute       Type            Description
+    =============== =============== ============================================
+    `sigma`         ``double``      Distance at which the inter-particle potential is zero
+    `epsilon`       ``double``      Depth of the potential well in J
+    =============== =============== ============================================
 
-	"""
+    """
 
-	def __init__(self, sigma=0.0, epsilon=0.0):
-		self.sigma = sigma
-		self.epsilon = epsilon
+    def __init__(self, sigma=0.0, epsilon=0.0):
+        self.sigma = sigma
+        self.epsilon = epsilon
 
 ################################################################################
 
 class Species:
-	"""
-	A chemical species.
-	
-	=============== =========================== ================================
-	Attribute       Type                        Description
-	=============== =========================== ================================
-	`index`         :class:`int`                A unique nonnegative integer index
-	`label`         :class:`str`                A descriptive string label
-	`thermo`        :class:`ThermoModel`        The thermodynamics model for the species
-	`states`        :class:`StatesModel`        The molecular degrees of freedom model for the species
-	`geometry`      :class:`Geometry`           The 3D geometry of the molecule
-	`lennardJones`  :class:`LennardJones`       A set of Lennard-Jones collision parameters
-	=============== =========================== ================================
-	
-	"""
-	
-	def __init__(self, index=-1, label='', thermo=None, states=None, geometry=None, lennardJones=None):
-		self.index = index
-		self.label = label
-		self.thermo = thermo
-		self.states = states
-		self.geometry = geometry
-		self.lennardJones = lennardJones
+    """
+    A chemical species.
+    
+    =============== =========================== ================================
+    Attribute       Type                        Description
+    =============== =========================== ================================
+    `index`         :class:`int`                A unique nonnegative integer index
+    `label`         :class:`str`                A descriptive string label
+    `thermo`        :class:`ThermoModel`        The thermodynamics model for the species
+    `states`        :class:`StatesModel`        The molecular degrees of freedom model for the species
+    `geometry`      :class:`Geometry`           The 3D geometry of the molecule
+    `lennardJones`  :class:`LennardJones`       A set of Lennard-Jones collision parameters
+    =============== =========================== ================================
+    
+    """
+    
+    def __init__(self, index=-1, label='', thermo=None, states=None, geometry=None, lennardJones=None):
+        self.index = index
+        self.label = label
+        self.thermo = thermo
+        self.states = states
+        self.geometry = geometry
+        self.lennardJones = lennardJones
 
-	def __repr__(self):
-		"""
-		Return a string representation of the species, suitable for console output.
-		"""
-		return "<Species %i '%s'>" % (self.index, self.label)
-	
-	def __str__(self):
-		"""
-		Return a string representation of the species, in the form 'label(id)'.
-		"""
-		return '%s(%i)' % (self.label, self.index)
+    def __repr__(self):
+        """
+        Return a string representation of the species, suitable for console output.
+        """
+        return "<Species %i '%s'>" % (self.index, self.label)
+    
+    def __str__(self):
+        """
+        Return a string representation of the species, in the form 'label(id)'.
+        """
+        if self.index == -1: return '%s' % (self.label)
+        else: return '%s(%i)' % (self.label, self.index)
 
 ################################################################################
 
 class TransitionState:
-	"""
-	A chemical transition state, representing a first-order saddle point on a
-	potential energy surface.
+    """
+    A chemical transition state, representing a first-order saddle point on a
+    potential energy surface.
 
-	=============== =========================== ================================
-	Attribute       Type                        Description
-	=============== =========================== ================================
-	`label`         :class:`str`                A descriptive string label
-	`states`        :class:`StatesModel`        The molecular degrees of freedom model for the species
-	`geometry`      :class:`Geometry`           The 3D geometry of the molecule
-	`frequency`     ``double``                  The negative frequency of the first-order saddle point in cm^-1
-	=============== =========================== ================================
+    =============== =========================== ================================
+    Attribute       Type                        Description
+    =============== =========================== ================================
+    `label`         :class:`str`                A descriptive string label
+    `states`        :class:`StatesModel`        The molecular degrees of freedom model for the species
+    `geometry`      :class:`Geometry`           The 3D geometry of the molecule
+    `frequency`     ``double``                  The negative frequency of the first-order saddle point in cm^-1
+    =============== =========================== ================================
 
-	"""
+    """
 
-	def __init__(self, label='', states=None, geometry=None, frequency=0.0):
-		self.label = label
-		self.states = states
-		self.geometry = geometry
-		self.frequency = frequency
+    def __init__(self, label='', states=None, geometry=None, frequency=0.0):
+        self.label = label
+        self.states = states
+        self.geometry = geometry
+        self.frequency = frequency
 
-	def __repr__(self):
-		"""
-		Return a string representation of the species, suitable for console output.
-		"""
-		return "<TransitionState '%s'>" % (self.label)
-	
+    def __repr__(self):
+        """
+        Return a string representation of the species, suitable for console output.
+        """
+        return "<TransitionState '%s'>" % (self.label)
+    

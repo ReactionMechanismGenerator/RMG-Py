@@ -44,55 +44,55 @@ from exception import ChemPyError
 ################################################################################
 
 class Element:
-	"""
-	A chemical element. The attributes are:
+    """
+    A chemical element. The attributes are:
 
-	=========== =============== ================================================
-	Attribute   Type            Description
-	=========== =============== ================================================
-	`number`    ``int``         The atomic number of the element
-	`symbol`    ``str``         The symbol used for the element
-	`name`      ``str``         The IUPAC name of the element
-	`mass`      ``float``       The mass of the element in kg/mol
-	=========== =============== ================================================
-	
-	This class is specifically for properties that all atoms of the same element
-	share. Ideally there is only one instance of this class for each element.
-	"""
-	
-	def __init__(self, number, symbol, name, mass):
-		self.number = number
-		self.symbol = intern(symbol)
-		self.name = name
-		self.mass = mass
-	
-	def __str__(self):
-		"""
-		Return a human-readable string representation of the object.
-		"""
-		return self.symbol
-	
-	def __repr__(self):
-		"""
-		Return a representation that can be used to reconstruct the object.
-		"""
-		return "Element(%s, '%s', '%s', %s)" % (self.number, self.symbol, self.name, self.mass)
-	
+    =========== =============== ================================================
+    Attribute   Type            Description
+    =========== =============== ================================================
+    `number`    ``int``         The atomic number of the element
+    `symbol`    ``str``         The symbol used for the element
+    `name`      ``str``         The IUPAC name of the element
+    `mass`      ``float``       The mass of the element in kg/mol
+    =========== =============== ================================================
+    
+    This class is specifically for properties that all atoms of the same element
+    share. Ideally there is only one instance of this class for each element.
+    """
+    
+    def __init__(self, number, symbol, name, mass):
+        self.number = number
+        self.symbol = intern(symbol)
+        self.name = name
+        self.mass = mass
+    
+    def __str__(self):
+        """
+        Return a human-readable string representation of the object.
+        """
+        return self.symbol
+    
+    def __repr__(self):
+        """
+        Return a representation that can be used to reconstruct the object.
+        """
+        return "Element(%s, '%s', '%s', %s)" % (self.number, self.symbol, self.name, self.mass)
+    
 ################################################################################
 
 def getElement(number=0, symbol=''):
-	"""
-	Return the :class:`Element` object with attributes defined by the given
-	parameters. Only the parameters explicitly given will be used, so you can
-	search by atomic `number` or by `symbol` independently.
-	"""
-	cython.declare(element=Element)
-	for element in elementList:
-		if (number == 0 or element.number == number) and (symbol == '' or element.symbol == symbol):
-			return element
-	# If we reach this point that means we did not find an appropriate element,
-	# so we raise an exception
-	raise ChemPyError("No element found with number %i and symbol '%s'." % (number, symbol))
+    """
+    Return the :class:`Element` object with attributes defined by the given
+    parameters. Only the parameters explicitly given will be used, so you can
+    search by atomic `number` or by `symbol` independently.
+    """
+    cython.declare(element=Element)
+    for element in elementList:
+        if (number == 0 or element.number == number) and (symbol == '' or element.symbol == symbol):
+            return element
+    # If we reach this point that means we did not find an appropriate element,
+    # so we raise an exception
+    raise ChemPyError("No element found with number %i and symbol '%s'." % (number, symbol))
 
 ################################################################################
 
@@ -230,11 +230,11 @@ Cn = Element(112, 'Cn', 'copernicum'    , 0.285)
 
 # A list of the elements, sorted by increasing atomic number
 elementList = [
-	H, He,
-	Li, Be, B, C, N, O, F, Ne,
-	Na, Mg, Al, Si, P, S, Cl, Ar,
-	K, Ca, Sc, Ti, V, Cr, Mn, Fe, Co, Ni, Cu, Zn, Ga, Ge, As, Se, Br, Kr,
-	Rb, Sr, Y, Zr, Nb, Mo, Tc, Ru, Rh, Pd, Ag, Cd, In, Sn, Sb, Te, I, Xe,
-	Cs, Ba, La, Ce, Pr, Nd, Pm, Sm, Eu, Gd, Tb, Dy, Ho, Er, Tm, Yb, Lu, Hf, Ta, W, Re, Os, Ir, Pt, Au, Hg, Tl, Pb, Bi, Po, At, Rn,
-	Fr, Ra, Ac, Th, Pa, U, Np, Pu, Am, Cm, Bk, Cf, Es, Fm, Md, No, Lr, Rf, Db, Sg, Bh, Hs, Mt, Ds, Rg, Cn
+    H, He,
+    Li, Be, B, C, N, O, F, Ne,
+    Na, Mg, Al, Si, P, S, Cl, Ar,
+    K, Ca, Sc, Ti, V, Cr, Mn, Fe, Co, Ni, Cu, Zn, Ga, Ge, As, Se, Br, Kr,
+    Rb, Sr, Y, Zr, Nb, Mo, Tc, Ru, Rh, Pd, Ag, Cd, In, Sn, Sb, Te, I, Xe,
+    Cs, Ba, La, Ce, Pr, Nd, Pm, Sm, Eu, Gd, Tb, Dy, Ho, Er, Tm, Yb, Lu, Hf, Ta, W, Re, Os, Ir, Pt, Au, Hg, Tl, Pb, Bi, Po, At, Rn,
+    Fr, Ra, Ac, Th, Pa, U, Np, Pu, Am, Cm, Bk, Cf, Es, Fm, Md, No, Lr, Rf, Db, Sg, Bh, Hs, Mt, Ds, Rg, Cn
 ]

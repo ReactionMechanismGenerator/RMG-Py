@@ -31,89 +31,89 @@ from element cimport Element
 
 cdef class Atom(Vertex):
 
-	cdef public Element element
-	cdef public short radicalElectrons
-	cdef public short spinMultiplicity
-	cdef public short implicitHydrogens
-	cdef public short charge
-	cdef public str label
+    cdef public Element element
+    cdef public short radicalElectrons
+    cdef public short spinMultiplicity
+    cdef public short implicitHydrogens
+    cdef public short charge
+    cdef public str label
 
-	cpdef bint equivalent(self, Vertex other0)
+    cpdef bint equivalent(self, Vertex other0)
 
-	cpdef Atom copy(self)
+    cpdef Atom copy(self)
 
-	cpdef bint isHydrogen(self)
+    cpdef bint isHydrogen(self)
 
-	cpdef bint isNonHydrogen(self)
+    cpdef bint isNonHydrogen(self)
 
-	cpdef bint isCarbon(self)
+    cpdef bint isCarbon(self)
 
-	cpdef bint isOxygen(self)
+    cpdef bint isOxygen(self)
 
 ################################################################################
 
 cdef class Bond(Edge):
 
-	cdef public short order
+    cdef public short order
 
-	cpdef bint equivalent(self, Edge other0)
+    cpdef bint equivalent(self, Edge other0)
 
-	cpdef Bond copy(self)
+    cpdef Bond copy(self)
 
-	cpdef bint isSingle(self)
+    cpdef bint isSingle(self)
 
-	cpdef bint isDouble(self)
+    cpdef bint isDouble(self)
 
-	cpdef bint isTriple(self)
+    cpdef bint isTriple(self)
 
 ################################################################################
 
 cdef class ChemGraph(Graph):
 
-	cdef public bint implicitHydrogens
+    cdef public bint implicitHydrogens
 
-	cpdef addAtom(self, Atom atom)
+    cpdef addAtom(self, Atom atom)
 
-	cpdef addBond(self, Atom atom1, Atom atom2, Bond bond)
+    cpdef addBond(self, Atom atom1, Atom atom2, Bond bond)
 
-	cpdef dict getBonds(self, Atom atom)
+    cpdef dict getBonds(self, Atom atom)
 
-	cpdef Bond getBond(self, Atom atom1, Atom atom2)
+    cpdef Bond getBond(self, Atom atom1, Atom atom2)
 
-	cpdef bint hasAtom(self, Atom atom)
+    cpdef bint hasAtom(self, Atom atom)
 
-	cpdef bint hasBond(self, Atom atom1, Atom atom2)
+    cpdef bint hasBond(self, Atom atom1, Atom atom2)
 
-	cpdef removeAtom(self, Atom atom)
+    cpdef removeAtom(self, Atom atom)
 
-	cpdef removeBond(self, Atom atom1, Atom atom2)
+    cpdef removeBond(self, Atom atom1, Atom atom2)
 
-	cpdef sortAtoms(self)
+    cpdef sortAtoms(self)
 
-	cpdef makeHydrogensImplicit(self)
+    cpdef makeHydrogensImplicit(self)
 
-	cpdef makeHydrogensExplicit(self)
+    cpdef makeHydrogensExplicit(self)
 
 ################################################################################
 
 cdef class Molecule:
 
-	cdef public list resonanceForms
+    cdef public list resonanceForms
 
-	cpdef fromCML(self, str cmlstr)
+    cpdef fromCML(self, str cmlstr)
 
-	cpdef fromInChI(self, str inchistr)
+    cpdef fromInChI(self, str inchistr)
 
-	cpdef fromSMILES(self, str smilesstr)
+    cpdef fromSMILES(self, str smilesstr)
 
-	cpdef fromOBMol(self, obmol)
+    cpdef fromOBMol(self, obmol)
 
-	cpdef str toCML(self)
+    cpdef str toCML(self)
 
-	cpdef str toInChI(self)
+    cpdef str toInChI(self)
 
-	cpdef str toSMILES(self)
+    cpdef str toSMILES(self)
 
-	cpdef toOBMol(self)
+    cpdef toOBMol(self)
 
-	cpdef bint isIsomorphic(self, other)
+    cpdef bint isIsomorphic(self, other)

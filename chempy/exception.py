@@ -43,37 +43,37 @@ discouraged.
 ################################################################################
 
 class ChemPyError(Exception):
-	"""
-	A generic ChemPy exception, and a base class for more detailed ChemPy
-	exceptions. Contains a single attribute `msg` that should be used to
-	provide information about the details of the exception.
-	"""
+    """
+    A generic ChemPy exception, and a base class for more detailed ChemPy
+    exceptions. Contains a single attribute `msg` that should be used to
+    provide information about the details of the exception.
+    """
 
-	def __init__(self, msg):
-		self.msg = msg
-	
-	def __str__(self):
-		return self.msg	
+    def __init__(self, msg):
+        self.msg = msg
+    
+    def __str__(self):
+        return self.msg	
 
 ################################################################################
 
 class InvalidThermoModelError(ChemPyError):
-	"""
-	An exception used when working with a thermodynamics model to indicate that
-	something went wrong while doing so.
-	"""
-	pass
+    """
+    An exception used when working with a thermodynamics model to indicate that
+    something went wrong while doing so.
+    """
+    pass
 
 class InvalidKineticsModelError(ChemPyError):
-	"""
-	An exception used when working with a kinetics model to indicate that
-	something went wrong while doing so.
-	"""
-	pass
+    """
+    An exception used when working with a kinetics model to indicate that
+    something went wrong while doing so.
+    """
+    pass
 
 class InvalidStatesModelError(ChemPyError):
-	"""
-	An exception used when working with a states model to indicate that
-	something went wrong while doing so.
-	"""
-	pass
+    """
+    An exception used when working with a states model to indicate that
+    something went wrong while doing so.
+    """
+    pass

@@ -32,24 +32,24 @@ from geometry cimport Geometry
 
 cdef class LennardJones:
 
-	cdef public double sigma
-	cdef public double epsilon
+    cdef public double sigma
+    cdef public double epsilon
 
 ################################################################################
 
 cdef class Species:
-	
-	cdef public int index
-	cdef public str label
-	cdef public ThermoModel thermo
-	cdef public StatesModel states
-	cdef public Geometry geometry
-	cdef public LennardJones lennardJones
+    
+    cdef public int index
+    cdef public str label
+    cdef public ThermoModel thermo
+    cdef public StatesModel states
+    cdef public Geometry geometry
+    cdef public LennardJones lennardJones
 
 ################################################################################
 
 cdef class TransitionState:
-	
-	cdef public str label
-	cdef public StatesModel states
-	cdef public Geometry geometry
+    
+    cdef public str label
+    cdef public StatesModel states
+    cdef public Geometry geometry
