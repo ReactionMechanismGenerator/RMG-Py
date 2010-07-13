@@ -219,9 +219,7 @@ subroutine estimateRateCoefficients_MSC(T, P, E, collFreq, densStates, Eres, &
 
     ! To complete pa we need the Boltzmann distribution at low energies
     do i = 1, nIsom
-        do r = 1, nGrains
-            if (pa(r,i,i) == 0) pa(r,i,i) = densStates(i, r) * exp(-E(r) / 8.314472 / T)
-        end do
+        pa(1:start,i,i) = densStates(i,1:start) * exp(-E(1:start) / 8.314472 / T)
     end do
 
 end subroutine

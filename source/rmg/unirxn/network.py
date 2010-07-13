@@ -527,7 +527,7 @@ class Network:
 					maxIndex = r
 
 			# If tail of distribution is much lower than the maximum, then we've found bounds for Emax
-			tol = 1e-8
+			tol = 1e-4
 			if isomer.eqDist[-1] / value < tol:
 				r = nE - 1
 				while r > 0 and not done:
@@ -780,22 +780,22 @@ class Network:
 			if msg != '':
 				raise UnirxnNetworkException('Unable to apply method %s: %s' % (method, msg))
 
-#		# Optionally, use the p values to evaluate the k(T,P) values
-#		# This is redundant because they are returned from the various methods
-#		# already (using more efficient code), and so is commented out
-#		import mastereqn
-#		dEdown = self.bathGas.expDownParam
-#		E0 = numpy.zeros([nIsom+nReac], numpy.float64)
-#		for i in range(nIsom+nReac): E0[i] = self.isomers[i].E0
-#		Mcoll0 = numpy.zeros([nIsom,nGrains,nGrains], numpy.float64)
-#		for i in range(nIsom):
-#			collFreq = self.isomers[i].collFreq
-#			densStates0 = self.isomers[i].densStates
-#			Mcoll0[i,:,:], msg = mastereqn.collisionmatrix(T, P, Elist, collFreq, densStates0, E0[i], dEdown)
-#			msg = msg.strip()
-#			if msg != '':
-#				raise UnirxnNetworkException('Unable to determine collision matrix for isomer %i: %s' % (i, msg))
-#		K = self.__calculateRatesFromPopulationVectors(p, Mcoll0, Kij, Gnj, Fim, nIsom, nReac, nProd)
+		## Optionally, use the p values to evaluate the k(T,P) values
+		## This is redundant because they are returned from the various methods
+		## already (using more efficient code), and so is commented out
+		#import mastereqn
+		#dEdown = self.bathGas.expDownParam
+		#E0 = numpy.zeros([nIsom+nReac], numpy.float64)
+		#for i in range(nIsom+nReac): E0[i] = self.isomers[i].E0
+		#Mcoll0 = numpy.zeros([nIsom,nGrains,nGrains], numpy.float64)
+		#for i in range(nIsom):
+			#collFreq = self.isomers[i].collFreq
+			#densStates0 = self.isomers[i].densStates
+			#Mcoll0[i,:,:], msg = mastereqn.collisionmatrix(T, P, Elist, collFreq, densStates0, E0[i], dEdown)
+			#msg = msg.strip()
+			#if msg != '':
+				#raise UnirxnNetworkException('Unable to determine collision matrix for isomer %i: %s' % (i, msg))
+		#K = self.__calculateRatesFromPopulationVectors(p, Mcoll0, Kij, Gnj, Fim, nIsom, nReac, nProd)
 		
 		# If we had to create a temporary (fake) product channel, then don't
 		# return the last row and column of the rate coefficient matrix
@@ -815,7 +815,7 @@ class Network:
 		"""
 
 		K = numpy.zeros((nIsom+nReac+nProd,nIsom+nReac+nProd), numpy.float64)
-
+		
 		# Setting an isomer well as the unit source gives the k(T,P) values
 		# from that channel to all others in the network (thermal activation)
 		for src in range(nIsom):
@@ -823,7 +823,7 @@ class Network:
 				# Mi
 				K[j,src] += numpy.sum(numpy.dot(Mcoll[j,:,:], p[:,src,j]))
 				for l in range(nIsom):
-					K[j,src] -= numpy.sum(Kij[l,j,:] * p[:,src,j])
+					if j != l: K[j,src] -= numpy.sum(Kij[l,j,:] * p[:,src,j])
 				for l in range(nReac+nProd):
 					K[j,src] -= numpy.sum(Gnj[l,j,:] * p[:,src,j])
 				# Kij
@@ -843,7 +843,7 @@ class Network:
 				# Mi
 				K[j,src] += numpy.sum(numpy.dot(Mcoll[j,:,:], p[:,src,j]))
 				for l in range(nIsom):
-					K[j,src] -= numpy.sum(Kij[l,j,:] * p[:,src,j])
+					if j != l: K[j,src] -= numpy.sum(Kij[l,j,:] * p[:,src,j])
 				for l in range(nReac+nProd):
 					K[j,src] -= numpy.sum(Gnj[l,j,:] * p[:,src,j])
 				# Kij

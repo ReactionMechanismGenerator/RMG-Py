@@ -95,9 +95,7 @@ Kij, Fim, Gnj, dEdown, nIsom, nReac, nProd, nGrains, K, msg, pa)
 
     ! Calculate equilibrium distributions
     do i = 1, nIsom
-        do r = 1, nGrains
-            eqDist(i,r) = densStates(i,r) * exp(-E(r) / 8.314472 / T)
-        end do
+        eqDist(i,:) = densStates(i,:) * exp(-E / 8.314472 / T)
     end do
     ! Determine fraction of equilibrium distribution in reservoir for each isomer
     do i = 1, nIsom
@@ -127,12 +125,6 @@ Kij, Fim, Gnj, dEdown, nIsom, nReac, nProd, nGrains, K, msg, pa)
                 end if
             end do
         end do
-    end do
-
-    ! Put the reservoir populations into pa as well
-    ! This means that x_i * pa_i gives the p(E,t) predicted by this method
-    do i = 1, nIsom
-        pa(1:nRes(i),i,i) = eqDist(i,1:nRes(i))
     end do
 
     ! Initialize phenomenological rate coefficient matrix
@@ -188,6 +180,12 @@ Kij, Fim, Gnj, dEdown, nIsom, nReac, nProd, nGrains, K, msg, pa)
     do n = 1, nIsom+nReac
         K(n,n) = K(n,n) - sum(K(:,n))
     end do
+    
+    ! Put the reservoir populations into pa as well
+    ! This means that x_i * pa_i gives the p(E,t) predicted by this method
+    do i = 1, nIsom
+        pa(1:nRes(i),i,i) = eqDist(i,1:nRes(i))
+    end do
 
 end subroutine
 
@@ -223,7 +221,6 @@ subroutine reservoirCutoffs(E0, Eres, nIsom, E, nGrains, dEdown, densStates, nRe
     integer, dimension(1:nIsom), intent(out) :: nRes
 
     real(8) Emin, dE
-    integer, dimension(1:nIsom) :: start
     integer i, r
 
     Emin = minval(E)
@@ -231,29 +228,9 @@ subroutine reservoirCutoffs(E0, Eres, nIsom, E, nGrains, dEdown, densStates, nRe
 
     ! Determine reservoir cutoffs by looking at transition state energies
     do i = 1, nIsom
-        ! Find the ground-state energy grain for this isomer
-        start(i) = 0
-        do r = 1, nGrains
-            if (densStates(i,r) > 0 .and. start(i) == 0) then
-                start(i) = r
-            end if
-        end do
-        ! Now find the reservoir cutoff grain for this isomer
-        nRes(i) = ceiling((Eres(i) - 10 * dEdown - Emin) / dE)
-        ! Sometimes the above will result in nRes(i) < start (i.e. a cutoff
-        ! below the ground state); we need to handle this if it happends
-        if (nRes(i) < start(i)) then
-            ! First try to place the cutoff a few grains below the lowest
-            ! transition state energy
-            nRes(i) = ceiling((Eres(i) - Emin) / dE) - 4
-            if (nRes(i) < start(i)) then
-                ! If this is still too low, then just put the cutoff a few
-                ! grains above the ground state
-                nRes(i) = start(i) + 4
-            end if
-        end if
+        nRes(i) = floor((Eres(i) - Emin) / dE)
     end do
-
+    
 end subroutine
 
 
@@ -388,7 +365,7 @@ subroutine activeStateFull(T, P, E, Mcoll, densStates, Kij, Fim, Gnj, &
     do n = 1, nIsom+nReac
         do i = 1, nIsom
             do r = 1, nGrains
-                pa(r,n,i) = 0 * pa(r,n,i)
+                pa(r,n,i) = 0.0
             end do
         end do
     end do
@@ -484,7 +461,7 @@ subroutine activeStateBanded(T, P, E, Mcoll, densStates, Kij, Fim, Gnj, dEdown, 
     ! Determine bandwidth (at which transfer probabilities are so low that they can be truncated
     ! with negligible error)
     dE = E(2) - E(1)
-    halfbandwidth = ceiling(6 * dEdown / dE) * nIsom
+    halfbandwidth = ceiling(8 * max(dEdown, 8.314472 * T) / dE) * nIsom
     bandwidth = 2 * halfbandwidth + 1
 
     ! Create and zero active-state matrix and RHS vectors
@@ -511,7 +488,7 @@ subroutine activeStateBanded(T, P, E, Mcoll, densStates, Kij, Fim, Gnj, dEdown, 
         end do
     end do
     halfbandwidth = halfbandwidth * nIsom
-
+    
     ! Isomerization terms in active-state matrix and RHS vectors
     do i = 1, nIsom
         do j = 1, i-1
@@ -554,7 +531,7 @@ subroutine activeStateBanded(T, P, E, Mcoll, densStates, Kij, Fim, Gnj, dEdown, 
     do n = 1, nIsom+nReac
         do i = 1, nIsom
             do r = 1, nGrains
-                pa(r,n,i) = 0 * pa(r,n,i)
+                pa(r,n,i) = 0.0
             end do
         end do
     end do

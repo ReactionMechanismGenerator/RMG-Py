@@ -307,10 +307,8 @@ subroutine estimateRateCoefficients_CSE(T, P, E, Mcoll0, E0, densStates, &
                 dXij(i,j) = 0.0
             end do
 
-            do r = 1, nRows
-                C(r) = X(r,j) * sum(Xinv(j,:) * eqDist(:,n))
-            end do
-
+            C = X(:,j) * sum(Xinv(j,:) * eqDist(:,n))
+            
             do r = 1, nGrains
                 do i = 1, nIsom
                     index = indices(r,i)

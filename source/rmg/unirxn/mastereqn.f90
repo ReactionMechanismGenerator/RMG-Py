@@ -64,8 +64,7 @@ subroutine collisionMatrix(T, P, E, collFreq, densStates, E0, dEdown, Ngrains, &
 
     real(8) dE
 
-    integer         :: halfbandwidth
-    integer         :: lb, ub, start
+    integer         :: start
     integer         :: r, s
 
     ! Initialize msg to empty string
@@ -80,10 +79,6 @@ subroutine collisionMatrix(T, P, E, collFreq, densStates, E0, dEdown, Ngrains, &
     ! Get minimum and maximum energies and grain size
     dE = E(2) - E(1)
 
-    ! Determine bandwidth (at which transfer probabilities are so low that they can be truncated
-    ! with negligible error)
-    halfbandwidth = ceiling(6 * dEdown / dE)
-    
     ! Determine start grain (corresponding to isomer ground-state energy)
     start = 0
     do r = 1, Ngrains
@@ -97,15 +92,9 @@ subroutine collisionMatrix(T, P, E, collFreq, densStates, E0, dEdown, Ngrains, &
     end if
 
     ! Determine unnormalized entries in collisional tranfer probability matrix for the current isomer
-    do r = 1, Ngrains
-        do s = 1, Ngrains
-            lb = max(r - halfbandwidth, start)
-            ub = min(r + halfbandwidth, Ngrains)
-            if (r >= start .and. s >= lb .and. s <= ub) then
-                call transferRate(s, r, E(s), E(r), dEdown, E0, densStates, Ngrains, T, Mcoll(s,r))
-            else
-                Mcoll(s,r) = 0.0
-            end if
+    do r = start, Ngrains
+        do s = start, Ngrains
+            call transferRate(s, r, E(s), E(r), dEdown, E0, densStates, Ngrains, T, Mcoll(s,r))
         end do
     end do
 
