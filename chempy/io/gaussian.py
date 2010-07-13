@@ -227,8 +227,33 @@ class GaussianLog:
                     # Read the next line in the file
                     line = f.readline()
 
+            # Read the next line in the file
+            line = f.readline()
+
+        # Close file when finished
+        f.close()
+
+        return StatesModel(modes=modes, spinMultiplicity=spinMultiplicity)
+
+    def loadEnergy(self):
+        """
+        Load the energy in J/mol from a Gaussian log file. The file is checked 
+        for a complete basis set extrapolation; if found, that value is 
+        returned. Only the last energy in the file is returned.
+        """
+
+        modes = []
+        E0 = None; E0_cbs = None
+        spinMultiplicity = 1
+
+        f = open(self.path, 'r')
+        line = f.readline()
+        while line != '':
+
+            if 'SCF Done:' in line:
+                E0 = float(line.split()[4]) * 4.35974394e-18 * constants.Na
             elif 'CBS-QB3 (0 K)' in line or 'G3 (O K)' in line:
-                E0 = float(line.split()[3]) * 4.35974394e-18 * constants.Na
+                E0_cbs = float(line.split()[3]) * 4.35974394e-18 * constants.Na
             
             # Read the next line in the file
             line = f.readline()
@@ -236,9 +261,11 @@ class GaussianLog:
         # Close file when finished
         f.close()
 
-        return StatesModel(modes=modes, E0=E0, spinMultiplicity=spinMultiplicity)
-
-    def loadEnergies(self):
+        if E0_cbs is not None: return E0_cbs
+        elif E0 is not None: return E0
+        else: raise ChemPyError('Unable to find energy in Gaussian log file.')
+    
+    def loadScanEnergies(self):
         """
         Extract the optimized energies in J/mol from a log file, e.g. the result
         of a Gaussian "Scan" quantum chemistry calculation.

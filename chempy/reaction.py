@@ -181,7 +181,7 @@ class Reaction:
         """
         cython.declare(E0=cython.double)
         # Determine barrier height
-        E0 = TS.states.E0 - sum([spec.states.E0 for spec in self.reactants])
+        E0 = TS.E0 - sum([spec.E0 for spec in self.reactants])
         # Determine TST rate constant at each temperature
         Qreac = numpy.ones_like(Tlist)
         for spec in self.reactants: Qreac *= spec.states.getPartitionFunction(Tlist) / constants.Na

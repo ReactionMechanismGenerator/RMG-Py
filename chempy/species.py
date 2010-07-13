@@ -79,17 +79,19 @@ class Species:
     `thermo`        :class:`ThermoModel`        The thermodynamics model for the species
     `states`        :class:`StatesModel`        The molecular degrees of freedom model for the species
     `geometry`      :class:`Geometry`           The 3D geometry of the molecule
+    `E0`            ``double``                  The ground-state energy in J/mol
     `lennardJones`  :class:`LennardJones`       A set of Lennard-Jones collision parameters
     =============== =========================== ================================
     
     """
     
-    def __init__(self, index=-1, label='', thermo=None, states=None, geometry=None, lennardJones=None):
+    def __init__(self, index=-1, label='', thermo=None, states=None, geometry=None, E0=0.0, lennardJones=None):
         self.index = index
         self.label = label
         self.thermo = thermo
         self.states = states
         self.geometry = geometry
+        self.E0 = E0
         self.lennardJones = lennardJones
 
     def __repr__(self):
@@ -118,15 +120,17 @@ class TransitionState:
     `label`         :class:`str`                A descriptive string label
     `states`        :class:`StatesModel`        The molecular degrees of freedom model for the species
     `geometry`      :class:`Geometry`           The 3D geometry of the molecule
+    `E0`            ``double``                  The ground-state energy in J/mol
     `frequency`     ``double``                  The negative frequency of the first-order saddle point in cm^-1
     =============== =========================== ================================
 
     """
 
-    def __init__(self, label='', states=None, geometry=None, frequency=0.0):
+    def __init__(self, label='', states=None, geometry=None, E0=0.0, frequency=0.0):
         self.label = label
         self.states = states
         self.geometry = geometry
+        self.E0 = E0
         self.frequency = frequency
 
     def __repr__(self):

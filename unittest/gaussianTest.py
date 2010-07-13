@@ -25,6 +25,8 @@ class GaussianTest(unittest.TestCase):
 
         log = GaussianLog('unittest/ethylene.log')
         s = log.loadStates()
+        E0 = log.loadEnergy()
+        
         self.assertTrue(len([mode for mode in s.modes if isinstance(mode,Translation)]) == 1)
         self.assertTrue(len([mode for mode in s.modes if isinstance(mode,RigidRotor)]) == 1)
         self.assertTrue(len([mode for mode in s.modes if isinstance(mode,HarmonicOscillator)]) == 1)
@@ -38,7 +40,7 @@ class GaussianTest(unittest.TestCase):
         self.assertAlmostEqual(rot.getPartitionFunction(Tlist) / 2.59622e3, 1.0, 3)
         self.assertAlmostEqual(vib.getPartitionFunction(Tlist) / 1.0481e0, 1.0, 3)
 
-        self.assertAlmostEqual(s.E0 / 6.02214179e23 / 4.35974394e-18 / -78.563169, 1.0, 2)
+        self.assertAlmostEqual(E0 / 6.02214179e23 / 4.35974394e-18 / -78.563169, 1.0, 2)
         self.assertEqual(s.spinMultiplicity, 1)
 
     def testLoadOxygenFromGaussianLog(self):
@@ -49,6 +51,8 @@ class GaussianTest(unittest.TestCase):
 
         log = GaussianLog('unittest/oxygen.log')
         s = log.loadStates()
+        E0 = log.loadEnergy()
+        
         self.assertTrue(len([mode for mode in s.modes if isinstance(mode,Translation)]) == 1)
         self.assertTrue(len([mode for mode in s.modes if isinstance(mode,RigidRotor)]) == 1)
         self.assertTrue(len([mode for mode in s.modes if isinstance(mode,HarmonicOscillator)]) == 1)
@@ -62,7 +66,7 @@ class GaussianTest(unittest.TestCase):
         self.assertAlmostEqual(rot.getPartitionFunction(Tlist) / 7.13316e1, 1.0, 3)
         self.assertAlmostEqual(vib.getPartitionFunction(Tlist) / 1.000037e0, 1.0, 3)
 
-        self.assertAlmostEqual(s.E0 / 6.02214179e23 / 4.35974394e-18 / -150.374756, 1.0, 4)
+        self.assertAlmostEqual(E0 / 6.02214179e23 / 4.35974394e-18 / -150.374756, 1.0, 4)
         self.assertEqual(s.spinMultiplicity, 3)
 
 if __name__ == '__main__':

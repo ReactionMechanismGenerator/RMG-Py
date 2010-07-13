@@ -108,7 +108,6 @@ cdef class HarmonicOscillator(Mode):
 cdef class StatesModel:
     
     cdef public list modes
-    cdef public double E0
     cdef public int spinMultiplicity
 
     cpdef numpy.ndarray getHeatCapacity(self, numpy.ndarray Tlist)
@@ -120,6 +119,8 @@ cdef class StatesModel:
     cpdef numpy.ndarray getPartitionFunction(self, numpy.ndarray Tlist)
     
     cpdef numpy.ndarray getDensityOfStates(self, numpy.ndarray Elist)
+
+################################################################################
 
 cdef numpy.ndarray convolve(numpy.ndarray rho1, numpy.ndarray rho2, numpy.ndarray Elist)
 

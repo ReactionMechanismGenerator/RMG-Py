@@ -45,6 +45,7 @@ cdef class Species:
     cdef public StatesModel states
     cdef public Geometry geometry
     cdef public LennardJones lennardJones
+    cdef public double E0
 
 ################################################################################
 
@@ -53,3 +54,5 @@ cdef class TransitionState:
     cdef public str label
     cdef public StatesModel states
     cdef public Geometry geometry
+    cdef public double E0
+    cdef public double frequency

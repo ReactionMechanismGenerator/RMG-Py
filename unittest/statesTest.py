@@ -44,9 +44,8 @@ class StatesTest(unittest.TestCase):
         self.assertAlmostEqual(rot.getEntropy(Tlist) / 4.184 / 18.604, 1.0, 3)
         self.assertAlmostEqual(vib.getEntropy(Tlist) / 4.184 / 0.533, 1.0, 3)
 
-        states = StatesModel()
-        states.modes = [rot, vib]
-
+        states = StatesModel(modes=[rot, vib], spinMultiplicity=1)
+        
         dE = 10.0
         Elist = numpy.arange(0, 100001, dE, numpy.float64)
         rho = states.getDensityOfStates(Elist)
@@ -80,9 +79,8 @@ class StatesTest(unittest.TestCase):
         self.assertAlmostEqual(rot.getEntropy(Tlist) / 4.184 / 10.467, 1.0, 3)
         self.assertAlmostEqual(vib.getEntropy(Tlist) / 4.184 / 0.00654, 1.0, 2)
 
-        states = StatesModel()
-        states.modes = [rot, vib]
-
+        states = StatesModel(modes=[rot, vib], spinMultiplicity=3)
+        
         dE = 10.0
         Elist = numpy.arange(0, 100001, dE, numpy.float64)
         rho = states.getDensityOfStates(Elist)

@@ -627,15 +627,13 @@ class StatesModel:
     Attribute           Type                Description
     =================== =================== ====================================
     `modes`             ``list``            A list of the degrees of freedom
-    `E0`                ``double``          The ground-state energy in J/mol
     `spinMultiplicity`  ``int``             The spin multiplicity of the molecule
     =================== =================== ====================================
 
     """
 
-    def __init__(self, modes=None, E0=0.0, spinMultiplicity=1):
+    def __init__(self, modes=None, spinMultiplicity=1):
         self.modes = modes or []
-        self.E0 = E0
         self.spinMultiplicity = spinMultiplicity
 
     def getHeatCapacity(self, Tlist):
@@ -686,7 +684,7 @@ class StatesModel:
         # Other modes
         for mode in self.modes:
             Q *= mode.getPartitionFunction(Tlist)
-        return Q
+        return Q * self.spinMultiplicity
 
     def getDensityOfStates(self, Elist):
         """
@@ -699,9 +697,10 @@ class StatesModel:
         # Active K-rotor
         rotors = [mode for mode in self.modes if isinstance(mode, RigidRotor)]
         if len(rotors) == 0:
+            rho0 = numpy.zeros_like(Elist)
             for i, E in enumerate(Elist):
-                if E == 0: rho[i] = 0.0
-                else: rho[i] = 1.0 / math.sqrt(1.0 * E)
+                if E > 0: rho0[i] = 1.0 / math.sqrt(1.0 * E)
+            rho = convolve(rho, rho0, Elist)
         # Other non-vibrational modes
         for mode in self.modes:
             if not isinstance(mode, HarmonicOscillator):
@@ -710,7 +709,7 @@ class StatesModel:
         for mode in self.modes:
             if isinstance(mode, HarmonicOscillator):
                 rho = mode.getDensityOfStates(Elist, rho)
-        return rho
+        return rho * self.spinMultiplicity
 
 def convolve(rho1, rho2, Elist):
     """
