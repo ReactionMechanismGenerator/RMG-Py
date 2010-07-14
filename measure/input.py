@@ -49,6 +49,13 @@ network = None
 # A dict of the species in the input file, enabling lookup by label
 speciesDict = {}
 
+# The temperatures and pressures to consider
+Tlist = None
+Plist = None
+
+# The energy grains to use
+Elist = None
+
 ################################################################################
 
 def processQuantity(quantity):
@@ -139,12 +146,53 @@ def collisionModel(type, parameters):
         logging.debug('Collision model set to single exponential down (alpha = %g kJ/mol)' % (parameters[0] / 1000.0))
     else:
         raise NameError('Invalid collision model type "%s".' % type)
-    
+
+def temperatures(Tlist0=None, Tmin=None, Tmax=None, count=None):
+    global Tlist
+    if Tlist0 is not None: 
+        Tlist0 = processQuantity(Tlist0)[0]
+        Tlist = Tlist0
+    elif Tmin is not None and Tmax is not None and count is not None:
+        # Distribute temperatures evenly on a T^-1 domain
+        Tmin = processQuantity(Tmin)[0]
+        Tmax = processQuantity(Tmax)[0]
+        Tlist = 1.0/numpy.linspace(1.0/Tmax, 1.0/Tmin, count)
+    else:
+        raise SyntaxError('Must specify either a list of temperatures or Tmin, Tmax, and count.')
+
+def pressures(Plist0=None, Pmin=None, Pmax=None, count=None):
+    global Plist
+    if Plist0 is not None: 
+        Plist0 = processQuantity(Plist0)[0]
+        Plist = Plist0
+    elif Pmin is not None and Pmax is not None and count is not None:
+        # Distribute pressures evenly on a log domain
+        Pmin = processQuantity(Pmin)[0]
+        Pmax = processQuantity(Pmax)[0]
+        Plist = 10.0 ** numpy.linspace(math.log10(Pmin), math.log10(Pmax), count)
+    else:
+        raise SyntaxError('Must specify either a list of pressures or Pmin, Pmax, and count.')
+
+def energies(Emin=None, Emax=None, dE=None, count=None):
+    global Elist, network
+    if dE is not None or count is not None:
+        dE = processQuantity(dE)[0]
+        if dE is None: dE = 0.0
+        if count is None: count = 0
+        if Emin is not None and Emax is not None:
+            Emin = processQuantity(Emin)[0]
+            Emax = processQuantity(Emax)[0]
+            Elist = network.getEnergyGrains(Emin, Emax, dE, count)
+        else:
+            Elist = (dE, count)
+    else:
+        raise SyntaxError('Must specify either dE or count.')
+
 ################################################################################
 
 def readInput(path):
 
-    global speciesDict, network
+    global speciesDict, network, Tlist, Plist, Elist
     
     try:
         f = open(path)
@@ -173,6 +221,9 @@ def readInput(path):
         'Arrhenius': Arrhenius,
         'TransitionState': TS,
         'collisionModel': collisionModel,
+        'temperatures': temperatures,
+        'pressures': pressures,
+        'energies': energies,
     }
     
     try:
@@ -180,8 +231,13 @@ def readInput(path):
     except (NameError, TypeError, SyntaxError), e:
         logging.error('The input file "%s" was invalid:' % path)
         logging.exception(e)
+        network = None
     finally:
         f.close()
+    
+    # If loading of the input file was unsuccessful for any reason,
+    # then return None for everything so the program can terminate
+    if network is None: return None, None, None, None
     
     # Figure out which configurations are isomers, reactant channels, and product channels
     for rxn in network.pathReactions:
@@ -231,4 +287,10 @@ def readInput(path):
     logging.debug('========================================================================')
     logging.debug('')
     
-    return network
+    # If there are no isomers, then there's nothing to do
+    if len(network.isomers) == 0:
+        logging.info('Could not find any unimolecular isomers based on this network, so there is nothing to do.')
+        return None, None, None, None
+      
+    
+    return network, Tlist, Plist, Elist
