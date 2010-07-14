@@ -144,8 +144,19 @@ if __name__ == '__main__':
     from measure.input import readInput
     network, Tlist, Plist, Elist = readInput(args.file[0])
     
+    # Only proceed if the input network is valid
+    if network is not None:
+        
+        # Automatically choose a suitable set of energy grains if they were not
+        # explicitly specified in the input file
+        if len(Elist) == 2:
+            logging.info('Automatically determining energy grains...')
+            Tmax = max(Tlist)
+            grainSize, Ngrains = Elist
+            Elist = network.autoGenerateEnergyGrains(Tmax=Tmax, grainSize=grainSize, Ngrains=Ngrains)
+            logging.debug('Using %i energy grains from %g to %g kJ/mol in steps of %g kJ/mol' % (len(Elist), Elist[0] / 1000, Elist[-1] / 1000, (Elist[1] - Elist[0]) / 1000))
+        
     # Log end timestamp
     logging.info('')
     logging.info('MEASURE execution terminated at ' + time.asctime())
-    
     
