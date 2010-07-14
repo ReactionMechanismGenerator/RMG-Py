@@ -140,6 +140,10 @@ if __name__ == '__main__':
     # Log header
     logHeader()
     
+    # Load input file
+    from measure.input import readInput
+    network = readInput(args.file[0])
+    
     # Log end timestamp
     logging.info('')
     logging.info('MEASURE execution terminated at ' + time.asctime())
