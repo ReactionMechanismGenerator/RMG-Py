@@ -208,4 +208,27 @@ def readInput(path):
         elif rxn.products not in network.products:
             network.products.append(rxn.products)
     
+    # Print lots of information about the loaded network
+    # In particular, we want to give all of the energies on the PES
+    # This will help the user decide if the range of energies selected is 
+    # appropriate when viewing the log file
+    logging.debug('')
+    logging.debug('========================================================================')
+    logging.debug('Network Information')
+    logging.debug('-------------------')
+    logging.debug('Isomers:')
+    for isomer in network.isomers:
+        logging.debug('    {0:<48s} {1:12g} kJ/mol'.format(str(isomer), isomer.E0 / 1000.0))
+    logging.debug('Reactant channels:')
+    for reactants in network.reactants:
+        logging.debug('    {0:<48s} {1:12g} kJ/mol'.format(' + '.join([str(spec) for spec in reactants]), sum([spec.E0 for spec in reactants])))
+    logging.debug('Product channels:')
+    for products in network.products:
+        logging.debug('    {0:<48s} {1:12g} kJ/mol'.format(' + '.join([str(spec) for spec in products]), sum([spec.E0 for spec in products])))
+    logging.debug('Path reactions:')
+    for rxn in network.pathReactions:
+        logging.debug('    {0:<48s} {1:12g} kJ/mol'.format(rxn, rxn.transitionState.E0))
+    logging.debug('========================================================================')
+    logging.debug('')
+    
     return network
