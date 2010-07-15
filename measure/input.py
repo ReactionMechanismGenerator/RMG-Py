@@ -35,11 +35,11 @@ quantities.UnitQuantity('kilocalorie', 1000.0*quantities.cal, symbol='kcal')
 from chempy.species import Species, TransitionState
 from chempy.reaction import Reaction
 from chempy.species import LennardJones as LennardJonesModel
-from chempy.thermo import WilhoitModel
 from chempy.states import *
 from chempy.kinetics import ArrheniusModel
 
 from network import Network
+from collision import SingleExponentialDownModel
 
 ################################################################################
 
@@ -56,6 +56,9 @@ Plist = None
 # The energy grains to use
 Elist = None
 
+# The method to use
+method = ''
+
 ################################################################################
 
 def processQuantity(quantity):
@@ -71,26 +74,15 @@ def processQuantity(quantity):
 
 ################################################################################
 
-def species(label='', thermo=None, E0=None, states=None, lennardJones=None):
+def species(label='', E0=None, states=None, lennardJones=None, molecularWeight=0.0):
     global speciesDict
     if E0 is not None: E0 = processQuantity(E0)[0]
     else: E0 = 0.0
-    spec = Species(label=label, thermo=thermo, states=states, E0=E0, lennardJones=lennardJones)
+    spec = Species(label=label, states=states, E0=E0, lennardJones=lennardJones)
+    spec.molecularWeight = processQuantity(molecularWeight)[0]
     speciesDict[label] = spec
     logging.debug('Found species "%s"' % spec)
     
-def Wilhoit(cp0, cpInf, a0, a1, a2, a3, B, H0, S0):
-    cp0, units = processQuantity(cp0)
-    cpInf, units = processQuantity(cpInf)
-    a0, units = processQuantity(a0)
-    a1, units = processQuantity(a1)
-    a2, units = processQuantity(a2)
-    a3, units = processQuantity(a3)
-    B, units = processQuantity(B)
-    H0, units = processQuantity(H0)
-    S0, units = processQuantity(S0)
-    return WilhoitModel(cp0, cpInf, a0, a1, a2, a3, B, H0, S0)
-
 def States(rotationalConstants=None, symmetry=1, frequencies=None, 
   frequencyScaleFactor=1.0, hinderedRotors=None, spinMultiplicity=1):
     modes = []
@@ -143,9 +135,14 @@ def TS(E0=None):
 def collisionModel(type, parameters):
     parameters = [processQuantity(p)[0] for p in parameters] 
     if type.lower() == 'single exponential down':
+        network.collisionModel = SingleExponentialDownModel(alpha=parameters[0])
         logging.debug('Collision model set to single exponential down (alpha = %g kJ/mol)' % (parameters[0] / 1000.0))
     else:
         raise NameError('Invalid collision model type "%s".' % type)
+
+def bathGas(label):
+    global network, speciesDict
+    network.bathGas = speciesDict[label]
 
 def temperatures(Tlist0=None, Tmin=None, Tmax=None, count=None):
     global Tlist
@@ -188,6 +185,10 @@ def energies(Emin=None, Emax=None, dE=None, count=None):
     else:
         raise SyntaxError('Must specify either dE or count.')
 
+def _method(name):
+    global method
+    method = name
+
 ################################################################################
 
 def readInput(path):
@@ -214,16 +215,17 @@ def readInput(path):
         'True': True,
         'False': False,
         'species': species,
-        'Wilhoit': Wilhoit,
         'States': States,
         'LennardJones': LennardJones,
         'reaction': reaction,
         'Arrhenius': Arrhenius,
         'TransitionState': TS,
         'collisionModel': collisionModel,
+        'bathGas': bathGas,
         'temperatures': temperatures,
         'pressures': pressures,
         'energies': energies,
+        'method': _method,
     }
     
     try:
@@ -293,4 +295,4 @@ def readInput(path):
         return None, None, None, None
       
     
-    return network, Tlist, Plist, Elist
+    return network, Tlist, Plist, Elist, method

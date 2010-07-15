@@ -142,7 +142,7 @@ if __name__ == '__main__':
     
     # Load input file
     from measure.input import readInput
-    network, Tlist, Plist, Elist = readInput(args.file[0])
+    network, Tlist, Plist, Elist, method = readInput(args.file[0])
     
     # Only proceed if the input network is valid
     if network is not None:
