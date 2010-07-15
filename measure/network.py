@@ -3,7 +3,7 @@
 
 ################################################################################
 #
-#   ChemPy - A chemistry toolkit for Python
+#   MEASURE - Master Equation Automatic Solver for Unimolecular REactions
 #
 #   Copyright (c) 2010 by Joshua W. Allen (jwallen@mit.edu)
 #
@@ -35,9 +35,22 @@ reaction network.
 import math
 import numpy
 import cython
+import logging
 
 import chempy.constants as constants
 import chempy.states as states
+
+from reaction import *
+from collision import *
+
+################################################################################
+
+class NetworkError(Exception):
+    """
+    An exception raised while manipulating unimolecular reaction networks for
+    any reason. Pass a string describing the cause of the exceptional behavior.
+    """
+    pass
 
 ################################################################################
 
@@ -196,6 +209,202 @@ class Network:
         # Return the chosen energy grains
         return self.getEnergyGrains(Emin, Emax, grainSize, Ngrains)
 
-    
+    def calculateDensitiesOfStates(self, Elist, E0):
+        """
+        Calculate and return an array containing the density of states for each
+        isomer and reactant channel in the network. `Elist` represents the
+        array of energies in J/mol at which to compute each density of states.
+        The ground-state energies `E0` in J/mol are used to shift each density
+        of states for each configuration to the same zero of energy. The 
+        returned density of states is in units of mol/J.
+        """
+        
+        Ngrains = len(Elist)
+        Nisom = len(self.isomers)
+        Nreac = len(self.reactants)
+        densStates = numpy.zeros((Nisom+Nreac, Ngrains), numpy.float64)
+        dE = Elist[1] - Elist[0]
+        
+        logging.info('Calculating densities of states...')
+        
+        # Densities of states for isomers
+        for i in range(Nisom):
+            logging.info('Calculating density of states for isomer "%s"' % self.isomers[i])
+            densStates0 = self.isomers[i].states.getDensityOfStates(Elist)
+            # Shift to common zero of energy
+            r0 = int(round(E0[i] / dE))
+            densStates[i,r0:] = densStates0[:-r0+len(densStates0)]
+        
+        # Densities of states for reactant channels
+        for n in range(Nreac):
+            if self.reactants[n][0].states is not None and self.reactants[n][1].states is not None:
+                logging.debug('Calculating density of states for reactant channel "%s"' % (' + '.join([str(spec) for spec in self.reactants[n]])))
+                densStates0 = self.reactants[n][0].states.getDensityOfStates(Elist)
+                densStates1 = self.reactants[n][1].states.getDensityOfStates(Elist)
+                densStates0 = states.convolve(densStates0, densStates1, Elist)
+                # Shift to common zero of energy
+                r0 = int(round(E0[n+Nisom] / dE))
+                densStates[n+Nisom,r0:] = densStates0[:-r0+len(densStates0)]
+            else:
+                logging.debug('NOT calculating density of states for reactant channel "%s"' % (' + '.join([str(spec) for spec in self.reactants[n]])))
+        logging.debug('')
+        
+        return densStates
 
-################################################################################
+    def calculateMicrocanonicalRates(self, Elist, densStates):
+        """
+        Calculate and return arrays containing the microcanonical rate 
+        coefficients :math:`k(E)` for the isomerization, dissociation, and
+        association path reactions in the network. `Elist` represents the
+        array of energies in J/mol at which to compute each density of states,
+        while `densStates` represents the density of states of each isomer and
+        reactant channel in mol/J.
+        """
+        
+        Ngrains = len(Elist)
+        Nisom = len(self.isomers)
+        Nreac = len(self.reactants)
+        Nprod = len(self.products)
+        
+        Kij = numpy.zeros([Nisom,Nisom,Ngrains], numpy.float64)
+        Gnj = numpy.zeros([Nreac+Nprod,Nisom,Ngrains], numpy.float64)
+        Fim = numpy.zeros([Nisom,Nreac,Ngrains], numpy.float64)
+        
+        logging.info('Calculating microcanonical rate coefficients k(E)...')
+        
+        for rxn in self.pathReactions:
+            if rxn.reactants[0] in self.isomers and rxn.products[0] in self.isomers:
+                # Isomerization
+                reac = self.isomers.index(rxn.reactants[0])
+                prod = self.isomers.index(rxn.products[0])
+                Kij[prod,reac,:], Kij[reac,prod,:] = calculateMicrocanonicalRateCoefficient(rxn, Elist, densStates[reac,:], densStates[prod,:])
+            elif rxn.reactants[0] in self.isomers and rxn.products in self.reactants:
+                # Dissociation (reversible)
+                reac = self.isomers.index(rxn.reactants[0])
+                prod = self.reactants.index(rxn.products)
+                Gnj[prod,reac,:], Fim[reac,prod,:] = calculateMicrocanonicalRateCoefficient(rxn, Elist, densStates[reac,:], densStates[prod+Nisom,:])
+            elif rxn.reactants[0] in self.isomers and rxn.products in self.products:
+                # Dissociation (irreversible)
+                reac = self.isomers.index(rxn.reactants[0])
+                prod = self.products.index(rxn.products) + Nreac
+                Gnj[prod,reac,:], dummy = calculateMicrocanonicalRateCoefficient(rxn, Elist, densStates[reac,:], None)
+            elif rxn.reactants in self.reactants and rxn.products[0] in self.isomers:
+                # Association
+                reac = self.reactants.index(rxn.reactants)
+                prod = self.isomers.index(rxn.products[0])
+                Fim[prod,reac,:], Gnj[reac,prod,:] = calculateMicrocanonicalRateCoefficient(rxn, Elist, densStates[reac+Nisom,:], densStates[prod,:])
+            else:
+                raise NetworkError('Unexpected type of path reaction "%s"' % rxn)
+        logging.debug('')
+        
+        return Kij, Gnj, Fim
+        
+    def calculateRateCoefficients(self, Tlist, Plist, Elist, method):
+        """
+        Calculate the phenomenological rate coefficients :math:`k(T,P)` for the
+        network at the given temperatures `Tlist` in K and pressures `Plist` in
+        Pa. The `method` string is used to indicate the method to use, and
+        should be one of "modified strong collision", "reservoir state", or
+        "chemically-significant eigenvalues".
+        """
+
+        # Determine the values of some counters
+        Ngrains = len(Elist)
+        Nisom = len(self.isomers)
+        Nreac = len(self.reactants)
+        Nprod = len(self.products)
+        
+        # Get ground-state energies of all isomers and each reactant channel
+        # that has the necessary parameters
+        # An exception will be raised if a unimolecular isomer is missing
+        # this information
+        E0 = numpy.zeros((Nisom+Nreac), numpy.float64)
+        for i in range(Nisom):
+            E0[i] = self.isomers[i].E0
+        for n in range(Nreac):
+            E0[n+Nisom] = sum([spec.E0 for spec in self.reactants[n]])
+        
+        # Get first reactive grain for each isomer
+        Ereac = numpy.ones(Nisom, numpy.float64) * 1e20
+        for i in range(Nisom):
+            for rxn in self.pathReactions:
+                if rxn.reactants[0] == self.isomers[i] or rxn.products[0] == self.isomers[i]:
+                    if rxn.transitionState.E0 < Ereac[i]: 
+                        Ereac[i] = rxn.transitionState.E0
+        
+        # Shift energy grains such that lowest is zero
+        for rxn in self.pathReactions:
+            rxn.transitionState.E0 -= Elist[0]
+        E0 -= Elist[0]
+        Ereac -= Elist[0]
+        Elist -= Elist[0]
+
+        # Calculate density of states for each isomer and each reactant channel
+        # that has the necessary parameters
+        densStates = self.calculateDensitiesOfStates(Elist, E0)
+        
+        # Calculate microcanonical rate coefficients for each path reaction
+        # If degree of freedom data is provided for the transition state, then RRKM theory is used
+        # If high-pressure limit Arrhenius data is provided, then the inverse Laplace transform method is used
+        # Otherwise an exception is raised
+        Kij, Gnj, Fim = self.calculateMicrocanonicalRates(Elist, densStates)
+
+        K = numpy.zeros((len(Tlist),len(Plist),Nisom+Nreac+Nprod,Nisom+Nreac+Nprod), numpy.float64)
+        
+        for t, T in enumerate(Tlist):
+            
+            # Rescale densities of states such that, when they are integrated 
+            # using the Boltzmann factor as a weighting factor, the result is unity
+            for i in range(Nisom+Nreac):
+                Q = numpy.sum(densStates[i,:] * numpy.exp(-Elist / constants.R / T))
+                densStates[i,:] /= Q
+        
+            for p, P in enumerate(Plist):
+                
+                logging.info('Calculating k(T,P) values at %g K, %g bar...' % (T, P/1e5))
+                
+                # Calculate collision frequencies
+                collFreq = numpy.zeros(Nisom, numpy.float64)
+                for i in range(Nisom):
+                    collFreq[i] = calculateCollisionFrequency(self.isomers[i], T, P, self.bathGas)
+                
+                # Apply method
+                if method.lower() == 'modified strong collision':
+                    # Modify collision frequencies using efficiency factor
+                    for i in range(Nisom): 
+                        collFreq[i] *= calculateCollisionEfficiency(self.isomers[i], T, Elist, densStates[i,:], self.collisionModel, E0[i], Ereac[i])
+                    # Apply modified strong collision method
+                    import msc
+                    K[t,p,:,:], p0 = msc.applyModifiedStrongCollisionMethod(T, P, Elist, densStates, collFreq, Kij, Fim, Gnj, Ereac, Nisom, Nreac, Nprod)
+                elif method.lower() == 'reservoir state':
+                    # The full collision matrix for each isomer
+                    Mcoll = numpy.zeros((Nisom,Ngrains,Ngrains), numpy.float64)
+                    for i in range(Nisom):
+                        Mcoll[i,:,:] = collFreq[i] * self.collisionModel.generateCollisionMatrix(Elist, T, densStates[i,:])
+                    # Apply reservoir state method
+                    import rs
+                    K[t,p,:,:], p0 = rs.applyReservoirStateMethod(T, P, Elist, densStates, Mcoll, Kij, Fim, Gnj, Ereac, Nisom, Nreac, Nprod)
+                elif method.lower() == 'chemically-significant eigenvalues':
+                    # The full collision matrix for each isomer
+                    Mcoll = numpy.zeros((Nisom,Ngrains,Ngrains), numpy.float64)
+                    for i in range(Nisom):
+                        Mcoll[i,:,:] = collFreq[i] * self.collisionModel.generateCollisionMatrix(Elist, T, densStates[i,:])
+                    # Equilibrium ratios of each isomer and reactant channel (for symmetrization)
+                    eqRatios = numpy.zeros(Nisom+Nreac, numpy.float64)
+                    conc = 1e5 / constants.R / T
+                    for i in range(Nisom):
+                        G = self.isomers[i].getFreeEnergy(T)
+                        eqRatios[i] = math.exp(-G / constants.R / T)
+                    for n in range(Nreac):
+                        G = sum([spec.getFreeEnergy(T) for spec in self.reactants[n]])
+                        eqRatios[n+Nisom] = math.exp(-G / constants.R / T) * conc ** (len(self.reactants[n]) - 1)
+                    eqRatios /= numpy.sum(eqRatios)
+                    # Apply chemically-significant eigenvalues method
+                    import cse
+                    K[t,p,:,:], p0 = cse.applyChemicallySignificantEigenvaluesMethod(T, P, Elist, densStates, Mcoll, Kij, Fim, Gnj, eqRatios, Nisom, Nreac, Nprod)
+                else:
+                    raise NetworkError('Unknown method "%s".' % method)
+                
+                logging.debug('')
+        
+        return K
