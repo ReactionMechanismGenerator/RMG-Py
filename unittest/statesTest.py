@@ -86,6 +86,33 @@ class StatesTest(unittest.TestCase):
         rho = states.getDensityOfStates(Elist)
         self.assertAlmostEqual(numpy.sum(rho * numpy.exp(-Elist / 8.314472 / 298.15) * dE) / states.getPartitionFunction(Tlist), 1.0, 2)
     
+    def testHinderedRotorDensityOfStates(self):
+        """
+        Test that the density of states and the partition function of the
+        hindered rotor are self-consistent. This is turned off because the
+        density of states is for the classical limit only, while the partition
+        function is not.
+        """
+
+        hr = HinderedRotor(inertia=3e-46, barrier=0.5*4184, symmetry=3)
+        dE = 10.0
+        Elist = numpy.arange(0, 100001, dE, numpy.float64)
+        rho = hr.getDensityOfStates(Elist)
+
+#        Tlist = 1000.0 / numpy.arange(0.5, 3.5, 0.1, numpy.float64)
+#        Q = numpy.zeros_like(Tlist)
+#        for i in range(len(Tlist)):
+#            Q[i] = numpy.sum(rho * numpy.exp(-Elist / 8.314472 / Tlist[i]) * dE)
+#        import pylab
+#        pylab.semilogy(1000.0 / Tlist, Q, '--k', 1000.0 / Tlist, hr.getPartitionFunction(Tlist), '-k')
+#        pylab.show()
+
+        Tlist = numpy.array([298.15], numpy.float64)
+        self.assertTrue(0.9 < numpy.sum(rho * numpy.exp(-Elist / 8.314472 / Tlist[0]) * dE) / hr.getPartitionFunction(Tlist) < 1.1)
+        Tlist = numpy.array([1000.0], numpy.float64)
+        self.assertTrue(0.9 < numpy.sum(rho * numpy.exp(-Elist / 8.314472 / Tlist[0]) * dE) / hr.getPartitionFunction(Tlist) < 1.1)
+
+################################################################################
 
 if __name__ == '__main__':
     unittest.main( testRunner = unittest.TextTestRunner(verbosity=2) )

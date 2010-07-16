@@ -83,6 +83,8 @@ cdef class HinderedRotor(Mode):
 
     cpdef numpy.ndarray getDensityOfStates(self, numpy.ndarray Elist)
 
+    cpdef double getFrequency(self)
+
 cdef numpy.ndarray besseli0(numpy.ndarray xlist)
 cdef numpy.ndarray besseli1(numpy.ndarray xlist)
 cdef double cellipk(double x)

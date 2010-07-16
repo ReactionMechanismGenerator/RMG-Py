@@ -374,7 +374,7 @@ class HinderedRotor(Mode):
 
         where
         
-        .. math:: \\nu = \\sigma \\sqrt{\\frac{V_0}{2 I}}
+        .. math:: \\nu = \\frac{\\sigma}{2 \\pi} \\sqrt{\\frac{V_0}{2 I}}
 
         :math:`T` is temperature, :math:`V_0` is the barrier height,
         :math:`I` is the moment of inertia, :math:`\\sigma` is the symmetry
@@ -383,7 +383,7 @@ class HinderedRotor(Mode):
         of order zero for argument :math:`x`.
         """
         cython.declare(frequency=cython.double, x=numpy.ndarray, z=numpy.ndarray)
-        frequency = self.symmetry * math.sqrt(self.barrier / constants.Na / 2 / self.inertia)
+        frequency = self.getFrequency() * constants.c * 100
         x = constants.h * frequency / (constants.kB * Tlist)
         z = 0.5 * self.barrier / (constants.R * Tlist)
         return x / (1 - numpy.exp(-x)) * numpy.sqrt(2 * math.pi * self.inertia * constants.kB * Tlist / constants.h / constants.h) * (2 * math.pi / self.symmetry) * numpy.exp(-z) * besseli0(z)
@@ -403,7 +403,7 @@ class HinderedRotor(Mode):
         """
         cython.declare(frequency=cython.double, x=numpy.ndarray, z=numpy.ndarray)
         cython.declare(exp_x=numpy.ndarray, one_minus_exp_x=numpy.ndarray, BB=numpy.ndarray)
-        frequency = self.symmetry * math.sqrt(self.barrier / constants.Na / 2 / self.inertia)
+        frequency = self.getFrequency() * constants.c * 100
         x = constants.h * frequency / (constants.kB * Tlist)
         z = 0.5 * self.barrier / (constants.R * Tlist)
         exp_x = numpy.exp(x)
@@ -458,16 +458,30 @@ class HinderedRotor(Mode):
         """
         cython.declare(rho=numpy.ndarray, q1f=cython.double, pre=cython.double, V0=cython.double, i=cython.int)
         rho = numpy.zeros_like(Elist)
-        q1f = math.sqrt(8 * math.pi * math.pi * math.pi * self.inertia / constants.h / constants.h) / self.symmetry
-        pre = 2.0 * q1f / math.sqrt(math.pi * math.pi * math.pi * self.barrier)
+        q1f = math.sqrt(8 * math.pi * math.pi * math.pi * self.inertia / constants.h / constants.h / constants.Na) / self.symmetry
         V0 = self.barrier
+        pre = 2.0 * q1f / math.sqrt(math.pi * math.pi * math.pi * V0)
         # The following is only valid in the classical limit
+        # Note that cellipk(1) = infinity, so we must skip that value
         for i in range(len(Elist)):
-            if Elist[i] / V0 <= 1:
+            if Elist[i] / V0 < 1:
                 rho[i] = pre * cellipk(Elist[i] / V0)
-            else:
+            elif Elist[i] / V0 > 1:
                 rho[i] = pre * math.sqrt(V0 / Elist[i]) * cellipk(V0 / Elist[i])
         return rho
+
+    def getFrequency(self):
+        """
+        Return the frequency of vibration corresponding to the limit of
+        harmonic oscillation. For the cosine potential, the formula is
+
+        .. math:: \\nu = \\frac{\\sigma}{2 \\pi} \\sqrt{\\frac{V_0}{2 I}}
+
+        where :math:`\\sigma` is the symmetry number, :math:`V_0` the barrier
+        height, and :math:`I` the reduced moment of inertia of the rotor. The
+        units of the returned frequency are cm^-1.
+        """
+        return self.symmetry / 2.0 / math.pi * math.sqrt(self.barrier / constants.Na / 2 / self.inertia) / (constants.c * 100)
 
 def besseli0(xlist):
     """
