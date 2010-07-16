@@ -60,16 +60,18 @@ class Reaction:
     `reactants`         :class:`list`               The reactant species (as :class:`Species` objects)
     `products`          :class:`list`               The product species (as :class:`Species` objects)
     `kinetics`          :class:`KineticsModel`      The kinetics model to use for the reaction
+    `reversible`        ``bool``                    ``True`` if the reaction is reversible, ``False`` if not
     `transitionState`   :class:`TransitionState`    The transition state
     =================== =========================== ============================
     
     """
     
-    def __init__(self, index=-1, reactants=None, products=None, kinetics=None, transitionState=None):
+    def __init__(self, index=-1, reactants=None, products=None, kinetics=None, reversible=True, transitionState=None):
         self.index = index
         self.reactants = reactants
         self.products = products
         self.kinetics = kinetics
+        self.reversible = reversible
         self.transitionState = transitionState
 
     def __repr__(self):
@@ -82,7 +84,9 @@ class Reaction:
         """
         Return a string representation of the reaction, in the form 'A + B <=> C + D'.
         """
-        return ' <=> '.join([' + '.join([str(s) for s in self.reactants]), ' + '.join([str(s) for s in self.products])])
+        arrow = ' <=> '
+        if not self.reversible: arrow = ' -> '
+        return arrow.join([' + '.join([str(s) for s in self.reactants]), ' + '.join([str(s) for s in self.products])])
 
     def getEnthalpyOfReaction(self, Tlist):
         """
