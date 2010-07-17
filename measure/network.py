@@ -313,6 +313,7 @@ class Network:
         Nisom = len(self.isomers)
         Nreac = len(self.reactants)
         Nprod = len(self.products)
+        dE = Elist[1] - Elist[0]
         
         # Get ground-state energies of all isomers and each reactant channel
         # that has the necessary parameters
@@ -341,13 +342,13 @@ class Network:
 
         # Calculate density of states for each isomer and each reactant channel
         # that has the necessary parameters
-        densStates = self.calculateDensitiesOfStates(Elist, E0)
-        
+        densStates0 = self.calculateDensitiesOfStates(Elist, E0)
+
         # Calculate microcanonical rate coefficients for each path reaction
         # If degree of freedom data is provided for the transition state, then RRKM theory is used
         # If high-pressure limit Arrhenius data is provided, then the inverse Laplace transform method is used
         # Otherwise an exception is raised
-        Kij, Gnj, Fim = self.calculateMicrocanonicalRates(Elist, densStates)
+        Kij, Gnj, Fim = self.calculateMicrocanonicalRates(Elist, densStates0)
 
         K = numpy.zeros((len(Tlist),len(Plist),Nisom+Nreac+Nprod,Nisom+Nreac+Nprod), numpy.float64)
         
@@ -355,9 +356,11 @@ class Network:
             
             # Rescale densities of states such that, when they are integrated 
             # using the Boltzmann factor as a weighting factor, the result is unity
+            densStates = numpy.zeros_like(densStates0)
+            eqRatios = numpy.zeros(Nisom+Nreac, numpy.float64)
             for i in range(Nisom+Nreac):
-                Q = numpy.sum(densStates[i,:] * numpy.exp(-Elist / constants.R / T))
-                densStates[i,:] /= Q
+                eqRatios[i] = numpy.sum(densStates0[i,:] * numpy.exp(-Elist / constants.R / T)) * dE
+                densStates[i,:] = densStates0[i,:] / eqRatios[i]
         
             for p, P in enumerate(Plist):
                 
@@ -389,16 +392,6 @@ class Network:
                     Mcoll = numpy.zeros((Nisom,Ngrains,Ngrains), numpy.float64)
                     for i in range(Nisom):
                         Mcoll[i,:,:] = collFreq[i] * self.collisionModel.generateCollisionMatrix(Elist, T, densStates[i,:])
-                    # Equilibrium ratios of each isomer and reactant channel (for symmetrization)
-                    eqRatios = numpy.zeros(Nisom+Nreac, numpy.float64)
-                    conc = 1e5 / constants.R / T
-                    for i in range(Nisom):
-                        G = self.isomers[i].getFreeEnergy(T)
-                        eqRatios[i] = math.exp(-G / constants.R / T)
-                    for n in range(Nreac):
-                        G = sum([spec.getFreeEnergy(T) for spec in self.reactants[n]])
-                        eqRatios[n+Nisom] = math.exp(-G / constants.R / T) * conc ** (len(self.reactants[n]) - 1)
-                    eqRatios /= numpy.sum(eqRatios)
                     # Apply chemically-significant eigenvalues method
                     import cse
                     K[t,p,:,:], p0 = cse.applyChemicallySignificantEigenvaluesMethod(T, P, Elist, densStates, Mcoll, Kij, Fim, Gnj, eqRatios, Nisom, Nreac, Nprod)
