@@ -110,7 +110,7 @@ def applyReservoirStateMethod(T, P, Elist, densStates, Mcoll, Kij, Fim, Gnj,
         for r in range(Nres[i], Ngrains):
             for s in range(max(Nres[i], r-halfbandwidth/Nisom), min(Ngrains, r+halfbandwidth/Nisom)):
                 L[halfbandwidth + indices[r,i] - indices[s,i], indices[s,i]] = Mcoll[i,r,s]
-        Z[indices[r,i],i] = numpy.sum(numpy.dot(Mcoll[i,Nres[i]:Ngrains,0:Nres[i]], eqDist[i,0:Nres[i]]))
+            Z[indices[r,i],i] = numpy.sum(Mcoll[i,r,0:Nres[i]] * eqDist[i,0:Nres[i]])
     # Isomerization terms
     for i in range(Nisom):
         for j in range(i):
@@ -131,10 +131,10 @@ def applyReservoirStateMethod(T, P, Elist, densStates, Mcoll, Kij, Fim, Gnj,
     # Solve for pseudo-steady state populations of active state
     X = scipy.linalg.solve_banded((halfbandwidth,halfbandwidth), L, -Z, overwrite_ab=True, overwrite_b=True)
     pa = numpy.zeros((Ngrains,Nisom+Nreac,Nisom), numpy.float64)
-    for r in range(min(Nres), Ngrains):
-        for n in range(Nisom+Nreac):
-            for i in range(Nisom):
-                if indices[r,i] > -1: pa[r,n,i] = Z[indices[r,i], n]
+    for i in range(Nisom):
+        for r in range(Nres[i], Ngrains):
+            for n in range(Nisom+Nreac):
+                pa[r,n,i] = X[indices[r,i], n]
     
     # Double-check to ensure that we have all positive populations
     if not (pa >= 0).all():
@@ -175,6 +175,6 @@ def applyReservoirStateMethod(T, P, Elist, densStates, Mcoll, Kij, Fim, Gnj,
     # Put the reservoir populations into pa as well
     for i in range(Nisom):
         pa[0:Nres[i],i,i] = eqDist[i,0:Nres[i]]
-    
+
     # Return the matrix of k(T,P) values and the pseudo-steady population distributions
     return K, pa

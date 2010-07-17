@@ -279,13 +279,13 @@ def readInput(path):
         logging.debug('    {0:<48s} {1:12g} kJ/mol'.format(str(isomer), isomer.E0 / 1000.0))
     logging.debug('Reactant channels:')
     for reactants in network.reactants:
-        logging.debug('    {0:<48s} {1:12g} kJ/mol'.format(' + '.join([str(spec) for spec in reactants]), sum([spec.E0 for spec in reactants])))
+        logging.debug('    {0:<48s} {1:12g} kJ/mol'.format(' + '.join([str(spec) for spec in reactants]), sum([spec.E0 for spec in reactants]) / 1000.0))
     logging.debug('Product channels:')
     for products in network.products:
-        logging.debug('    {0:<48s} {1:12g} kJ/mol'.format(' + '.join([str(spec) for spec in products]), sum([spec.E0 for spec in products])))
+        logging.debug('    {0:<48s} {1:12g} kJ/mol'.format(' + '.join([str(spec) for spec in products]), sum([spec.E0 for spec in products]) / 1000.0))
     logging.debug('Path reactions:')
     for rxn in network.pathReactions:
-        logging.debug('    {0:<48s} {1:12g} kJ/mol'.format(rxn, rxn.transitionState.E0))
+        logging.debug('    {0:<48s} {1:12g} kJ/mol'.format(rxn, rxn.transitionState.E0 / 1000.0))
     logging.debug('========================================================================')
     logging.debug('')
     

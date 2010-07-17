@@ -334,11 +334,12 @@ class Network:
                         Ereac[i] = rxn.transitionState.E0
         
         # Shift energy grains such that lowest is zero
+        Emin = Elist[0]
         for rxn in self.pathReactions:
-            rxn.transitionState.E0 -= Elist[0]
-        E0 -= Elist[0]
-        Ereac -= Elist[0]
-        Elist -= Elist[0]
+            rxn.transitionState.E0 -= Emin
+        E0 -= Emin
+        Ereac -= Emin
+        Elist -= Emin
 
         # Calculate density of states for each isomer and each reactant channel
         # that has the necessary parameters
@@ -399,7 +400,14 @@ class Network:
                     K[t,p,:,:], p0 = cse.applyChemicallySignificantEigenvaluesMethod(T, P, Elist, densStates, Mcoll, Kij, Fim, Gnj, eqRatios, Nisom, Nreac, Nprod)
                 else:
                     raise NetworkError('Unknown method "%s".' % method)
-                
+
+                logging.debug(K[t,p,0:Nisom+Nreac+Nprod,0:Nisom+Nreac])
+
                 logging.debug('')
-        
+
+        # Unshift energy grains
+        for rxn in self.pathReactions:
+            rxn.transitionState.E0 += Emin
+        Elist += Emin
+
         return K
