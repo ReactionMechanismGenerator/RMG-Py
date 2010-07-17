@@ -52,7 +52,7 @@ class ReactionError(Exception):
 
 ################################################################################
 
-def calculateMicrocanonicalRateCoefficient(reaction, Elist, reacDensStates, prodDensStates=None):
+def calculateMicrocanonicalRateCoefficient(reaction, Elist, reacDensStates, prodDensStates=None, T=None):
     """
     Calculate the microcanonical rate coefficient :math:`k(E)` for the reaction
     `reaction` at the energies `Elist` in J/mol. `reacDensStates` and 
@@ -83,7 +83,7 @@ def calculateMicrocanonicalRateCoefficient(reaction, Elist, reacDensStates, prod
         # We've been provided with high-pressure-limit rate coefficient data,
         # so let's use the less accurate inverse Laplace transform method
         logging.debug('Using ILT method for reaction "%s"' % reaction)
-        kf = applyInverseLaplaceTransformMethod(reaction.kinetics, reaction.transitionState.E0, Elist, reacDensStates)
+        kf = applyInverseLaplaceTransformMethod(reaction.kinetics, reaction.transitionState.E0, Elist, reacDensStates, T)
     
     # If the reaction is reversible, calculate the reverse microcanonical rate
     # using detailed balance
@@ -123,7 +123,7 @@ def applyRRKMTheory(transitionState, Elist, densStates):
 
 ################################################################################
 
-def applyInverseLaplaceTransformMethod(kinetics, E0, Elist, densStates):
+def applyInverseLaplaceTransformMethod(kinetics, E0, Elist, densStates, T=None):
     """
     Calculate the microcanonical rate coefficient for a reaction using the
     inverse Laplace transform method, where `kinetics` is the high pressure 
@@ -135,11 +135,23 @@ def applyInverseLaplaceTransformMethod(kinetics, E0, Elist, densStates):
     
     k = numpy.zeros_like((Elist))
     
-    if isinstance(kinetics, ArrheniusModel) and kinetics.n >= 0:
+    if isinstance(kinetics, ArrheniusModel) and (T is not None or (kinetics.Ea >= 0 and kinetics.n >= 0)):
         A = kinetics.A
         n = kinetics.n
         Ea = kinetics.Ea
         dE = Elist[1] - Elist[0]
+
+        # The inverse Laplace transform is not defined for Ea < 0 or n < 0
+        # In these cases we move the offending portion into the preexponential
+        # at the temperature of interest
+        # This is an approximation, but it's not worth a more robust procedure
+        if Ea < 0:
+            A *= math.exp(-Ea / constants.R / T)
+            Ea = 0.0
+        if n < 0:
+            A *= T**n
+            n = 0.0
+
         if n == 0:
             # Determine the microcanonical rate directly
             s = int(math.floor(Ea / dE))
@@ -166,7 +178,6 @@ def applyInverseLaplaceTransformMethod(kinetics, E0, Elist, densStates):
                     k[r] = A * phi[r - s] / densStates[r]
 
     else:
-        # Can we numerically invert the Laplace transform in this case ???
         raise ReactionError('Unable to use inverse Laplace transform method for non-Arrhenius kinetics or for n < 0.')
     
     return k

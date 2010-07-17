@@ -251,7 +251,7 @@ class Network:
         
         return densStates
 
-    def calculateMicrocanonicalRates(self, Elist, densStates):
+    def calculateMicrocanonicalRates(self, Elist, densStates, T=None):
         """
         Calculate and return arrays containing the microcanonical rate 
         coefficients :math:`k(E)` for the isomerization, dissociation, and
@@ -277,22 +277,22 @@ class Network:
                 # Isomerization
                 reac = self.isomers.index(rxn.reactants[0])
                 prod = self.isomers.index(rxn.products[0])
-                Kij[prod,reac,:], Kij[reac,prod,:] = calculateMicrocanonicalRateCoefficient(rxn, Elist, densStates[reac,:], densStates[prod,:])
+                Kij[prod,reac,:], Kij[reac,prod,:] = calculateMicrocanonicalRateCoefficient(rxn, Elist, densStates[reac,:], densStates[prod,:], T)
             elif rxn.reactants[0] in self.isomers and rxn.products in self.reactants:
                 # Dissociation (reversible)
                 reac = self.isomers.index(rxn.reactants[0])
                 prod = self.reactants.index(rxn.products)
-                Gnj[prod,reac,:], Fim[reac,prod,:] = calculateMicrocanonicalRateCoefficient(rxn, Elist, densStates[reac,:], densStates[prod+Nisom,:])
+                Gnj[prod,reac,:], Fim[reac,prod,:] = calculateMicrocanonicalRateCoefficient(rxn, Elist, densStates[reac,:], densStates[prod+Nisom,:], T)
             elif rxn.reactants[0] in self.isomers and rxn.products in self.products:
                 # Dissociation (irreversible)
                 reac = self.isomers.index(rxn.reactants[0])
                 prod = self.products.index(rxn.products) + Nreac
-                Gnj[prod,reac,:], dummy = calculateMicrocanonicalRateCoefficient(rxn, Elist, densStates[reac,:], None)
+                Gnj[prod,reac,:], dummy = calculateMicrocanonicalRateCoefficient(rxn, Elist, densStates[reac,:], None, T)
             elif rxn.reactants in self.reactants and rxn.products[0] in self.isomers:
                 # Association
                 reac = self.reactants.index(rxn.reactants)
                 prod = self.isomers.index(rxn.products[0])
-                Fim[prod,reac,:], Gnj[reac,prod,:] = calculateMicrocanonicalRateCoefficient(rxn, Elist, densStates[reac+Nisom,:], densStates[prod,:])
+                Fim[prod,reac,:], Gnj[reac,prod,:] = calculateMicrocanonicalRateCoefficient(rxn, Elist, densStates[reac+Nisom,:], densStates[prod,:], T)
             else:
                 raise NetworkError('Unexpected type of path reaction "%s"' % rxn)
         logging.debug('')
@@ -344,23 +344,25 @@ class Network:
         # that has the necessary parameters
         densStates0 = self.calculateDensitiesOfStates(Elist, E0)
 
-        # Calculate microcanonical rate coefficients for each path reaction
-        # If degree of freedom data is provided for the transition state, then RRKM theory is used
-        # If high-pressure limit Arrhenius data is provided, then the inverse Laplace transform method is used
-        # Otherwise an exception is raised
-        Kij, Gnj, Fim = self.calculateMicrocanonicalRates(Elist, densStates0)
-
         K = numpy.zeros((len(Tlist),len(Plist),Nisom+Nreac+Nprod,Nisom+Nreac+Nprod), numpy.float64)
         
         for t, T in enumerate(Tlist):
             
-            # Rescale densities of states such that, when they are integrated 
+            # Calculate microcanonical rate coefficients for each path reaction
+            # If degree of freedom data is provided for the transition state, then RRKM theory is used
+            # If high-pressure limit Arrhenius data is provided, then the inverse Laplace transform method is used
+            # Otherwise an exception is raised
+            # This is only dependent on temperature for the ILT method with
+            # certain Arrhenius parameters
+            Kij, Gnj, Fim = self.calculateMicrocanonicalRates(Elist, densStates0, T)
+
+            # Rescale densities of states such that, when they are integrated
             # using the Boltzmann factor as a weighting factor, the result is unity
             densStates = numpy.zeros_like(densStates0)
             eqRatios = numpy.zeros(Nisom+Nreac, numpy.float64)
             for i in range(Nisom+Nreac):
                 eqRatios[i] = numpy.sum(densStates0[i,:] * numpy.exp(-Elist / constants.R / T)) * dE
-                densStates[i,:] = densStates0[i,:] / eqRatios[i]
+                densStates[i,:] = densStates0[i,:] / eqRatios[i] * dE
         
             for p, P in enumerate(Plist):
                 
