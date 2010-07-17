@@ -183,12 +183,8 @@ class SingleExponentialDownModel(CollisionModel):
         
         # Determine unnormalized entries in collisional transfer probability matrix
         for r in range(start, Ngrains):
-            for s in range(start, r+1):
-                # Er >= Es
-                P[s,r] = math.exp(-(Elist[r] - Elist[s]) / self.alpha)
-            for s in range(r+1, Ngrains):
-                # Er < Es
-                P[s,r] = math.exp(-(Elist[s] - Elist[r]) / self.alpha) * densStates[s] / densStates[r] * math.exp(-(Elist[s] - Elist[r]) / (constants.R * T))
+            P[0:r+1,r] = numpy.exp(-(Elist[r] - Elist[0:r+1]) / self.alpha)
+            P[r+1:,r] = numpy.exp(-(Elist[r+1:] - Elist[r]) / self.alpha) * densStates[r+1:] / densStates[r] * numpy.exp(-(Elist[r+1:] - Elist[r]) / (constants.R * T))
         
         # Normalize using detailed balance
         # This method is much more robust, and corresponds to:
@@ -197,7 +193,7 @@ class SingleExponentialDownModel(CollisionModel):
         #    [ 1 2 3 3 ...]
         #    [ 1 2 3 4 ...]
         for r in range(start, Ngrains):
-            C = (1 - numpy.sum(P[start:r,r])) / sum(P[r:Ngrains,r])
+            C = (1 - numpy.sum(P[start:r,r])) / numpy.sum(P[r:Ngrains,r])
             # Check for normalization consistency (i.e. all numbers are positive)
             if C < 0: raise ChemPyError('Encountered negative normalization coefficient while normalizing collisional transfer probabilities matrix.')
             P[r,r+1:Ngrains] *= C
@@ -209,7 +205,7 @@ class SingleExponentialDownModel(CollisionModel):
         #    [ ... 2 2 2 1 ]
         #    [ ... 1 1 1 1 ]
         #for r in range(Ngrains, start, -1):
-            #C = (1 - numpy.sum(M[r:Ngrains,r])) / sum(M[0:r,r])
+            #C = (1 - numpy.sum(M[r:Ngrains,r])) / numpy.sum(M[0:r,r])
             ## Check for normalization consistency (i.e. all numbers are positive)
             #if C < 0: raise ChemPyError('Encountered negative normalization coefficient while normalizing collisional transfer probabilities matrix.')
             #P[r,0:r-1] *= C
