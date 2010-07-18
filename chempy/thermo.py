@@ -145,9 +145,9 @@ class WilhoitModel(ThermoModel):
         K. The formula is
 
         .. math::
-            H(T) = H_0 +
-            C_\\mathrm{p}(0) T + \\left[ C_\\mathrm{p}(\\infty) - C_\\mathrm{p}(0) \\right] T
-            \\left\\{ \\left[ 2 + \\sum_{i=0}^3 a_i \\right]
+            H(T) & = H_0 +
+            C_\\mathrm{p}(0) T + \\left[ C_\\mathrm{p}(\\infty) - C_\\mathrm{p}(0) \\right] T \\\\
+            & \\left\\{ \\left[ 2 + \\sum_{i=0}^3 a_i \\right]
             \\left[ \\frac{1}{2}y - 1 + \\left( \\frac{1}{y} - 1 \\right) \\ln \\frac{T}{y} \\right]
             + y^2 \\sum_{i=0}^3 \\frac{y^i}{(i+2)(i+3)} \\sum_{j=0}^3 f_{ij} a_j
             \\right\\}
@@ -155,7 +155,13 @@ class WilhoitModel(ThermoModel):
         where :math:`f_{ij} = 3 + j` if :math:`i = j`, :math:`f_{ij} = 1` if
         :math:`i > j`, and :math:`f_{ij} = 0` if :math:`i < j`.
         """
-        return self.H0 + self.__integral_T0(Tlist)
+        cython.declare(cp0=cython.double, cpInf=cython.double, B=cython.double, a0=cython.double, a1=cython.double, a2=cython.double, a3=cython.double)
+        cython.declare(y=numpy.ndarray, y2=numpy.ndarray, logBplust=numpy.ndarray)
+        cp0, cpInf, B, a0, a1, a2, a3 = self.cp0, self.cpInf, self.B, self.a0, self.a1, self.a2, self.a3
+        y = Tlist/(Tlist+B)
+        y2 = y*y
+        logBplust = numpy.log(B + Tlist)
+        return self.H0 + cp0*Tlist - (cpInf-cp0)*Tlist*(y2*((3*a0 + a1 + a2 + a3)/6. + (4*a1 + a2 + a3)*y/12. + (5*a2 + a3)*y2/20. + a3*y2*y/5.) + (2 + a0 + a1 + a2 + a3)*( y/2. - 1 + (1/y-1)*logBplust))
     
     def getEntropy(self, Tlist):
         """
@@ -164,12 +170,18 @@ class WilhoitModel(ThermoModel):
 
         .. math::
             S(T) = S_0 +
-            C_\\mathrm{p}(0) \\ln T - \\left[ C_\\mathrm{p}(\\infty) - C_\\mathrm{p}(0) \\right]
+            C_\\mathrm{p}(\\infty) \\ln T - \\left[ C_\\mathrm{p}(\\infty) - C_\\mathrm{p}(0) \\right]
             \\left[ \\ln y + \\left( 1 + y \\sum_{i=0}^3 \\frac{a_i y^i}{2+i} \\right) y
             \\right]
 
         """
-        return self.S0 + self.__integral_TM1(Tlist)
+        cython.declare(cp0=cython.double, cpInf=cython.double, B=cython.double, a0=cython.double, a1=cython.double, a2=cython.double, a3=cython.double)
+        cython.declare(y=numpy.ndarray, logt=numpy.ndarray, logy=numpy.ndarray)
+        cp0, cpInf, B, a0, a1, a2, a3 = self.cp0, self.cpInf, self.B, self.a0, self.a1, self.a2, self.a3
+        y = Tlist/(Tlist+B)
+        logt = numpy.log(Tlist)
+        logy = numpy.log(y)
+        return self.S0 + cpInf*logt-(cpInf-cp0)*(logy+y*(1+y*(a0/2+y*(a1/3 + y*(a2/4 + y*a3/5)))))
     
     def getFreeEnergy(self, Tlist):
         """
@@ -177,31 +189,6 @@ class WilhoitModel(ThermoModel):
         `Tlist` in K.
         """
         return self.getEnthalpy(Tlist) - Tlist * self.getEntropy(Tlist)
-    
-    #a faster version of the integral based on H from Yelvington's thesis; it differs from the original (see above) by a constant (dependent on parameters but independent of t)
-    def __integral_T0(self, Tlist):
-        #output: the quantity Integrate[Cp(Wilhoit)/R, t'] evaluated at t'=t
-        cython.declare(cp0=cython.double, cpInf=cython.double, B=cython.double, a0=cython.double, a1=cython.double, a2=cython.double, a3=cython.double)
-        cython.declare(y=numpy.ndarray, y2=numpy.ndarray, logBplust=numpy.ndarray, result=numpy.ndarray)
-        cp0, cpInf, B, a0, a1, a2, a3 = self.cp0, self.cpInf, self.B, self.a0, self.a1, self.a2, self.a3
-        y = Tlist/(Tlist+B)
-        y2 = y*y
-        logBplust = numpy.log(B + Tlist)
-        result = cp0*Tlist - (cpInf-cp0)*Tlist*(y2*((3*a0 + a1 + a2 + a3)/6. + (4*a1 + a2 + a3)*y/12. + (5*a2 + a3)*y2/20. + a3*y2*y/5.) + (2 + a0 + a1 + a2 + a3)*( y/2. - 1 + (1/y-1)*logBplust))
-        return result
-    
-    #a faster version of the integral based on S from Yelvington's thesis; it differs from the original by a constant (dependent on parameters but independent of t)
-    def __integral_TM1(self, Tlist):
-        #output: the quantity Integrate[Cp(Wilhoit)/R*t^-1, t'] evaluated at t'=t
-        cython.declare(cp0=cython.double, cpInf=cython.double, B=cython.double, a0=cython.double, a1=cython.double, a2=cython.double, a3=cython.double)
-        cython.declare(y=numpy.ndarray, logt=numpy.ndarray, logy=numpy.ndarray, result=numpy.ndarray)
-        cp0, cpInf, B, a0, a1, a2, a3 = self.cp0, self.cpInf, self.B, self.a0, self.a1, self.a2, self.a3
-        y = Tlist/(Tlist+B)
-        y2 = y*y
-        logBplust = numpy.log(B + Tlist)
-        logy = numpy.log(y); logt = numpy.log(Tlist)
-        result = cpInf*logt-(cpInf-cp0)*(logy+y*(1+y*(a0/2+y*(a1/3 + y*(a2/4 + y*a3/5)))))
-        return result
     
     def __residual(self, B, Tlist, Cplist, linear, nFreq, nRotors):
         # The residual corresponding to the fitToData() method

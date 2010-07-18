@@ -66,10 +66,6 @@ cdef class WilhoitModel(ThermoModel):
 
     cpdef numpy.ndarray getFreeEnergy(self, numpy.ndarray Tlist)
     
-    cpdef numpy.ndarray __integral_T0(self, numpy.ndarray Tlist)
-    
-    cpdef numpy.ndarray __integral_TM1(self, numpy.ndarray Tlist)
-
     cpdef double __residual(self, double B, numpy.ndarray Tlist, numpy.ndarray Cplist, 
         bint linear, int nFreq, int nRotors)
     
