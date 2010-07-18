@@ -168,13 +168,13 @@ class Translation(Mode):
         Return the contribution to the entropy due to translation in J/mol*K
         at the specified temperatures `Tlist` in K. The formula	is
 
-        .. math:: \\frac{S^\\mathrm{trans}(T)}{R} = \\frac{d}{2} \\ln \\left( \\frac{2 \\pi m k_\\mathrm{B} T}{h^2} e \\right)
+        .. math:: \\frac{S^\\mathrm{trans}(T)}{R} = \\frac{d}{2} \\ln \\left( \\frac{2 \\pi m k_\\mathrm{B} T}{h^2} \\right) + \\ln eV
         
         where :math:`T` is temperature, :math:`m` is mass, :math:`d` is
-        dimensionality, :math:`k_\\mathrm{B}` is the Boltzmann constant, and
-        :math:`R` is the gas law constant.
+        dimensionality, :math:`V` is volume, :math:`k_\\mathrm{B}` is the
+        Boltzmann constant, and :math:`R` is the gas law constant.
         """
-        return (numpy.log(self.getPartitionFunction(Tlist)) + 2.5) * constants.R
+        return (numpy.log(self.getPartitionFunction(Tlist)) + 0.5 * self.dimension + 1.0) * constants.R
     
     def getDensityOfStates(self, Elist):
         """
