@@ -337,34 +337,102 @@ class RigidRotor(Mode):
 
 class HinderedRotor(Mode):
     """
-    A one-dimensional hindered rotor using the simple potential function
+    A one-dimensional hindered rotor using one of two potential functions:
+    the the cosine potential function
 
     .. math:: V(\\phi) = \\frac{1}{2} V_0 \\left[1 - \\cos \\left( \\sigma \\phi \\right) \\right]
 
     where :math:`V_0` is the height of the potential barrier and
     :math:`\\sigma` is the number of minima or maxima in one revolution of
-    angle :math:`\\phi`, equivalent to the symmetry number of that rotor. The
-    hindered rotor is therefore described by three quantities: the moment of
-    `inertia` in kg*m^2, the `barrier` height in J/mol, and the `symmetry`
-    number.
+    angle :math:`\\phi`, equivalent to the symmetry number of that rotor;
+    or a Fourier series
+
+    .. math:: V(\\phi) = A + \\sum_{k=1}^C \\left( a_k \\cos k \\phi + b_k \\sin k \\phi \\right)
+
+    For the cosine potential, the hindered rotor is described by the `barrier`
+    height in J/mol. For the Fourier series potential, the potential is instead
+    defined by a :math:`C \\times 2` array `fourier` containing the Fourier
+    coefficients. Both forms require the reduced moment of `inertia` of the
+    rotor in kg*m^2 and the `symmetry` number.
+    If both sets of parameters are available, the Fourier series will be used,
+    as it is more accurate. However, it is also significantly more
+    computationally demanding.
     """
 
-    def __init__(self, inertia=None, barrier=None, symmetry=None):
+    def __init__(self, inertia=None, barrier=None, symmetry=None, fourier=None):
         self.inertia = inertia
         self.barrier = barrier
         self.symmetry = symmetry
+        self.fourier = fourier
 
     def __repr__(self):
         """
         Return a string representation that can be used to reconstruct the 
         object.
         """
-        return 'HinderedRotor(inertia=%g, barrier=%g, symmetry=%g)' % (self.inertia, self.barrier, self.symmetry)
+        return 'HinderedRotor(inertia=%g, barrier=%g, symmetry=%g, fourier=%s)' % (self.inertia, self.barrier, self.symmetry, self.fourier)
+
+    def getPotential(self, phi):
+        """
+        Return the values of the hindered rotor potential :math:`V(\\phi)`
+        in J/mol at the angles `phi` in radians.
+        """
+        cython.declare(V=numpy.ndarray, k=cython.int)
+        V = numpy.zeros_like(phi)
+        if self.fourier is not None:
+            for k in range(self.fourier.shape[0]):
+                V += self.fourier[k,0] * numpy.cos((k+1) * phi) + self.fourier[k,1] * numpy.sin((k+1) * phi)
+            V -= numpy.sum(self.fourier[:,0])
+        else:
+            V = 0.5 * self.barrier * (1 - numpy.cos(self.symmetry * phi))
+        return V
+
+    def __solveSchrodingerEquation(self):
+        """
+        Solves the one-dimensional time-independent Schrodinger equation
+
+        .. math:: -\\frac{\\hbar}{2I} \\frac{d^2 \\psi}{d \\phi^2} + V(\\phi) \\psi(\\phi) = E \\psi(\\phi)
+        
+        where :math:`I` is the reduced moment of inertia for the rotor and
+        :math:`V(\\phi)` is the rotation potential function, to determine the
+        energy levels of a one-dimensional hindered rotor with a Fourier series
+        potential. The solution method utilizes an orthonormal basis set
+        expansion of the form
+
+        .. math:: \\psi (\\phi) = \\sum_{m=-M}^M c_m \\frac{e^{im\\phi}}{\\sqrt{2*\\pi}}
+
+        which converts the Schrodinger equation into a standard eigenvalue
+        problem. For the purposes of this function it is sufficient to set
+        :math:`M = 200`, which corresponds to 401 basis functions. Returns the
+        energy eigenvalues of the Hamiltonian matrix in J/mol.
+        """
+        cython.declare(M=cython.int, m=cython.int, row=cython.int, n=cython.int)
+        cython.declare(H=numpy.ndarray, fourier=numpy.ndarray, A=cython.double, E=numpy.ndarray)
+        # The number of terms to use is 2*M + 1, ranging from -m to m inclusive
+        M = 200
+        # Populate Hamiltonian matrix
+        H = numpy.zeros((2*M+1,2*M+1), numpy.complex64)
+        fourier = self.fourier / constants.Na / 2.0
+        A = numpy.sum(self.fourier[:,0]) / constants.Na
+        row = 0
+        for m in range(-M, M+1):
+            H[row,row] = A + constants.h * constants.h * m * m / (8 * math.pi * math.pi * self.inertia)
+            for n in range(fourier.shape[0]):
+                if row-n-1 > -1:    H[row,row-n-1] = complex(fourier[n,0], - fourier[n,1])
+                if row+n+1 < 2*M+1: H[row,row+n+1] = complex(fourier[n,0], fourier[n,1])
+            row += 1
+        # The overlap matrix is the identity matrix, i.e. this is a standard
+        # eigenvalue problem
+        # Find the eigenvalues and eigenvectors of the Hamiltonian matrix
+        E, V = numpy.linalg.eigh(H)
+        # Return the eigenvalues
+        return (E - numpy.min(E)) * constants.Na
 
     def getPartitionFunction(self, Tlist):
         """
         Return the value of the partition function at the specified temperatures
-        `Tlist` in K. The formula makes use of the Pitzer-Gwynn approximation:
+        `Tlist` in K. For the cosine potential, the formula makes use of the
+        Pitzer-Gwynn approximation:
 
         .. math:: q_\\mathrm{hind}(T) = \\frac{q_\\mathrm{vib}^\\mathrm{quant}(T)}{q_\\mathrm{vib}^\\mathrm{class}(T)} q_\\mathrm{hind}^\\mathrm{class}(T)
 
@@ -381,18 +449,38 @@ class HinderedRotor(Mode):
         number, :math:`k_\\mathrm{B}` is the Boltzmann constant, and :math:`h`
         is the Planck constant. :math:`I_0(x)` is the modified Bessel function
         of order zero for argument :math:`x`.
+
+        For the Fourier series potential, we solve the corresponding 1D
+        Schrodinger equation to obtain the energy levels of the rotor and
+        utilize the expression
+
+        .. math:: q_\\mathrm{hind}(T) = \\frac{1}{\\sigma} \\sum_i e^{-\\beta E_i}
+
+        to obtain the partition function.
         """
-        cython.declare(frequency=cython.double, x=numpy.ndarray, z=numpy.ndarray)
-        frequency = self.getFrequency() * constants.c * 100
-        x = constants.h * frequency / (constants.kB * Tlist)
-        z = 0.5 * self.barrier / (constants.R * Tlist)
-        return x / (1 - numpy.exp(-x)) * numpy.sqrt(2 * math.pi * self.inertia * constants.kB * Tlist / constants.h / constants.h) * (2 * math.pi / self.symmetry) * numpy.exp(-z) * besseli0(z)
-    
+        if self.fourier is not None:
+            # Fourier series data found, so use it
+            # This means solving the 1D Schrodinger equation - slow!
+            cython.declare(Q=numpy.ndarray, E=numpy.ndarray, e_kT=numpy.ndarray, i=cython.int)
+            E = self.__solveSchrodingerEquation()
+            Q = numpy.zeros_like(Tlist)
+            for i in range(len(Tlist)):
+                e_kT = numpy.exp(-E / constants.R / Tlist[i])
+                Q[i] = numpy.sum(e_kT)
+            return Q / self.symmetry    # No Fourier data, so use the cosine potential data
+        else:
+            cython.declare(frequency=cython.double, x=numpy.ndarray, z=numpy.ndarray)
+            frequency = self.getFrequency() * constants.c * 100
+            x = constants.h * frequency / (constants.kB * Tlist)
+            z = 0.5 * self.barrier / (constants.R * Tlist)
+            return x / (1 - numpy.exp(-x)) * numpy.sqrt(2 * math.pi * self.inertia * constants.kB * Tlist / constants.h / constants.h) * (2 * math.pi / self.symmetry) * numpy.exp(-z) * besseli0(z)
+        
     def getHeatCapacity(self, Tlist):
         """
         Return the contribution to the heat capacity due to hindered rotation
-        in J/mol*K at the specified temperatures `Tlist`
-        in K. The formula is
+        in J/mol*K at the specified temperatures `Tlist` in K.
+
+        For the cosine potential, the formula is
 
         .. math:: \\frac{C_\\mathrm{v}^\\mathrm{hind}(T)}{R} = \\frac{C_\\mathrm{v}^\\mathrm{vib}(T)}{R} -\\frac{1}{2} + \\zeta^2 - \\left[ \\zeta \\frac{I_1(\\zeta)}{I_0(\\zeta)} \\right]^2 - \\zeta \\frac{I_1(\\zeta)}{I_0(\\zeta)}
 
@@ -400,47 +488,96 @@ class HinderedRotor(Mode):
         :math:`T` is temperature, :math:`V_0` is the barrier height,
         :math:`k_\\mathrm{B}` is the Boltzmann constant, and :math:`R` is the
         gas law constant.
+
+        For the Fourier series potential, we solve the corresponding 1D
+        Schrodinger equation to obtain the energy levels of the rotor and
+        utilize the expression
+
+        .. math:: \\frac{C_\\mathrm{v}^\\mathrm{hind}(T)}{R} = \\beta^2 \\frac{\\left( \\sum_i E_i^2 e^{-\\beta E_i} \\right) \\left( \\sum_i e^{-\\beta E_i} \\right) - \\left( \\sum_i E_i e^{-\\beta E_i} \\right)^2}{\\left( \\sum_i e^{-\\beta E_i} \\right)^2}
+        
+        to obtain the heat capacity.
         """
-        cython.declare(frequency=cython.double, x=numpy.ndarray, z=numpy.ndarray)
-        cython.declare(exp_x=numpy.ndarray, one_minus_exp_x=numpy.ndarray, BB=numpy.ndarray)
-        frequency = self.getFrequency() * constants.c * 100
-        x = constants.h * frequency / (constants.kB * Tlist)
-        z = 0.5 * self.barrier / (constants.R * Tlist)
-        exp_x = numpy.exp(x)
-        one_minus_exp_x = 1.0 - exp_x
-        BB = besseli1(z) / besseli0(z)
-        return (x * x * exp_x / one_minus_exp_x / one_minus_exp_x - 0.5 + z * (z - BB - z * BB * BB)) * constants.R
+        if self.fourier is not None:
+            cython.declare(Cv=numpy.ndarray, E=numpy.ndarray, e_kT=numpy.ndarray, i=cython.int)
+            E = self.__solveSchrodingerEquation()
+            Cv = numpy.zeros_like(Tlist)
+            for i in range(len(Tlist)):
+                e_kT = numpy.exp(-E / constants.R / Tlist[i])
+                Cv[i] = (numpy.sum(E*E*e_kT) * numpy.sum(e_kT) - numpy.sum(E*e_kT)**2) / (constants.R*Tlist[i]*Tlist[i] * numpy.sum(e_kT)**2)
+            return Cv
+        else:
+            cython.declare(frequency=cython.double, x=numpy.ndarray, z=numpy.ndarray)
+            cython.declare(exp_x=numpy.ndarray, one_minus_exp_x=numpy.ndarray, BB=numpy.ndarray)
+            frequency = self.getFrequency() * constants.c * 100
+            x = constants.h * frequency / (constants.kB * Tlist)
+            z = 0.5 * self.barrier / (constants.R * Tlist)
+            exp_x = numpy.exp(x)
+            one_minus_exp_x = 1.0 - exp_x
+            BB = besseli1(z) / besseli0(z)
+            return (x * x * exp_x / one_minus_exp_x / one_minus_exp_x - 0.5 + z * (z - BB - z * BB * BB)) * constants.R
         
     def getEnthalpy(self, Tlist):
         """
         Return the contribution to the heat capacity due to hindered rotation
-        in J/mol at the specified temperatures `Tlist` in K. This is calculated
-        numerically from the partition function.
+        in J/mol at the specified temperatures `Tlist` in K. For the cosine
+        potential, this is calculated numerically from the partition function.
+        For the Fourier series potential, we solve the corresponding 1D
+        Schrodinger equation to obtain the energy levels of the rotor and
+        utilize the expression
+
+        .. math:: H^\\mathrm{hind}(T) - H_0 = \\frac{\\sum_i E_i e^{-\\beta E_i}}{\\sum_i e^{-\\beta E_i}}
+
+        to obtain the enthalpy.
         """
-        Tlist_low = Tlist * 0.999
-        Tlist_high = Tlist * 1.001
-        return (Tlist *
-            (numpy.log(self.getPartitionFunction(Tlist_high)) -
-            numpy.log(self.getPartitionFunction(Tlist_low))) /
-            (Tlist_high - Tlist_low) + 1.0) * constants.R * Tlist
+        if self.fourier is not None:
+            cython.declare(H=numpy.ndarray, E=numpy.ndarray, e_kT=numpy.ndarray, i=cython.int)
+            E = self.__solveSchrodingerEquation()
+            H = numpy.zeros_like(Tlist)
+            for i in range(len(Tlist)):
+                e_kT = numpy.exp(-E / constants.R / Tlist[i])
+                H[i] = numpy.sum(E*e_kT) / numpy.sum(e_kT)
+            return H
+        else:
+            Tlist_low = Tlist * 0.999
+            Tlist_high = Tlist * 1.001
+            return (Tlist *
+                (numpy.log(self.getPartitionFunction(Tlist_high)) -
+                numpy.log(self.getPartitionFunction(Tlist_low))) /
+                (Tlist_high - Tlist_low)) * constants.R * Tlist
 
     def getEntropy(self, Tlist):
         """
         Return the contribution to the heat capacity due to hindered rotation
-        in J/mol*K at the specified temperatures `Tlist` in K. This is
-        calculated numerically from the partition function.
+        in J/mol*K at the specified temperatures `Tlist` in K. For the cosine
+        potential, this is calculated numerically from the partition function.
+        For the Fourier series potential, we solve the corresponding 1D
+        Schrodinger equation to obtain the energy levels of the rotor and
+        utilize the expression
+
+        .. math:: S^\\mathrm{hind}(T) = R \\left( \\ln q_\\mathrm{hind}(T) + \\frac{\\sum_i E_i e^{-\\beta E_i}}{RT \\sum_i e^{-\\beta E_i}} \\right)
+
+        to obtain the entropy.
         """
-        Tlist_low = Tlist * 0.999
-        Tlist_high = Tlist * 1.001
-        return (numpy.log(self.getPartitionFunction(Tlist_high)) +
-            Tlist * (numpy.log(self.getPartitionFunction(Tlist_high)) -
-            numpy.log(self.getPartitionFunction(Tlist_low))) /
-            (Tlist_high - Tlist_low)) * constants.R
+        if self.fourier is not None:
+            cython.declare(S=numpy.ndarray, E=numpy.ndarray, e_kT=numpy.ndarray, i=cython.int)
+            E = self.__solveSchrodingerEquation()
+            S = constants.kB * numpy.log(self.getPartitionFunction(Tlist))
+            for i in range(len(Tlist)):
+                e_kT = numpy.exp(-E / constants.R / Tlist[i])
+                S[i] += numpy.sum(E*e_kT) / (Tlist[i] * numpy.sum(e_kT))
+            return S
+        else:
+            Tlist_low = Tlist * 0.999
+            Tlist_high = Tlist * 1.001
+            return (numpy.log(self.getPartitionFunction(Tlist_high)) +
+                Tlist * (numpy.log(self.getPartitionFunction(Tlist_high)) -
+                numpy.log(self.getPartitionFunction(Tlist_low))) /
+                (Tlist_high - Tlist_low)) * constants.R
 
     def getDensityOfStates(self, Elist):
         """
         Return the density of states at the specified energlies `Elist` in J/mol
-        above the ground state. The formula is
+        above the ground state. For the cosine potential, the formula is
 
         .. math:: \\rho(E) = \\frac{2 q_\\mathrm{1f}}{\\pi^{3/2} V_0^{1/2}} \\mathcal{K}(E / V_0) \\hspace{20pt} E < V_0
 
@@ -454,7 +591,8 @@ class HinderedRotor(Mode):
 
         :math:`E` is energy, :math:`V_0` is barrier height, and
         :math:`\\mathcal{K}(x)` is the complete elliptic integral of the first
-        kind.
+        kind. There is currently no functionality for using the Fourier series
+        potential.
         """
         cython.declare(rho=numpy.ndarray, q1f=cython.double, pre=cython.double, V0=cython.double, i=cython.int)
         rho = numpy.zeros_like(Elist)
@@ -473,7 +611,7 @@ class HinderedRotor(Mode):
     def getFrequency(self):
         """
         Return the frequency of vibration corresponding to the limit of
-        harmonic oscillation. For the cosine potential, the formula is
+        harmonic oscillation. The formula is
 
         .. math:: \\nu = \\frac{\\sigma}{2 \\pi} \\sqrt{\\frac{V_0}{2 I}}
 
@@ -481,7 +619,10 @@ class HinderedRotor(Mode):
         height, and :math:`I` the reduced moment of inertia of the rotor. The
         units of the returned frequency are cm^-1.
         """
-        return self.symmetry / 2.0 / math.pi * math.sqrt(self.barrier / constants.Na / 2 / self.inertia) / (constants.c * 100)
+        V0 = self.barrier
+        if self.fourier is not None:
+            V0 = -numpy.sum(self.fourier[:,0])
+        return self.symmetry / 2.0 / math.pi * math.sqrt(V0 / constants.Na / 2 / self.inertia) / (constants.c * 100)
 
 def besseli0(xlist):
     """

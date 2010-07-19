@@ -72,6 +72,7 @@ cdef class HinderedRotor(Mode):
     cdef public double inertia
     cdef public double barrier
     cdef public int symmetry
+    cdef public numpy.ndarray fourier
     
     cpdef numpy.ndarray getPartitionFunction(self, numpy.ndarray Tlist)
 
@@ -82,6 +83,8 @@ cdef class HinderedRotor(Mode):
     cpdef numpy.ndarray getEntropy(self, numpy.ndarray Tlist)
 
     cpdef numpy.ndarray getDensityOfStates(self, numpy.ndarray Elist)
+
+    cpdef numpy.ndarray getPotential(self, numpy.ndarray phi)
 
     cpdef double getFrequency(self)
 
