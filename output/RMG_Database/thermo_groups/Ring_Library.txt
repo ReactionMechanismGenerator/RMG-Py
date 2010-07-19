@@ -13,6 +13,8 @@
 
 1	Cyclopropane	27.53	32.00880958	-3.227	-2.849	-2.536	-2.35	-2.191	-2.111	-1.76	0	0	0	Cyclopropane ring BENSON
 2	Cyclopropene	55.47022422	33.32566974	-0.469	-0.789	-0.953	-1.107	-1.45	-1.696	-1.716	0	0	0	Cyclopropene ring BENSON
+125 Cyclopropadiene  73.04	33.32566974	-0.469	-0.789	-0.953	-1.107	-1.45	-1.696	-1.716	0	0	0   Enthalpy from doi:10.1021/j100005a002 (S and Cp from Cyclopropene row above)
+126 Cyclopropatriene  78.0 33.32566974	-0.469	-0.789	-0.953	-1.107	-1.45	-1.696	-1.716	0	0	0   Enthalpy from doi:10.1021/j100005a002 (S and Cp from Cyclopropene row above)
 3	Methylene_cyclopropane	40.92	31.45066974	-2.1	-2.121	-2.081	-2.005	-1.98	-1.903	-1.541	0	0	0	Methylene cyclopropane ring BENSON
 4	dioxirane	25.19771558	32.38766974	-3.099	-3.194	-3.095	-3.038	-3.281	-3.818	-1.346	0	0	0	
 5	cyclopropanone	45.6	30.72466974	-2.274	-1.932	-1.307	-0.838	-1.06	-1.032	-0.271	0	0	0	

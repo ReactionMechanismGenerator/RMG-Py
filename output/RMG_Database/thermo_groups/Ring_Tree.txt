@@ -18,6 +18,8 @@ L0: Ring
 L1: ThreeMember
 	L2: Cyclopropane
 	L2: Cyclopropene
+	L2: Cyclopropadiene
+	L2: Cyclopropatriene
 	L2: Methylene_cyclopropane
 	L2: Ethylene_oxide
 	L2: dioxirane
