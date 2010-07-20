@@ -481,6 +481,12 @@ class Network:
         file at location `fstr` on disk.
         """
 
+        try:
+            import cairo
+        except ImportError:
+            logging.warning('Cairo not found; potential energy surface will not be drawn.')
+            return
+
         # Determine order of wells based on order of path reactions, but put
         # all the unimolecular isomer wells first
         wells = []
@@ -551,6 +557,130 @@ class Network:
         width = numpy.max(coordinates[:,0]) - numpy.min(coordinates[:,0]) + wellWidth + padding_left + padding_right
         height = numpy.max(coordinates[:,1]) - numpy.min(coordinates[:,1]) + 32.0 + padding_top + padding_bottom
 
+        # Initialize Cairo surface and context
+        surface = cairo.SVGSurface(fstr, width, height)
+        cr = cairo.Context(surface)
+
+        # Some global settings
+        cr.select_font_face("sans")
+        cr.set_font_size(10)
+        
+        # Draw path reactions
+        for rxn in self.pathReactions:
+            reac = wells.index(rxn.reactants)
+            prod = wells.index(rxn.products)
+            E0_reac = sum([spec.E0 for spec in wells[reac]]) / 4184
+            E0_prod = sum([spec.E0 for spec in wells[prod]]) / 4184
+            E0_TS = rxn.transitionState.E0 / 4184
+            if reac < prod:
+                x1, y1 = coordinates[reac,:]
+                x2, y2 = coordinates[prod,:]
+            else:
+                x1, y1 = coordinates[prod,:]
+                x2, y2 = coordinates[reac,:]
+            x1 += wellSpacing / 2.0; x2 -= wellSpacing / 2.0
+            if abs(E0_TS - E0_reac) > 0.1 and abs(E0_TS - E0_prod) > 0.1:
+                if len(rxn.reactants) == 2:
+                    if reac < prod: x0 = x1 + wellSpacing * 0.5
+                    else:           x0 = x2 - wellSpacing * 0.5
+                elif len(rxn.products) == 2:
+                    if reac < prod: x0 = x2 - wellSpacing * 0.5
+                    else:           x0 = x1 + wellSpacing * 0.5
+                else:
+                    x0 = 0.5 * (x1 + x2)
+                y0 = y_E0 - E0_TS * Emult
+                width1 = (x0 - x1)
+                width2 = (x2 - x0)
+                # Draw horizontal line for TS
+                cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
+                cr.set_line_width(2.0)
+                cr.move_to(x0 - TSwidth/2.0, y0)
+                cr.line_to(x0+TSwidth/2.0, y0)
+                cr.stroke()
+                # Add background and text for energy
+                E0 = "%.1f" % (rxn.transitionState.E0 / 1000.0)
+                extents = cr.text_extents(E0)
+                x = x0 - extents[2] / 2.0; y = y0 - 6.0
+                cr.rectangle(x + extents[0] - 2.0, y + extents[1] - 2.0, extents[2] + 4.0, extents[3] + 4.0)
+                cr.set_source_rgba(1.0, 1.0, 1.0, 0.75)
+                cr.fill()
+                cr.move_to(x, y)
+                cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
+                cr.show_text(E0)
+                # Draw Bezier curve connecting reactants and products through TS
+                cr.set_source_rgba(0.0, 0.0, 0.0, 0.5)
+                cr.set_line_width(1.0)
+                cr.move_to(x1, y1)
+                cr.curve_to(x1 + width1/8.0, y1,   x0 - width1/8.0 - TSwidth/2.0, y0,   x0 - TSwidth/2.0, y0)
+                cr.move_to(x0 + TSwidth/2.0, y0)
+                cr.curve_to(x0 + width2/8.0 + TSwidth/2.0, y0,   x2 - width2/8.0, y2,   x2, y2)
+                cr.stroke()
+            else:
+                width = (x2 - x1)
+                # Draw Bezier curve connecting reactants and products through TS
+                cr.set_source_rgba(0.0, 0.0, 0.0, 0.5)
+                cr.set_line_width(1.0)
+                cr.move_to(x1, y1)
+                cr.curve_to(x1 + width/4.0, y1,   x2 - width/4.0, y2,   x2, y2)
+                cr.stroke()
+
+        # Draw wells (after path reactions so that they are on top)
+        for i, well in enumerate(wells):
+            x0, y0 = coordinates[i,:]
+            # Draw horizontal line for well
+            cr.set_line_width(4.0)
+            cr.move_to(x0 - wellWidth/2.0, y0)
+            cr.line_to(x0 + wellWidth/2.0, y0)
+            cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
+            cr.stroke()
+            # Add background and text for energy
+            E0 = "%.1f" % (sum([spec.E0 for spec in well]) / 1000.0)
+            extents = cr.text_extents(E0)
+            x = x0 - extents[2] / 2.0; y = y0 - 6.0
+            cr.rectangle(x + extents[0] - 2.0, y + extents[1] - 2.0, extents[2] + 4.0, extents[3] + 4.0)
+            cr.set_source_rgba(1.0, 1.0, 1.0, 0.75)
+            cr.fill()
+            cr.move_to(x, y)
+            cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
+            cr.show_text(E0)
+            # Add background for label
+            label = well[0].label
+            extents = cr.text_extents(label)
+            x1 = x0 - extents[2] / 2.0 - 2.0; y1 = y0 + 4.0
+            width1 = extents[2] + 4.0; height1 = extents[3] + 4.0
+            if len(well) == 2:
+                label = "+ %s" % (well[1].label)
+                extents = cr.text_extents(label)
+                x2 = x0 - extents[2] / 2.0 - 2.0; y2 = y0 + 4.0 + height1 + 4.0
+                width2 = extents[2] + 4.0; height2 = extents[3] + 4.0
+                x = min(x1, x2); y = min(y1, y2)
+                width = max(width1, width2); height = height1 + height2
+            else:
+                x = x1; y = y1
+                width = width1; height = height1
+            cr.rectangle(x, y, width, height)
+            cr.set_source_rgba(1.0, 1.0, 1.0, 0.75)
+            cr.fill()
+            # Add text for label
+            label = well[0].label
+            extents = cr.text_extents(label)
+            x = x0 - extents[2] / 2.0; y = y0 - extents[1] + 6.0
+            cr.move_to(x - extents[0], y)
+            cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
+            cr.show_text(label)
+            if len(well) == 2:
+                label = "+ %s" % (well[1].label)
+                extents0 = extents
+                extents = cr.text_extents(label)
+                x = x0 - extents[2] / 2.0; y = y0 - extents[1] + 6.0 + extents0[3] + 4.0
+                cr.move_to(x - extents[0], y)
+                cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
+                cr.show_text(label)
+        
+        # Finish Cairo drawing
+        surface.finish()
+        return
+    
         # Create SVG file for potential energy surface
         f = open(fstr, 'w')
         f.write('<?xml version="1.0" standalone="no"?>\n')
@@ -590,22 +720,6 @@ class Network:
             else:
                 width = (x2 - x1)
                 f.write('\t\t<path d="M %g %g C %g %g %g %g %g %g" stroke="gray" stroke-width="1" fill="none"/>\n' % (x1, y1,   x1 + width/4.0, y1,   x2 - width/4.0, y2,   x2, y2))
-        f.write('\t</g>\n')
-
-        # Draw wells (after path reactions so that they are on top)
-        f.write('\t<g font-family="sans" font-size="8pt">\n')
-        for i, well in enumerate(wells):
-            x, y = coordinates[i,:]
-            E0 = sum([spec.E0 for spec in well]) / 4184
-            if len(well) == 1: 
-                text = well[0].label
-            elif len(well) == 2:
-                text = '<tspan x="%g" dy="0em">%s</tspan><tspan x="%g" dy="1.2em">+ %s</tspan>' % (x, well[0].label, x, well[1].label)
-            f.write('\t\t<rect x="%g" y="%g" width="%g" height="%gem" fill="white" fill-opacity="0.75"/>' % (x-wellWidth, y + 4, wellWidth * 2, 1.2*len(well)))
-            f.write('\t\t<rect x="%g" y="%g" width="%g" height="%gem" fill="white" fill-opacity="0.75"/>' % (x-wellWidth/2.0, y - 18, wellWidth, 1.1))
-            f.write('\t\t<text x="%g" y="%g" fill="gray" style="text-anchor: middle;">%.1f</text>\n' % (x, y - 6, E0 * 4.184))
-            f.write('\t\t<line x1="%g" y1="%g" x2="%g" y2="%g" stroke="black" stroke-width="4"/>\n' % (x-wellWidth/2.0, y, x+wellWidth/2.0, y))
-            f.write('\t\t<text x="%g" y="%g" fill="black" style="text-anchor: middle;">%s</text>\n' % (x, y + 16, text))
         f.write('\t</g>\n')
 
         # Finish SVG file
