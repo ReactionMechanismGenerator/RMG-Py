@@ -107,95 +107,85 @@ class Mode:
 
 class Translation(Mode):
     """
-    A representation of translational modes. The `dimension` attribute is an
-    integer representing the dimension of the translation (2 or 3) and the
-    `mass` is the molar mass of the molecule in kg/mol.
+    A representation of translational motion in three dimensions for an ideal
+    gas. The `mass` attribute is the molar mass of the molecule in kg/mol. The
+    quantities that depend on volume/pressure (partition function and entropy)
+    are evaluated at a standard pressure of 1 bar.
     """
 
-    def __init__(self, mass=0.0, volume=1.0, dimension=3):
+    def __init__(self, mass=0.0):
         self.mass = mass
-        self.volume = volume
-        self.dimension = dimension
 
     def __repr__(self):
         """
-        Return a string representation that can be used to reconstruct the 
+        Return a string representation that can be used to reconstruct the
         object.
         """
-        return 'Translation(mass=%g, volume=%g, dimension=%g)' % (self.mass, self.volume, self.dimension)
+        return 'Translation(mass=%g)' % (self.mass)
 
     def getPartitionFunction(self, Tlist):
         """
         Return the value of the partition function at the specified temperatures
         `Tlist` in K. The formula is
 
-        .. math:: q_\\mathrm{trans}(T, V) = \\left( \\frac{2 \\pi m k_\\mathrm{B} T}{h^2} \\right)^{d/2} V
+        .. math:: q_\\mathrm{trans}(T) = \\left( \\frac{2 \\pi m k_\\mathrm{B} T}{h^2} \\right)^{3/2} \\frac{k_\\mathrm{B} T}{P}
 
         where :math:`T` is temperature, :math:`V` is volume, :math:`m` is mass,
         :math:`d` is dimensionality, :math:`k_\\mathrm{B}` is the Boltzmann
         constant, and :math:`h` is the Planck constant.
         """
         cython.declare(qt=cython.double)
-        qt = ((2 * constants.pi * self.mass / constants.Na) / (constants.h * constants.h))**(self.dimension/2.0) * self.volume
-        return qt * (constants.kB * Tlist)**(self.dimension/2.0)
-    
+        qt = ((2 * constants.pi * self.mass / constants.Na) / (constants.h * constants.h))**1.5 / 1e5
+        return qt * (constants.kB * Tlist)**2.5
+
     def getHeatCapacity(self, Tlist):
         """
         Return the contribution to the heat capacity due to translation in
         J/mol*K at the specified temperatures `Tlist` in K. The formula is
 
-        .. math:: \\frac{C_\\mathrm{v}^\\mathrm{trans}(T)}{R} = \\frac{d}{2}
+        .. math:: \\frac{C_\\mathrm{v}^\\mathrm{trans}(T)}{R} = \\frac{3}{2}
 
-        where :math:`T` is temperature,	:math:`d` is dimensionality, and
-        :math:`R` is the gas law constant.
+        where :math:`T` is temperature and :math:`R` is the gas law constant.
         """
-        return 0.5 * self.dimension * numpy.ones_like(Tlist) * constants.R
-    
+        return 1.5 * constants.R * numpy.ones_like(Tlist)
+
     def getEnthalpy(self, Tlist):
         """
         Return the contribution to the enthalpy due to translation in J/mol
         at the specified temperatures `Tlist` in K. The formula is
 
-        .. math:: \\frac{H^\\mathrm{trans}(T)}{RT} = \\frac{d}{2}
+        .. math:: \\frac{H^\\mathrm{trans}(T)}{RT} = \\frac{3}{2}
 
-        where :math:`T` is temperature, :math:`d` is dimensionality, and
-        :math:`R` is the gas law constant.
+        where :math:`T` is temperature and :math:`R` is the gas law constant.
         """
-        return 0.5 * self.dimension * constants.R * Tlist
-    
+        return 1.5 * constants.R * Tlist
+
     def getEntropy(self, Tlist):
         """
         Return the contribution to the entropy due to translation in J/mol*K
         at the specified temperatures `Tlist` in K. The formula	is
 
-        .. math:: \\frac{S^\\mathrm{trans}(T)}{R} = \\frac{d}{2} \\ln \\left( \\frac{2 \\pi m k_\\mathrm{B} T}{h^2} \\right) + \\ln eV
-        
-        where :math:`T` is temperature, :math:`m` is mass, :math:`d` is
-        dimensionality, :math:`V` is volume, :math:`k_\\mathrm{B}` is the
-        Boltzmann constant, and :math:`R` is the gas law constant.
+        .. math:: \\frac{S^\\mathrm{trans}(T)}{R} = \\ln q_\\mathrm{trans}(T) + \\frac{3}{2} + 1
+
+        where :math:`T` is temperature, :math:`q_\\mathrm{trans}` is the
+        partition function, and :math:`R` is the gas law constant.
         """
-        return (numpy.log(self.getPartitionFunction(Tlist)) + 0.5 * self.dimension + 1.0) * constants.R
-    
+        return (numpy.log(self.getPartitionFunction(Tlist)) + 1.5 + 1.0) * constants.R
+
     def getDensityOfStates(self, Elist):
         """
         Return the density of states at the specified energlies `Elist` in J/mol
         above the ground state. The formula is
 
-        .. math:: \\rho(E) = \\left( \\frac{2 \\pi m}{h^2} \\right)^{d/2} \\frac{E^{d/2-1}}{(d/2-1)!} V
+        .. math:: \\rho(E) = \\left( \\frac{2 \\pi m}{h^2} \\right)^{3/2} \\frac{E^{3/2}}{\\Gamma(5/2)} \\frac{1}{P}
 
-        where :math:`E` is energy, :math:`m` is mass, :math:`d` is
-        dimensionality, :math:`k_\\mathrm{B}` is the Boltzmann constant, and
-        :math:`R` is the gas law constant.
+        where :math:`E` is energy, :math:`m` is mass, :math:`k_\\mathrm{B}` is
+        the Boltzmann constant, and :math:`R` is the gas law constant.
         """
         cython.declare(rho=numpy.ndarray, qt=cython.double)
         rho = numpy.zeros_like(Elist)
-        qt = ((2 * constants.pi * self.mass / constants.Na / constants.Na) / (constants.h * constants.h))**(self.dimension/2.0) * self.volume
-        if self.dimension == 2: # Dimension is 2
-            rho = qt * numpy.ones_like(Elist)
-        elif self.dimension == 3: # Dimension is 3
-            rho = qt * numpy.sqrt(Elist / math.pi) * 0.5
-        else:
-            raise InvalidStatesModelError('Unexpected dimensionality "%i" encountered while evaluating translation density of states.')
+        qt = ((2 * constants.pi * self.mass / constants.Na / constants.Na) / (constants.h * constants.h))**(1.5) / 1e5
+        rho = qt * Elist**1.5 / (numpy.sqrt(math.pi) * 0.25) / constants.Na
         return rho
 
 ################################################################################
@@ -218,7 +208,7 @@ class RigidRotor(Mode):
 
     def __repr__(self):
         """
-        Return a string representation that can be used to reconstruct the 
+        Return a string representation that can be used to reconstruct the
         object.
         """
         inertia = ', '.join(['%g' % i for i in self.inertia])
@@ -236,7 +226,7 @@ class RigidRotor(Mode):
         .. math:: q_\\mathrm{rot}(T) = \\frac{\\sqrt{\\pi}}{\\sigma} \\left( \\frac{8 \\pi^2 k_\\mathrm{B} T}{h^2} \\right)^{3/2} \\sqrt{I_\\mathrm{A} I_\\mathrm{B} I_\\mathrm{C}}
 
         for nonlinear rotors. Above, :math:`T` is temperature, :math:`\\sigma`
-        is the symmetry number, :math:`I` is the moment of inertia, 
+        is the symmetry number, :math:`I` is the moment of inertia,
         :math:`k_\\mathrm{B}` is the Boltzmann constant, and :math:`h` is the
         Planck constant.
         """
@@ -249,7 +239,7 @@ class RigidRotor(Mode):
             for inertia in self.inertia:
                 theta *= constants.h * constants.h / (8 * constants.pi * constants.pi * inertia * constants.kB)
             return numpy.sqrt(constants.pi * Tlist**len(self.inertia) / theta) / self.symmetry
-        
+
     def getHeatCapacity(self, Tlist):
         """
         Return the contribution to the heat capacity due to rigid rotation
@@ -287,26 +277,26 @@ class RigidRotor(Mode):
             return constants.R * Tlist
         else:
             return 1.5 * constants.R * Tlist
-    
+
     def getEntropy(self, Tlist):
         """
         Return the contribution to the entropy due to rigid rotation in J/mol*K
         at the specified temperatures `Tlist` in K. The formula is
 
         .. math:: \\frac{S^\\mathrm{rot}(T)}{R} = \\ln Q^\\mathrm{rot} + 1
-        
+
         for linear rotors and
 
         .. math:: \\frac{S^\\mathrm{rot}(T)}{R} = \\ln Q^\\mathrm{rot} + \\frac{3}{2}
 
-        for nonlinear rotors, where :math:`Q^\\mathrm{rot}` is the partition 
+        for nonlinear rotors, where :math:`Q^\\mathrm{rot}` is the partition
         function for a rigid rotor and :math:`R` is the gas law constant.
         """
         if self.linear:
             return (numpy.log(self.getPartitionFunction(Tlist)) + 1.0) * constants.R
         else:
             return (numpy.log(self.getPartitionFunction(Tlist)) + 1.5) * constants.R
-    
+
     def getDensityOfStates(self, Elist):
         """
         Return the density of states at the specified energlies `Elist` in J/mol
@@ -332,7 +322,7 @@ class RigidRotor(Mode):
             for inertia in self.inertia:
                 theta *= constants.h * constants.h / (8 * constants.pi * constants.pi * inertia) * constants.Na
             return 2.0 * numpy.sqrt(Elist / theta) / self.symmetry
-        
+
 ################################################################################
 
 class HinderedRotor(Mode):
@@ -367,7 +357,7 @@ class HinderedRotor(Mode):
 
     def __repr__(self):
         """
-        Return a string representation that can be used to reconstruct the 
+        Return a string representation that can be used to reconstruct the
         object.
         """
         return 'HinderedRotor(inertia=%g, barrier=%g, symmetry=%g, fourier=%s)' % (self.inertia, self.barrier, self.symmetry, self.fourier)
@@ -392,7 +382,7 @@ class HinderedRotor(Mode):
         Solves the one-dimensional time-independent Schrodinger equation
 
         .. math:: -\\frac{\\hbar}{2I} \\frac{d^2 \\psi}{d \\phi^2} + V(\\phi) \\psi(\\phi) = E \\psi(\\phi)
-        
+
         where :math:`I` is the reduced moment of inertia for the rotor and
         :math:`V(\\phi)` is the rotation potential function, to determine the
         energy levels of a one-dimensional hindered rotor with a Fourier series
@@ -441,7 +431,7 @@ class HinderedRotor(Mode):
         .. math:: q_\\mathrm{hind}(T) = \\frac{h \\nu}{k_\\mathrm{B} T} \\frac{1}{1 - \\exp \\left(- h \\nu / k_\\mathrm{B} T \\right)} \\left( \\frac{2 \\pi I k_\\mathrm{B} T}{h^2} \\right)^{1/2} \\frac{2 \\pi}{\\sigma} \\exp \\left( -\\frac{V_0}{2 k_\\mathrm{B} T} \\right) I_0 \\left( \\frac{V_0}{2 k_\\mathrm{B} T} \\right)
 
         where
-        
+
         .. math:: \\nu = \\frac{\\sigma}{2 \\pi} \\sqrt{\\frac{V_0}{2 I}}
 
         :math:`T` is temperature, :math:`V_0` is the barrier height,
@@ -474,7 +464,7 @@ class HinderedRotor(Mode):
             x = constants.h * frequency / (constants.kB * Tlist)
             z = 0.5 * self.barrier / (constants.R * Tlist)
             return x / (1 - numpy.exp(-x)) * numpy.sqrt(2 * math.pi * self.inertia * constants.kB * Tlist / constants.h / constants.h) * (2 * math.pi / self.symmetry) * numpy.exp(-z) * besseli0(z)
-        
+
     def getHeatCapacity(self, Tlist):
         """
         Return the contribution to the heat capacity due to hindered rotation
@@ -494,7 +484,7 @@ class HinderedRotor(Mode):
         utilize the expression
 
         .. math:: \\frac{C_\\mathrm{v}^\\mathrm{hind}(T)}{R} = \\beta^2 \\frac{\\left( \\sum_i E_i^2 e^{-\\beta E_i} \\right) \\left( \\sum_i e^{-\\beta E_i} \\right) - \\left( \\sum_i E_i e^{-\\beta E_i} \\right)^2}{\\left( \\sum_i e^{-\\beta E_i} \\right)^2}
-        
+
         to obtain the heat capacity.
         """
         if self.fourier is not None:
@@ -515,7 +505,7 @@ class HinderedRotor(Mode):
             one_minus_exp_x = 1.0 - exp_x
             BB = besseli1(z) / besseli0(z)
             return (x * x * exp_x / one_minus_exp_x / one_minus_exp_x - 0.5 + z * (z - BB - z * BB * BB)) * constants.R
-        
+
     def getEnthalpy(self, Tlist):
         """
         Return the contribution to the heat capacity due to hindered rotation
@@ -649,17 +639,17 @@ def cellipk(x):
 
 class HarmonicOscillator(Mode):
     """
-    A representation of a set of vibrational modes as one-dimensional quantum 
-    harmonic oscillator. The oscillators are defined by their `frequencies` in 
+    A representation of a set of vibrational modes as one-dimensional quantum
+    harmonic oscillator. The oscillators are defined by their `frequencies` in
     cm^-1.
     """
 
     def __init__(self, frequencies=None):
         self.frequencies = frequencies or []
-    
+
     def __repr__(self):
         """
-        Return a string representation that can be used to reconstruct the 
+        Return a string representation that can be used to reconstruct the
         object.
         """
         frequencies = ', '.join(['%g' % freq for freq in self.frequencies])
@@ -671,11 +661,11 @@ class HarmonicOscillator(Mode):
         `Tlist` in K. The formula is
 
         .. math:: q_\\mathrm{vib}(T) = \\prod_i \\frac{1}{1 - e^{-\\xi_i}}
-        
+
         where :math:`\\xi_i \\equiv h \\nu_i / k_\\mathrm{B} T`,
         :math:`T` is temperature, :math:`\\nu_i` is the frequency of vibration
-        :math:`i`, :math:`k_\\mathrm{B}` is the Boltzmann constant, :math:`h` 
-        is the Planck constant, and :math:`R` is the gas law constant. Note 
+        :math:`i`, :math:`k_\\mathrm{B}` is the Boltzmann constant, :math:`h`
+        is the Planck constant, and :math:`R` is the gas law constant. Note
         that we have chosen our zero of energy to be at the zero-point energy
         of the molecule, *not* the bottom of the potential well.
         """
@@ -684,7 +674,7 @@ class HarmonicOscillator(Mode):
         for freq in self.frequencies:
             Q = Q / (1 - numpy.exp(-freq / (0.695039 * Tlist)))  # kB = 0.695039 cm^-1/K
         return Q
-    
+
     def getHeatCapacity(self, Tlist):
         """
         Return the contribution to the heat capacity due to vibration
@@ -694,8 +684,8 @@ class HarmonicOscillator(Mode):
 
         where :math:`\\xi_i \\equiv h \\nu_i / k_\\mathrm{B} T`,
         :math:`T` is temperature, :math:`\\nu_i` is the frequency of vibration
-        :math:`i`, :math:`k_\\mathrm{B}` is the Boltzmann constant, :math:`h` 
-        is the Planck constant, and :math:`R` is the gas law constant. 
+        :math:`i`, :math:`k_\\mathrm{B}` is the Boltzmann constant, :math:`h`
+        is the Planck constant, and :math:`R` is the gas law constant.
         """
         cython.declare(Cv=numpy.ndarray, freq=cython.double)
         cython.declare(x=numpy.ndarray, exp_x=numpy.ndarray, one_minus_exp_x=numpy.ndarray)
@@ -713,11 +703,11 @@ class HarmonicOscillator(Mode):
         the specified temperatures `Tlist` in K. The formula is
 
         .. math:: \\frac{H^\\mathrm{vib}(T)}{RT} = \\sum_i \\frac{\\xi_i}{e^{\\xi_i} - 1}
-        
+
         where :math:`\\xi_i \\equiv h \\nu_i / k_\\mathrm{B} T`,
         :math:`T` is temperature, :math:`\\nu_i` is the frequency of vibration
-        :math:`i`, :math:`k_\\mathrm{B}` is the Boltzmann constant, :math:`h` 
-        is the Planck constant, and :math:`R` is the gas law constant. 
+        :math:`i`, :math:`k_\\mathrm{B}` is the Boltzmann constant, :math:`h`
+        is the Planck constant, and :math:`R` is the gas law constant.
         """
         cython.declare(H=numpy.ndarray, freq=cython.double)
         cython.declare(x=numpy.ndarray, exp_x=numpy.ndarray)
@@ -734,11 +724,11 @@ class HarmonicOscillator(Mode):
         the specified temperatures `Tlist` in K. The formula is
 
         .. math:: \\frac{S^\\mathrm{vib}(T)}{R} = \\sum_i \\left[ - \\ln \\left(1 - e^{-\\xi_i} \\right) + \\frac{\\xi_i}{e^{\\xi_i} - 1} \\right]
-        
+
         where :math:`\\xi_i \\equiv h \\nu_i / k_\\mathrm{B} T`,
         :math:`T` is temperature, :math:`\\nu_i` is the frequency of vibration
-        :math:`i`, :math:`k_\\mathrm{B}` is the Boltzmann constant, :math:`h` 
-        is the Planck constant, and :math:`R` is the gas law constant. 
+        :math:`i`, :math:`k_\\mathrm{B}` is the Boltzmann constant, :math:`h`
+        is the Planck constant, and :math:`R` is the gas law constant.
         """
         cython.declare(S=numpy.ndarray, freq=cython.double)
         cython.declare(x=numpy.ndarray, exp_x=numpy.ndarray)
@@ -752,7 +742,7 @@ class HarmonicOscillator(Mode):
     def getDensityOfStates(self, Elist, rho0=None):
         """
         Return the density of states at the specified energies `Elist` in J/mol
-        above the ground state. The Beyer-Swinehart method is used to 
+        above the ground state. The Beyer-Swinehart method is used to
         efficiently convolve the vibrational density of states into the
         density of states of other modes. To be accurate, this requires a small
         (:math:`1-10 \\ \\mathrm{cm^{-1}}` or so) energy spacing.
@@ -867,11 +857,11 @@ class StatesModel:
         return rho * self.spinMultiplicity
 
     def __phi(self, beta, E):
-		beta = float(beta)
-		cython.declare(T=numpy.ndarray, Q=cython.double)
+        beta = float(beta)
+        cython.declare(T=numpy.ndarray, Q=cython.double)
         T = numpy.array([1.0 / (constants.R * beta)], numpy.float64)
-		Q = self.getPartitionFunction(T)[0]
-		return math.log(Q) + beta * float(E)
+        Q = self.getPartitionFunction(T)[0]
+        return math.log(Q) + beta * float(E)
 
     def getDensityOfStatesILT(self, Elist, order=1):
         """
@@ -890,7 +880,7 @@ class StatesModel:
             *Unimolecular Reactions: A Concise Introduction.*
             Cambridge University Press (2003).
             `isbn:978-0-52-152922-8 <http://www.cambridge.org/9780521529228>`_
-        
+
         """
         import scipy.optimize
         cython.declare(rho=numpy.ndarray)

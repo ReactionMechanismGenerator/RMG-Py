@@ -24,11 +24,11 @@ class StatesTest(unittest.TestCase):
 
         Tlist = numpy.array([298.15], numpy.float64)
 
-        trans = Translation(mass=0.02803, volume=1.3806504e-23 * 298.15 / 101325, dimension=3)
+        trans = Translation(mass=0.02803)
         rot = RigidRotor(linear=False, inertia=[5.6952e-47, 2.7758e-46, 3.3454e-46], symmetry=1)
         vib = HarmonicOscillator(frequencies=[834.50, 973.31, 975.37, 1067.1, 1238.5, 1379.5, 1472.3, 1691.3, 3121.6, 3136.7, 3192.5, 3221.0])
 
-        self.assertAlmostEqual(trans.getPartitionFunction(Tlist) / 5.83338e6, 1.0, 3)
+        self.assertAlmostEqual(trans.getPartitionFunction(Tlist) / 1.01325 / 5.83338e6, 1.0, 3)
         self.assertAlmostEqual(rot.getPartitionFunction(Tlist) / 2.59622e3, 1.0, 3)
         self.assertAlmostEqual(vib.getPartitionFunction(Tlist) / 1.0481e0, 1.0, 3)
 
@@ -40,7 +40,7 @@ class StatesTest(unittest.TestCase):
         self.assertAlmostEqual(rot.getEnthalpy(Tlist) / 8.314472 / Tlist / 1.5, 1.0, 3)
         self.assertAlmostEqual(vib.getEnthalpy(Tlist) / 8.314472 / Tlist / 0.221258, 1.0, 3)
         
-        self.assertAlmostEqual(trans.getEntropy(Tlist) / 4.184 / 35.927, 1.0, 3)
+        self.assertAlmostEqual(trans.getEntropy(Tlist) / 4.184 / 35.927, 1.0, 2)
         self.assertAlmostEqual(rot.getEntropy(Tlist) / 4.184 / 18.604, 1.0, 3)
         self.assertAlmostEqual(vib.getEntropy(Tlist) / 4.184 / 0.533, 1.0, 3)
 
@@ -59,11 +59,11 @@ class StatesTest(unittest.TestCase):
 
         Tlist = numpy.array([298.15], numpy.float64)
 
-        trans = Translation(mass=0.03199, volume=1.3806504e-23 * 298.15 / 101325, dimension=3)
+        trans = Translation(mass=0.03199)
         rot = RigidRotor(linear=True, inertia=[1.9271e-46], symmetry=2)
         vib = HarmonicOscillator(frequencies=[1637.9])
 
-        self.assertAlmostEqual(trans.getPartitionFunction(Tlist) / 7.11169e6, 1.0, 3)
+        self.assertAlmostEqual(trans.getPartitionFunction(Tlist) / 1.01325 / 7.11169e6, 1.0, 3)
         self.assertAlmostEqual(rot.getPartitionFunction(Tlist) / 7.13316e1, 1.0, 3)
         self.assertAlmostEqual(vib.getPartitionFunction(Tlist) / 1.000037e0, 1.0, 3)
 
@@ -75,7 +75,7 @@ class StatesTest(unittest.TestCase):
         self.assertAlmostEqual(rot.getEnthalpy(Tlist) / 8.314472 / Tlist / 1.0, 1.0, 3)
         self.assertAlmostEqual(vib.getEnthalpy(Tlist) / 8.314472 / Tlist / 0.0029199, 1.0, 3)
 
-        self.assertAlmostEqual(trans.getEntropy(Tlist) / 4.184 / 36.321, 1.0, 3)
+        self.assertAlmostEqual(trans.getEntropy(Tlist) / 4.184 / 36.321, 1.0, 2)
         self.assertAlmostEqual(rot.getEntropy(Tlist) / 4.184 / 10.467, 1.0, 3)
         self.assertAlmostEqual(vib.getEntropy(Tlist) / 4.184 / 0.00654, 1.0, 2)
 
@@ -176,16 +176,29 @@ class StatesTest(unittest.TestCase):
         transform of the partition function is equivalent to that obtained
         directly (via convolution).
         """
-        trans = Translation(mass=0.02803, volume=1.3806504e-23 * 298.15 / 101325, dimension=3)
+        trans = Translation(mass=0.02803)
         rot = RigidRotor(linear=False, inertia=[5.6952e-47, 2.7758e-46, 3.3454e-46], symmetry=1)
         vib = HarmonicOscillator(frequencies=[834.50, 973.31, 975.37, 1067.1, 1238.5, 1379.5, 1472.3, 1691.3, 3121.6, 3136.7, 3192.5, 3221.0])
-        states = StatesModel(modes=[trans, rot, vib])
-
+        
         Elist = numpy.arange(0.0, 200000.0, 500.0, numpy.float64)
+
+        states = StatesModel(modes=[trans])
         densStates0 = states.getDensityOfStates(Elist)
         densStates1 = states.getDensityOfStatesILT(Elist)
-        for i in range(1, len(Elist)):
-            self.assertTrue(0.3333 < densStates1[i] / densStates0[i] < 3.0)
+        for i in range(10, len(Elist)):
+            self.assertTrue(0.8 < densStates1[i] / densStates0[i] < 1.25)
+
+        states = StatesModel(modes=[rot])
+        densStates0 = states.getDensityOfStates(Elist)
+        densStates1 = states.getDensityOfStatesILT(Elist)
+        for i in range(10, len(Elist)):
+            self.assertTrue(0.8 < densStates1[i] / densStates0[i] < 1.25)
+
+        states = StatesModel(modes=[rot, vib])
+        densStates0 = states.getDensityOfStates(Elist)
+        densStates1 = states.getDensityOfStatesILT(Elist)
+        for i in range(25, len(Elist)):
+            self.assertTrue(0.8 < densStates1[i] / densStates0[i] < 1.25)
 
 ################################################################################
 

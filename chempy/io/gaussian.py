@@ -178,7 +178,7 @@ class GaussianLog:
                     # Read molecular mass for external translational modes
                     elif 'Molecular mass:' in line:
                         mass = float(line.split()[2]) * 1e-3
-                        translation = Translation(mass=mass, dimension=3)
+                        translation = Translation(mass=mass)
                         modes.append(translation)
 
                     # Read Gaussian's estimate of the external symmetry number
@@ -340,7 +340,7 @@ class GaussianLog:
         """
         
         # Load the energies from the file
-        Vlist = self.loadEnergies()
+        Vlist = self.loadScanEnergies()
         
         # Gaussian does something extra with the last step in the scan, so we
         # discard this point

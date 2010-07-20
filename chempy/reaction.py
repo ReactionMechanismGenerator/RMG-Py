@@ -188,8 +188,8 @@ class Reaction:
         E0 = TS.E0 - sum([spec.E0 for spec in self.reactants])
         # Determine TST rate constant at each temperature
         Qreac = numpy.ones_like(Tlist)
-        for spec in self.reactants: Qreac *= spec.states.getPartitionFunction(Tlist) / constants.Na
-        Qts = TS.states.getPartitionFunction(Tlist) / constants.Na
+        for spec in self.reactants: Qreac *= spec.states.getPartitionFunction(Tlist) / (constants.R * Tlist / 1e5)
+        Qts = TS.states.getPartitionFunction(Tlist) / (constants.R * Tlist / 1e5)
         k = (constants.kB * Tlist / constants.h * Qts / Qreac *	numpy.exp(-E0 / constants.R / Tlist))
         # Apply tunneling correction
         if tunneling.lower() == 'wigner':

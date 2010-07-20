@@ -34,8 +34,6 @@ cdef class Mode:
 cdef class Translation(Mode):
     
     cdef public double mass
-    cdef public double volume
-    cdef public int dimension
     
     cpdef numpy.ndarray getPartitionFunction(self, numpy.ndarray Tlist)
     

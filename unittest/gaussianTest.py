@@ -36,7 +36,7 @@ class GaussianTest(unittest.TestCase):
         rot = [mode for mode in s.modes if isinstance(mode,RigidRotor)][0]
         vib = [mode for mode in s.modes if isinstance(mode,HarmonicOscillator)][0]
         Tlist = numpy.array([298.15], numpy.float64)
-        self.assertAlmostEqual(trans.getPartitionFunction(Tlist) * 1.3806504e-23 * 298.15 / 101325 / 5.83338e6, 1.0, 3)
+        self.assertAlmostEqual(trans.getPartitionFunction(Tlist) / 1.01325 / 5.83338e6, 1.0, 3)
         self.assertAlmostEqual(rot.getPartitionFunction(Tlist) / 2.59622e3, 1.0, 3)
         self.assertAlmostEqual(vib.getPartitionFunction(Tlist) / 1.0481e0, 1.0, 3)
 
@@ -62,7 +62,7 @@ class GaussianTest(unittest.TestCase):
         rot = [mode for mode in s.modes if isinstance(mode,RigidRotor)][0]
         vib = [mode for mode in s.modes if isinstance(mode,HarmonicOscillator)][0]
         Tlist = numpy.array([298.15], numpy.float64)
-        self.assertAlmostEqual(trans.getPartitionFunction(Tlist) * 1.3806504e-23 * 298.15 / 101325 / 7.11169e6, 1.0, 3)
+        self.assertAlmostEqual(trans.getPartitionFunction(Tlist) / 1.01325 / 7.11169e6, 1.0, 3)
         self.assertAlmostEqual(rot.getPartitionFunction(Tlist) / 7.13316e1, 1.0, 3)
         self.assertAlmostEqual(vib.getPartitionFunction(Tlist) / 1.000037e0, 1.0, 3)
 
