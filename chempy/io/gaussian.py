@@ -371,7 +371,7 @@ class GaussianLog:
         For a given log file, extract the energies and fit them to a potential
         of the form
 
-        .. math:: V(\\phi) = \\sum_{m=1}^6 A_m \\cos m \\phi + \\sum_{m=1}^6 B_m \\sin m \\phi
+        .. math:: V(\\phi) = \\sum_{m=1}^5 A_m \\cos m \\phi + \\sum_{m=1}^5 B_m \\sin m \\phi
         
         This function returns the fitted Fourier coefficients :math:`A_m` and
         :math:`B_m` in J/mol.
@@ -382,7 +382,7 @@ class GaussianLog:
         """
 
         # Load the energies from the file
-        Vlist = self.loadEnergies()
+        Vlist = self.loadScanEnergies()
 
         # Gaussian does something extra with the last step in the scan, so we
         # discard this point
@@ -394,16 +394,16 @@ class GaussianLog:
         angle = numpy.arange(0.0, 2*math.pi+0.00001, 2*math.pi/(len(Vlist)-1), numpy.float64)
 
         # Fit Fourier series potential
-        A = numpy.zeros((len(Elist),12), numpy.float64)
-        b = numpy.zeros(len(Elist), numpy.float64)
-        for i in range(len(Elist)):
-            for m in range(6):
+        A = numpy.zeros((len(Vlist),10), numpy.float64)
+        b = numpy.zeros(len(Vlist), numpy.float64)
+        for i in range(len(Vlist)):
+            for m in range(5):
                 A[i,m] = math.cos(m * angle[i])
-                A[i,6+m] = math.sin(m * angle[i])
-                b[i] = Elist[i]
+                A[i,5+m] = math.sin(m * angle[i])
+                b[i] = Vlist[i]
         x, residues, rank, s = numpy.linalg.lstsq(A, b)
 
         # Return the set of Fourier coefficients
-        return x[0:6], x[6:]
+        return numpy.array([x[0:5], x[5:]], numpy.float64)
 
 ################################################################################
