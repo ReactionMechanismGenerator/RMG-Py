@@ -481,42 +481,81 @@ class Network:
         file at location `fstr` on disk.
         """
 
-        # Determine order of wells based on order of path reactions
+        # Determine order of wells based on order of path reactions, but put
+        # all the unimolecular isomer wells first
         wells = []
+        for isomer in self.isomers: wells.append([isomer])
         for rxn in self.pathReactions:
-            if rxn.reactants not in wells: wells.append(rxn.reactants)
-            if rxn.products not in wells: wells.append(rxn.products)
-
+            if rxn.reactants not in wells:
+                if len(rxn.products) == 1 and rxn.products[0] in self.isomers:
+                    if self.isomers.index(rxn.products[0]) < len(self.isomers) / 2:
+                        wells.insert(0, rxn.reactants)
+                    else:
+                        wells.append(rxn.reactants)
+                else:
+                    wells.append(rxn.reactants)
+            if rxn.products not in wells:
+                if len(rxn.reactants) == 1 and rxn.reactants[0] in self.isomers:
+                    if self.isomers.index(rxn.reactants[0]) < len(self.isomers) / 2:
+                        wells.insert(0, rxn.products)
+                    else:
+                        wells.append(rxn.products)
+                else:
+                    wells.append(rxn.products)
+        
         # Drawing parameters
         padding_left = 96.0
         padding_right = padding_left
         padding_top = padding_left / 2.0
         padding_bottom = padding_left / 2.0
-        wellWidth = 64.0; wellSpacing = 64.0; Emult = 10.0; TSwidth = 16.0
-        width = int(len(wells) * (wellWidth + wellSpacing) - wellSpacing) + padding_left + padding_right
+        wellWidth = 64.0; wellSpacing = 64.0; Emult = 5.0; TSwidth = 16.0
         E0 = [sum([spec.E0 for spec in well]) / 4184 for well in wells]
         E0.extend([rxn.transitionState.E0 / 4184 for rxn in self.pathReactions])
-        height = int((max(E0) - min(E0)) * Emult) + padding_top + padding_bottom
         y_E0 = (max(E0) - 0.0) * Emult + padding_top
+        
+        # Determine naive position of each well (one per column)
+        coordinates = numpy.zeros((len(wells), 2), numpy.float64)
+        x = padding_left + wellWidth / 2.0
+        for i, well in enumerate(wells):
+            E0 = sum([spec.E0 for spec in well]) / 4184
+            y = y_E0 - E0 * Emult
+            coordinates[i] = [x, y]
+            x += wellWidth + wellSpacing
+
+        # Squish columns together from the left where possible until an isomer is encountered
+        Nleft = wells.index([self.isomers[0]])
+        for i in range(Nleft-1, -1, -1):
+            newX = float(coordinates[i,0])
+            for j in range(i+1, Nleft):
+                if abs(coordinates[i,1] - coordinates[j,1]) < 96:
+                    newX = float(coordinates[j,0]) - (wellWidth + wellSpacing)
+                    break
+                else:
+                    newX = float(coordinates[j,0])
+            coordinates[i,0] = newX
+        # Squish columns together from the right where possible until an isomer is encountered
+        Nright = wells.index([self.isomers[-1]])
+        for i in range(Nright+2, len(wells)):
+            newX = float(coordinates[i,0])
+            for j in range(i-1, Nright, -1):
+                if abs(coordinates[i,1] - coordinates[j,1]) < 96:
+                    newX = float(coordinates[j,0]) + (wellWidth + wellSpacing)
+                    break
+                else:
+                    newX = float(coordinates[j,0])
+            coordinates[i,0] = newX
+
+        coordinates[:,0] -= numpy.min(coordinates[:,0]) - padding_left - wellWidth/2.0
+
+        # Determine required size of diagram
+        width = numpy.max(coordinates[:,0]) - numpy.min(coordinates[:,0]) + wellWidth + padding_left + padding_right
+        height = numpy.max(coordinates[:,1]) - numpy.min(coordinates[:,1]) + 32.0 + padding_top + padding_bottom
 
         # Create SVG file for potential energy surface
         f = open(fstr, 'w')
         f.write('<?xml version="1.0" standalone="no"?>\n')
         f.write('<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">\n')
         f.write('<svg width="%ipx" height="%ipx" viewBox="0 0 %i %i" xmlns="http://www.w3.org/2000/svg" version="1.1">\n' % (width, height, width, height))
-
-        # Draw wells
-        f.write('\t<g font-family="sans" font-size="8pt">\n')
-        x = padding_left
-        for well in wells:
-            E0 = sum([spec.E0 for spec in well]) / 4184
-            y = y_E0 - E0 * Emult
-            text = ' + '.join([spec.label for spec in well])
-            f.write('\t\t<text x="%g" y="%g" fill="gray" style="text-anchor: middle;">%.1f</text>\n' % (x + wellWidth/2.0, y - 6, E0 * 4.184))
-            f.write('\t\t<line x1="%g" y1="%g" x2="%g" y2="%g" stroke="black" stroke-width="4"/>\n' % (x, y, x+wellWidth, y))
-            f.write('\t\t<text x="%g" y="%g" fill="gray" style="text-anchor: middle;">%s</text>\n' % (x + wellWidth/2.0, y + 16, text))
-            x += wellWidth + wellSpacing
-        f.write('\t</g>\n')
 
         # Draw path reactions
         f.write('\t<g font-family="sans" font-size="8pt">\n')
@@ -527,23 +566,46 @@ class Network:
             E0_prod = sum([spec.E0 for spec in wells[prod]]) / 4184
             E0_TS = rxn.transitionState.E0 / 4184
             if reac < prod:
-                x1 = padding_left + reac * (wellWidth + wellSpacing) + wellWidth
-                x2 = padding_left + prod * (wellWidth + wellSpacing)
-                y1 = y_E0 - E0_reac * Emult
-                y2 = y_E0 - E0_prod * Emult
+                x1, y1 = coordinates[reac,:]
+                x2, y2 = coordinates[prod,:]
             else:
-                x1 = padding_left + prod * (wellWidth + wellSpacing) + wellWidth
-                x2 = padding_left + reac * (wellWidth + wellSpacing)
-                y1 = y_E0 - E0_prod * Emult
-                y2 = y_E0 - E0_reac * Emult
-            width = x2 - x1
+                x1, y1 = coordinates[prod,:]
+                x2, y2 = coordinates[reac,:]
+            x1 += wellSpacing / 2.0; x2 -= wellSpacing / 2.0
             if abs(E0_TS - E0_reac) > 0.1 and abs(E0_TS - E0_prod) > 0.1:
-                x0 = 0.5 * (x1 + x2); y0 = y_E0 - E0_TS * Emult
+                if len(rxn.reactants) == 2:
+                    if reac < prod: x0 = x1 + wellSpacing * 0.5
+                    else:           x0 = x2 - wellSpacing * 0.5
+                elif len(rxn.products) == 2:
+                    if reac < prod: x0 = x2 - wellSpacing * 0.5
+                    else:           x0 = x1 + wellSpacing * 0.5
+                else:
+                    x0 = 0.5 * (x1 + x2)
+                y0 = y_E0 - E0_TS * Emult
+                width1 = (x0 - x1)
+                width2 = (x2 - x0)
                 f.write('\t\t<text x="%g" y="%g" fill="gray" style="text-anchor: middle;">%.1f</text>\n' % (x0, y0 - 6, E0_TS * 4.184))
                 f.write('\t\t<line x1="%g" y1="%g" x2="%g" y2="%g" stroke="black" stroke-width="2"/>\n' % (x0 - TSwidth/2.0, y0, x0+TSwidth/2.0, y0))
-                f.write('\t\t<path d="M %g %g C %g %g %g %g %g %g M %g %g C %g %g %g %g %g %g" stroke="black" stroke-width="1" fill="none"/>\n' % (x1, y1,   x1 + width/8.0, y1,   x0 - width/8.0 - TSwidth/2.0, y0,   x0 - TSwidth/2.0, y0,   x0 + TSwidth/2.0, y0,   x0 + width/8.0 + TSwidth/2.0, y0,   x2 - width/8.0, y2,   x2, y2))
+                f.write('\t\t<path d="M %g %g C %g %g %g %g %g %g M %g %g C %g %g %g %g %g %g" stroke="gray" stroke-width="1" fill="none"/>\n' % (x1, y1,   x1 + width1/8.0, y1,   x0 - width1/8.0 - TSwidth/2.0, y0,   x0 - TSwidth/2.0, y0,   x0 + TSwidth/2.0, y0,   x0 + width2/8.0 + TSwidth/2.0, y0,   x2 - width2/8.0, y2,   x2, y2))
             else:
-                f.write('\t\t<path d="M %g %g C %g %g %g %g %g %g" stroke="black" stroke-width="1" fill="none"/>\n' % (x1, y1,   x1 + width/4.0, y1,   x2 - width/4.0, y2,   x2, y2))
+                width = (x2 - x1)
+                f.write('\t\t<path d="M %g %g C %g %g %g %g %g %g" stroke="gray" stroke-width="1" fill="none"/>\n' % (x1, y1,   x1 + width/4.0, y1,   x2 - width/4.0, y2,   x2, y2))
+        f.write('\t</g>\n')
+
+        # Draw wells (after path reactions so that they are on top)
+        f.write('\t<g font-family="sans" font-size="8pt">\n')
+        for i, well in enumerate(wells):
+            x, y = coordinates[i,:]
+            E0 = sum([spec.E0 for spec in well]) / 4184
+            if len(well) == 1: 
+                text = well[0].label
+            elif len(well) == 2:
+                text = '<tspan x="%g" dy="0em">%s</tspan><tspan x="%g" dy="1.2em">+ %s</tspan>' % (x, well[0].label, x, well[1].label)
+            f.write('\t\t<rect x="%g" y="%g" width="%g" height="%gem" fill="white" fill-opacity="0.75"/>' % (x-wellWidth, y + 4, wellWidth * 2, 1.2*len(well)))
+            f.write('\t\t<rect x="%g" y="%g" width="%g" height="%gem" fill="white" fill-opacity="0.75"/>' % (x-wellWidth/2.0, y - 18, wellWidth, 1.1))
+            f.write('\t\t<text x="%g" y="%g" fill="gray" style="text-anchor: middle;">%.1f</text>\n' % (x, y - 6, E0 * 4.184))
+            f.write('\t\t<line x1="%g" y1="%g" x2="%g" y2="%g" stroke="black" stroke-width="4"/>\n' % (x-wellWidth/2.0, y, x+wellWidth/2.0, y))
+            f.write('\t\t<text x="%g" y="%g" fill="black" style="text-anchor: middle;">%s</text>\n' % (x, y + 16, text))
         f.write('\t</g>\n')
 
         # Finish SVG file
