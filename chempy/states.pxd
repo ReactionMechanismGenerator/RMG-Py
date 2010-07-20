@@ -125,6 +125,8 @@ cdef class StatesModel:
     
     cpdef numpy.ndarray getDensityOfStates(self, numpy.ndarray Elist)
 
+    cpdef numpy.ndarray getDensityOfStatesILT(self, numpy.ndarray Elist, int order=?)
+
 ################################################################################
 
 cdef numpy.ndarray convolve(numpy.ndarray rho1, numpy.ndarray rho2, numpy.ndarray Elist)

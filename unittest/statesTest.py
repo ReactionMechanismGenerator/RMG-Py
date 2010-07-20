@@ -141,7 +141,7 @@ class StatesTest(unittest.TestCase):
         fourier = numpy.array([ [ 1.377e-02,-2.226e-05], [-3.481e-03, 1.859e-05], [-2.511e-01, 2.025e-04], [ 6.786e-04,-3.212e-05], [-1.191e-02, 2.027e-05] ], numpy.float64) * 4184
         hr1 = HinderedRotor(inertia=1.60779/6.022e46, barrier=176.4*11.96, symmetry=3)
         hr2 = HinderedRotor(inertia=1.60779/6.022e46, barrier=0.233317*4184, symmetry=3, fourier=fourier)
-        
+
         # Check that the potentials between the two rotors are approximately consistent
         phi = numpy.arange(0, 2*math.pi, math.pi/48.0, numpy.float64)
         V1 = hr1.getPotential(phi)
@@ -162,7 +162,7 @@ class StatesTest(unittest.TestCase):
         S2 = hr2.getEntropy(Tlist)
         for i in range(len(Tlist)):
             self.assertTrue(abs(C2[i] - C1[i]) < 0.2)
-        
+
         #import pylab
         #pylab.plot(Tlist, Q1, '-r', Tlist, Q2, '-b')
         #pylab.plot(Tlist, C1, '-r', Tlist, C2, '-b')
@@ -170,7 +170,22 @@ class StatesTest(unittest.TestCase):
         #pylab.plot(Tlist, S1, '-r', Tlist, S2, '-b')
         #pylab.show()
 
-        
+    def testDensityOfStatesILT(self):
+        """
+        Test that the density of states as obtained via inverse Laplace
+        transform of the partition function is equivalent to that obtained
+        directly (via convolution).
+        """
+        trans = Translation(mass=0.02803, volume=1.3806504e-23 * 298.15 / 101325, dimension=3)
+        rot = RigidRotor(linear=False, inertia=[5.6952e-47, 2.7758e-46, 3.3454e-46], symmetry=1)
+        vib = HarmonicOscillator(frequencies=[834.50, 973.31, 975.37, 1067.1, 1238.5, 1379.5, 1472.3, 1691.3, 3121.6, 3136.7, 3192.5, 3221.0])
+        states = StatesModel(modes=[trans, rot, vib])
+
+        Elist = numpy.arange(0.0, 200000.0, 500.0, numpy.float64)
+        densStates0 = states.getDensityOfStates(Elist)
+        densStates1 = states.getDensityOfStatesILT(Elist)
+        for i in range(1, len(Elist)):
+            self.assertTrue(0.3333 < densStates1[i] / densStates0[i] < 3.0)
 
 ################################################################################
 

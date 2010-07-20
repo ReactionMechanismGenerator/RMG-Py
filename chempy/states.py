@@ -866,6 +866,58 @@ class StatesModel:
                 rho = mode.getDensityOfStates(Elist, rho)
         return rho * self.spinMultiplicity
 
+    def __phi(self, beta, E):
+		beta = float(beta)
+		cython.declare(T=numpy.ndarray, Q=cython.double)
+        T = numpy.array([1.0 / (constants.R * beta)], numpy.float64)
+		Q = self.getPartitionFunction(T)[0]
+		return math.log(Q) + beta * float(E)
+
+    def getDensityOfStatesILT(self, Elist, order=1):
+        """
+        Return the value of the density of states in mol/J at the specified
+        energies `Elist` in J/mol above the ground state, calculated by
+        numerical inverse Laplace transform of the partition function using
+        the method of steepest descents. This method is generally slower than
+        direct density of states calculation, but is guaranteed to correspond
+        with the partition function. The optional `order` attribute controls
+        the order of the steepest descents approximation applied (1 = first,
+        2 = second); the first-order approximation is slightly less accurate,
+        smoother, and faster to calculate than the second-order approximation.
+        This method is adapted from the discussion in Forst [Forst2003]_.
+
+        .. [Forst2003] W. Forst.
+            *Unimolecular Reactions: A Concise Introduction.*
+            Cambridge University Press (2003).
+            `isbn:978-0-52-152922-8 <http://www.cambridge.org/9780521529228>`_
+        
+        """
+        import scipy.optimize
+        cython.declare(rho=numpy.ndarray)
+        cython.declare(x=cython.double, E=cython.double, dx=cython.double, f=cython.double)
+        cython.declare(d2fdx2=cython.double, d3fdx3=cython.double, d4fdx4=cython.double)
+        rho = numpy.zeros_like(Elist)
+        # Initial guess for first minimization
+        x = 1e-5
+        # Iterate over energies
+        for i in range(1, len(Elist)):
+            E = Elist[i]
+            # Find minimum of phi         func x0 arg  xtol  ftol maxi  maxf fullout  disp retall  callback
+            x = scipy.optimize.fmin(self.__phi, x, [Elist[i]], 1e-8, 1e-8, 100, 1000, False, False, False, None)
+            x = float(x)
+            dx = 1e-4 * x
+            # Determine value of density of states using steepest descents approximation
+            d2fdx2 = (self.__phi(x+dx, E) - 2 * self.__phi(x, E) + self.__phi(x-dx, E)) / (dx**2)
+            # Apply first-order steepest descents approximation (accurate to 1-3%, smoother)
+            f = self.__phi(x, E)
+            rho[i] = math.exp(f) / math.sqrt(2 * math.pi * d2fdx2)
+            if order == 2:
+                # Apply second-order steepest descents approximation (more accurate, less smooth)
+                d3fdx3 = (self.__phi(x+1.5*dx, E) - 3 * self.__phi(x+0.5*dx, E) + 3 * self.__phi(x-0.5*dx, E) - self.__phi(x-1.5*dx, E)) / (dx**3)
+                d4fdx4 = (self.__phi(x+2*dx, E) - 4 * self.__phi(x+dx, E) + 6 * self.__phi(x, E) - 4 * self.__phi(x-dx, E) + self.__phi(x-2*dx, E)) / (dx**4)
+                rho[i] *= 1 + d4fdx4 / 8 / (d2fdx2**2) - 5 * (d3fdx3**2) / 24 / (d2fdx2**3)
+        return rho
+
 def convolve(rho1, rho2, Elist):
     """
     Convolutes two density of states arrays `rho1` and `rho2` with corresponding
