@@ -173,7 +173,7 @@ htmlhelp_basename = 'ChemPydoc'
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'ChemPy.tex', u'ChemPy Documentation',
+  ('contents', 'ChemPy.tex', u'ChemPy Documentation',
    u'Joshua W. Allen', 'manual'),
 ]
 
