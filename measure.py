@@ -143,6 +143,10 @@ if __name__ == '__main__':
     # Load input file
     from measure.input import readInput
     network, Tlist, Plist, Elist, method = readInput(args.file[0])
+
+    # Draw potential energy surface
+    logging.info('Drawing potential energy surface...')
+    network.drawPotentialEnergySurface('PES.svg')
     
     # Only proceed if the input network is valid
     if network is not None:
