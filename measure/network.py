@@ -558,7 +558,16 @@ class Network:
         height = numpy.max(coordinates[:,1]) - numpy.min(coordinates[:,1]) + 32.0 + padding_top + padding_bottom
 
         # Initialize Cairo surface and context
-        surface = cairo.SVGSurface(fstr, width, height)
+        ext = os.path.splitext(fstr)[1].lower()
+        if ext == '.svg':
+            surface = cairo.SVGSurface(fstr, width, height)
+        elif ext == '.pdf':
+            surface = cairo.PDFSurface(fstr, width, height)
+        elif ext == '.ps':
+            surface = cairo.PSSurface(fstr, width, height)
+        else:
+            logging.warning('Unknown format for target "%s"; not drawing potential energy surface.' % fstr)
+            return
         cr = cairo.Context(surface)
 
         # Some global settings

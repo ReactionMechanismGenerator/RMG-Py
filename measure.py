@@ -42,6 +42,7 @@ verbosity of information printed to the console.
 import argparse
 import logging
 import time
+import os.path
 
 ################################################################################
 
@@ -144,9 +145,13 @@ if __name__ == '__main__':
     from measure.input import readInput
     network, Tlist, Plist, Elist, method = readInput(args.file[0])
 
+    # We will save our output files to the directory containing the input file,
+    # NOT the current working directory
+    outputDirectory = os.path.dirname(os.path.abspath(args.file[0]))
+
     # Draw potential energy surface
     logging.info('Drawing potential energy surface...')
-    network.drawPotentialEnergySurface('PES.svg')
+    network.drawPotentialEnergySurface(os.path.join(outputDirectory, 'PES.pdf'))
     
     # Only proceed if the input network is valid
     if network is not None:
