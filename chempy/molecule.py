@@ -296,6 +296,18 @@ class ChemGraph(graph.Graph):
         """
         return self.sortVertices()
 
+    def copy(self, deep=False):
+        """
+        Create a copy of the current graph. If `deep` is ``True``, a deep copy
+        is made: copies of the vertices and edges are used in the new graph.
+        If `deep` is ``False`` or not specified, a shallow copy is made: the
+        original vertices and edges are used in the new graph.
+        """
+        other = cython.declare(ChemGraph)
+        g = graph.Graph.copy(self, deep)
+        other = ChemGraph(g.vertices, g.edges)
+        return other
+
     def makeHydrogensImplicit(self):
         """
         Convert all explicitly stored hydrogen atoms to be stored implicitly.
@@ -351,6 +363,27 @@ class ChemGraph(graph.Graph):
 
         # Set implicitHydrogens flag to False
         self.implicitHydrogens = False
+
+    def isAtomInCycle(self, atom):
+        """
+        Return :data:`True` if `atom` is in one or more cycles in the structure,
+        and :data:`False` if not.
+        """
+        return self.isVertexInCycle(atom)
+
+    def isBondInCycle(self, atom1, atom2):
+        """
+        Return :data:`True` if the bond between atoms `atom1` and `atom2`
+        is in one or more cycles in the graph, or :data:`False` if not.
+        """
+        return self.isEdgeInCycle(atom1, atom2)
+
+    def getAllCycles(self, atom):
+        """
+        Given a starting `atom`, return a list of all cycles this atom is found
+        in.
+        """
+        return self.getAllCycles(atom)
 
 ################################################################################
 

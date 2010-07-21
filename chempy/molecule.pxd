@@ -90,9 +90,17 @@ cdef class ChemGraph(Graph):
 
     cpdef sortAtoms(self)
 
+    cpdef copy(self, bint deep=?)
+
     cpdef makeHydrogensImplicit(self)
 
     cpdef makeHydrogensExplicit(self)
+
+    cpdef bint isAtomInCycle(self, Atom atom)
+
+    cpdef bint isBondInCycle(self, Atom atom1, Atom atom2)
+
+    cpdef list getAllCycles(self, Atom atom)
 
 ################################################################################
 
