@@ -36,6 +36,7 @@ import math
 import numpy
 import cython
 import logging
+import os.path
 
 import chempy.constants as constants
 import chempy.states as states
@@ -474,11 +475,13 @@ class Network:
 
         return K
 
-    def drawPotentialEnergySurface(self, fstr):
+    def drawPotentialEnergySurface(self, fstr, Eunits='kJ/mol'):
         """
         Generates an SVG file containing a rendering of the current potential
         energy surface for this reaction network. The SVG file is saved to a
-        file at location `fstr` on disk.
+        file at location `fstr` on disk. The units to use for energy values can
+        be specified using the `Eunits` option; allowed values are 'J/mol',
+        'kJ/mol', 'cal/mol', 'kcal/mol', and 'cm^-1'.
         """
 
         try:
@@ -501,7 +504,9 @@ class Network:
                 else:
                     wells.append(rxn.reactants)
             if rxn.products not in wells:
-                if len(rxn.reactants) == 1 and rxn.reactants[0] in self.isomers:
+                if rxn.products in self.products:
+                    wells.append(rxn.products)
+                elif len(rxn.reactants) == 1 and rxn.reactants[0] in self.isomers:
                     if self.isomers.index(rxn.reactants[0]) < len(self.isomers) / 2:
                         wells.insert(0, rxn.products)
                     else:
@@ -514,17 +519,17 @@ class Network:
         padding_right = padding_left
         padding_top = padding_left / 2.0
         padding_bottom = padding_left / 2.0
-        wellWidth = 64.0; wellSpacing = 64.0; Emult = 5.0; TSwidth = 16.0
+        wellWidth = 64.0; wellSpacing = 64.0; Eslope = 5.0; TSwidth = 16.0
         E0 = [sum([spec.E0 for spec in well]) / 4184 for well in wells]
         E0.extend([rxn.transitionState.E0 / 4184 for rxn in self.pathReactions])
-        y_E0 = (max(E0) - 0.0) * Emult + padding_top
+        y_E0 = (max(E0) - 0.0) * Eslope + padding_top
         
         # Determine naive position of each well (one per column)
         coordinates = numpy.zeros((len(wells), 2), numpy.float64)
         x = padding_left + wellWidth / 2.0
         for i, well in enumerate(wells):
             E0 = sum([spec.E0 for spec in well]) / 4184
-            y = y_E0 - E0 * Emult
+            y = y_E0 - E0 * Eslope
             coordinates[i] = [x, y]
             x += wellWidth + wellSpacing
 
@@ -533,7 +538,7 @@ class Network:
         for i in range(Nleft-1, -1, -1):
             newX = float(coordinates[i,0])
             for j in range(i+1, Nleft):
-                if abs(coordinates[i,1] - coordinates[j,1]) < 96:
+                if abs(coordinates[i,1] - coordinates[j,1]) < 72:
                     newX = float(coordinates[j,0]) - (wellWidth + wellSpacing)
                     break
                 else:
@@ -544,7 +549,7 @@ class Network:
         for i in range(Nright+2, len(wells)):
             newX = float(coordinates[i,0])
             for j in range(i-1, Nright, -1):
-                if abs(coordinates[i,1] - coordinates[j,1]) < 96:
+                if abs(coordinates[i,1] - coordinates[j,1]) < 72:
                     newX = float(coordinates[j,0]) + (wellWidth + wellSpacing)
                     break
                 else:
@@ -556,6 +561,16 @@ class Network:
         # Determine required size of diagram
         width = numpy.max(coordinates[:,0]) - numpy.min(coordinates[:,0]) + wellWidth + padding_left + padding_right
         height = numpy.max(coordinates[:,1]) - numpy.min(coordinates[:,1]) + 32.0 + padding_top + padding_bottom
+
+        # Choose multiplier to convert energies to desired units
+        if Eunits == 'J/mol':      Emult = 1.0
+        elif Eunits == 'kJ/mol':   Emult = 1.0 / 1000
+        elif Eunits == 'cal/mol':  Emult = 1.0 / 4.184
+        elif Eunits == 'kcal/mol': Emult = 1.0 / 4184
+        elif Eunits == 'cm^-1':    Emult = 1.0 / 11.96
+        else:
+            logging.warning('Invalid value "%s" for Eunits parameter. Setting to "kJ/mol".' % (Eunits))
+            Emult = 1.0 / 1000
 
         # Initialize Cairo surface and context
         ext = os.path.splitext(fstr)[1].lower()
@@ -597,7 +612,7 @@ class Network:
                     else:           x0 = x1 + wellSpacing * 0.5
                 else:
                     x0 = 0.5 * (x1 + x2)
-                y0 = y_E0 - E0_TS * Emult
+                y0 = y_E0 - E0_TS * Eslope
                 width1 = (x0 - x1)
                 width2 = (x2 - x0)
                 # Draw horizontal line for TS
@@ -607,7 +622,7 @@ class Network:
                 cr.line_to(x0+TSwidth/2.0, y0)
                 cr.stroke()
                 # Add background and text for energy
-                E0 = "%.1f" % (rxn.transitionState.E0 / 1000.0)
+                E0 = "%.1f" % (rxn.transitionState.E0 * Emult)
                 extents = cr.text_extents(E0)
                 x = x0 - extents[2] / 2.0; y = y0 - 6.0
                 cr.rectangle(x + extents[0] - 2.0, y + extents[1] - 2.0, extents[2] + 4.0, extents[3] + 4.0)
@@ -643,7 +658,7 @@ class Network:
             cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
             cr.stroke()
             # Add background and text for energy
-            E0 = "%.1f" % (sum([spec.E0 for spec in well]) / 1000.0)
+            E0 = "%.1f" % (sum([spec.E0 for spec in well]) * Emult)
             extents = cr.text_extents(E0)
             x = x0 - extents[2] / 2.0; y = y0 - 6.0
             cr.rectangle(x + extents[0] - 2.0, y + extents[1] - 2.0, extents[2] + 4.0, extents[3] + 4.0)
@@ -688,50 +703,4 @@ class Network:
         
         # Finish Cairo drawing
         surface.finish()
-        return
-    
-        # Create SVG file for potential energy surface
-        f = open(fstr, 'w')
-        f.write('<?xml version="1.0" standalone="no"?>\n')
-        f.write('<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">\n')
-        f.write('<svg width="%ipx" height="%ipx" viewBox="0 0 %i %i" xmlns="http://www.w3.org/2000/svg" version="1.1">\n' % (width, height, width, height))
-
-        # Draw path reactions
-        f.write('\t<g font-family="sans" font-size="8pt">\n')
-        for rxn in self.pathReactions:
-            reac = wells.index(rxn.reactants)
-            prod = wells.index(rxn.products)
-            E0_reac = sum([spec.E0 for spec in wells[reac]]) / 4184
-            E0_prod = sum([spec.E0 for spec in wells[prod]]) / 4184
-            E0_TS = rxn.transitionState.E0 / 4184
-            if reac < prod:
-                x1, y1 = coordinates[reac,:]
-                x2, y2 = coordinates[prod,:]
-            else:
-                x1, y1 = coordinates[prod,:]
-                x2, y2 = coordinates[reac,:]
-            x1 += wellSpacing / 2.0; x2 -= wellSpacing / 2.0
-            if abs(E0_TS - E0_reac) > 0.1 and abs(E0_TS - E0_prod) > 0.1:
-                if len(rxn.reactants) == 2:
-                    if reac < prod: x0 = x1 + wellSpacing * 0.5
-                    else:           x0 = x2 - wellSpacing * 0.5
-                elif len(rxn.products) == 2:
-                    if reac < prod: x0 = x2 - wellSpacing * 0.5
-                    else:           x0 = x1 + wellSpacing * 0.5
-                else:
-                    x0 = 0.5 * (x1 + x2)
-                y0 = y_E0 - E0_TS * Emult
-                width1 = (x0 - x1)
-                width2 = (x2 - x0)
-                f.write('\t\t<text x="%g" y="%g" fill="gray" style="text-anchor: middle;">%.1f</text>\n' % (x0, y0 - 6, E0_TS * 4.184))
-                f.write('\t\t<line x1="%g" y1="%g" x2="%g" y2="%g" stroke="black" stroke-width="2"/>\n' % (x0 - TSwidth/2.0, y0, x0+TSwidth/2.0, y0))
-                f.write('\t\t<path d="M %g %g C %g %g %g %g %g %g M %g %g C %g %g %g %g %g %g" stroke="gray" stroke-width="1" fill="none"/>\n' % (x1, y1,   x1 + width1/8.0, y1,   x0 - width1/8.0 - TSwidth/2.0, y0,   x0 - TSwidth/2.0, y0,   x0 + TSwidth/2.0, y0,   x0 + width2/8.0 + TSwidth/2.0, y0,   x2 - width2/8.0, y2,   x2, y2))
-            else:
-                width = (x2 - x1)
-                f.write('\t\t<path d="M %g %g C %g %g %g %g %g %g" stroke="gray" stroke-width="1" fill="none"/>\n' % (x1, y1,   x1 + width/4.0, y1,   x2 - width/4.0, y2,   x2, y2))
-        f.write('\t</g>\n')
-
-        # Finish SVG file
-        f.write('</svg>\n')
-        f.close()
-
+        
