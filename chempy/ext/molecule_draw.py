@@ -42,7 +42,7 @@ from chempy.molecule import *
 
 ################################################################################
 
-def render(atoms, bonds, coordinates, fstr):
+def render(atoms, bonds, coordinates, symbols, fstr):
     """
     Uses the Cairo graphics library to create the drawing of the molecule.
     """
@@ -71,6 +71,7 @@ def render(atoms, bonds, coordinates, fstr):
     # Some global settings
     cr.select_font_face("sans")
     cr.set_font_size(10)
+    cr.set_line_cap(cairo.LINE_CAP_ROUND)
 
     # Draw bond skeleton (for now)
     cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
@@ -98,20 +99,21 @@ def render(atoms, bonds, coordinates, fstr):
                 cr.set_font_size(10)
 
     # Draw atoms (for now)
-    for atom in atoms:
-        symbol = atom.symbol
-        index = atoms.index(atom)
-        x0, y0 = coordinates[index,:]
-        extents = cr.text_extents(symbol)
-        width = extents[2]; height = extents[3]
-        # Background
-        cr.rectangle(x0 - width / 2.0 - 2.0, y0 - height / 2.0 - 2.0, width + 4.0, height + 4.0)
-        cr.set_source_rgba(1.0, 1.0, 1.0, 1.0)
-        cr.fill()
-        # Text itself
-        cr.move_to(x0 - extents[0] - width / 2.0, y0 - extents[1] - height / 2.0)
-        cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
-        cr.show_text(symbol)
+    for i, atom in enumerate(atoms):
+        symbol = symbols[i]
+        if symbol != '':
+            index = atoms.index(atom)
+            x0, y0 = coordinates[index,:]
+            extents = cr.text_extents(symbol)
+            width = extents[2]; height = extents[3]
+            # Background
+            cr.rectangle(x0 - width / 2.0 - 2.0, y0 - height / 2.0 - 2.0, width + 4.0, height + 4.0)
+            cr.set_source_rgba(1.0, 1.0, 1.0, 1.0)
+            cr.fill()
+            # Text itself
+            cr.move_to(x0 - extents[0] - width / 2.0, y0 - extents[1] - height / 2.0)
+            cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
+            cr.show_text(symbol)
 
 
     # Finish Cairo drawing
@@ -119,19 +121,19 @@ def render(atoms, bonds, coordinates, fstr):
 
 ################################################################################
 
-def findLongestPath(chemGraph, atoms):
+def findLongestPath(chemGraph, atoms0):
     """
     Finds the longest path containing the list of `atoms` in the `chemGraph`.
     The atoms are assumed to already be in a path, with ``atoms[0]`` being a
     terminal atom.
     """
-    atom1 = atoms[-1]
-    paths = [atoms]
+    atom1 = atoms0[-1]
+    paths = [atoms0]
     for atom2 in chemGraph.bonds[atom1]:
-        if atom2 not in atoms:
+        if atom2 not in atoms0:
+            atoms = atoms0[:]
             atoms.append(atom2)
             paths.append(findLongestPath(chemGraph, atoms))
-            atoms = atoms[:-1]
     lengths = [len(path) for path in paths]
     index = lengths.index(max(lengths))
     return paths[index]
@@ -305,8 +307,71 @@ def generateCoordinates(chemGraph, atoms, bonds):
                         if numpy.linalg.norm(coordinates[index2,:] - coordinates[index0,:] - vector) < 1e-4:
                             occupied = True
                 coordinates[atoms.index(atom1),:] = coordinates[index0,:] + vector
+                processFunctionalGroup(atom0, atom1, atoms, bonds, coordinates)
 
     return coordinates
+
+################################################################################
+
+def processFunctionalGroup(atom0, atom1, atoms, bonds, coordinates):
+    """
+    For the functional group starting with the bond from `atom0` to `atom1`,
+    generate the coordinates of the rest of the functional group. `atom0` is
+    treated as if a terminal atom. `atom0` and `atom1` must already have their
+    coordinates determined. `atoms` is a list of the atoms to be drawn, `bonds`
+    is a dictionary of the bonds to draw, and `coordinates` is an array of the
+    coordinates for each atom to be drawn. This function is designed to be
+    recursive.
+    """
+
+    # Assume for now that each functional group is acyclic
+
+    index0 = atoms.index(atom0)
+    index1 = atoms.index(atom1)
+
+    # Determine the vector of any currently-existing bond from this atom
+    # (We use the bond to the previous atom here)
+    vector = coordinates[index0,:] - coordinates[index1,:]
+
+    # Determine rotation angle and matrix
+    numBonds = len(bonds[atom1])
+    angle = 0.0
+    if numBonds == 2:
+        bond0, bond = bonds[atom1].values()
+        if (bond0.isTriple() or bond.isTriple()) or (bond0.isDouble() and bond.isDouble()):
+            angle = math.pi
+        else:
+            angle = 2 * math.pi / 3
+            # Make sure we're rotating such that we move away from the origin,
+            # to discourage overlap of functional groups
+            rot1 = numpy.array([[math.cos(angle), -math.sin(angle)], [math.sin(angle), math.cos(angle)]], numpy.float64)
+            rot2 = numpy.array([[math.cos(angle), math.sin(angle)], [-math.sin(angle), math.cos(angle)]], numpy.float64)
+            vector1 = coordinates[index1,:] + numpy.dot(rot1, vector)
+            vector2 = coordinates[index1,:] + numpy.dot(rot2, vector)
+            if numpy.linalg.norm(vector1) < numpy.linalg.norm(vector2):
+                angle = -angle
+    else:
+        angle = 2 * math.pi / numBonds
+    rot = numpy.array([[math.cos(angle), -math.sin(angle)], [math.sin(angle), math.cos(angle)]], numpy.float64)
+            
+    # Iterate through each neighboring atom to this backbone atom
+    # If the neighbor is not in the backbone, then we need to determine
+    # coordinates for it
+    for atom, bond in bonds[atom1].iteritems():
+        if atom is not atom0:
+            occupied = True; count = 0
+            # Rotate vector until we find an unoccupied location
+            while occupied and count < len(bonds[atom1]):
+                count += 1; occupied = False
+                vector = numpy.dot(rot, vector)
+                for atom2 in bonds[atom1]:
+                    index2 = atoms.index(atom2)
+                    if numpy.linalg.norm(coordinates[index2,:] - coordinates[index1,:] - vector) < 1e-4:
+                        occupied = True
+            coordinates[atoms.index(atom),:] = coordinates[index1,:] + vector
+
+            # Recursively continue with functional group
+            processFunctionalGroup(atom1, atom, atoms, bonds, coordinates)
 
 ################################################################################
 
@@ -336,8 +401,18 @@ def drawMolecule(chemGraph, fstr=''):
     # Generate the coordinates to use to draw the molecule
     coordinates = generateCoordinates(chemGraph, atoms, bonds)
 
+    # Generate labels to use
+    symbols = [atom.symbol for atom in atoms]
+    for i in range(len(symbols)):
+        # Don't label carbon atoms
+        if symbols[i] == 'C': symbols[i] = ''
+        # Add implicit hydrogens
+        if symbols[i] != '':
+            if atoms[i].implicitHydrogens == 1: symbols[i] = symbols[i] + 'H'
+            elif atoms[i].implicitHydrogens > 1: symbols[i] += symbols[i] + 'H%i' % (atoms[i].implicitHydrogens)
+
     # Render using Cairo
-    render(atoms, bonds, coordinates, fstr)
+    render(atoms, bonds, coordinates, symbols, fstr)
 
 ################################################################################
 
@@ -346,11 +421,13 @@ if __name__ == '__main__':
     molecule = Molecule()
 
     # Test #1: Straight chain backbone, no functional groups
-    molecule.fromSMILES('C=CC=CCC')
+    #molecule.fromSMILES('C=CC=CCC') # 1,3-hexadiene
 
     # Test #2: Straight chain backbone, small functional groups
-    #molecule.fromSMILES('C(=O)O[O]')
-    molecule.fromSMILES('CCCC(O)CC(O)(O)CCCC')
+    #molecule.fromSMILES('OCC(O)C(O)C(O)C(O)C(=O)') # glucose
+
+    # Test #3: Straight chain backbone, large functional groups
+    molecule.fromSMILES('CCCCCCCCC(CCCC(CCC)(CCC)CCC)CCCCCCCCC')
 
     #molecule.fromSMILES('C=CC(C)(C)CCC')
     #molecule.fromSMILES('CCC(C)CCC(CCC)C')
