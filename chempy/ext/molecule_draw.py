@@ -73,7 +73,7 @@ def render(atoms, bonds, coordinates, symbols, fstr):
     cr.set_font_size(10)
     cr.set_line_cap(cairo.LINE_CAP_ROUND)
 
-    # Draw bond skeleton (for now)
+    # Draw bonds
     cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
     cr.set_line_width(1.0)
     for atom1 in bonds:
@@ -83,20 +83,45 @@ def render(atoms, bonds, coordinates, symbols, fstr):
             if index1 < index2:
                 x1, y1 = coordinates[index1,:]
                 x2, y2 = coordinates[index2,:]
-                cr.move_to(x1, y1)
-                cr.line_to(x2, y2)
-                cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
-                cr.stroke()
-                # Text label (for now)
-                labels = {1:'S', 2:'D', 3:'T'}
-                label = labels[bond.order]
-                extents = cr.text_extents(label)
-                x0 = 0.5 * (x1 + x2); y0 = 0.5 * (y1 + y2)
-                cr.move_to(x0 - extents[0] - extents[2] / 2.0, y0 - extents[1] - extents[3] / 2.0)
-                cr.set_source_rgba(0.0, 0.0, 1.0, 1.0)
-                cr.set_font_size(8)
-                cr.show_text(label)
-                cr.set_font_size(10)
+                angle = math.atan2(y2 - y1, x2 - x1)
+
+                dx = x2 - x1; dy = y2 - y1
+                du = math.cos(angle + math.pi / 2)
+                dv = math.sin(angle + math.pi / 2)
+                if bond.isDouble() and (symbols[index1] != '' or symbols[index2] != ''):
+                    # Draw double bond centered on bond axis
+                    du *= 2; dv *= 2
+                    cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
+                    cr.move_to(x1 - du, y1 - dv); cr.line_to(x2 - du, y2 - dv)
+                    cr.stroke()
+                    cr.move_to(x1 + du, y1 + dv); cr.line_to(x2 + du, y2 + dv)
+                    cr.stroke()
+                elif bond.isTriple() and (symbols[index1] != '' or symbols[index2] != ''):
+                    # Draw triple bond centered on bond axis
+                    du *= 3; dv *= 3
+                    cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
+                    cr.move_to(x1 - du, y1 - dv); cr.line_to(x2 - du, y2 - dv)
+                    cr.stroke()
+                    cr.move_to(x1, y1); cr.line_to(x2, y2)
+                    cr.stroke()
+                    cr.move_to(x1 + du, y1 + dv); cr.line_to(x2 + du, y2 + dv)
+                    cr.stroke()
+                else:
+                    # Draw bond on skeleton
+                    cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
+                    cr.move_to(x1, y1); cr.line_to(x2, y2)
+                    cr.stroke()
+                    # Draw other bonds
+                    if bond.isDouble():
+                        du *= 4; dv *= 4; dx = 2 * dx / bondLength; dy = 2 * dy / bondLength
+                        cr.move_to(x1 + du + dx, y1 + dv + dy); cr.line_to(x2 + du - dx, y2 + dv - dy)
+                        cr.stroke()
+                    elif bond.isTriple():
+                        du *= 3; dv *= 3; dx = 2 * dx / bondLength; dy = 2 * dy / bondLength
+                        cr.move_to(x1 - du + dx, y1 - dv + dy); cr.line_to(x2 - du - dx, y2 - dv - dy)
+                        cr.stroke()
+                        cr.move_to(x1 + du + dx, y1 + dv + dy); cr.line_to(x2 + du - dx, y2 + dv - dy)
+                        cr.stroke()
 
     # Draw atoms (for now)
     for i, atom in enumerate(atoms):
@@ -144,7 +169,16 @@ def getBackbone(chemGraph):
     """
 
     if chemGraph.isCyclic():
-        raise NotImplementedError('Currently cannot find backbone of cyclic molecules!')
+
+        cycles = []
+        for atom in chemGraph.atoms:
+            if chemGraph.isAtomInCycle(atom):
+                cycles.extend(chemGraph.getAllCycles(atom))
+        for cycle in cycles:
+            print [chemGraph.atoms.index(a) for a in cycle]
+        
+        quit()
+
     else:
         # Make a shallow copy of the chemGraph so we don't modify the original
         chemGraph = chemGraph.copy()
@@ -265,6 +299,20 @@ def generateCoordinates(chemGraph, atoms, bonds):
                 rotatePositive = not rotatePositive
             coordinates[index2,:] = coordinates[index1,:] + vector
 
+    # If backbone is linear, then rotate so that the bond is parallel to the
+    # horizontal axis
+    vector0 = coordinates[atoms.index(backbone[1]),:] - coordinates[atoms.index(backbone[0]),:]
+    linear = True
+    for i in range(2, len(backbone)):
+        vector = coordinates[atoms.index(backbone[i]),:] - coordinates[atoms.index(backbone[i-1]),:]
+        if numpy.linalg.norm(vector - vector0) > 1e-4:
+            linear = False
+            break
+    if linear:
+        angle = math.atan2(vector0[0], vector0[1]) - math.pi / 2
+        rot = numpy.array([[math.cos(angle), math.sin(angle)], [-math.sin(angle), math.cos(angle)]], numpy.float64)
+        coordinates = numpy.dot(coordinates, rot)
+    
     # Center backbone at origin
     origin = numpy.zeros(2, numpy.float64)
     for atom in backbone:
@@ -406,10 +454,19 @@ def drawMolecule(chemGraph, fstr=''):
     for i in range(len(symbols)):
         # Don't label carbon atoms
         if symbols[i] == 'C': symbols[i] = ''
-        # Add implicit hydrogens
+    # Do label atoms that have only double bonds to one or more labeled atoms
+    changed = True
+    while changed:
+        changed = False
+        for i in range(len(symbols)):
+            if symbols[i] == '' and all([(bond.isDouble() or bond.isTriple()) for bond in bonds[atoms[i]].values()]) and any([symbols[atoms.index(atom)] != '' for atom in bonds[atoms[i]]]):
+                symbols[i] = atoms[i].symbol
+                changed = True
+    # Add implicit hydrogens
+    for i in range(len(symbols)):
         if symbols[i] != '':
             if atoms[i].implicitHydrogens == 1: symbols[i] = symbols[i] + 'H'
-            elif atoms[i].implicitHydrogens > 1: symbols[i] += symbols[i] + 'H%i' % (atoms[i].implicitHydrogens)
+            elif atoms[i].implicitHydrogens > 1: symbols[i] = symbols[i] + 'H%i' % (atoms[i].implicitHydrogens)
 
     # Render using Cairo
     render(atoms, bonds, coordinates, symbols, fstr)
@@ -427,8 +484,17 @@ if __name__ == '__main__':
     #molecule.fromSMILES('OCC(O)C(O)C(O)C(O)C(=O)') # glucose
 
     # Test #3: Straight chain backbone, large functional groups
-    molecule.fromSMILES('CCCCCCCCC(CCCC(CCC)(CCC)CCC)CCCCCCCCC')
+    #molecule.fromSMILES('CCCCCCCCC(CCCC(CCC)(CCC)CCC)CCCCCCCCC')
 
+    # Test #4: For improved rendering
+    # Double bond test #1
+    molecule.fromSMILES('C=CCC=CC(=C)C(=C)C(=O)CC')
+    # Double bond test #2
+    molecule.fromSMILES('O=C=O')
+
+    # Test #5: Cyclic backbone, no functional groups
+    #molecule.fromSMILES('c1ccc2ccccc2c1') # naphthalene
+    
     #molecule.fromSMILES('C=CC(C)(C)CCC')
     #molecule.fromSMILES('CCC(C)CCC(CCC)C')
     #molecule.fromSMILES('C=CC(C)=CCC')
