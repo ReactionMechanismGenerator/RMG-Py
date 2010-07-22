@@ -35,6 +35,7 @@ molecules.
 import math
 import numpy
 import os.path
+import re
 
 import sys
 sys.path.append(os.path.abspath('.'))
@@ -129,20 +130,103 @@ def render(atoms, bonds, coordinates, symbols, fstr):
         if symbol != '':
             index = atoms.index(atom)
             x0, y0 = coordinates[index,:]
-            extents = cr.text_extents(symbol)
-            width = extents[2]; height = extents[3]
-            # Background
-            cr.rectangle(x0 - width / 2.0 - 2.0, y0 - height / 2.0 - 2.0, width + 4.0, height + 4.0)
-            cr.set_source_rgba(1.0, 1.0, 1.0, 1.0)
-            cr.fill()
-            # Text itself
-            cr.move_to(x0 - extents[0] - width / 2.0, y0 - extents[1] - height / 2.0)
-            cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
-            cr.show_text(symbol)
-
+            vector = numpy.zeros(2, numpy.float64)
+            for atom2 in bonds[atom]:
+                vector += coordinates[atoms.index(atom2),:] - coordinates[index,:]
+            heavyFirst = vector[0] <= 0
+            renderSymbol(symbol, x0, y0, cr, heavyFirst)
 
     # Finish Cairo drawing
     surface.finish()
+
+def renderSymbol(symbol, x0, y0, cr, heavyFirst=True):
+    """
+    Render the `label` for an atom centered around the coordinates (`x0`, `y0`)
+    onto the Cairo context `cr`. If `heavyFirst` is ``False``, then the order
+    of the atoms will be reversed in the symbol
+    """
+
+    heavyAtom = symbol[0]
+
+    # Split label by atoms
+    labels = re.findall('[A-Z][0-9]*', symbol)
+    if not heavyFirst: labels.reverse()
+    symbol = ''.join(labels)
+
+    # Determine positions of each character in the symbol
+    coordinates = []
+
+    y0 += max([cr.text_extents(char)[3] for char in symbol if char.isalpha()]) / 2
+
+    for i, label in enumerate(labels):
+        for j, char in enumerate(label):
+            cr.set_font_size(6 if char.isdigit() else 10)
+            xbearing, ybearing, width, height, xadvance, yadvance = cr.text_extents(char)
+            if i == 0 and j == 0:
+                # Center heavy atom at (x0, y0)
+                x = x0 - width / 2.0 - xbearing
+                y = y0
+            else:
+                # Left-justify other atoms (for now)
+                x = x0
+                y = y0
+            if char.isdigit(): y += height / 2.0
+            coordinates.append((x,y))
+            x0 = x + xadvance
+
+    x = 1000000; y = 1000000; width = 0; height = 0
+    startWidth = 0; endWidth = 0
+    for i, char in enumerate(symbol):
+        cr.set_font_size(6 if char.isdigit() else 10)
+        extents = cr.text_extents(char)
+        if coordinates[i][0] + extents[0] < x: x = coordinates[i][0] + extents[0]
+        if coordinates[i][1] + extents[1] < y: y = coordinates[i][1] + extents[1]
+        width += extents[4] if i < len(symbol) - 1 else extents[2]
+        if extents[3] > height: height = extents[3]
+        if i == 0: startWidth = extents[2]
+        if i == len(symbol) - 1: endWidth = extents[2]
+
+    if not heavyFirst:
+        for i in range(len(coordinates)):
+            coordinates[i] = (coordinates[i][0] - (width - startWidth / 2 - endWidth / 2), coordinates[i][1])
+        x -= width - startWidth / 2 - endWidth / 2
+
+    # Background
+    x1 = x - 2; y1 = y - 2; x2 = x + width + 2; y2 = y + height + 2; r = 4
+    cr.move_to(x1 + r, y1)
+    cr.line_to(x2 - r, y1)
+    cr.curve_to(x2 - r/2, y1, x2, y1 + r/2, x2, y1 + r)
+    cr.line_to(x2, y2 - r)
+    cr.curve_to(x2, y2 - r/2, x2 - r/2, y2, x2 - r, y2)
+    cr.line_to(x1 + r, y2)
+    cr.curve_to(x1 + r/2, y2, x1, y2 - r/2, x1, y2 - r)
+    cr.line_to(x1, y1 + r)
+    cr.curve_to(x1, y1 + r/2, x1 + r/2, y1, x1 + r, y1)
+    cr.close_path()
+    cr.set_source_rgba(1.0, 1.0, 1.0, 1.0)
+    cr.fill()
+
+    # Set color for text
+    if heavyAtom == 'C':    cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
+    elif heavyAtom == 'N':  cr.set_source_rgba(0.0, 0.0, 1.0, 1.0)
+    elif heavyAtom == 'O':  cr.set_source_rgba(1.0, 0.0, 0.0, 1.0)
+    elif heavyAtom == 'F':  cr.set_source_rgba(0.5, 0.75, 1.0, 1.0)
+    elif heavyAtom == 'Si': cr.set_source_rgba(0.5, 0.5, 0.75, 1.0)
+    elif heavyAtom == 'Al': cr.set_source_rgba(0.75, 0.5, 0.5, 1.0)
+    elif heavyAtom == 'P':  cr.set_source_rgba(1.0, 0.5, 0.0, 1.0)
+    elif heavyAtom == 'S':  cr.set_source_rgba(1.0, 0.75, 0.5, 1.0)
+    elif heavyAtom == 'Cl': cr.set_source_rgba(0.0, 1.0, 0.0, 1.0)
+    elif heavyAtom == 'Br': cr.set_source_rgba(0.6, 0.2, 0.2, 1.0)
+    elif heavyAtom == 'I':  cr.set_source_rgba(0.5, 0.0, 0.5, 1.0)
+    else:                   cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
+
+    # Text itself
+    for i, char in enumerate(symbol):
+        cr.set_font_size(6 if char.isdigit() else 10)
+        xbearing, ybearing, width, height, xadvance, yadvance = cr.text_extents(char)
+        x, y = coordinates[i]
+        cr.move_to(x, y)
+        cr.show_text(char)
 
 ################################################################################
 
@@ -176,7 +260,7 @@ def getBackbone(chemGraph):
                 cycles.extend(chemGraph.getAllCycles(atom))
         for cycle in cycles:
             print [chemGraph.atoms.index(a) for a in cycle]
-        
+
         quit()
 
     else:
@@ -312,7 +396,7 @@ def generateCoordinates(chemGraph, atoms, bonds):
         angle = math.atan2(vector0[0], vector0[1]) - math.pi / 2
         rot = numpy.array([[math.cos(angle), math.sin(angle)], [-math.sin(angle), math.cos(angle)]], numpy.float64)
         coordinates = numpy.dot(coordinates, rot)
-    
+
     # Center backbone at origin
     origin = numpy.zeros(2, numpy.float64)
     for atom in backbone:
@@ -327,11 +411,11 @@ def generateCoordinates(chemGraph, atoms, bonds):
     # branching and cycles
     # In general substituents should try to grow away from the origin to
     # minimize likelihood of overlap
-    
+
     # Don't need to do terminal atoms in backbone (if backbone is straight chain)
     for i in range(1, len(backbone)-1):
         atom0 = backbone[i]
-        
+
         # Determine rotation angle and matrix
         angle = 2 * math.pi / len(bonds[atom0])
         rot = numpy.array([[math.cos(angle), -math.sin(angle)], [math.sin(angle), math.cos(angle)]], numpy.float64)
@@ -339,7 +423,7 @@ def generateCoordinates(chemGraph, atoms, bonds):
         # Determine the vector of any currently-existing bond from this atom
         # (We use the bond to the previous atom in the backbone here)
         vector = coordinates[atoms.index(backbone[i-1]),:] - coordinates[index0,:]
-        
+
         # Iterate through each neighboring atom to this backbone atom
         # If the neighbor is not in the backbone, then we need to determine
         # coordinates for it
@@ -401,7 +485,7 @@ def processFunctionalGroup(atom0, atom1, atoms, bonds, coordinates):
     else:
         angle = 2 * math.pi / numBonds
     rot = numpy.array([[math.cos(angle), -math.sin(angle)], [math.sin(angle), math.cos(angle)]], numpy.float64)
-            
+
     # Iterate through each neighboring atom to this backbone atom
     # If the neighbor is not in the backbone, then we need to determine
     # coordinates for it
@@ -481,20 +565,20 @@ if __name__ == '__main__':
     #molecule.fromSMILES('C=CC=CCC') # 1,3-hexadiene
 
     # Test #2: Straight chain backbone, small functional groups
-    #molecule.fromSMILES('OCC(O)C(O)C(O)C(O)C(=O)') # glucose
+    molecule.fromSMILES('OCC(O)C(O)C(O)C(O)C(=O)') # glucose
 
     # Test #3: Straight chain backbone, large functional groups
     #molecule.fromSMILES('CCCCCCCCC(CCCC(CCC)(CCC)CCC)CCCCCCCCC')
 
     # Test #4: For improved rendering
     # Double bond test #1
-    molecule.fromSMILES('C=CCC=CC(=C)C(=C)C(=O)CC')
+    #molecule.fromSMILES('C=CCC=CC(=C)C(=C)C(=O)CC')
     # Double bond test #2
-    molecule.fromSMILES('O=C=O')
+    #molecule.fromSMILES('C=C=O')
 
     # Test #5: Cyclic backbone, no functional groups
     #molecule.fromSMILES('c1ccc2ccccc2c1') # naphthalene
-    
+
     #molecule.fromSMILES('C=CC(C)(C)CCC')
     #molecule.fromSMILES('CCC(C)CCC(CCC)C')
     #molecule.fromSMILES('C=CC(C)=CCC')
@@ -504,4 +588,3 @@ if __name__ == '__main__':
 
     drawMolecule(molecule.resonanceForms[0], 'molecule.svg')
 
-    
