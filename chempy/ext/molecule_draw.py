@@ -194,8 +194,10 @@ def generateCoordinates(chemGraph, atoms, bonds):
     # If there are only one or two atoms to draw, then determining the
     # coordinates is trivial
     if len(atoms) == 1:
+        coordinates[0,:] = [0.0, 0.0]
         return coordinates
     elif len(atoms) == 2:
+        coordinates[0,:] = [0.0, 0.0]
         coordinates[1,:] = [1.0, 0.0]
         return coordinates
 
@@ -245,8 +247,8 @@ def generateCoordinates(chemGraph, atoms, bonds):
                 # Rotate by 60 degrees towards horizontal axis (to get angle of 120)
                 angle = math.pi / 3
             elif numBonds == 4:
-                # Rotate by 90 degrees towards horizontal axis (to get angle of 90)
-                angle = math.pi / 2
+                # Rotate by 0 degrees towards horizontal axis (to get angle of 90)
+                angle = 0.0
             elif numBonds == 5:
                 # Rotate by 36 degrees towards horizontal axis (to get angle of 144)
                 angle = math.pi / 5
@@ -268,6 +270,41 @@ def generateCoordinates(chemGraph, atoms, bonds):
         origin += coordinates[index,:]
     origin /= len(backbone)
     coordinates -= origin
+
+    # We now proceed by calculating the coordinates of the functional groups
+    # attached to the backbone
+    # Each functional group is independent, although they may contain further
+    # branching and cycles
+    # In general substituents should try to grow away from the origin to
+    # minimize likelihood of overlap
+    
+    # Don't need to do terminal atoms in backbone (if backbone is straight chain)
+    for i in range(1, len(backbone)-1):
+        atom0 = backbone[i]
+        
+        # Determine rotation angle and matrix
+        angle = 2 * math.pi / len(bonds[atom0])
+        rot = numpy.array([[math.cos(angle), -math.sin(angle)], [math.sin(angle), math.cos(angle)]], numpy.float64)
+        index0 = atoms.index(atom0)
+        # Determine the vector of any currently-existing bond from this atom
+        # (We use the bond to the previous atom in the backbone here)
+        vector = coordinates[atoms.index(backbone[i-1]),:] - coordinates[index0,:]
+        
+        # Iterate through each neighboring atom to this backbone atom
+        # If the neighbor is not in the backbone, then we need to determine
+        # coordinates for it
+        for atom1, bond in bonds[atom0].iteritems():
+            if atom1 not in backbone:
+                occupied = True; count = 0
+                # Rotate vector until we find an unoccupied location
+                while occupied and count < len(bonds[atom0]):
+                    count += 1; occupied = False
+                    vector = numpy.dot(rot, vector)
+                    for atom2 in bonds[atom0]:
+                        index2 = atoms.index(atom2)
+                        if numpy.linalg.norm(coordinates[index2,:] - coordinates[index0,:] - vector) < 1e-4:
+                            occupied = True
+                coordinates[atoms.index(atom1),:] = coordinates[index0,:] + vector
 
     return coordinates
 
@@ -307,7 +344,15 @@ def drawMolecule(chemGraph, fstr=''):
 if __name__ == '__main__':
 
     molecule = Molecule()
+
+    # Test #1: Straight chain backbone, no functional groups
     molecule.fromSMILES('C=CC=CCC')
+
+    # Test #2: Straight chain backbone, small functional groups
+    #molecule.fromSMILES('C(=O)O[O]')
+    molecule.fromSMILES('CCCC(O)CC(O)(O)CCCC')
+
+    #molecule.fromSMILES('C=CC(C)(C)CCC')
     #molecule.fromSMILES('CCC(C)CCC(CCC)C')
     #molecule.fromSMILES('C=CC(C)=CCC')
     #molecule.fromSMILES('COC(C)(C)C(C)(C)N(C)C')
