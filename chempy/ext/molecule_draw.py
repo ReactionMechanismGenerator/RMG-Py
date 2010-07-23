@@ -671,18 +671,30 @@ def getRingSystemCoordinates(ringSystem, atoms):
                 if (count == 1 or count == 2):
                     if cycle is None or len(cycle0) > len(cycle): cycle = cycle0
         cycle0 = cycle1
-
         ringSystem.remove(cycle)
-        processed.append(cycle)
-
-        print [atoms.index(atom) for atom in cycle0]
-        print [atoms.index(atom) for atom in cycle]
 
         # Shuffle atoms in cycle such that the common atoms come first
+        # Also find the average center of the processed cycles that touch the
+        # current cycles
         found = False
         commonAtoms = []
-        for atom in cycle0:
-            if atom in cycle: commonAtoms.append(atom)
+        count = 0
+        center0 = numpy.zeros(2, numpy.float64)
+        for cycle1 in processed:
+            found = False
+            for atom in cycle1:
+                if atom in cycle and atom not in commonAtoms:
+                    commonAtoms.append(atom)
+                    found = True
+            if found:
+                center1 = numpy.zeros(2, numpy.float64)
+                for atom in cycle1:
+                    center1 += coordinates[atoms.index(atom),:]
+                center1 /= len(cycle1)
+                center0 += center1
+                count += 1
+        center0 /= count
+
         if len(commonAtoms) > 1:
             index0 = cycle.index(commonAtoms[0])
             index1 = cycle.index(commonAtoms[1])
@@ -693,37 +705,45 @@ def getRingSystemCoordinates(ringSystem, atoms):
             index = cycle.index(commonAtoms[0])
             cycle = cycle[index:] + cycle[0:index]
 
-        print [atoms.index(atom) for atom in cycle0]
-        print [atoms.index(atom) for atom in cycle]
-
         # Determine center of cycle based on already-assigned positions of
         # common atoms (which won't be changed)
-        center0 = numpy.zeros(2, numpy.float64)
-        for atom in cycle0: center0 += coordinates[atoms.index(atom),:]
-        center0 /= len(cycle0)
-        center = numpy.zeros(2, numpy.float64)
+        if len(commonAtoms) == 1 or len(commonAtoms) == 2:
+            # Center of new cycle is reflection of center of adjacent cycle
+            # across common atom or bond
+            center = numpy.zeros(2, numpy.float64)
+            for atom in commonAtoms:
+                center += coordinates[atoms.index(atom),:]
+            center /= len(commonAtoms)
+            vector = center - center0
+            center += vector
+            radius = 1
+        else:
+            # Use any three points to determine the point equidistant from these
+            # three; this is the center
+            index0 = atoms.index(commonAtoms[0])
+            index1 = atoms.index(commonAtoms[1])
+            index2 = atoms.index(commonAtoms[2])
+            A = numpy.zeros((2,2), numpy.float64)
+            b = numpy.zeros((2), numpy.float64)
+            A[0,:] = 2 * (coordinates[index1,:] - coordinates[index0,:])
+            A[1,:] = 2 * (coordinates[index2,:] - coordinates[index0,:])
+            b[0] = coordinates[index1,0]**2 + coordinates[index1,1]**2 - coordinates[index0,0]**2 - coordinates[index0,1]**2
+            b[1] = coordinates[index2,0]**2 + coordinates[index2,1]**2 - coordinates[index0,0]**2 - coordinates[index0,1]**2
+            center = numpy.linalg.solve(A, b)
+            radius = numpy.linalg.norm(center - coordinates[index0,:])
+            
+        startAngle = 0.0; endAngle = 0.0
         if len(commonAtoms) == 1:
-            # One common atom; center is on axis drawn from center of previous cycle through common atom
-            coord = coordinates[atoms.index(commonAtoms[0]),:]
-            vector = coord - center0
-            center = coord + vector / (2 * math.sin(math.pi / len(cycle)))
             # We will use the full 360 degrees to place the other atoms in the cycle
             startAngle = math.atan2(-vector[1], vector[0])
             endAngle = startAngle + 2 * math.pi
-        elif len(commonAtoms) == 2:
-            # Two common atoms; center is on axis drawn from center of previous cycle through bond of common atoms
-            coord = 0.5 * (coordinates[atoms.index(commonAtoms[0]),:] + coordinates[atoms.index(commonAtoms[1]),:])
-            vector = coord - center0
-            vector = vector / numpy.linalg.norm(vector)
-            center = coord + vector / (2 * math.tan(math.pi / len(cycle)))
+        elif len(commonAtoms) >= 2:
             # Divide other atoms in cycle equally among unused angle
-            vector = coordinates[atoms.index(commonAtoms[1]),:] - center
+            vector = coordinates[atoms.index(commonAtoms[-1]),:] - center
             startAngle = math.atan2(vector[1], vector[0])
             vector = coordinates[atoms.index(commonAtoms[0]),:] - center
             endAngle = math.atan2(vector[1], vector[0])
-        elif len(commonAtoms) > 2:
-            raise NotImplementedError('Cannot currently handle complex fused rings.')
-
+        
         # Place remaining atoms in cycle
         if endAngle < startAngle:
             endAngle += 2 * math.pi
@@ -732,8 +752,6 @@ def getRingSystemCoordinates(ringSystem, atoms):
             endAngle -= 2 * math.pi
             dAngle = (endAngle - startAngle) / (len(cycle) - len(commonAtoms) + 1)
         
-        print center0, center, startAngle * 180 / math.pi, endAngle * 180 / math.pi, dAngle * 180 / math.pi
-
         count = 1
         for i in range(len(commonAtoms), len(cycle)):
             angle = startAngle + count * dAngle
@@ -742,12 +760,12 @@ def getRingSystemCoordinates(ringSystem, atoms):
             # This version assumes that no atoms belong at the origin, which is
             # usually fine because the first ring is centered at the origin
             if numpy.linalg.norm(coordinates[index,:]) < 1e-4:
-                coordinates[index,0] = center[0] + math.cos(angle)
-                coordinates[index,1] = center[1] + math.sin(angle)
+                coordinates[index,0] = center[0] + radius * math.cos(angle)
+                coordinates[index,1] = center[1] + radius * math.sin(angle)
             count += 1
 
         # We're done assigning coordinates for this cycle, so mark it as processed
-        
+        processed.append(cycle)
     
     return coordinates
 
@@ -895,7 +913,7 @@ if __name__ == '__main__':
     #molecule.fromSMILES('c1ccc2ccccc2c1') # naphthalene
     #molecule.fromSMILES('c1ccc2cc3ccccc3cc2c1') # anthracene
     #molecule.fromSMILES('c1ccc2c(c1)ccc3ccccc32') # phenanthrene
-    molecule.fromSMILES('C1C=CC2=CC=CC3=C2C1=CC=C3') # phenalene
+    molecule.fromSMILES('C1CC2CCCC3C2C1CCC3')
 
     # Tests #6: Small molecules
     #molecule.fromSMILES('[O]C([O])([O])[O]')
