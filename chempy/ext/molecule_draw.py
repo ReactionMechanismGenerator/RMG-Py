@@ -127,106 +127,245 @@ def render(atoms, bonds, coordinates, symbols, fstr):
     # Draw atoms (for now)
     for i, atom in enumerate(atoms):
         symbol = symbols[i]
-        if symbol != '':
-            index = atoms.index(atom)
-            x0, y0 = coordinates[index,:]
-            vector = numpy.zeros(2, numpy.float64)
-            for atom2 in bonds[atom]:
-                vector += coordinates[atoms.index(atom2),:] - coordinates[index,:]
-            heavyFirst = vector[0] <= 0
-            renderSymbol(symbol, x0, y0, cr, heavyFirst)
+        index = atoms.index(atom)
+        x0, y0 = coordinates[index,:]
+        vector = numpy.zeros(2, numpy.float64)
+        for atom2 in bonds[atom]:
+            vector += coordinates[atoms.index(atom2),:] - coordinates[index,:]
+        heavyFirst = vector[0] <= 0
+        renderSymbol(symbol, atom, coordinates, atoms, bonds, x0, y0, cr, heavyFirst)
 
     # Finish Cairo drawing
     surface.finish()
 
-def renderSymbol(symbol, x0, y0, cr, heavyFirst=True):
+def renderSymbol(symbol, atom, coordinates0, atoms, bonds, x0, y0, cr, heavyFirst=True):
     """
     Render the `label` for an atom centered around the coordinates (`x0`, `y0`)
     onto the Cairo context `cr`. If `heavyFirst` is ``False``, then the order
     of the atoms will be reversed in the symbol
     """
 
-    heavyAtom = symbol[0]
+    if symbol != '':
+        heavyAtom = symbol[0]
 
-    # Split label by atoms
-    labels = re.findall('[A-Z][0-9]*', symbol)
-    if not heavyFirst: labels.reverse()
-    symbol = ''.join(labels)
+        # Split label by atoms
+        labels = re.findall('[A-Z][0-9]*', symbol)
+        if not heavyFirst: labels.reverse()
+        symbol = ''.join(labels)
 
-    # Determine positions of each character in the symbol
-    coordinates = []
+        # Determine positions of each character in the symbol
+        coordinates = []
 
-    y0 += max([cr.text_extents(char)[3] for char in symbol if char.isalpha()]) / 2
+        y0 += max([cr.text_extents(char)[3] for char in symbol if char.isalpha()]) / 2
 
-    for i, label in enumerate(labels):
-        for j, char in enumerate(label):
+        for i, label in enumerate(labels):
+            for j, char in enumerate(label):
+                cr.set_font_size(6 if char.isdigit() else 10)
+                xbearing, ybearing, width, height, xadvance, yadvance = cr.text_extents(char)
+                if i == 0 and j == 0:
+                    # Center heavy atom at (x0, y0)
+                    x = x0 - width / 2.0 - xbearing
+                    y = y0
+                else:
+                    # Left-justify other atoms (for now)
+                    x = x0
+                    y = y0
+                if char.isdigit(): y += height / 2.0
+                coordinates.append((x,y))
+                x0 = x + xadvance
+
+        x = 1000000; y = 1000000; width = 0; height = 0
+        startWidth = 0; endWidth = 0
+        for i, char in enumerate(symbol):
+            cr.set_font_size(6 if char.isdigit() else 10)
+            extents = cr.text_extents(char)
+            if coordinates[i][0] + extents[0] < x: x = coordinates[i][0] + extents[0]
+            if coordinates[i][1] + extents[1] < y: y = coordinates[i][1] + extents[1]
+            width += extents[4] if i < len(symbol) - 1 else extents[2]
+            if extents[3] > height: height = extents[3]
+            if i == 0: startWidth = extents[2]
+            if i == len(symbol) - 1: endWidth = extents[2]
+
+        if not heavyFirst:
+            for i in range(len(coordinates)):
+                coordinates[i] = (coordinates[i][0] - (width - startWidth / 2 - endWidth / 2), coordinates[i][1])
+            x -= width - startWidth / 2 - endWidth / 2
+
+        # Background
+        x1 = x - 2; y1 = y - 2; x2 = x + width + 2; y2 = y + height + 2; r = 4
+        cr.move_to(x1 + r, y1)
+        cr.line_to(x2 - r, y1)
+        cr.curve_to(x2 - r/2, y1, x2, y1 + r/2, x2, y1 + r)
+        cr.line_to(x2, y2 - r)
+        cr.curve_to(x2, y2 - r/2, x2 - r/2, y2, x2 - r, y2)
+        cr.line_to(x1 + r, y2)
+        cr.curve_to(x1 + r/2, y2, x1, y2 - r/2, x1, y2 - r)
+        cr.line_to(x1, y1 + r)
+        cr.curve_to(x1, y1 + r/2, x1 + r/2, y1, x1 + r, y1)
+        cr.close_path()
+        cr.set_source_rgba(1.0, 1.0, 1.0, 1.0)
+        cr.fill()
+
+        # Set color for text
+        if heavyAtom == 'C':    cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
+        elif heavyAtom == 'N':  cr.set_source_rgba(0.0, 0.0, 1.0, 1.0)
+        elif heavyAtom == 'O':  cr.set_source_rgba(1.0, 0.0, 0.0, 1.0)
+        elif heavyAtom == 'F':  cr.set_source_rgba(0.5, 0.75, 1.0, 1.0)
+        elif heavyAtom == 'Si': cr.set_source_rgba(0.5, 0.5, 0.75, 1.0)
+        elif heavyAtom == 'Al': cr.set_source_rgba(0.75, 0.5, 0.5, 1.0)
+        elif heavyAtom == 'P':  cr.set_source_rgba(1.0, 0.5, 0.0, 1.0)
+        elif heavyAtom == 'S':  cr.set_source_rgba(1.0, 0.75, 0.5, 1.0)
+        elif heavyAtom == 'Cl': cr.set_source_rgba(0.0, 1.0, 0.0, 1.0)
+        elif heavyAtom == 'Br': cr.set_source_rgba(0.6, 0.2, 0.2, 1.0)
+        elif heavyAtom == 'I':  cr.set_source_rgba(0.5, 0.0, 0.5, 1.0)
+        else:                   cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
+
+        # Text itself
+        for i, char in enumerate(symbol):
             cr.set_font_size(6 if char.isdigit() else 10)
             xbearing, ybearing, width, height, xadvance, yadvance = cr.text_extents(char)
-            if i == 0 and j == 0:
-                # Center heavy atom at (x0, y0)
-                x = x0 - width / 2.0 - xbearing
-                y = y0
+            xi, yi = coordinates[i]
+            cr.move_to(xi, yi)
+            cr.show_text(char)
+
+        x, y = coordinates[0] if heavyFirst else coordinates[-1]
+            
+    else:
+        x = x0 + 2; y = y0; width = 0; height = 0
+        heavyAtom = ''
+
+    # Draw radical electrons and charges
+    # These will be placed either horizontally along the top or bottom of the
+    # atom or vertically along the left or right of the atom
+    orientation = ' '
+    if len(bonds[atom]) == 1:
+        # Terminal atom - we require a horizontal arrangement if there are
+        # more than just the heavy atom
+        atom1 = bonds[atom].keys()[0]
+        vector = coordinates0[atoms.index(atom),:] - coordinates0[atoms.index(atom1),:]
+        if len(symbol) <= 1:
+            angle = math.atan2(vector[1], vector[0])
+            if 3 * math.pi / 4 <= angle or angle < -3 * math.pi / 4:  orientation = 'l'
+            elif -3 * math.pi / 4 <= angle < -1 * math.pi / 4:        orientation = 'b'
+            elif -1 * math.pi / 4 <= angle <  1 * math.pi / 4:        orientation = 'r'
+            else:                                                     orientation = 't'
+        else:
+            if vector[1] <= 0:
+                orientation = 'b'
             else:
-                # Left-justify other atoms (for now)
-                x = x0
-                y = y0
-            if char.isdigit(): y += height / 2.0
-            coordinates.append((x,y))
-            x0 = x + xadvance
+                orientation = 't'
+    else:
+        # Internal atom
+        # First try to see if there is a "preferred" side on which to place the
+        # radical/charge data, i.e. if the bonds are unbalanced
+        vector = numpy.zeros(2, numpy.float64)
+        for atom1 in bonds[atom]:
+            vector += coordinates0[atoms.index(atom),:] - coordinates0[atoms.index(atom1),:]
+        if numpy.linalg.norm(vector) < 1e-4:
+            # All of the bonds are balanced, so we'll need to be more shrewd
+            angles = []
+            for atom1 in bonds[atom]:
+                vector = coordinates0[atoms.index(atom1),:] - coordinates0[atoms.index(atom),:]
+                angles.append(math.atan2(vector[1], vector[0]))
+            # Try one more time to see if we can use one of the four sides
+            # (due to there being no bonds in that quadrant)
+            # We don't even need a full 90 degrees open (using 60 degrees instead)
+            if   all([ 1 * math.pi / 3 >= angle or angle >=  2 * math.pi / 3 for angle in angles]):  orientation = 't'
+            elif all([-2 * math.pi / 3 >= angle or angle >= -1 * math.pi / 3 for angle in angles]):  orientation = 'b'
+            elif all([-1 * math.pi / 6 >= angle or angle >=  1 * math.pi / 6 for angle in angles]):  orientation = 'r'
+            elif all([ 5 * math.pi / 6 >= angle or angle >= -5 * math.pi / 6 for angle in angles]):  orientation = 'l'
+            else:
+                # If we still don't have it (e.g. when there are 4+ equally-
+                # spaced bonds), just put everything in the top right for now
+                orientation = 'tr'
+        else:
+            # There is an unbalanced side, so let's put the radical/charge data there
+            angle = math.atan2(vector[1], vector[0])
+            if 3 * math.pi / 4 <= angle or angle < -3 * math.pi / 4:  orientation = 'l'
+            elif -3 * math.pi / 4 <= angle < -1 * math.pi / 4:        orientation = 'b'
+            elif -1 * math.pi / 4 <= angle <  1 * math.pi / 4:        orientation = 'r'
+            else:                                                     orientation = 't'
+        
+    cr.set_font_size(10)
+    extents = cr.text_extents(heavyAtom)
 
-    x = 1000000; y = 1000000; width = 0; height = 0
-    startWidth = 0; endWidth = 0
-    for i, char in enumerate(symbol):
-        cr.set_font_size(6 if char.isdigit() else 10)
-        extents = cr.text_extents(char)
-        if coordinates[i][0] + extents[0] < x: x = coordinates[i][0] + extents[0]
-        if coordinates[i][1] + extents[1] < y: y = coordinates[i][1] + extents[1]
-        width += extents[4] if i < len(symbol) - 1 else extents[2]
-        if extents[3] > height: height = extents[3]
-        if i == 0: startWidth = extents[2]
-        if i == len(symbol) - 1: endWidth = extents[2]
+    if len(orientation) > 1: xi += 4
 
-    if not heavyFirst:
-        for i in range(len(coordinates)):
-            coordinates[i] = (coordinates[i][0] - (width - startWidth / 2 - endWidth / 2), coordinates[i][1])
-        x -= width - startWidth / 2 - endWidth / 2
+    if orientation[0] == 'l':
+        xi = x - 2
+        yi = y
+    elif orientation[0] == 'b':
+        xi = x
+        yi = y - extents[3] - 3
+    elif orientation[0] == 'r':
+        xi = x + extents[2] + 4
+        yi = y
+    elif orientation[0] == 't':
+        xi = x
+        yi = y + 3
+    
+    if (orientation[0] == 'b' or orientation[0] == 't') and len(symbol) > 0:
+        xi += extents[0] + extents[2]/2.0 + 2.0
+    elif (orientation[0] == 'l' or orientation[0] == 'r') and len(symbol) > 0:
+        yi += extents[1] + extents[3]/2.0 + 2.0
 
-    # Background
-    x1 = x - 2; y1 = y - 2; x2 = x + width + 2; y2 = y + height + 2; r = 4
-    cr.move_to(x1 + r, y1)
-    cr.line_to(x2 - r, y1)
-    cr.curve_to(x2 - r/2, y1, x2, y1 + r/2, x2, y1 + r)
-    cr.line_to(x2, y2 - r)
-    cr.curve_to(x2, y2 - r/2, x2 - r/2, y2, x2 - r, y2)
-    cr.line_to(x1 + r, y2)
-    cr.curve_to(x1 + r/2, y2, x1, y2 - r/2, x1, y2 - r)
-    cr.line_to(x1, y1 + r)
-    cr.curve_to(x1, y1 + r/2, x1 + r/2, y1, x1 + r, y1)
-    cr.close_path()
-    cr.set_source_rgba(1.0, 1.0, 1.0, 1.0)
-    cr.fill()
+    # Get width/height
+    cr.set_font_size(6)
+    if orientation[0] == 'b' or orientation[0] == 't':
+        width = 0.0
+        if atom.radicalElectrons > 0: width = atom.radicalElectrons * 3 + 1
+        if atom.charge == 1:          width += cr.text_extents('+')[2] + 1
+        elif atom.charge > 1:         width += cr.text_extents('%i+' % atom.charge)[2] + 1
+        elif atom.charge == -1:       width += cr.text_extents(u'\u2013')[2] + 1
+        elif atom.charge < -1:        width += cr.text_extents(u'%i\u2013' % abs(atom.charge))[2] + 1
+        xi -= width / 2.0
+    elif orientation[0] == 'l' or orientation[0] == 'r':
+        height = 0.0
+        if atom.radicalElectrons > 0: height = atom.radicalElectrons * 3 + 1
+        if atom.charge == 1:          height += cr.text_extents('+')[3] + 1
+        elif atom.charge > 1:         height += cr.text_extents('%i+' % atom.charge)[3] + 1
+        elif atom.charge == -1:       width += cr.text_extents(u'\u2013')[3] + 1
+        elif atom.charge < -1:        height += cr.text_extents(u'%i\u2013' % abs(atom.charge))[3] + 1
+        yi -= height / 2.0
 
-    # Set color for text
-    if heavyAtom == 'C':    cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
-    elif heavyAtom == 'N':  cr.set_source_rgba(0.0, 0.0, 1.0, 1.0)
-    elif heavyAtom == 'O':  cr.set_source_rgba(1.0, 0.0, 0.0, 1.0)
-    elif heavyAtom == 'F':  cr.set_source_rgba(0.5, 0.75, 1.0, 1.0)
-    elif heavyAtom == 'Si': cr.set_source_rgba(0.5, 0.5, 0.75, 1.0)
-    elif heavyAtom == 'Al': cr.set_source_rgba(0.75, 0.5, 0.5, 1.0)
-    elif heavyAtom == 'P':  cr.set_source_rgba(1.0, 0.5, 0.0, 1.0)
-    elif heavyAtom == 'S':  cr.set_source_rgba(1.0, 0.75, 0.5, 1.0)
-    elif heavyAtom == 'Cl': cr.set_source_rgba(0.0, 1.0, 0.0, 1.0)
-    elif heavyAtom == 'Br': cr.set_source_rgba(0.6, 0.2, 0.2, 1.0)
-    elif heavyAtom == 'I':  cr.set_source_rgba(0.5, 0.0, 0.5, 1.0)
-    else:                   cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
-
-    # Text itself
-    for i, char in enumerate(symbol):
-        cr.set_font_size(6 if char.isdigit() else 10)
-        xbearing, ybearing, width, height, xadvance, yadvance = cr.text_extents(char)
-        x, y = coordinates[i]
-        cr.move_to(x, y)
-        cr.show_text(char)
+    if orientation[0] == 'b' or orientation[0] == 't':
+        # Draw radical electrons first
+        for i in range(atom.radicalElectrons):
+            cr.new_sub_path()
+            cr.arc(xi + 3 * i, yi, 1, 0, 2 * math.pi)
+            cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
+            cr.fill()
+        if atom.radicalElectrons > 0: xi += atom.radicalElectrons * 3
+        # Draw charges second
+        text = ''
+        if atom.charge == 1:       text = '+'
+        elif atom.charge > 1:      text = '%i+' % atom.charge
+        elif atom.charge == -1:    text = u'\u2013'
+        elif atom.charge < -1:     text = u'%i\u2013' % abs(atom.charge)
+        if text != '':
+            extents = cr.text_extents(text)
+            cr.move_to(xi - extents[0], yi - extents[1] - extents[3]/2)
+            cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
+            cr.show_text(text)
+    elif orientation[0] == 'l' or orientation[0] == 'r':
+        # Draw charges first
+        text = ''
+        if atom.charge == 1:       text = '+'
+        elif atom.charge > 1:      text = '%i+' % atom.charge
+        elif atom.charge == -1:    text = u'\u2013'
+        elif atom.charge < -1:     text = u'%i\u2013' % abs(atom.charge)
+        if text != '':
+            extents = cr.text_extents(text)
+            cr.move_to(xi - extents[0] - extents[2]/2, yi)
+            cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
+            cr.show_text(text)
+        if atom.charge != 0: yi += extents[3]
+        # Draw radical electrons second
+        for i in range(atom.radicalElectrons):
+            cr.new_sub_path()
+            cr.arc(xi, yi + 3 * i, 1, 0, 2 * math.pi)
+            cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
+            cr.fill()
 
 ################################################################################
 
@@ -537,7 +676,9 @@ def drawMolecule(chemGraph, fstr=''):
     symbols = [atom.symbol for atom in atoms]
     for i in range(len(symbols)):
         # Don't label carbon atoms
-        if symbols[i] == 'C': symbols[i] = ''
+        if symbols[i] == 'C':
+            if len(bonds[atoms[i]]) > 1 or (atoms[i].radicalElectrons == 0 and atoms[i].charge == 0):
+                symbols[i] = ''
     # Do label atoms that have only double bonds to one or more labeled atoms
     changed = True
     while changed:
@@ -565,7 +706,7 @@ if __name__ == '__main__':
     #molecule.fromSMILES('C=CC=CCC') # 1,3-hexadiene
 
     # Test #2: Straight chain backbone, small functional groups
-    molecule.fromSMILES('OCC(O)C(O)C(O)C(O)C(=O)') # glucose
+    #molecule.fromSMILES('OCC(O)C(O)C(O)C(O)C(=O)') # glucose
 
     # Test #3: Straight chain backbone, large functional groups
     #molecule.fromSMILES('CCCCCCCCC(CCCC(CCC)(CCC)CCC)CCCCCCCCC')
@@ -575,7 +716,9 @@ if __name__ == '__main__':
     #molecule.fromSMILES('C=CCC=CC(=C)C(=C)C(=O)CC')
     # Double bond test #2
     #molecule.fromSMILES('C=C=O')
-
+    # Radicals
+    molecule.fromSMILES('[O][CH][C]([O])[C]([O])[CH][O]')
+    
     # Test #5: Cyclic backbone, no functional groups
     #molecule.fromSMILES('c1ccc2ccccc2c1') # naphthalene
 
