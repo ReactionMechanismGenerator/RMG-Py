@@ -143,11 +143,11 @@ def render(atoms, bonds, coordinates, symbols, fstr):
                     cr.stroke()
                     # Draw other bonds
                     if bond.isDouble():
-                        du *= 4; dv *= 4; dx = 2 * dx / bondLength; dy = 2 * dy / bondLength
+                        du *= 4; dv *= 4; dx = 4 * dx / bondLength; dy = 4 * dy / bondLength
                         cr.move_to(x1 + du + dx, y1 + dv + dy); cr.line_to(x2 + du - dx, y2 + dv - dy)
                         cr.stroke()
                     elif bond.isTriple():
-                        du *= 3; dv *= 3; dx = 2 * dx / bondLength; dy = 2 * dy / bondLength
+                        du *= 3; dv *= 3; dx = 3 * dx / bondLength; dy = 3 * dy / bondLength
                         cr.move_to(x1 - du + dx, y1 - dv + dy); cr.line_to(x2 - du - dx, y2 - dv - dy)
                         cr.stroke()
                         cr.move_to(x1 + du + dx, y1 + dv + dy); cr.line_to(x2 + du - dx, y2 + dv - dy)
@@ -438,15 +438,16 @@ def getBackbone(chemGraph):
 
     if chemGraph.isCyclic():
 
-        cycles = []
-        for atom in chemGraph.atoms:
-            if chemGraph.isAtomInCycle(atom):
-                cycles.extend(chemGraph.getAllCycles(atom))
-        for cycle in cycles:
-            print [chemGraph.atoms.index(a) for a in cycle]
-
-        quit()
-
+        # This is not a robust method of identifying the ring systems, but will work as a starting point
+        cycles = chemGraph.getSmallestSetOfSmallestRings()
+        return cycles
+    
+        # Find the largest ring system and use it as the backbone
+        backbone = cycles[0]
+        for cycle in cycles[1:]:
+            if len(cycle) > len(backbone): backbone = cycle
+        return [backbone]
+    
     else:
         # Make a shallow copy of the chemGraph so we don't modify the original
         chemGraph = chemGraph.copy()
@@ -473,7 +474,7 @@ def getBackbone(chemGraph):
             if len(path) > len(backbone):
                 backbone = path
 
-        return backbone
+    return backbone
 
 ################################################################################
 
@@ -510,7 +511,18 @@ def generateCoordinates(chemGraph, atoms, bonds):
 
     # Generate coordinates for atoms in backbone
     if chemGraph.isCyclic():
-        raise NotImplementedError('Currently cannot find backbone of cyclic molecules!')
+        # Cyclic backbone
+
+        coordinates_cycle = getRingSystemCoordinates(backbone, atoms)
+        for cycle in backbone:
+            for atom in cycle:
+                index = atoms.index(atom)
+                coordinates[index,:] = coordinates_cycle[index,:]
+
+        # Flatten backbone so that it contains a list of the atoms in the
+        # backbone, rather than a list of the cycles in the backbone
+        backbone = list(set([atom for cycle in backbone for atom in cycle]))
+
     else:
         # Straight chain backbone
 
@@ -625,6 +637,118 @@ def generateCoordinates(chemGraph, atoms, bonds):
                 coordinates[atoms.index(atom1),:] = coordinates[index0,:] + vector
                 processFunctionalGroup(atom0, atom1, atoms, bonds, coordinates)
 
+    return coordinates
+
+################################################################################
+
+def getRingSystemCoordinates(ringSystem, atoms):
+
+    coordinates = numpy.zeros((len(atoms), 2), numpy.float64)
+    ringSystem = ringSystem[:]
+    processed = []
+
+    # Lay out largest cycle in ring system first
+    cycle = ringSystem[0]
+    for cycle0 in ringSystem[1:]:
+        if len(cycle0) > len(cycle):
+            cycle = cycle0
+    angle = - 2 * math.pi / len(cycle)
+    for i, atom in enumerate(cycle):
+        index = atoms.index(atom)
+        coordinates[index,:] = [math.cos(math.pi / 2 + i * angle), math.sin(math.pi / 2 + i * angle)]
+    ringSystem.remove(cycle)
+    processed.append(cycle)
+
+    # If there are other cycles, then try to lay them out as well
+    while len(ringSystem) > 0:
+
+        # Find the largest cycle that shares one or two atoms with a ring that's
+        # already been processed
+        cycle = None
+        for cycle0 in ringSystem:
+            for cycle1 in processed:
+                count = sum([1 for atom in cycle0 if atom in cycle1])
+                if (count == 1 or count == 2):
+                    if cycle is None or len(cycle0) > len(cycle): cycle = cycle0
+        cycle0 = cycle1
+
+        ringSystem.remove(cycle)
+        processed.append(cycle)
+
+        print [atoms.index(atom) for atom in cycle0]
+        print [atoms.index(atom) for atom in cycle]
+
+        # Shuffle atoms in cycle such that the common atoms come first
+        found = False
+        commonAtoms = []
+        for atom in cycle0:
+            if atom in cycle: commonAtoms.append(atom)
+        if len(commonAtoms) > 1:
+            index0 = cycle.index(commonAtoms[0])
+            index1 = cycle.index(commonAtoms[1])
+            if (index0 == 0 and index1 == len(cycle) - 1) or (index1 == 0 and index0 == len(cycle) - 1):
+                cycle = cycle[-1:] + cycle[0:-1]
+            if cycle.index(commonAtoms[1]) < cycle.index(commonAtoms[0]):
+                cycle.reverse()
+            index = cycle.index(commonAtoms[0])
+            cycle = cycle[index:] + cycle[0:index]
+
+        print [atoms.index(atom) for atom in cycle0]
+        print [atoms.index(atom) for atom in cycle]
+
+        # Determine center of cycle based on already-assigned positions of
+        # common atoms (which won't be changed)
+        center0 = numpy.zeros(2, numpy.float64)
+        for atom in cycle0: center0 += coordinates[atoms.index(atom),:]
+        center0 /= len(cycle0)
+        center = numpy.zeros(2, numpy.float64)
+        if len(commonAtoms) == 1:
+            # One common atom; center is on axis drawn from center of previous cycle through common atom
+            coord = coordinates[atoms.index(commonAtoms[0]),:]
+            vector = coord - center0
+            center = coord + vector / (2 * math.sin(math.pi / len(cycle)))
+            # We will use the full 360 degrees to place the other atoms in the cycle
+            startAngle = math.atan2(-vector[1], vector[0])
+            endAngle = startAngle + 2 * math.pi
+        elif len(commonAtoms) == 2:
+            # Two common atoms; center is on axis drawn from center of previous cycle through bond of common atoms
+            coord = 0.5 * (coordinates[atoms.index(commonAtoms[0]),:] + coordinates[atoms.index(commonAtoms[1]),:])
+            vector = coord - center0
+            vector = vector / numpy.linalg.norm(vector)
+            center = coord + vector / (2 * math.tan(math.pi / len(cycle)))
+            # Divide other atoms in cycle equally among unused angle
+            vector = coordinates[atoms.index(commonAtoms[1]),:] - center
+            startAngle = math.atan2(vector[1], vector[0])
+            vector = coordinates[atoms.index(commonAtoms[0]),:] - center
+            endAngle = math.atan2(vector[1], vector[0])
+        elif len(commonAtoms) > 2:
+            raise NotImplementedError('Cannot currently handle complex fused rings.')
+
+        # Place remaining atoms in cycle
+        if endAngle < startAngle:
+            endAngle += 2 * math.pi
+            dAngle = (endAngle - startAngle) / (len(cycle) - len(commonAtoms) + 1)
+        else:
+            endAngle -= 2 * math.pi
+            dAngle = (endAngle - startAngle) / (len(cycle) - len(commonAtoms) + 1)
+        
+        print center0, center, startAngle * 180 / math.pi, endAngle * 180 / math.pi, dAngle * 180 / math.pi
+
+        count = 1
+        for i in range(len(commonAtoms), len(cycle)):
+            angle = startAngle + count * dAngle
+            index = atoms.index(cycle[i])
+            # Check that we aren't reassigning any atom positions
+            # This version assumes that no atoms belong at the origin, which is
+            # usually fine because the first ring is centered at the origin
+            if numpy.linalg.norm(coordinates[index,:]) < 1e-4:
+                coordinates[index,0] = center[0] + math.cos(angle)
+                coordinates[index,1] = center[1] + math.sin(angle)
+            count += 1
+
+        # We're done assigning coordinates for this cycle, so mark it as processed
+        
+    
     return coordinates
 
 ################################################################################
@@ -767,10 +891,14 @@ if __name__ == '__main__':
     #molecule.fromSMILES('[O][CH][C]([O])[C]([O])[CH][O]')
     
     # Test #5: Cyclic backbone, no functional groups
+    #molecule.fromSMILES('C1=CC=CCC1') # 1,3-cyclohexadiene
     #molecule.fromSMILES('c1ccc2ccccc2c1') # naphthalene
+    #molecule.fromSMILES('c1ccc2cc3ccccc3cc2c1') # anthracene
+    #molecule.fromSMILES('c1ccc2c(c1)ccc3ccccc32') # phenanthrene
+    molecule.fromSMILES('C1C=CC2=CC=CC3=C2C1=CC=C3') # phenalene
 
     # Tests #6: Small molecules
-    molecule.fromSMILES('[O]C([O])([O])[O]')
+    #molecule.fromSMILES('[O]C([O])([O])[O]')
     
     #molecule.fromSMILES('C=CC(C)(C)CCC')
     #molecule.fromSMILES('CCC(C)CCC(CCC)C')

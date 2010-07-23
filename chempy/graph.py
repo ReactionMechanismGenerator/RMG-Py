@@ -529,14 +529,14 @@ class Graph:
         cycleList = []
         for graph in graphs:
 
-            while len(graph) > 0:
+            while len(graph.vertices) > 0:
 
                 # Choose root vertex as vertex with smallest number of edges
                 rootVertex = None
-                for vertex in graph:
+                for vertex in graph.vertices:
                     if rootVertex is None:
                         rootVertex = vertex
-                    elif len(graph[vertex]) < len(graph[rootVertex]):
+                    elif len(graph.edges[vertex]) < len(graph.edges[rootVertex]):
                         rootVertex = vertex
 
                 # Get all cycles involving the root vertex
