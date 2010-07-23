@@ -51,11 +51,44 @@ def render(atoms, bonds, coordinates, symbols, fstr):
     try:
         import cairo
     except ImportError:
-        print 'Cairo not found; potential energy surface will not be drawn.'
+        print 'Cairo not found; molecule will not be drawn.'
         return
 
+    bondLength = 32
+    coordinates[:,1] *= -1
+    coordinates = coordinates * bondLength + 160
+
+    # Determine width and height of graphics
+    sorted = numpy.argsort(coordinates[:,0])
+    left = sorted[0]; right = sorted[-1]
+    sorted = numpy.argsort(coordinates[:,1])
+    top = sorted[0]; bottom = sorted[-1]
+    padding = 8
+    x = coordinates[left,0] - padding
+    y = coordinates[top,1] - padding
+    width = coordinates[right,0] - coordinates[left,0] + padding * 2
+    height = coordinates[bottom,1] - coordinates[top,1] + padding * 2
+    # Add space for symbols on each edge of drawing using dummy Cairo surface and context
+    surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, int(width), int(height))
+    cr = cairo.Context(surface)
+    cr.set_font_size(10)
+    if left != right:
+        x -= cr.text_extents(symbols[left])[2]
+        width += cr.text_extents(symbols[left])[2] + cr.text_extents(symbols[right])[2]
+    else:
+        x -= cr.text_extents(symbols[left])[2] / 4
+        width += cr.text_extents(symbols[left])[2]
+    if top != bottom:
+        y -= cr.text_extents(symbols[top])[3]
+        height += cr.text_extents(symbols[top])[3] + cr.text_extents(symbols[bottom])[3]
+    else:
+        y -= cr.text_extents(symbols[top])[3] / 4
+        height += cr.text_extents(symbols[top])[3]
+
+    coordinates[:,0] -= x
+    coordinates[:,1] -= y
+
     # Initialize Cairo surface and context
-    width = 640; height = 480
     ext = os.path.splitext(fstr)[1].lower()
     if ext == '.svg':
         surface = cairo.SVGSurface(fstr, width, height)
@@ -64,10 +97,6 @@ def render(atoms, bonds, coordinates, symbols, fstr):
     elif ext == '.ps':
         surface = cairo.PSSurface(fstr, width, height)
     cr = cairo.Context(surface)
-
-    bondLength = 32
-    coordinates[:,1] *= -1
-    coordinates = coordinates * bondLength + 160
 
     # Some global settings
     cr.select_font_face("sans")
@@ -742,7 +771,7 @@ if __name__ == '__main__':
 
     # Tests #6: Small molecules
     molecule.fromSMILES('[O]C([O])([O])[O]')
-
+    
     #molecule.fromSMILES('C=CC(C)(C)CCC')
     #molecule.fromSMILES('CCC(C)CCC(CCC)C')
     #molecule.fromSMILES('C=CC(C)=CCC')
