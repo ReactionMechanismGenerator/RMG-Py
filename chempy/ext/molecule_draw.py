@@ -130,8 +130,9 @@ def render(atoms, bonds, coordinates, symbols, fstr):
         index = atoms.index(atom)
         x0, y0 = coordinates[index,:]
         vector = numpy.zeros(2, numpy.float64)
-        for atom2 in bonds[atom]:
-            vector += coordinates[atoms.index(atom2),:] - coordinates[index,:]
+        if atom in bonds:
+            for atom2 in bonds[atom]:
+                vector += coordinates[atoms.index(atom2),:] - coordinates[index,:]
         heavyFirst = vector[0] <= 0
         renderSymbol(symbol, atom, coordinates, atoms, bonds, x0, y0, cr, heavyFirst)
 
@@ -156,6 +157,7 @@ def renderSymbol(symbol, atom, coordinates0, atoms, bonds, x0, y0, cr, heavyFirs
         # Determine positions of each character in the symbol
         coordinates = []
 
+        cr.set_font_size(10)
         y0 += max([cr.text_extents(char)[3] for char in symbol if char.isalpha()]) / 2
 
         for i, label in enumerate(labels):
@@ -238,7 +240,10 @@ def renderSymbol(symbol, atom, coordinates0, atoms, bonds, x0, y0, cr, heavyFirs
     # These will be placed either horizontally along the top or bottom of the
     # atom or vertically along the left or right of the atom
     orientation = ' '
-    if len(bonds[atom]) == 1:
+    if atom not in bonds or len(bonds[atom]) == 0:
+        if len(symbol) == 1:  orientation = 'r'
+        else:                 orientation = 'l'
+    elif len(bonds[atom]) == 1:
         # Terminal atom - we require a horizontal arrangement if there are
         # more than just the heavy atom
         atom1 = bonds[atom].keys()[0]
@@ -289,53 +294,64 @@ def renderSymbol(symbol, atom, coordinates0, atoms, bonds, x0, y0, cr, heavyFirs
     cr.set_font_size(10)
     extents = cr.text_extents(heavyAtom)
 
-    if len(orientation) > 1: xi += 4
-
+    # (xi, yi) mark the center of the space in which to place the radicals and charges
     if orientation[0] == 'l':
         xi = x - 2
-        yi = y
+        yi = y - extents[3]/2
     elif orientation[0] == 'b':
-        xi = x
+        xi = x + extents[0] + extents[2]/2
         yi = y - extents[3] - 3
     elif orientation[0] == 'r':
-        xi = x + extents[2] + 4
-        yi = y
+        xi = x + extents[0] + extents[2] + 3
+        yi = y - extents[3]/2
     elif orientation[0] == 't':
-        xi = x
+        xi = x + extents[0] + extents[2]/2
         yi = y + 3
-    
-    if (orientation[0] == 'b' or orientation[0] == 't') and len(symbol) > 0:
-        xi += extents[0] + extents[2]/2.0 + 2.0
-    elif (orientation[0] == 'l' or orientation[0] == 'r') and len(symbol) > 0:
-        yi += extents[1] + extents[3]/2.0 + 2.0
 
-    # Get width/height
+    if len(orientation) > 1: xi += 4
+
+    # Get width and height
     cr.set_font_size(6)
+    width = 0.0; height = 0.0
     if orientation[0] == 'b' or orientation[0] == 't':
-        width = 0.0
-        if atom.radicalElectrons > 0: width = atom.radicalElectrons * 3 + 1
-        if atom.charge == 1:          width += cr.text_extents('+')[2] + 1
-        elif atom.charge > 1:         width += cr.text_extents('%i+' % atom.charge)[2] + 1
-        elif atom.charge == -1:       width += cr.text_extents(u'\u2013')[2] + 1
-        elif atom.charge < -1:        width += cr.text_extents(u'%i\u2013' % abs(atom.charge))[2] + 1
-        xi -= width / 2.0
+        if atom.radicalElectrons > 0:
+            width += atom.radicalElectrons * 2 + (atom.radicalElectrons - 1)
+            height = atom.radicalElectrons * 2
+        text = ''
+        if atom.radicalElectrons > 0 and atom.charge != 0: width += 1
+        if atom.charge == 1:          text = '+'
+        elif atom.charge > 1:         text = '%i+' % atom.charge
+        elif atom.charge == -1:       text = u'\u2013'
+        elif atom.charge < -1:        text = u'%i\u2013' % abs(atom.charge)
+        if text != '':
+            extents = cr.text_extents(text)
+            width += extents[2] + 1
+            height = extents[3]
     elif orientation[0] == 'l' or orientation[0] == 'r':
-        height = 0.0
-        if atom.radicalElectrons > 0: height = atom.radicalElectrons * 3 + 1
-        if atom.charge == 1:          height += cr.text_extents('+')[3] + 1
-        elif atom.charge > 1:         height += cr.text_extents('%i+' % atom.charge)[3] + 1
-        elif atom.charge == -1:       width += cr.text_extents(u'\u2013')[3] + 1
-        elif atom.charge < -1:        height += cr.text_extents(u'%i\u2013' % abs(atom.charge))[3] + 1
-        yi -= height / 2.0
+        if atom.radicalElectrons > 0:
+            height += atom.radicalElectrons * 2 + (atom.radicalElectrons - 1)
+            width = atom.radicalElectrons * 2
+        text = ''
+        if atom.radicalElectrons > 0 and atom.charge != 0: height += 1
+        if atom.charge == 1:          text = '+'
+        elif atom.charge > 1:         text = '%i+' % atom.charge
+        elif atom.charge == -1:       text = u'\u2013'
+        elif atom.charge < -1:        text = u'%i\u2013' % abs(atom.charge)
+        if text != '':
+            extents = cr.text_extents(text)
+            height += extents[3] + 1
+            width = extents[2]
+    # Move (xi, yi) to top left corner of space in which to draw radicals and charges
+    xi -= width / 2.0; yi -= height / 2.0
 
     if orientation[0] == 'b' or orientation[0] == 't':
         # Draw radical electrons first
         for i in range(atom.radicalElectrons):
             cr.new_sub_path()
-            cr.arc(xi + 3 * i, yi, 1, 0, 2 * math.pi)
+            cr.arc(xi + 3 * i + 1, yi + height/2, 1, 0, 2 * math.pi)
             cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
             cr.fill()
-        if atom.radicalElectrons > 0: xi += atom.radicalElectrons * 3
+        if atom.radicalElectrons > 0: xi += atom.radicalElectrons * 2 + (atom.radicalElectrons - 1) + 1
         # Draw charges second
         text = ''
         if atom.charge == 1:       text = '+'
@@ -344,7 +360,7 @@ def renderSymbol(symbol, atom, coordinates0, atoms, bonds, x0, y0, cr, heavyFirs
         elif atom.charge < -1:     text = u'%i\u2013' % abs(atom.charge)
         if text != '':
             extents = cr.text_extents(text)
-            cr.move_to(xi - extents[0], yi - extents[1] - extents[3]/2)
+            cr.move_to(xi, yi - extents[1])
             cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
             cr.show_text(text)
     elif orientation[0] == 'l' or orientation[0] == 'r':
@@ -356,14 +372,14 @@ def renderSymbol(symbol, atom, coordinates0, atoms, bonds, x0, y0, cr, heavyFirs
         elif atom.charge < -1:     text = u'%i\u2013' % abs(atom.charge)
         if text != '':
             extents = cr.text_extents(text)
-            cr.move_to(xi - extents[0] - extents[2]/2, yi)
+            cr.move_to(xi - extents[2]/2, yi - extents[1])
             cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
             cr.show_text(text)
-        if atom.charge != 0: yi += extents[3]
+        if atom.charge != 0: yi += extents[3] + 1
         # Draw radical electrons second
         for i in range(atom.radicalElectrons):
             cr.new_sub_path()
-            cr.arc(xi, yi + 3 * i, 1, 0, 2 * math.pi)
+            cr.arc(xi + width/2, yi + 3 * i + 1, 1, 0, 2 * math.pi)
             cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
             cr.fill()
 
@@ -659,15 +675,17 @@ def drawMolecule(chemGraph, fstr=''):
     # Special cases: H, H2, anything with one heavy atom
 
     # Remove all unlabeled hydrogen atoms from the molecule, as they are not drawn
+    # However, if this would remove all atoms, then don't remove any
     atomsToRemove = []
     for atom in atoms:
         if atom.isHydrogen() and atom.label == '': atomsToRemove.append(atom)
-    for atom in atomsToRemove:
-        atoms.remove(atom)
-    for atom in bonds:
-        if atom not in atoms: del bonds[atom]
-        for atom2 in bonds[atom]:
-            if atom2 not in atoms: del bonds[atom][atom2]
+    if len(atomsToRemove) < len(atoms):
+        for atom in atomsToRemove:
+            atoms.remove(atom)
+        for atom in bonds:
+            if atom not in atoms: del bonds[atom]
+            for atom2 in bonds[atom]:
+                if atom2 not in atoms: del bonds[atom][atom2]
 
     # Generate the coordinates to use to draw the molecule
     coordinates = generateCoordinates(chemGraph, atoms, bonds)
@@ -675,8 +693,8 @@ def drawMolecule(chemGraph, fstr=''):
     # Generate labels to use
     symbols = [atom.symbol for atom in atoms]
     for i in range(len(symbols)):
-        # Don't label carbon atoms
-        if symbols[i] == 'C':
+        # Don't label carbon atoms, unless there is only one heavy atom
+        if symbols[i] == 'C' and len(symbols) > 1:
             if len(bonds[atoms[i]]) > 1 or (atoms[i].radicalElectrons == 0 and atoms[i].charge == 0):
                 symbols[i] = ''
     # Do label atoms that have only double bonds to one or more labeled atoms
@@ -717,10 +735,13 @@ if __name__ == '__main__':
     # Double bond test #2
     #molecule.fromSMILES('C=C=O')
     # Radicals
-    molecule.fromSMILES('[O][CH][C]([O])[C]([O])[CH][O]')
+    #molecule.fromSMILES('[O][CH][C]([O])[C]([O])[CH][O]')
     
     # Test #5: Cyclic backbone, no functional groups
     #molecule.fromSMILES('c1ccc2ccccc2c1') # naphthalene
+
+    # Tests #6: Small molecules
+    molecule.fromSMILES('[O]C([O])([O])[O]')
 
     #molecule.fromSMILES('C=CC(C)(C)CCC')
     #molecule.fromSMILES('CCC(C)CCC(CCC)C')
