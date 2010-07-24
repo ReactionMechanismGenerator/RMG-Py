@@ -28,8 +28,61 @@
 ################################################################################
 
 """
-This module provides functionality for automatic drawing of two-dimensional
-molecules.
+This module provides functionality for automatic two-dimensional drawing of the
+`skeletal formulae <http://en.wikipedia.org/wiki/Skeletal_formula>`_ of a wide
+variety of organic and inorganic molecules. The general method for creating
+these drawings is to utilize the :meth:`draw()` method of the :class:`Molecule`
+or :class:`ChemGraph` you wish to draw; this wraps a call to 
+:meth:`drawMolecule()`, where the molecule drawing algorithm begins. Advanced
+use may require calling of the :meth:`drawMolecule()` method directly.
+
+The `Cairo <http://cairographics.org/>`_ 2D graphics library is used to create
+the drawings. The :meth:`drawMolecule()` method module will fail gracefully if
+Cairo is not installed.
+
+The general procedure for creating drawings of skeletal formula is as follows:
+
+1.  **Find the molecular backbone.** If the molecule contains no cycles, the
+    longest straight chain of heavy atoms is used as the backbone. If the 
+    molecule contains cycles, the largest independent cycle group is used as the
+    backbone. The :meth:`findBackbone()` method is used for this purpose.
+
+2.  **Generate coordinates for the backbone atoms.** Straight-chain backbones
+    are laid out in a horizontal seesaw pattern. Cyclic backbones are laid out
+    as regular polygons (or as close to this as is possible). The
+    :meth:`generateStraightChainCoordinates()` and 
+    :meth:`generateRingSystemCoordinates()` methods are used for this purpose.
+
+3.  **Generate coordinates for immediate neighbors to backbone.** Each neighbor
+    atom represents the start of a functional group attached to the backbone.
+    Generating coordinates for these means that we have determined the bonds
+    for all backbone atoms. The :meth:`generateNeighborCoordinates()` method is
+    used for this purpose.
+
+4.  **Continue generating coordinates for atoms in functional groups.** Moving
+    away from the molecular backbone and its immediate neighbors, the
+    coordinates for each atom in each functional group are determined such that
+    the functional groups tend to radiate away from the center of the backbone
+    (to reduce chances of overlap). If cycles are encountered in the functional
+    groups, their coordinates are processed as a unit. This continues until
+    the coordinates of all atoms in the molecule have been assigned. The
+    :meth:`generateFunctionalGroupCoordinates()` recursive method is used for
+    this.
+
+5.  **Use the generated coordinates and the atom and bond types to render the
+    skeletal formula.** The :meth:`render()`,  and :meth:`renderBond()`, and
+    :meth:`renderAtom()` methods are used for this.
+
+The developed procedure seems to be rather robust, but occasionally it will
+encounter a molecule that it renders incorrectly. In particular, features which
+have not yet been implemented by this drawing algorithm include:
+
+* cis-trans isomerism
+
+* stereoisomerism
+
+* bridging atoms in fused rings
+
 """
 
 import math
@@ -37,15 +90,30 @@ import numpy
 import os.path
 import re
 
-import sys
-sys.path.append(os.path.abspath('.'))
 from chempy.molecule import *
 
 ################################################################################
 
-def render(atoms, bonds, coordinates, symbols, fstr):
+# Parameters that control the Cairo output
+fontFamily = 'sans'
+fontSizeNormal = 10
+fontSizeSubscript = 6
+bondLength = 32
+    
+################################################################################
+
+class MoleculeRenderError(Exception): pass
+
+################################################################################
+
+def render(atoms, bonds, coordinates, symbols, path=None, context=None, surface=None):
     """
-    Uses the Cairo graphics library to create the drawing of the molecule.
+    Uses the Cairo graphics library to create a skeletal formula drawing of a
+    molecule containing the list of `atoms` and dict of `bonds` to be drawn.
+    The 2D position of each atom in `atoms` is given in the `coordinates` array.
+    The symbols to use at each atomic position are given by the list `symbols`.
+    You must specify either the `path` to the file to be rendered to, an
+    existing Cairo `context`, or an existing Cairo `surface`.
     """
 
     try:
@@ -54,24 +122,97 @@ def render(atoms, bonds, coordinates, symbols, fstr):
         print 'Cairo not found; molecule will not be drawn.'
         return
 
-    bondLength = 32
     coordinates[:,1] *= -1
-    coordinates = coordinates * bondLength + 160
+    coordinates = coordinates * bondLength
 
-    # Determine width and height of graphics
+    # Adjust coordinates such that the top left corner is (0,0) and determine
+    # the bounding rect for the molecule
+    left, top, width, height = adjustCoordinates(coordinates, symbols)
+    
+    # Initialize Cairo surface and context
+    if path is not None:
+        ext = os.path.splitext(path)[1].lower()
+        if ext == '.png':
+            surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, int(width), int(height))
+        elif ext == '.svg':
+            surface = cairo.SVGSurface(path, width, height)
+        elif ext == '.pdf':
+            surface = cairo.PDFSurface(path, width, height)
+        elif ext == '.ps':
+            surface = cairo.PSSurface(path, width, height)
+        cr = cairo.Context(surface)
+    elif context is not None:
+        surface = None
+        cr = context
+    elif surface is not None:
+        cr = cairo.Context(surface)
+    else:
+        raise MoleculeRenderError('You must specify either the "path" or "context" parameter.')
+    
+    # Draw bonds
+    for atom1 in bonds:
+        for atom2, bond in bonds[atom1].iteritems():
+            index1 = atoms.index(atom1)
+            index2 = atoms.index(atom2)
+            if index1 < index2: # So we only draw each bond once
+                renderBond(index1, index2, bond, coordinates, symbols, cr)
+
+    # Draw atoms
+    for i, atom in enumerate(atoms):
+        symbol = symbols[i]
+        index = atoms.index(atom)
+        x0, y0 = coordinates[index,:]
+        vector = numpy.zeros(2, numpy.float64)
+        if atom in bonds:
+            for atom2 in bonds[atom]:
+                vector += coordinates[atoms.index(atom2),:] - coordinates[index,:]
+        heavyFirst = vector[0] <= 0
+        renderAtom(symbol, atom, coordinates, atoms, bonds, x0, y0, cr, heavyFirst)
+
+    # Finish Cairo drawing
+    if surface is not None:
+        surface.finish()
+    # Save PNG of drawing if appropriate
+    if path is not None:
+        ext = os.path.splitext(path)[1].lower()
+        if ext == '.png':
+            surface.write_to_png(path)
+
+    # Return the rectangle that bounds the drawn molecule
+    # This may be useful to the calling method, especially when drawing as part
+    # of an existing figure
+    return left, top, width, height
+
+################################################################################
+
+def adjustCoordinates(coordinates, symbols):
+    """
+    Adjust the array of `coordinates` for atoms in a molecule such that the
+    top left corner of the bounding rectangle is (0, 0). Returns the bounding
+    rectangle for the coordinates.
+    """
+
+    import cairo
+
+    # Find the atoms on each edge of the bounding rect
     sorted = numpy.argsort(coordinates[:,0])
     left = sorted[0]; right = sorted[-1]
     sorted = numpy.argsort(coordinates[:,1])
     top = sorted[0]; bottom = sorted[-1]
+
+    # Get rough estimate of bounding box size
+    # Also include a bit of padding
     padding = 8
     x = coordinates[left,0] - padding
     y = coordinates[top,1] - padding
     width = coordinates[right,0] - coordinates[left,0] + padding * 2
     height = coordinates[bottom,1] - coordinates[top,1] + padding * 2
-    # Add space for symbols on each edge of drawing using dummy Cairo surface and context
+
+    # Improve bounding box estimate by adding space for symbols on each edge of
+    # drawing; this uses a dummy Cairo surface and context
     surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, int(width), int(height))
     cr = cairo.Context(surface)
-    cr.set_font_size(10)
+    cr.set_font_size(fontSizeNormal)
     if left != right:
         x -= cr.text_extents(symbols[left])[2]
         width += cr.text_extents(symbols[left])[2] + cr.text_extents(symbols[right])[2]
@@ -84,95 +225,78 @@ def render(atoms, bonds, coordinates, symbols, fstr):
     else:
         y -= cr.text_extents(symbols[top])[3] / 4
         height += cr.text_extents(symbols[top])[3]
-
+    
+    # Shift coordinates such that the upper left corner of the bounding box is (0,0)
     coordinates[:,0] -= x
     coordinates[:,1] -= y
 
-    # Initialize Cairo surface and context
-    ext = os.path.splitext(fstr)[1].lower()
-    if ext == '.svg':
-        surface = cairo.SVGSurface(fstr, width, height)
-    elif ext == '.pdf':
-        surface = cairo.PDFSurface(fstr, width, height)
-    elif ext == '.ps':
-        surface = cairo.PSSurface(fstr, width, height)
-    cr = cairo.Context(surface)
+    # Return the bounding rectangle
+    return 0, 0, width, height
 
-    # Some global settings
-    cr.select_font_face("sans")
-    cr.set_font_size(10)
-    cr.set_line_cap(cairo.LINE_CAP_ROUND)
+################################################################################
 
-    # Draw bonds
+def renderBond(atom1, atom2, bond, coordinates, symbols, cr):
+    """
+    Render an individual `bond` between atoms with indices `atom1` and `atom2`
+    on the Cairo context `cr`.
+    """
+
+    import cairo
+
     cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
     cr.set_line_width(1.0)
-    for atom1 in bonds:
-        for atom2, bond in bonds[atom1].iteritems():
-            index1 = atoms.index(atom1)
-            index2 = atoms.index(atom2)
-            if index1 < index2:
-                x1, y1 = coordinates[index1,:]
-                x2, y2 = coordinates[index2,:]
-                angle = math.atan2(y2 - y1, x2 - x1)
+    cr.set_line_cap(cairo.LINE_CAP_ROUND)
 
-                dx = x2 - x1; dy = y2 - y1
-                du = math.cos(angle + math.pi / 2)
-                dv = math.sin(angle + math.pi / 2)
-                if bond.isDouble() and (symbols[index1] != '' or symbols[index2] != ''):
-                    # Draw double bond centered on bond axis
-                    du *= 2; dv *= 2
-                    cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
-                    cr.move_to(x1 - du, y1 - dv); cr.line_to(x2 - du, y2 - dv)
-                    cr.stroke()
-                    cr.move_to(x1 + du, y1 + dv); cr.line_to(x2 + du, y2 + dv)
-                    cr.stroke()
-                elif bond.isTriple() and (symbols[index1] != '' or symbols[index2] != ''):
-                    # Draw triple bond centered on bond axis
-                    du *= 3; dv *= 3
-                    cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
-                    cr.move_to(x1 - du, y1 - dv); cr.line_to(x2 - du, y2 - dv)
-                    cr.stroke()
-                    cr.move_to(x1, y1); cr.line_to(x2, y2)
-                    cr.stroke()
-                    cr.move_to(x1 + du, y1 + dv); cr.line_to(x2 + du, y2 + dv)
-                    cr.stroke()
-                else:
-                    # Draw bond on skeleton
-                    cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
-                    cr.move_to(x1, y1); cr.line_to(x2, y2)
-                    cr.stroke()
-                    # Draw other bonds
-                    if bond.isDouble():
-                        du *= 4; dv *= 4; dx = 4 * dx / bondLength; dy = 4 * dy / bondLength
-                        cr.move_to(x1 + du + dx, y1 + dv + dy); cr.line_to(x2 + du - dx, y2 + dv - dy)
-                        cr.stroke()
-                    elif bond.isTriple():
-                        du *= 3; dv *= 3; dx = 3 * dx / bondLength; dy = 3 * dy / bondLength
-                        cr.move_to(x1 - du + dx, y1 - dv + dy); cr.line_to(x2 - du - dx, y2 - dv - dy)
-                        cr.stroke()
-                        cr.move_to(x1 + du + dx, y1 + dv + dy); cr.line_to(x2 + du - dx, y2 + dv - dy)
-                        cr.stroke()
+    x1, y1 = coordinates[atom1,:]
+    x2, y2 = coordinates[atom2,:]
+    angle = math.atan2(y2 - y1, x2 - x1)
 
-    # Draw atoms (for now)
-    for i, atom in enumerate(atoms):
-        symbol = symbols[i]
-        index = atoms.index(atom)
-        x0, y0 = coordinates[index,:]
-        vector = numpy.zeros(2, numpy.float64)
-        if atom in bonds:
-            for atom2 in bonds[atom]:
-                vector += coordinates[atoms.index(atom2),:] - coordinates[index,:]
-        heavyFirst = vector[0] <= 0
-        renderSymbol(symbol, atom, coordinates, atoms, bonds, x0, y0, cr, heavyFirst)
+    dx = x2 - x1; dy = y2 - y1
+    du = math.cos(angle + math.pi / 2)
+    dv = math.sin(angle + math.pi / 2)
+    if bond.isDouble() and (symbols[atom1] != '' or symbols[atom2] != ''):
+        # Draw double bond centered on bond axis
+        du *= 2; dv *= 2
+        cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
+        cr.move_to(x1 - du, y1 - dv); cr.line_to(x2 - du, y2 - dv)
+        cr.stroke()
+        cr.move_to(x1 + du, y1 + dv); cr.line_to(x2 + du, y2 + dv)
+        cr.stroke()
+    elif bond.isTriple() and (symbols[atom1] != '' or symbols[atom2] != ''):
+        # Draw triple bond centered on bond axis
+        du *= 3; dv *= 3
+        cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
+        cr.move_to(x1 - du, y1 - dv); cr.line_to(x2 - du, y2 - dv)
+        cr.stroke()
+        cr.move_to(x1, y1); cr.line_to(x2, y2)
+        cr.stroke()
+        cr.move_to(x1 + du, y1 + dv); cr.line_to(x2 + du, y2 + dv)
+        cr.stroke()
+    else:
+        # Draw bond on skeleton
+        cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
+        cr.move_to(x1, y1); cr.line_to(x2, y2)
+        cr.stroke()
+        # Draw other bonds
+        if bond.isDouble():
+            du *= 4; dv *= 4; dx = 4 * dx / bondLength; dy = 4 * dy / bondLength
+            cr.move_to(x1 + du + dx, y1 + dv + dy); cr.line_to(x2 + du - dx, y2 + dv - dy)
+            cr.stroke()
+        elif bond.isTriple():
+            du *= 3; dv *= 3; dx = 3 * dx / bondLength; dy = 3 * dy / bondLength
+            cr.move_to(x1 - du + dx, y1 - dv + dy); cr.line_to(x2 - du - dx, y2 - dv - dy)
+            cr.stroke()
+            cr.move_to(x1 + du + dx, y1 + dv + dy); cr.line_to(x2 + du - dx, y2 + dv - dy)
+            cr.stroke()
+    
+################################################################################
 
-    # Finish Cairo drawing
-    surface.finish()
-
-def renderSymbol(symbol, atom, coordinates0, atoms, bonds, x0, y0, cr, heavyFirst=True):
+def renderAtom(symbol, atom, coordinates0, atoms, bonds, x0, y0, cr, heavyFirst=True):
     """
     Render the `label` for an atom centered around the coordinates (`x0`, `y0`)
     onto the Cairo context `cr`. If `heavyFirst` is ``False``, then the order
-    of the atoms will be reversed in the symbol
+    of the atoms will be reversed in the symbol. This method also causes
+    radical electrons and charges to be drawn adjacent to the rendered symbol.
     """
 
     if symbol != '':
@@ -186,12 +310,12 @@ def renderSymbol(symbol, atom, coordinates0, atoms, bonds, x0, y0, cr, heavyFirs
         # Determine positions of each character in the symbol
         coordinates = []
 
-        cr.set_font_size(10)
+        cr.set_font_size(fontSizeNormal)
         y0 += max([cr.text_extents(char)[3] for char in symbol if char.isalpha()]) / 2
 
         for i, label in enumerate(labels):
             for j, char in enumerate(label):
-                cr.set_font_size(6 if char.isdigit() else 10)
+                cr.set_font_size(fontSizeSubscript if char.isdigit() else fontSizeNormal)
                 xbearing, ybearing, width, height, xadvance, yadvance = cr.text_extents(char)
                 if i == 0 and j == 0:
                     # Center heavy atom at (x0, y0)
@@ -208,7 +332,7 @@ def renderSymbol(symbol, atom, coordinates0, atoms, bonds, x0, y0, cr, heavyFirs
         x = 1000000; y = 1000000; width = 0; height = 0
         startWidth = 0; endWidth = 0
         for i, char in enumerate(symbol):
-            cr.set_font_size(6 if char.isdigit() else 10)
+            cr.set_font_size(fontSizeSubscript if char.isdigit() else fontSizeNormal)
             extents = cr.text_extents(char)
             if coordinates[i][0] + extents[0] < x: x = coordinates[i][0] + extents[0]
             if coordinates[i][1] + extents[1] < y: y = coordinates[i][1] + extents[1]
@@ -253,7 +377,7 @@ def renderSymbol(symbol, atom, coordinates0, atoms, bonds, x0, y0, cr, heavyFirs
 
         # Text itself
         for i, char in enumerate(symbol):
-            cr.set_font_size(6 if char.isdigit() else 10)
+            cr.set_font_size(fontSizeSubscript if char.isdigit() else fontSizeNormal)
             xbearing, ybearing, width, height, xadvance, yadvance = cr.text_extents(char)
             xi, yi = coordinates[i]
             cr.move_to(xi, yi)
@@ -262,7 +386,7 @@ def renderSymbol(symbol, atom, coordinates0, atoms, bonds, x0, y0, cr, heavyFirs
         x, y = coordinates[0] if heavyFirst else coordinates[-1]
             
     else:
-        x = x0 + 2; y = y0; width = 0; height = 0
+        x = x0; y = y0; width = 0; height = 0
         heavyAtom = ''
 
     # Draw radical electrons and charges
@@ -320,7 +444,7 @@ def renderSymbol(symbol, atom, coordinates0, atoms, bonds, x0, y0, cr, heavyFirs
             elif -1 * math.pi / 4 <= angle <  1 * math.pi / 4:        orientation = 'r'
             else:                                                     orientation = 't'
         
-    cr.set_font_size(10)
+    cr.set_font_size(fontSizeNormal)
     extents = cr.text_extents(heavyAtom)
 
     # (xi, yi) mark the center of the space in which to place the radicals and charges
@@ -337,10 +461,13 @@ def renderSymbol(symbol, atom, coordinates0, atoms, bonds, x0, y0, cr, heavyFirs
         xi = x + extents[0] + extents[2]/2
         yi = y + 3
 
+    # If we couldn't use one of the four sides, then offset the radical/charges
+    # horizontally by a few pixels, in hope that this avoids overlap with an
+    # existing bond
     if len(orientation) > 1: xi += 4
 
     # Get width and height
-    cr.set_font_size(6)
+    cr.set_font_size(fontSizeSubscript)
     width = 0.0; height = 0.0
     if orientation[0] == 'b' or orientation[0] == 't':
         if atom.radicalElectrons > 0:
@@ -431,9 +558,13 @@ def findLongestPath(chemGraph, atoms0):
     index = lengths.index(max(lengths))
     return paths[index]
 
-def getBackbone(chemGraph, ringSystems):
+################################################################################
+
+def findBackbone(chemGraph, ringSystems):
     """
-    Return the atoms that make up the backbone of the molecule.
+    Return the atoms that make up the backbone of the molecule. For acyclic
+    molecules, the longest straight chain of heavy atoms will be used. For
+    cyclic molecules, the largest independent ring system will be used.
     """
 
     if chemGraph.isCyclic():
@@ -481,14 +612,10 @@ def generateCoordinates(chemGraph, atoms, bonds):
     Generate the 2D coordinates to be used when drawing the `chemGraph`, a
     :class:`ChemGraph` object. Use the `atoms` parameter to pass a list
     containing the atoms in the molecule for which coordinates are needed. If
-    you don't specify this, all atoms in the molecule will be used.
-
-    Because we are working in two dimensions, we call the horizontal direction
-    :math:`u` and the vertical direction :math:`v`. The vertices are arranged
-    based on a standard bond length of unity, and can be scaled later for
-    longer bond lengths.
-
-    This function ignores any previously-existing coordinate information.
+    you don't specify this, all atoms in the molecule will be used. The vertices
+    are arranged based on a standard bond length of unity, and can be scaled
+    later for longer bond lengths. This function ignores any previously-existing
+    coordinate information.
     """
 
     # Initialize array of coordinates
@@ -525,77 +652,20 @@ def generateCoordinates(chemGraph, atoms, bonds):
         ringSystems = []
 
     # Find the backbone of the molecule
-    backbone = getBackbone(chemGraph, ringSystems)
+    backbone = findBackbone(chemGraph, ringSystems)
 
     # Generate coordinates for atoms in backbone
     if chemGraph.isCyclic():
         # Cyclic backbone
-
-        coordinates_cycle = getRingSystemCoordinates(backbone, atoms)
-        for cycle in backbone:
-            for atom in cycle:
-                index = atoms.index(atom)
-                coordinates[index,:] = coordinates_cycle[index,:]
-
+        coordinates = generateRingSystemCoordinates(backbone, atoms)
+        
         # Flatten backbone so that it contains a list of the atoms in the
         # backbone, rather than a list of the cycles in the backbone
         backbone = list(set([atom for cycle in backbone for atom in cycle]))
 
     else:
         # Straight chain backbone
-
-        # First atom in backbone goes at origin
-        index0 = atoms.index(backbone[0])
-        coordinates[index0,:] = [0.0, 0.0]
-
-        # Second atom in backbone goes on x-axis (for now; this could be improved!)
-        index1 = atoms.index(backbone[1])
-        vector = numpy.array([1.0, 0.0], numpy.float64)
-        if bonds[backbone[0]][backbone[1]].isTriple():
-            rotatePositive = False
-        else:
-            rotatePositive = True
-            rot = numpy.array([[math.cos(-math.pi / 6), math.sin(-math.pi / 6)], [-math.sin(-math.pi / 6), math.cos(-math.pi / 6)]], numpy.float64)
-            vector = numpy.array([1.0, 0.0], numpy.float64)
-            vector = numpy.dot(rot, vector)
-        coordinates[index1,:] = coordinates[index0,:] + vector
-
-        # Other atoms in backbone
-        for i in range(2, len(backbone)):
-            atom1 = backbone[i-1]
-            atom2 = backbone[i]
-            index1 = atoms.index(atom1)
-            index2 = atoms.index(atom2)
-            bond0 = bonds[backbone[i-2]][atom1]
-            bond = bonds[atom1][atom2]
-            # Angle of next bond depends on the number of bonds to the start atom
-            numBonds = len(bonds[atom1])
-            if numBonds == 2:
-                if (bond0.isTriple() or bond.isTriple()) or (bond0.isDouble() and bond.isDouble()):
-                    # Rotate by 0 degrees towards horizontal axis (to get angle of 180)
-                    angle = 0.0
-                else:
-                    # Rotate by 60 degrees towards horizontal axis (to get angle of 120)
-                    angle = math.pi / 3
-            elif numBonds == 3:
-                # Rotate by 60 degrees towards horizontal axis (to get angle of 120)
-                angle = math.pi / 3
-            elif numBonds == 4:
-                # Rotate by 0 degrees towards horizontal axis (to get angle of 90)
-                angle = 0.0
-            elif numBonds == 5:
-                # Rotate by 36 degrees towards horizontal axis (to get angle of 144)
-                angle = math.pi / 5
-            elif numBonds == 6:
-                # Rotate by 0 degrees towards horizontal axis (to get angle of 180)
-                angle = 0.0
-            # Determine coordinates for atom
-            if angle != 0:
-                if not rotatePositive: angle = -angle
-                rot = numpy.array([[math.cos(angle), math.sin(angle)], [-math.sin(angle), math.cos(angle)]], numpy.float64)
-                vector = numpy.dot(rot, vector)
-                rotatePositive = not rotatePositive
-            coordinates[index2,:] = coordinates[index1,:] + vector
+        coordinates = generateStraightChainCoordinates(backbone, atoms, bonds)
 
     # If backbone is linear, then rotate so that the bond is parallel to the
     # horizontal axis
@@ -617,8 +687,10 @@ def generateCoordinates(chemGraph, atoms, bonds):
         index = atoms.index(atom)
         origin += coordinates[index,:]
     origin /= len(backbone)
-    coordinates -= origin
-
+    for atom in backbone:
+        index = atoms.index(atom)
+        coordinates[index,:] -= origin
+    
     # We now proceed by calculating the coordinates of the functional groups
     # attached to the backbone
     # Each functional group is independent, although they may contain further
@@ -626,6 +698,74 @@ def generateCoordinates(chemGraph, atoms, bonds):
     # In general substituents should try to grow away from the origin to
     # minimize likelihood of overlap
     generateNeighborCoordinates(backbone, atoms, bonds, coordinates, ringSystems)
+
+    return coordinates
+
+################################################################################
+
+def generateStraightChainCoordinates(backbone, atoms, bonds):
+    """
+    Generate the coordinates for a mutually-adjacent straight chain of atoms
+    `backbone`, for which `atoms` and `bonds` are the list and dict of atoms
+    and bonds to be rendered, respectively. The general approach is to work from
+    one end of the chain to the other, using a horizontal seesaw pattern to lay
+    out the coordinates.
+    """
+
+    coordinates = numpy.zeros((len(atoms), 2), numpy.float64)
+
+    # First atom in backbone goes at origin
+    index0 = atoms.index(backbone[0])
+    coordinates[index0,:] = [0.0, 0.0]
+
+    # Second atom in backbone goes on x-axis (for now; this could be improved!)
+    index1 = atoms.index(backbone[1])
+    vector = numpy.array([1.0, 0.0], numpy.float64)
+    if bonds[backbone[0]][backbone[1]].isTriple():
+        rotatePositive = False
+    else:
+        rotatePositive = True
+        rot = numpy.array([[math.cos(-math.pi / 6), math.sin(-math.pi / 6)], [-math.sin(-math.pi / 6), math.cos(-math.pi / 6)]], numpy.float64)
+        vector = numpy.array([1.0, 0.0], numpy.float64)
+        vector = numpy.dot(rot, vector)
+    coordinates[index1,:] = coordinates[index0,:] + vector
+
+    # Other atoms in backbone
+    for i in range(2, len(backbone)):
+        atom1 = backbone[i-1]
+        atom2 = backbone[i]
+        index1 = atoms.index(atom1)
+        index2 = atoms.index(atom2)
+        bond0 = bonds[backbone[i-2]][atom1]
+        bond = bonds[atom1][atom2]
+        # Angle of next bond depends on the number of bonds to the start atom
+        numBonds = len(bonds[atom1])
+        if numBonds == 2:
+            if (bond0.isTriple() or bond.isTriple()) or (bond0.isDouble() and bond.isDouble()):
+                # Rotate by 0 degrees towards horizontal axis (to get angle of 180)
+                angle = 0.0
+            else:
+                # Rotate by 60 degrees towards horizontal axis (to get angle of 120)
+                angle = math.pi / 3
+        elif numBonds == 3:
+            # Rotate by 60 degrees towards horizontal axis (to get angle of 120)
+            angle = math.pi / 3
+        elif numBonds == 4:
+            # Rotate by 0 degrees towards horizontal axis (to get angle of 90)
+            angle = 0.0
+        elif numBonds == 5:
+            # Rotate by 36 degrees towards horizontal axis (to get angle of 144)
+            angle = math.pi / 5
+        elif numBonds == 6:
+            # Rotate by 0 degrees towards horizontal axis (to get angle of 180)
+            angle = 0.0
+        # Determine coordinates for atom
+        if angle != 0:
+            if not rotatePositive: angle = -angle
+            rot = numpy.array([[math.cos(angle), math.sin(angle)], [-math.sin(angle), math.cos(angle)]], numpy.float64)
+            vector = numpy.dot(rot, vector)
+            rotatePositive = not rotatePositive
+        coordinates[index2,:] = coordinates[index1,:] + vector
 
     return coordinates
 
@@ -646,15 +786,16 @@ def generateNeighborCoordinates(backbone, atoms, bonds, coordinates, ringSystems
         bondAngles = []
         for atom1 in bonds[atom0]:
             index1 = atoms.index(atom1)
-            if atom1 in backbone or numpy.linalg.norm(coordinates[index1,:]) > 1e-4:
+            if atom1 in backbone:
                 vector = coordinates[index1,:] - coordinates[index0,:]
                 angle = math.atan2(vector[1], vector[0])
                 bondAngles.append(angle)
-
+        bondAngles.sort()
+        
         bestAngle = 2 * math.pi / len(bonds[atom0])
         regular = True
         for angle1, angle2 in zip(bondAngles[0:-1], bondAngles[1:]):
-            if abs(angle2 - angle1 - bestAngle) > 1e-4:
+            if all([abs(angle2 - angle1 - (i+1) * bestAngle) > 1e-4 for i in range(len(bonds[atom0]))]):
                 regular = False
 
         if regular:
@@ -667,9 +808,9 @@ def generateNeighborCoordinates(backbone, atoms, bonds, coordinates, ringSystems
             vector = None
             for atom1 in bonds[atom0]:
                 index1 = atoms.index(atom1)
-                if atom1 in backbone or numpy.linalg.norm(coordinates[index1,:]) < 1e-4:
+                if atom1 in backbone or numpy.linalg.norm(coordinates[index1,:]) > 1e-4:
                     vector = coordinates[index1,:] - coordinates[index0,:]
-            
+
             # Iterate through each neighboring atom to this backbone atom
             # If the neighbor is not in the backbone and does not yet have
             # coordinates, then we need to determine coordinates for it
@@ -685,7 +826,7 @@ def generateNeighborCoordinates(backbone, atoms, bonds, coordinates, ringSystems
                             if numpy.linalg.norm(coordinates[index2,:] - coordinates[index0,:] - vector) < 1e-4:
                                 occupied = True
                     coordinates[atoms.index(atom1),:] = coordinates[index0,:] + vector
-                    processFunctionalGroup(atom0, atom1, atoms, bonds, coordinates, ringSystems)
+                    generateFunctionalGroupCoordinates(atom0, atom1, atoms, bonds, coordinates, ringSystems)
 
         else:
 
@@ -703,12 +844,22 @@ def generateNeighborCoordinates(backbone, atoms, bonds, coordinates, ringSystems
                     angle = startAngle + index * dAngle
                     index += 1
                     vector = numpy.array([math.cos(angle), math.sin(angle)], numpy.float64)
+                    vector /= numpy.linalg.norm(vector)
                     coordinates[atoms.index(atom1),:] = coordinates[index0,:] + vector
-                    processFunctionalGroup(atom0, atom1, atoms, bonds, coordinates, ringSystems)
+                    generateFunctionalGroupCoordinates(atom0, atom1, atoms, bonds, coordinates, ringSystems)
 
 ################################################################################
 
-def getRingSystemCoordinates(ringSystem, atoms):
+def generateRingSystemCoordinates(ringSystem, atoms):
+    """
+    Generate the coordinates for all atoms in a mutually-adjacent set of rings
+    `ringSystem`, where `atoms` is a list of all atoms to be rendered. The
+    general procedure is to (1) find and map the coordinates of the largest
+    ring in the system, then (2) iteratively map the coordinates of adjacent
+    rings to those already mapped until all rings are processed. This approach
+    works well for flat ring systems, but will probably not work when bridge
+    atoms are needed.
+    """
 
     coordinates = numpy.zeros((len(atoms), 2), numpy.float64)
     ringSystem = ringSystem[:]
@@ -720,9 +871,11 @@ def getRingSystemCoordinates(ringSystem, atoms):
         if len(cycle0) > len(cycle):
             cycle = cycle0
     angle = - 2 * math.pi / len(cycle)
+    radius = 1.0 / (2 * math.sin(math.pi / len(cycle)))
     for i, atom in enumerate(cycle):
         index = atoms.index(atom)
         coordinates[index,:] = [math.cos(math.pi / 2 + i * angle), math.sin(math.pi / 2 + i * angle)]
+        coordinates[index,:] *= radius
     ringSystem.remove(cycle)
     processed.append(cycle)
 
@@ -783,7 +936,8 @@ def getRingSystemCoordinates(ringSystem, atoms):
             center /= len(commonAtoms)
             vector = center - center0
             center += vector
-            radius = 1
+            radius = 1.0 / (2 * math.sin(math.pi / len(cycle)))
+            
         else:
             # Use any three points to determine the point equidistant from these
             # three; this is the center
@@ -827,8 +981,8 @@ def getRingSystemCoordinates(ringSystem, atoms):
             # This version assumes that no atoms belong at the origin, which is
             # usually fine because the first ring is centered at the origin
             if numpy.linalg.norm(coordinates[index,:]) < 1e-4:
-                coordinates[index,0] = center[0] + radius * math.cos(angle)
-                coordinates[index,1] = center[1] + radius * math.sin(angle)
+                vector = numpy.array([math.cos(angle), math.sin(angle)], numpy.float64)
+                coordinates[index,:] = center + radius * vector
             count += 1
 
         # We're done assigning coordinates for this cycle, so mark it as processed
@@ -838,7 +992,7 @@ def getRingSystemCoordinates(ringSystem, atoms):
 
 ################################################################################
 
-def processFunctionalGroup(atom0, atom1, atoms, bonds, coordinates, ringSystems):
+def generateFunctionalGroupCoordinates(atom0, atom1, atoms, bonds, coordinates, ringSystems):
     """
     For the functional group starting with the bond from `atom0` to `atom1`,
     generate the coordinates of the rest of the functional group. `atom0` is
@@ -867,7 +1021,7 @@ def processFunctionalGroup(atom0, atom1, atoms, bonds, coordinates, ringSystems)
         # ring system at once
 
         # Generate coordinates for all atoms in the ring system
-        coordinates_cycle = getRingSystemCoordinates(ringSystem, atoms)
+        coordinates_cycle = generateRingSystemCoordinates(ringSystem, atoms)
 
         # Rotate the ring system coordinates so that the line connecting atom1
         # and the center of mass of the ring is parallel to that between
@@ -932,15 +1086,30 @@ def processFunctionalGroup(atom0, atom1, atoms, bonds, coordinates, ringSystems)
                 coordinates[atoms.index(atom),:] = coordinates[index1,:] + vector
 
                 # Recursively continue with functional group
-                processFunctionalGroup(atom1, atom, atoms, bonds, coordinates, ringSystems)
+                generateFunctionalGroupCoordinates(atom1, atom, atoms, bonds, coordinates, ringSystems)
 
 ################################################################################
 
-def drawMolecule(chemGraph, fstr=''):
+def drawMolecule(chemGraph, path=None, context=None, surface=None):
     """
     Primary function for generating a drawing of a :class:`ChemGraph` object
-    `chemGraph`. The parameter `fstr` is the name of a file to save the drawing
-    to; valid file extensions are ``.pdf``, ``.svg``, and ``.ps``.
+    `chemGraph`. You can specify the render target in a few ways:
+
+    * If you wish to create an image file (PNG, SVG, PDF, or PS), use the `path`
+      parameter to pass a string containing the location at which you wish to
+      save the file; the extension will be used to identify the proper target
+      type.
+
+    * If you want to render the molecule on an existing Cairo context (e.g. as
+      part of another drawing you are constructing), use the `context` paramter
+      to pass the existing context object.
+
+    * If you want to render the molecule on an existing Cairo surface (e.g. as
+      part of another drawing you are constructing), use the `surface` paramter
+      to pass the existing surface object.
+
+    This function returns a bounding box for the molecule being drawn as the
+    tuple (`left`, `top`, `width`, `height`).
     """
 
     atoms = chemGraph.atoms[:]
@@ -986,7 +1155,7 @@ def drawMolecule(chemGraph, fstr=''):
             elif atoms[i].implicitHydrogens > 1: symbols[i] = symbols[i] + 'H%i' % (atoms[i].implicitHydrogens)
 
     # Render using Cairo
-    render(atoms, bonds, coordinates, symbols, fstr)
+    return render(atoms, bonds, coordinates, symbols, path, context, surface)
 
 ################################################################################
 
@@ -995,7 +1164,7 @@ if __name__ == '__main__':
     molecule = Molecule()
 
     # Test #1: Straight chain backbone, no functional groups
-    #molecule.fromSMILES('C=CC=CCC') # 1,3-hexadiene
+    molecule.fromSMILES('C=CC=CCC') # 1,3-hexadiene
 
     # Test #2: Straight chain backbone, small functional groups
     #molecule.fromSMILES('OCC(O)C(O)C(O)C(O)C(=O)') # glucose
@@ -1022,8 +1191,7 @@ if __name__ == '__main__':
     #molecule.fromSMILES('[O]C([O])([O])[O]')
 
     # Test #7: Cyclic backbone with functional groups
-    molecule.fromSMILES('C1(C)(C)CC1')
-    #molecule.fromSMILES('c1ccc(CCc2cc(CC)cc2)cc1')
+    molecule.fromSMILES('c1ccc(OCc2cc([CH]C)cc2)cc1')
 
     #molecule.fromSMILES('C=CC(C)(C)CCC')
     #molecule.fromSMILES('CCC(C)CCC(CCC)C')
@@ -1033,4 +1201,3 @@ if __name__ == '__main__':
     #molecule.fromSMILES('C1CCCCC1CCC2CCCC2')
 
     drawMolecule(molecule.resonanceForms[0], 'molecule.svg')
-
