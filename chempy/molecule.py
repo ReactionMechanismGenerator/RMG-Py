@@ -296,6 +296,18 @@ class ChemGraph(graph.Graph):
         """
         return self.sortVertices()
 
+    def copy(self, deep=False):
+        """
+        Create a copy of the current graph. If `deep` is ``True``, a deep copy
+        is made: copies of the vertices and edges are used in the new graph.
+        If `deep` is ``False`` or not specified, a shallow copy is made: the
+        original vertices and edges are used in the new graph.
+        """
+        other = cython.declare(ChemGraph)
+        g = graph.Graph.copy(self, deep)
+        other = ChemGraph(g.vertices, g.edges)
+        return other
+
     def makeHydrogensImplicit(self):
         """
         Convert all explicitly stored hydrogen atoms to be stored implicitly.
@@ -351,6 +363,32 @@ class ChemGraph(graph.Graph):
 
         # Set implicitHydrogens flag to False
         self.implicitHydrogens = False
+
+    def isAtomInCycle(self, atom):
+        """
+        Return :data:`True` if `atom` is in one or more cycles in the structure,
+        and :data:`False` if not.
+        """
+        return self.isVertexInCycle(atom)
+
+    def isBondInCycle(self, atom1, atom2):
+        """
+        Return :data:`True` if the bond between atoms `atom1` and `atom2`
+        is in one or more cycles in the graph, or :data:`False` if not.
+        """
+        return self.isEdgeInCycle(atom1, atom2)
+
+    def draw(self, path):
+        """
+        Generate a pictorial representation of the chemical graph using the
+        :mod:`ext.molecule_draw` module. Use `path` to specify the file to save
+        the generated image to; the image type is automatically determined by
+        extension. Valid extensions are ``.png``, ``.svg``, ``.pdf``, and
+        ``.ps``; of these, the first is a raster format and the remainder are
+        vector formats.
+        """
+        from ext.molecule_draw import drawMolecule
+        drawMolecule(self, path=path)
 
 ################################################################################
 
@@ -541,7 +579,7 @@ class Molecule:
         for atom in atoms:
             a = obmol.NewAtom()
             a.SetAtomicNum(atom.number)
-            a.SetCharge(atom.charge)
+            a.SetFormalCharge(atom.charge)
         for atom1, bonds in bonds.iteritems():
             for atom2, bond in bonds.iteritems():
                 index1 = atoms.index(atom1)
@@ -556,6 +594,17 @@ class Molecule:
         if implicitH: self.resonanceForms[0].makeHydrogensImplicit()
 
         return obmol
+
+    def draw(self, path):
+        """
+        Generate a pictorial representation of the molecule using the
+        :mod:`ext.molecule_draw` module. Use `path` to specify the file to save
+        the generated image to; the image type is automatically determined by
+        extension. Valid extensions are ``.png``, ``.svg``, ``.pdf``, and
+        ``.ps``; of these, the first is a raster format and the remainder are
+        vector formats.
+        """
+        self.resonanceForms[0].draw(path=path)
 
     def isIsomorphic(self, other):
         """

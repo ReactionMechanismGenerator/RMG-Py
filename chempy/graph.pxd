@@ -89,6 +89,20 @@ cdef class Graph:
 
     cpdef tuple findSubgraphIsomorphisms(self, Graph other, dict initialMap=?)
 
+    cpdef bint isCyclic(self)
+
+    cpdef bint isVertexInCycle(self, Vertex vertex)
+
+    cpdef bint isEdgeInCycle(self, Vertex vertex1, Vertex vertex2)
+
+    cpdef bint __isChainInCycle(self, list chain)
+
+    cpdef getAllCycles(self, Vertex startingVertex)
+
+    cpdef __exploreCyclesRecursively(self, list chain, list cycleList)
+
+    cpdef getSmallestSetOfSmallestRings(self)
+
 ################################################################################
 
 cpdef VF2_isomorphism(Graph graph1, Graph graph2, bint subgraph=?, 
