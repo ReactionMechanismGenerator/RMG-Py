@@ -378,12 +378,17 @@ class ChemGraph(graph.Graph):
         """
         return self.isEdgeInCycle(atom1, atom2)
 
-    def getAllCycles(self, atom):
+    def draw(self, path):
         """
-        Given a starting `atom`, return a list of all cycles this atom is found
-        in.
+        Generate a pictorial representation of the chemical graph using the
+        :mod:`ext.molecule_draw` module. Use `path` to specify the file to save
+        the generated image to; the image type is automatically determined by
+        extension. Valid extensions are ``.png``, ``.svg``, ``.pdf``, and
+        ``.ps``; of these, the first is a raster format and the remainder are
+        vector formats.
         """
-        return self.getAllCycles(atom)
+        from ext.molecule_draw import drawMolecule
+        drawMolecule(self, path=path)
 
 ################################################################################
 
@@ -574,7 +579,7 @@ class Molecule:
         for atom in atoms:
             a = obmol.NewAtom()
             a.SetAtomicNum(atom.number)
-            a.SetCharge(atom.charge)
+            a.SetFormalCharge(atom.charge)
         for atom1, bonds in bonds.iteritems():
             for atom2, bond in bonds.iteritems():
                 index1 = atoms.index(atom1)
@@ -589,6 +594,17 @@ class Molecule:
         if implicitH: self.resonanceForms[0].makeHydrogensImplicit()
 
         return obmol
+
+    def draw(self, path):
+        """
+        Generate a pictorial representation of the molecule using the
+        :mod:`ext.molecule_draw` module. Use `path` to specify the file to save
+        the generated image to; the image type is automatically determined by
+        extension. Valid extensions are ``.png``, ``.svg``, ``.pdf``, and
+        ``.ps``; of these, the first is a raster format and the remainder are
+        vector formats.
+        """
+        self.resonanceForms[0].draw(path=path)
 
     def isIsomorphic(self, other):
         """

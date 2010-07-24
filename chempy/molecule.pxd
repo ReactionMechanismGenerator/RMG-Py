@@ -100,7 +100,7 @@ cdef class ChemGraph(Graph):
 
     cpdef bint isBondInCycle(self, Atom atom1, Atom atom2)
 
-    cpdef list getAllCycles(self, Atom atom)
+    cpdef draw(self, str path)
 
 ################################################################################
 
@@ -123,5 +123,7 @@ cdef class Molecule:
     cpdef str toSMILES(self)
 
     cpdef toOBMol(self)
+
+    cpdef draw(self, str path)
 
     cpdef bint isIsomorphic(self, other)
