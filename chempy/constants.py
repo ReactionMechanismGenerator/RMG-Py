@@ -33,38 +33,30 @@ throughout ChemPy. ChemPy uses SI units throughout; accordingly, all of the
 constants in this module are stored in combinations of meters, seconds,
 kilograms, moles, etc.
 
-The constants available are listed below.
+The constants available are listed below. All values were taken from
+`NIST <http://physics.nist.gov/cuu/Constants/index.html>`_
 
 """
 
-import quantities as pq
 import math
 import cython
 
 ################################################################################
 
-# RMG uses SI units throughout
-pq.set_default_units('si')
-
-value = pq.constants.Avogadro_constant.simplified
 #: The Avogadro constant
-Na = float(value)
+Na = 6.02214179e23
 
-value = pq.constants.Boltzmann_constant.simplified
 #: The Boltzmann constant
-kB = float(value)
+kB = 1.3806504e-23
 
-value = pq.constants.R.simplified
 #: The gas law constant
-R = float(value)
+R = 8.314472
 
-value = pq.constants.Planck_constant.simplified
 #: The Planck constant
-h = float(value)
+h = 6.62606896e-34
 
-value = pq.constants.natural_unit_of_velocity.simplified
 #: The speed of light in a vacuum
-c = float(value)
+c = 299792458
 
 #: pi
 pi = float(math.pi)

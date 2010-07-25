@@ -24,6 +24,8 @@ source:
 
 * `OpenBabel <http://openbabel.org/>`_ (version 2.2.0 or later is recommended)
 
+* `Cairo <http://cairographics.org/>`_ (version 1.8.0 or later is recommended)
+
 * C and Fortran compilers
 
 Compilation with Cython

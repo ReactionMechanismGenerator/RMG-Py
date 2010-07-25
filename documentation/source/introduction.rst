@@ -23,4 +23,6 @@ standard library):
 * `OpenBabel <http://openbabel.org/>`_. Provides functionality for converting
   between a variety of chemical formats.
 
+* `Cairo <http://cairographics.org/>`_. Provides functionality for generation
+  of 2D graphics figures.
 
