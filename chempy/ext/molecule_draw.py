@@ -167,6 +167,11 @@ def render(atoms, bonds, coordinates, symbols, path=None, context=None, surface=
             for atom2 in bonds[atom]:
                 vector += coordinates[atoms.index(atom2),:] - coordinates[index,:]
         heavyFirst = vector[0] <= 0
+        if len(atoms) == 1 and not atoms[0].symbol not in ['C', 'N'] and atoms[0].charge == 0 and atoms[0].radicalElectrons == 0:
+            # This is so e.g. water is rendered as H2O rather than OH2
+            heavyFirst = False
+            cr.set_font_size(fontSizeNormal)
+            x0 += cr.text_extents(symbols[0])[2] / 2.0
         renderAtom(symbol, atom, coordinates, atoms, bonds, x0, y0, cr, heavyFirst)
 
     # Finish Cairo drawing
