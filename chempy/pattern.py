@@ -1,0 +1,380 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+################################################################################
+#
+#   ChemPy - A chemistry toolkit for Python
+#
+#   Copyright (c) 2010 by Joshua W. Allen (jwallen@mit.edu)
+#
+#   Permission is hereby granted, free of charge, to any person obtaining a
+#   copy of this software and associated documentation files (the 'Software'),
+#   to deal in the Software without restriction, including without limitation
+#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
+#   and/or sell copies of the Software, and to permit persons to whom the
+#   Software is furnished to do so, subject to the following conditions:
+#
+#   The above copyright notice and this permission notice shall be included in
+#   all copies or substantial portions of the Software.
+#
+#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+#   DEALINGS IN THE SOFTWARE.
+#
+################################################################################
+
+"""
+This module provides classes and methods for working with molecular substructure
+patterns. These enable molecules to be searched for common motifs (e.g.
+reaction sites).
+
+We define the following basic atom types:
+
+    =============== ============================================================
+    Atom type       Description
+    =============== ============================================================
+    *General atom types*
+    ----------------------------------------------------------------------------
+    ``R``           any atom with any local bond structure
+    ``R!H``         any non-hydrogen atom with any local bond structure
+    *Carbon atom types*
+    ----------------------------------------------------------------------------
+    ``C``           carbon atom with any local bond structure
+    ``Cs``          carbon atom with four single bonds
+    ``Cd``          carbon atom with one double bond (to carbon) and two single bonds
+    ``Cdd``         carbon atom with two double bonds
+    ``Ct``          carbon atom with one triple bond and one single bond
+    ``CO``          carbon atom with one double bond (to oxygen) and two single bonds
+    ``Cb``          carbon atom with two benzene bonds and one single bond
+    ``Cbf``         carbon atom with three benzene bonds
+    *Hydrogen atom types*
+    ----------------------------------------------------------------------------
+    ``H``           hydrogen atom with one single bond
+    *Oxygen atom types*
+    ----------------------------------------------------------------------------
+    ``O``           oxygen atom with any local bond structure
+    ``Os``          oxygen atom with two single bonds
+    ``Od``          oxygen atom with one double bond
+    ``Oa``          oxygen atom with no bonds
+    =============== ============================================================
+
+We define the following reaction recipe actions:
+
+    ============= ============================= ================================
+    Action name   Arguments                     Action
+    ============= ============================= ================================
+    CHANGE_BOND   `center1`, `order`, `center2` change the bond order of the bond between `center1` and `center2` by `order`; do not break or form bonds
+    FORM_BOND     `center1`, `order`, `center2` form a new bond between `center1` and `center2` of type `order`
+    BREAK_BOND    `center1`, `order`, `center2` break the bond between `center1` and `center2`, which should be of type `order`
+    GAIN_RADICAL  `center`, `radical`           increase the number of free electrons on `center` by `radical`
+    LOSE_RADICAL  `center`, `radical`           decrease the number of free electrons on `center` by `radical`
+    ============= ============================= ================================
+
+"""
+
+import cython
+
+import graph
+
+################################################################################
+
+class AtomPattern(graph.Vertex):
+    """
+    An atom pattern. This class is based on the :class:`Atom` class, except that
+    all attributes are lists rather than individual values. The attributes are:
+
+    =================== =================== ====================================
+    Attribute           Type                Description
+    =================== =================== ====================================
+    `atomType`          ``list``            The allowed atom types (as strings)
+    `radicalElectrons`  ``list``            The allowed numbers of radical electrons (as short integers)
+    `spinMultiplicity`  ``list``            The allowed spin multiplicities (as short integers)
+    `implicitHydrogens` ``list``            The allowed number of implicit hydrogen atoms (as short integers)
+    `charge`            ``list``            The allowed formal charges (as short integers)
+    `label`             ``str``             A string label that can be used to tag individual atoms
+    =================== =================== ====================================
+
+    """
+
+    def __init__(self, atomType=None, radicalElectrons=None, spinMultiplicity=None, implicitHydrogens=None, charge=None, label=''):
+        self.atomType = atomType or []
+        self.radicalElectrons = radicalElectrons or []
+        self.spinMultiplicity = spinMultiplicity or []
+        self.implicitHydrogens = implicitHydrogens or []
+        self.charge = charge or []
+        self.label = label
+
+    def __str__(self):
+        """
+        Return a human-readable string representation of the object.
+        """
+        return "<AtomPattern '%s'>" % (self.atomType)
+
+    def __repr__(self):
+        """
+        Return a representation that can be used to reconstruct the object.
+        """
+        return "AtomPattern(atomType='%s', radicalElectrons=%s, spinMultiplicity=%s, implicitHydrogens=%s, charge=%s, label='%s')" % (self.atomType, self.radicalElectrons, self.spinMultiplicity, self.implicitHydrogens, self.charge, self.label)
+
+    def copy(self):
+        """
+        Return a copy of the :class:`AtomPattern` object.
+        """
+        return AtomPattern(self.atomType, self.radicalElectrons, self.spinMultiplicity, self.implicitHydrogens, self.charge, self.label)
+
+    def __changeBond(self, order):
+        """
+        Update the atom pattern as a result of applying a CHANGE_BOND action,
+        where `order` specifies whether the bond is incremented or decremented
+        in bond order, and should be 1 or -1.
+        """
+        atomType = []
+        for atom in self.atomType:
+            if order == 1:
+                if atom == 'C' or atom == 'O' or atom == 'R' or atom == 'R!H': atomType.append(atom)
+                elif atom == 'Cs':      atomType.extend(['Cd', 'CO'])
+                elif atom == 'Cd':      atomType.extend(['Cdd', 'Ct'])
+                elif atom == 'CO':      atomType.append('Cdd')
+                elif atom == 'Os':      atomType.append('Od')
+                else:
+                    raise ChemPyError('Unable to update AtomPattern due to CHANGE_BOND action: Invalid atom type "%s" in set %s".' % (atom, self.atomType))
+            elif order == -1:
+                if atom == 'C' or atom == 'O' or atom == 'R' or atom == 'R!H': atomType.append(atom)
+                elif atom == 'Cd':      atomType.append('Cs')
+                elif atom == 'Cdd':     atomType.append('Cd')
+                elif atom == 'Ct':      atomType.append('Cd')
+                elif atom == 'CO':      atomType.append('Cs')
+                elif atom == 'Od':      atomType.append('Os')
+                else:
+                    raise ChemPyError('Unable to update AtomPattern due to CHANGE_BOND action: Invalid atom type "%s" in set %s".' % (atom, self.atomType))
+            else:
+                raise ChemPyError('Unable to update AtomPattern due to CHANGE_BOND action: Invalid order "%g".' % order)
+        # Set the new atom types, removing any duplicates
+        self.atomType = list(set(atomType))
+
+    def __formBond(self, order):
+        """
+        Update the atom pattern as a result of applying a FORM_BOND action,
+        where `order` specifies the order of the forming bond, and should be
+        'S' (since we only allow forming of single bonds).
+        """
+        if order != 'S':
+            raise ChemPyError('Unable to update AtomPattern due to FORM_BOND action: Invalid order "%s".' % order)
+        atomType = []
+        for atom in self.atomType:
+            if atom == 'H' or atom == 'C' or atom == 'O' or atom == 'R' or atom == 'R!H': atomType.append(atom)
+            elif atom == 'Cs':      atomType.append('Cs')
+            elif atom == 'Cd':      atomType.append('Cd')
+            elif atom == 'Ct':      atomType.append('Ct')
+            elif atom == 'CO':      atomType.append('CO')
+            elif atom == 'Cb':      atomType.append('Cb')
+            elif atom == 'Os':      atomType.append('Os')
+            else:
+                raise ChemPyError('Unable to update AtomPattern due to FORM_BOND action: Invalid atom type "%s" in set %s".' % (atom, self.atomType))
+        # Set the new atom types, removing any duplicates
+        self.atomType = list(set(atomType))
+
+    def __breakBond(self, order):
+        """
+        Update the atom pattern as a result of applying a BREAK_BOND action,
+        where `order` specifies the order of the breaking bond, and should be
+        'S' (since we only allow breaking of single bonds).
+        """
+        if order != 'S':
+            raise ChemPyError('Unable to update AtomPattern due to BREAK_BOND action: Invalid order "%s".' % order)
+        atomType = []
+        for atom in self.atomType:
+            if atom == 'H' or atom == 'C' or atom == 'O' or atom == 'R' or atom == 'R!H': atomType.append(atom)
+            elif atom == 'Cs':      atomType.append('Cs')
+            elif atom == 'Cd':      atomType.append('Cd')
+            elif atom == 'Ct':      atomType.append('Ct')
+            elif atom == 'CO':      atomType.append('CO')
+            elif atom == 'Cb':      atomType.append('Cb')
+            elif atom == 'Os':      atomType.append('Os')
+            else:
+                raise ChemPyError('Unable to update AtomPattern due to BREAK_BOND action: Invalid atom type "%s" in set %s".' % (atom, self.atomType))
+        # Set the new atom types, removing any duplicates
+        self.atomType = list(set(atomType))
+
+    def __gainRadical(self, radical):
+        """
+        Update the atom pattern as a result of applying a GAIN_RADICAL action,
+        where `radical` specifies the number of radical electrons to add.
+        """
+        radicalElectrons = []
+        spinMultiplicities = []
+        for electron, spin in zip(self.radicalElectrons, self.spinMultiplicities):
+            radicalElectrons.append(electron + radical)
+            spinMultiplicities.append(spin + radical)
+        # Set the new radical electron counts and spin multiplicities
+        self.radicalElectrons = radicalElectrons
+        self.spinMultiplicities = spinMultiplicities
+
+    def __loseRadical(self, radical):
+        """
+        Update the atom pattern as a result of applying a LOSE_RADICAL action,
+        where `radical` specifies the number of radical electrons to remove.
+        """
+        radicalElectrons = []
+        spinMultiplicities = []
+        for electron, spin in zip(self.radicalElectrons, self.spinMultiplicities):
+            if electron - radical < 0:
+                raise ChemPyError('Unable to update AtomPattern due to LOSE_RADICAL action: Invalid radical electron set "%s".' % (self.radicalElectrons))
+            radicalElectrons.append(electron - radical)
+            if spin - radical < 0:
+                spinMultiplicities.append(spin - radical + 2)
+            else:
+                spinMultiplicities.append(spin - radical)
+        # Set the new radical electron counts and spin multiplicities
+        self.radicalElectrons = radicalElectrons
+        self.spinMultiplicities = spinMultiplicities
+
+    def applyAction(self, action):
+        """
+        Update the atom pattern as a result of applying `action`, a tuple
+        containing the name of the reaction recipe action along with any
+        required parameters
+        """
+        if action[0].upper() == 'CHANGE_BOND':
+            self.__changeBond(order=action[2])
+        elif action[0].upper() == 'FORM_BOND':
+            self.__formBond(order=action[2])
+        elif action[0].upper() == 'BREAK_BOND':
+            self.__breakBond(order=action[2])
+        elif action[0].upper() == 'GAIN_RADICAL':
+            self.__gainRadical(radical=action[2])
+        elif action[0].upper() == 'LOSE_RADICAL':
+            self.__loseRadical(radical=action[2])
+        else:
+            raise ChemPyError('Unable to update AtomPattern: Invalid action %s".' % (action))
+
+    def __atomTypesEquivalent(self, atomType1, atomType2):
+        """
+        Returns ``True`` if two atom types `atomType1` and `atomType2` are
+        equivalent or ``False``  otherwise. This function respects wildcards,
+        e.g. ``R!H`` is equivalent to ``C``.
+        """
+        # If labels must match exactly, then always return True
+        if atomType1 == atomType2: return True
+        # If either is a generic atom type, then always return True
+        elif atomType1 == 'R' or atomType2 == 'R': return True
+        # If either is a generic non-hydrogen atom type, then return
+        # True if any atom type in the remaining one is non-hydrogen
+        elif atomType1 == 'R!H': return atomType2 != 'H'
+        elif atomType2 == 'R!H': return atomType1 != 'H'
+        # If either represents an element without surrounding bond info,
+        # match remaining to any with the same element
+        elif atomType1 == 'C': return atomType2 in ['C', 'Cs', 'Cd', 'Cdd', 'Ct', 'CO', 'Cb', 'Cbf']
+        elif atomType1 == 'H': return atomType2 in ['H']
+        elif atomType1 == 'O': return atomType2 in ['O', 'Os', 'Od', 'Oa']
+        elif atomType2 == 'C': return atomType1 in ['C', 'Cs', 'Cd', 'Cdd', 'Ct', 'CO', 'Cb', 'Cbf']
+        elif atomType2 == 'H': return atomType1 in ['H']
+        elif atomType2 == 'O': return atomType1 in ['O', 'Os', 'Od', 'Oa']
+        # If we are here then we're satisfied that atomType1 and atomType2 are not equivalent
+        return False
+
+    def __atomTypesSpecificCaseOf(self, atomType1, atomType2):
+        """
+        Returns ``True`` if atom type `atomType1` is a specific case of
+        atom type `atomType2` or ``False``  otherwise.
+        """
+        # If labels must match exactly, then always return True
+        if atomType1 == atomType2: return True
+        # If other is a generic atom type, then always return True
+        elif atomType2 == 'R': return True
+        # but if it's not, and self is, then return False
+        elif atomType1 == 'R': return False
+        # If other is a generic non-hydrogen atom type, then return
+        # True if self is non-hydrogen
+        elif atomType2 == 'R!H': return atomType1 != 'H'
+        # If other represents an element without surrounding bond info,
+        # match self to any with the same element
+        elif atomType2  == 'C': return atomType1 in ['C', 'Cs', 'Cd', 'Cdd', 'Ct', 'CO', 'Cb', 'Cbf']
+        elif atomType2  == 'H': return atomType1 in ['H']
+        elif atomType2  == 'O': return atomType1 in ['O', 'Os', 'Od', 'Oa']
+        # If we are here then we're satisfied that atomType1 is not a specific case of atomType2
+        return False
+
+    def equivalent(self, other):
+        """
+        Returns ``True`` if `other` is equivalent to `self`,
+        where `other` can be either an :class:`Atom` or an :class:`AtomPattern`
+        object. When comparing :class:`AtomPattern` objects, this function
+        respects wildcards, e.g. ``R!H`` is equivalent to ``C``.
+        """
+
+        if not isinstance(other, AtomPattern):
+            # Let the equivalent method of other handle it
+            # We expect self to be an Atom object, but can't test for it here
+            # because that would create an import cycle
+            return other.equivalent(self)
+
+        # Compare two atom patterns for equivalence
+        # Each atom type in self must have an equivalent in other (and vice versa)
+        for atomType1 in self.atomType:
+            for atomType2 in other.atomType:
+                if self.__atomTypesEquivalent(atomType1, atomType2): break
+            else:
+                return False
+        for atomType1 in other.atomType:
+            for atomType2 in self.atomType:
+                if self.__atomTypesEquivalent(atomType1, atomType2): break
+            else:
+                return False
+        # Each free radical electron state in self must have an equivalent in other (and vice versa)
+        for radical1, spin1 in zip(self.radicalElectrons, self.spinMultiplicity):
+            for radical2, spin2 in zip(other.radicalElectrons, other.spinMultiplicity):
+                if radical1 == radical2 and spin1 == spin2: break
+            else:
+                return False
+        for radical1, spin1 in zip(other.radicalElectrons, other.spinMultiplicity):
+            for radical2, spin2 in zip(self.radicalElectrons, self.spinMultiplicity):
+                if radical1 == radical2 and spin1 == spin2: break
+            else:
+                return False
+        # Otherwise the two atom patterns are equivalent
+        return True
+
+    def isSpecificCaseOf(self, other):
+        """
+        Returns ``True`` if `other` is the same as `self` or is a more
+        specific case of `self`. Returns ``False`` if some of `self` is not
+        included in `other` or they are mutually exclusive.
+        """
+
+        if not isinstance(other, AtomPattern):
+            # Let the isSpecificCaseOf method of other handle it
+            # We expect self to be an Atom object, but can't test for it here
+            # because that would create an import cycle
+            return other.isSpecificCaseOf(self)
+
+        # Compare two atom patterns for equivalence
+        # Each atom type in self must have an equivalent in other (and vice versa)
+        for atomType1 in self.atomType: # all these must match
+            for atomType2 in other.atomType: # can match any of these
+                if self.__atomTypesSpecificCaseOf(atomType1, atomType2): break
+            else:
+                return False
+        # Each free radical electron state in self must have an equivalent in other (and vice versa)
+        for radical1, spin1 in zip(self.radicalElectrons, self.spinMultiplicity): # all these must match
+            for radical2, spin2 in zip(other.radicalElectrons, other.spinMultiplicity): # can match any of these
+                if radical1 == radical2 and spin1 == spin2: break
+            else:
+                return False
+        # Otherwise self is in fact a specific case of other
+        return True
+
+
+################################################################################
+
+class BondPattern(graph.Edge):
+    pass
+
+################################################################################
+
+class MoleculePattern(graph.Graph):
+    pass
