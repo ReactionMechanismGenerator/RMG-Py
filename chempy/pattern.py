@@ -62,6 +62,17 @@ We define the following basic atom types:
     ``Oa``          oxygen atom with no bonds
     =============== ============================================================
 
+We define the following bond types:
+
+    =============== ============================================================
+    Bond type       Description
+    =============== ============================================================
+    ``S``           a single bond
+    ``D``           a double bond
+    ``T``           a triple bond
+    ``B``           a benzene bond
+    =============== ============================================================
+
 We define the following reaction recipe actions:
 
     ============= ============================= ================================
@@ -368,11 +379,125 @@ class AtomPattern(graph.Vertex):
         # Otherwise self is in fact a specific case of other
         return True
 
-
 ################################################################################
 
 class BondPattern(graph.Edge):
-    pass
+    """
+    A bond pattern. This class is based on the :class:`Bond` class, except that
+    all attributes are lists rather than individual values. The attributes are:
+
+    =================== =================== ====================================
+    Attribute           Type                Description
+    =================== =================== ====================================
+    `order`             ``list``            The allowed bond orders (as character strings)
+    =================== =================== ====================================
+
+    """
+
+    def __init__(self, order=None):
+        self.order = order or []
+
+    def __str__(self):
+        """
+        Return a human-readable string representation of the object.
+        """
+        return "<BondPattern %s>" % (self.order)
+
+    def __repr__(self):
+        """
+        Return a representation that can be used to reconstruct the object.
+        """
+        return "BondPattern(order=%s)" % (self.order)
+
+    def copy(self):
+        """
+        Return a copy of the :class:`BondPattern` object.
+        """
+        return BondPattern(self.order)
+
+    def __changeBond(self, order):
+        """
+        Update the bond pattern as a result of applying a CHANGE_BOND action,
+        where `order` specifies whether the bond is incremented or decremented
+        in bond order, and should be 1 or -1.
+        """
+        newOrder = []
+        for bond in self.order:
+            if order == 1:
+                if bond == 'S':         newOrder.append('D')
+                elif bond == 'D':       newOrder.append('T')
+                else:
+                    raise ChemPyError('Unable to update BondPattern due to CHANGE_BOND action: Invalid bond order "%s" in set %s".' % (bond, self.order))
+            elif order == -1:
+                if bond == 'D':         newOrder.append('S')
+                elif bond == 'T':       newOrder.append('D')
+                else:
+                    raise ChemPyError('Unable to update BondPattern due to CHANGE_BOND action: Invalid bond order "%s" in set %s".' % (bond, self.order))
+            else:
+                raise ChemPyError('Unable to update BondPattern due to CHANGE_BOND action: Invalid order "%g".' % order)
+        # Set the new bond orders, removing any duplicates
+        self.order = list(set(newOrder))
+
+    def applyAction(self, action):
+        """
+        Update the bond pattern as a result of applying `action`, a tuple
+        containing the name of the reaction recipe action along with any
+        required parameters
+        """
+        if action[0].upper() == 'CHANGE_BOND':
+            self.__changeBond(order=action[2])
+        else:
+            raise ChemPyError('Unable to update BondPattern: Invalid action %s".' % (action))
+
+    def equivalent(self, other):
+        """
+        Returns ``True`` if `other` is equivalent to `self`, where `other` can
+        be either an :class:`Bond` or an :class:`BondPattern` object.
+        """
+
+        if not isinstance(other, BondPattern):
+            # Let the equivalent method of other handle it
+            # We expect self to be a Bond object, but can't test for it here
+            # because that would create an import cycle
+            return other.equivalent(self)
+
+        # Compare two bond patterns for equivalence
+        # Each atom type in self must have an equivalent in other (and vice versa)
+        for order1 in self.order:
+            for order2 in other.order:
+                if order1 == order2: break
+            else:
+                return False
+        for order1 in other.order:
+            for order2 in self.order:
+                if order1 == order2: break
+            else:
+                return False
+        # Otherwise the two bond patterns are equivalent
+        return True
+
+    def isSpecificCaseOf(self, other):
+        """
+        Returns ``True`` if `other` is the same as `self` or is a more
+        specific case of `self`. Returns ``False`` if some of `self` is not
+        included in `other` or they are mutually exclusive.
+        """
+
+        if not isinstance(other, BondPattern):
+            # Let the isSpecificCaseOf method of other handle it
+            # We expect self to be a Bond object, but can't test for it here
+            # because that would create an import cycle
+            return other.isSpecificCaseOf(self)
+
+        # Compare two bond patterns for equivalence
+        # Each atom type in self must have an equivalent in other
+        for order1 in self.order: # all these must match
+            for order2 in other.order: # can match any of these
+                if order1 == order2: break
+            else:
+                return False
+        # Otherwise self is in fact a specific case of other
+        return True
 
 ################################################################################
 

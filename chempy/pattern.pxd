@@ -65,6 +65,16 @@ cdef class BondPattern(Edge):
 
     cdef public list order
 
+    cpdef copy(self)
+
+    cpdef __changeBond(self, short order)
+
+    cpdef applyAction(self, tuple action)
+
+    cpdef bint equivalent(self, other)
+
+    cpdef bint isSpecificCaseOf(self, other)
+
 ################################################################################
 
 cdef class MoleculePattern(Graph):
