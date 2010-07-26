@@ -190,16 +190,16 @@ class WilhoitModel(ThermoModel):
         """
         return self.getEnthalpy(Tlist) - Tlist * self.getEntropy(Tlist)
     
-    def __residual(self, B, Tlist, Cplist, linear, nFreq, nRotors):
+    def __residual(self, B, Tlist, Cplist, linear, nFreq, nRotors, H298, S298):
         # The residual corresponding to the fitToData() method
         # Parameters are the same as for that method
         cython.declare(Cp_fit=numpy.ndarray)
-        self.fitToDataForConstantB(Tlist, Cplist, linear, nFreq, nRotors, B)
+        self.fitToDataForConstantB(Tlist, Cplist, linear, nFreq, nRotors, B, H298, S298)
         Cp_fit = self.getHeatCapacity(Tlist)
         # Objective function is linear least-squares
         return numpy.sum( (Cp_fit - Cplist) * (Cp_fit - Cplist) )
     
-    def fitToData(self, Tlist, Cplist, linear, nFreq, nRotors, B0=500.0):
+    def fitToData(self, Tlist, Cplist, linear, nFreq, nRotors, H298, S298, B0=500.0):
         """
         Fit a Wilhoit model to the data points provided, allowing the 
         characteristic temperature `B` to vary so as to improve the fit. This
@@ -213,10 +213,10 @@ class WilhoitModel(ThermoModel):
         """
         self.B = B0
         import scipy.optimize
-        scipy.optimize.fminbound(self.__residual, 300.0, 3000.0, args=(Tlist, Cplist, linear, nFreq, nRotors))
+        scipy.optimize.fminbound(self.__residual, 300.0, 3000.0, args=(Tlist, Cplist, linear, nFreq, nRotors, H298, S298))
         return self
     
-    def fitToDataForConstantB(self, Tlist, Cplist, linear, nFreq, nRotors, B):
+    def fitToDataForConstantB(self, Tlist, Cplist, linear, nFreq, nRotors, B, H298, S298):
         """
         Fit a Wilhoit model to the data points provided using a specified value
         of the characteristic temperature `B`. The data consists of a set
@@ -227,34 +227,32 @@ class WilhoitModel(ThermoModel):
         zero and infinite temperature.
         """
         
-        cython.declare(Cp_red=numpy.ndarray, y=numpy.ndarray, Y=numpy.ndarray, X=numpy.ndarray)
-        cython.declare(XtX=numpy.ndarray, XtY=numpy.ndarray, z=numpy.ndarray)
-
+        cython.declare(y=numpy.ndarray, A=numpy.ndarray, b=numpy.ndarray, x=numpy.ndarray)
+        
         # Set the Cp(T) limits as T -> and T -> infinity
         self.cp0 = 3.5 * constants.R if linear else 4.0 * constants.R
         self.cpInf = self.cp0 + (nFreq + 0.5 * nRotors) * constants.R
         
         # What remains is to fit the polynomial coefficients (a0, a1, a2, a3)
         # This can be done directly - no iteration required
-        Cp_red = (Cplist - self.cp0) / (self.cpInf - self.cp0)
         y = Tlist / (Tlist + B)
-        
-        Y = numpy.zeros((len(Cplist),1), numpy.float64)
-        X = numpy.zeros((len(Cplist),4), numpy.float64)
-        Y[:,0] = Cp_red - y * y
+        A = numpy.zeros((len(Cplist),4), numpy.float64)
         for j in range(4):
-            X[:,j] = (y*y*y - y*y) * y**j
-        
-        XtX = numpy.dot(X.transpose(), X)
-        XtY = numpy.dot(X.transpose(), Y)
-        z = numpy.dot(numpy.linalg.inv(XtX), XtY)
+            A[:,j] = (y*y*y - y*y) * y**j
+        b = ((Cplist - self.cp0) / (self.cpInf - self.cp0) - y*y)
+        x, residues, rank, s = numpy.linalg.lstsq(A, b)
         
         self.B = float(B)
-        self.a0 = float(z[0])
-        self.a1 = float(z[1])
-        self.a2 = float(z[2])
-        self.a3 = float(z[3])
-        
+        self.a0 = float(x[0])
+        self.a1 = float(x[1])
+        self.a2 = float(x[2])
+        self.a3 = float(x[3])
+
+        Tlist0 = numpy.array([298.15], numpy.float64)
+        self.H0 = 0.0; self.S0 = 0.0
+        self.H0 = H298 - self.getEnthalpy(Tlist0)[0]
+        self.S0 = S298 - self.getEntropy(Tlist0)[0]
+
         return self
 
 ################################################################################

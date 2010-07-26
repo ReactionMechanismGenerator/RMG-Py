@@ -551,7 +551,7 @@ class HinderedRotor(Mode):
         if self.fourier is not None:
             cython.declare(S=numpy.ndarray, E=numpy.ndarray, e_kT=numpy.ndarray, i=cython.int)
             E = self.__solveSchrodingerEquation()
-            S = constants.kB * numpy.log(self.getPartitionFunction(Tlist))
+            S = constants.R * numpy.log(self.getPartitionFunction(Tlist))
             for i in range(len(Tlist)):
                 e_kT = numpy.exp(-E / constants.R / Tlist[i])
                 S[i] += numpy.sum(E*e_kT) / (Tlist[i] * numpy.sum(e_kT))

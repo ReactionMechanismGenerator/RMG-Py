@@ -67,13 +67,13 @@ cdef class WilhoitModel(ThermoModel):
     cpdef numpy.ndarray getFreeEnergy(self, numpy.ndarray Tlist)
     
     cpdef double __residual(self, double B, numpy.ndarray Tlist, numpy.ndarray Cplist, 
-        bint linear, int nFreq, int nRotors)
+        bint linear, int nFreq, int nRotors, double H298, double S298)
     
     cpdef WilhoitModel fitToData(self, numpy.ndarray Tlist, numpy.ndarray Cplist,
-        bint linear, int nFreq, int nRotors, double B0=?)
+        bint linear, int nFreq, int nRotors, double H298, double S298, double B0=?)
     
     cpdef WilhoitModel fitToDataForConstantB(self, numpy.ndarray Tlist, numpy.ndarray Cplist,
-        bint linear, int nFreq, int nRotors, double B)
+        bint linear, int nFreq, int nRotors, double B, double H298, double S298)
     
 ################################################################################
 
