@@ -28,6 +28,12 @@ from graph cimport Vertex, Edge, Graph
 
 ################################################################################
 
+cpdef bint atomTypesEquivalent(str atomType1, str atomType2)
+
+cpdef bint atomTypesSpecificCaseOf(str atomType1, str atomType2)
+
+################################################################################
+
 cdef class AtomPattern(Vertex):
 
     cdef public list atomType
@@ -51,13 +57,9 @@ cdef class AtomPattern(Vertex):
 
     cpdef applyAction(self, tuple action)
 
-    cpdef bint __atomTypesEquivalent(self, str atomType1, str atomType2)
+    cpdef bint equivalent(self, Vertex other)
 
-    cpdef bint __atomTypesSpecificCaseOf(self, str atomType1, str atomType2)
-
-    cpdef bint equivalent(self, other)
-
-    cpdef bint isSpecificCaseOf(self, other)
+    cpdef bint isSpecificCaseOf(self, Vertex other)
 
 ################################################################################
 
@@ -71,12 +73,30 @@ cdef class BondPattern(Edge):
 
     cpdef applyAction(self, tuple action)
 
-    cpdef bint equivalent(self, other)
+    cpdef bint equivalent(self, Edge other)
 
-    cpdef bint isSpecificCaseOf(self, other)
+    cpdef bint isSpecificCaseOf(self, Edge other)
 
 ################################################################################
 
 cdef class MoleculePattern(Graph):
 
-    cdef public bint implicitHydrogens
+    cpdef addAtom(self, Atom atom)
+
+    cpdef addBond(self, Atom atom1, Atom atom2, Bond bond)
+
+    cpdef dict getBonds(self, Atom atom)
+
+    cpdef Bond getBond(self, Atom atom1, Atom atom2)
+
+    cpdef bint hasAtom(self, Atom atom)
+
+    cpdef bint hasBond(self, Atom atom1, Atom atom2)
+
+    cpdef removeAtom(self, Atom atom)
+
+    cpdef removeBond(self, Atom atom1, Atom atom2)
+
+    cpdef sortAtoms(self)
+
+    cpdef copy(self, bint deep=?)

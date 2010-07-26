@@ -93,6 +93,55 @@ import graph
 
 ################################################################################
 
+def atomTypesEquivalent(atomType1, atomType2):
+    """
+    Returns ``True`` if two atom types `atomType1` and `atomType2` are
+    equivalent or ``False``  otherwise. This function respects wildcards,
+    e.g. ``R!H`` is equivalent to ``C``.
+    """
+    # If labels must match exactly, then always return True
+    if atomType1 == atomType2: return True
+    # If either is a generic atom type, then always return True
+    elif atomType1 == 'R' or atomType2 == 'R': return True
+    # If either is a generic non-hydrogen atom type, then return
+    # True if any atom type in the remaining one is non-hydrogen
+    elif atomType1 == 'R!H': return atomType2 != 'H'
+    elif atomType2 == 'R!H': return atomType1 != 'H'
+    # If either represents an element without surrounding bond info,
+    # match remaining to any with the same element
+    elif atomType1 == 'C': return atomType2 in ['C', 'Cs', 'Cd', 'Cdd', 'Ct', 'CO', 'Cb', 'Cbf']
+    elif atomType1 == 'H': return atomType2 in ['H']
+    elif atomType1 == 'O': return atomType2 in ['O', 'Os', 'Od', 'Oa']
+    elif atomType2 == 'C': return atomType1 in ['C', 'Cs', 'Cd', 'Cdd', 'Ct', 'CO', 'Cb', 'Cbf']
+    elif atomType2 == 'H': return atomType1 in ['H']
+    elif atomType2 == 'O': return atomType1 in ['O', 'Os', 'Od', 'Oa']
+    # If we are here then we're satisfied that atomType1 and atomType2 are not equivalent
+    return False
+
+def atomTypesSpecificCaseOf(atomType1, atomType2):
+    """
+    Returns ``True`` if atom type `atomType1` is a specific case of
+    atom type `atomType2` or ``False``  otherwise.
+    """
+    # If labels must match exactly, then always return True
+    if atomType1 == atomType2: return True
+    # If other is a generic atom type, then always return True
+    elif atomType2 == 'R': return True
+    # but if it's not, and self is, then return False
+    elif atomType1 == 'R': return False
+    # If other is a generic non-hydrogen atom type, then return
+    # True if self is non-hydrogen
+    elif atomType2 == 'R!H': return atomType1 != 'H'
+    # If other represents an element without surrounding bond info,
+    # match self to any with the same element
+    elif atomType2  == 'C': return atomType1 in ['C', 'Cs', 'Cd', 'Cdd', 'Ct', 'CO', 'Cb', 'Cbf']
+    elif atomType2  == 'H': return atomType1 in ['H']
+    elif atomType2  == 'O': return atomType1 in ['O', 'Os', 'Od', 'Oa']
+    # If we are here then we're satisfied that atomType1 is not a specific case of atomType2
+    return False
+
+################################################################################
+
 class AtomPattern(graph.Vertex):
     """
     An atom pattern. This class is based on the :class:`Atom` class, except that
@@ -263,53 +312,6 @@ class AtomPattern(graph.Vertex):
         else:
             raise ChemPyError('Unable to update AtomPattern: Invalid action %s".' % (action))
 
-    def __atomTypesEquivalent(self, atomType1, atomType2):
-        """
-        Returns ``True`` if two atom types `atomType1` and `atomType2` are
-        equivalent or ``False``  otherwise. This function respects wildcards,
-        e.g. ``R!H`` is equivalent to ``C``.
-        """
-        # If labels must match exactly, then always return True
-        if atomType1 == atomType2: return True
-        # If either is a generic atom type, then always return True
-        elif atomType1 == 'R' or atomType2 == 'R': return True
-        # If either is a generic non-hydrogen atom type, then return
-        # True if any atom type in the remaining one is non-hydrogen
-        elif atomType1 == 'R!H': return atomType2 != 'H'
-        elif atomType2 == 'R!H': return atomType1 != 'H'
-        # If either represents an element without surrounding bond info,
-        # match remaining to any with the same element
-        elif atomType1 == 'C': return atomType2 in ['C', 'Cs', 'Cd', 'Cdd', 'Ct', 'CO', 'Cb', 'Cbf']
-        elif atomType1 == 'H': return atomType2 in ['H']
-        elif atomType1 == 'O': return atomType2 in ['O', 'Os', 'Od', 'Oa']
-        elif atomType2 == 'C': return atomType1 in ['C', 'Cs', 'Cd', 'Cdd', 'Ct', 'CO', 'Cb', 'Cbf']
-        elif atomType2 == 'H': return atomType1 in ['H']
-        elif atomType2 == 'O': return atomType1 in ['O', 'Os', 'Od', 'Oa']
-        # If we are here then we're satisfied that atomType1 and atomType2 are not equivalent
-        return False
-
-    def __atomTypesSpecificCaseOf(self, atomType1, atomType2):
-        """
-        Returns ``True`` if atom type `atomType1` is a specific case of
-        atom type `atomType2` or ``False``  otherwise.
-        """
-        # If labels must match exactly, then always return True
-        if atomType1 == atomType2: return True
-        # If other is a generic atom type, then always return True
-        elif atomType2 == 'R': return True
-        # but if it's not, and self is, then return False
-        elif atomType1 == 'R': return False
-        # If other is a generic non-hydrogen atom type, then return
-        # True if self is non-hydrogen
-        elif atomType2 == 'R!H': return atomType1 != 'H'
-        # If other represents an element without surrounding bond info,
-        # match self to any with the same element
-        elif atomType2  == 'C': return atomType1 in ['C', 'Cs', 'Cd', 'Cdd', 'Ct', 'CO', 'Cb', 'Cbf']
-        elif atomType2  == 'H': return atomType1 in ['H']
-        elif atomType2  == 'O': return atomType1 in ['O', 'Os', 'Od', 'Oa']
-        # If we are here then we're satisfied that atomType1 is not a specific case of atomType2
-        return False
-
     def equivalent(self, other):
         """
         Returns ``True`` if `other` is equivalent to `self`,
@@ -328,12 +330,12 @@ class AtomPattern(graph.Vertex):
         # Each atom type in self must have an equivalent in other (and vice versa)
         for atomType1 in self.atomType:
             for atomType2 in other.atomType:
-                if self.__atomTypesEquivalent(atomType1, atomType2): break
+                if atomTypesEquivalent(atomType1, atomType2): break
             else:
                 return False
         for atomType1 in other.atomType:
             for atomType2 in self.atomType:
-                if self.__atomTypesEquivalent(atomType1, atomType2): break
+                if atomTypesEquivalent(atomType1, atomType2): break
             else:
                 return False
         # Each free radical electron state in self must have an equivalent in other (and vice versa)
@@ -367,7 +369,7 @@ class AtomPattern(graph.Vertex):
         # Each atom type in self must have an equivalent in other (and vice versa)
         for atomType1 in self.atomType: # all these must match
             for atomType2 in other.atomType: # can match any of these
-                if self.__atomTypesSpecificCaseOf(atomType1, atomType2): break
+                if self.atomTypesSpecificCaseOf(atomType1, atomType2): break
             else:
                 return False
         # Each free radical electron state in self must have an equivalent in other (and vice versa)
@@ -502,4 +504,95 @@ class BondPattern(graph.Edge):
 ################################################################################
 
 class MoleculePattern(graph.Graph):
-    pass
+    """
+    A representation of a molecular substructure pattern using a graph data
+    type, extending the :class:`Graph` class. The `atoms` and `bonds` attributes
+    are aliases for the `vertices` and `edges` attributes. Corresponding alias
+    methods have also been provided.
+    """
+
+    def __init__(self, atoms=None, bonds=None):
+        graph.Graph.__init__(self, atoms, bonds)
+    
+    def __getAtoms(self): return self.vertices
+    def __setAtoms(self, atoms): self.vertices = atoms
+    atoms = property(__getAtoms, __setAtoms)
+
+    def __getBonds(self): return self.edges
+    def __setBonds(self, bonds): self.edges = bonds
+    bonds = property(__getBonds, __setBonds)
+
+    def addAtom(self, atom):
+        """
+        Add an `atom` to the graph. The atom is initialized with no bonds.
+        """
+        return self.addVertex(atom)
+
+    def addBond(self, atom1, atom2, bond):
+        """
+        Add a `bond` to the graph as an edge connecting the two atoms `atom1`
+        and `atom2`.
+        """
+        return self.addEdge(atom1, atom2, bond)
+
+    def getBonds(self, atom):
+        """
+        Return a list of the bonds involving the specified `atom`.
+        """
+        return self.getEdges(atom)
+
+    def getBond(self, atom1, atom2):
+        """
+        Returns the bond connecting atoms `atom1` and `atom2`.
+        """
+        return self.getEdge(atom1, atom2)
+
+    def hasAtom(self, atom):
+        """
+        Returns ``True`` if `atom` is an atom in the graph, or ``False`` if
+        not.
+        """
+        return self.hasVertex(atom)
+
+    def hasBond(self, atom1, atom2):
+        """
+        Returns ``True`` if atoms `atom1` and `atom2` are connected
+        by an bond, or ``False`` if not.
+        """
+        return self.hasEdge(atom1, atom2)
+
+    def removeAtom(self, atom):
+        """
+        Remove `atom` and all bonds associated with it from the graph. Does
+        not remove atoms that no longer have any bonds as a result of this
+        removal.
+        """
+        return self.removeVertex(atom)
+
+    def removeBond(self, atom1, atom2):
+        """
+        Remove the bond between atoms `atom1` and `atom2` from the graph.
+        Does not remove atoms that no longer have any bonds as a result of
+        this removal.
+        """
+        return self.removeEdge(atom1, atom2)
+
+    def sortAtoms(self):
+        """
+        Sort the atoms in the graph. This can make certain operations, e.g.
+        the isomorphism functions, much more efficient.
+        """
+        return self.sortVertices()
+
+    def copy(self, deep=False):
+        """
+        Create a copy of the current graph. If `deep` is ``True``, a deep copy
+        is made: copies of the vertices and edges are used in the new graph.
+        If `deep` is ``False`` or not specified, a shallow copy is made: the
+        original vertices and edges are used in the new graph.
+        """
+        other = cython.declare(MoleculePattern)
+        g = graph.Graph.copy(self, deep)
+        other = MoleculePattern(g.vertices, g.edges)
+        return other
+
