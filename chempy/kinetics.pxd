@@ -54,10 +54,15 @@ cdef class KineticsModel:
 cdef class ArrheniusModel(KineticsModel):
     
     cdef public double A
+    cdef public double T0
     cdef public double Ea
     cdef public double n
     
     cpdef numpy.ndarray getRateCoefficient(self, numpy.ndarray Tlist)
+
+    cpdef changeT0(self, double T0)
+
+    cpdef fitToData(self, numpy.ndarray Tlist, numpy.ndarray klist, double T0=?)
 
 ################################################################################
 

@@ -90,40 +90,52 @@ class ArrheniusModel(KineticsModel):
     Represent a set of modified Arrhenius kinetics. The kinetic expression has
     the form
 
-    .. math:: k(T) = A T^n \\exp \\left( - \\frac{E_\\mathrm{a}}{RT} \\right)
+    .. math:: k(T) = A \\left( \\frac{T}{T_0} \\right)^n \\exp \\left( - \\frac{E_\\mathrm{a}}{RT} \\right)
 
-    The attributes are:
+    where :math:`A`, :math:`n`, :math:`E_\\mathrm{a}`, and :math:`T_0` are the
+    parameters to be set, :math:`T` is absolute temperature, and :math:`R` is
+    the gas law constant. The attributes are:
 
     =============== =============== ============================================
     Attribute       Type            Description
     =============== =============== ============================================
     `A`             :class:`float`  The preexponential factor in s^-1, m^3/mol*s, etc.
+    `T0`            :class:`float`  The reference temperature in K
     `n`             :class:`float`  The temperature exponent
     `Ea`            :class:`float`  The activation energy in J/mol
     =============== =============== ============================================
     
     """
     
-    def __init__(self, A=0.0, n=0.0, Ea=0.0):
+    def __init__(self, A=0.0, n=0.0, Ea=0.0, T0=298.15):
         KineticsModel.__init__(self)
         self.A = A
+        self.T0 = T0
         self.n = n
         self.Ea = Ea
     
     def __str__(self):
-        return 'k(T) = %s * T ** %s * math.exp(-%s / constants.R / T)\t%s < T < %s' % (self.A, self.n, self.Ea, self.Tmin, self.Tmax)
+        return 'k(T) = %g * (T / %g) ** %g * exp(-%g / RT)    %g < T < %g' % (self.A, self.T0, self.n, self.Ea, self.Tmin, self.Tmax)
     
     def __repr__(self):
-        return '<ArrheniusModel A=%g Ea=%g kJ/mol n=%g>' % (self.A,self.Ea/1000.0, self.n)
+        return '<ArrheniusModel A=%g Ea=%g kJ/mol n=%g T0=%g K>' % (self.A,self.Ea/1000.0, self.n, self.T0)
     
     def getRateCoefficient(self, Tlist):
         """
         Return the rate coefficient k(T) in SI units at a set of temperatures 
         `Tlist` in K.
         """
-        return self.A * (Tlist ** self.n) * numpy.exp(-self.Ea / constants.R / Tlist)
+        return self.A * (Tlist / self.T0)** self.n * numpy.exp(-self.Ea / constants.R / Tlist)
     
-    def fitToData(self, Tlist, klist):
+    def changeT0(self, T0):
+        """
+        Changes the reference temperature used in the exponent to `T0`, and
+        adjusts the preexponential accordingly.
+        """
+        self.A = (self.T0 / T0)**self.n
+        self.T0 = T0
+
+    def fitToData(self, Tlist, klist, T0=298.15):
         """
         Fit the Arrhenius parameters to a set of rate coefficient data `klist`
         corresponding to a set of temperatures `Tlist` in K. A linear least-
@@ -133,7 +145,7 @@ class ArrheniusModel(KineticsModel):
         import numpy.linalg
         A = numpy.zeros((len(Tlist),3), numpy.float64)
         A[:,0] = numpy.ones_like(Tlist)
-        A[:,1] = numpy.log(Tlist)
+        A[:,1] = numpy.log(Tlist / T0)
         A[:,2] = -1.0 / constants.R / Tlist
         b = numpy.log(klist)
         x = numpy.linalg.lstsq(A,b)[0]
@@ -141,6 +153,7 @@ class ArrheniusModel(KineticsModel):
         self.A = math.exp(x[0])
         self.n = x[1]
         self.Ea = x[2]
+        self.T0 = T0
         return self
     
 ################################################################################
