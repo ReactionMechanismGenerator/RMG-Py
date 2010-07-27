@@ -54,7 +54,7 @@ cdef class Atom(Vertex):
 
 cdef class Bond(Edge):
 
-    cdef public short order
+    cdef public str order
 
     cpdef bint equivalent(self, Edge other0)
 

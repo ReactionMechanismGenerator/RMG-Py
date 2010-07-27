@@ -154,7 +154,7 @@ class Bond(graph.Edge):
     =================== =================== ====================================
     Attribute           Type                Description
     =================== =================== ====================================
-    `order`             ``short``           The bond order (1 = single, 2 = double, 3 = triple)
+    `order`             ``str``             The bond order ('S' = single, 'D' = double, 'T' = triple, 'B' = benzene)
     =================== =================== ====================================
 
     """
@@ -166,14 +166,13 @@ class Bond(graph.Edge):
         """
         Return a human-readable string representation of the object.
         """
-        orders = {1:'S',2:'D',3:'T'}
-        return "<Bond '%s'>" % (orders[self.order])
+        return "<Bond '%s'>" % (self.order)
 
     def __repr__(self):
         """
         Return a representation that can be used to reconstruct the object.
         """
-        return "Bond(order=%s)" % (self.order)
+        return "Bond(order='%s')" % (self.order)
 
     def equivalent(self, other0):
         """
@@ -196,21 +195,21 @@ class Bond(graph.Edge):
         Return ``True`` if the bond represents a single bond or ``False`` if
         not.
         """
-        return self.order == 1
+        return self.order == 'S'
 
     def isDouble(self):
         """
         Return ``True`` if the bond represents a double bond or ``False`` if
         not.
         """
-        return self.order == 2
+        return self.order == 'D'
 
     def isTriple(self):
         """
         Return ``True`` if the bond represents a triple bond or ``False`` if
         not.
         """
-        return self.order == 3
+        return self.order == 'T'
 
 ################################################################################
 
@@ -352,7 +351,7 @@ class ChemGraph(graph.Graph):
         for atom in self.atoms:
             while atom.implicitHydrogens > 0:
                 H = Atom(element='H')
-                bond = Bond(order=1)
+                bond = Bond(order='S')
                 hydrogens.append((H, atom, bond))
                 atom.implicitHydrogens -= 1
 
@@ -499,10 +498,10 @@ class Molecule:
                     order = 0
 
                     # Process bond type
-                    if obbond.IsSingle(): order = 1
-                    elif obbond.IsDouble(): order = 2
-                    elif obbond.IsTriple(): order = 3
-                    elif obbond.IsAromatic(): order = 5
+                    if obbond.IsSingle(): order = 'S'
+                    elif obbond.IsDouble(): order = 'D'
+                    elif obbond.IsTriple(): order = 'T'
+                    elif obbond.IsAromatic(): order = 'B'
 
                     bond = Bond(order)
                     atom1 = chemGraph.atoms[i]
