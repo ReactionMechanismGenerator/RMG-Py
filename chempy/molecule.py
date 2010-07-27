@@ -366,6 +366,27 @@ class Molecule(graph.Graph):
         other = Molecule(g.vertices, g.edges)
         return other
 
+    def merge(self, other):
+        """
+        Merge two molecules so as to store them in a single :class:`Molecule`
+        object. The merged :class:`Molecule` object is returned.
+        """
+        graph = graph.Graph.merge(self, other)
+        molecule = Molecule(atoms=graph.vertices, bonds=graph.edges)
+        return molecule
+
+    def split(self):
+        """
+        Convert a single class:`Molecule` object containing two or more
+        unconnected molecules into separate class:`Molecule` objects.
+        """
+        graphs = graph.Graph.split(self)
+        molecules = []
+        for g in graphs:
+            molecule = Molecule(atoms=g.vertices, bonds=g.edges)
+            molecules.append(molecule)
+        return molecules
+
     def makeHydrogensImplicit(self):
         """
         Convert all explicitly stored hydrogen atoms to be stored implicitly.
@@ -743,12 +764,13 @@ class Molecule(graph.Graph):
             a = obmol.NewAtom()
             a.SetAtomicNum(atom.number)
             a.SetFormalCharge(atom.charge)
+        orders = {'S': 1, 'D': 2, 'T': 3, 'B': 5}
         for atom1, bonds in bonds.iteritems():
             for atom2, bond in bonds.iteritems():
                 index1 = atoms.index(atom1)
                 index2 = atoms.index(atom2)
                 if index1 < index2:
-                    order = bond.order
+                    order = orders[bond.order]
                     obmol.AddBond(index1+1, index2+1, order)
 
         obmol.AssignSpinMultiplicity(True)
