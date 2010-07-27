@@ -174,9 +174,9 @@ def atomTypesSpecificCaseOf(atomType1, atomType2):
     elif atomType2 == 'R!H': return atomType1 != 'H'
     # If other represents an element without surrounding bond info,
     # match self to any with the same element
-    elif atomType2  == 'C': return atomType1 in ['C', 'Cs', 'Cd', 'Cdd', 'Ct', 'CO', 'Cb', 'Cbf']
-    elif atomType2  == 'H': return atomType1 in ['H']
-    elif atomType2  == 'O': return atomType1 in ['O', 'Os', 'Od', 'Oa']
+    elif atomType2 == 'C': return atomType1 in ['C', 'Cs', 'Cd', 'Cdd', 'Ct', 'CO', 'Cb', 'Cbf']
+    elif atomType2 == 'H': return atomType1 in ['H']
+    elif atomType2 == 'O': return atomType1 in ['O', 'Os', 'Od', 'Oa']
     # If we are here then we're satisfied that atomType1 is not a specific case of atomType2
     return False
 
@@ -219,7 +219,7 @@ class AtomPattern(graph.Vertex):
         """
         Return a representation that can be used to reconstruct the object.
         """
-        return "AtomPattern(atomType='%s', radicalElectrons=%s, spinMultiplicity=%s, implicitHydrogens=%s, charge=%s, label='%s')" % (self.atomType, self.radicalElectrons, self.spinMultiplicity, self.implicitHydrogens, self.charge, self.label)
+        return "AtomPattern(atomType=%s, radicalElectrons=%s, spinMultiplicity=%s, implicitHydrogens=%s, charge=%s, label='%s')" % (self.atomType, self.radicalElectrons, self.spinMultiplicity, self.implicitHydrogens, self.charge, self.label)
 
     def copy(self):
         """
@@ -638,6 +638,22 @@ class MoleculePattern(graph.Graph):
         other = MoleculePattern(g.vertices, g.edges)
         return other
 
+    def getLabeledAtoms(self):
+        """
+        Return the labeled atoms as a ``dict`` with the keys being the labels
+        and the values the atoms themselves. If two or more atoms have the
+        same label, the value is converted to a list of these atoms.
+        """
+        labeled = {}
+        for atom in self.atoms:
+            if atom.label != '':
+                if atom.label in labeled:
+                    labeled[atom.label] = [labeled[atom.label]]
+                    labeled[atom.label].append(atom)
+                else:
+                    labeled[atom.label] = atom
+        return labeled
+
     def fromAdjacencyList(self, adjlist, withLabel=True):
         """
         Convert a string adjacency list `adjlist` to a molecular structure.
@@ -745,12 +761,14 @@ def fromAdjacencyList(adjlist, pattern=False, addH=False, withLabel=True):
 
             if order[0] == '{':
                 order = order[1:-1].split(',')
+            else:
+                order = [order]
 
             if aid2 in atomdict:
                 if pattern:
                     bond = BondPattern(order)
                 else:
-                    bond = Bond(order)
+                    bond = Bond(order[0])
                 bonds[atom][atomdict[aid2]] = bond
                 bonds[atomdict[aid2]][atom] = bond
 

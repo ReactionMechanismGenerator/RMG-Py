@@ -546,7 +546,7 @@ class Graph:
                     # remove all its edges
                     neighbours = graph.edges[rootVertex].keys()[:]
                     for vertex2 in neighbours:
-                        graph.removeEdge((rootVertex, vertex2))
+                        graph.removeEdge(rootVertex, vertex2)
                     # then remove it
                     graph.removeVertex(rootVertex)
                     #print("Removed vertex that's no longer in ring")

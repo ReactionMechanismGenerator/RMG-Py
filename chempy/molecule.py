@@ -395,6 +395,7 @@ class ChemGraph(graph.Graph):
         for atom in self.atoms:
             while atom.implicitHydrogens > 0:
                 H = Atom(element='H')
+                H.atomType = 'H'
                 bond = Bond(order='S')
                 hydrogens.append((H, atom, bond))
                 atom.implicitHydrogens -= 1
@@ -415,6 +416,22 @@ class ChemGraph(graph.Graph):
         """
         for atom in self.atoms:
             atom.atomType = getAtomType(atom, self.bonds[atom])
+
+    def getLabeledAtoms(self):
+        """
+        Return the labeled atoms as a ``dict`` with the keys being the labels
+        and the values the atoms themselves. If two or more atoms have the
+        same label, the value is converted to a list of these atoms.
+        """
+        labeled = {}
+        for atom in self.atoms:
+            if atom.label != '':
+                if atom.label in labeled:
+                    labeled[atom.label] = [labeled[atom.label]]
+                    labeled[atom.label].append(atom)
+                else:
+                    labeled[atom.label] = atom
+        return labeled
 
     def isIsomorphic(self, other, initialMap=None):
         """
@@ -781,7 +798,7 @@ class Molecule:
         elif isinstance(other, ChemGraph):
             for chemGraph1 in self.resonanceForms:
                 isomorphism.append(chemGraph1.findIsomorphism(other)[1])
-        return isomorphism
+        return any([len(iso) > 0 for iso in isomorphism]), isomorphism
 
     def isSubgraphIsomorphic(self, other):
         """
@@ -816,4 +833,4 @@ class Molecule:
         elif isinstance(other, ChemGraph) or isinstance(other, MoleculePattern):
             for chemGraph1 in self.resonanceForms:
                 isomorphism.append(chemGraph1.findSubgraphIsomorphisms(other)[1])
-        return isomorphism
+        return any([len(iso) > 0 for iso in isomorphism]), isomorphism
