@@ -257,7 +257,7 @@ class Bond(graph.Edge):
 
 ################################################################################
 
-class ChemGraph(graph.Graph):
+class Molecule(graph.Graph):
     """
     A representation of a molecular structure using a graph data type, extending
     the :class:`Graph` class. The `atoms` and `bonds` attributes are aliases
@@ -265,9 +265,24 @@ class ChemGraph(graph.Graph):
     also been provided.
     """
 
-    def __init__(self, atoms=None, bonds=None):
+    def __init__(self, atoms=None, bonds=None, SMILES='', InChI=''):
         graph.Graph.__init__(self, atoms, bonds)
+        if SMILES != '': self.fromSMILES(SMILES)
+        elif InChI != '': self.fromInChI(InChI)
         self.implicitHydrogens = False
+
+    def __str__(self):
+        """
+        Return a human-readable string representation of the object.
+        """
+        return "<Molecule '%s'>" % (self.toSMILES())
+
+    def __repr__(self):
+        """
+        Return a representation that can be used to reconstruct the object.
+        """
+        return "Bond(SMILES='%s')" % (self.toSMILES())
+
 
     def __getAtoms(self): return self.vertices
     def __setAtoms(self, atoms): self.vertices = atoms
@@ -346,9 +361,9 @@ class ChemGraph(graph.Graph):
         If `deep` is ``False`` or not specified, a shallow copy is made: the
         original vertices and edges are used in the new graph.
         """
-        other = cython.declare(ChemGraph)
+        other = cython.declare(Molecule)
         g = graph.Graph.copy(self, deep)
-        other = ChemGraph(g.vertices, g.edges)
+        other = Molecule(g.vertices, g.edges)
         return other
 
     def makeHydrogensImplicit(self):
@@ -526,35 +541,6 @@ class ChemGraph(graph.Graph):
         from ext.molecule_draw import drawMolecule
         drawMolecule(self, path=path)
 
-################################################################################
-
-class Molecule:
-    """
-    A molecular configuration of atoms and bonds. The attributes are:
-
-    =================== =================== ====================================
-    Attribute           Type                Description
-    =================== =================== ====================================
-    `resonanceForms`    ``list``            A list of :class:`ChemGraph` objects representing the resonance forms of the molecule, sorted by decreasing stability
-    =================== =================== ====================================
-
-    """
-
-    def __init__(self):
-        self.resonanceForms = []
-
-    def __str__(self):
-        """
-        Return a human-readable string representation of the object.
-        """
-        return "<Molecule '%s'>" % (self.toSMILES())
-
-    def __repr__(self):
-        """
-        Return a representation that can be used to reconstruct the object.
-        """
-        return "Molecule(SMILES=%s)" % (self.toSMILES())
-
     def fromCML(self, cmlstr):
         """
         Convert a string of CML `cmlstr` to a molecular structure. Uses
@@ -592,11 +578,9 @@ class Molecule:
         `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
         """
 
-        cython.declare(chemGraph=ChemGraph, i=cython.int)
+        cython.declare(i=cython.int)
         cython.declare(radicalElectrons=cython.int, spinMultiplicity=cython.int, charge=cython.int)
         cython.declare(atom=Atom, atom1=Atom, atom2=Atom, bond=Bond)
-
-        chemGraph = ChemGraph()
 
         # Add hydrogen atoms to complete molecule if needed
         obmol.AddHydrogens()
@@ -625,7 +609,7 @@ class Molecule:
             charge = obatom.GetFormalCharge()
 
             atom = Atom(element, radicalElectrons, spinMultiplicity, 0, charge)
-            chemGraph.atoms.append(atom)
+            self.atoms.append(atom)
 
             # Add bonds by iterating again through atoms
             for j in range(0, i):
@@ -641,22 +625,19 @@ class Molecule:
                     elif obbond.IsAromatic(): order = 'B'
 
                     bond = Bond(order)
-                    atom1 = chemGraph.atoms[i]
-                    atom2 = chemGraph.atoms[j]
-                    if atom1 not in chemGraph.bonds: chemGraph.bonds[atom1] = {}
-                    if atom2 not in chemGraph.bonds: chemGraph.bonds[atom2] = {}
-                    chemGraph.bonds[atom1][atom2] = bond
-                    chemGraph.bonds[atom2][atom1] = bond
-
-        # Add as only structure in list of resonance forms
-        self.resonanceForms = [chemGraph]
+                    atom1 = self.atoms[i]
+                    atom2 = self.atoms[j]
+                    if atom1 not in self.bonds: self.bonds[atom1] = {}
+                    if atom2 not in self.bonds: self.bonds[atom2] = {}
+                    self.bonds[atom1][atom2] = bond
+                    self.bonds[atom2][atom1] = bond
 
         # Make hydrogens implicit to conserve memory
-        chemGraph.makeHydrogensImplicit()
+        self.makeHydrogensImplicit()
 
-        # Update atom types
-        chemGraph.updateConnectivityValues()
-        chemGraph.updateAtomTypes()
+        # Set atom types and connectivity values
+        self.updateConnectivityValues()
+        self.updateAtomTypes()
 
         return self
 
@@ -666,12 +647,10 @@ class Molecule:
         Skips the first line (assuming it's a label) unless `withLabel` is
         ``False``.
         """
-        atoms, bonds = fromAdjacencyList(adjlist, pattern=False, addH=True, withLabel=withLabel)
-        chemGraph = ChemGraph(atoms, bonds)
-        chemGraph.makeHydrogensImplicit()
-        chemGraph.updateConnectivityValues()
-        chemGraph.updateAtomTypes()
-        self.resonanceForms = [chemGraph]
+        self.vertices, self.edges = fromAdjacencyList(adjlist, pattern=False, addH=True, withLabel=withLabel)
+        self.makeHydrogensImplicit()
+        self.updateConnectivityValues()
+        self.updateAtomTypes()
         return self
 
     def toCML(self):
@@ -719,15 +698,15 @@ class Molecule:
         cython.declare(index1=cython.int, index2=cython.int, order=cython.int)
 
         # Make hydrogens explicit while we perform the conversion
-        implicitH = self.resonanceForms[0].implicitHydrogens
-        self.resonanceForms[0].makeHydrogensExplicit()
+        implicitH = self.implicitHydrogens
+        self.makeHydrogensExplicit()
 
         # Sort the atoms before converting to ensure output is consistent
         # between different runs
-        self.resonanceForms[0].sortAtoms()
+        self.sortAtoms()
 
-        atoms = self.resonanceForms[0].atoms
-        bonds = self.resonanceForms[0].bonds
+        atoms = self.atoms
+        bonds = self.bonds
 
         obmol = openbabel.OBMol()
         for atom in atoms:
@@ -745,7 +724,7 @@ class Molecule:
         obmol.AssignSpinMultiplicity(True)
 
         # Restore implicit hydrogens if necessary
-        if implicitH: self.resonanceForms[0].makeHydrogensImplicit()
+        if implicitH: self.makeHydrogensImplicit()
 
         return obmol
 
@@ -753,84 +732,4 @@ class Molecule:
         """
         Convert the molecular structure to a string adjacency list.
         """
-        return toAdjacencyList(self.resonanceForms[0])
-
-    def draw(self, path):
-        """
-        Generate a pictorial representation of the molecule using the
-        :mod:`ext.molecule_draw` module. Use `path` to specify the file to save
-        the generated image to; the image type is automatically determined by
-        extension. Valid extensions are ``.png``, ``.svg``, ``.pdf``, and
-        ``.ps``; of these, the first is a raster format and the remainder are
-        vector formats.
-        """
-        self.resonanceForms[0].draw(path=path)
-
-    def isIsomorphic(self, other):
-        """
-        Returns ``True`` if the two molecules are isomorphic and ``False``
-        otherwise.
-        """
-        cython.declare(chemGraph1=ChemGraph, chemGraph2=ChemGraph)
-        if isinstance(other, Molecule):
-            for chemGraph1 in self.resonanceForms:
-                for chemGraph2 in other.resonanceForms:
-                    if chemGraph1.isIsomorphic(chemGraph2):
-                        return True
-        elif isinstance(other, ChemGraph):
-            for chemGraph1 in self.resonanceForms:
-                if chemGraph1.isIsomorphic(other):
-                    return True
-        return False
-
-    def findIsomorphism(self, other):
-        """
-        Returns :data:`True` if `other` is isomorphic and :data:`False`
-        otherwise, and the matching mapping.
-        Uses the VF2 algorithm of Vento and Foggia.
-        """
-        cython.declare(chemGraph1=ChemGraph, chemGraph2=ChemGraph)
-        isomorphism = []
-        if isinstance(other, Molecule):
-            for chemGraph1 in self.resonanceForms:
-                for chemGraph2 in other.resonanceForms:
-                    isomorphism.append(chemGraph1.findIsomorphism(chemGraph2)[1])
-        elif isinstance(other, ChemGraph):
-            for chemGraph1 in self.resonanceForms:
-                isomorphism.append(chemGraph1.findIsomorphism(other)[1])
-        return any([len(iso) > 0 for iso in isomorphism]), isomorphism
-
-    def isSubgraphIsomorphic(self, other):
-        """
-        Returns :data:`True` if `other` is subgraph isomorphic and :data:`False`
-        otherwise. Uses the VF2 algorithm of Vento and Foggia.
-        """
-        cython.declare(chemGraph1=ChemGraph, chemGraph2=ChemGraph)
-        if isinstance(other, Molecule):
-            for chemGraph1 in self.resonanceForms:
-                for chemGraph2 in other.resonanceForms:
-                    if chemGraph1.isSubgraphIsomorphic(chemGraph2):
-                        return True
-        elif isinstance(other, ChemGraph) or isinstance(other, MoleculePattern):
-            for chemGraph1 in self.resonanceForms:
-                if chemGraph1.isSubgraphIsomorphic(other):
-                    return True
-        return False
-
-    def findSubgraphIsomorphisms(self, other):
-        """
-        Returns :data:`True` if `other` is subgraph isomorphic and :data:`False`
-        otherwise. Also returns the lists all of valid mappings.
-
-        Uses the VF2 algorithm of Vento and Foggia.
-        """
-        cython.declare(chemGraph1=ChemGraph, chemGraph2=ChemGraph)
-        isomorphism = []
-        if isinstance(other, Molecule):
-            for chemGraph1 in self.resonanceForms:
-                for chemGraph2 in other.resonanceForms:
-                    isomorphism.append(chemGraph1.findSubgraphIsomorphisms(chemGraph2)[1])
-        elif isinstance(other, ChemGraph) or isinstance(other, MoleculePattern):
-            for chemGraph1 in self.resonanceForms:
-                isomorphism.append(chemGraph1.findSubgraphIsomorphisms(other)[1])
-        return any([len(iso) > 0 for iso in isomorphism]), isomorphism
+        return toAdjacencyList(self)

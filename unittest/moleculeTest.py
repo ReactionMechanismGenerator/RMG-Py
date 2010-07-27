@@ -32,14 +32,13 @@ class MoleculeCheck(unittest.TestCase):
         """)
 
         self.assertTrue(molecule.isSubgraphIsomorphic(pattern))
-        chemGraph = molecule.resonanceForms[0]
-        match, mapping = chemGraph.findSubgraphIsomorphisms(pattern)
+        match, mapping = molecule.findSubgraphIsomorphisms(pattern)
         self.assertTrue(match)
         self.assertTrue(len(mapping) == 4, "len(mapping) = %d, should be = 4" % (len(mapping)))
         for map in mapping:
-            self.assertTrue(len(map) == min(len(chemGraph.atoms), len(pattern.atoms)))
+            self.assertTrue(len(map) == min(len(molecule.atoms), len(pattern.atoms)))
             for key, value in map.iteritems():
-                self.assertTrue(key in chemGraph.atoms)
+                self.assertTrue(key in molecule.atoms)
                 self.assertTrue(value in pattern.atoms)
 
     def testSubgraphIsomorphismAgain(self):
@@ -71,23 +70,22 @@ class MoleculeCheck(unittest.TestCase):
         4   H 0 {1,S}
         """)
 
-        chemGraph = molecule.resonanceForms[0]
-        chemGraph.makeHydrogensExplicit()
+        molecule.makeHydrogensExplicit()
         
-        labeled1 = chemGraph.getLabeledAtoms().values()[0]
+        labeled1 = molecule.getLabeledAtoms().values()[0]
         labeled2 = pattern.getLabeledAtoms().values()[0]
         
         initialMap = {labeled1: labeled2}
-        self.assertTrue(chemGraph.isSubgraphIsomorphic(pattern, initialMap))
+        self.assertTrue(molecule.isSubgraphIsomorphic(pattern, initialMap))
 
         initialMap = {labeled1: labeled2}
-        match, mapping = chemGraph.findSubgraphIsomorphisms(pattern, initialMap)
+        match, mapping = molecule.findSubgraphIsomorphisms(pattern, initialMap)
         self.assertTrue(match)
         self.assertTrue(len(mapping) == 2,  "len(mapping) = %d, should be = 2" % (len(mapping)))
         for map in mapping:
-            self.assertTrue(len(map) == min(len(chemGraph.atoms), len(pattern.atoms)))
+            self.assertTrue(len(map) == min(len(molecule.atoms), len(pattern.atoms)))
             for key, value in map.iteritems():
-                self.assertTrue(key in chemGraph.atoms)
+                self.assertTrue(key in molecule.atoms)
                 self.assertTrue(value in pattern.atoms)
 
     def testSubgraphIsomorphismManyLabels(self):
@@ -97,8 +95,7 @@ class MoleculeCheck(unittest.TestCase):
 2    C  0 {1,S} {3,S}
 3    C  0 {1,S} {2,S}
         """)
-        chemGraph = molecule.resonanceForms[0]
-
+        
         pattern = MoleculePattern() # general case (functional group)
         pattern.fromAdjacencyList("""
 1 *1 C 1 {2,S}, {3,S}
@@ -106,20 +103,20 @@ class MoleculeCheck(unittest.TestCase):
 3    R 0 {1,S}
         """)
 
-        labeled1 = chemGraph.getLabeledAtoms()
+        labeled1 = molecule.getLabeledAtoms()
         labeled2 = pattern.getLabeledAtoms()
         initialMap = {}
         for label,atom1 in labeled1.iteritems():
             initialMap[atom1] = labeled2[label]
-        self.assertTrue(chemGraph.isSubgraphIsomorphic(pattern, initialMap))
+        self.assertTrue(molecule.isSubgraphIsomorphic(pattern, initialMap))
 
-        match, mapping = chemGraph.findSubgraphIsomorphisms(pattern, initialMap)
+        match, mapping = molecule.findSubgraphIsomorphisms(pattern, initialMap)
         self.assertTrue(match)
         self.assertTrue(len(mapping) == 1)
         for map in mapping:
-            self.assertTrue(len(map) == min(len(chemGraph.atoms), len(pattern.atoms)))
+            self.assertTrue(len(map) == min(len(molecule.atoms), len(pattern.atoms)))
             for key, value in map.iteritems():
-                self.assertTrue(key in chemGraph.atoms)
+                self.assertTrue(key in molecule.atoms)
                 self.assertTrue(value in pattern.atoms)
 
     def testAdjacencyList(self):
@@ -158,34 +155,32 @@ class MoleculeCheck(unittest.TestCase):
         molecule = Molecule()
         molecule.fromSMILES('C(CC1C(C(CCCCCCCC)C1c1ccccc1)c1ccccc1)CCCCCC')
         #http://cactus.nci.nih.gov/chemical/structure/C(CC1C(C(CCCCCCCC)C1c1ccccc1)c1ccccc1)CCCCCC/image
-        sssr = molecule.resonanceForms[0].getSmallestSetOfSmallestRings()
+        sssr = molecule.getSmallestSetOfSmallestRings()
         self.assertEqual( len(sssr), 3)
 
     def testIsInCycle(self):
 
         # ethane
         molecule = Molecule().fromSMILES('CC')
-        chemGraph = molecule.resonanceForms[0]
-        for atom in chemGraph.atoms:
-            self.assertFalse(chemGraph.isAtomInCycle(atom))
-        for atom1 in chemGraph.bonds:
-            for atom2 in chemGraph.bonds[atom1]:
-                self.assertFalse(chemGraph.isBondInCycle(atom1, atom2))
+        for atom in molecule.atoms:
+            self.assertFalse(molecule.isAtomInCycle(atom))
+        for atom1 in molecule.bonds:
+            for atom2 in molecule.bonds[atom1]:
+                self.assertFalse(molecule.isBondInCycle(atom1, atom2))
 
         # cyclohexane
         molecule = Molecule().fromInChI('InChI=1/C6H12/c1-2-4-6-5-3-1/h1-6H2')
-        chemGraph = molecule.resonanceForms[0]
-        for atom in chemGraph.atoms:
+        for atom in molecule.atoms:
             if atom.isHydrogen():
-                self.assertFalse(chemGraph.isAtomInCycle(atom))
+                self.assertFalse(molecule.isAtomInCycle(atom))
             elif atom.isCarbon():
-                self.assertTrue(chemGraph.isAtomInCycle(atom))
-        for atom1 in chemGraph.bonds:
-            for atom2 in chemGraph.bonds[atom1]:
+                self.assertTrue(molecule.isAtomInCycle(atom))
+        for atom1 in molecule.bonds:
+            for atom2 in molecule.bonds[atom1]:
                 if atom1.isCarbon() and atom2.isCarbon():
-                    self.assertTrue(chemGraph.isBondInCycle(atom1, atom2))
+                    self.assertTrue(molecule.isBondInCycle(atom1, atom2))
                 else:
-                    self.assertFalse(chemGraph.isBondInCycle(atom1, atom2))
+                    self.assertFalse(molecule.isBondInCycle(atom1, atom2))
 
 ################################################################################
 

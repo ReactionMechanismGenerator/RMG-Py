@@ -74,7 +74,7 @@ cdef class Bond(Edge):
 
 ################################################################################
 
-cdef class ChemGraph(Graph):
+cdef class Molecule(Graph):
 
     cdef public bint implicitHydrogens
 
@@ -116,12 +116,6 @@ cdef class ChemGraph(Graph):
 
     cpdef draw(self, str path)
 
-################################################################################
-
-cdef class Molecule:
-
-    cdef public list resonanceForms
-
     cpdef fromCML(self, str cmlstr)
 
     cpdef fromInChI(self, str inchistr)
@@ -141,7 +135,3 @@ cdef class Molecule:
     cpdef toOBMol(self)
 
     cpdef toAdjacencyList(self)
-
-    cpdef draw(self, str path)
-
-    cpdef bint isIsomorphic(self, other)
