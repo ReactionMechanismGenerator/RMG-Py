@@ -116,6 +116,8 @@ cdef class Molecule:
 
     cpdef fromOBMol(self, obmol)
 
+    cpdef fromAdjacencyList(self, str adjlist, bint withLabel=?)
+
     cpdef str toCML(self)
 
     cpdef str toInChI(self)
@@ -123,6 +125,8 @@ cdef class Molecule:
     cpdef str toSMILES(self)
 
     cpdef toOBMol(self)
+
+    cpdef toAdjacencyList(self)
 
     cpdef draw(self, str path)
 

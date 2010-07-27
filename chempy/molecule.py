@@ -61,6 +61,7 @@ class Atom(graph.Vertex):
     """
 
     def __init__(self, element=None, radicalElectrons=0, spinMultiplicity=1, implicitHydrogens=0, charge=0, label=''):
+        graph.Vertex.__init__(self)
         if isinstance(element, str):
             self.element = elements.__dict__[element]
         else:
@@ -160,6 +161,7 @@ class Bond(graph.Edge):
     """
 
     def __init__(self, order=1):
+        graph.Edge.__init__(self)
         self.order = order
 
     def __str__(self):
@@ -519,6 +521,18 @@ class Molecule:
 
         return self
 
+    def fromAdjacencyList(self, adjlist, withLabel=True):
+        """
+        Convert a string adjacency list `adjlist` to a molecular structure.
+        Skips the first line (assuming it's a label) unless `withLabel` is
+        ``False``.
+        """
+        atoms, bonds = fromAdjacencyList(adjlist, pattern=False, addH=True, withLabel=withLabel)
+        chemGraph = ChemGraph(atoms, bonds)
+        chemGraph.makeHydrogensImplicit()
+        self.resonanceForms = [chemGraph]
+        return self
+
     def toCML(self):
         """
         Convert the molecular structure to CML. Uses
@@ -593,6 +607,12 @@ class Molecule:
         if implicitH: self.resonanceForms[0].makeHydrogensImplicit()
 
         return obmol
+
+    def toAdjacencyList(self):
+        """
+        Convert the molecular structure to a string adjacency list.
+        """
+        return toAdjacencyList(self.resonanceForms[0])
 
     def draw(self, path):
         """

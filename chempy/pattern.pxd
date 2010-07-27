@@ -100,3 +100,13 @@ cdef class MoleculePattern(Graph):
     cpdef sortAtoms(self)
 
     cpdef copy(self, bint deep=?)
+
+    cpdef fromAdjacencyList(self, str adjlist, bint withLabel=?)
+
+    cpdef toAdjacencyList(self)
+
+################################################################################
+
+cpdef fromAdjacencyList(str adjlist, bint pattern=?, bint addH=?, bint withLabel=?)
+
+cpdef toAdjacencyList(Graph molecule, str label=?, bint pattern=?, bint removeH=?)

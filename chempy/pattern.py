@@ -90,6 +90,7 @@ We define the following reaction recipe actions:
 import cython
 
 import graph
+from exception import ChemPyError
 
 ################################################################################
 
@@ -161,6 +162,7 @@ class AtomPattern(graph.Vertex):
     """
 
     def __init__(self, atomType=None, radicalElectrons=None, spinMultiplicity=None, implicitHydrogens=None, charge=None, label=''):
+        graph.Vertex.__init__(self)
         self.atomType = atomType or []
         self.radicalElectrons = radicalElectrons or []
         self.spinMultiplicity = spinMultiplicity or []
@@ -397,6 +399,7 @@ class BondPattern(graph.Edge):
     """
 
     def __init__(self, order=None):
+        graph.Edge.__init__(self)
         self.order = order or []
 
     def __str__(self):
@@ -596,3 +599,249 @@ class MoleculePattern(graph.Graph):
         other = MoleculePattern(g.vertices, g.edges)
         return other
 
+    def fromAdjacencyList(self, adjlist, withLabel=True):
+        """
+        Convert a string adjacency list `adjlist` to a molecular structure.
+        Skips the first line (assuming it's a label) unless `withLabel` is
+        ``False``.
+        """
+        self.atoms, self.bonds = fromAdjacencyList(adjlist, pattern=True, addH=False, withLabel=withLabel)
+        return self
+
+    def toAdjacencyList(self):
+        """
+        Convert the molecular structure to a string adjacency list.
+        """
+        return toAdjacencyList(self, pattern=True)
+
+################################################################################
+
+def fromAdjacencyList(adjlist, pattern=False, addH=False, withLabel=True):
+    """
+    Convert a string adjacency list `adjlist` into a set of :class:`Atom` and
+    :class:`Bond` objects (if `pattern` is ``False``) or a set of
+    :class:`AtomPattern` and :class:`BondPattern` objects (if `pattern` is
+    ``True``). Only adds hydrogen atoms if `addH` is ``True``. Skips the first
+    line (assuming it's a label) unless `withLabel` is ``False``.
+    """
+
+    from molecule import Atom, Bond
+
+    atoms = []; atomdict = {}; bonds = {}
+
+    lines = adjlist.splitlines()
+    # Skip the first line if it contains a label
+    if withLabel: label = lines.pop(0)
+    # Iterate over the remaining lines, generating Atom or AtomPattern objects
+    for line in lines:
+
+        data = line.split()
+
+        # Skip if blank line
+        if len(data) == 0: continue
+
+        # First item is index for atom
+        # Sometimes these have a trailing period (as if in a numbered list),
+        # so remove it just in case
+        aid = int(data[0].strip('.'))
+
+        # If second item starts with '*', then atom is labeled
+        label = ''; index = 1
+        if data[1][0] == '*':
+            label = data[1]; index = 2
+
+        # Next is the element or functional group element
+        # A list can be specified with the {,} syntax
+        atomType = data[index]
+        if atomType[0] == '{':
+            atomType = atomType[1:-1].split(',')
+        else:
+            atomType = [atomType]
+
+        # Next is the electron state
+        radicalElectrons = []; spinMultiplicity = []
+        elecState = data[index+1].upper()
+        if elecState[0] == '{':
+            elecState = elecState[1:-1].split(',')
+        else:
+            elecState = [elecState]
+        for e in elecState:
+            if e == '0':
+                radicalElectrons.append(0); spinMultiplicity.append(1)
+            elif e == '1':
+                radicalElectrons.append(1); spinMultiplicity.append(2)
+            elif e == '2':
+                radicalElectrons.append(2); spinMultiplicity.append(1)
+                radicalElectrons.append(2); spinMultiplicity.append(3)
+            elif e == '2S':
+                radicalElectrons.append(2); spinMultiplicity.append(1)
+            elif e == '2T':
+                radicalElectrons.append(2); spinMultiplicity.append(3)
+            elif e == '3':
+                radicalElectrons.append(3); spinMultiplicity.append(4)
+            elif e == '4':
+                radicalElectrons.append(4); spinMultiplicity.append(5)
+
+        # Create a new atom based on the above information
+        if pattern:
+            atom = AtomPattern(atomType, radicalElectrons, spinMultiplicity, [0 for e in radicalElectrons], [0 for e in radicalElectrons], label)
+        else:
+            atom = Atom(atomType[0], radicalElectrons[0], spinMultiplicity[0], 0, 0, label)
+
+        # Add the atom to the list
+        atoms.append(atom)
+        atomdict[aid] = atom
+
+        # Process list of bonds
+        bonds[atom] = {}
+        for datum in data[index+2:]:
+
+            # Sometimes commas are used to delimit bonds in the bond list,
+            # so strip them just in case
+            datum = datum.strip(',')
+
+            aid2, comma, order = datum[1:-1].partition(',')
+            aid2 = int(aid2)
+
+            if order[0] == '{':
+                order = order[1:-1].split(',')
+
+            if aid2 in atomdict:
+                if pattern:
+                    bond = BondPattern(order)
+                else:
+                    bond = Bond(order)
+                bonds[atom][atomdict[aid2]] = bond
+                bonds[atomdict[aid2]][atom] = bond
+
+    # Check consistency using bonddict
+    for atom1 in bonds:
+        for atom2 in bonds[atom1]:
+            if atom2 not in bonds:
+                raise ChemPyError(label)
+            elif atom1 not in bonds[atom2]:
+                raise ChemPyError(label)
+            elif bonds[atom1][atom2] != bonds[atom2][atom1]:
+                raise ChemPyError(label)
+
+    # Add explicit hydrogen atoms to complete structure if desired
+    if addH and not pattern:
+        valences = {'H': 1, 'C': 4, 'O': 2}
+        orders = {'S': 1, 'D': 2, 'T': 3, 'B': 1.5}
+        newAtoms = []
+        for atom in atoms:
+            try:
+                valence = valences[atom.symbol]
+            except KeyError:
+                raise ChemPyError('Cannot add hydrogens to adjacency list: Unknown valence for atom "%s".' % atom.symbol)
+            radical = atom.radicalElectrons
+            order = 0
+            for atom2, bond in bonds[atom].iteritems():
+                order += orders[bond.order]
+            count = valence - radical - int(order)
+            for i in range(count):
+                a = Atom('H', 0, 1, 0, 0, '')
+                b = Bond('S')
+                newAtoms.append(a)
+                bonds[atom][a] = b
+                bonds[a] = {atom: b}
+        atoms.extend(newAtoms)
+
+    return atoms, bonds
+
+def toAdjacencyList(molecule, label='', pattern=False, removeH=False):
+    """
+    Convert the `graph` object to an adjacency list. `pattern` specifies
+    whether the graph object is a complete molecule (if ``False``) or a
+    substructure pattern (if ``True``). The `label` parameter is an optional
+    string to put as the first line of the adjacency list; if set to the empty
+    string, this line will be omitted. If `removeH` is ``True``, hydrogen atoms
+    (that do not have labels) will not be printed; this is a valid shorthand,
+    as they can usually be inferred as long as the free electron numbers are
+    accurate.
+    """
+
+    adjlist = ''
+
+    if label != '': adjlist += label + '\n'
+
+    molecule.updateConnectivityValues() # so we can sort by them
+    atoms = molecule.atoms
+    bonds = molecule.bonds
+
+    # weakest sort first (will be over-ruled by later sorts)
+    # some function of connectivity values), from lowest to highest
+    atoms.sort(key=graph.getVertexSortValue)
+    #  sort by label
+    atoms.sort(key=lambda atom: atom.label)
+    # then bring labeled atoms to the top (else '' will be before '*1')
+    atoms.sort(key=lambda atom: atom.label != '', reverse=True)
+    # Sort the atoms by graph.globalAtomSortValue
+    # (some function of connectivity values), from lowest to highest
+    atoms.sort(key=lambda atom: atom.connectivity1, reverse=True)
+    #atoms.sort(key=graph.globalAtomSortValue)
+    # now make sure the hydrogens come last, in case we wish to strip them!
+    if not pattern: atoms.sort(key=lambda atom: atom.isHydrogen() )
+
+    for i, atom in enumerate(atoms):
+        if removeH and atom.isHydrogen() and atom.label=='': continue
+
+        # Atom number
+        adjlist += '%-2d ' % (i+1)
+
+        # Atom label
+        adjlist += "%-2s " % (atom.label)
+
+        if pattern:
+            # Atom type(s)
+            if len(atom.atomType) == 1:
+                adjlist += atom.atomType[0] + ' '
+            else:
+                adjlist += '{%s} ' % (','.join(atom.atomType))
+            # Electron state(s)
+            if len(atom.radicalElectrons) > 1: adjlist += '{'
+            for radical, spin in zip(atom.radicalElectrons, atom.spinMultiplicity):
+                if radical == 0: adjlist += '0'
+                elif radical == 1: adjlist += '1'
+                elif radical == 2 and spin == 1: adjlist += '2S'
+                elif radical == 2 and spin == 3: adjlist += '2T'
+                elif radical == 3: adjlist += '3'
+                elif radical == 4: adjlist += '4'
+                if len(atom.radicalElectrons) > 1: adjlist += ','
+            if len(atom.radicalElectrons) > 1: adjlist = adjlist[0:-1] + '}'
+        else:
+            # Atom type
+            adjlist += "%-5s " % atom.symbol
+            # Electron state(s)
+            if atom.radicalElectrons == 0: adjlist += '0'
+            elif atom.radicalElectrons == 1: adjlist += '1'
+            elif atom.radicalElectrons == 2 and atom.spinMultiplicity == 1: adjlist += '2S'
+            elif atom.radicalElectrons == 2 and atom.spinMultiplicity == 3: adjlist += '2T'
+            elif atom.radicalElectrons == 3: adjlist += '3'
+            elif atom.radicalElectrons == 4: adjlist += '4'
+        adjlist += ' '
+
+        # Bonds list
+        atoms2 = bonds[atom].keys()
+        # sort them the same way as the atoms
+        #atoms2.sort(key=atoms.index)
+
+        for atom2 in atoms2:
+            if removeH and atom2.isHydrogen(): continue
+            bond = bonds[atom][atom2]
+            adjlist += '{' + str(atoms.index(atom2)+1) + ','
+
+            # Bond type(s)
+            if pattern:
+                if len(bond.order) == 1:
+                    adjlist += bond.order[0]
+                else:
+                    adjlist += '{%s} ' % (','.join(bond.order))
+            else:
+                adjlist += bond.order
+            adjlist += '} '
+
+        # Each atom begins on a new list
+        adjlist += '\n'
+
+    return adjlist
