@@ -21,6 +21,17 @@ class MoleculeCheck(unittest.TestCase):
         self.assertTrue(molecule1.isIsomorphic(molecule2))
         self.assertTrue(molecule2.isIsomorphic(molecule1))
 
+    def testSubgraphIsomorphism(self):
+        """
+        Check the graph isomorphism functions.
+        """
+        molecule = Molecule().fromSMILES('C=CC=C[CH]C')
+        pattern = MoleculePattern().fromAdjacencyList("""
+        1 Cd 0 {2,D}
+        2 Cd 0 {1,D}
+        """)
+        self.assertTrue(len(molecule.resonanceForms[0].findSubgraphIsomorphisms(pattern)[1]) == 4)
+
     def testAdjacencyList(self):
         """
         Check the adjacency list read/write functions for a full molecule.

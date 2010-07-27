@@ -36,6 +36,8 @@ import cython
 
 import element as elements
 import graph
+from exception import ChemPyError
+from pattern import *
 
 ################################################################################
 
@@ -71,6 +73,7 @@ class Atom(graph.Vertex):
         self.implicitHydrogens = implicitHydrogens
         self.charge = charge
         self.label = label
+        self.atomType = ''
 
     def __str__(self):
         """
@@ -98,19 +101,39 @@ class Atom(graph.Vertex):
     @property
     def symbol(self): return self.element.symbol
 
-    def equivalent(self, other0):
+    def equivalent(self, other):
         """
         Return ``True`` if `other` is indistinguishable from this atom, or
         ``False`` otherwise.
         """
-        if not isinstance(other0, Atom): return False
-        cython.declare(other=Atom)
-        other = other0
-        return (self.element is other.element and
-            self.radicalElectrons == other.radicalElectrons and
-            self.spinMultiplicity == other.spinMultiplicity and
-            self.implicitHydrogens == other.implicitHydrogens and
-            self.charge == other.charge)
+        if isinstance(other, Atom):
+            cython.declare(atom=Atom)
+            atom = other
+            return (self.element is atom.element and
+                self.radicalElectrons == atom.radicalElectrons and
+                self.spinMultiplicity == atom.spinMultiplicity and
+                self.implicitHydrogens == atom.implicitHydrogens and
+                self.charge == atom.charge)
+        elif isinstance(other, AtomPattern):
+            cython.declare(atom=AtomPattern)
+            atom = other
+            return (any([atomTypesEquivalent(self.atomType, a) for a in atom.atomType]) and
+                [self.radicalElectrons, self.spinMultiplicity] in zip(atom.radicalElectrons, atom.spinMultiplicity) and
+                self.charge in atom.charge)
+
+    def isSpecificCaseOf(self, other):
+        """
+        Return ``True`` if `self` is a specific case of `other`, or ``False``
+        otherwise.
+        """
+        if isinstance(other, Atom):
+            return self.equivalent(other)
+        elif isinstance(other, AtomPattern):
+            cython.declare(atom=AtomPattern)
+            atom = other
+            return (any([atomTypesSpecificCaseOf(self.atomType, a) for a in atom.atomType]) and
+                (self.radicalElectrons, self.spinMultiplicity) in zip(atom.radicalElectrons, atom.spinMultiplicity) and
+                self.charge in atom.charge)
 
     def copy(self):
         """
@@ -176,15 +199,27 @@ class Bond(graph.Edge):
         """
         return "Bond(order='%s')" % (self.order)
 
-    def equivalent(self, other0):
+    def equivalent(self, other):
         """
         Return ``True`` if `other` is indistinguishable from this bond, or
         ``False`` otherwise.
         """
-        if not isinstance(other0, Bond): return False
-        cython.declare(other=Bond)
-        other = other0
-        return (self.order == other.order)
+        if isinstance(other, Bond):
+            cython.declare(bond=Bond)
+            bond = other
+            return (self.order == bond.order)
+        elif isinstance(other, BondPattern):
+            cython.declare(bond=BondPattern)
+            bond = other
+            return (self.order in bond.order)
+
+    def isSpecificCaseOf(self, other):
+        """
+        Return ``True`` if `self` is a specific case of `other`, or ``False``
+        otherwise.
+        """
+        # There are no generic bond types, so isSpecificCaseOf is the same as equivalent
+        return self.equivalent(other)
 
     def copy(self):
         """
@@ -212,6 +247,13 @@ class Bond(graph.Edge):
         not.
         """
         return self.order == 'T'
+
+    def isBenzene(self):
+        """
+        Return ``True`` if the bond represents a benzene bond or ``False`` if
+        not.
+        """
+        return self.order == 'B'
 
 ################################################################################
 
@@ -364,6 +406,82 @@ class ChemGraph(graph.Graph):
 
         # Set implicitHydrogens flag to False
         self.implicitHydrogens = False
+
+    def updateAtomTypes(self):
+        """
+        Iterate through the atoms in the structure, checking their atom types
+        to ensure they are correct (i.e. accurately describe their local bond
+        environment) and complete (i.e. are as detailed as possible).
+        """
+        for atom in self.atoms:
+            atom.atomType = getAtomType(atom, self.bonds[atom])
+
+    def isIsomorphic(self, other, initialMap=None):
+        """
+        Returns :data:`True` if two graphs are isomorphic and :data:`False`
+        otherwise. Uses the VF2 algorithm of Vento and Foggia.
+        """
+        # Ensure that both self and other have the same implicit hydrogen status
+        # If not, make them both explicit just to be safe
+        implicitH = [self.implicitHydrogens, other.implicitHydrogens]
+        if not all(implicitH):
+            self.makeHydrogensExplicit()
+            other.makeHydrogensExplicit()
+        # Do the isomorphism comparison
+        result = graph.Graph.isIsomorphic(self, other, initialMap)
+        # Restore implicit status if needed
+        if implicitH[0]: self.makeHydrogensImplicit()
+        if implicitH[1]: other.makeHydrogensImplicit()
+        return result
+
+    def findIsomorphism(self, other, initialMap=None):
+        """
+        Returns :data:`True` if `other` is isomorphic and :data:`False`
+        otherwise, and the matching mapping.
+        Uses the VF2 algorithm of Vento and Foggia.
+        """
+        # Ensure that both self and other have the same implicit hydrogen status
+        # If not, make them both explicit just to be safe
+        implicitH = [self.implicitHydrogens, other.implicitHydrogens]
+        if not all(implicitH):
+            self.makeHydrogensExplicit()
+            other.makeHydrogensExplicit()
+        # Do the isomorphism comparison
+        result = graph.Graph.findIsomorphism(self, other, initialMap)
+        # Restore implicit status if needed
+        if implicitH[0]: self.makeHydrogensImplicit()
+        if implicitH[1]: other.makeHydrogensImplicit()
+        return result
+
+    def isSubgraphIsomorphic(self, other, initialMap=None):
+        """
+        Returns :data:`True` if `other` is subgraph isomorphic and :data:`False`
+        otherwise. Uses the VF2 algorithm of Vento and Foggia.
+        """
+        # Ensure that self is explicit (assume other is explicit)
+        implicitH = self.implicitHydrogens
+        self.makeHydrogensExplicit()
+        # Do the isomorphism comparison
+        result = graph.Graph.isSubgraphIsomorphic(self, other, initialMap)
+        # Restore implicit status if needed
+        if implicitH: self.makeHydrogensImplicit()
+        return result
+
+    def findSubgraphIsomorphisms(self, other, initialMap=None):
+        """
+        Returns :data:`True` if `other` is subgraph isomorphic and :data:`False`
+        otherwise. Also returns the lists all of valid mappings.
+
+        Uses the VF2 algorithm of Vento and Foggia.
+        """
+        # Ensure that self is explicit (assume other is explicit)
+        implicitH = self.implicitHydrogens
+        self.makeHydrogensExplicit()
+        # Do the isomorphism comparison
+        result = graph.Graph.findSubgraphIsomorphisms(self, other, initialMap)
+        # Restore implicit status if needed
+        if implicitH: self.makeHydrogensImplicit()
+        return result
 
     def isAtomInCycle(self, atom):
         """
@@ -519,6 +637,10 @@ class Molecule:
         # Make hydrogens implicit to conserve memory
         chemGraph.makeHydrogensImplicit()
 
+        # Update atom types
+        chemGraph.updateConnectivityValues()
+        chemGraph.updateAtomTypes()
+
         return self
 
     def fromAdjacencyList(self, adjlist, withLabel=True):
@@ -530,6 +652,8 @@ class Molecule:
         atoms, bonds = fromAdjacencyList(adjlist, pattern=False, addH=True, withLabel=withLabel)
         chemGraph = ChemGraph(atoms, bonds)
         chemGraph.makeHydrogensImplicit()
+        chemGraph.updateConnectivityValues()
+        chemGraph.updateAtomTypes()
         self.resonanceForms = [chemGraph]
         return self
 
@@ -641,3 +765,55 @@ class Molecule:
                 if chemGraph1.isIsomorphic(other):
                     return True
         return False
+
+    def findIsomorphism(self, other):
+        """
+        Returns :data:`True` if `other` is isomorphic and :data:`False`
+        otherwise, and the matching mapping.
+        Uses the VF2 algorithm of Vento and Foggia.
+        """
+        cython.declare(chemGraph1=ChemGraph, chemGraph2=ChemGraph)
+        isomorphism = []
+        if isinstance(other, Molecule):
+            for chemGraph1 in self.resonanceForms:
+                for chemGraph2 in other.resonanceForms:
+                    isomorphism.append(chemGraph1.findIsomorphism(chemGraph2)[1])
+        elif isinstance(other, ChemGraph):
+            for chemGraph1 in self.resonanceForms:
+                isomorphism.append(chemGraph1.findIsomorphism(other)[1])
+        return isomorphism
+
+    def isSubgraphIsomorphic(self, other):
+        """
+        Returns :data:`True` if `other` is subgraph isomorphic and :data:`False`
+        otherwise. Uses the VF2 algorithm of Vento and Foggia.
+        """
+        cython.declare(chemGraph1=ChemGraph, chemGraph2=ChemGraph)
+        if isinstance(other, Molecule):
+            for chemGraph1 in self.resonanceForms:
+                for chemGraph2 in other.resonanceForms:
+                    if chemGraph1.isSubgraphIsomorphic(chemGraph2):
+                        return True
+        elif isinstance(other, ChemGraph) or isinstance(other, MoleculePattern):
+            for chemGraph1 in self.resonanceForms:
+                if chemGraph1.isSubgraphIsomorphic(other):
+                    return True
+        return False
+
+    def findSubgraphIsomorphisms(self, other):
+        """
+        Returns :data:`True` if `other` is subgraph isomorphic and :data:`False`
+        otherwise. Also returns the lists all of valid mappings.
+
+        Uses the VF2 algorithm of Vento and Foggia.
+        """
+        cython.declare(chemGraph1=ChemGraph, chemGraph2=ChemGraph)
+        isomorphism = []
+        if isinstance(other, Molecule):
+            for chemGraph1 in self.resonanceForms:
+                for chemGraph2 in other.resonanceForms:
+                    isomorphism.append(chemGraph1.findSubgraphIsomorphisms(chemGraph2)[1])
+        elif isinstance(other, ChemGraph) or isinstance(other, MoleculePattern):
+            for chemGraph1 in self.resonanceForms:
+                isomorphism.append(chemGraph1.findSubgraphIsomorphisms(other)[1])
+        return isomorphism

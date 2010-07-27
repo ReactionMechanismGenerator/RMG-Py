@@ -94,6 +94,45 @@ from exception import ChemPyError
 
 ################################################################################
 
+def getAtomType(atom, bonds):
+    """
+    Determine the appropriate atom type for an :class:`Atom` object `atom`
+    with local bond structure `bonds`, a ``dict`` containing atom-bond pairs.
+    """
+
+    atomType = ''
+
+    # Count numbers of each higher-order bond type
+    double = 0; doubleO = 0; triple = 0; benzene = 0
+    for atom2, bond12 in bonds.iteritems():
+        if bond12.isDouble():
+            if atom2.isOxygen(): doubleO +=1
+            else:                double += 1
+        elif bond12.isTriple(): triple += 1
+        elif bond12.isBenzene(): benzene += 1
+
+    # Use element and counts to determine proper atom type
+    if atom.symbol == 'C':
+        if   double == 0 and doubleO == 0 and triple == 0 and benzene == 0: atomType = 'Cs'
+        elif double == 1 and doubleO == 0 and triple == 0 and benzene == 0: atomType = 'Cd'
+        elif double + doubleO == 2        and triple == 0 and benzene == 0: atomType = 'Cdd'
+        elif double == 0 and doubleO == 0 and triple == 1 and benzene == 0: atomType = 'Ct'
+        elif double == 0 and doubleO == 1 and triple == 0 and benzene == 0: atomType = 'CO'
+        elif double == 0 and doubleO == 0 and triple == 0 and benzene == 2: atomType = 'Cb'
+        elif double == 0 and doubleO == 0 and triple == 0 and benzene == 3: atomType = 'Cbf'
+    elif atom.symbol == 'H':
+        atomType = 'H'
+    elif atom.symbol == 'O':
+        if   double + doubleO == 0 and triple == 0 and benzene == 0: atomType = 'Os'
+        elif double + doubleO == 1 and triple == 0 and benzene == 0: atomType = 'Od'
+        elif len(bonds) == 0:                                        atomType = 'Oa'
+
+    # Raise exception if we could not identify the proper atom type
+    if atomType == '':
+        raise ChemPyError('Unable to determine atom type for atom %s.' % atom)
+
+    return atomType
+
 def atomTypesEquivalent(atomType1, atomType2):
     """
     Returns ``True`` if two atom types `atomType1` and `atomType2` are
@@ -605,7 +644,8 @@ class MoleculePattern(graph.Graph):
         Skips the first line (assuming it's a label) unless `withLabel` is
         ``False``.
         """
-        self.atoms, self.bonds = fromAdjacencyList(adjlist, pattern=True, addH=False, withLabel=withLabel)
+        self.vertices, self.edges = fromAdjacencyList(adjlist, pattern=True, addH=False, withLabel=withLabel)
+        self.updateConnectivityValues()
         return self
 
     def toAdjacencyList(self):

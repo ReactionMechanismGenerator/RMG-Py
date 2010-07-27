@@ -25,6 +25,7 @@
 ################################################################################
 
 from graph cimport Vertex, Edge, Graph
+from pattern cimport AtomPattern, BondPattern, MoleculePattern
 from element cimport Element
 
 ################################################################################
@@ -37,8 +38,11 @@ cdef class Atom(Vertex):
     cdef public short implicitHydrogens
     cdef public short charge
     cdef public str label
+    cdef public str atomType
 
-    cpdef bint equivalent(self, Vertex other0)
+    cpdef bint equivalent(self, Vertex other)
+
+    cpdef bint isSpecificCaseOf(self, Vertex other)
 
     cpdef Atom copy(self)
 
@@ -56,7 +60,9 @@ cdef class Bond(Edge):
 
     cdef public str order
 
-    cpdef bint equivalent(self, Edge other0)
+    cpdef bint equivalent(self, Edge other)
+
+    cpdef bint isSpecificCaseOf(self, Edge other)
 
     cpdef Bond copy(self)
 
@@ -95,6 +101,14 @@ cdef class ChemGraph(Graph):
     cpdef makeHydrogensImplicit(self)
 
     cpdef makeHydrogensExplicit(self)
+
+    cpdef bint isIsomorphic(self, Graph other, dict initialMap=?)
+
+    cpdef tuple findIsomorphism(self, Graph other, dict initialMap=?)
+
+    cpdef bint isSubgraphIsomorphic(self, Graph other, dict initialMap=?)
+
+    cpdef tuple findSubgraphIsomorphisms(self, Graph other, dict initialMap=?)
 
     cpdef bint isAtomInCycle(self, Atom atom)
 
