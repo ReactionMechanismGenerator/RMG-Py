@@ -182,6 +182,81 @@ class MoleculeCheck(unittest.TestCase):
                 else:
                     self.assertFalse(molecule.isBondInCycle(atom1, atom2))
 
+    def testRotorNumber(self):
+        """Count the number of internal rotors"""
+        # http://cactus.nci.nih.gov/chemical/structure/C1CCCC1C/image
+        test_set = [('CC', 1),
+                    ('CCC', 2),
+                    ('CC(C)(C)C', 4),
+                    ('C1CCCC1C',1),
+                    ('C=C',0)
+                    ]
+        fail_message = ''
+        for smile,should_be in test_set:
+            molecule = Molecule(SMILES=smile)
+            molecule.makeHydrogensExplicit()
+            rotorNumber = molecule.countInternalRotors()
+            if rotorNumber!=should_be:
+                fail_message+="Got rotor number of %s for %s (expected %s)\n"%(rotorNumber,smile,should_be)
+        self.assertEqual(fail_message,'',fail_message)
+
+    def testRotorNumberHard(self):
+        """Count the number of internal rotors in a tricky case"""
+        test_set = [('CC', 1),   # start with something simple:    H3C---CH3
+                    ('CC#CC', 1) # now lengthen that middle bond: H3C-C#C-CH3
+                    ]
+        fail_message = ''
+        for smile,should_be in test_set:
+            molecule = Molecule(SMILES=smile)
+            molecule.makeHydrogensExplicit()
+            rotorNumber = molecule.countInternalRotors()
+            if rotorNumber!=should_be:
+                fail_message+="Got rotor number of %s for %s (expected %s)\n"%(rotorNumber,smile,should_be)
+        self.assertEqual(fail_message,'',fail_message)
+
+    def testLinear(self):
+        """Identify linear molecules"""
+        # http://cactus.nci.nih.gov/chemical/structure/C1CCCC1C/image
+        test_set = [('CC', False),
+                    ('CCC', False),
+                    ('CC(C)(C)C', False),
+                    ('C',False),
+                    ('[H]',False),
+                    ('O=O',True),
+                    #('O=S',True),
+                    ('O=C=O',True),
+                    ('C#C', True),
+                    ('C#CC#CC#C', True)
+                    ]
+        fail_message = ''
+        for smile,should_be in test_set:
+            molecule = Molecule(SMILES=smile)
+            molecule.makeHydrogensExplicit()
+            symmetryNumber = molecule.isLinear()
+            if symmetryNumber!=should_be:
+                fail_message+="Got linearity %s for %s (expected %s)\n"%(symmetryNumber,smile,should_be)
+        self.assertEqual(fail_message,'',fail_message)
+
+    def testH(self):
+        """
+        Make sure that H radicals are produced properly from various shorthands.
+        """
+
+        # InChI
+        molecule = Molecule(InChI='InChI=1/H')
+        self.assertTrue(len(molecule.atoms) == 1)
+        H = molecule.atoms[0]
+        self.assertTrue(H.isHydrogen())
+        self.assertTrue(H.radicalElectrons == 1)
+
+        # SMILES
+        molecule = Molecule(SMILES='[H]')
+        self.assertTrue(len(molecule.atoms) == 1)
+        H = molecule.atoms[0]
+        print repr(H)
+        self.assertTrue(H.isHydrogen())
+        self.assertTrue(H.radicalElectrons == 1)
+
 ################################################################################
 
 if __name__ == '__main__':

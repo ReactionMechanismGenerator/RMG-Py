@@ -101,6 +101,14 @@ cdef class MoleculePattern(Graph):
 
     cpdef copy(self, bint deep=?)
 
+    cpdef clearLabeledAtoms(self)
+
+    cpdef bint containsLabeledAtom(self, str label)
+
+    cpdef Atom getLabeledAtom(self, str label)
+
+	cpdef dict getLabeledAtoms(self)
+
     cpdef fromAdjacencyList(self, str adjlist, bint withLabel=?)
 
     cpdef toAdjacencyList(self)

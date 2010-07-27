@@ -638,6 +638,30 @@ class MoleculePattern(graph.Graph):
         other = MoleculePattern(g.vertices, g.edges)
         return other
 
+    def clearLabeledAtoms(self):
+        """
+        Remove the labels from all atoms in the molecular pattern.
+        """
+        for atom in self.atoms:
+            atom.label = ''
+
+    def containsLabeledAtom(self, label):
+        """
+        Return :data:`True` if the pattern contains an atom with the label
+        `label` and :data:`False` otherwise.
+        """
+        for atom in self.atoms:
+            if atom.label == label: return True
+        return False
+
+    def getLabeledAtom(self, label):
+        """
+        Return the atoms in the pattern that are labeled.
+        """
+        for atom in self.atoms:
+            if atom.label == label: return atom
+        return None
+
     def getLabeledAtoms(self):
         """
         Return the labeled atoms as a ``dict`` with the keys being the labels

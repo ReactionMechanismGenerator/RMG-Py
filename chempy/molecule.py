@@ -354,6 +354,20 @@ class Molecule(graph.Graph):
         """
         return self.sortVertices()
 
+    def getFormula(self):
+        """
+        Return the molecular formula for the molecule.
+        """
+        import pybel
+        mol = pybel.Molecule(self.toOBMol())
+        return mol.formula
+
+    def getMolecularWeight(self):
+        """
+        Return the molecular weight of the molecule in kg/mol.
+        """
+        return sum([atom.mass for atom in self.atoms])
+
     def copy(self, deep=False):
         """
         Create a copy of the current graph. If `deep` is ``True``, a deep copy
@@ -452,6 +466,30 @@ class Molecule(graph.Graph):
         """
         for atom in self.atoms:
             atom.atomType = getAtomType(atom, self.bonds[atom])
+
+    def clearLabeledAtoms(self):
+        """
+        Remove the labels from all atoms in the molecule.
+        """
+        for atom in self.atoms:
+            atom.label = ''
+
+    def containsLabeledAtom(self, label):
+        """
+        Return :data:`True` if the molecule contains an atom with the label
+        `label` and :data:`False` otherwise.
+        """
+        for atom in self.atoms:
+            if atom.label == label: return True
+        return False
+
+    def getLabeledAtom(self, label):
+        """
+        Return the atoms in the molecule that are labeled.
+        """
+        for atom in self.atoms:
+            if atom.label == label: return atom
+        return None
 
     def getLabeledAtoms(self):
         """
@@ -661,7 +699,8 @@ class Molecule(graph.Graph):
 
             atom = Atom(element, radicalElectrons, spinMultiplicity, 0, charge)
             self.atoms.append(atom)
-
+            self.bonds[atom] = {}
+            
             # Add bonds by iterating again through atoms
             for j in range(0, i):
                 obatom2 = obmol.GetAtom(j + 1)
@@ -678,8 +717,6 @@ class Molecule(graph.Graph):
                     bond = Bond(order)
                     atom1 = self.atoms[i]
                     atom2 = self.atoms[j]
-                    if atom1 not in self.bonds: self.bonds[atom1] = {}
-                    if atom2 not in self.bonds: self.bonds[atom2] = {}
                     self.bonds[atom1][atom2] = bond
                     self.bonds[atom2][atom1] = bond
 
@@ -785,3 +822,62 @@ class Molecule(graph.Graph):
         Convert the molecular structure to a string adjacency list.
         """
         return toAdjacencyList(self)
+
+    def isLinear(self):
+        """
+        Return :data:`True` if the structure is linear and :data:`False`
+        otherwise.
+        """
+
+        atomCount = len(self.atoms)
+
+        # Monatomic molecules are definitely nonlinear
+        if atomCount == 1:
+            return False
+        # Diatomic molecules are definitely linear
+        elif atomCount == 2:
+            return True
+        # Cyclic molecules are definitely nonlinear
+        elif self.isCyclic():
+            return False
+
+        # True if all bonds are double bonds (e.g. O=C=O)
+        allDoubleBonds = True
+        for atom1 in self.bonds:
+            for bond in self.bonds[atom1].values():
+                if not bond.isDouble(): allDoubleBonds = False
+        if allDoubleBonds: return True
+
+        # True if alternating single-triple bonds (e.g. H-C#C-H)
+        for atom in self.atoms:
+            bonds = self.bonds[atom].values()
+            if len(bonds)==1:
+                continue # ok, next atom
+            if len(bonds)>2:
+                break # fail!
+            if bonds[0].isSingle() and bonds[1].isTriple():
+                continue # ok, next atom
+            if bonds[1].isSingle() and bonds[0].isTriple():
+                continue # ok, next atom
+            break # fail if we haven't continued
+        else:
+            # didn't fail
+            return True
+
+        # not returned yet? must be nonlinear
+        return False
+
+    def countInternalRotors(self):
+        """
+        Determine the number of internal rotors in the structure. Any single
+        bond not in a cycle and between two atoms that also have other bonds
+        are considered to be internal rotors.
+        """
+        count = 0
+        for atom1 in self.bonds:
+            for atom2, bond in self.bonds[atom1].iteritems():
+                if self.atoms.index(atom1) < self.atoms.index(atom2) and bond.isSingle() and not self.isBondInCycle(atom1, atom2):
+                    if len(self.bonds[atom1]) > 1 and len(self.bonds[atom2]) > 1:
+                        count += 1
+        return count
+

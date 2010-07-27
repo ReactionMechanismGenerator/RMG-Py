@@ -96,11 +96,23 @@ cdef class Molecule(Graph):
 
     cpdef sortAtoms(self)
 
+    cpdef str getFormula(self)
+
+    cpdef double getMolecularWeight(self):
+
     cpdef copy(self, bint deep=?)
 
     cpdef makeHydrogensImplicit(self)
 
     cpdef makeHydrogensExplicit(self)
+
+    cpdef clearLabeledAtoms(self)
+
+    cpdef bint containsLabeledAtom(self, str label)
+
+    cpdef Atom getLabeledAtom(self, str label)
+
+	cpdef dict getLabeledAtoms(self)
 
     cpdef bint isIsomorphic(self, Graph other, dict initialMap=?)
 
@@ -135,3 +147,7 @@ cdef class Molecule(Graph):
     cpdef toOBMol(self)
 
     cpdef toAdjacencyList(self)
+
+    cpdef bint isLinear(self)
+
+    cpdef bint countInternalRotors(self)
