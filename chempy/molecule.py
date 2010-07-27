@@ -36,6 +36,8 @@ import cython
 
 import element as elements
 import graph
+from exception import ChemPyError
+from pattern import *
 
 ################################################################################
 
@@ -61,6 +63,7 @@ class Atom(graph.Vertex):
     """
 
     def __init__(self, element=None, radicalElectrons=0, spinMultiplicity=1, implicitHydrogens=0, charge=0, label=''):
+        graph.Vertex.__init__(self)
         if isinstance(element, str):
             self.element = elements.__dict__[element]
         else:
@@ -70,6 +73,7 @@ class Atom(graph.Vertex):
         self.implicitHydrogens = implicitHydrogens
         self.charge = charge
         self.label = label
+        self.atomType = ''
 
     def __str__(self):
         """
@@ -97,19 +101,39 @@ class Atom(graph.Vertex):
     @property
     def symbol(self): return self.element.symbol
 
-    def equivalent(self, other0):
+    def equivalent(self, other):
         """
         Return ``True`` if `other` is indistinguishable from this atom, or
         ``False`` otherwise.
         """
-        if not isinstance(other0, Atom): return False
-        cython.declare(other=Atom)
-        other = other0
-        return (self.element is other.element and
-            self.radicalElectrons == other.radicalElectrons and
-            self.spinMultiplicity == other.spinMultiplicity and
-            self.implicitHydrogens == other.implicitHydrogens and
-            self.charge == other.charge)
+        if isinstance(other, Atom):
+            cython.declare(atom=Atom)
+            atom = other
+            return (self.element is atom.element and
+                self.radicalElectrons == atom.radicalElectrons and
+                self.spinMultiplicity == atom.spinMultiplicity and
+                self.implicitHydrogens == atom.implicitHydrogens and
+                self.charge == atom.charge)
+        elif isinstance(other, AtomPattern):
+            cython.declare(atom=AtomPattern)
+            atom = other
+            return (any([atomTypesEquivalent(self.atomType, a) for a in atom.atomType]) and
+                [self.radicalElectrons, self.spinMultiplicity] in zip(atom.radicalElectrons, atom.spinMultiplicity) and
+                self.charge in atom.charge)
+
+    def isSpecificCaseOf(self, other):
+        """
+        Return ``True`` if `self` is a specific case of `other`, or ``False``
+        otherwise.
+        """
+        if isinstance(other, Atom):
+            return self.equivalent(other)
+        elif isinstance(other, AtomPattern):
+            cython.declare(atom=AtomPattern)
+            atom = other
+            return (any([atomTypesSpecificCaseOf(self.atomType, a) for a in atom.atomType]) and
+                (self.radicalElectrons, self.spinMultiplicity) in zip(atom.radicalElectrons, atom.spinMultiplicity) and
+                self.charge in atom.charge)
 
     def copy(self):
         """
@@ -154,36 +178,48 @@ class Bond(graph.Edge):
     =================== =================== ====================================
     Attribute           Type                Description
     =================== =================== ====================================
-    `order`             ``short``           The bond order (1 = single, 2 = double, 3 = triple)
+    `order`             ``str``             The bond order ('S' = single, 'D' = double, 'T' = triple, 'B' = benzene)
     =================== =================== ====================================
 
     """
 
     def __init__(self, order=1):
+        graph.Edge.__init__(self)
         self.order = order
 
     def __str__(self):
         """
         Return a human-readable string representation of the object.
         """
-        orders = {1:'S',2:'D',3:'T'}
-        return "<Bond '%s'>" % (orders[self.order])
+        return "<Bond '%s'>" % (self.order)
 
     def __repr__(self):
         """
         Return a representation that can be used to reconstruct the object.
         """
-        return "Bond(order=%s)" % (self.order)
+        return "Bond(order='%s')" % (self.order)
 
-    def equivalent(self, other0):
+    def equivalent(self, other):
         """
         Return ``True`` if `other` is indistinguishable from this bond, or
         ``False`` otherwise.
         """
-        if not isinstance(other0, Bond): return False
-        cython.declare(other=Bond)
-        other = other0
-        return (self.order == other.order)
+        if isinstance(other, Bond):
+            cython.declare(bond=Bond)
+            bond = other
+            return (self.order == bond.order)
+        elif isinstance(other, BondPattern):
+            cython.declare(bond=BondPattern)
+            bond = other
+            return (self.order in bond.order)
+
+    def isSpecificCaseOf(self, other):
+        """
+        Return ``True`` if `self` is a specific case of `other`, or ``False``
+        otherwise.
+        """
+        # There are no generic bond types, so isSpecificCaseOf is the same as equivalent
+        return self.equivalent(other)
 
     def copy(self):
         """
@@ -196,25 +232,32 @@ class Bond(graph.Edge):
         Return ``True`` if the bond represents a single bond or ``False`` if
         not.
         """
-        return self.order == 1
+        return self.order == 'S'
 
     def isDouble(self):
         """
         Return ``True`` if the bond represents a double bond or ``False`` if
         not.
         """
-        return self.order == 2
+        return self.order == 'D'
 
     def isTriple(self):
         """
         Return ``True`` if the bond represents a triple bond or ``False`` if
         not.
         """
-        return self.order == 3
+        return self.order == 'T'
+
+    def isBenzene(self):
+        """
+        Return ``True`` if the bond represents a benzene bond or ``False`` if
+        not.
+        """
+        return self.order == 'B'
 
 ################################################################################
 
-class ChemGraph(graph.Graph):
+class Molecule(graph.Graph):
     """
     A representation of a molecular structure using a graph data type, extending
     the :class:`Graph` class. The `atoms` and `bonds` attributes are aliases
@@ -222,9 +265,24 @@ class ChemGraph(graph.Graph):
     also been provided.
     """
 
-    def __init__(self, atoms=None, bonds=None):
+    def __init__(self, atoms=None, bonds=None, SMILES='', InChI=''):
         graph.Graph.__init__(self, atoms, bonds)
+        if SMILES != '': self.fromSMILES(SMILES)
+        elif InChI != '': self.fromInChI(InChI)
         self.implicitHydrogens = False
+
+    def __str__(self):
+        """
+        Return a human-readable string representation of the object.
+        """
+        return "<Molecule '%s'>" % (self.toSMILES())
+
+    def __repr__(self):
+        """
+        Return a representation that can be used to reconstruct the object.
+        """
+        return "Bond(SMILES='%s')" % (self.toSMILES())
+
 
     def __getAtoms(self): return self.vertices
     def __setAtoms(self, atoms): self.vertices = atoms
@@ -303,9 +361,9 @@ class ChemGraph(graph.Graph):
         If `deep` is ``False`` or not specified, a shallow copy is made: the
         original vertices and edges are used in the new graph.
         """
-        other = cython.declare(ChemGraph)
+        other = cython.declare(Molecule)
         g = graph.Graph.copy(self, deep)
-        other = ChemGraph(g.vertices, g.edges)
+        other = Molecule(g.vertices, g.edges)
         return other
 
     def makeHydrogensImplicit(self):
@@ -352,7 +410,8 @@ class ChemGraph(graph.Graph):
         for atom in self.atoms:
             while atom.implicitHydrogens > 0:
                 H = Atom(element='H')
-                bond = Bond(order=1)
+                H.atomType = 'H'
+                bond = Bond(order='S')
                 hydrogens.append((H, atom, bond))
                 atom.implicitHydrogens -= 1
 
@@ -363,6 +422,128 @@ class ChemGraph(graph.Graph):
 
         # Set implicitHydrogens flag to False
         self.implicitHydrogens = False
+
+    def updateAtomTypes(self):
+        """
+        Iterate through the atoms in the structure, checking their atom types
+        to ensure they are correct (i.e. accurately describe their local bond
+        environment) and complete (i.e. are as detailed as possible).
+        """
+        for atom in self.atoms:
+            atom.atomType = getAtomType(atom, self.bonds[atom])
+
+    def getLabeledAtoms(self):
+        """
+        Return the labeled atoms as a ``dict`` with the keys being the labels
+        and the values the atoms themselves. If two or more atoms have the
+        same label, the value is converted to a list of these atoms.
+        """
+        labeled = {}
+        for atom in self.atoms:
+            if atom.label != '':
+                if atom.label in labeled:
+                    labeled[atom.label] = [labeled[atom.label]]
+                    labeled[atom.label].append(atom)
+                else:
+                    labeled[atom.label] = atom
+        return labeled
+
+    def isIsomorphic(self, other, initialMap=None):
+        """
+        Returns :data:`True` if two graphs are isomorphic and :data:`False`
+        otherwise. The `initialMap` attribute can be used to specify a required
+        mapping from `self` to `other` (i.e. the atoms of `self` are the keys,
+        while the atoms of `other` are the values). The `other` parameter must
+        be a :class:`Molecule` object, or a :class:`TypeError` is raised.
+        """
+        # It only makes sense to compare a Molecule to a Molecule for full
+        # isomorphism, so raise an exception if this is not what was requested
+        if not isinstance(other, Molecule):
+            raise TypeError('Got a %s object for parameter "other", when a Molecule object is required.' % other.__class__)
+        # Ensure that both self and other have the same implicit hydrogen status
+        # If not, make them both explicit just to be safe
+        implicitH = [self.implicitHydrogens, other.implicitHydrogens]
+        if not all(implicitH):
+            self.makeHydrogensExplicit()
+            other.makeHydrogensExplicit()
+        # Do the isomorphism comparison
+        result = graph.Graph.isIsomorphic(self, other, initialMap)
+        # Restore implicit status if needed
+        if implicitH[0]: self.makeHydrogensImplicit()
+        if implicitH[1]: other.makeHydrogensImplicit()
+        return result
+
+    def findIsomorphism(self, other, initialMap=None):
+        """
+        Returns :data:`True` if `other` is isomorphic and :data:`False`
+        otherwise, and the matching mapping. The `initialMap` attribute can be
+        used to specify a required mapping from `self` to `other` (i.e. the
+        atoms of `self` are the keys, while the atoms of `other` are the
+        values). The returned mapping also uses the atoms of `self` for the keys
+        and the atoms of `other` for the values. The `other` parameter must
+        be a :class:`Molecule` object, or a :class:`TypeError` is raised.
+        """
+        # It only makes sense to compare a Molecule to a Molecule for full
+        # isomorphism, so raise an exception if this is not what was requested
+        if not isinstance(other, Molecule):
+            raise TypeError('Got a %s object for parameter "other", when a Molecule object is required.' % other.__class__)
+        # Ensure that both self and other have the same implicit hydrogen status
+        # If not, make them both explicit just to be safe
+        implicitH = [self.implicitHydrogens, other.implicitHydrogens]
+        if not all(implicitH):
+            self.makeHydrogensExplicit()
+            other.makeHydrogensExplicit()
+        # Do the isomorphism comparison
+        result = graph.Graph.findIsomorphism(self, other, initialMap)
+        # Restore implicit status if needed
+        if implicitH[0]: self.makeHydrogensImplicit()
+        if implicitH[1]: other.makeHydrogensImplicit()
+        return result
+
+    def isSubgraphIsomorphic(self, other, initialMap=None):
+        """
+        Returns :data:`True` if `other` is subgraph isomorphic and :data:`False`
+        otherwise. The `initialMap` attribute can be used to specify a required
+        mapping from `self` to `other` (i.e. the atoms of `self` are the keys,
+        while the atoms of `other` are the values). The `other` parameter must
+        be a :class:`MoleculePattern` object, or a :class:`TypeError` is raised.
+        """
+        # It only makes sense to compare a Molecule to a MoleculePattern for subgraph
+        # isomorphism, so raise an exception if this is not what was requested
+        if not isinstance(other, MoleculePattern):
+            raise TypeError('Got a %s object for parameter "other", when a MoleculePattern object is required.' % other.__class__)
+        # Ensure that self is explicit (assume other is explicit)
+        implicitH = self.implicitHydrogens
+        self.makeHydrogensExplicit()
+        # Do the isomorphism comparison
+        result = graph.Graph.isSubgraphIsomorphic(self, other, initialMap)
+        # Restore implicit status if needed
+        if implicitH: self.makeHydrogensImplicit()
+        return result
+
+    def findSubgraphIsomorphisms(self, other, initialMap=None):
+        """
+        Returns :data:`True` if `other` is subgraph isomorphic and :data:`False`
+        otherwise. Also returns the lists all of valid mappings. The
+        `initialMap` attribute can be used to specify a required mapping from
+        `self` to `other` (i.e. the atoms of `self` are the keys, while the
+        atoms of `other` are the values). The returned mappings also use the
+        atoms of `self` for the keys and the atoms of `other` for the values.
+        The `other` parameter must be a :class:`MoleculePattern` object, or a
+        :class:`TypeError` is raised.
+        """
+        # It only makes sense to compare a Molecule to a MoleculePattern for subgraph
+        # isomorphism, so raise an exception if this is not what was requested
+        if not isinstance(other, MoleculePattern):
+            raise TypeError('Got a %s object for parameter "other", when a MoleculePattern object is required.' % other.__class__)
+        # Ensure that self is explicit (assume other is explicit)
+        implicitH = self.implicitHydrogens
+        self.makeHydrogensExplicit()
+        # Do the isomorphism comparison
+        result = graph.Graph.findSubgraphIsomorphisms(self, other, initialMap)
+        # Restore implicit status if needed
+        if implicitH: self.makeHydrogensImplicit()
+        return result
 
     def isAtomInCycle(self, atom):
         """
@@ -389,35 +570,6 @@ class ChemGraph(graph.Graph):
         """
         from ext.molecule_draw import drawMolecule
         drawMolecule(self, path=path)
-
-################################################################################
-
-class Molecule:
-    """
-    A molecular configuration of atoms and bonds. The attributes are:
-
-    =================== =================== ====================================
-    Attribute           Type                Description
-    =================== =================== ====================================
-    `resonanceForms`    ``list``            A list of :class:`ChemGraph` objects representing the resonance forms of the molecule, sorted by decreasing stability
-    =================== =================== ====================================
-
-    """
-
-    def __init__(self):
-        self.resonanceForms = []
-
-    def __str__(self):
-        """
-        Return a human-readable string representation of the object.
-        """
-        return "<Molecule '%s'>" % (self.toSMILES())
-
-    def __repr__(self):
-        """
-        Return a representation that can be used to reconstruct the object.
-        """
-        return "Molecule(SMILES=%s)" % (self.toSMILES())
 
     def fromCML(self, cmlstr):
         """
@@ -456,11 +608,9 @@ class Molecule:
         `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
         """
 
-        cython.declare(chemGraph=ChemGraph, i=cython.int)
+        cython.declare(i=cython.int)
         cython.declare(radicalElectrons=cython.int, spinMultiplicity=cython.int, charge=cython.int)
         cython.declare(atom=Atom, atom1=Atom, atom2=Atom, bond=Bond)
-
-        chemGraph = ChemGraph()
 
         # Add hydrogen atoms to complete molecule if needed
         obmol.AddHydrogens()
@@ -489,7 +639,7 @@ class Molecule:
             charge = obatom.GetFormalCharge()
 
             atom = Atom(element, radicalElectrons, spinMultiplicity, 0, charge)
-            chemGraph.atoms.append(atom)
+            self.atoms.append(atom)
 
             # Add bonds by iterating again through atoms
             for j in range(0, i):
@@ -499,25 +649,38 @@ class Molecule:
                     order = 0
 
                     # Process bond type
-                    if obbond.IsSingle(): order = 1
-                    elif obbond.IsDouble(): order = 2
-                    elif obbond.IsTriple(): order = 3
-                    elif obbond.IsAromatic(): order = 5
+                    if obbond.IsSingle(): order = 'S'
+                    elif obbond.IsDouble(): order = 'D'
+                    elif obbond.IsTriple(): order = 'T'
+                    elif obbond.IsAromatic(): order = 'B'
 
                     bond = Bond(order)
-                    atom1 = chemGraph.atoms[i]
-                    atom2 = chemGraph.atoms[j]
-                    if atom1 not in chemGraph.bonds: chemGraph.bonds[atom1] = {}
-                    if atom2 not in chemGraph.bonds: chemGraph.bonds[atom2] = {}
-                    chemGraph.bonds[atom1][atom2] = bond
-                    chemGraph.bonds[atom2][atom1] = bond
-
-        # Add as only structure in list of resonance forms
-        self.resonanceForms = [chemGraph]
+                    atom1 = self.atoms[i]
+                    atom2 = self.atoms[j]
+                    if atom1 not in self.bonds: self.bonds[atom1] = {}
+                    if atom2 not in self.bonds: self.bonds[atom2] = {}
+                    self.bonds[atom1][atom2] = bond
+                    self.bonds[atom2][atom1] = bond
 
         # Make hydrogens implicit to conserve memory
-        chemGraph.makeHydrogensImplicit()
+        self.makeHydrogensImplicit()
 
+        # Set atom types and connectivity values
+        self.updateConnectivityValues()
+        self.updateAtomTypes()
+
+        return self
+
+    def fromAdjacencyList(self, adjlist, withLabel=True):
+        """
+        Convert a string adjacency list `adjlist` to a molecular structure.
+        Skips the first line (assuming it's a label) unless `withLabel` is
+        ``False``.
+        """
+        self.vertices, self.edges = fromAdjacencyList(adjlist, pattern=False, addH=True, withLabel=withLabel)
+        self.makeHydrogensImplicit()
+        self.updateConnectivityValues()
+        self.updateAtomTypes()
         return self
 
     def toCML(self):
@@ -565,15 +728,15 @@ class Molecule:
         cython.declare(index1=cython.int, index2=cython.int, order=cython.int)
 
         # Make hydrogens explicit while we perform the conversion
-        implicitH = self.resonanceForms[0].implicitHydrogens
-        self.resonanceForms[0].makeHydrogensExplicit()
+        implicitH = self.implicitHydrogens
+        self.makeHydrogensExplicit()
 
         # Sort the atoms before converting to ensure output is consistent
         # between different runs
-        self.resonanceForms[0].sortAtoms()
+        self.sortAtoms()
 
-        atoms = self.resonanceForms[0].atoms
-        bonds = self.resonanceForms[0].bonds
+        atoms = self.atoms
+        bonds = self.bonds
 
         obmol = openbabel.OBMol()
         for atom in atoms:
@@ -591,34 +754,12 @@ class Molecule:
         obmol.AssignSpinMultiplicity(True)
 
         # Restore implicit hydrogens if necessary
-        if implicitH: self.resonanceForms[0].makeHydrogensImplicit()
+        if implicitH: self.makeHydrogensImplicit()
 
         return obmol
 
-    def draw(self, path):
+    def toAdjacencyList(self):
         """
-        Generate a pictorial representation of the molecule using the
-        :mod:`ext.molecule_draw` module. Use `path` to specify the file to save
-        the generated image to; the image type is automatically determined by
-        extension. Valid extensions are ``.png``, ``.svg``, ``.pdf``, and
-        ``.ps``; of these, the first is a raster format and the remainder are
-        vector formats.
+        Convert the molecular structure to a string adjacency list.
         """
-        self.resonanceForms[0].draw(path=path)
-
-    def isIsomorphic(self, other):
-        """
-        Returns ``True`` if the two molecules are isomorphic and ``False``
-        otherwise.
-        """
-        cython.declare(chemGraph1=ChemGraph, chemGraph2=ChemGraph)
-        if isinstance(other, Molecule):
-            for chemGraph1 in self.resonanceForms:
-                for chemGraph2 in other.resonanceForms:
-                    if chemGraph1.isIsomorphic(chemGraph2):
-                        return True
-        elif isinstance(other, ChemGraph):
-            for chemGraph1 in self.resonanceForms:
-                if chemGraph1.isIsomorphic(other):
-                    return True
-        return False
+        return toAdjacencyList(self)

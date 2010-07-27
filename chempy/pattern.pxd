@@ -25,58 +25,61 @@
 ################################################################################
 
 from graph cimport Vertex, Edge, Graph
-from pattern cimport AtomPattern, BondPattern, MoleculePattern
-from element cimport Element
 
 ################################################################################
 
-cdef class Atom(Vertex):
+cpdef bint atomTypesEquivalent(str atomType1, str atomType2)
 
-    cdef public Element element
-    cdef public short radicalElectrons
-    cdef public short spinMultiplicity
-    cdef public short implicitHydrogens
-    cdef public short charge
+cpdef bint atomTypesSpecificCaseOf(str atomType1, str atomType2)
+
+################################################################################
+
+cdef class AtomPattern(Vertex):
+
+    cdef public list atomType
+    cdef public list radicalElectrons
+    cdef public list spinMultiplicity
+    cdef public list implicitHydrogens
+    cdef public list charge
     cdef public str label
-    cdef public str atomType
+
+    cpdef copy(self)
+
+    cpdef __changeBond(self, short order)
+
+    cpdef __formBond(self, short order)
+
+    cpdef __breakBond(self, short order)
+
+    cpdef __gainRadical(self, short radical)
+
+    cpdef __loseRadical(self, short radical)
+
+    cpdef applyAction(self, tuple action)
 
     cpdef bint equivalent(self, Vertex other)
 
     cpdef bint isSpecificCaseOf(self, Vertex other)
 
-    cpdef Atom copy(self)
-
-    cpdef bint isHydrogen(self)
-
-    cpdef bint isNonHydrogen(self)
-
-    cpdef bint isCarbon(self)
-
-    cpdef bint isOxygen(self)
-
 ################################################################################
 
-cdef class Bond(Edge):
+cdef class BondPattern(Edge):
 
-    cdef public str order
+    cdef public list order
+
+    cpdef copy(self)
+
+    cpdef __changeBond(self, short order)
+
+    cpdef applyAction(self, tuple action)
 
     cpdef bint equivalent(self, Edge other)
 
     cpdef bint isSpecificCaseOf(self, Edge other)
 
-    cpdef Bond copy(self)
-
-    cpdef bint isSingle(self)
-
-    cpdef bint isDouble(self)
-
-    cpdef bint isTriple(self)
-
 ################################################################################
 
-cdef class Molecule(Graph):
-
-    cdef public bint implicitHydrogens
+cdef class MoleculePattern(Graph):
 
     cpdef addAtom(self, Atom atom)
 
@@ -98,40 +101,12 @@ cdef class Molecule(Graph):
 
     cpdef copy(self, bint deep=?)
 
-    cpdef makeHydrogensImplicit(self)
-
-    cpdef makeHydrogensExplicit(self)
-
-    cpdef bint isIsomorphic(self, Graph other, dict initialMap=?)
-
-    cpdef tuple findIsomorphism(self, Graph other, dict initialMap=?)
-
-    cpdef bint isSubgraphIsomorphic(self, Graph other, dict initialMap=?)
-
-    cpdef tuple findSubgraphIsomorphisms(self, Graph other, dict initialMap=?)
-
-    cpdef bint isAtomInCycle(self, Atom atom)
-
-    cpdef bint isBondInCycle(self, Atom atom1, Atom atom2)
-
-    cpdef draw(self, str path)
-
-    cpdef fromCML(self, str cmlstr)
-
-    cpdef fromInChI(self, str inchistr)
-
-    cpdef fromSMILES(self, str smilesstr)
-
-    cpdef fromOBMol(self, obmol)
-
     cpdef fromAdjacencyList(self, str adjlist, bint withLabel=?)
 
-    cpdef str toCML(self)
-
-    cpdef str toInChI(self)
-
-    cpdef str toSMILES(self)
-
-    cpdef toOBMol(self)
-
     cpdef toAdjacencyList(self)
+
+################################################################################
+
+cpdef fromAdjacencyList(str adjlist, bint pattern=?, bint addH=?, bint withLabel=?)
+
+cpdef toAdjacencyList(Graph molecule, str label=?, bint pattern=?, bint removeH=?)

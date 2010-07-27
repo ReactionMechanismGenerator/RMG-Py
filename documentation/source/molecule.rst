@@ -16,12 +16,6 @@ Bond Objects
 .. autoclass:: chempy.molecule.Bond
     :members:
 
-Chemical Graph Objects
-======================
-
-.. autoclass:: chempy.molecule.ChemGraph
-    :members:
-
 Molecule Objects
 ================
 

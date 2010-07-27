@@ -18,6 +18,7 @@ ChemPy documentation contents
     kinetics
     graph
     molecule
+    pattern
     species
     reaction
     
