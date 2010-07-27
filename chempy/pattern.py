@@ -670,6 +670,71 @@ class MoleculePattern(graph.Graph):
         """
         return toAdjacencyList(self, pattern=True)
 
+    def isIsomorphic(self, other, initialMap=None):
+        """
+        Returns :data:`True` if two graphs are isomorphic and :data:`False`
+        otherwise. The `initialMap` attribute can be used to specify a required
+        mapping from `self` to `other` (i.e. the atoms of `self` are the keys,
+        while the atoms of `other` are the values). The `other` parameter must
+        be a :class:`MoleculePattern` object, or a :class:`TypeError` is raised.
+        """
+        # It only makes sense to compare a MoleculePattern to a MoleculePattern for full
+        # isomorphism, so raise an exception if this is not what was requested
+        if not isinstance(other, MoleculePattern):
+            raise TypeError('Got a %s object for parameter "other", when a MoleculePattern object is required.' % other.__class__)
+        # Do the isomorphism comparison
+        return graph.Graph.isIsomorphic(self, other, initialMap)
+
+    def findIsomorphism(self, other, initialMap=None):
+        """
+        Returns :data:`True` if `other` is isomorphic and :data:`False`
+        otherwise, and the matching mapping. The `initialMap` attribute can be
+        used to specify a required mapping from `self` to `other` (i.e. the
+        atoms of `self` are the keys, while the atoms of `other` are the
+        values). The returned mapping also uses the atoms of `self` for the keys
+        and the atoms of `other` for the values. The `other` parameter must
+        be a :class:`MoleculePattern` object, or a :class:`TypeError` is raised.
+        """
+        # It only makes sense to compare a MoleculePattern to a MoleculePattern for full
+        # isomorphism, so raise an exception if this is not what was requested
+        if not isinstance(other, MoleculePattern):
+            raise TypeError('Got a %s object for parameter "other", when a MoleculePattern object is required.' % other.__class__)
+        # Do the isomorphism comparison
+        return graph.Graph.findIsomorphism(self, other, initialMap)
+
+    def isSubgraphIsomorphic(self, other, initialMap=None):
+        """
+        Returns :data:`True` if `other` is subgraph isomorphic and :data:`False`
+        otherwise. The `initialMap` attribute can be used to specify a required
+        mapping from `self` to `other` (i.e. the atoms of `self` are the keys,
+        while the atoms of `other` are the values). The `other` parameter must
+        be a :class:`MoleculePattern` object, or a :class:`TypeError` is raised.
+        """
+        # It only makes sense to compare a MoleculePattern to a MoleculePattern for subgraph
+        # isomorphism, so raise an exception if this is not what was requested
+        if not isinstance(other, MoleculePattern):
+            raise TypeError('Got a %s object for parameter "other", when a MoleculePattern object is required.' % other.__class__)
+        # Do the isomorphism comparison
+        return graph.Graph.isSubgraphIsomorphic(self, other, initialMap)
+
+    def findSubgraphIsomorphisms(self, other, initialMap=None):
+        """
+        Returns :data:`True` if `other` is subgraph isomorphic and :data:`False`
+        otherwise. Also returns the lists all of valid mappings. The
+        `initialMap` attribute can be used to specify a required mapping from
+        `self` to `other` (i.e. the atoms of `self` are the keys, while the
+        atoms of `other` are the values). The returned mappings also use the
+        atoms of `self` for the keys and the atoms of `other` for the values.
+        The `other` parameter must be a :class:`MoleculePattern` object, or a
+        :class:`TypeError` is raised.
+        """
+        # It only makes sense to compare a MoleculePattern to a MoleculePattern for subgraph
+        # isomorphism, so raise an exception if this is not what was requested
+        if not isinstance(other, MoleculePattern):
+            raise TypeError('Got a %s object for parameter "other", when a MoleculePattern object is required.' % other.__class__)
+        # Do the isomorphism comparison
+        return graph.Graph.findSubgraphIsomorphisms(self, other, initialMap)
+
 ################################################################################
 
 def fromAdjacencyList(adjlist, pattern=False, addH=False, withLabel=True):

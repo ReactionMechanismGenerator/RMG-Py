@@ -451,8 +451,15 @@ class Molecule(graph.Graph):
     def isIsomorphic(self, other, initialMap=None):
         """
         Returns :data:`True` if two graphs are isomorphic and :data:`False`
-        otherwise. Uses the VF2 algorithm of Vento and Foggia.
+        otherwise. The `initialMap` attribute can be used to specify a required
+        mapping from `self` to `other` (i.e. the atoms of `self` are the keys,
+        while the atoms of `other` are the values). The `other` parameter must
+        be a :class:`Molecule` object, or a :class:`TypeError` is raised.
         """
+        # It only makes sense to compare a Molecule to a Molecule for full
+        # isomorphism, so raise an exception if this is not what was requested
+        if not isinstance(other, Molecule):
+            raise TypeError('Got a %s object for parameter "other", when a Molecule object is required.' % other.__class__)
         # Ensure that both self and other have the same implicit hydrogen status
         # If not, make them both explicit just to be safe
         implicitH = [self.implicitHydrogens, other.implicitHydrogens]
@@ -469,9 +476,17 @@ class Molecule(graph.Graph):
     def findIsomorphism(self, other, initialMap=None):
         """
         Returns :data:`True` if `other` is isomorphic and :data:`False`
-        otherwise, and the matching mapping.
-        Uses the VF2 algorithm of Vento and Foggia.
+        otherwise, and the matching mapping. The `initialMap` attribute can be
+        used to specify a required mapping from `self` to `other` (i.e. the
+        atoms of `self` are the keys, while the atoms of `other` are the
+        values). The returned mapping also uses the atoms of `self` for the keys
+        and the atoms of `other` for the values. The `other` parameter must
+        be a :class:`Molecule` object, or a :class:`TypeError` is raised.
         """
+        # It only makes sense to compare a Molecule to a Molecule for full
+        # isomorphism, so raise an exception if this is not what was requested
+        if not isinstance(other, Molecule):
+            raise TypeError('Got a %s object for parameter "other", when a Molecule object is required.' % other.__class__)
         # Ensure that both self and other have the same implicit hydrogen status
         # If not, make them both explicit just to be safe
         implicitH = [self.implicitHydrogens, other.implicitHydrogens]
@@ -488,8 +503,15 @@ class Molecule(graph.Graph):
     def isSubgraphIsomorphic(self, other, initialMap=None):
         """
         Returns :data:`True` if `other` is subgraph isomorphic and :data:`False`
-        otherwise. Uses the VF2 algorithm of Vento and Foggia.
+        otherwise. The `initialMap` attribute can be used to specify a required
+        mapping from `self` to `other` (i.e. the atoms of `self` are the keys,
+        while the atoms of `other` are the values). The `other` parameter must
+        be a :class:`MoleculePattern` object, or a :class:`TypeError` is raised.
         """
+        # It only makes sense to compare a Molecule to a MoleculePattern for subgraph
+        # isomorphism, so raise an exception if this is not what was requested
+        if not isinstance(other, MoleculePattern):
+            raise TypeError('Got a %s object for parameter "other", when a MoleculePattern object is required.' % other.__class__)
         # Ensure that self is explicit (assume other is explicit)
         implicitH = self.implicitHydrogens
         self.makeHydrogensExplicit()
@@ -502,10 +524,18 @@ class Molecule(graph.Graph):
     def findSubgraphIsomorphisms(self, other, initialMap=None):
         """
         Returns :data:`True` if `other` is subgraph isomorphic and :data:`False`
-        otherwise. Also returns the lists all of valid mappings.
-
-        Uses the VF2 algorithm of Vento and Foggia.
+        otherwise. Also returns the lists all of valid mappings. The
+        `initialMap` attribute can be used to specify a required mapping from
+        `self` to `other` (i.e. the atoms of `self` are the keys, while the
+        atoms of `other` are the values). The returned mappings also use the
+        atoms of `self` for the keys and the atoms of `other` for the values.
+        The `other` parameter must be a :class:`MoleculePattern` object, or a
+        :class:`TypeError` is raised.
         """
+        # It only makes sense to compare a Molecule to a MoleculePattern for subgraph
+        # isomorphism, so raise an exception if this is not what was requested
+        if not isinstance(other, MoleculePattern):
+            raise TypeError('Got a %s object for parameter "other", when a MoleculePattern object is required.' % other.__class__)
         # Ensure that self is explicit (assume other is explicit)
         implicitH = self.implicitHydrogens
         self.makeHydrogensExplicit()
