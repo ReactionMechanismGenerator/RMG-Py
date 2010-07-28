@@ -46,6 +46,7 @@ cdef class Species:
     cdef public Geometry geometry
     cdef public LennardJones lennardJones
     cdef public double E0
+    cdef public list molecule
 
 ################################################################################
 

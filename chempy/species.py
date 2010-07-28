@@ -78,6 +78,7 @@ class Species:
     `label`         :class:`str`                A descriptive string label
     `thermo`        :class:`ThermoModel`        The thermodynamics model for the species
     `states`        :class:`StatesModel`        The molecular degrees of freedom model for the species
+    `molecule`      ``list``                    The :class:`Molecule` objects describing the molecular structure
     `geometry`      :class:`Geometry`           The 3D geometry of the molecule
     `E0`            ``double``                  The ground-state energy in J/mol
     `lennardJones`  :class:`LennardJones`       A set of Lennard-Jones collision parameters
@@ -85,11 +86,12 @@ class Species:
     
     """
     
-    def __init__(self, index=-1, label='', thermo=None, states=None, geometry=None, E0=0.0, lennardJones=None):
+    def __init__(self, index=-1, label='', thermo=None, states=None, molecule=None, geometry=None, E0=0.0, lennardJones=None):
         self.index = index
         self.label = label
         self.thermo = thermo
         self.states = states
+        self.molecule = molecule or []
         self.geometry = geometry
         self.E0 = E0
         self.lennardJones = lennardJones
@@ -106,6 +108,20 @@ class Species:
         """
         if self.index == -1: return '%s' % (self.label)
         else: return '%s(%i)' % (self.label, self.index)
+
+    def __cmp__(self, other):
+        """
+        A comparison function that can be used to sort lists of :class:`Species`
+        objects. Currently the sorting method is by increasing index.
+        """
+        return cmp(self.index, other.index)
+
+    def __hash__(self):
+        """
+        A hash function that allows for use in dictionaries et al. Currently the
+        species index is used.
+        """
+        return self.index
 
 ################################################################################
 
