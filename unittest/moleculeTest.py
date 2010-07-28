@@ -6,7 +6,8 @@ import unittest
 import sys
 sys.path.append('.')
 
-from chempy.molecule import *
+from chempy.molecule import Molecule
+from chempy.pattern import MoleculePattern
 
 ################################################################################
 

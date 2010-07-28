@@ -25,7 +25,9 @@
 ################################################################################
 
 from graph cimport Vertex, Edge, Graph
-from pattern cimport AtomPattern, BondPattern, MoleculePattern
+from pattern cimport AtomPattern, BondPattern, MoleculePattern, \
+    atomTypesEquivalent, atomTypesSpecificCaseOf, getAtomType, \
+    fromAdjacencyList, toAdjacencyList
 from element cimport Element
 
 ################################################################################
@@ -98,9 +100,9 @@ cdef class Molecule(Graph):
 
     cpdef str getFormula(self)
 
-    cpdef double getMolecularWeight(self):
+    cpdef double getMolecularWeight(self)
 
-    cpdef copy(self, bint deep=?)
+    cpdef Graph copy(self, bint deep=?)
 
     cpdef makeHydrogensImplicit(self)
 
@@ -112,7 +114,7 @@ cdef class Molecule(Graph):
 
     cpdef Atom getLabeledAtom(self, str label)
 
-	cpdef dict getLabeledAtoms(self)
+    cpdef dict getLabeledAtoms(self)
 
     cpdef bint isIsomorphic(self, Graph other, dict initialMap=?)
 

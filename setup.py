@@ -26,7 +26,7 @@
 #   DEALINGS IN THE SOFTWARE.
 #
 ################################################################################
-	
+    
 from distutils.core import setup
 from distutils.extension import Extension
 from Cython.Distutils import build_ext
@@ -36,27 +36,30 @@ import Cython.Compiler
 Cython.Compiler.Options.annotate = True
 
 # The Cython modules to setup
+# This is a more standard way of doing things, but Cython doesn't like it as much
+packages=['chempy']
 ext_modules = [
-	Extension('chempy.constants', ['chempy/constants.py']),
-	Extension('chempy.element', ['chempy/element.py']),
-	Extension('chempy.graph', ['chempy/graph.py']),
-	Extension('chempy.geometry', ['chempy/geometry.py']),
-	Extension('chempy.kinetics', ['chempy/kinetics.py']),
-	Extension('chempy.molecule', ['chempy/molecule.py']),
-	Extension('chempy.reaction', ['chempy/reaction.py']),
-	Extension('chempy.species', ['chempy/species.py']),
-	Extension('chempy.states', ['chempy/states.py']),
-	Extension('chempy.thermo', ['chempy/thermo.py']),
+    Extension('chempy.constants', ['chempy/constants.py']),
+    Extension('chempy.element', ['chempy/element.py']),
+    Extension('chempy.graph', ['chempy/graph.py']),
+    Extension('chempy.geometry', ['chempy/geometry.py']),
+    Extension('chempy.kinetics', ['chempy/kinetics.py']),
+    Extension('chempy.molecule', ['chempy/molecule.py']),
+    Extension('chempy.pattern', ['chempy/pattern.py']),
+    Extension('chempy.reaction', ['chempy/reaction.py']),
+    Extension('chempy.species', ['chempy/species.py']),
+    Extension('chempy.states', ['chempy/states.py']),
+    Extension('chempy.thermo', ['chempy/thermo.py']),
 ]
 
 setup(name='ChemPy',
-	version='0.1.0',
-	description='A chemistry toolkit for Python',
-	author='Joshua W. Allen',
-	author_email='jwallen@mit.edu',
-	url='',
-	packages=['chempy'],
-	cmdclass = {'build_ext': build_ext},
-	ext_modules = ext_modules,
+    version='0.1.0',
+    description='A chemistry toolkit for Python',
+    author='Joshua W. Allen',
+    author_email='jwallen@mit.edu',
+    url='',
+    packages=packages,
+    cmdclass = {'build_ext': build_ext},
+    ext_modules = ext_modules,
 )
 

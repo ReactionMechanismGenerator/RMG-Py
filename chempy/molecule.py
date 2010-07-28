@@ -111,8 +111,8 @@ class Atom(graph.Vertex):
         :class:`AtomPattern` object, then the atom must match any of the
         combinations in the atom pattern.
         """
+        cython.declare(atom=Atom, ap=AtomPattern)
         if isinstance(other, Atom):
-            cython.declare(atom=Atom)
             atom = other
             return (self.element is atom.element and
                 self.radicalElectrons == atom.radicalElectrons and
@@ -120,11 +120,10 @@ class Atom(graph.Vertex):
                 self.implicitHydrogens == atom.implicitHydrogens and
                 self.charge == atom.charge)
         elif isinstance(other, AtomPattern):
-            cython.declare(atom=AtomPattern)
-            atom = other
-            return (any([atomTypesEquivalent(self.atomType, a) for a in atom.atomType]) and
-                [self.radicalElectrons, self.spinMultiplicity] in zip(atom.radicalElectrons, atom.spinMultiplicity) and
-                self.charge in atom.charge)
+            ap = other
+            return (any([atomTypesEquivalent(self.atomType, a) for a in ap.atomType]) and
+                [self.radicalElectrons, self.spinMultiplicity] in zip(ap.radicalElectrons, ap.spinMultiplicity) and
+                self.charge in ap.charge)
 
     def isSpecificCaseOf(self, other):
         """
@@ -214,14 +213,13 @@ class Bond(graph.Edge):
         ``False`` otherwise. `other` can be either a :class:`Bond` or a
         :class:`BondPattern` object.
         """
+        cython.declare(bond=Bond, bp=BondPattern)
         if isinstance(other, Bond):
-            cython.declare(bond=Bond)
             bond = other
             return (self.order == bond.order)
         elif isinstance(other, BondPattern):
-            cython.declare(bond=BondPattern)
-            bond = other
-            return (self.order in bond.order)
+            bp = other
+            return (self.order in bp.order)
 
     def isSpecificCaseOf(self, other):
         """
@@ -746,7 +744,7 @@ class Molecule(graph.Graph):
         Skips the first line (assuming it's a label) unless `withLabel` is
         ``False``.
         """
-        self.vertices, self.edges = fromAdjacencyList(adjlist, pattern=False, addH=True, withLabel=withLabel)
+        self.vertices, self.edges = fromAdjacencyList(adjlist, False, True, withLabel)
         self.makeHydrogensImplicit()
         self.updateConnectivityValues()
         self.updateAtomTypes()

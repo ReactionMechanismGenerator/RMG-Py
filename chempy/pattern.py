@@ -319,13 +319,13 @@ class AtomPattern(graph.Vertex):
         where `radical` specifies the number of radical electrons to add.
         """
         radicalElectrons = []
-        spinMultiplicities = []
-        for electron, spin in zip(self.radicalElectrons, self.spinMultiplicities):
+        spinMultiplicity = []
+        for electron, spin in zip(self.radicalElectrons, self.spinMultiplicity):
             radicalElectrons.append(electron + radical)
-            spinMultiplicities.append(spin + radical)
+            spinMultiplicity.append(spin + radical)
         # Set the new radical electron counts and spin multiplicities
         self.radicalElectrons = radicalElectrons
-        self.spinMultiplicities = spinMultiplicities
+        self.spinMultiplicity = spinMultiplicity
 
     def __loseRadical(self, radical):
         """
@@ -333,18 +333,18 @@ class AtomPattern(graph.Vertex):
         where `radical` specifies the number of radical electrons to remove.
         """
         radicalElectrons = []
-        spinMultiplicities = []
-        for electron, spin in zip(self.radicalElectrons, self.spinMultiplicities):
+        spinMultiplicity = []
+        for electron, spin in zip(self.radicalElectrons, self.spinMultiplicity):
             if electron - radical < 0:
                 raise ChemPyError('Unable to update AtomPattern due to LOSE_RADICAL action: Invalid radical electron set "%s".' % (self.radicalElectrons))
             radicalElectrons.append(electron - radical)
             if spin - radical < 0:
-                spinMultiplicities.append(spin - radical + 2)
+                spinMultiplicity.append(spin - radical + 2)
             else:
-                spinMultiplicities.append(spin - radical)
+                spinMultiplicity.append(spin - radical)
         # Set the new radical electron counts and spin multiplicities
         self.radicalElectrons = radicalElectrons
-        self.spinMultiplicities = spinMultiplicities
+        self.spinMultiplicity = spinMultiplicity
 
     def applyAction(self, action):
         """
@@ -935,20 +935,6 @@ def toAdjacencyList(molecule, label='', pattern=False, removeH=False):
     molecule.updateConnectivityValues() # so we can sort by them
     atoms = molecule.atoms
     bonds = molecule.bonds
-
-    # weakest sort first (will be over-ruled by later sorts)
-    # some function of connectivity values), from lowest to highest
-    atoms.sort(key=graph.getVertexSortValue)
-    #  sort by label
-    atoms.sort(key=lambda atom: atom.label)
-    # then bring labeled atoms to the top (else '' will be before '*1')
-    atoms.sort(key=lambda atom: atom.label != '', reverse=True)
-    # Sort the atoms by graph.globalAtomSortValue
-    # (some function of connectivity values), from lowest to highest
-    atoms.sort(key=lambda atom: atom.connectivity1, reverse=True)
-    #atoms.sort(key=graph.globalAtomSortValue)
-    # now make sure the hydrogens come last, in case we wish to strip them!
-    if not pattern: atoms.sort(key=lambda atom: atom.isHydrogen() )
 
     for i, atom in enumerate(atoms):
         if removeH and atom.isHydrogen() and atom.label=='': continue

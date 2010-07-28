@@ -41,7 +41,6 @@ cdef class AtomPattern(Vertex):
     cdef public list atomType
     cdef public list radicalElectrons
     cdef public list spinMultiplicity
-    cdef public list implicitHydrogens
     cdef public list charge
     cdef public str label
 
@@ -83,33 +82,33 @@ cdef class BondPattern(Edge):
 
 cdef class MoleculePattern(Graph):
 
-    cpdef addAtom(self, Atom atom)
+    cpdef addAtom(self, AtomPattern atom)
 
-    cpdef addBond(self, Atom atom1, Atom atom2, Bond bond)
+    cpdef addBond(self, AtomPattern atom1, AtomPattern atom2, BondPattern bond)
 
-    cpdef dict getBonds(self, Atom atom)
+    cpdef dict getBonds(self, AtomPattern atom)
 
-    cpdef Bond getBond(self, Atom atom1, Atom atom2)
+    cpdef BondPattern getBond(self, AtomPattern atom1, AtomPattern atom2)
 
-    cpdef bint hasAtom(self, Atom atom)
+    cpdef bint hasAtom(self, AtomPattern atom)
 
-    cpdef bint hasBond(self, Atom atom1, Atom atom2)
+    cpdef bint hasBond(self, AtomPattern atom1, AtomPattern atom2)
 
-    cpdef removeAtom(self, Atom atom)
+    cpdef removeAtom(self, AtomPattern atom)
 
-    cpdef removeBond(self, Atom atom1, Atom atom2)
+    cpdef removeBond(self, AtomPattern atom1, AtomPattern atomPattern2)
 
     cpdef sortAtoms(self)
 
-    cpdef copy(self, bint deep=?)
+    cpdef Graph copy(self, bint deep=?)
 
     cpdef clearLabeledAtoms(self)
 
     cpdef bint containsLabeledAtom(self, str label)
 
-    cpdef Atom getLabeledAtom(self, str label)
+    cpdef AtomPattern getLabeledAtom(self, str label)
 
-	cpdef dict getLabeledAtoms(self)
+    cpdef dict getLabeledAtoms(self)
 
     cpdef fromAdjacencyList(self, str adjlist, bint withLabel=?)
 
