@@ -1,0 +1,18 @@
+//Intra_Disproportionation
+//what should we put for "2-member TS" rate (for adjacent biradicals?)
+
+L1: Y_birad
+        //ring-size includes hydrogen
+	L2: Y_biCyc3 
+      	L2: Y_biCyc4
+	L2: Y_biCyc5
+	L2: Y_biCyc6
+	L2: Y_biCyc7
+
+// the abstracting radical
+L1: Y_rad
+//L1: Rrad; gmagoon 8/7/09: changed name to more closely match disproportionation library
+
+//the site with a free hydrogen adjacent to a radical
+L1: XH_Rrad
+//L1: RHRrad; gmagoon 8/7/09: changed name to more closely match disproportionation library 

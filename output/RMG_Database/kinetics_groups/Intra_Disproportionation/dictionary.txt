@@ -1,0 +1,89 @@
+Y_birad
+Union {Y_biCyc3, Y_biCyc4, Y_biCyc5,Y_biCyc6, Y_biCyc7}
+
+//It is assumed below that the other radical site (#3) is not a member of the TS ring; we may eventually want to consider the possibility for the radical site being in the TS ring, which in certain cases, may give rise to multiple transition states for the same reaction; I expect that the number of cases that would be encountered where this reaction would not occur at all due to neglecting this would be small; UPDATE: 2,5-pentdiyl radical to 1-pentene can only occur when radical site is included in ring, so maybe this is more important than I thought
+//update: (cf. above) I will consider possibility of Endo case, but I will assume the rate rules are the same as for the probably more typical exo case (2nd radical site not a part of ring)
+//3 member TS endo cannot occur unless the same atom is used for 2 different starred groups and even then, it requires adjacent radical sites, I believe, so I will ignore this for now and just consider exo for 3-member TS
+Y_biCyc3
+1 *1 {R!H} 1 {2,{S,D,B}}
+2 *2 {R!H} 0 {1,{S,D,B}} {3,{S,D}} {4,S}
+3 *3 {R!H} 1 {2,{S,D}}
+4 *4 H 0 {2,S}
+
+//unless same atom is used for 2 different starred groups, 4 member TS endo cannot occur unless there are adjacent radical sites, I believe, so I will ignore this for now and just consider exo for 4-member TS
+Y_biCyc4
+1 *1 {R!H} 1 {5,{S,D,B,T}}
+2 *2 {R!H} 0 {5,{S,D,B}} {3,{S,D}} {4,S}
+3 *3 {R!H} 1 {2,{S,D}}
+4 *4 H 0 {2,S}
+5 {R!H} 0 {1,{S,D,B,T}} {2,{S,D,B}} 
+
+Y_biCyc5
+Union {Y_biCyc5radEndo,Y_biCyc5radExo}
+
+Y_biCyc6
+Union {Y_biCyc6radEndo,Y_biCyc6radExo}
+
+Y_biCyc7
+Union {Y_biCyc7radEndo,Y_biCyc7radExo}
+
+Y_biCyc5radExo
+1 *1 {R!H} 1 {5,{S,D,B,T}}
+2 *2 {R!H} 0 {6,{S,D,B}} {3,{S,D}} {4,S}
+3 *3 {R!H} 1 {2,{S,D}}
+4 *4 H 0 {2,S}
+5 {R!H} 0 {1,{S,D,B,T}} {6,{S,D,B,T}}
+6 {R!H} 0 {2,{S,D,B}} {5,{S,D,B,T}}
+
+Y_biCyc6radExo
+1 *1 {R!H} 1 {5,{S,D,B,T}}
+2 *2 {R!H} 0 {6,{S,D,B}} {3,{S,D}} {4,S}
+3 *3 {R!H} 1 {2,{S,D}}
+4 *4 H 0 {2,S}
+5 {R!H} 0 {1,{S,D,B,T}} {7,{S,D,B,T}}
+6 {R!H} 0 {2,{S,D,B}} {7,{S,D,B,T}}
+7 {R!H} 0 {5,{S,D,B,T}} {6,{S,D,B,T}}
+
+Y_biCyc7radExo
+1 *1 {R!H} 1 {5,{S,D,B,T}}
+2 *2 {R!H} 0 {6,{S,D,B}} {3,{S,D}} {4,S}
+3 *3 {R!H} 1 {2,{S,D}}
+4 *4 H 0 {2,S}
+5 {R!H} 0 {1,{S,D,B,T}} {7,{S,D,B,T}}
+6 {R!H} 0 {2,{S,D,B}} {8,{S,D,B,T}}
+7 {R!H} 0 {5,{S,D,B,T}} {8,{S,D,B,T}}
+8 {R!H} 0 {6,{S,D,B,T}} {7,{S,D,B,T}}
+
+Y_biCyc5radEndo
+1 *1 {R!H} 1 {5,{S,D,B,T}}
+2 *2 {R!H} 0 {3,{S,D}} {4,S}
+3 *3 {R!H} 1 {2,{S,D}} {5,{S,D,B}}
+4 *4 H 0 {2,S}
+5 {R!H} 0  {3,{S,D,B}} {1,{S,D,B,T}}
+
+Y_biCyc6radEndo
+1 *1 {R!H} 1 {6,{S,D,B,T}}
+2 *2 {R!H} 0 {3,{S,D}} {4,S}
+3 *3 {R!H} 1 {2,{S,D}} {5,{S,D,B}}
+4 *4 H 0 {2,S}
+5 {R!H} 0  {3,{S,D,B}} {6,{S,D,B,T}}
+6 {R!H} 0 {1,{S,D,B,T}} {5,{S,D,B,T}}
+
+Y_biCyc7radEndo
+1 *1 {R!H} 1 {6,{S,D,B,T}}
+2 *2 {R!H} 0 {3,{S,D}} {4,S}
+3 *3 {R!H} 1 {2,{S,D}} {5,{S,D,B}}
+4 *4 H 0 {2,S}
+5 {R!H} 0  {3,{S,D,B}} {7,{S,D,B,T}}
+6 {R!H} 0 {1,{S,D,B,T}} {7,{S,D,B,T}}
+7 {R!H} 0 {5,{S,D,B,T}} {6,{S,D,B,T}}
+
+// the abstracting radical
+Y_rad
+1 *1 {R!H} 1
+
+//the site with a free hydrogen on an atom adjacent to a radical
+XH_Rrad
+1 *2 {R!H} 0 {2,{S,D}} {3,S}
+2 *3 {R!H} 1 {1,{S,D}}
+3 *4 H 0 {1,S} 

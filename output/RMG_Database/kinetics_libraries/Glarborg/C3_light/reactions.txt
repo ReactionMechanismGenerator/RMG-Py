@@ -35,12 +35,18 @@ Reactions:
  HO2 + H = H2O + O                          1.4E12   0.000       0  0.0 0.0 0.0  
  HO2 + O = OH + O2                          1.6E13   0.000    -445  0.0 0.0 0.0  
 
- HO2 + OH = H2O + O2                        3.6E21  -2.100    9000  0.0 0.0 0.0  
-     //  DUPLICATE                                                 
- HO2 + OH = H2O + O2                        2.0E15  -0.600       0  0.0 0.0 0.0  
-     //  DUPLICATE                                                 
- HO2 + OH = H2O + O2                       -2.2E96 -24.000   49000 0.0 0.0 0.0
-     //  DUPLICATE                                                 
+// These three add up to give Glarborg's preferred rate, but the third of them 
+// has a negative A which RMG does not like:
+ // HO2 + OH = H2O + O2                        3.6E21  -2.100    9000  0.0 0.0 0.0  
+ //     //  DUPLICATE                                                 
+ // HO2 + OH = H2O + O2                        2.0E15  -0.600       0  0.0 0.0 0.0  
+ //     //  DUPLICATE                                                 
+ // HO2 + OH = H2O + O2                       -2.2E96 -24.000   49000 0.0 0.0 0.0
+ //     //  DUPLICATE                                                 
+// Instead here is a rate from Baulch et al JPCRF 1994 as reported by
+// http://kinetics.nist.gov/kinetics/Detail?id=1994BAU/COB847-1033:91
+// although the valid temperature range is not very large...
+ HO2 + OH = H2O + O2                       2.89E13   0.000   -497  *1.58 0.0 0.0
 
  HO2 + HO2 = H2O2 + O2                      1.9E11   0.000   -1408  0.0 0.0 0.0  
      //  DUPLICATE                                                 
@@ -292,7 +298,7 @@ HOCO = CO2 + H                           2.2E70 -18.000   60000  0.0 0.0 0.0
  CH2(S) + H2O = CH3 + OH                    3.0E15  -0.600       0  0.0 0.0 0.0  
 
 
- CH3 + HO2 = CH4 + H2O			    1.2E05  2.228  -3020 0.0 0.0 0.0 
+ CH3 + HO2 = CH4 + O2			    1.2E05  2.228  -3020 0.0 0.0 0.0 
 // RMG dislikes!  replaced with Jasper
 //CH3 + HO2 = CH4 + O2                       2.5E08   1.250   -1630  0.0 0.0 0.0  
 //CH3 + HO2 = CH4 + O2                       1.8E03   2.830   -3730  0.0 0.0 0.0  

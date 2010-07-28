@@ -1,0 +1,14 @@
+//Intra_Disproportionation	
+//gmagoon 08/06/09: estimates 1-5 below are based on:
+//(1) reference Ea values from Herbinet, Sirjean, Bounaceur, Fournet, Battin-Leclerc, Scacchi, and Marquaire, "Primary Mechanism of the Thermal Decomposition of Tricyclodecane", J. Phys. Chem. A, 2006, 110 (39), 11298-11314 DOI: 10.1021/jp0623802
+//(2) A (and n) factors from Eq. 1 (with deltan_int = -1) of Warth, Stef, Glaude, Battin-Leclerc, Scacchi, and Come, "Computer-Aided Derivation of Gas-Phase Oxidation Mechanisms: Application to the Modeling of the Oxidation of n-Butane", Comb. and Flame 114:81-102 (1998) doi:10.1016/S0010-2180(97)00273-3  
+//these are more likely to be overestimates than underestimates																							
+
+Arrhenius_EP
+
+//No	Y_birad		Y_rad		XH_Rrad		Temp		A	N	Alpha	E	DA	DN	DAlpha	DE	Rank	Comments											
+1	Y_biCyc3	Y_rad		XH_Rrad		300-1500	5.66E10	1.0	0	9.5	0	0	0	0	5	Herbinet et al.(2006) reference Ea and Warth et al.(1998) prefactor with deltan_int=-1
+2	Y_biCyc4	Y_rad		XH_Rrad		300-1500	5.66E10	1.0	0	16.3	0	0	0	0	5	Herbinet et al.(2006) reference Ea and Warth et al.(1998) prefactor with deltan_int=-1
+3	Y_biCyc5	Y_rad		XH_Rrad		300-1500	5.66E10	1.0	0	7.75	0	0	0	0	5	Herbinet et al.(2006) reference Ea and Warth et al.(1998) prefactor with deltan_int=-1
+4	Y_biCyc6	Y_rad		XH_Rrad		300-1500	5.66E10	1.0	0	3.85	0	0	0	0	5	Herbinet et al.(2006) reference Ea and Warth et al.(1998) prefactor with deltan_int=-1
+5	Y_biCyc7	Y_rad		XH_Rrad		300-1500	5.66E10	1.0	0	7.75	0	0	0	0	5	Herbinet et al.(2006) reference Ea and Warth et al.(1998) prefactor with deltan_int=-1

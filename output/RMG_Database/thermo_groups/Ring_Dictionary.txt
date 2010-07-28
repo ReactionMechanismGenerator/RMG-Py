@@ -243,6 +243,16 @@ Cyclopropene
 2    Cd 0 {1,S} {3,D}
 3    Cd 0 {1,S} {2,D}
 
+Cyclopropadiene
+1  * Cd 0 {2,S} {3,D}
+2    Cd 0 {1,S} {3,D}
+3    Cdd 0 {1,D} {2,D}
+
+Cyclopropatriene
+1  * Cdd 0 {2,D} {3,D}
+2    Cdd 0 {1,D} {3,D}
+3    Cdd 0 {1,D} {2,D}
+
 Methylene_cyclopropane
 1  * Cd 0 {2,S} {3,S} {4,D}
 2    Cs 0 {1,S} {3,S}
