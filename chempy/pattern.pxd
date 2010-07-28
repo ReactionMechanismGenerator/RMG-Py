@@ -32,6 +32,8 @@ cpdef bint atomTypesEquivalent(str atomType1, str atomType2)
 
 cpdef bint atomTypesSpecificCaseOf(str atomType1, str atomType2)
 
+cpdef str getAtomType(atom, dict bonds)
+
 ################################################################################
 
 cdef class AtomPattern(Vertex):
@@ -112,6 +114,14 @@ cdef class MoleculePattern(Graph):
     cpdef fromAdjacencyList(self, str adjlist, bint withLabel=?)
 
     cpdef toAdjacencyList(self)
+
+    cpdef bint isIsomorphic(self, Graph other, dict initialMap=?)
+
+    cpdef tuple findIsomorphism(self, Graph other, dict initialMap=?)
+
+    cpdef bint isSubgraphIsomorphic(self, Graph other, dict initialMap=?)
+
+    cpdef tuple findSubgraphIsomorphisms(self, Graph other, dict initialMap=?)
 
 ################################################################################
 

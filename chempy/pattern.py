@@ -32,6 +32,8 @@ This module provides classes and methods for working with molecular substructure
 patterns. These enable molecules to be searched for common motifs (e.g.
 reaction sites).
 
+.. _atom-types:
+
 We define the following basic atom types:
 
     =============== ============================================================
@@ -62,6 +64,8 @@ We define the following basic atom types:
     ``Oa``          oxygen atom with no bonds
     =============== ============================================================
 
+.. _bond-types:
+
 We define the following bond types:
 
     =============== ============================================================
@@ -72,6 +76,8 @@ We define the following bond types:
     ``T``           a triple bond
     ``B``           a benzene bond
     =============== ============================================================
+
+.. _reaction-recipe-actions:
 
 We define the following reaction recipe actions:
 
@@ -185,7 +191,8 @@ def atomTypesSpecificCaseOf(atomType1, atomType2):
 class AtomPattern(graph.Vertex):
     """
     An atom pattern. This class is based on the :class:`Atom` class, except that
-    all attributes are lists rather than individual values. The attributes are:
+    it uses :ref:`atom types <atom-types>` instead of elements, and all
+    attributes are lists rather than individual values. The attributes are:
 
     =================== =================== ====================================
     Attribute           Type                Description
@@ -193,19 +200,23 @@ class AtomPattern(graph.Vertex):
     `atomType`          ``list``            The allowed atom types (as strings)
     `radicalElectrons`  ``list``            The allowed numbers of radical electrons (as short integers)
     `spinMultiplicity`  ``list``            The allowed spin multiplicities (as short integers)
-    `implicitHydrogens` ``list``            The allowed number of implicit hydrogen atoms (as short integers)
     `charge`            ``list``            The allowed formal charges (as short integers)
     `label`             ``str``             A string label that can be used to tag individual atoms
     =================== =================== ====================================
 
+    Each list represents a logical OR construct, i.e. an atom will match the
+    pattern if it matches *any* item in the list. However, the
+    `radicalElectrons`, `spinMultiplicity`, and `charge` attributes are linked
+    such that an atom must match values from the same index in each of these in
+    order to match. Unlike an :class:`Atom` object, an :class:`AtomPattern`
+    cannot store implicit hydrogen atoms.
     """
 
-    def __init__(self, atomType=None, radicalElectrons=None, spinMultiplicity=None, implicitHydrogens=None, charge=None, label=''):
+    def __init__(self, atomType=None, radicalElectrons=None, spinMultiplicity=None, charge=None, label=''):
         graph.Vertex.__init__(self)
         self.atomType = atomType or []
         self.radicalElectrons = radicalElectrons or []
         self.spinMultiplicity = spinMultiplicity or []
-        self.implicitHydrogens = implicitHydrogens or []
         self.charge = charge or []
         self.label = label
 
@@ -219,13 +230,14 @@ class AtomPattern(graph.Vertex):
         """
         Return a representation that can be used to reconstruct the object.
         """
-        return "AtomPattern(atomType=%s, radicalElectrons=%s, spinMultiplicity=%s, implicitHydrogens=%s, charge=%s, label='%s')" % (self.atomType, self.radicalElectrons, self.spinMultiplicity, self.implicitHydrogens, self.charge, self.label)
+        return "AtomPattern(atomType=%s, radicalElectrons=%s, spinMultiplicity=%s, charge=%s, label='%s')" % (self.atomType, self.radicalElectrons, self.spinMultiplicity, self.implicitHydrogens, self.charge, self.label)
 
     def copy(self):
         """
-        Return a copy of the :class:`AtomPattern` object.
+        Return a deep copy of the :class:`AtomPattern` object. Modifying the
+        attributes of the copy will not affect the original.
         """
-        return AtomPattern(self.atomType, self.radicalElectrons, self.spinMultiplicity, self.implicitHydrogens, self.charge, self.label)
+        return AtomPattern(self.atomType[:], self.radicalElectrons[:], self.spinMultiplicity[:], self.charge[:], self.label)
 
     def __changeBond(self, order):
         """
@@ -338,7 +350,8 @@ class AtomPattern(graph.Vertex):
         """
         Update the atom pattern as a result of applying `action`, a tuple
         containing the name of the reaction recipe action along with any
-        required parameters
+        required parameters. The available actions can be found
+        :ref:`here <reaction-recipe-actions>`.
         """
         if action[0].upper() == 'CHANGE_BOND':
             self.__changeBond(order=action[2])
@@ -355,9 +368,9 @@ class AtomPattern(graph.Vertex):
 
     def equivalent(self, other):
         """
-        Returns ``True`` if `other` is equivalent to `self`,
+        Returns ``True`` if `other` is equivalent to `self` or ``False`` if not,
         where `other` can be either an :class:`Atom` or an :class:`AtomPattern`
-        object. When comparing :class:`AtomPattern` objects, this function
+        object. When comparing two :class:`AtomPattern` objects, this function
         respects wildcards, e.g. ``R!H`` is equivalent to ``C``.
         """
 
@@ -427,7 +440,8 @@ class AtomPattern(graph.Vertex):
 class BondPattern(graph.Edge):
     """
     A bond pattern. This class is based on the :class:`Bond` class, except that
-    all attributes are lists rather than individual values. The attributes are:
+    all attributes are lists rather than individual values. The allowed bond
+    types are given :ref:`here <bond-types>`. The attributes are:
 
     =================== =================== ====================================
     Attribute           Type                Description
@@ -435,6 +449,8 @@ class BondPattern(graph.Edge):
     `order`             ``list``            The allowed bond orders (as character strings)
     =================== =================== ====================================
 
+    Each list represents a logical OR construct, i.e. a bond will match the
+    pattern if it matches *any* item in the list.
     """
 
     def __init__(self, order=None):
@@ -455,9 +471,10 @@ class BondPattern(graph.Edge):
 
     def copy(self):
         """
-        Return a copy of the :class:`BondPattern` object.
+        Return a deep copy of the :class:`BondPattern` object. Modifying the
+        attributes of the copy will not affect the original.
         """
-        return BondPattern(self.order)
+        return BondPattern(self.order[:])
 
     def __changeBond(self, order):
         """
@@ -486,7 +503,8 @@ class BondPattern(graph.Edge):
         """
         Update the bond pattern as a result of applying `action`, a tuple
         containing the name of the reaction recipe action along with any
-        required parameters
+        required parameters. The available actions can be found
+        :ref:`here <reaction-recipe-actions>`.
         """
         if action[0].upper() == 'CHANGE_BOND':
             self.__changeBond(order=action[2])
@@ -495,8 +513,9 @@ class BondPattern(graph.Edge):
 
     def equivalent(self, other):
         """
-        Returns ``True`` if `other` is equivalent to `self`, where `other` can
-        be either an :class:`Bond` or an :class:`BondPattern` object.
+        Returns ``True`` if `other` is equivalent to `self` or ``False`` if not,
+        where `other` can be either an :class:`Bond` or an :class:`BondPattern`
+        object.
         """
 
         if not isinstance(other, BondPattern):
@@ -549,8 +568,9 @@ class MoleculePattern(graph.Graph):
     """
     A representation of a molecular substructure pattern using a graph data
     type, extending the :class:`Graph` class. The `atoms` and `bonds` attributes
-    are aliases for the `vertices` and `edges` attributes. Corresponding alias
-    methods have also been provided.
+    are aliases for the `vertices` and `edges` attributes, and store 
+    :class:`AtomPattern` and :class:`BondPattern` objects, respectively.
+    Corresponding alias methods have also been provided.
     """
 
     def __init__(self, atoms=None, bonds=None):
@@ -647,8 +667,8 @@ class MoleculePattern(graph.Graph):
 
     def containsLabeledAtom(self, label):
         """
-        Return :data:`True` if the pattern contains an atom with the label
-        `label` and :data:`False` otherwise.
+        Return ``True`` if the pattern contains an atom with the label
+        `label` and ``False`` otherwise.
         """
         for atom in self.atoms:
             if atom.label == label: return True
@@ -696,7 +716,7 @@ class MoleculePattern(graph.Graph):
 
     def isIsomorphic(self, other, initialMap=None):
         """
-        Returns :data:`True` if two graphs are isomorphic and :data:`False`
+        Returns ``True`` if two graphs are isomorphic and ``False``
         otherwise. The `initialMap` attribute can be used to specify a required
         mapping from `self` to `other` (i.e. the atoms of `self` are the keys,
         while the atoms of `other` are the values). The `other` parameter must
@@ -711,7 +731,7 @@ class MoleculePattern(graph.Graph):
 
     def findIsomorphism(self, other, initialMap=None):
         """
-        Returns :data:`True` if `other` is isomorphic and :data:`False`
+        Returns ``True`` if `other` is isomorphic and ``False``
         otherwise, and the matching mapping. The `initialMap` attribute can be
         used to specify a required mapping from `self` to `other` (i.e. the
         atoms of `self` are the keys, while the atoms of `other` are the
@@ -728,7 +748,7 @@ class MoleculePattern(graph.Graph):
 
     def isSubgraphIsomorphic(self, other, initialMap=None):
         """
-        Returns :data:`True` if `other` is subgraph isomorphic and :data:`False`
+        Returns ``True`` if `other` is subgraph isomorphic and ``False``
         otherwise. The `initialMap` attribute can be used to specify a required
         mapping from `self` to `other` (i.e. the atoms of `self` are the keys,
         while the atoms of `other` are the values). The `other` parameter must
@@ -743,7 +763,7 @@ class MoleculePattern(graph.Graph):
 
     def findSubgraphIsomorphisms(self, other, initialMap=None):
         """
-        Returns :data:`True` if `other` is subgraph isomorphic and :data:`False`
+        Returns ``True`` if `other` is subgraph isomorphic and ``False``
         otherwise. Also returns the lists all of valid mappings. The
         `initialMap` attribute can be used to specify a required mapping from
         `self` to `other` (i.e. the atoms of `self` are the keys, while the
@@ -829,7 +849,7 @@ def fromAdjacencyList(adjlist, pattern=False, addH=False, withLabel=True):
 
         # Create a new atom based on the above information
         if pattern:
-            atom = AtomPattern(atomType, radicalElectrons, spinMultiplicity, [0 for e in radicalElectrons], [0 for e in radicalElectrons], label)
+            atom = AtomPattern(atomType, radicalElectrons, spinMultiplicity, [0 for e in radicalElectrons], label)
         else:
             atom = Atom(atomType[0], radicalElectrons[0], spinMultiplicity[0], 0, 0, label)
 
@@ -898,7 +918,7 @@ def fromAdjacencyList(adjlist, pattern=False, addH=False, withLabel=True):
 
 def toAdjacencyList(molecule, label='', pattern=False, removeH=False):
     """
-    Convert the `graph` object to an adjacency list. `pattern` specifies
+    Convert the `molecule` object to an adjacency list. `pattern` specifies
     whether the graph object is a complete molecule (if ``False``) or a
     substructure pattern (if ``True``). The `label` parameter is an optional
     string to put as the first line of the adjacency list; if set to the empty

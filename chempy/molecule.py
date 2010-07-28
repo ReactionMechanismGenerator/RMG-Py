@@ -29,7 +29,10 @@
 
 """
 This module provides classes and methods for working with molecules and
-molecular configurations.
+molecular configurations. A molecule is represented internally using a graph
+data type, where atoms correspond to vertices and bonds correspond to edges.
+Both :class:`Atom` and :class:`Bond` objects store semantic information that
+describe the corresponding atom or bond.
 """
 
 import cython
@@ -59,7 +62,6 @@ class Atom(graph.Vertex):
     Additionally, the ``mass``, ``number``, and ``symbol`` attributes of the
     atom's element can be read (but not written) directly from the atom object,
     e.g. ``atom.symbol`` instead of ``atom.element.symbol``.
-
     """
 
     def __init__(self, element=None, radicalElectrons=0, spinMultiplicity=1, implicitHydrogens=0, charge=0, label=''):
@@ -104,7 +106,10 @@ class Atom(graph.Vertex):
     def equivalent(self, other):
         """
         Return ``True`` if `other` is indistinguishable from this atom, or
-        ``False`` otherwise.
+        ``False`` otherwise. If `other` is an :class:`Atom` object, then all
+        attributes except `label` must match exactly. If `other` is an
+        :class:`AtomPattern` object, then the atom must match any of the
+        combinations in the atom pattern.
         """
         if isinstance(other, Atom):
             cython.declare(atom=Atom)
@@ -124,7 +129,10 @@ class Atom(graph.Vertex):
     def isSpecificCaseOf(self, other):
         """
         Return ``True`` if `self` is a specific case of `other`, or ``False``
-        otherwise.
+        otherwise. If `other` is an :class:`Atom` object, then this is the same
+        as the :meth:`equivalent()` method. If `other` is an
+        :class:`AtomPattern` object, then the atom must match or be more
+        specific than any of the combinations in the atom pattern.
         """
         if isinstance(other, Atom):
             return self.equivalent(other)
@@ -137,7 +145,8 @@ class Atom(graph.Vertex):
 
     def copy(self):
         """
-        Generate a copy of the current atom.
+        Generate a deep copy of the current atom. Modifying the
+        attributes of the copy will not affect the original.
         """
         return Atom(self.element, self.radicalElectrons, self.spinMultiplicity, self.implicitHydrogens, self.charge, self.label)
 
@@ -178,7 +187,7 @@ class Bond(graph.Edge):
     =================== =================== ====================================
     Attribute           Type                Description
     =================== =================== ====================================
-    `order`             ``str``             The bond order ('S' = single, 'D' = double, 'T' = triple, 'B' = benzene)
+    `order`             ``str``             The bond order (``S`` = single, `D`` = double, ``T`` = triple, ``B`` = benzene)
     =================== =================== ====================================
 
     """
@@ -202,7 +211,8 @@ class Bond(graph.Edge):
     def equivalent(self, other):
         """
         Return ``True`` if `other` is indistinguishable from this bond, or
-        ``False`` otherwise.
+        ``False`` otherwise. `other` can be either a :class:`Bond` or a
+        :class:`BondPattern` object.
         """
         if isinstance(other, Bond):
             cython.declare(bond=Bond)
@@ -216,14 +226,16 @@ class Bond(graph.Edge):
     def isSpecificCaseOf(self, other):
         """
         Return ``True`` if `self` is a specific case of `other`, or ``False``
-        otherwise.
+        otherwise. `other` can be either a :class:`Bond` or a
+        :class:`BondPattern` object.
         """
         # There are no generic bond types, so isSpecificCaseOf is the same as equivalent
         return self.equivalent(other)
 
     def copy(self):
         """
-        Generate a copy of the current bond.
+        Generate a deep copy of the current bond. Modifying the
+        attributes of the copy will not affect the original.
         """
         return Bond(self.order)
 
@@ -282,7 +294,6 @@ class Molecule(graph.Graph):
         Return a representation that can be used to reconstruct the object.
         """
         return "Bond(SMILES='%s')" % (self.toSMILES())
-
 
     def __getAtoms(self): return self.vertices
     def __setAtoms(self, atoms): self.vertices = atoms
@@ -829,7 +840,7 @@ class Molecule(graph.Graph):
         otherwise.
         """
 
-        atomCount = len(self.atoms)
+        atomCount = len(self.atoms) + sum([atom.implicitHydrogens for atom in self.atoms])
 
         # Monatomic molecules are definitely nonlinear
         if atomCount == 1:
@@ -844,11 +855,15 @@ class Molecule(graph.Graph):
         # True if all bonds are double bonds (e.g. O=C=O)
         allDoubleBonds = True
         for atom1 in self.bonds:
+            if atom1.implicitHydrogens > 0: allDoubleBonds = False
             for bond in self.bonds[atom1].values():
                 if not bond.isDouble(): allDoubleBonds = False
         if allDoubleBonds: return True
 
         # True if alternating single-triple bonds (e.g. H-C#C-H)
+        # This test requires explicit hydrogen atoms
+        implicitH = self.implicitHydrogens
+        self.makeHydrogensExplicit()
         for atom in self.atoms:
             bonds = self.bonds[atom].values()
             if len(bonds)==1:
@@ -862,9 +877,11 @@ class Molecule(graph.Graph):
             break # fail if we haven't continued
         else:
             # didn't fail
+            if implicitH: self.makeHydrogensImplicit()
             return True
-
+        
         # not returned yet? must be nonlinear
+        if implicitH: self.makeHydrogensImplicit()
         return False
 
     def countInternalRotors(self):
@@ -877,7 +894,7 @@ class Molecule(graph.Graph):
         for atom1 in self.bonds:
             for atom2, bond in self.bonds[atom1].iteritems():
                 if self.atoms.index(atom1) < self.atoms.index(atom2) and bond.isSingle() and not self.isBondInCycle(atom1, atom2):
-                    if len(self.bonds[atom1]) > 1 and len(self.bonds[atom2]) > 1:
+                    if len(self.bonds[atom1]) + atom1.implicitHydrogens > 1 and len(self.bonds[atom2]) + atom2.implicitHydrogens > 1:
                         count += 1
         return count
 

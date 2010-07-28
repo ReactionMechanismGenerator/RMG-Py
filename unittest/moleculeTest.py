@@ -194,7 +194,6 @@ class MoleculeCheck(unittest.TestCase):
         fail_message = ''
         for smile,should_be in test_set:
             molecule = Molecule(SMILES=smile)
-            molecule.makeHydrogensExplicit()
             rotorNumber = molecule.countInternalRotors()
             if rotorNumber!=should_be:
                 fail_message+="Got rotor number of %s for %s (expected %s)\n"%(rotorNumber,smile,should_be)
@@ -208,7 +207,6 @@ class MoleculeCheck(unittest.TestCase):
         fail_message = ''
         for smile,should_be in test_set:
             molecule = Molecule(SMILES=smile)
-            molecule.makeHydrogensExplicit()
             rotorNumber = molecule.countInternalRotors()
             if rotorNumber!=should_be:
                 fail_message+="Got rotor number of %s for %s (expected %s)\n"%(rotorNumber,smile,should_be)
@@ -231,7 +229,6 @@ class MoleculeCheck(unittest.TestCase):
         fail_message = ''
         for smile,should_be in test_set:
             molecule = Molecule(SMILES=smile)
-            molecule.makeHydrogensExplicit()
             symmetryNumber = molecule.isLinear()
             if symmetryNumber!=should_be:
                 fail_message+="Got linearity %s for %s (expected %s)\n"%(symmetryNumber,smile,should_be)
