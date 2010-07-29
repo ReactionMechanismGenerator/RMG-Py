@@ -230,7 +230,7 @@ class AtomPattern(graph.Vertex):
         """
         Return a representation that can be used to reconstruct the object.
         """
-        return "AtomPattern(atomType=%s, radicalElectrons=%s, spinMultiplicity=%s, charge=%s, label='%s')" % (self.atomType, self.radicalElectrons, self.spinMultiplicity, self.implicitHydrogens, self.charge, self.label)
+        return "AtomPattern(atomType=%s, radicalElectrons=%s, spinMultiplicity=%s, charge=%s, label='%s')" % (self.atomType, self.radicalElectrons, self.spinMultiplicity, self.charge, self.label)
 
     def copy(self):
         """

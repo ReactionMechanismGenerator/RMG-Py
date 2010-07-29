@@ -84,6 +84,137 @@ class ThermoModel:
 
 ################################################################################
 
+class ThermoGAModel(ThermoModel):
+    """
+    A thermodynamic model defined by a set of heat capacities. The attributes
+    are:
+
+    =========== =================== ============================================
+    Attribute   Type                Description
+    =========== =================== ============================================
+    `Tdata`     ``numpy.ndarray``   The temperatures at which the heat capacity data is provided in K
+    `Cpdata`    ``numpy.ndarray``   The standard heat capacity in J/mol*K at each temperature in `Tdata`
+    `H298`      ``double``          The standard enthalpy of formation at 298 K in J/mol
+    `S298`      ``double``          The standard entropy of formation at 298 K in J/mol*K
+    `index`     ``int``             A unique integer identifier
+    =========== =================== ============================================
+    """
+
+    def __init__(self, Tdata=None, Cpdata=None, H298=0.0, S298=0.0, Tmin=0.0, Tmax=99999.9, comment=''):
+        ThermoModel.__init__(self, Tmin=Tmin, Tmax=Tmax, comment=comment)
+        self.Tdata = Tdata
+        self.Cpdata = Cpdata
+        self.H298 = H298
+        self.S298 = S298
+        self.index = -1
+
+    def __repr__(self):
+        string = 'ThermoGAModel(Tdata=%s, Cpdata=%s, H298=%s, S298=%s)' % (self.Tdata, self.Cpdata, self.H298, self.S298)
+        return string
+
+    def __str__(self):
+        """
+        Return a string summarizing the thermodynamic data.
+        """
+        string = ''
+        string += 'Enthalpy of formation: %g kJ/mol\n' % (self.H298 / 1000.0)
+        string += 'Entropy of formation: %g J/mol*K\n' % (self.S298)
+        string += 'Heat capacity (J/mol*K): '
+        for T, Cp in zip(self.Tdata, self.Cpdata):
+            string += '%.1f(%g K) ' % (Cp,T)
+        string += '\n'
+        string += 'Comment: %s' % (self.comment)
+        return string
+
+    def __add__(self, other):
+        """
+        Add two sets of thermodynamic data together. All parameters are
+        considered additive. Returns a new :class:`ThermoGAModel` object that is
+        the sum of the two sets of thermodynamic data.
+        """
+        cython.declare(i=int, new=ThermoGAModel)
+        if len(self.Tdata) != len(other.Tdata) or any([T1 != T2 for T1, T2 in zip(self.Tdata, other.Tdata)]):
+            raise Exception('Cannot add these ThermoGAModel objects due to their having different temperature points.')
+        new = ThermoGAModel()
+        new.H298 = self.H298 + other.H298
+        new.S298 = self.S298 + other.S298
+        new.Tdata = self.Tdata
+        new.Cpdata = self.Cpdata + other.Cpdata
+        if self.comment == '': new.comment = other.comment
+        elif other.comment == '': new.comment = self.comment
+        else: new.comment = self.comment + '+ ' + other.comment
+        return new
+
+    def getHeatCapacity(self, Tlist):
+        """
+        Return the constant-pressure heat capacity (Cp) in J/mol*K at temperature `T` in K.
+        """
+        cython.declare(Tmin=cython.double, Tmax=cython.double, Cpmin=cython.double, Cpmax=cython.double)
+        cython.declare(Cplist=numpy.ndarray)
+        Cplist = numpy.zeros_like(Tlist)
+        for i, T in enumerate(Tlist):
+            if not self.isTemperatureValid(T):
+                raise data.TemperatureOutOfRangeError('Invalid temperature "%g K" for heat capacity estimation.' % T)
+            if T < numpy.min(Tlist):
+                Cplist[i] = self.Cpdata[0]
+            elif T >= numpy.max(Tlist):
+                Cplist[i] = self.Cpdata[0]
+            else:
+                for Tmin, Tmax, Cpmin, Cpmax in zip(self.Tdata[:-1], self.Tdata[1:], self.Cpdata[:-1], self.Cpdata[1:]):
+                    if Tmin <= T and T < Tmax:
+                        Cplist[i] = (Cpmax - Cpmin) * ((T - Tmin) / (Tmax - Tmin)) + Cpmin
+
+    def getEnthalpy(self, T):
+        """
+        Return the enthalpy in J/mol at temperature `T` in K.
+        """
+        cython.declare(H=cython.double, slope=cython.double, intercept=cython.double,
+             Tmin=cython.double, Tmax=cython.double, Cpmin=cython.double, Cpmax=cython.double)
+        cython.declare(Hlist=numpy.ndarray)
+        Hlist = self.H298 * numpy.ones_like(Tlist)
+        for i, T in enumerate(Tlist):
+            if not self.isTemperatureValid(T):
+                raise data.TemperatureOutOfRangeError('Invalid temperature "%g K" for enthalpy estimation.' % T)
+            for Tmin, Tmax, Cpmin, Cpmax in zip(self.Tdata[:-1], self.Tdata[1:], self.Cpdata[:-1], self.Cpdata[1:]):
+                if T > Tmin:
+                    slope = (Cpmax - Cpmin) / (Tmax - Tmin)
+                    intercept = (Cpmin * Tmax - Cpmax * Tmin) / (Tmax - Tmin)
+                    if T < Tmax:	Hlist[i] += 0.5 * slope * (T*T - Tmin*Tmin) + intercept * (T - Tmin)
+                    else:			Hlist[i] += 0.5 * slope * (Tmax*Tmax - Tmin*Tmin) + intercept * (Tmax - Tmin)
+            if T > self.Tdata[-1]:
+                Hlist[i] += self.Cp[-1] * (T - self.Tdata[-1])
+        return H
+
+    def getEntropy(self, T):
+        """
+        Return the entropy in J/mol*K at temperature `T` in K.
+        """
+
+        Slist = self.H298 * numpy.ones_like(Tlist)
+        for i, T in enumerate(Tlist):
+            if not self.isTemperatureValid(T):
+                raise data.TemperatureOutOfRangeError('Invalid temperature "%g K" for entropy estimation.' % T)
+            for Tmin, Tmax, Cpmin, Cpmax in zip(self.Tdata[:-1], self.Tdata[1:], self.Cpdata[:-1], self.Cpdata[1:]):
+                if T > Tmin:
+                    slope = (Cpmax - Cpmin) / (Tmax - Tmin)
+                    intercept = (Cpmin * Tmax - Cpmax * Tmin) / (Tmax - Tmin)
+                    if T < Tmax:	Slist[i] += slope * (T - Tmin) + intercept * math.log(T/Tmin)
+                    else:			Slist[i] += slope * (Tmax - Tmin) + intercept * math.log(Tmax/Tmin)
+            if T > self.Tdata[-1]:
+                Slist[i] += self.Cp[-1] * math.log(T / self.Tdata[-1])
+        return S
+
+    def getFreeEnergy(self, Tlist):
+        """
+        Return the Gibbs free energy in J/mol at temperature `T` in K.
+        """
+        for T in Tlist:
+            if not self.isTemperatureValid(T):
+                raise data.TemperatureOutOfRangeError('Invalid temperature "%g K" for Gibbs free energy estimation.' % T)
+        return self.getEnthalpy(Tlist) - T * self.getEntropy(Tlist)
+
+################################################################################
+
 class WilhoitModel(ThermoModel):
     """
     A thermodynamics model based on the Wilhoit equation for heat capacity,
