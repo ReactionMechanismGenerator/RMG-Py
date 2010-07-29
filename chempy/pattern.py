@@ -781,6 +781,13 @@ class MoleculePattern(graph.Graph):
 
 ################################################################################
 
+class InvalidAdjacencyListError(Exception):
+    """
+    An exception used to indicate that an RMG-style adjacency list is invalid.
+    Pass a string giving specifics about the particular exceptional behavior.
+    """
+    pass
+
 def fromAdjacencyList(adjlist, pattern=False, addH=False, withLabel=True):
     """
     Convert a string adjacency list `adjlist` into a set of :class:`Atom` and
