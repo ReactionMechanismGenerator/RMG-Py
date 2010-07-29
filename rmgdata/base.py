@@ -780,25 +780,14 @@ class Database:
         the functional group represented by `node` has an equivalent labeled
         atom in `structure`.
         """
-    #   if node in ['CH2_triplet', 'Y_1centerbirad']:
-    #       logging.debug("Trying to match structure with node %s"%node)
+
         group = self.dictionary[node]
         if isinstance(group, LogicNode):
             return group.matchToStructure(self, structure, atoms)
-
-        #if group.__class__ == str or group.__class__ == unicode:
-        #   if group.lower() == 'union':
-        #       match = False
-        #       for child in self.tree.children[node]:
-        #           if self.matchNodeToStructure(child, structure, atoms):
-        #               match = True
-        #       return match
-        #   else:
-        #       return False
         else:
             # try to pair up labeled atoms
             centers = group.getLabeledAtoms()
-            map12_0 = {}; map21_0 = {}
+            initialMap = {}
             for label in centers.keys():
                 # Make sure the labels are in both group and structure.
                 if label not in atoms:
@@ -815,7 +804,7 @@ class Database:
                     return False
                 # Semantic check #2: labeled atoms that share bond in the group (node)
                 # also share equivalent (or more specific) bond in the structure
-                for atom1, atom2 in map21_0.iteritems():
+                for atom2, atom1 in initialMap.iteritems():
                     if group.hasBond(center, atom1) and structure.hasBond(atom, atom2):
                         bond1 = group.getBond(center, atom1)   # bond1 is group
                         bond2 = structure.getBond(atom, atom2) # bond2 is structure
@@ -828,9 +817,9 @@ class Database:
                         logging.debug("We don't mind that structure "+ str(structure) +
                             " has bond but group %s doesn't"%node )
                 # Passed semantic checks, so add to maps of already-matched atoms
-                map21_0[center] = atom; map12_0[atom] = center
+                initialMap[atom] = center
             # use mapped (labeled) atoms to try to match subgraph
-            return structure.isSubgraphIsomorphic(group, map12_0, map21_0)
+            return structure.isSubgraphIsomorphic(group, initialMap)
 
     def descendTree(self, structure, atoms, root=None):
         """
