@@ -62,6 +62,22 @@ We define the following basic atom types:
     ``Os``          oxygen atom with two single bonds
     ``Od``          oxygen atom with one double bond
     ``Oa``          oxygen atom with no bonds
+    *Silicon atom types*
+    ----------------------------------------------------------------------------
+    ``Si``          silicon atom with any local bond structure
+    ``Sis``         silicon atom with four single bonds
+    ``Sid``         silicon atom with one double bond (to carbon) and two single bonds
+    ``Sidd``        silicon atom with two double bonds
+    ``Sit``         silicon atom with one triple bond and one single bond
+    ``SiO``         silicon atom with one double bond (to oxygen) and two single bonds
+    ``Sib``         silicon atom with two benzene bonds and one single bond
+    ``Sibf``        silicon atom with three benzene bonds
+    *Sulfur atom types*
+    ----------------------------------------------------------------------------
+    ``S``           sulfur atom with any local bond structure
+    ``Ss``          sulfur atom with two single bonds
+    ``Sd``          sulfur atom with one double bond
+    ``Sa``          sulfur atom with no bonds
     =============== ============================================================
 
 .. _bond-types:
@@ -132,6 +148,18 @@ def getAtomType(atom, bonds):
         if   double + doubleO == 0 and triple == 0 and benzene == 0: atomType = 'Os'
         elif double + doubleO == 1 and triple == 0 and benzene == 0: atomType = 'Od'
         elif len(bonds) == 0:                                        atomType = 'Oa'
+    elif atom.symbol == 'Si':
+        if   double == 0 and doubleO == 0 and triple == 0 and benzene == 0: atomType = 'Sis'
+        elif double == 1 and doubleO == 0 and triple == 0 and benzene == 0: atomType = 'Sid'
+        elif double + doubleO == 2        and triple == 0 and benzene == 0: atomType = 'Sidd'
+        elif double == 0 and doubleO == 0 and triple == 1 and benzene == 0: atomType = 'Sit'
+        elif double == 0 and doubleO == 1 and triple == 0 and benzene == 0: atomType = 'SiO'
+        elif double == 0 and doubleO == 0 and triple == 0 and benzene == 2: atomType = 'Sib'
+        elif double == 0 and doubleO == 0 and triple == 0 and benzene == 3: atomType = 'Sibf'
+    elif atom.symbol == 'S':
+        if   double + doubleO == 0 and triple == 0 and benzene == 0: atomType = 'Ss'
+        elif double + doubleO == 1 and triple == 0 and benzene == 0: atomType = 'Sd'
+        elif len(bonds) == 0:                                        atomType = 'Sa'
 
     # Raise exception if we could not identify the proper atom type
     if atomType == '':
@@ -155,12 +183,16 @@ def atomTypesEquivalent(atomType1, atomType2):
     elif atomType2 == 'R!H': return atomType1 != 'H'
     # If either represents an element without surrounding bond info,
     # match remaining to any with the same element
-    elif atomType1 == 'C': return atomType2 in ['C', 'Cs', 'Cd', 'Cdd', 'Ct', 'CO', 'Cb', 'Cbf']
-    elif atomType1 == 'H': return atomType2 in ['H']
-    elif atomType1 == 'O': return atomType2 in ['O', 'Os', 'Od', 'Oa']
-    elif atomType2 == 'C': return atomType1 in ['C', 'Cs', 'Cd', 'Cdd', 'Ct', 'CO', 'Cb', 'Cbf']
-    elif atomType2 == 'H': return atomType1 in ['H']
-    elif atomType2 == 'O': return atomType1 in ['O', 'Os', 'Od', 'Oa']
+    elif atomType1 == 'C':  return atomType2 in ['C', 'Cs', 'Cd', 'Cdd', 'Ct', 'CO', 'Cb', 'Cbf']
+    elif atomType1 == 'H':  return atomType2 in ['H']
+    elif atomType1 == 'O':  return atomType2 in ['O', 'Os', 'Od', 'Oa']
+    elif atomType1 == 'Si': return atomType2 in ['Si', 'Sis', 'Sid', 'Sidd', 'Sit', 'SiO', 'Sib', 'Sibf']
+    elif atomType1 == 'S':  return atomType2 in ['S', 'Ss', 'Sd', 'Sa']
+    elif atomType2 == 'C':  return atomType1 in ['C', 'Cs', 'Cd', 'Cdd', 'Ct', 'CO', 'Cb', 'Cbf']
+    elif atomType2 == 'H':  return atomType1 in ['H']
+    elif atomType2 == 'O':  return atomType1 in ['O', 'Os', 'Od', 'Oa']
+    elif atomType2 == 'Si': return atomType1 in ['Si', 'Sis', 'Sid', 'Sidd', 'Sit', 'SiO', 'Sib', 'Sibf']
+    elif atomType2 == 'S':  return atomType1 in ['S', 'Ss', 'Sd', 'Sa']
     # If we are here then we're satisfied that atomType1 and atomType2 are not equivalent
     return False
 
@@ -180,9 +212,11 @@ def atomTypesSpecificCaseOf(atomType1, atomType2):
     elif atomType2 == 'R!H': return atomType1 != 'H'
     # If other represents an element without surrounding bond info,
     # match self to any with the same element
-    elif atomType2 == 'C': return atomType1 in ['C', 'Cs', 'Cd', 'Cdd', 'Ct', 'CO', 'Cb', 'Cbf']
-    elif atomType2 == 'H': return atomType1 in ['H']
-    elif atomType2 == 'O': return atomType1 in ['O', 'Os', 'Od', 'Oa']
+    elif atomType2 == 'C':  return atomType1 in ['C', 'Cs', 'Cd', 'Cdd', 'Ct', 'CO', 'Cb', 'Cbf']
+    elif atomType2 == 'H':  return atomType1 in ['H']
+    elif atomType2 == 'O':  return atomType1 in ['O', 'Os', 'Od', 'Oa']
+    elif atomType2 == 'Si': return atomType1 in ['Si', 'Sis', 'Sid', 'Sidd', 'Sit', 'SiO', 'Sib', 'Sibf']
+    elif atomType2 == 'S':  return atomType1 in ['S', 'Ss', 'Sd', 'Sa']
     # If we are here then we're satisfied that atomType1 is not a specific case of atomType2
     return False
 
@@ -248,20 +282,29 @@ class AtomPattern(graph.Vertex):
         atomType = []
         for atom in self.atomType:
             if order == 1:
-                if atom == 'C' or atom == 'O' or atom == 'R' or atom == 'R!H': atomType.append(atom)
+                if atom == 'C' or atom == 'O' or atom == 'Si' or atom == 'S' or atom == 'R' or atom == 'R!H': atomType.append(atom)
                 elif atom == 'Cs':      atomType.extend(['Cd', 'CO'])
                 elif atom == 'Cd':      atomType.extend(['Cdd', 'Ct'])
                 elif atom == 'CO':      atomType.append('Cdd')
                 elif atom == 'Os':      atomType.append('Od')
+                elif atom == 'Sis':     atomType.extend(['Sid', 'SiO'])
+                elif atom == 'Sid':     atomType.extend(['Sidd', 'Sit'])
+                elif atom == 'SiO':     atomType.append('Sidd')
+                elif atom == 'Ss':      atomType.append('Sd')
                 else:
                     raise ChemPyError('Unable to update AtomPattern due to CHANGE_BOND action: Invalid atom type "%s" in set %s".' % (atom, self.atomType))
             elif order == -1:
-                if atom == 'C' or atom == 'O' or atom == 'R' or atom == 'R!H': atomType.append(atom)
+                if atom == 'C' or atom == 'O' or atom == 'Si' or atom == 'S' or atom == 'R' or atom == 'R!H': atomType.append(atom)
                 elif atom == 'Cd':      atomType.append('Cs')
                 elif atom == 'Cdd':     atomType.append('Cd')
                 elif atom == 'Ct':      atomType.append('Cd')
                 elif atom == 'CO':      atomType.append('Cs')
                 elif atom == 'Od':      atomType.append('Os')
+                elif atom == 'Sid':     atomType.append('Sis')
+                elif atom == 'Sidd':    atomType.append('Sid')
+                elif atom == 'Sit':     atomType.append('Sid')
+                elif atom == 'SiO':     atomType.append('Sis')
+                elif atom == 'Sd':      atomType.append('Ss')
                 else:
                     raise ChemPyError('Unable to update AtomPattern due to CHANGE_BOND action: Invalid atom type "%s" in set %s".' % (atom, self.atomType))
             else:
@@ -279,13 +322,19 @@ class AtomPattern(graph.Vertex):
             raise ChemPyError('Unable to update AtomPattern due to FORM_BOND action: Invalid order "%s".' % order)
         atomType = []
         for atom in self.atomType:
-            if atom == 'H' or atom == 'C' or atom == 'O' or atom == 'R' or atom == 'R!H': atomType.append(atom)
+            if atom == 'H' or atom == 'C' or atom == 'O' or atom == 'Si' or atom == 'S' or atom == 'R' or atom == 'R!H': atomType.append(atom)
             elif atom == 'Cs':      atomType.append('Cs')
             elif atom == 'Cd':      atomType.append('Cd')
             elif atom == 'Ct':      atomType.append('Ct')
             elif atom == 'CO':      atomType.append('CO')
             elif atom == 'Cb':      atomType.append('Cb')
             elif atom == 'Os':      atomType.append('Os')
+            elif atom == 'Sis':     atomType.append('Sis')
+            elif atom == 'Sid':     atomType.append('Sid')
+            elif atom == 'Sit':     atomType.append('Sit')
+            elif atom == 'SiO':     atomType.append('SiO')
+            elif atom == 'Sib':     atomType.append('Sib')
+            elif atom == 'Ss':      atomType.append('Ss')
             else:
                 raise ChemPyError('Unable to update AtomPattern due to FORM_BOND action: Invalid atom type "%s" in set %s".' % (atom, self.atomType))
         # Set the new atom types, removing any duplicates
@@ -301,13 +350,19 @@ class AtomPattern(graph.Vertex):
             raise ChemPyError('Unable to update AtomPattern due to BREAK_BOND action: Invalid order "%s".' % order)
         atomType = []
         for atom in self.atomType:
-            if atom == 'H' or atom == 'C' or atom == 'O' or atom == 'R' or atom == 'R!H': atomType.append(atom)
+            if atom == 'H' or atom == 'C' or atom == 'O' or atom == 'Si' or atom == 'S' or atom == 'R' or atom == 'R!H': atomType.append(atom)
             elif atom == 'Cs':      atomType.append('Cs')
             elif atom == 'Cd':      atomType.append('Cd')
             elif atom == 'Ct':      atomType.append('Ct')
             elif atom == 'CO':      atomType.append('CO')
             elif atom == 'Cb':      atomType.append('Cb')
             elif atom == 'Os':      atomType.append('Os')
+            elif atom == 'Sis':     atomType.append('Sis')
+            elif atom == 'Sid':     atomType.append('Sid')
+            elif atom == 'Sit':     atomType.append('Sit')
+            elif atom == 'SiO':     atomType.append('SiO')
+            elif atom == 'Sib':     atomType.append('Sib')
+            elif atom == 'Ss':      atomType.append('Ss')
             else:
                 raise ChemPyError('Unable to update AtomPattern due to BREAK_BOND action: Invalid atom type "%s" in set %s".' % (atom, self.atomType))
         # Set the new atom types, removing any duplicates
