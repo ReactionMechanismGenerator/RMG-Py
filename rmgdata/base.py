@@ -132,65 +132,67 @@ class Dictionary(dict):
         """
         # If record is a logical node, make it into one.
         if re.match('(?i)\s*OR|AND|NOT|UNION',record.splitlines()[1] ):
-            return self.makeLogicNode(' '.join(record.splitlines()[1:]) )
+            return makeLogicNode(' '.join(record.splitlines()[1:]) )
         # Otherwise convert adjacency list to molecule or pattern
         elif pattern:
             return MoleculePattern().fromAdjacencyList(record)
         else:
             return Molecule().fromAdjacencyList(record)
 
-    def makeLogicNode(self, string):
-        """
-        Creates and returns a node in the tree which is a logic node.
+################################################################################
 
-        String should be of the form:
+def makeLogicNode(string):
+    """
+    Creates and returns a node in the tree which is a logic node.
 
-        * OR{}
-        * AND{}
-        * NOT OR{}
-        * NOT AND{}
+    String should be of the form:
 
-        And the returned object will be of class LogicOr or LogicAnd
-        """
+    * OR{}
+    * AND{}
+    * NOT OR{}
+    * NOT AND{}
 
-        match = re.match("(?i)\s*(NOT)?\s*(OR|AND|UNION)\s*(.*)",string)  # the (?i) makes it case-insensitive
-        if not match:
-            raise Exception("Unexpected string for Logic Node: %s"%string)
+    And the returned object will be of class LogicOr or LogicAnd
+    """
 
-        if match.group(1): invert = True
-        else: invert = False
+    match = re.match("(?i)\s*(NOT)?\s*(OR|AND|UNION)\s*(.*)",string)  # the (?i) makes it case-insensitive
+    if not match:
+        raise Exception("Unexpected string for Logic Node: %s"%string)
 
-        logic = match.group(2)  # OR or AND (or Union)
+    if match.group(1): invert = True
+    else: invert = False
 
-        contents = match.group(3).strip()
-        while contents.startswith('{'):
-            if not contents.endswith('}'):
-                raise Exception("Unbalanced braces in Logic Node: %s"%string)
-            contents = contents[1:-1]
+    logic = match.group(2)  # OR or AND (or Union)
 
-        items=[]
-        chars=[]
-        brace_depth = 0
-        for character in contents:
-            if character == '{':
-                brace_depth += 1
-            if character == '}':
-                brace_depth -= 1
-            if character == ',' and brace_depth == 0:
-                items.append(''.join(chars).lstrip().rstrip() )
-                chars = []
-            else:
-                chars.append(character)
-        if chars: # add last item
+    contents = match.group(3).strip()
+    while contents.startswith('{'):
+        if not contents.endswith('}'):
+            raise Exception("Unbalanced braces in Logic Node: %s"%string)
+        contents = contents[1:-1]
+
+    items=[]
+    chars=[]
+    brace_depth = 0
+    for character in contents:
+        if character == '{':
+            brace_depth += 1
+        if character == '}':
+            brace_depth -= 1
+        if character == ',' and brace_depth == 0:
             items.append(''.join(chars).lstrip().rstrip() )
-        if brace_depth != 0: raise Exception("Unbalanced braces in Logic Node: %s"%string)
+            chars = []
+        else:
+            chars.append(character)
+    if chars: # add last item
+        items.append(''.join(chars).lstrip().rstrip() )
+    if brace_depth != 0: raise Exception("Unbalanced braces in Logic Node: %s"%string)
 
-        if logic.upper() in ['OR', 'UNION']:
-            return LogicOr(items, invert)
-        if logic == 'AND':
-            return LogicAnd(items, invert)
+    if logic.upper() in ['OR', 'UNION']:
+        return LogicOr(items, invert)
+    if logic == 'AND':
+        return LogicAnd(items, invert)
 
-        raise Exception("Could not create Logic Node from %s" % string)
+    raise Exception("Could not create Logic Node from %s" % string)
 
 ################################################################################
 
@@ -595,7 +597,7 @@ class LogicOr(LogicNode):
             else:
                 structures.append(struct)
         for struct in structures: # check this worked
-            assert isinstance(struct,structure.Structure)
+            assert isinstance(struct,MoleculePattern)
         return structures
 
 class LogicAnd(LogicNode):
@@ -746,16 +748,17 @@ class Database:
                     raise InvalidDatabaseError('Node "%s" in library is not present in dictionary.' % (node))
             except InvalidDatabaseError, e:
                 wellFormed = False
-                logging.error(e.msg)
+                logging.error(str(e))
 
-            # If a tree is present, all nodes in library must be in tree
+            # If a tree is present, all nodes in library should be in tree
+            # (Technically the database is still well-formed, but let's warn
+            # the user anyway
             if len(self.tree.parent) > 0:
                 try:
                     if node not in self.tree.parent:
                         raise InvalidDatabaseError('Node "%s" in library is not present in tree.' % (node))
                 except InvalidDatabaseError, e:
-                    wellFormed = False
-                    logging.error(e.msg)
+                    logging.warning(str(e))
 
         # If a tree is present, all nodes in tree must be in dictionary
         if self.tree is not None:
@@ -765,7 +768,7 @@ class Database:
                         raise InvalidDatabaseError('Node "%s" in tree is not present in dictionary.' % (node))
                 except InvalidDatabaseError, e:
                     wellFormed = False
-                    logging.error(e.msg)
+                    logging.error(str(e))
 
         return wellFormed
 
@@ -868,6 +871,22 @@ def removeCommentFromLine(line):
     if index >= 0:
         line = line[0:index]
     return line
+
+def getAllCombinations(nodeLists):
+    """
+    Generate a list of all possible combinations of items in the list of
+    lists `nodeLists`. Each combination takes one item from each list
+    contained within `nodeLists`. The order of items in the returned lists
+    reflects the order of lists in `nodeLists`. For example, if `nodeLists` was
+    [[A, B, C],	[N], [X, Y]], the returned combinations would be
+    [[A, N, X], [A, N, Y], [B, N, X], [B, N, Y], [C, N, X], [C, N, Y]].
+    """
+
+    items = [[]]
+    for nodeList in nodeLists:
+        items = [ item + [node] for node in nodeList for item in items ]
+
+    return items
 
 ################################################################################
 
