@@ -231,7 +231,7 @@ class Reaction:
         frequency = abs(TS.frequency)
         return 1.0 + (constants.h * constants.c * 100.0 * abs(frequency) / constants.kB / Tlist)**2 / 24.0
     
-    def calculateEckartTunnelingCorrection(self, Tlist, TS):
+    def calculateEckartTunnelingCorrection(self, Tlist):
         """
         Calculate and return the value of the Eckart tunneling correction for
         the reaction with corresponding transition state `TS` at the list of
@@ -273,19 +273,22 @@ class Reaction:
         cython.declare(kappa=numpy.ndarray, E_kT=numpy.ndarray, f=numpy.ndarray, integral=cython.double)
         cython.declare(i=cython.int, tol=cython.double, fcrit=cython.double, E_kTmin=cython.double, E_kTmax=cython.double)
         
-        frequency = abs(TS.frequency)
+        frequency = abs(self.transitionState.frequency)
         
         # Calculate intermediate constants
-        dV1 = TS.states.E0 - sum([spec.states.E0 for spec in self.reactants]) # [=] J/mol
-        if all([spec.states is not None for spec in self.products]):
+        dV1 = self.transitionState.E0 - sum([spec.E0 for spec in self.reactants]) # [=] J/mol
+        #if all([spec.states is not None for spec in self.products]):
             # Product data available, so use asymmetric Eckart correction
-            dV2 = TS.states.E0 - sum([spec.states.E0 for spec in self.products]) # [=] J/mol
-        else:
-            # Product data not available, so use asymmetric Eckart correction
-            dV2 = dV1
+        dV2 = self.transitionState.E0 - sum([spec.E0 for spec in self.products]) # [=] J/mol
+        #else:
+            ## Product data not available, so use asymmetric Eckart correction
+            #dV2 = dV1
+        # Tunneling must be done in the exothermic direction, so swap if this 
+        # isn't the case
+        if dV2 < dV1: dV1, dV2 = dV2, dV1
         alpha1 = 2 * math.pi * dV1 / constants.Na / (constants.h * constants.c * 100.0 * frequency)
         alpha2 = 2 * math.pi * dV2 / constants.Na / (constants.h * constants.c * 100.0 * frequency)
-
+        
         # Integrate to get Eckart correction
         kappa = numpy.zeros_like(Tlist)
         for i in range(len(Tlist)):
