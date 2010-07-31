@@ -43,7 +43,7 @@ from chempy.pattern import BondPattern
 
 ################################################################################
 
-class ReactionException(Exception):
+class ReactionError(Exception):
     """
     An base exception for reactions.
     Takes a reaction object, and optional message
@@ -62,7 +62,7 @@ class ReactionException(Exception):
         if self.message: string += "Message: "+self.message
         return string
 
-class UndeterminableKineticsException(ReactionException):
+class UndeterminableKineticsError(ReactionError):
     """
     An exception raised when attempts to select appropriate kinetic parameters
     for a chemical reaction are unsuccessful.
@@ -1108,5 +1108,15 @@ def loadKineticsDatabase(dstr):
     kineticsDatabase = KineticsDatabase(path=dstr)
     return kineticsDatabase
 
+def generateKineticsData(rxn, family):
+    """
+    Get the kinetics data associated with `reaction` in `family` by looking in
+    the loaded kinetics database. The reactants and products in the molecule
+    should already be labeled appropriately.
+    """
+    global kineticsDatabase
+    kinetics = kineticsDatabase.generateKineticsData(rxn, family)
+    return kinetics
+    
 ################################################################################
 
