@@ -186,7 +186,7 @@ class ArrheniusEPModel(KineticsModel):
         self.alpha = alpha
 
     def __str__(self):
-        return 'k(T) = %s * T ** %s * math.exp(-(%s + %s * DHrxn) / constants.R / T)\t%s < T < %s' % (self.A, self.n, self.E0, self.alpha, self.Tmin, self.Tmax)
+        return 'k(T) = %g * T ** %g * exp(-(%g + %g * dHrxn) / RT)    %g < T < %g' % (self.A, self.n, self.E0, self.alpha, self.Tmin, self.Tmax)
         
     def __repr__(self):
         return '<ArrheniusEPModel A=%g E0=%g kJ/mol n=%g alpha=%.1g>' % (self.A, self.E0/1000.0, self.n, self.alpha)

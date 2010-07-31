@@ -713,6 +713,28 @@ class MoleculePattern(graph.Graph):
         other = MoleculePattern(g.vertices, g.edges)
         return other
 
+    def merge(self, other):
+        """
+        Merge two patterns so as to store them in a single
+        :class:`MoleculePattern` object. The merged :class:`MoleculePattern`
+        object is returned.
+        """
+        g = graph.Graph.merge(self, other)
+        molecule = MoleculePattern(atoms=g.vertices, bonds=g.edges)
+        return molecule
+
+    def split(self):
+        """
+        Convert a single :class:`MoleculePattern` object containing two or more
+        unconnected patterns into separate class:`MoleculePattern` objects.
+        """
+        graphs = graph.Graph.split(self)
+        molecules = []
+        for g in graphs:
+            molecule = MoleculePattern(atoms=g.vertices, bonds=g.edges)
+            molecules.append(molecule)
+        return molecules
+
     def clearLabeledAtoms(self):
         """
         Remove the labels from all atoms in the molecular pattern.

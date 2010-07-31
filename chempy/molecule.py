@@ -291,7 +291,7 @@ class Molecule(graph.Graph):
         """
         Return a representation that can be used to reconstruct the object.
         """
-        return "Bond(SMILES='%s')" % (self.toSMILES())
+        return "Molecule(SMILES='%s')" % (self.toSMILES())
 
     def __getAtoms(self): return self.vertices
     def __setAtoms(self, atoms): self.vertices = atoms
@@ -394,13 +394,13 @@ class Molecule(graph.Graph):
         Merge two molecules so as to store them in a single :class:`Molecule`
         object. The merged :class:`Molecule` object is returned.
         """
-        graph = graph.Graph.merge(self, other)
-        molecule = Molecule(atoms=graph.vertices, bonds=graph.edges)
+        g = graph.Graph.merge(self, other)
+        molecule = Molecule(atoms=g.vertices, bonds=g.edges)
         return molecule
 
     def split(self):
         """
-        Convert a single class:`Molecule` object containing two or more
+        Convert a single :class:`Molecule` object containing two or more
         unconnected molecules into separate class:`Molecule` objects.
         """
         graphs = graph.Graph.split(self)
