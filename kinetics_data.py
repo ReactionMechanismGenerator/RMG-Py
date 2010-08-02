@@ -1,87 +1,20 @@
 #!/usr/bin/env python
 # encoding: utf-8
-import sys, os
 
-rmgpy_dir = os.environ.get('RMGpy')
-if rmgpy_dir is None: raise RuntimeError("Please set RMGpy environment variable")
-sys.path.append(os.path.join(rmgpy_dir,'source'))
+import os
+import sys
+import logging
 
-import rmg
-import rmg.thermo, rmg.structure, rmg.species, rmg.data, rmg.reaction, rmg.kinetics.data
-import rmg.log as logging
+from chempy.pattern import MoleculePattern
 
+from rmgdata.base import removeCommentFromLine
+from rmgdata.kinetics import loadKineticsDatabase
 
 _rates = []
 
-
-def removeCommentFromLine(line):
-    """
-    Remove a C++/Java style comment from a line of text.
-    """
-    index = line.find('//')
-    if index >= 0:
-        line = line[0:index]
-    return line
-    
-
-def loadKineticsDatabases(databasePath, only_families=False):
-    """
-    Create and load the kinetics databases (reaction families).
-    If only_families is a list like ['H_Abstraction'] then only families in this
-    list will be loaded.
-    """
-    
-    db = rmg.kinetics.data.ReactionFamilySet()
-    rmg.kinetics.data.kineticsDatabase = db
-    
-    datapath = os.path.abspath(databasePath)
-    logging.info('Loading reaction family databases from %s.' % datapath)
-    
-    # Load the families from kinetics/families.txt
-    familyList = []
-    ffam = open(os.path.join(datapath,'kinetics_groups','families.txt'), 'r')
-    for line in ffam:
-        line = rmg.data.removeCommentFromLine(line).strip()
-        if len(line) > 0:
-            items = line.split()
-            items[0] = int(items[0])
-            familyList.append(items)
-    ffam.close()
-    
-    # loop through the families
-    families = {}
-    for index, status, label in familyList:
-        path = os.path.join(datapath, 'kinetics_groups', label)
-        if os.path.isdir(path): # and status.lower() == 'on':
-            # skip families not in only_families, if it's set
-            if only_families and label not in only_families: continue
-            
-            logging.verbose('Loading reaction family %s from %s...' % (label, datapath))
-            family = rmg.kinetics.data.ReactionFamily(label)
-            #family.load(path)  # this would load the whole family. We just want the dictionary and tree
-            
-            # Generate paths to files in the database
-            dictstr = os.path.join(path, 'dictionary.txt')
-            treestr = os.path.join(path, 'tree.txt')
-            #: The path of the database that was loaded.
-            family._path = path
-            
-            rmg.data.Database.load(family, dictstr, treestr, '')
-            
-            # Check for well-formedness
-            if not family.isWellFormed():
-                raise data.InvalidDatabaseException('Database at "%s" is not well-formed.' % (path))                
-                    
-            db.families[family.label] = family
-
-    # rmg.reaction.kineticsDatabase.load(databasePath, only_families=only_families)
-    db = rmg.kinetics.data.kineticsDatabase
-    return db
-        
-
+################################################################################
 
 # Some Python code for parsing the kinetics library entries
-
 
 class Group:
     def __init__(self, chemgraph):
@@ -95,8 +28,8 @@ class Group:
             return
         else:
             self.compound_structure=False
-        s = rmg.structure.Structure()
-        s.fromAdjacencyList(chemgraph.strip(),addH=False, withLabel=True)
+        s = MoleculePattern()
+        s.fromAdjacencyList(chemgraph.strip(), withLabel=True)
         self._structure = s
         
     def __str__(self):
@@ -140,11 +73,11 @@ class Group:
         if node_name != self.name:
             logging.warning("WARNING! in %s family I think %s is actually at node %s"%(family.label, self.name, node_name))
             if node_name:
-                logging.verbose(node_name + ":")
-                if family.dictionary[node_name].__class__ is rmg.structure.Structure:
-                    logging.verbose(family.dictionary[node_name].toAdjacencyList())
+                logging.debug(node_name + ":")
+                if isinstance(family.dictionary[node_name], MoleculePattern):
+                    logging.debug(family.dictionary[node_name].toAdjacencyList())
                 else: 
-                    logging.verbose(str(family.dictionary[node_name]))
+                    logging.debug(str(family.dictionary[node_name]))
                 #import pdb; pdb.set_trace()
             if family.dictionary.has_key(self.name):
                 logging.warning("There's a node called '%s' so I'm using that."%self.name)
@@ -153,7 +86,7 @@ class Group:
                     logging.warning( "Its ancestors are"+str(family.tree.ancestors(node_name)) )
                 else:
                     logging.warning("It is not in the tree!!!")
-                logging.verbose(self.name+": \n"+family.dictionary[self.name].toAdjacencyList() )
+                logging.debug(self.name+": \n"+family.dictionary[self.name].toAdjacencyList() )
 
         self.node_name = node_name
         return node_name
@@ -395,7 +328,7 @@ class rate:
 def WriteRMGjava(list_of_rates, output_folder, unread_lines=None, header=None ):
     os.path.exists(output_folder) or os.makedirs(output_folder)
     library = file(os.path.join(output_folder,'rateLibrary.txt'),'w')
-    logging.verbose("Writing library to "+output_folder)
+    logging.debug("Writing library to "+output_folder)
     if unread_lines:
         library.write(unread_lines+'\n')
     if header:
@@ -404,13 +337,13 @@ def WriteRMGjava(list_of_rates, output_folder, unread_lines=None, header=None ):
         line = '%-4d '%index
         line += r.toRMGjava()
         library.write(line+'\n')
-        logging.verbose(line)
+        logging.debug(line)
     library.close()
     
 def WriteSource(list_of_rates, output_folder, family_name=None, file_header='', unread_lines=None):
     os.path.exists(output_folder) or os.makedirs(output_folder)
     library = file(os.path.join(output_folder,'library.py'),'w')
-    logging.verbose("Writing library to "+output_folder)
+    logging.debug("Writing library to "+output_folder)
     
     library.write('# encoding: utf-8\n')
     library.write('header = """\n%s\n"""\n\n'%file_header.replace('"','\\"').strip())
@@ -428,7 +361,7 @@ def WriteSource(list_of_rates, output_folder, family_name=None, file_header='', 
     for index,r in enumerate(list_of_rates):
         library.write("# Number %d\n"%index)
         library.write(r.source+'\n\n')
-        #logging.verbose(line)
+        #logging.debug(line)
         
     library.write('\n')
     library.close()
@@ -440,19 +373,14 @@ GUESS = 5
 
 ################################################################
 
-def main():
-    pass
-    
-
 import shutil
-logging.initialize(5,'kinetics_data.log')  # <<< level in general
 
 logger = logging.getLogger()
 old_level = logger.getEffectiveLevel()
 logger.setLevel(15)  # <<< level while reading database 
 data_source = os.path.join('input','RMG_database')
 data_destination = os.path.join('output','RMG_database')
-db = loadKineticsDatabases( data_source )
+db = loadKineticsDatabase(data_source)
 logger.setLevel(old_level)
 
 
@@ -495,13 +423,13 @@ for family_name,family in db.families.iteritems():
         r.kf.reaction_order = reaction_order
     
     for r in _rates:
-        #logging.verbose("="*80)
+        #logging.debug("="*80)
         for group in r.groups:
             group.locateInFamily(family)
             #group._structure.updateAtomTypes()
         ## print output
-        #logging.verbose(r.source)
-        #logging.verbose('#RMG-Java: '+r.toRMGjava())
+        #logging.debug(r.source)
+        #logging.debug('#RMG-Java: '+r.toRMGjava())
         
     output_folder = os.path.join(data_destination,'kinetics_groups',family_name)
     os.path.exists(output_folder) or os.makedirs(output_folder)

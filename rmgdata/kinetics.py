@@ -1017,9 +1017,9 @@ class KineticsDatabase:
     representing the families in the set.
     """
 
-    def __init__(self, path=''):
+    def __init__(self, path='', only_families=False):
         self.families = {}
-        if path != '': self.load(path)
+        if path != '': self.load(path, only_families)
 
     def load(self, path, only_families=False):
         """
@@ -1073,13 +1073,13 @@ class KineticsDatabase:
 
 kineticsDatabase = None
 
-def loadKineticsDatabase(dstr):
+def loadKineticsDatabase(dstr, only_families=False):
     """
     Load the RMG kinetics database located at `dstr` into the global variable
     `rmg.reaction.kineticsDatabase`.
     """
     global kineticsDatabase
-    kineticsDatabase = KineticsDatabase(path=dstr)
+    kineticsDatabase = KineticsDatabase(path=dstr, only_families=only_families)
     return kineticsDatabase
 
 def generateKineticsData(rxn, family):
