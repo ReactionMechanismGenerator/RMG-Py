@@ -45,7 +45,19 @@ class ThermoDatabase:
     A set of thermodynamics group additivity databases, consisting of a primary
     database of functional groups and a number of secondary databases to provide
     corrections for 1,5-interactions, gauche interactions, radicals, rings,
-    and other functionality.
+    and other functionality. The attributes are:
+
+    =================== =================== ====================================
+    Attribute           Type                Description
+    =================== =================== ====================================
+    `groupDatabase`     :class:`Database`   Functional group additivity values
+    `radicalDatabase`   :class:`Database`   Corrections for radical species
+    `ringDatabase`      :class:`Database`   Corrections for cyclic and aromatic species
+    `int15Database`     :class:`Database`   Corrections for 1,5-interactions
+    `gaucheDatabase`    :class:`Database`   Corrections for gauche (1,4) interactions
+    `otherDatabase`     :class:`Database`   Other corrections
+    =================== =================== ====================================
+    
     """
 
 
@@ -298,8 +310,8 @@ forbiddenStructures = None
 def loadThermoDatabase(dstr):
     """
     Load the RMG thermo database located at `dstr` into the global variable
-    `rmg.species.thermoDatabase`. Also loads the forbidden structures into
-    `rmg.thermo.forbiddenStructures`.
+    :data:`thermoDatabase`. Also loads the forbidden structures into
+    :data:`forbiddenStructures`.
     """
     global thermoDatabase
     global forbiddenStructures

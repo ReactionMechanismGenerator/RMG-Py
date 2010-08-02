@@ -41,9 +41,10 @@ from base import *
 
 class GroupFrequency:
     """
-    Represent a group frequency in the frequency database. The
-    characteristic frequency has a real lower bound `lower`, a real upper bound
-    `upper`, an integer `degeneracy`.
+    Represent a set of characteristic frequencies for a group in the frequency
+    database. These frequencies are stored in the `frequencies` attribute, which
+    is a ``list`` of ``tuples``, where each ``tuple`` defines a lower bound,
+    upper bound, and degeneracy. Each group also has a `symmetry` correction.
     """
 
     def __init__(self, index=-1, frequencies=None, symmetry=1):
@@ -53,9 +54,9 @@ class GroupFrequency:
     
     def generateFrequencies(self, count=1):
         """
-        Generate a set of frequencies. The number of frequencies returned is
-        self.degeneracy * count, and these are distributed linearly between
-        `self.lower` and `self.upper`.
+        Generate a set of frequencies. For each characteristic frequency group,
+        the number of frequencies returned is degeneracy * count, and these are
+        distributed linearly between the lower and upper bounds.
         """
         frequencies = []
         for lower, upper, degeneracy in self.frequencies:
@@ -70,7 +71,8 @@ class GroupFrequency:
 
 class FrequencyDatabase:
     """
-    Represent an RMG group frequency database.
+    An RMG group frequency database, which associates various functional groups
+    with ranges of characteristic vibrational frequencies.
     """
 
     def __init__(self, path=''):
@@ -164,7 +166,7 @@ class FrequencyDatabase:
     def load(self, path):
         """
         Load a set of thermodynamics group additivity databases from the general
-        database specified at `datapath`.
+        database specified at `path`.
         """
         path = os.path.abspath(path)
         
@@ -209,8 +211,8 @@ frequencyDatabase = None
 
 def loadFrequencyDatabase(dstr):
     """
-    Load the RMG thermo database located at `dstr` into the global variable
-    `rmg.spectral.data.frequencyDatabase`.
+    Load the RMG frequency database located at `dstr` into the global variable
+    :data:`frequencyDatabase`.
     """
     global frequencyDatabase
 
@@ -226,6 +228,10 @@ def loadFrequencyDatabase(dstr):
 ################################################################################
 
 def generateFrequencyData(molecule):
+    """
+    Use the previously-loaded frequency database to generate a set of
+    characteristic group frequencies corresponding to the speficied `molecule`.
+    """
     return frequencyDatabase.getFrequencies(molecule)
 
 ################################################################################

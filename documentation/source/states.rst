@@ -2,7 +2,7 @@
 :mod:`rmgdata.states` --- Frequency Database
 ********************************************
 
-... automodule:: rmgdata.states
+.. automodule:: rmgdata.states
 
 Group Frequency Database
 ========================

@@ -30,41 +30,19 @@
 
 import os
 import os.path
-import math
 import logging
-import numpy
 
 from base import *
 
-import chempy.constants as constants
-from chempy.reaction import Reaction
+from chempy.reaction import Reaction, ReactionError
 from chempy.kinetics import *
 from chempy.pattern import BondPattern
 
 ################################################################################
 
-class ReactionError(Exception):
-    """
-    An base exception for reactions.
-    Takes a reaction object, and optional message
-    """
-    def __init__(self, reaction, message=''):
-        self.reaction = reaction
-        self.message = message
-
-    def __str__(self):
-        string = "Reaction: "+str(self.reaction) + '\n'
-        string += "Reaction Family: "+str(self.reaction.family) + '\n'
-        for reactant in self.reaction.reactants:
-            string += reactant.toAdjacencyList() + '\n'
-        for product in self.reaction.products:
-            string += product.toAdjacencyList() + '\n'
-        if self.message: string += "Message: "+self.message
-        return string
-
 class UndeterminableKineticsError(ReactionError):
     """
-    An exception raised when attempts to select appropriate kinetic parameters
+    An exception raised when attempts to estimate appropriate kinetic parameters
     for a chemical reaction are unsuccessful.
     """
     def __init__(self, reaction, message=''):
@@ -76,12 +54,7 @@ class InvalidActionError(Exception):
     An exception to be raised when an invalid action is encountered in a
     reaction recipe.
     """
-
-    def __init__(self, msg):
-        self.msg = msg
-
-    def __str__(self):
-        return self.msg
+    pass
 
 ################################################################################
 
@@ -91,15 +64,15 @@ class ReactionRecipe:
     of a set of reactants to a set of products. There are currently five such
     actions:
 
-    ============  =======================  =====================================
-    Action Name   Arguments                Action
-    ============  =======================  =====================================
-    CHANGE_BOND   center1, order, center2  change the bond order of the bond between center1 and center2 by order; do not break or form bonds
-    FORM_BOND     center1, order, center2  form a new bond between center1 and center2 of type order
-    BREAK_BOND    center1, order, center2  break the bond between center1 and center2, which should be of type order
-    GAIN_RADICAL  center, radical          increase the number of free electrons on center by radical
-    LOSE_RADICAL  center, radical          decrease the number of free electrons on center by radical
-    ============  =======================  =====================================
+    ============= ============================= ================================
+    Action Name   Arguments                     Description
+    ============= ============================= ================================
+    CHANGE_BOND   `center1`, `order`, `center2` change the bond order of the bond between `center1` and `center2` by `order`; do not break or form bonds
+    FORM_BOND     `center1`, `order`, `center2` form a new bond between `center1` and `center2` of type `order`
+    BREAK_BOND    `center1`, `order`, `center2` break the bond between `center1` and `center2`, which should be of type `order`
+    GAIN_RADICAL  `center`, `radical`           increase the number of free electrons on `center` by `radical`
+    LOSE_RADICAL  `center`, `radical`           decrease the number of free electrons on `center` by `radical`
+    ============= ============================= ================================
 
     The actions are stored as a list in the `actions` attribute. Each action is
     a list of items; the first is the action name, while the rest are the
@@ -111,7 +84,9 @@ class ReactionRecipe:
 
     def addAction(self, action):
         """
-        Add an action to the reaction recipe.
+        Add an `action` to the reaction recipe, where `action` is a list
+        containing the action name and the required parameters, as indicated in
+        the table above.
         """
         self.actions.append(action)
 
@@ -202,17 +177,15 @@ class ReactionRecipe:
 
     def applyForward(self, struct, unique=True):
         """
-        Apply the reaction recipe to the set of molecules contained in
-        `structure`, a single Structure object that contains one or more
-        structures.
+        Apply the forward reaction recipe to `molecule`, a single
+        :class:`Molecule` object.
         """
         return self.__apply(struct, True, unique)
 
     def applyReverse(self, struct, unique=True):
         """
-        Apply the reaction recipe to the set of molecules contained in
-        `structure`, a single Structure object that contains one or more
-        structures.
+        Apply the reverse reaction recipe to `molecule`, a single
+        :class:`Molecule` object.
         """
         return self.__apply(struct, False, unique)
 
@@ -235,6 +208,9 @@ class ReactionFamily(Database):
     `forbidden`         ``dict``                (Optional) Forbidden product structures in either direction
     =================== ======================= ================================
 
+    There are a few reaction families that are their own reverse (hydrogen
+    abstraction and intramolecular hydrogen migration); for these
+    `reverseTemplate` and `reverseRecipe` will both be ``None``.
     """
 
     def __init__(self, label=''):
@@ -256,9 +232,9 @@ class ReactionFamily(Database):
     def load(self, path):
         """
         Load a reaction family located in the directory `path`. The family
-        consists of the files ``dictionary.txt``, ``tree.txt``, ``library.txt``,
-        ``template.txt``, and optionally ``forbiddenGroups.txt``
-
+        consists of the files ``dictionary.txt``, ``tree.txt``, 
+        ``rateLibrary.txt``, ``reactionAdjList.txt``, and optionally
+        ``forbiddenGroups.txt``.
         """
         # Generate paths to files in the database
         dictstr = os.path.join(path, 'dictionary.txt')
@@ -306,7 +282,7 @@ class ReactionFamily(Database):
         else: # didn't break
             raise InvalidDatabaseError("Unable to figure out how many groups in %s using line %s"%(libstr,' '.join(test_line)))
 
-        self.library.parse(lines, number_of_groups )
+        self.library.parse(lines, number_of_groups)
         self.processLibraryData()
 
         # Check for well-formedness
@@ -544,29 +520,27 @@ class ReactionFamily(Database):
 
     def reactantMatch(self, reactant, templateReactant):
         """
-        Return :data:`True` if the provided reactant matches the provided
-        template reactant and :data:`False` if not.
-
-        Also returns complete lists of mappings
+        Return ``True`` if the provided reactant matches the provided
+        template reactant and ``False`` if not, along with a complete list of
+        the identified mappings.
         """
-        maps12 = []; maps21 = []
+        mapsList = []
         if templateReactant.__class__ == list: templateReactant = templateReactant[0]
         struct = self.dictionary[templateReactant]
 
         if isinstance(struct, LogicNode):
             for child_structure in struct.getPossibleStructures(self.dictionary):
-                ismatch, map21, map12 = reactant.findSubgraphIsomorphisms(child_structure)
+                ismatch, mappings = reactant.findSubgraphIsomorphisms(child_structure)
                 if ismatch:
-                    maps12.extend(map12); maps21.extend(map21)
-            return len(maps12) > 0, maps21, maps12
-
-        elif struct.__class__ == structure.Structure:
+                    mapsList.extend(mappings)
+            return len(mapsList) > 0, mapsList
+        elif isinstance(struct, Molecule):
             return reactant.findSubgraphIsomorphisms(struct)
 
     def applyRecipe(self, reactantStructures, forward=True, unique=True):
         """
         Apply the recipe for this reaction family to the list of
-        :class:`structure.Structure` objects `reactantStructures`. The atoms
+        :class:`Molecule` objects `reactantStructures`. The atoms
         of the reactant structures must already be tagged with the appropriate
         labels. Returns a list of structures corresponding to the products
         after checking that the correct number of products was produced.

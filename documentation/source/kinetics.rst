@@ -23,9 +23,6 @@ Kinetics Database
 Exceptions
 ==========
 
-.. autoclass:: rmgdata.kinetics.ReactionError
-    :members:
-
 .. autoclass:: rmgdata.kinetics.InvalidActionError
     :members:
 
