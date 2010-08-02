@@ -478,7 +478,7 @@ class AtomPattern(graph.Vertex):
         # Each atom type in self must have an equivalent in other (and vice versa)
         for atomType1 in self.atomType: # all these must match
             for atomType2 in other.atomType: # can match any of these
-                if self.atomTypesSpecificCaseOf(atomType1, atomType2): break
+                if atomTypesSpecificCaseOf(atomType1, atomType2): break
             else:
                 return False
         # Each free radical electron state in self must have an equivalent in other (and vice versa)
@@ -785,11 +785,11 @@ class MoleculePattern(graph.Graph):
         self.updateConnectivityValues()
         return self
 
-    def toAdjacencyList(self):
+    def toAdjacencyList(self, label=''):
         """
         Convert the molecular structure to a string adjacency list.
         """
-        return toAdjacencyList(self, pattern=True)
+        return toAdjacencyList(self, label='', pattern=True)
 
     def isIsomorphic(self, other, initialMap=None):
         """

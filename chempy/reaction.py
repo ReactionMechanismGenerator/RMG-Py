@@ -49,6 +49,27 @@ from species import Species
 
 ################################################################################
 
+class ReactionError(Exception):
+    """
+    An exception class for exceptional behavior involving :class:`Reaction`
+    objects. In addition to a string `message` describing the exceptional
+    behavior, this class stores the `reaction` that caused the behavior.
+    """
+    def __init__(self, reaction, message=''):
+        self.reaction = reaction
+        self.message = message
+
+    def __str__(self):
+        string = "Reaction: "+str(self.reaction) + '\n'
+        for reactant in self.reaction.reactants:
+            string += reactant.toAdjacencyList() + '\n'
+        for product in self.reaction.products:
+            string += product.toAdjacencyList() + '\n'
+        if self.message: string += "Message: "+self.message
+        return string
+
+################################################################################
+
 class Reaction:
     """
     A chemical reaction.
