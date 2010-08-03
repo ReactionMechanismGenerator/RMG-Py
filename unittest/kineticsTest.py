@@ -8,7 +8,7 @@ sys.path.append('.')
 
 import logging
 
-from rmgdata.kinetics import loadKineticsDatabase
+from rmgdata.kinetics import loadKineticsDatabase, KineticsEntry
 from rmgdata.base import LogicNode
 from chempy.molecule import Molecule
 from chempy.pattern import MoleculePattern
@@ -77,8 +77,9 @@ class KineticsDatabaseCheck(unittest.TestCase):
 
             # All values in library should be ArrheniusEPModel objects or lists of length 2
             for node in family.library:
-                self.assertTrue(isinstance(family.library[node], ArrheniusEPModel) or (isinstance(family.library[node], list) and len(family.library[node]) == 2), '"%s" is of unexpected type "%s".' % (node, family.library[node].__class__))
-
+                self.assertTrue(isinstance(family.library[node], KineticsEntry), '"%s" is of unexpected type "%s".' % (node, family.library[node].__class__))
+                self.assertTrue(family.library[node].model is not None or family.library[node].node != '')
+                
         C2H4 = Molecule().fromAdjacencyList("""
         1 *1 C 0 {2,D} {3,S} {4,S}
         2 *2 C 0 {1,D} {5,S} {6,S}

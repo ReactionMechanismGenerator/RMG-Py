@@ -542,6 +542,32 @@ class Library(dict):
 
 ################################################################################
 
+class DataEntry:
+    """
+    A single entry in the database, containing common attributes and methods.
+    The attributes are:
+
+    =================== =============== ========================================
+    Attribute           Type            Description
+    =================== =============== ========================================
+    `index`             ``int``         A unique integer index
+    `label`             ``str``         A unique, brief string label
+    `shortComment`      ``str``         A brief (one-line) comment
+    `longComment`       ``str``         A long, verbose comment
+    `history`           ``list``        Tuples containing the date of change, author, and a brief description of the change
+    =================== =============== ========================================
+    
+    """
+
+    def __init__(self, index=0, label='', shortComment='', longComment='', history=None):
+        self.index = index
+        self.label = label
+        self.shortComment = shortComment
+        self.longComment = longComment
+        self.history = history or []
+
+################################################################################
+
 class LogicNode():
     """
     A base class for AND and OR logic nodes.

@@ -40,6 +40,20 @@ from chempy.thermo import *
 
 ################################################################################
 
+class ThermoEntry(DataEntry):
+    """
+    A single entry in the thermodynamics database. Each entry either contains
+    a thermodynamics `model` or a string label of a `node` to look at for
+    thermodynamics information.
+    """
+
+    def __init__(self, model=None, node='', index=0, label='', shortComment='', longComment='', history=None):
+        DataEntry.__init__(self, index, label, shortComment, longComment, history)
+        self.model = model
+        self.node = node
+
+################################################################################
+
 class ThermoDatabase:
     """
     A set of thermodynamics group additivity databases, consisting of a primary
@@ -134,17 +148,24 @@ class ThermoDatabase:
                     # Remaining entries are comment
                     for i in range(12, len(items)):
                         comment += items[i] + ' '
+                    comment = comment.replace('"', '').strip()
 
-                    database.library[label] = self.__convertLibraryEntry(thermoData, comment)
-                    database.library[label].index = index
-                    
+                    database.library[label] = ThermoEntry(
+                        model=self.__convertLibraryEntry(thermoData, comment),
+                        index=int(index),
+                        label=label,
+                        shortComment=comment,
+                    )
 
                 except (ValueError, IndexError), e:
-                    # Split data into link string and comment string; store
-                    # as list of length 2
-                    link = items[0]
-                    comment = item[len(link)+1:].strip()
-                    database.library[label] = [link, comment]
+                    # Data represents a link to a different node that contains
+                    # the data to use
+                    database.library[label] = ThermoEntry(
+                        node=items[0],
+                        index=int(index),
+                        label=label,
+                        shortComment=item[len(items[0])+1:].replace('"', '').strip(),
+                    )
 
         # Check for well-formedness
         if not database.isWellFormed():
@@ -288,9 +309,8 @@ class ThermoDatabase:
         else:
             data = database.library[node]
         
-        while data.__class__ != ThermoGAModel and data is not None:
-            if data[0].__class__ == str or data[0].__class__ == unicode:
-                data = database.library[data[0]]
+        while data.model is None and data.node is not None:
+            data = database.library[data.node]
 
         # This code prints the hierarchy of the found node; useful for debugging
         #result = ''
@@ -299,7 +319,7 @@ class ThermoDatabase:
         #	node = database.tree.parent[node]
         #print result[4:]
         
-        return data
+        return data.model
 
 ################################################################################
 

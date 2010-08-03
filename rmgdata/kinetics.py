@@ -191,6 +191,20 @@ class ReactionRecipe:
 
 ################################################################################
 
+class KineticsEntry(DataEntry):
+    """
+    A single entry in the kinetics database. Each entry either contains
+    a kinetics `model` or a string label of a `node` to look at for
+    kinetics information.
+    """
+
+    def __init__(self, model=None, node='', index=0, label='', shortComment='', longComment='', history=None):
+        DataEntry.__init__(self, index, label, shortComment, longComment, history)
+        self.model = model
+        self.node = node
+
+################################################################################
+
 class ReactionFamily(Database):
     """
     Represent a reaction family: a set of reactions with similar chemistry, and
@@ -335,7 +349,7 @@ class ReactionFamily(Database):
                     # Final item before comment is quality
                     kineticData.append(int(items[9]))
                     # Everything else is a comment
-                    comment = ' '.join(items[10:])
+                    comment = ' '.join(items[10:]).replace('"', '').strip()
 
                     # Convert data to ArrheniusEPModel object
                     if len(kineticData) != 11:
@@ -359,16 +373,23 @@ class ReactionFamily(Database):
                     kinetics.Tmin = Tmin
                     kinetics.Tmax = Tmax
                     kinetics.comment = comment
-                    kinetics.index = index
-
-                    self.library[label] = kinetics
-
+                    
+                    self.library[label] = KineticsEntry(
+                        index=int(index),
+                        label=label,
+                        model=kinetics,
+                        shortComment = comment
+                    )
+                    
                 except (ValueError, IndexError), e:
-                    # Split data into link string and comment string; store
-                    # as list of length 2
-                    link = items[0]
-                    comment = data[len(link)+1:].strip()
-                    self.library[label] = [link, comment]
+                    # Data represents a link to a different node that contains
+                    # the data to use
+                    database.library[label] = KineticsEntry(
+                        node=items[0],
+                        index=int(index),
+                        label=label,
+                        shortComment=item[len(items[0])+1:].replace('"', '').strip(),
+                    )
 
     def loadTemplate(self, path):
         """
@@ -1006,7 +1027,7 @@ class ReactionFamily(Database):
         maxIndex = max([k.index for k in kinetics])
         kinetics = [k for k in kinetics if k.index == maxIndex][0]
 
-        return kinetics
+        return kinetics.model
 
 ################################################################################
 
