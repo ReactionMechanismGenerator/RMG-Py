@@ -551,7 +551,7 @@ class Graph:
                     graph.removeVertex(rootVertex)
                     #print("Removed vertex that's no longer in ring")
                     continue # (pick a new root Vertex)
-#					raise Exception('Did not find expected cycle!')
+#                   raise Exception('Did not find expected cycle!')
 
                 # Keep the smallest of the cycles found above
                 cycle = cycles[0]
@@ -585,7 +585,7 @@ def VF2_isomorphism(graph1, graph2, subgraph=False, findAll=False, initialMap=No
     performed:
 
     * If `subgraph` is ``True``, the isomorphism function will treat `graph2`
-    as a subgraph of `graph1`. In this instance a	subgraph can either mean a
+    as a subgraph of `graph1`. In this instance a   subgraph can either mean a
     smaller graph (i.e. fewer vertices and/or edges) or a less specific graph.
 
     * If `findAll` is ``True``, all valid isomorphisms will be found and
@@ -833,7 +833,7 @@ def __VF2_pairs(graph1, graph2, terminals1, terminals2, map21, map12):
     Create a list of pairs of candidates for inclusion in the VF2 mapping. If
     there are a nonzero number of terminals in each graph, the candidates are
     selected to be one terminal from the first graph and all terminals from the
-    second graph. If there are no terminals, the candidates are	selected to be
+    second graph. If there are no terminals, the candidates are selected to be
     one vertex from the first graph and all vertices from the second graph.
     """
     cython.declare(pairs=list)
