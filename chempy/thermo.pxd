@@ -50,7 +50,6 @@ cdef class ThermoGAModel(ThermoModel):
 
     cdef public numpy.ndarray Tdata, Cpdata
     cdef public double H298, S298
-    cdef public int index
     
     cpdef numpy.ndarray getHeatCapacity(self, numpy.ndarray Tlist)
 

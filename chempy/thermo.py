@@ -96,7 +96,6 @@ class ThermoGAModel(ThermoModel):
     `Cpdata`    ``numpy.ndarray``   The standard heat capacity in J/mol*K at each temperature in `Tdata`
     `H298`      ``double``          The standard enthalpy of formation at 298 K in J/mol
     `S298`      ``double``          The standard entropy of formation at 298 K in J/mol*K
-    `index`     ``int``             A unique integer identifier
     =========== =================== ============================================
     """
 
@@ -106,8 +105,7 @@ class ThermoGAModel(ThermoModel):
         self.Cpdata = Cpdata
         self.H298 = H298
         self.S298 = S298
-        self.index = -1
-
+    
     def __repr__(self):
         string = 'ThermoGAModel(Tdata=%s, Cpdata=%s, H298=%s, S298=%s)' % (self.Tdata, self.Cpdata, self.H298, self.S298)
         return string
@@ -142,7 +140,7 @@ class ThermoGAModel(ThermoModel):
         new.Cpdata = self.Cpdata + other.Cpdata
         if self.comment == '': new.comment = other.comment
         elif other.comment == '': new.comment = self.comment
-        else: new.comment = self.comment + '+ ' + other.comment
+        else: new.comment = self.comment + ' + ' + other.comment
         return new
 
     def getHeatCapacity(self, Tlist):
