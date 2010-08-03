@@ -1056,8 +1056,7 @@ def toAdjacencyList(molecule, label='', pattern=False, removeH=False):
             elif atom.radicalElectrons == 2 and atom.spinMultiplicity == 3: adjlist += '2T'
             elif atom.radicalElectrons == 3: adjlist += '3'
             elif atom.radicalElectrons == 4: adjlist += '4'
-        adjlist += ' '
-
+        
         # Bonds list
         atoms2 = bonds[atom].keys()
         # sort them the same way as the atoms
@@ -1066,19 +1065,19 @@ def toAdjacencyList(molecule, label='', pattern=False, removeH=False):
         for atom2 in atoms2:
             if removeH and atom2.isHydrogen(): continue
             bond = bonds[atom][atom2]
-            adjlist += '{' + str(atoms.index(atom2)+1) + ','
+            adjlist += ' {' + str(atoms.index(atom2)+1) + ','
 
             # Bond type(s)
             if pattern:
                 if len(bond.order) == 1:
                     adjlist += bond.order[0]
                 else:
-                    adjlist += '{%s} ' % (','.join(bond.order))
+                    adjlist += '{%s}' % (','.join(bond.order))
             else:
                 adjlist += bond.order
-            adjlist += '} '
+            adjlist += '}'
 
-        # Each atom begins on a new list
+        # Each atom begins on a new line
         adjlist += '\n'
 
     return adjlist
