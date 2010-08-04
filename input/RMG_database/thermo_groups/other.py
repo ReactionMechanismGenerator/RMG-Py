@@ -20,10 +20,7 @@ L1: R
 
 thermo(
     label="R",
-    group=
-        """
-        1  *  R 0
-        """,
+    group="OR{ketene,cis,double_cis,ortho}",
     model=ThermoGAModel(
         Tdata=([300,400,500,600,800,1000,1500],"K"),
         Cpdata=([0,0,0,0,0,0,0],"cal/(mol*K)"),
