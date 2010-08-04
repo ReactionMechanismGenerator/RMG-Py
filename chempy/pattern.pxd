@@ -112,7 +112,7 @@ cdef class MoleculePattern(Graph):
 
     cpdef fromAdjacencyList(self, str adjlist, bint withLabel=?)
 
-    cpdef toAdjacencyList(self)
+    cpdef toAdjacencyList(self, str label=?)
 
     cpdef bint isIsomorphic(self, Graph other, dict initialMap=?)
 

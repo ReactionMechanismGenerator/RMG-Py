@@ -30,7 +30,7 @@
 from distutils.core import setup
 from distutils.extension import Extension
 from Cython.Distutils import build_ext
-import Cython.Compiler
+import Cython.Compiler.Options
 
 # Create annotated HTML files for each of the Cython modules
 Cython.Compiler.Options.annotate = True

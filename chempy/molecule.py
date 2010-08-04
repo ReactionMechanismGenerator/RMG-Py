@@ -40,7 +40,9 @@ import cython
 import element as elements
 import graph
 from exception import ChemPyError
-from pattern import *
+from pattern import AtomPattern, BondPattern, MoleculePattern, \
+    atomTypesEquivalent, atomTypesSpecificCaseOf, getAtomType, \
+    fromAdjacencyList, toAdjacencyList
 
 ################################################################################
 

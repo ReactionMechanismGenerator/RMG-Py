@@ -231,7 +231,7 @@ class Reaction:
         if tunneling.lower() == 'wigner':
             k *= self.calculateWignerTunnelingCorrection(Tlist, TS)
         elif tunneling.lower() == 'eckart':
-            k *= self.calculateEckartTunnelingCorrection(Tlist, TS)
+            k *= self.calculateEckartTunnelingCorrection(Tlist)
         return k
     
     def calculateWignerTunnelingCorrection(self, Tlist, TS):

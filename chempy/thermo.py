@@ -43,6 +43,16 @@ from exception import InvalidThermoModelError
 
 ################################################################################
 
+class ThermoError:
+    """
+    An exception class for errors that occur while working with thermodynamics
+    models. Pass a string describing the circumstances that caused the
+    exceptional behavior.
+    """
+    pass
+
+################################################################################
+
 class ThermoModel:
     """
     A base class for thermodynamics models, containing several attributes
@@ -152,7 +162,7 @@ class ThermoGAModel(ThermoModel):
         Cplist = numpy.zeros_like(Tlist)
         for i, T in enumerate(Tlist):
             if not self.isTemperatureValid(T):
-                raise data.TemperatureOutOfRangeError('Invalid temperature "%g K" for heat capacity estimation.' % T)
+                raise ThermoError('Invalid temperature "%g K" for heat capacity estimation.' % T)
             if T < numpy.min(Tlist):
                 Cplist[i] = self.Cpdata[0]
             elif T >= numpy.max(Tlist):
@@ -161,8 +171,9 @@ class ThermoGAModel(ThermoModel):
                 for Tmin, Tmax, Cpmin, Cpmax in zip(self.Tdata[:-1], self.Tdata[1:], self.Cpdata[:-1], self.Cpdata[1:]):
                     if Tmin <= T and T < Tmax:
                         Cplist[i] = (Cpmax - Cpmin) * ((T - Tmin) / (Tmax - Tmin)) + Cpmin
-
-    def getEnthalpy(self, T):
+        return Cplist
+    
+    def getEnthalpy(self, Tlist):
         """
         Return the enthalpy in J/mol at temperature `T` in K.
         """
@@ -172,7 +183,7 @@ class ThermoGAModel(ThermoModel):
         Hlist = self.H298 * numpy.ones_like(Tlist)
         for i, T in enumerate(Tlist):
             if not self.isTemperatureValid(T):
-                raise data.TemperatureOutOfRangeError('Invalid temperature "%g K" for enthalpy estimation.' % T)
+                raise ThermoError('Invalid temperature "%g K" for enthalpy estimation.' % T)
             for Tmin, Tmax, Cpmin, Cpmax in zip(self.Tdata[:-1], self.Tdata[1:], self.Cpdata[:-1], self.Cpdata[1:]):
                 if T > Tmin:
                     slope = (Cpmax - Cpmin) / (Tmax - Tmin)
@@ -181,9 +192,9 @@ class ThermoGAModel(ThermoModel):
                     else:			Hlist[i] += 0.5 * slope * (Tmax*Tmax - Tmin*Tmin) + intercept * (Tmax - Tmin)
             if T > self.Tdata[-1]:
                 Hlist[i] += self.Cp[-1] * (T - self.Tdata[-1])
-        return H
+        return Hlist
 
-    def getEntropy(self, T):
+    def getEntropy(self, Tlist):
         """
         Return the entropy in J/mol*K at temperature `T` in K.
         """
@@ -191,7 +202,7 @@ class ThermoGAModel(ThermoModel):
         Slist = self.H298 * numpy.ones_like(Tlist)
         for i, T in enumerate(Tlist):
             if not self.isTemperatureValid(T):
-                raise data.TemperatureOutOfRangeError('Invalid temperature "%g K" for entropy estimation.' % T)
+                raise ThermoError('Invalid temperature "%g K" for entropy estimation.' % T)
             for Tmin, Tmax, Cpmin, Cpmax in zip(self.Tdata[:-1], self.Tdata[1:], self.Cpdata[:-1], self.Cpdata[1:]):
                 if T > Tmin:
                     slope = (Cpmax - Cpmin) / (Tmax - Tmin)
@@ -200,7 +211,7 @@ class ThermoGAModel(ThermoModel):
                     else:			Slist[i] += slope * (Tmax - Tmin) + intercept * math.log(Tmax/Tmin)
             if T > self.Tdata[-1]:
                 Slist[i] += self.Cp[-1] * math.log(T / self.Tdata[-1])
-        return S
+        return Slist
 
     def getFreeEnergy(self, Tlist):
         """
@@ -208,7 +219,7 @@ class ThermoGAModel(ThermoModel):
         """
         for T in Tlist:
             if not self.isTemperatureValid(T):
-                raise data.TemperatureOutOfRangeError('Invalid temperature "%g K" for Gibbs free energy estimation.' % T)
+                raise ThermoError('Invalid temperature "%g K" for Gibbs free energy estimation.' % T)
         return self.getEnthalpy(Tlist) - T * self.getEntropy(Tlist)
 
 ################################################################################

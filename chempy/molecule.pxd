@@ -25,9 +25,7 @@
 ################################################################################
 
 from graph cimport Vertex, Edge, Graph
-from pattern cimport AtomPattern, BondPattern, MoleculePattern, \
-    atomTypesEquivalent, atomTypesSpecificCaseOf, getAtomType, \
-    fromAdjacencyList, toAdjacencyList
+from pattern cimport AtomPattern, BondPattern, MoleculePattern
 from element cimport Element
 
 ################################################################################

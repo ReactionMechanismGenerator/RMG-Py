@@ -54,7 +54,7 @@ cdef class Reaction:
     
     cpdef numpy.ndarray calculateWignerTunnelingCorrection(self, numpy.ndarray Tlist, TransitionState TS)
     
-    cpdef numpy.ndarray calculateEckartTunnelingCorrection(self, numpy.ndarray Tlist, TransitionState TS)
+    cpdef numpy.ndarray calculateEckartTunnelingCorrection(self, numpy.ndarray Tlist)
 
     cpdef double __eckartIntegrand(self, double E_kT, double kT, double dV1, double alpha1, double alpha2)
 
