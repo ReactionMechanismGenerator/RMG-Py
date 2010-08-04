@@ -292,7 +292,7 @@ class Tree:
         del self.parent[node]
         del self.children[node]
 
-    def load(self, path):
+    def loadString(self, string):
         """
         Parse an RMG database tree located at `path`. An RMG tree is an
         n-ary tree representing the hierarchy of items in the dictionary.
@@ -305,35 +305,44 @@ class Tree:
         parser = re.compile('^\s*L(?P<level>\d+)\s*:\s*(?P<label>\S+)')
         # should match '  L3 : foo_bar '  and 'L3:foo_bar'
 
-        # Process the tree (optional)
+        # Process the tree
+        for line in string.splitlines():
+            line = removeCommentFromLine(line).strip()
+            if len(line) > 0:
+                # Extract level
+                match = parser.match(line)
+                if not match:
+                    raise InvalidDatabaseError("Couldn't parse line '%s'"%line.strip() )
+                level = int(match.group('level'))
+                label = match.group('label')
+
+                # Find immediate parent of the new node
+                parent = None
+                if len(parents) < level:
+                    raise InvalidDatabaseError("Invalid level specified in line '%s'"%line.strip() )
+                else:
+                    while len(parents) > level:
+                        parents.remove(parents[-1])
+                    if len(parents) > 0:
+                        parent = parents[level-1]
+
+                # Add node to tree
+                self.add(label, parent)
+
+                # Add node to list of parents
+                parents.append(label)
+
+    def load(self, path):
+        """
+        Parse an RMG database tree located at `path`. An RMG tree is an
+        n-ary tree representing the hierarchy of items in the dictionary.
+        """
+
         try:
             ftree = open(path, 'r')
+            lines = ''
             for line in ftree:
-                line = removeCommentFromLine(line).strip()
-                if len(line) > 0:
-                    # Extract level
-                    match = parser.match(line)
-                    if not match:
-                        raise InvalidDatabaseError("Couldn't parse line '%s'"%line.strip() )
-                    level = int(match.group('level'))
-                    label = match.group('label')
-
-                    # Find immediate parent of the new node
-                    parent = None
-                    if len(parents) < level:
-                        raise InvalidDatabaseError("Invalid level specified in line '%s'"%line.strip() )
-                    else:
-                        while len(parents) > level:
-                            parents.remove(parents[-1])
-                        if len(parents) > 0:
-                            parent = parents[level-1]
-
-                    # Add node to tree
-                    self.add(label, parent)
-
-                    # Add node to list of parents
-                    parents.append(label)
-
+                lines += line
 
         except InvalidDatabaseError, e:
             logging.exception(str(e))
@@ -341,6 +350,8 @@ class Tree:
             logging.exception('Database tree file "' + e.filename + '" not found.')
         finally:
             ftree.close()
+
+        self.loadString(lines)
 
     def write(self, children):
         """

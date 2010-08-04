@@ -86,7 +86,7 @@ class ThermoDatabase:
             self.radicalDatabase = None
             self.ringDatabase = None
 
-    def load(self, path):
+    def load(self, path, old=False):
         """
         Load a set of thermodynamics group additivity databases from the general
         database specified at `datapath`.
@@ -95,14 +95,46 @@ class ThermoDatabase:
         path = os.path.abspath(os.path.join(path,'thermo_groups'))
         
         logging.info('Loading thermodynamics databases from %s...' % path)
-        self.groupDatabase = self.__loadDatabase(*self.__getDTLPaths(path, 'Group')) # the '*' unpacks the tuple into three separate arguments
-        self.int15Database = self.__loadDatabase(*self.__getDTLPaths(path, '15'))
-        self.gaucheDatabase = self.__loadDatabase(*self.__getDTLPaths(path, 'Gauche'))
-        self.radicalDatabase = self.__loadDatabase(*self.__getDTLPaths(path, 'Radical'))
-        self.ringDatabase = self.__loadDatabase(*self.__getDTLPaths(path, 'Ring'))
-        self.otherDatabase = self.__loadDatabase(*self.__getDTLPaths(path, 'Other'))
+        if old:
+            self.groupDatabase = self.__loadOldDatabase(*self.__getOldDTLPaths(path, 'Group')) # the '*' unpacks the tuple into three separate arguments
+            self.int15Database = self.__loadOldDatabase(*self.__getOldDTLPaths(path, '15'))
+            self.gaucheDatabase = self.__loadOldDatabase(*self.__getOldDTLPaths(path, 'Gauche'))
+            self.radicalDatabase = self.__loadOldDatabase(*self.__getOldDTLPaths(path, 'Radical'))
+            self.ringDatabase = self.__loadOldDatabase(*self.__getOldDTLPaths(path, 'Ring'))
+            self.otherDatabase = self.__loadOldDatabase(*self.__getOldDTLPaths(path, 'Other'))
+        else:
+            self.groupDatabase = self.__loadDatabase(os.path.join(path, 'group.py'))
+            self.int15Database = self.__loadDatabase(os.path.join(path, 'int15.py'))
+            self.gaucheDatabase = self.__loadDatabase(os.path.join(path, 'gauche.py'))
+            self.radicalDatabase = self.__loadDatabase(os.path.join(path, 'radical.py'))
+            self.ringDatabase = self.__loadDatabase(os.path.join(path, 'ring.py'))
+            self.otherDatabase = self.__loadDatabase(os.path.join(path, 'other.py'))
 
-    def __getDTLPaths(self, path, prefix):
+    def __loadDatabase(self, path):
+
+        global currentDatabase
+        currentDatabase = Database()
+
+        global_context = { '__builtins__': None }
+        local_context = {
+            '__builtins__': None,
+            'thermo': loadThermo,
+            'tree': loadTree,
+            'ThermoGAModel': loadThermoGAModel,
+        }
+        f = open(path)
+        try:
+            exec f in global_context, local_context
+        except (NameError, TypeError, SyntaxError), e:
+            logging.error('The input file "%s" was invalid:' % path)
+            logging.exception(e)
+            network = None
+        finally:
+            f.close()
+
+        return currentDatabase
+
+    def __getOldDTLPaths(self, path, prefix):
         """
         Return a tuple of dictionary, tree, and library paths for a given
         prefix.
@@ -112,7 +144,7 @@ class ThermoDatabase:
         libr_path = os.path.join(path, '%s_Library.txt' % prefix)
         return dict_path, tree_path, libr_path
 
-    def __loadDatabase(self, dictstr, treestr, libstr):
+    def __loadOldDatabase(self, dictstr, treestr, libstr):
         """
         Load a thermodynamics group additivity database. The database is stored
         in three files: `dictstr` is the path to the dictionary, `treestr` to
@@ -151,7 +183,7 @@ class ThermoDatabase:
                     comment = comment.replace('"', '').strip()
 
                     database.library[label] = ThermoEntry(
-                        model=self.__convertLibraryEntry(thermoData, comment),
+                        model=self.__convertOldLibraryEntry(thermoData, comment),
                         index=int(index),
                         label=label,
                         shortComment=comment,
@@ -175,7 +207,7 @@ class ThermoDatabase:
 
         return database
 
-    def __convertLibraryEntry(self, data, comment):
+    def __convertOldLibraryEntry(self, data, comment):
         """
         Process a list of numbers `data` and associated description `comment`
         generated while reading from a thermodynamic database.
@@ -323,11 +355,44 @@ class ThermoDatabase:
 
 ################################################################################
 
+# A module-level variable that stores the currently-loading database
+currentDatabase = None
+
+def loadThermo(label, index, group=None, species=None, model=None, node='', short_comment='', long_comment='', history=None):
+    global currentDatabase
+    if species is not None:
+        currentDatabase.dictionary[label] = currentDatabase.dictionary.toStructure(species, pattern=False)
+    elif group is not None:
+        currentDatabase.dictionary[label] = currentDatabase.dictionary.toStructure('\n' + group, pattern=True)
+    else:
+        raise InvalidDatabaseError('Node "%s" must contain either a group or a species.' % label)
+    currentDatabase.library[label] = ThermoEntry(model, node, index, label, short_comment, long_comment, history)
+    if model is not None: model.comment = short_comment
+
+def loadTree(string):
+    global currentDatabase
+    currentDatabase.tree.loadString(string)
+
+def loadThermoGAModel(Tdata, Cpdata, H298, S298, Tmin=(0.0,"K"), Tmax=(99999.9,"K")):
+
+    # Convert all data to SI units
+    Tdata = numpy.array([float(T) for T in pq.Quantity(*Tdata).simplified], numpy.float64)
+    Cpdata = numpy.array([float(C) for C in pq.Quantity(*Cpdata).simplified], numpy.float64)
+    H298 = float(pq.Quantity(*H298).simplified)
+    S298 = float(pq.Quantity(*S298).simplified)
+    Tmin = float(pq.Quantity(*Tmin).simplified)
+    Tmax = float(pq.Quantity(*Tmax).simplified)
+
+    # Create and return the ThermoGAModel object
+    return ThermoGAModel(Tdata, Cpdata, H298, S298, Tmin, Tmax)
+
+################################################################################
+
 thermoDatabase = None
 
 forbiddenStructures = None
 
-def loadThermoDatabase(dstr):
+def loadThermoDatabase(dstr, old=False):
     """
     Load the RMG thermo database located at `dstr` into the global variable
     :data:`thermoDatabase`. Also loads the forbidden structures into
@@ -336,11 +401,9 @@ def loadThermoDatabase(dstr):
     global thermoDatabase
     global forbiddenStructures
 
-    thermoDatabase = ThermoDatabase(path=dstr)
+    thermoDatabase = ThermoDatabase()
+    thermoDatabase.load(path=dstr, old=old)
     
-    forbiddenStructures = Dictionary()
-    forbiddenStructures.load(os.path.join(dstr, 'ForbiddenStructures.txt'))
-
     return thermoDatabase
 
 ################################################################################
@@ -391,18 +454,3 @@ def generateThermoData(molecule, thermoClass=NASAModel):
 
     # Still not returned?
     raise Exception("Cannot convert themo data into class %r"%(required_class))
-
-################################################################################
-
-def isStructureForbidden(struct):
-    """
-    Return :data:`True` if the structure `struct` contains any of the subgraphs
-    listed in the forbidden structures database, or :data:`False` if not.
-    """
-
-    if forbiddenStructures:
-        for lbl, s in forbiddenStructures.iteritems():
-            if struct.isSubgraphIsomorphic(s):
-                return True
-
-    return False
