@@ -35,14 +35,12 @@ Contains classes that represent batch reaction systems.
 import os
 import os.path
 import math
-import rmg.log as logging
+import logging
 import numpy
 
 import rmg.settings as settings
 import rmg.ctml_writer as ctml_writer
 import rmg.model as modelmodule
-import rmg.species as species
-import rmg.reaction as reaction
 from base import ReactionSystem
 
 ################################################################################

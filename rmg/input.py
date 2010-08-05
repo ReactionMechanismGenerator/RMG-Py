@@ -1,0 +1,204 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+################################################################################
+#
+#   RMG - Reaction Mechanism Generator
+#
+#   Copyright (c) 2002-2010 Prof. William H. Green (whgreen@mit.edu) and the
+#   RMG Team (rmg_dev@mit.edu)
+#
+#   Permission is hereby granted, free of charge, to any person obtaining a
+#   copy of this software and associated documentation files (the 'Software'),
+#   to deal in the Software without restriction, including without limitation
+#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
+#   and/or sell copies of the Software, and to permit persons to whom the
+#   Software is furnished to do so, subject to the following conditions:
+#
+#   The above copyright notice and this permission notice shall be included in
+#   all copies or substantial portions of the Software.
+#
+#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+#   DEALINGS IN THE SOFTWARE.
+#
+################################################################################
+
+import logging
+import quantities
+
+from chempy.molecule import Molecule
+from chempy.species import Species
+
+from rmgdata import getDatabaseDirectory
+from rmgdata.thermo import loadThermoDatabase
+from rmgdata.kinetics import loadKineticsDatabase
+
+from system import getAvailableReactionSystems
+from model import *
+
+################################################################################
+
+class InputError(Exception): pass
+
+################################################################################
+
+speciesDict = {}
+databases = {}
+reactionSystems = []
+reactionModel = None
+
+availableReactionSystems = getAvailableReactionSystems()
+
+def database(general):
+    global databases
+    databases['general'] = general
+
+def species(label, structure, reactive=True):
+    global speciesDict, reactionModel
+    logging.debug('Found %s species "%s" (%s)' % ('reactive' if reactive else 'nonreactive', label, structure.toSMILES()))
+    speciesDict[label], isNew = reactionModel.makeNewSpecies(label=label, molecule=structure, reactive=reactive)
+
+def CML(string):
+    return Molecule().fromCML(string)
+
+def SMILES(string):
+    return Molecule().fromSMILES(string)
+
+def InChI(string):
+    return Molecule().fromInChI(string)
+
+def adjacencyList(string):
+    return Molecule().fromAdjacencyList(string)
+
+def batchReactor(physicalPropertyModel, temperatureModel, pressureModel, initialConditions, reservoirConditions, volume, area):
+
+    global availableReactionSystems, reactionSystems
+    logging.debug('Found BatchReactor reaction system')
+    system = availableReactionSystems['BatchReactor']()
+    reactionSystems.append(system)
+
+    system.area = processQuantity(area)[0]
+    system.volume = processQuantity(volume)[0]
+
+    system.equationOfState = IdealGas()
+
+    if temperatureModel != 'isothermal':
+        raise InputError('Only currently-supported temperature model is "isothermal".')
+    system.setIsothermal()
+
+    if pressureModel != 'isobaric':
+        raise InputError('Only currently-supported pressure model is "isobaric".')
+    system.setIsobaric()
+
+    system.initialPressure = processQuantity(initialConditions['P'])[0]
+    system.initialTemperature = processQuantity(initialConditions['T'])[0]
+    system.initialMoleFraction = {}
+    for key, value in initialConditions.iteritems():
+        if key not in ['T', 'P']:
+            system.initialMoleFraction[key] = processQuantity(value)[0]
+
+    system.reservoirPressure = processQuantity(reservoirConditions['P'])[0]
+    system.reservoirTemperature = processQuantity(reservoirConditions['T'])[0]
+
+def termination(conversion=None, time=None):
+    global reactionModel
+    reactionModel.termination = []
+    if conversion is not None:
+        for spec, conv in conversion.iteritems():
+            reactionModel.termination.append(TerminationConversion(spec, conv))
+    if time is not None:
+        reactionModel.termination.append(TerminationTime(processQuantity(time)[0]))
+
+def simulator(atol, rtol):
+    global reactionModel
+    reactionModel.absoluteTolerance = atol
+    reactionModel.relativeTolerance = rtol
+
+def model(toleranceMoveToCore, toleranceKeepInEdge=0.0, toleranceInterruptSimulation=1.0, maximumEdgeSpecies=None):
+    global reactionModel
+    reactionModel.fluxToleranceKeepInEdge = toleranceKeepInEdge
+    reactionModel.fluxToleranceMoveToCore = toleranceMoveToCore
+    reactionModel.fluxToleranceInterrupt = toleranceInterruptSimulation
+    reactionModel.maximumEdgeSpecies = maximumEdgeSpecies
+
+def pressureDependence(method, temperatures, pressures, grainSize=0.0, numberOfGrains=0, interpolation=None):
+    raise InputError('Pressure dependence not yet supported.')
+
+def options(units='si', saveRestart=False, drawMolecules=False, generatePlots=False):
+    pass
+
+################################################################################
+
+def processQuantity(quantity):
+    if isinstance(quantity, tuple) or isinstance(quantity, list):
+        value, units = quantity
+    else:
+        value = quantity; units = ''
+    newUnits = str(quantities.Quantity(1.0, units).simplified.units).split()[1]
+    if isinstance(value, tuple) or isinstance(value, list):
+        return [float(quantities.Quantity(v, units).simplified) for v in value], newUnits
+    else:
+        return float(quantities.Quantity(value, units).simplified), newUnits
+
+################################################################################
+
+def readInputFile(path):
+
+    global speciesDict, reactionModel, databases
+
+    try:
+        f = open(path)
+    except IOError, e:
+        logging.error('The input file "%s" could not be opened.' % path)
+        logging.info('Check that the file exists and that you have read access.')
+        return
+
+    logging.info('Reading input file "%s"...' % path)
+
+    reactionModel = CoreEdgeReactionModel()
+
+    global_context = { '__builtins__': None }
+    local_context = {
+        '__builtins__': None,
+        'True': True,
+        'False': False,
+        'database': database,
+        'species': species,
+        'CML': CML,
+        'SMILES': SMILES,
+        'InChI': InChI,
+        'adjacencyList': adjacencyList,
+        'batchReactor': batchReactor,
+        'termination': termination,
+        'simulator': simulator,
+        'model': model,
+        'pressureDependence': pressureDependence,
+        'options': options,
+    }
+
+    try:
+        exec f in global_context, local_context
+    except (NameError, TypeError, SyntaxError), e:
+        logging.error('The input file "%s" was invalid:' % path)
+        logging.exception(e)
+        raise
+    finally:
+        f.close()
+
+    logging.info('')
+
+    # Load databases
+    if isinstance(databases['general'], str):
+        path = os.path.join(getDatabaseDirectory(), databases['general'])
+        loadThermoDatabase(path, old=True)
+        loadKineticsDatabase(path)
+        #loadFrequencyDatabase(path)
+
+    speciesList = speciesDict.values(); speciesList.sort()
+    return reactionModel, speciesList
+

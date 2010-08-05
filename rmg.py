@@ -236,8 +236,8 @@ def execute(args):
         os.rmdir(specDir)
     os.mkdir(specDir)
 
-#    # Read input file
-#    readInputFile(inputFile)
+    # Read input file
+    reactionModel, coreSpecies = readInputFile(inputFile)
 
 #    # Initialize reaction model
 #    if options.restart:
