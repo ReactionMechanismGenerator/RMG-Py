@@ -4,7 +4,7 @@
 import unittest
 import os
 import sys
-sys.path.append('../source')
+sys.path.append('.')
 
 import math
 		
@@ -19,7 +19,7 @@ from rmg.thermo.data import *
 
 # Run this whether being run as __main__ or called by other unit test suite:
 # Load databases
-databasePath = '../data/RMG_database'
+databasePath = 'data/RMG_database'
 
 # Create and load thermo databases and forbidden structures
 rmg.thermo.data.loadThermoDatabase(databasePath + '/')

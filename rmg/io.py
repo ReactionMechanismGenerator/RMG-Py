@@ -289,7 +289,6 @@ def readDatabaseList(xml0, rootElement):
 		databaseName = xml0.getElementText(element).strip()
 		databasePath = os.path.dirname(__file__)
 		databasePath = os.path.join(databasePath, '..')
-		databasePath = os.path.join(databasePath, '..')
 		databasePath = os.path.join(databasePath, 'data')
 		databasePath = os.path.join(databasePath, databaseName)
 		if not os.path.exists(databasePath):
@@ -623,13 +622,13 @@ def readInputFile(fstr):
 		
 	except InvalidInputFileException, e:
 		logging.exception(str(e))
-		raise e
+		raise
 	except InvalidXMLError, e:
 		logging.exception(str(e))
-		raise InvalidInputFileException(e.msg)
+		raise
 	except xml.parsers.expat.ExpatError, e:
 		logging.exception('Invalid XML file: '+e.message+'\n')
-		raise InvalidInputFileException('Invalid XML file: '+e.message)
+		raise
 		
 	return reactionModel, coreSpecies, reactionSystems
 

@@ -4,12 +4,12 @@
 import unittest
 
 import sys
-sys.path.append('../source')
+sys.path.append('.')
 
 from rmg.data import *
 from rmg.structure import *
 
-thermoDatabase = '../data/RMG_database/thermo_groups'
+thermoDatabase = 'data/RMG_database/thermo_groups'
 
 ################################################################################
 

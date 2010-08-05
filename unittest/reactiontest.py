@@ -4,7 +4,7 @@
 import unittest
 
 import sys
-sys.path.append('../source')
+sys.path.append('.')
 
 import rmg.thermo.model as thermo
 from rmg.structure import Structure
@@ -96,7 +96,7 @@ class ReactionSetCheck(unittest.TestCase):
 	
 	def loadDatabase(self,only_families=[]):
 		# Load database
-		databasePath = '../data/RMG_database'
+		databasePath = 'data/RMG_database'
 		#if only_families: 
 		#	print "Only loading reaction families %s"%only_families
 		reaction.kineticsDatabase = ReactionFamilySet()

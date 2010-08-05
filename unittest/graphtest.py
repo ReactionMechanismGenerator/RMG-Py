@@ -4,7 +4,7 @@
 import unittest
 
 import sys
-sys.path.append('../source')
+sys.path.append('.')
 
 from rmg.graph import *
 from rmg.chem import Atom, Bond
