@@ -109,6 +109,17 @@ class Reaction:
         if not self.reversible: arrow = ' -> '
         return arrow.join([' + '.join([str(s) for s in self.reactants]), ' + '.join([str(s) for s in self.products])])
 
+    def __eq__(self, other):
+        """
+        A comparison function that can be used to sort lists of
+        :class:`Reaction` objects. Currently the sorting method is by
+        increasing index.
+        """
+        if self.index >= 0 and other.index >= 0:
+            return self.index == other.index
+        else:
+            return False
+
     def __cmp__(self, other):
         """
         A comparison function that can be used to sort lists of
