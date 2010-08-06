@@ -123,7 +123,7 @@ def getAtomType(atom, bonds):
     """
 
     atomType = ''
-
+    
     # Count numbers of each higher-order bond type
     double = 0; doubleO = 0; triple = 0; benzene = 0
     for atom2, bond12 in bonds.iteritems():
@@ -160,6 +160,8 @@ def getAtomType(atom, bonds):
         if   double + doubleO == 0 and triple == 0 and benzene == 0: atomType = 'Ss'
         elif double + doubleO == 1 and triple == 0 and benzene == 0: atomType = 'Sd'
         elif len(bonds) == 0:                                        atomType = 'Sa'
+    elif atom.symbol == 'N':
+        return 'N'
 
     # Raise exception if we could not identify the proper atom type
     if atomType == '':
