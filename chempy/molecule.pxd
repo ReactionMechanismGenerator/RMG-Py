@@ -151,3 +151,7 @@ cdef class Molecule(Graph):
     cpdef bint isLinear(self)
 
     cpdef bint countInternalRotors(self)
+
+    cpdef getAdjacentResonanceIsomers(self)
+
+    cpdef findAllDelocalizationPaths(self, Atom atom1)

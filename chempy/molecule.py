@@ -179,6 +179,49 @@ class Atom(graph.Vertex):
         """
         return self.element.number == 8
 
+    def incrementRadical(self):
+        """
+        Update the atom pattern as a result of applying a GAIN_RADICAL action,
+        where `radical` specifies the number of radical electrons to add.
+        """
+        # Set the new radical electron counts and spin multiplicities
+        self.radicalElectrons += 1
+        self.spinMultiplicity += 1
+
+    def decrementRadical(self):
+        """
+        Update the atom pattern as a result of applying a LOSE_RADICAL action,
+        where `radical` specifies the number of radical electrons to remove.
+        """
+        # Set the new radical electron counts and spin multiplicities
+        if self.radicalElectrons - 1 < 0:
+            raise ChemPyError('Unable to update Atom due to LOSE_RADICAL action: Invalid radical electron set "%s".' % (self.radicalElectrons))
+        self.radicalElectrons -= 1
+        if self.spinMultiplicity - 1 < 0:
+            self.spinMultiplicity -= 1 - 2
+        else:
+            self.spinMultiplicity -= 1
+
+    def applyAction(self, action):
+        """
+        Update the atom pattern as a result of applying `action`, a tuple
+        containing the name of the reaction recipe action along with any
+        required parameters. The available actions can be found
+        :ref:`here <reaction-recipe-actions>`.
+        """
+        # Invalidate current atom type
+        self.atomType = ''
+        # Modify attributes if necessary
+        if action[0].upper() in ['CHANGE_BOND', 'FORM_BOND', 'BREAK_BOND']:
+            # Nothing else to do here
+            pass
+        elif action[0].upper() == 'GAIN_RADICAL':
+            for i in range(action[2]): self.incrementRadical()
+        elif action[0].upper() == 'LOSE_RADICAL':
+            for i in range(abs(action[2])): self.decrementRadical()
+        else:
+            raise ChemPyError('Unable to update Atom: Invalid action %s".' % (action))
+
 ################################################################################
 
 class Bond(graph.Edge):
@@ -266,6 +309,62 @@ class Bond(graph.Edge):
         not.
         """
         return self.order == 'B'
+
+    def incrementOrder(self):
+        """
+        Update the bond as a result of applying a CHANGE_BOND action to
+        increase the order by one.
+        """
+        if self.order == 'S': self.order = 'D'
+        elif self.order == 'D': self.order = 'T'
+        else:
+            raise ChemPyError('Unable to update Bond due to CHANGE_BOND action: Invalid bond order "%s".' % (bond, self.order))
+        
+    def decrementOrder(self):
+        """
+        Update the bond as a result of applying a CHANGE_BOND action to
+        decrease the order by one.
+        """
+        if self.order == 'D': self.order = 'S'
+        elif self.order == 'T': self.order = 'D'
+        else:
+            raise ChemPyError('Unable to update Bond due to CHANGE_BOND action: Invalid bond order "%s".' % (bond, self.order))
+        
+    def __changeBond(self, order):
+        """
+        Update the bond as a result of applying a CHANGE_BOND action,
+        where `order` specifies whether the bond is incremented or decremented
+        in bond order, and should be 1 or -1.
+        """
+        if order == 1:
+            if self.order == 'S': self.order = 'D'
+            elif self.order == 'D': self.order = 'T'
+            else:
+                raise ChemPyError('Unable to update Bond due to CHANGE_BOND action: Invalid bond order "%s".' % (bond, self.order))
+        elif order == -1:
+            if self.order == 'D': self.order = 'S'
+            elif self.order == 'T': self.order = 'D'
+            else:
+                raise ChemPyError('Unable to update Bond due to CHANGE_BOND action: Invalid bond order "%s".' % (bond, self.order))
+        else:
+            raise ChemPyError('Unable to update Bond due to CHANGE_BOND action: Invalid order "%g".' % order)
+
+    def applyAction(self, action):
+        """
+        Update the bond as a result of applying `action`, a tuple
+        containing the name of the reaction recipe action along with any
+        required parameters. The available actions can be found
+        :ref:`here <reaction-recipe-actions>`.
+        """
+        if action[0].upper() == 'CHANGE_BOND':
+            if action[2] == 1:
+                self.incrementOrder()
+            elif action[2] == -1:
+                self.decrementOrder()
+            else:
+                raise ChemPyError('Unable to update Bond due to CHANGE_BOND action: Invalid order "%g".' % action[2])
+        else:
+            raise ChemPyError('Unable to update BondPattern: Invalid action %s".' % (action))
 
 ################################################################################
 
@@ -898,3 +997,54 @@ class Molecule(graph.Graph):
                         count += 1
         return count
 
+    def getAdjacentResonanceIsomers(self):
+        """
+        Generate all of the resonance isomers formed by one allyl radical shift.
+        """
+
+        isomers = []
+
+        # Radicals
+        if sum([atom.radicalElectrons for atom in self.atoms]) > 0:
+            # Iterate over radicals in structure
+            for atom in self.atoms:
+                paths = self.findAllDelocalizationPaths(atom)
+                for path in paths:
+                    atom1, atom2, atom3, bond12, bond23 = path
+                    # Adjust to (potentially) new resonance isomer
+                    atom1.decrementRadical()
+                    atom3.incrementRadical()
+                    bond12.incrementOrder()
+                    bond23.decrementOrder()
+                    # Make a copy of isomer
+                    isomer = self.copy(deep=True)
+                    # Restore current isomer
+                    atom1.incrementRadical()
+                    atom3.decrementRadical()
+                    bond12.decrementOrder()
+                    bond23.incrementOrder()
+                    # Append to isomer list if unique
+                    isomers.append(isomer)
+
+        return isomers
+
+    def findAllDelocalizationPaths(self, atom1):
+        """
+        Find all the delocalization paths allyl to the radical center indicated
+        by `atom1`. Used to generate resonance isomers.
+        """
+
+        # No paths if atom1 is not a radical
+        if atom1.radicalElectrons <= 0:
+            return []
+
+        # Find all delocalization paths
+        paths = []
+        for atom2, bond12 in self.bonds[atom1].iteritems():
+            # Vinyl bond must be capable of gaining an order
+            if bond12.order in ['S', 'D']:
+                for atom3, bond23 in self.getBonds(atom2).iteritems():
+                    # Allyl bond must be capable of losing an order without breaking
+                    if atom1 is not atom3 and bond23.order in ['D', 'T']:
+                        paths.append([atom1, atom2, atom3, bond12, bond23])
+        return paths

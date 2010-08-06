@@ -123,6 +123,35 @@ class Species:
         """
         return self.index
 
+    def generateResonanceIsomers(self):
+        """
+        Generate all of the resonance isomers of this species. The isomers are
+        stored as a list in the `molecule` attribute. If the length of
+        `molecule` is already greater than one, it is assumed that all of the
+        resonance isomers have already been generated.
+        """
+
+        if len(self.molecule) != 1:
+            return
+
+        # Radicals
+        if sum([atom.radicalElectrons for atom in self.molecule[0].atoms]) > 0:
+            # Iterate over resonance isomers
+            index = 0
+            while index < len(self.molecule):
+                isomer = self.molecule[index]
+                newIsomers = isomer.getAdjacentResonanceIsomers()
+                for newIsomer in newIsomers:
+                    # Append to isomer list if unique
+                    found = False
+                    for isom in self.molecule:
+                        if isom.isIsomorphic(newIsomer): found = True
+                    if not found:
+                        self.molecule.append(newIsomer)
+                        newIsomer.updateAtomTypes()
+                # Move to next resonance isomer
+                index += 1
+
 ################################################################################
 
 class TransitionState:

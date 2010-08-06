@@ -48,6 +48,8 @@ cdef class Species:
     cdef public double E0
     cdef public list molecule
 
+    cpdef generateResonanceIsomers(self)
+
 ################################################################################
 
 cdef class TransitionState:
