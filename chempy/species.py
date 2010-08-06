@@ -70,7 +70,7 @@ class LennardJones:
 class Species:
     """
     A chemical species.
-    
+
     =============== =========================== ================================
     Attribute       Type                        Description
     =============== =========================== ================================
@@ -82,11 +82,12 @@ class Species:
     `geometry`      :class:`Geometry`           The 3D geometry of the molecule
     `E0`            ``double``                  The ground-state energy in J/mol
     `lennardJones`  :class:`LennardJones`       A set of Lennard-Jones collision parameters
+    `reactive`      ``bool``                    ``True`` if the species participates in reactions, ``False`` if not
     =============== =========================== ================================
-    
+
     """
-    
-    def __init__(self, index=-1, label='', thermo=None, states=None, molecule=None, geometry=None, E0=0.0, lennardJones=None):
+
+    def __init__(self, index=-1, label='', thermo=None, states=None, molecule=None, geometry=None, E0=0.0, lennardJones=None, reactive=True):
         self.index = index
         self.label = label
         self.thermo = thermo
@@ -95,13 +96,14 @@ class Species:
         self.geometry = geometry
         self.E0 = E0
         self.lennardJones = lennardJones
+        self.reactive = reactive
 
     def __repr__(self):
         """
         Return a string representation of the species, suitable for console output.
         """
         return "<Species %i '%s'>" % (self.index, self.label)
-    
+
     def __str__(self):
         """
         Return a string representation of the species, in the form 'label(id)'.
@@ -183,4 +185,4 @@ class TransitionState:
         Return a string representation of the species, suitable for console output.
         """
         return "<TransitionState '%s'>" % (self.label)
-    
+

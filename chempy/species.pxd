@@ -47,6 +47,7 @@ cdef class Species:
     cdef public LennardJones lennardJones
     cdef public double E0
     cdef public list molecule
+    cdef public bint reactive
 
     cpdef generateResonanceIsomers(self)
 
