@@ -41,6 +41,7 @@ import chempy.species
 import chempy.reaction
 import settings
 import ctml_writer
+from rxngen import generateReactions
 
 ################################################################################
 
@@ -91,86 +92,285 @@ class CoreEdgeReactionModel:
     *core*; the species and reactions identified as candidates for inclusion in
     the model are called the *edge*. The attributes are:
 
-	def enlarge(self, newObject):
-		"""
-		Enlarge a reaction model by processing `newObject`. If `newObject` is a
-		:class:`rmg.species.Species` object, then the species is moved from
-		the edge to the core and reactions generated for that species, reacting
-		with itself and with all other species in the model core. If `newObject`
-		is a :class:`rmg.unirxn.network.Network` object, then reactions are
-		generated for the species in the network with the largest leak flux.
-		"""
+    =========================  ==============================================================
+    Attribute                  Description
+    =========================  ==============================================================
+    `core`                     The species and reactions of the current model core
+    `edge`                     The species and reactions of the current model edge
+    `absoluteTolerance`        The absolute tolerance used in the ODE/DAE solver
+    `relativeTolerance`        The relative tolerance used in the ODE/DAE solver
+    `fluxToleranceKeepInEdge`  The relative species flux below which species are discarded from the edge
+    `fluxToleranceMoveToCore`  The relative species flux above which species are moved from the edge to the core
+    `fluxToleranceInterrupt`   The relative species flux above which the simulation will halt
+    `maximumEdgeSpecies`       The maximum number of edge species allowed at any time
+    `termination`              A list of termination targets (i.e :class:`TerminationTime` and :class:`TerminationConversion` objects)
+    `unirxnNetworks`           A list of unimolecular reaction networks (:class:`unirxn.network.Network` objects)
+    `networkCount`             A counter for the number of unirxn networks created
+    =========================  ==============================================================
 
-		rxnList = []
 
-		if isinstance(newObject, species.Species):
+    """
 
-			newSpecies = newObject
-			# Find reactions involving the new species as unimolecular reactant
-			# or product (e.g. A <---> products)
-			rxnList.extend(kinetics.data.kineticsDatabase.getReactions([newSpecies]))
-			# Find reactions involving the new species as bimolecular reactants
-			# or products with itself (e.g. A + A <---> products)
-			rxnList.extend(kinetics.data.kineticsDatabase.getReactions([newSpecies, newSpecies]))
-			# Find reactions involving the new species as bimolecular reactants
-			# or products with other core species (e.g. A + B <---> products)
-			for coreSpecies in self.core.species:
-				if coreSpecies.reactive:
-					rxnList.extend(kinetics.data.kineticsDatabase.getReactions([newSpecies, coreSpecies]))
+    def __init__(self, core=None, edge=None):
+        if core is None:
+            self.core = ReactionModel()
+        else:
+            self.core = core
+        if edge is None:
+            self.edge = ReactionModel()
+        else:
+            self.edge = edge
+        # The default tolerances mimic the original RMG behavior; no edge
+        # pruning takes place, and the simulation is interrupted as soon as
+        # a species flux higher than the validity
+        self.fluxToleranceKeepInEdge = 0.0
+        self.fluxToleranceMoveToCore = 1.0
+        self.fluxToleranceInterrupt = 1.0
+        self.absoluteTolerance = 1.0e-8
+        self.relativeTolerance = 1.0e-4
+        self.maximumEdgeSpecies = 1000000
+        self.termination = []
+        self.unirxnNetworks = []
+        self.networkCount = 0
+        self.speciesList = []
+        self.reactionDict = {'seed': {}}
+        self.speciesCache = [None for i in range(4)]
+        
+    def checkForExistingSpecies(self, molecule):
+        """
+        Check to see if an existing species contains the same
+        :class:`structure.Structure` as `structure`. Returns :data:`True` or
+        :data:`False`, the matched species (if found), structure (if found), and
+        mapping (if found).
+        """
 
-			# Add new species
-			self.addSpeciesToCore(newSpecies)
+        # First check cache and return if species is found
+        for i, spec in enumerate(self.speciesCache):
+            if spec is not None:
+                for mol in spec.molecule:
+                    found, mapping = molecule.findIsomorphism(mol)
+                    if found:
+                        self.speciesCache.pop(i)
+                        self.speciesCache.insert(0, spec)
+                        return True, spec, mol, mapping
 
-		elif isinstance(newObject, unirxn.network.Network) and settings.unimolecularReactionNetworks:
+        # Return an existing species if a match is found
+        for spec in self.speciesList:
+            for mol in spec.molecule:
+                found, mapping = molecule.findIsomorphism(mol)
+                if found:
+                    self.speciesCache.pop()
+                    self.speciesCache.insert(0, spec)
+                    return True, spec, mol, mapping
 
-			network = newObject
-			# Determine the species with the maximum leak flux
-			maxSpecies, maxSpeciesFlux = network.getMaximumLeakSpecies()
-			network.explored.append(maxSpecies)
-			# Find reactions involving the found species as unimolecular
-			# reactant or product (e.g. A <---> products)
-			rxnList = kinetics.data.kineticsDatabase.getReactions([maxSpecies])
-			# Don't find reactions involving the new species as bimolecular
-			# reactants or products with itself (e.g. A + A <---> products)
-			# Don't find reactions involving the new species as bimolecular
-			# reactants or products with other core species (e.g. A + B <---> products)
+        # At this point we can conclude that the structure does not exist
+        return False, None, None, None
 
-		else:
-			raise TypeError('Unable to use object %s to enlarge reaction model; expecting an object of class rmg.species.Species or rmg.unirxn.network.Network.' % newObject)
+    def makeNewSpecies(self, molecule, label='', reactive=True, checkForExisting=True):
+        """
+        Create a new species.
+        """
 
-		# Add new reactions generated in above
-		for rxn in rxnList:
-			allSpeciesInCore = True
-			for spec in rxn.reactants:
-				if spec not in self.core.species:
-					allSpeciesInCore = False
-					if spec not in self.edge.species:
-						self.addSpeciesToEdge(spec)
-			for spec in rxn.products:
-				if spec not in self.core.species:
-					allSpeciesInCore = False
-					if spec not in self.edge.species:
-						self.addSpeciesToEdge(spec)
-			# If pressure dependence is on, we only add reactions that are not unimolecular;
-			# unimolecular reactions will be added after processing the associated networks
-			if not settings.unimolecularReactionNetworks or not (
-				rxn.isIsomerization() or rxn.isDissociation() or rxn.isAssociation()):
-				if allSpeciesInCore:
-					self.addReactionToCore(rxn)
-				else:
-					self.addReactionToEdge(rxn)
-			else:
-				# Update unimolecular reaction networks
-				net = self.addReactionToUnimolecularNetworks(rxn)
-				if net is not None and isinstance(newObject, species.Species):
-					net.explored.append(newObject)
+        # If desired, check to ensure that the species is new; return the
+        # existing species if not new
+        if checkForExisting:
+            found, spec, mol, mapping = self.checkForExistingSpecies(molecule)
+            if found: return spec, False
 
-		# Output current model size information after enlargement
-		logging.info('')
-		logging.info('After network enlargement:')
-		logging.info('\tThe model core has %s species and %s reactions' % (len(self.core.species), len(self.core.reactions)))
-		logging.info('\tThe model edge has %s species and %s reactions' % (len(self.edge.species), len(self.edge.reactions)))
-		logging.info('')
+        # Check that the structure is not forbidden
+
+        # If we're here then we're ready to make the new species
+        if label == '': label = molecule.toSMILES()
+        logging.debug('Creating new species %s' % str(label))
+        spec = Species(index=len(self.speciesList), label=label, molecule=[molecule], reactive=reactive)
+        spec.generateResonanceIsomers()
+        self.speciesList.append(spec)
+        
+        return spec, True
+
+
+    def checkForExistingReaction(self, rxn):
+        """
+        Check to see if an existing reaction has the same reactants, products, and
+        family as `rxn`. Returns :data:`True` or :data:`False` and the matched
+        reaction (if found).
+        """
+
+        # Get the short-list of reactions with the same family, reactant1 and reactant2
+        r1 = rxn.reactants[0]
+        if len(rxn.reactants)==1: r2 = None
+        else: r2 = rxn.reactants[1]
+        try:
+            my_reactionList = self.reactionDict[rxn.family][r1][r2]
+        except KeyError: # no such short-list: must be new, unless in seed.
+            my_reactionList = []
+
+        # Now use short-list to check for matches. All should be in same forward direction.
+        for rxn0 in my_reactionList:
+            if (rxn0.reactants == rxn.reactants and rxn0.products == rxn.products):
+                return True, rxn0
+
+        # Now check seed reactions.
+        # First check seed short-list in forward direction
+        try:
+            my_reactionList = self.reactionDict['seed'][r1][r2]
+        except KeyError:
+            my_reactionList = []
+        for rxn0 in my_reactionList:
+            if (rxn0.reactants == rxn.reactants and rxn0.products == rxn.products) or \
+                (rxn0.reactants == rxn.products and rxn0.products == rxn.reactants):
+                return True, rxn0
+        # Now get the seed short-list of the reverse reaction
+        r1 = rxn.products[0]
+        if len(rxn.products)==1: r2 = None
+        else: r2 = rxn.products[1]
+        try:
+            my_reactionList = self.reactionDict['seed'][r1][r2]
+        except KeyError:
+            my_reactionList = []
+        for rxn0 in my_reactionList:
+            if (rxn0.reactants == rxn.reactants and rxn0.products == rxn.products) or \
+                (rxn0.reactants == rxn.products and rxn0.products == rxn.reactants):
+                return True, rxn0
+
+        return False, None
+
+    def makeNewReaction(self, forward, checkExisting=True):
+        """
+        Make a new reaction given a :class:`Reaction` object `forward`. The kinetics
+        of the reaction are estimated and the reaction is added to the global list
+        of reactions. Returns the reaction in the direction that corresponds to the
+        estimated kinetics, along with whether or not the reaction is new to the
+        global reaction list.
+
+        The forward direction is determined using the "is_reverse" attribute of the
+        reaction's family.  If the reaction family is its own reverse, then it is
+        made such that the forward reaction is exothermic at 298K.
+        """
+
+        if checkExisting:
+            found, rxn = self.checkForExistingReaction(forward)
+            if found: return rxn, False
+
+        # Note in the log
+        logging.debug('Creating new %s reaction %s' % (forward.family.label, forward))
+
+        # Add to the global dict/list of existing reactions (a list broken down by family, r1, r2)
+        # identify r1 and r2
+        r1 = forward.reactants[0]
+        r2 = None if len(forward.reactants) == 1 else forward.reactants[1]
+        # make dictionary entries if necessary
+        if forward.family not in self.reactionDict:
+            self.reactionDict[forward.family] = {}
+        if not self.reactionDict[forward.family].has_key(r1):
+            self.reactionDict[forward.family][r1] = dict()
+        if not self.reactionDict[forward.family][r1].has_key(r2):
+            self.reactionDict[forward.family][r1][r2] = list()
+        # store this reaction at the top of the relevant short-list
+        self.reactionDict[forward.family][r1][r2].insert(0, forward)
+
+        # Return newly created reaction
+        return forward, True
+
+    def enlarge(self, newObject):
+        """
+        Enlarge a reaction model by processing `newObject`. If `newObject` is a
+        :class:`rmg.species.Species` object, then the species is moved from
+        the edge to the core and reactions generated for that species, reacting
+        with itself and with all other species in the model core. If `newObject`
+        is a :class:`rmg.unirxn.network.Network` object, then reactions are
+        generated for the species in the network with the largest leak flux.
+        """
+
+        newReactionList = []; newSpeciesList = []
+
+        if isinstance(newObject, Species):
+
+            newSpecies = newObject
+
+            if not newSpecies.reactive:
+                logging.info('NOT generating reactions for unreactive species %s' % newSpecies)
+            else:
+                # Find reactions involving the new species as unimolecular reactant
+                # or product (e.g. A <---> products)
+                r, s = generateReactions([newSpecies], self)
+                newReactionList.extend(r); newSpeciesList.extend(s)
+                # Find reactions involving the new species as bimolecular reactants
+                # or products with other core species (e.g. A + B <---> products)
+                for coreSpecies in self.core.species:
+                    if coreSpecies.reactive:
+                        r, s = generateReactions([newSpecies, coreSpecies], self)
+                        newReactionList.extend(r); newSpeciesList.extend(s)
+                # Find reactions involving the new species as bimolecular reactants
+                # or products with itself (e.g. A + A <---> products)
+                r, s = generateReactions([newSpecies, newSpecies], self)
+                newReactionList.extend(r); newSpeciesList.extend(s)
+
+            # Add new species
+            self.addSpeciesToCore(newSpecies)
+
+        elif isinstance(newObject, Network) and settings.unimolecularReactionNetworks:
+
+            network = newObject
+            # Determine the species with the maximum leak flux
+            maxSpecies, maxSpeciesFlux = network.getMaximumLeakSpecies()
+            network.explored.append(maxSpecies)
+            # Find reactions involving the found species as unimolecular
+            # reactant or product (e.g. A <---> products)
+            r, s = generateReactions([maxSpecies], self)
+            newReactionList.extend(r); newSpeciesList.extend(s)
+            # Don't find reactions involving the new species as bimolecular
+            # reactants or products with itself (e.g. A + A <---> products)
+            # Don't find reactions involving the new species as bimolecular
+            # reactants or products with other core species (e.g. A + B <---> products)
+
+        else:
+            raise TypeError('Unable to use object %s to enlarge reaction model; expecting an object of class rmg.species.Species or rmg.unirxn.network.Network.' % newObject)
+
+        # Add new reactions generated in above
+        for rxn in newReactionList:
+            allSpeciesInCore = True
+            for spec in rxn.reactants:
+                if spec not in self.core.species:
+                    allSpeciesInCore = False
+                    if spec not in self.edge.species:
+                        self.addSpeciesToEdge(spec)
+            for spec in rxn.products:
+                if spec not in self.core.species:
+                    allSpeciesInCore = False
+                    if spec not in self.edge.species:
+                        self.addSpeciesToEdge(spec)
+            # If pressure dependence is on, we only add reactions that are not unimolecular;
+            # unimolecular reactions will be added after processing the associated networks
+            if not settings.unimolecularReactionNetworks or not (
+                rxn.isIsomerization() or rxn.isDissociation() or rxn.isAssociation()):
+                if allSpeciesInCore:
+                    self.addReactionToCore(rxn)
+                else:
+                    self.addReactionToEdge(rxn)
+            else:
+                # Update unimolecular reaction networks
+                net = self.addReactionToUnimolecularNetworks(rxn)
+                if net is not None and isinstance(newObject, species.Species):
+                    net.explored.append(newObject)
+
+        if len(newSpeciesList) > 0 or len(newReactionList) > 0:
+            logging.info('')
+            logging.info('Summary of Model Enlargement')
+            logging.info('----------------------------')
+            logging.info('Created %i new species' % len(newSpeciesList))
+            for spec in newSpeciesList:
+                logging.info('    %s' % (spec))
+            logging.info('Created %i new reactions' % len(newReactionList))
+            for rxn in newReactionList:
+                logging.info('    %s' % (rxn.reverse if newSpecies in rxn.products else rxn))
+
+        # Output current model size information after enlargement
+        logging.info('')
+        logging.info('After model enlargement:')
+        logging.info('    The model core has %s species and %s reactions' % (len(self.core.species), len(self.core.reactions)))
+        logging.info('    The model edge has %s species and %s reactions' % (len(self.edge.species), len(self.edge.reactions)))
+        logging.info('')
 
     def addSpeciesToCore(self, spec):
         """

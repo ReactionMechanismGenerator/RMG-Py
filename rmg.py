@@ -239,31 +239,32 @@ def execute(args):
     # Read input file
     reactionModel, coreSpecies = readInputFile(inputFile)
 
-#    # Initialize reaction model
-#    if options.restart:
-#        import gzip
-#        import cPickle
-#        import ctml_writer
-#        logging.info('Loading previous restart file...')
-#        f = gzip.GzipFile(os.path.join(settings.outputDirectory,'restart.pkl'), 'rb')
-#        species.speciesList, species.speciesCounter, reaction.reactionDict, \
-#            reactionModel, reactionSystems = cPickle.load(f)
-#        f.close()
-#        # Cantera stuff
-#        reload(ctml_writer) # ensure new empty ctml_writer._species and ._reactions lists
-#        for reactor in reactionSystems:
-#            # initialise the ctml_writer thing
-#            reactor.initializeCantera()
-#        for spec in reactionModel.core.species:
-#            # add species to ctml_writer._species list
-#            spec.toCantera()
-#        for rxn in reactionModel.core.reactions:
-#            # add reaction to ctml_writer._reactions list
-#            rxn.toCantera()
-#        #print "enter 'c' to continue"; import pdb; pdb.set_trace()
-#        options.restart = False # have already restarted
-#    else:
-#        reactionModel.initialize(coreSpecies)
+    # Initialize reaction model
+    if args.restart:
+        import gzip
+        import cPickle
+        import ctml_writer
+        logging.info('Loading previous restart file...')
+        f = gzip.GzipFile(os.path.join(settings.outputDirectory,'restart.pkl'), 'rb')
+        species.speciesList, species.speciesCounter, reaction.reactionDict, \
+            reactionModel, reactionSystems = cPickle.load(f)
+        f.close()
+        # Cantera stuff
+        reload(ctml_writer) # ensure new empty ctml_writer._species and ._reactions lists
+        for reactor in reactionSystems:
+            # initialise the ctml_writer thing
+            reactor.initializeCantera()
+        for spec in reactionModel.core.species:
+            # add species to ctml_writer._species list
+            spec.toCantera()
+        for rxn in reactionModel.core.reactions:
+            # add reaction to ctml_writer._reactions list
+            rxn.toCantera()
+        #print "enter 'c' to continue"; import pdb; pdb.set_trace()
+        options.restart = False # have already restarted
+    else:
+        for spec in coreSpecies:
+            reactionModel.enlarge(spec)
 #
 #    # RMG execution statistics
 #    coreSpeciesCount = []
