@@ -396,7 +396,7 @@ class Library(dict):
         with those labels, else return False.
         """
         if self.getData(labels) is not None:
-            logging.warning("There was already something labelled %s in the database. Ignoring '%s' (%s)"%(labels,index, data))
+            logging.debug("There was already something labelled %s in the database. Ignoring '%s' (%s)"%(labels,index, data))
             return False
         names = self.hashLabels(labels)
 
@@ -487,6 +487,7 @@ class Library(dict):
 
         # Process the library
         try:
+            skippedCount = 0
             for line in lines:
                 info = line.split()
 
@@ -505,13 +506,16 @@ class Library(dict):
 
                 index = info[0]
 
-                self.add(index, labels, data)
+                if not self.add(index, labels, data): skippedCount += 1
+
+            if skippedCount > 0:
+                logging.warning("Skipped %i duplicate entries in this library." % skippedCount)
 
         except InvalidDatabaseError, e:
             logging.exception(str(e))
             for s in (dictstr, treestr, libstr):
                 logging.exception(s)
-            quit()
+            raise
 
     def removeLinks(self):
         """
@@ -583,7 +587,9 @@ class LogicNode():
     """
     A base class for AND and OR logic nodes.
     """
+
     symbol="<TBD>" # To be redefined by subclass
+
     def __init__(self,items,invert):
         self.components = []
         for item in items:
@@ -593,7 +599,7 @@ class LogicNode():
                 component = item
             self.components.append(component)
         self.invert = bool(invert)
-        logging.debug("Created Logic Node: "+str(self) )
+
     def __str__(self):
         result = ''
         if self.invert: result += 'NOT '

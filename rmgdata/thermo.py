@@ -110,6 +110,8 @@ class ThermoDatabase:
             self.ringDatabase = self.__loadDatabase(os.path.join(path, 'ring.py'))
             self.otherDatabase = self.__loadDatabase(os.path.join(path, 'other.py'))
 
+        logging.info('')
+
     def __loadDatabase(self, path):
 
         global currentDatabase

@@ -294,7 +294,7 @@ class ReactionFamily(Database):
             if token_no and re.match('^[0-9\-.]*$',token):
                 # found the Temperature range at token_no
                 number_of_groups = token_no-1
-                logging.debug("Deduced there are %d groups %s in %s"%(number_of_groups,test_line[1:token_no],libstr))
+                logging.log(0, "Deduced there are %d groups %s in %s"%(number_of_groups,test_line[1:token_no],libstr))
                 break
         else: # didn't break
             raise InvalidDatabaseError("Unable to figure out how many groups in %s using line %s"%(libstr,' '.join(test_line)))
@@ -485,18 +485,18 @@ class ReactionFamily(Database):
         # structures, rather than unions
         reactantStructures = []
 
-        logging.debug("Generating template for products.")
+        logging.log(0, "Generating template for products.")
         for reactant in self.forwardTemplate.reactants:
             if isinstance(reactant, list):	reactants = [reactant[0]]
             else:							reactants = [reactant]
 
-            logging.debug("Reactants:%s"%reactants)
+            logging.log(0, "Reactants:%s"%reactants)
             for s in reactants: #
                 struct = self.dictionary[s]
                 #logging.debug("Reactant %s is class %s"%(str(s),struct.__class__))
                 if isinstance(struct, LogicNode):
                     all_structures = struct.getPossibleStructures(self.dictionary)
-                    logging.debug('Expanding node %s to %s'%(s, all_structures))
+                    logging.log(0, 'Expanding node %s to %s'%(s, all_structures))
                     reactantStructures.append(all_structures)
                 else:
                     reactantStructures.append([struct])
@@ -1067,15 +1067,15 @@ class KineticsDatabase:
         this list will not be loaded (e.g. only_families=['H_Abstraction'] )
         """
 
-        path = os.path.abspath(path)
+        path = os.path.join(os.path.abspath(path),'kinetics_groups')
 
-        logging.info('Loading reaction family databases from %s...' % path)
+        logging.info('Loading kinetics databases from %s...' % path)
 
         # Load the families from kinetics/families.txt
         familyList = []
         ffam = None
         try:
-            ffam = open(os.path.join(path,'kinetics_groups','families.txt'), 'r')
+            ffam = open(os.path.join(path,'families.txt'), 'r')
             for line in ffam:
                 line = removeCommentFromLine(line).strip()
                 if len(line) > 0:
@@ -1094,16 +1094,18 @@ class KineticsDatabase:
         # Load the reaction families (if they exist and status is 'on')
         self.families = {}
         for index, status, label in familyList:
-            fpath = os.path.join(path, 'kinetics_groups', label)
+            fpath = os.path.join(path, label)
             if os.path.isdir(fpath) and status.lower() == 'on':
                 # skip families not in only_families, if it's set
                 if only_families and label not in only_families: continue
 
-                logging.info('Loading reaction family %s from %s...' % (label, fpath))
+                logging.info('Loading reaction family %s...' % (label))
                 family = ReactionFamily(label)
                 family.load(fpath)
                 self.families[family.label] = family
-            else: logging.info("NOT loading family %s."%label)
+            else: logging.info("NOT loading reaction family %s." % label)
+
+        logging.info('')
 
     def generateKineticsData(self, rxn, family):
         return self.families[family].getKinetics(rxn, rxn.reactants)
