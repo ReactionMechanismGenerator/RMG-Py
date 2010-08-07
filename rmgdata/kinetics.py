@@ -36,7 +36,8 @@ from base import *
 
 from chempy.reaction import Reaction, ReactionError
 from chempy.kinetics import *
-from chempy.pattern import BondPattern
+from chempy.pattern import BondPattern, MoleculePattern
+from chempy.molecule import Bond
 
 ################################################################################
 
@@ -119,6 +120,8 @@ class ReactionRecipe:
         the structure should be labeled with the appropriate atom centers.
         """
 
+        pattern = isinstance(struct, MoleculePattern)
+
         for action in self.actions:
             if action[0] in ['CHANGE_BOND', 'FORM_BOND', 'BREAK_BOND']:
 
@@ -143,7 +146,7 @@ class ReactionRecipe:
                         atom2.applyAction(['CHANGE_BOND', label1, -info, label2])
                         bond.applyAction(['CHANGE_BOND', label1, -info, label2])
                 elif (action[0] == 'FORM_BOND' and doForward) or (action[0] == 'BREAK_BOND' and not doForward):
-                    bond = BondPattern(order=['S'])
+                    bond = BondPattern(order=['S']) if pattern else Bond(order='S')
                     struct.addBond(atom1, atom2, bond)
                     atom1.applyAction(['FORM_BOND', label1, info, label2])
                     atom2.applyAction(['FORM_BOND', label1, info, label2])
@@ -513,12 +516,16 @@ class ReactionFamily(Database):
         productStructureList = [[] for i in range(len(productStructures[0]))]
         for productStructure in productStructures:
             for i, struct in enumerate(productStructure):
-                found = False
                 for s in productStructureList[i]:
-                    if s.isIsomorphic(struct): found = True
-                if not found:
+                    try:
+                        if s.isIsomorphic(struct): break
+                    except KeyError:
+                        print struct.toAdjacencyList()
+                        print s.toAdjacencyList()
+                        raise
+                else:
                     productStructureList[i].append(struct)
-
+        
         # Fifth, associate structures with product template
         for i in range(len(self.forwardTemplate.products)):
             if len(productStructureList[i]) == 1:
@@ -575,7 +582,10 @@ class ReactionFamily(Database):
         # Also copy structures so we don't modify the originals
         # Since the tagging has already occurred, both the reactants and the
         # products will have tags
-        reactantStructure = MoleculePattern()
+        if isinstance(reactantStructures[0], MoleculePattern):
+            reactantStructure = MoleculePattern()
+        else:
+            reactantStructure = Molecule()
         for s in reactantStructures:
             reactantStructure = reactantStructure.merge(s.copy(deep=True))
 
@@ -636,14 +646,17 @@ class ReactionFamily(Database):
                     for i in range(4,highest+1):
                         atomLabels['*%d'%i].label = '*%d'%(4+highest-i)
 
+        if not forward: template = self.reverseTemplate
+        else:           template = self.forwardTemplate
+
         # Split product structure into multiple species if necessary
-        if len(self.forwardTemplate.products) > 1:
+        if len(template.products) > 1:
             productStructures = productStructure.split()
         else:
             productStructures = [productStructure]
 
         # Make sure we've made the expected number of products
-        if len(self.forwardTemplate.products) != len(productStructures):
+        if len(template.products) != len(productStructures):
             # We have a different number of products than expected by the template.
             # It might be because we found a ring-opening using a homolysis template
             if (label=='r_recombination' and not forward
@@ -665,7 +678,7 @@ class ReactionFamily(Database):
             message += "Product structures: %s \n"%productStructures
             message += "Template: %s"%self.template
             logging.error(message)
-            return None # don't fail!!! muhahaha
+            #return None # don't fail!!! muhahaha
             raise Exception(message)
 
         # If there are two product structures, place the one containing '*1' first
@@ -673,6 +686,11 @@ class ReactionFamily(Database):
             if not productStructures[0].containsLabeledAtom('*1') and \
                 productStructures[1].containsLabeledAtom('*1'):
                 productStructures.reverse()
+
+        # If product structures are Molecule objects, update their atom types
+        for struct in productStructures:
+            if isinstance(struct, Molecule):
+                struct.updateAtomTypes()
 
         # Return the product structures
         return productStructures
