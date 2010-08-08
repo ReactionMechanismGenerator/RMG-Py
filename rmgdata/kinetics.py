@@ -1049,7 +1049,7 @@ class ReactionFamily(Database):
 
 ################################################################################
 
-class KineticsDatabase:
+class KineticsGroupDatabase:
     """
     Represent a kinetics database, divided into reaction families. The
     `families` attribute stores a dictionary of :class:`ReactionFamily` objects
@@ -1067,7 +1067,7 @@ class KineticsDatabase:
         this list will not be loaded (e.g. only_families=['H_Abstraction'] )
         """
 
-        path = os.path.join(os.path.abspath(path),'kinetics_groups')
+        path = os.path.abspath(path)
 
         logging.info('Loading kinetics databases from %s...' % path)
 
@@ -1112,15 +1112,19 @@ class KineticsDatabase:
 
 ################################################################################
 
-kineticsDatabase = None
+kineticsDatabases = []
 
-def loadKineticsDatabase(dstr, only_families=False):
+def loadKineticsDatabase(dstr, group=True, only_families=False):
     """
     Load the RMG kinetics database located at `dstr` into the global variable
     `rmg.reaction.kineticsDatabase`.
     """
-    global kineticsDatabase
-    kineticsDatabase = KineticsDatabase(path=dstr, only_families=only_families)
+    global kineticsDatabases
+    if group:
+        kineticsDatabase = KineticsGroupDatabase(path=dstr, only_families=only_families)
+        kineticsDatabases.append(kineticsDatabase)
+    else:
+        pass
     return kineticsDatabase
 
 def generateKineticsData(rxn, family):
@@ -1129,8 +1133,8 @@ def generateKineticsData(rxn, family):
     the loaded kinetics database. The reactants and products in the molecule
     should already be labeled appropriately.
     """
-    global kineticsDatabase
-    kinetics = kineticsDatabase.generateKineticsData(rxn, family)
+    global kineticsDatabases
+    kinetics = kineticsDatabases[0].generateKineticsData(rxn, family)
     return kinetics
     
 ################################################################################

@@ -55,7 +55,7 @@ class ThermoEntry(DataEntry):
 
 ################################################################################
 
-class ThermoDatabase:
+class ThermoGroupDatabase:
     """
     A set of thermodynamics group additivity databases, consisting of a primary
     database of functional groups and a number of secondary databases to provide
@@ -93,7 +93,7 @@ class ThermoDatabase:
         database specified at `datapath`.
         """
 
-        path = os.path.abspath(os.path.join(path,'thermo_groups'))
+        path = os.path.abspath(path)
         
         logging.info('Loading thermodynamics databases from %s...' % path)
         if old:
@@ -254,7 +254,7 @@ class ThermoDatabase:
                     if atom not in added:
                         added[atom] = []
                     added[atom].append([H, bond])
-                atom.radicalElectrons = 0
+                    atom.decrementRadical()
 
             # Update the atom types of the saturated structure (not sure why
             # this is necessary, because saturating with H shouldn't be
@@ -315,7 +315,7 @@ class ThermoDatabase:
                     try:
                         thermoData += self.__getThermoData(self.otherDatabase, molecule, {'*':atom})
                     except KeyError: pass
-
+                    
             # Do ring corrections separately because we only want to match
             # each ring one time; this doesn't work yet
             rings = molecule.getSmallestSetOfSmallestRings()
@@ -394,21 +394,25 @@ def loadThermoGAModel(Tdata, Cpdata, H298, S298, Tmin=(0.0,"K"), Tmax=(99999.9,"
 
 ################################################################################
 
-thermoDatabase = None
+thermoDatabases = []
 
 forbiddenStructures = None
 
-def loadThermoDatabase(dstr, old=False):
+def loadThermoDatabase(dstr, group, old=False):
     """
     Load the RMG thermo database located at `dstr` into the global variable
     :data:`thermoDatabase`. Also loads the forbidden structures into
     :data:`forbiddenStructures`.
     """
-    global thermoDatabase
+    global thermoDatabases
     global forbiddenStructures
 
-    thermoDatabase = ThermoDatabase()
-    thermoDatabase.load(path=dstr, old=old)
+    if group:
+        thermoDatabase = ThermoGroupDatabase()
+        thermoDatabase.load(path=dstr, old=old)
+        thermoDatabases.append(thermoDatabase)
+    else:
+        pass
     
     return thermoDatabase
 
@@ -421,9 +425,9 @@ def generateThermoData(molecule, thermoClass=NASAModel):
     thermo object you want returning; default is :class:`NASAModel`.
     """
 
-    GAthermoData = thermoDatabase.generateThermoData(molecule)
     from chempy.ext.thermo_converter import convertGAtoWilhoit, convertWilhoitToNASA
 
+    GAthermoData = thermoDatabases[0].generateThermoData(molecule)
 
     # Correct entropy for symmetry number
     molecule.calculateSymmetryNumber()
