@@ -166,7 +166,7 @@ class ThermoGAModel(ThermoModel):
             if T < numpy.min(Tlist):
                 Cplist[i] = self.Cpdata[0]
             elif T >= numpy.max(Tlist):
-                Cplist[i] = self.Cpdata[0]
+                Cplist[i] = self.Cpdata[-1]
             else:
                 for Tmin, Tmax, Cpmin, Cpmax in zip(self.Tdata[:-1], self.Tdata[1:], self.Cpdata[:-1], self.Cpdata[1:]):
                     if Tmin <= T and T < Tmax:
