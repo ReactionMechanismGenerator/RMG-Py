@@ -62,7 +62,7 @@ class MoleculeCheck(unittest.TestCase):
         15 H 0 {6,S}
         16 H 0 {6,S}
         """)
-        
+
         pattern = MoleculePattern()
         pattern.fromAdjacencyList("""
         1 * C 0 {2,D} {3,S} {4,S}
@@ -72,10 +72,10 @@ class MoleculeCheck(unittest.TestCase):
         """)
 
         molecule.makeHydrogensExplicit()
-        
+
         labeled1 = molecule.getLabeledAtoms().values()[0]
         labeled2 = pattern.getLabeledAtoms().values()[0]
-        
+
         initialMap = {labeled1: labeled2}
         self.assertTrue(molecule.isSubgraphIsomorphic(pattern, initialMap))
 
@@ -96,7 +96,7 @@ class MoleculeCheck(unittest.TestCase):
 2    C  0 {1,S} {3,S}
 3    C  0 {1,S} {2,S}
         """)
-        
+
         pattern = MoleculePattern() # general case (functional group)
         pattern.fromAdjacencyList("""
 1 *1 C 1 {2,S}, {3,S}
@@ -254,6 +254,113 @@ class MoleculeCheck(unittest.TestCase):
         print repr(H)
         self.assertTrue(H.isHydrogen())
         self.assertTrue(H.radicalElectrons == 1)
+
+    def testAtomSymmetryNumber(self):
+
+        testSet = [
+            ['C', 12],
+            ['[CH3]', 6],
+            ['CC', 9],
+            ['CCC', 18],
+            ['CC(C)C', 81],
+        ]
+        failMessage = ''
+
+        for SMILES, symmetry in testSet:
+            molecule = Molecule().fromSMILES(SMILES)
+            molecule.makeHydrogensExplicit()
+            symmetryNumber = 1
+            for atom in molecule.atoms:
+                if not molecule.isAtomInCycle(atom):
+                    symmetryNumber *= molecule.calculateAtomSymmetryNumber(atom)
+            if symmetryNumber != symmetry:
+                failMessage += 'Expected symmetry number of %i for %s, got %i\n' % (symmetry, SMILES, symmetryNumber)
+        self.assertEqual(failMessage, '', failMessage)
+
+    def testBondSymmetryNumber(self):
+
+        testSet = [
+            ['CC', 2],
+            ['CCC', 1],
+            ['CCCC', 2],
+            ['C=C', 2],
+            ['C#C', 2],
+        ]
+        failMessage = ''
+
+        for SMILES, symmetry in testSet:
+            molecule = Molecule().fromSMILES(SMILES)
+            molecule.makeHydrogensExplicit()
+            symmetryNumber = 1
+            for atom1 in molecule.bonds:
+                for atom2 in molecule.bonds[atom1]:
+                    if molecule.atoms.index(atom1) < molecule.atoms.index(atom2):
+                        symmetryNumber *= molecule.calculateBondSymmetryNumber(atom1, atom2)
+            if symmetryNumber != symmetry:
+                failMessage += 'Expected symmetry number of %i for %s, got %i\n' % (symmetry, SMILES, symmetryNumber)
+        self.assertEqual(failMessage, '', failMessage)
+
+    def testAxisSymmetryNumber(self):
+        """Axis symmetry number"""
+        test_set = [('C=C=C', 2), # ethane
+                    ('C=C=C=C', 2),
+                    ('C=C=C=[CH]', 2), # =C-H is straight
+                    ('C=C=[C]', 2),
+                    ('CC=C=[C]', 1),
+                    ('C=C=CC(CC)', 1),
+                    ('CC(C)=C=C(CC)CC', 2),
+                    ('C=C=C(C(C(C(C=C=C)=C=C)=C=C)=C=C)', 2),
+                    ('C=C=[C]C(C)(C)[C]=C=C', 1),
+                    ('C=C=C=O', 2),
+                    ('CC=C=C=O', 1),
+                    ('C=C=C=N', 1), # =N-H is bent
+                    ('C=C=C=[N]', 2)
+                    ]
+        # http://cactus.nci.nih.gov/chemical/structure/C=C=C(C(C(C(C=C=C)=C=C)=C=C)=C=C)/image
+        fail_message = ''
+
+        for smile,should_be in test_set:
+            molecule = Molecule().fromSMILES(smile)
+            molecule.makeHydrogensExplicit()
+            symmetryNumber = molecule.calculateAxisSymmetryNumber()
+            if symmetryNumber!=should_be:
+                fail_message+="Got axis symmetry number of %s for %s (expected %s)\n"%(symmetryNumber,smile,should_be)
+        self.assertEqual(fail_message,'',fail_message)
+
+#   def testCyclicSymmetryNumber(self):
+#
+#		# cyclohexane
+#       molecule = Molecule().fromInChI('InChI=1/C6H12/c1-2-4-6-5-3-1/h1-6H2')
+#       molecule.makeHydrogensExplicit()
+#       symmetryNumber = molecule.calculateCyclicSymmetryNumber()
+#       self.assertEqual(symmetryNumber, 12)
+
+    def testSymmetryNumber(self):
+        """Overall symmetry number"""
+        test_set = [('CC', 18), # ethane
+                    ('C=C=[C]C(C)(C)[C]=C=C', 'Who knows?'),
+                    ('C(=CC(c1ccccc1)C([CH]CCCCCC)C=Cc1ccccc1)[CH]CCCCCC', 1),
+                    ('[OH]', 1),#hydroxyl radical
+                    ('O=O', 2),#molecular oxygen
+                    ('[C]#[C]', 2),#C2
+                    ('[H][H]', 2),#H2
+                    ('C#C', 2),#acetylene
+                    ('C#CC#C', 2),#1,3-butadiyne
+                    ('C', 12),#methane
+                    ('C=O', 2),#formaldehyde
+                    ('[CH3]', 6),#methyl radical
+                    ('O', 2),#water
+                    ('C=C',4),#ethylene
+                    ('C1=C=C=1', '6?')#cyclic, cumulenic C3 species
+                    ]
+        fail_message = ''
+        for smile,should_be in test_set:
+            molecule = Molecule().fromSMILES(smile)
+            molecule.makeHydrogensExplicit()
+            symmetryNumber = molecule.calculateSymmetryNumber()
+            if symmetryNumber!=should_be:
+                fail_message+="Got total symmetry number of %s for %s (expected %s)\n"%(symmetryNumber,smile,should_be)
+        self.assertEqual(fail_message,'',fail_message)
 
 ################################################################################
 

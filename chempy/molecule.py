@@ -997,6 +997,354 @@ class Molecule(graph.Graph):
                         count += 1
         return count
 
+    def calculateAtomSymmetryNumber(self, atom):
+        """
+        Return the symmetry number centered at `atom` in the structure. The
+        `atom` of interest must not be in a cycle.
+        """
+        symmetryNumber = 1
+
+        single = 0; double = 0; triple = 0; benzene = 0
+        numNeighbors = 0
+        for bond in self.bonds[atom].values():
+            if bond.isSingle(): single += 1
+            elif bond.isDouble(): double += 1
+            elif bond.isTriple(): triple += 1
+            elif bond.isBenzene(): benzene += 1
+            numNeighbors += 1
+        
+        # If atom has zero or one neighbors, the symmetry number is 1
+        if numNeighbors < 2: return symmetryNumber
+
+        # Create temporary structures for each functional group attached to atom
+        molecule = self.copy()
+        for atom2 in molecule.bonds[atom].keys(): molecule.removeBond(atom, atom2)
+        molecule.removeAtom(atom)
+        groups = molecule.split()
+
+        # Determine equivalence of functional groups around atom
+        groupIsomorphism = dict([(group, dict()) for group in groups])
+        for group1 in groups:
+            for group2 in groups:
+                if group1 is not group2 and group2 not in groupIsomorphism[group1]:
+                    groupIsomorphism[group1][group2] = group1.isIsomorphic(group2)
+                    groupIsomorphism[group2][group1] = groupIsomorphism[group1][group2]
+                elif group1 is group2:
+                    groupIsomorphism[group1][group1] = True
+        count = [sum([int(groupIsomorphism[group1][group2]) for group2 in groups]) for group1 in groups]
+        for i in range(count.count(2) / 2):
+            count.remove(2)
+        for i in range(count.count(3) / 3):
+            count.remove(3); count.remove(3)
+        for i in range(count.count(4) / 4):
+            count.remove(4); count.remove(4); count.remove(4)
+        count.sort(); count.reverse()
+        
+        if atom.radicalElectrons == 0:
+            if single == 4:
+                # Four single bonds
+                if count == [4]: symmetryNumber *= 12
+                elif count == [3, 1]: symmetryNumber *= 3
+                elif count == [2, 2]: symmetryNumber *= 2
+                elif count == [2, 1, 1]: symmetryNumber *= 1
+                elif count == [1, 1, 1, 1]: symmetryNumber *= 1
+            elif single == 2:
+                # Two single bonds
+                if count == [2]: symmetryNumber *= 2
+            elif double == 2:
+                # Two double bonds
+                if count == [2]: symmetryNumber *= 2
+        elif atom.radicalElectrons == 1:
+            if single == 3:
+                # Three single bonds
+                if count == [3]: symmetryNumber *= 6
+                elif count == [2, 1]: symmetryNumber *= 2
+                elif count == [1, 1, 1]: symmetryNumber *= 1
+        elif atom.radicalElectrons == 2:
+            if single == 2:
+                # Two single bonds
+                if count == [2]: symmetryNumber *= 2
+
+        return symmetryNumber
+
+    def calculateBondSymmetryNumber(self, atom1, atom2):
+        """
+        Return the symmetry number centered at `bond` in the structure.
+        """
+        bond = self.bonds[atom1][atom2]
+        symmetryNumber = 1
+        if bond.isSingle() or bond.isDouble() or bond.isTriple():
+            if atom1.equivalent(atom2):
+                # An O-O bond is considered to be an "optical isomer" and so no
+                # symmetry correction will be applied
+                if atom1.atomType == atom2.atomType == 'Os' and \
+                    atom1.radicalElectrons == atom2.radicalElectrons == 0:
+                    pass
+                # If the molecule is diatomic, then we don't have to check the
+                # ligands on the two atoms in this bond (since we know there
+                # aren't any)
+                elif len(self.atoms) == 2:
+                    symmetryNumber = 2
+                else:
+                    molecule = self.copy()
+                    molecule.removeBond(atom1, atom2)
+                    fragments = molecule.split()
+                    if len(fragments) != 2: return symmetryNumber
+
+                    fragment1, fragment2 = fragments
+                    if atom1 in fragment1.atoms: fragment1.removeAtom(atom1)
+                    if atom2 in fragment1.atoms: fragment1.removeAtom(atom2)
+                    if atom1 in fragment2.atoms: fragment2.removeAtom(atom1)
+                    if atom2 in fragment2.atoms: fragment2.removeAtom(atom2)
+                    groups1 = fragment1.split()
+                    groups2 = fragment2.split()
+
+                    # Test functional groups for symmetry
+                    if len(groups1) == len(groups2) == 1:
+                        if groups1[0].isIsomorphic(groups2[0]): symmetryNumber *= 2
+                    elif len(groups1) == len(groups2) == 2:
+                        if groups1[0].isIsomorphic(groups2[0]) and groups1[1].isIsomorphic(groups2[1]): symmetryNumber *= 2
+                        elif groups1[1].isIsomorphic(groups2[0]) and groups1[0].isIsomorphic(groups2[1]): symmetryNumber *= 2
+                    elif len(groups1) == len(groups2) == 3:
+                        if groups1[0].isIsomorphic(groups2[0]) and groups1[1].isIsomorphic(groups2[1]) and groups1[2].isIsomorphic(groups2[2]): symmetryNumber *= 2
+                        elif groups1[0].isIsomorphic(groups2[0]) and groups1[1].isIsomorphic(groups2[2]) and groups1[2].isIsomorphic(groups2[1]): symmetryNumber *= 2
+                        elif groups1[0].isIsomorphic(groups2[1]) and groups1[1].isIsomorphic(groups2[2]) and groups1[2].isIsomorphic(groups2[0]): symmetryNumber *= 2
+                        elif groups1[0].isIsomorphic(groups2[1]) and groups1[1].isIsomorphic(groups2[0]) and groups1[2].isIsomorphic(groups2[2]): symmetryNumber *= 2
+                        elif groups1[0].isIsomorphic(groups2[2]) and groups1[1].isIsomorphic(groups2[0]) and groups1[2].isIsomorphic(groups2[1]): symmetryNumber *= 2
+                        elif groups1[0].isIsomorphic(groups2[2]) and groups1[1].isIsomorphic(groups2[1]) and groups1[2].isIsomorphic(groups2[0]): symmetryNumber *= 2
+
+        return symmetryNumber
+
+    def calculateAxisSymmetryNumber(self):
+        """
+        Get the axis symmetry number correction. The "axis" refers to a series
+        of two or more cumulated double bonds (e.g. C=C=C, etc.). Corrections
+        for single C=C bonds are handled in getBondSymmetryNumber().
+        
+        Each axis (C=C=C) has the potential to double the symmetry number.
+        If an end has 0 or 1 groups (eg. =C=CJJ or =C=C-R) then it cannot 
+        alter the axis symmetry and is disregarded::
+        
+            A=C=C=C..        A-C=C=C=C-A
+            
+              s=1                s=1
+        
+        If an end has 2 groups that are different then it breaks the symmetry 
+        and the symmetry for that axis is 1, no matter what's at the other end::
+        
+            A\               A\         /A
+              T=C=C=C=C-A      T=C=C=C=T
+            B/               A/         \B
+                  s=1             s=1
+        
+        If you have one or more ends with 2 groups, and neither end breaks the 
+        symmetry, then you have an axis symmetry number of 2::
+        
+            A\         /B      A\         
+              C=C=C=C=C          C=C=C=C-B
+            A/         \B      A/         
+                  s=2                s=2
+        """
+
+        symmetryNumber = 1
+
+        # List all double bonds in the structure
+        doubleBonds = []
+        for atom1 in self.bonds:
+            for atom2 in self.bonds[atom1]:
+                if self.bonds[atom1][atom2].isDouble() and self.atoms.index(atom1) < self.atoms.index(atom2):
+                    doubleBonds.append((atom1, atom2))
+
+        # Search for adjacent double bonds
+        cumulatedBonds = []
+        for i, bond1 in enumerate(doubleBonds):
+            atom11, atom12 = bond1
+            for bond2 in doubleBonds[i+1:]:
+                atom21, atom22 = bond2
+                if atom11 is atom21 or atom11 is atom22 or atom12 is atom21 or atom12 is atom22:
+                    listToAddTo = None
+                    for cumBonds in cumulatedBonds:
+                        if (atom11, atom12) in cumBonds or (atom21, atom22) in cumBonds:
+                            listToAddTo = cumBonds
+                    if listToAddTo is not None:
+                        if (atom11, atom12) not in listToAddTo: listToAddTo.append((atom11, atom12))
+                        if (atom21, atom22) not in listToAddTo: listToAddTo.append((atom21, atom22))
+                    else:
+                        cumulatedBonds.append([(atom11, atom12), (atom21, atom22)])
+
+        # For each set of adjacent double bonds, check for axis symmetry
+        for bonds in cumulatedBonds:
+            
+            # Do nothing if less than two cumulated bonds
+            if len(bonds) < 2: continue
+
+            # Do nothing if axis is in cycle
+            found = False
+            for atom1, atom2 in bonds:
+               if self.isBondInCycle(atom1, atom2): found = True
+            if found: continue
+
+            # Find terminal atoms in axis
+            # Terminal atoms labelled T:  T=C=C=C=T
+            axis = []
+            for bond in bonds: axis.extend(bond)
+            terminalAtoms = []
+            for atom in axis:
+                if axis.count(atom) == 1: terminalAtoms.append(atom)
+            if len(terminalAtoms) != 2: continue
+            
+            # Remove axis from (copy of) structure
+            structure = self.copy()
+            for atom1, atom2 in bonds:
+                structure.removeBond(atom1, atom2)
+            atomsToRemove = []
+            for atom in structure.atoms:
+                if len(structure.bonds[atom]) == 0: # it's not bonded to anything
+                    atomsToRemove.append(atom)
+            for atom in atomsToRemove: structure.removeAtom(atom)
+
+            # Split remaining fragments of structure
+            end_fragments = structure.split()
+            # you may have only one end fragment,
+            # eg. if you started with H2C=C=C..
+            
+            # 
+            # there can be two groups at each end     A\         /B
+            #                                           T=C=C=C=T
+            #                                         A/         \B
+            
+            # to start with nothing has broken symmetry about the axis
+            symmetry_broken=False 
+            for fragment in end_fragments: # a fragment is one end of the axis
+                
+                # remove the atom that was at the end of the axis and split what's left into groups
+                for atom in terminalAtoms:
+                    if atom in fragment.atoms: fragment.removeAtom(atom)
+                groups = fragment.split()
+                
+                # If end has only one group then it can't contribute to (nor break) axial symmetry
+                #   Eg. this has no axis symmetry:   A-T=C=C=C=T-A
+                # so we remove this end from the list of interesting end fragments
+                if len(groups)==1:
+                    end_fragments.remove(fragment)
+                    continue # next end fragment
+                if len(groups)==2:
+                    if not groups[0].isIsomorphic(groups[1]):
+                        # this end has broken the symmetry of the axis
+                        symmetry_broken = True
+                        
+            # If there are end fragments left that can contribute to symmetry,
+            # and none of them broke it, then double the symmetry number
+            # NB>> This assumes coordination number of 4 (eg. Carbon).
+            #      And would be wrong if we had /B
+            #                         =C=C=C=C=T-B
+            #                                   \B
+            #      (for some T with coordination number 5).
+            if end_fragments and not symmetry_broken:
+                symmetryNumber *= 2
+                    
+        return symmetryNumber
+
+    def calculateCyclicSymmetryNumber(self):
+        """
+        Get the symmetry number correction for cyclic regions of a molecule.
+        For complicated fused rings the smallest set of smallest rings is used.
+        """
+
+        symmetryNumber = 1
+
+        # Get symmetry number for each ring in structure
+        rings = self.getSmallestSetOfSmallestRings()
+        for ring in rings:
+
+            # Make copy of structure
+            structure = self.copy()
+
+            # Remove bonds of ring from structure
+            for i, atom1 in enumerate(ring):
+                for atom2 in ring[i+1:]:
+                    if structure.hasBond(atom1, atom2):
+                        structure.removeBond(atom1, atom2)
+
+            structures = structure.split()
+            groups = []
+            for struct in structures:
+                for atom in ring:
+                    if atom in struct.atoms(): struct.removeAtom(atom)
+                groups.append(struct.split())
+
+            # Find equivalent functional groups on ring
+            equivalentGroups = []
+            for group in groups:
+                found = False
+                for eqGroup in equivalentGroups:
+                    if not found:
+                        if group.isIsomorphic(eqGroup[0]):
+                            eqGroup.append(group)
+                            found = True
+                if not found:
+                    equivalentGroups.append([group])
+
+            # Find equivalent bonds on ring
+            equivalentBonds = []
+            for i, atom1 in enumerate(ring):
+                for atom2 in ring[i+1:]:
+                    if self.hasBond(atom1, atom2):
+                        bond = self.getBond(atom1, atom2)
+                        found = False
+                        for eqBond in equivalentBonds:
+                            if not found:
+                                if bond.equivalent(eqBond[0]):
+                                    eqBond.append(group)
+                                    found = True
+                        if not found:
+                            equivalentBonds.append([bond])
+
+            # Find maximum number of equivalent groups and bonds
+            maxEquivalentGroups = 0
+            for groups in equivalentGroups:
+                if len(groups) > maxEquivalentGroups:
+                    maxEquivalentGroups = len(groups)
+            maxEquivalentBonds = 0
+            for bonds in equivalentBonds:
+                if len(bonds) > maxEquivalentBonds:
+                    maxEquivalentBonds = len(bonds)
+
+            if maxEquivalentGroups == maxEquivalentBonds == len(ring):
+                symmetryNumber *= len(ring)
+            else:
+                symmetryNumber *= max(maxEquivalentGroups, maxEquivalentBonds)
+
+            print len(ring), maxEquivalentGroups, maxEquivalentBonds, symmetryNumber
+
+
+        return symmetryNumber
+
+    def calculateSymmetryNumber(self):
+        """
+        Return the symmetry number for the structure. The symmetry number
+        includes both external and internal modes.
+        """
+        symmetryNumber = 1
+
+        for atom in self.atoms:
+            if not self.isAtomInCycle(atom):
+                symmetryNumber *= self.calculateAtomSymmetryNumber(atom)
+
+        for atom1 in self.bonds:
+            for atom2 in self.bonds[atom1]:
+                if self.atoms.index(atom1) < self.atoms.index(atom2) and not self.isBondInCycle(atom1, atom2):
+                    symmetryNumber *= self.calculateBondSymmetryNumber(atom1, atom2)
+
+        symmetryNumber *= self.calculateAxisSymmetryNumber()
+
+        #if self.isCyclic():
+        #   symmetryNumber *= self.calculateCyclicSymmetryNumber()
+
+        self.symmetryNumber = symmetryNumber
+
+        return symmetryNumber
+
     def getAdjacentResonanceIsomers(self):
         """
         Generate all of the resonance isomers formed by one allyl radical shift.

@@ -155,3 +155,13 @@ cdef class Molecule(Graph):
     cpdef getAdjacentResonanceIsomers(self)
 
     cpdef findAllDelocalizationPaths(self, Atom atom1)
+
+    cpdef int calculateAtomSymmetryNumber(self, Atom atom)
+
+    cpdef int calculateBondSymmetryNumber(self, Atom atom1, Atom atom2)
+
+    cpdef int calculateAxisSymmetryNumber(self)
+
+    cpdef int calculateCyclicSymmetryNumber(self)
+
+    cpdef int calculateSymmetryNumber(self)
