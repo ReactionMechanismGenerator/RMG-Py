@@ -28,207 +28,103 @@
 ################################################################################
 
 """
-A module for working with the thermodynamics of chemical species. This module
-seeks to provide functionality for answering the question, "Given a species,
-what are its thermodynamics?"
+Contains functions for converting between some of the thermodynamics models
+given in the :mod:`chempy.thermo` module. The two primary functions are:
 
-This module can be compiled using Cython to a shared library, which provides a
-significant speed boost to running in pure Python mode.
+* :func:`convertGAtoWilhoit()` - converts a :class:`ThermoGAModel` to a :class:`WilhoitModel`
+
+* :func:`convertWilhoitToNASA()` - converts a :class:`WilhoitModel` to a :class:`NASAModel`
+
 """
 
 import math
+import numpy
+import logging
+import cython
 from scipy import zeros, linalg, optimize, integrate
 
-import rmg.constants
-import rmg.log as logging
+import chempy.constants as constants
 
-from model import *
+from chempy.thermo import ThermoGAModel, WilhoitModel, NASAPolynomial, NASAModel
 
 ################################################################################
 
-def convertGAtoWilhoit(GAthermo, atoms, rotors, linear, fixedB=1, Bmin=300.0, Bmax=6000.0):
-    """Convert a Group Additivity thermo instance into a Wilhoit thermo instance.
-
-    Takes a `ThermoGAModel` instance of themochemical data, and some extra information
-    about the molecule used to calculate high- and low-temperature limits of Cp.
-    These are the number of atoms (integer `atoms`), the number of rotors (integer `rotors`)
-    and whether the molecule is linear (boolean `linear`)
-    Returns a `WilhoitModel` instance.
-
-    cf. Paul Yelvington's thesis, p. 185-186
+def convertGAtoWilhoit(GAthermo, atoms, rotors, linear, B0=500.0, constantB=False):
     """
-
-    # get info from incoming group additivity thermo
-    H298 = GAthermo.H298
-    S298 = GAthermo.S298
-    Cp_list = GAthermo.Cp
-    T_list = ThermoGAModel.CpTlist  # usually [300, 400, 500, 600, 800, 1000, 1500] but why assume?
-    R = constants.R
-    B = WilhoitModelB # Constant (if fixed=1), set once in the class def.
-
-    # convert from K to kK
-    T_list = [t/1000. for t in T_list]
-    B = B/1000.
-    Bmin=Bmin/1000.
-    Bmax=Bmax/1000.
-
-    Cp_list = [x/R for x in Cp_list] # convert to Cp/R
-
-    (cp0, cpInf) = CpLimits(atoms, rotors, linear) # determine the heat capacity limits (non-dimensional)
-
-    if (cp0==cpInf):
-        a0=0.0
-        a1=0.0
-        a2=0.0
-        a3=0.0
-        resid = 0.0
-    elif(fixedB == 1):
-        (a0, a1, a2, a3, resid) = GA2Wilhoit(B, T_list, Cp_list, cp0, cpInf)
+    Convert a :class:`ThermoGAModel` object `GAthermo` to a
+    :class:`WilhoitModel` object. You must specify the number of `atoms`,
+    internal `rotors` and the linearity `linear` of the molecule so that the
+    proper limits of heat capacity at zero and infinite temperature can be
+    determined. You can also specify an initial guess of the scaling temperature
+    `B0` to use, and whether or not to allow that parameter to vary
+    (`constantB`). Returns the fitted :class:`WilhoitModel` object.
+    """
+    freq = 3 * atoms - (5 if linear else 6) - rotors
+    wilhoit = WilhoitModel()
+    if constantB:
+        wilhoit.fitToDataForConstantB(GAthermo.Tdata, GAthermo.Cpdata, linear, freq, rotors, GAthermo.H298, GAthermo.S298, B0)
     else:
-        (a0, a1, a2, a3, B, resid) = GA2Wilhoit_BOpt(T_list, Cp_list, cp0, cpInf, Bmin, Bmax)
-    m = len(T_list)
-    err = math.sqrt(resid/m) # gmagoon 1/19/10: this is a (probably) faster alternative to using rmsErrWilhoit, and it fits better within a scheme where we modify B
-
-    # scale everything back
-    T_list = [t*1000. for t in T_list]
-    B = B*1000.
-    Cp_list = [x*R for x in Cp_list]
-
-    # cp0 and cpInf should be in units of J/mol-K
-    cp0 = cp0*R
-    cpInf = cpInf*R
-
-    # output comment
-    comment = ''
-
-    # first set H0 = S0 = 0, then calculate what they should be
-    # by referring to H298, S298
-    H0 = 0
-    S0 = 0
-    # create Wilhoit instance
-    WilhoitThermo = WilhoitModel( cp0, cpInf, a0, a1, a2, a3, H0, S0, B=B, comment=comment)
-    # calculate correct I, J (integration constants for H, S, respectively)
-    H0 = H298 - WilhoitThermo.getEnthalpy(298.15)
-    S0 = S298 - WilhoitThermo.getEntropy(298.15)
-    # update Wilhoit instance with correct I,J
-    WilhoitThermo.H0 = H0
-    WilhoitThermo.S0 = S0
-
-    # calculate the correct err for the monoatomic case; there seems to be a bug in linalg.lstsq() where resid is incorrectly returned as [] when A matrix is all zeroes (this is also the reason for the check above for cp0==cpInf, where we set resid = 0)
-    if(cp0==cpInf):
-        err = WilhoitThermo.rmsErrWilhoit(T_list, Cp_list)/R #rms Error (J/mol-K units until it is divided by R)
-    WilhoitThermo.comment = WilhoitThermo.comment + 'Wilhoit function fitted to GA data with Cp0=%2g and Cp_inf=%2g. RMS error = %.3f*R. '%(cp0,cpInf,err) + GAthermo.comment
-
-    #print a warning if the rms fit is worse that 0.25*R
-    if (err>0.25):
-        logging.warning("Poor GA-to-Wilhoit fit quality: RMS error = %.3f*R" % err)
-
-    return WilhoitThermo
-
-def GA2Wilhoit(B, T_list, Cp_list, cp0, cpInf):
-    #input: B (in kiloKelvin), GA temperature and Cp_list (non-dimensionalized), Wilhoit parameters, Cp0/R and CpInf/R
-    #output: Wilhoit parameters a0-a3, and the sum of squared errors between Wilhoit and GA data
-
-    #create matrices for linear least squares problem
-    m = len(T_list)	 # probably m=7
-    # A = mx4
-    # b = mx1
-    # x = 4x1
-    A = zeros([m,4])
-    b = zeros([m])
-    for i in range(m):
-        y = T_list[i]/(T_list[i]+B)
-        A[i,0] = (cpInf-cp0) * y*y*(y-1)
-        A[i,1] = A[i,0] * y
-        A[i,2] = A[i,1] * y
-        A[i,3] = A[i,2] * y
-        b[i] = Cp_list[i]-cp0 - y*y*(cpInf-cp0)
-
-    #solve least squares problem A*x = b; http://docs.scipy.org/doc/scipy/reference/tutorial/linalg.html#solving-linear-least-squares-problems-and-pseudo-inverses
-    x,resid,rank,sigma = linalg.lstsq(A,b, overwrite_a=1, overwrite_b=1)
-    a0 = x[0]
-    a1 = x[1]
-    a2 = x[2]
-    a3 = x[3]
-
-    return a0, a1, a2, a3, resid
-
-def GA2Wilhoit_BOpt(T_list, Cp_list, cp0, cpInf, Bmin, Bmax):
-    #input: GA temperature and Cp_list (scaled/non-dimensionalized), Wilhoit parameters, Cp0/R and CpInf/R, and maximum and minimum bounds for B (in kK)
-    #output: Wilhoit parameters, including optimized B value (in kK), and the sum of squared errors between Wilhoit and GA data (dimensionless)
-    B = optimize.fminbound(BOpt_objFun, Bmin, Bmax, args=(T_list, Cp_list, cp0, cpInf))
-    (a0, a1, a2, a3, resid) = GA2Wilhoit(B[0], T_list, Cp_list, cp0, cpInf)
-    return a0, a1, a2, a3, B[0], resid
-
-def BOpt_objFun(B, T_list, Cp_list, cp0, cpInf):
-    #input: B (in kiloKelvin), GA temperature and Cp_list (scaled/non-dimensionalized), Wilhoit parameters, Cp0/R and CpInf/R
-    #output: the sum of squared errors between Wilhoit and GA data (dimensionless)
-    (a0, a1, a2, a3, resid) = GA2Wilhoit(B, T_list, Cp_list, cp0, cpInf)
-    return resid
-
-
-def CpLimits(atoms, rotors, linear):
-    """Calculate the zero and infinity limits for heat capacity.
-
-    Input: number of atoms, number of rotors, linearity (`True` if molecule is linear)
-    Output: Cp(0 K)/R, Cp(infinity)/R
-    """
-    #(based off of lsfp_wilh1.f in GATPFit)
-
-    if (atoms == 1): # monoatomic
-        cp0 = 2.5
-        cpInf = 2.5
-    elif linear: # linear
-        cp0	 = 3.5
-        cpInf = 3*atoms - 1.5
-    else: # nonlinear
-        cp0	 = 4.0
-        cpInf = 3*atoms - (2 + 0.5*rotors)
-    return cp0, cpInf
+        wilhoit.fitToData(GAthermo.Tdata, GAthermo.Cpdata, linear, freq, rotors, B0, GAthermo.H298, GAthermo.S298)
+    return wilhoit
 
 ################################################################################
 
-def convertWilhoitToNASA(Wilhoit, fixed=1, weighting=1, tint=1000.0, Tmin = 298.0, Tmax=6000.0, contCons=3):
-    """Convert a Wilhoit thermo instance into a NASA polynomial thermo instance.
+def convertWilhoitToNASA(wilhoit, Tmin, Tmax, Tint, fixedTint=False, weighting=True, continuity=3):
+    """
+    Convert a :class:`WilhoitModel` object `Wilhoit` to a :class:`NASAModel` 
+    object. You must specify the minimum and maximum temperatures of the fit
+    `Tmin` and `Tmax`, as well as the intermediate temperature `Tint` to use
+    as the bridge between the two fitted polynomials. The remaining parameters
+    can be used to modify the fitting algorithm used:
+    
+    * `fixedTint` - ``False`` to allow `Tint` to vary in order to improve the fit, or ``True`` to keep it fixed
 
-    Takes: a `WilhoitModel` instance of themochemical data.
-        fixed: 1 (default) to fix tint; 0 to allow it to float to get a better fit
-        weighting: 0 to not weight the fit by 1/T; 1 (default) to weight by 1/T to emphasize good fit at lower temperatures
-        tint, Tmin, Tmax: intermediate, minimum, and maximum temperatures in Kelvin
-        contCons: a measure of the continutity constraints on the fitted NASA polynomials; possible values are:
-                5: constrain Cp, dCp/dT, d2Cp/dT2, d3Cp/dT3, and d4Cp/dT4 to be continuous at tint; note: this effectively constrains all the coefficients to be equal and should be equivalent to fitting only one polynomial (rather than two)
-                4: constrain Cp, dCp/dT, d2Cp/dT2, and d3Cp/dT3 to be continuous at tint
-                3 (default): constrain Cp, dCp/dT, and d2Cp/dT2 to be continuous at tint
-                2: constrain Cp and dCp/dT to be continuous at tint
-                1: constrain Cp to be continous at tint
-                0: no constraints on continuity of Cp(T) at tint
-                note: 5th (and higher) derivatives of NASA Cp(T) are zero and hence will automatically be continuous at tint by the form of the Cp(T) function
-    Returns a `NASAModel` instance containing two `NASAPolynomial`
-    polynomials
+    * `weighting` - ``True`` to weight the fit by :math:`T^{-1}` to emphasize good fit at lower temperatures, or ``False`` to not use weighting
+
+    * `continuity` - The number of continuity constraints to enforce at `Tint`:
+
+        - 0: no constraints on continuity of :math:`C_\\mathrm{p}(T)` at `Tint`
+
+        - 1: constrain :math:`C_\\mathrm{p}(T)` to be continous at `Tint`
+
+        - 2: constrain :math:`C_\\mathrm{p}(T)` and :math:`\\frac{d C_\\mathrm{p}}{dT}` to be continuous at `Tint`
+
+        - 3: constrain :math:`C_\\mathrm{p}(T)`, :math:`\\frac{d C_\\mathrm{p}}{dT}`, and :math:`\\frac{d^2 C_\\mathrm{p}}{dT^2}` to be continuous at `Tint`
+
+        - 4: constrain :math:`C_\\mathrm{p}(T)`, :math:`\\frac{d C_\\mathrm{p}}{dT}`, :math:`\\frac{d^2 C_\\mathrm{p}}{dT^2}`, and :math:`\\frac{d^3 C_\\mathrm{p}}{dT^3}` to be continuous at `Tint`
+
+        - 5: constrain :math:`C_\\mathrm{p}(T)`, :math:`\\frac{d C_\\mathrm{p}}{dT}`, :math:`\\frac{d^2 C_\\mathrm{p}}{dT^2}`, :math:`\\frac{d^3 C_\\mathrm{p}}{dT^3}`, and :math:`\\frac{d^4 C_\\mathrm{p}}{dT^4}` to be continuous at `Tint`
+        
+    Note that values of `continuity` of 5 or higher effectively constrain all
+    the coefficients to be equal and should be equivalent to fitting only one
+    polynomial (rather than two).
+
+    Returns the fitted :class:`NASAModel` object containing the two fitted
+    :class:`NASAPolynomial` objects.
     """
 
     # Scale the temperatures to kK
-    Tmin = Tmin/1000
-    tint = tint/1000
-    Tmax = Tmax/1000
+    Tmin /= 1000.
+    Tint /= 1000.
+    Tmax /= 1000.
 
     # Make copy of Wilhoit data so we don't modify the original
-    wilhoit_scaled = WilhoitModel(Wilhoit.cp0, Wilhoit.cpInf, Wilhoit.a0, Wilhoit.a1, Wilhoit.a2, Wilhoit.a3, Wilhoit.H0, Wilhoit.S0, Wilhoit.comment, B=Wilhoit.B)
+    wilhoit_scaled = WilhoitModel(wilhoit.cp0, wilhoit.cpInf, wilhoit.a0, wilhoit.a1, wilhoit.a2, wilhoit.a3, wilhoit.H0, wilhoit.S0, wilhoit.comment, B=wilhoit.B)
     # Rescale Wilhoit parameters
     wilhoit_scaled.cp0 /= constants.R
     wilhoit_scaled.cpInf /= constants.R
     wilhoit_scaled.B /= 1000.
 
-    #if we are using fixed tint, do not allow tint to float
-    if(fixed == 1):
-        nasa_low, nasa_high = Wilhoit2NASA(wilhoit_scaled, Tmin, Tmax, tint, weighting, contCons)
+    #if we are using fixed Tint, do not allow Tint to float
+    if fixedTint:
+        nasa_low, nasa_high = Wilhoit2NASA(wilhoit_scaled, Tmin, Tmax, Tint, weighting, continuity)
     else:
-        nasa_low, nasa_high, tint = Wilhoit2NASA_TintOpt(wilhoit_scaled, Tmin, Tmax, weighting, contCons)
-    iseUnw = TintOpt_objFun(tint, wilhoit_scaled, Tmin, Tmax, 0, contCons) #the scaled, unweighted ISE (integral of squared error)
+        nasa_low, nasa_high, Tint = Wilhoit2NASA_TintOpt(wilhoit_scaled, Tmin, Tmax, weighting, continuity)
+    iseUnw = TintOpt_objFun(Tint, wilhoit_scaled, Tmin, Tmax, 0, continuity) #the scaled, unweighted ISE (integral of squared error)
     rmsUnw = math.sqrt(iseUnw/(Tmax-Tmin))
     rmsStr = '(Unweighted) RMS error = %.3f*R;'%(rmsUnw)
     if(weighting == 1):
-        iseWei= TintOpt_objFun(tint, wilhoit_scaled, Tmin, Tmax, weighting, contCons) #the scaled, weighted ISE
+        iseWei= TintOpt_objFun(Tint, wilhoit_scaled, Tmin, Tmax, weighting, continuity) #the scaled, weighted ISE
         rmsWei = math.sqrt(iseWei/math.log(Tmax/Tmin))
         rmsStr = 'Weighted RMS error = %.3f*R;'%(rmsWei)+rmsStr
 
@@ -237,9 +133,9 @@ def convertWilhoitToNASA(Wilhoit, fixed=1, weighting=1, tint=1000.0, Tmin = 298.
         logging.warning("Poor Wilhoit-to-NASA fit quality: RMS error = %.3f*R" % (rmsWei if weighting == 1 else rmsUnw))
 
     #restore to conventional units of K for Tint and units based on K rather than kK in NASA polynomial coefficients
-    tint=tint*1000.
-    Tmin = Tmin*1000
-    Tmax = Tmax*1000
+    Tint *= 1000.
+    Tmin *= 1000.
+    Tmax *= 1000.
 
     nasa_low.c1 /= 1000.
     nasa_low.c2 /= 1000000.
@@ -252,37 +148,36 @@ def convertWilhoitToNASA(Wilhoit, fixed=1, weighting=1, tint=1000.0, Tmin = 298.
     nasa_high.c4 /= 1000000000000.
 
     # output comment
-    comment = 'NASA function fitted to Wilhoit function. ' + rmsStr + Wilhoit.comment
-    nasa_low.Tmin = Tmin; nasa_low.Tmax = tint
+    comment = 'NASA function fitted to Wilhoit function. ' + rmsStr + wilhoit.comment
+    nasa_low.Tmin = Tmin; nasa_low.Tmax = Tint
     nasa_low.comment = 'Low temperature range polynomial'
-    nasa_high.Tmin = tint; nasa_high.Tmax = Tmax
+    nasa_high.Tmin = Tint; nasa_high.Tmax = Tmax
     nasa_high.comment = 'High temperature range polynomial'
 
     #for the low polynomial, we want the results to match the Wilhoit value at 298.15K
     #low polynomial enthalpy:
-    Hlow = (Wilhoit.getEnthalpy(298.15) - nasa_low.getEnthalpy(298.15))/constants.R
-    ###polynomial_low.coeffs[5] = (Wilhoit.getEnthalpy(298.15) - polynomial_low.getEnthalpy(298.15))/constants.R
+    Tlist = numpy.array([298.15], numpy.float64)
+    Hlow = (wilhoit.getEnthalpy(Tlist)[0] - nasa_low.getEnthalpy(Tlist)[0])/constants.R
     #low polynomial entropy:
-    Slow = (Wilhoit.getEntropy(298.15) - nasa_low.getEntropy(298.15))/constants.R
-    ###polynomial_low.coeffs[6] = (Wilhoit.getEntropy(298.15) - polynomial_low.getEntropy(298.15))/constants.R
-
+    Slow = (wilhoit.getEntropy(Tlist)[0] - nasa_low.getEntropy(Tlist)[0])/constants.R
+    
     # update last two coefficients
     nasa_low.c5 = Hlow
     nasa_low.c6 = Slow
 
     #for the high polynomial, we want the results to match the low polynomial value at tint
     #high polynomial enthalpy:
-    Hhigh = (nasa_low.getEnthalpy(tint) - nasa_high.getEnthalpy(tint))/constants.R
+    Tlist = numpy.array([Tint], numpy.float64)
+    Hhigh = (nasa_low.getEnthalpy(Tlist)[0] - nasa_high.getEnthalpy(Tlist)[0])/constants.R
     #high polynomial entropy:
-    Shigh = (nasa_low.getEntropy(tint) - nasa_high.getEntropy(tint))/constants.R
+    Shigh = (nasa_low.getEntropy(Tlist)[0] - nasa_high.getEntropy(Tlist)[0])/constants.R
 
     # update last two coefficients
     #polynomial_high.coeffs = (b6,b7,b8,b9,b10,Hhigh,Shigh)
     nasa_high.c5 = Hhigh
     nasa_high.c6 = Shigh
 
-    NASAthermo = NASAModel(Tmin=Tmin, Tmax=Tmax, polynomials=[nasa_low,nasa_high], comment=comment)
-    return NASAthermo
+    return NASAModel(Tmin=Tmin, Tmax=Tmax, polynomials=[nasa_low,nasa_high], comment=comment)
 
 def Wilhoit2NASA(wilhoit, tmin, tmax, tint, weighting, contCons):
     """
@@ -401,26 +296,26 @@ def Wilhoit2NASA(wilhoit, tmin, tmax, tint, weighting, contCons):
             A[i,j] = A[j,i]
 
     #construct b vector
-    w0int = wilhoit.integral_T0(tint)
-    w1int = wilhoit.integral_T1(tint)
-    w2int = wilhoit.integral_T2(tint)
-    w3int = wilhoit.integral_T3(tint)
-    w0min = wilhoit.integral_T0(tmin)
-    w1min = wilhoit.integral_T1(tmin)
-    w2min = wilhoit.integral_T2(tmin)
-    w3min = wilhoit.integral_T3(tmin)
-    w0max = wilhoit.integral_T0(tmax)
-    w1max = wilhoit.integral_T1(tmax)
-    w2max = wilhoit.integral_T2(tmax)
-    w3max = wilhoit.integral_T3(tmax)
+    w0int = Wilhoit_integral_T0(wilhoit, tint)
+    w1int = Wilhoit_integral_T1(wilhoit, tint)
+    w2int = Wilhoit_integral_T2(wilhoit, tint)
+    w3int = Wilhoit_integral_T3(wilhoit, tint)
+    w0min = Wilhoit_integral_T0(wilhoit, tmin)
+    w1min = Wilhoit_integral_T1(wilhoit, tmin)
+    w2min = Wilhoit_integral_T2(wilhoit, tmin)
+    w3min = Wilhoit_integral_T3(wilhoit, tmin)
+    w0max = Wilhoit_integral_T0(wilhoit, tmax)
+    w1max = Wilhoit_integral_T1(wilhoit, tmax)
+    w2max = Wilhoit_integral_T2(wilhoit, tmax)
+    w3max = Wilhoit_integral_T3(wilhoit, tmax)
     if weighting:
-        wM1int = wilhoit.integral_TM1(tint)
-        wM1min = wilhoit.integral_TM1(tmin)
-        wM1max = wilhoit.integral_TM1(tmax)
+        wM1int = Wilhoit_integral_TM1(wilhoit, tint)
+        wM1min = Wilhoit_integral_TM1(wilhoit, tmin)
+        wM1max = Wilhoit_integral_TM1(wilhoit, tmax)
     else:
-        w4int = wilhoit.integral_T4(tint)
-        w4min = wilhoit.integral_T4(tmin)
-        w4max = wilhoit.integral_T4(tmax)
+        w4int = Wilhoit_integral_T4(wilhoit, tint)
+        w4min = Wilhoit_integral_T4(wilhoit, tmin)
+        w4max = Wilhoit_integral_T4(wilhoit, tmax)
 
     if weighting:
         b[0] = 2*(wM1int - wM1min)
@@ -505,18 +400,19 @@ def TintOpt_objFun_NW(tint, wilhoit, tmin, tmax, contCons):
     b1, b2, b3, b4, b5 = nasa_low.c0, nasa_low.c1, nasa_low.c2, nasa_low.c3, nasa_low.c4
     b6, b7, b8, b9, b10 = nasa_high.c0, nasa_high.c1, nasa_high.c2, nasa_high.c3, nasa_high.c4
 
-    q0=wilhoit.integral_T0(tint)
-    q1=wilhoit.integral_T1(tint)
-    q2=wilhoit.integral_T2(tint)
-    q3=wilhoit.integral_T3(tint)
-    q4=wilhoit.integral_T4(tint)
-    result = (wilhoit.integral2_T0(tmax) - wilhoit.integral2_T0(tmin) +
-                 nasa_low.integral2_T0(tint)-nasa_low.integral2_T0(tmin) + nasa_high.integral2_T0(tmax) - nasa_high.integral2_T0(tint)
-                 - 2* (b6*(wilhoit.integral_T0(tmax)-q0)+b1*(q0-wilhoit.integral_T0(tmin))
-                 +b7*(wilhoit.integral_T1(tmax) - q1) +b2*(q1 - wilhoit.integral_T1(tmin))
-                 +b8*(wilhoit.integral_T2(tmax) - q2) +b3*(q2 - wilhoit.integral_T2(tmin))
-                 +b9*(wilhoit.integral_T3(tmax) - q3) +b4*(q3 - wilhoit.integral_T3(tmin))
-                 +b10*(wilhoit.integral_T4(tmax) - q4)+b5*(q4 - wilhoit.integral_T4(tmin))))
+    q0=Wilhoit_integral_T0(wilhoit, tint)
+    q1=Wilhoit_integral_T1(wilhoit, tint)
+    q2=Wilhoit_integral_T2(wilhoit, tint)
+    q3=Wilhoit_integral_T3(wilhoit, tint)
+    q4=Wilhoit_integral_T4(wilhoit, tint)
+    result = (Wilhoit_integral2_T0(wilhoit, tmax) - Wilhoit_integral2_T0(wilhoit, tmin) +
+                 NASAPolynomial_integral2_T0(nasa_low, tint) - NASAPolynomial_integral2_T0(nasa_low, tmin) +
+                 NASAPolynomial_integral2_T0(nasa_high, tmax) - NASAPolynomial_integral2_T0(nasa_high, tint)
+                 - 2* (b6*(Wilhoit_integral_T0(wilhoit, tmax)-q0)+b1*(q0-Wilhoit_integral_T0(wilhoit, tmin))
+                 +b7*(Wilhoit_integral_T1(wilhoit, tmax) - q1) +b2*(q1 - Wilhoit_integral_T1(wilhoit, tmin))
+                 +b8*(Wilhoit_integral_T2(wilhoit, tmax) - q2) +b3*(q2 - Wilhoit_integral_T2(wilhoit, tmin))
+                 +b9*(Wilhoit_integral_T3(wilhoit, tmax) - q3) +b4*(q3 - Wilhoit_integral_T3(wilhoit, tmin))
+                 +b10*(Wilhoit_integral_T4(wilhoit, tmax) - q4)+b5*(q4 - Wilhoit_integral_T4(wilhoit, tmin))))
 
     return result
 
@@ -535,18 +431,19 @@ def TintOpt_objFun_W(tint, wilhoit, tmin, tmax, contCons):
     b1, b2, b3, b4, b5 = nasa_low.c0, nasa_low.c1, nasa_low.c2, nasa_low.c3, nasa_low.c4
     b6, b7, b8, b9, b10 = nasa_high.c0, nasa_high.c1, nasa_high.c2, nasa_high.c3, nasa_high.c4
 
-    qM1=wilhoit.integral_TM1(tint)
-    q0=wilhoit.integral_T0(tint)
-    q1=wilhoit.integral_T1(tint)
-    q2=wilhoit.integral_T2(tint)
-    q3=wilhoit.integral_T3(tint)
-    result = (wilhoit.integral2_TM1(tmax) - wilhoit.integral2_TM1(tmin) +
-                 nasa_low.integral2_TM1(tint)-nasa_low.integral2_TM1(tmin) + nasa_high.integral2_TM1(tmax) - nasa_high.integral2_TM1(tint)
-                 - 2* (b6*(wilhoit.integral_TM1(tmax)-qM1)+b1*(qM1 - wilhoit.integral_TM1(tmin))
-                 +b7*(wilhoit.integral_T0(tmax)-q0)+b2*(q0 - wilhoit.integral_T0(tmin))
-                 +b8*(wilhoit.integral_T1(tmax)-q1)+b3*(q1 - wilhoit.integral_T1(tmin))
-                 +b9*(wilhoit.integral_T2(tmax)-q2)+b4*(q2 - wilhoit.integral_T2(tmin))
-                 +b10*(wilhoit.integral_T3(tmax)-q3)+b5*(q3 - wilhoit.integral_T3(tmin))))
+    qM1=Wilhoit_integral_TM1(wilhoit, tint)
+    q0=Wilhoit_integral_T0(wilhoit, tint)
+    q1=Wilhoit_integral_T1(wilhoit, tint)
+    q2=Wilhoit_integral_T2(wilhoit, tint)
+    q3=Wilhoit_integral_T3(wilhoit, tint)
+    result = (Wilhoit_integral2_TM1(wilhoit, tmax) - Wilhoit_integral2_TM1(wilhoit, tmin) +
+                 NASAPolynomial_integral2_TM1(nasa_low, tint) - NASAPolynomial_integral2_TM1(nasa_low, tmin) +
+                 NASAPolynomial_integral2_TM1(nasa_high, tmax) - NASAPolynomial_integral2_TM1(nasa_high, tint)
+                 - 2* (b6*(Wilhoit_integral_TM1(wilhoit, tmax)-qM1)+b1*(qM1 - Wilhoit_integral_TM1(wilhoit, tmin))
+                 +b7*(Wilhoit_integral_T0(wilhoit, tmax)-q0)+b2*(q0 - Wilhoit_integral_T0(wilhoit, tmin))
+                 +b8*(Wilhoit_integral_T1(wilhoit, tmax)-q1)+b3*(q1 - Wilhoit_integral_T1(wilhoit, tmin))
+                 +b9*(Wilhoit_integral_T2(wilhoit, tmax)-q2)+b4*(q2 - Wilhoit_integral_T2(wilhoit, tmin))
+                 +b10*(Wilhoit_integral_T3(wilhoit, tmax)-q3)+b5*(q3 - Wilhoit_integral_T3(wilhoit, tmin))))
 
     return result
 
@@ -893,6 +790,185 @@ def Cp_TintOpt_objFun_W(tint, CpObject, tmin, tmax, contCons):
                  +b10*Nintegral_T3(CpObject,tint,tmax)+b5*Nintegral_T3(CpObject,tmin,tint)))
 
     return result
+
+################################################################################
+
+#a faster version of the integral based on H from Yelvington's thesis; it differs from the original (see above) by a constant (dependent on parameters but independent of t)
+def Wilhoit_integral_T0(wilhoit, t):
+    #output: the quantity Integrate[Cp(Wilhoit)/R, t'] evaluated at t'=t
+    cython.declare(cp0=cython.double, cpInf=cython.double, B=cython.double, a0=cython.double, a1=cython.double, a2=cython.double, a3=cython.double)
+    cython.declare(y=cython.double, y2=cython.double, logBplust=cython.double, result=cython.double)
+    cp0, cpInf, B, a0, a1, a2, a3 = wilhoit.cp0, wilhoit.cpInf, wilhoit.B, wilhoit.a0, wilhoit.a1, wilhoit.a2, wilhoit.a3
+    y = t/(t+B)
+    y2 = y*y
+    if cython.compiled:
+        logBplust = log(B + t)
+    else:
+        logBplust = math.log(B + t)
+    result = cp0*t - (cpInf-cp0)*t*(y2*((3*a0 + a1 + a2 + a3)/6. + (4*a1 + a2 + a3)*y/12. + (5*a2 + a3)*y2/20. + a3*y2*y/5.) + (2 + a0 + a1 + a2 + a3)*( y/2. - 1 + (1/y-1)*logBplust))
+    return result
+
+#a faster version of the integral based on S from Yelvington's thesis; it differs from the original by a constant (dependent on parameters but independent of t)
+def Wilhoit_integral_TM1(wilhoit, t):
+    #output: the quantity Integrate[Cp(Wilhoit)/R*t^-1, t'] evaluated at t'=t
+    cython.declare(cp0=cython.double, cpInf=cython.double, B=cython.double, a0=cython.double, a1=cython.double, a2=cython.double, a3=cython.double)
+    cython.declare(y=cython.double, logt=cython.double, logy=cython.double, result=cython.double)
+    cp0, cpInf, B, a0, a1, a2, a3 = wilhoit.cp0, wilhoit.cpInf, wilhoit.B, wilhoit.a0, wilhoit.a1, wilhoit.a2, wilhoit.a3
+    y = t/(t+B)
+    if cython.compiled:
+        logy = log(y); logt = log(t)
+    else:
+        logy = math.log(y); logt = math.log(t)
+    result = cpInf*logt-(cpInf-cp0)*(logy+y*(1+y*(a0/2+y*(a1/3 + y*(a2/4 + y*a3/5)))))
+    return result
+
+def Wilhoit_integral_T1(wilhoit, t):
+    #output: the quantity Integrate[Cp(Wilhoit)/R*t, t'] evaluated at t'=t
+    cython.declare(cp0=cython.double, cpInf=cython.double, B=cython.double, a0=cython.double, a1=cython.double, a2=cython.double, a3=cython.double)
+    cython.declare(logBplust=cython.double, result=cython.double)
+    cp0, cpInf, B, a0, a1, a2, a3 = wilhoit.cp0, wilhoit.cpInf, wilhoit.B, wilhoit.a0, wilhoit.a1, wilhoit.a2, wilhoit.a3
+    if cython.compiled:
+        logBplust = log(B + t)
+    else:
+        logBplust = math.log(B + t)
+    result = ( (2 + a0 + a1 + a2 + a3)*B*(cp0 - cpInf)*t + (cpInf*t**2)/2. + (a3*B**7*(-cp0 + cpInf))/(5.*(B + t)**5) + ((a2 + 6*a3)*B**6*(cp0 - cpInf))/(4.*(B + t)**4) -
+        ((a1 + 5*(a2 + 3*a3))*B**5*(cp0 - cpInf))/(3.*(B + t)**3) + ((a0 + 4*a1 + 10*(a2 + 2*a3))*B**4*(cp0 - cpInf))/(2.*(B + t)**2) -
+        ((1 + 3*a0 + 6*a1 + 10*a2 + 15*a3)*B**3*(cp0 - cpInf))/(B + t) - (3 + 3*a0 + 4*a1 + 5*a2 + 6*a3)*B**2*(cp0 - cpInf)*logBplust)
+    return result
+
+def Wilhoit_integral_T2(wilhoit, t):
+    #output: the quantity Integrate[Cp(Wilhoit)/R*t^2, t'] evaluated at t'=t
+    cython.declare(cp0=cython.double, cpInf=cython.double, B=cython.double, a0=cython.double, a1=cython.double, a2=cython.double, a3=cython.double)
+    cython.declare(logBplust=cython.double, result=cython.double)
+    cp0, cpInf, B, a0, a1, a2, a3 = wilhoit.cp0, wilhoit.cpInf, wilhoit.B, wilhoit.a0, wilhoit.a1, wilhoit.a2, wilhoit.a3
+    if cython.compiled:
+        logBplust = log(B + t)
+    else:
+        logBplust = math.log(B + t)
+    result = ( -((3 + 3*a0 + 4*a1 + 5*a2 + 6*a3)*B**2*(cp0 - cpInf)*t) + ((2 + a0 + a1 + a2 + a3)*B*(cp0 - cpInf)*t**2)/2. + (cpInf*t**3)/3. + (a3*B**8*(cp0 - cpInf))/(5.*(B + t)**5) -
+        ((a2 + 7*a3)*B**7*(cp0 - cpInf))/(4.*(B + t)**4) + ((a1 + 6*a2 + 21*a3)*B**6*(cp0 - cpInf))/(3.*(B + t)**3) - ((a0 + 5*(a1 + 3*a2 + 7*a3))*B**5*(cp0 - cpInf))/(2.*(B + t)**2) +
+        ((1 + 4*a0 + 10*a1 + 20*a2 + 35*a3)*B**4*(cp0 - cpInf))/(B + t) + (4 + 6*a0 + 10*a1 + 15*a2 + 21*a3)*B**3*(cp0 - cpInf)*logBplust)
+    return result
+
+def Wilhoit_integral_T3(wilhoit, t):
+    #output: the quantity Integrate[Cp(Wilhoit)/R*t^3, t'] evaluated at t'=t
+    cython.declare(cp0=cython.double, cpInf=cython.double, B=cython.double, a0=cython.double, a1=cython.double, a2=cython.double, a3=cython.double)
+    cython.declare(logBplust=cython.double, result=cython.double)
+    cp0, cpInf, B, a0, a1, a2, a3 = wilhoit.cp0, wilhoit.cpInf, wilhoit.B, wilhoit.a0, wilhoit.a1, wilhoit.a2, wilhoit.a3
+    if cython.compiled:
+        logBplust = log(B + t)
+    else:
+        logBplust = math.log(B + t)
+    result = ( (4 + 6*a0 + 10*a1 + 15*a2 + 21*a3)*B**3*(cp0 - cpInf)*t + ((3 + 3*a0 + 4*a1 + 5*a2 + 6*a3)*B**2*(-cp0 + cpInf)*t**2)/2. + ((2 + a0 + a1 + a2 + a3)*B*(cp0 - cpInf)*t**3)/3. +
+        (cpInf*t**4)/4. + (a3*B**9*(-cp0 + cpInf))/(5.*(B + t)**5) + ((a2 + 8*a3)*B**8*(cp0 - cpInf))/(4.*(B + t)**4) - ((a1 + 7*(a2 + 4*a3))*B**7*(cp0 - cpInf))/(3.*(B + t)**3) +
+        ((a0 + 6*a1 + 21*a2 + 56*a3)*B**6*(cp0 - cpInf))/(2.*(B + t)**2) - ((1 + 5*a0 + 15*a1 + 35*a2 + 70*a3)*B**5*(cp0 - cpInf))/(B + t) -
+        (5 + 10*a0 + 20*a1 + 35*a2 + 56*a3)*B**4*(cp0 - cpInf)*logBplust)
+    return result
+
+def Wilhoit_integral_T4(wilhoit, t):
+    #output: the quantity Integrate[Cp(Wilhoit)/R*t^4, t'] evaluated at t'=t
+    cython.declare(cp0=cython.double, cpInf=cython.double, B=cython.double, a0=cython.double, a1=cython.double, a2=cython.double, a3=cython.double)
+    cython.declare(logBplust=cython.double, result=cython.double)
+    cp0, cpInf, B, a0, a1, a2, a3 = wilhoit.cp0, wilhoit.cpInf, wilhoit.B, wilhoit.a0, wilhoit.a1, wilhoit.a2, wilhoit.a3
+    if cython.compiled:
+        logBplust = log(B + t)
+    else:
+        logBplust = math.log(B + t)
+    result = ( -((5 + 10*a0 + 20*a1 + 35*a2 + 56*a3)*B**4*(cp0 - cpInf)*t) + ((4 + 6*a0 + 10*a1 + 15*a2 + 21*a3)*B**3*(cp0 - cpInf)*t**2)/2. +
+        ((3 + 3*a0 + 4*a1 + 5*a2 + 6*a3)*B**2*(-cp0 + cpInf)*t**3)/3. + ((2 + a0 + a1 + a2 + a3)*B*(cp0 - cpInf)*t**4)/4. + (cpInf*t**5)/5. + (a3*B**10*(cp0 - cpInf))/(5.*(B + t)**5) -
+        ((a2 + 9*a3)*B**9*(cp0 - cpInf))/(4.*(B + t)**4) + ((a1 + 8*a2 + 36*a3)*B**8*(cp0 - cpInf))/(3.*(B + t)**3) - ((a0 + 7*(a1 + 4*(a2 + 3*a3)))*B**7*(cp0 - cpInf))/(2.*(B + t)**2) +
+        ((1 + 6*a0 + 21*a1 + 56*a2 + 126*a3)*B**6*(cp0 - cpInf))/(B + t) + (6 + 15*a0 + 35*a1 + 70*a2 + 126*a3)*B**5*(cp0 - cpInf)*logBplust)
+    return result
+
+def Wilhoit_integral2_T0(wilhoit, t):
+    #output: the quantity Integrate[(Cp(Wilhoit)/R)^2, t'] evaluated at t'=t
+    cython.declare(cp0=cython.double, cpInf=cython.double, B=cython.double, a0=cython.double, a1=cython.double, a2=cython.double, a3=cython.double)
+    cython.declare(logBplust=cython.double, result=cython.double)
+    cp0, cpInf, B, a0, a1, a2, a3 = wilhoit.cp0, wilhoit.cpInf, wilhoit.B, wilhoit.a0, wilhoit.a1, wilhoit.a2, wilhoit.a3
+    if cython.compiled:
+        logBplust = log(B + t)
+    else:
+        logBplust = math.log(B + t)
+    result = (cpInf**2*t - (a3**2*B**12*(cp0 - cpInf)**2)/(11.*(B + t)**11) + (a3*(a2 + 5*a3)*B**11*(cp0 - cpInf)**2)/(5.*(B + t)**10) -
+        ((a2**2 + 18*a2*a3 + a3*(2*a1 + 45*a3))*B**10*(cp0 - cpInf)**2)/(9.*(B + t)**9) + ((4*a2**2 + 36*a2*a3 + a1*(a2 + 8*a3) + a3*(a0 + 60*a3))*B**9*(cp0 - cpInf)**2)/(4.*(B + t)**8) -
+        ((a1**2 + 14*a1*(a2 + 4*a3) + 2*(14*a2**2 + a3 + 84*a2*a3 + 105*a3**2 + a0*(a2 + 7*a3)))*B**8*(cp0 - cpInf)**2)/(7.*(B + t)**7) +
+        ((3*a1**2 + a2 + 28*a2**2 + 7*a3 + 126*a2*a3 + 126*a3**2 + 7*a1*(3*a2 + 8*a3) + a0*(a1 + 6*a2 + 21*a3))*B**7*(cp0 - cpInf)**2)/(3.*(B + t)**6) -
+        (B**6*(cp0 - cpInf)*(a0**2*(cp0 - cpInf) + 15*a1**2*(cp0 - cpInf) + 10*a0*(a1 + 3*a2 + 7*a3)*(cp0 - cpInf) + 2*a1*(1 + 35*a2 + 70*a3)*(cp0 - cpInf) +
+         2*(35*a2**2*(cp0 - cpInf) + 6*a2*(1 + 21*a3)*(cp0 - cpInf) + a3*(5*(4 + 21*a3)*cp0 - 21*(cpInf + 5*a3*cpInf)))))/(5.*(B + t)**5) +
+        (B**5*(cp0 - cpInf)*(14*a2*cp0 + 28*a2**2*cp0 + 30*a3*cp0 + 84*a2*a3*cp0 + 60*a3**2*cp0 + 2*a0**2*(cp0 - cpInf) + 10*a1**2*(cp0 - cpInf) +
+         a0*(1 + 10*a1 + 20*a2 + 35*a3)*(cp0 - cpInf) + a1*(5 + 35*a2 + 56*a3)*(cp0 - cpInf) - 15*a2*cpInf - 28*a2**2*cpInf - 35*a3*cpInf - 84*a2*a3*cpInf - 60*a3**2*cpInf))/
+         (2.*(B + t)**4) - (B**4*(cp0 - cpInf)*((1 + 6*a0**2 + 15*a1**2 + 32*a2 + 28*a2**2 + 50*a3 + 72*a2*a3 + 45*a3**2 + 2*a1*(9 + 21*a2 + 28*a3) + a0*(8 + 20*a1 + 30*a2 + 42*a3))*cp0 -
+         (1 + 6*a0**2 + 15*a1**2 + 40*a2 + 28*a2**2 + 70*a3 + 72*a2*a3 + 45*a3**2 + a0*(8 + 20*a1 + 30*a2 + 42*a3) + a1*(20 + 42*a2 + 56*a3))*cpInf))/(3.*(B + t)**3) +
+        (B**3*(cp0 - cpInf)*((2 + 2*a0**2 + 3*a1**2 + 9*a2 + 4*a2**2 + 11*a3 + 9*a2*a3 + 5*a3**2 + a0*(5 + 5*a1 + 6*a2 + 7*a3) + a1*(7 + 7*a2 + 8*a3))*cp0 -
+         (2 + 2*a0**2 + 3*a1**2 + 15*a2 + 4*a2**2 + 21*a3 + 9*a2*a3 + 5*a3**2 + a0*(6 + 5*a1 + 6*a2 + 7*a3) + a1*(10 + 7*a2 + 8*a3))*cpInf))/(B + t)**2 -
+        (B**2*((2 + a0 + a1 + a2 + a3)**2*cp0**2 - 2*(5 + a0**2 + a1**2 + 8*a2 + a2**2 + 9*a3 + 2*a2*a3 + a3**2 + 2*a0*(3 + a1 + a2 + a3) + a1*(7 + 2*a2 + 2*a3))*cp0*cpInf +
+         (6 + a0**2 + a1**2 + 12*a2 + a2**2 + 14*a3 + 2*a2*a3 + a3**2 + 2*a1*(5 + a2 + a3) + 2*a0*(4 + a1 + a2 + a3))*cpInf**2))/(B + t) +
+        2*(2 + a0 + a1 + a2 + a3)*B*(cp0 - cpInf)*cpInf*logBplust)
+    return result
+
+def Wilhoit_integral2_TM1(wilhoit, t):
+    #output: the quantity Integrate[(Cp(Wilhoit)/R)^2*t^-1, t'] evaluated at t'=t
+    cython.declare(cp0=cython.double, cpInf=cython.double, B=cython.double, a0=cython.double, a1=cython.double, a2=cython.double, a3=cython.double)
+    cython.declare(logBplust=cython.double, logt=cython.double, result=cython.double)
+    cp0, cpInf, B, a0, a1, a2, a3 = wilhoit.cp0, wilhoit.cpInf, wilhoit.B, wilhoit.a0, wilhoit.a1, wilhoit.a2, wilhoit.a3
+    if cython.compiled:
+        logBplust = log(B + t); logt = log(t)
+    else:
+        logBplust = math.log(B + t); logt = math.log(t)
+    result = ( (a3**2*B**11*(cp0 - cpInf)**2)/(11.*(B + t)**11) - (a3*(2*a2 + 9*a3)*B**10*(cp0 - cpInf)**2)/(10.*(B + t)**10) +
+        ((a2**2 + 16*a2*a3 + 2*a3*(a1 + 18*a3))*B**9*(cp0 - cpInf)**2)/(9.*(B + t)**9) -
+        ((7*a2**2 + 56*a2*a3 + 2*a1*(a2 + 7*a3) + 2*a3*(a0 + 42*a3))*B**8*(cp0 - cpInf)**2)/(8.*(B + t)**8) +
+        ((a1**2 + 21*a2**2 + 2*a3 + 112*a2*a3 + 126*a3**2 + 2*a0*(a2 + 6*a3) + 6*a1*(2*a2 + 7*a3))*B**7*(cp0 - cpInf)**2)/(7.*(B + t)**7) -
+        ((5*a1**2 + 2*a2 + 30*a1*a2 + 35*a2**2 + 12*a3 + 70*a1*a3 + 140*a2*a3 + 126*a3**2 + 2*a0*(a1 + 5*(a2 + 3*a3)))*B**6*(cp0 - cpInf)**2)/(6.*(B + t)**6) +
+        (B**5*(cp0 - cpInf)*(10*a2*cp0 + 35*a2**2*cp0 + 28*a3*cp0 + 112*a2*a3*cp0 + 84*a3**2*cp0 + a0**2*(cp0 - cpInf) + 10*a1**2*(cp0 - cpInf) + 2*a1*(1 + 20*a2 + 35*a3)*(cp0 - cpInf) +
+        4*a0*(2*a1 + 5*(a2 + 2*a3))*(cp0 - cpInf) - 10*a2*cpInf - 35*a2**2*cpInf - 30*a3*cpInf - 112*a2*a3*cpInf - 84*a3**2*cpInf))/(5.*(B + t)**5) -
+        (B**4*(cp0 - cpInf)*(18*a2*cp0 + 21*a2**2*cp0 + 32*a3*cp0 + 56*a2*a3*cp0 + 36*a3**2*cp0 + 3*a0**2*(cp0 - cpInf) + 10*a1**2*(cp0 - cpInf) +
+        2*a0*(1 + 6*a1 + 10*a2 + 15*a3)*(cp0 - cpInf) + 2*a1*(4 + 15*a2 + 21*a3)*(cp0 - cpInf) - 20*a2*cpInf - 21*a2**2*cpInf - 40*a3*cpInf - 56*a2*a3*cpInf - 36*a3**2*cpInf))/
+        (4.*(B + t)**4) + (B**3*(cp0 - cpInf)*((1 + 3*a0**2 + 5*a1**2 + 14*a2 + 7*a2**2 + 18*a3 + 16*a2*a3 + 9*a3**2 + 2*a0*(3 + 4*a1 + 5*a2 + 6*a3) + 2*a1*(5 + 6*a2 + 7*a3))*cp0 -
+        (1 + 3*a0**2 + 5*a1**2 + 20*a2 + 7*a2**2 + 30*a3 + 16*a2*a3 + 9*a3**2 + 2*a0*(3 + 4*a1 + 5*a2 + 6*a3) + 2*a1*(6 + 6*a2 + 7*a3))*cpInf))/(3.*(B + t)**3) -
+        (B**2*((3 + a0**2 + a1**2 + 4*a2 + a2**2 + 4*a3 + 2*a2*a3 + a3**2 + 2*a1*(2 + a2 + a3) + 2*a0*(2 + a1 + a2 + a3))*cp0**2 -
+        2*(3 + a0**2 + a1**2 + 7*a2 + a2**2 + 8*a3 + 2*a2*a3 + a3**2 + 2*a1*(3 + a2 + a3) + a0*(5 + 2*a1 + 2*a2 + 2*a3))*cp0*cpInf +
+        (3 + a0**2 + a1**2 + 10*a2 + a2**2 + 12*a3 + 2*a2*a3 + a3**2 + 2*a1*(4 + a2 + a3) + 2*a0*(3 + a1 + a2 + a3))*cpInf**2))/(2.*(B + t)**2) +
+        (B*(cp0 - cpInf)*(cp0 - (3 + 2*a0 + 2*a1 + 2*a2 + 2*a3)*cpInf))/(B + t) + cp0**2*logt + (-cp0**2 + cpInf**2)*logBplust)
+    return result
+
+################################################################################
+
+def NASAPolynomial_integral2_T0(polynomial, T):
+    #output: the quantity Integrate[(Cp(NASAPolynomial)/R)^2, t'] evaluated at t'=t
+    cython.declare(c0=cython.double, c1=cython.double, c2=cython.double, c3=cython.double, c4=cython.double)
+    cython.declare(T2=cython.double, T4=cython.double, T8=cython.double)
+    c0, c1, c2, c3, c4 = polynomial.c0, polynomial.c1, polynomial.c2, polynomial.c3, polynomial.c4
+    T2=T*T; T4=T2*T2; T8=T4*T4
+    result = (
+        c0*c0*T + c0*c1*T2 + 2./3.*c0*c2*T2*T + 0.5*c0*c3*T4 + 0.4*c0*c4*T4*T +
+        c1*c1*T2*T/3. + 0.5*c1*c2*T4 + 0.4*c1*c3*T4*T + c1*c4*T4*T2/3. +
+        0.2*c2*c2*T4*T + c2*c3*T4*T2/3. + 2./7.*c2*c4*T4*T2*T +
+        c3*c3*T4*T2*T/7. + 0.25*c3*c4*T8 +
+        c4*c4*T8*T/9.
+    )
+    return result
+
+def NASAPolynomial_integral2_TM1(polynomial, T):
+    #output: the quantity Integrate[(Cp(NASAPolynomial)/R)^2*t^-1, t'] evaluated at t'=t
+    cython.declare(c0=cython.double, c1=cython.double, c2=cython.double, c3=cython.double, c4=cython.double)
+    cython.declare(T2=cython.double, T4=cython.double, logT=cython.double)
+    c0, c1, c2, c3, c4 = polynomial.c0, polynomial.c1, polynomial.c2, polynomial.c3, polynomial.c4
+    T2=T*T; T4=T2*T2
+    if cython.compiled:
+        logT = log(T)
+    else:
+        logT = math.log(T)
+    result = (
+        c0*c0*logT + 2*c0*c1*T + c0*c2*T2 + 2./3.*c0*c3*T2*T + 0.5*c0*c4*T4 +
+        0.5*c1*c1*T2 + 2./3.*c1*c2*T2*T + 0.5*c1*c3*T4 + 0.4*c1*c4*T4*T +
+        0.25*c2*c2*T4 + 0.4*c2*c3*T4*T + c2*c4*T4*T2/3. +
+        c3*c3*T4*T2/6. + 2./7.*c3*c4*T4*T2*T +
+        c4*c4*T4*T4/8.
+    )
+    return result
+
+################################################################################
 
 #the numerical integrals:
 
