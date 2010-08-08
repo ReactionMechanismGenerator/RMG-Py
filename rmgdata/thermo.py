@@ -246,7 +246,7 @@ class ThermoGroupDatabase(ThermoDatabase):
         if sum([atom.radicalElectrons for atom in molecule.atoms]) > 0:
 
             # Make a copy of the structure so we don't change the original
-            saturatedStruct = molecule.copy()
+            saturatedStruct = molecule.copy(deep=True)
 
             # Saturate structure by replacing all radicals with bonds to
             # hydrogen atoms
@@ -468,18 +468,16 @@ def loadThermoDatabase(dstr, group, old=False):
 
 ################################################################################
 
-def generateThermoData(molecule, thermoClass=NASAModel):
+def generateThermoData(molecule):
     """
     Get the thermodynamic data associated with `molecule` by looking in the
     loaded thermodynamic database. The parameter `thermoClass` is the class of
     thermo object you want returning; default is :class:`NASAModel`.
     """
 
-    from chempy.ext.thermo_converter import convertGAtoWilhoit, convertWilhoitToNASA
-
     implicitH = molecule.implicitHydrogens
     molecule.makeHydrogensExplicit()
-
+    
     for thermoDatabase in thermoDatabases:
         GAthermoData = thermoDatabase.generateThermoData(molecule)
         if GAthermoData is not None and isinstance(thermoDatabase, ThermoGroupDatabase):
@@ -492,43 +490,35 @@ def generateThermoData(molecule, thermoClass=NASAModel):
             
     if implicitH: molecule.makeHydrogensImplicit()
 
-    logging.log(0, 'Group-additivity thermo data: %s' % GAthermoData)
+    return GAthermoData
 
-    if thermoClass == ThermoGAModel:
-        return GAthermoData  # return here because Wilhoit conversion not wanted
+def convertThermoData(thermoData, molecule, thermoClass=NASAModel):
+    """
+    Convert a given set of `thermoData` to the class specified by `thermoClass`.
+    Raises a :class:`TypeError` if this is not possible.
+    """
 
-    # Convert to Wilhoit
-    rotors = molecule.countInternalRotors()
-    atoms = len(molecule.atoms)
-    linear = molecule.isLinear()
-    WilhoitData = convertGAtoWilhoit(GAthermoData, atoms, rotors, linear)
-    err = math.sqrt(numpy.sum((WilhoitData.getHeatCapacity(GAthermoData.Tdata) - GAthermoData.Cpdata)**2))/constants.R
-    logging.log(logging.WARNING if err > 0.25 else 0, 'RMS error in Wilhoit fit to %s = %g*R' % (molecule, err))
+    from chempy.ext.thermo_converter import convertGAtoWilhoit, convertWilhoitToNASA
 
-    logging.log(0, 'Wilhoit thermo data: %s' % WilhoitData)
+    # Nothing to do if we already have the right thermo model
+    if isinstance(thermoData, thermoClass):
+        return thermoData
 
-    if thermoClass == WilhoitModel:
-        return WilhoitData
+    thermoData0 = thermoData
 
-    # Convert to NASA
-    NASAthermoData = convertWilhoitToNASA(WilhoitData, Tmin=298.0, Tmax=6000.0, Tint=1000.0)
-    
-    logging.log(0, 'NASA thermo data: %s' % NASAthermoData)
+    # Convert to WilhoitModel
+    if isinstance(thermoData, ThermoGAModel) and (thermoClass == WilhoitModel or thermoClass == NASAModel):
+        rotors = molecule.countInternalRotors()
+        atoms = len(molecule.atoms)
+        linear = molecule.isLinear()
+        thermoData = convertGAtoWilhoit(thermoData, atoms, rotors, linear)
 
-    # compute the error for the entire conversion, printing it as info or warning (if it is sufficiently high)
-    err = math.sqrt(numpy.sum((NASAthermoData.getHeatCapacity(GAthermoData.Tdata) - GAthermoData.Cpdata)**2))/constants.R
-    logging.log(logging.WARNING if err > 0.35 else 0, 'Overall RMS error in heat capacity fit to %s = %g*R' % (molecule, err))
+    # Convert to NASAModel
+    if isinstance(thermoData, WilhoitModel) and thermoClass == NASAModel:
+        thermoData = convertWilhoitToNASA(thermoData, Tmin=298.0, Tmax=6000.0, Tint=1000.0)
 
-#    Tlist = numpy.arange(300.0, 2000.0, 10.0, numpy.float64)
-#    import pylab
-#    pylab.plot(GAthermoData.Tdata, GAthermoData.Cpdata, 'or',
-#        Tlist, WilhoitData.getHeatCapacity(Tlist), '-g',
-#        Tlist, NASAthermoData.getHeatCapacity(Tlist), '-b',
-#    )
-#    pylab.show()
-    
-    if thermoClass == NASAModel:
-        return NASAthermoData
+    # Make sure we have the right class
+    if not isinstance(thermoData, thermoClass):
+        raise TypeError('Unable to convert thermo model of type %s to type %s.' % (thermoData0.__class__, thermoClass))
 
-    # Still not returned?
-    raise TypeError("Cannot convert thermo data into class %r" % (required_class))
+    return thermoData
