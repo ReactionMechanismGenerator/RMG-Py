@@ -55,65 +55,12 @@ class ThermoEntry(DataEntry):
 
 ################################################################################
 
-class ThermoGroupDatabase:
+class ThermoDatabase:
     """
-    A set of thermodynamics group additivity databases, consisting of a primary
-    database of functional groups and a number of secondary databases to provide
-    corrections for 1,5-interactions, gauche interactions, radicals, rings,
-    and other functionality. The attributes are:
-
-    =================== =================== ====================================
-    Attribute           Type                Description
-    =================== =================== ====================================
-    `groupDatabase`     :class:`Database`   Functional group additivity values
-    `radicalDatabase`   :class:`Database`   Corrections for radical species
-    `ringDatabase`      :class:`Database`   Corrections for cyclic and aromatic species
-    `int15Database`     :class:`Database`   Corrections for 1,5-interactions
-    `gaucheDatabase`    :class:`Database`   Corrections for gauche (1,4) interactions
-    `otherDatabase`     :class:`Database`   Other corrections
-    =================== =================== ====================================
-    
+    A base class for thermodynamics databases.
     """
 
-
-    def __init__(self, path=''):
-        if path != '':
-            self.load(path)
-        else:
-            self.groupDatabase = None
-            self.int15Database = None
-            self.gaucheDatabase = None
-            self.otherDatabase = None
-            self.radicalDatabase = None
-            self.ringDatabase = None
-
-    def load(self, path, old=False):
-        """
-        Load a set of thermodynamics group additivity databases from the general
-        database specified at `datapath`.
-        """
-
-        path = os.path.abspath(path)
-        
-        logging.info('Loading thermodynamics databases from %s...' % path)
-        if old:
-            self.groupDatabase = self.__loadOldDatabase(*self.__getOldDTLPaths(path, 'Group')) # the '*' unpacks the tuple into three separate arguments
-            self.int15Database = self.__loadOldDatabase(*self.__getOldDTLPaths(path, '15'))
-            self.gaucheDatabase = self.__loadOldDatabase(*self.__getOldDTLPaths(path, 'Gauche'))
-            self.radicalDatabase = self.__loadOldDatabase(*self.__getOldDTLPaths(path, 'Radical'))
-            self.ringDatabase = self.__loadOldDatabase(*self.__getOldDTLPaths(path, 'Ring'))
-            self.otherDatabase = self.__loadOldDatabase(*self.__getOldDTLPaths(path, 'Other'))
-        else:
-            self.groupDatabase = self.__loadDatabase(os.path.join(path, 'group.py'))
-            self.int15Database = self.__loadDatabase(os.path.join(path, 'int15.py'))
-            self.gaucheDatabase = self.__loadDatabase(os.path.join(path, 'gauche.py'))
-            self.radicalDatabase = self.__loadDatabase(os.path.join(path, 'radical.py'))
-            self.ringDatabase = self.__loadDatabase(os.path.join(path, 'ring.py'))
-            self.otherDatabase = self.__loadDatabase(os.path.join(path, 'other.py'))
-
-        logging.info('')
-
-    def __loadDatabase(self, path):
+    def loadDatabase(self, path):
 
         global currentDatabase
         currentDatabase = Database()
@@ -137,7 +84,7 @@ class ThermoGroupDatabase:
 
         return currentDatabase
 
-    def __getOldDTLPaths(self, path, prefix):
+    def getOldDTLPaths(self, path, prefix):
         """
         Return a tuple of dictionary, tree, and library paths for a given
         prefix.
@@ -147,7 +94,7 @@ class ThermoGroupDatabase:
         libr_path = os.path.join(path, '%s_Library.txt' % prefix)
         return dict_path, tree_path, libr_path
 
-    def __loadOldDatabase(self, dictstr, treestr, libstr):
+    def loadOldDatabase(self, dictstr, treestr, libstr, pattern=True):
         """
         Load a thermodynamics group additivity database. The database is stored
         in three files: `dictstr` is the path to the dictionary, `treestr` to
@@ -157,7 +104,7 @@ class ThermoGroupDatabase:
 
         # Load dictionary, library, and (optionally) tree
         database = Database()
-        database.load(dictstr, treestr, libstr)
+        database.load(dictstr, treestr, libstr, pattern)
 
         # Convert data in library to ThermoGAModel objects or lists of
         # [link, comment] pairs
@@ -229,6 +176,65 @@ class ThermoGroupDatabase:
         
         return ThermoGAModel(H298=H298, S298=S298, Tdata=Tdata, Cpdata=Cpdata, comment=comment)
 
+################################################################################
+
+class ThermoGroupDatabase(ThermoDatabase):
+    """
+    A set of thermodynamics group additivity databases, consisting of a primary
+    database of functional groups and a number of secondary databases to provide
+    corrections for 1,5-interactions, gauche interactions, radicals, rings,
+    and other functionality. The attributes are:
+
+    =================== =================== ====================================
+    Attribute           Type                Description
+    =================== =================== ====================================
+    `groupDatabase`     :class:`Database`   Functional group additivity values
+    `radicalDatabase`   :class:`Database`   Corrections for radical species
+    `ringDatabase`      :class:`Database`   Corrections for cyclic and aromatic species
+    `int15Database`     :class:`Database`   Corrections for 1,5-interactions
+    `gaucheDatabase`    :class:`Database`   Corrections for gauche (1,4) interactions
+    `otherDatabase`     :class:`Database`   Other corrections
+    =================== =================== ====================================
+
+    """
+
+    def __init__(self, path=''):
+        if path != '':
+            self.load(path)
+        else:
+            self.groupDatabase = None
+            self.int15Database = None
+            self.gaucheDatabase = None
+            self.otherDatabase = None
+            self.radicalDatabase = None
+            self.ringDatabase = None
+
+    def load(self, path, old=False):
+        """
+        Load a set of thermodynamics group additivity databases from the general
+        database specified at `datapath`.
+        """
+
+        path = os.path.abspath(path)
+
+        logging.info('Loading group thermodynamics databases from %s...' % path)
+        if old:
+            self.groupDatabase = self.loadOldDatabase(*self.getOldDTLPaths(path, 'Group')) # the '*' unpacks the tuple into three separate arguments
+            self.int15Database = self.loadOldDatabase(*self.getOldDTLPaths(path, '15'))
+            self.gaucheDatabase = self.loadOldDatabase(*self.getOldDTLPaths(path, 'Gauche'))
+            self.radicalDatabase = self.loadOldDatabase(*self.getOldDTLPaths(path, 'Radical'))
+            self.ringDatabase = self.loadOldDatabase(*self.getOldDTLPaths(path, 'Ring'))
+            self.otherDatabase = self.loadOldDatabase(*self.getOldDTLPaths(path, 'Other'))
+        else:
+            self.groupDatabase = self.loadDatabase(os.path.join(path, 'group.py'))
+            self.int15Database = self.loadDatabase(os.path.join(path, 'int15.py'))
+            self.gaucheDatabase = self.loadDatabase(os.path.join(path, 'gauche.py'))
+            self.radicalDatabase = self.loadDatabase(os.path.join(path, 'radical.py'))
+            self.ringDatabase = self.loadDatabase(os.path.join(path, 'ring.py'))
+            self.otherDatabase = self.loadDatabase(os.path.join(path, 'other.py'))
+
+        logging.info('')
+
     def generateThermoData(self, molecule):
         """
         Determine the group additivity thermodynamic data for the given
@@ -287,7 +293,7 @@ class ThermoGroupDatabase:
             # Subtract the enthalpy of the added hydrogens
             for bond in added[atom]:
                 thermoData.H298 -= 52.103 * 4184
-            
+
             # Correct the entropy for the symmetry number
 
         else:
@@ -315,7 +321,7 @@ class ThermoGroupDatabase:
                     try:
                         thermoData += self.__getThermoData(self.otherDatabase, molecule, {'*':atom})
                     except KeyError: pass
-                    
+
             # Do ring corrections separately because we only want to match
             # each ring one time; this doesn't work yet
             rings = molecule.getSmallestSetOfSmallestRings()
@@ -346,7 +352,7 @@ class ThermoGroupDatabase:
             raise KeyError('Node not found in database.')
         else:
             data = database.library[node]
-        
+
         while data.model is None and data.node is not None:
             data = database.library[data.node]
 
@@ -356,8 +362,52 @@ class ThermoGroupDatabase:
         #	result = ' -> ' + node + result
         #	node = database.tree.parent[node]
         #print result[4:]
-        
+
         return data.model
+
+################################################################################
+
+class ThermoPrimaryDatabase(ThermoDatabase):
+    """
+    A primary thermodynamics databases, consisting of a dictionary of species
+    and a library of corresponding thermodynamic data. (No tree is utilized in
+    this database.) The attributes are:
+
+    =================== =================== ====================================
+    Attribute           Type                Description
+    =================== =================== ====================================
+    `database`          :class:`Database`   Thermodynamic data for individual species
+    =================== =================== ====================================
+
+    """
+
+    def __init__(self, path=''):
+        if path != '':
+            self.load(path)
+        else:
+            self.database = None
+
+    def load(self, path, old=False):
+        """
+        Load a primary thermodynamics database from the location `path`.
+        """
+        path = os.path.abspath(path)
+        logging.info('Loading primary thermodynamics database from %s...' % path)
+        if old:
+            self.database = self.loadOldDatabase(os.path.join(path,'Dictionary.txt'), '', os.path.join(path,'Library.txt'), pattern=False)
+        else:
+            self.database = self.loadDatabase(os.path.join(path, 'database.py'))
+        logging.info('')
+
+    def generateThermoData(self, molecule):
+        """
+        Determine the group additivity thermodynamic data for the given
+        `molecule`.
+        """
+        for node, struct in self.database.dictionary.iteritems():
+            if molecule.isIsomorphic(struct):
+                return self.database.library[node].model
+        return None
 
 ################################################################################
 
@@ -409,11 +459,11 @@ def loadThermoDatabase(dstr, group, old=False):
 
     if group:
         thermoDatabase = ThermoGroupDatabase()
-        thermoDatabase.load(path=dstr, old=old)
-        thermoDatabases.append(thermoDatabase)
     else:
-        pass
-    
+        thermoDatabase = ThermoPrimaryDatabase()
+    thermoDatabase.load(path=dstr, old=old)
+    thermoDatabases.append(thermoDatabase)
+
     return thermoDatabase
 
 ################################################################################
@@ -427,11 +477,20 @@ def generateThermoData(molecule, thermoClass=NASAModel):
 
     from chempy.ext.thermo_converter import convertGAtoWilhoit, convertWilhoitToNASA
 
-    GAthermoData = thermoDatabases[0].generateThermoData(molecule)
+    implicitH = molecule.implicitHydrogens
+    molecule.makeHydrogensExplicit()
 
-    # Correct entropy for symmetry number
-    molecule.calculateSymmetryNumber()
-    GAthermoData.S298 -= constants.R * math.log(molecule.symmetryNumber)
+    for thermoDatabase in thermoDatabases:
+        GAthermoData = thermoDatabase.generateThermoData(molecule)
+        if GAthermoData is not None and isinstance(thermoDatabase, ThermoGroupDatabase):
+            # Correct entropy for symmetry number
+            molecule.calculateSymmetryNumber()
+            GAthermoData.S298 -= constants.R * math.log(molecule.symmetryNumber)
+            break
+        elif GAthermoData is not None and isinstance(thermoDatabase, ThermoPrimaryDatabase):
+            break
+            
+    if implicitH: molecule.makeHydrogensImplicit()
 
     logging.log(0, 'Group-additivity thermo data: %s' % GAthermoData)
 
@@ -443,6 +502,8 @@ def generateThermoData(molecule, thermoClass=NASAModel):
     atoms = len(molecule.atoms)
     linear = molecule.isLinear()
     WilhoitData = convertGAtoWilhoit(GAthermoData, atoms, rotors, linear)
+    err = math.sqrt(numpy.sum((WilhoitData.getHeatCapacity(GAthermoData.Tdata) - GAthermoData.Cpdata)**2))/constants.R
+    logging.log(logging.WARNING if err > 0.25 else 0, 'RMS error in Wilhoit fit to %s = %g*R' % (molecule, err))
 
     logging.log(0, 'Wilhoit thermo data: %s' % WilhoitData)
 
@@ -451,16 +512,21 @@ def generateThermoData(molecule, thermoClass=NASAModel):
 
     # Convert to NASA
     NASAthermoData = convertWilhoitToNASA(WilhoitData, Tmin=298.0, Tmax=6000.0, Tint=1000.0)
-
+    
     logging.log(0, 'NASA thermo data: %s' % NASAthermoData)
 
     # compute the error for the entire conversion, printing it as info or warning (if it is sufficiently high)
-#    rmsErr = NASAthermoData.rmsErr(GAthermoData)
-#    if(rmsErr > 0.35):
-#        logging.warning("Poor overall GA-to-NASA fit: Overall RMS error in heat capacity fit = %.3f*R." % (rmsErr))
-#    else:
-#        logging.debug("Overall RMS error in heat capacity fit = %.3f*R" % (rmsErr))
+    err = math.sqrt(numpy.sum((NASAthermoData.getHeatCapacity(GAthermoData.Tdata) - GAthermoData.Cpdata)**2))/constants.R
+    logging.log(logging.WARNING if err > 0.35 else 0, 'Overall RMS error in heat capacity fit to %s = %g*R' % (molecule, err))
 
+#    Tlist = numpy.arange(300.0, 2000.0, 10.0, numpy.float64)
+#    import pylab
+#    pylab.plot(GAthermoData.Tdata, GAthermoData.Cpdata, 'or',
+#        Tlist, WilhoitData.getHeatCapacity(Tlist), '-g',
+#        Tlist, NASAthermoData.getHeatCapacity(Tlist), '-b',
+#    )
+#    pylab.show()
+    
     if thermoClass == NASAModel:
         return NASAthermoData
 

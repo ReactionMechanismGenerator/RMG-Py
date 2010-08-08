@@ -684,7 +684,7 @@ class Database:
         self.library = Library()
         self.tree = Tree()
 
-    def load(self, dictstr, treestr, libstr):
+    def load(self, dictstr, treestr, libstr, pattern=True):
         """
         Load a dictionary-tree-library based database. The database is stored
         in three files: `dictstr` is the path to the dictionary, `treestr` to
@@ -693,7 +693,7 @@ class Database:
         """
 
         # Load dictionary, library, and (optionally) tree
-        self.dictionary.load(dictstr)
+        self.dictionary.load(dictstr, pattern)
         assert len(self.dictionary)>0
 
         if treestr != '':
@@ -837,7 +837,7 @@ class Database:
             for label in centers.keys():
                 # Make sure the labels are in both group and structure.
                 if label not in atoms:
-                    logging.debug("Label %s is in group %s but not in structure"%(label, node))
+                    logging.log(0, "Label %s is in group %s but not in structure"%(label, node))
                     continue # with the next label - ring structures might not have all labeled atoms
                     # return False # force it to have all the labeled atoms
                 center = centers[label]
