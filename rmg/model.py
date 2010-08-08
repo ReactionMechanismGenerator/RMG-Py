@@ -39,6 +39,10 @@ import os
 import chempy.constants as constants
 import chempy.species
 import chempy.reaction
+from chempy.thermo import NASAModel
+
+from rmgdata.thermo import generateThermoData
+
 import settings
 import ctml_writer
 from rxngen import generateReactions
@@ -46,6 +50,34 @@ from rxngen import generateReactions
 ################################################################################
 
 class Species(chempy.species.Species):
+
+    def generateThermoData(self, thermoClass=NASAModel):
+        """
+        Generate thermodynamic data for the species using the thermo database.
+
+        Generates the thermo data for each structure (resonance isomer),
+        picks that with lowest H298 value, and saves it to `self.thermoData`.
+        """
+
+        thermo = []
+        for molecule in self.molecule:
+            molecule.clearLabeledAtoms()
+            molecule.updateAtomTypes()
+            tdata = generateThermoData(molecule, thermoClass)
+            thermo.append(tdata)
+
+        H298 = numpy.array([t.getEnthalpy(numpy.array([298], numpy.float64))[0] for t in thermo])
+        indices = H298.argsort()
+
+        # If multiple resonance isomers are present, use the thermo data of
+        # the most stable isomer (i.e. one with lowest enthalpy of formation)
+        # as the thermo data of the species
+        self.thermo = thermo[indices[0]]
+
+        # Sort the structures in order of decreasing stability
+        self.molecule = [self.molecule[ind] for ind in indices]
+
+        return self.thermo
 
 	def toCantera(self):
 		"""
@@ -370,6 +402,15 @@ class CoreEdgeReactionModel:
         logging.info('After model enlargement:')
         logging.info('    The model core has %s species and %s reactions' % (len(self.core.species), len(self.core.reactions)))
         logging.info('    The model edge has %s species and %s reactions' % (len(self.edge.species), len(self.edge.reactions)))
+        logging.info('')
+
+        # Generate thermodynamics of new species
+        logging.info('Generating thermodynamics for new species...')
+        if isinstance(newObject, Species) and newObject.thermo is None and newObject.reactive:
+            newObject.generateThermoData()
+        for spec in newSpeciesList:
+            spec.generateThermoData()
+
         logging.info('')
 
     def addSpeciesToCore(self, spec):

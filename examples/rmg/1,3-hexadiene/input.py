@@ -1,6 +1,9 @@
 # Data sources
 database(
-    general='output/RMG_Database',
+    thermo_groups='output/RMG_Database/thermo_groups',
+    thermo_libraries='output/RMG_Database/thermo_libraries/primaryThermoLibrary',
+    kinetics_groups='output/RMG_Database/kinetics_groups',
+    #kinetics_libraries=None,
 )
 
 # List of species

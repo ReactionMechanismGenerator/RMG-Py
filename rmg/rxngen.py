@@ -310,7 +310,7 @@ def generateReactions(species, model):
     for spec in species:
         for molecule in spec.molecule: molecule.makeHydrogensExplicit()
 
-    for key, family in rmgdata.kinetics.kineticsDatabase.families.iteritems():
+    for key, family in rmgdata.kinetics.kineticsDatabases[-1].families.iteritems():
         for forward in [True, False]:
             rxnList, specList = generateReactionsForFamily(species, family, model, forward=forward)
             speciesList.extend(specList)

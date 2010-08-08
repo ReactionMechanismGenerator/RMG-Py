@@ -54,10 +54,17 @@ reactionModel = None
 
 availableReactionSystems = getAvailableReactionSystems()
 
-def database(general):
+def database(thermo_groups, kinetics_groups, thermo_libraries=None, kinetics_libraries=None):
     global databases
-    databases['general'] = general
-
+    if isinstance(thermo_groups, str): thermo_groups = [thermo_groups]
+    if isinstance(kinetics_groups, str): kinetics_groups = [kinetics_groups]
+    if isinstance(thermo_libraries, str): thermo_libraries = [thermo_libraries]
+    if isinstance(kinetics_libraries, str): kinetics_libraries = [kinetics_libraries]
+    databases['thermo_groups'] = thermo_groups or []
+    databases['kinetics_groups'] = kinetics_groups or []
+    databases['thermo_libraries'] = thermo_libraries or []
+    databases['kinetics_libraries'] = kinetics_libraries or []
+    
 def species(label, structure, reactive=True):
     global speciesDict, reactionModel
     logging.debug('Found %s species "%s" (%s)' % ('reactive' if reactive else 'nonreactive', label, structure.toSMILES()))
@@ -193,11 +200,15 @@ def readInputFile(path):
     logging.info('')
 
     # Load databases
-    if isinstance(databases['general'], str):
-        path = os.path.join(getDatabaseDirectory(), databases['general'])
-        loadThermoDatabase(path, old=True)
-        loadKineticsDatabase(path)
-        #loadFrequencyDatabase(path)
+    for d in databases['thermo_libraries']:
+        path = os.path.join(getDatabaseDirectory(), d)
+        loadThermoDatabase(path, group=False, old=True)
+    for d in databases['thermo_groups']:
+        path = os.path.join(getDatabaseDirectory(), d)
+        loadThermoDatabase(path, group=True, old=True)
+    for d in databases['kinetics_groups']:
+        path = os.path.join(getDatabaseDirectory(), d)
+        loadKineticsDatabase(path, group=True)
 
     speciesList = speciesDict.values(); speciesList.sort()
     return reactionModel, speciesList
