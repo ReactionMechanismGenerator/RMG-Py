@@ -37,6 +37,7 @@ from base import *
 
 import chempy.constants as constants
 from chempy.thermo import *
+from chempy.molecule import Atom, Bond, Molecule
 
 ################################################################################
 
@@ -273,22 +274,20 @@ class ThermoDatabase:
                 for H, bond in added[atom]:
                     saturatedStruct.removeBond(atom, H)
                     saturatedStruct.removeAtom(H)
-                    atom.radicalElectrons += 1
+                    atom.incrementRadical()
 
-                thermoData += self.__getThermoData(self.saturatedStruct, molecule, {'*':atom})
+                thermoData += self.__getThermoData(self.radicalDatabase, saturatedStruct, {'*':atom})
 
                 # Re-saturate
                 for H, bond in added[atom]:
                     saturatedStruct.addAtom(H)
                     saturatedStruct.addBond(atom, H, bond)
-                    atom.radicalElectrons -= 1
+                    atom.decrementRadical()
 
             # Subtract the enthalpy of the added hydrogens
-            thermoData_H = self.primaryDatabase.library['H']
             for bond in added[atom]:
-                thermoData.H298 -= thermoData_H.H298
-                #thermoData.S298 -= thermoData_H.S298
-
+                thermoData.H298 -= 52.103 * 4184
+            
             # Correct the entropy for the symmetry number
 
         else:
@@ -297,10 +296,15 @@ class ThermoDatabase:
                 # Iterate over heavy (non-hydrogen) atoms
                 if atom.isNonHydrogen():
                     # Get initial thermo estimate from main group database
-                    if thermoData is None:
-                        thermoData = self.__getThermoData(self.groupDatabase, molecule, {'*':atom})
-                    else:
-                        thermoData += self.__getThermoData(self.groupDatabase, molecule, {'*':atom})
+                    try:
+                        if thermoData is None:
+                            thermoData = self.__getThermoData(self.groupDatabase, molecule, {'*':atom})
+                        else:
+                            thermoData += self.__getThermoData(self.groupDatabase, molecule, {'*':atom})
+                    except KeyError:
+                        print molecule
+                        print molecule.toAdjacencyList()
+                        raise
                     # Correct for gauche and 1,5- interactions
                     try:
                         thermoData += self.__getThermoData(self.gaucheDatabase, molecule, {'*':atom})
@@ -418,41 +422,43 @@ def generateThermoData(molecule, thermoClass=NASAModel):
     """
 
     GAthermoData = thermoDatabase.generateThermoData(molecule)
+    from chempy.ext.thermo_converter import convertGAtoWilhoit, convertWilhoitToNASA
+
 
     # Correct entropy for symmetry number
-    struct.calculateSymmetryNumber()
-    GAthermoData.S298 -= constants.R * math.log(struct.symmetryNumber)
+    molecule.calculateSymmetryNumber()
+    GAthermoData.S298 -= constants.R * math.log(molecule.symmetryNumber)
 
-    logging.debug('Group-additivity thermo data: %s' % GAthermoData)
+    logging.log(0, 'Group-additivity thermo data: %s' % GAthermoData)
 
     if thermoClass == ThermoGAModel:
         return GAthermoData  # return here because Wilhoit conversion not wanted
 
     # Convert to Wilhoit
-    rotors = struct.calculateNumberOfRotors()
-    atoms = len(struct.atoms())
-    linear = struct.isLinear()
-    WilhoitData = convertGAtoWilhoit(GAthermoData,atoms,rotors,linear)
+    rotors = molecule.countInternalRotors()
+    atoms = len(molecule.atoms)
+    linear = molecule.isLinear()
+    WilhoitData = convertGAtoWilhoit(GAthermoData, atoms, rotors, linear)
 
-    logging.debug('Wilhoit thermo data: %s' % WilhoitData)
+    logging.log(0, 'Wilhoit thermo data: %s' % WilhoitData)
 
     if thermoClass == WilhoitModel:
         return WilhoitData
 
     # Convert to NASA
-    NASAthermoData = convertWilhoitToNASA(WilhoitData)
+    NASAthermoData = convertWilhoitToNASA(WilhoitData, Tmin=298.0, Tmax=6000.0, Tint=1000.0)
 
-    logging.debug('NASA thermo data: %s' % NASAthermoData)
+    logging.log(0, 'NASA thermo data: %s' % NASAthermoData)
 
     # compute the error for the entire conversion, printing it as info or warning (if it is sufficiently high)
-    rmsErr = NASAthermoData.rmsErr(GAthermoData)
-    if(rmsErr > 0.35):
-        logging.warning("Poor overall GA-to-NASA fit: Overall RMS error in heat capacity fit = %.3f*R." % (rmsErr))
-    else:
-        logging.debug("Overall RMS error in heat capacity fit = %.3f*R" % (rmsErr))
+#    rmsErr = NASAthermoData.rmsErr(GAthermoData)
+#    if(rmsErr > 0.35):
+#        logging.warning("Poor overall GA-to-NASA fit: Overall RMS error in heat capacity fit = %.3f*R." % (rmsErr))
+#    else:
+#        logging.debug("Overall RMS error in heat capacity fit = %.3f*R" % (rmsErr))
 
     if thermoClass == NASAModel:
         return NASAthermoData
 
     # Still not returned?
-    raise Exception("Cannot convert themo data into class %r"%(required_class))
+    raise TypeError("Cannot convert thermo data into class %r" % (required_class))
