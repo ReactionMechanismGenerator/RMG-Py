@@ -90,20 +90,26 @@ class Species(chempy.species.Species):
 
         return self.thermo
 
-	def toCantera(self):
-		"""
+    def toCantera(self):
+        """
         Return a Cantera ctml_writer instance.
         """
-		# contrivedly get a list like ['C', '3', 'H', '9', 'Si', '1']
-		atoms = self.molecule[0].toOBMol().GetSpacedFormula().split()
-		# magically turn that lst into a string like 'C:3 H:9 Si:1'
-		atoms = ' '.join([i+':'+j for i,j in zip(*[iter(atoms)]*2)])
-		return ctml_writer.species(name = str(self),
-		    atoms = " %s "%atoms,
-		    thermo = self.thermoData.toCantera(),
-			# this escaping should really be done by ctml_writer, but it doesn't do it
-		    note = xml.sax.saxutils.escape("%s (%s)"%(self.label,self.thermoData.comment))
-		       )
+        import ctml_writer
+        import xml.sax.saxutils
+        # contrivedly get a list like ['C', '3', 'H', '9', 'Si', '1']
+        atoms = self.molecule[0].toOBMol().GetSpacedFormula().split()
+        # magically turn that lst into a string like 'C:3 H:9 Si:1'
+        atoms = ' '.join([i+':'+j for i,j in zip(*[iter(atoms)]*2)])
+        thermo = None; note = ''
+        if self.reactive:
+            thermo = self.thermo.toCantera()
+            # this escaping should really be done by ctml_writer, but it doesn't do it
+            note = xml.sax.saxutils.escape("%s (%s)"%(self.label,self.thermo.comment))
+        return ctml_writer.species(name = str(self),
+            atoms = " %s "%atoms,
+            thermo = thermo,
+            note = note
+               )
 
 ################################################################################
 
@@ -122,6 +128,81 @@ class Reaction(chempy.reaction.Reaction):
         self.kinetics = generateKineticsData(self, self.family.label, self.reactantMolecules)
         Tlist = numpy.array([298.15], numpy.float64)
         self.kinetics = self.kinetics.toArrhenius(dHrxn=self.getEnthalpyOfReaction(Tlist)[0])
+
+    def toCantera(self, T=1000, P=1.0e5):
+        """
+        Return a Cantera ctml_writer instance.
+        """
+        import ctml_writer
+
+        rxnstring = ' + '.join([str(sp) for sp in self.reactants])
+        rxnstring += ' <=> '
+        rxnstring += ' + '.join([str(sp) for sp in self.products])
+
+        A = float(self.kinetics.A)
+        Ea= float(self.kinetics.Ea)
+        n = float(self.kinetics.n)
+
+        options = []
+
+        makeCanteraReaction = True
+        try:
+            if self.canteraReaction is not None:
+                makeCanteraReaction = False
+        except AttributeError:
+            pass
+
+        if not makeCanteraReaction:
+            # If we're updating this reaction, then remove the original version
+            ctml_writer._reactions.remove(self.canteraReaction)
+            # If the old reaction was a duplicate, then the new one is too
+            if 'duplicate' in self.canteraReaction._options:
+                options.append('duplicate')
+        else:
+            # If we're making this reaction for the first time then we need to
+            # check for duplicate reactions
+            # Get ID of each reactant and product of this reaction
+            reactants = [str(r) for r in self.reactants]; reactants.sort()
+            products = [str(p) for p in self.products]; products.sort()
+            # Remove any IDs that appear in both the reactant and product lists
+            # This is because Cantera treats A --> B + C and A + D --> B + C + D
+            # as requiring the duplicate tag
+            speciesToRemove = []
+            for spec in reactants:
+                if spec in products: speciesToRemove.append(spec)
+            speciesToRemove = list(set(speciesToRemove))
+            for spec in speciesToRemove:
+                reactants.remove(spec)
+                products.remove(spec)
+            # Iterate over all existing Cantera reactions
+            for rxn in ctml_writer._reactions:
+                # Get ID of each reactant and product
+                reac = []; prod = []
+                for r, v in rxn._r.iteritems():
+                    for i in range(int(v)): reac.append(r)
+                for p, v in rxn._p.iteritems():
+                    for i in range(int(v)): prod.append(p)
+                reac.sort(); prod.sort()
+                # Remove any IDs that appear in both the reactant and product lists
+                speciesToRemove = []
+                for spec in reac:
+                    if spec in prod: speciesToRemove.append(spec)
+                speciesToRemove = list(set(speciesToRemove))
+                for spec in speciesToRemove:
+                    reac.remove(spec)
+                    prod.remove(spec)
+                # Compare with reactants and products of this reaction
+                if (reactants == reac and products == prod) or (reactants == prod and products == reac):
+                    if 'duplicate' not in options or 'duplicate' not in rxn._options:
+                        logging.debug('Marking reaction %s as duplicate' % (self))
+                    if 'duplicate' not in options:
+                        options.append('duplicate')
+                    if 'duplicate' not in rxn._options:
+                        rxn._options.append('duplicate')
+
+        self.canteraReaction = ctml_writer.reaction(rxnstring, ctml_writer.Arrhenius(A, n, Ea), options=options)
+        return self.canteraReaction
+
 ################################################################################
 
 class ReactionModel:
@@ -242,7 +323,6 @@ class CoreEdgeReactionModel:
         self.speciesCounter += 1
 
         return spec, True
-
 
     def checkForExistingReaction(self, rxn):
         """
@@ -458,6 +538,9 @@ class CoreEdgeReactionModel:
         # Add the species to the core
         self.core.species.append(spec)
 
+        # Tell Cantera about the new core species
+        spec.toCantera()
+
         if spec in self.edge.species:
 
             # If species was in edge, remove it
@@ -558,7 +641,8 @@ class CoreEdgeReactionModel:
         self.core.reactions.append(rxn)
         if rxn in self.edge.reactions:
             self.edge.reactions.remove(rxn)
-
+        rxn.toCantera()
+        
     def addReactionToEdge(self, rxn):
         """
         Add a reaction `rxn` to the reaction model edge. This function assumes

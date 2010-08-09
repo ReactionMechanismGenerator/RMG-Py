@@ -266,113 +266,223 @@ def execute(args):
         for spec in coreSpecies:
             if spec.reactive: spec.generateThermoData()
             reactionModel.enlarge(spec)
-#
-#    # RMG execution statistics
-#    coreSpeciesCount = []
-#    coreReactionCount = []
-#    edgeSpeciesCount = []
-#    edgeReactionCount = []
-#    execTime = []
-#    restartSize = []
-#    memoryUse = []
-#
-#    # Handle unimolecular (pressure dependent) reaction networks
-#    if settings.unimolecularReactionNetworks:
-#        reactionModel.updateUnimolecularReactionNetworks()
-#        logging.info('')
-#
-#    # Main RMG loop
-#    done = False
-#    while not done:
-#
-#        done = True
-#        objectsToEnlarge = []
-#        for index, reactionSystem in enumerate(reactionSystems):
-#
-#            # Conduct simulation
-#            logging.info('Conducting simulation of reaction system %s...' % (index+1))
-#            t, y, dydt, valid, obj = reactionSystem.simulate(reactionModel)
-#
-#            # Postprocess results
-#            logging.info('')
-#            logging.info('Saving simulation results for reaction system %s...' % (index+1))
-#            reactionSystem.postprocess(reactionModel, t, y, dydt, str(index+1))
-#
-#            # If simulation is invalid, note which species should be added to
-#            # the core
-#            if not valid:
-#                objectsToEnlarge.append(obj)
-#                done = False
-#
-#        if not done:
-#            # Enlarge objects identified by the simulation for enlarging
-#            # These should be Species or Network objects
-#            logging.info('')
-#            objectsToEnlarge = list(set(objectsToEnlarge))
-#            for object in objectsToEnlarge:
-#                reactionModel.enlarge(object)
-#
-#            # Handle unimolecular (pressure dependent) reaction networks
-#            if settings.unimolecularReactionNetworks:
-#                reactionModel.updateUnimolecularReactionNetworks()
-#                logging.info('')
-#
-#            # Save the restart file
-#            # In order to get all the references preserved, you must pickle all of
-#            # the objects in one concerted dump; this also has the added benefits
-#            # of using less space and running faster
-#            # We also compress the restart file to save space (and lower the
-#            # disk read/write time)
-#            if settings.saveRestart:
-#                frequency, iterations, lastSaveTime, lastSaveIteration = settings.saveRestart
-#                settings.saveRestart[-2], settings.saveRestart[-1] = \
-#                    saveRestartFile(frequency, iterations, lastSaveTime, lastSaveIteration,
-#                    reactionModel, reactionSystems)
-#
-#            # Update RMG execution statistics
-#            logging.info('Updating RMG execution statistics...')
-#            coreSpeciesCount.append(len(reactionModel.core.species))
-#            coreReactionCount.append(len(reactionModel.core.reactions))
-#            edgeSpeciesCount.append(len(reactionModel.edge.species))
-#            edgeReactionCount.append(len(reactionModel.edge.reactions))
-#            execTime.append(time.time() - settings.initializationTime)
-#            from guppy import hpy
-#            hp = hpy()
-#            memoryUse.append(hp.heap().size / 1.0e6)
-#            logging.debug('Execution time: %s s' % (execTime[-1]))
-#            logging.debug('Memory used: %s MB' % (memoryUse[-1]))
-#            restartSize.append(os.path.getsize(os.path.join(settings.outputDirectory,'restart.pkl')) / 1.0e6)
-#            saveExecutionStatistics(execTime, coreSpeciesCount, coreReactionCount, edgeSpeciesCount, edgeReactionCount, memoryUse, restartSize)
-#            generateExecutionPlots(execTime, coreSpeciesCount, coreReactionCount, edgeSpeciesCount, edgeReactionCount, memoryUse, restartSize)
-#
-#        logging.info('')
-#
-#        # Consider stopping gracefully if the next iteration might take us
-#        # past the wall time
-#        if settings.wallTime > 0 and len(execTime) > 1:
-#            t = execTime[-1]
-#            dt = execTime[-1] - execTime[-2]
-#            if t + 2 * dt > settings.wallTime:
-#                logging.info('MODEL GENERATION TERMINATED')
-#                logging.info('')
-#                logging.info('There is not enough time to complete the next iteration before the wall time is reached.')
-#                logging.info('The output model may be incomplete.')
-#                logging.info('')
-#                logging.info('The current model core has %s species and %s reactions' % (len(reactionModel.core.species), len(reactionModel.core.reactions)))
-#                logging.info('The current model edge has %s species and %s reactions' % (len(reactionModel.edge.species), len(reactionModel.edge.reactions)))
-#                io.writeOutputFile(os.path.join(settings.outputDirectory,'output.xml'), reactionModel, reactionSystems)
-#                return
-#
-#    # Write output file
-#    logging.info('MODEL GENERATION COMPLETED')
-#    logging.info('')
-#    logging.info('The final model core has %s species and %s reactions' % (len(reactionModel.core.species), len(reactionModel.core.reactions)))
-#    logging.info('The final model edge has %s species and %s reactions' % (len(reactionModel.edge.species), len(reactionModel.edge.reactions)))
-#    io.writeOutputFile(os.path.join(settings.outputDirectory,'output.xml'), reactionModel, reactionSystems)
+
+    # RMG execution statistics
+    coreSpeciesCount = []
+    coreReactionCount = []
+    edgeSpeciesCount = []
+    edgeReactionCount = []
+    execTime = []
+    restartSize = []
+    memoryUse = []
+
+    # Handle unimolecular (pressure dependent) reaction networks
+    if settings.unimolecularReactionNetworks:
+        reactionModel.updateUnimolecularReactionNetworks()
+        logging.info('')
+
+    # Main RMG loop
+    done = False
+    while not done:
+
+        done = True
+        objectsToEnlarge = []
+        for index, reactionSystem in enumerate(reactionSystems):
+
+            # Conduct simulation
+            logging.info('Conducting simulation of reaction system %s...' % (index+1))
+            t, y, dydt, valid, obj = reactionSystem.simulate(reactionModel)
+
+            # Postprocess results
+            logging.info('')
+            logging.info('Saving simulation results for reaction system %s...' % (index+1))
+            reactionSystem.postprocess(reactionModel, t, y, dydt, str(index+1))
+
+            # If simulation is invalid, note which species should be added to
+            # the core
+            if not valid:
+                objectsToEnlarge.append(obj)
+                done = False
+
+        if not done:
+            # Enlarge objects identified by the simulation for enlarging
+            # These should be Species or Network objects
+            logging.info('')
+            objectsToEnlarge = list(set(objectsToEnlarge))
+            for object in objectsToEnlarge:
+                reactionModel.enlarge(object)
+
+            # Handle unimolecular (pressure dependent) reaction networks
+            if settings.unimolecularReactionNetworks:
+                reactionModel.updateUnimolecularReactionNetworks()
+                logging.info('')
+
+            # Save the restart file
+            # In order to get all the references preserved, you must pickle all of
+            # the objects in one concerted dump; this also has the added benefits
+            # of using less space and running faster
+            # We also compress the restart file to save space (and lower the
+            # disk read/write time)
+            if settings.saveRestart:
+                frequency, iterations, lastSaveTime, lastSaveIteration = settings.saveRestart
+                settings.saveRestart[-2], settings.saveRestart[-1] = \
+                    saveRestartFile(frequency, iterations, lastSaveTime, lastSaveIteration,
+                    reactionModel, reactionSystems)
+
+            # Update RMG execution statistics
+            logging.info('Updating RMG execution statistics...')
+            coreSpeciesCount.append(len(reactionModel.core.species))
+            coreReactionCount.append(len(reactionModel.core.reactions))
+            edgeSpeciesCount.append(len(reactionModel.edge.species))
+            edgeReactionCount.append(len(reactionModel.edge.reactions))
+            execTime.append(time.time() - settings.initializationTime)
+            from guppy import hpy
+            hp = hpy()
+            memoryUse.append(hp.heap().size / 1.0e6)
+            logging.debug('Execution time: %s s' % (execTime[-1]))
+            logging.debug('Memory used: %s MB' % (memoryUse[-1]))
+            restartSize.append(os.path.getsize(os.path.join(settings.outputDirectory,'restart.pkl')) / 1.0e6)
+            saveExecutionStatistics(execTime, coreSpeciesCount, coreReactionCount, edgeSpeciesCount, edgeReactionCount, memoryUse, restartSize)
+            generateExecutionPlots(execTime, coreSpeciesCount, coreReactionCount, edgeSpeciesCount, edgeReactionCount, memoryUse, restartSize)
+
+        logging.info('')
+
+        # Consider stopping gracefully if the next iteration might take us
+        # past the wall time
+        if settings.wallTime > 0 and len(execTime) > 1:
+            t = execTime[-1]
+            dt = execTime[-1] - execTime[-2]
+            if t + 2 * dt > settings.wallTime:
+                logging.info('MODEL GENERATION TERMINATED')
+                logging.info('')
+                logging.info('There is not enough time to complete the next iteration before the wall time is reached.')
+                logging.info('The output model may be incomplete.')
+                logging.info('')
+                logging.info('The current model core has %s species and %s reactions' % (len(reactionModel.core.species), len(reactionModel.core.reactions)))
+                logging.info('The current model edge has %s species and %s reactions' % (len(reactionModel.edge.species), len(reactionModel.edge.reactions)))
+                io.writeOutputFile(os.path.join(settings.outputDirectory,'output.xml'), reactionModel, reactionSystems)
+                return
+
+    # Write output file
+    logging.info('MODEL GENERATION COMPLETED')
+    logging.info('')
+    logging.info('The final model core has %s species and %s reactions' % (len(reactionModel.core.species), len(reactionModel.core.reactions)))
+    logging.info('The final model edge has %s species and %s reactions' % (len(reactionModel.edge.species), len(reactionModel.edge.reactions)))
+    io.writeOutputFile(os.path.join(settings.outputDirectory,'output.xml'), reactionModel, reactionSystems)
 
     # Log end timestamp
     logging.info('')
     logging.info('RMG execution terminated at ' + time.asctime())
+
+################################################################################
+
+def saveExecutionStatistics(execTime, coreSpeciesCount, coreReactionCount, \
+    edgeSpeciesCount, edgeReactionCount, memoryUse, restartSize):
+    """
+    Save the statistics of the RMG job to an Excel spreadsheet for easy viewing
+    after the run is complete. The statistics are saved to the file
+    `statistics.xls` in the output directory. The ``xlwt`` package is used to
+    create the spreadsheet file; if this package is not installed, no file is
+    saved.
+    """
+
+    # Attempt to import the xlwt package; return if not installed
+    try:
+        import xlwt
+    except ImportError:
+        logging.warning('Package xlwt not found. Unable to save execution statistics.')
+        return
+
+    # Create workbook and sheet for statistics to be places
+    workbook = xlwt.Workbook()
+    sheet = workbook.add_sheet('Statistics')
+
+    # First column is execution time
+    sheet.write(0,0,'Execution time (s)')
+    for i, etime in enumerate(execTime):
+        sheet.write(i+1,0,etime)
+
+    # Second column is number of core species
+    sheet.write(0,1,'Core species')
+    for i, count in enumerate(coreSpeciesCount):
+        sheet.write(i+1,1,count)
+
+    # Third column is number of core reactions
+    sheet.write(0,2,'Core reactions')
+    for i, count in enumerate(coreReactionCount):
+        sheet.write(i+1,2,count)
+
+    # Fourth column is number of edge species
+    sheet.write(0,3,'Edge species')
+    for i, count in enumerate(edgeSpeciesCount):
+        sheet.write(i+1,3,count)
+
+    # Fifth column is number of edge reactions
+    sheet.write(0,4,'Edge reactions')
+    for i, count in enumerate(edgeReactionCount):
+        sheet.write(i+1,4,count)
+
+    # Sixth column is memory used
+    sheet.write(0,5,'Memory used (MB)')
+    for i, memory in enumerate(memoryUse):
+        sheet.write(i+1,5,memory)
+
+    # Seventh column is restart file size
+    sheet.write(0,6,'Restart file size (MB)')
+    for i, memory in enumerate(restartSize):
+        sheet.write(i+1,6,memory)
+
+    # Save workbook to file
+    fstr = os.path.join(settings.outputDirectory, 'statistics.xls')
+    workbook.save(fstr)
+
+################################################################################
+
+def generateExecutionPlots(execTime, coreSpeciesCount, coreReactionCount,
+    edgeSpeciesCount, edgeReactionCount, memoryUse, restartSize):
+    """
+    Generate a number of plots describing the statistics of the RMG job,
+    including the reaction model core and edge size and memory use versus
+    execution time. These will be placed in the output directory in the plot/
+    folder.
+    """
+
+    # Only generate plots if that flag is turned on (in input file)
+    if not settings.generatePlots:
+        return
+
+    import matplotlib.pyplot as plt
+    fig = plt.figure()
+    ax1 = fig.add_subplot(111)
+    ax1.semilogx(execTime, coreSpeciesCount, 'o-b')
+    ax1.set_xlabel('Execution time (s)')
+    ax1.set_ylabel('Number of core species')
+    ax2 = ax1.twinx()
+    ax2.semilogx(execTime, coreReactionCount, 'o-r')
+    ax2.set_ylabel('Number of core reactions')
+    plt.savefig(os.path.join(settings.outputDirectory, 'plot/coreSize.svg'))
+    plt.clf()
+
+    fig = plt.figure()
+    ax1 = fig.add_subplot(111)
+    ax1.loglog(execTime, edgeSpeciesCount, 'o-b')
+    ax1.set_xlabel('Execution time (s)')
+    ax1.set_ylabel('Number of edge species')
+    ax2 = ax1.twinx()
+    ax2.loglog(execTime, edgeReactionCount, 'o-r')
+    ax2.set_ylabel('Number of edge reactions')
+    plt.savefig(os.path.join(settings.outputDirectory, 'plot/edgeSize.svg'))
+    plt.clf()
+
+    fig = plt.figure()
+    ax1 = fig.add_subplot(111)
+    ax1.semilogx(execTime, memoryUse, 'o-k')
+    ax1.semilogx(execTime, restartSize, 'o-g')
+    ax1.set_xlabel('Execution time (s)')
+    ax1.set_ylabel('Memory (MB)')
+    ax1.legend(['RAM', 'Restart file'], loc=2)
+    plt.savefig(os.path.join(settings.outputDirectory, 'plot/memoryUse.svg'))
+    plt.clf()
 
 ################################################################################
 

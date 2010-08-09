@@ -112,6 +112,10 @@ def batchReactor(physicalPropertyModel, temperatureModel, pressureModel, initial
     system.reservoirPressure = processQuantity(reservoirConditions['P'])[0]
     system.reservoirTemperature = processQuantity(reservoirConditions['T'])[0]
 
+    # Now that we've loaded the information about the reaction system,
+    # tell Cantera about it
+    system.initializeCantera()
+
 def termination(conversion=None, time=None):
     global reactionModel, speciesDict
     reactionModel.termination = []
