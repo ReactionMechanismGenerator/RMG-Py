@@ -472,6 +472,13 @@ class NASAPolynomial(ThermoModel):
         """
         return self.getEnthalpy(T) - T * self.getEntropy(T)
 
+    def toCantera(self):
+        """
+        Return a Cantera ctml_writer instance.
+        """
+        import ctml_writer
+        return ctml_writer.NASA([self.Tmin,self.Tmax], [self.c0, self.c1, self.c2, self.c3, self.c4, self.c5, self.c6])
+
 ################################################################################
 
 class NASAModel(ThermoModel):
@@ -527,5 +534,11 @@ class NASAModel(ThermoModel):
             if poly.isTemperatureValid(T): return poly
         else:
             raise ThermoError("No valid NASA polynomial found for T=%g K" % T)
+
+    def toCantera(self):
+        """
+        Return a Cantera ctml_writer instance.
+        """
+        return tuple([poly.toCantera() for poly in self.polynomials])
 
 ################################################################################
