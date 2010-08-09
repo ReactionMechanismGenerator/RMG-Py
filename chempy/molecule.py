@@ -149,7 +149,9 @@ class Atom(graph.Vertex):
         Generate a deep copy of the current atom. Modifying the
         attributes of the copy will not affect the original.
         """
-        return Atom(self.element, self.radicalElectrons, self.spinMultiplicity, self.implicitHydrogens, self.charge, self.label)
+        a = Atom(self.element, self.radicalElectrons, self.spinMultiplicity, self.implicitHydrogens, self.charge, self.label)
+        a.atomType = self.atomType
+        return a
 
     def isHydrogen(self):
         """
