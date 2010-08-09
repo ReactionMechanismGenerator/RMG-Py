@@ -36,13 +36,21 @@ cdef class ThermoModel:
     
     cpdef bint isTemperatureValid(ThermoModel self, double T) except -2
 
-    cpdef numpy.ndarray getHeatCapacity(self, numpy.ndarray Tlist)
+    cpdef double getHeatCapacity(self, double Tlist)
 
-    cpdef numpy.ndarray getEnthalpy(self, numpy.ndarray Tlist)
+    cpdef double getEnthalpy(self, double Tlist)
 
-    cpdef numpy.ndarray getEntropy(self, numpy.ndarray Tlist)
+    cpdef double getEntropy(self, double Tlist)
 
-    cpdef numpy.ndarray getFreeEnergy(self, numpy.ndarray Tlist)
+    cpdef double getFreeEnergy(self, double Tlist)
+
+    cpdef numpy.ndarray getHeatCapacities(self, numpy.ndarray Tlist)
+
+    cpdef numpy.ndarray getEnthalpies(self, numpy.ndarray Tlist)
+
+    cpdef numpy.ndarray getEntropies(self, numpy.ndarray Tlist)
+
+    cpdef numpy.ndarray getFreeEnergies(self, numpy.ndarray Tlist)
     
 ################################################################################
 
@@ -51,13 +59,13 @@ cdef class ThermoGAModel(ThermoModel):
     cdef public numpy.ndarray Tdata, Cpdata
     cdef public double H298, S298
     
-    cpdef numpy.ndarray getHeatCapacity(self, numpy.ndarray Tlist)
+    cpdef double getHeatCapacity(self, double T)
 
-    cpdef numpy.ndarray getEnthalpy(self, numpy.ndarray Tlist)
+    cpdef double getEnthalpy(self, double T)
 
-    cpdef numpy.ndarray getEntropy(self, numpy.ndarray Tlist)
+    cpdef double getEntropy(self, double T)
 
-    cpdef numpy.ndarray getFreeEnergy(self, numpy.ndarray Tlist)
+    cpdef double getFreeEnergy(self, double T)
 
 ################################################################################
 
@@ -73,13 +81,13 @@ cdef class WilhoitModel(ThermoModel):
     cdef public double H0
     cdef public double S0
     
-    cpdef numpy.ndarray getHeatCapacity(self, numpy.ndarray Tlist)
+    cpdef double getHeatCapacity(self, double T)
 
-    cpdef numpy.ndarray getEnthalpy(self, numpy.ndarray Tlist)
+    cpdef double getEnthalpy(self, double T)
 
-    cpdef numpy.ndarray getEntropy(self, numpy.ndarray Tlist)
+    cpdef double getEntropy(self, double T)
 
-    cpdef numpy.ndarray getFreeEnergy(self, numpy.ndarray Tlist)
+    cpdef double getFreeEnergy(self, double T)
     
     cpdef double __residual(self, double B, numpy.ndarray Tlist, numpy.ndarray Cplist, 
         bint linear, int nFreq, int nRotors, double H298, double S298)
@@ -96,13 +104,13 @@ cdef class NASAPolynomial(ThermoModel):
     
     cdef public double c0, c1, c2, c3, c4, c5, c6
     
-    cpdef numpy.ndarray getHeatCapacity(self, numpy.ndarray Tlist)
+    cpdef double getHeatCapacity(self, double T)
 
-    cpdef numpy.ndarray getEnthalpy(self, numpy.ndarray Tlist)
+    cpdef double getEnthalpy(self, double T)
 
-    cpdef numpy.ndarray getEntropy(self, numpy.ndarray Tlist)
+    cpdef double getEntropy(self, double T)
 
-    cpdef numpy.ndarray getFreeEnergy(self, numpy.ndarray Tlist)
+    cpdef double getFreeEnergy(self, double T)
     
 ################################################################################
 
@@ -110,12 +118,12 @@ cdef class NASAModel(ThermoModel):
     
     cdef public list polynomials
     
-    cpdef numpy.ndarray getHeatCapacity(self, numpy.ndarray Tlist)
+    cpdef double getHeatCapacity(self, double T)
 
-    cpdef numpy.ndarray getEnthalpy(self, numpy.ndarray Tlist)
+    cpdef double getEnthalpy(self, double T)
 
-    cpdef numpy.ndarray getEntropy(self, numpy.ndarray Tlist)
+    cpdef double getEntropy(self, double T)
 
-    cpdef numpy.ndarray getFreeEnergy(self, numpy.ndarray Tlist)
+    cpdef double getFreeEnergy(self, double T)
     
     cpdef NASAPolynomial __selectPolynomialForTemperature(self, double T)

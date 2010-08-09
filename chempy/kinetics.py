@@ -120,12 +120,12 @@ class ArrheniusModel(KineticsModel):
     def __repr__(self):
         return '<ArrheniusModel A=%g Ea=%g kJ/mol n=%g T0=%g K>' % (self.A,self.Ea/1000.0, self.n, self.T0)
     
-    def getRateCoefficient(self, Tlist):
+    def getRateCoefficient(self, T):
         """
-        Return the rate coefficient k(T) in SI units at a set of temperatures 
-        `Tlist` in K.
+        Return the rate coefficient k(T) in SI units at temperature 
+        `T` in K.
         """
-        return self.A * (Tlist / self.T0)** self.n * numpy.exp(-self.Ea / constants.R / Tlist)
+        return self.A * (T / self.T0)** self.n * math.exp(-self.Ea / constants.R / T)
     
     def changeT0(self, T0):
         """
@@ -198,15 +198,23 @@ class ArrheniusEPModel(KineticsModel):
         """
         return self.E0 + self.alpha * dHrxn
     
-    def getRateCoefficient(self, Tlist, dHrxn):
+    def getRateCoefficient(self, T, dHrxn):
         """
-        Return the rate coefficient k(T, P) in SI units at a set of  
-        temperatures `Tlist` in K for a reaction having an enthalpy of reaction 
+        Return the rate coefficient k(T, P) in SI units at a 
+        temperature `T` in K for a reaction having an enthalpy of reaction 
         `dHrxn` in J/mol.
         """
         Ea = cython.declare(cython.double)
         Ea = self.getActivationEnergy(dHrxn)
-        return self.A * (Tlist ** self.n) * numpy.exp(-self.Ea / constants.R / Tlist)
+        return self.A * (T ** self.n) * math.exp(-self.Ea / constants.R / T)
+
+    def toArrhenius(self, dHrxn):
+        """
+        Return an :class:`ArrheniusModel` object corresponding to this object
+        by using the provided enthalpy of reaction `dHrxn` in J/mol to calculate
+        the activation energy.
+        """
+        return ArrheniusModel(A=self.A, n=self.n, Ea=self.getActivationEnergy(dHrxn), T0=1.0)
 
 ################################################################################
 
@@ -256,26 +264,25 @@ class PDepArrheniusModel(KineticsModel):
             
             return Plow, Phigh, self.arrhenius[ilow], self.arrhenius[ihigh]
     
-    def getRateCoefficient(self, Tlist, Plist):
+    def getRateCoefficient(self, T, P):
         """
-        Return the rate constant k(T, P) in SI units at a set of temperatures 
-        `Tlist` in K and pressures `Plist` in Pa by evaluating the pressure-
+        Return the rate constant k(T, P) in SI units at a temperature 
+        `Tlist` in K and pressure `P` in Pa by evaluating the pressure-
         dependent Arrhenius expression.
         """
         cython.declare(Plow=cython.double, Phigh=cython.double)
         cython.declare(alow=ArrheniusModel, ahigh=ArrheniusModel)
-        cython.declare(j=cython.int, klist=numpy.ndarray, klow=numpy.ndarray, khigh=numpy.ndarray)
+        cython.declare(j=cython.int, klist=cython.double, klow=cython.double, khigh=cython.double)
         
-        klist = numpy.zeros((len(Tlist), len(Plist)), numpy.float64)
-        for j in range(len(Plist)):
-            Plow, Phigh, alow, ahigh = self.__getAdjacentExpressions(Plist[j])
-            if Plow == Phigh: 
-                klist[:,j] = alow.getRateCoefficient(Tlist)
-            else:
-                klow = alow.getRateCoefficient(Tlist)
-                khigh = ahigh.getRateCoefficient(Tlist)
-                klist[:,j] = 10**(math.log10(Plist[j]/Plow)/math.log10(Phigh/Plow)*numpy.log10(khigh/klow))
-        return klist
+        k = 0.0
+        Plow, Phigh, alow, ahigh = self.__getAdjacentExpressions(P)
+        if Plow == Phigh:
+            k = alow.getRateCoefficient(T)
+        else:
+            klow = alow.getRateCoefficient(T)
+            khigh = ahigh.getRateCoefficient(T)
+            k = 10**(math.log10(Plist[j]/Plow)/math.log10(Phigh/Plow)*math.log10(khigh/klow))
+        return k
         
 ################################################################################
 
@@ -329,23 +336,20 @@ class ChebyshevModel(KineticsModel):
         else:
             return (2.0*math.log(P) - math.log(self.Pmin) - math.log(self.Pmax)) / (math.log(self.Pmax) - math.log(self.Pmin))
     
-    def getRateCoefficient(self, Tlist, Plist):
+    def getRateCoefficient(self, T, P):
         """
-        Return the rate constant k(T, P) in SI units at a set of temperatures 
-        `Tlist` in K and pressures `Plist` in Pa by evaluating the Chebyshev 
+        Return the rate constant k(T, P) in SI units at a temperature 
+        `Tlist` in K and pressure `P` in Pa by evaluating the Chebyshev 
         expression.
         """
         
-        cython.declare(Tred=cython.double, Pred=cython.double, klist=numpy.ndarray)
+        cython.declare(Tred=cython.double, Pred=cython.double, k=cython.double)
         cython.declare(i=cython.int, j=cython.int, t=cython.int, p=cython.int)
         
-        klist = numpy.zeros((len(Tlist),len(Plist)), numpy.float64)
-        for i in range(len(Tlist)):
-            for j in range(len(Plist)):
-                Tred = self.__getReducedTemperature(Tlist[i])
-                Pred = self.__getReducedPressure(Plist[j])
-                for t in range(self.degreeT):
-                    for p in range(self.degreeP):
-                        klist[i,j] += self.coeffs[t,p] * self.__chebyshev(t, Tred) * self.__chebyshev(p, Pred)
-                
-        return 10.0**klist
+        k = 0.0
+        Tred = self.__getReducedTemperature(T)
+        Pred = self.__getReducedPressure(P)
+        for t in range(self.degreeT):
+            for p in range(self.degreeP):
+                k += self.coeffs[t,p] * self.__chebyshev(t, Tred) * self.__chebyshev(p, Pred)
+        return 10.0**k

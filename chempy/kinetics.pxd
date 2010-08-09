@@ -58,7 +58,7 @@ cdef class ArrheniusModel(KineticsModel):
     cdef public double Ea
     cdef public double n
     
-    cpdef numpy.ndarray getRateCoefficient(self, numpy.ndarray Tlist)
+    cpdef double getRateCoefficient(self, double T)
 
     cpdef changeT0(self, double T0)
 
@@ -75,7 +75,7 @@ cdef class ArrheniusEPModel(KineticsModel):
     
     cpdef double getActivationEnergy(self, double dHrxn)
     
-    cpdef numpy.ndarray getRateCoefficient(self, numpy.ndarray Tlist, double dHrxn)
+    cpdef double getRateCoefficient(self, double T)
 
 ################################################################################
 
@@ -86,7 +86,7 @@ cdef class PDepArrheniusModel(KineticsModel):
     
     cpdef tuple __getAdjacentExpressions(self, double P)
     
-    cpdef numpy.ndarray getRateCoefficient(self, numpy.ndarray Tlist, numpy.ndarray Plist)
+    cpdef double getRateCoefficient(self, double T, double P)
 
 ################################################################################
 
@@ -102,5 +102,4 @@ cdef class ChebyshevModel(KineticsModel):
     
     cpdef double __getReducedPressure(self, double P)
     
-    cpdef numpy.ndarray getRateCoefficient(self, numpy.ndarray Tlist, numpy.ndarray Plist)
-    
+    cpdef double getRateCoefficient(self, double T, double P)
