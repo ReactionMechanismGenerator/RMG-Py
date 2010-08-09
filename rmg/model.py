@@ -43,6 +43,7 @@ import chempy.reaction
 from chempy.thermo import NASAModel
 
 from rmgdata.thermo import generateThermoData, convertThermoData
+from rmgdata.kinetics import generateKineticsData
 
 import settings
 import ctml_writer
@@ -108,11 +109,18 @@ class Species(chempy.species.Species):
 
 class Reaction(chempy.reaction.Reaction):
 
-    def __init__(self, index=-1, reactants=None, products=None, kinetics=None, reversible=True, transitionState=None, family=None):
+    def __init__(self, index=-1, reactants=None, products=None, kinetics=None, reversible=True, transitionState=None, family=None, isForward=True):
         chempy.reaction.Reaction.__init__(self, index, reactants, products, kinetics, reversible, transitionState)
         self.family = family
+        self.isForward = isForward
         self.multiplier = 1.0
 
+    def generateKineticsData(self):
+        """
+        Generate kinetcs data for the reaction using the kinetics database.
+        """
+        self.kinetics = generateKineticsData(self, self.family.label, self.reactantMolecules)
+        
 ################################################################################
 
 class ReactionModel:
@@ -420,6 +428,15 @@ class CoreEdgeReactionModel:
             newObject.generateThermoData()
         for spec in newSpeciesList:
             spec.generateThermoData()
+
+        # Generate kinetics of new reactions
+        logging.info('Generating kinetics for new reactions...')
+        for rxn in newReactionList:
+            rxn.generateKineticsData()
+            # Now that we have the kinetics we don't need the reactant molecules
+            # any more, so delete them to recover the memory
+            rxn.reactantMolecules = None
+            rxn.reverse.reactantMolecules = None
 
         logging.info('')
 

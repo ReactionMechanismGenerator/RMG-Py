@@ -124,7 +124,7 @@ def generateProductStructures(family, reactantStructures, maps, forward):
 
     return productStructures
 
-def createReaction(family, reactants, reactantStructures, productStructures, reactantAtomLabels, isForward):
+def createReaction(family, reactants, reactantStructures, productStructures, isForward):
     """
     Create a :class:`Reaction` object representing the reaction that
     converts the structures in `reactantStructures` corresponding to the
@@ -134,10 +134,6 @@ def createReaction(family, reactants, reactantStructures, productStructures, rea
     """
 
     from model import Species, Reaction
-
-    productAtomLabels = []
-    for struct in productStructures:
-        productAtomLabels.append(struct.getLabeledAtoms())
 
     # Make sure the products are in fact different than the reactants
     if len(reactants) == len(productStructures) == 1:
@@ -158,11 +154,18 @@ def createReaction(family, reactants, reactantStructures, productStructures, rea
         products.append(product)
 
     # Create reaction object
-    forward = Reaction(reactants=reactants, products=products, family=family)
-    reverse = Reaction(reactants=products, products=reactants, family=family)
+    forward = Reaction(reactants=reactants, products=products, family=family, isForward=isForward)
+    reverse = Reaction(reactants=products, products=reactants, family=family, isForward=not isForward)
     forward.reverse = reverse
     reverse.reverse = forward
 
+    # We need to save the reactant and product structures with atom labels so
+    # we can generate the kinetics
+    # We make copies so the structures aren't trampled on by later actions
+    # Once we have the kinetics we can delete these to recover the memory
+    forward.reactantMolecules = [s.copy(deep=True) for s in reactantStructures]
+    reverse.reactantMolecules = [s.copy(deep=True) for s in productStructures]
+    
     # Return the created reaction (forward direction only)
     return forward
 
@@ -194,7 +197,7 @@ def generateReactionsForFamily(reactants, family, model, forward=True):
                     reactantStructures = [molecule]
                     productStructures = generateProductStructures(family, reactantStructures, [map], forward)
                     if productStructures:
-                        rxn = createReaction(family, reactants, reactantStructures, productStructures, reactantAtomLabels, forward)
+                        rxn = createReaction(family, reactants, reactantStructures, productStructures, forward)
                         if rxn: rxnList.append(rxn)
         
     # Bimolecular reactants: A + B --> products
@@ -225,7 +228,7 @@ def generateReactionsForFamily(reactants, family, model, forward=True):
                             reactantStructures = [moleculeA, moleculeB]
                             productStructures = generateProductStructures(family, reactantStructures, [mapA, mapB], forward)
                             if productStructures:
-                                rxn = createReaction(family, reactants, reactantStructures, productStructures, reactantAtomLabels, forward)
+                                rxn = createReaction(family, reactants, reactantStructures, productStructures, forward)
                                 if rxn: rxnList.append(rxn)
 
                 # Only check for swapped reactants if they are different
@@ -249,7 +252,7 @@ def generateReactionsForFamily(reactants, family, model, forward=True):
                                 reactantStructures = [moleculeA, moleculeB]
                                 productStructures = generateProductStructures(family, reactantStructures, [mapA, mapB], forward)
                                 if productStructures:
-                                    rxn = createReaction(family, reactants, reactantStructures, productStructures, reactantAtomLabels, forward)
+                                    rxn = createReaction(family, reactants, reactantStructures, productStructures, forward)
                                     if rxn: rxnList.append(rxn)
 
     # Check the product species to see if any of them have been encountered before
