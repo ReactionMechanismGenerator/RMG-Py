@@ -281,7 +281,7 @@ class PDepArrheniusModel(KineticsModel):
         else:
             klow = alow.getRateCoefficient(T)
             khigh = ahigh.getRateCoefficient(T)
-            k = 10**(math.log10(Plist[j]/Plow)/math.log10(Phigh/Plow)*math.log10(khigh/klow))
+            k = 10**(math.log10(P/Plow)/math.log10(Phigh/Plow)*math.log10(khigh/klow))
         return k
         
 ################################################################################

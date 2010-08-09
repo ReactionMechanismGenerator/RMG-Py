@@ -320,7 +320,7 @@ class Bond(graph.Edge):
         if self.order == 'S': self.order = 'D'
         elif self.order == 'D': self.order = 'T'
         else:
-            raise ChemPyError('Unable to update Bond due to CHANGE_BOND action: Invalid bond order "%s".' % (bond, self.order))
+            raise ChemPyError('Unable to update Bond due to CHANGE_BOND action: Invalid bond order "%s".' % (self.order))
         
     def decrementOrder(self):
         """
@@ -330,7 +330,7 @@ class Bond(graph.Edge):
         if self.order == 'D': self.order = 'S'
         elif self.order == 'T': self.order = 'D'
         else:
-            raise ChemPyError('Unable to update Bond due to CHANGE_BOND action: Invalid bond order "%s".' % (bond, self.order))
+            raise ChemPyError('Unable to update Bond due to CHANGE_BOND action: Invalid bond order "%s".' % (self.order))
         
     def __changeBond(self, order):
         """
@@ -342,12 +342,12 @@ class Bond(graph.Edge):
             if self.order == 'S': self.order = 'D'
             elif self.order == 'D': self.order = 'T'
             else:
-                raise ChemPyError('Unable to update Bond due to CHANGE_BOND action: Invalid bond order "%s".' % (bond, self.order))
+                raise ChemPyError('Unable to update Bond due to CHANGE_BOND action: Invalid bond order "%s".' % (self.order))
         elif order == -1:
             if self.order == 'D': self.order = 'S'
             elif self.order == 'T': self.order = 'D'
             else:
-                raise ChemPyError('Unable to update Bond due to CHANGE_BOND action: Invalid bond order "%s".' % (bond, self.order))
+                raise ChemPyError('Unable to update Bond due to CHANGE_BOND action: Invalid bond order "%s".' % (self.order))
         else:
             raise ChemPyError('Unable to update Bond due to CHANGE_BOND action: Invalid order "%g".' % order)
 

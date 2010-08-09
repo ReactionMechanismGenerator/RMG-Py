@@ -111,20 +111,6 @@ class Species:
         if self.index == -1: return '%s' % (self.label)
         else: return '%s(%i)' % (self.label, self.index)
 
-    def __cmp__(self, other):
-        """
-        A comparison function that can be used to sort lists of :class:`Species`
-        objects. Currently the sorting method is by increasing index.
-        """
-        return cmp(self.index, other.index)
-
-    def __hash__(self):
-        """
-        A hash function that allows for use in dictionaries et al. Currently the
-        species index is used.
-        """
-        return self.index
-
     def generateResonanceIsomers(self):
         """
         Generate all of the resonance isomers of this species. The isomers are

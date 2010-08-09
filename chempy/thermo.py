@@ -396,10 +396,9 @@ class WilhoitModel(ThermoModel):
         self.a2 = float(x[2])
         self.a3 = float(x[3])
 
-        Tlist0 = numpy.array([298.15], numpy.float64)
         self.H0 = 0.0; self.S0 = 0.0
-        self.H0 = H298 - self.getEnthalpy(Tlist0)[0]
-        self.S0 = S298 - self.getEntropy(Tlist0)[0]
+        self.H0 = H298 - self.getEnthalpy(298.15)
+        self.S0 = S298 - self.getEntropy(298.15)
 
         return self
 

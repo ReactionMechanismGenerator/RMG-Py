@@ -75,7 +75,7 @@ cdef class ArrheniusEPModel(KineticsModel):
     
     cpdef double getActivationEnergy(self, double dHrxn)
     
-    cpdef double getRateCoefficient(self, double T)
+    cpdef double getRateCoefficient(self, double T, double dHrxn)
 
 ################################################################################
 
