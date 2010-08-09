@@ -83,17 +83,19 @@ class Reaction:
     `kinetics`          :class:`KineticsModel`      The kinetics model to use for the reaction
     `reversible`        ``bool``                    ``True`` if the reaction is reversible, ``False`` if not
     `transitionState`   :class:`TransitionState`    The transition state
+    `thirdBody`         ``bool``                    ``True`` if the reaction if the reaction kinetics imply a third body, ``False`` if not
     =================== =========================== ============================
     
     """
     
-    def __init__(self, index=-1, reactants=None, products=None, kinetics=None, reversible=True, transitionState=None):
+    def __init__(self, index=-1, reactants=None, products=None, kinetics=None, reversible=True, transitionState=None, thirdBody=False):
         self.index = index
         self.reactants = reactants
         self.products = products
         self.kinetics = kinetics
         self.reversible = reversible
         self.transitionState = transitionState
+        self.thirdBody = thirdBody
 
     def __repr__(self):
         """
@@ -213,6 +215,48 @@ class Reaction:
         for product in self.products:
             if product is spec: stoich += 1
         return stoich
+
+    def getRate(self, T, P, conc, totalConc=None):
+        """
+        Return the net rate of reaction at temperature `T` and pressure `P`. The
+        parameter `conc` is a map with species as keys and concentrations as
+        values. A reactant not found in the `conc` map is treated as having zero
+        concentration.
+
+        If passed a `totalConc`, it won't bother recalculating it.
+        """
+
+        # Calculate total concentration
+        if totalConc is None:
+            totalConc=sum( conc.values() )
+
+        # Evaluate rate constant
+        rateConstant = self.kinetics.getRateCoefficient(T)
+        if self.thirdBody: rateConstant *= totalConc
+
+        # Evaluate equilibrium constant
+        equilibriumConstant = self.getEquilibriumConstant(T)
+
+        # Evaluate forward concentration product
+        forward = 1.0
+        for reactant in self.reactants:
+            if reactant in conc:
+                forward = forward * conc[reactant]
+            else:
+                forward = 0.0
+                break
+
+        # Evaluate reverse concentration product
+        reverse = 1.0
+        for product in self.products:
+            if product in conc:
+                reverse = reverse * conc[product]
+            else:
+                reverse = 0.0
+                break
+
+        # Return rate
+        return rateConstant * (forward - reverse / equilibriumConstant)
 
     def calculateTSTRateCoefficient(self, Tlist, TS, tunneling=''):
         """
