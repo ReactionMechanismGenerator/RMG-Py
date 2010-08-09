@@ -113,11 +113,11 @@ def batchReactor(physicalPropertyModel, temperatureModel, pressureModel, initial
     system.reservoirTemperature = processQuantity(reservoirConditions['T'])[0]
 
 def termination(conversion=None, time=None):
-    global reactionModel
+    global reactionModel, speciesDict
     reactionModel.termination = []
     if conversion is not None:
         for spec, conv in conversion.iteritems():
-            reactionModel.termination.append(TerminationConversion(spec, conv))
+            reactionModel.termination.append(TerminationConversion(speciesDict[spec], conv))
     if time is not None:
         reactionModel.termination.append(TerminationTime(processQuantity(time)[0]))
 
@@ -156,7 +156,7 @@ def processQuantity(quantity):
 
 def readInputFile(path):
 
-    global speciesDict, reactionModel, databases
+    global speciesDict, reactionModel, databases, reactionSystems
 
     try:
         f = open(path)
@@ -211,5 +211,12 @@ def readInputFile(path):
         loadKineticsDatabase(path, group=True)
 
     speciesList = speciesDict.values(); speciesList.sort()
-    return reactionModel, speciesList
+
+    for reactionSystem in reactionSystems:
+        initialMoleFraction = {}
+        for label, moleFrac in reactionSystem.initialMoleFraction.iteritems():
+            initialMoleFraction[str(speciesDict[label])] = moleFrac
+    reactionSystem.initialMoleFraction = initialMoleFraction
+
+    return reactionModel, speciesList, reactionSystems
 

@@ -211,7 +211,7 @@ def execute(args):
             settings.walltime = int(data[-1]) + 60 * int(data[-2]) + 3600 * int(data[-3]) + 86400 * int(data[-4])
         else:
             raise ValueError('Invalid format for wall time; should be HH:MM:SS.')
-        
+
     # Save initialization time
     settings.initializationTime = time.time()
 
@@ -237,7 +237,7 @@ def execute(args):
     os.mkdir(specDir)
 
     # Read input file
-    reactionModel, coreSpecies = readInputFile(inputFile)
+    reactionModel, coreSpecies, reactionSystems = readInputFile(inputFile)
 
     # Initialize reaction model
     if args.restart:
