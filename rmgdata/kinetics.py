@@ -48,7 +48,7 @@ class UndeterminableKineticsError(ReactionError):
     """
     def __init__(self, reaction, message=''):
         new_message = 'Kinetics could not be determined. '+message
-        ReactionException.__init__(self,reaction,new_message)
+        ReactionError.__init__(self,reaction,new_message)
 
 class InvalidActionError(Exception):
     """
@@ -942,10 +942,6 @@ class ReactionFamily(Database):
         for forward in forwardTemplate:
             # 'forward' is a head node that should be matched.
             # Get labeled atoms of forward
-
-            #if forward=='Rn':
-            #	import pdb
-            #	pdb.set_trace()
             node = forward
             group = self.dictionary[node]
             # to sort out "union" groups:
@@ -963,18 +959,11 @@ class ReactionFamily(Database):
             for struct in structures:
                 # Match labeled atoms
                 # Check this structure has each of the atom labels in this group
-                has_all_atom_labels = True
-                for label in atomList:
-                    if not struct.containsLabeledAtom(label):
-                        has_all_atom_labels = False
-                        #print "%s does not contain %s atom labels"%(struct.toSMILES(),node)
-                        break
-                        # this structure (reactant/product) does not contain this group's atom labels
-                if not has_all_atom_labels: continue # don't try to match this structure - the atoms aren't there!
-
+                if not all([struct.containsLabeledAtom(label) for label in atomList]):
+                    continue # don't try to match this structure - the atoms aren't there!
                 # Match structures
                 atoms = struct.getLabeledAtoms()
-                matched_node = self.descendTree(struct, atoms, forward)
+                matched_node = self.descendTree(struct, atoms, root=forward)
                 if matched_node is not None:
                     template.append(matched_node)
                 else:
@@ -983,15 +972,17 @@ class ReactionFamily(Database):
 
         # Get fresh templates (with duplicate nodes back in)
         forwardTemplate = self.tree.top[:]
+        if self.label.lower() == 'r_recombination':
+            forwardTemplate.append(forwardTemplate[0])
 
         # Check that we were able to match the template.
         # template is a list of the actual matched nodes
         # forwardTemplate is a list of the top level nodes that should be matched
         if len(template) != len(forwardTemplate):
-            logging.warning('Warning: Unable to find matching template for reaction %s in reaction family %s' % (str(reaction), str(self)) )
+            logging.warning('Unable to find matching template for reaction %s in reaction family %s' % (str(reaction), str(self)) )
             logging.warning(" Trying to match " + str(forwardTemplate))
             logging.warning(" Matched "+str(template))
-            raise UndeterminableKineticsException(reaction)
+            raise UndeterminableKineticsError(reaction)
             print str(self), template, forwardTemplate, reverseTemplate
             for reactant in reaction.reactants:
                 print reactant.toAdjacencyList() + '\n'
@@ -1000,13 +991,6 @@ class ReactionFamily(Database):
 
             ## If unable to match template, use the most general template
             #template = forwardTemplate
-
-
-#		k = self.library.getData(template)
-#		print template, k
-#		if k is not None: return [k]
-#		else: return None
-
 
         # climb the tree finding ancestors
         nodeLists = []
@@ -1038,6 +1022,8 @@ class ReactionFamily(Database):
 
         # Make sure we've found at least one set of valid kinetics
         if len(kinetics) == 0:
+            for reactant in structures:
+                print reactant.toAdjacencyList() + '\n'
             raise UndeterminableKineticsError(reaction)
 
         # Choose the best kinetics
@@ -1107,8 +1093,8 @@ class KineticsGroupDatabase:
 
         logging.info('')
 
-    def generateKineticsData(self, rxn, family):
-        return self.families[family].getKinetics(rxn, rxn.reactants)
+    def generateKineticsData(self, rxn, family, structures):
+        return self.families[family].getKinetics(rxn, structures)
 
 ################################################################################
 
@@ -1127,14 +1113,14 @@ def loadKineticsDatabase(dstr, group=True, only_families=False):
         pass
     return kineticsDatabase
 
-def generateKineticsData(rxn, family):
+def generateKineticsData(rxn, family, structures):
     """
     Get the kinetics data associated with `reaction` in `family` by looking in
     the loaded kinetics database. The reactants and products in the molecule
     should already be labeled appropriately.
     """
     global kineticsDatabases
-    kinetics = kineticsDatabases[0].generateKineticsData(rxn, family)
+    kinetics = kineticsDatabases[0].generateKineticsData(rxn, family, structures)
     return kinetics
     
 ################################################################################
