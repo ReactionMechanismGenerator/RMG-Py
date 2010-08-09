@@ -68,7 +68,7 @@ class Species(chempy.species.Species):
             tdata = generateThermoData(molecule)
             thermo.append(tdata)
 
-        H298 = numpy.array([t.getEnthalpy(numpy.array([298], numpy.float64))[0] for t in thermo])
+        H298 = numpy.array([t.getEnthalpy(298.) for t in thermo])
         indices = H298.argsort()
 
         # If multiple resonance isomers are present, use the thermo data of
@@ -85,7 +85,7 @@ class Species(chempy.species.Species):
         if self.thermo.__class__ != thermo0.__class__:
             # Compute RMS error of overall transformation
             Tlist = numpy.array([300.0, 400.0, 500.0, 600.0, 800.0, 1000.0, 1500.0], numpy.float64)
-            err = math.sqrt(numpy.sum((self.thermo.getHeatCapacity(Tlist) - thermo0.getHeatCapacity(Tlist))**2))/constants.R/len(Tlist)
+            err = math.sqrt(numpy.sum((self.thermo.getHeatCapacities(Tlist) - thermo0.getHeatCapacities(Tlist))**2))/constants.R/len(Tlist)
             logging.log(logging.WARNING if err > 0.05 else 0, 'Average RMS error in heat capacity fit to %s = %g*R' % (self, err))
 
         return self.thermo
@@ -109,8 +109,8 @@ class Species(chempy.species.Species):
 
 class Reaction(chempy.reaction.Reaction):
 
-    def __init__(self, index=-1, reactants=None, products=None, kinetics=None, reversible=True, transitionState=None, family=None, isForward=True):
-        chempy.reaction.Reaction.__init__(self, index, reactants, products, kinetics, reversible, transitionState)
+    def __init__(self, index=-1, reactants=None, products=None, kinetics=None, reversible=True, transitionState=None, thirdBody=False, family=None, isForward=True):
+        chempy.reaction.Reaction.__init__(self, index, reactants, products, kinetics, reversible, transitionState, thirdBody)
         self.family = family
         self.isForward = isForward
         self.multiplier = 1.0
@@ -120,7 +120,8 @@ class Reaction(chempy.reaction.Reaction):
         Generate kinetcs data for the reaction using the kinetics database.
         """
         self.kinetics = generateKineticsData(self, self.family.label, self.reactantMolecules)
-        
+        Tlist = numpy.array([298.15], numpy.float64)
+        self.kinetics = self.kinetics.toArrhenius(dHrxn=self.getEnthalpyOfReaction(Tlist)[0])
 ################################################################################
 
 class ReactionModel:
@@ -185,7 +186,9 @@ class CoreEdgeReactionModel:
         self.speciesList = []
         self.reactionDict = {'seed': {}}
         self.speciesCache = [None for i in range(4)]
-        
+        self.speciesCounter = 0
+        self.reactionCounter = 0
+
     def checkForExistingSpecies(self, molecule):
         """
         Check to see if an existing species contains the same
@@ -232,10 +235,12 @@ class CoreEdgeReactionModel:
         # If we're here then we're ready to make the new species
         if label == '': label = molecule.toSMILES()
         logging.debug('Creating new species %s' % str(label))
-        spec = Species(index=len(self.speciesList), label=label, molecule=[molecule], reactive=reactive)
+        spec = Species(index=len(self.speciesList)+1, label=label, molecule=[molecule], reactive=reactive)
         spec.generateResonanceIsomers()
         self.speciesList.append(spec)
-        
+
+        self.speciesCounter += 1
+
         return spec, True
 
 
@@ -318,6 +323,9 @@ class CoreEdgeReactionModel:
             self.reactionDict[forward.family][r1][r2] = list()
         # store this reaction at the top of the relevant short-list
         self.reactionDict[forward.family][r1][r2].insert(0, forward)
+
+        forward.index = self.reactionCounter + 1
+        self.reactionCounter += 1
 
         # Return newly created reaction
         return forward, True
@@ -424,8 +432,6 @@ class CoreEdgeReactionModel:
 
         # Generate thermodynamics of new species
         logging.info('Generating thermodynamics for new species...')
-        if isinstance(newObject, Species) and newObject.thermo is None and newObject.reactive:
-            newObject.generateThermoData()
         for spec in newSpeciesList:
             spec.generateThermoData()
 
@@ -536,7 +542,7 @@ class CoreEdgeReactionModel:
 
             # Complete deletion of empty networks
             for network in networksToDelete:
-                logging.debug('Deleting empty unirxn network %s' % network.id)
+                logging.debug('Deleting empty unirxn network %s' % network.index)
                 self.unirxnNetworks.remove(network)
 
         # remove from the global list of species, to free memory
@@ -584,12 +590,12 @@ class CoreEdgeReactionModel:
         """
         speciesList, reactionList = self.getLists()
         from scipy import sparse
-        stoichiometry = sparse.dok_matrix((species.speciesCounter, reaction.reactionCounter), float)
+        stoichiometry = sparse.dok_matrix((self.speciesCounter, self.reactionCounter), float)
         for rxn in reactionList:
-            j = rxn.id - 1
+            j = rxn.index - 1
             specList = rxn.reactants[:]; specList.extend(rxn.products)
             for spec in specList:
-                i = spec.id - 1
+                i = spec.index - 1
                 nu = rxn.getStoichiometricCoefficient(spec)
                 if nu != 0: stoichiometry[i,j] = nu
         return stoichiometry.tocsr()
@@ -600,9 +606,9 @@ class CoreEdgeReactionModel:
         and edge. The id of the reaction is the index into the vector.
         """
         speciesList, reactionList = self.getLists()
-        rxnRate = numpy.zeros(reaction.reactionCounter, float)
+        rxnRate = numpy.zeros(self.reactionCounter, float)
         for rxn in reactionList:
-            j = rxn.id - 1
+            j = rxn.index - 1
             rxnRate[j] = rxn.getRate(T, P, Ci)
         return rxnRate
 
@@ -691,7 +697,7 @@ class CoreEdgeReactionModel:
         for network in self.unirxnNetworks:
             if not network.valid:
 
-                logging.verbose('Updating unimolecular reaction network %s' % network.id)
+                logging.verbose('Updating unimolecular reaction network %s' % network.index)
 
                 # Other inputs
                 method, Tmin, Tmax, Tlist, Pmin, Pmax, Plist, grainSize, numGrains, model = settings.unimolecularReactionNetworks
@@ -743,7 +749,7 @@ class CoreEdgeReactionModel:
                     if not found:
                         isomerList.append(isomer)
                 if len(isomerList) > 0:
-                    logging.debug('Removed %i isomer(s) from network %i.' % (len(isomerList), network.id))
+                    logging.debug('Removed %i isomer(s) from network %i.' % (len(isomerList), network.index))
                     for isomer in isomerList: network.isomers.remove(isomer)
 
                 # Sort isomers such that the order is:

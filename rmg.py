@@ -264,6 +264,7 @@ def execute(args):
         options.restart = False # have already restarted
     else:
         for spec in coreSpecies:
+            if spec.reactive: spec.generateThermoData()
             reactionModel.enlarge(spec)
 #
 #    # RMG execution statistics
