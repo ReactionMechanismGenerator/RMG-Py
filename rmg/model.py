@@ -422,6 +422,9 @@ class CoreEdgeReactionModel:
 
         newReactionList = []; newSpeciesList = []
 
+        numOldCoreSpecies = len(self.core.species)
+        numOldCoreReactions = len(self.core.reactions)
+
         if isinstance(newObject, Species):
 
             newSpecies = newObject
@@ -496,10 +499,16 @@ class CoreEdgeReactionModel:
             logging.info('')
             logging.info('Summary of Model Enlargement')
             logging.info('----------------------------')
-            logging.info('Created %i new species' % len(newSpeciesList))
+            logging.info('Added %i new core species' % (len(self.core.species) - numOldCoreSpecies))
+            for spec in self.core.species[numOldCoreSpecies:]:
+                logging.info('    %s' % (spec))
+            logging.info('Created %i new edge species' % len(newSpeciesList))
             for spec in newSpeciesList:
                 logging.info('    %s' % (spec))
-            logging.info('Created %i new reactions' % len(newReactionList))
+            logging.info('Added %i new core reactions' % (len(self.core.reactions) - numOldCoreReactions))
+            for rxn in self.core.reactions[numOldCoreReactions:]:
+                logging.info('    %s' % (rxn.reverse if newSpecies in rxn.products else rxn))
+            logging.info('Created %i new edge reactions' % len(newReactionList))
             for rxn in newReactionList:
                 logging.info('    %s' % (rxn.reverse if newSpecies in rxn.products else rxn))
 
