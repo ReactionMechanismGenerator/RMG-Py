@@ -49,6 +49,8 @@ cdef class KineticsModel:
     
     cpdef bint isPressureValid(self, double P) except -2
 
+    cpdef numpy.ndarray getRateCoefficients(self, numpy.ndarray Tlist)
+
 ################################################################################
 
 cdef class ArrheniusModel(KineticsModel):

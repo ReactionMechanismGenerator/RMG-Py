@@ -111,46 +111,46 @@ class Reaction:
         if not self.reversible: arrow = ' -> '
         return arrow.join([' + '.join([str(s) for s in self.reactants]), ' + '.join([str(s) for s in self.products])])
 
-    def getEnthalpyOfReaction(self, Tlist):
+    def getEnthalpyOfReaction(self, T):
         """
-        Return the enthalpy of reaction in J/mol evaluated at temperatures
-        `Tlist` in K.
+        Return the enthalpy of reaction in J/mol evaluated at temperature
+        `T` in K.
         """
-        cython.declare(dHrxn=numpy.ndarray, reactant=Species, product=Species)
-        dHrxn = numpy.zeros_like(Tlist)
+        cython.declare(dHrxn=cython.double, reactant=Species, product=Species)
+        dHrxn = 0.0
         for reactant in self.reactants:
-            dHrxn -= reactant.thermo.getEnthalpy(Tlist)
+            dHrxn -= reactant.thermo.getEnthalpy(T)
         for product in self.products:
-            dHrxn += product.thermo.getEnthalpy(Tlist)
+            dHrxn += product.thermo.getEnthalpy(T)
         return dHrxn
 
-    def getEntropyOfReaction(self, Tlist):
+    def getEntropyOfReaction(self, T):
         """
         Return the entropy of reaction in J/mol*K evaluated at temperature `T`
         in K.
         """
-        cython.declare(dSrxn=numpy.ndarray, reactant=Species, product=Species)
-        dSrxn = numpy.zeros_like(Tlist)
+        cython.declare(dSrxn=cython.double, reactant=Species, product=Species)
+        dSrxn = 0.0
         for reactant in self.reactants:
-            dSrxn -= reactant.thermo.getEntropy(Tlist)
+            dSrxn -= reactant.thermo.getEntropy(T)
         for product in self.products:
-            dSrxn += product.thermo.getEntropy(Tlist)
+            dSrxn += product.thermo.getEntropy(T)
         return dSrxn
 
-    def getFreeEnergyOfReaction(self, Tlist):
+    def getFreeEnergyOfReaction(self, T):
         """
         Return the Gibbs free energy of reaction in J/mol evaluated at
         temperature `T` in K.
         """
-        cython.declare(dGrxn=numpy.ndarray, reactant=Species, product=Species)
-        dGrxn = numpy.zeros_like(Tlist)
+        cython.declare(dGrxn=cython.double, reactant=Species, product=Species)
+        dGrxn = 0.0
         for reactant in self.reactants:
-            dGrxn -= reactant.thermo.getFreeEnergy(Tlist)
+            dGrxn -= reactant.thermo.getFreeEnergy(T)
         for product in self.products:
-            dGrxn += product.thermo.getFreeEnergy(Tlist)
+            dGrxn += product.thermo.getFreeEnergy(T)
         return dGrxn
 
-    def getEquilibriumConstant(self, Tlist, type='Kc'):
+    def getEquilibriumConstant(self, T, type='Kc'):
         """
         Return the equilibrium constant for the reaction at the specified
         temperature `T` in K. The `type` parameter lets	you specify the
@@ -158,15 +158,15 @@ class Reaction:
         ``Kc`` for concentrations (default), or ``Kp`` for pressures. Note that
         this function currently assumes an ideal gas mixture.
         """
-        cython.declare(dGrxn=numpy.ndarray, K=numpy.ndarray, C0=numpy.ndarray, P0=cython.double)
+        cython.declare(dGrxn=cython.double, K=cython.double, C0=cython.double, P0=cython.double)
         # Use free energy of reaction to calculate Ka
-        dGrxn = self.getFreeEnergyOfReaction(Tlist)
-        K = numpy.exp(-dGrxn / constants.R / Tlist)
+        dGrxn = self.getFreeEnergyOfReaction(T)
+        K = numpy.exp(-dGrxn / constants.R / T)
         # Convert Ka to Kc or Kp if specified
         P0 = 1e5
         if type == 'Kc':
             # Convert from Ka to Kc; C0 is the reference concentration
-            C0 = P0 / constants.R / Tlist
+            C0 = P0 / constants.R / T
             K *= C0 ** (len(self.products) - len(self.reactants))
         elif type == 'Kp':
             # Convert from Ka to Kp; P0 is the reference pressure
@@ -174,6 +174,37 @@ class Reaction:
         elif type != 'Ka' and type != '':
             raise ChemPyError('Invalid type "%s" passed to Reaction.getEquilibriumConstant(); should be "Ka", "Kc", or "Kp".')
         return K
+
+    def getEnthalpiesOfReaction(self, Tlist):
+        """
+        Return the enthalpies of reaction in J/mol evaluated at temperatures
+        `Tlist` in K.
+        """
+        return numpy.array([self.getEnthalpyOfReaction(T) for T in Tlist], numpy.float64)
+
+    def getEntropiesOfReaction(self, Tlist):
+        """
+        Return the entropies of reaction in J/mol*K evaluated at temperatures
+        `Tlist` in K.
+        """
+        return numpy.array([self.getEntropyOfReaction(T) for T in Tlist], numpy.float64)
+
+    def getFreeEnergiesOfReaction(self, Tlist):
+        """
+        Return the Gibbs free energies of reaction in J/mol evaluated at
+        temperatures `Tlist` in K.
+        """
+        return numpy.array([self.getFreeEnergyOfReaction(T) for T in Tlist], numpy.float64)
+
+    def getEquilibriumConstants(self, Tlist, type='Kc'):
+        """
+        Return the equilibrium constants for the reaction at the specified
+        temperatures `Tlist` in K. The `type` parameter lets you specify the
+        quantities used in the equilibrium constant: ``Ka`` for	activities,
+        ``Kc`` for concentrations (default), or ``Kp`` for pressures. Note that
+        this function currently assumes an ideal gas mixture.
+        """
+        return numpy.array([self.getEquilibriumConstant(T, type) for T in Tlist], numpy.float64)
 
     def getStoichiometricCoefficient(self, spec):
         """

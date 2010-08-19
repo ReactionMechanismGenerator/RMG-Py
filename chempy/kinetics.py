@@ -83,6 +83,13 @@ class KineticsModel:
         """
         return (self.Pmin <= P and P <= self.Pmax)
 
+    def getRateCoefficients(self, Tlist):
+        """
+        Return the rate coefficient k(T) in SI units at temperatures
+        `Tlist` in K.
+        """
+        return numpy.array([self.getRateCoefficient(T) for T in Tlist], numpy.float64)
+
 ################################################################################
 
 class ArrheniusModel(KineticsModel):
@@ -126,7 +133,7 @@ class ArrheniusModel(KineticsModel):
         `T` in K.
         """
         return self.A * (T / self.T0)** self.n * math.exp(-self.Ea / constants.R / T)
-    
+
     def changeT0(self, T0):
         """
         Changes the reference temperature used in the exponent to `T0`, and

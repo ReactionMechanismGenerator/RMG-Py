@@ -39,14 +39,23 @@ cdef class Reaction:
     cdef public bint reversible
     cdef public TransitionState transitionState
     cdef public KineticsModel kinetics
+    cdef public bint thirdBody
 
-    cpdef numpy.ndarray getEnthalpyOfReaction(self, numpy.ndarray Tlist)
+    cpdef double getEnthalpyOfReaction(self, double T)
 
-    cpdef numpy.ndarray getEntropyOfReaction(self, numpy.ndarray Tlist)
+    cpdef double getEntropyOfReaction(self, double T)
 
-    cpdef numpy.ndarray getFreeEnergyOfReaction(self, numpy.ndarray Tlist)
+    cpdef double getFreeEnergyOfReaction(self, double T)
 
-    cpdef numpy.ndarray getEquilibriumConstant(self, numpy.ndarray Tlist, str type=?)
+    cpdef double getEquilibriumConstant(self, double T, str type=?)
+
+    cpdef numpy.ndarray getEnthalpiesOfReaction(self, numpy.ndarray Tlist)
+
+    cpdef numpy.ndarray getEntropiesOfReaction(self, numpy.ndarray Tlist)
+
+    cpdef numpy.ndarray getFreeEnergiesOfReaction(self, numpy.ndarray Tlist)
+
+    cpdef numpy.ndarray getEquilibriumConstants(self, numpy.ndarray Tlist, str type=?)
 
     cpdef int getStoichiometricCoefficient(self, Species spec)
 
