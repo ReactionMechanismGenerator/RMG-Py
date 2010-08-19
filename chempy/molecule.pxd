@@ -77,6 +77,7 @@ cdef class Bond(Edge):
 cdef class Molecule(Graph):
 
     cdef public bint implicitHydrogens
+    cdef public int symmetryNumber
 
     cpdef addAtom(self, Atom atom)
 
@@ -150,7 +151,7 @@ cdef class Molecule(Graph):
 
     cpdef bint isLinear(self)
 
-    cpdef bint countInternalRotors(self)
+    cpdef int countInternalRotors(self)
 
     cpdef getAdjacentResonanceIsomers(self)
 

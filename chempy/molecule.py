@@ -38,7 +38,7 @@ describe the corresponding atom or bond.
 import cython
 
 import element as elements
-import graph
+from graph import Vertex, Edge, Graph
 from exception import ChemPyError
 from pattern import AtomPattern, BondPattern, MoleculePattern, \
     atomTypesEquivalent, atomTypesSpecificCaseOf, getAtomType, \
@@ -46,7 +46,7 @@ from pattern import AtomPattern, BondPattern, MoleculePattern, \
 
 ################################################################################
 
-class Atom(graph.Vertex):
+class Atom(Vertex):
     """
     An atom. The attributes are:
 
@@ -67,7 +67,7 @@ class Atom(graph.Vertex):
     """
 
     def __init__(self, element=None, radicalElectrons=0, spinMultiplicity=1, implicitHydrogens=0, charge=0, label=''):
-        graph.Vertex.__init__(self)
+        Vertex.__init__(self)
         if isinstance(element, str):
             self.element = elements.__dict__[element]
         else:
@@ -226,7 +226,7 @@ class Atom(graph.Vertex):
 
 ################################################################################
 
-class Bond(graph.Edge):
+class Bond(Edge):
     """
     A chemical bond. The attributes are:
 
@@ -239,7 +239,7 @@ class Bond(graph.Edge):
     """
 
     def __init__(self, order=1):
-        graph.Edge.__init__(self)
+        Edge.__init__(self)
         self.order = order
 
     def __str__(self):
@@ -370,7 +370,7 @@ class Bond(graph.Edge):
 
 ################################################################################
 
-class Molecule(graph.Graph):
+class Molecule(Graph):
     """
     A representation of a molecular structure using a graph data type, extending
     the :class:`Graph` class. The `atoms` and `bonds` attributes are aliases
@@ -379,7 +379,7 @@ class Molecule(graph.Graph):
     """
 
     def __init__(self, atoms=None, bonds=None, SMILES='', InChI=''):
-        graph.Graph.__init__(self, atoms, bonds)
+        Graph.__init__(self, atoms, bonds)
         if SMILES != '': self.fromSMILES(SMILES)
         elif InChI != '': self.fromInChI(InChI)
         self.implicitHydrogens = False
@@ -488,7 +488,7 @@ class Molecule(graph.Graph):
         original vertices and edges are used in the new graph.
         """
         other = cython.declare(Molecule)
-        g = graph.Graph.copy(self, deep)
+        g = Graph.copy(self, deep)
         other = Molecule(g.vertices, g.edges)
         return other
 
@@ -497,7 +497,7 @@ class Molecule(graph.Graph):
         Merge two molecules so as to store them in a single :class:`Molecule`
         object. The merged :class:`Molecule` object is returned.
         """
-        g = graph.Graph.merge(self, other)
+        g = Graph.merge(self, other)
         molecule = Molecule(atoms=g.vertices, bonds=g.edges)
         return molecule
 
@@ -506,7 +506,7 @@ class Molecule(graph.Graph):
         Convert a single :class:`Molecule` object containing two or more
         unconnected molecules into separate class:`Molecule` objects.
         """
-        graphs = graph.Graph.split(self)
+        graphs = Graph.split(self)
         molecules = []
         for g in graphs:
             molecule = Molecule(atoms=g.vertices, bonds=g.edges)
@@ -638,7 +638,7 @@ class Molecule(graph.Graph):
             self.makeHydrogensExplicit()
             other.makeHydrogensExplicit()
         # Do the isomorphism comparison
-        result = graph.Graph.isIsomorphic(self, other, initialMap)
+        result = Graph.isIsomorphic(self, other, initialMap)
         # Restore implicit status if needed
         if implicitH[0]: self.makeHydrogensImplicit()
         if implicitH[1]: other.makeHydrogensImplicit()
@@ -665,7 +665,7 @@ class Molecule(graph.Graph):
             self.makeHydrogensExplicit()
             other.makeHydrogensExplicit()
         # Do the isomorphism comparison
-        result = graph.Graph.findIsomorphism(self, other, initialMap)
+        result = Graph.findIsomorphism(self, other, initialMap)
         # Restore implicit status if needed
         if implicitH[0]: self.makeHydrogensImplicit()
         if implicitH[1]: other.makeHydrogensImplicit()
@@ -687,7 +687,7 @@ class Molecule(graph.Graph):
         implicitH = self.implicitHydrogens
         self.makeHydrogensExplicit()
         # Do the isomorphism comparison
-        result = graph.Graph.isSubgraphIsomorphic(self, other, initialMap)
+        result = Graph.isSubgraphIsomorphic(self, other, initialMap)
         # Restore implicit status if needed
         if implicitH: self.makeHydrogensImplicit()
         return result
@@ -711,7 +711,7 @@ class Molecule(graph.Graph):
         implicitH = self.implicitHydrogens
         self.makeHydrogensExplicit()
         # Do the isomorphism comparison
-        result = graph.Graph.findSubgraphIsomorphisms(self, other, initialMap)
+        result = Graph.findSubgraphIsomorphisms(self, other, initialMap)
         # Restore implicit status if needed
         if implicitH: self.makeHydrogensImplicit()
         return result

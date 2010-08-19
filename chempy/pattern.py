@@ -111,7 +111,7 @@ We define the following reaction recipe actions:
 
 import cython
 
-import graph
+from graph import Vertex, Edge, Graph
 from exception import ChemPyError
 
 ################################################################################
@@ -224,7 +224,7 @@ def atomTypesSpecificCaseOf(atomType1, atomType2):
 
 ################################################################################
 
-class AtomPattern(graph.Vertex):
+class AtomPattern(Vertex):
     """
     An atom pattern. This class is based on the :class:`Atom` class, except that
     it uses :ref:`atom types <atom-types>` instead of elements, and all
@@ -249,7 +249,7 @@ class AtomPattern(graph.Vertex):
     """
 
     def __init__(self, atomType=None, radicalElectrons=None, spinMultiplicity=None, charge=None, label=''):
-        graph.Vertex.__init__(self)
+        Vertex.__init__(self)
         self.atomType = atomType or []
         self.radicalElectrons = radicalElectrons or []
         self.spinMultiplicity = spinMultiplicity or []
@@ -411,15 +411,15 @@ class AtomPattern(graph.Vertex):
         :ref:`here <reaction-recipe-actions>`.
         """
         if action[0].upper() == 'CHANGE_BOND':
-            self.__changeBond(order=action[2])
+            self.__changeBond(action[2])
         elif action[0].upper() == 'FORM_BOND':
-            self.__formBond(order=action[2])
+            self.__formBond(action[2])
         elif action[0].upper() == 'BREAK_BOND':
-            self.__breakBond(order=action[2])
+            self.__breakBond(action[2])
         elif action[0].upper() == 'GAIN_RADICAL':
-            self.__gainRadical(radical=action[2])
+            self.__gainRadical(action[2])
         elif action[0].upper() == 'LOSE_RADICAL':
-            self.__loseRadical(radical=action[2])
+            self.__loseRadical(action[2])
         else:
             raise ChemPyError('Unable to update AtomPattern: Invalid action %s".' % (action))
 
@@ -494,7 +494,7 @@ class AtomPattern(graph.Vertex):
 
 ################################################################################
 
-class BondPattern(graph.Edge):
+class BondPattern(Edge):
     """
     A bond pattern. This class is based on the :class:`Bond` class, except that
     all attributes are lists rather than individual values. The allowed bond
@@ -511,7 +511,7 @@ class BondPattern(graph.Edge):
     """
 
     def __init__(self, order=None):
-        graph.Edge.__init__(self)
+        Edge.__init__(self)
         self.order = order or []
 
     def __str__(self):
@@ -564,7 +564,7 @@ class BondPattern(graph.Edge):
         :ref:`here <reaction-recipe-actions>`.
         """
         if action[0].upper() == 'CHANGE_BOND':
-            self.__changeBond(order=action[2])
+            self.__changeBond(action[2])
         else:
             raise ChemPyError('Unable to update BondPattern: Invalid action %s".' % (action))
 
@@ -621,7 +621,7 @@ class BondPattern(graph.Edge):
 
 ################################################################################
 
-class MoleculePattern(graph.Graph):
+class MoleculePattern(Graph):
     """
     A representation of a molecular substructure pattern using a graph data
     type, extending the :class:`Graph` class. The `atoms` and `bonds` attributes
@@ -631,7 +631,7 @@ class MoleculePattern(graph.Graph):
     """
 
     def __init__(self, atoms=None, bonds=None):
-        graph.Graph.__init__(self, atoms, bonds)
+        Graph.__init__(self, atoms, bonds)
     
     def __getAtoms(self): return self.vertices
     def __setAtoms(self, atoms): self.vertices = atoms
@@ -711,7 +711,7 @@ class MoleculePattern(graph.Graph):
         original vertices and edges are used in the new graph.
         """
         other = cython.declare(MoleculePattern)
-        g = graph.Graph.copy(self, deep)
+        g = Graph.copy(self, deep)
         other = MoleculePattern(g.vertices, g.edges)
         return other
 
@@ -721,7 +721,7 @@ class MoleculePattern(graph.Graph):
         :class:`MoleculePattern` object. The merged :class:`MoleculePattern`
         object is returned.
         """
-        g = graph.Graph.merge(self, other)
+        g = Graph.merge(self, other)
         molecule = MoleculePattern(atoms=g.vertices, bonds=g.edges)
         return molecule
 
@@ -730,7 +730,7 @@ class MoleculePattern(graph.Graph):
         Convert a single :class:`MoleculePattern` object containing two or more
         unconnected patterns into separate class:`MoleculePattern` objects.
         """
-        graphs = graph.Graph.split(self)
+        graphs = Graph.split(self)
         molecules = []
         for g in graphs:
             molecule = MoleculePattern(atoms=g.vertices, bonds=g.edges)
@@ -806,7 +806,7 @@ class MoleculePattern(graph.Graph):
         if not isinstance(other, MoleculePattern):
             raise TypeError('Got a %s object for parameter "other", when a MoleculePattern object is required.' % other.__class__)
         # Do the isomorphism comparison
-        return graph.Graph.isIsomorphic(self, other, initialMap)
+        return Graph.isIsomorphic(self, other, initialMap)
 
     def findIsomorphism(self, other, initialMap=None):
         """
@@ -823,7 +823,7 @@ class MoleculePattern(graph.Graph):
         if not isinstance(other, MoleculePattern):
             raise TypeError('Got a %s object for parameter "other", when a MoleculePattern object is required.' % other.__class__)
         # Do the isomorphism comparison
-        return graph.Graph.findIsomorphism(self, other, initialMap)
+        return Graph.findIsomorphism(self, other, initialMap)
 
     def isSubgraphIsomorphic(self, other, initialMap=None):
         """
@@ -838,7 +838,7 @@ class MoleculePattern(graph.Graph):
         if not isinstance(other, MoleculePattern):
             raise TypeError('Got a %s object for parameter "other", when a MoleculePattern object is required.' % other.__class__)
         # Do the isomorphism comparison
-        return graph.Graph.isSubgraphIsomorphic(self, other, initialMap)
+        return Graph.isSubgraphIsomorphic(self, other, initialMap)
 
     def findSubgraphIsomorphisms(self, other, initialMap=None):
         """
@@ -856,7 +856,7 @@ class MoleculePattern(graph.Graph):
         if not isinstance(other, MoleculePattern):
             raise TypeError('Got a %s object for parameter "other", when a MoleculePattern object is required.' % other.__class__)
         # Do the isomorphism comparison
-        return graph.Graph.findSubgraphIsomorphisms(self, other, initialMap)
+        return Graph.findSubgraphIsomorphisms(self, other, initialMap)
 
 ################################################################################
 

@@ -48,15 +48,15 @@ cdef class AtomPattern(Vertex):
 
     cpdef __changeBond(self, short order)
 
-    cpdef __formBond(self, short order)
+    cpdef __formBond(self, str order)
 
-    cpdef __breakBond(self, short order)
+    cpdef __breakBond(self, str order)
 
     cpdef __gainRadical(self, short radical)
 
     cpdef __loseRadical(self, short radical)
 
-    cpdef applyAction(self, tuple action)
+    cpdef applyAction(self, list action)
 
     cpdef bint equivalent(self, Vertex other)
 
@@ -72,7 +72,7 @@ cdef class BondPattern(Edge):
 
     cpdef __changeBond(self, short order)
 
-    cpdef applyAction(self, tuple action)
+    cpdef applyAction(self, list action)
 
     cpdef bint equivalent(self, Edge other)
 
