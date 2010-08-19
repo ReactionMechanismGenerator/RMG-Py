@@ -36,13 +36,13 @@ cdef class ThermoModel:
     
     cpdef bint isTemperatureValid(ThermoModel self, double T) except -2
 
-    cpdef double getHeatCapacity(self, double Tlist)
-
-    cpdef double getEnthalpy(self, double Tlist)
-
-    cpdef double getEntropy(self, double Tlist)
-
-    cpdef double getFreeEnergy(self, double Tlist)
+#    cpdef double getHeatCapacity(self, double T)
+#
+#    cpdef double getEnthalpy(self, double T)
+#
+#    cpdef double getEntropy(self, double T)
+#
+#    cpdef double getFreeEnergy(self, double T)
 
     cpdef numpy.ndarray getHeatCapacities(self, numpy.ndarray Tlist)
 
