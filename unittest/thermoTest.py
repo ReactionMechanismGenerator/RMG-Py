@@ -31,10 +31,10 @@ class ThermoTest(unittest.TestCase):
         Slist0 = [287.421, 341.892, 384.685, 420.369, 450.861, 477.360, 500.708, 521.521, 540.262, 557.284]
         Glist0 = [-223797., -287002., -359801., -440406., -527604., -620485., -718338., -820599., -926809., -1036590.]
 
-        Cplist = wilhoit.getHeatCapacity(Tlist)
-        Hlist = wilhoit.getEnthalpy(Tlist)
-        Slist = wilhoit.getEntropy(Tlist)
-        Glist = wilhoit.getFreeEnergy(Tlist)
+        Cplist = wilhoit.getHeatCapacities(Tlist)
+        Hlist = wilhoit.getEnthalpies(Tlist)
+        Slist = wilhoit.getEntropies(Tlist)
+        Glist = wilhoit.getFreeEnergies(Tlist)
 
         for i in range(len(Tlist)):
             self.assertAlmostEqual(Cplist[i] / Cplist0[i], 1.0, 4)

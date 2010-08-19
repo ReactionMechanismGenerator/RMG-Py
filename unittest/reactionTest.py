@@ -59,12 +59,12 @@ class ReactionTest(unittest.TestCase):
         Kclist0 = [float(v) for v in ['1.45661e+28', '2.38935e+09', '1709.76', '1.74189', '0.0314866', '0.00235045', '0.000389568', '0.000105413', '3.93273e-05', '1.83006e-05']]
         Kplist0 = [float(v) for v in ['8.75951e+24', '718430', '0.342727', '0.000261877', '3.78696e-06', '2.35579e-07', '3.34673e-08', '7.92389e-09', '2.62777e-09', '1.10053e-09']]
 
-        Hlist = reaction.getEnthalpyOfReaction(Tlist)
-        Slist = reaction.getEntropyOfReaction(Tlist)
-        Glist = reaction.getFreeEnergyOfReaction(Tlist)
-        Kalist = reaction.getEquilibriumConstant(Tlist, type='Ka')
-        Kclist = reaction.getEquilibriumConstant(Tlist, type='Kc')
-        Kplist = reaction.getEquilibriumConstant(Tlist, type='Kp')
+        Hlist = reaction.getEnthalpiesOfReaction(Tlist)
+        Slist = reaction.getEntropiesOfReaction(Tlist)
+        Glist = reaction.getFreeEnergiesOfReaction(Tlist)
+        Kalist = reaction.getEquilibriumConstants(Tlist, type='Ka')
+        Kclist = reaction.getEquilibriumConstants(Tlist, type='Kc')
+        Kplist = reaction.getEquilibriumConstants(Tlist, type='Kp')
 
         for i in range(len(Tlist)):
             self.assertAlmostEqual( Hlist[i] /  Hlist0[i], 1.0, 4)
@@ -110,7 +110,7 @@ class ReactionTest(unittest.TestCase):
         Tlist = 1000.0/numpy.arange(0.4, 3.35, 0.05)
         klist = reaction.calculateTSTRateCoefficient(Tlist, TS, tunneling='')
         arrhenius = ArrheniusModel().fitToData(Tlist, klist)
-        klist2 = arrhenius.getRateCoefficient(Tlist)
+        klist2 = arrhenius.getRateCoefficients(Tlist)
 
         # Check that the correct Arrhenius parameters are returned
         self.assertAlmostEqual(arrhenius.A/458.87, 1.0, 2)
