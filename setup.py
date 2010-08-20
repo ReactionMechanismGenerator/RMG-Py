@@ -50,6 +50,7 @@ ext_modules = [
     Extension('chempy.species', ['chempy/species.py']),
     Extension('chempy.states', ['chempy/states.py']),
     Extension('chempy.thermo', ['chempy/thermo.py']),
+    Extension('chempy.ext.thermo_converter', ['chempy/ext/thermo_converter.py']),
 ]
 
 setup(name='ChemPy',
