@@ -664,8 +664,8 @@ class ReactionFamily(Database):
              and len(reactantStructures) == 1):
                 # just be absolutely sure (maybe slow, but safe)
                 rs = reactantStructures[0]
-                if ( rs.graph.isVertexInCycle(rs.getLabeledAtom('*1'))
-                 and rs.graph.isVertexInCycle(rs.getLabeledAtom('*2'))):
+                if ( rs.isVertexInCycle(rs.getLabeledAtom('*1'))
+                 and rs.isVertexInCycle(rs.getLabeledAtom('*2'))):
                     # both *1 and *2 are in cycles (probably the same one)
                     # so it's pretty safe to just fail quietly,
                     # and try the next reaction

@@ -845,6 +845,7 @@ class Database:
                 # Make sure labels actually point to atoms.
                 if center is None or atom is None:
                     return False
+                if isinstance(center, list): center = center[0]
                 # Semantic check #1: atoms with same label are equivalent
                 elif not atom.isSpecificCaseOf(center):
                     return False
