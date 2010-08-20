@@ -343,7 +343,7 @@ class WilhoitModel(ThermoModel):
         # Parameters are the same as for that method
         cython.declare(Cp_fit=numpy.ndarray)
         self.fitToDataForConstantB(Tlist, Cplist, linear, nFreq, nRotors, B, H298, S298)
-        Cp_fit = self.getHeatCapacity(Tlist)
+        Cp_fit = self.getHeatCapacities(Tlist)
         # Objective function is linear least-squares
         return numpy.sum( (Cp_fit - Cplist) * (Cp_fit - Cplist) )
     

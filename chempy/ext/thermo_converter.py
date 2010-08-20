@@ -64,7 +64,7 @@ def convertGAtoWilhoit(GAthermo, atoms, rotors, linear, B0=500.0, constantB=Fals
     if constantB:
         wilhoit.fitToDataForConstantB(GAthermo.Tdata, GAthermo.Cpdata, linear, freq, rotors, GAthermo.H298, GAthermo.S298, B0)
     else:
-        wilhoit.fitToData(GAthermo.Tdata, GAthermo.Cpdata, linear, freq, rotors, B0, GAthermo.H298, GAthermo.S298)
+        wilhoit.fitToData(GAthermo.Tdata, GAthermo.Cpdata, linear, freq, rotors, GAthermo.H298, GAthermo.S298, B0)
     return wilhoit
 
 ################################################################################
@@ -156,21 +156,19 @@ def convertWilhoitToNASA(wilhoit, Tmin, Tmax, Tint, fixedTint=False, weighting=T
 
     #for the low polynomial, we want the results to match the Wilhoit value at 298.15K
     #low polynomial enthalpy:
-    Tlist = numpy.array([298.15], numpy.float64)
-    Hlow = (wilhoit.getEnthalpy(Tlist)[0] - nasa_low.getEnthalpy(Tlist)[0])/constants.R
+    Hlow = (wilhoit.getEnthalpy(298.15) - nasa_low.getEnthalpy(298.15))/constants.R
     #low polynomial entropy:
-    Slow = (wilhoit.getEntropy(Tlist)[0] - nasa_low.getEntropy(Tlist)[0])/constants.R
-    
+    Slow = (wilhoit.getEntropy(298.15) - nasa_low.getEntropy(298.15))/constants.R
+
     # update last two coefficients
     nasa_low.c5 = Hlow
     nasa_low.c6 = Slow
 
     #for the high polynomial, we want the results to match the low polynomial value at tint
     #high polynomial enthalpy:
-    Tlist = numpy.array([Tint], numpy.float64)
-    Hhigh = (nasa_low.getEnthalpy(Tlist)[0] - nasa_high.getEnthalpy(Tlist)[0])/constants.R
+    Hhigh = (nasa_low.getEnthalpy(Tint) - nasa_high.getEnthalpy(Tint))/constants.R
     #high polynomial entropy:
-    Shigh = (nasa_low.getEntropy(Tlist)[0] - nasa_high.getEntropy(Tlist)[0])/constants.R
+    Shigh = (nasa_low.getEntropy(Tint) - nasa_high.getEntropy(Tint))/constants.R
 
     # update last two coefficients
     #polynomial_high.coeffs = (b6,b7,b8,b9,b10,Hhigh,Shigh)
