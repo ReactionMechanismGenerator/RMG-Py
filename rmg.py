@@ -200,7 +200,7 @@ def execute(args):
     # Set wall time
     if args.walltime == '0': settings.wallTime = 0
     else:
-        data = args.walltime.split(':')
+        data = args.walltime[0].split(':')
         if len(data) == 1:
             settings.walltime = int(data[-1])
         elif len(data) == 2:
@@ -486,19 +486,28 @@ def generateExecutionPlots(execTime, coreSpeciesCount, coreReactionCount,
 
 ################################################################################
 
+class tee:
+	"""A simple tee to create a stream which prints to many streams"""
+	def __init__(self, *fileobjects):
+		self.fileobjects=fileobjects
+	def write(self, string):
+		for fileobject in self.fileobjects:
+			fileobject.write(string)
+
 def processStats(stats_file, log_file):
-        out_stream = tee(sys.stdout,open(log_file,'a')) # print to screen AND append to RMG.log
-        stats = pstats.Stats(stats_file,stream=out_stream)
-        stats.strip_dirs()
-        print >>out_stream, "Sorted by internal time"
-        stats.sort_stats('time')
-        stats.print_stats(25)
-        stats.print_callers(25)
-        print >>out_stream, "Sorted by cumulative time"
-        stats.sort_stats('cumulative')
-        stats.print_stats(25)
-        stats.print_callers(25)
-        stats.print_callees(25)
+    import pstats
+    out_stream = tee(sys.stdout,open(log_file,'a')) # print to screen AND append to RMG.log
+    stats = pstats.Stats(stats_file,stream=out_stream)
+    stats.strip_dirs()
+    print >>out_stream, "Sorted by internal time"
+    stats.sort_stats('time')
+    stats.print_stats(25)
+    stats.print_callers(25)
+    print >>out_stream, "Sorted by cumulative time"
+    stats.sort_stats('cumulative')
+    stats.print_stats(25)
+    stats.print_callers(25)
+    stats.print_callees(25)
 
 ################################################################################
 
@@ -536,15 +545,15 @@ if __name__ == '__main__':
     if args.profile:
         import cProfile, sys, pstats, os
         global_vars = {}
-        local_vars = {'args': args, 'options':options, 'rmg':rmg}
+        local_vars = {'args': args, 'execute': execute}
         command = """execute(args)"""
-        stats_file = os.path.join(options.outputDirectory,'RMG.profile')
+        stats_file = os.path.join(args.output_directory,'RMG.profile')
         print("Running under cProfile")
         if not args.postprocess:
             # actually run the program!
             cProfile.runctx(command, global_vars, local_vars, stats_file)
         # postprocess the stats
-        log_file = os.path.join(options.outputDirectory,'RMG.log')
+        log_file = os.path.join(args.output_directory,'RMG.log')
         processStats(stats_file, log_file)
 
     else:
