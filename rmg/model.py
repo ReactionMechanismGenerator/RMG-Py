@@ -126,8 +126,7 @@ class Reaction(chempy.reaction.Reaction):
         Generate kinetcs data for the reaction using the kinetics database.
         """
         self.kinetics = generateKineticsData(self, self.family.label, self.reactantMolecules)
-        Tlist = numpy.array([298.15], numpy.float64)
-        self.kinetics = self.kinetics.toArrhenius(dHrxn=self.getEnthalpyOfReaction(Tlist)[0])
+        self.kinetics = self.kinetics.toArrhenius(self.getEnthalpyOfReaction(298.15))
 
     def toCantera(self, T=1000, P=1.0e5):
         """
@@ -533,6 +532,12 @@ class CoreEdgeReactionModel:
             rxn.reactantMolecules = None
             rxn.reverse.reactantMolecules = None
 
+        # Tell Cantera about new core species and core reactions
+        for spec in self.core.species[numOldCoreSpecies:]:
+            spec.toCantera()
+        for rxn in self.core.reactions[numOldCoreReactions:]:
+            rxn.toCantera()
+
         logging.info('')
 
     def addSpeciesToCore(self, spec):
@@ -546,9 +551,6 @@ class CoreEdgeReactionModel:
 
         # Add the species to the core
         self.core.species.append(spec)
-
-        # Tell Cantera about the new core species
-        spec.toCantera()
 
         if spec in self.edge.species:
 
@@ -650,7 +652,6 @@ class CoreEdgeReactionModel:
         self.core.reactions.append(rxn)
         if rxn in self.edge.reactions:
             self.edge.reactions.remove(rxn)
-        rxn.toCantera()
         
     def addReactionToEdge(self, rxn):
         """
