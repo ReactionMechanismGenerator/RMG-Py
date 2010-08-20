@@ -50,6 +50,7 @@ class Vertex(object):
     `connectivity1`     The number of nearest neighbors
     `connectivity2`     The sum of the neighbors' `connectivity1` values
     `connectivity3`     The sum of the neighbors' `connectivity2` values
+    `sortingLabel`      An integer used to sort the vertices
     ==================  ========================================================
 
     """
@@ -80,14 +81,23 @@ class Vertex(object):
         self.connectivity1 = -1
         self.connectivity2 = -1
         self.connectivity3 = -1
+        self.sortingLabel = -1
 
-def getVertexSortValue(vertex):
+def getVertexConnectivityValue(vertex):
     """
     Return a value used to sort vertices prior to poposing candidate pairs in
     :meth:`__VF2_pairs`. The value returned is based on the vertex's
     connectivity values (and assumes that they are set properly).
     """
     return ( -256*vertex.connectivity1 - 16*vertex.connectivity2 - vertex.connectivity3 )
+
+def getVertexSortingLabel(vertex):
+    """
+    Return a value used to sort vertices prior to poposing candidate pairs in
+    :meth:`__VF2_pairs`. The value returned is based on the vertex's
+    connectivity values (and assumes that they are set properly).
+    """
+    return vertex.sortingLabel
 
 ################################################################################
 
@@ -335,7 +345,9 @@ class Graph:
         the isomorphism functions, much more efficient.
         """
         self.updateConnectivityValues()
-        self.vertices.sort(key=getVertexSortValue)
+        self.vertices.sort(key=getVertexConnectivityValue)
+        for index, vertex in enumerate(self.vertices):
+            vertex.sortingLabel = index
 
     def isIsomorphic(self, other, initialMap=None):
         """
@@ -853,7 +865,7 @@ def __VF2_pairs(graph1, graph2, terminals1, terminals2, map21, map12):
         list_to_sort = graph2.vertices[:]
         lowest_label = 32766 # hopefully we don't have more unmapped atoms than this!
         for vertex1 in list_to_sort: # just using vertex1 as a temporary variable
-            this_label = getVertexSortValue(vertex1)
+            this_label = getVertexSortingLabel(vertex1)
             if this_label < lowest_label:
                 if not vertex1 in map12:
                     lowest_label = this_label
@@ -861,7 +873,7 @@ def __VF2_pairs(graph1, graph2, terminals1, terminals2, map21, map12):
 
         # pair with all vertex1s
         list_to_sort = graph1.vertices[:]
-        list_to_sort.sort(key=getVertexSortValue)
+        list_to_sort.sort(key=getVertexSortingLabel)
         for vertex1 in list_to_sort:
             if vertex1 not in map21: # exclude already mapped vertices
                 pairs.append([vertex1, vertex2])
@@ -884,7 +896,7 @@ def __VF2_terminals(graph, mapping):
             if vertex2 not in mapping:
                 if vertex2 not in terminals:
                     terminals.append(vertex2)
-    terminals.sort(key=getVertexSortValue)
+    terminals.sort(key=getVertexSortingLabel)
     return terminals
 
 def __VF2_updateTerminals(graph, mapping, old_terminals, new_vertex):
@@ -907,11 +919,11 @@ def __VF2_updateTerminals(graph, mapping, old_terminals, new_vertex):
     for vertex in graph.edges[new_vertex]:
         if vertex not in mapping: # only add if not already mapped
             # find spot in the sorted terminals list where we should put this vertex
-            sorting_label = getVertexSortValue(vertex)
+            sorting_label = getVertexSortingLabel(vertex)
             i=0; sorting_label2=-1 # in case terminals list empty
             for i in range(len(terminals)):
                 vertex2 = terminals[i]
-                sorting_label2 = getVertexSortValue(vertex2)
+                sorting_label2 = getVertexSortingLabel(vertex2)
                 if sorting_label2 >= sorting_label:
                     break
                 # else continue going through the list of terminals

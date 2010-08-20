@@ -29,6 +29,7 @@ cdef class Vertex(object):
     cdef public short connectivity1
     cdef public short connectivity2
     cdef public short connectivity3
+    cdef public short sortingLabel
 
     cpdef bint equivalent(self, Vertex other)
 
@@ -36,7 +37,9 @@ cdef class Vertex(object):
 
     cpdef resetConnectivityValues(self)
 
-cpdef short getVertexSortValue(Vertex vertex) except 1 # all values should be negative
+cpdef short getVertexConnectivityValue(Vertex vertex) except 1 # all values should be negative
+
+cpdef short getVertexSortingLabel(Vertex vertex) except -1 # all values should be nonnegative
 
 ################################################################################
 
