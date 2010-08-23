@@ -40,9 +40,8 @@ import cython
 import element as elements
 from graph import Vertex, Edge, Graph
 from exception import ChemPyError
-from pattern import AtomPattern, BondPattern, MoleculePattern, \
-    atomTypesEquivalent, atomTypesSpecificCaseOf, getAtomType, \
-    fromAdjacencyList, toAdjacencyList
+from pattern import AtomPattern, BondPattern, MoleculePattern
+from pattern import atomTypesEquivalent, atomTypesSpecificCaseOf, getAtomType, fromAdjacencyList, toAdjacencyList
 
 ################################################################################
 
@@ -122,10 +121,21 @@ class Atom(Vertex):
                 self.implicitHydrogens == atom.implicitHydrogens and
                 self.charge == atom.charge)
         elif isinstance(other, AtomPattern):
+            cython.declare(a=str, radical=cython.short, spin=cython.short, charge=cython.short)
             ap = other
-            return (any([atomTypesEquivalent(self.atomType, a) for a in ap.atomType]) and
-                [self.radicalElectrons, self.spinMultiplicity] in zip(ap.radicalElectrons, ap.spinMultiplicity) and
-                self.charge in ap.charge)
+            for a in ap.atomType:
+                if atomTypesEquivalent(self.atomType, a): break
+            else:
+                return False
+            for radical, spin in zip(ap.radicalElectrons, ap.spinMultiplicity):
+                if self.radicalElectrons == radical and self.spinMultiplicity == spin: break
+            else:
+                return False
+            for charge in ap.charge:
+                if self.charge == charge: break
+            else:
+                return False
+            return True
 
     def isSpecificCaseOf(self, other):
         """
@@ -138,11 +148,21 @@ class Atom(Vertex):
         if isinstance(other, Atom):
             return self.equivalent(other)
         elif isinstance(other, AtomPattern):
-            cython.declare(atom=AtomPattern)
+            cython.declare(atom=AtomPattern, a=str, radical=cython.short, spin=cython.short, charge=cython.short)
             atom = other
-            return (any([atomTypesSpecificCaseOf(self.atomType, a) for a in atom.atomType]) and
-                (self.radicalElectrons, self.spinMultiplicity) in zip(atom.radicalElectrons, atom.spinMultiplicity) and
-                self.charge in atom.charge)
+            for a in atom.atomType: 
+                if atomTypesSpecificCaseOf(self.atomType, a): break
+            else:
+                return False
+            for radical, spin in zip(atom.radicalElectrons, atom.spinMultiplicity):
+                if self.radicalElectrons == radical and self.spinMultiplicity == spin: break
+            else:
+                return False
+            for charge in atom.charge:
+                if self.charge == charge: break
+            else:
+                return False
+            return True
 
     def copy(self):
         """
@@ -478,7 +498,7 @@ class Molecule(Graph):
         """
         Return the molecular weight of the molecule in kg/mol.
         """
-        return sum([atom.mass for atom in self.atoms])
+        return sum([atom.mass for atom in self.vertices])
 
     def copy(self, deep=False):
         """
@@ -523,15 +543,15 @@ class Molecule(Graph):
         cython.declare(atom=Atom, neighbor=Atom, hydrogens=list)
 
         # Check that the structure contains at least one heavy atom
-        if all([atom.isHydrogen() for atom in self.atoms]):
+        if all([atom.isHydrogen() for atom in self.vertices]):
             return
         
         # Count the hydrogen atoms on each non-hydrogen atom and set the
         # `implicitHydrogens` attribute accordingly
         hydrogens = []
-        for atom in self.atoms:
+        for atom in self.vertices:
             if atom.isHydrogen():
-                neighbor = self.bonds[atom].keys()[0]
+                neighbor = self.edges[atom].keys()[0]
                 neighbor.implicitHydrogens += 1
                 hydrogens.append(atom)
 
@@ -554,7 +574,7 @@ class Molecule(Graph):
 
         # Create new hydrogen atoms for each implicit hydrogen
         hydrogens = []
-        for atom in self.atoms:
+        for atom in self.vertices:
             while atom.implicitHydrogens > 0:
                 H = Atom(element='H')
                 H.atomType = 'H'
@@ -576,14 +596,14 @@ class Molecule(Graph):
         to ensure they are correct (i.e. accurately describe their local bond
         environment) and complete (i.e. are as detailed as possible).
         """
-        for atom in self.atoms:
-            atom.atomType = getAtomType(atom, self.bonds[atom])
+        for atom in self.vertices:
+            atom.atomType = getAtomType(atom, self.edges[atom])
 
     def clearLabeledAtoms(self):
         """
         Remove the labels from all atoms in the molecule.
         """
-        for atom in self.atoms:
+        for atom in self.vertices:
             atom.label = ''
 
     def containsLabeledAtom(self, label):
@@ -591,7 +611,7 @@ class Molecule(Graph):
         Return :data:`True` if the molecule contains an atom with the label
         `label` and :data:`False` otherwise.
         """
-        for atom in self.atoms:
+        for atom in self.vertices:
             if atom.label == label: return True
         return False
 
@@ -599,7 +619,7 @@ class Molecule(Graph):
         """
         Return the atoms in the molecule that are labeled.
         """
-        for atom in self.atoms:
+        for atom in self.vertices:
             if atom.label == label: return atom
         return None
 
@@ -610,7 +630,7 @@ class Molecule(Graph):
         same label, the value is converted to a list of these atoms.
         """
         labeled = {}
-        for atom in self.atoms:
+        for atom in self.vertices:
             if atom.label != '':
                 if atom.label in labeled:
                     labeled[atom.label] = [labeled[atom.label]]
@@ -810,8 +830,8 @@ class Molecule(Graph):
             charge = obatom.GetFormalCharge()
 
             atom = Atom(element, radicalElectrons, spinMultiplicity, 0, charge)
-            self.atoms.append(atom)
-            self.bonds[atom] = {}
+            self.vertices.append(atom)
+            self.edges[atom] = {}
             
             # Add bonds by iterating again through atoms
             for j in range(0, i):
@@ -827,10 +847,10 @@ class Molecule(Graph):
                     elif obbond.IsAromatic(): order = 'B'
 
                     bond = Bond(order)
-                    atom1 = self.atoms[i]
-                    atom2 = self.atoms[j]
-                    self.bonds[atom1][atom2] = bond
-                    self.bonds[atom2][atom1] = bond
+                    atom1 = self.vertices[i]
+                    atom2 = self.vertices[j]
+                    self.edges[atom1][atom2] = bond
+                    self.edges[atom2][atom1] = bond
 
         # Make hydrogens implicit to conserve memory
         self.makeHydrogensImplicit()
@@ -905,8 +925,8 @@ class Molecule(Graph):
         # between different runs
         self.sortAtoms()
 
-        atoms = self.atoms
-        bonds = self.bonds
+        atoms = self.vertices
+        bonds = self.edges
 
         obmol = openbabel.OBMol()
         for atom in atoms:
@@ -941,7 +961,7 @@ class Molecule(Graph):
         otherwise.
         """
 
-        atomCount = len(self.atoms) + sum([atom.implicitHydrogens for atom in self.atoms])
+        atomCount = len(self.vertices) + sum([atom.implicitHydrogens for atom in self.vertices])
 
         # Monatomic molecules are definitely nonlinear
         if atomCount == 1:
@@ -955,9 +975,9 @@ class Molecule(Graph):
 
         # True if all bonds are double bonds (e.g. O=C=O)
         allDoubleBonds = True
-        for atom1 in self.bonds:
+        for atom1 in self.edges:
             if atom1.implicitHydrogens > 0: allDoubleBonds = False
-            for bond in self.bonds[atom1].values():
+            for bond in self.edges[atom1].values():
                 if not bond.isDouble(): allDoubleBonds = False
         if allDoubleBonds: return True
 
@@ -965,8 +985,8 @@ class Molecule(Graph):
         # This test requires explicit hydrogen atoms
         implicitH = self.implicitHydrogens
         self.makeHydrogensExplicit()
-        for atom in self.atoms:
-            bonds = self.bonds[atom].values()
+        for atom in self.vertices:
+            bonds = self.edges[atom].values()
             if len(bonds)==1:
                 continue # ok, next atom
             if len(bonds)>2:
@@ -992,10 +1012,10 @@ class Molecule(Graph):
         are considered to be internal rotors.
         """
         count = 0
-        for atom1 in self.bonds:
-            for atom2, bond in self.bonds[atom1].iteritems():
-                if self.atoms.index(atom1) < self.atoms.index(atom2) and bond.isSingle() and not self.isBondInCycle(atom1, atom2):
-                    if len(self.bonds[atom1]) + atom1.implicitHydrogens > 1 and len(self.bonds[atom2]) + atom2.implicitHydrogens > 1:
+        for atom1 in self.edges:
+            for atom2, bond in self.edges[atom1].iteritems():
+                if self.vertices.index(atom1) < self.vertices.index(atom2) and bond.isSingle() and not self.isBondInCycle(atom1, atom2):
+                    if len(self.edges[atom1]) + atom1.implicitHydrogens > 1 and len(self.edges[atom2]) + atom2.implicitHydrogens > 1:
                         count += 1
         return count
 
@@ -1008,7 +1028,7 @@ class Molecule(Graph):
 
         single = 0; double = 0; triple = 0; benzene = 0
         numNeighbors = 0
-        for bond in self.bonds[atom].values():
+        for bond in self.edges[atom].values():
             if bond.isSingle(): single += 1
             elif bond.isDouble(): double += 1
             elif bond.isTriple(): triple += 1
@@ -1073,7 +1093,7 @@ class Molecule(Graph):
         """
         Return the symmetry number centered at `bond` in the structure.
         """
-        bond = self.bonds[atom1][atom2]
+        bond = self.edges[atom1][atom2]
         symmetryNumber = 1
         if bond.isSingle() or bond.isDouble() or bond.isTriple():
             if atom1.equivalent(atom2):
@@ -1085,7 +1105,7 @@ class Molecule(Graph):
                 # If the molecule is diatomic, then we don't have to check the
                 # ligands on the two atoms in this bond (since we know there
                 # aren't any)
-                elif len(self.atoms) == 2:
+                elif len(self.vertices) == 2:
                     symmetryNumber = 2
                 else:
                     molecule = self.copy()
@@ -1152,9 +1172,9 @@ class Molecule(Graph):
 
         # List all double bonds in the structure
         doubleBonds = []
-        for atom1 in self.bonds:
-            for atom2 in self.bonds[atom1]:
-                if self.bonds[atom1][atom2].isDouble() and self.atoms.index(atom1) < self.atoms.index(atom2):
+        for atom1 in self.edges:
+            for atom2 in self.edges[atom1]:
+                if self.edges[atom1][atom2].isDouble() and self.vertices.index(atom1) < self.vertices.index(atom2):
                     doubleBonds.append((atom1, atom2))
 
         # Search for adjacent double bonds
@@ -1329,13 +1349,13 @@ class Molecule(Graph):
         """
         symmetryNumber = 1
 
-        for atom in self.atoms:
+        for atom in self.vertices:
             if not self.isAtomInCycle(atom):
                 symmetryNumber *= self.calculateAtomSymmetryNumber(atom)
 
-        for atom1 in self.bonds:
-            for atom2 in self.bonds[atom1]:
-                if self.atoms.index(atom1) < self.atoms.index(atom2) and not self.isBondInCycle(atom1, atom2):
+        for atom1 in self.edges:
+            for atom2 in self.edges[atom1]:
+                if self.vertices.index(atom1) < self.vertices.index(atom2) and not self.isBondInCycle(atom1, atom2):
                     symmetryNumber *= self.calculateBondSymmetryNumber(atom1, atom2)
 
         symmetryNumber *= self.calculateAxisSymmetryNumber()
@@ -1355,9 +1375,9 @@ class Molecule(Graph):
         isomers = []
 
         # Radicals
-        if sum([atom.radicalElectrons for atom in self.atoms]) > 0:
+        if sum([atom.radicalElectrons for atom in self.vertices]) > 0:
             # Iterate over radicals in structure
-            for atom in self.atoms:
+            for atom in self.vertices:
                 paths = self.findAllDelocalizationPaths(atom)
                 for path in paths:
                     atom1, atom2, atom3, bond12, bond23 = path
@@ -1390,7 +1410,7 @@ class Molecule(Graph):
 
         # Find all delocalization paths
         paths = []
-        for atom2, bond12 in self.bonds[atom1].iteritems():
+        for atom2, bond12 in self.edges[atom1].iteritems():
             # Vinyl bond must be capable of gaining an order
             if bond12.order in ['S', 'D']:
                 for atom3, bond23 in self.getBonds(atom2).iteritems():

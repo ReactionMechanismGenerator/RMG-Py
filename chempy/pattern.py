@@ -122,6 +122,9 @@ def getAtomType(atom, bonds):
     with local bond structure `bonds`, a ``dict`` containing atom-bond pairs.
     """
 
+    cython.declare(atomType=str)
+    cython.declare(double=cython.double, double0=cython.double, triple=cython.double, benzene=cython.double)
+    
     atomType = ''
     
     # Count numbers of each higher-order bond type
@@ -741,7 +744,7 @@ class MoleculePattern(Graph):
         """
         Remove the labels from all atoms in the molecular pattern.
         """
-        for atom in self.atoms:
+        for atom in self.vertices:
             atom.label = ''
 
     def containsLabeledAtom(self, label):
@@ -749,7 +752,7 @@ class MoleculePattern(Graph):
         Return ``True`` if the pattern contains an atom with the label
         `label` and ``False`` otherwise.
         """
-        for atom in self.atoms:
+        for atom in self.vertices:
             if atom.label == label: return True
         return False
 
@@ -757,7 +760,7 @@ class MoleculePattern(Graph):
         """
         Return the atoms in the pattern that are labeled.
         """
-        for atom in self.atoms:
+        for atom in self.vertices:
             if atom.label == label: return atom
         return None
 
@@ -768,7 +771,7 @@ class MoleculePattern(Graph):
         same label, the value is converted to a list of these atoms.
         """
         labeled = {}
-        for atom in self.atoms:
+        for atom in self.vertices:
             if atom.label != '':
                 if atom.label in labeled:
                     labeled[atom.label] = [labeled[atom.label]]

@@ -323,20 +323,21 @@ class Graph:
         used to accelerate the isomorphism checking.
         """
 
-        count = cython.declare(cython.short)
-        vertex1 = cython.declare(Vertex)
-        vertex2 = cython.declare(Vertex)
-
+        cython.declare(count=cython.short, edges=dict)
+        cython.declare(vertex1=Vertex, vertex2=Vertex)
+        
         for vertex1 in self.vertices:
             count = len(self.edges[vertex1])
             vertex1.connectivity1 = count
         for vertex1 in self.vertices:
             count = 0
-            for vertex2 in self.edges[vertex1]: count += vertex2.connectivity1
+            edges = self.edges[vertex1]
+            for vertex2 in edges: count += vertex2.connectivity1
             vertex1.connectivity2 = count
         for vertex1 in self.vertices:
             count = 0
-            for vertex2 in self.edges[vertex1]: count += vertex2.connectivity2
+            edges = self.edges[vertex1]
+            for vertex2 in edges: count += vertex2.connectivity2
             vertex1.connectivity3 = count
 
     def sortVertices(self):
@@ -344,6 +345,7 @@ class Graph:
         Sort the vertices in the graph. This can make certain operations, e.g.
         the isomorphism functions, much more efficient.
         """
+        cython.declare(index=cython.int, vertex=Vertex)
         self.updateConnectivityValues()
         self.vertices.sort(key=getVertexConnectivityValue)
         for index, vertex in enumerate(self.vertices):
@@ -908,7 +910,7 @@ def __VF2_updateTerminals(graph, mapping, old_terminals, new_vertex):
     added to the mapping. Returns a new *copy* of the terminals.
     """
 
-    cython.declare(terminals=list, vertex1=Vertex, vertex2=Vertex)
+    cython.declare(terminals=list, vertex1=Vertex, vertex2=Vertex, edges=dict)
     cython.declare(i=cython.int, sorting_label=cython.short, sorting_label2=cython.short)
 
     # Copy the old terminals, leaving out the new_vertex
@@ -916,7 +918,8 @@ def __VF2_updateTerminals(graph, mapping, old_terminals, new_vertex):
     if new_vertex in terminals: terminals.remove(new_vertex)
 
     # Add the terminals of new_vertex
-    for vertex in graph.edges[new_vertex]:
+    edges = graph.edges[new_vertex]
+    for vertex in edges:
         if vertex not in mapping: # only add if not already mapped
             # find spot in the sorted terminals list where we should put this vertex
             sorting_label = getVertexSortingLabel(vertex)

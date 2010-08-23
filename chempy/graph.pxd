@@ -125,4 +125,4 @@ cpdef list __VF2_pairs(Graph graph1, Graph graph2, list terminals1,
 cpdef list __VF2_terminals(Graph graph, dict mapping)
 
 cpdef list __VF2_updateTerminals(Graph graph, dict mapping, list old_terminals,
-    new_vertex)
+    Vertex new_vertex)
