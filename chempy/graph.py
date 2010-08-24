@@ -316,7 +316,7 @@ class Graph:
         """
         vertex = cython.declare(Vertex)
         for vertex in self.vertices: vertex.resetConnectivityValues()
-
+        
     def updateConnectivityValues(self):
         """
         Update the connectivity values for each vertex in the graph. These are
@@ -339,7 +339,7 @@ class Graph:
             edges = self.edges[vertex1]
             for vertex2 in edges: count += vertex2.connectivity2
             vertex1.connectivity3 = count
-
+        
     def sortVertices(self):
         """
         Sort the vertices in the graph. This can make certain operations, e.g.
@@ -347,6 +347,11 @@ class Graph:
         """
         cython.declare(index=cython.int, vertex=Vertex)
         self.updateConnectivityValues()
+        # Only need to conduct sort if there is an invalid sorting label on any vertex
+        for vertex in self.vertices:
+            if vertex.sortingLabel < 0: break
+        else:
+            return
         self.vertices.sort(key=getVertexConnectivityValue)
         for index, vertex in enumerate(self.vertices):
             vertex.sortingLabel = index
@@ -512,7 +517,7 @@ class Graph:
 
         # Make a copy of the graph so we don't modify the original
         graph = self.copy()
-
+        
         # Step 1: Remove all terminal vertices
         done = False
         while not done:
@@ -620,9 +625,7 @@ def VF2_isomorphism(graph1, graph2, subgraph=False, findAll=False, initialMap=No
     cython.declare(terminals1=list, terminals2=list, callDepth=cython.int)
     cython.declare(vert=Vertex)
 
-    if initialMap is None: initialMap = {}
-
-    map12List = list(); map21List = list()
+    map21List = list()
 
     # Some quick initial checks to avoid using the full algorithm if the
     # graphs are obviously not isomorphic (based on graph size)
@@ -642,6 +645,9 @@ def VF2_isomorphism(graph1, graph2, subgraph=False, findAll=False, initialMap=No
             # a subgraph of the first
             return False, map21List
 
+    if initialMap is None: initialMap = {}
+    map12List = list()
+    
     # Initialize callDepth with the size of the largest graph
     # Each recursive call to __VF2_match will decrease it by one;
     # when the whole graph has been explored, it should reach 0

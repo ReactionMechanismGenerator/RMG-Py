@@ -25,7 +25,7 @@
 ################################################################################
 
 from graph cimport Vertex, Edge, Graph
-from pattern cimport AtomPattern, BondPattern, MoleculePattern, atomTypesEquivalent, atomTypesSpecificCaseOf, getAtomType, fromAdjacencyList, toAdjacencyList
+from pattern cimport AtomPattern, BondPattern, MoleculePattern, AtomType
 from element cimport Element
 
 ################################################################################
@@ -38,7 +38,7 @@ cdef class Atom(Vertex):
     cdef public short implicitHydrogens
     cdef public short charge
     cdef public str label
-    cdef public str atomType
+    cdef public AtomType atomType
 
     cpdef bint equivalent(self, Vertex other)
 

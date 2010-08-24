@@ -40,8 +40,8 @@ import cython
 import element as elements
 from graph import Vertex, Edge, Graph
 from exception import ChemPyError
-from pattern import AtomPattern, BondPattern, MoleculePattern
-from pattern import atomTypesEquivalent, atomTypesSpecificCaseOf, getAtomType, fromAdjacencyList, toAdjacencyList
+from pattern import AtomPattern, BondPattern, MoleculePattern, AtomType
+from pattern import getAtomType, fromAdjacencyList, toAdjacencyList
 
 ################################################################################
 
@@ -76,7 +76,7 @@ class Atom(Vertex):
         self.implicitHydrogens = implicitHydrogens
         self.charge = charge
         self.label = label
-        self.atomType = ''
+        self.atomType = None
 
     def __str__(self):
         """
@@ -121,10 +121,10 @@ class Atom(Vertex):
                 self.implicitHydrogens == atom.implicitHydrogens and
                 self.charge == atom.charge)
         elif isinstance(other, AtomPattern):
-            cython.declare(a=str, radical=cython.short, spin=cython.short, charge=cython.short)
+            cython.declare(a=AtomType, radical=cython.short, spin=cython.short, charge=cython.short)
             ap = other
             for a in ap.atomType:
-                if atomTypesEquivalent(self.atomType, a): break
+                if self.atomType.equivalent(a): break
             else:
                 return False
             for radical, spin in zip(ap.radicalElectrons, ap.spinMultiplicity):
@@ -148,10 +148,10 @@ class Atom(Vertex):
         if isinstance(other, Atom):
             return self.equivalent(other)
         elif isinstance(other, AtomPattern):
-            cython.declare(atom=AtomPattern, a=str, radical=cython.short, spin=cython.short, charge=cython.short)
+            cython.declare(atom=AtomPattern, a=AtomType, radical=cython.short, spin=cython.short, charge=cython.short)
             atom = other
             for a in atom.atomType: 
-                if atomTypesSpecificCaseOf(self.atomType, a): break
+                if self.atomType.isSpecificCaseOf(a): break
             else:
                 return False
             for radical, spin in zip(atom.radicalElectrons, atom.spinMultiplicity):
@@ -232,7 +232,7 @@ class Atom(Vertex):
         :ref:`here <reaction-recipe-actions>`.
         """
         # Invalidate current atom type
-        self.atomType = ''
+        self.atomType = None
         # Modify attributes if necessary
         if action[0].upper() in ['CHANGE_BOND', 'FORM_BOND', 'BREAK_BOND']:
             # Nothing else to do here
@@ -543,7 +543,11 @@ class Molecule(Graph):
         cython.declare(atom=Atom, neighbor=Atom, hydrogens=list)
 
         # Check that the structure contains at least one heavy atom
-        if all([atom.isHydrogen() for atom in self.vertices]):
+        for atom in self.vertices:
+            if not atom.isHydrogen():
+                break
+        else:
+            # No heavy atoms, so leave explicit
             return
         
         # Count the hydrogen atoms on each non-hydrogen atom and set the
@@ -570,22 +574,30 @@ class Molecule(Graph):
         memory, but may be required for certain tasks (e.g. subgraph matching).
         """
 
-        cython.declare(atom=Atom, H=Atom, bond=Bond, hydrogens=list)
+        cython.declare(atom=Atom, H=Atom, bond=Bond, hydrogens=list, numAtoms=cython.short)
 
         # Create new hydrogen atoms for each implicit hydrogen
         hydrogens = []
         for atom in self.vertices:
             while atom.implicitHydrogens > 0:
                 H = Atom(element='H')
-                H.atomType = 'H'
                 bond = Bond(order='S')
                 hydrogens.append((H, atom, bond))
                 atom.implicitHydrogens -= 1
 
         # Add the hydrogens to the graph
+        numAtoms = len(self.vertices)
         for H, atom, bond in hydrogens:
             self.addAtom(H)
             self.addBond(H, atom, bond)
+            H.atomType = getAtomType(H, {atom:bond})
+            # If known, set the connectivity information
+            if atom.sortingLabel != -1:
+                H.connectivity1 = 1
+                H.connectivity2 = atom.connectivity1
+                H.connectivity3 = atom.connectivity2
+                H.sortingLabel = numAtoms
+            numAtoms += 1
 
         # Set implicitHydrogens flag to False
         self.implicitHydrogens = False

@@ -28,11 +28,26 @@ from graph cimport Vertex, Edge, Graph
 
 ################################################################################
 
-cpdef bint atomTypesEquivalent(str atomType1, str atomType2)
+cdef class AtomType:
 
-cpdef bint atomTypesSpecificCaseOf(str atomType1, str atomType2)
+    cdef public str label
+    cdef public list generic
+    cdef public list specific
 
-cpdef str getAtomType(atom, dict bonds)
+    cdef public list incrementBond
+    cdef public list decrementBond
+    cdef public list formBond
+    cdef public list breakBond
+    cdef public list incrementRadical
+    cdef public list decrementRadical
+
+    cpdef bint isSpecificCaseOf(self, AtomType other)
+
+    cpdef bint equivalent(self, AtomType other)
+
+cpdef AtomType getAtomType(atom, dict bonds)
+
+
 
 ################################################################################
 
