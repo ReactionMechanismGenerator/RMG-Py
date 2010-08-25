@@ -15,4 +15,4 @@ clean:
 	python setup.py clean $(CLEAN_FLAGS)
 
 cleanall: clean
-	rm -f chempy/*.so chempy/*.pyc
+	rm -f chempy/*.so chempy/*.pyc chempy/ext/*.so chempy/ext/*.pyc

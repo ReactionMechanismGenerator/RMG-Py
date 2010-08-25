@@ -35,6 +35,9 @@ import Cython.Compiler.Options
 # Create annotated HTML files for each of the Cython modules
 Cython.Compiler.Options.annotate = True
 
+# Turn on profiling capacity for all Cython modules
+#Cython.Compiler.Options.directive_defaults['profile'] = True
+
 # The Cython modules to setup
 # This is a more standard way of doing things, but Cython doesn't like it as much
 packages=['chempy']
