@@ -266,11 +266,14 @@ class ThermoGroupDatabase(ThermoDatabase):
             # this is necessary, because saturating with H shouldn't be
             # changing atom types, but it doesn't hurt anything and is not
             # very expensive, so will do it anyway)
+            saturatedStruct.updateConnectivityValues()
+            saturatedStruct.sortVertices()
             saturatedStruct.updateAtomTypes()
 
             # Get thermo estimate for saturated form of structure
             thermoData = self.generateThermoData(saturatedStruct)
-
+            assert thermoData is not None, "Thermo data of saturated %s of molecule %s is None!" % (saturatedStruct, molecule)
+            
             # For each radical site, get radical correction
             # Only one radical site should be considered at a time; all others
             # should be saturated with hydrogen atoms
@@ -282,6 +285,8 @@ class ThermoGroupDatabase(ThermoDatabase):
                     saturatedStruct.removeAtom(H)
                     atom.incrementRadical()
 
+                saturatedStruct.updateConnectivityValues()
+            
                 thermoData += self.__getThermoData(self.radicalDatabase, saturatedStruct, {'*':atom})
 
                 # Re-saturate
@@ -290,9 +295,9 @@ class ThermoGroupDatabase(ThermoDatabase):
                     saturatedStruct.addBond(atom, H, bond)
                     atom.decrementRadical()
 
-            # Subtract the enthalpy of the added hydrogens
-            for bond in added[atom]:
-                thermoData.H298 -= 52.103 * 4184
+                # Subtract the enthalpy of the added hydrogens
+                for H, bond in added[atom]:
+                    thermoData.H298 -= 52.103 * 4184
 
             # Correct the entropy for the symmetry number
 
@@ -321,7 +326,7 @@ class ThermoGroupDatabase(ThermoDatabase):
                     try:
                         thermoData += self.__getThermoData(self.otherDatabase, molecule, {'*':atom})
                     except KeyError: pass
-
+            
             # Do ring corrections separately because we only want to match
             # each ring one time; this doesn't work yet
             rings = molecule.getSmallestSetOfSmallestRings()
@@ -477,7 +482,12 @@ def generateThermoData(molecule):
 
     implicitH = molecule.implicitHydrogens
     molecule.makeHydrogensExplicit()
-    
+
+    # For thermo estimation we need the atoms to already be sorted because we
+    # iterate over them; if the order changes during the iteration then we
+    # will probably not visit the right atoms, and so will get the thermo wrong
+    molecule.sortVertices()
+
     for thermoDatabase in thermoDatabases:
         GAthermoData = thermoDatabase.generateThermoData(molecule)
         if GAthermoData is not None and isinstance(thermoDatabase, ThermoGroupDatabase):

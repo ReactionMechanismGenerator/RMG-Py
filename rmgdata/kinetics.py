@@ -125,6 +125,11 @@ class ReactionRecipe:
         for action in self.actions:
             if action[0] in ['CHANGE_BOND', 'FORM_BOND', 'BREAK_BOND']:
 
+                # We are about to change the connectivity of the atoms in
+                # struct, which invalidates any existing vertex connectivity
+                # information; thus we reset it
+                struct.resetConnectivityValues()
+
                 label1, info, label2 = action[1:]
                 
                 # Find associated atoms
@@ -177,6 +182,8 @@ class ReactionRecipe:
 
             else:
                 raise InvalidActionError('Unknown action "' + action[0] + '" encountered.')
+
+        struct.updateConnectivityValues()
 
     def applyForward(self, struct, unique=True):
         """
@@ -588,7 +595,7 @@ class ReactionFamily(Database):
             reactantStructure = Molecule()
         for s in reactantStructures:
             reactantStructure = reactantStructure.merge(s.copy(deep=True))
-
+        
         # Hardcoding of reaction family for radical recombination (colligation)
         # because the two reactants are identical, they have the same tags
         # In this case, we must change the labels from '*' and '*' to '*1' and
@@ -654,6 +661,9 @@ class ReactionFamily(Database):
             productStructures = productStructure.split()
         else:
             productStructures = [productStructure]
+
+        for product in productStructures:
+            product.updateConnectivityValues()
 
         # Make sure we've made the expected number of products
         if len(template.products) != len(productStructures):
