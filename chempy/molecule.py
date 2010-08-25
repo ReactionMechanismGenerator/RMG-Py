@@ -400,10 +400,10 @@ class Molecule(Graph):
 
     def __init__(self, atoms=None, bonds=None, SMILES='', InChI=''):
         Graph.__init__(self, atoms, bonds)
+        self.implicitHydrogens = False
         if SMILES != '': self.fromSMILES(SMILES)
         elif InChI != '': self.fromInChI(InChI)
-        self.implicitHydrogens = False
-
+    
     def __str__(self):
         """
         Return a human-readable string representation of the object.
@@ -592,11 +592,10 @@ class Molecule(Graph):
             self.addBond(H, atom, bond)
             H.atomType = getAtomType(H, {atom:bond})
             # If known, set the connectivity information
-            if atom.sortingLabel != -1:
-                H.connectivity1 = 1
-                H.connectivity2 = atom.connectivity1
-                H.connectivity3 = atom.connectivity2
-                H.sortingLabel = numAtoms
+            H.connectivity1 = 1
+            H.connectivity2 = atom.connectivity1
+            H.connectivity3 = atom.connectivity2
+            H.sortingLabel = numAtoms
             numAtoms += 1
 
         # Set implicitHydrogens flag to False
@@ -864,12 +863,12 @@ class Molecule(Graph):
                     self.edges[atom1][atom2] = bond
                     self.edges[atom2][atom1] = bond
 
-        # Make hydrogens implicit to conserve memory
-        self.makeHydrogensImplicit()
-
         # Set atom types and connectivity values
         self.updateConnectivityValues()
         self.updateAtomTypes()
+
+        # Make hydrogens implicit to conserve memory
+        self.makeHydrogensImplicit()
 
         return self
 
@@ -880,9 +879,9 @@ class Molecule(Graph):
         ``False``.
         """
         self.vertices, self.edges = fromAdjacencyList(adjlist, False, True, withLabel)
-        self.makeHydrogensImplicit()
         self.updateConnectivityValues()
         self.updateAtomTypes()
+        self.makeHydrogensImplicit()
         return self
 
     def toCML(self):
@@ -1361,6 +1360,9 @@ class Molecule(Graph):
         """
         symmetryNumber = 1
 
+        implicitH = self.implicitHydrogens
+        self.makeHydrogensExplicit()
+
         for atom in self.vertices:
             if not self.isAtomInCycle(atom):
                 symmetryNumber *= self.calculateAtomSymmetryNumber(atom)
@@ -1376,6 +1378,8 @@ class Molecule(Graph):
         #   symmetryNumber *= self.calculateCyclicSymmetryNumber()
 
         self.symmetryNumber = symmetryNumber
+
+        if implicitH: self.makeHydrogensImplicit()
 
         return symmetryNumber
 
@@ -1400,6 +1404,13 @@ class Molecule(Graph):
                     bond23.decrementOrder()
                     # Make a copy of isomer
                     isomer = self.copy(deep=True)
+                    # Also copy the connectivity values, since they are the same
+                    # for all resonance forms
+                    for v1, v2 in zip(self.vertices, isomer.vertices):
+                        v2.connectivity1 = v1.connectivity1
+                        v2.connectivity2 = v1.connectivity2
+                        v2.connectivity3 = v1.connectivity3
+                        v2.sortingLabel = v1.sortingLabel
                     # Restore current isomer
                     atom1.incrementRadical()
                     atom3.decrementRadical()

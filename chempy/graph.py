@@ -143,8 +143,7 @@ class Graph:
     def __init__(self, vertices=None, edges=None):
         self.vertices = vertices or []
         self.edges = edges or {}
-        self.resetConnectivityValues()
-
+        
     def addVertex(self, vertex):
         """
         Add a `vertex` to the graph. The vertex is initialized with no edges.
@@ -325,7 +324,9 @@ class Graph:
 
         cython.declare(count=cython.short, edges=dict)
         cython.declare(vertex1=Vertex, vertex2=Vertex)
-        
+
+        assert str(self.__class__) != 'chempy.molecule.Molecule' or not self.implicitHydrogens, "%s has implicit hydrogens" % self
+
         for vertex1 in self.vertices:
             count = len(self.edges[vertex1])
             vertex1.connectivity1 = count
@@ -346,7 +347,6 @@ class Graph:
         the isomorphism functions, much more efficient.
         """
         cython.declare(index=cython.int, vertex=Vertex)
-        self.updateConnectivityValues()
         # Only need to conduct sort if there is an invalid sorting label on any vertex
         for vertex in self.vertices:
             if vertex.sortingLabel < 0: break
