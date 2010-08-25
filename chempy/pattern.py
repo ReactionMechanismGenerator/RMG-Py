@@ -297,7 +297,7 @@ def getAtomType(atom, bonds):
         if   double + doubleO == 0 and triple == 0 and benzene == 0: atomType = 'Ss'
         elif double + doubleO == 1 and triple == 0 and benzene == 0: atomType = 'Sd'
         elif len(bonds) == 0:                                        atomType = 'Sa'
-    elif atom.symbol == 'N':
+    elif atom.symbol == 'N' or atom.symbol == 'Ar' or atom.symbol == 'He' or atom.symbol == 'Ne':
         return None
 
     # Raise exception if we could not identify the proper atom type
