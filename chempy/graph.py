@@ -652,7 +652,7 @@ def VF2_isomorphism(graph1, graph2, subgraph=False, findAll=False, initialMap=No
     # Each recursive call to __VF2_match will decrease it by one;
     # when the whole graph has been explored, it should reach 0
     # It should never go below zero!
-    callDepth = len(graph1.vertices)
+    callDepth = min(len(graph1.vertices), len(graph2.vertices)) - len(initialMap)
 
     # Sort the vertices in each graph to make the isomorphism more efficient
     graph1.sortVertices()
@@ -801,23 +801,26 @@ def __VF2_match(graph1, graph2, map21, map12, terminals1, terminals2, subgraph,
     cython.declare(vertex1=Vertex, vertex2=Vertex)
     cython.declare(ismatch=cython.bint)
 
-    # Make sure we don't geet cause in an infinite recursive loop
+    # Make sure we don't get cause in an infinite recursive loop
     if callDepth < 0:
         logging.error("Recursing too deep. Now %d" % callDepth)
         if callDepth < -100:
             raise Exception("Recursing infinitely deep!")
 
     # Done if we have mapped to all vertices in graph
-    if len(map21) >= len(graph1.vertices):
-        if findAll:
-            map21List.append(map21.copy())
-            map12List.append(map12.copy())
-        return True
-    if len(map12) >= len(graph2.vertices) and subgraph:
-        if findAll:
-            map21List.append(map21.copy())
-            map12List.append(map12.copy())
-        return True
+    if callDepth == 0:
+        if not subgraph:
+            assert len(map21) == len(graph1.vertices), "calldepth mismatch!"
+            if findAll:
+                map21List.append(map21.copy())
+                map12List.append(map12.copy())
+            return True
+        else:
+            assert len(map12) == len(graph2.vertices), "calldepth mismatch!"
+            if findAll:
+                map21List.append(map21.copy())
+                map12List.append(map12.copy())
+            return True
 
     # Create list of pairs of candidates for inclusion in mapping
     # Note that the extra Python overhead is not worth making this a standalone
