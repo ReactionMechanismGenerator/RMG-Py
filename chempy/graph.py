@@ -876,14 +876,14 @@ def __VF2_terminals(graph, mapping):
     List is sorted (using key=__getSortLabel) before returning.
     """
 
-    cython.declare(terminals=list, vertex1=Vertex, vertex2=Vertex)
+    cython.declare(terminals=list)
     terminals = list()
-    for vertex1 in mapping:
-        for vertex2 in graph.edges[vertex1]:
-            if vertex2 not in mapping:
-                if vertex2 not in terminals:
+    for vertex2 in graph.vertices:
+        if vertex2 not in mapping:
+            for vertex1 in mapping:
+                if vertex2 in graph.edges[vertex1]:
                     terminals.append(vertex2)
-    terminals.sort(key=getVertexSortingLabel)
+                    break
     return terminals
 
 def __VF2_updateTerminals(graph, mapping, old_terminals, new_vertex):
@@ -904,14 +904,14 @@ def __VF2_updateTerminals(graph, mapping, old_terminals, new_vertex):
 
     # Add the terminals of new_vertex
     edges = graph.edges[new_vertex]
-    for vertex in edges:
-        if vertex not in mapping: # only add if not already mapped
+    for vertex1 in edges:
+        if vertex1 not in mapping: # only add if not already mapped
             # find spot in the sorted terminals list where we should put this vertex
-            sorting_label = getVertexSortingLabel(vertex)
+            sorting_label = vertex1.sortingLabel
             i=0; sorting_label2=-1 # in case terminals list empty
             for i in range(len(terminals)):
                 vertex2 = terminals[i]
-                sorting_label2 = getVertexSortingLabel(vertex2)
+                sorting_label2 = vertex2.sortingLabel
                 if sorting_label2 >= sorting_label:
                     break
                 # else continue going through the list of terminals
@@ -922,7 +922,7 @@ def __VF2_updateTerminals(graph, mapping, old_terminals, new_vertex):
                 continue # try next vertex in graph[new_vertex]
 
             # insert vertex in right spot in terminals
-            terminals.insert(i,vertex)
+            terminals.insert(i,vertex1)
 
     return terminals
 
