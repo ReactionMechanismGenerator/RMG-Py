@@ -61,6 +61,11 @@ class Species(chempy.species.Species):
         picks that with lowest H298 value, and saves it to `self.thermoData`.
         """
 
+        # Ensure molecules are using explicit hydrogens
+        implicitH = [mol.implicitHydrogens for mol in self.molecule]
+        for molecule in self.molecule:
+            molecule.makeHydrogensExplicit()
+        
         thermo = []
         for molecule in self.molecule:
             molecule.clearLabeledAtoms()
@@ -78,6 +83,7 @@ class Species(chempy.species.Species):
 
         # Sort the structures in order of decreasing stability
         self.molecule = [self.molecule[ind] for ind in indices]
+        implicitH = [implicitH[ind] for ind in indices]
 
         # Convert to desired thermo class
         thermo0 = self.thermo
@@ -86,7 +92,11 @@ class Species(chempy.species.Species):
             # Compute RMS error of overall transformation
             Tlist = numpy.array([300.0, 400.0, 500.0, 600.0, 800.0, 1000.0, 1500.0], numpy.float64)
             err = math.sqrt(numpy.sum((self.thermo.getHeatCapacities(Tlist) - thermo0.getHeatCapacities(Tlist))**2))/constants.R/len(Tlist)
-            logging.log(logging.WARNING if err > 0.05 else 0, 'Average RMS error in heat capacity fit to %s = %g*R' % (self, err))
+            logging.log(logging.WARNING if err > 0.1 else 0, 'Average RMS error in heat capacity fit to %s = %g*R' % (self, err))
+
+        # Restore implicit hydrogens if necessary
+        for implicit, molecule in zip(implicitH, self.molecule):
+            if implicit: molecule.makeHydrogensImplicit()
 
         return self.thermo
 
@@ -301,6 +311,8 @@ class CoreEdgeReactionModel:
         Create a new species.
         """
 
+        molecule.makeHydrogensImplicit()
+
         # If desired, check to ensure that the species is new; return the
         # existing species if not new
         if checkForExisting:
@@ -315,6 +327,11 @@ class CoreEdgeReactionModel:
         spec = Species(index=len(self.speciesList)+1, label=label, molecule=[molecule], reactive=reactive)
         spec.generateResonanceIsomers()
         self.speciesList.append(spec)
+
+        # Store hydrogens implicitly to conserve memory and speed up isomorphism
+        for mol in spec.molecule:
+            #mol.updateConnectivityValues()
+            mol.makeHydrogensImplicit()
 
         self.speciesCounter += 1
 
@@ -519,7 +536,7 @@ class CoreEdgeReactionModel:
         logging.info('Generating thermodynamics for new species...')
         for spec in newSpeciesList:
             spec.generateThermoData()
-
+            
         # Generate kinetics of new reactions
         logging.info('Generating kinetics for new reactions...')
         for rxn in newReactionList:
