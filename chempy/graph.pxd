@@ -119,9 +119,6 @@ cpdef bint __VF2_match(Graph graph1, Graph graph2, dict map21, dict map12,
     list terminals1, list terminals2, bint subgraph, bint findAll,
     list map21List, list map12List, int call_depth) except -2 # bint should be 0 or 1
 
-cpdef list __VF2_pairs(Graph graph1, Graph graph2, list terminals1,
-    list terminals2, dict map21, dict map12)
-
 cpdef list __VF2_terminals(Graph graph, dict mapping)
 
 cpdef list __VF2_updateTerminals(Graph graph, dict mapping, list old_terminals,

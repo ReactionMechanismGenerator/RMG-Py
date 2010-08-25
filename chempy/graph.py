@@ -797,7 +797,7 @@ def __VF2_match(graph1, graph2, map21, map12, terminals1, terminals2, subgraph,
     and O(N**2) (best-case) to O(N! * N) (worst-case) in temporal complexity.
     """
 
-    cython.declare(pairs=list, new_terminals1=list, new_terminals2=list)
+    cython.declare(vertices1=list, new_terminals1=list, new_terminals2=list)
     cython.declare(vertex1=Vertex, vertex2=Vertex)
     cython.declare(ismatch=cython.bint)
 
@@ -820,9 +820,25 @@ def __VF2_match(graph1, graph2, map21, map12, terminals1, terminals2, subgraph,
         return True
 
     # Create list of pairs of candidates for inclusion in mapping
-    pairs = __VF2_pairs(graph1, graph2, terminals1, terminals2, map21, map12)
-
-    for vertex1, vertex2 in pairs:
+    # Note that the extra Python overhead is not worth making this a standalone
+    # method, so we simply put it inline here
+    # If we have terminals for both graphs, then use those as a basis for the
+    # pairs
+    if len(terminals1) > 0 and len(terminals2) > 0:
+        vertices1 = terminals1
+        vertex2 = terminals2[0]
+    # Otherwise construct list from all *remaining* vertices (not matched)
+    else:
+        # vertex2 is the lowest-labelled un-mapped vertex from graph2
+        # Note that this assumes that graph2.vertices is properly sorted
+        vertices1 = graph1.vertices
+        for vertex2 in graph2.vertices:
+            if vertex2 not in map12:
+                break
+        else:
+            raise Exception("Could not find a pair to propose!")
+    
+    for vertex1 in vertices1:
         # propose a pairing
         if __VF2_feasible(graph1, graph2, vertex1, vertex2, map21, map12, \
                 terminals1, terminals2, subgraph):
@@ -847,46 +863,6 @@ def __VF2_match(graph1, graph2, map21, map12, terminals1, terminals2, subgraph,
             # changes to 'new_terminals' will be discarded and 'terminals' is unchanged
 
     return False
-
-def __VF2_pairs(graph1, graph2, terminals1, terminals2, map21, map12):
-    """
-    Create a list of pairs of candidates for inclusion in the VF2 mapping. If
-    there are a nonzero number of terminals in each graph, the candidates are
-    selected to be one terminal from the first graph and all terminals from the
-    second graph. If there are no terminals, the candidates are selected to be
-    one vertex from the first graph and all vertices from the second graph.
-    """
-    cython.declare(pairs=list)
-    cython.declare(vertex1=Vertex, vertex2=Vertex, terminal1=Vertex, terminal2=Vertex)
-    cython.declare(list_to_sort=list, lowest_label=cython.short, this_label=cython.short)
-
-    pairs = list()
-
-    # Construct list from terminals if possible
-    if len(terminals1) > 0 and len(terminals2) > 0:
-        terminal2 = terminals2[0]
-        for terminal1 in terminals1:
-            pairs.append([terminal1, terminal2])
-    # Otherwise construct list from all *remaining* vertices (not matched)
-    else:
-        # vertex2 is the lowest-labelled un-mapped vertex from graph2
-        list_to_sort = graph2.vertices[:]
-        lowest_label = 32766 # hopefully we don't have more unmapped atoms than this!
-        for vertex1 in list_to_sort: # just using vertex1 as a temporary variable
-            this_label = getVertexSortingLabel(vertex1)
-            if this_label < lowest_label:
-                if not vertex1 in map12:
-                    lowest_label = this_label
-                    vertex2 = vertex1
-
-        # pair with all vertex1s
-        list_to_sort = graph1.vertices[:]
-        list_to_sort.sort(key=getVertexSortingLabel)
-        for vertex1 in list_to_sort:
-            if vertex1 not in map21: # exclude already mapped vertices
-                pairs.append([vertex1, vertex2])
-
-    return pairs
 
 def __VF2_terminals(graph, mapping):
     """
