@@ -272,32 +272,29 @@ class CoreEdgeReactionModel:
     def checkForExistingSpecies(self, molecule):
         """
         Check to see if an existing species contains the same
-        :class:`structure.Structure` as `structure`. Returns :data:`True` or
-        :data:`False`, the matched species (if found), structure (if found), and
-        mapping (if found).
+        :class:`structure.Structure` as `structure`. Returns ``True`` or
+        ``False`` and the matched species (if found, or ``None`` if not).
         """
 
         # First check cache and return if species is found
         for i, spec in enumerate(self.speciesCache):
             if spec is not None:
                 for mol in spec.molecule:
-                    found, mapping = molecule.findIsomorphism(mol)
-                    if found:
+                    if molecule.isIsomorphic(mol):
                         self.speciesCache.pop(i)
                         self.speciesCache.insert(0, spec)
-                        return True, spec, mol, mapping
+                        return True, spec
 
         # Return an existing species if a match is found
         for spec in self.speciesList:
             for mol in spec.molecule:
-                found, mapping = molecule.findIsomorphism(mol)
-                if found:
+                if molecule.isIsomorphic(mol):
                     self.speciesCache.pop()
                     self.speciesCache.insert(0, spec)
-                    return True, spec, mol, mapping
+                    return True, spec
 
         # At this point we can conclude that the structure does not exist
-        return False, None, None, None
+        return False, None
 
     def makeNewSpecies(self, molecule, label='', reactive=True, checkForExisting=True):
         """
@@ -307,7 +304,7 @@ class CoreEdgeReactionModel:
         # If desired, check to ensure that the species is new; return the
         # existing species if not new
         if checkForExisting:
-            found, spec, mol, mapping = self.checkForExistingSpecies(molecule)
+            found, spec = self.checkForExistingSpecies(molecule)
             if found: return spec, False
 
         # Check that the structure is not forbidden
