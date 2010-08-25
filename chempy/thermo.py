@@ -190,7 +190,7 @@ class ThermoGAModel(ThermoModel):
         """
         cython.declare(H=cython.double, slope=cython.double, intercept=cython.double,
              Tmin=cython.double, Tmax=cython.double, Cpmin=cython.double, Cpmax=cython.double)
-        H = 0.0
+        H = self.H298
         if not self.isTemperatureValid(T):
             raise ThermoError('Invalid temperature "%g K" for enthalpy estimation.' % T)
         for Tmin, Tmax, Cpmin, Cpmax in zip(self.Tdata[:-1], self.Tdata[1:], self.Cpdata[:-1], self.Cpdata[1:]):
@@ -209,7 +209,7 @@ class ThermoGAModel(ThermoModel):
         """
         cython.declare(S=cython.double, slope=cython.double, intercept=cython.double,
              Tmin=cython.double, Tmax=cython.double, Cpmin=cython.double, Cpmax=cython.double)
-        S = 0.0
+        S = self.S298
         if not self.isTemperatureValid(T):
             raise ThermoError('Invalid temperature "%g K" for entropy estimation.' % T)
         for Tmin, Tmax, Cpmin, Cpmax in zip(self.Tdata[:-1], self.Tdata[1:], self.Cpdata[:-1], self.Cpdata[1:]):
