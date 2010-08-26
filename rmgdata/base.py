@@ -490,21 +490,29 @@ class Library(dict):
             skippedCount = 0
             for line in lines:
                 info = line.split()
-
+                
                 # Skip if the number of items on the line is invalid
                 if len(info) < 2:
                     continue
 
+                # Determine if the first item is an index
+                # This index is optional in the [old] library format
+                index = -1
+                offset = 0
+                try:
+                    index = int(info[0])
+                    offset = 1
+                except ValueError:
+                    pass
+
                 # Extract label(s)
                 labels = []
                 for i in range(0, numLabels):
-                    labels.append(info[i+1])
+                    labels.append(info[i+offset])
 
                 data = ''
-                for i in range(numLabels+1, len(info)):
+                for i in range(numLabels+offset, len(info)):
                     data += info[i] + ' '
-
-                index = info[0]
 
                 if not self.add(index, labels, data): skippedCount += 1
 
