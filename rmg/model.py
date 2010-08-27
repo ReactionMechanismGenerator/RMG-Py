@@ -508,29 +508,13 @@ class CoreEdgeReactionModel:
                 if net is not None and isinstance(newObject, species.Species):
                     net.explored.append(newObject)
 
-        if len(newSpeciesList) > 0 or len(newReactionList) > 0:
-            logging.info('')
-            logging.info('Summary of Model Enlargement')
-            logging.info('----------------------------')
-            logging.info('Added %i new core species' % (len(self.core.species) - numOldCoreSpecies))
-            for spec in self.core.species[numOldCoreSpecies:]:
-                logging.info('    %s' % (spec))
-            logging.info('Created %i new edge species' % len(newSpeciesList))
-            for spec in newSpeciesList:
-                logging.info('    %s' % (spec))
-            logging.info('Added %i new core reactions' % (len(self.core.reactions) - numOldCoreReactions))
-            for rxn in self.core.reactions[numOldCoreReactions:]:
-                logging.info('    %s' % (rxn.reverse if newSpecies in rxn.products else rxn))
-            logging.info('Created %i new edge reactions' % len(newReactionList))
-            for rxn in newReactionList:
-                logging.info('    %s' % (rxn.reverse if newSpecies in rxn.products else rxn))
-
-        # Output current model size information after enlargement
-        logging.info('')
-        logging.info('After model enlargement:')
-        logging.info('    The model core has %s species and %s reactions' % (len(self.core.species), len(self.core.reactions)))
-        logging.info('    The model edge has %s species and %s reactions' % (len(self.edge.species), len(self.edge.reactions)))
-        logging.info('')
+        self.printEnlargeSummary(
+            newCoreSpecies=self.core.species[numOldCoreSpecies:],
+            newCoreReactions=self.core.reactions[numOldCoreReactions:],
+            newEdgeSpecies=newSpeciesList,
+            newEdgeReactions=newReactionList,
+            newSpecies=newSpecies,
+        )
 
         # Generate thermodynamics of new species
         logging.info('Generating thermodynamics for new species...')
@@ -552,6 +536,40 @@ class CoreEdgeReactionModel:
         for rxn in self.core.reactions[numOldCoreReactions:]:
             rxn.toCantera()
 
+        logging.info('')
+
+    def printEnlargeSummary(self, newCoreSpecies, newCoreReactions, newEdgeSpecies, newEdgeReactions, newSpecies=None):
+        """
+        Output a summary of a model enlargement step to the log. The details of
+        the enlargement are passed in the `newCoreSpecies`, `newCoreReactions`,
+        `newEdgeSpecies`, and `newEdgeReactions` objects. If the model
+        enlargement is based around one species, you may optionally pass that
+        species as `newSpecies`, which will cause all of the reactions to be
+        printed with that species as the reactant. If `newSpecies` is ``None``,
+        the reactions are printed in the direction for which kinetics are known.
+        """
+
+        logging.info('')
+        logging.info('Summary of Model Enlargement')
+        logging.info('----------------------------')
+        logging.info('Added %i new core species' % (len(newCoreSpecies)))
+        for spec in newCoreSpecies:
+            logging.info('    %s' % (spec))
+        logging.info('Created %i new edge species' % len(newEdgeSpecies))
+        for spec in newEdgeSpecies:
+            logging.info('    %s' % (spec))
+        logging.info('Added %i new core reactions' % (len(newCoreReactions)))
+        for rxn in newCoreReactions:
+            logging.info('    %s' % (rxn.reverse if newSpecies in rxn.products else rxn))
+        logging.info('Created %i new edge reactions' % len(newEdgeReactions))
+        for rxn in newEdgeReactions:
+            logging.info('    %s' % (rxn.reverse if newSpecies in rxn.products else rxn))
+
+        # Output current model size information after enlargement
+        logging.info('')
+        logging.info('After model enlargement:')
+        logging.info('    The model core has %s species and %s reactions' % (len(self.core.species), len(self.core.reactions)))
+        logging.info('    The model edge has %s species and %s reactions' % (len(self.edge.species), len(self.edge.reactions)))
         logging.info('')
 
     def addSpeciesToCore(self, spec):
