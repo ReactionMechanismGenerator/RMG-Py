@@ -59,6 +59,8 @@ cdef class Reaction:
 
     cpdef int getStoichiometricCoefficient(self, Species spec)
 
+    cpdef double getRate(self, double T, double P, dict conc, double totalConc=?)
+
     cpdef numpy.ndarray calculateTSTRateCoefficient(self, numpy.ndarray Tlist, TransitionState TS, str tunneling=?)
     
     cpdef numpy.ndarray calculateWignerTunnelingCorrection(self, numpy.ndarray Tlist, TransitionState TS)

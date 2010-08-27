@@ -221,7 +221,7 @@ class Reaction:
             if product is spec: stoich += 1
         return stoich
 
-    def getRate(self, T, P, conc, totalConc=None):
+    def getRate(self, T, P, conc, totalConc=-1.0):
         """
         Return the net rate of reaction at temperature `T` and pressure `P`. The
         parameter `conc` is a map with species as keys and concentrations as
@@ -231,8 +231,11 @@ class Reaction:
         If passed a `totalConc`, it won't bother recalculating it.
         """
 
+        cython.declare(rateConstant=cython.double, equilibriumConstant=cython.double)
+        cython.declare(forward=cython.double, reverse=cython.double, speciesConc=cython.double)
+
         # Calculate total concentration
-        if totalConc is None:
+        if totalConc == -1.0:
             totalConc=sum( conc.values() )
 
         # Evaluate rate constant
@@ -246,7 +249,8 @@ class Reaction:
         forward = 1.0
         for reactant in self.reactants:
             if reactant in conc:
-                forward = forward * conc[reactant]
+                speciesConc = conc[reactant]
+                forward = forward * speciesConc
             else:
                 forward = 0.0
                 break
@@ -255,7 +259,8 @@ class Reaction:
         reverse = 1.0
         for product in self.products:
             if product in conc:
-                reverse = reverse * conc[product]
+                speciesConc = conc[product]
+                reverse = reverse * speciesConc
             else:
                 reverse = 0.0
                 break
