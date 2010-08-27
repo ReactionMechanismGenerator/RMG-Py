@@ -526,7 +526,7 @@ class CoreEdgeReactionModel:
         # Generate kinetics of new reactions
         logging.info('Generating kinetics for new reactions...')
         for rxn in newReactionList:
-            rxn.generateKineticsData()
+            if rxn.kinetics is None: rxn.generateKineticsData()
             # Now that we have the kinetics we don't need the reactant molecules
             # any more, so delete them to recover the memory
             rxn.reactantMolecules = None

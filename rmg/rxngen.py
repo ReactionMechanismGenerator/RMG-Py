@@ -309,7 +309,7 @@ def generateReactionsForPrimary(kineticsDatabase, species, model):
     rxnList = []; speciesList = []
     dictionary = kineticsDatabase.database.dictionary
     for rxn in rxnList0:
-        forward = Reaction(reactants=rxn.reactants[:], products=rxn.products[:], family=kineticsDatabase, isForward=True)
+        forward = Reaction(reactants=rxn.reactants[:], products=rxn.products[:], family=kineticsDatabase, kinetics=rxn.kinetics, isForward=True)
         for i, product in enumerate(forward.products):
             label = dictionary.keys()[dictionary.values().index(product)]
             forward.products[i], isNew = model.makeNewSpecies(product, label=label)
@@ -346,7 +346,7 @@ def generateReactions(species, model):
         for molecule in spec.molecule: molecule.makeHydrogensExplicit()
 
     for kineticsDatabase in rmgdata.kinetics.kineticsDatabases:
-        if isinstance(kineticsDatabase, rmgdata.kinetics.KineticsPrimaryDatabase) and kineticsDatabase.reactionLibrary:
+        if isinstance(kineticsDatabase, rmgdata.kinetics.KineticsPrimaryDatabase) and kineticsDatabase.reactionLibrary and not kineticsDatabase.seedMechanism:
             rxnList, specList = generateReactionsForPrimary(kineticsDatabase, species, model)
             speciesList.extend(specList)
             # Formally make the new reactions
