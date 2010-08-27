@@ -663,7 +663,7 @@ def VF2_isomorphism(graph1, graph2, subgraph=False, findAll=False, initialMap=No
     #   map12 = map to 1 from 2
     map21 = initialMap
     map12 = dict([(v,k) for k,v in initialMap.iteritems()])
-
+    
     # Generate an initial set of terminals
     terminals1 = __VF2_terminals(graph1, map21)
     terminals2 = __VF2_terminals(graph2, map12)
@@ -810,13 +810,15 @@ def __VF2_match(graph1, graph2, map21, map12, terminals1, terminals2, subgraph,
     # Done if we have mapped to all vertices in graph
     if callDepth == 0:
         if not subgraph:
-            assert len(map21) == len(graph1.vertices), "calldepth mismatch!"
+            assert len(map21) == len(graph1.vertices), \
+                "Calldepth mismatch: callDepth = %g, len(map21) = %g, len(map12) = %g, len(graph1.vertices) = %g, len(graph2.vertices) = %g" % (callDepth, len(map21), len(map12), len(graph1.vertices), len(graph2.vertices))
             if findAll:
                 map21List.append(map21.copy())
                 map12List.append(map12.copy())
             return True
         else:
-            assert len(map12) == len(graph2.vertices), "calldepth mismatch!"
+            assert len(map12) == len(graph2.vertices), \
+                "Calldepth mismatch: callDepth = %g, len(map21) = %g, len(map12) = %g, len(graph1.vertices) = %g, len(graph2.vertices) = %g" % (callDepth, len(map21), len(map12), len(graph1.vertices), len(graph2.vertices))
             if findAll:
                 map21List.append(map21.copy())
                 map12List.append(map12.copy())
@@ -834,7 +836,10 @@ def __VF2_match(graph1, graph2, map21, map12, terminals1, terminals2, subgraph,
     else:
         # vertex2 is the lowest-labelled un-mapped vertex from graph2
         # Note that this assumes that graph2.vertices is properly sorted
-        vertices1 = graph1.vertices
+        vertices1 = []
+        for vertex1 in graph1.vertices:
+            if vertex1 not in map21:
+                vertices1.append(vertex1)
         for vertex2 in graph2.vertices:
             if vertex2 not in map12:
                 break
