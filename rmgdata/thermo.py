@@ -351,13 +351,21 @@ class ThermoGroupDatabase(ThermoDatabase):
         in the structure `structure`.
         """
 
-        node = database.descendTree(molecule, atom, None)
+        node0 = database.descendTree(molecule, atom, None)
 
-        if node is None:
+        if node0 is None:
             raise KeyError('Node not found in database.')
-        else:
-            data = database.library[node]
 
+        # It's possible (and allowed) that items in the tree may not be in the 
+        # library, in which case we need to fall up the tree until we find an
+        # ancestor that has an entry in the library
+        node = node0
+        while node not in database.library and node is not None:
+            node = database.tree.parent[node]
+        if node is None:
+            raise InvalidDatabaseError('Unable to determine thermo parameters for %s: no library entries for %s or any of its ancestors.' % (molecule, node0) )
+
+        data = database.library[node]
         while data.model is None and data.node is not None:
             data = database.library[data.node]
 
