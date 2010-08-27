@@ -1108,9 +1108,210 @@ class KineticsGroupDatabase:
 
 ################################################################################
 
+class KineticsPrimaryDatabase(Database):
+    """
+    A primary kinetics database, consisting of a dictionary of species
+    and a library of reactions with corresponding kinetic data. (No tree is
+    utilized in this database.) The attributes are:
+
+    =================== =================== ====================================
+    Attribute           Type                Description
+    =================== =================== ====================================
+    `label`             ``str``             A unique string identifier for the kinetics database
+    `database`          :class:`Database`   Used to store a dictionary of species
+    `reactions`         ``list``            A list of the reactions in the database
+    `seedMechanism`     ``bool``            ``True`` to use as seed mechanism, ``False`` if not
+    `reactionLibrary`   ``bool``            ``True`` to use as reaction library, ``False`` if not
+    =================== =================== ====================================
+
+    """
+
+    def __init__(self, path=''):
+        self.label = ''
+        self.reactions = []
+        self.seedMechanism = False
+        self.reactionLibrary = False
+        if path != '':
+            self.load(path)
+        else:
+            self.database = None
+
+    def __str__(self):
+        return self.label
+
+    def load(self, path, seedMechanism=False, reactionLibrary=False, old=False):
+        """
+        Load a primary kinetics database from the location `path`. Also set
+        whether the kinetics database represents a `seedMechanism` or
+        `reactionLibrary` (in addition to the default kinetics library).
+        """
+        self.label = os.path.split(path)[1]
+        self.seedMechanism = seedMechanism
+        self.reactionLibrary = reactionLibrary
+        path = os.path.abspath(path)
+        if seedMechanism:
+            logging.info('Loading seed mechanism from %s...' % path)
+        elif reactionLibrary:
+            logging.info('Loading primary reaction database from %s...' % path)
+        else:
+            logging.info('Loading primary kinetics database from %s...' % path)
+        if old:
+            self.database = Database()
+            self.__loadOldSpecies(os.path.join(path,'species.txt'))
+            self.__loadOldReactions(os.path.join(path,'reactions.txt'))
+        else:
+            self.database = self.loadDatabase(os.path.join(path, 'database.py'))
+        logging.info('')
+
+    def __loadOldSpecies(self, path):
+        """
+        Load an old-style reaction library species file from `path`.
+        """
+        self.database.dictionary.load(path, pattern=False)
+    
+    def __loadOldReactions(self, path):
+        """
+        Load an old-style high-pressure limit reaction library from `path`.
+        """
+        self.reactions = []
+
+        # Process the reactions file
+        try:
+            inUnitSection = False; inReactionSection = False
+            Aunits = ''; Eunits = ''
+
+            fdict = open(path, 'r')
+            for line in fdict:
+                line = removeCommentFromLine(line).strip()
+                if len(line) > 0:
+                    if inUnitSection:
+                        if 'A:' in line or 'E:' in line:
+                            units = line.split()[1]
+                            if 'A:' in line:
+                                Aunits = units.split('/') # Assume this is a 3-tuple: moles or molecules, volume, time
+                                Aunits[1] = Aunits[1][0:-1] # Remove '3' from e.g. 'm3' or 'cm3'; this is assumed
+                            elif 'E:' in line:
+                                Eunits = units
+                    elif inReactionSection:
+                        reactants = []; products = []
+                        items = line.split()
+                        arrow = '=>' if '=>' in items else '<=>'
+                        for item in items[0:items.index(arrow)]:
+                            if item != '+':
+                                if item not in self.database.dictionary:
+                                    raise InvalidDatabaseError('Reactant %s not found in dictionary.' % item)
+                                reactants.append(self.database.dictionary[item])
+                        for item in items[items.index(arrow)+1:-6]:
+                            if item != '+':
+                                if item not in self.database.dictionary:
+                                    raise InvalidDatabaseError('Product %s not found in dictionary.' % item)
+                                products.append(self.database.dictionary[item])
+                        A = pq.Quantity(float(items[-6]), '%s^%g/%s^%g/%s' %
+                            (Aunits[1], 3*(len(reactants)-1), Aunits[0], len(reactants)-1, Aunits[2]))
+                        n = pq.Quantity(float(items[-5]), '')
+                        Ea = pq.Quantity(float(items[-4]), Eunits)
+                        kin = ArrheniusModel(
+                            A=float(A.simplified),
+                            n=float(n.simplified),
+                            Ea=float(Ea.simplified),
+                            T0=1.0
+                        )
+                        rxn = Reaction(
+                            reactants=reactants,
+                            products=products,
+                            kinetics=kin,
+                            reversible= arrow =='<=>',
+                        )
+                        self.reactions.append(rxn)
+                    if 'Unit:' in line:
+                        inUnitSection = True; inReactionSection = False
+                    elif 'Reactions:' in line:
+                        inUnitSection = False; inReactionSection = True
+
+        except (InvalidDatabaseError, InvalidAdjacencyListError), e:
+            logging.exception(str(e))
+            raise
+        except IOError, e:
+            logging.exception('Database dictionary file "' + e.filename + '" not found.')
+            raise
+        finally:
+            if fdict: fdict.close()
+
+    def generateKineticsData(self, reaction):
+        """
+        Determine the kinetics data for the given `reaction`, if it exists in
+        the library. The reaction must be in the same direction as it is in
+        the library in order to have the kinetics returned.
+        """
+        for libraryReaction in self.reactions:
+            # To match, the reactions must have exactly the same numbers of
+            # reactants and products
+            if (len(libraryReaction.reactants) == len(reaction.reactants) and
+              len(libraryReaction.products) == len(reaction.products)):
+                # Try to pair up reactants
+                reactants = reaction.reactants[:]
+                for libraryReactant in libraryReaction.reactants:
+                    for reactant in reactants:
+                        if any([molecule.isIsomorphic(libraryReactant) for molecule in reactant.molecule]):
+                            reactants.remove(reactant) # So we don't match the same reactant multiple times
+                            break
+                if len(reactants) != 0: continue
+                # Try to pair up products
+                products = reaction.products[:]
+                for libraryProduct in libraryReaction.products:
+                    for product in products:
+                        if any([molecule.isIsomorphic(libraryProduct) for molecule in product.molecule]):
+                            products.remove(product) # So we don't match the same product multiple times
+                            break
+                if len(products) != 0: continue
+                # If we're here, then we were able to match all reactants and
+                # products, so we assume that the reactions match
+                return libraryReaction.kinetics
+
+        # If we're here, then there were no matches found, so return no match
+        return None
+
+    def getReactionList(self, reactants):
+        """
+        Generate a list of all of the possible reactions of this family between
+        the list of `reactants`.
+        """
+        rxnList = []
+
+        for libraryReaction in self.reactions:
+            # To match, the reactions must have exactly the same numbers of
+            # reactants
+            if len(libraryReaction.reactants) == len(reactants):
+                # Try to pair up reactants
+                reactants0 = reactants[:]
+                for libraryReactant in libraryReaction.reactants:
+                    for reactant in reactants0:
+                        if any([molecule.isIsomorphic(libraryReactant) for molecule in reactant.molecule]):
+                            reactants0.remove(reactant) # So we don't match the same reactant multiple times
+                            break
+                if len(reactants0) == 0:
+                    rxnList.append(libraryReaction)
+
+            # To match, the reactions must have exactly the same numbers of
+            # reactants
+            if len(libraryReaction.products) == len(reactants):
+                # Try to pair up products
+                reactants0 = reactants[:]
+                for libraryProduct in libraryReaction.products:
+                    for reactant in reactants0:
+                        if any([molecule.isIsomorphic(libraryProduct) for molecule in reactant.molecule]):
+                            reactants0.remove(reactant) # So we don't match the same product multiple times
+                            break
+                if len(reactants0) == 0:
+                    rxnList.append(libraryReaction)
+
+        return rxnList
+
+################################################################################
+
 kineticsDatabases = []
 
-def loadKineticsDatabase(dstr, group=True, only_families=False):
+def loadKineticsDatabase(dstr, group=True, old=False, seedMechanism=False, reactionLibrary=False, only_families=False):
     """
     Load the RMG kinetics database located at `dstr` into the global variable
     `rmg.reaction.kineticsDatabase`.
@@ -1118,20 +1319,31 @@ def loadKineticsDatabase(dstr, group=True, only_families=False):
     global kineticsDatabases
     if group:
         kineticsDatabase = KineticsGroupDatabase(path=dstr, only_families=only_families)
+        kineticsDatabase.load(dstr, only_families)
         kineticsDatabases.append(kineticsDatabase)
     else:
-        pass
+        kineticsDatabase = KineticsPrimaryDatabase()
+        kineticsDatabase.load(dstr, old=old, seedMechanism=seedMechanism, reactionLibrary=reactionLibrary)
+        kineticsDatabases.append(kineticsDatabase)
     return kineticsDatabase
 
 def generateKineticsData(rxn, family, structures):
     """
     Get the kinetics data associated with `reaction` in `family` by looking in
     the loaded kinetics database. The reactants and products in the molecule
-    should already be labeled appropriately.
+    should already be labeled appropriately. An
+    :class:`UndeterminableKineticsError` is raised if no kinetics could be
+    determined for the given reaction.
     """
     global kineticsDatabases
-    kinetics = kineticsDatabases[0].generateKineticsData(rxn, family, structures)
-    return kinetics
+    kinetics = None
+    for kineticsDatabase in kineticsDatabases:
+        if isinstance(kineticsDatabase, KineticsGroupDatabase):
+            kinetics = kineticsDatabase.generateKineticsData(rxn, family, structures)
+        elif isinstance(kineticsDatabase, KineticsPrimaryDatabase):
+            kinetics = kineticsDatabase.generateKineticsData(rxn)
+        if kinetics is not None: return kinetics
+    raise UndeterminableKineticsError(rxn)
     
 ################################################################################
 
