@@ -1340,7 +1340,10 @@ def generateKineticsData(rxn, family, structures):
     for kineticsDatabase in kineticsDatabases:
         if isinstance(kineticsDatabase, KineticsGroupDatabase):
             kinetics = kineticsDatabase.generateKineticsData(rxn, family, structures)
-        elif isinstance(kineticsDatabase, KineticsPrimaryDatabase):
+        elif isinstance(kineticsDatabase, KineticsPrimaryDatabase) and not kineticsDatabase.seedMechanism and not kineticsDatabase.reactionLibrary:
+            # Assume that, for seed mechanisms and reaction libraries, you've
+            # already determined the kinetics (if possible) when you discovered
+            # the reaction
             kinetics = kineticsDatabase.generateKineticsData(rxn)
         if kinetics is not None: return kinetics
     raise UndeterminableKineticsError(rxn)
