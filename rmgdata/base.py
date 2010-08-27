@@ -94,7 +94,7 @@ class Dictionary(dict):
         try:
             fdict = open(path, 'r')
             for line in fdict:
-                line = removeCommentFromLine(line).strip()
+                line = line.strip()
                 # If at blank line, end of record has been found
                 if len(line) == 0 and len(record) > 0:
                     # Label is first line of record
@@ -104,9 +104,11 @@ class Dictionary(dict):
                     self[label] = self.toStructure(record, pattern)
                     # Clear record in preparation for next iteration
                     record = ''
-                # Otherwise append line to record (if not empty)
-                elif len(line) > 0:
-                    record += line + '\n'
+                # Otherwise append line to record (if not empty and not a comment line)
+                else:
+                    line = removeCommentFromLine(line).strip()
+                    if len(line) > 0:
+                        record += line + '\n'
             # process the last record! (after end of for loop)
             # Label is first line of record
             if record:
@@ -131,8 +133,9 @@ class Dictionary(dict):
         record is a logical node, it is converted into the appropriate class.
         """
         # If record is a logical node, make it into one.
-        if re.match('(?i)\s*OR|AND|NOT|UNION',record.splitlines()[1] ):
-            return makeLogicNode(' '.join(record.splitlines()[1:]) )
+        lines = record.splitlines()
+        if re.match('(?i)\s*OR|AND|NOT|UNION',lines[1] ):
+            return makeLogicNode(' '.join(lines[1:]) )
         # Otherwise convert adjacency list to molecule or pattern
         elif pattern:
             return MoleculePattern().fromAdjacencyList(record)
