@@ -41,6 +41,7 @@ import chempy.constants as constants
 import chempy.species
 import chempy.reaction
 from chempy.thermo import NASAModel
+from chempy.kinetics import ArrheniusModel
 
 from rmgdata.thermo import generateThermoData, convertThermoData
 from rmgdata.kinetics import generateKineticsData
@@ -136,7 +137,8 @@ class Reaction(chempy.reaction.Reaction):
         Generate kinetcs data for the reaction using the kinetics database.
         """
         self.kinetics = generateKineticsData(self, self.family.label, self.reactantMolecules)
-        self.kinetics = self.kinetics.toArrhenius(self.getEnthalpyOfReaction(298.15))
+        if not isinstance(self.kinetics, ArrheniusModel):
+            self.kinetics = self.kinetics.toArrhenius(self.getEnthalpyOfReaction(298.15))
 
     def toCantera(self, T=1000, P=1.0e5):
         """
@@ -737,6 +739,64 @@ class CoreEdgeReactionModel:
             j = rxn.index - 1
             rxnRate[j] = rxn.getRate(T, P, Ci)
         return rxnRate
+
+    def addSeedMechanismToCore(self, seedMechanism, react=False):
+        """
+        Add all species and reactions from `seedMechanism`, a 
+        :class:`KineticsPrimaryDatabase` object, to the model core. If `react`
+        is ``True``, then reactions will also be generated between the seed
+        species. For large seed mechanisms this can be prohibitively expensive,
+        so it is not done by default.
+        """
+        
+        rxnList = []; speciesList = []
+
+        numOldCoreSpecies = len(self.core.species)
+        numOldCoreReactions = len(self.core.reactions)
+
+        logging.info('Adding seed mechanism %s to model core...' % seedMechanism)
+
+        dictionary = seedMechanism.database.dictionary
+
+        for rxn in seedMechanism.reactions:
+            forward = Reaction(reactants=rxn.reactants[:], products=rxn.products[:], family=seedMechanism, kinetics=rxn.kinetics, isForward=True)
+            for i, reactant in enumerate(forward.reactants):
+                label = dictionary.keys()[dictionary.values().index(reactant)]
+                forward.reactants[i], isNew = self.makeNewSpecies(reactant, label=label)
+                if isNew: speciesList.append(forward.reactants[i])
+            for i, product in enumerate(forward.products):
+                label = dictionary.keys()[dictionary.values().index(product)]
+                forward.products[i], isNew = self.makeNewSpecies(product, label=label)
+                if isNew: speciesList.append(forward.products[i])
+            # Sort reactants and products
+            rxn.reactants.sort()
+            rxn.products.sort()
+
+            reverse = Reaction(reactants=rxn.products, products=rxn.reactants, family=seedMechanism, isForward=False)
+            forward.reverse = reverse
+            reverse.reverse = forward
+
+            r, isNew = self.makeNewReaction(forward)
+            if isNew: rxnList.append(r)
+
+        for spec in speciesList:
+            if spec.reactive: spec.generateThermoData()
+            if react:
+                self.enlarge(spec)
+            else:
+                self.addSpeciesToCore(spec)
+            spec.toCantera()
+
+        for rxn in rxnList:
+            self.addReactionToCore(rxn)
+            rxn.toCantera()
+
+        self.printEnlargeSummary(
+            newCoreSpecies=self.core.species[numOldCoreSpecies:],
+            newCoreReactions=self.core.reactions[numOldCoreReactions:],
+            newEdgeSpecies=[],
+            newEdgeReactions=[],
+        )
 
     def addReactionToUnimolecularNetworks(self, newReaction):
         """

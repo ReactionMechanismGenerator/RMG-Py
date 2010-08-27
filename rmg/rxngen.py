@@ -292,6 +292,38 @@ def generateReactionsForFamily(reactants, family, model, forward=True):
 
 ################################################################################
 
+def generateReactionsForPrimary(kineticsDatabase, species, model):
+    """
+    Generate all possible reactions involving `species`, a list of either one
+    or two species to react, that are present within a single primary kinetics
+    database `kineticsDatabase`.
+    """
+
+    from model import Reaction
+
+    rxnList0 = kineticsDatabase.getReactionList(species)
+
+    # Check the product species to see if any of them have been encountered before
+    # If so, replace them with the existing species
+    # If not, formally create a new species
+    rxnList = []; speciesList = []
+    dictionary = kineticsDatabase.database.dictionary
+    for rxn in rxnList0:
+        forward = Reaction(reactants=rxn.reactants[:], products=rxn.products[:], family=kineticsDatabase, isForward=True)
+        for i, product in enumerate(forward.products):
+            label = dictionary.keys()[dictionary.values().index(product)]
+            forward.products[i], isNew = model.makeNewSpecies(product, label=label)
+            if isNew: speciesList.append(forward.products[i])
+        # Sort reactants and products
+        rxn.reactants.sort()
+        rxn.products.sort()
+
+        reverse = Reaction(reactants=rxn.products, products=rxn.reactants, family=kineticsDatabase, isForward=False)
+        forward.reverse = reverse
+        reverse.reverse = forward
+
+    return rxnList, speciesList
+
 def generateReactions(species, model):
     """
     Generate all possible reactions involving `species`, a list of either one
@@ -313,14 +345,24 @@ def generateReactions(species, model):
     for spec in species:
         for molecule in spec.molecule: molecule.makeHydrogensExplicit()
 
-    for key, family in rmgdata.kinetics.kineticsDatabases[-1].families.iteritems():
-        for forward in [True, False]:
-            rxnList, specList = generateReactionsForFamily(species, family, model, forward=forward)
+    for kineticsDatabase in rmgdata.kinetics.kineticsDatabases:
+        if isinstance(kineticsDatabase, rmgdata.kinetics.KineticsPrimaryDatabase) and kineticsDatabase.reactionLibrary:
+            rxnList, specList = generateReactionsForPrimary(kineticsDatabase, species, model)
             speciesList.extend(specList)
             # Formally make the new reactions
             for rxn in rxnList:
+                forward = species[0] in rxn.reactants
                 r, isNew = model.makeNewReaction(rxn if forward else rxn.reverse)
                 if isNew: reactionList.append(r)
+        elif isinstance(kineticsDatabase, rmgdata.kinetics.KineticsGroupDatabase):
+            for key, family in rmgdata.kinetics.kineticsDatabases[-1].families.iteritems():
+                for forward in [True, False]:
+                    rxnList, specList = generateReactionsForFamily(species, family, model, forward=forward)
+                    speciesList.extend(specList)
+                    # Formally make the new reactions
+                    for rxn in rxnList:
+                        r, isNew = model.makeNewReaction(rxn if forward else rxn.reverse)
+                        if isNew: reactionList.append(r)
             
     # Restore implicit hydrogens if necessary
     for implicit, spec in zip(implicitH, species):

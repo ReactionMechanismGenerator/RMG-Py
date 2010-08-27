@@ -263,6 +263,15 @@ def execute(args):
         #print "enter 'c' to continue"; import pdb; pdb.set_trace()
         options.restart = False # have already restarted
     else:
+
+        # Seed mechanisms: add species and reactions from seed mechanism
+        # DON'T generate any more reactions for the seed species at this time
+        import rmgdata.kinetics
+        from rmg.model import Reaction
+        for kineticsDatabase in rmgdata.kinetics.kineticsDatabases:
+            if isinstance(kineticsDatabase, rmgdata.kinetics.KineticsPrimaryDatabase) and kineticsDatabase.seedMechanism:
+                reactionModel.addSeedMechanismToCore(kineticsDatabase, react=False)
+
         for spec in coreSpecies:
             if spec.reactive: spec.generateThermoData()
             reactionModel.enlarge(spec)

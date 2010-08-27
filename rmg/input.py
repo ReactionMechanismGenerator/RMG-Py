@@ -54,17 +54,21 @@ reactionModel = None
 
 availableReactionSystems = getAvailableReactionSystems()
 
-def database(thermo_groups, kinetics_groups, thermo_libraries=None, kinetics_libraries=None):
+def database(thermo_groups, kinetics_groups, thermo_libraries=None, kinetics_libraries=None, reaction_libraries=None, seed_mechanisms=None):
     global databases
     if isinstance(thermo_groups, str): thermo_groups = [thermo_groups]
     if isinstance(kinetics_groups, str): kinetics_groups = [kinetics_groups]
     if isinstance(thermo_libraries, str): thermo_libraries = [thermo_libraries]
     if isinstance(kinetics_libraries, str): kinetics_libraries = [kinetics_libraries]
+    if isinstance(reaction_libraries, str): reaction_libraries = [reaction_libraries]
+    if isinstance(seed_mechanisms, str): seed_mechanisms = [seed_mechanisms]
     databases['thermo_groups'] = thermo_groups or []
     databases['kinetics_groups'] = kinetics_groups or []
     databases['thermo_libraries'] = thermo_libraries or []
     databases['kinetics_libraries'] = kinetics_libraries or []
-    
+    databases['reaction_libraries'] = reaction_libraries or []
+    databases['seed_mechanisms'] = seed_mechanisms or []
+
 def species(label, structure, reactive=True):
     global speciesDict, reactionModel
     logging.debug('Found %s species "%s" (%s)' % ('reactive' if reactive else 'nonreactive', label, structure.toSMILES()))
@@ -210,9 +214,18 @@ def readInputFile(path):
     for d in databases['thermo_groups']:
         path = os.path.join(getDatabaseDirectory(), d)
         loadThermoDatabase(path, group=True, old=True)
+    for d in databases['seed_mechanisms']:
+        path = os.path.join(getDatabaseDirectory(), d)
+        loadKineticsDatabase(path, group=False, old=True, seedMechanism=True)
+    for d in databases['reaction_libraries']:
+        path = os.path.join(getDatabaseDirectory(), d)
+        loadKineticsDatabase(path, group=False, old=True, reactionLibrary=True)
+    for d in databases['kinetics_libraries']:
+        path = os.path.join(getDatabaseDirectory(), d)
+        loadKineticsDatabase(path, group=False, old=True)
     for d in databases['kinetics_groups']:
         path = os.path.join(getDatabaseDirectory(), d)
-        loadKineticsDatabase(path, group=True)
+        loadKineticsDatabase(path, group=True, old=True)
 
     speciesList = speciesDict.values(); speciesList.sort()
 
