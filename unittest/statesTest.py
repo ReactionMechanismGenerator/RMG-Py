@@ -22,34 +22,34 @@ class StatesTest(unittest.TestCase):
         from a CBS-QB3 calculation using Gaussian03.
         """
 
-        Tlist = numpy.array([298.15], numpy.float64)
+        T = 298.15
 
         trans = Translation(mass=0.02803)
         rot = RigidRotor(linear=False, inertia=[5.6952e-47, 2.7758e-46, 3.3454e-46], symmetry=1)
         vib = HarmonicOscillator(frequencies=[834.50, 973.31, 975.37, 1067.1, 1238.5, 1379.5, 1472.3, 1691.3, 3121.6, 3136.7, 3192.5, 3221.0])
 
-        self.assertAlmostEqual(trans.getPartitionFunction(Tlist) / 1.01325 / 5.83338e6, 1.0, 3)
-        self.assertAlmostEqual(rot.getPartitionFunction(Tlist) / 2.59622e3, 1.0, 3)
-        self.assertAlmostEqual(vib.getPartitionFunction(Tlist) / 1.0481e0, 1.0, 3)
+        self.assertAlmostEqual(trans.getPartitionFunction(T) / 1.01325 / 5.83338e6, 1.0, 3)
+        self.assertAlmostEqual(rot.getPartitionFunction(T) / 2.59622e3, 1.0, 3)
+        self.assertAlmostEqual(vib.getPartitionFunction(T) / 1.0481e0, 1.0, 3)
 
-        self.assertAlmostEqual(trans.getHeatCapacity(Tlist) / 4.184 / 2.981, 1.0, 3)
-        self.assertAlmostEqual(rot.getHeatCapacity(Tlist) / 4.184 / 2.981, 1.0, 3)
-        self.assertAlmostEqual(vib.getHeatCapacity(Tlist) / 4.184 / 2.133, 1.0, 3)
+        self.assertAlmostEqual(trans.getHeatCapacity(T) / 4.184 / 2.981, 1.0, 3)
+        self.assertAlmostEqual(rot.getHeatCapacity(T) / 4.184 / 2.981, 1.0, 3)
+        self.assertAlmostEqual(vib.getHeatCapacity(T) / 4.184 / 2.133, 1.0, 3)
 
-        self.assertAlmostEqual(trans.getEnthalpy(Tlist) / 8.314472 / Tlist / 1.5, 1.0, 3)
-        self.assertAlmostEqual(rot.getEnthalpy(Tlist) / 8.314472 / Tlist / 1.5, 1.0, 3)
-        self.assertAlmostEqual(vib.getEnthalpy(Tlist) / 8.314472 / Tlist / 0.221258, 1.0, 3)
+        self.assertAlmostEqual(trans.getEnthalpy(T) / 8.314472 / T / 1.5, 1.0, 3)
+        self.assertAlmostEqual(rot.getEnthalpy(T) / 8.314472 / T / 1.5, 1.0, 3)
+        self.assertAlmostEqual(vib.getEnthalpy(T) / 8.314472 / T / 0.221258, 1.0, 3)
         
-        self.assertAlmostEqual(trans.getEntropy(Tlist) / 4.184 / 35.927, 1.0, 2)
-        self.assertAlmostEqual(rot.getEntropy(Tlist) / 4.184 / 18.604, 1.0, 3)
-        self.assertAlmostEqual(vib.getEntropy(Tlist) / 4.184 / 0.533, 1.0, 3)
+        self.assertAlmostEqual(trans.getEntropy(T) / 4.184 / 35.927, 1.0, 2)
+        self.assertAlmostEqual(rot.getEntropy(T) / 4.184 / 18.604, 1.0, 3)
+        self.assertAlmostEqual(vib.getEntropy(T) / 4.184 / 0.533, 1.0, 3)
 
         states = StatesModel(modes=[rot, vib], spinMultiplicity=1)
         
         dE = 10.0
         Elist = numpy.arange(0, 100001, dE, numpy.float64)
         rho = states.getDensityOfStates(Elist)
-        self.assertAlmostEqual(numpy.sum(rho * numpy.exp(-Elist / 8.314472 / 298.15) * dE) / states.getPartitionFunction(Tlist), 1.0, 2)
+        self.assertAlmostEqual(numpy.sum(rho * numpy.exp(-Elist / 8.314472 / 298.15) * dE) / states.getPartitionFunction(T), 1.0, 2)
         
     def testModesForOxygen(self):
         """
@@ -57,34 +57,34 @@ class StatesTest(unittest.TestCase):
         from a CBS-QB3 calculation using Gaussian03.
         """
 
-        Tlist = numpy.array([298.15], numpy.float64)
+        T = 298.15
 
         trans = Translation(mass=0.03199)
         rot = RigidRotor(linear=True, inertia=[1.9271e-46], symmetry=2)
         vib = HarmonicOscillator(frequencies=[1637.9])
 
-        self.assertAlmostEqual(trans.getPartitionFunction(Tlist) / 1.01325 / 7.11169e6, 1.0, 3)
-        self.assertAlmostEqual(rot.getPartitionFunction(Tlist) / 7.13316e1, 1.0, 3)
-        self.assertAlmostEqual(vib.getPartitionFunction(Tlist) / 1.000037e0, 1.0, 3)
+        self.assertAlmostEqual(trans.getPartitionFunction(T) / 1.01325 / 7.11169e6, 1.0, 3)
+        self.assertAlmostEqual(rot.getPartitionFunction(T) / 7.13316e1, 1.0, 3)
+        self.assertAlmostEqual(vib.getPartitionFunction(T) / 1.000037e0, 1.0, 3)
 
-        self.assertAlmostEqual(trans.getHeatCapacity(Tlist) / 4.184 / 2.981, 1.0, 3)
-        self.assertAlmostEqual(rot.getHeatCapacity(Tlist) / 4.184 / 1.987, 1.0, 3)
-        self.assertAlmostEqual(vib.getHeatCapacity(Tlist) / 4.184 / 0.046, 1.0, 2)
+        self.assertAlmostEqual(trans.getHeatCapacity(T) / 4.184 / 2.981, 1.0, 3)
+        self.assertAlmostEqual(rot.getHeatCapacity(T) / 4.184 / 1.987, 1.0, 3)
+        self.assertAlmostEqual(vib.getHeatCapacity(T) / 4.184 / 0.046, 1.0, 2)
 
-        self.assertAlmostEqual(trans.getEnthalpy(Tlist) / 8.314472 / Tlist / 1.5, 1.0, 3)
-        self.assertAlmostEqual(rot.getEnthalpy(Tlist) / 8.314472 / Tlist / 1.0, 1.0, 3)
-        self.assertAlmostEqual(vib.getEnthalpy(Tlist) / 8.314472 / Tlist / 0.0029199, 1.0, 3)
+        self.assertAlmostEqual(trans.getEnthalpy(T) / 8.314472 / T / 1.5, 1.0, 3)
+        self.assertAlmostEqual(rot.getEnthalpy(T) / 8.314472 / T / 1.0, 1.0, 3)
+        self.assertAlmostEqual(vib.getEnthalpy(T) / 8.314472 / T / 0.0029199, 1.0, 3)
 
-        self.assertAlmostEqual(trans.getEntropy(Tlist) / 4.184 / 36.321, 1.0, 2)
-        self.assertAlmostEqual(rot.getEntropy(Tlist) / 4.184 / 10.467, 1.0, 3)
-        self.assertAlmostEqual(vib.getEntropy(Tlist) / 4.184 / 0.00654, 1.0, 2)
+        self.assertAlmostEqual(trans.getEntropy(T) / 4.184 / 36.321, 1.0, 2)
+        self.assertAlmostEqual(rot.getEntropy(T) / 4.184 / 10.467, 1.0, 3)
+        self.assertAlmostEqual(vib.getEntropy(T) / 4.184 / 0.00654, 1.0, 2)
 
         states = StatesModel(modes=[rot, vib], spinMultiplicity=3)
         
         dE = 10.0
         Elist = numpy.arange(0, 100001, dE, numpy.float64)
         rho = states.getDensityOfStates(Elist)
-        self.assertAlmostEqual(numpy.sum(rho * numpy.exp(-Elist / 8.314472 / 298.15) * dE) / states.getPartitionFunction(Tlist), 1.0, 2)
+        self.assertAlmostEqual(numpy.sum(rho * numpy.exp(-Elist / 8.314472 / 298.15) * dE) / states.getPartitionFunction(T), 1.0, 2)
     
     def testHinderedRotorDensityOfStates(self):
         """
@@ -107,10 +107,10 @@ class StatesTest(unittest.TestCase):
 #        pylab.semilogy(1000.0 / Tlist, Q, '--k', 1000.0 / Tlist, hr.getPartitionFunction(Tlist), '-k')
 #        pylab.show()
 
-        Tlist = numpy.array([298.15], numpy.float64)
-        self.assertTrue(0.9 < numpy.sum(rho * numpy.exp(-Elist / 8.314472 / Tlist[0]) * dE) / hr.getPartitionFunction(Tlist) < 1.1)
-        Tlist = numpy.array([1000.0], numpy.float64)
-        self.assertTrue(0.9 < numpy.sum(rho * numpy.exp(-Elist / 8.314472 / Tlist[0]) * dE) / hr.getPartitionFunction(Tlist) < 1.1)
+        T = 298.15
+        self.assertTrue(0.9 < numpy.sum(rho * numpy.exp(-Elist / 8.314472 / T) * dE) / hr.getPartitionFunction(T) < 1.1)
+        T = 1000.0
+        self.assertTrue(0.9 < numpy.sum(rho * numpy.exp(-Elist / 8.314472 / T) * dE) / hr.getPartitionFunction(T) < 1.1)
 
     def testHinderedRotor1(self):
         """
@@ -124,9 +124,9 @@ class StatesTest(unittest.TestCase):
 
         # Check that it matches the harmonic oscillator model at low T
         Tlist = numpy.arange(10, 41.0, 1.0, numpy.float64)
-        Q1 = hr1.getPartitionFunction(Tlist)
-        Q2 = hr2.getPartitionFunction(Tlist)
-        Q0 = ho.getPartitionFunction(Tlist)
+        Q1 = hr1.getPartitionFunctions(Tlist)
+        Q2 = hr2.getPartitionFunctions(Tlist)
+        Q0 = ho.getPartitionFunctions(Tlist)
         for i in range(len(Tlist)):
             self.assertAlmostEqual(Q1[i] / Q0[i], 1.0, 2)
         for i in range(len(Tlist)):
@@ -152,14 +152,14 @@ class StatesTest(unittest.TestCase):
 
         # Check that it matches the harmonic oscillator model at low T
         Tlist = numpy.arange(100.0, 2001.0, 10.0, numpy.float64)
-        Q1 = hr1.getPartitionFunction(Tlist)
-        Q2 = hr2.getPartitionFunction(Tlist)
-        C1 = hr1.getHeatCapacity(Tlist)
-        C2 = hr2.getHeatCapacity(Tlist)
-        H1 = hr1.getEnthalpy(Tlist)
-        H2 = hr2.getEnthalpy(Tlist)
-        S1 = hr1.getEntropy(Tlist)
-        S2 = hr2.getEntropy(Tlist)
+        Q1 = hr1.getPartitionFunctions(Tlist)
+        Q2 = hr2.getPartitionFunctions(Tlist)
+        C1 = hr1.getHeatCapacities(Tlist)
+        C2 = hr2.getHeatCapacities(Tlist)
+        H1 = hr1.getEnthalpies(Tlist)
+        H2 = hr2.getEnthalpies(Tlist)
+        S1 = hr1.getEntropies(Tlist)
+        S2 = hr2.getEntropies(Tlist)
         for i in range(len(Tlist)):
             self.assertTrue(abs(C2[i] - C1[i]) < 0.2)
 

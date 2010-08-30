@@ -101,7 +101,18 @@ from exception import InvalidStatesModelError
 ################################################################################
 
 class Mode:
-    pass
+
+    def getPartitionFunctions(self, Tlist):
+        return numpy.array([self.getPartitionFunction(T) for T in Tlist], numpy.float64)
+
+    def getHeatCapacities(self, Tlist):
+        return numpy.array([self.getHeatCapacity(T) for T in Tlist], numpy.float64)
+
+    def getEnthalpies(self, Tlist):
+        return numpy.array([self.getEnthalpy(T) for T in Tlist], numpy.float64)
+
+    def getEntropies(self, Tlist):
+        return numpy.array([self.getEntropy(T) for T in Tlist], numpy.float64)
 
 ################################################################################
 
@@ -123,7 +134,7 @@ class Translation(Mode):
         """
         return 'Translation(mass=%g)' % (self.mass)
 
-    def getPartitionFunction(self, Tlist):
+    def getPartitionFunction(self, T):
         """
         Return the value of the partition function at the specified temperatures
         `Tlist` in K. The formula is
@@ -136,9 +147,9 @@ class Translation(Mode):
         """
         cython.declare(qt=cython.double)
         qt = ((2 * constants.pi * self.mass / constants.Na) / (constants.h * constants.h))**1.5 / 1e5
-        return qt * (constants.kB * Tlist)**2.5
+        return qt * (constants.kB * T)**2.5
 
-    def getHeatCapacity(self, Tlist):
+    def getHeatCapacity(self, T):
         """
         Return the contribution to the heat capacity due to translation in
         J/mol*K at the specified temperatures `Tlist` in K. The formula is
@@ -147,9 +158,9 @@ class Translation(Mode):
 
         where :math:`T` is temperature and :math:`R` is the gas law constant.
         """
-        return 1.5 * constants.R * numpy.ones_like(Tlist)
+        return 1.5 * constants.R
 
-    def getEnthalpy(self, Tlist):
+    def getEnthalpy(self, T):
         """
         Return the contribution to the enthalpy due to translation in J/mol
         at the specified temperatures `Tlist` in K. The formula is
@@ -158,9 +169,9 @@ class Translation(Mode):
 
         where :math:`T` is temperature and :math:`R` is the gas law constant.
         """
-        return 1.5 * constants.R * Tlist
+        return 1.5 * constants.R * T
 
-    def getEntropy(self, Tlist):
+    def getEntropy(self, T):
         """
         Return the contribution to the entropy due to translation in J/mol*K
         at the specified temperatures `Tlist` in K. The formula	is
@@ -170,7 +181,7 @@ class Translation(Mode):
         where :math:`T` is temperature, :math:`q_\\mathrm{trans}` is the
         partition function, and :math:`R` is the gas law constant.
         """
-        return (numpy.log(self.getPartitionFunction(Tlist)) + 1.5 + 1.0) * constants.R
+        return (numpy.log(self.getPartitionFunction(T)) + 1.5 + 1.0) * constants.R
 
     def getDensityOfStates(self, Elist):
         """
@@ -214,7 +225,7 @@ class RigidRotor(Mode):
         inertia = ', '.join(['%g' % i for i in self.inertia])
         return 'RigidRotor(linear=%s, inertia=[%s], symmetry=%s)' % (self.linear, inertia, self.symmetry)
 
-    def getPartitionFunction(self, Tlist):
+    def getPartitionFunction(self, T):
         """
         Return the value of the partition function at the specified temperatures
         `Tlist` in K. The formula is
@@ -233,14 +244,14 @@ class RigidRotor(Mode):
         cython.declare(theta=cython.double, inertia=cython.double)
         if self.linear:
             theta = constants.h * constants.h / (8 * constants.pi * constants.pi * self.inertia[0] * constants.kB)
-            return Tlist / theta / self.symmetry
+            return T / theta / self.symmetry
         else:
             theta = 1.0
             for inertia in self.inertia:
                 theta *= constants.h * constants.h / (8 * constants.pi * constants.pi * inertia * constants.kB)
-            return numpy.sqrt(constants.pi * Tlist**len(self.inertia) / theta) / self.symmetry
+            return numpy.sqrt(constants.pi * T**len(self.inertia) / theta) / self.symmetry
 
-    def getHeatCapacity(self, Tlist):
+    def getHeatCapacity(self, T):
         """
         Return the contribution to the heat capacity due to rigid rotation
         in J/mol*K at the specified temperatures `Tlist` in K. The formula is
@@ -255,11 +266,11 @@ class RigidRotor(Mode):
         law constant.
         """
         if self.linear:
-            return numpy.ones_like(Tlist) * constants.R
+            return constants.R
         else:
-            return 1.5 * numpy.ones_like(Tlist) * constants.R
+            return 1.5 * constants.R
 
-    def getEnthalpy(self, Tlist):
+    def getEnthalpy(self, T):
         """
         Return the contribution to the enthalpy due to rigid rotation in J/mol
         at the specified temperatures `Tlist` in K. The formula is
@@ -274,11 +285,11 @@ class RigidRotor(Mode):
         the gas law constant.
         """
         if self.linear:
-            return constants.R * Tlist
+            return constants.R * T
         else:
-            return 1.5 * constants.R * Tlist
+            return 1.5 * constants.R * T
 
-    def getEntropy(self, Tlist):
+    def getEntropy(self, T):
         """
         Return the contribution to the entropy due to rigid rotation in J/mol*K
         at the specified temperatures `Tlist` in K. The formula is
@@ -293,9 +304,9 @@ class RigidRotor(Mode):
         function for a rigid rotor and :math:`R` is the gas law constant.
         """
         if self.linear:
-            return (numpy.log(self.getPartitionFunction(Tlist)) + 1.0) * constants.R
+            return (numpy.log(self.getPartitionFunction(T)) + 1.0) * constants.R
         else:
-            return (numpy.log(self.getPartitionFunction(Tlist)) + 1.5) * constants.R
+            return (numpy.log(self.getPartitionFunction(T)) + 1.5) * constants.R
 
     def getDensityOfStates(self, Elist):
         """
@@ -354,6 +365,8 @@ class HinderedRotor(Mode):
         self.barrier = barrier
         self.symmetry = symmetry
         self.fourier = fourier
+        self.energies = None
+        if self.fourier is not None: self.energies = self.__solveSchrodingerEquation()
 
     def __repr__(self):
         """
@@ -418,7 +431,7 @@ class HinderedRotor(Mode):
         # Return the eigenvalues
         return (E - numpy.min(E)) * constants.Na
 
-    def getPartitionFunction(self, Tlist):
+    def getPartitionFunction(self, T):
         """
         Return the value of the partition function at the specified temperatures
         `Tlist` in K. For the cosine potential, the formula makes use of the
@@ -451,21 +464,18 @@ class HinderedRotor(Mode):
         if self.fourier is not None:
             # Fourier series data found, so use it
             # This means solving the 1D Schrodinger equation - slow!
-            cython.declare(Q=numpy.ndarray, E=numpy.ndarray, e_kT=numpy.ndarray, i=cython.int)
-            E = self.__solveSchrodingerEquation()
-            Q = numpy.zeros_like(Tlist)
-            for i in range(len(Tlist)):
-                e_kT = numpy.exp(-E / constants.R / Tlist[i])
-                Q[i] = numpy.sum(e_kT)
+            cython.declare(Q=cython.double, E=numpy.ndarray, e_kT=numpy.ndarray, i=cython.int)
+            e_kT = numpy.exp(-self.energies / constants.R / T)
+            Q = numpy.sum(e_kT)
             return Q / self.symmetry    # No Fourier data, so use the cosine potential data
         else:
-            cython.declare(frequency=cython.double, x=numpy.ndarray, z=numpy.ndarray)
+            cython.declare(frequency=cython.double, x=cython.double, z=cython.double)
             frequency = self.getFrequency() * constants.c * 100
-            x = constants.h * frequency / (constants.kB * Tlist)
-            z = 0.5 * self.barrier / (constants.R * Tlist)
-            return x / (1 - numpy.exp(-x)) * numpy.sqrt(2 * math.pi * self.inertia * constants.kB * Tlist / constants.h / constants.h) * (2 * math.pi / self.symmetry) * numpy.exp(-z) * besseli0(z)
+            x = constants.h * frequency / (constants.kB * T)
+            z = 0.5 * self.barrier / (constants.R * T)
+            return x / (1 - numpy.exp(-x)) * numpy.sqrt(2 * math.pi * self.inertia * constants.kB * T / constants.h / constants.h) * (2 * math.pi / self.symmetry) * numpy.exp(-z) * besseli0(z)
 
-    def getHeatCapacity(self, Tlist):
+    def getHeatCapacity(self, T):
         """
         Return the contribution to the heat capacity due to hindered rotation
         in J/mol*K at the specified temperatures `Tlist` in K.
@@ -488,25 +498,23 @@ class HinderedRotor(Mode):
         to obtain the heat capacity.
         """
         if self.fourier is not None:
-            cython.declare(Cv=numpy.ndarray, E=numpy.ndarray, e_kT=numpy.ndarray, i=cython.int)
-            E = self.__solveSchrodingerEquation()
-            Cv = numpy.zeros_like(Tlist)
-            for i in range(len(Tlist)):
-                e_kT = numpy.exp(-E / constants.R / Tlist[i])
-                Cv[i] = (numpy.sum(E*E*e_kT) * numpy.sum(e_kT) - numpy.sum(E*e_kT)**2) / (constants.R*Tlist[i]*Tlist[i] * numpy.sum(e_kT)**2)
+            cython.declare(Cv=cython.double, E=numpy.ndarray, e_kT=numpy.ndarray, i=cython.int)
+            E = self.energies
+            e_kT = numpy.exp(-E / constants.R / T)
+            Cv = (numpy.sum(E*E*e_kT) * numpy.sum(e_kT) - numpy.sum(E*e_kT)**2) / (constants.R*T*T * numpy.sum(e_kT)**2)
             return Cv
         else:
-            cython.declare(frequency=cython.double, x=numpy.ndarray, z=numpy.ndarray)
-            cython.declare(exp_x=numpy.ndarray, one_minus_exp_x=numpy.ndarray, BB=numpy.ndarray)
+            cython.declare(frequency=cython.double, x=cython.double, z=cython.double)
+            cython.declare(exp_x=cython.double, one_minus_exp_x=cython.double, BB=cython.double)
             frequency = self.getFrequency() * constants.c * 100
-            x = constants.h * frequency / (constants.kB * Tlist)
-            z = 0.5 * self.barrier / (constants.R * Tlist)
+            x = constants.h * frequency / (constants.kB * T)
+            z = 0.5 * self.barrier / (constants.R * T)
             exp_x = numpy.exp(x)
             one_minus_exp_x = 1.0 - exp_x
             BB = besseli1(z) / besseli0(z)
             return (x * x * exp_x / one_minus_exp_x / one_minus_exp_x - 0.5 + z * (z - BB - z * BB * BB)) * constants.R
 
-    def getEnthalpy(self, Tlist):
+    def getEnthalpy(self, T):
         """
         Return the contribution to the heat capacity due to hindered rotation
         in J/mol at the specified temperatures `Tlist` in K. For the cosine
@@ -520,22 +528,20 @@ class HinderedRotor(Mode):
         to obtain the enthalpy.
         """
         if self.fourier is not None:
-            cython.declare(H=numpy.ndarray, E=numpy.ndarray, e_kT=numpy.ndarray, i=cython.int)
-            E = self.__solveSchrodingerEquation()
-            H = numpy.zeros_like(Tlist)
-            for i in range(len(Tlist)):
-                e_kT = numpy.exp(-E / constants.R / Tlist[i])
-                H[i] = numpy.sum(E*e_kT) / numpy.sum(e_kT)
+            cython.declare(H=cython.double, E=numpy.ndarray, e_kT=numpy.ndarray, i=cython.int)
+            E = self.energies
+            e_kT = numpy.exp(-E / constants.R / T)
+            H = numpy.sum(E*e_kT) / numpy.sum(e_kT)
             return H
         else:
-            Tlist_low = Tlist * 0.999
-            Tlist_high = Tlist * 1.001
-            return (Tlist *
-                (numpy.log(self.getPartitionFunction(Tlist_high)) -
-                numpy.log(self.getPartitionFunction(Tlist_low))) /
-                (Tlist_high - Tlist_low)) * constants.R * Tlist
+            Tlow = T * 0.999
+            Thigh = T * 1.001
+            return (T *
+                (numpy.log(self.getPartitionFunction(Thigh)) -
+                numpy.log(self.getPartitionFunction(Tlow))) /
+                (Thigh - Tlow)) * constants.R * T
 
-    def getEntropy(self, Tlist):
+    def getEntropy(self, T):
         """
         Return the contribution to the heat capacity due to hindered rotation
         in J/mol*K at the specified temperatures `Tlist` in K. For the cosine
@@ -549,20 +555,19 @@ class HinderedRotor(Mode):
         to obtain the entropy.
         """
         if self.fourier is not None:
-            cython.declare(S=numpy.ndarray, E=numpy.ndarray, e_kT=numpy.ndarray, i=cython.int)
-            E = self.__solveSchrodingerEquation()
-            S = constants.R * numpy.log(self.getPartitionFunction(Tlist))
-            for i in range(len(Tlist)):
-                e_kT = numpy.exp(-E / constants.R / Tlist[i])
-                S[i] += numpy.sum(E*e_kT) / (Tlist[i] * numpy.sum(e_kT))
+            cython.declare(S=cython.double, E=numpy.ndarray, e_kT=numpy.ndarray, i=cython.int)
+            E = self.energies
+            S = constants.R * numpy.log(self.getPartitionFunction(T))
+            e_kT = numpy.exp(-E / constants.R / T)
+            S += numpy.sum(E*e_kT) / (T * numpy.sum(e_kT))
             return S
         else:
-            Tlist_low = Tlist * 0.999
-            Tlist_high = Tlist * 1.001
-            return (numpy.log(self.getPartitionFunction(Tlist_high)) +
-                Tlist * (numpy.log(self.getPartitionFunction(Tlist_high)) -
-                numpy.log(self.getPartitionFunction(Tlist_low))) /
-                (Tlist_high - Tlist_low)) * constants.R
+            Tlow = T * 0.999
+            Thigh = T * 1.001
+            return (numpy.log(self.getPartitionFunction(Thigh)) +
+                T * (numpy.log(self.getPartitionFunction(Thigh)) -
+                numpy.log(self.getPartitionFunction(Tlow))) /
+                (Thigh - Tlow)) * constants.R
 
     def getDensityOfStates(self, Elist):
         """
@@ -614,19 +619,19 @@ class HinderedRotor(Mode):
             V0 = -numpy.sum(self.fourier[:,0])
         return self.symmetry / 2.0 / math.pi * math.sqrt(V0 / constants.Na / 2 / self.inertia) / (constants.c * 100)
 
-def besseli0(xlist):
+def besseli0(x):
     """
     Return the value of the zeroth-order modified Bessel function at `x`.
     """
     import scipy.special
-    return scipy.special.i0(xlist)
+    return scipy.special.i0(x)
 
-def besseli1(xlist):
+def besseli1(x):
     """
     Return the value of the first-order modified Bessel function at `x`.
     """
     import scipy.special
-    return scipy.special.i1(xlist)
+    return scipy.special.i1(x)
 
 def cellipk(x):
     """
@@ -655,7 +660,7 @@ class HarmonicOscillator(Mode):
         frequencies = ', '.join(['%g' % freq for freq in self.frequencies])
         return 'HarmonicOscillator(frequencies=[%s])' % (frequencies)
 
-    def getPartitionFunction(self, Tlist):
+    def getPartitionFunction(self, T):
         """
         Return the value of the partition function at the specified temperatures
         `Tlist` in K. The formula is
@@ -669,13 +674,13 @@ class HarmonicOscillator(Mode):
         that we have chosen our zero of energy to be at the zero-point energy
         of the molecule, *not* the bottom of the potential well.
         """
-        cython.declare(Q=numpy.ndarray, freq=cython.double)
-        Q = numpy.ones_like(Tlist)
+        cython.declare(Q=cython.double, freq=cython.double)
+        Q = 1.0
         for freq in self.frequencies:
-            Q = Q / (1 - numpy.exp(-freq / (0.695039 * Tlist)))  # kB = 0.695039 cm^-1/K
+            Q = Q / (1 - numpy.exp(-freq / (0.695039 * T)))  # kB = 0.695039 cm^-1/K
         return Q
 
-    def getHeatCapacity(self, Tlist):
+    def getHeatCapacity(self, T):
         """
         Return the contribution to the heat capacity due to vibration
         in J/mol*K at the specified temperatures `Tlist` in K. The formula is
@@ -687,17 +692,17 @@ class HarmonicOscillator(Mode):
         :math:`i`, :math:`k_\\mathrm{B}` is the Boltzmann constant, :math:`h`
         is the Planck constant, and :math:`R` is the gas law constant.
         """
-        cython.declare(Cv=numpy.ndarray, freq=cython.double)
-        cython.declare(x=numpy.ndarray, exp_x=numpy.ndarray, one_minus_exp_x=numpy.ndarray)
-        Cv = numpy.zeros_like(Tlist)
+        cython.declare(Cv=cython.double, freq=cython.double)
+        cython.declare(x=cython.double, exp_x=cython.double, one_minus_exp_x=cython.double)
+        Cv = 0.0
         for freq in self.frequencies:
-            x = freq / (0.695039 * Tlist)	# kB = 0.695039 cm^-1/K
+            x = freq / (0.695039 * T)	# kB = 0.695039 cm^-1/K
             exp_x = numpy.exp(x)
             one_minus_exp_x = 1.0 - exp_x
             Cv = Cv + x * x * exp_x / one_minus_exp_x / one_minus_exp_x
         return Cv * constants.R
 
-    def getEnthalpy(self, Tlist):
+    def getEnthalpy(self, T):
         """
         Return the contribution to the enthalpy due to vibration in J/mol at
         the specified temperatures `Tlist` in K. The formula is
@@ -709,16 +714,16 @@ class HarmonicOscillator(Mode):
         :math:`i`, :math:`k_\\mathrm{B}` is the Boltzmann constant, :math:`h`
         is the Planck constant, and :math:`R` is the gas law constant.
         """
-        cython.declare(H=numpy.ndarray, freq=cython.double)
-        cython.declare(x=numpy.ndarray, exp_x=numpy.ndarray)
-        H = numpy.zeros_like(Tlist)
+        cython.declare(H=cython.double, freq=cython.double)
+        cython.declare(x=cython.double, exp_x=cython.double)
+        H = 0.0
         for freq in self.frequencies:
-            x = freq / (0.695039 * Tlist)	# kB = 0.695039 cm^-1/K
+            x = freq / (0.695039 * T)	# kB = 0.695039 cm^-1/K
             exp_x = numpy.exp(x)
             H = H + x / (exp_x - 1)
-        return H * constants.R * Tlist
+        return H * constants.R * T
 
-    def getEntropy(self, Tlist):
+    def getEntropy(self, T):
         """
         Return the contribution to the entropy due to vibration in J/mol*K at
         the specified temperatures `Tlist` in K. The formula is
@@ -730,11 +735,11 @@ class HarmonicOscillator(Mode):
         :math:`i`, :math:`k_\\mathrm{B}` is the Boltzmann constant, :math:`h`
         is the Planck constant, and :math:`R` is the gas law constant.
         """
-        cython.declare(S=numpy.ndarray, freq=cython.double)
-        cython.declare(x=numpy.ndarray, exp_x=numpy.ndarray)
-        S = numpy.log(self.getPartitionFunction(Tlist))
+        cython.declare(S=cython.double, freq=cython.double)
+        cython.declare(x=cython.double, exp_x=cython.double)
+        S = numpy.log(self.getPartitionFunction(T))
         for freq in self.frequencies:
-            x = freq / (0.695039 * Tlist)	# kB = 0.695039 cm^-1/K
+            x = freq / (0.695039 * T)	# kB = 0.695039 cm^-1/K
             exp_x = numpy.exp(x)
             S = S + x / (exp_x - 1)
         return S * constants.R
@@ -781,54 +786,54 @@ class StatesModel:
         self.modes = modes or []
         self.spinMultiplicity = spinMultiplicity
 
-    def getHeatCapacity(self, Tlist):
+    def getHeatCapacity(self, T):
         """
         Return the constant-pressure heat capacity in J/mol*K at the specified
         temperatures `Tlist` in K.
         """
-        cython.declare(Cp=numpy.ndarray)
-        Cp = numpy.ones_like(Tlist) * constants.R
+        cython.declare(Cp=cython.double)
+        Cp = constants.R
         for mode in self.modes:
-            Cp += mode.getHeatCapacity(Tlist)
+            Cp += mode.getHeatCapacity(T)
         return Cp
 
-    def getEnthalpy(self, Tlist):
+    def getEnthalpy(self, T):
         """
         Return the enthalpy in J/mol at the specified temperatures `Tlist` in K.
         """
-        cython.declare(H=numpy.ndarray)
-        H = constants.R * Tlist
+        cython.declare(H=cython.double)
+        H = constants.R * T
         for mode in self.modes:
-            H += mode.getEnthalpy(Tlist)
+            H += mode.getEnthalpy(T)
         return H
 
-    def getEntropy(self, Tlist):
+    def getEntropy(self, T):
         """
         Return the entropy in J/mol*K at the specified temperatures `Tlist` in
         K.
         """
-        cython.declare(S=numpy.ndarray)
-        S = numpy.zeros_like(Tlist)
+        cython.declare(S=cython.double)
+        S = 0.0
         for mode in self.modes:
-            S += mode.getEntropy(Tlist)
+            S += mode.getEntropy(T)
         return S
 
-    def getPartitionFunction(self, Tlist):
+    def getPartitionFunction(self, T):
         """
         Return the the partition function at the specified temperatures
         `Tlist` in K. An active K-rotor is automatically included if there are
         no external rotational modes.
         """
-        cython.declare(Q=numpy.ndarray, Trot=cython.double)
-        Q = numpy.ones_like(Tlist)
+        cython.declare(Q=cython.double, Trot=cython.double)
+        Q = 1.0
         # Active K-rotor
         rotors = [mode for mode in self.modes if isinstance(mode, RigidRotor)]
         if len(rotors) == 0:
             Trot = 1.0 / constants.R / 3.141592654
-            Q *= numpy.sqrt(Tlist / Trot)
+            Q *= numpy.sqrt(T / Trot)
         # Other modes
         for mode in self.modes:
-            Q *= mode.getPartitionFunction(Tlist)
+            Q *= mode.getPartitionFunction(T)
         return Q * self.spinMultiplicity
 
     def getDensityOfStates(self, Elist):
@@ -856,11 +861,22 @@ class StatesModel:
                 rho = mode.getDensityOfStates(Elist, rho)
         return rho * self.spinMultiplicity
 
+    def getPartitionFunctions(self, Tlist):
+        return numpy.array([self.getPartitionFunction(T) for T in Tlist], numpy.float64)
+
+    def getHeatCapacities(self, Tlist):
+        return numpy.array([self.getHeatCapacity(T) for T in Tlist], numpy.float64)
+
+    def getEnthalpies(self, Tlist):
+        return numpy.array([self.getEnthalpy(T) for T in Tlist], numpy.float64)
+
+    def getEntropies(self, Tlist):
+        return numpy.array([self.getEntropy(T) for T in Tlist], numpy.float64)
+
     def __phi(self, beta, E):
         beta = float(beta)
         cython.declare(T=numpy.ndarray, Q=cython.double)
-        T = numpy.array([1.0 / (constants.R * beta)], numpy.float64)
-        Q = self.getPartitionFunction(T)[0]
+        Q = self.getPartitionFunction(1.0 / (constants.R * beta))
         return math.log(Q) + beta * float(E)
 
     def getDensityOfStatesILT(self, Elist, order=1):
