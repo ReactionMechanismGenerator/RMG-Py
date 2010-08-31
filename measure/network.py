@@ -299,6 +299,31 @@ class Network:
         
         return Kij, Gnj, Fim
         
+    def printSummary(self, level=logging.DEBUG):
+        """
+        Print a formatted list of information about the current network. In
+        particular, we want to give all of the energies on the PES.
+        """
+
+        logging.log(level, '')
+        logging.log(level, '========================================================================')
+        logging.log(level, 'Network Information')
+        logging.log(level, '-------------------')
+        logging.log(level, 'Isomers:')
+        for isomer in self.isomers:
+            logging.log(level, '    {0:<48s} {1:12g} kJ/mol'.format(str(isomer), isomer.E0 / 1000.0))
+        logging.log(level, 'Reactant channels:')
+        for reactants in self.reactants:
+            logging.log(level, '    {0:<48s} {1:12g} kJ/mol'.format(' + '.join([str(spec) for spec in reactants]), sum([spec.E0 for spec in reactants]) / 1000.0))
+        logging.log(level, 'Product channels:')
+        for products in self.products:
+            logging.log(level, '    {0:<48s} {1:12g} kJ/mol'.format(' + '.join([str(spec) for spec in products]), sum([spec.E0 for spec in products]) / 1000.0))
+        logging.log(level, 'Path reactions:')
+        for rxn in self.pathReactions:
+            logging.log(level, '    {0:<48s} {1:12g} kJ/mol'.format(rxn, rxn.transitionState.E0 / 1000.0))
+        logging.log(level, '========================================================================')
+        logging.log(level, '')
+
     def calculateRateCoefficients(self, Tlist, Plist, Elist, method):
         """
         Calculate the phenomenological rate coefficients :math:`k(T,P)` for the
