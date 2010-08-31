@@ -143,5 +143,5 @@ cdef class StatesModel:
     
 ################################################################################
 
-cdef numpy.ndarray convolve(numpy.ndarray rho1, numpy.ndarray rho2, numpy.ndarray Elist)
+cpdef numpy.ndarray convolve(numpy.ndarray rho1, numpy.ndarray rho2, numpy.ndarray Elist)
 
