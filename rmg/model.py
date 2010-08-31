@@ -480,7 +480,7 @@ class CoreEdgeReactionModel:
             # Add new species
             self.addSpeciesToCore(newSpecies)
 
-        elif isinstance(newObject, Network) and settings.unimolecularReactionNetworks:
+        elif isinstance(newObject, Network) and settings.pressureDependence:
 
             network = newObject
             # Determine the species with the maximum leak flux
@@ -513,7 +513,7 @@ class CoreEdgeReactionModel:
                         self.addSpeciesToEdge(spec)
             # If pressure dependence is on, we only add reactions that are not unimolecular;
             # unimolecular reactions will be added after processing the associated networks
-            if not settings.unimolecularReactionNetworks or not (
+            if not settings.pressureDependence or not (
                 rxn.isIsomerization() or rxn.isDissociation() or rxn.isAssociation()):
                 if allSpeciesInCore:
                     self.addReactionToCore(rxn)
@@ -546,6 +546,12 @@ class CoreEdgeReactionModel:
             # any more, so delete them to recover the memory
             rxn.reactantMolecules = None
             rxn.reverse.reactantMolecules = None
+
+        # Generate frequencies of new species
+        if settings.pressureDependence:
+            logging.info('Generating frequencies for new species...')
+            for spec in newSpeciesList:
+                spec.generateStatesData()
 
         # Tell Cantera about new core species and core reactions
         for spec in self.core.species[numOldCoreSpecies:]:
@@ -648,7 +654,7 @@ class CoreEdgeReactionModel:
                 reaction.removeFromGlobalList(rxn)
 
         # Remove the species from any unirxn networks it is in
-        if settings.unimolecularReactionNetworks:
+        if settings.pressureDependence:
             networksToDelete = []
             for network in self.unirxnNetworks:
                 if spec in network.getSpeciesList():

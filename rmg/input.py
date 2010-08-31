@@ -148,9 +148,26 @@ def model(toleranceMoveToCore, toleranceKeepInEdge=0.0, toleranceInterruptSimula
     reactionModel.fluxToleranceInterrupt = toleranceInterruptSimulation
     reactionModel.maximumEdgeSpecies = maximumEdgeSpecies
 
-def pressureDependence(method, temperatures, pressures, grainSize=0.0, numberOfGrains=0, interpolation=None):
-    raise InputError('Pressure dependence not yet supported.')
+def pressureDependence(method, temperatures, pressures, minimumGrainSize=0.0, minimumNumberOfGrains=0, interpolation=None):
 
+    # Process temperatures
+    Tmin, Tmin_units, Tmax, Tmax_units, Tcount = temperatures
+    Tmin = processQuantity((Tmin, Tmin_units))[0]
+    Tmax = processQuantity((Tmax, Tmax_units))[0]
+    Tlist = 1.0 / numpy.linspace(1.0/Tmax, 1.0/Tmin, Tcount)[::-1]
+    
+    # Process pressures
+    Pmin, Pmin_units, Pmax, Pmax_units, Pcount = pressures
+    Pmin = processQuantity((Pmin, Pmin_units))[0]
+    Pmax = processQuantity((Pmax, Pmax_units))[0]
+    Plist = 10.0 ** numpy.linspace(math.log10(Pmin), math.log10(Pmax), Pcount)
+
+    # Process grain size
+    minimumGrainSize = processQuantity(minimumGrainSize)[0]
+
+    # Save settings (setting this to non-None enables pressure dependence)
+    settings.pressureDependence = (method, Tmin, Tmax, Tlist, Pmin, Pmax, Plist, minimumGrainSize, minimumNumberOfGrains, interpolation)
+    
 def options(units='si', saveRestart=False, drawMolecules=False, generatePlots=False):
     pass
 

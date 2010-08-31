@@ -288,7 +288,7 @@ def execute(args):
     memoryUse = []
 
     # Handle unimolecular (pressure dependent) reaction networks
-    if settings.unimolecularReactionNetworks:
+    if settings.pressureDependence:
         reactionModel.updateUnimolecularReactionNetworks()
         logging.info('')
 
