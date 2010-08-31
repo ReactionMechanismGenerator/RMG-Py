@@ -45,6 +45,7 @@ from chempy.kinetics import ArrheniusModel
 
 from rmgdata.thermo import generateThermoData, convertThermoData
 from rmgdata.kinetics import generateKineticsData
+from rmgdata.states import generateFrequencyData
 
 import settings
 import ctml_writer
@@ -100,6 +101,20 @@ class Species(chempy.species.Species):
             if implicit: molecule.makeHydrogensImplicit()
 
         return self.thermo
+
+    def generateStatesData(self):
+        """
+        Generate molecular degree of freedom data for the species. You must
+        have already provided a thermodynamics model using e.g.
+        :meth:`generateThermoData()`.
+        """
+        if not self.thermo:
+            raise Exception("Unable to determine states model for species %s: No thermodynamics model found." % self)
+        molecule = self.molecule[0]
+        implicitH = molecule.implicitHydrogens
+        molecule.makeHydrogensExplicit()
+        self.states = generateFrequencyData(molecule, self.thermo)
+        if implicitH: molecule.makeHydrogensImplicit()
 
     def toCantera(self):
         """

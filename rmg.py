@@ -273,7 +273,9 @@ def execute(args):
                 reactionModel.addSeedMechanismToCore(kineticsDatabase, react=False)
 
         for spec in coreSpecies:
-            if spec.reactive: spec.generateThermoData()
+            if spec.reactive:
+                spec.generateThermoData()
+                spec.generateStatesData()
             reactionModel.enlarge(spec)
 
     # RMG execution statistics

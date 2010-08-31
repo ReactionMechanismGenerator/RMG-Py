@@ -37,6 +37,7 @@ from chempy.species import Species
 from rmgdata import getDatabaseDirectory
 from rmgdata.thermo import loadThermoDatabase
 from rmgdata.kinetics import loadKineticsDatabase
+from rmgdata.states import loadFrequencyDatabase
 
 from system import getAvailableReactionSystems
 from model import *
@@ -54,7 +55,9 @@ reactionModel = None
 
 availableReactionSystems = getAvailableReactionSystems()
 
-def database(thermo_groups, kinetics_groups, thermo_libraries=None, kinetics_libraries=None, reaction_libraries=None, seed_mechanisms=None):
+def database(thermo_groups, kinetics_groups, thermo_libraries=None, 
+  kinetics_libraries=None, reaction_libraries=None, seed_mechanisms=None,
+  frequencies_groups=None, frequencies_libraries=None):
     global databases
     if isinstance(thermo_groups, str): thermo_groups = [thermo_groups]
     if isinstance(kinetics_groups, str): kinetics_groups = [kinetics_groups]
@@ -62,12 +65,16 @@ def database(thermo_groups, kinetics_groups, thermo_libraries=None, kinetics_lib
     if isinstance(kinetics_libraries, str): kinetics_libraries = [kinetics_libraries]
     if isinstance(reaction_libraries, str): reaction_libraries = [reaction_libraries]
     if isinstance(seed_mechanisms, str): seed_mechanisms = [seed_mechanisms]
+    if isinstance(frequencies_groups, str): frequencies_groups = [frequencies_groups]
+    if isinstance(frequencies_libraries, str): frequencies_libraries = [frequencies_libraries]
     databases['thermo_groups'] = thermo_groups or []
     databases['kinetics_groups'] = kinetics_groups or []
     databases['thermo_libraries'] = thermo_libraries or []
     databases['kinetics_libraries'] = kinetics_libraries or []
     databases['reaction_libraries'] = reaction_libraries or []
     databases['seed_mechanisms'] = seed_mechanisms or []
+    databases['frequencies_groups'] = frequencies_groups or []
+    databases['frequencies_libraries'] = frequencies_libraries or []
 
 def species(label, structure, reactive=True):
     global speciesDict, reactionModel
@@ -226,6 +233,12 @@ def readInputFile(path):
     for d in databases['kinetics_groups']:
         path = os.path.join(getDatabaseDirectory(), d)
         loadKineticsDatabase(path, group=True, old=True)
+    for d in databases['frequencies_libraries']:
+        path = os.path.join(getDatabaseDirectory(), d)
+        loadFrequencyDatabase(path, group=False, old=True)
+    for d in databases['frequencies_groups']:
+        path = os.path.join(getDatabaseDirectory(), d)
+        loadFrequencyDatabase(path, group=True, old=True)
 
     speciesList = speciesDict.values(); speciesList.sort()
 
