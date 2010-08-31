@@ -61,6 +61,7 @@ class Network:
     =================== ======================= ================================
     Attribute           Type                    Description
     =================== ======================= ================================
+    `index`             ``int``                 A unique integer identifier for the network
     `isomers`           ``list``                A list of the unimolecular isomers in the network
     `reactants`         ``list``                A list of the bimolecular reactant channels in the network
     `products`          ``list``                A list of the bimolecular product channels in the network
@@ -68,18 +69,42 @@ class Network:
     `bathGas`           :class:`Species`        The bath gas
     `collisionModel`    :class:`CollisionModel` The collision model to use
     `netReactions`      ``list``                A list of reaction objects that connect any pair of isomers
+    `valid`             ``bool``                ``True`` if the rate coefficients for the network have been computed, ``False`` if not
+    `explored`          ``list``                A list of the unimolecular isomers whose reactions have been fully explored
     =================== ======================= ================================
 
     """
 
-    def __init__(self, isomers=None, reactants=None, products=None, pathReactions=None, bathGas=None):
+    def __init__(self, index=-1, isomers=None, reactants=None, products=None, pathReactions=None, bathGas=None):
+        self.index = index
         self.isomers = isomers or []
         self.reactants = reactants or []
         self.products = products or []
         self.pathReactions = pathReactions or []
         self.bathGas = bathGas
         self.netReactions = []
-    
+        self.valid = False
+        self.explored = []
+
+    def invalidate(self):
+        """
+        Mark the network as in need of a new calculation to determine the
+        pressure-dependent rate coefficients
+        """
+        self.valid = False
+
+    def containsSpecies(self, species):
+        """
+        Return :data:`True` if the `species` is a *unimolecular* isomer in the
+        network, and :data:`False` if not.
+        """
+        for rxn in self.pathReactions:
+            if len(rxn.reactants) == 1:
+                if rxn.reactants[0] == species and species in self.explored: return True
+            if len(rxn.products) == 1:
+                if rxn.products[0] == species and species in self.explored: return True
+        return False
+
     def getEnergyGrains(self, Emin, Emax, dE=0.0, Ngrains=0):
         """
         Return an array of energy grains that have a minimum of `Emin`, a
@@ -103,13 +128,13 @@ class Network:
             # (i.e. the one that will give more grains, and so better accuracy)
             dE0 = (Emax - Emin) / (Ngrains - 1)
             useGrainSize = (dE0 > dE)
-        
+
         # Generate the array of energies
         if useGrainSize:
             return numpy.arange(Emin, Emax + dE, dE, numpy.float64)
         else:
             return numpy.linspace(Emin, Emax, Ngrains, numpy.float64)
-        
+
     def autoGenerateEnergyGrains(self, Tmax, grainSize=0.0, Ngrains=0):
         """
         Select a suitable list of energies to use for subsequent calculations.
@@ -126,16 +151,16 @@ class Network:
            the highest ground-state energy in the system (either isomer or
            transition state)
 
-        You must specify either the desired grain spacing `grainSize` in J/mol 
-        or the desired number of grains `Ngrains`, as well as a temperature 
+        You must specify either the desired grain spacing `grainSize` in J/mol
+        or the desired number of grains `Ngrains`, as well as a temperature
         `Tmax` in K to use for the equilibrium calculation, which should be the
-        highest temperature of interest. You can specify both `grainSize` and 
-        `Ngrains`, in which case the one that gives the more accurate result 
+        highest temperature of interest. You can specify both `grainSize` and
+        `Ngrains`, in which case the one that gives the more accurate result
         will be used (i.e. they represent a maximum grain size and a minimum
-        number of grains). An array containing the energy grains in J/mol is 
+        number of grains). An array containing the energy grains in J/mol is
         returned.
         """
-        
+
         if grainSize == 0.0 and Ngrains == 0:
             raise NetworkError('Must provide either grainSize or Ngrains parameter to Network.determineEnergyGrains().')
 
@@ -164,17 +189,17 @@ class Network:
         while not done and iterCount < maxIter:
 
             iterCount += 1
-            
+
             Emax = math.ceil(Emax0 + mult * constants.R * Tmax)
 
             Elist = self.getEnergyGrains(0.0, Emax-Emin, dE, nE)
             densStates = isomer.states.getDensityOfStates(Elist)
             eqDist = densStates * numpy.exp(-Elist / constants.R / Tmax)
             eqDist /= numpy.sum(eqDist)
-            
+
             # Find maximum of distribution
             maxIndex = eqDist.argmax()
-            
+
             # If tail of distribution is much lower than the maximum, then we've found bounds for Emax
             tol = 1e-4
             if eqDist[-1] / eqDist[maxIndex] < tol:
@@ -215,18 +240,18 @@ class Network:
         isomer and reactant channel in the network. `Elist` represents the
         array of energies in J/mol at which to compute each density of states.
         The ground-state energies `E0` in J/mol are used to shift each density
-        of states for each configuration to the same zero of energy. The 
+        of states for each configuration to the same zero of energy. The
         returned density of states is in units of mol/J.
         """
-        
+
         Ngrains = len(Elist)
         Nisom = len(self.isomers)
         Nreac = len(self.reactants)
         densStates = numpy.zeros((Nisom+Nreac, Ngrains), numpy.float64)
         dE = Elist[1] - Elist[0]
-        
+
         logging.info('Calculating densities of states...')
-        
+
         # Densities of states for isomers
         for i in range(Nisom):
             logging.info('Calculating density of states for isomer "%s"' % self.isomers[i])
@@ -234,7 +259,7 @@ class Network:
             # Shift to common zero of energy
             r0 = int(round(E0[i] / dE))
             densStates[i,r0:] = densStates0[:-r0+len(densStates0)]
-        
+
         # Densities of states for reactant channels
         for n in range(Nreac):
             if self.reactants[n][0].states is not None and self.reactants[n][1].states is not None:
@@ -245,33 +270,45 @@ class Network:
                 # Shift to common zero of energy
                 r0 = int(round(E0[n+Nisom] / dE))
                 densStates[n+Nisom,r0:] = densStates0[:-r0+len(densStates0)]
+            elif self.reactants[n][0].states is not None:
+                logging.debug('Calculating density of states for reactant channel "%s"' % (' + '.join([str(spec) for spec in self.reactants[n]])))
+                densStates0 = self.reactants[n][0].states.getDensityOfStates(Elist)
+                # Shift to common zero of energy
+                r0 = int(round(E0[n+Nisom] / dE))
+                densStates[n+Nisom,r0:] = densStates0[:-r0+len(densStates0)]
+            elif self.reactants[n][1].states is not None:
+                logging.debug('Calculating density of states for reactant channel "%s"' % (' + '.join([str(spec) for spec in self.reactants[n]])))
+                densStates0 = self.reactants[n][1].states.getDensityOfStates(Elist)
+                # Shift to common zero of energy
+                r0 = int(round(E0[n+Nisom] / dE))
+                densStates[n+Nisom,r0:] = densStates0[:-r0+len(densStates0)]
             else:
                 logging.debug('NOT calculating density of states for reactant channel "%s"' % (' + '.join([str(spec) for spec in self.reactants[n]])))
         logging.debug('')
-        
+
         return densStates
 
     def calculateMicrocanonicalRates(self, Elist, densStates, T=None):
         """
-        Calculate and return arrays containing the microcanonical rate 
+        Calculate and return arrays containing the microcanonical rate
         coefficients :math:`k(E)` for the isomerization, dissociation, and
         association path reactions in the network. `Elist` represents the
         array of energies in J/mol at which to compute each density of states,
         while `densStates` represents the density of states of each isomer and
         reactant channel in mol/J.
         """
-        
+
         Ngrains = len(Elist)
         Nisom = len(self.isomers)
         Nreac = len(self.reactants)
         Nprod = len(self.products)
-        
+
         Kij = numpy.zeros([Nisom,Nisom,Ngrains], numpy.float64)
         Gnj = numpy.zeros([Nreac+Nprod,Nisom,Ngrains], numpy.float64)
         Fim = numpy.zeros([Nisom,Nreac,Ngrains], numpy.float64)
-        
+
         logging.info('Calculating microcanonical rate coefficients k(E)...')
-        
+
         for rxn in self.pathReactions:
             if rxn.reactants[0] in self.isomers and rxn.products[0] in self.isomers:
                 # Isomerization
@@ -296,9 +333,9 @@ class Network:
             else:
                 raise NetworkError('Unexpected type of path reaction "%s"' % rxn)
         logging.debug('')
-        
+
         return Kij, Gnj, Fim
-        
+
     def printSummary(self, level=logging.DEBUG):
         """
         Print a formatted list of information about the current network. In
@@ -339,7 +376,7 @@ class Network:
         Nreac = len(self.reactants)
         Nprod = len(self.products)
         dE = Elist[1] - Elist[0]
-        
+
         # Get ground-state energies of all isomers and each reactant channel
         # that has the necessary parameters
         # An exception will be raised if a unimolecular isomer is missing
@@ -349,15 +386,15 @@ class Network:
             E0[i] = self.isomers[i].E0
         for n in range(Nreac):
             E0[n+Nisom] = sum([spec.E0 for spec in self.reactants[n]])
-        
+
         # Get first reactive grain for each isomer
         Ereac = numpy.ones(Nisom, numpy.float64) * 1e20
         for i in range(Nisom):
             for rxn in self.pathReactions:
                 if rxn.reactants[0] == self.isomers[i] or rxn.products[0] == self.isomers[i]:
-                    if rxn.transitionState.E0 < Ereac[i]: 
+                    if rxn.transitionState.E0 < Ereac[i]:
                         Ereac[i] = rxn.transitionState.E0
-        
+
         # Shift energy grains such that lowest is zero
         Emin = Elist[0]
         for rxn in self.pathReactions:
@@ -371,9 +408,9 @@ class Network:
         densStates0 = self.calculateDensitiesOfStates(Elist, E0)
 
         K = numpy.zeros((len(Tlist),len(Plist),Nisom+Nreac+Nprod,Nisom+Nreac+Nprod), numpy.float64)
-        
+
         for t, T in enumerate(Tlist):
-            
+
             # Calculate microcanonical rate coefficients for each path reaction
             # If degree of freedom data is provided for the transition state, then RRKM theory is used
             # If high-pressure limit Arrhenius data is provided, then the inverse Laplace transform method is used
@@ -389,20 +426,20 @@ class Network:
             for i in range(Nisom+Nreac):
                 eqRatios[i] = numpy.sum(densStates0[i,:] * numpy.exp(-Elist / constants.R / T)) * dE
                 densStates[i,:] = densStates0[i,:] / eqRatios[i] * dE
-        
+
             for p, P in enumerate(Plist):
-                
+
                 logging.info('Calculating k(T,P) values at %g K, %g bar...' % (T, P/1e5))
-                
+
                 # Calculate collision frequencies
                 collFreq = numpy.zeros(Nisom, numpy.float64)
                 for i in range(Nisom):
                     collFreq[i] = calculateCollisionFrequency(self.isomers[i], T, P, self.bathGas)
-                
+
                 # Apply method
                 if method.lower() == 'modified strong collision':
                     # Modify collision frequencies using efficiency factor
-                    for i in range(Nisom): 
+                    for i in range(Nisom):
                         collFreq[i] *= calculateCollisionEfficiency(self.isomers[i], T, Elist, densStates[i,:], self.collisionModel, E0[i], Ereac[i])
                     # Apply modified strong collision method
                     import msc
@@ -434,5 +471,8 @@ class Network:
         for rxn in self.pathReactions:
             rxn.transitionState.E0 += Emin
         Elist += Emin
+
+        # Mark network as valid
+        self.valid = True
 
         return K
