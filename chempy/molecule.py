@@ -498,7 +498,7 @@ class Molecule(Graph):
         """
         Return the molecular weight of the molecule in kg/mol.
         """
-        return sum([atom.mass for atom in self.vertices])
+        return sum([atom.element.mass for atom in self.vertices])
 
     def copy(self, deep=False):
         """

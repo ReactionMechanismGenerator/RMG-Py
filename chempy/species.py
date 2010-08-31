@@ -71,23 +71,24 @@ class Species:
     """
     A chemical species.
 
-    =============== =========================== ================================
-    Attribute       Type                        Description
-    =============== =========================== ================================
-    `index`         :class:`int`                A unique nonnegative integer index
-    `label`         :class:`str`                A descriptive string label
-    `thermo`        :class:`ThermoModel`        The thermodynamics model for the species
-    `states`        :class:`StatesModel`        The molecular degrees of freedom model for the species
-    `molecule`      ``list``                    The :class:`Molecule` objects describing the molecular structure
-    `geometry`      :class:`Geometry`           The 3D geometry of the molecule
-    `E0`            ``double``                  The ground-state energy in J/mol
-    `lennardJones`  :class:`LennardJones`       A set of Lennard-Jones collision parameters
-    `reactive`      ``bool``                    ``True`` if the species participates in reactions, ``False`` if not
-    =============== =========================== ================================
+    =================== ======================= ================================
+    Attribute           Type                    Description
+    =================== ======================= ================================
+    `index`             :class:`int`            A unique nonnegative integer index
+    `label`             :class:`str`            A descriptive string label
+    `thermo`            :class:`ThermoModel`    The thermodynamics model for the species
+    `states`            :class:`StatesModel`    The molecular degrees of freedom model for the species
+    `molecule`          ``list``                The :class:`Molecule` objects describing the molecular structure
+    `geometry`          :class:`Geometry`       The 3D geometry of the molecule
+    `E0`                ``double``              The ground-state energy in J/mol
+    `lennardJones`      :class:`LennardJones`   A set of Lennard-Jones collision parameters
+    `molecularWeight`   ``double``              The molecular weight of the species in kg/mol
+    `reactive`          ``bool``                ``True`` if the species participates in reactions, ``False`` if not
+    =================== ======================= ================================
 
     """
 
-    def __init__(self, index=-1, label='', thermo=None, states=None, molecule=None, geometry=None, E0=0.0, lennardJones=None, reactive=True):
+    def __init__(self, index=-1, label='', thermo=None, states=None, molecule=None, geometry=None, E0=0.0, lennardJones=None, molecularWeight=0.0, reactive=True):
         self.index = index
         self.label = label
         self.thermo = thermo
@@ -97,6 +98,7 @@ class Species:
         self.E0 = E0
         self.lennardJones = lennardJones
         self.reactive = reactive
+        self.molecularWeight = molecularWeight
 
     def __repr__(self):
         """
