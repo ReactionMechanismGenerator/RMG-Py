@@ -34,6 +34,7 @@ import numpy
 
 import chempy.constants as constants
 from chempy.states import *
+from chempy.pattern import MoleculePattern
 
 from base import *
 
@@ -60,26 +61,25 @@ class GroupFrequency:
         """
         frequencies = []
         for lower, upper, degeneracy in self.frequencies:
-            number = self.degeneracy * count
+            number = degeneracy * count
             if number == 1:
-                frequencies.append((self.lower + self.upper) / 2.0)
+                frequencies.append((lower + upper) / 2.0)
             else:
-                frequencies.extend(list(numpy.linspace(self.lower, self.upper, number, endpoint=True)))
+                frequencies.extend(list(numpy.linspace(lower, upper, number, endpoint=True)))
         return frequencies
 
 ################################################################################
 
-class FrequencyDatabase:
+class FrequencyGroupDatabase(Database):
     """
     An RMG group frequency database, which associates various functional groups
     with ranges of characteristic vibrational frequencies.
     """
 
-    def __init__(self, path=''):
+    def __init__(self, path='', old=False):
+        Database.__init__(self)
         if path != '':
-            self.load(path)
-        else:
-            self.groupDatabase = None
+            self.load(path, old)
 
     def __loadDatabase(self, dictstr, treestr, libstr):
         """
@@ -90,12 +90,11 @@ class FrequencyDatabase:
         """
 
         # Load dictionary, library, and (optionally) tree
-        database = Database()
-        database.load(dictstr, treestr, libstr)
+        Database.load(self, dictstr, treestr, libstr)
 
         # Convert data in library to ThermoGAModel objects or lists of
         # [link, comment] pairs
-        for label, item in database.library.iteritems():
+        for label, item in self.library.iteritems():
             
             if item is None:
                 pass
@@ -108,23 +107,23 @@ class FrequencyDatabase:
                 try:
                     comment = ''
                     items = items.split()
-                    database.library[label] = self.__convertLibraryEntry(list(items), comment)
-                    database.library[label].index = index
+                    self.library[label] = self.__convertLibraryEntry(list(items), comment)
+                    self.library[label].index = index
 
                 except (ValueError, IndexError), e:
                     # Split data into link string and comment string; store
                     # as list of length 2
                     link = items[0]
                     comment = item[len(link)+1:].strip()
-                    database.library[label] = [link, comment]
+                    self.library[label] = [link, comment]
 
         # Check for well-formedness
-        if not database.isWellFormed():
+        if not self.isWellFormed():
             raise InvalidDatabaseError('Database at "%s" is not well-formed.' % (dictstr))
 
-        #database.library.removeLinks()
+        #self.library.removeLinks()
 
-        return database
+        return self
 
     def __convertLibraryEntry(self, freqData, comment):
         """
@@ -163,20 +162,54 @@ class FrequencyDatabase:
         libr_path = os.path.join(path, '%s_Library.txt' % prefix)
         return dict_path, tree_path, libr_path
 
-    def load(self, path):
+    def load(self, path, old=False):
         """
         Load a set of thermodynamics group additivity databases from the general
         database specified at `path`.
         """
         path = os.path.abspath(path)
-        
         logging.info('Loading functional group frequency database from %s...' % path)
-        dict_path = os.path.join(path, 'Dictionary.txt')
-        tree_path = os.path.join(path, 'Tree.txt')
-        libr_path = os.path.join(path, 'Library.txt')
-        self.groupDatabase = self.__loadDatabase(dict_path, tree_path, libr_path)
 
-    def getFrequencies(self, molecule):
+        if old:
+            dict_path = os.path.join(path, 'Dictionary.txt')
+            tree_path = os.path.join(path, 'Tree.txt')
+            libr_path = os.path.join(path, 'Library.txt')
+            self.__loadDatabase(dict_path, tree_path, libr_path)
+
+        logging.info('')
+
+    def __countMatchesToNode(self, molecule, node):
+        
+        count = 0
+        if isinstance(self.dictionary[node], MoleculePattern):
+            ismatch, mappings = molecule.findSubgraphIsomorphisms(self.dictionary[node])
+            count = len(mappings) if ismatch else 0
+        elif isinstance(self.dictionary[node], LogicOr):
+            for child in self.dictionary[node].components:
+                count += self.__countMatchesToNode(molecule, child)
+        return count
+
+    def __getNode(self, molecule, atom):
+        """
+        Determine the group additivity thermodynamic data for the atom `atom`
+        in the structure `structure`.
+        """
+
+        node0 = self.descendTree(molecule, atom, None)
+
+        if node0 is None:
+            raise KeyError('Node not found in database.')
+
+        # It's possible (and allowed) that items in the tree may not be in the
+        # library, in which case we need to fall up the tree until we find an
+        # ancestor that has an entry in the library
+        node = node0
+        while node not in self.library and node is not None:
+            node = self.tree.parent[node]
+        
+        return node
+
+    def getFrequencyGroups(self, molecule):
         """
         Return the set of characteristic group frequencies corresponding to the
         speficied `molecule`. This is done by searching the molecule for
@@ -185,53 +218,127 @@ class FrequencyDatabase:
         """
 
         frequencies = []
+        groupCount = {}
 
-        # No spectral data for single atoms
-        if len(molecule.atoms) > 1:
-            
-            # For each group in library, find all subgraph isomorphisms
-            groupCount = {}
-            for node, data in self.groupDatabase.library.iteritems():
-                ismatch, mappings = molecule.findSubgraphIsomorphisms(self.groupDatabase.dictionary[node])
-                count = len(mappings) if ismatch else 0
-                if count % data[0] != 0:
-                    raise Exception('Incorrect number of matches of node "%s" while estimating frequencies of %s; expected a multiple of %s, got %s.' % (node, struct, data[0], count))
-                groupCount[node] = count / data[0]
-
-            # Get characteristic frequencies
-            for node, count in groupCount.iteritems():
-                for charFreq in self.groupDatabase.library[node][1:]:
-                    frequencies.extend(charFreq.generateFrequencies(count))
-
-        return frequencies
+        # Generate estimate of thermodynamics
+        for atom in molecule.atoms:
+            # Iterate over heavy (non-hydrogen) atoms
+            if atom.isNonHydrogen():
+                node = self.__getNode(molecule, {'*':atom})
+                if node is not None:
+                    try:
+                        groupCount[node] += 1
+                    except KeyError:
+                        groupCount[node] = 1
+                    
+        return groupCount
 
 ################################################################################
 
-frequencyDatabase = None
+frequencyDatabases = []
 
-def loadFrequencyDatabase(dstr):
+def loadFrequencyDatabase(dstr, group=True, old=False):
     """
     Load the RMG frequency database located at `dstr` into the global variable
     :data:`frequencyDatabase`.
     """
-    global frequencyDatabase
+    global frequencyDatabases
 
-    path = os.path.join(dstr,'frequencies_groups')
-
-    # Create and load frequency databases
-    frequencyDatabase = FrequencyDatabase()
-    logging.debug('\tFrequencies database from '+path)
-    frequencyDatabase.load(path)
+    if group:
+        frequencyDatabase = FrequencyGroupDatabase()
+    else:
+        frequencyDatabase = None
+    frequencyDatabase.load(path=dstr, old=old)
+    frequencyDatabases.append(frequencyDatabase)
 
     return frequencyDatabase
 
 ################################################################################
 
-def generateFrequencyData(molecule):
+def generateFrequencyData(molecule, thermoModel):
     """
     Use the previously-loaded frequency database to generate a set of
     characteristic group frequencies corresponding to the speficied `molecule`.
     """
-    return frequencyDatabase.getFrequencies(molecule)
+
+    if len(molecule.atoms) < 2:
+        return None
+
+    # This depends on the statesfit module to fit the internal modes not
+    # determined by the characteristic group frequencies
+    from statesfit import fitSpectralDataToHeatCapacity
+
+    linear = molecule.isLinear()
+    numRotors = molecule.countInternalRotors()
+    numVibrations = 3 * len(molecule.atoms) - (5 if linear else 6) - numRotors
+
+    frequencyDatabase = frequencyDatabases[-1]
+
+    # Get characteristic frequency groups and the associated frequencies
+    groupCount = frequencyDatabase.getFrequencyGroups(molecule)
+    frequencies = []
+    for node, count in groupCount.iteritems():
+        if count != 0: frequencies.extend(frequencyDatabase.library[node].generateFrequencies(count))
+
+    # Check that we have the right number of degrees of freedom specified
+    if len(frequencies) > numVibrations:
+        # We have too many vibrational modes
+        difference = len(frequencies) - numVibrations
+        # First try to remove hindered rotor modes until the proper number of modes remain
+        if numRotors > difference:
+            numRotors -= difference
+            numVibrations = len(frequencies)
+            logging.warning('For %s, more characteristic frequencies were generated than vibrational modes allowed. Removed %i internal rotors to compensate.' % (molecule, difference))
+        # If that won't work, turn off functional groups until the problem is underspecified again
+        else:
+            groupsRemoved = 0
+            freqsRemoved = 0
+            freqCount = len(frequencies)
+            while freqCount > numVibrations:
+                minDegeneracy, minNode = min([(frequencyDatabase.library[node].symmetry, node) for node in groupCount if groupCount[node] > 0])
+                if groupCount[minNode] > 1:
+                    groupCount[minNode] -= 1
+                else:
+                    del groupCount[minNode]
+                groupsRemoved += 1
+                freqsRemoved += minDegeneracy
+                freqCount -= minDegeneracy
+            # Log warning
+            logging.warning('For %s, more characteristic frequencies were generated than vibrational modes allowed. Removed %i groups (%i frequencies) to compensate.' % (molecule, groupsRemoved, freqsRemoved))
+            # Regenerate characteristic frequencies
+            frequencies = []
+            for node, count in groupCount.iteritems():
+                if count != 0: frequencies.extend(frequencyDatabase.library[node].generateFrequencies(count))
+
+    # Subtract out contributions to heat capacity from the group frequencies
+    Tlist = numpy.arange(300.0, 1501.0, 100.0, numpy.float64)
+    Cv = numpy.array([thermoModel.getHeatCapacity(T) / constants.R for T in Tlist], numpy.float64)
+    ho = HarmonicOscillator(frequencies=frequencies)
+    Cv -= ho.getHeatCapacities(Tlist) / constants.R
+    # Subtract out translational modes
+    Cv -= 1.5
+    # Subtract out external rotational modes
+    Cv -= (1.5 if not linear else 1.0)
+    # Subtract out PV term (Cp -> Cv)
+    Cv -= 1.0
+    # Check that all Cv values are still positive
+    # We allow a small amount of negative values to allow for the approximate
+    # nature of the heat capacity data being used
+    assert all([C > -0.05 for C in Cv]), "For %s, reduced Cv data is %s" % (molecule, Cv)
+
+    # Fit remaining frequencies and hindered rotors to the heat capacity data
+    vib, hind = fitSpectralDataToHeatCapacity(molecule, Tlist, Cv, numVibrations - len(frequencies), numRotors)
+    statesModel = StatesModel()
+    for freq, degen in vib:
+        for d in range(degen):
+            frequencies.append(freq)
+    statesModel.modes.append(ho)
+    for freq, barr, degen in hind:
+        inertia = (barr*constants.c*100.0*constants.h) / (2 * (freq*constants.c*100.0)**2)
+        barrier = barr*constants.c*100.0*constants.h*constants.Na
+        for d in range(degen):
+            statesModel.modes.append(HinderedRotor(inertia=inertia, barrier=barrier, symmetry=1))
+    
+    return statesModel
 
 ################################################################################
