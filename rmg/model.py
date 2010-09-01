@@ -288,6 +288,20 @@ def getCanteraReaction(reaction):
 
     return ctml_writer.reaction(rxnstring, options=options)
 
+class PDepReaction(chempy.reaction.Reaction):
+
+    def __init__(self, index=-1, reactants=None, products=None, network=None, kinetics=None, reversible=True, transitionState=None, thirdBody=False):
+        chempy.reaction.Reaction.__init__(self, index, reactants, products, kinetics, reversible, transitionState, thirdBody)
+        self.network = network
+
+    def toCantera(self):
+        """Add this to Cantera ctml_writer"""
+        self.canteraReaction = getCanteraReaction(self)
+
+        # replace the forward rate coefficient
+        rate_function_of_T_P = self.kinetics.getRateCoefficient
+        self.canteraReaction._kf = ctml_writer.PdepRate(rate_function_of_T_P)
+        
         return self.canteraReaction
 
 ################################################################################
@@ -502,6 +516,31 @@ class CoreEdgeReactionModel:
 
         # Return newly created reaction
         return forward, True
+
+    def makeNewPDepReaction(self, forward):
+        """
+        Make a new pressure-dependent reaction based on a list of `reactants` and a
+        list of `products`. The reaction belongs to the specified `network` and
+        has pressure-dependent kinetics given by `kinetics`.
+
+        No checking for existing reactions is made here. The returned PDepReaction
+        object is not added to the global list of reactions, as that is intended
+        to represent only the high-pressure-limit set. The reactionCounter is
+        incremented, however, since the returned reaction can and will exist in
+        the model edge and/or core.
+        """
+
+        # Create reverse reaction
+        reverse = PDepReaction(reactants=forward.products, products=forward.reactants, network=forward.network, kinetics=None)
+        forward.reverse = reverse
+        reverse.reverse = forward
+
+        # Set reaction index and increment the counter
+        forward.index = self.reactionCounter + 1
+        reverse.index = self.reactionCounter + 1
+        self.reactionCounter += 1
+
+        return forward
 
     def enlarge(self, newObject):
         """
