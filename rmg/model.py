@@ -175,6 +175,27 @@ class Reaction(chempy.reaction.Reaction):
         self.isForward = isForward
         self.multiplier = 1.0
 
+    def isIsomerization(self):
+        """
+        Return ``True`` if the reaction represents an isomerization reaction
+        :math:`\\ce{A <=> B}` or ``False`` if not.
+        """
+        return len(self.reactants) == 1 and len(self.products) == 1
+
+    def isAssociation(self):
+        """
+        Return ``True`` if the reaction represents an association reaction
+        :math:`\\ce{A + B <=> C}` or ``False`` if not.
+        """
+        return len(self.reactants) > 1 and len(self.products) == 1
+
+    def isDissociation(self):
+        """
+        Return ``True`` if the reaction represents a dissociation reaction
+        :math:`\\ce{A <=> B + C}` or ``False`` if not.
+        """
+        return len(self.reactants) == 1 and len(self.products) > 1
+
     def generateKineticsData(self):
         """
         Generate kinetcs data for the reaction using the kinetics database.
