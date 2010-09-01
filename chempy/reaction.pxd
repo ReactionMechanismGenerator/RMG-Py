@@ -25,7 +25,7 @@
 ################################################################################
 
 from species cimport Species, TransitionState
-from kinetics cimport KineticsModel
+from kinetics cimport KineticsModel, ArrheniusModel
 
 cimport numpy
 
@@ -60,6 +60,8 @@ cdef class Reaction:
     cpdef int getStoichiometricCoefficient(self, Species spec)
 
     cpdef double getRate(self, double T, double P, dict conc, double totalConc=?)
+
+    cpdef generateReverseRateCoefficient(self, numpy.ndarray Tlist)
 
     cpdef numpy.ndarray calculateTSTRateCoefficient(self, numpy.ndarray Tlist, TransitionState TS, str tunneling=?)
     
