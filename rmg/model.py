@@ -40,8 +40,8 @@ import os
 import chempy.constants as constants
 import chempy.species
 import chempy.reaction
-from chempy.thermo import NASAModel
 from chempy.kinetics import ArrheniusModel
+from chempy.thermo import WilhoitModel, NASAModel
 
 from rmgdata.thermo import generateThermoData, convertThermoData
 from rmgdata.kinetics import generateKineticsData
@@ -91,6 +91,8 @@ class Species(chempy.species.Species):
 
         # Convert to desired thermo class
         thermo0 = self.thermo
+        self.thermo = convertThermoData(self.thermo, self.molecule[0], WilhoitModel)
+        self.E0 = self.thermo.getEnthalpy(1.0)
         self.thermo = convertThermoData(self.thermo, self.molecule[0], thermoClass)
         if self.thermo.__class__ != thermo0.__class__:
             # Compute RMS error of overall transformation
