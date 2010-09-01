@@ -251,11 +251,9 @@ class Network:
         densStates = numpy.zeros((Nisom+Nreac, Ngrains), numpy.float64)
         dE = Elist[1] - Elist[0]
 
-        logging.info('Calculating densities of states...')
-
         # Densities of states for isomers
         for i in range(Nisom):
-            logging.info('Calculating density of states for isomer "%s"' % self.isomers[i])
+            logging.debug('Calculating density of states for isomer "%s"' % self.isomers[i])
             densStates0 = self.isomers[i].states.getDensityOfStates(Elist)
             # Shift to common zero of energy
             r0 = int(round(E0[i] / dE))
@@ -267,24 +265,24 @@ class Network:
             for n in range(Nreac):
                 r0 = int(round(E0[n+Nisom] / dE))
                 if self.reactants[n][0].states is not None and self.reactants[n][1].states is not None:
-                    logging.info('Calculating density of states for reactant channel "%s"' % (' + '.join([str(spec) for spec in self.reactants[n]])))
+                    logging.debug('Calculating density of states for reactant channel "%s"' % (' + '.join([str(spec) for spec in self.reactants[n]])))
                     densStates0 = self.reactants[n][0].states.getDensityOfStates(Elist)
                     densStates1 = self.reactants[n][1].states.getDensityOfStates(Elist)
                     densStates0 = states.convolve(densStates0, densStates1, Elist)
                     # Shift to common zero of energy
                     densStates[n+Nisom,r0:] = densStates0[:-r0+len(densStates0)]
                 elif self.reactants[n][0].states is not None:
-                    logging.info('Calculating density of states for reactant channel "%s"' % (' + '.join([str(spec) for spec in self.reactants[n]])))
+                    logging.debug('Calculating density of states for reactant channel "%s"' % (' + '.join([str(spec) for spec in self.reactants[n]])))
                     densStates0 = self.reactants[n][0].states.getDensityOfStates(Elist)
                     # Shift to common zero of energy
                     densStates[n+Nisom,r0:] = densStates0[:-r0+len(densStates0)]
                 elif self.reactants[n][1].states is not None:
-                    logging.info('Calculating density of states for reactant channel "%s"' % (' + '.join([str(spec) for spec in self.reactants[n]])))
+                    logging.debug('Calculating density of states for reactant channel "%s"' % (' + '.join([str(spec) for spec in self.reactants[n]])))
                     densStates0 = self.reactants[n][1].states.getDensityOfStates(Elist)
                     # Shift to common zero of energy
                     densStates[n+Nisom,r0:] = densStates0[:-r0+len(densStates0)]
                 else:
-                    logging.info('NOT calculating density of states for reactant channel "%s"' % (' + '.join([str(spec) for spec in self.reactants[n]])))
+                    logging.debug('NOT calculating density of states for reactant channel "%s"' % (' + '.join([str(spec) for spec in self.reactants[n]])))
             logging.debug('')
 
         return densStates
@@ -307,8 +305,6 @@ class Network:
         Kij = numpy.zeros([Nisom,Nisom,Ngrains], numpy.float64)
         Gnj = numpy.zeros([Nreac+Nprod,Nisom,Ngrains], numpy.float64)
         Fim = numpy.zeros([Nisom,Nreac,Ngrains], numpy.float64)
-
-        logging.info('Calculating microcanonical rate coefficients k(E)...')
 
         for rxn in self.pathReactions:
             if rxn.reactants[0] in self.isomers and rxn.products[0] in self.isomers:
@@ -406,8 +402,10 @@ class Network:
 
         # Calculate density of states for each isomer and each reactant channel
         # that has the necessary parameters
+        logging.info('Calculating densities of states for network %i...' % self.index)
         densStates0 = self.calculateDensitiesOfStates(Elist, E0)
 
+        logging.info('Calculating phenomenological rate coefficients for network %i...' % self.index)
         K = numpy.zeros((len(Tlist),len(Plist),Nisom+Nreac+Nprod,Nisom+Nreac+Nprod), numpy.float64)
 
         for t, T in enumerate(Tlist):
@@ -429,8 +427,6 @@ class Network:
                 densStates[i,:] = densStates0[i,:] / eqRatios[i] * dE
 
             for p, P in enumerate(Plist):
-
-                logging.info('Calculating k(T,P) values at %g K, %g bar...' % (T, P/1e5))
 
                 # Calculate collision frequencies
                 collFreq = numpy.zeros(Nisom, numpy.float64)
@@ -464,7 +460,7 @@ class Network:
                 else:
                     raise NetworkError('Unknown method "%s".' % method)
 
-                logging.debug(K[t,p,0:Nisom+Nreac+Nprod,0:Nisom+Nreac])
+                logging.log(0, K[t,p,0:Nisom+Nreac+Nprod,0:Nisom+Nreac])
 
                 logging.debug('')
 
