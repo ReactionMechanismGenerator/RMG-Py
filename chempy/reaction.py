@@ -240,7 +240,7 @@ class Reaction:
             totalConc=sum( conc.values() )
 
         # Evaluate rate constant
-        rateConstant = self.kinetics.getRateCoefficient(T)
+        rateConstant = self.kinetics.getRateCoefficient(T, P)
         if self.thirdBody: rateConstant *= totalConc
 
         # Evaluate equilibrium constant

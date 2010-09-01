@@ -127,7 +127,7 @@ class ArrheniusModel(KineticsModel):
     def __repr__(self):
         return '<ArrheniusModel A=%g Ea=%g kJ/mol n=%g T0=%g K>' % (self.A,self.Ea/1000.0, self.n, self.T0)
     
-    def getRateCoefficient(self, T):
+    def getRateCoefficient(self, T, P=1e5):
         """
         Return the rate coefficient k(T) in SI units at temperature 
         `T` in K.

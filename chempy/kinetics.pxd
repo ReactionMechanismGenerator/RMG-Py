@@ -60,7 +60,7 @@ cdef class ArrheniusModel(KineticsModel):
     cdef public double Ea
     cdef public double n
     
-    cpdef double getRateCoefficient(self, double T)
+    cpdef double getRateCoefficient(self, double T, double P=?)
 
     cpdef changeT0(self, double T0)
 
