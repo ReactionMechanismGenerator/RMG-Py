@@ -4,6 +4,7 @@ database(
     thermo_libraries='output/RMG_Database/thermo_libraries/primaryThermoLibrary',
     kinetics_groups='output/RMG_Database/kinetics_groups',
     #kinetics_libraries=None,
+    frequencies_groups='output/RMG_Database/frequencies_groups',
 )
 
 # List of species
@@ -87,20 +88,20 @@ simulator(
 )
 
 model(
-    toleranceKeepInEdge=1e-16,
+    toleranceKeepInEdge=0.0,
     toleranceMoveToCore=0.1,
     toleranceInterruptSimulation=1.0,
-    maximumEdgeSpecies=100
+    maximumEdgeSpecies=100000
 )
 
-#pressureDependence(
-#    method='modified strong collision',
-#    grainSize=(2.0,'kcal/mol'),
-#    numberOfGrains=200,
-#    temperatures=(300,'K',2000,'K',8),
-#    pressures=(0.01,'bar',100,'bar',5),
-#    interpolation=('Chebyshev', 4, 4),
-#)
+pressureDependence(
+    method='modified strong collision',
+    minimumGrainSize=(2.0,'kcal/mol'),
+    minimumNumberOfGrains=200,
+    temperatures=(300,'K',2000,'K',8),
+    pressures=(0.01,'bar',100,'bar',5),
+    interpolation=('Chebyshev', 4, 4),
+)
 
 options(
     units='si',
