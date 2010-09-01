@@ -204,78 +204,90 @@ class Reaction(chempy.reaction.Reaction):
         if not isinstance(self.kinetics, ArrheniusModel):
             self.kinetics = self.kinetics.toArrhenius(self.getEnthalpyOfReaction(298.15))
 
-    def toCantera(self, T=1000, P=1.0e5):
+    def toCantera(self):
         """
         Return a Cantera ctml_writer instance.
         """
-        import ctml_writer
-
-        rxnstring = ' + '.join([str(sp) for sp in self.reactants])
-        rxnstring += ' <=> '
-        rxnstring += ' + '.join([str(sp) for sp in self.products])
+        self.canteraReaction = getCanteraReaction(self)
 
         A = float(self.kinetics.A)
-        Ea= float(self.kinetics.Ea)
+        Ea = float(self.kinetics.Ea)
         n = float(self.kinetics.n)
+        self.canteraReaction._kf = ctml_writer.Arrhenius(A, n, Ea)
 
-        options = []
+        return self.canteraReaction
 
-        makeCanteraReaction = True
-        try:
-            if self.canteraReaction is not None:
-                makeCanteraReaction = False
-        except AttributeError:
-            pass
+def getCanteraReaction(reaction):
+    """
+    For a given :class:`Reaction` object `reaction`, create and return a
+    Cantera reaction object.
+    """
 
-        if not makeCanteraReaction:
-            # If we're updating this reaction, then remove the original version
-            ctml_writer._reactions.remove(self.canteraReaction)
-            # If the old reaction was a duplicate, then the new one is too
-            if 'duplicate' in self.canteraReaction._options:
-                options.append('duplicate')
-        else:
-            # If we're making this reaction for the first time then we need to
-            # check for duplicate reactions
-            # Get ID of each reactant and product of this reaction
-            reactants = [str(r) for r in self.reactants]; reactants.sort()
-            products = [str(p) for p in self.products]; products.sort()
+    import ctml_writer
+
+    options = []
+
+    makeCanteraReaction = True
+    try:
+        if reaction.canteraReaction is not None:
+            makeCanteraReaction = False
+    except AttributeError:
+        pass
+
+    if not makeCanteraReaction:
+        # If we're updating this reaction, then remove the original version
+        ctml_writer._reactions.remove(reaction.canteraReaction)
+        # If the old reaction was a duplicate, then the new one is too
+        if 'duplicate' in reaction.canteraReaction._options:
+            options.append('duplicate')
+    else:
+        # If we're making this reaction for the first time then we need to
+        # check for duplicate reactions
+        # Get ID of each reactant and product of this reaction
+        reactants = [str(r) for r in reaction.reactants]; reactants.sort()
+        products = [str(p) for p in reaction.products]; products.sort()
+        # Remove any IDs that appear in both the reactant and product lists
+        # This is because Cantera treats A --> B + C and A + D --> B + C + D
+        # as requiring the duplicate tag
+        speciesToRemove = []
+        for spec in reactants:
+            if spec in products: speciesToRemove.append(spec)
+        speciesToRemove = list(set(speciesToRemove))
+        for spec in speciesToRemove:
+            reactants.remove(spec)
+            products.remove(spec)
+        # Iterate over all existing Cantera reactions
+        for rxn in ctml_writer._reactions:
+            # Get ID of each reactant and product
+            reac = []; prod = []
+            for r, v in rxn._r.iteritems():
+                for i in range(int(v)): reac.append(r)
+            for p, v in rxn._p.iteritems():
+                for i in range(int(v)): prod.append(p)
+            reac.sort(); prod.sort()
             # Remove any IDs that appear in both the reactant and product lists
-            # This is because Cantera treats A --> B + C and A + D --> B + C + D
-            # as requiring the duplicate tag
             speciesToRemove = []
-            for spec in reactants:
-                if spec in products: speciesToRemove.append(spec)
+            for spec in reac:
+                if spec in prod: speciesToRemove.append(spec)
             speciesToRemove = list(set(speciesToRemove))
             for spec in speciesToRemove:
-                reactants.remove(spec)
-                products.remove(spec)
-            # Iterate over all existing Cantera reactions
-            for rxn in ctml_writer._reactions:
-                # Get ID of each reactant and product
-                reac = []; prod = []
-                for r, v in rxn._r.iteritems():
-                    for i in range(int(v)): reac.append(r)
-                for p, v in rxn._p.iteritems():
-                    for i in range(int(v)): prod.append(p)
-                reac.sort(); prod.sort()
-                # Remove any IDs that appear in both the reactant and product lists
-                speciesToRemove = []
-                for spec in reac:
-                    if spec in prod: speciesToRemove.append(spec)
-                speciesToRemove = list(set(speciesToRemove))
-                for spec in speciesToRemove:
-                    reac.remove(spec)
-                    prod.remove(spec)
-                # Compare with reactants and products of this reaction
-                if (reactants == reac and products == prod) or (reactants == prod and products == reac):
-                    if 'duplicate' not in options or 'duplicate' not in rxn._options:
-                        logging.debug('Marking reaction %s as duplicate' % (self))
-                    if 'duplicate' not in options:
-                        options.append('duplicate')
-                    if 'duplicate' not in rxn._options:
-                        rxn._options.append('duplicate')
+                reac.remove(spec)
+                prod.remove(spec)
+            # Compare with reactants and products of this reaction
+            if (reactants == reac and products == prod) or (reactants == prod and products == reac):
+                if 'duplicate' not in options or 'duplicate' not in rxn._options:
+                    logging.debug('Marking reaction %s as duplicate' % (reaction))
+                if 'duplicate' not in options:
+                    options.append('duplicate')
+                if 'duplicate' not in rxn._options:
+                    rxn._options.append('duplicate')
 
-        self.canteraReaction = ctml_writer.reaction(rxnstring, ctml_writer.Arrhenius(A, n, Ea), options=options)
+    rxnstring = ' + '.join([str(sp) for sp in reaction.reactants])
+    rxnstring += ' <=> '
+    rxnstring += ' + '.join([str(sp) for sp in reaction.products])
+
+    return ctml_writer.reaction(rxnstring, options=options)
+
         return self.canteraReaction
 
 ################################################################################
