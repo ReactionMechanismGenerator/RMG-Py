@@ -110,7 +110,7 @@ def applyModifiedStrongCollisionMethod(T, P, Elist, densStates, collFreq, Kij,
             b[i,i] = collFreq[i] * densStates[i,r] * math.exp(-Elist[r] / constants.R / T)
         for n in range(Nisom, Nisom+Nreac):
             # Chemical activation via association reaction
-            b[:,n] = Fim[:,n-Nisom,r] * (densStates[n,r] * math.exp(-Elist[r] / constants.R / T))
+            b[:,n] = Fim[:,n-Nisom,r] #* (densStates[n,r] * math.exp(-Elist[r] / constants.R / T))
 
         # Solve for steady-state population
         pa[r,:,:] = -numpy.linalg.solve(A, b)
