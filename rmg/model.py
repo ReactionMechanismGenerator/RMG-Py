@@ -116,6 +116,34 @@ class Species(chempy.species.Species):
         self.states = generateFrequencyData(molecule, self.thermo)
         if implicitH: molecule.makeHydrogensImplicit()
 
+    def generateLennardJonesParameters(self):
+        """
+        Generate the Lennard-Jones parameters for the species. This "algorithm"
+        is *very* much in need of improvement.
+        """
+
+        count = sum([1 for atom in self.molecule[0].vertices if atom.isNonHydrogen()])
+        self.lennardJones = chempy.species.LennardJones()
+
+        if count == 1:
+            self.lennardJones.sigma = 3.758e-10
+            self.lennardJones.epsilon = 148.6 * constants.kB
+        elif count == 2:
+            self.lennardJones.sigma = 4.443e-10
+            self.lennardJones.epsilon = 110.7 * constants.kB
+        elif count == 3:
+            self.lennardJones.sigma = 5.118e-10
+            self.lennardJones.epsilon = 237.1 * constants.kB
+        elif count == 4:
+            self.lennardJones.sigma = 4.687e-10
+            self.lennardJones.epsilon = 531.4 * constants.kB
+        elif count == 5:
+            self.lennardJones.sigma = 5.784e-10
+            self.lennardJones.epsilon = 341.1 * constants.kB
+        else:
+            self.lennardJones.sigma = 5.949e-10
+            self.lennardJones.epsilon = 399.3 * constants.kB
+
     def toCantera(self):
         """
         Return a Cantera ctml_writer instance.
@@ -343,6 +371,8 @@ class CoreEdgeReactionModel:
         logging.debug('Creating new species %s' % str(label))
         spec = Species(index=len(self.speciesList)+1, label=label, molecule=[molecule], reactive=reactive)
         spec.generateResonanceIsomers()
+        spec.molecularWeight = spec.molecule[0].getMolecularWeight()
+        spec.generateLennardJonesParameters()
         self.speciesList.append(spec)
 
         # Store hydrogens implicitly to conserve memory and speed up isomorphism
