@@ -688,14 +688,6 @@ class CoreEdgeReactionModel:
             else:
                 # Update unimolecular reaction networks
                 net = self.addReactionToUnimolecularNetworks(rxn)
-
-        self.printEnlargeSummary(
-            newCoreSpecies=self.core.species[numOldCoreSpecies:],
-            newCoreReactions=self.core.reactions[numOldCoreReactions:],
-            newEdgeSpecies=newSpeciesList,
-            newEdgeReactions=newReactionList,
-            newSpecies=newSpecies,
-        )
                 if net is not None and isinstance(newObject, Species):
                     if (len(rxn.reactants) == 1 and rxn.reactants[0] == newObject) or (len(rxn.products) == 1 and rxn.products[0] == newObject):
                         net.explored.append(newObject)
@@ -724,6 +716,16 @@ class CoreEdgeReactionModel:
         if settings.pressureDependence:
             self.updateUnimolecularReactionNetworks()
             logging.info('')
+
+        # Print summary of enlargement
+        if not isinstance(newObject, Species): newSpecies = None
+        self.printEnlargeSummary(
+            newCoreSpecies=self.core.species[numOldCoreSpecies:],
+            newCoreReactions=self.core.reactions[numOldCoreReactions:],
+            newEdgeSpecies=newSpeciesList,
+            newEdgeReactions=newReactionList,
+            newSpecies=newSpecies,
+        )
 
         # Tell Cantera about new core species and core reactions
         for spec in self.core.species[numOldCoreSpecies:]:
