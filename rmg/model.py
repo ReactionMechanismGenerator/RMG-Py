@@ -47,6 +47,8 @@ from rmgdata.thermo import generateThermoData, convertThermoData
 from rmgdata.kinetics import generateKineticsData
 from rmgdata.states import generateFrequencyData
 
+import measure.network
+
 import settings
 import ctml_writer
 from rxngen import generateReactions
@@ -303,6 +305,66 @@ class PDepReaction(chempy.reaction.Reaction):
         self.canteraReaction._kf = ctml_writer.PdepRate(rate_function_of_T_P)
         
         return self.canteraReaction
+
+################################################################################
+
+class Network(measure.network.Network):
+
+    def getLeakFlux(self, T, P, conc):
+        """
+        Return the leak flux of the network: the forward flux to all unexplored
+        unimolecular isomers in the network. If there is only one path (and
+        therefore net) reaction and its unimolecular reactants and/or products
+        have not been explored, then it uses the high-pressure-limit rate to
+        ensure it is considering the maximum possible rate.
+        """
+
+        self.leakFluxes = {}
+
+        # If only one path/net reaction and it contains an isomer that has not
+        # been explored, then use the high-pressure-limit k(T) to calculate
+        # the flux rather than the phenomenological k(T,P) value
+        if len(self.netReactions) == 1 and len(self.pathReactions) == 1:
+            rxn = self.netReactions[0]
+            rate = self.pathReactions[0].getRate(T, P, conc)
+            if len(rxn.reactants) == 1 and rxn.reactants[0] not in self.explored:
+                self.leakFluxes[rxn.reactants[0]] = -rate
+            if len(rxn.products) == 1 and rxn.products[0] not in self.explored:
+                self.leakFluxes[rxn.products[0]] = rate
+        # Otherwise get leak fluxes of all unexplored [unimolecular] isomers
+        else:
+            for rxn in self.netReactions:
+                rate = rxn.getRate(T, P, conc)
+                if len(rxn.reactants) == 1 and rxn.reactants[0] not in self.explored:
+                    spec = rxn.reactants[0]
+                    if spec in self.leakFluxes:
+                        self.leakFluxes[spec] -= rate
+                    else:
+                        self.leakFluxes[spec] = -rate
+                if len(rxn.products) == 1 and rxn.products[0] not in self.explored:
+                    spec = rxn.products[0]
+                    if spec in self.leakFluxes:
+                        self.leakFluxes[spec] += rate
+                    else:
+                        self.leakFluxes[spec] = rate
+
+        return sum([abs(v) for v in self.leakFluxes.values()])
+
+    def getMaximumLeakSpecies(self):
+        """
+        Get the unexplored (unimolecular) isomer with the maximum leak flux.
+        """
+        if len(self.leakFluxes) == 0:
+            raise UnirxnNetworkException('No unimolecular isomers left to explore!')
+
+        # Choose species with maximum leak flux
+        maxSpeciesFlux = 0.0; maxSpecies = None
+        for spec, flux in self.leakFluxes.iteritems():
+            if maxSpecies is None or flux > maxSpeciesFlux:
+                maxSpecies = spec; maxSpeciesFlux = flux
+
+        # Return the species and flux
+        return maxSpecies, maxSpeciesFlux
 
 ################################################################################
 
