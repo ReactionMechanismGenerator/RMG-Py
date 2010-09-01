@@ -42,6 +42,7 @@ import chempy.states as states
 
 from reaction import *
 from collision import *
+import settings
 
 ################################################################################
 
@@ -261,30 +262,30 @@ class Network:
             densStates[i,r0:] = densStates0[:-r0+len(densStates0)]
 
         # Densities of states for reactant channels
-        for n in range(Nreac):
-            if self.reactants[n][0].states is not None and self.reactants[n][1].states is not None:
-                logging.debug('Calculating density of states for reactant channel "%s"' % (' + '.join([str(spec) for spec in self.reactants[n]])))
-                densStates0 = self.reactants[n][0].states.getDensityOfStates(Elist)
-                densStates1 = self.reactants[n][1].states.getDensityOfStates(Elist)
-                densStates0 = states.convolve(densStates0, densStates1, Elist)
-                # Shift to common zero of energy
+        # (Only if not minimizing the number of density of states calculations)
+        if not settings.minimizeDensityOfStatesCalculations:
+            for n in range(Nreac):
                 r0 = int(round(E0[n+Nisom] / dE))
-                densStates[n+Nisom,r0:] = densStates0[:-r0+len(densStates0)]
-            elif self.reactants[n][0].states is not None:
-                logging.debug('Calculating density of states for reactant channel "%s"' % (' + '.join([str(spec) for spec in self.reactants[n]])))
-                densStates0 = self.reactants[n][0].states.getDensityOfStates(Elist)
-                # Shift to common zero of energy
-                r0 = int(round(E0[n+Nisom] / dE))
-                densStates[n+Nisom,r0:] = densStates0[:-r0+len(densStates0)]
-            elif self.reactants[n][1].states is not None:
-                logging.debug('Calculating density of states for reactant channel "%s"' % (' + '.join([str(spec) for spec in self.reactants[n]])))
-                densStates0 = self.reactants[n][1].states.getDensityOfStates(Elist)
-                # Shift to common zero of energy
-                r0 = int(round(E0[n+Nisom] / dE))
-                densStates[n+Nisom,r0:] = densStates0[:-r0+len(densStates0)]
-            else:
-                logging.debug('NOT calculating density of states for reactant channel "%s"' % (' + '.join([str(spec) for spec in self.reactants[n]])))
-        logging.debug('')
+                if self.reactants[n][0].states is not None and self.reactants[n][1].states is not None:
+                    logging.info('Calculating density of states for reactant channel "%s"' % (' + '.join([str(spec) for spec in self.reactants[n]])))
+                    densStates0 = self.reactants[n][0].states.getDensityOfStates(Elist)
+                    densStates1 = self.reactants[n][1].states.getDensityOfStates(Elist)
+                    densStates0 = states.convolve(densStates0, densStates1, Elist)
+                    # Shift to common zero of energy
+                    densStates[n+Nisom,r0:] = densStates0[:-r0+len(densStates0)]
+                elif self.reactants[n][0].states is not None:
+                    logging.info('Calculating density of states for reactant channel "%s"' % (' + '.join([str(spec) for spec in self.reactants[n]])))
+                    densStates0 = self.reactants[n][0].states.getDensityOfStates(Elist)
+                    # Shift to common zero of energy
+                    densStates[n+Nisom,r0:] = densStates0[:-r0+len(densStates0)]
+                elif self.reactants[n][1].states is not None:
+                    logging.info('Calculating density of states for reactant channel "%s"' % (' + '.join([str(spec) for spec in self.reactants[n]])))
+                    densStates0 = self.reactants[n][1].states.getDensityOfStates(Elist)
+                    # Shift to common zero of energy
+                    densStates[n+Nisom,r0:] = densStates0[:-r0+len(densStates0)]
+                else:
+                    logging.info('NOT calculating density of states for reactant channel "%s"' % (' + '.join([str(spec) for spec in self.reactants[n]])))
+            logging.debug('')
 
         return densStates
 
