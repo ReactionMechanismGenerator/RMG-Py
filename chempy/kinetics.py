@@ -36,6 +36,7 @@ All such models derive from the :class:`KineticsModel` base class.
 
 import math
 import numpy
+import numpy.linalg
 import cython
 
 import constants
@@ -290,7 +291,22 @@ class PDepArrheniusModel(KineticsModel):
             khigh = ahigh.getRateCoefficient(T)
             k = 10**(math.log10(P/Plow)/math.log10(Phigh/Plow)*math.log10(khigh/klow))
         return k
-        
+
+    def fitToData(self, Tlist, Plist, K, T0=298.0):
+        """
+        Fit the pressure-dependent Arrhenius model to a matrix of rate
+        coefficient data `K` corresponding to a set of temperatures `Tlist` in
+        K and pressures `Plist` in Pa. An Arrhenius model is fit at each
+        pressure.
+        """
+        cython.declare(i=cython.int)
+        self.pressures = list(Plist)
+        self.arrhenius = []
+        for i in range(len(Plist)):
+            arrhenius = ArrheniusModel()
+            arrhenius.fitToData(Tlist, K[:,i], T0)
+            self.arrhenius.append(arrhenius)
+
 ################################################################################
 
 class ChebyshevModel(KineticsModel):
@@ -329,7 +345,27 @@ class ChebyshevModel(KineticsModel):
         self.degreeP = 0
 
     def __chebyshev(self, n, x):
-        if cython.compiled:
+        if n == 0:
+            return 1
+        elif n == 1:
+            return x
+        elif n == 2:
+            return -1 + 2*x*x
+        elif n == 3:
+            return x * (-3 + 4*x*x)
+        elif n == 4:
+            return 1 + x*x*(-8 + 8*x*x)
+        elif n == 5:
+            return x * (5 + x*x*(-20 + 16*x*x))
+        elif n == 6:
+            return -1 + x*x*(18 + x*x*(-48 + 32*x*x))
+        elif n == 7:
+            return x * (-7 + x*x*(56 + x*x*(-112 + 64*x*x)))
+        elif n == 8:
+            return 1 + x*x*(-32 + x*x*(160 + x*x*(-256 + 128*x*x)))
+        elif n == 9:
+            return x * (9 + x*x*(-120 + x*x*(432 + x*x*(-576 + 256*x*x))))
+        elif cython.compiled:
             return cos(n * acos(x))
         else:
             return math.cos(n * math.acos(x))
@@ -360,3 +396,50 @@ class ChebyshevModel(KineticsModel):
             for p in range(self.degreeP):
                 k += self.coeffs[t,p] * self.__chebyshev(t, Tred) * self.__chebyshev(p, Pred)
         return 10.0**k
+
+    def fitToData(self, Tlist, Plist, K, degreeT, degreeP, Tmin, Tmax, Pmin, Pmax):
+        """
+        Fit a Chebyshev kinetic model to a set of rate coefficients `K`, which
+        is a matrix corresponding to the temperatures `Tlist` in K and pressures
+        `Plist` in Pa. `degreeT` and `degreeP` are the degree of the polynomials
+        in temperature and pressure, while `Tmin`, `Tmax`, `Pmin`, and `Pmax`
+        set the edges of the valid temperature and pressure ranges in K and Pa,
+        respectively.
+        """
+
+        cython.declare(nT=cython.int, nP=cython.int, Tred=list, Pred=list)
+        cython.declare(A=numpy.ndarray, b=numpy.ndarray)
+        cython.declare(t1=cython.int, p1=cython.int, t2=cython.int, p2=cython.int)
+        cython.declare(T=cython.double, P=cython.double)
+
+        nT = len(Tlist); nP = len(Plist)
+
+        self.degreeT = degreeT; self.degreeP = degreeP
+
+        # Set temperature and pressure ranges
+        self.Tmin = Tmin; self.Tmax = Tmax
+        self.Pmin = Pmin; self.Pmax = Pmax
+
+        # Calculate reduced temperatures and pressures
+        Tred = [self.__getReducedTemperature(T) for T in Tlist]
+        Pred = [self.__getReducedPressure(P) for P in Plist]
+
+        # Create matrix and vector for coefficient fit (linear least-squares)
+        A = numpy.zeros((nT*nP, degreeT*degreeP), numpy.float64)
+        b = numpy.zeros((nT*nP), numpy.float64)
+        for t1, T in enumerate(Tred):
+            for p1, P in enumerate(Pred):
+                for t2 in range(degreeT):
+                    for p2 in range(degreeP):
+                        A[p1*nT+t1, p2*degreeT+t2] = self.__chebyshev(t2, T) * self.__chebyshev(p2, P)
+                b[p1*nT+t1] = math.log10(K[t1,p1])
+
+        # Do linear least-squares fit to get coefficients
+        x, residues, rank, s = numpy.linalg.lstsq(A, b)
+
+        # Extract coefficients
+        self.coeffs = numpy.zeros((degreeT,degreeP), numpy.float64)
+        for t2 in range(degreeT):
+            for p2 in range(degreeP):
+                self.coeffs[t2,p2] = x[p2*degreeT+t2]
+    
