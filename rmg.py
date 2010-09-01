@@ -272,11 +272,17 @@ def execute(args):
             if isinstance(kineticsDatabase, rmgdata.kinetics.KineticsPrimaryDatabase) and kineticsDatabase.seedMechanism:
                 reactionModel.addSeedMechanismToCore(kineticsDatabase, react=False)
 
+        # Add nonreactive species (e.g. bath gases) to core first
+        # This is necessary so that the PDep algorithm can identify the bath gas
+        for spec in coreSpecies:
+            if not spec.reactive:
+                reactionModel.enlarge(spec)
+        # Then add remaining reactive species
         for spec in coreSpecies:
             if spec.reactive:
                 spec.generateThermoData()
                 spec.generateStatesData()
-            reactionModel.enlarge(spec)
+                reactionModel.enlarge(spec)
 
     # RMG execution statistics
     coreSpeciesCount = []
@@ -286,11 +292,6 @@ def execute(args):
     execTime = []
     restartSize = []
     memoryUse = []
-
-    # Handle unimolecular (pressure dependent) reaction networks
-    if settings.pressureDependence:
-        reactionModel.updateUnimolecularReactionNetworks()
-        logging.info('')
 
     # Main RMG loop
     done = False
@@ -322,11 +323,6 @@ def execute(args):
             objectsToEnlarge = list(set(objectsToEnlarge))
             for object in objectsToEnlarge:
                 reactionModel.enlarge(object)
-
-            # Handle unimolecular (pressure dependent) reaction networks
-            if settings.unimolecularReactionNetworks:
-                reactionModel.updateUnimolecularReactionNetworks()
-                logging.info('')
 
             # Save the restart file
             # In order to get all the references preserved, you must pickle all of

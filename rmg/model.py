@@ -717,6 +717,11 @@ class CoreEdgeReactionModel:
             for spec in newSpeciesList:
                 spec.generateStatesData()
 
+        # Update unimolecular (pressure dependent) reaction networks
+        if settings.pressureDependence:
+            self.updateUnimolecularReactionNetworks()
+            logging.info('')
+
         # Tell Cantera about new core species and core reactions
         for spec in self.core.species[numOldCoreSpecies:]:
             spec.toCantera()
