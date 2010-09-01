@@ -382,7 +382,7 @@ class BatchReactor(ReactionSystem):
             edgeValid, maxSpecies, maxSpeciesFlux = self.isModelValid(model, dNidt, criticalFlux)
 
             # Test leak fluxes of unimolecular networks
-            if settings.unimolecularReactionNetworks:
+            if settings.pressureDependence:
                 maxNetwork = None; maxNetworkFlux = 0.0
                 # Get current leak fluxes of all unimolecular reaction networks
                 networkLeakFluxes = self.getNetworkLeakFluxes(model, P, V, T, Ni, criticalFlux)
@@ -451,7 +451,7 @@ class BatchReactor(ReactionSystem):
 
         # Compare maximum network leak fluxes
         maxRelativeNetworkLeakFlux = 0.0; maxNetwork = None
-        if settings.unimolecularReactionNetworks:
+        if settings.pressureDependence:
             # Compare maximum species fluxes
             for i in range(len(model.unirxnNetworks)):
                 # pick out the single highest-flux edge species
@@ -667,8 +667,6 @@ class BatchReactor(ReactionSystem):
         `dNidt` and the critical flux `criticalFlux`.
         Also returns the edge species whose flux is greatest, and that flux.
         """
-
-        import rmg.reaction as reaction
 
         conc = {}
         for i, spec in enumerate(model.core.species):
