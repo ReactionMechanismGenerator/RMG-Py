@@ -41,6 +41,8 @@ cdef class Reaction:
     cdef public KineticsModel kinetics
     cdef public bint thirdBody
 
+    cpdef bint hasTemplate(self, list reactants, list products)
+
     cpdef double getEnthalpyOfReaction(self, double T)
 
     cpdef double getEntropyOfReaction(self, double T)

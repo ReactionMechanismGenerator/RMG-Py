@@ -112,6 +112,17 @@ class Reaction:
         if not self.reversible: arrow = ' -> '
         return arrow.join([' + '.join([str(s) for s in self.reactants]), ' + '.join([str(s) for s in self.products])])
 
+    def hasTemplate(self, reactants, products):
+        """
+        Return ``True`` if the reaction matches the template of `reactants`
+        and `products`, which are both lists of :class:`Species` objects, or
+        ``False`` if not.
+        """
+        return ((all([spec in self.reactants for spec in reactants]) and
+            all([spec in self.products for spec in products])) or
+            (all([spec in self.products for spec in reactants]) and
+            all([spec in self.reactants for spec in products])))
+
     def getEnthalpyOfReaction(self, T):
         """
         Return the enthalpy of reaction in J/mol evaluated at temperature
