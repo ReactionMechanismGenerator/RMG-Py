@@ -36,6 +36,7 @@ phenomenological rate coefficients :math:`k(T,P)`.
 import math
 import numpy
 import scipy.linalg
+import cython
 
 import chempy.constants as constants
 
@@ -68,7 +69,15 @@ def applyReservoirStateMethod(T, P, Elist, densStates, Mcoll, Kij, Fim, Gnj,
     active-state matrix. The nonreactive grains are placed in the reservoir,
     while the reactive grains are placed in the active-state.
     """
-    
+
+    cython.declare(Ngrains=cython.int)
+    cython.declare(Nres=numpy.ndarray, Nact=numpy.ndarray, indices=numpy.ndarray)
+    cython.declare(eqDist=numpy.ndarray, ratio=numpy.ndarray, ind=list)
+    cython.declare(L=numpy.ndarray, Z=numpy.ndarray, X=numpy.ndarray, pa=numpy.ndarray, K=numpy.ndarray)
+    cython.declare(bandwidth=cython.int, halfbandwidth=cython.int)
+    cython.declare(i=cython.int, j=cython.int, n=cython.int, r=cython.int, s=cython.int)
+    cython.declare(E=cython.double, tol=cython.double, row=cython.int)
+
     Ngrains = len(Elist)
 
     # Determine the starting grain for the calculation based on the

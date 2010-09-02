@@ -35,6 +35,7 @@ of phenomenological rate coefficients :math:`k(T,P)`.
 
 import math
 import numpy
+import cython
 
 import chempy.constants as constants
 
@@ -66,6 +67,12 @@ def applyModifiedStrongCollisionMethod(T, P, Elist, densStates, collFreq, Kij,
     channels `Nisom`, `Nreac`, and `Nprod`, respectively.
     """
     
+    cython.declare(Ngrains=cython.int)
+    cython.declare(A=numpy.ndarray, b=numpy.ndarray, pa=numpy.ndarray, K=numpy.ndarray)
+    cython.declare(bandwidth=cython.int, halfbandwidth=cython.int)
+    cython.declare(i=cython.int, j=cython.int, n=cython.int, r=cython.int, src=cython.int)
+    cython.declare(E=cython.double, Emin=cython.double, start=cython.int)
+
     Ngrains = len(Elist)
 
     K = numpy.zeros((Nisom+Nreac+Nprod, Nisom+Nreac+Nprod), numpy.float64)
