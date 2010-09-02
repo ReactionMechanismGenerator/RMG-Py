@@ -191,6 +191,24 @@ def _method(name):
 
 ################################################################################
 
+def generateThermoFromStates(species):
+    """
+    For a given :class:`Species` object `species`, use its states model to
+    generate a corresponding thermo model.
+    """
+    # Do nothing if the species already has thermo data or if it does not have
+    # states data
+    if species.thermo is not None or species.states is None: return
+
+    # Must use ThermoGAModel because we can't rely on knowing
+    # anything about the structure of the species
+    from chempy.thermo import ThermoGAModel
+    Tdata = numpy.linspace(numpy.min(Tlist), numpy.max(Tlist), 20.0)
+    Cpdata = species.states.getHeatCapacities(Tdata)
+    H298 = species.states.getEnthalpy(298)
+    S298 = species.states.getEntropy(298)
+    species.thermo = ThermoGAModel(Tdata=Tdata, Cpdata=Cpdata, H298=H298, S298=S298)
+
 def readInput(path):
 
     global speciesDict, network, Tlist, Plist, Elist
@@ -266,11 +284,25 @@ def readInput(path):
         elif rxn.products not in network.products:
             network.products.append(rxn.products)
     
+    # For each configuration with states data but not thermo data,
+    # calculate the thermo data
+    for isomer in network.isomers:
+        if isomer.thermo is None and isomer.states is not None:
+            generateThermoFromStates(isomer)
+    for reactants in network.reactants:
+        for spec in reactants:
+            if spec.thermo is None and spec.states is not None:
+                generateThermoFromStates(spec)
+    for products in network.products:
+        for spec in products:
+            if spec.thermo is None and spec.states is not None:
+                generateThermoFromStates(spec)
+
     # Print lots of information about the loaded network
     # In particular, we want to give all of the energies on the PES
     # This will help the user decide if the range of energies selected is 
     # appropriate when viewing the log file
-    network.printSummary()
+    network.printSummary(level=logging.INFO)
     
     # If there are no isomers, then there's nothing to do
     if len(network.isomers) == 0:
