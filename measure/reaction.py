@@ -73,24 +73,70 @@ def calculateMicrocanonicalRateCoefficient(reaction, Elist, reacDensStates, prod
     
     kf = numpy.zeros_like(Elist)
     kr = numpy.zeros_like(Elist)
-    
-    if reaction.transitionState.states is not None:
-        # We've been provided with molecular degree of freedom data for the
-        # transition state, so let's use the more accurate RRKM theory
-        logging.debug('Using RRKM theory for reaction "%s"' % reaction)
-        kf = applyRRKMTheory(reaction.transitionState, Elist, reacDensStates)
-    elif reaction.kinetics is not None:
-        # We've been provided with high-pressure-limit rate coefficient data,
-        # so let's use the less accurate inverse Laplace transform method
-        logging.debug('Using ILT method for reaction "%s"' % reaction)
-        kf = applyInverseLaplaceTransformMethod(reaction.kinetics, reaction.transitionState.E0, Elist, reacDensStates, T)
-    
-    # If the reaction is reversible, calculate the reverse microcanonical rate
-    # using detailed balance
+
+    reactantStatesKnown = reacDensStates.any()
+    productStatesKnown = prodDensStates is not None and prodDensStates.any()
+
+    if reactantStatesKnown:
+        if reaction.transitionState.states is not None:
+            # We've been provided with molecular degree of freedom data for the
+            # transition state, so let's use the more accurate RRKM theory
+            logging.debug('Using RRKM theory for reaction "%s"' % reaction)
+            kf = applyRRKMTheory(reaction.transitionState, Elist, reacDensStates)
+        elif reaction.kinetics is not None:
+            # We've been provided with high-pressure-limit rate coefficient data,
+            # so let's use the less accurate inverse Laplace transform method
+            logging.debug('Using ILT method for reaction "%s"' % reaction)
+            kf = applyInverseLaplaceTransformMethod(reaction.kinetics, reaction.transitionState.E0, Elist, reacDensStates, T)
+
+    elif productStatesKnown:
+        if reaction.transitionState.states is not None:
+            # We've been provided with molecular degree of freedom data for the
+            # transition state, so let's use the more accurate RRKM theory
+            logging.debug('Using RRKM theory for reaction "%s"' % reaction)
+            kr = applyRRKMTheory(reaction.transitionState, Elist, prodDensStates)
+        elif reaction.kinetics is not None:
+            # We've been provided with high-pressure-limit rate coefficient data,
+            # so let's use the less accurate inverse Laplace transform method
+            logging.debug('Using ILT method for reaction "%s"' % reaction)
+            Tlist = 1.0/numpy.arange(1.0/2000.0, 1.0/300.0, 18, numpy.float64)
+            if reaction.reverse.kinetics is None:
+                reaction.reverse.kinetics = reaction.generateReverseRateCoefficient(Tlist)
+            kr = applyInverseLaplaceTransformMethod(reaction.reverse.kinetics, reaction.transitionState.E0, Elist, prodDensStates, T)
+
+    else:
+        raise ReactionError("Unable to determine microcanonical rate for association reaction: no density of states data provided.")
+
+    # Get the reverse microcanonical rate coefficient
     if reaction.reversible:
-        for r in range(len(Elist)):
-            if prodDensStates[r] > 0: 
-                kr[r] = kf[r] * reacDensStates[r] / prodDensStates[r]
+        Keq = reaction.getEquilibriumConstant(T, 'Kc')
+    
+        if len(reaction.reactants) == 1 and len(reaction.products) == 1 and reactantStatesKnown and productStatesKnown:
+            # Isomerization
+            reacQ = numpy.sum(reacDensStates * numpy.exp(-Elist / constants.R / T))
+            prodQ = numpy.sum(prodDensStates * numpy.exp(-Elist / constants.R / T))
+            for r in range(len(Elist)):
+                if prodDensStates[r] > 0: break
+            kr[r:] = kf[r:] * (reacDensStates[r:] / reacQ) / (prodDensStates[r:] / prodQ) / Keq
+
+        elif len(reaction.reactants) == 1 and len(reaction.products) > 1 and reactantStatesKnown:
+            # Dissociation
+            reacQ = numpy.sum(reacDensStates * numpy.exp(-Elist / constants.R / T))
+            kr = kf * (reacDensStates / reacQ) / Keq
+
+        elif len(reaction.reactants) > 1 and len(reaction.products) == 1 and reactantStatesKnown and productStatesKnown:
+            # Association with reactants and product known
+            reacQ = numpy.sum(reacDensStates * numpy.exp(-Elist / constants.R / T))
+            prodQ = numpy.sum(prodDensStates * numpy.exp(-Elist / constants.R / T))
+            kf = kf * reacDensStates * numpy.exp(-Elist / constants.R / T) / reacQ
+            for r in range(len(Elist)):
+                if prodDensStates[r] > 0: break
+            kr[r:] = kf[r:] / (prodDensStates[r:] / prodQ) / Keq
+
+        elif len(reaction.reactants) > 1 and len(reaction.products) == 1 and productStatesKnown:
+            # Association with only product known
+            prodQ = numpy.sum(prodDensStates * numpy.exp(-Elist / constants.R / T))
+            kf = kr * (prodDensStates / prodQ) * Keq
     
     return kf, kr
 

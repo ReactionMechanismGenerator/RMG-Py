@@ -126,7 +126,7 @@ def applyReservoirStateMethod(T, P, Elist, densStates, Mcoll, Kij, Fim, Gnj,
                 L[halfbandwidth, indices[r,i]] -= Gnj[n,i,r]
         for n in range(Nreac):
             for r in range(Nres[i], Ngrains):
-                Z[indices[r,i], n+Nisom] = Fim[i,n,r] * eqDist[n+Nisom,r]
+                Z[indices[r,i], n+Nisom] = Fim[i,n,r] #* eqDist[n+Nisom,r]
         
     # Solve for pseudo-steady state populations of active state
     X = scipy.linalg.solve_banded((halfbandwidth,halfbandwidth), L, -Z, overwrite_ab=True, overwrite_b=True)
@@ -156,7 +156,7 @@ def applyReservoirStateMethod(T, P, Elist, densStates, Mcoll, Kij, Fim, Gnj,
     for n in range(Nreac):
         # Association loss
         for i in range(Nisom):
-            K[Nisom+n,Nisom+n] -= numpy.sum(Fim[i,n,:] * eqDist[n+Nisom,:])
+            K[Nisom+n,Nisom+n] -= numpy.sum(Fim[i,n,:])# * eqDist[n+Nisom,:])
         # Reaction from isomer or reactant j to reactant n
         for j in range(Nisom+Nreac):
             for i in range(Nisom):
