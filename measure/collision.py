@@ -41,6 +41,7 @@ corresponding to the collisional energy transfer probability function
 
 import math
 import numpy
+import logging
 
 import chempy.constants as constants
 
@@ -257,7 +258,7 @@ class SingleExponentialDownModel(CollisionModel):
         for r in range(start, Ngrains):
             C = (1 - numpy.sum(P[start:r,r])) / numpy.sum(P[r:Ngrains,r])
             # Check for normalization consistency (i.e. all numbers are positive)
-            if C < 0: raise ChemPyError('Encountered negative normalization coefficient while normalizing collisional transfer probabilities matrix.')
+            if C < 0: raise CollisionError('Encountered negative normalization coefficient while normalizing collisional transfer probabilities matrix.')
             P[r,r+1:Ngrains] *= C
             P[r:Ngrains,r] *= C
             P[r,r] -= 1
@@ -269,7 +270,7 @@ class SingleExponentialDownModel(CollisionModel):
         #for r in range(Ngrains, start, -1):
             #C = (1 - numpy.sum(M[r:Ngrains,r])) / numpy.sum(M[0:r,r])
             ## Check for normalization consistency (i.e. all numbers are positive)
-            #if C < 0: raise ChemPyError('Encountered negative normalization coefficient while normalizing collisional transfer probabilities matrix.')
+            #if C < 0: raise CollisionError('Encountered negative normalization coefficient while normalizing collisional transfer probabilities matrix.')
             #P[r,0:r-1] *= C
             #P[0:r,r] *= C
             #P[r,r] -= 1

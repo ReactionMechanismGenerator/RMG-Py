@@ -56,7 +56,7 @@ class ReactionError(Exception):
 
 ################################################################################
 
-def calculateMicrocanonicalRateCoefficient(reaction, Elist, reacDensStates, prodDensStates=None, T=None):
+def calculateMicrocanonicalRateCoefficient(reaction, Elist, reacDensStates, prodDensStates=None, T=0.0):
     """
     Calculate the microcanonical rate coefficient :math:`k(E)` for the reaction
     `reaction` at the energies `Elist` in J/mol. `reacDensStates` and 
@@ -182,7 +182,7 @@ def applyRRKMTheory(transitionState, Elist, densStates):
 
 ################################################################################
 
-def applyInverseLaplaceTransformMethod(kinetics, E0, Elist, densStates, T=None):
+def applyInverseLaplaceTransformMethod(kinetics, E0, Elist, densStates, T=0.0):
     """
     Calculate the microcanonical rate coefficient for a reaction using the
     inverse Laplace transform method, where `kinetics` is the high pressure 
