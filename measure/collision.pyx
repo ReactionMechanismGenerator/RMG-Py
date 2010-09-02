@@ -60,7 +60,7 @@ class CollisionError(Exception):
 
 ################################################################################
 
-def calculateCollisionFrequency(species, double T, double P, bathGas):
+cpdef double calculateCollisionFrequency(species, double T, double P, bathGas):
     """
     Calculate the Lennard-Jones collision frequency for a given `species` with
     a dictionary of bath gases and their mole fractions `bathGas` at a given
@@ -72,10 +72,10 @@ def calculateCollisionFrequency(species, double T, double P, bathGas):
     :math:`\\epsilon` parameter.
     """
    
-    cdef double gasConc, sigma, epsilon, Tred, omega22
+    cdef double gasConc, sigma, epsilon, Tred, omega22, value
     cdef double bathGasSigma, bathGasEpsilon, bathGasMW
     cdef double kB = constants.kB, pi = math.pi
-
+    
     bathGasSigma = 0.0; bathGasEpsilon = 1.0; bathGasMW = 0.0
     for key, value in bathGas.iteritems():
         try:
@@ -146,7 +146,7 @@ def calculateCollisionEfficiency(species, double T,
         if Elist[r] > Ereac:
             FeNum += value * dE
             if FeDen == 0:
-                FeDen = value * constants.R * T
+                FeDen = value * R * T
     if FeDen == 0: return 1.0
     Fe = FeNum / FeDen
 
@@ -173,6 +173,7 @@ def calculateCollisionEfficiency(species, double T,
 
     if beta > 1:
         logging.warning('Collision efficiency %s calculated at %s K is greater than unity, so it will be set to unity.' % (beta, T))
+        beta = 1
     if beta < 0:
         raise CollisionError('Invalid collision efficiency %s calculated at %s K.' % (beta, T))
     
@@ -197,7 +198,7 @@ cdef class CollisionModel:
 
 ################################################################################
 
-class SingleExponentialDownModel(CollisionModel):
+cdef class SingleExponentialDownModel(CollisionModel):
     r"""
     Refactoring of collision and reaction modules to full Cython syntax.
     A single exponential down collision model, based around the collisional 
@@ -225,12 +226,14 @@ class SingleExponentialDownModel(CollisionModel):
     
     """
 
+    cdef public double alpha0, T0, n
+
     def __init__(self, alpha0=0.0, T0=1.0, n=0.0):
         self.alpha0 = alpha0
         self.T0 = T0
         self.n = n
 
-    def getAlpha(self, T):
+    cpdef double getAlpha(self, double T):
         """
         Return the value of the :math:`\\alpha` parameter at temperature `T` in
         K. The :math:`\\alpha` parameter represents the average energy
@@ -251,7 +254,7 @@ class SingleExponentialDownModel(CollisionModel):
         `densStates`.
         """
 
-        cdef double alpha = 1.0/self.alpha, beta = 1.0 / (constants.R * T)
+        cdef double alpha = 1.0/self.getAlpha(T), beta = 1.0 / (constants.R * T)
         cdef double C, left, right
         cdef int Ngrains, start, i, r
         cdef numpy.ndarray[numpy.float64_t,ndim=2] P
@@ -264,9 +267,6 @@ class SingleExponentialDownModel(CollisionModel):
             if densStates[i] > 0 and start == -1:
                 start = i
                 break
-
-        # Determine value of parameters at this temperature
-        alpha = self.getAlpha(T)
 
         # Determine unnormalized entries in collisional transfer probability matrix
         for r in range(start, Ngrains):

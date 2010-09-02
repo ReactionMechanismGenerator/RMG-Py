@@ -36,6 +36,10 @@ interpolation model to a phenomenological rate coefficient :meth:`k(T,P)` for
 each net reaction.
 """
 
+cdef extern from "math.h":
+    cdef double exp(double x)
+    cdef double floor(double x)
+
 import numpy
 cimport numpy
 import logging
@@ -210,7 +214,7 @@ def applyInverseLaplaceTransformMethod(kinetics, double E0,
 
     cdef double A, n, Ea, dE, R = constants.R
     cdef numpy.ndarray[numpy.float64_t,ndim=1] k, phi
-    cdef int i, r, s
+    cdef int i, r, s, Ngrains = len(Elist)
 
     k = numpy.zeros_like((Elist))
     
@@ -225,7 +229,7 @@ def applyInverseLaplaceTransformMethod(kinetics, double E0,
         # at the temperature of interest
         # This is an approximation, but it's not worth a more robust procedure
         if Ea < 0:
-            A *= math.exp(-Ea / R / T)
+            A *= exp(-Ea / R / T)
             Ea = 0.0
         if n < 0:
             A *= T**n
@@ -233,8 +237,8 @@ def applyInverseLaplaceTransformMethod(kinetics, double E0,
 
         if n == 0:
             # Determine the microcanonical rate directly
-            s = int(math.floor(Ea / dE))
-            for r in range(len(Elist)):
+            s = int(floor(Ea / dE))
+            for r in range(Ngrains):
                 if Elist[r] > E0 and densStates[r] != 0:
                     k[r] = A * densStates[r - s] / densStates[r]
                     
@@ -242,8 +246,8 @@ def applyInverseLaplaceTransformMethod(kinetics, double E0,
             import scipy.special
             # Evaluate the inverse Laplace transform of the T**n piece, which only
             # exists for n >= 0
-            phi = numpy.zeros(len(Elist), numpy.float64)
-            for i in range(len(Elist)):
+            phi = numpy.zeros(Ngrains, numpy.float64)
+            for i in range(Ngrains):
                 if Elist[i] == 0.0:
                     phi[i] = 0.0
                 else:
@@ -251,8 +255,8 @@ def applyInverseLaplaceTransformMethod(kinetics, double E0,
             # Evaluate the convolution
             phi = convolve(phi, densStates, Elist)
             # Apply to determine the microcanonical rate
-            s = int(math.floor(Ea / dE))
-            for r in range(len(Elist)):
+            s = int(floor(Ea / dE))
+            for r in range(Ngrains):
                 if Elist[r] > E0 and densStates[r] != 0:
                     k[r] = A * phi[r - s] / densStates[r]
 

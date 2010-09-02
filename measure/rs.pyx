@@ -191,7 +191,8 @@ def applyReservoirStateMethod(double T, double P,
     
     # Put the reservoir populations into pa as well
     for i in range(Nisom):
-        pa[0:Nres[i],i,i] = eqDist[i,0:Nres[i]]
+        for r in range(Nres[i]):
+            pa[r,i,i] = eqDist[i,r]
 
     # Return the matrix of k(T,P) values and the pseudo-steady population distributions
     return K, pa
