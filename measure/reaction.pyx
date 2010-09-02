@@ -37,6 +37,7 @@ each net reaction.
 """
 
 import numpy
+cimport numpy
 import logging
 
 import chempy.constants as constants
@@ -56,7 +57,11 @@ class ReactionError(Exception):
 
 ################################################################################
 
-def calculateMicrocanonicalRateCoefficient(reaction, Elist, reacDensStates, prodDensStates=None, T=0.0):
+def calculateMicrocanonicalRateCoefficient(reaction, 
+    numpy.ndarray[numpy.float64_t,ndim=1] Elist, 
+    numpy.ndarray[numpy.float64_t,ndim=1] reacDensStates, 
+    numpy.ndarray[numpy.float64_t,ndim=1] prodDensStates=None, 
+    double T=0.0):
     """
     Calculate the microcanonical rate coefficient :math:`k(E)` for the reaction
     `reaction` at the energies `Elist` in J/mol. `reacDensStates` and 
@@ -81,6 +86,10 @@ def calculateMicrocanonicalRateCoefficient(reaction, Elist, reacDensStates, prod
     inverse Laplace transform method.
 
     """
+
+    cdef numpy.ndarray[numpy.float64_t,ndim=1] kf, kr
+    cdef double Keq, reacQ, prodQ, R = constants.R
+    cdef int r
     
     kf = numpy.zeros_like(Elist)
     kr = numpy.zeros_like(Elist)
@@ -124,8 +133,8 @@ def calculateMicrocanonicalRateCoefficient(reaction, Elist, reacDensStates, prod
     
         if len(reaction.reactants) == 1 and len(reaction.products) == 1 and reactantStatesKnown and productStatesKnown:
             # Isomerization
-            reacQ = numpy.sum(reacDensStates * numpy.exp(-Elist / constants.R / T))
-            prodQ = numpy.sum(prodDensStates * numpy.exp(-Elist / constants.R / T))
+            reacQ = numpy.sum(reacDensStates * numpy.exp(-Elist / R / T))
+            prodQ = numpy.sum(prodDensStates * numpy.exp(-Elist / R / T))
             for r in range(len(Elist)):
                 if prodDensStates[r] > 0: break
             kr[r:] = kf[r:] * (reacDensStates[r:] / reacQ) / (prodDensStates[r:] / prodQ) / Keq
@@ -137,23 +146,25 @@ def calculateMicrocanonicalRateCoefficient(reaction, Elist, reacDensStates, prod
 
         elif len(reaction.reactants) > 1 and len(reaction.products) == 1 and reactantStatesKnown and productStatesKnown:
             # Association with reactants and product known
-            reacQ = numpy.sum(reacDensStates * numpy.exp(-Elist / constants.R / T))
-            prodQ = numpy.sum(prodDensStates * numpy.exp(-Elist / constants.R / T))
-            kf = kf * reacDensStates * numpy.exp(-Elist / constants.R / T) / reacQ
+            reacQ = numpy.sum(reacDensStates * numpy.exp(-Elist / R / T))
+            prodQ = numpy.sum(prodDensStates * numpy.exp(-Elist / R / T))
+            kf = kf * reacDensStates * numpy.exp(-Elist / R / T) / reacQ
             for r in range(len(Elist)):
                 if prodDensStates[r] > 0: break
             kr[r:] = kf[r:] / (prodDensStates[r:] / prodQ) / Keq
 
         elif len(reaction.reactants) > 1 and len(reaction.products) == 1 and productStatesKnown:
             # Association with only product known
-            prodQ = numpy.sum(prodDensStates * numpy.exp(-Elist / constants.R / T))
+            prodQ = numpy.sum(prodDensStates * numpy.exp(-Elist / R / T))
             kf = kr * (prodDensStates / prodQ) * Keq
     
     return kf, kr
 
 ################################################################################
 
-def applyRRKMTheory(transitionState, Elist, densStates):
+def applyRRKMTheory(transitionState, 
+    numpy.ndarray[numpy.float64_t,ndim=1] Elist,
+    numpy.ndarray[numpy.float64_t,ndim=1] densStates):
     """
     Calculate the microcanonical rate coefficient for a reaction using RRKM
     theory, where `transitionState` is the transition state of the reaction,
@@ -182,7 +193,10 @@ def applyRRKMTheory(transitionState, Elist, densStates):
 
 ################################################################################
 
-def applyInverseLaplaceTransformMethod(kinetics, E0, Elist, densStates, T=0.0):
+def applyInverseLaplaceTransformMethod(kinetics, double E0,
+    numpy.ndarray[numpy.float64_t,ndim=1] Elist,
+    numpy.ndarray[numpy.float64_t,ndim=1] densStates,
+    double T=0.0):
     """
     Calculate the microcanonical rate coefficient for a reaction using the
     inverse Laplace transform method, where `kinetics` is the high pressure 
@@ -193,10 +207,14 @@ def applyInverseLaplaceTransformMethod(kinetics, E0, Elist, densStates, T=0.0):
     the temperature exponent of the Arrhenius expression is negative (for which
     the inverse transform is undefined).
     """
-    
+
+    cdef double A, n, Ea, dE, R = constants.R
+    cdef numpy.ndarray[numpy.float64_t,ndim=1] k, phi
+    cdef int i, r, s
+
     k = numpy.zeros_like((Elist))
     
-    if isinstance(kinetics, ArrheniusModel) and (T is not None or (kinetics.Ea >= 0 and kinetics.n >= 0)):
+    if isinstance(kinetics, ArrheniusModel) and (T != 0.0 or (kinetics.Ea >= 0 and kinetics.n >= 0)):
         A = kinetics.A
         n = kinetics.n
         Ea = kinetics.Ea
@@ -207,7 +225,7 @@ def applyInverseLaplaceTransformMethod(kinetics, E0, Elist, densStates, T=0.0):
         # at the temperature of interest
         # This is an approximation, but it's not worth a more robust procedure
         if Ea < 0:
-            A *= math.exp(-Ea / constants.R / T)
+            A *= math.exp(-Ea / R / T)
             Ea = 0.0
         if n < 0:
             A *= T**n
@@ -225,11 +243,11 @@ def applyInverseLaplaceTransformMethod(kinetics, E0, Elist, densStates, T=0.0):
             # Evaluate the inverse Laplace transform of the T**n piece, which only
             # exists for n >= 0
             phi = numpy.zeros(len(Elist), numpy.float64)
-            for i, E in enumerate(Elist):
-                if E == 0.0:
+            for i in range(len(Elist)):
+                if Elist[i] == 0.0:
                     phi[i] = 0.0
                 else:
-                    phi[i] = E**(n-1) / (constants.R**n * scipy.special.gamma(n))
+                    phi[i] = Elist[i]**(n-1) / (R**n * scipy.special.gamma(n))
             # Evaluate the convolution
             phi = convolve(phi, densStates, Elist)
             # Apply to determine the microcanonical rate

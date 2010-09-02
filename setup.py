@@ -44,8 +44,8 @@ Cython.Compiler.Options.annotate = True
 # This is a more standard way of doing things, but Cython doesn't like it as much
 packages=['measure']
 ext_modules = [
-    Extension('measure.collision', ['measure/collision.py']),
-    Extension('measure.reaction', ['measure/reaction.py']),
+    Extension('measure.collision', ['measure/collision.pyx']),
+    Extension('measure.reaction', ['measure/reaction.pyx']),
     Extension('measure.msc', ['measure/msc.pyx']),
     Extension('measure.rs', ['measure/rs.pyx']),
 ]
