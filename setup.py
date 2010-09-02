@@ -46,8 +46,8 @@ packages=['measure']
 ext_modules = [
     Extension('measure.collision', ['measure/collision.py']),
     Extension('measure.reaction', ['measure/reaction.py']),
-    Extension('measure.msc', ['measure/msc.py']),
-    Extension('measure.rs', ['measure/rs.py']),
+    Extension('measure.msc', ['measure/msc.pyx']),
+    Extension('measure.rs', ['measure/rs.pyx']),
 ]
 
 setup(name='MEASURE',

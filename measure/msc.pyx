@@ -35,6 +35,7 @@ of phenomenological rate coefficients :math:`k(T,P)`.
 
 import math
 import numpy
+cimport numpy
 import cython
 
 import chempy.constants as constants
@@ -51,8 +52,16 @@ class ModifiedStrongCollisionError(Exception):
 
 ################################################################################
 
-def applyModifiedStrongCollisionMethod(T, P, Elist, densStates, collFreq, Kij, 
-  Fim, Gnj, Ereac, Nisom, Nreac, Nprod):
+@cython.boundscheck(False)
+def applyModifiedStrongCollisionMethod(double T, double P,
+    numpy.ndarray[numpy.float64_t,ndim=1] Elist,
+    numpy.ndarray[numpy.float64_t,ndim=2] densStates,
+    numpy.ndarray[numpy.float64_t,ndim=1] collFreq,
+    numpy.ndarray[numpy.float64_t,ndim=3] Kij,
+    numpy.ndarray[numpy.float64_t,ndim=3] Fim,
+    numpy.ndarray[numpy.float64_t,ndim=3] Gnj,
+    numpy.ndarray[numpy.float64_t,ndim=1] Ereac,
+    int Nisom, int Nreac, int Nprod):
     """
     Use the modified strong collsion method to reduce the master equation model
     to a set of phenomenological rate coefficients :math:`k(T,P)` and a set of
@@ -67,11 +76,10 @@ def applyModifiedStrongCollisionMethod(T, P, Elist, densStates, collFreq, Kij,
     channels `Nisom`, `Nreac`, and `Nprod`, respectively.
     """
     
-    cython.declare(Ngrains=cython.int)
-    cython.declare(A=numpy.ndarray, b=numpy.ndarray, pa=numpy.ndarray, K=numpy.ndarray)
-    cython.declare(bandwidth=cython.int, halfbandwidth=cython.int)
-    cython.declare(i=cython.int, j=cython.int, n=cython.int, r=cython.int, src=cython.int)
-    cython.declare(E=cython.double, Emin=cython.double, start=cython.int)
+    cdef int Ngrains, start, i, j, n, r, src
+    cdef double E, Emin
+    cdef numpy.ndarray[numpy.float64_t,ndim=2] A, b, K
+    cdef numpy.ndarray[numpy.float64_t,ndim=3] pa
 
     Ngrains = len(Elist)
 
@@ -81,8 +89,8 @@ def applyModifiedStrongCollisionMethod(T, P, Elist, densStates, collFreq, Kij,
     # Determine the starting grain for the calculation based on the
     # active-state cutoff energy
     Emin = numpy.min(Ereac); start = -1
-    for i, E in enumerate(Elist):
-        if E > Emin:
+    for i in range(len(Elist)):
+        if Elist[i] > Emin:
             start = i
             break
     if start < 0:

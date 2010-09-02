@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 ################################################################################
 #
 #   MEASURE - Master Equation Automatic Solver for Unimolecular REactions
@@ -35,6 +32,7 @@ phenomenological rate coefficients :math:`k(T,P)`.
 
 import math
 import numpy
+cimport numpy
 import scipy.linalg
 import cython
 
@@ -51,8 +49,16 @@ class ReservoirStateError(Exception):
 
 ################################################################################
 
-def applyReservoirStateMethod(T, P, Elist, densStates, Mcoll, Kij, Fim, Gnj, 
-  Ereac, Nisom, Nreac, Nprod):
+@cython.boundscheck(False)
+def applyReservoirStateMethod(double T, double P,
+    numpy.ndarray[numpy.float64_t,ndim=1] Elist,
+    numpy.ndarray[numpy.float64_t,ndim=2] densStates,
+    numpy.ndarray[numpy.float64_t,ndim=3] Mcoll,
+    numpy.ndarray[numpy.float64_t,ndim=3] Kij,
+    numpy.ndarray[numpy.float64_t,ndim=3] Fim,
+    numpy.ndarray[numpy.float64_t,ndim=3] Gnj,
+    numpy.ndarray[numpy.float64_t,ndim=1] Ereac,
+    int Nisom, int Nreac, int Nprod):
     """
     Use the reservoir state method to reduce the master equation model to a
     set of phenomenological rate coefficients :math:`k(T,P)` and a set of
@@ -70,23 +76,25 @@ def applyReservoirStateMethod(T, P, Elist, densStates, Mcoll, Kij, Fim, Gnj,
     while the reactive grains are placed in the active-state.
     """
 
-    cython.declare(Ngrains=cython.int)
-    cython.declare(Nres=numpy.ndarray, Nact=numpy.ndarray, indices=numpy.ndarray)
-    cython.declare(eqDist=numpy.ndarray, ratio=numpy.ndarray, ind=list)
-    cython.declare(L=numpy.ndarray, Z=numpy.ndarray, X=numpy.ndarray, pa=numpy.ndarray, K=numpy.ndarray)
-    cython.declare(bandwidth=cython.int, halfbandwidth=cython.int)
-    cython.declare(i=cython.int, j=cython.int, n=cython.int, r=cython.int, s=cython.int)
-    cython.declare(E=cython.double, tol=cython.double, row=cython.int)
+    cdef int Ngrains, bandwidth, halfbandwidth, row, i, j, n, r, s
+    cdef double E, tol
+    cdef list ind
+    cdef numpy.ndarray[numpy.int_t,ndim=1] Nres, Nact
+    cdef numpy.ndarray[numpy.int_t,ndim=2] indices
+    cdef numpy.ndarray[numpy.float64_t,ndim=1] ratio
+    cdef numpy.ndarray[numpy.float64_t,ndim=2] eqDist, L, Z, X, K
+    cdef numpy.ndarray[numpy.float64_t,ndim=3] pa
 
     Ngrains = len(Elist)
 
     # Determine the starting grain for the calculation based on the
     # active-state cutoff energy
     Nres = numpy.zeros(Nisom, numpy.int)
-    for r, E in enumerate(Elist):
-        for i in range(Nisom):
-            if E > Ereac[i] and Nres[i] == 0:
+    for i in range(Nisom):
+        for r in range(Ngrains):
+            if Elist[r] > Ereac[i] and Nres[i] == 0:
                 Nres[i] = r
+                break
     Nact = Ngrains - Nres
     
     # Determine equilibrium distributions
