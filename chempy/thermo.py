@@ -497,7 +497,7 @@ class NASAModel(ThermoModel):
         Return a string representation that can be used to reconstruct the 
         object.
         """
-        return 'NASAPolynomial(Tmin=%g, Tmax=%g, polynomials=%s)' % (self.Tmin, self.Tmax, self.polynomials)
+        return 'NASAModel(Tmin=%g, Tmax=%g, polynomials=%s)' % (self.Tmin, self.Tmax, self.polynomials)
     
     def getHeatCapacity(self, T):
         """
