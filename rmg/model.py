@@ -36,6 +36,7 @@ import logging
 import math
 import numpy
 import os
+import os.path
 
 import chempy.constants as constants
 import chempy.species
@@ -1013,13 +1014,6 @@ class CoreEdgeReactionModel:
         if not newReaction.isIsomerization() and not newReaction.isDissociation() and not newReaction.isAssociation():
             return None
 
-        # Don't add reactions that are dissociation of a diatomic or association
-        # to form a diatomic
-        if newReaction.isDissociation() and len(newReaction.reactants[0].molecule[0].atoms) == 2:
-            return None
-        elif newReaction.isAssociation() and len(newReaction.products[0].molecule[0].atoms) == 2:
-            return None
-
         # Find networks containing either the reactant or the product as a
         # unimolecular isomer
         reactantNetwork = None; productNetwork = None
@@ -1070,8 +1064,9 @@ class CoreEdgeReactionModel:
 
         from measure.collision import SingleExponentialDownModel
         import measure.settings
+        import measure.input
         
-        count = sum([1 for network in self.unirxnNetworks if not network.valid])
+        count = sum([1 for network in self.unirxnNetworks if not network.valid and len(network.explored) > 0])
         logging.info('Updating %i modified unimolecular reaction networks...' % count)
 
         # For the purposes of RMG we want each network to run very quickly
@@ -1086,8 +1081,6 @@ class CoreEdgeReactionModel:
                 if len(network.explored) == 0:
                     network.valid = True
                     continue
-
-                logging.debug('Updating unimolecular reaction network %s' % network.index)
 
                 # Other inputs
                 method, Tmin, Tmax, Tlist, Pmin, Pmax, Plist, grainSize, numGrains, model = settings.pressureDependence
@@ -1146,6 +1139,10 @@ class CoreEdgeReactionModel:
                 network.bathGas = [spec for spec in self.core.species if not spec.reactive][0]
                 network.collisionModel = SingleExponentialDownModel(alpha=4.86 * 4184)
                 
+                # Save input file
+                measure.input.writeInput(os.path.join(settings.outputDirectory, 'pdep', 'network%i_%i.py' % (network.index, len(network.isomers))),
+                    network, Tlist, Plist, (grainSize, numGrains), method)
+
                 # Automatically choose a suitable set of energy grains if they were not
                 # explicitly specified in the input file
                 Elist = network.autoGenerateEnergyGrains(Tmax=Tmax, grainSize=grainSize, Ngrains=numGrains)

@@ -236,6 +236,13 @@ def execute(args):
         os.rmdir(specDir)
     os.mkdir(specDir)
 
+    pdepDir = os.path.join(settings.outputDirectory, 'pdep')
+    if os.path.exists(pdepDir):
+        for f in os.listdir(pdepDir):
+            os.remove(pdepDir + '/' + f)
+        os.rmdir(pdepDir)
+    os.mkdir(pdepDir)
+
     # Read input file
     reactionModel, coreSpecies, reactionSystems = readInputFile(inputFile)
 
