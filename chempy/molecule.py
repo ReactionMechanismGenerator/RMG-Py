@@ -398,11 +398,11 @@ class Molecule(Graph):
     also been provided.
     """
 
-    def __init__(self, atoms=None, bonds=None, SMILES='', InChI=''):
+    def __init__(self, atoms=None, bonds=None, SMILES='', InChI='', implicitH=False):
         Graph.__init__(self, atoms, bonds)
         self.implicitHydrogens = False
-        if SMILES != '': self.fromSMILES(SMILES)
-        elif InChI != '': self.fromInChI(InChI)
+        if SMILES != '': self.fromSMILES(SMILES, implicitH)
+        elif InChI != '': self.fromInChI(InChI, implicitH)
     
     def __str__(self):
         """
@@ -773,7 +773,7 @@ class Molecule(Graph):
         from ext.molecule_draw import drawMolecule
         drawMolecule(self, path=path)
 
-    def fromCML(self, cmlstr):
+    def fromCML(self, cmlstr, implicitH=False):
         """
         Convert a string of CML `cmlstr` to a molecular structure. Uses
         `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
@@ -781,30 +781,30 @@ class Molecule(Graph):
         import pybel
         cmlstr = cmlstr.replace('\t', '')
         mol = pybel.readstring('cml', cmlstr)
-        self.fromOBMol(mol.OBMol)
+        self.fromOBMol(mol.OBMol, implicitH)
         return self
 
-    def fromInChI(self, inchistr):
+    def fromInChI(self, inchistr, implicitH=False):
         """
         Convert an InChI string `inchistr` to a molecular structure. Uses
         `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
         """
         import pybel
         mol = pybel.readstring('inchi', inchistr)
-        self.fromOBMol(mol.OBMol)
+        self.fromOBMol(mol.OBMol, implicitH)
         return self
 
-    def fromSMILES(self, smilesstr):
+    def fromSMILES(self, smilesstr, implicitH=False):
         """
         Convert a SMILES string `smilesstr` to a molecular structure. Uses
         `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
         """
         import pybel
         mol = pybel.readstring('smiles', smilesstr)
-        self.fromOBMol(mol.OBMol)
+        self.fromOBMol(mol.OBMol, implicitH)
         return self
 
-    def fromOBMol(self, obmol):
+    def fromOBMol(self, obmol, implicitH=False):
         """
         Convert an OpenBabel OBMol object `obmol` to a molecular structure. Uses
         `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
@@ -813,6 +813,9 @@ class Molecule(Graph):
         cython.declare(i=cython.int)
         cython.declare(radicalElectrons=cython.int, spinMultiplicity=cython.int, charge=cython.int)
         cython.declare(atom=Atom, atom1=Atom, atom2=Atom, bond=Bond)
+
+        self.vertices = []
+        self.edges = {}
 
         # Add hydrogen atoms to complete molecule if needed
         obmol.AddHydrogens()
@@ -868,7 +871,7 @@ class Molecule(Graph):
         self.updateAtomTypes()
 
         # Make hydrogens implicit to conserve memory
-        self.makeHydrogensImplicit()
+        if implicitH: self.makeHydrogensImplicit()
 
         return self
 

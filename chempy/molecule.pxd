@@ -129,13 +129,13 @@ cdef class Molecule(Graph):
 
     cpdef draw(self, str path)
 
-    cpdef fromCML(self, str cmlstr)
+    cpdef fromCML(self, str cmlstr, bint implicitH=?)
 
-    cpdef fromInChI(self, str inchistr)
+    cpdef fromInChI(self, str inchistr, bint implicitH=?)
 
-    cpdef fromSMILES(self, str smilesstr)
+    cpdef fromSMILES(self, str smilesstr, bint implicitH=?)
 
-    cpdef fromOBMol(self, obmol)
+    cpdef fromOBMol(self, obmol, bint implicitH=?)
 
     cpdef fromAdjacencyList(self, str adjlist, bint withLabel=?)
 
