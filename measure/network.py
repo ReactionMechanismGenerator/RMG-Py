@@ -36,6 +36,7 @@ import math
 import numpy
 import cython
 import logging
+import os.path
 
 import chempy.constants as constants
 import chempy.states as states
@@ -473,3 +474,233 @@ class Network:
         self.valid = True
 
         return K
+
+    def drawPotentialEnergySurface(self, fstr, Eunits='kJ/mol'):
+        """
+        Generates an SVG file containing a rendering of the current potential
+        energy surface for this reaction network. The SVG file is saved to a
+        file at location `fstr` on disk. The units to use for energy values can
+        be specified using the `Eunits` option; allowed values are 'J/mol',
+        'kJ/mol', 'cal/mol', 'kcal/mol', and 'cm^-1'.
+        """
+
+        try:
+            import cairo
+        except ImportError:
+            logging.warning('Cairo not found; potential energy surface will not be drawn.')
+            return
+
+        # Determine order of wells based on order of path reactions, but put
+        # all the unimolecular isomer wells first
+        wells = []
+        for isomer in self.isomers: wells.append([isomer])
+        for rxn in self.pathReactions:
+            if rxn.reactants not in wells:
+                if len(rxn.products) == 1 and rxn.products[0] in self.isomers:
+                    if self.isomers.index(rxn.products[0]) < len(self.isomers) / 2:
+                        wells.insert(0, rxn.reactants)
+                    else:
+                        wells.append(rxn.reactants)
+                else:
+                    wells.append(rxn.reactants)
+            if rxn.products not in wells:
+                if rxn.products in self.products:
+                    wells.append(rxn.products)
+                elif len(rxn.reactants) == 1 and rxn.reactants[0] in self.isomers:
+                    if self.isomers.index(rxn.reactants[0]) < len(self.isomers) / 2:
+                        wells.insert(0, rxn.products)
+                    else:
+                        wells.append(rxn.products)
+                else:
+                    wells.append(rxn.products)
+        
+        # Drawing parameters
+        padding_left = 96.0
+        padding_right = padding_left
+        padding_top = padding_left / 2.0
+        padding_bottom = padding_left / 2.0
+        wellWidth = 64.0; wellSpacing = 64.0; Eslope = 5.0; TSwidth = 16.0
+        E0 = [sum([spec.E0 for spec in well]) / 4184 for well in wells]
+        E0.extend([rxn.transitionState.E0 / 4184 for rxn in self.pathReactions])
+        y_E0 = (max(E0) - 0.0) * Eslope + padding_top
+        
+        # Determine naive position of each well (one per column)
+        coordinates = numpy.zeros((len(wells), 2), numpy.float64)
+        x = padding_left + wellWidth / 2.0
+        for i, well in enumerate(wells):
+            E0 = sum([spec.E0 for spec in well]) / 4184
+            y = y_E0 - E0 * Eslope
+            coordinates[i] = [x, y]
+            x += wellWidth + wellSpacing
+
+        # Squish columns together from the left where possible until an isomer is encountered
+        Nleft = wells.index([self.isomers[0]])
+        for i in range(Nleft-1, -1, -1):
+            newX = float(coordinates[i,0])
+            for j in range(i+1, Nleft):
+                if abs(coordinates[i,1] - coordinates[j,1]) < 72:
+                    newX = float(coordinates[j,0]) - (wellWidth + wellSpacing)
+                    break
+                else:
+                    newX = float(coordinates[j,0])
+            coordinates[i,0] = newX
+        # Squish columns together from the right where possible until an isomer is encountered
+        Nright = wells.index([self.isomers[-1]])
+        for i in range(Nright+2, len(wells)):
+            newX = float(coordinates[i,0])
+            for j in range(i-1, Nright, -1):
+                if abs(coordinates[i,1] - coordinates[j,1]) < 72:
+                    newX = float(coordinates[j,0]) + (wellWidth + wellSpacing)
+                    break
+                else:
+                    newX = float(coordinates[j,0])
+            coordinates[i,0] = newX
+
+        coordinates[:,0] -= numpy.min(coordinates[:,0]) - padding_left - wellWidth/2.0
+
+        # Determine required size of diagram
+        width = numpy.max(coordinates[:,0]) - numpy.min(coordinates[:,0]) + wellWidth + padding_left + padding_right
+        height = numpy.max(coordinates[:,1]) - numpy.min(coordinates[:,1]) + 32.0 + padding_top + padding_bottom
+
+        # Choose multiplier to convert energies to desired units
+        if Eunits == 'J/mol':      Emult = 1.0
+        elif Eunits == 'kJ/mol':   Emult = 1.0 / 1000
+        elif Eunits == 'cal/mol':  Emult = 1.0 / 4.184
+        elif Eunits == 'kcal/mol': Emult = 1.0 / 4184
+        elif Eunits == 'cm^-1':    Emult = 1.0 / 11.96
+        else:
+            logging.warning('Invalid value "%s" for Eunits parameter. Setting to "kJ/mol".' % (Eunits))
+            Emult = 1.0 / 1000
+
+        # Initialize Cairo surface and context
+        ext = os.path.splitext(fstr)[1].lower()
+        if ext == '.svg':
+            surface = cairo.SVGSurface(fstr, width, height)
+        elif ext == '.pdf':
+            surface = cairo.PDFSurface(fstr, width, height)
+        elif ext == '.ps':
+            surface = cairo.PSSurface(fstr, width, height)
+        else:
+            logging.warning('Unknown format for target "%s"; not drawing potential energy surface.' % fstr)
+            return
+        cr = cairo.Context(surface)
+
+        # Some global settings
+        cr.select_font_face("sans")
+        cr.set_font_size(10)
+        
+        # Draw path reactions
+        for rxn in self.pathReactions:
+            reac = wells.index(rxn.reactants)
+            prod = wells.index(rxn.products)
+            E0_reac = sum([spec.E0 for spec in wells[reac]]) / 4184
+            E0_prod = sum([spec.E0 for spec in wells[prod]]) / 4184
+            E0_TS = rxn.transitionState.E0 / 4184
+            if reac < prod:
+                x1, y1 = coordinates[reac,:]
+                x2, y2 = coordinates[prod,:]
+            else:
+                x1, y1 = coordinates[prod,:]
+                x2, y2 = coordinates[reac,:]
+            x1 += wellSpacing / 2.0; x2 -= wellSpacing / 2.0
+            if abs(E0_TS - E0_reac) > 0.1 and abs(E0_TS - E0_prod) > 0.1:
+                if len(rxn.reactants) == 2:
+                    if reac < prod: x0 = x1 + wellSpacing * 0.5
+                    else:           x0 = x2 - wellSpacing * 0.5
+                elif len(rxn.products) == 2:
+                    if reac < prod: x0 = x2 - wellSpacing * 0.5
+                    else:           x0 = x1 + wellSpacing * 0.5
+                else:
+                    x0 = 0.5 * (x1 + x2)
+                y0 = y_E0 - E0_TS * Eslope
+                width1 = (x0 - x1)
+                width2 = (x2 - x0)
+                # Draw horizontal line for TS
+                cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
+                cr.set_line_width(2.0)
+                cr.move_to(x0 - TSwidth/2.0, y0)
+                cr.line_to(x0+TSwidth/2.0, y0)
+                cr.stroke()
+                # Add background and text for energy
+                E0 = "%.1f" % (rxn.transitionState.E0 * Emult)
+                extents = cr.text_extents(E0)
+                x = x0 - extents[2] / 2.0; y = y0 - 6.0
+                cr.rectangle(x + extents[0] - 2.0, y + extents[1] - 2.0, extents[2] + 4.0, extents[3] + 4.0)
+                cr.set_source_rgba(1.0, 1.0, 1.0, 0.75)
+                cr.fill()
+                cr.move_to(x, y)
+                cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
+                cr.show_text(E0)
+                # Draw Bezier curve connecting reactants and products through TS
+                cr.set_source_rgba(0.0, 0.0, 0.0, 0.5)
+                cr.set_line_width(1.0)
+                cr.move_to(x1, y1)
+                cr.curve_to(x1 + width1/8.0, y1,   x0 - width1/8.0 - TSwidth/2.0, y0,   x0 - TSwidth/2.0, y0)
+                cr.move_to(x0 + TSwidth/2.0, y0)
+                cr.curve_to(x0 + width2/8.0 + TSwidth/2.0, y0,   x2 - width2/8.0, y2,   x2, y2)
+                cr.stroke()
+            else:
+                width = (x2 - x1)
+                # Draw Bezier curve connecting reactants and products through TS
+                cr.set_source_rgba(0.0, 0.0, 0.0, 0.5)
+                cr.set_line_width(1.0)
+                cr.move_to(x1, y1)
+                cr.curve_to(x1 + width/4.0, y1,   x2 - width/4.0, y2,   x2, y2)
+                cr.stroke()
+
+        # Draw wells (after path reactions so that they are on top)
+        for i, well in enumerate(wells):
+            x0, y0 = coordinates[i,:]
+            # Draw horizontal line for well
+            cr.set_line_width(4.0)
+            cr.move_to(x0 - wellWidth/2.0, y0)
+            cr.line_to(x0 + wellWidth/2.0, y0)
+            cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
+            cr.stroke()
+            # Add background and text for energy
+            E0 = "%.1f" % (sum([spec.E0 for spec in well]) * Emult)
+            extents = cr.text_extents(E0)
+            x = x0 - extents[2] / 2.0; y = y0 - 6.0
+            cr.rectangle(x + extents[0] - 2.0, y + extents[1] - 2.0, extents[2] + 4.0, extents[3] + 4.0)
+            cr.set_source_rgba(1.0, 1.0, 1.0, 0.75)
+            cr.fill()
+            cr.move_to(x, y)
+            cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
+            cr.show_text(E0)
+            # Add background for label
+            label = well[0].label
+            extents = cr.text_extents(label)
+            x1 = x0 - extents[2] / 2.0 - 2.0; y1 = y0 + 4.0
+            width1 = extents[2] + 4.0; height1 = extents[3] + 4.0
+            if len(well) == 2:
+                label = "+ %s" % (well[1].label)
+                extents = cr.text_extents(label)
+                x2 = x0 - extents[2] / 2.0 - 2.0; y2 = y0 + 4.0 + height1 + 4.0
+                width2 = extents[2] + 4.0; height2 = extents[3] + 4.0
+                x = min(x1, x2); y = min(y1, y2)
+                width = max(width1, width2); height = height1 + height2
+            else:
+                x = x1; y = y1
+                width = width1; height = height1
+            cr.rectangle(x, y, width, height)
+            cr.set_source_rgba(1.0, 1.0, 1.0, 0.75)
+            cr.fill()
+            # Add text for label
+            label = well[0].label
+            extents = cr.text_extents(label)
+            x = x0 - extents[2] / 2.0; y = y0 - extents[1] + 6.0
+            cr.move_to(x - extents[0], y)
+            cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
+            cr.show_text(label)
+            if len(well) == 2:
+                label = "+ %s" % (well[1].label)
+                extents0 = extents
+                extents = cr.text_extents(label)
+                x = x0 - extents[2] / 2.0; y = y0 - extents[1] + 6.0 + extents0[3] + 4.0
+                cr.move_to(x - extents[0], y)
+                cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
+                cr.show_text(label)
+        
+        # Finish Cairo drawing
+        surface.finish()
+        
