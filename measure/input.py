@@ -31,6 +31,7 @@ import logging
 import quantities
 quantities.set_default_units('si')
 quantities.UnitQuantity('kilocalorie', 1000.0*quantities.cal, symbol='kcal')
+quantities.UnitQuantity('kilojoule', 1000.0*quantities.J, symbol='kJ')
 
 from chempy.species import Species, TransitionState
 from chempy.reaction import Reaction
@@ -75,15 +76,57 @@ def processQuantity(quantity):
 
 ################################################################################
 
-def species(label='', E0=None, states=None, lennardJones=None, molecularWeight=0.0):
+def species(label='', E0=None, states=None, thermo=None, lennardJones=None, molecularWeight=0.0):
     global speciesDict
     if E0 is not None: E0 = processQuantity(E0)[0]
     else: E0 = 0.0
-    spec = Species(label=label, states=states, E0=E0, lennardJones=lennardJones)
+    spec = Species(label=label, states=states, thermo=thermo, E0=E0, lennardJones=lennardJones)
     spec.molecularWeight = processQuantity(molecularWeight)[0]
     speciesDict[label] = spec
     logging.debug('Found species "%s"' % spec)
-    
+
+def thermoGAModel(Tdata, Cpdata, H298, S298, Tmin=0.0, Tmax=99999.9, comment=''):
+    return ThermoGAModel(
+        Tdata=processQuantity(Tdata)[0],
+        Cpdata=processQuantity(Cpdata)[0],
+        H298=processQuantity(H298)[0],
+        S298=processQuantity(S298)[0],
+        Tmin=processQuantity(Tmin)[0],
+        Tmax=processQuantity(Tmax)[0],
+        comment=comment,
+    )
+
+def thermoWilhoitModel(cp0, cpInf, a0, a1, a2, a3, H0, S0, B, comment=''):
+    return WilhoitModel(
+        cp0=processQuantity(cp0)[0],
+        cpInf=processQuantity(cpInf)[0],
+        a0=a0,
+        a1=a1,
+        a2=a2,
+        a3=a3,
+        H0=H0,
+        S0=S0,
+        B=processQuantity(B)[0],
+        comment=comment,
+    )
+
+def thermoNASAModel(polynomials=None, Tmin=0.0, Tmax=0.0, comment=''):
+    return NASAModel(
+        polynomials=polynomials,
+        Tmin=processQuantity(Tmin)[0],
+        Tmax=processQuantity(Tmax)[0],
+        comment=comment,
+    )
+
+def thermoNASAPolynomial(Tmin=0.0, Tmax=0.0, coeffs=None, comment=''):
+    return NASAPolynomial(
+        Tmin=processQuantity(Tmin)[0],
+        Tmax=processQuantity(Tmax)[0],
+        coeffs=coeffs,
+        comment=comment,
+    )
+
+
 def States(rotationalConstants=None, symmetry=1, frequencies=None, 
   frequencyScaleFactor=1.0, hinderedRotors=None, spinMultiplicity=1):
     modes = []
@@ -123,11 +166,12 @@ def reaction(reactants, products, kinetics=None, reversible=True, transitionStat
     network.pathReactions.append(rxn)
     logging.debug('Found reaction "%s"' % rxn)
 
-def Arrhenius(A, n, Ea):
+def Arrhenius(A, n, Ea, T0=1.0):
     A, units = processQuantity(A)
     n, units = processQuantity(n)
     Ea, units = processQuantity(Ea)
-    return ArrheniusModel(A=A, n=n, Ea=Ea)
+    T0, units = processQuantity(T0)
+    return ArrheniusModel(A=A, n=n, Ea=Ea, T0=T0)
 
 def TS(E0=None):
     if E0 is not None: E0 = processQuantity(E0)[0]
@@ -245,6 +289,10 @@ def readInput(path):
         'pressures': pressures,
         'energies': energies,
         'method': _method,
+        'ThermoGAModel': thermoGAModel,
+        'WilhoitModel': thermoWilhoitModel,
+        'NASAModel': thermoNASAModel,
+        'NASAPolynomial': thermoNASAPolynomial,
     }
     
     try:
@@ -383,7 +431,7 @@ def writeInput(path, network, Tlist, Plist, Elist, method):
         f.write('    reversible=%s,\n' % ('True' if rxn.reversible else 'False'))
         if rxn.kinetics is not None:
             if isinstance(rxn.kinetics, ArrheniusModel):
-                f.write('    kinetics=ArrheniusModel(\n')
+                f.write('    kinetics=Arrhenius(\n')
                 if len(rxn.reactants) == 1: units = 's^-1'
                 else: units = 'm^%g/(mol^%g*s)' % (3*(len(rxn.reactants)-1), len(rxn.reactants)-1)
                 f.write('        A=(%g,"%s"),\n' % (rxn.kinetics.A, units))
