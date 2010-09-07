@@ -1130,10 +1130,8 @@ def drawMolecule(chemGraph, path=None, context=None, surface=None):
     if len(atomsToRemove) < len(atoms):
         for atom in atomsToRemove:
             atoms.remove(atom)
-        for atom in bonds:
-            if atom not in atoms: del bonds[atom]
-            for atom2 in bonds[atom]:
-                if atom2 not in atoms: del bonds[atom][atom2]
+            for atom2 in bonds[atom]: del bonds[atom2][atom]
+            del bonds[atom]
 
     # Generate the coordinates to use to draw the molecule
     coordinates = generateCoordinates(chemGraph, atoms, bonds)
@@ -1205,4 +1203,4 @@ if __name__ == '__main__':
     #molecule.fromSMILES('CCC=C=CCCC')
     #molecule.fromSMILES('C1CCCCC1CCC2CCCC2')
 
-    drawMolecule(molecule.resonanceForms[0], 'molecule.svg')
+    drawMolecule(molecule, 'molecule.pdf')
