@@ -98,7 +98,7 @@ from chempy.molecule import *
 fontFamily = 'sans'
 fontSizeNormal = 10
 fontSizeSubscript = 6
-bondLength = 32
+bondLength = 24
     
 ################################################################################
 
@@ -106,21 +106,16 @@ class MoleculeRenderError(Exception): pass
 
 ################################################################################
 
-def render(atoms, bonds, coordinates, symbols, path=None, context=None, surface=None):
+def render(atoms, bonds, coordinates, symbols, cr):
     """
     Uses the Cairo graphics library to create a skeletal formula drawing of a
     molecule containing the list of `atoms` and dict of `bonds` to be drawn.
     The 2D position of each atom in `atoms` is given in the `coordinates` array.
     The symbols to use at each atomic position are given by the list `symbols`.
-    You must specify either the `path` to the file to be rendered to, an
-    existing Cairo `context`, or an existing Cairo `surface`.
+    You must specify the Cairo context `cr` to render to.
     """
 
-    try:
-        import cairo
-    except ImportError:
-        print 'Cairo not found; molecule will not be drawn.'
-        return
+    import cairo
 
     coordinates[:,1] *= -1
     coordinates = coordinates * bondLength
@@ -128,26 +123,6 @@ def render(atoms, bonds, coordinates, symbols, path=None, context=None, surface=
     # Adjust coordinates such that the top left corner is (0,0) and determine
     # the bounding rect for the molecule
     left, top, width, height = adjustCoordinates(coordinates, symbols)
-    
-    # Initialize Cairo surface and context
-    if path is not None:
-        ext = os.path.splitext(path)[1].lower()
-        if ext == '.png':
-            surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, int(width), int(height))
-        elif ext == '.svg':
-            surface = cairo.SVGSurface(path, width, height)
-        elif ext == '.pdf':
-            surface = cairo.PDFSurface(path, width, height)
-        elif ext == '.ps':
-            surface = cairo.PSSurface(path, width, height)
-        cr = cairo.Context(surface)
-    elif context is not None:
-        surface = None
-        cr = context
-    elif surface is not None:
-        cr = cairo.Context(surface)
-    else:
-        raise MoleculeRenderError('You must specify either the "path" or "context" parameter.')
     
     # Draw bonds
     for atom1 in bonds:
@@ -174,19 +149,8 @@ def render(atoms, bonds, coordinates, symbols, path=None, context=None, surface=
             x0 += cr.text_extents(symbols[0])[2] / 2.0
         renderAtom(symbol, atom, coordinates, atoms, bonds, x0, y0, cr, heavyFirst)
 
-    # Finish Cairo drawing
-    if surface is not None:
-        surface.finish()
-    # Save PNG of drawing if appropriate
-    if path is not None:
-        ext = os.path.splitext(path)[1].lower()
-        if ext == '.png':
-            surface.write_to_png(path)
-
-    # Return the rectangle that bounds the drawn molecule
-    # This may be useful to the calling method, especially when drawing as part
-    # of an existing figure
-    return left, top, width, height
+    # Return a tuple containing the bounding rectangle for the drawing
+    return (left, top, width, height)
 
 ################################################################################
 
@@ -1095,34 +1059,62 @@ def generateFunctionalGroupCoordinates(atom0, atom1, atoms, bonds, coordinates, 
 
 ################################################################################
 
-def drawMolecule(chemGraph, path=None, context=None, surface=None):
+def createNewSurface(type, path=None, width=1024, height=768):
     """
-    Primary function for generating a drawing of a :class:`ChemGraph` object
-    `chemGraph`. You can specify the render target in a few ways:
+    Create a new surface of the specified `type`: "png" for
+    :class:`ImageSurface`, "svg" for :class:`SVGSurface`, "pdf" for
+    :class:`PDFSurface`, or "ps" for :class:`PSSurface`. If the surface is to
+    be saved to a file, use the `path` parameter to give the path to the file.
+    You can also optionally specify the `width` and `height` of the generated
+    surface if you know what it is; otherwise a default size of 1024 by 768 is
+    used.
+    """
+    import cairo
+    type = type.lower()
+    if type == 'png':
+        surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, int(width), int(height))
+    elif type == 'svg':
+        surface = cairo.SVGSurface(path, width, height)
+    elif type == 'pdf':
+        surface = cairo.PDFSurface(path, width, height)
+    elif type == 'ps':
+        surface = cairo.PSSurface(path, width, height)
+    else:
+        raise ValueError('Invalid value "%s" for type parameter; valid values are "png", "svg", "pdf", and "ps".' % type)
+    return surface
+
+def drawMolecule(molecule, path=None, surface=''):
+    """
+    Primary function for generating a drawing of a :class:`Molecule` object
+    `molecule`. You can specify the render target in a few ways:
 
     * If you wish to create an image file (PNG, SVG, PDF, or PS), use the `path`
       parameter to pass a string containing the location at which you wish to
       save the file; the extension will be used to identify the proper target
       type.
 
-    * If you want to render the molecule on an existing Cairo context (e.g. as
-      part of another drawing you are constructing), use the `context` paramter
-      to pass the existing context object.
+    * If you want to render the molecule onto a Cairo surface without saving it
+      to a file (e.g. as part of another drawing you are constructing), use the
+      `surface` paramter to pass the type of surface you wish to use: "png",
+      "svg", "pdf", or "ps".
 
-    * If you want to render the molecule on an existing Cairo surface (e.g. as
-      part of another drawing you are constructing), use the `surface` paramter
-      to pass the existing surface object.
-
-    This function returns a bounding box for the molecule being drawn as the
+    This function returns the Cairo surface and context used to create the
+    drawing, as well as a bounding box for the molecule being drawn as the
     tuple (`left`, `top`, `width`, `height`).
     """
 
-    # This algorithm requires that the hydrogen atoms be implicit
-    implicitH = chemGraph.implicitHydrogens
-    chemGraph.makeHydrogensImplicit()
+    try:
+        import cairo
+    except ImportError:
+        print 'Cairo not found; molecule will not be drawn.'
+        return
 
-    atoms = chemGraph.atoms[:]
-    bonds = chemGraph.bonds.copy()
+    # This algorithm requires that the hydrogen atoms be implicit
+    implicitH = molecule.implicitHydrogens
+    molecule.makeHydrogensImplicit()
+
+    atoms = molecule.atoms[:]
+    bonds = molecule.bonds.copy()
 
     # Special cases: H, H2, anything with one heavy atom
 
@@ -1138,7 +1130,7 @@ def drawMolecule(chemGraph, path=None, context=None, surface=None):
             del bonds[atom]
 
     # Generate the coordinates to use to draw the molecule
-    coordinates = generateCoordinates(chemGraph, atoms, bonds)
+    coordinates = generateCoordinates(molecule, atoms, bonds)
 
     # Generate labels to use
     symbols = [atom.symbol for atom in atoms]
@@ -1161,12 +1153,36 @@ def drawMolecule(chemGraph, path=None, context=None, surface=None):
             if atoms[i].implicitHydrogens == 1: symbols[i] = symbols[i] + 'H'
             elif atoms[i].implicitHydrogens > 1: symbols[i] = symbols[i] + 'H%i' % (atoms[i].implicitHydrogens)
 
+    # Create a dummy surface to draw to, since we don't know the bounding rect
+    # We will copy this to another surface with the correct bounding rect
+    if path is not None and surface == '':
+        type = os.path.splitext(path)[1].lower()[1:]
+    else:
+        type = surface.lower()
+    surface0 = createNewSurface(type=type, path=None)
+    cr0 = cairo.Context(surface0)
+
     # Render using Cairo
-    result = render(atoms, bonds, coordinates, symbols, path, surface)
+    left, top, width, height = render(atoms, bonds, coordinates, symbols, cr0)
 
-    if not implicitH: chemGraph.makeHydrogensExplicit()
+    # Create the real surface with the appropriate size
+    surface = createNewSurface(type=type, path=path, width=width, height=height)
+    cr = cairo.Context(surface)
+    cr.set_source_surface(surface0, 0, 0)
+    cr.paint()
 
-    return result
+    if path is not None:
+        # Finish Cairo drawing
+        if surface is not None:
+            surface.finish()
+        # Save PNG of drawing if appropriate
+        ext = os.path.splitext(path)[1].lower()
+        if ext == '.png':
+            surface.write_to_png(path)
+
+    if not implicitH: molecule.makeHydrogensExplicit()
+
+    return surface, cr, (left, top, width, height)
 
 ################################################################################
 
