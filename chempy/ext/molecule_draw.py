@@ -106,7 +106,7 @@ class MoleculeRenderError(Exception): pass
 
 ################################################################################
 
-def render(atoms, bonds, coordinates, symbols, cr):
+def render(atoms, bonds, coordinates, symbols, cr, offset=(0,0)):
     """
     Uses the Cairo graphics library to create a skeletal formula drawing of a
     molecule containing the list of `atoms` and dict of `bonds` to be drawn.
@@ -117,12 +117,21 @@ def render(atoms, bonds, coordinates, symbols, cr):
 
     import cairo
 
-    coordinates[:,1] *= -1
-    coordinates = coordinates * bondLength
-
     # Adjust coordinates such that the top left corner is (0,0) and determine
     # the bounding rect for the molecule
-    left, top, width, height = adjustCoordinates(coordinates, symbols)
+    # Find the atoms on each edge of the bounding rect
+    sorted = numpy.argsort(coordinates[:,0])
+    left = sorted[0]; right = sorted[-1]
+    sorted = numpy.argsort(coordinates[:,1])
+    top = sorted[0]; bottom = sorted[-1]
+    # Get rough estimate of bounding box size using atom coordinates
+    left = coordinates[left,0] + offset[0]
+    top = coordinates[top,1] + offset[1]
+    right = coordinates[right,0] + offset[0]
+    bottom = coordinates[bottom,1] + offset[1]
+    # Shift coordinates by offset value
+    coordinates[:,0] += offset[0]
+    coordinates[:,1] += offset[1]
     
     # Draw bonds
     for atom1 in bonds:
@@ -147,60 +156,23 @@ def render(atoms, bonds, coordinates, symbols, cr):
             heavyFirst = False
             cr.set_font_size(fontSizeNormal)
             x0 += cr.text_extents(symbols[0])[2] / 2.0
-        renderAtom(symbol, atom, coordinates, atoms, bonds, x0, y0, cr, heavyFirst)
+        atomBoundingRect = renderAtom(symbol, atom, coordinates, atoms, bonds, x0, y0, cr, heavyFirst)
+        # Update bounding rect to ensure atoms are included
+        if atomBoundingRect[0] < left:
+            left = atomBoundingRect[0]
+        if atomBoundingRect[1] < top:
+            top = atomBoundingRect[1]
+        if atomBoundingRect[2] > right:
+            right = atomBoundingRect[2]
+        if atomBoundingRect[3] > bottom:
+            bottom = atomBoundingRect[3]
+    
+    # Add a small amount of whitespace on all sides
+    padding = 2
+    left -= padding; top -= padding; right += padding; bottom += padding
 
     # Return a tuple containing the bounding rectangle for the drawing
-    return (left, top, width, height)
-
-################################################################################
-
-def adjustCoordinates(coordinates, symbols):
-    """
-    Adjust the array of `coordinates` for atoms in a molecule such that the
-    top left corner of the bounding rectangle is (0, 0). Returns the bounding
-    rectangle for the coordinates.
-    """
-
-    import cairo
-
-    # Find the atoms on each edge of the bounding rect
-    sorted = numpy.argsort(coordinates[:,0])
-    left = sorted[0]; right = sorted[-1]
-    sorted = numpy.argsort(coordinates[:,1])
-    top = sorted[0]; bottom = sorted[-1]
-
-    # Get rough estimate of bounding box size
-    # Also include a bit of padding
-    padding = 8
-    x = coordinates[left,0] - padding
-    y = coordinates[top,1] - padding
-    width = coordinates[right,0] - coordinates[left,0] + padding * 2
-    height = coordinates[bottom,1] - coordinates[top,1] + padding * 2
-
-    # Improve bounding box estimate by adding space for symbols on each edge of
-    # drawing; this uses a dummy Cairo surface and context
-    surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, int(width), int(height))
-    cr = cairo.Context(surface)
-    cr.set_font_size(fontSizeNormal)
-    if left != right:
-        x -= cr.text_extents(symbols[left])[2]
-        width += cr.text_extents(symbols[left])[2] + cr.text_extents(symbols[right])[2]
-    else:
-        x -= cr.text_extents(symbols[left])[2] / 4
-        width += cr.text_extents(symbols[left])[2]
-    if top != bottom:
-        y -= cr.text_extents(symbols[top])[3]
-        height += cr.text_extents(symbols[top])[3] + cr.text_extents(symbols[bottom])[3]
-    else:
-        y -= cr.text_extents(symbols[top])[3] / 4
-        height += cr.text_extents(symbols[top])[3]
-    
-    # Shift coordinates such that the upper left corner of the bounding box is (0,0)
-    coordinates[:,0] -= x
-    coordinates[:,1] -= y
-
-    # Return the bounding rectangle
-    return 0, 0, width, height
+    return (left, top, right-left, bottom-top)
 
 ################################################################################
 
@@ -329,6 +301,7 @@ def renderAtom(symbol, atom, coordinates0, atoms, bonds, x0, y0, cr, heavyFirst=
         cr.close_path()
         cr.set_source_rgba(1.0, 1.0, 1.0, 1.0)
         cr.fill()
+        boundingRect = [x1, y1, x2, y2]
 
         # Set color for text
         if heavyAtom == 'C':    cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
@@ -356,6 +329,7 @@ def renderAtom(symbol, atom, coordinates0, atoms, bonds, x0, y0, cr, heavyFirst=
             
     else:
         x = x0; y = y0; width = 0; height = 0
+        boundingRect = [x0 - 0.5, y0 - 0.5, x0 + 0.5, y0 + 0.5]
         heavyAtom = ''
 
     # Draw radical electrons and charges
@@ -469,6 +443,17 @@ def renderAtom(symbol, atom, coordinates0, atoms, bonds, x0, y0, cr, heavyFirst=
     # Move (xi, yi) to top left corner of space in which to draw radicals and charges
     xi -= width / 2.0; yi -= height / 2.0
 
+    # Update bounding rectangle if necessary
+    if width > 0 and height > 0:
+        if xi < boundingRect[0]:
+            boundingRect[0] = xi
+        if yi < boundingRect[1]:
+            boundingRect[1] = yi
+        if xi + width > boundingRect[2]:
+            boundingRect[2] = xi + width
+        if yi + height > boundingRect[3]:
+            boundingRect[3] = yi + height
+        
     if orientation[0] == 'b' or orientation[0] == 't':
         # Draw radical electrons first
         for i in range(atom.radicalElectrons):
@@ -507,6 +492,8 @@ def renderAtom(symbol, atom, coordinates0, atoms, bonds, x0, y0, cr, heavyFirst=
             cr.arc(xi + width/2, yi + 3 * i + 1, 1, 0, 2 * math.pi)
             cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
             cr.fill()
+
+    return boundingRect
 
 ################################################################################
 
@@ -1131,6 +1118,8 @@ def drawMolecule(molecule, path=None, surface=''):
 
     # Generate the coordinates to use to draw the molecule
     coordinates = generateCoordinates(molecule, atoms, bonds)
+    coordinates[:,1] *= -1
+    coordinates = coordinates * bondLength
 
     # Generate labels to use
     symbols = [atom.symbol for atom in atoms]
@@ -1164,12 +1153,11 @@ def drawMolecule(molecule, path=None, surface=''):
 
     # Render using Cairo
     left, top, width, height = render(atoms, bonds, coordinates, symbols, cr0)
-
+    
     # Create the real surface with the appropriate size
     surface = createNewSurface(type=type, path=path, width=width, height=height)
     cr = cairo.Context(surface)
-    cr.set_source_surface(surface0, 0, 0)
-    cr.paint()
+    left, top, width, height = render(atoms, bonds, coordinates, symbols, cr, offset=(-left,-top))
 
     if path is not None:
         # Finish Cairo drawing
@@ -1182,7 +1170,7 @@ def drawMolecule(molecule, path=None, surface=''):
 
     if not implicitH: molecule.makeHydrogensExplicit()
 
-    return surface, cr, (left, top, width, height)
+    return surface, cr, (0, 0, width, height)
 
 ################################################################################
 
