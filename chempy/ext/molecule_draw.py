@@ -1117,6 +1117,10 @@ def drawMolecule(chemGraph, path=None, context=None, surface=None):
     tuple (`left`, `top`, `width`, `height`).
     """
 
+    # This algorithm requires that the hydrogen atoms be implicit
+    implicitH = chemGraph.implicitHydrogens
+    chemGraph.makeHydrogensImplicit()
+
     atoms = chemGraph.atoms[:]
     bonds = chemGraph.bonds.copy()
 
@@ -1158,7 +1162,11 @@ def drawMolecule(chemGraph, path=None, context=None, surface=None):
             elif atoms[i].implicitHydrogens > 1: symbols[i] = symbols[i] + 'H%i' % (atoms[i].implicitHydrogens)
 
     # Render using Cairo
-    return render(atoms, bonds, coordinates, symbols, path, context, surface)
+    result = render(atoms, bonds, coordinates, symbols, path, surface)
+
+    if not implicitH: chemGraph.makeHydrogensExplicit()
+
+    return result
 
 ################################################################################
 
