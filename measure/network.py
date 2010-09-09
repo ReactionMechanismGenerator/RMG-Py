@@ -672,70 +672,105 @@ class Network:
             cr.move_to(x, y)
             cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
             cr.show_text(E0)
-#            # Add background for label
-#            label = well[0].label
-#            extents = cr.text_extents(label)
-#            x1 = x0 - extents[2] / 2.0 - 2.0; y1 = y0 + 4.0
-#            width1 = extents[2] + 4.0; height1 = extents[3] + 4.0
-#            if len(well) == 2:
-#                label = "+ %s" % (well[1].label)
-#                extents = cr.text_extents(label)
-#                x2 = x0 - extents[2] / 2.0 - 2.0; y2 = y0 + 4.0 + height1 + 4.0
-#                width2 = extents[2] + 4.0; height2 = extents[3] + 4.0
-#                x = min(x1, x2); y = min(y1, y2)
-#                width = max(width1, width2); height = height1 + height2
-#            else:
-#                x = x1; y = y1
-#                width = width1; height = height1
-#            cr.rectangle(x, y, width, height)
-#            cr.set_source_rgba(1.0, 1.0, 1.0, 0.75)
-#            cr.fill()
-#            # Add text for label
-#            label = well[0].label
-#            extents = cr.text_extents(label)
-#            x = x0 - extents[2] / 2.0; y = y0 - extents[1] + 6.0
-#            cr.move_to(x - extents[0], y)
-#            cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
-#            cr.show_text(label)
-#            if len(well) == 2:
-#                label = "+ %s" % (well[1].label)
-#                extents0 = extents
-#                extents = cr.text_extents(label)
-#                x = x0 - extents[2] / 2.0; y = y0 - extents[1] + 6.0 + extents0[3] + 4.0
-#                cr.move_to(x - extents[0], y)
-#                cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
-#                cr.show_text(label)
-            # Add molecular structure
-            dy = 0
-            for j, spec in enumerate(well):
-                if len(spec.molecule) > 0:
-                    left0, top0, width0, height0 = self.__drawMolecule(spec.molecule[0], ext, cr, x0, y0 + dy)
-                    dy += height0
-                    if j < len(well) - 1:
-                        extents = cr.text_extents('+')
-                        dy += extents[3]
-                        x = x0 - extents[0] - extents[2] / 2.0; y = y0 + dy + extents[3] / 2.0 + 1.0
-                        cr.move_to(x, y)
-                        cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
-                        cr.show_text('+')
-                        
+            # Add background for label and label itself
+            surface0, width0, height0 = self.__drawLabel(well, ext)
+            cr.save()
+            cr.rectangle(x0 - width0/2.0, y0 + 4, width0, height0)
+            cr.set_source_rgba(1.0, 1.0, 1.0, 0.75)
+            cr.fill()
+            cr.set_source_surface(surface0, x0 - width0/2.0, y0 + 4)
+            cr.paint()
+            cr.restore()
 
         # Finish Cairo drawing
         surface.finish()
+
+    def __drawText(self, text, ext, padding=0):
+        """
+        Create and return a temporary Cairo surface containing the string
+        `text` with an optional amount of `padding` on all sides. The type of
+        surface is dictated by the `ext` parameter.
+        """
+
+        from chempy.ext.molecule_draw import createNewSurface, fontSizeNormal
+        import cairo
+
+        surface0 = createNewSurface(type=ext[1:])
+        cr0 = cairo.Context(surface0)
+        cr0.set_font_size(fontSizeNormal)
+        extents = cr0.text_extents(text)
+        width = extents[2] + 2 * padding; height = extents[3] + 2 * padding
+
+        surface = createNewSurface(type=ext[1:], width=width, height=height)
+        cr = cairo.Context(surface)
+        cr.set_font_size(fontSizeNormal)
+        cr.move_to(padding - extents[0], padding - extents[1])
+        cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
+        cr.show_text(text)
         
-    def __drawMolecule(self, molecule, ext, cr, x0, y0):
-        from chempy.ext.molecule_draw import drawMolecule
-        surface0, cr0, boundingRect0 = drawMolecule(molecule, surface=ext[1:])
-        left0, top0, width0, height0 = boundingRect0
+        return surface, cr, [0, 0, width, height]
 
-        cr.save()
-        x1 = x0 - width0/2.0; y1 = y0 + 4.0
+    def __drawLabel(self, speciesList, ext, useLabels=False):
+        """
+        For a local minima on the potential energy surface composed of a list
+        of species `speciesList`, generate a Cairo surface containing the label
+        by which to mark the local minima. If molecular structure data is
+        available for all species, structures will be used; otherwise labels
+        will be used.
+        """
 
-        cr.rectangle(x1 + left0, y1 + top0, width0, height0)
-        cr.set_source_rgba(1.0, 1.0, 1.0, 0.5)
-        cr.fill()
+        from chempy.ext.molecule_draw import createNewSurface, drawMolecule
+        import cairo
+        
+        # Determine whether or not to use the molecular structures in the
+        # label
+        # All species must have structure data in order to use the structures
+        # Otherwise the labels are used
+        for spec in speciesList:
+            if spec.molecule is None:
+                useLabels = True
+                break
 
-        cr.set_source_surface(surface0, x1, y1)
-        cr.paint()
-        cr.restore()
-        return left0, top0, width0, height0
+        plusSurface, cr0, plusBoundingRect = self.__drawText('+', ext, padding=2)
+        plusWidth = plusBoundingRect[2]; plusHeight = plusBoundingRect[3]
+        
+        # Render
+        surfaces = []; boundingRects = []; width = 0.0; height = 0.0
+        # Draw the molecular structures or labels on temporary Cairo surfaces
+        for spec in speciesList:
+            if useLabels:
+                surface0, cr0, boundingRect0 = self.__drawText(spec.label, ext, padding=2)
+            else:
+                surface0, cr0, boundingRect0 = drawMolecule(spec.molecule[0], surface=ext[1:])
+            surfaces.append(surface0)
+            boundingRects.append(boundingRect0)
+            if width < boundingRect0[2]: width = boundingRect0[2]
+            height += boundingRect0[3]
+
+        # Sort the structures from widest to narrowest
+        widths = numpy.array([rect[2] for rect in boundingRects], numpy.float64)
+        indices = list(widths.argsort())
+        indices.reverse()
+        surfaces = [surfaces[i] for i in indices]
+        boundingRects = [boundingRects[i] for i in indices]
+
+        # Insert plus between each structure
+        for i in range(1, len(speciesList)):
+            surfaces.insert(len(speciesList)-i, plusSurface)
+            boundingRects.insert(len(speciesList)-i, [0,0,plusWidth,plusHeight])
+            height += plusHeight
+
+        # Merge the structures onto a single surface
+        surface = createNewSurface(type=ext[1:], width=width, height=height)
+        cr = cairo.Context(surface)
+        left = 0; top = 0
+        for i in range(len(surfaces)):
+            cr.save()
+            left = (width - boundingRects[i][2]) / 2
+            cr.set_source_surface(surfaces[i], left, top)
+            cr.paint()
+            cr.restore()
+            top += boundingRects[i][3]
+
+        return surface, width, height
+        
