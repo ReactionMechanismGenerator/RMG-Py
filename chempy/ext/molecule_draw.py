@@ -240,6 +240,8 @@ def renderAtom(symbol, atom, coordinates0, atoms, bonds, x0, y0, cr, heavyFirst=
     radical electrons and charges to be drawn adjacent to the rendered symbol.
     """
 
+    import cairo
+
     if symbol != '':
         heavyAtom = symbol[0]
 
@@ -299,8 +301,10 @@ def renderAtom(symbol, atom, coordinates0, atoms, bonds, x0, y0, cr, heavyFirst=
         cr.line_to(x1, y1 + r)
         cr.curve_to(x1, y1 + r/2, x1 + r/2, y1, x1 + r, y1)
         cr.close_path()
+        cr.set_operator(cairo.OPERATOR_CLEAR)
         cr.set_source_rgba(1.0, 1.0, 1.0, 1.0)
         cr.fill()
+        cr.set_operator(cairo.OPERATOR_OVER)
         boundingRect = [x1, y1, x2, y2]
 
         # Set color for text
