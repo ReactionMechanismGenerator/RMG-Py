@@ -131,6 +131,8 @@ cdef class StatesModel:
 
     cpdef numpy.ndarray getDensityOfStates(self, numpy.ndarray Elist)
 
+    cpdef numpy.ndarray getSumOfStates(self, numpy.ndarray Elist)
+
     cpdef numpy.ndarray getDensityOfStatesILT(self, numpy.ndarray Elist, int order=?)
 
     cpdef numpy.ndarray getPartitionFunctions(self, numpy.ndarray Tlist)

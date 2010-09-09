@@ -861,6 +861,20 @@ class StatesModel:
                 rho = mode.getDensityOfStates(Elist, rho)
         return rho * self.spinMultiplicity
 
+    def getSumOfStates(self, Elist):
+        """
+        Return the value of the sum of states at the specified energies `Elist`
+        in J/mol above the ground state. The sum of states is computed via
+        numerical integration of the density of states.
+        """
+        cython.declare(densStates=numpy.ndarray, sumStates=numpy.ndarray, i=cython.int, dE=cython.double)
+        densStates = self.getDensityOfStates(Elist)
+        sumStates = numpy.zeros_like(densStates)
+        dE = Elist[1] - Elist[0]
+        for i in range(len(densStates)):
+            sumStates[i] = numpy.sum(densStates[0:i]) * dE
+        return sumStates
+    
     def getPartitionFunctions(self, Tlist):
         return numpy.array([self.getPartitionFunction(T) for T in Tlist], numpy.float64)
 
