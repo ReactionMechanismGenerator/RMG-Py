@@ -56,6 +56,9 @@ def parseCommandLineArguments():
     parser.add_argument('file', metavar='FILE', type=str, nargs=1,
         help='a file containing information about the network')
     
+    parser.add_argument('-d', '--draw', metavar='IMGFILE', type=str, nargs=1,
+        help='draw potential energy surface and exit')
+
     # Options for controlling the amount of information printed to the console
     # By default a moderate level of information is printed; you can either
     # ask for less (quiet), more (verbose), or much more (debug)
@@ -149,25 +152,28 @@ if __name__ == '__main__':
     # NOT the current working directory
     outputDirectory = os.path.dirname(os.path.abspath(args.file[0]))
 
-    # Draw potential energy surface
-    logging.info('Drawing potential energy surface...')
-    network.drawPotentialEnergySurface(os.path.join(outputDirectory, 'PES.pdf'))
-    
+
     # Only proceed if the input network is valid
     if network is not None:
         
-        # Automatically choose a suitable set of energy grains if they were not
-        # explicitly specified in the input file
-        if len(Elist) == 2:
-            logging.info('Automatically determining energy grains...')
-            Tmax = max(Tlist)
-            grainSize, Ngrains = Elist
-            Elist = network.autoGenerateEnergyGrains(Tmax=Tmax, grainSize=grainSize, Ngrains=Ngrains)
-            logging.debug('Using %i energy grains from %g to %g kJ/mol in steps of %g kJ/mol' % (len(Elist), Elist[0] / 1000, Elist[-1] / 1000, (Elist[1] - Elist[0]) / 1000))
-            logging.debug('')
-        
-        # Calculate the rate coefficients
-        K = network.calculateRateCoefficients(Tlist, Plist, Elist, method)
+        # Draw potential energy surface
+        if args.draw:
+            logging.info('Drawing potential energy surface...')
+            network.drawPotentialEnergySurface(args.draw[0])
+
+        else:
+            # Automatically choose a suitable set of energy grains if they were not
+            # explicitly specified in the input file
+            if len(Elist) == 2:
+                logging.info('Automatically determining energy grains...')
+                Tmax = max(Tlist)
+                grainSize, Ngrains = Elist
+                Elist = network.autoGenerateEnergyGrains(Tmax=Tmax, grainSize=grainSize, Ngrains=Ngrains)
+                logging.debug('Using %i energy grains from %g to %g kJ/mol in steps of %g kJ/mol' % (len(Elist), Elist[0] / 1000, Elist[-1] / 1000, (Elist[1] - Elist[0]) / 1000))
+                logging.debug('')
+
+            # Calculate the rate coefficients
+            K = network.calculateRateCoefficients(Tlist, Plist, Elist, method)
         
     # Log end timestamp
     logging.info('')
