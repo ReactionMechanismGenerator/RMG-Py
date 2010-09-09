@@ -153,17 +153,19 @@ def applyRRKMTheory(transitionState, Elist, densStates):
     
     k = numpy.zeros_like((Elist))
     Ngrains = len(Elist)
+    dE = Elist[1] - Elist[0]
     
     # Calculate sum of states of transition state
     sumStates0 = transitionState.states.getSumOfStates(Elist)
     # Shift to common zero of energy
     r0 = int(round(transitionState.E0 / dE))
-    sumStates[n+Nisom,r0:] = sumStates0[:-r0+len(densStates0)]
+    sumStates = numpy.zeros_like(Elist)
+    sumStates[r0:] = sumStates0[:-r0+len(sumStates0)]
     
     # Generate k(E) using RRKM formula
     for r in range(len(Elist)):
         if densStates[r] > 0:
-            k[r] = sumStates[r] / constants.h / densStates[r]
+            k[r] = sumStates[r] / constants.h / densStates[r] / constants.Na
     
     return k
 

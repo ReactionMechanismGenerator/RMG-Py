@@ -178,9 +178,10 @@ def Arrhenius(A, n, Ea, T0=1.0):
     T0, units = processQuantity(T0)
     return ArrheniusModel(A=A, n=n, Ea=Ea, T0=T0)
 
-def TS(E0=None):
+def TS(E0=None, states=None, frequency=0.0):
     if E0 is not None: E0 = processQuantity(E0)[0]
-    return TransitionState(E0=E0)
+    frequency = processQuantity(frequency)[0]
+    return TransitionState(E0=E0, states=states, frequency=frequency)
 
 def collisionModel(type, parameters):
     parameters = [processQuantity(p)[0] for p in parameters] 
