@@ -537,7 +537,16 @@ class Network:
         E0 = [sum([spec.E0 for spec in well]) / 4184 for well in wells]
         E0.extend([rxn.transitionState.E0 / 4184 for rxn in self.pathReactions])
         y_E0 = (max(E0) - 0.0) * Eslope + padding_top
-        
+
+        ext = os.path.splitext(fstr)[1].lower()
+
+        # Draw labels for each well right away
+        # We need their size information to ensure that wells don't overlap
+        labels = []
+        for well in wells:
+            surfaces0, width0, height0, boundingRects0 = self.__drawLabel(well, ext)
+            labels.append([surfaces0, width0, height0, boundingRects0])
+
         # Determine naive position of each well (one per column)
         coordinates = numpy.zeros((len(wells), 2), numpy.float64)
         x = padding_left + wellWidth / 2.0
@@ -552,7 +561,9 @@ class Network:
         for i in range(Nleft-1, -1, -1):
             newX = float(coordinates[i,0])
             for j in range(i+1, Nleft):
-                if abs(coordinates[i,1] - coordinates[j,1]) < 72:
+                spacing = labels[i][2] if coordinates[i,1] < coordinates[j,1] else labels[j][2]
+                spacing += 24
+                if abs(coordinates[i,1] - coordinates[j,1]) < spacing:
                     newX = float(coordinates[j,0]) - (wellWidth + wellSpacing)
                     break
                 else:
@@ -587,7 +598,6 @@ class Network:
             Emult = 1.0 / 1000
 
         # Initialize Cairo surface and context
-        ext = os.path.splitext(fstr)[1].lower()
         surface, cr = self.__createNewSurfaceAndContext(ext, fstr, width, height)
 
         # Some global settings
@@ -673,14 +683,16 @@ class Network:
             cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
             cr.show_text(E0)
             # Add background for label and label itself
-            surface0, width0, height0 = self.__drawLabel(well, ext)
-            cr.save()
-            cr.rectangle(x0 - width0/2.0, y0 + 4, width0, height0)
-            cr.set_source_rgba(1.0, 1.0, 1.0, 0.75)
-            cr.fill()
-            cr.set_source_surface(surface0, x0 - width0/2.0, y0 + 4)
-            cr.paint()
-            cr.restore()
+            surfaces0, width0, height0, boundingRects0 = labels[i]
+            left = x0 - width0/2.0; top = y0 + 4
+            for j, surf in enumerate(surfaces0):
+                cr.save()
+                cr.rectangle(left + boundingRects0[j][0], top + boundingRects0[j][1], boundingRects0[j][2], boundingRects0[j][3])
+                cr.set_source_rgba(1.0, 1.0, 1.0, 0.75)
+                cr.fill()
+                cr.set_source_surface(surf, left + boundingRects0[j][0], top + boundingRects0[j][1])
+                cr.paint()
+                cr.restore()
 
         # Finish Cairo drawing
         surface.finish()
@@ -727,7 +739,7 @@ class Network:
         # All species must have structure data in order to use the structures
         # Otherwise the labels are used
         for spec in speciesList:
-            if spec.molecule is None:
+            if spec.molecule is None or len(spec.molecule) == 0:
                 useLabels = True
                 break
 
@@ -743,7 +755,7 @@ class Network:
             else:
                 surface0, cr0, boundingRect0 = drawMolecule(spec.molecule[0], surface=ext[1:])
             surfaces.append(surface0)
-            boundingRects.append(boundingRect0)
+            boundingRects.append(list(boundingRect0))
             if width < boundingRect0[2]: width = boundingRect0[2]
             height += boundingRect0[3]
 
@@ -760,17 +772,12 @@ class Network:
             boundingRects.insert(len(speciesList)-i, [0,0,plusWidth,plusHeight])
             height += plusHeight
 
-        # Merge the structures onto a single surface
-        surface = createNewSurface(type=ext[1:], width=width, height=height)
-        cr = cairo.Context(surface)
+        # Set left and top of each bounding rectangle
         left = 0; top = 0
         for i in range(len(surfaces)):
-            cr.save()
-            left = (width - boundingRects[i][2]) / 2
-            cr.set_source_surface(surfaces[i], left, top)
-            cr.paint()
-            cr.restore()
+            boundingRects[i][0] = (width - boundingRects[i][2]) / 2.0
+            boundingRects[i][1] = top
             top += boundingRects[i][3]
 
-        return surface, width, height
+        return surfaces, width, height, boundingRects
         
