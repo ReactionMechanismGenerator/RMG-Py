@@ -65,11 +65,13 @@ cdef class Reaction:
 
     cpdef generateReverseRateCoefficient(self, numpy.ndarray Tlist)
 
-    cpdef numpy.ndarray calculateTSTRateCoefficient(self, numpy.ndarray Tlist, TransitionState TS, str tunneling=?)
+    cpdef numpy.ndarray calculateTSTRateCoefficients(self, numpy.ndarray Tlist, str tunneling=?)
+
+    cpdef double calculateTSTRateCoefficient(self, double T, str tunneling=?)
     
-    cpdef numpy.ndarray calculateWignerTunnelingCorrection(self, numpy.ndarray Tlist, TransitionState TS)
+    cpdef numpy.ndarray calculateWignerTunnelingCorrection(self, double T)
     
-    cpdef numpy.ndarray calculateEckartTunnelingCorrection(self, numpy.ndarray Tlist)
+    cpdef numpy.ndarray calculateEckartTunnelingCorrection(self, double T)
 
     cpdef double __eckartIntegrand(self, double E_kT, double kT, double dV1, double alpha1, double alpha2)
 

@@ -302,11 +302,14 @@ class Reaction:
         kr.fitToData(Tlist, klist, kf.T0)
         return kr
 
-    def calculateTSTRateCoefficient(self, Tlist, TS, tunneling=''):
+    def calculateTSTRateCoefficients(self, Tlist, tunneling=''):
+        return numpy.array([self.calculateTSTRateCoefficient(T, tunneling) for T in Tlist], numpy.float64)
+
+    def calculateTSTRateCoefficient(self, T, tunneling=''):
         """
-        Evaluate the forward rate coefficient for the reaction
-        with corresponding transition state `TS` at the list of temperatures
-        `Tlist` in K using (canonical) transition state theory. The TST equation is
+        Evaluate the forward rate coefficient for the reaction with
+        corresponding transition state `TS` at temperature `T` in K using
+        (canonical) transition state theory. The TST equation is
 
         .. math:: k(T) = \\kappa(T) \\frac{k_\\mathrm{B} T}{h} \\frac{Q^\\ddagger(T)}{Q^\\mathrm{A}(T) Q^\\mathrm{B}(T)} \\exp \\left( -\\frac{E_0}{k_\\mathrm{B} T} \\right)
 
@@ -320,20 +323,20 @@ class Reaction:
         """
         cython.declare(E0=cython.double)
         # Determine barrier height
-        E0 = TS.E0 - sum([spec.E0 for spec in self.reactants])
+        E0 = self.transitionState.E0 - sum([spec.E0 for spec in self.reactants])
         # Determine TST rate constant at each temperature
-        Qreac = numpy.ones_like(Tlist)
-        for spec in self.reactants: Qreac *= spec.states.getPartitionFunction(Tlist) / (constants.R * Tlist / 1e5)
-        Qts = TS.states.getPartitionFunction(Tlist) / (constants.R * Tlist / 1e5)
-        k = (constants.kB * Tlist / constants.h * Qts / Qreac *	numpy.exp(-E0 / constants.R / Tlist))
+        Qreac = 1.0
+        for spec in self.reactants: Qreac *= spec.states.getPartitionFunction(T) / (constants.R * T / 1e5)
+        Qts = self.transitionState.states.getPartitionFunction(T) / (constants.R * T / 1e5)
+        k = (constants.kB * T / constants.h * Qts / Qreac *	numpy.exp(-E0 / constants.R / T))
         # Apply tunneling correction
         if tunneling.lower() == 'wigner':
-            k *= self.calculateWignerTunnelingCorrection(Tlist, TS)
+            k *= self.calculateWignerTunnelingCorrection(T)
         elif tunneling.lower() == 'eckart':
-            k *= self.calculateEckartTunnelingCorrection(Tlist)
+            k *= self.calculateEckartTunnelingCorrection(T)
         return k
     
-    def calculateWignerTunnelingCorrection(self, Tlist, TS):
+    def calculateWignerTunnelingCorrection(self, T):
         """
         Calculate and return the value of the Wigner tunneling correction for
         the reaction with corresponding transition state `TS` at the list of
@@ -348,10 +351,10 @@ class Reaction:
         state, not the reactants or products, but is also generally less 
         accurate than the Eckart correction.
         """
-        frequency = abs(TS.frequency)
-        return 1.0 + (constants.h * constants.c * 100.0 * abs(frequency) / constants.kB / Tlist)**2 / 24.0
+        frequency = abs(self.transitionState.frequency)
+        return 1.0 + (constants.h * constants.c * 100.0 * abs(frequency) / constants.kB / T)**2 / 24.0
     
-    def calculateEckartTunnelingCorrection(self, Tlist):
+    def calculateEckartTunnelingCorrection(self, T):
         """
         Calculate and return the value of the Eckart tunneling correction for
         the reaction with corresponding transition state `TS` at the list of
@@ -410,27 +413,26 @@ class Reaction:
         alpha2 = 2 * math.pi * dV2 / constants.Na / (constants.h * constants.c * 100.0 * frequency)
         
         # Integrate to get Eckart correction
-        kappa = numpy.zeros_like(Tlist)
-        for i in range(len(Tlist)):
+        kappa = 0.0
         
-            # First we need to determine the lower and upper bounds at which to
-            # truncate the integral
-            tol = 1e-3
-            E_kT = numpy.arange(0.0, 1000.01, 0.1)
-            f = numpy.zeros_like(E_kT)
-            for j in range(len(E_kT)):
-                f[j] = self.__eckartIntegrand(E_kT[j], constants.R * Tlist[i], dV1, alpha1, alpha2)
-            # Find the cutoff values of the integrand
-            fcrit = tol * f.max()
-            x = (f > fcrit).nonzero()
-            E_kTmin = E_kT[x[0][0]]
-            E_kTmax = E_kT[x[0][-1]]
-            
-            # Now that we know the bounds we can formally integrate
-            import scipy.integrate
-            integral = scipy.integrate.quad(self.__eckartIntegrand, E_kTmin, E_kTmax,
-                args=(constants.R * Tlist[i],dV1,alpha1,alpha2,))[0]
-            kappa[i] = integral * math.exp(dV1 / constants.R / Tlist[i])
+        # First we need to determine the lower and upper bounds at which to
+        # truncate the integral
+        tol = 1e-3
+        E_kT = numpy.arange(0.0, 1000.01, 0.1)
+        f = numpy.zeros_like(E_kT)
+        for j in range(len(E_kT)):
+            f[j] = self.__eckartIntegrand(E_kT[j], constants.R * T, dV1, alpha1, alpha2)
+        # Find the cutoff values of the integrand
+        fcrit = tol * f.max()
+        x = (f > fcrit).nonzero()
+        E_kTmin = E_kT[x[0][0]]
+        E_kTmax = E_kT[x[0][-1]]
+
+        # Now that we know the bounds we can formally integrate
+        import scipy.integrate
+        integral = scipy.integrate.quad(self.__eckartIntegrand, E_kTmin, E_kTmax,
+            args=(constants.R * T,dV1,alpha1,alpha2,))[0]
+        kappa = integral * math.exp(dV1 / constants.R / T)
         
         # Return the calculated Eckart correction
         return kappa
