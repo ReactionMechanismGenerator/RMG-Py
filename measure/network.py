@@ -475,7 +475,21 @@ class Network:
 
         return K
 
-    def drawPotentialEnergySurface(self, fstr, Eunits='kJ/mol'):
+    def __createNewSurfaceAndContext(self, ext, fstr='', width=800, height=600):
+        import cairo
+        if ext == '.svg':
+            surface = cairo.SVGSurface(fstr, width, height)
+        elif ext == '.pdf':
+            surface = cairo.PDFSurface(fstr, width, height)
+        elif ext == '.ps':
+            surface = cairo.PSSurface(fstr, width, height)
+        else:
+            logging.warning('Unknown format for target "%s"; not drawing potential energy surface.' % fstr)
+            return
+        cr = cairo.Context(surface)
+        return surface, cr
+
+    def drawPotentialEnergySurface(self, fstr, Eunits='kJ/mol', drawStructures=False):
         """
         Generates an SVG file containing a rendering of the current potential
         energy surface for this reaction network. The SVG file is saved to a
@@ -574,16 +588,7 @@ class Network:
 
         # Initialize Cairo surface and context
         ext = os.path.splitext(fstr)[1].lower()
-        if ext == '.svg':
-            surface = cairo.SVGSurface(fstr, width, height)
-        elif ext == '.pdf':
-            surface = cairo.PDFSurface(fstr, width, height)
-        elif ext == '.ps':
-            surface = cairo.PSSurface(fstr, width, height)
-        else:
-            logging.warning('Unknown format for target "%s"; not drawing potential energy surface.' % fstr)
-            return
-        cr = cairo.Context(surface)
+        surface, cr = self.__createNewSurfaceAndContext(ext, fstr, width, height)
 
         # Some global settings
         cr.select_font_face("sans")
@@ -667,40 +672,70 @@ class Network:
             cr.move_to(x, y)
             cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
             cr.show_text(E0)
-            # Add background for label
-            label = well[0].label
-            extents = cr.text_extents(label)
-            x1 = x0 - extents[2] / 2.0 - 2.0; y1 = y0 + 4.0
-            width1 = extents[2] + 4.0; height1 = extents[3] + 4.0
-            if len(well) == 2:
-                label = "+ %s" % (well[1].label)
-                extents = cr.text_extents(label)
-                x2 = x0 - extents[2] / 2.0 - 2.0; y2 = y0 + 4.0 + height1 + 4.0
-                width2 = extents[2] + 4.0; height2 = extents[3] + 4.0
-                x = min(x1, x2); y = min(y1, y2)
-                width = max(width1, width2); height = height1 + height2
-            else:
-                x = x1; y = y1
-                width = width1; height = height1
-            cr.rectangle(x, y, width, height)
-            cr.set_source_rgba(1.0, 1.0, 1.0, 0.75)
-            cr.fill()
-            # Add text for label
-            label = well[0].label
-            extents = cr.text_extents(label)
-            x = x0 - extents[2] / 2.0; y = y0 - extents[1] + 6.0
-            cr.move_to(x - extents[0], y)
-            cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
-            cr.show_text(label)
-            if len(well) == 2:
-                label = "+ %s" % (well[1].label)
-                extents0 = extents
-                extents = cr.text_extents(label)
-                x = x0 - extents[2] / 2.0; y = y0 - extents[1] + 6.0 + extents0[3] + 4.0
-                cr.move_to(x - extents[0], y)
-                cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
-                cr.show_text(label)
-        
+#            # Add background for label
+#            label = well[0].label
+#            extents = cr.text_extents(label)
+#            x1 = x0 - extents[2] / 2.0 - 2.0; y1 = y0 + 4.0
+#            width1 = extents[2] + 4.0; height1 = extents[3] + 4.0
+#            if len(well) == 2:
+#                label = "+ %s" % (well[1].label)
+#                extents = cr.text_extents(label)
+#                x2 = x0 - extents[2] / 2.0 - 2.0; y2 = y0 + 4.0 + height1 + 4.0
+#                width2 = extents[2] + 4.0; height2 = extents[3] + 4.0
+#                x = min(x1, x2); y = min(y1, y2)
+#                width = max(width1, width2); height = height1 + height2
+#            else:
+#                x = x1; y = y1
+#                width = width1; height = height1
+#            cr.rectangle(x, y, width, height)
+#            cr.set_source_rgba(1.0, 1.0, 1.0, 0.75)
+#            cr.fill()
+#            # Add text for label
+#            label = well[0].label
+#            extents = cr.text_extents(label)
+#            x = x0 - extents[2] / 2.0; y = y0 - extents[1] + 6.0
+#            cr.move_to(x - extents[0], y)
+#            cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
+#            cr.show_text(label)
+#            if len(well) == 2:
+#                label = "+ %s" % (well[1].label)
+#                extents0 = extents
+#                extents = cr.text_extents(label)
+#                x = x0 - extents[2] / 2.0; y = y0 - extents[1] + 6.0 + extents0[3] + 4.0
+#                cr.move_to(x - extents[0], y)
+#                cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
+#                cr.show_text(label)
+            # Add molecular structure
+            dy = 0
+            for j, spec in enumerate(well):
+                if len(spec.molecule) > 0:
+                    left0, top0, width0, height0 = self.__drawMolecule(spec.molecule[0], ext, cr, x0, y0 + dy)
+                    dy += height0
+                    if j < len(well) - 1:
+                        extents = cr.text_extents('+')
+                        dy += extents[3]
+                        x = x0 - extents[0] - extents[2] / 2.0; y = y0 + dy + extents[3] / 2.0 + 1.0
+                        cr.move_to(x, y)
+                        cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
+                        cr.show_text('+')
+                        
+
         # Finish Cairo drawing
         surface.finish()
         
+    def __drawMolecule(self, molecule, ext, cr, x0, y0):
+        from chempy.ext.molecule_draw import drawMolecule
+        surface0, cr0, boundingRect0 = drawMolecule(molecule, surface=ext[1:])
+        left0, top0, width0, height0 = boundingRect0
+
+        cr.save()
+        x1 = x0 - width0/2.0; y1 = y0 + 4.0
+
+        cr.rectangle(x1 + left0, y1 + top0, width0, height0)
+        cr.set_source_rgba(1.0, 1.0, 1.0, 0.5)
+        cr.fill()
+
+        cr.set_source_surface(surface0, x1, y1)
+        cr.paint()
+        cr.restore()
+        return left0, top0, width0, height0
