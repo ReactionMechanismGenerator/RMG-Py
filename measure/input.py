@@ -36,6 +36,7 @@ quantities.UnitQuantity('kilojoule', 1000.0*quantities.J, symbol='kJ')
 from chempy.species import Species, TransitionState
 from chempy.reaction import Reaction
 from chempy.species import LennardJones as LennardJonesModel
+from chempy.molecule import Molecule
 from chempy.states import *
 from chempy.kinetics import ArrheniusModel
 from chempy.thermo import *
@@ -76,11 +77,15 @@ def processQuantity(quantity):
 
 ################################################################################
 
-def species(label='', E0=None, states=None, thermo=None, lennardJones=None, molecularWeight=0.0):
+def species(label='', E0=None, states=None, thermo=None, lennardJones=None, molecularWeight=0.0, SMILES='', InChI=''):
     global speciesDict
     if E0 is not None: E0 = processQuantity(E0)[0]
     else: E0 = 0.0
     spec = Species(label=label, states=states, thermo=thermo, E0=E0, lennardJones=lennardJones)
+    if InChI != '':
+        spec.molecule = [Molecule(InChI=InChI)]
+    elif SMILES != '':
+        spec.molecule = [Molecule(SMILES=SMILES)]
     spec.molecularWeight = processQuantity(molecularWeight)[0]
     speciesDict[label] = spec
     logging.debug('Found species "%s"' % spec)
@@ -402,6 +407,8 @@ def writeInput(path, network, Tlist, Plist, Elist, method):
     for spec in speciesList:
         f.write('species(\n')
         f.write('    label="%s",\n' % (spec.label))
+        if len(spec.molecule) > 0:
+            f.write('    SMILES="%s",\n' % (spec.molecule[0].toSMILES()))
         f.write('    E0=(%g,"kJ/mol"),\n' % (spec.E0 / 1000))
         if spec.states is not None:
             writeStatesData(f, spec.states, prefix='    ')
