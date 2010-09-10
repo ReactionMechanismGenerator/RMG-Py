@@ -1063,6 +1063,7 @@ class CoreEdgeReactionModel:
         """
 
         from measure.collision import SingleExponentialDownModel
+        from measure.reaction import fitInterpolationModel
         import measure.settings
         import measure.input
         
@@ -1191,23 +1192,7 @@ class CoreEdgeReactionModel:
                                         self.addReactionToEdge(netReaction)
 
                                 # Set/update the net reaction kinetics using interpolation model
-                                if model[0].lower() == 'chebyshev':
-                                    modelType, degreeT, degreeP = model
-                                    chebyshev = ChebyshevModel()
-                                    chebyshev.fitToData(Tlist, Plist, K[:,:,i,j], degreeT, degreeP, Tmin, Tmax, Pmin, Pmax)
-                                    netReaction.kinetics = chebyshev
-                                elif model.lower() == 'pdeparrhenius':
-                                    pDepArrhenius = PDepArrheniusModel()
-                                    pDepArrhenius.fitToData(Tlist, Plist, K[:,:,i,j], T0=1.0)
-                                    netReaction.kinetics = pDepArrhenius
-                                else:
-                                    pass
-
-                                # Set temperature and pressure ranges explicitly
-                                netReaction.kinetics.Tmin = Tmin
-                                netReaction.kinetics.Tmax = Tmax
-                                netReaction.kinetics.Pmin = Pmin
-                                netReaction.kinetics.Pmax = Pmax
+                                netReaction.kinetics = fitInterpolationModel(netReaction, Tlist, Plist, K[:,:,i,j], model, Tmin, Tmax, Pmin, Pmax)
 
                                 # Update cantera if this is a core reaction
                                 if netReaction in self.core.reactions:
