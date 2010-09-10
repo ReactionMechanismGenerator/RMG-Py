@@ -170,7 +170,6 @@ if __name__ == '__main__':
             # explicitly specified in the input file
             if len(Elist) == 2:
                 logging.info('Automatically determining energy grains...')
-                Tmax = max(Tlist)
                 grainSize, Ngrains = Elist
                 Elist = network.autoGenerateEnergyGrains(Tmax=Tmax, grainSize=grainSize, Ngrains=Ngrains)
                 logging.debug('Using %i energy grains from %g to %g kJ/mol in steps of %g kJ/mol' % (len(Elist), Elist[0] / 1000, Elist[-1] / 1000, (Elist[1] - Elist[0]) / 1000))
@@ -211,6 +210,8 @@ if __name__ == '__main__':
                     model, Tmin, Tmax, Pmin, Pmax, errorCheck=True)
 
         # Save results to file
+        from measure.output import writeOutput
+        writeOutput(os.path.join(outputDirectory, 'output.py'), network, Tlist, Plist, Elist, method, model)
 
     # Log end timestamp
     logging.info('')
