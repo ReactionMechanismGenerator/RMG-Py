@@ -53,14 +53,17 @@ network = None
 speciesDict = {}
 
 # The temperatures and pressures to consider
-Tlist = None
-Plist = None
+Tlist = None; Tparams = None
+Plist = None; Pparams = None
 
 # The energy grains to use
 Elist = None
 
 # The method to use
 method = ''
+
+# The interpolation model to use
+model = ['']
 
 ################################################################################
 
@@ -196,28 +199,32 @@ def bathGas(label):
     network.bathGas = speciesDict[label]
 
 def temperatures(Tlist0=None, Tmin=None, Tmax=None, count=None):
-    global Tlist
-    if Tlist0 is not None: 
-        Tlist0 = processQuantity(Tlist0)[0]
-        Tlist = Tlist0
+    global Tlist, Tparams
+    if Tlist0 is not None:
+        # We've been provided a list of specific temperatures to use
+        Tlist = processQuantity(Tlist0)[0]
+        Tparams = None
     elif Tmin is not None and Tmax is not None and count is not None:
-        # Distribute temperatures evenly on a T^-1 domain
-        Tmin = processQuantity(Tmin)[0]
-        Tmax = processQuantity(Tmax)[0]
-        Tlist = 1.0/numpy.linspace(1.0/Tmax, 1.0/Tmin, count)
+        # We've been provided a temperature range and number of temperatures to use
+        # We defer choosing the actual temperatures because they depend on the
+        # choice of interpolation model
+        Tlist = None
+        Tparams = [processQuantity(Tmin)[0], processQuantity(Tmax)[0], count]
     else:
         raise SyntaxError('Must specify either a list of temperatures or Tmin, Tmax, and count.')
 
 def pressures(Plist0=None, Pmin=None, Pmax=None, count=None):
-    global Plist
-    if Plist0 is not None: 
-        Plist0 = processQuantity(Plist0)[0]
-        Plist = Plist0
+    global Tlist, Pparams
+    if Plist0 is not None:
+        # We've been provided a list of specific pressures to use
+        Plist = processQuantity(Plist0)[0]
+        Pparams = None
     elif Pmin is not None and Pmax is not None and count is not None:
-        # Distribute pressures evenly on a log domain
-        Pmin = processQuantity(Pmin)[0]
-        Pmax = processQuantity(Pmax)[0]
-        Plist = 10.0 ** numpy.linspace(math.log10(Pmin), math.log10(Pmax), count)
+        # We've been provided a pressures range and number of pressures to use
+        # We defer choosing the actual pressures because they depend on the
+        # choice of interpolation model
+        Plist = None
+        Pparams = [processQuantity(Pmin)[0], processQuantity(Pmax)[0], count]
     else:
         raise SyntaxError('Must specify either a list of pressures or Pmin, Pmax, and count.')
 
@@ -239,6 +246,11 @@ def energies(Emin=None, Emax=None, dE=None, count=None):
 def _method(name):
     global method
     method = name
+
+def interpolationModel(name, *args):
+    global model
+    model = [name]
+    model.extend(list(args))
 
 ################################################################################
 
@@ -262,7 +274,7 @@ def generateThermoFromStates(species):
 
 def readInput(path):
 
-    global speciesDict, network, Tlist, Plist, Elist
+    global speciesDict, network, Tlist, Tparams, Plist, Pparams, Elist, method, model
     
     try:
         f = open(path)
@@ -295,6 +307,7 @@ def readInput(path):
         'pressures': pressures,
         'energies': energies,
         'method': _method,
+        'interpolationModel': interpolationModel,
         'ThermoGAModel': thermoGAModel,
         'WilhoitModel': thermoWilhoitModel,
         'NASAModel': thermoNASAModel,
@@ -312,7 +325,39 @@ def readInput(path):
     
     # If loading of the input file was unsuccessful for any reason,
     # then return None for everything so the program can terminate
-    if network is None: return None, None, None, None
+    if network is None: return None, None, None, None, None, None, None, None, None, None
+    
+    # Determine temperature grid if not yet known
+    if Tparams is not None and Tlist is None:
+        Tmin, Tmax, Tcount = Tparams
+        if model[0].lower() == 'chebyshev':
+            # Distribute temperatures on a Gauss-Chebyshev grid
+            Tlist = numpy.zeros(Tcount, numpy.float64)
+            for i in range(Tcount):
+                T = -math.cos((2*i+1) * math.pi / (2*Tcount))
+                T = 2.0 / ((1.0/Tmax - 1.0/Tmin) * T + 1.0/Tmax + 1.0/Tmin)
+                Tlist[i] = T
+        else:
+            # Distribute temperatures evenly on a T^-1 domain
+            Tlist = 1.0/numpy.linspace(1.0/Tmax, 1.0/Tmin, Tcount)
+    else:
+        Tmin = min(Tlist); Tmax = max(Tlist); Tcount = len(Tlist)
+    
+    # Determine pressure grid if not yet known
+    if Pparams is not None and Plist is None:
+        Pmin, Pmax, Pcount = Pparams
+        if model[0].lower() == 'chebyshev':
+            # Distribute pressures on a Gauss-Chebyshev grid
+            Plist = numpy.zeros(Pcount, numpy.float64)
+            for i in range(Pcount):
+                P = -math.cos((2*i+1) * math.pi / (2*Pcount))
+                P = 10**(0.5 * ((math.log10(Pmax) - math.log10(Pmin)) * P + math.log10(Pmax) + math.log10(Pmin)))
+                Plist[i] = P
+        else:
+            # Distribute pressures evenly on a log domain
+            Plist = 10.0 ** numpy.linspace(math.log10(Pmin), math.log10(Pmax), Pcount)
+    else:
+        Pmin = min(Plist); Pmax = max(Plist); Pcount = len(Plist)
     
     # Figure out which configurations are isomers, reactant channels, and product channels
     for rxn in network.pathReactions:
@@ -364,7 +409,7 @@ def readInput(path):
         logging.info('Could not find any unimolecular isomers based on this network, so there is nothing to do.')
         return None, None, None, None
       
-    return network, Tlist, Plist, Elist, method
+    return network, Tlist, Plist, Elist, method, model, Tmin, Tmax, Pmin, Pmax
 
 ################################################################################
 

@@ -43,6 +43,7 @@ import argparse
 import logging
 import time
 import os.path
+import numpy
 
 ################################################################################
 
@@ -146,7 +147,10 @@ if __name__ == '__main__':
     
     # Load input file
     from measure.input import readInput
-    network, Tlist, Plist, Elist, method = readInput(args.file[0])
+    network, Tlist, Plist, Elist, method, model, Tmin, Tmax, Pmin, Pmax = readInput(args.file[0])
+    Nisom = len(network.isomers)
+    Nreac = len(network.reactants)
+    Nprod = len(network.products)
 
     # We will save our output files to the directory containing the input file,
     # NOT the current working directory
@@ -174,7 +178,40 @@ if __name__ == '__main__':
 
             # Calculate the rate coefficients
             K = network.calculateRateCoefficients(Tlist, Plist, Elist, method)
-        
+
+        # Fit interpolation model
+        from chempy.reaction import Reaction
+        from measure.reaction import fitInterpolationModel
+        if model[0] != '':
+            logging.info('Fitting %s interpolation models...' % model[0])
+        configurations = []
+        configurations.extend([[isom] for isom in network.isomers])
+        configurations.extend([reactants for reactants in network.reactants])
+        configurations.extend([products for products in network.products])
+        for i in range(Nisom+Nreac+Nprod):
+            for j in range(min(i, Nisom+Nreac)):
+
+                # Check that we have nonzero k(T,P) values
+                if (numpy.any(K[:,:,i,j]) and not numpy.all(K[:,:,i,j])):
+                    raise NetworkError('Zero rate coefficient encountered while updating network %s.' % network)
+                
+                # Make a new net reaction
+                forward = True
+                netReaction = Reaction(
+                    reactants=configurations[j],
+                    products=configurations[i],
+                    kinetics=None,
+                    reversible=(i<Nisom+Nreac),
+                )
+                network.netReactions.append(netReaction)
+
+                # Set/update the net reaction kinetics using interpolation model
+                netReaction.kinetics = fitInterpolationModel(netReaction, Tlist, Plist,
+                    K[:,:,i,j] if forward else K[:,:,j,i],
+                    model, Tmin, Tmax, Pmin, Pmax, errorCheck=True)
+
+        # Save results to file
+
     # Log end timestamp
     logging.info('')
     logging.info('MEASURE execution terminated at ' + time.asctime())

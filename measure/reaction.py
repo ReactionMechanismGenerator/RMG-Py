@@ -229,4 +229,47 @@ def applyInverseLaplaceTransformMethod(kinetics, E0, Elist, densStates, T=None):
         raise ReactionError('Unable to use inverse Laplace transform method for non-Arrhenius kinetics or for n < 0.')
     
     return k
+
+################################################################################
+
+def fitInterpolationModel(reaction, Tlist, Plist, K, model, Tmin, Tmax, Pmin, Pmax, errorCheck=False):
+    """
+    For a set of phenomenological rate coefficients `K` computed at a grid of
+    temperatures `Tlist` in K and pressures `Plist` in Pa, fit a :math:`k(T,P)`
+    interpolation `model`.
+    """
+
+    # Set/update the net reaction kinetics using interpolation model
+    if model[0].lower() == 'chebyshev':
+        modelType, degreeT, degreeP = model
+        chebyshev = ChebyshevModel()
+        chebyshev.fitToData(Tlist, Plist, K, degreeT, degreeP, Tmin, Tmax, Pmin, Pmax)
+        kinetics = chebyshev
+    elif model[0].lower() == 'pdeparrhenius':
+        pDepArrhenius = PDepArrheniusModel()
+        pDepArrhenius.fitToData(Tlist, Plist, K, T0=298.0)
+        kinetics = pDepArrhenius
+    else:
+        return None
+
+    # Set temperature and pressure ranges explicitly (as they may be different
+    # from min(Tlist), max(Tlist), min(Plist), max(Plist))
+    kinetics.Tmin = Tmin
+    kinetics.Tmax = Tmax
+    kinetics.Pmin = Pmin
+    kinetics.Pmax = Pmax
+
+    # Compute log RMS error for fit
+    if errorCheck:
+        logRMS = 0.0
+        # Check that fit is within an order of magnitude at all points
+        for t, T in enumerate(Tlist):
+            for p, P in enumerate(Plist):
+                logkmodel = math.log(kinetics.getRateCoefficient(T, P))
+                logkdata = math.log(K[t,p])
+                logRMS += (logkmodel - logkdata) * (logkmodel - logkdata)
+        logRMS = math.sqrt(logRMS / len(Tlist) / len(Plist))
+        if logRMS > 0.05:
+            logging.warning('RMS error for k(T,P) fit = %g for reaction %s.' % (logRMS, reaction))
     
+    return kinetics
