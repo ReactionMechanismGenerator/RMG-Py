@@ -1065,7 +1065,7 @@ class CoreEdgeReactionModel:
         from measure.collision import SingleExponentialDownModel
         from measure.reaction import fitInterpolationModel
         import measure.settings
-        import measure.input
+        import measure.output
         
         count = sum([1 for network in self.unirxnNetworks if not network.valid and len(network.explored) > 0])
         logging.info('Updating %i modified unimolecular reaction networks...' % count)
@@ -1141,8 +1141,8 @@ class CoreEdgeReactionModel:
                 network.collisionModel = SingleExponentialDownModel(alpha=4.86 * 4184)
                 
                 # Save input file
-                measure.input.writeInput(os.path.join(settings.outputDirectory, 'pdep', 'network%i_%i.py' % (network.index, len(network.isomers))),
-                    network, Tlist, Plist, (grainSize, numGrains), method)
+                measure.output.writeInput(os.path.join(settings.outputDirectory, 'pdep', 'network%i_%i.py' % (network.index, len(network.isomers))),
+                    network, Tlist, Plist, (grainSize, numGrains), method, model)
 
                 # Automatically choose a suitable set of energy grains if they were not
                 # explicitly specified in the input file
