@@ -341,8 +341,12 @@ class ChebyshevModel(KineticsModel):
     def __init__(self, Tmin=0.0, Tmax=0.0, Pmin=0.0, Pmax=0.0, coeffs=None):
         KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax)
         self.coeffs = coeffs
-        self.degreeT = 0
-        self.degreeP = 0
+        if coeffs is not None:
+            self.degreeT = coeffs.shape[0]
+            self.degreeP = coeffs.shape[1]
+        else:
+            self.degreeT = 0
+            self.degreeP = 0
 
     def __chebyshev(self, n, x):
         if n == 0:
