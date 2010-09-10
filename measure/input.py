@@ -272,6 +272,32 @@ def generateThermoFromStates(species):
     S298 = species.states.getEntropy(298)
     species.thermo = ThermoGAModel(Tdata=Tdata, Cpdata=Cpdata, H298=H298, S298=S298)
 
+def getTemperaturesForModel(model, Tmin, Tmax, Tcount):
+    if model[0].lower() == 'chebyshev':
+        # Distribute temperatures on a Gauss-Chebyshev grid
+        Tlist = numpy.zeros(Tcount, numpy.float64)
+        for i in range(Tcount):
+            T = -math.cos((2*i+1) * math.pi / (2*Tcount))
+            T = 2.0 / ((1.0/Tmax - 1.0/Tmin) * T + 1.0/Tmax + 1.0/Tmin)
+            Tlist[i] = T
+    else:
+        # Distribute temperatures evenly on a T^-1 domain
+        Tlist = 1.0/numpy.linspace(1.0/Tmax, 1.0/Tmin, Tcount)
+    return Tlist
+
+def getPressuresForModel(model, Pmin, Pmax, Pcount):
+    if model[0].lower() == 'chebyshev':
+        # Distribute pressures on a Gauss-Chebyshev grid
+        Plist = numpy.zeros(Pcount, numpy.float64)
+        for i in range(Pcount):
+            P = -math.cos((2*i+1) * math.pi / (2*Pcount))
+            P = 10**(0.5 * ((math.log10(Pmax) - math.log10(Pmin)) * P + math.log10(Pmax) + math.log10(Pmin)))
+            Plist[i] = P
+    else:
+        # Distribute pressures evenly on a log domain
+        Plist = 10.0 ** numpy.linspace(math.log10(Pmin), math.log10(Pmax), Pcount)
+    return Plist
+
 def readInput(path):
 
     global speciesDict, network, Tlist, Tparams, Plist, Pparams, Elist, method, model
@@ -330,32 +356,14 @@ def readInput(path):
     # Determine temperature grid if not yet known
     if Tparams is not None and Tlist is None:
         Tmin, Tmax, Tcount = Tparams
-        if model[0].lower() == 'chebyshev':
-            # Distribute temperatures on a Gauss-Chebyshev grid
-            Tlist = numpy.zeros(Tcount, numpy.float64)
-            for i in range(Tcount):
-                T = -math.cos((2*i+1) * math.pi / (2*Tcount))
-                T = 2.0 / ((1.0/Tmax - 1.0/Tmin) * T + 1.0/Tmax + 1.0/Tmin)
-                Tlist[i] = T
-        else:
-            # Distribute temperatures evenly on a T^-1 domain
-            Tlist = 1.0/numpy.linspace(1.0/Tmax, 1.0/Tmin, Tcount)
+        Tlist = getTemperaturesForModel(model, Tmin, Tmax, Tcount)
     else:
         Tmin = min(Tlist); Tmax = max(Tlist); Tcount = len(Tlist)
     
     # Determine pressure grid if not yet known
     if Pparams is not None and Plist is None:
         Pmin, Pmax, Pcount = Pparams
-        if model[0].lower() == 'chebyshev':
-            # Distribute pressures on a Gauss-Chebyshev grid
-            Plist = numpy.zeros(Pcount, numpy.float64)
-            for i in range(Pcount):
-                P = -math.cos((2*i+1) * math.pi / (2*Pcount))
-                P = 10**(0.5 * ((math.log10(Pmax) - math.log10(Pmin)) * P + math.log10(Pmax) + math.log10(Pmin)))
-                Plist[i] = P
-        else:
-            # Distribute pressures evenly on a log domain
-            Plist = 10.0 ** numpy.linspace(math.log10(Pmin), math.log10(Pmax), Pcount)
+        Plist = getPressuresForModel(model, Pmin, Pmax, Pcount)
     else:
         Pmin = min(Plist); Pmax = max(Plist); Pcount = len(Plist)
     
