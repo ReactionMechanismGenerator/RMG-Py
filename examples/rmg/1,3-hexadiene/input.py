@@ -100,7 +100,7 @@ pressureDependence(
     minimumNumberOfGrains=200,
     temperatures=(300,'K',2000,'K',8),
     pressures=(0.01,'bar',100,'bar',5),
-    interpolation=('Chebyshev', 4, 4),
+    interpolation=('Chebyshev', 6, 4),
 )
 
 options(
