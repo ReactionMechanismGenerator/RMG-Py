@@ -133,8 +133,24 @@ class MoleculeCheck(unittest.TestCase):
         6 C 0 {5,S}
         """)
         molecule2 = Molecule().fromSMILES('C=CC=C[CH]C')
-        molecule1.toAdjacencyList()
-        molecule2.toAdjacencyList()
+        
+        molecule1.makeHydrogensExplicit()
+        molecule2.makeHydrogensExplicit()
+        self.assertTrue(molecule1.isIsomorphic(molecule2))
+        self.assertTrue(molecule2.isIsomorphic(molecule1))
+        
+        molecule1.makeHydrogensImplicit()
+        molecule2.makeHydrogensImplicit()
+        self.assertTrue(molecule1.isIsomorphic(molecule2))
+        self.assertTrue(molecule2.isIsomorphic(molecule1))
+        
+        molecule1.makeHydrogensExplicit()
+        molecule2.makeHydrogensImplicit()
+        self.assertTrue(molecule1.isIsomorphic(molecule2))
+        self.assertTrue(molecule2.isIsomorphic(molecule1))
+        
+        molecule1.makeHydrogensImplicit()
+        molecule2.makeHydrogensExplicit()
         self.assertTrue(molecule1.isIsomorphic(molecule2))
         self.assertTrue(molecule2.isIsomorphic(molecule1))
 

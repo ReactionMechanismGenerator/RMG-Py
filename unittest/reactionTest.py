@@ -104,11 +104,11 @@ class ReactionTest(unittest.TestCase):
         )
         TS = TransitionState(states=states, E0=-207188826.467, frequency=-309.3437)
         
-        reaction = Reaction(reactants=[hydrogen, ethylene], products=[ethyl])
+        reaction = Reaction(reactants=[hydrogen, ethylene], products=[ethyl], transitionState=TS)
     
         import numpy
         Tlist = 1000.0/numpy.arange(0.4, 3.35, 0.05)
-        klist = reaction.calculateTSTRateCoefficient(Tlist, TS, tunneling='')
+        klist = reaction.calculateTSTRateCoefficients(Tlist, tunneling='')
         arrhenius = ArrheniusModel().fitToData(Tlist, klist)
         klist2 = arrhenius.getRateCoefficients(Tlist)
 
