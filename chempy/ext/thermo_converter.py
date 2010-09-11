@@ -356,8 +356,8 @@ def Wilhoit2NASA_TintOpt(wilhoit, tmin, tmax, weighting, contCons):
     tint = optimize.fminbound(TintOpt_objFun, tmin, tmax, args=(wilhoit, tmin, tmax, weighting, contCons))
     #note that we have not used any guess when using this minimization routine
     #2. determine the bi parameters based on the optimized Tint (alternatively, maybe we could have TintOpt_objFun also return these parameters, along with the objective function, which would avoid an extra calculation)
-    (nasa1, nasa2) = Wilhoit2NASA(wilhoit, tmin, tmax, tint[0] ,weighting, contCons)
-    return nasa1, nasa2, tint[0]
+    (nasa1, nasa2) = Wilhoit2NASA(wilhoit, tmin, tmax, tint, weighting, contCons)
+    return nasa1, nasa2, tint
 
 def TintOpt_objFun(tint, wilhoit, tmin, tmax, weighting, contCons):
     #input: Tint (intermediate temperature, in kiloKelvin); Wilhoit parameters, Cp0/R, CpInf/R, and B (kK), a0, a1, a2, a3, Tmin (minimum temperature (in kiloKelvin), Tmax (maximum temperature (in kiloKelvin)
@@ -714,8 +714,8 @@ def Cp2NASA_TintOpt(CpObject, tmin, tmax, weighting, contCons):
     tint = optimize.fminbound(Cp_TintOpt_objFun, tmin, tmax, args=(CpObject, tmin, tmax, weighting, contCons))
     #note that we have not used any guess when using this minimization routine
     #2. determine the bi parameters based on the optimized Tint (alternatively, maybe we could have TintOpt_objFun also return these parameters, along with the objective function, which would avoid an extra calculation)
-    (nasa1, nasa2) = Cp2NASA(CpObject, tmin, tmax, tint[0] ,weighting, contCons)
-    return nasa1, nasa2, tint[0]
+    (nasa1, nasa2) = Cp2NASA(CpObject, tmin, tmax, tint, weighting, contCons)
+    return nasa1, nasa2, tint
 
 def Cp_TintOpt_objFun(tint, CpObject, tmin, tmax, weighting, contCons):
     #input: Tint (intermediate temperature, in kiloKelvin); CpObject: an object with method "getHeatCapacity(self,T) that will return Cp in J/mol-K with argument T in K, Tmin (minimum temperature (in kiloKelvin), Tmax (maximum temperature (in kiloKelvin)
