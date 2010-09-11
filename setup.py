@@ -31,6 +31,7 @@ from distutils.core import setup
 from distutils.extension import Extension
 from Cython.Distutils import build_ext
 import Cython.Compiler.Options
+import numpy
 
 # Create annotated HTML files for each of the Cython modules
 Cython.Compiler.Options.annotate = True
@@ -65,5 +66,6 @@ setup(name='ChemPy',
     packages=packages,
     cmdclass = {'build_ext': build_ext},
     ext_modules = ext_modules,
+    include_dirs=[numpy.get_include()],
 )
 
