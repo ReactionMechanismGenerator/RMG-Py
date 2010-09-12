@@ -8,7 +8,13 @@ MEASURE Users' Guide
     :maxdepth: 2
     :numbered:
     
-    
+    introduction
+    installation
+    input
+    running
+    output
+    faq
+    credits
     
 * :ref:`genindex`
 * :ref:`modindex`
