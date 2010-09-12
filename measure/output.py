@@ -51,6 +51,7 @@ def writeStates(f, states, prefix=''):
             if isinstance(mode, HinderedRotor):
                 f.write(prefix + '        ((%g,"amu*angstrom^2"), (%g,"kJ/mol"), %i),\n' % (mode.inertia*constants.Na*1e23, mode.barrier/1000.0, mode.symmetry))
         f.write(prefix + '    ],\n')
+    f.write(prefix + '    spinMultiplicity=%i,\n' % (states.spinMultiplicity))
     f.write(prefix + '),\n')
 
 ################################################################################
