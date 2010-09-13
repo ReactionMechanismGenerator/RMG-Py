@@ -53,19 +53,30 @@ def parseCommandLineArguments():
     described in the module docstring.
     """
 
-    parser = argparse.ArgumentParser(description='Master Equation Automatic Solver for Unimolecular REactions.')
+    parser = argparse.ArgumentParser(description="""
+        Master Equation Automatic Solver for Unimolecular REactions (MEASURE):
+        A tool for estimating pressure-dependent phenomenological rate
+        coefficients k(T,P) for unimolecular reaction networks of arbitrary
+        size and complexity using the master equation. Multiple methods of
+        varying accuracy, speed, and robustness are available for determining
+        the k(T,P) values. The output is a set of k(T,P) functions suitable for
+        use in chemical kinetics mechanisms.
+    """)
     parser.add_argument('file', metavar='FILE', type=str, nargs=1,
         help='a file containing information about the network')
     
-    parser.add_argument('-d', '--draw', metavar='IMGFILE', type=str, nargs=1,
+    group1 = parser.add_mutually_exclusive_group()
+    group1.add_argument('-d', '--draw', metavar='IMGFILE', type=str, nargs=1,
         help='draw potential energy surface and exit')
+    group1.add_argument('-o', '--output', metavar='OUTFILE', type=str, nargs=1,
+        help='specify location of output file')
 
     # Options for controlling the amount of information printed to the console
     # By default a moderate level of information is printed; you can either
     # ask for less (quiet), more (verbose), or much more (debug)
-    group = parser.add_mutually_exclusive_group()
-    group.add_argument('-q', '--quiet', action='store_true', help='only print warnings and errors')
-    group.add_argument('-v', '--verbose', action='store_true', help='print more verbose output')
+    group2 = parser.add_mutually_exclusive_group()
+    group2.add_argument('-q', '--quiet', action='store_true', help='only print warnings and errors')
+    group2.add_argument('-v', '--verbose', action='store_true', help='print more verbose output')
 
     return parser.parse_args()
 
@@ -156,7 +167,6 @@ if __name__ == '__main__':
     # NOT the current working directory
     outputDirectory = os.path.dirname(os.path.abspath(args.file[0]))
 
-
     # Only proceed if the input network is valid
     if network is not None:
         
@@ -211,7 +221,11 @@ if __name__ == '__main__':
 
             # Save results to file
             from measure.output import writeOutput
-            writeOutput(os.path.join(outputDirectory, 'output.py'), network, Tlist, Plist, Elist, method, model)
+            if args.output:
+                out = os.path.abspath(args.output[0])
+            else:
+                out = os.path.join(outputDirectory, 'output.py')
+            writeOutput(out, network, Tlist, Plist, Elist, method, model)
 
     # Log end timestamp
     logging.info('')
