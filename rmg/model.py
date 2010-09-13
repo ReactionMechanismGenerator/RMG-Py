@@ -1137,7 +1137,10 @@ class CoreEdgeReactionModel:
                     )
 
                 # Set collision model
-                network.bathGas = [spec for spec in self.core.species if not spec.reactive][0]
+                bathGas = [spec for spec in self.core.species if not spec.reactive]
+                network.bathGas = {}
+                for spec in bathGas:
+                    network.bathGas[spec] = 1.0 / len(bathGas)
                 network.collisionModel = SingleExponentialDownModel(alpha=4.86 * 4184)
                 
                 # Save input file
