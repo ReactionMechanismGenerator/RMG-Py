@@ -58,10 +58,16 @@ def calculateCollisionFrequency(species, T, P, bathGas):
     underestimate, but reasonable enough.
     """
     
+    bathGasSigma = 0.0; bathGasEpsilon = 1.0; bathGasMW = 0.0
+    for key, value in bathGas.iteritems():
+        bathGasSigma += key.lennardJones.sigma * value
+        bathGasEpsilon *= key.lennardJones.epsilon ** value
+        bathGasMW += key.molecularWeight * value
+
     gasConc = P / constants.kB / T
-    mu = 1 / (1/species.molecularWeight + 1/bathGas.molecularWeight) / 6.022e23
-    sigma = 0.5 * (species.lennardJones.sigma + bathGas.lennardJones.sigma)
-    epsilon = math.sqrt(species.lennardJones.epsilon * bathGas.lennardJones.epsilon)
+    mu = 1.0 / (1.0/species.molecularWeight + 1.0/bathGasMW) / 6.022e23
+    sigma = 0.5 * (species.lennardJones.sigma + bathGasSigma)
+    epsilon = math.sqrt(species.lennardJones.epsilon * bathGasEpsilon)
 
     # Evaluate configuration integral
     Tred = constants.kB * T / epsilon

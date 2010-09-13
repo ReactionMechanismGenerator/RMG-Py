@@ -68,7 +68,7 @@ class Network:
     `reactants`         ``list``                A list of the bimolecular reactant channels in the network
     `products`          ``list``                A list of the bimolecular product channels in the network
     `pathReactions`     ``list``                A list of reaction objects that connect adjacent isomers (the high-pressure-limit)
-    `bathGas`           :class:`Species`        The bath gas
+    `bathGas`           ``dict``                A dictionary of the bath gas species (keys) and their mole fractions (values)
     `collisionModel`    :class:`CollisionModel` The collision model to use
     `netReactions`      ``list``                A list of reaction objects that connect any pair of isomers
     `valid`             ``bool``                ``True`` if the rate coefficients for the network have been computed, ``False`` if not
@@ -83,7 +83,7 @@ class Network:
         self.reactants = reactants or []
         self.products = products or []
         self.pathReactions = pathReactions or []
-        self.bathGas = bathGas
+        self.bathGas = bathGas or {}
         self.netReactions = []
         self.valid = False
         self.explored = []

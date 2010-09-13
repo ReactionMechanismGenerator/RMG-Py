@@ -186,18 +186,22 @@ def TS(E0=None, states=None, frequency=0.0):
     frequency = processQuantity(frequency)[0]
     return TransitionState(E0=E0, states=states, frequency=frequency)
 
-def collisionModel(type, parameters):
-    parameters = [processQuantity(p)[0] for p in parameters] 
+def collisionModel(type, parameters, bathGas):
+    global network, speciesDict
+    parameters = [processQuantity(p)[0] for p in parameters]
     if type.lower() == 'single exponential down':
         network.collisionModel = SingleExponentialDownModel(alpha=parameters[0])
         logging.debug('Collision model set to single exponential down (alpha = %g kJ/mol)' % (parameters[0] / 1000.0))
     else:
         raise NameError('Invalid collision model type "%s".' % type)
-
-def bathGas(label):
-    global network, speciesDict
-    network.bathGas = speciesDict[label]
-
+    # Set bath gas composition
+    network.bathGas = {}
+    for key, value in bathGas.iteritems():
+        network.bathGas[speciesDict[key]] = float(value)
+    # Normalize bath gas composition
+    for key in network.bathGas:
+        network.bathGas[key] /= sum(network.bathGas.values())
+    
 def temperatures(Tlist0=None, Tmin=None, Tmax=None, count=None):
     global Tlist, Tparams
     if Tlist0 is not None:
@@ -214,7 +218,7 @@ def temperatures(Tlist0=None, Tmin=None, Tmax=None, count=None):
         raise SyntaxError('Must specify either a list of temperatures or Tmin, Tmax, and count.')
 
 def pressures(Plist0=None, Pmin=None, Pmax=None, count=None):
-    global Tlist, Pparams
+    global Plist, Pparams
     if Plist0 is not None:
         # We've been provided a list of specific pressures to use
         Plist = processQuantity(Plist0)[0]
@@ -328,7 +332,6 @@ def readInput(path):
         'Arrhenius': Arrhenius,
         'TransitionState': TS,
         'collisionModel': collisionModel,
-        'bathGas': bathGas,
         'temperatures': temperatures,
         'pressures': pressures,
         'energies': energies,
@@ -359,14 +362,16 @@ def readInput(path):
         Tlist = getTemperaturesForModel(model, Tmin, Tmax, Tcount)
     else:
         Tmin = min(Tlist); Tmax = max(Tlist); Tcount = len(Tlist)
-    
+    Tlist = numpy.array(Tlist, numpy.float64)
+
     # Determine pressure grid if not yet known
     if Pparams is not None and Plist is None:
         Pmin, Pmax, Pcount = Pparams
         Plist = getPressuresForModel(model, Pmin, Pmax, Pcount)
     else:
         Pmin = min(Plist); Pmax = max(Plist); Pcount = len(Plist)
-    
+    Plist = numpy.array(Plist, numpy.float64)
+
     # Figure out which configurations are isomers, reactant channels, and product channels
     for rxn in network.pathReactions:
         # Sort bimolecular configurations so that we always encounter them in the

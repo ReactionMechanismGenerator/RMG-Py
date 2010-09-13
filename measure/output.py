@@ -34,6 +34,8 @@ from chempy.thermo import *
 from chempy.kinetics import *
 from chempy.states import *
 
+from collision import *
+
 ################################################################################
 
 def writeStates(f, states, prefix=''):
@@ -68,7 +70,8 @@ def writeNetworkSpecies(f, network):
     for products in network.products:
         for spec in products:
             if spec not in speciesList: speciesList.append(spec)
-    if network.bathGas not in speciesList: speciesList.append(network.bathGas)
+    for spec in network.bathGas:
+        if spec not in speciesList: speciesList.append(spec)
 
     for spec in speciesList:
         writeSpecies(f, spec)
@@ -206,10 +209,12 @@ def writeInput(path, network, Tlist, Plist, Elist, method, model):
         f.write('    parameters=[\n')
         f.write('        (%g,"kJ/mol"),\n' % (network.collisionModel.alpha/1000.0))
         f.write('    ],\n')
+        f.write('    bathGas={\n')
+        for spec, frac in network.bathGas.iteritems():
+            f.write('        "%s": %g,\n' % (spec.label, frac))
+        f.write('},\n')
     f.write(')\n\n')
-
-    f.write('bathGas("%s")\n\n' % (network.bathGas.label))
-
+    
     f.write('temperatures(([%s],"K"))\n' % (', '.join([('%g' % T) for T in Tlist])))
     f.write('pressures(([%s],"bar"))\n' % (', '.join([('%g' % (P/1e5)) for P in Plist])))
     dE, count = Elist
