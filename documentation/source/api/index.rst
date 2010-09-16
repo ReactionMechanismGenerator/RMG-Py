@@ -8,7 +8,8 @@ MEASURE Developers' Guide
     :maxdepth: 2
     :numbered:
     
-    
+    introduction
+    collision
     
 * :ref:`genindex`
 * :ref:`modindex`

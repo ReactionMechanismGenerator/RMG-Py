@@ -28,9 +28,15 @@
 ################################################################################
 
 """
-Contains classes that represent the collision models available in MEASURE.
-Each collision model provides a collisional energy transfer probability function
-that returns the value of :math:`P(E, E^\prime)` for that model.
+Contains classes that represent the collision models available in MEASURE,
+and methods for calculating various collision parameters. Each collision model
+provides a method :meth:`generateCollisionMatrix()` that generates the collision
+matrix :math:`\\matrix{M}_\\mathrm{coll} / \\omega = \\matrix{P} - \\matrix{I}`
+corresponding to the collisional energy transfer probability function
+:math:`P(E, E^\\prime)` for that model. The available collision models are:
+
+* :class:`SingleExponentialDownModel`
+
 """
 
 import math
@@ -52,22 +58,32 @@ class CollisionError(Exception):
 
 def calculateCollisionFrequency(species, T, P, bathGas):
     """
-    Calculate the collision frequency for a given `species` with a bath gas
-    `bathGas` at a given temperature `T` in K and pressure `P` in Pa. The
-    Lennard-Jones collision model is used, which generally is a slight 
-    underestimate, but reasonable enough.
+    Calculate the Lennard-Jones collision frequency for a given `species` with
+    a dictionary of bath gases and their mole fractions `bathGas` at a given
+    temperature `T` in K and pressure `P` in Pa. The Lennard-Jones model is
+    generally a slight underestimate, but reasonable enough. If the bath gas
+    is a mixture, arithmetic means are used to compute its effective
+    Lennard-Jones :math:`\\sigma` parameter and molecular weight, while a
+    geometric mean is used to calculate its effective Lennard-Jones
+    :math:`\\epsilon` parameter.
     """
     
     bathGasSigma = 0.0; bathGasEpsilon = 1.0; bathGasMW = 0.0
     for key, value in bathGas.iteritems():
-        bathGasSigma += key.lennardJones.sigma * value
-        bathGasEpsilon *= key.lennardJones.epsilon ** value
+        try:
+            bathGasSigma += key.lennardJones.sigma * value
+            bathGasEpsilon *= key.lennardJones.epsilon ** value
+        except AttributeError:
+            raise CollisionError('No Lennard-Jones parameters specified for component "%s" in bath gas.' % bathGas)
         bathGasMW += key.molecularWeight * value
 
     gasConc = P / constants.kB / T
     mu = 1.0 / (1.0/species.molecularWeight + 1.0/bathGasMW) / 6.022e23
-    sigma = 0.5 * (species.lennardJones.sigma + bathGasSigma)
-    epsilon = math.sqrt(species.lennardJones.epsilon * bathGasEpsilon)
+    try:
+        sigma = 0.5 * (species.lennardJones.sigma + bathGasSigma)
+        epsilon = math.sqrt(species.lennardJones.epsilon * bathGasEpsilon)
+    except AttributeError:
+        raise CollisionError('No Lennard-Jones parameters specified for species "%s".' % species)
 
     # Evaluate configuration integral
     Tred = constants.kB * T / epsilon
@@ -85,13 +101,20 @@ def calculateCollisionEfficiency(species, T, Elist, densStates, collisionModel, 
     `species` with density of states `densStates` in mol/J corresponding to
     energies `Elist` in J/mol, ground-state energy `E0` in J/mol, and first 
     reactive energy `Ereac` in J/mol. The collisions occur at temperature `T` 
-    in K and are described by the collision model `collisionModel`. The
-    algorithm here is implemented as described by Chang, Bozzelli, and Dean.
+    in K and are described by the collision model `collisionModel`, which
+    currently must be a :class:`SingleExponentialDownModel` object. The
+    algorithm here is implemented as described by Chang, Bozzelli, and Dean
+    [Chang2000]_.
+
+    .. [Chang2000] A. Y. Chang, J. W. Bozzelli, and A. M. Dean.
+       *Z. Phys. Chem.* **214**, p. 1533-1568 (2000).
+       `doi: 10.1524/zpch.2000.214.11.1533 <http://dx.doi.org/10.1524/zpch.2000.214.11.1533>`_
+
     """
 
     if not isinstance(collisionModel, SingleExponentialDownModel):
-        raise CollisionError('Modified strong collision method requires the single exponential down collision model.')
-    alpha = collisionModel.alpha
+        raise CollisionError('Calculation of collision efficients requires the single exponential down collision model.')
+    alpha = collisionModel.getAlpha(T)
     
     # Ensure that the barrier height is sufficiently above the ground state
     # Otherwise invalid efficiencies are observed
@@ -134,7 +157,7 @@ def calculateCollisionEfficiency(species, T, Elist, densStates, collisionModel, 
     beta = (alpha / (alpha + Fe * constants.R * T))**2 / Delta
 
     if beta > 1:
-        logging.warning('Collision efficiency %s calculated at %s K is greater than unity, so it will be set to unity..' % (beta, T))
+        logging.warning('Collision efficiency %s calculated at %s K is greater than unity, so it will be set to unity.' % (beta, T))
     if beta < 0:
         raise CollisionError('Invalid collision efficiency %s calculated at %s K.' % (beta, T))
     
@@ -144,7 +167,16 @@ def calculateCollisionEfficiency(species, T, Elist, densStates, collisionModel, 
 
 class CollisionModel:
     """
-    A base class for collision models.
+    A base class for collision models. To create a custom collision model,
+    derive from this class and implement the :meth:`generateCollisionMatrix()`
+    method, which returns the collision matrix for the collision model you are
+    implementing.
+
+    .. note:: As with all collision models, you can only specify either the
+        deactivating direction or the activating direction of the collisional
+        transfer probabilities function :math:`P(E, E^\\prime)`, as the other
+        is constrained by detailed balance.
+       
     """
     pass
 
