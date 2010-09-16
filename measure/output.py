@@ -206,9 +206,11 @@ def writeInput(path, network, Tlist, Plist, Elist, method, model):
     f.write('collisionModel(\n')
     if isinstance(network.collisionModel, SingleExponentialDownModel):
         f.write('    type="single exponential down",\n')
-        f.write('    parameters=[\n')
-        f.write('        (%g,"kJ/mol"),\n' % (network.collisionModel.alpha/1000.0))
-        f.write('    ],\n')
+        f.write('    parameters={\n')
+        f.write('        "alpha0": (%g,"kJ/mol"),\n' % (network.collisionModel.alpha0/1000.0))
+        f.write('        "T0": (%g,"K"),\n' % (network.collisionModel.T0))
+        f.write('        "n": %g,\n' % (network.collisionModel.n))
+        f.write('    },\n')
         f.write('    bathGas={\n')
         for spec, frac in network.bathGas.iteritems():
             f.write('        "%s": %g,\n' % (spec.label, frac))

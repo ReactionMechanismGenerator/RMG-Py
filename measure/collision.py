@@ -151,14 +151,23 @@ class CollisionModel:
 ################################################################################
 
 class SingleExponentialDownModel(CollisionModel):
-    """
+    r"""
     A single exponential down collision model, based around the collisional 
     energy transfer probability function
     
     .. math:: P(E, E^\prime) = C(E^\prime) \exp \left( - \frac{E^\prime - E}{\alpha} \right) \hspace{40pt} E < E^\prime
     
     where the parameter :math:`\alpha = \left< \Delta E_\mathrm{d} \right>`
-    represents the average energy transferred in a deactivating collision.
+    represents the average energy transferred in a deactivating collision. This
+    is the most commonly-used collision model, simply because it only has one
+    parameter to determine. The parameter :math:`\alpha` is specified using the
+    equation
+
+    .. math:: \alpha = \alpha_0 \left( \frac{T}{T_0} \right)^n
+
+    where :math:`\alpha_0` is the value of :math:`\alpha` at temperature
+    :math:`T_0` in K. Set the exponent :math:`n` to zero to obtain a
+    temperature-independent value for :math:`\alpha`.
     
     =============== =============== ============================================
     Attribute       Type            Description
@@ -168,15 +177,27 @@ class SingleExponentialDownModel(CollisionModel):
     
     """
 
-    def __init__(self, alpha=0.0):
-        self.alpha = alpha
+    def __init__(self, alpha0=0.0, T0=1.0, n=0.0):
+        self.alpha0 = alpha0
+        self.T0 = T0
+        self.n = n
+
+    def getAlpha(self, T):
+        """
+        Return the value of the :math:`\\alpha` parameter at temperature `T` in
+        K. The :math:`\\alpha` parameter represents the average energy
+        transferred in a deactivating collision
+        :math:`\\left< \\Delta E_\\mathrm{d} \\right>`, and has units of J/mol.
+        """
+        return self.alpha0 * (T / self.T0) ** self.n
 
     def generateCollisionMatrix(self, Elist, T, densStates):
         """
-        Generate and return the collisional transfer probability matrix 
-        :math:`P(E, E^\prime)` for this model for a given
-        set of energies `Elist` in J/mol, temperature `T` in K, and isomer 
-        density of states `densStates`.
+        Generate and return the collision matrix
+        :math:`\\matrix{M}_\\mathrm{coll} / \\omega = \\matrix{P} - \\matrix{I}`
+        corresponding to this collision model for a given set of energies
+        `Elist` in J/mol, temperature `T` in K, and isomer density of states
+        `densStates`.
         """
         Ngrains = len(Elist)
         P = numpy.zeros((Ngrains,Ngrains), numpy.float64)
@@ -186,11 +207,14 @@ class SingleExponentialDownModel(CollisionModel):
             if densStates[i] > 0 and start == -1:
                 start = i
                 break
-        
+
+        # Determine value of parameters at this temperature
+        alpha = self.getAlpha(T)
+
         # Determine unnormalized entries in collisional transfer probability matrix
         for r in range(start, Ngrains):
-            P[0:r+1,r] = numpy.exp(-(Elist[r] - Elist[0:r+1]) / self.alpha)
-            P[r+1:,r] = numpy.exp(-(Elist[r+1:] - Elist[r]) / self.alpha) * densStates[r+1:] / densStates[r] * numpy.exp(-(Elist[r+1:] - Elist[r]) / (constants.R * T))
+            P[0:r+1,r] = numpy.exp(-(Elist[r] - Elist[0:r+1]) / alpha)
+            P[r+1:,r] = numpy.exp(-(Elist[r+1:] - Elist[r]) / alpha) * densStates[r+1:] / densStates[r] * numpy.exp(-(Elist[r+1:] - Elist[r]) / (constants.R * T))
         
         # Normalize using detailed balance
         # This method is much more robust, and corresponds to:

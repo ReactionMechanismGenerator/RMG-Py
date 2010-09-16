@@ -215,9 +215,11 @@ reaction(
 
 collisionModel(
     type='single exponential down',
-    parameters=[
-        (1.429,'kcal/mol')
-    ],
+    parameters={
+        'alpha0': (1.429,'kcal/mol'),
+        'T0': (1000,'K'),
+        'n': (0.0,'kcal/mol'),
+    },
     bathGas={
         'nitrogen': 1.0,
     }

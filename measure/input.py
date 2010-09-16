@@ -67,6 +67,16 @@ model = ['']
 
 ################################################################################
 
+class InputError(Exception):
+    """
+    An exception that is raised when a MEASURE input file is invalid for some
+    reason. Pass a string detailing the circumstances of the exceptional
+    behavior.
+    """
+    pass
+
+################################################################################
+
 def processQuantity(quantity):
     if isinstance(quantity, tuple) or isinstance(quantity, list):
         value, units = quantity
@@ -188,10 +198,28 @@ def TS(E0=None, states=None, frequency=0.0):
 
 def collisionModel(type, parameters, bathGas):
     global network, speciesDict
-    parameters = [processQuantity(p)[0] for p in parameters]
     if type.lower() == 'single exponential down':
-        network.collisionModel = SingleExponentialDownModel(alpha=parameters[0])
-        logging.debug('Collision model set to single exponential down (alpha = %g kJ/mol)' % (parameters[0] / 1000.0))
+
+        # Process parameters, making sure we have a valid set
+        if len(parameters) == 1:
+            if 'alpha' not in parameters:
+                raise InputError('Must specify either "alpha" or ("alpha0","T0","n") as parameters for SingleExponentialDownModel.')
+            alpha0 = processQuantity(parameters['alpha'])[0]
+            T0 = 1000.0
+            n = 0.0
+        elif len(parameters) == 3:
+            if 'alpha0' not in parameters or 'T0' not in parameters or 'n' not in parameters:
+                raise InputError('Must specify either "alpha" or ("alpha0","T0","n") as parameters for SingleExponentialDownModel.')
+            alpha0 = processQuantity(parameters['alpha0'])[0]
+            T0 = processQuantity(parameters['T0'])[0]
+            n = processQuantity(parameters['n'])[0]
+        else:
+            raise InputError('Must specify either "alpha" or ("alpha0","T0","n") as parameters for SingleExponentialDownModel.')
+
+        # Create the collision model object
+        network.collisionModel = SingleExponentialDownModel(alpha0=alpha0, T0=T0, n=n)
+        logging.debug('Collision model set to single exponential down')
+        
     else:
         raise NameError('Invalid collision model type "%s".' % type)
     # Set bath gas composition
