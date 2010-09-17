@@ -9,6 +9,7 @@ import argparse
 import numpy
 import os.path
 
+from chempy.molecule import Molecule
 from chempy.species import Species, TransitionState
 from chempy.reaction import Reaction
 from chempy.species import LennardJones
@@ -28,8 +29,10 @@ def parseCommandLineArguments():
 
     parser = argparse.ArgumentParser()
     parser.add_argument('file', metavar='FILE', type=str, nargs='+',
-        help='one or more files to convert')
-    
+        help='a file to convert')
+    parser.add_argument('-d', '--dictionary', metavar='DICTFILE', type=str, nargs=1,
+        help='the RMG dictionary corresponding to these files')
+
     return parser.parse_args()
 
 ################################################################################
@@ -49,6 +52,25 @@ if __name__ == '__main__':
     
     # Parse the command-line arguments
     args = parseCommandLineArguments()
+    
+    # Load RMG dictionary if specified
+    moleculeDict = {}
+    if args.dictionary is not None:
+        f = open(args.dictionary[0])
+        adjlist = ''; label = ''
+        for line in f:
+            if len(line.strip()) == 0:
+                if len(adjlist.strip()) > 0:
+                    molecule = Molecule()
+                    molecule.fromAdjacencyList(adjlist)
+                    moleculeDict[label] = molecule
+                adjlist = ''; label = ''
+            else:
+                if len(adjlist.strip()) == 0:
+                    label = line.strip()
+                adjlist += line
+                    
+        f.close()
     
     method = None
 
@@ -98,7 +120,7 @@ if __name__ == '__main__':
         data = readMeaningfulLine(f).split()
         assert data[0].lower() == 'singleexpdown'
         assert data[1] == 'J/mol'
-        network.collisionModel = SingleExponentialDownModel(alpha=float(data[2]))
+        network.collisionModel = SingleExponentialDownModel(alpha0=float(data[2]), T0=298, n=0.0)
         
         # Read bath gas parameters
         bathGas = Species()
@@ -113,6 +135,8 @@ if __name__ == '__main__':
             # Read species label
             spec.label = readMeaningfulLine(f)
             speciesDict[spec.label] = spec
+            if spec.label in moleculeDict:
+                spec.molecule = [moleculeDict[spec.label]]
             # Read species E0
             data = readMeaningfulLine(f).split()
             assert data[0] == 'J/mol'
@@ -212,7 +236,7 @@ if __name__ == '__main__':
         
         dirname, basename = os.path.split(os.path.abspath(fstr))
         basename, ext = os.path.splitext(basename)
-        output = os.path.join(dirname, basename + '.pdf')
+        output = os.path.join(dirname, basename + '.svg')
         
         network.drawPotentialEnergySurface(output, Eunits='kcal/mol')
     
