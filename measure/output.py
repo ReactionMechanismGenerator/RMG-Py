@@ -27,6 +27,13 @@
 #
 ################################################################################
 
+"""
+Contains the :meth:`writeOutput()` method for saving output files to disk and
+the :meth:`writeInput()` method for saving input files to disk. A number of
+helper functions are used by both functions due to the high degree of similarity
+between the input and output file syntax.
+"""
+
 import logging
 import os.path
 
@@ -39,6 +46,12 @@ from collision import *
 ################################################################################
 
 def writeStates(f, states, prefix=''):
+    """
+    Write the :class:`StatesModel` data `states` containing molecular degree of
+    freedom data to the file object `f`. The optional parameter `prefix`
+    is prepended to each line of the output file, which provides an easy way to
+    adjust the indentation.
+    """
     f.write(prefix + 'states=States(\n')
     for mode in states.modes:
         if isinstance(mode, RigidRotor):
@@ -59,6 +72,11 @@ def writeStates(f, states, prefix=''):
 ################################################################################
 
 def writeNetworkSpecies(f, network):
+    """
+    Write all species in the given unimolecular reaction `network` to a file
+    object`f`. All isomer, reactant, product, and bath gas species are
+    automatically written one time each.
+    """
 
     # Get list of all species in network
     speciesList = []
@@ -77,6 +95,9 @@ def writeNetworkSpecies(f, network):
         writeSpecies(f, spec)
 
 def writeSpecies(f, spec):
+    """
+    Write a :class:`Species` object `spec` to a file object `f`.
+    """
     f.write('species(\n')
     f.write('    label="%s",\n' % (spec.label))
     if len(spec.molecule) > 0:
@@ -103,10 +124,19 @@ def writeSpecies(f, spec):
 ################################################################################
 
 def writeNetworkPathReactions(f, network):
+    """
+    Write all path reactions in the given unimolecular reaction `network` to a
+    file object`f`. The path reactions are those reactions that directly connect
+    adjacent molecular configurations; these are the reactions that remain in
+    the high-pressure limit.
+    """
     for rxn in network.pathReactions:
         writeReaction(f, rxn)
 
 def writeReaction(f, rxn):
+    """
+    Write a :class:`Reaction` object `rxn` to a file object `f`.
+    """
     f.write('reaction(\n')
     f.write('    reactants=[%s],\n' % (', '.join([('"%s"' % spec.label) for spec in rxn.reactants])))
     f.write('    products=[%s],\n' % (', '.join([('"%s"' % spec.label) for spec in rxn.products])))
@@ -134,11 +164,21 @@ def writeReaction(f, rxn):
 ################################################################################
 
 def writeNetworkNetReactions(f, network):
+    """
+    Write all net reactions in the given unimolecular reaction `network` to a
+    file object`f`. The net reactions are those reactions that can connect
+    any pair of molecular configurations, not just those directly adjacent.
+    These are the reactions that have pressure-dependent rate coefficients.
+    """
     for rxn in network.netReactions:
         writePDepReaction(f, rxn)
 
 def writePDepReaction(f, rxn):
-    
+    """
+    Write a :class:`Reaction` object `rxn` that has pressure-dependent kinetics
+    to a file object `f`.
+    """
+
     f.write('pdepreaction(\n')
     f.write('    reactants=[%s],\n' % (', '.join([('"%s"' % spec.label) for spec in rxn.reactants])))
     f.write('    products=[%s],\n' % (', '.join([('"%s"' % spec.label) for spec in rxn.products])))
@@ -171,6 +211,32 @@ def writePDepReaction(f, rxn):
 ################################################################################
 
 def writeOutput(path, network, Tlist, Plist, Elist, method, model):
+    """
+    Write a MEASURE output file to `path` on disk. The parameters needed mirror
+    those returned by :meth:`readInput()`:
+
+    * The :class:`Network` object `network` representing the unimolecular
+      reaction network
+
+    * The list of temperatures `Tlist` in K to be used in the master equation
+      calculation
+
+    * The list of pressures `Plist` in Pa to be used in the master equation
+      calculation
+
+    * A tuple `Elist` containing the maximum energy grain size in J/mol and the
+      minimum number of energy grains to use in the master equation calculation;
+      whichever of these results in more energy grains
+
+    * The approximate `method` to use to estimate the phenomenological rate
+      coefficients :math:`k(T,P)`
+
+    * The interpolation `model` to fit the estimated :math:`k(T,P)` values to
+
+    If successful, the file created on disk will contain all of the species
+    and net reaction data, including all phenomenological rate coefficients
+    :math:`k(T,P)`.
+    """
 
     logging.info('Saving output to "%s"...' % path)
 
@@ -189,10 +255,30 @@ def writeOutput(path, network, Tlist, Plist, Elist, method, model):
 
 def writeInput(path, network, Tlist, Plist, Elist, method, model):
     """
-    Write a MEASURE input file to `path` on disk.
-    """
+    Write a MEASURE input file to `path` on disk. The parameters needed mirror
+    those returned by :meth:`readInput()`:
 
-    from output import writeNetworkSpecies, writeNetworkPathReactions
+    * The :class:`Network` object `network` representing the unimolecular
+      reaction network
+
+    * The list of temperatures `Tlist` in K to be used in the master equation
+      calculation
+
+    * The list of pressures `Plist` in Pa to be used in the master equation
+      calculation
+
+    * A tuple `Elist` containing the maximum energy grain size in J/mol and the
+      minimum number of energy grains to use in the master equation calculation;
+      whichever of these results in more energy grains
+
+    * The approximate `method` to use to estimate the phenomenological rate
+      coefficients :math:`k(T,P)`
+
+    * The interpolation `model` to fit the estimated :math:`k(T,P)` values to
+
+    If successful, the file created on disk should be able to be read in by
+    :meth:`readInput()` with (hopefully) no loss of fidelity.
+    """
 
     f = open(path, 'w')
 

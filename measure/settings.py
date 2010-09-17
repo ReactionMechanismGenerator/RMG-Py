@@ -29,7 +29,7 @@
 
 """
 Contains a number of settings to be used throughout MEASURE. These can be
-modified at runtime
+modified at runtime.
 """
 
 #: Whether or not the number of density of states calculations should be minimized

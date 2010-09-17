@@ -28,8 +28,9 @@
 ################################################################################
 
 """
-Contains classes that define an internal representation of a unimolecular
-reaction network.
+Contains the :class:`Network` class, which defines an internal representation
+of a unimolecular reaction network. This provides a convienent means of
+keeping track of things while we are performing the master equation calculation.
 """
 
 import math
@@ -77,13 +78,14 @@ class Network:
 
     """
 
-    def __init__(self, index=-1, isomers=None, reactants=None, products=None, pathReactions=None, bathGas=None):
+    def __init__(self, index=-1, isomers=None, reactants=None, products=None, pathReactions=None, bathGas=None, collisionModel=None):
         self.index = index
         self.isomers = isomers or []
         self.reactants = reactants or []
         self.products = products or []
         self.pathReactions = pathReactions or []
         self.bathGas = bathGas or {}
+        self.collisionModel = collisionModel
         self.netReactions = []
         self.valid = False
         self.explored = []
@@ -295,7 +297,9 @@ class Network:
         association path reactions in the network. `Elist` represents the
         array of energies in J/mol at which to compute each density of states,
         while `densStates` represents the density of states of each isomer and
-        reactant channel in mol/J.
+        reactant channel in mol/J. The temperature `T` is K is used in certain
+        circumstances when :math:`k(E)` cannot be determined without it, and
+        in the detailed balance expression to obtain the reverse kinetics.
         """
 
         Ngrains = len(Elist)
@@ -336,8 +340,14 @@ class Network:
 
     def printSummary(self, level=logging.DEBUG):
         """
-        Print a formatted list of information about the current network. In
-        particular, we want to give all of the energies on the PES.
+        Print a formatted list of information about the current network. Each
+        molecular configuration - unimolecular isomers, bimolecular reactant
+        channels, and bimolecular product channels - is given along with its
+        energy on the potential energy surface. The path reactions connecting
+        adjacent molecular configurations are also given, along with their
+        energies on the potential energy surface. The `level` parameter controls
+        the level of logging to which the summary is written, and is DEBUG by
+        default.
         """
 
         logging.log(level, '')
@@ -363,9 +373,10 @@ class Network:
         """
         Calculate the phenomenological rate coefficients :math:`k(T,P)` for the
         network at the given temperatures `Tlist` in K and pressures `Plist` in
-        Pa. The `method` string is used to indicate the method to use, and
-        should be one of "modified strong collision", "reservoir state", or
-        "chemically-significant eigenvalues".
+        Pa using the energy grains ``Elist`` in J/mol. The `method` string is
+        used to indicate the method to use, and should be one of ``"modified
+        strong collision"``, ``"reservoir state"``, or
+        ``"chemically-significant eigenvalues"``.
         """
 
         # Determine the values of some counters
@@ -491,11 +502,15 @@ class Network:
 
     def drawPotentialEnergySurface(self, fstr, Eunits='kJ/mol', drawStructures=False):
         """
-        Generates an SVG file containing a rendering of the current potential
-        energy surface for this reaction network. The SVG file is saved to a
-        file at location `fstr` on disk. The units to use for energy values can
-        be specified using the `Eunits` option; allowed values are 'J/mol',
-        'kJ/mol', 'cal/mol', 'kcal/mol', and 'cm^-1'.
+        Generates a file containing a rendering of the current potential
+        energy surface for this reaction network. The file is saved to at
+        location `fstr` on disk. The type of file saved is determined
+        automatically from the extension on `fstr`; valid file types are PDF,
+        SVG, PS, and PNG. The units to use for energy values can be specified
+        using the `Eunits` option; allowed values are ``'J/mol'``, ``'kJ/mol'``,
+        ``'cal/mol'``, ``'kcal/mol'``, and ``'cm^-1'``. The drawing is performed
+        using the Cairo 2D graphics package; both Cairo and its Python wrapper
+        must be installed.
         """
 
         try:

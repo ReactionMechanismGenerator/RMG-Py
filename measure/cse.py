@@ -63,10 +63,7 @@ def applyChemicallySignificantEigenvaluesMethod(T, P, Elist, densStates, Mcoll, 
     microcanonical rate coefficients `Kij`, `Fim`, and `Gnj`, respectively;
     energies of the first reactive grain for each isomer `Ereac` in J/mol;
     and the numbers of isomers, reactant channels, and product channels `Nisom`,
-    `Nreac`, and `Nprod`, respectively. The method involves a significant linear
-    solve, which is accelerated by taking advantage of the bandedness of the
-    active-state matrix. The nonreactive grains are placed in the reservoir,
-    while the reactive grains are placed in the active-state.
+    `Nreac`, and `Nprod`, respectively.
     """
     
     Ngrains = len(Elist)

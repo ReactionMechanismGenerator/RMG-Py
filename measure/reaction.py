@@ -28,8 +28,12 @@
 ################################################################################
 
 """
-Contains functions for working with reaction objects, particularly for
-calculating microcanonical rate coefficients using various methods.
+Contains functions for working with reaction rate coefficients. The
+:meth:`calculateMicrocanonicalRateCoefficients()` function is used to calculate
+the forward and reverse microcanonical rate coefficients :math:`k(E)` for each
+path reaction. The :meth:`fitInterpolationModel()` function is used to fit an
+interpolation model to a phenomenological rate coefficient :meth:`k(T,P)` for
+each net reaction.
 """
 
 import numpy
@@ -68,7 +72,14 @@ def calculateMicrocanonicalRateCoefficient(reaction, Elist, reacDensStates, prod
     * If the above is not possible but high-pressure limit kinetics
       :math:`k_\\infty(T)` have been provided, then the inverse Laplace 
       transform method will be used.
-      
+
+    The density of states for the product `prodDensStates` and the temperature
+    of interest `T` in K can also be provided. For isomerization and association
+    reactions `prodDensStates` is required; for dissociation reactions it is
+    optional. The temperature is used if provided in the detailed balance
+    expression to determine the reverse kinetics, and in certain cases in the
+    inverse Laplace transform method.
+
     """
     
     kf = numpy.zeros_like(Elist)
@@ -178,7 +189,9 @@ def applyInverseLaplaceTransformMethod(kinetics, E0, Elist, densStates, T=None):
     limit rate coefficient, `E0` is the ground-state energy of the transition
     state, `Elist` is the array of energies in J/mol at which to evaluate the
     microcanonial rate, and `densStates` is the density of states of the
-    reactant.
+    reactant. The temperature `T` in K is not required, and is only used when
+    the temperature exponent of the Arrhenius expression is negative (for which
+    the inverse transform is undefined).
     """
     
     k = numpy.zeros_like((Elist))
@@ -236,7 +249,17 @@ def fitInterpolationModel(reaction, Tlist, Plist, K, model, Tmin, Tmax, Pmin, Pm
     """
     For a set of phenomenological rate coefficients `K` computed at a grid of
     temperatures `Tlist` in K and pressures `Plist` in Pa, fit a :math:`k(T,P)`
-    interpolation `model`.
+    interpolation `model`, a tuple where the first item is a string describing
+    the type of model - either ``'chebyshev'`` or ``'pdeparrhenius'`` - and the
+    remaining elements contain parameters for that model. For Chebyshev
+    polynomials, the parameters are the number of terms to use in each of the
+    temperature and pressure dimensions. For pressure-dependent Arrhenius models
+    there are no additional parameters. `Tmin`, `Tmax`, `Pmin`, and `Pmax`
+    specify the temperature and pressure ranges in K and Pa, respectively,
+    over which the interpolation model is valid. If `errorCheck` is ``True``,
+    a check will be performed to ensure that the interpolation model does not
+    deviate too much from the data; as this is not necessarily a fast process,
+    it is optional.
     """
 
     # Set/update the net reaction kinetics using interpolation model

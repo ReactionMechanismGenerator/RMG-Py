@@ -27,6 +27,14 @@
 #
 ################################################################################
 
+"""
+Contains the :meth:`readInput()` function, used to read MEASURE input files.
+The MEASURE input file format is based on Python syntax, and is in fact a
+valid Python file. This allows us to easily load the file by defining functions
+and connecting them to the constructs in the input file. If the reading of the
+input file is unsuccessful, an :class:`InputError` will be raised.
+"""
+
 import logging
 import quantities
 quantities.set_default_units('si')
@@ -78,6 +86,29 @@ class InputError(Exception):
 ################################################################################
 
 def processQuantity(quantity):
+    """
+    Processes a `quantity` from the input file. The quantity can be a number of
+    things:
+
+    * A :data:`list` or :data:`tuple` containing a number and a string with its
+      units (e.g ``[100,'kJ/mol']``)
+
+    * A :data:`list` or :data:`tuple` containing a list or tuple of numbers and
+      a string with their units (e.g ``[(1,2,3), 'm']``)
+
+    * A :data:`list` or :data:`tuple` of numbers with no units (e.g.
+      ``[1, 2, 3]``)
+
+    * A single number with no units
+
+    If the quantity has units, then the associated number(s) are converted to
+    SI units using the ``quantities`` package.  If the quantity does not have
+    units, then it is assumed to be either a dimensionless quantity or a
+    quantity that is already in SI units.
+
+    This function returns a :data:`tuple` containing the number or list of
+    numbers and a string with the units of those numbers.
+    """
     if isinstance(quantity, tuple) or isinstance(quantity, list):
         value, units = quantity
     else:
@@ -288,8 +319,10 @@ def interpolationModel(name, *args):
 
 def generateThermoFromStates(species):
     """
-    For a given :class:`Species` object `species`, use its states model to
-    generate a corresponding thermo model.
+    For a given :class:`Species` object `species` with molecular degrees of
+    freedom data in its ``states`` attribute, generate a corresponding thermo
+    model. A :class:`ThermoGAModel` thermodynamics model is stored in the
+    species ``thermo`` attribute, and nothing is returned.
     """
     # Do nothing if the species already has thermo data or if it does not have
     # states data
@@ -305,6 +338,15 @@ def generateThermoFromStates(species):
     species.thermo = ThermoGAModel(Tdata=Tdata, Cpdata=Cpdata, H298=H298, S298=S298)
 
 def getTemperaturesForModel(model, Tmin, Tmax, Tcount):
+    """
+    Returns an array of temperatures based on the interpolation `model`,
+    minimum and maximum temperatures `Tmin` and `Tmax` in K, and the number of
+    temperatures `Tcount`. For Chebyshev polynomials a Gauss-Chebyshev
+    distribution is used; for all others a linear distribution on an inverse
+    temperature domain is used. Note that the Gauss-Chebyshev grid does *not*
+    place `Tmin` and `Tmax` at the endpoints, yet the interpolation is still
+    valid up to these values.
+    """
     if model[0].lower() == 'chebyshev':
         # Distribute temperatures on a Gauss-Chebyshev grid
         Tlist = numpy.zeros(Tcount, numpy.float64)
@@ -318,6 +360,15 @@ def getTemperaturesForModel(model, Tmin, Tmax, Tcount):
     return Tlist
 
 def getPressuresForModel(model, Pmin, Pmax, Pcount):
+    """
+    Returns an array of pressures based on the interpolation `model`,
+    minimum and maximum pressures `Pmin` and `Pmax` in Pa, and the number of
+    pressures `Pcount`. For Chebyshev polynomials a Gauss-Chebyshev
+    distribution is used; for all others a linear distribution on an logarithmic
+    pressure domain is used. Note that the Gauss-Chebyshev grid does *not*
+    place `Pmin` and `Pmax` at the endpoints, yet the interpolation is still
+    valid up to these values.
+    """
     if model[0].lower() == 'chebyshev':
         # Distribute pressures on a Gauss-Chebyshev grid
         Plist = numpy.zeros(Pcount, numpy.float64)
@@ -331,6 +382,41 @@ def getPressuresForModel(model, Pmin, Pmax, Pcount):
     return Plist
 
 def readInput(path):
+    """
+    Reads a MEASURE input file from location `path` on disk. The input file
+    format is described in the :ref:`usersguide`. Returns a number of
+    quantities:
+
+    * The :class:`Network` object representing the unimolecular reaction network
+
+    * The list of temperatures in K to be used in the master equation
+      calculation
+
+    * The list of pressures in Pa to be used in the master equation
+      calculation
+
+    * A tuple containing the maximum energy grain size in J/mol and the
+      minimum number of energy grains to use in the master equation calculation;
+      whichever of these results in more energy grains
+
+    * The approximate method to use to estimate the phenomenological rate
+      coefficients :math:`k(T,P)`
+
+    * The interpolation model to fit the estimated :math:`k(T,P)` values to
+
+    * The minimum temperature in K at which the fitted interpolation model is
+      valid; this is *not* necessarily equal to ``min(Tlist)``
+
+    * The maximum temperature in K at which the fitted interpolation model is
+      valid; this is *not* necessarily equal to ``max(Tlist)``
+
+    * The minimum temperature in Pa at which the fitted interpolation model is
+      valid; this is *not* necessarily equal to ``min(Plist)``
+
+    * The maximum temperature in Pa at which the fitted interpolation model is
+      valid; this is *not* necessarily equal to ``max(Plist)``
+    
+    """
 
     global speciesDict, network, Tlist, Tparams, Plist, Pparams, Elist, method, model
     
@@ -448,7 +534,7 @@ def readInput(path):
     # If there are no isomers, then there's nothing to do
     if len(network.isomers) == 0:
         logging.info('Could not find any unimolecular isomers based on this network, so there is nothing to do.')
-        return None, None, None, None
+        return None, None, None, None, None, None, None, None, None, None
       
     return network, Tlist, Plist, Elist, method, model, Tmin, Tmax, Pmin, Pmax
 
