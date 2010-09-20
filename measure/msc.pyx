@@ -33,8 +33,12 @@ for reducing a master equation model of unimolecular reaction networks to a set
 of phenomenological rate coefficients :math:`k(T,P)`.
 """
 
-import math
+cdef extern from "math.h":
+    cdef double exp(double x)
+
 import numpy
+cimport numpy
+import cython
 
 import chempy.constants as constants
 
@@ -50,8 +54,16 @@ class ModifiedStrongCollisionError(Exception):
 
 ################################################################################
 
-def applyModifiedStrongCollisionMethod(T, P, Elist, densStates, collFreq, Kij, 
-  Fim, Gnj, Ereac, Nisom, Nreac, Nprod):
+@cython.boundscheck(False)
+def applyModifiedStrongCollisionMethod(double T, double P,
+    numpy.ndarray[numpy.float64_t,ndim=1] Elist,
+    numpy.ndarray[numpy.float64_t,ndim=2] densStates,
+    numpy.ndarray[numpy.float64_t,ndim=1] collFreq,
+    numpy.ndarray[numpy.float64_t,ndim=3] Kij,
+    numpy.ndarray[numpy.float64_t,ndim=3] Fim,
+    numpy.ndarray[numpy.float64_t,ndim=3] Gnj,
+    numpy.ndarray[numpy.float64_t,ndim=1] Ereac,
+    int Nisom, int Nreac, int Nprod):
     """
     Use the modified strong collsion method to reduce the master equation model
     to a set of phenomenological rate coefficients :math:`k(T,P)` and a set of
@@ -66,6 +78,11 @@ def applyModifiedStrongCollisionMethod(T, P, Elist, densStates, collFreq, Kij,
     channels `Nisom`, `Nreac`, and `Nprod`, respectively.
     """
     
+    cdef int Ngrains, start, i, j, n, r, src
+    cdef double E, Emin, val, beta = 1.0 / (constants.R * T)
+    cdef numpy.ndarray[numpy.float64_t,ndim=2] A, b, K, x
+    cdef numpy.ndarray[numpy.float64_t,ndim=3] pa
+
     Ngrains = len(Elist)
 
     K = numpy.zeros((Nisom+Nreac+Nprod, Nisom+Nreac+Nprod), numpy.float64)
@@ -74,24 +91,24 @@ def applyModifiedStrongCollisionMethod(T, P, Elist, densStates, collFreq, Kij,
     # Determine the starting grain for the calculation based on the
     # active-state cutoff energy
     Emin = numpy.min(Ereac); start = -1
-    for i, E in enumerate(Elist):
-        if E > Emin:
+    for i in range(Ngrains):
+        if Elist[i] > Emin:
             start = i
             break
     if start < 0:
         raise ModifiedStrongCollisionError('Unable to determine starting grain; check active-state energies.')
 
+    # Zero LHS matrix and RHS vectors
+    A = numpy.zeros((Nisom,Nisom), numpy.float64)
+    b = numpy.zeros((Nisom,Nisom+Nreac), numpy.float64)
+
     # Iterate over the grains, calculating the PSSA concentrations
     for r in range(start, Ngrains):
-
-        # Zero LHS matrix and RHS vectors
-        A = numpy.zeros((Nisom,Nisom), numpy.float64)
-        b = numpy.zeros((Nisom,Nisom+Nreac), numpy.float64)
 
         # Populate LHS matrix
         # Collisional deactivation
         for i in range(Nisom):
-            A[i,i] -= collFreq[i]
+            A[i,i] = -collFreq[i]
         # Isomerization reactions
         for i in range(Nisom):
             for j in range(i):
@@ -107,13 +124,17 @@ def applyModifiedStrongCollisionMethod(T, P, Elist, densStates, collFreq, Kij,
         # Populate RHS vectors, one per isomer and reactant
         for i in range(Nisom):
             # Thermal activation via collisions
-            b[i,i] = collFreq[i] * densStates[i,r] * math.exp(-Elist[r] / constants.R / T)
+            b[i,i] = collFreq[i] * densStates[i,r] * exp(-Elist[r] * beta)
         for n in range(Nisom, Nisom+Nreac):
             # Chemical activation via association reaction
-            b[:,n] = Fim[:,n-Nisom,r] #* (densStates[n,r] * math.exp(-Elist[r] / constants.R / T))
+            for j in range(Nisom):
+                b[j,n] = Fim[j,n-Nisom,r] #* (densStates[n,r] * exp(-Elist[r] * beta))
 
         # Solve for steady-state population
-        pa[r,:,:] = -numpy.linalg.solve(A, b)
+        x = -numpy.linalg.solve(A, b)
+        for n in range(Nisom+Nreac):
+            for i in range(Nisom):
+                pa[r,i,n] = x[i,n]
         
             
     # Check that our populations are all positive
@@ -139,7 +160,7 @@ def applyModifiedStrongCollisionMethod(T, P, Elist, densStates, collFreq, Kij,
     # To complete pa we need the Boltzmann distribution at low energies
     for i in range(Nisom):
         for r in range(Ngrains):
-            if pa[r,i,i] == 0: pa[r,i,i] = densStates[i,r] * math.exp(-Elist[r] / constants.R / T)
+            if pa[r,i,i] == 0: pa[r,i,i] = densStates[i,r] * exp(-Elist[r] * beta)
 
     # Return the matrix of k(T,P) values and the pseudo-steady population distributions
     return K, pa

@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 ################################################################################
 #
 #   MEASURE - Master Equation Automatic Solver for Unimolecular REactions
@@ -35,7 +32,9 @@ phenomenological rate coefficients :math:`k(T,P)`.
 
 import math
 import numpy
+cimport numpy
 import scipy.linalg
+import cython
 
 import chempy.constants as constants
 
@@ -50,8 +49,16 @@ class ReservoirStateError(Exception):
 
 ################################################################################
 
-def applyReservoirStateMethod(T, P, Elist, densStates, Mcoll, Kij, Fim, Gnj, 
-  Ereac, Nisom, Nreac, Nprod):
+@cython.boundscheck(False)
+def applyReservoirStateMethod(double T, double P,
+    numpy.ndarray[numpy.float64_t,ndim=1] Elist,
+    numpy.ndarray[numpy.float64_t,ndim=2] densStates,
+    numpy.ndarray[numpy.float64_t,ndim=3] Mcoll,
+    numpy.ndarray[numpy.float64_t,ndim=3] Kij,
+    numpy.ndarray[numpy.float64_t,ndim=3] Fim,
+    numpy.ndarray[numpy.float64_t,ndim=3] Gnj,
+    numpy.ndarray[numpy.float64_t,ndim=1] Ereac,
+    int Nisom, int Nreac, int Nprod):
     """
     Use the reservoir state method to reduce the master equation model to a
     set of phenomenological rate coefficients :math:`k(T,P)` and a set of
@@ -68,16 +75,26 @@ def applyReservoirStateMethod(T, P, Elist, densStates, Mcoll, Kij, Fim, Gnj,
     active-state matrix. The nonreactive grains are placed in the reservoir,
     while the reactive grains are placed in the active-state.
     """
-    
+
+    cdef int Ngrains, bandwidth, halfbandwidth, row, i, j, n, r, s
+    cdef double E, tol
+    cdef list ind
+    cdef numpy.ndarray[numpy.int_t,ndim=1] Nres, Nact
+    cdef numpy.ndarray[numpy.int_t,ndim=2] indices
+    cdef numpy.ndarray[numpy.float64_t,ndim=1] ratio
+    cdef numpy.ndarray[numpy.float64_t,ndim=2] eqDist, L, Z, X, K
+    cdef numpy.ndarray[numpy.float64_t,ndim=3] pa
+
     Ngrains = len(Elist)
 
     # Determine the starting grain for the calculation based on the
     # active-state cutoff energy
     Nres = numpy.zeros(Nisom, numpy.int)
-    for r, E in enumerate(Elist):
-        for i in range(Nisom):
-            if E > Ereac[i] and Nres[i] == 0:
+    for i in range(Nisom):
+        for r in range(Ngrains):
+            if Elist[r] > Ereac[i] and Nres[i] == 0:
                 Nres[i] = r
+                break
     Nact = Ngrains - Nres
     
     # Determine equilibrium distributions
@@ -174,7 +191,8 @@ def applyReservoirStateMethod(T, P, Elist, densStates, Mcoll, Kij, Fim, Gnj,
     
     # Put the reservoir populations into pa as well
     for i in range(Nisom):
-        pa[0:Nres[i],i,i] = eqDist[i,0:Nres[i]]
+        for r in range(Nres[i]):
+            pa[r,i,i] = eqDist[i,r]
 
     # Return the matrix of k(T,P) values and the pseudo-steady population distributions
     return K, pa

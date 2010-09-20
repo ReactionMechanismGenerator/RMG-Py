@@ -1,6 +1,3 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
-
 ################################################################################
 #
 #   MEASURE - Master Equation Automatic Solver for Unimolecular REactions
@@ -39,8 +36,15 @@ corresponding to the collisional energy transfer probability function
 
 """
 
+cdef extern from "math.h":
+    cdef double exp(double x)
+    cdef double sqrt(double x)
+
 import math
 import numpy
+cimport numpy
+import logging
+import cython
 
 import chempy.constants as constants
 
@@ -56,7 +60,7 @@ class CollisionError(Exception):
 
 ################################################################################
 
-def calculateCollisionFrequency(species, T, P, bathGas):
+cpdef double calculateCollisionFrequency(species, double T, double P, bathGas):
     """
     Calculate the Lennard-Jones collision frequency for a given `species` with
     a dictionary of bath gases and their mole fractions `bathGas` at a given
@@ -67,6 +71,10 @@ def calculateCollisionFrequency(species, T, P, bathGas):
     geometric mean is used to calculate its effective Lennard-Jones
     :math:`\\epsilon` parameter.
     """
+   
+    cdef double gasConc, sigma, epsilon, Tred, omega22, value
+    cdef double bathGasSigma, bathGasEpsilon, bathGasMW
+    cdef double kB = constants.kB, pi = math.pi
     
     bathGasSigma = 0.0; bathGasEpsilon = 1.0; bathGasMW = 0.0
     for key, value in bathGas.iteritems():
@@ -86,15 +94,18 @@ def calculateCollisionFrequency(species, T, P, bathGas):
         raise CollisionError('No Lennard-Jones parameters specified for species "%s".' % species)
 
     # Evaluate configuration integral
-    Tred = constants.kB * T / epsilon
-    omega22 = 1.16145 * Tred**(-0.14874) + 0.52487 * math.exp(-0.77320 * Tred) + 2.16178 * math.exp(-2.43787 * Tred)
+    Tred = kB * T / epsilon
+    omega22 = 1.16145 * Tred**(-0.14874) + 0.52487 * exp(-0.77320 * Tred) + 2.16178 * exp(-2.43787 * Tred)
 
     # Evaluate collision frequency
-    return omega22 * math.sqrt(8 * constants.kB * T / math.pi / mu) * math.pi * sigma**2 * gasConc
+    return omega22 * sqrt(8 * kB * T / pi / mu) * pi * sigma*sigma * gasConc
 
 ################################################################################
 
-def calculateCollisionEfficiency(species, T, Elist, densStates, collisionModel, E0, Ereac):
+def calculateCollisionEfficiency(species, double T,
+    numpy.ndarray[numpy.float64_t,ndim=1] Elist,
+    numpy.ndarray[numpy.float64_t,ndim=1] densStates,
+    collisionModel, double E0, double Ereac):
     """
     Calculate an efficiency factor for collisions, particularly useful for the
     modified strong collision method. The collisions involve the given 
@@ -112,6 +123,10 @@ def calculateCollisionEfficiency(species, T, Elist, densStates, collisionModel, 
 
     """
 
+    cdef double alpha, dE, FeNum, FeDen, Delta1, Delta2, DeltaN, Delta, value, beta
+    cdef double R = constants.R
+    cdef int Ngrains, r
+
     if not isinstance(collisionModel, SingleExponentialDownModel):
         raise CollisionError('Calculation of collision efficients requires the single exponential down collision model.')
     alpha = collisionModel.getAlpha(T)
@@ -127,11 +142,11 @@ def calculateCollisionEfficiency(species, T, Elist, densStates, collisionModel, 
     Delta1 = 0; Delta2 = 0; DeltaN = 0; Delta = 1
 
     for r in range(Ngrains):
-        value = densStates[r] * math.exp(-Elist[r] / constants.R / T)
+        value = densStates[r] * exp(-Elist[r] / R / T)
         if Elist[r] > Ereac:
             FeNum += value * dE
             if FeDen == 0:
-                FeDen = value * constants.R * T
+                FeDen = value * R * T
     if FeDen == 0: return 1.0
     Fe = FeNum / FeDen
 
@@ -142,22 +157,23 @@ def calculateCollisionEfficiency(species, T, Elist, densStates, collisionModel, 
     if Fe > 1e6: Fe = 1e6
     
     for r in range(Ngrains):
-        value = densStates[r] * math.exp(-Elist[r] / constants.R / T)
+        value = densStates[r] * exp(-Elist[r] / R / T)
         # Delta
         if Elist[r] < Ereac:
             Delta1 += value * dE
-            Delta2 += value * dE * math.exp(-(Ereac - Elist[r]) / (Fe * constants.R * T))
+            Delta2 += value * dE * exp(-(Ereac - Elist[r]) / (Fe * R * T))
         DeltaN += value * dE
 
     Delta1 /= DeltaN
     Delta2 /= DeltaN
 
-    Delta = Delta1 - (Fe * constants.R * T) / (alpha + Fe * constants.R * T) * Delta2
+    Delta = Delta1 - (Fe * R * T) / (alpha + Fe * R * T) * Delta2
 
-    beta = (alpha / (alpha + Fe * constants.R * T))**2 / Delta
+    beta = (alpha / (alpha + Fe * R * T))**2 / Delta
 
     if beta > 1:
         logging.warning('Collision efficiency %s calculated at %s K is greater than unity, so it will be set to unity.' % (beta, T))
+        beta = 1
     if beta < 0:
         raise CollisionError('Invalid collision efficiency %s calculated at %s K.' % (beta, T))
     
@@ -165,7 +181,7 @@ def calculateCollisionEfficiency(species, T, Elist, densStates, collisionModel, 
 
 ################################################################################
 
-class CollisionModel:
+cdef class CollisionModel:
     """
     A base class for collision models. To create a custom collision model,
     derive from this class and implement the :meth:`generateCollisionMatrix()`
@@ -182,8 +198,9 @@ class CollisionModel:
 
 ################################################################################
 
-class SingleExponentialDownModel(CollisionModel):
+cdef class SingleExponentialDownModel(CollisionModel):
     r"""
+    Refactoring of collision and reaction modules to full Cython syntax.
     A single exponential down collision model, based around the collisional 
     energy transfer probability function
     
@@ -209,12 +226,14 @@ class SingleExponentialDownModel(CollisionModel):
     
     """
 
+    cdef public double alpha0, T0, n
+
     def __init__(self, alpha0=0.0, T0=1.0, n=0.0):
         self.alpha0 = alpha0
         self.T0 = T0
         self.n = n
 
-    def getAlpha(self, T):
+    cpdef double getAlpha(self, double T):
         """
         Return the value of the :math:`\\alpha` parameter at temperature `T` in
         K. The :math:`\\alpha` parameter represents the average energy
@@ -223,7 +242,10 @@ class SingleExponentialDownModel(CollisionModel):
         """
         return self.alpha0 * (T / self.T0) ** self.n
 
-    def generateCollisionMatrix(self, Elist, T, densStates):
+    def generateCollisionMatrix(self,
+        numpy.ndarray[numpy.float64_t,ndim=1] Elist,
+        double T,
+        numpy.ndarray[numpy.float64_t,ndim=1] densStates):
         """
         Generate and return the collision matrix
         :math:`\\matrix{M}_\\mathrm{coll} / \\omega = \\matrix{P} - \\matrix{I}`
@@ -231,22 +253,27 @@ class SingleExponentialDownModel(CollisionModel):
         `Elist` in J/mol, temperature `T` in K, and isomer density of states
         `densStates`.
         """
+
+        cdef double alpha = 1.0/self.getAlpha(T), beta = 1.0 / (constants.R * T)
+        cdef double C, left, right
+        cdef int Ngrains, start, i, r
+        cdef numpy.ndarray[numpy.float64_t,ndim=2] P
+
         Ngrains = len(Elist)
         P = numpy.zeros((Ngrains,Ngrains), numpy.float64)
-        
+
         start = -1
         for i in range(Ngrains):
             if densStates[i] > 0 and start == -1:
                 start = i
                 break
 
-        # Determine value of parameters at this temperature
-        alpha = self.getAlpha(T)
-
         # Determine unnormalized entries in collisional transfer probability matrix
         for r in range(start, Ngrains):
-            P[0:r+1,r] = numpy.exp(-(Elist[r] - Elist[0:r+1]) / alpha)
-            P[r+1:,r] = numpy.exp(-(Elist[r+1:] - Elist[r]) / alpha) * densStates[r+1:] / densStates[r] * numpy.exp(-(Elist[r+1:] - Elist[r]) / (constants.R * T))
+            for s in range(r+1):
+                P[s,r] = exp(-(Elist[r] - Elist[s]) * alpha)
+            for s in range(r+1,Ngrains):
+                P[s,r] = exp(-(Elist[s] - Elist[r]) * alpha) * densStates[s] / densStates[r] * exp(-(Elist[s] - Elist[r]) * beta)
         
         # Normalize using detailed balance
         # This method is much more robust, and corresponds to:
@@ -255,24 +282,32 @@ class SingleExponentialDownModel(CollisionModel):
         #    [ 1 2 3 3 ...]
         #    [ 1 2 3 4 ...]
         for r in range(start, Ngrains):
-            C = (1 - numpy.sum(P[start:r,r])) / numpy.sum(P[r:Ngrains,r])
+            left = 0.0; right = 0.0
+            for s in range(start, r): left += P[s,r]
+            for s in range(r, Ngrains): right += P[s,r]
+            C = (1 - left) / right
             # Check for normalization consistency (i.e. all numbers are positive)
-            if C < 0: raise ChemPyError('Encountered negative normalization coefficient while normalizing collisional transfer probabilities matrix.')
-            P[r,r+1:Ngrains] *= C
-            P[r:Ngrains,r] *= C
-            P[r,r] -= 1
+            if C < 0: raise CollisionError('Encountered negative normalization coefficient while normalizing collisional transfer probabilities matrix.')
+            for s in range(r+1,Ngrains):
+                P[r,s] *= C
+                P[s,r] *= C
+            P[r,r] = P[r,r] * C - 1
         # This method is described by Pilling and Holbrook, and corresponds to:
         #    [ ... 4 3 2 1 ]
         #    [ ... 3 3 2 1 ]
         #    [ ... 2 2 2 1 ]
         #    [ ... 1 1 1 1 ]
         #for r in range(Ngrains, start, -1):
-            #C = (1 - numpy.sum(M[r:Ngrains,r])) / numpy.sum(M[0:r,r])
+            #left = 0.0; right = 0.0
+            #for s in range(start, r): left += P[s,r]
+            #for s in range(r, Ngrains): right += P[s,r]
+            #C = (1 - right) / left
             ## Check for normalization consistency (i.e. all numbers are positive)
-            #if C < 0: raise ChemPyError('Encountered negative normalization coefficient while normalizing collisional transfer probabilities matrix.')
-            #P[r,0:r-1] *= C
-            #P[0:r,r] *= C
-            #P[r,r] -= 1
+            #if C < 0: raise CollisionError('Encountered negative normalization coefficient while normalizing collisional transfer probabilities matrix.')
+            #for s in range(r-1):
+                #P[r,s] *= C
+                #P[s,r] *= C
+            #P[r,r] = P[r,r] * C - 1
 
         return P
 
