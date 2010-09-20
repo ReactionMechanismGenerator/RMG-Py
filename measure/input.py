@@ -333,7 +333,7 @@ def generateThermoFromStates(species):
     from chempy.thermo import ThermoGAModel
     Tdata = numpy.linspace(numpy.min(Tlist), numpy.max(Tlist), 20.0)
     Cpdata = species.states.getHeatCapacities(Tdata)
-    H298 = species.states.getEnthalpy(298)
+    H298 = species.E0 + species.states.getEnthalpy(298)
     S298 = species.states.getEntropy(298)
     species.thermo = ThermoGAModel(Tdata=Tdata, Cpdata=Cpdata, H298=H298, S298=S298)
 
