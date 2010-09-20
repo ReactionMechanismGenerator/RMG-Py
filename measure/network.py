@@ -437,6 +437,15 @@ class Network:
             for i in range(Nisom+Nreac):
                 eqRatios[i] = numpy.sum(densStates0[i,:] * numpy.exp(-Elist / constants.R / T)) * dE
                 densStates[i,:] = densStates0[i,:] / eqRatios[i] * dE
+            # Use free energy to determine equilibrium ratios of each isomer and product channel
+            eqRatios = numpy.zeros(Nisom+Nreac, numpy.float64)
+            conc = 1e5 / constants.R / T
+            for i in range(Nisom):
+                G = self.isomers[i].thermo.getFreeEnergy(T)
+                eqRatios[i] = math.exp(-G / constants.R / T)
+            for i in range(Nreac):
+                G = sum([spec.thermo.getFreeEnergy(T) for spec in self.reactants[i]])
+                eqRatios[Nisom+i] = math.exp(-G / constants.R / T) * conc ** (len(self.reactants[i]) - 1)
 
             for p, P in enumerate(Plist):
 
