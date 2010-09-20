@@ -162,31 +162,37 @@ def calculateMicrocanonicalRateCoefficient(reaction,
     
         if len(reaction.reactants) == 1 and len(reaction.products) == 1 and reactantStatesKnown and productStatesKnown:
             # Isomerization
-            reacQ = numpy.sum(reacDensStates * numpy.exp(-Elist / R / T))
-            prodQ = numpy.sum(prodDensStates * numpy.exp(-Elist / R / T))
+            reacEqDist = reacDensStates * numpy.exp(-Elist / R / T)
+            reacQ = numpy.sum(reacEqDist)
+            prodEqDist = numpy.sum(prodDensStates * numpy.exp(-Elist / R / T))
+            prodQ = numpy.sum(prodEqDist)
             for r in range(len(Elist)):
-                if prodDensStates[r] > 0: break
-            kr[r:] = kf[r:] * (reacDensStates[r:] / reacQ) / (prodDensStates[r:] / prodQ) / Keq
+                if prodEqDist[r] > 0: break
+            kr[r:] = kf[r:] * (reacEqDist[r:] / reacQ) / (prodEqDist[r:] / prodQ) / Keq
 
         elif len(reaction.reactants) == 1 and len(reaction.products) > 1 and reactantStatesKnown:
             # Dissociation
-            reacQ = numpy.sum(reacDensStates * numpy.exp(-Elist / constants.R / T))
-            kr = kf * (reacDensStates / reacQ) / Keq
+            reacEqDist = reacDensStates * numpy.exp(-Elist / R / T)
+            reacQ = numpy.sum(reacEqDist)
+            kr = kf * (reacEqDist / reacQ) / Keq
 
         elif len(reaction.reactants) > 1 and len(reaction.products) == 1 and reactantStatesKnown and productStatesKnown:
             # Association with reactants and product known
-            reacQ = numpy.sum(reacDensStates * numpy.exp(-Elist / R / T))
-            prodQ = numpy.sum(prodDensStates * numpy.exp(-Elist / R / T))
-            kf = kf * reacDensStates * numpy.exp(-Elist / R / T) / reacQ
+            reacEqDist = reacDensStates * numpy.exp(-Elist / R / T)
+            reacQ = numpy.sum(reacEqDist)
+            prodEqDist = numpy.sum(prodDensStates * numpy.exp(-Elist / R / T))
+            prodQ = numpy.sum(prodEqDist)
+            kf = kf * reacEqDist / reacQ
             for r in range(len(Elist)):
-                if prodDensStates[r] > 0: break
-            kr[r:] = kf[r:] / (prodDensStates[r:] / prodQ) / Keq
+                if prodEqDist[r] > 0: break
+            kr[r:] = kf[r:] / (prodEqDist[r:] / prodQ) / Keq
 
         elif len(reaction.reactants) > 1 and len(reaction.products) == 1 and productStatesKnown:
             # Association with only product known
-            prodQ = numpy.sum(prodDensStates * numpy.exp(-Elist / R / T))
-            kf = kr * (prodDensStates / prodQ) * Keq
-    
+            prodEqDist = numpy.sum(prodDensStates * numpy.exp(-Elist / R / T))
+            prodQ = numpy.sum(prodEqDist)
+            kf = kr * (prodEqDist / prodQ) * Keq
+
     return kf, kr
 
 ################################################################################
@@ -237,14 +243,14 @@ def applyInverseLaplaceTransformMethod(kinetics, double E0,
     the inverse transform is undefined).
     """
 
-    cdef double A, n, Ea, dE, R = constants.R
+    cdef double A, n, T0, Ea, dE, R = constants.R
     cdef numpy.ndarray[numpy.float64_t,ndim=1] k, phi
     cdef int i, r, s, Ngrains = len(Elist)
 
     k = numpy.zeros_like((Elist))
     
     if isinstance(kinetics, ArrheniusModel) and (T != 0.0 or (kinetics.Ea >= 0 and kinetics.n >= 0)):
-        A = kinetics.A
+        A = kinetics.A / (kinetics.T0**kinetics.n)
         n = kinetics.n
         Ea = kinetics.Ea
         dE = Elist[1] - Elist[0]
@@ -263,7 +269,7 @@ def applyInverseLaplaceTransformMethod(kinetics, double E0,
         if n == 0:
             # Determine the microcanonical rate directly
             s = int(floor(Ea / dE))
-            for r in range(Ngrains):
+            for r in range(s, Ngrains):
                 if Elist[r] > E0 and densStates[r] != 0:
                     k[r] = A * densStates[r - s] / densStates[r]
                     
