@@ -47,7 +47,31 @@ import logging
 import chempy.constants as constants
 import chempy.reaction
 from chempy.kinetics import *
-from chempy.states import convolve
+
+def convolve(numpy.ndarray[numpy.float64_t,ndim=1] rho1,
+    numpy.ndarray[numpy.float64_t,ndim=1] rho2,
+    numpy.ndarray[numpy.float64_t,ndim=1] Elist):
+    """
+    Convolutes two density of states arrays `rho1` and `rho2` with corresponding
+    energies `Elist` together using the equation
+
+    .. math:: \\rho(E) = \\int_0^E \\rho_1(x) \\rho_2(E-x) \\, dx
+
+    The units of the parameters do not matter so long as they are consistent.
+    """
+
+    cdef numpy.ndarray[numpy.float64_t,ndim=1] rho
+    cdef double dE
+    cdef int nE, i, j
+
+    rho = numpy.zeros_like(Elist)
+    dE = Elist[1] - Elist[0]
+    nE = len(Elist)
+    for i in range(nE):
+        for j in range(i+1):
+            rho[i] += rho2[i-j] * rho1[i] * dE
+
+    return rho
 
 ################################################################################
 
@@ -94,7 +118,8 @@ def calculateMicrocanonicalRateCoefficient(reaction,
     cdef numpy.ndarray[numpy.float64_t,ndim=1] kf, kr
     cdef double Keq, reacQ, prodQ, R = constants.R
     cdef int r
-    
+    cdef bint reactantStatesKnown, productStatesKnown
+
     kf = numpy.zeros_like(Elist)
     kr = numpy.zeros_like(Elist)
 
