@@ -35,7 +35,9 @@ a set of phenomenological rate coefficients :math:`k(T,P)`.
 
 import math
 import numpy
+cimport numpy
 import numpy.linalg
+import logging
 
 import chempy.constants as constants
 
@@ -50,8 +52,15 @@ class ChemicallySignificantEigenvaluesError(Exception):
 
 ################################################################################
 
-def applyChemicallySignificantEigenvaluesMethod(T, P, Elist, densStates, Mcoll, Kij, Fim, Gnj,
-  eqRatios, Nisom, Nreac, Nprod):
+def applyChemicallySignificantEigenvaluesMethod(double T, double P,
+    numpy.ndarray[numpy.float64_t,ndim=1] Elist,
+    numpy.ndarray[numpy.float64_t,ndim=2] densStates,
+    numpy.ndarray[numpy.float64_t,ndim=3] Mcoll,
+    numpy.ndarray[numpy.float64_t,ndim=3] Kij,
+    numpy.ndarray[numpy.float64_t,ndim=3] Fim,
+    numpy.ndarray[numpy.float64_t,ndim=3] Gnj,
+    numpy.ndarray[numpy.float64_t,ndim=1] eqRatios,
+    int Nisom, int Nreac, int Nprod):
     """
     Use the chemically-significant eigenvalues method to reduce the master
     equation model to a set of phenomenological rate coefficients :math:`k(T,P)`
@@ -65,7 +74,13 @@ def applyChemicallySignificantEigenvaluesMethod(T, P, Elist, densStates, Mcoll, 
     and the numbers of isomers, reactant channels, and product channels `Nisom`,
     `Nreac`, and `Nprod`, respectively.
     """
-    
+
+    cdef int Ngrains, Nchem, Nrows, Ncse, index, i, n, r, s
+    cdef numpy.ndarray[numpy.int_t,ndim=2] indices
+    cdef numpy.ndarray[numpy.float64_t,ndim=1] S, Sinv, W0, W, C
+    cdef numpy.ndarray[numpy.float64_t,ndim=2] eqDist, M, K, V0, V, X, Xinv, dXij
+    cdef numpy.ndarray[numpy.float64_t,ndim=3] pa,
+
     Ngrains = len(Elist)
     Nchem = Nisom + Nreac
     
@@ -213,8 +228,18 @@ def applyChemicallySignificantEigenvaluesMethod(T, P, Elist, densStates, Mcoll, 
 
 ################################################################################
 
-def getFullMatrix(Mcoll, Kij, Fim, Gnj, Ngrains, Nisom, Nreac, Nprod, indices):
+def getFullMatrix(
+    numpy.ndarray[numpy.float64_t,ndim=3] Mcoll,
+    numpy.ndarray[numpy.float64_t,ndim=3] Kij,
+    numpy.ndarray[numpy.float64_t,ndim=3] Fim,
+    numpy.ndarray[numpy.float64_t,ndim=3] Gnj,
+    int Ngrains, int Nisom, int Nreac, int Nprod,
+    numpy.ndarray[numpy.int_t,ndim=2] indices,
+):
 
+    cdef int Nrows, i, j, n, r, s, u, v
+    cdef numpy.ndarray[numpy.float64_t,ndim=2] M
+    
     Nrows = numpy.max(indices) + 1 + Nreac
 
     M = numpy.zeros((Nrows, Nrows), numpy.float64)

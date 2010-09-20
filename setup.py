@@ -48,6 +48,7 @@ ext_modules = [
     Extension('measure.reaction', ['measure/reaction.pyx']),
     Extension('measure.msc', ['measure/msc.pyx']),
     Extension('measure.rs', ['measure/rs.pyx']),
+    Extension('measure.cse', ['measure/cse.pyx']),
 ]
 
 setup(name='MEASURE',
