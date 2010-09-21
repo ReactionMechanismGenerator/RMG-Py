@@ -164,7 +164,7 @@ def calculateMicrocanonicalRateCoefficient(reaction,
             # Isomerization
             reacEqDist = reacDensStates * numpy.exp(-Elist / R / T)
             reacQ = numpy.sum(reacEqDist)
-            prodEqDist = numpy.sum(prodDensStates * numpy.exp(-Elist / R / T))
+            prodEqDist = prodDensStates * numpy.exp(-Elist / R / T)
             prodQ = numpy.sum(prodEqDist)
             for r in range(len(Elist)):
                 if prodEqDist[r] > 0: break
@@ -180,7 +180,7 @@ def calculateMicrocanonicalRateCoefficient(reaction,
             # Association with reactants and product known
             reacEqDist = reacDensStates * numpy.exp(-Elist / R / T)
             reacQ = numpy.sum(reacEqDist)
-            prodEqDist = numpy.sum(prodDensStates * numpy.exp(-Elist / R / T))
+            prodEqDist = prodDensStates * numpy.exp(-Elist / R / T)
             prodQ = numpy.sum(prodEqDist)
             kf = kf * reacEqDist / reacQ
             for r in range(len(Elist)):
@@ -189,7 +189,7 @@ def calculateMicrocanonicalRateCoefficient(reaction,
 
         elif len(reaction.reactants) > 1 and len(reaction.products) == 1 and productStatesKnown:
             # Association with only product known
-            prodEqDist = numpy.sum(prodDensStates * numpy.exp(-Elist / R / T))
+            prodEqDist = prodDensStates * numpy.exp(-Elist / R / T)
             prodQ = numpy.sum(prodEqDist)
             kf = kr * (prodEqDist / prodQ) * Keq
 
