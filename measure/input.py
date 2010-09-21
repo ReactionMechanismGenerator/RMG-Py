@@ -123,6 +123,7 @@ def processQuantity(quantity):
 
 def species(label='', E0=None, states=None, thermo=None, lennardJones=None, molecularWeight=0.0, SMILES='', InChI=''):
     global speciesDict
+    if label == '': raise InputError('Missing "label" attribute in species() block.')
     if E0 is not None: E0 = processQuantity(E0)[0]
     else: E0 = 0.0
     spec = Species(label=label, states=states, thermo=thermo, E0=E0, lennardJones=lennardJones)
@@ -210,7 +211,7 @@ def reaction(reactants, products, kinetics=None, reversible=True, transitionStat
             transitionState=transitionState,
         )
     except KeyError, e:
-        raise NameError('A reaction was encountered with species "%s", but that species was not found in the input file.' % e.args[0])
+        raise InputError('A reaction was encountered with species "%s", but that species was not found in the input file.' % e.args[0])
         
     network.pathReactions.append(rxn)
     logging.debug('Found reaction "%s"' % rxn)
@@ -304,10 +305,12 @@ def energies(Emin=None, Emax=None, dE=None, count=None):
         else:
             Elist = (dE, count)
     else:
-        raise SyntaxError('Must specify either dE or count.')
+        raise InputError('Must specify either dE or count in energies() block.')
 
 def _method(name):
     global method
+    if name.lower() not in ['modified strong collision', 'reservoir state', 'chemically-significant eigenvalues']:
+        raise InputError('Invalid method "%s"; see documentation for available methods.' % name)
     method = name
 
 def interpolationModel(name, *args):
@@ -425,7 +428,7 @@ def readInput(path):
     except IOError, e:
         logging.error('The input file "%s" could not be opened.' % path)
         logging.info('Check that the file exists and that you have read access.')
-        return
+        return None
     
     # Clear any existing loaded species
     speciesDict = {}
@@ -459,71 +462,127 @@ def readInput(path):
     
     try:
         exec f in global_context, local_context
-    except (NameError, TypeError, SyntaxError), e:
+    
+    
+        # If loading of the input file was unsuccessful for any reason,
+        # then return None so the program can terminate
+        if network is None: return None
+
+        # Determine temperature grid if not yet known
+        if Tparams is not None and Tlist is None:
+            Tmin, Tmax, Tcount = Tparams
+            Tlist = getTemperaturesForModel(model, Tmin, Tmax, Tcount)
+        elif Tparams is None and Tlist is not None:
+            Tmin = min(Tlist); Tmax = max(Tlist); Tcount = len(Tlist)
+        else:
+            raise InputError('No temperature() block found.')
+        Tlist = numpy.array(Tlist, numpy.float64)
+
+        # Determine pressure grid if not yet known
+        if Pparams is not None and Plist is None:
+            Pmin, Pmax, Pcount = Pparams
+            Plist = getPressuresForModel(model, Pmin, Pmax, Pcount)
+        elif Pparams is None and Plist is not None:
+            Pmin = min(Plist); Pmax = max(Plist); Pcount = len(Plist)
+        else:
+            raise InputError('No pressure() block found.')
+        Plist = numpy.array(Plist, numpy.float64)
+
+        # Check that we have energy grain information
+        if Elist is None:
+            raise InputError('No energies() block found.')
+
+        # Check that a method was specified
+        if method == '':
+            raise InputError('No method() block found.')
+
+        # Figure out which configurations are isomers, reactant channels, and product channels
+        for rxn in network.pathReactions:
+            # Sort bimolecular configurations so that we always encounter them in the
+            # same order
+            # The actual order doesn't matter, as long as it is consistent
+            rxn.reactants.sort()
+            rxn.products.sort()
+            # Reactants:
+            # - All unimolecular configurations are automatically isomers
+            # - All bimolecular configurations are automatically reactant channels
+            if len(rxn.reactants) == 1 and rxn.reactants[0] not in network.isomers:
+                network.isomers.append(rxn.reactants[0])
+            elif len(rxn.reactants) > 1 and rxn.reactants not in network.isomers:
+                network.reactants.append(rxn.reactants)
+            # Products:
+            # - If reversible, the same actions are taken as for the reactants
+            # - If irreversible, configurations are treated as products
+            if rxn.reversible:
+                if len(rxn.products) == 1 and rxn.products[0] not in network.isomers:
+                    network.isomers.append(rxn.products[0])
+                elif len(rxn.products) > 1 and rxn.products not in network.isomers:
+                    network.reactants.append(rxn.products)
+            elif rxn.products not in network.products:
+                network.products.append(rxn.products)
+
+        # For each configuration with states data but not thermo data,
+        # calculate the thermo data
+        for isomer in network.isomers:
+            if isomer.thermo is None and isomer.states is not None:
+                generateThermoFromStates(isomer)
+        for reactants in network.reactants:
+            for spec in reactants:
+                if spec.thermo is None and spec.states is not None:
+                    generateThermoFromStates(spec)
+        for products in network.products:
+            for spec in products:
+                if spec.thermo is None and spec.states is not None:
+                    generateThermoFromStates(spec)
+
+        # Check that we have the right data for each configuration
+        # Use a string to store the errors so that the user can see all of
+        # the mistakes at once
+        errorString = ''
+        
+        for isomer in network.isomers:
+            errorString0 = ''
+            # All isomers must have states data
+            if isomer.states is None:
+                errorString0 += '    Required molecular degree of freedom data was not provided.\n'
+            # All isomers must have collision parameters
+            if isomer.lennardJones is None:
+                errorString0 += '    Required Lennard-Jones parameters were not provided.\n'
+            if isomer.molecularWeight == 0:
+                errorString0 += '    Required molecular weight was not provided.\n'
+            if errorString0 != '':
+                errorString = 'For unimolecular isomer "%s":\n%s' % (isomer, errorString0)
+
+        for rxn in network.pathReactions:
+            errorString0 = ''
+            # All reactions must have either high-pressure-limit kinetics or transition state data
+            if rxn.kinetics is None and rxn.transitionState.states is None:
+                errorString0 += '    Unable to determine microcanonical rate k(E); you must specify either the high-P kinetics or transition state molecular degrees of freedom.\n' % spec
+
+            if rxn.reversible:
+                # All reversible reactions must have thermo for both reactants and products
+                for spec in rxn.reactants:
+                    if spec.thermo is None:
+                        errorString0 += '    Unable to determine thermo data for reactant "%s"; you must specify either molecular degrees of freedom or a thermodynamics model.\n' % spec
+                for spec in rxn.products:
+                    if spec.thermo is None:
+                        errorString0 += '    Unable to determine thermo data for product "%s"; you must specify either molecular degrees of freedom or a thermodynamics model.\n' % spec
+            else:
+                # All irreversible reactions must have states data for reactants
+                for spec in rxn.reactants:
+                    if spec.states is None:
+                        errorString0 += '    Required molecular degree of freedom data for reactant "%s" was not provided.\n' % spec
+
+            if errorString0 != '':
+                errorString = 'For path reaction "%s":\n%s' % (rxn, errorString0)
+
+        if errorString != '':
+            raise InputError(errorString)
+
+    except InputError, e:
         logging.error('The input file "%s" was invalid:' % path)
-        logging.exception(e)
-        network = None
-    finally:
-        f.close()
-    
-    # If loading of the input file was unsuccessful for any reason,
-    # then return None for everything so the program can terminate
-    if network is None: return None, None, None, None, None, None, None, None, None, None
-    
-    # Determine temperature grid if not yet known
-    if Tparams is not None and Tlist is None:
-        Tmin, Tmax, Tcount = Tparams
-        Tlist = getTemperaturesForModel(model, Tmin, Tmax, Tcount)
-    else:
-        Tmin = min(Tlist); Tmax = max(Tlist); Tcount = len(Tlist)
-    Tlist = numpy.array(Tlist, numpy.float64)
-
-    # Determine pressure grid if not yet known
-    if Pparams is not None and Plist is None:
-        Pmin, Pmax, Pcount = Pparams
-        Plist = getPressuresForModel(model, Pmin, Pmax, Pcount)
-    else:
-        Pmin = min(Plist); Pmax = max(Plist); Pcount = len(Plist)
-    Plist = numpy.array(Plist, numpy.float64)
-
-    # Figure out which configurations are isomers, reactant channels, and product channels
-    for rxn in network.pathReactions:
-        # Sort bimolecular configurations so that we always encounter them in the
-        # same order
-        # The actual order doesn't matter, as long as it is consistent
-        rxn.reactants.sort()
-        rxn.products.sort()
-        # Reactants:
-        # - All unimolecular configurations are automatically isomers
-        # - All bimolecular configurations are automatically reactant channels
-        if len(rxn.reactants) == 1 and rxn.reactants[0] not in network.isomers:
-            network.isomers.append(rxn.reactants[0])
-        elif len(rxn.reactants) > 1 and rxn.reactants not in network.isomers:
-            network.reactants.append(rxn.reactants)
-        # Products:
-        # - If reversible, the same actions are taken as for the reactants
-        # - If irreversible, configurations are treated as products
-        if rxn.reversible:
-            if len(rxn.products) == 1 and rxn.products[0] not in network.isomers:
-                network.isomers.append(rxn.products[0])
-            elif len(rxn.products) > 1 and rxn.products not in network.isomers:
-                network.reactants.append(rxn.products)
-        elif rxn.products not in network.products:
-            network.products.append(rxn.products)
-    
-    # For each configuration with states data but not thermo data,
-    # calculate the thermo data
-    for isomer in network.isomers:
-        if isomer.thermo is None and isomer.states is not None:
-            generateThermoFromStates(isomer)
-    for reactants in network.reactants:
-        for spec in reactants:
-            if spec.thermo is None and spec.states is not None:
-                generateThermoFromStates(spec)
-    for products in network.products:
-        for spec in products:
-            if spec.thermo is None and spec.states is not None:
-                generateThermoFromStates(spec)
+        logging.info(e)
+        return None
 
     # Print lots of information about the loaded network
     # In particular, we want to give all of the energies on the PES
@@ -534,7 +593,7 @@ def readInput(path):
     # If there are no isomers, then there's nothing to do
     if len(network.isomers) == 0:
         logging.info('Could not find any unimolecular isomers based on this network, so there is nothing to do.')
-        return None, None, None, None, None, None, None, None, None, None
+        return None
       
     return network, Tlist, Plist, Elist, method, model, Tmin, Tmax, Pmin, Pmax
 

@@ -158,18 +158,21 @@ if __name__ == '__main__':
     
     # Load input file
     from measure.input import readInput
-    network, Tlist, Plist, Elist, method, model, Tmin, Tmax, Pmin, Pmax = readInput(args.file[0])
-    Nisom = len(network.isomers)
-    Nreac = len(network.reactants)
-    Nprod = len(network.products)
-
-    # We will save our output files to the directory containing the input file,
-    # NOT the current working directory
-    outputDirectory = os.path.dirname(os.path.abspath(args.file[0]))
+    params = readInput(args.file[0])
 
     # Only proceed if the input network is valid
-    if network is not None:
-        
+    if params is not None:
+
+        network, Tlist, Plist, Elist, method, model, Tmin, Tmax, Pmin, Pmax = params
+
+        Nisom = len(network.isomers)
+        Nreac = len(network.reactants)
+        Nprod = len(network.products)
+
+        # We will save our output files to the directory containing the input file,
+        # NOT the current working directory
+        outputDirectory = os.path.dirname(os.path.abspath(args.file[0]))
+
         # Draw potential energy surface
         if args.draw:
             logging.info('Drawing potential energy surface...')
