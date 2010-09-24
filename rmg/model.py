@@ -1113,6 +1113,7 @@ class CoreEdgeReactionModel:
                             network.reactants.append(rxn.products)
                     elif rxn.products not in network.products:
                         network.products.append(rxn.products)
+                network.isomers.sort(cmp=lambda x, y: x.index - y.index)
                 
                 # Update list of explored isomers to include all species in core
                 for isom in network.isomers:
@@ -1141,7 +1142,7 @@ class CoreEdgeReactionModel:
                 network.bathGas = {}
                 for spec in bathGas:
                     network.bathGas[spec] = 1.0 / len(bathGas)
-                network.collisionModel = SingleExponentialDownModel(alpha=4.86 * 4184)
+                network.collisionModel = SingleExponentialDownModel(alpha0=4.86 * 4184)
                 
                 # Save input file
                 measure.output.writeInput(os.path.join(settings.outputDirectory, 'pdep', 'network%i_%i.py' % (network.index, len(network.isomers))),

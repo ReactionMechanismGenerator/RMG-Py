@@ -289,6 +289,8 @@ def execute(args):
             if spec.reactive:
                 spec.generateThermoData()
                 spec.generateStatesData()
+        for spec in coreSpecies:
+            if spec.reactive:
                 reactionModel.enlarge(spec)
 
     # RMG execution statistics

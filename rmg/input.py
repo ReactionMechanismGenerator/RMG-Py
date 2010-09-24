@@ -258,7 +258,8 @@ def readInputFile(path):
         path = os.path.join(getDatabaseDirectory(), d)
         loadFrequencyDatabase(path, group=True, old=True)
 
-    speciesList = speciesDict.values(); speciesList.sort()
+    speciesList = speciesDict.values()
+    speciesList.sort(cmp=lambda x, y: x.index - y.index)
 
     for reactionSystem in reactionSystems:
         initialMoleFraction = {}
