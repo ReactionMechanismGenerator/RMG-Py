@@ -97,6 +97,15 @@ class Network:
         """
         self.valid = False
 
+    def merge(self, other):
+        """
+        Merge another :class:`Network` object `other` into this object.
+        """
+        self.isomers.extend(other.isomers)
+        self.pathReactions.extend(other.pathReactions)
+        self.explored.extend(other.explored)
+        self.invalidate()
+
     def containsSpecies(self, species):
         """
         Return :data:`True` if the `species` is a *unimolecular* isomer in the
@@ -496,6 +505,126 @@ class Network:
 
         return K, p0
 
+    def generateFullMEMatrix(self, T, P, Elist):
+        """
+        Generate the full master equation matrix for the network at the
+        specified temperature `T` in K and pressure `P` in Pa and for the
+        set of energy grains `Elist` in J/mol. Returns the full master equation
+        matrix, the indices used to place the isomers into the rows of the
+        matrix, and the computed densities of states in mol/J.
+        """
+
+        # Note that this is a very similar method to calculateRateCoefficients()
+        # Thus, if you change something here, you may need to change it there
+        # as well
+        # Would be better to refactor to share the common code!
+
+        # Determine the values of some counters
+        Ngrains = len(Elist)
+        Nisom = len(self.isomers)
+        Nreac = len(self.reactants)
+        Nprod = len(self.products)
+        dE = Elist[1] - Elist[0]
+
+        # Get ground-state energies of all isomers and each reactant channel
+        # that has the necessary parameters
+        # An exception will be raised if a unimolecular isomer is missing
+        # this information
+        E0 = numpy.zeros((Nisom+Nreac), numpy.float64)
+        for i in range(Nisom):
+            E0[i] = self.isomers[i].E0
+        for n in range(Nreac):
+            E0[n+Nisom] = sum([spec.E0 for spec in self.reactants[n]])
+
+        # Get first reactive grain for each isomer
+        Ereac = numpy.ones(Nisom, numpy.float64) * 1e20
+        for i in range(Nisom):
+            for rxn in self.pathReactions:
+                if rxn.reactants[0] == self.isomers[i] or rxn.products[0] == self.isomers[i]:
+                    if rxn.transitionState.E0 < Ereac[i]:
+                        Ereac[i] = rxn.transitionState.E0
+
+        # Shift energy grains such that lowest is zero
+        Emin = Elist[0]
+        for rxn in self.pathReactions:
+            rxn.transitionState.E0 -= Emin
+        E0 -= Emin
+        Ereac -= Emin
+        Elist -= Emin
+
+        # Calculate density of states for each isomer and each reactant channel
+        # that has the necessary parameters
+        densStates0 = self.calculateDensitiesOfStates(Elist, E0)
+
+        Kij, Gnj, Fim = self.calculateMicrocanonicalRates(Elist, densStates0, T)
+
+        # Rescale densities of states such that, when they are integrated
+        # using the Boltzmann factor as a weighting factor, the result is unity
+        densStates = numpy.zeros_like(densStates0)
+        eqRatios = numpy.zeros(Nisom+Nreac, numpy.float64)
+        for i in range(Nisom+Nreac):
+            eqRatios[i] = numpy.sum(densStates0[i,:] * numpy.exp(-Elist / constants.R / T)) * dE
+            densStates[i,:] = densStates0[i,:] / eqRatios[i] * dE
+        
+        # Calculate collision frequencies
+        collFreq = numpy.zeros(Nisom, numpy.float64)
+        for i in range(Nisom):
+            collFreq[i] = calculateCollisionFrequency(self.isomers[i], T, P, self.bathGas)
+
+        Mcoll = numpy.zeros((Nisom,Ngrains,Ngrains), numpy.float64)
+        for i in range(Nisom):
+            Mcoll[i,:,:] = collFreq[i] * self.collisionModel.generateCollisionMatrix(Elist, T, densStates[i,:])
+
+        # Unshift energy grains
+        for rxn in self.pathReactions:
+            rxn.transitionState.E0 += Emin
+        Elist += Emin
+
+        # Construct accounting matrix
+        # Row is grain number, column is well number, value is index into matrix
+        indices = -numpy.ones([Ngrains,Nisom], numpy.int)
+        Nrows = 0
+        for r in range(Ngrains):
+            for i in range(Nisom):
+                if densStates[i,r] > 0:
+                    indices[r,i] = Nrows
+                    Nrows += 1
+        Nrows += Nreac + Nprod
+        
+        # Construct full ME matrix
+        M = numpy.zeros([Nrows,Nrows], numpy.float64)
+        # Collision terms
+        for i in range(Nisom):
+            for r in range(Ngrains):
+                if indices[r,i] > -1:
+                    for s in range(r, Ngrains):
+                        M[indices[r,i], indices[s,i]] = Mcoll[i,r,s]
+                        M[indices[s,i], indices[r,i]] = Mcoll[i,s,r]
+        # Isomerization terms
+        for i in range(Nisom):
+            for j in range(i):
+                if Kij[i,j,Ngrains-1] > 0 or Kij[j,i,Ngrains-1] > 0:
+                    for r in range(Ngrains):
+                        u = indices[r,i]; v = indices[r,j]
+                        if u > -1 and v > -1:
+                            M[v,u] = Kij[j,i,r]
+                            M[u,u] -= Kij[j,i,r]
+                            M[u,v] = Kij[i,j,r]
+                            M[v,v] -= Kij[i,j,r]
+        # Association/dissociation terms
+        for i in range(Nisom):
+            for n in range(Nreac+Nprod):
+                if Gnj[n,i,Ngrains-1] > 0:
+                    for r in range(Ngrains):
+                        u = indices[r,i]; v = Nrows - Nreac - Nprod + n
+                        if u > -1:
+                            M[u,u] -= Gnj[n,i,r]
+                            M[v,u] = Gnj[n,i,r]
+                            if n < Nreac:
+                                M[u,v] = Fim[i,n,r]
+                                M[v,v] -= Fim[i,n,r]
+
+        return M, indices, densStates
 
     def __createNewSurfaceAndContext(self, ext, fstr='', width=800, height=600):
         import cairo
