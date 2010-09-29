@@ -138,7 +138,7 @@ def applyChemicallySignificantEigenvaluesMethod(double T, double P,
         W0, V0 = numpy.linalg.eigh(M)
     except numpy.linalg.LinAlgError:
         raise ChemicallySignificantEigenvaluesError('Eigenvalue calculation failed to converge.')
-
+    
     # We can't assume that eigh returns them in sorted order
     ind = W0.argsort()
 
@@ -148,7 +148,7 @@ def applyChemicallySignificantEigenvaluesMethod(double T, double P,
         if abs(W0[ind[-Nchem-1]] / W0[ind[-1-i]]) > 5.0: Ncse += 1
 
     K = numpy.zeros((Nisom+Nreac+Nprod, Nisom+Nreac+Nprod), numpy.float64)
-    pa = numpy.zeros((Ngrains, Nisom+Nreac, Nisom), numpy.float64)
+    pa = numpy.zeros((Ngrains, Nisom, Nisom+Nreac), numpy.float64)
 
     # Check that we have the correct number of distinct eigenvalues and that
     # there is a zero eigenvalue if there should be (i.e. no product channels)
@@ -205,7 +205,7 @@ def applyChemicallySignificantEigenvaluesMethod(double T, double P,
                         if index > -1:
                             # Isomers
                             dXij[i,j] += C[index]
-                            pa[r,src,i] += C[index]
+                            pa[r,i,src] += C[index]
                             # Product channels
                             for n in range(Nreac, Nreac+Nprod):
                                 dXij[Nisom+n,j] += C[index] * Gnj[n,i,r] / W[j]
@@ -219,7 +219,7 @@ def applyChemicallySignificantEigenvaluesMethod(double T, double P,
                 K[:,src] += W[j] * dXij[:,j]
 
 #    import pylab
-#    pylab.semilogy(Elist / 4184, pa[:,:,0])
+#    pylab.semilogy(Elist / 4184, pa[:,0,:])
 #    pylab.show()
 #    quit()
 
@@ -254,14 +254,15 @@ def getFullMatrix(
 
     # Add isomerization terms
     for i in range(Nisom):
-        for j in range(Nisom):
+        for j in range(i):
             if Kij[i,j,-1] > 0 or Kij[j,i,-1] > 0:
-                u = indices[r,i]; v = indices[r,j]
-                if u > -1 and v > -1:
-                    M[v,u] = Kij[j,i,r]
-                    M[u,u] -= Kij[j,i,r]
-                    M[u,v] = Kij[i,j,r]
-                    M[v,v] -= Kij[i,j,r]
+                for r in range(Ngrains):
+                    u = indices[r,i]; v = indices[r,j]
+                    if u > -1 and v > -1:
+                        M[v,u] = Kij[j,i,r]
+                        M[u,u] -= Kij[j,i,r]
+                        M[u,v] = Kij[i,j,r]
+                        M[v,v] -= Kij[i,j,r]
 
     # Add dissociation/association terms
     for i in range(Nisom):

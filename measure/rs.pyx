@@ -147,11 +147,11 @@ def applyReservoirStateMethod(double T, double P,
         
     # Solve for pseudo-steady state populations of active state
     X = scipy.linalg.solve_banded((halfbandwidth,halfbandwidth), L, -Z, overwrite_ab=True, overwrite_b=True)
-    pa = numpy.zeros((Ngrains,Nisom+Nreac,Nisom), numpy.float64)
+    pa = numpy.zeros((Ngrains,Nisom,Nisom+Nreac), numpy.float64)
     for i in range(Nisom):
         for r in range(Nres[i], Ngrains):
             for n in range(Nisom+Nreac):
-                pa[r,n,i] = X[indices[r,i], n]
+                pa[r,i,n] = X[indices[r,i], n]
     
     # Double-check to ensure that we have all positive populations
     if not (pa >= 0).all():
@@ -165,10 +165,10 @@ def applyReservoirStateMethod(double T, double P,
         K[i,i] += numpy.sum(numpy.dot(Mcoll[i,0:Nres[i],0:Nres[i]], eqDist[i,0:Nres[i]]))
         # Isomerization from isomer j to isomer i
         for j in range(Nisom):
-            K[i,j] += numpy.sum(numpy.dot(Mcoll[i,0:Nres[i],Nres[i]:Ngrains], pa[Nres[i]:Ngrains,j,i]))
+            K[i,j] += numpy.sum(numpy.dot(Mcoll[i,0:Nres[i],Nres[i]:Ngrains], pa[Nres[i]:Ngrains,i,j]))
         # Association from reactant n to isomer i
         for n in range(Nisom, Nisom+Nreac):
-            K[i,n] += numpy.sum(numpy.dot(Mcoll[i,0:Nres[i],Nres[i]:Ngrains], pa[Nres[i]:Ngrains,n,i]))
+            K[i,n] += numpy.sum(numpy.dot(Mcoll[i,0:Nres[i],Nres[i]:Ngrains], pa[Nres[i]:Ngrains,i,n]))
     # Rows relating to reactants
     for n in range(Nreac):
         # Association loss
@@ -177,13 +177,13 @@ def applyReservoirStateMethod(double T, double P,
         # Reaction from isomer or reactant j to reactant n
         for j in range(Nisom+Nreac):
             for i in range(Nisom):
-                K[Nisom+n,j] += numpy.sum(Gnj[n,i,Nres[i]:Ngrains] * pa[Nres[i]:Ngrains,j,i])
+                K[Nisom+n,j] += numpy.sum(Gnj[n,i,Nres[i]:Ngrains] * pa[Nres[i]:Ngrains,i,j])
     # Rows relating to products
     for n in range(Nreac, Nreac+Nprod):
         # Reaction from isomer or reactant j to product n
         for j in range(Nisom+Nreac):
             for i in range(Nisom):
-                K[Nisom+n,j] += numpy.sum(Gnj[n,i,Nres[i]:Ngrains] * pa[Nres[i]:Ngrains,j,i])
+                K[Nisom+n,j] += numpy.sum(Gnj[n,i,Nres[i]:Ngrains] * pa[Nres[i]:Ngrains,i,j])
         
     # Ensure matrix is conservative
     for n in range(Nisom+Nreac):

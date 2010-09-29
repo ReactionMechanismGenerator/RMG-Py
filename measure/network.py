@@ -419,6 +419,7 @@ class Network:
 
         logging.info('Calculating phenomenological rate coefficients for network %i...' % self.index)
         K = numpy.zeros((len(Tlist),len(Plist),Nisom+Nreac+Nprod,Nisom+Nreac+Nprod), numpy.float64)
+        p0 = numpy.zeros((len(Tlist),len(Plist),Ngrains,Nisom,Nisom+Nreac), numpy.float64)
 
         for t, T in enumerate(Tlist):
 
@@ -461,7 +462,7 @@ class Network:
                         collFreq[i] *= calculateCollisionEfficiency(self.isomers[i], T, Elist, densStates[i,:], self.collisionModel, E0[i], Ereac[i])
                     # Apply modified strong collision method
                     import msc
-                    K[t,p,:,:], p0 = msc.applyModifiedStrongCollisionMethod(T, P, Elist, densStates, collFreq, Kij, Fim, Gnj, Ereac, Nisom, Nreac, Nprod)
+                    K[t,p,:,:], p0[t,p,:,:,:] = msc.applyModifiedStrongCollisionMethod(T, P, Elist, densStates, collFreq, Kij, Fim, Gnj, Ereac, Nisom, Nreac, Nprod)
                 elif method.lower() == 'reservoir state':
                     # The full collision matrix for each isomer
                     Mcoll = numpy.zeros((Nisom,Ngrains,Ngrains), numpy.float64)
@@ -469,7 +470,7 @@ class Network:
                         Mcoll[i,:,:] = collFreq[i] * self.collisionModel.generateCollisionMatrix(Elist, T, densStates[i,:])
                     # Apply reservoir state method
                     import rs
-                    K[t,p,:,:], p0 = rs.applyReservoirStateMethod(T, P, Elist, densStates, Mcoll, Kij, Fim, Gnj, Ereac, Nisom, Nreac, Nprod)
+                    K[t,p,:,:], p0[t,p,:,:,:] = rs.applyReservoirStateMethod(T, P, Elist, densStates, Mcoll, Kij, Fim, Gnj, Ereac, Nisom, Nreac, Nprod)
                 elif method.lower() == 'chemically-significant eigenvalues':
                     # The full collision matrix for each isomer
                     Mcoll = numpy.zeros((Nisom,Ngrains,Ngrains), numpy.float64)
@@ -477,7 +478,7 @@ class Network:
                         Mcoll[i,:,:] = collFreq[i] * self.collisionModel.generateCollisionMatrix(Elist, T, densStates[i,:])
                     # Apply chemically-significant eigenvalues method
                     import cse
-                    K[t,p,:,:], p0 = cse.applyChemicallySignificantEigenvaluesMethod(T, P, Elist, densStates, Mcoll, Kij, Fim, Gnj, eqRatios, Nisom, Nreac, Nprod)
+                    K[t,p,:,:], p0[t,p,:,:,:] = cse.applyChemicallySignificantEigenvaluesMethod(T, P, Elist, densStates, Mcoll, Kij, Fim, Gnj, eqRatios, Nisom, Nreac, Nprod)
                 else:
                     raise NetworkError('Unknown method "%s".' % method)
 
@@ -493,7 +494,8 @@ class Network:
         # Mark network as valid
         self.valid = True
 
-        return K
+        return K, p0
+
 
     def __createNewSurfaceAndContext(self, ext, fstr='', width=800, height=600):
         import cairo

@@ -189,7 +189,7 @@ if __name__ == '__main__':
                 logging.debug('')
 
             # Calculate the rate coefficients
-            K = network.calculateRateCoefficients(Tlist, Plist, Elist, method)
+            K, p0 = network.calculateRateCoefficients(Tlist, Plist, Elist, method)
 
             # Fit interpolation model
             from chempy.reaction import Reaction
