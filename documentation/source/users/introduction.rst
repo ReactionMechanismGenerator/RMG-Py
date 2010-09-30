@@ -2,14 +2,16 @@
 Introduction
 ************
 
-**MEASURE** - short for **M**\ aster **E**\ quation **A**\ utomatic **S**\ olver  
+**MEASURE** - short for **M**\ aster **E**\ quation **A**\ utomatic **S**\ olver 
 for **U**\ nimolecular **RE**\ actions - is a tool for estimating 
 pressure-dependent phenomenological rate coefficients :math:`k(T,P)` for  
-unimolecular reaction networks of arbitrary complexity using the master 
-equation. MEASURE provides multiple methods of simplifying the full master 
-equation model of the reaction network into a set of phenomenological rate 
-coefficients; these methods vary in accuracy, speed, and robustness. The result 
-is a set of :math:`k(T,P)` functions suitable for use in kinetic mechanisms.
+unimolecular reaction networks of arbitrary complexity. The approach is to
+first generate a detailed model of the reaction network using the 
+one-dimensional master equation, then apply one of several available model 
+reduction methods of varying accuracy, speed, and robustness to simplify the 
+detailed model into a set of phenomenological rate coefficients. The result 
+is a set of :math:`k(T,P)` functions suitable for use in chemical reaction
+mechanisms.
 
 About MEASURE
 =============
@@ -25,10 +27,9 @@ networks in greater detail.
 
 MEASURE is written in the `Python <http://www.python.org/>`_ programming
 language to facilitate ease of development, installation, and use. Certain
-computationally-intensive procedures have also been adapted to the
+computationally-intensive procedures have been adapted to the
 `Cython <http://www.cython.org/>`_ programming language in order to improve the
-execution time; use of this functionality is entirely optional (but
-recommended).
+execution time.
 
 License
 =======

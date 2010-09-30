@@ -10,13 +10,13 @@ for a reaction network specified in an input file. To do so, run Python on the
 main ``measure.py`` file, passing the input file as a parameter on the command
 line, e.g. ::
 
-    $ python measure.py [FILE]
+    $ python measure.py FILE
 
 When MEASURE execution is complete, it will save an output file in the same
 directory as the input file but with the name ``output.py``. If you wish to
 change the location of the output, use, the ``-o``/``--output`` flag, e.g. ::
 
-    $ python measure.py [INPUTFILE] -o [OUTPUTFILE]
+    $ python measure.py INPUTFILE -o OUTPUTFILE
 
 Drawing Potential Energy Surface
 ================================
@@ -27,7 +27,7 @@ main ``measure.py`` file, passing the input file as a parameter on the command
 line, and also add the ``-d``/``--draw`` flag along with the output image, 
 e.g. ::
 
-    $ python measure.py [INPUTFILE] -d [OUTPUTIMAGE]
+    $ python measure.py INPUTFILE -d OUTPUTIMAGE
 
 The potential energy surface can be generated in PNG, SVG, PDF, and PS formats.
 The format is automatically chosen based on the output image file extension.

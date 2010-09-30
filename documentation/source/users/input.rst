@@ -41,9 +41,9 @@ Species Parameters
 ==================
 
 Each species in the network must be specified using a ``species()`` block.
-This includes all unimolecular isomers, bimolecular reactant and products,
-and the bath gas. A species that appears in multiple bimolecular channels need
-only be specified with a single ``species()`` block.
+This includes all unimolecular isomers, bimolecular reactants and products,
+and the bath gas(es). A species that appears in multiple bimolecular channels 
+need only be specified with a single ``species()`` block.
 
 There are a number of required and optional parameters associated with a species
 block:
@@ -60,6 +60,9 @@ Parameter              Required?            Description
 ``SMILES``                                  The `SMILES <http://en.wikipedia.org/wiki/SMILES>`_ string describing the chemical structure
 ``InChI``                                   The `InChI <http://en.wikipedia.org/wiki/InChI>`_ string describing the chemical structure
 ====================== ==================== ====================================
+
+If you specify the molecular structure via SMILES or InChI strings and omit the
+molecular weight, the code will compute the molecular weight for you.
 
 The `states` parameter is required for all unimolecular isomers and all
 bimolecular reactant channels. When specifying the ``states`` parameter, use a 
@@ -102,13 +105,13 @@ radical :math:`\ce{CH3C(=O)OO.}`::
             spinMultiplicity=2,
         ),
         thermo=ThermoGAModel(
-            Tdata=([300, 336.842, 373.684, 410.526, 447.368, 484.211, 521.053, 557.895, 594.737, 631.579, 668.421, 705.263, 742.105, 778.947, 815.789, 852.632, 889.474, 926.316, 963.158, 1000], "K"),
-            Cpdata=([67.9785, 73.2536, 78.3762, 83.2814, 87.9238, 92.2793, 96.341, 100.114, 103.613, 106.855, 109.86, 112.647, 115.236, 117.643, 119.886, 121.978, 123.932, 125.759, 127.471, 129.076], "J/(mol*K)"),
-            H298=(13.4363, "kJ/mol"),
-            S298=(151.704, "J/(mol*K)"),
+            Tdata=([303.231, 385.553, 467.875, 550.197, 632.519, 714.841, 797.163, 879.485, 961.807, 1044.13, 1126.45, 1208.77, 1291.09, 1373.42, 1455.74, 1538.06, 1620.38, 1702.7, 1785.03, 1867.35], "K"),
+            Cpdata=([80.917, 92.4545, 102.856, 111.821, 119.406, 125.81, 131.243, 135.887, 139.882, 143.341, 146.352, 148.984, 151.294, 153.33, 155.129, 156.725, 158.145, 159.413, 160.548, 161.567], "J/(mol*K)"),
+            H298=(-127.614, "kJ/mol"),
+            S298=(314.403, "J/(mol*K)"),
         ),
-        lennardJones=LennardJones(sigma=(5.09e-10,"m"), epsilon=(6.53e-21,"J")),
-        molecularWeight=(75,"g/mol"),
+        lennardJones=LennardJones(sigma=(5.09e-10,"m"), epsilon=(6.53048e-21,"J")),
+        molecularWeight=(75.0434,"g/mol"),
     )
 
 Path Reaction Parameters
@@ -155,7 +158,7 @@ MEASURE will automatically use the best method that it can, so if you provide
 both the molecular degrees of freedom and the high pressure-limit kinetics -
 as in the example below - RRKM theory will be used.
 
-The following is an example of a typical species item, based on the reaction
+The following is an example of a typical reaction item, based on the reaction
 :math:`\ce{CH3C(=O)OO. -> CH2C=O + HO2}`::
 
     reaction(
@@ -169,6 +172,15 @@ The following is an example of a typical species item, based on the reaction
         ),
         transitionState=TransitionState(
             E0=(0.6,'kcal/mol'),
+            states=States(
+                rotationalConstants=([55.4256, 136.1886, 188.2442], 'amu*angstrom^2'),
+                symmetry=1,
+                frequencies=([59.306,  205.421,  354.483,  468.861,  482.875,  545.574,  657.825,  891.898, 1023.947, 1085.617, 1257.494, 1316.937, 1378.552, 1688.566, 2175.346, 3079.822, 3154.325], 'cm^-1'),
+                frequencyScaleFactor=0.99,
+                hinderedRotors=[],
+                spinMultiplicity=2,
+            ),
+            frequency=(-1048.9950,'cm^-1'),
         )
     )
 
@@ -184,24 +196,27 @@ of model, the value of any required ``parameters`` as a list of quantities,
 and a list of tuples specifying the labels of the species in the bath gas and
 their relative mole fractions. The collision models available are:
 
-======================================= ========================================
-Model                                   Parameters
-======================================= ========================================
-``single exponential down``             :math:`\left< \Delta E_\mathrm{down} \right>`
-======================================= ========================================
+* ``single exponential down`` - Specify ``alpha0``, ``T0`` and ``n`` for the 
+  average energy transferred in a deactiving collision
+
+  .. math :: \left< \Delta E_\mathrm{down} \right> = \alpha_0 \left( \frac{T}{T_0} \right)^n
 
 An example of a typical ``collisionModel()`` block is given below::
 
     collisionModel(
         type='single exponential down',
-        parameters=[
-            (1.429,'kcal/mol')
-        ],
-        bathGas=[('nitrogen',1.0)],
+        parameters={
+            'alpha0': (0.5718,'kcal/mol'),
+            'T0': (300,'K'),
+            'n': 0.85,
+        },
+        bathGas={
+            'nitrogen': 1.0,
+        }
     )
 
-Tempeerature and Pressure Ranges
---------------------------------
+Temperature and Pressure Ranges
+-------------------------------
 
 MEASURE will compute the :math:`k(T,P)` values on a grid of temperature and
 pressure points. The discussion below is for temperatures, but applies 
@@ -220,9 +235,7 @@ block:
     temperatures(Tmin=(300.0,'K'), Tmax=(2000.0,'K'), count=8)
 
   MEASURE will automatically choose the intermediate temperatures based on the 
-  interpolation model you wish to fit.
-
-The latter approach is recommended.
+  interpolation model you wish to fit. This is the recommended approach.
 
 An example of typical ``temperatures()`` and ``pressures()`` blocks is given
 below::
@@ -230,7 +243,7 @@ below::
     temperatures(Tmin=(300.0,'K'), Tmax=(2000.0,'K'), count=8)
     pressures(Pmin=(0.01,'bar'), Pmax=(100.0,'bar'), count=5)
 
-Energy Ranges
+Energy Grains
 -------------
 
 Use an ``energies()`` block to specify information about the energies to use.
@@ -245,7 +258,7 @@ more accurate calculation.
 
 A typical ``energies()`` block is given below::
 
-    energies(dE=(0.5,'kcal/mol'), count=200)
+    energies(dE=(0.25,'kcal/mol'), count=250)
 
 Method
 ------

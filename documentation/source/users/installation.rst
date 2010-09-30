@@ -18,12 +18,12 @@ that are not part of the Python standard library:
 * `Quantities <http://packages.python.org/quantities/>`_. Provides unit
   conversions of physical quantities.
 
-The following lists the optional Python packages that are not part of the 
-Python standard library:
-
 * `Cython <http://www.cython.org/>`_. Compiles certain computationally-intensive
   modules to C code, often resulting in a dramatic speed increase, mostly due
   to static typing of variables.
+
+The following lists the optional Python packages that are not part of the 
+Python standard library:
 
 * `Cairo <http://cairographics.org/>`_. Provides 2D drawing support, used for
   automatic drawing of potential energy surfaces.
@@ -44,7 +44,7 @@ location on disk. If Cython is installed, this will also compile the appropriate
 modules prior to installation.
 
 You can also use MEASURE without installing if you prefer. This is done by
-appending the full path to the ``/measure`` directory to your ``PYTHONPATH``
+appending the full path to the package's root directory to your ``PYTHONPATH``
 environment variable. To compile the Cython modules in this case, use the
 command ::
 
