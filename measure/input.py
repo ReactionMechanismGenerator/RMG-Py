@@ -134,11 +134,15 @@ def species(label='', E0=None, states=None, thermo=None, lennardJones=None, mole
     spec.molecularWeight = processQuantity(molecularWeight)[0]
     speciesDict[label] = spec
     logging.debug('Found species "%s"' % spec)
+    # If the molecular weight was not specified but the structure was, then
+    # get the molecular weight from the structure
+    if spec.molecularWeight == 0.0 and spec.molecule is not None and len(spec.molecule) > 0:
+        spec.molecularWeight = spec.molecule[0].getMolecularWeight()
 
 def thermoGAModel(Tdata, Cpdata, H298, S298, Tmin=0.0, Tmax=99999.9, comment=''):
     return ThermoGAModel(
-        Tdata=processQuantity(Tdata)[0],
-        Cpdata=processQuantity(Cpdata)[0],
+        Tdata=numpy.array(processQuantity(Tdata)[0], numpy.float64),
+        Cpdata=numpy.array(processQuantity(Cpdata)[0], numpy.float64),
         H298=processQuantity(H298)[0],
         S298=processQuantity(S298)[0],
         Tmin=processQuantity(Tmin)[0],
@@ -198,6 +202,8 @@ def States(rotationalConstants=None, symmetry=1, frequencies=None,
 def LennardJones(sigma, epsilon):
     sigma, units = processQuantity(sigma)
     epsilon, units = processQuantity(epsilon)
+    if units == 'K':
+        epsilon *= constants.kB; units = 'J'
     return LennardJonesModel(sigma, epsilon)
 
 def reaction(reactants, products, kinetics=None, reversible=True, transitionState=None):
@@ -330,7 +336,10 @@ def generateThermoFromStates(species):
     # Do nothing if the species already has thermo data or if it does not have
     # states data
     if species.thermo is not None or species.states is None: return
-
+    # States data must have external rotational modes
+    if not any([isinstance(mode, RigidRotor) for mode in species.states.modes]):
+        raise InputError('For species "%s", must specify external rotational constants to generate thermo model from states data.' % species)
+    
     # Must use ThermoGAModel because we can't rely on knowing
     # anything about the structure of the species
     from chempy.thermo import ThermoGAModel
@@ -338,6 +347,16 @@ def generateThermoFromStates(species):
     Cpdata = species.states.getHeatCapacities(Tdata)
     H298 = species.E0 + species.states.getEnthalpy(298)
     S298 = species.states.getEntropy(298)
+
+    # Add in heat capacities for translational modes if missing
+    if not any([isinstance(mode, Translation) for mode in species.states.modes]):
+        if species.molecularWeight == 0:
+            raise InputError('Molecular weight required for species "%s".' % species)
+        trans = Translation(species.molecularWeight)
+        Cpdata += trans.getHeatCapacities(Tdata)
+        H298 += trans.getEnthalpy(298)
+        S298 += trans.getEntropy(298)
+
     species.thermo = ThermoGAModel(Tdata=Tdata, Cpdata=Cpdata, H298=H298, S298=S298)
 
 def getTemperaturesForModel(model, Tmin, Tmax, Tcount):
@@ -563,10 +582,10 @@ def readInput(path):
                 # All reversible reactions must have thermo for both reactants and products
                 for spec in rxn.reactants:
                     if spec.thermo is None:
-                        errorString0 += '    Unable to determine thermo data for reactant "%s"; you must specify either molecular degrees of freedom or a thermodynamics model.\n' % spec
+                        errorString0 += '    Unable to determine thermo data for reactant "%s"; you must specify a thermodynamics model.\n' % spec
                 for spec in rxn.products:
                     if spec.thermo is None:
-                        errorString0 += '    Unable to determine thermo data for product "%s"; you must specify either molecular degrees of freedom or a thermodynamics model.\n' % spec
+                        errorString0 += '    Unable to determine thermo data for product "%s"; you must specify a thermodynamics model.\n' % spec
             else:
                 # All irreversible reactions must have states data for reactants
                 for spec in rxn.reactants:
@@ -574,7 +593,7 @@ def readInput(path):
                         errorString0 += '    Required molecular degree of freedom data for reactant "%s" was not provided.\n' % spec
 
             if errorString0 != '':
-                errorString = 'For path reaction "%s":\n%s' % (rxn, errorString0)
+                errorString += 'For path reaction "%s":\n%s' % (rxn, errorString0)
 
         if errorString != '':
             raise InputError(errorString)

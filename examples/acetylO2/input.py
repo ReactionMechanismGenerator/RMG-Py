@@ -19,8 +19,7 @@ species(
         ],
         spinMultiplicity=2,
     ),
-    lennardJones=LennardJones(sigma=(5.09e-10,'m'), epsilon=(6.53e-21,'J')),
-    molecularWeight=(75.0,'g/mol'),
+    lennardJones=LennardJones(sigma=(5.09,'angstrom'), epsilon=(473,'K')),
 )
 
 species(
@@ -39,8 +38,7 @@ species(
         ],
         spinMultiplicity=2,
     ),
-    lennardJones=LennardJones(sigma=(5.09e-10,'m'), epsilon=(6.53e-21,'J')),
-    molecularWeight=(75.0,'g/mol'),
+    lennardJones=LennardJones(sigma=(5.09,'angstrom'), epsilon=(473,'K')),
 )
 
 species(
@@ -99,8 +97,7 @@ species(
 species(
     label='nitrogen',
     SMILES='N#N',
-    lennardJones=LennardJones(sigma=(3.70e-10,'m'), epsilon=(1.31e-21,'J')),
-    molecularWeight=(28.0,'g/mol'),
+    lennardJones=LennardJones(sigma=(3.70,'angstrom'), epsilon=(94.9,'K')),
 )
 
 ################################################################################
