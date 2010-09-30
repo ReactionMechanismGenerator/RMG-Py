@@ -15,5 +15,7 @@ MEASURE Developers' Guide
     reaction
     msc
     rs
+    cse
     output
+    simulate
     settings
