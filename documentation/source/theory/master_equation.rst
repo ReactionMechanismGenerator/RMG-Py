@@ -143,7 +143,10 @@ of energy rather than the usual temperature. Such a quantity is called a
 equation we will differentiate between microcanonical rate coefficients for
 isomerization, dissociation, and association by using different letters:
 :math:`k_{ij}(E, J)` for isomerization, :math:`g_{nj}(E, J)` for dissociation, 
-and :math:`f_{im}(E, J)` for association.
+and :math:`f_{im}(E, J)` for association. (By convention, we use indices
+:math:`i` and :math:`j` to refer to unimolecular isomers, :math:`m` and
+:math:`n` to refer to bimolecular reactant and product channels, and, later,
+:math:`r` and :math:`s` to refer to energy grains.)
 
 As with collision models, the values of the microcanonical rate coefficients
 are constrained by detailed balance so that the proper equilibrium is 
@@ -156,7 +159,37 @@ for isomerization and
 .. math:: f_{in}(E, J) \rho_n(E, J) = g_{ni}(E, J) \rho_i(E, J)
 
 for association/dissociation, where :math:`\rho_i(E, J)` is the density of 
-states of the appropriate unimolecular or bimolecular configuration.
+states of the appropriate unimolecular or bimolecular configuration. 
+
+An alternative formulation incorporates the macroscopic equilibrium coefficient
+:math:`K_\mathrm{eq}(T)` and equilibrium distributions :math:`b_i(E, J, T)` at 
+each temperature:
+
+.. math:: k_{ij}(E, J) b_j(E, J, T) = K_\mathrm{eq}(T) k_{ji}(E, J) b_i(E, J, T)
+
+for isomerization and
+
+.. math:: f_{in}(E, J) b_n(E, J, T) = K_\mathrm{eq}(T) g_{ni}(E, J) b_i(E, J, T)
+
+for association/dissociation. Note that these two formulations are equivalent if
+the molecular degrees of freedom are consistent with the macroscopic 
+thermodynamic parameters. There are multiple reasons to use the latter 
+formulation:
+
+* Only the density of states of the unimolecular isomers need be computed. This 
+  is a result of the assumption of thermalized bimolecular channels, which 
+  means that we only need to compute the product :math:`f_{in} b_n`, and not 
+  the individual values of :math:`f_{in}` and :math:`b_n`.
+
+* Only the reactive rovibrational modes need be included in the density of 
+  states. Missing modes will not affect the observed equilibrium because we are 
+  imposing the macroscopic equilibrium via :math:`K_\mathrm{eq}(T)`.
+
+* Constants of proportionality in the density of states become unimportant, as 
+  they cancel when taking the ratio :math:`\rho(E,J)/Q(\beta)`. For example, if
+  the external rotational constants are unknown then we will include an active
+  K-rotor in the density of states; this property means that the rotational
+  constant of this active K-rotor cancels and is therefore arbitrary.
 
 There are two common ways of determining values for :math:`k(E, J)`: the 
 inverse Laplace transform method and RRKM theory. The latter requires detailed
@@ -326,7 +359,7 @@ differential equations:
     \matrix{K}_{21} & \matrix{M}_2 & \ldots & \matrix{F}_{21} \vector{b}_1 y_{1\mathrm{B}} & \matrix{F}_{22} \vector{b}_2 y_{2\mathrm{B}} & \ldots \\
     \vdots & \vdots & \ddots & \vdots & \vdots & \ddots \\
     (\vector{g}_{11})^T & (\vector{g}_{12})^T & \ldots & h_1 & 0 & \ldots \\
-    \vector{g}_{21})^T & (\vector{g}_{22})^T & \ldots & 0 & h_2 & \ldots \\
+    (\vector{g}_{21})^T & (\vector{g}_{22})^T & \ldots & 0 & h_2 & \ldots \\
     \vdots & \vdots & \ddots & \vdots & \vdots & \ddots 
     \end{bmatrix} \begin{bmatrix}
     \vector{p}_1 \\
@@ -373,8 +406,8 @@ Further Reading
 ===============
 
 The interested reader is referred to any of a variety of other sources for
-alternative presentations [Gilbert1990]_ [Baer1996]_ [Holbrook1996]_ 
-[Forst2003]_ [Pilling2003]_.
+alternative presentations, of which an illustrative sampling is given here
+[Gilbert1990]_ [Baer1996]_ [Holbrook1996]_ [Forst2003]_ [Pilling2003]_.
 
 .. [Gilbert1990] R. G. Gilbert and S. C. Smith. *Theory of Unimolecular and 
    Recombination Reactions*. Blackwell Sci. (1990).

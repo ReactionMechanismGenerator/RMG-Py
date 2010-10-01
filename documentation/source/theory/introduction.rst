@@ -70,7 +70,7 @@ represents a count of the internal degrees of freedom (vibrations and hindered
 rotors, respectively). The ranges of the x-axis and y-axis suggest that
 pressure dependence is in fact important over a wide regime of conditions of
 practical interest, particularly in high-temperature processes such as
-pyrolysis and combustion.
+pyrolysis and combustion [Wong2003]_.
 
 .. figure:: images/switchover_pressure.*
     :width: 67%

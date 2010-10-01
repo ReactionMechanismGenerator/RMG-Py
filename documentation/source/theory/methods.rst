@@ -19,6 +19,9 @@ but is very computationally expensive and not very robust. Your choice of
 method will depend on the particular balance between expense, robustness, and
 rigor that is required for your intended application.
 
+A Common Formalism
+==================
+
 All of the methods discussed here can be expressed in terms of a common 
 formalism. Each method seeks to express the population distribution vector 
 :math:`p_i(E, t)` for each unimolecular isomer :math:`i` as a linear 
