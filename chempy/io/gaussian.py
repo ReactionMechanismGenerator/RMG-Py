@@ -132,6 +132,7 @@ class GaussianLog:
         f.close()
 
         coord = numpy.array(coord, numpy.float64)
+        number = numpy.array(number, numpy.int)
         mass = numpy.zeros(len(number), numpy.float64)
         for i in range(len(number)):
             if number[i] == 1:
@@ -143,7 +144,7 @@ class GaussianLog:
             else:
                 print 'Atomic number %i not yet supported in loadGeometry().' % number[i]
 
-        return Geometry(coordinates=coord * 5.291772108e-11, mass=mass / 1000)
+        return Geometry(coordinates=coord * 5.291772108e-11, number=number, mass=mass / 1000)
 
     def loadStates(self, symmetry=None):
         """

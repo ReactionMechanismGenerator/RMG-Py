@@ -48,8 +48,9 @@ class Geometry:
     The attribute `mass` is an array of the masses of each atom in kg/mol.
     """
     
-    def __init__(self, coordinates=None, mass=None):
+    def __init__(self, coordinates=None, number=None, mass=None):
         self.coordinates = coordinates
+        self.number = number
         self.mass = mass
     
     def getTotalMass(self, atoms=None):
