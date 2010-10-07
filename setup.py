@@ -50,6 +50,7 @@ ext_modules = [
     Extension('measure.rs', ['measure/rs.pyx']),
     Extension('measure.cse', ['measure/cse.pyx']),
 ]
+scripts=['measure.py']
 
 setup(name='MEASURE',
     version='0.1.0',
@@ -61,5 +62,6 @@ setup(name='MEASURE',
     cmdclass = {'build_ext': build_ext},
     ext_modules = ext_modules,
     include_dirs = [numpy.get_include()],
+    scripts=scripts,
 )
 

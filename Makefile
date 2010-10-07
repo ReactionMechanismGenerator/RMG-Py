@@ -1,6 +1,6 @@
 ################################################################################
 #
-#   Makefile for ChemPy
+#   Makefile for MEASURE
 #
 ################################################################################
 
@@ -8,11 +8,14 @@
 
 all: cython
 
+install:
+	python setup.py install
+
 cython:
-	python setup.py build_ext $(CYTHON_FLAGS)
+	python setup.py build_ext --inplace $(CYTHON_FLAGS)
 
 clean:
 	python setup.py clean $(CLEAN_FLAGS)
 
 cleanall: clean
-	rm -f chempy/*.so chempy/*.pyc chempy/ext/*.so chempy/ext/*.pyc
+	rm -f measure/*.so measure/*.pyc
