@@ -219,7 +219,7 @@ class ThermoGAModel(ThermoModel):
                 if T < Tmax:	S += slope * (T - Tmin) + intercept * math.log(T/Tmin)
                 else:			S += slope * (Tmax - Tmin) + intercept * math.log(Tmax/Tmin)
         if T > self.Tdata[-1]:
-            S += self.Cp[-1] * math.log(T / self.Tdata[-1])
+            S += self.Cpdata[-1] * math.log(T / self.Tdata[-1])
         return S
 
     def getFreeEnergy(self, T):

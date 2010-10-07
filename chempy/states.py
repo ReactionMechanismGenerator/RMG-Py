@@ -360,7 +360,7 @@ class HinderedRotor(Mode):
     computationally demanding.
     """
 
-    def __init__(self, inertia=None, barrier=None, symmetry=None, fourier=None):
+    def __init__(self, inertia=0.0, barrier=0.0, symmetry=1, fourier=None):
         self.inertia = inertia
         self.barrier = barrier
         self.symmetry = symmetry
