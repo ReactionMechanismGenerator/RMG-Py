@@ -61,3 +61,4 @@ cdef class TransitionState:
     cdef public Geometry geometry
     cdef public double E0
     cdef public double frequency
+    cdef public int degeneracy

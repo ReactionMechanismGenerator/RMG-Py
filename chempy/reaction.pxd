@@ -69,9 +69,9 @@ cdef class Reaction:
 
     cpdef double calculateTSTRateCoefficient(self, double T, str tunneling=?)
     
-    cpdef numpy.ndarray calculateWignerTunnelingCorrection(self, double T)
+    cpdef double calculateWignerTunnelingCorrection(self, double T)
     
-    cpdef numpy.ndarray calculateEckartTunnelingCorrection(self, double T)
+    cpdef double calculateEckartTunnelingCorrection(self, double T)
 
     cpdef double __eckartIntegrand(self, double E_kT, double kT, double dV1, double alpha1, double alpha2)
 

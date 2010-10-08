@@ -157,16 +157,18 @@ class TransitionState:
     `geometry`      :class:`Geometry`           The 3D geometry of the molecule
     `E0`            ``double``                  The ground-state energy in J/mol
     `frequency`     ``double``                  The negative frequency of the first-order saddle point in cm^-1
+    `degeneracy`    ``int``                     The reaction path degeneracy
     =============== =========================== ================================
 
     """
 
-    def __init__(self, label='', states=None, geometry=None, E0=0.0, frequency=0.0):
+    def __init__(self, label='', states=None, geometry=None, E0=0.0, frequency=0.0, degeneracy=1):
         self.label = label
         self.states = states
         self.geometry = geometry
         self.E0 = E0
         self.frequency = frequency
+        self.degeneracy = degeneracy
 
     def __repr__(self):
         """

@@ -328,7 +328,7 @@ class Reaction:
         Qreac = 1.0
         for spec in self.reactants: Qreac *= spec.states.getPartitionFunction(T) / (constants.R * T / 1e5)
         Qts = self.transitionState.states.getPartitionFunction(T) / (constants.R * T / 1e5)
-        k = (constants.kB * T / constants.h * Qts / Qreac *	numpy.exp(-E0 / constants.R / T))
+        k = self.transitionState.degeneracy * (constants.kB * T / constants.h * Qts / Qreac *	numpy.exp(-E0 / constants.R / T))
         # Apply tunneling correction
         if tunneling.lower() == 'wigner':
             k *= self.calculateWignerTunnelingCorrection(T)
@@ -352,7 +352,7 @@ class Reaction:
         accurate than the Eckart correction.
         """
         frequency = abs(self.transitionState.frequency)
-        return 1.0 + (constants.h * constants.c * 100.0 * abs(frequency) / constants.kB / T)**2 / 24.0
+        return 1.0 + (constants.h * constants.c * 100.0 * frequency / constants.kB / T)**2 / 24.0
     
     def calculateEckartTunnelingCorrection(self, T):
         """
@@ -393,7 +393,7 @@ class Reaction:
         """
         
         cython.declare(frequency=cython.double, alpha1=cython.double, alpha2=cython.double, dV1=cython.double, dV2=cython.double)
-        cython.declare(kappa=numpy.ndarray, E_kT=numpy.ndarray, f=numpy.ndarray, integral=cython.double)
+        cython.declare(kappa=cython.double, E_kT=numpy.ndarray, f=numpy.ndarray, integral=cython.double)
         cython.declare(i=cython.int, tol=cython.double, fcrit=cython.double, E_kTmin=cython.double, E_kTmax=cython.double)
         
         frequency = abs(self.transitionState.frequency)
