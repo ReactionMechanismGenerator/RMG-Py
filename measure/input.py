@@ -229,10 +229,10 @@ def Arrhenius(A, n, Ea, T0=1.0):
     T0, units = processQuantity(T0)
     return ArrheniusModel(A=A, n=n, Ea=Ea, T0=T0)
 
-def TS(E0=None, states=None, frequency=0.0):
+def TS(E0=None, states=None, frequency=0.0, degeneracy=1):
     if E0 is not None: E0 = processQuantity(E0)[0]
-    frequency = processQuantity(frequency)[0]
-    return TransitionState(E0=E0, states=states, frequency=frequency)
+    frequency = processQuantity(frequency)[0] / 100.0
+    return TransitionState(E0=E0, states=states, frequency=frequency, degeneracy=degeneracy)
 
 def collisionModel(type, parameters, bathGas):
     global network, speciesDict
