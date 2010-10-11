@@ -29,6 +29,7 @@
 
 import math
 import numpy
+import logging
 
 import chempy.constants as constants
 

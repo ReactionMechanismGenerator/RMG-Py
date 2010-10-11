@@ -112,8 +112,9 @@ def loadTransitionState(label, geomLog, statesLog, extSymmetry, freqScaleFactor,
     global modelChemistry
     logging.info('Loading transition state %s...' % label)
     E0, geom, states = loadConfiguration(geomLog, statesLog, extSymmetry, freqScaleFactor, linear, rotorPivots, rotorTops, rotorScans, rotorSymmetry, atoms, bonds)
+    log = GaussianLog(statesLog)
     frequency = log.loadNegativeFrequency()
-    transitionStateDict[label] = TransitionState(label=label, states=states, geometry=geom, frequency=frequency)
+    transitionStateDict[label] = TransitionState(label=label, states=states, geometry=geom, frequency=frequency, E0=E0)
     
 ################################################################################
 
@@ -146,7 +147,7 @@ def generateThermo(label, plot=False):
     from thermo import generateThermoModel
     generateThermoModel(speciesDict[label], plot)
 
-def generateKinetics(label, plot=False):
+def generateKinetics(label, tunneling='', plot=False):
     global reactionDict
     from kinetics import generateKineticsModel
-    generateKineticsModel(reactionDict[label], plot)
+    generateKineticsModel(reactionDict[label], tunneling, plot)
