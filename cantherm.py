@@ -3,7 +3,7 @@
 
 ################################################################################
 #
-#   CanTherm - 
+#   CanTherm
 #    
 #   Copyright (c) 2010 by Joshua W. Allen (jwallen@mit.edu)
 #
@@ -108,7 +108,44 @@ def execute(path):
     """
     Execute the CanTherm job located at `path` on disk.
     """
+    
+    try:
+        f = open(path)
+    except IOError, e:
+        logging.error('The input file "%s" could not be opened.' % (path))
+        logging.error('Check that the file exists and that you have read access.')
+        return
+
     logging.info('Executing job "%s"...' % os.path.abspath(path))
+
+    # Change directory to that of the job file
+    # This way all relative paths given in the job file will be valid
+    root, ext = os.path.split(path)
+    os.chdir(root)
+
+    from cantherm.input import setModelChemistry, loadSpecies, loadTransitionState, loadReaction, generateThermo, generateKinetics
+    
+    global_context = { '__builtins__': None }
+    local_context = {
+        '__builtins__': None,
+        'True': True,
+        'False': False,
+        'range': range,
+        'modelChemistry': setModelChemistry,
+        'species': loadSpecies,
+        'transitionState': loadTransitionState,
+        'reaction': loadReaction,
+        'thermo': generateThermo,
+        'kinetics': generateKinetics,
+    }
+
+    try:
+        exec f in global_context, local_context
+    except (NameError, TypeError, SyntaxError), e:
+        logging.error('The input file "%s" was invalid:' % (path))
+        raise
+    finally:
+        f.close()
 
 ################################################################################
 
