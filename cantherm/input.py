@@ -78,7 +78,7 @@ def hinderedRotor(scanLog, pivots, top, symmetry):
 
 ################################################################################
 
-def loadConfiguration(geomLog, statesLog, extSymmetry, freqScaleFactor, linear, rotors, atoms, bonds):
+def loadConfiguration(geomLog, statesLog, extSymmetry, freqScaleFactor, linear, rotors, atoms, bonds, TS=False):
     
     logging.debug('    Reading optimized geometry...')
     log = GaussianLog(geomLog)
@@ -93,6 +93,7 @@ def loadConfiguration(geomLog, statesLog, extSymmetry, freqScaleFactor, linear, 
     states = log.loadStates(symmetry=extSymmetry)
 
     F = log.loadForceConstantMatrix()
+    
     if F is not None and len(geom.mass) > 1 and len(rotors) > 0:
         
         logging.debug('    Fitting %i hindered rotors...' % len(rotors))
@@ -104,7 +105,7 @@ def loadConfiguration(geomLog, statesLog, extSymmetry, freqScaleFactor, linear, 
             states.modes.append(rotor)
         
         logging.debug('    Determining frequencies from reduced force constant matrix...')
-        frequencies = projectRotors(geom, F, rotors, linear)
+        frequencies = projectRotors(geom, F, rotors, linear, TS)
         for mode in states.modes:
             if isinstance(mode, HarmonicOscillator):
                 mode.frequencies = list(frequencies * freqScaleFactor)
@@ -121,13 +122,13 @@ def loadConfiguration(geomLog, statesLog, extSymmetry, freqScaleFactor, linear, 
 def loadSpecies(label, geomLog, statesLog, extSymmetry, freqScaleFactor, linear, rotors, atoms, bonds):
     global modelChemistry
     logging.info('Loading species %s...' % label)
-    E0, geom, states = loadConfiguration(geomLog, statesLog, extSymmetry, freqScaleFactor, linear, rotors, atoms, bonds)
+    E0, geom, states = loadConfiguration(geomLog, statesLog, extSymmetry, freqScaleFactor, linear, rotors, atoms, bonds, TS=False)
     speciesDict[label] = Species(label=label, thermo=None, states=states, geometry=geom, E0=E0)
 
 def loadTransitionState(label, geomLog, statesLog, extSymmetry, freqScaleFactor, linear, rotors, atoms, bonds):
     global modelChemistry
     logging.info('Loading transition state %s...' % label)
-    E0, geom, states = loadConfiguration(geomLog, statesLog, extSymmetry, freqScaleFactor, linear, rotors, atoms, bonds)
+    E0, geom, states = loadConfiguration(geomLog, statesLog, extSymmetry, freqScaleFactor, linear, rotors, atoms, bonds, TS=True)
     log = GaussianLog(statesLog)
     frequency = log.loadNegativeFrequency()
     transitionStateDict[label] = TransitionState(label=label, states=states, geometry=geom, frequency=frequency, E0=E0)

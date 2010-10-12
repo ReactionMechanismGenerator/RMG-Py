@@ -79,7 +79,7 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds):
 
 ################################################################################
 
-def projectRotors(geom, F, rotors, linear):
+def projectRotors(geom, F, rotors, linear, TS):
     """
     For a given geometry `geom` with associated force constant matrix `F`,
     lists of rotor information `rotors`, `pivots`, and `top1`, and the linearity
@@ -90,7 +90,8 @@ def projectRotors(geom, F, rotors, linear):
     
     Nrotors = len(rotors)
     Natoms = len(geom.mass)
-
+    Nvib = 3 * Natoms - (5 if linear else 6) - Nrotors - (1 if (TS) else 0)
+    
     if linear:
         D = numpy.zeros((Natoms*3,5+Nrotors), numpy.float64)
     else:
@@ -106,7 +107,8 @@ def projectRotors(geom, F, rotors, linear):
         D[3*i:3*i+3,4] = numpy.array([geom.coordinates[i,2], 0, -geom.coordinates[i,0]], numpy.float64)
         if not linear:
             D[3*i:3*i+3,5] = numpy.array([-geom.coordinates[i,1], geom.coordinates[i,0], 0], numpy.float64)
-    for scanLog, pivots, top, symmetry in rotors:
+    for i, rotor in enumerate(rotors):
+        scanLog, pivots, top, symmetry = rotor
         # Determine pivot atom
         if pivots[0] in top: pivot = pivots[0]
         elif pivots[1] in top: pivot = pivots[1]
@@ -143,7 +145,7 @@ def projectRotors(geom, F, rotors, linear):
 
     # Convert eigenvalues to vibrational frequencies in cm^-1
     # Only keep the modes that don't correspond to translation, rotation, or internal rotation
-    return numpy.sqrt(eig[6+Nrotors:]) / (2 * math.pi * constants.c * 100)
+    return numpy.sqrt(eig[-Nvib:]) / (2 * math.pi * constants.c * 100)
 
 ################################################################################   
 
