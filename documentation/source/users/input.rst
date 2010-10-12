@@ -139,7 +139,7 @@ fitted thermodynamics, set the `plot` parameter to ``True``.
 
 Below is a typical ``thermo()`` function::
 
-    thermo('ethane', type='Wilhoit', plot=True)
+    thermo('ethane', model='Wilhoit', plot=True)
 
 Kinetics Computations
 =====================

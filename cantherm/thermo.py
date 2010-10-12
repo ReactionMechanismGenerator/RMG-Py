@@ -32,13 +32,23 @@ import numpy.linalg
 import logging
 
 import chempy.constants as constants
-from chempy.thermo import WilhoitModel
+from chempy.thermo import ThermoGAModel, WilhoitModel
+from chempy.ext.thermo_converter import convertWilhoitToNASA
 
 ################################################################################
 
-def generateThermoModel(species, plot=False):
+def generateThermoModel(species, model, plot=False):
+    """
+    Generate a thermodynamics model for a given `species`. The type of `model`
+    generated can be any of ``'Group additivity'``, ``'Wilhoit'``, or 
+    ``'NASA'``. Set `plot` to ``True`` to see a plot of the generated
+    thermodynamic values.
+    """
 
-    logging.info('Generating Wilhoit thermo model for %s...' % (species))
+    if model.lower() not in ['group additivity', 'wilhoit', 'nasa']:
+        raise Exception('Unknown thermodynamic model "%s".' % model)
+
+    logging.info('Generating %s thermo model for %s...' % (model, species))
     linear = species.states.modes[1].linear
     Nfreq = len(species.states.modes[2].frequencies)
     Nrotors = len(species.states.modes[3:])
@@ -46,12 +56,20 @@ def generateThermoModel(species, plot=False):
     H298 = species.states.getEnthalpy(298.15) + species.E0
     S298 = species.states.getEntropy(298.15)
     
-    Tlist = numpy.arange(10.0, 2501.0, 10.0)
-    Cplist = species.states.getHeatCapacities(Tlist)
-    wilhoit = WilhoitModel()
-    wilhoit.fitToData(Tlist, Cplist, linear, Nfreq, Nrotors, H298, S298, B0=500.0)
-    species.thermo = wilhoit
-
+    if model.lower() == 'group additivity':
+        Tdata = numpy.arange(300.0, 2001.0, 100.0, numpy.float64)
+        Cpdata = species.states.getHeatCapacities(Tdata)
+        species.thermo = ThermoGAModel(Tdata=Tdata, Cpdata=Cpdata, H298=H298, S298=S298)
+    else:
+        Tlist = numpy.arange(10.0, 3001.0, 10.0, numpy.float64)
+        Cplist = species.states.getHeatCapacities(Tlist)
+        wilhoit = WilhoitModel()
+        wilhoit.fitToData(Tlist, Cplist, linear, Nfreq, Nrotors, H298, S298, B0=500.0)
+        if model.lower() == 'nasa':
+            species.thermo = convertWilhoitToNASA(wilhoit, Tmin=10.0, Tmax=3000.0, Tint=500.0, fixedTint=False, weighting=True, continuity=3)
+        else:
+            species.thermo = wilhoit
+            
     # Plots to compare with the states model predictions
     if plot:
         print 'Plotting thermo model for %s...' % (species)
@@ -92,8 +110,6 @@ def generateThermoModel(species, plot=False):
 
         fig.subplots_adjust(left=0.10, bottom=0.08, right=0.95, top=0.95, wspace=0.35, hspace=0.20)
         pylab.show()
-
-    return wilhoit
 
 ################################################################################
 
