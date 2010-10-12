@@ -48,6 +48,10 @@ def parseCommandLineArguments():
     parser.add_argument('file', metavar='FILE', type=str, nargs=1,
         help='a job to run')
     
+    # Option for controlling the output file location
+    parser.add_argument('-o', '--output', metavar='OUTFILE', type=str, nargs=1,
+        help='specify location of output file')
+
     # Options for controlling the amount of information printed to the console
     # By default a moderate level of information is printed; you can either
     # ask for less (quiet), more (verbose), or much more (debug)
@@ -104,7 +108,7 @@ def initializeLogging(args):
 
 ################################################################################
 
-def execute(path):
+def execute(path, output):
     """
     Execute the CanTherm job located at `path` on disk.
     """
@@ -153,7 +157,11 @@ if __name__ == '__main__':
     
     # Parse the command-line arguments
     args = parseCommandLineArguments()
-    
+    outputDirectory = os.path.dirname(os.path.abspath(args.file[0]))
+    out = os.path.join(outputDirectory, 'output.py')
+    if args.output:
+        out = os.path.abspath(args.output[0])
+            
     # Initialize the logging system
     initializeLogging(args)
     
@@ -161,7 +169,7 @@ if __name__ == '__main__':
     logging.info('CanTherm execution initiated at ' + time.asctime() + '\n')
     
     # Execute job
-    execute(args.file[0])
+    execute(args.file[0], out)
 
     # Log end timestamp
     logging.info('')
