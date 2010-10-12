@@ -43,7 +43,7 @@ def generateKineticsModel(reaction, tunneling='', plot=False):
     arrhenius = ArrheniusModel().fitToData(Tlist, klist)
     klist2 = arrhenius.getRateCoefficients(Tlist)
     
-    logging.debug('    %s' % (arrhenius))
+    reaction.kinetics = arrhenius
     
     if plot:
         logging.info('Plotting thermo model for %s...' % (reaction))
@@ -54,5 +54,35 @@ def generateKineticsModel(reaction, tunneling='', plot=False):
         pylab.ylabel('Rate coefficient (SI units)')
         pylab.show()
     
-    return arrhenius
+################################################################################
+
+def saveKinetics(reaction, label, path):
+    """
+    Append the kinetic model generated for `reaction` with associated
+    string `label` to the file located at `path` on disk.
+    """
     
+    f = open(path, 'a')
+    f.write('kinetics(\n')
+    f.write('    label = "%s",\n' % label)
+    
+    if isinstance(reaction.kinetics, ArrheniusModel):
+        Nreac = len(reaction.reactants)
+        f.write('    thermo = ArrheniusModel(\n')
+        f.write('        A = (%g, "m^%i/(mol^%i*s)"),\n' % (reaction.kinetics.A, 3*(Nreac-1), Nreac-1))
+        f.write('        n = %g,\n' % (reaction.kinetics.n))
+        f.write('        Ea = (%g, "kcal/mol"),\n' % (reaction.kinetics.Ea / 4184))
+        f.write('        T0 = (%g, "K"),\n' % (reaction.kinetics.T0))
+        f.write('    ),\n')
+    
+    f.write('    Tmin = 300.0,\n')
+    f.write('    Tmax = 2000.0,\n')
+    f.write('    short_comment = "",\n')
+    f.write('    long_comment = \n')
+    f.write('"""\n')
+    f.write('\n')
+    f.write('""",\n')
+    f.write(')\n')
+    f.write('\n')
+    
+    f.close()

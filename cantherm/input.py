@@ -52,8 +52,17 @@ transitionStateDict = {}
 # A dictionary associating reaction identifiers with reaction objects
 reactionDict = {}
 
+# The file to save the output to
+outputFile = ''
+
 ################################################################################
 
+def setOutputFile(path):
+    global outputFile
+    outputFile = path
+    f = open(path, 'w')
+    f.close()
+    
 def setModelChemistry(method):
     """
     Set the model chemistry used in this quantum chemisty calculation to
@@ -137,12 +146,19 @@ def loadReaction(label, reactants, products, transitionState):
 
 ################################################################################
 
+def generateStates(label):
+    global outputFile, speciesDict
+    from states import saveStates
+    saveStates(speciesDict[label], label, outputFile)
+    
 def generateThermo(label, model, plot=False):
-    global speciesDict
-    from thermo import generateThermoModel
+    global outputFile, speciesDict
+    from thermo import generateThermoModel, saveThermo
     generateThermoModel(speciesDict[label], model, plot)
-
+    saveThermo(speciesDict[label], label, outputFile)
+    
 def generateKinetics(label, tunneling='', plot=False):
-    global reactionDict
-    from kinetics import generateKineticsModel
+    global outputFile, reactionDict
+    from kinetics import generateKineticsModel, saveKinetics
     generateKineticsModel(reactionDict[label], tunneling, plot)
+    saveKinetics(reactionDict[label], label, outputFile)

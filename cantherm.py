@@ -128,7 +128,8 @@ def execute(path, output):
     root, ext = os.path.split(path)
     os.chdir(root)
 
-    from cantherm.input import setModelChemistry, hinderedRotor, loadSpecies, loadTransitionState, loadReaction, generateThermo, generateKinetics
+    from cantherm.input import setOutputFile, setModelChemistry, hinderedRotor, loadSpecies, loadTransitionState, loadReaction, generateStates, generateThermo, generateKinetics
+    setOutputFile(output)    
     
     global_context = { '__builtins__': None }
     local_context = {
@@ -141,6 +142,7 @@ def execute(path, output):
         'species': loadSpecies,
         'transitionState': loadTransitionState,
         'reaction': loadReaction,
+        'states': generateStates,
         'thermo': generateThermo,
         'kinetics': generateKinetics,
     }

@@ -32,6 +32,7 @@ import numpy
 import logging
 
 import chempy.constants as constants
+from chempy.states import *
 
 ################################################################################
 
@@ -145,3 +146,36 @@ def projectRotors(geom, F, rotors, linear):
     return numpy.sqrt(eig[6+Nrotors:]) / (2 * math.pi * constants.c * 100)
 
 ################################################################################   
+
+def saveStates(species, label, path):
+    """
+    Append the molecular degrees of freedom for `species` with associated
+    string `label` to the file located at `path` on disk.
+    """
+    
+    f = open(path, 'a')
+    f.write('states(\n')
+    f.write('    label = "%s",\n' % label)
+    
+    f.write('    modes = [\n')
+    for mode in species.states.modes:
+        if isinstance(mode, Translation):
+            f.write('        Translation(mass=(%g,"g/mol")),\n' % (mode.mass*1000))
+        elif isinstance(mode, RigidRotor):
+            f.write('        RigidRotor(linear=%s, inertia=[%s], "amu*angstrom^2"), symmetry=%i),\n' % (mode.linear, ', '.join(['%g' % (I * 6.022e46) for I in mode.inertia]), mode.symmetry))
+        elif isinstance(mode, HarmonicOscillator):
+            f.write('        HarmonicOscillator(frequencies=([%s], "cm^-1")),\n' % (', '.join(['%g' % (freq) for freq in mode.frequencies])))
+        elif isinstance(mode, HinderedRotor):
+            f.write('        HinderedRotor(inertia=(%g, "amu*angstrom^2"), symmetry=%i, fourier=[[%g, %g, %g, %g, %g], [%g, %g, %g, %g, %g]]),\n' % (mode.inertia * 6.022e46, mode.symmetry, 
+                mode.fourier[0,0], mode.fourier[0,1], mode.fourier[0,2], mode.fourier[0,3], mode.fourier[0,4],
+                mode.fourier[1,0], mode.fourier[1,1], mode.fourier[1,2], mode.fourier[1,3], mode.fourier[1,4],
+                ))
+    f.write('    ],\n')
+    f.write('    short_comment = "",\n')
+    f.write('    long_comment = \n')
+    f.write('"""\n')
+    f.write('\n')
+    f.write('""",\n')
+    f.write(')\n\n')
+    
+    f.close()

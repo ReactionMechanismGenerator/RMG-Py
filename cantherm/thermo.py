@@ -32,7 +32,7 @@ import numpy.linalg
 import logging
 
 import chempy.constants as constants
-from chempy.thermo import ThermoGAModel, WilhoitModel
+from chempy.thermo import ThermoGAModel, WilhoitModel, NASAModel
 from chempy.ext.thermo_converter import convertWilhoitToNASA
 
 ################################################################################
@@ -113,44 +113,49 @@ def generateThermoModel(species, model, plot=False):
 
 ################################################################################
 
-def saveThermoData(fstr, species, label):
-
-    from datetime import date
-    f = open(fstr, 'w')
-    f.write('Thermo(\n')
-    f.write('    species = \n')
-    f.write('"""\n')
-    f.write('%s\n' % label)
-    f.write('\n')
-    f.write('"""\n')
-    f.write('    thermo = %s,\n' % repr(species.thermo))
+def saveThermo(species, label, path):
+    """
+    Append the thermodynamic model generated for `species` with associated
+    string `label` to the file located at `path` on disk.
+    """
+    
+    f = open(path, 'a')
+    f.write('thermo(\n')
+    f.write('    label = "%s",\n' % label)
+    
+    if isinstance(species.thermo, ThermoGAModel):
+        f.write('    thermo = ThermoGAModel(\n')
+        f.write('        Tdata = ([%s], "K"),\n' % (', '.join(['%g' % (T) for T in species.thermo.Tdata])))
+        f.write('        Cpdata = ([%s], "cal/(mol*K)"),\n' % (', '.join(['%g' % (Cp/4.184) for Cp in species.thermo.Cpdata])))
+        f.write('        H298 = (%g, "kcal/mol"),\n' % (species.thermo.H298 / 4184))
+        f.write('        S298 = (%g, "cal/(mol*K)"),\n' % (species.thermo.S298 / 4.184))
+        f.write('    ),\n')
+    elif isinstance(species.thermo, WilhoitModel):
+        f.write('    thermo = WilhoitModel(\n')
+        f.write('        cp0 = (%g, "cal/(mol*K)"),\n' % (species.thermo.cp0 / 4.184))
+        f.write('        cpInf = (%g, "cal/(mol*K)"),\n' % (species.thermo.cpInf / 4.184))
+        f.write('        B = (%g, "K"),\n' % (species.thermo.B))
+        f.write('        a0 = %g,\n' % (species.thermo.a0))
+        f.write('        a1 = %g,\n' % (species.thermo.a1))
+        f.write('        a2 = %g,\n' % (species.thermo.a2))
+        f.write('        a3 = %g,\n' % (species.thermo.a3))
+        f.write('        H0 = (%g, "kcal/mol"),\n' % (species.thermo.H0 / 4184))
+        f.write('        S0 = (%g, "cal/(mol*K)"),\n' % (species.thermo.S0 / 4.184))
+        f.write('    ),\n')
+    elif isinstance(species.thermo, NASAModel):
+        f.write('    thermo = NASAModel(polynomials = [\n')
+        for poly in species.thermo.polynomials:
+            f.write('        NASAPolynomial(Tmin=(%g,"K"), Tmax=(%g,"K"), coeffs=[%g, %g, %g, %g, %g, %g, %g]),\n' % (poly.Tmin, poly.Tmax, poly.c0, poly.c1, poly.c2, poly.c3, poly.c4, poly.c5, poly.c6))
+        f.write('    ]),\n')
+       
     f.write('    Tmin = 0.0,\n')
-    f.write('    Tmax = 9999.9,\n')
+    f.write('    Tmax = 3000.0,\n')
     f.write('    short_comment = "",\n')
     f.write('    long_comment = \n')
     f.write('"""\n')
     f.write('\n')
-    f.write('"""\n')
-    f.write('\n')
-    f.write('"""\n')
-    f.write('    history = ("%s","jwallen","Added to database.)",\n' % date.today().strftime('%Y-%m-%d'))
+    f.write('""",\n')
     f.write(')\n')
     f.write('\n')
-    f.write('States(\n')
-    f.write('    species = \n')
-    f.write('"""\n')
-    f.write('%s\n' % label)
-    f.write('\n')
-    f.write('"""\n')
-    f.write('    modes = [\n')
-    for mode in species.states.modes:
-        f.write('        %s,\n' % repr(mode))
-    f.write('    ],\n')
-    f.write('    short_comment = "",\n')
-    f.write('    long_comment = \n')
-    f.write('"""\n')
-    f.write('\n')
-    f.write('"""\n')
-    f.write('    history = ("%s","jwallen","Added to database.)",\n' % date.today().strftime('%Y-%m-%d'))
-    f.write(')')
+    
     f.close()
