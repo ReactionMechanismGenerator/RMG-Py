@@ -64,7 +64,12 @@ def setModelChemistry(method):
 
 ################################################################################
 
-def loadConfiguration(geomLog, statesLog, extSymmetry, freqScaleFactor, linear, rotorPivots, rotorTops, rotorScans, rotorSymmetry, atoms, bonds):
+def hinderedRotor(scanLog, pivots, top, symmetry):
+    return [scanLog, pivots, top, symmetry]
+
+################################################################################
+
+def loadConfiguration(geomLog, statesLog, extSymmetry, freqScaleFactor, linear, rotors, atoms, bonds):
     
     logging.debug('    Reading optimized geometry...')
     log = GaussianLog(geomLog)
@@ -79,39 +84,41 @@ def loadConfiguration(geomLog, statesLog, extSymmetry, freqScaleFactor, linear, 
     states = log.loadStates(symmetry=extSymmetry)
 
     F = log.loadForceConstantMatrix()
-    if F is not None and len(geom.mass) > 1 and len(rotorScans) > 0:
-        logging.debug('    Fitting %i hindered rotors...' % len(rotorScans))
-        rotors = loadHinderedRotors(geom, rotorPivots, rotorTops, rotorScans, rotorSymmetry)
-
-        if len(rotors) > 0:
-            logging.debug('    Determining frequencies from reduced force constant matrix...')
-            frequencies = projectRotors(geom, F, rotors, rotorPivots, rotorTops, linear)
-            for mode in states.modes:
-                if isinstance(mode, HarmonicOscillator):
-                    mode.frequencies = list(frequencies * freqScaleFactor)
-            states.modes.extend(rotors)
-        elif len(states.modes) > 2:
-            frequencies = states.modes[2].frequencies
-            rotors = []
-        else:
-            frequencies = []
-            rotors = []
+    if F is not None and len(geom.mass) > 1 and len(rotors) > 0:
+        
+        logging.debug('    Fitting %i hindered rotors...' % len(rotors))
+        for scanLog, pivots, top, symmetry in rotors:
+            log = GaussianLog(scanLog)
+            fourier = log.fitFourierSeriesPotential()
+            inertia = geom.getInternalReducedMomentOfInertia(pivots, top)
+            rotor = HinderedRotor(inertia=inertia, symmetry=symmetry, fourier=fourier)
+            states.modes.append(rotor)
+        
+        logging.debug('    Determining frequencies from reduced force constant matrix...')
+        frequencies = projectRotors(geom, F, rotors, linear)
+        for mode in states.modes:
+            if isinstance(mode, HarmonicOscillator):
+                mode.frequencies = list(frequencies * freqScaleFactor)
+        
+    elif len(states.modes) > 2:
+        frequencies = states.modes[2].frequencies
+        rotors = []
     else:
         frequencies = []
         rotors = []
     
     return E0, geom, states
 
-def loadSpecies(label, geomLog, statesLog, extSymmetry, freqScaleFactor, linear, rotorPivots, rotorTops, rotorScans, rotorSymmetry, atoms, bonds):
+def loadSpecies(label, geomLog, statesLog, extSymmetry, freqScaleFactor, linear, rotors, atoms, bonds):
     global modelChemistry
     logging.info('Loading species %s...' % label)
-    E0, geom, states = loadConfiguration(geomLog, statesLog, extSymmetry, freqScaleFactor, linear, rotorPivots, rotorTops, rotorScans, rotorSymmetry, atoms, bonds)
+    E0, geom, states = loadConfiguration(geomLog, statesLog, extSymmetry, freqScaleFactor, linear, rotors, atoms, bonds)
     speciesDict[label] = Species(label=label, thermo=None, states=states, geometry=geom, E0=E0)
 
-def loadTransitionState(label, geomLog, statesLog, extSymmetry, freqScaleFactor, linear, rotorPivots, rotorTops, rotorScans, rotorSymmetry, atoms, bonds):
+def loadTransitionState(label, geomLog, statesLog, extSymmetry, freqScaleFactor, linear, rotors, atoms, bonds):
     global modelChemistry
     logging.info('Loading transition state %s...' % label)
-    E0, geom, states = loadConfiguration(geomLog, statesLog, extSymmetry, freqScaleFactor, linear, rotorPivots, rotorTops, rotorScans, rotorSymmetry, atoms, bonds)
+    E0, geom, states = loadConfiguration(geomLog, statesLog, extSymmetry, freqScaleFactor, linear, rotors, atoms, bonds)
     log = GaussianLog(statesLog)
     frequency = log.loadNegativeFrequency()
     transitionStateDict[label] = TransitionState(label=label, states=states, geometry=geom, frequency=frequency, E0=E0)
@@ -130,22 +137,10 @@ def loadReaction(label, reactants, products, transitionState):
 
 ################################################################################
 
-def loadHinderedRotors(geom, pivots, top1, scans, symmetry):
-    rotors = []
-    for i in range(len(scans)):
-        log = GaussianLog(scans[i])
-        fourier = log.fitFourierSeriesPotential()
-        inertia = geom.getInternalReducedMomentOfInertia(pivots[i], top1[i])
-        rotor = HinderedRotor(inertia=inertia, symmetry=symmetry[i], fourier=fourier)
-        rotors.append(rotor)
-    return rotors
-
-################################################################################
-
-def generateThermo(label, plot=False):
+def generateThermo(label, model, plot=False):
     global speciesDict
     from thermo import generateThermoModel
-    generateThermoModel(speciesDict[label], plot)
+    generateThermoModel(speciesDict[label], model, plot)
 
 def generateKinetics(label, tunneling='', plot=False):
     global reactionDict

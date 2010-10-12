@@ -78,7 +78,7 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds):
 
 ################################################################################
 
-def projectRotors(geom, F, rotors, pivots, top1, linear):
+def projectRotors(geom, F, rotors, linear):
     """
     For a given geometry `geom` with associated force constant matrix `F`,
     lists of rotor information `rotors`, `pivots`, and `top1`, and the linearity
@@ -105,14 +105,15 @@ def projectRotors(geom, F, rotors, pivots, top1, linear):
         D[3*i:3*i+3,4] = numpy.array([geom.coordinates[i,2], 0, -geom.coordinates[i,0]], numpy.float64)
         if not linear:
             D[3*i:3*i+3,5] = numpy.array([-geom.coordinates[i,1], geom.coordinates[i,0], 0], numpy.float64)
-    for i in range(Nrotors):
-        if pivots[i][0] in top1[i]: pivot = pivots[i][0]
-        elif pivots[i][1] in top1[i]: pivot = pivots[i][1]
+    for scanLog, pivots, top, symmetry in rotors:
+        # Determine pivot atom
+        if pivots[0] in top: pivot = pivots[0]
+        elif pivots[1] in top: pivot = pivots[1]
         else: raise Exception('Could not determine pivot atom.')
         # Projection vectors for internal rotation
-        e12 = geom.coordinates[pivots[i][0],:] - geom.coordinates[pivots[i][1],:]
+        e12 = geom.coordinates[pivots[0],:] - geom.coordinates[pivots[1],:]
         e12 /= numpy.linalg.norm(e12)
-        for atom in top1[i]:
+        for atom in top:
             e31 = geom.coordinates[atom,:] - geom.coordinates[pivot,:]
             D[3*atom:3*atom+3,-Nrotors+i] = numpy.cross(e31, e12)
 

@@ -110,7 +110,8 @@ def initializeLogging(args):
 
 def execute(path, output):
     """
-    Execute the CanTherm job located at `path` on disk.
+    Execute the CanTherm job located at `path` on disk, saving the output to
+    `output` on disk.
     """
     
     try:
@@ -127,7 +128,7 @@ def execute(path, output):
     root, ext = os.path.split(path)
     os.chdir(root)
 
-    from cantherm.input import setModelChemistry, loadSpecies, loadTransitionState, loadReaction, generateThermo, generateKinetics
+    from cantherm.input import setModelChemistry, hinderedRotor, loadSpecies, loadTransitionState, loadReaction, generateThermo, generateKinetics
     
     global_context = { '__builtins__': None }
     local_context = {
@@ -136,6 +137,7 @@ def execute(path, output):
         'False': False,
         'range': range,
         'modelChemistry': setModelChemistry,
+        'HinderedRotor': hinderedRotor,
         'species': loadSpecies,
         'transitionState': loadTransitionState,
         'reaction': loadReaction,
