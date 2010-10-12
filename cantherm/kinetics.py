@@ -66,10 +66,15 @@ def saveKinetics(reaction, label, path):
     f.write('kinetics(\n')
     f.write('    label = "%s",\n' % label)
     
+    Nreac = len(reaction.reactants)
+    if Nreac > 1:
+        Aunits = 'm^%i/(mol^%i*s)' % (3*(Nreac-1), Nreac-1)
+    else:
+        Aunits = 's^-1'
+    
     if isinstance(reaction.kinetics, ArrheniusModel):
-        Nreac = len(reaction.reactants)
         f.write('    thermo = ArrheniusModel(\n')
-        f.write('        A = (%g, "m^%i/(mol^%i*s)"),\n' % (reaction.kinetics.A, 3*(Nreac-1), Nreac-1))
+        f.write('        A = (%g, "%s"),\n' % (reaction.kinetics.A, Aunits))
         f.write('        n = %g,\n' % (reaction.kinetics.n))
         f.write('        Ea = (%g, "kcal/mol"),\n' % (reaction.kinetics.Ea / 4184))
         f.write('        T0 = (%g, "K"),\n' % (reaction.kinetics.T0))
