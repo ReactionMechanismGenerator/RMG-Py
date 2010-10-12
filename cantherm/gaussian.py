@@ -315,7 +315,7 @@ class GaussianLog:
         line = f.readline()
         while line != '':
             # Read vibrational frequencies
-            if 'Frequencies ---' in line:
+            if 'Frequencies --' in line:
                 frequencies.extend(line.split()[2:])
             line = f.readline()
         # Close file when finished
