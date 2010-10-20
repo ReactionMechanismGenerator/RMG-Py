@@ -332,6 +332,7 @@ def generateFrequencyData(molecule, thermoModel):
     for freq, degen in vib:
         for d in range(degen):
             frequencies.append(freq)
+    ho.frequencies = frequencies
     statesModel.modes.append(ho)
     for freq, barr, degen in hind:
         inertia = (barr*constants.c*100.0*constants.h) / (2 * (freq*constants.c*100.0)**2)
