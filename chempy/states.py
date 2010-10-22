@@ -383,9 +383,9 @@ class HinderedRotor(Mode):
         cython.declare(V=numpy.ndarray, k=cython.int)
         V = numpy.zeros_like(phi)
         if self.fourier is not None:
-            for k in range(self.fourier.shape[0]):
-                V += self.fourier[k,0] * numpy.cos((k+1) * phi) + self.fourier[k,1] * numpy.sin((k+1) * phi)
-            V -= numpy.sum(self.fourier[:,0])
+            for k in range(self.fourier.shape[1]):
+                V += self.fourier[0,k] * numpy.cos((k+1) * phi) + self.fourier[1,k] * numpy.sin((k+1) * phi)
+            V -= numpy.sum(self.fourier[0,:])
         else:
             V = 0.5 * self.barrier * (1 - numpy.cos(self.symmetry * phi))
         return V
@@ -416,13 +416,13 @@ class HinderedRotor(Mode):
         # Populate Hamiltonian matrix
         H = numpy.zeros((2*M+1,2*M+1), numpy.complex64)
         fourier = self.fourier / constants.Na / 2.0
-        A = numpy.sum(self.fourier[:,0]) / constants.Na
+        A = numpy.sum(self.fourier[0,:]) / constants.Na
         row = 0
         for m in range(-M, M+1):
             H[row,row] = A + constants.h * constants.h * m * m / (8 * math.pi * math.pi * self.inertia)
-            for n in range(fourier.shape[0]):
-                if row-n-1 > -1:    H[row,row-n-1] = complex(fourier[n,0], - fourier[n,1])
-                if row+n+1 < 2*M+1: H[row,row+n+1] = complex(fourier[n,0], fourier[n,1])
+            for n in range(fourier.shape[1]):
+                if row-n-1 > -1:    H[row,row-n-1] = complex(fourier[0,n], - fourier[1,n])
+                if row+n+1 < 2*M+1: H[row,row+n+1] = complex(fourier[0,n], fourier[1,n])
             row += 1
         # The overlap matrix is the identity matrix, i.e. this is a standard
         # eigenvalue problem
