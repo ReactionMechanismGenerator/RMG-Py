@@ -15,6 +15,9 @@ build/*
 *.so
 *.pyd
 
+# Example output files
+examples/*/output.py
+
 # Compilation helper files
 # (These will be unique to each developer's setup)
 make.inc
