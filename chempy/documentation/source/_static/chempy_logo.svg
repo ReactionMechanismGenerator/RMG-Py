@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="640"
+   height="128"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.47 r22583"
+   sodipodi:docname="chempy_logo.svg"
+   inkscape:export-filename="/files/projects/chempy/devel/documentation/source/_static/chempy_logo.png"
+   inkscape:export-xdpi="67.5"
+   inkscape:export-ydpi="67.5">
+  <defs
+     id="defs4">
+    <inkscape:perspective
+       sodipodi:type="inkscape:persp3d"
+       inkscape:vp_x="0 : 526.18109 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_z="744.09448 : 526.18109 : 1"
+       inkscape:persp3d-origin="372.04724 : 350.78739 : 1"
+       id="perspective10" />
+    <inkscape:perspective
+       id="perspective2842"
+       inkscape:persp3d-origin="0.5 : 0.33333333 : 1"
+       inkscape:vp_z="1 : 0.5 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_x="0 : 0.5 : 1"
+       sodipodi:type="inkscape:persp3d" />
+    <inkscape:perspective
+       id="perspective2876"
+       inkscape:persp3d-origin="0.5 : 0.33333333 : 1"
+       inkscape:vp_z="1 : 0.5 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_x="0 : 0.5 : 1"
+       sodipodi:type="inkscape:persp3d" />
+    <inkscape:perspective
+       id="perspective2901"
+       inkscape:persp3d-origin="0.5 : 0.33333333 : 1"
+       inkscape:vp_z="1 : 0.5 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_x="0 : 0.5 : 1"
+       sodipodi:type="inkscape:persp3d" />
+    <inkscape:perspective
+       id="perspective2828"
+       inkscape:persp3d-origin="0.5 : 0.33333333 : 1"
+       inkscape:vp_z="1 : 0.5 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_x="0 : 0.5 : 1"
+       sodipodi:type="inkscape:persp3d" />
+    <filter
+       inkscape:collect="always"
+       id="filter3650"
+       color-interpolation-filters="sRGB">
+      <feGaussianBlur
+         inkscape:collect="always"
+         stdDeviation="2.1313478"
+         id="feGaussianBlur3652" />
+    </filter>
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="1"
+     inkscape:cx="325.11915"
+     inkscape:cy="40.94654"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:window-width="929"
+     inkscape:window-height="793"
+     inkscape:window-x="118"
+     inkscape:window-y="113"
+     inkscape:window-maximized="0" />
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(0,-924.36218)">
+    <g
+       id="g3690-6"
+       transform="translate(-80.25015,11.49994)"
+       style="opacity:0.75;fill:#000000;fill-opacity:1;stroke:#000000;stroke-opacity:1;filter:url(#filter3650)">
+      <g
+         id="flowRoot2824-7-1"
+         style="font-size:40px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:#000000;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         transform="translate(244.38671,681.94204)">
+        <path
+           sodipodi:nodetypes="csscscccccsscscccc"
+           id="path2866-6-5"
+           style="font-size:144px;font-variant:normal;font-stretch:normal;fill:#000000;fill-opacity:1;stroke:#000000;stroke-opacity:1;font-family:Nimbus Roman No9 L;-inkscape-font-specification:Nimbus Roman No9 L"
+           d="m -99.328125,318.67795 c -5.156285,-0.375 -9.726595,-1.28907 -13.710935,-2.74219 -3.9844,-1.45312 -7.35939,-3.53906 -10.125,-6.25781 -2.76564,-2.71874 -4.87501,-6.11718 -6.32813,-10.19532 -1.40625,-4.0781 -2.10938,-8.97653 -2.10937,-14.69531 -1e-5,-5.81246 0.56249,-10.75777 1.6875,-14.83594 1.12499,-4.12494 2.74218,-7.57025 4.85156,-10.33593 2.15624,-2.76557 4.80467,-4.92182 7.94531,-6.46875 3.18748,-1.54681 6.82029,-2.67181 10.89844,-3.375 l -0.0703,5.13281 c -2.53128,0.93756 -4.61722,2.25006 -6.25782,3.9375 -1.59377,1.64068 -2.85939,3.67974 -3.79687,6.11719 -0.93752,2.43755 -1.59377,5.27348 -1.96875,8.50781 -0.37502,3.18754 -0.56252,6.82035 -0.5625,10.89844 -2e-5,4.68752 0.39842,8.74221 1.19531,12.16406 0.84373,3.42189 2.06248,6.3047 3.65625,8.64844 1.6406,2.29688 3.67966,4.125 6.11719,5.48437 2.48434,1.35938 5.34372,2.29688 8.578125,2.8125" />
+      </g>
+      <g
+         id="flowRoot2824-2-5"
+         style="font-size:40px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:#000000;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         transform="translate(244.38671,681.94204)">
+        <path
+           sodipodi:nodetypes="ccccccccscscccccccccscccccsc"
+           id="path2866-2-4"
+           style="font-size:144px;font-variant:normal;font-stretch:normal;fill:#000000;fill-opacity:1;stroke:#000000;stroke-opacity:1;font-family:Nimbus Roman No9 L;-inkscape-font-specification:Nimbus Roman No9 L"
+           d="m -91.875,348.2092 -7.453125,0 0,-29.53125 1e-5,-5.20313 0,-43.03125 c -3.8e-5,-2.81245 0.281212,-5.48432 0.84375,-8.01562 0.609336,-2.5312 1.570272,-4.73432 2.882813,-6.60938 1.312457,-1.92181 2.999955,-3.42181 5.0625,-4.5 2.109326,-1.12493 4.687448,-1.68743 7.734375,-1.6875 7.359313,7e-5 13.05462,2.836 17.085937,8.50781 4.031175,5.62506 6.046798,13.89849 6.046875,24.82032 -7.7e-5,5.6719 -0.773514,10.66408 -2.320312,14.97656 -1.546949,4.26564 -3.750072,7.87501 -6.609375,10.82812 -2.812566,2.95313 -6.211,5.25001 -10.195313,6.89063 -3.937554,1.64062 -8.296925,2.67187 -13.078125,3.09375 l 0,29.46094 m 19.617188,-64.26563 c -6.5e-5,-5.15621 -0.304753,-9.53902 -0.914063,-13.14844 -0.609438,-3.6562 -1.453188,-6.60932 -2.53125,-8.85937 -1.078185,-2.29682 -2.343809,-3.96088 -3.796875,-4.99219 -1.406306,-1.07806 -2.929742,-1.61712 -4.570312,-1.61719 -2.437551,7e-5 -4.359424,1.24225 -5.765625,3.72657 -1.359421,2.43755 -2.039108,6.23442 -2.039063,11.39062 l 0,42.89063 c 3.187452,-0.46875 5.999949,-1.35937 8.4375,-2.67188 2.437444,-1.35937 4.476504,-3.21093 6.117188,-5.55469 1.687438,-2.39061 2.953062,-5.32029 3.796875,-8.78906 0.843685,-3.46872 1.26556,-7.59372 1.265625,-12.375" />
+      </g>
+    </g>
+    <g
+       id="g3690"
+       transform="translate(-84.749997,7.500005)">
+      <g
+         id="flowRoot2824-7"
+         style="font-size:40px;font-style:normal;font-weight:normal;fill:#993333;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+         transform="translate(244.38671,681.94204)">
+        <path
+           sodipodi:nodetypes="csscscccccsscscccc"
+           id="path2866-6"
+           style="font-size:144px;font-variant:normal;font-stretch:normal;fill:#993333;fill-opacity:1;stroke:none;font-family:Nimbus Roman No9 L;-inkscape-font-specification:Nimbus Roman No9 L"
+           d="m -99.328125,318.67795 c -5.156285,-0.375 -9.726595,-1.28907 -13.710935,-2.74219 -3.9844,-1.45312 -7.35939,-3.53906 -10.125,-6.25781 -2.76564,-2.71874 -4.87501,-6.11718 -6.32813,-10.19532 -1.40625,-4.0781 -2.10938,-8.97653 -2.10937,-14.69531 -1e-5,-5.81246 0.56249,-10.75777 1.6875,-14.83594 1.12499,-4.12494 2.74218,-7.57025 4.85156,-10.33593 2.15624,-2.76557 4.80467,-4.92182 7.94531,-6.46875 3.18748,-1.54681 6.82029,-2.67181 10.89844,-3.375 l -0.0703,5.13281 c -2.53128,0.93756 -4.61722,2.25006 -6.25782,3.9375 -1.59377,1.64068 -2.85939,3.67974 -3.79687,6.11719 -0.93752,2.43755 -1.59377,5.27348 -1.96875,8.50781 -0.37502,3.18754 -0.56252,6.82035 -0.5625,10.89844 -2e-5,4.68752 0.39842,8.74221 1.19531,12.16406 0.84373,3.42189 2.06248,6.3047 3.65625,8.64844 1.6406,2.29688 3.67966,4.125 6.11719,5.48437 2.48434,1.35938 5.34372,2.29688 8.578125,2.8125" />
+      </g>
+      <g
+         id="flowRoot2824-2"
+         style="font-size:40px;font-style:normal;font-weight:normal;fill:#808080;fill-opacity:1;stroke:#993333;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         transform="translate(244.38671,681.94204)">
+        <path
+           sodipodi:nodetypes="ccccccccscscccccccccscccccsc"
+           id="path2866-2"
+           style="font-size:144px;font-variant:normal;font-stretch:normal;fill:#808080;fill-opacity:1;stroke:#993333;stroke-opacity:1;font-family:Nimbus Roman No9 L;-inkscape-font-specification:Nimbus Roman No9 L"
+           d="m -91.875,348.2092 -7.453125,0 0,-29.53125 1e-5,-5.20313 0,-43.03125 c -3.8e-5,-2.81245 0.281212,-5.48432 0.84375,-8.01562 0.609336,-2.5312 1.570272,-4.73432 2.882813,-6.60938 1.312457,-1.92181 2.999955,-3.42181 5.0625,-4.5 2.109326,-1.12493 4.687448,-1.68743 7.734375,-1.6875 7.359313,7e-5 13.05462,2.836 17.085937,8.50781 4.031175,5.62506 6.046798,13.89849 6.046875,24.82032 -7.7e-5,5.6719 -0.773514,10.66408 -2.320312,14.97656 -1.546949,4.26564 -3.750072,7.87501 -6.609375,10.82812 -2.812566,2.95313 -6.211,5.25001 -10.195313,6.89063 -3.937554,1.64062 -8.296925,2.67187 -13.078125,3.09375 l 0,29.46094 m 19.617188,-64.26563 c -6.5e-5,-5.15621 -0.304753,-9.53902 -0.914063,-13.14844 -0.609438,-3.6562 -1.453188,-6.60932 -2.53125,-8.85937 -1.078185,-2.29682 -2.343809,-3.96088 -3.796875,-4.99219 -1.406306,-1.07806 -2.929742,-1.61712 -4.570312,-1.61719 -2.437551,7e-5 -4.359424,1.24225 -5.765625,3.72657 -1.359421,2.43755 -2.039108,6.23442 -2.039063,11.39062 l 0,42.89063 c 3.187452,-0.46875 5.999949,-1.35937 8.4375,-2.67188 2.437444,-1.35937 4.476504,-3.21093 6.117188,-5.55469 1.687438,-2.39061 2.953062,-5.32029 3.796875,-8.78906 0.843685,-3.46872 1.26556,-7.59372 1.265625,-12.375" />
+      </g>
+    </g>
+    <flowRoot
+       xml:space="preserve"
+       id="flowRoot3654"
+       style="font-size:40px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       transform="translate(-10.92,923.68333)"><flowRegion
+         id="flowRegion3656"><rect
+           id="rect3658"
+           width="302"
+           height="66"
+           x="137"
+           y="19" /></flowRegion><flowPara
+         id="flowPara3666"
+         style="font-size:48px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:Century Schoolbook L;-inkscape-font-specification:Century Schoolbook L Medium"><flowSpan
+           style="fill:#993333;fill-opacity:1"
+           id="flowSpan3687">Chem</flowSpan><flowSpan
+           style="fill:#808080;fill-opacity:1"
+           id="flowSpan3703">Py</flowSpan></flowPara></flowRoot>    <flowRoot
+       xml:space="preserve"
+       id="flowRoot3677"
+       style="font-size:40px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       transform="translate(-15.744,875.44144)"><flowRegion
+         id="flowRegion3679"><rect
+           id="rect3681"
+           width="569"
+           height="140"
+           x="144"
+           y="125" /></flowRegion><flowPara
+         id="flowPara3683"
+         style="font-size:24px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Century Schoolbook L;-inkscape-font-specification:Century Schoolbook L Medium">A chemistry toolkit for Python</flowPara></flowRoot>  </g>
+</svg>
