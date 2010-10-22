@@ -12,7 +12,7 @@ install:
 	python setup.py install
 
 cython:
-	python setup.py build_ext --inplace $(CYTHON_FLAGS)
+	python setup.py build_ext $(CYTHON_FLAGS)
 
 clean:
 	python setup.py clean $(CLEAN_FLAGS)
