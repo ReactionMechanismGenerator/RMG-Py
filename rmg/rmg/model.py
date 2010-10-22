@@ -1155,7 +1155,7 @@ class CoreEdgeReactionModel:
                 network.printSummary(level=logging.INFO)
 
                 # Calculate the rate coefficients
-                K = network.calculateRateCoefficients(Tlist, Plist, Elist, method)
+                K, p0 = network.calculateRateCoefficients(Tlist, Plist, Elist, method)
 
                 # Generate PDepReaction objects
                 configurations = []

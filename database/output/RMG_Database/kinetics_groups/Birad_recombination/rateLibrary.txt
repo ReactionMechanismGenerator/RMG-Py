@@ -1,0 +1,29 @@
+
+// rate library for f07: biradical recombination to form cycle
+
+// jing, define key word for format of the rate: either Arrhenius or Arrhenius_EP
+Arrhenius_EP
+
+// f07_biradical_recombination_to_form_cycle
+// from rate_library_4.txt, Cath, 03/07/28
+
+// Catherina Wijaya Thesis, pg 157.
+
+// [185] Roth, W.R.; Scholz, B.P.; Breuckmann, R.; Jelich, K.; Lennartz, H-W. Chem. Ber. 1982, 115, 1934. 
+// [186] Benson, S.W. J. Chem. Phys. 1967, 46, 4920.
+// [187] Grimme, W.; Schumachers, L.; Roth, W.R.; Breuckmann, R. Chem. Ber. 1981, 114, 3197. 
+// [188] Lewis, K.E.; Steiner, H. J. Chem. Soc. 1964, 3080.
+// [x] Sirjean, B.; Glaude, P. A.; Ruiz-Lopez, M. F.; Fournet, R.; J. Phys. Chem. A. 2006, 110, 12693-12704. 
+
+//No.	Rn			Y_rad_out			Ypri_rad_out		Temp.		A			n	a		E0		DA		Dn		Da		DE0		Rank	Comments
+//481.	R4_SDS			C_rad_out_2H			Cpri_rad_out_2H		495-549		2.5E+11		0		0		35.7	1.3E+11 0		0		0.5	5	[185] Roth et al.
+//483.	R6_SDSDS		C_rad_out_2H			Cpri_rad_out_2H		555-606		2.77E+13	0		0		45.51	*1.2	0		0		0		3	[187] Grimme et al.
+//484.	R6_SDSDS		C_rad_out_2H			Cpri_rad_out_2H		390-463		7.14E+11	0		0		29.01	*3.7	0		0		0.58	3	[188] Lewis et al.
+
+
+//#  Group1             Group2                TempRange         A        n    alpha       E0       DA       Dn   Dalpha      DE0  Rank  Comment
+0    Rn                   Y_rad_out            Ypri_rad_out           300-1500     5e+11        0        0       30        0        0        0        0  0     Default
+1    R6_SSSDS             C_rad_out_H/OneDe    Cpri_rad_out_2H        550-650      2e+12        0        0      1.8        0        0        0        1  4     [186] Benson et al.
+2    R4_SSS               C_rad_out_2H         Cpri_rad_out_2H        600-2000  1.62e+12   -0.305        0     1.98        0        0        0        0  3     [x] Sirjean et al.
+3    R5_SSSS              C_rad_out_2H         Cpri_rad_out_2H        600-2000  7.76e+09    0.311        0      1.7        0        0        0        0  3     [x] Sirjean et al.
+4    R6_SSSSS             C_rad_out_2H         Cpri_rad_out_2H        600-2000  3.21e+10    0.137        0     2.12        0        0        0        0  3     [x] Sirjean et al.

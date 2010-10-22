@@ -1,0 +1,9 @@
+H2                 1    59.700     2.8327    0.000     0.000     0.000 ! Value stored by RMG in Species.selectLJParametersForSpecialMolecule()
+O2                 1   106.700     3.467     0.000     0.000     0.000 ! Value stored by RMG in Species.selectLJParametersForSpecialMolecule()
+H2O                2   809.100     2.641     0.000     1.760     4.000 ! Value stored by RMG in Species.selectLJParametersForSpecialMolecule()
+H2O2               2   289.300     4.196     0.000     0.000     0.000 ! Value stored by RMG in Species.selectLJParametersForSpecialMolecule()
+CO2                1   195.200     3.941     0.000     0.000     0.000 ! Value stored by RMG in Species.selectLJParametersForSpecialMolecule()
+CO                 1    91.700     3.690     0.000     1.760     4.000 ! Value stored by RMG in Species.selectLJParametersForSpecialMolecule()
+
+// Value for H2S
+H2S					2  221.000     3.730     0.000     0.000     0.000 ! F.Salmoun and J.Dubessy; J. Raman Spectrosc. 25 (1994) 281-287

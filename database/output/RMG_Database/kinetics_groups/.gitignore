@@ -1,0 +1,4 @@
+# ignore the re-generated library.py files in the output folder
+# because we want to be tracking the originals in the input folder
+# and don't want extras in here for confusion
+library.py

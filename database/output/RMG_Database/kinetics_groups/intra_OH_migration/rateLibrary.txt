@@ -1,0 +1,21 @@
+
+// rate library for f33: intra hydroxyl migration
+// Originally from rate_library_4.txt, Cath, 03/07/28
+
+// jing, define key word for format of the rate: either Arrhenius or Arrhenius_EP
+Arrhenius_EP
+
+//f33_intra_hydroxyl_migration
+//			RnOOH		Y_rad_out			Temp.		A			n	a		E0		DA		Dn		Da		DE0		Rank	Comments
+	
+
+//#  Group1             Group2                TempRange         A        n    alpha       E0       DA       Dn   Dalpha      DE0  Rank  Comment
+0    RnOOH                Y_rad_out              300-1500     1e+10        0        0       15        0        0        0        0  0     
+1    R2OOH_S              C_rad_out_2H           300-1500  3.39e+11        0        0     26.9        0        0        0        0  2     CBS-QB3 calculations (Catherina Wijaya). Treatment of hindered rotor included; hindered rotor PES are done at B3LYP/6-31g(d) level.
+2    R2OOH_S              C_rad_out_H/NonDeC     300-1500  2.69e+11        0        0     24.3        0        0        0        0  2     CBS-QB3 calculations (Catherina Wijaya). Treatment of hindered rotor included; hindered rotor PES are done at B3LYP/6-31g(d) level.
+3    R3OOH_SS             C_rad_out_2H           300-1500  4.47e+10        0        0     27.8        0        0        0        0  2     CBS-QB3 calculations (Catherina Wijaya). Treatment of hindered rotor included; hindered rotor PES are done at B3LYP/6-31g(d) level.
+4    R3OOH_SS             C_rad_out_H/NonDeC     300-1500  2.88e+10        0        0     26.6        0        0        0        0  2     CBS-QB3 calculations (Catherina Wijaya). Treatment of hindered rotor included; hindered rotor PES are done at B3LYP/6-31g(d) level.
+5    R3OOH_SS             C_rad_out_Cs2          300-1500  4.79e+10        0        0     26.3        0        0        0        0  2     CBS-QB3 calculations (Catherina Wijaya). Treatment of hindered rotor included; hindered rotor PES are done at B3LYP/6-31g(d) level.
+6    R4OOH_SSS            C_rad_out_2H           300-1500  1.12e+10        0        0     16.3        0        0        0        0  2     CBS-QB3 calculations (Catherina Wijaya). Treatment of hindered rotor included; hindered rotor PES are done at B3LYP/6-31g(d) level.
+7    R4OOH_SSS            C_rad_out_H/NonDeC     300-1500     1e+10        0        0     15.6        0        0        0        0  2     CBS-QB3 calculations (Catherina Wijaya). Treatment of hindered rotor included; hindered rotor PES are done at B3LYP/6-31g(d) level.
+8    R4OOH_SSS            C_rad_out_Cs2          300-1500  8.71e+09        0        0     14.9        0        0        0        0  2     CBS-QB3 calculations (Catherina Wijaya). Treatment of hindered rotor included; hindered rotor PES are done at B3LYP/6-31g(d) level.

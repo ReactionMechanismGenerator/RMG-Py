@@ -1,0 +1,15 @@
+################################################################################
+#
+#   Compilation options for MEASURE
+#
+################################################################################
+
+# Extra flags to pass to Cython:
+#   --build-lib         Set the directory to place the build directory
+#   --build-temp        Set the location to place temporary build files
+#   --pyrex-c-in-temp   Place the generated C files in the temp directory
+CYTHON_FLAGS=--build-lib . --build-temp build --pyrex-c-in-temp
+
+# Extra flags to pass to Python/Cython when cleaning:
+#   --build-temp        Set the location where temporary build files were placed
+CLEAN_FLAGS=--build-temp build
