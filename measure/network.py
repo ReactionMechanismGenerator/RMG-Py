@@ -492,6 +492,17 @@ class Network:
                 else:
                     raise NetworkError('Unknown method "%s".' % method)
 
+                # Reject if any rate coefficients are negative
+                negativeRate = False
+                for i in range(Nisom+Nreac+Nprod):
+                    for j in range(i):
+                        if K[t,p,i,j] < 0 or K[t,p,j,i] < 0 and not negativeRate:
+                            negativeRate = True
+                            logging.error('Negative rate coefficient generated; rejecting result.')
+                            logging.info(K[t,p,0:Nisom+Nreac+Nprod,0:Nisom+Nreac])
+                            K[t,p,:,:] = 0 * K[t,p,:,:]
+                            p0[t,p,:,:,:] = 0 * p0[t,p,:,:,:]
+                            
                 logging.log(0, K[t,p,0:Nisom+Nreac+Nprod,0:Nisom+Nreac])
 
                 logging.debug('')
