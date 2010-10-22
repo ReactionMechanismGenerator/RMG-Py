@@ -145,8 +145,8 @@ class GaussianLog:
                 mass[i] = 15.9994
             else:
                 print 'Atomic number %i not yet supported in loadGeometry().' % number[i]
-
-        return Geometry(coordinates=coord * 5.291772108e-11, number=number, mass=mass / 1000)
+        
+        return Geometry(coordinates=coord * 1e-10, number=number, mass=mass / 1000)
 
     def loadStates(self, symmetry=None):
         """
@@ -390,7 +390,7 @@ class GaussianLog:
         # Gaussian does something extra with the last step in the scan, so we
         # discard this point
         Vlist = Vlist[:-1]
-
+        
         # Determine the set of dihedral angles corresponding to the above
         # This assumes that you start at 0.0, finish at 360.0, and take
         # constant step sizes in between
