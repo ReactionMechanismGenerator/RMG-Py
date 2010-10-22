@@ -1,0 +1,187 @@
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Abraham Solute Descriptor dictionary                                                                  
+// Defines groups for determining 5 out of 6 Abraham solute descriptors (all but hydrogen bond acidity)  
+// Constructed by Amrit Jalan                                                                            
+// May 1, 2009                                                                                        
+//                                                                                                       
+// Reference: Platts et al J.Chem Inf. Comput. Sci. 1999, 39, 835-845                                     
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+R
+1  * R 0
+
+C			// L1 Node
+1  * C 0  
+
+Css                                                  
+1  * Cs 0
+
+Cb
+1 * Cb 0  
+
+O
+1  * O 0
+
+Oss				
+1  * Os 0 
+
+Cbf
+1 * Cbf 0
+
+Ct
+1 * Ct 0
+
+Cds
+1  * {Cd,CO} 0 
+
+Od
+1 * Od 0
+
+CssH3
+1 * Cs 0 {2,S} {3,S} {4,S}
+2   H 0 {1,S}
+3   H 0 {1,S}
+4   H 0 {1,S}
+
+// does not the definition of a fifth group because it can be H or C. Defining R!H would exclude methane.
+
+CssH2
+1 * Cs 0 {2,S} {3,S} {4,S} {5,S}
+2   H 0 {1,S}
+3   H 0 {1,S
+4   R!H 0 {1,S}
+5   R!H 0 {1,S}
+
+CssH
+1 * Cs 0 {2,S} {3,S} {4,S} {5,S}
+2   H 0 {1,S}
+3   R!H 0 {1,S}
+4   R!H 0 {1,S}
+5   R!H 0 {1,S}
+
+Css-noH
+1 * Cs 0 {2,S} {3,S} {4,S} {5,S}
+2   R!H 0 {1,S}
+3   R!H 0 {1,S}
+4   R!H 0 {1,S}
+5   R!H 0 {1,S}
+
+OssH
+1 * Os 0 {2,S}
+2   H 0 {1,S}
+
+Oss-noncyclic
+1 * Os 0 {2,S} {3,S}
+2   R!H 0 {1,S}
+3   R!H 0 {1,S}
+
+Oss(CdsOd)
+1 * CO 0 {2,S} {3,D}
+2   Os 0 {1,S}
+3   Od 0 {1,D}
+
+OssCds(Od)Oss
+1 * CO 0 {2,S} {3,S} {4,D}
+2   Os 0 {1,S}
+3   Os 0 {1,S}
+4   Od 0 {1,D}
+
+Oss*Cds(Od)Oss
+1   CO 0 {2,S} {3,S} {4,D}
+2 * Os 0 {1,S}
+3   Os 0 {1,S}
+4   Od 0 {1,D}
+
+OssCds(Od*)Oss
+1   CO 0 {2,S} {3,S} {4,D}
+2   Os 0 {1,S}
+3   Os 0 {1,S}
+4 * Od 0 {1,D}
+
+OssCds(Od)Oss*
+1   CO 0 {2,S} {3,S} {4,D}
+2   Os 0 {1,S}
+3 * Os 0 {1,S}
+4   Od 0 {1,D}
+
+Cds(Od)OssH
+1 * CO 0 {2,S} {4,D}
+2   Os 0 {1,S} {3,S}
+3   H 0 {2,S}
+4   Od 0 {1,D}
+
+Cds(Od)Cds=CdsCds(Od)
+1 * Cd 0 {2,D} {3,S}
+2   Cd 0 {1,D} {4,S}
+3   CO 0 {1,S} {5,D}
+4   CO 0 {2,S} {6,D}
+5   Od 0 {3,D}
+6   Od 0 {4,D}
+
+Cds*(Od)Cds=CdsCds(Od)
+1   Cd 0 {2,D} {3,S}
+2   Cd 0 {1,D} {4,S}
+3 * CO 0 {1,S} {5,D}
+4   CO 0 {2,S} {6,D}
+5   Od 0 {3,D}
+6   Od 0 {4,D}
+
+Cds(Od*)Cds=CdsCds(Od)
+1   Cd 0 {2,D} {3,S}
+2   Cd 0 {1,D} {4,S}
+3   CO 0 {1,S} {5,D}
+4   CO 0 {2,S} {6,D}
+5 * Od 0 {3,D}
+6   Od 0 {4,D}
+
+Css(OssH)-Css(OssH)
+1 * Cs 0 {2,S} {4,S}
+2   Os 0 {1,S} {3,S}
+3   H 0 {2,S}
+4   Cs 0 {5,S} {1,S}
+5   Os 0 {4,S} {6,S}
+6   H 0 {5,S}
+
+Css(Oss*H)-Css(OssH)
+1   Cs 0 {2,S} {4,S}
+2 * Os 0 {1,S} {3,S}
+3   H 0 {2,S}
+4   Cs 0 {5,S} {1,S}
+5   Os 0 {4,S} {6,S}
+6   H 0 {5,S}
+
+CbCs-OsH
+1 * Cs 0 {2,S} {4,S}
+2   Os 0 {1,S} {3,S}
+3   H 0 {2,S}
+4   Cb 0 {1,S}
+
+CdsH2
+1 * C 0 {2,S} {3,S} {4,D}
+2   H 0 {1,S}
+3   H 0 {1,S}
+4   R!H 0 {1,D}
+
+CdsH
+1 * C 0 {2,S} {3,S} {4,D}
+2   H 0 {1,S}
+3   R!H 0 {1,S}
+4   R!H 0 {1,D}
+
+Cds-noH
+1 * C 0 {2,S} {3,S} {4,D}
+2   R!H 0 {1,S}
+3   R!H 0 {1,S}
+4   R!H 0 {1,D}
+
+//Cdd
+//1 * C 0 {2,D} {3,D}
+//2   C 0 {1,D}
+//3   C 0 {1,D}
+
+Cdd
+1 * Cdd 0
+
+
+
+

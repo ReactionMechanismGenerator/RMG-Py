@@ -1,0 +1,150 @@
+
+// rate library for f02: Radical addition to multiple bond
+// original from rate_library_4.txt, Cath, 03/07/28
+
+// JS, define key word for format of the rate: either Arrhenius or Arrhenius_EP
+Arrhenius_EP
+
+//f02_Radical_Addition
+//No.		XZ				Y_rad			Temp.		A			N		a	E0		DA		Dn		Da	DE0		Rank	Comments
+//416 Added by sandeep taken from the stufy of 1,3-Hexadiene dont at CBS-QB3 level
+
+
+//#  Group1             Group2                TempRange         A        n    alpha       E0       DA       Dn   Dalpha      DE0  Rank  Comment
+0    XZ                   Y_rad_birad            300-1500     1e+13        0        0      0.5        0        0        0        0  0     Default
+1    Cd/H2                H_rad                  300-1500     1e+13        0        0      1.2        0        0        0        0  5     Curran et al. [8] in his reaction type 3. Based on recommendations of Allara and Shaw [146]
+2    Cd/H/Nd              H_rad                  300-1500     1e+13        0        0      2.9        0        0        0        0  5     Curran et al. [8] in his reaction type 3. Based on recommendations of Allara and Shaw [146]
+3    Cd/Nd2               H_rad                  300-1500     1e+13        0        0      2.9        0        0        0        0  5     Curran et al. [8] in his reaction type 3. Based on recommendations of Allara and Shaw [146]
+4    Cd/H2                Cs_rad                 300-1500   8.5e+10        0        0      7.8        0        0        0        0  5     Curran et al. [8] in his reaction type 3. Based on recommendations of Allara and Shaw [146]
+5    Cd/H/Nd              Cs_rad                 300-1500   8.5e+10        0        0     10.6        0        0        0        0  5     Curran et al. [8] in his reaction type 3. Based on recommendations of Allara and Shaw [146]
+6    Cd/Nd2               Cs_rad                 300-1500   8.5e+10        0        0     10.6        0        0        0        0  5     Curran et al. [8] in his reaction type 3. Based on recommendations of Allara and Shaw [146]
+7    Cd/H2                O_rad/NonDe            300-1500     1e+11        0        0     12.5        0        0        0        0  5     Curran et al. [8] in his reaction type 20. Based on recommendations of Chen and Bozzelli [57]
+8    Cd/H/Nd              O_rad/NonDe            300-1500     1e+11        0        0       11        0        0        0        0  5     Curran et al. [8] in his reaction type 20. Based on recommendations of Chen and Bozzelli [57]
+9    Cd/Nd2               O_rad/NonDe            300-1500     1e+11        0        0      7.6        0        0        0        0  5     Curran et al. [8] in his reaction type 20. Based on recommendations of Chen and Bozzelli [57]
+10   Cd/H2_Cd/H2          H_rad                  200-1100  1.98e+09     1.28        0     1.29       *2        0        0        0  4     Baulch et al. [94] literature review.
+11   Cd/H2_Cd/H2          C_methyl               300-2500  1.66e+11        0        0     7.71     *1.3        0        0        0  4     Tsang et al. [89] literature review.
+12   Cd/H2_Cd/H2          C_rad/H2/Cs            298-1500  1.99e+03     2.44        0     5.37        0        0        0        0  2     Knyazev et al. [147]
+13   Cd/H2_Cd/H2          C_rad/H2/O             300-2500  2.41e+10        0        0     6.96       *5        0        0        0  4     Tsang et al. [90] literature review.
+14   Cd/H2_Cd/H2          Cd_pri_rad            1260-1310     1e+11        0        0     2.01        0        0        0        0  5     Weissman and Benson [148] Estimated values.
+15   Cd/H2_Cd/H2          O_pri_rad              300-1500  2.71e+12        0        0        0        0        0        0        0  4     Tsang et al. [89] literature review.
+16   Cd/H2_Cd/H/Nd        H_rad                  500-2500   1.3e+13        0        0     1.56        0        0        0        0  4     Tsang [149] experiments and limited review.
+17   Cd/H2_Cd/H/Nd        C_methyl               298-1500  1.28e+05     2.28        0      6.6        0        0        0        0  4     Knyazev et al. [150]
+18   Cd/H2_Cd/H/Nd        C_methyl               300-2500  1.69e+11        0        0     7.41     *1.4        0        0        0  4     Tsang [93] literature review.
+19   Cd/H2_Cd/H/Nd        C_rad/H2/Cd            762-811   3.55e+11        0        0     16.9        0        0        0        0  4     Barbe et al. [151] Data are estimated.
+20   Cd/H2_Cd/H/Nd        C_rad/Cs3              300-2500  3.07e+09        0        0     5.88      *10        0        0        0  4     Tsang [93] literature review.
+21   Cd/H2_Cd/H/De        C_methyl               743-772   3.16e+10        0        0     7.49        0        0        0        0  5     Perrin et al. [152] Data are estimated.
+22   Cd/H2_Cd/Nd2         H_rad                  712-779   6.21e+12     0.25        0     1.46        0        0        0        0  4     Knyazev et al. [153]
+23   Cd/H2_Cd/Nd2         C_methyl               391-449   2.51e+11        0        0      6.7        0        0        0        0  4     Seres et al. [154] Data derived from fitting a complex mechanism.
+24   Cd/H/Nd_Cd/H2        H_rad                  500-2500   1.3e+13        0        0     3.26        0        0        0        0  4     Tsang [149] experiments and limited review.
+25   Cd/H/Nd_Cd/H2        C_methyl               298-1500     1e+04     2.57        0     7.71        0        0        0        0  4     Knyazev et al. [147]
+26   Cd/H/Nd_Cd/H2        C_methyl               300-2500  9.64e+10        0        0     8.01       *3        0        0        0  4     Tsang [93] literature review.
+27   Cd/Nd2_Cd/H2         C_methyl               560-650   2.23e+11        0        0     10.6        0        0        0        0  5     Slagle et al. [155] Data derived from detailed balance/reverse rate.
+28   Cd/H2_Ca             H_rad                  300-1500     1e+13        0        0      1.2        0        0        0        0  5     Curran et al. [8] in his reaction type 3. Based on recommendations of Allara and Shaw [146]
+29   Cd/H/Nd_Ca           H_rad                  300-1500     1e+13        0        0      2.9        0        0        0        0  5     Curran et al. [8] in his reaction type 3. Based on recommendations of Allara and Shaw [146]
+30   Cd/Nd2_Ca            H_rad                  300-1500     1e+13        0        0      2.9        0        0        0        0  5     Curran et al. [8] in his reaction type 3. Based on recommendations of Allara and Shaw [146]
+31   Cd/H2_Ca             Cs_rad                 300-1500   8.5e+10        0        0      7.8        0        0        0        0  5     Curran et al. [8] in his reaction type 3. Based on recommendations of Allara and Shaw [146]
+32   Cd/H/Nd_Ca           Cs_rad                 300-1500   8.5e+10        0        0     10.6        0        0        0        0  5     Curran et al. [8] in his reaction type 3. Based on recommendations of Allara and Shaw [146]
+33   Cd/Nd2_Ca            Cs_rad                 300-1500   8.5e+10        0        0     10.6        0        0        0        0  5     Curran et al. [8] in his reaction type 3. Based on recommendations of Allara and Shaw [146]
+34   Cd/H2_Ca             C_methyl               573-595   5.75e+10        0        0     6.84        0        0        0      0.2  5     Scherzer et al. [156] Data derived from fitting a complex mechanism.
+35   Ca_Cd/H2             H_rad                  350-1200   1.2e+11     0.69        0        3     *2.5        0        0        0  4     Tsang et al. [157]
+36   Ca_Cd/H2             C_methyl               996-1180  1.58e+11        0        0     4.97        0        0        0        0  5     Tsang [158] Data is estimated.
+37   CO_O                 H_rad                  300-1500     1e+11        0        0     11.9        0        0        0        0  5     Curran et al. [8] in his reaction type 18.
+38   CO_O                 Cs_rad                 300-1500     1e+11        0        0     11.9        0        0        0        0  5     Curran et al. [8] in his reaction type 18.
+39   CO_O                 CO_pri_rad             300-1500   5.2e+11        0        0     6.56        0        0        0        0  4     Bozzelli et al. [144] based on CH3 addition to CO (Anastasi and Maw)
+40   CO_O                 O_rad/OneDe            300-1500   1.3e+11        0        0      7.4        0        0        0        0  5     Curran esitmation [159] in DME oxidation modeling for ketohydroperoxide decomposition.
+41   CO/H2_O              C_rad/H2/Cs            333-363   7.94e+10        0        0      6.7        0        0        0     0.47  5     Knoll et al. [160] Data derived from fitting a complex mechanism.
+42   CO/Nd2_O             C_methyl               413-563   3.16e+10        0        0     11.5        0        0        0     1.15  3     Knoll et al. [161]
+43   Ct/H_Ct/H            H_rad                  300-2000  2.75e+12        0        0     2.42        0        0        0        0  4     Warnatz [134] literature review.
+44   Ct/H_Ct/H            C_methyl               370-478   1.88e+11        0        0     7.77        0        0        0        0  4     E.W. Diau and M.C. Lin [162] RRK(M) extrapolation.
+45   Ct/H_Ct/H            C_rad/H2/Cs            373-473   2.50e+10        0        0     6.99        0        0        0        0  4     Kerr et al. [163] literature review.
+46   Ct/H_Ct/H            C_rad/H2/Cd            300-2500   1.6e+10        0        0     6.96      *10        0        0        0  4     Tsang [93] literature review.
+47   Ct/H_Ct/H            C_rad/H/NonDeC         363-577   2.50e+10        0        0      6.9        0        0        0        0  5     Kerr et al. [163] literature review.
+48   Ct/H_Ct/H            C_rad/Cs3              373-493   2.50e+10        0        0     5.31        0        0        0        0  4     Dominguez et al. [164] Data derived from fitting a complex mechanism.
+49   Ct/H_Ct/H            Cd_pri_rad             300-1500  1.26e+05      1.9        0     2.11        0        0        0        0  3     Weissman et al. [121] Transition state theory.
+50   Ct/H_Ct/H            Cd_pri_rad             700-1300  3.16e+11        0        0      4.9        0        0        0        0  3     Duran et al. [165] Ab initio.
+51   Ct/H_Ct/H            Ct_rad                 700-1300     5e+12        0        0        0        0        0        0        0  3     Duran et al. [165] Ab initio.
+52   Ct/H_Ct/H            O_pri_rad              298-1100  6.05e+11        0        0     0.46      *10        0        0        0  4     Baulch et al. [95] literature review.
+53   Ct/H_Ct/H            O_pri_rad              250-2500   7.6e+07      1.7        0        1        0        0        0        0  3     Miller et al. [166] Transition state theory.
+54   Ct/H_Ct/H            O_sec_rad              300-1500   5.2e+11        0        0      7.9        0        0        0        0  4     Bozzelli et al. [144] based on CH3 addition to C2H2 (NIST)
+55   Cd/H2_Cd/H2          C_methyl               300-1500  9.69e+12        0        0        9        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+56   Cd/H2_Cd/H2          C_rad/H2/Cs            300-1500  2.94e+11        0        0      8.2        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+57   Cd/H2_Cd/H2          C_rad/H2/Cs            300-1500  3.78e+11        0        0        8        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+58   Cd/H2_Cd/H2          C_rad/H2/Cs            300-1500  2.92e+11        0        0      7.6        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+59   Cd/H2_Cd/H2          C_rad/H2/Cs            300-1500  2.58e+11        0        0      8.3        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+60   Cd/H2_Cd/H2          C_rad/H2/Cs            300-1500   1.1e+11        0        0      7.6        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+61   Cd/H2_Cd/H2          C_rad/H/NonDeC         300-1500  1.73e+11        0        0        7        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+62   Cd/H2_Cd/H2          C_rad/Cs3              300-1500  2.41e+11        0        0      5.5        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+63   Cd/H2_Cd/H2          C_rad/Cs3              300-1500  2.05e+09        0        0      5.3        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+64   Cd/H2_Cd/H2          C_rad/Cs3              300-1500  8.54e+09        0        0      7.4        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+65   Cd/H2_Cd/H2          C_rad/H2/Cd            300-1500  7.15e+11        0        0     14.4        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+66   Cd/H2_Cd/H2          C_rad/H2/Cd            300-1500  5.44e+11        0        0     14.6        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+67   Cd/H2_Cd/H2          C_rad/H/OneDeC         300-1500  2.38e+11        0        0       14        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+68   Cd/H2_Cd/H2          C_rad/H/TwoDe          300-1500  1.08e+12        0        0       20        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+69   Cd/H2_Cd/H2          C_rad/Cs2              300-1500  3.83e+10        0        0     13.1        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+70   Cd/H2_Cd/H2          C_rad/Cs               300-1500  3.78e+10        0        0     19.3        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+71   Cd/H2_Cd/H2          C_rad/H2/Cb            300-1500  6.64e+11        0        0     11.9        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+72   Cd/H2_Cd/H2          C_rad/H2/Ct            300-1500  1.25e+12        0        0       12        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+73   Cd/H2_Cd/H2          C_rad/H/OneDeC         300-1500  1.36e+11        0        0     11.4        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+74   Cd/H2_Cd/H2          C_rad/Cs2              300-1500     7e+10        0        0     10.8        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+75   Cd/H2_Cd/H2          Cd_pri_rad             300-1500  2.09e+13        0        0      5.2        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+76   Cd/H2_Cd/H2          Cd_rad/NonDe           300-1500  7.24e+12        0        0      4.5        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+77   Cd/H2_Cd/H2          Cb_rad                 300-1500  1.68e+13        0        0      2.7        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+78   Cd/H2_Cd/H2          C_methyl               300-1500  9.69e+12        0        0        9        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+79   Cd/H2_Cd/H/Nd        C_methyl               300-1500   3.1e+12        0        0      8.5        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+80   Cd/H2_Cd/H/Nd        C_methyl               300-1500  2.22e+12        0        0      8.4        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+81   Cd/H2_Cd/Nd2         C_methyl               300-1500  3.99e+12        0        0        8        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+82   Cd/H2_Cd/H/De        C_methyl               300-1500   7.3e+12        0        0      5.7        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+83   Ca_Cd/H/Nd           C_methyl               300-1500  7.59e+12        0        0      9.8        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+84   Cd/H2_Cd/Nd/De       C_methyl               300-1500  4.12e+12        0        0      5.2        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+85   Ca_Cd/Nd2            C_methyl               300-1500  1.86e+13        0        0      8.8        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+86   Ct/H_Ct/H            C_methyl               300-1500  4.06e+13        0        0      9.9        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+87   Ct/H_Ct/Nd           C_methyl               300-1500  1.32e+14        0        0     10.3        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+88   Cd/H2_Ca             C_methyl               300-1500  9.23e+12        0        0      9.4        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+89   Cd/H2_Cd/H/De        C_methyl               300-1500  4.18e+11        0        0      7.4        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+90   Cd/H2_Cd/De2         C_methyl               300-1500  5.58e+12        0        0      3.5        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+91   Cd/H2_Cd/H/De        C_methyl               300-1500  4.37e+12        0        0      5.5        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+92   Ct/H_Ct/De           C_methyl               300-1500  1.19e+13        0        0      7.1        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+93   Cd/H2_Cd/Nd/De       C_methyl               300-1500  4.32e+12        0        0      5.3        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+94   Cd/H/Nd_Cd/H2        C_methyl               300-1500  1.36e+12        0        0     10.1        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+95   Cd/H/Nd_Cd/H2        C_methyl               300-1500  6.42e+11        0        0     11.1        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+96   Cd/H/Nd_Cd/H2        C_methyl               300-1500  6.24e+11        0        0     11.2        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+97   Cd/Nd2_Cd/H2         C_methyl               300-1500  1.12e+12        0        0     11.2        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+98   Cd/Nd2_Cd/H2         C_methyl               300-1500  1.51e+11        0        0     12.5        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+99   Cd/H/De_Cd/H2        C_methyl               300-1500  2.43e+12        0        0     10.2        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+100  Cd/Nd/De_Cd/H2       C_methyl               300-1500  5.92e+11        0        0     11.2        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+101  Ct/Nd_Ct/H           C_methyl               300-1500  1.99e+13        0        0     12.1        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+102  Cd/H/De_Cd/H2        C_methyl               300-1500  1.24e+11        0        0     11.1        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+103  Cd/H/De_Cd/H2        C_methyl               300-1500  1.36e+12        0        0      9.7        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+104  Ct/De_Ct/H           C_methyl               300-1500  4.49e+12        0        0     11.7        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+105  Ct/De_Ct/H           C_methyl               300-1500  1.71e+13        0        0     11.4        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+106  Cd/Nd/De_Cd/H2       C_methyl               300-1500  6.07e+11        0        0       11        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+107  Cd/H2_Cd/H2          H_rad                  300-1500  7.74e+13        0        0      2.8        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+108  Cd/H2_Cd/H/Nd        H_rad                  300-1500  2.01e+13        0        0      2.1        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+109  Cd/H2_Cd/Nd2         H_rad                  300-1500  4.94e+13        0        0      1.5        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+110  Cd/H2_Cd/H/De        H_rad                  300-1500  3.71e+13        0        0        1        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+111  Cd/H2_Cd/Nd/De       H_rad                  300-1500  2.13e+13        0        0      0.5        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+112  Cd/H2_Cd/H/De        H_rad                  300-1500  1.97e+12        0        0      3.2        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+113  Cd/H2_Cd/Nd/De       H_rad                  300-1500  1.43e+13        0        0      2.5        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+114  Ct/H_Ct/H            H_rad                  300-1500  1.16e+14        0        0      3.8        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+115  Ct/H_Ct/Nd           H_rad                  300-1500  1.12e+14        0        0      3.7        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+116  Cd/H2_Ca             H_rad                  300-1500  6.68e+13        0        0      2.9        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+117  Cd/H2_Ca             H_rad                  300-1500  2.73e+13        0        0      2.6        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+118  Cd/H2_Cd/H/De        H_rad                  300-1500  1.82e+13        0        0      1.4        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+119  Cd/H2_Cd/Nd/De       H_rad                  300-1500  2.04e+13        0        0        1        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+120  Ct/H_Ct/De           H_rad                  300-1500  1.86e+13        0        0      2.3        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+121  Ct/H_Ct/De           H_rad                  300-1500  1.69e+13        0        0      2.2        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+122  Ct/H_Ct/De           H_rad                  300-1500  1.07e+14        0        0      2.1        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+123  Ca_Cd/H/Nd           H_rad                  300-1500  1.28e+13        0        0      3.7        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+124  Ca_Cd/Nd2            H_rad                  300-1500  2.57e+13        0        0      2.7        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+125  Cd/H/Nd_Cd/H2        H_rad                  300-1500  1.18e+13        0        0      3.8        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+126  Cd/Nd2_Cd/H2         H_rad                  300-1500  1.17e+13        0        0      4.7        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+127  Cd/H/De_Cd/H2        H_rad                  300-1500  2.85e+13        0        0      4.3        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+128  Cd/Nd/De_Cd/H2       H_rad                  300-1500   9.3e+12        0        0      5.2        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+129  Ct/Nd_Ct/H           H_rad                  300-1500  5.77e+13        0        0      5.3        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+130  Cd/H/De_Cd/H2        H_rad                  300-1500  1.67e+12        0        0        6        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+131  Cd/Nd/De_Cd/H2       H_rad                  300-1500  5.62e+12        0        0      6.5        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+132  Cd/H/De_Cd/H2        H_rad                  300-1500  1.33e+13        0        0      4.6        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+133  Cd/Nd/De_Cd/H2       H_rad                  300-1500   8.2e+12        0        0      5.8        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+134  Ct/De_Ct/H           H_rad                  300-1500  2.25e+13        0        0      5.4        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+135  Ct/De_Ct/H           H_rad                  300-1500  9.99e+13        0        0        6        0        0        0        0  3     Mark Saeys, CBS-QB3 calculations, without hindered rotor treatment.
+136  Cd/H2_Cd/H2          Cd_pri_rad-Cd/Cd       300-1600       149     3.01        0     10.2        0        0        0        0  3     Sandeep CBS-QB3 calculations

@@ -1,0 +1,10 @@
+// rate library for f17b: 2+2-cycloaddition_CO
+
+// jing, define key word for format of the rate: either Arrhenius or Arrhenius_EP
+Arrhenius_EP
+
+//f15b_2+2-cycloaddition_CO
+// from rate_library_4.txt, Cath, 03/07/28
+
+//No.	CO	doublebond		Temp.		A			N		a		E0		DA		Dn		Da		DE0		Rank	Comments
+587.	CO	doublebond		300-1500	6.92E+10	0		0		43.72	0		0		0		0		0

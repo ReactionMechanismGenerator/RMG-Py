@@ -1,0 +1,28 @@
+// rate library for f15: 1+2 cycloaddition
+
+// jing, define key word for format of the rate: either Arrhenius or Arrhenius_EP
+Arrhenius_EP
+
+// f15_1+2_cycloaddition
+
+// Catherina Wijaya Thesis, pg 131
+// [106] Cobos, C. Chem. - Phys. 1985, 83, 1010 pages 3-4
+// [192] Frey, H. M. - J. Am. Chem. Soc. 1957, 79, 6373.
+// [194] Gaedtke, H. Symp. Int. Combust. Proc. 1973, 14, 295.
+// [195] Herbrechtsmeier, P. Reactions of O(3P) Atoms with Unsaturated C3 Hydrocarbons. In Combust. Inst. European Symp., 1973; pp13.
+// [196] Smith, I.W.M. Trans. Faraday Soc. 1968, 64, 378.
+// [197] Cvetanovic, R. J. Chem. Phys. 1959, 30, 19.
+
+// rate constants from rate_library_4.txt, Cath, 03/07/28
+
+//No.		elec_def	multiplebond		Temp.		A			n		a		E0		DA		Dn		Da		DE0		Rank	Comments
+576.		elec_def	multiplebond		300-1500	1E+12		0		0		0		0		0		0		0		0		Default
+577.		carbene		mb_db_unsub			296-728		1.98E+12	0		0		5.29	*3.2	0		0		0.26	3		Frey et al [192] 
+//578.		o_atom		mb_o2_doublebond	300-2100	3.49E+12	0		0		0.46	0		0		0		0		3		Cobos et al [106] Transition state theory. (pages 3-4)
+579.		o_atom		mb_db_unsub			300			7.0E+11		0		0		0		0		0		0		0		4		Gaedtke et al [194] 
+580.		o_atom		mb_db_monosub_Nd	300			2.9E+12		0		0		0		0		0		0		0		4		Gaedtke et al [194] 
+581.		o_atom		mb_db_monosub_Nd	275-360		4.2E+12		0		0		0.50	0		0		0		0		4		Herbrechtsmeier et al [195] 
+582.		o_atom		mb_db_monosub_Nd	298-410		1.9E+12		0		0		0.80	*1.2	0		0		0.40	4		Smith [196] 
+583.		o_atom		mb_db_onecdisub_Nd	298-410		7.6E+12		0		0		0.10	*1.2	0		0		0.40	4		Smith [196]
+584.		o_atom		mb_db_twocdisub_Nd	298			1.54E+13	0		0		0		0		0		0		0		4		Cvetanovic [197] 
+585.		o_atom		mb_db_tetrasub_Nd	298			3.18E+13	0		0		0		*1.2	0		0		0		4		Cvetanovic [197] 
