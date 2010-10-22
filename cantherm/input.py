@@ -78,14 +78,18 @@ def hinderedRotor(scanLog, pivots, top, symmetry):
 
 ################################################################################
 
-def loadConfiguration(geomLog, statesLog, extSymmetry, freqScaleFactor, linear, rotors, atoms, bonds, TS=False):
+def loadConfiguration(geomLog, statesLog, extSymmetry, freqScaleFactor, linear, rotors, atoms, bonds, E0=None, TS=False):
     
     logging.debug('    Reading optimized geometry...')
     log = GaussianLog(geomLog)
     geom = log.loadGeometry()
     
     logging.debug('    Reading energy...')
-    E0 = applyEnergyCorrections(log.loadEnergy(), modelChemistry, atoms, bonds)
+    if E0 is None:
+        E0 = log.loadEnergy()
+    else:
+        E0 *= 4.35974394e-18 * constants.Na     # Hartree/particle to J/mol
+    E0 = applyEnergyCorrections(E0, modelChemistry, atoms, bonds)
     logging.debug('         E0 (0 K) = %g kcal/mol' % (E0 / 4184))
     
     logging.debug('    Reading molecular degrees of freedom...')
@@ -103,6 +107,11 @@ def loadConfiguration(geomLog, statesLog, extSymmetry, freqScaleFactor, linear, 
             inertia = geom.getInternalReducedMomentOfInertia(pivots, top)
             rotor = HinderedRotor(inertia=inertia, symmetry=symmetry, fourier=fourier)
             states.modes.append(rotor)
+            #import numpy
+            #import pylab
+            #phi = numpy.arange(0, 6.3, 0.1, numpy.float64)
+            #pylab.plot(phi, rotor.getPotential(phi) / 4184)
+        #pylab.show()
         
         logging.debug('    Determining frequencies from reduced force constant matrix...')
         frequencies = projectRotors(geom, F, rotors, linear, TS)
@@ -119,16 +128,16 @@ def loadConfiguration(geomLog, statesLog, extSymmetry, freqScaleFactor, linear, 
     
     return E0, geom, states
 
-def loadSpecies(label, geomLog, statesLog, extSymmetry, freqScaleFactor, linear, rotors, atoms, bonds):
+def loadSpecies(label, geomLog, statesLog, extSymmetry, freqScaleFactor, linear, rotors, atoms, bonds, E0=None):
     global modelChemistry
     logging.info('Loading species %s...' % label)
-    E0, geom, states = loadConfiguration(geomLog, statesLog, extSymmetry, freqScaleFactor, linear, rotors, atoms, bonds, TS=False)
+    E0, geom, states = loadConfiguration(geomLog, statesLog, extSymmetry, freqScaleFactor, linear, rotors, atoms, bonds, E0, TS=False)
     speciesDict[label] = Species(label=label, thermo=None, states=states, geometry=geom, E0=E0)
 
-def loadTransitionState(label, geomLog, statesLog, extSymmetry, freqScaleFactor, linear, rotors, atoms, bonds):
+def loadTransitionState(label, geomLog, statesLog, extSymmetry, freqScaleFactor, linear, rotors, atoms, bonds, E0=None):
     global modelChemistry
     logging.info('Loading transition state %s...' % label)
-    E0, geom, states = loadConfiguration(geomLog, statesLog, extSymmetry, freqScaleFactor, linear, rotors, atoms, bonds, TS=True)
+    E0, geom, states = loadConfiguration(geomLog, statesLog, extSymmetry, freqScaleFactor, linear, rotors, atoms, bonds, E0, TS=True)
     log = GaussianLog(statesLog)
     frequency = log.loadNegativeFrequency()
     transitionStateDict[label] = TransitionState(label=label, states=states, geometry=geom, frequency=frequency, E0=E0)
