@@ -269,6 +269,7 @@ class Network:
             densStates0 = self.isomers[i].states.getDensityOfStates(Elist)
             # Shift to common zero of energy
             r0 = int(round(E0[i] / dE))
+            if r0 < 0: r0 = 0
             densStates[i,r0:] = densStates0[:-r0+len(densStates0)]
 
         # Densities of states for reactant channels
