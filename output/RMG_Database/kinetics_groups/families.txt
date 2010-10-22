@@ -36,5 +36,5 @@
 19      on      R_Addition_COm
 20      on      Intra_R_Add_Exocyclic
 21      on      Intra_R_Add_Endocyclic
-22      on      1,2-Birad_to_alkene
+22      off     1,2-Birad_to_alkene
 23      off      Intra_Disproportionation

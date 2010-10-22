@@ -12,7 +12,7 @@
 // R!H means any atom, except H
 
 R
-1 *  R 0			
+Union {ketene,cis,double_cis,ortho}
 
 cis
 1  * C 0 {2,Dcis} {3,S} {4,S}
