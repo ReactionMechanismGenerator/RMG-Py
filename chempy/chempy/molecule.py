@@ -875,13 +875,13 @@ class Molecule(Graph):
 
         return self
 
-    def fromAdjacencyList(self, adjlist, withLabel=True):
+    def fromAdjacencyList(self, adjlist):
         """
         Convert a string adjacency list `adjlist` to a molecular structure.
         Skips the first line (assuming it's a label) unless `withLabel` is
         ``False``.
         """
-        self.vertices, self.edges = fromAdjacencyList(adjlist, False, True, withLabel)
+        self.vertices, self.edges = fromAdjacencyList(adjlist, False, True)
         self.updateConnectivityValues()
         self.updateAtomTypes()
         self.makeHydrogensImplicit()

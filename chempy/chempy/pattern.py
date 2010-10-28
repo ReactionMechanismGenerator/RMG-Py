@@ -820,13 +820,13 @@ class MoleculePattern(Graph):
                     labeled[atom.label] = atom
         return labeled
 
-    def fromAdjacencyList(self, adjlist, withLabel=True):
+    def fromAdjacencyList(self, adjlist):
         """
         Convert a string adjacency list `adjlist` to a molecular structure.
         Skips the first line (assuming it's a label) unless `withLabel` is
         ``False``.
         """
-        self.vertices, self.edges = fromAdjacencyList(adjlist, pattern=True, addH=False, withLabel=withLabel)
+        self.vertices, self.edges = fromAdjacencyList(adjlist, pattern=True, addH=False)
         self.updateConnectivityValues()
         return self
 
@@ -910,7 +910,7 @@ class InvalidAdjacencyListError(Exception):
     """
     pass
 
-def fromAdjacencyList(adjlist, pattern=False, addH=False, withLabel=True):
+def fromAdjacencyList(adjlist, pattern=False, addH=False):
     """
     Convert a string adjacency list `adjlist` into a set of :class:`Atom` and
     :class:`Bond` objects (if `pattern` is ``False``) or a set of
@@ -923,10 +923,17 @@ def fromAdjacencyList(adjlist, pattern=False, addH=False, withLabel=True):
 
     atoms = []; atomdict = {}; bonds = {}
 
+    adjlist = adjlist.strip()
+    if adjlist == '':
+        raise InvalidAdjacencyListError('Empty adjacency list.')
+
     lines = adjlist.splitlines()
     # Skip the first line if it contains a label
-    if withLabel: label = lines.pop(0)
+    if len(lines) > 0 and len(lines[0].split()) == 1:
+        label = lines.pop(0)
     # Iterate over the remaining lines, generating Atom or AtomPattern objects
+    if len(lines) == 0:
+        raise InvalidAdjacencyListError('No atoms specified in adjacency list.')
     for line in lines:
 
         data = line.split()
@@ -985,9 +992,9 @@ def fromAdjacencyList(adjlist, pattern=False, addH=False, withLabel=True):
         # Add the atom to the list
         atoms.append(atom)
         atomdict[aid] = atom
-
+        
         # Process list of bonds
-        bonds[atom] = {}
+        bonds[aid] = {}
         for datum in data[index+2:]:
 
             # Sometimes commas are used to delimit bonds in the bond list,
@@ -996,30 +1003,41 @@ def fromAdjacencyList(adjlist, pattern=False, addH=False, withLabel=True):
 
             aid2, comma, order = datum[1:-1].partition(',')
             aid2 = int(aid2)
-
+            if aid == aid2:
+                raise InvalidAdjacencyListError('Attempted to create a bond between atom %i and itself.' % (aid))
+            
             if order[0] == '{':
                 order = order[1:-1].split(',')
             else:
                 order = [order]
 
-            if aid2 in atomdict:
-                if pattern:
-                    bond = BondPattern(order)
-                else:
-                    bond = Bond(order[0])
-                bonds[atom][atomdict[aid2]] = bond
-                bonds[atomdict[aid2]][atom] = bond
+            bonds[aid][aid2] = order
 
     # Check consistency using bonddict
     for atom1 in bonds:
         for atom2 in bonds[atom1]:
             if atom2 not in bonds:
-                raise ChemPyError(label)
+                raise InvalidAdjacencyListError('Atom %i not in bond dictionary.' % atom2)
             elif atom1 not in bonds[atom2]:
-                raise ChemPyError(label)
+                raise InvalidAdjacencyListError('Found bond between %i and %i, but not the reverse.' % (atom1, atom2))
             elif bonds[atom1][atom2] != bonds[atom2][atom1]:
-                raise ChemPyError(label)
+                raise InvalidAdjacencyListError('Found bonds between %i and %i, but of different order.' % (atom1, atom2))
 
+    # Convert bonddict to use Atom[Pattern] and Bond[Pattern] objects
+    for aid1 in atomdict:
+        bonds[atomdict[aid1]] = {}
+        for aid2 in bonds[aid1]:
+            if aid1 < aid2:
+                if pattern:
+                    bonds[atomdict[aid1]][atomdict[aid2]] = BondPattern(order)
+                elif len(order) == 1:
+                    bonds[atomdict[aid1]][atomdict[aid2]] = Bond(order[0])
+                else:
+                    raise InvalidAdjacencyListError('Multiple bond orders specified for an atom in a Molecule.')
+            else:
+                bonds[atomdict[aid1]][atomdict[aid2]] = bonds[atomdict[aid2]][atomdict[aid1]]
+        del bonds[aid1]
+        
     # Add explicit hydrogen atoms to complete structure if desired
     if addH and not pattern:
         valences = {'H': 1, 'C': 4, 'O': 2}
@@ -1029,7 +1047,7 @@ def fromAdjacencyList(adjlist, pattern=False, addH=False, withLabel=True):
             try:
                 valence = valences[atom.symbol]
             except KeyError:
-                raise ChemPyError('Cannot add hydrogens to adjacency list: Unknown valence for atom "%s".' % atom.symbol)
+                raise InvalidAdjacencyListError('Cannot add hydrogens to adjacency list: Unknown valence for atom "%s".' % atom.symbol)
             radical = atom.radicalElectrons
             order = 0
             for atom2, bond in bonds[atom].iteritems():
