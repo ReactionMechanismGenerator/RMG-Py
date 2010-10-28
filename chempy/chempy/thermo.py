@@ -407,39 +407,46 @@ class WilhoitModel(ThermoModel):
 class NASAPolynomial(ThermoModel):
     """
     A single NASA polynomial for thermodynamic data. The `coeffs` attribute
-    stores the seven polynomial coefficients
-    :math:`\\mathbf{a} = \\left[a_1\\ a_2\\ a_3\\ a_4\\ a_5\\ a_6\\ a_7 \\right]`
+    stores the seven or nine polynomial coefficients
+    :math:`\\mathbf{a} = \\left[a_{-2}\\ a_{-1}\\ a_0\\ a_1\\ a_2\\ a_3\\ a_4\\ a_5\\ a_6 \\right]`
     from which the relevant thermodynamic parameters are evaluated via the
     expressions
     
-    .. math:: \\frac{C_\\mathrm{p}(T)}{R} = a_1 + a_2 T + a_3 T^2 + a_4 T^3 + a_5 T^4
+    .. math:: \\frac{C_\\mathrm{p}(T)}{R} = a_{-2} T^{-2} + a_{-1} T^{-1} + a_0 + a_1 T + a_2 T^2 + a_3 T^3 + a_4 T^4
     
-    .. math:: \\frac{H(T)}{RT} = a_1 + \\frac{1}{2} a_2 T + \\frac{1}{3} a_3 T^2 + \\frac{1}{4} a_4 T^3 + \\frac{1}{5} a_5 T^4 + \\frac{a_6}{T}
+    .. math:: \\frac{H(T)}{RT} = - a_{-2} T^{-2} + a_{-1} T^{-1} \\ln T + a_0 + \\frac{1}{2} a_1 T + \\frac{1}{3} a_2 T^2 + \\frac{1}{4} a_3 T^3 + \\frac{1}{5} a_4 T^4 + \\frac{a_5}{T}
     
-    .. math:: \\frac{S(T)}{R} = a_1 \\ln T + a_2 T + \\frac{1}{2} a_3 T^2 + \\frac{1}{3} a_4 T^3 + \\frac{1}{4} a_5 T^4 + a_7
+    .. math:: \\frac{S(T)}{R} = -\\frac{1}{2} a_{-2} T^{-2} - a_{-1} T^{-1} + a_0 \\ln T + a_1 T + \\frac{1}{2} a_2 T^2 + \\frac{1}{3} a_3 T^3 + \\frac{1}{4} a_4 T^4 + a_6
     
-    The above was adapted from `this page <http://www.me.berkeley.edu/gri-mech/data/nasa_plnm.html>`_.
+    The coefficients are stored internally in the nine-coefficient format, even
+    when only seven coefficients are provided.
     """
     
     def __init__(self, Tmin=0.0, Tmax=0.0, coeffs=None, comment=''):
         ThermoModel.__init__(self, Tmin=Tmin, Tmax=Tmax, comment=comment)
-        coeffs = coeffs or (0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
-        self.c0, self.c1, self.c2, self.c3, self.c4, self.c5, self.c6 = coeffs
+        coeffs = coeffs or (0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
+        if len(coeffs) == 7:
+            self.cm2 = 0.0; self.cm1 = 0.0
+            self.c0, self.c1, self.c2, self.c3, self.c4, self.c5, self.c6 = coeffs
+        elif len(coeffs) == 9:
+            self.cm2, self.cm1, self.c0, self.c1, self.c2, self.c3, self.c4, self.c5, self.c6 = coeffs
+        else:
+            raise ThermoError('Invalid number of NASA polynomial coefficients; should be 7 or 9.')
         
     def __repr__(self):
         """
         Return a string representation that can be used to reconstruct the 
         object.
         """
-        return 'NASAPolynomial(Tmin=%g, Tmax=%g, coeffs=[%g, %g, %g, %g, %g, %g, %g])' % (self.Tmin, self.Tmax, self.c0, self.c1, self.c2, self.c3, self.c4, self.c5, self.c6)
+        return 'NASAPolynomial(Tmin=%g, Tmax=%g, coeffs=[%g, %g, %g, %g, %g, %g, %g, %g, %g])' % (self.Tmin, self.Tmax, self.cm2, self.cm1, self.c0, self.c1, self.c2, self.c3, self.c4, self.c5, self.c6)
     
     def getHeatCapacity(self, T):
         """
         Return the constant-pressure heat capacity (Cp) in J/mol*K at the
         specified temperature `T` in K.
         """
-        # Cp/R = a1 + a2 T + a3 T^2 + a4 T^3 + a5 T^4
-        return (self.c0 + T*(self.c1 + T*(self.c2 + T*(self.c3 + self.c4*T)))) * constants.R
+        # Cp/R = am2 T^-2 + am1 T^-1 + a0 + a1 T + a2 T^2 + a3 T^3 + a4 T^4
+        return ((self.cm2 / T + self.cm1) / T + self.c0 + T*(self.c1 + T*(self.c2 + T*(self.c3 + self.c4*T)))) * constants.R
     
     def getEnthalpy(self, T):
         """
@@ -449,8 +456,8 @@ class NASAPolynomial(ThermoModel):
         cython.declare(T2=cython.double, T4=cython.double)
         T2 = T*T
         T4 = T2*T2
-        # H/RT = a1 + a2 T /2 + a3 T^2 /3 + a4 T^3 /4 + a5 T^4 /5 + a6/T
-        return (self.c0 + self.c1*T/2 + self.c2*T2/3 + self.c3*T2*T/4 + self.c4*T4/5 + self.c5/T) * constants.R * T
+        # H/RT = -am2 T^-2 + am1 ln(T)/T + a0 + a1 T /2 + a2 T^2 /3 + a3 T^3 /4 + a4 T^4 /5 + a5/T
+        return ((-self.cm2 / T + self.cm1 * math.log(T)) / T + self.c0 + self.c1*T/2. + self.c2*T2/3. + self.c3*T2*T/4. + self.c4*T4/5. + self.c5/T) * constants.R * T
     
     def getEntropy(self, T):
         """
@@ -460,9 +467,9 @@ class NASAPolynomial(ThermoModel):
         cython.declare(T2=cython.double, T4=cython.double)
         T2 = T*T
         T4 = T2*T2
-        # S/R  = a1 lnT + a2 T + a3 T^2 /2 + a4 T^3 /3 + a5 T^4 /4 + a7
-        return ( self.c0*math.log(T) + self.c1*T + self.c2*T2/2 +
-            self.c3*T2*T/3 + self.c4*T4/4 + self.c6 ) * constants.R
+        # S/R  = -am2/2 T^-2 - am1 T^-1 + a0 ln T + a1 T + a2 T^2 /2 + a3 T^3 /3 + a4 T^4 /4 + a6
+        return ((-self.cm2 / T / 2. - self.cm1) / T + self.c0*math.log(T) + self.c1*T + self.c2*T2/2. +
+            self.c3*T2*T/3. + self.c4*T4/4. + self.c6 ) * constants.R
     
     def getFreeEnergy(self, T):
         """

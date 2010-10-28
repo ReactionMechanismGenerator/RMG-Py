@@ -102,7 +102,7 @@ cdef class WilhoitModel(ThermoModel):
 
 cdef class NASAPolynomial(ThermoModel):
     
-    cdef public double c0, c1, c2, c3, c4, c5, c6
+    cdef public double cm2, cm1, c0, c1, c2, c3, c4, c5, c6
     
     cpdef double getHeatCapacity(self, double T)
 
