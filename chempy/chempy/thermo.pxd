@@ -56,8 +56,8 @@ cdef class ThermoModel:
 
 cdef class ThermoGAModel(ThermoModel):
 
-    cdef public numpy.ndarray Tdata, Cpdata
-    cdef public double H298, S298
+    cdef public numpy.ndarray Tdata, Cpdata, dCp
+    cdef public double H298, S298, dH, dS
     
     cpdef double getHeatCapacity(self, double T)
 

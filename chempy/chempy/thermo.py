@@ -118,16 +118,24 @@ class ThermoGAModel(ThermoModel):
     `Cpdata`    ``numpy.ndarray``   The standard heat capacity in J/mol*K at each temperature in `Tdata`
     `H298`      ``double``          The standard enthalpy of formation at 298 K in J/mol
     `S298`      ``double``          The standard entropy of formation at 298 K in J/mol*K
+    `dCp`       ``numpy.ndarray``   The uncertainty in each heat capacity data point in J/mol*K
+    `dH`        ``double``          The uncertainty in the enthalpy of formation in J/mol
+    `dS`        ``double``          The uncertainty in the entropy of formation in J/mol*K
     =========== =================== ============================================
     """
 
-    def __init__(self, Tdata=None, Cpdata=None, H298=0.0, S298=0.0, Tmin=0.0, Tmax=99999.9, comment=''):
+    def __init__(self, Tdata=None, Cpdata=None, H298=0.0, S298=0.0, dCp=None, dH=0.0, dS=0.0, Tmin=0.0, Tmax=99999.9, comment=''):
         ThermoModel.__init__(self, Tmin=Tmin, Tmax=Tmax, comment=comment)
         self.Tdata = Tdata
         self.Cpdata = Cpdata
         self.H298 = H298
         self.S298 = S298
-    
+        self.dCp = dCp
+        self.dH = dH
+        self.dS = dS
+        if dCp is None and Cpdata is not None:
+            self.dCp = numpy.zeros_like(Cpdata)
+
     def __repr__(self):
         string = 'ThermoGAModel(Tdata=%s, Cpdata=%s, H298=%s, S298=%s)' % (self.Tdata, self.Cpdata, self.H298, self.S298)
         return string
@@ -163,6 +171,16 @@ class ThermoGAModel(ThermoModel):
         if self.comment == '': new.comment = other.comment
         elif other.comment == '': new.comment = self.comment
         else: new.comment = self.comment + ' + ' + other.comment
+        new.dH = math.sqrt(self.dH**2 + other.dH**2)
+        new.dS = math.sqrt(self.dH**2 + other.dH**2)
+        if self.dCp is not None and other.dCp is not None:
+            new.dCp = numpy.sqrt(self.dCp**2 + other.dCp**2)
+        elif self.dCp is not None:
+            new.dCp = self.dCp
+        elif other.dCp is not None:
+            new.dCp = other.dCp
+        else:
+            new.dCp = numpy.zeros_like(self.Cpdata)
         return new
 
     def getHeatCapacity(self, T):
