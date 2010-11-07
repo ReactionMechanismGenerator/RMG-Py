@@ -69,8 +69,8 @@ class ThermoModel:
     """
     
     def __init__(self, Tmin=0.0, Tmax=1.0e10, comment=''):
-        self.Tmin = Tmin
-        self.Tmax = Tmax
+        self.Tmin = constants.processQuantity(Tmin)[0]
+        self.Tmax = constants.processQuantity(Tmax)[0]
         self.comment = comment
     
     def isTemperatureValid(self, T):
@@ -126,18 +126,29 @@ class ThermoGAModel(ThermoModel):
 
     def __init__(self, Tdata=None, Cpdata=None, H298=0.0, S298=0.0, dCp=None, dH=0.0, dS=0.0, Tmin=0.0, Tmax=99999.9, comment=''):
         ThermoModel.__init__(self, Tmin=Tmin, Tmax=Tmax, comment=comment)
-        self.Tdata = Tdata
-        self.Cpdata = Cpdata
-        self.H298 = H298
-        self.S298 = S298
-        self.dCp = dCp
-        self.dH = dH
-        self.dS = dS
+        self.Tdata = constants.processQuantity(Tdata)[0]
+        self.Cpdata = constants.processQuantity(Cpdata)[0]
+        self.H298 = constants.processQuantity(H298)[0]
+        self.S298 = constants.processQuantity(S298)[0]
+        self.dCp = constants.processQuantity(dCp)[0]
+        self.dH = constants.processQuantity(dH)[0]
+        self.dS = constants.processQuantity(dS)[0]
         if dCp is None and Cpdata is not None:
             self.dCp = numpy.zeros_like(Cpdata)
 
     def __repr__(self):
-        string = 'ThermoGAModel(Tdata=%s, Cpdata=%s, H298=%s, S298=%s)' % (self.Tdata, self.Cpdata, self.H298, self.S298)
+        string = 'ThermoGAModel('
+        string += 'Tdata=([%s],"K")' % (','.join(['%g' % T for T in self.Tdata]))
+        string += ', Cpdata=([%s],"J/(mol*K)")' % (','.join(['%g' % Cp for Cp in self.Cpdata]))
+        string += ', H298=(%g,"kJ/mol")' % (self.H298/1000.)
+        string += ', S298=(%g,"J/(mol*K)")' % (self.S298)
+        if self.dCp is not None and any(self.dCp != 0): string += ', dCp=([%s],"J/(mol*K)")' % (','.join(['%g' % Cp for Cp in self.dCp]))
+        if self.dH != 0: string += ', dH=(%g,"kJ/mol")' % (self.dH/1000.)
+        if self.dS != 0: string += ', dS=(%g,"J/(mol*K)")' % (self.dS)
+        if self.Tmin != 0: string += ', Tmin=(%g,"K")' % (self.Tmin)
+        if self.Tmax != 99999.9: string += ', Tmax=(%g,"K")' % (self.Tmax)
+        if self.comment != '': string += ', comment="""%s"""' % (self.comment)
+        string += ')'
         return string
 
     def __str__(self):
@@ -276,25 +287,39 @@ class WilhoitModel(ThermoModel):
     `S0` that are needed to evaluate the enthalpy and entropy, respectively.
     """
 
-    def __init__(self, cp0=0.0, cpInf=0.0, a0=0.0, a1=0.0, a2=0.0, a3=0.0, H0=0.0, S0=0.0, comment='', B=500.0):
-        ThermoModel.__init__(self, comment=comment)
-        self.cp0 = cp0
-        self.cpInf = cpInf
-        self.B = B
-        self.a0 = a0
-        self.a1 = a1
-        self.a2 = a2
-        self.a3 = a3
-        self.H0 = H0
-        self.S0 = S0
+    def __init__(self, cp0=0.0, cpInf=0.0, a0=0.0, a1=0.0, a2=0.0, a3=0.0, H0=0.0, S0=0.0, B=500.0, Tmin=0.0, Tmax=99999.9, comment=''):
+        ThermoModel.__init__(self, Tmin=Tmin, Tmax=Tmax, comment=comment)
+        self.cp0 = constants.processQuantity(cp0)[0]
+        self.cpInf = constants.processQuantity(cpInf)[0]
+        self.B = constants.processQuantity(B)[0]
+        self.a0 = constants.processQuantity(a0)[0]
+        self.a1 = constants.processQuantity(a1)[0]
+        self.a2 = constants.processQuantity(a2)[0]
+        self.a3 = constants.processQuantity(a3)[0]
+        self.H0 = constants.processQuantity(H0)[0]
+        self.S0 = constants.processQuantity(S0)[0]
     
     def __repr__(self):
         """
-        Return a string representation that can be used to reconstruct the 
+        Return a string representation that can be used to reconstruct the
         object.
         """
-        return 'WilhoitModel(cp0=%g, cpInf=%g, a0=%g, a1=%g, a2=%g, a3=%g, H0=%g, S0=%g, B=%g)' % (self.cp0, self.cpInf, self.a0, self.a1, self.a2, self.a3, self.H0, self.S0, self.B)
-    
+        string = 'WilhoitModel('
+        string += 'cp0=(%g,"J/(mol*K)")' % (self.cp0)
+        string += ', cpInf=(%g,"J/(mol*K)")' % (self.cpInf)
+        string += ', a0=%g' % (self.a0)
+        string += ', a1=%g' % (self.a1)
+        string += ', a2=%g' % (self.a2)
+        string += ', a3=%g' % (self.a3)
+        string += ', B=(%g,"K")' % (self.B)
+        string += ', H0=(%g,"kJ/mol")' % (self.H0/1000.)
+        string += ', S0=(%g,"J/(mol*K)")' % (self.S0)
+        if self.Tmin != 0: string += ', Tmin=(%g,"K")' % (self.Tmin)
+        if self.Tmax != 99999.9: string += ', Tmax=(%g,"K")' % (self.Tmax)
+        if self.comment != '': string += ', comment="""%s"""' % (self.comment)
+        string += ')'
+        return string
+
     def getHeatCapacity(self, T):
         """
         Return the constant-pressure heat capacity (Cp) in J/mol*K at the
@@ -453,11 +478,20 @@ class NASAPolynomial(ThermoModel):
         
     def __repr__(self):
         """
-        Return a string representation that can be used to reconstruct the 
+        Return a string representation that can be used to reconstruct the
         object.
         """
-        return 'NASAPolynomial(Tmin=%g, Tmax=%g, coeffs=[%g, %g, %g, %g, %g, %g, %g, %g, %g])' % (self.Tmin, self.Tmax, self.cm2, self.cm1, self.c0, self.c1, self.c2, self.c3, self.c4, self.c5, self.c6)
-    
+        string = 'NASAPolynomial('
+        string += 'Tmin=(%g,"K")' % (self.Tmin)
+        string += ', Tmax=(%g,"K")' % (self.Tmax)
+        if self.cm2 == 0 and self.cm1 == 0:
+            string += ', coeffs=[%g,%g,%g,%g,%g,%g,%g]' % (self.c0, self.c1, self.c2, self.c3, self.c4, self.c5, self.c6)
+        else:
+            string += ', coeffs=[%g,%g,%g,%g,%g,%g,%g,%g,%g]' % (self.cm2, self.cm1, self.c0, self.c1, self.c2, self.c3, self.c4, self.c5, self.c6)
+        if self.comment != '': string += ', comment="""%s"""' % (self.comment)
+        string += ')'
+        return string
+
     def getHeatCapacity(self, T):
         """
         Return the constant-pressure heat capacity (Cp) in J/mol*K at the
@@ -519,11 +553,17 @@ class NASAModel(ThermoModel):
     
     def __repr__(self):
         """
-        Return a string representation that can be used to reconstruct the 
+        Return a string representation that can be used to reconstruct the
         object.
         """
-        return 'NASAModel(Tmin=%g, Tmax=%g, polynomials=%s)' % (self.Tmin, self.Tmax, self.polynomials)
-    
+        string = 'NASAModel('
+        string += 'Tmin=(%g,"K")' % (self.Tmin)
+        string += ', Tmax=(%g,"K")' % (self.Tmax)
+        string += ', polynomials=[%s]' % (','.join(['%r' % poly for poly in self.polynomials]))
+        if self.comment != '': string += ', comment="""%s"""' % (self.comment)
+        string += ')'
+        return string
+
     def getHeatCapacity(self, T):
         """
         Return the constant-pressure heat capacity (Cp) in J/mol*K at the

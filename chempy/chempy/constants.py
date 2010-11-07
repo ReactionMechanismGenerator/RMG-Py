@@ -40,6 +40,7 @@ The constants available are listed below. All values were taken from
 
 import math
 import cython
+import numpy
 
 ################################################################################
 
@@ -60,3 +61,52 @@ c = 299792458
 
 #: pi
 pi = float(math.pi)
+
+################################################################################
+
+def processQuantity(quantity):
+    """
+    Convert a numeric quantity or set of quantities in the input file to a
+    consistent set of units (SI). The parameter `quantity` is usually a 2-tuple
+    or 2-list, with the first element a single number or a list or tuple of
+    numbers, and the second element is the units associated with the number(s)
+    in the first element. If `quantity` is a number or a list or tuple of
+    numbers, then they are assumed to already be in SI units.
+
+    .. note::
+
+        The ``quantities`` package is used to convert your numeric parameters
+        into SI units, and therefore inherits all of the idiosyncracies from
+        that package. In particular, the ``quantities`` package does *not*
+        follow the SI convention that all units after the circumflex are in the
+        denominator. For example, ``J/mol*K`` would be interpreted as
+        ``(J/mol)*K`` rather than ``J/(mol*K)``. Thus we recommend using
+        parentheses where necessary to make your intentions explicit.
+
+    """
+    import quantities
+
+    # Do nothing if the parameter is invalid
+    if quantity is None: return None
+    # If the parameter is a number or a numpy array, then immediately return it
+    # (so we avoid the slow calls to quantities)
+    if isinstance(quantity, float) or isinstance(quantity, int) or isinstance(quantity, numpy.ndarray):
+        return quantity, ''
+
+    if (isinstance(quantity, tuple) or isinstance(quantity, list)) and len(quantity) == 2:
+        value, units = quantity
+    else:
+        value = quantity; units = ''
+
+    # Get the output (SI) units corresponding to the input units
+    factor = quantities.Quantity(1.0, units).simplified
+    newUnits = str(factor.units).split()[1]
+    factor = float(factor)
+
+    if isinstance(value, tuple) or isinstance(value, list):
+        return numpy.array([v * factor for v in value], numpy.float64), newUnits
+    elif isinstance(value, numpy.ndarray):
+        return value, newUnits
+    else:
+        return float(value) * factor, newUnits
+
