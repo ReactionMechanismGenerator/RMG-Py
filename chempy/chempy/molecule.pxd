@@ -137,7 +137,7 @@ cdef class Molecule(Graph):
 
     cpdef fromOBMol(self, obmol, bint implicitH=?)
 
-    cpdef fromAdjacencyList(self, str adjlist, bint withLabel=?)
+    cpdef fromAdjacencyList(self, str adjlist)
 
     cpdef str toCML(self)
 

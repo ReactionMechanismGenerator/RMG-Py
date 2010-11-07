@@ -125,7 +125,7 @@ cdef class MoleculePattern(Graph):
 
     cpdef dict getLabeledAtoms(self)
 
-    cpdef fromAdjacencyList(self, str adjlist, bint withLabel=?)
+    cpdef fromAdjacencyList(self, str adjlist)
 
     cpdef toAdjacencyList(self, str label=?)
 
@@ -139,6 +139,6 @@ cdef class MoleculePattern(Graph):
 
 ################################################################################
 
-cpdef fromAdjacencyList(str adjlist, bint pattern=?, bint addH=?, bint withLabel=?)
+cpdef fromAdjacencyList(str adjlist, bint pattern=?, bint addH=?)
 
 cpdef toAdjacencyList(Graph molecule, str label=?, bint pattern=?, bint removeH=?)
