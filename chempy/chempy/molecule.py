@@ -967,7 +967,11 @@ class Molecule(Graph):
         """
         Convert the molecular structure to a string adjacency list.
         """
-        return toAdjacencyList(self)
+        implicitH = self.implicitHydrogens
+        self.makeHydrogensExplicit()
+        result = toAdjacencyList(self)
+        if implicitH: self.makeHydrogensImplicit()
+        return result
 
     def isLinear(self):
         """

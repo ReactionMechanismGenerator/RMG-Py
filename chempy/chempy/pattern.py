@@ -1079,11 +1079,7 @@ def toAdjacencyList(molecule, label='', pattern=False, removeH=False):
 
     if label != '': adjlist += label + '\n'
 
-    implicitH = molecule.implicitHydrogens
-    molecule.makeHydrogensExplicit()
     molecule.updateConnectivityValues() # so we can sort by them
-    if implicitH: molecule.makeHydrogensImplicit()
-
     atoms = molecule.atoms
     bonds = molecule.bonds
 
