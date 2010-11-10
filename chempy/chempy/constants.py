@@ -87,7 +87,7 @@ def processQuantity(quantity):
     import quantities
 
     # Do nothing if the parameter is invalid
-    if quantity is None: return None
+    if quantity is None: return None, ''
     # If the parameter is a number or a numpy array, then immediately return it
     # (so we avoid the slow calls to quantities)
     if isinstance(quantity, float) or isinstance(quantity, int) or isinstance(quantity, numpy.ndarray):
