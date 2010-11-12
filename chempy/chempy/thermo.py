@@ -134,7 +134,7 @@ class ThermoGAModel(ThermoModel):
         self.dH = constants.processQuantity(dH)[0]
         self.dS = constants.processQuantity(dS)[0]
         if dCp is None and Cpdata is not None:
-            self.dCp = numpy.zeros_like(Cpdata)
+            self.dCp = numpy.zeros_like(self.Cpdata)
 
     def __repr__(self):
         string = 'ThermoGAModel('
