@@ -540,6 +540,14 @@ class Network:
                     # Apply chemically-significant eigenvalues method
                     import cse
                     K[t,p,:,:], p0[t,p,:,:,:] = cse.applyChemicallySignificantEigenvaluesMethod(T, P, Elist, densStates, Mcoll, Kij, Fim, Gnj, eqRatios, Nisom, Nreac, Nprod)
+                elif method.lower() == 'branching ratios':
+                    # The full collision matrix for each isomer
+                    Mcoll = numpy.zeros((Nisom,Ngrains,Ngrains), numpy.float64)
+                    for i in range(Nisom):
+                        Mcoll[i,:,:] = collFreq[i] * self.collisionModel.generateCollisionMatrix(Elist, T, densStates[i,:])
+                    # Apply chemically-significant eigenvalues method
+                    import me
+                    K[t,p,:,:], p0[t,p,:,:,:] = me.applyBranchingRatiosMethod(T, P, Elist, densStates, Mcoll, Kij, Fim, Gnj, Ereac, Nisom, Nreac, Nprod)
                 else:
                     raise NetworkError('Unknown method "%s".' % method)
 

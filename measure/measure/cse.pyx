@@ -41,6 +41,8 @@ import logging
 
 import chempy.constants as constants
 
+from me import generateFullMEMatrix
+
 ################################################################################
 
 class ChemicallySignificantEigenvaluesError(Exception):
@@ -103,7 +105,7 @@ def applyChemicallySignificantEigenvaluesMethod(double T, double P,
 #        for n in range(Nreac):
 #            Fim[i,n,:] *= densStates[n+Nisom,:] * numpy.exp(-Elist[:] / constants.R / T)
 
-    M = getFullMatrix(Mcoll, Kij, Fim, Gnj, Ngrains, Nisom, Nreac, Nprod, indices)
+    M = generateFullMEMatrix(Mcoll, Kij, Fim, Gnj, Ngrains, Nisom, Nreac, Nprod, indices)
 
     # Generate symmetrization matrix and its inverse
     S = numpy.zeros(Nrows, numpy.float64)
@@ -248,59 +250,3 @@ def applyChemicallySignificantEigenvaluesMethod(double T, double P,
 
 ################################################################################
 
-def getFullMatrix(
-    numpy.ndarray[numpy.float64_t,ndim=3] Mcoll,
-    numpy.ndarray[numpy.float64_t,ndim=3] Kij,
-    numpy.ndarray[numpy.float64_t,ndim=3] Fim,
-    numpy.ndarray[numpy.float64_t,ndim=3] Gnj,
-    int Ngrains, int Nisom, int Nreac, int Nprod,
-    numpy.ndarray[numpy.int_t,ndim=2] indices,
-):
-
-    cdef int Nrows, i, j, n, r, s, u, v
-    cdef numpy.ndarray[numpy.float64_t,ndim=2] M
-    
-    Nrows = numpy.max(indices) + 1 + Nreac
-
-    M = numpy.zeros((Nrows, Nrows), numpy.float64)
-
-    # Add collision terms
-    for i in range(Nisom):
-        for r in range(Ngrains):
-            if indices[r,i] > -1:
-                for s in range(Ngrains):
-                    if indices[s,i] > -1:
-                        M[indices[r,i], indices[s,i]] = Mcoll[i,r,s]
-
-    # Add isomerization terms
-    for i in range(Nisom):
-        for j in range(i):
-            if Kij[i,j,-1] > 0 or Kij[j,i,-1] > 0:
-                for r in range(Ngrains):
-                    u = indices[r,i]; v = indices[r,j]
-                    if u > -1 and v > -1:
-                        M[v,u] = Kij[j,i,r]
-                        M[u,u] -= Kij[j,i,r]
-                        M[u,v] = Kij[i,j,r]
-                        M[v,v] -= Kij[i,j,r]
-
-    # Add dissociation/association terms
-    for i in range(Nisom):
-        for n in range(Nreac):
-            if Gnj[n,i,-1] > 0 or Fim[i,n,-1] > 0:
-                for r in range(Ngrains):
-                    u = indices[r,i]; v = Nrows - Nreac + n
-                    if u > -1:
-                        M[v,u] = Gnj[n,i,r]
-                        M[u,u] -= Gnj[n,i,r]
-                        M[u,v] = Fim[i,n,r]
-                        M[v,v] -= Fim[i,n,r]
-    for i in range(Nisom):
-        for n in range(Nreac, Nreac+Nprod):
-            if Gnj[n,i,-1] > 0:
-                for r in range(Ngrains):
-                    u = indices[r,i]; v = Nrows - Nreac + n
-                    if u > -1:
-                        M[u,u] -= Gnj[n,i,r]
-    
-    return M

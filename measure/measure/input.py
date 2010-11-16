@@ -315,7 +315,7 @@ def energies(Emin=None, Emax=None, dE=None, count=None):
 
 def _method(name):
     global method
-    if name.lower() not in ['modified strong collision', 'reservoir state', 'chemically-significant eigenvalues']:
+    if name.lower() not in ['modified strong collision', 'reservoir state', 'chemically-significant eigenvalues', 'branching ratios']:
         raise InputError('Invalid method "%s"; see documentation for available methods.' % name)
     method = name
 

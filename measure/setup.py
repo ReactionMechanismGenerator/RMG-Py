@@ -49,6 +49,7 @@ ext_modules = [
     Extension('measure.msc', ['measure/msc.pyx']),
     Extension('measure.rs', ['measure/rs.pyx']),
     Extension('measure.cse', ['measure/cse.pyx']),
+    Extension('measure.me', ['measure/me.pyx']),
 ]
 scripts=['measure.py']
 
