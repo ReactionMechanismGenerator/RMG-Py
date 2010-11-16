@@ -49,7 +49,7 @@ def jacobian(t, y, K):
 
 ################################################################################
 
-def solveFullME(network, T, P, Elist, tlist, x0, M, indices, densStates):
+def solveFullME(T, P, Elist, tlist, x0, M, indices, densStates, Nisom, Nreac, Nprod):
     """
     Directly solve the full master equation using a stiff ODE solver. Pass the
     reaction `network` to solve, the temperature `T` in K and pressure `P` in
@@ -63,9 +63,6 @@ def solveFullME(network, T, P, Elist, tlist, x0, M, indices, densStates):
     """
 
     Ngrains = len(Elist)
-    Nisom = len(network.isomers)
-    Nreac = len(network.reactants)
-    Nprod = len(network.products)
     Ntime = len(tlist)
 
     # Get equilibrium distributions
@@ -106,7 +103,7 @@ def solveFullME(network, T, P, Elist, tlist, x0, M, indices, densStates):
 
 ################################################################################
 
-def solveReducedME(network, T, P, Elist, tlist, x0, K, p0):
+def solveReducedME(T, P, Elist, tlist, x0, K, p0, Nisom, Nreac, Nprod):
     """
     Directly solve a reduced master equation (set of phenomenological rate
     coefficients) using a stiff ODE solver. Pass the reaction `network` to
@@ -119,9 +116,6 @@ def solveReducedME(network, T, P, Elist, tlist, x0, K, p0):
     """
     
     Ngrains = len(Elist)
-    Nisom = len(network.isomers)
-    Nreac = len(network.reactants)
-    Nprod = len(network.products)
     Ntime = len(tlist)
 
     # Set up ODEs
