@@ -218,6 +218,26 @@ def applyChemicallySignificantEigenvaluesMethod(double T, double P,
                 # rate coefficients
                 K[:,src] += W[j] * dXij[:,j]
 
+#        # Use the "long-time" method to extract the k(T,P) values
+#        # This method is supposedly more numerically robust
+#        # It also doesn't require finagling with various initial conditions
+#        cdef numpy.ndarray[numpy.float64_t,ndim=2] Z, Zinv
+#        Z = numpy.zeros((Nchem,Nchem), numpy.float64)
+#        for j in range(Nchem):
+#            for i in range(Nisom):
+#                for r in range(Ngrains):
+#                    index = indices[r,i]
+#                    if index > -1: Z[i,j] += X[index,j]
+#            for n in range(Nreac):
+#                index = Nrows - Nreac + n
+#                Z[Nisom+n,j] += X[index,j]
+#        Zinv = numpy.linalg.inv(Z)
+#        for i in range(Nchem):
+#            for j in range(Nchem):
+#                K[i,j] = numpy.sum(Z[i,:] * W * Zinv[:,j])
+#        # Note that we still need k(T,P) values for reactions to product channels!
+#        # For now we keep those from the initial rate method
+        
 #    import pylab
 #    pylab.semilogy(Elist / 4184, pa[:,0,:])
 #    pylab.show()
