@@ -51,7 +51,7 @@ species(
         frequencies=([467.090, 850.182, 1016.581, 1044.643, 1351.572, 1443.265, 1450.874, 1917.585, 3003.317, 3094.973, 3097.873], 'cm^-1'),
         frequencyScaleFactor=0.99,
         hinderedRotors=[
-            ((1.61753,'amu*angstrom^2'), (178.474,'kcal/mol'), 3),
+            ((1.61753,'amu*angstrom^2'), (0.510278,'kcal/mol'), 3),
         ],
         spinMultiplicity=2,
     ),
@@ -213,9 +213,9 @@ reaction(
 collisionModel(
     type='single exponential down',
     parameters={
-        'alpha0': (1.429,'kcal/mol'),
-        'T0': (1000,'K'),
-        'n': (0.0,'kcal/mol'),
+        'alpha0': (0.5718,'kcal/mol'),
+        'T0': (300,'K'),
+        'n': 0.85,
     },
     bathGas={
         'nitrogen': 1.0,
