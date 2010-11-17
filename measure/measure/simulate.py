@@ -36,6 +36,7 @@ reducing the master equation.
 
 import numpy
 import scipy.integrate
+from PyDAS import dassl
 
 import chempy.constants as constants
 
@@ -80,6 +81,27 @@ def solveFullME(T, P, Elist, tlist, x0, M, indices, densStates, Nisom, Nreac, Np
     for i in range(Nreac+Nprod):
         p0[-Nreac-Nprod + i] = x0[i+Nisom]
 
+
+#    # Set up ODEs
+#    me = MasterEquation(M)
+#    me.initialize(t0=0, y0=p0, atol=1e-16, rtol=1e-8)
+#
+#    # Generate solution
+#    t = numpy.zeros([Ntime], float)
+#    p = numpy.zeros([Ntime, Nisom, Ngrains], float)
+#    x = numpy.zeros([Ntime, Nisom+Nreac+Nprod], float)
+#    for s in range(Ntime):
+#        me.advance(tlist[s])
+#        print me.t
+#        t[s] = me.t
+#        for r in range(Ngrains):
+#            for i in range(0, Nisom):
+#                if indices[r,i] > 0:
+#                    p[s,i,r] += me.y[indices[r,i]]
+#                    x[s,i] += me.y[indices[r,i]]
+#        for n in range(Nisom, Nisom+Nreac+Nprod):
+#            x[s,n] = me.y[-(Nisom+Nreac+Nprod)+n]
+
     # Set up ODEs
     ode = scipy.integrate.ode(residual, jacobian).set_integrator('vode', method='bdf', with_jacobian=True, atol=1e-16, rtol=1e-8)
     ode.set_initial_value(p0, 0.0).set_f_params(M).set_jac_params(M)
@@ -98,6 +120,10 @@ def solveFullME(T, P, Elist, tlist, x0, M, indices, densStates, Nisom, Nreac, Np
                     x[s,i] += ode.y[indices[r,i]]
         for n in range(Nisom, Nisom+Nreac+Nprod):
             x[s,n] = ode.y[-(Nisom+Nreac+Nprod)+n]
+
+    #import pylab
+    #pylab.loglog(t,x)
+    #pylab.show()
 
     return t, p, x
 
@@ -141,3 +167,19 @@ def solveReducedME(T, P, Elist, tlist, x0, K, p0, Nisom, Nreac, Nprod):
                 p[s,i,:] += x[s,n] * p0[:,i,n] * (0.21 * P / constants.R / T)
 
     return t, p, x
+
+################################################################################
+
+class MasterEquation(dassl.DASSL):
+    """
+    """
+
+    def __init__(self, M):
+        dassl.DASSL.__init__(self)
+        self.M = M
+
+    def residual(self, t, y, dydt):
+        return numpy.dot(self.M, y) - dydt, 0
+
+    def jacobian(self, t, y, dydt, cj):
+        return self.M - cj * numpy.identity(y.shape[0], numpy.float64)
