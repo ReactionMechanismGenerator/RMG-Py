@@ -87,8 +87,8 @@ def applyReservoirStateMethod(double T, double P,
 
     Ngrains = len(Elist)
 
-    # Determine the starting grain for the calculation based on the
-    # active-state cutoff energy
+    # Determine the reservoir cutoff grain for each isomer
+    # Start by simply placing it at the lowest reactive grain
     Nres = numpy.zeros(Nisom, numpy.int)
     for i in range(Nisom):
         for r in range(Ngrains):
@@ -101,7 +101,7 @@ def applyReservoirStateMethod(double T, double P,
     eqDist = numpy.zeros((Nisom+Nreac,Ngrains), numpy.float64)
     for i in range(Nisom+Nreac):
         eqDist[i,:] = densStates[i,:] * numpy.exp(-Elist / constants.R / T)
-    
+
     # Determine pseudo-steady state populations of active state
     row = 0
     indices = -numpy.ones((Ngrains,Nisom), numpy.int)
@@ -113,7 +113,7 @@ def applyReservoirStateMethod(double T, double P,
     
     # Choose the half-bandwidth
     r = int(Ngrains / 2)
-    tol = 1e-6
+    tol = 1e-12
     ratio = numpy.abs(Mcoll[0,:,r] / Mcoll[0,r,r])
     ind = [i for i,x in enumerate(ratio) if x > tol]
     halfbandwidth = max(r - min(ind), max(ind) - r) * Nisom

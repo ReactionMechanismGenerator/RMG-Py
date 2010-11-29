@@ -145,7 +145,7 @@ def applyChemicallySignificantEigenvaluesMethod(double T, double P,
     # Count the number of distinct eigenvalues
     Ncse = 0
     for i in range(Nchem):
-        if abs(W0[ind[-Nchem-1]] / W0[ind[-1-i]]) > 5.0: Ncse += 1
+        if abs(W0[ind[-Nchem-1]] / W0[ind[-1-i]]) > 3.0: Ncse += 1
 
     K = numpy.zeros((Nisom+Nreac+Nprod, Nisom+Nreac+Nprod), numpy.float64)
     pa = numpy.zeros((Ngrains, Nisom, Nisom+Nreac), numpy.float64)
@@ -162,8 +162,8 @@ def applyChemicallySignificantEigenvaluesMethod(double T, double P,
     else:
 
         # Extract the chemically-significant eigenvalues and eigenvectors
-        W = W0.take(ind[-Nchem:])
-        V = V0.take(ind[-Nchem:], axis=1)
+        W = W0.take(ind[-Ncse:])
+        V = V0.take(ind[-Ncse:], axis=1)
         
         # Unsymmetrize the eigenvectors and their inverses
         X = V.copy()
@@ -222,8 +222,8 @@ def applyChemicallySignificantEigenvaluesMethod(double T, double P,
 #        # This method is supposedly more numerically robust
 #        # It also doesn't require finagling with various initial conditions
 #        cdef numpy.ndarray[numpy.float64_t,ndim=2] Z, Zinv
-#        Z = numpy.zeros((Nchem,Nchem), numpy.float64)
-#        for j in range(Nchem):
+#        Z = numpy.zeros((Ncse,Ncse), numpy.float64)
+#        for j in range(Ncse):
 #            for i in range(Nisom):
 #                for r in range(Ngrains):
 #                    index = indices[r,i]
@@ -232,8 +232,8 @@ def applyChemicallySignificantEigenvaluesMethod(double T, double P,
 #                index = Nrows - Nreac + n
 #                Z[Nisom+n,j] += X[index,j]
 #        Zinv = numpy.linalg.inv(Z)
-#        for i in range(Nchem):
-#            for j in range(Nchem):
+#        for i in range(Ncse):
+#            for j in range(Ncse):
 #                K[i,j] = numpy.sum(Z[i,:] * W * Zinv[:,j])
 #        # Note that we still need k(T,P) values for reactions to product channels!
 #        # For now we keep those from the initial rate method
