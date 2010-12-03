@@ -379,57 +379,6 @@ class Network:
         logging.log(level, '========================================================================')
         logging.log(level, '')
 
-    def __computeRateCoefficients(self, Mcoll, Kij, Gnj, Fim, p0, Nisom, Nreac, Nprod):
-        """
-        Using the time-independent population vectors `p0` returned from one of
-        the approximate methods and the components of the full master equation
-        matrix (`Mcoll`, `Kij`, `Gnj`, and `Fim`), compute and return the
-        corresponding phenomenological rate coefficients :math:`k(T,P)`. This
-        should produce rates that are exactly the same as those returned by
-        each method (which provides a way to check that the method is working
-        as expected).
-        """
-
-        K = numpy.zeros((Nisom+Nreac+Nprod,Nisom+Nreac+Nprod), numpy.float64)
-
-        for i in range(Nisom):
-            # Isomerization
-            for j in range(Nisom):
-                if i != j:
-                    K[i,j] = 0.0  # numpy.sum(numpy.dot(Mcoll[i,:,:], p0[:,i,j]))
-                    for l in range(Nisom):
-                        K[i,j] -= numpy.sum(Kij[l,i,:] * p0[:,i,j])
-                    for n in range(Nreac+Nprod):
-                        K[i,j] -= numpy.sum(Gnj[n,i,:] * p0[:,i,j])
-                    for l in range(Nisom):
-                        K[i,j] += numpy.sum(Kij[i,l,:] * p0[:,l,j])
-            # Association
-            for m in range(Nisom, Nisom+Nreac):
-                K[i,m] = 0.0  # numpy.sum(numpy.dot(Mcoll[i,:,:], p0[:,i,m]))
-                for l in range(Nisom):
-                    K[i,m] -= numpy.sum(Kij[l,i,:] * p0[:,i,m])
-                for n in range(Nreac+Nprod):
-                    K[i,m] -= numpy.sum(Gnj[n,i,:] * p0[:,i,m])
-                for l in range(Nisom):
-                    K[i,m] += numpy.sum(Kij[i,l,:] * p0[:,l,m])
-                K[i,m] += numpy.sum(Fim[i,m-Nisom,:])
-
-        for n in range(Nisom, Nisom+Nreac+Nprod):
-            # Dissociation
-            for j in range(Nisom):
-                for l in range(Nisom):
-                    K[n,j] += numpy.sum(Gnj[n-Nisom,l,:] * p0[:,l,j])
-            # Bimolecular
-            for m in range(Nisom, Nisom+Nreac):
-                if m != n:
-                    for l in range(Nisom):
-                        K[n,m] += numpy.sum(Gnj[n-Nisom,l,:] * p0[:,l,m])
-
-        for i in range(Nisom+Nreac):
-            K[i,i] = -numpy.sum(K[:,i])
-
-        return K
-
     def calculateRateCoefficients(self, Tlist, Plist, Elist, method):
         """
         Calculate the phenomenological rate coefficients :math:`k(T,P)` for the
@@ -548,7 +497,9 @@ class Network:
 
                 # Compute k(T,P) values from the return p0
                 # This should be identical to the k(T,P) values returned by each method
-                #K[t,p,:,:] = self.__computeRateCoefficients(Mcoll, Kij, Gnj, Fim, p0[t,p,:,:,:], Nisom, Nreac, Nprod)
+                #if method.lower() != 'modified strong collision':
+                #    import me
+                #    K[t,p,:,:] = me.computeRateCoefficients(Mcoll, Kij, Fim, Gnj, p0[t,p,:,:,:], Nisom, Nreac, Nprod)
 
                 # Reject if any rate coefficients are negative
                 negativeRate = False

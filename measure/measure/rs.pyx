@@ -37,6 +37,7 @@ import scipy.linalg
 import cython
 
 import chempy.constants as constants
+from me cimport computeRateCoefficients
 
 ################################################################################
 
@@ -157,42 +158,47 @@ def applyReservoirStateMethod(double T, double P,
     if not (pa >= 0).all():
         raise ReservoirStateError('A negative steady-state population was encountered.')
 
-    # Determine the phenomenological rate coefficients
-    K = numpy.zeros((Nisom+Nreac+Nprod, Nisom+Nreac+Nprod), numpy.float64)
-    # Rows relating to isomers
-    for i in range(Nisom):
-        # Collisional rearrangement within the reservoir of isomer i
-        K[i,i] += numpy.sum(numpy.dot(Mcoll[i,0:Nres[i],0:Nres[i]], eqDist[i,0:Nres[i]]))
-        # Isomerization from isomer j to isomer i
-        for j in range(Nisom):
-            K[i,j] += numpy.sum(numpy.dot(Mcoll[i,0:Nres[i],Nres[i]:Ngrains], pa[Nres[i]:Ngrains,i,j]))
-        # Association from reactant n to isomer i
-        for n in range(Nisom, Nisom+Nreac):
-            K[i,n] += numpy.sum(numpy.dot(Mcoll[i,0:Nres[i],Nres[i]:Ngrains], pa[Nres[i]:Ngrains,i,n]))
-    # Rows relating to reactants
-    for n in range(Nreac):
-        # Association loss
-        for i in range(Nisom):
-            K[Nisom+n,Nisom+n] -= numpy.sum(Fim[i,n,:])# * eqDist[n+Nisom,:])
-        # Reaction from isomer or reactant j to reactant n
-        for j in range(Nisom+Nreac):
-            for i in range(Nisom):
-                K[Nisom+n,j] += numpy.sum(Gnj[n,i,Nres[i]:Ngrains] * pa[Nres[i]:Ngrains,i,j])
-    # Rows relating to products
-    for n in range(Nreac, Nreac+Nprod):
-        # Reaction from isomer or reactant j to product n
-        for j in range(Nisom+Nreac):
-            for i in range(Nisom):
-                K[Nisom+n,j] += numpy.sum(Gnj[n,i,Nres[i]:Ngrains] * pa[Nres[i]:Ngrains,i,j])
-        
-    # Ensure matrix is conservative
-    for n in range(Nisom+Nreac):
-        K[n,n] -= numpy.sum(K[:,n])
-    
     # Put the reservoir populations into pa as well
     for i in range(Nisom):
         for r in range(Nres[i]):
             pa[r,i,i] = eqDist[i,r]
+
+    # Determine the phenomenological rate coefficients
+    # This method is more numerically robust than the one below, although both should work
+    # In particular, the latter method struggles when the reservoir is small (i.e. when a reaction barrier is small)
+    K = computeRateCoefficients(Mcoll, Kij, Fim, Gnj, pa, Nisom, Nreac, Nprod)
+
+#    # Determine the phenomenological rate coefficients
+#    K = numpy.zeros((Nisom+Nreac+Nprod, Nisom+Nreac+Nprod), numpy.float64)
+#    # Rows relating to isomers
+#    for i in range(Nisom):
+#        # Collisional rearrangement within the reservoir of isomer i
+#        K[i,i] += numpy.sum(numpy.dot(Mcoll[i,0:Nres[i],0:Nres[i]], eqDist[i,0:Nres[i]]))
+#        # Isomerization from isomer j to isomer i
+#        for j in range(Nisom):
+#            K[i,j] += numpy.sum(numpy.dot(Mcoll[i,0:Nres[i],Nres[i]:Ngrains], pa[Nres[i]:Ngrains,i,j]))
+#        # Association from reactant n to isomer i
+#        for n in range(Nisom, Nisom+Nreac):
+#            K[i,n] += numpy.sum(numpy.dot(Mcoll[i,0:Nres[i],Nres[i]:Ngrains], pa[Nres[i]:Ngrains,i,n]))
+#    # Rows relating to reactants
+#    for n in range(Nreac):
+#        # Association loss
+#        for i in range(Nisom):
+#            K[Nisom+n,Nisom+n] -= numpy.sum(Fim[i,n,:])# * eqDist[n+Nisom,:])
+#        # Reaction from isomer or reactant j to reactant n
+#        for j in range(Nisom+Nreac):
+#            for i in range(Nisom):
+#                K[Nisom+n,j] += numpy.sum(Gnj[n,i,Nres[i]:Ngrains] * pa[Nres[i]:Ngrains,i,j])
+#    # Rows relating to products
+#    for n in range(Nreac, Nreac+Nprod):
+#        # Reaction from isomer or reactant j to product n
+#        for j in range(Nisom+Nreac):
+#            for i in range(Nisom):
+#                K[Nisom+n,j] += numpy.sum(Gnj[n,i,Nres[i]:Ngrains] * pa[Nres[i]:Ngrains,i,j])
+#
+#    # Ensure matrix is conservative
+#    for n in range(Nisom+Nreac):
+#        K[n,n] -= numpy.sum(K[:,n])
 
     # Return the matrix of k(T,P) values and the pseudo-steady population distributions
     return K, pa
