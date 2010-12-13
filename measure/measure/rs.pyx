@@ -93,7 +93,7 @@ def applyReservoirStateMethod(double T, double P,
     Nres = numpy.zeros(Nisom, numpy.int)
     for i in range(Nisom):
         for r in range(Ngrains):
-            if Elist[r] > Ereac[i] and Nres[i] == 0:
+            if densStates[i,r] != 0 and Elist[r] > Ereac[i] and Nres[i] == 0:
                 Nres[i] = r
                 break
     Nact = Ngrains - Nres
