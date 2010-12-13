@@ -186,6 +186,10 @@ def States(rotationalConstants=None, symmetry=1, frequencies=None,
     modes = []
     if rotationalConstants is not None:
         inertia, units = processQuantity(rotationalConstants)
+        if units == '1/m':
+            # This allows the end user to specify rotational constants as wavenumbers
+            inertia = [constants.h / (8 * constants.pi * constants.pi * B * constants.c) for B in inertia]
+            units = 'kg*m^2'
         linear = len(inertia)==1
         modes.append(RigidRotor(linear, inertia, symmetry))
     if frequencies is not None: 
