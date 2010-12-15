@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 ################################################################################
 #
 #   MEASURE - Master Equation Automatic Solver for Unimolecular REactions
@@ -63,9 +60,10 @@ cpdef computeRateCoefficients(
     as expected).
     """
 
-    cdef int i, j, m, n
+    cdef int i, j, m, n, r, Ngrains
     cdef numpy.ndarray[numpy.float64_t,ndim=2] K
     
+    Ngrains = p0.shape[0]
     K = numpy.zeros((Nisom+Nreac+Nprod,Nisom+Nreac+Nprod), numpy.float64)
 
     for i in range(Nisom):
@@ -73,33 +71,37 @@ cpdef computeRateCoefficients(
         for j in range(Nisom):
             if i != j:
                 K[i,j] = 0.0  # numpy.sum(numpy.dot(Mcoll[i,:,:], p0[:,i,j]))
-                for l in range(Nisom):
-                    K[i,j] -= numpy.sum(Kij[l,i,:] * p0[:,i,j])
-                for n in range(Nreac+Nprod):
-                    K[i,j] -= numpy.sum(Gnj[n,i,:] * p0[:,i,j])
-                for l in range(Nisom):
-                    K[i,j] += numpy.sum(Kij[i,l,:] * p0[:,l,j])
+                for r in range(Ngrains):
+                    for l in range(Nisom):
+                        K[i,j] -= Kij[l,i,r] * p0[r,i,j]
+                    for n in range(Nreac+Nprod):
+                        K[i,j] -= Gnj[n,i,r] * p0[r,i,j]
+                    for l in range(Nisom):
+                        K[i,j] += Kij[i,l,r] * p0[r,l,j]
         # Association
         for m in range(Nisom, Nisom+Nreac):
             K[i,m] = 0.0  # numpy.sum(numpy.dot(Mcoll[i,:,:], p0[:,i,m]))
-            for l in range(Nisom):
-                K[i,m] -= numpy.sum(Kij[l,i,:] * p0[:,i,m])
-            for n in range(Nreac+Nprod):
-                K[i,m] -= numpy.sum(Gnj[n,i,:] * p0[:,i,m])
-            for l in range(Nisom):
-                K[i,m] += numpy.sum(Kij[i,l,:] * p0[:,l,m])
-            K[i,m] += numpy.sum(Fim[i,m-Nisom,:])
+            for r in range(Ngrains):
+                for l in range(Nisom):
+                    K[i,m] -= Kij[l,i,r] * p0[r,i,m]
+                for n in range(Nreac+Nprod):
+                    K[i,m] -= Gnj[n,i,r] * p0[r,i,m]
+                for l in range(Nisom):
+                    K[i,m] += Kij[i,l,r] * p0[r,l,m]
+                K[i,m] += Fim[i,m-Nisom,r]
 
     for n in range(Nisom, Nisom+Nreac+Nprod):
         # Dissociation
         for j in range(Nisom):
-            for l in range(Nisom):
-                K[n,j] += numpy.sum(Gnj[n-Nisom,l,:] * p0[:,l,j])
+            for r in range(Ngrains):
+                for l in range(Nisom):
+                    K[n,j] += Gnj[n-Nisom,l,r] * p0[r,l,j]
         # Bimolecular
         for m in range(Nisom, Nisom+Nreac):
             if m != n:
-                for l in range(Nisom):
-                    K[n,m] += numpy.sum(Gnj[n-Nisom,l,:] * p0[:,l,m])
+                for r in range(Ngrains):
+                    for l in range(Nisom):
+                        K[n,m] += Gnj[n-Nisom,l,r] * p0[r,l,m]
 
     for i in range(Nisom+Nreac):
         K[i,i] = -numpy.sum(K[:,i])
