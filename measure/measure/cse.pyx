@@ -76,12 +76,19 @@ def applyChemicallySignificantEigenvaluesMethod(double T, double P,
 
     cdef int Ngrains, Nchem, Nrows, Ncse, index, i, n, r, s
     cdef numpy.ndarray[numpy.int_t,ndim=2] indices
-    cdef numpy.ndarray[numpy.float64_t,ndim=1] S, Sinv, W0, W, C
-    cdef numpy.ndarray[numpy.float64_t,ndim=2] eqDist, M, K, V0, V, X, Xinv, dXij
-    cdef numpy.ndarray[numpy.float64_t,ndim=3] pa,
-
+    cdef numpy.ndarray[numpy.float64_t,ndim=1] S, Sinv, W0, W
+    cdef numpy.ndarray[numpy.float64_t,ndim=2] M, K, V0, V, Z, Zinv, Y, X
+    cdef numpy.ndarray[numpy.float64_t,ndim=3] pa
+    cdef double ymB
+    
     Ngrains = len(Elist)
     Nchem = Nisom + Nreac
+    
+    # The concentration of the major species for all bimolecular channels
+    # This is the species whose concentration is constant (pseudo-first order
+    # approximation)
+    # Tweaking this number may improve the numerics somewhat (not guaranteed)
+    ymB = 1.0
     
     # Construct accounting matrix
     Nrows = 0
@@ -102,7 +109,7 @@ def applyChemicallySignificantEigenvaluesMethod(double T, double P,
 #        for n in range(Nreac):
 #            Fim[i,n,:] *= densStates[n+Nisom,:] * numpy.exp(-Elist[:] / constants.R / T)
 
-    M = generateFullMEMatrix(Mcoll, Kij, Fim, Gnj, Ngrains, Nisom, Nreac, Nprod, indices)
+    M = generateFullMEMatrix(Mcoll, Kij, Fim * ymB, Gnj, Ngrains, Nisom, Nreac, Nprod, indices)
 
     # Generate symmetrization matrix and its inverse
     S = numpy.zeros(Nrows, numpy.float64)
@@ -115,7 +122,7 @@ def applyChemicallySignificantEigenvaluesMethod(double T, double P,
                 Sinv[index] = 1.0 / S[index]
     for n in range(Nreac):
         index = Nrows - Nreac + n
-        S[index] = math.sqrt(1.0 * eqRatios[n+Nisom])
+        S[index] = math.sqrt(eqRatios[n+Nisom] / ymB)
         Sinv[index] = 1.0 / S[index]
 
     # Symmetrize master equation matrix: M = S * Msymm * Sinv
@@ -164,78 +171,45 @@ def applyChemicallySignificantEigenvaluesMethod(double T, double P,
         W = W0.take(ind[-Ncse:])
         V = V0.take(ind[-Ncse:], axis=1)
         
-        # Unsymmetrize the eigenvectors and their inverses
-        X = V.copy()
-        Xinv = V.copy().transpose()
+        # Unsymmetrize the eigenvectors
         for j in range(Ncse):
-            X[:,j] *= S
-            Xinv[j,:] *= Sinv
+            V[:,j] *= S
         
-        # Generate set of initial condition vectors, one per isomer and reactant
-        # Each initial condition vector corresponds to a case where a Boltzmann
-        # distribution of only one isomer or reactant is present
-        # The Boltzmann distribution occurs as a result of the fast relaxation of
-        # internal energy modes, which is separable from the chemical modes
-        eqDist = numpy.zeros((Nrows, Nisom+Nreac), numpy.float64)
-        for i in range(Nisom):
-            for r in range(Ngrains):
-                index = indices[r,i]
-                if index > -1: eqDist[index,i] = densStates[i,r] * math.exp(-Elist[r] / constants.R / T)
-        for n in range(Nreac):
-            index = Nrows - Nreac + n
-            eqDist[index,n+Nisom] = 1.0
-
-        # Calculate the phenomenological rate constants
-        # This version follows the notation of Miller and Klippenstein
-        # Iterate over isomers and reactants to determine k(T,P) with each as the
-        # reactant
-        for src in range(Nisom+Nreac):
-            # dXij contains the change in isomer/reactant/product i as a result
-            # of the jth eigenmode, using isomer/reactant n as the starting
-            # point
-            dXij = numpy.zeros((Nisom+Nreac+Nprod, Ncse), numpy.float64)
+        # Use the "long-time" method to extract the k(T,P) values
+        # This method is more numerically robust
+        # It also doesn't require finagling with various initial conditions
+        # Source: Robertson, Pilling, Jitariu, and Hillier, Phys. Chem. Chem. Phys 9, p. 4085-4097 (2007).
+        Z = numpy.zeros((Ncse,Ncse), numpy.float64)
+        Y = numpy.zeros((Nprod,Ncse), numpy.float64)
+        for j in range(Ncse):
+            for i in range(Nisom):
+                for r in range(Ngrains):
+                    index = indices[r,i]
+                    if index > -1: 
+                        Z[i,j] += V[index,j]
+                        for n in range(Nprod):
+                            Y[n,j] += Gnj[Nreac+n,i,r] * V[index,j]
+            for n in range(Nreac):
+                index = Nrows - Nreac + n
+                Z[Nisom+n,j] += V[index,j]
+        Zinv = numpy.linalg.inv(Z)
+        for i in range(Ncse):
             for j in range(Ncse):
-
-                C = X[:,j] * numpy.sum(Xinv[j,:] * eqDist[:,src])
-
-                for i in range(Nisom):
-                    for r in range(Ngrains):
-                        index = indices[r,i]
-                        if index > -1:
-                            # Isomers
-                            dXij[i,j] += C[index]
-                            pa[r,i,src] += C[index]
-                            # Product channels
-                            for n in range(Nreac, Nreac+Nprod):
-                                dXij[Nisom+n,j] += C[index] * Gnj[n,i,r] / W[j]
-                for n in range(Nreac):
-                    # Reactant channels
-                    index = Nrows - Nreac + n
-                    dXij[Nisom+n,j] += C[index]
-
-                # Convert the dXij information for eigenmode j into phenomenological
-                # rate coefficients
-                K[:,src] += W[j] * dXij[:,j]
-
-#        # Use the "long-time" method to extract the k(T,P) values
-#        # This method is supposedly more numerically robust
-#        # It also doesn't require finagling with various initial conditions
-#        cdef numpy.ndarray[numpy.float64_t,ndim=2] Z, Zinv
-#        Z = numpy.zeros((Ncse,Ncse), numpy.float64)
-#        for j in range(Ncse):
-#            for i in range(Nisom):
-#                for r in range(Ngrains):
-#                    index = indices[r,i]
-#                    if index > -1: Z[i,j] += X[index,j]
-#            for n in range(Nreac):
-#                index = Nrows - Nreac + n
-#                Z[Nisom+n,j] += X[index,j]
-#        Zinv = numpy.linalg.inv(Z)
-#        for i in range(Ncse):
-#            for j in range(Ncse):
-#                K[i,j] = numpy.sum(Z[i,:] * W * Zinv[:,j])
-#        # Note that we still need k(T,P) values for reactions to product channels!
-#        # For now we keep those from the initial rate method
+                K[i,j] = numpy.sum(Z[i,:] * W * Zinv[:,j])
+        for n in range(Nprod):
+            for j in range(Ncse):
+                K[Nisom+Nreac+n,j] = numpy.sum(Y[n,:] * Zinv[:,j])
+        
+        # Compute pa
+        X = numpy.dot(V, Zinv)
+        for src in range(Nisom+Nreac):
+            for i in range(Nisom):
+                for r in range(Ngrains):
+                    index = indices[r,i]
+                    if index > -1:
+                        pa[r,i,src] = X[index,src]
+     
+    K[:,Nisom:] = K[:,Nisom:] / ymB
         
 #    import pylab
 #    pylab.semilogy(Elist / 4184, pa[:,0,:])
