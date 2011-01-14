@@ -379,7 +379,7 @@ class Network:
         logging.log(level, '========================================================================')
         logging.log(level, '')
 
-    def calculateRateCoefficients(self, Tlist, Plist, Elist, method):
+    def calculateRateCoefficients(self, Tlist, Plist, Elist, method, errorCheck=True):
         """
         Calculate the phenomenological rate coefficients :math:`k(T,P)` for the
         network at the given temperatures `Tlist` in K and pressures `Plist` in
@@ -502,15 +502,21 @@ class Network:
                 #    K[t,p,:,:] = me.computeRateCoefficients(Mcoll, Kij, Fim, Gnj, p0[t,p,:,:,:], Nisom, Nreac, Nprod)
 
                 # Reject if any rate coefficients are negative
-                negativeRate = False
-                for i in range(Nisom+Nreac+Nprod):
-                    for j in range(i):
-                        if K[t,p,i,j] < 0 or K[t,p,j,i] < 0 and not negativeRate:
-                            negativeRate = True
-                            logging.error('Negative rate coefficient generated; rejecting result.')
-                            logging.info(K[t,p,0:Nisom+Nreac+Nprod,0:Nisom+Nreac])
-                            K[t,p,:,:] = 0 * K[t,p,:,:]
-                            p0[t,p,:,:,:] = 0 * p0[t,p,:,:,:]
+                if errorCheck:
+                    negativeRate = False
+                    for i in range(Nisom+Nreac+Nprod):
+                        for j in range(i):
+                            if (K[t,p,i,j] < 0 or K[t,p,j,i] < 0) and not negativeRate:
+                                negativeRate = True
+                                logging.error('Negative rate coefficient generated; rejecting result.')
+                                logging.info(K[t,p,0:Nisom+Nreac+Nprod,0:Nisom+Nreac])
+                                K[t,p,:,:] = 0 * K[t,p,:,:]
+                                p0[t,p,:,:,:] = 0 * p0[t,p,:,:,:]
+                            #elif K[t,p,i,j] < 0 and i < Nisom+Nreac and j < Nisom+Nreac:
+                                #K[t,p,i,j] = K[t,p,j,i] * eqRatios[j] / eqRatios[i]
+                            #elif K[t,p,j,i] < 0 and i < Nisom+Nreac and j < Nisom+Nreac:
+                                #K[t,p,j,i] = K[t,p,i,j] * eqRatios[i] / eqRatios[j]
+                                
                             
                 logging.log(0, K[t,p,0:Nisom+Nreac+Nprod,0:Nisom+Nreac])
 
