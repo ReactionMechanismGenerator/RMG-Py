@@ -1028,6 +1028,7 @@ def fromAdjacencyList(adjlist, pattern=False, addH=False):
         bonds[atomdict[aid1]] = {}
         for aid2 in bonds[aid1]:
             if aid1 < aid2:
+                order = bonds[aid1][aid2]
                 if pattern:
                     bonds[atomdict[aid1]][atomdict[aid2]] = BondPattern(order)
                 elif len(order) == 1:
