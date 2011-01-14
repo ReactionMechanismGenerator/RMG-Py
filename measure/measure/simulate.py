@@ -36,7 +36,7 @@ reducing the master equation.
 
 import numpy
 import scipy.integrate
-from PyDAS import dassl
+from pydas import DASSL
 
 import chempy.constants as constants
 
@@ -170,12 +170,12 @@ def solveReducedME(T, P, Elist, tlist, x0, K, p0, Nisom, Nreac, Nprod):
 
 ################################################################################
 
-class MasterEquation(dassl.DASSL):
+class MasterEquation(DASSL):
     """
     """
 
     def __init__(self, M):
-        dassl.DASSL.__init__(self)
+        DASSL.__init__(self)
         self.M = M
 
     def residual(self, t, y, dydt):
