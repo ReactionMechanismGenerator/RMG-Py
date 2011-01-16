@@ -4,6 +4,10 @@
 #
 ################################################################################
 
+CYTHON_FLAGS=--build-lib . --build-temp build --pyrex-c-in-temp
+
+CLEAN_FLAGS=--build-temp build
+
 -include make.inc
 
 all: cython
