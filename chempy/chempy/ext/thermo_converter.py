@@ -107,9 +107,9 @@ def convertWilhoitToNASA(wilhoit, Tmin, Tmax, Tint, fixedTint=False, weighting=T
     Tmin /= 1000.
     Tint /= 1000.
     Tmax /= 1000.
-
+    
     # Make copy of Wilhoit data so we don't modify the original
-    wilhoit_scaled = WilhoitModel(wilhoit.cp0, wilhoit.cpInf, wilhoit.a0, wilhoit.a1, wilhoit.a2, wilhoit.a3, wilhoit.H0, wilhoit.S0, wilhoit.comment, B=wilhoit.B)
+    wilhoit_scaled = WilhoitModel(wilhoit.cp0, wilhoit.cpInf, wilhoit.a0, wilhoit.a1, wilhoit.a2, wilhoit.a3, wilhoit.H0, wilhoit.S0, wilhoit.B, Tmin=wilhoit.Tmin, Tmax=wilhoit.Tmax, comment=wilhoit.comment)
     # Rescale Wilhoit parameters
     wilhoit_scaled.cp0 /= constants.R
     wilhoit_scaled.cpInf /= constants.R
