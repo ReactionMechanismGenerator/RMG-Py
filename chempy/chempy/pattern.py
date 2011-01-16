@@ -923,145 +923,155 @@ def fromAdjacencyList(adjlist, pattern=False, addH=False):
 
     atoms = []; atomdict = {}; bonds = {}
 
-    adjlist = adjlist.strip()
-    if adjlist == '':
-        raise InvalidAdjacencyListError('Empty adjacency list.')
-
-    lines = adjlist.splitlines()
-    # Skip the first line if it contains a label
-    if len(lines) > 0 and len(lines[0].split()) == 1:
-        label = lines.pop(0)
-    # Iterate over the remaining lines, generating Atom or AtomPattern objects
-    if len(lines) == 0:
-        raise InvalidAdjacencyListError('No atoms specified in adjacency list.')
-    for line in lines:
-
-        data = line.split()
-
-        # Skip if blank line
-        if len(data) == 0: continue
-
-        # First item is index for atom
-        # Sometimes these have a trailing period (as if in a numbered list),
-        # so remove it just in case
-        aid = int(data[0].strip('.'))
-
-        # If second item starts with '*', then atom is labeled
-        label = ''; index = 1
-        if data[1][0] == '*':
-            label = data[1]; index = 2
-
-        # Next is the element or functional group element
-        # A list can be specified with the {,} syntax
-        atomType = data[index]
-        if atomType[0] == '{':
-            atomType = atomType[1:-1].split(',')
-        else:
-            atomType = [atomType]
-
-        # Next is the electron state
-        radicalElectrons = []; spinMultiplicity = []
-        elecState = data[index+1].upper()
-        if elecState[0] == '{':
-            elecState = elecState[1:-1].split(',')
-        else:
-            elecState = [elecState]
-        for e in elecState:
-            if e == '0':
-                radicalElectrons.append(0); spinMultiplicity.append(1)
-            elif e == '1':
-                radicalElectrons.append(1); spinMultiplicity.append(2)
-            elif e == '2':
-                radicalElectrons.append(2); spinMultiplicity.append(1)
-                radicalElectrons.append(2); spinMultiplicity.append(3)
-            elif e == '2S':
-                radicalElectrons.append(2); spinMultiplicity.append(1)
-            elif e == '2T':
-                radicalElectrons.append(2); spinMultiplicity.append(3)
-            elif e == '3':
-                radicalElectrons.append(3); spinMultiplicity.append(4)
-            elif e == '4':
-                radicalElectrons.append(4); spinMultiplicity.append(5)
-
-        # Create a new atom based on the above information
-        if pattern:
-            atom = AtomPattern(atomType, radicalElectrons, spinMultiplicity, [0 for e in radicalElectrons], label)
-        else:
-            atom = Atom(atomType[0], radicalElectrons[0], spinMultiplicity[0], 0, 0, label)
-
-        # Add the atom to the list
-        atoms.append(atom)
-        atomdict[aid] = atom
+    try:
         
-        # Process list of bonds
-        bonds[aid] = {}
-        for datum in data[index+2:]:
+        adjlist = adjlist.strip()
+        if adjlist == '':
+            raise InvalidAdjacencyListError('Empty adjacency list.')
+
+        lines = adjlist.splitlines()
+        # Skip the first line if it contains a label
+        if len(lines) > 0 and len(lines[0].split()) == 1:
+            label = lines.pop(0)
+        # Iterate over the remaining lines, generating Atom or AtomPattern objects
+        if len(lines) == 0:
+            raise InvalidAdjacencyListError('No atoms specified in adjacency list.')
+        for line in lines:
 
             # Sometimes commas are used to delimit bonds in the bond list,
-            # so strip them just in case
-            datum = datum.strip(',')
-
-            aid2, comma, order = datum[1:-1].partition(',')
-            aid2 = int(aid2)
-            if aid == aid2:
-                raise InvalidAdjacencyListError('Attempted to create a bond between atom %i and itself.' % (aid))
+            # so replace them just in case
+            line = line.replace('},{', '} {')
             
-            if order[0] == '{':
-                order = order[1:-1].split(',')
+            data = line.split()
+
+            # Skip if blank line
+            if len(data) == 0: continue
+
+            # First item is index for atom
+            # Sometimes these have a trailing period (as if in a numbered list),
+            # so remove it just in case
+            aid = int(data[0].strip('.'))
+
+            # If second item starts with '*', then atom is labeled
+            label = ''; index = 1
+            if data[1][0] == '*':
+                label = data[1]; index = 2
+
+            # Next is the element or functional group element
+            # A list can be specified with the {,} syntax
+            atomType = data[index]
+            if atomType[0] == '{':
+                atomType = atomType[1:-1].split(',')
             else:
-                order = [order]
+                atomType = [atomType]
 
-            bonds[aid][aid2] = order
+            # Next is the electron state
+            radicalElectrons = []; spinMultiplicity = []
+            elecState = data[index+1].upper()
+            if elecState[0] == '{':
+                elecState = elecState[1:-1].split(',')
+            else:
+                elecState = [elecState]
+            for e in elecState:
+                if e == '0':
+                    radicalElectrons.append(0); spinMultiplicity.append(1)
+                elif e == '1':
+                    radicalElectrons.append(1); spinMultiplicity.append(2)
+                elif e == '2':
+                    radicalElectrons.append(2); spinMultiplicity.append(1)
+                    radicalElectrons.append(2); spinMultiplicity.append(3)
+                elif e == '2S':
+                    radicalElectrons.append(2); spinMultiplicity.append(1)
+                elif e == '2T':
+                    radicalElectrons.append(2); spinMultiplicity.append(3)
+                elif e == '3':
+                    radicalElectrons.append(3); spinMultiplicity.append(4)
+                elif e == '4':
+                    radicalElectrons.append(4); spinMultiplicity.append(5)
 
-    # Check consistency using bonddict
-    for atom1 in bonds:
-        for atom2 in bonds[atom1]:
-            if atom2 not in bonds:
-                raise InvalidAdjacencyListError('Atom %i not in bond dictionary.' % atom2)
-            elif atom1 not in bonds[atom2]:
-                raise InvalidAdjacencyListError('Found bond between %i and %i, but not the reverse.' % (atom1, atom2))
-            elif bonds[atom1][atom2] != bonds[atom2][atom1]:
-                raise InvalidAdjacencyListError('Found bonds between %i and %i, but of different order.' % (atom1, atom2))
+            # Create a new atom based on the above information
+            if pattern:
+                atom = AtomPattern(atomType, radicalElectrons, spinMultiplicity, [0 for e in radicalElectrons], label)
+            else:
+                atom = Atom(atomType[0], radicalElectrons[0], spinMultiplicity[0], 0, 0, label)
 
-    # Convert bonddict to use Atom[Pattern] and Bond[Pattern] objects
-    for aid1 in atomdict:
-        bonds[atomdict[aid1]] = {}
-        for aid2 in bonds[aid1]:
-            if aid1 < aid2:
-                order = bonds[aid1][aid2]
-                if pattern:
-                    bonds[atomdict[aid1]][atomdict[aid2]] = BondPattern(order)
-                elif len(order) == 1:
-                    bonds[atomdict[aid1]][atomdict[aid2]] = Bond(order[0])
+            # Add the atom to the list
+            atoms.append(atom)
+            atomdict[aid] = atom
+            
+            # Process list of bonds
+            bonds[aid] = {}
+            for datum in data[index+2:]:
+
+                # Sometimes commas are used to delimit bonds in the bond list,
+                # so strip them just in case
+                datum = datum.strip(',')
+                
+                aid2, comma, order = datum[1:-1].partition(',')
+                aid2 = int(aid2)
+                if aid == aid2:
+                    raise InvalidAdjacencyListError('Attempted to create a bond between atom %i and itself.' % (aid))
+                
+                if order[0] == '{':
+                    order = order[1:-1].split(',')
                 else:
-                    raise InvalidAdjacencyListError('Multiple bond orders specified for an atom in a Molecule.')
-            else:
-                bonds[atomdict[aid1]][atomdict[aid2]] = bonds[atomdict[aid2]][atomdict[aid1]]
-        del bonds[aid1]
-        
-    # Add explicit hydrogen atoms to complete structure if desired
-    if addH and not pattern:
-        valences = {'H': 1, 'C': 4, 'O': 2}
-        orders = {'S': 1, 'D': 2, 'T': 3, 'B': 1.5}
-        newAtoms = []
-        for atom in atoms:
-            try:
-                valence = valences[atom.symbol]
-            except KeyError:
-                raise InvalidAdjacencyListError('Cannot add hydrogens to adjacency list: Unknown valence for atom "%s".' % atom.symbol)
-            radical = atom.radicalElectrons
-            order = 0
-            for atom2, bond in bonds[atom].iteritems():
-                order += orders[bond.order]
-            count = valence - radical - int(order)
-            for i in range(count):
-                a = Atom('H', 0, 1, 0, 0, '')
-                b = Bond('S')
-                newAtoms.append(a)
-                bonds[atom][a] = b
-                bonds[a] = {atom: b}
-        atoms.extend(newAtoms)
+                    order = [order]
 
+                bonds[aid][aid2] = order
+
+        # Check consistency using bonddict
+        for atom1 in bonds:
+            for atom2 in bonds[atom1]:
+                if atom2 not in bonds:
+                    raise InvalidAdjacencyListError('Atom %i not in bond dictionary.' % atom2)
+                elif atom1 not in bonds[atom2]:
+                    raise InvalidAdjacencyListError('Found bond between %i and %i, but not the reverse.' % (atom1, atom2))
+                elif bonds[atom1][atom2] != bonds[atom2][atom1]:
+                    raise InvalidAdjacencyListError('Found bonds between %i and %i, but of different orders "%s" and "%s".' % (atom1, atom2, bonds[atom1][atom2], bonds[atom2][atom1]))
+
+        # Convert bonddict to use Atom[Pattern] and Bond[Pattern] objects
+        for aid1 in atomdict:
+            bonds[atomdict[aid1]] = {}
+            for aid2 in bonds[aid1]:
+                if aid1 < aid2:
+                    order = bonds[aid1][aid2]
+                    if pattern:
+                        bonds[atomdict[aid1]][atomdict[aid2]] = BondPattern(order)
+                    elif len(order) == 1:
+                        bonds[atomdict[aid1]][atomdict[aid2]] = Bond(order[0])
+                    else:
+                        raise InvalidAdjacencyListError('Multiple bond orders specified for an atom in a Molecule.')
+                else:
+                    bonds[atomdict[aid1]][atomdict[aid2]] = bonds[atomdict[aid2]][atomdict[aid1]]
+            del bonds[aid1]
+            
+        # Add explicit hydrogen atoms to complete structure if desired
+        if addH and not pattern:
+            valences = {'H': 1, 'C': 4, 'O': 2}
+            orders = {'S': 1, 'D': 2, 'T': 3, 'B': 1.5}
+            newAtoms = []
+            for atom in atoms:
+                try:
+                    valence = valences[atom.symbol]
+                except KeyError:
+                    raise InvalidAdjacencyListError('Cannot add hydrogens to adjacency list: Unknown valence for atom "%s".' % atom.symbol)
+                radical = atom.radicalElectrons
+                order = 0
+                for atom2, bond in bonds[atom].iteritems():
+                    order += orders[bond.order]
+                count = valence - radical - int(order)
+                for i in range(count):
+                    a = Atom('H', 0, 1, 0, 0, '')
+                    b = Bond('S')
+                    newAtoms.append(a)
+                    bonds[atom][a] = b
+                    bonds[a] = {atom: b}
+            atoms.extend(newAtoms)
+    
+    except InvalidAdjacencyListError:
+        print adjlist
+        raise
+    
     return atoms, bonds
 
 def toAdjacencyList(molecule, label='', pattern=False, removeH=False):
