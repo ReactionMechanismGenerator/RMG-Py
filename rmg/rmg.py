@@ -352,9 +352,12 @@ def execute(args):
             edgeSpeciesCount.append(len(reactionModel.edge.species))
             edgeReactionCount.append(len(reactionModel.edge.reactions))
             execTime.append(time.time() - settings.initializationTime)
-            from guppy import hpy
-            hp = hpy()
-            memoryUse.append(hp.heap().size / 1.0e6)
+            try:
+                from guppy import hpy
+                hp = hpy()
+                memoryUse.append(hp.heap().size / 1.0e6)
+            except ImportError:
+                memoryUse.append(0.0)
             logging.debug('Execution time: %s s' % (execTime[-1]))
             logging.debug('Memory used: %s MB' % (memoryUse[-1]))
             restartSize.append(os.path.getsize(os.path.join(settings.outputDirectory,'restart.pkl')) / 1.0e6)
@@ -531,9 +534,13 @@ if __name__ == '__main__':
 
     # Initialize the memory profiler
     # It works best if we do this as the very first thing
-    from guppy import hpy
-    hp = hpy()
-    hp.heap()
+    # If the memory profiler package is not installed then carry on
+    try:
+        from guppy import hpy
+        hp = hpy()
+        hp.heap()
+    except ImportError:
+        pass
 
     # Parse the command-line arguments (requires the argparse module)
     args = parseCommandLineArguments()
