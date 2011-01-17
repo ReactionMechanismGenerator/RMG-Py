@@ -44,7 +44,7 @@ import thermo.model
 import thermo.data
 import spectral.modes
 import spectral.data
-import ctml_writer
+import chempy.ctml_writer as ctml_writer
 
 ################################################################################
 

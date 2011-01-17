@@ -118,7 +118,7 @@ def execute(inputFile, options):
 	if options.restart:
 		import gzip
 		import cPickle
-		import ctml_writer
+		import chempy.ctml_writer as ctml_writer
 		logging.info('Loading previous restart file...')
 		f = gzip.GzipFile(os.path.join(settings.outputDirectory,'restart.pkl'), 'rb')
 		species.speciesList, species.speciesCounter, reaction.reactionDict, \

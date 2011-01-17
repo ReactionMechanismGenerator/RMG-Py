@@ -39,7 +39,7 @@ import logging
 import numpy
 
 import rmg.settings as settings
-import rmg.ctml_writer as ctml_writer
+import chempy.ctml_writer as ctml_writer
 import rmg.model as modelmodule
 from base import ReactionSystem
 

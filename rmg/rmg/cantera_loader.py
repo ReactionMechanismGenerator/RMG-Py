@@ -45,8 +45,8 @@ pq.UnitQuantity('kilomoles', pq.mol*1e3, symbol='kmol')
 # (which do some checks and allow you to write 'ctml' XML)
 # then we can modify the classes we want to do more
 sys.path.append('../external')
-import ctml_writer as cti
-from ctml_writer import units, OneAtm
+import chempy.ctml_writer as cti
+from chempy.ctml_writer import units, OneAtm
 
 # set these once base units have been set by importing .cti file, inside loadCanteraFile()
 _uConc = None 

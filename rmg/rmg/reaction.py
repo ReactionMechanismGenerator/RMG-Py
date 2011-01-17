@@ -49,7 +49,7 @@ import constants
 
 from kinetics.model import *
 
-import ctml_writer
+import chempy.ctml_writer as ctml_writer
 
 ################################################################################
 

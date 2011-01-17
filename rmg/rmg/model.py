@@ -51,7 +51,7 @@ from rmgdata.states import generateFrequencyData
 import measure.network
 
 import settings
-import ctml_writer
+import chempy.ctml_writer as ctml_writer
 from rxngen import generateReactions
 
 ################################################################################
@@ -153,7 +153,6 @@ class Species(chempy.species.Species):
         """
         Return a Cantera ctml_writer instance.
         """
-        import ctml_writer
         import xml.sax.saxutils
         # contrivedly get a list like ['C', '3', 'H', '9', 'Si', '1']
         atoms = self.molecule[0].toOBMol().GetSpacedFormula().split()
@@ -227,8 +226,6 @@ def getCanteraReaction(reaction):
     For a given :class:`Reaction` object `reaction`, create and return a
     Cantera reaction object.
     """
-
-    import ctml_writer
 
     options = []
 
