@@ -60,7 +60,7 @@ class Reaction:
 	================= ==========================================================
 	Attribute         Description
 	================= ==========================================================
-	`id`              A unique integer identifier
+	`index`           A unique integer identifier
 	`atomLabels`      A dictionary with the keys representing the labels and the
 	                  values the atoms of the reactant or product species that
 	                  were labeled at the time the reaction was generated
@@ -90,9 +90,9 @@ class Reaction:
 	convenient way to represent the reverse reaction.
 	"""
 
-	def __init__(self, id=0, reactants=None, products=None, family=None, kinetics=None, thirdBody=False):
+	def __init__(self, index=0, reactants=None, products=None, family=None, kinetics=None, thirdBody=False):
 		"""Initialize a reaction object."""
-		self.id = id
+		self.index = index
 		self.reactants = reactants or []
 		self.products = products or []
 		self.family = family
@@ -182,7 +182,7 @@ class Reaction:
 				products.remove(spec)
 			# Iterate over all existing Cantera reactions
 			for rxn in ctml_writer._reactions:
-				# Get ID of each reactant and product
+				# Get index of each reactant and product
 				reac = []; prod = []
 				for r, v in rxn._r.iteritems():
 					for i in range(int(v)): reac.append(r)
@@ -218,7 +218,7 @@ class Reaction:
 		"""
 
 		# Read label attribute
-		self.id = str(document.getAttribute(rootElement, 'id', required=True))
+		self.index = str(document.getAttribute(rootElement, 'index', required=True))
 
 		# Read <reactant> elements
 		self.reactants = []
@@ -260,19 +260,19 @@ class Reaction:
 		matches the format of the :meth:`Reaction.fromXML()` function.
 		"""
 
-		# Create <species> element with id attribute
+		# Create <species> element with index attribute
 		reactionElement = document.createElement('reaction', rootElement)
-		document.createAttribute('id', reactionElement, self.id)
+		document.createAttribute('index', reactionElement, self.index)
 
 		# Write reactants
 		for reactant in self.reactants:
 			reactantElement = document.createElement('reactant', reactionElement)
-			document.createAttribute('ref', reactantElement, reactant.id)
+			document.createAttribute('ref', reactantElement, reactant.index)
 
 		# Write products
 		for product in self.products:
 			productElement = document.createElement('product', reactionElement)
-			document.createAttribute('ref', productElement, product.id)
+			document.createAttribute('ref', productElement, product.index)
 
 		# Write kinetics; format is to be added in kinetics class
 		for kinetics in self.kinetics:
@@ -618,8 +618,8 @@ class PDepReaction(Reaction):
 	:meth:`getBestKinetics`.
 	"""
 
-	def __init__(self, id=0, reactants=None, products=None, network=None, kinetics=None):
-		Reaction.__init__(self, id=id, reactants=reactants, products=products, family=None)
+	def __init__(self, index=0, reactants=None, products=None, network=None, kinetics=None):
+		Reaction.__init__(self, index=index, reactants=reactants, products=products, family=None)
 		self.kinetics = kinetics
 		self.network = network
 
@@ -880,7 +880,7 @@ def processNewReaction(rxn):
 	Once a reaction `rxn` has been created (e.g. via :meth:`makeNewReaction`),
 	this function handles other aspects	of preparing it for RMG.
 	
-	It increments the global reactionCounter, assigns this to the id of the 
+	It increments the global reactionCounter, assigns this to the index of the
 	forward and reverse reactions, and stores the forward reaction in the 
 	global list of reactions, which is now a dictionary of short-lists 
 	(to speed up searching through it).
@@ -889,7 +889,7 @@ def processNewReaction(rxn):
 	# Update counter
 	global reactionCounter
 	reactionCounter += 1
-	rxn.id = rxn.reverse.id = reactionCounter
+	rxn.index = rxn.reverse.index = reactionCounter
 	
 	# Add to the global dict/list of existing reactions (a list broken down by family, r1, r2)
 	# identify r1 and r2
@@ -941,8 +941,8 @@ def makeNewPDepReaction(reactants, products, network, kinetics):
 	reactants.sort()
 	products.sort()
 
-	forward = PDepReaction(id=reactionCounter+1, reactants=reactants, products=products, network=network, kinetics=kinetics)
-	reverse = PDepReaction(id=reactionCounter+1, reactants=products, products=reactants, network=network, kinetics=None)
+	forward = PDepReaction(index=reactionCounter+1, reactants=reactants, products=products, network=network, kinetics=kinetics)
+	reverse = PDepReaction(index=reactionCounter+1, reactants=products, products=reactants, network=network, kinetics=None)
 	forward.reverse = reverse
 	reverse.reverse = forward
 

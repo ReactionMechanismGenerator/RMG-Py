@@ -159,7 +159,7 @@ class Species:
 	================  ==========================================================
 	Attributes        Description
 	================  ==========================================================
-	`id`              A unique integer identifier
+	`index`           A unique integer identifier
 	`label`           A more descriptive (but not necessarily unique) string
 	                  label
 	`lennardJones`    The Lennard-Jones parameters for the species
@@ -178,13 +178,13 @@ class Species:
 	"""
 	def __repr__(self):
 		"""How it looks on the console"""
-		return "<Species %d '%s'>"%(self.id, self.label)
+		return "<Species %d '%s'>"%(self.index, self.label)
 
-	def __init__(self, id=0, label='', structure=None, reactive=True, SMILES=None):
+	def __init__(self, index=0, label='', structure=None, reactive=True, SMILES=None):
 		"""
 		Initialize a Species object.
 		"""
-		self.id = id
+		self.index = index
 		
 		self.label = label
 		if structure is not None:
@@ -206,22 +206,22 @@ class Species:
 	def __cmp__(self, other):
 		"""
 		A comparison function that can be used to sort lists of Species objects.
-		Currently the sorting method is by increasing ID.
+		Currently the sorting method is by increasing index.
 		"""
-		return cmp(self.id, other.id)
+		return cmp(self.index, other.index)
 
 	def __hash__(self):
 		"""
 		A hash function that allows for use in dictionaries et al. Currently the
-		species ID is used.
+		species index is used.
 		"""
-		return self.id
+		return self.index
 		
 	def __str__(self):
 		"""
-		Return a string representation of the species, in the form 'label(id)'.
+		Return a string representation of the species, in the form 'label(index)'.
 		"""
-		return self.label + '(' + str(self.id) + ')'
+		return self.label + '(' + str(self.index) + ')'
 		
 	def toCantera(self):
 		"""Return a Cantera ctml_writer instance"""
@@ -250,11 +250,11 @@ class Species:
 		element in that tree.
 		"""
 
-		# Read id attribute
-		self.id = str(document.getAttribute(rootElement, 'id', required=True))
+		# Read index attribute
+		self.index = str(document.getAttribute(rootElement, 'index', required=True))
 
 		# Read label attribute
-		self.label = str(document.getAttribute(rootElement, 'label', required=False, default=self.id))
+		self.label = str(document.getAttribute(rootElement, 'label', required=False, default=self.index))
 
 		# Read reactive attribute
 		self.reactive = str(document.getAttribute(rootElement, 'reactive', required=False, default='yes')).lower()
@@ -312,9 +312,9 @@ class Species:
 		matches the format of the :meth:`Species.fromXML()` function.
 		"""
 
-		# Create <species> element with id, label, and reactive attributes
+		# Create <species> element with index, label, and reactive attributes
 		speciesElement = document.createElement('species', rootElement)
-		document.createAttribute('id', speciesElement, self.id)
+		document.createAttribute('index', speciesElement, self.index)
 		document.createAttribute('label', speciesElement, self.label)
 		document.createAttribute('reactive', speciesElement, 'yes' if self.reactive else 'no')
 
@@ -726,7 +726,7 @@ def processNewSpecies(spec):
 
 	speciesList.insert(0, spec)
 	speciesCounter += 1
-	spec.id = speciesCounter
+	spec.index = speciesCounter
 	
 	spec.getResonanceIsomers()
 	spec.generateThermoData()
