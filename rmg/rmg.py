@@ -379,7 +379,6 @@ def execute(args):
                 logging.info('')
                 logging.info('The current model core has %s species and %s reactions' % (len(reactionModel.core.species), len(reactionModel.core.reactions)))
                 logging.info('The current model edge has %s species and %s reactions' % (len(reactionModel.edge.species), len(reactionModel.edge.reactions)))
-                io.writeOutputFile(os.path.join(settings.outputDirectory,'output.xml'), reactionModel, reactionSystems)
                 return
 
     # Write output file
@@ -387,8 +386,7 @@ def execute(args):
     logging.info('')
     logging.info('The final model core has %s species and %s reactions' % (len(reactionModel.core.species), len(reactionModel.core.reactions)))
     logging.info('The final model edge has %s species and %s reactions' % (len(reactionModel.edge.species), len(reactionModel.edge.reactions)))
-    io.writeOutputFile(os.path.join(settings.outputDirectory,'output.xml'), reactionModel, reactionSystems)
-
+    
     # Log end timestamp
     logging.info('')
     logging.info('RMG execution terminated at ' + time.asctime())
