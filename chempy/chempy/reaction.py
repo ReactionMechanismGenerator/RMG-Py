@@ -338,7 +338,7 @@ class Reaction:
         Qreac = 1.0
         for spec in self.reactants: Qreac *= spec.states.getPartitionFunction(T) / (constants.R * T / 101325.)
         Qts = self.transitionState.states.getPartitionFunction(T) / (constants.R * T / 101325.)
-        k = self.transitionState.degeneracy * (constants.kB * T / constants.h * Qts / Qreac *	numpy.exp(-E0 / constants.R / T))
+        k = (constants.kB * T / constants.h * Qts / Qreac *	numpy.exp(-E0 / constants.R / T))
         # Apply tunneling correction
         if tunneling.lower() == 'wigner':
             k *= self.calculateWignerTunnelingCorrection(T)
@@ -443,7 +443,7 @@ class Reaction:
         integral = scipy.integrate.quad(self.__eckartIntegrand, E_kTmin, E_kTmax,
             args=(constants.R * T,dV1,alpha1,alpha2,))[0]
         kappa = integral * math.exp(dV1 / constants.R / T)
-        
+
         # Return the calculated Eckart correction
         return kappa
     

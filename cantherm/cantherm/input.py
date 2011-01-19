@@ -145,7 +145,7 @@ def loadTransitionState(label, geomLog, statesLog, extSymmetry, freqScaleFactor,
     
 ################################################################################
 
-def loadReaction(label, reactants, products, transitionState):
+def loadReaction(label, reactants, products, transitionState, degeneracy=1):
     global speciesDict, transitionStateDict, reactionDict
     logging.info('Loading reaction %s...' % label)
     rxn = Reaction(
@@ -153,6 +153,7 @@ def loadReaction(label, reactants, products, transitionState):
         products=[speciesDict[s] for s in products],
         transitionState=transitionStateDict[transitionState],
     )
+    rxn.degeneracy = degeneracy
     reactionDict[label] = rxn
 
 ################################################################################
