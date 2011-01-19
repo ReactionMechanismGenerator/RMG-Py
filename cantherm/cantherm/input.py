@@ -114,10 +114,7 @@ def loadConfiguration(geomLog, statesLog, extSymmetry, freqScaleFactor, linear, 
         #pylab.show()
         
         logging.debug('    Determining frequencies from reduced force constant matrix...')
-        frequencies = projectRotors(geom, F, rotors, linear, TS)
-        for mode in states.modes:
-            if isinstance(mode, HarmonicOscillator):
-                mode.frequencies = list(frequencies * freqScaleFactor)
+        frequencies = list(projectRotors(geom, F, rotors, linear, TS))
         
     elif len(states.modes) > 2:
         frequencies = states.modes[2].frequencies
@@ -125,7 +122,11 @@ def loadConfiguration(geomLog, statesLog, extSymmetry, freqScaleFactor, linear, 
     else:
         frequencies = []
         rotors = []
-    
+
+    for mode in states.modes:
+        if isinstance(mode, HarmonicOscillator):
+            mode.frequencies = [f * freqScaleFactor for f in frequencies]
+
     return E0, geom, states
 
 def loadSpecies(label, geomLog, statesLog, extSymmetry, freqScaleFactor, linear, rotors, atoms, bonds, E0=None):
