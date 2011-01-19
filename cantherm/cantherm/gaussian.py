@@ -136,13 +136,16 @@ class GaussianLog:
         coord = numpy.array(coord, numpy.float64)
         number = numpy.array(number, numpy.int)
         mass = numpy.zeros(len(number), numpy.float64)
+        # Use the atomic mass of the most common isotope rather than the
+        # average atomic mass
+        # These values were taken from "Atomic Weights and Isotopic Compositions" v3.0 (July 2010) from NIST
         for i in range(len(number)):
             if number[i] == 1:
-                mass[i] = 1.00794
+                mass[i] = 1.00782503207
             elif number[i] == 6:
-                mass[i] = 12.0107
+                mass[i] = 12.0
             elif number[i] == 8:
-                mass[i] = 15.9994
+                mass[i] = 15.99491461956
             else:
                 print 'Atomic number %i not yet supported in loadGeometry().' % number[i]
         
