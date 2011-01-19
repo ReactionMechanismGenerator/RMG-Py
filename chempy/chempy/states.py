@@ -827,8 +827,10 @@ class StatesModel:
         cython.declare(Q=cython.double, Trot=cython.double)
         Q = 1.0
         # Active K-rotor
+        # Only include this if there is no translation or rotation data
+        translators = [mode for mode in self.modes if isinstance(mode, Translation)]
         rotors = [mode for mode in self.modes if isinstance(mode, RigidRotor)]
-        if len(rotors) == 0:
+        if len(translators) == 0 and len(rotors) == 0:
             Trot = 1.0 / constants.R / 3.141592654
             Q *= numpy.sqrt(T / Trot)
         # Other modes
@@ -845,8 +847,10 @@ class StatesModel:
         cython.declare(rho=numpy.ndarray, i=cython.int, E=cython.double)
         rho = numpy.zeros_like(Elist)
         # Active K-rotor
+        # Only include this if there is no translation or rotation data
+        translators = [mode for mode in self.modes if isinstance(mode, Translation)]
         rotors = [mode for mode in self.modes if isinstance(mode, RigidRotor)]
-        if len(rotors) == 0:
+        if len(translators) == 0 and len(rotors) == 0:
             rho0 = numpy.zeros_like(Elist)
             for i, E in enumerate(Elist):
                 if E > 0: rho0[i] = 1.0 / math.sqrt(1.0 * E)
