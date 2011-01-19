@@ -70,7 +70,7 @@ class Reaction(chempy.reaction.Reaction):
     `family`          The reaction family that this reaction represents, as a
                       pointer to a :class:`ReactionFamily` object
     `kinetics`        A list of all of the valid sets of kinetics for the reaction
-    `multiplier`      A multiplier to use to increase the reaction rate for cases
+    `degeneracy`      A multiplier to use to increase the reaction rate for cases
                       when the reaction is generated multiple times due to
                       different parts of the reactants yielding the same behavior
     `products`        A list of the species that are produced by this reaction
@@ -96,8 +96,7 @@ class Reaction(chempy.reaction.Reaction):
         chempy.reaction.Reaction.__init__(self, index=index, reactants=reactants, products=products, kinetics=kinetics, thirdBody=thirdBody)
         self.family = family
         self.reverse = None
-        self.multiplier = 1.0
-
+        
         self.E0 = None
 
         # A cache for the best kinetics for this reaction

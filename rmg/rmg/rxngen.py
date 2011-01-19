@@ -273,7 +273,7 @@ def generateReactionsForFamily(reactants, family, model, forward=True):
     for index1, rxn1 in enumerate(rxnList):
         for index2, rxn2, in enumerate(rxnList[index1+1:]):
             if rxn1.products == rxn2.products:
-                rxn1.multiplier += 1
+                rxn1.degeneracy += 1
                 if rxn2 not in reactionsToRemove:
                     reactionsToRemove.append(rxn2)
     for rxn2 in reactionsToRemove:
@@ -284,7 +284,7 @@ def generateReactionsForFamily(reactants, family, model, forward=True):
     # This is hardcoding of reaction families!
     if family.label.lower() == 'unimolecular homolysis':
         for rxn in rxnList:
-            rxn.multiplier /= 2
+            rxn.degeneracy /= 2
 
     # This reaction list has only checked for duplicates within itself, not
     # with the global list of reactions
