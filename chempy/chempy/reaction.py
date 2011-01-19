@@ -326,8 +326,8 @@ class Reaction:
         E0 = self.transitionState.E0 - sum([spec.E0 for spec in self.reactants])
         # Determine TST rate constant at each temperature
         Qreac = 1.0
-        for spec in self.reactants: Qreac *= spec.states.getPartitionFunction(T) / (constants.R * T / 1e5)
-        Qts = self.transitionState.states.getPartitionFunction(T) / (constants.R * T / 1e5)
+        for spec in self.reactants: Qreac *= spec.states.getPartitionFunction(T) / (constants.R * T / 101325.)
+        Qts = self.transitionState.states.getPartitionFunction(T) / (constants.R * T / 101325.)
         k = self.transitionState.degeneracy * (constants.kB * T / constants.h * Qts / Qreac *	numpy.exp(-E0 / constants.R / T))
         # Apply tunneling correction
         if tunneling.lower() == 'wigner':
