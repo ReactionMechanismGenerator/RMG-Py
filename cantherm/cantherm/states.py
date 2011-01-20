@@ -173,6 +173,9 @@ def saveStates(species, label, path):
                 mode.fourier[1,0], mode.fourier[1,1], mode.fourier[1,2], mode.fourier[1,3], mode.fourier[1,4],
                 ))
     f.write('    ],\n')
+    try:
+        f.write('    frequency=(%g,"cm^-1"),\n' % species.frequency)
+    except AttributeError: pass
     f.write('    short_comment = "",\n')
     f.write('    long_comment = \n')
     f.write('"""\n')

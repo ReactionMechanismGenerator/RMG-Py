@@ -107,10 +107,16 @@ def loadConfiguration(geomLog, statesLog, extSymmetry, freqScaleFactor, linear, 
             inertia = geom.getInternalReducedMomentOfInertia(pivots, top)
             rotor = HinderedRotor(inertia=inertia, symmetry=symmetry, fourier=fourier)
             states.modes.append(rotor)
+            
             #import numpy
             #import pylab
-            #phi = numpy.arange(0, 6.3, 0.1, numpy.float64)
-            #pylab.plot(phi, rotor.getPotential(phi) / 4184)
+            #import math
+            #Vlist = log.loadScanEnergies()
+            #Vlist = Vlist[:-1]
+            #angle = numpy.arange(0.0, 2*math.pi+0.00001, 2*math.pi/(len(Vlist)-1), numpy.float64)
+            #phi = numpy.arange(0, 6.3, 0.02, numpy.float64)
+            #pylab.plot(angle, Vlist / 4184, 'ok')
+            #pylab.plot(phi, rotor.getPotential(phi) / 4184, '-k')
         #pylab.show()
         
         logging.debug('    Determining frequencies from reduced force constant matrix...')
@@ -159,9 +165,12 @@ def loadReaction(label, reactants, products, transitionState, degeneracy=1):
 ################################################################################
 
 def generateStates(label):
-    global outputFile, speciesDict
+    global outputFile, speciesDict, transitionStateDict
     from states import saveStates
-    saveStates(speciesDict[label], label, outputFile)
+    if label in speciesDict:
+        saveStates(speciesDict[label], label, outputFile)
+    elif label in transitionStateDict:
+        saveStates(transitionStateDict[label], label, outputFile)
     
 def generateThermo(label, model, plot=False):
     global outputFile, speciesDict
