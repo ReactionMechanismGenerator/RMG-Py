@@ -120,6 +120,18 @@ def saveThermo(species, label, path):
     """
     
     f = open(path, 'a')
+
+    f.write('# Thermodynamics for %s:\n' % (label))
+    f.write('#   H(298 K)   = %9.3f kcal/mol\n' % (species.thermo.getEnthalpy(298) / 4184.))
+    f.write('#   S(298 K)   = %9.3f cal/(mol*K)\n' % (species.thermo.getEntropy(298) / 4.184))
+    f.write('#   Cp(300 K)  = %9.3f cal/(mol*K)\n' % (species.thermo.getHeatCapacity(300) / 4.184))
+    f.write('#   Cp(400 K)  = %9.3f cal/(mol*K)\n' % (species.thermo.getHeatCapacity(400) / 4.184))
+    f.write('#   Cp(500 K)  = %9.3f cal/(mol*K)\n' % (species.thermo.getHeatCapacity(500) / 4.184))
+    f.write('#   Cp(600 K)  = %9.3f cal/(mol*K)\n' % (species.thermo.getHeatCapacity(600) / 4.184))
+    f.write('#   Cp(800 K)  = %9.3f cal/(mol*K)\n' % (species.thermo.getHeatCapacity(800) / 4.184))
+    f.write('#   Cp(1000 K) = %9.3f cal/(mol*K)\n' % (species.thermo.getHeatCapacity(1000) / 4.184))
+    f.write('#   Cp(1500 K) = %9.3f cal/(mol*K)\n' % (species.thermo.getHeatCapacity(1500) / 4.184))
+
     f.write('thermo(\n')
     f.write('    label = "%s",\n' % label)
     

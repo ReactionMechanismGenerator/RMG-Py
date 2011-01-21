@@ -156,9 +156,22 @@ def saveStates(species, label, path):
     """
     
     f = open(path, 'a')
+
+    coordinates = species.geometry.coordinates * 1e10
+    number = species.geometry.number
+    numbers = {1: 'H', 6: 'C', 7: 'N', 8: 'O', 14: 'Si', 15: 'P', 16: 'S'}
+
+    f = open(path, 'a')
+    f.write('# Coordinates for %s (angstroms):\n' % label)
+    for i in range(coordinates.shape[0]):
+        x = coordinates[i,0] - coordinates[0,0]
+        y = coordinates[i,1] - coordinates[0,1]
+        z = coordinates[i,2] - coordinates[0,2]
+        f.write('#   %s %9.4f %9.4f %9.4f\n' % (numbers[number[i]], x, y, z))
+    
     f.write('states(\n')
     f.write('    label = "%s",\n' % label)
-    
+    f.write('    E0 = (%g,"kcal/mol"),\n' % (species.E0 / 4184.))
     f.write('    modes = [\n')
     for mode in species.states.modes:
         if isinstance(mode, Translation):

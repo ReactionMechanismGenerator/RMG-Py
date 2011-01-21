@@ -164,28 +164,6 @@ def loadReaction(label, reactants, products, transitionState, degeneracy=1):
 
 ################################################################################
 
-def generateGeometry(label):
-    global outputFile, speciesDict, transitionStateDict
-    if label in speciesDict:
-        saveGeometry(speciesDict[label], label, outputFile)
-    elif label in transitionStateDict:
-        saveGeometry(transitionStateDict[label], label, outputFile)
-        
-def saveGeometry(species, label, path):
-    coordinates = species.geometry.coordinates * 1e10
-    number = species.geometry.number
-    numbers = {1: 'H', 6: 'C', 8: 'O'}
-
-    f = open(path, 'a')
-    f.write('# Coordinates for %s (angstroms):\n' % label)
-    for i in range(coordinates.shape[0]):
-        x = coordinates[i,0] - coordinates[0,0]
-        y = coordinates[i,1] - coordinates[0,1]
-        z = coordinates[i,2] - coordinates[0,2]
-        f.write('#   %s %9.4f %9.4f %9.4f\n' % (numbers[number[i]], x, y, z))
-    f.write('\n')
-    f.close()
-
 def generateStates(label):
     global outputFile, speciesDict, transitionStateDict
     from states import saveStates

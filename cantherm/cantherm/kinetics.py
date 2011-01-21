@@ -63,14 +63,31 @@ def saveKinetics(reaction, label, path):
     """
     
     f = open(path, 'a')
+
+    Nreac = len(reaction.reactants)
+    if Nreac == 1:   Aunits = 's^-1'
+    elif Nreac == 2: Aunits = 'cm^3/(mol*s)'
+    elif Nreac == 3: Aunits = 'cm^6/(mol^2*s)'
+    else:            Aunits = 'cm^%i/(mol^%i*s)' % (3*(Nreac-1), Nreac-1)
+
+    f.write('# Kinetics for %s:\n' % (label)) # Note: This includes reaction-path degeneracy!
+    f.write('#   k(300 K)  = %12.3e %s\n' % (reaction.degeneracy * reaction.kinetics.getRateCoefficient(300, 1e5) * 1.0e6**(Nreac - 1), Aunits))
+    f.write('#   k(400 K)  = %12.3e %s\n' % (reaction.degeneracy * reaction.kinetics.getRateCoefficient(400, 1e5) * 1.0e6**(Nreac - 1), Aunits))
+    f.write('#   k(500 K)  = %12.3e %s\n' % (reaction.degeneracy * reaction.kinetics.getRateCoefficient(500, 1e5) * 1.0e6**(Nreac - 1), Aunits))
+    f.write('#   k(600 K)  = %12.3e %s\n' % (reaction.degeneracy * reaction.kinetics.getRateCoefficient(600, 1e5) * 1.0e6*(Nreac - 1), Aunits))
+    f.write('#   k(800 K)  = %12.3e %s\n' % (reaction.degeneracy * reaction.kinetics.getRateCoefficient(800, 1e5) * 1.0e6**(Nreac - 1), Aunits))
+    f.write('#   k(1000 K) = %12.3e %s\n' % (reaction.degeneracy * reaction.kinetics.getRateCoefficient(1000, 1e5) * 1.0e6**(Nreac - 1), Aunits))
+    f.write('#   k(1500 K) = %12.3e %s\n' % (reaction.degeneracy * reaction.kinetics.getRateCoefficient(1500, 1e5) * 1.0e6**(Nreac - 1), Aunits))
+    f.write('#   k(2000 K) = %12.3e %s\n' % (reaction.degeneracy * reaction.kinetics.getRateCoefficient(2000, 1e5) * 1.0e6**(Nreac - 1), Aunits))
+
+    Nreac = len(reaction.reactants)
+    if Nreac == 1:   Aunits = 's^-1'
+    elif Nreac == 2: Aunits = 'm^3/(mol*s)'
+    elif Nreac == 3: Aunits = 'm^6/(mol^2*s)'
+    else:            Aunits = 'm^%i/(mol^%i*s)' % (3*(Nreac-1), Nreac-1)
+
     f.write('kinetics(\n')
     f.write('    label = "%s",\n' % label)
-    
-    Nreac = len(reaction.reactants)
-    if Nreac > 1:
-        Aunits = 'm^%i/(mol^%i*s)' % (3*(Nreac-1), Nreac-1)
-    else:
-        Aunits = 's^-1'
     
     # Reaction path degeneracy is NOT included in the model itself; you must
     # add it yourself later
