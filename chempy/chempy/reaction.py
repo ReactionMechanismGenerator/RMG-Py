@@ -85,11 +85,12 @@ class Reaction:
     `reversible`        ``bool``                    ``True`` if the reaction is reversible, ``False`` if not
     `transitionState`   :class:`TransitionState`    The transition state
     `thirdBody`         ``bool``                    ``True`` if the reaction if the reaction kinetics imply a third body, ``False`` if not
+    `degeneracy`        :class:`double`             The reaction path degeneracy for the reaction
     =================== =========================== ============================
     
     """
     
-    def __init__(self, index=-1, reactants=None, products=None, kinetics=None, reversible=True, transitionState=None, thirdBody=False):
+    def __init__(self, index=-1, reactants=None, products=None, kinetics=None, reversible=True, transitionState=None, thirdBody=False, degeneracy=1):
         self.index = index
         self.reactants = reactants
         self.products = products
@@ -97,6 +98,7 @@ class Reaction:
         self.reversible = reversible
         self.transitionState = transitionState
         self.thirdBody = thirdBody
+        self.degeneracy = degeneracy
 
     def __repr__(self):
         """
@@ -233,6 +235,14 @@ class Reaction:
             if product is spec: stoich += 1
         return stoich
 
+    def getRateCoefficient(self, T, P):
+        """
+        Return the overall rate coefficient for the forward reaction at
+        temperature `T` in K and pressure `P` in Pa, including any reaction
+        path degeneracies.
+        """
+        return self.kinetics.getRateCoefficient(T, P) * self.degeneracy
+
     def getRate(self, T, P, conc, totalConc=-1.0):
         """
         Return the net rate of reaction at temperature `T` and pressure `P`. The
@@ -251,7 +261,7 @@ class Reaction:
             totalConc=sum( conc.values() )
 
         # Evaluate rate constant
-        rateConstant = self.kinetics.getRateCoefficient(T, P)
+        rateConstant = self.getRateCoefficient(T, P)
         if self.thirdBody: rateConstant *= totalConc
 
         # Evaluate equilibrium constant
@@ -326,9 +336,9 @@ class Reaction:
         E0 = self.transitionState.E0 - sum([spec.E0 for spec in self.reactants])
         # Determine TST rate constant at each temperature
         Qreac = 1.0
-        for spec in self.reactants: Qreac *= spec.states.getPartitionFunction(T) / (constants.R * T / 1e5)
-        Qts = self.transitionState.states.getPartitionFunction(T) / (constants.R * T / 1e5)
-        k = self.transitionState.degeneracy * (constants.kB * T / constants.h * Qts / Qreac *	numpy.exp(-E0 / constants.R / T))
+        for spec in self.reactants: Qreac *= spec.states.getPartitionFunction(T) / (constants.R * T / 101325.)
+        Qts = self.transitionState.states.getPartitionFunction(T) / (constants.R * T / 101325.)
+        k = (constants.kB * T / constants.h * Qts / Qreac *	numpy.exp(-E0 / constants.R / T))
         # Apply tunneling correction
         if tunneling.lower() == 'wigner':
             k *= self.calculateWignerTunnelingCorrection(T)
@@ -433,7 +443,7 @@ class Reaction:
         integral = scipy.integrate.quad(self.__eckartIntegrand, E_kTmin, E_kTmax,
             args=(constants.R * T,dV1,alpha1,alpha2,))[0]
         kappa = integral * math.exp(dV1 / constants.R / T)
-        
+
         # Return the calculated Eckart correction
         return kappa
     

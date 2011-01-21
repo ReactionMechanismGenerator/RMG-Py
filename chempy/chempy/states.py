@@ -146,7 +146,7 @@ class Translation(Mode):
         constant, and :math:`h` is the Planck constant.
         """
         cython.declare(qt=cython.double)
-        qt = ((2 * constants.pi * self.mass / constants.Na) / (constants.h * constants.h))**1.5 / 1e5
+        qt = ((2 * constants.pi * self.mass / constants.Na) / (constants.h * constants.h))**1.5 / 101325.
         return qt * (constants.kB * T)**2.5
 
     def getHeatCapacity(self, T):
@@ -616,7 +616,7 @@ class HinderedRotor(Mode):
         """
         V0 = self.barrier
         if self.fourier is not None:
-            V0 = -numpy.sum(self.fourier[:,0])
+            V0 = -numpy.sum(self.fourier[0,:])
         return self.symmetry / 2.0 / math.pi * math.sqrt(V0 / constants.Na / 2 / self.inertia) / (constants.c * 100)
 
 def besseli0(x):
@@ -827,8 +827,10 @@ class StatesModel:
         cython.declare(Q=cython.double, Trot=cython.double)
         Q = 1.0
         # Active K-rotor
+        # Only include this if there is no translation or rotation data
+        translators = [mode for mode in self.modes if isinstance(mode, Translation)]
         rotors = [mode for mode in self.modes if isinstance(mode, RigidRotor)]
-        if len(rotors) == 0:
+        if len(translators) == 0 and len(rotors) == 0:
             Trot = 1.0 / constants.R / 3.141592654
             Q *= numpy.sqrt(T / Trot)
         # Other modes
@@ -845,8 +847,10 @@ class StatesModel:
         cython.declare(rho=numpy.ndarray, i=cython.int, E=cython.double)
         rho = numpy.zeros_like(Elist)
         # Active K-rotor
+        # Only include this if there is no translation or rotation data
+        translators = [mode for mode in self.modes if isinstance(mode, Translation)]
         rotors = [mode for mode in self.modes if isinstance(mode, RigidRotor)]
-        if len(rotors) == 0:
+        if len(translators) == 0 and len(rotors) == 0:
             rho0 = numpy.zeros_like(Elist)
             for i, E in enumerate(Elist):
                 if E > 0: rho0[i] = 1.0 / math.sqrt(1.0 * E)

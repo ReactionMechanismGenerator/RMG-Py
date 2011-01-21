@@ -40,7 +40,8 @@ cdef class Reaction:
     cdef public TransitionState transitionState
     cdef public KineticsModel kinetics
     cdef public bint thirdBody
-
+    cdef public double degeneracy
+    
     cpdef bint hasTemplate(self, list reactants, list products)
 
     cpdef double getEnthalpyOfReaction(self, double T)
@@ -60,6 +61,8 @@ cdef class Reaction:
     cpdef numpy.ndarray getEquilibriumConstants(self, numpy.ndarray Tlist, str type=?)
 
     cpdef int getStoichiometricCoefficient(self, Species spec)
+
+    cpdef double getRateCoefficient(self, double T, double P)
 
     cpdef double getRate(self, double T, double P, dict conc, double totalConc=?)
 

@@ -107,17 +107,20 @@ def loadConfiguration(geomLog, statesLog, extSymmetry, freqScaleFactor, linear, 
             inertia = geom.getInternalReducedMomentOfInertia(pivots, top)
             rotor = HinderedRotor(inertia=inertia, symmetry=symmetry, fourier=fourier)
             states.modes.append(rotor)
+            
             #import numpy
             #import pylab
-            #phi = numpy.arange(0, 6.3, 0.1, numpy.float64)
-            #pylab.plot(phi, rotor.getPotential(phi) / 4184)
+            #import math
+            #Vlist = log.loadScanEnergies()
+            #Vlist = Vlist[:-1]
+            #angle = numpy.arange(0.0, 2*math.pi+0.00001, 2*math.pi/(len(Vlist)-1), numpy.float64)
+            #phi = numpy.arange(0, 6.3, 0.02, numpy.float64)
+            #pylab.plot(angle, Vlist / 4184, 'ok')
+            #pylab.plot(phi, rotor.getPotential(phi) / 4184, '-k')
         #pylab.show()
         
         logging.debug('    Determining frequencies from reduced force constant matrix...')
-        frequencies = projectRotors(geom, F, rotors, linear, TS)
-        for mode in states.modes:
-            if isinstance(mode, HarmonicOscillator):
-                mode.frequencies = list(frequencies * freqScaleFactor)
+        frequencies = list(projectRotors(geom, F, rotors, linear, TS))
         
     elif len(states.modes) > 2:
         frequencies = states.modes[2].frequencies
@@ -125,7 +128,11 @@ def loadConfiguration(geomLog, statesLog, extSymmetry, freqScaleFactor, linear, 
     else:
         frequencies = []
         rotors = []
-    
+
+    for mode in states.modes:
+        if isinstance(mode, HarmonicOscillator):
+            mode.frequencies = [f * freqScaleFactor for f in frequencies]
+
     return E0, geom, states
 
 def loadSpecies(label, geomLog, statesLog, extSymmetry, freqScaleFactor, linear, rotors, atoms, bonds, E0=None):
@@ -144,7 +151,7 @@ def loadTransitionState(label, geomLog, statesLog, extSymmetry, freqScaleFactor,
     
 ################################################################################
 
-def loadReaction(label, reactants, products, transitionState):
+def loadReaction(label, reactants, products, transitionState, degeneracy=1):
     global speciesDict, transitionStateDict, reactionDict
     logging.info('Loading reaction %s...' % label)
     rxn = Reaction(
@@ -152,14 +159,40 @@ def loadReaction(label, reactants, products, transitionState):
         products=[speciesDict[s] for s in products],
         transitionState=transitionStateDict[transitionState],
     )
+    rxn.degeneracy = degeneracy
     reactionDict[label] = rxn
 
 ################################################################################
 
+def generateGeometry(label):
+    global outputFile, speciesDict, transitionStateDict
+    if label in speciesDict:
+        saveGeometry(speciesDict[label], label, outputFile)
+    elif label in transitionStateDict:
+        saveGeometry(transitionStateDict[label], label, outputFile)
+        
+def saveGeometry(species, label, path):
+    coordinates = species.geometry.coordinates * 1e10
+    number = species.geometry.number
+    numbers = {1: 'H', 6: 'C', 8: 'O'}
+
+    f = open(path, 'a')
+    f.write('# Coordinates for %s (angstroms):\n' % label)
+    for i in range(coordinates.shape[0]):
+        x = coordinates[i,0] - coordinates[0,0]
+        y = coordinates[i,1] - coordinates[0,1]
+        z = coordinates[i,2] - coordinates[0,2]
+        f.write('#   %s %9.4f %9.4f %9.4f\n' % (numbers[number[i]], x, y, z))
+    f.write('\n')
+    f.close()
+
 def generateStates(label):
-    global outputFile, speciesDict
+    global outputFile, speciesDict, transitionStateDict
     from states import saveStates
-    saveStates(speciesDict[label], label, outputFile)
+    if label in speciesDict:
+        saveStates(speciesDict[label], label, outputFile)
+    elif label in transitionStateDict:
+        saveStates(transitionStateDict[label], label, outputFile)
     
 def generateThermo(label, model, plot=False):
     global outputFile, speciesDict

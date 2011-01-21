@@ -136,13 +136,16 @@ class GaussianLog:
         coord = numpy.array(coord, numpy.float64)
         number = numpy.array(number, numpy.int)
         mass = numpy.zeros(len(number), numpy.float64)
+        # Use the atomic mass of the most common isotope rather than the
+        # average atomic mass
+        # These values were taken from "Atomic Weights and Isotopic Compositions" v3.0 (July 2010) from NIST
         for i in range(len(number)):
             if number[i] == 1:
-                mass[i] = 1.00794
+                mass[i] = 1.00782503207
             elif number[i] == 6:
-                mass[i] = 12.0107
+                mass[i] = 12.0
             elif number[i] == 8:
-                mass[i] = 15.9994
+                mass[i] = 15.99491461956
             else:
                 print 'Atomic number %i not yet supported in loadGeometry().' % number[i]
         
@@ -289,12 +292,12 @@ class GaussianLog:
             # We want to keep the values of E that come most recently before
             # the line containing "Optimization completed", since it refers
             # to the optimized geometry
-            if 'Optimization completed.' in line:
+            if 'Optimization completed' in line:
                 Vlist.append(E)
             line = f.readline()
         # Close file when finished
         f.close()
-
+        
         # Adjust energies to be relative to minimum energy conformer
         # Also convert units from Hartree/particle to J/mol
         Vlist = numpy.array(Vlist, numpy.float64)
@@ -397,16 +400,19 @@ class GaussianLog:
         angle = numpy.arange(0.0, 2*math.pi+0.00001, 2*math.pi/(len(Vlist)-1), numpy.float64)
 
         # Fit Fourier series potential
-        A = numpy.zeros((len(Vlist),12), numpy.float64)
-        b = numpy.zeros(len(Vlist), numpy.float64)
+        A = numpy.zeros((len(Vlist)+1,12), numpy.float64)
+        b = numpy.zeros(len(Vlist)+1, numpy.float64)
         for i in range(len(Vlist)):
             for m in range(6):
                 A[i,m] = math.cos(m * angle[i])
                 A[i,6+m] = math.sin(m * angle[i])
                 b[i] = Vlist[i]
+        # This row forces dV/dangle = 0 at angle = 0
+        for m in range(6):
+            A[len(Vlist),m+6] = m
         x, residues, rank, s = numpy.linalg.lstsq(A, b)
 
         # Return the set of Fourier coefficients
-        return numpy.array([x[1:6], x[7:]], numpy.float64)
+        return numpy.array([x[1:6], x[7:12]], numpy.float64)
 
 ################################################################################

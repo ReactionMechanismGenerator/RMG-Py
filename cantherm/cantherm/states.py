@@ -168,11 +168,15 @@ def saveStates(species, label, path):
         elif isinstance(mode, HarmonicOscillator):
             f.write('        HarmonicOscillator(frequencies=([%s], "cm^-1")),\n' % (', '.join(['%g' % (freq) for freq in mode.frequencies])))
         elif isinstance(mode, HinderedRotor):
-            f.write('        HinderedRotor(inertia=(%g, "amu*angstrom^2"), symmetry=%i, fourier=[[%g, %g, %g, %g, %g], [%g, %g, %g, %g, %g]]),\n' % (mode.inertia * 6.022e46, mode.symmetry, 
+            f.write('        HinderedRotor(inertia=(%g, "amu*angstrom^2"), symmetry=%i, fourier=[[%g, %g, %g, %g, %g], [%g, %g, %g, %g, %g]]),   # frequency = %g cm^-1, barrier = %g kJ/mol\n' % (mode.inertia * 6.022e46, mode.symmetry,
                 mode.fourier[0,0], mode.fourier[0,1], mode.fourier[0,2], mode.fourier[0,3], mode.fourier[0,4],
                 mode.fourier[1,0], mode.fourier[1,1], mode.fourier[1,2], mode.fourier[1,3], mode.fourier[1,4],
+                mode.getFrequency(), -2. * numpy.sum(mode.fourier[0,:]) / 1000.
                 ))
     f.write('    ],\n')
+    try:
+        f.write('    frequency=(%g,"cm^-1"),\n' % species.frequency)
+    except AttributeError: pass
     f.write('    short_comment = "",\n')
     f.write('    long_comment = \n')
     f.write('"""\n')

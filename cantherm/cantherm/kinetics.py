@@ -48,8 +48,8 @@ def generateKineticsModel(reaction, tunneling='', plot=False):
     if plot:
         logging.info('Plotting thermo model for %s...' % (reaction))
         import pylab
-        pylab.semilogy(1000.0 / Tlist, klist , 'ok')
-        pylab.semilogy(1000.0 / Tlist, klist2, '-k')
+        pylab.semilogy(1000.0 / Tlist, klist  * reaction.degeneracy, 'ok')
+        pylab.semilogy(1000.0 / Tlist, klist2 * reaction.degeneracy, '-k')
         pylab.xlabel('1000 / Temperature (1000/K)')
         pylab.ylabel('Rate coefficient (SI units)')
         pylab.show()
@@ -72,8 +72,10 @@ def saveKinetics(reaction, label, path):
     else:
         Aunits = 's^-1'
     
+    # Reaction path degeneracy is NOT included in the model itself; you must
+    # add it yourself later
     if isinstance(reaction.kinetics, ArrheniusModel):
-        f.write('    thermo = ArrheniusModel(\n')
+        f.write('    kinetics = ArrheniusModel(\n')
         f.write('        A = (%g, "%s"),\n' % (reaction.kinetics.A, Aunits))
         f.write('        n = %g,\n' % (reaction.kinetics.n))
         f.write('        Ea = (%g, "kcal/mol"),\n' % (reaction.kinetics.Ea / 4184))
@@ -82,6 +84,7 @@ def saveKinetics(reaction, label, path):
     
     f.write('    Tmin = 300.0,\n')
     f.write('    Tmax = 2000.0,\n')
+    f.write('    degeneracy = %i,\n' % int(reaction.degeneracy))
     f.write('    short_comment = "",\n')
     f.write('    long_comment = \n')
     f.write('"""\n')
