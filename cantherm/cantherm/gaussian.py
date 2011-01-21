@@ -292,12 +292,12 @@ class GaussianLog:
             # We want to keep the values of E that come most recently before
             # the line containing "Optimization completed", since it refers
             # to the optimized geometry
-            if 'Optimization completed.' in line:
+            if 'Optimization completed' in line:
                 Vlist.append(E)
             line = f.readline()
         # Close file when finished
         f.close()
-
+        
         # Adjust energies to be relative to minimum energy conformer
         # Also convert units from Hartree/particle to J/mol
         Vlist = numpy.array(Vlist, numpy.float64)
