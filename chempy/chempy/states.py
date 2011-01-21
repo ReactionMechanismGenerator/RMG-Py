@@ -616,7 +616,7 @@ class HinderedRotor(Mode):
         """
         V0 = self.barrier
         if self.fourier is not None:
-            V0 = -numpy.sum(self.fourier[:,0])
+            V0 = -numpy.sum(self.fourier[0,:])
         return self.symmetry / 2.0 / math.pi * math.sqrt(V0 / constants.Na / 2 / self.inertia) / (constants.c * 100)
 
 def besseli0(x):
