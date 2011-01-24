@@ -187,6 +187,7 @@ def saveStates(species, label, path):
                 mode.getFrequency(), -2. * numpy.sum(mode.fourier[0,:]) / 1000.
                 ))
     f.write('    ],\n')
+    f.write('    spinMultiplicity = %i,\n' % (species.states.spinMultiplicity))
     try:
         f.write('    frequency=(%g,"cm^-1"),\n' % species.frequency)
     except AttributeError: pass
