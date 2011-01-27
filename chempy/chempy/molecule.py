@@ -656,7 +656,7 @@ class Molecule(Graph):
                     labeled[atom.label] = atom
         return labeled
 
-    def isIsomorphic(self, other, initialMap=None):
+    def isIsomorphic(self, other0, initialMap=None):
         """
         Returns :data:`True` if two graphs are isomorphic and :data:`False`
         otherwise. The `initialMap` attribute can be used to specify a required
@@ -664,10 +664,12 @@ class Molecule(Graph):
         while the atoms of `other` are the values). The `other` parameter must
         be a :class:`Molecule` object, or a :class:`TypeError` is raised.
         """
+        cython.declare(other=Molecule, selfImplicitH=cython.bint, otherImplicitH=cython.bint)
         # It only makes sense to compare a Molecule to a Molecule for full
         # isomorphism, so raise an exception if this is not what was requested
-        if not isinstance(other, Molecule):
+        if not isinstance(other0, Molecule):
             raise TypeError('Got a %s object for parameter "other", when a Molecule object is required.' % other.__class__)
+        other = other0
         # Ensure that both self and other have the same implicit hydrogen status
         # If not, make them both explicit just to be safe
         selfImplicitH = self.implicitHydrogens
@@ -682,7 +684,7 @@ class Molecule(Graph):
         if otherImplicitH and not other.implicitHydrogens: other.makeHydrogensImplicit()
         return result
 
-    def findIsomorphism(self, other, initialMap=None):
+    def findIsomorphism(self, other0, initialMap=None):
         """
         Returns :data:`True` if `other` is isomorphic and :data:`False`
         otherwise, and the matching mapping. The `initialMap` attribute can be
@@ -692,10 +694,12 @@ class Molecule(Graph):
         and the atoms of `other` for the values. The `other` parameter must
         be a :class:`Molecule` object, or a :class:`TypeError` is raised.
         """
+        cython.declare(other=Molecule, selfImplicitH=cython.bint, otherImplicitH=cython.bint)
         # It only makes sense to compare a Molecule to a Molecule for full
         # isomorphism, so raise an exception if this is not what was requested
-        if not isinstance(other, Molecule):
+        if not isinstance(other0, Molecule):
             raise TypeError('Got a %s object for parameter "other", when a Molecule object is required.' % other.__class__)
+        other = other0
         # Ensure that both self and other have the same implicit hydrogen status
         # If not, make them both explicit just to be safe
         selfImplicitH = self.implicitHydrogens

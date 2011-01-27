@@ -115,9 +115,9 @@ cdef class Molecule(Graph):
 
     cpdef dict getLabeledAtoms(self)
 
-    cpdef bint isIsomorphic(self, Graph other, dict initialMap=?)
+    cpdef bint isIsomorphic(self, Graph other0, dict initialMap=?)
 
-    cpdef tuple findIsomorphism(self, Graph other, dict initialMap=?)
+    cpdef tuple findIsomorphism(self, Graph other0, dict initialMap=?)
 
     cpdef bint isSubgraphIsomorphic(self, Graph other, dict initialMap=?)
 
