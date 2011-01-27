@@ -542,6 +542,9 @@ class Molecule(Graph):
 
         cython.declare(atom=Atom, neighbor=Atom, hydrogens=list)
 
+        # Do nothing if already implicit
+        if self.implicitHydrogens: return
+
         # Check that the structure contains at least one heavy atom
         for atom in self.vertices:
             if not atom.isHydrogen():
@@ -575,6 +578,9 @@ class Molecule(Graph):
         """
 
         cython.declare(atom=Atom, H=Atom, bond=Bond, hydrogens=list, numAtoms=cython.short)
+
+        # Do nothing if already explicit
+        if not self.implicitHydrogens: return
 
         # Create new hydrogen atoms for each implicit hydrogen
         hydrogens = []
@@ -664,15 +670,16 @@ class Molecule(Graph):
             raise TypeError('Got a %s object for parameter "other", when a Molecule object is required.' % other.__class__)
         # Ensure that both self and other have the same implicit hydrogen status
         # If not, make them both explicit just to be safe
-        implicitH = [self.implicitHydrogens, other.implicitHydrogens]
-        if not all(implicitH):
+        selfImplicitH = self.implicitHydrogens
+        otherImplicitH = other.implicitHydrogens
+        if not selfImplicitH or not otherImplicitH:
             self.makeHydrogensExplicit()
             other.makeHydrogensExplicit()
         # Do the isomorphism comparison
         result = Graph.isIsomorphic(self, other, initialMap)
         # Restore implicit status if needed
-        if implicitH[0]: self.makeHydrogensImplicit()
-        if implicitH[1]: other.makeHydrogensImplicit()
+        if selfImplicitH and not self.implicitHydrogens: self.makeHydrogensImplicit()
+        if otherImplicitH and not other.implicitHydrogens: other.makeHydrogensImplicit()
         return result
 
     def findIsomorphism(self, other, initialMap=None):
@@ -691,15 +698,16 @@ class Molecule(Graph):
             raise TypeError('Got a %s object for parameter "other", when a Molecule object is required.' % other.__class__)
         # Ensure that both self and other have the same implicit hydrogen status
         # If not, make them both explicit just to be safe
-        implicitH = [self.implicitHydrogens, other.implicitHydrogens]
-        if not all(implicitH):
+        selfImplicitH = self.implicitHydrogens
+        otherImplicitH = other.implicitHydrogens
+        if not selfImplicitH or not otherImplicitH:
             self.makeHydrogensExplicit()
             other.makeHydrogensExplicit()
         # Do the isomorphism comparison
         result = Graph.findIsomorphism(self, other, initialMap)
         # Restore implicit status if needed
-        if implicitH[0]: self.makeHydrogensImplicit()
-        if implicitH[1]: other.makeHydrogensImplicit()
+        if selfImplicitH and not self.implicitHydrogens: self.makeHydrogensImplicit()
+        if otherImplicitH and not other.implicitHydrogens: other.makeHydrogensImplicit()
         return result
 
     def isSubgraphIsomorphic(self, other, initialMap=None):
@@ -716,11 +724,11 @@ class Molecule(Graph):
             raise TypeError('Got a %s object for parameter "other", when a MoleculePattern object is required.' % other.__class__)
         # Ensure that self is explicit (assume other is explicit)
         implicitH = self.implicitHydrogens
-        self.makeHydrogensExplicit()
+        if implicitH: self.makeHydrogensExplicit()
         # Do the isomorphism comparison
         result = Graph.isSubgraphIsomorphic(self, other, initialMap)
         # Restore implicit status if needed
-        if implicitH: self.makeHydrogensImplicit()
+        if implicitH and not self.implicitHydrogens: self.makeHydrogensImplicit()
         return result
 
     def findSubgraphIsomorphisms(self, other, initialMap=None):
@@ -740,11 +748,11 @@ class Molecule(Graph):
             raise TypeError('Got a %s object for parameter "other", when a MoleculePattern object is required.' % other.__class__)
         # Ensure that self is explicit (assume other is explicit)
         implicitH = self.implicitHydrogens
-        self.makeHydrogensExplicit()
+        if implicitH: self.makeHydrogensExplicit()
         # Do the isomorphism comparison
         result = Graph.findSubgraphIsomorphisms(self, other, initialMap)
         # Restore implicit status if needed
-        if implicitH: self.makeHydrogensImplicit()
+        if implicitH and not self.implicitHydrogens: self.makeHydrogensImplicit()
         return result
 
     def isAtomInCycle(self, atom):
