@@ -361,8 +361,7 @@ class Graph:
         Returns :data:`True` if two graphs are isomorphic and :data:`False`
         otherwise. Uses the VF2 algorithm of Vento and Foggia.
         """
-        ismatch, mapList = VF2_isomorphism(self, other, subgraph=False, findAll=False, initialMap=initialMap)
-        return ismatch
+        return VF2_isomorphism(self, other, False, False, initialMap)[0]
 
     def findIsomorphism(self, other, initialMap=None):
         """
@@ -370,15 +369,14 @@ class Graph:
         otherwise, and the matching mapping.
         Uses the VF2 algorithm of Vento and Foggia.
         """
-        return VF2_isomorphism(self, other, subgraph=False, findAll=True, initialMap=initialMap)
+        return VF2_isomorphism(self, other, False, True, initialMap)
 
     def isSubgraphIsomorphic(self, other, initialMap=None):
         """
         Returns :data:`True` if `other` is subgraph isomorphic and :data:`False`
         otherwise. Uses the VF2 algorithm of Vento and Foggia.
         """
-        ismatch, mapList = VF2_isomorphism(self, other, subgraph=True, findAll=False, initialMap=initialMap)
-        return ismatch
+        return VF2_isomorphism(self, other, True, False, initialMap)[0]
 
     def findSubgraphIsomorphisms(self, other, initialMap=None):
         """
@@ -387,7 +385,7 @@ class Graph:
 
         Uses the VF2 algorithm of Vento and Foggia.
         """
-        return VF2_isomorphism(self, other, subgraph=True, findAll=True, initialMap=initialMap)
+        return VF2_isomorphism(self, other, True, True, initialMap)
 
     def isCyclic(self):
         """
