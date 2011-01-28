@@ -245,7 +245,7 @@ def execute(args):
 
     # Read input file
     reactionModel, coreSpecies, reactionSystems = readInputFile(inputFile)
-
+    
     # Initialize reaction model
     if args.restart:
         import gzip
@@ -288,7 +288,7 @@ def execute(args):
         for spec in coreSpecies:
             if spec.reactive:
                 spec.generateThermoData()
-                spec.generateStatesData()
+                if settings.pressureDependence: spec.generateStatesData()
         for spec in coreSpecies:
             if spec.reactive:
                 reactionModel.enlarge(spec)
