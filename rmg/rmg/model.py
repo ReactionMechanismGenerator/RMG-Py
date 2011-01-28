@@ -427,7 +427,7 @@ class CoreEdgeReactionModel:
         self.termination = []
         self.unirxnNetworks = []
         self.networkCount = 0
-        self.speciesList = []
+        self.speciesDict = {}
         self.reactionDict = {'seed': {}}
         self.speciesCache = [None for i in range(4)]
         self.speciesCounter = 0
@@ -450,13 +450,16 @@ class CoreEdgeReactionModel:
                         return True, spec
 
         # Return an existing species if a match is found
-        for spec in self.speciesList:
-            for mol in spec.molecule:
-                if molecule.isIsomorphic(mol):
-                    self.speciesCache.pop()
-                    self.speciesCache.insert(0, spec)
-                    return True, spec
-
+        formula = molecule.getFormula()
+        try:
+            for spec in self.speciesDict[formula]:
+                for mol in spec.molecule:
+                    if molecule.isIsomorphic(mol):
+                        self.speciesCache.pop()
+                        self.speciesCache.insert(0, spec)
+                        return True, spec
+        except KeyError: pass
+        
         # At this point we can conclude that the structure does not exist
         return False, None
 
@@ -478,11 +481,15 @@ class CoreEdgeReactionModel:
         # If we're here then we're ready to make the new species
         if label == '': label = molecule.toSMILES()
         logging.debug('Creating new species %s' % str(label))
-        spec = Species(index=len(self.speciesList)+1, label=label, molecule=[molecule], reactive=reactive)
+        spec = Species(index=self.speciesCounter+1, label=label, molecule=[molecule], reactive=reactive)
         spec.generateResonanceIsomers()
         spec.molecularWeight = spec.molecule[0].getMolecularWeight()
         spec.generateLennardJonesParameters()
-        self.speciesList.append(spec)
+        formula = molecule.getFormula()
+        if formula in self.speciesDict:
+            self.speciesDict[formula].append(spec)
+        else:
+            self.speciesDict[formula] = [spec]
 
         # Store hydrogens implicitly to conserve memory and speed up isomorphism
         for mol in spec.molecule:
@@ -867,7 +874,8 @@ class CoreEdgeReactionModel:
                 self.unirxnNetworks.remove(network)
 
         # remove from the global list of species, to free memory
-        species.speciesList.remove(spec)
+        formula = spec.molecule[0].getFormula()
+        species.speciesDict[formula].remove(spec)
 
     def addReactionToCore(self, rxn):
         """
