@@ -34,6 +34,8 @@ import numpy
 from scipy import sparse
 from pydas import DASSL
 
+import chempy.constants as constants
+
 class SimpleReactor(DASSL):
     """
     A reaction system consisting of a homogeneous, isothermal, isobaric batch
@@ -41,10 +43,10 @@ class SimpleReactor(DASSL):
     this solver to complete very rapidly, even for large kinetic models.
     """
 
-    def __init__(self, T, P, C0):
+    def __init__(self, T, P, initialMoleFractions):
         self.T = T
         self.P = P
-        self.C0 = C0
+        self.initialMoleFractions = initialMoleFractions
 
         # The reaction and species rates at the current time (in mol/m^3*s)
         self.reactionRates = None
@@ -109,8 +111,8 @@ class SimpleReactor(DASSL):
         # Set initial conditions
         t0 = 0.0
         y0 = numpy.zeros((numCoreSpecies), numpy.float64)
-        for spec, C in self.C0.iteritems():
-            y0[speciesIndex[spec]] = C
+        for spec, moleFrac in self.initialMoleFractions.iteritems():
+            y0[speciesIndex[spec]] = moleFrac * (self.P / constants.R / self.T)
         
         # Initialize the model
         dydt0 = - self.residual(t0, y0, numpy.zeros((numCoreSpecies), numpy.float64))[0]
