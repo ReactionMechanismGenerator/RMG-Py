@@ -33,10 +33,11 @@ consisting of a homogeneous, isothermal, isobaric batch reactor.
 import numpy
 from scipy import sparse
 from pydas import DASSL
+from base import ReactionSystem
 
 import chempy.constants as constants
 
-class SimpleReactor(DASSL):
+class SimpleReactor(ReactionSystem):
     """
     A reaction system consisting of a homogeneous, isothermal, isobaric batch
     reactor. These assumptions allow for a number of optimizations that enable
@@ -44,15 +45,10 @@ class SimpleReactor(DASSL):
     """
 
     def __init__(self, T, P, initialMoleFractions):
+        ReactionSystem.__init__(self)
         self.T = T
         self.P = P
         self.initialMoleFractions = initialMoleFractions
-
-        # The reaction and species rates at the current time (in mol/m^3*s)
-        self.coreSpeciesRates = None
-        self.coreReactionRates = None
-        self.edgeSpeciesRates = None
-        self.edgeReactionRates = None
 
         # These are helper variables used within the solver
         self.reactantIndices = None
