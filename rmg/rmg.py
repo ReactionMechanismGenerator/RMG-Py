@@ -256,18 +256,6 @@ def execute(args):
         species.speciesList, species.speciesCounter, reaction.reactionDict, \
             reactionModel, reactionSystems = cPickle.load(f)
         f.close()
-        # Cantera stuff
-        reload(ctml_writer) # ensure new empty ctml_writer._species and ._reactions lists
-        for reactor in reactionSystems:
-            # initialise the ctml_writer thing
-            reactor.initializeCantera()
-        for spec in reactionModel.core.species:
-            # add species to ctml_writer._species list
-            spec.toCantera()
-        for rxn in reactionModel.core.reactions:
-            # add reaction to ctml_writer._reactions list
-            rxn.toCantera()
-        #print "enter 'c' to continue"; import pdb; pdb.set_trace()
         options.restart = False # have already restarted
     else:
 

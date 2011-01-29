@@ -51,7 +51,6 @@ from rmgdata.states import generateFrequencyData
 import measure.network
 
 import settings
-import chempy.ctml_writer as ctml_writer
 from rxngen import generateReactions
 
 ################################################################################
@@ -149,26 +148,6 @@ class Species(chempy.species.Species):
             self.lennardJones.sigma = 5.949e-10
             self.lennardJones.epsilon = 399.3 * constants.kB
 
-    def toCantera(self):
-        """
-        Return a Cantera ctml_writer instance.
-        """
-        import xml.sax.saxutils
-        # contrivedly get a list like ['C', '3', 'H', '9', 'Si', '1']
-        atoms = self.molecule[0].toOBMol().GetSpacedFormula().split()
-        # magically turn that lst into a string like 'C:3 H:9 Si:1'
-        atoms = ' '.join([i+':'+j for i,j in zip(*[iter(atoms)]*2)])
-        thermo = None; note = ''
-        if self.reactive:
-            thermo = self.thermo.toCantera()
-            # this escaping should really be done by ctml_writer, but it doesn't do it
-            note = xml.sax.saxutils.escape("%s (%s)"%(self.label,self.thermo.comment))
-        return ctml_writer.species(name = str(self),
-            atoms = " %s "%atoms,
-            thermo = thermo,
-            note = note
-               )
-
 ################################################################################
 
 class Reaction(chempy.reaction.Reaction):
@@ -208,103 +187,11 @@ class Reaction(chempy.reaction.Reaction):
         if not isinstance(self.kinetics, ArrheniusModel):
             self.kinetics = self.kinetics.toArrhenius(self.getEnthalpyOfReaction(298.15))
 
-    def toCantera(self):
-        """
-        Return a Cantera ctml_writer instance.
-        """
-        self.canteraReaction = getCanteraReaction(self)
-
-        A = float(self.kinetics.A)
-        Ea = float(self.kinetics.Ea)
-        n = float(self.kinetics.n)
-        self.canteraReaction._kf = ctml_writer.Arrhenius(A, n, Ea)
-
-        return self.canteraReaction
-
-def getCanteraReaction(reaction):
-    """
-    For a given :class:`Reaction` object `reaction`, create and return a
-    Cantera reaction object.
-    """
-
-    options = []
-
-    makeCanteraReaction = True
-    try:
-        if reaction.canteraReaction is not None:
-            makeCanteraReaction = False
-    except AttributeError:
-        pass
-
-    if not makeCanteraReaction:
-        # If we're updating this reaction, then remove the original version
-        ctml_writer._reactions.remove(reaction.canteraReaction)
-        # If the old reaction was a duplicate, then the new one is too
-        if 'duplicate' in reaction.canteraReaction._options:
-            options.append('duplicate')
-    else:
-        # If we're making this reaction for the first time then we need to
-        # check for duplicate reactions
-        # Get ID of each reactant and product of this reaction
-        reactants = [str(r) for r in reaction.reactants]; reactants.sort()
-        products = [str(p) for p in reaction.products]; products.sort()
-        # Remove any IDs that appear in both the reactant and product lists
-        # This is because Cantera treats A --> B + C and A + D --> B + C + D
-        # as requiring the duplicate tag
-        speciesToRemove = []
-        for spec in reactants:
-            if spec in products: speciesToRemove.append(spec)
-        speciesToRemove = list(set(speciesToRemove))
-        for spec in speciesToRemove:
-            reactants.remove(spec)
-            products.remove(spec)
-        # Iterate over all existing Cantera reactions
-        for rxn in ctml_writer._reactions:
-            # Get ID of each reactant and product
-            reac = []; prod = []
-            for r, v in rxn._r.iteritems():
-                for i in range(int(v)): reac.append(r)
-            for p, v in rxn._p.iteritems():
-                for i in range(int(v)): prod.append(p)
-            reac.sort(); prod.sort()
-            # Remove any IDs that appear in both the reactant and product lists
-            speciesToRemove = []
-            for spec in reac:
-                if spec in prod: speciesToRemove.append(spec)
-            speciesToRemove = list(set(speciesToRemove))
-            for spec in speciesToRemove:
-                reac.remove(spec)
-                prod.remove(spec)
-            # Compare with reactants and products of this reaction
-            if (reactants == reac and products == prod) or (reactants == prod and products == reac):
-                if 'duplicate' not in options or 'duplicate' not in rxn._options:
-                    logging.debug('Marking reaction %s as duplicate' % (reaction))
-                if 'duplicate' not in options:
-                    options.append('duplicate')
-                if 'duplicate' not in rxn._options:
-                    rxn._options.append('duplicate')
-
-    rxnstring = ' + '.join([str(sp) for sp in reaction.reactants])
-    rxnstring += ' <=> '
-    rxnstring += ' + '.join([str(sp) for sp in reaction.products])
-
-    return ctml_writer.reaction(rxnstring, options=options)
-
 class PDepReaction(chempy.reaction.Reaction):
 
     def __init__(self, index=-1, reactants=None, products=None, network=None, kinetics=None, reversible=True, transitionState=None, thirdBody=False):
         chempy.reaction.Reaction.__init__(self, index, reactants, products, kinetics, reversible, transitionState, thirdBody)
         self.network = network
-
-    def toCantera(self):
-        """Add this to Cantera ctml_writer"""
-        self.canteraReaction = getCanteraReaction(self)
-
-        # replace the forward rate coefficient
-        rate_function_of_T_P = self.kinetics.getRateCoefficient
-        self.canteraReaction._kf = ctml_writer.PdepRate(rate_function_of_T_P)
-        
-        return self.canteraReaction
 
 ################################################################################
 
@@ -732,12 +619,6 @@ class CoreEdgeReactionModel:
             newSpecies=newSpecies,
         )
 
-        # Tell Cantera about new core species and core reactions
-        for spec in self.core.species[numOldCoreSpecies:]:
-            spec.toCantera()
-        for rxn in self.core.reactions[numOldCoreReactions:]:
-            rxn.toCantera()
-
         logging.info('')
 
     def printEnlargeSummary(self, newCoreSpecies, newCoreReactions, newEdgeSpecies, newEdgeReactions, newSpecies=None):
@@ -986,11 +867,9 @@ class CoreEdgeReactionModel:
                 self.enlarge(spec)
             else:
                 self.addSpeciesToCore(spec)
-            spec.toCantera()
-
+        
         for rxn in rxnList:
             self.addReactionToCore(rxn)
-            rxn.toCantera()
 
         self.printEnlargeSummary(
             newCoreSpecies=self.core.species[numOldCoreSpecies:],
@@ -1202,10 +1081,6 @@ class CoreEdgeReactionModel:
 
                                 # Set/update the net reaction kinetics using interpolation model
                                 netReaction.kinetics = fitInterpolationModel(netReaction, Tlist, Plist, K[:,:,i,j], model, Tmin, Tmax, Pmin, Pmax)
-
-                                # Update cantera if this is a core reaction
-                                if netReaction in self.core.reactions:
-                                    netReaction.toCantera()
 
                 # We're done processing this network, so mark it as valid
                 network.valid = True
