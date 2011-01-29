@@ -49,7 +49,9 @@ class ReactionSystem(DASSL):
         self.edgeSpeciesRates = None
         self.edgeReactionRates = None
 
-    def solve(self, coreSpecies, coreReactions, edgeSpecies, edgeReactions):
+    def solve(self, coreSpecies, coreReactions, edgeSpecies, edgeReactions,
+        toleranceKeepInEdge, toleranceMoveToCore, toleranceInterruptSimulation,
+        termination):
         """
         Simulate the reaction system with the provided reaction model,
         consisting of lists of core species, core reactions, edge species, and
@@ -61,32 +63,49 @@ class ReactionSystem(DASSL):
         ``None`` is returned.
         """
 
+        speciesIndex = {}
+        for index, spec in enumerate(coreSpecies):
+            speciesIndex[spec] = index
+        
         self.initialize(coreSpecies, coreReactions, edgeSpecies, edgeReactions)
+
+        invalidObject = None
+        terminated = False
 
         # Copy the initial conditions to use in evaluating conversions
         y0 = self.y.copy()
 
-        tfinal = 1e0
-        while self.t <= 0.9999*tfinal:
+        while not terminated:
             # Integrate forward in time by one time step
-            self.step(tfinal)
+            self.step(1.0)
             
             # Get the characteristic flux
             charRate = math.sqrt(numpy.sum(self.coreSpeciesRates * self.coreSpeciesRates))
 
             # Get the edge species with the highest flux
-            index = numpy.argmax(self.edgeSpeciesRates)
+            maxIndex = numpy.argmax(self.edgeSpeciesRates)
 
             # Interrupt simulation if that flux exceeds the characteristic rate times a tolerance
-            if self.edgeSpeciesRates[index] > 0.1 * charRate:
-                return edgeSpecies[index]
-
-            # Finish simulation if the termination criteria are satisfied
-            if self.y[0] < 0.1 * y0[0]:
+            if self.edgeSpeciesRates[maxIndex] > toleranceMoveToCore * charRate and not invalidObject:
+                invalidObject = edgeSpecies[maxIndex]
+            if self.edgeSpeciesRates[maxIndex] > toleranceInterruptSimulation * charRate:
                 break
 
-        # If we're here, then the simulation completed, and the model is valid!
-        return None
+            # Finish simulation if any of the termination criteria are satisfied
+            for term in termination:
+                if isinstance(term, TerminationTime):
+                    if self.t > term.time:
+                        terminated = True
+                        break
+                elif isinstance(term, TerminationConversion):
+                    index = speciesIndex[term.species]
+                    if (y0[index] - self.y[index]) / y0[index] > term.conversion:
+                        terminated = True
+                        break
+
+        # Return the invalid object (if the simulation was invalid) or None
+        # (if the simulation was valid)
+        return invalidObject
 
 ################################################################################
 
