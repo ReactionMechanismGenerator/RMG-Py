@@ -71,14 +71,15 @@ class ReactionSystem(DASSL):
 
         invalidObject = None
         terminated = False
-
+        
         # Copy the initial conditions to use in evaluating conversions
         y0 = self.y.copy()
 
+        stepTime = 1e-12
         while not terminated:
             # Integrate forward in time by one time step
-            self.step(1.0)
-            
+            self.step(stepTime)
+
             # Get the characteristic flux
             charRate = math.sqrt(numpy.sum(self.coreSpeciesRates * self.coreSpeciesRates))
 
@@ -103,6 +104,10 @@ class ReactionSystem(DASSL):
                         terminated = True
                         break
 
+            # Increment destination step time if necessary
+            if self.t >= 0.9999 * stepTime:
+                stepTime *= 10.0
+                
         # Return the invalid object (if the simulation was invalid) or None
         # (if the simulation was valid)
         return invalidObject
