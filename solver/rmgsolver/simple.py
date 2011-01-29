@@ -49,15 +49,16 @@ class SimpleReactor(DASSL):
         self.initialMoleFractions = initialMoleFractions
 
         # The reaction and species rates at the current time (in mol/m^3*s)
-        self.reactionRates = None
-        self.speciesRates = None
+        self.coreSpeciesRates = None
+        self.coreReactionRates = None
+        self.edgeSpeciesRates = None
+        self.edgeReactionRates = None
 
         # These are helper variables used within the solver
         self.reactantIndices = None
         self.productIndices = None
         self.forwardRateCoefficients = None
         self.reverseRateCoefficients = None
-
 
     def initialize(self, coreSpecies, coreReactions, edgeSpecies, edgeReactions):
         """
@@ -105,8 +106,10 @@ class SimpleReactor(DASSL):
         self.forwardRateCoefficients = forwardRateCoefficients
         self.reverseRateCoefficients = reverseRateCoefficients
 
-        self.reactionRates = numpy.zeros((numCoreReactions + numEdgeReactions), numpy.float64)
-        self.speciesRates = numpy.zeros((numCoreSpecies + numEdgeSpecies), numpy.float64)
+        self.coreReactionRates = numpy.zeros((numCoreReactions), numpy.float64)
+        self.edgeReactionRates = numpy.zeros((numEdgeReactions), numpy.float64)
+        self.coreSpeciesRates = numpy.zeros((numCoreSpecies), numpy.float64)
+        self.edgeSpeciesRates = numpy.zeros((numEdgeSpecies), numpy.float64)
 
         # Set initial conditions
         t0 = 0.0
@@ -123,20 +126,26 @@ class SimpleReactor(DASSL):
         Return the residual function for the governing DAE system for the
         simple reaction system.
         """
-        N = y.shape[0]
-        res = numpy.zeros(N, numpy.float64)
+        res = numpy.zeros(y.shape[0], numpy.float64)
 
         ir = self.reactantIndices
         ip = self.productIndices
         kf = self.forwardRateCoefficients
         kr = self.reverseRateCoefficients
 
-        reactionRates = numpy.zeros_like(self.reactionRates)
-        speciesRates = numpy.zeros_like(self.speciesRates)
+        numCoreSpecies = len(self.coreSpeciesRates)
+        numCoreReactions = len(self.coreReactionRates)
+        numEdgeSpecies = len(self.edgeSpeciesRates)
+        numEdgeReactions = len(self.edgeReactionRates)
+
+        self.coreReactionRates = numpy.zeros((numCoreReactions), numpy.float64)
+        self.edgeReactionRates = numpy.zeros((numEdgeReactions), numpy.float64)
+        self.coreSpeciesRates = numpy.zeros((numCoreSpecies), numpy.float64)
+        self.edgeSpeciesRates = numpy.zeros((numEdgeSpecies), numpy.float64)
 
         for j in range(ir.shape[0]):
             kf = self.forwardRateCoefficients[j]
-            if ir[j,0] >= N or ir[j,1] >= N or ir[j,2] >= N:
+            if ir[j,0] >= numCoreSpecies or ir[j,1] >= numCoreSpecies or ir[j,2] >= numCoreSpecies:
                 reactionRate = 0.0
             elif ir[j,1] == -1: # only one reactant
                 reactionRate = kf * y[ir[j,0]]
@@ -145,7 +154,7 @@ class SimpleReactor(DASSL):
             else: # three reactants!! (really?)
                 reactionRate = kf * y[ir[j,0]] * y[ir[j,1]] * y[ir[j,2]]
             kr = self.reverseRateCoefficients[j]
-            if ip[j,0] >= N or ip[j,1] >= N or ip[j,2] >= N:
+            if ip[j,0] >= numCoreSpecies or ip[j,1] >= numCoreSpecies or ip[j,2] >= numCoreSpecies:
                 pass
             elif ip[j,1] == -1: # only one reactant
                 reactionRate -= kr * y[ip[j,0]]
@@ -154,27 +163,53 @@ class SimpleReactor(DASSL):
             else: # three reactants!! (really?)
                 reactionRate -= kr * y[ip[j,0]] * y[ip[j,1]] * y[ip[j,2]]
 
-            # Set the total reaction rate
-            reactionRates[j] = reactionRate
+            # Set the reaction and species rates
+            if j < numCoreReactions:
+                # The reaction is a core reaction
+                self.coreReactionRates[j] = reactionRate
 
-            # Add/substract the total reaction rate from each species rate
-            speciesRates[ir[j,0]] -= reactionRate
-            second = ir[j,1]
-            if second != -1:
-                speciesRates[second] -= reactionRate
-                third = ir[j,2]
-                if third != -1:
-                    speciesRates[third] -= reactionRate
-            speciesRates[ip[j,0]] += reactionRate
-            second = ip[j,1]
-            if second != -1:
-                speciesRates[second] += reactionRate
-                third = ip[j,2]
-                if third != -1:
-                    speciesRates[third] += reactionRate
+                # Add/substract the total reaction rate from each species rate
+                # Since it's a core reaction we know that all of its reactants
+                # and products are core species
+                self.coreSpeciesRates[ir[j,0]] -= reactionRate
+                second = ir[j,1]
+                if second != -1:
+                    self.coreSpeciesRates[second] -= reactionRate
+                    third = ir[j,2]
+                    if third != -1:
+                        self.coreSpeciesRates[third] -= reactionRate
+                self.coreSpeciesRates[ip[j,0]] += reactionRate
+                second = ip[j,1]
+                if second != -1:
+                    self.coreSpeciesRates[second] += reactionRate
+                    third = ip[j,2]
+                    if third != -1:
+                        self.coreSpeciesRates[third] += reactionRate
 
-        self.reactionRates = reactionRates
-        self.speciesRates = speciesRates
+            else:
+                # The reaction is an edge reaction
+                self.edgeReactionRates[j-numCoreReactions] = reactionRate
 
-        res = speciesRates[0:N] - dydt
+                # Add/substract the total reaction rate from each species rate
+                # Since it's an edge reaction its reactants and products could
+                # be either core or edge species
+                # We're only interested in the edge species
+                first = ir[j,0]
+                if first >= numCoreSpecies: self.edgeSpeciesRates[first-numCoreSpecies] -= reactionRate
+                second = ir[j,1]
+                if second != -1:
+                    if second >= numCoreSpecies: self.edgeSpeciesRates[second-numCoreSpecies] -= reactionRate
+                    third = ir[j,2]
+                    if third != -1:
+                        if third >= numCoreSpecies: self.edgeSpeciesRates[third-numCoreSpecies] -= reactionRate
+                first = ip[j,0]
+                if first >= numCoreSpecies: self.edgeSpeciesRates[first-numCoreSpecies] += reactionRate
+                second = ip[j,1]
+                if second != -1:
+                    if second >= numCoreSpecies: self.edgeSpeciesRates[second-numCoreSpecies] += reactionRate
+                    third = ip[j,2]
+                    if third != -1:
+                        if third >= numCoreSpecies: self.edgeSpeciesRates[third-numCoreSpecies] += reactionRate
+
+        res = self.coreSpeciesRates - dydt
         return res, 0

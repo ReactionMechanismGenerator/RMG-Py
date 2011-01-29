@@ -64,8 +64,8 @@ class SimpleReactorCheck(unittest.TestCase):
             # You must make a copy of y because it is overwritten by DASSL at
             # each call to advance()
             y.append(rxnSystem.y.copy())
-            reactionRates.append(rxnSystem.reactionRates.copy())
-            speciesRates.append(rxnSystem.speciesRates.copy())
+            reactionRates.append(rxnSystem.coreReactionRates.copy())
+            speciesRates.append(rxnSystem.coreSpeciesRates.copy())
 
         # Convert the solution vectors to numpy arrays
         t = numpy.array(t, numpy.float64)
