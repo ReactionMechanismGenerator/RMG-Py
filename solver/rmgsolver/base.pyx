@@ -30,13 +30,16 @@ Contains the :class:`ReactionSystemr` class, a base class for all RMG reaction
 systems.
 """
 
-import math
+cdef extern from "math.h":
+    double sqrt(double)
+
 import numpy
-from pydas import DASSL
+cimport numpy
+from pydas cimport DASSL
 
 ################################################################################
 
-class ReactionSystem(DASSL):
+cdef class ReactionSystem(DASSL):
     """
     A base class for all RMG reaction systems.
     """
@@ -49,9 +52,9 @@ class ReactionSystem(DASSL):
         self.edgeSpeciesRates = None
         self.edgeReactionRates = None
 
-    def solve(self, coreSpecies, coreReactions, edgeSpecies, edgeReactions,
-        toleranceKeepInEdge, toleranceMoveToCore, toleranceInterruptSimulation,
-        termination):
+    cpdef simulate(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions,
+        double toleranceKeepInEdge, double toleranceMoveToCore, double toleranceInterruptSimulation,
+        list termination):
         """
         Simulate the reaction system with the provided reaction model,
         consisting of lists of core species, core reactions, edge species, and
@@ -63,11 +66,17 @@ class ReactionSystem(DASSL):
         ``None`` is returned.
         """
 
+        cdef dict speciesIndex
+        cdef int index, maxIndex
+        cdef double stepTime, charRate
+        cdef numpy.ndarray[numpy.float64_t, ndim=1] y0
+        cdef bint terminated
+        
         speciesIndex = {}
         for index, spec in enumerate(coreSpecies):
             speciesIndex[spec] = index
         
-        self.initialize(coreSpecies, coreReactions, edgeSpecies, edgeReactions)
+        self.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions)
 
         invalidObject = None
         terminated = False
@@ -81,7 +90,7 @@ class ReactionSystem(DASSL):
             self.step(stepTime)
 
             # Get the characteristic flux
-            charRate = math.sqrt(numpy.sum(self.coreSpeciesRates * self.coreSpeciesRates))
+            charRate = sqrt(numpy.sum(self.coreSpeciesRates * self.coreSpeciesRates))
 
             # Get the edge species with the highest flux
             maxIndex = numpy.argmax(self.edgeSpeciesRates)
