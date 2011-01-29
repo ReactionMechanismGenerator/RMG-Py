@@ -87,3 +87,27 @@ class ReactionSystem(DASSL):
 
         # If we're here, then the simulation completed, and the model is valid!
         return None
+
+################################################################################
+
+class TerminationTime:
+    """
+    Represent a time at which the simulation should be terminated. This class
+    has one attribute: the termination `time` in seconds.
+    """
+
+    def __init__(self, time=0.0):
+        self.time = time
+
+################################################################################
+
+class TerminationConversion:
+    """
+    Represent a conversion at which the simulation should be terminated. This
+    class has two attributes: the `species` to monitor and the fractional
+    `conversion` at which to terminate.
+    """
+
+    def __init__(self, spec=None, conv=0.0):
+        self.species = spec
+        self.conversion = conv

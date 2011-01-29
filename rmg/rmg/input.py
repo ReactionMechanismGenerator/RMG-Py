@@ -40,6 +40,7 @@ from rmgdata.kinetics import loadKineticsDatabase
 from rmgdata.states import loadFrequencyDatabase
 
 from system import getAvailableReactionSystems
+from rmgsolver.base import TerminationTime, TerminationConversion
 from model import *
 
 ################################################################################
