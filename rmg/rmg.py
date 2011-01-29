@@ -37,6 +37,7 @@ import sys
 import argparse
 import logging
 import time
+import numpy
 
 import rmg.settings as settings
 from rmg.input import readInputFile
@@ -300,16 +301,20 @@ def execute(args):
 
             # Conduct simulation
             logging.info('Conducting simulation of reaction system %s...' % (index+1))
-            t, y, dydt, valid, obj = reactionSystem.simulate(reactionModel)
-
-            # Postprocess results
-            logging.info('')
-            logging.info('Saving simulation results for reaction system %s...' % (index+1))
-            reactionSystem.postprocess(reactionModel, t, y, dydt, str(index+1))
-
+            obj = reactionSystem.simulate(
+                coreSpecies = reactionModel.core.species,
+                coreReactions = reactionModel.core.reactions,
+                edgeSpecies = reactionModel.edge.species,
+                edgeReactions = reactionModel.edge.reactions,
+                toleranceKeepInEdge = reactionModel.fluxToleranceKeepInEdge,
+                toleranceMoveToCore = reactionModel.fluxToleranceMoveToCore,
+                toleranceInterruptSimulation = reactionModel.fluxToleranceInterrupt,
+                termination = reactionModel.termination,
+            )
+            
             # If simulation is invalid, note which species should be added to
             # the core
-            if not valid:
+            if obj:
                 objectsToEnlarge.append(obj)
                 done = False
 
