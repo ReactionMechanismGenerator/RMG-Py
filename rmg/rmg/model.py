@@ -227,61 +227,61 @@ class PDepNetwork(measure.network.Network):
         self.source = source
         self.explored = []
 
-    def getLeakFlux(self, T, P, conc):
+    def getLeakCoefficient(self, T, P):
         """
-        Return the leak flux of the network: the forward flux to all unexplored
-        unimolecular isomers in the network. If there is only one path (and
-        therefore net) reaction and its unimolecular reactants and/or products
-        have not been explored, then it uses the high-pressure-limit rate to
-        ensure it is considering the maximum possible rate.
+        Return the pressure-dependent rate coefficient :math:`k(T,P)` describing
+        the total rate of "leak" from this network. This is defined as the sum
+        of the :math:`k(T,P)` values for all net reactions to nonexplored
+        unimolecular isomers.
         """
-
-        self.leakFluxes = {}
-
-        # If only one path/net reaction and it contains an isomer that has not
-        # been explored, then use the high-pressure-limit k(T) to calculate
-        # the flux rather than the phenomenological k(T,P) value
-        if len(self.netReactions) == 1 and len(self.pathReactions) == 1:
-            rxn = self.netReactions[0]
-            rate = self.pathReactions[0].getRate(T, P, conc)
-            if len(rxn.reactants) == 1 and rxn.reactants[0] not in self.explored:
-                self.leakFluxes[rxn.reactants[0]] = -rate
-            if len(rxn.products) == 1 and rxn.products[0] not in self.explored:
-                self.leakFluxes[rxn.products[0]] = rate
-        # Otherwise get leak fluxes of all unexplored [unimolecular] isomers
+        k = 0.0
+        if len(self.netReactions) == 0 and len(self.pathReactions) == 1:
+            # The network is of the form A + B -> C* (with C* nonincluded)
+            # For this special case we use the high-pressure limit k(T) to
+            # ensure that we're estimating the total leak flux
+            rxn = self.pathReactions[0]
+            if rxn.products is self.source:
+                k = rxn.getRateCoefficient(T,P) / rxn.getEquilibriumConstant(T)
+            else:
+                k = rxn.getRateCoefficient(T,P)
         else:
+            # The network has at least one included isomer, so we can calculate
+            # the leak flux normally
             for rxn in self.netReactions:
-                rate = rxn.getRate(T, P, conc)
-                if len(rxn.reactants) == 1 and rxn.reactants[0] not in self.explored:
-                    spec = rxn.reactants[0]
-                    if spec in self.leakFluxes:
-                        self.leakFluxes[spec] -= rate
-                    else:
-                        self.leakFluxes[spec] = -rate
                 if len(rxn.products) == 1 and rxn.products[0] not in self.explored:
-                    spec = rxn.products[0]
-                    if spec in self.leakFluxes:
-                        self.leakFluxes[spec] += rate
-                    else:
-                        self.leakFluxes[spec] = rate
+                    k += rxn.getRateCoefficient(T,P)
+        return k
 
-        return sum([abs(v) for v in self.leakFluxes.values()])
-
-    def getMaximumLeakSpecies(self):
+    def getMaximumLeakSpecies(self, T, P):
         """
         Get the unexplored (unimolecular) isomer with the maximum leak flux.
+        Note that the leak rate coefficients vary with temperature and
+        pressure, so you must provide these in order to get a meaningful result.
         """
-        if len(self.leakFluxes) == 0:
-            raise UnirxnNetworkException('No unimolecular isomers left to explore!')
-
         # Choose species with maximum leak flux
-        maxSpeciesFlux = 0.0; maxSpecies = None
-        for spec, flux in self.leakFluxes.iteritems():
-            if maxSpecies is None or flux > maxSpeciesFlux:
-                maxSpecies = spec; maxSpeciesFlux = flux
+        maxK = 0.0; maxSpecies = None
+        if len(self.netReactions) == 0 and len(self.pathReactions) == 1:
+            maxK = self.getLeakCoefficient(T,P)
+            rxn = self.pathReactions[0]
+            if rxn.products is self.source:
+                assert len(rxn.reactants) == 1
+                maxSpecies = rxn.reactants[0]
+            else:
+                assert len(rxn.products) == 1
+                maxSpecies = rxn.products[0]
+        else:
+            for rxn in self.netReactions:
+                if len(rxn.products) == 1 and rxn.products[0] not in self.explored:
+                    k = rxn.getRateCoefficient(T,P)
+                    if maxSpecies is None or k > maxK:
+                        maxSpecies = rxn.products[0]
+                        maxK = k
 
-        # Return the species and flux
-        return maxSpecies, maxSpeciesFlux
+        # Make sure we've identified a species
+        if maxSpecies is None:
+            raise UnirxnNetworkException('No unimolecular isomers left to explore!')
+        # Return the species
+        return maxSpecies
 
     def update(self, reactionModel):
         """
