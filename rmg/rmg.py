@@ -277,7 +277,6 @@ def execute(args):
         for spec in coreSpecies:
             if spec.reactive:
                 spec.generateThermoData()
-                if settings.pressureDependence: spec.generateStatesData()
         for spec in coreSpecies:
             if spec.reactive:
                 reactionModel.enlarge(spec)

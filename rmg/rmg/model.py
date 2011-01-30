@@ -321,6 +321,13 @@ class PDepNetwork(measure.network.Network):
             elif len(rxn.products) > 1 and rxn.products not in self.reactants:
                 self.products.append(rxn.products)
 
+        # Generate states data for unimolecular isomers and reactants if necessary
+        for spec in self.isomers:
+            if spec.states is None: spec.generateStatesData()
+        for reactants in self.reactants:
+            for spec in reactants:
+                if spec.states is None: spec.generateStatesData()
+
         # Determine transition state energies on potential energy surface
         # In the absence of any better information, we simply set it to
         # be the reactant ground-state energy + the activation energy
@@ -730,12 +737,6 @@ class CoreEdgeReactionModel:
             # any more, so delete them to recover the memory
             rxn.reactantMolecules = None
             rxn.reverse.reactantMolecules = None
-
-        # Generate frequencies of new species
-        if settings.pressureDependence:
-            logging.info('Generating frequencies for new species...')
-            for spec in newSpeciesList:
-                spec.generateStatesData()
 
         # Update unimolecular (pressure dependent) reaction networks
         if settings.pressureDependence:
