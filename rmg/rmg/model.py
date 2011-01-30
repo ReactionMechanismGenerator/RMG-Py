@@ -195,7 +195,27 @@ class PDepReaction(chempy.reaction.Reaction):
 
 ################################################################################
 
-class Network(measure.network.Network):
+class PDepNetwork(measure.network.Network):
+    """
+    A representation of a *partial* unimolecular reaction network. Each partial
+    network has a single `source` isomer or reactant channel, and is responsible
+    only for :math:`k(T,P)` values for net reactions with source as the
+    reactant. Multiple partial networks can have the same source, but networks
+    with the same source and any explored isomers must be combined.
+
+    =================== ======================= ================================
+    Attribute           Type                    Description
+    =================== ======================= ================================
+    `source`            ``list``                The isomer or reactant channel that acts as the source
+    `explored`          ``list``                A list of the unimolecular isomers whose reactions have been fully explored
+    =================== ======================= ================================
+
+    """
+
+    def __init__(self, index=-1, source=None):
+        measure.network.Network.__init__(self, index=index)
+        self.source = source
+        self.explored = []
 
     def getLeakFlux(self, T, P, conc):
         """

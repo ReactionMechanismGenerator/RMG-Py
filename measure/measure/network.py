@@ -73,7 +73,6 @@ class Network:
     `collisionModel`    :class:`CollisionModel` The collision model to use
     `netReactions`      ``list``                A list of reaction objects that connect any pair of isomers
     `valid`             ``bool``                ``True`` if the rate coefficients for the network have been computed, ``False`` if not
-    `explored`          ``list``                A list of the unimolecular isomers whose reactions have been fully explored
     =================== ======================= ================================
 
     """
@@ -88,8 +87,7 @@ class Network:
         self.collisionModel = collisionModel
         self.netReactions = []
         self.valid = False
-        self.explored = []
-
+        
     def invalidate(self):
         """
         Mark the network as in need of a new calculation to determine the
