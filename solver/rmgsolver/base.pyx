@@ -51,10 +51,11 @@ cdef class ReactionSystem(DASSL):
         self.coreReactionRates = None
         self.edgeSpeciesRates = None
         self.edgeReactionRates = None
+        self.networkLeakRates = None
 
     cpdef simulate(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions,
         double toleranceKeepInEdge, double toleranceMoveToCore, double toleranceInterruptSimulation,
-        list termination):
+        list termination, list pdepNetworks=None):
         """
         Simulate the reaction system with the provided reaction model,
         consisting of lists of core species, core reactions, edge species, and
@@ -71,12 +72,14 @@ cdef class ReactionSystem(DASSL):
         cdef double stepTime, charRate
         cdef numpy.ndarray[numpy.float64_t, ndim=1] y0
         cdef bint terminated
-        
+
+        pdepNetworks = pdepNetworks or []
+
         speciesIndex = {}
         for index, spec in enumerate(coreSpecies):
             speciesIndex[spec] = index
         
-        self.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions)
+        self.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions, pdepNetworks)
 
         invalidObject = None
         terminated = False
@@ -100,6 +103,14 @@ cdef class ReactionSystem(DASSL):
                 invalidObject = edgeSpecies[maxIndex]
             if self.edgeSpeciesRates[maxIndex] > toleranceInterruptSimulation * charRate:
                 break
+
+            # If pressure dependence, also check the network leak fluxes
+            if pdepNetworks:
+                maxIndex = numpy.argmax(self.networkLeakRates)
+                if self.networkLeakRates[maxIndex] > toleranceMoveToCore * charRate and not invalidObject:
+                    invalidObject = pdepNetworks[maxIndex]
+                if self.networkLeakRates[maxIndex] > toleranceInterruptSimulation * charRate:
+                    break
 
             # Finish simulation if any of the termination criteria are satisfied
             for term in termination:

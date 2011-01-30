@@ -51,8 +51,10 @@ cdef class SimpleReactor(ReactionSystem):
 
     cdef numpy.ndarray reactantIndices
     cdef numpy.ndarray productIndices
+    cdef numpy.ndarray networkIndices
     cdef numpy.ndarray forwardRateCoefficients
     cdef numpy.ndarray reverseRateCoefficients
+    cdef numpy.ndarray networkLeakCoefficients
 
     def __init__(self, T, P, initialMoleFractions):
         ReactionSystem.__init__(self)
@@ -63,24 +65,26 @@ cdef class SimpleReactor(ReactionSystem):
         # These are helper variables used within the solver
         self.reactantIndices = None
         self.productIndices = None
+        self.networkIndices = None
         self.forwardRateCoefficients = None
         self.reverseRateCoefficients = None
 
-    cpdef initializeModel(self, coreSpecies, coreReactions, edgeSpecies, edgeReactions):
+    cpdef initializeModel(self, coreSpecies, coreReactions, edgeSpecies, edgeReactions, list pdepNetworks=None):
         """
         Initialize a simulation of the simple reactor using the provided kinetic
         model.
         """
-        cdef int numCoreSpecies, numCoreReactions, numEdgeSpecies, numEdgeReactions
+        cdef int numCoreSpecies, numCoreReactions, numEdgeSpecies, numEdgeReactions, numPdepNetworks
         cdef int i, j, l, index
         cdef dict speciesIndex, reactionIndex
-        cdef numpy.ndarray[numpy.int_t, ndim=2] reactantIndices, productIndices
-        cdef numpy.ndarray[numpy.float64_t, ndim=1] forwardRateCoefficients, reverseRateCoefficients
+        cdef numpy.ndarray[numpy.int_t, ndim=2] reactantIndices, productIndices, networkIndices
+        cdef numpy.ndarray[numpy.float64_t, ndim=1] forwardRateCoefficients, reverseRateCoefficients, networkLeakCoefficients
         
         numCoreSpecies = len(coreSpecies)
         numCoreReactions = len(coreReactions)
         numEdgeSpecies = len(edgeSpecies)
         numEdgeReactions = len(edgeReactions)
+        numPdepNetworks = len(pdepNetworks)
 
         # Assign an index to each species (core first, then edge)
         speciesIndex = {}
@@ -112,16 +116,27 @@ cdef class SimpleReactor(ReactionSystem):
                 for l, spec in enumerate(rxn.products):
                     i = speciesIndex[spec]
                     productIndices[j,l] = i
-        
+
+        networkIndices = -numpy.ones((numPdepNetworks, 3), numpy.int )
+        networkLeakCoefficients = numpy.zeros((numPdepNetworks), numpy.float64)
+        for j, network in enumerate(pdepNetworks):
+            networkLeakCoefficients[j] = network.getLeakCoefficient(self.T, self.P)
+            for l, spec in enumerate(network.source):
+                i = speciesIndex[spec]
+                networkIndices[j,l] = i
+
         self.reactantIndices = reactantIndices
         self.productIndices = productIndices
         self.forwardRateCoefficients = forwardRateCoefficients
         self.reverseRateCoefficients = reverseRateCoefficients
-
+        self.networkIndices = networkIndices
+        self.networkLeakCoefficients = networkLeakCoefficients
+        
         self.coreReactionRates = numpy.zeros((numCoreReactions), numpy.float64)
         self.edgeReactionRates = numpy.zeros((numEdgeReactions), numpy.float64)
         self.coreSpeciesRates = numpy.zeros((numCoreSpecies), numpy.float64)
         self.edgeSpeciesRates = numpy.zeros((numEdgeSpecies), numpy.float64)
+        self.networkLeakRates = numpy.zeros((numPdepNetworks), numpy.float64)
 
         # Set initial conditions
         t0 = 0.0
@@ -140,12 +155,12 @@ cdef class SimpleReactor(ReactionSystem):
         Return the residual function for the governing DAE system for the
         simple reaction system.
         """
-        cdef numpy.ndarray[numpy.int_t, ndim=2] ir, ip
-        cdef numpy.ndarray[numpy.float64_t, ndim=1] res, kf, kr
-        cdef int numCoreSpecies, numCoreReactions, numEdgeSpecies, numEdgeReactions
+        cdef numpy.ndarray[numpy.int_t, ndim=2] ir, ip, inet
+        cdef numpy.ndarray[numpy.float64_t, ndim=1] res, kf, kr, knet
+        cdef int numCoreSpecies, numCoreReactions, numEdgeSpecies, numEdgeReactions, numPdepNetworks
         cdef int j, first, second, third
         cdef double k, reactionRate
-        cdef numpy.ndarray[numpy.float64_t, ndim=1] coreSpeciesRates, coreReactionRates, edgeSpeciesRates, edgeReactionRates
+        cdef numpy.ndarray[numpy.float64_t, ndim=1] coreSpeciesRates, coreReactionRates, edgeSpeciesRates, edgeReactionRates, networkLeakRates
 
         res = numpy.zeros(y.shape[0], numpy.float64)
 
@@ -153,16 +168,20 @@ cdef class SimpleReactor(ReactionSystem):
         ip = self.productIndices
         kf = self.forwardRateCoefficients
         kr = self.reverseRateCoefficients
+        inet = self.networkIndices
+        knet = self.networkLeakCoefficients
 
         numCoreSpecies = len(self.coreSpeciesRates)
         numCoreReactions = len(self.coreReactionRates)
         numEdgeSpecies = len(self.edgeSpeciesRates)
         numEdgeReactions = len(self.edgeReactionRates)
+        numPdepNetworks = len(self.networkLeakRates)
 
         coreSpeciesRates = numpy.zeros_like(self.coreSpeciesRates)
         coreReactionRates = numpy.zeros_like(self.coreReactionRates)
         edgeSpeciesRates = numpy.zeros_like(self.edgeSpeciesRates)
         edgeReactionRates = numpy.zeros_like(self.edgeReactionRates)
+        networkLeakRates = numpy.zeros_like(self.networkLeakRates)
 
         for j in range(ir.shape[0]):
             k = kf[j]
@@ -234,10 +253,21 @@ cdef class SimpleReactor(ReactionSystem):
                     if third != -1:
                         if third >= numCoreSpecies: edgeSpeciesRates[third-numCoreSpecies] += reactionRate
 
+        for j in range(inet.shape[0]):
+            k = knet[j]
+            if inet[j,1] == -1: # only one reactant
+                reactionRate = k * y[inet[j,0]]
+            elif inet[j,2] == -1: # only two reactants
+                reactionRate = k * y[inet[j,0]] * y[inet[j,1]]
+            else: # three reactants!! (really?)
+                reactionRate = k * y[inet[j,0]] * y[inet[j,1]] * y[inet[j,2]]
+            networkLeakRates[j] = reactionRate
+
         self.coreSpeciesRates = coreSpeciesRates
         self.coreReactionRates = coreReactionRates
         self.edgeSpeciesRates = edgeSpeciesRates
         self.edgeReactionRates = edgeReactionRates
+        self.networkLeakRates = networkLeakRates
 
         res = coreSpeciesRates - dydt
         return res, 0

@@ -309,6 +309,7 @@ def execute(args):
                 toleranceMoveToCore = reactionModel.fluxToleranceMoveToCore,
                 toleranceInterruptSimulation = reactionModel.fluxToleranceInterrupt,
                 termination = reactionModel.termination,
+                pdepNetworks = reactionModel.unirxnNetworks,
             )
             
             # If simulation is invalid, note which species should be added to
