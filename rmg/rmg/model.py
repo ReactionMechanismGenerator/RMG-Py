@@ -273,6 +273,122 @@ class PDepNetwork(measure.network.Network):
         # Return the species and flux
         return maxSpecies, maxSpeciesFlux
 
+    def update(self, reactionModel):
+        """
+        Regenerate the :math:`k(T,P)` values for this partial network if the
+        network is marked as invalid.
+        """
+
+        from measure.collision import SingleExponentialDownModel
+        from measure.reaction import fitInterpolationModel
+        import measure.settings
+        import measure.output
+
+        # Do nothing if the network is already valid
+        if self.valid: return
+        # Do nothing if there are no explored wells
+        if len(self.explored) == 0 and len(self.source) > 1: return
+
+        # Get the parameters for the pressure dependence calculation
+        method, Tmin, Tmax, Tlist, Pmin, Pmax, Plist, grainSize, numGrains, model = settings.pressureDependence
+
+        # Figure out which configurations are isomers, reactant channels, and product channels
+        self.products = []
+        if len(self.source) == 1:
+            # The source is a unimolecular isomer
+            self.isomers = self.explored[:]
+            if self.source[0] not in self.isomers: self.isomers.insert(0, self.source[0])
+            self.reactants = []
+        else:
+            # The source is a bimolecular reactant channel
+            self.source.sort()
+            self.isomers = self.explored[:]
+            self.reactants = [self.source]
+        for rxn in self.pathReactions:
+            # Sort bimolecular configurations so that we always encounter them in the
+            # same order
+            # The actual order doesn't matter, as long as it is consistent
+            rxn.reactants.sort()
+            rxn.products.sort()
+            # All reactants and products not already assigned as an isomer or
+            # a reactant channel are product channels
+            if len(rxn.reactants) == 1 and rxn.reactants[0] not in self.isomers:
+                self.products.append(rxn.reactants)
+            elif len(rxn.reactants) > 1 and rxn.reactants not in self.reactants:
+                self.products.append(rxn.reactants)
+            if len(rxn.products) == 1 and rxn.products[0] not in self.isomers:
+                self.products.append(rxn.products)
+            elif len(rxn.products) > 1 and rxn.products not in self.reactants:
+                self.products.append(rxn.products)
+
+        # Determine transition state energies on potential energy surface
+        # In the absence of any better information, we simply set it to
+        # be the reactant ground-state energy + the activation energy
+        for rxn in self.pathReactions:
+            rxn.transitionState = chempy.species.TransitionState(
+                E0=sum([spec.E0 for spec in rxn.reactants]) + rxn.kinetics.Ea,
+            )
+
+        # Set collision model
+        bathGas = [spec for spec in reactionModel.core.species if not spec.reactive]
+        self.bathGas = {}
+        for spec in bathGas:
+            self.bathGas[spec] = 1.0 / len(bathGas)
+        self.collisionModel = SingleExponentialDownModel(alpha0=4.86 * 4184)
+
+        # Save input file
+        measure.output.writeInput(os.path.join(settings.outputDirectory, 'pdep', 'network%i_%i.py' % (self.index, len(self.isomers))),
+            self, Tlist, Plist, (grainSize, numGrains), method, model)
+
+        # Automatically choose a suitable set of energy grains if they were not
+        # explicitly specified in the input file
+        Elist = self.autoGenerateEnergyGrains(Tmax=Tmax, grainSize=grainSize, Ngrains=numGrains)
+
+        self.printSummary(level=logging.INFO)
+
+        # Calculate the rate coefficients
+        K, p0 = self.calculateRateCoefficients(Tlist, Plist, Elist, method)
+
+        # Generate PDepReaction objects
+        configurations = []
+        configurations.extend([[isom] for isom in self.isomers])
+        configurations.extend([reactants for reactants in self.reactants])
+        configurations.extend([products for products in self.products])
+        j = configurations.index(self.source)
+
+        for i in range(K.shape[2]):
+            if i != j:
+                # Find the path reaction
+                netReaction = None
+                for r in self.netReactions:
+                    if r.hasTemplate(configurations[j], configurations[i]):
+                        netReaction = r
+                # If net reaction does not already exist, make a new one
+                if netReaction is None:
+                    netReaction = PDepReaction(
+                        reactants=configurations[j],
+                        products=configurations[i],
+                        network=self,
+                        kinetics=None
+                    )
+                    netReaction = reactionModel.makeNewPDepReaction(netReaction)
+                    self.netReactions.append(netReaction)
+
+                    # Place the net reaction in the core or edge if necessary
+                    # Note that leak reactions are not placed in the edge
+                    if netReaction.reactants in self.reactants or netReaction.reactants in self.products:
+                        pass
+                    elif all([s in reactionModel.core.species for s in netReaction.reactants]) and all([s in reactionModel.core.species for s in netReaction.products]):
+                        reactionModel.addReactionToCore(netReaction)
+                    else:
+                        reactionModel.addReactionToEdge(netReaction)
+
+                # Set/update the net reaction kinetics using interpolation model
+                netReaction.kinetics = fitInterpolationModel(netReaction, Tlist, Plist, K[:,:,i,j], model, Tmin, Tmax, Pmin, Pmax)
+
+        # We're done processing this network, so mark it as valid
+        self.valid = True
+
 ################################################################################
 
 class ReactionModel:
@@ -558,7 +674,7 @@ class CoreEdgeReactionModel:
             # Add new species
             self.addSpeciesToCore(newSpecies)
 
-        elif isinstance(newObject, Network) and settings.pressureDependence:
+        elif isinstance(newObject, PDepNetwork) and settings.pressureDependence:
 
             network = newObject
             # Determine the species with the maximum leak flux
@@ -955,11 +1071,6 @@ class CoreEdgeReactionModel:
         updated.
         """
 
-        from measure.collision import SingleExponentialDownModel
-        from measure.reaction import fitInterpolationModel
-        import measure.settings
-        import measure.output
-        
         count = sum([1 for network in self.unirxnNetworks if not network.valid and len(network.explored) > 0])
         logging.info('Updating %i modified unimolecular reaction networks...' % count)
 
@@ -970,129 +1081,7 @@ class CoreEdgeReactionModel:
 
         # Iterate over all the networks, updating the invalid ones as necessary
         for network in self.unirxnNetworks:
-            if not network.valid:
-
-                if len(network.explored) == 0:
-                    network.valid = True
-                    continue
-
-                # Other inputs
-                method, Tmin, Tmax, Tlist, Pmin, Pmax, Plist, grainSize, numGrains, model = settings.pressureDependence
-
-                # Figure out which configurations are isomers, reactant channels, and product channels
-                network.isomers = []
-                network.reactants = []
-                network.products = []
-                for rxn in network.pathReactions:
-                    # Sort bimolecular configurations so that we always encounter them in the
-                    # same order
-                    # The actual order doesn't matter, as long as it is consistent
-                    rxn.reactants.sort()
-                    rxn.products.sort()
-                    # Reactants:
-                    # - All unimolecular configurations are automatically isomers
-                    # - All bimolecular configurations are automatically reactant channels
-                    if len(rxn.reactants) == 1 and rxn.reactants[0] not in network.isomers:
-                        network.isomers.append(rxn.reactants[0])
-                    elif len(rxn.reactants) > 1 and rxn.reactants not in network.isomers:
-                        network.reactants.append(rxn.reactants)
-                    # Products:
-                    # - If reversible, the same actions are taken as for the reactants
-                    # - If irreversible, configurations are treated as products
-                    if rxn.reversible:
-                        if len(rxn.products) == 1 and rxn.products[0] not in network.isomers:
-                            network.isomers.append(rxn.products[0])
-                        elif len(rxn.products) > 1 and rxn.products not in network.isomers:
-                            network.reactants.append(rxn.products)
-                    elif rxn.products not in network.products:
-                        network.products.append(rxn.products)
-                network.isomers.sort(cmp=lambda x, y: x.index - y.index)
-                
-                # Update list of explored isomers to include all species in core
-                for isom in network.isomers:
-                    if isom not in network.explored and isom in self.core.species:
-                        network.explored.append(isom)
-
-                # Place all unexplored unimolecular isomers as product channels
-                isomersToMove = []
-                for isomer in network.isomers:
-                    if isomer not in network.explored:
-                        isomersToMove.append(isomer)
-                for isomer in isomersToMove[::-1]:
-                    network.isomers.remove(isomer)
-                    network.products.insert(0, [isomer])
-                
-                # Determine transition state energies on potential energy surface
-                # In the absence of any better information, we simply set it to
-                # be the reactant ground-state energy + the activation energy
-                for rxn in network.pathReactions:
-                    rxn.transitionState = chempy.species.TransitionState(
-                        E0=sum([spec.E0 for spec in rxn.reactants]) + rxn.kinetics.Ea,
-                    )
-
-                # Set collision model
-                bathGas = [spec for spec in self.core.species if not spec.reactive]
-                network.bathGas = {}
-                for spec in bathGas:
-                    network.bathGas[spec] = 1.0 / len(bathGas)
-                network.collisionModel = SingleExponentialDownModel(alpha0=4.86 * 4184)
-                
-                # Save input file
-                measure.output.writeInput(os.path.join(settings.outputDirectory, 'pdep', 'network%i_%i.py' % (network.index, len(network.isomers))),
-                    network, Tlist, Plist, (grainSize, numGrains), method, model)
-
-                # Automatically choose a suitable set of energy grains if they were not
-                # explicitly specified in the input file
-                Elist = network.autoGenerateEnergyGrains(Tmax=Tmax, grainSize=grainSize, Ngrains=numGrains)
-
-                network.printSummary(level=logging.INFO)
-
-                # Calculate the rate coefficients
-                K, p0 = network.calculateRateCoefficients(Tlist, Plist, Elist, method)
-
-                # Generate PDepReaction objects
-                configurations = []
-                configurations.extend([[isom] for isom in network.isomers])
-                configurations.extend([reactants for reactants in network.reactants])
-                configurations.extend([products for products in network.products])
-                for i in range(K.shape[2]):
-                    for j in range(i):
-                        
-                            # Check that we have nonzero k(T,P) values
-                            if numpy.any(K[:,:,i,j]):
-                                if not numpy.all(K[:,:,i,j]):
-                                    raise NetworkError('Zero rate coefficient encountered while updating network %s.' % network)
-
-                                # Find the path reaction
-                                netReaction = None
-                                for r in network.netReactions:
-                                    if r.hasTemplate(configurations[j], configurations[i]):
-                                        netReaction = r
-                                # If net reaction does not already exist, make a new one
-                                if netReaction is None:
-                                    netReaction = PDepReaction(
-                                        reactants=configurations[j],
-                                        products=configurations[i],
-                                        network=network,
-                                        kinetics=None
-                                    )
-                                    netReaction = self.makeNewPDepReaction(netReaction)
-                                    network.netReactions.append(netReaction)
-
-                                    # Place the net reaction in the core or edge if necessary
-                                    # Note that leak reactions are not placed in the edge
-                                    if netReaction.reactants in network.reactants or netReaction.reactants in network.products:
-                                        pass
-                                    elif all([s in self.core.species for s in netReaction.reactants]) and all([s in self.core.species for s in netReaction.products]):
-                                        self.addReactionToCore(netReaction)
-                                    else:
-                                        self.addReactionToEdge(netReaction)
-
-                                # Set/update the net reaction kinetics using interpolation model
-                                netReaction.kinetics = fitInterpolationModel(netReaction, Tlist, Plist, K[:,:,i,j], model, Tmin, Tmax, Pmin, Pmax)
-
-                # We're done processing this network, so mark it as valid
-                network.valid = True
+            network.update(self)
 
     def loadSeedMechanism(self, path):
         """
