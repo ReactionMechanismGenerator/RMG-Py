@@ -445,8 +445,7 @@ class Network:
             eqRatios = numpy.zeros(Nisom+Nreac, numpy.float64)
             for i in range(Nisom+Nreac):
                 eqRatios[i] = numpy.sum(densStates0[i,:] * numpy.exp(-Elist / constants.R / T)) * dE
-                if not settings.minimizeDensityOfStatesCalculations: 
-                    densStates[i,:] = densStates0[i,:] / eqRatios[i] * dE
+                densStates[i,:] = densStates0[i,:] / eqRatios[i] * dE
             # Use free energy to determine equilibrium ratios of each isomer and product channel
             eqRatios = numpy.zeros(Nisom+Nreac, numpy.float64)
             conc = 1e5 / constants.R / T
