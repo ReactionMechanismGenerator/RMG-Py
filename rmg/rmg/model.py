@@ -187,6 +187,16 @@ class Reaction(chempy.reaction.Reaction):
         if not isinstance(self.kinetics, ArrheniusModel):
             self.kinetics = self.kinetics.toArrhenius(self.getEnthalpyOfReaction(298.15))
 
+    def fitReverseKinetics(self):
+        """
+        Return kinetics for the reverse of this reaction.
+        """
+        Tlist = 1.0/numpy.arange(0.0005, 0.0034, 0.0001, numpy.float64)
+        klist = numpy.zeros_like(Tlist)
+        for i in range(len(Tlist)):
+            klist[i] = self.getRateCoefficient(Tlist[i], 1e5) / self.getEquilibriumConstant(Tlist[i])
+        return ArrheniusModel().fitToData(Tlist, klist)
+
 class PDepReaction(chempy.reaction.Reaction):
 
     def __init__(self, index=-1, reactants=None, products=None, network=None, kinetics=None, reversible=True, transitionState=None, thirdBody=False):
@@ -332,10 +342,11 @@ class PDepNetwork(measure.network.Network):
         # In the absence of any better information, we simply set it to
         # be the reactant ground-state energy + the activation energy
         for rxn in self.pathReactions:
+            if rxn.kinetics is None: rxn.kinetics = rxn.reverse.fitReverseKinetics()
             rxn.transitionState = chempy.species.TransitionState(
                 E0=sum([spec.E0 for spec in rxn.reactants]) + rxn.kinetics.Ea,
             )
-
+        
         # Set collision model
         bathGas = [spec for spec in reactionModel.core.species if not spec.reactive]
         self.bathGas = {}
@@ -1056,8 +1067,8 @@ class CoreEdgeReactionModel:
         # Add this reaction to that network if not already present
 		# Also marks the reactant and product isomers as included if all of
         # their species are in the core
-        if newReaction not in network.pathReactions:
-            network.pathReactions.append(newReaction)
+        if newReaction not in network.pathReactions and reaction not in network.pathReactions:
+            network.pathReactions.append(reaction)
             network.invalidate()
         
         # Return the network that the reaction was added to
