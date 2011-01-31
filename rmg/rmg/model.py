@@ -721,14 +721,13 @@ class CoreEdgeReactionModel:
         the model edge and/or core.
         """
 
-        # Create reverse reaction
-        reverse = PDepReaction(reactants=forward.products, products=forward.reactants, network=forward.network, kinetics=None)
-        forward.reverse = reverse
-        reverse.reverse = forward
+        # Don't create reverse reaction: all such reactions are treated as irreversible
+        # The reverse direction will come from a different partial network
+        # Note that this isn't guaranteed to satisfy thermodynamics (but will probably be close)
+        forward.reverse = None
 
         # Set reaction index and increment the counter
         forward.index = self.reactionCounter + 1
-        reverse.index = self.reactionCounter + 1
         self.reactionCounter += 1
 
         return forward
