@@ -392,14 +392,16 @@ class PDepNetwork(measure.network.Network):
             rxn.products.sort()
             # All reactants and products not already assigned as an isomer or
             # a reactant channel are product channels
-            if len(rxn.reactants) == 1 and rxn.reactants[0] not in self.isomers:
-                self.products.append(rxn.reactants)
-            elif len(rxn.reactants) > 1 and rxn.reactants not in self.reactants:
-                self.products.append(rxn.reactants)
-            if len(rxn.products) == 1 and rxn.products[0] not in self.isomers:
-                self.products.append(rxn.products)
-            elif len(rxn.products) > 1 and rxn.products not in self.reactants:
-                self.products.append(rxn.products)
+            if rxn.reactants not in self.products:
+                if len(rxn.reactants) == 1 and rxn.reactants[0] not in self.isomers:
+                    self.products.append(rxn.reactants)
+                elif len(rxn.reactants) > 1 and rxn.reactants not in self.reactants:
+                    self.products.append(rxn.reactants)
+            if rxn.products not in self.products:
+                if len(rxn.products) == 1 and rxn.products[0] not in self.isomers:
+                    self.products.append(rxn.products)
+                elif len(rxn.products) > 1 and rxn.products not in self.reactants:
+                    self.products.append(rxn.products)
 
         # Generate states data for unimolecular isomers and reactants if necessary
         for spec in self.isomers:
@@ -1162,9 +1164,12 @@ class CoreEdgeReactionModel:
             self.unirxnNetworks.append(network)
 
         # Add this reaction to that network if not already present
-		# Also marks the reactant and product isomers as included if all of
-        # their species are in the core
-        if newReaction not in network.pathReactions and reaction not in network.pathReactions:
+        found = False
+        for rxn in network.pathReactions:
+            if newReaction.isEquivalent(rxn):
+                found = True
+                break
+        if not found:
             network.pathReactions.append(reaction)
             network.invalidate()
         
