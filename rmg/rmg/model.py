@@ -739,6 +739,8 @@ class CoreEdgeReactionModel:
         numOldCoreSpecies = len(self.core.species)
         numOldCoreReactions = len(self.core.reactions)
 
+        pdepNetwork = None
+
         if isinstance(newObject, Species):
 
             newSpecies = newObject
@@ -767,9 +769,9 @@ class CoreEdgeReactionModel:
 
         elif isinstance(newObject, tuple) and isinstance(newObject[0], PDepNetwork) and settings.pressureDependence:
 
-            network, newSpecies = newObject
-            logging.info('Exploring species %s in pressure-dependent network #%i' % (newSpecies, network.index))
-            network.explored.append(newSpecies)
+            pdepNetwork, newSpecies = newObject
+            logging.info('Exploring species %s in pressure-dependent network #%i' % (newSpecies, pdepNetwork.index))
+            pdepNetwork.explored.append(newSpecies)
             # Find reactions involving the found species as unimolecular
             # reactant or product (e.g. A <---> products)
             r, s = generateReactions([newSpecies], self)
@@ -805,7 +807,7 @@ class CoreEdgeReactionModel:
                     self.addReactionToEdge(rxn)
             else:
                 # Update unimolecular reaction networks
-                net = self.addReactionToUnimolecularNetworks(rxn, newSpecies=newSpecies)
+                net = self.addReactionToUnimolecularNetworks(rxn, newSpecies=newSpecies, network=pdepNetwork)
 
         # Generate thermodynamics of new species
         logging.info('Generating thermodynamics for new species...')
@@ -1122,7 +1124,7 @@ class CoreEdgeReactionModel:
             newEdgeReactions=[],
         )
 
-    def addReactionToUnimolecularNetworks(self, newReaction, newSpecies):
+    def addReactionToUnimolecularNetworks(self, newReaction, newSpecies, network=None):
         """
         Given a newly-created :class:`Reaction` object `newReaction`, update the
         corresponding unimolecular reaction network. If no network exists, a new
@@ -1138,30 +1140,30 @@ class CoreEdgeReactionModel:
         reaction = newReaction.reverse if newSpecies in newReaction.products else newReaction
         reaction.reactants.sort()
         reaction.products.sort()
-        
-        network = None
-        if reaction.isIsomerization() or reaction.isDissociation():
-            # Find the network containing the reactant as the source
-            for n in self.unirxnNetworks:
-                if reaction.reactants == n.source:
-                    assert network is None
-                    network = n
-        elif reaction.isAssociation():
-            # Find the network containing the reactant as the source AND the
-            # product channel as an explored isomer
-            for n in self.unirxnNetworks:
-                if reaction.reactants == n.source and reaction.products[0] in n.explored:
-                    assert network is None
-                    network = n
 
-        else:
-            return None
-
-        # If no suitable network exists, create a new one
+        # Only search for a network if we don't specify it as a parameter
         if network is None:
-            self.networkCount += 1
-            network = PDepNetwork(index=self.networkCount, source=reaction.reactants[:])
-            self.unirxnNetworks.append(network)
+            if reaction.isIsomerization() or reaction.isDissociation():
+                # Find the network containing the reactant as the source
+                for n in self.unirxnNetworks:
+                    if reaction.reactants == n.source:
+                        assert network is None
+                        network = n
+            elif reaction.isAssociation():
+                # Find the network containing the reactant as the source AND the
+                # product channel as an explored isomer
+                for n in self.unirxnNetworks:
+                    if reaction.reactants == n.source and reaction.products[0] in n.explored:
+                        assert network is None
+                        network = n
+            else:
+                return None
+
+            # If no suitable network exists, create a new one
+            if network is None:
+                self.networkCount += 1
+                network = PDepNetwork(index=self.networkCount, source=reaction.reactants[:])
+                self.unirxnNetworks.append(network)
 
         # Add this reaction to that network if not already present
         found = False
