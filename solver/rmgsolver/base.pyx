@@ -37,6 +37,8 @@ import numpy
 cimport numpy
 from pydas cimport DASSL
 
+import logging
+
 ################################################################################
 
 cdef class ReactionSystem(DASSL):
@@ -68,11 +70,12 @@ cdef class ReactionSystem(DASSL):
         """
 
         cdef dict speciesIndex
-        cdef int index, maxIndex
-        cdef double stepTime, charRate
+        cdef int index, maxSpeciesIndex, maxNetworkIndex
+        cdef double stepTime, charRate, maxSpeciesRate, maxNetworkRate
         cdef numpy.ndarray[numpy.float64_t, ndim=1] y0
         cdef bint terminated
-
+        cdef object maxSpecies, maxNetwork
+        
         pdepNetworks = pdepNetworks or []
 
         speciesIndex = {}
@@ -83,7 +86,13 @@ cdef class ReactionSystem(DASSL):
 
         invalidObject = None
         terminated = False
-        
+        maxSpeciesIndex = -1
+        maxSpecies = None
+        maxSpeciesRate = 0.0
+        maxNetworkIndex = -1
+        maxNetwork = None
+        maxNetworkRate = 0.0
+
         # Copy the initial conditions to use in evaluating conversions
         y0 = self.y.copy()
 
@@ -96,20 +105,37 @@ cdef class ReactionSystem(DASSL):
             charRate = sqrt(numpy.sum(self.coreSpeciesRates * self.coreSpeciesRates))
 
             # Get the edge species with the highest flux
-            maxIndex = numpy.argmax(self.edgeSpeciesRates)
+            maxSpeciesIndex = numpy.argmax(self.edgeSpeciesRates)
+            maxSpecies = edgeSpecies[maxSpeciesIndex]
+            maxSpeciesRate = self.edgeSpeciesRates[maxSpeciesIndex]
+            if pdepNetworks:
+                maxNetworkIndex = numpy.argmax(self.networkLeakRates)
+                maxNetwork = pdepNetworks[maxNetworkIndex]
+                maxNetworkRate = self.networkLeakRates[maxNetworkIndex]
 
             # Interrupt simulation if that flux exceeds the characteristic rate times a tolerance
-            if self.edgeSpeciesRates[maxIndex] > toleranceMoveToCore * charRate and not invalidObject:
-                invalidObject = edgeSpecies[maxIndex]
-            if self.edgeSpeciesRates[maxIndex] > toleranceInterruptSimulation * charRate:
+            if maxSpeciesRate > toleranceMoveToCore * charRate and not invalidObject:
+                logging.info('At time %10.4e s, species %s exceeded the minimum rate for moving to model core' % (self.t, maxSpecies))
+                self.logRates(charRate, maxSpecies, maxSpeciesRate, maxNetwork, maxNetworkRate)
+                self.logConversions(termination, speciesIndex, y0)
+                invalidObject = maxSpecies
+            if maxSpeciesRate > toleranceInterruptSimulation * charRate:
+                logging.info('At time %10.4e s, species %s exceeded the minimum rate for simulation interruption' % (self.t, maxSpecies))
+                self.logRates(charRate, maxSpecies, maxSpeciesRate, maxNetwork, maxNetworkRate)
+                self.logConversions(termination, speciesIndex, y0)
                 break
 
             # If pressure dependence, also check the network leak fluxes
             if pdepNetworks:
-                maxIndex = numpy.argmax(self.networkLeakRates)
-                if self.networkLeakRates[maxIndex] > toleranceMoveToCore * charRate and not invalidObject:
-                    invalidObject = pdepNetworks[maxIndex]
-                if self.networkLeakRates[maxIndex] > toleranceInterruptSimulation * charRate:
+                if maxNetworkRate > toleranceMoveToCore * charRate and not invalidObject:
+                    logging.info('At time %10.4e s, PDepNetwork #%i exceeded the minimum rate for exploring' % (self.t, maxNetwork.index))
+                    self.logRates(charRate, maxSpecies, maxSpeciesRate, maxNetwork, maxNetworkRate)
+                    self.logConversions(termination, speciesIndex, y0)
+                    invalidObject = maxNetwork
+                if maxNetworkRate > toleranceInterruptSimulation * charRate:
+                    logging.info('At time %10.4e s, PDepNetwork #%i exceeded the minimum rate for simulation interruption' % (self.t, maxNetwork.index))
+                    self.logRates(charRate, maxSpecies, maxSpeciesRate, maxNetwork, maxNetworkRate)
+                    self.logConversions(termination, speciesIndex, y0)
                     break
 
             # Finish simulation if any of the termination criteria are satisfied
@@ -131,6 +157,30 @@ cdef class ReactionSystem(DASSL):
         # Return the invalid object (if the simulation was invalid) or None
         # (if the simulation was valid)
         return invalidObject
+
+    cpdef logRates(self, double charRate, object species, double speciesRate, object network, double networkRate):
+        """
+        Log information about the current maximum species and network rates.
+        """
+        logging.info('    Characteristic rate: %10.4e mol/m^3*s' % (charRate))
+        if charRate == 0.0:
+            logging.info('    %s rate: %10.4e mol/m^3*s' % (species, speciesRate))
+            if network is not None:
+                logging.info('    PDepNetwork #%i leak rate: %10.4e mol/m^3*s' % (network.index, networkRate))
+        else:
+            logging.info('    %s rate: %10.4e mol/m^3*s (%.4g)' % (species, speciesRate, speciesRate / charRate))
+            if network is not None:
+                logging.info('    PDepNetwork #%i leak rate: %10.4e mol/m^3*s (%.4g)' % (network.index, networkRate, networkRate / charRate))
+
+    cpdef logConversions(self, termination, speciesIndex, y0):
+        """
+        Log information about the current conversion values.
+        """
+        for term in termination:
+            if isinstance(term, TerminationConversion):
+                index = speciesIndex[term.species]
+                X = (y0[index] - self.y[index]) / y0[index]
+                logging.info('    %s conversion: %-10.4g' % (term.species, X))
 
 ################################################################################
 

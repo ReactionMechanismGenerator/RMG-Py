@@ -41,3 +41,7 @@ cdef class ReactionSystem(DASSL):
     cpdef simulate(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions,
         double toleranceKeepInEdge, double toleranceMoveToCore, double toleranceInterruptSimulation,
         list termination, list pdepNetworks=?)
+
+    cpdef logRates(self, double charRate, object species, double speciesRate, object network, double networkRate)
+
+    cpdef logConversions(self, termination, speciesIndex, y0)
