@@ -418,7 +418,16 @@ class PDepNetwork(measure.network.Network):
             rxn.transitionState = chempy.species.TransitionState(
                 E0=sum([spec.E0 for spec in rxn.reactants]) + rxn.kinetics.Ea,
             )
-        
+
+        # Determine reversibility of reactions
+        # While not currently important during RMG, this is important if you
+        # want to run the saved partial network input files standalone
+        for rxn in self.pathReactions:
+            rxn.reversible = (((len(rxn.reactants) == 1 and rxn.reactants[0] in self.isomers) or
+                (len(rxn.reactants) > 1 and rxn.reactants in self.reactants)) and
+                ((len(rxn.products) == 1 and rxn.products[0] in self.isomers) or
+                (len(rxn.products) > 1 and rxn.products in self.reactants)))
+
         # Set collision model
         bathGas = [spec for spec in reactionModel.core.species if not spec.reactive]
         self.bathGas = {}
