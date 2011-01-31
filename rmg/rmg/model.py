@@ -158,6 +158,39 @@ class Reaction(chempy.reaction.Reaction):
         self.isForward = isForward
         self.multiplier = 1.0
 
+    def isEquivalent(self, other):
+        """
+        Return ``True`` if reaction `other` is equivalent to this reaction, or
+        ``False`` if not. In this context, equivalent reactions have the same
+        reactants and products (either forward or reverse), as well as the same
+        family. This definition does not take into account reactions within a
+        family with the same reactants and products, but different transition
+        states, which are rare but certainly possible.
+        """
+        # To match, the two reactions must be from the same family
+        if self.family and other.family and self.family != other.family: return False
+        # Check forward direction for match
+        forwardMatch = True
+        for reactant in self.reactants:
+            if reactant not in other.reactants:
+                forwardMatch = False
+                break
+        for product in self.products:
+            if product not in other.products:
+                forwardMatch = False
+                break
+        # Check reverse direction for match
+        reverseMatch = True
+        for reactant in self.reactants:
+            if reactant not in other.products:
+                reverseMatch = False
+                break
+        for product in self.products:
+            if product not in other.reactants:
+                reverseMatch = False
+                break
+        return forwardMatch or reverseMatch
+
     def isIsomerization(self):
         """
         Return ``True`` if the reaction represents an isomerization reaction
@@ -282,6 +315,43 @@ class PDepNetwork(measure.network.Network):
             raise UnirxnNetworkException('No unimolecular isomers left to explore!')
         # Return the species
         return maxSpecies
+
+    def merge(self, other):
+        """
+        Merge the partial network `other` into this network.
+        """
+        # Make sure the two partial networks have the same source configuration
+        assert self.source == other.source
+
+        # Merge isomers
+        for isomer in other.isomers:
+            if isomer not in self.isomers:
+                self.isomers.append(isomer)
+            else:
+                # If the isomer is explored in either network, then it is explored in the combined network
+                if isomer in other.explored and not isomer in self.explored:
+                    self.explored.append(isomer)
+        # Merge reactants
+        for reactants in other.reactants:
+            if reactants not in self.reactants:
+                self.reactants.append(reactants)
+        # Merge products
+        for products in other.products:
+            if isomer not in self.isomers:
+                self.isomers.append(isomer)
+
+        # Merge path reactions
+        for reaction in other.pathReactions:
+            found = False
+            for rxn in self.pathReactions:
+                if reaction.isEquivalent(rxn):
+                    found = True
+                    break
+            if not found:
+                self.pathReactions.append(reaction)
+
+        # Mark this network as invalid
+        self.valid = False
 
     def update(self, reactionModel):
         """
@@ -751,6 +821,33 @@ class CoreEdgeReactionModel:
 
         # Update unimolecular (pressure dependent) reaction networks
         if settings.pressureDependence:
+            # Merge networks if necessary
+            # Two partial networks having the same source and containing one or
+            # more explored isomers in common must be merged together to avoid
+            # double-counting of rates
+            for index0, network0 in enumerate(self.unirxnNetworks):
+                index = index0 + 1
+                while index < len(self.unirxnNetworks):
+                    found = False
+                    network = self.unirxnNetworks[index]
+                    if network0.source == network.source:
+                        # The networks contain the same source, but do they contain any common included isomers (other than the source)?
+                        for isomer in network0.explored:
+                            if isomer != network.source and isomer in network.explored:
+                                # The networks contain an included isomer in common, so we need to merge them
+                                found = True
+                                break
+                    if found:
+                        # The networks contain the same source and one or more common included isomers
+                        # Therefore they need to be merged together
+                        logging.debug('Merging PDepNetwork #%i and PDepNetwork #%i' % (network0.index, network.index))
+                        import pdb; pdb.set_trace()
+                        network0.merge(network)
+                        self.unirxnNetworks.remove(network)
+                    else:
+                        index += 1
+
+            # Recalculate k(T,P) values for modified networks
             self.updateUnimolecularReactionNetworks()
             logging.info('')
 
