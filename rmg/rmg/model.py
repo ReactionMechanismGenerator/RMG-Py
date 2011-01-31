@@ -674,6 +674,7 @@ class CoreEdgeReactionModel:
             if not newSpecies.reactive:
                 logging.info('NOT generating reactions for unreactive species %s' % newSpecies)
             else:
+                logging.info('Adding species %s to model core' % newSpecies)
                 # Find reactions involving the new species as unimolecular reactant
                 # or product (e.g. A <---> products)
                 r, s = generateReactions([newSpecies], self)
@@ -692,15 +693,14 @@ class CoreEdgeReactionModel:
             # Add new species
             self.addSpeciesToCore(newSpecies)
 
-        elif isinstance(newObject, PDepNetwork) and settings.pressureDependence:
+        elif isinstance(newObject, tuple) and isinstance(newObject[0], PDepNetwork) and settings.pressureDependence:
 
-            network = newObject
-            # Determine the species with the maximum leak flux
-            maxSpecies, maxSpeciesFlux = network.getMaximumLeakSpecies()
-            network.explored.append(maxSpecies)
+            network, newSpecies = newObject
+            logging.info('Exploring species %s in pressure-dependent network #%i' % (newSpecies, network.index))
+            network.explored.append(newSpecies)
             # Find reactions involving the found species as unimolecular
             # reactant or product (e.g. A <---> products)
-            r, s = generateReactions([maxSpecies], self)
+            r, s = generateReactions([newSpecies], self)
             newReactionList.extend(r); newSpeciesList.extend(s)
             # Don't find reactions involving the new species as bimolecular
             # reactants or products with itself (e.g. A + A <---> products)
@@ -708,7 +708,7 @@ class CoreEdgeReactionModel:
             # reactants or products with other core species (e.g. A + B <---> products)
 
         else:
-            raise TypeError('Unable to use object %s to enlarge reaction model; expecting an object of class rmg.species.Species or rmg.unirxn.network.Network.' % newObject)
+            raise TypeError('Unable to use object %s to enlarge reaction model; expecting an object of class rmg.model.Species or rmg.model.PDepNetwork.' % newObject)
 
         # Add new reactions generated in above
         for rxn in newReactionList:
@@ -733,7 +733,7 @@ class CoreEdgeReactionModel:
                     self.addReactionToEdge(rxn)
             else:
                 # Update unimolecular reaction networks
-                net = self.addReactionToUnimolecularNetworks(rxn, newSpecies=newObject)
+                net = self.addReactionToUnimolecularNetworks(rxn, newSpecies=newSpecies)
 
         # Generate thermodynamics of new species
         logging.info('Generating thermodynamics for new species...')
@@ -1083,9 +1083,9 @@ class CoreEdgeReactionModel:
         updated.
         """
 
-        count = sum([1 for network in self.unirxnNetworks if not network.valid and len(network.explored) > 0])
+        count = sum([1 for network in self.unirxnNetworks if not network.valid and not (len(network.explored) == 0 and len(network.source) > 1)])
         logging.info('Updating %i modified unimolecular reaction networks...' % count)
-
+        
         # For the purposes of RMG we want each network to run very quickly
         # One way to do this is to only calculate the density of states for
         # the unimolecular isomers

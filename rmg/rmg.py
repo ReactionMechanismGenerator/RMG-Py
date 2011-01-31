@@ -41,6 +41,7 @@ import numpy
 
 import rmg.settings as settings
 from rmg.input import readInputFile
+from rmg.model import Species, PDepNetwork
 
 ################################################################################
 
@@ -315,6 +316,11 @@ def execute(args):
             # If simulation is invalid, note which species should be added to
             # the core
             if obj:
+                if isinstance(obj, PDepNetwork):
+                    # Determine which species in that network has the highest leak rate
+                    # We do this here because we need a temperature and pressure
+                    # Store the maximum leak species along with the associated network
+                    obj = (obj, obj.getMaximumLeakSpecies(reactionSystem.T, reactionSystem.P))
                 objectsToEnlarge.append(obj)
                 done = False
 
