@@ -73,7 +73,6 @@ class Network:
     `collisionModel`    :class:`CollisionModel` The collision model to use
     `netReactions`      ``list``                A list of reaction objects that connect any pair of isomers
     `valid`             ``bool``                ``True`` if the rate coefficients for the network have been computed, ``False`` if not
-    `explored`          ``list``                A list of the unimolecular isomers whose reactions have been fully explored
     =================== ======================= ================================
 
     """
@@ -88,8 +87,7 @@ class Network:
         self.collisionModel = collisionModel
         self.netReactions = []
         self.valid = False
-        self.explored = []
-
+        
     def invalidate(self):
         """
         Mark the network as in need of a new calculation to determine the
@@ -447,8 +445,7 @@ class Network:
             eqRatios = numpy.zeros(Nisom+Nreac, numpy.float64)
             for i in range(Nisom+Nreac):
                 eqRatios[i] = numpy.sum(densStates0[i,:] * numpy.exp(-Elist / constants.R / T)) * dE
-                if not settings.minimizeDensityOfStatesCalculations: 
-                    densStates[i,:] = densStates0[i,:] / eqRatios[i] * dE
+                densStates[i,:] = densStates0[i,:] / eqRatios[i] * dE
             # Use free energy to determine equilibrium ratios of each isomer and product channel
             eqRatios = numpy.zeros(Nisom+Nreac, numpy.float64)
             conc = 1e5 / constants.R / T

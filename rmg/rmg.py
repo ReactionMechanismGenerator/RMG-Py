@@ -41,6 +41,7 @@ import numpy
 
 import rmg.settings as settings
 from rmg.input import readInputFile
+from rmg.model import Species, PDepNetwork
 
 ################################################################################
 
@@ -277,7 +278,6 @@ def execute(args):
         for spec in coreSpecies:
             if spec.reactive:
                 spec.generateThermoData()
-                if settings.pressureDependence: spec.generateStatesData()
         for spec in coreSpecies:
             if spec.reactive:
                 reactionModel.enlarge(spec)
@@ -310,11 +310,17 @@ def execute(args):
                 toleranceMoveToCore = reactionModel.fluxToleranceMoveToCore,
                 toleranceInterruptSimulation = reactionModel.fluxToleranceInterrupt,
                 termination = reactionModel.termination,
+                pdepNetworks = reactionModel.unirxnNetworks,
             )
             
             # If simulation is invalid, note which species should be added to
             # the core
             if obj:
+                if isinstance(obj, PDepNetwork):
+                    # Determine which species in that network has the highest leak rate
+                    # We do this here because we need a temperature and pressure
+                    # Store the maximum leak species along with the associated network
+                    obj = (obj, obj.getMaximumLeakSpecies(reactionSystem.T, reactionSystem.P))
                 objectsToEnlarge.append(obj)
                 done = False
 
@@ -340,10 +346,11 @@ def execute(args):
 
             # Update RMG execution statistics
             logging.info('Updating RMG execution statistics...')
-            coreSpeciesCount.append(len(reactionModel.core.species))
-            coreReactionCount.append(len(reactionModel.core.reactions))
-            edgeSpeciesCount.append(len(reactionModel.edge.species))
-            edgeReactionCount.append(len(reactionModel.edge.reactions))
+            coreSpec, coreReac, edgeSpec, edgeReac = reactionModel.getModelSize()
+            coreSpeciesCount.append(coreSpec)
+            coreReactionCount.append(coreReac)
+            edgeSpeciesCount.append(edgeSpec)
+            edgeReactionCount.append(edgeReac)
             execTime.append(time.time() - settings.initializationTime)
             try:
                 from guppy import hpy
@@ -377,8 +384,9 @@ def execute(args):
     # Write output file
     logging.info('MODEL GENERATION COMPLETED')
     logging.info('')
-    logging.info('The final model core has %s species and %s reactions' % (len(reactionModel.core.species), len(reactionModel.core.reactions)))
-    logging.info('The final model edge has %s species and %s reactions' % (len(reactionModel.edge.species), len(reactionModel.edge.reactions)))
+    coreSpec, coreReac, edgeSpec, edgeReac = reactionModel.getModelSize()
+    logging.info('The final model core has %s species and %s reactions' % (coreSpec, coreReac))
+    logging.info('The final model edge has %s species and %s reactions' % (edgeSpec, edgeReac))
     
     # Log end timestamp
     logging.info('')

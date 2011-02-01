@@ -158,6 +158,39 @@ class Reaction(chempy.reaction.Reaction):
         self.isForward = isForward
         self.multiplier = 1.0
 
+    def isEquivalent(self, other):
+        """
+        Return ``True`` if reaction `other` is equivalent to this reaction, or
+        ``False`` if not. In this context, equivalent reactions have the same
+        reactants and products (either forward or reverse), as well as the same
+        family. This definition does not take into account reactions within a
+        family with the same reactants and products, but different transition
+        states, which are rare but certainly possible.
+        """
+        # To match, the two reactions must be from the same family
+        if self.family and other.family and self.family != other.family: return False
+        # Check forward direction for match
+        forwardMatch = True
+        for reactant in self.reactants:
+            if reactant not in other.reactants:
+                forwardMatch = False
+                break
+        for product in self.products:
+            if product not in other.products:
+                forwardMatch = False
+                break
+        # Check reverse direction for match
+        reverseMatch = True
+        for reactant in self.reactants:
+            if reactant not in other.products:
+                reverseMatch = False
+                break
+        for product in self.products:
+            if product not in other.reactants:
+                reverseMatch = False
+                break
+        return forwardMatch or reverseMatch
+
     def isIsomerization(self):
         """
         Return ``True`` if the reaction represents an isomerization reaction
@@ -187,6 +220,16 @@ class Reaction(chempy.reaction.Reaction):
         if not isinstance(self.kinetics, ArrheniusModel):
             self.kinetics = self.kinetics.toArrhenius(self.getEnthalpyOfReaction(298.15))
 
+    def fitReverseKinetics(self):
+        """
+        Return kinetics for the reverse of this reaction.
+        """
+        Tlist = 1.0/numpy.arange(0.0005, 0.0034, 0.0001, numpy.float64)
+        klist = numpy.zeros_like(Tlist)
+        for i in range(len(Tlist)):
+            klist[i] = self.getRateCoefficient(Tlist[i], 1e5) / self.getEquilibriumConstant(Tlist[i])
+        return ArrheniusModel().fitToData(Tlist, klist)
+
 class PDepReaction(chempy.reaction.Reaction):
 
     def __init__(self, index=-1, reactants=None, products=None, network=None, kinetics=None, reversible=True, transitionState=None, thirdBody=False):
@@ -195,63 +238,316 @@ class PDepReaction(chempy.reaction.Reaction):
 
 ################################################################################
 
-class Network(measure.network.Network):
+class PDepNetwork(measure.network.Network):
+    """
+    A representation of a *partial* unimolecular reaction network. Each partial
+    network has a single `source` isomer or reactant channel, and is responsible
+    only for :math:`k(T,P)` values for net reactions with source as the
+    reactant. Multiple partial networks can have the same source, but networks
+    with the same source and any explored isomers must be combined.
 
-    def getLeakFlux(self, T, P, conc):
+    =================== ======================= ================================
+    Attribute           Type                    Description
+    =================== ======================= ================================
+    `source`            ``list``                The isomer or reactant channel that acts as the source
+    `explored`          ``list``                A list of the unimolecular isomers whose reactions have been fully explored
+    =================== ======================= ================================
+
+    """
+
+    def __init__(self, index=-1, source=None):
+        measure.network.Network.__init__(self, index=index)
+        self.source = source
+        self.explored = []
+
+    def getLeakCoefficient(self, T, P):
         """
-        Return the leak flux of the network: the forward flux to all unexplored
-        unimolecular isomers in the network. If there is only one path (and
-        therefore net) reaction and its unimolecular reactants and/or products
-        have not been explored, then it uses the high-pressure-limit rate to
-        ensure it is considering the maximum possible rate.
+        Return the pressure-dependent rate coefficient :math:`k(T,P)` describing
+        the total rate of "leak" from this network. This is defined as the sum
+        of the :math:`k(T,P)` values for all net reactions to nonexplored
+        unimolecular isomers.
         """
-
-        self.leakFluxes = {}
-
-        # If only one path/net reaction and it contains an isomer that has not
-        # been explored, then use the high-pressure-limit k(T) to calculate
-        # the flux rather than the phenomenological k(T,P) value
-        if len(self.netReactions) == 1 and len(self.pathReactions) == 1:
-            rxn = self.netReactions[0]
-            rate = self.pathReactions[0].getRate(T, P, conc)
-            if len(rxn.reactants) == 1 and rxn.reactants[0] not in self.explored:
-                self.leakFluxes[rxn.reactants[0]] = -rate
-            if len(rxn.products) == 1 and rxn.products[0] not in self.explored:
-                self.leakFluxes[rxn.products[0]] = rate
-        # Otherwise get leak fluxes of all unexplored [unimolecular] isomers
+        k = 0.0
+        if len(self.netReactions) == 0 and len(self.pathReactions) == 1:
+            # The network is of the form A + B -> C* (with C* nonincluded)
+            # For this special case we use the high-pressure limit k(T) to
+            # ensure that we're estimating the total leak flux
+            rxn = self.pathReactions[0]
+            if rxn.products is self.source:
+                k = rxn.getRateCoefficient(T,P) / rxn.getEquilibriumConstant(T)
+            else:
+                k = rxn.getRateCoefficient(T,P)
         else:
+            # The network has at least one included isomer, so we can calculate
+            # the leak flux normally
             for rxn in self.netReactions:
-                rate = rxn.getRate(T, P, conc)
-                if len(rxn.reactants) == 1 and rxn.reactants[0] not in self.explored:
-                    spec = rxn.reactants[0]
-                    if spec in self.leakFluxes:
-                        self.leakFluxes[spec] -= rate
-                    else:
-                        self.leakFluxes[spec] = -rate
                 if len(rxn.products) == 1 and rxn.products[0] not in self.explored:
-                    spec = rxn.products[0]
-                    if spec in self.leakFluxes:
-                        self.leakFluxes[spec] += rate
-                    else:
-                        self.leakFluxes[spec] = rate
+                    k += rxn.getRateCoefficient(T,P)
+        return k
 
-        return sum([abs(v) for v in self.leakFluxes.values()])
-
-    def getMaximumLeakSpecies(self):
+    def getMaximumLeakSpecies(self, T, P):
         """
         Get the unexplored (unimolecular) isomer with the maximum leak flux.
+        Note that the leak rate coefficients vary with temperature and
+        pressure, so you must provide these in order to get a meaningful result.
         """
-        if len(self.leakFluxes) == 0:
-            raise UnirxnNetworkException('No unimolecular isomers left to explore!')
-
         # Choose species with maximum leak flux
-        maxSpeciesFlux = 0.0; maxSpecies = None
-        for spec, flux in self.leakFluxes.iteritems():
-            if maxSpecies is None or flux > maxSpeciesFlux:
-                maxSpecies = spec; maxSpeciesFlux = flux
+        maxK = 0.0; maxSpecies = None
+        if len(self.netReactions) == 0 and len(self.pathReactions) == 1:
+            maxK = self.getLeakCoefficient(T,P)
+            rxn = self.pathReactions[0]
+            if rxn.products is self.source:
+                assert len(rxn.reactants) == 1
+                maxSpecies = rxn.reactants[0]
+            else:
+                assert len(rxn.products) == 1
+                maxSpecies = rxn.products[0]
+        else:
+            for rxn in self.netReactions:
+                if len(rxn.products) == 1 and rxn.products[0] not in self.explored:
+                    k = rxn.getRateCoefficient(T,P)
+                    if maxSpecies is None or k > maxK:
+                        maxSpecies = rxn.products[0]
+                        maxK = k
 
-        # Return the species and flux
-        return maxSpecies, maxSpeciesFlux
+        # Make sure we've identified a species
+        if maxSpecies is None:
+            raise UnirxnNetworkException('No unimolecular isomers left to explore!')
+        # Return the species
+        return maxSpecies
+
+    def exploreIsomer(self, isomer, reactionModel):
+        """
+        Explore a previously-unexplored unimolecular `isomer` in this partial
+        network using the provided core-edge reaction model `reactionModel`,
+        returning the new reactions and new species.
+        """
+        assert isomer not in self.explored
+        assert isomer not in self.isomers
+        assert isomer not in self.source
+
+        logging.info('Exploring isomer %s in pressure-dependent network #%i' % (isomer, self.index))
+        self.explored.append(isomer)
+        # Find reactions involving the found species as unimolecular
+        # reactant or product (e.g. A <---> products)
+        newReactionList, newSpeciesList = generateReactions([isomer], reactionModel)
+        # Don't find reactions involving the new species as bimolecular
+        # reactants or products with itself (e.g. A + A <---> products)
+        # Don't find reactions involving the new species as bimolecular
+        # reactants or products with other core species (e.g. A + B <---> products)
+
+        return newReactionList, newSpeciesList
+
+    def addPathReaction(self, newReaction, newSpecies):
+        """
+        Add a path reaction to the network. If the path reaction already exists,
+        no action is taken.
+        """
+        # Put the reaction in the direction in which the new species is in the reactants
+        reaction = newReaction.reverse if newSpecies in newReaction.products else newReaction
+        reaction.reactants.sort()
+        reaction.products.sort()
+
+        # Add this reaction to that network if not already present
+        found = False
+        for rxn in self.pathReactions:
+            if newReaction.isEquivalent(rxn):
+                found = True
+                break
+        if not found:
+            self.pathReactions.append(reaction)
+            self.invalidate()
+
+    def merge(self, other):
+        """
+        Merge the partial network `other` into this network.
+        """
+        # Make sure the two partial networks have the same source configuration
+        assert self.source == other.source
+
+        # Merge isomers
+        for isomer in other.isomers:
+            if isomer not in self.isomers:
+                self.isomers.append(isomer)
+            else:
+                # If the isomer is explored in either network, then it is explored in the combined network
+                if isomer in other.explored and not isomer in self.explored:
+                    self.explored.append(isomer)
+        # Merge reactants
+        for reactants in other.reactants:
+            if reactants not in self.reactants:
+                self.reactants.append(reactants)
+        # Merge products
+        for products in other.products:
+            if isomer not in self.isomers:
+                self.isomers.append(isomer)
+
+        # Merge path reactions
+        for reaction in other.pathReactions:
+            found = False
+            for rxn in self.pathReactions:
+                if reaction.isEquivalent(rxn):
+                    found = True
+                    break
+            if not found:
+                self.pathReactions.append(reaction)
+
+        # Also merge net reactions (so that when we update the network in the
+        # future, we update the existing net reactions rather than making new ones)
+        # Q: What to do when a net reaction exists in both networks being merged?
+        for reaction in other.netReactions:
+            found = False
+            for rxn in self.netReactions:
+                if reaction.isEquivalent(rxn):
+                    found = True
+                    break
+            if not found:
+                self.netReactions.append(reaction)
+
+        # Mark this network as invalid
+        self.valid = False
+
+    def updateConfigurations(self):
+        """
+        Regenerate the :math:`k(T,P)` values for this partial network if the
+        network is marked as invalid.
+        """
+
+        # Figure out which configurations are isomers, reactant channels, and product channels
+        self.products = []
+        if len(self.source) == 1:
+            # The source is a unimolecular isomer
+            self.isomers = self.explored[:]
+            if self.source[0] not in self.isomers: self.isomers.insert(0, self.source[0])
+            self.reactants = []
+        else:
+            # The source is a bimolecular reactant channel
+            self.source.sort()
+            self.isomers = self.explored[:]
+            self.reactants = [self.source]
+        for rxn in self.pathReactions:
+            # Sort bimolecular configurations so that we always encounter them in the
+            # same order
+            # The actual order doesn't matter, as long as it is consistent
+            rxn.reactants.sort()
+            rxn.products.sort()
+            # All reactants and products not already assigned as an isomer or
+            # a reactant channel are product channels
+            if rxn.reactants not in self.products:
+                if len(rxn.reactants) == 1 and rxn.reactants[0] not in self.isomers:
+                    self.products.append(rxn.reactants)
+                elif len(rxn.reactants) > 1 and rxn.reactants not in self.reactants:
+                    self.products.append(rxn.reactants)
+            if rxn.products not in self.products:
+                if len(rxn.products) == 1 and rxn.products[0] not in self.isomers:
+                    self.products.append(rxn.products)
+                elif len(rxn.products) > 1 and rxn.products not in self.reactants:
+                    self.products.append(rxn.products)
+
+    def update(self, reactionModel):
+        """
+        Regenerate the :math:`k(T,P)` values for this partial network if the
+        network is marked as invalid.
+        """
+
+        from measure.collision import SingleExponentialDownModel
+        from measure.reaction import fitInterpolationModel
+        import measure.settings
+        import measure.output
+
+        # Get the parameters for the pressure dependence calculation
+        method, Tmin, Tmax, Tlist, Pmin, Pmax, Plist, grainSize, numGrains, model = settings.pressureDependence
+
+        # Figure out which configurations are isomers, reactant channels, and product channels
+        self.updateConfigurations()
+
+        # Do nothing if the network is already valid
+        if self.valid: return
+        # Do nothing if there are no explored wells
+        if len(self.explored) == 0 and len(self.source) > 1: return
+
+        # Generate states data for unimolecular isomers and reactants if necessary
+        for spec in self.isomers:
+            if spec.states is None: spec.generateStatesData()
+        for reactants in self.reactants:
+            for spec in reactants:
+                if spec.states is None: spec.generateStatesData()
+
+        # Determine transition state energies on potential energy surface
+        # In the absence of any better information, we simply set it to
+        # be the reactant ground-state energy + the activation energy
+        for rxn in self.pathReactions:
+            if rxn.kinetics is None: rxn.kinetics = rxn.reverse.fitReverseKinetics()
+            rxn.transitionState = chempy.species.TransitionState(
+                E0=sum([spec.E0 for spec in rxn.reactants]) + rxn.kinetics.Ea,
+            )
+
+        # Determine reversibility of reactions
+        # While not currently important during RMG, this is important if you
+        # want to run the saved partial network input files standalone
+        for rxn in self.pathReactions:
+            rxn.reversible = (((len(rxn.reactants) == 1 and rxn.reactants[0] in self.isomers) or
+                (len(rxn.reactants) > 1 and rxn.reactants in self.reactants)) and
+                ((len(rxn.products) == 1 and rxn.products[0] in self.isomers) or
+                (len(rxn.products) > 1 and rxn.products in self.reactants)))
+
+        # Set collision model
+        bathGas = [spec for spec in reactionModel.core.species if not spec.reactive]
+        self.bathGas = {}
+        for spec in bathGas:
+            self.bathGas[spec] = 1.0 / len(bathGas)
+        self.collisionModel = SingleExponentialDownModel(alpha0=4.86 * 4184)
+
+        # Save input file
+        measure.output.writeInput(os.path.join(settings.outputDirectory, 'pdep', 'network%i_%i.py' % (self.index, len(self.isomers))),
+            self, Tlist, Plist, (grainSize, numGrains), method, model)
+
+        # Automatically choose a suitable set of energy grains if they were not
+        # explicitly specified in the input file
+        Elist = self.autoGenerateEnergyGrains(Tmax=Tmax, grainSize=grainSize, Ngrains=numGrains)
+
+        self.printSummary(level=logging.INFO)
+
+        # Calculate the rate coefficients
+        K, p0 = self.calculateRateCoefficients(Tlist, Plist, Elist, method)
+
+        # Generate PDepReaction objects
+        configurations = []
+        configurations.extend([[isom] for isom in self.isomers])
+        configurations.extend([reactants for reactants in self.reactants])
+        configurations.extend([products for products in self.products])
+        j = configurations.index(self.source)
+
+        for i in range(K.shape[2]):
+            if i != j:
+                # Find the path reaction
+                netReaction = None
+                for r in self.netReactions:
+                    if r.hasTemplate(configurations[j], configurations[i]):
+                        netReaction = r
+                # If net reaction does not already exist, make a new one
+                if netReaction is None:
+                    netReaction = PDepReaction(
+                        reactants=configurations[j],
+                        products=configurations[i],
+                        network=self,
+                        kinetics=None
+                    )
+                    netReaction = reactionModel.makeNewPDepReaction(netReaction)
+                    self.netReactions.append(netReaction)
+
+                    # Place the net reaction in the core or edge if necessary
+                    # Note that leak reactions are not placed in the edge
+                    if all([s in reactionModel.core.species for s in netReaction.reactants]) and all([s in reactionModel.core.species for s in netReaction.products]):
+                        reactionModel.addReactionToCore(netReaction)
+                    else:
+                        reactionModel.addReactionToEdge(netReaction)
+
+                # Set/update the net reaction kinetics using interpolation model
+                netReaction.kinetics = fitInterpolationModel(netReaction, Tlist, Plist, K[:,:,i,j], model, Tmin, Tmax, Pmin, Pmax)
+
+        # We're done processing this network, so mark it as valid
+        self.valid = True
 
 ################################################################################
 
@@ -486,14 +782,14 @@ class CoreEdgeReactionModel:
         the model edge and/or core.
         """
 
-        # Create reverse reaction
-        reverse = PDepReaction(reactants=forward.products, products=forward.reactants, network=forward.network, kinetics=None)
-        forward.reverse = reverse
-        reverse.reverse = forward
+        # Don't create reverse reaction: all such reactions are treated as irreversible
+        # The reverse direction will come from a different partial network
+        # Note that this isn't guaranteed to satisfy thermodynamics (but will probably be close)
+        forward.reverse = None
+        forward.reversible = False
 
         # Set reaction index and increment the counter
         forward.index = self.reactionCounter + 1
-        reverse.index = self.reactionCounter + 1
         self.reactionCounter += 1
 
         return forward
@@ -513,6 +809,8 @@ class CoreEdgeReactionModel:
         numOldCoreSpecies = len(self.core.species)
         numOldCoreReactions = len(self.core.reactions)
 
+        pdepNetwork = None
+
         if isinstance(newObject, Species):
 
             newSpecies = newObject
@@ -520,6 +818,7 @@ class CoreEdgeReactionModel:
             if not newSpecies.reactive:
                 logging.info('NOT generating reactions for unreactive species %s' % newSpecies)
             else:
+                logging.info('Adding species %s to model core' % newSpecies)
                 # Find reactions involving the new species as unimolecular reactant
                 # or product (e.g. A <---> products)
                 r, s = generateReactions([newSpecies], self)
@@ -538,27 +837,102 @@ class CoreEdgeReactionModel:
             # Add new species
             self.addSpeciesToCore(newSpecies)
 
-        elif isinstance(newObject, Network) and settings.pressureDependence:
+            # Process the new reactions
+            self.processNewReactions(newReactionList, newSpecies, pdepNetwork)
 
-            network = newObject
-            # Determine the species with the maximum leak flux
-            maxSpecies, maxSpeciesFlux = network.getMaximumLeakSpecies()
-            network.explored.append(maxSpecies)
-            # Find reactions involving the found species as unimolecular
-            # reactant or product (e.g. A <---> products)
-            r, s = generateReactions([maxSpecies], self)
-            newReactionList.extend(r); newSpeciesList.extend(s)
-            # Don't find reactions involving the new species as bimolecular
-            # reactants or products with itself (e.g. A + A <---> products)
-            # Don't find reactions involving the new species as bimolecular
-            # reactants or products with other core species (e.g. A + B <---> products)
+        elif isinstance(newObject, tuple) and isinstance(newObject[0], PDepNetwork) and settings.pressureDependence:
+
+            pdepNetwork, newSpecies = newObject
+            newReactionList, newSpeciesList = pdepNetwork.exploreIsomer(newSpecies, self)
+            self.processNewReactions(newReactionList, newSpecies, pdepNetwork)
 
         else:
-            raise TypeError('Unable to use object %s to enlarge reaction model; expecting an object of class rmg.species.Species or rmg.unirxn.network.Network.' % newObject)
+            raise TypeError('Unable to use object %s to enlarge reaction model; expecting an object of class rmg.model.Species or rmg.model.PDepNetwork.' % newObject)
 
-        # Add new reactions generated in above
+        # If there are any core species among the unimolecular product channels
+        # of any existing network, they need to be made included
+        for network in self.unirxnNetworks:
+            network.updateConfigurations()
+            index = 0
+            while index < len(self.core.species):
+                species = self.core.species[index]
+                for products in network.products:
+                    if len(products) == 1 and products[0] == species:
+                        reactionList, speciesList = network.exploreIsomer(species, self)
+                        self.processNewReactions(reactionList, species, network)
+                        network.updateConfigurations()
+                        index = 0
+                        break
+                else:
+                    index += 1
+        
+        # Generate thermodynamics of new species
+        logging.info('Generating thermodynamics for new species...')
+        for spec in newSpeciesList:
+            spec.generateThermoData()
+            
+        # Generate kinetics of new reactions
+        logging.info('Generating kinetics for new reactions...')
         for rxn in newReactionList:
+            if rxn.kinetics is None: rxn.generateKineticsData()
+            # Now that we have the kinetics we don't need the reactant molecules
+            # any more, so delete them to recover the memory
+            rxn.reactantMolecules = None
+            rxn.reverse.reactantMolecules = None
+
+        # Update unimolecular (pressure dependent) reaction networks
+        if settings.pressureDependence:
+            # Merge networks if necessary
+            # Two partial networks having the same source and containing one or
+            # more explored isomers in common must be merged together to avoid
+            # double-counting of rates
+            for index0, network0 in enumerate(self.unirxnNetworks):
+                index = index0 + 1
+                while index < len(self.unirxnNetworks):
+                    found = False
+                    network = self.unirxnNetworks[index]
+                    if network0.source == network.source:
+                        # The networks contain the same source, but do they contain any common included isomers (other than the source)?
+                        for isomer in network0.explored:
+                            if isomer != network.source and isomer in network.explored:
+                                # The networks contain an included isomer in common, so we need to merge them
+                                found = True
+                                break
+                    if found:
+                        # The networks contain the same source and one or more common included isomers
+                        # Therefore they need to be merged together
+                        logging.debug('Merging PDepNetwork #%i and PDepNetwork #%i' % (network0.index, network.index))
+                        import pdb; pdb.set_trace()
+                        network0.merge(network)
+                        self.unirxnNetworks.remove(network)
+                    else:
+                        index += 1
+
+            # Recalculate k(T,P) values for modified networks
+            self.updateUnimolecularReactionNetworks()
+            logging.info('')
+
+        # Print summary of enlargement
+        if not isinstance(newObject, Species): newSpecies = None
+        self.printEnlargeSummary(
+            newCoreSpecies=self.core.species[numOldCoreSpecies:],
+            newCoreReactions=self.core.reactions[numOldCoreReactions:],
+            newEdgeSpecies=newSpeciesList,
+            newEdgeReactions=newReactionList,
+            newSpecies=newSpecies,
+        )
+
+        logging.info('')
+
+    def processNewReactions(self, newReactions, newSpecies, pdepNetwork=None):
+        """
+        Process a list of newly-generated reactions involving the new core
+        species or explored isomer `newSpecies` in network `pdepNetwork`.
+        """
+        for rxn in newReactions:
             allSpeciesInCore = True
+            # Add the reactant and product species to the edge if necessary
+            # At the same time, check if all reactants and products are in the core
             for spec in rxn.reactants:
                 if spec not in self.core.species:
                     allSpeciesInCore = False
@@ -578,48 +952,10 @@ class CoreEdgeReactionModel:
                 else:
                     self.addReactionToEdge(rxn)
             else:
-                # Update unimolecular reaction networks
-                net = self.addReactionToUnimolecularNetworks(rxn)
-                if net is not None and isinstance(newObject, Species):
-                    if (len(rxn.reactants) == 1 and rxn.reactants[0] == newObject) or (len(rxn.products) == 1 and rxn.products[0] == newObject):
-                        net.explored.append(newObject)
-
-        # Generate thermodynamics of new species
-        logging.info('Generating thermodynamics for new species...')
-        for spec in newSpeciesList:
-            spec.generateThermoData()
-            
-        # Generate kinetics of new reactions
-        logging.info('Generating kinetics for new reactions...')
-        for rxn in newReactionList:
-            if rxn.kinetics is None: rxn.generateKineticsData()
-            # Now that we have the kinetics we don't need the reactant molecules
-            # any more, so delete them to recover the memory
-            rxn.reactantMolecules = None
-            rxn.reverse.reactantMolecules = None
-
-        # Generate frequencies of new species
-        if settings.pressureDependence:
-            logging.info('Generating frequencies for new species...')
-            for spec in newSpeciesList:
-                spec.generateStatesData()
-
-        # Update unimolecular (pressure dependent) reaction networks
-        if settings.pressureDependence:
-            self.updateUnimolecularReactionNetworks()
-            logging.info('')
-
-        # Print summary of enlargement
-        if not isinstance(newObject, Species): newSpecies = None
-        self.printEnlargeSummary(
-            newCoreSpecies=self.core.species[numOldCoreSpecies:],
-            newCoreReactions=self.core.reactions[numOldCoreReactions:],
-            newEdgeSpecies=newSpeciesList,
-            newEdgeReactions=newReactionList,
-            newSpecies=newSpecies,
-        )
-
-        logging.info('')
+                # Add the reaction to the appropriate unimolecular reaction network
+                # If pdepNetwork is not None then that will be the network the
+                # (path) reactions are added to
+                net = self.addReactionToUnimolecularNetworks(rxn, newSpecies=newSpecies, network=pdepNetwork)
 
     def printEnlargeSummary(self, newCoreSpecies, newCoreReactions, newEdgeSpecies, newEdgeReactions, newSpecies=None):
         """
@@ -648,11 +984,13 @@ class CoreEdgeReactionModel:
         for rxn in newEdgeReactions:
             logging.info('    %s' % (rxn.reverse if newSpecies in rxn.products else rxn))
 
+        coreSpeciesCount, coreReactionCount, edgeSpeciesCount, edgeReactionCount = self.getModelSize()
+
         # Output current model size information after enlargement
         logging.info('')
         logging.info('After model enlargement:')
-        logging.info('    The model core has %s species and %s reactions' % (len(self.core.species), len(self.core.reactions)))
-        logging.info('    The model edge has %s species and %s reactions' % (len(self.edge.species), len(self.edge.reactions)))
+        logging.info('    The model core has %s species and %s reactions' % (coreSpeciesCount, coreReactionCount))
+        logging.info('    The model edge has %s species and %s reactions' % (edgeSpeciesCount, edgeReactionCount))
         logging.info('')
 
     def addSpeciesToCore(self, spec):
@@ -765,7 +1103,8 @@ class CoreEdgeReactionModel:
         ensure it is supposed to be a core reaction (i.e. all of its reactants
         AND all of its products are in the list of core species).
         """
-        self.core.reactions.append(rxn)
+        if rxn not in self.core.reactions:
+            self.core.reactions.append(rxn)
         if rxn in self.edge.reactions:
             self.edge.reactions.remove(rxn)
         
@@ -777,7 +1116,22 @@ class CoreEdgeReactionModel:
         list of core species, and the others are in either the core or the
         edge).
         """
-        self.edge.reactions.append(rxn)
+        if rxn not in self.edge.reactions:
+            self.edge.reactions.append(rxn)
+
+    def getModelSize(self):
+        """
+        Return the numbers of species and reactions in the model core and edge.
+        Note that this is not necessarily equal to the lengths of the
+        corresponding species and reaction lists.
+        """
+        coreSpeciesCount = len(self.core.species)
+        coreReactionsCount = len([rxn for rxn in self.core.reactions if isinstance(rxn, Reaction)])
+        coreReactionsCount += len([rxn for rxn in self.core.reactions if isinstance(rxn, PDepReaction)]) / 2
+        edgeSpeciesCount = len(self.edge.species)
+        edgeReactionsCount = len([rxn for rxn in self.edge.reactions if isinstance(rxn, Reaction)])
+        edgeReactionsCount += len([rxn for rxn in self.edge.reactions if isinstance(rxn, PDepReaction)]) / 2
+        return (coreSpeciesCount, coreReactionsCount, edgeSpeciesCount, edgeReactionsCount)
 
     def getLists(self):
         """
@@ -878,7 +1232,7 @@ class CoreEdgeReactionModel:
             newEdgeReactions=[],
         )
 
-    def addReactionToUnimolecularNetworks(self, newReaction):
+    def addReactionToUnimolecularNetworks(self, newReaction, newSpecies, network=None):
         """
         Given a newly-created :class:`Reaction` object `newReaction`, update the
         corresponding unimolecular reaction network. If no network exists, a new
@@ -888,51 +1242,39 @@ class CoreEdgeReactionModel:
         network containing the new reaction.
         """
 
-        def getNetworkContainingSpecies(spec, networks):
-            for network in networks:
-                if network.containsSpecies(spec): return network
-            return None
+        assert isinstance(newSpecies, Species)
 
-        # If the reaction is not unimolecular, then there's nothing to do
-        # Return None because we haven't added newReaction to a network
-        if not newReaction.isIsomerization() and not newReaction.isDissociation() and not newReaction.isAssociation():
-            return None
+        # Put the reaction in the direction in which the new species is in the reactants
+        reaction = newReaction.reverse if newSpecies in newReaction.products else newReaction
+        reaction.reactants.sort()
+        reaction.products.sort()
 
-        # Find networks containing either the reactant or the product as a
-        # unimolecular isomer
-        reactantNetwork = None; productNetwork = None
-        if newReaction.isIsomerization() or newReaction.isDissociation():
-            reactantNetwork = getNetworkContainingSpecies(newReaction.reactants[0], self.unirxnNetworks)
-        if newReaction.isIsomerization() or newReaction.isAssociation():
-            productNetwork = getNetworkContainingSpecies(newReaction.products[0], self.unirxnNetworks)
+        # Only search for a network if we don't specify it as a parameter
+        if network is None:
+            if reaction.isIsomerization() or reaction.isDissociation():
+                # Find the network containing the reactant as the source
+                for n in self.unirxnNetworks:
+                    if reaction.reactants == n.source:
+                        assert network is None
+                        network = n
+            elif reaction.isAssociation():
+                # Find the network containing the reactant as the source AND the
+                # product channel as an explored isomer
+                for n in self.unirxnNetworks:
+                    if reaction.reactants == n.source and reaction.products[0] in n.explored:
+                        assert network is None
+                        network = n
+            else:
+                return None
 
-        # Action depends on results of above search
-        network = None
-        if reactantNetwork is not None and productNetwork is not None and reactantNetwork is productNetwork:
-            # Found the same network twice, so we don't need to merge
-            # This can happend when a net reaction is later generated by RMG as a
-            # path reaction
-            network = reactantNetwork
-        elif reactantNetwork is not None and productNetwork is not None:
-            # Found two different networks, so we need to merge
-            network = reactantNetwork
-            network.merge(productNetwork)
-            self.unirxnNetworks.remove(productNetwork)
-        elif reactantNetwork is not None and productNetwork is None:
-            # Found one network, so we add to it
-            network = reactantNetwork
-        elif reactantNetwork is None and productNetwork is not None:
-            # Found one network, so we add to it
-            network = productNetwork
-        else:
-            # Didn't find any networks, so we need to make a new one
-            self.networkCount += 1
-            network = Network(index=self.networkCount)
-            self.unirxnNetworks.append(network)
+            # If no suitable network exists, create a new one
+            if network is None:
+                self.networkCount += 1
+                network = PDepNetwork(index=self.networkCount, source=reaction.reactants[:])
+                self.unirxnNetworks.append(network)
 
-        # Add the new reaction to whatever network was found/created above
-        network.pathReactions.append(newReaction)
-        network.invalidate()
+        # Add the path reaction to that network
+        network.addPathReaction(newReaction, newSpecies)
         
         # Return the network that the reaction was added to
         return network
@@ -946,14 +1288,9 @@ class CoreEdgeReactionModel:
         updated.
         """
 
-        from measure.collision import SingleExponentialDownModel
-        from measure.reaction import fitInterpolationModel
-        import measure.settings
-        import measure.output
-        
-        count = sum([1 for network in self.unirxnNetworks if not network.valid and len(network.explored) > 0])
+        count = sum([1 for network in self.unirxnNetworks if not network.valid and not (len(network.explored) == 0 and len(network.source) > 1)])
         logging.info('Updating %i modified unimolecular reaction networks...' % count)
-
+        
         # For the purposes of RMG we want each network to run very quickly
         # One way to do this is to only calculate the density of states for
         # the unimolecular isomers
@@ -961,129 +1298,7 @@ class CoreEdgeReactionModel:
 
         # Iterate over all the networks, updating the invalid ones as necessary
         for network in self.unirxnNetworks:
-            if not network.valid:
-
-                if len(network.explored) == 0:
-                    network.valid = True
-                    continue
-
-                # Other inputs
-                method, Tmin, Tmax, Tlist, Pmin, Pmax, Plist, grainSize, numGrains, model = settings.pressureDependence
-
-                # Figure out which configurations are isomers, reactant channels, and product channels
-                network.isomers = []
-                network.reactants = []
-                network.products = []
-                for rxn in network.pathReactions:
-                    # Sort bimolecular configurations so that we always encounter them in the
-                    # same order
-                    # The actual order doesn't matter, as long as it is consistent
-                    rxn.reactants.sort()
-                    rxn.products.sort()
-                    # Reactants:
-                    # - All unimolecular configurations are automatically isomers
-                    # - All bimolecular configurations are automatically reactant channels
-                    if len(rxn.reactants) == 1 and rxn.reactants[0] not in network.isomers:
-                        network.isomers.append(rxn.reactants[0])
-                    elif len(rxn.reactants) > 1 and rxn.reactants not in network.isomers:
-                        network.reactants.append(rxn.reactants)
-                    # Products:
-                    # - If reversible, the same actions are taken as for the reactants
-                    # - If irreversible, configurations are treated as products
-                    if rxn.reversible:
-                        if len(rxn.products) == 1 and rxn.products[0] not in network.isomers:
-                            network.isomers.append(rxn.products[0])
-                        elif len(rxn.products) > 1 and rxn.products not in network.isomers:
-                            network.reactants.append(rxn.products)
-                    elif rxn.products not in network.products:
-                        network.products.append(rxn.products)
-                network.isomers.sort(cmp=lambda x, y: x.index - y.index)
-                
-                # Update list of explored isomers to include all species in core
-                for isom in network.isomers:
-                    if isom not in network.explored and isom in self.core.species:
-                        network.explored.append(isom)
-
-                # Place all unexplored unimolecular isomers as product channels
-                isomersToMove = []
-                for isomer in network.isomers:
-                    if isomer not in network.explored:
-                        isomersToMove.append(isomer)
-                for isomer in isomersToMove[::-1]:
-                    network.isomers.remove(isomer)
-                    network.products.insert(0, [isomer])
-                
-                # Determine transition state energies on potential energy surface
-                # In the absence of any better information, we simply set it to
-                # be the reactant ground-state energy + the activation energy
-                for rxn in network.pathReactions:
-                    rxn.transitionState = chempy.species.TransitionState(
-                        E0=sum([spec.E0 for spec in rxn.reactants]) + rxn.kinetics.Ea,
-                    )
-
-                # Set collision model
-                bathGas = [spec for spec in self.core.species if not spec.reactive]
-                network.bathGas = {}
-                for spec in bathGas:
-                    network.bathGas[spec] = 1.0 / len(bathGas)
-                network.collisionModel = SingleExponentialDownModel(alpha0=4.86 * 4184)
-                
-                # Save input file
-                measure.output.writeInput(os.path.join(settings.outputDirectory, 'pdep', 'network%i_%i.py' % (network.index, len(network.isomers))),
-                    network, Tlist, Plist, (grainSize, numGrains), method, model)
-
-                # Automatically choose a suitable set of energy grains if they were not
-                # explicitly specified in the input file
-                Elist = network.autoGenerateEnergyGrains(Tmax=Tmax, grainSize=grainSize, Ngrains=numGrains)
-
-                network.printSummary(level=logging.INFO)
-
-                # Calculate the rate coefficients
-                K, p0 = network.calculateRateCoefficients(Tlist, Plist, Elist, method)
-
-                # Generate PDepReaction objects
-                configurations = []
-                configurations.extend([[isom] for isom in network.isomers])
-                configurations.extend([reactants for reactants in network.reactants])
-                configurations.extend([products for products in network.products])
-                for i in range(K.shape[2]):
-                    for j in range(i):
-                        
-                            # Check that we have nonzero k(T,P) values
-                            if numpy.any(K[:,:,i,j]):
-                                if not numpy.all(K[:,:,i,j]):
-                                    raise NetworkError('Zero rate coefficient encountered while updating network %s.' % network)
-
-                                # Find the path reaction
-                                netReaction = None
-                                for r in network.netReactions:
-                                    if r.hasTemplate(configurations[j], configurations[i]):
-                                        netReaction = r
-                                # If net reaction does not already exist, make a new one
-                                if netReaction is None:
-                                    netReaction = PDepReaction(
-                                        reactants=configurations[j],
-                                        products=configurations[i],
-                                        network=network,
-                                        kinetics=None
-                                    )
-                                    netReaction = self.makeNewPDepReaction(netReaction)
-                                    network.netReactions.append(netReaction)
-
-                                    # Place the net reaction in the core or edge if necessary
-                                    # Note that leak reactions are not placed in the edge
-                                    if netReaction.reactants in network.reactants or netReaction.reactants in network.products:
-                                        pass
-                                    elif all([s in self.core.species for s in netReaction.reactants]) and all([s in self.core.species for s in netReaction.products]):
-                                        self.addReactionToCore(netReaction)
-                                    else:
-                                        self.addReactionToEdge(netReaction)
-
-                                # Set/update the net reaction kinetics using interpolation model
-                                netReaction.kinetics = fitInterpolationModel(netReaction, Tlist, Plist, K[:,:,i,j], model, Tmin, Tmax, Pmin, Pmax)
-
-                # We're done processing this network, so mark it as valid
-                network.valid = True
+            network.update(self)
 
     def loadSeedMechanism(self, path):
         """

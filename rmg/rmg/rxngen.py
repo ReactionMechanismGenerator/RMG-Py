@@ -353,7 +353,7 @@ def generateReactions(species, model):
             for rxn in rxnList:
                 forward = species[0] in rxn.reactants
                 r, isNew = model.makeNewReaction(rxn if forward else rxn.reverse)
-                if isNew: reactionList.append(r)
+                reactionList.append(r)
         elif isinstance(kineticsDatabase, rmgdata.kinetics.KineticsGroupDatabase):
             for key, family in rmgdata.kinetics.kineticsDatabases[-1].families.iteritems():
                 for forward in [True, False]:
@@ -362,11 +362,12 @@ def generateReactions(species, model):
                     # Formally make the new reactions
                     for rxn in rxnList:
                         r, isNew = model.makeNewReaction(rxn if forward else rxn.reverse)
-                        if isNew: reactionList.append(r)
-            
+                        reactionList.append(r)
+
     # Restore implicit hydrogens if necessary
     for implicit, spec in zip(implicitH, species):
         if implicit:
             for molecule in spec.molecule: molecule.makeHydrogensImplicit()
 
+    # This list contains all generated reactions, not just those that are new
     return reactionList, speciesList

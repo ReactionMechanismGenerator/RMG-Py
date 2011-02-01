@@ -53,25 +53,14 @@ species(
 )
 
 # Reaction systems
-batchReactor(
-    volume=(1.0,'m^3'),
-    area=(1.0,'m^2'),
-    physicalPropertyModel="idealGas",
-    temperatureModel='isothermal',
-    pressureModel='isobaric',
-    initialConditions={
-        "T": (1350,'K'),
-        "P": (1.0,'bar'),
+simpleReactor(
+    temperature=(1350,'K'),
+    pressure=(1.0,'bar'),
+    initialMoleFractions={
         "HXD13": 6.829e-4,
         "CH4": 0.104,
         "H2": 0.0156,
         "N2": 0.8797,
-    },
-    reservoirConditions={
-        "T": (1350,'K'),
-        "P": (1.0,'bar'),
-        "O2": 0.21,
-        "N2": 0.79,
     },
 )
 
