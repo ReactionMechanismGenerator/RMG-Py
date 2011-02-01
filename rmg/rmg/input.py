@@ -39,7 +39,8 @@ from rmgdata.thermo import loadThermoDatabase
 from rmgdata.kinetics import loadKineticsDatabase
 from rmgdata.states import loadFrequencyDatabase
 
-from system import getAvailableReactionSystems
+from rmgsolver.base import TerminationTime, TerminationConversion
+from rmgsolver.simple import SimpleReactor
 from model import *
 
 ################################################################################
@@ -52,8 +53,6 @@ speciesDict = {}
 databases = {}
 reactionSystems = []
 reactionModel = None
-
-availableReactionSystems = getAvailableReactionSystems()
 
 def database(thermo_groups, kinetics_groups, thermo_libraries=None, 
   kinetics_libraries=None, reaction_libraries=None, seed_mechanisms=None,
@@ -93,39 +92,21 @@ def InChI(string):
 def adjacencyList(string):
     return Molecule().fromAdjacencyList(string)
 
-def batchReactor(physicalPropertyModel, temperatureModel, pressureModel, initialConditions, reservoirConditions, volume, area):
+# Reaction systems
+def simpleReactor(temperature, pressure, initialMoleFractions):
+    global reactionSystems
+    logging.debug('Found SimpleReactor reaction system')
 
-    global availableReactionSystems, reactionSystems
-    logging.debug('Found BatchReactor reaction system')
-    system = availableReactionSystems['BatchReactor']()
+    if sum(initialMoleFractions.values()) != 1:
+        logging.warning('Initial mole fractions do not sum to one; renormalizing.')
+        for spec in initialMoleFractions:
+            initialMoleFractions[spec] /= sum(initialMoleFractions.values())
+
+    T = processQuantity(temperature)[0]
+    P = processQuantity(pressure)[0]
+    
+    system = SimpleReactor(T, P, initialMoleFractions)
     reactionSystems.append(system)
-
-    system.area = processQuantity(area)[0]
-    system.volume = processQuantity(volume)[0]
-
-    system.equationOfState = IdealGas()
-
-    if temperatureModel != 'isothermal':
-        raise InputError('Only currently-supported temperature model is "isothermal".')
-    system.setIsothermal()
-
-    if pressureModel != 'isobaric':
-        raise InputError('Only currently-supported pressure model is "isobaric".')
-    system.setIsobaric()
-
-    system.initialPressure = processQuantity(initialConditions['P'])[0]
-    system.initialTemperature = processQuantity(initialConditions['T'])[0]
-    system.initialMoleFraction = {}
-    for key, value in initialConditions.iteritems():
-        if key not in ['T', 'P']:
-            system.initialMoleFraction[key] = processQuantity(value)[0]
-
-    system.reservoirPressure = processQuantity(reservoirConditions['P'])[0]
-    system.reservoirTemperature = processQuantity(reservoirConditions['T'])[0]
-
-    # Now that we've loaded the information about the reaction system,
-    # tell Cantera about it
-    system.initializeCantera()
 
 def termination(conversion=None, time=None):
     global reactionModel, speciesDict
@@ -213,7 +194,7 @@ def readInputFile(path):
         'SMILES': SMILES,
         'InChI': InChI,
         'adjacencyList': adjacencyList,
-        'batchReactor': batchReactor,
+        'simpleReactor': simpleReactor,
         'termination': termination,
         'simulator': simulator,
         'model': model,
@@ -262,10 +243,10 @@ def readInputFile(path):
     speciesList.sort(cmp=lambda x, y: x.index - y.index)
 
     for reactionSystem in reactionSystems:
-        initialMoleFraction = {}
-        for label, moleFrac in reactionSystem.initialMoleFraction.iteritems():
-            initialMoleFraction[str(speciesDict[label])] = moleFrac
-    reactionSystem.initialMoleFraction = initialMoleFraction
+        initialMoleFractions = {}
+        for label, moleFrac in reactionSystem.initialMoleFractions.iteritems():
+            initialMoleFractions[speciesDict[label]] = moleFrac
+    reactionSystem.initialMoleFractions = initialMoleFractions
 
     return reactionModel, speciesList, reactionSystems
 
