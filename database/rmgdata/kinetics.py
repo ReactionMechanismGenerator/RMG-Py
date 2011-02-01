@@ -1318,7 +1318,7 @@ def loadKineticsDatabase(dstr, group=True, old=False, seedMechanism=False, react
     """
     global kineticsDatabases
     if group:
-        kineticsDatabase = KineticsGroupDatabase(path=dstr, only_families=only_families)
+        kineticsDatabase = KineticsGroupDatabase()
         kineticsDatabase.load(dstr, only_families)
         kineticsDatabases.append(kineticsDatabase)
     else:
