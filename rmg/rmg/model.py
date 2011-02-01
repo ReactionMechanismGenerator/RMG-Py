@@ -316,6 +316,26 @@ class PDepNetwork(measure.network.Network):
         # Return the species
         return maxSpecies
 
+    def addPathReaction(self, newReaction, newSpecies):
+        """
+        Add a path reaction to the network. If the path reaction already exists,
+        no action is taken.
+        """
+        # Put the reaction in the direction in which the new species is in the reactants
+        reaction = newReaction.reverse if newSpecies in newReaction.products else newReaction
+        reaction.reactants.sort()
+        reaction.products.sort()
+
+        # Add this reaction to that network if not already present
+        found = False
+        for rxn in self.pathReactions:
+            if newReaction.isEquivalent(rxn):
+                found = True
+                break
+        if not found:
+            self.pathReactions.append(reaction)
+            self.invalidate()
+
     def merge(self, other):
         """
         Merge the partial network `other` into this network.
@@ -353,24 +373,11 @@ class PDepNetwork(measure.network.Network):
         # Mark this network as invalid
         self.valid = False
 
-    def update(self, reactionModel):
+    def updateConfigurations(self):
         """
         Regenerate the :math:`k(T,P)` values for this partial network if the
         network is marked as invalid.
         """
-
-        from measure.collision import SingleExponentialDownModel
-        from measure.reaction import fitInterpolationModel
-        import measure.settings
-        import measure.output
-
-        # Do nothing if the network is already valid
-        if self.valid: return
-        # Do nothing if there are no explored wells
-        if len(self.explored) == 0 and len(self.source) > 1: return
-
-        # Get the parameters for the pressure dependence calculation
-        method, Tmin, Tmax, Tlist, Pmin, Pmax, Plist, grainSize, numGrains, model = settings.pressureDependence
 
         # Figure out which configurations are isomers, reactant channels, and product channels
         self.products = []
@@ -402,6 +409,28 @@ class PDepNetwork(measure.network.Network):
                     self.products.append(rxn.products)
                 elif len(rxn.products) > 1 and rxn.products not in self.reactants:
                     self.products.append(rxn.products)
+
+    def update(self, reactionModel):
+        """
+        Regenerate the :math:`k(T,P)` values for this partial network if the
+        network is marked as invalid.
+        """
+
+        from measure.collision import SingleExponentialDownModel
+        from measure.reaction import fitInterpolationModel
+        import measure.settings
+        import measure.output
+
+        # Get the parameters for the pressure dependence calculation
+        method, Tmin, Tmax, Tlist, Pmin, Pmax, Plist, grainSize, numGrains, model = settings.pressureDependence
+
+        # Figure out which configurations are isomers, reactant channels, and product channels
+        self.updateConfigurations()
+
+        # Do nothing if the network is already valid
+        if self.valid: return
+        # Do nothing if there are no explored wells
+        if len(self.explored) == 0 and len(self.source) > 1: return
 
         # Generate states data for unimolecular isomers and reactants if necessary
         for spec in self.isomers:
@@ -725,6 +754,7 @@ class CoreEdgeReactionModel:
         # The reverse direction will come from a different partial network
         # Note that this isn't guaranteed to satisfy thermodynamics (but will probably be close)
         forward.reverse = None
+        forward.reversible = False
 
         # Set reaction index and increment the counter
         forward.index = self.reactionCounter + 1
@@ -1173,15 +1203,8 @@ class CoreEdgeReactionModel:
                 network = PDepNetwork(index=self.networkCount, source=reaction.reactants[:])
                 self.unirxnNetworks.append(network)
 
-        # Add this reaction to that network if not already present
-        found = False
-        for rxn in network.pathReactions:
-            if newReaction.isEquivalent(rxn):
-                found = True
-                break
-        if not found:
-            network.pathReactions.append(reaction)
-            network.invalidate()
+        # Add the path reaction to that network
+        network.addPathReaction(newReaction, newSpecies)
         
         # Return the network that the reaction was added to
         return network
