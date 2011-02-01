@@ -346,10 +346,11 @@ def execute(args):
 
             # Update RMG execution statistics
             logging.info('Updating RMG execution statistics...')
-            coreSpeciesCount.append(len(reactionModel.core.species))
-            coreReactionCount.append(len(reactionModel.core.reactions))
-            edgeSpeciesCount.append(len(reactionModel.edge.species))
-            edgeReactionCount.append(len(reactionModel.edge.reactions))
+            coreSpec, coreReac, edgeSpec, edgeReac = reactionModel.getModelSize()
+            coreSpeciesCount.append(coreSpec)
+            coreReactionCount.append(coreReac)
+            edgeSpeciesCount.append(edgeSpec)
+            edgeReactionCount.append(edgeReac)
             execTime.append(time.time() - settings.initializationTime)
             try:
                 from guppy import hpy
@@ -383,8 +384,9 @@ def execute(args):
     # Write output file
     logging.info('MODEL GENERATION COMPLETED')
     logging.info('')
-    logging.info('The final model core has %s species and %s reactions' % (len(reactionModel.core.species), len(reactionModel.core.reactions)))
-    logging.info('The final model edge has %s species and %s reactions' % (len(reactionModel.edge.species), len(reactionModel.edge.reactions)))
+    coreSpec, coreReac, edgeSpec, edgeReac = reactionModel.getModelSize()
+    logging.info('The final model core has %s species and %s reactions' % (coreSpec, coreReac))
+    logging.info('The final model edge has %s species and %s reactions' % (edgeSpec, edgeReac))
     
     # Log end timestamp
     logging.info('')

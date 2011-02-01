@@ -984,11 +984,13 @@ class CoreEdgeReactionModel:
         for rxn in newEdgeReactions:
             logging.info('    %s' % (rxn.reverse if newSpecies in rxn.products else rxn))
 
+        coreSpeciesCount, coreReactionCount, edgeSpeciesCount, edgeReactionCount = self.getModelSize()
+
         # Output current model size information after enlargement
         logging.info('')
         logging.info('After model enlargement:')
-        logging.info('    The model core has %s species and %s reactions' % (len(self.core.species), len(self.core.reactions)))
-        logging.info('    The model edge has %s species and %s reactions' % (len(self.edge.species), len(self.edge.reactions)))
+        logging.info('    The model core has %s species and %s reactions' % (coreSpeciesCount, coreReactionCount))
+        logging.info('    The model edge has %s species and %s reactions' % (edgeSpeciesCount, edgeReactionCount))
         logging.info('')
 
     def addSpeciesToCore(self, spec):
@@ -1116,6 +1118,20 @@ class CoreEdgeReactionModel:
         """
         if rxn not in self.edge.reactions:
             self.edge.reactions.append(rxn)
+
+    def getModelSize(self):
+        """
+        Return the numbers of species and reactions in the model core and edge.
+        Note that this is not necessarily equal to the lengths of the
+        corresponding species and reaction lists.
+        """
+        coreSpeciesCount = len(self.core.species)
+        coreReactionsCount = len([rxn for rxn in self.core.reactions if isinstance(rxn, Reaction)])
+        coreReactionsCount += len([rxn for rxn in self.core.reactions if isinstance(rxn, PDepReaction)]) / 2
+        edgeSpeciesCount = len(self.edge.species)
+        edgeReactionsCount = len([rxn for rxn in self.edge.reactions if isinstance(rxn, Reaction)])
+        edgeReactionsCount += len([rxn for rxn in self.edge.reactions if isinstance(rxn, PDepReaction)]) / 2
+        return (coreSpeciesCount, coreReactionsCount, edgeSpeciesCount, edgeReactionsCount)
 
     def getLists(self):
         """
