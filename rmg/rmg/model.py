@@ -316,6 +316,28 @@ class PDepNetwork(measure.network.Network):
         # Return the species
         return maxSpecies
 
+    def exploreIsomer(self, isomer, reactionModel):
+        """
+        Explore a previously-unexplored unimolecular `isomer` in this partial
+        network using the provided core-edge reaction model `reactionModel`,
+        returning the new reactions and new species.
+        """
+        assert isomer not in self.explored
+        assert isomer not in self.isomers
+        assert isomer not in self.source
+
+        logging.info('Exploring isomer %s in pressure-dependent network #%i' % (isomer, self.index))
+        self.explored.append(isomer)
+        # Find reactions involving the found species as unimolecular
+        # reactant or product (e.g. A <---> products)
+        newReactionList, newSpeciesList = generateReactions([isomer], reactionModel)
+        # Don't find reactions involving the new species as bimolecular
+        # reactants or products with itself (e.g. A + A <---> products)
+        # Don't find reactions involving the new species as bimolecular
+        # reactants or products with other core species (e.g. A + B <---> products)
+
+        return newReactionList, newSpeciesList
+
     def addPathReaction(self, newReaction, newSpecies):
         """
         Add a path reaction to the network. If the path reaction already exists,
@@ -504,9 +526,7 @@ class PDepNetwork(measure.network.Network):
 
                     # Place the net reaction in the core or edge if necessary
                     # Note that leak reactions are not placed in the edge
-                    if netReaction.reactants in self.reactants or netReaction.reactants in self.products:
-                        pass
-                    elif all([s in reactionModel.core.species for s in netReaction.reactants]) and all([s in reactionModel.core.species for s in netReaction.products]):
+                    if all([s in reactionModel.core.species for s in netReaction.reactants]) and all([s in reactionModel.core.species for s in netReaction.products]):
                         reactionModel.addReactionToCore(netReaction)
                     else:
                         reactionModel.addReactionToEdge(netReaction)
@@ -805,48 +825,35 @@ class CoreEdgeReactionModel:
             # Add new species
             self.addSpeciesToCore(newSpecies)
 
+            # Process the new reactions
+            self.processNewReactions(newReactionList, newSpecies, pdepNetwork)
+
         elif isinstance(newObject, tuple) and isinstance(newObject[0], PDepNetwork) and settings.pressureDependence:
 
             pdepNetwork, newSpecies = newObject
-            logging.info('Exploring species %s in pressure-dependent network #%i' % (newSpecies, pdepNetwork.index))
-            pdepNetwork.explored.append(newSpecies)
-            # Find reactions involving the found species as unimolecular
-            # reactant or product (e.g. A <---> products)
-            r, s = generateReactions([newSpecies], self)
-            newReactionList.extend(r); newSpeciesList.extend(s)
-            # Don't find reactions involving the new species as bimolecular
-            # reactants or products with itself (e.g. A + A <---> products)
-            # Don't find reactions involving the new species as bimolecular
-            # reactants or products with other core species (e.g. A + B <---> products)
+            newReactionList, newSpeciesList = pdepNetwork.exploreIsomer(newSpecies, self)
+            self.processNewReactions(newReactionList, newSpecies, pdepNetwork)
 
         else:
             raise TypeError('Unable to use object %s to enlarge reaction model; expecting an object of class rmg.model.Species or rmg.model.PDepNetwork.' % newObject)
 
-        # Add new reactions generated in above
-        for rxn in newReactionList:
-            allSpeciesInCore = True
-            for spec in rxn.reactants:
-                if spec not in self.core.species:
-                    allSpeciesInCore = False
-                    if spec not in self.edge.species:
-                        self.addSpeciesToEdge(spec)
-            for spec in rxn.products:
-                if spec not in self.core.species:
-                    allSpeciesInCore = False
-                    if spec not in self.edge.species:
-                        self.addSpeciesToEdge(spec)
-            # If pressure dependence is on, we only add reactions that are not unimolecular;
-            # unimolecular reactions will be added after processing the associated networks
-            if not settings.pressureDependence or not (
-                rxn.isIsomerization() or rxn.isDissociation() or rxn.isAssociation()):
-                if allSpeciesInCore:
-                    self.addReactionToCore(rxn)
+        # If there are any core species among the unimolecular product channels
+        # of any existing network, they need to be made included
+        for network in self.unirxnNetworks:
+            network.updateConfigurations()
+            index = 0
+            while index < len(self.core.species):
+                species = self.core.species[index]
+                for products in network.products:
+                    if len(products) == 1 and products[0] == species:
+                        reactionList, speciesList = network.exploreIsomer(species, self)
+                        self.processNewReactions(reactionList, species, network)
+                        network.updateConfigurations()
+                        index = 0
+                        break
                 else:
-                    self.addReactionToEdge(rxn)
-            else:
-                # Update unimolecular reaction networks
-                net = self.addReactionToUnimolecularNetworks(rxn, newSpecies=newSpecies, network=pdepNetwork)
-
+                    index += 1
+        
         # Generate thermodynamics of new species
         logging.info('Generating thermodynamics for new species...')
         for spec in newSpeciesList:
@@ -904,6 +911,39 @@ class CoreEdgeReactionModel:
         )
 
         logging.info('')
+
+    def processNewReactions(self, newReactions, newSpecies, pdepNetwork=None):
+        """
+        Process a list of newly-generated reactions involving the new core
+        species or explored isomer `newSpecies` in network `pdepNetwork`.
+        """
+        for rxn in newReactions:
+            allSpeciesInCore = True
+            # Add the reactant and product species to the edge if necessary
+            # At the same time, check if all reactants and products are in the core
+            for spec in rxn.reactants:
+                if spec not in self.core.species:
+                    allSpeciesInCore = False
+                    if spec not in self.edge.species:
+                        self.addSpeciesToEdge(spec)
+            for spec in rxn.products:
+                if spec not in self.core.species:
+                    allSpeciesInCore = False
+                    if spec not in self.edge.species:
+                        self.addSpeciesToEdge(spec)
+            # If pressure dependence is on, we only add reactions that are not unimolecular;
+            # unimolecular reactions will be added after processing the associated networks
+            if not settings.pressureDependence or not (
+                rxn.isIsomerization() or rxn.isDissociation() or rxn.isAssociation()):
+                if allSpeciesInCore:
+                    self.addReactionToCore(rxn)
+                else:
+                    self.addReactionToEdge(rxn)
+            else:
+                # Add the reaction to the appropriate unimolecular reaction network
+                # If pdepNetwork is not None then that will be the network the
+                # (path) reactions are added to
+                net = self.addReactionToUnimolecularNetworks(rxn, newSpecies=newSpecies, network=pdepNetwork)
 
     def printEnlargeSummary(self, newCoreSpecies, newCoreReactions, newEdgeSpecies, newEdgeReactions, newSpecies=None):
         """
@@ -1049,7 +1089,8 @@ class CoreEdgeReactionModel:
         ensure it is supposed to be a core reaction (i.e. all of its reactants
         AND all of its products are in the list of core species).
         """
-        self.core.reactions.append(rxn)
+        if rxn not in self.core.reactions:
+            self.core.reactions.append(rxn)
         if rxn in self.edge.reactions:
             self.edge.reactions.remove(rxn)
         
@@ -1061,7 +1102,8 @@ class CoreEdgeReactionModel:
         list of core species, and the others are in either the core or the
         edge).
         """
-        self.edge.reactions.append(rxn)
+        if rxn not in self.edge.reactions:
+            self.edge.reactions.append(rxn)
 
     def getLists(self):
         """
