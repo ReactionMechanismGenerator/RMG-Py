@@ -180,6 +180,19 @@ def logHeader(level=logging.INFO):
 
 ################################################################################
 
+def makeOutputSubdirectory(folder):
+    """
+    Create a subdirectory `folder` in the output directory. If the folder
+    already exists (e.g. from a previous job) its contents are deleted.
+    """
+    dir = os.path.join(settings.outputDirectory, folder)
+    if os.path.exists(dir):
+        # The directory already exists, so delete it (and all its content!)
+        for f in os.listdir(dir):
+            os.remove(os.path.join(dir, f))
+        os.rmdir(dir)
+    os.mkdir(dir)
+
 def execute(args):
     """
     Generate a reaction model for the set of reaction systems specified in an
@@ -224,26 +237,9 @@ def execute(args):
     logHeader()
 
     # Make output subdirectories
-    plotDir = os.path.join(settings.outputDirectory, 'plot')
-    if os.path.exists(plotDir):
-        for f in os.listdir(plotDir):
-            os.remove(plotDir + '/' + f)
-        os.rmdir(plotDir)
-    os.mkdir(plotDir)
-
-    specDir = os.path.join(settings.outputDirectory, 'species')
-    if os.path.exists(specDir):
-        for f in os.listdir(specDir):
-            os.remove(specDir + '/' + f)
-        os.rmdir(specDir)
-    os.mkdir(specDir)
-
-    pdepDir = os.path.join(settings.outputDirectory, 'pdep')
-    if os.path.exists(pdepDir):
-        for f in os.listdir(pdepDir):
-            os.remove(pdepDir + '/' + f)
-        os.rmdir(pdepDir)
-    os.mkdir(pdepDir)
+    makeOutputSubdirectory('plot')
+    makeOutputSubdirectory('species')
+    makeOutputSubdirectory('pdep')
 
     # Read input file
     reactionModel, coreSpecies, reactionSystems = readInputFile(inputFile)
