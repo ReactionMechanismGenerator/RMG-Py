@@ -392,6 +392,18 @@ class PDepNetwork(measure.network.Network):
             if not found:
                 self.pathReactions.append(reaction)
 
+        # Also merge net reactions (so that when we update the network in the
+        # future, we update the existing net reactions rather than making new ones)
+        # Q: What to do when a net reaction exists in both networks being merged?
+        for reaction in other.netReactions:
+            found = False
+            for rxn in self.netReactions:
+                if reaction.isEquivalent(rxn):
+                    found = True
+                    break
+            if not found:
+                self.netReactions.append(reaction)
+
         # Mark this network as invalid
         self.valid = False
 
