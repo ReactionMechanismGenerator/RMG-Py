@@ -948,9 +948,15 @@ class CoreEdgeReactionModel:
             if not settings.pressureDependence or not (
                 rxn.isIsomerization() or rxn.isDissociation() or rxn.isAssociation()):
                 if allSpeciesInCore:
-                    self.addReactionToCore(rxn)
+                    for reaction in self.core.reactions:
+                        if isinstance(reaction, Reaction) and reaction.isEquivalent(rxn): break
+                    else:
+                        self.addReactionToCore(rxn)
                 else:
-                    self.addReactionToEdge(rxn)
+                    for reaction in self.edge.reactions:
+                        if isinstance(reaction, Reaction) and reaction.isEquivalent(rxn): break
+                    else:
+                        self.addReactionToEdge(rxn)
             else:
                 # Add the reaction to the appropriate unimolecular reaction network
                 # If pdepNetwork is not None then that will be the network the
