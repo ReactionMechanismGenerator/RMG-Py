@@ -1,7 +1,7 @@
-.. _usersguide:
+.. _measureusersguide:
 
 ********************
-MEASURE Users' Guide
+MEASURE User's Guide
 ********************
 
 .. toctree::

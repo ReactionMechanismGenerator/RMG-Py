@@ -1,8 +1,8 @@
-.. _api:
+.. _measureapireference:
 
-*************************
-MEASURE Developers' Guide
-*************************
+*********************
+MEASURE API Reference
+*********************
 
 .. toctree::
     :maxdepth: 2

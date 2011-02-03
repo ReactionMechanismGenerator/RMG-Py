@@ -1,8 +1,6 @@
-.. _contents:
-
-******************************
-MEASURE Documentation Contents
-******************************
+*******
+MEASURE
+*******
 
 .. toctree::
     :maxdepth: 2

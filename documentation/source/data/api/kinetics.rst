@@ -13,7 +13,10 @@ Kinetics Database
 .. autoclass:: rmgdata.kinetics.ReactionFamily
     :members:
 
-.. autoclass:: rmgdata.kinetics.KineticsDatabase
+.. autoclass:: rmgdata.kinetics.KineticsGroupDatabase
+    :members:
+
+.. autoclass:: rmgdata.kinetics.KineticsPrimaryDatabase
     :members:
 
 .. autofunction:: rmgdata.kinetics.loadKineticsDatabase

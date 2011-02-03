@@ -25,10 +25,6 @@ MoleculePattern Objects
 Working with Atom Types
 =======================
 
-.. autofunction:: chempy.pattern.atomTypesEquivalent
-
-.. autofunction:: chempy.pattern.atomTypesSpecificCaseOf
-
 .. autofunction:: chempy.pattern.getAtomType
 
 Adjacency Lists

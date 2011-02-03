@@ -1,8 +1,8 @@
-.. _contents:
+.. _dataapireference:
 
-***********************************
-RMG Database documentation contents
-***********************************
+******************
+Data API Reference
+******************
 
 .. toctree::
     :maxdepth: 2

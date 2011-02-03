@@ -1,4 +1,4 @@
-.. _theory:
+.. _measuretheoryguide:
 
 ********************
 MEASURE Theory Guide

@@ -1,11 +1,10 @@
-********
-CanTherm
-********
+****
+Chem
+****
 
 .. toctree::
     :maxdepth: 2
 
-    users/index
     api/index
 
 * :ref:`genindex`

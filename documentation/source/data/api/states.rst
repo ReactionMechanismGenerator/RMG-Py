@@ -10,7 +10,7 @@ Group Frequency Database
 .. autoclass:: rmgdata.states.GroupFrequency
     :members:
 
-.. autoclass:: rmgdata.states.FrequencyDatabase
+.. autoclass:: rmgdata.states.FrequencyGroupDatabase
     :members:
 
 .. autofunction:: rmgdata.states.loadFrequencyDatabase

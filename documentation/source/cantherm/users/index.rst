@@ -1,7 +1,7 @@
-.. _usersguide:
+.. _canthermusersguide:
 
 *********************
-CanTherm Users' Guide
+CanTherm User's Guide
 *********************
 
 .. toctree::

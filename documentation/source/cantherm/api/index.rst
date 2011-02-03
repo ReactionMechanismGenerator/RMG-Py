@@ -1,3 +1,5 @@
+.. _canthermapireference:
+
 **********************
 CanTherm API Reference
 **********************

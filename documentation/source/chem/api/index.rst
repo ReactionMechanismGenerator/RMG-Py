@@ -1,8 +1,8 @@
-.. _contents:
+.. _chemapireference:
 
-*****************************
-ChemPy documentation contents
-*****************************
+******************
+Chem API Reference
+******************
 
 .. toctree::
     :maxdepth: 2

@@ -7,10 +7,10 @@ used within MEASURE. If you are a developer wishing to know the full
 implementation details of MEASURE - e.g. if you are trying to modify the 
 codebase - this document is for you. If you are simply trying to learn how to
 generate phenomenological rate coefficients with MEASURE, you should switch to
-the :ref:`usersguide`. If you want to know the mathematical basis for the
-master equation methods used by measure, you should read the :ref:`theory`.
-(In fact, if you haven't already, you may wish to read these documents first 
-before continuing.)
+the :ref:`measureusersguide`. If you want to know the mathematical basis for the
+master equation methods used by measure, you should read the 
+:ref:`measuretheoryguide`. (In fact, if you haven't already, you may wish to 
+read these documents first before continuing.)
 
 The source for MEASURE is split across a number of Python and Cython modules. 
 Each section of the developers' guide references a different module:
