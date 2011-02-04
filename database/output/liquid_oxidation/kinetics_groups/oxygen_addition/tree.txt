@@ -1,8 +1,0 @@
-// RWest. primary_initiation. 28 Oct 2008
-// for autoxidation of liquid alkanes 
-// based on Pfaendtner & Broadbelt 2008
-// http://dx.doi.org/10.1021/ie0714807
-
-L1 : O2d
-
-L1 : Y_rad_birad
