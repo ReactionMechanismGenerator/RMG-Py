@@ -38,24 +38,24 @@ import numpy
 import os
 import os.path
 
-import chempy.constants as constants
-import chempy.species
-import chempy.reaction
-from chempy.thermo import WilhoitModel, NASAModel
-from chempy.kinetics import ArrheniusModel, ChebyshevModel, PDepArrheniusModel
+import rmgpy.chem.constants as constants
+import rmgpy.chem.species
+import rmgpy.chem.reaction
+from rmgpy.chem.thermo import WilhoitModel, NASAModel
+from rmgpy.chem.kinetics import ArrheniusModel, ChebyshevModel, PDepArrheniusModel
 
-from rmgdata.thermo import generateThermoData, convertThermoData
-from rmgdata.kinetics import generateKineticsData
-from rmgdata.states import generateFrequencyData
+from rmgpy.data.thermo import generateThermoData, convertThermoData
+from rmgpy.data.kinetics import generateKineticsData
+from rmgpy.data.states import generateFrequencyData
 
-import measure.network
+import rmgpy.measure.network
 
 import settings
 from rxngen import generateReactions
 
 ################################################################################
 
-class Species(chempy.species.Species):
+class Species(rmgpy.chem.species.Species):
 
     def generateThermoData(self, thermoClass=NASAModel):
         """
@@ -127,7 +127,7 @@ class Species(chempy.species.Species):
         """
 
         count = sum([1 for atom in self.molecule[0].vertices if atom.isNonHydrogen()])
-        self.lennardJones = chempy.species.LennardJones()
+        self.lennardJones = rmgpy.chem.species.LennardJones()
 
         if count == 1:
             self.lennardJones.sigma = 3.758e-10
@@ -150,10 +150,10 @@ class Species(chempy.species.Species):
 
 ################################################################################
 
-class Reaction(chempy.reaction.Reaction):
+class Reaction(rmgpy.chem.reaction.Reaction):
 
     def __init__(self, index=-1, reactants=None, products=None, kinetics=None, reversible=True, transitionState=None, thirdBody=False, family=None, isForward=True):
-        chempy.reaction.Reaction.__init__(self, index, reactants, products, kinetics, reversible, transitionState, thirdBody)
+        rmgpy.chem.reaction.Reaction.__init__(self, index, reactants, products, kinetics, reversible, transitionState, thirdBody)
         self.family = family
         self.isForward = isForward
         self.multiplier = 1.0
@@ -230,15 +230,15 @@ class Reaction(chempy.reaction.Reaction):
             klist[i] = self.getRateCoefficient(Tlist[i], 1e5) / self.getEquilibriumConstant(Tlist[i])
         return ArrheniusModel().fitToData(Tlist, klist)
 
-class PDepReaction(chempy.reaction.Reaction):
+class PDepReaction(rmgpy.chem.reaction.Reaction):
 
     def __init__(self, index=-1, reactants=None, products=None, network=None, kinetics=None, reversible=True, transitionState=None, thirdBody=False):
-        chempy.reaction.Reaction.__init__(self, index, reactants, products, kinetics, reversible, transitionState, thirdBody)
+        rmgpy.chem.reaction.Reaction.__init__(self, index, reactants, products, kinetics, reversible, transitionState, thirdBody)
         self.network = network
 
 ################################################################################
 
-class PDepNetwork(measure.network.Network):
+class PDepNetwork(rmgpy.measure.network.Network):
     """
     A representation of a *partial* unimolecular reaction network. Each partial
     network has a single `source` isomer or reactant channel, and is responsible
@@ -256,7 +256,7 @@ class PDepNetwork(measure.network.Network):
     """
 
     def __init__(self, index=-1, source=None):
-        measure.network.Network.__init__(self, index=index)
+        rmgpy.measure.network.Network.__init__(self, index=index)
         self.source = source
         self.explored = []
 
@@ -450,10 +450,10 @@ class PDepNetwork(measure.network.Network):
         network is marked as invalid.
         """
 
-        from measure.collision import SingleExponentialDownModel
-        from measure.reaction import fitInterpolationModel
-        import measure.settings
-        import measure.output
+        from rmgpy.measure.collision import SingleExponentialDownModel
+        from rmgpy.measure.reaction import fitInterpolationModel
+        import rmgpy.measure.settings
+        import rmgpy.measure.output
 
         # Get the parameters for the pressure dependence calculation
         method, Tmin, Tmax, Tlist, Pmin, Pmax, Plist, grainSize, numGrains, model = settings.pressureDependence
@@ -478,7 +478,7 @@ class PDepNetwork(measure.network.Network):
         # be the reactant ground-state energy + the activation energy
         for rxn in self.pathReactions:
             if rxn.kinetics is None: rxn.kinetics = rxn.reverse.fitReverseKinetics()
-            rxn.transitionState = chempy.species.TransitionState(
+            rxn.transitionState = rmgpy.chem.species.TransitionState(
                 E0=sum([spec.E0 for spec in rxn.reactants]) + rxn.kinetics.Ea,
             )
 
@@ -499,7 +499,7 @@ class PDepNetwork(measure.network.Network):
         self.collisionModel = SingleExponentialDownModel(alpha0=4.86 * 4184)
 
         # Save input file
-        measure.output.writeInput(os.path.join(settings.outputDirectory, 'pdep', 'network%i_%i.py' % (self.index, len(self.isomers))),
+        rmgpy.measure.output.writeInput(os.path.join(settings.outputDirectory, 'pdep', 'network%i_%i.py' % (self.index, len(self.isomers))),
             self, Tlist, Plist, (grainSize, numGrains), method, model)
 
         # Automatically choose a suitable set of energy grains if they were not
@@ -1300,7 +1300,7 @@ class CoreEdgeReactionModel:
         # For the purposes of RMG we want each network to run very quickly
         # One way to do this is to only calculate the density of states for
         # the unimolecular isomers
-        measure.settings.minimizeDensityOfStatesCalculations = True
+        rmgpy.measure.settings.minimizeDensityOfStatesCalculations = True
 
         # Iterate over all the networks, updating the invalid ones as necessary
         for network in self.unirxnNetworks:

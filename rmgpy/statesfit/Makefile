@@ -10,5 +10,3 @@ all:
 clean:
 	python setup.py clean
 	rm -rf *.so *.pyc build
-
-cleanall: clean

@@ -35,10 +35,10 @@ the kinetics database.
 
 import logging
 
-from chempy.pattern import MoleculePattern
+from rmgpy.chem.pattern import MoleculePattern
 
-from rmgdata.base import LogicNode
-import rmgdata.kinetics
+from rmgpy.data.base import LogicNode
+import rmgpy.data.kinetics
 
 ################################################################################
 
@@ -99,7 +99,7 @@ def generateProductStructures(family, reactantStructures, maps, forward):
     try:
         productStructures = family.applyRecipe(reactantStructures, forward=forward)
         if not productStructures: return None
-    except rmgdata.kinetics.InvalidActionError, e:
+    except rmgpy.data.kinetics.InvalidActionError, e:
         print 'Unable to apply reaction recipe!'
         print 'Reaction family is %s in %s direction' % (family.label, 'forward' if forward else 'reverse')
         print 'Reactant structures are:'
@@ -345,8 +345,8 @@ def generateReactions(species, model):
     for spec in species:
         for molecule in spec.molecule: molecule.makeHydrogensExplicit()
 
-    for kineticsDatabase in rmgdata.kinetics.kineticsDatabases:
-        if isinstance(kineticsDatabase, rmgdata.kinetics.KineticsPrimaryDatabase) and kineticsDatabase.reactionLibrary and not kineticsDatabase.seedMechanism:
+    for kineticsDatabase in rmgpy.data.kinetics.kineticsDatabases:
+        if isinstance(kineticsDatabase, rmgpy.data.kinetics.KineticsPrimaryDatabase) and kineticsDatabase.reactionLibrary and not kineticsDatabase.seedMechanism:
             rxnList, specList = generateReactionsForPrimary(kineticsDatabase, species, model)
             speciesList.extend(specList)
             # Formally make the new reactions
@@ -354,8 +354,8 @@ def generateReactions(species, model):
                 forward = species[0] in rxn.reactants
                 r, isNew = model.makeNewReaction(rxn if forward else rxn.reverse)
                 reactionList.append(r)
-        elif isinstance(kineticsDatabase, rmgdata.kinetics.KineticsGroupDatabase):
-            for key, family in rmgdata.kinetics.kineticsDatabases[-1].families.iteritems():
+        elif isinstance(kineticsDatabase, rmgpy.data.kinetics.KineticsGroupDatabase):
+            for key, family in rmgpy.data.kinetics.kineticsDatabases[-1].families.iteritems():
                 for forward in [True, False]:
                     rxnList, specList = generateReactionsForFamily(species, family, model, forward=forward)
                     speciesList.extend(specList)

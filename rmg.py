@@ -39,9 +39,9 @@ import logging
 import time
 import numpy
 
-import rmg.settings as settings
-from rmg.input import readInputFile
-from rmg.model import Species, PDepNetwork
+import rmgpy.rmg.settings as settings
+from rmgpy.rmg.input import readInputFile
+from rmgpy.rmg.model import Species, PDepNetwork
 
 ################################################################################
 
@@ -259,10 +259,10 @@ def execute(args):
 
         # Seed mechanisms: add species and reactions from seed mechanism
         # DON'T generate any more reactions for the seed species at this time
-        import rmgdata.kinetics
-        from rmg.model import Reaction
-        for kineticsDatabase in rmgdata.kinetics.kineticsDatabases:
-            if isinstance(kineticsDatabase, rmgdata.kinetics.KineticsPrimaryDatabase) and kineticsDatabase.seedMechanism:
+        import rmgpy.data.kinetics
+        from rmgpy.rmg.model import Reaction
+        for kineticsDatabase in rmgpy.data.kinetics.kineticsDatabases:
+            if isinstance(kineticsDatabase, rmgpy.data.kinetics.KineticsPrimaryDatabase) and kineticsDatabase.seedMechanism:
                 reactionModel.addSeedMechanismToCore(kineticsDatabase, react=False)
 
         # Add nonreactive species (e.g. bath gases) to core first

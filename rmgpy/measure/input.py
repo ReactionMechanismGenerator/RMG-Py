@@ -41,13 +41,13 @@ quantities.set_default_units('si')
 quantities.UnitQuantity('kilocalorie', 1000.0*quantities.cal, symbol='kcal')
 quantities.UnitQuantity('kilojoule', 1000.0*quantities.J, symbol='kJ')
 
-from chempy.species import Species, TransitionState
-from chempy.reaction import Reaction
-from chempy.species import LennardJones as LennardJonesModel
-from chempy.molecule import Molecule
-from chempy.states import *
-from chempy.kinetics import ArrheniusModel
-from chempy.thermo import *
+from rmgpy.chem.species import Species, TransitionState
+from rmgpy.chem.reaction import Reaction
+from rmgpy.chem.species import LennardJones as LennardJonesModel
+from rmgpy.chem.molecule import Molecule
+from rmgpy.chem.states import *
+from rmgpy.chem.kinetics import ArrheniusModel
+from rmgpy.chem.thermo import *
 
 from network import Network
 from collision import SingleExponentialDownModel
@@ -346,7 +346,7 @@ def generateThermoFromStates(species):
     
     # Must use ThermoGAModel because we can't rely on knowing
     # anything about the structure of the species
-    from chempy.thermo import ThermoGAModel
+    from rmgpy.chem.thermo import ThermoGAModel
     Tdata = numpy.linspace(numpy.min(Tlist), numpy.max(Tlist), 20.0)
     Cpdata = species.states.getHeatCapacities(Tdata)
     H298 = species.E0 + species.states.getEnthalpy(298)

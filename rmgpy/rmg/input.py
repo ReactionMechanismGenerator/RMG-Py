@@ -31,16 +31,16 @@
 import logging
 import quantities
 
-from chempy.molecule import Molecule
-from chempy.species import Species
+from rmgpy.chem.molecule import Molecule
 
-from rmgdata import getDatabaseDirectory
-from rmgdata.thermo import loadThermoDatabase
-from rmgdata.kinetics import loadKineticsDatabase
-from rmgdata.states import loadFrequencyDatabase
+from rmgpy.data import getDatabaseDirectory
+from rmgpy.data.thermo import loadThermoDatabase
+from rmgpy.data.kinetics import loadKineticsDatabase
+from rmgpy.data.states import loadFrequencyDatabase
 
-from rmgsolver.base import TerminationTime, TerminationConversion
-from rmgsolver.simple import SimpleReactor
+from rmgpy.solver.base import TerminationTime, TerminationConversion
+from rmgpy.solver.simple import SimpleReactor
+
 from model import *
 
 ################################################################################
@@ -131,7 +131,7 @@ def model(toleranceMoveToCore, toleranceKeepInEdge=0.0, toleranceInterruptSimula
 
 def pressureDependence(method, temperatures, pressures, minimumGrainSize=0.0, minimumNumberOfGrains=0, interpolation=None):
 
-    from measure.input import getTemperaturesForModel, getPressuresForModel
+    from rmgpy.measure.input import getTemperaturesForModel, getPressuresForModel
     # Process temperatures
     Tmin, Tmin_units, Tmax, Tmax_units, Tcount = temperatures
     Tmin = processQuantity((Tmin, Tmin_units))[0]

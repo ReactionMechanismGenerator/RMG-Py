@@ -41,9 +41,9 @@ import numpy
 cimport numpy
 import logging
 
-import chempy.constants as constants
-import chempy.reaction
-from chempy.kinetics import *
+import rmgpy.chem.constants as constants
+import rmgpy.chem.reaction
+from rmgpy.chem.kinetics import *
 
 def convolve(numpy.ndarray[numpy.float64_t,ndim=1] rho1,
     numpy.ndarray[numpy.float64_t,ndim=1] rho2,

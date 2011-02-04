@@ -31,8 +31,8 @@ import math
 import numpy
 import logging
 
-import chempy.constants as constants
-from chempy.states import *
+import rmgpy.chem.constants as constants
+from rmgpy.chem.states import *
 
 ################################################################################
 

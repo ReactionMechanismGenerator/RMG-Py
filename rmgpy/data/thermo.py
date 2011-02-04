@@ -35,9 +35,9 @@ import numpy
 
 from base import *
 
-import chempy.constants as constants
-from chempy.thermo import *
-from chempy.molecule import Atom, Bond, Molecule
+import rmgpy.chem.constants as constants
+from rmgpy.chem.thermo import *
+from rmgpy.chem.molecule import Atom, Bond, Molecule
 
 ################################################################################
 
@@ -516,7 +516,7 @@ def convertThermoData(thermoData, molecule, thermoClass=NASAModel):
     Raises a :class:`TypeError` if this is not possible.
     """
 
-    from chempy.ext.thermo_converter import convertGAtoWilhoit, convertWilhoitToNASA
+    from rmgpy.chem.ext.thermo_converter import convertGAtoWilhoit, convertWilhoitToNASA
 
     # Nothing to do if we already have the right thermo model
     if isinstance(thermoData, thermoClass):

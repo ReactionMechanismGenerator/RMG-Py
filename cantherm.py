@@ -128,7 +128,7 @@ def execute(path, output):
     root, ext = os.path.split(path)
     os.chdir(root)
 
-    from cantherm.input import setOutputFile, setModelChemistry, hinderedRotor, loadSpecies, loadTransitionState, loadReaction, generateStates, generateThermo, generateKinetics
+    from rmgpy.cantherm.input import setOutputFile, setModelChemistry, hinderedRotor, loadSpecies, loadTransitionState, loadReaction, generateStates, generateThermo, generateKinetics
     setOutputFile(output)    
     
     global_context = { '__builtins__': None }

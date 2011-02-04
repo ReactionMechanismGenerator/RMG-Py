@@ -34,10 +34,10 @@ import logging
 
 from base import *
 
-from chempy.reaction import Reaction, ReactionError
-from chempy.kinetics import *
-from chempy.pattern import BondPattern, MoleculePattern
-from chempy.molecule import Bond
+from rmgpy.chem.reaction import Reaction, ReactionError
+from rmgpy.chem.kinetics import *
+from rmgpy.chem.pattern import BondPattern, MoleculePattern
+from rmgpy.chem.molecule import Bond
 
 ################################################################################
 

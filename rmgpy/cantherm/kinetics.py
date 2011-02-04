@@ -30,7 +30,7 @@
 import numpy
 import logging
 
-from chempy.kinetics import ArrheniusModel
+from rmgpy.chem.kinetics import ArrheniusModel
 
 ################################################################################
 

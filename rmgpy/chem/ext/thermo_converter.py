@@ -43,9 +43,9 @@ import logging
 import cython
 from scipy import zeros, linalg, optimize, integrate
 
-import chempy.constants as constants
+import rmgpy.chem.constants as constants
 
-from chempy.thermo import ThermoGAModel, WilhoitModel, NASAPolynomial, NASAModel
+from rmgpy.chem.thermo import ThermoGAModel, WilhoitModel, NASAPolynomial, NASAModel
 
 ################################################################################
 

@@ -46,7 +46,7 @@ cimport numpy
 import logging
 import cython
 
-import chempy.constants as constants
+import rmgpy.chem.constants as constants
 
 ################################################################################
 

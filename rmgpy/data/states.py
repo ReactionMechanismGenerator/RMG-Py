@@ -32,9 +32,9 @@ import os.path
 import logging
 import numpy
 
-import chempy.constants as constants
-from chempy.states import *
-from chempy.pattern import MoleculePattern
+import rmgpy.chem.constants as constants
+from rmgpy.chem.states import *
+from rmgpy.chem.pattern import MoleculePattern
 
 from base import *
 
@@ -266,7 +266,7 @@ def generateFrequencyData(molecule, thermoModel):
 
     # This depends on the statesfit module to fit the internal modes not
     # determined by the characteristic group frequencies
-    from statesfit import fitSpectralDataToHeatCapacity
+    from rmgpy.statesfit.fit import fitSpectralDataToHeatCapacity
 
     linear = molecule.isLinear()
     numRotors = molecule.countInternalRotors()

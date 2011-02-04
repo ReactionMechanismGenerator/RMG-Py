@@ -29,11 +29,11 @@
 
 import logging
 
-import chempy.constants as constants
-from chempy.states import HinderedRotor, HarmonicOscillator
-from chempy.species import Species, TransitionState
-from chempy.kinetics import ArrheniusModel
-from chempy.reaction import Reaction
+import rmgpy.chem.constants as constants
+from rmgpy.chem.states import HinderedRotor, HarmonicOscillator
+from rmgpy.chem.species import Species, TransitionState
+from rmgpy.chem.kinetics import ArrheniusModel
+from rmgpy.chem.reaction import Reaction
 
 from gaussian import GaussianLog
 from states import projectRotors, applyEnergyCorrections

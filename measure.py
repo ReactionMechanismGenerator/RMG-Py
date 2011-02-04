@@ -157,7 +157,7 @@ if __name__ == '__main__':
     logHeader()
     
     # Load input file
-    from measure.input import readInput
+    from rmgpy.measure.input import readInput
     params = readInput(args.file[0])
 
     # Only proceed if the input network is valid
@@ -192,8 +192,8 @@ if __name__ == '__main__':
             K, p0 = network.calculateRateCoefficients(Tlist, Plist, Elist, method)
 
             # Fit interpolation model
-            from chempy.reaction import Reaction
-            from measure.reaction import fitInterpolationModel
+            from rmgpy.chem.reaction import Reaction
+            from rmgpy.measure.reaction import fitInterpolationModel
             if model[0] != '':
                 logging.info('Fitting %s interpolation models...' % model[0])
             configurations = []
@@ -223,7 +223,7 @@ if __name__ == '__main__':
                         model, Tmin, Tmax, Pmin, Pmax, errorCheck=True)
 
             # Save results to file
-            from measure.output import writeOutput
+            from rmgpy.measure.output import writeOutput
             if args.output:
                 out = os.path.abspath(args.output[0])
             else:

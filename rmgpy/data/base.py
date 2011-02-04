@@ -50,8 +50,8 @@ import logging
 import quantities as pq
 import re
 
-from chempy.molecule import Molecule
-from chempy.pattern import MoleculePattern, InvalidAdjacencyListError
+from rmgpy.chem.molecule import Molecule
+from rmgpy.chem.pattern import MoleculePattern, InvalidAdjacencyListError
 
 pq.UnitQuantity('kilocalories', pq.cal*1e3, symbol='kcal')
 pq.UnitQuantity('kilojoules', pq.J*1e3, symbol='kJ')

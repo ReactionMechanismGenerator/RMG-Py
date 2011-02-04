@@ -37,9 +37,9 @@ between the input and output file syntax.
 import logging
 import os.path
 
-from chempy.thermo import *
-from chempy.kinetics import *
-from chempy.states import *
+from rmgpy.chem.thermo import *
+from rmgpy.chem.kinetics import *
+from rmgpy.chem.states import *
 
 from collision import *
 

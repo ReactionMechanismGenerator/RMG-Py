@@ -38,7 +38,7 @@ import numpy
 import scipy.integrate
 from pydas import DASSL
 
-import chempy.constants as constants
+import rmgpy.chem.constants as constants
 
 ################################################################################
 

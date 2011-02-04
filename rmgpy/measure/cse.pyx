@@ -36,7 +36,7 @@ cimport numpy
 import numpy.linalg
 import logging
 
-import chempy.constants as constants
+import rmgpy.chem.constants as constants
 
 from me import generateFullMEMatrix
 

@@ -31,9 +31,9 @@ import math
 import numpy.linalg
 import logging
 
-import chempy.constants as constants
-from chempy.thermo import ThermoGAModel, WilhoitModel, NASAModel
-from chempy.ext.thermo_converter import convertWilhoitToNASA
+import rmgpy.chem.constants as constants
+from rmgpy.chem.thermo import ThermoGAModel, WilhoitModel, NASAModel
+from rmgpy.chem.ext.thermo_converter import convertWilhoitToNASA
 
 ################################################################################
 

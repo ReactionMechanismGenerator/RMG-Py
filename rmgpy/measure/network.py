@@ -39,8 +39,8 @@ import cython
 import logging
 import os.path
 
-import chempy.constants as constants
-import chempy.states as states
+import rmgpy.chem.constants as constants
+import rmgpy.chem.states as states
 
 from reaction import *
 from collision import *
@@ -884,7 +884,7 @@ class Network:
         surface is dictated by the `ext` parameter.
         """
 
-        from chempy.ext.molecule_draw import createNewSurface, fontSizeNormal
+        from rmgpy.chem.ext.molecule_draw import createNewSurface, fontSizeNormal
         import cairo
 
         surface0 = createNewSurface(type=ext[1:])
@@ -911,7 +911,7 @@ class Network:
         will be used.
         """
 
-        from chempy.ext.molecule_draw import createNewSurface, drawMolecule
+        from rmgpy.chem.ext.molecule_draw import createNewSurface, drawMolecule
         import cairo
         
         # Determine whether or not to use the molecular structures in the
