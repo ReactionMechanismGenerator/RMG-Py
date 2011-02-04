@@ -6,14 +6,14 @@ import unittest
 import sys
 sys.path.append('.')
 
-import chempy.constants as constants
-from chempy.thermo import *
+import rmgpy.chem.constants as constants
+from rmgpy.chem.thermo import *
 
 ################################################################################
 
 class ThermoTest(unittest.TestCase):
     """
-    Contains unit tests for the chempy.thermo module, used for working with
+    Contains unit tests for the rmgpy.chems.thermo module, used for working with
     thermodynamics models.
     """
     

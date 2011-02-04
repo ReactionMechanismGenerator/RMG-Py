@@ -6,7 +6,7 @@ import unittest
 import sys
 sys.path.append('.')
 
-from chempy.graph import *
+from rmgpy.chem.graph import *
 
 ################################################################################
 

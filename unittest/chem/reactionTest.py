@@ -6,18 +6,19 @@ import unittest
 import sys
 sys.path.append('.')
 
-from chempy.species import Species, TransitionState
-from chempy.reaction import *
-from chempy.states import *
-from chempy.kinetics import ArrheniusModel
-from chempy.thermo import WilhoitModel
+from rmgpy.chem.species import Species, TransitionState
+from rmgpy.chem.reaction import *
+from rmgpy.chem.states import *
+from rmgpy.chem.kinetics import ArrheniusModel
+from rmgpy.chem.thermo import WilhoitModel
+import rmgpy.chem.constants as constants
 
 ################################################################################
 
 class ReactionTest(unittest.TestCase):
     """
-    Contains unit tests for the chempy.reaction module, used for working with
-    chemical reaction objects.
+    Contains unit tests for the rmgpy.chem.reaction module, used for working
+    with chemical reaction objects.
     """
     
     def testReactionThermo(self):

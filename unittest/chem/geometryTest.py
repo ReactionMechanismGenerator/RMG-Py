@@ -6,7 +6,7 @@ import unittest
 import sys
 sys.path.append('.')
 
-from chempy.geometry import *
+from rmgpy.chem.geometry import *
 
 ################################################################################
 

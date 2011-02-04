@@ -6,13 +6,13 @@ import unittest
 import sys
 sys.path.append('.')
 
-from chempy.states import *
+from rmgpy.chem.states import *
 
 ################################################################################
 
 class StatesTest(unittest.TestCase):
     """
-    Contains unit tests for the chempy.states module, used for working with
+    Contains unit tests for the rmgpy.chem.states module, used for working with
     molecular degrees of freedom.
     """
     

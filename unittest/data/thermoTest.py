@@ -6,12 +6,12 @@ import unittest
 import sys
 sys.path.append('.')
 
-from rmgdata.thermo import loadThermoDatabase, ThermoEntry, generateThermoData
-from rmgdata.base import LogicNode
-from chempy.molecule import Molecule
-from chempy.pattern import MoleculePattern
-from chempy.thermo import ThermoGAModel
-from chempy.species import Species
+from rmgpy.data.thermo import loadThermoDatabase, ThermoEntry, generateThermoData
+from rmgpy.data.base import LogicNode
+from rmgpy.chem.molecule import Molecule
+from rmgpy.chem.pattern import MoleculePattern
+from rmgpy.chem.thermo import ThermoGAModel
+from rmgpy.chem.species import Species
 
 ################################################################################
 
@@ -22,7 +22,7 @@ class ThermoDatabaseCheck(unittest.TestCase):
         Check the database load functions.
         """
 
-        thermoDatabase = loadThermoDatabase('output/RMG_Database/thermo_groups', group=True, old=True)
+        thermoDatabase = loadThermoDatabase('database/output/RMG_Database/thermo_groups', group=True, old=True)
 
         for database in [thermoDatabase.groupDatabase,
             thermoDatabase.int15Database,
@@ -76,7 +76,7 @@ class ThermoDatabaseCheck(unittest.TestCase):
         Check the database load functions.
         """
 
-        thermoDatabase = loadThermoDatabase('input/RMG_database/thermo_groups', group=True, old=False)
+        thermoDatabase = loadThermoDatabase('database/input/RMG_database/thermo_groups', group=True, old=False)
 
         for database in [thermoDatabase.groupDatabase,
             thermoDatabase.int15Database,
@@ -148,7 +148,7 @@ class ThermoDatabaseCheck(unittest.TestCase):
             ['[CH]=CCC',     3,    58.99,   74.9971,   20.38, 25.34, 29.68, 33.36, 39.14, 43.48, 50.22],
         ]
                
-        thermoDatabase = loadThermoDatabase('output/RMG_Database/thermo_groups', group=True, old=True)
+        thermoDatabase = loadThermoDatabase('database/output/RMG_Database/thermo_groups', group=True, old=True)
         
         failMessage = '\n'
         

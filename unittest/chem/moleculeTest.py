@@ -6,8 +6,8 @@ import unittest
 import sys
 sys.path.append('.')
 
-from chempy.molecule import Molecule
-from chempy.pattern import MoleculePattern
+from rmgpy.chem.molecule import Molecule
+from rmgpy.chem.pattern import MoleculePattern
 
 ################################################################################
 

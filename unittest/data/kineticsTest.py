@@ -8,12 +8,12 @@ sys.path.append('.')
 
 import logging
 
-from rmgdata.kinetics import loadKineticsDatabase, KineticsEntry
-from rmgdata.base import LogicNode
-from chempy.molecule import Molecule
-from chempy.pattern import MoleculePattern
-from chempy.reaction import Reaction
-from chempy.kinetics import ArrheniusEPModel
+from rmgpy.data.kinetics import loadKineticsDatabase, KineticsEntry
+from rmgpy.data.base import LogicNode
+from rmgpy.chem.molecule import Molecule
+from rmgpy.chem.pattern import MoleculePattern
+from rmgpy.chem.reaction import Reaction
+from rmgpy.chem.kinetics import ArrheniusEPModel
 
 ################################################################################
 

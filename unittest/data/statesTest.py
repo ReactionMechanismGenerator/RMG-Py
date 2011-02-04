@@ -6,10 +6,10 @@ import unittest
 import sys
 sys.path.append('.')
 
-from rmgdata.states import loadFrequencyDatabase, GroupFrequency
-from rmgdata.base import LogicNode
-from chempy.molecule import Molecule
-from chempy.pattern import MoleculePattern
+from rmgpy.data.states import loadFrequencyDatabase, GroupFrequency
+from rmgpy.data.base import LogicNode
+from rmgpy.chem.molecule import Molecule
+from rmgpy.chem.pattern import MoleculePattern
 
 ################################################################################
 
@@ -20,7 +20,7 @@ class ThermoDatabaseCheck(unittest.TestCase):
         Check the database load functions.
         """
 
-        frequencyDatabase = loadFrequencyDatabase('output/RMG_Database')
+        frequencyDatabase = loadFrequencyDatabase('database/output/RMG_Database')
         
         # All nodes in library should be in tree and dictionary
         # All nodes in tree should be in dictionary

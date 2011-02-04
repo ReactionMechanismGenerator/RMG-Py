@@ -6,10 +6,10 @@ import unittest
 import sys
 sys.path.append('.')
 
-from rmgdata.base import *
-from chempy.pattern import MoleculePattern
+from rmgpy.data.base import *
+from rmgpy.chem.pattern import MoleculePattern
 
-thermoDatabase = 'output/RMG_Database/thermo_groups'
+thermoDatabase = 'database/output/RMG_Database/thermo_groups'
 
 ################################################################################
 

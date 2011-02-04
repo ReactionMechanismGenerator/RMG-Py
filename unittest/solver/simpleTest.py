@@ -9,12 +9,12 @@ quantities.set_default_units('si')
 quantities.UnitQuantity('kilocalorie', 1000.0*quantities.cal, symbol='kcal')
 quantities.UnitQuantity('kilojoule', 1000.0*quantities.J, symbol='kJ')
 
-from chempy.molecule import Molecule
-from chempy.species import Species
-from chempy.reaction import Reaction
-from chempy.kinetics import ArrheniusModel
-from chempy.thermo import ThermoGAModel
-from rmgsolver.simple import SimpleReactor
+from rmgpy.chem.molecule import Molecule
+from rmgpy.chem.species import Species
+from rmgpy.chem.reaction import Reaction
+from rmgpy.chem.kinetics import ArrheniusModel
+from rmgpy.chem.thermo import ThermoGAModel
+from rmgpy.solver.simple import SimpleReactor
 
 ################################################################################
 
@@ -52,7 +52,7 @@ class SimpleReactorCheck(unittest.TestCase):
 
         T = 1000; P = 1.0e5
         rxnSystem = SimpleReactor(T, P, initialMoleFractions={C2H5: 0.1, CH3: 0.1, CH4: 0.4, C2H6: 0.4})
-        rxnSystem.initialize(coreSpecies, coreReactions, edgeSpecies, edgeReactions)
+        rxnSystem.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions)
 
         tlist = numpy.array([10**(i/10.0) for i in range(-130, -49)], numpy.float64)
 
