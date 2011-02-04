@@ -1,9 +1,0 @@
-*******************************
-Introduction to RMG Development
-*******************************
-
-.. toctree::
-	:maxdepth: 1
-	
-	motivation
-	code_overview

@@ -1,8 +1,0 @@
-//gmagoon 2/9/09: same references as for gauche library
-//values used are 1976 values (1.5 kcal/mol per 1,5 interaction in alkanes and 3.5 per 1,5 interaction in ethers)
-
-0  CsOs				0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0	0	0
-1  Cs(Cs(CsCsCs)Cs(CsCsR)RR) 	1.5	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0	0	0 //S(QT) one 1,5 interaction
-2  Cs(Cs(CsCsCs)Cs(CsCsCs)RR) 	3.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0	0	0 //S(QQ) two 1,5 interactions
-3  Os(Cs(CsCsCs)Cs(CsCsR)) 	3.5	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0	0	0 //S(QT) one 1,5 interaction
-4  Os(Cs(CsCsCs)Cs(CsCsCs)) 	7.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0	0	0 //S(QQ) two 1,5 interactions
