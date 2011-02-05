@@ -1,0 +1,24 @@
+################################################################################
+#
+#   Files for git to ignore
+#
+################################################################################
+
+# Compiled Python modules
+*.pyc
+*.so
+*.pyd
+
+# Temporary build files
+build/*
+
+# Compiled documentation
+documentation/build/*
+
+# Compilation helper files
+# (These will be unique to each developer's setup)
+make.inc
+
+# Example output files
+examples/*
+!examples/*/input.py

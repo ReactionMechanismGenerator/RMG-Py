@@ -1,0 +1,39 @@
+{% extends "!layout.html" %}
+
+{% block rootrellink %}
+<li><a href="{{ pathto('index') }}">Documentation</a> &raquo;</li>
+{% endblock %}
+
+{%- block header %}
+<div class="header">
+&nbsp;
+</div>
+{%- endblock %}
+
+{%- block sidebarlogo %}
+<div class="sidebarlogo">
+<img src="{{ pathto('_static/rmg-logo-small.png', 1) }}" alt="RMG" />
+</div>
+{%- endblock %}
+
+{%- block relbar1 %}{% endblock %}
+
+  {%- block document %}
+      <div class="documentwrapper">
+      {%- if render_sidebar %}
+        <div class="bodywrapper">
+      {%- endif %}
+          <div class="body">
+            {{ relbar() }}
+            {% block body %} {% endblock %}
+          </div>
+      {%- if render_sidebar %}
+        </div>
+      {%- endif %}
+      </div>
+  {%- endblock %}
+
+{%- block relbar2 %}{% endblock %}
+
+  </body>
+</html>

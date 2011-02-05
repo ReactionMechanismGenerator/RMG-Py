@@ -1,3 +1,0 @@
-http://webbook.nist.gov/chemistry/
-http://cea.grc.nasa.gov/index.html
-http://www.me.berkeley.edu/gri_mech/data/thermo_table.html

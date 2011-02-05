@@ -1,8 +1,0 @@
-kinetics_data.log
-kinetics_data_backup.log
-
-# Python bytecode
-*.pyc
-
-# Compiled Sphinx documentation
-documentation/build/*
