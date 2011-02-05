@@ -37,83 +37,62 @@ from pydqed import DQED
 
 ################################################################################
 
-def harmonicOscillator_heatCapacity(Tlist, freq):
+def harmonicOscillator_heatCapacity(T, freq):
     """
     Return the heat capacity in J/mol*K at the given set of temperatures `Tlist`
     in K for the harmonic oscillator with a frequency `freq` in cm^-1.
     """
-    nT = len(Tlist)
-    Cvlist = numpy.zeros_like(Tlist)
-    for i in range(nT):
-        x = freq / (0.695039 * Tlist[i])        # kB = 0.695039 cm^-1/K
-        exp_x = math.exp(x)
-        one_minus_exp_x = 1.0 - exp_x
-        Cvlist[i] = x * x * exp_x / one_minus_exp_x / one_minus_exp_x
-    return Cvlist
+    x = freq / (0.695039 * T)        # kB = 0.695039 cm^-1/K
+    exp_x = math.exp(x)
+    one_minus_exp_x = 1.0 - exp_x
+    return x * x * exp_x / one_minus_exp_x / one_minus_exp_x
 
-def harmonicOscillator_d_heatCapacity_d_freq(Tlist, freq):
+def harmonicOscillator_d_heatCapacity_d_freq(T, freq):
     """
     Return the first derivative of the heat capacity with respect to the
     harmonic oscillator frequency in J/mol*K/cm^-1 at the given set of
     temperatures `Tlist` in K, evaluated at the frequency `freq` in cm^-1.
     """
-    nT = len(Tlist)
-    dCvlist = numpy.zeros_like(Tlist)
+    x = freq / (0.695039 * T)        # kB = 0.695039 cm^-1/K
+    exp_x = math.exp(x)
+    one_minus_exp_x = 1.0 - exp_x
+    return x * exp_x / one_minus_exp_x / one_minus_exp_x * (2.0 + x + 2.0 * x * exp_x / one_minus_exp_x) * x / freq
 
-    for i in range(nT):
-        x = freq / (0.695039 * Tlist[i])        # kB = 0.695039 cm^-1/K
-        exp_x = math.exp(x)
-        one_minus_exp_x = 1.0 - exp_x
-        dCvlist[i] = x * exp_x / one_minus_exp_x / one_minus_exp_x * (2.0 + x + 2.0 * x * exp_x / one_minus_exp_x) * x / freq
-    return dCvlist
-
-def hinderedRotor_heatCapacity(Tlist, freq, barr):
+def hinderedRotor_heatCapacity(T, freq, barr):
     """
     Return the heat capacity in J/mol*K at the given set of temperatures `Tlist`
     in K for the 1D hindered rotor with a frequency `freq` in cm^-1 and a
     barrier height `barr` in cm^-1.
     """
-    nT = len(Tlist)
-    Cvlist = numpy.zeros_like(Tlist)
-    for i in range(nT):
-        x = constants.h * constants.c * 100. * freq / constants.kB / Tlist[i]
-        exp_x = math.exp(x)
-        one_minus_exp_x = 1.0 - exp_x
-        z = 0.5 * constants.h * constants.c * 100. * barr / constants.kB / Tlist[i]
-        BB = scipy.special.i1(z) / scipy.special.i0(z)
-        Cvlist[i] = x * x * exp_x / one_minus_exp_x / one_minus_exp_x - 0.5 + z * (z - BB - z * BB * BB)
-    return Cvlist
+    x = constants.h * constants.c * 100. * freq / constants.kB / T
+    exp_x = math.exp(x)
+    one_minus_exp_x = 1.0 - exp_x
+    z = 0.5 * constants.h * constants.c * 100. * barr / constants.kB / T
+    BB = scipy.special.i1(z) / scipy.special.i0(z)
+    return x * x * exp_x / one_minus_exp_x / one_minus_exp_x - 0.5 + z * (z - BB - z * BB * BB)
 
-def hinderedRotor_d_heatCapacity_d_freq(Tlist, freq, barr):
+def hinderedRotor_d_heatCapacity_d_freq(T, freq, barr):
     """
     Return the first derivative of the heat capacity with respect to the
     hindered rotor frequency in J/mol*K/cm^-1 at the given set of temperatures
     `Tlist` in K, evaluated at the frequency `freq` in cm^-1 and a barrier
     height `barr` in cm^-1.
     """
-    nT = len(Tlist)
-    dCvlist = numpy.zeros_like(Tlist)
-    for i in range(nT):
-        x = constants.h * constants.c * 100. * freq / constants.kB / Tlist[i]
-        exp_x = math.exp(x)
-        one_minus_exp_x = 1.0 - exp_x
-        dCvlist[i] = x * exp_x / one_minus_exp_x / one_minus_exp_x * (2 + x + 2 * x * exp_x / one_minus_exp_x) * x / freq
-    return dCvlist
+    x = constants.h * constants.c * 100. * freq / constants.kB / T
+    exp_x = math.exp(x)
+    one_minus_exp_x = 1.0 - exp_x
+    return x * exp_x / one_minus_exp_x / one_minus_exp_x * (2 + x + 2 * x * exp_x / one_minus_exp_x) * x / freq
 
-def hinderedRotor_d_heatCapacity_d_barr(Tlist, freq, barr):
+def hinderedRotor_d_heatCapacity_d_barr(T, freq, barr):
     """
     Return the first derivative of the heat capacity with respect to the
     hindered rotor frequency in J/mol*K/cm^-1 at the given set of temperatures
     `Tlist` in K, evaluated at the frequency `freq` in cm^-1 and a barrier
     height `barr` in cm^-1.
     """
-    nT = len(Tlist)
-    dCvlist = numpy.zeros_like(Tlist)
-    for i in range(nT):
-        z = 0.5 * constants.h * constants.c * 100. * barr / constants.kB / Tlist[i]
-        BB = scipy.special.i1(z) / scipy.special.i0(z)
-        dCvlist[i] = z * (1 - 2 * z * BB + BB * BB + 2 * z * BB * BB * BB) * z / barr
-    return dCvlist
+    z = 0.5 * constants.h * constants.c * 100. * barr / constants.kB / T
+    BB = scipy.special.i1(z) / scipy.special.i0(z)
+    return z * (1 - 2 * z * BB + BB * BB + 2 * z * BB * BB * BB) * z / barr
 
 ################################################################################
 
@@ -140,19 +119,19 @@ class DirectFit(DQED):
         Nvib = self.Nvib
         Nrot = self.Nrot
 
-        # Residual
-        for n in range(Nvib):
-            f += harmonicOscillator_heatCapacity(self.Tdata, x[n])
-        for n in range(Nrot):
-            f += hinderedRotor_heatCapacity(self.Tdata, x[Nvib+2*n], x[Nvib+2*n+1])
-        f -= self.Cvdata
-
-        # Jacobian
-        for n in range(Nvib):
-            J[:,n         ] = harmonicOscillator_d_heatCapacity_d_freq(self.Tdata, x[n])
-        for n in range(Nrot):
-            J[:,Nvib+2*n  ] = hinderedRotor_d_heatCapacity_d_freq(self.Tdata, x[Nvib+2*n], x[Nvib+2*n+1])
-            J[:,Nvib+2*n+1] = hinderedRotor_d_heatCapacity_d_barr(self.Tdata, x[Nvib+2*n], x[Nvib+2*n+1])
+        for i in range(len(self.Tdata)):
+            # Residual
+            for n in range(Nvib):
+                f[i] += harmonicOscillator_heatCapacity(self.Tdata[i], x[n])
+            for n in range(Nrot):
+                f[i] += hinderedRotor_heatCapacity(self.Tdata[i], x[Nvib+2*n], x[Nvib+2*n+1])
+            f[i] -= self.Cvdata[i]
+            # Jacobian
+            for n in range(Nvib):
+                J[i,n         ] = harmonicOscillator_d_heatCapacity_d_freq(self.Tdata[i], x[n])
+            for n in range(Nrot):
+                J[i,Nvib+2*n  ] = hinderedRotor_d_heatCapacity_d_freq(self.Tdata[i], x[Nvib+2*n], x[Nvib+2*n+1])
+                J[i,Nvib+2*n+1] = hinderedRotor_d_heatCapacity_d_barr(self.Tdata[i], x[Nvib+2*n], x[Nvib+2*n+1])
         
         return f, J, fcons, Jcons
 
@@ -181,27 +160,28 @@ class PseudoRotorFit(DQED):
         Nvib = self.Nvib
         Nrot = self.Nrot
 
-        Cv = numpy.zeros((Nvib+1, len(self.Tdata)), numpy.float64)
-        dCv = numpy.zeros((Nvib+2, len(self.Tdata)), numpy.float64)
+        Cv = numpy.zeros((len(self.Tdata), Nvib+1), numpy.float64)
+        dCv = numpy.zeros((len(self.Tdata), Nvib+2), numpy.float64)
     
-        for i in range(Nvib):
-            Cv[i,:] = harmonicOscillator_heatCapacity(self.Tdata, x[i])
-            dCv[i,:] = harmonicOscillator_d_heatCapacity_d_freq(self.Tdata, x[i])
-        Cv[Nvib,:] = hinderedRotor_heatCapacity(self.Tdata, x[Nvib], x[Nvib+1])
-        dCv[Nvib,:] = hinderedRotor_d_heatCapacity_d_freq(self.Tdata, x[Nvib], x[Nvib+1])
-        dCv[Nvib+1,:] = hinderedRotor_d_heatCapacity_d_barr(self.Tdata, x[Nvib], x[Nvib+1])
+        for i in range(len(self.Tdata)):
+            for j in range(Nvib):
+                Cv[i,j] = harmonicOscillator_heatCapacity(self.Tdata[i], x[j])
+                dCv[i,j] = harmonicOscillator_d_heatCapacity_d_freq(self.Tdata[i], x[j])
+            Cv[i,Nvib] = hinderedRotor_heatCapacity(self.Tdata[i], x[Nvib], x[Nvib+1])
+            dCv[i,Nvib] = hinderedRotor_d_heatCapacity_d_freq(self.Tdata[i], x[Nvib], x[Nvib+1])
+            dCv[i,Nvib+1] = hinderedRotor_d_heatCapacity_d_barr(self.Tdata[i], x[Nvib], x[Nvib+1])
 
-        # Residual
-        for i in range(Nvib):
-            f += Cv[i,:]
-        f += Nrot * Cv[Nvib,:]
-        f -= self.Cvdata
-
-        # Jacobian
-        for i in range(Nvib):
-            J[:,i] = 2.0 * f * dCv[i,:]
-        J[:,Nvib] = 2.0 * f * Nrot * dCv[Nvib,:]
-        J[:,Nvib+1] = 2.0 * f * Nrot * dCv[Nvib+1,:]
+        for i in range(len(self.Tdata)):
+            # Residual
+            for j in range(Nvib):
+                f[i] += Cv[i,j]
+            f[i] += Nrot * Cv[i,Nvib]
+            f[i] -= self.Cvdata[i]
+            # Jacobian
+            for j in range(Nvib):
+                J[i,j] = 2.0 * f[i] * dCv[i,j]
+            J[i,Nvib] = 2.0 * f[i] * Nrot * dCv[i,Nvib]
+            J[i,Nvib+1] = 2.0 * f[i] * Nrot * dCv[i,Nvib+1]
 
         return f, J, fcons, Jcons
 
@@ -230,26 +210,27 @@ class PseudoFit(DQED):
         Nvib = self.Nvib
         Nrot = self.Nrot
 
-        Cv1 = harmonicOscillator_heatCapacity(self.Tdata, x[0])
-        Cv2 = harmonicOscillator_heatCapacity(self.Tdata, x[2])
-        Cv3 = harmonicOscillator_heatCapacity(self.Tdata, x[3])
-        Cv4 = hinderedRotor_heatCapacity(self.Tdata, x[4], x[5])
-        dCv1 = harmonicOscillator_d_heatCapacity_d_freq(self.Tdata, x[0])
-        dCv2 = harmonicOscillator_d_heatCapacity_d_freq(self.Tdata, x[2])
-        dCv3 = harmonicOscillator_d_heatCapacity_d_freq(self.Tdata, x[3])
-        dCv4 = hinderedRotor_d_heatCapacity_d_freq(self.Tdata, x[4], x[5])
-        dCv5 = hinderedRotor_d_heatCapacity_d_barr(self.Tdata, x[4], x[5])
+        for i in range(len(self.Tdata)):
+            Cv1 = harmonicOscillator_heatCapacity(self.Tdata[i], x[0])
+            Cv2 = harmonicOscillator_heatCapacity(self.Tdata[i], x[2])
+            Cv3 = harmonicOscillator_heatCapacity(self.Tdata[i], x[3])
+            Cv4 = hinderedRotor_heatCapacity(self.Tdata[i], x[4], x[5])
+            dCv1 = harmonicOscillator_d_heatCapacity_d_freq(self.Tdata[i], x[0])
+            dCv2 = harmonicOscillator_d_heatCapacity_d_freq(self.Tdata[i], x[2])
+            dCv3 = harmonicOscillator_d_heatCapacity_d_freq(self.Tdata[i], x[3])
+            dCv4 = hinderedRotor_d_heatCapacity_d_freq(self.Tdata[i], x[4], x[5])
+            dCv5 = hinderedRotor_d_heatCapacity_d_barr(self.Tdata[i], x[4], x[5])
 
-        # Residual
-        f = Cv1 + x[1] * Cv2 + (Nvib - x[1] - 1) * Cv3 + Nrot * Cv4 - self.Cvdata
+            # Residual
+            f[i] = Cv1 + x[1] * Cv2 + (Nvib - x[1] - 1) * Cv3 + Nrot * Cv4 - self.Cvdata[i]
 
-        # Jacobian
-        J[:,0] = 2.0 * f * dCv1
-        J[:,1] = 2.0 * f * (Cv2 - Cv3)
-        J[:,2] = 2.0 * f * x[1] * dCv2
-        J[:,3] = 2.0 * f * ((Nvib - x[1] - 1) * dCv3)
-        J[:,4] = 2.0 * f * Nrot * dCv4
-        J[:,5] = 2.0 * f * Nrot * dCv5
+            # Jacobian
+            J[i,0] = 2.0 * f[i] * dCv1
+            J[i,1] = 2.0 * f[i] * (Cv2 - Cv3)
+            J[i,2] = 2.0 * f[i] * x[1] * dCv2
+            J[i,3] = 2.0 * f[i] * ((Nvib - x[1] - 1) * dCv3)
+            J[i,4] = 2.0 * f[i] * Nrot * dCv4
+            J[i,5] = 2.0 * f[i] * Nrot * dCv5
 
         return f, J, fcons, Jcons
 
@@ -275,7 +256,7 @@ def fitModes(mode, x0, bounds, maxIter, Tdata, Cvdata, Nvib, Nrot):
     elif mode == 'pseudo-rotors':
         fit = PseudoRotorFit(Tdata, Cvdata, Nvib, Nrot)
 
-    fit.initialize(Neq=len(Tdata), Nvars=Nvib+2*Nrot, Ncons=0, bounds=bounds, maxIter=maxIter)
+    fit.initialize(Neq=len(Tdata), Nvars=len(x0), Ncons=0, bounds=bounds, maxIter=maxIter)
     x, igo = fit.solve(x0)
 
     return x, igo
