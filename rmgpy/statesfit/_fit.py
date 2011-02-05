@@ -255,9 +255,18 @@ class PseudoFit(DQED):
 
 ################################################################################
 
-def fitModes(mode, x0, bl, bu, ind, maxIter, Tdata, Cvdata, Nvib, Nrot):
-
-    bounds = [(l,u) for l, u in zip(bl, bu)]
+def fitModes(mode, x0, bounds, maxIter, Tdata, Cvdata, Nvib, Nrot):
+    """
+    Fit a set of vibrational frequencies and hindered rotor frequency-barrier
+    pairs. The `mode` of the fitting is ``'direct'``, ``'pseudo'``, or
+    ``'pseudo-rotor'``. `x0` is the initial guess, `bounds` are the lower and
+    upper bounds for each variable, `maxIter` is the maximum number of
+    iterations, `Tdata` are the temperatures at which heat capacity data is
+    known, `Cvdata` are the corresponding heat capacities in J/mol*K, `Nvib`
+    is the total number of vibrational modes being fit, and `Nrot` is the total
+    number of hindered rotors being fit. Returns the best fit parameters and
+    the status flag from DQED.
+    """
 
     if mode == 'direct':
         fit = DirectFit(Tdata, Cvdata, Nvib, Nrot)
