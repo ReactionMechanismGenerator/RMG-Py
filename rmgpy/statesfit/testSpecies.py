@@ -10,12 +10,12 @@ import math
 import numpy
 import logging
 
-from chempy.molecule import Molecule
-from chempy.states import *
-from chempy.thermo import ThermoGAModel
-import chempy.constants as constants
+from rmgpy.chem.molecule import Molecule
+from rmgpy.chem.states import *
+from rmgpy.chem.thermo import ThermoGAModel
+import rmgpy.chem.constants as constants
 
-from statesfit import fitSpectralDataToHeatCapacity
+from rmgpy.statesfit.fit import fitSpectralDataToHeatCapacity
 
 ################################################################################
 
