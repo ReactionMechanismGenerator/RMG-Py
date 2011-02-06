@@ -3,48 +3,43 @@
 
 ################################################################################
 #
-#	RMG - Reaction Mechanism Generator
+#   RMG - Reaction Mechanism Generator
 #
-#	Copyright (c) 2002-2009 Prof. William H. Green (whgreen@mit.edu) and the
-#	RMG Team (rmg_dev@mit.edu)
+#   Copyright (c) 2002-2010 Prof. William H. Green (whgreen@mit.edu) and the
+#   RMG Team (rmg_dev@mit.edu)
 #
-#	Permission is hereby granted, free of charge, to any person obtaining a
-#	copy of this software and associated documentation files (the 'Software'),
-#	to deal in the Software without restriction, including without limitation
-#	the rights to use, copy, modify, merge, publish, distribute, sublicense,
-#	and/or sell copies of the Software, and to permit persons to whom the
-#	Software is furnished to do so, subject to the following conditions:
+#   Permission is hereby granted, free of charge, to any person obtaining a
+#   copy of this software and associated documentation files (the 'Software'),
+#   to deal in the Software without restriction, including without limitation
+#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
+#   and/or sell copies of the Software, and to permit persons to whom the
+#   Software is furnished to do so, subject to the following conditions:
 #
-#	The above copyright notice and this permission notice shall be included in
-#	all copies or substantial portions of the Software.
+#   The above copyright notice and this permission notice shall be included in
+#   all copies or substantial portions of the Software.
 #
-#	THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-#	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-#	FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-#	DEALINGS IN THE SOFTWARE.
+#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+#   DEALINGS IN THE SOFTWARE.
 #
 ################################################################################
 
 """
 Contains functions for fitting of molecular degrees of freedom from
-macroscopic properties, particularly the heat capacity. The primary function
-of interest is :meth:`fitSpectralDataToHeatCapacity`, which does exactly this.
-This function utilizes a number of helper functions that are called based on
-the numbers and types of modes that should be fitted. The helper functions
-are divided into those that setup the initial guess and bounds (named
-``setupCase?vib?rot``) and those that convert the fitted results into
-mode objects (named ``postprocessCase?vib?rot``).
+macroscopic properties, particularly the heat capacity.
 """
 
 import math
 import numpy
-
 import logging
 
-from _fit import fitModes
+import rmgpy.chem.constants as constants
+from rmgpy.chem.states import HarmonicOscillator, HinderedRotor
+from _statesfit import DirectFit, PseudoRotorFit, PseudoFit
 
 ################################################################################
 
@@ -81,7 +76,7 @@ class StatesFitError(Exception):
 
 ################################################################################
 
-def fitSpectralDataToHeatCapacity(molecule, Tlist, Cvlist, Nvib, Nrot):
+def fitStatesToHeatCapacity(Tlist, Cvlist, Nvib, Nrot, molecule=None):
     """
     For a given set of dimensionless heat capacity data `Cvlist` corresponding
     to temperature list `Tlist` in K, fit `Nvib` harmonic oscillator and `Nrot`
@@ -89,19 +84,17 @@ def fitSpectralDataToHeatCapacity(molecule, Tlist, Cvlist, Nvib, Nrot):
     should have already been removed from `Cvlist` prior to calling this
     function. You must provide at least 7 values for `Cvlist`.
 
-    This function returns two lists: the first contains lists of frequency-
-    degeneracy pairs representing fitted harmonic oscillator modes, and the
-    second contains lists of frequency-barrier-degeneracy triples representing
-    fitted hindered rotor modes.
-
-    The fitting is done by calling into Fortran in order to use the DQED
-    nonlinear constrained optimization code.
+    This function returns a list containing the fitted vibrational frequencies
+    in a :class:`HarmonicOscillator` object and the fitted 1D hindered rotors
+    in :class:`HinderedRotor` objects.
     """
 
     # You must specify at least 7 heat capacity points to use in the fitting;
     # you can specify as many as you like above that minimum
     if len(Tlist) < 7:
-        raise Exception('Unable to fit spectral data; you need to specify at least 7 heat capacity points.')
+        raise StatesFitError('You must specify at least 7 heat capacity points to fitStatesToHeatCapacity().')
+    if len(Tlist) != len(Cvlist):
+        raise StatesFitError('The number of heat capacity points (%i) does not match the number of temperatures provided (%i).' % (len(Cvlist), len(Tlist)))
 
     # The number of optimization variables available is constrained to be less
     # than the number of heat capacity points
@@ -109,91 +102,69 @@ def fitSpectralDataToHeatCapacity(molecule, Tlist, Cvlist, Nvib, Nrot):
     maxVariables = len(Tlist) - 1
     if maxVariables > 16: maxVariables = 16
 
-    # Setup the initial guess and the bounds for the solver variables
-    # The format of the variables depends on the numbers of oscillators and
-    # rotors being fitted:
-    #	-	For low values of Nvib and Nrot, we can fit the individual
-    #		parameters directly
-    #	-	For high values of Nvib and/or Nrot we are limited by the number of
-    #		temperatures we are fitting at, and so we can only fit
-    #		pseudo-oscillators and/or pseudo-rotors
-    mode = ''
+    # The type of variables fitted depends on the values of Nvib and Nrot and
+    # the number of heat capacity points provided
+    # For low values of Nvib and Nrot, we can fit the individual
+    # parameters directly
+    # For high values of Nvib and/or Nrot we are limited by the number of
+    # temperatures we are fitting at, and so we can only fit
+    # pseudo-oscillators and/or pseudo-rotors
+    vib = []; hind = []
     if Nvib <= 0 and Nrot <= 0:
-        return [], []
+        pass
     elif Nvib + 2 * Nrot <= maxVariables:
-        mode = 'direct'
-        x0, bounds = setupCaseDirect(Nvib, Nrot)
+        vib, hind = fitStatesDirect(Tlist, Cvlist, Nvib, Nrot, molecule)
     elif Nvib + 2 <= maxVariables:
-        mode = 'pseudo-rotors'
-        x0, bounds = setupCasePseudoRot(Nvib, Nrot)
+        vib, hind = fitStatesPseudoRotors(Tlist, Cvlist, Nvib, Nrot, molecule)
     else:
-        mode = 'pseudo'
-        x0, bounds = setupCasePseudo(Nvib, Nrot)
+        vib, hind = fitStatesPseudo(Tlist, Cvlist, Nvib, Nrot, molecule)
 
-    # Execute the optimization, passing the initial guess and bounds and other
-    # solver options
-    x, igo = fitModes(
-        mode = mode,
-        x0 = numpy.array(x0),
-        bounds = bounds,
-        maxIter = maxIter,
-        Tdata = numpy.array(Tlist),
-        Cvdata = numpy.array(Cvlist),
-        Nvib = Nvib,
-        Nrot = Nrot
-        )
+    modes = []
+    if Nvib > 0:
+        ho = HarmonicOscillator(frequencies=vib[:])
+        ho.frequencies.sort()
+        modes.append(ho)
+    for i in range(Nrot):
+        freq = hind[i][0]
+        barr = hind[i][1]
+        inertia = (barr*constants.c*100.0*constants.h) / (8 * math.pi * math.pi * (freq*constants.c*100.0)**2)
+        barrier = barr*constants.c*100.0*constants.h*constants.Na
+        hr = HinderedRotor(inertia=inertia, barrier=barrier, symmetry=1)
+        modes.append(hr)
 
-    if not numpy.isfinite(x).all():
-        raise StatesFitError('Returned solution vector is nonsensical: x = %s.' % (x))
-    if igo == 8:
-        logging.warning('Maximum number of iterations reached when fitting spectral data for %s.' % str(molecule))
-        #raise StatesFitError('Maximum number of iterations reached; solution may be invalid.\nI was trying to fit %s oscillators and %s rotors.' % (Nvib, Nrot))
-
-    # Convert the solution vector into sets of oscillators and rotors
-    # The procedure for doing this depends on the content of the solution
-    # vector, which itself depends on the number of oscillators and rotors
-    # being fitted
-    if Nvib + 2 * Nrot <= maxVariables:
-        vib, rot = postprocessCaseDirect(Nvib, Nrot, x)
-    elif Nvib + 2 <= maxVariables:
-        vib, rot = postprocessCasePseudoRot(Nvib, Nrot, x)
-    else:
-        vib, rot = postprocessCasePseudo(Nvib, Nrot, x)
-
-    return vib, rot
+    # Return the fitted modes
+    return modes
 
 ################################################################################
 
-def setupCaseDirect(Nvib, Nrot):
+def fitStatesDirect(Tlist, Cvlist, Nvib, Nrot, molecule=None):
     """
-    Fit a known number of harmonic oscillator and hindered rotor modes to
-    the heat capacity data. This case is to be called when the total number of
-    variables is less than the number of data points used in the fit. For this
-    case, we can fit the oscillator frequencies and rotor frequency-barrier
-    pairs directly.
+    Fit `Nvib` harmonic oscillator and `Nrot` hindered internal rotor modes to
+    the provided dimensionless heat capacities `Cvlist` at temperatures `Tlist`
+    in K. This method assumes that there are enough heat capacity points
+    provided that the vibrational frequencies and hindered rotation frequency-
+    barrier pairs can be fit directly.
     """
 
-    # Initialize the variables that are set by this function
-    count = Nvib + 2 * Nrot
-    x0 = numpy.zeros(count, numpy.float64)		# Initial guess
+    # Construct the lower and upper bounds for each variable
     bounds = []
-    
-    # The first Nvib variables correspond to real harmonic oscillator frequencies
+    # Bounds for harmonic oscillator frequencies
     for i in range(Nvib):
         bounds.append((hoFreqLowerBound, hoFreqUpperBound))
-    # The remaining 2 * Nrot variables correspond to real hindered rotor frequencies and barrier heights
+    # Bounds for hindered rotor frequencies and barrier heights
     for i in range(Nrot):
         bounds.append((hrFreqLowerBound, hrFreqUpperBound))
         bounds.append((hrBarrLowerBound, hrBarrUpperBound))
 
+    # Construct the initial guess
     # Initial guesses within each mode type must be distinct or else the
     # optimization will fail
-
-    # Initial guess for harmonic oscillators
+    x0 = numpy.zeros(Nvib + 2*Nrot, numpy.float64)
+    # Initial guess for harmonic oscillator frequencies
     if Nvib > 0:
         x0[0] = 200.0
         x0[1:Nvib] = numpy.linspace(800.0, 1600.0, Nvib-1)
-    # Initial guess for hindered rotors
+    # Initial guess for hindered rotor frequencies and barrier heights
     if Nrot > 0:
         x0[Nvib] = 100.0
         x0[Nvib+1] = 100.0
@@ -201,40 +172,91 @@ def setupCaseDirect(Nvib, Nrot):
             x0[Nvib+2*i] = x0[Nvib+2*i-2] + 20.0
             x0[Nvib+2*i+1] = x0[Nvib+2*i-1] + 100.0
 
-    return x0, bounds
+    # Execute the optimization
+    fit = DirectFit(Tlist, Cvlist, Nvib, Nrot)
+    fit.initialize(Neq=len(Tlist), Nvars=len(x0), Ncons=0, bounds=bounds, maxIter=maxIter)
+    x, igo = fit.solve(x0)
 
-def postprocessCaseDirect(Nvib, Nrot, x):
-    """
-    Convert the optimization solution vector `x` to a set of harmonic
-    oscillators and a set of hindered rotors. This case is to be called when
-    the total number of variables is less than the number of data points used
-    in the fit. For this case, we have fitted the oscillator frequencies and
-    rotor frequency-barrier pairs directly.
-    """
+    # Check that the results of the optimization are valid
+    if not numpy.isfinite(x).all():
+        raise StatesFitError('Returned solution vector is nonsensical: x = %s.' % (x))
+    if igo == 8:
+        logging.warning('Maximum number of iterations reached when fitting spectral data for %s.' % str(molecule))
 
-    vib = []
-    for i in range(Nvib):
-        vib.append(x[i])
-    rot = []
+    # Postprocess optimization results
+    vib = list(x[0:Nvib])
+    hind = []
     for i in range(Nrot):
-        rot.append((x[Nvib+2*i], x[Nvib+2*i+1]))
+        hind.append((x[Nvib+2*i], x[Nvib+2*i+1]))
 
-    return vib, rot
+    return vib, hind
 
 ################################################################################
 
-def setupCasePseudo(Nvib, Nrot):
+def fitStatesPseudoRotors(Tlist, Cvlist, Nvib, Nrot, molecule=None):
     """
-    Fit an arbitrary number of harmonic oscillator and hindered rotor modes to
-    the heat capacity data. This case will fit two pseudo-oscillators and two
-    pseudo-rotors such that their degeneracies sum to `Nvib` and `Nrot`,
-    respectively.
+    Fit `Nvib` harmonic oscillator and `Nrot` hindered internal rotor modes to
+    the provided dimensionless heat capacities `Cvlist` at temperatures `Tlist`
+    in K. This method assumes that there are enough heat capacity points
+    provided that the vibrational frequencies can be fit directly, but the
+    hindered rotors must be combined into a single "pseudo-rotor".
     """
 
-    # Initialize the variables that are set by this function
-    x0 = numpy.zeros(6, numpy.float64)		# Initial guess
+    # Construct the lower and upper bounds for each variable
     bounds = []
+    # Bounds for harmonic oscillator frequencies
+    for i in range(Nvib):
+        bounds.append((hoFreqLowerBound, hoFreqUpperBound))
+    # Bounds for pseudo-hindered rotor frequency and barrier height
+    bounds.append((hrFreqLowerBound, hrFreqUpperBound))
+    bounds.append((hrBarrLowerBound, hrBarrUpperBound))
 
+    # Construct the initial guess
+    # Initial guesses within each mode type must be distinct or else the
+    # optimization will fail
+    x0 = numpy.zeros(Nvib + 2, numpy.float64)
+    # Initial guess for harmonic oscillator frequencies
+    if Nvib > 0:
+        x0[0] = 200.0
+        x0[1:Nvib] = numpy.linspace(800.0, 1600.0, Nvib-1)
+    # Initial guess for hindered rotor frequencies and barrier heights
+    x0[Nvib] = 100.0
+    x0[Nvib+1] = 300.0
+
+    # Execute the optimization
+    fit = PseudoRotorFit(Tlist, Cvlist, Nvib, Nrot)
+    fit.initialize(Neq=len(Tlist), Nvars=len(x0), Ncons=0, bounds=bounds, maxIter=maxIter)
+    x, igo = fit.solve(x0)
+
+    # Check that the results of the optimization are valid
+    if not numpy.isfinite(x).all():
+        raise StatesFitError('Returned solution vector is nonsensical: x = %s.' % (x))
+    if igo == 8:
+        logging.warning('Maximum number of iterations reached when fitting spectral data for %s.' % str(molecule))
+
+    # Postprocess optimization results
+    vib = list(x[0:Nvib])
+    hind = []
+    for i in range(Nrot):
+        hind.append((x[Nvib], x[Nvib+1]))
+
+    return vib, hind
+
+################################################################################
+
+def fitStatesPseudo(Tlist, Cvlist, Nvib, Nrot, molecule=None):
+    """
+    Fit `Nvib` harmonic oscillator and `Nrot` hindered internal rotor modes to
+    the provided dimensionless heat capacities `Cvlist` at temperatures `Tlist`
+    in K. This method assumes that there are relatively few heat capacity points
+    provided, so the vibrations must be combined into one real vibration and
+    two "pseudo-vibrations" and the hindered rotors must be combined into a
+    single "pseudo-rotor".
+    """
+
+
+    # Construct the lower and upper bounds for each variable
+    bounds = []
     # x[0] corresponds to the first harmonic oscillator (real) frequency
     bounds.append((hoFreqLowerBound, hoFreqUpperBound))
     # x[1] corresponds to the degeneracy of the second harmonic oscillator
@@ -248,7 +270,8 @@ def setupCasePseudo(Nvib, Nrot):
     # x[5] corresponds to the hindered rotor pseudo-barrier
     bounds.append((hrBarrLowerBound, hrBarrUpperBound))
 
-    # Initial guess
+    # Construct the initial guess
+    x0 = numpy.zeros(6, numpy.float64)      # Initial guess
     x0[0] = 300.0
     x0[1] = float(math.floor((Nvib - 1) / 2.0))
     x0[2] = 800.0
@@ -256,72 +279,29 @@ def setupCasePseudo(Nvib, Nrot):
     x0[4] = 100.0
     x0[5] = 300.0
 
-    return x0, bounds
+    # Execute the optimization
+    fit = PseudoFit(Tlist, Cvlist, Nvib, Nrot)
+    fit.initialize(Neq=len(Tlist), Nvars=len(x0), Ncons=0, bounds=bounds, maxIter=maxIter)
+    x, igo = fit.solve(x0)
 
-def postprocessCasePseudo(Nvib, Nrot, x):
-    """
-    Convert the optimization solution vector `x` to a set of harmonic
-    oscillators and a set of hindered rotors for the case of an arbitrary
-    number of oscillator and rotor modes `Nvib` and `Nrot`, respectively.
-    """
+    # Check that the results of the optimization are valid
+    if not numpy.isfinite(x).all():
+        raise StatesFitError('Returned solution vector is nonsensical: x = %s.' % (x))
+    if igo == 8:
+        logging.warning('Maximum number of iterations reached when fitting spectral data for %s.' % str(molecule))
 
+    # Postprocess optimization results
     Nvib2 = int(round(x[1]))
     Nvib3 = Nvib - Nvib2 - 1
     if Nvib2 < 0 or Nvib2 > Nvib-1 or Nvib3 < 0 or Nvib3 > Nvib-1:
         raise StatesFitError('Invalid degeneracies %s and %s fitted for pseudo-frequencies.' % (Nvib2, Nvib3))
 
-    vib = []
-    vib.append(x[0])
+    vib = [x[0]]
     for i in range(Nvib2): vib.append(x[2])
     for i in range(Nvib3): vib.append(x[3])
-    rot = []
-    for i in range(Nrot): rot.append((x[4], x[5]))
-
-    return vib, rot
-
-################################################################################
-
-def setupCasePseudoRot(Nvib, Nrot):
-    """
-    Fit an arbitrary number of harmonic oscillator and hindered rotor modes to
-    the heat capacity data. This case will fit `Nvib` real oscillators and two
-    pseudo-rotors such that their degeneracies sum to `Nrot`.
-    """
-
-    # Initialize the variables that are set by this function
-    x0 = numpy.zeros(Nvib+2, numpy.float64)		# Initial guess
-    bounds = []
-
-    # x[0] corresponds to the first harmonic oscillator (real) frequency
-    for i in range(Nvib):
-        bounds.append((hoFreqLowerBound, hoFreqUpperBound))
-    # x[Nvib] corresponds to the hindered rotor pseudo-frequency
-    bounds.append((hrFreqLowerBound, hrFreqUpperBound))
-    # x[Nvib+1] corresponds to the hindered rotor pseudo-barrier
-    bounds.append((hrBarrLowerBound, hrBarrUpperBound))
-
-    # Initial guess for harmonic oscillators
-    if Nvib > 0:
-        x0[0] = 200.0
-        x0[1:Nvib] = numpy.linspace(800.0, 1600.0, Nvib-1)
-    # Initial guess for hindered pseudo-rotors
-    x0[-2] = 100.0
-    x0[-1] = 300.0
-
-    return x0, bounds
-
-def postprocessCasePseudoRot(Nvib, Nrot, x):
-    """
-    Convert the optimization solution vector `x` to a set of harmonic
-    oscillators and a set of hindered rotors for the case of real oscillator
-    and pseudo rotor modes `Nvib` and `Nrot`, respectively.
-    """
-
-    vib = []
-    for i in range(Nvib):
-        vib.append(x[i])
-    rot = []
-    for i in range(Nrot): rot.append((x[-2], x[-1]))
+    hind = []
+    for i in range(Nrot):
+        hind.append((x[4], x[5]))
 
     return vib, rot
 
