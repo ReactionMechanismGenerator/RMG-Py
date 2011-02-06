@@ -1,35 +1,35 @@
-*****************************************************************
-:mod:`chempy.pattern` --- Molecular Substructure Pattern Matching
-*****************************************************************
+*********************************************************************
+:mod:`rmgpy.chem.pattern` --- Molecular Substructure Pattern Matching
+*********************************************************************
 
-.. automodule:: chempy.pattern
+.. automodule:: rmgpy.chem.pattern
 
 AtomPattern Objects
 ===================
 
-.. autoclass:: chempy.pattern.AtomPattern
+.. autoclass:: rmgpy.chem.pattern.AtomPattern
     :members:
 
 BondPattern Objects
 ===================
 
-.. autoclass:: chempy.pattern.BondPattern
+.. autoclass:: rmgpy.chem.pattern.BondPattern
     :members:
 
 MoleculePattern Objects
 =======================
 
-.. autoclass:: chempy.pattern.MoleculePattern
+.. autoclass:: rmgpy.chem.pattern.MoleculePattern
     :members:
 
 Working with Atom Types
 =======================
 
-.. autofunction:: chempy.pattern.getAtomType
+.. autofunction:: rmgpy.chem.pattern.getAtomType
 
 Adjacency Lists
 ===============
 
-.. autofunction:: chempy.pattern.fromAdjacencyList
+.. autofunction:: rmgpy.chem.pattern.fromAdjacencyList
 
-.. autofunction:: chempy.pattern.toAdjacencyList
+.. autofunction:: rmgpy.chem.pattern.toAdjacencyList

@@ -1,6 +1,6 @@
-***********************************************
-:mod:`chempy.constants` --- Numerical Constants
-***********************************************
+***************************************************
+:mod:`rmgpy.chem.constants` --- Numerical Constants
+***************************************************
 
-.. automodule:: chempy.constants
+.. automodule:: rmgpy.chem.constants
     :members:

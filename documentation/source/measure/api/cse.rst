@@ -1,9 +1,9 @@
-******************************************************************
-:mod:`measure.cse` - The chemically-significant eigenvalues method
-******************************************************************
+************************************************************************
+:mod:`rmgpy.measure.cse` - The chemically-significant eigenvalues method
+************************************************************************
 
-.. automodule:: measure.cse
+.. automodule:: rmgpy.measure.cse
 
-.. autoclass:: measure.cse.ChemicallySignificantEigenvaluesError
+.. autoclass:: rmgpy.measure.cse.ChemicallySignificantEigenvaluesError
 
-.. autofunction:: measure.cse.applyChemicallySignificantEigenvaluesMethod
+.. autofunction:: rmgpy.measure.cse.applyChemicallySignificantEigenvaluesMethod

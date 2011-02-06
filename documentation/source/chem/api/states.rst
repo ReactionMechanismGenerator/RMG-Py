@@ -1,13 +1,13 @@
-*****************************************************
-:mod:`chempy.states` --- Molecular Degrees of Freedom
-*****************************************************
+*********************************************************
+:mod:`rmgpy.chem.states` --- Molecular Degrees of Freedom
+*********************************************************
 
-.. automodule:: chempy.states
+.. automodule:: rmgpy.chem.states
 
-.. autoclass:: chempy.states.StatesModel
+.. autoclass:: rmgpy.chem.states.StatesModel
     :members:
 
-.. autoclass:: chempy.states.Mode
+.. autoclass:: rmgpy.chem.states.Mode
     :members:
 
 External Degrees of Freedom
@@ -16,13 +16,13 @@ External Degrees of Freedom
 Translation
 -----------
 
-.. autoclass:: chempy.states.Translation
+.. autoclass:: rmgpy.chem.states.Translation
     :members:
 
 Rotation
 --------
 
-.. autoclass:: chempy.states.RigidRotor
+.. autoclass:: rmgpy.chem.states.RigidRotor
     :members:
 
 Internal Degrees of Freedom
@@ -31,11 +31,11 @@ Internal Degrees of Freedom
 Vibration
 ---------
 
-.. autoclass:: chempy.states.HarmonicOscillator
+.. autoclass:: rmgpy.chem.states.HarmonicOscillator
     :members:
 
 Torsion
 -------
 
-.. autoclass:: chempy.states.HinderedRotor
+.. autoclass:: rmgpy.chem.states.HinderedRotor
     :members:

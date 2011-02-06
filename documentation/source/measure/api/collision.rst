@@ -1,25 +1,25 @@
-**********************************************************
-:mod:`measure.collision` - Collision models and parameters
-**********************************************************
+****************************************************************
+:mod:`rmgpy.measure.collision` - Collision models and parameters
+****************************************************************
 
-.. automodule:: measure.collision
+.. automodule:: rmgpy.measure.collision
 
 Collision Models
 ================
 
-.. autoclass:: measure.collision.CollisionModel
+.. autoclass:: rmgpy.measure.collision.CollisionModel
     :members:
 
 Single Exponential Down Model
 -----------------------------
 
-.. autoclass:: measure.collision.SingleExponentialDownModel
+.. autoclass:: rmgpy.measure.collision.SingleExponentialDownModel
     :members:
 
 Collision Parameters
 ====================
 
-.. autofunction:: measure.collision.calculateCollisionFrequency
+.. autofunction:: rmgpy.measure.collision.calculateCollisionFrequency
 
-.. autofunction:: measure.collision.calculateCollisionEfficiency
+.. autofunction:: rmgpy.measure.collision.calculateCollisionEfficiency
 

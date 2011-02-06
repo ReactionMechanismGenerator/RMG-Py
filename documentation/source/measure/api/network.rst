@@ -1,8 +1,8 @@
-**************************************************************
-:mod:`measure.network` - Unimolecular reaction network objects
-**************************************************************
+********************************************************************
+:mod:`rmgpy.measure.network` - Unimolecular reaction network objects
+********************************************************************
 
-.. automodule:: measure.network
+.. automodule:: rmgpy.measure.network
 
-.. autoclass:: measure.network.Network
+.. autoclass:: rmgpy.measure.network.Network
     :members:

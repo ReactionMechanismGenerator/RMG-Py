@@ -1,24 +1,24 @@
-**********************************************
-:mod:`chempy.thermo` --- Thermodynamics Models
-**********************************************
+**************************************************
+:mod:`rmgpy.chem.thermo` --- Thermodynamics Models
+**************************************************
 
-.. automodule:: chempy.thermo
+.. automodule:: rmgpy.chem.thermo
 
 Thermodynamics Models
 =====================
 
-.. autoclass:: chempy.thermo.ThermoModel
+.. autoclass:: rmgpy.chem.thermo.ThermoModel
     :members:
 
-.. autoclass:: chempy.thermo.WilhoitModel
+.. autoclass:: rmgpy.chem.thermo.WilhoitModel
     :members:
 
-.. autoclass:: chempy.thermo.NASAModel
+.. autoclass:: rmgpy.chem.thermo.NASAModel
     :members:
     
 Other Classes
 =============
 
-.. autoclass:: chempy.thermo.NASAPolynomial
+.. autoclass:: rmgpy.chem.thermo.NASAPolynomial
     :members:
 

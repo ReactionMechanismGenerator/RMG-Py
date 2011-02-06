@@ -1,11 +1,11 @@
-************************************************************
-:mod:`chempy.geometry` --- Working With Molecular Geometries
-************************************************************
+****************************************************************
+:mod:`rmgpy.chem.geometry` --- Working With Molecular Geometries
+****************************************************************
 
-.. automodule:: chempy.geometry
+.. automodule:: rmgpy.chem.geometry
 
 Molecular Geometries
 ====================
 
-.. autoclass:: chempy.geometry.Geometry
+.. autoclass:: rmgpy.chem.geometry.Geometry
     :members:

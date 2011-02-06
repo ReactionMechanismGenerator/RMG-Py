@@ -21,7 +21,6 @@ Contents
     measure/index
     rmg/index
     solver/index
-    statesfit/index
     
 Indices and tables
 ==================

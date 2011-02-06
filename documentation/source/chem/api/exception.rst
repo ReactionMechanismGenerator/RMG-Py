@@ -1,21 +1,21 @@
-*********************************************
-:mod:`chempy.exception` --- ChemPy Exceptions
-*********************************************
+*************************************************
+:mod:`rmgpy.chem.exception` --- ChemPy Exceptions
+*************************************************
 
-.. automodule:: chempy.exception
+.. automodule:: rmgpy.chem.exception
 
 ChemPy Exceptions
 =================
 
-.. autoclass:: chempy.exception.ChemPyError
+.. autoclass:: rmgpy.chem.exception.ChemPyError
     :members:
 
-.. autoclass:: chempy.exception.InvalidThermoModelError
+.. autoclass:: rmgpy.chem.exception.InvalidThermoModelError
     :members:
 
-.. autoclass:: chempy.exception.InvalidKineticsModelError
+.. autoclass:: rmgpy.chem.exception.InvalidKineticsModelError
     :members:
 
-.. autoclass:: chempy.exception.InvalidStatesModelError
+.. autoclass:: rmgpy.chem.exception.InvalidStatesModelError
     :members:
 

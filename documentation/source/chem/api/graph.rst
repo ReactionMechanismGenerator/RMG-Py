@@ -1,25 +1,25 @@
-***************************************
-:mod:`chempy.graph` --- Graph Data Type
-***************************************
+*******************************************
+:mod:`rmgpy.chem.graph` --- Graph Data Type
+*******************************************
 
-.. automodule:: chempy.graph
+.. automodule:: rmgpy.chem.graph
 
 Vertices and Edges
 ==================
 
-.. autoclass:: chempy.graph.Vertex
+.. autoclass:: rmgpy.chem.graph.Vertex
     :members:
 
-.. autoclass:: chempy.graph.Edge
+.. autoclass:: rmgpy.chem.graph.Edge
     :members:
 
 Graph Objects
 =============
 
-.. autoclass:: chempy.graph.Graph
+.. autoclass:: rmgpy.chem.graph.Graph
     :members:
 
 Isomorphism Functions
 =====================
 
-.. automethod:: chempy.graph.VF2_isomorphism
+.. automethod:: rmgpy.chem.graph.VF2_isomorphism

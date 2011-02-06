@@ -15,15 +15,15 @@ read these documents first before continuing.)
 The source for MEASURE is split across a number of Python and Cython modules. 
 Each section of the developers' guide references a different module:
 
-=========================== ====================================================
-Module                      Description
-=========================== ====================================================
-:mod:`measure.input`        Reading network data from input files
-:mod:`measure.network`      Representing network data in memory
-:mod:`measure.collision`    Working with collision models and parameters
-:mod:`measure.reaction`     Working with microcanonical and phenomenological rate coefficients
-:mod:`measure.msc`          Determining :math:`k(T,P)` via the modified strong collision method
-:mod:`measure.rs`           Determining :math:`k(T,P)` via the reservoir state method
-:mod:`measure.output`       Writing network data to input and output files
-:mod:`measure.settings`     Setting application-wide options
-=========================== ====================================================
+=============================== ================================================
+Module                          Description
+=============================== ================================================
+:mod:`rmgpy.measure.input`      Reading network data from input files
+:mod:`rmgpy.measure.network`    Representing network data in memory
+:mod:`rmgpy.measure.collision`  Working with collision models and parameters
+:mod:`rmgpy.measure.reaction`   Working with microcanonical and phenomenological rate coefficients
+:mod:`rmgpy.measure.msc`        Determining :math:`k(T,P)` via the modified strong collision method
+:mod:`rmgpy.measure.rs`         Determining :math:`k(T,P)` via the reservoir state method
+:mod:`rmgpy.measure.output`     Writing network data to input and output files
+:mod:`rmgpy.measure.settings`   Setting application-wide options
+=============================== ================================================

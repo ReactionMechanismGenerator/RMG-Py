@@ -1,9 +1,9 @@
-**********************************************
-:mod:`measure.rs` - The reservoir state method
-**********************************************
+****************************************************
+:mod:`rmgpy.measure.rs` - The reservoir state method
+****************************************************
 
-.. automodule:: measure.rs
+.. automodule:: rmgpy.measure.rs
 
-.. autoclass:: measure.rs.ReservoirStateError
+.. autoclass:: rmgpy.measure.rs.ReservoirStateError
 
-.. autofunction:: measure.rs.applyReservoirStateMethod
+.. autofunction:: rmgpy.measure.rs.applyReservoirStateMethod

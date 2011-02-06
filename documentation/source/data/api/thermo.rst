@@ -1,22 +1,22 @@
-*************************************************
-:mod:`rmgdata.thermo` --- Thermodynamics Database
-*************************************************
+****************************************************
+:mod:`rmgpy.data.thermo` --- Thermodynamics Database
+****************************************************
 
-.. automodule:: rmgdata.thermo
+.. automodule:: rmgpy.data.thermo
 
 Thermodynamics Database
 =======================
 
-.. autoclass:: rmgdata.thermo.ThermoDatabase
+.. autoclass:: rmgpy.data.thermo.ThermoDatabase
     :members:
 
-.. autoclass:: rmgdata.thermo.ThermoGroupDatabase
+.. autoclass:: rmgpy.data.thermo.ThermoGroupDatabase
     :members:
 
-.. autoclass:: rmgdata.thermo.ThermoPrimaryDatabase
+.. autoclass:: rmgpy.data.thermo.ThermoPrimaryDatabase
     :members:
 
-.. autofunction:: rmgdata.thermo.loadThermoDatabase
+.. autofunction:: rmgpy.data.thermo.loadThermoDatabase
 
-.. autofunction:: rmgdata.thermo.generateThermoData
+.. autofunction:: rmgpy.data.thermo.generateThermoData
 

@@ -1,9 +1,9 @@
-*************************************************************
-:mod:`measure.simulate` - Simulating population distributions
-*************************************************************
+*******************************************************************
+:mod:`rmgpy.measure.simulate` - Simulating population distributions
+*******************************************************************
 
-.. automodule:: measure.simulate
+.. automodule:: rmgpy.measure.simulate
 
-.. autofunction:: measure.simulate.solveFullME
+.. autofunction:: rmgpy.measure.simulate.solveFullME
 
-.. autofunction:: measure.simulate.solveReducedME
+.. autofunction:: rmgpy.measure.simulate.solveReducedME

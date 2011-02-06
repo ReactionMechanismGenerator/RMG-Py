@@ -1,9 +1,9 @@
-*********************************************************
-:mod:`measure.msc` - The modified strong collision method
-*********************************************************
+***************************************************************
+:mod:`rmgpy.measure.msc` - The modified strong collision method
+***************************************************************
 
-.. automodule:: measure.msc
+.. automodule:: rmgpy.measure.msc
 
-.. autoclass:: measure.msc.ModifiedStrongCollisionError
+.. autoclass:: rmgpy.measure.msc.ModifiedStrongCollisionError
 
-.. autofunction:: measure.msc.applyModifiedStrongCollisionMethod
+.. autofunction:: rmgpy.measure.msc.applyModifiedStrongCollisionMethod

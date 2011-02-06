@@ -1,11 +1,11 @@
-******************************************
-:mod:`chempy.species` --- Chemical Species
-******************************************
+**********************************************
+:mod:`rmgpy.chem.species` --- Chemical Species
+**********************************************
 
-.. automodule:: chempy.species
+.. automodule:: rmgpy.chem.species
 
 Species Objects
 ===============
 
-.. autoclass:: chempy.species.Species
+.. autoclass:: rmgpy.chem.species.Species
     :members:

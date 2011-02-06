@@ -1,31 +1,31 @@
-*******************************************
-:mod:`measure.output` - Output file writing
-*******************************************
+*************************************************
+:mod:`rmgpy.measure.output` - Output file writing
+*************************************************
 
-.. automodule:: measure.output
+.. automodule:: rmgpy.measure.output
 
 Input and Output File Writing
 =============================
 
-.. autofunction:: measure.output.writeInput
+.. autofunction:: rmgpy.measure.output.writeInput
 
-.. autofunction:: measure.output.writeOutput
+.. autofunction:: rmgpy.measure.output.writeOutput
 
 Helper Functions
 ================
 
-.. autofunction:: measure.output.writeNetworkSpecies
+.. autofunction:: rmgpy.measure.output.writeNetworkSpecies
 
-.. autofunction:: measure.output.writeNetworkPathReactions
+.. autofunction:: rmgpy.measure.output.writeNetworkPathReactions
 
-.. autofunction:: measure.output.writeNetworkNetReactions
+.. autofunction:: rmgpy.measure.output.writeNetworkNetReactions
 
-.. autofunction:: measure.output.writeSpecies
+.. autofunction:: rmgpy.measure.output.writeSpecies
 
-.. autofunction:: measure.output.writeReaction
+.. autofunction:: rmgpy.measure.output.writeReaction
 
-.. autofunction:: measure.output.writePDepReaction
+.. autofunction:: rmgpy.measure.output.writePDepReaction
 
-.. autofunction:: measure.output.writeStates
+.. autofunction:: rmgpy.measure.output.writeStates
 
 

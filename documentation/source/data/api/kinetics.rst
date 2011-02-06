@@ -1,33 +1,33 @@
-*********************************************
-:mod:`rmgdata.kinetics` --- Kinetics Database
-*********************************************
+************************************************
+:mod:`rmgpy.data.kinetics` --- Kinetics Database
+************************************************
 
-.. automodule:: rmgdata.kinetics
+.. automodule:: rmgpy.data.kinetics
 
 Kinetics Database
 =================
 
-.. autoclass:: rmgdata.kinetics.ReactionRecipe
+.. autoclass:: rmgpy.data.kinetics.ReactionRecipe
     :members:
 
-.. autoclass:: rmgdata.kinetics.ReactionFamily
+.. autoclass:: rmgpy.data.kinetics.ReactionFamily
     :members:
 
-.. autoclass:: rmgdata.kinetics.KineticsGroupDatabase
+.. autoclass:: rmgpy.data.kinetics.KineticsGroupDatabase
     :members:
 
-.. autoclass:: rmgdata.kinetics.KineticsPrimaryDatabase
+.. autoclass:: rmgpy.data.kinetics.KineticsPrimaryDatabase
     :members:
 
-.. autofunction:: rmgdata.kinetics.loadKineticsDatabase
+.. autofunction:: rmgpy.data.kinetics.loadKineticsDatabase
 
-.. autofunction:: rmgdata.kinetics.generateKineticsData
+.. autofunction:: rmgpy.data.kinetics.generateKineticsData
 
 Exceptions
 ==========
 
-.. autoclass:: rmgdata.kinetics.InvalidActionError
+.. autoclass:: rmgpy.data.kinetics.InvalidActionError
     :members:
 
-.. autoclass:: rmgdata.kinetics.UndeterminableKineticsError
+.. autoclass:: rmgpy.data.kinetics.UndeterminableKineticsError
     :members:

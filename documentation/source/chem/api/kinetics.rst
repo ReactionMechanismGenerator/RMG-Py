@@ -1,23 +1,23 @@
-******************************************
-:mod:`chempy.kinetics` --- Kinetics Models
-******************************************
+**********************************************
+:mod:`rmgpy.chem.kinetics` --- Kinetics Models
+**********************************************
 
-.. automodule:: chempy.kinetics
+.. automodule:: rmgpy.chem.kinetics
 
 Kinetics Models
 ===============
 
-.. autoclass:: chempy.kinetics.KineticsModel
+.. autoclass:: rmgpy.chem.kinetics.KineticsModel
     :members:
 
-.. autoclass:: chempy.kinetics.ArrheniusModel
+.. autoclass:: rmgpy.chem.kinetics.ArrheniusModel
     :members:
 
-.. autoclass:: chempy.kinetics.ArrheniusEPModel
+.. autoclass:: rmgpy.chem.kinetics.ArrheniusEPModel
     :members:
 
-.. autoclass:: chempy.kinetics.PDepArrheniusModel
+.. autoclass:: rmgpy.chem.kinetics.PDepArrheniusModel
     :members:
 
-.. autoclass:: chempy.kinetics.ChebyshevModel
+.. autoclass:: rmgpy.chem.kinetics.ChebyshevModel
     :members:

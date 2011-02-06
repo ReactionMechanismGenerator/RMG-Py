@@ -13,6 +13,7 @@ Data API Reference
     thermo
     kinetics
     states
+    statesfit
     
 * :ref:`genindex`
 * :ref:`modindex`

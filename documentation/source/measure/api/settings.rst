@@ -1,6 +1,6 @@
-********************************************
-:mod:`measure.settings` - Execution settings
-********************************************
+**************************************************
+:mod:`rmgpy.measure.settings` - Execution settings
+**************************************************
 
-.. automodule:: measure.settings
+.. automodule:: rmgpy.measure.settings
     :members:

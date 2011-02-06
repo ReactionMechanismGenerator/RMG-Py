@@ -1,45 +1,45 @@
-***********************************************
-:mod:`rmgdata.base` --- Common Database Classes
-***********************************************
+**************************************************
+:mod:`rmgpy.data.base` --- Common Database Classes
+**************************************************
 
-.. automodule:: rmgdata.thermo
+.. automodule:: rmgpy.data.thermo
 
 Database Model
 ==============
 
-.. autoclass:: rmgdata.base.Dictionary
+.. autoclass:: rmgpy.data.base.Dictionary
     :members:
 
-.. autoclass:: rmgdata.base.Tree
+.. autoclass:: rmgpy.data.base.Tree
     :members:
 
-.. autoclass:: rmgdata.base.Library
+.. autoclass:: rmgpy.data.base.Library
     :members:
 
-.. autoclass:: rmgdata.base.Database
+.. autoclass:: rmgpy.data.base.Database
     :members:
 
-.. autoclass:: rmgdata.base.InvalidDatabaseError
+.. autoclass:: rmgpy.data.base.InvalidDatabaseError
     :members:
 
 Logical Nodes
 =============
 
-.. autoclass:: rmgdata.base.LogicNode
+.. autoclass:: rmgpy.data.base.LogicNode
     :members:
 
-.. autoclass:: rmgdata.base.LogicAnd
+.. autoclass:: rmgpy.data.base.LogicAnd
     :members:
     
-.. autoclass:: rmgdata.base.LogicOr
+.. autoclass:: rmgpy.data.base.LogicOr
     :members:
 
-.. autofunction:: rmgdata.base.makeLogicNode
+.. autofunction:: rmgpy.data.base.makeLogicNode
 
 Other Functions
 ===============
 
-.. autofunction:: rmgdata.base.getAllCombinations
+.. autofunction:: rmgpy.data.base.getAllCombinations
 
-.. autofunction:: rmgdata.base.removeCommentFromLine
+.. autofunction:: rmgpy.data.base.removeCommentFromLine
 

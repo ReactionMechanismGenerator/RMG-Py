@@ -1,11 +1,11 @@
-*********************************************
-:mod:`chempy.reaction` --- Chemical Reactions
-*********************************************
+*************************************************
+:mod:`rmgpy.chem.reaction` --- Chemical Reactions
+*************************************************
 
-.. automodule:: chempy.reaction
+.. automodule:: rmgpy.chem.reaction
 
 Reaction Objects
 ================
 
-.. autoclass:: chempy.reaction.Reaction
+.. autoclass:: rmgpy.chem.reaction.Reaction
     :members:

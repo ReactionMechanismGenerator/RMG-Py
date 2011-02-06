@@ -1,19 +1,19 @@
-********************************************
-:mod:`rmgdata.states` --- Frequency Database
-********************************************
+***********************************************
+:mod:`rmgpy.data.states` --- Frequency Database
+***********************************************
 
-.. automodule:: rmgdata.states
+.. automodule:: rmgpy.data.states
 
 Group Frequency Database
 ========================
 
-.. autoclass:: rmgdata.states.GroupFrequency
+.. autoclass:: rmgpy.data.states.GroupFrequency
     :members:
 
-.. autoclass:: rmgdata.states.FrequencyGroupDatabase
+.. autoclass:: rmgpy.data.states.FrequencyGroupDatabase
     :members:
 
-.. autofunction:: rmgdata.states.loadFrequencyDatabase
+.. autofunction:: rmgpy.data.states.loadFrequencyDatabase
 
-.. autofunction:: rmgdata.states.generateFrequencyData
+.. autofunction:: rmgpy.data.states.generateFrequencyData
 

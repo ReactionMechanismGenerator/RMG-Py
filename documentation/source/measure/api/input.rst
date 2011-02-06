@@ -1,17 +1,17 @@
-*****************************************
-:mod:`measure.input` - Input file reading
-*****************************************
+***********************************************
+:mod:`rmgpy.measure.input` - Input file reading
+***********************************************
 
-.. automodule:: measure.input
+.. automodule:: rmgpy.measure.input
 
-.. autoclass:: measure.input.InputError
+.. autoclass:: rmgpy.measure.input.InputError
 
-.. autofunction:: measure.input.readInput
+.. autofunction:: rmgpy.measure.input.readInput
 
-.. autofunction:: measure.input.processQuantity
+.. autofunction:: rmgpy.measure.input.processQuantity
 
-.. autofunction:: measure.input.generateThermoFromStates
+.. autofunction:: rmgpy.measure.input.generateThermoFromStates
 
-.. autofunction:: measure.input.getTemperaturesForModel
+.. autofunction:: rmgpy.measure.input.getTemperaturesForModel
 
-.. autofunction:: measure.input.getPressuresForModel
+.. autofunction:: rmgpy.measure.input.getPressuresForModel
