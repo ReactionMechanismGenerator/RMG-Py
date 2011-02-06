@@ -264,10 +264,6 @@ def generateFrequencyData(molecule, thermoModel):
     if len(molecule.atoms) < 2:
         return None
 
-    # This depends on the statesfit module to fit the internal modes not
-    # determined by the characteristic group frequencies
-    from rmgpy.statesfit.fit import fitSpectralDataToHeatCapacity
-
     linear = molecule.isLinear()
     numRotors = molecule.countInternalRotors()
     numVibrations = 3 * len(molecule.atoms) - (5 if linear else 6) - numRotors
@@ -327,16 +323,9 @@ def generateFrequencyData(molecule, thermoModel):
     assert all([C > -0.05 for C in Cv]), "For %s, reduced Cv data is %s" % (molecule, Cv)
 
     # Fit remaining frequencies and hindered rotors to the heat capacity data
-    vib, hind = fitSpectralDataToHeatCapacity(molecule, Tlist, Cv, numVibrations - len(frequencies), numRotors)
-    statesModel = StatesModel()
-    for freq in vib:
-        frequencies.append(freq)
-    ho.frequencies = frequencies
-    statesModel.modes.append(ho)
-    for freq, barr in hind:
-        inertia = (barr*constants.c*100.0*constants.h) / (2 * (freq*constants.c*100.0)**2)
-        barrier = barr*constants.c*100.0*constants.h*constants.Na
-        statesModel.modes.append(HinderedRotor(inertia=inertia, barrier=barrier, symmetry=1))
+    from statesfit import fitStatesToHeatCapacity
+    modes = fitStatesToHeatCapacity(Tlist, Cv, numVibrations - len(frequencies), numRotors, molecule)
+    statesModel = StatesModel(modes=modes)
     
     return statesModel
 
