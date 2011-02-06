@@ -232,10 +232,10 @@ def postprocessCaseDirect(Nvib, Nrot, x):
 
     vib = []
     for i in range(Nvib):
-        vib.append([x[i], 1])
+        vib.append(x[i])
     rot = []
     for i in range(Nrot):
-        rot.append([x[Nvib+2*i], x[Nvib+2*i+1], 1])
+        rot.append((x[Nvib+2*i], x[Nvib+2*i+1]))
 
     return vib, rot
 
@@ -289,11 +289,11 @@ def postprocessCasePseudo(Nvib, Nrot, x):
         raise StatesFitError('Invalid degeneracies %s and %s fitted for pseudo-frequencies.' % (Nvib2, Nvib3))
 
     vib = []
-    vib.append([x[0], 1])
-    if Nvib2 > 0: vib.append([x[2], Nvib2])
-    if Nvib3 > 0: vib.append([x[3], Nvib3])
+    vib.append(x[0])
+    for i in range(Nvib2): vib.append(x[2])
+    for i in range(Nvib3): vib.append(x[3])
     rot = []
-    if Nrot > 0: rot.append([x[4], x[5], Nrot])
+    for i in range(Nrot): rot.append((x[4], x[5]))
 
     return vib, rot
 
@@ -337,9 +337,9 @@ def postprocessCasePseudoRot(Nvib, Nrot, x):
 
     vib = []
     for i in range(Nvib):
-        vib.append([x[i], 1])
+        vib.append(x[i])
     rot = []
-    if Nrot > 0: rot.append([x[-2], x[-1], Nrot])
+    for i in range(Nrot): rot.append((x[-2], x[-1]))
 
     return vib, rot
 
