@@ -44,7 +44,7 @@ import numpy
 
 import logging
 
-from _statesfit import setparams, fitmodes, cleanup
+from _fit import fitModes
 
 ################################################################################
 
@@ -130,23 +130,8 @@ def fitSpectralDataToHeatCapacity(molecule, Tlist, Cvlist, Nvib, Nrot):
         mode = 'pseudo'
         x0, bounds = setupCasePseudo(Nvib, Nrot)
 
-    # Set parameters that are not needed by the solver but are needed to
-    # evaluate the objective function and its Jacobian
-    # These are stored in a Fortran 90 module called params
-    setparams(
-        p_tlist = numpy.array(Tlist),
-        p_cvlist = numpy.array(Cvlist),
-        p_mcon = 0,
-        p_mequa = len(Tlist),
-        p_nvars = len(x0),
-        p_nvib = Nvib,
-        p_nrot = Nrot
-        )
-
     # Execute the optimization, passing the initial guess and bounds and other
     # solver options
-
-    from _fit import fitModes
     x, igo = fitModes(
         mode = mode,
         x0 = numpy.array(x0),
@@ -157,9 +142,6 @@ def fitSpectralDataToHeatCapacity(molecule, Tlist, Cvlist, Nvib, Nrot):
         Nvib = Nvib,
         Nrot = Nrot
         )
-
-    # Clean up the temporary variables stored via _fit.setparams() earlier
-    cleanup()
 
     if not numpy.isfinite(x).all():
         raise StatesFitError('Returned solution vector is nonsensical: x = %s.' % (x))
