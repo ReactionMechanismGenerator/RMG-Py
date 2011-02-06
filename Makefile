@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-all: chem measure solver statesfit
+all: chem measure solver
 
 minimal: measure solver
 
@@ -17,12 +17,8 @@ measure:
 solver:
 	python setup.py build_ext solver --build-lib . --build-temp build/solver --pyrex-c-in-temp
 
-statesfit:
-	make -C rmgpy/statesfit
-
 clean:
 	python setup.py clean --build-temp build
-	make -C rmgpy/statesfit clean
 	rm -rf build/
 	find . -name *.so -exec rm -f '{}' \;
 	find . -name *.pyc -exec rm -f '{}' \;

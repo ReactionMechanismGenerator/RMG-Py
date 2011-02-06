@@ -329,16 +329,14 @@ def generateFrequencyData(molecule, thermoModel):
     # Fit remaining frequencies and hindered rotors to the heat capacity data
     vib, hind = fitSpectralDataToHeatCapacity(molecule, Tlist, Cv, numVibrations - len(frequencies), numRotors)
     statesModel = StatesModel()
-    for freq, degen in vib:
-        for d in range(degen):
-            frequencies.append(freq)
+    for freq in vib:
+        frequencies.append(freq)
     ho.frequencies = frequencies
     statesModel.modes.append(ho)
-    for freq, barr, degen in hind:
+    for freq, barr in hind:
         inertia = (barr*constants.c*100.0*constants.h) / (2 * (freq*constants.c*100.0)**2)
         barrier = barr*constants.c*100.0*constants.h*constants.Na
-        for d in range(degen):
-            statesModel.modes.append(HinderedRotor(inertia=inertia, barrier=barrier, symmetry=1))
+        statesModel.modes.append(HinderedRotor(inertia=inertia, barrier=barrier, symmetry=1))
     
     return statesModel
 

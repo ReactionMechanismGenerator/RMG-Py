@@ -44,7 +44,7 @@ import numpy
 
 import logging
 
-from _statesfit import setparams, fitmodes, cleanup
+from _fit import fitModes
 
 ################################################################################
 
@@ -117,40 +117,31 @@ def fitSpectralDataToHeatCapacity(molecule, Tlist, Cvlist, Nvib, Nrot):
     #	-	For high values of Nvib and/or Nrot we are limited by the number of
     #		temperatures we are fitting at, and so we can only fit
     #		pseudo-oscillators and/or pseudo-rotors
+    mode = ''
     if Nvib <= 0 and Nrot <= 0:
         return [], []
     elif Nvib + 2 * Nrot <= maxVariables:
-        x0, bl, bu, ind = setupCaseDirect(Nvib, Nrot)
+        mode = 'direct'
+        x0, bounds = setupCaseDirect(Nvib, Nrot)
     elif Nvib + 2 <= maxVariables:
-        x0, bl, bu, ind = setupCasePseudoRot(Nvib, Nrot)
+        mode = 'pseudo-rotors'
+        x0, bounds = setupCasePseudoRot(Nvib, Nrot)
     else:
-        x0, bl, bu, ind = setupCasePseudo(Nvib, Nrot)
-
-    # Set parameters that are not needed by the solver but are needed to
-    # evaluate the objective function and its Jacobian
-    # These are stored in a Fortran 90 module called params
-    setparams(
-        p_tlist = numpy.array(Tlist),
-        p_cvlist = numpy.array(Cvlist),
-        p_mcon = 0,
-        p_mequa = len(Tlist),
-        p_nvars = len(x0),
-        p_nvib = Nvib,
-        p_nrot = Nrot
-        )
+        mode = 'pseudo'
+        x0, bounds = setupCasePseudo(Nvib, Nrot)
 
     # Execute the optimization, passing the initial guess and bounds and other
     # solver options
-    x, igo = fitmodes(
+    x, igo = fitModes(
+        mode = mode,
         x0 = numpy.array(x0),
-        bl = numpy.array(bl),
-        bu = numpy.array(bu),
-        ind = numpy.array(ind),
-        maxiter = maxIter,
+        bounds = bounds,
+        maxIter = maxIter,
+        Tdata = numpy.array(Tlist),
+        Cvdata = numpy.array(Cvlist),
+        Nvib = Nvib,
+        Nrot = Nrot
         )
-
-    # Clean up the temporary variables stored via _fit.setparams() earlier
-    cleanup()
 
     if not numpy.isfinite(x).all():
         raise StatesFitError('Returned solution vector is nonsensical: x = %s.' % (x))
@@ -184,25 +175,16 @@ def setupCaseDirect(Nvib, Nrot):
 
     # Initialize the variables that are set by this function
     count = Nvib + 2 * Nrot
-    ind = numpy.zeros(count, numpy.float64)		# Indicates type of bounds to apply (1 = lower, 2 = upper, 3 = both, 4 = neither)
-    lb = numpy.zeros(count, numpy.float64)		# Lower bounds
-    ub = numpy.zeros(count, numpy.float64)		# Upper bounds
     x0 = numpy.zeros(count, numpy.float64)		# Initial guess
-
+    bounds = []
+    
     # The first Nvib variables correspond to real harmonic oscillator frequencies
     for i in range(Nvib):
-        ind[i] = 3
-        lb[i]  = hoFreqLowerBound
-        ub[i]  = hoFreqUpperBound
-
+        bounds.append((hoFreqLowerBound, hoFreqUpperBound))
     # The remaining 2 * Nrot variables correspond to real hindered rotor frequencies and barrier heights
     for i in range(Nrot):
-        ind[Nvib+2*i] = 3
-        lb[Nvib+2*i]  = hrFreqLowerBound
-        ub[Nvib+2*i]  = hrFreqUpperBound
-        ind[Nvib+2*i+1] = 3
-        lb[Nvib+2*i+1]  = hrBarrLowerBound
-        ub[Nvib+2*i+1]  = hrBarrUpperBound
+        bounds.append((hrFreqLowerBound, hrFreqUpperBound))
+        bounds.append((hrBarrLowerBound, hrBarrUpperBound))
 
     # Initial guesses within each mode type must be distinct or else the
     # optimization will fail
@@ -219,7 +201,7 @@ def setupCaseDirect(Nvib, Nrot):
             x0[Nvib+2*i] = x0[Nvib+2*i-2] + 20.0
             x0[Nvib+2*i+1] = x0[Nvib+2*i-1] + 100.0
 
-    return x0, lb, ub, ind
+    return x0, bounds
 
 def postprocessCaseDirect(Nvib, Nrot, x):
     """
@@ -232,10 +214,10 @@ def postprocessCaseDirect(Nvib, Nrot, x):
 
     vib = []
     for i in range(Nvib):
-        vib.append([x[i], 1])
+        vib.append(x[i])
     rot = []
     for i in range(Nrot):
-        rot.append([x[Nvib+2*i], x[Nvib+2*i+1], 1])
+        rot.append((x[Nvib+2*i], x[Nvib+2*i+1]))
 
     return vib, rot
 
@@ -250,40 +232,21 @@ def setupCasePseudo(Nvib, Nrot):
     """
 
     # Initialize the variables that are set by this function
-    ind = numpy.zeros(6, numpy.float64)		# Indicates type of bounds to apply (1 = lower, 2 = upper, 3 = both, 4 = neither)
-    lb = numpy.zeros(6, numpy.float64)		# Lower bounds
-    ub = numpy.zeros(6, numpy.float64)		# Upper bounds
     x0 = numpy.zeros(6, numpy.float64)		# Initial guess
+    bounds = []
 
     # x[0] corresponds to the first harmonic oscillator (real) frequency
-    ind[0] = 3
-    lb[0]  = hoFreqLowerBound
-    ub[0]  = hoFreqUpperBound
-
+    bounds.append((hoFreqLowerBound, hoFreqUpperBound))
     # x[1] corresponds to the degeneracy of the second harmonic oscillator
-    ind[1] = 3
-    lb[1]  = 1.0
-    ub[1]  = float(Nvib - 2)
-
+    bounds.append((1.0, float(Nvib - 2)))
     # x[2] corresponds to the second harmonic oscillator pseudo-frequency
-    ind[2] = 3
-    lb[2]  = hoFreqLowerBound
-    ub[2]  = hoFreqUpperBound
-
+    bounds.append((hoFreqLowerBound, hoFreqUpperBound))
     # x[3] corresponds to the third harmonic oscillator pseudo-frequency
-    ind[3] = 3
-    lb[3]  = hoFreqLowerBound
-    ub[3]  = hoFreqUpperBound
-
+    bounds.append((hoFreqLowerBound, hoFreqUpperBound))
     # x[4] corresponds to the hindered rotor pseudo-frequency
-    ind[4] = 3
-    lb[4]  = hrFreqLowerBound
-    ub[4]  = hrFreqUpperBound
-
+    bounds.append((hrFreqLowerBound, hrFreqUpperBound))
     # x[5] corresponds to the hindered rotor pseudo-barrier
-    ind[5] = 3
-    lb[5]  = hrBarrLowerBound
-    ub[5]  = hrBarrUpperBound
+    bounds.append((hrBarrLowerBound, hrBarrUpperBound))
 
     # Initial guess
     x0[0] = 300.0
@@ -293,7 +256,7 @@ def setupCasePseudo(Nvib, Nrot):
     x0[4] = 100.0
     x0[5] = 300.0
 
-    return x0, lb, ub, ind
+    return x0, bounds
 
 def postprocessCasePseudo(Nvib, Nrot, x):
     """
@@ -308,11 +271,11 @@ def postprocessCasePseudo(Nvib, Nrot, x):
         raise StatesFitError('Invalid degeneracies %s and %s fitted for pseudo-frequencies.' % (Nvib2, Nvib3))
 
     vib = []
-    vib.append([x[0], 1])
-    if Nvib2 > 0: vib.append([x[2], Nvib2])
-    if Nvib3 > 0: vib.append([x[3], Nvib3])
+    vib.append(x[0])
+    for i in range(Nvib2): vib.append(x[2])
+    for i in range(Nvib3): vib.append(x[3])
     rot = []
-    if Nrot > 0: rot.append([x[4], x[5], Nrot])
+    for i in range(Nrot): rot.append((x[4], x[5]))
 
     return vib, rot
 
@@ -326,26 +289,16 @@ def setupCasePseudoRot(Nvib, Nrot):
     """
 
     # Initialize the variables that are set by this function
-    ind = numpy.zeros(Nvib+2, numpy.float64)		# Indicates type of bounds to apply (1 = lower, 2 = upper, 3 = both, 4 = neither)
-    lb = numpy.zeros(Nvib+2, numpy.float64)		# Lower bounds
-    ub = numpy.zeros(Nvib+2, numpy.float64)		# Upper bounds
     x0 = numpy.zeros(Nvib+2, numpy.float64)		# Initial guess
+    bounds = []
 
     # x[0] corresponds to the first harmonic oscillator (real) frequency
     for i in range(Nvib):
-        ind[i] = 3
-        lb[i]  = hoFreqLowerBound
-        ub[i]  = hoFreqUpperBound
-
+        bounds.append((hoFreqLowerBound, hoFreqUpperBound))
     # x[Nvib] corresponds to the hindered rotor pseudo-frequency
-    ind[Nvib] = 3
-    lb[Nvib]  = hrFreqLowerBound
-    ub[Nvib]  = hrFreqUpperBound
-
+    bounds.append((hrFreqLowerBound, hrFreqUpperBound))
     # x[Nvib+1] corresponds to the hindered rotor pseudo-barrier
-    ind[Nvib+1] = 3
-    lb[Nvib+1]  = hrBarrLowerBound
-    ub[Nvib+1]  = hrBarrUpperBound
+    bounds.append((hrBarrLowerBound, hrBarrUpperBound))
 
     # Initial guess for harmonic oscillators
     if Nvib > 0:
@@ -355,7 +308,7 @@ def setupCasePseudoRot(Nvib, Nrot):
     x0[-2] = 100.0
     x0[-1] = 300.0
 
-    return x0, lb, ub, ind
+    return x0, bounds
 
 def postprocessCasePseudoRot(Nvib, Nrot, x):
     """
@@ -366,9 +319,9 @@ def postprocessCasePseudoRot(Nvib, Nrot, x):
 
     vib = []
     for i in range(Nvib):
-        vib.append([x[i], 1])
+        vib.append(x[i])
     rot = []
-    if Nrot > 0: rot.append([x[-2], x[-1], Nrot])
+    for i in range(Nrot): rot.append((x[-2], x[-1]))
 
     return vib, rot
 

@@ -10,12 +10,12 @@ import math
 import numpy
 import logging
 
-from chempy.molecule import Molecule
-from chempy.states import *
-from chempy.thermo import ThermoGAModel
-import chempy.constants as constants
+from rmgpy.chem.molecule import Molecule
+from rmgpy.chem.states import *
+from rmgpy.chem.thermo import ThermoGAModel
+import rmgpy.chem.constants as constants
 
-from statesfit import fitSpectralDataToHeatCapacity
+from rmgpy.statesfit.fit import fitSpectralDataToHeatCapacity
 
 ################################################################################
 
@@ -59,15 +59,19 @@ class GroupFrequencyCheck(unittest.TestCase):
         print vib, hind
 
         model = StatesModel()
-        model.modes.append(HarmonicOscillator(frequencies=[freq for freq, degen in vib for d in range(degen)]))
-        for freq, barr, degen in hind:
+        model.modes.append(HarmonicOscillator(frequencies=vib))
+        for freq, barr in hind:
             inertia = (barr*constants.c*100.0*constants.h) / (2 * (freq*constants.c*100.0)**2)
             barrier = barr*constants.c*100.0*constants.h*constants.Na
-            for d in range(degen):
-                model.modes.append(HinderedRotor(inertia=inertia, barrier=barrier, symmetry=1))
+            model.modes.append(HinderedRotor(inertia=inertia, barrier=barrier, symmetry=1))
 
         Cp_fit = model.getHeatCapacities(Tlist) / constants.R - 1.0
         Cp_data = Cv
+
+        import pylab
+        pylab.plot(Tlist, Cp_data, 'ok', Tlist, Cp_fit, '-k')
+        pylab.show()
+        
         rms = numpy.sqrt(numpy.sum((Cp_fit - Cp_data) * (Cp_fit - Cp_data))) / len(Tlist)
         print Cp_data
         print Cp_fit
@@ -96,18 +100,22 @@ class GroupFrequencyCheck(unittest.TestCase):
         print vib, hind
         self.assertTrue(len(vib) == 1)
         self.assertTrue(len(hind) == 0)
-        self.assertAlmostEqual(vib[0][0] / ho.frequencies[0], 1.0, 3)
+        self.assertAlmostEqual(vib[0] / ho.frequencies[0], 1.0, 3)
 
         model = StatesModel()
-        model.modes.append(HarmonicOscillator(frequencies=[freq for freq, degen in vib for d in range(degen)]))
-        for freq, barr, degen in hind:
+        model.modes.append(HarmonicOscillator(frequencies=vib))
+        for freq, barr in hind:
             inertia = (barr*constants.c*100.0*constants.h) / (2 * (freq*constants.c*100.0)**2)
             barrier = barr*constants.c*100.0*constants.h*constants.Na
-            for d in range(degen):
-                model.modes.append(HinderedRotor(inertia=inertia, barrier=barrier, symmetry=1))
+            model.modes.append(HinderedRotor(inertia=inertia, barrier=barrier, symmetry=1))
 
         Cp_fit = model.getHeatCapacities(Tlist) / constants.R - 1.0
         Cp_data = Cv
+
+        import pylab
+        pylab.plot(Tlist, Cp_data, 'ok', Tlist, Cp_fit, '-k')
+        pylab.show()
+
         rms = numpy.sqrt(numpy.sum((Cp_fit - Cp_data) * (Cp_fit - Cp_data))) / len(Tlist)
         print Cp_data
         print Cp_fit
@@ -150,16 +158,20 @@ class GroupFrequencyCheck(unittest.TestCase):
         print vib, hind
 
         model = StatesModel()
-        model.modes.append(HarmonicOscillator(frequencies=[freq for freq, degen in vib for d in range(degen)]))
-        for freq, barr, degen in hind:
+        model.modes.append(HarmonicOscillator(frequencies=vib))
+        for freq, barr in hind:
             inertia = (barr*constants.c*100.0*constants.h) / (2 * (freq*constants.c*100.0)**2)
             barrier = barr*constants.c*100.0*constants.h*constants.Na
-            for d in range(degen):
-                model.modes.append(HinderedRotor(inertia=inertia, barrier=barrier, symmetry=1))
+            model.modes.append(HinderedRotor(inertia=inertia, barrier=barrier, symmetry=1))
 
         Cp_fit = model.getHeatCapacities(Tlist) / constants.R - 1.0
         Cp_data = Cv
         rms = numpy.sqrt(numpy.sum((Cp_fit - Cp_data) * (Cp_fit - Cp_data))) / len(Tlist)
+
+        import pylab
+        pylab.plot(Tlist, Cp_data, 'ok', Tlist, Cp_fit, '-k')
+        pylab.show()
+
         print Cp_data
         print Cp_fit
         print rms
@@ -204,15 +216,19 @@ class GroupFrequencyCheck(unittest.TestCase):
         print vib, hind
 
         model = StatesModel()
-        model.modes.append(HarmonicOscillator(frequencies=[freq for freq, degen in vib for d in range(degen)]))
-        for freq, barr, degen in hind:
+        model.modes.append(HarmonicOscillator(frequencies=vib))
+        for freq, barr in hind:
             inertia = (barr*constants.c*100.0*constants.h) / (2 * (freq*constants.c*100.0)**2)
             barrier = barr*constants.c*100.0*constants.h*constants.Na
-            for d in range(degen):
-                model.modes.append(HinderedRotor(inertia=inertia, barrier=barrier, symmetry=1))
+            model.modes.append(HinderedRotor(inertia=inertia, barrier=barrier, symmetry=1))
 
         Cp_fit = model.getHeatCapacities(Tlist) / constants.R - 1.0
         Cp_data = Cv
+
+        import pylab
+        pylab.plot(Tlist, Cp_data, 'ok', Tlist, Cp_fit, '-k')
+        pylab.show()
+
         rms = numpy.sqrt(numpy.sum((Cp_fit - Cp_data) * (Cp_fit - Cp_data))) / len(Tlist)
         print Cp_data
         print Cp_fit
