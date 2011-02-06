@@ -16,7 +16,7 @@ from rmgpy.chem.states import *
 from rmgpy.chem.thermo import ThermoGAModel
 import rmgpy.chem.constants as constants
 
-from rmgpy.statesfit.fit import fitSpectralDataToHeatCapacity
+from rmgpy.data.statesfit import fitStatesToHeatCapacity
 
 showPlots = False
 
@@ -51,14 +51,16 @@ class StatesfitCheck(unittest.TestCase):
             ho = HarmonicOscillator(frequencies=[freq])
             Cv_data = ho.getHeatCapacities(Tlist) / constants.R
 
-            vib, hind = fitSpectralDataToHeatCapacity(None, Tlist, Cv_data, Nvib=1, Nrot=0)
+            modes = fitStatesToHeatCapacity(Tlist, Cv_data, Nvib=1, Nrot=0)
             
-            self.assertTrue(len(vib) == 1)
-            self.assertTrue(len(hind) == 0)
-            self.assertAlmostEqual(vib[0] / freq, 1.0, 4, 'Fitted vibrational frequency of %g cm^-1 does not match expected value of %g cm^-1.' % (vib[0], freq))
+            self.assertTrue(len(modes) == 1)
+            self.assertTrue(isinstance(modes[0], HarmonicOscillator))
+            self.assertTrue(len(modes[0].frequencies) == 1)
+            self.assertAlmostEqual(modes[0].frequencies[0] / freq, 1.0, 4, 'Fitted vibrational frequency of %g cm^-1 does not match expected value of %g cm^-1.' % (modes[0].frequencies[0], freq))
 
-            ho = HarmonicOscillator(frequencies=vib)
-            Cv_model = ho.getHeatCapacities(Tlist) / constants.R
+            Cv_model = numpy.zeros_like(Tlist)
+            for mode in modes:
+                Cv_model += mode.getHeatCapacities(Tlist) / constants.R
 
             pylab.plot(Tlist, Cv_data, 'o%s' % colors[i], Tlist, Cv_model, '-%s' % colors[i])
 
@@ -81,15 +83,18 @@ class StatesfitCheck(unittest.TestCase):
             hr = makeHinderedRotor(freq, barr)
             Cv_data = hr.getHeatCapacities(Tlist) / constants.R
 
-            vib, hind = fitSpectralDataToHeatCapacity(None, Tlist, Cv_data, Nvib=0, Nrot=1)
+            modes = fitStatesToHeatCapacity(Tlist, Cv_data, Nvib=0, Nrot=1)
             
-            self.assertTrue(len(vib) == 0)
-            self.assertTrue(len(hind) == 1)
-            self.assertAlmostEqual(hind[0][0] / freq, 1.0, 4, 'Fitted rotor frequency of %g cm^-1 does not match expected value of %g cm^-1.' % (hind[0][0], freq))
-            self.assertAlmostEqual(hind[0][1] / barr, 1.0, 4, 'Fitted rotor barrier of %g cm^-1 does not match expected value of %g cm^-1.' % (hind[0][1], barr))
+            self.assertTrue(len(modes) == 1)
+            self.assertTrue(isinstance(modes[0], HinderedRotor))
+            freq0 = modes[0].getFrequency()
+            barr0 = modes[0].barrier / (constants.h * constants.c * 100.0 * constants.Na)
+            self.assertAlmostEqual(freq0 / freq, 1.0, 4, 'Fitted rotor frequency of %g cm^-1 does not match expected value of %g cm^-1.' % (freq0, freq))
+            self.assertAlmostEqual(barr0 / barr, 1.0, 4, 'Fitted rotor barrier of %g cm^-1 does not match expected value of %g cm^-1.' % (barr0, barr))
 
-            hr = makeHinderedRotor(hind[0][0], hind[0][1])
-            Cv_model = hr.getHeatCapacities(Tlist) / constants.R
+            Cv_model = numpy.zeros_like(Tlist)
+            for mode in modes:
+                Cv_model += mode.getHeatCapacities(Tlist) / constants.R
 
             pylab.plot(Tlist, Cv_data, 'o%s' % colors[i], Tlist, Cv_model, '-%s' % colors[i])
 
@@ -110,15 +115,17 @@ class StatesfitCheck(unittest.TestCase):
             ho = HarmonicOscillator(frequencies=freq)
             Cv_data = ho.getHeatCapacities(Tlist) / constants.R
 
-            vib, hind = fitSpectralDataToHeatCapacity(None, Tlist, Cv_data, Nvib=2, Nrot=0)
+            modes = fitStatesToHeatCapacity(Tlist, Cv_data, Nvib=2, Nrot=0)
             
-            self.assertTrue(len(vib) == 2)
-            self.assertTrue(len(hind) == 0)
-            self.assertAlmostEqual(vib[0] / freq[0], 1.0, 4, 'Fitted vibrational frequency of %g cm^-1 does not match expected value of %g cm^-1.' % (vib[0], freq[0]))
-            self.assertAlmostEqual(vib[1] / freq[1], 1.0, 4, 'Fitted vibrational frequency of %g cm^-1 does not match expected value of %g cm^-1.' % (vib[1], freq[1]))
+            self.assertTrue(len(modes) == 1)
+            self.assertTrue(isinstance(modes[0], HarmonicOscillator))
+            self.assertTrue(len(modes[0].frequencies) == 2)
+            self.assertAlmostEqual(modes[0].frequencies[0] / freq[0], 1.0, 4, 'Fitted vibrational frequency of %g cm^-1 does not match expected value of %g cm^-1.' % (modes[0].frequencies[0], freq[0]))
+            self.assertAlmostEqual(modes[0].frequencies[1] / freq[1], 1.0, 4, 'Fitted vibrational frequency of %g cm^-1 does not match expected value of %g cm^-1.' % (modes[0].frequencies[1], freq[1]))
 
-            ho = HarmonicOscillator(frequencies=vib)
-            Cv_model = ho.getHeatCapacities(Tlist) / constants.R
+            Cv_model = numpy.zeros_like(Tlist)
+            for mode in modes:
+                Cv_model += mode.getHeatCapacities(Tlist) / constants.R
 
             pylab.plot(Tlist, Cv_data, 'o%s' % colors[i], Tlist, Cv_model, '-%s' % colors[i])
 
@@ -144,17 +151,21 @@ class StatesfitCheck(unittest.TestCase):
             hr = makeHinderedRotor(freq, barr)
             Cv_data = ho.getHeatCapacities(Tlist) / constants.R + hr.getHeatCapacities(Tlist) / constants.R
 
-            vib, hind = fitSpectralDataToHeatCapacity(None, Tlist, Cv_data, Nvib=1, Nrot=1)
+            modes = fitStatesToHeatCapacity(Tlist, Cv_data, Nvib=1, Nrot=1)
             
-            self.assertTrue(len(vib) == 1)
-            self.assertTrue(len(hind) == 1)
-            self.assertAlmostEqual(vib[0] / vibFreq, 1.0, 3, 'Fitted vibrational frequency of %g cm^-1 does not match expected value of %g cm^-1.' % (vib[0], vibFreq))
-            self.assertAlmostEqual(hind[0][0] / freq, 1.0, 3, 'Fitted rotor frequency of %g cm^-1 does not match expected value of %g cm^-1.' % (hind[0][0], freq))
-            self.assertAlmostEqual(hind[0][1] / barr, 1.0, 3, 'Fitted rotor barrier of %g cm^-1 does not match expected value of %g cm^-1.' % (hind[0][1], barr))
+            self.assertTrue(len(modes) == 2)
+            self.assertTrue(isinstance(modes[0], HarmonicOscillator))
+            self.assertTrue(len(modes[0].frequencies) == 1)
+            self.assertTrue(isinstance(modes[1], HinderedRotor))
+            freq0 = modes[1].getFrequency()
+            barr0 = modes[1].barrier / (constants.h * constants.c * 100.0 * constants.Na)
+            self.assertAlmostEqual(modes[0].frequencies[0] / vibFreq, 1.0, 3, 'Fitted vibrational frequency of %g cm^-1 does not match expected value of %g cm^-1.' % (modes[0].frequencies[0], vibFreq))
+            self.assertAlmostEqual(freq0 / freq, 1.0, 4, 'Fitted rotor frequency of %g cm^-1 does not match expected value of %g cm^-1.' % (freq0, freq))
+            self.assertAlmostEqual(barr0 / barr, 1.0, 4, 'Fitted rotor barrier of %g cm^-1 does not match expected value of %g cm^-1.' % (barr0, barr))
 
-            ho = HarmonicOscillator(frequencies=vib)
-            hr = makeHinderedRotor(hind[0][0], hind[0][1])
-            Cv_model = ho.getHeatCapacities(Tlist) / constants.R + hr.getHeatCapacities(Tlist) / constants.R
+            Cv_model = numpy.zeros_like(Tlist)
+            for mode in modes:
+                Cv_model += mode.getHeatCapacities(Tlist) / constants.R
 
             pylab.plot(Tlist, Cv_data, 'o%s' % colors[i], Tlist, Cv_model, '-%s' % colors[i])
 
@@ -173,18 +184,18 @@ class StatesfitCheck(unittest.TestCase):
         ho = HarmonicOscillator(frequencies=list(frequencies))
         Cv_data = ho.getHeatCapacities(Tlist) / constants.R
 
-        vib, hind = fitSpectralDataToHeatCapacity(None, Tlist, Cv_data, Nvib=len(frequencies), Nrot=0)
-        print vib, hind
+        modes = fitStatesToHeatCapacity(Tlist, Cv_data, Nvib=len(frequencies), Nrot=0)
         
-        self.assertTrue(len(vib) == len(frequencies))
-        self.assertTrue(len(hind) == 0)
-        vib.sort()
-        for i in range(len(vib)):
-            self.assertAlmostEqual(vib[i] / frequencies[i], 1.0, 2, 'Fitted vibrational frequency of %g cm^-1 does not match expected value of %g cm^-1.' % (vib[i], frequencies[i]))
-
-        ho = HarmonicOscillator(frequencies=vib)
+        self.assertTrue(len(modes) == 1)
+        self.assertTrue(isinstance(modes[0], HarmonicOscillator))
+        self.assertTrue(len(modes[0].frequencies) == len(frequencies))
+        for i in range(len(frequencies)):
+            self.assertAlmostEqual(modes[0].frequencies[i] / frequencies[i], 1.0, 2, 'Fitted vibrational frequency of %g cm^-1 does not match expected value of %g cm^-1.' % (modes[0].frequencies[i], frequencies[i]))
+        
         T_model = numpy.arange(300.0, 2001.0, 100.0, numpy.float64)
-        Cv_model = ho.getHeatCapacities(T_model) / constants.R
+        Cv_model = numpy.zeros_like(T_model)
+        for mode in modes:
+            Cv_model += mode.getHeatCapacities(T_model) / constants.R
 
         pylab.plot(Tlist, Cv_data, 'ok', T_model, Cv_model, '-k')
 
