@@ -324,6 +324,12 @@ def execute(args):
                 done = False
 
         if not done:
+
+            # If we reached our termination conditions, then try to prune
+            # species from the edge
+            if allTerminated:
+                reactionModel.prune(reactionSystems)
+
             # Enlarge objects identified by the simulation for enlarging
             # These should be Species or Network objects
             logging.info('')

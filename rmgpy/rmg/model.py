@@ -1037,6 +1037,56 @@ class CoreEdgeReactionModel:
         """
         self.edge.species.append(spec)
 
+    def prune(self, reactionSystems):
+        """
+        Remove species from the model edge based on the simulation results from
+        the list of `reactionSystems`.
+        """
+
+        # Get the maximum species rates (and network leak rates)
+        # across all reaction systems
+        numEdgeSpecies = len(self.edge.species)
+        numPdepNetworks = len(self.unirxnNetworks)
+        maxEdgeSpeciesRates = numpy.zeros((numEdgeSpecies), numpy.float64)
+        maxNetworkLeakRates = numpy.zeros((numPdepNetworks), numpy.float64)
+        for reactionSystem in reactionSystems:
+            for i in range(numEdgeSpecies):
+                rate = reactionSystem.maxEdgeSpeciesRates[i]
+                if maxEdgeSpeciesRates[i] < rate:
+                    maxEdgeSpeciesRates[i] = rate
+            for i in range(numPdepNetworks):
+                rate = reactionSystem.maxNetworkLeakRates[i]
+                if maxNetworkLeakRates[i] < rate:
+                    maxNetworkLeakRates[i] = rate
+
+        # Sort the edge species rates by index
+        indices = numpy.argsort(maxEdgeSpeciesRates)
+
+        # Determine which species to prune
+        speciesToPrune = []
+        pruneDueToRateCounter = 0
+        for index in indices:
+            # Remove the species with rates below the pruning tolerance from the model edge
+            if maxEdgeSpeciesRates[index] < self.fluxToleranceKeepInEdge:
+                speciesToPrune.append((index, self.edge.species[index]))
+                pruneDueToRateCounter += 1
+            # Keep removing species with the lowest rates until we are below the maximum edge species size
+            elif numEdgeSpecies - len(speciesToPrune) > self.maximumEdgeSpecies:
+                speciesToPrune.append((index, self.edge.species[index]))
+            else:
+                break
+
+        # Actually do the pruning
+        logging.info('Pruning %i species whose rates did not exceed the minimum threshold of %g' % (pruneDueToRateCounter, self.fluxToleranceKeepInEdge))
+        for index, spec in speciesToPrune[0:pruneDueToRateCounter]:
+            logging.info('    %-56s    %10.4e' % (spec, maxEdgeSpeciesRates[index]))
+            self.removeSpeciesFromEdge(spec)
+        logging.info('Pruning %i species to obtain an edge size of %i species' % (len(speciesToPrune) - pruneDueToRateCounter, self.maximumEdgeSpecies))
+        for index, spec in speciesToPrune[pruneDueToRateCounter:]:
+            logging.info('    %-56s    %10.4e' % (spec, maxEdgeSpeciesRates[index]))
+            self.removeSpeciesFromEdge(spec)
+        logging.info('')
+
     def removeSpeciesFromEdge(self, spec):
         """
         Remove species `spec` from the reaction model edge.
@@ -1054,8 +1104,12 @@ class CoreEdgeReactionModel:
             # also remove it from the global list of reactions
             # the PDepReactions on the edge aren't in the global list, so we
             # should not try to remove them
-            if not isinstance(rxn, reaction.PDepReaction):
-                reaction.removeFromGlobalList(rxn)
+            if not isinstance(rxn, PDepReaction):
+                family = rxn.family
+                reactant1 = rxn.reactants[0]
+                reactant2 = None
+                if len(rxn.reactants) > 1: reactant2 = rxn.reactants[1]
+                self.reactionDict[family][reactant1][reactant2].remove(rxn)
 
         # Remove the species from any unirxn networks it is in
         if settings.pressureDependence:
@@ -1100,7 +1154,10 @@ class CoreEdgeReactionModel:
 
         # remove from the global list of species, to free memory
         formula = spec.molecule[0].getFormula()
-        species.speciesDict[formula].remove(spec)
+        self.speciesDict[formula].remove(spec)
+        if spec in self.speciesCache:
+            self.speciesCache.remove(spec)
+            self.speciesCache.append(None)
 
     def addReactionToCore(self, rxn):
         """
