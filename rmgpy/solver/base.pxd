@@ -38,6 +38,8 @@ cdef class ReactionSystem(DASSL):
     cdef public numpy.ndarray edgeReactionRates
     cdef public numpy.ndarray networkLeakRates
 
+    cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions, list pdepNetworks=?)
+
     cpdef simulate(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions,
         double toleranceKeepInEdge, double toleranceMoveToCore, double toleranceInterruptSimulation,
         list termination, list pdepNetworks=?)

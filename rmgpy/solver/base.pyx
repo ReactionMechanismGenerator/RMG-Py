@@ -54,6 +54,29 @@ cdef class ReactionSystem(DASSL):
         self.edgeSpeciesRates = None
         self.edgeReactionRates = None
         self.networkLeakRates = None
+    
+    cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions, list pdepNetworks=None):
+        """
+        Initialize a simulation of the reaction system using the provided
+        kinetic model. You will probably want to create your own version of this
+        method in the derived class; don't forget to also call the base class
+        version, too.
+        """
+        cdef int numCoreSpecies, numCoreReactions, numEdgeSpecies, numEdgeReactions, numPdepNetworks
+
+        pdepNetworks = pdepNetworks or []
+
+        numCoreSpecies = len(coreSpecies)
+        numCoreReactions = len(coreReactions)
+        numEdgeSpecies = len(edgeSpecies)
+        numEdgeReactions = len(edgeReactions)
+        numPdepNetworks = len(pdepNetworks)
+
+        self.coreReactionRates = numpy.zeros((numCoreReactions), numpy.float64)
+        self.edgeReactionRates = numpy.zeros((numEdgeReactions), numpy.float64)
+        self.coreSpeciesRates = numpy.zeros((numCoreSpecies), numpy.float64)
+        self.edgeSpeciesRates = numpy.zeros((numEdgeSpecies), numpy.float64)
+        self.networkLeakRates = numpy.zeros((numPdepNetworks), numpy.float64)
 
     cpdef simulate(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions,
         double toleranceKeepInEdge, double toleranceMoveToCore, double toleranceInterruptSimulation,
