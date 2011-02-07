@@ -32,6 +32,7 @@ systems.
 
 cdef extern from "math.h":
     double sqrt(double)
+    double abs(double)
 
 import numpy
 cimport numpy
@@ -54,6 +55,9 @@ cdef class ReactionSystem(DASSL):
         self.edgeSpeciesRates = None
         self.edgeReactionRates = None
         self.networkLeakRates = None
+        self.maxCoreSpeciesRates = None
+        self.maxEdgeSpeciesRates = None
+        self.maxNetworkLeakRates = None
     
     cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions, list pdepNetworks=None):
         """
@@ -77,6 +81,9 @@ cdef class ReactionSystem(DASSL):
         self.coreSpeciesRates = numpy.zeros((numCoreSpecies), numpy.float64)
         self.edgeSpeciesRates = numpy.zeros((numEdgeSpecies), numpy.float64)
         self.networkLeakRates = numpy.zeros((numPdepNetworks), numpy.float64)
+        self.maxCoreSpeciesRates = numpy.zeros((numCoreSpecies), numpy.float64)
+        self.maxEdgeSpeciesRates = numpy.zeros((numEdgeSpecies), numpy.float64)
+        self.maxNetworkLeakRates = numpy.zeros((numPdepNetworks), numpy.float64)
 
     cpdef simulate(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions,
         double toleranceKeepInEdge, double toleranceMoveToCore, double toleranceInterruptSimulation,
@@ -94,12 +101,19 @@ cdef class ReactionSystem(DASSL):
 
         cdef dict speciesIndex
         cdef int index, maxSpeciesIndex, maxNetworkIndex
+        cdef int numCoreSpecies, numEdgeSpecies, numPdepNetworks
         cdef double stepTime, charRate, maxSpeciesRate, maxNetworkRate
         cdef numpy.ndarray[numpy.float64_t, ndim=1] y0
+        cdef numpy.ndarray[numpy.float64_t, ndim=1] coreSpeciesRates, edgeSpeciesRates, networkLeakRates
+        cdef numpy.ndarray[numpy.float64_t, ndim=1] maxCoreSpeciesRates, maxEdgeSpeciesRates, maxNetworkLeakRates
         cdef bint terminated
         cdef object maxSpecies, maxNetwork
         
         pdepNetworks = pdepNetworks or []
+
+        numCoreSpecies = len(coreSpecies)
+        numEdgeSpecies = len(edgeSpecies)
+        numPdepNetworks = len(pdepNetworks)
 
         speciesIndex = {}
         for index, spec in enumerate(coreSpecies):
@@ -116,6 +130,10 @@ cdef class ReactionSystem(DASSL):
         maxNetwork = None
         maxNetworkRate = 0.0
 
+        maxCoreSpeciesRates = self.maxCoreSpeciesRates
+        maxEdgeSpeciesRates = self.maxEdgeSpeciesRates
+        maxNetworkLeakRates = self.maxNetworkLeakRates
+        
         # Copy the initial conditions to use in evaluating conversions
         y0 = self.y.copy()
 
@@ -123,6 +141,21 @@ cdef class ReactionSystem(DASSL):
         while not terminated:
             # Integrate forward in time by one time step
             self.step(stepTime)
+
+            coreSpeciesRates = self.coreSpeciesRates
+            edgeSpeciesRates = self.edgeSpeciesRates
+            networkLeakRates = self.networkLeakRates
+
+            # Update the maximum species rate and maximum network leak rate arrays
+            for index in range(numCoreSpecies):
+                if abs(maxCoreSpeciesRates[index]) < abs(coreSpeciesRates[index]):
+                    maxCoreSpeciesRates[index] = coreSpeciesRates[index]
+            for index in range(numEdgeSpecies):
+                if abs(maxEdgeSpeciesRates[index]) < abs(edgeSpeciesRates[index]):
+                    maxEdgeSpeciesRates[index] = edgeSpeciesRates[index]
+            for index in range(numPdepNetworks):
+                if abs(maxNetworkLeakRates[index]) < abs(networkLeakRates[index]):
+                    maxNetworkLeakRates[index] = networkLeakRates[index]
 
             # Get the characteristic flux
             charRate = sqrt(numpy.sum(self.coreSpeciesRates * self.coreSpeciesRates))
@@ -176,7 +209,11 @@ cdef class ReactionSystem(DASSL):
             # Increment destination step time if necessary
             if self.t >= 0.9999 * stepTime:
                 stepTime *= 10.0
-                
+
+        self.maxCoreSpeciesRates = maxCoreSpeciesRates
+        self.maxEdgeSpeciesRates = maxEdgeSpeciesRates
+        self.maxNetworkLeakRates = maxNetworkLeakRates
+
         # Return the invalid object (if the simulation was invalid) or None
         # (if the simulation was valid)
         return invalidObject
