@@ -37,6 +37,7 @@ import numpy
 cimport numpy
 from pydas cimport DASSL
 
+import cython
 import logging
 
 ################################################################################
@@ -84,6 +85,7 @@ cdef class ReactionSystem(DASSL):
         self.maxEdgeSpeciesRates = numpy.zeros((numEdgeSpecies), numpy.float64)
         self.maxNetworkLeakRates = numpy.zeros((numPdepNetworks), numpy.float64)
 
+    @cython.boundscheck(False)
     cpdef simulate(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions,
         double toleranceKeepInEdge, double toleranceMoveToCore, double toleranceInterruptSimulation,
         list termination, list pdepNetworks=None):
