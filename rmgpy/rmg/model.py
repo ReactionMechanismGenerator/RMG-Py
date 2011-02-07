@@ -502,7 +502,12 @@ class PDepNetwork(rmgpy.measure.network.Network):
         # In the absence of any better information, we simply set it to
         # be the reactant ground-state energy + the activation energy
         for rxn in self.pathReactions:
-            if rxn.kinetics is None: rxn.kinetics = rxn.reverse.fitReverseKinetics()
+            if rxn.kinetics is None:
+                if rxn.reverse.kinetics is not None:
+                    rxn.kinetics = rxn.reverse.fitReverseKinetics()
+                else:
+                    import pdb; pdb.set_trace()
+                    raise Exception('Path reaction "%s" in PDepNetwork #%i has no kinetics!' % (rxn, self.index))
             rxn.transitionState = rmgpy.chem.species.TransitionState(
                 E0=sum([spec.E0 for spec in rxn.reactants]) + rxn.kinetics.Ea,
             )
@@ -884,6 +889,7 @@ class CoreEdgeReactionModel:
                 for products in network.products:
                     if len(products) == 1 and products[0] == species:
                         reactionList, speciesList = network.exploreIsomer(species, self)
+                        newReactionList.extend(reactionList); newSpeciesList.extend(speciesList)
                         self.processNewReactions(reactionList, species, network)
                         network.updateConfigurations()
                         index = 0
