@@ -1136,12 +1136,12 @@ class CoreEdgeReactionModel:
         if pruneDueToRateCounter > 0:
             logging.info('Pruning %i species whose rates did not exceed the minimum threshold of %g' % (pruneDueToRateCounter, self.fluxToleranceKeepInEdge))
             for index, spec in speciesToPrune[0:pruneDueToRateCounter]:
-                logging.info('    %-56s    %10.4e' % (spec, maxEdgeSpeciesRates[index]))
+                logging.debug('    %-56s    %10.4e' % (spec, maxEdgeSpeciesRates[index]))
                 self.removeSpeciesFromEdge(spec)
         if len(speciesToPrune) - pruneDueToRateCounter > 0:
             logging.info('Pruning %i species to obtain an edge size of %i species' % (len(speciesToPrune) - pruneDueToRateCounter, self.maximumEdgeSpecies))
             for index, spec in speciesToPrune[pruneDueToRateCounter:]:
-                logging.info('    %-56s    %10.4e' % (spec, maxEdgeSpeciesRates[index]))
+                logging.debug('    %-56s    %10.4e' % (spec, maxEdgeSpeciesRates[index]))
                 self.removeSpeciesFromEdge(spec)
 
         # Delete any networks that became empty as a result of pruning
@@ -1152,7 +1152,7 @@ class CoreEdgeReactionModel:
             if len(networksToDelete) > 0:
                 logging.info('Deleting %i empty pressure-dependent reaction networks' % (len(networksToDelete)))
                 for network in networksToDelete:
-                    logging.info('    Deleting empty pressure dependent reaction network #%i' % network.index)
+                    logging.debug('    Deleting empty pressure dependent reaction network #%i' % network.index)
                     self.unirxnNetworks.remove(network)
 
         logging.info('')
