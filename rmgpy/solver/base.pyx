@@ -32,7 +32,6 @@ systems.
 
 cdef extern from "math.h":
     double sqrt(double)
-    double abs(double)
 
 import numpy
 cimport numpy
@@ -142,23 +141,23 @@ cdef class ReactionSystem(DASSL):
             # Integrate forward in time by one time step
             self.step(stepTime)
 
-            coreSpeciesRates = self.coreSpeciesRates
-            edgeSpeciesRates = self.edgeSpeciesRates
-            networkLeakRates = self.networkLeakRates
+            # Get the characteristic flux
+            charRate = sqrt(numpy.sum(self.coreSpeciesRates * self.coreSpeciesRates))
+
+            coreSpeciesRates = numpy.abs(self.coreSpeciesRates / charRate)
+            edgeSpeciesRates = numpy.abs(self.edgeSpeciesRates / charRate)
+            networkLeakRates = numpy.abs(self.networkLeakRates / charRate)
 
             # Update the maximum species rate and maximum network leak rate arrays
             for index in range(numCoreSpecies):
-                if abs(maxCoreSpeciesRates[index]) < abs(coreSpeciesRates[index]):
+                if maxCoreSpeciesRates[index] < coreSpeciesRates[index]:
                     maxCoreSpeciesRates[index] = coreSpeciesRates[index]
             for index in range(numEdgeSpecies):
-                if abs(maxEdgeSpeciesRates[index]) < abs(edgeSpeciesRates[index]):
+                if maxEdgeSpeciesRates[index] < edgeSpeciesRates[index]:
                     maxEdgeSpeciesRates[index] = edgeSpeciesRates[index]
             for index in range(numPdepNetworks):
-                if abs(maxNetworkLeakRates[index]) < abs(networkLeakRates[index]):
+                if maxNetworkLeakRates[index] < networkLeakRates[index]:
                     maxNetworkLeakRates[index] = networkLeakRates[index]
-
-            # Get the characteristic flux
-            charRate = sqrt(numpy.sum(self.coreSpeciesRates * self.coreSpeciesRates))
 
             # Get the edge species with the highest flux
             maxSpeciesIndex = numpy.argmax(self.edgeSpeciesRates)
