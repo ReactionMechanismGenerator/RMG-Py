@@ -316,6 +316,31 @@ class PDepNetwork(rmgpy.measure.network.Network):
         # Return the species
         return maxSpecies
 
+    def getLeakBranchingRatios(self, T, P):
+        """
+        Return a dict with the unexplored isomers in the partial network as the
+        keys and the fraction of the total leak coefficient as the values.
+        """
+        ratios = {}
+        if len(self.netReactions) == 0 and len(self.pathReactions) == 1:
+            rxn = self.pathReactions[0]
+            if rxn.products is self.source:
+                assert len(rxn.reactants) == 1
+                ratios[rxn.reactants[0]] = 1.0
+            else:
+                assert len(rxn.products) == 1
+                ratios[rxn.products[0]] = 1.0
+        else:
+            for rxn in self.netReactions:
+                if len(rxn.products) == 1 and rxn.products[0] not in self.explored:
+                    ratios[rxn.products[0]] = rxn.getRateCoefficient(T,P)
+
+        kleak = sum(ratios.values())
+        for spec in ratios:
+            ratios[spec] /= kleak
+
+        return ratios
+
     def exploreIsomer(self, isomer, reactionModel):
         """
         Explore a previously-unexplored unimolecular `isomer` in this partial
@@ -477,7 +502,12 @@ class PDepNetwork(rmgpy.measure.network.Network):
         # In the absence of any better information, we simply set it to
         # be the reactant ground-state energy + the activation energy
         for rxn in self.pathReactions:
-            if rxn.kinetics is None: rxn.kinetics = rxn.reverse.fitReverseKinetics()
+            if rxn.kinetics is None:
+                if rxn.reverse.kinetics is not None:
+                    rxn.kinetics = rxn.reverse.fitReverseKinetics()
+                else:
+                    import pdb; pdb.set_trace()
+                    raise Exception('Path reaction "%s" in PDepNetwork #%i has no kinetics!' % (rxn, self.index))
             rxn.transitionState = rmgpy.chem.species.TransitionState(
                 E0=sum([spec.E0 for spec in rxn.reactants]) + rxn.kinetics.Ea,
             )
@@ -665,6 +695,7 @@ class CoreEdgeReactionModel:
         if label == '': label = molecule.toSMILES()
         logging.debug('Creating new species %s' % str(label))
         spec = Species(index=self.speciesCounter+1, label=label, molecule=[molecule], reactive=reactive)
+        spec.coreSizeAtCreation = len(self.core.species)
         spec.generateResonanceIsomers()
         spec.molecularWeight = spec.molecule[0].getMolecularWeight()
         spec.generateLennardJonesParameters()
@@ -859,6 +890,7 @@ class CoreEdgeReactionModel:
                 for products in network.products:
                     if len(products) == 1 and products[0] == species:
                         reactionList, speciesList = network.exploreIsomer(species, self)
+                        newReactionList.extend(reactionList); newSpeciesList.extend(speciesList)
                         self.processNewReactions(reactionList, species, network)
                         network.updateConfigurations()
                         index = 0
@@ -1037,10 +1069,99 @@ class CoreEdgeReactionModel:
         """
         self.edge.species.append(spec)
 
+    def prune(self, reactionSystems):
+        """
+        Remove species from the model edge based on the simulation results from
+        the list of `reactionSystems`.
+        """
+
+        ineligibleSpecies = []     # A list of the species which are not eligible for pruning, for any reason
+
+        numCoreSpecies = len(self.core.species)
+        numEdgeSpecies = len(self.edge.species)
+        numPdepNetworks = len(self.unirxnNetworks)
+
+        # All edge species that have not existed for more than two enlarge
+        # iterations are ineligible for pruning
+        for spec in self.edge.species:
+            if numCoreSpecies - spec.coreSizeAtCreation <= 2:
+                ineligibleSpecies.append(spec)
+
+        # Get the maximum species rates (and network leak rates)
+        # across all reaction systems
+        maxEdgeSpeciesRates = numpy.zeros((numEdgeSpecies), numpy.float64)
+        maxNetworkLeakRates = numpy.zeros((numPdepNetworks), numpy.float64)
+        for reactionSystem in reactionSystems:
+            for i in range(numEdgeSpecies):
+                rate = reactionSystem.maxEdgeSpeciesRates[i]
+                if maxEdgeSpeciesRates[i] < rate:
+                    maxEdgeSpeciesRates[i] = rate
+            for i in range(numPdepNetworks):
+                network = self.unirxnNetworks[i]
+                rate = reactionSystem.maxNetworkLeakRates[i]
+                if maxNetworkLeakRates[i] < rate:
+                    maxNetworkLeakRates[i] = rate
+
+                # Add the fraction of the network leak rate contributed by
+                # each unexplored species to that species' rate
+                # This is to ensure we have an overestimate of that species flux
+                ratios = network.getLeakBranchingRatios(reactionSystem.T,reactionSystem.P)
+                for spec, frac in ratios.iteritems():
+                    index = self.edge.species.index(spec)
+                    maxEdgeSpeciesRates[index] += frac * rate
+
+                # Mark any species that is explored in any partial network as ineligible for pruning
+                for spec in network.explored:
+                    if spec not in ineligibleSpecies:
+                        ineligibleSpecies.append(spec)
+
+        # Sort the edge species rates by index
+        indices = numpy.argsort(maxEdgeSpeciesRates)
+
+        # Determine which species to prune
+        speciesToPrune = []
+        pruneDueToRateCounter = 0
+        for index in indices:
+            # Remove the species with rates below the pruning tolerance from the model edge
+            if maxEdgeSpeciesRates[index] < self.fluxToleranceKeepInEdge and self.edge.species[index] not in ineligibleSpecies:
+                speciesToPrune.append((index, self.edge.species[index]))
+                pruneDueToRateCounter += 1
+            # Keep removing species with the lowest rates until we are below the maximum edge species size
+            elif numEdgeSpecies - len(speciesToPrune) > self.maximumEdgeSpecies and self.edge.species[index] not in ineligibleSpecies:
+                speciesToPrune.append((index, self.edge.species[index]))
+            else:
+                break
+
+        # Actually do the pruning
+        if pruneDueToRateCounter > 0:
+            logging.info('Pruning %i species whose rates did not exceed the minimum threshold of %g' % (pruneDueToRateCounter, self.fluxToleranceKeepInEdge))
+            for index, spec in speciesToPrune[0:pruneDueToRateCounter]:
+                logging.debug('    %-56s    %10.4e' % (spec, maxEdgeSpeciesRates[index]))
+                self.removeSpeciesFromEdge(spec)
+        if len(speciesToPrune) - pruneDueToRateCounter > 0:
+            logging.info('Pruning %i species to obtain an edge size of %i species' % (len(speciesToPrune) - pruneDueToRateCounter, self.maximumEdgeSpecies))
+            for index, spec in speciesToPrune[pruneDueToRateCounter:]:
+                logging.debug('    %-56s    %10.4e' % (spec, maxEdgeSpeciesRates[index]))
+                self.removeSpeciesFromEdge(spec)
+
+        # Delete any networks that became empty as a result of pruning
+        if settings.pressureDependence:
+            networksToDelete = []
+            if len(network.pathReactions) == 0 and len(network.netReactions) == 0:
+                networksToDelete.append(network)
+            if len(networksToDelete) > 0:
+                logging.info('Deleting %i empty pressure-dependent reaction networks' % (len(networksToDelete)))
+                for network in networksToDelete:
+                    logging.debug('    Deleting empty pressure dependent reaction network #%i' % network.index)
+                    self.unirxnNetworks.remove(network)
+
+        logging.info('')
+
     def removeSpeciesFromEdge(self, spec):
         """
         Remove species `spec` from the reaction model edge.
         """
+
         # remove the species
         self.edge.species.remove(spec)
         # identify any reactions it's involved in
@@ -1051,25 +1172,18 @@ class CoreEdgeReactionModel:
         # remove those reactions
         for rxn in rxnList:
             self.edge.reactions.remove(rxn)
-            # also remove it from the global list of reactions
-            # the PDepReactions on the edge aren't in the global list, so we
-            # should not try to remove them
-            if not isinstance(rxn, reaction.PDepReaction):
-                reaction.removeFromGlobalList(rxn)
-
+        
         # Remove the species from any unirxn networks it is in
         if settings.pressureDependence:
-            networksToDelete = []
             for network in self.unirxnNetworks:
-                if spec in network.getSpeciesList():
-                    # Delete all path reactions involving the species
-                    rxnList = []
-                    for rxn in network.pathReactions:
-                        if spec in rxn.reactants or spec in rxn.products:
-                            rxnList.append(rxn)
+                # Delete all path reactions involving the species
+                rxnList = []
+                for rxn in network.pathReactions:
+                    if spec in rxn.reactants or spec in rxn.products:
+                        rxnList.append(rxn)
+                if len(rxnList) > 0:
                     for rxn in rxnList:
                         network.pathReactions.remove(rxn)
-                        reaction.removeFromGlobalList(rxn)
                     # Delete all net reactions involving the species
                     rxnList = []
                     for rxn in network.netReactions:
@@ -1077,30 +1191,25 @@ class CoreEdgeReactionModel:
                             rxnList.append(rxn)
                     for rxn in rxnList:
                         network.netReactions.remove(rxn)
-                        # net reactions are not in global reaction list
-                        # so don't reaction.removeFromGlobalList(rxn)
+                        
+                    # Recompute the isomers, reactants, and products for this network
+                    network.updateConfigurations()
 
-                    # Delete all isomers involving the species
-                    isomerList = []
-                    for isomer in network.isomers:
-                        if spec in isomer.species:
-                            isomerList.append(isomer)
-                    for isomer in isomerList:
-                        network.isomers.remove(isomer)
-                    # If no remaining reactions, delete the network (actually
-                    # add to list of networks to be deleted in a subsequent
-                    # step)
-                    if len(network.pathReactions) == 0 and len(network.netReactions) == 0:
-                        networksToDelete.append(network)
-
-            # Complete deletion of empty networks
-            for network in networksToDelete:
-                logging.debug('Deleting empty unirxn network %s' % network.index)
-                self.unirxnNetworks.remove(network)
+        # Remove from the global list of reactions
+        # also remove it from the global list of reactions
+        for family in self.reactionDict:
+            if spec in self.reactionDict[family]:
+                del self.reactionDict[family][spec]
+            for reactant1 in self.reactionDict[family]:
+                if spec in self.reactionDict[family][reactant1]:
+                    del self.reactionDict[family][reactant1][spec]
 
         # remove from the global list of species, to free memory
         formula = spec.molecule[0].getFormula()
-        species.speciesDict[formula].remove(spec)
+        self.speciesDict[formula].remove(spec)
+        if spec in self.speciesCache:
+            self.speciesCache.remove(spec)
+            self.speciesCache.append(None)
 
     def addReactionToCore(self, rxn):
         """

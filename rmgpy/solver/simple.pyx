@@ -69,17 +69,24 @@ cdef class SimpleReactor(ReactionSystem):
         self.forwardRateCoefficients = None
         self.reverseRateCoefficients = None
 
-    cpdef initializeModel(self, coreSpecies, coreReactions, edgeSpecies, edgeReactions, list pdepNetworks=None):
+    cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions, list pdepNetworks=None):
         """
         Initialize a simulation of the simple reactor using the provided kinetic
         model.
         """
+
+        # First call the base class version of the method
+        # This initializes the attributes declared in the base class
+        ReactionSystem.initializeModel(self, coreSpecies, coreReactions, edgeSpecies, edgeReactions, pdepNetworks)
+
         cdef int numCoreSpecies, numCoreReactions, numEdgeSpecies, numEdgeReactions, numPdepNetworks
         cdef int i, j, l, index
         cdef dict speciesIndex, reactionIndex
         cdef numpy.ndarray[numpy.int_t, ndim=2] reactantIndices, productIndices, networkIndices
         cdef numpy.ndarray[numpy.float64_t, ndim=1] forwardRateCoefficients, reverseRateCoefficients, networkLeakCoefficients
         
+        pdepNetworks = pdepNetworks or []
+
         numCoreSpecies = len(coreSpecies)
         numCoreReactions = len(coreReactions)
         numEdgeSpecies = len(edgeSpecies)
@@ -132,12 +139,6 @@ cdef class SimpleReactor(ReactionSystem):
         self.networkIndices = networkIndices
         self.networkLeakCoefficients = networkLeakCoefficients
         
-        self.coreReactionRates = numpy.zeros((numCoreReactions), numpy.float64)
-        self.edgeReactionRates = numpy.zeros((numEdgeReactions), numpy.float64)
-        self.coreSpeciesRates = numpy.zeros((numCoreSpecies), numpy.float64)
-        self.edgeSpeciesRates = numpy.zeros((numEdgeSpecies), numpy.float64)
-        self.networkLeakRates = numpy.zeros((numPdepNetworks), numpy.float64)
-
         # Set initial conditions
         t0 = 0.0
         y0 = numpy.zeros((numCoreSpecies), numpy.float64)
