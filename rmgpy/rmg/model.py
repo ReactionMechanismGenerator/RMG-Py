@@ -695,6 +695,7 @@ class CoreEdgeReactionModel:
         if label == '': label = molecule.toSMILES()
         logging.debug('Creating new species %s' % str(label))
         spec = Species(index=self.speciesCounter+1, label=label, molecule=[molecule], reactive=reactive)
+        spec.coreSizeAtCreation = len(self.core.species)
         spec.generateResonanceIsomers()
         spec.molecularWeight = spec.molecule[0].getMolecularWeight()
         spec.generateLennardJonesParameters()
@@ -1076,10 +1077,18 @@ class CoreEdgeReactionModel:
 
         ineligibleSpecies = []     # A list of the species which are not eligible for pruning, for any reason
 
-        # Get the maximum species rates (and network leak rates)
-        # across all reaction systems
+        numCoreSpecies = len(self.core.species)
         numEdgeSpecies = len(self.edge.species)
         numPdepNetworks = len(self.unirxnNetworks)
+
+        # All edge species that have not existed for more than two enlarge
+        # iterations are ineligible for pruning
+        for spec in self.edge.species:
+            if numCoreSpecies - spec.coreSizeAtCreation <= 2:
+                ineligibleSpecies.append(spec)
+
+        # Get the maximum species rates (and network leak rates)
+        # across all reaction systems
         maxEdgeSpeciesRates = numpy.zeros((numEdgeSpecies), numpy.float64)
         maxNetworkLeakRates = numpy.zeros((numPdepNetworks), numpy.float64)
         for reactionSystem in reactionSystems:
