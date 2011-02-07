@@ -215,7 +215,7 @@ cdef class ReactionSystem(DASSL):
 
         # Return the invalid object (if the simulation was invalid) or None
         # (if the simulation was valid)
-        return invalidObject
+        return terminated, invalidObject
 
     cpdef logRates(self, double charRate, object species, double speciesRate, object network, double networkRate):
         """

@@ -293,11 +293,12 @@ def execute(args):
 
         done = True
         objectsToEnlarge = []
+        allTerminated = True
         for index, reactionSystem in enumerate(reactionSystems):
 
             # Conduct simulation
             logging.info('Conducting simulation of reaction system %s...' % (index+1))
-            obj = reactionSystem.simulate(
+            terminated, obj = reactionSystem.simulate(
                 coreSpecies = reactionModel.core.species,
                 coreReactions = reactionModel.core.reactions,
                 edgeSpecies = reactionModel.edge.species,
@@ -308,6 +309,8 @@ def execute(args):
                 termination = reactionModel.termination,
                 pdepNetworks = reactionModel.unirxnNetworks,
             )
+            allTerminated = allTerminated and terminated
+            logging.info('')
             
             # If simulation is invalid, note which species should be added to
             # the core
