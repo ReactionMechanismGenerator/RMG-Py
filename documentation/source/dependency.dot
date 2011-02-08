@@ -4,7 +4,7 @@
 
 digraph graphname {
     
-    size="6,4";
+    size="5,3";
     
     CanTherm    [color="#993333",fontcolor="#993333",fontname="sans-serif"];
     Chem        [color="#993333",fontcolor="#993333",fontname="sans-serif"];
@@ -12,18 +12,15 @@ digraph graphname {
     MEASURE     [color="#993333",fontcolor="#993333",fontname="sans-serif"];
     RMG         [color="#993333",fontcolor="#993333",fontname="sans-serif"];
     Solver      [color="#993333",fontcolor="#993333",fontname="sans-serif"];
-    StatesFit   [color="#993333",fontcolor="#993333",fontname="sans-serif"];
     
     Chem -> CanTherm [color="#993333"];
     Chem -> Data [color="#993333"];
     Chem -> MEASURE [color="#993333"];
     Chem -> RMG [color="#993333"];
     Chem -> Solver [color="#993333"];
-    Chem -> StatesFit [color="#993333"];
      
     Data -> RMG [color="#993333"];
     MEASURE -> RMG [color="#993333",style=dashed];
     Solver -> RMG [color="#993333"];
-    StatesFit -> RMG [color="#993333",style=dashed];
     
 }
