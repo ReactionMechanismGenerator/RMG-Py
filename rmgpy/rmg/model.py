@@ -42,10 +42,10 @@ import rmgpy.chem.constants as constants
 import rmgpy.chem.species
 import rmgpy.chem.reaction
 from rmgpy.chem.thermo import WilhoitModel, NASAModel
-from rmgpy.chem.kinetics import ArrheniusModel, ChebyshevModel, PDepArrheniusModel
+from rmgpy.chem.kinetics import ArrheniusModel, ArrheniusEPModel, ChebyshevModel, PDepArrheniusModel
 
 from rmgpy.data.thermo import generateThermoData, convertThermoData
-from rmgpy.data.kinetics import generateKineticsData
+from rmgpy.data.kinetics import generateKineticsData, KineticsPrimaryDatabase
 from rmgpy.data.states import generateFrequencyData
 
 import rmgpy.measure.network
@@ -217,7 +217,7 @@ class Reaction(rmgpy.chem.reaction.Reaction):
         Generate kinetcs data for the reaction using the kinetics database.
         """
         self.kinetics = generateKineticsData(self, self.family.label, self.reactantMolecules)
-        if not isinstance(self.kinetics, ArrheniusModel):
+        if isinstance(self.kinetics, ArrheniusEPModel):
             self.kinetics = self.kinetics.toArrhenius(self.getEnthalpyOfReaction(298.15))
 
     def fitReverseKinetics(self):
@@ -721,6 +721,10 @@ class CoreEdgeReactionModel:
         reaction (if found).
         """
 
+        # Make sure the reactant and product lists are sorted before performing the check
+        rxn.reactants.sort()
+        rxn.products.sort()
+
         # Get the short-list of reactions with the same family, reactant1 and reactant2
         r1 = rxn.reactants[0]
         if len(rxn.reactants)==1: r2 = None
@@ -735,28 +739,33 @@ class CoreEdgeReactionModel:
             if (rxn0.reactants == rxn.reactants and rxn0.products == rxn.products):
                 return True, rxn0
 
-        # Now check seed reactions.
-        # First check seed short-list in forward direction
-        try:
-            my_reactionList = self.reactionDict['seed'][r1][r2]
-        except KeyError:
-            my_reactionList = []
-        for rxn0 in my_reactionList:
-            if (rxn0.reactants == rxn.reactants and rxn0.products == rxn.products) or \
-                (rxn0.reactants == rxn.products and rxn0.products == rxn.reactants):
-                return True, rxn0
-        # Now get the seed short-list of the reverse reaction
-        r1 = rxn.products[0]
-        if len(rxn.products)==1: r2 = None
-        else: r2 = rxn.products[1]
-        try:
-            my_reactionList = self.reactionDict['seed'][r1][r2]
-        except KeyError:
-            my_reactionList = []
-        for rxn0 in my_reactionList:
-            if (rxn0.reactants == rxn.reactants and rxn0.products == rxn.products) or \
-                (rxn0.reactants == rxn.products and rxn0.products == rxn.reactants):
-                return True, rxn0
+        # Now check seed mechanisms
+        # We want to check for duplicates in *other* seed mechanisms, but allow
+        # duplicated *within* the same seed mechanism
+        for family in self.reactionDict:
+            if isinstance(family, KineticsPrimaryDatabase) and family != rxn.family:
+
+                # First check seed short-list in forward direction
+                try:
+                    my_reactionList = self.reactionDict[family][r1][r2]
+                except KeyError:
+                    my_reactionList = []
+                for rxn0 in my_reactionList:
+                    if (rxn0.reactants == rxn.reactants and rxn0.products == rxn.products) or \
+                        (rxn0.reactants == rxn.products and rxn0.products == rxn.reactants):
+                        return True, rxn0
+                # Now get the seed short-list of the reverse reaction
+                r1 = rxn.products[0]
+                if len(rxn.products)==1: r2 = None
+                else: r2 = rxn.products[1]
+                try:
+                    my_reactionList = self.reactionDict[family][r1][r2]
+                except KeyError:
+                    my_reactionList = []
+                for rxn0 in my_reactionList:
+                    if (rxn0.reactants == rxn.reactants and rxn0.products == rxn.products) or \
+                        (rxn0.reactants == rxn.products and rxn0.products == rxn.reactants):
+                        return True, rxn0
 
         return False, None
 
@@ -784,15 +793,16 @@ class CoreEdgeReactionModel:
         # identify r1 and r2
         r1 = forward.reactants[0]
         r2 = None if len(forward.reactants) == 1 else forward.reactants[1]
+        family = forward.family
         # make dictionary entries if necessary
-        if forward.family not in self.reactionDict:
-            self.reactionDict[forward.family] = {}
-        if not self.reactionDict[forward.family].has_key(r1):
-            self.reactionDict[forward.family][r1] = dict()
-        if not self.reactionDict[forward.family][r1].has_key(r2):
-            self.reactionDict[forward.family][r1][r2] = list()
+        if family not in self.reactionDict:
+            self.reactionDict[family] = {}
+        if not self.reactionDict[family].has_key(r1):
+            self.reactionDict[family][r1] = dict()
+        if not self.reactionDict[family][r1].has_key(r2):
+            self.reactionDict[family][r1][r2] = list()
         # store this reaction at the top of the relevant short-list
-        self.reactionDict[forward.family][r1][r2].insert(0, forward)
+        self.reactionDict[family][r1][r2].insert(0, forward)
 
         forward.index = self.reactionCounter + 1
         self.reactionCounter += 1
@@ -839,6 +849,8 @@ class CoreEdgeReactionModel:
 
         numOldCoreSpecies = len(self.core.species)
         numOldCoreReactions = len(self.core.reactions)
+        numOldEdgeSpecies = len(self.edge.species)
+        numOldEdgeReactions = len(self.edge.reactions)
 
         pdepNetwork = None
 
@@ -949,8 +961,8 @@ class CoreEdgeReactionModel:
         self.printEnlargeSummary(
             newCoreSpecies=self.core.species[numOldCoreSpecies:],
             newCoreReactions=self.core.reactions[numOldCoreReactions:],
-            newEdgeSpecies=newSpeciesList,
-            newEdgeReactions=newReactionList,
+            newEdgeSpecies=self.edge.species[numOldEdgeSpecies:],
+            newEdgeReactions=self.edge.reactions[numOldEdgeReactions:],
             newSpecies=newSpecies,
         )
 
