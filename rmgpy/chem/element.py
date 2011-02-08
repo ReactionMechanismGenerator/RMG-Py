@@ -33,8 +33,11 @@ each element is stored as attributes of an object of the :class:`Element`
 class. 
 
 Element objects for each chemical element (1-112) have also been declared as 
-module-level variables, using each element's symbol as its variable name. These
-should be used in most cases to conserve memory.
+module-level variables, using each element's symbol as its variable name. The
+:meth:`getElement` method can also be used to retrieve the :class:`Element`
+object associated with an atomic number or symbol. Generally applications will
+want to use these objects, both to conserve memory and to make for easy
+comparisons.
 """
 
 import cython
@@ -111,6 +114,7 @@ def getElement(number=0, symbol=''):
 # 'caesium')
 
 # Period 1
+#: Hydrogen
 H  = Element(1,   'H' , 'hydrogen'      , 0.00100794)
 He = Element(2,   'He', 'helium'        , 0.004002602)
 

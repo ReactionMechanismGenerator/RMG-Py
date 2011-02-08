@@ -36,8 +36,10 @@ ensemble of chemically identical molecular entities that can explore the same
 set of molecular energy levels on the time scale of the experiment". This
 definition is purposefully vague to allow the user flexibility in application.
 
-In ChemPy, a chemical species is called a Species object and is represented in
-memory as an instance of the :class:`Species` class.
+In RMG Py, a chemical species -- a local minimum on a potential energy surface
+-- is represented in memory as a :class:`Species` object. This module also
+contains the :class:`TransitionState` class for representing chemical reaction
+transition states (first-order saddle points on a potential energy surface).
 """
 
 ################################################################################
@@ -60,12 +62,13 @@ class LennardJones:
     .. math:: V(r) = 4 \\epsilon \\left[ \\left( \\frac{\\sigma}{r} \\right)^{12} - \\left( \\frac{\\sigma}{r} \\right)^{6} \\right]
 
     where the first term represents repulsion of overlapping orbitals and the
-    second represents attraction due to van der Waals forces.
+    second represents attraction due to van der Waals forces. The attributes
+    are:
 
     =============== =============== ============================================
     Attribute       Type            Description
     =============== =============== ============================================
-    `sigma`         ``double``      Distance at which the inter-particle potential is zero
+    `sigma`         ``double``      Distance at which the inter-particle potential is zero in m
     `epsilon`       ``double``      Depth of the potential well in J
     =============== =============== ============================================
 
@@ -79,7 +82,8 @@ class LennardJones:
 
 class Species:
     """
-    A chemical species.
+    A chemical species, representing a local minimum on a potential energy
+    surface. The attributes are:
 
     =================== ======================= ================================
     Attribute           Type                    Description
@@ -157,7 +161,7 @@ class Species:
 class TransitionState:
     """
     A chemical transition state, representing a first-order saddle point on a
-    potential energy surface.
+    potential energy surface. The attributes are:
 
     =============== =========================== ================================
     Attribute       Type                        Description

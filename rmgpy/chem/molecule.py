@@ -51,6 +51,7 @@ class Atom(Vertex):
     =================== =================== ====================================
     Attribute           Type                Description
     =================== =================== ====================================
+    `atomType`          :class:`AtomType`   The :ref:`atom type <atom-types>`
     `element`           :class:`Element`    The chemical element the atom represents
     `radicalElectrons`  ``short``           The number of radical electrons
     `spinMultiplicity`  ``short``           The spin multiplicity of the atom
@@ -252,7 +253,7 @@ class Bond(Edge):
     =================== =================== ====================================
     Attribute           Type                Description
     =================== =================== ====================================
-    `order`             ``str``             The bond order (``S`` = single, `D`` = double, ``T`` = triple, ``B`` = benzene)
+    `order`             ``str``             The :ref:`bond type <bond-types>`
     =================== =================== ====================================
 
     """
@@ -393,8 +394,17 @@ class Molecule(Graph):
     """
     A representation of a molecular structure using a graph data type, extending
     the :class:`Graph` class. The `atoms` and `bonds` attributes are aliases
-    for the `vertices` and `edges` attributes. Corresponding alias methods have
-    also been provided.
+    for the `vertices` and `edges` attributes. Other attributes are:
+
+    ======================= =========== ========================================
+    Attribute               Type        Description
+    ======================= =========== ========================================
+    `implicitHydrogens`     ``bool``    ``True`` if the hydrogen atoms are stored implicitly, ``False`` if stored explicity
+    `symmetryNumber`        ``int``     The (estimated) external + internal symmetry number of the molecule
+    ======================= =========== ========================================
+
+    A new molecule object can be easily instantiated by passing the `SMILES` or
+    `InChI` string representing the molecular structure.
     """
 
     def __init__(self, atoms=None, bonds=None, SMILES='', InChI='', implicitH=False):

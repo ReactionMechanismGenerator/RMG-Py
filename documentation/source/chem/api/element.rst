@@ -4,10 +4,11 @@
 
 .. automodule:: rmgpy.chem.element
 
-Element Objects
-===============
+.. autoclass:: rmgpy.chem.element.ElementError
+    :members:
 
 .. autoclass:: rmgpy.chem.element.Element
     :members:
 
 .. autofunction:: rmgpy.chem.element.getElement
+

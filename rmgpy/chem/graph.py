@@ -602,15 +602,15 @@ def VF2_isomorphism(graph1, graph2, subgraph=False, findAll=False, initialMap=No
     performed:
 
     * If `subgraph` is ``True``, the isomorphism function will treat `graph2`
-    as a subgraph of `graph1`. In this instance a   subgraph can either mean a
-    smaller graph (i.e. fewer vertices and/or edges) or a less specific graph.
+      as a subgraph of `graph1`. In this instance a   subgraph can either mean a
+      smaller graph (i.e. fewer vertices and/or edges) or a less specific graph.
 
     * If `findAll` is ``True``, all valid isomorphisms will be found and
-    returned; otherwise only the first valid isomorphism will be returned.
+      returned; otherwise only the first valid isomorphism will be returned.
 
     * The `initialMap` parameter can be used to pass a previously-established
-    mapping. This mapping will be preserved in all returned valid
-    isomorphisms.
+      mapping. This mapping will be preserved in all returned valid
+      isomorphisms.
 
     The isomorphism algorithm used is the VF2 algorithm of Vento and Foggia.
     The function returns a boolean `isMatch` indicating whether or not one or

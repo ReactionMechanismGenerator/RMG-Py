@@ -4,11 +4,17 @@
 
 .. automodule:: rmgpy.chem.kinetics
 
-Kinetics Models
-===============
+Base Class for Kinetics Models
+==============================
+
+.. autoclass:: rmgpy.chem.kinetics.KineticsError
+    :members:
 
 .. autoclass:: rmgpy.chem.kinetics.KineticsModel
     :members:
+
+Pressure-Independent Kinetics Models
+====================================
 
 .. autoclass:: rmgpy.chem.kinetics.ArrheniusModel
     :members:
@@ -16,8 +22,11 @@ Kinetics Models
 .. autoclass:: rmgpy.chem.kinetics.ArrheniusEPModel
     :members:
 
-.. autoclass:: rmgpy.chem.kinetics.PDepArrheniusModel
-    :members:
+Pressure-Dependent Kinetics Models
+==================================
 
 .. autoclass:: rmgpy.chem.kinetics.ChebyshevModel
+    :members:
+
+.. autoclass:: rmgpy.chem.kinetics.PDepArrheniusModel
     :members:

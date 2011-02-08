@@ -4,8 +4,8 @@
 
 .. automodule:: rmgpy.chem.geometry
 
-Molecular Geometries
-====================
+.. autoclass:: rmgpy.chem.geometry.GeometryError
+    :members:
 
 .. autoclass:: rmgpy.chem.geometry.Geometry
     :members:

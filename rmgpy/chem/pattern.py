@@ -31,82 +31,6 @@
 This module provides classes and methods for working with molecular substructure
 patterns. These enable molecules to be searched for common motifs (e.g.
 reaction sites).
-
-.. _atom-types:
-
-We define the following basic atom types:
-
-    =============== ============================================================
-    Atom type       Description
-    =============== ============================================================
-    *General atom types*
-    ----------------------------------------------------------------------------
-    ``R``           any atom with any local bond structure
-    ``R!H``         any non-hydrogen atom with any local bond structure
-    *Carbon atom types*
-    ----------------------------------------------------------------------------
-    ``C``           carbon atom with any local bond structure
-    ``Cs``          carbon atom with four single bonds
-    ``Cd``          carbon atom with one double bond (to carbon) and two single bonds
-    ``Cdd``         carbon atom with two double bonds
-    ``Ct``          carbon atom with one triple bond and one single bond
-    ``CO``          carbon atom with one double bond (to oxygen) and two single bonds
-    ``Cb``          carbon atom with two benzene bonds and one single bond
-    ``Cbf``         carbon atom with three benzene bonds
-    *Hydrogen atom types*
-    ----------------------------------------------------------------------------
-    ``H``           hydrogen atom with one single bond
-    *Oxygen atom types*
-    ----------------------------------------------------------------------------
-    ``O``           oxygen atom with any local bond structure
-    ``Os``          oxygen atom with two single bonds
-    ``Od``          oxygen atom with one double bond
-    ``Oa``          oxygen atom with no bonds
-    *Silicon atom types*
-    ----------------------------------------------------------------------------
-    ``Si``          silicon atom with any local bond structure
-    ``Sis``         silicon atom with four single bonds
-    ``Sid``         silicon atom with one double bond (to carbon) and two single bonds
-    ``Sidd``        silicon atom with two double bonds
-    ``Sit``         silicon atom with one triple bond and one single bond
-    ``SiO``         silicon atom with one double bond (to oxygen) and two single bonds
-    ``Sib``         silicon atom with two benzene bonds and one single bond
-    ``Sibf``        silicon atom with three benzene bonds
-    *Sulfur atom types*
-    ----------------------------------------------------------------------------
-    ``S``           sulfur atom with any local bond structure
-    ``Ss``          sulfur atom with two single bonds
-    ``Sd``          sulfur atom with one double bond
-    ``Sa``          sulfur atom with no bonds
-    =============== ============================================================
-
-.. _bond-types:
-
-We define the following bond types:
-
-    =============== ============================================================
-    Bond type       Description
-    =============== ============================================================
-    ``S``           a single bond
-    ``D``           a double bond
-    ``T``           a triple bond
-    ``B``           a benzene bond
-    =============== ============================================================
-
-.. _reaction-recipe-actions:
-
-We define the following reaction recipe actions:
-
-    ============= ============================= ================================
-    Action name   Arguments                     Action
-    ============= ============================= ================================
-    CHANGE_BOND   `center1`, `order`, `center2` change the bond order of the bond between `center1` and `center2` by `order`; do not break or form bonds
-    FORM_BOND     `center1`, `order`, `center2` form a new bond between `center1` and `center2` of type `order`
-    BREAK_BOND    `center1`, `order`, `center2` break the bond between `center1` and `center2`, which should be of type `order`
-    GAIN_RADICAL  `center`, `radical`           increase the number of free electrons on `center` by `radical`
-    LOSE_RADICAL  `center`, `radical`           decrease the number of free electrons on `center` by `radical`
-    ============= ============================= ================================
-
 """
 
 import cython
@@ -139,14 +63,25 @@ class AtomType:
     """
     A class for internal representation of atom types. Using unique objects
     rather than strings allows us to use fast pointer comparisons instead of
-    slow string comparisons, as well as store extra metadata if desired.
-    The attributes are:
+    slow string comparisons, as well as store extra metadata. In particular,
+    we store metadata describing the atom type's hierarchy with regard to other
+    atom types, and the atom types that can result when various actions
+    involving this atom type are taken. The attributes are:
 
     =================== =================== ====================================
     Attribute           Type                Description
     =================== =================== ====================================
-    `label`             ``str``             A unique string label for the atom type
+    `label`             ``str``             A unique label for the atom type
+    `generic`           ``list``            The atom types that are more generic than this one
+    `specific`          ``list``            The atom types that are more specific than this one
+    `incrementBond`     ``list``            The atom type(s) that result when an adjacent bond's order is incremented
+    `decrementBond`     ``list``            The atom type(s) that result when an adjacent bond's order is decremented
+    `formBond`          ``list``            The atom type(s) that result when a new single bond is formed to this atom type
+    `breakBond`         ``list``            The atom type(s) that result when an existing single bond to this atom type is broken
+    `incrementRadical`  ``list``            The atom type(s) that result when the number of radical electrons is incremented
+    `decrementRadical`  ``list``            The atom type(s) that result when the number of radical electrons is decremented
     =================== =================== ====================================
+
     """
 
     def __init__(self, label, generic, specific):
@@ -336,7 +271,7 @@ class AtomPattern(Vertex):
     =================== =================== ====================================
     Attribute           Type                Description
     =================== =================== ====================================
-    `atomType`          ``list``            The allowed atom types (as strings)
+    `atomType`          ``list``            The allowed atom types (as :class:`AtomType` objects)
     `radicalElectrons`  ``list``            The allowed numbers of radical electrons (as short integers)
     `spinMultiplicity`  ``list``            The allowed spin multiplicities (as short integers)
     `charge`            ``list``            The allowed formal charges (as short integers)

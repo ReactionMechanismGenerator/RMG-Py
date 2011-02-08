@@ -28,8 +28,20 @@
 ################################################################################
 
 """
-This module contains the thermodynamics models that are available in ChemPy.
-All such models derive from the :class:`ThermoModel` base class.
+This module contains a variety of classes representing various thermodynamics
+models. All such models derive from the :class:`ThermoModel` base class, and
+generally vary by how the heat capacity data is represented:
+
+* :class:`ThermoGAModel` - A thermodynamics model using a discrete set of heat
+  capacity data points
+
+* :class:`WilhoitModel` - A thermodynamics model using the Wilhoit polynomial
+  equation for heat capacity
+
+* :class:`NASAModel` - A thermodynamics model using a set of
+  :class:`NASAPolynomial` objects, each representing a seven-coefficient or
+  nine-coefficient polynomial equation for heat capacity, enthalpy, and entropy
+
 """
 
 ################################################################################
@@ -92,15 +104,31 @@ class ThermoModel:
         raise ThermoError('Unexpected call to ThermoModel.getFreeEnergy(); you should be using a class derived from ThermoModel.')
 
     def getHeatCapacities(self, Tlist):
+        """
+        Return the constant-pressure heat capacity (Cp) in J/mol*K at the
+        specified temperatures `Tlist` in K, as a numpy array.
+        """
         return numpy.array([self.getHeatCapacity(T) for T in Tlist], numpy.float64)
 
     def getEnthalpies(self, Tlist):
+        """
+        Return the enthalpy in J/mol at the specified temperatures `Tlist` in
+        K, as a numpy array.
+        """
         return numpy.array([self.getEnthalpy(T) for T in Tlist], numpy.float64)
 
     def getEntropies(self, Tlist):
+        """
+        Return the entropy in J/mol*K at the specified temperatures `Tlist` in
+        K, as a numpy array.
+        """
         return numpy.array([self.getEntropy(T) for T in Tlist], numpy.float64)
 
     def getFreeEnergies(self, Tlist):
+        """
+        Return the Gibbs free energy in J/mol at the specified temperatures
+        `Tlist` in K, as a numpy array.
+        """
         return numpy.array([self.getFreeEnergy(T) for T in Tlist], numpy.float64)
     
 ################################################################################
@@ -559,28 +587,26 @@ class NASAModel(ThermoModel):
     def getHeatCapacity(self, T):
         """
         Return the constant-pressure heat capacity (Cp) in J/mol*K at the
-        specified temperatures `Tlist` in K.
+        specified temperature `T` in K.
         """
         return self.__selectPolynomialForTemperature(T).getHeatCapacity(T)
     
     def getEnthalpy(self, T):
         """
-        Return the enthalpy in J/mol at the specified temperatures `Tlist` in
-        K.
+        Return the enthalpy in J/mol at the specified temperature `T` in K.
         """
         return self.__selectPolynomialForTemperature(T).getEnthalpy(T)
     
     def getEntropy(self, T):
         """
-        Return the entropy in J/mol*K at the specified temperatures `Tlist` in
-        K.
+        Return the entropy in J/mol*K at the specified temperature `T` in K.
         """
         return self.__selectPolynomialForTemperature(T).getEntropy(T)
     
     def getFreeEnergy(self, T):
         """
-        Return the Gibbs free energy in J/mol at the specified temperatures
-        `Tlist` in K.
+        Return the Gibbs free energy in J/mol at the specified temperature
+        `T` in K.
         """
         return self.__selectPolynomialForTemperature(T).getFreeEnergy(T)
     

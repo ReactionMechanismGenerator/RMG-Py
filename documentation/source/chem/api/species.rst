@@ -4,8 +4,17 @@
 
 .. automodule:: rmgpy.chem.species
 
-Species Objects
-===============
+Species
+=======
+
+.. autoclass:: rmgpy.chem.species.SpeciesError
+    :members:
 
 .. autoclass:: rmgpy.chem.species.Species
+    :members:
+
+Transition States
+=================
+
+.. autoclass:: rmgpy.chem.species.TransitionState
     :members:

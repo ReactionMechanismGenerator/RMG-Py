@@ -28,65 +28,19 @@
 ################################################################################
 
 """
-Each atom in a molecular configuration has three spatial dimensions in which it
-can move. Thus, a molecular configuration consisting of :math:`N` atoms has
-:math:`3N` degrees of freedom. We can distinguish between those modes that
-involve movement of atoms relative to the molecular center of mass (called
-*internal* modes) and those that do not (called *external* modes). Of the
-external degrees of freedom, three involve translation of the entire molecular
-configuration, while either three (for a nonlinear molecule) or two (for a
-linear molecule) involve rotation of the entire molecular configuration
-around the center of mass. The remaining :math:`3N-6` (nonlinear) or
-:math:`3N-5` (linear) degrees of freedom are the internal modes, and can be
-divided into those that involve vibrational motions (symmetric and asymmetric
-stretches, bends, etc.) and those that involve torsional rotation around single
-bonds between nonterminal heavy atoms.
-
-The mathematical description of these degrees of freedom falls under the purview
-of quantum chemistry, and involves the solution of the time-independent
-Schrodinger equation:
-
-    .. math:: \\hat{H} \\psi = E \\psi
-
-where :math:`\\hat{H}` is the Hamiltonian, :math:`\\hat{H}` is the wavefunction,
-and :math:`E` is the energy. The exact form of the Hamiltonian varies depending
-on the degree of freedom you are modeling. Since this is a quantum system, the
-energy can only take on discrete values. Once the allowed energy levels are
-known, the partition function :math:`Q(\\beta)` can be computed using the
-summation
-
-    .. math:: Q(\\beta) = \\sum_i g_i e^{-\\beta E_i}
-
-where :math:`g_i` is the degeneracy of energy level :math:`i` (i.e. the number
-of energy states at that energy level) and
-:math:`\\beta \\equiv (k_\\mathrm{B} T)^{-1}`.
-
-The partition function is an immensely useful quantity, as all sorts of
-thermodynamic parameters can be evaluated using the partition function:
-
-    .. math:: A = - k_\\mathrm{B} T \\ln Q
-
-    .. math:: U = - \\frac{\\partial \\ln Q}{\\partial \\beta}
-
-    .. math:: S = \\frac{\\partial}{\\partial T} \\left( k_\\mathrm{B} T \\ln Q \\right)
-
-    .. math:: C_\\mathrm{v} = \\frac{1}{k_\\mathrm{B} T} \\frac{\\partial^2 \\ln Q}{\\partial \\beta^2}
-
-Above, :math:`A`, :math:`U`, :math:`S`, and :math:`C_\\mathrm{v}` are the
-Helmholtz free energy, internal energy, entropy, and constant-volume heat
-capacity, respectively.
-
-The partition function for a molecular configuration is the product of the
-partition functions for each invidual degree of freedom:
-
-    .. math:: Q = Q_\\mathrm{trans} Q_\\mathrm{rot} Q_\\mathrm{vib} Q_\\mathrm{tors} Q_\\mathrm{elec}
-
-This means that the contributions to each thermodynamic quantity from each
-molecular degree of freedom are additive.
-
 This module contains models for various molecular degrees of freedom. All such
-models derive from the :class:`Mode` base class. A list of molecular degrees of
-freedom can be stored in a :class:`StatesModel` object.
+models derive from the :class:`Mode` base class, and include:
+
+* :class:`Translation` - 3D translational motion in an ideal gas
+
+* :class:`RigidRotor` - 2D (linear) or 3D (nonlinear) external rotational motion, modeled as a rigid rotor
+
+* :class:`HarmonicOscillator` - A set of independent 1D vibrational motions, modeled as harmonic oscillators
+
+* :class:`HinderedRotor` - 1D internal (hindered) torsional rotation using a simple cosine or Fourier series potential
+
+A list of molecular degrees of freedom can be stored in a :class:`StatesModel`
+object.
 """
 
 ################################################################################
@@ -110,17 +64,36 @@ class StatesError(Exception):
 ################################################################################
 
 class Mode:
+    """
+    The base class for all molecular degrees of freedom.
+    """
 
     def getPartitionFunctions(self, Tlist):
+        """
+        Return the partition functions at the specified temperatures `Tlist` in
+        K, as a numpy array.
+        """
         return numpy.array([self.getPartitionFunction(T) for T in Tlist], numpy.float64)
 
     def getHeatCapacities(self, Tlist):
+        """
+        Return the constant-pressure heat capacity (Cp) in J/mol*K at the
+        specified temperatures `Tlist` in K, as a numpy array.
+        """
         return numpy.array([self.getHeatCapacity(T) for T in Tlist], numpy.float64)
 
     def getEnthalpies(self, Tlist):
+        """
+        Return the enthalpy in J/mol at the specified temperatures `Tlist` in
+        K, as a numpy array.
+        """
         return numpy.array([self.getEnthalpy(T) for T in Tlist], numpy.float64)
 
     def getEntropies(self, Tlist):
+        """
+        Return the entropy in J/mol*K at the specified temperatures `Tlist` in
+        K, as a numpy array.
+        """
         return numpy.array([self.getEntropy(T) for T in Tlist], numpy.float64)
 
 ################################################################################

@@ -28,9 +28,9 @@
 ################################################################################
 
 """
-Contains classes and functions for manipulating the three-dimensional geometry
-of molecules and evaluating properties based on the geometry information, e.g.
-moments of inertia.
+Contains the :class:`Geometry` class for working with the three-dimensional
+geometry of molecules and evaluating properties based on the geometry
+information, e.g. moments of inertia.
 """
 
 import numpy
@@ -52,9 +52,18 @@ class GeometryError(Exception):
 
 class Geometry:
     """
-    The three-dimensional geometry of a molecular configuration. The attribute
-    `coordinates` is an array mapping atoms (by index) to numpy coordinate arrays.
-    The attribute `mass` is an array of the masses of each atom in kg/mol.
+    The three-dimensional geometry of a molecular configuration. The attributes
+    are:
+
+    =============== ======================= ====================================
+    Attribute       Type                    Description
+    =============== ======================= ====================================
+    `coordinates`   :class:`numpy.ndarray`  An N x 3 array containing the 3D coordinates of each atom
+    `number`        :class:`numpy.ndarray`  An array containing the integer atomic number of each atom
+    `mass`          :class:`numpy.ndarray`  An array containing the atomic mass in kg/mol of each atom
+    =============== ======================= ====================================
+
+    The integer index of each atom is consistent across all three attributes.
     """
     
     def __init__(self, coordinates=None, number=None, mass=None):
@@ -132,7 +141,7 @@ class Geometry:
         """
         Calculate and return the reduced moment of inertia for an internal
         torsional rotation around the axis defined by the two atoms in 
-        `pivots`. The list `top` contains the atoms that should be considered
+        `pivots`. The list `top1` contains the atoms that should be considered
         as part of the rotating top; this list should contain the pivot atom
         connecting the top to the rest of the molecule.	The procedure used is
         that of Pitzer [1]_, which is described as :math:`I^{(2,3)}` by East

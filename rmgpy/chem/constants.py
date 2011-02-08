@@ -29,12 +29,12 @@
 
 """
 This module contains a number of physical constants to be made available
-throughout ChemPy. ChemPy uses SI units throughout; accordingly, all of the
+throughout RMG Py. RMG Py uses SI units throughout; accordingly, all of the
 constants in this module are stored in combinations of meters, seconds,
 kilograms, moles, etc.
 
 The constants available are listed below. All values were taken from
-`NIST <http://physics.nist.gov/cuu/Constants/index.html>`_
+`NIST <http://physics.nist.gov/cuu/Constants/index.html>`_.
 
 """
 
@@ -44,22 +44,22 @@ import numpy
 
 ################################################################################
 
-#: The Avogadro constant
+#: The Avogadro constant :math:`N_\mathrm{a}`, in :math:`\mathrm{mol^{-1}}`.
 Na = 6.02214179e23
 
-#: The Boltzmann constant
+#: The Boltzmann constant :math:`k_\mathrm{B}`, in :math:`\mathrm{J/K}`.
 kB = 1.3806504e-23
 
-#: The gas law constant
+#: The gas law constant :math:`R`, in :math:`\mathrm{J/mol \cdot K}`.
 R = 8.314472
 
-#: The Planck constant
+#: The Planck constant :math:`h`, in :math:`\mathrm{J \cdot s}`.
 h = 6.62606896e-34
 
-#: The speed of light in a vacuum
+#: The speed of light in a vacuum :math:`c`, in :math:`\mathrm{m/s}`.
 c = 299792458
 
-#: pi
+#: The mathematical constant :math:`\pi = 3.14159...`
 pi = float(math.pi)
 
 ################################################################################
@@ -78,7 +78,7 @@ def processQuantity(quantity):
         The ``quantities`` package is used to convert your numeric parameters
         into SI units, and therefore inherits all of the idiosyncracies from
         that package. In particular, the ``quantities`` package does *not*
-        follow the SI convention that all units after the circumflex are in the
+        follow the SI convention that all units after the solidus are in the
         denominator. For example, ``J/mol*K`` would be interpreted as
         ``(J/mol)*K`` rather than ``J/(mol*K)``. Thus we recommend using
         parentheses where necessary to make your intentions explicit.

@@ -29,7 +29,25 @@
 
 """
 This module contains the kinetics models that are available in ChemPy.
-All such models derive from the :class:`KineticsModel` base class.
+All such models derive from the :class:`KineticsModel` base class, and include:
+
+This module contains a variety of classes representing various thermodynamics
+models. All such models derive from the :class:`ThermoModel` base class, and
+generally vary by how the heat capacity data is represented:
+
+* :class:`ArrheniusModel` - A kinetics model based on the modified Arrhenius
+  equation
+
+* :class:`ArrheniusEPModel` - A kinetics model based on the modified Arrhenius
+  equation with Evans-Polanyi correction to the activation energy
+
+* :class:`ChebyshevModel` - A pressure-dependent kinetics model using an array
+  of Chebyshev polynomials in inverse temperature and logarithmic pressure
+
+* :class:`PDepArrheniusModel` - A kinetics model based on a set of modified
+  Arrhenius equations at various pressures, which are then interpolated between
+  on a logarithmic pressure scale
+
 """
 
 ################################################################################
@@ -95,7 +113,7 @@ class KineticsModel:
 
     def getRateCoefficients(self, Tlist):
         """
-        Return the rate coefficient k(T) in SI units at temperatures
+        Return the rate coefficients k(T) in SI units at temperatures
         `Tlist` in K.
         """
         return numpy.array([self.getRateCoefficient(T) for T in Tlist], numpy.float64)
@@ -284,7 +302,7 @@ class PDepArrheniusModel(KineticsModel):
     def getRateCoefficient(self, T, P):
         """
         Return the rate constant k(T, P) in SI units at a temperature 
-        `Tlist` in K and pressure `P` in Pa by evaluating the pressure-
+        `T` in K and pressure `P` in Pa by evaluating the pressure-
         dependent Arrhenius expression.
         """
         cython.declare(Plow=cython.double, Phigh=cython.double)
@@ -395,7 +413,7 @@ class ChebyshevModel(KineticsModel):
     def getRateCoefficient(self, T, P):
         """
         Return the rate constant k(T, P) in SI units at a temperature 
-        `Tlist` in K and pressure `P` in Pa by evaluating the Chebyshev 
+        `T` in K and pressure `P` in Pa by evaluating the Chebyshev 
         expression.
         """
         
