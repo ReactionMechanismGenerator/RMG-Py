@@ -1159,6 +1159,8 @@ class KineticsPrimaryDatabase(Database):
             self.database = Database()
             self.__loadOldSpecies(os.path.join(path,'species.txt'))
             self.__loadOldReactions(os.path.join(path,'reactions.txt'))
+            if os.path.exists(os.path.join(path,'pdepreactions.txt')):
+                self.__loadOldReactions(os.path.join(path,'pdepreactions.txt'))
         else:
             self.database = self.loadDatabase(os.path.join(path, 'database.py'))
         logging.info('')
@@ -1171,14 +1173,15 @@ class KineticsPrimaryDatabase(Database):
     
     def __loadOldReactions(self, path):
         """
-        Load an old-style high-pressure limit reaction library from `path`.
+        Load an old-style reaction library from `path`. This algorithm can
+        handle both the pressure-independent and pressure-dependent reaction
+        files.
         """
-        self.reactions = []
-
-        # Process the reactions file
+        # Process the reactions or pdepreactions file
         try:
             inUnitSection = False; inReactionSection = False
             Aunits = ''; Eunits = ''
+            reaction = None; kinetics = None
 
             fdict = open(path, 'r')
             for line in fdict:
@@ -1194,35 +1197,112 @@ class KineticsPrimaryDatabase(Database):
                                 Eunits = units
                     elif inReactionSection:
                         reactants = []; products = []
-                        items = line.split()
-                        arrow = '=>' if '=>' in items else '<=>'
-                        for item in items[0:items.index(arrow)]:
-                            if item != '+':
-                                if item not in self.database.dictionary:
-                                    raise InvalidDatabaseError('Reactant %s not found in dictionary.' % item)
-                                reactants.append(self.database.dictionary[item])
-                        for item in items[items.index(arrow)+1:-6]:
-                            if item != '+':
-                                if item not in self.database.dictionary:
-                                    raise InvalidDatabaseError('Product %s not found in dictionary.' % item)
-                                products.append(self.database.dictionary[item])
-                        A = pq.Quantity(float(items[-6]), '%s^%g/%s^%g/%s' %
-                            (Aunits[1], 3*(len(reactants)-1), Aunits[0], len(reactants)-1, Aunits[2]))
-                        n = pq.Quantity(float(items[-5]), '')
-                        Ea = pq.Quantity(float(items[-4]), Eunits)
-                        kin = ArrheniusModel(
-                            A=float(A.simplified),
-                            n=float(n.simplified),
-                            Ea=float(Ea.simplified),
-                            T0=1.0
-                        )
-                        rxn = Reaction(
-                            reactants=reactants,
-                            products=products,
-                            kinetics=kin,
-                            reversible= arrow =='<=>',
-                        )
-                        self.reactions.append(rxn)
+                        if '=' in line:
+                            # This line contains a reaction equation, (high-P) Arrhenius parameters, and uncertainties
+
+                            # Strip out "+ M" and "(+M)" from line
+                            line = line.replace(" + M", "").replace("(+M)", "")
+                            
+                            items = line.split()
+
+                            # Find the reaction arrow
+                            for arrow in ['<=>', '=>', '=', '->']:
+                                if arrow in items:
+                                    arrowIndex = items.index(arrow)
+                                    break
+
+                            for item in items[0:arrowIndex]:
+                                if item != '+':
+                                    if item not in self.database.dictionary:
+                                        raise InvalidDatabaseError('Reactant %s not found in dictionary.' % item)
+                                    reactants.append(self.database.dictionary[item])
+                            for item in items[arrowIndex+1:-6]:
+                                if item != '+':
+                                    if item not in self.database.dictionary:
+                                        raise InvalidDatabaseError('Product %s not found in dictionary.' % item)
+                                    products.append(self.database.dictionary[item])
+                            A = pq.Quantity(float(items[-6]), '%s^%g/%s^%g/%s' %
+                                (Aunits[1], 3*(len(reactants)-1), Aunits[0], len(reactants)-1, Aunits[2]))
+                            n = pq.Quantity(float(items[-5]), '')
+                            Ea = pq.Quantity(float(items[-4]), Eunits)
+
+                            kinetics = ArrheniusModel(
+                                A=float(A.simplified),
+                                n=float(n.simplified),
+                                Ea=float(Ea.simplified),
+                                T0=1.0
+                            )
+
+                            reaction = Reaction(
+                                reactants=reactants,
+                                products=products,
+                                kinetics=kinetics,
+                                reversible=(arrow in ['<=>', '=']),
+                            )
+                            self.reactions.append(reaction)
+
+                        elif 'LOW' in line:
+                            # This line contains low-pressure-limit Arrhenius parameters in Chemkin format
+
+                            # Upgrade the kinetics to a LindemannModel if not already done
+                            if isinstance(kinetics, ThirdBodyModel):
+                                kinetics = LindemannModel(arrheniusHigh=kinetics.arrheniusHigh, efficiencies=kinetics.efficiencies)
+                                reaction.kinetics = kinetics
+                            elif isinstance(kinetics, ArrheniusModel):
+                                kinetics = LindemannModel(arrheniusHigh=kinetics)
+                                reaction.kinetics = kinetics
+                            
+                            items = line.split('/')
+                            A, n, Ea = items[1].split()
+                            A = pq.Quantity(float(A), '%s^%g/%s^%g/%s' %
+                                (Aunits[1], 3*(len(reactants)-1), Aunits[0], len(reactants)-1, Aunits[2]))
+                            n = pq.Quantity(float(n), '')
+                            Ea = pq.Quantity(float(Ea), Eunits)
+                            kinetics.arrheniusLow = ArrheniusModel(
+                                A=float(A.simplified),
+                                n=float(n.simplified),
+                                Ea=float(Ea.simplified),
+                                T0=1.0
+                            )
+
+                        elif 'TROE' in line:
+                            # This line contains Troe falloff parameters in Chemkin format
+
+                            # Upgrade the kinetics to a TroeModel if not already done
+                            if isinstance(kinetics, LindemannModel):
+                                kinetics = TroeModel(arrheniusLow=kinetics.arrheniusLow, arrheniusHigh=kinetics.arrheniusHigh, efficiencies=kinetics.efficiencies)
+                                reaction.kinetics = kinetics
+                            elif isinstance(kinetics, ThirdBodyModel):
+                                kinetics = TroeModel(arrheniusHigh=kinetics.arrheniusHigh, efficiencies=kinetics.efficiencies)
+                                reaction.kinetics = kinetics
+                            elif isinstance(kinetics, ArrheniusModel):
+                                kinetics = TroeModel(arrheniusHigh=kinetics)
+                                reaction.kinetics = kinetics
+
+                            items = line.split('/')
+                            items = items[1].split()
+                            if len(items) == 3:
+                                alpha, T3, T1 = items; T2 = 1e100
+                            else:
+                                alpha, T3, T1, T2 = items
+
+                            kinetics.alpha = float(alpha)
+                            kinetics.T1 = float(T1)
+                            kinetics.T2 = float(T2)
+                            kinetics.T3 = float(T3)
+
+                        else:
+                            # This line contains collider efficiencies
+
+                            # Upgrade the kinetics to a ThirdBodyModel if not already done
+                            if isinstance(kinetics, ArrheniusModel):
+                                kinetics = ThirdBodyModel(arrheniusHigh=kinetics)
+                                reaction.kinetics = kinetics
+
+                            items = line.split('/')
+                            for spec, eff in zip(items[0::2], items[1::2]):
+                                kinetics.efficiencies[str(spec)] = float(eff)
+                            
                     if 'Unit:' in line:
                         inUnitSection = True; inReactionSection = False
                     elif 'Reactions:' in line:
