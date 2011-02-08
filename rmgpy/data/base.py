@@ -503,7 +503,7 @@ class Library(dict):
                 index = -1
                 offset = 0
                 try:
-                    index = int(info[0])
+                    index = int(float(info[0]))
                     offset = 1
                 except ValueError:
                     pass
