@@ -43,7 +43,6 @@ import math
 import numpy
 
 import constants
-from exception import ChemPyError
 
 from species import Species
 from kinetics import ArrheniusModel
@@ -53,21 +52,10 @@ from kinetics import ArrheniusModel
 class ReactionError(Exception):
     """
     An exception class for exceptional behavior involving :class:`Reaction`
-    objects. In addition to a string `message` describing the exceptional
-    behavior, this class stores the `reaction` that caused the behavior.
+    objects. Pass a string describing the circumstances that caused the
+    exceptional behavior.
     """
-    def __init__(self, reaction, message=''):
-        self.reaction = reaction
-        self.message = message
-
-    def __str__(self):
-        string = "Reaction: "+str(self.reaction) + '\n'
-        for reactant in self.reaction.reactants:
-            string += reactant.toAdjacencyList() + '\n'
-        for product in self.reaction.products:
-            string += product.toAdjacencyList() + '\n'
-        if self.message: string += "Message: "+self.message
-        return string
+    pass
 
 ################################################################################
 
@@ -186,7 +174,7 @@ class Reaction:
             # Convert from Ka to Kp; P0 is the reference pressure
             K *= P0 ** (len(self.products) - len(self.reactants))
         elif type != 'Ka' and type != '':
-            raise ChemPyError('Invalid type "%s" passed to Reaction.getEquilibriumConstant(); should be "Ka", "Kc", or "Kp".')
+            raise ReactionError('Invalid type "%s" passed to Reaction.getEquilibriumConstant(); should be "Ka", "Kc", or "Kp".')
         return K
 
     def getEnthalpiesOfReaction(self, Tlist):

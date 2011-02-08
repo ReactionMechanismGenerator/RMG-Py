@@ -112,7 +112,26 @@ We define the following reaction recipe actions:
 import cython
 
 from graph import Vertex, Edge, Graph
-from exception import ChemPyError
+
+################################################################################
+
+class ActionError(Exception):
+    """
+    An exception class for errors that occur while applying reaction recipe
+    actions. Pass a string describing the circumstances that caused the
+    exceptional behavior.
+    """
+    pass
+
+################################################################################
+
+class AtomTypeError(Exception):
+    """
+    An exception class for errors that occur while working with atom types.
+    Pass a string describing the circumstances that caused the
+    exceptional behavior.
+    """
+    pass
 
 ################################################################################
 
@@ -302,7 +321,7 @@ def getAtomType(atom, bonds):
 
     # Raise exception if we could not identify the proper atom type
     if atomType == '':
-        raise ChemPyError('Unable to determine atom type for atom %s.' % atom)
+        raise AtomTypeError('Unable to determine atom type for atom %s.' % atom)
 
     return atomTypes[atomType]
 
@@ -375,9 +394,9 @@ class AtomPattern(Vertex):
             elif order == -1:
                 atomType.extend(atom.decrementBond)
             else:
-                raise ChemPyError('Unable to update AtomPattern due to CHANGE_BOND action: Invalid order "%g".' % order)
+                raise ActionError('Unable to update AtomPattern due to CHANGE_BOND action: Invalid order "%g".' % order)
         if len(atomType) == 0:
-            raise ChemPyError('Unable to update AtomPattern due to CHANGE_BOND action: Unknown atom type produced from set "%s".' % (self.atomType))
+            raise ActionError('Unable to update AtomPattern due to CHANGE_BOND action: Unknown atom type produced from set "%s".' % (self.atomType))
         # Set the new atom types, removing any duplicates
         self.atomType = list(set(atomType))
 
@@ -388,12 +407,12 @@ class AtomPattern(Vertex):
         'S' (since we only allow forming of single bonds).
         """
         if order != 'S':
-            raise ChemPyError('Unable to update AtomPattern due to FORM_BOND action: Invalid order "%s".' % order)
+            raise ActionError('Unable to update AtomPattern due to FORM_BOND action: Invalid order "%s".' % order)
         atomType = []
         for atom in self.atomType:
             atomType.extend(atom.formBond)
         if len(atomType) == 0:
-            raise ChemPyError('Unable to update AtomPattern due to FORM_BOND action: Unknown atom type produced from set "%s".' % (self.atomType))
+            raise ActionError('Unable to update AtomPattern due to FORM_BOND action: Unknown atom type produced from set "%s".' % (self.atomType))
         # Set the new atom types, removing any duplicates
         self.atomType = list(set(atomType))
 
@@ -404,12 +423,12 @@ class AtomPattern(Vertex):
         'S' (since we only allow breaking of single bonds).
         """
         if order != 'S':
-            raise ChemPyError('Unable to update AtomPattern due to BREAK_BOND action: Invalid order "%s".' % order)
+            raise ActionError('Unable to update AtomPattern due to BREAK_BOND action: Invalid order "%s".' % order)
         atomType = []
         for atom in self.atomType:
             atomType.extend(atom.breakBond)
         if len(atomType) == 0:
-            raise ChemPyError('Unable to update AtomPattern due to BREAK_BOND action: Unknown atom type produced from set "%s".' % (self.atomType))
+            raise ActionError('Unable to update AtomPattern due to BREAK_BOND action: Unknown atom type produced from set "%s".' % (self.atomType))
         # Set the new atom types, removing any duplicates
         self.atomType = list(set(atomType))
 
@@ -436,7 +455,7 @@ class AtomPattern(Vertex):
         spinMultiplicity = []
         for electron, spin in zip(self.radicalElectrons, self.spinMultiplicity):
             if electron - radical < 0:
-                raise ChemPyError('Unable to update AtomPattern due to LOSE_RADICAL action: Invalid radical electron set "%s".' % (self.radicalElectrons))
+                raise ActionError('Unable to update AtomPattern due to LOSE_RADICAL action: Invalid radical electron set "%s".' % (self.radicalElectrons))
             radicalElectrons.append(electron - radical)
             if spin - radical < 0:
                 spinMultiplicity.append(spin - radical + 2)
@@ -464,7 +483,7 @@ class AtomPattern(Vertex):
         elif action[0].upper() == 'LOSE_RADICAL':
             self.__loseRadical(action[2])
         else:
-            raise ChemPyError('Unable to update AtomPattern: Invalid action %s".' % (action))
+            raise ActionError('Unable to update AtomPattern: Invalid action %s".' % (action))
 
     def equivalent(self, other):
         """
@@ -588,14 +607,14 @@ class BondPattern(Edge):
                 if bond == 'S':         newOrder.append('D')
                 elif bond == 'D':       newOrder.append('T')
                 else:
-                    raise ChemPyError('Unable to update BondPattern due to CHANGE_BOND action: Invalid bond order "%s" in set %s".' % (bond, self.order))
+                    raise ActionError('Unable to update BondPattern due to CHANGE_BOND action: Invalid bond order "%s" in set %s".' % (bond, self.order))
             elif order == -1:
                 if bond == 'D':         newOrder.append('S')
                 elif bond == 'T':       newOrder.append('D')
                 else:
-                    raise ChemPyError('Unable to update BondPattern due to CHANGE_BOND action: Invalid bond order "%s" in set %s".' % (bond, self.order))
+                    raise ActionError('Unable to update BondPattern due to CHANGE_BOND action: Invalid bond order "%s" in set %s".' % (bond, self.order))
             else:
-                raise ChemPyError('Unable to update BondPattern due to CHANGE_BOND action: Invalid order "%g".' % order)
+                raise ActionError('Unable to update BondPattern due to CHANGE_BOND action: Invalid order "%g".' % order)
         # Set the new bond orders, removing any duplicates
         self.order = list(set(newOrder))
 
@@ -609,7 +628,7 @@ class BondPattern(Edge):
         if action[0].upper() == 'CHANGE_BOND':
             self.__changeBond(action[2])
         else:
-            raise ChemPyError('Unable to update BondPattern: Invalid action %s".' % (action))
+            raise ActionError('Unable to update BondPattern: Invalid action %s".' % (action))
 
     def equivalent(self, other):
         """

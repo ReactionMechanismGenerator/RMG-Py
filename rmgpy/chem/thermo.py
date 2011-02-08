@@ -39,11 +39,10 @@ import numpy
 import cython
 
 import constants
-from exception import InvalidThermoModelError
 
 ################################################################################
 
-class ThermoError:
+class ThermoError(Exception):
     """
     An exception class for errors that occur while working with thermodynamics
     models. Pass a string describing the circumstances that caused the

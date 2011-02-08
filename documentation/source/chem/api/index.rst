@@ -10,7 +10,6 @@ Chem API Reference
     
     introduction
     constants
-    exception
     element
     geometry
     thermo

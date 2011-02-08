@@ -39,7 +39,15 @@ should be used in most cases to conserve memory.
 
 import cython
 
-from exception import ChemPyError
+################################################################################
+
+class ElementError(Exception):
+    """
+    An exception class for errors that occur while working with elements.
+    Pass a string describing the circumstances that caused the
+    exceptional behavior.
+    """
+    pass
 
 ################################################################################
 
@@ -92,7 +100,7 @@ def getElement(number=0, symbol=''):
             return element
     # If we reach this point that means we did not find an appropriate element,
     # so we raise an exception
-    raise ChemPyError("No element found with number %i and symbol '%s'." % (number, symbol))
+    raise ElementError("No element found with number %i and symbol '%s'." % (number, symbol))
 
 ################################################################################
 

@@ -42,6 +42,16 @@ memory as an instance of the :class:`Species` class.
 
 ################################################################################
 
+class SpeciesError(Exception):
+    """
+    An exception class for exceptional behavior involving :class:`Species`
+    objects. Pass a string describing the circumstances that caused the
+    exceptional behavior.
+    """
+    pass
+
+################################################################################
+
 class LennardJones:
     """
     A set of Lennard-Jones collision parameters. The Lennard-Jones parameters

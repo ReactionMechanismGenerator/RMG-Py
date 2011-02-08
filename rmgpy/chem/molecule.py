@@ -39,8 +39,7 @@ import cython
 
 import element as elements
 from graph import Vertex, Edge, Graph
-from exception import ChemPyError
-from pattern import AtomPattern, BondPattern, MoleculePattern, AtomType
+from pattern import AtomPattern, BondPattern, MoleculePattern, AtomType, ActionError
 from pattern import getAtomType, fromAdjacencyList, toAdjacencyList
 
 ################################################################################
@@ -217,7 +216,7 @@ class Atom(Vertex):
         """
         # Set the new radical electron counts and spin multiplicities
         if self.radicalElectrons - 1 < 0:
-            raise ChemPyError('Unable to update Atom due to LOSE_RADICAL action: Invalid radical electron set "%s".' % (self.radicalElectrons))
+            raise ActionError('Unable to update Atom due to LOSE_RADICAL action: Invalid radical electron set "%s".' % (self.radicalElectrons))
         self.radicalElectrons -= 1
         if self.spinMultiplicity - 1 < 0:
             self.spinMultiplicity -= 1 - 2
@@ -242,7 +241,7 @@ class Atom(Vertex):
         elif action[0].upper() == 'LOSE_RADICAL':
             for i in range(abs(action[2])): self.decrementRadical()
         else:
-            raise ChemPyError('Unable to update Atom: Invalid action %s".' % (action))
+            raise ActionError('Unable to update Atom: Invalid action %s".' % (action))
 
 ################################################################################
 
@@ -340,7 +339,7 @@ class Bond(Edge):
         if self.order == 'S': self.order = 'D'
         elif self.order == 'D': self.order = 'T'
         else:
-            raise ChemPyError('Unable to update Bond due to CHANGE_BOND action: Invalid bond order "%s".' % (self.order))
+            raise ActionError('Unable to update Bond due to CHANGE_BOND action: Invalid bond order "%s".' % (self.order))
         
     def decrementOrder(self):
         """
@@ -350,7 +349,7 @@ class Bond(Edge):
         if self.order == 'D': self.order = 'S'
         elif self.order == 'T': self.order = 'D'
         else:
-            raise ChemPyError('Unable to update Bond due to CHANGE_BOND action: Invalid bond order "%s".' % (self.order))
+            raise ActionError('Unable to update Bond due to CHANGE_BOND action: Invalid bond order "%s".' % (self.order))
         
     def __changeBond(self, order):
         """
@@ -362,14 +361,14 @@ class Bond(Edge):
             if self.order == 'S': self.order = 'D'
             elif self.order == 'D': self.order = 'T'
             else:
-                raise ChemPyError('Unable to update Bond due to CHANGE_BOND action: Invalid bond order "%s".' % (self.order))
+                raise ActionError('Unable to update Bond due to CHANGE_BOND action: Invalid bond order "%s".' % (self.order))
         elif order == -1:
             if self.order == 'D': self.order = 'S'
             elif self.order == 'T': self.order = 'D'
             else:
-                raise ChemPyError('Unable to update Bond due to CHANGE_BOND action: Invalid bond order "%s".' % (self.order))
+                raise ActionError('Unable to update Bond due to CHANGE_BOND action: Invalid bond order "%s".' % (self.order))
         else:
-            raise ChemPyError('Unable to update Bond due to CHANGE_BOND action: Invalid order "%g".' % order)
+            raise ActionError('Unable to update Bond due to CHANGE_BOND action: Invalid order "%g".' % order)
 
     def applyAction(self, action):
         """
@@ -384,9 +383,9 @@ class Bond(Edge):
             elif action[2] == -1:
                 self.decrementOrder()
             else:
-                raise ChemPyError('Unable to update Bond due to CHANGE_BOND action: Invalid order "%g".' % action[2])
+                raise ActionError('Unable to update Bond due to CHANGE_BOND action: Invalid order "%g".' % action[2])
         else:
-            raise ChemPyError('Unable to update BondPattern: Invalid action %s".' % (action))
+            raise ActionError('Unable to update BondPattern: Invalid action %s".' % (action))
 
 ################################################################################
 

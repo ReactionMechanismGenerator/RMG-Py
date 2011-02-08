@@ -37,7 +37,16 @@ import numpy
 import cython
 
 import constants
-from exception import ChemPyError
+
+################################################################################
+
+class GeometryError(Exception):
+    """
+    An exception class for errors that occur while working with molecular
+    geometries. Pass a string describing the circumstances that caused the
+    exceptional behavior.
+    """
+    pass
 
 ################################################################################
 
@@ -149,9 +158,9 @@ class Geometry:
 
         # Check that exactly one pivot atom is in the specified top
         if pivots[0] not in top1 and pivots[1] not in top1:
-            raise ChemPyError('No pivot atom included in top; you must specify which pivot atom belongs with the specified top.')
+            raise GeometryError('No pivot atom included in top; you must specify which pivot atom belongs with the specified top.')
         elif pivots[0] in top1 and pivots[1] in top1:
-            raise ChemPyError('Both pivot atoms included in top; you must specify only one pivot atom that belongs with the specified top.')
+            raise GeometryError('Both pivot atoms included in top; you must specify only one pivot atom that belongs with the specified top.')
 
         # Determine atoms in other top
         top2 = []

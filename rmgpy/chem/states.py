@@ -96,7 +96,16 @@ import cython
 import numpy
 
 import constants
-from exception import InvalidStatesModelError
+
+################################################################################
+
+class StatesError(Exception):
+    """
+    An exception class for errors that occur while working with molecular
+    degrees of freedom. Pass a string describing the circumstances that caused
+    the exceptional behavior.
+    """
+    pass
 
 ################################################################################
 
