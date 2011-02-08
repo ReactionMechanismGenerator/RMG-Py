@@ -81,6 +81,14 @@ cdef class ArrheniusEPModel(KineticsModel):
 
 ################################################################################
 
+cdef class MultiArrheniusModel(KineticsModel):
+
+    cdef public list arrheniusList
+
+    cpdef double getRateCoefficient(self, double T, double P=?)
+
+################################################################################
+
 cdef class PDepArrheniusModel(KineticsModel):
     
     cdef public list pressures
@@ -110,3 +118,30 @@ cdef class ChebyshevModel(KineticsModel):
 
     cpdef fitToData(self, numpy.ndarray Tlist, numpy.ndarray Plist, numpy.ndarray K,
         int degreeT, int degreeP, double Tmin, double Tmax, double Pmin, double Pmax)
+
+################################################################################
+
+cdef class ThirdBodyModel(KineticsModel):
+
+    cdef public ArrheniusModel arrheniusHigh
+    cdef public dict efficiencies
+    
+    cpdef getColliderEfficiency(self, collider)
+
+    cpdef double getRateCoefficient(self, double T, double P, collider=?)
+
+################################################################################
+
+cdef class LindemannModel(ThirdBodyModel):
+
+    cdef public ArrheniusModel arrheniusLow
+    
+    cpdef double getRateCoefficient(self, double T, double P, collider=?)
+
+################################################################################
+
+cdef class TroeModel(LindemannModel):
+
+    cdef public double alpha, T1, T2, T3
+    
+    cpdef double getRateCoefficient(self, double T, double P, collider=?)

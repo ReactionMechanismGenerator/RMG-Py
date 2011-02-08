@@ -41,12 +41,24 @@ generally vary by how the heat capacity data is represented:
 * :class:`ArrheniusEPModel` - A kinetics model based on the modified Arrhenius
   equation with Evans-Polanyi correction to the activation energy
 
+* :class:`MultiArrheniusModel` - A kinetics model based on a summation of
+  modified Arrhenius expressions
+
+* :class:`ThirdBodyModel` - A pressure-dependent kinetics model based on the modified Arrhenius
+  equation, but with an additional factor for the third body concentration
+
+* :class:`LindemannModel` - A pressure-dependent kinetics model based on the
+  Lindemann equation
+
+* :class:`TroeModel` - A pressure-dependent kinetics model based on the
+  Lindemann equation with improved Troe falloff factor
+
+* :class:`PDepArrheniusModel` - A pressure-dependent kinetics model based on a
+  set of modified Arrhenius equations at various pressures, which are then
+  interpolated between on a logarithmic pressure scale
+
 * :class:`ChebyshevModel` - A pressure-dependent kinetics model using an array
   of Chebyshev polynomials in inverse temperature and logarithmic pressure
-
-* :class:`PDepArrheniusModel` - A kinetics model based on a set of modified
-  Arrhenius equations at various pressures, which are then interpolated between
-  on a logarithmic pressure scale
 
 """
 
@@ -142,7 +154,7 @@ class ArrheniusModel(KineticsModel):
     
     """
     
-    def __init__(self, A=0.0, n=0.0, Ea=0.0, T0=298.15):
+    def __init__(self, A=0.0, n=0.0, Ea=0.0, T0=1.0):
         KineticsModel.__init__(self)
         self.A = A
         self.T0 = T0
@@ -250,6 +262,40 @@ class ArrheniusEPModel(KineticsModel):
         the activation energy.
         """
         return ArrheniusModel(A=self.A, n=self.n, Ea=self.getActivationEnergy(dHrxn), T0=1.0)
+
+################################################################################
+
+class MultiArrheniusModel(KineticsModel):
+    """
+    Represent a rate coefficient as multiple sets of modified Arrhenius
+    parameters, i.e.
+
+    .. math:: k(T) = \\sum_{i=1}^N A_i \\left( \\frac{T}{T_{0,i}} \\right)^{n_i} \\exp \\left( - \\frac{E_{\\mathrm{a},i}}{RT} \\right)
+
+    The attributes are:
+
+    =============== =============== ============================================
+    Attribute       Type            Description
+    =============== =============== ============================================
+    `arrheniusList` ``list``        A list of the :class:`ArrheniusModel` objects that sum to represent the kinetics
+    =============== =============== ============================================
+
+    """
+
+    def __init__(self, arrheniusList=None):
+        KineticsModel.__init__(self)
+        self.arrheniusList = arrheniusList or []
+
+    def getRateCoefficient(self, T, P=1e5):
+        """
+        Return the rate coefficient k(T) in SI units at temperature
+        `T` in K.
+        """
+        cython.declare(k=cython.double, arrhenius=ArrheniusModel)
+        k = 0.0
+        for arrhenius in self.arrheniusList:
+            k += arrhenius.getRateCoefficient(T)
+        return k
 
 ################################################################################
 
@@ -473,4 +519,230 @@ class ChebyshevModel(KineticsModel):
         for t2 in range(degreeT):
             for p2 in range(degreeP):
                 self.coeffs[t2,p2] = x[p2*degreeT+t2]
-    
+
+################################################################################
+
+class ThirdBodyModel(KineticsModel):
+    """
+    A kinetic model of a phenomenological rate coefficient k(T, P) using the
+    expression
+
+    .. math:: k(T,P) = k(T) [\\ce{M}]
+
+    where :math:`k(T)` is an Arrhenius expression and
+    :math:`[\\ce{M}] \\approx P/RT` is the concentration of the third body
+    (i.e. the bath gas). A collision efficiency can be used to further correct
+    the value of :math:`k(T,P)`.
+
+    The attributes are:
+
+    =============== ======================= ====================================
+    Attribute       Type                    Description
+    =============== ======================= ====================================
+    `arrheniusHigh` :class:`ArrheniusModel` The Arrhenius kinetics
+    `efficiencies`  ``dict``                A mapping of species to collider efficiencies
+    =============== ======================= ====================================
+
+    """
+
+    def __init__(self, arrheniusHigh=None, efficiencies=None):
+        self.arrheniusHigh = arrheniusHigh
+        self.efficiencies = efficiencies or {}
+
+    def getColliderEfficiency(self, collider):
+        """
+        Return the collider efficiency for the specified `collider`, which can
+        take one of two forms:
+
+        * A single collider species. If the collider exists in the in the set
+          of efficiencies, its efficiency will be returned. If not, an
+          efficiency of unity will be returned.
+
+        * A ``dict`` mapping collider species to mole fractions. The overall
+          efficiency will be a weighted sum of the efficiencies of the collider
+          species, using the mole fractions as the weights. Collider species not
+          present in the set of efficiencies will be assumed to have an
+          efficiency of unity.
+
+        If collider is ``None`` or otherwise invalid, an efficiency of unity
+        will be returned.
+        """
+        if isinstance(collider, dict):
+            # Assume collider is a dict mapping species to weights
+            efficiency = 0.0
+            for spec, frac in collider.iteritems:
+                try:
+                    eff = self.efficiencies[spec]
+                except KeyError:
+                    eff = 1.0
+            efficiency = eff * frac
+            efficiency /= sum(collider.values())
+        else:
+            # Assume collider is a single species
+            try:
+                efficiency = self.efficiencies[collider]
+            except KeyError:
+                efficiency = 1.0
+
+        return efficiency
+
+    def getRateCoefficient(self, T, P, collider=None):
+        """
+        Return the rate constant k(T, P) in SI units at a temperature
+        `T` in K and pressure `P` in Pa by evaluating the Lindemann expression.
+        If a `collider` is specified the rate coefficient will be modified
+        accordingly.
+        """
+        cython.declare(C=cython.double, k=cython.double, efficiency=cython.double)
+        C = P / constants.R / T # bath gas concentration in mol/m^3
+        k = self.arrheniusHigh.getRateCoefficient(T)
+        efficiency = self.getColliderEfficiency(collider)
+        return efficiency * k * C
+
+################################################################################
+
+class LindemannModel(ThirdBodyModel):
+    """
+    A kinetic model of a phenomenological rate coefficient k(T, P) using the
+    expression
+
+    .. math:: k(T,P) = k_\\infty(T) \\left[ \\frac{P_\\mathrm{r}}{1 + P_\\mathrm{r}} \\right] F
+
+    where
+
+    .. math::
+
+        P_\\mathrm{r} &= \\frac{k_0(T)}{k_\\infty(T)} [\\ce{M}]
+
+        k_0(T) &= A_0 T^{n_0} \\exp \\left( - \\frac{E_0}{RT} \\right)
+
+        k_\\infty(T) &= A_\\infty T^{n_\\infty} \\exp \\left( - \\frac{E_\\infty}{RT} \\right)
+
+    and :math:`[\\ce{M}] \\approx P/RT` is the concentration of the
+    bath gas. The Arrhenius expressions :math:`k_0(T)` and :math:`k_\\infty(T)`
+    represent the low-pressure and high-pressure limit kinetics, respectively.
+    The former is necessarily one reaction order higher than the latter. For
+    the Lindemann model, :math:`F = 1`. A collision efficiency can be used to
+    further correct the value of :math:`k(T,P)`.
+
+    The attributes are:
+
+    =============== ======================= ====================================
+    Attribute       Type                    Description
+    =============== ======================= ====================================
+    `arrheniusLow`  :class:`ArrheniusModel` The Arrhenius kinetics at the low-pressure limit
+    `arrheniusHigh` :class:`ArrheniusModel` The Arrhenius kinetics at the high-pressure limit
+    `efficiencies`  ``dict``                A mapping of species to collider efficiencies
+    =============== ======================= ====================================
+
+    """
+
+    def __init__(self, arrheniusLow=None, arrheniusHigh=None, efficiencies=None):
+        ThirdBodyModel.__init__(self, arrheniusHigh=arrheniusHigh, efficiencies=efficiencies)
+        self.arrheniusLow = arrheniusLow
+
+    def getRateCoefficient(self, T, P, collider=None):
+        """
+        Return the rate constant k(T, P) in SI units at a temperature
+        `T` in K and pressure `P` in Pa by evaluating the Lindemann expression.
+        If a `collider` is specified the rate coefficient will be modified
+        accordingly.
+        """
+        cython.declare(C=cython.double, k0=cython.double, kinf=cython.double,
+            Pr=cython.double, F=cython.double, efficiency=cython.double)
+        C = P / constants.R / T # bath gas concentration in mol/m^3
+        k0 = self.arrheniusLow.getRateCoefficient(T)
+        kinf = self.arrheniusHigh.getRateCoefficient(T)
+        Pr = k0 * C / kinf
+        F = 1.0
+        efficiency = self.getColliderEfficiency(collider)
+        return efficiency * kinf * (Pr / (1 + Pr)) * F
+
+################################################################################
+
+class TroeModel(LindemannModel):
+    """
+    A kinetic model of a phenomenological rate coefficient k(T, P) using the
+    expression
+
+    .. math:: k(T,P) = k_\\infty(T) \\left[ \\frac{P_\\mathrm{r}}{1 + P_\\mathrm{r}} \\right] F
+
+    where
+
+    .. math::
+
+        P_\\mathrm{r} &= \\frac{k_0(T)}{k_\\infty(T)} [\\ce{M}]
+
+        k_0(T) &= A_0 T^{n_0} \\exp \\left( - \\frac{E_0}{RT} \\right)
+
+        k_\\infty(T) &= A_\\infty T^{n_\\infty} \\exp \\left( - \\frac{E_\\infty}{RT} \\right)
+
+    and :math:`[\\ce{M}] \\approx P/RT` is the concentration of the
+    bath gas. The Arrhenius expressions :math:`k_0(T)` and :math:`k_\\infty(T)`
+    represent the low-pressure and high-pressure limit kinetics, respectively.
+    The former is necessarily one reaction order higher than the latter. A
+    collision efficiency can be used to further correct the value of
+    :math:`k(T,P)`.
+
+    For the Troe model the parameter :math:`F` is computed via
+
+    .. math::
+
+        \\log F &= \\left\\{1 + \\left[ \\frac{\\log P_\\mathrm{r} + c}{n - d (\\log P_\\mathrm{r} + c)} \\right]^2 \\right\\}^{-1} \\log F_\\mathrm{cent}
+
+        c &= -0.4 - 0.67 \\log F_\\mathrm{cent}
+
+        n &= 0.75 - 1.27 \\log F_\\mathrm{cent}
+
+        d &= 0.14
+
+        F_\\mathrm{cent} &= (1 - \\alpha) \\exp \\left( -T/T_3 \\right) + \\alpha \\exp \\left( -T/T_1 \\right) + \\exp \\left( -T_2/T \\right)
+
+    The attributes are:
+
+    =============== ======================= ====================================
+    Attribute       Type                    Description
+    =============== ======================= ====================================
+    `arrheniusLow`  :class:`ArrheniusModel` The Arrhenius kinetics at the low-pressure limit
+    `arrheniusHigh` :class:`ArrheniusModel` The Arrhenius kinetics at the high-pressure limit
+    `efficiencies`  ``dict``                A mapping of species to collider efficiencies
+    `alpha`         ``float``               The :math:`\\alpha` parameter
+    `T1`            ``float``               The :math:`T_1` parameter
+    `T2`            ``float``               The :math:`T_2` parameter
+    `T3`            ``float``               The :math:`T_3` parameter
+    =============== ======================= ====================================
+
+    """
+
+    def __init__(self, arrheniusLow=None, arrheniusHigh=None, efficiencies=None, alpha=0.0, T3=0.0, T1=0.0, T2=1e100):
+        LindemannModel.__init__(self, arrheniusLow=arrheniusLow, arrheniusHigh=arrheniusHigh, efficiencies=efficiencies)
+        self.alpha = alpha
+        self.T1 = T1
+        self.T2 = T2
+        self.T3 = T3
+
+    def getRateCoefficient(self, T, P, collider=None):
+        """
+        Return the rate constant k(T, P) in SI units at a temperature
+        `T` in K and pressure `P` in Pa by evaluating the Lindemann expression.
+        If a `collider` is specified the rate coefficient will be modified
+        accordingly.
+        """
+        cython.declare(C=cython.double, k0=cython.double, kinf=cython.double,
+            Pr=cython.double, F=cython.double, efficiency=cython.double,
+            d=cython.double, n=cython.double, c=cython.double, Fcent=cython.double)
+        
+        C = P / constants.R / T # bath gas concentration in mol/m^3
+        k0 = self.arrheniusLow.getRateCoefficient(T)
+        kinf = self.arrheniusHigh.getRateCoefficient(T)
+        Pr = k0 * C / kinf
+        efficiency = self.getColliderEfficiency(collider)
+        
+        Fcent = (1 - self.alpha) * math.exp(-T / self.T3) + self.alpha * math.exp(-T / self.T1)
+        if self.T2 != 1e100: Fcent += math.exp(-self.T2 / T)
+        d = 0.14
+        n = 0.75 - 1.27 * math.log10(Fcent)
+        c = -0.4 - 0.67 * math.log10(Fcent)
+        F = 10.0**(math.log10(Fcent)/(1 + ((math.log10(Pr) + c)/(n - d * (math.log10(Pr))))**2))
+
+        return efficiency * kinf * (Pr / (1 + Pr)) * F

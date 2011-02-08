@@ -22,11 +22,30 @@ Pressure-Independent Kinetics Models
 .. autoclass:: rmgpy.chem.kinetics.ArrheniusEPModel
     :members:
 
+.. autoclass:: rmgpy.chem.kinetics.MultiArrheniusModel
+    :members:
+
 Pressure-Dependent Kinetics Models
 ==================================
 
-.. autoclass:: rmgpy.chem.kinetics.ChebyshevModel
+Single-Well Models
+------------------
+
+.. autoclass:: rmgpy.chem.kinetics.ThirdBodyModel
+    :members:
+
+.. autoclass:: rmgpy.chem.kinetics.LindemannModel
+    :members:
+
+.. autoclass:: rmgpy.chem.kinetics.TroeModel
     :members:
 
 .. autoclass:: rmgpy.chem.kinetics.PDepArrheniusModel
     :members:
+
+Multi-Well Models
+-----------------
+
+.. autoclass:: rmgpy.chem.kinetics.ChebyshevModel
+    :members:
+
