@@ -1011,8 +1011,9 @@ class CoreEdgeReactionModel:
                         self.addSpeciesToEdge(spec)
             # If pressure dependence is on, we only add reactions that are not unimolecular;
             # unimolecular reactions will be added after processing the associated networks
-            if not settings.pressureDependence or not (
-                rxn.isIsomerization() or rxn.isDissociation() or rxn.isAssociation()):
+            if not settings.pressureDependence or \
+                not (rxn.isIsomerization() or rxn.isDissociation() or rxn.isAssociation()) or \
+                (rxn.kinetics is not None and rxn.kinetics.isPressureDependent()):
                 if allSpeciesInCore:
                     for reaction in self.core.reactions:
                         if isinstance(reaction, Reaction) and reaction.isEquivalent(rxn): break

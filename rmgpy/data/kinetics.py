@@ -1283,7 +1283,7 @@ class KineticsPrimaryDatabase(Database):
                             )
                             self.reactions.append(reaction)
 
-                        elif 'LOW' in line:
+                        elif 'LOW' in line and self.isSeedMechanism():
                             # This line contains low-pressure-limit Arrhenius parameters in Chemkin format
 
                             # Upgrade the kinetics to a LindemannModel if not already done
@@ -1307,7 +1307,7 @@ class KineticsPrimaryDatabase(Database):
                                 T0=1.0
                             )
 
-                        elif 'TROE' in line:
+                        elif 'TROE' in line and self.isSeedMechanism():
                             # This line contains Troe falloff parameters in Chemkin format
 
                             # Upgrade the kinetics to a TroeModel if not already done
@@ -1333,7 +1333,7 @@ class KineticsPrimaryDatabase(Database):
                             kinetics.T2 = float(T2)
                             kinetics.T3 = float(T3)
 
-                        else:
+                        elif self.isSeedMechanism():
                             # This line contains collider efficiencies
 
                             # Upgrade the kinetics to a ThirdBodyModel if not already done
