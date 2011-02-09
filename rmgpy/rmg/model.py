@@ -42,7 +42,7 @@ import rmgpy.chem.constants as constants
 import rmgpy.chem.species
 import rmgpy.chem.reaction
 from rmgpy.chem.thermo import WilhoitModel, NASAModel
-from rmgpy.chem.kinetics import ArrheniusModel, ArrheniusEPModel, ChebyshevModel, PDepArrheniusModel
+from rmgpy.chem.kinetics import ArrheniusModel, ArrheniusEPModel, ChebyshevModel, PDepArrheniusModel, ThirdBodyModel
 
 from rmgpy.data.thermo import generateThermoData, convertThermoData
 from rmgpy.data.kinetics import generateKineticsData, KineticsPrimaryDatabase
@@ -1360,7 +1360,17 @@ class CoreEdgeReactionModel:
             reactants.sort()
             products.sort()
 
-            forward = Reaction(reactants=reactants, products=products, family=seedMechanism, kinetics=rxn.kinetics, isForward=True)
+            # If the kinetics has third body information, then make sure
+            # we're using real species for the collision efficiency data
+            kinetics = rxn.kinetics
+            if isinstance(kinetics, ThirdBodyModel):
+                efficiencies = {}
+                for collider, efficiency in kinetics.efficiencies.iteritems():
+                    spec, isNew = self.makeNewSpecies(collider, label='')
+                    efficiencies[spec] = efficiency
+                kinetics.efficiencies = efficiencies
+
+            forward = Reaction(reactants=reactants, products=products, family=seedMechanism, kinetics=kinetics, isForward=True)
             reverse = Reaction(reactants=products, products=reactants, family=seedMechanism, isForward=False)
             forward.reverse = reverse
             reverse.reverse = forward

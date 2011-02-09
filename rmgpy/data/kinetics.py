@@ -1343,7 +1343,11 @@ class KineticsPrimaryDatabase(Database):
 
                             items = line.split('/')
                             for spec, eff in zip(items[0::2], items[1::2]):
-                                kinetics.efficiencies[str(spec)] = float(eff)
+                                spec = str(spec).strip()
+                                if spec not in self.database.dictionary:
+                                    logging.warning('Collider %s for reaction %s not found in species dictionary.' % (spec, reaction))
+                                else:
+                                    kinetics.efficiencies[self.database.dictionary[spec]] = float(eff)
                             
                     if 'Unit:' in line:
                         inUnitSection = True; inReactionSection = False
