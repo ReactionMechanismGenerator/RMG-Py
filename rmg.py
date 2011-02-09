@@ -262,7 +262,7 @@ def execute(args):
         import rmgpy.data.kinetics
         from rmgpy.rmg.model import Reaction
         for kineticsDatabase in rmgpy.data.kinetics.kineticsDatabases:
-            if isinstance(kineticsDatabase, rmgpy.data.kinetics.KineticsPrimaryDatabase) and kineticsDatabase.seedMechanism:
+            if isinstance(kineticsDatabase, rmgpy.data.kinetics.KineticsPrimaryDatabase) and kineticsDatabase.isSeedMechanism():
                 reactionModel.addSeedMechanismToCore(kineticsDatabase, react=False)
 
         # Add nonreactive species (e.g. bath gases) to core first

@@ -222,16 +222,16 @@ def readInputFile(path):
         loadThermoDatabase(path, group=True, old=True)
     for d in databases['seed_mechanisms']:
         path = os.path.join(getDatabaseDirectory(), d)
-        loadKineticsDatabase(path, group=False, old=True, seedMechanism=True)
+        loadKineticsDatabase(path, mode='seed mechanism', group=False, old=True)
     for d in databases['reaction_libraries']:
         path = os.path.join(getDatabaseDirectory(), d)
-        loadKineticsDatabase(path, group=False, old=True, reactionLibrary=True)
+        loadKineticsDatabase(path, mode='reaction library', group=False, old=True)
     for d in databases['kinetics_libraries']:
         path = os.path.join(getDatabaseDirectory(), d)
-        loadKineticsDatabase(path, group=False, old=True)
+        loadKineticsDatabase(path, mode='kinetics library', group=False, old=True)
     for d in databases['kinetics_groups']:
         path = os.path.join(getDatabaseDirectory(), d)
-        loadKineticsDatabase(path, group=True, old=True)
+        loadKineticsDatabase(path, mode='kinetics groups', group=True, old=True)
     for d in databases['frequencies_libraries']:
         path = os.path.join(getDatabaseDirectory(), d)
         loadFrequencyDatabase(path, group=False, old=True)

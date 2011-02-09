@@ -346,7 +346,7 @@ def generateReactions(species, model):
         for molecule in spec.molecule: molecule.makeHydrogensExplicit()
 
     for kineticsDatabase in rmgpy.data.kinetics.kineticsDatabases:
-        if isinstance(kineticsDatabase, rmgpy.data.kinetics.KineticsPrimaryDatabase) and kineticsDatabase.reactionLibrary and not kineticsDatabase.seedMechanism:
+        if isinstance(kineticsDatabase, rmgpy.data.kinetics.KineticsPrimaryDatabase) and kineticsDatabase.isReactionLibrary():
             rxnList, specList = generateReactionsForPrimary(kineticsDatabase, species, model)
             speciesList.extend(specList)
             # Formally make the new reactions

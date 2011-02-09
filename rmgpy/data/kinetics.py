@@ -1112,7 +1112,24 @@ class KineticsPrimaryDatabase(Database):
     """
     A primary kinetics database, consisting of a dictionary of species
     and a library of reactions with corresponding kinetic data. (No tree is
-    utilized in this database.) The attributes are:
+    utilized in this database.) There are three types of of primary kinetics
+    database:
+
+    * A seed mechanism contains reactions that will be immediately added to
+      the model core. Pressure-dependent kinetics will be preserved.
+
+    * A reaction library contains reactions that will be added to the model
+      core or edge as their reactants or products are moved into the model
+      core. This provides a means of specifying reactions that do not fit
+      into any of the group templates. Pressure-dependent kinetics will *not*
+      be preserved.
+
+    * A kinetics library contains reaction kinetics that will be used only if
+      that reaction is generated via one of the group templates. This provides
+      a means of overruling the group-estimated kinetics with better values.
+      Pressure-dependent kinetics will *not* be preserved.
+    
+    The attributes are:
 
     =================== =================== ====================================
     Attribute           Type                Description
@@ -1120,17 +1137,15 @@ class KineticsPrimaryDatabase(Database):
     `label`             ``str``             A unique string identifier for the kinetics database
     `database`          :class:`Database`   Used to store a dictionary of species
     `reactions`         ``list``            A list of the reactions in the database
-    `seedMechanism`     ``bool``            ``True`` to use as seed mechanism, ``False`` if not
-    `reactionLibrary`   ``bool``            ``True`` to use as reaction library, ``False`` if not
+    `mode`              ``str``             The type of primary database: ``'seed mechanism'``, ``'reaction library'``, or ``'kinetics library'``
     =================== =================== ====================================
 
     """
 
-    def __init__(self, path=''):
+    def __init__(self, path='', mode=''):
         self.label = ''
         self.reactions = []
-        self.seedMechanism = False
-        self.reactionLibrary = False
+        self.mode = mode
         if path != '':
             self.load(path)
         else:
@@ -1139,22 +1154,47 @@ class KineticsPrimaryDatabase(Database):
     def __str__(self):
         return self.label
 
-    def load(self, path, seedMechanism=False, reactionLibrary=False, old=False):
+    def isSeedMechanism(self):
+        """
+        Return ``True`` if the primary database represents a seed mechanism
+        or ``False`` if not. This is determined by examination of the `mode`
+        attribute.
+        """
+        return self.mode == 'seed mechanism'
+
+    def isReactionLibrary(self):
+        """
+        Return ``True`` if the primary database represents a reaction library
+        or ``False`` if not. This is determined by examination of the `mode`
+        attribute.
+        """
+        return self.mode == 'reaction library'
+
+    def isKineticsLibrary(self):
+        """
+        Return ``True`` if the primary database represents a kinetics library
+        or ``False`` if not. This is determined by examination of the `mode`
+        attribute.
+        """
+        return self.mode == 'kinetics library'
+
+    def load(self, path, old=False):
         """
         Load a primary kinetics database from the location `path`. Also set
-        whether the kinetics database represents a `seedMechanism` or
-        `reactionLibrary` (in addition to the default kinetics library).
+        the `mode` of the kinetics database to one of ``'seed mechanism'``,
+        ``'reaction library'``, or ``'kinetics library'`` and whether the path
+        points to a new-style database or an `old` one.
         """
         self.label = os.path.split(path)[1]
-        self.seedMechanism = seedMechanism
-        self.reactionLibrary = reactionLibrary
         path = os.path.abspath(path)
-        if seedMechanism:
+        if self.mode == 'seed mechanism':
             logging.info('Loading seed mechanism from %s...' % path)
-        elif reactionLibrary:
+        elif self.mode == 'reaction library':
             logging.info('Loading primary reaction database from %s...' % path)
-        else:
+        elif self.mode == 'kinetics library':
             logging.info('Loading primary kinetics database from %s...' % path)
+        else:
+            raise ValueError('The mode attribute had an invalid value of "%s"; valid values are "seed mechanism", "reaction library", or "kinetics library".' % self.mode)
         if old:
             self.database = Database()
             self.__loadOldSpecies(os.path.join(path,'species.txt'))
@@ -1175,7 +1215,9 @@ class KineticsPrimaryDatabase(Database):
         """
         Load an old-style reaction library from `path`. This algorithm can
         handle both the pressure-independent and pressure-dependent reaction
-        files.
+        files. If the pressure-dependent file is read, the extra pressure-
+        dependent kinetics information is ignored unless the kinetics database
+        is a seed mechanism.
         """
         # Process the reactions or pdepreactions file
         try:
@@ -1391,7 +1433,7 @@ class KineticsPrimaryDatabase(Database):
 
 kineticsDatabases = []
 
-def loadKineticsDatabase(dstr, group=True, old=False, seedMechanism=False, reactionLibrary=False, only_families=False):
+def loadKineticsDatabase(dstr, mode, group=True, old=False, only_families=False):
     """
     Load the RMG kinetics database located at `dstr` into the global variable
     `rmg.reaction.kineticsDatabase`.
@@ -1402,8 +1444,8 @@ def loadKineticsDatabase(dstr, group=True, old=False, seedMechanism=False, react
         kineticsDatabase.load(dstr, only_families)
         kineticsDatabases.append(kineticsDatabase)
     else:
-        kineticsDatabase = KineticsPrimaryDatabase()
-        kineticsDatabase.load(dstr, old=old, seedMechanism=seedMechanism, reactionLibrary=reactionLibrary)
+        kineticsDatabase = KineticsPrimaryDatabase(mode=mode)
+        kineticsDatabase.load(dstr, old=old)
         kineticsDatabases.append(kineticsDatabase)
     return kineticsDatabase
 
@@ -1420,7 +1462,7 @@ def generateKineticsData(rxn, family, structures):
     for kineticsDatabase in kineticsDatabases:
         if isinstance(kineticsDatabase, KineticsGroupDatabase):
             kinetics = kineticsDatabase.generateKineticsData(rxn, family, structures)
-        elif isinstance(kineticsDatabase, KineticsPrimaryDatabase) and not kineticsDatabase.seedMechanism and not kineticsDatabase.reactionLibrary:
+        elif isinstance(kineticsDatabase, KineticsPrimaryDatabase) and kineticsDatabase.isKineticsLibrary():
             # Assume that, for seed mechanisms and reaction libraries, you've
             # already determined the kinetics (if possible) when you discovered
             # the reaction
