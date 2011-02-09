@@ -1344,20 +1344,23 @@ class CoreEdgeReactionModel:
         dictionary = seedMechanism.database.dictionary
 
         for rxn in seedMechanism.reactions:
-            forward = Reaction(reactants=rxn.reactants[:], products=rxn.products[:], family=seedMechanism, kinetics=rxn.kinetics, isForward=True)
-            for i, reactant in enumerate(forward.reactants):
+            reactants = []; products = []
+            for reactant in rxn.reactants:
                 label = dictionary.keys()[dictionary.values().index(reactant)]
-                forward.reactants[i], isNew = self.makeNewSpecies(reactant, label=label)
-                if isNew: speciesList.append(forward.reactants[i])
-            for i, product in enumerate(forward.products):
+                spec, isNew = self.makeNewSpecies(reactant, label=label)
+                reactants.append(spec)
+                if isNew: speciesList.append(spec)
+            for product in rxn.products:
                 label = dictionary.keys()[dictionary.values().index(product)]
-                forward.products[i], isNew = self.makeNewSpecies(product, label=label)
-                if isNew: speciesList.append(forward.products[i])
+                spec, isNew = self.makeNewSpecies(product, label=label)
+                products.append(spec)
+                if isNew: speciesList.append(spec)
             # Sort reactants and products
-            rxn.reactants.sort()
-            rxn.products.sort()
+            reactants.sort()
+            products.sort()
 
-            reverse = Reaction(reactants=rxn.products, products=rxn.reactants, family=seedMechanism, isForward=False)
+            forward = Reaction(reactants=reactants, products=products, family=seedMechanism, kinetics=rxn.kinetics, isForward=True)
+            reverse = Reaction(reactants=products, products=reactants, family=seedMechanism, isForward=False)
             forward.reverse = reverse
             reverse.reverse = forward
 
