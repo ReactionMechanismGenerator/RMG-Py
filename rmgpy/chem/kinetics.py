@@ -123,6 +123,13 @@ class KineticsModel:
         """
         return (self.Pmin <= P and P <= self.Pmax)
 
+    def isPressureDependent(self):
+        """
+        Return ``True`` if the kinetics are pressure-dependent or ``False`` if
+        they are pressure-independent.
+        """
+        raise NotImplementedError('You must implement this method in your derived class.')
+
     def getRateCoefficients(self, Tlist):
         """
         Return the rate coefficients k(T) in SI units at temperatures
@@ -167,6 +174,12 @@ class ArrheniusModel(KineticsModel):
     def __repr__(self):
         return '<ArrheniusModel A=%g Ea=%g kJ/mol n=%g T0=%g K>' % (self.A,self.Ea/1000.0, self.n, self.T0)
     
+    def isPressureDependent(self):
+        """
+        Returns ``False`` since Arrhenius kinetics are not pressure-dependent.
+        """
+        return False
+
     def getRateCoefficient(self, T, P=1e5):
         """
         Return the rate coefficient k(T) in SI units at temperature 
@@ -238,6 +251,12 @@ class ArrheniusEPModel(KineticsModel):
     def __repr__(self):
         return '<ArrheniusEPModel A=%g E0=%g kJ/mol n=%g alpha=%.1g>' % (self.A, self.E0/1000.0, self.n, self.alpha)
     
+    def isPressureDependent(self):
+        """
+        Returns ``False`` since ArrheniusEP kinetics are not pressure-dependent.
+        """
+        return False
+
     def getActivationEnergy(self, dHrxn):
         """
         Return the activation energy in J/mol using the enthalpy of reaction 
@@ -286,6 +305,12 @@ class MultiArrheniusModel(KineticsModel):
         KineticsModel.__init__(self)
         self.arrheniusList = arrheniusList or []
 
+    def isPressureDependent(self):
+        """
+        Returns ``False`` since Arrhenius kinetics are not pressure-dependent.
+        """
+        return False
+
     def getRateCoefficient(self, T, P=1e5):
         """
         Return the rate coefficient k(T) in SI units at temperature
@@ -322,6 +347,12 @@ class PDepArrheniusModel(KineticsModel):
         KineticsModel.__init__(self)
         self.pressures = pressures or []
         self.arrhenius = arrhenius or []
+
+    def isPressureDependent(self):
+        """
+        Returns ``True`` since PDepArrhenius kinetics are pressure-dependent.
+        """
+        return True
 
     def __getAdjacentExpressions(self, P):
         """
@@ -420,6 +451,12 @@ class ChebyshevModel(KineticsModel):
         else:
             self.degreeT = 0
             self.degreeP = 0
+
+    def isPressureDependent(self):
+        """
+        Returns ``True`` since Chebyshev polynomial kinetics are pressure-dependent.
+        """
+        return True
 
     def __chebyshev(self, n, x):
         if n == 0:
@@ -548,6 +585,12 @@ class ThirdBodyModel(KineticsModel):
     def __init__(self, arrheniusHigh=None, efficiencies=None):
         self.arrheniusHigh = arrheniusHigh
         self.efficiencies = efficiencies or {}
+
+    def isPressureDependent(self):
+        """
+        Returns ``True`` since third-body kinetics are pressure-dependent.
+        """
+        return True
 
     def getColliderEfficiency(self, collider):
         """

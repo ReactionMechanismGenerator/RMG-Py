@@ -49,6 +49,8 @@ cdef class KineticsModel:
     
     cpdef bint isPressureValid(self, double P) except -2
 
+    cpdef bint isPressureDependent(self)
+    
     cpdef numpy.ndarray getRateCoefficients(self, numpy.ndarray Tlist)
 
 ################################################################################
@@ -60,6 +62,8 @@ cdef class ArrheniusModel(KineticsModel):
     cdef public double Ea
     cdef public double n
     
+    cpdef bint isPressureDependent(self)
+
     cpdef double getRateCoefficient(self, double T, double P=?)
 
     cpdef changeT0(self, double T0)
@@ -75,6 +79,8 @@ cdef class ArrheniusEPModel(KineticsModel):
     cdef public double n
     cdef public double alpha
     
+    cpdef bint isPressureDependent(self)
+
     cpdef double getActivationEnergy(self, double dHrxn)
     
     cpdef double getRateCoefficient(self, double T, double dHrxn)
@@ -85,6 +91,8 @@ cdef class MultiArrheniusModel(KineticsModel):
 
     cdef public list arrheniusList
 
+    cpdef bint isPressureDependent(self)
+
     cpdef double getRateCoefficient(self, double T, double P=?)
 
 ################################################################################
@@ -94,6 +102,8 @@ cdef class PDepArrheniusModel(KineticsModel):
     cdef public list pressures
     cdef public list arrhenius
     
+    cpdef bint isPressureDependent(self)
+
     cpdef tuple __getAdjacentExpressions(self, double P)
     
     cpdef double getRateCoefficient(self, double T, double P)
@@ -108,6 +118,8 @@ cdef class ChebyshevModel(KineticsModel):
     cdef public int degreeT
     cdef public int degreeP
     
+    cpdef bint isPressureDependent(self)
+
     cpdef double __chebyshev(self, double n, double x)
     
     cpdef double __getReducedTemperature(self, double T)
@@ -126,6 +138,8 @@ cdef class ThirdBodyModel(KineticsModel):
     cdef public ArrheniusModel arrheniusHigh
     cdef public dict efficiencies
     
+    cpdef bint isPressureDependent(self)
+
     cpdef getColliderEfficiency(self, collider)
 
     cpdef double getRateCoefficient(self, double T, double P, collider=?)
