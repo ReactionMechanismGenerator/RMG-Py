@@ -238,6 +238,14 @@ class PDepReaction(rmgpy.chem.reaction.Reaction):
 
 ################################################################################
 
+class PressureDependenceError(Exception):
+    """
+    An exception class to use when an error involving pressure dependence is
+    encountered. Pass a string describing the circumstances of the exceptional
+    behavior.
+    """
+    pass
+
 class PDepNetwork(rmgpy.measure.network.Network):
     """
     A representation of a *partial* unimolecular reaction network. Each partial
@@ -273,6 +281,11 @@ class PDepNetwork(rmgpy.measure.network.Network):
             # For this special case we use the high-pressure limit k(T) to
             # ensure that we're estimating the total leak flux
             rxn = self.pathReactions[0]
+            if rxn.kinetics is None:
+                if rxn.reverse.kinetics is not None:
+                    rxn = rxn.reverse
+                else:
+                    raise PressureDependenceError('Path reaction %s with no high-pressure-limit kinetics encountered in PDepNetwork #%i while evaluating leak flux.' % (rxn, self.index))
             if rxn.products is self.source:
                 k = rxn.getRateCoefficient(T,P) / rxn.getEquilibriumConstant(T)
             else:
@@ -485,6 +498,15 @@ class PDepNetwork(rmgpy.measure.network.Network):
 
         # Figure out which configurations are isomers, reactant channels, and product channels
         self.updateConfigurations()
+
+        # Make sure we have high-P kinetics for all path reactions
+        for rxn in self.pathReactions:
+            if rxn.kinetics is None and rxn.reverse.kinetics is None:
+                raise PressureDependenceError('Path reaction %s with no high-pressure-limit kinetics encountered in PDepNetwork #%i.' % (rxn, self.index))
+            elif rxn.kinetics is not None and rxn.kinetics.isPressureDependent():
+                raise PressureDependenceError('Pressure-dependent kinetics encountered for path reaction %s in PDepNetwork #%i.' % (rxn, self.index))
+            elif rxn.reverse.kinetics is not None and rxn.reverse.kinetics.isPressureDependent():
+                raise PressureDependenceError('Pressure-dependent kinetics encountered for path reaction %s in PDepNetwork #%i.' % (rxn, self.index))
 
         # Do nothing if the network is already valid
         if self.valid: return
