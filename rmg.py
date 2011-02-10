@@ -246,15 +246,7 @@ def execute(args):
     
     # Initialize reaction model
     if args.restart:
-        import gzip
-        import cPickle
-        import ctml_writer
-        logging.info('Loading previous restart file...')
-        f = gzip.GzipFile(os.path.join(settings.outputDirectory,'restart.pkl'), 'rb')
-        species.speciesList, species.speciesCounter, reaction.reactionDict, \
-            reactionModel, reactionSystems = cPickle.load(f)
-        f.close()
-        options.restart = False # have already restarted
+        reactionModel = loadRestartFile(os.path.join(settings.outputDirectory,'restart.pkl.gz'))
     else:
 
         # Seed mechanisms: add species and reactions from seed mechanism
@@ -337,37 +329,33 @@ def execute(args):
             for object in objectsToEnlarge:
                 reactionModel.enlarge(object)
 
-            # Save the restart file
-            # In order to get all the references preserved, you must pickle all of
-            # the objects in one concerted dump; this also has the added benefits
-            # of using less space and running faster
-            # We also compress the restart file to save space (and lower the
-            # disk read/write time)
-            if settings.saveRestart:
-                frequency, iterations, lastSaveTime, lastSaveIteration = settings.saveRestart
-                settings.saveRestart[-2], settings.saveRestart[-1] = \
-                    saveRestartFile(frequency, iterations, lastSaveTime, lastSaveIteration,
-                    reactionModel, reactionSystems)
 
-            # Update RMG execution statistics
-            logging.info('Updating RMG execution statistics...')
-            coreSpec, coreReac, edgeSpec, edgeReac = reactionModel.getModelSize()
-            coreSpeciesCount.append(coreSpec)
-            coreReactionCount.append(coreReac)
-            edgeSpeciesCount.append(edgeSpec)
-            edgeReactionCount.append(edgeReac)
-            execTime.append(time.time() - settings.initializationTime)
-            try:
-                from guppy import hpy
-                hp = hpy()
-                memoryUse.append(hp.heap().size / 1.0e6)
-            except ImportError:
-                memoryUse.append(0.0)
-            logging.debug('Execution time: %s s' % (execTime[-1]))
-            logging.debug('Memory used: %s MB' % (memoryUse[-1]))
-            restartSize.append(os.path.getsize(os.path.join(settings.outputDirectory,'restart.pkl')) / 1.0e6)
-            saveExecutionStatistics(execTime, coreSpeciesCount, coreReactionCount, edgeSpeciesCount, edgeReactionCount, memoryUse, restartSize)
-            generateExecutionPlots(execTime, coreSpeciesCount, coreReactionCount, edgeSpeciesCount, edgeReactionCount, memoryUse, restartSize)
+        # Save the restart file if desired
+        if settings.saveRestart:
+            saveRestartFile(os.path.join(settings.outputDirectory,'restart.pkl.gz'), reactionModel)
+
+        # Update RMG execution statistics
+        logging.info('Updating RMG execution statistics...')
+        coreSpec, coreReac, edgeSpec, edgeReac = reactionModel.getModelSize()
+        coreSpeciesCount.append(coreSpec)
+        coreReactionCount.append(coreReac)
+        edgeSpeciesCount.append(edgeSpec)
+        edgeReactionCount.append(edgeReac)
+        execTime.append(time.time() - settings.initializationTime)
+        try:
+            from guppy import hpy
+            hp = hpy()
+            memoryUse.append(hp.heap().size / 1.0e6)
+        except ImportError:
+            memoryUse.append(0.0)
+        logging.debug('Execution time: %s s' % (execTime[-1]))
+        logging.debug('Memory used: %s MB' % (memoryUse[-1]))
+        if os.path.exists(os.path.join(settings.outputDirectory,'restart.pkl.gz')):
+            restartSize.append(os.path.getsize(os.path.join(settings.outputDirectory,'restart.pkl.gz')) / 1.0e6)
+        else:
+            restartSize.append(0.0)
+        saveExecutionStatistics(execTime, coreSpeciesCount, coreReactionCount, edgeSpeciesCount, edgeReactionCount, memoryUse, restartSize)
+        generateExecutionPlots(execTime, coreSpeciesCount, coreReactionCount, edgeSpeciesCount, edgeReactionCount, memoryUse, restartSize)
 
         logging.info('')
 
@@ -396,6 +384,89 @@ def execute(args):
     # Log end timestamp
     logging.info('')
     logging.info('RMG execution terminated at ' + time.asctime())
+
+################################################################################
+
+def loadRestartFile(path):
+    """
+    Load a restart file at `path` on disk.
+    """
+
+    import gzip
+    import cPickle
+
+    # Unpickle the reaction model from the specified restart file
+    logging.info('Loading previous restart file...')
+    f = gzip.GzipFile(path, 'rb')
+    reactionModel = cPickle.load(f)
+    f.close()
+
+    # A few things still point to the species in the input file, so update
+    # those to point to the equivalent species loaded from the restart file
+
+    # The termination conversions still point to the old species
+    from rmgpy.solver.base import TerminationConversion
+    for term in reactionModel.termination:
+        if isinstance(term, TerminationConversion):
+            term.species, isNew = reactionModel.makeNewSpecies(term.species.molecule[0], term.species.label, term.species.reactive)
+
+    # The initial mole fractions in the reaction systems still point to the old species
+    for reactionSystem in reactionSystems:
+        initialMoleFractions = {}
+        for spec0, moleFrac in reactionSystem.initialMoleFractions.iteritems():
+            spec, isNew = reactionModel.makeNewSpecies(spec0.molecule[0], spec0.label, spec0.reactive)
+            initialMoleFractions[spec] = moleFrac
+        reactionSystem.initialMoleFractions = initialMoleFractions
+
+    # The reactions and reactionDict still point to the old reaction families
+    reactionDict = {}
+    for family0 in reactionModel.reactionDict:
+
+        # Find the equivalent family in the newly-loaded database
+        import rmgpy.data.kinetics
+        family = None
+        for kineticsDatabase in rmgpy.data.kinetics.kineticsDatabases:
+            if isinstance(kineticsDatabase, rmgpy.data.kinetics.KineticsPrimaryDatabase):
+                if kineticsDatabase.label == family0.label:
+                    family = kineticsDatabase
+                    break
+            elif isinstance(kineticsDatabase, rmgpy.data.kinetics.KineticsGroupDatabase):
+                for label, fam in kineticsDatabase.families.iteritems():
+                    if fam.label == family0.label:
+                        family = fam
+                        break
+        if family is None:
+            raise Exception("Unable to find matching reaction family for %s" % family0.label)
+
+        # Update each affected reaction to point to that new family
+        # Also use that new family in a duplicate reactionDict
+        reactionDict[family] = {}
+        for reactant1 in reactionModel.reactionDict[family0]:
+            reactionDict[family][reactant1] = {}
+            for reactant2 in reactionModel.reactionDict[family0][reactant1]:
+                reactionDict[family][reactant1][reactant2] = []
+                for rxn in reactionModel.reactionDict[family0][reactant1][reactant2]:
+                    rxn.family = family
+                    rxn.reverse.family = family
+                    reactionDict[family][reactant1][reactant2].append(rxn)
+
+    # Return the unpickled reaction model
+    return reactionModel
+
+def saveRestartFile(path, reactionModel):
+    """
+    Save a restart file to `path` on disk containing the contents of the
+    provided `reactionModel`.
+    """
+    import gzip
+    import cPickle
+    
+    # Pickle the reaction model to the specified file
+    # We also compress the restart file to save space (and lower the disk read/write time)
+    logging.info('Saving restart file...')
+    f = gzip.GzipFile(path, 'wb')
+    cPickle.dump(reactionModel, f)
+    f.close()
 
 ################################################################################
 
