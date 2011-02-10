@@ -266,7 +266,7 @@ def generateReactionsForFamily(reactants, family, model, forward=True):
         rxn.reactants.sort()
         rxn.products.sort()
 
-    # Merge duplicate reactions and increment multiplier
+    # Merge duplicate reactions and increment degeneracy
     # In this context we already know that the family and the reactants
     # match, so we only need to check the products
     reactionsToRemove = []
@@ -279,7 +279,7 @@ def generateReactionsForFamily(reactants, family, model, forward=True):
     for rxn2 in reactionsToRemove:
         rxnList.remove(rxn2)
 
-    # For R_Recombination reactions, the multiplier is twice what it should
+    # For R_Recombination reactions, the degeneracy is twice what it should
     # be, so divide those by two
     # This is hardcoding of reaction families!
     if family.label.lower() == 'unimolecular homolysis':
