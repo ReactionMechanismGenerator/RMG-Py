@@ -161,8 +161,8 @@ class ArrheniusModel(KineticsModel):
     
     """
     
-    def __init__(self, A=0.0, n=0.0, Ea=0.0, T0=1.0):
-        KineticsModel.__init__(self)
+    def __init__(self, A=0.0, n=0.0, Ea=0.0, T0=1.0, Tmin=0.0, Tmax=1.0e10, numReactants=-1, comment=''):
+        KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, numReactants=numReactants, comment=comment)
         self.A = A
         self.T0 = T0
         self.n = n
@@ -238,8 +238,8 @@ class ArrheniusEPModel(KineticsModel):
     
     """
 
-    def __init__(self, A=0.0, E0=0.0, n=0.0, alpha=0.0):
-        KineticsModel.__init__(self)
+    def __init__(self, A=0.0, n=0.0, alpha=0.0, E0=0.0, Tmin=0.0, Tmax=1.0e10, numReactants=-1, comment=''):
+        KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, numReactants=numReactants, comment=comment)
         self.A = A
         self.E0 = E0
         self.n = n
@@ -301,8 +301,8 @@ class MultiArrheniusModel(KineticsModel):
 
     """
 
-    def __init__(self, arrheniusList=None):
-        KineticsModel.__init__(self)
+    def __init__(self, arrheniusList=None, Tmin=0.0, Tmax=1.0e10, numReactants=-1, comment=''):
+        KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, numReactants=numReactants, comment=comment)
         self.arrheniusList = arrheniusList or []
 
     def isPressureDependent(self):
@@ -343,8 +343,8 @@ class PDepArrheniusModel(KineticsModel):
     
     """
 
-    def __init__(self, pressures=None, arrhenius=None):
-        KineticsModel.__init__(self)
+    def __init__(self, pressures=None, arrhenius=None, Tmin=0.0, Tmax=1.0e10, Pmin=0.0, Pmax=1.0e100, numReactants=-1, comment=''):
+        KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, numReactants=numReactants, comment=comment)
         self.pressures = pressures or []
         self.arrhenius = arrhenius or []
 
@@ -442,8 +442,8 @@ class ChebyshevModel(KineticsModel):
     
     """
 
-    def __init__(self, Tmin=0.0, Tmax=0.0, Pmin=0.0, Pmax=0.0, coeffs=None):
-        KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax)
+    def __init__(self, coeffs=None, Tmin=0.0, Tmax=1.0e10, Pmin=0.0, Pmax=1.0e100, numReactants=-1, comment=''):
+        KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, numReactants=numReactants, comment=comment)
         self.coeffs = coeffs
         if coeffs is not None:
             self.degreeT = coeffs.shape[0]
@@ -582,7 +582,8 @@ class ThirdBodyModel(KineticsModel):
 
     """
 
-    def __init__(self, arrheniusHigh=None, efficiencies=None):
+    def __init__(self, arrheniusHigh=None, efficiencies=None, Tmin=0.0, Tmax=1.0e10, Pmin=0.0, Pmax=1.0e100, numReactants=-1, comment=''):
+        KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, numReactants=numReactants, comment=comment)
         self.arrheniusHigh = arrheniusHigh
         self.efficiencies = efficiencies or {}
 
@@ -680,8 +681,8 @@ class LindemannModel(ThirdBodyModel):
 
     """
 
-    def __init__(self, arrheniusLow=None, arrheniusHigh=None, efficiencies=None):
-        ThirdBodyModel.__init__(self, arrheniusHigh=arrheniusHigh, efficiencies=efficiencies)
+    def __init__(self, arrheniusLow=None, arrheniusHigh=None, efficiencies=None, Tmin=0.0, Tmax=1.0e10, Pmin=0.0, Pmax=1.0e100, numReactants=-1, comment=''):
+        ThirdBodyModel.__init__(self, arrheniusHigh=arrheniusHigh, efficiencies=efficiencies, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, numReactants=numReactants, comment=comment)
         self.arrheniusLow = arrheniusLow
 
     def getRateCoefficient(self, T, P, collider=None):
@@ -757,8 +758,8 @@ class TroeModel(LindemannModel):
 
     """
 
-    def __init__(self, arrheniusLow=None, arrheniusHigh=None, efficiencies=None, alpha=0.0, T3=0.0, T1=0.0, T2=1e100):
-        LindemannModel.__init__(self, arrheniusLow=arrheniusLow, arrheniusHigh=arrheniusHigh, efficiencies=efficiencies)
+    def __init__(self, arrheniusLow=None, arrheniusHigh=None, efficiencies=None, alpha=0.0, T3=0.0, T1=0.0, T2=1e100, Tmin=0.0, Tmax=1.0e10, Pmin=0.0, Pmax=1.0e100, numReactants=-1, comment=''):
+        LindemannModel.__init__(self, arrheniusLow=arrheniusLow, arrheniusHigh=arrheniusHigh, efficiencies=efficiencies, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, numReactants=numReactants, comment=comment)
         self.alpha = alpha
         self.T1 = T1
         self.T2 = T2
