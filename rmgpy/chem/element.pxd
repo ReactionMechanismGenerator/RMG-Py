@@ -31,4 +31,4 @@ cdef class Element:
     cdef public str symbol
     cdef public float mass
 
-cpdef Element getElement(int number=?, str symbol=?)
+cpdef Element getElement(value)

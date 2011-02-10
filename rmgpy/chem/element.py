@@ -91,19 +91,34 @@ class Element:
     
 ################################################################################
 
-def getElement(number=0, symbol=''):
+def getElement(value):
     """
-    Return the :class:`Element` object with attributes defined by the given
-    parameters. Only the parameters explicitly given will be used, so you can
-    search by atomic `number` or by `symbol` independently.
+    Return the :class:`Element` object corresponding to the given parameter
+    `value`. If an integer is provided, the value is treated as the atomic
+    number. If a string is provided, the value is treated as the symbol. An
+    :class:`ElementError` is raised if no matching element is found.
     """
-    cython.declare(element=Element)
-    for element in elementList:
-        if (number == 0 or element.number == number) and (symbol == '' or element.symbol == symbol):
-            return element
-    # If we reach this point that means we did not find an appropriate element,
-    # so we raise an exception
-    raise ElementError("No element found with number %i and symbol '%s'." % (number, symbol))
+    cython.declare(element=Element, number=cython.int, symbol=str)
+    if isinstance(value, int):
+        # The parameter is an integer; assume this is the atomic number
+        number = value
+        for element in elementList:
+            if element.number == number:
+                return element
+        # If we reach this point that means we did not find an appropriate element,
+        # so we raise an exception
+        raise ElementError("No element found with atomic number %i." % (number))
+    elif isinstance(value, str):
+        # The parameter is a string; assume this is the element symbol
+        symbol = value
+        for element in elementList:
+            if element.symbol == symbol:
+                return element
+        # If we reach this point that means we did not find an appropriate element,
+        # so we raise an exception
+        raise ElementError("No element found with symbol %s." % (symbol))
+    else:
+        raise ElementError('No element found based on parameter "%s".' % (value))
 
 ################################################################################
 
