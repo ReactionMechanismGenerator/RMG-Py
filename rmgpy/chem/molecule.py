@@ -40,7 +40,7 @@ import cython
 import element as elements
 from graph import Vertex, Edge, Graph
 from pattern import AtomPattern, BondPattern, MoleculePattern, AtomType, ActionError
-from pattern import getAtomType, fromAdjacencyList, toAdjacencyList
+from pattern import atomTypes, getAtomType, fromAdjacencyList, toAdjacencyList
 
 ################################################################################
 
@@ -95,6 +95,29 @@ class Atom(Vertex):
         """
         return "Atom(element='%s', radicalElectrons=%s, spinMultiplicity=%s, implicitHydrogens=%s, charge=%s, label='%s')" % (self.element, self.radicalElectrons, self.spinMultiplicity, self.implicitHydrogens, self.charge, self.label)
 
+    def __reduce__(self):
+        """
+        A helper function used when pickling an object.
+        """
+        d = {
+            'connectivity1': self.connectivity1,
+            'connectivity2': self.connectivity2,
+            'connectivity3': self.connectivity3,
+            'sortingLabel': self.sortingLabel,
+            'atomType': self.atomType.label if self.atomType else None,
+        }
+        return (Atom, (self.element.symbol, self.radicalElectrons, self.spinMultiplicity, self.implicitHydrogens, self.charge, self.label), d)
+
+    def __setstate__(self, d):
+        """
+        A helper function used when unpickling an object.
+        """
+        self.connectivity1 = d['connectivity1']
+        self.connectivity2 = d['connectivity2']
+        self.connectivity3 = d['connectivity3']
+        self.sortingLabel = d['sortingLabel']
+        self.atomType = atomTypes[d['atomType']] if d['atomType'] else None
+    
     @property
     def mass(self): return self.element.mass
     
@@ -274,6 +297,12 @@ class Bond(Edge):
         """
         return "Bond(order='%s')" % (self.order)
 
+    def __reduce__(self):
+        """
+        A helper function used when pickling an object.
+        """
+        return (Bond, (self.order,))
+
     def equivalent(self, other):
         """
         Return ``True`` if `other` is indistinguishable from this bond, or
@@ -407,9 +436,10 @@ class Molecule(Graph):
     `InChI` string representing the molecular structure.
     """
 
-    def __init__(self, atoms=None, bonds=None, SMILES='', InChI='', implicitH=False):
+    def __init__(self, atoms=None, bonds=None, implicitH=False, symmetry=1, SMILES='', InChI=''):
         Graph.__init__(self, atoms, bonds)
-        self.implicitHydrogens = False
+        self.implicitHydrogens = implicitH
+        self.symmetryNumber = symmetry
         if SMILES != '': self.fromSMILES(SMILES, implicitH)
         elif InChI != '': self.fromInChI(InChI, implicitH)
     
@@ -424,6 +454,12 @@ class Molecule(Graph):
         Return a representation that can be used to reconstruct the object.
         """
         return "Molecule(SMILES='%s')" % (self.toSMILES())
+
+    def __reduce__(self):
+        """
+        A helper function used when pickling an object.
+        """
+        return (Molecule, (self.vertices, self.edges, self.implicitHydrogens, self.symmetryNumber))
 
     def __getAtoms(self): return self.vertices
     def __setAtoms(self, atoms): self.vertices = atoms
@@ -847,7 +883,7 @@ class Molecule(Graph):
 
             # Use atomic number as key for element
             number = obatom.GetAtomicNum()
-            element = elements.getElement(number=number)
+            element = elements.getElement(number)
             
             # Process spin multiplicity
             radicalElectrons = 0

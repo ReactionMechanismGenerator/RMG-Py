@@ -109,6 +109,12 @@ class KineticsModel:
         self.numReactants = numReactants
         self.comment = comment
 
+    def __reduce__(self):
+        """
+        A helper function used when pickling an object.
+        """
+        return (KineticsModel, (self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.numReactants, self.comment))
+
     def isTemperatureValid(self, T):
         """
         Return :data:`True` if temperature `T` in K is within the valid 
@@ -174,6 +180,22 @@ class ArrheniusModel(KineticsModel):
     def __repr__(self):
         return '<ArrheniusModel A=%g Ea=%g kJ/mol n=%g T0=%g K>' % (self.A,self.Ea/1000.0, self.n, self.T0)
     
+    def __reduce__(self):
+        """
+        A helper function used when pickling an object.
+        """
+        d = {}
+        d['Pmin'] = self.Pmin
+        d['Pmax'] = self.Pmax
+        return (ArrheniusModel, (self.A, self.n, self.Ea, self.T0, self.Tmin, self.Tmax, self.numReactants, self.comment), d)
+
+    def __setstate__(self, d):
+        """
+        A helper function used when unpickling an object.
+        """
+        self.Pmin = d['Pmin']
+        self.Pmax = d['Pmax']
+
     def isPressureDependent(self):
         """
         Returns ``False`` since Arrhenius kinetics are not pressure-dependent.
@@ -251,6 +273,22 @@ class ArrheniusEPModel(KineticsModel):
     def __repr__(self):
         return '<ArrheniusEPModel A=%g E0=%g kJ/mol n=%g alpha=%.1g>' % (self.A, self.E0/1000.0, self.n, self.alpha)
     
+    def __reduce__(self):
+        """
+        A helper function used when pickling an object.
+        """
+        d = {}
+        d['Pmin'] = self.Pmin
+        d['Pmax'] = self.Pmax
+        return (ArrheniusEPModel, (self.A, self.n, self.alpha, self.E0, self.Tmin, self.Tmax, self.numReactants, self.comment), d)
+
+    def __setstate__(self, d):
+        """
+        A helper function used when unpickling an object.
+        """
+        self.Pmin = d['Pmin']
+        self.Pmax = d['Pmax']
+
     def isPressureDependent(self):
         """
         Returns ``False`` since ArrheniusEP kinetics are not pressure-dependent.
@@ -305,6 +343,22 @@ class MultiArrheniusModel(KineticsModel):
         KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, numReactants=numReactants, comment=comment)
         self.arrheniusList = arrheniusList or []
 
+    def __reduce__(self):
+        """
+        A helper function used when pickling an object.
+        """
+        d = {}
+        d['Pmin'] = self.Pmin
+        d['Pmax'] = self.Pmax
+        return (MultiArrheniusModel, (self.arrheniusList, self.Tmin, self.Tmax, self.numReactants, self.comment), d)
+
+    def __setstate__(self, d):
+        """
+        A helper function used when unpickling an object.
+        """
+        self.Pmin = d['Pmin']
+        self.Pmax = d['Pmax']
+
     def isPressureDependent(self):
         """
         Returns ``False`` since Arrhenius kinetics are not pressure-dependent.
@@ -347,6 +401,12 @@ class PDepArrheniusModel(KineticsModel):
         KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, numReactants=numReactants, comment=comment)
         self.pressures = pressures or []
         self.arrhenius = arrhenius or []
+
+    def __reduce__(self):
+        """
+        A helper function used when pickling an object.
+        """
+        return (PDepArrheniusModel, (self.pressures, self.arrhenius, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.numReactants, self.comment))
 
     def isPressureDependent(self):
         """
@@ -451,6 +511,12 @@ class ChebyshevModel(KineticsModel):
         else:
             self.degreeT = 0
             self.degreeP = 0
+
+    def __reduce__(self):
+        """
+        A helper function used when pickling an object.
+        """
+        return (ChebyshevModel, (self.coeffs, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.numReactants, self.comment))
 
     def isPressureDependent(self):
         """
@@ -587,6 +653,12 @@ class ThirdBodyModel(KineticsModel):
         self.arrheniusHigh = arrheniusHigh
         self.efficiencies = efficiencies or {}
 
+    def __reduce__(self):
+        """
+        A helper function used when pickling an object.
+        """
+        return (ThirdBodyModel, (self.arrheniusHigh, self.efficiencies, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.numReactants, self.comment))
+
     def isPressureDependent(self):
         """
         Returns ``True`` since third-body kinetics are pressure-dependent.
@@ -685,6 +757,12 @@ class LindemannModel(ThirdBodyModel):
         ThirdBodyModel.__init__(self, arrheniusHigh=arrheniusHigh, efficiencies=efficiencies, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, numReactants=numReactants, comment=comment)
         self.arrheniusLow = arrheniusLow
 
+    def __reduce__(self):
+        """
+        A helper function used when pickling an object.
+        """
+        return (LindemannModel, (self.arrheniusLow, self.arrheniusHigh, self.efficiencies, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.numReactants, self.comment))
+
     def getRateCoefficient(self, T, P, collider=None):
         """
         Return the rate constant k(T, P) in SI units at a temperature
@@ -764,6 +842,12 @@ class TroeModel(LindemannModel):
         self.T1 = T1
         self.T2 = T2
         self.T3 = T3
+
+    def __reduce__(self):
+        """
+        A helper function used when pickling an object.
+        """
+        return (TroeModel, (self.arrheniusLow, self.arrheniusHigh, self.efficiencies, self.alpha, self.T3, self.T1, self.T2, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.numReactants, self.comment))
 
     def getRateCoefficient(self, T, P, collider=None):
         """

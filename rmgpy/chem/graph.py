@@ -58,6 +58,24 @@ class Vertex(object):
     def __init__(self):
         self.resetConnectivityValues()
 
+    def __reduce__(self):
+        """
+        A helper function used when pickling an object.
+        """
+        d = {
+            'connectivity1': self.connectivity1,
+            'connectivity2': self.connectivity2,
+            'connectivity3': self.connectivity3,
+            'sortingLabel': self.sortingLabel,
+        }
+        return (Vertex, (), d)
+
+    def __setstate__(self, d):
+        self.connectivity1 = d['connectivity1']
+        self.connectivity2 = d['connectivity2']
+        self.connectivity3 = d['connectivity3']
+        self.sortingLabel = d['sortingLabel']
+
     def equivalent(self, other):
         """
         Return :data:`True` if two vertices `self` and `other` are semantically
@@ -111,6 +129,12 @@ class Edge(object):
     def __init__(self):
         pass
 
+    def __reduce__(self):
+        """
+        A helper function used when pickling an object.
+        """
+        return (Edge, ())
+
     def equivalent(self, other):
         """
         Return ``True`` if two edges `self` and `other` are semantically
@@ -144,6 +168,12 @@ class Graph:
         self.vertices = vertices or []
         self.edges = edges or {}
         
+    def __reduce__(self):
+        """
+        A helper function used when pickling an object.
+        """
+        return (Graph, (self.vertices, self.edges))
+
     def addVertex(self, vertex):
         """
         Add a `vertex` to the graph. The vertex is initialized with no edges.
