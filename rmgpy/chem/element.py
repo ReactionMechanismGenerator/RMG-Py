@@ -88,6 +88,12 @@ class Element:
         Return a representation that can be used to reconstruct the object.
         """
         return "Element(%s, '%s', '%s', %s)" % (self.number, self.symbol, self.name, self.mass)
+
+    def __reduce__(self):
+        """
+        A helper function used when pickling an object.
+        """
+        return (Element, (self.number, self.symbol, self.name, self.mass))
     
 ################################################################################
 
