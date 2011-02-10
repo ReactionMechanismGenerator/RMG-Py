@@ -78,6 +78,12 @@ class LennardJones:
         self.sigma = sigma
         self.epsilon = epsilon
 
+    def __reduce__(self):
+        """
+        A helper function used when pickling an object.
+        """
+        return (LennardJones, (self.sigma, self.epsilon))
+
 ################################################################################
 
 class Species:
@@ -126,6 +132,12 @@ class Species:
         """
         if self.index == -1: return '%s' % (self.label)
         else: return '%s(%i)' % (self.label, self.index)
+
+    def __reduce__(self):
+        """
+        A helper function used when pickling an object.
+        """
+        return (Species, (self.index, self.label, self.thermo, self.states, self.molecule, self.geometry, self.E0, self.lennardJones, self.molecularWeight, self.reactive))
 
     def generateResonanceIsomers(self):
         """
@@ -189,4 +201,10 @@ class TransitionState:
         Return a string representation of the species, suitable for console output.
         """
         return "<TransitionState '%s'>" % (self.label)
+
+    def __reduce__(self):
+        """
+        A helper function used when pickling an object.
+        """
+        return (TransitionState, (self.label, self.states, self.geometry, self.E0, self.frequency, self.degeneracy))
 

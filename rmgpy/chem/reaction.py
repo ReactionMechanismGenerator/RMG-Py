@@ -103,6 +103,12 @@ class Reaction:
         if not self.reversible: arrow = ' -> '
         return arrow.join([' + '.join([str(s) for s in self.reactants]), ' + '.join([str(s) for s in self.products])])
 
+    def __reduce__(self):
+        """
+        A helper function used when pickling an object.
+        """
+        return (Reaction, (self.index, self.reactants, self.products, self.kinetics, self.reversible, self.transitionState, self.thirdBody, self.degeneracy))
+
     def hasTemplate(self, reactants, products):
         """
         Return ``True`` if the reaction matches the template of `reactants`
@@ -494,6 +500,12 @@ class ReactionModel:
         self.species = species or []
         self.reactions = reactions or []
     
+    def __reduce__(self):
+        """
+        A helper function used when pickling an object.
+        """
+        return (ReactionModel, (self.species, self.reactions))
+
     def generateStoichiometryMatrix(self):
         """
         Generate the stoichiometry matrix corresponding to the current

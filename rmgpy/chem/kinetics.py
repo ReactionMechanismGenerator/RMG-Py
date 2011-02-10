@@ -109,6 +109,12 @@ class KineticsModel:
         self.numReactants = numReactants
         self.comment = comment
 
+    def __reduce__(self):
+        """
+        A helper function used when pickling an object.
+        """
+        return (KineticsModel, (self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.numReactants, self.comment))
+
     def isTemperatureValid(self, T):
         """
         Return :data:`True` if temperature `T` in K is within the valid 
@@ -161,8 +167,8 @@ class ArrheniusModel(KineticsModel):
     
     """
     
-    def __init__(self, A=0.0, n=0.0, Ea=0.0, T0=1.0):
-        KineticsModel.__init__(self)
+    def __init__(self, A=0.0, n=0.0, Ea=0.0, T0=1.0, Tmin=0.0, Tmax=1.0e10, numReactants=-1, comment=''):
+        KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, numReactants=numReactants, comment=comment)
         self.A = A
         self.T0 = T0
         self.n = n
@@ -174,6 +180,22 @@ class ArrheniusModel(KineticsModel):
     def __repr__(self):
         return '<ArrheniusModel A=%g Ea=%g kJ/mol n=%g T0=%g K>' % (self.A,self.Ea/1000.0, self.n, self.T0)
     
+    def __reduce__(self):
+        """
+        A helper function used when pickling an object.
+        """
+        d = {}
+        d['Pmin'] = self.Pmin
+        d['Pmax'] = self.Pmax
+        return (ArrheniusModel, (self.A, self.n, self.Ea, self.T0, self.Tmin, self.Tmax, self.numReactants, self.comment), d)
+
+    def __setstate__(self, d):
+        """
+        A helper function used when unpickling an object.
+        """
+        self.Pmin = d['Pmin']
+        self.Pmax = d['Pmax']
+
     def isPressureDependent(self):
         """
         Returns ``False`` since Arrhenius kinetics are not pressure-dependent.
@@ -238,8 +260,8 @@ class ArrheniusEPModel(KineticsModel):
     
     """
 
-    def __init__(self, A=0.0, E0=0.0, n=0.0, alpha=0.0):
-        KineticsModel.__init__(self)
+    def __init__(self, A=0.0, n=0.0, alpha=0.0, E0=0.0, Tmin=0.0, Tmax=1.0e10, numReactants=-1, comment=''):
+        KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, numReactants=numReactants, comment=comment)
         self.A = A
         self.E0 = E0
         self.n = n
@@ -251,6 +273,22 @@ class ArrheniusEPModel(KineticsModel):
     def __repr__(self):
         return '<ArrheniusEPModel A=%g E0=%g kJ/mol n=%g alpha=%.1g>' % (self.A, self.E0/1000.0, self.n, self.alpha)
     
+    def __reduce__(self):
+        """
+        A helper function used when pickling an object.
+        """
+        d = {}
+        d['Pmin'] = self.Pmin
+        d['Pmax'] = self.Pmax
+        return (ArrheniusEPModel, (self.A, self.n, self.alpha, self.E0, self.Tmin, self.Tmax, self.numReactants, self.comment), d)
+
+    def __setstate__(self, d):
+        """
+        A helper function used when unpickling an object.
+        """
+        self.Pmin = d['Pmin']
+        self.Pmax = d['Pmax']
+
     def isPressureDependent(self):
         """
         Returns ``False`` since ArrheniusEP kinetics are not pressure-dependent.
@@ -301,9 +339,25 @@ class MultiArrheniusModel(KineticsModel):
 
     """
 
-    def __init__(self, arrheniusList=None):
-        KineticsModel.__init__(self)
+    def __init__(self, arrheniusList=None, Tmin=0.0, Tmax=1.0e10, numReactants=-1, comment=''):
+        KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, numReactants=numReactants, comment=comment)
         self.arrheniusList = arrheniusList or []
+
+    def __reduce__(self):
+        """
+        A helper function used when pickling an object.
+        """
+        d = {}
+        d['Pmin'] = self.Pmin
+        d['Pmax'] = self.Pmax
+        return (MultiArrheniusModel, (self.arrheniusList, self.Tmin, self.Tmax, self.numReactants, self.comment), d)
+
+    def __setstate__(self, d):
+        """
+        A helper function used when unpickling an object.
+        """
+        self.Pmin = d['Pmin']
+        self.Pmax = d['Pmax']
 
     def isPressureDependent(self):
         """
@@ -343,10 +397,16 @@ class PDepArrheniusModel(KineticsModel):
     
     """
 
-    def __init__(self, pressures=None, arrhenius=None):
-        KineticsModel.__init__(self)
+    def __init__(self, pressures=None, arrhenius=None, Tmin=0.0, Tmax=1.0e10, Pmin=0.0, Pmax=1.0e100, numReactants=-1, comment=''):
+        KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, numReactants=numReactants, comment=comment)
         self.pressures = pressures or []
         self.arrhenius = arrhenius or []
+
+    def __reduce__(self):
+        """
+        A helper function used when pickling an object.
+        """
+        return (PDepArrheniusModel, (self.pressures, self.arrhenius, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.numReactants, self.comment))
 
     def isPressureDependent(self):
         """
@@ -442,8 +502,8 @@ class ChebyshevModel(KineticsModel):
     
     """
 
-    def __init__(self, Tmin=0.0, Tmax=0.0, Pmin=0.0, Pmax=0.0, coeffs=None):
-        KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax)
+    def __init__(self, coeffs=None, Tmin=0.0, Tmax=1.0e10, Pmin=0.0, Pmax=1.0e100, numReactants=-1, comment=''):
+        KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, numReactants=numReactants, comment=comment)
         self.coeffs = coeffs
         if coeffs is not None:
             self.degreeT = coeffs.shape[0]
@@ -451,6 +511,12 @@ class ChebyshevModel(KineticsModel):
         else:
             self.degreeT = 0
             self.degreeP = 0
+
+    def __reduce__(self):
+        """
+        A helper function used when pickling an object.
+        """
+        return (ChebyshevModel, (self.coeffs, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.numReactants, self.comment))
 
     def isPressureDependent(self):
         """
@@ -582,9 +648,16 @@ class ThirdBodyModel(KineticsModel):
 
     """
 
-    def __init__(self, arrheniusHigh=None, efficiencies=None):
+    def __init__(self, arrheniusHigh=None, efficiencies=None, Tmin=0.0, Tmax=1.0e10, Pmin=0.0, Pmax=1.0e100, numReactants=-1, comment=''):
+        KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, numReactants=numReactants, comment=comment)
         self.arrheniusHigh = arrheniusHigh
         self.efficiencies = efficiencies or {}
+
+    def __reduce__(self):
+        """
+        A helper function used when pickling an object.
+        """
+        return (ThirdBodyModel, (self.arrheniusHigh, self.efficiencies, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.numReactants, self.comment))
 
     def isPressureDependent(self):
         """
@@ -680,9 +753,15 @@ class LindemannModel(ThirdBodyModel):
 
     """
 
-    def __init__(self, arrheniusLow=None, arrheniusHigh=None, efficiencies=None):
-        ThirdBodyModel.__init__(self, arrheniusHigh=arrheniusHigh, efficiencies=efficiencies)
+    def __init__(self, arrheniusLow=None, arrheniusHigh=None, efficiencies=None, Tmin=0.0, Tmax=1.0e10, Pmin=0.0, Pmax=1.0e100, numReactants=-1, comment=''):
+        ThirdBodyModel.__init__(self, arrheniusHigh=arrheniusHigh, efficiencies=efficiencies, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, numReactants=numReactants, comment=comment)
         self.arrheniusLow = arrheniusLow
+
+    def __reduce__(self):
+        """
+        A helper function used when pickling an object.
+        """
+        return (LindemannModel, (self.arrheniusLow, self.arrheniusHigh, self.efficiencies, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.numReactants, self.comment))
 
     def getRateCoefficient(self, T, P, collider=None):
         """
@@ -757,12 +836,18 @@ class TroeModel(LindemannModel):
 
     """
 
-    def __init__(self, arrheniusLow=None, arrheniusHigh=None, efficiencies=None, alpha=0.0, T3=0.0, T1=0.0, T2=1e100):
-        LindemannModel.__init__(self, arrheniusLow=arrheniusLow, arrheniusHigh=arrheniusHigh, efficiencies=efficiencies)
+    def __init__(self, arrheniusLow=None, arrheniusHigh=None, efficiencies=None, alpha=0.0, T3=0.0, T1=0.0, T2=1e100, Tmin=0.0, Tmax=1.0e10, Pmin=0.0, Pmax=1.0e100, numReactants=-1, comment=''):
+        LindemannModel.__init__(self, arrheniusLow=arrheniusLow, arrheniusHigh=arrheniusHigh, efficiencies=efficiencies, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, numReactants=numReactants, comment=comment)
         self.alpha = alpha
         self.T1 = T1
         self.T2 = T2
         self.T3 = T3
+
+    def __reduce__(self):
+        """
+        A helper function used when pickling an object.
+        """
+        return (TroeModel, (self.arrheniusLow, self.arrheniusHigh, self.efficiencies, self.alpha, self.T3, self.T1, self.T2, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.numReactants, self.comment))
 
     def getRateCoefficient(self, T, P, collider=None):
         """

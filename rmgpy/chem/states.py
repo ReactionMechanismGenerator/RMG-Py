@@ -116,6 +116,12 @@ class Translation(Mode):
         """
         return 'Translation(mass=%g)' % (self.mass)
 
+    def __reduce__(self):
+        """
+        A helper function used when pickling an object.
+        """
+        return (Translation, (self.mass,))
+
     def getPartitionFunction(self, T):
         """
         Return the value of the partition function at the specified temperatures
@@ -206,6 +212,12 @@ class RigidRotor(Mode):
         """
         inertia = ', '.join(['%g' % i for i in self.inertia])
         return 'RigidRotor(linear=%s, inertia=[%s], symmetry=%s)' % (self.linear, inertia, self.symmetry)
+
+    def __reduce__(self):
+        """
+        A helper function used when pickling an object.
+        """
+        return (RigidRotor, (self.linear, self.inertia, self.symmetry))
 
     def getPartitionFunction(self, T):
         """
@@ -356,6 +368,21 @@ class HinderedRotor(Mode):
         object.
         """
         return 'HinderedRotor(inertia=%g, barrier=%g, symmetry=%g, fourier=%s)' % (self.inertia, self.barrier, self.symmetry, self.fourier)
+
+    def __reduce__(self):
+        """
+        A helper function used when pickling an object.
+        """
+        d = {
+            'energies': self.energies,
+        }
+        return (HinderedRotor, (self.inertia, self.barrier, self.symmetry, self.fourier), d)
+
+    def __setstate__(self, d):
+        """
+        A helper function used when unpickling an object.
+        """
+        self.energies = d['energies']
 
     def getPotential(self, phi):
         """
@@ -642,6 +669,12 @@ class HarmonicOscillator(Mode):
         frequencies = ', '.join(['%g' % freq for freq in self.frequencies])
         return 'HarmonicOscillator(frequencies=[%s])' % (frequencies)
 
+    def __reduce__(self):
+        """
+        A helper function used when pickling an object.
+        """
+        return (HarmonicOscillator, (self.frequencies,))
+
     def getPartitionFunction(self, T):
         """
         Return the value of the partition function at the specified temperatures
@@ -767,6 +800,12 @@ class StatesModel:
     def __init__(self, modes=None, spinMultiplicity=1):
         self.modes = modes or []
         self.spinMultiplicity = spinMultiplicity
+
+    def __reduce__(self):
+        """
+        A helper function used when pickling an object.
+        """
+        return (StatesModel, (self.modes, self.spinMultiplicity))
 
     def getHeatCapacity(self, T):
         """

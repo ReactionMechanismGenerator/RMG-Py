@@ -151,7 +151,7 @@ def pressureDependence(method, temperatures, pressures, minimumGrainSize=0.0, mi
     settings.pressureDependence = (method, Tmin, Tmax, Tlist, Pmin, Pmax, Plist, minimumGrainSize, minimumNumberOfGrains, interpolation)
     
 def options(units='si', saveRestart=False, drawMolecules=False, generatePlots=False):
-    pass
+    settings.saveRestart = saveRestart
 
 ################################################################################
 

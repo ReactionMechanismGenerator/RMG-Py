@@ -893,7 +893,7 @@ class ReactionFamily(Database):
                                         rxn = self.createReaction(reactants, reactantStructures, productStructures, reactantAtomLabels)
                                         if rxn: rxnList.append(rxn)
 
-        # Merge duplicate reactions and increment multiplier
+        # Merge duplicate reactions and increment degeneracy
         # In this context we already know that the family and the reactants
         # match, so we only need to check the products
         reactionsToRemove = []
@@ -902,16 +902,16 @@ class ReactionFamily(Database):
                 if rxn2 not in reactionsToRemove:
                     if rxn1.products == rxn2.products:
                         reactionsToRemove.append(rxn2)
-                        rxn1.multiplier += 1.0
+                        rxn1.degeneracy += 1.0
         for rxn in reactionsToRemove:
             rxnList.remove(rxn)
 
-        # For R_Recombination reactions, the multiplier is twice what it should
+        # For R_Recombination reactions, the degeneracy is twice what it should
         # be, so divide those by two
         # This is hardcoding of reaction families!
         if self.label.lower() == 'unimolecular homolysis':
             for rxn in rxnList:
-                rxn.multiplier /= 2
+                rxn.degeneracy /= 2
 
         # Formally make the new reactions
         reactionsToRemove = []

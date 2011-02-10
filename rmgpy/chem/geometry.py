@@ -71,6 +71,12 @@ class Geometry:
         self.number = number
         self.mass = mass
     
+    def __reduce__(self):
+        """
+        A helper function used when pickling an object.
+        """
+        return (Geometry, (self.coordinates, self.number, self.mass))
+
     def getTotalMass(self, atoms=None):
         """
         Calculate and return the total mass of the atoms in the geometry in 

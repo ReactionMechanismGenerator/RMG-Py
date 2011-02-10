@@ -57,6 +57,25 @@ from rxngen import generateReactions
 
 class Species(rmgpy.chem.species.Species):
 
+    def __init__(self, index=-1, label='', thermo=None, states=None, molecule=None, geometry=None, E0=0.0, lennardJones=None, molecularWeight=0.0, reactive=True):
+        rmgpy.chem.species.Species.__init__(self, index, label, thermo, states, molecule, geometry, E0, lennardJones, molecularWeight, reactive)
+        self.coreSizeAtCreation = 0
+
+    def __reduce__(self):
+        """
+        A helper function used when pickling an object.
+        """
+        d = {
+            'coreSizeAtCreation': self.coreSizeAtCreation,
+        }
+        return (Species, (self.index, self.label, self.thermo, self.states, self.molecule, self.geometry, self.E0, self.lennardJones, self.molecularWeight, self.reactive), d)
+
+    def __setstate__(self, d):
+        """
+        A helper function used when unpickling an object.
+        """
+        self.coreSizeAtCreation = d['coreSizeAtCreation']
+
     def generateThermoData(self, thermoClass=NASAModel):
         """
         Generate thermodynamic data for the species using the thermo database.
@@ -152,11 +171,26 @@ class Species(rmgpy.chem.species.Species):
 
 class Reaction(rmgpy.chem.reaction.Reaction):
 
-    def __init__(self, index=-1, reactants=None, products=None, kinetics=None, reversible=True, transitionState=None, thirdBody=False, family=None, isForward=True):
-        rmgpy.chem.reaction.Reaction.__init__(self, index, reactants, products, kinetics, reversible, transitionState, thirdBody)
+    def __init__(self, index=-1, reactants=None, products=None, kinetics=None, reversible=True, transitionState=None, thirdBody=False, degeneracy=1, family=None, isForward=True):
+        rmgpy.chem.reaction.Reaction.__init__(self, index, reactants, products, kinetics, reversible, transitionState, thirdBody, degeneracy)
         self.family = family
         self.isForward = isForward
-        self.multiplier = 1.0
+        self.reverse = None
+    
+    def __reduce__(self):
+        """
+        A helper function used when pickling an object.
+        """
+        d = {
+            'reverse': self.reverse,
+        }
+        return (Reaction, (self.index, self.reactants, self.products, self.kinetics, self.reversible, self.transitionState, self.thirdBody, self.degeneracy, self.family, self.isForward), d)
+
+    def __setstate__(self, d):
+        """
+        A helper function used when unpickling an object.
+        """
+        self.reverse = d['reverse']
 
     def isEquivalent(self, other):
         """
@@ -663,7 +697,7 @@ class CoreEdgeReactionModel:
         self.unirxnNetworks = []
         self.networkCount = 0
         self.speciesDict = {}
-        self.reactionDict = {'seed': {}}
+        self.reactionDict = {}
         self.speciesCache = [None for i in range(4)]
         self.speciesCounter = 0
         self.reactionCounter = 0

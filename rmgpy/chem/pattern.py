@@ -98,6 +98,31 @@ class AtomType:
     def __repr__(self):
         return '<AtomType "%s">' % self.label
 
+    def __reduce__(self):
+        """
+        A helper function used when pickling an object.
+        """
+        d = {
+            'incrementBond': self.incrementBond,
+            'decrementBond': self.decrementBond,
+            'formBond': self.formBond,
+            'breakBond': self.breakBond,
+            'incrementRadical': self.incrementRadical,
+            'decrementRadical': self.decrementRadical,
+        }
+        return (AtomType, (self.label, self.generic, self.specific), d)
+
+    def __setstate__(self, d):
+        """
+        A helper function used when unpickling an object.
+        """
+        self.incrementBond = d['incrementBond']
+        self.decrementBond = d['decrementBond']
+        self.formBond = d['formBond']
+        self.breakBond = d['breakBond']
+        self.incrementRadical = d['incrementRadical']
+        self.decrementRadical = d['decrementRadical']
+
     def setActions(self, incrementBond, decrementBond, formBond, breakBond, incrementRadical, decrementRadical):
         self.incrementBond = incrementBond
         self.decrementBond = decrementBond
@@ -296,6 +321,15 @@ class AtomPattern(Vertex):
         self.spinMultiplicity = spinMultiplicity or []
         self.charge = charge or []
         self.label = label
+
+    def __reduce__(self):
+        """
+        A helper function used when pickling an object.
+        """
+        atomType = self.atomType
+        if atomType is not None:
+            atomType = [a.label for a in atomType]
+        return (AtomPattern, (atomType, self.radicalElectrons, self.spinMultiplicity, self.charge, self.label))
 
     def __str__(self):
         """
@@ -523,6 +557,12 @@ class BondPattern(Edge):
         """
         return "BondPattern(order=%s)" % (self.order)
 
+    def __reduce__(self):
+        """
+        A helper function used when pickling an object.
+        """
+        return (BondPattern, (self.order,))
+
     def copy(self):
         """
         Return a deep copy of the :class:`BondPattern` object. Modifying the
@@ -629,7 +669,14 @@ class MoleculePattern(Graph):
 
     def __init__(self, atoms=None, bonds=None):
         Graph.__init__(self, atoms, bonds)
+        self.updateConnectivityValues()
     
+    def __reduce__(self):
+        """
+        A helper function used when pickling an object.
+        """
+        return (MoleculePattern, (self.vertices, self.edges))
+
     def __getAtoms(self): return self.vertices
     def __setAtoms(self, atoms): self.vertices = atoms
     atoms = property(__getAtoms, __setAtoms)

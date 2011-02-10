@@ -84,6 +84,12 @@ class ThermoModel:
         self.Tmax = constants.processQuantity(Tmax)[0]
         self.comment = comment
     
+    def __reduce__(self):
+        """
+        A helper function used when pickling an object.
+        """
+        return (ThermoModel, (self.Tmin, self.Tmax, self.comment))
+
     def isTemperatureValid(self, T):
         """
         Return ``True`` if the temperature `T` in K is within the valid
@@ -191,6 +197,12 @@ class ThermoGAModel(ThermoModel):
         string += '\n'
         string += 'Comment: %s' % (self.comment)
         return string
+
+    def __reduce__(self):
+        """
+        A helper function used when pickling an object.
+        """
+        return (ThermoGAModel, (self.Tdata, self.Cpdata, self.H298, self.S298, self.dCp, self.dH, self.dS, self.Tmin, self.Tmax, self.comment))
 
     def __add__(self, other):
         """
@@ -347,6 +359,12 @@ class WilhoitModel(ThermoModel):
         string += ')'
         return string
 
+    def __reduce__(self):
+        """
+        A helper function used when pickling an object.
+        """
+        return (WilhoitModel, (self.cp0, self.cpInf, self.a0, self.a1, self.a2, self.a3, self.H0, self.S0, self.B, self.Tmin, self.Tmax, self.comment))
+
     def getHeatCapacity(self, T):
         """
         Return the constant-pressure heat capacity (Cp) in J/mol*K at the
@@ -492,7 +510,7 @@ class NASAPolynomial(ThermoModel):
     when only seven coefficients are provided.
     """
     
-    def __init__(self, Tmin=0.0, Tmax=0.0, coeffs=None, comment=''):
+    def __init__(self, coeffs=None, Tmin=0.0, Tmax=0.0, comment=''):
         ThermoModel.__init__(self, Tmin=Tmin, Tmax=Tmax, comment=comment)
         coeffs = coeffs or (0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
         if len(coeffs) == 7:
@@ -518,6 +536,12 @@ class NASAPolynomial(ThermoModel):
         if self.comment != '': string += ', comment="""%s"""' % (self.comment)
         string += ')'
         return string
+
+    def __reduce__(self):
+        """
+        A helper function used when pickling an object.
+        """
+        return (NASAPolynomial, ([self.cm2, self.cm1, self.c0, self.c1, self.c2, self.c3, self.c4, self.c5, self.c6], self.Tmin, self.Tmax, self.comment))
 
     def getHeatCapacity(self, T):
         """
@@ -583,6 +607,12 @@ class NASAModel(ThermoModel):
         if self.comment != '': string += ', comment="""%s"""' % (self.comment)
         string += ')'
         return string
+
+    def __reduce__(self):
+        """
+        A helper function used when pickling an object.
+        """
+        return (NASAModel, (self.polynomials, self.Tmin, self.Tmax, self.comment))
 
     def getHeatCapacity(self, T):
         """
