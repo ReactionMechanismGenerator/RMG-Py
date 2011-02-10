@@ -3,9 +3,6 @@
 
 import unittest
 
-import sys
-sys.path.append('.')
-
 from rmgpy.chem.graph import *
 
 ################################################################################
@@ -192,6 +189,40 @@ class GraphCheck(unittest.TestCase):
         ismatch, mapList = graph1.findSubgraphIsomorphisms(graph2)
         self.assertTrue(ismatch)
         self.assertTrue(len(mapList) == 10)
+
+    def testPickle(self):
+        """
+        Test that a Graph object can be successfully pickled and unpickled
+        with no loss of information.
+        """
+
+        vertices = [Vertex() for i in range(6)]
+        edges = [Edge() for i in range(5)]
+
+        graph0 = Graph()
+        for vertex in vertices: graph0.addVertex(vertex)
+        graph0.addEdge(vertices[0], vertices[1], edges[0])
+        graph0.addEdge(vertices[1], vertices[2], edges[1])
+        graph0.addEdge(vertices[2], vertices[3], edges[2])
+        graph0.addEdge(vertices[3], vertices[4], edges[3])
+        graph0.addEdge(vertices[4], vertices[5], edges[4])
+        graph0.updateConnectivityValues()
+        
+        import cPickle
+        graph = cPickle.loads(cPickle.dumps(graph0))
+
+        Nvert = len(graph.vertices)
+        self.assertEqual(len(graph0.vertices), len(graph.vertices))
+        self.assertEqual(len(graph0.edges), len(graph.edges))
+        for v1, v2 in zip(graph0.vertices, graph.vertices):
+            self.assertEqual(v1.connectivity1, v2.connectivity1)
+            self.assertEqual(v1.connectivity2, v2.connectivity2)
+            self.assertEqual(v1.connectivity3, v2.connectivity3)
+            self.assertEqual(v1.sortingLabel, v2.sortingLabel)
+            self.assertEqual(len(graph0.edges[v1]), len(graph.edges[v2]))
+        self.assertTrue(graph0.isIsomorphic(graph))
+        self.assertTrue(graph.isIsomorphic(graph0))
+
 
 ################################################################################
 

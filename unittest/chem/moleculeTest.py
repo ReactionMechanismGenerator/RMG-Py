@@ -3,9 +3,6 @@
 
 import unittest
 
-import sys
-sys.path.append('.')
-
 from rmgpy.chem.molecule import Molecule
 from rmgpy.chem.pattern import MoleculePattern
 
@@ -378,6 +375,22 @@ class MoleculeCheck(unittest.TestCase):
                 fail_message+="Got total symmetry number of %s for %s (expected %s)\n"%(symmetryNumber,smile,should_be)
         self.assertEqual(fail_message,'',fail_message)
 
+    def testPickle(self):
+        """
+        Test that a Molecule object can be successfully pickled and
+        unpickled with no loss of information.
+        """
+        molecule0 = Molecule().fromSMILES('C=CC=C[CH2]C')
+        molecule0.updateAtomTypes()
+        molecule0.updateConnectivityValues()
+        import cPickle
+        molecule = cPickle.loads(cPickle.dumps(molecule0))
+        
+        self.assertEqual(len(molecule0.atoms), len(molecule.atoms))
+        self.assertEqual(molecule0.getFormula(), molecule.getFormula())
+        self.assertTrue(molecule0.isIsomorphic(molecule))
+        self.assertTrue(molecule.isIsomorphic(molecule0))
+        
 ################################################################################
 
 if __name__ == '__main__':

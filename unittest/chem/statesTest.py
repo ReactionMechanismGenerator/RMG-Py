@@ -179,7 +179,7 @@ class StatesTest(unittest.TestCase):
         trans = Translation(mass=0.02803)
         rot = RigidRotor(linear=False, inertia=[5.6952e-47, 2.7758e-46, 3.3454e-46], symmetry=1)
         vib = HarmonicOscillator(frequencies=[834.50, 973.31, 975.37, 1067.1, 1238.5, 1379.5, 1472.3, 1691.3, 3121.6, 3136.7, 3192.5, 3221.0])
-        
+
         Elist = numpy.arange(0.0, 200000.0, 500.0, numpy.float64)
 
         states = StatesModel(modes=[trans])
@@ -199,6 +199,64 @@ class StatesTest(unittest.TestCase):
         densStates1 = states.getDensityOfStatesILT(Elist)
         for i in range(25, len(Elist)):
             self.assertTrue(0.8 < densStates1[i] / densStates0[i] < 1.25)
+
+    def testPickleTranslation(self):
+        """
+        Test that a Translation object can be successfully pickled and
+        unpickled with no loss of information.
+        """
+        trans0 = Translation(mass=0.02803)
+        import cPickle
+        trans = cPickle.loads(cPickle.dumps(trans0))
+        
+        self.assertAlmostEqual(trans0.mass, trans.mass, 6)
+        
+    def testPickleRigidRotor(self):
+        """
+        Test that a RigidRotor object can be successfully pickled and
+        unpickled with no loss of information.
+        """
+        rot0 = RigidRotor(linear=False, inertia=[5.6952e-47, 2.7758e-46, 3.3454e-46], symmetry=1)
+        import cPickle
+        rot = cPickle.loads(cPickle.dumps(rot0))
+
+        self.assertEqual(rot0.linear, rot.linear)
+        self.assertEqual(len(rot0.inertia), len(rot.inertia))
+        for I0, I in zip(rot0.inertia, rot.inertia):
+            self.assertAlmostEqual(I0 * 6.022e46, I * 6.022e46, 6)
+        self.assertEqual(rot0.symmetry, rot.symmetry)
+        
+    def testPickleHarmonicOscillator(self):
+        """
+        Test that a HarmonicOscillator object can be successfully pickled and
+        unpickled with no loss of information.
+        """
+        vib0 = HarmonicOscillator(frequencies=[834.50, 973.31, 975.37, 1067.1, 1238.5, 1379.5, 1472.3, 1691.3, 3121.6, 3136.7, 3192.5, 3221.0])
+        import cPickle
+        vib = cPickle.loads(cPickle.dumps(vib0))
+
+        self.assertEqual(len(vib0.frequencies), len(vib.frequencies))
+        for freq0, freq in zip(vib0.frequencies, vib.frequencies):
+            self.assertAlmostEqual(freq0, freq, 6)
+
+    def testPickleHinderedRotor(self):
+        """
+        Test that a HarmonicOscillator object can be successfully pickled and
+        unpickled with no loss of information.
+        """
+        fourier = numpy.array([ [-4.683e-01, 8.767e-05], [-2.827e+00, 1.048e-03], [ 1.751e-01,-9.278e-05], [-1.355e-02, 1.916e-06], [-1.128e-01, 1.025e-04] ], numpy.float64) * 4184
+        hr0 = HinderedRotor(inertia=7.38359/6.022e46, barrier=3.20429*4184, symmetry=1, fourier=fourier)
+        import cPickle
+        hr = cPickle.loads(cPickle.dumps(hr0))
+
+        self.assertAlmostEqual(hr0.barrier, hr.barrier, 6)
+        self.assertAlmostEqual(hr0.inertia * 6.022e46, hr.inertia * 6.022e46, 6)
+        self.assertEqual(hr0.symmetry, hr.symmetry)
+        self.assertEqual(hr0.fourier.shape[0], hr.fourier.shape[0])
+        self.assertEqual(hr0.fourier.shape[1], hr.fourier.shape[1])
+        for i in range(hr0.fourier.shape[0]):
+            for j in range(hr0.fourier.shape[1]):
+                self.assertAlmostEqual(hr0.fourier[i,j], hr.fourier[i,j], 6)
 
 ################################################################################
 
