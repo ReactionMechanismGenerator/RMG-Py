@@ -96,10 +96,16 @@ from rmgpy.chem.molecule import *
 
 # Parameters that control the Cairo output
 fontFamily = 'sans'
-fontSizeNormal = 10
-fontSizeSubscript = 6
+fontSizeNormal = 12
+fontSizeSubscript = 8
 bondLength = 24
-    
+
+# These variables contain the extent of the current drawing
+left = 0.0
+top = 0.0
+right = 0.0
+bottom = 0.0
+
 ################################################################################
 
 class MoleculeRenderError(Exception): pass
@@ -117,18 +123,13 @@ def render(atoms, bonds, coordinates, symbols, cr, offset=(0,0)):
 
     import cairo
 
-    # Adjust coordinates such that the top left corner is (0,0) and determine
-    # the bounding rect for the molecule
-    # Find the atoms on each edge of the bounding rect
-    sorted = numpy.argsort(coordinates[:,0])
-    left = sorted[0]; right = sorted[-1]
-    sorted = numpy.argsort(coordinates[:,1])
-    top = sorted[0]; bottom = sorted[-1]
-    # Get rough estimate of bounding box size using atom coordinates
-    left = coordinates[left,0] + offset[0]
-    top = coordinates[top,1] + offset[1]
-    right = coordinates[right,0] + offset[0]
-    bottom = coordinates[bottom,1] + offset[1]
+    global left, top, right, bottom
+    
+    left = 0.0
+    top = 0.0
+    right = 0.0
+    bottom = 0.0
+
     # Shift coordinates by offset value
     coordinates[:,0] += offset[0]
     coordinates[:,1] += offset[1]
@@ -184,9 +185,21 @@ def renderBond(atom1, atom2, bond, coordinates, symbols, cr):
 
     import cairo
 
-    cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
-    cr.set_line_width(1.0)
-    cr.set_line_cap(cairo.LINE_CAP_ROUND)
+    def drawLine(cr, x1, y1, x2, y2):
+        global left, top, right, bottom
+        cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
+        cr.set_line_width(1.0)
+        cr.set_line_cap(cairo.LINE_CAP_ROUND)
+        cr.move_to(x1, y1); cr.line_to(x2, y2)
+        cr.stroke()
+        if x1 < left: left = x1
+        if x1 > right: right = x1
+        if y1 < top: top = y1
+        if y1 > bottom: bottom = y1
+        if x2 < left: left = x2
+        if x2 > right: right = x2
+        if y2 < top: top = y2
+        if y2 > bottom: bottom = y2
 
     x1, y1 = coordinates[atom1,:]
     x2, y2 = coordinates[atom2,:]
@@ -198,37 +211,25 @@ def renderBond(atom1, atom2, bond, coordinates, symbols, cr):
     if bond.isDouble() and (symbols[atom1] != '' or symbols[atom2] != ''):
         # Draw double bond centered on bond axis
         du *= 2; dv *= 2
-        cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
-        cr.move_to(x1 - du, y1 - dv); cr.line_to(x2 - du, y2 - dv)
-        cr.stroke()
-        cr.move_to(x1 + du, y1 + dv); cr.line_to(x2 + du, y2 + dv)
-        cr.stroke()
+        drawLine(cr, x1 - du, y1 - dv, x2 - du, y2 - dv)
+        drawLine(cr, x1 + du, y1 + dv, x2 + du, y2 + dv)
     elif bond.isTriple() and (symbols[atom1] != '' or symbols[atom2] != ''):
         # Draw triple bond centered on bond axis
         du *= 3; dv *= 3
-        cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
-        cr.move_to(x1 - du, y1 - dv); cr.line_to(x2 - du, y2 - dv)
-        cr.stroke()
-        cr.move_to(x1, y1); cr.line_to(x2, y2)
-        cr.stroke()
-        cr.move_to(x1 + du, y1 + dv); cr.line_to(x2 + du, y2 + dv)
-        cr.stroke()
+        drawLine(cr, x1 - du, y1 - dv, x2 - du, y2 - dv)
+        drawLine(cr, x1     , y1     , x2     , y2     )
+        drawLine(cr, x1 + du, y1 + dv, x2 + du, y2 + dv)
     else:
         # Draw bond on skeleton
-        cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
-        cr.move_to(x1, y1); cr.line_to(x2, y2)
-        cr.stroke()
+        drawLine(cr, x1, y1, x2, y2)
         # Draw other bonds
         if bond.isDouble():
             du *= 4; dv *= 4; dx = 4 * dx / bondLength; dy = 4 * dy / bondLength
-            cr.move_to(x1 + du + dx, y1 + dv + dy); cr.line_to(x2 + du - dx, y2 + dv - dy)
-            cr.stroke()
+            drawLine(cr, x1 + du + dx, y1 + dv + dy, x2 + du - dx, y2 + dv - dy)
         elif bond.isTriple():
             du *= 3; dv *= 3; dx = 3 * dx / bondLength; dy = 3 * dy / bondLength
-            cr.move_to(x1 - du + dx, y1 - dv + dy); cr.line_to(x2 - du - dx, y2 - dv - dy)
-            cr.stroke()
-            cr.move_to(x1 + du + dx, y1 + dv + dy); cr.line_to(x2 + du - dx, y2 + dv - dy)
-            cr.stroke()
+            drawLine(cr, x1 - du + dx, y1 - dv + dy, x2 - du - dx, y2 - dv - dy)
+            drawLine(cr, x1 + du + dx, y1 + dv + dy, x2 + du - dx, y2 + dv - dy)
     
 ################################################################################
 
@@ -1128,8 +1129,8 @@ def drawMolecule(molecule, path=None, surface=''):
     # Generate labels to use
     symbols = [atom.symbol for atom in atoms]
     for i in range(len(symbols)):
-        # Don't label carbon atoms, unless there is only one heavy atom
-        if symbols[i] == 'C' and len(symbols) > 1:
+        # Don't label carbon atoms, unless there are only one or two heavy atoms
+        if symbols[i] == 'C' and len(symbols) > 2:
             if len(bonds[atoms[i]]) > 1 or (atoms[i].radicalElectrons == 0 and atoms[i].charge == 0):
                 symbols[i] = ''
     # Do label atoms that have only double bonds to one or more labeled atoms
@@ -1164,13 +1165,14 @@ def drawMolecule(molecule, path=None, surface=''):
     left, top, width, height = render(atoms, bonds, coordinates, symbols, cr, offset=(-left,-top))
 
     if path is not None:
-        # Finish Cairo drawing
         if surface is not None:
-            surface.finish()
-        # Save PNG of drawing if appropriate
-        ext = os.path.splitext(path)[1].lower()
-        if ext == '.png':
-            surface.write_to_png(path)
+            # Finish Cairo drawing
+            # Save PNG of drawing if appropriate
+            ext = os.path.splitext(path)[1].lower()
+            if ext == '.png':
+                surface.write_to_png(path)
+            else:
+                surface.finish()
 
     if not implicitH: molecule.makeHydrogensExplicit()
 
