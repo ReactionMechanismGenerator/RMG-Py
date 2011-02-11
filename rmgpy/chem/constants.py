@@ -41,6 +41,11 @@ The constants available are listed below. All values were taken from
 import math
 import cython
 import numpy
+import quantities as pq
+
+pq.UnitQuantity('kilocalories', pq.cal*1e3, symbol='kcal')
+pq.UnitQuantity('kilojoules', pq.J*1e3, symbol='kJ')
+pq.UnitQuantity('kilomoles', pq.mol*1e3, symbol='kmol')
 
 ################################################################################
 
@@ -95,6 +100,7 @@ def processQuantity(quantity):
 
     if (isinstance(quantity, tuple) or isinstance(quantity, list)) and len(quantity) == 2:
         value, units = quantity
+        if not isinstance(units, str): return numpy.array(quantity, numpy.float64), ''
     else:
         value = quantity; units = ''
 
@@ -103,10 +109,14 @@ def processQuantity(quantity):
     newUnits = str(factor.units).split()[1]
     factor = float(factor)
 
+    # Exception: don't convert wavenumbers (cm^-1) to m^-1
+    if units == 'cm^-1':
+        newUnits = units; factor = 1.0
+
     if isinstance(value, tuple) or isinstance(value, list):
-        return numpy.array([v * factor for v in value], numpy.float64), newUnits
+        return numpy.array(value, numpy.float64) * factor, newUnits
     elif isinstance(value, numpy.ndarray):
-        return value, newUnits
+        return value * factor, newUnits
     else:
         return float(value) * factor, newUnits
 
