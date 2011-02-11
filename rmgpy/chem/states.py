@@ -107,14 +107,14 @@ class Translation(Mode):
     """
 
     def __init__(self, mass=0.0):
-        self.mass = mass
+        self.mass = constants.processQuantity(mass)[0]
 
     def __repr__(self):
         """
         Return a string representation that can be used to reconstruct the
         object.
         """
-        return 'Translation(mass=%g)' % (self.mass)
+        return 'Translation(mass=(%g,"g/mol"))' % (self.mass * 1000.)
 
     def __reduce__(self):
         """
@@ -202,7 +202,10 @@ class RigidRotor(Mode):
 
     def __init__(self, linear=False, inertia=None, symmetry=1):
         self.linear = linear
-        self.inertia = inertia or []
+        if inertia is not None:
+            self.inertia = list(constants.processQuantity(inertia)[0])
+        else:
+            self.inertia = []
         self.symmetry = symmetry
 
     def __repr__(self):
@@ -210,8 +213,8 @@ class RigidRotor(Mode):
         Return a string representation that can be used to reconstruct the
         object.
         """
-        inertia = ', '.join(['%g' % i for i in self.inertia])
-        return 'RigidRotor(linear=%s, inertia=[%s], symmetry=%s)' % (self.linear, inertia, self.symmetry)
+        inertia = ', '.join(['%g' % (I*constants.Na*1.0e23) for I in self.inertia])
+        return 'RigidRotor(linear=%s, inertia=([%s],"amu*angstrom^2"), symmetry=%i)' % (self.linear, inertia, self.symmetry)
 
     def __reduce__(self):
         """
@@ -355,19 +358,32 @@ class HinderedRotor(Mode):
     """
 
     def __init__(self, inertia=0.0, barrier=0.0, symmetry=1, fourier=None):
-        self.inertia = inertia
-        self.barrier = barrier
+        self.inertia = constants.processQuantity(inertia)[0]
+        self.barrier = constants.processQuantity(barrier)[0]
         self.symmetry = symmetry
-        self.fourier = fourier
-        self.energies = None
-        if self.fourier is not None: self.energies = self.__solveSchrodingerEquation()
+        if fourier is not None:
+            self.fourier = constants.processQuantity(fourier)[0]
+            self.energies = self.__solveSchrodingerEquation()
+        else:
+            self.fourier = None
+            self.energies = None
 
     def __repr__(self):
         """
         Return a string representation that can be used to reconstruct the
         object.
         """
-        return 'HinderedRotor(inertia=%g, barrier=%g, symmetry=%g, fourier=%s)' % (self.inertia, self.barrier, self.symmetry, self.fourier)
+        fourier = '['
+        for i in range(self.fourier.shape[0]):
+            if i > 0: fourier += ', '
+            fourier += '[%s]' % (','.join(['%g' % (self.fourier[i,j]) for j in range(self.fourier.shape[1])]))
+        fourier += ']'
+
+        return 'HinderedRotor(inertia=(%g,"amu*angstrom^2"), barrier=(%g,"kJ/mol"), symmetry=%g, fourier=%s)' % (
+            self.inertia*constants.Na*1.0e23,
+            self.barrier/1000.,
+            self.symmetry,
+            fourier)
 
     def __reduce__(self):
         """
@@ -659,7 +675,12 @@ class HarmonicOscillator(Mode):
     """
 
     def __init__(self, frequencies=None):
-        self.frequencies = frequencies or []
+        if frequencies is not None:
+            frequencies, units = constants.processQuantity(frequencies)
+            assert units in ['','dimensionless','cm^-1'], 'Can only handle harmonic oscillator frequencies in units of cm^-1; provided units were "%s"' % units
+            self.frequencies = list(frequencies)
+        else:
+            self.frequencies = None
 
     def __repr__(self):
         """
@@ -667,7 +688,7 @@ class HarmonicOscillator(Mode):
         object.
         """
         frequencies = ', '.join(['%g' % freq for freq in self.frequencies])
-        return 'HarmonicOscillator(frequencies=[%s])' % (frequencies)
+        return 'HarmonicOscillator(frequencies=([%s],"cm^-1"))' % (frequencies)
 
     def __reduce__(self):
         """
@@ -800,6 +821,13 @@ class StatesModel:
     def __init__(self, modes=None, spinMultiplicity=1):
         self.modes = modes or []
         self.spinMultiplicity = spinMultiplicity
+
+    def __repr__(self):
+        """
+        Return a string representation that can be used to reconstruct the
+        object.
+        """
+        return 'StatesModel(modes=%s, spinMultiplicity=%i)' % (self.modes, self.spinMultiplicity)
 
     def __reduce__(self):
         """

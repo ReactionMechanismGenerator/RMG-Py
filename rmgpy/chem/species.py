@@ -42,6 +42,8 @@ contains the :class:`TransitionState` class for representing chemical reaction
 transition states (first-order saddle points on a potential energy surface).
 """
 
+import constants
+
 ################################################################################
 
 class SpeciesError(Exception):
@@ -75,8 +77,15 @@ class LennardJones:
     """
 
     def __init__(self, sigma=0.0, epsilon=0.0):
-        self.sigma = sigma
-        self.epsilon = epsilon
+        self.sigma = constants.processQuantity(sigma)[0]
+        self.epsilon = constants.processQuantity(epsilon)[0]
+
+    def __repr__(self):
+        """
+        Return a string representation that can be used to reconstruct the
+        object.
+        """
+        return 'LennardJones(sigma=(%g,"m"), epsilon=(%g,"J"))' % (self.sigma, self.epsilon)
 
     def __reduce__(self):
         """
@@ -115,16 +124,29 @@ class Species:
         self.states = states
         self.molecule = molecule or []
         self.geometry = geometry
-        self.E0 = E0
+        self.E0 = constants.processQuantity(E0)[0]
         self.lennardJones = lennardJones
         self.reactive = reactive
-        self.molecularWeight = molecularWeight
+        self.molecularWeight = constants.processQuantity(molecularWeight)[0]
 
     def __repr__(self):
         """
-        Return a string representation of the species, suitable for console output.
+        Return a string representation that can be used to reconstruct the
+        object.
         """
-        return "<Species %i '%s'>" % (self.index, self.label)
+        string = 'Species('
+        if self.index != -1: string += 'index=%i, ' % (self.index)
+        if self.label != -1: string += 'label="%s", ' % (self.label)
+        if self.thermo is not None: string += 'thermo=%r, ' % (self.thermo)
+        if self.states is not None: string += 'states=%r, ' % (self.states)
+        if len(self.molecule) > 0: string += 'molecule=[%r], ' % (self.molecule[0])
+        if self.geometry is not None: string += 'geometry=%r, ' % (self.geometry)
+        if self.E0 != 0.0: string += 'E0=(%g,"kJ/mol"), ' % (self.E0 / 1000.)
+        if self.lennardJones is not None: string += 'lennardJones=%r, ' % (self.lennardJones)
+        if not self.reactive: string += 'reactive=%s, ' % (self.reactive)
+        if self.molecularWeight != 0.0: string += 'molecularWeight=(%g,"g/mol"), ' % (self.molecularWeight * 1000.)
+        string = string[:-2] + ')'
+        return string
 
     def __str__(self):
         """
@@ -192,15 +214,24 @@ class TransitionState:
         self.label = label
         self.states = states
         self.geometry = geometry
-        self.E0 = E0
-        self.frequency = frequency
+        self.E0 = constants.processQuantity(E0)[0]
+        self.frequency = constants.processQuantity(frequency)[0]
         self.degeneracy = degeneracy
 
     def __repr__(self):
         """
-        Return a string representation of the species, suitable for console output.
+        Return a string representation that can be used to reconstruct the
+        object.
         """
-        return "<TransitionState '%s'>" % (self.label)
+        string = 'TransitionState('
+        if self.label != -1: string += 'label="%s", ' % (self.label)
+        if self.states is not None: string += 'states=%r, ' % (self.states)
+        if self.geometry is not None: string += 'geometry=%r, ' % (self.geometry)
+        if self.E0 != 0.0: string += 'E0=(%g,"kJ/mol"), ' % (self.E0 / 1000.)
+        if self.frequency != 0.0: string += 'frequency=(%g,"cm^-1"), ' % (self.frequency)
+        if self.degeneracy != 1: string += 'degeneracy=%i, ' % (self.degeneracy)
+        string = string[:-2] + ')'
+        return string
 
     def __reduce__(self):
         """
