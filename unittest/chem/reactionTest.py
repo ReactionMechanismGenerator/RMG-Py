@@ -152,6 +152,36 @@ class ReactionTest(unittest.TestCase):
         self.assertEqual(rxn0.kinetics.Ea, rxn.kinetics.Ea)
         self.assertEqual(rxn0.kinetics.comment, rxn.kinetics.comment)
 
+    def testOutput(self):
+        """
+        Test that a Reaction object can be successfully reconstructed
+        from its repr() output with no loss of information.
+        """
+        ethylene = Species(  E0=-205882860.949)
+        hydrogen = Species(  E0=  -1318675.56138)
+        ethyl    = Species(  E0=-207340036.867)
+        TS = TransitionState(E0=-207188826.467, frequency=-309.3437)
+
+        kinetics = ArrheniusModel(A=1.0e6, n=1.0, Ea=10000.0, T0=298.15, comment='These parameters are completely made up')
+
+        rxn0 = Reaction(reactants=[hydrogen, ethylene], products=[ethyl], transitionState=TS, kinetics=kinetics)
+        exec('rxn = %r' % (rxn0))
+
+        self.assertEqual(len(rxn0.reactants), len(rxn.reactants))
+        self.assertEqual(len(rxn0.products), len(rxn.products))
+        for reactant0, reactant in zip(rxn0.reactants, rxn.reactants):
+            self.assertAlmostEqual(reactant0.E0 / 1e9, reactant.E0 / 1e9, 4)
+        for product0, product in zip(rxn0.products, rxn.products):
+            self.assertAlmostEqual(product0.E0 / 1e9, product.E0 / 1e9, 4)
+        self.assertAlmostEqual(rxn0.transitionState.E0 / 1e9, rxn.transitionState.E0 / 1e9, 4)
+        self.assertAlmostEqual(rxn0.transitionState.frequency, rxn.transitionState.frequency, 2)
+
+        self.assertAlmostEqual(rxn0.kinetics.A / 1e6, rxn.kinetics.A / 1e6, 4)
+        self.assertEqual(rxn0.kinetics.n, rxn.kinetics.n)
+        self.assertEqual(rxn0.kinetics.T0, rxn.kinetics.T0)
+        self.assertEqual(rxn0.kinetics.Ea, rxn.kinetics.Ea)
+        self.assertEqual(rxn0.kinetics.comment, rxn.kinetics.comment)
+
 ################################################################################
 
 if __name__ == '__main__':

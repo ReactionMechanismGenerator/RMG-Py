@@ -124,5 +124,39 @@ class GeometryTest(unittest.TestCase):
             self.assertEqual(g0.number[i], g.number[i])
             self.assertEqual(g0.mass[i], g.mass[i])
 
+    def testOutput(self):
+        """
+        Test that a Geometry object can be successfully reconstructed
+        from its repr() output with no loss of information.
+        """
+
+        # Masses should be in kg/mol
+        mass = numpy.array([12.0, 1.0, 1.0, 1.0, 12.0, 1.0, 1.0, 1.0], numpy.float64) * 0.001
+        # Atomic numbers
+        number = numpy.array([6, 1, 1, 1, 6, 1, 1, 1], numpy.int)
+        # Coordinates should be in m
+        position = numpy.zeros((8,3), numpy.float64)
+        position[0,:] = numpy.array([ 0.001294,  0.002015,  0.000152]) * 1e-10
+        position[1,:] = numpy.array([ 0.397758,  0.629904, -0.805418]) * 1e-10
+        position[2,:] = numpy.array([-0.646436,  0.631287,  0.620549]) * 1e-10
+        position[3,:] = numpy.array([ 0.847832, -0.312615,  0.620435]) * 1e-10
+        position[4,:] = numpy.array([-0.760734, -1.204707, -0.557036]) * 1e-10
+        position[5,:] = numpy.array([-1.15728 , -1.832718,  0.248402]) * 1e-10
+        position[6,:] = numpy.array([-1.607276, -0.890277, -1.177452]) * 1e-10
+        position[7,:] = numpy.array([-0.11271 , -1.833701, -1.177357]) * 1e-10
+
+        g0 = Geometry(position, number, mass)
+        exec('g = %r' % g0)
+        
+        Natoms = len(g.number)
+        self.assertEqual(len(g0.number), len(g.number))
+        for i in range(Natoms):
+            for j in range(3):
+                self.assertAlmostEqual(g0.coordinates[i,j], g.coordinates[i,j], 6)
+            self.assertEqual(g0.number[i], g.number[i])
+            self.assertAlmostEqual(g0.mass[i], g.mass[i], 6)
+
+################################################################################
+
 if __name__ == '__main__':
     unittest.main( testRunner = unittest.TextTestRunner(verbosity=2) )
