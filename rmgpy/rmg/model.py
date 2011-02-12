@@ -748,7 +748,7 @@ class CoreEdgeReactionModel:
         # Check that the structure is not forbidden
 
         # If we're here then we're ready to make the new species
-        if label == '': label = molecule.toSMILES()
+        if label == '': label = molecule.getFormula()
         logging.debug('Creating new species %s' % str(label))
         spec = Species(index=self.speciesCounter+1, label=label, molecule=[molecule], reactive=reactive)
         spec.coreSizeAtCreation = len(self.core.species)
