@@ -74,8 +74,15 @@ def saveOutputHTML(path, reactionModel):
         if not os.path.exists(fstr):
             drawMolecule(spec.molecule[0], fstr)
 
-    # Count the number of reactions from each reaction family
-    # This information will be passed to the jinja template below
+    # Prepare parameters to pass to jinja template
+    title = 'RMG Output'
+
+    species = reactionModel.core.species[:]
+    species.sort(key=lambda x: x.index)
+
+    reactions = reactionModel.core.reactions[:]
+    reactions.sort(key=lambda x: x.index)
+
     families = list(set([rxn.family for rxn in reactionModel.core.reactions]))
     families.sort(key=lambda x: x.label)
     familyCount = {}
@@ -103,9 +110,12 @@ def saveOutputHTML(path, reactionModel):
         a:hover {
             text-decoration: underline;
         }
-        table.reactionList {
+        table.speciesList, table.reactionList {
             width: 100%;
             border-collapse: collapse;
+        }
+        table.speciesList th, table.reactionList th {
+            text-align: left;
         }
         td.reactants {
             text-align: right;
@@ -117,7 +127,7 @@ def saveOutputHTML(path, reactionModel):
             text-align: center;
             font-size: 16px;
         }
-        td.reactants img, td.products img {
+        td.species img, td.reactants img, td.products img {
             vertical-align: middle;
         }
     </style>
@@ -148,18 +158,40 @@ def saveOutputHTML(path, reactionModel):
 
 <body>
 
+<h1>{{ title }}<h1>
+
+<h2>Species ({{ species|length }})</h2>
+
+<table class="speciesList">
+    <tr><th>Index</th><th>Structure</th><th>Label</th></tr>
+    {% for spec in species %}
+    <tr class="species">
+        <td class="index">{{ spec.index }}.</td>
+        <td class="structure"><img src="species/{{ spec }}.png" alt="{{ spec }}" title="{{ spec }}"/></td>
+        <td class="label">{{ spec.label }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+<h2>Reactions ({{ reactions|length }})</h2>
+
+<p>
 <form id='familySelector'>
     <div>Reaction families:</div>
 {% for family in families %}    <div><input type="checkbox" id="{{ family.label }}" name="family" value="{{ family.label }}" checked="checked" onclick="updateFamily(this);"/><label for="{{ family.label }}">{{ family.label }} ({{ familyCount[family] }})</label></div>
 {% endfor %}    <div><a href="#" onclick="checkAllFamilies();">check all</a> &nbsp; &nbsp; <a href="#" onclick="uncheckAllFamilies();">uncheck all</a></div>
 </form>
+</p>
 
 <table class="reactionList">
+    <tr><th>Index</th><th colspan="3" style="text-align: center;">Reaction</th><th>Family</th></tr>
     {% for rxn in reactions %}
     <tr class="reaction {{ rxn.family.label }}">
+        <td class="index">{{ rxn.index }}.</td>
         <td class="reactants">{% for reactant in rxn.reactants %}<img src="species/{{ reactant }}.png" alt="{{ reactant }}" title="{{ reactant }}"/>{% if not loop.last %} + {% endif %}{% endfor %}</td>
         <td class="reactionArrow">{% if rxn.reversible %}&hArr;{% else %}&rarr;{% endif %}</td>
         <td class="products">{% for product in rxn.products %}<img src="species/{{ product }}.png" alt="{{ product }}" title="{{ product }}"/>{% if not loop.last %} + {% endif %}{% endfor %}</td>
+        <td class="family">{{ rxn.family.label }}</td>
     </tr>
     {% endfor %}
 </table>
@@ -169,5 +201,5 @@ def saveOutputHTML(path, reactionModel):
 </html>
 """)
     f = open(path, 'w')
-    f.write(template.render(title='RMG Output', reactions=reactionModel.core.reactions, families=families, familyCount=familyCount))
+    f.write(template.render(title=title, species=species, reactions=reactions, families=families, familyCount=familyCount))
     f.close()
