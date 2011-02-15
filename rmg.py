@@ -240,6 +240,7 @@ def execute(args):
     makeOutputSubdirectory('plot')
     makeOutputSubdirectory('species')
     makeOutputSubdirectory('pdep')
+    makeOutputSubdirectory('chemkin')
     
     # Read input file
     reactionModel, coreSpecies, reactionSystems = readInputFile(inputFile)
@@ -333,6 +334,10 @@ def execute(args):
         logging.info('Saving latest model core to HTML file...')
         from rmgpy.rmg.output import saveOutputHTML
         saveOutputHTML(os.path.join(settings.outputDirectory, 'output.html'), reactionModel)
+
+        # Save a Chemkin file containing the current model core
+        logging.info('Saving latest model core to Chemkin file...')
+        reactionModel.saveChemkinFile(os.path.join(settings.outputDirectory, 'chemkin', 'chem%04i.inp' % len(reactionModel.core.species)))
 
         # Save the restart file if desired
         if settings.saveRestart:
