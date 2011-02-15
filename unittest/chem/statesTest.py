@@ -39,18 +39,18 @@ class StatesTest(unittest.TestCase):
         self.assertAlmostEqual(trans.getEnthalpy(T) / 8.314472 / T / 1.5, 1.0, 3)
         self.assertAlmostEqual(rot.getEnthalpy(T) / 8.314472 / T / 1.5, 1.0, 3)
         self.assertAlmostEqual(vib.getEnthalpy(T) / 8.314472 / T / 0.221258, 1.0, 3)
-        
+
         self.assertAlmostEqual(trans.getEntropy(T) / 4.184 / 35.927, 1.0, 2)
         self.assertAlmostEqual(rot.getEntropy(T) / 4.184 / 18.604, 1.0, 3)
         self.assertAlmostEqual(vib.getEntropy(T) / 4.184 / 0.533, 1.0, 3)
 
         states = StatesModel(modes=[rot, vib], spinMultiplicity=1)
-        
+
         dE = 10.0
         Elist = numpy.arange(0, 100001, dE, numpy.float64)
         rho = states.getDensityOfStates(Elist)
         self.assertAlmostEqual(numpy.sum(rho * numpy.exp(-Elist / 8.314472 / 298.15) * dE) / states.getPartitionFunction(T), 1.0, 2)
-        
+
     def testModesForOxygen(self):
         """
         Uses data for oxygen (O2) to test the various modes. The data comes
@@ -80,12 +80,12 @@ class StatesTest(unittest.TestCase):
         self.assertAlmostEqual(vib.getEntropy(T) / 4.184 / 0.00654, 1.0, 2)
 
         states = StatesModel(modes=[rot, vib], spinMultiplicity=3)
-        
+
         dE = 10.0
         Elist = numpy.arange(0, 100001, dE, numpy.float64)
         rho = states.getDensityOfStates(Elist)
         self.assertAlmostEqual(numpy.sum(rho * numpy.exp(-Elist / 8.314472 / 298.15) * dE) / states.getPartitionFunction(T), 1.0, 2)
-    
+
     def testHinderedRotorDensityOfStates(self):
         """
         Test that the density of states and the partition function of the
@@ -257,6 +257,60 @@ class StatesTest(unittest.TestCase):
         for i in range(hr0.fourier.shape[0]):
             for j in range(hr0.fourier.shape[1]):
                 self.assertAlmostEqual(hr0.fourier[i,j], hr.fourier[i,j], 6)
+
+    def testOutputTranslation(self):
+        """
+        Test that a Translation object can be successfully reconstructed
+        from its repr() output with no loss of information.
+        """
+        trans0 = Translation(mass=0.02803)
+        exec('trans = %r' % trans0)
+
+        self.assertAlmostEqual(trans0.mass, trans.mass, 6)
+
+    def testOutputRigidRotor(self):
+        """
+        Test that a RigidRotor object can be successfully reconstructed
+        from its repr() output with no loss of information.
+        """
+        rot0 = RigidRotor(linear=False, inertia=[5.6952e-47, 2.7758e-46, 3.3454e-46], symmetry=1)
+        exec('rot = %r' % rot0)
+
+        self.assertEqual(rot0.linear, rot.linear)
+        self.assertEqual(len(rot0.inertia), len(rot.inertia))
+        for I0, I in zip(rot0.inertia, rot.inertia):
+            self.assertAlmostEqual(I0 * 6.022e46, I * 6.022e46, 3)
+        self.assertEqual(rot0.symmetry, rot.symmetry)
+
+    def testOutputHarmonicOscillator(self):
+        """
+        Test that a HarmonicOscillator object can be successfully reconstructed
+        from its repr() output with no loss of information.
+        """
+        vib0 = HarmonicOscillator(frequencies=[834.50, 973.31, 975.37, 1067.1, 1238.5, 1379.5, 1472.3, 1691.3, 3121.6, 3136.7, 3192.5, 3221.0])
+        exec('vib = %r' % vib0)
+
+        self.assertEqual(len(vib0.frequencies), len(vib.frequencies))
+        for freq0, freq in zip(vib0.frequencies, vib.frequencies):
+            self.assertAlmostEqual(freq0, freq, 6)
+
+    def testOutputHinderedRotor(self):
+        """
+        Test that a HarmonicOscillator object can be successfully reconstructed
+        from its repr() output with no loss of information.
+        """
+        fourier = numpy.array([ [-4.683e-01, 8.767e-05], [-2.827e+00, 1.048e-03], [ 1.751e-01,-9.278e-05], [-1.355e-02, 1.916e-06], [-1.128e-01, 1.025e-04] ], numpy.float64) * 4184
+        hr0 = HinderedRotor(inertia=7.38359/6.022e46, barrier=3.20429*4184, symmetry=1, fourier=fourier)
+        exec('hr = %r' % hr0)
+        
+        self.assertAlmostEqual(hr0.barrier / 1000., hr.barrier / 1000., 4)
+        self.assertAlmostEqual(hr0.inertia * 6.022e46, hr.inertia * 6.022e46, 4)
+        self.assertEqual(hr0.symmetry, hr.symmetry)
+        self.assertEqual(hr0.fourier.shape[0], hr.fourier.shape[0])
+        self.assertEqual(hr0.fourier.shape[1], hr.fourier.shape[1])
+        for i in range(hr0.fourier.shape[0]):
+            for j in range(hr0.fourier.shape[1]):
+                self.assertAlmostEqual(hr0.fourier[i,j] / 1000., hr.fourier[i,j] / 1000., 4)
 
 ################################################################################
 

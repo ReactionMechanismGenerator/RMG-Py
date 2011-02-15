@@ -66,11 +66,25 @@ class Geometry:
     The integer index of each atom is consistent across all three attributes.
     """
     
-    def __init__(self, coordinates=None, number=None, mass=None):
-        self.coordinates = coordinates
-        self.number = number
-        self.mass = mass
+    def __init__(self, coordinates, number, mass):
+        self.coordinates = constants.processQuantity(coordinates)[0]
+        self.number = constants.processQuantity(number)[0]
+        self.mass = constants.processQuantity(mass)[0]
     
+    def __repr__(self):
+        """
+        Return a string representation that can be used to reconstruct the
+        object.
+        """
+        coordinates = '(['
+        for i in range(self.coordinates.shape[0]):
+            if i > 0: coordinates += ', '
+            coordinates += '[%s]' % (','.join(['%g' % (self.coordinates[i,j]) for j in range(self.coordinates.shape[1])]))
+        coordinates += '],"m")'
+        number = '[%s]' % (','.join(['%i' % (n) for n in self.number]))
+        mass = '([%s],"g/mol")' % (','.join(['%g' % (m * 1000.) for m in self.mass]))
+        return 'Geometry(coordinates=%s, number=%s, mass=%s)' % (coordinates, number, mass)
+
     def __reduce__(self):
         """
         A helper function used when pickling an object.

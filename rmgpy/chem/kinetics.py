@@ -102,10 +102,10 @@ class KineticsModel:
     """
 
     def __init__(self, Tmin=0.0, Tmax=1.0e10, Pmin=0.0, Pmax=1.0e100, numReactants=-1, comment=''):
-        self.Tmin = Tmin
-        self.Tmax = Tmax
-        self.Pmin = Pmin
-        self.Pmax = Pmax
+        self.Tmin = constants.processQuantity(Tmin)[0]
+        self.Tmax = constants.processQuantity(Tmax)[0]
+        self.Pmin = constants.processQuantity(Pmin)[0]
+        self.Pmax = constants.processQuantity(Pmax)[0]
         self.numReactants = numReactants
         self.comment = comment
 
@@ -169,17 +169,35 @@ class ArrheniusModel(KineticsModel):
     
     def __init__(self, A=0.0, n=0.0, Ea=0.0, T0=1.0, Tmin=0.0, Tmax=1.0e10, numReactants=-1, comment=''):
         KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, numReactants=numReactants, comment=comment)
-        self.A = A
-        self.T0 = T0
-        self.n = n
-        self.Ea = Ea
+        self.A = constants.processQuantity(A)[0]
+        self.T0 = constants.processQuantity(T0)[0]
+        self.n = constants.processQuantity(n)[0]
+        self.Ea = constants.processQuantity(Ea)[0]
     
     def __str__(self):
         return 'k(T) = %g * (T / %g) ** %g * exp(-%g / RT)    %g < T < %g' % (self.A, self.T0, self.n, self.Ea, self.Tmin, self.Tmax)
     
     def __repr__(self):
-        return '<ArrheniusModel A=%g Ea=%g kJ/mol n=%g T0=%g K>' % (self.A,self.Ea/1000.0, self.n, self.T0)
-    
+        """
+        Return a string representation that can be used to reconstruct the
+        object.
+        """
+        if self.numReactants == 1: Aunits = 's^-1'
+        elif self.numReactants == 2: Aunits = 'm^3/(mol*s)'
+        else: Aunits = 'm^%g/(mol^%g*s)' % (3*(self.numReactants-1), self.numReactants-1)
+
+        string = 'ArrheniusModel('
+        string += 'A=(%g,"%s")' % (self.A, Aunits)
+        string += ', n=%g' % (self.n)
+        string += ', Ea=(%g,"kJ/mol")' % (self.Ea / 1000.)
+        string += ', T0=(%g,"K")' % (self.T0)
+        string += ', Tmin=(%g,"K")' % (self.Tmin)
+        string += ', Tmax=(%g,"K")' % (self.Tmax)
+        string += ', numReactants=%i' % (self.numReactants)
+        string += ', comment="%s"' % (self.comment)
+        string += ')'
+        return string
+
     def __reduce__(self):
         """
         A helper function used when pickling an object.
@@ -262,17 +280,35 @@ class ArrheniusEPModel(KineticsModel):
 
     def __init__(self, A=0.0, n=0.0, alpha=0.0, E0=0.0, Tmin=0.0, Tmax=1.0e10, numReactants=-1, comment=''):
         KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, numReactants=numReactants, comment=comment)
-        self.A = A
-        self.E0 = E0
-        self.n = n
-        self.alpha = alpha
+        self.A = constants.processQuantity(A)[0]
+        self.n = constants.processQuantity(n)[0]
+        self.alpha = constants.processQuantity(alpha)[0]
+        self.E0 = constants.processQuantity(E0)[0]
 
     def __str__(self):
         return 'k(T) = %g * T ** %g * exp(-(%g + %g * dHrxn) / RT)    %g < T < %g' % (self.A, self.n, self.E0, self.alpha, self.Tmin, self.Tmax)
         
     def __repr__(self):
-        return '<ArrheniusEPModel A=%g E0=%g kJ/mol n=%g alpha=%.1g>' % (self.A, self.E0/1000.0, self.n, self.alpha)
-    
+        """
+        Return a string representation that can be used to reconstruct the
+        object.
+        """
+        if self.numReactants == 1: Aunits = 's^-1'
+        elif self.numReactants == 2: Aunits = 'm^3/(mol*s)'
+        else: Aunits = 'm^%g/(mol^%g*s)' % (3*(self.numReactants-1), self.numReactants-1)
+
+        string = 'ArrheniusEPModel('
+        string += 'A=(%g,"%s")' % (self.A, Aunits)
+        string += ', n=%g' % (self.n)
+        string += ', alpha=%g' % (self.alpha)
+        string += ', E0=(%g,"kJ/mol")' % (self.E0 / 1000.)
+        string += ', Tmin=(%g,"K")' % (self.Tmin)
+        string += ', Tmax=(%g,"K")' % (self.Tmax)
+        string += ', numReactants=%i' % (self.numReactants)
+        string += ', comment="%s"' % (self.comment)
+        string += ')'
+        return string
+
     def __reduce__(self):
         """
         A helper function used when pickling an object.
@@ -343,6 +379,20 @@ class MultiArrheniusModel(KineticsModel):
         KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, numReactants=numReactants, comment=comment)
         self.arrheniusList = arrheniusList or []
 
+    def __repr__(self):
+        """
+        Return a string representation that can be used to reconstruct the
+        object.
+        """
+        string = 'MultiArrheniusModel('
+        string += 'arrheniusList=[%s]' % (', '.join([repr(arrh) for arrh in self.arrheniusList]))
+        string += ', Tmin=(%g,"K")' % (self.Tmin)
+        string += ', Tmax=(%g,"K")' % (self.Tmax)
+        string += ', numReactants=%i' % (self.numReactants)
+        string += ', comment="%s"' % (self.comment)
+        string += ')'
+        return string
+
     def __reduce__(self):
         """
         A helper function used when pickling an object.
@@ -399,8 +449,28 @@ class PDepArrheniusModel(KineticsModel):
 
     def __init__(self, pressures=None, arrhenius=None, Tmin=0.0, Tmax=1.0e10, Pmin=0.0, Pmax=1.0e100, numReactants=-1, comment=''):
         KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, numReactants=numReactants, comment=comment)
-        self.pressures = pressures or []
+        if pressures:
+            self.pressures = list(constants.processQuantity(pressures)[0])
+        else:
+            self.pressures = []
         self.arrhenius = arrhenius or []
+
+    def __repr__(self):
+        """
+        Return a string representation that can be used to reconstruct the
+        object.
+        """
+        string = 'PDepArrheniusModel('
+        string += 'pressures=([%s],"bar")' % (', '.join(['%g' % (P/1.0e5) for P in self.pressures]))
+        string += ', arrhenius=[%s]' % (', '.join([repr(arrh) for arrh in self.arrhenius]))
+        string += ', Tmin=(%g,"K")' % (self.Tmin)
+        string += ', Tmax=(%g,"K")' % (self.Tmax)
+        string += ', Pmin=(%g,"bar")' % (self.Pmin / 1.0e5)
+        string += ', Pmax=(%g,"bar")' % (self.Pmax / 1.0e5)
+        string += ', numReactants=%i' % (self.numReactants)
+        string += ', comment="%s"' % (self.comment)
+        string += ')'
+        return string
 
     def __reduce__(self):
         """
@@ -504,13 +574,36 @@ class ChebyshevModel(KineticsModel):
 
     def __init__(self, coeffs=None, Tmin=0.0, Tmax=1.0e10, Pmin=0.0, Pmax=1.0e100, numReactants=-1, comment=''):
         KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, numReactants=numReactants, comment=comment)
-        self.coeffs = coeffs
         if coeffs is not None:
-            self.degreeT = coeffs.shape[0]
-            self.degreeP = coeffs.shape[1]
+            self.coeffs = constants.processQuantity(coeffs)[0]
+            self.degreeT = self.coeffs.shape[0]
+            self.degreeP = self.coeffs.shape[1]
         else:
+            self.coeffs = None
             self.degreeT = 0
             self.degreeP = 0
+
+    def __repr__(self):
+        """
+        Return a string representation that can be used to reconstruct the
+        object.
+        """
+        coeffs = '['
+        for i in range(self.degreeT):
+            if i > 0: coeffs += ', '
+            coeffs += '[%s]' % (','.join(['%g' % (self.coeffs[i,j]) for j in range(self.degreeP)]))
+        coeffs += ']'
+        
+        string = 'ChebyshevModel('
+        string += 'coeffs=%s' % (coeffs)
+        string += ', Tmin=(%g,"K")' % (self.Tmin)
+        string += ', Tmax=(%g,"K")' % (self.Tmax)
+        string += ', Pmin=(%g,"bar")' % (self.Pmin / 1.0e5)
+        string += ', Pmax=(%g,"bar")' % (self.Pmax / 1.0e5)
+        string += ', numReactants=%i' % (self.numReactants)
+        string += ', comment="%s"' % (self.comment)
+        string += ')'
+        return string
 
     def __reduce__(self):
         """
@@ -653,6 +746,23 @@ class ThirdBodyModel(KineticsModel):
         self.arrheniusHigh = arrheniusHigh
         self.efficiencies = efficiencies or {}
 
+    def __repr__(self):
+        """
+        Return a string representation that can be used to reconstruct the
+        object.
+        """
+        string = 'ThirdBodyModel('
+        string += 'arrheniusHigh=%r' % (self.arrheniusHigh)
+        string += ', efficiencies=%r' % (self.efficiencies)
+        string += ', Tmin=(%g,"K")' % (self.Tmin)
+        string += ', Tmax=(%g,"K")' % (self.Tmax)
+        string += ', Pmin=(%g,"bar")' % (self.Pmin / 1.0e5)
+        string += ', Pmax=(%g,"bar")' % (self.Pmax / 1.0e5)
+        string += ', numReactants=%i' % (self.numReactants)
+        string += ', comment="%s"' % (self.comment)
+        string += ')'
+        return string
+
     def __reduce__(self):
         """
         A helper function used when pickling an object.
@@ -757,6 +867,24 @@ class LindemannModel(ThirdBodyModel):
         ThirdBodyModel.__init__(self, arrheniusHigh=arrheniusHigh, efficiencies=efficiencies, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, numReactants=numReactants, comment=comment)
         self.arrheniusLow = arrheniusLow
 
+    def __repr__(self):
+        """
+        Return a string representation that can be used to reconstruct the
+        object.
+        """
+        string = 'LindemannModel('
+        string += 'arrheniusHigh=%r' % (self.arrheniusHigh)
+        string += ', arrheniusLow=%r' % (self.arrheniusLow)
+        string += ', efficiencies=%r' % (self.efficiencies)
+        string += ', Tmin=(%g,"K")' % (self.Tmin)
+        string += ', Tmax=(%g,"K")' % (self.Tmax)
+        string += ', Pmin=(%g,"bar")' % (self.Pmin / 1.0e5)
+        string += ', Pmax=(%g,"bar")' % (self.Pmax / 1.0e5)
+        string += ', numReactants=%i' % (self.numReactants)
+        string += ', comment="%s"' % (self.comment)
+        string += ')'
+        return string
+
     def __reduce__(self):
         """
         A helper function used when pickling an object.
@@ -838,10 +966,32 @@ class TroeModel(LindemannModel):
 
     def __init__(self, arrheniusLow=None, arrheniusHigh=None, efficiencies=None, alpha=0.0, T3=0.0, T1=0.0, T2=1e100, Tmin=0.0, Tmax=1.0e10, Pmin=0.0, Pmax=1.0e100, numReactants=-1, comment=''):
         LindemannModel.__init__(self, arrheniusLow=arrheniusLow, arrheniusHigh=arrheniusHigh, efficiencies=efficiencies, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, numReactants=numReactants, comment=comment)
-        self.alpha = alpha
-        self.T1 = T1
-        self.T2 = T2
-        self.T3 = T3
+        self.alpha = constants.processQuantity(alpha)[0]
+        self.T3 = constants.processQuantity(T3)[0]
+        self.T1 = constants.processQuantity(T1)[0]
+        self.T2 = constants.processQuantity(T2)[0]
+    
+    def __repr__(self):
+        """
+        Return a string representation that can be used to reconstruct the
+        object.
+        """
+        string = 'TroeModel('
+        string += 'arrheniusHigh=%r' % (self.arrheniusHigh)
+        string += ', arrheniusLow=%r' % (self.arrheniusLow)
+        string += ', efficiencies=%r' % (self.efficiencies)
+        string += ', alpha=%g' % (self.alpha)
+        string += ', T3=(%g,"K")' % (self.T3)
+        string += ', T1=(%g,"K")' % (self.T1)
+        if self.T2 != 1e100: string += ', T2=(%g,"K")' % (self.T2)
+        string += ', Tmin=(%g,"K")' % (self.Tmin)
+        string += ', Tmax=(%g,"K")' % (self.Tmax)
+        string += ', Pmin=(%g,"bar")' % (self.Pmin / 1.0e5)
+        string += ', Pmax=(%g,"bar")' % (self.Pmax / 1.0e5)
+        string += ', numReactants=%i' % (self.numReactants)
+        string += ', comment="%s"' % (self.comment)
+        string += ')'
+        return string
 
     def __reduce__(self):
         """

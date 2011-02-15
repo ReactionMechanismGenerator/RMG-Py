@@ -122,5 +122,87 @@ class ThermoTest(unittest.TestCase):
         self.assertEqual(thermo0.Tmax, thermo.Tmax)
         self.assertEqual(thermo0.comment, thermo.comment)
 
+    def testOutputThermoGA(self):
+        """
+        Test that we can reconstruct a ThermoGAModel object from its repr()
+        output with no loss of information.
+        """
+        Tdata = [300.0,400.0,500.0,600.0,800.0,1000.0,1500.0]
+        Cpdata = [3.0,4.0,5.0,6.0,8.0,10.0,15.0]
+        thermo0 = ThermoGAModel(Tdata, Cpdata, H298=-2000.0, S298=50.0, dCp=None, dH=100.0, dS=2.0, Tmin=300.0, Tmax=2000.0, comment='This data is completely made up')
+        exec('thermo = %r' % thermo0)
+
+        self.assertEqual(len(thermo0.Tdata), len(thermo.Tdata))
+        self.assertEqual(len(thermo0.Cpdata), len(thermo.Cpdata))
+        self.assertEqual(len(thermo0.dCp), len(thermo.dCp))
+        for i in range(len(thermo0.Tdata)):
+            self.assertEqual(thermo0.Tdata[i], thermo.Tdata[i])
+            self.assertEqual(thermo0.Cpdata[i], thermo.Cpdata[i])
+            self.assertEqual(thermo0.dCp[i], thermo.dCp[i])
+        self.assertEqual(thermo0.H298, thermo.H298)
+        self.assertEqual(thermo0.S298, thermo.S298)
+        self.assertEqual(thermo0.dH, thermo.dH)
+        self.assertEqual(thermo0.dS, thermo.dS)
+
+        self.assertEqual(thermo0.Tmin, thermo.Tmin)
+        self.assertEqual(thermo0.Tmax, thermo.Tmax)
+        self.assertEqual(thermo0.comment, thermo.comment)
+
+    def testOutputWilhoit(self):
+        """
+        Test that we can reconstruct a WilhoitModel object from its repr()
+        output with no loss of information.
+        """
+        thermo0 = WilhoitModel(cp0=4.0*constants.R, cpInf=21.0*constants.R, a0=-3.95, a1=9.26, a2=-15.6, a3=8.55, B=500.0, H0=-6.151e+04, S0=-790.2, Tmin=300.0, Tmax=2000.0, comment='CC(=O)O[O]')
+        exec('thermo = %r' % thermo0)
+
+        self.assertAlmostEqual(thermo0.cp0, thermo.cp0, 4)
+        self.assertAlmostEqual(thermo0.cpInf, thermo.cpInf, 3)
+        self.assertAlmostEqual(thermo0.a0, thermo.a0, 4)
+        self.assertAlmostEqual(thermo0.a1, thermo.a1, 4)
+        self.assertAlmostEqual(thermo0.a2, thermo.a2, 4)
+        self.assertAlmostEqual(thermo0.a3, thermo.a3, 4)
+        self.assertAlmostEqual(thermo0.H0, thermo.H0, 4)
+        self.assertAlmostEqual(thermo0.S0, thermo.S0, 4)
+        self.assertAlmostEqual(thermo0.B, thermo.B, 4)
+
+        self.assertAlmostEqual(thermo0.Tmin, thermo.Tmin)
+        self.assertAlmostEqual(thermo0.Tmax, thermo.Tmax)
+        self.assertAlmostEqual(thermo0.comment, thermo.comment)
+
+    def testOutputNASA(self):
+        """
+        Test that we can reconstruct a NASAModel object from its repr()
+        output with no loss of information.
+        """
+
+        nasa0 = NASAPolynomial(coeffs=[11.0,12.0,13.0,14.0,15.0,16.0,17.0], Tmin=300.0, Tmax=1000.0, comment='This data is completely made up and unphysical')
+        nasa1 = NASAPolynomial(coeffs=[21.0,22.0,23.0,24.0,25.0,26.0,27.0], Tmin=1000.0, Tmax=6000.0, comment='This data is also completely made up and unphysical')
+
+        thermo0 = NASAModel(polynomials=[nasa0, nasa1], Tmin=300.0, Tmax=6000.0, comment='This data is completely made up and unphysical')
+        exec('thermo = %r' % thermo0)
+
+        self.assertEqual(len(thermo0.polynomials), len(thermo.polynomials))
+        for poly0, poly in zip(thermo0.polynomials, thermo.polynomials):
+            self.assertEqual(poly0.cm2, poly.cm2)
+            self.assertEqual(poly0.cm1, poly.cm1)
+            self.assertEqual(poly0.c0, poly.c0)
+            self.assertEqual(poly0.c1, poly.c1)
+            self.assertEqual(poly0.c2, poly.c2)
+            self.assertEqual(poly0.c3, poly.c3)
+            self.assertEqual(poly0.c4, poly.c4)
+            self.assertEqual(poly0.c5, poly.c5)
+            self.assertEqual(poly0.c6, poly.c6)
+            self.assertEqual(poly0.Tmin, poly.Tmin)
+            self.assertEqual(poly0.Tmax, poly.Tmax)
+            self.assertEqual(poly0.comment, poly.comment)
+
+        self.assertEqual(thermo0.Tmin, thermo.Tmin)
+        self.assertEqual(thermo0.Tmax, thermo.Tmax)
+        self.assertEqual(thermo0.comment, thermo.comment)
+
+
+################################################################################
+
 if __name__ == '__main__':
     unittest.main( testRunner = unittest.TextTestRunner(verbosity=2) )

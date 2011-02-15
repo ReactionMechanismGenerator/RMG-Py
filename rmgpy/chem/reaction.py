@@ -91,10 +91,21 @@ class Reaction:
 
     def __repr__(self):
         """
-        Return a string representation of the reaction, suitable for console output.
+        Return a string representation that can be used to reconstruct the
+        object.
         """
-        return "<Reaction %i '%s'>" % (self.index, str(self))
-    
+        string = 'Reaction('
+        if self.index != -1: string += 'index=%i, ' % (self.index)
+        if self.reactants is not None: string += 'reactants=%r, ' % (self.reactants)
+        if self.products is not None: string += 'products=%r, ' % (self.products)
+        if self.kinetics is not None: string += 'kinetics=%r, ' % (self.kinetics)
+        if not self.reversible: string += 'reversible=%s, ' % (self.reversible)
+        if self.transitionState is not None: string += 'transitionState=%r, ' % (self.transitionState)
+        if self.thirdBody: string += 'thirdBody=%s, ' % (self.thirdBody)
+        if self.degeneracy != 1: string += 'degeneracy=%i, ' % (self.degeneracy)
+        string = string[:-2] + ')'
+        return string
+
     def __str__(self):
         """
         Return a string representation of the reaction, in the form 'A + B <=> C + D'.
