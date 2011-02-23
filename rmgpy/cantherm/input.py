@@ -74,6 +74,8 @@ def setModelChemistry(method):
 ################################################################################
 
 def hinderedRotor(scanLog, pivots, top, symmetry):
+    pivots = [p-1 for p in pivots]
+    top = [t-1 for t in top]
     return [scanLog, pivots, top, symmetry]
 
 ################################################################################
