@@ -247,7 +247,7 @@ def renderAtom(symbol, atom, coordinates0, atoms, bonds, x0, y0, cr, heavyFirst=
         heavyAtom = symbol[0]
 
         # Split label by atoms
-        labels = re.findall('[A-Z][0-9]*', symbol)
+        labels = re.findall('[A-Z][a-z]*[0-9]*', symbol)
         if not heavyFirst: labels.reverse()
         symbol = ''.join(labels)
 
@@ -1147,6 +1147,13 @@ def drawMolecule(molecule, path=None, surface=''):
             if atoms[i].implicitHydrogens == 1: symbols[i] = symbols[i] + 'H'
             elif atoms[i].implicitHydrogens > 1: symbols[i] = symbols[i] + 'H%i' % (atoms[i].implicitHydrogens)
 
+    # Special case: H2 (render as H2 and not H-H)
+    if symbols == ['H','H']:
+        atoms = [atoms[0]]
+        bonds = []
+        symbols = ['H2']
+        coordinates = numpy.array([[0,0]], numpy.float64)
+    
     # Create a dummy surface to draw to, since we don't know the bounding rect
     # We will copy this to another surface with the correct bounding rect
     if path is not None and surface == '':
