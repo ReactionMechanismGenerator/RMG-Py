@@ -1020,13 +1020,13 @@ class Molecule(Graph):
 
         return obmol
 
-    def toAdjacencyList(self):
+    def toAdjacencyList(self, label='', removeH=False):
         """
         Convert the molecular structure to a string adjacency list.
         """
         implicitH = self.implicitHydrogens
         self.makeHydrogensExplicit()
-        result = toAdjacencyList(self)
+        result = toAdjacencyList(self, label=label, pattern=False, removeH=removeH)
         if implicitH: self.makeHydrogensImplicit()
         return result
 

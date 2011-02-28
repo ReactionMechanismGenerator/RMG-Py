@@ -1048,7 +1048,7 @@ def fromAdjacencyList(adjlist, pattern=False, addH=False):
             
         # Add explicit hydrogen atoms to complete structure if desired
         if addH and not pattern:
-            valences = {'H': 1, 'C': 4, 'O': 2}
+            valences = {'H': 1, 'C': 4, 'O': 2, 'N': 3, 'S': 2, 'Si': 4, 'He': 0, 'Ne': 0, 'Ar': 0}
             orders = {'S': 1, 'D': 2, 'T': 3, 'B': 1.5}
             newAtoms = []
             for atom in atoms:
@@ -1088,6 +1088,12 @@ def toAdjacencyList(molecule, label='', pattern=False, removeH=False):
     """
 
     adjlist = ''
+
+    # Don't remove hydrogen atoms if the molecule consists only of hydrogen atoms
+    try:
+        if removeH and all([atom.isHydrogen() for atom in molecule.atoms]): removeH = False
+    except AttributeError:
+        pass
 
     if label != '': adjlist += label + '\n'
 

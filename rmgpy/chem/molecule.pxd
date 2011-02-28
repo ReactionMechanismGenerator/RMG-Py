@@ -147,7 +147,7 @@ cdef class Molecule(Graph):
 
     cpdef toOBMol(self)
 
-    cpdef toAdjacencyList(self)
+    cpdef toAdjacencyList(self, str label=?, bint removeH=?)
 
     cpdef bint isLinear(self)
 
