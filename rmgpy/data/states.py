@@ -320,7 +320,9 @@ def generateFrequencyData(molecule, thermoModel):
     # Check that all Cv values are still positive
     # We allow a small amount of negative values to allow for the approximate
     # nature of the heat capacity data being used
-    assert all([C > -0.05 for C in Cv]), "For %s, reduced Cv data is %s" % (molecule, Cv)
+    # Some Cv values can be negative at high temperature if hindered rotors are
+    # present, so don't do this check any more
+    #assert all([C > -0.05 for C in Cv]), "For %s, reduced Cv data is %s" % (molecule, Cv)
 
     # Fit remaining frequencies and hindered rotors to the heat capacity data
     from statesfit import fitStatesToHeatCapacity
