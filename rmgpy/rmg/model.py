@@ -1001,8 +1001,7 @@ class CoreEdgeReactionModel:
                     if found:
                         # The networks contain the same source and one or more common included isomers
                         # Therefore they need to be merged together
-                        logging.debug('Merging PDepNetwork #%i and PDepNetwork #%i' % (network0.index, network.index))
-                        import pdb; pdb.set_trace()
+                        logging.info('Merging PDepNetwork #%i and PDepNetwork #%i' % (network0.index, network.index))
                         network0.merge(network)
                         self.unirxnNetworks.remove(network)
                     else:
@@ -1488,11 +1487,6 @@ class CoreEdgeReactionModel:
         count = sum([1 for network in self.unirxnNetworks if not network.valid and not (len(network.explored) == 0 and len(network.source) > 1)])
         logging.info('Updating %i modified unimolecular reaction networks...' % count)
         
-        # For the purposes of RMG we want each network to run very quickly
-        # One way to do this is to only calculate the density of states for
-        # the unimolecular isomers
-        rmgpy.measure.settings.minimizeDensityOfStatesCalculations = True
-
         # Iterate over all the networks, updating the invalid ones as necessary
         for network in self.unirxnNetworks:
             network.update(self)
