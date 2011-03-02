@@ -373,11 +373,14 @@ class HinderedRotor(Mode):
         Return a string representation that can be used to reconstruct the
         object.
         """
-        fourier = '['
-        for i in range(self.fourier.shape[0]):
-            if i > 0: fourier += ', '
-            fourier += '[%s]' % (','.join(['%g' % (self.fourier[i,j]) for j in range(self.fourier.shape[1])]))
-        fourier += ']'
+        if self.fourier is not None:
+            fourier = '['
+            for i in range(self.fourier.shape[0]):
+                if i > 0: fourier += ', '
+                fourier += '[%s]' % (','.join(['%g' % (self.fourier[i,j]) for j in range(self.fourier.shape[1])]))
+            fourier += ']'
+        else:
+            fourier = 'None'
 
         return 'HinderedRotor(inertia=(%g,"amu*angstrom^2"), barrier=(%g,"kJ/mol"), symmetry=%g, fourier=%s)' % (
             self.inertia*constants.Na*1.0e23,

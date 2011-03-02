@@ -325,8 +325,13 @@ def generateFrequencyData(molecule, thermoModel):
     # Fit remaining frequencies and hindered rotors to the heat capacity data
     from statesfit import fitStatesToHeatCapacity
     modes = fitStatesToHeatCapacity(Tlist, Cv, numVibrations - len(frequencies), numRotors, molecule)
+    for mode in modes:
+        if isinstance(mode, HarmonicOscillator):
+            frequencies.extend(mode.frequencies)
+            mode.frequencies = frequencies
+            break
     statesModel = StatesModel(modes=modes)
-    
+
     return statesModel
 
 ################################################################################
