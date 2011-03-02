@@ -1,12 +1,12 @@
 # Data sources
 database(
-    thermo_groups='output/RMG_Database/thermo_groups',
+    thermo_groups='output/RMG_database/thermo_groups',
     thermo_libraries=[
-        'output/RMG_Database/thermo_libraries/primaryThermoLibrary',
-        'output/RMG_Database/thermo_libraries/GRI-Mech3.0',
+        'output/RMG_database/thermo_libraries/primaryThermoLibrary',
+        'output/RMG_database/thermo_libraries/GRI-Mech3.0',
     ],
-    kinetics_groups='output/RMG_Database/kinetics_groups',
-    seed_mechanisms=['output/RMG_Database/kinetics_libraries/GRI-Mech3.0'],
+    kinetics_groups='output/RMG_database/kinetics_groups',
+    seed_mechanisms=['output/RMG_database/kinetics_libraries/GRI-Mech3.0'],
 )
 
 # List of species
@@ -42,15 +42,10 @@ species(
 )
 
 # Reaction systems
-batchReactor(
-    volume=(1.0,'m^3'),
-    area=(1.0,'m^2'),
-    physicalPropertyModel="idealGas",
-    temperatureModel='isothermal',
-    pressureModel='isobaric',
-    initialConditions={
-        "T": (900,'K'),
-        "P": (10.0,'bar'),
+simpleReactor(
+    temperature=(1000,'K'),
+    pressure=(1.0,'bar'),
+    initialMoleFractions={
         "O2": 0.00707000960551,
         "C8H18i": 6.89999461306e-05,
         "C2H6On": 0.0018620014036,
@@ -58,15 +53,7 @@ batchReactor(
         "C6H12n": 2.1000044337e-05,
         "Ar": 0.990929988899,
     },
-    reservoirConditions={
-        "T": (900,'K'),
-        "P": (10.0,'bar'),
-        "O2": 0.21,
-        "N2": 0.79,
-    },
 )
-
-
 
 termination(
     conversion={
@@ -82,18 +69,18 @@ simulator(
 
 model(
     toleranceKeepInEdge=0.0,
-    toleranceMoveToCore=0.1,
+    toleranceMoveToCore=0.01,
     toleranceInterruptSimulation=1.0,
-    maximumEdgeSpecies=100000,
+    maximumEdgeSpecies=1000000,
 )
 
 #pressureDependence(
-#    method='modified strong collision',
+#    method='reservoir state',
 #    grainSize=(2.0,'kcal/mol'),
 #    numberOfGrains=200,
 #    temperatures=(300,'K',2000,'K',8),
 #    pressures=(0.01,'bar',100,'bar',5),
-#    interpolation=('Chebyshev', 4, 4),
+#    interpolation=('Chebyshev', 6, 4),
 #)
 
 options(
@@ -102,3 +89,4 @@ options(
     drawMolecules=False,
     generatePlots=False,
 )
+
