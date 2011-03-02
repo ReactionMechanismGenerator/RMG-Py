@@ -304,7 +304,7 @@ def fitStatesPseudo(Tlist, Cvlist, Nvib, Nrot, molecule=None):
     for i in range(Nrot):
         hind.append((x[4], x[5]))
 
-    return vib, rot
+    return vib, hind
 
 ################################################################################
 
