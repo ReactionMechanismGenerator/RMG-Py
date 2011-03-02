@@ -185,9 +185,7 @@ if __name__ == '__main__':
                 logging.info('Automatically determining energy grains...')
                 grainSize, Ngrains = Elist
                 Elist = network.autoGenerateEnergyGrains(Tmax=Tmax, grainSize=grainSize, Ngrains=Ngrains)
-                logging.debug('Using %i energy grains from %g to %g kJ/mol in steps of %g kJ/mol' % (len(Elist), Elist[0] / 1000, Elist[-1] / 1000, (Elist[1] - Elist[0]) / 1000))
-                logging.debug('')
-
+                
             # Calculate the rate coefficients
             K, p0 = network.calculateRateCoefficients(Tlist, Plist, Elist, method)
 

@@ -588,12 +588,12 @@ class PDepNetwork(rmgpy.measure.network.Network):
         rmgpy.measure.output.writeInput(os.path.join(settings.outputDirectory, 'pdep', 'network%i_%i.py' % (self.index, len(self.isomers))),
             self, Tlist, Plist, (grainSize, numGrains), method, model)
 
+        self.printSummary(level=logging.INFO)
+
         # Automatically choose a suitable set of energy grains if they were not
         # explicitly specified in the input file
         Elist = self.autoGenerateEnergyGrains(Tmax=Tmax, grainSize=grainSize, Ngrains=numGrains)
-
-        self.printSummary(level=logging.INFO)
-
+        
         # Calculate the rate coefficients
         K, p0 = self.calculateRateCoefficients(Tlist, Plist, Elist, method)
 

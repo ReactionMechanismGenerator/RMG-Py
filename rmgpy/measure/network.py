@@ -178,10 +178,13 @@ class Network:
         # For the purposes of finding the maximum energy we will use 251 grains
         nE = 251; dE = 0.0
 
-        # The minimum energy is the lowest isomer energy on the PES
+        # The minimum energy is the lowest isomer or reactant energy on the PES
         Emin = 1.0e25
         for species in self.isomers:
             if species.E0 < Emin: Emin = species.E0
+        for reactants in self.reactants:
+            E0 = sum([reactant.E0 for reactant in reactants])
+            if E0 < Emin: Emin = E0
         Emin = math.floor(Emin) # Round to nearest whole number
 
         # Determine the isomer with the maximum ground-state energy
@@ -189,11 +192,23 @@ class Network:
         for species in self.isomers:
             if isomer is None: isomer = species
             elif species.E0 > isomer.E0: isomer = species
-        Emax0 = isomer.E0
 
+        # Use the highest energy on the PES as the initial guess for Emax0
+        Emax0 = isomer.E0
+        for reactants in self.reactants:
+            E0 = sum([reactant.E0 for reactant in reactants])
+            if E0 > Emax0: Emax0 = E0
+        for products in self.products:
+            E0 = sum([product.E0 for product in products])
+            if E0 > Emax0: Emax0 = E0
+        for rxn in self.pathReactions:
+            if rxn.transitionState is not None:
+                E0 = rxn.transitionState.E0
+                if E0 > Emax0: Emax0 = E0
+        
         # (Try to) purposely overestimate Emax using arbitrary multiplier
         # to (hopefully) avoid multiple density of states calculations
-        mult = 50
+        mult = 20
         done = False
         maxIter = 5
         iterCount = 0
@@ -218,32 +233,21 @@ class Network:
                 while r > maxIndex and not done:
                     if eqDist[r] / eqDist[maxIndex] > tol: done = True
                     else: r -= 1
-                Emax = Elist[r] + Emin
+                Emax = Elist[r] + Emax0
                 # A final check to ensure we've captured almost all of the equilibrium distribution
                 if abs(1.0 - numpy.sum(eqDist[0:r]) / numpy.sum(eqDist)) > tol:
                     done = False
-                    mult += 50
+                    mult += 20
             else:
-                mult += 50
-
-        # Add difference between isomer ground-state energy and highest
-        # transition state or reactant channel energy
-        Emax0_iso = Emin
-        for species in self.reactants:
-            E = sum([spec.E0 for spec in species])
-            if Emax0_iso < E: Emax0_iso = E
-        Emax0_rxn = Emin
-        for rxn in self.pathReactions:
-            if rxn.transitionState is not None:
-                E = rxn.transitionState.E0
-                if Emax0_rxn < E: Emax0_rxn = E
-        Emax += max([isomer.E0, Emax0_iso, Emax0_rxn]) - isomer.E0
+                mult += 20
 
         # Round Emax up to nearest integer
         Emax = math.ceil(Emax)
 
         # Return the chosen energy grains
-        return self.getEnergyGrains(Emin, Emax, grainSize, Ngrains)
+        Elist = self.getEnergyGrains(Emin, Emax, grainSize, Ngrains)
+        logging.info('Using %i grains from %.2f to %.2f kJ/mol in steps of %.2f kJ/mol' % (len(Elist), Elist[0] / 1000, Elist[-1] / 1000, (Elist[1] - Elist[0]) / 1000))
+        return Elist
 
     def calculateDensitiesOfStates(self, Elist, E0):
         """
