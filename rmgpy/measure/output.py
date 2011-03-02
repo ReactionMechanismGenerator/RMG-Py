@@ -99,7 +99,7 @@ def writeSpecies(f, spec):
     Write a :class:`Species` object `spec` to a file object `f`.
     """
     f.write('species(\n')
-    f.write('    label="%s",\n' % (spec.label))
+    f.write('    label="%s",\n' % (spec))
     if len(spec.molecule) > 0:
         f.write('    SMILES="%s",\n' % (spec.molecule[0].toSMILES()))
     f.write('    E0=(%g,"kJ/mol"),\n' % (spec.E0 / 1000))
@@ -138,8 +138,8 @@ def writeReaction(f, rxn):
     Write a :class:`Reaction` object `rxn` to a file object `f`.
     """
     f.write('reaction(\n')
-    f.write('    reactants=[%s],\n' % (', '.join([('"%s"' % spec.label) for spec in rxn.reactants])))
-    f.write('    products=[%s],\n' % (', '.join([('"%s"' % spec.label) for spec in rxn.products])))
+    f.write('    reactants=[%s],\n' % (', '.join([('"%s"' % spec) for spec in rxn.reactants])))
+    f.write('    products=[%s],\n' % (', '.join([('"%s"' % spec) for spec in rxn.products])))
     f.write('    reversible=%s,\n' % ('True' if rxn.reversible else 'False'))
     if rxn.kinetics is not None:
         if isinstance(rxn.kinetics, ArrheniusModel):
@@ -180,8 +180,8 @@ def writePDepReaction(f, rxn):
     """
 
     f.write('pdepreaction(\n')
-    f.write('    reactants=[%s],\n' % (', '.join([('"%s"' % spec.label) for spec in rxn.reactants])))
-    f.write('    products=[%s],\n' % (', '.join([('"%s"' % spec.label) for spec in rxn.products])))
+    f.write('    reactants=[%s],\n' % (', '.join([('"%s"' % spec) for spec in rxn.reactants])))
+    f.write('    products=[%s],\n' % (', '.join([('"%s"' % spec) for spec in rxn.products])))
     f.write('    reversible=%s,\n' % ('True' if rxn.reversible else 'False'))
     if rxn.kinetics is not None:
         if len(rxn.reactants) == 1: Aunits = 's^-1'
@@ -299,7 +299,7 @@ def writeInput(path, network, Tlist, Plist, Elist, method, model):
         f.write('    },\n')
         f.write('    bathGas={\n')
         for spec, frac in network.bathGas.iteritems():
-            f.write('        "%s": %g,\n' % (spec.label, frac))
+            f.write('        "%s": %g,\n' % (spec, frac))
         f.write('},\n')
     f.write(')\n\n')
     
