@@ -236,6 +236,13 @@ def execute(args):
     # Print out RMG header
     logHeader()
 
+    # See if memory profiling package is available
+    try:
+        import os
+        import psutil
+    except ImportError:
+        logging.info('Optional package dependency "psutil" not found; memory profiling information will not be saved.')
+
     # Make output subdirectories
     makeOutputSubdirectory('plot')
     makeOutputSubdirectory('species')
@@ -351,16 +358,18 @@ def execute(args):
         edgeSpeciesCount.append(edgeSpec)
         edgeReactionCount.append(edgeReac)
         execTime.append(time.time() - settings.initializationTime)
+        logging.info('    Execution time (HH:MM:SS): %s' % (time.strftime("%H:%M:%S", time.gmtime(execTime[-1]))))
         try:
-            from guppy import hpy
-            hp = hpy()
-            memoryUse.append(hp.heap().size / 1.0e6)
+            import psutil
+            process = psutil.Process(os.getpid())
+            rss, vms = process.get_memory_info()
+            memoryUse.append(rss / 1.0e6)
+            logging.info('    Memory used: %.2f MB' % (memoryUse[-1]))
         except ImportError:
             memoryUse.append(0.0)
-        logging.debug('Execution time: %s s' % (execTime[-1]))
-        logging.debug('Memory used: %s MB' % (memoryUse[-1]))
         if os.path.exists(os.path.join(settings.outputDirectory,'restart.pkl.gz')):
             restartSize.append(os.path.getsize(os.path.join(settings.outputDirectory,'restart.pkl.gz')) / 1.0e6)
+            logging.info('    Restart file size: %.2f MB' % (restartSize[-1]))
         else:
             restartSize.append(0.0)
         saveExecutionStatistics(execTime, coreSpeciesCount, coreReactionCount, edgeSpeciesCount, edgeReactionCount, memoryUse, restartSize)
