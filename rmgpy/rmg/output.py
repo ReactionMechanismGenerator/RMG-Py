@@ -58,6 +58,8 @@ def saveOutputHTML(path, reactionModel):
     HTML will be generated (but the program will carry on).
     """
 
+    from model import PDepReaction
+
     from rmgpy.chem.ext.molecule_draw import drawMolecule
     try:
         import jinja2
@@ -80,14 +82,17 @@ def saveOutputHTML(path, reactionModel):
     species = reactionModel.core.species[:]
     species.sort(key=lambda x: x.index)
 
-    reactions = reactionModel.core.reactions[:]
+    reactions = [rxn for rxn in reactionModel.core.reactions if not isinstance(rxn, PDepReaction)]
     reactions.sort(key=lambda x: x.index)
 
-    families = list(set([rxn.family for rxn in reactionModel.core.reactions]))
+    pdepreactions = [rxn for rxn in reactionModel.core.reactions if isinstance(rxn, PDepReaction)]
+    pdepreactions.sort(key=lambda x: x.index)
+
+    families = list(set([rxn.family for rxn in reactions]))
     families.sort(key=lambda x: x.label)
     familyCount = {}
     for family in families:
-        familyCount[family] = sum([1 for rxn in reactionModel.core.reactions if rxn.family is family])
+        familyCount[family] = sum([1 for rxn in reactions if rxn.family is family])
 
     # Make HTML file
     template = jinja2.Template(
@@ -194,6 +199,15 @@ def saveOutputHTML(path, reactionModel):
         <td class="family">{{ rxn.family.label }}</td>
     </tr>
     {% endfor %}
+    {% for rxn in pdepreactions %}
+    <tr class="reaction {{ pdepnetreaction }}">
+        <td class="index">{{ rxn.index }}.</td>
+        <td class="reactants">{% for reactant in rxn.reactants %}<img src="species/{{ reactant }}.png" alt="{{ reactant }}" title="{{ reactant }}"/>{% if not loop.last %} + {% endif %}{% endfor %}</td>
+        <td class="reactionArrow">{% if rxn.reversible %}&hArr;{% else %}&rarr;{% endif %}</td>
+        <td class="products">{% for product in rxn.products %}<img src="species/{{ product }}.png" alt="{{ product }}" title="{{ product }}"/>{% if not loop.last %} + {% endif %}{% endfor %}</td>
+        <td class="family"></td>
+    </tr>
+    {% endfor %}
 </table>
 
 </body>
@@ -201,5 +215,5 @@ def saveOutputHTML(path, reactionModel):
 </html>
 """)
     f = open(path, 'w')
-    f.write(template.render(title=title, species=species, reactions=reactions, families=families, familyCount=familyCount))
+    f.write(template.render(title=title, species=species, reactions=reactions, pdepreactions=pdepreactions, families=families, familyCount=familyCount))
     f.close()
