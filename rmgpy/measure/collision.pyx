@@ -233,6 +233,12 @@ cdef class SingleExponentialDownModel(CollisionModel):
         self.T0 = T0
         self.n = n
 
+    def __reduce__(self):
+        """
+        A helper function used when pickling an object.
+        """
+        return (SingleExponentialDownModel, (self.alpha0, self.T0, self.n))
+
     cpdef double getAlpha(self, double T):
         """
         Return the value of the :math:`\\alpha` parameter at temperature `T` in
