@@ -94,7 +94,11 @@ def applyReservoirStateMethod(double T, double P,
     for i in range(Nisom):
         for r in range(Ngrains):
             if densStates[i,r] != 0 and Elist[r] > Ereac[i] and Nres[i] == 0:
-                Nres[i] = r
+                # We need at least one reservoir grain for the RS method to be successful
+                if r == 0 or densStates[i,r-1] == 0:
+                    Nres[i] = r + 1
+                else:
+                    Nres[i] = r
                 break
     Nact = Ngrains - Nres
     
