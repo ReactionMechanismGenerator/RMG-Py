@@ -59,25 +59,25 @@ def getSpeciesIdentifier(species):
     # The label can only contain alphanumeric characters, hyphens, and underscores
     if len(species.label) > 0 and species.index >= 0 and not re.search('[^A-Za-z0-9\-_]+', species.label):
         name = '%s(%i)' % (species.label, species.index)
-        if len(name) < 10:
+        if len(name) <= 10:
             return name
 
     # Next try the chemical formula
     if len(species.molecule) > 0:
         # Try the chemical formula
         name = '%s(%i)' % (species.molecule[0].getFormula(), species.index)
-        if len(name) < 10:
+        if len(name) <= 10:
             return name
 
     # As a last resort, just use the index
     if species.index >= 0:
-        name = 'SPC(%i)' % (species.index)
-        if len(name) < 10:
+        name = 'S(%i)' % (species.index)
+        if len(name) <= 10:
             return name
 
     # If we're here then we just can't come up with a valid Chemkin name
     # for this species, so raise an exception
-    raise ChemkinError("Unable to determine valid Chemkin identifier for species %s." % self)
+    raise ChemkinError("Unable to determine valid Chemkin identifier for species %s." % species)
 
 ################################################################################
 
