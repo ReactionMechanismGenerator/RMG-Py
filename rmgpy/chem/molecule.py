@@ -1447,6 +1447,33 @@ class Molecule(Graph):
 
         return symmetryNumber
 
+    def generateResonanceIsomers(self):
+        """
+        Generate and return all of the resonance isomers of this molecule.
+        """
+
+        isomers = [self]
+
+        # Radicals
+        if sum([atom.radicalElectrons for atom in isomers[0].atoms]) > 0:
+            # Iterate over resonance isomers
+            index = 0
+            while index < len(isomers):
+                isomer = isomers[index]
+                newIsomers = isomer.getAdjacentResonanceIsomers()
+                for newIsomer in newIsomers:
+                    # Append to isomer list if unique
+                    found = False
+                    for isom in isomers:
+                        if isom.isIsomorphic(newIsomer): found = True
+                    if not found:
+                        isomers.append(newIsomer)
+                        newIsomer.updateAtomTypes()
+                # Move to next resonance isomer
+                index += 1
+
+        return isomers
+
     def getAdjacentResonanceIsomers(self):
         """
         Generate all of the resonance isomers formed by one allyl radical shift.
