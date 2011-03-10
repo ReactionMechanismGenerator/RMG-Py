@@ -1101,11 +1101,18 @@ def toAdjacencyList(molecule, label='', pattern=False, removeH=False):
     atoms = molecule.atoms
     bonds = molecule.bonds
 
-    for i, atom in enumerate(atoms):
+    # Determine the numbers to use for each atom
+    atomNumbers = {}; index = 0
+    for atom in atoms:
+        if removeH and atom.isHydrogen() and atom.label=='': continue
+        atomNumbers[atom] = index + 1
+        index += 1
+
+    for atom in atoms:
         if removeH and atom.isHydrogen() and atom.label=='': continue
 
         # Atom number
-        adjlist += '%-2d ' % (i+1)
+        adjlist += '%-2d ' % (atomNumbers[atom])
 
         # Atom label
         adjlist += "%-2s " % (atom.label)
@@ -1144,9 +1151,9 @@ def toAdjacencyList(molecule, label='', pattern=False, removeH=False):
         atoms2.sort(key=atoms.index)
 
         for atom2 in atoms2:
-            if removeH and atom2.isHydrogen(): continue
+            if removeH and atom2.isHydrogen() and atom2.label=='': continue
             bond = bonds[atom][atom2]
-            adjlist += ' {' + str(atoms.index(atom2)+1) + ','
+            adjlist += ' {%i,' % atomNumbers[atom2]
 
             # Bond type(s)
             if pattern:
