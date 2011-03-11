@@ -602,7 +602,7 @@ class Molecule(Graph):
         # `implicitHydrogens` attribute accordingly
         hydrogens = []
         for atom in self.vertices:
-            if atom.isHydrogen():
+            if atom.isHydrogen() and atom.label == '':
                 neighbor = self.edges[atom].keys()[0]
                 neighbor.implicitHydrogens += 1
                 hydrogens.append(atom)
