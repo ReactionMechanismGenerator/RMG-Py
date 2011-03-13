@@ -112,7 +112,7 @@ class MoleculeRenderError(Exception): pass
 
 ################################################################################
 
-def render(atoms, bonds, coordinates, symbols, cr, offset=(0,0)):
+def render(atoms, bonds, cycles, coordinates, symbols, cr, offset=(0,0)):
     """
     Uses the Cairo graphics library to create a skeletal formula drawing of a
     molecule containing the list of `atoms` and dict of `bonds` to be drawn.
@@ -141,6 +141,31 @@ def render(atoms, bonds, coordinates, symbols, cr, offset=(0,0)):
             index2 = atoms.index(atom2)
             if index1 < index2: # So we only draw each bond once
                 renderBond(index1, index2, bond, coordinates, symbols, cr)
+
+    # Draw aromatic bonds
+    for cycle in cycles:
+        cycleBonds = []
+        for atom1, atom2 in zip(cycle[0:-1], cycle[1:]):
+            cycleBonds.append(bonds[atom1][atom2])
+        cycleBonds.append(bonds[cycle[0]][cycle[-1]])
+        if all([bond.isBenzene() for bond in cycleBonds]):
+            # We've found an aromatic ring, so draw a circle in the center to represent the benzene bonds
+            center = numpy.zeros(2, numpy.float64)
+            for atom in cycle:
+                index = atoms.index(atom)
+                center += coordinates[index,:]
+            center /= len(cycle)
+            index1 = atoms.index(cycle[0])
+            index2 = atoms.index(cycle[1])
+            radius = math.sqrt(
+                (center[0] - (coordinates[index1,0] + coordinates[index2,0]) / 2)**2 +
+                (center[1] - (coordinates[index1,1] + coordinates[index2,1]) / 2)**2
+            ) - 4
+            cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
+            cr.set_line_width(1.0)
+            cr.set_line_cap(cairo.LINE_CAP_ROUND)
+            cr.arc(center[0], center[1], radius, 0.0, 2 * math.pi)
+            cr.stroke()
 
     # Draw atoms
     for i, atom in enumerate(atoms):
@@ -568,7 +593,7 @@ def findBackbone(chemGraph, ringSystems):
 
 ################################################################################
 
-def generateCoordinates(chemGraph, atoms, bonds):
+def generateCoordinates(chemGraph, atoms, bonds, cycles):
     """
     Generate the 2D coordinates to be used when drawing the `chemGraph`, a
     :class:`ChemGraph` object. Use the `atoms` parameter to pass a list
@@ -594,9 +619,6 @@ def generateCoordinates(chemGraph, atoms, bonds):
 
     # If the molecule contains cycles, find them and group them
     if chemGraph.isCyclic():
-        # This is not a robust method of identifying the ring systems, but will work as a starting point
-        cycles = chemGraph.getSmallestSetOfSmallestRings()
-
         # Split the list of cycles into groups
         # Each atom in the molecule should belong to exactly zero or one such groups
         ringSystems = []
@@ -1107,6 +1129,7 @@ def drawMolecule(molecule, path=None, surface=''):
 
     atoms = molecule.atoms[:]
     bonds = molecule.bonds.copy()
+    cycles = molecule.getSmallestSetOfSmallestRings()
 
     # Special cases: H, H2, anything with one heavy atom
 
@@ -1122,7 +1145,7 @@ def drawMolecule(molecule, path=None, surface=''):
             del bonds[atom]
 
     # Generate the coordinates to use to draw the molecule
-    coordinates = generateCoordinates(molecule, atoms, bonds)
+    coordinates = generateCoordinates(molecule, atoms, bonds, cycles)
     coordinates[:,1] *= -1
     coordinates = coordinates * bondLength
 
@@ -1164,12 +1187,12 @@ def drawMolecule(molecule, path=None, surface=''):
     cr0 = cairo.Context(surface0)
 
     # Render using Cairo
-    left, top, width, height = render(atoms, bonds, coordinates, symbols, cr0)
+    left, top, width, height = render(atoms, bonds, cycles, coordinates, symbols, cr0)
     
     # Create the real surface with the appropriate size
     surface = createNewSurface(type=type, path=path, width=width, height=height)
     cr = cairo.Context(surface)
-    left, top, width, height = render(atoms, bonds, coordinates, symbols, cr, offset=(-left,-top))
+    left, top, width, height = render(atoms, bonds, cycles, coordinates, symbols, cr, offset=(-left,-top))
 
     if path is not None:
         if surface is not None:
