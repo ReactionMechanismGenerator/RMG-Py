@@ -9,15 +9,15 @@ import argparse
 import numpy
 import os.path
 
-from chempy.molecule import Molecule
-from chempy.species import Species, TransitionState
-from chempy.reaction import Reaction
-from chempy.species import LennardJones
-from chempy.states import *
-from chempy.kinetics import ArrheniusModel
+from rmgpy.chem.molecule import Molecule
+from rmgpy.chem.species import Species, TransitionState
+from rmgpy.chem.reaction import Reaction
+from rmgpy.chem.species import LennardJones
+from rmgpy.chem.states import *
+from rmgpy.chem.kinetics import ArrheniusModel
 
-from measure.network import Network
-from measure.collision import SingleExponentialDownModel
+from rmgpy.measure.network import Network
+from rmgpy.measure.collision import SingleExponentialDownModel
 
 ################################################################################
 
