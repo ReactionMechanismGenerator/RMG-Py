@@ -531,7 +531,7 @@ def readInput(path):
             # - All bimolecular configurations are automatically reactant channels
             if len(rxn.reactants) == 1 and rxn.reactants[0] not in network.isomers:
                 network.isomers.insert(0, rxn.reactants[0])
-            elif len(rxn.reactants) > 1 and rxn.reactants not in network.isomers:
+            elif len(rxn.reactants) > 1 and rxn.reactants not in network.reactants:
                 network.reactants.append(rxn.reactants)
             # Products:
             # - If reversible, the same actions are taken as for the reactants
@@ -539,7 +539,7 @@ def readInput(path):
             if rxn.reversible:
                 if len(rxn.products) == 1 and rxn.products[0] not in network.isomers:
                     network.isomers.insert(0, rxn.products[0])
-                elif len(rxn.products) > 1 and rxn.products not in network.isomers:
+                elif len(rxn.products) > 1 and rxn.products not in network.reactants:
                     network.reactants.append(rxn.products)
             elif rxn.products not in network.products:
                 network.products.append(rxn.products)

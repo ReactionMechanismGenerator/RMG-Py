@@ -300,7 +300,7 @@ def writeInput(path, network, Tlist, Plist, Elist, method, model):
         f.write('    bathGas={\n')
         for spec, frac in network.bathGas.iteritems():
             f.write('        "%s": %g,\n' % (spec, frac))
-        f.write('},\n')
+        f.write('    },\n')
     f.write(')\n\n')
     
     f.write('temperatures(([%s],"K"))\n' % (', '.join([('%g' % T) for T in Tlist])))

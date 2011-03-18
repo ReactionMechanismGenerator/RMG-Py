@@ -14,10 +14,12 @@ from rmgpy.chem.species import Species, TransitionState
 from rmgpy.chem.reaction import Reaction
 from rmgpy.chem.species import LennardJones
 from rmgpy.chem.states import *
+from rmgpy.chem.thermo import ThermoGAModel
 from rmgpy.chem.kinetics import ArrheniusModel
 
 from rmgpy.measure.network import Network
 from rmgpy.measure.collision import SingleExponentialDownModel
+from rmgpy.measure.output import writeInput
 
 ################################################################################
 
@@ -103,7 +105,9 @@ if __name__ == '__main__':
 
         # Read interpolation model
         model = readMeaningfulLine(f).split()
-
+        if model[0].lower() == 'chebyshev':
+            model = ['chebyshev', int(model[1]), int(model[2])]
+        
         # Read grain size or number of grains
         data = readMeaningfulLine(f).split()
         if data[0].lower() == 'numgrains':
@@ -122,14 +126,16 @@ if __name__ == '__main__':
         assert data[1] == 'J/mol'
         network.collisionModel = SingleExponentialDownModel(alpha0=float(data[2]), T0=298, n=0.0)
         
+        speciesDict = {}
+
         # Read bath gas parameters
-        bathGas = Species()
+        bathGas = Species(label='bath_gas')
         bathGas.molecularWeight = float(readMeaningfulLine(f).split()[1]) / 1000.0
         bathGas.lennardJones = LennardJones(sigma=float(readMeaningfulLine(f).split()[1]), epsilon=float(readMeaningfulLine(f).split()[1]))
+        network.bathGas = {bathGas: 1.0}
         
         # Read species data
         Nspec = int(readMeaningfulLine(f))
-        speciesDict = {}
         for i in range(Nspec):
             spec = Species()
             # Read species label
@@ -141,9 +147,23 @@ if __name__ == '__main__':
             data = readMeaningfulLine(f).split()
             assert data[0] == 'J/mol'
             spec.E0 = float(data[1])
-            # Read and ignore species thermo data
-            for j in range(10):
-                data = readMeaningfulLine(f)
+            # Read species thermo data
+            spec.thermo = ThermoGAModel()
+            data = readMeaningfulLine(f).split()
+            assert data[0] == 'J/mol'
+            spec.thermo.H298 = float(data[1])
+            data = readMeaningfulLine(f).split()
+            assert data[0] == 'J/mol*K'
+            spec.thermo.S298 = float(data[1])
+            data = readMeaningfulLine(f).split()
+            assert data[1] == 'J/mol*K'
+            assert int(data[0]) == 7
+            spec.thermo.Tdata = numpy.array([300,400,500,600,800,1000,1500], numpy.float64)
+            Cpdata = []
+            for j in range(7):
+                data = readMeaningfulLine(f).split()
+                Cpdata.append(float(data[0]))
+            spec.thermo.Cpdata = numpy.array(Cpdata, numpy.float64)
             # Read species collision parameters
             spec.molecularWeight = float(readMeaningfulLine(f).split()[1]) / 1000.0
             spec.lennardJones = LennardJones(sigma=float(readMeaningfulLine(f).split()[1]), epsilon=float(readMeaningfulLine(f).split()[1]))
@@ -233,10 +253,9 @@ if __name__ == '__main__':
             
         # Close file
         f.close()
-        
+
+        # Save MEASURE input file based on the above
         dirname, basename = os.path.split(os.path.abspath(fstr))
         basename, ext = os.path.splitext(basename)
-        output = os.path.join(dirname, basename + '.svg')
-        
-        network.drawPotentialEnergySurface(output, Eunits='kcal/mol')
-    
+        path = os.path.join(dirname, basename + '.py')
+        writeInput(path, network, Tlist, Plist, (grainSize, Ngrains), method, model)
