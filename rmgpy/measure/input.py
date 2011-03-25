@@ -46,7 +46,7 @@ from rmgpy.chem.reaction import Reaction
 from rmgpy.chem.species import LennardJones as LennardJonesModel
 from rmgpy.chem.molecule import Molecule
 from rmgpy.chem.states import *
-from rmgpy.chem.kinetics import ArrheniusModel
+from rmgpy.chem.kinetics import Arrhenius
 from rmgpy.chem.thermo import *
 
 from network import Network
@@ -231,7 +231,7 @@ def Arrhenius(A, n, Ea, T0=1.0):
     n, units = processQuantity(n)
     Ea, units = processQuantity(Ea)
     T0, units = processQuantity(T0)
-    return ArrheniusModel(A=A, n=n, Ea=Ea, T0=T0)
+    return Arrhenius(A=A, n=n, Ea=Ea, T0=T0)
 
 def TS(E0=None, states=None, frequency=0.0, degeneracy=1):
     if E0 is not None: E0 = processQuantity(E0)[0]

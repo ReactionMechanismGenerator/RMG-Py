@@ -316,7 +316,7 @@ class ReactionFamily(Database):
     def processLibraryData(self):
         """
         Convert the data in the library from a string/unicode object to either
-        an :class:`ArrheniusEPModel` object or a list of [link, comment]
+        an :class:`ArrheniusEP` object or a list of [link, comment]
         string pairs. This function is generally called in the course of
         loading a database from files.
         """
@@ -361,7 +361,7 @@ class ReactionFamily(Database):
                     # Everything else is a comment
                     comment = ' '.join(items[10:]).replace('"', '').strip()
 
-                    # Convert data to ArrheniusEPModel object
+                    # Convert data to ArrheniusEP object
                     if len(kineticData) != 11:
                         raise Exception('Invalid list of kinetic data. Should be a list of numbers of length 11; instead got %s'%data)
                     Tmin, Tmax, A, n, alpha, E0, dA, dn, dalpha, dE0, rank = kineticData
@@ -378,8 +378,8 @@ class ReactionFamily(Database):
                     E0 = float(pq.Quantity(E0, 'kcal/mol').simplified)
                     n = float(pq.Quantity(n, '').simplified)
                     alpha = float(pq.Quantity(alpha, '').simplified)
-                    # Construct ArrheniusEPModel object
-                    kinetics = ArrheniusEPModel(A=A, n=n, alpha=alpha, E0=E0)
+                    # Construct ArrheniusEP object
+                    kinetics = ArrheniusEP(A=A, n=n, alpha=alpha, E0=E0)
                     kinetics.Tmin = Tmin
                     kinetics.Tmax = Tmax
                     kinetics.comment = comment
@@ -1268,7 +1268,7 @@ class KineticsPrimaryDatabase(Database):
                             n = pq.Quantity(float(items[-5]), '')
                             Ea = pq.Quantity(float(items[-4]), Eunits)
 
-                            kinetics = ArrheniusModel(
+                            kinetics = Arrhenius(
                                 A=float(A.simplified),
                                 n=float(n.simplified),
                                 Ea=float(Ea.simplified),
@@ -1286,12 +1286,12 @@ class KineticsPrimaryDatabase(Database):
                         elif 'LOW' in line and self.isSeedMechanism():
                             # This line contains low-pressure-limit Arrhenius parameters in Chemkin format
 
-                            # Upgrade the kinetics to a LindemannModel if not already done
-                            if isinstance(kinetics, ThirdBodyModel):
-                                kinetics = LindemannModel(arrheniusHigh=kinetics.arrheniusHigh, efficiencies=kinetics.efficiencies)
+                            # Upgrade the kinetics to a Lindemann if not already done
+                            if isinstance(kinetics, ThirdBody):
+                                kinetics = Lindemann(arrheniusHigh=kinetics.arrheniusHigh, efficiencies=kinetics.efficiencies)
                                 reaction.kinetics = kinetics
-                            elif isinstance(kinetics, ArrheniusModel):
-                                kinetics = LindemannModel(arrheniusHigh=kinetics)
+                            elif isinstance(kinetics, Arrhenius):
+                                kinetics = Lindemann(arrheniusHigh=kinetics)
                                 reaction.kinetics = kinetics
                             
                             items = line.split('/')
@@ -1300,7 +1300,7 @@ class KineticsPrimaryDatabase(Database):
                                 (Aunits[1], 3*(len(reactants)-1), Aunits[0], len(reactants)-1, Aunits[2]))
                             n = pq.Quantity(float(n), '')
                             Ea = pq.Quantity(float(Ea), Eunits)
-                            kinetics.arrheniusLow = ArrheniusModel(
+                            kinetics.arrheniusLow = Arrhenius(
                                 A=float(A.simplified),
                                 n=float(n.simplified),
                                 Ea=float(Ea.simplified),
@@ -1310,15 +1310,15 @@ class KineticsPrimaryDatabase(Database):
                         elif 'TROE' in line and self.isSeedMechanism():
                             # This line contains Troe falloff parameters in Chemkin format
 
-                            # Upgrade the kinetics to a TroeModel if not already done
-                            if isinstance(kinetics, LindemannModel):
-                                kinetics = TroeModel(arrheniusLow=kinetics.arrheniusLow, arrheniusHigh=kinetics.arrheniusHigh, efficiencies=kinetics.efficiencies)
+                            # Upgrade the kinetics to a Troe if not already done
+                            if isinstance(kinetics, Lindemann):
+                                kinetics = Troe(arrheniusLow=kinetics.arrheniusLow, arrheniusHigh=kinetics.arrheniusHigh, efficiencies=kinetics.efficiencies)
                                 reaction.kinetics = kinetics
-                            elif isinstance(kinetics, ThirdBodyModel):
-                                kinetics = TroeModel(arrheniusHigh=kinetics.arrheniusHigh, efficiencies=kinetics.efficiencies)
+                            elif isinstance(kinetics, ThirdBody):
+                                kinetics = Troe(arrheniusHigh=kinetics.arrheniusHigh, efficiencies=kinetics.efficiencies)
                                 reaction.kinetics = kinetics
-                            elif isinstance(kinetics, ArrheniusModel):
-                                kinetics = TroeModel(arrheniusHigh=kinetics)
+                            elif isinstance(kinetics, Arrhenius):
+                                kinetics = Troe(arrheniusHigh=kinetics)
                                 reaction.kinetics = kinetics
 
                             items = line.split('/')
@@ -1336,9 +1336,9 @@ class KineticsPrimaryDatabase(Database):
                         elif self.isSeedMechanism():
                             # This line contains collider efficiencies
 
-                            # Upgrade the kinetics to a ThirdBodyModel if not already done
-                            if isinstance(kinetics, ArrheniusModel):
-                                kinetics = ThirdBodyModel(arrheniusHigh=kinetics)
+                            # Upgrade the kinetics to a ThirdBody if not already done
+                            if isinstance(kinetics, Arrhenius):
+                                kinetics = ThirdBody(arrheniusHigh=kinetics)
                                 reaction.kinetics = kinetics
 
                             items = line.split('/')

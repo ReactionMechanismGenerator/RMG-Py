@@ -9,7 +9,7 @@ sys.path.append('.')
 from rmgpy.chem.species import Species, TransitionState
 from rmgpy.chem.reaction import *
 from rmgpy.chem.states import *
-from rmgpy.chem.kinetics import ArrheniusModel
+from rmgpy.chem.kinetics import Arrhenius
 from rmgpy.chem.thermo import Wilhoit
 import rmgpy.chem.constants as constants
 
@@ -48,7 +48,7 @@ class ReactionTest(unittest.TestCase):
         reaction = Reaction(
             reactants=[acetyl, oxygen],
             products=[acetylperoxy],
-            kinetics=ArrheniusModel(A=2.65e6, n=0.0, Ea=0.0*4184),
+            kinetics=Arrhenius(A=2.65e6, n=0.0, Ea=0.0*4184),
         )
 
         Tlist = numpy.arange(200.0, 2001.0, 200.0, numpy.float64)
@@ -110,7 +110,7 @@ class ReactionTest(unittest.TestCase):
         import numpy
         Tlist = 1000.0/numpy.arange(0.4, 3.35, 0.05)
         klist = reaction.calculateTSTRateCoefficients(Tlist, tunneling='')
-        arrhenius = ArrheniusModel().fitToData(Tlist, klist)
+        arrhenius = Arrhenius().fitToData(Tlist, klist)
         klist2 = arrhenius.getRateCoefficients(Tlist)
 
         # Check that the correct Arrhenius parameters are returned
@@ -131,7 +131,7 @@ class ReactionTest(unittest.TestCase):
         ethyl    = Species(  E0=-207340036.867)
         TS = TransitionState(E0=-207188826.467, frequency=-309.3437)
 
-        kinetics = ArrheniusModel(A=1.0e6, n=1.0, Ea=10000.0, T0=298.15, comment='These parameters are completely made up')
+        kinetics = Arrhenius(A=1.0e6, n=1.0, Ea=10000.0, T0=298.15, comment='These parameters are completely made up')
 
         rxn0 = Reaction(reactants=[hydrogen, ethylene], products=[ethyl], transitionState=TS, kinetics=kinetics)
         import cPickle
@@ -162,7 +162,7 @@ class ReactionTest(unittest.TestCase):
         ethyl    = Species(  E0=-207340036.867)
         TS = TransitionState(E0=-207188826.467, frequency=-309.3437)
 
-        kinetics = ArrheniusModel(A=1.0e6, n=1.0, Ea=10000.0, T0=298.15, comment='These parameters are completely made up')
+        kinetics = Arrhenius(A=1.0e6, n=1.0, Ea=10000.0, T0=298.15, comment='These parameters are completely made up')
 
         rxn0 = Reaction(reactants=[hydrogen, ethylene], products=[ethyl], transitionState=TS, kinetics=kinetics)
         exec('rxn = %r' % (rxn0))

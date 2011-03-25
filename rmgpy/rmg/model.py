@@ -42,7 +42,7 @@ import rmgpy.chem.constants as constants
 import rmgpy.chem.species
 import rmgpy.chem.reaction
 from rmgpy.chem.thermo import Wilhoit, MultiNASA
-from rmgpy.chem.kinetics import ArrheniusModel, ArrheniusEPModel, ChebyshevModel, PDepArrheniusModel, ThirdBodyModel
+from rmgpy.chem.kinetics import Arrhenius, ArrheniusEP, Chebyshev, PDepArrhenius, ThirdBody
 
 from rmgpy.data.thermo import generateThermoData, convertThermoData
 from rmgpy.data.kinetics import generateKineticsData, KineticsPrimaryDatabase
@@ -251,7 +251,7 @@ class Reaction(rmgpy.chem.reaction.Reaction):
         Generate kinetcs data for the reaction using the kinetics database.
         """
         self.kinetics = generateKineticsData(self, self.family.label, self.reactantMolecules)
-        if isinstance(self.kinetics, ArrheniusEPModel):
+        if isinstance(self.kinetics, ArrheniusEP):
             self.kinetics = self.kinetics.toArrhenius(self.getEnthalpyOfReaction(298.15))
 
     def fitReverseKinetics(self):
@@ -262,7 +262,7 @@ class Reaction(rmgpy.chem.reaction.Reaction):
         klist = numpy.zeros_like(Tlist)
         for i in range(len(Tlist)):
             klist[i] = self.getRateCoefficient(Tlist[i], 1e5) / self.getEquilibriumConstant(Tlist[i])
-        return ArrheniusModel().fitToData(Tlist, klist)
+        return Arrhenius().fitToData(Tlist, klist)
 
 class PDepReaction(rmgpy.chem.reaction.Reaction):
 
@@ -1396,7 +1396,7 @@ class CoreEdgeReactionModel:
             # If the kinetics has third body information, then make sure
             # we're using real species for the collision efficiency data
             kinetics = rxn.kinetics
-            if isinstance(kinetics, ThirdBodyModel):
+            if isinstance(kinetics, ThirdBody):
                 efficiencies = {}
                 for collider, efficiency in kinetics.efficiencies.iteritems():
                     spec, isNew = self.makeNewSpecies(collider, label='')
@@ -1567,7 +1567,7 @@ class CoreEdgeReactionModel:
                     A = float(pq.Quantity(float(items[-6]), Aunits).simplified)
                     n = float(items[-5])			# dimensionless
                     Ea = float(pq.Quantity(float(items[-4]), 'cal/mol').simplified)
-                    kin = [kinetics.model.ArrheniusModel(A=A, n=n, Ea=Ea)]
+                    kin = [kinetics.model.Arrhenius(A=A, n=n, Ea=Ea)]
 
                     # Create reaction object and add to list
                     rxn = reaction.Reaction(id=0, reactants=reactants, products=products, family='seed', kinetics=kin, thirdBody=thirdBody)

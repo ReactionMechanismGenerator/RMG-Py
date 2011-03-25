@@ -167,7 +167,7 @@ def writeKineticsEntry(reaction):
     
     thirdBody = ''
     if kinetics.isPressureDependent():
-        if isinstance(kinetics, ThirdBodyModel) and not isinstance(kinetics, LindemannModel) and not isinstance(kinetics, TroeModel):
+        if isinstance(kinetics, ThirdBody) and not isinstance(kinetics, Lindemann) and not isinstance(kinetics, Troe):
             thirdBody = '+M'
         else:
             thirdBody = '(+M)'
@@ -180,13 +180,13 @@ def writeKineticsEntry(reaction):
 
     string = '%-52s' % string
 
-    if isinstance(kinetics, ArrheniusModel):
+    if isinstance(kinetics, Arrhenius):
         string += '%9.3e %9.3f %9.3f' % (
             kinetics.A / (kinetics.T0 ** kinetics.n) * 1.0e6 ** (numReactants - 1),
             kinetics.n,
             kinetics.Ea / 4184.
         )
-    elif isinstance(kinetics, ThirdBodyModel):
+    elif isinstance(kinetics, ThirdBody):
         arrhenius = kinetics.arrheniusHigh
         string += '%9.3e %9.3f %9.3f' % (
             arrhenius.A / (arrhenius.T0 ** arrhenius.n) * 1.0e6 ** (numReactants - 1),
@@ -199,13 +199,13 @@ def writeKineticsEntry(reaction):
 
     string += '\n'
 
-    if isinstance(kinetics, ThirdBodyModel):
+    if isinstance(kinetics, ThirdBody):
         # Write collider efficiencies
         for collider, efficiency in kinetics.efficiencies.iteritems():
             string += '%s/%4.2f/ ' % (getSpeciesIdentifier(collider), efficiency)
         string += '\n'
         
-        if isinstance(kinetics, LindemannModel):
+        if isinstance(kinetics, Lindemann):
             # Write low-P kinetics
             arrhenius = kinetics.arrheniusLow
             string += '    LOW/ %9.3e %9.3f %9.3f/\n' % (
@@ -213,20 +213,20 @@ def writeKineticsEntry(reaction):
                 arrhenius.n,
                 arrhenius.Ea / 4184.
             )
-            if isinstance(kinetics, TroeModel):
+            if isinstance(kinetics, Troe):
                 # Write Troe parameters
                 if kinetics.T2 == 1e100:
                     string += '    TROE/ %9.3e %9.3f %9.3f/\n' % (kinetics.alpha, kinetics.T3, kinetics.T1)
                 else:
                     string += '    TROE/ %9.3e %9.3f %9.3f %9.3f/\n' % (kinetics.alpha, kinetics.T3, kinetics.T1, kinetics.T2)
-    elif isinstance(kinetics, PDepArrheniusModel):
+    elif isinstance(kinetics, PDepArrhenius):
         for P, arrhenius in zip(kinetics.pressures, kinetics.arrhenius):
             string += '    PLOG/ %9.3f %9.3f %9.3f %9.3f/\n' % (P / 101325.,
                 arrhenius.A / (arrhenius.T0 ** arrhenius.n) * 1.0e6 ** (numReactants - 1),
                 arrhenius.n,
                 arrhenius.Ea / 4184.
             )
-    elif isinstance(kinetics, ChebyshevModel):
+    elif isinstance(kinetics, Chebyshev):
         string += '    TCHEB/ %9.3f %9.3f/\n' % (kinetics.Tmin, kinetics.Tmax)
         string += '    PCHEB/ %9.3f %9.3f/\n' % (kinetics.Pmin / 101325., kinetics.Pmax / 101325.)
         string += '    CHEB/ %i %i/\n' % (kinetics.degreeT, kinetics.degreeP)

@@ -32,7 +32,7 @@ import logging
 import rmgpy.chem.constants as constants
 from rmgpy.chem.states import HinderedRotor, HarmonicOscillator
 from rmgpy.chem.species import Species, TransitionState
-from rmgpy.chem.kinetics import ArrheniusModel
+from rmgpy.chem.kinetics import Arrhenius
 from rmgpy.chem.reaction import Reaction
 
 from gaussian import GaussianLog

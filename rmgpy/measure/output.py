@@ -142,7 +142,7 @@ def writeReaction(f, rxn):
     f.write('    products=[%s],\n' % (', '.join([('"%s"' % spec) for spec in rxn.products])))
     f.write('    reversible=%s,\n' % ('True' if rxn.reversible else 'False'))
     if rxn.kinetics is not None:
-        if isinstance(rxn.kinetics, ArrheniusModel):
+        if isinstance(rxn.kinetics, Arrhenius):
             f.write('    kinetics=Arrhenius(\n')
             if len(rxn.reactants) == 1: units = 's^-1'
             else: units = 'm^%g/(mol^%g*s)' % (3*(len(rxn.reactants)-1), len(rxn.reactants)-1)
@@ -186,7 +186,7 @@ def writePDepReaction(f, rxn):
     if rxn.kinetics is not None:
         if len(rxn.reactants) == 1: Aunits = 's^-1'
         else: Aunits = 'm^%g/(mol^%g*s)' % (3*(len(rxn.reactants)-1), len(rxn.reactants)-1)
-        if isinstance(rxn.kinetics, ChebyshevModel):
+        if isinstance(rxn.kinetics, Chebyshev):
             f.write('    kinetics=Chebyshev(\n')
             f.write('        Tmin=(%g,"K"),\n' % (rxn.kinetics.Tmin))
             f.write('        Tmax=(%g,"K"),\n' % (rxn.kinetics.Tmax))
@@ -197,7 +197,7 @@ def writePDepReaction(f, rxn):
                 f.write('            [%s],\n' % (', '.join([('%g' % rxn.kinetics.coeffs[t,p]) for p in range(rxn.kinetics.degreeP)])))
             f.write('        ],\n')
             f.write('    ),\n')
-        elif isinstance(rxn.kinetics, PDepArrheniusModel):
+        elif isinstance(rxn.kinetics, PDepArrhenius):
             f.write('    kinetics=PDepArrhenius(\n')
             f.write('        pressures=([%s],"bar"),\n' % (', '.join([('%g' % (P / 1e5)) for P in rxn.kinetics.pressures])))
             f.write('        arrhenius=[\n')

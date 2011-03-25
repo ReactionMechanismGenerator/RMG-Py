@@ -30,7 +30,7 @@
 import numpy
 import logging
 
-from rmgpy.chem.kinetics import ArrheniusModel
+from rmgpy.chem.kinetics import Arrhenius
 
 ################################################################################
 
@@ -40,7 +40,7 @@ def generateKineticsModel(reaction, tunneling='', plot=False):
     
     Tlist = 1000.0/numpy.arange(0.4, 3.35, 0.05)
     klist = reaction.calculateTSTRateCoefficients(Tlist, tunneling)
-    arrhenius = ArrheniusModel().fitToData(Tlist, klist)
+    arrhenius = Arrhenius().fitToData(Tlist, klist)
     klist2 = arrhenius.getRateCoefficients(Tlist)
     
     reaction.kinetics = arrhenius
@@ -91,8 +91,8 @@ def saveKinetics(reaction, label, path):
     
     # Reaction path degeneracy is NOT included in the model itself; you must
     # add it yourself later
-    if isinstance(reaction.kinetics, ArrheniusModel):
-        f.write('    kinetics = ArrheniusModel(\n')
+    if isinstance(reaction.kinetics, Arrhenius):
+        f.write('    kinetics = Arrhenius(\n')
         f.write('        A = (%g, "%s"),\n' % (reaction.kinetics.A, Aunits))
         f.write('        n = %g,\n' % (reaction.kinetics.n))
         f.write('        Ea = (%g, "kcal/mol"),\n' % (reaction.kinetics.Ea / 4184))

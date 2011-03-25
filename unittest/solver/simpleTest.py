@@ -12,7 +12,7 @@ quantities.UnitQuantity('kilojoule', 1000.0*quantities.J, symbol='kJ')
 from rmgpy.chem.molecule import Molecule
 from rmgpy.chem.species import Species
 from rmgpy.chem.reaction import Reaction
-from rmgpy.chem.kinetics import ArrheniusModel
+from rmgpy.chem.kinetics import Arrhenius
 from rmgpy.chem.thermo import ThermoData
 from rmgpy.solver.simple import SimpleReactor
 
@@ -43,7 +43,7 @@ class SimpleReactorCheck(unittest.TestCase):
             thermo=ThermoData(Tdata=([300,400,500,600,800,1000,1500],"K"), Cpdata=([11.635,13.744,16.085,18.246,21.885,24.676,29.107],"cal/mol*K"), H298=( 29.496,"kcal/mol"), S298=(56.687,"cal/mol*K"))
             )
 
-        rxn1 = Reaction(reactants=[C2H6,CH3], products=[C2H5,CH4], kinetics=ArrheniusModel(A=686.375*6, n=4.40721, Ea=7.82799*4184., T0=298.15))
+        rxn1 = Reaction(reactants=[C2H6,CH3], products=[C2H5,CH4], kinetics=Arrhenius(A=686.375*6, n=4.40721, Ea=7.82799*4184., T0=298.15))
 
         coreSpecies = [CH4,CH3,C2H6,C2H5]
         edgeSpecies = []
