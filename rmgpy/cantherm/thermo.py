@@ -32,7 +32,7 @@ import numpy.linalg
 import logging
 
 import rmgpy.chem.constants as constants
-from rmgpy.chem.thermo import ThermoGAModel, WilhoitModel, NASAModel
+from rmgpy.chem.thermo import ThermoData, Wilhoit, MultiNASA
 from rmgpy.chem.ext.thermo_converter import convertWilhoitToNASA
 
 ################################################################################
@@ -59,11 +59,11 @@ def generateThermoModel(species, model, plot=False):
     if model.lower() == 'group additivity':
         Tdata = numpy.arange(300.0, 2001.0, 100.0, numpy.float64)
         Cpdata = species.states.getHeatCapacities(Tdata)
-        species.thermo = ThermoGAModel(Tdata=Tdata, Cpdata=Cpdata, H298=H298, S298=S298)
+        species.thermo = ThermoData(Tdata=Tdata, Cpdata=Cpdata, H298=H298, S298=S298)
     else:
         Tlist = numpy.arange(10.0, 3001.0, 10.0, numpy.float64)
         Cplist = species.states.getHeatCapacities(Tlist)
-        wilhoit = WilhoitModel()
+        wilhoit = Wilhoit()
         wilhoit.fitToData(Tlist, Cplist, linear, Nfreq, Nrotors, H298, S298, B0=500.0)
         if model.lower() == 'nasa':
             species.thermo = convertWilhoitToNASA(wilhoit, Tmin=10.0, Tmax=3000.0, Tint=500.0, fixedTint=False, weighting=True, continuity=3)
@@ -135,15 +135,15 @@ def saveThermo(species, label, path):
     f.write('thermo(\n')
     f.write('    label = "%s",\n' % label)
     
-    if isinstance(species.thermo, ThermoGAModel):
-        f.write('    thermo = ThermoGAModel(\n')
+    if isinstance(species.thermo, ThermoData):
+        f.write('    thermo = ThermoData(\n')
         f.write('        Tdata = ([%s], "K"),\n' % (', '.join(['%g' % (T) for T in species.thermo.Tdata])))
         f.write('        Cpdata = ([%s], "cal/(mol*K)"),\n' % (', '.join(['%g' % (Cp/4.184) for Cp in species.thermo.Cpdata])))
         f.write('        H298 = (%g, "kcal/mol"),\n' % (species.thermo.H298 / 4184))
         f.write('        S298 = (%g, "cal/(mol*K)"),\n' % (species.thermo.S298 / 4.184))
         f.write('    ),\n')
-    elif isinstance(species.thermo, WilhoitModel):
-        f.write('    thermo = WilhoitModel(\n')
+    elif isinstance(species.thermo, Wilhoit):
+        f.write('    thermo = Wilhoit(\n')
         f.write('        cp0 = (%g, "cal/(mol*K)"),\n' % (species.thermo.cp0 / 4.184))
         f.write('        cpInf = (%g, "cal/(mol*K)"),\n' % (species.thermo.cpInf / 4.184))
         f.write('        B = (%g, "K"),\n' % (species.thermo.B))
@@ -154,10 +154,10 @@ def saveThermo(species, label, path):
         f.write('        H0 = (%g, "kcal/mol"),\n' % (species.thermo.H0 / 4184))
         f.write('        S0 = (%g, "cal/(mol*K)"),\n' % (species.thermo.S0 / 4.184))
         f.write('    ),\n')
-    elif isinstance(species.thermo, NASAModel):
-        f.write('    thermo = NASAModel(polynomials = [\n')
+    elif isinstance(species.thermo, MultiNASA):
+        f.write('    thermo = MultiNASA(polynomials = [\n')
         for poly in species.thermo.polynomials:
-            f.write('        NASAPolynomial(Tmin=(%g,"K"), Tmax=(%g,"K"), coeffs=[%g, %g, %g, %g, %g, %g, %g]),\n' % (poly.Tmin, poly.Tmax, poly.c0, poly.c1, poly.c2, poly.c3, poly.c4, poly.c5, poly.c6))
+            f.write('        NASA(Tmin=(%g,"K"), Tmax=(%g,"K"), coeffs=[%g, %g, %g, %g, %g, %g, %g]),\n' % (poly.Tmin, poly.Tmax, poly.c0, poly.c1, poly.c2, poly.c3, poly.c4, poly.c5, poly.c6))
         f.write('    ]),\n')
        
     f.write('    Tmin = 0.0,\n')

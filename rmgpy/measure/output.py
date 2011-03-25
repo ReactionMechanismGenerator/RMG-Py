@@ -106,8 +106,8 @@ def writeSpecies(f, spec):
     if spec.states is not None:
         writeStates(f, spec.states, prefix='    ')
     if spec.thermo is not None:
-        if isinstance(spec.thermo, ThermoGAModel):
-            f.write('    thermo=ThermoGAModel(\n')
+        if isinstance(spec.thermo, ThermoData):
+            f.write('    thermo=ThermoData(\n')
             f.write('        Tdata=([%s], "K"),\n' % (', '.join([('%g' % T) for T in spec.thermo.Tdata])))
             f.write('        Cpdata=([%s], "J/(mol*K)"),\n' % (', '.join([('%g' % Cp) for Cp in spec.thermo.Cpdata])))
             f.write('        H298=(%g, "kJ/mol"),\n' % (spec.thermo.H298/1000.0))

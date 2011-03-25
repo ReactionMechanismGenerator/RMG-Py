@@ -70,7 +70,7 @@ class ThermoDatabase:
             '__builtins__': None,
             'thermo': loadThermo,
             'tree': loadTree,
-            'ThermoGAModel': loadThermoGAModel,
+            'ThermoData': loadThermoData,
         }
         f = open(path)
         try:
@@ -106,7 +106,7 @@ class ThermoDatabase:
         database = Database()
         database.load(dictstr, treestr, libstr, pattern)
 
-        # Convert data in library to ThermoGAModel objects or lists of
+        # Convert data in library to ThermoData objects or lists of
         # [link, comment] pairs
         for label, item in database.library.iteritems():
 
@@ -174,7 +174,7 @@ class ThermoDatabase:
         Cpdata = list(pq.Quantity([Cp300, Cp400, Cp500, Cp600, Cp800, Cp1000, Cp1500], 'cal/(mol*K)').simplified)
         Cpdata = numpy.array([float(Cp) for Cp in Cpdata], numpy.float64)
         
-        return ThermoGAModel(H298=H298, S298=S298, Tdata=Tdata, Cpdata=Cpdata, comment=comment)
+        return ThermoData(H298=H298, S298=S298, Tdata=Tdata, Cpdata=Cpdata, comment=comment)
 
 ################################################################################
 
@@ -442,7 +442,7 @@ def loadTree(string):
     global currentDatabase
     currentDatabase.tree.loadString(string)
 
-def loadThermoGAModel(Tdata, Cpdata, H298, S298, Tmin=(0.0,"K"), Tmax=(99999.9,"K")):
+def loadThermoData(Tdata, Cpdata, H298, S298, Tmin=(0.0,"K"), Tmax=(99999.9,"K")):
 
     # Convert all data to SI units
     Tdata = numpy.array([float(T) for T in pq.Quantity(*Tdata).simplified], numpy.float64)
@@ -452,8 +452,8 @@ def loadThermoGAModel(Tdata, Cpdata, H298, S298, Tmin=(0.0,"K"), Tmax=(99999.9,"
     Tmin = float(pq.Quantity(*Tmin).simplified)
     Tmax = float(pq.Quantity(*Tmax).simplified)
 
-    # Create and return the ThermoGAModel object
-    return ThermoGAModel(Tdata, Cpdata, H298, S298, Tmin, Tmax)
+    # Create and return the ThermoData object
+    return ThermoData(Tdata, Cpdata, H298, S298, Tmin, Tmax)
 
 ################################################################################
 
@@ -485,7 +485,7 @@ def generateThermoData(molecule):
     """
     Get the thermodynamic data associated with `molecule` by looking in the
     loaded thermodynamic database. The parameter `thermoClass` is the class of
-    thermo object you want returning; default is :class:`NASAModel`.
+    thermo object you want returning; default is :class:`MultiNASA`.
     """
 
     implicitH = molecule.implicitHydrogens
@@ -510,7 +510,7 @@ def generateThermoData(molecule):
 
     return GAthermoData
 
-def convertThermoData(thermoData, molecule, thermoClass=NASAModel):
+def convertThermoData(thermoData, molecule, thermoClass=MultiNASA):
     """
     Convert a given set of `thermoData` to the class specified by `thermoClass`.
     Raises a :class:`TypeError` if this is not possible.
@@ -524,15 +524,15 @@ def convertThermoData(thermoData, molecule, thermoClass=NASAModel):
 
     thermoData0 = thermoData
 
-    # Convert to WilhoitModel
-    if isinstance(thermoData, ThermoGAModel) and (thermoClass == WilhoitModel or thermoClass == NASAModel):
+    # Convert to Wilhoit
+    if isinstance(thermoData, ThermoData) and (thermoClass == Wilhoit or thermoClass == MultiNASA):
         rotors = molecule.countInternalRotors()
         atoms = len(molecule.atoms)
         linear = molecule.isLinear()
         thermoData = convertGAtoWilhoit(thermoData, atoms, rotors, linear)
 
-    # Convert to NASAModel
-    if isinstance(thermoData, WilhoitModel) and thermoClass == NASAModel:
+    # Convert to MultiNASA
+    if isinstance(thermoData, Wilhoit) and thermoClass == MultiNASA:
         thermoData = convertWilhoitToNASA(thermoData, Tmin=298.0, Tmax=6000.0, Tint=1000.0)
 
     # Make sure we have the right class

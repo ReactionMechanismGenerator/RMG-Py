@@ -23,7 +23,7 @@ class GroupFrequencyCheck(unittest.TestCase):
 		"""
 
 		struct = structure.Structure(SMILES='C[C]=O')
-		thermoData = rmg.thermo.model.ThermoGAModel(H298=-3.08*4184, S298=64.27*4.184,
+		thermoData = rmg.thermo.model.ThermoData(H298=-3.08*4184, S298=64.27*4.184,
 			Cp=[12.28*4.184, 14.34*4.184, 16.30*4.184, 18.05*4.184, 20.92*4.184, 23.08*4.184, 26.39*4.184])
 
 		spectralData = data.generateSpectralData(struct, thermoData)
@@ -59,7 +59,7 @@ class GroupFrequencyCheck(unittest.TestCase):
 		"""
 
 		struct = structure.Structure(SMILES='CC(=O)O[O]')
-		thermoData = rmg.thermo.model.ThermoGAModel(H298=-38.57*4184, S298=75.56*4.184,
+		thermoData = rmg.thermo.model.ThermoData(H298=-38.57*4184, S298=75.56*4.184,
 			Cp=[19.48*4.184, 23.22*4.184, 26.33*4.184, 28.81*4.184, 32.39*4.184, 34.76*4.184, 37.99*4.184])
 
 		spectralData = data.generateSpectralData(struct, thermoData)
@@ -95,7 +95,7 @@ class GroupFrequencyCheck(unittest.TestCase):
 		"""
 
 		struct = structure.Structure(SMILES='[CH2]C(=O)OO')
-		thermoData = rmg.thermo.model.ThermoGAModel(H298=-32.95*4184, S298=79.25*4.184,
+		thermoData = rmg.thermo.model.ThermoData(H298=-32.95*4184, S298=79.25*4.184,
 			Cp=[21.79*4.184, 25.53*4.184, 28.35*4.184, 30.47*4.184, 33.34*4.184, 35.12*4.184, 37.57*4.184])
 
 		spectralData = data.generateSpectralData(struct, thermoData)
@@ -131,7 +131,7 @@ class GroupFrequencyCheck(unittest.TestCase):
 		"""
 
 		struct = structure.Structure(SMILES='O=O')
-		thermoData = rmg.thermo.model.ThermoGAModel(H298=0.0*4184, S298=49.00*4.184,
+		thermoData = rmg.thermo.model.ThermoData(H298=0.0*4184, S298=49.00*4.184,
 			Cp=[7.00*4.184, 7.22*4.184, 7.44*4.184, 7.65*4.184, 8.07*4.184, 8.35*4.184, 8.72*4.184])
 
 		spectralData = data.generateSpectralData(struct, thermoData)

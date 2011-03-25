@@ -111,7 +111,7 @@ class Quantity:
     than the units they are specified as.
     """
 
-    def __init__(self, *args):
+    def __init__(self, args=None):
         # Set default attribute values
         self.value = 0.0
         self.values = None
@@ -123,12 +123,14 @@ class Quantity:
         # Unpack arguments
         # If given, the order should be: value(s), units[, uncertaintyType], uncertainty
         units = ''; uncertaintyType = ''; uncertainty = None
-        if isinstance(args, numpy.ndarray):
+        if args is None:
+            return
+        elif isinstance(args, numpy.ndarray):
             # We've been given just an array of numbers
             value = args
         elif isinstance(args, float) or isinstance(args, int):
             # We've been given just a single number
-            value = quantity
+            value = args
         elif isinstance(args, list) or isinstance(args, tuple):
             if len(args) == 1:
                 value = args[0]
@@ -144,7 +146,7 @@ class Quantity:
                 value = args; units = ''; uncertaintyType = ''; uncertainty = None
 
         # Process value parameter
-        if isinstance(value, list):
+        if isinstance(value, list) or isinstance(value, tuple):
             self.value = 0.0
             self.values = numpy.array(value, numpy.float64)
         elif isinstance(value, numpy.ndarray):
@@ -218,22 +220,75 @@ class Quantity:
         object.
         """
         factor = getConversionFactorFromSI(self.units)
-        string = '('
+        string = ''
         if self.values is None:
             string += '%g' % (self.value * factor)
         else:
             string += '[%s]' % (','.join(['%g' % (v * factor) for v in self.values]))
-        string += ',"%s"' % (self.units)
-        if self.uncertaintyType != '':
-            string += ',"%s"' % (self.uncertaintyType)
-            if not self.isUncertaintyAdditive(): factor = 1.0
-            if self.uncertainties is None:
-                string += ',%g' % (self.uncertainty * factor)
-            else:
-                string += ',[%s]' % (','.join(['%g' % (u * factor) for u in self.uncertainties]))
-        string += ')'
+        if self.units != '' or self.uncertaintyType != '':
+            string += ',"%s"' % (self.units)
+            if self.uncertaintyType != '':
+                string += ',"%s"' % (self.uncertaintyType)
+                if not self.isUncertaintyAdditive(): factor = 1.0
+                if self.uncertainties is None:
+                    string += ',%g' % (self.uncertainty * factor)
+                else:
+                    string += ',[%s]' % (','.join(['%g' % (u * factor) for u in self.uncertainties]))
+            string = '(' + string + ')'
         return string
 
+    def __eq__(self, other):
+        """
+        Return ``True`` if two quantity objects are equal or ``False`` if not.
+        """
+        if not isinstance(other, Quantity): return False
+        if self.values is not None and self.uncertainties is not None:
+            if other.values is None or other.uncertainties is None:
+                return False
+            else:
+                return (self.value == other.value and self.units == other.units and
+                    self.uncertaintyType == other.uncertaintyType and self.uncertainty == other.uncertainty and
+                    (self.values == other.values).all() and (self.uncertainties == other.uncertainties).all())
+        elif self.values is not None and self.uncertainties is None:
+            if other.values is None or other.uncertainties is not None:
+                return False
+            else:
+                return (self.value == other.value and self.units == other.units and
+                    self.uncertaintyType == other.uncertaintyType and self.uncertainty == other.uncertainty and
+                    (self.values == other.values).all())
+        else:
+            if other.values is not None or other.uncertainties is not None:
+                return False
+            else:
+                return (self.value == other.value and self.units == other.units and
+                    self.uncertaintyType == other.uncertaintyType and self.uncertainty == other.uncertainty)
+
+    def __add__(self, other):
+        """
+        Add two objects together and return the sum as a new object.
+        """
+        if not isinstance(other, Quantity): raise ValueError('Unexpected type "%s" for other parameter.' % (other.__class__))
+        assert self.units == other.units
+        assert self.uncertaintyType == other.uncertaintyType == '+|-'
+
+        new = Quantity()
+        if self.values is not None and self.uncertainties is not None:
+            new.values = self.values + other.values
+            new.units = self.units
+            new.uncertaintyType = self.uncertaintyType
+            new.uncertainties = numpy.sqrt(self.uncertainties**2 + other.uncertainties**2)
+        elif self.values is not None and self.uncertainties is None:
+            new.values = self.values + other.values
+            new.units = self.units
+            new.uncertaintyType = self.uncertaintyType
+            new.uncertainty = numpy.sqrt(self.uncertainty**2 + other.uncertainty**2)
+        else:
+            new.value = self.value + other.value
+            new.units = self.units
+            new.uncertaintyType = self.uncertaintyType
+            new.uncertainty = numpy.sqrt(self.uncertainty**2 + other.uncertainty**2)
+        return new
+        
     def isUncertaintyAdditive(self):
         """
         Return ``True`` if the uncertainty is specified in additive format

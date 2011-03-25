@@ -92,7 +92,7 @@ class FrequencyGroupDatabase(Database):
         # Load dictionary, library, and (optionally) tree
         Database.load(self, dictstr, treestr, libstr)
 
-        # Convert data in library to ThermoGAModel objects or lists of
+        # Convert data in library to ThermoData objects or lists of
         # [link, comment] pairs
         for label, item in self.library.iteritems():
             

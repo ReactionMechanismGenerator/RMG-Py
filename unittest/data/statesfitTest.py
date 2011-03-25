@@ -13,7 +13,7 @@ import pylab
 
 from rmgpy.chem.molecule import Molecule
 from rmgpy.chem.states import *
-from rmgpy.chem.thermo import ThermoGAModel
+from rmgpy.chem.thermo import ThermoData
 import rmgpy.chem.constants as constants
 
 from rmgpy.data.statesfit import fitStatesToHeatCapacity

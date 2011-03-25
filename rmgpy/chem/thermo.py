@@ -32,14 +32,14 @@ This module contains a variety of classes representing various thermodynamics
 models. All such models derive from the :class:`ThermoModel` base class, and
 generally vary by how the heat capacity data is represented:
 
-* :class:`ThermoGAModel` - A thermodynamics model using a discrete set of heat
+* :class:`ThermoData` - A thermodynamics model using a discrete set of heat
   capacity data points
 
-* :class:`WilhoitModel` - A thermodynamics model using the Wilhoit polynomial
+* :class:`Wilhoit` - A thermodynamics model using the Wilhoit polynomial
   equation for heat capacity
 
-* :class:`NASAModel` - A thermodynamics model using a set of
-  :class:`NASAPolynomial` objects, each representing a seven-coefficient or
+* :class:`MultiNASA` - A thermodynamics model using a set of
+  :class:`NASA` objects, each representing a seven-coefficient or
   nine-coefficient polynomial equation for heat capacity, enthalpy, and entropy
 
 """
@@ -187,17 +187,17 @@ class ThermoData(ThermoModel):
         """
         A helper function used when pickling an object.
         """
-        return (ThermoGAModel, (self.Tdata, self.Cpdata, self.H298, self.S298, self.Tmin, self.Tmax, self.comment))
+        return (ThermoData, (self.Tdata, self.Cpdata, self.H298, self.S298, self.Tmin, self.Tmax, self.comment))
 
     def __add__(self, other):
         """
         Add two sets of thermodynamic data together. All parameters are
-        considered additive. Returns a new :class:`ThermoGAModel` object that is
+        considered additive. Returns a new :class:`ThermoData` object that is
         the sum of the two sets of thermodynamic data.
         """
         cython.declare(i=int, new=ThermoData)
         if len(self.Tdata) != len(other.Tdata) or any([T1 != T2 for T1, T2 in zip(self.Tdata, other.Tdata)]):
-            raise ThermoError('Cannot add these ThermoGAModel objects due to their having different temperature points.')
+            raise ThermoError('Cannot add these ThermoData objects due to their having different temperature points.')
         new = ThermoData(
             Tdata = self.Tdata,
             Cpdata = self.Cpdata + other.Cpdata,
@@ -553,7 +553,7 @@ class NASA(ThermoModel):
 class MultiNASA(ThermoModel):
     """
     A set of thermodynamic parameters given by NASA polynomials. This class
-    stores a list of :class:`NASAPolynomial` objects in the `polynomials`
+    stores a list of :class:`NASA` objects in the `polynomials`
     attribute. When evaluating a thermodynamic quantity, a polynomial that
     contains the desired temperature within its valid range will be used.
     """
@@ -606,7 +606,7 @@ class MultiNASA(ThermoModel):
         return self.__selectPolynomialForTemperature(T).getFreeEnergy(T)
     
     def __selectPolynomialForTemperature(self, T):
-        poly = cython.declare(NASAPolynomial)
+        poly = cython.declare(NASA)
         for poly in self.polynomials:
             if poly.isTemperatureValid(T): return poly
         else:

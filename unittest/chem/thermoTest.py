@@ -73,7 +73,7 @@ class ThermoTest(unittest.TestCase):
 
     def testPickleWilhoit(self):
         """
-        Test that a WilhoitModel object can be successfully pickled and
+        Test that a Wilhoit object can be successfully pickled and
         unpickled with no loss of information.
         """
         thermo0 = Wilhoit(cp0=4.0*constants.R, cpInf=21.0*constants.R, a0=-3.95, a1=9.26, a2=-15.6, a3=8.55, B=500.0, H0=-6.151e+04, S0=-790.2, Tmin=300.0, Tmax=2000.0, comment='CC(=O)O[O]')
@@ -127,7 +127,7 @@ class ThermoTest(unittest.TestCase):
 
     def testOutputThermoData(self):
         """
-        Test that we can reconstruct a ThermoGAModel object from its repr()
+        Test that we can reconstruct a ThermoData object from its repr()
         output with no loss of information.
         """
         Tdata = ([300.0,400.0,500.0,600.0,800.0,1000.0,1500.0],"K")
@@ -145,7 +145,7 @@ class ThermoTest(unittest.TestCase):
 
     def testOutputWilhoit(self):
         """
-        Test that we can reconstruct a WilhoitModel object from its repr()
+        Test that we can reconstruct a Wilhoit object from its repr()
         output with no loss of information.
         """
         thermo0 = Wilhoit(cp0=4.0*constants.R, cpInf=21.0*constants.R, a0=-3.95, a1=9.26, a2=-15.6, a3=8.55, B=500.0, H0=-6.151e+04, S0=-790.2, Tmin=300.0, Tmax=2000.0, comment='CC(=O)O[O]')

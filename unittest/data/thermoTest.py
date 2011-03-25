@@ -10,7 +10,7 @@ from rmgpy.data.thermo import loadThermoDatabase, ThermoEntry, generateThermoDat
 from rmgpy.data.base import LogicNode
 from rmgpy.chem.molecule import Molecule
 from rmgpy.chem.pattern import MoleculePattern
-from rmgpy.chem.thermo import ThermoGAModel
+from rmgpy.chem.thermo import ThermoData
 from rmgpy.chem.species import Species
 
 ################################################################################

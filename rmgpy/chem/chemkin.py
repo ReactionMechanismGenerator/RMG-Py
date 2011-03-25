@@ -33,7 +33,7 @@ This module contains functions for writing of Chemkin input files.
 
 import re
 
-from thermo import NASAModel
+from thermo import MultiNASA
 from kinetics import *
 
 ################################################################################
@@ -89,9 +89,9 @@ def writeThermoEntry(species):
     """
 
     thermo = species.thermo
-    if not isinstance(thermo, NASAModel):
+    if not isinstance(thermo, MultiNASA):
         return ''
-        raise ChemkinError('Cannot generate Chemkin string for species "%s": Thermodynamics data must be a NASAModel object.' % species)
+        raise ChemkinError('Cannot generate Chemkin string for species "%s": Thermodynamics data must be a MultiNASA object.' % species)
 
     assert len(thermo.polynomials) == 2
     assert thermo.polynomials[0].Tmin < thermo.polynomials[1].Tmin

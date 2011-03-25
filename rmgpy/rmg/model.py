@@ -41,7 +41,7 @@ import os.path
 import rmgpy.chem.constants as constants
 import rmgpy.chem.species
 import rmgpy.chem.reaction
-from rmgpy.chem.thermo import WilhoitModel, NASAModel
+from rmgpy.chem.thermo import Wilhoit, MultiNASA
 from rmgpy.chem.kinetics import ArrheniusModel, ArrheniusEPModel, ChebyshevModel, PDepArrheniusModel, ThirdBodyModel
 
 from rmgpy.data.thermo import generateThermoData, convertThermoData
@@ -76,7 +76,7 @@ class Species(rmgpy.chem.species.Species):
         """
         self.coreSizeAtCreation = d['coreSizeAtCreation']
 
-    def generateThermoData(self, thermoClass=NASAModel):
+    def generateThermoData(self, thermoClass=MultiNASA):
         """
         Generate thermodynamic data for the species using the thermo database.
 
@@ -110,7 +110,7 @@ class Species(rmgpy.chem.species.Species):
 
         # Convert to desired thermo class
         thermo0 = self.thermo
-        self.thermo = convertThermoData(self.thermo, self.molecule[0], WilhoitModel)
+        self.thermo = convertThermoData(self.thermo, self.molecule[0], Wilhoit)
         self.E0 = self.thermo.getEnthalpy(1.0)
         self.thermo = convertThermoData(self.thermo, self.molecule[0], thermoClass)
         if self.thermo.__class__ != thermo0.__class__:

@@ -140,7 +140,7 @@ def species(label='', E0=None, states=None, thermo=None, lennardJones=None, mole
         spec.molecularWeight = spec.molecule[0].getMolecularWeight()
 
 def thermoGAModel(Tdata, Cpdata, H298, S298, Tmin=0.0, Tmax=99999.9, comment=''):
-    return ThermoGAModel(
+    return ThermoData(
         Tdata=numpy.array(processQuantity(Tdata)[0], numpy.float64),
         Cpdata=numpy.array(processQuantity(Cpdata)[0], numpy.float64),
         H298=processQuantity(H298)[0],
@@ -150,8 +150,8 @@ def thermoGAModel(Tdata, Cpdata, H298, S298, Tmin=0.0, Tmax=99999.9, comment='')
         comment=comment,
     )
 
-def thermoWilhoitModel(cp0, cpInf, a0, a1, a2, a3, H0, S0, B, comment=''):
-    return WilhoitModel(
+def thermoWilhoit(cp0, cpInf, a0, a1, a2, a3, H0, S0, B, comment=''):
+    return Wilhoit(
         cp0=processQuantity(cp0)[0],
         cpInf=processQuantity(cpInf)[0],
         a0=a0,
@@ -164,16 +164,16 @@ def thermoWilhoitModel(cp0, cpInf, a0, a1, a2, a3, H0, S0, B, comment=''):
         comment=comment,
     )
 
-def thermoNASAModel(polynomials=None, Tmin=0.0, Tmax=0.0, comment=''):
-    return NASAModel(
+def thermoMultiNASA(polynomials=None, Tmin=0.0, Tmax=0.0, comment=''):
+    return MultiNASA(
         polynomials=polynomials,
         Tmin=processQuantity(Tmin)[0],
         Tmax=processQuantity(Tmax)[0],
         comment=comment,
     )
 
-def thermoNASAPolynomial(Tmin=0.0, Tmax=0.0, coeffs=None, comment=''):
-    return NASAPolynomial(
+def thermoNASA(Tmin=0.0, Tmax=0.0, coeffs=None, comment=''):
+    return NASA(
         Tmin=processQuantity(Tmin)[0],
         Tmax=processQuantity(Tmax)[0],
         coeffs=coeffs,
@@ -334,7 +334,7 @@ def generateThermoFromStates(species):
     """
     For a given :class:`Species` object `species` with molecular degrees of
     freedom data in its ``states`` attribute, generate a corresponding thermo
-    model. A :class:`ThermoGAModel` thermodynamics model is stored in the
+    model. A :class:`ThermoData` thermodynamics model is stored in the
     species ``thermo`` attribute, and nothing is returned.
     """
     # Do nothing if the species already has thermo data or if it does not have
@@ -344,9 +344,9 @@ def generateThermoFromStates(species):
     if not any([isinstance(mode, RigidRotor) for mode in species.states.modes]):
         raise InputError('For species "%s", must specify external rotational constants to generate thermo model from states data.' % species)
     
-    # Must use ThermoGAModel because we can't rely on knowing
+    # Must use ThermoData because we can't rely on knowing
     # anything about the structure of the species
-    from rmgpy.chem.thermo import ThermoGAModel
+    from rmgpy.chem.thermo import ThermoData
     Tdata = numpy.linspace(numpy.min(Tlist), numpy.max(Tlist), 20.0)
     Cpdata = species.states.getHeatCapacities(Tdata)
     H298 = species.E0 + species.states.getEnthalpy(298)
@@ -361,7 +361,7 @@ def generateThermoFromStates(species):
         H298 += trans.getEnthalpy(298)
         S298 += trans.getEntropy(298)
 
-    species.thermo = ThermoGAModel(Tdata=Tdata, Cpdata=Cpdata, H298=H298, S298=S298)
+    species.thermo = ThermoData(Tdata=Tdata, Cpdata=Cpdata, H298=H298, S298=S298)
 
 def getTemperaturesForModel(model, Tmin, Tmax, Tcount):
     """
@@ -477,10 +477,10 @@ def readInput(path):
         'energies': energies,
         'method': _method,
         'interpolationModel': interpolationModel,
-        'ThermoGAModel': thermoGAModel,
-        'WilhoitModel': thermoWilhoitModel,
-        'NASAModel': thermoNASAModel,
-        'NASAPolynomial': thermoNASAPolynomial,
+        'ThermoData': thermoGAModel,
+        'Wilhoit': thermoWilhoit,
+        'MultiNASA': thermoMultiNASA,
+        'NASA': thermoNASA,
     }
     
     try:

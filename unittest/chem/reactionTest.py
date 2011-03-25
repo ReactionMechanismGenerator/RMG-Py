@@ -10,7 +10,7 @@ from rmgpy.chem.species import Species, TransitionState
 from rmgpy.chem.reaction import *
 from rmgpy.chem.states import *
 from rmgpy.chem.kinetics import ArrheniusModel
-from rmgpy.chem.thermo import WilhoitModel
+from rmgpy.chem.thermo import Wilhoit
 import rmgpy.chem.constants as constants
 
 ################################################################################
@@ -30,19 +30,19 @@ class ReactionTest(unittest.TestCase):
         # CC(=O)O[O]
         acetylperoxy = Species(
             label='acetylperoxy',
-            thermo=WilhoitModel(cp0=4.0*constants.R, cpInf=21.0*constants.R, a0=-3.95, a1=9.26, a2=-15.6, a3=8.55, B=500.0, H0=-6.151e+04, S0=-790.2),
+            thermo=Wilhoit(cp0=4.0*constants.R, cpInf=21.0*constants.R, a0=-3.95, a1=9.26, a2=-15.6, a3=8.55, B=500.0, H0=-6.151e+04, S0=-790.2),
         )
 
         # C[C]=O
         acetyl = Species(
             label='acetyl',
-            thermo=WilhoitModel(cp0=4.0*constants.R, cpInf=15.5*constants.R, a0=0.2541, a1=-0.4712, a2=-4.434, a3=2.25, B=500.0, H0=-1.439e+05, S0=-524.6),
+            thermo=Wilhoit(cp0=4.0*constants.R, cpInf=15.5*constants.R, a0=0.2541, a1=-0.4712, a2=-4.434, a3=2.25, B=500.0, H0=-1.439e+05, S0=-524.6),
         )
 
         # [O][O]
         oxygen = Species(
             label='oxygen',
-            thermo=WilhoitModel(cp0=3.5*constants.R, cpInf=4.5*constants.R, a0=-0.9324, a1=26.18, a2=-70.47, a3=44.12, B=500.0, H0=1.453e+04, S0=-12.19),
+            thermo=Wilhoit(cp0=3.5*constants.R, cpInf=4.5*constants.R, a0=-0.9324, a1=26.18, a2=-70.47, a3=44.12, B=500.0, H0=1.453e+04, S0=-12.19),
         )
         
         reaction = Reaction(
