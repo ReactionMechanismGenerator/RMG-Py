@@ -15,13 +15,25 @@ class ThermoTest(unittest.TestCase):
     thermodynamics models.
     """
     
+    def testThermoData(self):
+        """
+        Tests the ThermoData class.
+        """
+        Tdata = ([300.0,400.0,500.0,600.0,800.0,1000.0,1500.0],"K")
+        Cpdata = ([3.0,4.0,5.0,6.0,8.0,10.0,15.0],"K")
+
+        thermo = ThermoData(Tdata, Cpdata, H298=-2000.0, S298=50.0, Tmin=300.0, Tmax=2000.0, comment='This data is completely made up')
+        self.assertEqual(thermo.getHeatCapacity(500), 5)
+        self.assertEqual(thermo.getEnthalpy(300), -2000.0)
+        self.assertEqual(thermo.getEntropy(300), 50.0)
+
     def testWilhoit(self):
         """
         Tests the Wilhoit thermodynamics model functions.
         """
         
         # CC(=O)O[O]
-        wilhoit = WilhoitModel(cp0=4.0*constants.R, cpInf=21.0*constants.R, a0=-3.95, a1=9.26, a2=-15.6, a3=8.55, B=500.0, H0=-6.151e+04, S0=-790.2)
+        wilhoit = Wilhoit(cp0=4.0*constants.R, cpInf=21.0*constants.R, a0=-3.95, a1=9.26, a2=-15.6, a3=8.55, B=500.0, H0=-6.151e+04, S0=-790.2)
         
         Tlist = numpy.arange(200.0, 2001.0, 200.0, numpy.float64)
         Cplist0 = [ 64.398,  94.765, 116.464, 131.392, 141.658, 148.830, 153.948, 157.683, 160.469, 162.589]
@@ -40,29 +52,21 @@ class ThermoTest(unittest.TestCase):
             self.assertAlmostEqual( Slist[i] /  Slist0[i], 1.0, 4)
             self.assertAlmostEqual( Glist[i] /  Glist0[i], 1.0, 4)
 
-    def testPickleThermoGA(self):
+    def testPickleThermoData(self):
         """
-        Test that a ThermoGAModel object can be successfully pickled and
+        Test that a ThermoData object can be successfully pickled and
         unpickled with no loss of information.
         """
-        Tdata = [300.0,400.0,500.0,600.0,800.0,1000.0,1500.0]
+        Tdata = ([300.0,400.0,500.0,600.0,800.0,1000.0,1500.0],"K")
         Cpdata = [3.0,4.0,5.0,6.0,8.0,10.0,15.0]
-        thermo0 = ThermoGAModel(Tdata, Cpdata, H298=-2000.0, S298=50.0, dCp=None, dH=100.0, dS=2.0, Tmin=300.0, Tmax=2000.0, comment='This data is completely made up')
+        thermo0 = ThermoData(Tdata, Cpdata, H298=-2000.0, S298=50.0, Tmin=300.0, Tmax=2000.0, comment='This data is completely made up')
         import cPickle
         thermo = cPickle.loads(cPickle.dumps(thermo0))
 
-        self.assertEqual(len(thermo0.Tdata), len(thermo.Tdata))
-        self.assertEqual(len(thermo0.Cpdata), len(thermo.Cpdata))
-        self.assertEqual(len(thermo0.dCp), len(thermo.dCp))
-        for i in range(len(thermo0.Tdata)):
-            self.assertEqual(thermo0.Tdata[i], thermo.Tdata[i])
-            self.assertEqual(thermo0.Cpdata[i], thermo.Cpdata[i])
-            self.assertEqual(thermo0.dCp[i], thermo.dCp[i])
+        self.assertEqual(thermo0.Tdata, thermo.Tdata)
+        self.assertEqual(thermo0.Cpdata, thermo.Cpdata)
         self.assertEqual(thermo0.H298, thermo.H298)
         self.assertEqual(thermo0.S298, thermo.S298)
-        self.assertEqual(thermo0.dH, thermo.dH)
-        self.assertEqual(thermo0.dS, thermo.dS)
-
         self.assertEqual(thermo0.Tmin, thermo.Tmin)
         self.assertEqual(thermo0.Tmax, thermo.Tmax)
         self.assertEqual(thermo0.comment, thermo.comment)
@@ -72,34 +76,33 @@ class ThermoTest(unittest.TestCase):
         Test that a WilhoitModel object can be successfully pickled and
         unpickled with no loss of information.
         """
-        thermo0 = WilhoitModel(cp0=4.0*constants.R, cpInf=21.0*constants.R, a0=-3.95, a1=9.26, a2=-15.6, a3=8.55, B=500.0, H0=-6.151e+04, S0=-790.2, Tmin=300.0, Tmax=2000.0, comment='CC(=O)O[O]')
+        thermo0 = Wilhoit(cp0=4.0*constants.R, cpInf=21.0*constants.R, a0=-3.95, a1=9.26, a2=-15.6, a3=8.55, B=500.0, H0=-6.151e+04, S0=-790.2, Tmin=300.0, Tmax=2000.0, comment='CC(=O)O[O]')
         import cPickle
         thermo = cPickle.loads(cPickle.dumps(thermo0))
 
-        self.assertEqual(thermo0.cp0, thermo.cp0)
-        self.assertEqual(thermo0.cpInf, thermo.cpInf)
-        self.assertEqual(thermo0.a0, thermo.a0)
-        self.assertEqual(thermo0.a1, thermo.a1)
-        self.assertEqual(thermo0.a2, thermo.a2)
-        self.assertEqual(thermo0.a3, thermo.a3)
-        self.assertEqual(thermo0.H0, thermo.H0)
-        self.assertEqual(thermo0.S0, thermo.S0)
-        self.assertEqual(thermo0.B, thermo.B)
-
+        self.assertAlmostEqual(thermo0.cp0.value, thermo.cp0.value, 4)
+        self.assertAlmostEqual(thermo0.cpInf.value, thermo.cpInf.value, 3)
+        self.assertAlmostEqual(thermo0.a0.value, thermo.a0.value, 4)
+        self.assertAlmostEqual(thermo0.a1.value, thermo.a1.value, 4)
+        self.assertAlmostEqual(thermo0.a2.value, thermo.a2.value, 4)
+        self.assertAlmostEqual(thermo0.a3.value, thermo.a3.value, 4)
+        self.assertAlmostEqual(thermo0.H0.value, thermo.H0.value, 4)
+        self.assertAlmostEqual(thermo0.S0.value, thermo.S0.value, 4)
+        self.assertAlmostEqual(thermo0.B.value, thermo.B.value, 4)
         self.assertEqual(thermo0.Tmin, thermo.Tmin)
         self.assertEqual(thermo0.Tmax, thermo.Tmax)
         self.assertEqual(thermo0.comment, thermo.comment)
 
     def testPickleNASA(self):
         """
-        Test that a NASAModel object can be successfully pickled and
+        Test that a MultiNASA object can be successfully pickled and
         unpickled with no loss of information.
         """
 
-        nasa0 = NASAPolynomial(coeffs=[11.0,12.0,13.0,14.0,15.0,16.0,17.0], Tmin=300.0, Tmax=1000.0, comment='This data is completely made up and unphysical')
-        nasa1 = NASAPolynomial(coeffs=[21.0,22.0,23.0,24.0,25.0,26.0,27.0], Tmin=1000.0, Tmax=6000.0, comment='This data is also completely made up and unphysical')
+        nasa0 = NASA(coeffs=[11.0,12.0,13.0,14.0,15.0,16.0,17.0], Tmin=300.0, Tmax=1000.0, comment='This data is completely made up and unphysical')
+        nasa1 = NASA(coeffs=[21.0,22.0,23.0,24.0,25.0,26.0,27.0], Tmin=1000.0, Tmax=6000.0, comment='This data is also completely made up and unphysical')
 
-        thermo0 = NASAModel(polynomials=[nasa0, nasa1], Tmin=300.0, Tmax=6000.0, comment='This data is completely made up and unphysical')
+        thermo0 = MultiNASA(polynomials=[nasa0, nasa1], Tmin=300.0, Tmax=6000.0, comment='This data is completely made up and unphysical')
         import cPickle
         thermo = cPickle.loads(cPickle.dumps(thermo0))
 
@@ -122,28 +125,20 @@ class ThermoTest(unittest.TestCase):
         self.assertEqual(thermo0.Tmax, thermo.Tmax)
         self.assertEqual(thermo0.comment, thermo.comment)
 
-    def testOutputThermoGA(self):
+    def testOutputThermoData(self):
         """
         Test that we can reconstruct a ThermoGAModel object from its repr()
         output with no loss of information.
         """
-        Tdata = [300.0,400.0,500.0,600.0,800.0,1000.0,1500.0]
+        Tdata = ([300.0,400.0,500.0,600.0,800.0,1000.0,1500.0],"K")
         Cpdata = [3.0,4.0,5.0,6.0,8.0,10.0,15.0]
-        thermo0 = ThermoGAModel(Tdata, Cpdata, H298=-2000.0, S298=50.0, dCp=None, dH=100.0, dS=2.0, Tmin=300.0, Tmax=2000.0, comment='This data is completely made up')
+        thermo0 = ThermoData(Tdata, Cpdata, H298=-2000.0, S298=50.0, Tmin=300.0, Tmax=2000.0, comment='This data is completely made up')
         exec('thermo = %r' % thermo0)
 
-        self.assertEqual(len(thermo0.Tdata), len(thermo.Tdata))
-        self.assertEqual(len(thermo0.Cpdata), len(thermo.Cpdata))
-        self.assertEqual(len(thermo0.dCp), len(thermo.dCp))
-        for i in range(len(thermo0.Tdata)):
-            self.assertEqual(thermo0.Tdata[i], thermo.Tdata[i])
-            self.assertEqual(thermo0.Cpdata[i], thermo.Cpdata[i])
-            self.assertEqual(thermo0.dCp[i], thermo.dCp[i])
+        self.assertEqual(thermo0.Tdata, thermo.Tdata)
+        self.assertEqual(thermo0.Cpdata, thermo.Cpdata)
         self.assertEqual(thermo0.H298, thermo.H298)
         self.assertEqual(thermo0.S298, thermo.S298)
-        self.assertEqual(thermo0.dH, thermo.dH)
-        self.assertEqual(thermo0.dS, thermo.dS)
-
         self.assertEqual(thermo0.Tmin, thermo.Tmin)
         self.assertEqual(thermo0.Tmax, thermo.Tmax)
         self.assertEqual(thermo0.comment, thermo.comment)
@@ -153,33 +148,32 @@ class ThermoTest(unittest.TestCase):
         Test that we can reconstruct a WilhoitModel object from its repr()
         output with no loss of information.
         """
-        thermo0 = WilhoitModel(cp0=4.0*constants.R, cpInf=21.0*constants.R, a0=-3.95, a1=9.26, a2=-15.6, a3=8.55, B=500.0, H0=-6.151e+04, S0=-790.2, Tmin=300.0, Tmax=2000.0, comment='CC(=O)O[O]')
+        thermo0 = Wilhoit(cp0=4.0*constants.R, cpInf=21.0*constants.R, a0=-3.95, a1=9.26, a2=-15.6, a3=8.55, B=500.0, H0=-6.151e+04, S0=-790.2, Tmin=300.0, Tmax=2000.0, comment='CC(=O)O[O]')
         exec('thermo = %r' % thermo0)
 
-        self.assertAlmostEqual(thermo0.cp0, thermo.cp0, 4)
-        self.assertAlmostEqual(thermo0.cpInf, thermo.cpInf, 3)
-        self.assertAlmostEqual(thermo0.a0, thermo.a0, 4)
-        self.assertAlmostEqual(thermo0.a1, thermo.a1, 4)
-        self.assertAlmostEqual(thermo0.a2, thermo.a2, 4)
-        self.assertAlmostEqual(thermo0.a3, thermo.a3, 4)
-        self.assertAlmostEqual(thermo0.H0, thermo.H0, 4)
-        self.assertAlmostEqual(thermo0.S0, thermo.S0, 4)
-        self.assertAlmostEqual(thermo0.B, thermo.B, 4)
-
-        self.assertAlmostEqual(thermo0.Tmin, thermo.Tmin)
-        self.assertAlmostEqual(thermo0.Tmax, thermo.Tmax)
-        self.assertAlmostEqual(thermo0.comment, thermo.comment)
+        self.assertAlmostEqual(thermo0.cp0.value, thermo.cp0.value, 4)
+        self.assertAlmostEqual(thermo0.cpInf.value, thermo.cpInf.value, 3)
+        self.assertAlmostEqual(thermo0.a0.value, thermo.a0.value, 4)
+        self.assertAlmostEqual(thermo0.a1.value, thermo.a1.value, 4)
+        self.assertAlmostEqual(thermo0.a2.value, thermo.a2.value, 4)
+        self.assertAlmostEqual(thermo0.a3.value, thermo.a3.value, 4)
+        self.assertAlmostEqual(thermo0.H0.value, thermo.H0.value, 4)
+        self.assertAlmostEqual(thermo0.S0.value, thermo.S0.value, 4)
+        self.assertAlmostEqual(thermo0.B.value, thermo.B.value, 4)
+        self.assertEqual(thermo0.Tmin, thermo.Tmin)
+        self.assertEqual(thermo0.Tmax, thermo.Tmax)
+        self.assertEqual(thermo0.comment, thermo.comment)
 
     def testOutputNASA(self):
         """
-        Test that we can reconstruct a NASAModel object from its repr()
+        Test that we can reconstruct a MultiNASA object from its repr()
         output with no loss of information.
         """
 
-        nasa0 = NASAPolynomial(coeffs=[11.0,12.0,13.0,14.0,15.0,16.0,17.0], Tmin=300.0, Tmax=1000.0, comment='This data is completely made up and unphysical')
-        nasa1 = NASAPolynomial(coeffs=[21.0,22.0,23.0,24.0,25.0,26.0,27.0], Tmin=1000.0, Tmax=6000.0, comment='This data is also completely made up and unphysical')
+        nasa0 = NASA(coeffs=[11.0,12.0,13.0,14.0,15.0,16.0,17.0], Tmin=300.0, Tmax=1000.0, comment='This data is completely made up and unphysical')
+        nasa1 = NASA(coeffs=[21.0,22.0,23.0,24.0,25.0,26.0,27.0], Tmin=1000.0, Tmax=6000.0, comment='This data is also completely made up and unphysical')
 
-        thermo0 = NASAModel(polynomials=[nasa0, nasa1], Tmin=300.0, Tmax=6000.0, comment='This data is completely made up and unphysical')
+        thermo0 = MultiNASA(polynomials=[nasa0, nasa1], Tmin=300.0, Tmax=6000.0, comment='This data is completely made up and unphysical')
         exec('thermo = %r' % thermo0)
 
         self.assertEqual(len(thermo0.polynomials), len(thermo.polynomials))
