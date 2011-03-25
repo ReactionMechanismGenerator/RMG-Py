@@ -16,11 +16,11 @@ class KineticsTest(unittest.TestCase):
 
     def testPickleArrhenius(self):
         """
-        Test that an ArrheniusModel object can be successfully pickled and
+        Test that an Arrhenius object can be successfully pickled and
         unpickled with no loss of information.
         """
         
-        kinetics0 = ArrheniusModel(A=1.0e6, n=1.0, Ea=10000.0, T0=298.15, Tmin=300, Tmax=2000, numReactants=2, comment='These parameters are completely made up')
+        kinetics0 = Arrhenius(A=1.0e6, n=1.0, Ea=10000.0, T0=298.15, Tmin=300, Tmax=2000, numReactants=2, comment='These parameters are completely made up')
         import cPickle
         kinetics = cPickle.loads(cPickle.dumps(kinetics0))
 
@@ -38,11 +38,11 @@ class KineticsTest(unittest.TestCase):
 
     def testPickleArrheniusEP(self):
         """
-        Test that an ArrheniusEPModel object can be successfully pickled and
+        Test that an ArrheniusEP object can be successfully pickled and
         unpickled with no loss of information.
         """
 
-        kinetics0 = ArrheniusEPModel(A=1.0e6, n=1.0, alpha=0.5, E0=10000.0, Tmin=300, Tmax=2000, numReactants=2, comment='These parameters are completely made up')
+        kinetics0 = ArrheniusEP(A=1.0e6, n=1.0, alpha=0.5, E0=10000.0, Tmin=300, Tmax=2000, numReactants=2, comment='These parameters are completely made up')
         import cPickle
         kinetics = cPickle.loads(cPickle.dumps(kinetics0))
 
@@ -60,14 +60,14 @@ class KineticsTest(unittest.TestCase):
 
     def testPickleMultiArrhenius(self):
         """
-        Test that a MultiArrheniusModel object can be successfully pickled and
+        Test that a MultiArrhenius object can be successfully pickled and
         unpickled with no loss of information.
         """
 
-        arrh0 = ArrheniusModel(A=1.0e6, n=1.0, Ea=10000.0, T0=298.15, Tmin=300, Tmax=2000, numReactants=2, comment='These parameters are completely made up')
-        arrh1 = ArrheniusModel(A=1.0e12, n=0.0, Ea=20000.0, T0=298.15, Tmin=300, Tmax=2000, numReactants=2, comment='These parameters are also completely made up')
+        arrh0 = Arrhenius(A=1.0e6, n=1.0, Ea=10000.0, T0=298.15, Tmin=300, Tmax=2000, numReactants=2, comment='These parameters are completely made up')
+        arrh1 = Arrhenius(A=1.0e12, n=0.0, Ea=20000.0, T0=298.15, Tmin=300, Tmax=2000, numReactants=2, comment='These parameters are also completely made up')
 
-        kinetics0 = MultiArrheniusModel(arrheniusList=[arrh0, arrh1], Tmin=300, Tmax=2000, numReactants=2, comment='These parameters are completely made up')
+        kinetics0 = MultiArrhenius(arrheniusList=[arrh0, arrh1], Tmin=300, Tmax=2000, numReactants=2, comment='These parameters are completely made up')
         import cPickle
         kinetics = cPickle.loads(cPickle.dumps(kinetics0))
 
@@ -89,15 +89,15 @@ class KineticsTest(unittest.TestCase):
 
     def testPicklePDepArrhenius(self):
         """
-        Test that a PDepArrheniusModel object can be successfully pickled and
+        Test that a PDepArrhenius object can be successfully pickled and
         unpickled with no loss of information.
         """
 
         P0 = 1e3; P1 = 1e5
-        arrh0 = ArrheniusModel(A=1.0e6, n=1.0, Ea=10000.0, T0=298.15, Tmin=300, Tmax=2000, numReactants=2, comment='These parameters are completely made up')
-        arrh1 = ArrheniusModel(A=1.0e12, n=0.0, Ea=20000.0, T0=298.15, Tmin=300, Tmax=2000, numReactants=2, comment='These parameters are also completely made up')
+        arrh0 = Arrhenius(A=1.0e6, n=1.0, Ea=10000.0, T0=298.15, Tmin=300, Tmax=2000, numReactants=2, comment='These parameters are completely made up')
+        arrh1 = Arrhenius(A=1.0e12, n=0.0, Ea=20000.0, T0=298.15, Tmin=300, Tmax=2000, numReactants=2, comment='These parameters are also completely made up')
 
-        kinetics0 = PDepArrheniusModel(pressures=[P0,P1], arrhenius=[arrh0, arrh1], Tmin=300, Tmax=2000, Pmin=1e3, Pmax=1e5, numReactants=2, comment='These parameters are completely made up')
+        kinetics0 = PDepArrhenius(pressures=[P0,P1], arrhenius=[arrh0, arrh1], Tmin=300, Tmax=2000, Pmin=1e3, Pmax=1e5, numReactants=2, comment='These parameters are completely made up')
         import cPickle
         kinetics = cPickle.loads(cPickle.dumps(kinetics0))
 
@@ -122,13 +122,13 @@ class KineticsTest(unittest.TestCase):
 
     def testPickleChebyshev(self):
         """
-        Test that a ChebyshevModel object can be successfully pickled and
+        Test that a Chebyshev object can be successfully pickled and
         unpickled with no loss of information.
         """
 
         coeffs = numpy.array([[1.0,2.0,3.0,4.0], [5.0,6.0,7.0,8.0], [9.0,10.0,11.0,12.0]], numpy.float64)
 
-        kinetics0 = ChebyshevModel(coeffs=coeffs, Tmin=300, Tmax=2000, Pmin=1e3, Pmax=1e5, numReactants=2, comment='These parameters are completely made up and unrealistic')
+        kinetics0 = Chebyshev(coeffs=coeffs, Tmin=300, Tmax=2000, Pmin=1e3, Pmax=1e5, numReactants=2, comment='These parameters are completely made up and unrealistic')
         import cPickle
         kinetics = cPickle.loads(cPickle.dumps(kinetics0))
 
@@ -154,14 +154,14 @@ class KineticsTest(unittest.TestCase):
 
     def testPickleThirdBody(self):
         """
-        Test that a ThirdBodyModel object can be successfully pickled and
+        Test that a ThirdBody object can be successfully pickled and
         unpickled with no loss of information.
         """
 
-        arrhHigh = ArrheniusModel(A=1.0e6, n=1.0, Ea=10000.0, T0=298.15, Tmin=300, Tmax=2000, numReactants=2, comment='These parameters are completely made up')
+        arrhHigh = Arrhenius(A=1.0e6, n=1.0, Ea=10000.0, T0=298.15, Tmin=300, Tmax=2000, numReactants=2, comment='These parameters are completely made up')
         efficiencies = {'N2': 0.5, 'Ar': 1.5}
 
-        kinetics0 = ThirdBodyModel(arrheniusHigh=arrhHigh, efficiencies=efficiencies, Tmin=300, Tmax=2000, Pmin=1e3, Pmax=1e5, numReactants=2, comment='These parameters are completely made up and unrealistic')
+        kinetics0 = ThirdBody(arrheniusHigh=arrhHigh, efficiencies=efficiencies, Tmin=300, Tmax=2000, Pmin=1e3, Pmax=1e5, numReactants=2, comment='These parameters are completely made up and unrealistic')
         import cPickle
         kinetics = cPickle.loads(cPickle.dumps(kinetics0))
 
@@ -182,15 +182,15 @@ class KineticsTest(unittest.TestCase):
 
     def testPickleLindemann(self):
         """
-        Test that a LindemannModel object can be successfully pickled and
+        Test that a Lindemann object can be successfully pickled and
         unpickled with no loss of information.
         """
 
-        arrhLow = ArrheniusModel(A=1.0e6, n=1.0, Ea=10000.0, T0=298.15, Tmin=300, Tmax=2000, numReactants=2, comment='These parameters are completely made up')
-        arrhHigh = ArrheniusModel(A=1.0e12, n=0.0, Ea=20000.0, T0=298.15, Tmin=300, Tmax=2000, numReactants=2, comment='These parameters are also completely made up')
+        arrhLow = Arrhenius(A=1.0e6, n=1.0, Ea=10000.0, T0=298.15, Tmin=300, Tmax=2000, numReactants=2, comment='These parameters are completely made up')
+        arrhHigh = Arrhenius(A=1.0e12, n=0.0, Ea=20000.0, T0=298.15, Tmin=300, Tmax=2000, numReactants=2, comment='These parameters are also completely made up')
         efficiencies = {'N2': 0.5, 'Ar': 1.5}
 
-        kinetics0 = LindemannModel(arrheniusLow=arrhLow, arrheniusHigh=arrhHigh, efficiencies=efficiencies, Tmin=300, Tmax=2000, Pmin=1e3, Pmax=1e5, numReactants=2, comment='These parameters are completely made up and unrealistic')
+        kinetics0 = Lindemann(arrheniusLow=arrhLow, arrheniusHigh=arrhHigh, efficiencies=efficiencies, Tmin=300, Tmax=2000, Pmin=1e3, Pmax=1e5, numReactants=2, comment='These parameters are completely made up and unrealistic')
         import cPickle
         kinetics = cPickle.loads(cPickle.dumps(kinetics0))
 
@@ -215,15 +215,15 @@ class KineticsTest(unittest.TestCase):
 
     def testPickleTroe(self):
         """
-        Test that a TroeModel object can be successfully pickled and
+        Test that a Troe object can be successfully pickled and
         unpickled with no loss of information.
         """
 
-        arrhLow = ArrheniusModel(A=1.0e6, n=1.0, Ea=10000.0, T0=298.15, Tmin=300, Tmax=2000, numReactants=2, comment='These parameters are completely made up')
-        arrhHigh = ArrheniusModel(A=1.0e12, n=0.0, Ea=20000.0, T0=298.15, Tmin=300, Tmax=2000, numReactants=2, comment='These parameters are also completely made up')
+        arrhLow = Arrhenius(A=1.0e6, n=1.0, Ea=10000.0, T0=298.15, Tmin=300, Tmax=2000, numReactants=2, comment='These parameters are completely made up')
+        arrhHigh = Arrhenius(A=1.0e12, n=0.0, Ea=20000.0, T0=298.15, Tmin=300, Tmax=2000, numReactants=2, comment='These parameters are also completely made up')
         efficiencies = {'N2': 0.5, 'Ar': 1.5}
 
-        kinetics0 = TroeModel(arrheniusLow=arrhLow, arrheniusHigh=arrhHigh, efficiencies=efficiencies, alpha=0.6, T3=1000.0, T1=500.0, T2=300.0, Tmin=300, Tmax=2000, Pmin=1e3, Pmax=1e5, numReactants=2, comment='These parameters are completely made up and unrealistic')
+        kinetics0 = Troe(arrheniusLow=arrhLow, arrheniusHigh=arrhHigh, efficiencies=efficiencies, alpha=0.6, T3=1000.0, T1=500.0, T2=300.0, Tmin=300, Tmax=2000, Pmin=1e3, Pmax=1e5, numReactants=2, comment='These parameters are completely made up and unrealistic')
         import cPickle
         kinetics = cPickle.loads(cPickle.dumps(kinetics0))
 
@@ -252,11 +252,11 @@ class KineticsTest(unittest.TestCase):
 
     def testOutputArrhenius(self):
         """
-        Test that an ArrheniusModel object can be successfully reconstructed
+        Test that an Arrhenius object can be successfully reconstructed
         from its repr() output with no loss of information.
         """
 
-        kinetics0 = ArrheniusModel(A=1.0e6, n=1.0, Ea=10000.0, T0=298.15, Tmin=300, Tmax=2000, numReactants=2, comment='These parameters are completely made up')
+        kinetics0 = Arrhenius(A=1.0e6, n=1.0, Ea=10000.0, T0=298.15, Tmin=300, Tmax=2000, numReactants=2, comment='These parameters are completely made up')
         exec('kinetics = %r' % kinetics0)
 
         self.assertEqual(kinetics0.A, kinetics.A)
@@ -273,11 +273,11 @@ class KineticsTest(unittest.TestCase):
 
     def testOutputArrheniusEP(self):
         """
-        Test that an ArrheniusEPModel object can be successfully reconstructed
+        Test that an ArrheniusEP object can be successfully reconstructed
         from its repr() output with no loss of information.
         """
 
-        kinetics0 = ArrheniusEPModel(A=1.0e6, n=1.0, alpha=0.5, E0=10000.0, Tmin=300, Tmax=2000, numReactants=2, comment='These parameters are completely made up')
+        kinetics0 = ArrheniusEP(A=1.0e6, n=1.0, alpha=0.5, E0=10000.0, Tmin=300, Tmax=2000, numReactants=2, comment='These parameters are completely made up')
         exec('kinetics = %r' % kinetics0)
 
         self.assertAlmostEqual(kinetics0.A, kinetics.A, 4)
@@ -294,14 +294,14 @@ class KineticsTest(unittest.TestCase):
 
     def testOutputMultiArrhenius(self):
         """
-        Test that a MultiArrheniusModel object can be successfully reconstructed
+        Test that a MultiArrhenius object can be successfully reconstructed
         from its repr() output with no loss of information.
         """
 
-        arrh0 = ArrheniusModel(A=1.0e6, n=1.0, Ea=10000.0, T0=298.15, Tmin=300, Tmax=2000, numReactants=2, comment='These parameters are completely made up')
-        arrh1 = ArrheniusModel(A=1.0e12, n=0.0, Ea=20000.0, T0=298.15, Tmin=300, Tmax=2000, numReactants=2, comment='These parameters are also completely made up')
+        arrh0 = Arrhenius(A=1.0e6, n=1.0, Ea=10000.0, T0=298.15, Tmin=300, Tmax=2000, numReactants=2, comment='These parameters are completely made up')
+        arrh1 = Arrhenius(A=1.0e12, n=0.0, Ea=20000.0, T0=298.15, Tmin=300, Tmax=2000, numReactants=2, comment='These parameters are also completely made up')
 
-        kinetics0 = MultiArrheniusModel(arrheniusList=[arrh0, arrh1], Tmin=300, Tmax=2000, numReactants=2, comment='These parameters are completely made up')
+        kinetics0 = MultiArrhenius(arrheniusList=[arrh0, arrh1], Tmin=300, Tmax=2000, numReactants=2, comment='These parameters are completely made up')
         exec('kinetics = %r' % kinetics0)
 
         Narrh = 2
@@ -322,15 +322,15 @@ class KineticsTest(unittest.TestCase):
 
     def testOutputPDepArrhenius(self):
         """
-        Test that a PDepArrheniusModel object can be successfully reconstructed
+        Test that a PDepArrhenius object can be successfully reconstructed
         from its repr() output with no loss of information.
         """
 
         P0 = 1e3; P1 = 1e5
-        arrh0 = ArrheniusModel(A=1.0e6, n=1.0, Ea=10000.0, T0=298.15, Tmin=300, Tmax=2000, numReactants=2, comment='These parameters are completely made up')
-        arrh1 = ArrheniusModel(A=1.0e12, n=0.0, Ea=20000.0, T0=298.15, Tmin=300, Tmax=2000, numReactants=2, comment='These parameters are also completely made up')
+        arrh0 = Arrhenius(A=1.0e6, n=1.0, Ea=10000.0, T0=298.15, Tmin=300, Tmax=2000, numReactants=2, comment='These parameters are completely made up')
+        arrh1 = Arrhenius(A=1.0e12, n=0.0, Ea=20000.0, T0=298.15, Tmin=300, Tmax=2000, numReactants=2, comment='These parameters are also completely made up')
 
-        kinetics0 = PDepArrheniusModel(pressures=[P0,P1], arrhenius=[arrh0, arrh1], Tmin=300, Tmax=2000, Pmin=1e3, Pmax=1e5, numReactants=2, comment='These parameters are completely made up')
+        kinetics0 = PDepArrhenius(pressures=[P0,P1], arrhenius=[arrh0, arrh1], Tmin=300, Tmax=2000, Pmin=1e3, Pmax=1e5, numReactants=2, comment='These parameters are completely made up')
         exec('kinetics = %r' % kinetics0)
 
         Narrh = 2
@@ -354,13 +354,13 @@ class KineticsTest(unittest.TestCase):
 
     def testOutputChebyshev(self):
         """
-        Test that a ChebyshevModel object can be successfully reconstructed
+        Test that a Chebyshev object can be successfully reconstructed
         from its repr() output with no loss of information.
         """
 
         coeffs = numpy.array([[1.0,2.0,3.0,4.0], [5.0,6.0,7.0,8.0], [9.0,10.0,11.0,12.0]], numpy.float64)
 
-        kinetics0 = ChebyshevModel(coeffs=coeffs, Tmin=300, Tmax=2000, Pmin=1e3, Pmax=1e5, numReactants=2, comment='These parameters are completely made up and unrealistic')
+        kinetics0 = Chebyshev(coeffs=coeffs, Tmin=300, Tmax=2000, Pmin=1e3, Pmax=1e5, numReactants=2, comment='These parameters are completely made up and unrealistic')
         exec('kinetics = %r' % kinetics0)
 
         degreeT = 3; degreeP = 4
@@ -385,14 +385,14 @@ class KineticsTest(unittest.TestCase):
 
     def testOutputThirdBody(self):
         """
-        Test that a ThirdBodyModel object can be successfully reconstructed
+        Test that a ThirdBody object can be successfully reconstructed
         from its repr() output with no loss of information.
         """
 
-        arrhHigh = ArrheniusModel(A=1.0e6, n=1.0, Ea=10000.0, T0=298.15, Tmin=300, Tmax=2000, numReactants=2, comment='These parameters are completely made up')
+        arrhHigh = Arrhenius(A=1.0e6, n=1.0, Ea=10000.0, T0=298.15, Tmin=300, Tmax=2000, numReactants=2, comment='These parameters are completely made up')
         efficiencies = {'N2': 0.5, 'Ar': 1.5}
 
-        kinetics0 = ThirdBodyModel(arrheniusHigh=arrhHigh, efficiencies=efficiencies, Tmin=300, Tmax=2000, Pmin=1e3, Pmax=1e5, numReactants=2, comment='These parameters are completely made up and unrealistic')
+        kinetics0 = ThirdBody(arrheniusHigh=arrhHigh, efficiencies=efficiencies, Tmin=300, Tmax=2000, Pmin=1e3, Pmax=1e5, numReactants=2, comment='These parameters are completely made up and unrealistic')
         exec('kinetics = %r' % kinetics0)
 
         self.assertEqual(kinetics0.arrheniusHigh.A, kinetics.arrheniusHigh.A)
@@ -412,15 +412,15 @@ class KineticsTest(unittest.TestCase):
 
     def testOutputLindemann(self):
         """
-        Test that a LindemannModel object can be successfully reconstructed
+        Test that a Lindemann object can be successfully reconstructed
         from its repr() output with no loss of information.
         """
 
-        arrhLow = ArrheniusModel(A=1.0e6, n=1.0, Ea=10000.0, T0=298.15, Tmin=300, Tmax=2000, numReactants=2, comment='These parameters are completely made up')
-        arrhHigh = ArrheniusModel(A=1.0e12, n=0.0, Ea=20000.0, T0=298.15, Tmin=300, Tmax=2000, numReactants=2, comment='These parameters are also completely made up')
+        arrhLow = Arrhenius(A=1.0e6, n=1.0, Ea=10000.0, T0=298.15, Tmin=300, Tmax=2000, numReactants=2, comment='These parameters are completely made up')
+        arrhHigh = Arrhenius(A=1.0e12, n=0.0, Ea=20000.0, T0=298.15, Tmin=300, Tmax=2000, numReactants=2, comment='These parameters are also completely made up')
         efficiencies = {'N2': 0.5, 'Ar': 1.5}
 
-        kinetics0 = LindemannModel(arrheniusLow=arrhLow, arrheniusHigh=arrhHigh, efficiencies=efficiencies, Tmin=300, Tmax=2000, Pmin=1e3, Pmax=1e5, numReactants=2, comment='These parameters are completely made up and unrealistic')
+        kinetics0 = Lindemann(arrheniusLow=arrhLow, arrheniusHigh=arrhHigh, efficiencies=efficiencies, Tmin=300, Tmax=2000, Pmin=1e3, Pmax=1e5, numReactants=2, comment='These parameters are completely made up and unrealistic')
         exec('kinetics = %r' % kinetics0)
 
         self.assertEqual(kinetics0.arrheniusLow.A, kinetics.arrheniusLow.A)
@@ -444,15 +444,15 @@ class KineticsTest(unittest.TestCase):
 
     def testOutputTroe(self):
         """
-        Test that a TroeModel object can be successfully reconstructed
+        Test that a Troe object can be successfully reconstructed
         from its repr() output with no loss of information.
         """
 
-        arrhLow = ArrheniusModel(A=1.0e6, n=1.0, Ea=10000.0, T0=298.15, Tmin=300, Tmax=2000, numReactants=2, comment='These parameters are completely made up')
-        arrhHigh = ArrheniusModel(A=1.0e12, n=0.0, Ea=20000.0, T0=298.15, Tmin=300, Tmax=2000, numReactants=2, comment='These parameters are also completely made up')
+        arrhLow = Arrhenius(A=1.0e6, n=1.0, Ea=10000.0, T0=298.15, Tmin=300, Tmax=2000, numReactants=2, comment='These parameters are completely made up')
+        arrhHigh = Arrhenius(A=1.0e12, n=0.0, Ea=20000.0, T0=298.15, Tmin=300, Tmax=2000, numReactants=2, comment='These parameters are also completely made up')
         efficiencies = {'N2': 0.5, 'Ar': 1.5}
 
-        kinetics0 = TroeModel(arrheniusLow=arrhLow, arrheniusHigh=arrhHigh, efficiencies=efficiencies, alpha=0.6, T3=1000.0, T1=500.0, T2=300.0, Tmin=300, Tmax=2000, Pmin=1e3, Pmax=1e5, numReactants=2, comment='These parameters are completely made up and unrealistic')
+        kinetics0 = Troe(arrheniusLow=arrhLow, arrheniusHigh=arrhHigh, efficiencies=efficiencies, alpha=0.6, T3=1000.0, T1=500.0, T2=300.0, Tmin=300, Tmax=2000, Pmin=1e3, Pmax=1e5, numReactants=2, comment='These parameters are completely made up and unrealistic')
         exec('kinetics = %r' % kinetics0)
 
         self.assertEqual(kinetics0.alpha, kinetics.alpha)

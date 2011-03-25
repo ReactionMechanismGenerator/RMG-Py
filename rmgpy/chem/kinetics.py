@@ -35,29 +35,29 @@ This module contains a variety of classes representing various thermodynamics
 models. All such models derive from the :class:`ThermoModel` base class, and
 generally vary by how the heat capacity data is represented:
 
-* :class:`ArrheniusModel` - A kinetics model based on the modified Arrhenius
+* :class:`Arrhenius` - A kinetics model based on the modified Arrhenius
   equation
 
-* :class:`ArrheniusEPModel` - A kinetics model based on the modified Arrhenius
+* :class:`ArrheniusEP` - A kinetics model based on the modified Arrhenius
   equation with Evans-Polanyi correction to the activation energy
 
-* :class:`MultiArrheniusModel` - A kinetics model based on a summation of
+* :class:`MultiArrhenius` - A kinetics model based on a summation of
   modified Arrhenius expressions
 
-* :class:`ThirdBodyModel` - A pressure-dependent kinetics model based on the modified Arrhenius
+* :class:`ThirdBody` - A pressure-dependent kinetics model based on the modified Arrhenius
   equation, but with an additional factor for the third body concentration
 
-* :class:`LindemannModel` - A pressure-dependent kinetics model based on the
+* :class:`Lindemann` - A pressure-dependent kinetics model based on the
   Lindemann equation
 
-* :class:`TroeModel` - A pressure-dependent kinetics model based on the
+* :class:`Troe` - A pressure-dependent kinetics model based on the
   Lindemann equation with improved Troe falloff factor
 
-* :class:`PDepArrheniusModel` - A pressure-dependent kinetics model based on a
+* :class:`PDepArrhenius` - A pressure-dependent kinetics model based on a
   set of modified Arrhenius equations at various pressures, which are then
   interpolated between on a logarithmic pressure scale
 
-* :class:`ChebyshevModel` - A pressure-dependent kinetics model using an array
+* :class:`Chebyshev` - A pressure-dependent kinetics model using an array
   of Chebyshev polynomials in inverse temperature and logarithmic pressure
 
 """
@@ -145,7 +145,7 @@ class KineticsModel:
 
 ################################################################################
 
-class ArrheniusModel(KineticsModel):
+class Arrhenius(KineticsModel):
     """
     Represent a set of modified Arrhenius kinetics. The kinetic expression has
     the form
@@ -186,7 +186,7 @@ class ArrheniusModel(KineticsModel):
         elif self.numReactants == 2: Aunits = 'm^3/(mol*s)'
         else: Aunits = 'm^%g/(mol^%g*s)' % (3*(self.numReactants-1), self.numReactants-1)
 
-        string = 'ArrheniusModel('
+        string = 'Arrhenius('
         string += 'A=(%g,"%s")' % (self.A, Aunits)
         string += ', n=%g' % (self.n)
         string += ', Ea=(%g,"kJ/mol")' % (self.Ea / 1000.)
@@ -205,7 +205,7 @@ class ArrheniusModel(KineticsModel):
         d = {}
         d['Pmin'] = self.Pmin
         d['Pmax'] = self.Pmax
-        return (ArrheniusModel, (self.A, self.n, self.Ea, self.T0, self.Tmin, self.Tmax, self.numReactants, self.comment), d)
+        return (Arrhenius, (self.A, self.n, self.Ea, self.T0, self.Tmin, self.Tmax, self.numReactants, self.comment), d)
 
     def __setstate__(self, d):
         """
@@ -258,7 +258,7 @@ class ArrheniusModel(KineticsModel):
     
 ################################################################################
 
-class ArrheniusEPModel(KineticsModel):
+class ArrheniusEP(KineticsModel):
     """
     Represent a set of modified Arrhenius kinetics with Evans-Polanyi data. The
     kinetic expression has the form
@@ -297,7 +297,7 @@ class ArrheniusEPModel(KineticsModel):
         elif self.numReactants == 2: Aunits = 'm^3/(mol*s)'
         else: Aunits = 'm^%g/(mol^%g*s)' % (3*(self.numReactants-1), self.numReactants-1)
 
-        string = 'ArrheniusEPModel('
+        string = 'ArrheniusEP('
         string += 'A=(%g,"%s")' % (self.A, Aunits)
         string += ', n=%g' % (self.n)
         string += ', alpha=%g' % (self.alpha)
@@ -316,7 +316,7 @@ class ArrheniusEPModel(KineticsModel):
         d = {}
         d['Pmin'] = self.Pmin
         d['Pmax'] = self.Pmax
-        return (ArrheniusEPModel, (self.A, self.n, self.alpha, self.E0, self.Tmin, self.Tmax, self.numReactants, self.comment), d)
+        return (ArrheniusEP, (self.A, self.n, self.alpha, self.E0, self.Tmin, self.Tmax, self.numReactants, self.comment), d)
 
     def __setstate__(self, d):
         """
@@ -350,15 +350,15 @@ class ArrheniusEPModel(KineticsModel):
 
     def toArrhenius(self, dHrxn):
         """
-        Return an :class:`ArrheniusModel` object corresponding to this object
+        Return an :class:`Arrhenius` object corresponding to this object
         by using the provided enthalpy of reaction `dHrxn` in J/mol to calculate
         the activation energy.
         """
-        return ArrheniusModel(A=self.A, n=self.n, Ea=self.getActivationEnergy(dHrxn), T0=1.0)
+        return Arrhenius(A=self.A, n=self.n, Ea=self.getActivationEnergy(dHrxn), T0=1.0)
 
 ################################################################################
 
-class MultiArrheniusModel(KineticsModel):
+class MultiArrhenius(KineticsModel):
     """
     Represent a rate coefficient as multiple sets of modified Arrhenius
     parameters, i.e.
@@ -370,7 +370,7 @@ class MultiArrheniusModel(KineticsModel):
     =============== =============== ============================================
     Attribute       Type            Description
     =============== =============== ============================================
-    `arrheniusList` ``list``        A list of the :class:`ArrheniusModel` objects that sum to represent the kinetics
+    `arrheniusList` ``list``        A list of the :class:`Arrhenius` objects that sum to represent the kinetics
     =============== =============== ============================================
 
     """
@@ -384,7 +384,7 @@ class MultiArrheniusModel(KineticsModel):
         Return a string representation that can be used to reconstruct the
         object.
         """
-        string = 'MultiArrheniusModel('
+        string = 'MultiArrhenius('
         string += 'arrheniusList=[%s]' % (', '.join([repr(arrh) for arrh in self.arrheniusList]))
         string += ', Tmin=(%g,"K")' % (self.Tmin)
         string += ', Tmax=(%g,"K")' % (self.Tmax)
@@ -400,7 +400,7 @@ class MultiArrheniusModel(KineticsModel):
         d = {}
         d['Pmin'] = self.Pmin
         d['Pmax'] = self.Pmax
-        return (MultiArrheniusModel, (self.arrheniusList, self.Tmin, self.Tmax, self.numReactants, self.comment), d)
+        return (MultiArrhenius, (self.arrheniusList, self.Tmin, self.Tmax, self.numReactants, self.comment), d)
 
     def __setstate__(self, d):
         """
@@ -420,7 +420,7 @@ class MultiArrheniusModel(KineticsModel):
         Return the rate coefficient k(T) in SI units at temperature
         `T` in K.
         """
-        cython.declare(k=cython.double, arrhenius=ArrheniusModel)
+        cython.declare(k=cython.double, arrhenius=Arrhenius)
         k = 0.0
         for arrhenius in self.arrheniusList:
             k += arrhenius.getRateCoefficient(T)
@@ -428,7 +428,7 @@ class MultiArrheniusModel(KineticsModel):
 
 ################################################################################
 
-class PDepArrheniusModel(KineticsModel):
+class PDepArrhenius(KineticsModel):
     """
     A kinetic model of a phenomenological rate coefficient k(T, P) using the
     expression
@@ -442,7 +442,7 @@ class PDepArrheniusModel(KineticsModel):
     Attribute       Type            Description
     =============== =============== ============================================
     `pressures`     :class:`list`   The list of pressures in Pa
-    `arrhenius`     :class:`list`   The list of :class:`ArrheniusModel` objects at each pressure
+    `arrhenius`     :class:`list`   The list of :class:`Arrhenius` objects at each pressure
     =============== =============== ============================================
     
     """
@@ -460,7 +460,7 @@ class PDepArrheniusModel(KineticsModel):
         Return a string representation that can be used to reconstruct the
         object.
         """
-        string = 'PDepArrheniusModel('
+        string = 'PDepArrhenius('
         string += 'pressures=([%s],"bar")' % (', '.join(['%g' % (P/1.0e5) for P in self.pressures]))
         string += ', arrhenius=[%s]' % (', '.join([repr(arrh) for arrh in self.arrhenius]))
         string += ', Tmin=(%g,"K")' % (self.Tmin)
@@ -476,7 +476,7 @@ class PDepArrheniusModel(KineticsModel):
         """
         A helper function used when pickling an object.
         """
-        return (PDepArrheniusModel, (self.pressures, self.arrhenius, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.numReactants, self.comment))
+        return (PDepArrhenius, (self.pressures, self.arrhenius, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.numReactants, self.comment))
 
     def isPressureDependent(self):
         """
@@ -486,11 +486,11 @@ class PDepArrheniusModel(KineticsModel):
 
     def __getAdjacentExpressions(self, P):
         """
-        Returns the pressures and ArrheniusModel expressions for the pressures that
+        Returns the pressures and Arrhenius expressions for the pressures that
         most closely bound the specified pressure `P` in Pa.
         """
         cython.declare(Plow=cython.double, Phigh=cython.double)
-        cython.declare(arrh=ArrheniusModel)
+        cython.declare(arrh=Arrhenius)
         cython.declare(i=cython.int, ilow=cython.int, ihigh=cython.int)
         
         if P in self.pressures:
@@ -513,7 +513,7 @@ class PDepArrheniusModel(KineticsModel):
         dependent Arrhenius expression.
         """
         cython.declare(Plow=cython.double, Phigh=cython.double)
-        cython.declare(alow=ArrheniusModel, ahigh=ArrheniusModel)
+        cython.declare(alow=Arrhenius, ahigh=Arrhenius)
         cython.declare(j=cython.int, klist=cython.double, klow=cython.double, khigh=cython.double)
         
         k = 0.0
@@ -537,13 +537,13 @@ class PDepArrheniusModel(KineticsModel):
         self.pressures = list(Plist)
         self.arrhenius = []
         for i in range(len(Plist)):
-            arrhenius = ArrheniusModel()
+            arrhenius = Arrhenius()
             arrhenius.fitToData(Tlist, K[:,i], T0)
             self.arrhenius.append(arrhenius)
 
 ################################################################################
 
-class ChebyshevModel(KineticsModel):
+class Chebyshev(KineticsModel):
     """
     A kinetic model of a phenomenological rate coefficient k(T, P) using the
     expression
@@ -594,7 +594,7 @@ class ChebyshevModel(KineticsModel):
             coeffs += '[%s]' % (','.join(['%g' % (self.coeffs[i,j]) for j in range(self.degreeP)]))
         coeffs += ']'
         
-        string = 'ChebyshevModel('
+        string = 'Chebyshev('
         string += 'coeffs=%s' % (coeffs)
         string += ', Tmin=(%g,"K")' % (self.Tmin)
         string += ', Tmax=(%g,"K")' % (self.Tmax)
@@ -609,7 +609,7 @@ class ChebyshevModel(KineticsModel):
         """
         A helper function used when pickling an object.
         """
-        return (ChebyshevModel, (self.coeffs, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.numReactants, self.comment))
+        return (Chebyshev, (self.coeffs, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.numReactants, self.comment))
 
     def isPressureDependent(self):
         """
@@ -718,7 +718,7 @@ class ChebyshevModel(KineticsModel):
 
 ################################################################################
 
-class ThirdBodyModel(KineticsModel):
+class ThirdBody(KineticsModel):
     """
     A kinetic model of a phenomenological rate coefficient k(T, P) using the
     expression
@@ -735,7 +735,7 @@ class ThirdBodyModel(KineticsModel):
     =============== ======================= ====================================
     Attribute       Type                    Description
     =============== ======================= ====================================
-    `arrheniusHigh` :class:`ArrheniusModel` The Arrhenius kinetics
+    `arrheniusHigh` :class:`Arrhenius` The Arrhenius kinetics
     `efficiencies`  ``dict``                A mapping of species to collider efficiencies
     =============== ======================= ====================================
 
@@ -751,7 +751,7 @@ class ThirdBodyModel(KineticsModel):
         Return a string representation that can be used to reconstruct the
         object.
         """
-        string = 'ThirdBodyModel('
+        string = 'ThirdBody('
         string += 'arrheniusHigh=%r' % (self.arrheniusHigh)
         string += ', efficiencies=%r' % (self.efficiencies)
         string += ', Tmin=(%g,"K")' % (self.Tmin)
@@ -767,7 +767,7 @@ class ThirdBodyModel(KineticsModel):
         """
         A helper function used when pickling an object.
         """
-        return (ThirdBodyModel, (self.arrheniusHigh, self.efficiencies, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.numReactants, self.comment))
+        return (ThirdBody, (self.arrheniusHigh, self.efficiencies, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.numReactants, self.comment))
 
     def isPressureDependent(self):
         """
@@ -827,7 +827,7 @@ class ThirdBodyModel(KineticsModel):
 
 ################################################################################
 
-class LindemannModel(ThirdBodyModel):
+class Lindemann(ThirdBody):
     """
     A kinetic model of a phenomenological rate coefficient k(T, P) using the
     expression
@@ -856,15 +856,15 @@ class LindemannModel(ThirdBodyModel):
     =============== ======================= ====================================
     Attribute       Type                    Description
     =============== ======================= ====================================
-    `arrheniusLow`  :class:`ArrheniusModel` The Arrhenius kinetics at the low-pressure limit
-    `arrheniusHigh` :class:`ArrheniusModel` The Arrhenius kinetics at the high-pressure limit
+    `arrheniusLow`  :class:`Arrhenius` The Arrhenius kinetics at the low-pressure limit
+    `arrheniusHigh` :class:`Arrhenius` The Arrhenius kinetics at the high-pressure limit
     `efficiencies`  ``dict``                A mapping of species to collider efficiencies
     =============== ======================= ====================================
 
     """
 
     def __init__(self, arrheniusLow=None, arrheniusHigh=None, efficiencies=None, Tmin=0.0, Tmax=1.0e10, Pmin=0.0, Pmax=1.0e100, numReactants=-1, comment=''):
-        ThirdBodyModel.__init__(self, arrheniusHigh=arrheniusHigh, efficiencies=efficiencies, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, numReactants=numReactants, comment=comment)
+        ThirdBody.__init__(self, arrheniusHigh=arrheniusHigh, efficiencies=efficiencies, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, numReactants=numReactants, comment=comment)
         self.arrheniusLow = arrheniusLow
 
     def __repr__(self):
@@ -872,7 +872,7 @@ class LindemannModel(ThirdBodyModel):
         Return a string representation that can be used to reconstruct the
         object.
         """
-        string = 'LindemannModel('
+        string = 'Lindemann('
         string += 'arrheniusHigh=%r' % (self.arrheniusHigh)
         string += ', arrheniusLow=%r' % (self.arrheniusLow)
         string += ', efficiencies=%r' % (self.efficiencies)
@@ -889,7 +889,7 @@ class LindemannModel(ThirdBodyModel):
         """
         A helper function used when pickling an object.
         """
-        return (LindemannModel, (self.arrheniusLow, self.arrheniusHigh, self.efficiencies, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.numReactants, self.comment))
+        return (Lindemann, (self.arrheniusLow, self.arrheniusHigh, self.efficiencies, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.numReactants, self.comment))
 
     def getRateCoefficient(self, T, P, collider=None):
         """
@@ -910,7 +910,7 @@ class LindemannModel(ThirdBodyModel):
 
 ################################################################################
 
-class TroeModel(LindemannModel):
+class Troe(Lindemann):
     """
     A kinetic model of a phenomenological rate coefficient k(T, P) using the
     expression
@@ -953,8 +953,8 @@ class TroeModel(LindemannModel):
     =============== ======================= ====================================
     Attribute       Type                    Description
     =============== ======================= ====================================
-    `arrheniusLow`  :class:`ArrheniusModel` The Arrhenius kinetics at the low-pressure limit
-    `arrheniusHigh` :class:`ArrheniusModel` The Arrhenius kinetics at the high-pressure limit
+    `arrheniusLow`  :class:`Arrhenius` The Arrhenius kinetics at the low-pressure limit
+    `arrheniusHigh` :class:`Arrhenius` The Arrhenius kinetics at the high-pressure limit
     `efficiencies`  ``dict``                A mapping of species to collider efficiencies
     `alpha`         ``float``               The :math:`\\alpha` parameter
     `T1`            ``float``               The :math:`T_1` parameter
@@ -965,7 +965,7 @@ class TroeModel(LindemannModel):
     """
 
     def __init__(self, arrheniusLow=None, arrheniusHigh=None, efficiencies=None, alpha=0.0, T3=0.0, T1=0.0, T2=1e100, Tmin=0.0, Tmax=1.0e10, Pmin=0.0, Pmax=1.0e100, numReactants=-1, comment=''):
-        LindemannModel.__init__(self, arrheniusLow=arrheniusLow, arrheniusHigh=arrheniusHigh, efficiencies=efficiencies, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, numReactants=numReactants, comment=comment)
+        Lindemann.__init__(self, arrheniusLow=arrheniusLow, arrheniusHigh=arrheniusHigh, efficiencies=efficiencies, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, numReactants=numReactants, comment=comment)
         self.alpha = constants.processQuantity(alpha)[0]
         self.T3 = constants.processQuantity(T3)[0]
         self.T1 = constants.processQuantity(T1)[0]
@@ -976,7 +976,7 @@ class TroeModel(LindemannModel):
         Return a string representation that can be used to reconstruct the
         object.
         """
-        string = 'TroeModel('
+        string = 'Troe('
         string += 'arrheniusHigh=%r' % (self.arrheniusHigh)
         string += ', arrheniusLow=%r' % (self.arrheniusLow)
         string += ', efficiencies=%r' % (self.efficiencies)
@@ -997,7 +997,7 @@ class TroeModel(LindemannModel):
         """
         A helper function used when pickling an object.
         """
-        return (TroeModel, (self.arrheniusLow, self.arrheniusHigh, self.efficiencies, self.alpha, self.T3, self.T1, self.T2, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.numReactants, self.comment))
+        return (Troe, (self.arrheniusLow, self.arrheniusHigh, self.efficiencies, self.alpha, self.T3, self.T1, self.T2, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.numReactants, self.comment))
 
     def getRateCoefficient(self, T, P, collider=None):
         """

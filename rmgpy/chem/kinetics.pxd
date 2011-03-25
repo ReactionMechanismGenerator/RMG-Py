@@ -55,7 +55,7 @@ cdef class KineticsModel:
 
 ################################################################################
 
-cdef class ArrheniusModel(KineticsModel):
+cdef class Arrhenius(KineticsModel):
     
     cdef public double A
     cdef public double T0
@@ -72,7 +72,7 @@ cdef class ArrheniusModel(KineticsModel):
 
 ################################################################################
 
-cdef class ArrheniusEPModel(KineticsModel):
+cdef class ArrheniusEP(KineticsModel):
     
     cdef public double A
     cdef public double E0
@@ -87,7 +87,7 @@ cdef class ArrheniusEPModel(KineticsModel):
 
 ################################################################################
 
-cdef class MultiArrheniusModel(KineticsModel):
+cdef class MultiArrhenius(KineticsModel):
 
     cdef public list arrheniusList
 
@@ -97,7 +97,7 @@ cdef class MultiArrheniusModel(KineticsModel):
 
 ################################################################################
 
-cdef class PDepArrheniusModel(KineticsModel):
+cdef class PDepArrhenius(KineticsModel):
     
     cdef public list pressures
     cdef public list arrhenius
@@ -112,7 +112,7 @@ cdef class PDepArrheniusModel(KineticsModel):
 
 ################################################################################
 
-cdef class ChebyshevModel(KineticsModel):
+cdef class Chebyshev(KineticsModel):
     
     cdef public object coeffs
     cdef public int degreeT
@@ -133,7 +133,7 @@ cdef class ChebyshevModel(KineticsModel):
 
 ################################################################################
 
-cdef class ThirdBodyModel(KineticsModel):
+cdef class ThirdBody(KineticsModel):
 
     cdef public ArrheniusModel arrheniusHigh
     cdef public dict efficiencies
@@ -146,7 +146,7 @@ cdef class ThirdBodyModel(KineticsModel):
 
 ################################################################################
 
-cdef class LindemannModel(ThirdBodyModel):
+cdef class Lindemann(ThirdBodyModel):
 
     cdef public ArrheniusModel arrheniusLow
     
@@ -154,7 +154,7 @@ cdef class LindemannModel(ThirdBodyModel):
 
 ################################################################################
 
-cdef class TroeModel(LindemannModel):
+cdef class Troe(LindemannModel):
 
     cdef public double alpha, T1, T2, T3
     
