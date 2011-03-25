@@ -77,8 +77,8 @@ class LennardJones:
     """
 
     def __init__(self, sigma=0.0, epsilon=0.0):
-        self.sigma = constants.processQuantity(sigma)[0]
-        self.epsilon = constants.processQuantity(epsilon)[0]
+        self.sigma = constants.Quantity(sigma).value
+        self.epsilon = constants.Quantity(epsilon).value
 
     def __repr__(self):
         """
@@ -124,10 +124,10 @@ class Species:
         self.states = states
         self.molecule = molecule or []
         self.geometry = geometry
-        self.E0 = constants.processQuantity(E0)[0]
+        self.E0 = constants.Quantity(E0).value
         self.lennardJones = lennardJones
         self.reactive = reactive
-        self.molecularWeight = constants.processQuantity(molecularWeight)[0]
+        self.molecularWeight = constants.Quantity(molecularWeight).value
 
     def __repr__(self):
         """
@@ -214,8 +214,8 @@ class TransitionState:
         self.label = label
         self.states = states
         self.geometry = geometry
-        self.E0 = constants.processQuantity(E0)[0]
-        self.frequency = constants.processQuantity(frequency)[0]
+        self.E0 = constants.Quantity(E0).value
+        self.frequency = constants.Quantity(frequency).value
         self.degeneracy = degeneracy
 
     def __repr__(self):

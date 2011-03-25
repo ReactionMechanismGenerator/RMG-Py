@@ -26,7 +26,7 @@ class ConstantsTest(unittest.TestCase):
         self.assertEqual(q.units, "")
         self.assertEqual(q.uncertaintyType, "")
 
-        q = Quantity(10.0,"cm")
+        q = Quantity((10.0,"cm"))
         self.assertEqual(q.value, 0.1)
         self.assertEqual(q.uncertainty, 0.0)
         self.assertEqual(q.values, None)
@@ -34,7 +34,7 @@ class ConstantsTest(unittest.TestCase):
         self.assertEqual(q.units, "cm")
         self.assertEqual(q.uncertaintyType, "")
 
-        q = Quantity(10.0,"cm","+|-",2.0)
+        q = Quantity((10.0,"cm","+|-",2.0))
         self.assertEqual(q.value, 0.1)
         self.assertEqual(q.uncertainty, 0.02)
         self.assertEqual(q.values, None)
@@ -42,7 +42,7 @@ class ConstantsTest(unittest.TestCase):
         self.assertEqual(q.units, "cm")
         self.assertEqual(q.uncertaintyType, "+|-")
         
-        q = Quantity(10.0,"cm","*|/",2.0)
+        q = Quantity((10.0,"cm","*|/",2.0))
         self.assertEqual(q.value, 0.1)
         self.assertEqual(q.uncertainty, 2.0)
         self.assertEqual(q.values, None)
@@ -50,7 +50,7 @@ class ConstantsTest(unittest.TestCase):
         self.assertEqual(q.units, "cm")
         self.assertEqual(q.uncertaintyType, "*|/")
         
-        q = Quantity([30.0,20.0,10.0],"cm","+|-",2.0)
+        q = Quantity(([30.0,20.0,10.0],"cm","+|-",2.0))
         self.assertEqual(q.value, 0.0)
         self.assertEqual(q.uncertainty, 0.02)
         self.assertEqual(q.values[0], 0.3)
@@ -60,7 +60,7 @@ class ConstantsTest(unittest.TestCase):
         self.assertEqual(q.units, "cm")
         self.assertEqual(q.uncertaintyType, "+|-")
         
-        q = Quantity([10.0,20.0,30.0],"cm","+|-",[1.0,2.0,3.0])
+        q = Quantity(([10.0,20.0,30.0],"cm","+|-",[1.0,2.0,3.0]))
         self.assertEqual(q.value, 0.0)
         self.assertEqual(q.uncertainty, 0.0)
         self.assertEqual(q.values[0], 0.1)

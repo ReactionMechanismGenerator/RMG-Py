@@ -176,7 +176,7 @@ class ReactionTest(unittest.TestCase):
         self.assertAlmostEqual(rxn0.transitionState.E0 / 1e9, rxn.transitionState.E0 / 1e9, 4)
         self.assertAlmostEqual(rxn0.transitionState.frequency, rxn.transitionState.frequency, 2)
 
-        self.assertAlmostEqual(rxn0.kinetics.A / 1e6, rxn.kinetics.A / 1e6, 4)
+        self.assertAlmostEqual(rxn0.kinetics.A.value / 1e6, rxn.kinetics.A.value / 1e6, 4)
         self.assertEqual(rxn0.kinetics.n, rxn.kinetics.n)
         self.assertEqual(rxn0.kinetics.T0, rxn.kinetics.T0)
         self.assertEqual(rxn0.kinetics.Ea, rxn.kinetics.Ea)
