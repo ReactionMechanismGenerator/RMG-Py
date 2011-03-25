@@ -111,7 +111,37 @@ class Quantity:
     than the units they are specified as.
     """
 
-    def __init__(self, value=None, units='', uncertaintyType='', uncertainty=0.0):
+    def __init__(self, *args):
+        # Set default attribute values
+        self.value = 0.0
+        self.values = None
+        self.units = ''
+        self.uncertaintyType = ''
+        self.uncertainty = 0.0
+        self.uncertainties = None
+
+        # Unpack arguments
+        # If given, the order should be: value(s), units[, uncertaintyType], uncertainty
+        units = ''; uncertaintyType = ''; uncertainty = None
+        if isinstance(args, numpy.ndarray):
+            # We've been given just an array of numbers
+            value = args
+        elif isinstance(args, float) or isinstance(args, int):
+            # We've been given just a single number
+            value = quantity
+        elif isinstance(args, list) or isinstance(args, tuple):
+            if len(args) == 1:
+                value = args[0]
+            elif len(args) == 2:
+                value, units = args
+            elif len(args) == 3:
+                value, units, uncertainty = args
+            elif len(args) == 4:
+                value, units, uncertaintyType, uncertainty = args
+            else:
+                value = args
+            if not isinstance(units, str) or not isinstance(uncertaintyType, str):
+                value = args; units = ''; uncertaintyType = ''; uncertainty = None
 
         # Process value parameter
         if isinstance(value, list):
@@ -188,7 +218,7 @@ class Quantity:
         object.
         """
         factor = getConversionFactorFromSI(self.units)
-        string = 'Quantity('
+        string = '('
         if self.values is None:
             string += '%g' % (self.value * factor)
         else:
