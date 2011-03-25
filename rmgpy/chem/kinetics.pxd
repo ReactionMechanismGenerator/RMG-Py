@@ -38,10 +38,7 @@ cdef extern from "math.h":
 
 cdef class KineticsModel:
     
-    cdef public double Tmin
-    cdef public double Tmax
-    cdef public double Pmin
-    cdef public double Pmax
+    cdef public Quantity Tmin, Tmax, Pmin, Pmax
     cdef public int numReactants
     cdef public str comment
     
@@ -57,10 +54,7 @@ cdef class KineticsModel:
 
 cdef class Arrhenius(KineticsModel):
     
-    cdef public double A
-    cdef public double T0
-    cdef public double Ea
-    cdef public double n
+    cdef public Quantity A, T0, Ea, n
     
     cpdef bint isPressureDependent(self)
 
@@ -68,17 +62,14 @@ cdef class Arrhenius(KineticsModel):
 
     cpdef changeT0(self, double T0)
 
-    cpdef fitToData(self, numpy.ndarray Tlist, numpy.ndarray klist, double T0=?)
+    cpdef fitToData(self, Quantity Tlist, Quantity klist, double T0=?)
 
 ################################################################################
 
 cdef class ArrheniusEP(KineticsModel):
     
-    cdef public double A
-    cdef public double E0
-    cdef public double n
-    cdef public double alpha
-    
+    cdef public Quantity A, E0, n, alpha
+
     cpdef bint isPressureDependent(self)
 
     cpdef double getActivationEnergy(self, double dHrxn)
@@ -99,7 +90,7 @@ cdef class MultiArrhenius(KineticsModel):
 
 cdef class PDepArrhenius(KineticsModel):
     
-    cdef public list pressures
+    cdef public Quantity pressures
     cdef public list arrhenius
     
     cpdef bint isPressureDependent(self)
@@ -156,6 +147,6 @@ cdef class Lindemann(ThirdBodyModel):
 
 cdef class Troe(LindemannModel):
 
-    cdef public double alpha, T1, T2, T3
+    cdef public Quantity alpha, T1, T2, T3
     
     cpdef double getRateCoefficient(self, double T, double P, collider=?)

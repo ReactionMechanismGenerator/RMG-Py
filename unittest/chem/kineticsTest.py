@@ -102,12 +102,12 @@ class KineticsTest(unittest.TestCase):
         kinetics = cPickle.loads(cPickle.dumps(kinetics0))
 
         Narrh = 2
-        self.assertEqual(len(kinetics0.pressures), Narrh)
-        self.assertEqual(len(kinetics.pressures), Narrh)
+        self.assertEqual(len(kinetics0.pressures.values), Narrh)
+        self.assertEqual(len(kinetics.pressures.values), Narrh)
         self.assertEqual(len(kinetics0.arrhenius), Narrh)
         self.assertEqual(len(kinetics.arrhenius), Narrh)
         for i in range(Narrh):
-            self.assertEqual(kinetics0.pressures[i], kinetics.pressures[i])
+            self.assertEqual(kinetics0.pressures.values[i], kinetics.pressures.values[i])
             self.assertEqual(kinetics0.arrhenius[i].A, kinetics.arrhenius[i].A)
             self.assertEqual(kinetics0.arrhenius[i].n, kinetics.arrhenius[i].n)
             self.assertEqual(kinetics0.arrhenius[i].T0, kinetics.arrhenius[i].T0)
@@ -334,12 +334,12 @@ class KineticsTest(unittest.TestCase):
         exec('kinetics = %r' % kinetics0)
 
         Narrh = 2
-        self.assertEqual(len(kinetics0.pressures), Narrh)
-        self.assertEqual(len(kinetics.pressures), Narrh)
+        self.assertEqual(len(kinetics0.pressures.values), Narrh)
+        self.assertEqual(len(kinetics.pressures.values), Narrh)
         self.assertEqual(len(kinetics0.arrhenius), Narrh)
         self.assertEqual(len(kinetics.arrhenius), Narrh)
         for i in range(Narrh):
-            self.assertEqual(kinetics0.pressures[i], kinetics.pressures[i])
+            self.assertEqual(kinetics0.pressures.values[i], kinetics.pressures.values[i])
             self.assertEqual(kinetics0.arrhenius[i].A, kinetics.arrhenius[i].A)
             self.assertEqual(kinetics0.arrhenius[i].n, kinetics.arrhenius[i].n)
             self.assertEqual(kinetics0.arrhenius[i].T0, kinetics.arrhenius[i].T0)

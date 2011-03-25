@@ -88,24 +88,24 @@ class KineticsModel:
     Represent a set of kinetic data. The details of the form of the kinetic
     data are left to a derived class. The attributes are:
 
-    =============== =============== ============================================
-    Attribute       Type            Description
-    =============== =============== ============================================
-    `Tmin`          :class:`float`  The minimum absolute temperature in K at which the model is valid
-    `Tmax`          :class:`float`  The maximum absolute temperature in K at which the model is valid
-    `Pmin`          :class:`float`  The minimum absolute pressure in Pa at which the model is valid
-    `Pmax`          :class:`float`  The maximum absolute pressure in Pa at which the model is valid
-    `numReactants`  :class:`int`    The number of reactants (used to determine the units of the kinetics)
-    `comment`       :class:`str`    A string containing information about the model (e.g. its source)
-    =============== =============== ============================================
-    
+    =============== =================== ========================================
+    Attribute       Type                Description
+    =============== =================== ========================================
+    `Tmin`          :class:`Quantity`   The minimum absolute temperature in K at which the model is valid
+    `Tmax`          :class:`Quantity`   The maximum absolute temperature in K at which the model is valid
+    `Pmin`          :class:`Quantity`   The minimum absolute pressure in Pa at which the model is valid
+    `Pmax`          :class:`Quantity`   The maximum absolute pressure in Pa at which the model is valid
+    `numReactants`  :class:`int`        The number of reactants (used to determine the units of the kinetics)
+    `comment`       :class:`str`        A string containing information about the model (e.g. its source)
+    =============== =================== ========================================
+
     """
 
-    def __init__(self, Tmin=0.0, Tmax=1.0e10, Pmin=0.0, Pmax=1.0e100, numReactants=-1, comment=''):
-        self.Tmin = constants.processQuantity(Tmin)[0]
-        self.Tmax = constants.processQuantity(Tmax)[0]
-        self.Pmin = constants.processQuantity(Pmin)[0]
-        self.Pmax = constants.processQuantity(Pmax)[0]
+    def __init__(self, Tmin=None, Tmax=None, Pmin=None, Pmax=None, numReactants=-1, comment=''):
+        self.Tmin = constants.Quantity(Tmin)
+        self.Tmax = constants.Quantity(Tmax)
+        self.Pmin = constants.Quantity(Pmin)
+        self.Pmax = constants.Quantity(Pmax)
         self.numReactants = numReactants
         self.comment = comment
 
@@ -120,14 +120,14 @@ class KineticsModel:
         Return :data:`True` if temperature `T` in K is within the valid 
         temperature range and :data:`False` if not. 
         """
-        return (self.Tmin <= T and T <= self.Tmax)
+        return (self.Tmin.value <= T and T <= self.Tmax.value)
 
     def isPressureValid(self, P):
         """
         Return :data:`True` if pressure `P` in Pa is within the valid pressure
         range, and :data:`False` if not.
         """
-        return (self.Pmin <= P and P <= self.Pmax)
+        return (self.Pmin.value <= P and P <= self.Pmax.value)
 
     def isPressureDependent(self):
         """
@@ -156,23 +156,23 @@ class Arrhenius(KineticsModel):
     parameters to be set, :math:`T` is absolute temperature, and :math:`R` is
     the gas law constant. The attributes are:
 
-    =============== =============== ============================================
-    Attribute       Type            Description
-    =============== =============== ============================================
-    `A`             :class:`float`  The preexponential factor in s^-1, m^3/mol*s, etc.
-    `T0`            :class:`float`  The reference temperature in K
-    `n`             :class:`float`  The temperature exponent
-    `Ea`            :class:`float`  The activation energy in J/mol
-    =============== =============== ============================================
+    =============== =================== ========================================
+    Attribute       Type                Description
+    =============== =================== ========================================
+    `A`             :class:`Quantity`   The preexponential factor in s^-1, m^3/mol*s, etc.
+    `T0`            :class:`Quantity`   The reference temperature in K
+    `n`             :class:`Quantity`   The temperature exponent
+    `Ea`            :class:`Quantity`   The activation energy in J/mol
+    =============== =================== ========================================
     
     """
     
-    def __init__(self, A=0.0, n=0.0, Ea=0.0, T0=1.0, Tmin=0.0, Tmax=1.0e10, numReactants=-1, comment=''):
+    def __init__(self, A=0.0, n=0.0, Ea=0.0, T0=1.0, Tmin=None, Tmax=None, numReactants=-1, comment=''):
         KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, numReactants=numReactants, comment=comment)
-        self.A = constants.processQuantity(A)[0]
-        self.T0 = constants.processQuantity(T0)[0]
-        self.n = constants.processQuantity(n)[0]
-        self.Ea = constants.processQuantity(Ea)[0]
+        self.A = constants.Quantity(A)
+        self.T0 = constants.Quantity(T0)
+        self.n = constants.Quantity(n)
+        self.Ea = constants.Quantity(Ea)
     
     def __str__(self):
         return 'k(T) = %g * (T / %g) ** %g * exp(-%g / RT)    %g < T < %g' % (self.A, self.T0, self.n, self.Ea, self.Tmin, self.Tmax)
@@ -182,17 +182,9 @@ class Arrhenius(KineticsModel):
         Return a string representation that can be used to reconstruct the
         object.
         """
-        if self.numReactants == 1: Aunits = 's^-1'
-        elif self.numReactants == 2: Aunits = 'm^3/(mol*s)'
-        else: Aunits = 'm^%g/(mol^%g*s)' % (3*(self.numReactants-1), self.numReactants-1)
-
-        string = 'Arrhenius('
-        string += 'A=(%g,"%s")' % (self.A, Aunits)
-        string += ', n=%g' % (self.n)
-        string += ', Ea=(%g,"kJ/mol")' % (self.Ea / 1000.)
-        string += ', T0=(%g,"K")' % (self.T0)
-        string += ', Tmin=(%g,"K")' % (self.Tmin)
-        string += ', Tmax=(%g,"K")' % (self.Tmax)
+        string = 'Arrhenius(A=%r, n=%r, Ea=%r, T0=%r' % (self.A, self.n, self.Ea, self.T0)
+        string += ', Tmin=%r' % (self.Tmin)
+        string += ', Tmax=%r' % (self.Tmax)
         string += ', numReactants=%i' % (self.numReactants)
         string += ', comment="%s"' % (self.comment)
         string += ')'
@@ -225,17 +217,17 @@ class Arrhenius(KineticsModel):
         Return the rate coefficient k(T) in SI units at temperature 
         `T` in K.
         """
-        return self.A * (T / self.T0)** self.n * math.exp(-self.Ea / constants.R / T)
+        return self.A.value * (T / self.T0.value)** self.n.value * math.exp(-self.Ea.value / constants.R / T)
 
     def changeT0(self, T0):
         """
         Changes the reference temperature used in the exponent to `T0`, and
         adjusts the preexponential accordingly.
         """
-        self.A = (self.T0 / T0)**self.n
-        self.T0 = T0
+        self.A.value = (self.T0.value / T0)**self.n
+        self.T0.value = T0.value
 
-    def fitToData(self, Tlist, klist, T0=298.15):
+    def fitToData(self, Tlist, klist, T0=298.15, numReactants=1):
         """
         Fit the Arrhenius parameters to a set of rate coefficient data `klist`
         corresponding to a set of temperatures `Tlist` in K. A linear least-
@@ -250,10 +242,10 @@ class Arrhenius(KineticsModel):
         b = numpy.log(klist)
         x = numpy.linalg.lstsq(A,b)[0]
         
-        self.A = math.exp(x[0])
-        self.n = x[1]
-        self.Ea = x[2]
-        self.T0 = T0
+        self.A = constants.Quantity(math.exp(x[0]), klist.units)
+        self.n = constants.Quantity(x[1])
+        self.Ea = constants.Quantity(x[2], "J/mol")
+        self.T0 = constants.Quantity(T0, "K")
         return self
     
 ################################################################################
@@ -267,23 +259,23 @@ class ArrheniusEP(KineticsModel):
 
     The attributes are:
 
-    =============== =============== ============================================
-    Attribute       Type            Description
-    =============== =============== ============================================
-    `A`             :class:`float`  The preexponential factor in s^-1, m^3/mol*s, etc.
-    `n`             :class:`float`  The temperature exponent
-    `E0`            :class:`float`  The activation energy at zero enthalpy of reaction in J/mol
-    `alpha`         :class:`float`  The linear dependence of activation energy on enthalpy of reaction
-    =============== =============== ============================================
-    
+    =============== =================== ========================================
+    Attribute       Type                Description
+    =============== =================== ========================================
+    `A`             :class:`Quantity`   The preexponential factor in s^-1, m^3/mol*s, etc.
+    `n`             :class:`Quantity`   The temperature exponent
+    `E0`            :class:`Quantity`   The activation energy at zero enthalpy of reaction in J/mol
+    `alpha`         :class:`Quantity`   The linear dependence of activation energy on enthalpy of reaction
+    =============== =================== ========================================
+
     """
 
-    def __init__(self, A=0.0, n=0.0, alpha=0.0, E0=0.0, Tmin=0.0, Tmax=1.0e10, numReactants=-1, comment=''):
+    def __init__(self, A=0.0, n=0.0, alpha=0.0, E0=0.0, Tmin=None, Tmax=None, numReactants=-1, comment=''):
         KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, numReactants=numReactants, comment=comment)
-        self.A = constants.processQuantity(A)[0]
-        self.n = constants.processQuantity(n)[0]
-        self.alpha = constants.processQuantity(alpha)[0]
-        self.E0 = constants.processQuantity(E0)[0]
+        self.A = constants.Quantity(A)
+        self.n = constants.Quantity(n)
+        self.alpha = constants.Quantity(alpha)
+        self.E0 = constants.Quantity(E0)
 
     def __str__(self):
         return 'k(T) = %g * T ** %g * exp(-(%g + %g * dHrxn) / RT)    %g < T < %g' % (self.A, self.n, self.E0, self.alpha, self.Tmin, self.Tmax)
@@ -293,17 +285,9 @@ class ArrheniusEP(KineticsModel):
         Return a string representation that can be used to reconstruct the
         object.
         """
-        if self.numReactants == 1: Aunits = 's^-1'
-        elif self.numReactants == 2: Aunits = 'm^3/(mol*s)'
-        else: Aunits = 'm^%g/(mol^%g*s)' % (3*(self.numReactants-1), self.numReactants-1)
-
-        string = 'ArrheniusEP('
-        string += 'A=(%g,"%s")' % (self.A, Aunits)
-        string += ', n=%g' % (self.n)
-        string += ', alpha=%g' % (self.alpha)
-        string += ', E0=(%g,"kJ/mol")' % (self.E0 / 1000.)
-        string += ', Tmin=(%g,"K")' % (self.Tmin)
-        string += ', Tmax=(%g,"K")' % (self.Tmax)
+        string = 'ArrheniusEP(A=%r, n=%r, alpha=%r, E0=%r' % (self.A, self.n, self.alpha, self.E0)
+        string += ', Tmin=%r' % (self.Tmin)
+        string += ', Tmax=%r' % (self.Tmax)
         string += ', numReactants=%i' % (self.numReactants)
         string += ', comment="%s"' % (self.comment)
         string += ')'
@@ -336,7 +320,7 @@ class ArrheniusEP(KineticsModel):
         Return the activation energy in J/mol using the enthalpy of reaction 
         `dHrxn` in J/mol.
         """
-        return self.E0 + self.alpha * dHrxn
+        return self.E0.value + self.alpha * dHrxn.value
     
     def getRateCoefficient(self, T, dHrxn):
         """
@@ -346,7 +330,7 @@ class ArrheniusEP(KineticsModel):
         """
         Ea = cython.declare(cython.double)
         Ea = self.getActivationEnergy(dHrxn)
-        return self.A * (T ** self.n) * math.exp(-self.Ea / constants.R / T)
+        return self.A.value * (T ** self.n.value) * math.exp(-Ea / constants.R / T)
 
     def toArrhenius(self, dHrxn):
         """
@@ -354,7 +338,7 @@ class ArrheniusEP(KineticsModel):
         by using the provided enthalpy of reaction `dHrxn` in J/mol to calculate
         the activation energy.
         """
-        return Arrhenius(A=self.A, n=self.n, Ea=self.getActivationEnergy(dHrxn), T0=1.0)
+        return Arrhenius(A=self.A, n=self.n, Ea=(self.getActivationEnergy(dHrxn),"J/mol"), T0=(1.0,"K"))
 
 ################################################################################
 
@@ -386,8 +370,8 @@ class MultiArrhenius(KineticsModel):
         """
         string = 'MultiArrhenius('
         string += 'arrheniusList=[%s]' % (', '.join([repr(arrh) for arrh in self.arrheniusList]))
-        string += ', Tmin=(%g,"K")' % (self.Tmin)
-        string += ', Tmax=(%g,"K")' % (self.Tmax)
+        string += ', Tmin=%r' % (self.Tmin)
+        string += ', Tmax=%r' % (self.Tmax)
         string += ', numReactants=%i' % (self.numReactants)
         string += ', comment="%s"' % (self.comment)
         string += ')'
@@ -449,10 +433,7 @@ class PDepArrhenius(KineticsModel):
 
     def __init__(self, pressures=None, arrhenius=None, Tmin=0.0, Tmax=1.0e10, Pmin=0.0, Pmax=1.0e100, numReactants=-1, comment=''):
         KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, numReactants=numReactants, comment=comment)
-        if pressures:
-            self.pressures = list(constants.processQuantity(pressures)[0])
-        else:
-            self.pressures = []
+        self.pressures = constants.Quantity(pressures)
         self.arrhenius = arrhenius or []
 
     def __repr__(self):
@@ -461,12 +442,12 @@ class PDepArrhenius(KineticsModel):
         object.
         """
         string = 'PDepArrhenius('
-        string += 'pressures=([%s],"bar")' % (', '.join(['%g' % (P/1.0e5) for P in self.pressures]))
+        string += 'pressures=%r' % (self.pressures)
         string += ', arrhenius=[%s]' % (', '.join([repr(arrh) for arrh in self.arrhenius]))
-        string += ', Tmin=(%g,"K")' % (self.Tmin)
-        string += ', Tmax=(%g,"K")' % (self.Tmax)
-        string += ', Pmin=(%g,"bar")' % (self.Pmin / 1.0e5)
-        string += ', Pmax=(%g,"bar")' % (self.Pmax / 1.0e5)
+        string += ', Tmin=%r' % (self.Tmin)
+        string += ', Tmax=%r' % (self.Tmax)
+        string += ', Pmin=%r' % (self.Pmin)
+        string += ', Pmax=%r' % (self.Pmax)
         string += ', numReactants=%i' % (self.numReactants)
         string += ', comment="%s"' % (self.comment)
         string += ')'
@@ -489,19 +470,20 @@ class PDepArrhenius(KineticsModel):
         Returns the pressures and Arrhenius expressions for the pressures that
         most closely bound the specified pressure `P` in Pa.
         """
-        cython.declare(Plow=cython.double, Phigh=cython.double)
+        cython.declare(Plow=cython.double, Phigh=cython.double, pressures=list)
         cython.declare(arrh=Arrhenius)
         cython.declare(i=cython.int, ilow=cython.int, ihigh=cython.int)
-        
-        if P in self.pressures:
-            arrh = self.arrhenius[self.pressures.index(P)]
+
+        pressures = [pressure.value for pressure in self.pressures]
+        if P in pressures:
+            arrh = self.arrhenius[pressures.index(P)]
             return P, P, arrh, arrh
         else:
-            ilow = 0; ihigh = -1; Plow = self.pressures[0]; Phigh = 0.0
-            for i in range(1, len(self.pressures)):
-                if self.pressures[i] <= P:
+            ilow = 0; ihigh = -1; Plow = pressures[0]; Phigh = 0.0
+            for i in range(1, len(pressures)):
+                if pressures[i] <= P:
                     ilow = i; Plow = P
-                if self.pressures[i] > P and ihigh is None:
+                if pressures[i] > P and ihigh is None:
                     ihigh = i; Phigh = P
             
             return Plow, Phigh, self.arrhenius[ilow], self.arrhenius[ihigh]
@@ -534,11 +516,11 @@ class PDepArrhenius(KineticsModel):
         pressure.
         """
         cython.declare(i=cython.int)
-        self.pressures = list(Plist)
+        self.pressures = Plist
         self.arrhenius = []
         for i in range(len(Plist)):
             arrhenius = Arrhenius()
-            arrhenius.fitToData(Tlist, K[:,i], T0)
+            arrhenius.fitToData(Tlist, constants.Quantity(K[:,i], K.units), T0)
             self.arrhenius.append(arrhenius)
 
 ################################################################################
@@ -575,7 +557,7 @@ class Chebyshev(KineticsModel):
     def __init__(self, coeffs=None, Tmin=0.0, Tmax=1.0e10, Pmin=0.0, Pmax=1.0e100, numReactants=-1, comment=''):
         KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, numReactants=numReactants, comment=comment)
         if coeffs is not None:
-            self.coeffs = constants.processQuantity(coeffs)[0]
+            self.coeffs = constants.Quantity(numpy.array(coeffs, numpy.float64)).values
             self.degreeT = self.coeffs.shape[0]
             self.degreeP = self.coeffs.shape[1]
         else:
@@ -596,10 +578,10 @@ class Chebyshev(KineticsModel):
         
         string = 'Chebyshev('
         string += 'coeffs=%s' % (coeffs)
-        string += ', Tmin=(%g,"K")' % (self.Tmin)
-        string += ', Tmax=(%g,"K")' % (self.Tmax)
-        string += ', Pmin=(%g,"bar")' % (self.Pmin / 1.0e5)
-        string += ', Pmax=(%g,"bar")' % (self.Pmax / 1.0e5)
+        string += ', Tmin=%r' % (self.Tmin)
+        string += ', Tmax=%r' % (self.Tmax)
+        string += ', Pmin=%r' % (self.Pmin)
+        string += ', Pmax=%r' % (self.Pmax)
         string += ', numReactants=%i' % (self.numReactants)
         string += ', comment="%s"' % (self.comment)
         string += ')'
@@ -735,7 +717,7 @@ class ThirdBody(KineticsModel):
     =============== ======================= ====================================
     Attribute       Type                    Description
     =============== ======================= ====================================
-    `arrheniusHigh` :class:`Arrhenius` The Arrhenius kinetics
+    `arrheniusHigh` :class:`Arrhenius`      The Arrhenius kinetics
     `efficiencies`  ``dict``                A mapping of species to collider efficiencies
     =============== ======================= ====================================
 
@@ -754,10 +736,10 @@ class ThirdBody(KineticsModel):
         string = 'ThirdBody('
         string += 'arrheniusHigh=%r' % (self.arrheniusHigh)
         string += ', efficiencies=%r' % (self.efficiencies)
-        string += ', Tmin=(%g,"K")' % (self.Tmin)
-        string += ', Tmax=(%g,"K")' % (self.Tmax)
-        string += ', Pmin=(%g,"bar")' % (self.Pmin / 1.0e5)
-        string += ', Pmax=(%g,"bar")' % (self.Pmax / 1.0e5)
+        string += ', Tmin=%r' % (self.Tmin)
+        string += ', Tmax=%r' % (self.Tmax)
+        string += ', Pmin=%r' % (self.Pmin)
+        string += ', Pmax=%r' % (self.Pmax)
         string += ', numReactants=%i' % (self.numReactants)
         string += ', comment="%s"' % (self.comment)
         string += ')'
@@ -876,10 +858,10 @@ class Lindemann(ThirdBody):
         string += 'arrheniusHigh=%r' % (self.arrheniusHigh)
         string += ', arrheniusLow=%r' % (self.arrheniusLow)
         string += ', efficiencies=%r' % (self.efficiencies)
-        string += ', Tmin=(%g,"K")' % (self.Tmin)
-        string += ', Tmax=(%g,"K")' % (self.Tmax)
-        string += ', Pmin=(%g,"bar")' % (self.Pmin / 1.0e5)
-        string += ', Pmax=(%g,"bar")' % (self.Pmax / 1.0e5)
+        string += ', Tmin=%r' % (self.Tmin)
+        string += ', Tmax=%r' % (self.Tmax)
+        string += ', Pmin=%r' % (self.Pmin)
+        string += ', Pmax=%r' % (self.Pmax)
         string += ', numReactants=%i' % (self.numReactants)
         string += ', comment="%s"' % (self.comment)
         string += ')'
@@ -964,12 +946,15 @@ class Troe(Lindemann):
 
     """
 
-    def __init__(self, arrheniusLow=None, arrheniusHigh=None, efficiencies=None, alpha=0.0, T3=0.0, T1=0.0, T2=1e100, Tmin=0.0, Tmax=1.0e10, Pmin=0.0, Pmax=1.0e100, numReactants=-1, comment=''):
+    def __init__(self, arrheniusLow=None, arrheniusHigh=None, efficiencies=None, alpha=0.0, T3=0.0, T1=0.0, T2=None, Tmin=0.0, Tmax=1.0e10, Pmin=0.0, Pmax=1.0e100, numReactants=-1, comment=''):
         Lindemann.__init__(self, arrheniusLow=arrheniusLow, arrheniusHigh=arrheniusHigh, efficiencies=efficiencies, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, numReactants=numReactants, comment=comment)
-        self.alpha = constants.processQuantity(alpha)[0]
-        self.T3 = constants.processQuantity(T3)[0]
-        self.T1 = constants.processQuantity(T1)[0]
-        self.T2 = constants.processQuantity(T2)[0]
+        self.alpha = constants.Quantity(alpha)
+        self.T3 = constants.Quantity(T3)
+        self.T1 = constants.Quantity(T1)
+        if T2 is None:
+            self.T2 = None
+        else:
+            self.T2 = constants.Quantity(T2)
     
     def __repr__(self):
         """
@@ -980,14 +965,14 @@ class Troe(Lindemann):
         string += 'arrheniusHigh=%r' % (self.arrheniusHigh)
         string += ', arrheniusLow=%r' % (self.arrheniusLow)
         string += ', efficiencies=%r' % (self.efficiencies)
-        string += ', alpha=%g' % (self.alpha)
-        string += ', T3=(%g,"K")' % (self.T3)
-        string += ', T1=(%g,"K")' % (self.T1)
-        if self.T2 != 1e100: string += ', T2=(%g,"K")' % (self.T2)
-        string += ', Tmin=(%g,"K")' % (self.Tmin)
-        string += ', Tmax=(%g,"K")' % (self.Tmax)
-        string += ', Pmin=(%g,"bar")' % (self.Pmin / 1.0e5)
-        string += ', Pmax=(%g,"bar")' % (self.Pmax / 1.0e5)
+        string += ', alpha=%r' % (self.alpha)
+        string += ', T3=%r' % (self.T3)
+        string += ', T1=%r' % (self.T1)
+        if self.T2 is not None: string += ', T2=%r' % (self.T2)
+        string += ', Tmin=%r' % (self.Tmin)
+        string += ', Tmax=%r' % (self.Tmax)
+        string += ', Pmin=%r' % (self.Pmin)
+        string += ', Pmax=%r' % (self.Pmax)
         string += ', numReactants=%i' % (self.numReactants)
         string += ', comment="%s"' % (self.comment)
         string += ')'
@@ -1016,8 +1001,8 @@ class Troe(Lindemann):
         Pr = k0 * C / kinf
         efficiency = self.getColliderEfficiency(collider)
         
-        Fcent = (1 - self.alpha) * math.exp(-T / self.T3) + self.alpha * math.exp(-T / self.T1)
-        if self.T2 != 1e100: Fcent += math.exp(-self.T2 / T)
+        Fcent = (1 - self.alpha.value) * math.exp(-T / self.T3.value) + self.alpha * math.exp(-T / self.T1.value)
+        if self.T2 is not None: Fcent += math.exp(-self.T2.value / T)
         d = 0.14
         n = 0.75 - 1.27 * math.log10(Fcent)
         c = -0.4 - 0.67 * math.log10(Fcent)
