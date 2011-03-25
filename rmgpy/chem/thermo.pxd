@@ -84,10 +84,10 @@ cdef class Wilhoit(ThermoModel):
     cpdef double __residual(self, double B, numpy.ndarray Tlist, numpy.ndarray Cplist, 
         bint linear, int nFreq, int nRotors, double H298, double S298)
     
-    cpdef WilhoitModel fitToData(self, numpy.ndarray Tlist, numpy.ndarray Cplist,
+    cpdef Wilhoit fitToData(self, numpy.ndarray Tlist, numpy.ndarray Cplist,
         bint linear, int nFreq, int nRotors, double H298, double S298, double B0=?)
     
-    cpdef WilhoitModel fitToDataForConstantB(self, numpy.ndarray Tlist, numpy.ndarray Cplist,
+    cpdef Wilhoit fitToDataForConstantB(self, numpy.ndarray Tlist, numpy.ndarray Cplist,
         bint linear, int nFreq, int nRotors, double B, double H298, double S298)
     
 ################################################################################
@@ -118,4 +118,4 @@ cdef class MultiNASA(ThermoModel):
 
     cpdef double getFreeEnergy(self, double T)
     
-    cpdef NASAPolynomial __selectPolynomialForTemperature(self, double T)
+    cpdef NASA __selectPolynomialForTemperature(self, double T)

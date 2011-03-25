@@ -125,6 +125,14 @@ class Quantity:
         units = ''; uncertaintyType = ''; uncertainty = None
         if args is None:
             return
+        elif isinstance(args, Quantity):
+            self.value = args.value
+            self.values = args.values
+            self.units = args.units
+            self.uncertaintyType = args.uncertaintyType
+            self.uncertainty = args.uncertainty
+            self.uncertainties = args.uncertainties
+            return
         elif isinstance(args, numpy.ndarray):
             # We've been given just an array of numbers
             value = args
@@ -194,6 +202,30 @@ class Quantity:
         self.uncertainty *= factor
         if self.uncertainties is not None: self.uncertainties *= factor
 
+    def __reduce__(self):
+        """
+        A helper function used when pickling an object.
+        """
+        d = {}
+        d['value'] = self.value
+        d['units'] = self.units
+        d['uncertaintyType'] = self.uncertaintyType
+        d['uncertainty'] = self.uncertainty
+        d['values'] = self.values
+        d['uncertainties'] = self.uncertainties
+        return (Quantity, tuple([None]), d)
+
+    def __setstate__(self, d):
+        """
+        A helper function used when unpickling an object.
+        """
+        self.value = d['value']
+        self.units = d['units']
+        self.uncertaintyType = d['uncertaintyType']
+        self.uncertainty = d['uncertainty']
+        self.values = d['values']
+        self.uncertainties = d['uncertainties']
+
     def __str__(self):
         """
         Return a string representation of the object.
@@ -236,32 +268,6 @@ class Quantity:
                     string += ',[%s]' % (','.join(['%g' % (u * factor) for u in self.uncertainties]))
             string = '(' + string + ')'
         return string
-
-    def __eq__(self, other):
-        """
-        Return ``True`` if two quantity objects are equal or ``False`` if not.
-        """
-        if not isinstance(other, Quantity): return False
-        if self.values is not None and self.uncertainties is not None:
-            if other.values is None or other.uncertainties is None:
-                return False
-            else:
-                return (self.value == other.value and self.units == other.units and
-                    self.uncertaintyType == other.uncertaintyType and self.uncertainty == other.uncertainty and
-                    (self.values == other.values).all() and (self.uncertainties == other.uncertainties).all())
-        elif self.values is not None and self.uncertainties is None:
-            if other.values is None or other.uncertainties is not None:
-                return False
-            else:
-                return (self.value == other.value and self.units == other.units and
-                    self.uncertaintyType == other.uncertaintyType and self.uncertainty == other.uncertainty and
-                    (self.values == other.values).all())
-        else:
-            if other.values is not None or other.uncertainties is not None:
-                return False
-            else:
-                return (self.value == other.value and self.units == other.units and
-                    self.uncertaintyType == other.uncertaintyType and self.uncertainty == other.uncertainty)
 
     def __add__(self, other):
         """

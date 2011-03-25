@@ -63,12 +63,12 @@ class ThermoTest(unittest.TestCase):
         import cPickle
         thermo = cPickle.loads(cPickle.dumps(thermo0))
 
-        self.assertEqual(thermo0.Tdata, thermo.Tdata)
-        self.assertEqual(thermo0.Cpdata, thermo.Cpdata)
-        self.assertEqual(thermo0.H298, thermo.H298)
-        self.assertEqual(thermo0.S298, thermo.S298)
-        self.assertEqual(thermo0.Tmin, thermo.Tmin)
-        self.assertEqual(thermo0.Tmax, thermo.Tmax)
+        self.assertEqual(thermo0.Tdata.value, thermo.Tdata.value)
+        self.assertEqual(thermo0.Cpdata.value, thermo.Cpdata.value)
+        self.assertEqual(thermo0.H298.value, thermo.H298.value)
+        self.assertEqual(thermo0.S298.value, thermo.S298.value)
+        self.assertEqual(thermo0.Tmin.value, thermo.Tmin.value)
+        self.assertEqual(thermo0.Tmax.value, thermo.Tmax.value)
         self.assertEqual(thermo0.comment, thermo.comment)
 
     def testPickleWilhoit(self):
@@ -89,8 +89,8 @@ class ThermoTest(unittest.TestCase):
         self.assertAlmostEqual(thermo0.H0.value, thermo.H0.value, 4)
         self.assertAlmostEqual(thermo0.S0.value, thermo.S0.value, 4)
         self.assertAlmostEqual(thermo0.B.value, thermo.B.value, 4)
-        self.assertEqual(thermo0.Tmin, thermo.Tmin)
-        self.assertEqual(thermo0.Tmax, thermo.Tmax)
+        self.assertEqual(thermo0.Tmin.value, thermo.Tmin.value)
+        self.assertEqual(thermo0.Tmax.value, thermo.Tmax.value)
         self.assertEqual(thermo0.comment, thermo.comment)
 
     def testPickleNASA(self):
@@ -117,12 +117,12 @@ class ThermoTest(unittest.TestCase):
             self.assertEqual(poly0.c4, poly.c4)
             self.assertEqual(poly0.c5, poly.c5)
             self.assertEqual(poly0.c6, poly.c6)
-            self.assertEqual(poly0.Tmin, poly.Tmin)
-            self.assertEqual(poly0.Tmax, poly.Tmax)
+            self.assertEqual(poly0.Tmin.value, poly.Tmin.value)
+            self.assertEqual(poly0.Tmax.value, poly.Tmax.value)
             self.assertEqual(poly0.comment, poly.comment)
 
-        self.assertEqual(thermo0.Tmin, thermo.Tmin)
-        self.assertEqual(thermo0.Tmax, thermo.Tmax)
+        self.assertEqual(thermo0.Tmin.value, thermo.Tmin.value)
+        self.assertEqual(thermo0.Tmax.value, thermo.Tmax.value)
         self.assertEqual(thermo0.comment, thermo.comment)
 
     def testOutputThermoData(self):
@@ -135,12 +135,12 @@ class ThermoTest(unittest.TestCase):
         thermo0 = ThermoData(Tdata, Cpdata, H298=-2000.0, S298=50.0, Tmin=300.0, Tmax=2000.0, comment='This data is completely made up')
         exec('thermo = %r' % thermo0)
 
-        self.assertEqual(thermo0.Tdata, thermo.Tdata)
-        self.assertEqual(thermo0.Cpdata, thermo.Cpdata)
-        self.assertEqual(thermo0.H298, thermo.H298)
-        self.assertEqual(thermo0.S298, thermo.S298)
-        self.assertEqual(thermo0.Tmin, thermo.Tmin)
-        self.assertEqual(thermo0.Tmax, thermo.Tmax)
+        self.assertEqual(thermo0.Tdata.value, thermo.Tdata.value)
+        self.assertEqual(thermo0.Cpdata.value, thermo.Cpdata.value)
+        self.assertEqual(thermo0.H298.value, thermo.H298.value)
+        self.assertEqual(thermo0.S298.value, thermo.S298.value)
+        self.assertEqual(thermo0.Tmin.value, thermo.Tmin.value)
+        self.assertEqual(thermo0.Tmax.value, thermo.Tmax.value)
         self.assertEqual(thermo0.comment, thermo.comment)
 
     def testOutputWilhoit(self):
@@ -160,8 +160,8 @@ class ThermoTest(unittest.TestCase):
         self.assertAlmostEqual(thermo0.H0.value, thermo.H0.value, 4)
         self.assertAlmostEqual(thermo0.S0.value, thermo.S0.value, 4)
         self.assertAlmostEqual(thermo0.B.value, thermo.B.value, 4)
-        self.assertEqual(thermo0.Tmin, thermo.Tmin)
-        self.assertEqual(thermo0.Tmax, thermo.Tmax)
+        self.assertEqual(thermo0.Tmin.value, thermo.Tmin.value)
+        self.assertEqual(thermo0.Tmax.value, thermo.Tmax.value)
         self.assertEqual(thermo0.comment, thermo.comment)
 
     def testOutputNASA(self):
@@ -187,12 +187,12 @@ class ThermoTest(unittest.TestCase):
             self.assertEqual(poly0.c4, poly.c4)
             self.assertEqual(poly0.c5, poly.c5)
             self.assertEqual(poly0.c6, poly.c6)
-            self.assertEqual(poly0.Tmin, poly.Tmin)
-            self.assertEqual(poly0.Tmax, poly.Tmax)
+            self.assertEqual(poly0.Tmin.value, poly.Tmin.value)
+            self.assertEqual(poly0.Tmax.value, poly.Tmax.value)
             self.assertEqual(poly0.comment, poly.comment)
 
-        self.assertEqual(thermo0.Tmin, thermo.Tmin)
-        self.assertEqual(thermo0.Tmax, thermo.Tmax)
+        self.assertEqual(thermo0.Tmin.value, thermo.Tmin.value)
+        self.assertEqual(thermo0.Tmax.value, thermo.Tmax.value)
         self.assertEqual(thermo0.comment, thermo.comment)
 
 

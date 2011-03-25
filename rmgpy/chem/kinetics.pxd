@@ -26,6 +26,8 @@
 
 cimport numpy
 
+from constants cimport Quantity
+
 cdef extern from "math.h":
     cdef double acos(double x)
     cdef double cos(double x)
@@ -62,7 +64,7 @@ cdef class Arrhenius(KineticsModel):
 
     cpdef changeT0(self, double T0)
 
-    cpdef fitToData(self, Quantity Tlist, Quantity klist, double T0=?)
+    cpdef fitToData(self, Quantity Tlist, Quantity klist, double T0=?, int numReactants=?)
 
 ################################################################################
 
@@ -126,7 +128,7 @@ cdef class Chebyshev(KineticsModel):
 
 cdef class ThirdBody(KineticsModel):
 
-    cdef public ArrheniusModel arrheniusHigh
+    cdef public Arrhenius arrheniusHigh
     cdef public dict efficiencies
     
     cpdef bint isPressureDependent(self)
@@ -137,15 +139,15 @@ cdef class ThirdBody(KineticsModel):
 
 ################################################################################
 
-cdef class Lindemann(ThirdBodyModel):
+cdef class Lindemann(ThirdBody):
 
-    cdef public ArrheniusModel arrheniusLow
+    cdef public Arrhenius arrheniusLow
     
     cpdef double getRateCoefficient(self, double T, double P, collider=?)
 
 ################################################################################
 
-cdef class Troe(LindemannModel):
+cdef class Troe(Lindemann):
 
     cdef public Quantity alpha, T1, T2, T3
     

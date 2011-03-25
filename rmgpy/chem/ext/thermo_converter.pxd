@@ -27,7 +27,7 @@
 #
 ################################################################################
 
-from rmgpy.chem.thermo cimport ThermoGAModel, WilhoitModel, NASAPolynomial, NASAModel
+from rmgpy.chem.thermo cimport ThermoData, Wilhoit, NASA, MultiNASA
 
 cdef extern from "math.h":
     double log(double)
@@ -35,19 +35,19 @@ cdef extern from "math.h":
 
 ################################################################################
 
-cpdef WilhoitModel convertGAtoWilhoit(ThermoGAModel GAthermo, int atoms, int rotors, bint linear, double B0=?, bint constantB=?)
+cpdef Wilhoit convertGAtoWilhoit(ThermoData GAthermo, int atoms, int rotors, bint linear, double B0=?, bint constantB=?)
 
-cpdef NASAModel convertWilhoitToNASA(WilhoitModel wilhoit, double Tmin, double Tmax, double Tint, bint fixedTint=?, bint weighting=?, int continuity=?)
+cpdef NASA convertWilhoitToNASA(Wilhoit wilhoit, double Tmin, double Tmax, double Tint, bint fixedTint=?, bint weighting=?, int continuity=?)
 
-cpdef Wilhoit2NASA(WilhoitModel wilhoit, double tmin, double tmax, double tint, bint weighting, int contCons)
+cpdef Wilhoit2NASA(Wilhoit wilhoit, double tmin, double tmax, double tint, bint weighting, int contCons)
 
-cpdef Wilhoit2NASA_TintOpt(WilhoitModel wilhoit, double tmin, double tmax, bint weighting, int contCons)
+cpdef Wilhoit2NASA_TintOpt(Wilhoit wilhoit, double tmin, double tmax, bint weighting, int contCons)
 
-cpdef TintOpt_objFun(tint, WilhoitModel wilhoit, double tmin, double tmax, bint weighting, int contCons)
+cpdef TintOpt_objFun(tint, Wilhoit wilhoit, double tmin, double tmax, bint weighting, int contCons)
 
-cpdef TintOpt_objFun_NW(double tint, WilhoitModel wilhoit, double tmin, double tmax, int contCons)
+cpdef TintOpt_objFun_NW(double tint, Wilhoit wilhoit, double tmin, double tmax, int contCons)
 
-cpdef TintOpt_objFun_W(double tint, WilhoitModel wilhoit, double tmin, double tmax, int contCons)
+cpdef TintOpt_objFun_W(double tint, Wilhoit wilhoit, double tmin, double tmax, int contCons)
 
 cpdef convertCpToNASA(CpObject, double H298, double S298, int fixed=?, bint weighting=?, double tint=?, double Tmin=?, double Tmax=?, int contCons=?)
 
@@ -63,27 +63,27 @@ cpdef Cp_TintOpt_objFun_W(double tint, CpObject, double tmin, double tmax, int c
 
 ################################################################################
 
-cpdef double Wilhoit_integral_T0(WilhoitModel wilhoit, double t)
+cpdef double Wilhoit_integral_T0(Wilhoit wilhoit, double t)
 
-cpdef double Wilhoit_integral_TM1(WilhoitModel wilhoit, double t)
+cpdef double Wilhoit_integral_TM1(Wilhoit wilhoit, double t)
 
-cpdef double Wilhoit_integral_T1(WilhoitModel wilhoit, double t)
+cpdef double Wilhoit_integral_T1(Wilhoit wilhoit, double t)
 
-cpdef double Wilhoit_integral_T2(WilhoitModel wilhoit, double t)
+cpdef double Wilhoit_integral_T2(Wilhoit wilhoit, double t)
 
-cpdef double Wilhoit_integral_T3(WilhoitModel wilhoit, double t)
+cpdef double Wilhoit_integral_T3(Wilhoit wilhoit, double t)
 
-cpdef double Wilhoit_integral_T4(WilhoitModel wilhoit, double t)
+cpdef double Wilhoit_integral_T4(Wilhoit wilhoit, double t)
 
-cpdef double Wilhoit_integral2_T0(WilhoitModel wilhoit, double t)
+cpdef double Wilhoit_integral2_T0(Wilhoit wilhoit, double t)
 
-cpdef double Wilhoit_integral2_TM1(WilhoitModel wilhoit, double t)
+cpdef double Wilhoit_integral2_TM1(Wilhoit wilhoit, double t)
 
 ################################################################################
 
-cpdef double NASAPolynomial_integral2_T0(NASAPolynomial polynomial, double T)
+cpdef double NASA_integral2_T0(NASA polynomial, double T)
 
-cpdef double NASAPolynomial_integral2_TM1(NASAPolynomial polynomial, double T)
+cpdef double NASA_integral2_TM1(NASA polynomial, double T)
 
 ################################################################################
 
