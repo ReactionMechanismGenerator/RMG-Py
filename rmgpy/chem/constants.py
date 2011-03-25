@@ -69,54 +69,151 @@ pi = float(math.pi)
 
 ################################################################################
 
-def processQuantity(quantity):
+def getConversionFactorToSI(units):
     """
-    Convert a numeric quantity or set of quantities in the input file to a
-    consistent set of units (SI). The parameter `quantity` is usually a 2-tuple
-    or 2-list, with the first element a single number or a list or tuple of
-    numbers, and the second element is the units associated with the number(s)
-    in the first element. If `quantity` is a number or a list or tuple of
-    numbers, then they are assumed to already be in SI units.
-
-    .. note::
-
-        The ``quantities`` package is used to convert your numeric parameters
-        into SI units, and therefore inherits all of the idiosyncracies from
-        that package. In particular, the ``quantities`` package does *not*
-        follow the SI convention that all units after the solidus are in the
-        denominator. For example, ``J/mol*K`` would be interpreted as
-        ``(J/mol)*K`` rather than ``J/(mol*K)``. Thus we recommend using
-        parentheses where necessary to make your intentions explicit.
-
+    Get the conversion factor for converting a quantity in a given set of
+    `units` to the SI equivalent units.
     """
-    import quantities
-
-    # Do nothing if the parameter is invalid
-    if quantity is None: return None, ''
-    # If the parameter is a number or a numpy array, then immediately return it
-    # (so we avoid the slow calls to quantities)
-    if isinstance(quantity, float) or isinstance(quantity, int) or isinstance(quantity, numpy.ndarray):
-        return quantity, ''
-
-    if (isinstance(quantity, tuple) or isinstance(quantity, list)) and len(quantity) == 2:
-        value, units = quantity
-        if not isinstance(units, str): return numpy.array(quantity, numpy.float64), ''
-    else:
-        value = quantity; units = ''
-
-    # Get the output (SI) units corresponding to the input units
-    factor = quantities.Quantity(1.0, units).simplified
-    newUnits = str(factor.units).split()[1]
-    factor = float(factor)
-
+    factor = float(pq.Quantity(1.0, units).simplified)
     # Exception: don't convert wavenumbers (cm^-1) to m^-1
-    if units == 'cm^-1':
-        newUnits = units; factor = 1.0
+    if units == 'cm^-1': factor = 1.0
+    return factor
 
-    if isinstance(value, tuple) or isinstance(value, list):
-        return numpy.array(value, numpy.float64) * factor, newUnits
-    elif isinstance(value, numpy.ndarray):
-        return value * factor, newUnits
-    else:
-        return float(value) * factor, newUnits
+def getConversionFactorFromSI(units):
+    """
+    Get the conversion factor for converting a quantity to a given set of
+    `units` from the SI equivalent units.
+    """
+    factor = float(pq.Quantity(1.0, units).simplified)
+    # Exception: don't convert wavenumbers (cm^-1) to m^-1
+    if units == 'cm^-1': factor = 1.0
+    return 1.0 / factor
 
+class Quantity:
+    """
+    A single numeric quantity, with optional units and uncertainty. The
+    attributes are:
+
+    =================== =================== ====================================
+    Attribute           Type                Description
+    =================== =================== ====================================
+    `value`             ``double``          The numeric value of the quantity in SI units
+    `units`             ``str``             The units the value was specified in
+    `uncertainty`       ``double``          The numeric uncertainty in the value
+    `uncertaintyType`   ``str``             The type of uncertainty: ``'+|-'`` for additive, ``'*|/'`` for multiplicative
+    `values`            ``numpy.ndarray``   The numeric values of the quantity in SI units
+    `uncertainties`     ``numpy.ndarray``   The numeric uncertainty of the values in SI units
+    =================== =================== ====================================
+
+    In order for this class to be efficient for mathematical operations, we
+    must minimize the number of unit conversions that are performed. To this
+    end, all numeric values and uncertainties are stored in SI units, rather
+    than the units they are specified as.
+    """
+
+    def __init__(self, value=None, units='', uncertaintyType='', uncertainty=0.0):
+
+        # Process value parameter
+        if isinstance(value, list):
+            self.value = 0.0
+            self.values = numpy.array(value, numpy.float64)
+        elif isinstance(value, numpy.ndarray):
+            self.value = 0.0
+            self.values = value
+        elif isinstance(value, float) or isinstance(value, int):
+            self.value = value
+            self.values = None
+        else:
+            raise ValueError('Unexpected type "%s" for value parameter.' % (value.__class__))
+
+        # Process units and uncertainty type parameters
+        self.units = units
+        self.uncertaintyType = uncertaintyType
+
+        # Process uncertainty parameter
+        if isinstance(uncertainty, list) or isinstance(uncertainty, tuple):
+            self.uncertainty = 0.0
+            self.uncertainties = numpy.array(uncertainty, numpy.float64)
+        elif isinstance(uncertainty, numpy.ndarray):
+            self.uncertainty = 0.0
+            self.uncertainties = uncertainty
+        elif isinstance(uncertainty, float) or isinstance(uncertainty, int):
+            self.uncertainty = uncertainty
+            self.uncertainties = None
+        elif uncertainty is not None:
+            raise ValueError('Unexpected type "%s" for uncertainty parameter.' % (uncertainty.__class__))
+
+        # Having multiple uncertainties for a single value is nonsensical
+        # Add assertion to ensure we don't ever try to do this
+        assert self.values is not None or self.uncertainties is None, "Attempted to create Quantity with one value but multiple uncertainties."
+        # If multiple values and multiple uncertainties are specified, they
+        # should be of equal length
+        # Add assertion to ensure this is the case
+        if self.values is not None and self.uncertainties is not None:
+            assert len(self.values) == len(self.uncertainties), "Provided multiple uncertainties of different length than multiple values."
+
+        # Get the output (SI) units corresponding to the input units
+        factor = getConversionFactorToSI(self.units)
+
+        # Convert the value and uncertainty to SI units
+        self.value *= factor
+        if self.values is not None: self.values *= factor
+        if not self.isUncertaintyAdditive(): factor = 1.0
+        self.uncertainty *= factor
+        if self.uncertainties is not None: self.uncertainties *= factor
+
+    def __str__(self):
+        """
+        Return a string representation of the object.
+        """
+        factor = getConversionFactorFromSI(self.units)
+        string = ''
+        if self.values is None:
+            string += '%g' % (self.value * factor)
+        else:
+            string += '[%s]' % (','.join(['%g' % (v * factor) for v in self.values]))
+        if self.uncertaintyType != '':
+            string += ' %s ' % (self.uncertaintyType)
+            if not self.isUncertaintyAdditive(): factor = 1.0
+            if self.uncertainties is None:
+                string += '%g' % (self.uncertainty * factor)
+            else:
+                string += '[%s]' % (','.join(['%g' % (u * factor) for u in self.uncertainties]))
+        string += ' %s' % (self.units)
+        return string
+
+    def __repr__(self):
+        """
+        Return a string representation that can be used to reconstruct the
+        object.
+        """
+        factor = getConversionFactorFromSI(self.units)
+        string = 'Quantity('
+        if self.values is None:
+            string += '%g' % (self.value * factor)
+        else:
+            string += '[%s]' % (','.join(['%g' % (v * factor) for v in self.values]))
+        string += ',"%s"' % (self.units)
+        if self.uncertaintyType != '':
+            string += ',"%s"' % (self.uncertaintyType)
+            if not self.isUncertaintyAdditive(): factor = 1.0
+            if self.uncertainties is None:
+                string += ',%g' % (self.uncertainty * factor)
+            else:
+                string += ',[%s]' % (','.join(['%g' % (u * factor) for u in self.uncertainties]))
+        string += ')'
+        return string
+
+    def isUncertaintyAdditive(self):
+        """
+        Return ``True`` if the uncertainty is specified in additive format
+        and ``False`` otherwise.
+        """
+        return self.uncertaintyType == '+|-'
+
+    def isUncertaintyMultiplicative(self):
+        """
+        Return ``True`` if the uncertainty is specified in multiplicative format
+        and ``False`` otherwise.
+        """
+        return self.uncertaintyType == '*|/'
