@@ -188,7 +188,7 @@ class ThermoData(ThermoModel):
         the sum of the two sets of thermodynamic data.
         """
         cython.declare(i=int, new=ThermoData)
-        if len(self.Tdata) != len(other.Tdata) or any([T1 != T2 for T1, T2 in zip(self.Tdata, other.Tdata)]):
+        if len(self.Tdata.values) != len(other.Tdata.values) or any([T1 != T2 for T1, T2 in zip(self.Tdata.values, other.Tdata.values)]):
             raise ThermoError('Cannot add these ThermoData objects due to their having different temperature points.')
         new = ThermoData(
             Tdata = self.Tdata,
@@ -407,7 +407,7 @@ class Wilhoit(ThermoModel):
         `nFreq`, and `nRotors`, respectively) is used to set the limits at
         zero and infinite temperature.
         """
-        self.B = B0
+        self.B = constants.Quantity((B0,"K"))
         import scipy.optimize
         scipy.optimize.fminbound(self.__residual, 300.0, 3000.0, args=(Tlist, Cplist, linear, nFreq, nRotors, H298, S298))
         return self
@@ -426,8 +426,8 @@ class Wilhoit(ThermoModel):
         cython.declare(y=numpy.ndarray, A=numpy.ndarray, b=numpy.ndarray, x=numpy.ndarray)
         
         # Set the Cp(T) limits as T -> and T -> infinity
-        self.cp0 = constants.Quantity(3.5 * constants.R if linear else 4.0 * constants.R, "J/(mol*K)")
-        self.cpInf = constants.Quantity(self.cp0.value + (nFreq + 0.5 * nRotors) * constants.R, "J/(mol*K)")
+        self.cp0 = constants.Quantity((3.5 * constants.R if linear else 4.0 * constants.R, "J/(mol*K)"))
+        self.cpInf = constants.Quantity((self.cp0.value + (nFreq + 0.5 * nRotors) * constants.R, "J/(mol*K)"))
         
         # What remains is to fit the polynomial coefficients (a0, a1, a2, a3)
         # This can be done directly - no iteration required
@@ -435,16 +435,16 @@ class Wilhoit(ThermoModel):
         A = numpy.zeros((len(Cplist),4), numpy.float64)
         for j in range(4):
             A[:,j] = (y*y*y - y*y) * y**j
-        b = ((Cplist - self.cp0) / (self.cpInf - self.cp0) - y*y)
+        b = ((Cplist - self.cp0.value) / (self.cpInf.value - self.cp0.value) - y*y)
         x, residues, rank, s = numpy.linalg.lstsq(A, b)
         
-        self.B = constants.Quantity(float(B), "K")
+        self.B = constants.Quantity((float(B), "K"))
         self.a0 = constants.Quantity(float(x[0]))
         self.a1 = constants.Quantity(float(x[1]))
         self.a2 = constants.Quantity(float(x[2]))
         self.a3 = constants.Quantity(float(x[3]))
 
-        self.H0 = constants.Quantity(0.0); self.S0 = constants.Quantity(0.0)
+        self.H0 = constants.Quantity((0.0,"J/mol")); self.S0 = constants.Quantity((0.0,"J/(mol*K)"))
         self.H0.value = H298 - self.getEnthalpy(298.15)
         self.S0.value = S298 - self.getEntropy(298.15)
 

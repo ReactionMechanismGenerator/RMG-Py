@@ -275,7 +275,8 @@ class Quantity:
         """
         if not isinstance(other, Quantity): raise ValueError('Unexpected type "%s" for other parameter.' % (other.__class__))
         assert self.units == other.units
-        assert self.uncertaintyType == other.uncertaintyType == '+|-'
+        assert self.uncertaintyType in ['', '+|-']
+        assert other.uncertaintyType in ['', '+|-']
 
         new = Quantity()
         if self.values is not None and self.uncertainties is not None:

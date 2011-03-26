@@ -379,10 +379,7 @@ class ReactionFamily(Database):
                     n = float(pq.Quantity(n, '').simplified)
                     alpha = float(pq.Quantity(alpha, '').simplified)
                     # Construct ArrheniusEP object
-                    kinetics = ArrheniusEP(A=A, n=n, alpha=alpha, E0=E0)
-                    kinetics.Tmin = Tmin
-                    kinetics.Tmax = Tmax
-                    kinetics.comment = comment
+                    kinetics = ArrheniusEP(A=A, n=n, alpha=alpha, E0=E0, Tmin=Tmin, Tmax=Tmax, comment=comment)
                     
                     self.library[label] = KineticsEntry(
                         index=int(index),

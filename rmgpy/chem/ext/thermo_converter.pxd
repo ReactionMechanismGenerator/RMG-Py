@@ -37,7 +37,7 @@ cdef extern from "math.h":
 
 cpdef Wilhoit convertGAtoWilhoit(ThermoData GAthermo, int atoms, int rotors, bint linear, double B0=?, bint constantB=?)
 
-cpdef NASA convertWilhoitToNASA(Wilhoit wilhoit, double Tmin, double Tmax, double Tint, bint fixedTint=?, bint weighting=?, int continuity=?)
+cpdef MultiNASA convertWilhoitToNASA(Wilhoit wilhoit, double Tmin, double Tmax, double Tint, bint fixedTint=?, bint weighting=?, int continuity=?)
 
 cpdef Wilhoit2NASA(Wilhoit wilhoit, double tmin, double tmax, double tint, bint weighting, int contCons)
 

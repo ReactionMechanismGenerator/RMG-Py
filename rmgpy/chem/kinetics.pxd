@@ -121,7 +121,7 @@ cdef class Chebyshev(KineticsModel):
     cpdef double getRateCoefficient(self, double T, double P)
 
     cpdef fitToData(self, numpy.ndarray Tlist, numpy.ndarray Plist, numpy.ndarray K,
-        int degreeT, int degreeP, double Tmin, double Tmax, double Pmin, double Pmax)
+        int degreeT, int degreeP, Quantity Tmin, Quantity Tmax, Quantity Pmin, Quantity Pmax)
 
 ################################################################################
 

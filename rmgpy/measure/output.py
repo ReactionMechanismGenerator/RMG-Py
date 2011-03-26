@@ -134,17 +134,7 @@ def writeReaction(f, rxn):
     f.write('    products=[%s],\n' % (', '.join([('"%s"' % spec) for spec in rxn.products])))
     f.write('    reversible=%s,\n' % ('True' if rxn.reversible else 'False'))
     if rxn.kinetics is not None:
-        if isinstance(rxn.kinetics, Arrhenius):
-            f.write('    kinetics=Arrhenius(\n')
-            if len(rxn.reactants) == 1: units = 's^-1'
-            else: units = 'm^%g/(mol^%g*s)' % (3*(len(rxn.reactants)-1), len(rxn.reactants)-1)
-            f.write('        A=(%g,"%s"),\n' % (rxn.kinetics.A, units))
-            f.write('        n=%g,\n' % (rxn.kinetics.n))
-            f.write('        Ea=(%g,"kJ/mol"),\n' % (rxn.kinetics.Ea / 1000.0))
-            f.write('        T0=(%g,"K"),\n' % (rxn.kinetics.T0))
-            f.write('    ),\n')
-        else:
-            f.write('    kinetics=%r,\n' % rxn.kinetics)
+        f.write('    kinetics=%r,\n' % rxn.kinetics)
     if rxn.transitionState is not None:
         f.write('    transitionState=TransitionState(\n')
         f.write('        E0=(%g,"kJ/mol"),\n' % (rxn.transitionState.E0/1000))

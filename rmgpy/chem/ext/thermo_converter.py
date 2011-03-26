@@ -62,9 +62,9 @@ def convertGAtoWilhoit(GAthermo, atoms, rotors, linear, B0=500.0, constantB=Fals
     freq = 3 * atoms - (5 if linear else 6) - rotors
     wilhoit = Wilhoit()
     if constantB:
-        wilhoit.fitToDataForConstantB(GAthermo.Tdata, GAthermo.Cpdata, linear, freq, rotors, GAthermo.H298, GAthermo.S298, B0)
+        wilhoit.fitToDataForConstantB(GAthermo.Tdata.values, GAthermo.Cpdata.values, linear, freq, rotors, GAthermo.H298.value, GAthermo.S298.value, B0)
     else:
-        wilhoit.fitToData(GAthermo.Tdata, GAthermo.Cpdata, linear, freq, rotors, GAthermo.H298, GAthermo.S298, B0)
+        wilhoit.fitToData(GAthermo.Tdata.values, GAthermo.Cpdata.values, linear, freq, rotors, GAthermo.H298.value, GAthermo.S298.value, B0)
     return wilhoit
 
 ################################################################################
@@ -111,9 +111,9 @@ def convertWilhoitToNASA(wilhoit, Tmin, Tmax, Tint, fixedTint=False, weighting=T
     # Make copy of Wilhoit data so we don't modify the original
     wilhoit_scaled = Wilhoit(wilhoit.cp0, wilhoit.cpInf, wilhoit.a0, wilhoit.a1, wilhoit.a2, wilhoit.a3, wilhoit.H0, wilhoit.S0, wilhoit.B, Tmin=wilhoit.Tmin, Tmax=wilhoit.Tmax, comment=wilhoit.comment)
     # Rescale Wilhoit parameters
-    wilhoit_scaled.cp0 /= constants.R
-    wilhoit_scaled.cpInf /= constants.R
-    wilhoit_scaled.B /= 1000.
+    wilhoit_scaled.cp0.value /= constants.R
+    wilhoit_scaled.cpInf.value /= constants.R
+    wilhoit_scaled.B.value /= 1000.
 
     #if we are using fixed Tint, do not allow Tint to float
     if fixedTint:
@@ -149,9 +149,9 @@ def convertWilhoitToNASA(wilhoit, Tmin, Tmax, Tint, fixedTint=False, weighting=T
 
     # output comment
     comment = 'NASA function fitted to Wilhoit function. ' + rmsStr + wilhoit.comment
-    nasa_low.Tmin = Tmin; nasa_low.Tmax = Tint
+    nasa_low.Tmin = constants.Quantity((Tmin,"K")); nasa_low.Tmax = constants.Quantity((Tint,"K"))
     nasa_low.comment = 'Low temperature range polynomial'
-    nasa_high.Tmin = Tint; nasa_high.Tmax = Tmax
+    nasa_high.Tmin = constants.Quantity((Tint,"K")); nasa_high.Tmax = constants.Quantity((Tmax,"K"))
     nasa_high.comment = 'High temperature range polynomial'
 
     #for the low polynomial, we want the results to match the Wilhoit value at 298.15K
@@ -796,7 +796,7 @@ def Wilhoit_integral_T0(wilhoit, t):
     #output: the quantity Integrate[Cp(Wilhoit)/R, t'] evaluated at t'=t
     cython.declare(cp0=cython.double, cpInf=cython.double, B=cython.double, a0=cython.double, a1=cython.double, a2=cython.double, a3=cython.double)
     cython.declare(y=cython.double, y2=cython.double, logBplust=cython.double, result=cython.double)
-    cp0, cpInf, B, a0, a1, a2, a3 = wilhoit.cp0, wilhoit.cpInf, wilhoit.B, wilhoit.a0, wilhoit.a1, wilhoit.a2, wilhoit.a3
+    cp0, cpInf, B, a0, a1, a2, a3 = wilhoit.cp0.value, wilhoit.cpInf.value, wilhoit.B.value, wilhoit.a0.value, wilhoit.a1.value, wilhoit.a2.value, wilhoit.a3.value
     y = t/(t+B)
     y2 = y*y
     if cython.compiled:
@@ -811,7 +811,7 @@ def Wilhoit_integral_TM1(wilhoit, t):
     #output: the quantity Integrate[Cp(Wilhoit)/R*t^-1, t'] evaluated at t'=t
     cython.declare(cp0=cython.double, cpInf=cython.double, B=cython.double, a0=cython.double, a1=cython.double, a2=cython.double, a3=cython.double)
     cython.declare(y=cython.double, logt=cython.double, logy=cython.double, result=cython.double)
-    cp0, cpInf, B, a0, a1, a2, a3 = wilhoit.cp0, wilhoit.cpInf, wilhoit.B, wilhoit.a0, wilhoit.a1, wilhoit.a2, wilhoit.a3
+    cp0, cpInf, B, a0, a1, a2, a3 = wilhoit.cp0.value, wilhoit.cpInf.value, wilhoit.B.value, wilhoit.a0.value, wilhoit.a1.value, wilhoit.a2.value, wilhoit.a3.value
     y = t/(t+B)
     if cython.compiled:
         logy = log(y); logt = log(t)
@@ -824,7 +824,7 @@ def Wilhoit_integral_T1(wilhoit, t):
     #output: the quantity Integrate[Cp(Wilhoit)/R*t, t'] evaluated at t'=t
     cython.declare(cp0=cython.double, cpInf=cython.double, B=cython.double, a0=cython.double, a1=cython.double, a2=cython.double, a3=cython.double)
     cython.declare(logBplust=cython.double, result=cython.double)
-    cp0, cpInf, B, a0, a1, a2, a3 = wilhoit.cp0, wilhoit.cpInf, wilhoit.B, wilhoit.a0, wilhoit.a1, wilhoit.a2, wilhoit.a3
+    cp0, cpInf, B, a0, a1, a2, a3 = wilhoit.cp0.value, wilhoit.cpInf.value, wilhoit.B.value, wilhoit.a0.value, wilhoit.a1.value, wilhoit.a2.value, wilhoit.a3.value
     if cython.compiled:
         logBplust = log(B + t)
     else:
@@ -838,7 +838,7 @@ def Wilhoit_integral_T2(wilhoit, t):
     #output: the quantity Integrate[Cp(Wilhoit)/R*t^2, t'] evaluated at t'=t
     cython.declare(cp0=cython.double, cpInf=cython.double, B=cython.double, a0=cython.double, a1=cython.double, a2=cython.double, a3=cython.double)
     cython.declare(logBplust=cython.double, result=cython.double)
-    cp0, cpInf, B, a0, a1, a2, a3 = wilhoit.cp0, wilhoit.cpInf, wilhoit.B, wilhoit.a0, wilhoit.a1, wilhoit.a2, wilhoit.a3
+    cp0, cpInf, B, a0, a1, a2, a3 = wilhoit.cp0.value, wilhoit.cpInf.value, wilhoit.B.value, wilhoit.a0.value, wilhoit.a1.value, wilhoit.a2.value, wilhoit.a3.value
     if cython.compiled:
         logBplust = log(B + t)
     else:
@@ -852,7 +852,7 @@ def Wilhoit_integral_T3(wilhoit, t):
     #output: the quantity Integrate[Cp(Wilhoit)/R*t^3, t'] evaluated at t'=t
     cython.declare(cp0=cython.double, cpInf=cython.double, B=cython.double, a0=cython.double, a1=cython.double, a2=cython.double, a3=cython.double)
     cython.declare(logBplust=cython.double, result=cython.double)
-    cp0, cpInf, B, a0, a1, a2, a3 = wilhoit.cp0, wilhoit.cpInf, wilhoit.B, wilhoit.a0, wilhoit.a1, wilhoit.a2, wilhoit.a3
+    cp0, cpInf, B, a0, a1, a2, a3 = wilhoit.cp0.value, wilhoit.cpInf.value, wilhoit.B.value, wilhoit.a0.value, wilhoit.a1.value, wilhoit.a2.value, wilhoit.a3.value
     if cython.compiled:
         logBplust = log(B + t)
     else:
@@ -867,7 +867,7 @@ def Wilhoit_integral_T4(wilhoit, t):
     #output: the quantity Integrate[Cp(Wilhoit)/R*t^4, t'] evaluated at t'=t
     cython.declare(cp0=cython.double, cpInf=cython.double, B=cython.double, a0=cython.double, a1=cython.double, a2=cython.double, a3=cython.double)
     cython.declare(logBplust=cython.double, result=cython.double)
-    cp0, cpInf, B, a0, a1, a2, a3 = wilhoit.cp0, wilhoit.cpInf, wilhoit.B, wilhoit.a0, wilhoit.a1, wilhoit.a2, wilhoit.a3
+    cp0, cpInf, B, a0, a1, a2, a3 = wilhoit.cp0.value, wilhoit.cpInf.value, wilhoit.B.value, wilhoit.a0.value, wilhoit.a1.value, wilhoit.a2.value, wilhoit.a3.value
     if cython.compiled:
         logBplust = log(B + t)
     else:
@@ -882,7 +882,7 @@ def Wilhoit_integral2_T0(wilhoit, t):
     #output: the quantity Integrate[(Cp(Wilhoit)/R)^2, t'] evaluated at t'=t
     cython.declare(cp0=cython.double, cpInf=cython.double, B=cython.double, a0=cython.double, a1=cython.double, a2=cython.double, a3=cython.double)
     cython.declare(logBplust=cython.double, result=cython.double)
-    cp0, cpInf, B, a0, a1, a2, a3 = wilhoit.cp0, wilhoit.cpInf, wilhoit.B, wilhoit.a0, wilhoit.a1, wilhoit.a2, wilhoit.a3
+    cp0, cpInf, B, a0, a1, a2, a3 = wilhoit.cp0.value, wilhoit.cpInf.value, wilhoit.B.value, wilhoit.a0.value, wilhoit.a1.value, wilhoit.a2.value, wilhoit.a3.value
     if cython.compiled:
         logBplust = log(B + t)
     else:
@@ -908,7 +908,7 @@ def Wilhoit_integral2_TM1(wilhoit, t):
     #output: the quantity Integrate[(Cp(Wilhoit)/R)^2*t^-1, t'] evaluated at t'=t
     cython.declare(cp0=cython.double, cpInf=cython.double, B=cython.double, a0=cython.double, a1=cython.double, a2=cython.double, a3=cython.double)
     cython.declare(logBplust=cython.double, logt=cython.double, result=cython.double)
-    cp0, cpInf, B, a0, a1, a2, a3 = wilhoit.cp0, wilhoit.cpInf, wilhoit.B, wilhoit.a0, wilhoit.a1, wilhoit.a2, wilhoit.a3
+    cp0, cpInf, B, a0, a1, a2, a3 = wilhoit.cp0.value, wilhoit.cpInf.value, wilhoit.B.value, wilhoit.a0.value, wilhoit.a1.value, wilhoit.a2.value, wilhoit.a3.value
     if cython.compiled:
         logBplust = log(B + t); logt = log(t)
     else:

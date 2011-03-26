@@ -297,7 +297,7 @@ class ThermoGroupDatabase(ThermoDatabase):
 
                 # Subtract the enthalpy of the added hydrogens
                 for H, bond in added[atom]:
-                    thermoData.H298 -= 52.103 * 4184
+                    thermoData.H298.value -= 52.103 * 4184
 
             # Correct the entropy for the symmetry number
 
@@ -501,7 +501,7 @@ def generateThermoData(molecule):
         if GAthermoData is not None and isinstance(thermoDatabase, ThermoGroupDatabase):
             # Correct entropy for symmetry number
             molecule.calculateSymmetryNumber()
-            GAthermoData.S298 -= constants.R * math.log(molecule.symmetryNumber)
+            GAthermoData.S298.value -= constants.R * math.log(molecule.symmetryNumber)
             break
         elif GAthermoData is not None and isinstance(thermoDatabase, ThermoPrimaryDatabase):
             break

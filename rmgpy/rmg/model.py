@@ -565,7 +565,7 @@ class PDepNetwork(rmgpy.measure.network.Network):
                     import pdb; pdb.set_trace()
                     raise Exception('Path reaction "%s" in PDepNetwork #%i has no kinetics!' % (rxn, self.index))
             rxn.transitionState = rmgpy.chem.species.TransitionState(
-                E0=sum([spec.E0 for spec in rxn.reactants]) + rxn.kinetics.Ea,
+                E0=sum([spec.E0 for spec in rxn.reactants]) + rxn.kinetics.Ea.value,
             )
 
         # Determine reversibility of reactions

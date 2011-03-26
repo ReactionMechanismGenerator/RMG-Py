@@ -322,7 +322,7 @@ class ArrheniusEP(KineticsModel):
         Return the activation energy in J/mol using the enthalpy of reaction 
         `dHrxn` in J/mol.
         """
-        return self.E0.value + self.alpha * dHrxn.value
+        return self.E0.value + self.alpha.value * dHrxn
     
     def getRateCoefficient(self, T, dHrxn):
         """
