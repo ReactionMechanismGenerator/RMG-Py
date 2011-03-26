@@ -41,7 +41,6 @@ cdef extern from "math.h":
 cdef class KineticsModel:
     
     cdef public Quantity Tmin, Tmax, Pmin, Pmax
-    cdef public int numReactants
     cdef public str comment
     
     cpdef bint isTemperatureValid(self, double T) except -2
@@ -64,7 +63,7 @@ cdef class Arrhenius(KineticsModel):
 
     cpdef changeT0(self, double T0)
 
-    cpdef fitToData(self, Quantity Tlist, Quantity klist, double T0=?, int numReactants=?)
+    cpdef fitToData(self, Quantity Tlist, Quantity klist, double T0=?)
 
 ################################################################################
 

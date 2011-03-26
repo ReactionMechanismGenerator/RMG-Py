@@ -95,25 +95,23 @@ class KineticsModel:
     `Tmax`          :class:`Quantity`   The maximum absolute temperature in K at which the model is valid
     `Pmin`          :class:`Quantity`   The minimum absolute pressure in Pa at which the model is valid
     `Pmax`          :class:`Quantity`   The maximum absolute pressure in Pa at which the model is valid
-    `numReactants`  :class:`int`        The number of reactants (used to determine the units of the kinetics)
     `comment`       :class:`str`        A string containing information about the model (e.g. its source)
     =============== =================== ========================================
 
     """
 
-    def __init__(self, Tmin=None, Tmax=None, Pmin=None, Pmax=None, numReactants=-1, comment=''):
+    def __init__(self, Tmin=None, Tmax=None, Pmin=None, Pmax=None, comment=''):
         self.Tmin = constants.Quantity(Tmin)
         self.Tmax = constants.Quantity(Tmax)
         self.Pmin = constants.Quantity(Pmin)
         self.Pmax = constants.Quantity(Pmax)
-        self.numReactants = numReactants
         self.comment = comment
 
     def __reduce__(self):
         """
         A helper function used when pickling an object.
         """
-        return (KineticsModel, (self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.numReactants, self.comment))
+        return (KineticsModel, (self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.comment))
 
     def isTemperatureValid(self, T):
         """
@@ -167,8 +165,8 @@ class Arrhenius(KineticsModel):
     
     """
     
-    def __init__(self, A=0.0, n=0.0, Ea=0.0, T0=1.0, Tmin=None, Tmax=None, numReactants=-1, comment=''):
-        KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, numReactants=numReactants, comment=comment)
+    def __init__(self, A=0.0, n=0.0, Ea=0.0, T0=1.0, Tmin=None, Tmax=None, comment=''):
+        KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, comment=comment)
         self.A = constants.Quantity(A)
         self.T0 = constants.Quantity(T0)
         self.n = constants.Quantity(n)
@@ -185,7 +183,6 @@ class Arrhenius(KineticsModel):
         string = 'Arrhenius(A=%r, n=%r, Ea=%r, T0=%r' % (self.A, self.n, self.Ea, self.T0)
         string += ', Tmin=%r' % (self.Tmin)
         string += ', Tmax=%r' % (self.Tmax)
-        string += ', numReactants=%i' % (self.numReactants)
         string += ', comment="%s"' % (self.comment)
         string += ')'
         return string
@@ -197,7 +194,7 @@ class Arrhenius(KineticsModel):
         d = {}
         d['Pmin'] = self.Pmin
         d['Pmax'] = self.Pmax
-        return (Arrhenius, (self.A, self.n, self.Ea, self.T0, self.Tmin, self.Tmax, self.numReactants, self.comment), d)
+        return (Arrhenius, (self.A, self.n, self.Ea, self.T0, self.Tmin, self.Tmax, self.comment), d)
 
     def __setstate__(self, d):
         """
@@ -227,7 +224,7 @@ class Arrhenius(KineticsModel):
         self.A.value = (self.T0.value / T0)**self.n
         self.T0.value = T0.value
 
-    def fitToData(self, Tlist, klist, T0=298.15, numReactants=1):
+    def fitToData(self, Tlist, klist, T0=298.15):
         """
         Fit the Arrhenius parameters to a set of rate coefficient data `klist`
         corresponding to a set of temperatures `Tlist` in K. A linear least-
@@ -270,8 +267,8 @@ class ArrheniusEP(KineticsModel):
 
     """
 
-    def __init__(self, A=0.0, n=0.0, alpha=0.0, E0=0.0, Tmin=None, Tmax=None, numReactants=-1, comment=''):
-        KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, numReactants=numReactants, comment=comment)
+    def __init__(self, A=0.0, n=0.0, alpha=0.0, E0=0.0, Tmin=None, Tmax=None, comment=''):
+        KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, comment=comment)
         self.A = constants.Quantity(A)
         self.n = constants.Quantity(n)
         self.alpha = constants.Quantity(alpha)
@@ -288,7 +285,6 @@ class ArrheniusEP(KineticsModel):
         string = 'ArrheniusEP(A=%r, n=%r, alpha=%r, E0=%r' % (self.A, self.n, self.alpha, self.E0)
         string += ', Tmin=%r' % (self.Tmin)
         string += ', Tmax=%r' % (self.Tmax)
-        string += ', numReactants=%i' % (self.numReactants)
         string += ', comment="%s"' % (self.comment)
         string += ')'
         return string
@@ -300,7 +296,7 @@ class ArrheniusEP(KineticsModel):
         d = {}
         d['Pmin'] = self.Pmin
         d['Pmax'] = self.Pmax
-        return (ArrheniusEP, (self.A, self.n, self.alpha, self.E0, self.Tmin, self.Tmax, self.numReactants, self.comment), d)
+        return (ArrheniusEP, (self.A, self.n, self.alpha, self.E0, self.Tmin, self.Tmax, self.comment), d)
 
     def __setstate__(self, d):
         """
@@ -359,8 +355,8 @@ class MultiArrhenius(KineticsModel):
 
     """
 
-    def __init__(self, arrheniusList=None, Tmin=0.0, Tmax=1.0e10, numReactants=-1, comment=''):
-        KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, numReactants=numReactants, comment=comment)
+    def __init__(self, arrheniusList=None, Tmin=0.0, Tmax=1.0e10, comment=''):
+        KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, comment=comment)
         self.arrheniusList = arrheniusList or []
 
     def __repr__(self):
@@ -372,7 +368,6 @@ class MultiArrhenius(KineticsModel):
         string += 'arrheniusList=[%s]' % (', '.join([repr(arrh) for arrh in self.arrheniusList]))
         string += ', Tmin=%r' % (self.Tmin)
         string += ', Tmax=%r' % (self.Tmax)
-        string += ', numReactants=%i' % (self.numReactants)
         string += ', comment="%s"' % (self.comment)
         string += ')'
         return string
@@ -384,7 +379,7 @@ class MultiArrhenius(KineticsModel):
         d = {}
         d['Pmin'] = self.Pmin
         d['Pmax'] = self.Pmax
-        return (MultiArrhenius, (self.arrheniusList, self.Tmin, self.Tmax, self.numReactants, self.comment), d)
+        return (MultiArrhenius, (self.arrheniusList, self.Tmin, self.Tmax, self.comment), d)
 
     def __setstate__(self, d):
         """
@@ -431,8 +426,8 @@ class PDepArrhenius(KineticsModel):
     
     """
 
-    def __init__(self, pressures=None, arrhenius=None, Tmin=0.0, Tmax=1.0e10, Pmin=0.0, Pmax=1.0e100, numReactants=-1, comment=''):
-        KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, numReactants=numReactants, comment=comment)
+    def __init__(self, pressures=None, arrhenius=None, Tmin=0.0, Tmax=1.0e10, Pmin=0.0, Pmax=1.0e100, comment=''):
+        KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, comment=comment)
         self.pressures = constants.Quantity(pressures)
         self.arrhenius = arrhenius or []
 
@@ -448,7 +443,6 @@ class PDepArrhenius(KineticsModel):
         string += ', Tmax=%r' % (self.Tmax)
         string += ', Pmin=%r' % (self.Pmin)
         string += ', Pmax=%r' % (self.Pmax)
-        string += ', numReactants=%i' % (self.numReactants)
         string += ', comment="%s"' % (self.comment)
         string += ')'
         return string
@@ -457,7 +451,7 @@ class PDepArrhenius(KineticsModel):
         """
         A helper function used when pickling an object.
         """
-        return (PDepArrhenius, (self.pressures, self.arrhenius, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.numReactants, self.comment))
+        return (PDepArrhenius, (self.pressures, self.arrhenius, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.comment))
 
     def isPressureDependent(self):
         """
@@ -554,8 +548,8 @@ class Chebyshev(KineticsModel):
     
     """
 
-    def __init__(self, coeffs=None, Tmin=0.0, Tmax=1.0e10, Pmin=0.0, Pmax=1.0e100, numReactants=-1, comment=''):
-        KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, numReactants=numReactants, comment=comment)
+    def __init__(self, coeffs=None, Tmin=0.0, Tmax=1.0e10, Pmin=0.0, Pmax=1.0e100, comment=''):
+        KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, comment=comment)
         if coeffs is not None:
             self.coeffs = constants.Quantity(numpy.array(coeffs, numpy.float64)).values
             self.degreeT = self.coeffs.shape[0]
@@ -582,7 +576,6 @@ class Chebyshev(KineticsModel):
         string += ', Tmax=%r' % (self.Tmax)
         string += ', Pmin=%r' % (self.Pmin)
         string += ', Pmax=%r' % (self.Pmax)
-        string += ', numReactants=%i' % (self.numReactants)
         string += ', comment="%s"' % (self.comment)
         string += ')'
         return string
@@ -591,7 +584,7 @@ class Chebyshev(KineticsModel):
         """
         A helper function used when pickling an object.
         """
-        return (Chebyshev, (self.coeffs, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.numReactants, self.comment))
+        return (Chebyshev, (self.coeffs, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.comment))
 
     def isPressureDependent(self):
         """
@@ -723,8 +716,8 @@ class ThirdBody(KineticsModel):
 
     """
 
-    def __init__(self, arrheniusHigh=None, efficiencies=None, Tmin=0.0, Tmax=1.0e10, Pmin=0.0, Pmax=1.0e100, numReactants=-1, comment=''):
-        KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, numReactants=numReactants, comment=comment)
+    def __init__(self, arrheniusHigh=None, efficiencies=None, Tmin=0.0, Tmax=1.0e10, Pmin=0.0, Pmax=1.0e100, comment=''):
+        KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, comment=comment)
         self.arrheniusHigh = arrheniusHigh
         self.efficiencies = efficiencies or {}
 
@@ -740,7 +733,6 @@ class ThirdBody(KineticsModel):
         string += ', Tmax=%r' % (self.Tmax)
         string += ', Pmin=%r' % (self.Pmin)
         string += ', Pmax=%r' % (self.Pmax)
-        string += ', numReactants=%i' % (self.numReactants)
         string += ', comment="%s"' % (self.comment)
         string += ')'
         return string
@@ -749,7 +741,7 @@ class ThirdBody(KineticsModel):
         """
         A helper function used when pickling an object.
         """
-        return (ThirdBody, (self.arrheniusHigh, self.efficiencies, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.numReactants, self.comment))
+        return (ThirdBody, (self.arrheniusHigh, self.efficiencies, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.comment))
 
     def isPressureDependent(self):
         """
@@ -845,8 +837,8 @@ class Lindemann(ThirdBody):
 
     """
 
-    def __init__(self, arrheniusLow=None, arrheniusHigh=None, efficiencies=None, Tmin=0.0, Tmax=1.0e10, Pmin=0.0, Pmax=1.0e100, numReactants=-1, comment=''):
-        ThirdBody.__init__(self, arrheniusHigh=arrheniusHigh, efficiencies=efficiencies, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, numReactants=numReactants, comment=comment)
+    def __init__(self, arrheniusLow=None, arrheniusHigh=None, efficiencies=None, Tmin=0.0, Tmax=1.0e10, Pmin=0.0, Pmax=1.0e100, comment=''):
+        ThirdBody.__init__(self, arrheniusHigh=arrheniusHigh, efficiencies=efficiencies, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, comment=comment)
         self.arrheniusLow = arrheniusLow
 
     def __repr__(self):
@@ -862,7 +854,6 @@ class Lindemann(ThirdBody):
         string += ', Tmax=%r' % (self.Tmax)
         string += ', Pmin=%r' % (self.Pmin)
         string += ', Pmax=%r' % (self.Pmax)
-        string += ', numReactants=%i' % (self.numReactants)
         string += ', comment="%s"' % (self.comment)
         string += ')'
         return string
@@ -871,7 +862,7 @@ class Lindemann(ThirdBody):
         """
         A helper function used when pickling an object.
         """
-        return (Lindemann, (self.arrheniusLow, self.arrheniusHigh, self.efficiencies, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.numReactants, self.comment))
+        return (Lindemann, (self.arrheniusLow, self.arrheniusHigh, self.efficiencies, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.comment))
 
     def getRateCoefficient(self, T, P, collider=None):
         """
@@ -946,8 +937,8 @@ class Troe(Lindemann):
 
     """
 
-    def __init__(self, arrheniusLow=None, arrheniusHigh=None, efficiencies=None, alpha=0.0, T3=0.0, T1=0.0, T2=None, Tmin=0.0, Tmax=1.0e10, Pmin=0.0, Pmax=1.0e100, numReactants=-1, comment=''):
-        Lindemann.__init__(self, arrheniusLow=arrheniusLow, arrheniusHigh=arrheniusHigh, efficiencies=efficiencies, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, numReactants=numReactants, comment=comment)
+    def __init__(self, arrheniusLow=None, arrheniusHigh=None, efficiencies=None, alpha=0.0, T3=0.0, T1=0.0, T2=None, Tmin=0.0, Tmax=1.0e10, Pmin=0.0, Pmax=1.0e100, comment=''):
+        Lindemann.__init__(self, arrheniusLow=arrheniusLow, arrheniusHigh=arrheniusHigh, efficiencies=efficiencies, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, comment=comment)
         self.alpha = constants.Quantity(alpha)
         self.T3 = constants.Quantity(T3)
         self.T1 = constants.Quantity(T1)
@@ -973,7 +964,6 @@ class Troe(Lindemann):
         string += ', Tmax=%r' % (self.Tmax)
         string += ', Pmin=%r' % (self.Pmin)
         string += ', Pmax=%r' % (self.Pmax)
-        string += ', numReactants=%i' % (self.numReactants)
         string += ', comment="%s"' % (self.comment)
         string += ')'
         return string
@@ -982,7 +972,7 @@ class Troe(Lindemann):
         """
         A helper function used when pickling an object.
         """
-        return (Troe, (self.arrheniusLow, self.arrheniusHigh, self.efficiencies, self.alpha, self.T3, self.T1, self.T2, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.numReactants, self.comment))
+        return (Troe, (self.arrheniusLow, self.arrheniusHigh, self.efficiencies, self.alpha, self.T3, self.T1, self.T2, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.comment))
 
     def getRateCoefficient(self, T, P, collider=None):
         """
