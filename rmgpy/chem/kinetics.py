@@ -101,10 +101,22 @@ class KineticsModel:
     """
 
     def __init__(self, Tmin=None, Tmax=None, Pmin=None, Pmax=None, comment=''):
-        self.Tmin = constants.Quantity(Tmin)
-        self.Tmax = constants.Quantity(Tmax)
-        self.Pmin = constants.Quantity(Pmin)
-        self.Pmax = constants.Quantity(Pmax)
+        if Tmin is not None:
+            self.Tmin = constants.Quantity(Tmin)
+        else:
+            self.Tmin = None
+        if Tmax is not None:
+            self.Tmax = constants.Quantity(Tmax)
+        else:
+            self.Tmax = None
+        if Pmin is not None:
+            self.Pmin = constants.Quantity(Pmin)
+        else:
+            self.Pmin = None
+        if Pmax is not None:
+            self.Pmax = constants.Quantity(Pmax)
+        else:
+            self.Pmax = None
         self.comment = comment
 
     def __reduce__(self):
@@ -118,14 +130,14 @@ class KineticsModel:
         Return :data:`True` if temperature `T` in K is within the valid 
         temperature range and :data:`False` if not. 
         """
-        return (self.Tmin.value <= T and T <= self.Tmax.value)
+        return self.Tmin is None or self.Tmax is None or (self.Tmin.value <= T and T <= self.Tmax.value)
 
     def isPressureValid(self, P):
         """
         Return :data:`True` if pressure `P` in Pa is within the valid pressure
         range, and :data:`False` if not.
         """
-        return (self.Pmin.value <= P and P <= self.Pmax.value)
+        return self.Pmin is None or self.Pmax is None or (self.Pmin.value <= P and P <= self.Pmax.value)
 
     def isPressureDependent(self):
         """
@@ -171,9 +183,6 @@ class Arrhenius(KineticsModel):
         self.T0 = constants.Quantity(T0)
         self.n = constants.Quantity(n)
         self.Ea = constants.Quantity(Ea)
-    
-    def __str__(self):
-        return 'k(T) = %g * (T / %g) ** %g * exp(-%g / RT)    %g < T < %g' % (self.A, self.T0, self.n, self.Ea, self.Tmin, self.Tmax)
     
     def __repr__(self):
         """
@@ -239,10 +248,10 @@ class Arrhenius(KineticsModel):
         b = numpy.log(klist)
         x = numpy.linalg.lstsq(A,b)[0]
         
-        self.A = constants.Quantity(math.exp(x[0]), klist.units)
+        self.A = constants.Quantity(math.exp(x[0]))
         self.n = constants.Quantity(x[1])
-        self.Ea = constants.Quantity(x[2], "J/mol")
-        self.T0 = constants.Quantity(T0, "K")
+        self.Ea = constants.Quantity((x[2], "J/mol"))
+        self.T0 = constants.Quantity((T0, "K"))
         return self
     
 ################################################################################
@@ -274,9 +283,6 @@ class ArrheniusEP(KineticsModel):
         self.alpha = constants.Quantity(alpha)
         self.E0 = constants.Quantity(E0)
 
-    def __str__(self):
-        return 'k(T) = %g * T ** %g * exp(-(%g + %g * dHrxn) / RT)    %g < T < %g' % (self.A, self.n, self.E0, self.alpha, self.Tmin, self.Tmax)
-        
     def __repr__(self):
         """
         Return a string representation that can be used to reconstruct the
@@ -619,13 +625,13 @@ class Chebyshev(KineticsModel):
             return math.cos(n * math.acos(x))
 
     def __getReducedTemperature(self, T):
-        return (2.0/T - 1.0/self.Tmin - 1.0/self.Tmax) / (1.0/self.Tmax - 1.0/self.Tmin)
+        return (2.0/T - 1.0/self.Tmin.value - 1.0/self.Tmax.value) / (1.0/self.Tmax.value - 1.0/self.Tmin.value)
     
     def __getReducedPressure(self, P):
         if cython.compiled:
-            return (2.0*log10(P) - log10(self.Pmin) - log10(self.Pmax)) / (log10(self.Pmax) - log10(self.Pmin))
+            return (2.0*log10(P) - log10(self.Pmin.value) - log10(self.Pmax.value)) / (log10(self.Pmax.value) - log10(self.Pmin.value))
         else:
-            return (2.0*math.log(P) - math.log(self.Pmin) - math.log(self.Pmax)) / (math.log(self.Pmax) - math.log(self.Pmin))
+            return (2.0*math.log(P) - math.log(self.Pmin.value) - math.log(self.Pmax.value)) / (math.log(self.Pmax.value) - math.log(self.Pmin.value))
     
     def getRateCoefficient(self, T, P):
         """

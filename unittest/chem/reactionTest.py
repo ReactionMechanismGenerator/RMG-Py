@@ -114,9 +114,9 @@ class ReactionTest(unittest.TestCase):
         klist2 = arrhenius.getRateCoefficients(Tlist)
 
         # Check that the correct Arrhenius parameters are returned
-        self.assertAlmostEqual(arrhenius.A/458.87, 1.0, 2)
-        self.assertAlmostEqual(arrhenius.n/0.978, 1.0, 2)
-        self.assertAlmostEqual(arrhenius.Ea/10194, 1.0, 2)
+        self.assertAlmostEqual(arrhenius.A.value/458.87, 1.0, 2)
+        self.assertAlmostEqual(arrhenius.n.value/0.978, 1.0, 2)
+        self.assertAlmostEqual(arrhenius.Ea.value/10194, 1.0, 2)
         # Check that the fit is satisfactory
         for i in range(len(Tlist)):
             self.assertTrue(abs(1 - klist2[i] / klist[i]) < 0.01)
@@ -146,10 +146,10 @@ class ReactionTest(unittest.TestCase):
         self.assertEqual(rxn0.transitionState.E0, rxn.transitionState.E0)
         self.assertEqual(rxn0.transitionState.frequency, rxn.transitionState.frequency)
 
-        self.assertEqual(rxn0.kinetics.A, rxn.kinetics.A)
-        self.assertEqual(rxn0.kinetics.n, rxn.kinetics.n)
-        self.assertEqual(rxn0.kinetics.T0, rxn.kinetics.T0)
-        self.assertEqual(rxn0.kinetics.Ea, rxn.kinetics.Ea)
+        self.assertEqual(rxn0.kinetics.A.value, rxn.kinetics.A.value)
+        self.assertEqual(rxn0.kinetics.n.value, rxn.kinetics.n.value)
+        self.assertEqual(rxn0.kinetics.T0.value, rxn.kinetics.T0.value)
+        self.assertEqual(rxn0.kinetics.Ea.value, rxn.kinetics.Ea.value)
         self.assertEqual(rxn0.kinetics.comment, rxn.kinetics.comment)
 
     def testOutput(self):
@@ -177,9 +177,9 @@ class ReactionTest(unittest.TestCase):
         self.assertAlmostEqual(rxn0.transitionState.frequency, rxn.transitionState.frequency, 2)
 
         self.assertAlmostEqual(rxn0.kinetics.A.value / 1e6, rxn.kinetics.A.value / 1e6, 4)
-        self.assertEqual(rxn0.kinetics.n, rxn.kinetics.n)
-        self.assertEqual(rxn0.kinetics.T0, rxn.kinetics.T0)
-        self.assertEqual(rxn0.kinetics.Ea, rxn.kinetics.Ea)
+        self.assertEqual(rxn0.kinetics.n.value, rxn.kinetics.n.value)
+        self.assertEqual(rxn0.kinetics.T0.value, rxn.kinetics.T0.value)
+        self.assertEqual(rxn0.kinetics.Ea.value, rxn.kinetics.Ea.value)
         self.assertEqual(rxn0.kinetics.comment, rxn.kinetics.comment)
 
 ################################################################################

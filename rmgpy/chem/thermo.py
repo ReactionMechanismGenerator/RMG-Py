@@ -72,18 +72,24 @@ class ThermoModel:
     =============== =================== ========================================
     Attribute       Type                Description
     =============== =================== ========================================
-    `Tmin`          :class:`Quantity`   The minimum temperature in K at which the model is valid
-    `Tmax`          :class:`Quantity`   The maximum temperature in K at which the model is valid
+    `Tmin`          :class:`Quantity`   The minimum temperature in K at which the model is valid, or ``None`` if unknown
+    `Tmax`          :class:`Quantity`   The maximum temperature in K at which the model is valid, or ``None`` if unknown
     `comment`       :class:`Quantity`   A string containing information about the model (e.g. its source)
     =============== =================== ========================================
 
     """
     
     def __init__(self, Tmin=None, Tmax=None, comment=''):
-        self.Tmin = constants.Quantity(Tmin)
-        self.Tmax = constants.Quantity(Tmax)
+        if Tmin is not None:
+            self.Tmin = constants.Quantity(Tmin)
+        else:
+            self.Tmin = None
+        if Tmax is not None:
+            self.Tmax = constants.Quantity(Tmax)
+        else:
+            self.Tmax = None
         self.comment = comment
-    
+        
     def __reduce__(self):
         """
         A helper function used when pickling an object.
@@ -95,7 +101,7 @@ class ThermoModel:
         Return ``True`` if the temperature `T` in K is within the valid
         temperature range of the thermodynamic data, or ``False`` if not.
         """
-        return self.Tmin.value <= T and T <= self.Tmax.value
+        return self.Tmin is None or self.Tmax is None or (self.Tmin.value <= T and T <= self.Tmax.value)
 
     def getHeatCapacity(self, T):
         raise ThermoError('Unexpected call to ThermoModel.getHeatCapacity(); you should be using a class derived from ThermoModel.')
@@ -167,20 +173,6 @@ class ThermoData(ThermoModel):
         if self.Tmax: string += ', Tmax=%r' % (self.Tmax)
         if self.comment != '': string += ', comment="""%s"""' % (self.comment)
         string += ')'
-        return string
-
-    def __str__(self):
-        """
-        Return a string summarizing the thermodynamic data.
-        """
-        string = ''
-        string += 'Enthalpy of formation: %g kJ/mol\n' % (self.H298.value / 1000.0)
-        string += 'Entropy of formation: %g J/mol*K\n' % (self.S298.value)
-        string += 'Heat capacity (J/mol*K): '
-        for T, Cp in zip(self.Tdata.values, self.Cpdata.values):
-            string += '%.1f(%g K) ' % (Cp,T)
-        string += '\n'
-        string += 'Comment: %s' % (self.comment)
         return string
 
     def __reduce__(self):
@@ -341,8 +333,7 @@ class Wilhoit(ThermoModel):
         cython.declare(y=cython.double)
         cp0, cpInf, B, a0, a1, a2, a3 = self.cp0.value, self.cpInf.value, self.B.value, self.a0.value, self.a1.value, self.a2.value, self.a3.value
         y = T/(T+B)
-        return cp0+(cpInf-cp0)*y*y*( 1 +
-            (y-1)*(a0 + y*(a1 + y*(a2 + y*a3))) )
+        return cp0+(cpInf-cp0)*y*y*( 1 + (y-1)*(a0 + y*(a1 + y*(a2 + y*a3))) )
             
     def getEnthalpy(self, T):
         """

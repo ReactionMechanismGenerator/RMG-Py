@@ -246,10 +246,10 @@ def applyInverseLaplaceTransformMethod(kinetics, double E0,
 
     k = numpy.zeros_like((Elist))
     
-    if isinstance(kinetics, ArrheniusModel) and (T != 0.0 or (kinetics.Ea >= 0 and kinetics.n >= 0)):
-        A = kinetics.A / (kinetics.T0**kinetics.n)
-        n = kinetics.n
-        Ea = kinetics.Ea
+    if isinstance(kinetics, Arrhenius) and (T != 0.0 or (kinetics.Ea >= 0 and kinetics.n >= 0)):
+        A = kinetics.A.value / (kinetics.T0.value**kinetics.n.value)
+        n = kinetics.n.value
+        Ea = kinetics.Ea.value
         dE = Elist[1] - Elist[0]
 
         # The inverse Laplace transform is not defined for Ea < 0 or n < 0
@@ -312,14 +312,19 @@ def fitInterpolationModel(reaction, Tlist, Plist, K, model, Tmin, Tmax, Pmin, Pm
     it is optional.
     """
 
+    Tmin = constants.Quantity((Tmin,"K"))
+    Tmax = constants.Quantity((Tmax,"K"))
+    Pmin = constants.Quantity((Pmin/1e5,"bar"))
+    Pmax = constants.Quantity((Pmax/1e5,"bar"))
+
     # Set/update the net reaction kinetics using interpolation model
     if model[0].lower() == 'chebyshev':
         modelType, degreeT, degreeP = model
-        chebyshev = ChebyshevModel()
+        chebyshev = Chebyshev()
         chebyshev.fitToData(Tlist, Plist, K, degreeT, degreeP, Tmin, Tmax, Pmin, Pmax)
         kinetics = chebyshev
     elif model[0].lower() == 'pdeparrhenius':
-        pDepArrhenius = PDepArrheniusModel()
+        pDepArrhenius = PDepArrhenius()
         pDepArrhenius.fitToData(Tlist, Plist, K, T0=298.0)
         kinetics = pDepArrhenius
     else:

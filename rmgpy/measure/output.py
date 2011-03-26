@@ -106,15 +106,7 @@ def writeSpecies(f, spec):
     if spec.states is not None:
         writeStates(f, spec.states, prefix='    ')
     if spec.thermo is not None:
-        if isinstance(spec.thermo, ThermoData):
-            f.write('    thermo=ThermoData(\n')
-            f.write('        Tdata=([%s], "K"),\n' % (', '.join([('%g' % T) for T in spec.thermo.Tdata])))
-            f.write('        Cpdata=([%s], "J/(mol*K)"),\n' % (', '.join([('%g' % Cp) for Cp in spec.thermo.Cpdata])))
-            f.write('        H298=(%g, "kJ/mol"),\n' % (spec.thermo.H298/1000.0))
-            f.write('        S298=(%g, "J/(mol*K)"),\n' % (spec.thermo.S298))
-            f.write('    ),\n')
-        else:
-            f.write('    thermo=%r,\n' % spec.thermo)
+        f.write('    thermo=%r,\n' % spec.thermo)
     if spec.lennardJones is not None:
         f.write('    lennardJones=LennardJones(sigma=(%g,"m"), epsilon=(%g,"J")),\n' % (spec.lennardJones.sigma, spec.lennardJones.epsilon))
     if spec.molecularWeight != 0.0:
@@ -188,10 +180,10 @@ def writePDepReaction(f, rxn):
         else: Aunits = 'm^%g/(mol^%g*s)' % (3*(len(rxn.reactants)-1), len(rxn.reactants)-1)
         if isinstance(rxn.kinetics, Chebyshev):
             f.write('    kinetics=Chebyshev(\n')
-            f.write('        Tmin=(%g,"K"),\n' % (rxn.kinetics.Tmin))
-            f.write('        Tmax=(%g,"K"),\n' % (rxn.kinetics.Tmax))
-            f.write('        Pmin=(%g,"bar"),\n' % (rxn.kinetics.Pmin/1e5))
-            f.write('        Pmax=(%g,"bar"),\n' % (rxn.kinetics.Pmax/1e5))
+            f.write('        Tmin=%r,\n' % (rxn.kinetics.Tmin))
+            f.write('        Tmax=%r,\n' % (rxn.kinetics.Tmax))
+            f.write('        Pmin=%r,\n' % (rxn.kinetics.Pmin))
+            f.write('        Pmax=%r,\n' % (rxn.kinetics.Pmax))
             f.write('        coeffs=[\n')
             for t in range(rxn.kinetics.degreeT):
                 f.write('            [%s],\n' % (', '.join([('%g' % rxn.kinetics.coeffs[t,p]) for p in range(rxn.kinetics.degreeP)])))
@@ -199,10 +191,10 @@ def writePDepReaction(f, rxn):
             f.write('    ),\n')
         elif isinstance(rxn.kinetics, PDepArrhenius):
             f.write('    kinetics=PDepArrhenius(\n')
-            f.write('        pressures=([%s],"bar"),\n' % (', '.join([('%g' % (P / 1e5)) for P in rxn.kinetics.pressures])))
+            f.write('        pressures=%r,\n' % (rxn.kinetics.pressures))
             f.write('        arrhenius=[\n')
             for arrh in rxn.kinetics.arrhenius:
-                f.write('            Arrhenius(A=(%g,"%s"), n=(%g), Ea=(%g,"kJ/mol"), T0=(%g,"K")),\n' % (arrh.A, Aunits, arrh.n, arrh.Ea/1000.0, arrh.T0))
+                f.write('            %r,\n' % (arrh))
             f.write('        ],\n')
             f.write('    ),\n')
 

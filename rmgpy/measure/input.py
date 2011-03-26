@@ -43,7 +43,7 @@ quantities.UnitQuantity('kilojoule', 1000.0*quantities.J, symbol='kJ')
 
 from rmgpy.chem.species import Species, TransitionState
 from rmgpy.chem.reaction import Reaction
-from rmgpy.chem.species import LennardJones as LennardJonesModel
+from rmgpy.chem.species import LennardJones
 from rmgpy.chem.molecule import Molecule
 from rmgpy.chem.states import *
 from rmgpy.chem.kinetics import Arrhenius
@@ -85,53 +85,14 @@ class InputError(Exception):
 
 ################################################################################
 
-def processQuantity(quantity):
-    """
-    Processes a `quantity` from the input file. The quantity can be a number of
-    things:
-
-    * A :data:`list` or :data:`tuple` containing a number and a string with its
-      units (e.g ``[100,'kJ/mol']``)
-
-    * A :data:`list` or :data:`tuple` containing a list or tuple of numbers and
-      a string with their units (e.g ``[(1,2,3), 'm']``)
-
-    * A :data:`list` or :data:`tuple` of numbers with no units (e.g.
-      ``[1, 2, 3]``)
-
-    * A single number with no units
-
-    If the quantity has units, then the associated number(s) are converted to
-    SI units using the ``quantities`` package.  If the quantity does not have
-    units, then it is assumed to be either a dimensionless quantity or a
-    quantity that is already in SI units.
-
-    This function returns a :data:`tuple` containing the number or list of
-    numbers and a string with the units of those numbers.
-    """
-    if isinstance(quantity, tuple) or isinstance(quantity, list):
-        value, units = quantity
-    else:
-        value = quantity; units = ''
-    newUnits = str(quantities.Quantity(1.0, units).simplified.units).split()[1]
-    if isinstance(value, tuple) or isinstance(value, list):
-        return [float(quantities.Quantity(v, units).simplified) for v in value], newUnits
-    else:
-        return float(quantities.Quantity(value, units).simplified), newUnits
-
-################################################################################
-
 def species(label='', E0=None, states=None, thermo=None, lennardJones=None, molecularWeight=0.0, SMILES='', InChI=''):
     global speciesDict
     if label == '': raise InputError('Missing "label" attribute in species() block.')
-    if E0 is not None: E0 = processQuantity(E0)[0]
-    else: E0 = 0.0
-    spec = Species(label=label, states=states, thermo=thermo, E0=E0, lennardJones=lennardJones)
+    spec = Species(label=label, states=states, thermo=thermo, E0=E0, molecularWeight=molecularWeight, lennardJones=lennardJones)
     if InChI != '':
         spec.molecule = [Molecule(InChI=InChI)]
     elif SMILES != '':
         spec.molecule = [Molecule(SMILES=SMILES)]
-    spec.molecularWeight = processQuantity(molecularWeight)[0]
     speciesDict[label] = spec
     logging.debug('Found species "%s"' % spec)
     # If the molecular weight was not specified but the structure was, then
@@ -139,76 +100,19 @@ def species(label='', E0=None, states=None, thermo=None, lennardJones=None, mole
     if spec.molecularWeight == 0.0 and spec.molecule is not None and len(spec.molecule) > 0:
         spec.molecularWeight = spec.molecule[0].getMolecularWeight()
 
-def thermoGAModel(Tdata, Cpdata, H298, S298, Tmin=0.0, Tmax=99999.9, comment=''):
-    return ThermoData(
-        Tdata=numpy.array(processQuantity(Tdata)[0], numpy.float64),
-        Cpdata=numpy.array(processQuantity(Cpdata)[0], numpy.float64),
-        H298=processQuantity(H298)[0],
-        S298=processQuantity(S298)[0],
-        Tmin=processQuantity(Tmin)[0],
-        Tmax=processQuantity(Tmax)[0],
-        comment=comment,
-    )
-
-def thermoWilhoit(cp0, cpInf, a0, a1, a2, a3, H0, S0, B, comment=''):
-    return Wilhoit(
-        cp0=processQuantity(cp0)[0],
-        cpInf=processQuantity(cpInf)[0],
-        a0=a0,
-        a1=a1,
-        a2=a2,
-        a3=a3,
-        H0=H0,
-        S0=S0,
-        B=processQuantity(B)[0],
-        comment=comment,
-    )
-
-def thermoMultiNASA(polynomials=None, Tmin=0.0, Tmax=0.0, comment=''):
-    return MultiNASA(
-        polynomials=polynomials,
-        Tmin=processQuantity(Tmin)[0],
-        Tmax=processQuantity(Tmax)[0],
-        comment=comment,
-    )
-
-def thermoNASA(Tmin=0.0, Tmax=0.0, coeffs=None, comment=''):
-    return NASA(
-        Tmin=processQuantity(Tmin)[0],
-        Tmax=processQuantity(Tmax)[0],
-        coeffs=coeffs,
-        comment=comment,
-    )
-
-
 def States(rotationalConstants=None, symmetry=1, frequencies=None, 
   frequencyScaleFactor=1.0, hinderedRotors=None, spinMultiplicity=1):
     modes = []
     if rotationalConstants is not None:
-        inertia, units = processQuantity(rotationalConstants)
-        if units == '1/m':
-            # This allows the end user to specify rotational constants as wavenumbers
-            inertia = [constants.h / (8 * constants.pi * constants.pi * B * constants.c) for B in inertia]
-            units = 'kg*m^2'
+        inertia = rotationalConstants
         linear = len(inertia)==1
         modes.append(RigidRotor(linear, inertia, symmetry))
     if frequencies is not None: 
-        frequencies, units = processQuantity(frequencies)
-        frequencies = [f / 100.0 for f in frequencies]
         modes.append(HarmonicOscillator(frequencies))
     if hinderedRotors is not None: 
         for inertia, barrier, symmetry in hinderedRotors:
-            inertia, units = processQuantity(inertia)
-            barrier, units = processQuantity(barrier)
             modes.append(HinderedRotor(inertia, barrier, symmetry))
     return StatesModel(modes, spinMultiplicity)
-
-def LennardJones(sigma, epsilon):
-    sigma, units = processQuantity(sigma)
-    epsilon, units = processQuantity(epsilon)
-    if units == 'K':
-        epsilon *= constants.kB; units = 'J'
-    return LennardJonesModel(sigma, epsilon)
 
 def reaction(reactants, products, kinetics=None, reversible=True, transitionState=None):
     global network
@@ -226,18 +130,6 @@ def reaction(reactants, products, kinetics=None, reversible=True, transitionStat
     network.pathReactions.append(rxn)
     logging.debug('Found reaction "%s"' % rxn)
 
-def Arrhenius(A, n, Ea, T0=1.0):
-    A, units = processQuantity(A)
-    n, units = processQuantity(n)
-    Ea, units = processQuantity(Ea)
-    T0, units = processQuantity(T0)
-    return Arrhenius(A=A, n=n, Ea=Ea, T0=T0)
-
-def TS(E0=None, states=None, frequency=0.0, degeneracy=1):
-    if E0 is not None: E0 = processQuantity(E0)[0]
-    frequency = processQuantity(frequency)[0] / 100.0
-    return TransitionState(E0=E0, states=states, frequency=frequency, degeneracy=degeneracy)
-
 def collisionModel(type, parameters, bathGas):
     global network, speciesDict
     if type.lower() == 'single exponential down':
@@ -246,15 +138,15 @@ def collisionModel(type, parameters, bathGas):
         if len(parameters) == 1:
             if 'alpha' not in parameters:
                 raise InputError('Must specify either "alpha" or ("alpha0","T0","n") as parameters for SingleExponentialDownModel.')
-            alpha0 = processQuantity(parameters['alpha'])[0]
+            alpha0 = constants.Quantity(parameters['alpha']).value
             T0 = 1000.0
             n = 0.0
         elif len(parameters) == 3:
             if 'alpha0' not in parameters or 'T0' not in parameters or 'n' not in parameters:
                 raise InputError('Must specify either "alpha" or ("alpha0","T0","n") as parameters for SingleExponentialDownModel.')
-            alpha0 = processQuantity(parameters['alpha0'])[0]
-            T0 = processQuantity(parameters['T0'])[0]
-            n = processQuantity(parameters['n'])[0]
+            alpha0 = constants.Quantity(parameters['alpha0']).value
+            T0 = constants.Quantity(parameters['T0']).value
+            n = constants.Quantity(parameters['n']).value
         else:
             raise InputError('Must specify either "alpha" or ("alpha0","T0","n") as parameters for SingleExponentialDownModel.')
 
@@ -276,14 +168,14 @@ def temperatures(Tlist0=None, Tmin=None, Tmax=None, count=None):
     global Tlist, Tparams
     if Tlist0 is not None:
         # We've been provided a list of specific temperatures to use
-        Tlist = processQuantity(Tlist0)[0]
+        Tlist = constants.processQuantity(Tlist0)[0].value
         Tparams = None
     elif Tmin is not None and Tmax is not None and count is not None:
         # We've been provided a temperature range and number of temperatures to use
         # We defer choosing the actual temperatures because they depend on the
         # choice of interpolation model
         Tlist = None
-        Tparams = [processQuantity(Tmin)[0], processQuantity(Tmax)[0], count]
+        Tparams = [constants.Quantity(Tmin).value, constants.Quantity(Tmax).value, count]
     else:
         raise SyntaxError('Must specify either a list of temperatures or Tmin, Tmax, and count.')
 
@@ -291,26 +183,26 @@ def pressures(Plist0=None, Pmin=None, Pmax=None, count=None):
     global Plist, Pparams
     if Plist0 is not None:
         # We've been provided a list of specific pressures to use
-        Plist = processQuantity(Plist0)[0]
+        Plist = constants.processQuantity(Plist0).value
         Pparams = None
     elif Pmin is not None and Pmax is not None and count is not None:
         # We've been provided a pressures range and number of pressures to use
         # We defer choosing the actual pressures because they depend on the
         # choice of interpolation model
         Plist = None
-        Pparams = [processQuantity(Pmin)[0], processQuantity(Pmax)[0], count]
+        Pparams = [constants.Quantity(Pmin).value, constants.Quantity(Pmax).value, count]
     else:
         raise SyntaxError('Must specify either a list of pressures or Pmin, Pmax, and count.')
 
 def energies(Emin=None, Emax=None, dE=None, count=None):
     global Elist, network
     if dE is not None or count is not None:
-        dE = processQuantity(dE)[0]
+        dE = constants.Quantity(dE).value
         if dE is None: dE = 0.0
         if count is None: count = 0
         if Emin is not None and Emax is not None:
-            Emin = processQuantity(Emin)[0]
-            Emax = processQuantity(Emax)[0]
+            Emin = constants.Quantity(Emin).value
+            Emax = constants.Quantity(Emax).value
             Elist = network.getEnergyGrains(Emin, Emax, dE, count)
         else:
             Elist = (dE, count)
@@ -361,7 +253,7 @@ def generateThermoFromStates(species):
         H298 += trans.getEnthalpy(298)
         S298 += trans.getEntropy(298)
 
-    species.thermo = ThermoData(Tdata=Tdata, Cpdata=Cpdata, H298=H298, S298=S298)
+    species.thermo = ThermoData(Tdata=(Tdata,"K"), Cpdata=(Cpdata,"J/(mol*K)"), H298=(H298/1000.,"kJ/mol"), S298=(S298,"J/(mol*K)"))
 
 def getTemperaturesForModel(model, Tmin, Tmax, Tcount):
     """
@@ -470,17 +362,17 @@ def readInput(path):
         'LennardJones': LennardJones,
         'reaction': reaction,
         'Arrhenius': Arrhenius,
-        'TransitionState': TS,
+        'TransitionState': TransitionState,
         'collisionModel': collisionModel,
         'temperatures': temperatures,
         'pressures': pressures,
         'energies': energies,
         'method': _method,
         'interpolationModel': interpolationModel,
-        'ThermoData': thermoGAModel,
-        'Wilhoit': thermoWilhoit,
-        'MultiNASA': thermoMultiNASA,
-        'NASA': thermoNASA,
+        'ThermoData': ThermoData,
+        'Wilhoit': Wilhoit,
+        'MultiNASA': MultiNASA,
+        'NASA': NASA,
     }
     
     try:

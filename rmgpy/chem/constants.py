@@ -141,7 +141,7 @@ class Quantity:
             value = args
         elif isinstance(args, list) or isinstance(args, tuple):
             if len(args) == 1:
-                value = args[0]
+                value = args
             elif len(args) == 2:
                 value, units = args
             elif len(args) == 3:
