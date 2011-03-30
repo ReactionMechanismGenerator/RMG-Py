@@ -302,7 +302,7 @@ def getPressuresForModel(model, Pmin, Pmax, Pcount):
 def readInput(path):
     """
     Reads a MEASURE input file from location `path` on disk. The input file
-    format is described in the :ref:`usersguide`. Returns a number of
+    format is described in the :ref:`measureusersguide`. Returns a number of
     quantities:
 
     * The :class:`Network` object representing the unimolecular reaction network

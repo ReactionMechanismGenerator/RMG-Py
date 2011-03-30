@@ -8,8 +8,6 @@
 
 .. autofunction:: rmgpy.measure.input.readInput
 
-.. autofunction:: rmgpy.measure.input.processQuantity
-
 .. autofunction:: rmgpy.measure.input.generateThermoFromStates
 
 .. autofunction:: rmgpy.measure.input.getTemperaturesForModel

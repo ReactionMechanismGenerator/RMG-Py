@@ -836,8 +836,8 @@ class Lindemann(ThirdBody):
     =============== ======================= ====================================
     Attribute       Type                    Description
     =============== ======================= ====================================
-    `arrheniusLow`  :class:`Arrhenius` The Arrhenius kinetics at the low-pressure limit
-    `arrheniusHigh` :class:`Arrhenius` The Arrhenius kinetics at the high-pressure limit
+    `arrheniusLow`  :class:`Arrhenius`      The Arrhenius kinetics at the low-pressure limit
+    `arrheniusHigh` :class:`Arrhenius`      The Arrhenius kinetics at the high-pressure limit
     `efficiencies`  ``dict``                A mapping of species to collider efficiencies
     =============== ======================= ====================================
 
@@ -932,13 +932,13 @@ class Troe(Lindemann):
     =============== ======================= ====================================
     Attribute       Type                    Description
     =============== ======================= ====================================
-    `arrheniusLow`  :class:`Arrhenius` The Arrhenius kinetics at the low-pressure limit
-    `arrheniusHigh` :class:`Arrhenius` The Arrhenius kinetics at the high-pressure limit
+    `arrheniusLow`  :class:`Arrhenius`      The Arrhenius kinetics at the low-pressure limit
+    `arrheniusHigh` :class:`Arrhenius`      The Arrhenius kinetics at the high-pressure limit
     `efficiencies`  ``dict``                A mapping of species to collider efficiencies
-    `alpha`         ``float``               The :math:`\\alpha` parameter
-    `T1`            ``float``               The :math:`T_1` parameter
-    `T2`            ``float``               The :math:`T_2` parameter
-    `T3`            ``float``               The :math:`T_3` parameter
+    `alpha`         :class:`Quantity`       The :math:`\\alpha` parameter
+    `T1`            :class:`Quantity`       The :math:`T_1` parameter
+    `T2`            :class:`Quantity`       The :math:`T_2` parameter
+    `T3`            :class:`Quantity`       The :math:`T_3` parameter
     =============== ======================= ====================================
 
     """
