@@ -187,61 +187,6 @@ class Dictionary(dict):
 
 ################################################################################
 
-def makeLogicNode(string):
-    """
-    Creates and returns a node in the tree which is a logic node.
-
-    String should be of the form:
-
-    * OR{}
-    * AND{}
-    * NOT OR{}
-    * NOT AND{}
-
-    And the returned object will be of class LogicOr or LogicAnd
-    """
-
-    match = re.match("(?i)\s*(NOT)?\s*(OR|AND|UNION)\s*(.*)",string)  # the (?i) makes it case-insensitive
-    if not match:
-        raise Exception("Unexpected string for Logic Node: %s"%string)
-
-    if match.group(1): invert = True
-    else: invert = False
-
-    logic = match.group(2)  # OR or AND (or Union)
-
-    contents = match.group(3).strip()
-    while contents.startswith('{'):
-        if not contents.endswith('}'):
-            raise Exception("Unbalanced braces in Logic Node: %s"%string)
-        contents = contents[1:-1]
-
-    items=[]
-    chars=[]
-    brace_depth = 0
-    for character in contents:
-        if character == '{':
-            brace_depth += 1
-        if character == '}':
-            brace_depth -= 1
-        if character == ',' and brace_depth == 0:
-            items.append(''.join(chars).lstrip().rstrip() )
-            chars = []
-        else:
-            chars.append(character)
-    if chars: # add last item
-        items.append(''.join(chars).lstrip().rstrip() )
-    if brace_depth != 0: raise Exception("Unbalanced braces in Logic Node: %s"%string)
-
-    if logic.upper() in ['OR', 'UNION']:
-        return LogicOr(items, invert)
-    if logic == 'AND':
-        return LogicAnd(items, invert)
-
-    raise Exception("Could not create Logic Node from %s" % string)
-
-################################################################################
-
 class Tree:
     """
     An implementation of an n-ary tree used for representing a hierarchy of
@@ -611,86 +556,6 @@ class Library(dict):
 
 ################################################################################
 
-class LogicNode():
-    """
-    A base class for AND and OR logic nodes.
-    """
-
-    symbol="<TBD>" # To be redefined by subclass
-
-    def __init__(self,items,invert):
-        self.components = []
-        for item in items:
-            if re.match('(?i)\s*OR|AND|NOT|UNION',item):
-                component = makeLogicNode(item)
-            else:
-                component = item
-            self.components.append(component)
-        self.invert = bool(invert)
-
-    def __str__(self):
-        result = ''
-        if self.invert: result += 'NOT '
-        result += self.symbol
-        result += "{%s}"%(', '.join([str(c) for c in self.components]))
-        return result
-
-class LogicOr(LogicNode):
-    """
-    A logical OR node. Structure can match any component.
-
-    Initialize with a list of component items and a boolean instruction to invert the answer.
-    """
-    symbol = "OR"
-    def matchToStructure(self,database,structure,atoms):
-        """
-        Does this node in the given database match the given structure with the labeled atoms?
-        """
-        for node in self.components:
-            if isinstance(node,LogicNode):
-                match = node.matchToStructure(database,structure,atoms)
-            else:
-                match = database.matchNodeToStructure(node, structure, atoms)
-            if match:
-                return True != self.invert
-        return False != self.invert
-
-    def getPossibleStructures(self,dictionary):
-        """
-        Return a list of the possible structures below this node.
-        """
-        if self.invert: raise NotImplementedError("Finding possible structures of NOT OR nodes not implemented.")
-        structures = []
-        for item in self.components:
-            struct = dictionary[item]
-            if isinstance(struct, LogicNode):
-                structures.extend(struct.getPossibleStructures(dictionary))
-            else:
-                structures.append(struct)
-        for struct in structures: # check this worked
-            assert isinstance(struct,MoleculePattern)
-        return structures
-
-class LogicAnd(LogicNode):
-    """A logical AND node. Structure must match all components."""
-    symbol = "AND"
-    def matchToStructure(self,database,structure,atoms):
-        """
-        Does this node in the given database match the given structure with the labeled atoms?
-        """
-        for node in self.components:
-            if isinstance(node,LogicNode):
-                match = node.matchToStructure(database,structure,atoms)
-            else:
-                match = database.matchNodeToStructure(node, structure, atoms)
-            if not match:
-                return False != self.invert
-        return True != self.invert
-
-
-
-################################################################################
-
 class Database:
     """
     Represent an RMG database. An RMG database is structured as an n-ary tree,
@@ -932,6 +797,141 @@ class Database:
 
 ################################################################################
 
+class LogicNode:
+    """
+    A base class for AND and OR logic nodes.
+    """
+
+    symbol = "<TBD>" # To be redefined by subclass
+
+    def __init__(self,items,invert):
+        self.components = []
+        for item in items:
+            if re.match('(?i)\s*OR|AND|NOT|UNION',item):
+                component = makeLogicNode(item)
+            else:
+                component = item
+            self.components.append(component)
+        self.invert = bool(invert)
+
+    def __str__(self):
+        result = ''
+        if self.invert: result += 'NOT '
+        result += self.symbol
+        result += "{%s}"%(', '.join([str(c) for c in self.components]))
+        return result
+
+class LogicOr(LogicNode):
+    """
+    A logical OR node. Structure can match any component.
+
+    Initialize with a list of component items and a boolean instruction to invert the answer.
+    """
+
+    symbol = "OR"
+
+    def matchToStructure(self,database,structure,atoms):
+        """
+        Does this node in the given database match the given structure with the labeled atoms?
+        """
+        for node in self.components:
+            if isinstance(node,LogicNode):
+                match = node.matchToStructure(database,structure,atoms)
+            else:
+                match = database.matchNodeToStructure(node, structure, atoms)
+            if match:
+                return True != self.invert
+        return False != self.invert
+
+    def getPossibleStructures(self,dictionary):
+        """
+        Return a list of the possible structures below this node.
+        """
+        if self.invert: raise NotImplementedError("Finding possible structures of NOT OR nodes not implemented.")
+        structures = []
+        for item in self.components:
+            struct = dictionary[item]
+            if isinstance(struct, LogicNode):
+                structures.extend(struct.getPossibleStructures(dictionary))
+            else:
+                structures.append(struct)
+        for struct in structures: # check this worked
+            assert isinstance(struct,MoleculePattern)
+        return structures
+
+class LogicAnd(LogicNode):
+    """A logical AND node. Structure must match all components."""
+
+    symbol = "AND"
+
+    def matchToStructure(self,database,structure,atoms):
+        """
+        Does this node in the given database match the given structure with the labeled atoms?
+        """
+        for node in self.components:
+            if isinstance(node,LogicNode):
+                match = node.matchToStructure(database,structure,atoms)
+            else:
+                match = database.matchNodeToStructure(node, structure, atoms)
+            if not match:
+                return False != self.invert
+        return True != self.invert
+
+def makeLogicNode(string):
+    """
+    Creates and returns a node in the tree which is a logic node.
+
+    String should be of the form:
+
+    * OR{}
+    * AND{}
+    * NOT OR{}
+    * NOT AND{}
+
+    And the returned object will be of class LogicOr or LogicAnd
+    """
+
+    match = re.match("(?i)\s*(NOT)?\s*(OR|AND|UNION)\s*(.*)",string)  # the (?i) makes it case-insensitive
+    if not match:
+        raise Exception("Unexpected string for Logic Node: %s"%string)
+
+    if match.group(1): invert = True
+    else: invert = False
+
+    logic = match.group(2)  # OR or AND (or Union)
+
+    contents = match.group(3).strip()
+    while contents.startswith('{'):
+        if not contents.endswith('}'):
+            raise Exception("Unbalanced braces in Logic Node: %s"%string)
+        contents = contents[1:-1]
+
+    items=[]
+    chars=[]
+    brace_depth = 0
+    for character in contents:
+        if character == '{':
+            brace_depth += 1
+        if character == '}':
+            brace_depth -= 1
+        if character == ',' and brace_depth == 0:
+            items.append(''.join(chars).lstrip().rstrip() )
+            chars = []
+        else:
+            chars.append(character)
+    if chars: # add last item
+        items.append(''.join(chars).lstrip().rstrip() )
+    if brace_depth != 0: raise Exception("Unbalanced braces in Logic Node: %s"%string)
+
+    if logic.upper() in ['OR', 'UNION']:
+        return LogicOr(items, invert)
+    if logic == 'AND':
+        return LogicAnd(items, invert)
+
+    raise Exception("Could not create Logic Node from %s" % string)
+
+################################################################################
+
 def removeCommentFromLine(line):
     """
     Remove a C++/Java style comment from a line of text. This refers
@@ -950,7 +950,7 @@ def getAllCombinations(nodeLists):
     lists `nodeLists`. Each combination takes one item from each list
     contained within `nodeLists`. The order of items in the returned lists
     reflects the order of lists in `nodeLists`. For example, if `nodeLists` was
-    [[A, B, C],	[N], [X, Y]], the returned combinations would be
+    [[A, B, C], [N], [X, Y]], the returned combinations would be
     [[A, N, X], [A, N, Y], [B, N, X], [B, N, Y], [C, N, X], [C, N, Y]].
     """
 
@@ -959,8 +959,3 @@ def getAllCombinations(nodeLists):
         items = [ item + [node] for node in nodeList for item in items ]
 
     return items
-
-################################################################################
-
-if __name__ == '__main__':
-    pass
