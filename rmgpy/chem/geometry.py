@@ -67,9 +67,9 @@ class Geometry:
     """
     
     def __init__(self, coordinates, number, mass):
-        self.coordinates = constants.processQuantity(coordinates)[0]
-        self.number = constants.processQuantity(number)[0]
-        self.mass = constants.processQuantity(mass)[0]
+        self.coordinates = constants.Quantity(coordinates).values
+        self.number = constants.Quantity(number).values
+        self.mass = constants.Quantity(mass).values
     
     def __repr__(self):
         """

@@ -9,8 +9,8 @@ sys.path.append('.')
 from rmgpy.chem.species import Species, TransitionState
 from rmgpy.chem.reaction import *
 from rmgpy.chem.states import *
-from rmgpy.chem.kinetics import ArrheniusModel
-from rmgpy.chem.thermo import WilhoitModel
+from rmgpy.chem.kinetics import Arrhenius
+from rmgpy.chem.thermo import Wilhoit
 import rmgpy.chem.constants as constants
 
 ################################################################################
@@ -30,25 +30,25 @@ class ReactionTest(unittest.TestCase):
         # CC(=O)O[O]
         acetylperoxy = Species(
             label='acetylperoxy',
-            thermo=WilhoitModel(cp0=4.0*constants.R, cpInf=21.0*constants.R, a0=-3.95, a1=9.26, a2=-15.6, a3=8.55, B=500.0, H0=-6.151e+04, S0=-790.2),
+            thermo=Wilhoit(cp0=4.0*constants.R, cpInf=21.0*constants.R, a0=-3.95, a1=9.26, a2=-15.6, a3=8.55, B=500.0, H0=-6.151e+04, S0=-790.2),
         )
 
         # C[C]=O
         acetyl = Species(
             label='acetyl',
-            thermo=WilhoitModel(cp0=4.0*constants.R, cpInf=15.5*constants.R, a0=0.2541, a1=-0.4712, a2=-4.434, a3=2.25, B=500.0, H0=-1.439e+05, S0=-524.6),
+            thermo=Wilhoit(cp0=4.0*constants.R, cpInf=15.5*constants.R, a0=0.2541, a1=-0.4712, a2=-4.434, a3=2.25, B=500.0, H0=-1.439e+05, S0=-524.6),
         )
 
         # [O][O]
         oxygen = Species(
             label='oxygen',
-            thermo=WilhoitModel(cp0=3.5*constants.R, cpInf=4.5*constants.R, a0=-0.9324, a1=26.18, a2=-70.47, a3=44.12, B=500.0, H0=1.453e+04, S0=-12.19),
+            thermo=Wilhoit(cp0=3.5*constants.R, cpInf=4.5*constants.R, a0=-0.9324, a1=26.18, a2=-70.47, a3=44.12, B=500.0, H0=1.453e+04, S0=-12.19),
         )
         
         reaction = Reaction(
             reactants=[acetyl, oxygen],
             products=[acetylperoxy],
-            kinetics=ArrheniusModel(A=2.65e6, n=0.0, Ea=0.0*4184),
+            kinetics=Arrhenius(A=2.65e6, n=0.0, Ea=0.0*4184),
         )
 
         Tlist = numpy.arange(200.0, 2001.0, 200.0, numpy.float64)
@@ -110,13 +110,13 @@ class ReactionTest(unittest.TestCase):
         import numpy
         Tlist = 1000.0/numpy.arange(0.4, 3.35, 0.05)
         klist = reaction.calculateTSTRateCoefficients(Tlist, tunneling='')
-        arrhenius = ArrheniusModel().fitToData(Tlist, klist)
+        arrhenius = Arrhenius().fitToData(Tlist, klist)
         klist2 = arrhenius.getRateCoefficients(Tlist)
 
         # Check that the correct Arrhenius parameters are returned
-        self.assertAlmostEqual(arrhenius.A/458.87, 1.0, 2)
-        self.assertAlmostEqual(arrhenius.n/0.978, 1.0, 2)
-        self.assertAlmostEqual(arrhenius.Ea/10194, 1.0, 2)
+        self.assertAlmostEqual(arrhenius.A.value/458.87, 1.0, 2)
+        self.assertAlmostEqual(arrhenius.n.value/0.978, 1.0, 2)
+        self.assertAlmostEqual(arrhenius.Ea.value/10194, 1.0, 2)
         # Check that the fit is satisfactory
         for i in range(len(Tlist)):
             self.assertTrue(abs(1 - klist2[i] / klist[i]) < 0.01)
@@ -131,7 +131,7 @@ class ReactionTest(unittest.TestCase):
         ethyl    = Species(  E0=-207340036.867)
         TS = TransitionState(E0=-207188826.467, frequency=-309.3437)
 
-        kinetics = ArrheniusModel(A=1.0e6, n=1.0, Ea=10000.0, T0=298.15, comment='These parameters are completely made up')
+        kinetics = Arrhenius(A=1.0e6, n=1.0, Ea=10000.0, T0=298.15, comment='These parameters are completely made up')
 
         rxn0 = Reaction(reactants=[hydrogen, ethylene], products=[ethyl], transitionState=TS, kinetics=kinetics)
         import cPickle
@@ -146,10 +146,10 @@ class ReactionTest(unittest.TestCase):
         self.assertEqual(rxn0.transitionState.E0, rxn.transitionState.E0)
         self.assertEqual(rxn0.transitionState.frequency, rxn.transitionState.frequency)
 
-        self.assertEqual(rxn0.kinetics.A, rxn.kinetics.A)
-        self.assertEqual(rxn0.kinetics.n, rxn.kinetics.n)
-        self.assertEqual(rxn0.kinetics.T0, rxn.kinetics.T0)
-        self.assertEqual(rxn0.kinetics.Ea, rxn.kinetics.Ea)
+        self.assertEqual(rxn0.kinetics.A.value, rxn.kinetics.A.value)
+        self.assertEqual(rxn0.kinetics.n.value, rxn.kinetics.n.value)
+        self.assertEqual(rxn0.kinetics.T0.value, rxn.kinetics.T0.value)
+        self.assertEqual(rxn0.kinetics.Ea.value, rxn.kinetics.Ea.value)
         self.assertEqual(rxn0.kinetics.comment, rxn.kinetics.comment)
 
     def testOutput(self):
@@ -162,7 +162,7 @@ class ReactionTest(unittest.TestCase):
         ethyl    = Species(  E0=-207340036.867)
         TS = TransitionState(E0=-207188826.467, frequency=-309.3437)
 
-        kinetics = ArrheniusModel(A=1.0e6, n=1.0, Ea=10000.0, T0=298.15, comment='These parameters are completely made up')
+        kinetics = Arrhenius(A=1.0e6, n=1.0, Ea=10000.0, T0=298.15, comment='These parameters are completely made up')
 
         rxn0 = Reaction(reactants=[hydrogen, ethylene], products=[ethyl], transitionState=TS, kinetics=kinetics)
         exec('rxn = %r' % (rxn0))
@@ -176,10 +176,10 @@ class ReactionTest(unittest.TestCase):
         self.assertAlmostEqual(rxn0.transitionState.E0 / 1e9, rxn.transitionState.E0 / 1e9, 4)
         self.assertAlmostEqual(rxn0.transitionState.frequency, rxn.transitionState.frequency, 2)
 
-        self.assertAlmostEqual(rxn0.kinetics.A / 1e6, rxn.kinetics.A / 1e6, 4)
-        self.assertEqual(rxn0.kinetics.n, rxn.kinetics.n)
-        self.assertEqual(rxn0.kinetics.T0, rxn.kinetics.T0)
-        self.assertEqual(rxn0.kinetics.Ea, rxn.kinetics.Ea)
+        self.assertAlmostEqual(rxn0.kinetics.A.value / 1e6, rxn.kinetics.A.value / 1e6, 4)
+        self.assertEqual(rxn0.kinetics.n.value, rxn.kinetics.n.value)
+        self.assertEqual(rxn0.kinetics.T0.value, rxn.kinetics.T0.value)
+        self.assertEqual(rxn0.kinetics.Ea.value, rxn.kinetics.Ea.value)
         self.assertEqual(rxn0.kinetics.comment, rxn.kinetics.comment)
 
 ################################################################################

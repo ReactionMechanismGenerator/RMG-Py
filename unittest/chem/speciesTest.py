@@ -5,7 +5,7 @@ import unittest
 
 from rmgpy.chem.molecule import Molecule
 from rmgpy.chem.species import *
-from rmgpy.chem.thermo import ThermoGAModel
+from rmgpy.chem.thermo import ThermoData
 from rmgpy.chem.states import *
 import rmgpy.chem.constants as constants
 
@@ -25,7 +25,7 @@ class SpeciesTest(unittest.TestCase):
         spec0 = Species(
             index=1,
             label='C2H4',
-            thermo=ThermoGAModel(
+            thermo=ThermoData(
                 Tdata=[300.0,400.0,500.0,600.0,800.0,1000.0,1500.0],
                 Cpdata=[3.0,4.0,5.0,6.0,8.0,10.0,15.0],
                 H298=-20.0*4184,
@@ -69,7 +69,7 @@ class SpeciesTest(unittest.TestCase):
         spec0 = Species(
             index=1,
             label='C2H4',
-            thermo=ThermoGAModel(
+            thermo=ThermoData(
                 Tdata=[300.0,400.0,500.0,600.0,800.0,1000.0,1500.0],
                 Cpdata=[3.0,4.0,5.0,6.0,8.0,10.0,15.0],
                 H298=-20.0*4184,

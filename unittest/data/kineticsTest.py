@@ -13,7 +13,7 @@ from rmgpy.data.base import LogicNode
 from rmgpy.chem.molecule import Molecule
 from rmgpy.chem.pattern import MoleculePattern
 from rmgpy.chem.reaction import Reaction
-from rmgpy.chem.kinetics import ArrheniusEPModel
+from rmgpy.chem.kinetics import ArrheniusEP
 
 ################################################################################
 
@@ -75,7 +75,7 @@ class KineticsDatabaseCheck(unittest.TestCase):
             for node in family.dictionary:
                 self.assertTrue(isinstance(family.dictionary[node], MoleculePattern) or isinstance(family.dictionary[node], LogicNode))
 
-            # All values in library should be ArrheniusEPModel objects or lists of length 2
+            # All values in library should be ArrheniusEP objects or lists of length 2
             for node in family.library:
                 self.assertTrue(isinstance(family.library[node], KineticsEntry), '"%s" is of unexpected type "%s".' % (node, family.library[node].__class__))
                 self.assertTrue(family.library[node].model is not None or family.library[node].node != '')

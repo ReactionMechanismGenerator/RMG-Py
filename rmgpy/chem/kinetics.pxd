@@ -26,6 +26,8 @@
 
 cimport numpy
 
+from constants cimport Quantity
+
 cdef extern from "math.h":
     cdef double acos(double x)
     cdef double cos(double x)
@@ -38,11 +40,7 @@ cdef extern from "math.h":
 
 cdef class KineticsModel:
     
-    cdef public double Tmin
-    cdef public double Tmax
-    cdef public double Pmin
-    cdef public double Pmax
-    cdef public int numReactants
+    cdef public Quantity Tmin, Tmax, Pmin, Pmax
     cdef public str comment
     
     cpdef bint isTemperatureValid(self, double T) except -2
@@ -55,12 +53,9 @@ cdef class KineticsModel:
 
 ################################################################################
 
-cdef class ArrheniusModel(KineticsModel):
+cdef class Arrhenius(KineticsModel):
     
-    cdef public double A
-    cdef public double T0
-    cdef public double Ea
-    cdef public double n
+    cdef public Quantity A, T0, Ea, n
     
     cpdef bint isPressureDependent(self)
 
@@ -72,13 +67,10 @@ cdef class ArrheniusModel(KineticsModel):
 
 ################################################################################
 
-cdef class ArrheniusEPModel(KineticsModel):
+cdef class ArrheniusEP(KineticsModel):
     
-    cdef public double A
-    cdef public double E0
-    cdef public double n
-    cdef public double alpha
-    
+    cdef public Quantity A, E0, n, alpha
+
     cpdef bint isPressureDependent(self)
 
     cpdef double getActivationEnergy(self, double dHrxn)
@@ -87,7 +79,7 @@ cdef class ArrheniusEPModel(KineticsModel):
 
 ################################################################################
 
-cdef class MultiArrheniusModel(KineticsModel):
+cdef class MultiArrhenius(KineticsModel):
 
     cdef public list arrheniusList
 
@@ -97,9 +89,9 @@ cdef class MultiArrheniusModel(KineticsModel):
 
 ################################################################################
 
-cdef class PDepArrheniusModel(KineticsModel):
+cdef class PDepArrhenius(KineticsModel):
     
-    cdef public list pressures
+    cdef public Quantity pressures
     cdef public list arrhenius
     
     cpdef bint isPressureDependent(self)
@@ -112,7 +104,7 @@ cdef class PDepArrheniusModel(KineticsModel):
 
 ################################################################################
 
-cdef class ChebyshevModel(KineticsModel):
+cdef class Chebyshev(KineticsModel):
     
     cdef public object coeffs
     cdef public int degreeT
@@ -129,13 +121,13 @@ cdef class ChebyshevModel(KineticsModel):
     cpdef double getRateCoefficient(self, double T, double P)
 
     cpdef fitToData(self, numpy.ndarray Tlist, numpy.ndarray Plist, numpy.ndarray K,
-        int degreeT, int degreeP, double Tmin, double Tmax, double Pmin, double Pmax)
+        int degreeT, int degreeP, Quantity Tmin, Quantity Tmax, Quantity Pmin, Quantity Pmax)
 
 ################################################################################
 
-cdef class ThirdBodyModel(KineticsModel):
+cdef class ThirdBody(KineticsModel):
 
-    cdef public ArrheniusModel arrheniusHigh
+    cdef public Arrhenius arrheniusHigh
     cdef public dict efficiencies
     
     cpdef bint isPressureDependent(self)
@@ -146,16 +138,16 @@ cdef class ThirdBodyModel(KineticsModel):
 
 ################################################################################
 
-cdef class LindemannModel(ThirdBodyModel):
+cdef class Lindemann(ThirdBody):
 
-    cdef public ArrheniusModel arrheniusLow
+    cdef public Arrhenius arrheniusLow
     
     cpdef double getRateCoefficient(self, double T, double P, collider=?)
 
 ################################################################################
 
-cdef class TroeModel(LindemannModel):
+cdef class Troe(Lindemann):
 
-    cdef public double alpha, T1, T2, T3
+    cdef public Quantity alpha, T1, T2, T3
     
     cpdef double getRateCoefficient(self, double T, double P, collider=?)

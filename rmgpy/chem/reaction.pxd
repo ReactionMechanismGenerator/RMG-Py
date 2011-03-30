@@ -25,7 +25,7 @@
 ################################################################################
 
 from species cimport Species, TransitionState
-from kinetics cimport KineticsModel, ArrheniusModel
+from kinetics cimport KineticsModel, Arrhenius
 
 cimport numpy
 

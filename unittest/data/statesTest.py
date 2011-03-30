@@ -54,7 +54,7 @@ class ThermoDatabaseCheck(unittest.TestCase):
         for node in database.dictionary:
             self.assertTrue(isinstance(database.dictionary[node], MoleculePattern) or isinstance(database.dictionary[node], LogicNode))
 
-        # All values in library should be ThermoGAModel objects or lists of length 2
+        # All values in library should be ThermoData objects or lists of length 2
         for node in database.library:
             self.assertTrue(isinstance(database.library[node], GroupFrequency) or (isinstance(database.library[node], list) and len(database.library[node]) == 2), '"%s" is of unexpected type "%s".' % (node, database.library[node].__class__))
 

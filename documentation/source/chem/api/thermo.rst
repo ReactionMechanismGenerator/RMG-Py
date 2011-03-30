@@ -16,21 +16,21 @@ Base Class for Thermodynamics Models
 Group-Additivity Thermodynamics Model
 =====================================
 
-.. autoclass:: rmgpy.chem.thermo.ThermoGAModel
+.. autoclass:: rmgpy.chem.thermo.ThermoData
     :members:
 
 Wilhoit Polynomial Thermodynamics Model
 =======================================
 
-.. autoclass:: rmgpy.chem.thermo.WilhoitModel
+.. autoclass:: rmgpy.chem.thermo.Wilhoit
     :members:
 
 NASA Polynomial Thermodynamics Model
 ====================================
 
-.. autoclass:: rmgpy.chem.thermo.NASAPolynomial
+.. autoclass:: rmgpy.chem.thermo.NASA
     :members:
 
-.. autoclass:: rmgpy.chem.thermo.NASAModel
+.. autoclass:: rmgpy.chem.thermo.MultiNASA
     :members:
     

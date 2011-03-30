@@ -107,7 +107,7 @@ class Translation(Mode):
     """
 
     def __init__(self, mass=0.0):
-        self.mass = constants.processQuantity(mass)[0]
+        self.mass = constants.Quantity(mass).value
 
     def __repr__(self):
         """
@@ -203,7 +203,7 @@ class RigidRotor(Mode):
     def __init__(self, linear=False, inertia=None, symmetry=1):
         self.linear = linear
         if inertia is not None:
-            self.inertia = list(constants.processQuantity(inertia)[0])
+            self.inertia = list(constants.Quantity(inertia).values)
         else:
             self.inertia = []
         self.symmetry = symmetry
@@ -358,11 +358,11 @@ class HinderedRotor(Mode):
     """
 
     def __init__(self, inertia=0.0, barrier=0.0, symmetry=1, fourier=None):
-        self.inertia = constants.processQuantity(inertia)[0]
-        self.barrier = constants.processQuantity(barrier)[0]
+        self.inertia = constants.Quantity(inertia).value
+        self.barrier = constants.Quantity(barrier).value
         self.symmetry = symmetry
         if fourier is not None:
-            self.fourier = constants.processQuantity(fourier)[0]
+            self.fourier = constants.Quantity(fourier).values
             self.energies = self.__solveSchrodingerEquation()
         else:
             self.fourier = None
@@ -679,9 +679,7 @@ class HarmonicOscillator(Mode):
 
     def __init__(self, frequencies=None):
         if frequencies is not None:
-            frequencies, units = constants.processQuantity(frequencies)
-            assert units in ['','dimensionless','cm^-1'], 'Can only handle harmonic oscillator frequencies in units of cm^-1; provided units were "%s"' % units
-            self.frequencies = list(frequencies)
+            self.frequencies = list(constants.Quantity(frequencies).values)
         else:
             self.frequencies = None
 

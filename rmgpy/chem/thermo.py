@@ -32,14 +32,14 @@ This module contains a variety of classes representing various thermodynamics
 models. All such models derive from the :class:`ThermoModel` base class, and
 generally vary by how the heat capacity data is represented:
 
-* :class:`ThermoGAModel` - A thermodynamics model using a discrete set of heat
+* :class:`ThermoData` - A thermodynamics model using a discrete set of heat
   capacity data points
 
-* :class:`WilhoitModel` - A thermodynamics model using the Wilhoit polynomial
+* :class:`Wilhoit` - A thermodynamics model using the Wilhoit polynomial
   equation for heat capacity
 
-* :class:`NASAModel` - A thermodynamics model using a set of
-  :class:`NASAPolynomial` objects, each representing a seven-coefficient or
+* :class:`MultiNASA` - A thermodynamics model using a set of
+  :class:`NASA` objects, each representing a seven-coefficient or
   nine-coefficient polynomial equation for heat capacity, enthalpy, and entropy
 
 """
@@ -69,21 +69,27 @@ class ThermoModel:
     A base class for thermodynamics models, containing several attributes
     common to all models:
     
-    =============== =============== ============================================
-    Attribute       Type            Description
-    =============== =============== ============================================
-    `Tmin`          :class:`float`  The minimum temperature in K at which the model is valid
-    `Tmax`          :class:`float`  The maximum temperature in K at which the model is valid
-    `comment`       :class:`str`    A string containing information about the model (e.g. its source)
-    =============== =============== ============================================
-    
+    =============== =================== ========================================
+    Attribute       Type                Description
+    =============== =================== ========================================
+    `Tmin`          :class:`Quantity`   The minimum temperature in K at which the model is valid, or ``None`` if unknown
+    `Tmax`          :class:`Quantity`   The maximum temperature in K at which the model is valid, or ``None`` if unknown
+    `comment`       :class:`Quantity`   A string containing information about the model (e.g. its source)
+    =============== =================== ========================================
+
     """
     
-    def __init__(self, Tmin=0.0, Tmax=1.0e10, comment=''):
-        self.Tmin = constants.processQuantity(Tmin)[0]
-        self.Tmax = constants.processQuantity(Tmax)[0]
+    def __init__(self, Tmin=None, Tmax=None, comment=''):
+        if Tmin is not None:
+            self.Tmin = constants.Quantity(Tmin)
+        else:
+            self.Tmin = None
+        if Tmax is not None:
+            self.Tmax = constants.Quantity(Tmax)
+        else:
+            self.Tmax = None
         self.comment = comment
-    
+        
     def __reduce__(self):
         """
         A helper function used when pickling an object.
@@ -95,7 +101,7 @@ class ThermoModel:
         Return ``True`` if the temperature `T` in K is within the valid
         temperature range of the thermodynamic data, or ``False`` if not.
         """
-        return self.Tmin <= T and T <= self.Tmax
+        return self.Tmin is None or self.Tmax is None or (self.Tmin.value <= T and T <= self.Tmax.value)
 
     def getHeatCapacity(self, T):
         raise ThermoError('Unexpected call to ThermoModel.getHeatCapacity(); you should be using a class derived from ThermoModel.')
@@ -139,7 +145,7 @@ class ThermoModel:
     
 ################################################################################
 
-class ThermoGAModel(ThermoModel):
+class ThermoData(ThermoModel):
     """
     A thermodynamic model defined by a set of heat capacities. The attributes
     are:
@@ -147,90 +153,52 @@ class ThermoGAModel(ThermoModel):
     =========== =================== ============================================
     Attribute   Type                Description
     =========== =================== ============================================
-    `Tdata`     ``numpy.ndarray``   The temperatures at which the heat capacity data is provided in K
-    `Cpdata`    ``numpy.ndarray``   The standard heat capacity in J/mol*K at each temperature in `Tdata`
-    `H298`      ``double``          The standard enthalpy of formation at 298 K in J/mol
-    `S298`      ``double``          The standard entropy of formation at 298 K in J/mol*K
-    `dCp`       ``numpy.ndarray``   The uncertainty in each heat capacity data point in J/mol*K
-    `dH`        ``double``          The uncertainty in the enthalpy of formation in J/mol
-    `dS`        ``double``          The uncertainty in the entropy of formation in J/mol*K
+    `Tdata`     :class:`Quantity`   The temperatures at which the heat capacity data is provided in K
+    `Cpdata`    :class:`Quantity`   The standard heat capacity in J/mol*K at each temperature in `Tdata`
+    `H298`      :class:`Quantity`   The standard enthalpy of formation at 298 K in J/mol
+    `S298`      :class:`Quantity`   The standard entropy of formation at 298 K in J/mol*K
     =========== =================== ============================================
     """
 
-    def __init__(self, Tdata=None, Cpdata=None, H298=0.0, S298=0.0, dCp=None, dH=0.0, dS=0.0, Tmin=0.0, Tmax=99999.9, comment=''):
+    def __init__(self, Tdata, Cpdata, H298, S298, Tmin=None, Tmax=None, comment=''):
         ThermoModel.__init__(self, Tmin=Tmin, Tmax=Tmax, comment=comment)
-        self.Tdata = constants.processQuantity(Tdata)[0]
-        self.Cpdata = constants.processQuantity(Cpdata)[0]
-        self.H298 = constants.processQuantity(H298)[0]
-        self.S298 = constants.processQuantity(S298)[0]
-        self.dCp = constants.processQuantity(dCp)[0]
-        self.dH = constants.processQuantity(dH)[0]
-        self.dS = constants.processQuantity(dS)[0]
-        if dCp is None and Cpdata is not None:
-            self.dCp = numpy.zeros_like(self.Cpdata)
-
+        self.Tdata = constants.Quantity(Tdata)
+        self.Cpdata = constants.Quantity(Cpdata)
+        self.H298 = constants.Quantity(H298)
+        self.S298 = constants.Quantity(S298)
+        
     def __repr__(self):
-        string = 'ThermoGAModel('
-        string += 'Tdata=([%s],"K")' % (','.join(['%g' % T for T in self.Tdata]))
-        string += ', Cpdata=([%s],"J/(mol*K)")' % (','.join(['%g' % Cp for Cp in self.Cpdata]))
-        string += ', H298=(%g,"kJ/mol")' % (self.H298/1000.)
-        string += ', S298=(%g,"J/(mol*K)")' % (self.S298)
-        if self.dCp is not None and any(self.dCp != 0): string += ', dCp=([%s],"J/(mol*K)")' % (','.join(['%g' % Cp for Cp in self.dCp]))
-        if self.dH != 0: string += ', dH=(%g,"kJ/mol")' % (self.dH/1000.)
-        if self.dS != 0: string += ', dS=(%g,"J/(mol*K)")' % (self.dS)
-        if self.Tmin != 0: string += ', Tmin=(%g,"K")' % (self.Tmin)
-        if self.Tmax != 99999.9: string += ', Tmax=(%g,"K")' % (self.Tmax)
+        string = 'ThermoData(Tdata=%r, Cpdata=%r, H298=%r, S298=%r' % (self.Tdata, self.Cpdata, self.H298, self.S298)
+        if self.Tmin: string += ', Tmin=%r' % (self.Tmin)
+        if self.Tmax: string += ', Tmax=%r' % (self.Tmax)
         if self.comment != '': string += ', comment="""%s"""' % (self.comment)
         string += ')'
-        return string
-
-    def __str__(self):
-        """
-        Return a string summarizing the thermodynamic data.
-        """
-        string = ''
-        string += 'Enthalpy of formation: %g kJ/mol\n' % (self.H298 / 1000.0)
-        string += 'Entropy of formation: %g J/mol*K\n' % (self.S298)
-        string += 'Heat capacity (J/mol*K): '
-        for T, Cp in zip(self.Tdata, self.Cpdata):
-            string += '%.1f(%g K) ' % (Cp,T)
-        string += '\n'
-        string += 'Comment: %s' % (self.comment)
         return string
 
     def __reduce__(self):
         """
         A helper function used when pickling an object.
         """
-        return (ThermoGAModel, (self.Tdata, self.Cpdata, self.H298, self.S298, self.dCp, self.dH, self.dS, self.Tmin, self.Tmax, self.comment))
+        return (ThermoData, (self.Tdata, self.Cpdata, self.H298, self.S298, self.Tmin, self.Tmax, self.comment))
 
     def __add__(self, other):
         """
         Add two sets of thermodynamic data together. All parameters are
-        considered additive. Returns a new :class:`ThermoGAModel` object that is
+        considered additive. Returns a new :class:`ThermoData` object that is
         the sum of the two sets of thermodynamic data.
         """
-        cython.declare(i=int, new=ThermoGAModel)
-        if len(self.Tdata) != len(other.Tdata) or any([T1 != T2 for T1, T2 in zip(self.Tdata, other.Tdata)]):
-            raise Exception('Cannot add these ThermoGAModel objects due to their having different temperature points.')
-        new = ThermoGAModel()
-        new.H298 = self.H298 + other.H298
-        new.S298 = self.S298 + other.S298
-        new.Tdata = self.Tdata
-        new.Cpdata = self.Cpdata + other.Cpdata
+        cython.declare(i=int, new=ThermoData)
+        if len(self.Tdata.values) != len(other.Tdata.values) or any([T1 != T2 for T1, T2 in zip(self.Tdata.values, other.Tdata.values)]):
+            raise ThermoError('Cannot add these ThermoData objects due to their having different temperature points.')
+        new = ThermoData(
+            Tdata = self.Tdata,
+            Cpdata = self.Cpdata + other.Cpdata,
+            H298 = self.H298 + other.H298,
+            S298 = self.S298 + other.S298,
+        )
         if self.comment == '': new.comment = other.comment
         elif other.comment == '': new.comment = self.comment
         else: new.comment = self.comment + ' + ' + other.comment
-        new.dH = math.sqrt(self.dH**2 + other.dH**2)
-        new.dS = math.sqrt(self.dH**2 + other.dH**2)
-        if self.dCp is not None and other.dCp is not None:
-            new.dCp = numpy.sqrt(self.dCp**2 + other.dCp**2)
-        elif self.dCp is not None:
-            new.dCp = self.dCp
-        elif other.dCp is not None:
-            new.dCp = other.dCp
-        else:
-            new.dCp = numpy.zeros_like(self.Cpdata)
         return new
 
     def getHeatCapacity(self, T):
@@ -242,12 +210,12 @@ class ThermoGAModel(ThermoModel):
         Cp = 0.0
         if not self.isTemperatureValid(T):
             raise ThermoError('Invalid temperature "%g K" for heat capacity estimation.' % T)
-        if T < numpy.min(self.Tdata):
-            Cp = self.Cpdata[0]
-        elif T >= numpy.max(self.Tdata):
-            Cp = self.Cpdata[-1]
+        if T < numpy.min(self.Tdata.values):
+            Cp = self.Cpdata.values[0]
+        elif T >= numpy.max(self.Tdata.values):
+            Cp = self.Cpdata.values[-1]
         else:
-            for Tmin, Tmax, Cpmin, Cpmax in zip(self.Tdata[:-1], self.Tdata[1:], self.Cpdata[:-1], self.Cpdata[1:]):
+            for Tmin, Tmax, Cpmin, Cpmax in zip(self.Tdata.values[:-1], self.Tdata.values[1:], self.Cpdata.values[:-1], self.Cpdata.values[1:]):
                 if Tmin <= T and T < Tmax:
                     Cp = (Cpmax - Cpmin) * ((T - Tmin) / (Tmax - Tmin)) + Cpmin
         return Cp
@@ -258,17 +226,17 @@ class ThermoGAModel(ThermoModel):
         """
         cython.declare(H=cython.double, slope=cython.double, intercept=cython.double,
              Tmin=cython.double, Tmax=cython.double, Cpmin=cython.double, Cpmax=cython.double)
-        H = self.H298
+        H = self.H298.value
         if not self.isTemperatureValid(T):
             raise ThermoError('Invalid temperature "%g K" for enthalpy estimation.' % T)
-        for Tmin, Tmax, Cpmin, Cpmax in zip(self.Tdata[:-1], self.Tdata[1:], self.Cpdata[:-1], self.Cpdata[1:]):
+        for Tmin, Tmax, Cpmin, Cpmax in zip(self.Tdata.values[:-1], self.Tdata.values[1:], self.Cpdata.values[:-1], self.Cpdata.values[1:]):
             if T > Tmin:
                 slope = (Cpmax - Cpmin) / (Tmax - Tmin)
                 intercept = (Cpmin * Tmax - Cpmax * Tmin) / (Tmax - Tmin)
                 if T < Tmax:	H += 0.5 * slope * (T*T - Tmin*Tmin) + intercept * (T - Tmin)
                 else:			H += 0.5 * slope * (Tmax*Tmax - Tmin*Tmin) + intercept * (Tmax - Tmin)
-        if T > self.Tdata[-1]:
-            H += self.Cpdata[-1] * (T - self.Tdata[-1])
+        if T > self.Tdata.values[-1]:
+            H += self.Cpdata.values[-1] * (T - self.Tdata.values[-1])
         return H
 
     def getEntropy(self, T):
@@ -277,17 +245,17 @@ class ThermoGAModel(ThermoModel):
         """
         cython.declare(S=cython.double, slope=cython.double, intercept=cython.double,
              Tmin=cython.double, Tmax=cython.double, Cpmin=cython.double, Cpmax=cython.double)
-        S = self.S298
+        S = self.S298.value
         if not self.isTemperatureValid(T):
             raise ThermoError('Invalid temperature "%g K" for entropy estimation.' % T)
-        for Tmin, Tmax, Cpmin, Cpmax in zip(self.Tdata[:-1], self.Tdata[1:], self.Cpdata[:-1], self.Cpdata[1:]):
+        for Tmin, Tmax, Cpmin, Cpmax in zip(self.Tdata.values[:-1], self.Tdata.values[1:], self.Cpdata.values[:-1], self.Cpdata.values[1:]):
             if T > Tmin:
                 slope = (Cpmax - Cpmin) / (Tmax - Tmin)
                 intercept = (Cpmin * Tmax - Cpmax * Tmin) / (Tmax - Tmin)
                 if T < Tmax:	S += slope * (T - Tmin) + intercept * math.log(T/Tmin)
                 else:			S += slope * (Tmax - Tmin) + intercept * math.log(Tmax/Tmin)
-        if T > self.Tdata[-1]:
-            S += self.Cpdata[-1] * math.log(T / self.Tdata[-1])
+        if T > self.Tdata.values[-1]:
+            S += self.Cpdata.values[-1] * math.log(T / self.Tdata.values[-1])
         return S
 
     def getFreeEnergy(self, T):
@@ -300,7 +268,7 @@ class ThermoGAModel(ThermoModel):
 
 ################################################################################
 
-class WilhoitModel(ThermoModel):
+class Wilhoit(ThermoModel):
     """
     A thermodynamics model based on the Wilhoit equation for heat capacity,
 
@@ -326,35 +294,26 @@ class WilhoitModel(ThermoModel):
     `S0` that are needed to evaluate the enthalpy and entropy, respectively.
     """
 
-    def __init__(self, cp0=0.0, cpInf=0.0, a0=0.0, a1=0.0, a2=0.0, a3=0.0, H0=0.0, S0=0.0, B=500.0, Tmin=0.0, Tmax=99999.9, comment=''):
+    def __init__(self, cp0=0.0, cpInf=0.0, a0=0.0, a1=0.0, a2=0.0, a3=0.0, H0=0.0, S0=0.0, B=500.0, Tmin=None, Tmax=None, comment=''):
         ThermoModel.__init__(self, Tmin=Tmin, Tmax=Tmax, comment=comment)
-        self.cp0 = constants.processQuantity(cp0)[0]
-        self.cpInf = constants.processQuantity(cpInf)[0]
-        self.B = constants.processQuantity(B)[0]
-        self.a0 = constants.processQuantity(a0)[0]
-        self.a1 = constants.processQuantity(a1)[0]
-        self.a2 = constants.processQuantity(a2)[0]
-        self.a3 = constants.processQuantity(a3)[0]
-        self.H0 = constants.processQuantity(H0)[0]
-        self.S0 = constants.processQuantity(S0)[0]
+        self.cp0 = constants.Quantity(cp0)
+        self.cpInf = constants.Quantity(cpInf)
+        self.B = constants.Quantity(B)
+        self.a0 = constants.Quantity(a0)
+        self.a1 = constants.Quantity(a1)
+        self.a2 = constants.Quantity(a2)
+        self.a3 = constants.Quantity(a3)
+        self.H0 = constants.Quantity(H0)
+        self.S0 = constants.Quantity(S0)
     
     def __repr__(self):
         """
         Return a string representation that can be used to reconstruct the
         object.
         """
-        string = 'WilhoitModel('
-        string += 'cp0=(%g,"J/(mol*K)")' % (self.cp0)
-        string += ', cpInf=(%g,"J/(mol*K)")' % (self.cpInf)
-        string += ', a0=%g' % (self.a0)
-        string += ', a1=%g' % (self.a1)
-        string += ', a2=%g' % (self.a2)
-        string += ', a3=%g' % (self.a3)
-        string += ', B=(%g,"K")' % (self.B)
-        string += ', H0=(%g,"kJ/mol")' % (self.H0/1000.)
-        string += ', S0=(%g,"J/(mol*K)")' % (self.S0)
-        if self.Tmin != 0: string += ', Tmin=(%g,"K")' % (self.Tmin)
-        if self.Tmax != 99999.9: string += ', Tmax=(%g,"K")' % (self.Tmax)
+        string = 'Wilhoit(cp0=%r, cpInf=%r, a0=%r, a1=%r, a2=%r, a3=%r, H0=%r, S0=%r, B=%r' % (self.cp0, self.cpInf, self.a0, self.a1, self.a2, self.a3, self.H0, self.S0, self.B)
+        if self.Tmin: string += ', Tmin=%r' % (self.Tmin)
+        if self.Tmax: string += ', Tmax=%r' % (self.Tmax)
         if self.comment != '': string += ', comment="""%s"""' % (self.comment)
         string += ')'
         return string
@@ -363,18 +322,19 @@ class WilhoitModel(ThermoModel):
         """
         A helper function used when pickling an object.
         """
-        return (WilhoitModel, (self.cp0, self.cpInf, self.a0, self.a1, self.a2, self.a3, self.H0, self.S0, self.B, self.Tmin, self.Tmax, self.comment))
+        return (Wilhoit, (self.cp0, self.cpInf, self.a0, self.a1, self.a2, self.a3, self.H0, self.S0, self.B, self.Tmin, self.Tmax, self.comment))
 
     def getHeatCapacity(self, T):
         """
         Return the constant-pressure heat capacity (Cp) in J/mol*K at the
         specified temperature `T` in K.
         """
+        cython.declare(cp0=cython.double, cpInf=cython.double, B=cython.double, a0=cython.double, a1=cython.double, a2=cython.double, a3=cython.double)
         cython.declare(y=cython.double)
-        y = T/(T+self.B)
-        return self.cp0+(self.cpInf-self.cp0)*y*y*( 1 +
-            (y-1)*(self.a0 + y*(self.a1 + y*(self.a2 + y*self.a3))) )
-    
+        cp0, cpInf, B, a0, a1, a2, a3 = self.cp0.value, self.cpInf.value, self.B.value, self.a0.value, self.a1.value, self.a2.value, self.a3.value
+        y = T/(T+B)
+        return cp0+(cpInf-cp0)*y*y*( 1 + (y-1)*(a0 + y*(a1 + y*(a2 + y*a3))) )
+            
     def getEnthalpy(self, T):
         """
         Return the enthalpy in J/mol at the specified temperature `T` in
@@ -393,11 +353,11 @@ class WilhoitModel(ThermoModel):
         """
         cython.declare(cp0=cython.double, cpInf=cython.double, B=cython.double, a0=cython.double, a1=cython.double, a2=cython.double, a3=cython.double)
         cython.declare(y=cython.double, y2=cython.double, logBplust=cython.double)
-        cp0, cpInf, B, a0, a1, a2, a3 = self.cp0, self.cpInf, self.B, self.a0, self.a1, self.a2, self.a3
+        cp0, cpInf, B, a0, a1, a2, a3 = self.cp0.value, self.cpInf.value, self.B.value, self.a0.value, self.a1.value, self.a2.value, self.a3.value
         y = T/(T+B)
         y2 = y*y
         logBplust = math.log(B + T)
-        return self.H0 + cp0*T - (cpInf-cp0)*T*(y2*((3*a0 + a1 + a2 + a3)/6. + (4*a1 + a2 + a3)*y/12. + (5*a2 + a3)*y2/20. + a3*y2*y/5.) + (2 + a0 + a1 + a2 + a3)*( y/2. - 1 + (1/y-1)*logBplust))
+        return self.H0.value + cp0*T - (cpInf-cp0)*T*(y2*((3*a0 + a1 + a2 + a3)/6. + (4*a1 + a2 + a3)*y/12. + (5*a2 + a3)*y2/20. + a3*y2*y/5.) + (2 + a0 + a1 + a2 + a3)*( y/2. - 1 + (1/y-1)*logBplust))
     
     def getEntropy(self, T):
         """
@@ -413,11 +373,11 @@ class WilhoitModel(ThermoModel):
         """
         cython.declare(cp0=cython.double, cpInf=cython.double, B=cython.double, a0=cython.double, a1=cython.double, a2=cython.double, a3=cython.double)
         cython.declare(y=cython.double, logt=cython.double, logy=cython.double)
-        cp0, cpInf, B, a0, a1, a2, a3 = self.cp0, self.cpInf, self.B, self.a0, self.a1, self.a2, self.a3
+        cp0, cpInf, B, a0, a1, a2, a3 = self.cp0.value, self.cpInf.value, self.B.value, self.a0.value, self.a1.value, self.a2.value, self.a3.value
         y = T/(T+B)
         logt = math.log(T)
         logy = math.log(y)
-        return self.S0 + cpInf*logt-(cpInf-cp0)*(logy+y*(1+y*(a0/2+y*(a1/3 + y*(a2/4 + y*a3/5)))))
+        return self.S0.value + cpInf*logt-(cpInf-cp0)*(logy+y*(1+y*(a0/2+y*(a1/3 + y*(a2/4 + y*a3/5)))))
     
     def getFreeEnergy(self, T):
         """
@@ -447,7 +407,7 @@ class WilhoitModel(ThermoModel):
         `nFreq`, and `nRotors`, respectively) is used to set the limits at
         zero and infinite temperature.
         """
-        self.B = B0
+        self.B = constants.Quantity((B0,"K"))
         import scipy.optimize
         scipy.optimize.fminbound(self.__residual, 300.0, 3000.0, args=(Tlist, Cplist, linear, nFreq, nRotors, H298, S298))
         return self
@@ -466,8 +426,8 @@ class WilhoitModel(ThermoModel):
         cython.declare(y=numpy.ndarray, A=numpy.ndarray, b=numpy.ndarray, x=numpy.ndarray)
         
         # Set the Cp(T) limits as T -> and T -> infinity
-        self.cp0 = 3.5 * constants.R if linear else 4.0 * constants.R
-        self.cpInf = self.cp0 + (nFreq + 0.5 * nRotors) * constants.R
+        self.cp0 = constants.Quantity((3.5 * constants.R if linear else 4.0 * constants.R, "J/(mol*K)"))
+        self.cpInf = constants.Quantity((self.cp0.value + (nFreq + 0.5 * nRotors) * constants.R, "J/(mol*K)"))
         
         # What remains is to fit the polynomial coefficients (a0, a1, a2, a3)
         # This can be done directly - no iteration required
@@ -475,24 +435,24 @@ class WilhoitModel(ThermoModel):
         A = numpy.zeros((len(Cplist),4), numpy.float64)
         for j in range(4):
             A[:,j] = (y*y*y - y*y) * y**j
-        b = ((Cplist - self.cp0) / (self.cpInf - self.cp0) - y*y)
+        b = ((Cplist - self.cp0.value) / (self.cpInf.value - self.cp0.value) - y*y)
         x, residues, rank, s = numpy.linalg.lstsq(A, b)
         
-        self.B = float(B)
-        self.a0 = float(x[0])
-        self.a1 = float(x[1])
-        self.a2 = float(x[2])
-        self.a3 = float(x[3])
+        self.B = constants.Quantity((float(B), "K"))
+        self.a0 = constants.Quantity(float(x[0]))
+        self.a1 = constants.Quantity(float(x[1]))
+        self.a2 = constants.Quantity(float(x[2]))
+        self.a3 = constants.Quantity(float(x[3]))
 
-        self.H0 = 0.0; self.S0 = 0.0
-        self.H0 = H298 - self.getEnthalpy(298.15)
-        self.S0 = S298 - self.getEntropy(298.15)
+        self.H0 = constants.Quantity((0.0,"J/mol")); self.S0 = constants.Quantity((0.0,"J/(mol*K)"))
+        self.H0.value = H298 - self.getEnthalpy(298.15)
+        self.S0.value = S298 - self.getEntropy(298.15)
 
         return self
 
 ################################################################################
 
-class NASAPolynomial(ThermoModel):
+class NASA(ThermoModel):
     """
     A single NASA polynomial for thermodynamic data. The `coeffs` attribute
     stores the seven or nine polynomial coefficients
@@ -510,7 +470,7 @@ class NASAPolynomial(ThermoModel):
     when only seven coefficients are provided.
     """
     
-    def __init__(self, coeffs=None, Tmin=0.0, Tmax=0.0, comment=''):
+    def __init__(self, coeffs, Tmin=None, Tmax=None, comment=''):
         ThermoModel.__init__(self, Tmin=Tmin, Tmax=Tmax, comment=comment)
         coeffs = coeffs or (0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
         if len(coeffs) == 7:
@@ -526,9 +486,7 @@ class NASAPolynomial(ThermoModel):
         Return a string representation that can be used to reconstruct the
         object.
         """
-        string = 'NASAPolynomial('
-        string += 'Tmin=(%g,"K")' % (self.Tmin)
-        string += ', Tmax=(%g,"K")' % (self.Tmax)
+        string = 'NASA(Tmin=%r, Tmax=%r' % (self.Tmin, self.Tmax)
         if self.cm2 == 0 and self.cm1 == 0:
             string += ', coeffs=[%g,%g,%g,%g,%g,%g,%g]' % (self.c0, self.c1, self.c2, self.c3, self.c4, self.c5, self.c6)
         else:
@@ -541,7 +499,7 @@ class NASAPolynomial(ThermoModel):
         """
         A helper function used when pickling an object.
         """
-        return (NASAPolynomial, ([self.cm2, self.cm1, self.c0, self.c1, self.c2, self.c3, self.c4, self.c5, self.c6], self.Tmin, self.Tmax, self.comment))
+        return (NASA, ([self.cm2, self.cm1, self.c0, self.c1, self.c2, self.c3, self.c4, self.c5, self.c6], self.Tmin, self.Tmax, self.comment))
 
     def getHeatCapacity(self, T):
         """
@@ -583,10 +541,10 @@ class NASAPolynomial(ThermoModel):
 
 ################################################################################
 
-class NASAModel(ThermoModel):
+class MultiNASA(ThermoModel):
     """
     A set of thermodynamic parameters given by NASA polynomials. This class
-    stores a list of :class:`NASAPolynomial` objects in the `polynomials`
+    stores a list of :class:`NASA` objects in the `polynomials`
     attribute. When evaluating a thermodynamic quantity, a polynomial that
     contains the desired temperature within its valid range will be used.
     """
@@ -600,9 +558,7 @@ class NASAModel(ThermoModel):
         Return a string representation that can be used to reconstruct the
         object.
         """
-        string = 'NASAModel('
-        string += 'Tmin=(%g,"K")' % (self.Tmin)
-        string += ', Tmax=(%g,"K")' % (self.Tmax)
+        string = 'MultiNASA(Tmin=%r, Tmax=%r' % (self.Tmin, self.Tmax)
         string += ', polynomials=[%s]' % (','.join(['%r' % poly for poly in self.polynomials]))
         if self.comment != '': string += ', comment="""%s"""' % (self.comment)
         string += ')'
@@ -612,7 +568,7 @@ class NASAModel(ThermoModel):
         """
         A helper function used when pickling an object.
         """
-        return (NASAModel, (self.polynomials, self.Tmin, self.Tmax, self.comment))
+        return (MultiNASA, (self.polynomials, self.Tmin, self.Tmax, self.comment))
 
     def getHeatCapacity(self, T):
         """
@@ -641,7 +597,7 @@ class NASAModel(ThermoModel):
         return self.__selectPolynomialForTemperature(T).getFreeEnergy(T)
     
     def __selectPolynomialForTemperature(self, T):
-        poly = cython.declare(NASAPolynomial)
+        poly = cython.declare(NASA)
         for poly in self.polynomials:
             if poly.isTemperatureValid(T): return poly
         else:

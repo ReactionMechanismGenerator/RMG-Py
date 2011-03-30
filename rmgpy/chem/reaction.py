@@ -46,7 +46,7 @@ import numpy
 import constants
 
 from species import Species
-from kinetics import ArrheniusModel
+from kinetics import Arrhenius
 
 ################################################################################
 
@@ -300,12 +300,12 @@ class Reaction:
         """
         Generate and return a rate coefficient model for the reverse reaction
         using a supplied set of temperatures `Tlist`. Currently this only
-        works if the `kinetics` attribute is an :class:`ArrheniusModel` object.
+        works if the `kinetics` attribute is an :class:`Arrhenius` object.
         """
-        if not isinstance(self.kinetics, ArrheniusModel):
-            raise ReactionError("ArrheniusModel kinetics required to use Reaction.generateReverseRateCoefficient(), but %s object encountered." % (self.kinetics.__class__))
+        if not isinstance(self.kinetics, Arrhenius):
+            raise ReactionError("Arrhenius kinetics required to use Reaction.generateReverseRateCoefficient(), but %s object encountered." % (self.kinetics.__class__))
 
-        cython.declare(klist=numpy.ndarray, i=cython.int, kf=ArrheniusModel, kr=ArrheniusModel)
+        cython.declare(klist=numpy.ndarray, i=cython.int, kf=Arrhenius, kr=Arrhenius)
         kf = self.kinetics
 
         # Determine the values of the reverse rate coefficient k_r(T) at each temperature
@@ -314,7 +314,7 @@ class Reaction:
             klist[i] = kf.getRateCoefficient(Tlist[i]) / self.getEquilibriumConstant(Tlist[i])
 
         # Fit and return an Arrhenius model to the k_r(T) data
-        kr = ArrheniusModel()
+        kr = Arrhenius()
         kr.fitToData(Tlist, klist, kf.T0)
         return kr
 

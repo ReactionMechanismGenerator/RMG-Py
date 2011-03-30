@@ -19,7 +19,10 @@ class GeometryTest(unittest.TestCase):
         
         # Masses should be in kg/mol
         mass = numpy.array([12.0, 1.0, 1.0, 1.0, 12.0, 1.0, 1.0, 1.0], numpy.float64) * 0.001
-        
+
+        # Atomic numbers
+        number = numpy.array([6, 1, 1, 1, 6, 1, 1, 1], numpy.int)
+
         # Coordinates should be in m
         position = numpy.zeros((8,3), numpy.float64)
         position[0,:] = numpy.array([ 0.001294,  0.002015,  0.000152]) * 1e-10
@@ -31,7 +34,7 @@ class GeometryTest(unittest.TestCase):
         position[6,:] = numpy.array([-1.607276, -0.890277, -1.177452]) * 1e-10
         position[7,:] = numpy.array([-0.11271 , -1.833701, -1.177357]) * 1e-10
         
-        geometry = Geometry(position, mass)
+        geometry = Geometry(position, number, mass)
         
         pivots = [0, 4]
         top = [0, 1, 2, 3]
@@ -50,6 +53,9 @@ class GeometryTest(unittest.TestCase):
         # Masses should be in kg/mol
         mass = numpy.array([12.0107, 1.00794, 1.00794, 1.00794, 12.0107, 1.00794, 1.00794, 12.0107, 1.00794, 12.0107, 1.00794, 1.00794, 1.00794, 15.9994, 1.00794], numpy.float64) * 0.001
         
+        # Atomic numbers
+        number = numpy.array([6, 1, 1, 1, 6, 1, 1, 6, 1, 6, 1, 1, 1, 8, 1], numpy.int)
+
         # Coordinates should be in m
         position = numpy.zeros((15,3), numpy.float64)
         position[0,:] = numpy.array([-2.066968, -0.048470, -0.104326]) * 1e-10
@@ -68,7 +74,7 @@ class GeometryTest(unittest.TestCase):
         position[13,:] = numpy.array([ 0.521504,  1.410171,  0.056819]) * 1e-10
         position[14,:] = numpy.array([ 0.657443,  1.437685,  1.010704]) * 1e-10
         
-        geometry = Geometry(position, mass)
+        geometry = Geometry(position, number, mass)
         
         pivots = [0, 4]
         top = [0, 1, 2, 3]
