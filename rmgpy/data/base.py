@@ -69,6 +69,49 @@ class InvalidDatabaseError(Exception):
 
 ################################################################################
 
+class Entry:
+    """
+    A class for representing individual records in an RMG database. Each entry
+    in the database associates a chemical item (generally a species, functional
+    group, or reaction) with a piece of data corresponding to that item. A
+    significant amount of metadata can also be stored with each entry.
+
+    The attributes are:
+
+    =================== ========================================================
+    Attribute           Description
+    =================== ========================================================
+    `index`             A unique nonnegative integer index for the entry
+    `label`             A unique string identifier for the entry (or '' if not used)
+    `item`              The item that this entry represents
+    `parent`            The parent of the entry in the hierarchy (or ``None`` if not used)
+    `children`          A list of the children of the entry in the hierarchy (or ``None`` if not used)
+    `data`              The data to associate with the item
+    `reference`         A :class:`Reference` object containing bibliographic reference information to the source of the data
+    `referenceType`     The way the data was determined: ``'theoretical'``, ``'experimental'``, or ``'review'``
+    `shortDesc`         A brief (one-line) description of the data
+    `longDesc`          A long, verbose description of the data
+    `history`           A list of tuples containing the date/time of change, author, type of change, and a brief description of the change
+    =================== ========================================================
+
+    """
+
+    def __init__(self, index=-1, label='', item=None, parent=None,
+        children=None, data=None, reference=None, shortDesc='', longDesc='',
+        history=None):
+        self.index = index
+        self.label = label
+        self.item = item
+        self.parent = parent
+        self.children = children or []
+        self.data = data
+        self.reference = reference
+        self.shortDesc = shortDesc
+        self.longDesc = longDesc
+        self.history = history or []
+
+################################################################################
+
 class Dictionary(dict):
     """
     An RMG dictionary class, extended from the Python dictionary class to
@@ -565,32 +608,6 @@ class Library(dict):
                 element.appendChild(link)
             else:
                 data.toXML(dom, element)
-
-################################################################################
-
-class DataEntry:
-    """
-    A single entry in the database, containing common attributes and methods.
-    The attributes are:
-
-    =================== =============== ========================================
-    Attribute           Type            Description
-    =================== =============== ========================================
-    `index`             ``int``         A unique integer index
-    `label`             ``str``         A unique, brief string label
-    `shortComment`      ``str``         A brief (one-line) comment
-    `longComment`       ``str``         A long, verbose comment
-    `history`           ``list``        Tuples containing the date of change, author, and a brief description of the change
-    =================== =============== ========================================
-    
-    """
-
-    def __init__(self, index=0, label='', shortComment='', longComment='', history=None):
-        self.index = index
-        self.label = label
-        self.shortComment = shortComment
-        self.longComment = longComment
-        self.history = history or []
 
 ################################################################################
 
