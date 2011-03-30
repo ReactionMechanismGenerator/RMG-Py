@@ -32,10 +32,6 @@ This module contains a number of physical constants to be made available
 throughout RMG Py. RMG Py uses SI units throughout; accordingly, all of the
 constants in this module are stored in combinations of meters, seconds,
 kilograms, moles, etc.
-
-The constants available are listed below. All values were taken from
-`NIST <http://physics.nist.gov/cuu/Constants/index.html>`_.
-
 """
 
 import math
@@ -91,8 +87,8 @@ def getConversionFactorFromSI(units):
 
 class Quantity:
     """
-    A single numeric quantity, with optional units and uncertainty. The
-    attributes are:
+    A single numeric quantity or an array of quantities, with optional units
+    and uncertainty. The attributes are:
 
     =================== =================== ====================================
     Attribute           Type                Description
@@ -105,10 +101,26 @@ class Quantity:
     `uncertainties`     ``numpy.ndarray``   The numeric uncertainty of the values in SI units
     =================== =================== ====================================
 
-    In order for this class to be efficient for mathematical operations, we
-    must minimize the number of unit conversions that are performed. To this
-    end, all numeric values and uncertainties are stored in SI units, rather
-    than the units they are specified as.
+    Only one of `value` and `values` is meaningful at a time. If `values` is
+    not ``None``, then the class assumes that it represents an array of
+    quantities and uses the `values` attribute. If `values` is `None`, the
+    class assumed that it represents a single quantity and uses the `value`
+    attribute. You can test for this using the :meth:`isArray` method.
+
+    In order to preserve the efficiency that Cythonization provides, the actual
+    value of the quantity is stored in SI units in the `value` (for a single
+    quantity) or `values` (for an array of quantities) attributes. The methods
+    :meth:`getConversionFactorToSI` and :meth:`getConversionFactorFromSI` have
+    been provided to facilitate unit conversions when reading and writing the
+    quantity data. These methods use the ``quantities`` package, and are
+    generally not optimized for speed.
+
+    When providing an array of quantities, you have the option of providing
+    no uncertainty data, a single uncertainty value to use for all values in
+    the array, or an array of uncertainties corresponding to each value. When
+    providing a single quantity, you can either provide no uncertainty or a
+    single uncertainty value for that quantity. The uncertainty data can be
+    specified as either additive or multiplicative, and must be symmetric.
     """
 
     def __init__(self, args=None):
@@ -232,7 +244,7 @@ class Quantity:
         """
         factor = getConversionFactorFromSI(self.units)
         string = ''
-        if self.values is None:
+        if not self.isArray():
             string += '%g' % (self.value * factor)
         else:
             string += '[%s]' % (','.join(['%g' % (v * factor) for v in self.values]))
@@ -253,7 +265,7 @@ class Quantity:
         """
         factor = getConversionFactorFromSI(self.units)
         string = ''
-        if self.values is None:
+        if not self.isArray():
             string += '%g' % (self.value * factor)
         else:
             string += '[%s]' % (','.join(['%g' % (v * factor) for v in self.values]))
@@ -279,12 +291,12 @@ class Quantity:
         assert other.uncertaintyType in ['', '+|-']
 
         new = Quantity()
-        if self.values is not None and self.uncertainties is not None:
+        if self.isArray() and self.uncertainties is not None:
             new.values = self.values + other.values
             new.units = self.units
             new.uncertaintyType = self.uncertaintyType
             new.uncertainties = numpy.sqrt(self.uncertainties**2 + other.uncertainties**2)
-        elif self.values is not None and self.uncertainties is None:
+        elif self.isArray() and self.uncertainties is None:
             new.values = self.values + other.values
             new.units = self.units
             new.uncertaintyType = self.uncertaintyType
@@ -296,6 +308,16 @@ class Quantity:
             new.uncertainty = numpy.sqrt(self.uncertainty**2 + other.uncertainty**2)
         return new
         
+    def isArray(self):
+        """
+        Return ``True`` if this quantity contains an array of values or 
+        ``False`` if it contains only a single value. If the former, you should
+        use the `values` attribute to get the values (in SI units) of the
+        quantities as a NumPy array. If the latter, you should use the `value` 
+        attribute to get the value of the quantity as a ``float``.
+        """
+        return values is not None
+
     def isUncertaintyAdditive(self):
         """
         Return ``True`` if the uncertainty is specified in additive format
