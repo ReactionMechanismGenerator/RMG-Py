@@ -30,19 +30,8 @@
 
 """
 Contains classes and functions for working with the various RMG databases. In
-RMG a database is composed of three parts:
-
-* A *dictionary*, associating a string identifier with a chemical structure,
-  either a full molecular species or an partial molecular pattern.
-
-* A *tree*, providing a hierarchical and extensible organization of the chemical structures.
-
-* A *library*, associating a chemical structure with some sort of physical information.
-
-These are implemented via the :class:`Dictionary`, :class:`Tree`, and
-:class:`Library` classes, respectively. A base class for databases is
-implemented in the :class:`Database` class, which is often overloaded to
-provide specific functionality for individual databases.
+particular, this module is devoted to functionality that is common across all
+components of the RMG database.
 """
 
 import os
@@ -53,17 +42,18 @@ import re
 from rmgpy.chem.molecule import Molecule
 from rmgpy.chem.pattern import MoleculePattern, InvalidAdjacencyListError
 
+from reference import *
+
 pq.UnitQuantity('kilocalories', pq.cal*1e3, symbol='kcal')
 pq.UnitQuantity('kilojoules', pq.J*1e3, symbol='kJ')
 pq.UnitQuantity('kilomoles', pq.mol*1e3, symbol='kmol')
 
 ################################################################################
 
-class InvalidDatabaseError(Exception):
+class DatabaseError(Exception):
     """
-    An exception used when parsing an RMG database to indicate that the
-    database is invalid. Pass a string giving specifics about the particular
-    exceptional behavior
+    A exception that occurs when working with an RMG database. Pass a string
+    giving specifics about the exceptional behavior.
     """
     pass
 
@@ -97,8 +87,8 @@ class Entry:
     """
 
     def __init__(self, index=-1, label='', item=None, parent=None,
-        children=None, data=None, reference=None, shortDesc='', longDesc='',
-        history=None):
+        children=None, data=None, reference=None, referenceType='',
+        shortDesc='', longDesc='', history=None):
         self.index = index
         self.label = label
         self.item = item
@@ -106,100 +96,19 @@ class Entry:
         self.children = children or []
         self.data = data
         self.reference = reference
+        self.referenceType = referenceType
         self.shortDesc = shortDesc
         self.longDesc = longDesc
         self.history = history or []
 
 ################################################################################
 
-class Dictionary(dict):
+class Database:
     """
-    An RMG dictionary class, extended from the Python dictionary class to
-    include functions for loading the dictionary from a file. The keys of the
-    dictionary are strings that represent unique identifiers, while the
-    corresponding values are either :class:`chem.Structure` objects representing
-    a chemical structure or the string 'union' to indicate that the structure
-    is a union of all of its child nodes in the corresponding tree.
-    """
-
-    def load(self, path, pattern=True):
-        """
-        Parse an RMG database dictionary located at path. An RMG
-        dictionary is a list of key-value pairs of a string label and a string
-        record. Each record is separated by at least one empty line.
-        """
-
-        # The current record
-        record = ''
-
-        fdict=None
-        # Process the dictionary
-        try:
-            fdict = open(path, 'r')
-            for line in fdict:
-                line = line.strip()
-                # If at blank line, end of record has been found
-                if len(line) == 0 and len(record) > 0:
-                    # Label is first line of record
-                    lines = record.splitlines()
-                    label = lines[0]
-                    # Add record to dictionary
-                    self[label] = self.toStructure(record, pattern)
-                    # Clear record in preparation for next iteration
-                    record = ''
-                # Otherwise append line to record (if not empty and not a comment line)
-                else:
-                    line = removeCommentFromLine(line).strip()
-                    if len(line) > 0:
-                        record += line + '\n'
-            # process the last record! (after end of for loop)
-            # Label is first line of record
-            if record:
-                label = record.splitlines()[0]
-                # Add record to dictionary
-                self[label] = self.toStructure(record, pattern)
-
-        except (InvalidDatabaseError, InvalidAdjacencyListError), e:
-            logging.exception(str(e))
-            raise
-        except IOError, e:
-            logging.exception('Database dictionary file "' + e.filename + '" not found.')
-            raise
-        finally:
-            if fdict: fdict.close()
-
-    def toStructure(self, record, pattern):
-        """
-        Convert the values stored in the dictionary from adjacency list strings
-        to :class:`Molecule` (if `pattern` is ``False``) or
-        :class:`MoleculePattern` (if `pattern` is ``True``) objects. If a
-        record is a logical node, it is converted into the appropriate class.
-        """
-        # If record is a logical node, make it into one.
-        lines = record.splitlines()
-        if re.match('(?i)\s*OR|AND|NOT|UNION',lines[1] ):
-            return makeLogicNode(' '.join(lines[1:]) )
-        # Otherwise convert adjacency list to molecule or pattern
-        elif pattern:
-            return MoleculePattern().fromAdjacencyList(record)
-        else:
-            return Molecule().fromAdjacencyList(record)
-
-################################################################################
-
-class Tree:
-    """
-    An implementation of an n-ary tree used for representing a hierarchy of
-    data. The tree is represented as a pair of dictionaries:
-
-    * The `parent` dictionary. For a given identifier, returns the identifier
-      corresponding to the parent.
-
-    * The `children` dictionary. For a given identifier, returns a list of
-      identifiers corresponding to the children.
-
-    The top-level node(s) of the tree are stored in a list in the `top`
-    attribute.
+    An RMG-style database, consisting of a dictionary of entries (associating
+    items with data), and an optional tree for assigning a hierarchy to the
+    entries. The use of the tree enables the database to be easily extensible
+    as more parameters are available.
 
     In constructing the tree, it is important to develop a hierarchy such that
     siblings are mutually exclusive, to ensure that there is a unique path of
@@ -212,372 +121,100 @@ class Tree:
     attempting to maintain complete sets of children for each parent in each
     database rapidly becomes untenable, and is against the spirit of
     extensibility behind the database development.
+
+    You must derive from this class and implement the :meth:`loadEntry`,
+    :meth:`saveEntry`, :meth:`processOldLibraryEntry`, and
+    :meth:`generateOldLibraryEntry` methods in order to load and save from the
+    new and old database formats.
     """
 
-    def __init__(self):
+    def __init__(self, entries=None, top=None, label='', name='', shortDesc='', longDesc=''):
+        self.entries = entries or {}
+        self.top = top or []
+        self.label = label
+        self.name = name
+        self.shortDesc = shortDesc
+        self.longDesc = longDesc
+
+    def load(self, path, local_context=None, global_context=None):
+        """
+        Load an RMG-style database from the file at location `path` on disk.
+        The `entryName` parameter specifies the identifier used for each data
+        entry. The parameters `local_context` and `global_context` are used to
+        provide specialized mapping of identifiers in the input file to
+        corresponding functions to evaluate. This method will automatically add
+        a few identifiers required by all data entries, so you don't need to
+        provide these.
+        """
+        # Clear any previously-loaded data
+        self.entries = {}
         self.top = []
-        self.parent = {}
-        self.children = {}
 
-    def ancestors(self, node):
+        # Set up global and local context
+        if global_context is None: global_context = {}
+        global_context['__builtins__'] = None
+        if local_context is None: local_context = {}
+        local_context['__builtins__'] = None
+        local_context['entry'] = self.loadEntry
+        local_context['tree'] = self.__loadTree
+        local_context['name'] = self.name
+        local_context['shortDesc'] = self.shortDesc
+        local_context['longDesc'] = self.longDesc
+        local_context['Reference'] = Reference
+        local_context['Article'] = Article
+        local_context['Book'] = Book
+        local_context['Thesis'] = Thesis
+
+        # Process the file
+        f = open(path)
+        exec f in global_context, local_context
+        f.close()
+
+        # Extract the database metadata
+        self.name = local_context['name']
+        self.shortDesc = local_context['shortDesc']
+        self.longDesc = local_context['longDesc'].strip()
+
+        # Return the loaded database (to allow for Database().load() syntax)
+        return self
+
+    def save(self, path, entryName='entry'):
         """
-        Returns all the ancestors of a node, climbing up the tree to the top.
+        Save the current database to the file at location `path` on disk. The
+        optional `entryName` parameter specifies the identifier used for each
+        data entry.
         """
-        parent=self.parent[node]
-        if parent is None:
-            return list()
+        entries = self.top[:]
+        if len(self.top) > 0:
+            # Save the entries in the same order as the tree (so that it saves
+            # in the same order each time)
+            for entry in self.top:
+                entries.extend(self.descendants(entry))
         else:
-            ancestors = [parent]
-            ancestors.extend(self.ancestors(parent))
-            return ancestors
-
-    def descendants(self, node):
-        """
-        Returns all the descendants of a node, climbing down the tree to the bottom.
-        """
-        children = self.children[node][:]
-        temp0 = children[:]
-
-        while len(temp0) > 0:
-            temp = []
-            for child in temp0:
-                children.extend(self.children[child])
-                temp.extend(self.children[child])
-            temp0 = temp
-
-        return children
-
-    def add(self, node, parent):
-        """
-        Add `node` to the tree as a child of `parent`, another node already in
-        the tree.
-        """
-
-        # Set parent of node
-        self.parent[node] = parent
-
-        # Initialize list of children of node
-        self.children[node] = []
-
-        # Set node as child of parent
-        if parent is not None:
-            self.children[parent].append(node)
-
-        # Set top if needed
-        if parent is None:
-            self.top.append(node)
-
-    def remove(self, node):
-        """
-        Remove `node` and all of its children from the tree.
-        """
-        # Recursively remove the children of node
-        while len(self.children[node]) > 0:
-            self.remove(self.children[node][0])
-
-        # Remove the current node from the list of its parent's children
-        if self.parent[node] is not None:
-            self.children[self.parent[node]].remove(node)
-
-        # Delete the node from the parent and children dictionaries
-        del self.parent[node]
-        del self.children[node]
-
-    def loadString(self, string):
-        """
-        Parse an RMG database tree located at `path`. An RMG tree is an
-        n-ary tree representing the hierarchy of items in the dictionary.
-        """
-
-        # An array of parents used when forming the tree
-        parents = [None]
-
-        import re
-        parser = re.compile('^\s*L(?P<level>\d+)\s*:\s*(?P<label>\S+)')
-        # should match '  L3 : foo_bar '  and 'L3:foo_bar'
-
-        # Process the tree
-        for line in string.splitlines():
-            line = removeCommentFromLine(line).strip()
-            if len(line) > 0:
-                # Extract level
-                match = parser.match(line)
-                if not match:
-                    raise InvalidDatabaseError("Couldn't parse line '%s'"%line.strip() )
-                level = int(match.group('level'))
-                label = match.group('label')
-
-                # Find immediate parent of the new node
-                parent = None
-                if len(parents) < level:
-                    raise InvalidDatabaseError("Invalid level specified in line '%s'"%line.strip() )
-                else:
-                    while len(parents) > level:
-                        parents.remove(parents[-1])
-                    if len(parents) > 0:
-                        parent = parents[level-1]
-
-                # Add node to tree
-                self.add(label, parent)
-
-                # Add node to list of parents
-                parents.append(label)
-
-    def load(self, path):
-        """
-        Parse an RMG database tree located at `path`. An RMG tree is an
-        n-ary tree representing the hierarchy of items in the dictionary.
-        """
-
-        try:
-            ftree = open(path, 'r')
-            lines = ''
-            for line in ftree:
-                lines += line
-
-        except InvalidDatabaseError, e:
-            logging.exception(str(e))
-        except IOError, e:
-            logging.exception('Database tree file "' + e.filename + '" not found.')
-        finally:
-            ftree.close()
-
-        self.loadString(lines)
-
-    def write(self, children):
-        """
-        Write the tree to a string in the syntax used by the RMG database. The
-        `children` parameter is a list of the current children, used to enable
-        recursive writing.
-        """
-
-        string = ''
-
-        for child in children:
-
-            # Determine level
-            level = 1
-            temp = child
-            while self.parent[temp] is not None:
-                level += 1
-                temp = self.parent[temp]
-
-            # Write current node
-            for i in range(level):
-                string += '\t'
-            string += 'L%s: %s\n' % (str(level), child)
-
-            # Recursively descend children
-            string += self.write(self.children[child])
-
-        return string
-
-################################################################################
-
-class Library(dict):
-    """
-    An RMG database library class, extended from the base Python dict class
-    to be able to handle an array of string labels.
-    """
-
-    def add(self, index, labels, data):
-        """
-        Add an item of `data` to the library based on the value of the list
-        of `labels`. Only add and return True if there is not preexisting data
-        with those labels, else return False.
-        """
-        if self.getData(labels) is not None:
-            logging.debug("There was already something labelled %s in the database. Ignoring '%s' (%s)"%(labels,index, data))
-            return False
-        names = self.hashLabels(labels)
-
-        for name in names:
-            self[name] = (index, data )
-
-        return True
-
-    def remove(self, labels):
-        """
-        Remove an item of data from the library based on the value of the list
-        of `labels`.
-        """
-        names = self.hashLabels(labels)
-        for name in names:
-            del self[name]
-
-    def hashLabels(self, labels):
-        """
-        Convert a list of string `labels` to a list of single strings that
-        represent permutations of the individual strings in the `labels` list::
-
-            >>> hashLabels(['a','b'])
-            ['a;b', 'b;a']
-        """
-        names = []
-        if len(labels) == 1:
-            names.append(labels[0])
-        elif len(labels) == 2:
-            names.append(labels[0] + ';' + labels[1])
-        #   names.append(labels[1] + ';' + labels[0])
-        elif len(labels) == 3:
-            names.append(labels[0] + ';' + labels[1] + ';' + labels[2])
-        #   names.append(labels[0] + ';' + labels[2] + ';' + labels[1])
-        #   names.append(labels[1] + ';' + labels[0] + ';' + labels[2])
-        #   names.append(labels[1] + ';' + labels[2] + ';' + labels[0])
-        #   names.append(labels[2] + ';' + labels[0] + ';' + labels[1])
-        #   names.append(labels[2] + ';' + labels[1] + ';' + labels[0])
-        return names
-
-    def getData(self, key):
-        """
-        Return the data in the library associated with the label or list of
-        labels denoted by `key`.
-        """
-        if key.__class__ == str or key.__class__ == unicode:
-            if key in self: return self[key]
-        else:
-            names = self.hashLabels(key)
-            for name in names:
-                if name in self: return self[name]
-        return None
-
-    def load(self, path):
-        """
-        Parse an RMG database library located at `path`.
-        """
-        lines = []
-
-        # Process the library
-        flib = None
-        try:
-            flib = open(path, 'r')
-            for line in flib:
-                line = removeCommentFromLine(line).strip()
-                if len(line) > 0:
-                    lines.append(line)
-
-        except IOError, e:
-            logging.exception('Database library file "' + e.filename + '" not found.')
-            raise
-        finally:
-            if flib: flib.close()
-
-        return lines
-
-    def parse(self, lines, numLabels=1):
-        """
-        Parse an RMG database library located at `path`.
-
-        It splits lines on whitespace then treats tokens as::
-
-            <index> <label1> ... <labelN> <data1>  <data2> ...
-
-        `numLabels` determines how  many labels are assumed.
-        All the data are concatenated to a single string with single spaces between items.
-        """
-
-        # Process the library
-        try:
-            skippedCount = 0
-            for line in lines:
-                info = line.split()
-                
-                # Skip if the number of items on the line is invalid
-                if len(info) < 2:
-                    continue
-
-                # Determine if the first item is an index
-                # This index is optional in the [old] library format
-                index = -1
-                offset = 0
-                try:
-                    index = int(float(info[0]))
-                    offset = 1
-                except ValueError:
-                    pass
-
-                # Extract label(s)
-                labels = []
-                for i in range(0, numLabels):
-                    labels.append(info[i+offset])
-
-                data = ''
-                for i in range(numLabels+offset, len(info)):
-                    data += info[i] + ' '
-
-                if not self.add(index, labels, data): skippedCount += 1
-
-            if skippedCount > 0:
-                logging.warning("Skipped %i duplicate entries in this library." % skippedCount)
-
-        except InvalidDatabaseError, e:
-            logging.exception(str(e))
-            for s in (dictstr, treestr, libstr):
-                logging.exception(s)
-            raise
-
-    def removeLinks(self):
-        """
-        Ensure all values in the library are either a
-        :class:`chem.ThermoGAValue` object or None by following and replacing
-        all string links.
-        """
-
-        for label, data in self.iteritems():
-            dataLabel = ''
-            while data.__class__ == str or data.__class__ == unicode:
-                if data not in self:
-                    raise InvalidDatabaseError('Node %s references parameters from a node %s that is not in the library.'%(label,data))
-                if dataLabel == data:
-                    raise InvalidDatabaseError('Node %s references parameters from itself.'%label )
-                dataLabel = data; data = self[dataLabel]
-
-            self[label] = data
-
-    def toXML(self, dom, root):
-        """
-        Return an XML representation of the library.
-        """
-
-        library = dom.createElement('library')
-        root.appendChild(library)
-
-        for label, data in self.iteritems():
-            element = dom.createElement('data')
-            element.setAttribute('label', label)
-            library.appendChild(element)
-
-            if data.__class__ == str or data.__class__ == unicode:
-                link = dom.createElement('link')
-                link.setAttribute('target', data)
-                element.appendChild(link)
-            else:
-                data.toXML(dom, element)
-
-################################################################################
-
-class Database:
-    """
-    Represent an RMG database. An RMG database is structured as an n-ary tree,
-    were each node has a chemical or functional group `structure` (that is a
-    superset of its parent node) and a library of `data` values. This class is
-    intended to be generic and can be subclassed for specific databases if
-    desired.
-
-    Each Database object maintains its own internal dictionary of the nodes
-    in the tree. Thus it is strongly recommended that you utilize the add()
-    and remove() functions for manipulating the database.
-    """
-
-    def __init__(self):
-        """
-        Initialize an RMG database.
-        """
-        self.dictionary = Dictionary()
-        self.library = Library()
-        self.tree = Tree()
-
-    def load(self, dictstr, treestr, libstr, pattern=True):
+            # Otherwise save the entries sorted by index
+            entries = self.entries.values()
+            entries.sort(key=lambda x: x.index)
+
+        f = open(path, 'w')
+        f.write('name = "%s"\n' % (self.name))
+        f.write('shortDesc = "%s"\n' % (self.shortDesc))
+        f.write('longDesc = """\n')
+        f.write(self.longDesc)
+        f.write('\n"""\n\n')
+        for entry in entries:
+            self.saveEntry(f, entry)
+
+        # Write the tree
+        if len(self.top) > 0:
+            f.write('tree(\n')
+            f.write('"""\n')
+            f.write(self.__generateOldTree(self.top, 1))
+            f.write('"""\n')
+            f.write(')\n\n')
+
+        f.close()
+
+    def loadOld(self, dictstr, treestr, libstr, numParameters, numLabels=1, pattern=True):
         """
         Load a dictionary-tree-library based database. The database is stored
         in three files: `dictstr` is the path to the dictionary, `treestr` to
@@ -586,74 +223,417 @@ class Database:
         """
 
         # Load dictionary, library, and (optionally) tree
-        self.dictionary.load(dictstr, pattern)
-        assert len(self.dictionary)>0
+        self.loadOldDictionary(dictstr, pattern)
+        if treestr != '': self.loadOldTree(treestr)
+        self.loadOldLibrary(libstr, numParameters, numLabels)
+        return self
 
-        if treestr != '':
-            self.tree.load(treestr)
-            # Check that all nodes in tree are also in dictionary
-            for node in self.tree.children:
-                if node not in self.dictionary:
-                    if node.startswith('Others-'):
-                        logging.warning("Node %s found in tree but not dictionary %s. Letting it through for now because it's an 'Others-' node!"%(node,os.path.abspath(treestr)))
-                    else:
-                        raise InvalidDatabaseError('Node "' + node + '" found in tree "' + os.path.abspath(treestr) + '", but not in corresponding dictionary "' + os.path.abspath(dictstr) + '".')
-            # Sort children by decreasing size; the algorithm returns the first
-            # match of each children, so this makes it less likely to miss a
-            # more detailed functional group
-            # First determine if we can do the sort (that is, all children have
-            # one structure.Structure)
+    def loadOldDictionary(self, path, pattern):
+        """
+        Parse an old-style RMG database dictionary located at `path`. An RMG
+        dictionary is a list of key-value pairs of a one-line string key and a
+        multi-line string value. Each record is separated by at least one empty
+        line. Returns a ``dict`` object with the values converted to
+        :class:`Molecule` or :class:`MoleculePattern` objects depending on the
+        value of `pattern`.
+        """
+
+        # The dictionary being loaded
+        self.entries = {}
+        # The current record
+        record = ''
+
+        fdict=None
+        # Process the dictionary file
+        try:
+            fdict = open(path, 'r')
+            for line in fdict:
+                line = line.strip()
+                # If at blank line, end of record has been found
+                if len(line) == 0 and len(record) > 0:
+                    # Label is first line of record
+                    lines = record.splitlines()
+                    label = lines[0]
+                    # Add record to dictionary
+                    self.entries[label] = Entry(label=label, item=record)
+                    # Clear record in preparation for next iteration
+                    record = ''
+                # Otherwise append line to record (if not empty and not a comment line)
+                else:
+                    line = removeCommentFromLine(line).strip()
+                    if len(line) > 0:
+                        record += line + '\n'
+            # process the last record! (after end of for loop)
+            # Label is first line of record
+            if record:
+                label = record.splitlines()[0]
+                # Add record to dictionary
+                self.entries[label] = Entry(label=label, item=record)
+        except DatabaseError, e:
+            logging.exception(str(e))
+            raise
+        except IOError, e:
+            logging.exception('Database dictionary file "' + e.filename + '" not found.')
+            raise
+        finally:
+            if fdict: fdict.close()
+
+        # Convert the records in the dictionary to Molecule, MoleculePattern, or
+        # logical objects
+        try:
+            for label in self.entries:
+                record = self.entries[label].item
+                lines = record.splitlines()
+                # If record is a logical node, make it into one.
+                if re.match('(?i)\s*OR|AND|NOT|UNION',lines[1] ):
+                    self.entries[label].item = makeLogicNode(' '.join(lines[1:]) )
+                # Otherwise convert adjacency list to molecule or pattern
+                elif pattern:
+                    self.entries[label].item = MoleculePattern().fromAdjacencyList(record)
+                else:
+                    self.entries[label].item = Molecule().fromAdjacencyList(record)
+        except InvalidAdjacencyListError, e:
+            logging.exception(str(e))
+            raise
+
+    def __loadTree(self, tree):
+        """
+        Parse an old-style RMG tree located at `tree`. An RMG tree is an n-ary
+        tree representing the hierarchy of items in the dictionary.
+        """
+
+        if len(self.entries) == 0:
+            raise DatabaseError("Load the dictionary before you load the tree.")
+
+        import re
+        # should match '  L3 : foo_bar '  and 'L3:foo_bar'
+        parser = re.compile('^\s*L(?P<level>\d+)\s*:\s*(?P<label>\S+)')
+
+        parents = [None]
+        for line in tree.splitlines():
+            line = removeCommentFromLine(line).strip()
+            if len(line) > 0:
+                # Extract level
+                match = parser.match(line)
+                if not match:
+                    raise DatabaseError("Couldn't parse line '%s'" % line.strip())
+                level = int(match.group('level'))
+                label = match.group('label')
+
+                # Find immediate parent of the new node
+                parent = None
+                if len(parents) < level:
+                    raise DatabaseError("Invalid level specified in line '%s'" % line.strip())
+                else:
+                    while len(parents) > level:
+                        parents.remove(parents[-1])
+                    if len(parents) > 0:
+                        parent = parents[level-1]
+
+                if parent is not None: parent = self.entries[parent]
+                entry = self.entries[label]
+
+                if isinstance(parent, str):
+                    import pdb; pdb.set_trace()
+                    raise DatabaseError('Unable to find parent entry "%s" of entry "%s" in tree.' % (parent, label))
+
+                # Update the parent and children of the nodes accordingly
+                if parent is not None:
+                    entry.parent = parent
+                    parent.children.append(entry)
+                else:
+                    entry.parent = None
+                    self.top.append(entry)
+
+                # Add node to list of parents for subsequent iteration
+                parents.append(label)
+
+        # Sort children by decreasing size; the algorithm returns the first
+        # match of each children, so this makes it less likely to miss a
+        # more detailed functional group
+        # First determine if we can do the sort (that is, all children have
+        # one Molecule or MoleculePattern)
+        for label, entry in self.entries.iteritems():
             canSort = True
-            for node, children in self.tree.children.iteritems():
-                for child in children:
-                    if not isinstance(self.dictionary[child], Molecule) and not isinstance(self.dictionary[child], MoleculePattern):
-                        canSort = False
+            for child in entry.children:
+                if not isinstance(entry.item, Molecule) and not isinstance(entry.item, MoleculePattern):
+                    canSort = False
             if canSort:
-                for node, children in self.tree.children.iteritems():
-                    children.sort(lambda x, y: cmp(len(self.dictionary[x].atoms), len(self.dictionary[y].atoms)))
-        if libstr != '':
-            lines = self.library.load(libstr)
-            self.library.parse(lines, 1)
+                entry.children.sort(lambda x, y: cmp(len(x.item.atoms), len(y.item.atoms)))
 
-
-    def save(self, dictstr, treestr, libstr):
+    def loadOldTree(self, path):
         """
-        Save a dictionary-tree-library based database. The database is stored
-        in three files: `dictstr` is the path to the dictionary, `treestr` to
-        the tree, and `libstr` to the library. If a file is not desired to be
-        saved, its path should be set to ''.
+        Parse an old-style RMG database tree located at `path`. An RMG
+        tree is an n-ary tree representing the hierarchy of items in the
+        dictionary.
+        """
+        tree = []
+        try:
+            ftree = open(path, 'r')
+            tree = ftree.read()
+
+        except IOError, e:
+            logging.exception('Database tree file "' + e.filename + '" not found.')
+        finally:
+            ftree.close()
+
+        try:
+            self.__loadTree(tree)
+        except DatabaseError, e:
+            logging.exception(str(e))
+
+    def loadOldLibrary(self, path, numParameters, numLabels=1):
+        """
+        Parse an RMG database library located at `path`.
         """
 
-        # Save dictionary
-        if dictstr != '':
-            f = open(dictstr, 'w')
+        if len(self.entries) == 0:
+            raise DatabaseError("Load the dictionary before you load the library.")
+
+        # Process the library
+        flib = None
+        try:
+            flib = open(path, 'r')
+            skippedCount = 0
+            for line in flib:
+                line = removeCommentFromLine(line).strip()
+                if len(line) > 0:
+
+                    info = line.split()
+
+                    # Skip if the number of items on the line is invalid
+                    if len(info) < 2:
+                        continue
+
+                    # Determine if the first item is an index
+                    # This index is optional in the old library format
+                    index = -1
+                    offset = 0
+                    try:
+                        index = int(info[0])
+                        offset = 1
+                    except ValueError:
+                        pass
+                    # Extract label(s)
+                    label = self.__hashLabels(info[offset:offset+numLabels])
+                    offset += numLabels
+                    # Extract numeric parameter(s) or label of node with data to use
+                    try:
+                        parameters = self.processOldLibraryEntry([float(p) for p in info[offset:offset+numParameters]])
+                        offset += numParameters
+                    except ValueError:
+                        parameters = info[offset]
+                        offset += 1
+                    # Remaining part of string is comment
+                    comment = ' '.join(info[offset:])
+                    comment = comment.strip('"')
+
+                    if numLabels == 1:
+                        if self.entries[label].data is not None:
+                            logging.debug("There was already something labeled %s in the library. Ignoring '%s' (%s)" % (label, index, parameters))
+                            skippedCount += 1
+                        else:
+                            self.entries[label].index = index
+                            self.entries[label].data = parameters
+                            self.entries[label].shortDesc = comment
+                    else:
+                        if label in self.library:
+                            logging.debug("There was already something labeled %s in the library. Ignoring '%s' (%s)" % (label, index, parameters))
+                            skippedCount += 1
+                        else:
+                            self.entries[label] = (index, parameters, comment)
+
+            if skippedCount > 0:
+                logging.warning("Skipped %i duplicate entries in this library." % skippedCount)
+
+        except DatabaseError, e:
+            logging.exception(str(e))
+            for s in (dictstr, treestr, libstr):
+                logging.exception(s)
+            raise
+        except IOError, e:
+            logging.exception('Database library file "' + e.filename + '" not found.')
+            raise
+        finally:
+            if flib: flib.close()
+
+        # Make sure each entry with data has a nonnegative index
+        entries = self.entries.values()
+        entries.sort(key=lambda entry: entry.index)
+        index = entries[-1].index + 1
+        if index < 1: index = 1
+        for entry in entries:
+            if entry.index < 0:
+                entry.index = index
+                index += 1
+
+    def saveOld(self, dictstr, treestr, libstr):
+        """
+        Save the current database to a set of text files using the old-style
+        syntax.
+        """
+        self.saveOldDictionary(dictstr)
+        if treestr != '': self.saveOldTree(treestr)
+        self.saveOldLibrary(libstr)
+
+    def saveOldDictionary(self, path):
+        """
+        Save the current database dictionary to a text file using the old-style
+        syntax.
+        """
+
+        entries = []
+        # If we have tree information, save the dictionary in the same order as
+        # the tree (so that it saves in the same order each time)
+        if len(self.top) > 0:
+            for entry in self.top:
+                entries.extend(self.descendants(entry))
+        # Otherwise save the dictionary in any order
+        else:
+            entries = self.entries.values()
+
+        try:
+            f = open(path, 'w')
             f.write('////////////////////////////////////////////////////////////////////////////////\n')
             f.write('//\n')
-            f.write('//\tDictionary\n')
+            f.write('//  Dictionary\n')
             f.write('//\n')
             f.write('////////////////////////////////////////////////////////////////////////////////\n')
             f.write('\n')
-            for label, struct in self.dictionary.iteritems():
-                f.write(label + '\n')
-                if isinstance(struct, structure.Structure):
-                    f.write(struct.toAdjacencyList() + '\n')
-                elif struct == 'union':
-                    union = 'Union {'
-                    children = [child for child in self.tree.children[label]]
-                    union += ','.join(children)
-                    union += '}'
-                    f.write(union + '\n\n')
+            for entry in entries:
+                f.write(entry.label + '\n')
+                if isinstance(entry.item, Molecule):
+                    f.write(entry.item.toAdjacencyList(removeH=True) + '\n')
+                elif isinstance(entry.item, MoleculePattern):
+                    f.write(entry.item.toAdjacencyList() + '\n')
+                elif isinstance(entry.item, LogicAnd) or isinstance(entry.item, LogicOr):
+                    f.write('%s\n\n' % (str(entry.item)))
                 else:
-                    raise InvalidDatabaseError('Unexpected item with label %s encountered in dictionary while attempting to save.' % label)
+                    raise DatabaseError('Unexpected item with label %s encountered in dictionary while attempting to save.' % label)
             f.close()
+        except IOError, e:
+            logging.exception('Unable to save old-style tree to "%s".' % (os.path.abspath(path)))
+            raise
 
-        # Save tree
-        if treestr != '':
-            logging.warning('Tree saving not yet implemented.')
+    def __generateOldTree(self, entries, level):
+        """
+        Generate a multi-line string representation of the current tree using
+        the old-style syntax.
+        """
+        string = ''
+        for entry in entries:
+            # Write current node
+            string += '%sL%i: %s\n' % ('    ' * (level-1), level, entry.label)
+            # Recursively descend children (depth-first)
+            string += self.__generateOldTree(entry.children, level+1)
+        return string
 
-        # Save library
-        if libstr != '':
-            logging.warning('Library saving not yet implemented.')
+    def saveOldTree(self, path):
+        """
+        Save the current database tree to a text file using the old-style
+        syntax.
+        """
+        try:
+            f = open(path, 'w')
+            f.write('////////////////////////////////////////////////////////////////////////////////\n')
+            f.write('//\n')
+            f.write('//  Tree\n')
+            f.write('//\n')
+            f.write('////////////////////////////////////////////////////////////////////////////////\n')
+            f.write('\n')
+            f.write(self.__generateOldTree(self.top, 1))
+            f.close()
+        except IOError, e:
+            logging.exception('Unable to save old-style tree to "%s".' % (os.path.abspath(path)))
+            raise
+
+    def saveOldLibrary(self, path):
+        """
+        Save the current database library to a text file using the old-style
+        syntax.
+        """
+        try:
+            f = open(path, 'w')
+            records = []
+            for label, entry in self.entries.iteritems():
+                if entry.data is not None:
+                    data = entry.data
+                    if not isinstance(data, str):
+                        data = self.generateOldLibraryEntry(data)
+                    records.append((entry.index, [entry.label], data, entry.shortDesc))
+
+            records.sort()
+
+            f.write('////////////////////////////////////////////////////////////////////////////////\n')
+            f.write('//\n')
+            f.write('//  Library\n')
+            f.write('//\n')
+            f.write('////////////////////////////////////////////////////////////////////////////////\n')
+            f.write('\n')
+            for index, labels, data, comment in records:
+                f.write('{:<6d} '.format(index))
+                for label in labels:
+                    f.write('{:<24s}'.format(label))
+                if isinstance(data, str):
+                    f.write('{:s} '.format(data))
+                else:
+                    f.write('{:s} '.format(' '.join(['{:<10g}'.format(d) for d in data])))
+                f.write('{:s}\n'.format(comment))
+            f.close()
+        except IOError, e:
+            logging.exception('Unable to save old-style library to "%s".' % (os.path.abspath(path)))
+            raise
+
+    def __hashLabels(self, labels):
+        """
+        Convert a list of string `labels` to a list of single strings that
+        represent permutations of the individual strings in the `labels` list::
+
+            >>> hashLabels(['a','b'])
+            ['a;b', 'b;a']
+        """
+        return ';'.join(labels)
+
+    def ancestors(self, node):
+        """
+        Returns all the ancestors of a node, climbing up the tree to the top.
+        """
+        if isinstance(node, str): node = self.entries[node]
+        ancestors = []
+        parent = node.parent
+        if parent is not None:
+            ancestors = [parent]
+            ancestors.extend(self.ancestors(parent))
+        return ancestors
+
+    def descendants(self, node):
+        """
+        Returns all the descendants of a node, climbing down the tree to the bottom.
+        """
+        if isinstance(node, str): node = self.entries[node]
+        descendants = []
+        for child in node.children:
+            descendants.append(child)
+            descendants.extend(self.descendants(child))
+        return descendants
+
+    def getData(self, label):
+        """
+        Return the data in the library associated with the label or list of
+        labels denoted by `key`.
+        """
+        if len(self.library) > 0:
+            key = self.hashLabels(key)
+            data = self.library[key]
+            while isinstance(data, str):
+                key = self.hashLabels(data)
+                data = self.library[key]
+        else:
+            data = self.library[label]
+            while isinstance(data, str):
+                label = data
+                data = self.library[label]
+        return data
 
     def isWellFormed(self):
         """
@@ -680,9 +660,9 @@ class Database:
 
             # All nodes in library must be in dictionary
             try:
-                if node not in self.dictionary:
-                    raise InvalidDatabaseError('Node "%s" in library is not present in dictionary.' % (node))
-            except InvalidDatabaseError, e:
+                if node not in self.entries:
+                    raise DatabaseError('Node "%s" in library is not present in dictionary.' % (node))
+            except DatabaseError, e:
                 wellFormed = False
                 logging.error(str(e))
 
@@ -692,17 +672,17 @@ class Database:
             if len(self.tree.parent) > 0:
                 try:
                     if node not in self.tree.parent:
-                        raise InvalidDatabaseError('Node "%s" in library is not present in tree.' % (node))
-                except InvalidDatabaseError, e:
+                        raise DatabaseError('Node "%s" in library is not present in tree.' % (node))
+                except DatabaseError, e:
                     logging.warning(str(e))
 
         # If a tree is present, all nodes in tree must be in dictionary
         if self.tree is not None:
             for node in self.tree.parent:
                 try:
-                    if node not in self.dictionary:
-                        raise InvalidDatabaseError('Node "%s" in tree is not present in dictionary.' % (node))
-                except InvalidDatabaseError, e:
+                    if node not in self.entries:
+                        raise DatabaseError('Node "%s" in tree is not present in dictionary.' % (node))
+                except DatabaseError, e:
                     wellFormed = False
                     logging.error(str(e))
 
@@ -719,8 +699,8 @@ class Database:
         the functional group represented by `node` has an equivalent labeled
         atom in `structure`.
         """
-
-        group = self.dictionary[node]
+        if isinstance(node, str): node = self.entries[node]
+        group = node.item
         if isinstance(group, LogicNode):
             return group.matchToStructure(self, structure, atoms)
         else:
@@ -772,7 +752,7 @@ class Database:
         """
 
         if root is None:
-            for root in self.tree.top:
+            for root in self.top:
                 if self.matchNodeToStructure(root, structure, atoms):
                     break # We've found a matching root
             else: # didn't break - matched no top nodes
@@ -781,7 +761,7 @@ class Database:
             return None
 
         next = []
-        for child in self.tree.children[root]:
+        for child in root.children:
             if self.matchNodeToStructure(child, structure, atoms):
                 next.append(child)
 
@@ -791,7 +771,7 @@ class Database:
             return root
         else:
             #print structure.toAdjacencyList()
-            #raise InvalidDatabaseError('For structure %s, a node %s with non-mutually-exclusive children %s was encountered in tree with top level nodes %s.' % (structure.getFormula(), root, next, self.tree.top))
+            #raise DatabaseError('For structure %s, a node %s with non-mutually-exclusive children %s was encountered in tree with top level nodes %s.' % (structure.getFormula(), root, next, self.tree.top))
             logging.warning('For %s, a node %s with overlapping children %s was encountered in tree with top level nodes %s.' % (structure, root, next, self.tree.top))
             return root
 
@@ -802,7 +782,7 @@ class LogicNode:
     A base class for AND and OR logic nodes.
     """
 
-    symbol = "<TBD>" # To be redefined by subclass
+    symbol="<TBD>" # To be redefined by subclass
 
     def __init__(self,items,invert):
         self.components = []
