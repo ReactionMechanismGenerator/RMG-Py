@@ -28,515 +28,430 @@
 #
 ################################################################################
 
+"""
+
+"""
+
 import os
 import math
 import logging
 import numpy
 
-from base import *
+from base import Database, Entry, makeLogicNode
 
 import rmgpy.chem.constants as constants
 from rmgpy.chem.thermo import *
-from rmgpy.chem.molecule import Atom, Bond, Molecule
+from rmgpy.chem.molecule import Molecule
+from rmgpy.chem.pattern import MoleculePattern
 
 ################################################################################
 
-class ThermoEntry(DataEntry):
+def saveEntry(f, entry):
     """
-    A single entry in the thermodynamics database. Each entry either contains
-    a thermodynamics `model` or a string label of a `node` to look at for
-    thermodynamics information.
+    Write a Pythonic string representation of the given `entry` in the thermo
+    database to the file object `f`.
+    """
+    
+    f.write('entry(\n')
+    f.write('    index = %i,\n' % (entry.index))
+    f.write('    label = "%s",\n' % (entry.label))
+
+    if isinstance(entry.item, Molecule):
+        f.write('    molecule = \n')
+        f.write('"""\n')
+        f.write(entry.item.toAdjacencyList(removeH=True))
+        f.write('""",\n')
+    elif isinstance(entry.item, MoleculePattern):
+        f.write('    group = \n')
+        f.write('"""\n')
+        f.write(entry.item.toAdjacencyList())
+        f.write('""",\n')
+    else:
+        f.write('    group = "%s",\n' % (entry.item))
+
+    if isinstance(entry.data, ThermoData):
+        f.write('    thermo = ThermoData(\n')
+        f.write('        Tdata = %r,\n' % (entry.data.Tdata))
+        f.write('        Cpdata = %r,\n' % (entry.data.Cpdata))
+        f.write('        H298 = %r,\n' % (entry.data.H298))
+        f.write('        S298 = %r,\n' % (entry.data.S298))
+        if entry.data.Tmin is not None: f.write('        Tmin = %r,\n' % (entry.data.Tmin))
+        if entry.data.Tmax is not None: f.write('        Tmax = %r,\n' % (entry.data.Tmax))
+        f.write('    ),\n')
+    elif isinstance(entry.data, Wilhoit):
+        f.write('    thermo = Wilhoit(\n')
+        f.write('        cp0 = %r,\n' % (entry.data.cp0))
+        f.write('        cpInf = %r,\n' % (entry.data.cpInf))
+        f.write('        a0 = %r,\n' % (entry.data.a0))
+        f.write('        a1 = %r,\n' % (entry.data.a1))
+        f.write('        a2 = %r,\n' % (entry.data.a2))
+        f.write('        a3 = %r,\n' % (entry.data.a3))
+        f.write('        B = %r,\n' % (entry.data.B))
+        f.write('        H0 = %r,\n' % (entry.data.H0))
+        f.write('        S0 = %r,\n' % (entry.data.S0))
+        if entry.data.Tmin is not None: f.write('        Tmin = %r,\n' % (entry.data.Tmin))
+        if entry.data.Tmax is not None: f.write('        Tmax = %r,\n' % (entry.data.Tmax))
+        f.write('    ),\n')
+    elif isinstance(entry.data, MultiNASA):
+        f.write('    thermo = MultiNASA(\n')
+        f.write('        polynomials = [\n')
+        for poly in entry.data.polynomials:
+            f.write('            %r,\n' % (poly))
+        f.write('        ],\n')
+        if entry.data.Tmin is not None: f.write('        Tmin = %r,\n' % (entry.data.Tmin))
+        if entry.data.Tmax is not None: f.write('        Tmax = %r,\n' % (entry.data.Tmax))
+        f.write('    ),\n')
+    else:
+        f.write('    thermo = %r,\n' % (entry.data))
+
+    if entry.reference is not None: f.write('    reference = %r,\n' % (entry.reference))
+    if entry.referenceType != "": f.write('    referenceType = "%s",\n' % (entry.referenceType))
+    f.write('    shortDesc = """%s""",\n' % (entry.shortDesc))
+    f.write('    longDesc = \n')
+    f.write('"""\n')
+    f.write(entry.longDesc)
+    f.write('\n""",\n')
+
+    f.write('    history = [\n')
+    for time, user, action, description in entry.history:
+        f.write('        ("%s","%s","%s","""%s"""),\n' % (time, user, action, description))
+    f.write('    ],\n')
+
+    f.write(')\n\n')
+
+def generateOldLibraryEntry(data):
+    """
+    Return a list of values used to save entries to the old-style RMG
+    thermo database based on the thermodynamics object `data`.
+    """
+    if not isinstance(data, ThermoData):
+        raise ValueError('data parameter must be in ThermoData format; got %s instead' % (data.__class__))
+    return [
+        data.H298.value/4184.,
+        data.S298.value/4.184,
+        data.Cpdata.values[0]/4.184,
+        data.Cpdata.values[1]/4.184,
+        data.Cpdata.values[2]/4.184,
+        data.Cpdata.values[3]/4.184,
+        data.Cpdata.values[4]/4.184,
+        data.Cpdata.values[5]/4.184,
+        data.Cpdata.values[6]/4.184,
+        data.H298.uncertainty/4184.,
+        data.S298.uncertainty/4.184,
+        data.Cpdata.uncertainty/4.184,
+    ]
+
+def processOldLibraryEntry(data):
+    """
+    Process a list of parameters `data` as read from an old-style RMG
+    thermo database, returning the corresponding thermodynamics object.
+    """
+    return ThermoData(
+        Tdata = ([300,400,500,600,800,1000,1500],"K"),
+        Cpdata = (data[2:9],"cal/(mol*K)","+|-",data[11]),
+        H298 = (data[0],"kcal/mol","+|-",data[9]),
+        S298 = (data[1],"cal/(mol*K)","+|-",data[10]),
+    )
+
+
+################################################################################
+
+class ThermoDepository(Database):
+    """
+    A class for working with the RMG thermodynamics depository.
     """
 
-    def __init__(self, model=None, node='', index=0, label='', shortComment='', longComment='', history=None):
-        DataEntry.__init__(self, index, label, shortComment, longComment, history)
-        self.model = model
-        self.node = node
+    def __init__(self):
+        Database.__init__(self)
+        
+    def loadEntry(self, index, label, molecule, thermo, reference=None, referenceType='', shortDesc='', longDesc='', history=None):
+        self.entries[label] = Entry(
+            index = index,
+            label = label,
+            item = Molecule().fromAdjacencyList(molecule),
+            data = thermo,
+            reference = reference,
+            referenceType = referenceType,
+            shortDesc = shortDesc,
+            longDesc = longDesc.strip(),
+            history = history or [],
+        )
+
+    def saveEntry(self, f, entry):
+        """
+        Write the given `entry` in the thermo database to the file object `f`.
+        """
+        return saveEntry(f, entry)
+
+################################################################################
+
+class ThermoLibrary(Database):
+    """
+    A class for working with a RMG thermodynamics library.
+    """
+
+    def __init__(self):
+        Database.__init__(self)
+
+    def loadEntry(self, index, label, molecule, thermo, reference=None, referenceType='', shortDesc='', longDesc='', history=None):
+        self.entries[label] = Entry(
+            index = index,
+            label = label,
+            item = Molecule().fromAdjacencyList(molecule),
+            data = thermo,
+            reference = reference,
+            referenceType = referenceType,
+            shortDesc = shortDesc,
+            longDesc = longDesc.strip(),
+            history = history or [],
+        )
+
+    def saveEntry(self, f, entry):
+        """
+        Write the given `entry` in the thermo database to the file object `f`.
+        """
+        return saveEntry(f, entry)
+
+    def generateOldLibraryEntry(self, data):
+        """
+        Return a list of values used to save entries to the old-style RMG
+        thermo database based on the thermodynamics object `data`.
+        """
+        return generateOldLibraryEntry(data)
+
+    def processOldLibraryEntry(self, data):
+        """
+        Process a list of parameters `data` as read from an old-style RMG
+        thermo database, returning the corresponding thermodynamics object.
+        """
+        return processOldLibraryEntry(data)
+
+################################################################################
+
+class ThermoGroups(Database):
+    """
+    A class for working with an RMG thermodynamics group additivity database.
+    """
+
+    def __init__(self):
+        Database.__init__(self)
+
+    def loadEntry(self, index, label, group, thermo, reference=None, referenceType='', shortDesc='', longDesc='', history=None):
+        if group[0:3].upper() == 'OR{' or group[0:4].upper() == 'AND{' or group[0:7].upper() == 'NOT OR{' or group[0:8].upper() == 'NOT AND{':
+            item = makeLogicNode(group)
+        else:
+            item = MoleculePattern().fromAdjacencyList(group)
+        self.entries[label] = Entry(
+            index = index,
+            label = label,
+            item = item,
+            data = thermo,
+            reference = reference,
+            referenceType = referenceType,
+            shortDesc = shortDesc,
+            longDesc = longDesc.strip(),
+            history = history or [],
+        )
+    
+    def saveEntry(self, f, entry):
+        """
+        Write the given `entry` in the thermo database to the file object `f`.
+        """
+        return saveEntry(f, entry)
+
+    def generateOldLibraryEntry(self, data):
+        """
+        Return a list of values used to save entries to the old-style RMG
+        thermo database based on the thermodynamics object `data`.
+        """
+        return generateOldLibraryEntry(data)
+
+    def processOldLibraryEntry(self, data):
+        """
+        Process a list of parameters `data` as read from an old-style RMG
+        thermo database, returning the corresponding thermodynamics object.
+        """
+        return processOldLibraryEntry(data)
 
 ################################################################################
 
 class ThermoDatabase:
     """
-    A base class for thermodynamics databases.
+    A class for working with the RMG thermodynamics database.
     """
 
-    def loadDatabase(self, path):
-
-        global currentDatabase
-        currentDatabase = Database()
-
-        global_context = { '__builtins__': None }
-        local_context = {
-            '__builtins__': None,
-            'thermo': loadThermo,
-            'tree': loadTree,
-            'ThermoData': loadThermoData,
+    def __init__(self):
+        self.depository = {}
+        self.libraries = {}
+        self.groups = {}
+        self.local_context = {
+            'ThermoData': ThermoData,
+            'Wilhoit': Wilhoit,
+            'NASA': NASA,
+            'MultiNASA': MultiNASA,
         }
-        f = open(path)
-        try:
-            exec f in global_context, local_context
-        except (NameError, TypeError, SyntaxError), e:
-            logging.error('The input file "%s" was invalid:' % path)
-            logging.exception(e)
-            network = None
-        finally:
-            f.close()
+        self.global_context = {}
 
-        return currentDatabase
-
-    def getOldDTLPaths(self, path, prefix):
+    def load(self, path):
         """
-        Return a tuple of dictionary, tree, and library paths for a given
-        prefix.
+        Load the thermo database from the given `path` on disk, where `path`
+        points to the top-level folder of the thermo database.
         """
-        dict_path = os.path.join(path, '%s_Dictionary.txt' % prefix)
-        tree_path = os.path.join(path, '%s_Tree.txt' % prefix)
-        libr_path = os.path.join(path, '%s_Library.txt' % prefix)
-        return dict_path, tree_path, libr_path
-
-    def loadOldDatabase(self, dictstr, treestr, libstr, pattern=True):
-        """
-        Load a thermodynamics group additivity database. The database is stored
-        in three files: `dictstr` is the path to the dictionary, `treestr` to
-        the tree, and `libstr` to the library. The tree is optional, and should
-        be set to '' if not desired.
-        """
-
-        # Load dictionary, library, and (optionally) tree
-        database = Database()
-        database.load(dictstr, treestr, libstr, pattern)
-
-        # Convert data in library to ThermoData objects or lists of
-        # [link, comment] pairs
-        for label, item in database.library.iteritems():
-
-            if item is None:
-                pass
-            elif not item.__class__ is tuple:
-                raise InvalidDatabaseError('Thermo library should be tuple at this point. Instead got %r'%data)
-            else:
-                index,item = item # break apart tuple, recover the 'index' - the beginning of the line in the library file.
-                # Is't it dangerous having a local variable with the same name as a module?
-                # what if we want to raise another data.InvalidDatabaseError() ?
-                if not ( item.__class__ is str or item.__class__ is unicode) :
-                    raise InvalidDatabaseError('Thermo library data format is unrecognized.')
-
-                items = item.split()
-                try:
-                    thermoData = []; comment = ''
-                    # First 12 entries are thermo data
-                    for i in range(12):
-                        thermoData.append(float(items[i]))
-                    # Remaining entries are comment
-                    for i in range(12, len(items)):
-                        comment += items[i] + ' '
-                    comment = comment.replace('"', '').strip()
-
-                    database.library[label] = ThermoEntry(
-                        model=self.__convertOldLibraryEntry(thermoData, comment),
-                        index=int(index),
-                        label=label,
-                        shortComment=comment,
-                    )
-
-                except (ValueError, IndexError), e:
-                    # Data represents a link to a different node that contains
-                    # the data to use
-                    database.library[label] = ThermoEntry(
-                        node=items[0],
-                        index=int(index),
-                        label=label,
-                        shortComment=item[len(items[0])+1:].replace('"', '').strip(),
-                    )
-
-        # Check for well-formedness
-        if not database.isWellFormed():
-            raise InvalidDatabaseError('Database at "%s" is not well-formed.' % (dictstr))
-
-        #database.library.removeLinks()
-
-        return database
-
-    def __convertOldLibraryEntry(self, data, comment):
-        """
-        Process a list of numbers `data` and associated description `comment`
-        generated while reading from a thermodynamic database.
-        """
-
-        if len(data) != 12:
-            raise Exception('Invalid list of thermo data; should be a list of numbers of length 12.')
-
-        H298, S298, Cp300, Cp400, Cp500, Cp600, Cp800, Cp1000, Cp1500, dH, dS, dCp = data
-
-        H298 = float(pq.Quantity(H298, 'kcal/mol').simplified)
-        S298 = float(pq.Quantity(S298, 'cal/(mol*K)').simplified)
-        Tdata = numpy.array([300, 400, 500, 600, 800, 1000, 1500], numpy.float64)
-        Cpdata = list(pq.Quantity([Cp300, Cp400, Cp500, Cp600, Cp800, Cp1000, Cp1500], 'cal/(mol*K)').simplified)
-        Cpdata = numpy.array([float(Cp) for Cp in Cpdata], numpy.float64)
+        self.depository = {}
+        self.depository['stable']  = ThermoDepository().load(os.path.join(path, 'depository', 'stable.py'), self.local_context, self.global_context)
+        self.depository['radical'] = ThermoDepository().load(os.path.join(path, 'depository', 'radical.py'), self.local_context, self.global_context)
         
-        return ThermoData(H298=H298, S298=S298, Tdata=Tdata, Cpdata=Cpdata, comment=comment)
+        self.libraries = {}
+        for (root, dirs, files) in os.walk(os.path.join(path, 'libraries')):
+            for f in files:
+                if os.path.splitext(f)[1].lower() == '.py':
+                    library = ThermoLibrary()
+                    library.load(os.path.join(root, f), self.local_context, self.global_context)
+                    library.label = os.path.splitext(f)[0]
+                    self.libraries[library.label] = library
 
-################################################################################
+        self.groups = {}
+        self.groups['group']   = ThermoGroups().load(os.path.join(path, 'groups', 'group.py' ), self.local_context, self.global_context)
+        self.groups['gauche']  = ThermoGroups().load(os.path.join(path, 'groups', 'gauche.py' ), self.local_context, self.global_context)
+        self.groups['int15']   = ThermoGroups().load(os.path.join(path, 'groups', 'int15.py'  ), self.local_context, self.global_context)
+        self.groups['ring']    = ThermoGroups().load(os.path.join(path, 'groups', 'ring.py'   ), self.local_context, self.global_context)
+        self.groups['radical'] = ThermoGroups().load(os.path.join(path, 'groups', 'radical.py'), self.local_context, self.global_context)
+        self.groups['other']   = ThermoGroups().load(os.path.join(path, 'groups', 'other.py'  ), self.local_context, self.global_context)
 
-class ThermoGroupDatabase(ThermoDatabase):
-    """
-    A set of thermodynamics group additivity databases, consisting of a primary
-    database of functional groups and a number of secondary databases to provide
-    corrections for 1,5-interactions, gauche interactions, radicals, rings,
-    and other functionality. The attributes are:
-
-    =================== =================== ====================================
-    Attribute           Type                Description
-    =================== =================== ====================================
-    `groupDatabase`     :class:`Database`   Functional group additivity values
-    `radicalDatabase`   :class:`Database`   Corrections for radical species
-    `ringDatabase`      :class:`Database`   Corrections for cyclic and aromatic species
-    `int15Database`     :class:`Database`   Corrections for 1,5-interactions
-    `gaucheDatabase`    :class:`Database`   Corrections for gauche (1,4) interactions
-    `otherDatabase`     :class:`Database`   Other corrections
-    =================== =================== ====================================
-
-    """
-
-    def __init__(self, path=''):
-        if path != '':
-            self.load(path)
-        else:
-            self.groupDatabase = None
-            self.int15Database = None
-            self.gaucheDatabase = None
-            self.otherDatabase = None
-            self.radicalDatabase = None
-            self.ringDatabase = None
-
-    def load(self, path, old=False):
+    def save(self, path):
         """
-        Load a set of thermodynamics group additivity databases from the general
-        database specified at `datapath`.
+        Save the thermo database to the given `path` on disk, where `path`
+        points to the top-level folder of the thermo database.
         """
+        self.depository['stable'].save(os.path.join(path, 'depository', 'stable.py'))
+        self.depository['radical'].save(os.path.join(path, 'depository', 'radical.py'))
 
-        path = os.path.abspath(path)
+        for library in self.libraries.values():
+            library.save(os.path.join(path, 'libraries', '%s.py' % (library.label)))
+        
+        self.groups['group'].save(os.path.join(path, 'groups', 'group.py'))
+        self.groups['gauche'].save(os.path.join(path, 'groups', 'gauche.py'))
+        self.groups['int15'].save(os.path.join(path, 'groups', 'int15.py'))
+        self.groups['ring'].save(os.path.join(path, 'groups', 'ring.py'))
+        self.groups['radical'].save(os.path.join(path, 'groups', 'radical.py'))
+        self.groups['other'].save(os.path.join(path, 'groups', 'other.py'))
 
-        logging.info('Loading group thermodynamics databases from %s...' % path)
-        if old:
-            self.groupDatabase = self.loadOldDatabase(*self.getOldDTLPaths(path, 'Group')) # the '*' unpacks the tuple into three separate arguments
-            self.int15Database = self.loadOldDatabase(*self.getOldDTLPaths(path, '15'))
-            self.gaucheDatabase = self.loadOldDatabase(*self.getOldDTLPaths(path, 'Gauche'))
-            self.radicalDatabase = self.loadOldDatabase(*self.getOldDTLPaths(path, 'Radical'))
-            self.ringDatabase = self.loadOldDatabase(*self.getOldDTLPaths(path, 'Ring'))
-            self.otherDatabase = self.loadOldDatabase(*self.getOldDTLPaths(path, 'Other'))
-        else:
-            self.groupDatabase = self.loadDatabase(os.path.join(path, 'group.py'))
-            self.int15Database = self.loadDatabase(os.path.join(path, 'int15.py'))
-            self.gaucheDatabase = self.loadDatabase(os.path.join(path, 'gauche.py'))
-            self.radicalDatabase = self.loadDatabase(os.path.join(path, 'radical.py'))
-            self.ringDatabase = self.loadDatabase(os.path.join(path, 'ring.py'))
-            self.otherDatabase = self.loadDatabase(os.path.join(path, 'other.py'))
-
-        logging.info('')
-
-    def generateThermoData(self, molecule):
+    def loadOld(self, path):
         """
-        Determine the group additivity thermodynamic data for the given
-        `molecule`.
+        Load the old RMG thermo database from the given `path` on disk, where
+        `path` points to the top-level folder of the old RMG database.
         """
+        # The old database does not have a depository, so create an empty one
+        self.depository = {}
+        self.depository['stable']  = ThermoDepository()
+        self.depository['radical'] = ThermoDepository()
+        
+        for (root, dirs, files) in os.walk(os.path.join(path, 'thermo_libraries')):
+            if os.path.exists(os.path.join(root, 'Dictionary.txt')) and os.path.exists(os.path.join(root, 'Library.txt')):
+                library = ThermoLibrary()
+                library.loadOld(
+                    dictstr = os.path.join(root, 'Dictionary.txt'),
+                    treestr = '',
+                    libstr = os.path.join(root, 'Library.txt'),
+                    numParameters = 12,
+                    numLabels = 1,
+                    pattern = False,
+                )
+                library.label = os.path.basename(root)
+                self.libraries[library.label] = library
 
-        thermoData = None
+        self.groups = {}
+        self.groups['group'] = ThermoGroups().loadOld(
+            dictstr = os.path.join(path, 'thermo_groups', 'Group_Dictionary.txt'),
+            treestr = os.path.join(path, 'thermo_groups', 'Group_Tree.txt'),
+            libstr = os.path.join(path, 'thermo_groups', 'Group_Library.txt'),
+            numParameters = 12,
+            numLabels = 1,
+            pattern = True,
+        )
+        self.groups['gauche'] = ThermoGroups().loadOld(
+            dictstr = os.path.join(path, 'thermo_groups', 'Gauche_Dictionary.txt'),
+            treestr = os.path.join(path, 'thermo_groups', 'Gauche_Tree.txt'),
+            libstr = os.path.join(path, 'thermo_groups', 'Gauche_Library.txt'),
+            numParameters = 12,
+            numLabels = 1,
+            pattern = True,
+        )
+        self.groups['int15'] = ThermoGroups().loadOld(
+            dictstr = os.path.join(path, 'thermo_groups', '15_Dictionary.txt'),
+            treestr = os.path.join(path, 'thermo_groups', '15_Tree.txt'),
+            libstr = os.path.join(path, 'thermo_groups', '15_Library.txt'),
+            numParameters = 12,
+            numLabels = 1,
+            pattern = True,
+        )
+        self.groups['radical'] = ThermoGroups().loadOld(
+            dictstr = os.path.join(path, 'thermo_groups', 'Radical_Dictionary.txt'),
+            treestr = os.path.join(path, 'thermo_groups', 'Radical_Tree.txt'),
+            libstr = os.path.join(path, 'thermo_groups', 'Radical_Library.txt'),
+            numParameters = 12,
+            numLabels = 1,
+            pattern = True,
+        )
+        self.groups['ring'] = ThermoGroups().loadOld(
+            dictstr = os.path.join(path, 'thermo_groups', 'Ring_Dictionary.txt'),
+            treestr = os.path.join(path, 'thermo_groups', 'Ring_Tree.txt'),
+            libstr = os.path.join(path, 'thermo_groups', 'Ring_Library.txt'),
+            numParameters = 12,
+            numLabels = 1,
+            pattern = True,
+        )
+        self.groups['other'] = ThermoGroups().loadOld(
+            dictstr = os.path.join(path, 'thermo_groups', 'Other_Dictionary.txt'),
+            treestr = os.path.join(path, 'thermo_groups', 'Other_Tree.txt'),
+            libstr = os.path.join(path, 'thermo_groups', 'Other_Library.txt'),
+            numParameters = 12,
+            numLabels = 1,
+            pattern = True,
+        )
 
-        if sum([atom.radicalElectrons for atom in molecule.atoms]) > 0:
-
-            # Make a copy of the structure so we don't change the original
-            saturatedStruct = molecule.copy(deep=True)
-
-            # Saturate structure by replacing all radicals with bonds to
-            # hydrogen atoms
-            added = {}
-            for atom in saturatedStruct.atoms:
-                for i in range(atom.radicalElectrons):
-                    H = Atom('H')
-                    bond = Bond('S')
-                    saturatedStruct.addAtom(H)
-                    saturatedStruct.addBond(atom, H, bond)
-                    if atom not in added:
-                        added[atom] = []
-                    added[atom].append([H, bond])
-                    atom.decrementRadical()
-
-            # Update the atom types of the saturated structure (not sure why
-            # this is necessary, because saturating with H shouldn't be
-            # changing atom types, but it doesn't hurt anything and is not
-            # very expensive, so will do it anyway)
-            saturatedStruct.updateConnectivityValues()
-            saturatedStruct.sortVertices()
-            saturatedStruct.updateAtomTypes()
-
-            # Get thermo estimate for saturated form of structure
-            thermoData = self.generateThermoData(saturatedStruct)
-            assert thermoData is not None, "Thermo data of saturated %s of molecule %s is None!" % (saturatedStruct, molecule)
-            
-            # For each radical site, get radical correction
-            # Only one radical site should be considered at a time; all others
-            # should be saturated with hydrogen atoms
-            for atom in added:
-
-                # Remove the added hydrogen atoms and bond and restore the radical
-                for H, bond in added[atom]:
-                    saturatedStruct.removeBond(atom, H)
-                    saturatedStruct.removeAtom(H)
-                    atom.incrementRadical()
-
-                saturatedStruct.updateConnectivityValues()
-            
-                thermoData += self.__getThermoData(self.radicalDatabase, saturatedStruct, {'*':atom})
-
-                # Re-saturate
-                for H, bond in added[atom]:
-                    saturatedStruct.addAtom(H)
-                    saturatedStruct.addBond(atom, H, bond)
-                    atom.decrementRadical()
-
-                # Subtract the enthalpy of the added hydrogens
-                for H, bond in added[atom]:
-                    thermoData.H298.value -= 52.103 * 4184
-
-            # Correct the entropy for the symmetry number
-
-        else:
-            # Generate estimate of thermodynamics
-            for atom in molecule.atoms:
-                # Iterate over heavy (non-hydrogen) atoms
-                if atom.isNonHydrogen():
-                    # Get initial thermo estimate from main group database
-                    try:
-                        if thermoData is None:
-                            thermoData = self.__getThermoData(self.groupDatabase, molecule, {'*':atom})
-                        else:
-                            thermoData += self.__getThermoData(self.groupDatabase, molecule, {'*':atom})
-                    except KeyError:
-                        print molecule
-                        print molecule.toAdjacencyList()
-                        raise
-                    # Correct for gauche and 1,5- interactions
-                    try:
-                        thermoData += self.__getThermoData(self.gaucheDatabase, molecule, {'*':atom})
-                    except KeyError: pass
-                    try:
-                        thermoData += self.__getThermoData(self.int15Database, molecule, {'*':atom})
-                    except KeyError: pass
-                    try:
-                        thermoData += self.__getThermoData(self.otherDatabase, molecule, {'*':atom})
-                    except KeyError: pass
-            
-            # Do ring corrections separately because we only want to match
-            # each ring one time; this doesn't work yet
-            rings = molecule.getSmallestSetOfSmallestRings()
-            for ring in rings:
-
-                # Make a temporary structure containing only the atoms in the ring
-                ringStructure = Molecule()
-                for atom in ring: ringStructure.addAtom(atom)
-                for atom1 in ring:
-                    for atom2 in ring:
-                        if molecule.hasBond(atom1, atom2):
-                            ringStructure.addBond(atom1, atom2, molecule.getBond(atom1, atom2))
-
-                # Get thermo correction for this ring
-                thermoData += self.__getThermoData(self.ringDatabase, ringStructure, {})
-
-        return thermoData
-
-    def __getThermoData(self, database, molecule, atom):
+    def saveOld(self, path):
         """
-        Determine the group additivity thermodynamic data for the atom `atom`
-        in the structure `structure`.
+        Save the old RMG thermo database to the given `path` on disk, where
+        `path` points to the top-level folder of the old RMG database.
         """
 
-        node0 = database.descendTree(molecule, atom, None)
+        # Depository not used in old database, so it is not saved
 
-        if node0 is None:
-            raise KeyError('Node not found in database.')
+        for library in self.libraries.values():
+            library.saveOld(
+                dictstr = os.path.join(path, 'thermo_libraries', library.label, 'Dictionary.txt'),
+                treestr = '',
+                libstr = os.path.join(path, 'thermo_libraries', library.label, 'Library.txt'),
+            )
 
-        # It's possible (and allowed) that items in the tree may not be in the 
-        # library, in which case we need to fall up the tree until we find an
-        # ancestor that has an entry in the library
-        node = node0
-        while node not in database.library and node is not None:
-            node = database.tree.parent[node]
-        if node is None:
-            raise InvalidDatabaseError('Unable to determine thermo parameters for %s: no library entries for %s or any of its ancestors.' % (molecule, node0) )
-
-        data = database.library[node]
-        while data.model is None and data.node is not None:
-            data = database.library[data.node]
-
-        # This code prints the hierarchy of the found node; useful for debugging
-        #result = ''
-        #while node is not None:
-        #	result = ' -> ' + node + result
-        #	node = database.tree.parent[node]
-        #print result[4:]
-
-        return data.model
-
-################################################################################
-
-class ThermoPrimaryDatabase(ThermoDatabase):
-    """
-    A primary thermodynamics databases, consisting of a dictionary of species
-    and a library of corresponding thermodynamic data. (No tree is utilized in
-    this database.) The attributes are:
-
-    =================== =================== ====================================
-    Attribute           Type                Description
-    =================== =================== ====================================
-    `database`          :class:`Database`   Thermodynamic data for individual species
-    =================== =================== ====================================
-
-    """
-
-    def __init__(self, path=''):
-        if path != '':
-            self.load(path)
-        else:
-            self.database = None
-
-    def load(self, path, old=False):
-        """
-        Load a primary thermodynamics database from the location `path`.
-        """
-        path = os.path.abspath(path)
-        logging.info('Loading primary thermodynamics database from %s...' % path)
-        if old:
-            self.database = self.loadOldDatabase(os.path.join(path,'Dictionary.txt'), '', os.path.join(path,'Library.txt'), pattern=False)
-        else:
-            self.database = self.loadDatabase(os.path.join(path, 'database.py'))
-        logging.info('')
-
-    def generateThermoData(self, molecule):
-        """
-        Determine the group additivity thermodynamic data for the given
-        `molecule`.
-        """
-        for node, struct in self.database.dictionary.iteritems():
-            if molecule.isIsomorphic(struct):
-                return self.database.library[node].model
-        return None
-
-################################################################################
-
-# A module-level variable that stores the currently-loading database
-currentDatabase = None
-
-def loadThermo(label, index, group=None, species=None, model=None, node='', short_comment='', long_comment='', history=None):
-    global currentDatabase
-    if species is not None:
-        currentDatabase.dictionary[label] = currentDatabase.dictionary.toStructure(species, pattern=False)
-    elif group is not None:
-        currentDatabase.dictionary[label] = currentDatabase.dictionary.toStructure('\n' + group, pattern=True)
-    else:
-        raise InvalidDatabaseError('Node "%s" must contain either a group or a species.' % label)
-    currentDatabase.library[label] = ThermoEntry(model, node, index, label, short_comment, long_comment, history)
-    if model is not None: model.comment = short_comment
-
-def loadTree(string):
-    global currentDatabase
-    currentDatabase.tree.loadString(string)
-
-def loadThermoData(Tdata, Cpdata, H298, S298, Tmin=(0.0,"K"), Tmax=(99999.9,"K")):
-
-    # Convert all data to SI units
-    Tdata = numpy.array([float(T) for T in pq.Quantity(*Tdata).simplified], numpy.float64)
-    Cpdata = numpy.array([float(C) for C in pq.Quantity(*Cpdata).simplified], numpy.float64)
-    H298 = float(pq.Quantity(*H298).simplified)
-    S298 = float(pq.Quantity(*S298).simplified)
-    Tmin = float(pq.Quantity(*Tmin).simplified)
-    Tmax = float(pq.Quantity(*Tmax).simplified)
-
-    # Create and return the ThermoData object
-    return ThermoData(Tdata, Cpdata, H298, S298, Tmin, Tmax)
-
-################################################################################
-
-thermoDatabases = []
-
-forbiddenStructures = None
-
-def loadThermoDatabase(dstr, group, old=False):
-    """
-    Load the RMG thermo database located at `dstr` into the global variable
-    :data:`thermoDatabase`. Also loads the forbidden structures into
-    :data:`forbiddenStructures`.
-    """
-    global thermoDatabases
-    global forbiddenStructures
-
-    if group:
-        thermoDatabase = ThermoGroupDatabase()
-    else:
-        thermoDatabase = ThermoPrimaryDatabase()
-    thermoDatabase.load(path=dstr, old=old)
-    thermoDatabases.append(thermoDatabase)
-
-    return thermoDatabase
-
-################################################################################
-
-def generateThermoData(molecule):
-    """
-    Get the thermodynamic data associated with `molecule` by looking in the
-    loaded thermodynamic database. The parameter `thermoClass` is the class of
-    thermo object you want returning; default is :class:`MultiNASA`.
-    """
-
-    implicitH = molecule.implicitHydrogens
-    molecule.makeHydrogensExplicit()
-
-    # For thermo estimation we need the atoms to already be sorted because we
-    # iterate over them; if the order changes during the iteration then we
-    # will probably not visit the right atoms, and so will get the thermo wrong
-    molecule.sortVertices()
-
-    for thermoDatabase in thermoDatabases:
-        GAthermoData = thermoDatabase.generateThermoData(molecule)
-        if GAthermoData is not None and isinstance(thermoDatabase, ThermoGroupDatabase):
-            # Correct entropy for symmetry number
-            molecule.calculateSymmetryNumber()
-            GAthermoData.S298.value -= constants.R * math.log(molecule.symmetryNumber)
-            break
-        elif GAthermoData is not None and isinstance(thermoDatabase, ThermoPrimaryDatabase):
-            break
-            
-    if implicitH: molecule.makeHydrogensImplicit()
-
-    return GAthermoData
-
-def convertThermoData(thermoData, molecule, thermoClass=MultiNASA):
-    """
-    Convert a given set of `thermoData` to the class specified by `thermoClass`.
-    Raises a :class:`TypeError` if this is not possible.
-    """
-
-    from rmgpy.chem.ext.thermo_converter import convertGAtoWilhoit, convertWilhoitToNASA
-
-    # Nothing to do if we already have the right thermo model
-    if isinstance(thermoData, thermoClass):
-        return thermoData
-
-    thermoData0 = thermoData
-
-    # Convert to Wilhoit
-    if isinstance(thermoData, ThermoData) and (thermoClass == Wilhoit or thermoClass == MultiNASA):
-        rotors = molecule.countInternalRotors()
-        atoms = len(molecule.atoms)
-        linear = molecule.isLinear()
-        thermoData = convertGAtoWilhoit(thermoData, atoms, rotors, linear)
-
-    # Convert to MultiNASA
-    if isinstance(thermoData, Wilhoit) and thermoClass == MultiNASA:
-        thermoData = convertWilhoitToNASA(thermoData, Tmin=298.0, Tmax=6000.0, Tint=1000.0)
-
-    # Make sure we have the right class
-    if not isinstance(thermoData, thermoClass):
-        raise TypeError('Unable to convert thermo model of type %s to type %s.' % (thermoData0.__class__, thermoClass))
-
-    return thermoData
+        self.groups['group'].saveOld(
+            dictstr = os.path.join(path, 'thermo_groups', 'Group_Dictionary.txt'),
+            treestr = os.path.join(path, 'thermo_groups', 'Group_Tree.txt'),
+            libstr = os.path.join(path, 'thermo_groups', 'Group_Library.txt'),
+        )
+        self.groups['gauche'].saveOld(
+            dictstr = os.path.join(path, 'thermo_groups', 'Gauche_Dictionary.txt'),
+            treestr = os.path.join(path, 'thermo_groups', 'Gauche_Tree.txt'),
+            libstr = os.path.join(path, 'thermo_groups', 'Gauche_Library.txt'),
+        )
+        self.groups['int15'].saveOld(
+            dictstr = os.path.join(path, 'thermo_groups', '15_Dictionary.txt'),
+            treestr = os.path.join(path, 'thermo_groups', '15_Tree.txt'),
+            libstr = os.path.join(path, 'thermo_groups', '15_Library.txt'),
+        )
+        self.groups['radical'].saveOld(
+            dictstr = os.path.join(path, 'thermo_groups', 'Radical_Dictionary.txt'),
+            treestr = os.path.join(path, 'thermo_groups', 'Radical_Tree.txt'),
+            libstr = os.path.join(path, 'thermo_groups', 'Radical_Library.txt'),
+        )
+        self.groups['ring'].saveOld(
+            dictstr = os.path.join(path, 'thermo_groups', 'Ring_Dictionary.txt'),
+            treestr = os.path.join(path, 'thermo_groups', 'Ring_Tree.txt'),
+            libstr = os.path.join(path, 'thermo_groups', 'Ring_Library.txt'),
+        )
+        self.groups['other'].saveOld(
+            dictstr = os.path.join(path, 'thermo_groups', 'Other_Dictionary.txt'),
+            treestr = os.path.join(path, 'thermo_groups', 'Other_Tree.txt'),
+            libstr = os.path.join(path, 'thermo_groups', 'Other_Library.txt'),
+        )
