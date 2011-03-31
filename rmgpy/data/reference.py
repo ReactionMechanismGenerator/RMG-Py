@@ -65,6 +65,32 @@ class Reference:
         self.year = year
         self.url = url
     
+    def __repr__(self):
+        """
+        Return a string representation of the reference that can be used to
+        reconstruct the object.
+        """
+        string = 'Reference('
+        if len(self.authors) != 0: string += 'authors=[%s], ' % (', '.join(self.authors))
+        if self.title != '':       string += 'title="""%s""", ' % (self.title)
+        if self.year != '':        string += 'year="%s", ' % (self.year)
+        if self.url != '':         string += 'url="%s", ' % (self.url)
+        if string[-2:] == ', ':    string = string[:-2]
+        return string + ')'
+
+    def __str__(self):
+        """
+        Return a string representation of the reference in reStructuredText
+        format.
+        """
+        string = self.getAuthorString()
+        if self.title != '':
+            string += ' *%s*' % (self.title)
+        if self.year != '':
+            string += ' (%s)' % (self.year)
+        if string[-1] != '.': string += '.'
+        return string
+
     def getAuthorString(self):
         """
         Return a pretty, reStructuredText-formatted string of the authors.
@@ -109,6 +135,23 @@ class Article(Reference):
         self.volume = volume
         self.number = number
         self.pages = pages
+
+    def __repr__(self):
+        """
+        Return a string representation of the reference that can be used to
+        reconstruct the object.
+        """
+        string = 'Reference('
+        if len(self.authors) != 0: string += 'authors=[%s], ' % (', '.join(self.authors))
+        if self.title != '':       string += 'title="""%s""", ' % (self.title)
+        if self.journal != '':     string += 'journal="%s", ' % (self.journal)
+        if self.volume != '':      string += 'volume="%s", ' % (self.volume)
+        if self.number != '':      string += 'number="%s", ' % (self.number)
+        if self.pages != '':       string += 'pages="""%s""", ' % (self.pages)
+        if self.year != '':        string += 'year="%s", ' % (self.year)
+        if self.url != '':         string += 'url="%s", ' % (self.url)
+        if string[-2:] == ', ':    string = string[:-2]
+        return string + ')'
 
     def __str__(self):
         """
@@ -161,6 +204,24 @@ class Book(Reference):
         self.series = series
         self.edition = edition
 
+    def __repr__(self):
+        """
+        Return a string representation of the reference that can be used to
+        reconstruct the object.
+        """
+        string = 'Reference('
+        if len(self.authors) != 0: string += 'authors=[%s], ' % (', '.join(self.authors))
+        if self.title != '':       string += 'title="""%s""", ' % (self.title)
+        if self.publisher != '':   string += 'publisher="%s", ' % (self.publisher)
+        if self.address != '':     string += 'address="%s", ' % (self.address)
+        if self.volume != '':      string += 'volume="%s", ' % (self.volume)
+        if self.series != '':      string += 'series="""%s""", ' % (self.series)
+        if self.edition != '':     string += 'edition="""%s""", ' % (self.edition)
+        if self.year != '':        string += 'year="%s", ' % (self.year)
+        if self.url != '':         string += 'url="%s", ' % (self.url)
+        if string[-2:] == ', ':    string = string[:-2]
+        return string + ')'
+
     def __str__(self):
         """
         Return a string representation of the reference in reStructuredText
@@ -205,6 +266,21 @@ class Thesis(Reference):
         self.degree = degree
         self.school = school
     
+    def __repr__(self):
+        """
+        Return a string representation of the reference that can be used to
+        reconstruct the object.
+        """
+        string = 'Reference('
+        if len(self.authors) != 0: string += 'authors=[%s], ' % (', '.join(self.authors))
+        if self.title != '':       string += 'title="""%s""", ' % (self.title)
+        if self.degree != '':      string += 'degree="%s", ' % (self.degree)
+        if self.school != '':      string += 'school="%s", ' % (self.school)
+        if self.year != '':        string += 'year="%s", ' % (self.year)
+        if self.url != '':         string += 'url="%s", ' % (self.url)
+        if string[-2:] == ', ':    string = string[:-2]
+        return string + ')'
+
     def __str__(self):
         """
         Return a string representation of the reference in reStructuredText
