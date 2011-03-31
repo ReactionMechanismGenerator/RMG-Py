@@ -271,7 +271,7 @@ class Quantity:
             string += '[%s]' % (','.join(['%g' % (v * factor) for v in self.values]))
         if self.units != '' or self.uncertaintyType != '':
             string += ',"%s"' % (self.units)
-            if self.uncertaintyType != '':
+            if self.uncertaintyType != '' and (self.uncertainty != 0 or self.uncertainties is not None):
                 string += ',"%s"' % (self.uncertaintyType)
                 if not self.isUncertaintyAdditive(): factor = 1.0
                 if self.uncertainties is None:
@@ -316,7 +316,7 @@ class Quantity:
         quantities as a NumPy array. If the latter, you should use the `value` 
         attribute to get the value of the quantity as a ``float``.
         """
-        return values is not None
+        return self.values is not None
 
     def isUncertaintyAdditive(self):
         """
