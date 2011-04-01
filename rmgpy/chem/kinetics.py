@@ -190,9 +190,9 @@ class Arrhenius(KineticsModel):
         object.
         """
         string = 'Arrhenius(A=%r, n=%r, Ea=%r, T0=%r' % (self.A, self.n, self.Ea, self.T0)
-        string += ', Tmin=%r' % (self.Tmin)
-        string += ', Tmax=%r' % (self.Tmax)
-        string += ', comment="%s"' % (self.comment)
+        if self.Tmin is not None: string += ', Tmin=%r' % (self.Tmin)
+        if self.Tmax is not None: string += ', Tmax=%r' % (self.Tmax)
+        if self.comment != '': string += ', comment="%s"' % (self.comment)
         string += ')'
         return string
 
@@ -289,9 +289,9 @@ class ArrheniusEP(KineticsModel):
         object.
         """
         string = 'ArrheniusEP(A=%r, n=%r, alpha=%r, E0=%r' % (self.A, self.n, self.alpha, self.E0)
-        string += ', Tmin=%r' % (self.Tmin)
-        string += ', Tmax=%r' % (self.Tmax)
-        string += ', comment="%s"' % (self.comment)
+        if self.Tmin is not None: string += ', Tmin=%r' % (self.Tmin)
+        if self.Tmax is not None: string += ', Tmax=%r' % (self.Tmax)
+        if self.comment != '': string += ', comment="%s"' % (self.comment)
         string += ')'
         return string
 
@@ -372,9 +372,9 @@ class MultiArrhenius(KineticsModel):
         """
         string = 'MultiArrhenius('
         string += 'arrheniusList=[%s]' % (', '.join([repr(arrh) for arrh in self.arrheniusList]))
-        string += ', Tmin=%r' % (self.Tmin)
-        string += ', Tmax=%r' % (self.Tmax)
-        string += ', comment="%s"' % (self.comment)
+        if self.Tmin is not None: string += ', Tmin=%r' % (self.Tmin)
+        if self.Tmax is not None: string += ', Tmax=%r' % (self.Tmax)
+        if self.comment != '': string += ', comment="%s"' % (self.comment)
         string += ')'
         return string
 
@@ -432,7 +432,7 @@ class PDepArrhenius(KineticsModel):
     
     """
 
-    def __init__(self, pressures=None, arrhenius=None, Tmin=0.0, Tmax=1.0e10, Pmin=0.0, Pmax=1.0e100, comment=''):
+    def __init__(self, pressures=None, arrhenius=None, Tmin=None, Tmax=None, Pmin=None, Pmax=None, comment=''):
         KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, comment=comment)
         self.pressures = constants.Quantity(pressures)
         self.arrhenius = arrhenius or []
@@ -445,11 +445,11 @@ class PDepArrhenius(KineticsModel):
         string = 'PDepArrhenius('
         string += 'pressures=%r' % (self.pressures)
         string += ', arrhenius=[%s]' % (', '.join([repr(arrh) for arrh in self.arrhenius]))
-        string += ', Tmin=%r' % (self.Tmin)
-        string += ', Tmax=%r' % (self.Tmax)
-        string += ', Pmin=%r' % (self.Pmin)
-        string += ', Pmax=%r' % (self.Pmax)
-        string += ', comment="%s"' % (self.comment)
+        if self.Tmin is not None: string += ', Tmin=%r' % (self.Tmin)
+        if self.Tmax is not None: string += ', Tmax=%r' % (self.Tmax)
+        if self.Pmin is not None: string += ', Pmin=%r' % (self.Pmin)
+        if self.Pmax is not None: string += ', Pmax=%r' % (self.Pmax)
+        if self.comment != '': string += ', comment="%s"' % (self.comment)
         string += ')'
         return string
 
@@ -554,7 +554,7 @@ class Chebyshev(KineticsModel):
     
     """
 
-    def __init__(self, coeffs=None, Tmin=0.0, Tmax=1.0e10, Pmin=0.0, Pmax=1.0e100, comment=''):
+    def __init__(self, coeffs=None, Tmin=None, Tmax=None, Pmin=None, Pmax=None, comment=''):
         KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, comment=comment)
         if coeffs is not None:
             self.coeffs = constants.Quantity(numpy.array(coeffs, numpy.float64)).values
@@ -578,11 +578,11 @@ class Chebyshev(KineticsModel):
         
         string = 'Chebyshev('
         string += 'coeffs=%s' % (coeffs)
-        string += ', Tmin=%r' % (self.Tmin)
-        string += ', Tmax=%r' % (self.Tmax)
-        string += ', Pmin=%r' % (self.Pmin)
-        string += ', Pmax=%r' % (self.Pmax)
-        string += ', comment="%s"' % (self.comment)
+        if self.Tmin is not None: string += ', Tmin=%r' % (self.Tmin)
+        if self.Tmax is not None: string += ', Tmax=%r' % (self.Tmax)
+        if self.Pmin is not None: string += ', Pmin=%r' % (self.Pmin)
+        if self.Pmax is not None: string += ', Pmax=%r' % (self.Pmax)
+        if self.comment != '': string += ', comment="%s"' % (self.comment)
         string += ')'
         return string
 
@@ -722,7 +722,7 @@ class ThirdBody(KineticsModel):
 
     """
 
-    def __init__(self, arrheniusHigh=None, efficiencies=None, Tmin=0.0, Tmax=1.0e10, Pmin=0.0, Pmax=1.0e100, comment=''):
+    def __init__(self, arrheniusHigh=None, efficiencies=None, Tmin=None, Tmax=None, Pmin=None, Pmax=None, comment=''):
         KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, comment=comment)
         self.arrheniusHigh = arrheniusHigh
         self.efficiencies = efficiencies or {}
@@ -735,11 +735,11 @@ class ThirdBody(KineticsModel):
         string = 'ThirdBody('
         string += 'arrheniusHigh=%r' % (self.arrheniusHigh)
         string += ', efficiencies=%r' % (self.efficiencies)
-        string += ', Tmin=%r' % (self.Tmin)
-        string += ', Tmax=%r' % (self.Tmax)
-        string += ', Pmin=%r' % (self.Pmin)
-        string += ', Pmax=%r' % (self.Pmax)
-        string += ', comment="%s"' % (self.comment)
+        if self.Tmin is not None: string += ', Tmin=%r' % (self.Tmin)
+        if self.Tmax is not None: string += ', Tmax=%r' % (self.Tmax)
+        if self.Pmin is not None: string += ', Pmin=%r' % (self.Pmin)
+        if self.Pmax is not None: string += ', Pmax=%r' % (self.Pmax)
+        if self.comment != '': string += ', comment="%s"' % (self.comment)
         string += ')'
         return string
 
@@ -843,7 +843,7 @@ class Lindemann(ThirdBody):
 
     """
 
-    def __init__(self, arrheniusLow=None, arrheniusHigh=None, efficiencies=None, Tmin=0.0, Tmax=1.0e10, Pmin=0.0, Pmax=1.0e100, comment=''):
+    def __init__(self, arrheniusLow=None, arrheniusHigh=None, efficiencies=None, Tmin=None, Tmax=None, Pmin=None, Pmax=None, comment=''):
         ThirdBody.__init__(self, arrheniusHigh=arrheniusHigh, efficiencies=efficiencies, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, comment=comment)
         self.arrheniusLow = arrheniusLow
 
@@ -856,11 +856,11 @@ class Lindemann(ThirdBody):
         string += 'arrheniusHigh=%r' % (self.arrheniusHigh)
         string += ', arrheniusLow=%r' % (self.arrheniusLow)
         string += ', efficiencies=%r' % (self.efficiencies)
-        string += ', Tmin=%r' % (self.Tmin)
-        string += ', Tmax=%r' % (self.Tmax)
-        string += ', Pmin=%r' % (self.Pmin)
-        string += ', Pmax=%r' % (self.Pmax)
-        string += ', comment="%s"' % (self.comment)
+        if self.Tmin is not None: string += ', Tmin=%r' % (self.Tmin)
+        if self.Tmax is not None: string += ', Tmax=%r' % (self.Tmax)
+        if self.Pmin is not None: string += ', Pmin=%r' % (self.Pmin)
+        if self.Pmax is not None: string += ', Pmax=%r' % (self.Pmax)
+        if self.comment != '': string += ', comment="%s"' % (self.comment)
         string += ')'
         return string
 
@@ -943,7 +943,7 @@ class Troe(Lindemann):
 
     """
 
-    def __init__(self, arrheniusLow=None, arrheniusHigh=None, efficiencies=None, alpha=0.0, T3=0.0, T1=0.0, T2=None, Tmin=0.0, Tmax=1.0e10, Pmin=0.0, Pmax=1.0e100, comment=''):
+    def __init__(self, arrheniusLow=None, arrheniusHigh=None, efficiencies=None, alpha=0.0, T3=0.0, T1=0.0, T2=None, Tmin=None, Tmax=None, Pmin=None, Pmax=None, comment=''):
         Lindemann.__init__(self, arrheniusLow=arrheniusLow, arrheniusHigh=arrheniusHigh, efficiencies=efficiencies, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, comment=comment)
         self.alpha = constants.Quantity(alpha)
         self.T3 = constants.Quantity(T3)
@@ -966,11 +966,11 @@ class Troe(Lindemann):
         string += ', T3=%r' % (self.T3)
         string += ', T1=%r' % (self.T1)
         if self.T2 is not None: string += ', T2=%r' % (self.T2)
-        string += ', Tmin=%r' % (self.Tmin)
-        string += ', Tmax=%r' % (self.Tmax)
-        string += ', Pmin=%r' % (self.Pmin)
-        string += ', Pmax=%r' % (self.Pmax)
-        string += ', comment="%s"' % (self.comment)
+        if self.Tmin is not None: string += ', Tmin=%r' % (self.Tmin)
+        if self.Tmax is not None: string += ', Tmax=%r' % (self.Tmax)
+        if self.Pmin is not None: string += ', Pmin=%r' % (self.Pmin)
+        if self.Pmax is not None: string += ', Pmax=%r' % (self.Pmax)
+        if self.comment != '': string += ', comment="%s"' % (self.comment)
         string += ')'
         return string
 
