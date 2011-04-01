@@ -178,11 +178,10 @@ class Database:
         # Return the loaded database (to allow for Database().load() syntax)
         return self
 
-    def save(self, path, entryName='entry'):
+    def getEntriesToSave(self):
         """
-        Save the current database to the file at location `path` on disk. The
-        optional `entryName` parameter specifies the identifier used for each
-        data entry.
+        Return a sorted list of the entries in this database that should be
+        saved to the output file.
         """
         entries = self.top[:]
         if len(self.top) > 0:
@@ -190,10 +189,30 @@ class Database:
             # in the same order each time)
             for entry in self.top:
                 entries.extend(self.descendants(entry))
+            # It may be that a logical or is defined such that its children
+            # are not in the tree; this ensures that they still get saved
+            index = 0
+            while index < len(entries):
+                entry = entries[index]
+                if isinstance(entry.item, LogicOr):
+                    descendants = self.descendants(entry)
+                    for child in entry.item.components:
+                        if self.entries[child] not in descendants:
+                            entries.append(self.entries[child])
+                index += 1
         else:
             # Otherwise save the entries sorted by index
             entries = self.entries.values()
             entries.sort(key=lambda x: x.index)
+        return entries
+
+    def save(self, path, entryName='entry'):
+        """
+        Save the current database to the file at location `path` on disk. The
+        optional `entryName` parameter specifies the identifier used for each
+        data entry.
+        """
+        entries = self.getEntriesToSave()
 
         f = open(path, 'w')
         f.write('name = "%s"\n' % (self.name))
@@ -208,7 +227,7 @@ class Database:
         if len(self.top) > 0:
             f.write('tree(\n')
             f.write('"""\n')
-            f.write(self.__generateOldTree(self.top, 1))
+            f.write(self.generateOldTree(self.top, 1))
             f.write('"""\n')
             f.write(')\n\n')
 
@@ -356,7 +375,7 @@ class Database:
         for label, entry in self.entries.iteritems():
             canSort = True
             for child in entry.children:
-                if not isinstance(entry.item, Molecule) and not isinstance(entry.item, MoleculePattern):
+                if not isinstance(child.item, Molecule) and not isinstance(child.item, MoleculePattern):
                     canSort = False
             if canSort:
                 entry.children.sort(lambda x, y: cmp(len(x.item.atoms), len(y.item.atoms)))
@@ -515,7 +534,7 @@ class Database:
             logging.exception('Unable to save old-style tree to "%s".' % (os.path.abspath(path)))
             raise
 
-    def __generateOldTree(self, entries, level):
+    def generateOldTree(self, entries, level):
         """
         Generate a multi-line string representation of the current tree using
         the old-style syntax.
@@ -525,7 +544,7 @@ class Database:
             # Write current node
             string += '%sL%i: %s\n' % ('    ' * (level-1), level, entry.label)
             # Recursively descend children (depth-first)
-            string += self.__generateOldTree(entry.children, level+1)
+            string += self.generateOldTree(entry.children, level+1)
         return string
 
     def saveOldTree(self, path):
@@ -541,7 +560,7 @@ class Database:
             f.write('//\n')
             f.write('////////////////////////////////////////////////////////////////////////////////\n')
             f.write('\n')
-            f.write(self.__generateOldTree(self.top, 1))
+            f.write(self.generateOldTree(self.top, 1))
             f.close()
         except IOError, e:
             logging.exception('Unable to save old-style tree to "%s".' % (os.path.abspath(path)))
@@ -823,16 +842,16 @@ class LogicOr(LogicNode):
                 return True != self.invert
         return False != self.invert
 
-    def getPossibleStructures(self,dictionary):
+    def getPossibleStructures(self, entries):
         """
         Return a list of the possible structures below this node.
         """
         if self.invert: raise NotImplementedError("Finding possible structures of NOT OR nodes not implemented.")
         structures = []
         for item in self.components:
-            struct = dictionary[item]
+            struct = entries[item].item
             if isinstance(struct, LogicNode):
-                structures.extend(struct.getPossibleStructures(dictionary))
+                structures.extend(struct.getPossibleStructures(entries))
             else:
                 structures.append(struct)
         for struct in structures: # check this worked
