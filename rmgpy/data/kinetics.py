@@ -131,13 +131,13 @@ class ReactionRecipe:
                 struct.resetConnectivityValues()
 
                 label1, info, label2 = action[1:]
-                
+
                 # Find associated atoms
                 atom1 = struct.getLabeledAtom(label1)
                 atom2 = struct.getLabeledAtom(label2)
                 if atom1 is None or atom2 is None or atom1 is atom2:
                     raise InvalidActionError('Invalid atom labels encountered.')
-                
+
                 # Apply the action
                 if action[0] == 'CHANGE_BOND':
                     info = int(info)
@@ -167,12 +167,12 @@ class ReactionRecipe:
 
                 label, change = action[1:]
                 change = int(change)
-                
+
                 # Find associated atom
                 atom = struct.getLabeledAtom(label)
                 if atom is None:
                     raise InvalidActionError('Unable to find atom with label "%s" while applying reaction recipe.' % label)
-                
+
                 # Apply the action
                 for i in range(change):
                     if (action[0] == 'GAIN_RADICAL' and doForward) or (action[0] == 'LOSE_RADICAL' and not doForward):
@@ -201,17 +201,460 @@ class ReactionRecipe:
 
 ################################################################################
 
-class KineticsEntry(DataEntry):
+def saveEntry(f, entry):
     """
-    A single entry in the kinetics database. Each entry either contains
-    a kinetics `model` or a string label of a `node` to look at for
-    kinetics information.
+    Save an `entry` in the kinetics database by writing a string to
+    the given file object `f`.
     """
 
-    def __init__(self, model=None, node='', index=0, label='', shortComment='', longComment='', history=None):
-        DataEntry.__init__(self, index, label, shortComment, longComment, history)
-        self.model = model
-        self.node = node
+    def sortEfficiencies(efficiencies0):
+        efficiencies = {}
+        for mol, eff in efficiencies0.iteritems():
+            smiles = mol.toSMILES()
+            efficiencies[smiles] = eff
+        keys = efficiencies.keys()
+        keys.sort()
+        return [(key, efficiencies[key]) for key in keys]
+
+    f.write('entry(\n')
+    f.write('    index = %i,\n' % (entry.index))
+    if entry.label != '':
+        f.write('    label = "%s",\n' % (entry.label))
+
+    if isinstance(entry.item, Reaction):
+        for i, reactant in enumerate(entry.item.reactants):
+            f.write('    reactant%i = \n' % (i+1))
+            f.write('"""\n')
+            f.write(reactant.toAdjacencyList(removeH=True))
+            f.write('""",\n')
+        for i, product in enumerate(entry.item.products):
+            f.write('    product%i = \n' % (i+1))
+            f.write('"""\n')
+            f.write(product.toAdjacencyList(removeH=True))
+            f.write('""",\n')
+        f.write('    degeneracy = %i,\n' % (entry.item.degeneracy))
+    elif isinstance(entry.item, MoleculePattern):
+        f.write('    group = \n')
+        f.write('"""\n')
+        f.write(entry.item.toAdjacencyList())
+        f.write('""",\n')
+    elif isinstance(entry.item, LogicNode):
+        f.write('    group = "%s",\n' % (entry.item))
+    else:
+        raise InvalidDatabaseError("Encountered unexpected item of type %s while saving database." % (entry.item.__class__))
+
+    if isinstance(entry.data, Arrhenius):
+        f.write('    kinetics = Arrhenius(\n')
+        f.write('        A = %r,\n' % (entry.data.A))
+        f.write('        n = %r,\n' % (entry.data.n))
+        f.write('        Ea = %r,\n' % (entry.data.Ea))
+        f.write('        T0 = %r,\n' % (entry.data.T0))
+        if entry.data.Tmin is not None: f.write('        Tmin = %r,\n' % (entry.data.Tmin))
+        if entry.data.Tmax is not None: f.write('        Tmax = %r,\n' % (entry.data.Tmax))
+        f.write('    ),\n')
+    elif isinstance(entry.data, ArrheniusEP):
+        f.write('    kinetics = ArrheniusEP(\n')
+        f.write('        A = %r,\n' % (entry.data.A))
+        f.write('        n = %r,\n' % (entry.data.n))
+        f.write('        alpha = %r,\n' % (entry.data.alpha))
+        f.write('        E0 = %r,\n' % (entry.data.E0))
+        if entry.data.Tmin is not None: f.write('        Tmin = %r,\n' % (entry.data.Tmin))
+        if entry.data.Tmax is not None: f.write('        Tmax = %r,\n' % (entry.data.Tmax))
+        f.write('    ),\n')
+    elif isinstance(entry.data, MultiArrhenius):
+        f.write('    kinetics = MultiArrhenius(\n')
+        f.write('        arrheniusList = [\n')
+        for arrh in entry.data.arrheniusList:
+            f.write('            %r,\n' % (arrh))
+        f.write('        ],\n')
+        if entry.data.Tmin is not None: f.write('        Tmin = %r,\n' % (entry.data.Tmin))
+        if entry.data.Tmax is not None: f.write('        Tmax = %r,\n' % (entry.data.Tmax))
+        f.write('    ),\n')
+    elif isinstance(entry.data, PDepArrhenius):
+        f.write('    kinetics = PDepArrhenius(\n')
+        f.write('        pressures = %r,\n' % (entry.data.pressures))
+        f.write('        arrhenius = [\n')
+        for arrh in entry.data.arrhenius:
+            f.write('            %r,\n' % (arrh))
+        f.write('        ],\n')
+        if entry.data.Tmin is not None: f.write('        Tmin = %r,\n' % (entry.data.Tmin))
+        if entry.data.Tmax is not None: f.write('        Tmax = %r,\n' % (entry.data.Tmax))
+        if entry.data.Pmin is not None: f.write('        Pmin = %r,\n' % (entry.data.Pmin))
+        if entry.data.Pmax is not None: f.write('        Pmax = %r,\n' % (entry.data.Pmax))
+        f.write('    ),\n')
+    elif isinstance(entry.data, Troe):
+        f.write('    kinetics = Troe(\n')
+        f.write('        arrheniusHigh = %r,\n' % (entry.data.arrheniusHigh))
+        f.write('        arrheniusLow = %r,\n' % (entry.data.arrheniusLow))
+        f.write('        efficiencies = {%s},\n' % (', '.join(['"%s": %g' % (label, eff) for label, eff in sortEfficiencies(entry.data.efficiencies)])))
+        f.write('        alpha = %r,\n' % (entry.data.alpha))
+        f.write('        T3 = %r,\n' % (entry.data.T3))
+        f.write('        T1 = %r,\n' % (entry.data.T1))
+        if entry.data.T2 is not None: f.write('        T2 = %r,\n' % (entry.data.T2))
+        if entry.data.Tmin is not None: f.write('        Tmin = %r,\n' % (entry.data.Tmin))
+        if entry.data.Tmax is not None: f.write('        Tmax = %r,\n' % (entry.data.Tmax))
+        if entry.data.Pmin is not None: f.write('        Pmin = %r,\n' % (entry.data.Pmin))
+        if entry.data.Pmax is not None: f.write('        Pmax = %r,\n' % (entry.data.Pmax))
+        f.write('    ),\n')
+    elif isinstance(entry.data, Lindemann):
+        f.write('    kinetics = Lindemann(\n')
+        f.write('        arrheniusHigh = %r,\n' % (entry.data.arrheniusHigh))
+        f.write('        arrheniusLow = %r,\n' % (entry.data.arrheniusLow))
+        f.write('        efficiencies = {%s},\n' % (', '.join(['"%s": %g' % (label, eff) for label, eff in sortEfficiencies(entry.data.efficiencies)])))
+        if entry.data.Tmin is not None: f.write('        Tmin = %r,\n' % (entry.data.Tmin))
+        if entry.data.Tmax is not None: f.write('        Tmax = %r,\n' % (entry.data.Tmax))
+        if entry.data.Pmin is not None: f.write('        Pmin = %r,\n' % (entry.data.Pmin))
+        if entry.data.Pmax is not None: f.write('        Pmax = %r,\n' % (entry.data.Pmax))
+        f.write('    ),\n')
+    elif isinstance(entry.data, ThirdBody):
+        f.write('    kinetics = ThirdBody(\n')
+        f.write('        arrheniusHigh = %r,\n' % (entry.data.arrheniusHigh))
+        f.write('        efficiencies = {%s},\n' % (', '.join(['"%s": %g' % (label, eff) for label, eff in sortEfficiencies(entry.data.efficiencies)])))
+        if entry.data.Tmin is not None: f.write('        Tmin = %r,\n' % (entry.data.Tmin))
+        if entry.data.Tmax is not None: f.write('        Tmax = %r,\n' % (entry.data.Tmax))
+        if entry.data.Pmin is not None: f.write('        Pmin = %r,\n' % (entry.data.Pmin))
+        if entry.data.Pmax is not None: f.write('        Pmax = %r,\n' % (entry.data.Pmax))
+        f.write('    ),\n')
+    elif isinstance(entry.data, Chebyshev):
+        f.write('    kinetics = Chebyshev(\n')
+        f.write('        coeffs = [\n')
+        for i in range(entry.data.degreeT):
+            f.write('            [%s],\n' % (','.join(['%g' % (self.coeffs[i,j]) for j in range(self.degreeP)])))
+        f.write('        ],\n')
+        if entry.data.Tmin is not None: f.write('        Tmin = %r,\n' % (entry.data.Tmin))
+        if entry.data.Tmax is not None: f.write('        Tmax = %r,\n' % (entry.data.Tmax))
+        if entry.data.Pmin is not None: f.write('        Pmin = %r,\n' % (entry.data.Pmin))
+        if entry.data.Pmax is not None: f.write('        Pmax = %r,\n' % (entry.data.Pmax))
+        f.write('    ),\n')
+    else:
+        f.write('    data = %r,\n' % (data))
+
+    f.write('    reference = %r,\n' % (entry.reference))
+    f.write('    referenceType = "%s",\n' % (entry.referenceType))
+    f.write('    shortDesc = """%s""",\n' % (entry.shortDesc))
+    f.write('    longDesc = \n')
+    f.write('"""\n')
+    f.write(entry.longDesc)
+    f.write('""",\n')
+
+    f.write('    history = [\n')
+    for time, user, action, description in entry.history:
+        f.write('        ("%s","%s","%s","""%s"""),\n' % (time, user, action, description))
+    f.write('    ],\n')
+
+    f.write(')\n\n')
+
+################################################################################
+
+class KineticsDepository(Database):
+    """
+    A class for working with an RMG kinetics depository.
+    """
+
+    def __init__(self):
+        Database.__init__(self)
+
+    def loadEntry(self, index, label, molecule, kinetics, reference=None, referenceType='', shortDesc='', longDesc='', history=None):
+        self.entries[label] = Entry(
+            index = index,
+            label = label,
+            item = Molecule().fromAdjacencyList(molecule),
+            data = kinetics,
+            reference = reference,
+            referenceType = referenceType,
+            shortDesc = shortDesc,
+            longDesc = longDesc.strip(),
+            history = history or [],
+        )
+
+    def saveEntry(self, f, entry):
+        """
+        Write the given `entry` in the thermo database to the file object `f`.
+        """
+        return saveEntry(f, entry)
+
+################################################################################
+
+class KineticsLibrary(Database):
+    """
+    A class for working with an RMG kinetics library.
+    """
+
+    def __init__(self):
+        Database.__init__(self)
+
+    def loadEntry(self, index, reactant1, product1, kinetics, reactant2=None, reactant3=None, product2=None, product3=None, degeneracy=1, label='', reference=None, referenceType='', shortDesc='', longDesc='', history=None):
+        reactants = [Molecule().fromAdjacencyList(reactant1)]
+        if reactant2 is not None: reactants.append(Molecule().fromAdjacencyList(reactant2))
+        if reactant3 is not None: reactants.append(Molecule().fromAdjacencyList(reactant3))
+
+        products = [Molecule().fromAdjacencyList(product1)]
+        if product2 is not None: products.append(Molecule().fromAdjacencyList(product2))
+        if product3 is not None: products.append(Molecule().fromAdjacencyList(product3))
+
+        self.entries[label] = Entry(
+            index = index,
+            label = label,
+            item = Reaction(reactants=reactants, products=products, degeneracy=degeneracy),
+            data = kinetics,
+            reference = reference,
+            referenceType = referenceType,
+            shortDesc = shortDesc,
+            longDesc = longDesc.strip(),
+            history = history or [],
+        )
+
+    def saveEntry(self, f, entry):
+        """
+        Write the given `entry` in the kinetics library to the file object `f`.
+        """
+        return saveEntry(f, entry)
+
+    def loadOld(self, path):
+        """
+        Load an old-style RMG kinetics library from the location `path`.
+        """
+        self.label = os.path.split(path)[1]
+        self.name = self.label
+        path = os.path.abspath(path)
+
+        self.loadOldDictionary(os.path.join(path,'species.txt'), pattern=False)
+        species = dict([(label, entry.item) for label, entry in self.entries.iteritems()])
+        
+        reactions = []
+        reactions.extend(self.__loadOldReactions(os.path.join(path,'reactions.txt'), species))
+        if os.path.exists(os.path.join(path,'pdepreactions.txt')):
+            reactions.extend(self.__loadOldReactions(os.path.join(path,'pdepreactions.txt'), species))
+
+        self.entries = {}
+        for index, reaction in enumerate(reactions):
+            self.entries[index+1] = Entry(
+                index = index+1,
+                item = reaction,
+                data = reaction.kinetics,
+            )
+            reaction.kinetics = None
+
+    def __loadOldReactions(self, path, species):
+        """
+        Load an old-style reaction library from `path`. This algorithm can
+        handle both the pressure-independent and pressure-dependent reaction
+        files. If the pressure-dependent file is read, the extra pressure-
+        dependent kinetics information is ignored unless the kinetics database
+        is a seed mechanism.
+        """
+        reactions = []
+
+        # Process the reactions or pdepreactions file
+        try:
+            inUnitSection = False; inReactionSection = False
+            Aunits = []; Eunits = ''
+            reaction = None; kinetics = None
+
+            fdict = open(path, 'r')
+            for line in fdict:
+                line = removeCommentFromLine(line).strip()
+                if len(line) > 0:
+                    if inUnitSection:
+                        if 'A:' in line or 'E:' in line:
+                            units = line.split()[1]
+                            if 'A:' in line:
+                                Aunits0 = units.split('/') # Assume this is a 3-tuple: moles or molecules, volume, time
+                                Aunits0[1] = Aunits0[1][0:-1] # Remove '3' from e.g. 'm3' or 'cm3'; this is assumed
+                                Aunits = [
+                                    '',                                                         # Zeroth-order
+                                    '%s^-1' % (Aunits0[2]),                                     # First-order
+                                    '%s^3/(%s*%s)' % (Aunits0[1], Aunits0[0], Aunits0[2]),      # Second-order
+                                    '%s^6/(%s^2*%s)' % (Aunits0[1], Aunits0[0], Aunits0[2]),    # Third-order
+                                ]
+                            elif 'E:' in line:
+                                Eunits = units
+                    elif inReactionSection:
+                        reactants = []; products = []
+                        if '=' in line:
+                            # This line contains a reaction equation, (high-P) Arrhenius parameters, and uncertainties
+
+                            # Strip out "(+M)" from line
+                            line = line.replace("(+M)", "")
+
+                            items = line.split()
+
+                            # Find the reaction arrow
+                            for arrow in ['<=>', '=>', '=', '->']:
+                                if arrow in items:
+                                    arrowIndex = items.index(arrow)
+                                    break
+
+                            # Find the start of the data
+                            try:
+                                temp = float(items[-6])
+                                dataIndex = -6
+                            except ValueError:
+                                dataIndex = -3
+
+                            # Find the reactant and product items
+                            reactantItems = []
+                            for item in items[0:arrowIndex]:
+                                if item != '+':
+                                    for i in item.split('+'):
+                                        if i != '' and i != 'M': reactantItems.append(i)
+                            productItems = []
+                            for item in items[arrowIndex+1:dataIndex]:
+                                if item != '+':
+                                    for i in item.split('+'):
+                                        if i != '' and i != 'M': productItems.append(i)
+                            
+                            for item in reactantItems:
+                                try:
+                                    reactants.append(species[item])
+                                except KeyError:
+                                    raise DatabaseError('Reactant %s not found in species dictionary.' % item)
+                            for item in productItems:
+                                try:
+                                    products.append(species[item])
+                                except KeyError:
+                                    raise DatabaseError('Product %s not found in species dictionary.' % item)
+
+                            if dataIndex == -6:
+                                A = constants.Quantity((float(items[-6]), Aunits[len(reactants)]))
+                                n = constants.Quantity((float(items[-5]), ''))
+                                Ea = constants.Quantity((float(items[-4]), Eunits))
+                            else:
+                                A = constants.Quantity((float(items[-3]), Aunits[len(reactants)]))
+                                n = constants.Quantity((float(items[-2]), ''))
+                                Ea = constants.Quantity((float(items[-1]), Eunits))
+                            kinetics = Arrhenius(A=A, n=n, Ea=Ea, T0=(1.0,"K"))
+
+                            reaction = Reaction(
+                                reactants=reactants,
+                                products=products,
+                                kinetics=kinetics,
+                                reversible=(arrow in ['<=>', '=']),
+                            )
+                            reactions.append(reaction)
+
+                        elif 'LOW' in line:
+                            # This line contains low-pressure-limit Arrhenius parameters in Chemkin format
+
+                            # Upgrade the kinetics to a Lindemann if not already done
+                            if isinstance(kinetics, ThirdBody):
+                                kinetics = Lindemann(arrheniusHigh=kinetics.arrheniusHigh, efficiencies=kinetics.efficiencies)
+                                reaction.kinetics = kinetics
+                            elif isinstance(kinetics, Arrhenius):
+                                kinetics = Lindemann(arrheniusHigh=kinetics)
+                                reaction.kinetics = kinetics
+
+                            items = line.split('/')
+                            A, n, Ea = items[1].split()
+                            A = constants.Quantity((float(A), Aunits[len(reactants)]))
+                            n = constants.Quantity((float(n), ''))
+                            Ea = constants.Quantity((float(Ea), Eunits))
+                            kinetics.arrheniusLow = Arrhenius(A=A, n=n, Ea=Ea, T0=1.0)
+
+                        elif 'TROE' in line:
+                            # This line contains Troe falloff parameters in Chemkin format
+
+                            # Upgrade the kinetics to a Troe if not already done
+                            if isinstance(kinetics, Lindemann):
+                                kinetics = Troe(arrheniusLow=kinetics.arrheniusLow, arrheniusHigh=kinetics.arrheniusHigh, efficiencies=kinetics.efficiencies)
+                                reaction.kinetics = kinetics
+                            elif isinstance(kinetics, ThirdBody):
+                                kinetics = Troe(arrheniusHigh=kinetics.arrheniusHigh, efficiencies=kinetics.efficiencies)
+                                reaction.kinetics = kinetics
+                            elif isinstance(kinetics, Arrhenius):
+                                kinetics = Troe(arrheniusHigh=kinetics)
+                                reaction.kinetics = kinetics
+
+                            items = line.split('/')
+                            items = items[1].split()
+                            if len(items) == 3:
+                                alpha, T3, T1 = items; T2 = 1e100
+                            else:
+                                alpha, T3, T1, T2 = items
+
+                            kinetics.alpha = constants.Quantity(float(alpha))
+                            kinetics.T1 = constants.Quantity((float(T1),"K"))
+                            kinetics.T2 = constants.Quantity((float(T2),"K"))
+                            kinetics.T3 = constants.Quantity((float(T3),"K"))
+
+                        else:
+                            # This line contains collider efficiencies
+
+                            # Upgrade the kinetics to a ThirdBody if not already done
+                            if isinstance(kinetics, Arrhenius):
+                                kinetics = ThirdBody(arrheniusHigh=kinetics)
+                                reaction.kinetics = kinetics
+
+                            items = line.split('/')
+                            for spec, eff in zip(items[0::2], items[1::2]):
+                                spec = str(spec).strip()
+                                if spec not in species:
+                                    logging.warning('Collider %s for reaction %s not found in species dictionary.' % (spec, reaction))
+                                else:
+                                    kinetics.efficiencies[species[spec]] = float(eff)
+
+                    if 'Unit:' in line:
+                        inUnitSection = True; inReactionSection = False
+                    elif 'Reactions:' in line:
+                        inUnitSection = False; inReactionSection = True
+
+        except (DatabaseError, InvalidAdjacencyListError), e:
+            logging.exception(str(e))
+            raise
+        except IOError, e:
+            logging.exception('Database dictionary file "' + e.filename + '" not found.')
+            raise
+        finally:
+            if fdict: fdict.close()
+
+        return reactions
+
+################################################################################
+
+class KineticsGroups(Database):
+    """
+    A class for working with an RMG kinetics group additivity database.
+    """
+
+    def __init__(self):
+        Database.__init__(self)
+
+    def loadEntry(self, index, label, group, kinetics, reference=None, referenceType='', shortDesc='', longDesc='', history=None):
+        if group[0:3].upper() == 'OR{' or group[0:4].upper() == 'AND{' or group[0:7].upper() == 'NOT OR{' or group[0:8].upper() == 'NOT AND{':
+            item = makeLogicNode(group)
+        else:
+            item = MoleculePattern().fromAdjacencyList(group)
+        self.entries[label] = Entry(
+            index = index,
+            label = label,
+            item = item,
+            data = kinetics,
+            reference = reference,
+            referenceType = referenceType,
+            shortDesc = shortDesc,
+            longDesc = longDesc.strip(),
+            history = history or [],
+        )
+
+    def saveEntry(self, f, entry):
+        """
+        Write the given `entry` in the thermo database to the file object `f`.
+        """
+        return saveEntry(f, entry)
+
+    def generateOldLibraryEntry(self, data):
+        """
+        Return a list of values used to save entries to the old-style RMG
+        thermo database based on the thermodynamics object `data`.
+        """
+        return generateOldLibraryEntry(data)
+
+    def processOldLibraryEntry(self, data):
+        """
+        Process a list of parameters `data` as read from an old-style RMG
+        thermo database, returning the corresponding thermodynamics object.
+        """
+        return processOldLibraryEntry(data)
 
 ################################################################################
 
@@ -256,7 +699,7 @@ class ReactionFamily(Database):
     def load(self, path):
         """
         Load a reaction family located in the directory `path`. The family
-        consists of the files ``dictionary.txt``, ``tree.txt``, 
+        consists of the files ``dictionary.txt``, ``tree.txt``,
         ``rateLibrary.txt``, ``reactionAdjList.txt``, and optionally
         ``forbiddenGroups.txt``.
         """
@@ -281,7 +724,7 @@ class ReactionFamily(Database):
         if os.path.exists(forbstr):
             self.forbidden = Dictionary()
             self.forbidden.load(forbstr)
-        
+
         # Load the reaction template information and generate the reverse family
         # This requires that the dictionary and tree be loaded
         self.loadTemplate(tempstr)
@@ -292,7 +735,7 @@ class ReactionFamily(Database):
         # pop off the first line and check that it's 'Arrhenius_EP'
         line = lines.pop(0)
         if line != 'Arrhenius_EP':
-            raise InvalidDatabaseError("Was expecting 'Arrhenius_EP' as first line, but got %s, in %s"%(line,libstr))
+            raise DatabaseError("Was expecting 'Arrhenius_EP' as first line, but got %s, in %s"%(line,libstr))
 
         #figure out how many labels there are
         test_line = lines[0].split()
@@ -304,14 +747,14 @@ class ReactionFamily(Database):
                 logging.log(0, "Deduced there are %d groups %s in %s"%(number_of_groups,test_line[1:token_no],libstr))
                 break
         else: # didn't break
-            raise InvalidDatabaseError("Unable to figure out how many groups in %s using line %s"%(libstr,' '.join(test_line)))
+            raise DatabaseError("Unable to figure out how many groups in %s using line %s"%(libstr,' '.join(test_line)))
 
         self.library.parse(lines, number_of_groups)
         self.processLibraryData()
 
         # Check for well-formedness
         if not self.isWellFormed():
-            raise InvalidDatabaseError('Database at "%s" is not well-formed.' % (path))
+            raise DatabaseError('Database at "%s" is not well-formed.' % (path))
 
     def processLibraryData(self):
         """
@@ -328,13 +771,13 @@ class ReactionFamily(Database):
             if item is None:
                 pass
             elif not item.__class__ is tuple:
-                raise InvalidDatabaseError('Kinetics library should be tuple at this point. Instead got %r'%data)
+                raise DatabaseError('Kinetics library should be tuple at this point. Instead got %r'%data)
             else:
                 index,data = item # break apart tuple, recover the 'index' - the beginning of the line in the library file.
                 # Is't it dangerous having a local variable with the same name as a module?
-                # what if we want to raise another InvalidDatabaseError() ?
+                # what if we want to raise another DatabaseError() ?
                 if not ( data.__class__ is str or data.__class__ is unicode) :
-                    raise InvalidDatabaseError('Kinetics library data format is unrecognized.')
+                    raise DatabaseError('Kinetics library data format is unrecognized.')
 
                 items = data.split()
                 try:
@@ -380,14 +823,14 @@ class ReactionFamily(Database):
                     alpha = float(pq.Quantity(alpha, '').simplified)
                     # Construct ArrheniusEP object
                     kinetics = ArrheniusEP(A=A, n=n, alpha=alpha, E0=E0, Tmin=Tmin, Tmax=Tmax, comment=comment)
-                    
+
                     self.library[label] = KineticsEntry(
                         index=int(index),
                         label=label,
                         model=kinetics,
                         shortComment = comment
                     )
-                    
+
                 except (ValueError, IndexError), e:
                     # Data represents a link to a different node that contains
                     # the data to use
@@ -413,7 +856,7 @@ class ReactionFamily(Database):
                 line = removeCommentFromLine(line).strip()
                 if len(line) > 0:
                     info += line + '\n'
-        except InvalidDatabaseError, e:
+        except DatabaseError, e:
             logging.exception(str(e))
             return
         except IOError, e:
@@ -440,7 +883,7 @@ class ReactionFamily(Database):
                 # The product structures are generated automatically and need
                 # not be included
                 if item not in self.dictionary and not atArrow:
-                    raise InvalidDatabaseError('Reaction family template contains an unknown structure.')
+                    raise DatabaseError('Reaction family template contains an unknown structure.')
                 species.append(item)
 
         self.forwardTemplate = Reaction(reactants=reactants, products=products)
@@ -529,7 +972,7 @@ class ReactionFamily(Database):
                         raise
                 else:
                     productStructureList[i].append(struct)
-        
+
         # Fifth, associate structures with product template
         for i in range(len(self.forwardTemplate.products)):
             if len(productStructureList[i]) == 1:
@@ -592,7 +1035,7 @@ class ReactionFamily(Database):
             reactantStructure = Molecule()
         for s in reactantStructures:
             reactantStructure = reactantStructure.merge(s.copy(deep=True))
-        
+
         # Hardcoding of reaction family for radical recombination (colligation)
         # because the two reactants are identical, they have the same tags
         # In this case, we must change the labels from '*' and '*' to '*1' and
@@ -1039,437 +1482,111 @@ class ReactionFamily(Database):
         kinetics = [k for k in kinetics if k.index == maxIndex][0]
 
         return kinetics.model
-
 ################################################################################
 
-class KineticsGroupDatabase:
+class KineticsDatabase:
     """
-    Represent a kinetics database, divided into reaction families. The
-    `families` attribute stores a dictionary of :class:`ReactionFamily` objects
-    representing the families in the set.
+    A class for working with the RMG kinetics database.
     """
 
-    def __init__(self, path='', only_families=False):
-        self.families = {}
-        if path != '': self.load(path, only_families)
+    def __init__(self):
+        self.depository = {}
+        self.libraries = {}
+        self.groups = {}
+        self.local_context = {
+            'Arrhenius': Arrhenius,
+            'ArrheniusEP': ArrheniusEP,
+            'MultiArrhenius': MultiArrhenius,
+            'PDepArrhenius': PDepArrhenius,
+            'Chebyshev': Chebyshev,
+            'ThirdBody': ThirdBody,
+            'Lindemann': Lindemann,
+            'Troe': Troe,
+        }
+        self.global_context = {}
 
-    def load(self, path, only_families=False):
+    def load(self, path):
         """
-        Load a set of reaction families from the general database
-        specified at `path`. If only_families is present, families not in
-        this list will not be loaded (e.g. only_families=['H_Abstraction'] )
+        Load the kinetics database from the given `path` on disk, where `path`
+        points to the top-level folder of the thermo database.
+        """
+        self.depository = {}
+        for (root, dirs, files) in os.walk(os.path.join(path, 'depository')):
+            for f in files:
+                if os.path.splitext(f)[1].lower() == '.py':
+                    depository = KineticsDepository()
+                    depository.load(os.path.join(root, f), self.local_context, self.global_context)
+                    self.depository[depository.label] = depository
+
+        self.libraries = {}
+        for (root, dirs, files) in os.walk(os.path.join(path, 'libraries')):
+            for f in files:
+                if os.path.splitext(f)[1].lower() == '.py':
+                    library = KineticsLibrary()
+                    library.load(os.path.join(root, f), self.local_context, self.global_context)
+                    self.libraries[library.label] = library
+
+        self.groups = {}
+        for (root, dirs, files) in os.walk(os.path.join(path, 'groups')):
+            for f in files:
+                if os.path.splitext(f)[1].lower() == '.py':
+                    groups = KineticsGroups()
+                    groups.load(os.path.join(root, f), self.local_context, self.global_context)
+                    self.groups[groups.label] = groups
+
+    def save(self, path):
+        """
+        Save the thermo database to the given `path` on disk, where `path`
+        points to the top-level folder of the thermo database.
         """
 
         path = os.path.abspath(path)
 
-        logging.info('Loading kinetics databases from %s...' % path)
+        for label, depository in self.depository.iteritems():
+            depository.save(os.path.join(path, 'depository', '%s.py' % label))
+        
+        for label, library in self.libraries.iteritems():
+            folders = label.split(os.sep)
+            try:
+                os.makedirs(os.path.join(path, 'libraries', *folders[:-1]))
+            except OSError:
+                pass
+            library.save(os.path.join(path, 'libraries', '%s.py' % label))
 
-        # Load the families from kinetics/families.txt
-        familyList = []
-        ffam = None
-        try:
-            ffam = open(os.path.join(path,'families.txt'), 'r')
-            for line in ffam:
-                line = removeCommentFromLine(line).strip()
-                if len(line) > 0:
-                    items = line.split()
-                    items[0] = int(items[0])
-                    familyList.append(items)
-        except InvalidDatabaseError, e:
-            logging.exception(str(e))
-            return
-        except IOError, e:
-            logging.exception('Database file "' + e.filename + '" not found.')
-            raise
-        finally:
-            if ffam: ffam.close()
+        for label, family in self.groups.iteritems():
+            family.save(os.path.join(path, 'groups', '%s.py' % label))
 
-        # Load the reaction families (if they exist and status is 'on')
-        self.families = {}
-        for index, status, label in familyList:
-            fpath = os.path.join(path, label)
-            if os.path.isdir(fpath) and status.lower() == 'on':
-                # skip families not in only_families, if it's set
-                if only_families and label not in only_families: continue
-
-                logging.info('Loading reaction family %s...' % (label))
-                family = ReactionFamily(label)
-                family.load(fpath)
-                self.families[family.label] = family
-            else: logging.info("NOT loading reaction family %s." % label)
-
-        logging.info('')
-
-    def generateKineticsData(self, rxn, family, structures):
-        return self.families[family].getKinetics(rxn, structures)
-
-################################################################################
-
-class KineticsPrimaryDatabase(Database):
-    """
-    A primary kinetics database, consisting of a dictionary of species
-    and a library of reactions with corresponding kinetic data. (No tree is
-    utilized in this database.) There are three types of of primary kinetics
-    database:
-
-    * A seed mechanism contains reactions that will be immediately added to
-      the model core. Pressure-dependent kinetics will be preserved.
-
-    * A reaction library contains reactions that will be added to the model
-      core or edge as their reactants or products are moved into the model
-      core. This provides a means of specifying reactions that do not fit
-      into any of the group templates. Pressure-dependent kinetics will *not*
-      be preserved.
-
-    * A kinetics library contains reaction kinetics that will be used only if
-      that reaction is generated via one of the group templates. This provides
-      a means of overruling the group-estimated kinetics with better values.
-      Pressure-dependent kinetics will *not* be preserved.
-    
-    The attributes are:
-
-    =================== =================== ====================================
-    Attribute           Type                Description
-    =================== =================== ====================================
-    `label`             ``str``             A unique string identifier for the kinetics database
-    `database`          :class:`Database`   Used to store a dictionary of species
-    `reactions`         ``list``            A list of the reactions in the database
-    `mode`              ``str``             The type of primary database: ``'seed mechanism'``, ``'reaction library'``, or ``'kinetics library'``
-    =================== =================== ====================================
-
-    """
-
-    def __init__(self, path='', mode=''):
-        self.label = ''
-        self.reactions = []
-        self.mode = mode
-        if path != '':
-            self.load(path)
-        else:
-            self.database = None
-
-    def __str__(self):
-        return self.label
-
-    def isSeedMechanism(self):
+    def loadOld(self, path):
         """
-        Return ``True`` if the primary database represents a seed mechanism
-        or ``False`` if not. This is determined by examination of the `mode`
-        attribute.
+        Load the old RMG kinetics database from the given `path` on disk, where
+        `path` points to the top-level folder of the old RMG database.
         """
-        return self.mode == 'seed mechanism'
+        self.depository = {}
+        self.libraries = {}
+        self.groups = {}
 
-    def isReactionLibrary(self):
+        librariesPath = os.path.join(path, 'kinetics_libraries')
+        for (root, dirs, files) in os.walk(os.path.join(path, 'kinetics_libraries')):
+            if os.path.exists(os.path.join(root, 'species.txt')) and os.path.exists(os.path.join(root, 'reactions.txt')):
+                library = KineticsLibrary()
+                library.loadOld(root)
+                library.label = root[len(librariesPath)+1:]
+                self.libraries[library.label] = library
+        
+        for (root, dirs, files) in os.walk(os.path.join(path, 'kinetics_groups')):
+            if os.path.exists(os.path.join(root, 'dictionary.txt')) and os.path.exists(os.path.join(root, 'rateLibrary.txt')):
+                group = KineticsGroups()
+                group.loadOld(root)
+                group.label = os.path.basename(root)
+                self.groups[group.label] = group
+                self.depository[group.label]  = KineticsDepository()
+
+        return self
+
+    def saveOld(self, path):
         """
-        Return ``True`` if the primary database represents a reaction library
-        or ``False`` if not. This is determined by examination of the `mode`
-        attribute.
+        Save the old RMG kinetics database to the given `path` on disk, where
+        `path` points to the top-level folder of the old RMG database.
         """
-        return self.mode == 'reaction library'
-
-    def isKineticsLibrary(self):
-        """
-        Return ``True`` if the primary database represents a kinetics library
-        or ``False`` if not. This is determined by examination of the `mode`
-        attribute.
-        """
-        return self.mode == 'kinetics library'
-
-    def load(self, path, old=False):
-        """
-        Load a primary kinetics database from the location `path`. Also set
-        the `mode` of the kinetics database to one of ``'seed mechanism'``,
-        ``'reaction library'``, or ``'kinetics library'`` and whether the path
-        points to a new-style database or an `old` one.
-        """
-        self.label = os.path.split(path)[1]
-        path = os.path.abspath(path)
-        if self.mode == 'seed mechanism':
-            logging.info('Loading seed mechanism from %s...' % path)
-        elif self.mode == 'reaction library':
-            logging.info('Loading primary reaction database from %s...' % path)
-        elif self.mode == 'kinetics library':
-            logging.info('Loading primary kinetics database from %s...' % path)
-        else:
-            raise ValueError('The mode attribute had an invalid value of "%s"; valid values are "seed mechanism", "reaction library", or "kinetics library".' % self.mode)
-        if old:
-            self.database = Database()
-            self.__loadOldSpecies(os.path.join(path,'species.txt'))
-            self.__loadOldReactions(os.path.join(path,'reactions.txt'))
-            if os.path.exists(os.path.join(path,'pdepreactions.txt')):
-                self.__loadOldReactions(os.path.join(path,'pdepreactions.txt'))
-        else:
-            self.database = self.loadDatabase(os.path.join(path, 'database.py'))
-        logging.info('')
-
-    def __loadOldSpecies(self, path):
-        """
-        Load an old-style reaction library species file from `path`.
-        """
-        self.database.dictionary.load(path, pattern=False)
-    
-    def __loadOldReactions(self, path):
-        """
-        Load an old-style reaction library from `path`. This algorithm can
-        handle both the pressure-independent and pressure-dependent reaction
-        files. If the pressure-dependent file is read, the extra pressure-
-        dependent kinetics information is ignored unless the kinetics database
-        is a seed mechanism.
-        """
-        # Process the reactions or pdepreactions file
-        try:
-            inUnitSection = False; inReactionSection = False
-            Aunits = ''; Eunits = ''
-            reaction = None; kinetics = None
-
-            fdict = open(path, 'r')
-            for line in fdict:
-                line = removeCommentFromLine(line).strip()
-                if len(line) > 0:
-                    if inUnitSection:
-                        if 'A:' in line or 'E:' in line:
-                            units = line.split()[1]
-                            if 'A:' in line:
-                                Aunits = units.split('/') # Assume this is a 3-tuple: moles or molecules, volume, time
-                                Aunits[1] = Aunits[1][0:-1] # Remove '3' from e.g. 'm3' or 'cm3'; this is assumed
-                            elif 'E:' in line:
-                                Eunits = units
-                    elif inReactionSection:
-                        reactants = []; products = []
-                        if '=' in line:
-                            # This line contains a reaction equation, (high-P) Arrhenius parameters, and uncertainties
-
-                            # Strip out "+ M" and "(+M)" from line
-                            line = line.replace(" + M", "").replace("(+M)", "")
-                            
-                            items = line.split()
-
-                            # Find the reaction arrow
-                            for arrow in ['<=>', '=>', '=', '->']:
-                                if arrow in items:
-                                    arrowIndex = items.index(arrow)
-                                    break
-
-                            for item in items[0:arrowIndex]:
-                                if item != '+':
-                                    if item not in self.database.dictionary:
-                                        raise InvalidDatabaseError('Reactant %s not found in dictionary.' % item)
-                                    reactants.append(self.database.dictionary[item])
-                            for item in items[arrowIndex+1:-6]:
-                                if item != '+':
-                                    if item not in self.database.dictionary:
-                                        raise InvalidDatabaseError('Product %s not found in dictionary.' % item)
-                                    products.append(self.database.dictionary[item])
-                            A = pq.Quantity(float(items[-6]), '%s^%g/%s^%g/%s' %
-                                (Aunits[1], 3*(len(reactants)-1), Aunits[0], len(reactants)-1, Aunits[2]))
-                            n = pq.Quantity(float(items[-5]), '')
-                            Ea = pq.Quantity(float(items[-4]), Eunits)
-
-                            kinetics = Arrhenius(
-                                A=float(A.simplified),
-                                n=float(n.simplified),
-                                Ea=float(Ea.simplified),
-                                T0=1.0
-                            )
-
-                            reaction = Reaction(
-                                reactants=reactants,
-                                products=products,
-                                kinetics=kinetics,
-                                reversible=(arrow in ['<=>', '=']),
-                            )
-                            self.reactions.append(reaction)
-
-                        elif 'LOW' in line and self.isSeedMechanism():
-                            # This line contains low-pressure-limit Arrhenius parameters in Chemkin format
-
-                            # Upgrade the kinetics to a Lindemann if not already done
-                            if isinstance(kinetics, ThirdBody):
-                                kinetics = Lindemann(arrheniusHigh=kinetics.arrheniusHigh, efficiencies=kinetics.efficiencies)
-                                reaction.kinetics = kinetics
-                            elif isinstance(kinetics, Arrhenius):
-                                kinetics = Lindemann(arrheniusHigh=kinetics)
-                                reaction.kinetics = kinetics
-                            
-                            items = line.split('/')
-                            A, n, Ea = items[1].split()
-                            A = pq.Quantity(float(A), '%s^%g/%s^%g/%s' %
-                                (Aunits[1], 3*(len(reactants)-1), Aunits[0], len(reactants)-1, Aunits[2]))
-                            n = pq.Quantity(float(n), '')
-                            Ea = pq.Quantity(float(Ea), Eunits)
-                            kinetics.arrheniusLow = Arrhenius(
-                                A=float(A.simplified),
-                                n=float(n.simplified),
-                                Ea=float(Ea.simplified),
-                                T0=1.0
-                            )
-
-                        elif 'TROE' in line and self.isSeedMechanism():
-                            # This line contains Troe falloff parameters in Chemkin format
-
-                            # Upgrade the kinetics to a Troe if not already done
-                            if isinstance(kinetics, Lindemann):
-                                kinetics = Troe(arrheniusLow=kinetics.arrheniusLow, arrheniusHigh=kinetics.arrheniusHigh, efficiencies=kinetics.efficiencies)
-                                reaction.kinetics = kinetics
-                            elif isinstance(kinetics, ThirdBody):
-                                kinetics = Troe(arrheniusHigh=kinetics.arrheniusHigh, efficiencies=kinetics.efficiencies)
-                                reaction.kinetics = kinetics
-                            elif isinstance(kinetics, Arrhenius):
-                                kinetics = Troe(arrheniusHigh=kinetics)
-                                reaction.kinetics = kinetics
-
-                            items = line.split('/')
-                            items = items[1].split()
-                            if len(items) == 3:
-                                alpha, T3, T1 = items; T2 = 1e100
-                            else:
-                                alpha, T3, T1, T2 = items
-
-                            kinetics.alpha = float(alpha)
-                            kinetics.T1 = float(T1)
-                            kinetics.T2 = float(T2)
-                            kinetics.T3 = float(T3)
-
-                        elif self.isSeedMechanism():
-                            # This line contains collider efficiencies
-
-                            # Upgrade the kinetics to a ThirdBody if not already done
-                            if isinstance(kinetics, Arrhenius):
-                                kinetics = ThirdBody(arrheniusHigh=kinetics)
-                                reaction.kinetics = kinetics
-
-                            items = line.split('/')
-                            for spec, eff in zip(items[0::2], items[1::2]):
-                                spec = str(spec).strip()
-                                if spec not in self.database.dictionary:
-                                    logging.warning('Collider %s for reaction %s not found in species dictionary.' % (spec, reaction))
-                                else:
-                                    kinetics.efficiencies[self.database.dictionary[spec]] = float(eff)
-                            
-                    if 'Unit:' in line:
-                        inUnitSection = True; inReactionSection = False
-                    elif 'Reactions:' in line:
-                        inUnitSection = False; inReactionSection = True
-
-        except (InvalidDatabaseError, InvalidAdjacencyListError), e:
-            logging.exception(str(e))
-            raise
-        except IOError, e:
-            logging.exception('Database dictionary file "' + e.filename + '" not found.')
-            raise
-        finally:
-            if fdict: fdict.close()
-
-    def generateKineticsData(self, reaction):
-        """
-        Determine the kinetics data for the given `reaction`, if it exists in
-        the library. The reaction must be in the same direction as it is in
-        the library in order to have the kinetics returned.
-        """
-        for libraryReaction in self.reactions:
-            # To match, the reactions must have exactly the same numbers of
-            # reactants and products
-            if (len(libraryReaction.reactants) == len(reaction.reactants) and
-              len(libraryReaction.products) == len(reaction.products)):
-                # Try to pair up reactants
-                reactants = reaction.reactants[:]
-                for libraryReactant in libraryReaction.reactants:
-                    for reactant in reactants:
-                        if any([molecule.isIsomorphic(libraryReactant) for molecule in reactant.molecule]):
-                            reactants.remove(reactant) # So we don't match the same reactant multiple times
-                            break
-                if len(reactants) != 0: continue
-                # Try to pair up products
-                products = reaction.products[:]
-                for libraryProduct in libraryReaction.products:
-                    for product in products:
-                        if any([molecule.isIsomorphic(libraryProduct) for molecule in product.molecule]):
-                            products.remove(product) # So we don't match the same product multiple times
-                            break
-                if len(products) != 0: continue
-                # If we're here, then we were able to match all reactants and
-                # products, so we assume that the reactions match
-                return libraryReaction.kinetics
-
-        # If we're here, then there were no matches found, so return no match
-        return None
-
-    def getReactionList(self, reactants):
-        """
-        Generate a list of all of the possible reactions of this family between
-        the list of `reactants`.
-        """
-        rxnList = []
-
-        for libraryReaction in self.reactions:
-            # To match, the reactions must have exactly the same numbers of
-            # reactants
-            if len(libraryReaction.reactants) == len(reactants):
-                # Try to pair up reactants
-                reactants0 = reactants[:]
-                for libraryReactant in libraryReaction.reactants:
-                    for reactant in reactants0:
-                        if any([molecule.isIsomorphic(libraryReactant) for molecule in reactant.molecule]):
-                            reactants0.remove(reactant) # So we don't match the same reactant multiple times
-                            break
-                if len(reactants0) == 0:
-                    rxnList.append(libraryReaction)
-
-            # To match, the reactions must have exactly the same numbers of
-            # reactants
-            if len(libraryReaction.products) == len(reactants):
-                # Try to pair up products
-                reactants0 = reactants[:]
-                for libraryProduct in libraryReaction.products:
-                    for reactant in reactants0:
-                        if any([molecule.isIsomorphic(libraryProduct) for molecule in reactant.molecule]):
-                            reactants0.remove(reactant) # So we don't match the same product multiple times
-                            break
-                if len(reactants0) == 0:
-                    rxnList.append(libraryReaction)
-
-        return rxnList
-
-################################################################################
-
-kineticsDatabases = []
-
-def loadKineticsDatabase(dstr, mode, group=True, old=False, only_families=False):
-    """
-    Load the RMG kinetics database located at `dstr` into the global variable
-    `rmg.reaction.kineticsDatabase`.
-    """
-    global kineticsDatabases
-    if group:
-        kineticsDatabase = KineticsGroupDatabase()
-        kineticsDatabase.load(dstr, only_families)
-        kineticsDatabases.append(kineticsDatabase)
-    else:
-        kineticsDatabase = KineticsPrimaryDatabase(mode=mode)
-        kineticsDatabase.load(dstr, old=old)
-        kineticsDatabases.append(kineticsDatabase)
-    return kineticsDatabase
-
-def generateKineticsData(rxn, family, structures):
-    """
-    Get the kinetics data associated with `reaction` in `family` by looking in
-    the loaded kinetics database. The reactants and products in the molecule
-    should already be labeled appropriately. An
-    :class:`UndeterminableKineticsError` is raised if no kinetics could be
-    determined for the given reaction.
-    """
-    global kineticsDatabases
-    kinetics = None
-    for kineticsDatabase in kineticsDatabases:
-        if isinstance(kineticsDatabase, KineticsGroupDatabase):
-            kinetics = kineticsDatabase.generateKineticsData(rxn, family, structures)
-        elif isinstance(kineticsDatabase, KineticsPrimaryDatabase) and kineticsDatabase.isKineticsLibrary():
-            # Assume that, for seed mechanisms and reaction libraries, you've
-            # already determined the kinetics (if possible) when you discovered
-            # the reaction
-            kinetics = kineticsDatabase.generateKineticsData(rxn)
-        if kinetics is not None: return kinetics
-    raise UndeterminableKineticsError(rxn)
-    
-################################################################################
+        pass
 
