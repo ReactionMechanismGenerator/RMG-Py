@@ -351,11 +351,11 @@ class KineticsDepository(Database):
     A class for working with an RMG kinetics depository.
     """
 
-    def __init__(self):
-        Database.__init__(self)
+    def __init__(self, label='', name='', shortDesc='', longDesc=''):
+        Database.__init__(self, label=label, name=name, shortDesc=shortDesc, longDesc=longDesc)
 
     def loadEntry(self, index, label, molecule, kinetics, reference=None, referenceType='', shortDesc='', longDesc='', history=None):
-        self.entries[label] = Entry(
+        self.entries[index] = Entry(
             index = index,
             label = label,
             item = Molecule().fromAdjacencyList(molecule),
@@ -380,8 +380,8 @@ class KineticsLibrary(Database):
     A class for working with an RMG kinetics library.
     """
 
-    def __init__(self):
-        Database.__init__(self)
+    def __init__(self, label='', name='', shortDesc='', longDesc=''):
+        Database.__init__(self, label=label, name=name, shortDesc=shortDesc, longDesc=longDesc)
 
     def loadEntry(self, index, reactant1, product1, kinetics, reactant2=None, reactant3=None, product2=None, product3=None, degeneracy=1, label='', reference=None, referenceType='', shortDesc='', longDesc='', history=None):
         reactants = [Molecule().fromAdjacencyList(reactant1)]
@@ -392,7 +392,7 @@ class KineticsLibrary(Database):
         if product2 is not None: products.append(Molecule().fromAdjacencyList(product2))
         if product3 is not None: products.append(Molecule().fromAdjacencyList(product3))
 
-        self.entries[label] = Entry(
+        self.entries[index] = Entry(
             index = index,
             label = label,
             item = Reaction(reactants=reactants, products=products, degeneracy=degeneracy),
@@ -414,8 +414,6 @@ class KineticsLibrary(Database):
         """
         Load an old-style RMG kinetics library from the location `path`.
         """
-        self.label = os.path.split(path)[1]
-        self.name = self.label
         path = os.path.abspath(path)
 
         self.loadOldDictionary(os.path.join(path,'species.txt'), pattern=False)
@@ -1152,18 +1150,16 @@ class KineticsDatabase:
         librariesPath = os.path.join(path, 'kinetics_libraries')
         for (root, dirs, files) in os.walk(os.path.join(path, 'kinetics_libraries')):
             if os.path.exists(os.path.join(root, 'species.txt')) and os.path.exists(os.path.join(root, 'reactions.txt')):
-                library = KineticsLibrary()
+                library = KineticsLibrary(label=root[len(librariesPath)+1:], name=root[len(librariesPath)+1:])
                 library.loadOld(root)
-                library.label = root[len(librariesPath)+1:]
                 self.libraries[library.label] = library
-
+                
         for (root, dirs, files) in os.walk(os.path.join(path, 'kinetics_groups')):
             if os.path.exists(os.path.join(root, 'dictionary.txt')) and os.path.exists(os.path.join(root, 'rateLibrary.txt')):
-                group = KineticsGroups()
+                group = KineticsGroups(label=os.path.basename(root), name=os.path.basename(root))
                 group.loadOld(root)
-                group.label = os.path.basename(root)
                 self.groups[group.label] = group
-                self.depository[group.label]  = KineticsDepository()
+                self.depository[group.label]  = KineticsDepository(label=group.label, name=group.name)
 
         return self
 

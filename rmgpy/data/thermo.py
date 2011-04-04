@@ -161,9 +161,9 @@ class ThermoDepository(Database):
     A class for working with the RMG thermodynamics depository.
     """
 
-    def __init__(self):
-        Database.__init__(self)
-        
+    def __init__(self, label='', name='', shortDesc='', longDesc=''):
+        Database.__init__(self, label=label, name=name, shortDesc=shortDesc, longDesc=longDesc)
+
     def loadEntry(self, index, label, molecule, thermo, reference=None, referenceType='', shortDesc='', longDesc='', history=None):
         self.entries[label] = Entry(
             index = index,
@@ -190,8 +190,8 @@ class ThermoLibrary(Database):
     A class for working with a RMG thermodynamics library.
     """
 
-    def __init__(self):
-        Database.__init__(self)
+    def __init__(self, label='', name='', shortDesc='', longDesc=''):
+        Database.__init__(self, label=label, name=name, shortDesc=shortDesc, longDesc=longDesc)
 
     def loadEntry(self, index, label, molecule, thermo, reference=None, referenceType='', shortDesc='', longDesc='', history=None):
         self.entries[label] = Entry(
@@ -233,8 +233,8 @@ class ThermoGroups(Database):
     A class for working with an RMG thermodynamics group additivity database.
     """
 
-    def __init__(self):
-        Database.__init__(self)
+    def __init__(self, label='', name='', shortDesc='', longDesc=''):
+        Database.__init__(self, label=label, name=name, shortDesc=shortDesc, longDesc=longDesc)
 
     def loadEntry(self, index, label, group, thermo, reference=None, referenceType='', shortDesc='', longDesc='', history=None):
         if group[0:3].upper() == 'OR{' or group[0:4].upper() == 'AND{' or group[0:7].upper() == 'NOT OR{' or group[0:8].upper() == 'NOT AND{':
@@ -362,12 +362,12 @@ class ThermoDatabase:
         """
         # The old database does not have a depository, so create an empty one
         self.depository = {}
-        self.depository['stable']  = ThermoDepository()
-        self.depository['radical'] = ThermoDepository()
+        self.depository['stable']  = ThermoDepository(label='stable', name='Stable Molecules')
+        self.depository['radical'] = ThermoDepository(label='radical', name='Radical Molecules')
         
         for (root, dirs, files) in os.walk(os.path.join(path, 'thermo_libraries')):
             if os.path.exists(os.path.join(root, 'Dictionary.txt')) and os.path.exists(os.path.join(root, 'Library.txt')):
-                library = ThermoLibrary()
+                library = ThermoLibrary(label=os.path.basename(root), name=os.path.basename(root))
                 library.loadOld(
                     dictstr = os.path.join(root, 'Dictionary.txt'),
                     treestr = '',
@@ -380,7 +380,7 @@ class ThermoDatabase:
                 self.libraries[library.label] = library
 
         self.groups = {}
-        self.groups['group'] = ThermoGroups().loadOld(
+        self.groups['group'] = ThermoGroups(label='group', name='Functional Group Additivity Values').loadOld(
             dictstr = os.path.join(path, 'thermo_groups', 'Group_Dictionary.txt'),
             treestr = os.path.join(path, 'thermo_groups', 'Group_Tree.txt'),
             libstr = os.path.join(path, 'thermo_groups', 'Group_Library.txt'),
@@ -388,7 +388,7 @@ class ThermoDatabase:
             numLabels = 1,
             pattern = True,
         )
-        self.groups['gauche'] = ThermoGroups().loadOld(
+        self.groups['gauche'] = ThermoGroups(label='gauche', name='Gauche Interaction Corrections').loadOld(
             dictstr = os.path.join(path, 'thermo_groups', 'Gauche_Dictionary.txt'),
             treestr = os.path.join(path, 'thermo_groups', 'Gauche_Tree.txt'),
             libstr = os.path.join(path, 'thermo_groups', 'Gauche_Library.txt'),
@@ -396,7 +396,7 @@ class ThermoDatabase:
             numLabels = 1,
             pattern = True,
         )
-        self.groups['int15'] = ThermoGroups().loadOld(
+        self.groups['int15'] = ThermoGroups(label='int15', name='1,5-Interaction Corrections').loadOld(
             dictstr = os.path.join(path, 'thermo_groups', '15_Dictionary.txt'),
             treestr = os.path.join(path, 'thermo_groups', '15_Tree.txt'),
             libstr = os.path.join(path, 'thermo_groups', '15_Library.txt'),
@@ -404,7 +404,7 @@ class ThermoDatabase:
             numLabels = 1,
             pattern = True,
         )
-        self.groups['radical'] = ThermoGroups().loadOld(
+        self.groups['radical'] = ThermoGroups(label='radical', name='Radical Corrections').loadOld(
             dictstr = os.path.join(path, 'thermo_groups', 'Radical_Dictionary.txt'),
             treestr = os.path.join(path, 'thermo_groups', 'Radical_Tree.txt'),
             libstr = os.path.join(path, 'thermo_groups', 'Radical_Library.txt'),
@@ -412,7 +412,7 @@ class ThermoDatabase:
             numLabels = 1,
             pattern = True,
         )
-        self.groups['ring'] = ThermoGroups().loadOld(
+        self.groups['ring'] = ThermoGroups(label='ring', name='Ring Corrections').loadOld(
             dictstr = os.path.join(path, 'thermo_groups', 'Ring_Dictionary.txt'),
             treestr = os.path.join(path, 'thermo_groups', 'Ring_Tree.txt'),
             libstr = os.path.join(path, 'thermo_groups', 'Ring_Library.txt'),
@@ -420,7 +420,7 @@ class ThermoDatabase:
             numLabels = 1,
             pattern = True,
         )
-        self.groups['other'] = ThermoGroups().loadOld(
+        self.groups['other'] = ThermoGroups(label='other', name='Other Corrections').loadOld(
             dictstr = os.path.join(path, 'thermo_groups', 'Other_Dictionary.txt'),
             treestr = os.path.join(path, 'thermo_groups', 'Other_Tree.txt'),
             libstr = os.path.join(path, 'thermo_groups', 'Other_Library.txt'),
