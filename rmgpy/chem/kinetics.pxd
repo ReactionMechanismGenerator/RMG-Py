@@ -53,6 +53,16 @@ cdef class KineticsModel:
 
 ################################################################################
 
+cdef class KineticsData(KineticsModel):
+
+    cdef public numpy.ndarray Tdata, kdata
+
+    cpdef bint isPressureDependent(self)
+
+    cpdef double getRateCoefficient(self, double T, double P=?)
+
+################################################################################
+
 cdef class Arrhenius(KineticsModel):
     
     cdef public Quantity A, T0, Ea, n

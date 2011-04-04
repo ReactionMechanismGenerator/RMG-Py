@@ -155,6 +155,74 @@ class KineticsModel:
 
 ################################################################################
 
+class KineticsData(KineticsModel):
+    """
+    A kinetics model based around a set of discrete (high-pressure limit)
+    rate coefficients at various temperatures. The attributes are:
+
+    =========== =================== ============================================
+    Attribute   Type                Description
+    =========== =================== ============================================
+    `Tdata`     ``numpy.ndarray``   The temperatures at which the rate coefficient data is provided in K
+    `kdata`     ``numpy.ndarray``   The rate coefficients in SI units at each temperature in `Tdata`
+    =========== =================== ============================================
+
+    """
+
+    def __init__(self, Tdata=None, kdata=None, Tmin=None, Tmax=None, comment=''):
+        KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, comment=comment)
+        self.Tdata = constants.Quantity(Tdata)
+        self.kdata = constants.Quantity(kdata)
+
+    def __repr__(self):
+        """
+        Return a string representation that can be used to reconstruct the
+        object.
+        """
+        string = 'KineticsData('
+        string += 'Tdata=%r' % (self.Tdata)
+        string += ', kdata=%r' % (self.kdata)
+        if self.Tmin is not None: string += ', Tmin=%r' % (self.Tmin)
+        if self.Tmax is not None: string += ', Tmax=%r' % (self.Tmax)
+        if self.comment != '': string += ', comment="%s"' % (self.comment)
+        string += ')'
+        return string
+
+    def __reduce__(self):
+        """
+        A helper function used when pickling an object.
+        """
+        return (KineticsData, (self.Tdata, self.kdata, self.Tmin, self.Tmax, self.comment))
+
+    def isPressureDependent(self):
+        """
+        Returns ``False`` since KineticsDataModel kinetics are not
+        pressure-dependent.
+        """
+        return False
+
+    def getRateCoefficient(self, T, P=1e5):
+        """
+        Return the rate coefficient k(T) in SI units at temperature
+        `T` in K.
+        """
+        cython.declare(Tmin=cython.double, Tmax=cython.double, kmin=cython.double, kmax=cython.double)
+        cython.declare(k=cython.double)
+        k = 0.0
+        if not self.isTemperatureValid(T):
+            raise KineticsError('Invalid temperature "%g K" for heat capacity estimation.' % T)
+        if T < numpy.min(self.Tdata.values):
+            k = self.kdata.values[0]
+        elif T >= numpy.max(self.Tdata.values):
+            k = self.kdata.values[-1]
+        else:
+            for Tmin, Tmax, kmin, kmax in zip(self.Tdata.values[:-1], self.Tdata.values[1:], self.kdata.values[:-1], self.kdata.values[1:]):
+                if Tmin <= T and T < Tmax:
+                    k = (kmax - kmin) * ((T - Tmin) / (Tmax - Tmin)) + kmin
+        return k
+
+################################################################################
+
 class Arrhenius(KineticsModel):
     """
     Represent a set of modified Arrhenius kinetics. The kinetic expression has
