@@ -429,7 +429,7 @@ class MultiArrhenius(KineticsModel):
 
     """
 
-    def __init__(self, arrheniusList=None, Tmin=0.0, Tmax=1.0e10, comment=''):
+    def __init__(self, arrheniusList=None, Tmin=None, Tmax=None, comment=''):
         KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, comment=comment)
         self.arrheniusList = arrheniusList or []
 
@@ -1016,11 +1016,11 @@ class Troe(Lindemann):
         self.alpha = constants.Quantity(alpha)
         self.T3 = constants.Quantity(T3)
         self.T1 = constants.Quantity(T1)
-        if T2 is None:
-            self.T2 = None
-        else:
+        if T2 is not None:
             self.T2 = constants.Quantity(T2)
-    
+        else:
+            self.T2 = None
+        
     def __repr__(self):
         """
         Return a string representation that can be used to reconstruct the
