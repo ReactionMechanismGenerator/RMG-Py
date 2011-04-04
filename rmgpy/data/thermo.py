@@ -297,12 +297,26 @@ class ThermoDatabase:
         Load the thermo database from the given `path` on disk, where `path`
         points to the top-level folder of the thermo database.
         """
-        self.depository = {}
-        self.depository['stable']  = ThermoDepository().load(os.path.join(path, 'depository', 'stable.py'), self.local_context, self.global_context)
-        self.depository['radical'] = ThermoDepository().load(os.path.join(path, 'depository', 'radical.py'), self.local_context, self.global_context)
+        self.loadDepository(os.path.join(path, 'depository'))
+        self.loadLibraries(os.path.join(path, 'libraries'))
+        self.loadGroups(os.path.join(path, 'groups'))
         
+    def loadDepository(self, path):
+        """
+        Load the thermo database from the given `path` on disk, where `path`
+        points to the top-level folder of the thermo database.
+        """
+        self.depository = {}
+        self.depository['stable']  = ThermoDepository().load(os.path.join(path, 'stable.py'), self.local_context, self.global_context)
+        self.depository['radical'] = ThermoDepository().load(os.path.join(path, 'radical.py'), self.local_context, self.global_context)
+
+    def loadLibraries(self, path):
+        """
+        Load the thermo database from the given `path` on disk, where `path`
+        points to the top-level folder of the thermo database.
+        """
         self.libraries = {}
-        for (root, dirs, files) in os.walk(os.path.join(path, 'libraries')):
+        for (root, dirs, files) in os.walk(os.path.join(path)):
             for f in files:
                 if os.path.splitext(f)[1].lower() == '.py':
                     library = ThermoLibrary()
@@ -310,13 +324,18 @@ class ThermoDatabase:
                     library.label = os.path.splitext(f)[0]
                     self.libraries[library.label] = library
 
+    def loadGroups(self, path):
+        """
+        Load the thermo database from the given `path` on disk, where `path`
+        points to the top-level folder of the thermo database.
+        """
         self.groups = {}
-        self.groups['group']   = ThermoGroups().load(os.path.join(path, 'groups', 'group.py' ), self.local_context, self.global_context)
-        self.groups['gauche']  = ThermoGroups().load(os.path.join(path, 'groups', 'gauche.py' ), self.local_context, self.global_context)
-        self.groups['int15']   = ThermoGroups().load(os.path.join(path, 'groups', 'int15.py'  ), self.local_context, self.global_context)
-        self.groups['ring']    = ThermoGroups().load(os.path.join(path, 'groups', 'ring.py'   ), self.local_context, self.global_context)
-        self.groups['radical'] = ThermoGroups().load(os.path.join(path, 'groups', 'radical.py'), self.local_context, self.global_context)
-        self.groups['other']   = ThermoGroups().load(os.path.join(path, 'groups', 'other.py'  ), self.local_context, self.global_context)
+        self.groups['group']   = ThermoGroups().load(os.path.join(path, 'group.py' ), self.local_context, self.global_context)
+        self.groups['gauche']  = ThermoGroups().load(os.path.join(path, 'gauche.py' ), self.local_context, self.global_context)
+        self.groups['int15']   = ThermoGroups().load(os.path.join(path, 'int15.py'  ), self.local_context, self.global_context)
+        self.groups['ring']    = ThermoGroups().load(os.path.join(path, 'ring.py'   ), self.local_context, self.global_context)
+        self.groups['radical'] = ThermoGroups().load(os.path.join(path, 'radical.py'), self.local_context, self.global_context)
+        self.groups['other']   = ThermoGroups().load(os.path.join(path, 'other.py'  ), self.local_context, self.global_context)
 
     def save(self, path):
         """

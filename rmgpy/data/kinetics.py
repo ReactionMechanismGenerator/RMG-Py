@@ -1072,24 +1072,43 @@ class KineticsDatabase:
         Load the kinetics database from the given `path` on disk, where `path`
         points to the top-level folder of the thermo database.
         """
+        self.loadDepository(os.path.join(path, 'depository'))
+        self.loadLibraries(os.path.join(path, 'libraries'))
+        self.loadGroups(os.path.join(path, 'groups'))
+
+    def loadDepository(self, path):
+        """
+        Load the kinetics database from the given `path` on disk, where `path`
+        points to the top-level folder of the thermo database.
+        """
         self.depository = {}
-        for (root, dirs, files) in os.walk(os.path.join(path, 'depository')):
+        for (root, dirs, files) in os.walk(os.path.join(path)):
             for f in files:
                 if os.path.splitext(f)[1].lower() == '.py':
                     depository = KineticsDepository()
                     depository.load(os.path.join(root, f), self.local_context, self.global_context)
                     self.depository[depository.label] = depository
 
+    def loadLibraries(self, path):
+        """
+        Load the kinetics database from the given `path` on disk, where `path`
+        points to the top-level folder of the thermo database.
+        """
         self.libraries = {}
-        for (root, dirs, files) in os.walk(os.path.join(path, 'libraries')):
+        for (root, dirs, files) in os.walk(os.path.join(path)):
             for f in files:
                 if os.path.splitext(f)[1].lower() == '.py':
                     library = KineticsLibrary()
                     library.load(os.path.join(root, f), self.local_context, self.global_context)
                     self.libraries[library.label] = library
 
+    def loadGroups(self, path):
+        """
+        Load the kinetics database from the given `path` on disk, where `path`
+        points to the top-level folder of the thermo database.
+        """
         self.groups = {}
-        for (root, dirs, files) in os.walk(os.path.join(path, 'groups')):
+        for (root, dirs, files) in os.walk(os.path.join(path)):
             for f in files:
                 if os.path.splitext(f)[1].lower() == '.py':
                     groups = KineticsGroups()
