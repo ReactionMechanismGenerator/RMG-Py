@@ -568,13 +568,16 @@ class KineticsLibrary(Database):
                             items = line.split('/')
                             items = items[1].split()
                             if len(items) == 3:
-                                alpha, T3, T1 = items; T2 = 1e100
+                                alpha, T3, T1 = items; T2 = None
                             else:
                                 alpha, T3, T1, T2 = items
 
                             kinetics.alpha = constants.Quantity(float(alpha))
                             kinetics.T1 = constants.Quantity((float(T1),"K"))
-                            kinetics.T2 = constants.Quantity((float(T2),"K"))
+                            if T2 is not None:
+                                kinetics.T2 = constants.Quantity((float(T2),"K"))
+                            else:
+                                kinetics.T2 = None
                             kinetics.T3 = constants.Quantity((float(T3),"K"))
 
                         else:
