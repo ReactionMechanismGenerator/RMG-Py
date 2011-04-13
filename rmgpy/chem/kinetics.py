@@ -70,6 +70,7 @@ import numpy.linalg
 import cython
 
 import constants
+from molecule import Molecule
 
 ################################################################################
 
@@ -793,7 +794,13 @@ class ThirdBody(KineticsModel):
     def __init__(self, arrheniusHigh=None, efficiencies=None, Tmin=None, Tmax=None, Pmin=None, Pmax=None, comment=''):
         KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, comment=comment)
         self.arrheniusHigh = arrheniusHigh
-        self.efficiencies = efficiencies or {}
+        self.efficiencies = {}
+        if efficiencies is not None:
+            for mol, eff in efficiencies.iteritems():
+                if isinstance(mol, Molecule):
+                    self.efficiencies[mol] = eff
+                else:
+                    self.efficiencies[Molecule().fromSMILES(mol)] = eff
 
     def __repr__(self):
         """
@@ -802,7 +809,9 @@ class ThirdBody(KineticsModel):
         """
         string = 'ThirdBody('
         string += 'arrheniusHigh=%r' % (self.arrheniusHigh)
-        string += ', efficiencies=%r' % (self.efficiencies)
+        molecules = [(molecule.toSMILES(), molecule) for molecule in self.efficiencies]
+        molecules.sort()
+        string += ', efficiencies={%s}' % (', '.join(['"%s": %g' % (molecule, self.efficiencies[molecule]) for smiles, molecule in molecules]))
         if self.Tmin is not None: string += ', Tmin=%r' % (self.Tmin)
         if self.Tmax is not None: string += ', Tmax=%r' % (self.Tmax)
         if self.Pmin is not None: string += ', Pmin=%r' % (self.Pmin)
