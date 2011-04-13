@@ -589,6 +589,21 @@ class KineticsLibrary(Database):
                             items = line.split('/')
                             for spec, eff in zip(items[0::2], items[1::2]):
                                 spec = str(spec).strip()
+
+                                # In old database, N2, He, Ne, and Ar were treated as special "bath gas" species
+                                # These bath gas species were not required to be in the species dictionary
+                                # The new database removes this special case, and requires all colliders to be explicitly defined
+                                # This is hardcoding to handle these special colliders
+                                if spec.upper() in ['N2', 'HE', 'AR', 'NE'] and spec not in species:
+                                    if spec.upper() == 'N2':
+                                        species[spec] = Molecule().fromSMILES('N#N')
+                                    elif spec.upper() == 'HE':
+                                        species[spec] = Molecule().fromAdjacencyList('1 He 0')
+                                    elif spec.upper() == 'AR':
+                                        species[spec] = Molecule().fromAdjacencyList('1 Ar 0')
+                                    elif spec.upper() == 'NE':
+                                        species[spec] = Molecule().fromAdjacencyList('1 Ne 0')
+                                
                                 if spec not in species:
                                     logging.warning('Collider %s for reaction %s not found in species dictionary.' % (spec, reaction))
                                 else:
