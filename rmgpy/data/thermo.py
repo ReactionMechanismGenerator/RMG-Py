@@ -148,9 +148,9 @@ def processOldLibraryEntry(data):
     """
     return ThermoData(
         Tdata = ([300,400,500,600,800,1000,1500],"K"),
-        Cpdata = (data[2:9],"cal/(mol*K)","+|-",data[11]),
-        H298 = (data[0],"kcal/mol","+|-",data[9]),
-        S298 = (data[1],"cal/(mol*K)","+|-",data[10]),
+        Cpdata = ([float(d) for d in data[2:9]],"cal/(mol*K)","+|-",float(data[11])),
+        H298 = (float(data[0]),"kcal/mol","+|-",float(data[9])),
+        S298 = (float(data[1]),"cal/(mol*K)","+|-",float(data[10])),
     )
 
 

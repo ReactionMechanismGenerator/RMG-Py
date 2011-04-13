@@ -410,7 +410,33 @@ class Database:
         if len(self.entries) == 0:
             raise DatabaseError("Load the dictionary before you load the library.")
 
-        # Process the library
+        entries = self.parseOldLibrary(path, numParameters, numLabels)
+
+        for label, entry in entries.iteritems():
+            assert label in self.entries
+            index, parameters, comment = entry
+            self.entries[label].index = index
+            self.entries[label].data = parameters
+            self.entries[label].shortDesc = comment
+
+        # Make sure each entry with data has a nonnegative index
+        entries = self.entries.values()
+        entries.sort(key=lambda entry: entry.index)
+        index = entries[-1].index + 1
+        if index < 1: index = 1
+        for entry in entries:
+            if entry.index < 0:
+                entry.index = index
+                index += 1
+
+    def parseOldLibrary(self, path, numParameters, numLabels=1):
+        """
+        Parse an RMG database library located at `path`, returning the loaded
+        entries (rather than storing them in the database).
+        """
+
+        entries = {}
+        
         flib = None
         try:
             flib = open(path, 'r')
@@ -430,7 +456,7 @@ class Database:
                     index = -1
                     offset = 0
                     try:
-                        index = int(info[0])
+                        index = int(float(info[0]))
                         offset = 1
                     except ValueError:
                         pass
@@ -439,29 +465,20 @@ class Database:
                     offset += numLabels
                     # Extract numeric parameter(s) or label of node with data to use
                     try:
-                        parameters = self.processOldLibraryEntry([float(p) for p in info[offset:offset+numParameters]])
+                        parameters = self.processOldLibraryEntry(info[offset:offset+numParameters])
                         offset += numParameters
-                    except ValueError:
+                    except (IndexError, ValueError), e:
                         parameters = info[offset]
                         offset += 1
                     # Remaining part of string is comment
                     comment = ' '.join(info[offset:])
                     comment = comment.strip('"')
 
-                    if numLabels == 1:
-                        if self.entries[label].data is not None:
-                            logging.debug("There was already something labeled %s in the library. Ignoring '%s' (%s)" % (label, index, parameters))
-                            skippedCount += 1
-                        else:
-                            self.entries[label].index = index
-                            self.entries[label].data = parameters
-                            self.entries[label].shortDesc = comment
+                    if label in entries:
+                        logging.debug("There was already something labeled %s in the library. Ignoring '%s' (%s)" % (label, index, parameters))
+                        skippedCount += 1
                     else:
-                        if label in self.library:
-                            logging.debug("There was already something labeled %s in the library. Ignoring '%s' (%s)" % (label, index, parameters))
-                            skippedCount += 1
-                        else:
-                            self.entries[label] = (index, parameters, comment)
+                        entries[label] = (index, parameters, comment)
 
             if skippedCount > 0:
                 logging.warning("Skipped %i duplicate entries in this library." % skippedCount)
@@ -477,15 +494,7 @@ class Database:
         finally:
             if flib: flib.close()
 
-        # Make sure each entry with data has a nonnegative index
-        entries = self.entries.values()
-        entries.sort(key=lambda entry: entry.index)
-        index = entries[-1].index + 1
-        if index < 1: index = 1
-        for entry in entries:
-            if entry.index < 0:
-                entry.index = index
-                index += 1
+        return entries
 
     def saveOld(self, dictstr, treestr, libstr):
         """
