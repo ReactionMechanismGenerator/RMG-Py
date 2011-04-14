@@ -694,6 +694,36 @@ class KineticsGroups(Database):
 
         return self
 
+    def processOldLibraryEntry(self, data):
+        """
+        Process a list of parameters `data` as read from an old-style RMG
+        thermo database, returning the corresponding kinetics object.
+        """
+        # This is hardcoding of reaction families!
+        if self.label in ['H_Abstraction', 'R_Addition_MultipleBond', 'R_Recombination', 'HO2_Elimination_from_PeroxyRadical', 'Disproportionation', '1+2_Cycloaddition', '2+2_cycloaddition_Cd', '2+2_cycloaddition_CO', '2+2_cycloaddition_CCO', 'Diels_alder_addition', '1,2_Insertion', '1,3_Insertion_CO2', '1,3_Insertion_ROR', 'R_Addition_COm', 'Oa_R_Recombination']:
+            Aunits = 'cm^3/(mol*s)'
+        elif self.label in ['intra_H_migration', 'Birad_recombination', 'intra_OH_migration', 'Cyclic_Ether_Formation', 'Intra_R_Add_Exocyclic', 'Intra_R_Add_Endocyclic', '1,2-Birad_to_alkene', 'Intra_Disproportionation']:
+            Aunits = 's^-1'
+        else:
+            raise ValueError('Unable to determine preexponential units for reaction family "%s".' % self.label)
+
+        try:
+            Tmin, Tmax = data[0].split('-')
+            Tmin = (float(Tmin),"K")
+            Tmax = (float(Tmax),"K")
+        except ValueError:
+            Tmin = None
+            Tmax = None
+
+        return ArrheniusEP(
+            A = (float(data[1]),Aunits),
+            n = float(data[2]),
+            alpha = float(data[3]),
+            E0 = (float(data[4]),"kcal/mol"),
+            Tmin = Tmin,
+            Tmax = Tmax,
+        )
+
     def loadOldTemplate(self, path):
         """
         Load an old-style RMG reaction family template from the location `path`.
@@ -1059,7 +1089,155 @@ class KineticsGroups(Database):
 
         # Return the product structures
         return productStructures
-    
+
+    def fitGroupValuesFromOldLibrary(self, path, Tlist):
+        """
+        Generate group additivity values for the reaction family using the
+        rate rules in the old kinetics database at location `path` on disk.
+        The group additivity values are generated at the set of temperatures
+        `Tlist` in K.
+        """
+
+        # This function assumes that the rest of the old database has already been loaded
+
+        # Parse the old library
+        numLabels = max(len(self.forwardTemplate.reactants), len(self.top))
+        entries = self.parseOldLibrary(os.path.join(path, 'rateLibrary.txt'), numParameters=10, numLabels=numLabels)
+
+        kdata = []
+        templates = []
+        kunits = ''
+        for labels, entry in entries.iteritems():
+            kinetics = entry[1]
+            if isinstance(kinetics, ArrheniusEP):
+                if kinetics.alpha.value == 0:
+                    templates.append([self.entries[group] for group in labels.split(';')])
+                    kdata.append([kinetics.getRateCoefficient(T, 0) for T in Tlist])
+                    kunits = kinetics.A.units
+                else:
+                    logging.warning('Skipping entry "%s" with nonzero value of alpha = %g.' % (labels, kinetics.alpha.value))
+            else:
+                logging.warning('Skipping entry "%s" with non-ArrheniusEP kinetics "%s".' % (labels, kinetics.__class__))
+        assert kunits in ['s^-1', 'cm^3/(mol*s)']
+        if kunits == 'cm^3/(mol*s)':
+            kunits = 'm^3/(mol*s)'
+        
+        Tdata = numpy.array(Tlist, numpy.float64)
+        kdata = numpy.array(kdata, numpy.float64)
+        groupValues, groupUncertainties, groupCounts, kmodel = self.fitGroupValues(templates, Tdata, kdata, kunits)
+
+        return groupValues, groupUncertainties, groupCounts, templates, kdata, kmodel
+
+    def fitGroupValues(self, templates, Tdata, kdata, kunits):
+        """
+        Fit group additivity values based on a matrix of rate coefficient
+        data `kdata` corresponding to a list of reaction `templates` and a
+        set of temperatures `Tdata`. The provided rate coefficient data should
+        be for the high-pressure limit and should be given on a per-site basis.
+        The groups in the templates should also be in this reaction family's
+        tree.
+        """
+
+        import scipy.stats
+
+        kmodel = numpy.zeros_like(kdata)
+
+        # Determine a complete list of the entries in the database, sorted as in the tree
+        entries = self.top[:]
+        for entry in self.top:
+            entries.extend(self.descendants(entry))
+
+        # Determine a unique list of the groups we will be able to fit parameters for
+        groupList = []
+        for template in templates:
+            for group in template:
+                if group not in self.top:
+                    groupList.append(group)
+                    groupList.extend(self.ancestors(group)[:-1])
+        groupList = list(set(groupList))
+        groupList.sort(key=lambda x: x.index)
+
+        # Initialize dictionaries of fitted group values and uncertainties
+        groupValues = {}; groupUncertainties = {}; groupCounts = {}
+        for entry in entries:
+            groupValues[entry] = []
+            groupUncertainties[entry] = []
+            groupCounts[entry] = []
+
+        # Fit group values at each temperature
+        for t, T in enumerate(Tdata):
+
+            # Generate least-squares matrix and vector
+            A = []; b = []
+            for index, template in enumerate(templates):
+
+                # Create every combination of each group and its ancestors with each other
+                combinations = []
+                for group in template:
+                    groups = [group]; groups.extend(self.ancestors(group))
+                    combinations.append(groups)
+                combinations = getAllCombinations(combinations)
+                # Add a row to the matrix for each combination
+                for groups in combinations:
+                    Arow = [1 if group in groups else 0 for group in groupList]
+                    Arow.append(1)
+                    brow = math.log10(kdata[index,t])
+                    A.append(Arow); b.append(brow)
+                    
+            if len(A) == 0:
+                logging.warning('Unable to fit kinetics groups for family "%s"; no valid data found.' % (self.label))
+                return
+            A = numpy.array(A)
+            b = numpy.array(b)
+
+            x, residues, rank, s = numpy.linalg.lstsq(A, b)
+            
+            # Determine error in each group (on log scale)
+            stdev = numpy.zeros(len(groupList)+1, numpy.float64)
+            count = numpy.zeros(len(groupList)+1, numpy.int)
+            for index, template in enumerate(templates):
+                kd = math.log10(kdata[index,t])
+                km = x[-1] + sum([x[groupList.index(group)] for group in template if group in groupList])
+                kmodel[index,t] = 10**km
+                variance = (km - kd)**2
+                for group in template:
+                    groups = [group]; groups.extend(self.ancestors(group))
+                    for g in groups:
+                        if g not in self.top:
+                            index = groupList.index(g)
+                            stdev[index] += variance
+                            count[index] += 1
+                stdev[-1] += variance
+                count[-1] += 1
+            stdev = numpy.sqrt(stdev / (count - 1))
+            ci = scipy.stats.t.ppf(0.975, count - 1) * stdev
+
+            # Update dictionaries of fitted group values and uncertainties
+            for entry in entries:
+                if entry == self.top[0]:
+                    groupValues[entry].append(10**x[-1])
+                    groupUncertainties[entry].append(10**ci[-1])
+                    groupCounts[entry].append(count[-1])
+                elif entry in groupList:
+                    index = groupList.index(entry)
+                    groupValues[entry].append(10**x[index])
+                    groupUncertainties[entry].append(10**ci[index])
+                    groupCounts[entry].append(count[index])
+                else:
+                    groupValues[entry] = None
+                    groupUncertainties[entry] = None
+                    groupCounts[entry] = None
+
+        # Store the fitted group values and uncertainties on the associated entries
+        for entry in entries:
+            if groupValues[entry] is not None:
+                entry.data = KineticsData(Tdata=(Tdata,"K"), kdata=(groupValues[entry],kunits))
+                entry.data.kdata.uncertainties = numpy.array(groupUncertainties[entry])
+            else:
+                entry.data = None
+
+        return groupValues, groupUncertainties, groupCounts, kmodel
+
 ################################################################################
 
 class KineticsDatabase:
