@@ -474,3 +474,229 @@ class ThermoDatabase:
             treestr = os.path.join(path, 'thermo_groups', 'Other_Tree.txt'),
             libstr = os.path.join(path, 'thermo_groups', 'Other_Library.txt'),
         )
+
+    def getThermoData(self, molecule):
+        """
+        Return the thermodynamic parameters for a given :class:`Molecule`
+        object `molecule`. This function first searches the loaded libraries
+        in order, returning the first match found, before falling back to
+        estimation via group additivity.
+        """
+        thermoData = None
+        # Check the libraries in order first; return the first successful match
+        for label, library in self.libraries.iteritems():
+            thermoData = self.getThermoDataFromLibrary(molecule, library)
+            if thermoData: break
+        else:
+            # Thermo not found in any loaded libraries, so estimate
+            thermoData = self.getThermoDataFromGroups(molecule)
+        return thermoData
+
+    def getAllThermoData(self, molecule):
+        """
+        Return all possible sets of thermodynamic parameters for a given
+        :class:`Molecule` object `molecule`. The hits from the depository come
+        first, then the libraries (in order), and then the group additivity
+        estimate. This method is useful for a generic search job.
+        """
+        thermoData = []
+        # Data from depository comes first
+        thermoData.extend(self.getThermoDataFromDepository(molecule))
+        # Data from libraries comes second
+        for label, library in self.libraries.iteritems():
+            data = self.getThermoDataFromLibrary(molecule, library)
+            if data: thermoData.append(data)
+        # Last entry is always the estimate from group additivity
+        thermoData.append(self.getThermoDataFromGroups(molecule))
+        return thermoData
+
+    def getThermoDataFromDepository(self, molecule):
+        """
+        Return all possible sets of thermodynamic parameters for a given
+        :class:`Molecule` object `molecule` from the depository. If no
+        depository is loaded, a :class:`DatabaseError` is raised.
+        """
+        items = []
+        for label, entry in self.depository['stable'].entries.iteritems():
+            if molecule.isIsomorphic(entry.item):
+                items.append((entry.data, self.depository['stable'], entry))
+        for label, entry in self.depository['radical'].entries.iteritems():
+            if molecule.isIsomorphic(entry.item):
+                items.append((entry.data, self.depository['radical'], entry))
+        return items
+
+    def getThermoDataFromLibrary(self, molecule, library):
+        """
+        Return the set of thermodynamic parameters corresponding to a given
+        :class:`Molecule` object `molecule` from the specified thermodynamics
+        `library`. If `library` is a string, the list of libraries is searched
+        for a library with that name. If no match is found in that library,
+        ``None`` is returned. If no corresponding library is found, a
+        :class:`DatabaseError` is raised.
+        """
+        for label, entry in library.entries.iteritems():
+            if molecule.isIsomorphic(entry.item):
+                return (entry.data, library, entry)
+        return None
+
+    def getThermoDataFromGroups(self, molecule):
+        """
+        Return the set of thermodynamic parameters corresponding to a given
+        :class:`Molecule` object `molecule` by estimation using the group
+        additivity values. If no group additivity values are loaded, a
+        :class:`DatabaseError` is raised.
+        """
+        implicitH = molecule.implicitHydrogens
+        molecule.makeHydrogensExplicit()
+
+        # For thermo estimation we need the atoms to already be sorted because we
+        # iterate over them; if the order changes during the iteration then we
+        # will probably not visit the right atoms, and so will get the thermo wrong
+        molecule.sortVertices()
+
+        thermoData = None
+
+        if sum([atom.radicalElectrons for atom in molecule.atoms]) > 0:
+
+            # Make a copy of the structure so we don't change the original
+            saturatedStruct = molecule.copy(deep=True)
+
+            # Saturate structure by replacing all radicals with bonds to
+            # hydrogen atoms
+            added = {}
+            for atom in saturatedStruct.atoms:
+                for i in range(atom.radicalElectrons):
+                    H = Atom('H')
+                    bond = Bond('S')
+                    saturatedStruct.addAtom(H)
+                    saturatedStruct.addBond(atom, H, bond)
+                    if atom not in added:
+                        added[atom] = []
+                    added[atom].append([H, bond])
+                    atom.decrementRadical()
+
+            # Update the atom types of the saturated structure (not sure why
+            # this is necessary, because saturating with H shouldn't be
+            # changing atom types, but it doesn't hurt anything and is not
+            # very expensive, so will do it anyway)
+            saturatedStruct.updateConnectivityValues()
+            saturatedStruct.sortVertices()
+            saturatedStruct.updateAtomTypes()
+
+            # Get thermo estimate for saturated form of structure
+            thermoData = self.getThermoDataFromGroups(saturatedStruct)[0]
+            assert thermoData is not None, "Thermo data of saturated %s of molecule %s is None!" % (saturatedStruct, molecule)
+
+            # For each radical site, get radical correction
+            # Only one radical site should be considered at a time; all others
+            # should be saturated with hydrogen atoms
+            for atom in added:
+
+                # Remove the added hydrogen atoms and bond and restore the radical
+                for H, bond in added[atom]:
+                    saturatedStruct.removeBond(atom, H)
+                    saturatedStruct.removeAtom(H)
+                    atom.incrementRadical()
+
+                saturatedStruct.updateConnectivityValues()
+
+                thermoData += self.__getGroupThermoData(self.groups['radical'], saturatedStruct, {'*':atom})
+
+                # Re-saturate
+                for H, bond in added[atom]:
+                    saturatedStruct.addAtom(H)
+                    saturatedStruct.addBond(atom, H, bond)
+                    atom.decrementRadical()
+
+                # Subtract the enthalpy of the added hydrogens
+                for H, bond in added[atom]:
+                    thermoData.H298 -= 52.103 * 4184
+
+            # Correct the entropy for the symmetry number
+
+        else:
+            # Generate estimate of thermodynamics
+            for atom in molecule.atoms:
+                # Iterate over heavy (non-hydrogen) atoms
+                if atom.isNonHydrogen():
+                    # Get initial thermo estimate from main group database
+                    try:
+                        if thermoData is None:
+                            thermoData = self.__getGroupThermoData(self.groups['group'], molecule, {'*':atom})
+                        else:
+                            thermoData += self.__getGroupThermoData(self.groups['group'], molecule, {'*':atom})
+                    except KeyError:
+                        print molecule
+                        print molecule.toAdjacencyList()
+                        raise
+                    # Correct for gauche and 1,5- interactions
+                    try:
+                        thermoData += self.__getGroupThermoData(self.groups['gauche'], molecule, {'*':atom})
+                    except KeyError: pass
+                    try:
+                        thermoData += self.__getGroupThermoData(self.groups['int15'], molecule, {'*':atom})
+                    except KeyError: pass
+                    try:
+                        thermoData += self.__getGroupThermoData(self.groups['other'], molecule, {'*':atom})
+                    except KeyError: pass
+
+            # Do ring corrections separately because we only want to match
+            # each ring one time; this doesn't work yet
+            rings = molecule.getSmallestSetOfSmallestRings()
+            for ring in rings:
+
+                # Make a temporary structure containing only the atoms in the ring
+                ringStructure = Molecule()
+                for atom in ring: ringStructure.addAtom(atom)
+                for atom1 in ring:
+                    for atom2 in ring:
+                        if molecule.hasBond(atom1, atom2):
+                            ringStructure.addBond(atom1, atom2, molecule.getBond(atom1, atom2))
+
+                # Get thermo correction for this ring
+                thermoData += self.__getGroupThermoData(self.groups['ring'], ringStructure, {})
+
+        # Correct entropy for symmetry number
+        molecule.calculateSymmetryNumber()
+        thermoData.S298.value -= constants.R * math.log(molecule.symmetryNumber)
+
+        if implicitH: molecule.makeHydrogensImplicit()
+
+        return (thermoData, None, None)
+
+    def __getGroupThermoData(self, database, molecule, atom):
+        """
+        Determine the group additivity thermodynamic data for the atom `atom`
+        in the structure `structure`.
+        """
+
+        node0 = database.descendTree(molecule, atom, None)
+
+        if node0 is None:
+            raise KeyError('Node not found in database.')
+
+        # It's possible (and allowed) that items in the tree may not be in the
+        # library, in which case we need to fall up the tree until we find an
+        # ancestor that has an entry in the library
+        node = node0
+        while node.data is None and node is not None:
+            node = node.parent
+        if node is None:
+            raise InvalidDatabaseError('Unable to determine thermo parameters for %s: no library entries for %s or any of its ancestors.' % (molecule, node0) )
+
+        data = node.data
+        while isinstance(data, str) and data is not None:
+            for entry in database.entries.values():
+                if entry.label == data:
+                    data = entry.data
+                    break
+
+
+        # This code prints the hierarchy of the found node; useful for debugging
+        #result = ''
+        #while node is not None:
+        #   result = ' -> ' + node + result
+        #   node = database.tree.parent[node]
+        #print result[4:]
+
+        return data
