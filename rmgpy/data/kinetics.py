@@ -961,6 +961,25 @@ class KineticsGroups(Database):
 
         return productSet
 
+    def reactantMatch(self, reactant, templateReactant):
+        """
+        Return ``True`` if the provided reactant matches the provided
+        template reactant and ``False`` if not, along with a complete list of
+        the identified mappings.
+        """
+        mapsList = []
+        if templateReactant.__class__ == list: templateReactant = templateReactant[0]
+        struct = self.dictionary[templateReactant]
+
+        if isinstance(struct, LogicNode):
+            for child_structure in struct.getPossibleStructures(self.dictionary):
+                ismatch, mappings = reactant.findSubgraphIsomorphisms(child_structure)
+                if ismatch:
+                    mapsList.extend(mappings)
+            return len(mapsList) > 0, mapsList
+        elif isinstance(struct, Molecule):
+            return reactant.findSubgraphIsomorphisms(struct)
+
     def applyRecipe(self, reactantStructures, forward=True, unique=True):
         """
         Apply the recipe for this reaction family to the list of
@@ -1089,6 +1108,397 @@ class KineticsGroups(Database):
 
         # Return the product structures
         return productStructures
+
+    def __generateProductStructures(self, reactantStructures, maps, forward):
+        """
+        For a given set of `reactantStructures` and a given set of `maps`,
+        generate and return the corresponding product structures. The
+        `reactantStructures` parameter should be given in the order the
+        reactants are stored in the reaction family template. The `maps`
+        parameter is a list of mappings of the top-level tree node of each
+        *template* reactant to the corresponding *structure*. This function
+        returns the product structures, species, and a boolean that tells
+        whether any species are new.
+        """
+
+        if not forward: template = self.reverseTemplate
+        else:           template = self.forwardTemplate
+
+        # Clear any previous atom labeling from all reactant structures
+        for struct in reactantStructures: struct.clearLabeledAtoms()
+
+        # If there are two structures and they are the same, then make a copy
+        # of the second one and adjust the second map to point to its atoms
+        # This is for the case where A + A --> products
+        if len(reactantStructures) == 2 and reactantStructures[0] == reactantStructures[1]:
+            reactantStructures[1] = reactantStructures[1].copy(deep=True)
+            newMap = {}
+            for reactantAtom, templateAtom in maps[1].iteritems():
+                index = reactantStructures[0].atoms.index(reactantAtom)
+                newMap[reactantStructures[1].atoms[index]] = templateAtom
+            maps[1] = newMap
+
+        # Tag atoms with labels
+        for map in maps:
+            for reactantAtom, templateAtom in map.iteritems():
+                reactantAtom.label = templateAtom.label
+
+        # Generate the product structures by applying the forward reaction recipe
+        try:
+            productStructures = self.applyRecipe(reactantStructures, forward=forward)
+            if not productStructures: return None
+        except InvalidActionError, e:
+            print 'Unable to apply reaction recipe!'
+            print 'Reaction family is %s in %s direction' % (self.label, 'forward' if forward else 'reverse')
+            print 'Reactant structures are:'
+            for struct in reactantStructures:
+                print struct.toAdjacencyList()
+            raise
+
+        # If there are two product structures, place the one containing '*1' first
+        if len(productStructures) == 2:
+            if not productStructures[0].containsLabeledAtom('*1') and \
+                productStructures[1].containsLabeledAtom('*1'):
+                productStructures.reverse()
+
+        # Check that reactant and product structures are allowed in this family
+        # If not, then stop
+        if self.forbidden is not None:
+            for label, struct2 in self.forbidden.iteritems():
+                for struct in reactantStructures:
+                    if struct.isSubgraphIsomorphic(struct2): return None
+                for struct in productStructures:
+                    if struct.isSubgraphIsomorphic(struct2): return None
+
+        return productStructures
+
+    def __createReaction(self, reactants, products, isForward):
+        """
+        Create and return a new :class:`Reaction` object containing the
+        provided `reactants` and `products` as lists of :class:`Molecule`
+        objects.
+        """
+
+        # Make sure the products are in fact different than the reactants
+        if len(reactants) == len(products) == 1:
+            if reactants[0].isIsomorphic(products[0]):
+                return None
+        elif len(reactants) == len(products) == 2:
+            if reactants[0].isIsomorphic(products[0]) and reactants[1].isIsomorphic(products[1]):
+                return None
+            elif reactants[0].isIsomorphic(products[1]) and reactants[1].isIsomorphic(products[0]):
+                return None
+
+        # We need to save the reactant and product structures with atom labels so
+        # we can generate the kinetics
+        # We make copies so the structures aren't trampled on by later actions
+        reactants = [reactant.copy(deep=True) for reactant in reactants]
+        products = [product.copy(deep=True) for product in products]
+        for reactant in reactants:
+            reactant.updateAtomTypes()
+            reactant.updateConnectivityValues()
+        for product in products:
+            product.updateAtomTypes()
+            product.updateConnectivityValues()
+
+        # Create and return reaction object
+        return Reaction(reactants=reactants, products=products)
+
+    def __matchReactantToTemplate(self, reactant, templateReactant):
+        """
+        Return ``True`` if the provided reactant matches the provided
+        template reactant and ``False`` if not, along with a complete list of the
+        mappings.
+        """
+
+        if isinstance(templateReactant, list): templateReactant = templateReactant[0]
+        struct = templateReactant.item
+        
+        if isinstance(struct, LogicNode):
+            mappings = []
+            for child_structure in struct.getPossibleStructures(self.entries):
+                ismatch, map = reactant.findSubgraphIsomorphisms(child_structure)
+                if ismatch: mappings.extend(map)
+            return len(mappings) > 0, mappings
+        elif isinstance(struct, MoleculePattern):
+            return reactant.findSubgraphIsomorphisms(struct)
+
+    def generateReactions(self, reactants, forward=True):
+        """
+        Generate a list of all of the possible reactions of this family between
+        the list of `reactants`. The number of reactants provided must match
+        the number of reactants expected by the template, or this function
+        will return an empty list. Each item in the list of reactants should
+        be a list of :class:`Molecule` objects, each representing a resonance
+        isomer of the species of interest.
+        """
+
+        rxnList = []; speciesList = []
+
+        for index in range(len(reactants)):
+            if not isinstance(reactants[index], list):
+                reactants[index] = [reactants[index]]
+
+        # Reactants must have explicit hydrogen atoms
+        implicitH = []
+        for reactant in reactants:
+            implicit = []
+            for isomer in reactant:
+                implicit.append(isomer.implicitHydrogens)
+                isomer.makeHydrogensExplicit()
+            implicitH.append(implicit)
+
+        if forward: template = self.forwardTemplate
+        elif not forward and self.reverseTemplate is not None: template = self.reverseTemplate
+        else: return rxnList
+
+        # Unimolecular reactants: A --> products
+        if len(reactants) == 1 and len(template.reactants) == 1:
+
+            # Iterate over all resonance isomers of the reactant
+            for molecule in reactants[0]:
+
+                ismatch, mappings = self.__matchReactantToTemplate(molecule, template.reactants[0])
+                if ismatch:
+                    for map in mappings:
+                        reactantAtomLabels = [{}]
+                        for atom1, atom2 in map.iteritems():
+                            reactantAtomLabels[0][atom1.label] = atom2
+
+                        reactantStructures = [molecule]
+                        productStructures = self.__generateProductStructures(reactantStructures, [map], forward)
+                        if productStructures:
+                            rxn = self.__createReaction(reactantStructures, productStructures, forward)
+                            if rxn: rxnList.append(rxn)
+
+        # Bimolecular reactants: A + B --> products
+        elif len(reactants) == 2 and len(template.reactants) == 2:
+
+            moleculesA = reactants[0]
+            moleculesB = reactants[1]
+
+            # Iterate over all resonance isomers of the reactant
+            for moleculeA in moleculesA:
+                for moleculeB in moleculesB:
+
+                    # Reactants stored as A + B
+                    ismatchA, mappingsA = self.__matchReactantToTemplate(moleculeA, template.reactants[0])
+                    ismatchB, mappingsB = self.__matchReactantToTemplate(moleculeB, template.reactants[1])
+
+                    # Iterate over each pair of matches (A, B)
+                    if ismatchA and ismatchB:
+                        for mapA in mappingsA:
+                            for mapB in mappingsB:
+
+                                reactantAtomLabels = [{},{}]
+                                for atom1, atom2 in mapA.iteritems():
+                                    reactantAtomLabels[0][atom1.label] = atom2
+                                for atom1, atom2 in mapB.iteritems():
+                                    reactantAtomLabels[1][atom1.label] = atom2
+
+                                reactantStructures = [moleculeA, moleculeB]
+                                productStructures = self.__generateProductStructures(reactantStructures, [mapA, mapB], forward)
+                                if productStructures:
+                                    rxn = self.__createReaction(reactantStructures, productStructures, forward)
+                                    if rxn: rxnList.append(rxn)
+
+                    # Only check for swapped reactants if they are different
+                    if reactants[0] is not reactants[1]:
+
+                        # Reactants stored as B + A
+                        ismatchA, mappingsA = self.__matchReactantToTemplate(moleculeA, template.reactants[1])
+                        ismatchB, mappingsB = self.__matchReactantToTemplate(moleculeB, template.reactants[0])
+
+                        # Iterate over each pair of matches (A, B)
+                        if ismatchA and ismatchB:
+                            for mapA in mappingsA:
+                                for mapB in mappingsB:
+
+                                    reactantAtomLabels = [{},{}]
+                                    for atom1, atom2 in mapA.iteritems():
+                                        reactantAtomLabels[0][atom1.label] = atom2
+                                    for atom1, atom2 in mapB.iteritems():
+                                        reactantAtomLabels[1][atom1.label] = atom2
+
+                                    reactantStructures = [moleculeA, moleculeB]
+                                    productStructures = self.__generateProductStructures(reactantStructures, [mapA, mapB], forward)
+                                    if productStructures:
+                                        rxn = self.__createReaction(reactantStructures, productStructures, forward)
+                                        if rxn: rxnList.append(rxn)
+
+        # Remove duplicates from the reaction list
+        index0 = 0
+        while index0 < len(rxnList):
+
+            # Generate resonance isomers for products of the current reaction
+            products = [product.generateResonanceIsomers() for product in rxnList[index0].products]
+
+            index = index0 + 1
+            while index < len(rxnList):
+                # We know the reactants are the same, so we only need to compare the products
+                match = False
+                if len(rxnList[index].products) == len(products) == 1:
+                    for product in products[0]:
+                        if rxnList[index].products[0].isIsomorphic(product):
+                            match = True
+                            break
+                elif len(rxnList[index].products) == len(products) == 2:
+                    for productA in products[0]:
+                        for productB in products[1]:
+                            if rxnList[index].products[0].isIsomorphic(productA) and rxnList[index].products[1].isIsomorphic(productB):
+                                match = True
+                                break
+                            elif rxnList[index].products[0].isIsomorphic(productB) and rxnList[index].products[1].isIsomorphic(productA):
+                                match = True
+                                break
+
+                # If we found a match, remove it from the list
+                # Also increment the reaction path degeneracy of the remaining reaction
+                if match:
+                    rxnList.remove(rxnList[index])
+                    rxnList[index0].degeneracy += 1
+                else:
+                    index += 1
+
+            index0 += 1
+
+        # For R_Recombination reactions, the degeneracy is twice what it should
+        # be, so divide those by two
+        # This is hardcoding of reaction families!
+        if self.label.lower() == 'unimolecular homolysis':
+            for rxn in rxnList:
+                rxn.degeneracy /= 2
+
+        # Restore implicit hydrogen atoms if necessary
+        for reactant, implicit in zip(reactants, implicitH):
+            for isomer, H in zip(reactant, implicit):
+                if H: isomer.makeHydrogensImplicit()
+
+        # This reaction list has only checked for duplicates within itself, not
+        # with the global list of reactions
+        return rxnList
+
+    def getReactionTemplate(self, reaction):
+        """
+        For a given `reaction` with properly-labeled :class:`Molecule` objects
+        as the reactants, determine the most specific nodes in the tree that
+        describe the reaction.
+        """
+
+        # Get forward reaction template and remove any duplicates
+        forwardTemplate = self.top[:]
+
+        temporary = []
+        symmetricTree = False
+        for entry in forwardTemplate:
+            if entry not in temporary:
+                temporary.append(entry)
+            else:
+                # duplicate node found at top of tree
+                # eg. R_recombination: ['Y_rad', 'Y_rad']
+                assert len(forwardTemplate)==2 , 'Can currently only do symmetric trees with nothing else in them'
+                symmetricTree = True
+        forwardTemplate = temporary
+
+        # Descend reactant trees as far as possible
+        template = []
+        for entry in forwardTemplate:
+            # entry is a top-level node that should be matched
+            group = entry.item
+
+            # To sort out "union" groups, descend to the first child that's not a logical node
+            # ...but this child may not match the structure.
+            # eg. an R3 ring node will not match an R4 ring structure.
+            # (but at least the first such child will contain fewest labels - we hope)
+            if isinstance(entry.item, LogicNode):
+                group = entry.item.getPossibleStructures(self.entries)[0]
+
+            atomList = group.getLabeledAtoms() # list of atom labels in highest non-union node
+
+            for reactant in reaction.reactants:
+                # Match labeled atoms
+                # Check this reactant has each of the atom labels in this group
+                if not all([reactant.containsLabeledAtom(label) for label in atomList]):
+                    continue # don't try to match this structure - the atoms aren't there!
+                # Match structures
+                atoms = reactant.getLabeledAtoms()
+                matched_node = self.descendTree(reactant, atoms, root=entry)
+                if matched_node is not None:
+                    template.append(matched_node)
+                else:
+                    logging.warning("Couldn't find match for %s in %s" % (entry,atomList))
+                    logging.warning(reactant.toAdjacencyList())
+
+        # Get fresh templates (with duplicate nodes back in)
+        forwardTemplate = self.top[:]
+        if self.label.lower() == 'r_recombination':
+            forwardTemplate.append(forwardTemplate[0])
+
+        # Check that we were able to match the template.
+        # template is a list of the actual matched nodes
+        # forwardTemplate is a list of the top level nodes that should be matched
+        if len(template) != len(forwardTemplate):
+            logging.warning('Unable to find matching template for reaction %s in reaction family %s' % (str(reaction), str(self)) )
+            logging.warning(" Trying to match " + str(forwardTemplate))
+            logging.warning(" Matched "+str(template))
+            print str(self), template, forwardTemplate
+            for reactant in reaction.reactants:
+                print reactant.toAdjacencyList() + '\n'
+            for product in reaction.products:
+                print product.toAdjacencyList() + '\n'
+            raise UndeterminableKineticsError(reaction)
+
+        return template
+
+    def getKinetics(self, reaction, structures):
+        """
+        Determine the appropriate kinetics for `reaction` which involves the
+        labeled atoms in `atoms`.
+        """
+
+        template = self.getReactionTemplate(reaction)
+
+        # climb the tree finding ancestors
+        nodeLists = []
+        for temp in template:
+            nodeList = []
+            while temp is not None:
+                nodeList.append(temp)
+                temp = self.tree.parent[temp]
+            nodeLists.append(nodeList)
+
+        # Generate all possible combinations of nodes
+        items = getAllCombinations(nodeLists)
+
+        # Generate list of kinetics at every node
+        #logging.debug("   Template contains %s"%forwardTemplate)
+        kinetics = []
+        for item in items:
+            itemData = self.library.getData(item)
+            #logging.debug("   Looking for %s found %r"%(item, itemData))
+            if itemData is not None:
+                kinetics.append(itemData)
+
+            if symmetric_tree: # we might only store kinetics the other way around
+                item.reverse()
+                itemData = self.library.getData(item)
+                #logging.debug("   Also looking for %s found %r"%(item, itemData))
+                if itemData is not None:
+                    kinetics.append(itemData)
+
+        # Make sure we've found at least one set of valid kinetics
+        if len(kinetics) == 0:
+            for reactant in structures:
+                print reactant.toAdjacencyList() + '\n'
+            raise UndeterminableKineticsError(reaction)
+
+        # Choose the best kinetics
+        # For now just return the kinetics with the highest index
+        maxIndex = max([k.index for k in kinetics])
+        kinetics = [k for k in kinetics if k.index == maxIndex][0]
+
+        return kinetics.model
+
 
     def fitGroupValuesFromOldLibrary(self, path, Tlist):
         """
@@ -1362,3 +1772,256 @@ class KineticsDatabase:
         `path` points to the top-level folder of the old RMG database.
         """
         pass
+
+    def generateReactions(self, reactants, products=None):
+        """
+        Generate all reactions between the provided list of one or two
+        `reactants`, which should be :class:`Molecule` objects. This method
+        searches the depository, libraries, and groups, in that order.
+        """
+        reactionList = []
+        reactionList.extend(self.generateReactionsFromDepository(reactants))
+        reactionList.extend(self.generateReactionsFromLibraries(reactants))
+        reactionList.extend(self.generateReactionsFromGroups(reactants))
+
+        # Remove any reactions from the above that don't also involve *all* of the specified products
+        if products is not None:
+            reactionsToRemove = []
+            for reaction in reactionList:
+                rxn = reaction[0]
+                products0 = [p for p in rxn.products]
+                for product in products:
+                    for product0 in products0:
+                        if product.isIsomorphic(product0):
+                            products0.remove(product0)
+                            break
+                if len(products0) != 0:
+                    reactionsToRemove.append(reaction)
+            for reaction in reactionsToRemove:
+                reactionList.remove(reaction)
+
+        return reactionList
+
+    def __reactionMatchesReactants(self, reactants, reaction):
+        """
+        Return ``True`` if the given ``reactants`` represent the total set of
+        reactants or products for the given ``reaction``, or ``False`` if not.
+        The reactants should be :class:`Molecule` objects.
+        """
+        # Check forward direction
+        if len(reactants) == len(reaction.reactants) == 1:
+            if reactants[0].isIsomorphic(reaction.reactants[0]):
+                return True
+        elif len(reactants) == len(reaction.reactants) == 2:
+            if reactants[0].isIsomorphic(reaction.reactants[0]) and reactants[1].isIsomorphic(reaction.reactants[1]):
+                return True
+            elif reactants[0].isIsomorphic(reaction.reactants[1]) and reactants[1].isIsomorphic(reaction.reactants[0]):
+                return True
+
+        # Check reverse direction
+        if len(reactants) == len(reaction.products) == 1:
+            if reactants[0].isIsomorphic(reaction.products[0]):
+                return True
+        elif len(reactants) == len(reaction.products) == 2:
+            if reactants[0].isIsomorphic(reaction.products[0]) and reactants[1].isIsomorphic(reaction.products[1]):
+                return True
+            elif reactants[0].isIsomorphic(reaction.products[1]) and reactants[1].isIsomorphic(reaction.products[0]):
+                return True
+
+        # If we're here then neither direction matched, so return false
+        return False
+
+    def generateReactionsFromDepository(self, reactants, only_families=None):
+        """
+        Generate all reactions between the provided list of one or two
+        `reactants`, which should be :class:`Molecule` objects. This method
+        searches the depository.
+        """
+        reactionList = []
+        for label, depository in self.depository.iteritems():
+            if only_families is None or label in only_families:
+                for entry in depository.entries.values():
+                    if self.__reactionMatchesReactants(reactants, entry.item):
+                        reactionList.append([entry.item, entry.data, depository, entry])
+        return reactionList
+
+    def generateReactionsFromLibraries(self, reactants):
+        """
+        Generate all reactions between the provided list of one or two
+        `reactants`, which should be :class:`Molecule` objects. This method
+        searches the depository.
+        """
+        reactionList = []
+        for label, library in self.libraries.iteritems():
+            reactionList.extend(self.generateReactionsFromLibrary(reactants, library))
+        return reactionList
+
+    def generateReactionsFromLibrary(self, reactants, library):
+        """
+        Generate all reactions between the provided list of one or two
+        `reactants`, which should be :class:`Molecule` objects. This method
+        searches the depository.
+        """
+        reactionList = []
+        for entry in library.entries.values():
+            if self.__reactionMatchesReactants(reactants, entry.item):
+                reactionList.append([entry.item, entry.data, library, entry])
+        return reactionList
+
+    def generateReactionsFromGroups(self, reactants, only_families=None):
+        """
+        Generate all reactions between the provided list of one or two
+        `reactants`, which should be :class:`Molecule` objects. This method
+        searches the depository.
+        """
+        reactionList = []
+        for label, family in self.groups.iteritems():
+            if only_families is None or label in only_families:
+                reactions = family.generateReactions(reactants, forward=True)
+                for reaction in reactions:
+                    reactionList.append([reaction, None, family, None])
+                reactions = family.generateReactions(reactants, forward=False)
+                for reaction in reactions:
+                    reactionList.append([reaction, None, family, None])
+        return reactionList
+
+    def getKineticsData(self, reactants, products, family):
+        """
+        Return the kinetic parameters for a reaction involving lists of
+        `reactants` and `products` and a string name of a reaction `family`.
+        The reactant and product molecules should already have the appropriate
+        reactive atoms labeled. This function first searches the loaded
+        libraries in order, returning the first match found, before falling
+        back to estimation via group additivity.
+        """
+        kineticsData = None
+        # Check the libraries in order first; return the first successful match
+        for label, library in self.libraries.iteritems():
+            kineticsData = self.getKineticsDataFromLibrary(reactants, products, family, library)
+            if kineticsData: break
+        else:
+            # Thermo not found in any loaded libraries, so estimate
+            kineticsData = self.getKineticsDataFromGroups(reactants, products, family)
+        return kineticsData
+
+    def getAllKineticsData(self, reactants, products, family):
+        """
+        Return all possible sets of kinetic parameters for a reaction involving
+        lists of `reactants` and `products` and a string name of a reaction
+        `family`. The reactant and product molecules should already have the
+        appropriate reactive atoms labeled. The hits from the depository come
+        first, then the libraries (in order), and then the group additivity
+        estimate. This method is useful for a generic search job.
+        """
+        kineticsData = []
+        # Data from depository comes first
+        kineticsData.append(self.getKineticsDataFromDepository(reactants, products, family))
+        # Data from libraries comes second
+        for label, library in self.libraries.iteritems():
+            kineticsData.append(self.getKineticsDataFromLibrary(reactants, products, family, library))
+        # Last entry is always the estimate from group additivity
+        kineticsData.append(self.getKineticsDataFromGroups(reactants, products, family))
+        return kineticsData
+
+    def __equivalentReactions(self, reaction, reactants, products):
+        """
+        Return ``True`` if `reaction` has all of the given `reactants` and
+        `products`.
+        """
+        if len(reaction.reactants) != len(reactants) or len(reaction.products) != len(products):
+            return False
+
+        reactantsMatch = False
+        if len(reactants) == 1:
+            reactantsMatch = reaction.reactants[0].isIsomorphic(reactants[0])
+        elif len(reactants) == 2:
+            reactantsMatch = (
+                (reaction.reactants[0].isIsomorphic(reactants[0]) and reaction.reactants[1].isIsomorphic(reactants[1]))
+                or
+                (reaction.reactants[0].isIsomorphic(reactants[1]) and reaction.reactants[1].isIsomorphic(reactants[0]))
+            )
+        elif len(reactants) == 3:
+            reactantsMatch = (
+                (reaction.reactants[0].isIsomorphic(reactants[0]) and reaction.reactants[1].isIsomorphic(reactants[1]) and reaction.reactants[2].isIsomorphic(reactants[2]))
+                or
+                (reaction.reactants[0].isIsomorphic(reactants[0]) and reaction.reactants[1].isIsomorphic(reactants[2]) and reaction.reactants[2].isIsomorphic(reactants[1]))
+                or
+                (reaction.reactants[0].isIsomorphic(reactants[1]) and reaction.reactants[1].isIsomorphic(reactants[0]) and reaction.reactants[2].isIsomorphic(reactants[2]))
+                or
+                (reaction.reactants[0].isIsomorphic(reactants[1]) and reaction.reactants[1].isIsomorphic(reactants[2]) and reaction.reactants[2].isIsomorphic(reactants[0]))
+                or
+                (reaction.reactants[0].isIsomorphic(reactants[2]) and reaction.reactants[1].isIsomorphic(reactants[0]) and reaction.reactants[2].isIsomorphic(reactants[1]))
+                or
+                (reaction.reactants[0].isIsomorphic(reactants[2]) and reaction.reactants[1].isIsomorphic(reactants[1]) and reaction.reactants[2].isIsomorphic(reactants[0]))
+            )
+        if not reactantsMatch: return False
+
+        productsMatch = False
+        if len(reactants) == 1:
+            productsMatch = reaction.products[0].isIsomorphic(products[0])
+        elif len(reactants) == 2:
+            productsMatch = (
+                (reaction.products[0].isIsomorphic(products[0]) and reaction.products[1].isIsomorphic(products[1]))
+                or
+                (reaction.products[0].isIsomorphic(products[1]) and reaction.products[1].isIsomorphic(products[0]))
+            )
+        elif len(reactants) == 3:
+            productsMatch = (
+                (reaction.products[0].isIsomorphic(products[0]) and reaction.products[1].isIsomorphic(products[1]) and reaction.products[2].isIsomorphic(products[2]))
+                or
+                (reaction.products[0].isIsomorphic(products[0]) and reaction.products[1].isIsomorphic(products[2]) and reaction.products[2].isIsomorphic(products[1]))
+                or
+                (reaction.products[0].isIsomorphic(products[1]) and reaction.products[1].isIsomorphic(products[0]) and reaction.products[2].isIsomorphic(products[2]))
+                or
+                (reaction.products[0].isIsomorphic(products[1]) and reaction.products[1].isIsomorphic(products[2]) and reaction.products[2].isIsomorphic(products[0]))
+                or
+                (reaction.products[0].isIsomorphic(products[2]) and reaction.products[1].isIsomorphic(products[0]) and reaction.products[2].isIsomorphic(products[1]))
+                or
+                (reaction.products[0].isIsomorphic(products[2]) and reaction.products[1].isIsomorphic(products[1]) and reaction.products[2].isIsomorphic(products[0]))
+            )
+        if not productsMatch: return False
+
+        return True
+        
+    def getKineticsDataFromDepository(self, reactants, products, family):
+        """
+        Return all possible sets of kinetic parameters for a reaction involving
+        lists of `reactants` and `products` and a string name of a reaction
+        `family` from the depository. The reactant and product molecules should
+        already have the appropriate reactive atoms labeled. If no depository
+        is loaded, a :class:`DatabaseError` is raised.
+        """
+        items = []
+        # First check the family that the reaction belongs to
+        for label, entry in self.depository[family].dictionary.iteritems():
+            if self.__equivalentReactions(entry.item, reactants, products):
+                items.append(entry.data)
+        return items
+
+    def getKineticsDataFromLibrary(self, reactants, products, family, library):
+        """
+        Return all possible sets of kinetic parameters for a reaction involving
+        lists of `reactants` and `products` and a string name of a reaction
+        `family` from the specified kinetics `library`. The reactant and
+        product molecules should already have the appropriate reactive atoms
+        labeled. If `library` is a string, the list of libraries is searched
+        for a library with that name. If no match is found in that library,
+        ``None`` is returned. If no corresponding library is found, a
+        :class:`DatabaseError` is raised.
+        """
+        # In kinetics libraries we don't deal with reaction families
+        for label, entry in library.entries.iteritems():
+            if self.__equivalentReactions(entry.item, reactants, products):
+                return entry.data
+        return None
+
+    def getKineticsDataFromGroups(self, reactants, products, family):
+        """
+        Return all possible sets of kinetic parameters for a reaction involving
+        lists of `reactants` and `products` and a string name of a reaction
+        `family` by estimation using the group additivity values. The reactant
+        and product molecules should already have the appropriate reactive
+        atoms labeled. If no group additivity values are loaded, a
+        :class:`DatabaseError` is raised.
+        """
+        raise NotImplementedError("Kinetics group additivity database has not yet been implemented!")
