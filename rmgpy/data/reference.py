@@ -71,7 +71,7 @@ class Reference:
         reconstruct the object.
         """
         string = 'Reference('
-        if len(self.authors) != 0: string += 'authors=[%s], ' % (', '.join(self.authors))
+        if len(self.authors) != 0: string += 'authors=[%s], ' % (', '.join(['"%s"' % author for author in self.authors]))
         if self.title != '':       string += 'title="""%s""", ' % (self.title)
         if self.year != '':        string += 'year="%s", ' % (self.year)
         if self.url != '':         string += 'url="%s", ' % (self.url)
@@ -141,8 +141,8 @@ class Article(Reference):
         Return a string representation of the reference that can be used to
         reconstruct the object.
         """
-        string = 'Reference('
-        if len(self.authors) != 0: string += 'authors=[%s], ' % (', '.join(self.authors))
+        string = 'Article('
+        if len(self.authors) != 0: string += 'authors=[%s], ' % (', '.join(['"%s"' % author for author in self.authors]))
         if self.title != '':       string += 'title="""%s""", ' % (self.title)
         if self.journal != '':     string += 'journal="%s", ' % (self.journal)
         if self.volume != '':      string += 'volume="%s", ' % (self.volume)
@@ -209,8 +209,8 @@ class Book(Reference):
         Return a string representation of the reference that can be used to
         reconstruct the object.
         """
-        string = 'Reference('
-        if len(self.authors) != 0: string += 'authors=[%s], ' % (', '.join(self.authors))
+        string = 'Book('
+        if len(self.authors) != 0: string += 'authors=[%s], ' % (', '.join(['"%s"' % author for author in self.authors]))
         if self.title != '':       string += 'title="""%s""", ' % (self.title)
         if self.publisher != '':   string += 'publisher="%s", ' % (self.publisher)
         if self.address != '':     string += 'address="%s", ' % (self.address)
@@ -271,8 +271,8 @@ class Thesis(Reference):
         Return a string representation of the reference that can be used to
         reconstruct the object.
         """
-        string = 'Reference('
-        if len(self.authors) != 0: string += 'authors=[%s], ' % (', '.join(self.authors))
+        string = 'Thesis('
+        if len(self.authors) != 0: string += 'authors=[%s], ' % (', '.join(['"%s"' % author for author in self.authors]))
         if self.title != '':       string += 'title="""%s""", ' % (self.title)
         if self.degree != '':      string += 'degree="%s", ' % (self.degree)
         if self.school != '':      string += 'school="%s", ' % (self.school)
