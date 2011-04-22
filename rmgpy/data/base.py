@@ -38,6 +38,7 @@ import os
 import logging
 import quantities as pq
 import re
+import codecs
 
 from rmgpy.chem.molecule import Molecule
 from rmgpy.chem.pattern import MoleculePattern, InvalidAdjacencyListError
@@ -166,7 +167,7 @@ class Database:
         local_context['Thesis'] = Thesis
 
         # Process the file
-        f = open(path)
+        f = open(path, 'r')
         exec f in global_context, local_context
         f.close()
 
@@ -215,7 +216,7 @@ class Database:
         """
         entries = self.getEntriesToSave()
 
-        f = open(path, 'w')
+        f = codecs.open(path, 'w', 'utf-8')
         f.write('name = "%s"\n' % (self.name))
         f.write('shortDesc = "%s"\n' % (self.shortDesc))
         f.write('longDesc = """\n')

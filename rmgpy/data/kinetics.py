@@ -31,6 +31,7 @@
 import os
 import os.path
 import logging
+import codecs
 
 from base import *
 
@@ -843,7 +844,7 @@ class KineticsGroups(Database):
         entries = self.getEntriesToSave()
                 
         # Write the header
-        f = open(path, 'w')
+        f = codecs.open(path, 'w', 'utf-8')
         f.write('name = "%s"\n' % (self.name))
         f.write('shortDesc = "%s"\n' % (self.shortDesc))
         f.write('longDesc = """\n')
