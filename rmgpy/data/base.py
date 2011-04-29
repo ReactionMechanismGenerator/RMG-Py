@@ -147,6 +147,14 @@ class Database:
         a few identifiers required by all data entries, so you don't need to
         provide these.
         """
+
+        # Collision efficiencies are in SMILES format, so we'll need OpenBabel
+        # to convert them to Molecule objects
+        # Do the import here to ensure it is imported from a pure Python
+        # environment (as opposed to a Cythonized environment, which is not
+        # allowed during an exec() call)
+        import pybel
+
         # Clear any previously-loaded data
         self.entries = {}
         self.top = []
