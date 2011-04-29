@@ -300,7 +300,7 @@ class Arrhenius(KineticsModel):
         adjusts the preexponential accordingly.
         """
         self.A.value = (self.T0.value / T0)**self.n
-        self.T0.value = T0.value
+        self.T0.value = T0
 
     def fitToData(self, Tlist, klist, T0=298.15):
         """
