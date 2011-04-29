@@ -802,6 +802,7 @@ class KineticsGroups(Database):
         # Generate the reverse template if necessary
         self.forwardTemplate.reactants = [self.entries[label] for label in self.forwardTemplate.reactants]
         if self.ownReverse:
+            self.forwardTemplate.products = self.forwardTemplate.reactants[:]
             self.reverseTemplate = None
             self.reverseRecipe = None
         else:
