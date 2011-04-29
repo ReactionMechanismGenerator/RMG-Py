@@ -355,11 +355,19 @@ class KineticsDepository(Database):
     def __init__(self, label='', name='', shortDesc='', longDesc=''):
         Database.__init__(self, label=label, name=name, shortDesc=shortDesc, longDesc=longDesc)
 
-    def loadEntry(self, index, label, molecule, kinetics, reference=None, referenceType='', shortDesc='', longDesc='', history=None):
+    def loadEntry(self, index, reactant1, product1, kinetics, reactant2=None, reactant3=None, product2=None, product3=None, degeneracy=1, label='', reference=None, referenceType='', shortDesc='', longDesc='', history=None):
+        reactants = [Molecule().fromAdjacencyList(reactant1)]
+        if reactant2 is not None: reactants.append(Molecule().fromAdjacencyList(reactant2))
+        if reactant3 is not None: reactants.append(Molecule().fromAdjacencyList(reactant3))
+
+        products = [Molecule().fromAdjacencyList(product1)]
+        if product2 is not None: products.append(Molecule().fromAdjacencyList(product2))
+        if product3 is not None: products.append(Molecule().fromAdjacencyList(product3))
+
         self.entries[index] = Entry(
             index = index,
             label = label,
-            item = Molecule().fromAdjacencyList(molecule),
+            item = Reaction(reactants=reactants, products=products, degeneracy=degeneracy),
             data = kinetics,
             reference = reference,
             referenceType = referenceType,
