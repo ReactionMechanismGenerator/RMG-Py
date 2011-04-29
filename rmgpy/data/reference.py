@@ -64,19 +64,19 @@ class Reference:
         self.title = title
         self.year = year
         self.url = url
-    
+
     def __repr__(self):
         """
         Return a string representation of the reference that can be used to
         reconstruct the object.
         """
-        string = 'Reference('
-        if len(self.authors) != 0: string += 'authors=[%s], ' % (', '.join(['"%s"' % author for author in self.authors]))
-        if self.title != '':       string += 'title="""%s""", ' % (self.title)
-        if self.year != '':        string += 'year="%s", ' % (self.year)
-        if self.url != '':         string += 'url="%s", ' % (self.url)
-        if string[-2:] == ', ':    string = string[:-2]
-        return string + ')'
+        string = u'Reference('
+        if len(self.authors) != 0: string += u'authors=[%s], ' % (', '.join(['"%s"' % author for author in self.authors]))
+        if self.title != '':       string += u'title=%r, ' % (self.title)
+        if self.year != '':        string += u'year="%s", ' % (self.year)
+        if self.url != '':         string += u'url="%s", ' % (self.url)
+        if string[-2:] == u', ':   string = string[:-2]
+        return string + u')'
 
     def __str__(self):
         """
@@ -141,17 +141,17 @@ class Article(Reference):
         Return a string representation of the reference that can be used to
         reconstruct the object.
         """
-        string = 'Article('
-        if len(self.authors) != 0: string += 'authors=[%s], ' % (', '.join(['"%s"' % author for author in self.authors]))
-        if self.title != '':       string += 'title="""%s""", ' % (self.title)
-        if self.journal != '':     string += 'journal="%s", ' % (self.journal)
-        if self.volume != '':      string += 'volume="%s", ' % (self.volume)
-        if self.number != '':      string += 'number="%s", ' % (self.number)
-        if self.pages != '':       string += 'pages="""%s""", ' % (self.pages)
-        if self.year != '':        string += 'year="%s", ' % (self.year)
-        if self.url != '':         string += 'url="%s", ' % (self.url)
-        if string[-2:] == ', ':    string = string[:-2]
-        return string + ')'
+        string = u'Article('
+        if len(self.authors) != 0: string += u'authors=[%s], ' % (', '.join(['"%s"' % author for author in self.authors]))
+        if self.title != '':       string += u'title=%r, ' % (self.title)
+        if self.journal != '':     string += u'journal="%s", ' % (self.journal)
+        if self.volume != '':      string += u'volume="%s", ' % (self.volume)
+        if self.number != '':      string += u'number="%s", ' % (self.number)
+        if self.pages != '':       string += u'pages="""%s""", ' % (self.pages)
+        if self.year != '':        string += u'year="%s", ' % (self.year)
+        if self.url != '':         string += u'url="%s", ' % (self.url)
+        if string[-2:] == u', ':   string = string[:-2]
+        return string + u')'
 
     def __str__(self):
         """
@@ -209,18 +209,18 @@ class Book(Reference):
         Return a string representation of the reference that can be used to
         reconstruct the object.
         """
-        string = 'Book('
-        if len(self.authors) != 0: string += 'authors=[%s], ' % (', '.join(['"%s"' % author for author in self.authors]))
-        if self.title != '':       string += 'title="""%s""", ' % (self.title)
-        if self.publisher != '':   string += 'publisher="%s", ' % (self.publisher)
-        if self.address != '':     string += 'address="%s", ' % (self.address)
-        if self.volume != '':      string += 'volume="%s", ' % (self.volume)
-        if self.series != '':      string += 'series="""%s""", ' % (self.series)
-        if self.edition != '':     string += 'edition="""%s""", ' % (self.edition)
-        if self.year != '':        string += 'year="%s", ' % (self.year)
-        if self.url != '':         string += 'url="%s", ' % (self.url)
-        if string[-2:] == ', ':    string = string[:-2]
-        return string + ')'
+        string = u'Book('
+        if len(self.authors) != 0: string += u'authors=[%s], ' % (', '.join(['"%s"' % author for author in self.authors]))
+        if self.title != '':       string += u'title=%r, ' % (self.title)
+        if self.publisher != '':   string += u'publisher="%s", ' % (self.publisher)
+        if self.address != '':     string += u'address="%s", ' % (self.address)
+        if self.volume != '':      string += u'volume="%s", ' % (self.volume)
+        if self.series != '':      string += u'series="""%s""", ' % (self.series)
+        if self.edition != '':     string += u'edition="""%s""", ' % (self.edition)
+        if self.year != '':        string += u'year="%s", ' % (self.year)
+        if self.url != '':         string += u'url="%s", ' % (self.url)
+        if string[-2:] == u', ':   string = string[:-2]
+        return string + u')'
 
     def __str__(self):
         """
@@ -265,21 +265,21 @@ class Thesis(Reference):
         Reference.__init__(self, authors=authors, title=title, year=year, url=url)
         self.degree = degree
         self.school = school
-    
+
     def __repr__(self):
         """
         Return a string representation of the reference that can be used to
         reconstruct the object.
         """
-        string = 'Thesis('
-        if len(self.authors) != 0: string += 'authors=[%s], ' % (', '.join(['"%s"' % author for author in self.authors]))
-        if self.title != '':       string += 'title="""%s""", ' % (self.title)
-        if self.degree != '':      string += 'degree="%s", ' % (self.degree)
-        if self.school != '':      string += 'school="%s", ' % (self.school)
-        if self.year != '':        string += 'year="%s", ' % (self.year)
-        if self.url != '':         string += 'url="%s", ' % (self.url)
-        if string[-2:] == ', ':    string = string[:-2]
-        return string + ')'
+        string = u'Thesis('
+        if len(self.authors) != 0: string += u'authors=[%s], ' % (', '.join(['"%s"' % author for author in self.authors]))
+        if self.title != '':       string += u'title=%r, ' % (self.title)
+        if self.degree != '':      string += u'degree="%s", ' % (self.degree)
+        if self.school != '':      string += u'school="%s", ' % (self.school)
+        if self.year != '':        string += u'year="%s", ' % (self.year)
+        if self.url != '':         string += u'url="%s", ' % (self.url)
+        if string[-2:] == u', ':   string = string[:-2]
+        return string + u')'
 
     def __str__(self):
         """
