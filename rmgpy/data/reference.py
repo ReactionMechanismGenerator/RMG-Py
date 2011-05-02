@@ -95,17 +95,25 @@ class Reference:
         """
         Return a pretty, reStructuredText-formatted string of the authors.
         """
+        authors = ''
         if self.authors is not None and len(self.authors) > 0:
             if len(self.authors) == 1:
-                return '%s.' % (self.authors[0])
+                authors = '%s.' % (self.authors[0])
             elif len(self.authors) == 2:
-                return '%s and %s.' % (self.authors[0])
+                authors = '%s and %s.' % (self.authors[0], self.authors[1])
             elif self.authors[-1] == 'et al':
-                return '%s et al.' % (', '.join(self.authors[:-1]))
+                authors = '%s et al.' % (', '.join(self.authors[:-1]))
             else:
-                return '%s, and %s.' % (', '.join(self.authors[:-1]), self.authors[-1])
-        else:
-            return ''
+                authors = '%s, and %s.' % (', '.join(self.authors[:-1]), self.authors[-1])
+            # reStructuredText automatically interprets "A." et al as a 
+            # numbered list; this suppresses that behavior
+            if authors[1:3] == '. ':
+                authors = authors[0:2] + '\ ' + authors[2:]
+            # If the last author is of the form "Lastname, A. B.", this will
+            # remove the extra period at the end of the sentence
+            if authors[-2:] == '..':
+                authors = authors[:-1]
+        return authors
 
 ################################################################################
 
