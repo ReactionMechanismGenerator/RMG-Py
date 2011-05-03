@@ -217,13 +217,13 @@ def execute(args):
     else:
         data = args.walltime[0].split(':')
         if len(data) == 1:
-            settings.walltime = int(data[-1])
+            settings.wallTime = int(data[-1])
         elif len(data) == 2:
-            settings.walltime = int(data[-1]) + 60 * int(data[-2])
+            settings.wallTime = int(data[-1]) + 60 * int(data[-2])
         elif len(data) == 3:
-            settings.walltime = int(data[-1]) + 60 * int(data[-2]) + 3600 * int(data[-3])
+            settings.wallTime = int(data[-1]) + 60 * int(data[-2]) + 3600 * int(data[-3])
         elif len(data) == 4:
-            settings.walltime = int(data[-1]) + 60 * int(data[-2]) + 3600 * int(data[-3]) + 86400 * int(data[-4])
+            settings.wallTime = int(data[-1]) + 60 * int(data[-2]) + 3600 * int(data[-3]) + 86400 * int(data[-4])
         else:
             raise ValueError('Invalid format for wall time; should be HH:MM:SS.')
 
@@ -382,7 +382,7 @@ def execute(args):
         if settings.wallTime > 0 and len(execTime) > 1:
             t = execTime[-1]
             dt = execTime[-1] - execTime[-2]
-            if t + 2 * dt > settings.wallTime:
+            if t + 3 * dt > settings.wallTime:
                 logging.info('MODEL GENERATION TERMINATED')
                 logging.info('')
                 logging.info('There is not enough time to complete the next iteration before the wall time is reached.')
