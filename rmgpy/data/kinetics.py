@@ -1082,28 +1082,15 @@ class KineticsGroups(Database):
         # Make sure we've made the expected number of products
         if len(template.products) != len(productStructures):
             # We have a different number of products than expected by the template.
-            # It might be because we found a ring-opening using a homolysis template
-            if (label=='r_recombination' and not forward
-             and len(productStructures) == 1
-             and len(reactantStructures) == 1):
-                # just be absolutely sure (maybe slow, but safe)
-                rs = reactantStructures[0]
-                if ( rs.isVertexInCycle(rs.getLabeledAtom('*1'))
-                 and rs.isVertexInCycle(rs.getLabeledAtom('*2'))):
-                    # both *1 and *2 are in cycles (probably the same one)
-                    # so it's pretty safe to just fail quietly,
-                    # and try the next reaction
-                    return None
-
-            # no other excuses, raise an exception
-            message = 'Application of reaction recipe failed; expected %s product(s), but %s found.\n' % (len(template.products), len(productStructures))
-            message += "Reaction family: %s \n"% (self)
-            message += "Reactant structures: %s \n" % (reactantStructures)
-            message += "Product structures: %s \n" % (productStructures)
-            message += "Template: %s" % (template)
-            logging.error(message)
-            #return None # don't fail!!! muhahaha
-            raise Exception(message)
+            # By definition this means that the template is not a match, so
+            # we return None to indicate that we could not generate the product
+            # structures
+            # We need to think this way in order to distinguish between
+            # intermolecular and intramolecular versions of reaction families,
+            # which will have very different kinetics
+            # Unfortunately this may also squash actual errors with malformed
+            # reaction templates
+            return None
 
         # If there are two product structures, place the one containing '*1' first
         if len(productStructures) == 2:
