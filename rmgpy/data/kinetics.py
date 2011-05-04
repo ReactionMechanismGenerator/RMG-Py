@@ -1657,6 +1657,7 @@ class KineticsDatabase:
         self.libraries = {}
         self.groups = {}
         self.local_context = {
+            'KineticsData': KineticsData,
             'Arrhenius': Arrhenius,
             'ArrheniusEP': ArrheniusEP,
             'MultiArrhenius': MultiArrhenius,

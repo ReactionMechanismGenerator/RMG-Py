@@ -10,9 +10,12 @@ the new database.
 
 import os
 import time
+import math
 import argparse
 
+from rmgpy.chem.kinetics import KineticsData
 from rmgpy.data.rmg import RMGDatabase
+from rmgpy.data.kinetics import KineticsDatabase, KineticsGroups
 
 ################################################################################
 
@@ -37,6 +40,41 @@ kinetics group additivity values from the rate rules.
 
 ################################################################################
 
+def generateKineticsGroups(inputDirectory, family, Tdata):
+    """
+    Generate kinetics group additivity values for the given reaction `family`
+    name at the specified temperatures `Tdata`. The `inputDirectory` is the
+    path to the old-style RMG database to load the rate rules from.
+    """
+
+    database = KineticsDatabase()
+
+    root = os.path.join(inputDirectory, 'kinetics_groups', family)
+    if os.path.exists(os.path.join(root, 'dictionary.txt')) and os.path.exists(os.path.join(root, 'rateLibrary.txt')):
+
+        # Load the old kinetics rate rules
+        group = KineticsGroups(label=os.path.basename(root), name=os.path.basename(root))
+        group.loadOld(root)
+        database.groups[group.label] = group
+
+        # Generate the new kinetics group additivity values
+        groupValues0, groupUncertainties0, groupCounts, templates, kdata, kmodel = group.fitGroupValuesFromOldLibrary(root, Tdata)
+
+        # Postprocess the fitted group values and uncertainies
+        groupValues = {}
+        for entry, data in groupValues0.iteritems():
+            if data is not None:
+                groupValues[entry.label] = data
+        groupUncertainties = {}
+        for entry, data in groupUncertainties0.iteritems():
+            if data is not None:
+                if not any([(math.isinf(d) or math.isnan(d)) for d in data]):
+                    groupUncertainties[entry.label] = data
+
+    return groupValues, groupUncertainties
+
+################################################################################
+
 if __name__ == '__main__':
 
     # Parse the command-line arguments
@@ -50,7 +88,37 @@ if __name__ == '__main__':
     database.loadOld(inputDirectory)
 
     # Generate kinetics group additivity values from old rate rules
-    print 'Warning: Not yet generating kinetics group additivity values!'
+    print 'Generating kinetics group additivity values...'
+    Tdata = [300,400,500,600,800,1000,1500,2000]
+    for familyLabel, family in database.kinetics.groups.iteritems():
+        print '    %s...' % (familyLabel)
+
+        # Determine units of generated rate coefficients
+        numReactants = len(family.forwardTemplate.reactants)
+        if numReactants == 1:
+            kunits = 's^-1'
+        elif numReactants == 2:
+            kunits = 'm^3/(mol*s)'
+        else:
+            raise Exception("Unexpected number of reactants %i in forward template of reaction family %s." % (numReactants, familyLabel))
+
+        # Generate and store the group values
+        groupValues, groupUncertainties = generateKineticsGroups(inputDirectory, familyLabel, Tdata)
+        for label, entry in family.entries.iteritems():
+            if label in groupValues:
+                if label in groupUncertainties:
+                    kdata = (groupValues[label],kunits,"*|/",groupUncertainties[label])
+                else:
+                    kdata = (groupValues[label],kunits)
+                entry.data = KineticsData(
+                    Tdata=(Tdata,"K"),
+                    kdata=kdata,
+                    Tmin=(Tdata[0],"K"),
+                    Tmax=(Tdata[-1],"K"),
+                    comment='Fitted from RMG-Java rate rules',
+                )
+            else:
+                entry.data = None
 
     # Add history item to each entry in each database (saying that JWA added them all!)
     print 'Setting history of all entries in database...'
