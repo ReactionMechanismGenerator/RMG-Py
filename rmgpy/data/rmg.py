@@ -33,6 +33,7 @@ This module contains the :class:`RMGDatabase` class, which is the primary class
 for working with the RMG database.
 """
 
+import os
 import os.path
 
 from thermo import ThermoDatabase
@@ -87,6 +88,7 @@ class RMGDatabase:
         """
         Save the RMG database to the given `path` on disk.
         """
+        if not os.path.exists(path): os.mkdir(path)
         self.thermo.save(os.path.join(path, 'thermo'))
         self.kinetics.save(os.path.join(path, 'kinetics'))
 
@@ -94,5 +96,6 @@ class RMGDatabase:
         """
         Save the old RMG database to the given `path` on disk.
         """
+        if not os.path.exists(path): os.mkdir(path)
         self.thermo.saveOld(path)
         self.kinetics.saveOld(path)

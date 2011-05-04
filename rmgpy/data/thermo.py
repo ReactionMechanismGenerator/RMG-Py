@@ -33,6 +33,7 @@
 """
 
 import os
+import os.path
 import math
 import logging
 import numpy
@@ -342,18 +343,27 @@ class ThermoDatabase:
         Save the thermo database to the given `path` on disk, where `path`
         points to the top-level folder of the thermo database.
         """
-        self.depository['stable'].save(os.path.join(path, 'depository', 'stable.py'))
-        self.depository['radical'].save(os.path.join(path, 'depository', 'radical.py'))
+        path = os.path.abspath(path)
+        if not os.path.exists(path): os.mkdir(path)
 
+        depositoryPath = os.path.join(path, 'depository')
+        if not os.path.exists(depositoryPath): os.mkdir(depositoryPath)
+        self.depository['stable'].save(os.path.join(depositoryPath, 'stable.py'))
+        self.depository['radical'].save(os.path.join(depositoryPath, 'radical.py'))
+
+        librariesPath = os.path.join(path, 'libraries')
+        if not os.path.exists(librariesPath): os.mkdir(librariesPath)
         for library in self.libraries.values():
-            library.save(os.path.join(path, 'libraries', '%s.py' % (library.label)))
+            library.save(os.path.join(librariesPath, '%s.py' % (library.label)))
         
-        self.groups['group'].save(os.path.join(path, 'groups', 'group.py'))
-        self.groups['gauche'].save(os.path.join(path, 'groups', 'gauche.py'))
-        self.groups['int15'].save(os.path.join(path, 'groups', 'int15.py'))
-        self.groups['ring'].save(os.path.join(path, 'groups', 'ring.py'))
-        self.groups['radical'].save(os.path.join(path, 'groups', 'radical.py'))
-        self.groups['other'].save(os.path.join(path, 'groups', 'other.py'))
+        groupsPath = os.path.join(path, 'groups')
+        if not os.path.exists(groupsPath): os.mkdir(groupsPath)
+        self.groups['group'].save(os.path.join(groupsPath, 'group.py'))
+        self.groups['gauche'].save(os.path.join(groupsPath, 'gauche.py'))
+        self.groups['int15'].save(os.path.join(groupsPath, 'int15.py'))
+        self.groups['ring'].save(os.path.join(groupsPath, 'ring.py'))
+        self.groups['radical'].save(os.path.join(groupsPath, 'radical.py'))
+        self.groups['other'].save(os.path.join(groupsPath, 'other.py'))
 
     def loadOld(self, path):
         """
@@ -437,42 +447,48 @@ class ThermoDatabase:
 
         # Depository not used in old database, so it is not saved
 
+        librariesPath = os.path.join(path, 'thermo_libraries')
+        if not os.path.exists(librariesPath): os.mkdir(librariesPath)
         for library in self.libraries.values():
+            libraryPath = os.path.join(librariesPath, library.label)
+            if not os.path.exists(libraryPath): os.mkdir(libraryPath)
             library.saveOld(
-                dictstr = os.path.join(path, 'thermo_libraries', library.label, 'Dictionary.txt'),
+                dictstr = os.path.join(libraryPath, 'Dictionary.txt'),
                 treestr = '',
-                libstr = os.path.join(path, 'thermo_libraries', library.label, 'Library.txt'),
+                libstr = os.path.join(libraryPath, 'Library.txt'),
             )
 
+        groupsPath = os.path.join(path, 'thermo_groups')
+        if not os.path.exists(groupsPath): os.mkdir(groupsPath)
         self.groups['group'].saveOld(
-            dictstr = os.path.join(path, 'thermo_groups', 'Group_Dictionary.txt'),
-            treestr = os.path.join(path, 'thermo_groups', 'Group_Tree.txt'),
-            libstr = os.path.join(path, 'thermo_groups', 'Group_Library.txt'),
+            dictstr = os.path.join(groupsPath, 'Group_Dictionary.txt'),
+            treestr = os.path.join(groupsPath, 'Group_Tree.txt'),
+            libstr = os.path.join(groupsPath, 'Group_Library.txt'),
         )
         self.groups['gauche'].saveOld(
-            dictstr = os.path.join(path, 'thermo_groups', 'Gauche_Dictionary.txt'),
-            treestr = os.path.join(path, 'thermo_groups', 'Gauche_Tree.txt'),
-            libstr = os.path.join(path, 'thermo_groups', 'Gauche_Library.txt'),
+            dictstr = os.path.join(groupsPath, 'Gauche_Dictionary.txt'),
+            treestr = os.path.join(groupsPath, 'Gauche_Tree.txt'),
+            libstr = os.path.join(groupsPath, 'Gauche_Library.txt'),
         )
         self.groups['int15'].saveOld(
-            dictstr = os.path.join(path, 'thermo_groups', '15_Dictionary.txt'),
-            treestr = os.path.join(path, 'thermo_groups', '15_Tree.txt'),
-            libstr = os.path.join(path, 'thermo_groups', '15_Library.txt'),
+            dictstr = os.path.join(groupsPath, '15_Dictionary.txt'),
+            treestr = os.path.join(groupsPath, '15_Tree.txt'),
+            libstr = os.path.join(groupsPath, '15_Library.txt'),
         )
         self.groups['radical'].saveOld(
-            dictstr = os.path.join(path, 'thermo_groups', 'Radical_Dictionary.txt'),
-            treestr = os.path.join(path, 'thermo_groups', 'Radical_Tree.txt'),
-            libstr = os.path.join(path, 'thermo_groups', 'Radical_Library.txt'),
+            dictstr = os.path.join(groupsPath, 'Radical_Dictionary.txt'),
+            treestr = os.path.join(groupsPath, 'Radical_Tree.txt'),
+            libstr = os.path.join(groupsPath, 'Radical_Library.txt'),
         )
         self.groups['ring'].saveOld(
-            dictstr = os.path.join(path, 'thermo_groups', 'Ring_Dictionary.txt'),
-            treestr = os.path.join(path, 'thermo_groups', 'Ring_Tree.txt'),
-            libstr = os.path.join(path, 'thermo_groups', 'Ring_Library.txt'),
+            dictstr = os.path.join(groupsPath, 'Ring_Dictionary.txt'),
+            treestr = os.path.join(groupsPath, 'Ring_Tree.txt'),
+            libstr = os.path.join(groupsPath, 'Ring_Library.txt'),
         )
         self.groups['other'].saveOld(
-            dictstr = os.path.join(path, 'thermo_groups', 'Other_Dictionary.txt'),
-            treestr = os.path.join(path, 'thermo_groups', 'Other_Tree.txt'),
-            libstr = os.path.join(path, 'thermo_groups', 'Other_Library.txt'),
+            dictstr = os.path.join(groupsPath, 'Other_Dictionary.txt'),
+            treestr = os.path.join(groupsPath, 'Other_Tree.txt'),
+            libstr = os.path.join(groupsPath, 'Other_Library.txt'),
         )
 
     def getThermoData(self, molecule):

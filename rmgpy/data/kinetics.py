@@ -1723,9 +1723,12 @@ class KineticsDatabase:
         """
 
         path = os.path.abspath(path)
+        if not os.path.exists(path): os.mkdir(path)
 
+        depositoryPath = os.path.join(path, 'depository')
+        if not os.path.exists(depositoryPath): os.mkdir(depositoryPath)
         for label, depository in self.depository.iteritems():
-            depository.save(os.path.join(path, 'depository', '%s.py' % label))
+            depository.save(os.path.join(depositoryPath, '%s.py' % label))
 
         for label, library in self.libraries.iteritems():
             folders = label.split(os.sep)
@@ -1735,8 +1738,10 @@ class KineticsDatabase:
                 pass
             library.save(os.path.join(path, 'libraries', '%s.py' % label))
 
+        groupsPath = os.path.join(path, 'groups')
+        if not os.path.exists(groupsPath): os.mkdir(groupsPath)
         for label, family in self.groups.iteritems():
-            family.save(os.path.join(path, 'groups', '%s.py' % label))
+            family.save(os.path.join(groupsPath, '%s.py' % label))
 
     def loadOld(self, path):
         """
