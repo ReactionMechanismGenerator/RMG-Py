@@ -195,6 +195,24 @@ class KineticsData(KineticsModel):
         """
         return (KineticsData, (self.Tdata, self.kdata, self.Tmin, self.Tmax, self.comment))
 
+    def __mul__(self, other):
+        """
+        Multiply two sets of kinetics data together. Returns a new
+        :class:`KineticsData` object that is the product of the two sets of
+        kinetics data.
+        """
+        cython.declare(i=int, new=KineticsData)
+        if len(self.Tdata.values) != len(other.Tdata.values) or any([T1 != T2 for T1, T2 in zip(self.Tdata.values, other.Tdata.values)]):
+            raise KineticsError('Cannot add these KineticsData objects due to their having different temperature points.')
+        new = KineticsData(
+            Tdata = self.Tdata,
+            kdata = (self.kdata.values * other.kdata.values, self.kdata.units),
+        )
+        if self.comment == '': new.comment = other.comment
+        elif other.comment == '': new.comment = self.comment
+        else: new.comment = self.comment + ' + ' + other.comment
+        return new
+
     def isPressureDependent(self):
         """
         Returns ``False`` since KineticsDataModel kinetics are not
