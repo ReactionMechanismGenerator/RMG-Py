@@ -1488,55 +1488,33 @@ class KineticsGroups(Database):
 
         return template
 
-    def getKinetics(self, reaction, structures):
+    def getKinetics(self, reaction, degeneracy=1):
         """
         Determine the appropriate kinetics for `reaction` which involves the
         labeled atoms in `atoms`.
         """
 
+        # Start with the generic kinetics of the top-level nodes
+        kinetics = None
+        for entry in self.forwardTemplate.reactants:
+            if kinetics is None and entry.data is not None:
+                kinetics = entry.data
+
+        # Get the most specific nodes in the tree for each reactant
         template = self.getReactionTemplate(reaction)
 
-        # climb the tree finding ancestors
-        nodeLists = []
-        for temp in template:
-            nodeList = []
-            while temp is not None:
-                nodeList.append(temp)
-                temp = self.tree.parent[temp]
-            nodeLists.append(nodeList)
+        # Now add in more specific corrections if possible
+        for node in template:
+            entry = node
+            while entry.data is None and entry not in self.forwardTemplate.reactants:
+                entry = entry.parent
+            if entry.data is not None and entry not in self.forwardTemplate.reactants:
+                kinetics *= entry.data
 
-        # Generate all possible combinations of nodes
-        items = getAllCombinations(nodeLists)
+        # Also include reaction-path degeneracy
+        kinetics.kdata.values *= degeneracy
 
-        # Generate list of kinetics at every node
-        #logging.debug("   Template contains %s"%forwardTemplate)
-        kinetics = []
-        for item in items:
-            itemData = self.library.getData(item)
-            #logging.debug("   Looking for %s found %r"%(item, itemData))
-            if itemData is not None:
-                kinetics.append(itemData)
-
-            if symmetric_tree: # we might only store kinetics the other way around
-                item.reverse()
-                itemData = self.library.getData(item)
-                #logging.debug("   Also looking for %s found %r"%(item, itemData))
-                if itemData is not None:
-                    kinetics.append(itemData)
-
-        # Make sure we've found at least one set of valid kinetics
-        if len(kinetics) == 0:
-            for reactant in structures:
-                print reactant.toAdjacencyList() + '\n'
-            raise UndeterminableKineticsError(reaction)
-
-        # Choose the best kinetics
-        # For now just return the kinetics with the highest index
-        maxIndex = max([k.index for k in kinetics])
-        kinetics = [k for k in kinetics if k.index == maxIndex][0]
-
-        return kinetics.model
-
+        return kinetics
 
     def fitGroupValuesFromOldLibrary(self, path, Tlist):
         """
