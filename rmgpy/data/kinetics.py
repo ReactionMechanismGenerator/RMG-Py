@@ -60,6 +60,47 @@ class InvalidActionError(Exception):
 
 ################################################################################
 
+class DepositoryReaction(Reaction):
+    """
+    A Reaction object generated from a reaction depository. In addition to the
+    usual attributes, this class includes `depository` and `entry` attributes to
+    store the library and the entry in that depository that it was created from.
+    """
+
+    def __init__(self, index=-1, reactants=None, products=None, kinetics=None, reversible=True, transitionState=None, thirdBody=False, degeneracy=1, depository=None, entry=None):
+        Reaction.__init__(self, index, reactants, products, kinetics, reversible, transitionState, thirdBody, degeneracy)
+        self.depository = depository
+        self.entry = entry
+
+################################################################################
+
+class LibraryReaction(Reaction):
+    """
+    A Reaction object generated from a reaction library. In addition to the
+    usual attributes, this class includes `library` and `entry` attributes to
+    store the library and the entry in that library that it was created from.
+    """
+
+    def __init__(self, index=-1, reactants=None, products=None, kinetics=None, reversible=True, transitionState=None, thirdBody=False, degeneracy=1, library=None, entry=None):
+        Reaction.__init__(self, index, reactants, products, kinetics, reversible, transitionState, thirdBody, degeneracy)
+        self.library = library
+        self.entry = entry
+
+################################################################################
+
+class TemplateReaction(Reaction):
+    """
+    A Reaction object generated from a reaction family template. In addition to
+    the usual attributes, this class includes a `family` attribute to store the
+    family that it was created from.
+    """
+
+    def __init__(self, index=-1, reactants=None, products=None, kinetics=None, reversible=True, transitionState=None, thirdBody=False, degeneracy=1, family=None):
+        Reaction.__init__(self, index, reactants, products, kinetics, reversible, transitionState, thirdBody, degeneracy)
+        self.family = family
+
+################################################################################
+
 class ReactionRecipe:
     """
     Represent a list of actions that, when executed, result in the conversion
@@ -1845,7 +1886,17 @@ class KineticsDatabase:
             if only_families is None or label in only_families:
                 for entry in depository.entries.values():
                     if self.__reactionMatchesReactants(reactants, entry.item):
-                        reactionList.append([entry.item, entry.data, depository, entry])
+                        reaction = DepositoryReaction(
+                            reactants = entry.item.reactants[:],
+                            products = entry.item.products[:],
+                            degeneracy = entry.item.degeneracy,
+                            thirdBody = entry.item.thirdBody,
+                            reversible = entry.item.reversible,
+                            kinetics = entry.data,
+                            depository = depository,
+                            entry = entry,
+                        )
+                        reactionList.append(reaction)
         return reactionList
 
     def generateReactionsFromLibraries(self, reactants):
@@ -1868,7 +1919,17 @@ class KineticsDatabase:
         reactionList = []
         for entry in library.entries.values():
             if self.__reactionMatchesReactants(reactants, entry.item):
-                reactionList.append([entry.item, entry.data, library, entry])
+                reaction = LibraryReaction(
+                    reactants = entry.item.reactants[:],
+                    products = entry.item.products[:],
+                    degeneracy = entry.item.degeneracy,
+                    thirdBody = entry.item.thirdBody,
+                    reversible = entry.item.reversible,
+                    kinetics = entry.data,
+                    library = library,
+                    entry = entry,
+                )
+                reactionList.append(reaction)
         return reactionList
 
     def generateReactionsFromGroups(self, reactants, only_families=None):
@@ -1880,12 +1941,37 @@ class KineticsDatabase:
         reactionList = []
         for label, family in self.groups.iteritems():
             if only_families is None or label in only_families:
+
+                # Forward direction (the direction in which kinetics is defined)
                 reactions = family.generateReactions(reactants, forward=True)
-                for reaction in reactions:
-                    reactionList.append([reaction, None, family, None])
+                for rxn in reactions:
+                    reaction = TemplateReaction(
+                        reactants = rxn.reactants[:],
+                        products = rxn.products[:],
+                        degeneracy = rxn.degeneracy,
+                        thirdBody = rxn.thirdBody,
+                        reversible = rxn.reversible,
+                        family = family,
+                    )
+                    reactionList.append(reaction)
+
+                # Reverse direction (the direction in which kinetics is not defined)
                 reactions = family.generateReactions(reactants, forward=False)
-                for reaction in reactions:
-                    reactionList.append([reaction, None, family, None])
+                for rxn in reactions:
+                    reaction = TemplateReaction(
+                        reactants = rxn.products[:],
+                        products = rxn.reactants[:],
+                        degeneracy = rxn.degeneracy,
+                        thirdBody = rxn.thirdBody,
+                        reversible = rxn.reversible,
+                        family = family,
+                    )
+                    reactionList.append(reaction)
+
+        # While we're here, we might as well get the kinetics too
+        for reaction in reactionList:
+            reaction.kinetics = reaction.family.getKinetics(reaction, degeneracy=reaction.degeneracy)
+
         return reactionList
 
     def getKineticsData(self, reactants, products, family):
