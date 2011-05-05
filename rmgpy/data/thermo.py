@@ -42,7 +42,7 @@ from base import Database, Entry, makeLogicNode
 
 import rmgpy.chem.constants as constants
 from rmgpy.chem.thermo import *
-from rmgpy.chem.molecule import Molecule
+from rmgpy.chem.molecule import Molecule, Atom, Bond
 from rmgpy.chem.pattern import MoleculePattern
 
 ################################################################################
@@ -516,7 +516,7 @@ class ThermoDatabase:
         else:
             # Thermo not found in any loaded libraries, so estimate
             thermoData = self.getThermoDataFromGroups(molecule)
-        return thermoData
+        return thermoData[0]
 
     def getAllThermoData(self, molecule):
         """
@@ -636,7 +636,7 @@ class ThermoDatabase:
 
                 # Subtract the enthalpy of the added hydrogens
                 for H, bond in added[atom]:
-                    thermoData.H298 -= 52.103 * 4184
+                    thermoData.H298.value -= 52.103 * 4184
 
             # Correct the entropy for the symmetry number
 
