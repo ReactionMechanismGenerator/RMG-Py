@@ -72,6 +72,12 @@ class DepositoryReaction(Reaction):
         self.depository = depository
         self.entry = entry
 
+    def __reduce__(self):
+        """
+        A helper function used when pickling an object.
+        """
+        return (DepositoryReaction, (self.index, self.reactants, self.products, self.kinetics, self.reversible, self.transitionState, self.thirdBody, self.degeneracy, self.depository, self.entry))
+
 ################################################################################
 
 class LibraryReaction(Reaction):
@@ -86,6 +92,12 @@ class LibraryReaction(Reaction):
         self.library = library
         self.entry = entry
 
+    def __reduce__(self):
+        """
+        A helper function used when pickling an object.
+        """
+        return (LibraryReaction, (self.index, self.reactants, self.products, self.kinetics, self.reversible, self.transitionState, self.thirdBody, self.degeneracy, self.library, self.entry))
+
 ################################################################################
 
 class TemplateReaction(Reaction):
@@ -98,6 +110,12 @@ class TemplateReaction(Reaction):
     def __init__(self, index=-1, reactants=None, products=None, kinetics=None, reversible=True, transitionState=None, thirdBody=False, degeneracy=1, family=None):
         Reaction.__init__(self, index, reactants, products, kinetics, reversible, transitionState, thirdBody, degeneracy)
         self.family = family
+
+    def __reduce__(self):
+        """
+        A helper function used when pickling an object.
+        """
+        return (TemplateReaction, (self.index, self.reactants, self.products, self.kinetics, self.reversible, self.transitionState, self.thirdBody, self.degeneracy, self.family))
 
 ################################################################################
 
