@@ -250,7 +250,7 @@ def execute(args):
     makeOutputSubdirectory('chemkin')
     
     # Read input file
-    reactionModel, coreSpecies, reactionSystems = readInputFile(inputFile)
+    reactionModel, coreSpecies, reactionSystems, database, seedMechanisms = readInputFile(inputFile)
     
     # Initialize reaction model
     if args.restart:
@@ -259,24 +259,21 @@ def execute(args):
 
         # Seed mechanisms: add species and reactions from seed mechanism
         # DON'T generate any more reactions for the seed species at this time
-        import rmgpy.data.kinetics
-        from rmgpy.rmg.model import Reaction
-        for kineticsDatabase in rmgpy.data.kinetics.kineticsDatabases:
-            if isinstance(kineticsDatabase, rmgpy.data.kinetics.KineticsPrimaryDatabase) and kineticsDatabase.isSeedMechanism():
-                reactionModel.addSeedMechanismToCore(kineticsDatabase, react=False)
-
+        for seedMechanism in seedMechanisms:
+            reactionModel.addSeedMechanismToCore(seedMechanism, react=False)
+        
         # Add nonreactive species (e.g. bath gases) to core first
         # This is necessary so that the PDep algorithm can identify the bath gas
         for spec in coreSpecies:
             if not spec.reactive:
-                reactionModel.enlarge(spec)
+                reactionModel.enlarge(spec, database)
         # Then add remaining reactive species
         for spec in coreSpecies:
             if spec.reactive:
-                spec.generateThermoData()
+                spec.generateThermoData(database)
         for spec in coreSpecies:
             if spec.reactive:
-                reactionModel.enlarge(spec)
+                reactionModel.enlarge(spec, database)
 
     # RMG execution statistics
     coreSpeciesCount = []
@@ -335,7 +332,7 @@ def execute(args):
             logging.info('')
             objectsToEnlarge = list(set(objectsToEnlarge))
             for object in objectsToEnlarge:
-                reactionModel.enlarge(object)
+                reactionModel.enlarge(object, database)
 
         # Save the current state of the model core to a pretty HTML file
         logging.info('Saving latest model core to HTML file...')

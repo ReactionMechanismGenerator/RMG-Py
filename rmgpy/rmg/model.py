@@ -44,9 +44,9 @@ import rmgpy.chem.reaction
 from rmgpy.chem.thermo import Wilhoit, MultiNASA
 from rmgpy.chem.kinetics import Arrhenius, ArrheniusEP, Chebyshev, PDepArrhenius, ThirdBody
 
-from rmgpy.data.thermo import generateThermoData, convertThermoData
-from rmgpy.data.kinetics import generateKineticsData, KineticsPrimaryDatabase
-from rmgpy.data.states import generateFrequencyData
+from rmgpy.data.thermo import *
+from rmgpy.data.kinetics import *
+from rmgpy.data.states import *
 
 import rmgpy.measure.network
 
@@ -76,7 +76,7 @@ class Species(rmgpy.chem.species.Species):
         """
         self.coreSizeAtCreation = d['coreSizeAtCreation']
 
-    def generateThermoData(self, thermoClass=MultiNASA):
+    def generateThermoData(self, database, thermoClass=MultiNASA):
         """
         Generate thermodynamic data for the species using the thermo database.
 
@@ -93,7 +93,7 @@ class Species(rmgpy.chem.species.Species):
         for molecule in self.molecule:
             molecule.clearLabeledAtoms()
             molecule.updateAtomTypes()
-            tdata = generateThermoData(molecule)
+            tdata = database.thermo.getThermoData(molecule)
             thermo.append(tdata)
 
         H298 = numpy.array([t.getEnthalpy(298.) for t in thermo])
@@ -166,6 +166,38 @@ class Species(rmgpy.chem.species.Species):
         else:
             self.lennardJones.sigma = 5.949e-10
             self.lennardJones.epsilon = 399.3 * constants.kB
+
+def convertThermoData(thermoData, molecule, thermoClass=MultiNASA):
+    """
+    Convert a given set of `thermoData` to the class specified by `thermoClass`.
+    Raises a :class:`TypeError` if this is not possible.
+    """
+
+    from rmgpy.chem.thermo import *
+    from rmgpy.chem.ext.thermo_converter import convertGAtoWilhoit, convertWilhoitToNASA
+
+    # Nothing to do if we already have the right thermo model
+    if isinstance(thermoData, thermoClass):
+        return thermoData
+
+    thermoData0 = thermoData
+
+    # Convert to Wilhoit
+    if isinstance(thermoData, ThermoData) and (thermoClass == Wilhoit or thermoClass == MultiNASA):
+        rotors = molecule.countInternalRotors()
+        atoms = len(molecule.atoms)
+        linear = molecule.isLinear()
+        thermoData = convertGAtoWilhoit(thermoData, atoms, rotors, linear)
+
+    # Convert to MultiNASA
+    if isinstance(thermoData, Wilhoit) and thermoClass == MultiNASA:
+        thermoData = convertWilhoitToNASA(thermoData, Tmin=298.0, Tmax=6000.0, Tint=1000.0)
+
+    # Make sure we have the right class
+    if not isinstance(thermoData, thermoClass):
+        raise TypeError('Unable to convert thermo model of type %s to type %s.' % (thermoData0.__class__, thermoClass))
+
+    return thermoData
 
 ################################################################################
 
@@ -701,6 +733,8 @@ class CoreEdgeReactionModel:
         self.speciesCache = [None for i in range(4)]
         self.speciesCounter = 0
         self.reactionCounter = 0
+        self.newSpeciesList = []
+        self.newReactionList = []
 
     def checkForExistingSpecies(self, molecule):
         """
@@ -768,6 +802,9 @@ class CoreEdgeReactionModel:
 
         self.speciesCounter += 1
 
+        # Since the species is new, add it to the list of new species
+        self.newSpeciesList.append(spec)
+
         return spec, True
 
     def checkForExistingReaction(self, rxn):
@@ -799,7 +836,7 @@ class CoreEdgeReactionModel:
         # We want to check for duplicates in *other* seed mechanisms, but allow
         # duplicated *within* the same seed mechanism
         for family in self.reactionDict:
-            if isinstance(family, KineticsPrimaryDatabase) and family != rxn.family:
+            if isinstance(family, KineticsLibrary) and family != rxn.family:
 
                 # First check seed short-list in forward direction
                 try:
@@ -838,6 +875,10 @@ class CoreEdgeReactionModel:
         made such that the forward reaction is exothermic at 298K.
         """
 
+        # Convert the reactants and products to species objects
+        forward.reactants = [self.makeNewSpecies(molecule)[0] for molecule in forward.reactants]
+        forward.products  = [self.makeNewSpecies(molecule)[0] for molecule in forward.products]
+
         if checkExisting:
             found, rxn = self.checkForExistingReaction(forward)
             if found: return rxn, False
@@ -862,6 +903,9 @@ class CoreEdgeReactionModel:
 
         forward.index = self.reactionCounter + 1
         self.reactionCounter += 1
+
+        # Since the reaction is new, add it to the list of new reactions
+        self.newReactionList.append(forward)
 
         # Return newly created reaction
         return forward, True
@@ -891,7 +935,18 @@ class CoreEdgeReactionModel:
 
         return forward
 
-    def enlarge(self, newObject):
+    def react(self, database, speciesA, speciesB=None):
+        reactionList = []
+        if speciesB is None:
+            for moleculeA in speciesA.molecule:
+                reactionList.extend(database.kinetics.generateReactions([moleculeA]))
+        else:
+            for moleculeA in speciesA.molecule:
+                for moleculeB in speciesB.molecule:
+                    reactionList.extend(database.kinetics.generateReactions([moleculeA, moleculeB]))
+        return reactionList
+
+    def enlarge(self, newObject, database):
         """
         Enlarge a reaction model by processing `newObject`. If `newObject` is a
         :class:`rmg.species.Species` object, then the species is moved from
@@ -901,7 +956,8 @@ class CoreEdgeReactionModel:
         generated for the species in the network with the largest leak flux.
         """
 
-        newReactionList = []; newSpeciesList = []
+        self.newReactionList = []; self.newSpeciesList = []
+        newReactions = []
 
         numOldCoreSpecies = len(self.core.species)
         numOldCoreReactions = len(self.core.reactions)
@@ -920,30 +976,27 @@ class CoreEdgeReactionModel:
                 logging.info('Adding species %s to model core' % newSpecies)
                 # Find reactions involving the new species as unimolecular reactant
                 # or product (e.g. A <---> products)
-                r, s = generateReactions([newSpecies], self)
-                newReactionList.extend(r); newSpeciesList.extend(s)
+                newReactions.extend(self.react(database, newSpecies))
                 # Find reactions involving the new species as bimolecular reactants
                 # or products with other core species (e.g. A + B <---> products)
                 for coreSpecies in self.core.species:
                     if coreSpecies.reactive:
-                        r, s = generateReactions([newSpecies, coreSpecies], self)
-                        newReactionList.extend(r); newSpeciesList.extend(s)
+                        newReactions.extend(self.react(database, newSpecies, coreSpecies))
                 # Find reactions involving the new species as bimolecular reactants
                 # or products with itself (e.g. A + A <---> products)
-                r, s = generateReactions([newSpecies, newSpecies], self)
-                newReactionList.extend(r); newSpeciesList.extend(s)
+                newReactions.extend(self.react(database, newSpecies, newSpecies))
 
             # Add new species
             self.addSpeciesToCore(newSpecies)
 
             # Process the new reactions
-            self.processNewReactions(newReactionList, newSpecies, pdepNetwork)
+            self.processNewReactions(newReactions, newSpecies, pdepNetwork)
 
         elif isinstance(newObject, tuple) and isinstance(newObject[0], PDepNetwork) and settings.pressureDependence:
 
             pdepNetwork, newSpecies = newObject
             newReactionList, newSpeciesList = pdepNetwork.exploreIsomer(newSpecies, self)
-            self.processNewReactions(newReactionList, newSpecies, pdepNetwork)
+            self.processNewReactions(newReactions, newSpecies, pdepNetwork)
 
         else:
             raise TypeError('Unable to use object %s to enlarge reaction model; expecting an object of class rmg.model.Species or rmg.model.PDepNetwork.' % newObject)
@@ -959,7 +1012,7 @@ class CoreEdgeReactionModel:
                     if len(products) == 1 and products[0] == species:
                         reactionList, speciesList = network.exploreIsomer(species, self)
                         newReactionList.extend(reactionList); newSpeciesList.extend(speciesList)
-                        self.processNewReactions(reactionList, species, network)
+                        self.processNewReactions(newReactions, species, network)
                         network.updateConfigurations()
                         index = 0
                         break
@@ -968,18 +1021,9 @@ class CoreEdgeReactionModel:
         
         # Generate thermodynamics of new species
         logging.info('Generating thermodynamics for new species...')
-        for spec in newSpeciesList:
-            spec.generateThermoData()
+        for spec in self.newSpeciesList:
+            spec.generateThermoData(database)
             
-        # Generate kinetics of new reactions
-        logging.info('Generating kinetics for new reactions...')
-        for rxn in newReactionList:
-            if rxn.kinetics is None: rxn.generateKineticsData()
-            # Now that we have the kinetics we don't need the reactant molecules
-            # any more, so delete them to recover the memory
-            rxn.reactantMolecules = None
-            rxn.reverse.reactantMolecules = None
-
         # Update unimolecular (pressure dependent) reaction networks
         if settings.pressureDependence:
             # Merge networks if necessary
@@ -1029,6 +1073,11 @@ class CoreEdgeReactionModel:
         species or explored isomer `newSpecies` in network `pdepNetwork`.
         """
         for rxn in newReactions:
+
+            rxn, isNew = self.makeNewReaction(rxn)
+            if not isNew:
+                continue
+
             allSpeciesInCore = True
             # Add the reactant and product species to the edge if necessary
             # At the same time, check if all reactants and products are in the core
@@ -1085,10 +1134,10 @@ class CoreEdgeReactionModel:
             logging.info('    %s' % (spec))
         logging.info('Added %i new core reactions' % (len(newCoreReactions)))
         for rxn in newCoreReactions:
-            logging.info('    %s' % (rxn.reverse if newSpecies in rxn.products else rxn))
+            logging.info('    %s' % (rxn))
         logging.info('Created %i new edge reactions' % len(newEdgeReactions))
         for rxn in newEdgeReactions:
-            logging.info('    %s' % (rxn.reverse if newSpecies in rxn.products else rxn))
+            logging.info('    %s' % (rxn))
 
         coreSpeciesCount, coreReactionCount, edgeSpeciesCount, edgeReactionCount = self.getModelSize()
 
@@ -1309,10 +1358,10 @@ class CoreEdgeReactionModel:
         corresponding species and reaction lists.
         """
         coreSpeciesCount = len(self.core.species)
-        coreReactionsCount = len([rxn for rxn in self.core.reactions if isinstance(rxn, Reaction)])
+        coreReactionsCount = len([rxn for rxn in self.core.reactions if not isinstance(rxn, PDepReaction)])
         coreReactionsCount += len([rxn for rxn in self.core.reactions if isinstance(rxn, PDepReaction)]) / 2
         edgeSpeciesCount = len(self.edge.species)
-        edgeReactionsCount = len([rxn for rxn in self.edge.reactions if isinstance(rxn, Reaction)])
+        edgeReactionsCount = len([rxn for rxn in self.edge.reactions if not isinstance(rxn, PDepReaction)])
         edgeReactionsCount += len([rxn for rxn in self.edge.reactions if isinstance(rxn, PDepReaction)]) / 2
         return (coreSpeciesCount, coreReactionsCount, edgeSpeciesCount, edgeReactionsCount)
 
