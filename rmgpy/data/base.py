@@ -102,6 +102,12 @@ class Entry:
         self.longDesc = longDesc
         self.history = history or []
 
+    def __str__(self):
+        return self.label
+
+    def __repr__(self):
+        return '<Entry index=%i label="%s">' % (self.index, self.label)
+
 ################################################################################
 
 class Database:
@@ -810,7 +816,7 @@ class Database:
         else:
             #print structure.toAdjacencyList()
             #raise DatabaseError('For structure %s, a node %s with non-mutually-exclusive children %s was encountered in tree with top level nodes %s.' % (structure.getFormula(), root, next, self.tree.top))
-            logging.warning('For %s, a node %s with overlapping children %s was encountered in tree with top level nodes %s.' % (structure, root, next, self.tree.top))
+            logging.warning('For %s, a node %s with overlapping children %s was encountered in tree with top level nodes %s.' % (structure, root, next, self.top))
             return root
 
 ################################################################################
