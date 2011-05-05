@@ -1675,6 +1675,7 @@ class KineticsDatabase:
         self.depository = {}
         self.libraries = {}
         self.groups = {}
+        self.libraryOrder = []
         self.local_context = {
             'KineticsData': KineticsData,
             'Arrhenius': Arrhenius,
@@ -1688,13 +1689,16 @@ class KineticsDatabase:
         }
         self.global_context = {}
 
-    def load(self, path):
+    def load(self, path, libraries=None, depository=True):
         """
         Load the kinetics database from the given `path` on disk, where `path`
         points to the top-level folder of the thermo database.
         """
-        self.loadDepository(os.path.join(path, 'depository'))
-        self.loadLibraries(os.path.join(path, 'libraries'))
+        if depository:
+            self.loadDepository(os.path.join(path, 'depository'))
+        else:
+            self.depository = {}
+        self.loadLibraries(os.path.join(path, 'libraries'), libraries)
         self.loadGroups(os.path.join(path, 'groups'))
 
     def loadDepository(self, path):
@@ -1710,18 +1714,24 @@ class KineticsDatabase:
                     depository.load(os.path.join(root, f), self.local_context, self.global_context)
                     self.depository[depository.label] = depository
 
-    def loadLibraries(self, path):
+    def loadLibraries(self, path, libraries=None):
         """
         Load the kinetics database from the given `path` on disk, where `path`
         points to the top-level folder of the thermo database.
         """
-        self.libraries = {}
+        self.libraries = {}; self.libraryOrder = []
         for (root, dirs, files) in os.walk(os.path.join(path)):
             for f in files:
-                if os.path.splitext(f)[1].lower() == '.py':
+                name, ext = os.path.splitext(f)
+                if ext.lower() == '.py' and (libraries is None or name in libraries):
+                    logging.info('Loading kinetics library from %s in %s...' % (f, root))
                     library = KineticsLibrary()
                     library.load(os.path.join(root, f), self.local_context, self.global_context)
+                    library.label = os.path.splitext(f)[0]
                     self.libraries[library.label] = library
+                    self.libraryOrder.append(library.label)
+        if libraries is not None:
+            self.libraryOrder = libraries
 
     def loadGroups(self, path):
         """
@@ -1729,9 +1739,11 @@ class KineticsDatabase:
         points to the top-level folder of the thermo database.
         """
         self.groups = {}
+        logging.info('Loading kinetics group database from %s' % (path))
         for (root, dirs, files) in os.walk(os.path.join(path)):
             for f in files:
                 if os.path.splitext(f)[1].lower() == '.py':
+                    logging.debug('Loading kinetics groups from %s in %s...' % (f, root))
                     groups = KineticsGroups()
                     groups.load(os.path.join(root, f), self.local_context, self.global_context)
                     self.groups[groups.label] = groups
@@ -1884,8 +1896,8 @@ class KineticsDatabase:
         searches the depository.
         """
         reactionList = []
-        for label, library in self.libraries.iteritems():
-            reactionList.extend(self.generateReactionsFromLibrary(reactants, library))
+        for label in self.libraryOrder:
+            reactionList.extend(self.generateReactionsFromLibrary(reactants, self.libraries[label]))
         return reactionList
 
     def generateReactionsFromLibrary(self, reactants, library):

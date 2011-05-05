@@ -50,29 +50,35 @@ class RMGDatabase:
         self.thermo = None
         self.kinetics = None
 
-    def load(self, path):
+    def load(self, path, thermoLibraries=None, reactionLibraries=None, seedMechanisms=None, depository=True):
         """
         Load the RMG database from the given `path` on disk, where `path`
-        points to the top-level folder of the RMG database.
+        points to the top-level folder of the RMG database. If none of the
+        optional arguments are provided, then the entire database will be
+        loaded. You can use the optional arguments to specify that only certain
+        components of the database be loaded.
         """
-        self.loadThermo(os.path.join(path, 'thermo'))
-        self.loadKinetics(os.path.join(path, 'kinetics'))
+        self.loadThermo(os.path.join(path, 'thermo'), thermoLibraries, depository)
+        self.loadKinetics(os.path.join(path, 'kinetics'), reactionLibraries, seedMechanisms, depository)
 
-    def loadThermo(self, path):
+    def loadThermo(self, path, thermoLibraries=None, depository=True):
         """
         Load the RMG thermo database from the given `path` on disk, where
         `path` points to the top-level folder of the RMG thermo database.
         """
         self.thermo = ThermoDatabase()
-        self.thermo.load(path)
+        self.thermo.load(path, thermoLibraries, depository)
 
-    def loadKinetics(self, path):
+    def loadKinetics(self, path, reactionLibraries=None, seedMechanisms=None, depository=True):
         """
         Load the RMG kinetics database from the given `path` on disk, where
         `path` points to the top-level folder of the RMG kinetics database.
         """
         self.kinetics = KineticsDatabase()
-        self.kinetics.load(path)
+        kineticsLibraries = []
+        kineticsLibraries.extend(seedMechanisms)
+        kineticsLibraries.extend(reactionLibraries)
+        self.kinetics.load(path, kineticsLibraries, depository)
 
     def loadOld(self, path):
         """
