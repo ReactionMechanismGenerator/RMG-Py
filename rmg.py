@@ -260,7 +260,7 @@ def execute(args):
         # Seed mechanisms: add species and reactions from seed mechanism
         # DON'T generate any more reactions for the seed species at this time
         for seedMechanism in seedMechanisms:
-            reactionModel.addSeedMechanismToCore(seedMechanism, react=False)
+            reactionModel.addSeedMechanismToCore(database, seedMechanism, react=False)
         
         # Add nonreactive species (e.g. bath gases) to core first
         # This is necessary so that the PDep algorithm can identify the bath gas

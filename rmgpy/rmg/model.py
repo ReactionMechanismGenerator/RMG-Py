@@ -1412,7 +1412,7 @@ class CoreEdgeReactionModel:
             rxnRate[j] = rxn.getRate(T, P, Ci)
         return rxnRate
 
-    def addSeedMechanismToCore(self, seedMechanism, react=False):
+    def addSeedMechanismToCore(self, database, seedMechanism, react=False):
         """
         Add all species and reactions from `seedMechanism`, a 
         :class:`KineticsPrimaryDatabase` object, to the model core. If `react`
@@ -1421,57 +1421,27 @@ class CoreEdgeReactionModel:
         so it is not done by default.
         """
         
-        rxnList = []; speciesList = []
+        self.newReactionList = []; self.newSpeciesList = []
 
         numOldCoreSpecies = len(self.core.species)
         numOldCoreReactions = len(self.core.reactions)
 
         logging.info('Adding seed mechanism %s to model core...' % seedMechanism)
 
-        dictionary = seedMechanism.database.dictionary
+        seedMechanism = database.kinetics.libraries[seedMechanism]
 
-        for rxn in seedMechanism.reactions:
-            reactants = []; products = []
-            for reactant in rxn.reactants:
-                label = dictionary.keys()[dictionary.values().index(reactant)]
-                spec, isNew = self.makeNewSpecies(reactant, label=label)
-                reactants.append(spec)
-                if isNew: speciesList.append(spec)
-            for product in rxn.products:
-                label = dictionary.keys()[dictionary.values().index(product)]
-                spec, isNew = self.makeNewSpecies(product, label=label)
-                products.append(spec)
-                if isNew: speciesList.append(spec)
-            # Sort reactants and products
-            reactants.sort()
-            products.sort()
-
-            # If the kinetics has third body information, then make sure
-            # we're using real species for the collision efficiency data
-            kinetics = rxn.kinetics
-            if isinstance(kinetics, ThirdBody):
-                efficiencies = {}
-                for collider, efficiency in kinetics.efficiencies.iteritems():
-                    spec, isNew = self.makeNewSpecies(collider, label='')
-                    efficiencies[spec] = efficiency
-                kinetics.efficiencies = efficiencies
-
-            forward = Reaction(reactants=reactants, products=products, family=seedMechanism, kinetics=kinetics, isForward=True)
-            reverse = Reaction(reactants=products, products=reactants, family=seedMechanism, isForward=False)
-            forward.reverse = reverse
-            reverse.reverse = forward
-
-            r, isNew = self.makeNewReaction(forward)
-            if isNew: rxnList.append(r)
-
-        for spec in speciesList:
-            if spec.reactive: spec.generateThermoData()
+        for entry in seedMechanism.entries.values():
+            rxn = LibraryReaction(reactants=entry.item.reactants[:], products=entry.item.reactants[:], library=seedMechanism, kinetics=entry.data)
+            r, isNew = self.makeNewReaction(rxn)
+            
+        for spec in self.newSpeciesList:
+            if spec.reactive: spec.generateThermoData(database)
             if react:
                 self.enlarge(spec)
             else:
                 self.addSpeciesToCore(spec)
         
-        for rxn in rxnList:
+        for rxn in self.newReactionList:
             self.addReactionToCore(rxn)
 
         self.printEnlargeSummary(
