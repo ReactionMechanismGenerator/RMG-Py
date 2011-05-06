@@ -822,8 +822,9 @@ class CoreEdgeReactionModel:
         r1 = rxn.reactants[0]
         if len(rxn.reactants)==1: r2 = None
         else: r2 = rxn.reactants[1]
+        family = rxn.getSource()
         try:
-            my_reactionList = self.reactionDict[rxn.family][r1][r2]
+            my_reactionList = self.reactionDict[family][r1][r2]
         except KeyError: # no such short-list: must be new, unless in seed.
             my_reactionList = []
 
@@ -835,12 +836,12 @@ class CoreEdgeReactionModel:
         # Now check seed mechanisms
         # We want to check for duplicates in *other* seed mechanisms, but allow
         # duplicated *within* the same seed mechanism
-        for family in self.reactionDict:
-            if isinstance(family, KineticsLibrary) and family != rxn.family:
+        for family0 in self.reactionDict:
+            if isinstance(family, KineticsLibrary) and family0 != family:
 
                 # First check seed short-list in forward direction
                 try:
-                    my_reactionList = self.reactionDict[family][r1][r2]
+                    my_reactionList = self.reactionDict[family0][r1][r2]
                 except KeyError:
                     my_reactionList = []
                 for rxn0 in my_reactionList:
@@ -852,7 +853,7 @@ class CoreEdgeReactionModel:
                 if len(rxn.products)==1: r2 = None
                 else: r2 = rxn.products[1]
                 try:
-                    my_reactionList = self.reactionDict[family][r1][r2]
+                    my_reactionList = self.reactionDict[family0][r1][r2]
                 except KeyError:
                     my_reactionList = []
                 for rxn0 in my_reactionList:
@@ -884,13 +885,16 @@ class CoreEdgeReactionModel:
             if found: return rxn, False
 
         # Note in the log
-        logging.debug('Creating new %s reaction %s' % (forward.family.label, forward))
-
+        if isinstance(rxn, TemplateReaction):
+            logging.debug('Creating new %s reaction %s' % (forward.family.label, forward))
+        else:
+            logging.debug('Creating new library reaction %s' % (forward))
+        
         # Add to the global dict/list of existing reactions (a list broken down by family, r1, r2)
         # identify r1 and r2
         r1 = forward.reactants[0]
         r2 = None if len(forward.reactants) == 1 else forward.reactants[1]
-        family = forward.family
+        family = rxn.getSource()
         # make dictionary entries if necessary
         if family not in self.reactionDict:
             self.reactionDict[family] = {}
