@@ -1524,9 +1524,9 @@ class KineticsGroups(Database):
         # Now add in more specific corrections if possible
         for node in template:
             entry = node
-            while entry.data is None and entry not in self.forwardTemplate.reactants:
+            while entry.data is None and entry not in self.top:
                 entry = entry.parent
-            if entry.data is not None and entry not in self.forwardTemplate.reactants:
+            if entry.data is not None and entry not in self.top:
                 kinetics *= entry.data
 
         # Also include reaction-path degeneracy
