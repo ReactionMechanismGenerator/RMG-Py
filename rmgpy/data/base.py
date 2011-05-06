@@ -479,15 +479,19 @@ class Database:
                     label = self.__hashLabels(info[offset:offset+numLabels])
                     offset += numLabels
                     # Extract numeric parameter(s) or label of node with data to use
-                    try:
-                        parameters = self.processOldLibraryEntry(info[offset:offset+numParameters])
-                        offset += numParameters
-                    except (IndexError, ValueError), e:
-                        parameters = info[offset]
-                        offset += 1
-                    # Remaining part of string is comment
-                    comment = ' '.join(info[offset:])
-                    comment = comment.strip('"')
+                    if numParameters < 0:
+                        parameters = self.processOldLibraryEntry(info[offset:])
+                        comment = ''
+                    else:
+                        try:
+                            parameters = self.processOldLibraryEntry(info[offset:offset+numParameters])
+                            offset += numParameters
+                        except (IndexError, ValueError), e:
+                            parameters = info[offset]
+                            offset += 1
+                        # Remaining part of string is comment
+                        comment = ' '.join(info[offset:])
+                        comment = comment.strip('"')
 
                     if label in entries:
                         logging.debug("There was already something labeled %s in the library. Ignoring '%s' (%s)" % (label, index, parameters))

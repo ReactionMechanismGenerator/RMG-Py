@@ -38,6 +38,7 @@ import os.path
 
 from thermo import ThermoDatabase
 from kinetics import KineticsDatabase
+from states import StatesDatabase
 
 ################################################################################
 
@@ -49,8 +50,9 @@ class RMGDatabase:
     def __init__(self):
         self.thermo = None
         self.kinetics = None
+        self.states = None
 
-    def load(self, path, thermoLibraries=None, reactionLibraries=None, seedMechanisms=None, depository=True):
+    def load(self, path, thermoLibraries=None, reactionLibraries=None, seedMechanisms=None, statesLibraries=None, depository=True):
         """
         Load the RMG database from the given `path` on disk, where `path`
         points to the top-level folder of the RMG database. If none of the
@@ -60,6 +62,7 @@ class RMGDatabase:
         """
         self.loadThermo(os.path.join(path, 'thermo'), thermoLibraries, depository)
         self.loadKinetics(os.path.join(path, 'kinetics'), reactionLibraries, seedMechanisms, depository)
+        self.loadStates(os.path.join(path, 'states'), statesLibraries, depository)
 
     def loadThermo(self, path, thermoLibraries=None, depository=True):
         """
@@ -80,6 +83,14 @@ class RMGDatabase:
         kineticsLibraries.extend(reactionLibraries)
         self.kinetics.load(path, kineticsLibraries, depository)
 
+    def loadStates(self, path, statesLibraries=None, depository=True):
+        """
+        Load the RMG states database from the given `path` on disk, where
+        `path` points to the top-level folder of the RMG states database.
+        """
+        self.states = StatesDatabase()
+        self.states.load(path, statesLibraries, depository)
+
     def loadOld(self, path):
         """
         Load the old RMG database from the given `path` on disk, where `path`
@@ -89,6 +100,8 @@ class RMGDatabase:
         self.thermo.loadOld(path)
         self.kinetics = KineticsDatabase()
         self.kinetics.loadOld(path)
+        self.states = StatesDatabase()
+        self.states.loadOld(path)
 
     def save(self, path):
         """
@@ -97,6 +110,7 @@ class RMGDatabase:
         if not os.path.exists(path): os.mkdir(path)
         self.thermo.save(os.path.join(path, 'thermo'))
         self.kinetics.save(os.path.join(path, 'kinetics'))
+        self.states.save(os.path.join(path, 'states'))
 
     def saveOld(self, path):
         """
@@ -105,3 +119,4 @@ class RMGDatabase:
         if not os.path.exists(path): os.mkdir(path)
         self.thermo.saveOld(path)
         self.kinetics.saveOld(path)
+        self.states.saveOld(path)
