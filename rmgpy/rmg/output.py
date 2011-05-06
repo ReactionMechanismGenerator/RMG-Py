@@ -94,7 +94,7 @@ def saveOutputHTML(path, reactionModel):
         if family in familyCount:
             familyCount[family] += 1
         else:
-            familyCout[family] = 1
+            familyCount[family] = 1
     families = familyCount.keys()
     families.sort(key=lambda x: x.label)
     

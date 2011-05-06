@@ -79,7 +79,7 @@ def saveEntry(f, entry):
         f.write('        symmetry = %d,\n' % (entry.data.symmetry))
         f.write('    ),\n')
     else:
-        f.write('        data = %r,\n' % (entry.data))
+        f.write('    states = %r,\n' % (entry.data))
 
     if entry.reference is not None: f.write('    reference = %r,\n' % (entry.reference))
     if entry.referenceType != "": f.write('    referenceType = "%s",\n' % (entry.referenceType))

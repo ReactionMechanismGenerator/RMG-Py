@@ -894,7 +894,7 @@ class CoreEdgeReactionModel:
         # identify r1 and r2
         r1 = forward.reactants[0]
         r2 = None if len(forward.reactants) == 1 else forward.reactants[1]
-        family = rxn.getSource()
+        family = forward.getSource()
         # make dictionary entries if necessary
         if family not in self.reactionDict:
             self.reactionDict[family] = {}
