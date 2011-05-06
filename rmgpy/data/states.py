@@ -241,9 +241,147 @@ class StatesGroups(Database):
     def processOldLibraryEntry(self, data):
         """
         Process a list of parameters `data` as read from an old-style RMG
-        thermo database, returning the corresponding thermodynamics object.
+        states database, returning the corresponding thermodynamics object.
         """
         return processOldLibraryEntry(data, "groups")
+
+    def __countMatchesToNode(self, molecule, node):
+        """
+        Count the number of matches in the given :class:`Molecule` object
+        `molecule` for the given `node` in the group database.
+        """
+        count = 0
+        if isinstance(self.dictionary[node], MoleculePattern):
+            ismatch, mappings = molecule.findSubgraphIsomorphisms(self.dictionary[node])
+            count = len(mappings) if ismatch else 0
+        elif isinstance(self.dictionary[node], LogicOr):
+            for child in self.dictionary[node].components:
+                count += self.__countMatchesToNode(molecule, child)
+        return count
+
+    def __getNode(self, molecule, atom):
+        """
+        For a given :class:`Molecule` object `molecule` with central `atom`,
+        determine the most specific functional group that describes that atom
+        center and has characteristic frequencies associated with it.
+        """
+
+        node0 = self.descendTree(molecule, atom, None)
+
+        if node0 is None:
+            raise KeyError('Node not found in database.')
+
+        # It's possible (and allowed) that items in the tree may not be in the
+        # library, in which case we need to fall up the tree until we find an
+        # ancestor that has an entry in the library
+        node = node0
+        while node.data is None and node.parent is not None:
+            node = node.parent
+
+        return node
+
+    def getFrequencyGroups(self, molecule):
+        """
+        Return the set of characteristic group frequencies corresponding to the
+        speficied `molecule`. This is done by searching the molecule for
+        certain functional groups for which characteristic frequencies are
+        known, and using those frequencies.
+        """
+
+        frequencies = []
+        groupCount = {}
+
+        # Generate estimate of thermodynamics
+        for atom in molecule.atoms:
+            # Iterate over heavy (non-hydrogen) atoms
+            if atom.isNonHydrogen():
+                node = self.__getNode(molecule, {'*':atom})
+                if node is not None:
+                    try:
+                        groupCount[node] += 1
+                    except KeyError:
+                        groupCount[node] = 1
+
+        return groupCount
+
+    def getStatesData(self, molecule, thermoModel):
+        """
+        Use the previously-loaded frequency database to generate a set of
+        characteristic group frequencies corresponding to the speficied
+        `molecule`. The provided thermo data in `thermoModel` is used to fit
+        some frequencies and all hindered rotors to heat capacity data.
+        """
+
+        # No need to determine rotational and vibrational modes for single atoms
+        if len(molecule.atoms) < 2:
+            return states
+
+        linear = molecule.isLinear()
+        numRotors = molecule.countInternalRotors()
+        numVibrations = 3 * len(molecule.atoms) - (5 if linear else 6) - numRotors
+
+        # Get characteristic frequency groups and the associated frequencies
+        groupCount = self.getFrequencyGroups(molecule)
+        frequencies = []
+        for entry, count in groupCount.iteritems():
+            if count != 0 and entry.data is not None: frequencies.extend(entry.data.generateFrequencies(count))
+
+        # Check that we have the right number of degrees of freedom specified
+        if len(frequencies) > numVibrations:
+            # We have too many vibrational modes
+            difference = len(frequencies) - numVibrations
+            # First try to remove hindered rotor modes until the proper number of modes remain
+            if numRotors > difference:
+                numRotors -= difference
+                numVibrations = len(frequencies)
+                logging.warning('For %s, more characteristic frequencies were generated than vibrational modes allowed. Removed %i internal rotors to compensate.' % (molecule, difference))
+            # If that won't work, turn off functional groups until the problem is underspecified again
+            else:
+                groupsRemoved = 0
+                freqsRemoved = 0
+                freqCount = len(frequencies)
+                while freqCount > numVibrations:
+                    minDegeneracy, minNode = min([(frequencyDatabase.library[node].symmetry, node) for node in groupCount if groupCount[node] > 0])
+                    if groupCount[minNode] > 1:
+                        groupCount[minNode] -= 1
+                    else:
+                        del groupCount[minNode]
+                    groupsRemoved += 1
+                    freqsRemoved += minDegeneracy
+                    freqCount -= minDegeneracy
+                # Log warning
+                logging.warning('For %s, more characteristic frequencies were generated than vibrational modes allowed. Removed %i groups (%i frequencies) to compensate.' % (molecule, groupsRemoved, freqsRemoved))
+                # Regenerate characteristic frequencies
+                frequencies = []
+                for node, count in groupCount.iteritems():
+                    if count != 0: frequencies.extend(frequencyDatabase.library[node].generateFrequencies(count))
+
+        # Subtract out contributions to heat capacity from the group frequencies
+        Tlist = numpy.arange(300.0, 1501.0, 100.0, numpy.float64)
+        Cv = numpy.array([thermoModel.getHeatCapacity(T) / constants.R for T in Tlist], numpy.float64)
+        ho = HarmonicOscillator(frequencies=frequencies)
+        Cv -= ho.getHeatCapacities(Tlist) / constants.R
+        # Subtract out translational modes
+        Cv -= 1.5
+        # Subtract out external rotational modes
+        Cv -= (1.5 if not linear else 1.0)
+        # Subtract out PV term (Cp -> Cv)
+        Cv -= 1.0
+        
+        # Fit remaining frequencies and hindered rotors to the heat capacity data
+        from statesfit import fitStatesToHeatCapacity
+        modes = fitStatesToHeatCapacity(Tlist, Cv, numVibrations - len(frequencies), numRotors, molecule)
+        for mode in modes:
+            if isinstance(mode, HarmonicOscillator):
+                frequencies.extend(mode.frequencies)
+                mode.frequencies = frequencies
+                break
+        else:
+            modes.insert(0, HarmonicOscillator(frequencies=frequencies))
+
+        statesModel = StatesModel(modes=modes)
+
+        return (statesModel, None, None)
 
 ################################################################################
 
@@ -391,6 +529,54 @@ class StatesDatabase:
             treestr = os.path.join(groupsPath, 'Tree.txt'),
             libstr = os.path.join(groupsPath, 'Library.txt'),
         )
+
+    def getStatesData(self, molecule, thermoModel=None):
+        """
+        Return the thermodynamic parameters for a given :class:`Molecule`
+        object `molecule`. This function first searches the loaded libraries
+        in order, returning the first match found, before falling back to
+        estimation via group additivity.
+        """
+        statesModel = None
+        # Check the libraries in order first; return the first successful match
+        for label in self.libraryOrder:
+            statesModel = self.getStatesDataFromLibrary(molecule, self.libraries[label])
+            if statesModel: break
+        else:
+            # Thermo not found in any loaded libraries, so estimate
+            statesModel = self.getStatesDataFromGroups(molecule, thermoModel)
+        return statesModel[0]
+
+    def getStatesDataFromDepository(self, molecule):
+        """
+        Return states data for the given :class:`Molecule` object `molecule`
+        by searching the entries in the depository.
+        """
+        items = []
+        for label, entry in self.depository.entries.iteritems():
+            if molecule.isIsomorphic(entry.item):
+                items.append((entry.data, self.depository['stable'], entry))
+        return items
+
+    def getStatesDataFromLibrary(self, molecule, library):
+        """
+        Return states data for the given :class:`Molecule` object `molecule`
+        by searching the entries in the specified :class:`StatesLibrary` object
+        `library`. Returns ``None`` if no data was found.
+        """
+        for label, entry in library.entries.iteritems():
+            if molecule.isIsomorphic(entry.item):
+                return (entry.data, library, entry)
+        return None
+
+    def getStatesDataFromGroups(self, molecule, thermoModel):
+        """
+        Return states data for the given :class:`Molecule` object `molecule`
+        by estimating using characteristic group frequencies and fitting the
+        remaining internal modes to heat capacity data from the given thermo
+        model `thermoModel`. This always returns valid degrees of freedom data.
+        """
+        return self.groups.getStatesData(molecule, thermoModel)
         
 ################################################################################
 
@@ -605,88 +791,5 @@ def loadFrequencyDatabase(dstr, group=True, old=False):
     frequencyDatabases.append(frequencyDatabase)
 
     return frequencyDatabase
-
-################################################################################
-
-def generateFrequencyData(molecule, thermoModel):
-    """
-    Use the previously-loaded frequency database to generate a set of
-    characteristic group frequencies corresponding to the speficied `molecule`.
-    """
-
-    if len(molecule.atoms) < 2:
-        return None
-
-    linear = molecule.isLinear()
-    numRotors = molecule.countInternalRotors()
-    numVibrations = 3 * len(molecule.atoms) - (5 if linear else 6) - numRotors
-
-    frequencyDatabase = frequencyDatabases[-1]
-
-    # Get characteristic frequency groups and the associated frequencies
-    groupCount = frequencyDatabase.getFrequencyGroups(molecule)
-    frequencies = []
-    for node, count in groupCount.iteritems():
-        if count != 0: frequencies.extend(frequencyDatabase.library[node].generateFrequencies(count))
-
-    # Check that we have the right number of degrees of freedom specified
-    if len(frequencies) > numVibrations:
-        # We have too many vibrational modes
-        difference = len(frequencies) - numVibrations
-        # First try to remove hindered rotor modes until the proper number of modes remain
-        if numRotors > difference:
-            numRotors -= difference
-            numVibrations = len(frequencies)
-            logging.warning('For %s, more characteristic frequencies were generated than vibrational modes allowed. Removed %i internal rotors to compensate.' % (molecule, difference))
-        # If that won't work, turn off functional groups until the problem is underspecified again
-        else:
-            groupsRemoved = 0
-            freqsRemoved = 0
-            freqCount = len(frequencies)
-            while freqCount > numVibrations:
-                minDegeneracy, minNode = min([(frequencyDatabase.library[node].symmetry, node) for node in groupCount if groupCount[node] > 0])
-                if groupCount[minNode] > 1:
-                    groupCount[minNode] -= 1
-                else:
-                    del groupCount[minNode]
-                groupsRemoved += 1
-                freqsRemoved += minDegeneracy
-                freqCount -= minDegeneracy
-            # Log warning
-            logging.warning('For %s, more characteristic frequencies were generated than vibrational modes allowed. Removed %i groups (%i frequencies) to compensate.' % (molecule, groupsRemoved, freqsRemoved))
-            # Regenerate characteristic frequencies
-            frequencies = []
-            for node, count in groupCount.iteritems():
-                if count != 0: frequencies.extend(frequencyDatabase.library[node].generateFrequencies(count))
-
-    # Subtract out contributions to heat capacity from the group frequencies
-    Tlist = numpy.arange(300.0, 1501.0, 100.0, numpy.float64)
-    Cv = numpy.array([thermoModel.getHeatCapacity(T) / constants.R for T in Tlist], numpy.float64)
-    ho = HarmonicOscillator(frequencies=frequencies)
-    Cv -= ho.getHeatCapacities(Tlist) / constants.R
-    # Subtract out translational modes
-    Cv -= 1.5
-    # Subtract out external rotational modes
-    Cv -= (1.5 if not linear else 1.0)
-    # Subtract out PV term (Cp -> Cv)
-    Cv -= 1.0
-    # Check that all Cv values are still positive
-    # We allow a small amount of negative values to allow for the approximate
-    # nature of the heat capacity data being used
-    # Some Cv values can be negative at high temperature if hindered rotors are
-    # present, so don't do this check any more
-    #assert all([C > -0.05 for C in Cv]), "For %s, reduced Cv data is %s" % (molecule, Cv)
-
-    # Fit remaining frequencies and hindered rotors to the heat capacity data
-    from statesfit import fitStatesToHeatCapacity
-    modes = fitStatesToHeatCapacity(Tlist, Cv, numVibrations - len(frequencies), numRotors, molecule)
-    for mode in modes:
-        if isinstance(mode, HarmonicOscillator):
-            frequencies.extend(mode.frequencies)
-            mode.frequencies = frequencies
-            break
-    statesModel = StatesModel(modes=modes)
-
-    return statesModel
 
 ################################################################################
