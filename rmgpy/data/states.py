@@ -40,7 +40,361 @@ from base import *
 
 ################################################################################
 
-class GroupFrequency:
+def saveEntry(f, entry):
+    """
+    Write a Pythonic string representation of the given `entry` in the thermo
+    database to the file object `f`.
+    """
+    f.write('entry(\n')
+    f.write('    index = %i,\n' % (entry.index))
+    f.write('    label = "%s",\n' % (entry.label))
+
+    if isinstance(entry.item, Molecule):
+        f.write('    molecule = \n')
+        f.write('"""\n')
+        f.write(entry.item.toAdjacencyList(removeH=True))
+        f.write('""",\n')
+    elif isinstance(entry.item, MoleculePattern):
+        f.write('    group = \n')
+        f.write('"""\n')
+        f.write(entry.item.toAdjacencyList())
+        f.write('""",\n')
+    else:
+        f.write('    group = "%s",\n' % (entry.item))
+
+    if isinstance(entry.data, StatesModel):
+        f.write('    states = States(\n')
+        f.write('        modes = [\n')
+        for mode in entry.data.modes:
+            f.write('            %r,\n' % mode)
+        f.write('        ],\n')
+        f.write('        spinMultiplicity = %r,\n' % (entry.data.spinMultiplicity))
+        f.write('    ),\n')
+    elif isinstance(entry.data, GroupFrequencies):
+        f.write('    states = GroupFrequencies(\n')
+        f.write('        frequencies = [\n')
+        for lower, upper, degeneracy in entry.data.frequencies:
+            f.write('            (%g, %g, %d),\n' % (lower, upper, degeneracy))
+        f.write('        ],\n')
+        f.write('        symmetry = %d,\n' % (entry.data.symmetry))
+        f.write('    ),\n')
+    else:
+        f.write('        data = %r,\n' % (entry.data))
+
+    if entry.reference is not None: f.write('    reference = %r,\n' % (entry.reference))
+    if entry.referenceType != "": f.write('    referenceType = "%s",\n' % (entry.referenceType))
+    f.write('    shortDesc = """%s""",\n' % (entry.shortDesc))
+    f.write('    longDesc = \n')
+    f.write('"""\n')
+    f.write(entry.longDesc)
+    f.write('\n""",\n')
+
+    f.write('    history = [\n')
+    for time, user, action, description in entry.history:
+        f.write('        ("%s","%s","%s","""%s"""),\n' % (time, user, action, description))
+    f.write('    ],\n')
+
+    f.write(')\n\n')
+
+def generateOldLibraryEntry(data):
+    """
+    Return a list of values used to save entries to the old-style RMG
+    thermo database based on the thermodynamics object `data`.
+    """
+    items = []
+    if isinstance(data, StatesModel):
+        pass
+    elif isinstance(data, list):
+        for mode in data:
+            items.extend([mode.degeneracy, mode.lower, mode.upper])
+    else:
+        raise ValueError('data parameter must be in StatesModel format or a list; got %s instead' % (data.__class__))
+    return items
+
+def processOldLibraryEntry(data, format):
+    """
+    Process a list of parameters `data` as read from an old-style RMG
+    thermo database, returning the corresponding thermodynamics object.
+    """
+    if format == 'library':
+        pass
+    elif format == 'groups':
+        frequencies = []
+        for degeneracy, lower, upper in zip(data[1::3], data[2::3], data[3::3]):
+            frequencies.append((float(lower), float(upper), int(degeneracy)))
+        return GroupFrequencies(frequencies=frequencies, symmetry=int(data[0]))
+    else:
+        raise ValueError('format parameter must be "library" or "groups"; got "%s" instead' % (format))
+
+################################################################################
+
+class StatesDepository(Database):
+    """
+    A class for working with the RMG states (frequencies) depository.
+    """
+
+    def __init__(self, label='', name='', shortDesc='', longDesc=''):
+        Database.__init__(self, label=label, name=name, shortDesc=shortDesc, longDesc=longDesc)
+
+    def loadEntry(self, index, label, molecule, states, reference=None, referenceType='', shortDesc='', longDesc='', history=None):
+        self.entries[label] = Entry(
+            index = index,
+            label = label,
+            item = Molecule().fromAdjacencyList(molecule),
+            data = states,
+            reference = reference,
+            referenceType = referenceType,
+            shortDesc = shortDesc,
+            longDesc = longDesc.strip(),
+            history = history or [],
+        )
+
+    def saveEntry(self, f, entry):
+        """
+        Write the given `entry` in the thermo database to the file object `f`.
+        """
+        return saveEntry(f, entry)
+
+################################################################################
+
+class StatesLibrary(Database):
+    """
+    A class for working with a RMG states (frequencies) library.
+    """
+
+    def __init__(self, label='', name='', shortDesc='', longDesc=''):
+        Database.__init__(self, label=label, name=name, shortDesc=shortDesc, longDesc=longDesc)
+
+    def loadEntry(self, index, label, molecule, states, reference=None, referenceType='', shortDesc='', longDesc='', history=None):
+        self.entries[label] = Entry(
+            index = index,
+            label = label,
+            item = Molecule().fromAdjacencyList(molecule),
+            data = states,
+            reference = reference,
+            referenceType = referenceType,
+            shortDesc = shortDesc,
+            longDesc = longDesc.strip(),
+            history = history or [],
+        )
+
+    def saveEntry(self, f, entry):
+        """
+        Write the given `entry` in the thermo database to the file object `f`.
+        """
+        return saveEntry(f, entry)
+
+    def generateOldLibraryEntry(self, data):
+        """
+        Return a list of values used to save entries to the old-style RMG
+        thermo database based on the thermodynamics object `data`.
+        """
+        return generateOldLibraryEntry(data)
+
+    def processOldLibraryEntry(self, data):
+        """
+        Process a list of parameters `data` as read from an old-style RMG
+        thermo database, returning the corresponding thermodynamics object.
+        """
+        return processOldLibraryEntry(data, "library")
+
+################################################################################
+
+class StatesGroups(Database):
+    """
+    A class for working with an RMG states (frequencies) group database.
+    """
+
+    def __init__(self, label='', name='', shortDesc='', longDesc=''):
+        Database.__init__(self, label=label, name=name, shortDesc=shortDesc, longDesc=longDesc)
+
+    def loadEntry(self, index, label, group, states, reference=None, referenceType='', shortDesc='', longDesc='', history=None):
+        if group[0:3].upper() == 'OR{' or group[0:4].upper() == 'AND{' or group[0:7].upper() == 'NOT OR{' or group[0:8].upper() == 'NOT AND{':
+            item = makeLogicNode(group)
+        else:
+            item = MoleculePattern().fromAdjacencyList(group)
+        self.entries[label] = Entry(
+            index = index,
+            label = label,
+            item = item,
+            data = states,
+            reference = reference,
+            referenceType = referenceType,
+            shortDesc = shortDesc,
+            longDesc = longDesc.strip(),
+            history = history or [],
+        )
+
+    def saveEntry(self, f, entry):
+        """
+        Write the given `entry` in the thermo database to the file object `f`.
+        """
+        return saveEntry(f, entry)
+
+    def generateOldLibraryEntry(self, data):
+        """
+        Return a list of values used to save entries to the old-style RMG
+        thermo database based on the thermodynamics object `data`.
+        """
+        return generateOldLibraryEntry(data)
+
+    def processOldLibraryEntry(self, data):
+        """
+        Process a list of parameters `data` as read from an old-style RMG
+        thermo database, returning the corresponding thermodynamics object.
+        """
+        return processOldLibraryEntry(data, "groups")
+
+################################################################################
+
+class StatesDatabase:
+    """
+    A class for working with the RMG states (frequencies) database.
+    """
+
+    def __init__(self):
+        self.depository = {}
+        self.libraries = {}
+        self.groups = {}
+        self.libraryOrder = []
+        self.local_context = {
+            'HarmonicOscillator': HarmonicOscillator,
+            'RigidRotor': RigidRotor,
+            'HinderedRotor': HinderedRotor,
+            'Translation': Translation,
+            'GroupFrequencies': GroupFrequencies,
+            'States': StatesModel,
+        }
+        self.global_context = {}
+
+    def load(self, path, libraries=None, depository=True):
+        """
+        Load the states database from the given `path` on disk, where `path`
+        points to the top-level folder of the thermo database.
+        """
+        if depository:
+            self.loadDepository(os.path.join(path, 'depository'))
+        else:
+            self.depository = {}
+        self.loadLibraries(os.path.join(path, 'libraries'), libraries)
+        self.loadGroups(os.path.join(path, 'groups'))
+
+    def loadDepository(self, path):
+        """
+        Load the states database from the given `path` on disk, where `path`
+        points to the top-level folder of the thermo database.
+        """
+        self.depository = StatesDepository().load(os.path.join(path, 'depository.py'), self.local_context, self.global_context)
+
+    def loadLibraries(self, path, libraries=None):
+        """
+        Load the states database from the given `path` on disk, where `path`
+        points to the top-level folder of the thermo database.
+        """
+        self.libraries = {}; self.libraryOrder = []
+        for (root, dirs, files) in os.walk(os.path.join(path)):
+            for f in files:
+                name, ext = os.path.splitext(f)
+                if ext.lower() == '.py' and (libraries is None or name in libraries):
+                    logging.info('Loading frequencies library from %s in %s...' % (f, root))
+                    library = StatesLibrary()
+                    library.load(os.path.join(root, f), self.local_context, self.global_context)
+                    library.label = os.path.splitext(f)[0]
+                    self.libraries[library.label] = library
+                    self.libraryOrder.append(library.label)
+        if libraries is not None:
+            self.libraryOrder = libraries
+
+    def loadGroups(self, path):
+        """
+        Load the states database from the given `path` on disk, where `path`
+        points to the top-level folder of the thermo database.
+        """
+        logging.info('Loading frequencies group database from %s...' % (path))
+        self.groups = StatesGroups().load(os.path.join(path, 'groups.py' ), self.local_context, self.global_context)
+
+    def save(self, path):
+        """
+        Save the states database to the given `path` on disk, where `path`
+        points to the top-level folder of the thermo database.
+        """
+        path = os.path.abspath(path)
+        if not os.path.exists(path): os.mkdir(path)
+
+        depositoryPath = os.path.join(path, 'depository')
+        if not os.path.exists(depositoryPath): os.mkdir(depositoryPath)
+        self.depository.save(os.path.join(depositoryPath, 'depository.py'))
+
+        librariesPath = os.path.join(path, 'libraries')
+        if not os.path.exists(librariesPath): os.mkdir(librariesPath)
+        for library in self.libraries.values():
+            library.save(os.path.join(librariesPath, '%s.py' % (library.label)))
+
+        groupsPath = os.path.join(path, 'groups')
+        if not os.path.exists(groupsPath): os.mkdir(groupsPath)
+        self.groups.save(os.path.join(groupsPath, 'groups.py'))
+
+    def loadOld(self, path):
+        """
+        Load the old RMG thermo database from the given `path` on disk, where
+        `path` points to the top-level folder of the old RMG database.
+        """
+        # The old database does not have a depository, so create an empty one
+        self.depository = StatesDepository(label='depository', name='States Depository')
+
+        for (root, dirs, files) in os.walk(os.path.join(path, 'frequencies_libraries')):
+            if os.path.exists(os.path.join(root, 'Dictionary.txt')) and os.path.exists(os.path.join(root, 'Library.txt')):
+                library = StatesLibrary(label=os.path.basename(root), name=os.path.basename(root))
+                library.loadOld(
+                    dictstr = os.path.join(root, 'Dictionary.txt'),
+                    treestr = '',
+                    libstr = os.path.join(root, 'Library.txt'),
+                    numParameters = -1,
+                    numLabels = 1,
+                    pattern = False,
+                )
+                library.label = os.path.basename(root)
+                self.libraries[library.label] = library
+
+        self.groups = StatesGroups(label='group', name='Functional Group Values').loadOld(
+            dictstr = os.path.join(path, 'frequencies_groups', 'Dictionary.txt'),
+            treestr = os.path.join(path, 'frequencies_groups', 'Tree.txt'),
+            libstr = os.path.join(path, 'frequencies_groups', 'Library.txt'),
+            numParameters = -1,
+            numLabels = 1,
+            pattern = True,
+        )
+
+    def saveOld(self, path):
+        """
+        Save the old RMG thermo database to the given `path` on disk, where
+        `path` points to the top-level folder of the old RMG database.
+        """
+
+        # Depository not used in old database, so it is not saved
+
+        librariesPath = os.path.join(path, 'frequencies_libraries')
+        if not os.path.exists(librariesPath): os.mkdir(librariesPath)
+        for library in self.libraries.values():
+            libraryPath = os.path.join(librariesPath, library.label)
+            if not os.path.exists(libraryPath): os.mkdir(libraryPath)
+            library.saveOld(
+                dictstr = os.path.join(libraryPath, 'Dictionary.txt'),
+                treestr = '',
+                libstr = os.path.join(libraryPath, 'Library.txt'),
+            )
+
+        groupsPath = os.path.join(path, 'frequencies_groups')
+        if not os.path.exists(groupsPath): os.mkdir(groupsPath)
+        self.groups.saveOld(
+            dictstr = os.path.join(groupsPath, 'Dictionary.txt'),
+            treestr = os.path.join(groupsPath, 'Tree.txt'),
+            libstr = os.path.join(groupsPath, 'Library.txt'),
+        )
+        
+################################################################################
+
+class GroupFrequencies:
     """
     Represent a set of characteristic frequencies for a group in the frequency
     database. These frequencies are stored in the `frequencies` attribute, which
@@ -48,8 +402,7 @@ class GroupFrequency:
     upper bound, and degeneracy. Each group also has a `symmetry` correction.
     """
 
-    def __init__(self, index=-1, frequencies=None, symmetry=1):
-        self.index = index
+    def __init__(self, frequencies=None, symmetry=1):
         self.frequencies = frequencies or []
         self.symmetry = symmetry
     
