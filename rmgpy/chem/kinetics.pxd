@@ -55,7 +55,7 @@ cdef class KineticsModel:
 
 cdef class KineticsData(KineticsModel):
 
-    cdef public numpy.ndarray Tdata, kdata
+    cdef public Quantity Tdata, kdata
 
     cpdef bint isPressureDependent(self)
 

@@ -1074,7 +1074,7 @@ class Troe(Lindemann):
         Pr = k0 * C / kinf
         efficiency = self.getColliderEfficiency(collider)
         
-        Fcent = (1 - self.alpha.value) * math.exp(-T / self.T3.value) + self.alpha * math.exp(-T / self.T1.value)
+        Fcent = (1 - self.alpha.value) * math.exp(-T / self.T3.value) + self.alpha.value * math.exp(-T / self.T1.value)
         if self.T2 is not None: Fcent += math.exp(-self.T2.value / T)
         d = 0.14
         n = 0.75 - 1.27 * math.log10(Fcent)
