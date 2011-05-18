@@ -210,26 +210,6 @@ class ThermoData(ThermoModel):
         """
         return (ThermoData, (self.Tdata, self.Cpdata, self.H298, self.S298, self.Tmin, self.Tmax, self.comment))
 
-    def __add__(self, other):
-        """
-        Add two sets of thermodynamic data together. All parameters are
-        considered additive. Returns a new :class:`ThermoData` object that is
-        the sum of the two sets of thermodynamic data.
-        """
-        cython.declare(i=int, new=ThermoData)
-        if len(self.Tdata.values) != len(other.Tdata.values) or any([T1 != T2 for T1, T2 in zip(self.Tdata.values, other.Tdata.values)]):
-            raise ThermoError('Cannot add these ThermoData objects due to their having different temperature points.')
-        new = ThermoData(
-            Tdata = self.Tdata,
-            Cpdata = self.Cpdata + other.Cpdata,
-            H298 = self.H298 + other.H298,
-            S298 = self.S298 + other.S298,
-        )
-        if self.comment == '': new.comment = other.comment
-        elif other.comment == '': new.comment = self.comment
-        else: new.comment = self.comment + ' + ' + other.comment
-        return new
-
     def getHeatCapacity(self, T):
         """
         Return the constant-pressure heat capacity in J/mol*K at temperature 
