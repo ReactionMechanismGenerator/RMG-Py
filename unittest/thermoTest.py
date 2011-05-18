@@ -1,183 +1,465 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
+# encoding: utf-8
 
-import numpy
+"""
+This module contains unit tests of the rmgpy.thermo module.
+"""
+
 import unittest
 
-import rmgpy.chem.constants as constants
-from rmgpy.chem.thermo import *
+from rmgpy.thermo import *
 
 ################################################################################
 
-class ThermoTest(unittest.TestCase):
+class TestThermoModel(unittest.TestCase):
     """
-    Contains unit tests for the rmgpy.chem.thermo module, used for working with
-    thermodynamics models.
+    Contains unit tests of the ThermoModel class.
     """
     
-    def testThermoData(self):
+    def setUp(self):
         """
-        Tests the ThermoData class.
+        A function run before each unit test in this class.
         """
-        Tdata = ([300.0,400.0,500.0,600.0,800.0,1000.0,1500.0],"K")
-        Cpdata = ([3.0,4.0,5.0,6.0,8.0,10.0,15.0],"K")
-
-        thermo = ThermoData(Tdata, Cpdata, H298=-2000.0, S298=50.0, Tmin=300.0, Tmax=2000.0, comment='This data is completely made up')
-        self.assertEqual(thermo.getHeatCapacity(500), 5)
-        self.assertEqual(thermo.getEnthalpy(300), -2000.0)
-        self.assertEqual(thermo.getEntropy(300), 50.0)
-
-    def testWilhoit(self):
-        """
-        Tests the Wilhoit thermodynamics model functions.
-        """
+        self.thermo = ThermoModel(Tmin=(300,"K"), Tmax=(2000,"K"))
         
-        # CC(=O)O[O]
-        wilhoit = Wilhoit(cp0=4.0*constants.R, cpInf=21.0*constants.R, a0=-3.95, a1=9.26, a2=-15.6, a3=8.55, B=500.0, H0=-6.151e+04, S0=-790.2)
+    def testTemperatureRange(self):
+        """
+        Test that the temperature range is set and handled appropriately.
+        """
+        self.assertEqual(self.thermo.Tmin.value, 300)
+        self.assertEqual(self.thermo.Tmin.units, "K")
+        self.assertEqual(self.thermo.Tmax.value, 2000)
+        self.assertEqual(self.thermo.Tmax.units, "K")
+        self.assertFalse(self.thermo.isTemperatureValid(200))
+        self.assertTrue(self.thermo.isTemperatureValid(300))
+        self.assertTrue(self.thermo.isTemperatureValid(400))
+        self.assertTrue(self.thermo.isTemperatureValid(500))
+        self.assertTrue(self.thermo.isTemperatureValid(600))
+        self.assertTrue(self.thermo.isTemperatureValid(800))
+        self.assertTrue(self.thermo.isTemperatureValid(1000))
+        self.assertTrue(self.thermo.isTemperatureValid(1500))
+        self.assertTrue(self.thermo.isTemperatureValid(2000))
+        self.assertFalse(self.thermo.isTemperatureValid(2500))
         
-        Tlist = numpy.arange(200.0, 2001.0, 200.0, numpy.float64)
-        Cplist0 = [ 64.398,  94.765, 116.464, 131.392, 141.658, 148.830, 153.948, 157.683, 160.469, 162.589]
-        Hlist0 = [-166312., -150244., -128990., -104110., -76742.9, -47652.6, -17347.1, 13834.8, 45663.0, 77978.1]
-        Slist0 = [287.421, 341.892, 384.685, 420.369, 450.861, 477.360, 500.708, 521.521, 540.262, 557.284]
-        Glist0 = [-223797., -287002., -359801., -440406., -527604., -620485., -718338., -820599., -926809., -1036590.]
+    def testPickle(self):
+        """
+        Test that a ThermoModel object can be successfully pickled and
+        unpickled with no loss of information.
+        """
+        import cPickle
+        thermo = cPickle.loads(cPickle.dumps(self.thermo))
+        self.assertEqual(self.thermo.Tmin.value, thermo.Tmin.value)
+        self.assertEqual(self.thermo.Tmin.units, thermo.Tmin.units)
+        self.assertEqual(self.thermo.Tmax.value, thermo.Tmax.value)
+        self.assertEqual(self.thermo.Tmax.units, thermo.Tmax.units)
+        self.assertEqual(self.thermo.comment, thermo.comment)
+    
+    def testOutput(self):
+        """
+        Test that we can reconstruct a ThermoModel object from its repr()
+        output with no loss of information.
+        """
+        exec('thermo = {0!r}'.format(self.thermo))
+        self.assertEqual(self.thermo.Tmin.value, thermo.Tmin.value)
+        self.assertEqual(self.thermo.Tmin.units, thermo.Tmin.units)
+        self.assertEqual(self.thermo.Tmax.value, thermo.Tmax.value)
+        self.assertEqual(self.thermo.Tmax.units, thermo.Tmax.units)
+        self.assertEqual(self.thermo.comment, thermo.comment)
+        
+################################################################################
 
-        Cplist = wilhoit.getHeatCapacities(Tlist)
-        Hlist = wilhoit.getEnthalpies(Tlist)
-        Slist = wilhoit.getEntropies(Tlist)
-        Glist = wilhoit.getFreeEnergies(Tlist)
+class TestThermoData(unittest.TestCase):
+    """
+    Contains unit tests of the ThermoData class.
+    """
 
-        for i in range(len(Tlist)):
-            self.assertAlmostEqual(Cplist[i] / Cplist0[i], 1.0, 4)
-            self.assertAlmostEqual( Hlist[i] /  Hlist0[i], 1.0, 4)
-            self.assertAlmostEqual( Slist[i] /  Slist0[i], 1.0, 4)
-            self.assertAlmostEqual( Glist[i] /  Glist0[i], 1.0, 4)
+    def setUp(self):
+        """
+        A function run before each unit test in this class.
+        """
+        self.thermo = ThermoData(
+            Tdata = ([300.0,400.0,500.0,600.0,800.0,1000.0,1500.0],"K"),
+            Cpdata = ([3.0,4.0,5.0,6.0,8.0,10.0,15.0],"J/(mol*K)"),
+            H298 = (-2.0,"kJ/mol"),
+            S298 = (50.0,"J/(mol*K)"),
+            Tmin = (300.0,"K"), 
+            Tmax = (2000.0,"K"), 
+            comment = """This data is completely made up""",
+        )
+    
+    def testHeatCapacity(self):
+        """
+        Test the ThermoData.getHeatCapacity() method.
+        """
+        self.assertEqual(self.thermo.getHeatCapacity(300), 3)
+        self.assertEqual(self.thermo.getHeatCapacity(350), 3.5)
+        self.assertEqual(self.thermo.getHeatCapacity(400), 4)
+        self.assertEqual(self.thermo.getHeatCapacity(450), 4.5)
+        self.assertEqual(self.thermo.getHeatCapacity(500), 5)
+        self.assertEqual(self.thermo.getHeatCapacity(550), 5.5)
+        self.assertEqual(self.thermo.getHeatCapacity(600), 6)
+        self.assertEqual(self.thermo.getHeatCapacity(700), 7)
+        self.assertEqual(self.thermo.getHeatCapacity(800), 8)
+        self.assertEqual(self.thermo.getHeatCapacity(900), 9)
+        self.assertEqual(self.thermo.getHeatCapacity(1000), 10)
+        self.assertEqual(self.thermo.getHeatCapacity(1100), 11)
+        self.assertEqual(self.thermo.getHeatCapacity(1200), 12)
+        self.assertEqual(self.thermo.getHeatCapacity(1300), 13)
+        self.assertEqual(self.thermo.getHeatCapacity(1400), 14)
+        self.assertEqual(self.thermo.getHeatCapacity(1500), 15)
+        self.assertEqual(self.thermo.getHeatCapacity(1600), 15)
+        self.assertEqual(self.thermo.getHeatCapacity(1700), 15)
+        self.assertEqual(self.thermo.getHeatCapacity(1800), 15)
+        self.assertEqual(self.thermo.getHeatCapacity(1900), 15)
+        self.assertEqual(self.thermo.getHeatCapacity(2000), 15)
+    
+    def testEnthalpy(self):
+        """
+        Test the ThermoData.getEnthalpy() method.
+        """
+        self.assertEqual(self.thermo.getEnthalpy(300), -1994.0)
+        self.assertEqual(self.thermo.getEnthalpy(400), -1644.0)
+        self.assertEqual(self.thermo.getEnthalpy(500), -1194.0)
+        self.assertEqual(self.thermo.getEnthalpy(600), -644.0)
+        self.assertEqual(self.thermo.getEnthalpy(800), 756.0)
+        self.assertEqual(self.thermo.getEnthalpy(1000), 2556.0)
+        self.assertEqual(self.thermo.getEnthalpy(1500), 8806.0)
+        self.assertEqual(self.thermo.getEnthalpy(2000), 16306.0)
+        
+    def testEntropy(self):
+        """
+        Test the ThermoData.getEntropy() method.
+        """
+        self.assertAlmostEqual(self.thermo.getEntropy(300), 50.02, 3)
+        self.assertAlmostEqual(self.thermo.getEntropy(400), 51.02, 3)
+        self.assertAlmostEqual(self.thermo.getEntropy(500), 52.02, 3)
+        self.assertAlmostEqual(self.thermo.getEntropy(600), 53.02, 3)
+        self.assertAlmostEqual(self.thermo.getEntropy(800), 55.02, 3)
+        self.assertAlmostEqual(self.thermo.getEntropy(1000), 57.02, 3)
+        self.assertAlmostEqual(self.thermo.getEntropy(1500), 62.02, 3)
+        self.assertAlmostEqual(self.thermo.getEntropy(2000), 66.3352, 3)
 
-    def testPickleThermoData(self):
+    def testFreeEnergy(self):
+        """
+        Test the ThermoData.getFreeEnergy() method.
+        """
+        for T in [300,400,500,600,800,1000,1500,2000]:
+            self.assertEqual(self.thermo.getFreeEnergy(T), self.thermo.getEnthalpy(T) - T * self.thermo.getEntropy(T))
+    
+    def testPickle(self):
         """
         Test that a ThermoData object can be successfully pickled and
         unpickled with no loss of information.
         """
-        Tdata = ([300.0,400.0,500.0,600.0,800.0,1000.0,1500.0],"K")
-        Cpdata = [3.0,4.0,5.0,6.0,8.0,10.0,15.0]
-        thermo0 = ThermoData(Tdata, Cpdata, H298=-2000.0, S298=50.0, Tmin=300.0, Tmax=2000.0, comment='This data is completely made up')
         import cPickle
-        thermo = cPickle.loads(cPickle.dumps(thermo0))
+        thermo = cPickle.loads(cPickle.dumps(self.thermo))
+        self.assertEqual(self.thermo.Tdata.value, thermo.Tdata.value)
+        self.assertEqual(self.thermo.Tdata.units, thermo.Tdata.units)
+        self.assertEqual(self.thermo.Cpdata.value, thermo.Cpdata.value)
+        self.assertEqual(self.thermo.Cpdata.units, thermo.Cpdata.units)
+        self.assertEqual(self.thermo.H298.value, thermo.H298.value)
+        self.assertEqual(self.thermo.H298.units, thermo.H298.units)
+        self.assertEqual(self.thermo.S298.value, thermo.S298.value)
+        self.assertEqual(self.thermo.S298.units, thermo.S298.units)
+        self.assertEqual(self.thermo.Tmin.value, thermo.Tmin.value)
+        self.assertEqual(self.thermo.Tmin.units, thermo.Tmin.units)
+        self.assertEqual(self.thermo.Tmax.value, thermo.Tmax.value)
+        self.assertEqual(self.thermo.Tmax.units, thermo.Tmax.units)
+        self.assertEqual(self.thermo.comment, thermo.comment)
 
-        self.assertEqual(thermo0.Tdata.value, thermo.Tdata.value)
-        self.assertEqual(thermo0.Cpdata.value, thermo.Cpdata.value)
-        self.assertEqual(thermo0.H298.value, thermo.H298.value)
-        self.assertEqual(thermo0.S298.value, thermo.S298.value)
-        self.assertEqual(thermo0.Tmin.value, thermo.Tmin.value)
-        self.assertEqual(thermo0.Tmax.value, thermo.Tmax.value)
-        self.assertEqual(thermo0.comment, thermo.comment)
-
-    def testPickleWilhoit(self):
-        """
-        Test that a Wilhoit object can be successfully pickled and
-        unpickled with no loss of information.
-        """
-        thermo0 = Wilhoit(cp0=4.0*constants.R, cpInf=21.0*constants.R, a0=-3.95, a1=9.26, a2=-15.6, a3=8.55, B=500.0, H0=-6.151e+04, S0=-790.2, Tmin=300.0, Tmax=2000.0, comment='CC(=O)O[O]')
-        import cPickle
-        thermo = cPickle.loads(cPickle.dumps(thermo0))
-
-        self.assertAlmostEqual(thermo0.cp0.value, thermo.cp0.value, 4)
-        self.assertAlmostEqual(thermo0.cpInf.value, thermo.cpInf.value, 3)
-        self.assertAlmostEqual(thermo0.a0.value, thermo.a0.value, 4)
-        self.assertAlmostEqual(thermo0.a1.value, thermo.a1.value, 4)
-        self.assertAlmostEqual(thermo0.a2.value, thermo.a2.value, 4)
-        self.assertAlmostEqual(thermo0.a3.value, thermo.a3.value, 4)
-        self.assertAlmostEqual(thermo0.H0.value, thermo.H0.value, 4)
-        self.assertAlmostEqual(thermo0.S0.value, thermo.S0.value, 4)
-        self.assertAlmostEqual(thermo0.B.value, thermo.B.value, 4)
-        self.assertEqual(thermo0.Tmin.value, thermo.Tmin.value)
-        self.assertEqual(thermo0.Tmax.value, thermo.Tmax.value)
-        self.assertEqual(thermo0.comment, thermo.comment)
-
-    def testPickleNASA(self):
-        """
-        Test that a MultiNASA object can be successfully pickled and
-        unpickled with no loss of information.
-        """
-
-        nasa0 = NASA(coeffs=[11.0,12.0,13.0,14.0,15.0,16.0,17.0], Tmin=300.0, Tmax=1000.0, comment='This data is completely made up and unphysical')
-        nasa1 = NASA(coeffs=[21.0,22.0,23.0,24.0,25.0,26.0,27.0], Tmin=1000.0, Tmax=6000.0, comment='This data is also completely made up and unphysical')
-
-        thermo0 = MultiNASA(polynomials=[nasa0, nasa1], Tmin=300.0, Tmax=6000.0, comment='This data is completely made up and unphysical')
-        import cPickle
-        thermo = cPickle.loads(cPickle.dumps(thermo0))
-
-        self.assertEqual(len(thermo0.polynomials), len(thermo.polynomials))
-        for poly0, poly in zip(thermo0.polynomials, thermo.polynomials):
-            self.assertEqual(poly0.cm2, poly.cm2)
-            self.assertEqual(poly0.cm1, poly.cm1)
-            self.assertEqual(poly0.c0, poly.c0)
-            self.assertEqual(poly0.c1, poly.c1)
-            self.assertEqual(poly0.c2, poly.c2)
-            self.assertEqual(poly0.c3, poly.c3)
-            self.assertEqual(poly0.c4, poly.c4)
-            self.assertEqual(poly0.c5, poly.c5)
-            self.assertEqual(poly0.c6, poly.c6)
-            self.assertEqual(poly0.Tmin.value, poly.Tmin.value)
-            self.assertEqual(poly0.Tmax.value, poly.Tmax.value)
-            self.assertEqual(poly0.comment, poly.comment)
-
-        self.assertEqual(thermo0.Tmin.value, thermo.Tmin.value)
-        self.assertEqual(thermo0.Tmax.value, thermo.Tmax.value)
-        self.assertEqual(thermo0.comment, thermo.comment)
-
-    def testOutputThermoData(self):
+    def testOutput(self):
         """
         Test that we can reconstruct a ThermoData object from its repr()
         output with no loss of information.
         """
-        Tdata = ([300.0,400.0,500.0,600.0,800.0,1000.0,1500.0],"K")
-        Cpdata = [3.0,4.0,5.0,6.0,8.0,10.0,15.0]
-        thermo0 = ThermoData(Tdata, Cpdata, H298=-2000.0, S298=50.0, Tmin=300.0, Tmax=2000.0, comment='This data is completely made up')
-        exec('thermo = %r' % thermo0)
+        exec('thermo = {0!r}'.format(self.thermo))
+        self.assertEqual(self.thermo.Tdata.value, thermo.Tdata.value)
+        self.assertEqual(self.thermo.Tdata.units, thermo.Tdata.units)
+        self.assertEqual(self.thermo.Cpdata.value, thermo.Cpdata.value)
+        self.assertEqual(self.thermo.Cpdata.units, thermo.Cpdata.units)
+        self.assertEqual(self.thermo.H298.value, thermo.H298.value)
+        self.assertEqual(self.thermo.H298.units, thermo.H298.units)
+        self.assertEqual(self.thermo.S298.value, thermo.S298.value)
+        self.assertEqual(self.thermo.S298.units, thermo.S298.units)
+        self.assertEqual(self.thermo.Tmin.value, thermo.Tmin.value)
+        self.assertEqual(self.thermo.Tmin.units, thermo.Tmin.units)
+        self.assertEqual(self.thermo.Tmax.value, thermo.Tmax.value)
+        self.assertEqual(self.thermo.Tmax.units, thermo.Tmax.units)
+        self.assertEqual(self.thermo.comment, thermo.comment)
 
-        self.assertEqual(thermo0.Tdata.value, thermo.Tdata.value)
-        self.assertEqual(thermo0.Cpdata.value, thermo.Cpdata.value)
-        self.assertEqual(thermo0.H298.value, thermo.H298.value)
-        self.assertEqual(thermo0.S298.value, thermo.S298.value)
-        self.assertEqual(thermo0.Tmin.value, thermo.Tmin.value)
-        self.assertEqual(thermo0.Tmax.value, thermo.Tmax.value)
-        self.assertEqual(thermo0.comment, thermo.comment)
+################################################################################
 
-    def testOutputWilhoit(self):
+class TestWilhoit(unittest.TestCase):
+    """
+    Contains unit tests of the ThermoData class.
+    """
+
+    def setUp(self):
         """
-        Test that we can reconstruct a Wilhoit object from its repr()
+        A function run before each unit test in this class.
+        """
+        self.thermo = Wilhoit(
+            cp0 = (4.0*8.314472,"J/(mol*K)"), 
+            cpInf = (21.0*8.314472,"J/(mol*K)"), 
+            a0 = -3.95, 
+            a1 = 9.26, 
+            a2 = -15.6, 
+            a3 = 8.55, 
+            B = (500.0,"K"), 
+            H0 = (-6.151e+04,"J/mol"), 
+            S0 = (-790.2,"J/(mol*K)"),
+            Tmin = (300.0,"K"), 
+            Tmax = (2000.0,"K"), 
+            comment = """This data is completely made up""",
+        )
+    
+    def testHeatCapacity(self):
+        """
+        Test the Wilhoit.getHeatCapacity() method.
+        """
+        self.assertAlmostEqual(self.thermo.getHeatCapacity(200), 64.398, 2)
+        self.assertAlmostEqual(self.thermo.getHeatCapacity(400), 94.765, 2)
+        self.assertAlmostEqual(self.thermo.getHeatCapacity(600), 116.464, 2)
+        self.assertAlmostEqual(self.thermo.getHeatCapacity(800), 131.392, 2)
+        self.assertAlmostEqual(self.thermo.getHeatCapacity(1000), 141.658, 2)
+        self.assertAlmostEqual(self.thermo.getHeatCapacity(1200), 148.830, 2)
+        self.assertAlmostEqual(self.thermo.getHeatCapacity(1400), 153.948, 2)
+        self.assertAlmostEqual(self.thermo.getHeatCapacity(1600), 157.683, 2)
+        self.assertAlmostEqual(self.thermo.getHeatCapacity(1800), 160.469, 2)
+        self.assertAlmostEqual(self.thermo.getHeatCapacity(2000), 162.589, 2)
+    
+    def testEnthalpy(self):
+        """
+        Test the Wilhoit.getEnthalpy() method.
+        """
+        self.assertAlmostEqual(self.thermo.getEnthalpy(200) / 1000., -166.312, 2)
+        self.assertAlmostEqual(self.thermo.getEnthalpy(400) / 1000., -150.244, 2)
+        self.assertAlmostEqual(self.thermo.getEnthalpy(600) / 1000., -128.990, 2)
+        self.assertAlmostEqual(self.thermo.getEnthalpy(800) / 1000., -104.110, 2)
+        self.assertAlmostEqual(self.thermo.getEnthalpy(1000) / 1000., -76.7429, 3)
+        self.assertAlmostEqual(self.thermo.getEnthalpy(1200) / 1000., -47.6526, 3)
+        self.assertAlmostEqual(self.thermo.getEnthalpy(1400) / 1000., -17.3471, 3)
+        self.assertAlmostEqual(self.thermo.getEnthalpy(1600) / 1000., 13.8348, 3)
+        self.assertAlmostEqual(self.thermo.getEnthalpy(1800) / 1000., 45.6630, 3)
+        self.assertAlmostEqual(self.thermo.getEnthalpy(2000) / 1000., 77.9781, 3)
+        
+    def testEntropy(self):
+        """
+        Test the Wilhoit.getEntropy() method.
+        """
+        self.assertAlmostEqual(self.thermo.getEntropy(200), 287.421, 2)
+        self.assertAlmostEqual(self.thermo.getEntropy(400), 341.892, 2)
+        self.assertAlmostEqual(self.thermo.getEntropy(600), 384.685, 2)
+        self.assertAlmostEqual(self.thermo.getEntropy(800), 420.369, 2)
+        self.assertAlmostEqual(self.thermo.getEntropy(1000), 450.861, 2)
+        self.assertAlmostEqual(self.thermo.getEntropy(1200), 477.360, 2)
+        self.assertAlmostEqual(self.thermo.getEntropy(1400), 500.708, 2)
+        self.assertAlmostEqual(self.thermo.getEntropy(1600), 521.521, 2)
+        self.assertAlmostEqual(self.thermo.getEntropy(1800), 540.262, 2)
+        self.assertAlmostEqual(self.thermo.getEntropy(2000), 557.284, 2)
+
+    def testFreeEnergy(self):
+        """
+        Test the Wilhoit.getFreeEnergy() method.
+        """
+        for T in [300,400,500,600,800,1000,1500,2000]:
+            self.assertEqual(self.thermo.getFreeEnergy(T), self.thermo.getEnthalpy(T) - T * self.thermo.getEntropy(T))
+    
+    def testPickle(self):
+        """
+        Test that a ThermoData object can be successfully pickled and
+        unpickled with no loss of information.
+        """
+        import cPickle
+        thermo = cPickle.loads(cPickle.dumps(self.thermo))
+        self.assertAlmostEqual(self.thermo.cp0.value, thermo.cp0.value, 4)
+        self.assertEqual(self.thermo.cp0.units, thermo.cp0.units)
+        self.assertAlmostEqual(self.thermo.cpInf.value, thermo.cpInf.value, 3)
+        self.assertEqual(self.thermo.cpInf.units, thermo.cpInf.units)
+        self.assertAlmostEqual(self.thermo.a0, thermo.a0, 4)
+        self.assertAlmostEqual(self.thermo.a1, thermo.a1, 4)
+        self.assertAlmostEqual(self.thermo.a2, thermo.a2, 4)
+        self.assertAlmostEqual(self.thermo.a3, thermo.a3, 4)
+        self.assertAlmostEqual(self.thermo.H0.value, thermo.H0.value, 4)
+        self.assertEqual(self.thermo.H0.units, thermo.H0.units)
+        self.assertAlmostEqual(self.thermo.S0.value, thermo.S0.value, 4)
+        self.assertEqual(self.thermo.S0.units, thermo.S0.units)
+        self.assertAlmostEqual(self.thermo.B.value, thermo.B.value, 4)
+        self.assertEqual(self.thermo.B.units, thermo.B.units)
+        self.assertEqual(self.thermo.Tmin.value, thermo.Tmin.value)
+        self.assertEqual(self.thermo.Tmin.units, thermo.Tmin.units)
+        self.assertEqual(self.thermo.Tmax.value, thermo.Tmax.value)
+        self.assertEqual(self.thermo.Tmax.units, thermo.Tmax.units)
+        self.assertEqual(self.thermo.comment, thermo.comment)
+
+    def testOutput(self):
+        """
+        Test that we can reconstruct a ThermoData object from its repr()
         output with no loss of information.
         """
-        thermo0 = Wilhoit(cp0=4.0*constants.R, cpInf=21.0*constants.R, a0=-3.95, a1=9.26, a2=-15.6, a3=8.55, B=500.0, H0=-6.151e+04, S0=-790.2, Tmin=300.0, Tmax=2000.0, comment='CC(=O)O[O]')
-        exec('thermo = %r' % thermo0)
+        exec('thermo = {0!r}'.format(self.thermo))
+        self.assertAlmostEqual(self.thermo.cp0.value, thermo.cp0.value, 4)
+        self.assertEqual(self.thermo.cp0.units, thermo.cp0.units)
+        self.assertAlmostEqual(self.thermo.cpInf.value, thermo.cpInf.value, 3)
+        self.assertEqual(self.thermo.cpInf.units, thermo.cpInf.units)
+        self.assertAlmostEqual(self.thermo.a0, thermo.a0, 4)
+        self.assertAlmostEqual(self.thermo.a1, thermo.a1, 4)
+        self.assertAlmostEqual(self.thermo.a2, thermo.a2, 4)
+        self.assertAlmostEqual(self.thermo.a3, thermo.a3, 4)
+        self.assertAlmostEqual(self.thermo.H0.value, thermo.H0.value, 4)
+        self.assertEqual(self.thermo.H0.units, thermo.H0.units)
+        self.assertAlmostEqual(self.thermo.S0.value, thermo.S0.value, 4)
+        self.assertEqual(self.thermo.S0.units, thermo.S0.units)
+        self.assertAlmostEqual(self.thermo.B.value, thermo.B.value, 4)
+        self.assertEqual(self.thermo.B.units, thermo.B.units)
+        self.assertEqual(self.thermo.Tmin.value, thermo.Tmin.value)
+        self.assertEqual(self.thermo.Tmin.units, thermo.Tmin.units)
+        self.assertEqual(self.thermo.Tmax.value, thermo.Tmax.value)
+        self.assertEqual(self.thermo.Tmax.units, thermo.Tmax.units)
+        self.assertEqual(self.thermo.comment, thermo.comment)
 
-        self.assertAlmostEqual(thermo0.cp0.value, thermo.cp0.value, 4)
-        self.assertAlmostEqual(thermo0.cpInf.value, thermo.cpInf.value, 3)
-        self.assertAlmostEqual(thermo0.a0.value, thermo.a0.value, 4)
-        self.assertAlmostEqual(thermo0.a1.value, thermo.a1.value, 4)
-        self.assertAlmostEqual(thermo0.a2.value, thermo.a2.value, 4)
-        self.assertAlmostEqual(thermo0.a3.value, thermo.a3.value, 4)
-        self.assertAlmostEqual(thermo0.H0.value, thermo.H0.value, 4)
-        self.assertAlmostEqual(thermo0.S0.value, thermo.S0.value, 4)
-        self.assertAlmostEqual(thermo0.B.value, thermo.B.value, 4)
-        self.assertEqual(thermo0.Tmin.value, thermo.Tmin.value)
-        self.assertEqual(thermo0.Tmax.value, thermo.Tmax.value)
-        self.assertEqual(thermo0.comment, thermo.comment)
+################################################################################
 
-    def testOutputNASA(self):
+class TestNASA(unittest.TestCase):
+    """
+    Contains unit tests of the NASA class.
+    """
+
+    def setUp(self):
         """
-        Test that we can reconstruct a MultiNASA object from its repr()
+        A function run before each unit test in this class.
+        """
+        self.thermo = NASA(
+            coeffs = [1.0e0,1.0e-3,1.0e-6,1.0e-9,1.0e-12,1.0e3,1.0e0],
+            Tmin = (300.0,"K"), 
+            Tmax = (2000.0,"K"), 
+            comment = """This data is completely made up""",
+        )
+    
+    def testHeatCapacity(self):
+        """
+        Test the NASA.getHeatCapacity() method.
+        """
+        self.assertAlmostEqual(self.thermo.getHeatCapacity(200), 10.3898, 3)
+        self.assertAlmostEqual(self.thermo.getHeatCapacity(400), 13.7156, 3)
+        self.assertAlmostEqual(self.thermo.getHeatCapacity(600), 19.1698, 3)
+        self.assertAlmostEqual(self.thermo.getHeatCapacity(800), 27.9499, 2)
+        self.assertAlmostEqual(self.thermo.getHeatCapacity(1000), 41.5724, 3)
+        self.assertAlmostEqual(self.thermo.getHeatCapacity(1200), 61.8730, 3)
+        self.assertAlmostEqual(self.thermo.getHeatCapacity(1400), 91.0069, 3)
+        self.assertAlmostEqual(self.thermo.getHeatCapacity(1600), 131.448, 2)
+        self.assertAlmostEqual(self.thermo.getHeatCapacity(1800), 185.991, 2)
+        self.assertAlmostEqual(self.thermo.getHeatCapacity(2000), 257.749, 2)
+    
+    def testEnthalpy(self):
+        """
+        Test the NASA.getEnthalpy() method.
+        """
+        self.assertAlmostEqual(self.thermo.getEnthalpy(200) / 1000., 10.1697, 3)
+        self.assertAlmostEqual(self.thermo.getEnthalpy(400) / 1000., 12.5530, 3)
+        self.assertAlmostEqual(self.thermo.getEnthalpy(600) / 1000., 15.7971, 3)
+        self.assertAlmostEqual(self.thermo.getEnthalpy(800) / 1000., 20.4420, 3)
+        self.assertAlmostEqual(self.thermo.getEnthalpy(1000) / 1000., 27.2992, 3)
+        self.assertAlmostEqual(self.thermo.getEnthalpy(1200) / 1000., 37.5154, 3)
+        self.assertAlmostEqual(self.thermo.getEnthalpy(1400) / 1000., 52.6365, 3)
+        self.assertAlmostEqual(self.thermo.getEnthalpy(1600) / 1000., 74.6713, 3)
+        self.assertAlmostEqual(self.thermo.getEnthalpy(1800) / 1000., 106.155, 2)
+        self.assertAlmostEqual(self.thermo.getEnthalpy(2000) / 1000., 150.215, 2)
+        
+    def testEntropy(self):
+        """
+        Test the NASA.getEntropy() method.
+        """
+        self.assertAlmostEqual(self.thermo.getEntropy(200), 54.2219, 3)
+        self.assertAlmostEqual(self.thermo.getEntropy(400), 62.3519, 3)
+        self.assertAlmostEqual(self.thermo.getEntropy(600), 68.8549, 3)
+        self.assertAlmostEqual(self.thermo.getEntropy(800), 75.4761, 3)
+        self.assertAlmostEqual(self.thermo.getEntropy(1000), 83.0706, 3)
+        self.assertAlmostEqual(self.thermo.getEntropy(1200), 92.3279, 3)
+        self.assertAlmostEqual(self.thermo.getEntropy(1400), 103.925, 2)
+        self.assertAlmostEqual(self.thermo.getEntropy(1600), 118.577, 2)
+        self.assertAlmostEqual(self.thermo.getEntropy(1800), 137.055, 2)
+        self.assertAlmostEqual(self.thermo.getEntropy(2000), 160.200, 2)
+
+    def testFreeEnergy(self):
+        """
+        Test the NASA.getFreeEnergy() method.
+        """
+        for T in [300,400,500,600,800,1000,1500,2000]:
+            self.assertEqual(self.thermo.getFreeEnergy(T), self.thermo.getEnthalpy(T) - T * self.thermo.getEntropy(T))
+    
+    def testPickle(self):
+        """
+        Test that a NASA object can be successfully pickled and
+        unpickled with no loss of information.
+        """
+        import cPickle
+        thermo = cPickle.loads(cPickle.dumps(self.thermo))
+        self.assertAlmostEqual(self.thermo.cm2, thermo.cm2, 4)
+        self.assertAlmostEqual(self.thermo.cm1, thermo.cm1, 4)
+        self.assertAlmostEqual(self.thermo.c0 / thermo.c0, 1.0, 4)
+        self.assertAlmostEqual(self.thermo.c1 / thermo.c1, 1.0, 4)
+        self.assertAlmostEqual(self.thermo.c2 / thermo.c2, 1.0, 4)
+        self.assertAlmostEqual(self.thermo.c3 / thermo.c3, 1.0, 4)
+        self.assertAlmostEqual(self.thermo.c4 / thermo.c4, 1.0, 4)
+        self.assertAlmostEqual(self.thermo.c5 / thermo.c5, 1.0, 4)
+        self.assertAlmostEqual(self.thermo.c6 / thermo.c6, 1.0, 4)
+        self.assertEqual(self.thermo.Tmin.value, thermo.Tmin.value)
+        self.assertEqual(self.thermo.Tmin.units, thermo.Tmin.units)
+        self.assertEqual(self.thermo.Tmax.value, thermo.Tmax.value)
+        self.assertEqual(self.thermo.Tmax.units, thermo.Tmax.units)
+        self.assertEqual(self.thermo.comment, thermo.comment)
+
+    def testOutput(self):
+        """
+        Test that we can reconstruct a NASA object from its repr()
         output with no loss of information.
         """
+        exec('thermo = {0!r}'.format(self.thermo))
+        self.assertAlmostEqual(self.thermo.cm2, thermo.cm2, 4)
+        self.assertAlmostEqual(self.thermo.cm1, thermo.cm1, 4)
+        self.assertAlmostEqual(self.thermo.c0 / thermo.c0, 1.0, 4)
+        self.assertAlmostEqual(self.thermo.c1 / thermo.c1, 1.0, 4)
+        self.assertAlmostEqual(self.thermo.c2 / thermo.c2, 1.0, 4)
+        self.assertAlmostEqual(self.thermo.c3 / thermo.c3, 1.0, 4)
+        self.assertAlmostEqual(self.thermo.c4 / thermo.c4, 1.0, 4)
+        self.assertAlmostEqual(self.thermo.c5 / thermo.c5, 1.0, 4)
+        self.assertAlmostEqual(self.thermo.c6 / thermo.c6, 1.0, 4)
+        self.assertEqual(self.thermo.Tmin.value, thermo.Tmin.value)
+        self.assertEqual(self.thermo.Tmin.units, thermo.Tmin.units)
+        self.assertEqual(self.thermo.Tmax.value, thermo.Tmax.value)
+        self.assertEqual(self.thermo.Tmax.units, thermo.Tmax.units)
+        self.assertEqual(self.thermo.comment, thermo.comment)
 
-        nasa0 = NASA(coeffs=[11.0,12.0,13.0,14.0,15.0,16.0,17.0], Tmin=300.0, Tmax=1000.0, comment='This data is completely made up and unphysical')
-        nasa1 = NASA(coeffs=[21.0,22.0,23.0,24.0,25.0,26.0,27.0], Tmin=1000.0, Tmax=6000.0, comment='This data is also completely made up and unphysical')
+################################################################################
 
-        thermo0 = MultiNASA(polynomials=[nasa0, nasa1], Tmin=300.0, Tmax=6000.0, comment='This data is completely made up and unphysical')
-        exec('thermo = %r' % thermo0)
+class TestMultiNASA(unittest.TestCase):
+    """
+    Contains unit tests of the MultiNASA class.
+    """
 
-        self.assertEqual(len(thermo0.polynomials), len(thermo.polynomials))
-        for poly0, poly in zip(thermo0.polynomials, thermo.polynomials):
+    def setUp(self):
+        """
+        A function run before each unit test in this class.
+        """
+        nasa0 = NASA(coeffs=[11.0,12.0,13.0,14.0,15.0,16.0,17.0], Tmin=(300.0,"K"), Tmax=(1000.0,"K"), comment='This data is completely made up and unphysical')
+        nasa1 = NASA(coeffs=[21.0,22.0,23.0,24.0,25.0,26.0,27.0], Tmin=(1000.0,"K"), Tmax=(6000.0,"K"), comment='This data is also completely made up and unphysical')
+        self.thermo = MultiNASA(
+            polynomials=[nasa0, nasa1],
+            Tmin = (300.0,"K"), 
+            Tmax = (6000.0,"K"), 
+            comment = """This data is completely made up and unphysical""",
+        )
+    
+    def testPickle(self):
+        """
+        Test that a MultiNASA object can be successfully pickled and
+        unpickled with no loss of information.
+        """
+        import cPickle
+        thermo = cPickle.loads(cPickle.dumps(self.thermo))
+        self.assertEqual(len(self.thermo.polynomials), len(thermo.polynomials))
+        for poly0, poly in zip(self.thermo.polynomials, thermo.polynomials):
             self.assertEqual(poly0.cm2, poly.cm2)
             self.assertEqual(poly0.cm1, poly.cm1)
             self.assertEqual(poly0.c0, poly.c0)
@@ -188,12 +470,44 @@ class ThermoTest(unittest.TestCase):
             self.assertEqual(poly0.c5, poly.c5)
             self.assertEqual(poly0.c6, poly.c6)
             self.assertEqual(poly0.Tmin.value, poly.Tmin.value)
+            self.assertEqual(poly0.Tmin.units, poly.Tmin.units)
             self.assertEqual(poly0.Tmax.value, poly.Tmax.value)
+            self.assertEqual(poly0.Tmax.units, poly.Tmax.units)
             self.assertEqual(poly0.comment, poly.comment)
+        self.assertEqual(self.thermo.Tmin.value, thermo.Tmin.value)
+        self.assertEqual(self.thermo.Tmin.units, thermo.Tmin.units)
+        self.assertEqual(self.thermo.Tmax.value, thermo.Tmax.value)
+        self.assertEqual(self.thermo.Tmax.units, thermo.Tmax.units)
+        self.assertEqual(self.thermo.comment, thermo.comment)
 
-        self.assertEqual(thermo0.Tmin.value, thermo.Tmin.value)
-        self.assertEqual(thermo0.Tmax.value, thermo.Tmax.value)
-        self.assertEqual(thermo0.comment, thermo.comment)
+    def testOutput(self):
+        """
+        Test that we can reconstruct a MultiNASA object from its repr()
+        output with no loss of information.
+        """
+        exec('thermo = {0!r}'.format(self.thermo))
+        self.assertEqual(len(self.thermo.polynomials), len(thermo.polynomials))
+        for poly0, poly in zip(self.thermo.polynomials, thermo.polynomials):
+            self.assertEqual(poly0.cm2, poly.cm2)
+            self.assertEqual(poly0.cm1, poly.cm1)
+            self.assertEqual(poly0.c0, poly.c0)
+            self.assertEqual(poly0.c1, poly.c1)
+            self.assertEqual(poly0.c2, poly.c2)
+            self.assertEqual(poly0.c3, poly.c3)
+            self.assertEqual(poly0.c4, poly.c4)
+            self.assertEqual(poly0.c5, poly.c5)
+            self.assertEqual(poly0.c6, poly.c6)
+            self.assertEqual(poly0.Tmin.value, poly.Tmin.value)
+            self.assertEqual(poly0.Tmin.units, poly.Tmin.units)
+            self.assertEqual(poly0.Tmax.value, poly.Tmax.value)
+            self.assertEqual(poly0.Tmax.units, poly.Tmax.units)
+            self.assertEqual(poly0.comment, poly.comment)
+        self.assertEqual(self.thermo.Tmin.value, thermo.Tmin.value)
+        self.assertEqual(self.thermo.Tmin.units, thermo.Tmin.units)
+        self.assertEqual(self.thermo.Tmax.value, thermo.Tmax.value)
+        self.assertEqual(self.thermo.Tmax.units, thermo.Tmax.units)
+        self.assertEqual(self.thermo.comment, thermo.comment)
+
 
 
 ################################################################################
