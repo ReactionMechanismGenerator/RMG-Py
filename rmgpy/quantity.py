@@ -48,26 +48,6 @@ pq.UnitQuantity('molecules', pq.mol/6.02214179e23, symbol='molecules')
 
 ################################################################################
 
-#: The Avogadro constant :math:`N_\mathrm{a}`, in :math:`\mathrm{mol^{-1}}`.
-Na = 6.02214179e23
-
-#: The Boltzmann constant :math:`k_\mathrm{B}`, in :math:`\mathrm{J/K}`.
-kB = 1.3806504e-23
-
-#: The gas law constant :math:`R`, in :math:`\mathrm{J/mol \cdot K}`.
-R = 8.314472
-
-#: The Planck constant :math:`h`, in :math:`\mathrm{J \cdot s}`.
-h = 6.62606896e-34
-
-#: The speed of light in a vacuum :math:`c`, in :math:`\mathrm{m/s}`.
-c = 299792458
-
-#: The mathematical constant :math:`\pi = 3.14159...`
-pi = float(math.pi)
-
-################################################################################
-
 def getConversionFactorToSI(units):
     """
     Get the conversion factor for converting a quantity in a given set of
@@ -334,3 +314,33 @@ class Quantity:
         and ``False`` otherwise.
         """
         return self.uncertaintyType == '*|/'
+
+################################################################################
+
+class Constants:
+    """
+    A class defining several physical constants:
+
+    =============== =========== ================================================
+    Attribute       Type        Description
+    =============== =========== ================================================
+    `Na`            ``double``  The Avogadro constant :math:`N_\\mathrm{A}`, in :math:`\\mathrm{mol^{-1}}`
+    `kB`            ``double``  The Boltzmann constant :math:`k_\\mathrm{B}`, in :math:`\\mathrm{J/K}`
+    `R`             ``double``  The gas law constant :math:`R`, in :math:`\\mathrm{J/mol \\cdot K}`
+    `h`             ``double``  The Planck constant :math:`h`, in :math:`\\mathrm{J \\cdot s}`
+    `c`             ``double``  The speed of light in a vacuum :math:`c`, in :math:`\\mathrm{m/s}`
+    `pi`            ``double``  The mathematical constant :math:`\\pi = 3.14159...`
+    =============== =========== ================================================
+    
+    """
+    
+    def __init__(self):
+        self.Na = 6.02214179e23
+        self.kB = 1.3806504e-23
+        self.R = 8.314472
+        self.h = 6.62606896e-34
+        self.c = 299792458
+        self.pi = float(math.pi)
+
+# An instance of the Constants class providing easy access to the physical constants
+constants = Constants()

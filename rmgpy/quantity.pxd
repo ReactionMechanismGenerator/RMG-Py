@@ -32,3 +32,10 @@ cdef class Quantity:
     cdef public numpy.ndarray values, uncertainties
     cdef public str units
     cdef public str uncertaintyType
+
+################################################################################
+
+cdef class Constants:
+
+    cdef public double Na, kB, R, h, c, pi
+
