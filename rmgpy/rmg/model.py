@@ -125,7 +125,7 @@ class Species(rmgpy.chem.species.Species):
 
         return self.thermo
 
-    def generateStatesData(self):
+    def generateStatesData(self, database):
         """
         Generate molecular degree of freedom data for the species. You must
         have already provided a thermodynamics model using e.g.
@@ -136,7 +136,7 @@ class Species(rmgpy.chem.species.Species):
         molecule = self.molecule[0]
         implicitH = molecule.implicitHydrogens
         molecule.makeHydrogensExplicit()
-        self.states = generateFrequencyData(molecule, self.thermo)
+        self.states = database.states.getStatesData(molecule, self.thermo)
         if implicitH: molecule.makeHydrogensImplicit()
 
     def generateLennardJonesParameters(self):
@@ -173,7 +173,7 @@ def convertThermoData(thermoData, molecule, thermoClass=MultiNASA):
     Raises a :class:`TypeError` if this is not possible.
     """
 
-    from rmgpy.chem.thermo import *
+    from rmgpy.chem.thermo import ThermoData, Wilhoit, MultiNASA
     from rmgpy.chem.ext.thermo_converter import convertGAtoWilhoit, convertWilhoitToNASA
 
     # Nothing to do if we already have the right thermo model
@@ -323,7 +323,7 @@ class PDepNetwork(rmgpy.measure.network.Network):
 
         return ratios
 
-    def exploreIsomer(self, isomer, reactionModel):
+    def exploreIsomer(self, isomer, reactionModel, database):
         """
         Explore a previously-unexplored unimolecular `isomer` in this partial
         network using the provided core-edge reaction model `reactionModel`,
@@ -337,32 +337,30 @@ class PDepNetwork(rmgpy.measure.network.Network):
         self.explored.append(isomer)
         # Find reactions involving the found species as unimolecular
         # reactant or product (e.g. A <---> products)
-        newReactionList, newSpeciesList = generateReactions([isomer], reactionModel)
+        newReactionList = reactionModel.react(database, isomer)
         # Don't find reactions involving the new species as bimolecular
         # reactants or products with itself (e.g. A + A <---> products)
         # Don't find reactions involving the new species as bimolecular
         # reactants or products with other core species (e.g. A + B <---> products)
 
-        return newReactionList, newSpeciesList
+        return newReactionList
 
     def addPathReaction(self, newReaction, newSpecies):
         """
         Add a path reaction to the network. If the path reaction already exists,
         no action is taken.
         """
-        # Put the reaction in the direction in which the new species is in the reactants
-        reaction = newReaction.reverse if newSpecies in newReaction.products else newReaction
-        reaction.reactants.sort()
-        reaction.products.sort()
-
         # Add this reaction to that network if not already present
         found = False
         for rxn in self.pathReactions:
-            if newReaction.isEquivalent(rxn):
+            if newReaction.reactants == rxn.reactants and newReaction.products == rxn.products:
+                found = True
+                break
+            elif newReaction.products == rxn.reactants and newReaction.reactants == rxn.products:
                 found = True
                 break
         if not found:
-            self.pathReactions.append(reaction)
+            self.pathReactions.append(newReaction)
             self.invalidate()
 
     def merge(self, other):
@@ -451,12 +449,12 @@ class PDepNetwork(rmgpy.measure.network.Network):
                 elif len(rxn.products) > 1 and rxn.products not in self.reactants:
                     self.products.append(rxn.products)
 
-    def update(self, reactionModel):
+    def update(self, reactionModel, database):
         """
         Regenerate the :math:`k(T,P)` values for this partial network if the
         network is marked as invalid.
         """
-
+        from rmgpy.chem.kinetics import Arrhenius, KineticsData
         from rmgpy.measure.collision import SingleExponentialDownModel
         from rmgpy.measure.reaction import fitInterpolationModel
         import rmgpy.measure.settings
@@ -474,9 +472,7 @@ class PDepNetwork(rmgpy.measure.network.Network):
                 raise PressureDependenceError('Path reaction %s with no high-pressure-limit kinetics encountered in PDepNetwork #%i.' % (rxn, self.index))
             elif rxn.kinetics is not None and rxn.kinetics.isPressureDependent():
                 raise PressureDependenceError('Pressure-dependent kinetics encountered for path reaction %s in PDepNetwork #%i.' % (rxn, self.index))
-            elif rxn.reverse.kinetics is not None and rxn.reverse.kinetics.isPressureDependent():
-                raise PressureDependenceError('Pressure-dependent kinetics encountered for path reaction %s in PDepNetwork #%i.' % (rxn, self.index))
-
+        
         # Do nothing if the network is already valid
         if self.valid: return
         # Do nothing if there are no explored wells
@@ -484,21 +480,22 @@ class PDepNetwork(rmgpy.measure.network.Network):
 
         # Generate states data for unimolecular isomers and reactants if necessary
         for spec in self.isomers:
-            if spec.states is None: spec.generateStatesData()
+            if spec.states is None: spec.generateStatesData(database)
         for reactants in self.reactants:
             for spec in reactants:
-                if spec.states is None: spec.generateStatesData()
+                if spec.states is None: spec.generateStatesData(database)
 
         # Determine transition state energies on potential energy surface
         # In the absence of any better information, we simply set it to
         # be the reactant ground-state energy + the activation energy
+        # Note that we need Arrhenius kinetics in order to do this
         for rxn in self.pathReactions:
             if rxn.kinetics is None:
-                if rxn.reverse.kinetics is not None:
-                    rxn.kinetics = rxn.reverse.fitReverseKinetics()
-                else:
-                    import pdb; pdb.set_trace()
-                    raise Exception('Path reaction "%s" in PDepNetwork #%i has no kinetics!' % (rxn, self.index))
+                raise Exception('Path reaction "%s" in PDepNetwork #%i has no kinetics!' % (rxn, self.index))
+            elif isinstance(rxn.kinetics, KineticsData):
+                rxn.kinetics = Arrhenius().fitToData(Tlist=rxn.kinetics.Tdata.values, klist=rxn.kinetics.kdata.values)
+            elif not isinstance(rxn.kinetics, Arrhenius):
+                raise Exception('Path reaction "%s" in PDepNetwork #%i has invalid kinetics type "%s".' % (rxn, rxn.kinetics.__class__))
             rxn.transitionState = rmgpy.chem.species.TransitionState(
                 E0=sum([spec.E0 for spec in rxn.reactants]) + rxn.kinetics.Ea.value,
             )
@@ -902,7 +899,7 @@ class CoreEdgeReactionModel:
         elif isinstance(newObject, tuple) and isinstance(newObject[0], PDepNetwork) and settings.pressureDependence:
 
             pdepNetwork, newSpecies = newObject
-            newReactionList, newSpeciesList = pdepNetwork.exploreIsomer(newSpecies, self)
+            newReactions.extend(network.exploreIsomer(species, self, database))
             self.processNewReactions(newReactions, newSpecies, pdepNetwork)
 
         else:
@@ -917,8 +914,7 @@ class CoreEdgeReactionModel:
                 species = self.core.species[index]
                 for products in network.products:
                     if len(products) == 1 and products[0] == species:
-                        reactionList, speciesList = network.exploreIsomer(species, self)
-                        newReactionList.extend(reactionList); newSpeciesList.extend(speciesList)
+                        newReactions = network.exploreIsomer(species, self, database)
                         self.processNewReactions(newReactions, species, network)
                         network.updateConfigurations()
                         index = 0
@@ -959,7 +955,7 @@ class CoreEdgeReactionModel:
                         index += 1
 
             # Recalculate k(T,P) values for modified networks
-            self.updateUnimolecularReactionNetworks()
+            self.updateUnimolecularReactionNetworks(database)
             logging.info('')
 
         # Print summary of enlargement
@@ -1004,15 +1000,15 @@ class CoreEdgeReactionModel:
                 not (rxn.isIsomerization() or rxn.isDissociation() or rxn.isAssociation()) or \
                 (rxn.kinetics is not None and rxn.kinetics.isPressureDependent()):
                 if allSpeciesInCore:
-                    for reaction in self.core.reactions:
-                        if isinstance(reaction, Reaction) and reaction.isEquivalent(rxn): break
-                    else:
-                        self.addReactionToCore(rxn)
+                    #for reaction in self.core.reactions:
+                    #    if isinstance(reaction, Reaction) and reaction.isEquivalent(rxn): break
+                    #else:
+                    self.addReactionToCore(rxn)
                 else:
-                    for reaction in self.edge.reactions:
-                        if isinstance(reaction, Reaction) and reaction.isEquivalent(rxn): break
-                    else:
-                        self.addReactionToEdge(rxn)
+                    #for reaction in self.edge.reactions:
+                    #    if isinstance(reaction, Reaction) and reaction.isEquivalent(rxn): break
+                    #else:
+                    self.addReactionToEdge(rxn)
             else:
                 # Add the reaction to the appropriate unimolecular reaction network
                 # If pdepNetwork is not None then that will be the network the
@@ -1367,23 +1363,28 @@ class CoreEdgeReactionModel:
         assert isinstance(newSpecies, Species)
 
         # Put the reaction in the direction in which the new species is in the reactants
-        reaction = newReaction.reverse if newSpecies in newReaction.products else newReaction
-        reaction.reactants.sort()
-        reaction.products.sort()
+        if newSpecies in newReaction.reactants:
+            reactants = newReaction.reactants[:]
+            products = newReaction.products[:]
+        else:
+            reactants = newReaction.products[:]
+            products = newReaction.products[:]
+        reactants.sort()
+        products.sort()
 
         # Only search for a network if we don't specify it as a parameter
         if network is None:
-            if reaction.isIsomerization() or reaction.isDissociation():
+            if len(reactants) == 1:
                 # Find the network containing the reactant as the source
                 for n in self.unirxnNetworks:
-                    if reaction.reactants == n.source:
+                    if reactants == n.source:
                         assert network is None
                         network = n
-            elif reaction.isAssociation():
+            elif len(reactants) > 1:
                 # Find the network containing the reactant as the source AND the
                 # product channel as an explored isomer
                 for n in self.unirxnNetworks:
-                    if reaction.reactants == n.source and reaction.products[0] in n.explored:
+                    if reactants == n.source and products[0] in n.explored:
                         assert network is None
                         network = n
             else:
@@ -1392,7 +1393,7 @@ class CoreEdgeReactionModel:
             # If no suitable network exists, create a new one
             if network is None:
                 self.networkCount += 1
-                network = PDepNetwork(index=self.networkCount, source=reaction.reactants[:])
+                network = PDepNetwork(index=self.networkCount, source=reactants[:])
                 self.unirxnNetworks.append(network)
 
         # Add the path reaction to that network
@@ -1401,7 +1402,7 @@ class CoreEdgeReactionModel:
         # Return the network that the reaction was added to
         return network
 
-    def updateUnimolecularReactionNetworks(self):
+    def updateUnimolecularReactionNetworks(self, database):
         """
         Iterate through all of the currently-existing unimolecular reaction
         networks, updating those that have been marked as invalid. In each update,
@@ -1415,7 +1416,7 @@ class CoreEdgeReactionModel:
         
         # Iterate over all the networks, updating the invalid ones as necessary
         for network in self.unirxnNetworks:
-            network.update(self)
+            network.update(self, database)
 
     def loadSeedMechanism(self, path):
         """
