@@ -123,3 +123,38 @@ cdef class MultiNASA(ThermoModel):
     cpdef double getFreeEnergy(self, double T)
     
     cpdef NASA __selectPolynomialForTemperature(self, double T)
+
+################################################################################
+
+cpdef MultiNASA convertWilhoitToNASA(Wilhoit wilhoit, double Tmin, double Tmax, double Tint, bint fixedTint=?, bint weighting=?, int continuity=?)
+
+cpdef Wilhoit2NASA(Wilhoit wilhoit, double tmin, double tmax, double tint, bint weighting, int contCons)
+
+cpdef Wilhoit2NASA_TintOpt(Wilhoit wilhoit, double tmin, double tmax, bint weighting, int contCons)
+
+cpdef TintOpt_objFun(tint, Wilhoit wilhoit, double tmin, double tmax, bint weighting, int contCons)
+
+cpdef TintOpt_objFun_NW(double tint, Wilhoit wilhoit, double tmin, double tmax, int contCons)
+
+cpdef TintOpt_objFun_W(double tint, Wilhoit wilhoit, double tmin, double tmax, int contCons)
+
+cpdef double Wilhoit_integral_T0(Wilhoit wilhoit, double t)
+
+cpdef double Wilhoit_integral_TM1(Wilhoit wilhoit, double t)
+
+cpdef double Wilhoit_integral_T1(Wilhoit wilhoit, double t)
+
+cpdef double Wilhoit_integral_T2(Wilhoit wilhoit, double t)
+
+cpdef double Wilhoit_integral_T3(Wilhoit wilhoit, double t)
+
+cpdef double Wilhoit_integral_T4(Wilhoit wilhoit, double t)
+
+cpdef double Wilhoit_integral2_T0(Wilhoit wilhoit, double t)
+
+cpdef double Wilhoit_integral2_TM1(Wilhoit wilhoit, double t)
+
+cpdef double NASA_integral2_T0(NASA polynomial, double T)
+
+cpdef double NASA_integral2_TM1(NASA polynomial, double T)
+
