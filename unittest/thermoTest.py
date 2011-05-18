@@ -153,9 +153,13 @@ class TestThermoData(unittest.TestCase):
         """
         import cPickle
         thermo = cPickle.loads(cPickle.dumps(self.thermo))
-        self.assertEqual(self.thermo.Tdata.value, thermo.Tdata.value)
+        self.assertEqual(len(self.thermo.Tdata.values), len(thermo.Tdata.values))
+        for T0, T in zip(self.thermo.Tdata.values, thermo.Tdata.values):
+            self.assertEqual(T0, T)
         self.assertEqual(self.thermo.Tdata.units, thermo.Tdata.units)
-        self.assertEqual(self.thermo.Cpdata.value, thermo.Cpdata.value)
+        self.assertEqual(len(self.thermo.Cpdata.values), len(thermo.Cpdata.values))
+        for Cp0, Cp in zip(self.thermo.Cpdata.values, thermo.Cpdata.values):
+            self.assertEqual(Cp0, Cp)
         self.assertEqual(self.thermo.Cpdata.units, thermo.Cpdata.units)
         self.assertEqual(self.thermo.H298.value, thermo.H298.value)
         self.assertEqual(self.thermo.H298.units, thermo.H298.units)
@@ -173,9 +177,13 @@ class TestThermoData(unittest.TestCase):
         output with no loss of information.
         """
         exec('thermo = {0!r}'.format(self.thermo))
-        self.assertEqual(self.thermo.Tdata.value, thermo.Tdata.value)
+        self.assertEqual(len(self.thermo.Tdata.values), len(thermo.Tdata.values))
+        for T0, T in zip(self.thermo.Tdata.values, thermo.Tdata.values):
+            self.assertEqual(T0, T)
         self.assertEqual(self.thermo.Tdata.units, thermo.Tdata.units)
-        self.assertEqual(self.thermo.Cpdata.value, thermo.Cpdata.value)
+        self.assertEqual(len(self.thermo.Cpdata.values), len(thermo.Cpdata.values))
+        for Cp0, Cp in zip(self.thermo.Cpdata.values, thermo.Cpdata.values):
+            self.assertEqual(Cp0, Cp)
         self.assertEqual(self.thermo.Cpdata.units, thermo.Cpdata.units)
         self.assertEqual(self.thermo.H298.value, thermo.H298.value)
         self.assertEqual(self.thermo.H298.units, thermo.H298.units)
