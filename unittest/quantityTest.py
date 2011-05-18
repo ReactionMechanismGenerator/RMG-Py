@@ -13,16 +13,19 @@ from rmgpy.quantity import *
 
 ################################################################################
 
-class ConstantsTest(unittest.TestCase):
+class TestQuantity(unittest.TestCase):
     """
-    Contains unit tests for the rmgpy.chem.constants module.
+    Contains unit tests of the Quantity class. Most of the unit tests focus on
+    the __init__() method, which is where most of the magic happens regarding
+    Quantity objects. Tests of constructing Quantity objects via other means
+    (especially via repr() and pickling/unpickling) are also performed.
     """
     
-    def testQuantity(self):
+    def testValue(self):
         """
-        Unit tests for the Quantity class.
+        Test that the correct Quantity object is created when only a number
+        is provided.
         """
-
         q = Quantity(10.0)
         self.assertEqual(q.value, 10.0)
         self.assertEqual(q.uncertainty, 0.0)
@@ -30,52 +33,317 @@ class ConstantsTest(unittest.TestCase):
         self.assertEqual(q.uncertainties, None)
         self.assertEqual(q.units, "")
         self.assertEqual(q.uncertaintyType, "")
-
-        q = Quantity((10.0,"cm"))
+        self.assertFalse(q.isArray())
+        self.assertFalse(q.isUncertaintyAdditive())
+        self.assertFalse(q.isUncertaintyMultiplicative())
+        self.assertEqual(q.getConversionFactorToSI(), 1.0)
+        self.assertEqual(q.getConversionFactorFromSI(), 1.0)
+    
+    def testValueWithUnits(self):
+        """
+        Test that the correct Quantity object is created when a number with
+        units is provided.
+        """
+        q = Quantity(10.0,"cm")
         self.assertEqual(q.value, 0.1)
         self.assertEqual(q.uncertainty, 0.0)
         self.assertEqual(q.values, None)
         self.assertEqual(q.uncertainties, None)
         self.assertEqual(q.units, "cm")
         self.assertEqual(q.uncertaintyType, "")
-
-        q = Quantity((10.0,"cm","+|-",2.0))
+        self.assertFalse(q.isArray())
+        self.assertFalse(q.isUncertaintyAdditive())
+        self.assertFalse(q.isUncertaintyMultiplicative())
+        self.assertEqual(q.getConversionFactorToSI(), 0.01)
+        self.assertEqual(q.getConversionFactorFromSI(), 100.0)
+    
+    def testValueWithUncertainty(self):
+        """
+        Test that the correct Quantity object is created when a number with
+        units and an uncertainty is provided.
+        """
+        q = Quantity(10.0,"cm",2.0)
         self.assertEqual(q.value, 0.1)
         self.assertEqual(q.uncertainty, 0.02)
         self.assertEqual(q.values, None)
         self.assertEqual(q.uncertainties, None)
         self.assertEqual(q.units, "cm")
         self.assertEqual(q.uncertaintyType, "+|-")
-        
-        q = Quantity((10.0,"cm","*|/",2.0))
+        self.assertFalse(q.isArray())
+        self.assertTrue(q.isUncertaintyAdditive())
+        self.assertFalse(q.isUncertaintyMultiplicative())
+        self.assertEqual(q.getConversionFactorToSI(), 0.01)
+        self.assertEqual(q.getConversionFactorFromSI(), 100.0)
+    
+    def testValueWithAdditiveUncertainty(self):
+        """
+        Test that the correct Quantity object is created when a number with
+        units and an additive uncertainty is provided.
+        """
+        q = Quantity(10.0,"cm","+|-",2.0)
+        self.assertEqual(q.value, 0.1)
+        self.assertEqual(q.uncertainty, 0.02)
+        self.assertEqual(q.values, None)
+        self.assertEqual(q.uncertainties, None)
+        self.assertEqual(q.units, "cm")
+        self.assertEqual(q.uncertaintyType, "+|-")
+        self.assertFalse(q.isArray())
+        self.assertTrue(q.isUncertaintyAdditive())
+        self.assertFalse(q.isUncertaintyMultiplicative())
+        self.assertEqual(q.getConversionFactorToSI(), 0.01)
+        self.assertEqual(q.getConversionFactorFromSI(), 100.0)
+    
+    def testValueWithMultiplicativeUncertainty(self):
+        """
+        Test that the correct Quantity object is created when a number with
+        units and a multiplicative uncertainty is provided.
+        """
+        q = Quantity(10.0,"cm","*|/",2.0)
         self.assertEqual(q.value, 0.1)
         self.assertEqual(q.uncertainty, 2.0)
         self.assertEqual(q.values, None)
         self.assertEqual(q.uncertainties, None)
         self.assertEqual(q.units, "cm")
         self.assertEqual(q.uncertaintyType, "*|/")
-        
-        q = Quantity(([30.0,20.0,10.0],"cm","+|-",2.0))
+        self.assertFalse(q.isArray())
+        self.assertFalse(q.isUncertaintyAdditive())
+        self.assertTrue(q.isUncertaintyMultiplicative())
+        self.assertEqual(q.getConversionFactorToSI(), 0.01)
+        self.assertEqual(q.getConversionFactorFromSI(), 100.0)
+    
+    def testValues(self):
+        """
+        Test that the correct Quantity object is created when a set of numbers
+        is provided.
+        """
+        q = Quantity([30.0,20.0,10.0])
+        self.assertEqual(q.value, 0.0)
+        self.assertEqual(q.uncertainty, 0.0)
+        self.assertNotEqual(q.values, None)
+        self.assertEqual(q.values[0], 30.0)
+        self.assertEqual(q.values[1], 20.0)
+        self.assertEqual(q.values[2], 10.0)
+        self.assertEqual(q.uncertainties, None)
+        self.assertEqual(q.units, "")
+        self.assertEqual(q.uncertaintyType, "")
+        self.assertTrue(q.isArray())
+        self.assertFalse(q.isUncertaintyAdditive())
+        self.assertFalse(q.isUncertaintyMultiplicative())
+        self.assertEqual(q.getConversionFactorToSI(), 1.0)
+        self.assertEqual(q.getConversionFactorFromSI(), 1.0)
+    
+    def testValuesWithUnits(self):
+        """
+        Test that the correct Quantity object is created when a set of numbers
+        with units is provided.
+        """
+        q = Quantity([30.0,20.0,10.0],"cm")
+        self.assertEqual(q.value, 0.0)
+        self.assertEqual(q.uncertainty, 0.0)
+        self.assertNotEqual(q.values, None)
+        self.assertEqual(q.values[0], 0.3)
+        self.assertEqual(q.values[1], 0.2)
+        self.assertEqual(q.values[2], 0.1)
+        self.assertEqual(q.uncertainties, None)
+        self.assertEqual(q.units, "cm")
+        self.assertEqual(q.uncertaintyType, "")
+        self.assertTrue(q.isArray())
+        self.assertFalse(q.isUncertaintyAdditive())
+        self.assertFalse(q.isUncertaintyMultiplicative())
+        self.assertEqual(q.getConversionFactorToSI(), 0.01)
+        self.assertEqual(q.getConversionFactorFromSI(), 100.0)
+    
+    def testValuesWithUncertainty(self):
+        """
+        Test that the correct Quantity object is created when a set of numbers
+        with a single uncertainty is provided.
+        """
+        q = Quantity([30.0,20.0,10.0],"cm","+|-",2.0)
         self.assertEqual(q.value, 0.0)
         self.assertEqual(q.uncertainty, 0.02)
+        self.assertNotEqual(q.values, None)
+        self.assertEqual(len(q.values), 3)
         self.assertEqual(q.values[0], 0.3)
         self.assertEqual(q.values[1], 0.2)
         self.assertEqual(q.values[2], 0.1)
         self.assertEqual(q.uncertainties, None)
         self.assertEqual(q.units, "cm")
         self.assertEqual(q.uncertaintyType, "+|-")
-        
-        q = Quantity(([10.0,20.0,30.0],"cm","+|-",[1.0,2.0,3.0]))
+        self.assertTrue(q.isArray())
+        self.assertTrue(q.isUncertaintyAdditive())
+        self.assertFalse(q.isUncertaintyMultiplicative())
+        self.assertEqual(q.getConversionFactorToSI(), 0.01)
+        self.assertEqual(q.getConversionFactorFromSI(), 100.0)
+    
+    def testValuesWithUncertainties(self):
+        """
+        Test that the correct Quantity object is created when a set of numbers
+        with a corresponding set of uncertainties is provided.
+        """
+        q = Quantity([10.0,20.0,30.0],"cm","+|-",[1.0,2.0,3.0])
         self.assertEqual(q.value, 0.0)
         self.assertEqual(q.uncertainty, 0.0)
+        self.assertNotEqual(q.values, None)
+        self.assertEqual(len(q.values), 3)
         self.assertEqual(q.values[0], 0.1)
         self.assertEqual(q.values[1], 0.2)
         self.assertEqual(q.values[2], 0.3)
+        self.assertNotEqual(q.uncertainties, None)
+        self.assertEqual(len(q.uncertainties), 3)
         self.assertEqual(q.uncertainties[0], 0.01)
         self.assertEqual(q.uncertainties[1], 0.02)
         self.assertEqual(q.uncertainties[2], 0.03)
         self.assertEqual(q.units, "cm")
         self.assertEqual(q.uncertaintyType, "+|-")
+        self.assertTrue(q.isArray())
+        self.assertTrue(q.isUncertaintyAdditive())
+        self.assertFalse(q.isUncertaintyMultiplicative())
+        self.assertEqual(q.getConversionFactorToSI(), 0.01)
+        self.assertEqual(q.getConversionFactorFromSI(), 100.0)
+    
+    def testValueWithUncertainties(self):
+        """
+        Test that the correct Quantity object is created when a set of numbers
+        with an incorrect set of uncertainties is provided.
+        """
+        try:
+            Quantity(10.0,"cm","+|-",[1.0,2.0])
+            self.fail("Expected a QuantityError to be raised as a result of providing multiple uncertainties for a single value.")
+        except QuantityError:
+            pass
+    
+    def testValuesWithInvalidUncertainties(self):
+        """
+        Test that the correct Quantity object is created when a set of numbers
+        with an incorrect set of uncertainties is provided.
+        """
+        try:
+            Quantity([10.0,20.0,30.0],"cm","+|-",[1.0,2.0])
+            self.fail("Expected a QuantityError to be raised as a result of providing multiple uncertainties, but not one for each of the values.")
+        except QuantityError:
+            pass
+    
+    def testInvalidUncertaintyType(self):
+        """
+        Test that the correct Quantity object is created when a set of numbers
+        with an incorrect set of uncertainties is provided.
+        """
+        try:
+            Quantity([10.0,20.0,30.0],"cm","+-*/",1.0)
+            self.fail("Expected a QuantityError to be raised as a result of providing an invalid uncertainty type.")
+        except QuantityError:
+            pass
+    
+    def testFromTuple(self):
+        """
+        Test that the correct Quantity object is created when the parameters
+        are passed within a tuple. This is useful e.g. when parsing a 
+        Python-formatted input file via the exec() command.
+        """
+        q = Quantity(([10.0,20.0,30.0],"cm","+|-",[1.0,2.0,3.0]))
+        self.assertEqual(q.value, 0.0)
+        self.assertEqual(q.uncertainty, 0.0)
+        self.assertNotEqual(q.values, None)
+        self.assertEqual(len(q.values), 3)
+        self.assertEqual(q.values[0], 0.1)
+        self.assertEqual(q.values[1], 0.2)
+        self.assertEqual(q.values[2], 0.3)
+        self.assertNotEqual(q.uncertainties, None)
+        self.assertEqual(len(q.uncertainties), 3)
+        self.assertEqual(q.uncertainties[0], 0.01)
+        self.assertEqual(q.uncertainties[1], 0.02)
+        self.assertEqual(q.uncertainties[2], 0.03)
+        self.assertEqual(q.units, "cm")
+        self.assertEqual(q.uncertaintyType, "+|-")
+        self.assertTrue(q.isArray())
+        self.assertTrue(q.isUncertaintyAdditive())
+        self.assertFalse(q.isUncertaintyMultiplicative())
+        self.assertEqual(q.getConversionFactorToSI(), 0.01)
+        self.assertEqual(q.getConversionFactorFromSI(), 100.0)
+    
+    def testFromQuantity(self):
+        """
+        Test that the correct Quantity object is created when the parameters
+        are passed via another Quantity object. This is useful e.g. when
+        pickling and unpickling.
+        """
+        q0 = Quantity(([10.0,20.0,30.0],"cm","+|-",[1.0,2.0,3.0]))
+        q = Quantity(q0)
+        self.assertEqual(q.value, 0.0)
+        self.assertEqual(q.uncertainty, 0.0)
+        self.assertNotEqual(q.values, None)
+        self.assertEqual(len(q.values), 3)
+        self.assertEqual(q.values[0], 0.1)
+        self.assertEqual(q.values[1], 0.2)
+        self.assertEqual(q.values[2], 0.3)
+        self.assertNotEqual(q.uncertainties, None)
+        self.assertEqual(len(q.uncertainties), 3)
+        self.assertEqual(q.uncertainties[0], 0.01)
+        self.assertEqual(q.uncertainties[1], 0.02)
+        self.assertEqual(q.uncertainties[2], 0.03)
+        self.assertEqual(q.units, "cm")
+        self.assertEqual(q.uncertaintyType, "+|-")
+        self.assertTrue(q.isArray())
+        self.assertTrue(q.isUncertaintyAdditive())
+        self.assertFalse(q.isUncertaintyMultiplicative())
+        self.assertEqual(q.getConversionFactorToSI(), 0.01)
+        self.assertEqual(q.getConversionFactorFromSI(), 100.0)
+    
+    def testPickle(self):
+        """
+        Test that a Quantity object can be successfully pickled and
+        unpickled with no loss of information.
+        """
+        import cPickle
+        q0 = Quantity([10.0,20.0,30.0],"cm","+|-",[1.0,2.0,3.0])
+        q = cPickle.loads(cPickle.dumps(q0))
+        self.assertEqual(q.value, 0.0)
+        self.assertEqual(q.uncertainty, 0.0)
+        self.assertNotEqual(q.values, None)
+        self.assertEqual(len(q.values), 3)
+        self.assertEqual(q.values[0], 0.1)
+        self.assertEqual(q.values[1], 0.2)
+        self.assertEqual(q.values[2], 0.3)
+        self.assertNotEqual(q.uncertainties, None)
+        self.assertEqual(len(q.uncertainties), 3)
+        self.assertEqual(q.uncertainties[0], 0.01)
+        self.assertEqual(q.uncertainties[1], 0.02)
+        self.assertEqual(q.uncertainties[2], 0.03)
+        self.assertEqual(q.units, "cm")
+        self.assertEqual(q.uncertaintyType, "+|-")
+        self.assertTrue(q.isArray())
+        self.assertTrue(q.isUncertaintyAdditive())
+        self.assertFalse(q.isUncertaintyMultiplicative())
+        self.assertEqual(q.getConversionFactorToSI(), 0.01)
+        self.assertEqual(q.getConversionFactorFromSI(), 100.0)
+    
+    def testOutput(self):
+        """
+        Test that we can reconstruct a Quantity object from its repr()
+        output with no loss of information.
+        """
+        q0 = Quantity([10.0,20.0,30.0],"cm","+|-",[1.0,2.0,3.0])
+        exec('q = Quantity{0!r}'.format(q0))
+        self.assertEqual(q.value, 0.0)
+        self.assertEqual(q.uncertainty, 0.0)
+        self.assertNotEqual(q.values, None)
+        self.assertEqual(len(q.values), 3)
+        self.assertEqual(q.values[0], 0.1)
+        self.assertEqual(q.values[1], 0.2)
+        self.assertEqual(q.values[2], 0.3)
+        self.assertNotEqual(q.uncertainties, None)
+        self.assertEqual(len(q.uncertainties), 3)
+        self.assertEqual(q.uncertainties[0], 0.01)
+        self.assertEqual(q.uncertainties[1], 0.02)
+        self.assertEqual(q.uncertainties[2], 0.03)
+        self.assertEqual(q.units, "cm")
+        self.assertEqual(q.uncertaintyType, "+|-")
+        self.assertTrue(q.isArray())
+        self.assertTrue(q.isUncertaintyAdditive())
+        self.assertFalse(q.isUncertaintyMultiplicative())
+        self.assertEqual(q.getConversionFactorToSI(), 0.01)
+        self.assertEqual(q.getConversionFactorFromSI(), 100.0)
+    
 ################################################################################
 
 class TestCustomUnits(unittest.TestCase):
