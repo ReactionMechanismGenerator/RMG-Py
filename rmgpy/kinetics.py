@@ -66,15 +66,15 @@ import numpy
 import numpy.linalg
 import cython
 
-import constants
-from molecule import Molecule
+from quantity import Quantity, constants
+from chem.molecule import Molecule
 
 ################################################################################
 
 class KineticsError(Exception):
     """
-    An exception class for errors that occur while working with kinetic
-    models. Pass a string describing the circumstances that caused the
+    An exception to be raised when an error occurs while working with 
+    kinetics models and data. Pass a string describing the circumstances of the
     exceptional behavior.
     """
     pass
@@ -83,8 +83,8 @@ class KineticsError(Exception):
 
 class KineticsModel:
     """
-    Represent a set of kinetic data. The details of the form of the kinetic
-    data are left to a derived class. The attributes are:
+    A base class for kinetics models, containing several attributes common to 
+    all models:
 
     =============== =================== ========================================
     Attribute       Type                Description
@@ -100,49 +100,61 @@ class KineticsModel:
 
     def __init__(self, Tmin=None, Tmax=None, Pmin=None, Pmax=None, comment=''):
         if Tmin is not None:
-            self.Tmin = constants.Quantity(Tmin)
+            self.Tmin = Quantity(Tmin)
         else:
             self.Tmin = None
         if Tmax is not None:
-            self.Tmax = constants.Quantity(Tmax)
+            self.Tmax = Quantity(Tmax)
         else:
             self.Tmax = None
         if Pmin is not None:
-            self.Pmin = constants.Quantity(Pmin)
+            self.Pmin = Quantity(Pmin)
         else:
             self.Pmin = None
         if Pmax is not None:
-            self.Pmax = constants.Quantity(Pmax)
+            self.Pmax = Quantity(Pmax)
         else:
             self.Pmax = None
         self.comment = comment
 
+    def __repr__(self):
+        """
+        Return a string representation that can be used to reconstruct the
+        KineticsModel object.
+        """
+        return 'KineticsModel(Tmin={0!r}, Tmax={1!r}, Pmin={2!r}, Pmax={3!r}, comment="""{4}""")'.format(self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.comment)
+
     def __reduce__(self):
         """
-        A helper function used when pickling an object.
+        A helper function used when pickling a KineticsModel object.
         """
         return (KineticsModel, (self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.comment))
 
     def isTemperatureValid(self, T):
         """
-        Return :data:`True` if temperature `T` in K is within the valid 
-        temperature range and :data:`False` if not. 
+        Return ``True`` if the temperature `T` in K is within the valid
+        temperature range of the kinetic data, or ``False`` if not. If
+        the minimum and maximum temperature are not defined, ``True`` is 
+        returned.
         """
         return self.Tmin is None or self.Tmax is None or (self.Tmin.value <= T and T <= self.Tmax.value)
 
     def isPressureValid(self, P):
         """
-        Return :data:`True` if pressure `P` in Pa is within the valid pressure
-        range, and :data:`False` if not.
+        Return ``True`` if the pressure `P` in Pa is within the valid
+        pressure range of the kinetic data, or ``False`` if not. If
+        the minimum and maximum pressure are not defined, ``True`` is 
+        returned.
         """
         return self.Pmin is None or self.Pmax is None or (self.Pmin.value <= P and P <= self.Pmax.value)
 
     def isPressureDependent(self):
         """
         Return ``True`` if the kinetics are pressure-dependent or ``False`` if
-        they are pressure-independent.
+        they are pressure-independent. This method must be overloaded in the 
+        derived class.
         """
-        raise NotImplementedError('You must implement this method in your derived class.')
+        raise KineticsError('Unexpected call to KineticsModel.isPressureDependent(); you should be using a class derived from KineticsModel.')
 
     def getRateCoefficients(self, Tlist):
         """
@@ -161,58 +173,38 @@ class KineticsData(KineticsModel):
     =========== =================== ============================================
     Attribute   Type                Description
     =========== =================== ============================================
-    `Tdata`     ``numpy.ndarray``   The temperatures at which the rate coefficient data is provided in K
-    `kdata`     ``numpy.ndarray``   The rate coefficients in SI units at each temperature in `Tdata`
+    `Tdata`     :class:`Quantity`   The temperatures at which the heat capacity data is provided
+    `kdata`     :class:`Quantity`   The rate coefficients in SI units at each temperature in `Tdata`
     =========== =================== ============================================
-
+    
     """
 
     def __init__(self, Tdata=None, kdata=None, Tmin=None, Tmax=None, comment=''):
         KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, comment=comment)
-        self.Tdata = constants.Quantity(Tdata)
-        self.kdata = constants.Quantity(kdata)
+        self.Tdata = Quantity(Tdata)
+        self.kdata = Quantity(kdata)
 
     def __repr__(self):
         """
         Return a string representation that can be used to reconstruct the
-        object.
+        KineticsData object.
         """
-        string = 'KineticsData('
-        string += 'Tdata=%r' % (self.Tdata)
-        string += ', kdata=%r' % (self.kdata)
-        if self.Tmin is not None: string += ', Tmin=%r' % (self.Tmin)
-        if self.Tmax is not None: string += ', Tmax=%r' % (self.Tmax)
-        if self.comment != '': string += ', comment="%s"' % (self.comment)
+        string = 'KineticsData(Tdata={0!r}, kdata={1!r}'.format(self.Tdata, self.kdata)
+        if self.Tmin is not None: string += ', Tmin={0!r}'.format(self.Tmin)
+        if self.Tmax is not None: string += ', Tmax={0!r}'.format(self.Tmax)
+        if self.comment != '': string += ', comment="""{0}"""'.format(self.comment)
         string += ')'
         return string
 
     def __reduce__(self):
         """
-        A helper function used when pickling an object.
+        A helper function used when pickling a KineticsData object.
         """
         return (KineticsData, (self.Tdata, self.kdata, self.Tmin, self.Tmax, self.comment))
 
-    def __mul__(self, other):
-        """
-        Multiply two sets of kinetics data together. Returns a new
-        :class:`KineticsData` object that is the product of the two sets of
-        kinetics data.
-        """
-        cython.declare(i=int, new=KineticsData)
-        if len(self.Tdata.values) != len(other.Tdata.values) or any([T1 != T2 for T1, T2 in zip(self.Tdata.values, other.Tdata.values)]):
-            raise KineticsError('Cannot add these KineticsData objects due to their having different temperature points.')
-        new = KineticsData(
-            Tdata = self.Tdata,
-            kdata = (self.kdata.values * other.kdata.values, self.kdata.units),
-        )
-        if self.comment == '': new.comment = other.comment
-        elif other.comment == '': new.comment = self.comment
-        else: new.comment = self.comment + ' + ' + other.comment
-        return new
-
     def isPressureDependent(self):
         """
-        Returns ``False`` since KineticsDataModel kinetics are not
+        Returns ``False`` since KineticsData kinetics are not 
         pressure-dependent.
         """
         return False
@@ -226,7 +218,7 @@ class KineticsData(KineticsModel):
         cython.declare(k=cython.double)
         k = 0.0
         if not self.isTemperatureValid(T):
-            raise KineticsError('Invalid temperature "%g K" for heat capacity estimation.' % T)
+            raise KineticsError('Invalid temperature "{0:g} K" for heat capacity estimation.'.format(T))
         if T < numpy.min(self.Tdata.values):
             k = self.kdata.values[0]
         elif T >= numpy.max(self.Tdata.values):
@@ -263,38 +255,28 @@ class Arrhenius(KineticsModel):
     
     def __init__(self, A=0.0, n=0.0, Ea=0.0, T0=1.0, Tmin=None, Tmax=None, comment=''):
         KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, comment=comment)
-        self.A = constants.Quantity(A)
-        self.T0 = constants.Quantity(T0)
-        self.n = constants.Quantity(n)
-        self.Ea = constants.Quantity(Ea)
+        self.A = Quantity(A)
+        self.T0 = Quantity(T0)
+        self.n = Quantity(n)
+        self.Ea = Quantity(Ea)
     
     def __repr__(self):
         """
         Return a string representation that can be used to reconstruct the
-        object.
+        Arrhenius object.
         """
-        string = 'Arrhenius(A=%r, n=%r, Ea=%r, T0=%r' % (self.A, self.n, self.Ea, self.T0)
-        if self.Tmin is not None: string += ', Tmin=%r' % (self.Tmin)
-        if self.Tmax is not None: string += ', Tmax=%r' % (self.Tmax)
-        if self.comment != '': string += ', comment="%s"' % (self.comment)
+        string = 'Arrhenius(A={0!r}, n={1!r}, Ea={2!r}, T0={3!r}'.format(self.A, self.n, self.Ea, self.T0)
+        if self.Tmin is not None: string += ', Tmin={0!r}'.format(self.Tmin)
+        if self.Tmax is not None: string += ', Tmax={0!r}'.format(self.Tmax)
+        if self.comment != '': string += ', comment="""{0}"""'.format(self.comment)
         string += ')'
         return string
 
     def __reduce__(self):
         """
-        A helper function used when pickling an object.
+        A helper function used when pickling an Arrhenius object.
         """
-        d = {}
-        d['Pmin'] = self.Pmin
-        d['Pmax'] = self.Pmax
-        return (Arrhenius, (self.A, self.n, self.Ea, self.T0, self.Tmin, self.Tmax, self.comment), d)
-
-    def __setstate__(self, d):
-        """
-        A helper function used when unpickling an object.
-        """
-        self.Pmin = d['Pmin']
-        self.Pmax = d['Pmax']
+        return (Arrhenius, (self.A, self.n, self.Ea, self.T0, self.Tmin, self.Tmax, self.comment))
 
     def isPressureDependent(self):
         """
@@ -311,18 +293,19 @@ class Arrhenius(KineticsModel):
 
     def changeT0(self, T0):
         """
-        Changes the reference temperature used in the exponent to `T0`, and
+        Changes the reference temperature used in the exponent to `T0` in K, and
         adjusts the preexponential accordingly.
         """
-        self.A.value = (self.T0.value / T0)**self.n
+        self.A.value /= (self.T0.value / T0)**self.n.value
         self.T0.value = T0
 
-    def fitToData(self, Tlist, klist, T0=298.15):
+    def fitToData(self, Tlist, klist, kunits, T0=300):
         """
         Fit the Arrhenius parameters to a set of rate coefficient data `klist`
-        corresponding to a set of temperatures `Tlist` in K. A linear least-
-        squares fit is used, which guarantees that the resulting parameters
-        provide the best possible approximation to the data.
+        in units of `kunits` corresponding to a set of temperatures `Tlist` in 
+        K. A linear least-squares fit is used, which guarantees that the 
+        resulting parameters provide the best possible approximation to the 
+        data.
         """
         import numpy.linalg
         A = numpy.zeros((len(Tlist),3), numpy.float64)
@@ -332,10 +315,10 @@ class Arrhenius(KineticsModel):
         b = numpy.log(klist)
         x = numpy.linalg.lstsq(A,b)[0]
         
-        self.A = constants.Quantity(math.exp(x[0]))
-        self.n = constants.Quantity(x[1])
-        self.Ea = constants.Quantity((x[2], "J/mol"))
-        self.T0 = constants.Quantity((T0, "K"))
+        self.A = Quantity(math.exp(x[0]), kunits)
+        self.n = Quantity(x[1])
+        self.Ea = Quantity((x[2], "J/mol"))
+        self.T0 = Quantity((T0, "K"))
         return self
     
 ################################################################################
@@ -362,38 +345,28 @@ class ArrheniusEP(KineticsModel):
 
     def __init__(self, A=0.0, n=0.0, alpha=0.0, E0=0.0, Tmin=None, Tmax=None, comment=''):
         KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, comment=comment)
-        self.A = constants.Quantity(A)
-        self.n = constants.Quantity(n)
-        self.alpha = constants.Quantity(alpha)
-        self.E0 = constants.Quantity(E0)
+        self.A = Quantity(A)
+        self.n = Quantity(n)
+        self.alpha = Quantity(alpha)
+        self.E0 = Quantity(E0)
 
     def __repr__(self):
         """
         Return a string representation that can be used to reconstruct the
-        object.
+        ArrheniusEP object.
         """
-        string = 'ArrheniusEP(A=%r, n=%r, alpha=%r, E0=%r' % (self.A, self.n, self.alpha, self.E0)
-        if self.Tmin is not None: string += ', Tmin=%r' % (self.Tmin)
-        if self.Tmax is not None: string += ', Tmax=%r' % (self.Tmax)
-        if self.comment != '': string += ', comment="%s"' % (self.comment)
+        string = 'ArrheniusEP(A={0!r}, n={1!r}, alpha={2!r}, E0={3!r}'.format(self.A, self.n, self.alpha, self.E0)
+        if self.Tmin is not None: string += ', Tmin={0!r}'.format(self.Tmin)
+        if self.Tmax is not None: string += ', Tmax={0!r}'.format(self.Tmax)
+        if self.comment != '': string += ', comment="""{0}"""'.format(self.comment)
         string += ')'
         return string
 
     def __reduce__(self):
         """
-        A helper function used when pickling an object.
+        A helper function used when pickling an ArrheniusEP object.
         """
-        d = {}
-        d['Pmin'] = self.Pmin
-        d['Pmax'] = self.Pmax
-        return (ArrheniusEP, (self.A, self.n, self.alpha, self.E0, self.Tmin, self.Tmax, self.comment), d)
-
-    def __setstate__(self, d):
-        """
-        A helper function used when unpickling an object.
-        """
-        self.Pmin = d['Pmin']
-        self.Pmax = d['Pmax']
+        return (ArrheniusEP, (self.A, self.n, self.alpha, self.E0, self.Tmin, self.Tmax, self.comment))
 
     def isPressureDependent(self):
         """
@@ -452,35 +425,25 @@ class MultiArrhenius(KineticsModel):
     def __repr__(self):
         """
         Return a string representation that can be used to reconstruct the
-        object.
+        MultiArrhenius object.
         """
-        string = 'MultiArrhenius('
-        string += 'arrheniusList=[%s]' % (', '.join([repr(arrh) for arrh in self.arrheniusList]))
-        if self.Tmin is not None: string += ', Tmin=%r' % (self.Tmin)
-        if self.Tmax is not None: string += ', Tmax=%r' % (self.Tmax)
-        if self.comment != '': string += ', comment="%s"' % (self.comment)
+        string = 'MultiArrhenius(arrheniusList=[{0}]'.format(', '.join([repr(arrh) for arrh in self.arrheniusList]))
+        if self.Tmin is not None: string += ', Tmin={0!r}'.format(self.Tmin)
+        if self.Tmax is not None: string += ', Tmax={0!r}'.format(self.Tmax)
+        if self.comment != '': string += ', comment="""{0}"""'.format(self.comment)
         string += ')'
         return string
 
     def __reduce__(self):
         """
-        A helper function used when pickling an object.
+        A helper function used when pickling a MultiArrhenius object.
         """
-        d = {}
-        d['Pmin'] = self.Pmin
-        d['Pmax'] = self.Pmax
-        return (MultiArrhenius, (self.arrheniusList, self.Tmin, self.Tmax, self.comment), d)
-
-    def __setstate__(self, d):
-        """
-        A helper function used when unpickling an object.
-        """
-        self.Pmin = d['Pmin']
-        self.Pmax = d['Pmax']
+        return (MultiArrhenius, (self.arrheniusList, self.Tmin, self.Tmax, self.comment))
 
     def isPressureDependent(self):
         """
-        Returns ``False`` since Arrhenius kinetics are not pressure-dependent.
+        Returns ``False`` since MultiArrhenius kinetics are not 
+        pressure-dependent.
         """
         return False
 
@@ -518,28 +481,26 @@ class PDepArrhenius(KineticsModel):
 
     def __init__(self, pressures=None, arrhenius=None, Tmin=None, Tmax=None, Pmin=None, Pmax=None, comment=''):
         KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, comment=comment)
-        self.pressures = constants.Quantity(pressures)
+        self.pressures = Quantity(pressures)
         self.arrhenius = arrhenius or []
 
     def __repr__(self):
         """
         Return a string representation that can be used to reconstruct the
-        object.
+        PDepArrhenius object.
         """
-        string = 'PDepArrhenius('
-        string += 'pressures=%r' % (self.pressures)
-        string += ', arrhenius=[%s]' % (', '.join([repr(arrh) for arrh in self.arrhenius]))
-        if self.Tmin is not None: string += ', Tmin=%r' % (self.Tmin)
-        if self.Tmax is not None: string += ', Tmax=%r' % (self.Tmax)
-        if self.Pmin is not None: string += ', Pmin=%r' % (self.Pmin)
-        if self.Pmax is not None: string += ', Pmax=%r' % (self.Pmax)
-        if self.comment != '': string += ', comment="%s"' % (self.comment)
+        string = 'PDepArrhenius(pressures={0!r}, arrhenius=[{1}]'.format(self.pressures, ', '.join([repr(arrh) for arrh in self.arrhenius]))
+        if self.Tmin is not None: string += ', Tmin={0!r}'.format(self.Tmin)
+        if self.Tmax is not None: string += ', Tmax={0!r}'.format(self.Tmax)
+        if self.Pmin is not None: string += ', Pmin={0!r}'.format(self.Pmin)
+        if self.Pmax is not None: string += ', Pmax={0!r}'.format(self.Pmax)
+        if self.comment != '': string += ', comment="""{0}"""'.format(self.comment)
         string += ')'
         return string
 
     def __reduce__(self):
         """
-        A helper function used when pickling an object.
+        A helper function used when pickling a PDepArrhenius object.
         """
         return (PDepArrhenius, (self.pressures, self.arrhenius, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.comment))
 
@@ -554,23 +515,22 @@ class PDepArrhenius(KineticsModel):
         Returns the pressures and Arrhenius expressions for the pressures that
         most closely bound the specified pressure `P` in Pa.
         """
-        cython.declare(Plow=cython.double, Phigh=cython.double, pressures=list)
+        cython.declare(pressures=list)
         cython.declare(arrh=Arrhenius)
         cython.declare(i=cython.int, ilow=cython.int, ihigh=cython.int)
 
-        pressures = [pressure.value for pressure in self.pressures]
+        pressures = [pressure for pressure in self.pressures.values]
         if P in pressures:
             arrh = self.arrhenius[pressures.index(P)]
             return P, P, arrh, arrh
         else:
-            ilow = 0; ihigh = -1; Plow = pressures[0]; Phigh = 0.0
+            ilow = 0; ihigh = -1
             for i in range(1, len(pressures)):
                 if pressures[i] <= P:
-                    ilow = i; Plow = P
-                if pressures[i] > P and ihigh is None:
-                    ihigh = i; Phigh = P
-            
-            return Plow, Phigh, self.arrhenius[ilow], self.arrhenius[ihigh]
+                    ilow = i
+                if pressures[i] > P and ihigh == -1:
+                    ihigh = i
+            return pressures[ilow], pressures[ihigh], self.arrhenius[ilow], self.arrhenius[ihigh]
     
     def getRateCoefficient(self, T, P):
         """
@@ -589,23 +549,23 @@ class PDepArrhenius(KineticsModel):
         else:
             klow = alow.getRateCoefficient(T)
             khigh = ahigh.getRateCoefficient(T)
-            k = 10**(math.log10(P/Plow)/math.log10(Phigh/Plow)*math.log10(khigh/klow))
+            k = klow * 10**(math.log10(P/Plow)/math.log10(Phigh/Plow)*math.log10(khigh/klow))
         return k
 
-    def fitToData(self, Tlist, Plist, K, T0=298.0):
+    def fitToData(self, Tlist, Plist, K, kunits, T0=298.0):
         """
         Fit the pressure-dependent Arrhenius model to a matrix of rate
-        coefficient data `K` corresponding to a set of temperatures `Tlist` in
-        K and pressures `Plist` in Pa. An Arrhenius model is fit at each
-        pressure.
+        coefficient data `K` with units of `kunits` corresponding to a set of 
+        temperatures `Tlist` in K and pressures `Plist` in Pa. An Arrhenius 
+        model is fit at each pressure.
         """
         cython.declare(i=cython.int)
-        self.pressures = Plist
+        self.pressures = Quantity(Plist/1e5,"bar")
         self.arrhenius = []
         for i in range(len(Plist)):
-            arrhenius = Arrhenius()
-            arrhenius.fitToData(Tlist, constants.Quantity(K[:,i], K.units), T0)
+            arrhenius = Arrhenius().fitToData(Tlist, K[:,i], kunits, T0)
             self.arrhenius.append(arrhenius)
+        return self
 
 ################################################################################
 
@@ -641,7 +601,7 @@ class Chebyshev(KineticsModel):
     def __init__(self, coeffs=None, Tmin=None, Tmax=None, Pmin=None, Pmax=None, comment=''):
         KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, comment=comment)
         if coeffs is not None:
-            self.coeffs = constants.Quantity(numpy.array(coeffs, numpy.float64)).values
+            self.coeffs = Quantity(numpy.array(coeffs, numpy.float64)).values
             self.degreeT = self.coeffs.shape[0]
             self.degreeP = self.coeffs.shape[1]
         else:
@@ -652,33 +612,33 @@ class Chebyshev(KineticsModel):
     def __repr__(self):
         """
         Return a string representation that can be used to reconstruct the
-        object.
+        Chebyshev object.
         """
         coeffs = '['
         for i in range(self.degreeT):
             if i > 0: coeffs += ', '
-            coeffs += '[%s]' % (','.join(['%g' % (self.coeffs[i,j]) for j in range(self.degreeP)]))
+            coeffs += '[{0}]'.format(','.join(['{0:g}'.format(self.coeffs[i,j]) for j in range(self.degreeP)]))
         coeffs += ']'
         
-        string = 'Chebyshev('
-        string += 'coeffs=%s' % (coeffs)
-        if self.Tmin is not None: string += ', Tmin=%r' % (self.Tmin)
-        if self.Tmax is not None: string += ', Tmax=%r' % (self.Tmax)
-        if self.Pmin is not None: string += ', Pmin=%r' % (self.Pmin)
-        if self.Pmax is not None: string += ', Pmax=%r' % (self.Pmax)
-        if self.comment != '': string += ', comment="%s"' % (self.comment)
+        string = 'Chebyshev(coeffs={0}'.format(coeffs)
+        if self.Tmin is not None: string += ', Tmin={0!r}'.format(self.Tmin)
+        if self.Tmax is not None: string += ', Tmax={0!r}'.format(self.Tmax)
+        if self.Pmin is not None: string += ', Pmin={0!r}'.format(self.Pmin)
+        if self.Pmax is not None: string += ', Pmax={0!r}'.format(self.Pmax)
+        if self.comment != '': string += ', comment="""{0}"""'.format(self.comment)
         string += ')'
         return string
 
     def __reduce__(self):
         """
-        A helper function used when pickling an object.
+        A helper function used when pickling a Chebyshev object.
         """
         return (Chebyshev, (self.coeffs, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.comment))
 
     def isPressureDependent(self):
         """
-        Returns ``True`` since Chebyshev polynomial kinetics are pressure-dependent.
+        Returns ``True`` since Chebyshev polynomial kinetics are 
+        pressure-dependent.
         """
         return True
 
@@ -709,9 +669,19 @@ class Chebyshev(KineticsModel):
             return math.cos(n * math.acos(x))
 
     def __getReducedTemperature(self, T):
+        """
+        Return the reduced temperature corresponding to the given temperature
+        `T` in K. This maps the inverse of the temperature onto the domain 
+        [-1, 1] using the `Tmin` and `Tmax` attributes as the limits.
+        """
         return (2.0/T - 1.0/self.Tmin.value - 1.0/self.Tmax.value) / (1.0/self.Tmax.value - 1.0/self.Tmin.value)
     
     def __getReducedPressure(self, P):
+        """
+        Return the reduced pressure corresponding to the given pressure
+        `P` in Pa. This maps the logarithm of the pressure onto the domain 
+        [-1, 1] using the `Pmin` and `Pmax` attributes as the limits.
+        """
         if cython.compiled:
             return (2.0*log10(P) - log10(self.Pmin.value) - log10(self.Pmax.value)) / (log10(self.Pmax.value) - log10(self.Pmin.value))
         else:
@@ -755,8 +725,8 @@ class Chebyshev(KineticsModel):
         self.degreeT = degreeT; self.degreeP = degreeP
 
         # Set temperature and pressure ranges
-        self.Tmin = Tmin; self.Tmax = Tmax
-        self.Pmin = Pmin; self.Pmax = Pmax
+        self.Tmin = Quantity(Tmin,"K"); self.Tmax = Quantity(Tmax,"K")
+        self.Pmin = Quantity(Pmin,"bar"); self.Pmax = Quantity(Pmax,"bar")
 
         # Calculate reduced temperatures and pressures
         Tred = [self.__getReducedTemperature(T) for T in Tlist]
@@ -780,6 +750,8 @@ class Chebyshev(KineticsModel):
         for t2 in range(degreeT):
             for p2 in range(degreeP):
                 self.coeffs[t2,p2] = x[p2*degreeT+t2]
+        
+        return self
 
 ################################################################################
 
@@ -820,24 +792,23 @@ class ThirdBody(KineticsModel):
     def __repr__(self):
         """
         Return a string representation that can be used to reconstruct the
-        object.
+        ThirdBody object.
         """
-        string = 'ThirdBody('
-        string += 'arrheniusHigh=%r' % (self.arrheniusHigh)
+        string = 'ThirdBody(arrheniusHigh={0!r}'.format(self.arrheniusHigh)
         molecules = [(molecule.toSMILES(), molecule) for molecule in self.efficiencies]
         molecules.sort()
-        string += ', efficiencies={%s}' % (', '.join(['"%s": %g' % (molecule, self.efficiencies[molecule]) for smiles, molecule in molecules]))
-        if self.Tmin is not None: string += ', Tmin=%r' % (self.Tmin)
-        if self.Tmax is not None: string += ', Tmax=%r' % (self.Tmax)
-        if self.Pmin is not None: string += ', Pmin=%r' % (self.Pmin)
-        if self.Pmax is not None: string += ', Pmax=%r' % (self.Pmax)
-        if self.comment != '': string += ', comment="%s"' % (self.comment)
+        string += ', efficiencies={{{0}}}'.format(', '.join(['"{0}": {1:g}'.format(smiles, self.efficiencies[molecule]) for smiles, molecule in molecules]))
+        if self.Tmin is not None: string += ', Tmin={0!r}'.format(self.Tmin)
+        if self.Tmax is not None: string += ', Tmax={0!r}'.format(self.Tmax)
+        if self.Pmin is not None: string += ', Pmin={0!r}'.format(self.Pmin)
+        if self.Pmax is not None: string += ', Pmax={0!r}'.format(self.Pmax)
+        if self.comment != '': string += ', comment="""{0}"""'.format(self.comment)
         string += ')'
         return string
 
     def __reduce__(self):
         """
-        A helper function used when pickling an object.
+        A helper function used when pickling a ThirdBody object.
         """
         return (ThirdBody, (self.arrheniusHigh, self.efficiencies, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.comment))
 
@@ -868,12 +839,12 @@ class ThirdBody(KineticsModel):
         if isinstance(collider, dict):
             # Assume collider is a dict mapping species to weights
             efficiency = 0.0
-            for spec, frac in collider.iteritems:
+            for spec, frac in collider.iteritems():
                 try:
                     eff = self.efficiencies[spec]
                 except KeyError:
                     eff = 1.0
-            efficiency = eff * frac
+                efficiency += eff * frac
             efficiency /= sum(collider.values())
         else:
             # Assume collider is a single species
@@ -887,7 +858,7 @@ class ThirdBody(KineticsModel):
     def getRateCoefficient(self, T, P, collider=None):
         """
         Return the rate constant k(T, P) in SI units at a temperature
-        `T` in K and pressure `P` in Pa by evaluating the Lindemann expression.
+        `T` in K and pressure `P` in Pa by evaluating the third-body expression.
         If a `collider` is specified the rate coefficient will be modified
         accordingly.
         """
@@ -942,23 +913,23 @@ class Lindemann(ThirdBody):
     def __repr__(self):
         """
         Return a string representation that can be used to reconstruct the
-        object.
+        Lindemann object.
         """
-        string = 'Lindemann('
-        string += 'arrheniusHigh=%r' % (self.arrheniusHigh)
-        string += ', arrheniusLow=%r' % (self.arrheniusLow)
-        string += ', efficiencies=%r' % (self.efficiencies)
-        if self.Tmin is not None: string += ', Tmin=%r' % (self.Tmin)
-        if self.Tmax is not None: string += ', Tmax=%r' % (self.Tmax)
-        if self.Pmin is not None: string += ', Pmin=%r' % (self.Pmin)
-        if self.Pmax is not None: string += ', Pmax=%r' % (self.Pmax)
-        if self.comment != '': string += ', comment="%s"' % (self.comment)
+        string = 'Lindemann(arrheniusHigh={0!r}, arrheniusLow={1!r}'.format(self.arrheniusHigh, self.arrheniusLow)
+        molecules = [(molecule.toSMILES(), molecule) for molecule in self.efficiencies]
+        molecules.sort()
+        string += ', efficiencies={{{0}}}'.format(', '.join(['"{0}": {1:g}'.format(smiles, self.efficiencies[molecule]) for smiles, molecule in molecules]))
+        if self.Tmin is not None: string += ', Tmin={0!r}'.format(self.Tmin)
+        if self.Tmax is not None: string += ', Tmax={0!r}'.format(self.Tmax)
+        if self.Pmin is not None: string += ', Pmin={0!r}'.format(self.Pmin)
+        if self.Pmax is not None: string += ', Pmax={0!r}'.format(self.Pmax)
+        if self.comment != '': string += ', comment="""{0}"""'.format(self.comment)
         string += ')'
         return string
 
     def __reduce__(self):
         """
-        A helper function used when pickling an object.
+        A helper function used when pickling a Lindemann object.
         """
         return (Lindemann, (self.arrheniusLow, self.arrheniusHigh, self.efficiencies, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.comment))
 
@@ -1037,38 +1008,36 @@ class Troe(Lindemann):
 
     def __init__(self, arrheniusLow=None, arrheniusHigh=None, efficiencies=None, alpha=0.0, T3=0.0, T1=0.0, T2=None, Tmin=None, Tmax=None, Pmin=None, Pmax=None, comment=''):
         Lindemann.__init__(self, arrheniusLow=arrheniusLow, arrheniusHigh=arrheniusHigh, efficiencies=efficiencies, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, comment=comment)
-        self.alpha = constants.Quantity(alpha)
-        self.T3 = constants.Quantity(T3)
-        self.T1 = constants.Quantity(T1)
+        self.alpha = Quantity(alpha)
+        self.T3 = Quantity(T3)
+        self.T1 = Quantity(T1)
         if T2 is not None:
-            self.T2 = constants.Quantity(T2)
+            self.T2 = Quantity(T2)
         else:
             self.T2 = None
         
     def __repr__(self):
         """
         Return a string representation that can be used to reconstruct the
-        object.
+        Troe object.
         """
-        string = 'Troe('
-        string += 'arrheniusHigh=%r' % (self.arrheniusHigh)
-        string += ', arrheniusLow=%r' % (self.arrheniusLow)
-        string += ', efficiencies=%r' % (self.efficiencies)
-        string += ', alpha=%r' % (self.alpha)
-        string += ', T3=%r' % (self.T3)
-        string += ', T1=%r' % (self.T1)
-        if self.T2 is not None: string += ', T2=%r' % (self.T2)
-        if self.Tmin is not None: string += ', Tmin=%r' % (self.Tmin)
-        if self.Tmax is not None: string += ', Tmax=%r' % (self.Tmax)
-        if self.Pmin is not None: string += ', Pmin=%r' % (self.Pmin)
-        if self.Pmax is not None: string += ', Pmax=%r' % (self.Pmax)
-        if self.comment != '': string += ', comment="%s"' % (self.comment)
+        string = 'Troe(arrheniusHigh={0!r}, arrheniusLow={1!r}'.format(self.arrheniusHigh, self.arrheniusLow)
+        string += ', alpha={0!r}, T3={1!r}, T1={2!r}'.format(self.alpha, self.T3, self.T1)
+        if self.T2 is not None: string += ', T2={0!r}'.format(self.T2)
+        molecules = [(molecule.toSMILES(), molecule) for molecule in self.efficiencies]
+        molecules.sort()
+        string += ', efficiencies={{{0}}}'.format(', '.join(['"{0}": {1:g}'.format(smiles, self.efficiencies[molecule]) for smiles, molecule in molecules]))
+        if self.Tmin is not None: string += ', Tmin={0!r}'.format(self.Tmin)
+        if self.Tmax is not None: string += ', Tmax={0!r}'.format(self.Tmax)
+        if self.Pmin is not None: string += ', Pmin={0!r}'.format(self.Pmin)
+        if self.Pmax is not None: string += ', Pmax={0!r}'.format(self.Pmax)
+        if self.comment != '': string += ', comment="""{0}"""'.format(self.comment)
         string += ')'
         return string
 
     def __reduce__(self):
         """
-        A helper function used when pickling an object.
+        A helper function used when pickling a Troe object.
         """
         return (Troe, (self.arrheniusLow, self.arrheniusHigh, self.efficiencies, self.alpha, self.T3, self.T1, self.T2, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.comment))
 

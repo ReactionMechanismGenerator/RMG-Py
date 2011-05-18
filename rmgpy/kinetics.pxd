@@ -152,6 +152,8 @@ cdef class Lindemann(ThirdBody):
 
     cdef public Arrhenius arrheniusLow
     
+    cpdef bint isPressureDependent(self)
+
     cpdef double getRateCoefficient(self, double T, double P, collider=?)
 
 ################################################################################
@@ -160,4 +162,6 @@ cdef class Troe(Lindemann):
 
     cdef public Quantity alpha, T1, T2, T3
     
+    cpdef bint isPressureDependent(self)
+
     cpdef double getRateCoefficient(self, double T, double P, collider=?)
