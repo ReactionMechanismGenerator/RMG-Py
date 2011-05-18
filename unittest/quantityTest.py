@@ -1,10 +1,15 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
+# encoding: utf-8
 
-import numpy
+"""
+This module contains unit tests of the rmgpy.quantity module.
+"""
+
 import unittest
+import math
+import quantities as pq
 
-from rmgpy.chem.constants import *
+from rmgpy.quantity import *
 
 ################################################################################
 
@@ -71,7 +76,36 @@ class ConstantsTest(unittest.TestCase):
         self.assertEqual(q.uncertainties[2], 0.03)
         self.assertEqual(q.units, "cm")
         self.assertEqual(q.uncertaintyType, "+|-")
+################################################################################
+
+class TestCustomUnits(unittest.TestCase):
+    """
+    Contains unit tests of the custom units added to the quantities package.
+    These tests ensure that, when these units are used in a Quantity object,
+    the resulting value has the correct conversion factor (or at least that the
+    conversion factor does not change!)
+    """
+
+    def testMolecules(self):
+        q = Quantity(1.0,"molecules")
+        self.assertAlmostEqual(q.value / (1.0/constants.Na), 1.0, 6)
+    
+    def testMolecule(self):
+        q = Quantity(1.0,"molecule")
+        self.assertAlmostEqual(q.value / (1.0/constants.Na), 1.0, 6)
         
+    def testKcalPerMol(self):
+        q = Quantity(1.0,"kcal/mol")
+        self.assertAlmostEqual(q.value / (1.0*4184.), 1.0, 6)
+    
+    def testKJPerMol(self):
+        q = Quantity(1.0,"kJ/mol")
+        self.assertAlmostEqual(q.value / (1.0*1000.), 1.0, 6)
+    
+    def testJPerMol(self):
+        q = Quantity(1.0,"J/kmol")
+        self.assertAlmostEqual(q.value / (1.0/1000.), 1.0, 6)
+    
 ################################################################################
 
 class TestConstants(unittest.TestCase):

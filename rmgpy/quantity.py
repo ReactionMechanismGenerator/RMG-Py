@@ -28,21 +28,23 @@
 ################################################################################
 
 """
-This module contains a number of physical constants to be made available
-throughout RMG Py. RMG Py uses SI units throughout; accordingly, all of the
-constants in this module are stored in combinations of meters, seconds,
-kilograms, moles, etc.
+This module contains classes and methods for working with physical quantities,
+particularly the :class:`Quantity` class for representing physical quantities
+and the :class:`Constants` class for defining relevant physical constants.
 """
 
 import math
-import cython
 import numpy
 import quantities as pq
 
+# Explicity set the default units to SI
+pq.set_default_units('si')
+
+# These units are not defined by the quantities package, but occur frequently
+# in data handled by RMG, so we define them manually
 pq.UnitQuantity('kilocalories', pq.cal*1e3, symbol='kcal')
 pq.UnitQuantity('kilojoules', pq.J*1e3, symbol='kJ')
 pq.UnitQuantity('kilomoles', pq.mol*1e3, symbol='kmol')
-
 pq.UnitQuantity('molecule', pq.mol/6.02214179e23, symbol='molecule')
 pq.UnitQuantity('molecules', pq.mol/6.02214179e23, symbol='molecules')
 
