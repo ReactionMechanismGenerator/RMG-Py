@@ -1,8 +1,8 @@
 ################################################################################
 #
-#   ChemPy - A chemistry toolkit for Python
+#   RMG - Reaction Mechanism Generator
 #
-#   Copyright (c) 2010 by Joshua W. Allen (jwallen@mit.edu)
+#   Copyright (c) 2009-2011 by the RMG Team (rmg_dev@mit.edu)
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
 #   copy of this software and associated documentation files (the 'Software'),
@@ -26,7 +26,10 @@
 
 cimport numpy
 
-from constants cimport Quantity
+from quantity cimport Quantity
+
+cdef extern from "math.h":
+    double log(double)
 
 ################################################################################
 
@@ -37,13 +40,13 @@ cdef class ThermoModel:
     
     cpdef bint isTemperatureValid(ThermoModel self, double T) except -2
 
-#    cpdef double getHeatCapacity(self, double T)
-#
-#    cpdef double getEnthalpy(self, double T)
-#
-#    cpdef double getEntropy(self, double T)
-#
-#    cpdef double getFreeEnergy(self, double T)
+    cpdef double getHeatCapacity(self, double T)
+
+    cpdef double getEnthalpy(self, double T)
+
+    cpdef double getEntropy(self, double T)
+
+    cpdef double getFreeEnergy(self, double T)
 
     cpdef numpy.ndarray getHeatCapacities(self, numpy.ndarray Tlist)
 
@@ -52,7 +55,7 @@ cdef class ThermoModel:
     cpdef numpy.ndarray getEntropies(self, numpy.ndarray Tlist)
 
     cpdef numpy.ndarray getFreeEnergies(self, numpy.ndarray Tlist)
-    
+
 ################################################################################
 
 cdef class ThermoData(ThermoModel):
@@ -71,7 +74,8 @@ cdef class ThermoData(ThermoModel):
 
 cdef class Wilhoit(ThermoModel):
     
-    cdef public Quantity cp0, cpInf, B, a0, a1, a2, a3, H0, S0
+    cdef public Quantity cp0, cpInf, B, H0, S0
+    cdef public double a0, a1, a2, a3
     
     cpdef double getHeatCapacity(self, double T)
 
@@ -119,3 +123,38 @@ cdef class MultiNASA(ThermoModel):
     cpdef double getFreeEnergy(self, double T)
     
     cpdef NASA __selectPolynomialForTemperature(self, double T)
+
+################################################################################
+
+cpdef MultiNASA convertWilhoitToNASA(Wilhoit wilhoit, double Tmin, double Tmax, double Tint, bint fixedTint=?, bint weighting=?, int continuity=?)
+
+cpdef Wilhoit2NASA(Wilhoit wilhoit, double tmin, double tmax, double tint, bint weighting, int contCons)
+
+cpdef Wilhoit2NASA_TintOpt(Wilhoit wilhoit, double tmin, double tmax, bint weighting, int contCons)
+
+cpdef TintOpt_objFun(tint, Wilhoit wilhoit, double tmin, double tmax, bint weighting, int contCons)
+
+cpdef TintOpt_objFun_NW(double tint, Wilhoit wilhoit, double tmin, double tmax, int contCons)
+
+cpdef TintOpt_objFun_W(double tint, Wilhoit wilhoit, double tmin, double tmax, int contCons)
+
+cpdef double Wilhoit_integral_T0(Wilhoit wilhoit, double t)
+
+cpdef double Wilhoit_integral_TM1(Wilhoit wilhoit, double t)
+
+cpdef double Wilhoit_integral_T1(Wilhoit wilhoit, double t)
+
+cpdef double Wilhoit_integral_T2(Wilhoit wilhoit, double t)
+
+cpdef double Wilhoit_integral_T3(Wilhoit wilhoit, double t)
+
+cpdef double Wilhoit_integral_T4(Wilhoit wilhoit, double t)
+
+cpdef double Wilhoit_integral2_T0(Wilhoit wilhoit, double t)
+
+cpdef double Wilhoit_integral2_TM1(Wilhoit wilhoit, double t)
+
+cpdef double NASA_integral2_T0(NASA polynomial, double T)
+
+cpdef double NASA_integral2_TM1(NASA polynomial, double T)
+
