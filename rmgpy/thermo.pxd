@@ -26,7 +26,10 @@
 
 cimport numpy
 
-from constants cimport Quantity
+from quantity cimport Quantity
+
+cdef extern from "math.h":
+    double log(double)
 
 ################################################################################
 
@@ -37,13 +40,13 @@ cdef class ThermoModel:
     
     cpdef bint isTemperatureValid(ThermoModel self, double T) except -2
 
-#    cpdef double getHeatCapacity(self, double T)
-#
-#    cpdef double getEnthalpy(self, double T)
-#
-#    cpdef double getEntropy(self, double T)
-#
-#    cpdef double getFreeEnergy(self, double T)
+    cpdef double getHeatCapacity(self, double T)
+
+    cpdef double getEnthalpy(self, double T)
+
+    cpdef double getEntropy(self, double T)
+
+    cpdef double getFreeEnergy(self, double T)
 
     cpdef numpy.ndarray getHeatCapacities(self, numpy.ndarray Tlist)
 
@@ -52,7 +55,7 @@ cdef class ThermoModel:
     cpdef numpy.ndarray getEntropies(self, numpy.ndarray Tlist)
 
     cpdef numpy.ndarray getFreeEnergies(self, numpy.ndarray Tlist)
-    
+
 ################################################################################
 
 cdef class ThermoData(ThermoModel):
@@ -71,7 +74,8 @@ cdef class ThermoData(ThermoModel):
 
 cdef class Wilhoit(ThermoModel):
     
-    cdef public Quantity cp0, cpInf, B, a0, a1, a2, a3, H0, S0
+    cdef public Quantity cp0, cpInf, B, H0, S0
+    cdef public double a0, a1, a2, a3
     
     cpdef double getHeatCapacity(self, double T)
 
