@@ -50,30 +50,20 @@ pq.UnitQuantity('molecules', pq.mol/6.02214179e23, symbol='molecules')
 
 ################################################################################
 
-def getConversionFactorToSI(units):
+class QuantityError(Exception):
     """
-    Get the conversion factor for converting a quantity in a given set of
-    `units` to the SI equivalent units.
+    An exception to be raised when an error occurs while working with physical
+    quantities in RMG. Pass a string describing the circumstances of the
+    exceptional behavior.
     """
-    factor = float(pq.Quantity(1.0, units).simplified)
-    # Exception: don't convert wavenumbers (cm^-1) to m^-1
-    if units == 'cm^-1': factor = 1.0
-    return factor
+    pass
 
-def getConversionFactorFromSI(units):
-    """
-    Get the conversion factor for converting a quantity to a given set of
-    `units` from the SI equivalent units.
-    """
-    factor = float(pq.Quantity(1.0, units).simplified)
-    # Exception: don't convert wavenumbers (cm^-1) to m^-1
-    if units == 'cm^-1': factor = 1.0
-    return 1.0 / factor
+################################################################################
 
 class Quantity:
     """
-    A single numeric quantity or an array of quantities, with optional units
-    and uncertainty. The attributes are:
+    A representation of a physical quantity, with optional units and 
+    uncertainty information. The attributes are:
 
     =================== =================== ====================================
     Attribute           Type                Description
@@ -90,14 +80,14 @@ class Quantity:
     not ``None``, then the class assumes that it represents an array of
     quantities and uses the `values` attribute. If `values` is `None`, the
     class assumed that it represents a single quantity and uses the `value`
-    attribute. You can test for this using the :meth:`isArray` method.
+    attribute. You can test for this using the :meth:`isArray()` method.
 
     In order to preserve the efficiency that Cythonization provides, the actual
     value of the quantity is stored in SI units in the `value` (for a single
     quantity) or `values` (for an array of quantities) attributes. The methods
-    :meth:`getConversionFactorToSI` and :meth:`getConversionFactorFromSI` have
-    been provided to facilitate unit conversions when reading and writing the
-    quantity data. These methods use the ``quantities`` package, and are
+    :meth:`getConversionFactorToSI()` and :meth:`getConversionFactorFromSI()` 
+    have been provided to facilitate unit conversions when reading and writing 
+    the quantity data. These methods use the ``quantities`` package, and are
     generally not optimized for speed.
 
     When providing an array of quantities, you have the option of providing
@@ -107,49 +97,71 @@ class Quantity:
     single uncertainty value for that quantity. The uncertainty data can be
     specified as either additive or multiplicative, and must be symmetric.
     """
-
-    def __init__(self, args=None):
-        # Set default attribute values
-        self.value = 0.0
-        self.values = None
-        self.units = ''
-        self.uncertaintyType = ''
-        self.uncertainty = 0.0
-        self.uncertainties = None
-
-        # Unpack arguments
-        # If given, the order should be: value(s), units[, uncertaintyType], uncertainty
-        units = ''; uncertaintyType = ''; uncertainty = None
-        if args is None:
+    
+    def __init__(self, *args):
+        """
+        Create a new :class:`Quantity` object. The `args` parameter can contain
+        from zero to four parameters. If no parameters are provided, the 
+        attributes are initialized to default values. The first parameter should
+        always be the value(s) of the quantity. The second parameter, if given, 
+        should always be the units. The third and fourth parameters, if given,
+        should be the uncertainty type and uncertainty values. If the
+        uncertainty type is omitted but the uncertainty values are given, the
+        type is assumed to be additive.
+        """
+        value = 0.0; units = ''; uncertaintyType = ''; uncertainty = 0.0
+        
+        # Unpack args if necessary
+        if isinstance(args, tuple) and len(args) == 1 and isinstance(args[0], tuple):
+            args = args[0]
+            
+        # Process args    
+        if len(args) == 0:
+            # No parameters were given, so initialize with default values
+            self.value = 0.0
+            self.values = None
+            self.units = ''
+            self.uncertaintyType = ''
+            self.uncertainty = 0.0
+            self.uncertainties = None
             return
-        elif isinstance(args, Quantity):
-            self.value = args.value
-            self.values = args.values
-            self.units = args.units
-            self.uncertaintyType = args.uncertaintyType
-            self.uncertainty = args.uncertainty
-            self.uncertainties = args.uncertainties
-            return
-        elif isinstance(args, numpy.ndarray):
-            # We've been given just an array of numbers
-            value = args
-        elif isinstance(args, float) or isinstance(args, int):
-            # We've been given just a single number
-            value = args
-        elif isinstance(args, list) or isinstance(args, tuple):
-            if len(args) == 1:
-                value = args
-            elif len(args) == 2:
-                value, units = args
-            elif len(args) == 3:
-                value, units, uncertainty = args
-            elif len(args) == 4:
-                value, units, uncertaintyType, uncertainty = args
-            else:
-                value = args
-            if not isinstance(units, str) or not isinstance(uncertaintyType, str):
-                value = args; units = ''; uncertaintyType = ''; uncertainty = None
-
+        elif len(args) == 1:
+            # If one parameter is given, it should be a single value or 
+            # array of values; it could also be another Quantity object to
+            # make a copy of
+            other = args[0]
+            if isinstance(other, Quantity):
+                # We were given another Quantity object, so make a (shallow) copy of it
+                self.value = other.value
+                self.values = other.values
+                self.units = other.units
+                self.uncertaintyType = other.uncertaintyType
+                self.uncertainty = other.uncertainty
+                self.uncertainties = other.uncertainties
+                return
+            elif isinstance(other, list) or isinstance(other, tuple) or isinstance(other, numpy.ndarray):
+                # We've been given just an array of values
+                value = other
+            elif isinstance(other, float) or isinstance(other, int):
+                # We've been given just a single value
+                value = other
+        elif len(args) == 2:
+            # If two parameters are given, it should be a single value or 
+            # array of values, plus units
+            value, units = args
+        elif len(args) == 3:
+            # If three parameters are given, it should be a single value or 
+            # array of values, plus units and uncertainty
+            value, units, uncertainty = args; 
+            # Assume the intended uncertainty type is additive
+            uncertaintyType = '+|-'
+        elif len(args) == 4:
+            # If three parameters are given, it should be a single value or 
+            # array of values, plus units and uncertainty
+            value, units, uncertaintyType, uncertainty = args
+        else:
+            raise QuantityError('Invalid parameters {0!r} passed to init method of Quantity object.'.format(args))
+        
         # Process value parameter
         if isinstance(value, list) or isinstance(value, tuple):
             self.value = 0.0
@@ -161,12 +173,14 @@ class Quantity:
             self.value = value
             self.values = None
         else:
-            raise ValueError('Unexpected type "%s" for value parameter.' % (value.__class__))
+            raise QuantityError('Unexpected type "{0}" for value parameter.'.format(value.__class__))
 
         # Process units and uncertainty type parameters
         self.units = units
         self.uncertaintyType = uncertaintyType
-
+        if uncertaintyType not in ['', '+|-', '*|/']:
+            raise QuantityError('Unexpected uncertainty type "{0}"; valid values are "+|-" and "*|/".'.format(uncertaintyType))
+            
         # Process uncertainty parameter
         if isinstance(uncertainty, list) or isinstance(uncertainty, tuple):
             self.uncertainty = 0.0
@@ -178,19 +192,21 @@ class Quantity:
             self.uncertainty = uncertainty
             self.uncertainties = None
         elif uncertainty is not None:
-            raise ValueError('Unexpected type "%s" for uncertainty parameter.' % (uncertainty.__class__))
-
+            raise QuantityError('Unexpected type "{0}" for uncertainty parameter.'.format(uncertainty.__class__))
+    
         # Having multiple uncertainties for a single value is nonsensical
-        # Add assertion to ensure we don't ever try to do this
-        assert self.values is not None or self.uncertainties is None, "Attempted to create Quantity with one value but multiple uncertainties."
+        # Add a check to ensure we don't ever try to do this
+        if self.values is None and self.uncertainties is not None:
+            raise QuantityError('Attempted to create Quantity with one value but multiple uncertainties.')
+        
         # If multiple values and multiple uncertainties are specified, they
         # should be of equal length
-        # Add assertion to ensure this is the case
-        if self.values is not None and self.uncertainties is not None:
-            assert len(self.values) == len(self.uncertainties), "Provided multiple uncertainties of different length than multiple values."
+        # Add a check to ensure we don't ever try to do this
+        if self.values is not None and self.uncertainties is not None and len(self.values) != len(self.uncertainties):
+            raise QuantityError('Provided multiple uncertainties of different length than multiple values.')
 
         # Get the output (SI) units corresponding to the input units
-        factor = getConversionFactorToSI(self.units)
+        factor = self.getConversionFactorToSI()
 
         # Convert the value and uncertainty to SI units
         self.value *= factor
@@ -198,10 +214,10 @@ class Quantity:
         if not self.isUncertaintyAdditive(): factor = 1.0
         self.uncertainty *= factor
         if self.uncertainties is not None: self.uncertainties *= factor
-
+        
     def __reduce__(self):
         """
-        A helper function used when pickling an object.
+        A helper function used when pickling a Quantity object.
         """
         d = {}
         d['value'] = self.value
@@ -214,7 +230,7 @@ class Quantity:
 
     def __setstate__(self, d):
         """
-        A helper function used when unpickling an object.
+        A helper function used when unpickling a Quantity object.
         """
         self.value = d['value']
         self.units = d['units']
@@ -225,9 +241,9 @@ class Quantity:
 
     def __str__(self):
         """
-        Return a string representation of the object.
+        Return a human-readable string representation of the Quantity object.
         """
-        factor = getConversionFactorFromSI(self.units)
+        factor = self.getConversionFactorFromSI()
         string = ''
         if not self.isArray():
             string += '%g' % (self.value * factor)
@@ -246,9 +262,9 @@ class Quantity:
     def __repr__(self):
         """
         Return a string representation that can be used to reconstruct the
-        object.
+        Quantity object.
         """
-        factor = getConversionFactorFromSI(self.units)
+        factor = self.getConversionFactorFromSI()
         string = ''
         if not self.isArray():
             string += '%g' % (self.value * factor)
@@ -266,33 +282,26 @@ class Quantity:
             string = '(' + string + ')'
         return string
 
-    def __add__(self, other):
+    def getConversionFactorToSI(self):
         """
-        Add two objects together and return the sum as a new object.
+        Get the conversion factor for converting a quantity in a given set of
+        `units` to the SI equivalent units.
         """
-        if not isinstance(other, Quantity): raise ValueError('Unexpected type "%s" for other parameter.' % (other.__class__))
-        assert self.units == other.units
-        assert self.uncertaintyType in ['', '+|-']
-        assert other.uncertaintyType in ['', '+|-']
+        factor = float(pq.Quantity(1.0, self.units).simplified)
+        # Exception: don't convert wavenumbers (cm^-1) to m^-1
+        if self.units == 'cm^-1': factor = 1.0
+        return factor
 
-        new = Quantity()
-        if self.isArray() and self.uncertainties is not None:
-            new.values = self.values + other.values
-            new.units = self.units
-            new.uncertaintyType = self.uncertaintyType
-            new.uncertainties = numpy.sqrt(self.uncertainties**2 + other.uncertainties**2)
-        elif self.isArray() and self.uncertainties is None:
-            new.values = self.values + other.values
-            new.units = self.units
-            new.uncertaintyType = self.uncertaintyType
-            new.uncertainty = numpy.sqrt(self.uncertainty**2 + other.uncertainty**2)
-        else:
-            new.value = self.value + other.value
-            new.units = self.units
-            new.uncertaintyType = self.uncertaintyType
-            new.uncertainty = numpy.sqrt(self.uncertainty**2 + other.uncertainty**2)
-        return new
-        
+    def getConversionFactorFromSI(self):
+        """
+        Get the conversion factor for converting a quantity to a given set of
+        `units` from the SI equivalent units.
+        """
+        factor = float(pq.Quantity(1.0, self.units).simplified)
+        # Exception: don't convert wavenumbers (cm^-1) to m^-1
+        if self.units == 'cm^-1': factor = 1.0
+        return 1.0 / factor
+
     def isArray(self):
         """
         Return ``True`` if this quantity contains an array of values or 
@@ -312,8 +321,8 @@ class Quantity:
 
     def isUncertaintyMultiplicative(self):
         """
-        Return ``True`` if the uncertainty is specified in multiplicative format
-        and ``False`` otherwise.
+        Return ``True`` if the uncertainty is specified in multiplicative 
+        format and ``False`` otherwise.
         """
         return self.uncertaintyType == '*|/'
 

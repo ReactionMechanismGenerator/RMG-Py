@@ -26,12 +26,23 @@
 
 cimport numpy
 
+################################################################################
+
 cdef class Quantity:
 
     cdef public double value, uncertainty
     cdef public numpy.ndarray values, uncertainties
-    cdef public str units
-    cdef public str uncertaintyType
+    cdef public str units, uncertaintyType
+
+    cpdef double getConversionFactorToSI(self)
+
+    cpdef double getConversionFactorFromSI(self)
+
+    cpdef bint isArray(self)
+
+    cpdef bint isUncertaintyAdditive(self)
+
+    cpdef bint isUncertaintyMultiplicative(self)
 
 ################################################################################
 
