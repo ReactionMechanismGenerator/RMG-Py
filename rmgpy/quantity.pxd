@@ -1,8 +1,8 @@
 ################################################################################
 #
-#   ChemPy - A chemistry toolkit for Python
+#   RMG - Reaction Mechanism Generator
 #
-#   Copyright (c) 2010 by Joshua W. Allen (jwallen@mit.edu)
+#   Copyright (c) 2009-2011 by the RMG Team (rmg_dev@mit.edu)
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
 #   copy of this software and associated documentation files (the 'Software'),
@@ -26,9 +26,27 @@
 
 cimport numpy
 
+################################################################################
+
 cdef class Quantity:
 
     cdef public double value, uncertainty
     cdef public numpy.ndarray values, uncertainties
-    cdef public str units
-    cdef public str uncertaintyType
+    cdef public str units, uncertaintyType
+
+    cpdef double getConversionFactorToSI(self)
+
+    cpdef double getConversionFactorFromSI(self)
+
+    cpdef bint isArray(self)
+
+    cpdef bint isUncertaintyAdditive(self)
+
+    cpdef bint isUncertaintyMultiplicative(self)
+
+################################################################################
+
+cdef class Constants:
+
+    cdef public double Na, kB, R, h, c, pi
+
