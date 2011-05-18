@@ -1,11 +1,11 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
+# encoding: utf-8
 
 ################################################################################
 #
-#   ChemPy - A chemistry toolkit for Python
+#   RMG - Reaction Mechanism Generator
 #
-#   Copyright (c) 2010 by Joshua W. Allen (jwallen@mit.edu)
+#   Copyright (c) 2009-2011 by the RMG Team (rmg_dev@mit.edu)
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
 #   copy of this software and associated documentation files (the 'Software'),
@@ -28,19 +28,19 @@
 ################################################################################
 
 """
-This module contains a variety of classes representing various thermodynamics
+This module contains classes and methods for working with thermodynamics 
 models. All such models derive from the :class:`ThermoModel` base class, and
 generally vary by how the heat capacity data is represented:
 
 * :class:`ThermoData` - A thermodynamics model using a discrete set of heat
-  capacity data points
+  capacity data points.
 
 * :class:`Wilhoit` - A thermodynamics model using the Wilhoit polynomial
-  equation for heat capacity
+  equation for heat capacity.
 
 * :class:`MultiNASA` - A thermodynamics model using a set of
   :class:`NASA` objects, each representing a seven-coefficient or
-  nine-coefficient polynomial equation for heat capacity, enthalpy, and entropy
+  nine-coefficient polynomial equation for heat capacity, enthalpy, and entropy.
 
 """
 
