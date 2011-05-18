@@ -1452,6 +1452,9 @@ class Molecule(Graph):
         Generate and return all of the resonance isomers of this molecule.
         """
 
+        implicitH = self.implicitHydrogens
+        self.makeHydrogensExplicit()
+        
         isomers = [self]
 
         # Radicals
@@ -1472,6 +1475,10 @@ class Molecule(Graph):
                 # Move to next resonance isomer
                 index += 1
 
+        if implicitH:
+            for isomer in isomers:
+                isomer.makeHydrogensImplicit()
+        
         return isomers
 
     def getAdjacentResonanceIsomers(self):
