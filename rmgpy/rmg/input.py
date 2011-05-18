@@ -33,10 +33,7 @@ import quantities
 
 from rmgpy.chem.molecule import Molecule
 
-from rmgpy.data import getDatabaseDirectory
-from rmgpy.data.thermo import loadThermoDatabase
-from rmgpy.data.kinetics import loadKineticsDatabase
-from rmgpy.data.states import loadFrequencyDatabase
+from rmgpy.data.rmg import RMGDatabase
 
 from rmgpy.solver.base import TerminationTime, TerminationConversion
 from rmgpy.solver.simple import SimpleReactor
@@ -54,26 +51,20 @@ databases = {}
 reactionSystems = []
 reactionModel = None
 
-def database(thermo_groups, kinetics_groups, thermo_libraries=None, 
-  kinetics_libraries=None, reaction_libraries=None, seed_mechanisms=None,
-  frequencies_groups=None, frequencies_libraries=None):
+def database(path, thermoLibraries=None, reactionLibraries=None, frequenciesLibraries=None, seedMechanisms=None):
     global databases
-    if isinstance(thermo_groups, str): thermo_groups = [thermo_groups]
-    if isinstance(kinetics_groups, str): kinetics_groups = [kinetics_groups]
-    if isinstance(thermo_libraries, str): thermo_libraries = [thermo_libraries]
-    if isinstance(kinetics_libraries, str): kinetics_libraries = [kinetics_libraries]
-    if isinstance(reaction_libraries, str): reaction_libraries = [reaction_libraries]
-    if isinstance(seed_mechanisms, str): seed_mechanisms = [seed_mechanisms]
-    if isinstance(frequencies_groups, str): frequencies_groups = [frequencies_groups]
-    if isinstance(frequencies_libraries, str): frequencies_libraries = [frequencies_libraries]
-    databases['thermo_groups'] = thermo_groups or []
-    databases['kinetics_groups'] = kinetics_groups or []
-    databases['thermo_libraries'] = thermo_libraries or []
-    databases['kinetics_libraries'] = kinetics_libraries or []
-    databases['reaction_libraries'] = reaction_libraries or []
-    databases['seed_mechanisms'] = seed_mechanisms or []
-    databases['frequencies_groups'] = frequencies_groups or []
-    databases['frequencies_libraries'] = frequencies_libraries or []
+    # This function just stores the information about the database to be loaded
+    # We don't actually load the database until after we're finished reading
+    # the input file
+    if isinstance(thermoLibraries, str): thermoLibraries = [thermoLibraries]
+    if isinstance(reactionLibraries, str): reactionLibraries = [reactionLibraries]
+    if isinstance(seedMechanisms, str): seedMechanisms = [seedMechanisms]
+    if isinstance(frequenciesLibraries, str): frequenciesLibraries = [frequenciesLibraries]
+    databases['path'] = os.path.abspath(path)
+    databases['thermoLibraries'] = thermoLibraries or []
+    databases['reactionLibraries'] = reactionLibraries or []
+    databases['seedMechanisms'] = seedMechanisms or []
+    databases['frequenciesLibraries'] = frequenciesLibraries or []
 
 def species(label, structure, reactive=True):
     global speciesDict, reactionModel
@@ -214,31 +205,18 @@ def readInputFile(path):
     logging.info('')
 
     # Load databases
-    for d in databases['thermo_libraries']:
-        path = os.path.join(getDatabaseDirectory(), d)
-        loadThermoDatabase(path, group=False, old=True)
-    for d in databases['thermo_groups']:
-        path = os.path.join(getDatabaseDirectory(), d)
-        loadThermoDatabase(path, group=True, old=True)
-    for d in databases['seed_mechanisms']:
-        path = os.path.join(getDatabaseDirectory(), d)
-        loadKineticsDatabase(path, mode='seed mechanism', group=False, old=True)
-    for d in databases['reaction_libraries']:
-        path = os.path.join(getDatabaseDirectory(), d)
-        loadKineticsDatabase(path, mode='reaction library', group=False, old=True)
-    for d in databases['kinetics_libraries']:
-        path = os.path.join(getDatabaseDirectory(), d)
-        loadKineticsDatabase(path, mode='kinetics library', group=False, old=True)
-    for d in databases['kinetics_groups']:
-        path = os.path.join(getDatabaseDirectory(), d)
-        loadKineticsDatabase(path, mode='kinetics groups', group=True, old=True)
-    for d in databases['frequencies_libraries']:
-        path = os.path.join(getDatabaseDirectory(), d)
-        loadFrequencyDatabase(path, group=False, old=True)
-    for d in databases['frequencies_groups']:
-        path = os.path.join(getDatabaseDirectory(), d)
-        loadFrequencyDatabase(path, group=True, old=True)
-
+    rmgDatabase = RMGDatabase()
+    rmgDatabase.load(
+        path = databases['path'],
+        thermoLibraries = databases['thermoLibraries'],
+        reactionLibraries = databases['reactionLibraries'],
+        seedMechanisms = databases['seedMechanisms'],
+        #frequenciesLibraries = databases['frequenciesLibraries'],
+        depository = False, # Don't bother loading the depository information, as we don't use it
+    )
+    seedMechanisms = databases['seedMechanisms']
+    logging.info("")
+    
     speciesList = speciesDict.values()
     speciesList.sort(cmp=lambda x, y: x.index - y.index)
 
@@ -248,5 +226,5 @@ def readInputFile(path):
             initialMoleFractions[speciesDict[label]] = moleFrac
     reactionSystem.initialMoleFractions = initialMoleFractions
 
-    return reactionModel, speciesList, reactionSystems
+    return reactionModel, speciesList, reactionSystems, rmgDatabase, seedMechanisms
 

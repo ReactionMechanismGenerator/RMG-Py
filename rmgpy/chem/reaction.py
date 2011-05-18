@@ -120,6 +120,27 @@ class Reaction:
         """
         return (Reaction, (self.index, self.reactants, self.products, self.kinetics, self.reversible, self.transitionState, self.thirdBody, self.degeneracy))
 
+    def isIsomerization(self):
+        """
+        Return ``True`` if the reaction represents an isomerization reaction
+        :math:`\\ce{A <=> B}` or ``False`` if not.
+        """
+        return len(self.reactants) == 1 and len(self.products) == 1
+
+    def isAssociation(self):
+        """
+        Return ``True`` if the reaction represents an association reaction
+        :math:`\\ce{A + B <=> C}` or ``False`` if not.
+        """
+        return len(self.reactants) > 1 and len(self.products) == 1
+
+    def isDissociation(self):
+        """
+        Return ``True`` if the reaction represents a dissociation reaction
+        :math:`\\ce{A <=> B + C}` or ``False`` if not.
+        """
+        return len(self.reactants) == 1 and len(self.products) > 1
+
     def hasTemplate(self, reactants, products):
         """
         Return ``True`` if the reaction matches the template of `reactants`

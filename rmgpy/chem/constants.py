@@ -43,6 +43,9 @@ pq.UnitQuantity('kilocalories', pq.cal*1e3, symbol='kcal')
 pq.UnitQuantity('kilojoules', pq.J*1e3, symbol='kJ')
 pq.UnitQuantity('kilomoles', pq.mol*1e3, symbol='kmol')
 
+pq.UnitQuantity('molecule', pq.mol/6.02214179e23, symbol='molecule')
+pq.UnitQuantity('molecules', pq.mol/6.02214179e23, symbol='molecules')
+
 ################################################################################
 
 #: The Avogadro constant :math:`N_\mathrm{a}`, in :math:`\mathrm{mol^{-1}}`.
