@@ -1,11 +1,11 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
+# encoding: utf-8
 
 ################################################################################
 #
-#   ChemPy - A chemistry toolkit for Python
+#   RMG - Reaction Mechanism Generator
 #
-#   Copyright (c) 2010 by Joshua W. Allen (jwallen@mit.edu)
+#   Copyright (c) 2009-2011 by the RMG Team (rmg_dev@mit.edu)
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
 #   copy of this software and associated documentation files (the 'Software'),
@@ -28,12 +28,8 @@
 ################################################################################
 
 """
-This module contains the kinetics models that are available in ChemPy.
-All such models derive from the :class:`KineticsModel` base class, and include:
-
-This module contains a variety of classes representing various thermodynamics
-models. All such models derive from the :class:`ThermoModel` base class, and
-generally vary by how the heat capacity data is represented:
+This module contains classes and methods for working with kinetics models. All 
+such models derive from the :class:`KineticsModel` base class:
 
 * :class:`Arrhenius` - A kinetics model based on the modified Arrhenius
   equation
@@ -44,8 +40,9 @@ generally vary by how the heat capacity data is represented:
 * :class:`MultiArrhenius` - A kinetics model based on a summation of
   modified Arrhenius expressions
 
-* :class:`ThirdBody` - A pressure-dependent kinetics model based on the modified Arrhenius
-  equation, but with an additional factor for the third body concentration
+* :class:`ThirdBody` - A pressure-dependent kinetics model based on the  
+  modified Arrhenius equation, but with an additional factor for the third body 
+  concentration
 
 * :class:`Lindemann` - A pressure-dependent kinetics model based on the
   Lindemann equation
