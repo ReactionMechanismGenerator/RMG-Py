@@ -77,6 +77,8 @@ class RMGDatabase:
         Load the RMG kinetics database from the given `path` on disk, where
         `path` points to the top-level folder of the RMG kinetics database.
         """
+        if reactionLibraries is None: reactionLibraries = []
+        if seedMechanisms is None: seedMechanisms = []
         self.kinetics = KineticsDatabase()
         kineticsLibraries = []
         kineticsLibraries.extend(seedMechanisms)
