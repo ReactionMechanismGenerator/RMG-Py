@@ -508,9 +508,132 @@ class TestMultiNASA(unittest.TestCase):
         self.assertEqual(self.thermo.Tmax.units, thermo.Tmax.units)
         self.assertEqual(self.thermo.comment, thermo.comment)
 
+################################################################################
 
+class TestConversion(unittest.TestCase):
+    """
+    Contains unit tests involving conversion from one thermodynamics model to
+    another.
+    """
+
+    def setUp(self):
+        """
+        A function run before each unit test in this class.
+        """
+        self.thermoData = ThermoData(
+            Tdata=([303.231,385.553,467.875,550.197,632.519,714.841,797.163,879.485,961.807,1044.13,1126.45,1208.77,1291.09,1373.42,1455.74,1538.06,1620.38,1702.7,1785.03,1867.35],"K"), 
+            Cpdata=([50.4468,57.4605,64.3653,70.7093,76.4,81.4756,86.0017,90.0394,93.6412,96.853,99.7159,102.268,104.543,106.574,108.388,110.011,111.466,112.772,113.947,115.007],"J/(mol*K)"), 
+            H298=(12.3533,"kJ/mol"), 
+            S298=(261.187,"J/(mol*K)"),
+        )
+        self.wilhoit = Wilhoit(
+            cp0 = (4.0*8.314472,"J/(mol*K)"), 
+            cpInf = (21.0*8.314472,"J/(mol*K)"), 
+            a0 = -3.95, 
+            a1 = 9.26, 
+            a2 = -15.6, 
+            a3 = 8.55, 
+            B = (500.0,"K"), 
+            H0 = (-6.151e+04,"J/mol"), 
+            S0 = (-790.2,"J/(mol*K)"),
+            Tmin = (300.0,"K"), 
+            Tmax = (2000.0,"K"), 
+            comment = """This data is completely made up""",
+        )
+        nasa0 = NASA(coeffs=[0.93355381E+00, 0.26424579E-01, 0.61059727E-05,-0.21977499E-07, 0.95149253E-11,-0.13958520E+05, 0.19201691E+02], Tmin=(298.0,"K"), Tmax=(1000.0,"K"), comment='Low-temperature polynomial for C3H8 from GRI-Mech 3.0')
+        nasa1 = NASA(coeffs=[0.75341368E+01, 0.18872239E-01,-0.62718491E-05, 0.91475649E-09,-0.47838069E-13,-0.16467516E+05,-0.17892349E+02], Tmin=(1000.0,"K"), Tmax=(5000.0,"K"), comment='High-temperature polynomial for C3H8 from GRI-Mech 3.0')
+        self.multiNASA = MultiNASA(
+            polynomials=[nasa0, nasa1],
+            Tmin = (298.0,"K"), 
+            Tmax = (5000.0,"K"), 
+            comment = """C3H8 from GRI-Mech 3.0""",
+        )
+    
+    def testThermoDataToWilhoit(self):
+        """
+        Test that a ThermoData object can be successfully converted to a
+        Wilhoit object.
+        """
+        thermo0 = self.thermoData
+        thermo = convertThermoModel(thermo0, Wilhoit, linear=False, nFreq=11, nRotors=1)
+        self.assertNotEqual(thermo, None)
+        for T in [300,350,400,450,500,550,600,700,800,900,1000,1100,1200,1300,1400,1500]:
+            self.assertAlmostEqual(thermo0.getHeatCapacity(T) / thermo.getHeatCapacity(T), 1.0, 0)
+            self.assertAlmostEqual(thermo0.getEnthalpy(T) / thermo.getEnthalpy(T), 1.0, 0)
+            self.assertAlmostEqual(thermo0.getEntropy(T) / thermo.getEntropy(T), 1.0, 0)
+            self.assertAlmostEqual(thermo0.getFreeEnergy(T) / thermo.getFreeEnergy(T), 1.0, 0)
+        
+    def testWilhoitToThermoData(self):
+        """
+        Test that a Wilhoit object can be successfully converted to a
+        ThermoData object.
+        """
+        thermo0 = self.wilhoit
+        thermo = convertThermoModel(thermo0, ThermoData, Tdata=[300,400,500,600,800,1000,1500])
+        self.assertNotEqual(thermo, None)
+        for T in [300,350,400,450,500,550,600,700,800,900,1000,1100,1200,1300,1400,1500]:
+            self.assertAlmostEqual(thermo0.getHeatCapacity(T) / thermo.getHeatCapacity(T), 1.0, 0)
+            self.assertAlmostEqual(thermo0.getEnthalpy(T) / thermo.getEnthalpy(T), 1.0, 0)
+            self.assertAlmostEqual(thermo0.getEntropy(T) / thermo.getEntropy(T), 1.0, 0)
+            self.assertAlmostEqual(thermo0.getFreeEnergy(T) / thermo.getFreeEnergy(T), 1.0, 0)
+    
+    def testThermoDataToMultiNASA(self):
+        """
+        Test that a ThermoData object can be successfully converted to a
+        MultiNASA object.
+        """
+        thermo0 = self.thermoData
+        thermo = convertThermoModel(thermo0, MultiNASA, linear=False, nFreq=11, nRotors=1, Tmin=300, Tmax=6000, Tint=1000)
+        self.assertNotEqual(thermo, None)
+        for T in [300,350,400,450,500,550,600,700,800,900,1000,1100,1200,1300,1400,1500]:
+            self.assertAlmostEqual(thermo0.getHeatCapacity(T) / thermo.getHeatCapacity(T), 1.0, 0)
+            self.assertAlmostEqual(thermo0.getEnthalpy(T) / thermo.getEnthalpy(T), 1.0, 0)
+            self.assertAlmostEqual(thermo0.getEntropy(T) / thermo.getEntropy(T), 1.0, 0)
+            self.assertAlmostEqual(thermo0.getFreeEnergy(T) / thermo.getFreeEnergy(T), 1.0, 0)
+    
+    def testMultiNASAToThermoData(self):
+        """
+        Test that a MultiNASA object can be successfully converted to a
+        ThermoData object.
+        """
+        thermo0 = self.multiNASA
+        thermo = convertThermoModel(thermo0, ThermoData, Tdata=[300,400,500,600,800,1000,1500])
+        self.assertNotEqual(thermo, None)
+        for T in [300,350,400,450,500,550,600,700,800,900,1000,1100,1200,1300,1400,1500]:
+            self.assertAlmostEqual(thermo0.getHeatCapacity(T) / thermo.getHeatCapacity(T), 1.0, 0)
+            self.assertAlmostEqual(thermo0.getEnthalpy(T) / thermo.getEnthalpy(T), 1.0, 0)
+            self.assertAlmostEqual(thermo0.getEntropy(T) / thermo.getEntropy(T), 1.0, 0)
+            self.assertAlmostEqual(thermo0.getFreeEnergy(T) / thermo.getFreeEnergy(T), 1.0, -1)
+    
+    def testWilhoitToMultiNASA(self):
+        """
+        Test that a Wilhoit object can be successfully converted to a
+        MultiNASA object.
+        """
+        thermo0 = self.wilhoit
+        thermo = convertThermoModel(thermo0, MultiNASA, Tmin=300, Tmax=6000, Tint=1000)
+        self.assertNotEqual(thermo, None)
+        for T in [300,350,400,450,500,550,600,700,800,900,1000,1100,1200,1300,1400,1500]:
+            self.assertAlmostEqual(thermo0.getHeatCapacity(T) / thermo.getHeatCapacity(T), 1.0, 0)
+            self.assertAlmostEqual(thermo0.getEnthalpy(T) / thermo.getEnthalpy(T), 1.0, 0)
+            self.assertAlmostEqual(thermo0.getEntropy(T) / thermo.getEntropy(T), 1.0, 0)
+            self.assertAlmostEqual(thermo0.getFreeEnergy(T) / thermo.getFreeEnergy(T), 1.0, 0)
+    
+    def testMultiNASAToWilhoit(self):
+        """
+        Test that a MultiNASA object can be successfully converted to a
+        Wilhoit object.
+        """
+        thermo0 = self.multiNASA
+        thermo = convertThermoModel(thermo0, Wilhoit, linear=False, nFreq=25, nRotors=2)
+        self.assertNotEqual(thermo, None)
+        for T in [300,350,400,450,500,550,600,700,800,900,1000,1100,1200,1300,1400,1500]:
+            self.assertAlmostEqual(thermo0.getHeatCapacity(T) / thermo.getHeatCapacity(T), 1.0, 0)
+            self.assertAlmostEqual(thermo0.getEnthalpy(T) / thermo.getEnthalpy(T), 1.0, 0)
+            self.assertAlmostEqual(thermo0.getEntropy(T) / thermo.getEntropy(T), 1.0, 0)
+            self.assertAlmostEqual(thermo0.getFreeEnergy(T) / thermo.getFreeEnergy(T), 1.0, 0)
 
 ################################################################################
 
 if __name__ == '__main__':
-    unittest.main( testRunner = unittest.TextTestRunner(verbosity=2) )
+    unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))
