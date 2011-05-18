@@ -1,8 +1,8 @@
 ################################################################################
 #
-#   ChemPy - A chemistry toolkit for Python
+#   RMG - Reaction Mechanism Generator
 #
-#   Copyright (c) 2010 by Joshua W. Allen (jwallen@mit.edu)
+#   Copyright (c) 2009-2011 by the RMG Team (rmg_dev@mit.edu)
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
 #   copy of this software and associated documentation files (the 'Software'),
@@ -26,7 +26,7 @@
 
 cimport numpy
 
-from constants cimport Quantity
+from quantity cimport Quantity
 
 cdef extern from "math.h":
     cdef double acos(double x)
@@ -73,7 +73,7 @@ cdef class Arrhenius(KineticsModel):
 
     cpdef changeT0(self, double T0)
 
-    cpdef fitToData(self, numpy.ndarray Tlist, numpy.ndarray klist, double T0=?)
+    cpdef fitToData(self, numpy.ndarray Tlist, numpy.ndarray klist, str kunits, double T0=?)
 
 ################################################################################
 
@@ -110,15 +110,14 @@ cdef class PDepArrhenius(KineticsModel):
     
     cpdef double getRateCoefficient(self, double T, double P)
 
-    cpdef fitToData(self, numpy.ndarray Tlist, numpy.ndarray Plist, numpy.ndarray K, double T0=?)
+    cpdef fitToData(self, numpy.ndarray Tlist, numpy.ndarray Plist, numpy.ndarray K, str kunits, double T0=?)
 
 ################################################################################
 
 cdef class Chebyshev(KineticsModel):
     
     cdef public object coeffs
-    cdef public int degreeT
-    cdef public int degreeP
+    cdef public int degreeT, degreeP
     
     cpdef bint isPressureDependent(self)
 
@@ -131,7 +130,7 @@ cdef class Chebyshev(KineticsModel):
     cpdef double getRateCoefficient(self, double T, double P)
 
     cpdef fitToData(self, numpy.ndarray Tlist, numpy.ndarray Plist, numpy.ndarray K,
-        int degreeT, int degreeP, Quantity Tmin, Quantity Tmax, Quantity Pmin, Quantity Pmax)
+        int degreeT, int degreeP, double Tmin, double Tmax, double Pmin, double Pmax)
 
 ################################################################################
 
@@ -152,6 +151,8 @@ cdef class Lindemann(ThirdBody):
 
     cdef public Arrhenius arrheniusLow
     
+    cpdef bint isPressureDependent(self)
+
     cpdef double getRateCoefficient(self, double T, double P, collider=?)
 
 ################################################################################
@@ -160,4 +161,6 @@ cdef class Troe(Lindemann):
 
     cdef public Quantity alpha, T1, T2, T3
     
+    cpdef bint isPressureDependent(self)
+
     cpdef double getRateCoefficient(self, double T, double P, collider=?)
