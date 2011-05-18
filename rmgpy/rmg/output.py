@@ -59,7 +59,7 @@ def saveOutputHTML(path, reactionModel):
     """
 
     from model import PDepReaction
-
+    
     from rmgpy.chem.ext.molecule_draw import drawMolecule
     try:
         import jinja2
@@ -88,12 +88,16 @@ def saveOutputHTML(path, reactionModel):
     pdepreactions = [rxn for rxn in reactionModel.core.reactions if isinstance(rxn, PDepReaction)]
     pdepreactions.sort(key=lambda x: x.index)
 
-    families = list(set([rxn.family for rxn in reactions]))
-    families.sort(key=lambda x: x.label)
     familyCount = {}
-    for family in families:
-        familyCount[family] = sum([1 for rxn in reactions if rxn.family is family])
-
+    for rxn in reactions:
+        family = rxn.getSource()
+        if family in familyCount:
+            familyCount[family] += 1
+        else:
+            familyCount[family] = 1
+    families = familyCount.keys()
+    families.sort(key=lambda x: x.label)
+    
     # Make HTML file
     template = jinja2.Template(
 """<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">

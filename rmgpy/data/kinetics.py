@@ -78,6 +78,13 @@ class DepositoryReaction(Reaction):
         """
         return (DepositoryReaction, (self.index, self.reactants, self.products, self.kinetics, self.reversible, self.transitionState, self.thirdBody, self.degeneracy, self.depository, self.entry))
 
+    def getSource(self):
+        """
+        Return the database that was the source of this reaction. For a
+        DepositoryReaction this should be a KineticsDepository object.
+        """
+        return self.depository
+
 ################################################################################
 
 class LibraryReaction(Reaction):
@@ -98,6 +105,13 @@ class LibraryReaction(Reaction):
         """
         return (LibraryReaction, (self.index, self.reactants, self.products, self.kinetics, self.reversible, self.transitionState, self.thirdBody, self.degeneracy, self.library, self.entry))
 
+    def getSource(self):
+        """
+        Return the database that was the source of this reaction. For a
+        LibraryReaction this should be a KineticsLibrary object.
+        """
+        return self.library
+
 ################################################################################
 
 class TemplateReaction(Reaction):
@@ -116,6 +130,13 @@ class TemplateReaction(Reaction):
         A helper function used when pickling an object.
         """
         return (TemplateReaction, (self.index, self.reactants, self.products, self.kinetics, self.reversible, self.transitionState, self.thirdBody, self.degeneracy, self.family))
+
+    def getSource(self):
+        """
+        Return the database that was the source of this reaction. For a
+        TemplateReaction this should be a KineticsGroups object.
+        """
+        return self.family
 
 ################################################################################
 

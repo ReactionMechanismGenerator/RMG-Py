@@ -42,6 +42,12 @@ cdef class Reaction:
     cdef public bint thirdBody
     cdef public double degeneracy
     
+    cpdef bint isIsomerization(self)
+
+    cpdef bint isDissociation(self)
+
+    cpdef bint isAssociation(self)
+
     cpdef bint hasTemplate(self, list reactants, list products)
 
     cpdef double getEnthalpyOfReaction(self, double T)

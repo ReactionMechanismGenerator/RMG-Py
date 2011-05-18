@@ -1,15 +1,9 @@
 # Data sources
 database(
-    thermo_groups='output/RMG_database/thermo_groups',
-    thermo_libraries=[
-        'output/RMG_database/thermo_libraries/primaryThermoLibrary',
-        'output/RMG_database/thermo_libraries/GRI-Mech3.0',
-    ],
-    kinetics_groups='output/RMG_database/kinetics_groups',
-    reaction_libraries=[
-        'output/RMG_database/kinetics_libraries/GRI-Mech3.0',
-    ],
-    frequencies_groups='output/RMG_database/frequencies_groups',
+    '../RMG-database',
+    thermoLibraries = ['primaryThermoLibrary', 'GRI-Mech3.0'],
+    reactionLibraries = ['GRI-Mech3.0'],
+    seedMechanisms = [],
 )
 
 # List of species

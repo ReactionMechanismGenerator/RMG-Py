@@ -512,7 +512,7 @@ class ThermoDatabase:
         # Check the libraries in order first; return the first successful match
         for label in self.libraryOrder:
             thermoData = self.getThermoDataFromLibrary(molecule, self.libraries[label])
-            if thermoData: break
+            if thermoData is not None: break
         else:
             # Thermo not found in any loaded libraries, so estimate
             thermoData = self.getThermoDataFromGroups(molecule)
@@ -561,7 +561,7 @@ class ThermoDatabase:
         :class:`DatabaseError` is raised.
         """
         for label, entry in library.entries.iteritems():
-            if molecule.isIsomorphic(entry.item):
+            if molecule.isIsomorphic(entry.item) and entry.data is not None:
                 return (entry.data, library, entry)
         return None
 

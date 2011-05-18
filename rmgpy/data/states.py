@@ -79,7 +79,7 @@ def saveEntry(f, entry):
         f.write('        symmetry = %d,\n' % (entry.data.symmetry))
         f.write('    ),\n')
     else:
-        f.write('        data = %r,\n' % (entry.data))
+        f.write('    states = %r,\n' % (entry.data))
 
     if entry.reference is not None: f.write('    reference = %r,\n' % (entry.reference))
     if entry.referenceType != "": f.write('    referenceType = "%s",\n' % (entry.referenceType))
@@ -314,7 +314,7 @@ class StatesGroups(Database):
 
         # No need to determine rotational and vibrational modes for single atoms
         if len(molecule.atoms) < 2:
-            return states
+            return (None, None, None)
 
         linear = molecule.isLinear()
         numRotors = molecule.countInternalRotors()
@@ -341,11 +341,11 @@ class StatesGroups(Database):
                 freqsRemoved = 0
                 freqCount = len(frequencies)
                 while freqCount > numVibrations:
-                    minDegeneracy, minNode = min([(frequencyDatabase.library[node].symmetry, node) for node in groupCount if groupCount[node] > 0])
-                    if groupCount[minNode] > 1:
-                        groupCount[minNode] -= 1
+                    minDegeneracy, minEntry = min([(entry.data.symmetry, entry) for entry in groupCount if groupCount[entry] > 0])
+                    if groupCount[minEntry] > 1:
+                        groupCount[minEntry] -= 1
                     else:
-                        del groupCount[minNode]
+                        del groupCount[minEntry]
                     groupsRemoved += 1
                     freqsRemoved += minDegeneracy
                     freqCount -= minDegeneracy
@@ -353,8 +353,8 @@ class StatesGroups(Database):
                 logging.warning('For %s, more characteristic frequencies were generated than vibrational modes allowed. Removed %i groups (%i frequencies) to compensate.' % (molecule, groupsRemoved, freqsRemoved))
                 # Regenerate characteristic frequencies
                 frequencies = []
-                for node, count in groupCount.iteritems():
-                    if count != 0: frequencies.extend(frequencyDatabase.library[node].generateFrequencies(count))
+                for entry, count in groupCount.iteritems():
+                    if count != 0: frequencies.extend(entry.data.generateFrequencies(count))
 
         # Subtract out contributions to heat capacity from the group frequencies
         Tlist = numpy.arange(300.0, 1501.0, 100.0, numpy.float64)
