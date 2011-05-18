@@ -619,6 +619,95 @@ class MultiNASA(ThermoModel):
 
 ################################################################################
 
+def convertThermoModel(model, thermoClass, **kwargs):
+    """
+    Convert a given thermodynamics `model` to an object of the class 
+    `thermoClass`. Depending on the desired conversion, various additional
+    keyword arguments may be required:
+    
+    * In general, if you are converting to a :class:`Wilhoit` model -- even if 
+      this conversion is only part of a conversion to another format -- you 
+      need to specify whether or not the molecule is linear, the number of 
+      vibrational modes, and the number of internal hindered rotor modes as the
+      `linear`, `nFreq`, and `nRotors` keyword arguments, so that the correct 
+      limits at zero and infinite temperature can be determined. 
+    
+    * If you are converting to a :class:`ThermoData` model, you must provide 
+      the set of temperatures in K to use for the heat capacity points via the
+      `Tdata` keyword argument.
+    
+    A :class:`ThermoError` will be raised if you do not provide the appropriate
+    keyword arguments for the conversion you are attempting.
+    """
+    # Make sure we've requested a valid output format
+    if thermoClass not in [ThermoData, Wilhoit, MultiNASA]:
+        raise ValueError('Unexpected value "{0}" for thermoClass parameter; should be one of ["ThermoData", "Wilhoit", "MultiNASA"].'.format(thermoClass))
+    
+    # If the output format is the same as the input format, just return the same model
+    if isinstance(model, thermoClass):
+        return model
+    
+    # Do the conversion
+    output = None
+    if isinstance(model, ThermoData) and thermoClass == Wilhoit:
+        try:
+            linear = kwargs['linear']
+            nFreq = kwargs['nFreq']
+            nRotors = kwargs['nRotors']
+        except KeyError:
+            raise ValueError('To convert ThermoData to Wilhoit or MultiNASA, you must provide the keyword arguments linear, nFreq, and nRotors.')
+        output = Wilhoit().fitToData(model.Tdata.values, model.Cpdata.values, linear, nFreq, nRotors, model.H298.value, model.S298.value)
+    
+    elif isinstance(model, ThermoData) and thermoClass == MultiNASA:
+        # First convert it to a Wilhoit, then to a MultiNASA
+        output = convertThermoModel(convertThermoModel(model, Wilhoit, **kwargs), MultiNASA, **kwargs)
+    
+    elif isinstance(model, Wilhoit) and thermoClass == ThermoData:
+        try:
+            Tdata = kwargs['Tdata']
+        except KeyError:
+            raise ValueError('To convert Wilhoit to ThermoData, you must provide the keyword argument Tdata.')
+        output = ThermoData(
+            Tdata = (Tdata,"K"),
+            Cpdata = ([model.getHeatCapacity(T) for T in Tdata],"J/(mol*K)"),
+            H298 = (model.getEnthalpy(298) / 1000.0,"kJ/mol"),
+            S298 = (model.getEntropy(298),"J/(mol*K)"),
+            Tmin = model.Tmin,
+            Tmax = model.Tmax,
+            comment = model.comment,
+        )
+        
+    elif isinstance(model, Wilhoit) and thermoClass == MultiNASA:
+        try:
+            Tmin = kwargs['Tmin']
+            Tmax = kwargs['Tmax']
+            Tint = kwargs['Tint']
+        except KeyError:
+            raise ValueError('To convert Wilhoit tor MultiNASA, you must provide the keyword arguments Tmin, Tmax, and Tint.')
+        output = convertWilhoitToNASA(model, Tmin, Tmax, Tint)
+        
+    elif isinstance(model, MultiNASA) and thermoClass == ThermoData:
+        try:
+            Tdata = kwargs['Tdata']
+        except KeyError:
+            raise ValueError('To convert MultiNASA to ThermoData, you must provide the keyword argument Tdata.')
+        output = ThermoData(
+            Tdata = (Tdata,"K"),
+            Cpdata = ([model.getHeatCapacity(T) for T in Tdata],"J/(mol*K)"),
+            H298 = (model.getEnthalpy(298) / 1000.0,"kJ/mol"),
+            S298 = (model.getEntropy(298),"J/(mol*K)"),
+            Tmin = model.Tmin,
+            Tmax = model.Tmax,
+            comment = model.comment,
+        )
+    
+    elif isinstance(model, MultiNASA) and thermoClass == Wilhoit:
+        # First convert it to a ThermoData, then to a Wilhoit
+        Tdata = numpy.arange(model.Tmin.value, model.Tmax.value, 50.0)
+        output = convertThermoModel(convertThermoModel(model, ThermoData, Tdata=Tdata), Wilhoit, **kwargs)
+    
+    return output
+
 def convertWilhoitToNASA(wilhoit, Tmin, Tmax, Tint, fixedTint=False, weighting=True, continuity=3):
     """
     Convert a :class:`Wilhoit` object `Wilhoit` to a :class:`MultiNASA` 
