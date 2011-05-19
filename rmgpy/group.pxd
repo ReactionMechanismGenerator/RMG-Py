@@ -28,30 +28,7 @@ from graph cimport Vertex, Edge, Graph
 
 ################################################################################
 
-cdef class AtomType:
-
-    cdef public str label
-    cdef public list generic
-    cdef public list specific
-
-    cdef public list incrementBond
-    cdef public list decrementBond
-    cdef public list formBond
-    cdef public list breakBond
-    cdef public list incrementRadical
-    cdef public list decrementRadical
-
-    cpdef bint isSpecificCaseOf(self, AtomType other)
-
-    cpdef bint equivalent(self, AtomType other)
-
-cpdef AtomType getAtomType(atom, dict bonds)
-
-
-
-################################################################################
-
-cdef class AtomPattern(Vertex):
+cdef class GroupAtom(Vertex):
 
     cdef public list atomType
     cdef public list radicalElectrons
@@ -79,7 +56,7 @@ cdef class AtomPattern(Vertex):
 
 ################################################################################
 
-cdef class BondPattern(Edge):
+cdef class GroupBond(Edge):
 
     cdef public list order
 
@@ -95,23 +72,23 @@ cdef class BondPattern(Edge):
 
 ################################################################################
 
-cdef class MoleculePattern(Graph):
+cdef class Group(Graph):
 
-    cpdef addAtom(self, AtomPattern atom)
+    cpdef addAtom(self, GroupAtom atom)
 
-    cpdef addBond(self, AtomPattern atom1, AtomPattern atom2, BondPattern bond)
+    cpdef addBond(self, GroupAtom atom1, GroupAtom atom2, GroupBond bond)
 
-    cpdef dict getBonds(self, AtomPattern atom)
+    cpdef dict getBonds(self, GroupAtom atom)
 
-    cpdef BondPattern getBond(self, AtomPattern atom1, AtomPattern atom2)
+    cpdef GroupBond getBond(self, GroupAtom atom1, GroupAtom atom2)
 
-    cpdef bint hasAtom(self, AtomPattern atom)
+    cpdef bint hasAtom(self, GroupAtom atom)
 
-    cpdef bint hasBond(self, AtomPattern atom1, AtomPattern atom2)
+    cpdef bint hasBond(self, GroupAtom atom1, GroupAtom atom2)
 
-    cpdef removeAtom(self, AtomPattern atom)
+    cpdef removeAtom(self, GroupAtom atom)
 
-    cpdef removeBond(self, AtomPattern atom1, AtomPattern atomPattern2)
+    cpdef removeBond(self, GroupAtom atom1, GroupAtom GroupAtom2)
 
     cpdef sortAtoms(self)
 
@@ -121,7 +98,7 @@ cdef class MoleculePattern(Graph):
 
     cpdef bint containsLabeledAtom(self, str label)
 
-    cpdef AtomPattern getLabeledAtom(self, str label)
+    cpdef GroupAtom getLabeledAtom(self, str label)
 
     cpdef dict getLabeledAtoms(self)
 
@@ -139,6 +116,6 @@ cdef class MoleculePattern(Graph):
 
 ################################################################################
 
-cpdef fromAdjacencyList(str adjlist, bint pattern=?, bint addH=?)
+cpdef fromAdjacencyList(str adjlist, bint group=?, bint addH=?)
 
-cpdef toAdjacencyList(Graph molecule, str label=?, bint pattern=?, bint removeH=?)
+cpdef toAdjacencyList(Graph molecule, str label=?, bint group=?, bint removeH=?)
