@@ -1,11 +1,11 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python
+# encoding: utf-8
 
 ################################################################################
 #
-#   ChemPy - A chemistry toolkit for Python
+#   RMG - Reaction Mechanism Generator
 #
-#   Copyright (c) 2010 by Joshua W. Allen (jwallen@mit.edu)
+#   Copyright (c) 2009-2011 by the RMG Team (rmg_dev@mit.edu)
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
 #   copy of this software and associated documentation files (the 'Software'),
@@ -30,7 +30,9 @@
 """
 This module contains an implementation of a graph data structure (the 
 :class:`Graph` class) and functions for manipulating that graph, including 
-efficient isomorphism functions.
+efficient isomorphism functions. This module also contains base classes for
+the vertices and edges (:class:`Vertex` and :class:`Edge`, respectively) that
+are the components of a graph.
 """
 
 import cython
@@ -44,15 +46,15 @@ class Vertex(object):
     useful for accelerating isomorphism searches, as proposed by
     `Morgan (1965) <http://dx.doi.org/10.1021/c160017a018>`_.
 
-    ==================  ========================================================
-    Attribute           Description
-    ==================  ========================================================
-    `connectivity1`     The number of nearest neighbors
-    `connectivity2`     The sum of the neighbors' `connectivity1` values
-    `connectivity3`     The sum of the neighbors' `connectivity2` values
-    `sortingLabel`      An integer used to sort the vertices
-    ==================  ========================================================
-
+    =================== =============== ========================================
+    Attribute           Type            Description
+    =================== =============== ========================================
+    `connectivity1`     ``int``         The number of nearest neighbors
+    `connectivity2`     ``int``         The sum of the neighbors' `connectivity1` values
+    `connectivity3`     ``int``         The sum of the neighbors' `connectivity2` values
+    `sortingLabel`      ``int``         An integer label used to sort the vertices
+    =================== =============== ========================================
+    
     """
 
     def __init__(self):
