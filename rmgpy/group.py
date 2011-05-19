@@ -29,7 +29,7 @@
 
 """
 This module provides classes and methods for working with molecular substructure
-patterns. These enable molecules to be searched for common motifs (e.g.
+groups. These enable molecules to be searched for common motifs (e.g.
 reaction sites).
 """
 
@@ -52,7 +52,7 @@ class ActionError(Exception):
 
 class GroupAtom(Vertex):
     """
-    An atom pattern. This class is based on the :class:`Atom` class, except that
+    An atom group. This class is based on the :class:`Atom` class, except that
     it uses :ref:`atom types <atom-types>` instead of elements, and all
     attributes are lists rather than individual values. The attributes are:
 
@@ -67,7 +67,7 @@ class GroupAtom(Vertex):
     =================== =================== ====================================
 
     Each list represents a logical OR construct, i.e. an atom will match the
-    pattern if it matches *any* item in the list. However, the
+    group if it matches *any* item in the list. However, the
     `radicalElectrons`, `spinMultiplicity`, and `charge` attributes are linked
     such that an atom must match values from the same index in each of these in
     order to match. Unlike an :class:`Atom` object, an :class:`GroupAtom`
@@ -116,7 +116,7 @@ class GroupAtom(Vertex):
 
     def __changeBond(self, order):
         """
-        Update the atom pattern as a result of applying a CHANGE_BOND action,
+        Update the atom group as a result of applying a CHANGE_BOND action,
         where `order` specifies whether the bond is incremented or decremented
         in bond order, and should be 1 or -1.
         """
@@ -135,7 +135,7 @@ class GroupAtom(Vertex):
 
     def __formBond(self, order):
         """
-        Update the atom pattern as a result of applying a FORM_BOND action,
+        Update the atom group as a result of applying a FORM_BOND action,
         where `order` specifies the order of the forming bond, and should be
         'S' (since we only allow forming of single bonds).
         """
@@ -151,7 +151,7 @@ class GroupAtom(Vertex):
 
     def __breakBond(self, order):
         """
-        Update the atom pattern as a result of applying a BREAK_BOND action,
+        Update the atom group as a result of applying a BREAK_BOND action,
         where `order` specifies the order of the breaking bond, and should be
         'S' (since we only allow breaking of single bonds).
         """
@@ -167,7 +167,7 @@ class GroupAtom(Vertex):
 
     def __gainRadical(self, radical):
         """
-        Update the atom pattern as a result of applying a GAIN_RADICAL action,
+        Update the atom group as a result of applying a GAIN_RADICAL action,
         where `radical` specifies the number of radical electrons to add.
         """
         radicalElectrons = []
@@ -183,7 +183,7 @@ class GroupAtom(Vertex):
 
     def __loseRadical(self, radical):
         """
-        Update the atom pattern as a result of applying a LOSE_RADICAL action,
+        Update the atom group as a result of applying a LOSE_RADICAL action,
         where `radical` specifies the number of radical electrons to remove.
         """
         radicalElectrons = []
@@ -204,7 +204,7 @@ class GroupAtom(Vertex):
 
     def applyAction(self, action):
         """
-        Update the atom pattern as a result of applying `action`, a tuple
+        Update the atom group as a result of applying `action`, a tuple
         containing the name of the reaction recipe action along with any
         required parameters. The available actions can be found
         :ref:`here <reaction-recipe-actions>`.
@@ -236,7 +236,7 @@ class GroupAtom(Vertex):
             # because that would create an import cycle
             return other.equivalent(self)
 
-        # Compare two atom patterns for equivalence
+        # Compare two atom groups for equivalence
         # Each atom type in self must have an equivalent in other (and vice versa)
         for atomType1 in self.atomType:
             for atomType2 in other.atomType:
@@ -259,7 +259,7 @@ class GroupAtom(Vertex):
                 if radical1 == radical2 and spin1 == spin2: break
             else:
                 return False
-        # Otherwise the two atom patterns are equivalent
+        # Otherwise the two atom groups are equivalent
         return True
 
     def isSpecificCaseOf(self, other):
@@ -275,7 +275,7 @@ class GroupAtom(Vertex):
             # because that would create an import cycle
             return other.isSpecificCaseOf(self)
 
-        # Compare two atom patterns for equivalence
+        # Compare two atom groups for equivalence
         # Each atom type in self must have an equivalent in other (and vice versa)
         for atomType1 in self.atomType: # all these must match
             for atomType2 in other.atomType: # can match any of these
@@ -295,7 +295,7 @@ class GroupAtom(Vertex):
 
 class GroupBond(Edge):
     """
-    A bond pattern. This class is based on the :class:`Bond` class, except that
+    A bond group. This class is based on the :class:`Bond` class, except that
     all attributes are lists rather than individual values. The allowed bond
     types are given :ref:`here <bond-types>`. The attributes are:
 
@@ -306,7 +306,7 @@ class GroupBond(Edge):
     =================== =================== ====================================
 
     Each list represents a logical OR construct, i.e. a bond will match the
-    pattern if it matches *any* item in the list.
+    group if it matches *any* item in the list.
     """
 
     def __init__(self, order=None):
@@ -340,7 +340,7 @@ class GroupBond(Edge):
 
     def __changeBond(self, order):
         """
-        Update the bond pattern as a result of applying a CHANGE_BOND action,
+        Update the bond group as a result of applying a CHANGE_BOND action,
         where `order` specifies whether the bond is incremented or decremented
         in bond order, and should be 1 or -1.
         """
@@ -363,7 +363,7 @@ class GroupBond(Edge):
 
     def applyAction(self, action):
         """
-        Update the bond pattern as a result of applying `action`, a tuple
+        Update the bond group as a result of applying `action`, a tuple
         containing the name of the reaction recipe action along with any
         required parameters. The available actions can be found
         :ref:`here <reaction-recipe-actions>`.
@@ -386,7 +386,7 @@ class GroupBond(Edge):
             # because that would create an import cycle
             return other.equivalent(self)
 
-        # Compare two bond patterns for equivalence
+        # Compare two bond groups for equivalence
         # Each atom type in self must have an equivalent in other (and vice versa)
         for order1 in self.order:
             for order2 in other.order:
@@ -398,7 +398,7 @@ class GroupBond(Edge):
                 if order1 == order2: break
             else:
                 return False
-        # Otherwise the two bond patterns are equivalent
+        # Otherwise the two bond groups are equivalent
         return True
 
     def isSpecificCaseOf(self, other):
@@ -414,7 +414,7 @@ class GroupBond(Edge):
             # because that would create an import cycle
             return other.isSpecificCaseOf(self)
 
-        # Compare two bond patterns for equivalence
+        # Compare two bond groups for equivalence
         # Each atom type in self must have an equivalent in other
         for order1 in self.order: # all these must match
             for order2 in other.order: # can match any of these
@@ -428,7 +428,7 @@ class GroupBond(Edge):
 
 class Group(Graph):
     """
-    A representation of a molecular substructure pattern using a graph data
+    A representation of a molecular substructure group using a graph data
     type, extending the :class:`Graph` class. The `atoms` and `bonds` attributes
     are aliases for the `vertices` and `edges` attributes, and store 
     :class:`GroupAtom` and :class:`GroupBond` objects, respectively.
@@ -529,7 +529,7 @@ class Group(Graph):
 
     def merge(self, other):
         """
-        Merge two patterns so as to store them in a single
+        Merge two groups so as to store them in a single
         :class:`Group` object. The merged :class:`Group`
         object is returned.
         """
@@ -540,7 +540,7 @@ class Group(Graph):
     def split(self):
         """
         Convert a single :class:`Group` object containing two or more
-        unconnected patterns into separate class:`Group` objects.
+        unconnected groups into separate class:`Group` objects.
         """
         graphs = Graph.split(self)
         molecules = []
@@ -551,14 +551,14 @@ class Group(Graph):
 
     def clearLabeledAtoms(self):
         """
-        Remove the labels from all atoms in the molecular pattern.
+        Remove the labels from all atoms in the molecular group.
         """
         for atom in self.vertices:
             atom.label = ''
 
     def containsLabeledAtom(self, label):
         """
-        Return ``True`` if the pattern contains an atom with the label
+        Return ``True`` if the group contains an atom with the label
         `label` and ``False`` otherwise.
         """
         for atom in self.vertices:
@@ -567,8 +567,8 @@ class Group(Graph):
 
     def getLabeledAtom(self, label):
         """
-        Return the atom in the pattern that is labeled with the given `label`.
-        Raises :class:`ValueError` if no atom in the pattern has that label.
+        Return the atom in the group that is labeled with the given `label`.
+        Raises :class:`ValueError` if no atom in the group has that label.
         """
         for atom in self.vertices:
             if atom.label == label: return atom
@@ -596,7 +596,7 @@ class Group(Graph):
         Skips the first line (assuming it's a label) unless `withLabel` is
         ``False``.
         """
-        self.vertices, self.edges = fromAdjacencyList(adjlist, pattern=True, addH=False)
+        self.vertices, self.edges = fromAdjacencyList(adjlist, group=True, addH=False)
         self.updateConnectivityValues()
         return self
 
@@ -604,7 +604,7 @@ class Group(Graph):
         """
         Convert the molecular structure to a string adjacency list.
         """
-        return toAdjacencyList(self, label='', pattern=True)
+        return toAdjacencyList(self, label='', group=True)
 
     def isIsomorphic(self, other, initialMap=None):
         """
@@ -680,11 +680,11 @@ class InvalidAdjacencyListError(Exception):
     """
     pass
 
-def fromAdjacencyList(adjlist, pattern=False, addH=False):
+def fromAdjacencyList(adjlist, group=False, addH=False):
     """
     Convert a string adjacency list `adjlist` into a set of :class:`Atom` and
-    :class:`Bond` objects (if `pattern` is ``False``) or a set of
-    :class:`GroupAtom` and :class:`GroupBond` objects (if `pattern` is
+    :class:`Bond` objects (if `group` is ``False``) or a set of
+    :class:`GroupAtom` and :class:`GroupBond` objects (if `group` is
     ``True``). Only adds hydrogen atoms if `addH` is ``True``. Skips the first
     line (assuming it's a label) unless `withLabel` is ``False``.
     """
@@ -760,7 +760,7 @@ def fromAdjacencyList(adjlist, pattern=False, addH=False):
                     radicalElectrons.append(4); spinMultiplicity.append(5)
 
             # Create a new atom based on the above information
-            if pattern:
+            if group:
                 atom = GroupAtom(atomType, radicalElectrons, spinMultiplicity, [0 for e in radicalElectrons], label)
             else:
                 atom = Atom(atomType[0], radicalElectrons[0], spinMultiplicity[0], 0, 0, label)
@@ -799,13 +799,13 @@ def fromAdjacencyList(adjlist, pattern=False, addH=False):
                 elif bonds[atom1][atom2] != bonds[atom2][atom1]:
                     raise InvalidAdjacencyListError('Found bonds between {0:d} and {1:d}, but of different orders "{2}" and "{3}".'.format(atom1, atom2, bonds[atom1][atom2], bonds[atom2][atom1]))
 
-        # Convert bonddict to use Atom[Pattern] and Bond[Pattern] objects
+        # Convert bonddict to use Atom[group] and Bond[group] objects
         for aid1 in atomdict:
             bonds[atomdict[aid1]] = {}
             for aid2 in bonds[aid1]:
                 if aid1 < aid2:
                     order = bonds[aid1][aid2]
-                    if pattern:
+                    if group:
                         bonds[atomdict[aid1]][atomdict[aid2]] = GroupBond(order)
                     elif len(order) == 1:
                         bonds[atomdict[aid1]][atomdict[aid2]] = Bond(order[0])
@@ -816,7 +816,7 @@ def fromAdjacencyList(adjlist, pattern=False, addH=False):
             del bonds[aid1]
             
         # Add explicit hydrogen atoms to complete structure if desired
-        if addH and not pattern:
+        if addH and not group:
             valences = {'H': 1, 'C': 4, 'O': 2, 'N': 3, 'S': 2, 'Si': 4, 'He': 0, 'Ne': 0, 'Ar': 0}
             orders = {'S': 1, 'D': 2, 'T': 3, 'B': 1.5}
             newAtoms = []
@@ -844,11 +844,11 @@ def fromAdjacencyList(adjlist, pattern=False, addH=False):
     
     return atoms, bonds
 
-def toAdjacencyList(molecule, label='', pattern=False, removeH=False):
+def toAdjacencyList(molecule, label='', group=False, removeH=False):
     """
-    Convert the `molecule` object to an adjacency list. `pattern` specifies
+    Convert the `molecule` object to an adjacency list. `group` specifies
     whether the graph object is a complete molecule (if ``False``) or a
-    substructure pattern (if ``True``). The `label` parameter is an optional
+    substructure group (if ``True``). The `label` parameter is an optional
     string to put as the first line of the adjacency list; if set to the empty
     string, this line will be omitted. If `removeH` is ``True``, hydrogen atoms
     (that do not have labels) will not be printed; this is a valid shorthand,
@@ -886,7 +886,7 @@ def toAdjacencyList(molecule, label='', pattern=False, removeH=False):
         # Atom label
         adjlist += '{0:<2} '.format(atom.label)
 
-        if pattern:
+        if group:
             # Atom type(s)
             if len(atom.atomType) == 1:
                 adjlist += atom.atomType[0].label + ' '
@@ -925,7 +925,7 @@ def toAdjacencyList(molecule, label='', pattern=False, removeH=False):
             adjlist += ' {{{0:d},'.format(atomNumbers[atom2])
 
             # Bond type(s)
-            if pattern:
+            if group:
                 if len(bond.order) == 1:
                     adjlist += bond.order[0]
                 else:

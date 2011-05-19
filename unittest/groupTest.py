@@ -520,7 +520,7 @@ class TestGroup(unittest.TestCase):
         
     def testPickle(self):
         """
-        Test that a MoleculePattern object can be successfully pickled and
+        Test that a Group object can be successfully pickled and
         unpickled with no loss of information.
         """
         import cPickle
