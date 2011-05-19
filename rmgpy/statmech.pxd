@@ -26,6 +26,10 @@
 
 cimport numpy
 
+from quantity cimport Quantity
+
+################################################################################
+
 cdef class Mode:
 
     cpdef numpy.ndarray getPartitionFunctions(self, numpy.ndarray Tlist)
@@ -40,7 +44,7 @@ cdef class Mode:
 
 cdef class Translation(Mode):
     
-    cdef public double mass
+    cdef public Quantity mass
     
     cpdef double getPartitionFunction(self, double T)
     
@@ -56,7 +60,7 @@ cdef class Translation(Mode):
 
 cdef class RigidRotor(Mode):
     
-    cdef public list inertia
+    cdef public Quantity inertia
     cdef public bint linear
     cdef public int symmetry
 
@@ -74,11 +78,11 @@ cdef class RigidRotor(Mode):
 
 cdef class HinderedRotor(Mode):
     
-    cdef public double inertia
-    cdef public double barrier
+    cdef public Quantity inertia
+    cdef public Quantity barrier
     cdef public int symmetry
-    cdef public numpy.ndarray fourier
-    cdef numpy.ndarray energies
+    cdef public Quantity fourier
+    cdef public numpy.ndarray energies
 
     cpdef double getPartitionFunction(self, double T)
 
@@ -102,7 +106,7 @@ cdef double cellipk(double x)
 
 cdef class HarmonicOscillator(Mode):
     
-    cdef public list frequencies
+    cdef public Quantity frequencies
     
     cpdef double getPartitionFunction(self, double T)
 
