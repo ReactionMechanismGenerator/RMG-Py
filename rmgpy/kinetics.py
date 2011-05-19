@@ -67,7 +67,7 @@ import numpy.linalg
 import cython
 
 from quantity import Quantity, constants
-from chem.molecule import Molecule
+from molecule import Molecule
 
 ################################################################################
 
