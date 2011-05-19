@@ -1,11 +1,11 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
+# encoding: utf-8
 
 ################################################################################
 #
-#   ChemPy - A chemistry toolkit for Python
+#   RMG - Reaction Mechanism Generator
 #
-#   Copyright (c) 2010 by Joshua W. Allen (jwallen@mit.edu)
+#   Copyright (c) 2009-2011 by the RMG Team (rmg_dev@mit.edu)
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
 #   copy of this software and associated documentation files (the 'Software'),
@@ -28,8 +28,9 @@
 ################################################################################
 
 """
-This module contains models for various molecular degrees of freedom. All such
-models derive from the :class:`Mode` base class, and include:
+This module contains classes and methods for working with statistical mechanics
+models for various molecular degrees of freedom. All such models derive from 
+the :class:`Mode` base class, and include:
 
 * :class:`Translation` - 3D translational motion in an ideal gas
 
@@ -49,14 +50,14 @@ import math
 import cython
 import numpy
 
-import constants
+from quantity import Quantity, constants
 
 ################################################################################
 
 class StatesError(Exception):
     """
-    An exception class for errors that occur while working with molecular
-    degrees of freedom. Pass a string describing the circumstances that caused
+    An exception to be raised when an error occurs while working with 
+    molecular degrees of freedom. Pass a string describing the circumstances of
     the exceptional behavior.
     """
     pass
@@ -101,31 +102,38 @@ class Mode:
 class Translation(Mode):
     """
     A representation of translational motion in three dimensions for an ideal
-    gas. The `mass` attribute is the molar mass of the molecule in kg/mol. The
-    quantities that depend on volume/pressure (partition function and entropy)
-    are evaluated at a standard pressure of 1 bar.
+    gas. The attributes are:
+    
+    =============== =================== ========================================
+    Attribute       Type                Description
+    =============== =================== ========================================
+    `mass`          :class:`Quantity`   The molar mass of the molecule
+    =============== =================== ========================================
+
+    The quantities that depend on volume/pressure -- partition function and 
+    entropy -- are evaluated at a standard pressure of 1 atm.
     """
 
     def __init__(self, mass=0.0):
-        self.mass = constants.Quantity(mass).value
+        self.mass = Quantity(mass)
 
     def __repr__(self):
         """
         Return a string representation that can be used to reconstruct the
-        object.
+        Translation object.
         """
-        return 'Translation(mass=(%g,"g/mol"))' % (self.mass * 1000.)
+        return 'Translation(mass={0!r})'.format(self.mass)
 
     def __reduce__(self):
         """
-        A helper function used when pickling an object.
+        A helper function used when pickling a Translation object.
         """
         return (Translation, (self.mass,))
 
     def getPartitionFunction(self, T):
         """
-        Return the value of the partition function at the specified temperatures
-        `Tlist` in K. The formula is
+        Return the value of the partition function at the specified temperature
+        `T` in K. The formula is
 
         .. math:: q_\\mathrm{trans}(T) = \\left( \\frac{2 \\pi m k_\\mathrm{B} T}{h^2} \\right)^{3/2} \\frac{k_\\mathrm{B} T}{P}
 
@@ -134,13 +142,13 @@ class Translation(Mode):
         constant, and :math:`h` is the Planck constant.
         """
         cython.declare(qt=cython.double)
-        qt = ((2 * constants.pi * self.mass / constants.Na) / (constants.h * constants.h))**1.5 / 101325.
+        qt = ((2 * constants.pi * self.mass.value / constants.Na) / (constants.h * constants.h))**1.5 / 101325.
         return qt * (constants.kB * T)**2.5
 
     def getHeatCapacity(self, T):
         """
         Return the contribution to the heat capacity due to translation in
-        J/mol*K at the specified temperatures `Tlist` in K. The formula is
+        J/mol*K at the specified temperature `T` in K. The formula is
 
         .. math:: \\frac{C_\\mathrm{v}^\\mathrm{trans}(T)}{R} = \\frac{3}{2}
 
@@ -151,7 +159,7 @@ class Translation(Mode):
     def getEnthalpy(self, T):
         """
         Return the contribution to the enthalpy due to translation in J/mol
-        at the specified temperatures `Tlist` in K. The formula is
+        at the specified temperature `T` in K. The formula is
 
         .. math:: \\frac{H^\\mathrm{trans}(T)}{RT} = \\frac{3}{2}
 
@@ -162,7 +170,7 @@ class Translation(Mode):
     def getEntropy(self, T):
         """
         Return the contribution to the entropy due to translation in J/mol*K
-        at the specified temperatures `Tlist` in K. The formula	is
+        at the specified temperature `T` in K. The formula	is
 
         .. math:: \\frac{S^\\mathrm{trans}(T)}{R} = \\ln q_\\mathrm{trans}(T) + \\frac{3}{2} + 1
 
@@ -173,7 +181,7 @@ class Translation(Mode):
 
     def getDensityOfStates(self, Elist):
         """
-        Return the density of states at the specified energlies `Elist` in J/mol
+        Return the density of states at the specified energies `Elist` in J/mol
         above the ground state. The formula is
 
         .. math:: \\rho(E) = \\left( \\frac{2 \\pi m}{h^2} \\right)^{3/2} \\frac{E^{3/2}}{\\Gamma(5/2)} \\frac{1}{P}
@@ -183,49 +191,52 @@ class Translation(Mode):
         """
         cython.declare(rho=numpy.ndarray, qt=cython.double)
         rho = numpy.zeros_like(Elist)
-        qt = ((2 * constants.pi * self.mass / constants.Na / constants.Na) / (constants.h * constants.h))**(1.5) / 1e5
-        rho = qt * Elist**1.5 / (numpy.sqrt(math.pi) * 0.25) / constants.Na
+        qt = ((2 * constants.pi * self.mass.value / constants.Na / constants.Na) / (constants.h * constants.h))**(1.5) / 101325.
+        rho = qt * Elist**1.5 / (numpy.sqrt(math.pi) * 0.75) / constants.Na
         return rho
 
 ################################################################################
 
 class RigidRotor(Mode):
     """
-    A rigid rotor approximation of (external) rotational modes. The `linear`
-    attribute is :data:`True` if the associated molecule is linear, and
-    :data:`False` if nonlinear. For a linear molecule, `inertia` stores a
-    list with one moment of inertia in kg*m^2. For a nonlinear molecule,
-    `frequencies` stores a list of the three moments of inertia, even if two or
-    three are equal, in kg*m^2. The symmetry number of the rotation is stored
-    in the `symmetry` attribute.
+    A rigid rotor approximation of (external) rotational modes. The attributes
+    are:
+    
+    =============== =================== ========================================
+    Attribute       Type                Description
+    =============== =================== ========================================
+    `linear`        :class:`boolean`    ``True`` if the associated molecule is linear, ``False`` if nonlinear
+    `inertia`       :class:`Quantity`   The moment(s) of inertia of the molecule (1 if linear, 3 if nonlinear)
+    `symmetry`      ``int``             The total external rotational symmetry number
+    =============== =================== ========================================
+    
     """
 
     def __init__(self, linear=False, inertia=None, symmetry=1):
         self.linear = linear
         if inertia is not None:
-            self.inertia = list(constants.Quantity(inertia).values)
+            self.inertia = Quantity(inertia)
         else:
-            self.inertia = []
+            self.inertia = None
         self.symmetry = symmetry
 
     def __repr__(self):
         """
         Return a string representation that can be used to reconstruct the
-        object.
+        RigidRotor object.
         """
-        inertia = ', '.join(['%g' % (I*constants.Na*1.0e23) for I in self.inertia])
-        return 'RigidRotor(linear=%s, inertia=([%s],"amu*angstrom^2"), symmetry=%i)' % (self.linear, inertia, self.symmetry)
+        return 'RigidRotor(linear={0}, inertia={1!r}, symmetry={2:d})'.format(self.linear, self.inertia, self.symmetry)
 
     def __reduce__(self):
         """
-        A helper function used when pickling an object.
+        A helper function used when pickling a RigidRotor object.
         """
         return (RigidRotor, (self.linear, self.inertia, self.symmetry))
 
     def getPartitionFunction(self, T):
         """
-        Return the value of the partition function at the specified temperatures
-        `Tlist` in K. The formula is
+        Return the value of the partition function at the specified temperature
+        `T` in K. The formula is
 
         .. math:: q_\\mathrm{rot}(T) = \\frac{8 \\pi^2 I k_\\mathrm{B} T}{\\sigma h^2}
 
@@ -240,18 +251,18 @@ class RigidRotor(Mode):
         """
         cython.declare(theta=cython.double, inertia=cython.double)
         if self.linear:
-            theta = constants.h * constants.h / (8 * constants.pi * constants.pi * self.inertia[0] * constants.kB)
+            theta = constants.h * constants.h / (8 * constants.pi * constants.pi * self.inertia.values[0] * constants.kB)
             return T / theta / self.symmetry
         else:
             theta = 1.0
-            for inertia in self.inertia:
+            for inertia in self.inertia.values:
                 theta *= constants.h * constants.h / (8 * constants.pi * constants.pi * inertia * constants.kB)
-            return numpy.sqrt(constants.pi * T**len(self.inertia) / theta) / self.symmetry
+            return numpy.sqrt(constants.pi * T**len(self.inertia.values) / theta) / self.symmetry
 
     def getHeatCapacity(self, T):
         """
         Return the contribution to the heat capacity due to rigid rotation
-        in J/mol*K at the specified temperatures `Tlist` in K. The formula is
+        in J/mol*K at the specified temperature `T` in K. The formula is
 
         .. math:: \\frac{C_\\mathrm{v}^\\mathrm{rot}(T)}{R} = 1
 
@@ -270,7 +281,7 @@ class RigidRotor(Mode):
     def getEnthalpy(self, T):
         """
         Return the contribution to the enthalpy due to rigid rotation in J/mol
-        at the specified temperatures `Tlist` in K. The formula is
+        at the specified temperature `T` in K. The formula is
 
         .. math:: \\frac{H^\\mathrm{rot}(T)}{RT} = 1
 
@@ -289,7 +300,7 @@ class RigidRotor(Mode):
     def getEntropy(self, T):
         """
         Return the contribution to the entropy due to rigid rotation in J/mol*K
-        at the specified temperatures `Tlist` in K. The formula is
+        at the specified temperature `T` in K. The formula is
 
         .. math:: \\frac{S^\\mathrm{rot}(T)}{R} = \\ln Q^\\mathrm{rot} + 1
 
@@ -307,7 +318,7 @@ class RigidRotor(Mode):
 
     def getDensityOfStates(self, Elist):
         """
-        Return the density of states at the specified energlies `Elist` in J/mol
+        Return the density of states at the specified energies `Elist` in J/mol
         above the ground state in mol/J. The formula is
 
         .. math:: \\rho(E) = \\frac{8 \\pi^2 I}{\\sigma h^2}
@@ -323,11 +334,11 @@ class RigidRotor(Mode):
         """
         cython.declare(theta=cython.double, inertia=cython.double)
         if self.linear:
-            theta = constants.h * constants.h / (8 * constants.pi * constants.pi * self.inertia[0]) * constants.Na
+            theta = constants.h * constants.h / (8 * constants.pi * constants.pi * self.inertia.values[0]) * constants.Na
             return numpy.ones_like(Elist) / theta / self.symmetry
         else:
             theta = 1.0
-            for inertia in self.inertia:
+            for inertia in self.inertia.values:
                 theta *= constants.h * constants.h / (8 * constants.pi * constants.pi * inertia) * constants.Na
             return 2.0 * numpy.sqrt(Elist / theta) / self.symmetry
 
@@ -347,22 +358,31 @@ class HinderedRotor(Mode):
 
     .. math:: V(\\phi) = A + \\sum_{k=1}^C \\left( a_k \\cos k \\phi + b_k \\sin k \\phi \\right)
 
-    For the cosine potential, the hindered rotor is described by the `barrier`
-    height in J/mol. For the Fourier series potential, the potential is instead
-    defined by a :math:`C \\times 2` array `fourier` containing the Fourier
-    coefficients. Both forms require the reduced moment of `inertia` of the
-    rotor in kg*m^2 and the `symmetry` number.
+    The attributes are:
+    
+    =============== =================== ========================================
+    Attribute       Type                Description
+    =============== =================== ========================================
+    `inertia`       :class:`Quantity`   The reduced moment of inertia of the hindered rotor
+    `symmetry`      ``int``             The symmetry number for the hindered rotation
+    `barrier`       :class:`Quantity`   The barrier height of the cosine potential
+    `fourier`       :class:`Quantity`   The :math:`2 \\times C` array of Fourier coefficients for the Fourier potential
+    =============== =================== ========================================
+    
     If both sets of parameters are available, the Fourier series will be used,
     as it is more accurate. However, it is also significantly more
     computationally demanding.
     """
 
     def __init__(self, inertia=0.0, barrier=0.0, symmetry=1, fourier=None):
-        self.inertia = constants.Quantity(inertia).value
-        self.barrier = constants.Quantity(barrier).value
+        self.inertia = Quantity(inertia)
+        self.barrier = Quantity(barrier)
         self.symmetry = symmetry
         if fourier is not None:
-            self.fourier = constants.Quantity(fourier).values
+            self.fourier = Quantity(fourier)
+            if self.fourier.values.shape[1] == 2 and self.fourier.values.shape[0] > 2:
+                # The dimension with a length of 2 should be the rows, not the columns
+                self.fourier.values = self.fourier.values.transpose()
             self.energies = self.__solveSchrodingerEquation()
         else:
             self.fourier = None
@@ -371,37 +391,28 @@ class HinderedRotor(Mode):
     def __repr__(self):
         """
         Return a string representation that can be used to reconstruct the
-        object.
+        HinderedRotor object.
         """
         if self.fourier is not None:
             fourier = '['
-            for i in range(self.fourier.shape[0]):
+            for i in range(self.fourier.values.shape[0]):
                 if i > 0: fourier += ', '
-                fourier += '[%s]' % (','.join(['%g' % (self.fourier[i,j]) for j in range(self.fourier.shape[1])]))
+                fourier += '[{0}]'.format(','.join(['{0:g}'.format(self.fourier.values[i,j]) for j in range(self.fourier.values.shape[1])]))
             fourier += ']'
         else:
             fourier = 'None'
 
-        return 'HinderedRotor(inertia=(%g,"amu*angstrom^2"), barrier=(%g,"kJ/mol"), symmetry=%g, fourier=%s)' % (
-            self.inertia*constants.Na*1.0e23,
-            self.barrier/1000.,
+        return 'HinderedRotor(inertia={0!r}, barrier={1!r}, symmetry={2:d}, fourier={3})'.format(
+            self.inertia,
+            self.barrier,
             self.symmetry,
             fourier)
 
     def __reduce__(self):
         """
-        A helper function used when pickling an object.
+        A helper function used when pickling a HinderedRotor object.
         """
-        d = {
-            'energies': self.energies,
-        }
-        return (HinderedRotor, (self.inertia, self.barrier, self.symmetry, self.fourier), d)
-
-    def __setstate__(self, d):
-        """
-        A helper function used when unpickling an object.
-        """
-        self.energies = d['energies']
+        return (HinderedRotor, (self.inertia, self.barrier, self.symmetry, self.fourier))
 
     def getPotential(self, phi):
         """
@@ -411,11 +422,11 @@ class HinderedRotor(Mode):
         cython.declare(V=numpy.ndarray, k=cython.int)
         V = numpy.zeros_like(phi)
         if self.fourier is not None:
-            for k in range(self.fourier.shape[1]):
-                V += self.fourier[0,k] * numpy.cos((k+1) * phi) + self.fourier[1,k] * numpy.sin((k+1) * phi)
-            V -= numpy.sum(self.fourier[0,:])
+            for k in range(self.fourier.values.shape[1]):
+                V += self.fourier.values[0,k] * numpy.cos((k+1) * phi) + self.fourier.values[1,k] * numpy.sin((k+1) * phi)
+            V -= numpy.sum(self.fourier.values[0,:])
         else:
-            V = 0.5 * self.barrier * (1 - numpy.cos(self.symmetry * phi))
+            V = 0.5 * self.barrier.value * (1 - numpy.cos(self.symmetry * phi))
         return V
 
     def __solveSchrodingerEquation(self):
@@ -443,11 +454,11 @@ class HinderedRotor(Mode):
         M = 200
         # Populate Hamiltonian matrix
         H = numpy.zeros((2*M+1,2*M+1), numpy.complex64)
-        fourier = self.fourier / constants.Na / 2.0
-        A = numpy.sum(self.fourier[0,:]) / constants.Na
+        fourier = self.fourier.values / constants.Na / 2.0
+        A = numpy.sum(self.fourier.values[0,:]) / constants.Na
         row = 0
         for m in range(-M, M+1):
-            H[row,row] = A + constants.h * constants.h * m * m / (8 * math.pi * math.pi * self.inertia)
+            H[row,row] = A + constants.h * constants.h * m * m / (8 * math.pi * math.pi * self.inertia.value)
             for n in range(fourier.shape[1]):
                 if row-n-1 > -1:    H[row,row-n-1] = complex(fourier[0,n], - fourier[1,n])
                 if row+n+1 < 2*M+1: H[row,row+n+1] = complex(fourier[0,n], fourier[1,n])
@@ -461,8 +472,8 @@ class HinderedRotor(Mode):
 
     def getPartitionFunction(self, T):
         """
-        Return the value of the partition function at the specified temperatures
-        `Tlist` in K. For the cosine potential, the formula makes use of the
+        Return the value of the partition function at the specified temperature
+        `T` in K. For the cosine potential, the formula makes use of the
         Pitzer-Gwynn approximation:
 
         .. math:: q_\\mathrm{hind}(T) = \\frac{q_\\mathrm{vib}^\\mathrm{quant}(T)}{q_\\mathrm{vib}^\\mathrm{class}(T)} q_\\mathrm{hind}^\\mathrm{class}(T)
@@ -500,13 +511,13 @@ class HinderedRotor(Mode):
             cython.declare(frequency=cython.double, x=cython.double, z=cython.double)
             frequency = self.getFrequency() * constants.c * 100
             x = constants.h * frequency / (constants.kB * T)
-            z = 0.5 * self.barrier / (constants.R * T)
-            return x / (1 - numpy.exp(-x)) * numpy.sqrt(2 * math.pi * self.inertia * constants.kB * T / constants.h / constants.h) * (2 * math.pi / self.symmetry) * numpy.exp(-z) * besseli0(z)
+            z = 0.5 * self.barrier.value / (constants.R * T)
+            return x / (1 - numpy.exp(-x)) * numpy.sqrt(2 * math.pi * self.inertia.value * constants.kB * T / constants.h / constants.h) * (2 * math.pi / self.symmetry) * numpy.exp(-z) * besseli0(z)
 
     def getHeatCapacity(self, T):
         """
         Return the contribution to the heat capacity due to hindered rotation
-        in J/mol*K at the specified temperatures `Tlist` in K.
+        in J/mol*K at the specified temperature `T` in K.
 
         For the cosine potential, the formula is
 
@@ -536,7 +547,7 @@ class HinderedRotor(Mode):
             cython.declare(exp_x=cython.double, one_minus_exp_x=cython.double, BB=cython.double)
             frequency = self.getFrequency() * constants.c * 100
             x = constants.h * frequency / (constants.kB * T)
-            z = 0.5 * self.barrier / (constants.R * T)
+            z = 0.5 * self.barrier.value / (constants.R * T)
             exp_x = numpy.exp(x)
             one_minus_exp_x = 1.0 - exp_x
             BB = besseli1(z) / besseli0(z)
@@ -545,7 +556,7 @@ class HinderedRotor(Mode):
     def getEnthalpy(self, T):
         """
         Return the contribution to the heat capacity due to hindered rotation
-        in J/mol at the specified temperatures `Tlist` in K. For the cosine
+        in J/mol at the specified temperature `T` in K. For the cosine
         potential, this is calculated numerically from the partition function.
         For the Fourier series potential, we solve the corresponding 1D
         Schrodinger equation to obtain the energy levels of the rotor and
@@ -572,7 +583,7 @@ class HinderedRotor(Mode):
     def getEntropy(self, T):
         """
         Return the contribution to the heat capacity due to hindered rotation
-        in J/mol*K at the specified temperatures `Tlist` in K. For the cosine
+        in J/mol*K at the specified temperature `T` in K. For the cosine
         potential, this is calculated numerically from the partition function.
         For the Fourier series potential, we solve the corresponding 1D
         Schrodinger equation to obtain the energy levels of the rotor and
@@ -599,7 +610,7 @@ class HinderedRotor(Mode):
 
     def getDensityOfStates(self, Elist):
         """
-        Return the density of states at the specified energlies `Elist` in J/mol
+        Return the density of states at the specified energies `Elist` in J/mol
         above the ground state. For the cosine potential, the formula is
 
         .. math:: \\rho(E) = \\frac{2 q_\\mathrm{1f}}{\\pi^{3/2} V_0^{1/2}} \\mathcal{K}(E / V_0) \\hspace{20pt} E < V_0
@@ -619,8 +630,8 @@ class HinderedRotor(Mode):
         """
         cython.declare(rho=numpy.ndarray, q1f=cython.double, pre=cython.double, V0=cython.double, i=cython.int)
         rho = numpy.zeros_like(Elist)
-        q1f = math.sqrt(8 * math.pi * math.pi * math.pi * self.inertia / constants.h / constants.h / constants.Na) / self.symmetry
-        V0 = self.barrier
+        q1f = math.sqrt(8 * math.pi * math.pi * math.pi * self.inertia.value / constants.h / constants.h / constants.Na) / self.symmetry
+        V0 = self.barrier.value
         pre = 2.0 * q1f / math.sqrt(math.pi * math.pi * math.pi * V0)
         # The following is only valid in the classical limit
         # Note that cellipk(1) = infinity, so we must skip that value
@@ -633,7 +644,7 @@ class HinderedRotor(Mode):
 
     def getFrequency(self):
         """
-        Return the frequency of vibration corresponding to the limit of
+        Return the frequency of vibration in cm^-1 corresponding to the limit of
         harmonic oscillation. The formula is
 
         .. math:: \\nu = \\frac{\\sigma}{2 \\pi} \\sqrt{\\frac{V_0}{2 I}}
@@ -642,10 +653,10 @@ class HinderedRotor(Mode):
         height, and :math:`I` the reduced moment of inertia of the rotor. The
         units of the returned frequency are cm^-1.
         """
-        V0 = self.barrier
+        V0 = self.barrier.value
         if self.fourier is not None:
-            V0 = -numpy.sum(self.fourier[0,:])
-        return self.symmetry / 2.0 / math.pi * math.sqrt(V0 / constants.Na / 2 / self.inertia) / (constants.c * 100)
+            V0 = -numpy.sum(self.fourier.values[0,:])
+        return self.symmetry / 2.0 / math.pi * math.sqrt(V0 / constants.Na / 2 / self.inertia.value) / (constants.c * 100)
 
 def besseli0(x):
     """
@@ -673,34 +684,39 @@ def cellipk(x):
 class HarmonicOscillator(Mode):
     """
     A representation of a set of vibrational modes as one-dimensional quantum
-    harmonic oscillator. The oscillators are defined by their `frequencies` in
-    cm^-1.
+    harmonic oscillator. The attributes are:
+    
+    =============== =================== ========================================
+    Attribute       Type                Description
+    =============== =================== ========================================
+    `frequencies`   :class:`Quantity`   The set of vibrational frequencies
+    =============== =================== ========================================
+    
     """
 
     def __init__(self, frequencies=None):
         if frequencies is not None:
-            self.frequencies = list(constants.Quantity(frequencies).values)
+            self.frequencies = Quantity(frequencies)
         else:
             self.frequencies = None
 
     def __repr__(self):
         """
         Return a string representation that can be used to reconstruct the
-        object.
+        HarmonicOscillator object.
         """
-        frequencies = ', '.join(['%g' % freq for freq in self.frequencies])
-        return 'HarmonicOscillator(frequencies=([%s],"cm^-1"))' % (frequencies)
+        return 'HarmonicOscillator(frequencies={0!r})'.format(self.frequencies)
 
     def __reduce__(self):
         """
-        A helper function used when pickling an object.
+        A helper function used when pickling a HarmonicOscillator object.
         """
         return (HarmonicOscillator, (self.frequencies,))
 
     def getPartitionFunction(self, T):
         """
-        Return the value of the partition function at the specified temperatures
-        `Tlist` in K. The formula is
+        Return the value of the partition function at the specified temperature
+        `T` in K. The formula is
 
         .. math:: q_\\mathrm{vib}(T) = \\prod_i \\frac{1}{1 - e^{-\\xi_i}}
 
@@ -713,14 +729,14 @@ class HarmonicOscillator(Mode):
         """
         cython.declare(Q=cython.double, freq=cython.double)
         Q = 1.0
-        for freq in self.frequencies:
+        for freq in self.frequencies.values:
             Q = Q / (1 - numpy.exp(-freq / (0.695039 * T)))  # kB = 0.695039 cm^-1/K
         return Q
 
     def getHeatCapacity(self, T):
         """
         Return the contribution to the heat capacity due to vibration
-        in J/mol*K at the specified temperatures `Tlist` in K. The formula is
+        in J/mol*K at the specified temperature `T` in K. The formula is
 
         .. math:: \\frac{C_\\mathrm{v}^\\mathrm{vib}(T)}{R} = \\sum_i \\xi_i^2 \\frac{e^{\\xi_i}}{\\left( 1 - e^{\\xi_i} \\right)^2}
 
@@ -732,7 +748,7 @@ class HarmonicOscillator(Mode):
         cython.declare(Cv=cython.double, freq=cython.double)
         cython.declare(x=cython.double, exp_x=cython.double, one_minus_exp_x=cython.double)
         Cv = 0.0
-        for freq in self.frequencies:
+        for freq in self.frequencies.values:
             x = freq / (0.695039 * T)	# kB = 0.695039 cm^-1/K
             exp_x = numpy.exp(x)
             one_minus_exp_x = 1.0 - exp_x
@@ -742,7 +758,7 @@ class HarmonicOscillator(Mode):
     def getEnthalpy(self, T):
         """
         Return the contribution to the enthalpy due to vibration in J/mol at
-        the specified temperatures `Tlist` in K. The formula is
+        the specified temperature `T` in K. The formula is
 
         .. math:: \\frac{H^\\mathrm{vib}(T)}{RT} = \\sum_i \\frac{\\xi_i}{e^{\\xi_i} - 1}
 
@@ -754,7 +770,7 @@ class HarmonicOscillator(Mode):
         cython.declare(H=cython.double, freq=cython.double)
         cython.declare(x=cython.double, exp_x=cython.double)
         H = 0.0
-        for freq in self.frequencies:
+        for freq in self.frequencies.values:
             x = freq / (0.695039 * T)	# kB = 0.695039 cm^-1/K
             exp_x = numpy.exp(x)
             H = H + x / (exp_x - 1)
@@ -763,7 +779,7 @@ class HarmonicOscillator(Mode):
     def getEntropy(self, T):
         """
         Return the contribution to the entropy due to vibration in J/mol*K at
-        the specified temperatures `Tlist` in K. The formula is
+        the specified temperature `T` in K. The formula is
 
         .. math:: \\frac{S^\\mathrm{vib}(T)}{R} = \\sum_i \\left[ - \\ln \\left(1 - e^{-\\xi_i} \\right) + \\frac{\\xi_i}{e^{\\xi_i} - 1} \\right]
 
@@ -775,7 +791,7 @@ class HarmonicOscillator(Mode):
         cython.declare(S=cython.double, freq=cython.double)
         cython.declare(x=cython.double, exp_x=cython.double)
         S = numpy.log(self.getPartitionFunction(T))
-        for freq in self.frequencies:
+        for freq in self.frequencies.values:
             x = freq / (0.695039 * T)	# kB = 0.695039 cm^-1/K
             exp_x = numpy.exp(x)
             S = S + x / (exp_x - 1)
@@ -797,7 +813,7 @@ class HarmonicOscillator(Mode):
             rho = numpy.zeros_like(Elist)
         dE = Elist[1] - Elist[0]
         nE = len(Elist)
-        for freq in self.frequencies:
+        for freq in self.frequencies.values:
             dn = int(freq * constants.h * constants.c * 100 * constants.Na / dE)
             for n in range(dn+1, nE):
                 rho[n] = rho[n] + rho[n-dn]
@@ -807,8 +823,8 @@ class HarmonicOscillator(Mode):
 
 class StatesModel:
     """
-    A set of molecular degrees of freedom data for a given molecule, comprising
-    the results of a quantum chemistry calculation.
+    A set of molecular degrees of freedom data for a given molecule. The
+    attributes are:
 
     =================== =================== ====================================
     Attribute           Type                Description
@@ -826,20 +842,20 @@ class StatesModel:
     def __repr__(self):
         """
         Return a string representation that can be used to reconstruct the
-        object.
+        StatesModel object.
         """
-        return 'StatesModel(modes=%s, spinMultiplicity=%i)' % (self.modes, self.spinMultiplicity)
+        return 'StatesModel(modes={0!r}, spinMultiplicity={1:d})'.format(self.modes, self.spinMultiplicity)
 
     def __reduce__(self):
         """
-        A helper function used when pickling an object.
+        A helper function used when pickling a StatesModel object.
         """
         return (StatesModel, (self.modes, self.spinMultiplicity))
 
     def getHeatCapacity(self, T):
         """
         Return the constant-pressure heat capacity in J/mol*K at the specified
-        temperatures `Tlist` in K.
+        temperature `T` in K.
         """
         cython.declare(Cp=cython.double)
         Cp = constants.R
@@ -849,7 +865,7 @@ class StatesModel:
 
     def getEnthalpy(self, T):
         """
-        Return the enthalpy in J/mol at the specified temperatures `Tlist` in K.
+        Return the enthalpy in J/mol at the specified temperature `T` in K.
         """
         cython.declare(H=cython.double)
         H = constants.R * T
@@ -859,8 +875,7 @@ class StatesModel:
 
     def getEntropy(self, T):
         """
-        Return the entropy in J/mol*K at the specified temperatures `Tlist` in
-        K.
+        Return the entropy in J/mol*K at the specified temperature `T` in K.
         """
         cython.declare(S=cython.double)
         S = 0.0
@@ -870,9 +885,9 @@ class StatesModel:
 
     def getPartitionFunction(self, T):
         """
-        Return the the partition function at the specified temperatures
-        `Tlist` in K. An active K-rotor is automatically included if there are
-        no external rotational modes.
+        Return the the partition function at the specified temperatures `T` in 
+        K. An active K-rotor is automatically included if there are no 
+        translational or external rotational modes.
         """
         cython.declare(Q=cython.double, Trot=cython.double)
         Q = 1.0
@@ -892,7 +907,8 @@ class StatesModel:
         """
         Return the value of the density of states in mol/J at the specified
         energies `Elist` in J/mol above the ground state. An active K-rotor is
-        automatically included if there are no external rotational modes.
+        automatically included if there are no translational or external 
+        rotational modes.
         """
         cython.declare(rho=numpy.ndarray, i=cython.int, E=cython.double)
         rho = numpy.zeros_like(Elist)
@@ -976,7 +992,7 @@ class StatesModel:
         # Iterate over energies
         for i in range(1, len(Elist)):
             E = Elist[i]
-            # Find minimum of phi         func x0 arg  xtol  ftol maxi  maxf fullout  disp retall  callback
+            # Find minimum of phi         func x0  arg         xtol  ftol maxi  maxf fullout  disp retall  callback
             x = scipy.optimize.fmin(self.__phi, x, [Elist[i]], 1e-8, 1e-8, 100, 1000, False, False, False, None)
             x = float(x)
             dx = 1e-4 * x
