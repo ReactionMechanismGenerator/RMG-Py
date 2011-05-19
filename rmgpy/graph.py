@@ -1,11 +1,11 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python
+# encoding: utf-8
 
 ################################################################################
 #
-#   ChemPy - A chemistry toolkit for Python
+#   RMG - Reaction Mechanism Generator
 #
-#   Copyright (c) 2010 by Joshua W. Allen (jwallen@mit.edu)
+#   Copyright (c) 2009-2011 by the RMG Team (rmg_dev@mit.edu)
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
 #   copy of this software and associated documentation files (the 'Software'),
@@ -30,7 +30,9 @@
 """
 This module contains an implementation of a graph data structure (the 
 :class:`Graph` class) and functions for manipulating that graph, including 
-efficient isomorphism functions.
+efficient isomorphism functions. This module also contains base classes for
+the vertices and edges (:class:`Vertex` and :class:`Edge`, respectively) that
+are the components of a graph.
 """
 
 import cython
@@ -44,15 +46,15 @@ class Vertex(object):
     useful for accelerating isomorphism searches, as proposed by
     `Morgan (1965) <http://dx.doi.org/10.1021/c160017a018>`_.
 
-    ==================  ========================================================
-    Attribute           Description
-    ==================  ========================================================
-    `connectivity1`     The number of nearest neighbors
-    `connectivity2`     The sum of the neighbors' `connectivity1` values
-    `connectivity3`     The sum of the neighbors' `connectivity2` values
-    `sortingLabel`      An integer used to sort the vertices
-    ==================  ========================================================
-
+    =================== =============== ========================================
+    Attribute           Type            Description
+    =================== =============== ========================================
+    `connectivity1`     ``int``         The number of nearest neighbors
+    `connectivity2`     ``int``         The sum of the neighbors' `connectivity1` values
+    `connectivity3`     ``int``         The sum of the neighbors' `connectivity2` values
+    `sortingLabel`      ``int``         An integer label used to sort the vertices
+    =================== =============== ========================================
+    
     """
 
     def __init__(self):
@@ -355,8 +357,6 @@ class Graph:
         cython.declare(count=cython.short, edges=dict)
         cython.declare(vertex1=Vertex, vertex2=Vertex)
 
-        assert str(self.__class__) != 'chempy.molecule.Molecule' or not self.implicitHydrogens, "%s has implicit hydrogens" % self
-
         for vertex1 in self.vertices:
             count = len(self.edges[vertex1])
             vertex1.connectivity1 = count
@@ -382,6 +382,9 @@ class Graph:
             if vertex.sortingLabel < 0: break
         else:
             return
+        # If we need to sort then let's also update the connecitivities so
+        # we're sure they are right, since the sorting labels depend on them
+        self.updateConnectivityValues()
         self.vertices.sort(key=getVertexConnectivityValue)
         for index, vertex in enumerate(self.vertices):
             vertex.sortingLabel = index
@@ -831,7 +834,7 @@ def __VF2_match(graph1, graph2, map21, map12, terminals1, terminals2, subgraph,
 
     # Make sure we don't get cause in an infinite recursive loop
     if callDepth < 0:
-        logging.error("Recursing too deep. Now %d" % callDepth)
+        logging.error("Recursing too deep. Now {0:d}".format(callDepth))
         if callDepth < -100:
             raise Exception("Recursing infinitely deep!")
 
@@ -839,14 +842,14 @@ def __VF2_match(graph1, graph2, map21, map12, terminals1, terminals2, subgraph,
     if callDepth == 0:
         if not subgraph:
             assert len(map21) == len(graph1.vertices), \
-                "Calldepth mismatch: callDepth = %g, len(map21) = %g, len(map12) = %g, len(graph1.vertices) = %g, len(graph2.vertices) = %g" % (callDepth, len(map21), len(map12), len(graph1.vertices), len(graph2.vertices))
+                "Calldepth mismatch: callDepth = {0:d}, len(map21) = {1:d}, len(map12) = {2:d}, len(graph1.vertices) = {3:d}, len(graph2.vertices) = {4:d}".format(callDepth, len(map21), len(map12), len(graph1.vertices), len(graph2.vertices))
             if findAll:
                 map21List.append(map21.copy())
                 map12List.append(map12.copy())
             return True
         else:
             assert len(map12) == len(graph2.vertices), \
-                "Calldepth mismatch: callDepth = %g, len(map21) = %g, len(map12) = %g, len(graph1.vertices) = %g, len(graph2.vertices) = %g" % (callDepth, len(map21), len(map12), len(graph1.vertices), len(graph2.vertices))
+                "Calldepth mismatch: callDepth = {0:d}, len(map21) = {1:d}, len(map12) = {2:d}, len(graph1.vertices) = {3:d}, len(graph2.vertices) = {4:d}".format(callDepth, len(map21), len(map12), len(graph1.vertices), len(graph2.vertices))
             if findAll:
                 map21List.append(map21.copy())
                 map12List.append(map12.copy())

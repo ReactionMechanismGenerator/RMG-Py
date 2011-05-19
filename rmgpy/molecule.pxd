@@ -1,8 +1,8 @@
 ################################################################################
 #
-#   ChemPy - A chemistry toolkit for Python
+#   RMG - Reaction Mechanism Generator
 #
-#   Copyright (c) 2010 by Joshua W. Allen (jwallen@mit.edu)
+#   Copyright (c) 2009-2011 by the RMG Team (rmg_dev@mit.edu)
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
 #   copy of this software and associated documentation files (the 'Software'),
@@ -25,7 +25,8 @@
 ################################################################################
 
 from graph cimport Vertex, Edge, Graph
-from pattern cimport AtomPattern, BondPattern, MoleculePattern, AtomType
+from atomtype cimport AtomType
+from group cimport GroupAtom, GroupBond, Group
 from element cimport Element
 
 ################################################################################

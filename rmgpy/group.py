@@ -1,11 +1,11 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
+# encoding: utf-8
 
 ################################################################################
 #
-#   ChemPy - A chemistry toolkit for Python
+#   RMG - Reaction Mechanism Generator
 #
-#   Copyright (c) 2010 by Joshua W. Allen (jwallen@mit.edu)
+#   Copyright (c) 2009-2011 by the RMG Team (rmg_dev@mit.edu)
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
 #   copy of this software and associated documentation files (the 'Software'),
@@ -29,13 +29,14 @@
 
 """
 This module provides classes and methods for working with molecular substructure
-patterns. These enable molecules to be searched for common motifs (e.g.
+groups. These enable molecules to be searched for common motifs (e.g.
 reaction sites).
 """
 
 import cython
 
 from graph import Vertex, Edge, Graph
+from atomtype import atomTypes
 
 ################################################################################
 
@@ -49,247 +50,9 @@ class ActionError(Exception):
 
 ################################################################################
 
-class AtomTypeError(Exception):
+class GroupAtom(Vertex):
     """
-    An exception class for errors that occur while working with atom types.
-    Pass a string describing the circumstances that caused the
-    exceptional behavior.
-    """
-    pass
-
-################################################################################
-
-class AtomType:
-    """
-    A class for internal representation of atom types. Using unique objects
-    rather than strings allows us to use fast pointer comparisons instead of
-    slow string comparisons, as well as store extra metadata. In particular,
-    we store metadata describing the atom type's hierarchy with regard to other
-    atom types, and the atom types that can result when various actions
-    involving this atom type are taken. The attributes are:
-
-    =================== =================== ====================================
-    Attribute           Type                Description
-    =================== =================== ====================================
-    `label`             ``str``             A unique label for the atom type
-    `generic`           ``list``            The atom types that are more generic than this one
-    `specific`          ``list``            The atom types that are more specific than this one
-    `incrementBond`     ``list``            The atom type(s) that result when an adjacent bond's order is incremented
-    `decrementBond`     ``list``            The atom type(s) that result when an adjacent bond's order is decremented
-    `formBond`          ``list``            The atom type(s) that result when a new single bond is formed to this atom type
-    `breakBond`         ``list``            The atom type(s) that result when an existing single bond to this atom type is broken
-    `incrementRadical`  ``list``            The atom type(s) that result when the number of radical electrons is incremented
-    `decrementRadical`  ``list``            The atom type(s) that result when the number of radical electrons is decremented
-    =================== =================== ====================================
-
-    """
-
-    def __init__(self, label, generic, specific):
-        self.label = label
-        self.generic = generic
-        self.specific = specific
-        self.incrementBond = []
-        self.decrementBond = []
-        self.formBond = []
-        self.breakBond = []
-        self.incrementRadical = []
-        self.decrementRadical = []
-
-    def __repr__(self):
-        return '<AtomType "%s">' % self.label
-
-    def __reduce__(self):
-        """
-        A helper function used when pickling an object.
-        """
-        d = {
-            'incrementBond': self.incrementBond,
-            'decrementBond': self.decrementBond,
-            'formBond': self.formBond,
-            'breakBond': self.breakBond,
-            'incrementRadical': self.incrementRadical,
-            'decrementRadical': self.decrementRadical,
-        }
-        return (AtomType, (self.label, self.generic, self.specific), d)
-
-    def __setstate__(self, d):
-        """
-        A helper function used when unpickling an object.
-        """
-        self.incrementBond = d['incrementBond']
-        self.decrementBond = d['decrementBond']
-        self.formBond = d['formBond']
-        self.breakBond = d['breakBond']
-        self.incrementRadical = d['incrementRadical']
-        self.decrementRadical = d['decrementRadical']
-
-    def setActions(self, incrementBond, decrementBond, formBond, breakBond, incrementRadical, decrementRadical):
-        self.incrementBond = incrementBond
-        self.decrementBond = decrementBond
-        self.formBond = formBond
-        self.breakBond = breakBond
-        self.incrementRadical = incrementRadical
-        self.decrementRadical = decrementRadical
-
-    def equivalent(self, other):
-        """
-        Returns ``True`` if two atom types `atomType1` and `atomType2` are
-        equivalent or ``False``  otherwise. This function respects wildcards,
-        e.g. ``R!H`` is equivalent to ``C``.
-        """
-        return self is other or self in other.specific or other in self.specific
-
-    def isSpecificCaseOf(self, other):
-        """
-        Returns ``True`` if atom type `atomType1` is a specific case of
-        atom type `atomType2` or ``False``  otherwise.
-        """
-        return self is other or self in other.specific
-
-
-
-atomTypes = {}
-atomTypes['R']    = AtomType(label='R', generic=[], specific=[
-    'R!H',
-    'C','Cs','Cd','Cdd','Ct','CO','Cb','Cbf',
-    'H',
-    'O','Os','Od','Oa',
-    'Si','Sis','Sid','Sidd','Sit','SiO','Sib','Sibf',
-    'S','Ss','Sd','Sa']
-)
-atomTypes['R!H']  = AtomType(label='R!H', generic=['R'], specific=[
-    'C','Cs','Cd','Cdd','Ct','CO','Cb','Cbf',
-    'O','Os','Od','Oa',
-    'Si','Sis','Sid','Sidd','Sit','SiO','Sib','Sibf',
-    'S','Ss','Sd','Sa']
-)
-atomTypes['C']    = AtomType('C', generic=['R','R!H'], specific=['Cs','Cd','Cdd','Ct','CO','Cb','Cbf'])
-atomTypes['Cs']   = AtomType('Cs', generic=['R','R!H', 'C'], specific=[])
-atomTypes['Cd']   = AtomType('Cd', generic=['R','R!H', 'C'], specific=[])
-atomTypes['Cdd']  = AtomType('Cdd', generic=['R','R!H', 'C'], specific=[])
-atomTypes['Ct']   = AtomType('Ct', generic=['R','R!H', 'C'], specific=[])
-atomTypes['CO']   = AtomType('CO', generic=['R','R!H', 'C'], specific=[])
-atomTypes['Cb']   = AtomType('Cb', generic=['R','R!H', 'C'], specific=[])
-atomTypes['Cbf']  = AtomType('Cbf', generic=['R','R!H', 'C'], specific=[])
-atomTypes['H']    = AtomType('H', generic=['R','R!H'], specific=[])
-atomTypes['O']    = AtomType('O', generic=['R','R!H'], specific=['Os','Od','Oa'])
-atomTypes['Os']   = AtomType('Os', generic=['R','R!H','O'], specific=[])
-atomTypes['Od']   = AtomType('Od', generic=['R','R!H','O'], specific=[])
-atomTypes['Oa']   = AtomType('Oa', generic=['R','R!H','O'], specific=[])
-atomTypes['Si']   = AtomType('Si', generic=['R','R!H'], specific=['Sis','Sid','Sidd','Sit','SiO','Sib','Sibf'])
-atomTypes['Sis']  = AtomType('Sis', generic=['R','R!H','Si'], specific=[])
-atomTypes['Sid']  = AtomType('Sid', generic=['R','R!H','Si'], specific=[])
-atomTypes['Sidd'] = AtomType('Sidd', generic=['R','R!H','Si'], specific=[])
-atomTypes['Sit']  = AtomType('Sit', generic=['R','R!H','Si'], specific=[])
-atomTypes['SiO']  = AtomType('SiO', generic=['R','R!H','Si'], specific=[])
-atomTypes['Sib']  = AtomType('Sib', generic=['R','R!H','Si'], specific=[])
-atomTypes['Sibf'] = AtomType('Sibf', generic=['R','R!H','Si'], specific=[])
-atomTypes['S']    = AtomType('S', generic=['R','R!H'], specific=['Ss','Sd','Sa'])
-atomTypes['Ss']   = AtomType('Ss', generic=['R','R!H','S'], specific=[])
-atomTypes['Sd']   = AtomType('Sd', generic=['R','R!H','S'], specific=[])
-atomTypes['Sa']   = AtomType('Sa', generic=['R','R!H','S'], specific=[])
-
-atomTypes['R'   ].setActions(incrementBond=['R'],            decrementBond=['R'],         formBond=['R'],     breakBond=['R'],     incrementRadical=['R'],     decrementRadical=['R'])
-atomTypes['R!H' ].setActions(incrementBond=['R!H'],          decrementBond=['R!H'],       formBond=['R!H'],   breakBond=['R!H'],   incrementRadical=['R!H'],   decrementRadical=['R!H'])
-
-atomTypes['C'   ].setActions(incrementBond=['C'],            decrementBond=['C'],         formBond=['C'],     breakBond=['C'],     incrementRadical=['C'],     decrementRadical=['C'])
-atomTypes['Cs'  ].setActions(incrementBond=['Cd','CO'],      decrementBond=[],            formBond=['Cs'],    breakBond=['Cs'],    incrementRadical=['Cs'],    decrementRadical=['Cs'])
-atomTypes['Cd'  ].setActions(incrementBond=['Cdd','Ct'],     decrementBond=['Cs'],        formBond=['Cd'],    breakBond=['Cd'],    incrementRadical=['Cd'],    decrementRadical=['Cd'])
-atomTypes['Cdd' ].setActions(incrementBond=[],               decrementBond=['Cd','CO'],   formBond=[],        breakBond=[],        incrementRadical=[],        decrementRadical=[])
-atomTypes['Ct'  ].setActions(incrementBond=[],               decrementBond=['Cd'],        formBond=['Ct'],    breakBond=['Ct'],    incrementRadical=['Ct'],    decrementRadical=['Ct'])
-atomTypes['CO'  ].setActions(incrementBond=['Cdd'],          decrementBond=['Cs'],        formBond=['CO'],    breakBond=['CO'],    incrementRadical=['CO'],    decrementRadical=['CO'])
-atomTypes['Cb'  ].setActions(incrementBond=[],               decrementBond=[],            formBond=['Cb'],    breakBond=['Cb'],    incrementRadical=['Cb'],    decrementRadical=['Cb'])
-atomTypes['Cbf' ].setActions(incrementBond=[],               decrementBond=[],            formBond=[],        breakBond=[],        incrementRadical=[],        decrementRadical=[])
-
-atomTypes['H'   ].setActions(incrementBond=[],               decrementBond=[],            formBond=['H'],     breakBond=['H'],     incrementRadical=['H'],     decrementRadical=['H'])
-
-atomTypes['O'   ].setActions(incrementBond=['O'],            decrementBond=['O'],         formBond=['O'],     breakBond=['O'],     incrementRadical=['O'],     decrementRadical=['O'])
-atomTypes['Os'  ].setActions(incrementBond=['Od'],           decrementBond=[],            formBond=['Os'],    breakBond=['Os'],    incrementRadical=['Os'],    decrementRadical=['Os'])
-atomTypes['Od'  ].setActions(incrementBond=[],               decrementBond=['Os'],        formBond=[],        breakBond=[],        incrementRadical=[],        decrementRadical=[])
-atomTypes['Oa'  ].setActions(incrementBond=[],               decrementBond=[],            formBond=[],        breakBond=[],        incrementRadical=[],        decrementRadical=[])
-
-atomTypes['Si'   ].setActions(incrementBond=['Si'],          decrementBond=['Si'],        formBond=['Si'],    breakBond=['Si'],    incrementRadical=['Si'],    decrementRadical=['Si'])
-atomTypes['Sis'  ].setActions(incrementBond=['Sid','SiO'],   decrementBond=[],            formBond=['Sis'],   breakBond=['Sis'],   incrementRadical=['Sis'],   decrementRadical=['Sis'])
-atomTypes['Sid'  ].setActions(incrementBond=['Sidd','Sit'],  decrementBond=['Sis'],       formBond=['Sid'],   breakBond=['Sid'],   incrementRadical=['Sid'],   decrementRadical=['Sid'])
-atomTypes['Sidd' ].setActions(incrementBond=[],              decrementBond=['Sid','SiO'], formBond=[],        breakBond=[],        incrementRadical=[],        decrementRadical=[])
-atomTypes['Sit'  ].setActions(incrementBond=[],              decrementBond=['Sid'],       formBond=['Sit'],   breakBond=['Sit'],   incrementRadical=['Sit'],   decrementRadical=['Sit'])
-atomTypes['SiO'  ].setActions(incrementBond=['Sidd'],        decrementBond=['Sis'],       formBond=['SiO'],   breakBond=['SiO'],   incrementRadical=['SiO'],   decrementRadical=['SiO'])
-atomTypes['Sib'  ].setActions(incrementBond=[],              decrementBond=[],            formBond=['Sib'],   breakBond=['Sib'],   incrementRadical=['Sib'],   decrementRadical=['Sib'])
-atomTypes['Sibf' ].setActions(incrementBond=[],              decrementBond=[],            formBond=[],        breakBond=[],        incrementRadical=[],        decrementRadical=[])
-
-atomTypes['S'   ].setActions(incrementBond=['S'],            decrementBond=['S'],         formBond=['S'],     breakBond=['S'],     incrementRadical=['S'],     decrementRadical=['S'])
-atomTypes['Ss'  ].setActions(incrementBond=['Sd'],           decrementBond=[],            formBond=['Ss'],    breakBond=['Ss'],    incrementRadical=['Ss'],    decrementRadical=['Ss'])
-atomTypes['Sd'  ].setActions(incrementBond=[],               decrementBond=['Ss'],        formBond=[],        breakBond=[],        incrementRadical=[],        decrementRadical=[])
-atomTypes['Sa'  ].setActions(incrementBond=[],               decrementBond=[],            formBond=[],        breakBond=[],        incrementRadical=[],        decrementRadical=[])
-
-for atomType in atomTypes.values():
-    for items in [atomType.generic, atomType.specific,
-      atomType.incrementBond, atomType.decrementBond, atomType.formBond,
-      atomType.breakBond, atomType.incrementRadical, atomType.decrementRadical]:
-        for index in range(len(items)):
-            items[index] = atomTypes[items[index]]
-
-def getAtomType(atom, bonds):
-    """
-    Determine the appropriate atom type for an :class:`Atom` object `atom`
-    with local bond structure `bonds`, a ``dict`` containing atom-bond pairs.
-    """
-
-    cython.declare(atomType=str)
-    cython.declare(double=cython.double, double0=cython.double, triple=cython.double, benzene=cython.double)
-    
-    atomType = ''
-    
-    # Count numbers of each higher-order bond type
-    double = 0; doubleO = 0; triple = 0; benzene = 0
-    for atom2, bond12 in bonds.iteritems():
-        if bond12.isDouble():
-            if atom2.isOxygen(): doubleO +=1
-            else:                double += 1
-        elif bond12.isTriple(): triple += 1
-        elif bond12.isBenzene(): benzene += 1
-
-    # Use element and counts to determine proper atom type
-    if atom.symbol == 'C':
-        if   double == 0 and doubleO == 0 and triple == 0 and benzene == 0: atomType = 'Cs'
-        elif double == 1 and doubleO == 0 and triple == 0 and benzene == 0: atomType = 'Cd'
-        elif double + doubleO == 2        and triple == 0 and benzene == 0: atomType = 'Cdd'
-        elif double == 0 and doubleO == 0 and triple == 1 and benzene == 0: atomType = 'Ct'
-        elif double == 0 and doubleO == 1 and triple == 0 and benzene == 0: atomType = 'CO'
-        elif double == 0 and doubleO == 0 and triple == 0 and benzene == 2: atomType = 'Cb'
-        elif double == 0 and doubleO == 0 and triple == 0 and benzene == 3: atomType = 'Cbf'
-    elif atom.symbol == 'H':
-        atomType = 'H'
-    elif atom.symbol == 'O':
-        if   double + doubleO == 0 and triple == 0 and benzene == 0: atomType = 'Os'
-        elif double + doubleO == 1 and triple == 0 and benzene == 0: atomType = 'Od'
-        elif len(bonds) == 0:                                        atomType = 'Oa'
-    elif atom.symbol == 'Si':
-        if   double == 0 and doubleO == 0 and triple == 0 and benzene == 0: atomType = 'Sis'
-        elif double == 1 and doubleO == 0 and triple == 0 and benzene == 0: atomType = 'Sid'
-        elif double + doubleO == 2        and triple == 0 and benzene == 0: atomType = 'Sidd'
-        elif double == 0 and doubleO == 0 and triple == 1 and benzene == 0: atomType = 'Sit'
-        elif double == 0 and doubleO == 1 and triple == 0 and benzene == 0: atomType = 'SiO'
-        elif double == 0 and doubleO == 0 and triple == 0 and benzene == 2: atomType = 'Sib'
-        elif double == 0 and doubleO == 0 and triple == 0 and benzene == 3: atomType = 'Sibf'
-    elif atom.symbol == 'S':
-        if   double + doubleO == 0 and triple == 0 and benzene == 0: atomType = 'Ss'
-        elif double + doubleO == 1 and triple == 0 and benzene == 0: atomType = 'Sd'
-        elif len(bonds) == 0:                                        atomType = 'Sa'
-    elif atom.symbol == 'N' or atom.symbol == 'Ar' or atom.symbol == 'He' or atom.symbol == 'Ne':
-        return None
-
-    # Raise exception if we could not identify the proper atom type
-    if atomType == '':
-        raise AtomTypeError('Unable to determine atom type for atom %s.' % atom)
-
-    return atomTypes[atomType]
-
-################################################################################
-
-class AtomPattern(Vertex):
-    """
-    An atom pattern. This class is based on the :class:`Atom` class, except that
+    An atom group. This class is based on the :class:`Atom` class, except that
     it uses :ref:`atom types <atom-types>` instead of elements, and all
     attributes are lists rather than individual values. The attributes are:
 
@@ -304,10 +67,10 @@ class AtomPattern(Vertex):
     =================== =================== ====================================
 
     Each list represents a logical OR construct, i.e. an atom will match the
-    pattern if it matches *any* item in the list. However, the
+    group if it matches *any* item in the list. However, the
     `radicalElectrons`, `spinMultiplicity`, and `charge` attributes are linked
     such that an atom must match values from the same index in each of these in
-    order to match. Unlike an :class:`Atom` object, an :class:`AtomPattern`
+    order to match. Unlike an :class:`Atom` object, an :class:`GroupAtom`
     cannot store implicit hydrogen atoms.
     """
 
@@ -329,30 +92,31 @@ class AtomPattern(Vertex):
         atomType = self.atomType
         if atomType is not None:
             atomType = [a.label for a in atomType]
-        return (AtomPattern, (atomType, self.radicalElectrons, self.spinMultiplicity, self.charge, self.label))
+        return (GroupAtom, (atomType, self.radicalElectrons, self.spinMultiplicity, self.charge, self.label))
 
     def __str__(self):
         """
         Return a human-readable string representation of the object.
         """
-        return "<AtomPattern '%s'>" % (self.atomType)
+        return "<GroupAtom '{0}'>".format(self.atomType)
 
     def __repr__(self):
         """
         Return a representation that can be used to reconstruct the object.
         """
-        return "AtomPattern(atomType=%s, radicalElectrons=%s, spinMultiplicity=%s, charge=%s, label='%s')" % (self.atomType, self.radicalElectrons, self.spinMultiplicity, self.charge, self.label)
+        atomType = ','.join(['"{0}"'.format(a.label) for a in self.atomType])
+        return "GroupAtom(atomType=[{0}], radicalElectrons={1}, spinMultiplicity={2}, charge={3}, label='{4}')".format(atomType, self.radicalElectrons, self.spinMultiplicity, self.charge, self.label)
 
     def copy(self):
         """
-        Return a deep copy of the :class:`AtomPattern` object. Modifying the
+        Return a deep copy of the :class:`GroupAtom` object. Modifying the
         attributes of the copy will not affect the original.
         """
-        return AtomPattern(self.atomType[:], self.radicalElectrons[:], self.spinMultiplicity[:], self.charge[:], self.label)
+        return GroupAtom(self.atomType[:], self.radicalElectrons[:], self.spinMultiplicity[:], self.charge[:], self.label)
 
     def __changeBond(self, order):
         """
-        Update the atom pattern as a result of applying a CHANGE_BOND action,
+        Update the atom group as a result of applying a CHANGE_BOND action,
         where `order` specifies whether the bond is incremented or decremented
         in bond order, and should be 1 or -1.
         """
@@ -363,51 +127,53 @@ class AtomPattern(Vertex):
             elif order == -1:
                 atomType.extend(atom.decrementBond)
             else:
-                raise ActionError('Unable to update AtomPattern due to CHANGE_BOND action: Invalid order "%g".' % order)
+                raise ActionError('Unable to update GroupAtom due to CHANGE_BOND action: Invalid order "{0}".'.format(order))
         if len(atomType) == 0:
-            raise ActionError('Unable to update AtomPattern due to CHANGE_BOND action: Unknown atom type produced from set "%s".' % (self.atomType))
+            raise ActionError('Unable to update GroupAtom due to CHANGE_BOND action: Unknown atom type produced from set "{0}".'.format(self.atomType))
         # Set the new atom types, removing any duplicates
         self.atomType = list(set(atomType))
 
     def __formBond(self, order):
         """
-        Update the atom pattern as a result of applying a FORM_BOND action,
+        Update the atom group as a result of applying a FORM_BOND action,
         where `order` specifies the order of the forming bond, and should be
         'S' (since we only allow forming of single bonds).
         """
         if order != 'S':
-            raise ActionError('Unable to update AtomPattern due to FORM_BOND action: Invalid order "%s".' % order)
+            raise ActionError('Unable to update GroupAtom due to FORM_BOND action: Invalid order "{0}".'.format(order))
         atomType = []
         for atom in self.atomType:
             atomType.extend(atom.formBond)
         if len(atomType) == 0:
-            raise ActionError('Unable to update AtomPattern due to FORM_BOND action: Unknown atom type produced from set "%s".' % (self.atomType))
+            raise ActionError('Unable to update GroupAtom due to FORM_BOND action: Unknown atom type produced from set "{0}".'.format(self.atomType))
         # Set the new atom types, removing any duplicates
         self.atomType = list(set(atomType))
 
     def __breakBond(self, order):
         """
-        Update the atom pattern as a result of applying a BREAK_BOND action,
+        Update the atom group as a result of applying a BREAK_BOND action,
         where `order` specifies the order of the breaking bond, and should be
         'S' (since we only allow breaking of single bonds).
         """
         if order != 'S':
-            raise ActionError('Unable to update AtomPattern due to BREAK_BOND action: Invalid order "%s".' % order)
+            raise ActionError('Unable to update GroupAtom due to BREAK_BOND action: Invalid order "{0}".'.format(order))
         atomType = []
         for atom in self.atomType:
             atomType.extend(atom.breakBond)
         if len(atomType) == 0:
-            raise ActionError('Unable to update AtomPattern due to BREAK_BOND action: Unknown atom type produced from set "%s".' % (self.atomType))
+            raise ActionError('Unable to update GroupAtom due to BREAK_BOND action: Unknown atom type produced from set "{0}".'.format(self.atomType))
         # Set the new atom types, removing any duplicates
         self.atomType = list(set(atomType))
 
     def __gainRadical(self, radical):
         """
-        Update the atom pattern as a result of applying a GAIN_RADICAL action,
+        Update the atom group as a result of applying a GAIN_RADICAL action,
         where `radical` specifies the number of radical electrons to add.
         """
         radicalElectrons = []
         spinMultiplicity = []
+        if any([len(atomType.incrementRadical) == 0 for atomType in self.atomType]):
+            raise ActionError('Unable to update GroupAtom due to GAIN_RADICAL action: Unknown atom type produced from set "{0}".'.format(self.atomType))
         for electron, spin in zip(self.radicalElectrons, self.spinMultiplicity):
             radicalElectrons.append(electron + radical)
             spinMultiplicity.append(spin + radical)
@@ -417,14 +183,16 @@ class AtomPattern(Vertex):
 
     def __loseRadical(self, radical):
         """
-        Update the atom pattern as a result of applying a LOSE_RADICAL action,
+        Update the atom group as a result of applying a LOSE_RADICAL action,
         where `radical` specifies the number of radical electrons to remove.
         """
         radicalElectrons = []
         spinMultiplicity = []
+        if any([len(atomType.decrementRadical) == 0 for atomType in self.atomType]):
+            raise ActionError('Unable to update GroupAtom due to LOSE_RADICAL action: Unknown atom type produced from set "{0}".'.format(self.atomType))
         for electron, spin in zip(self.radicalElectrons, self.spinMultiplicity):
             if electron - radical < 0:
-                raise ActionError('Unable to update AtomPattern due to LOSE_RADICAL action: Invalid radical electron set "%s".' % (self.radicalElectrons))
+                raise ActionError('Unable to update GroupAtom due to LOSE_RADICAL action: Invalid radical electron set "{0}".'.format(self.radicalElectrons))
             radicalElectrons.append(electron - radical)
             if spin - radical < 0:
                 spinMultiplicity.append(spin - radical + 2)
@@ -436,7 +204,7 @@ class AtomPattern(Vertex):
 
     def applyAction(self, action):
         """
-        Update the atom pattern as a result of applying `action`, a tuple
+        Update the atom group as a result of applying `action`, a tuple
         containing the name of the reaction recipe action along with any
         required parameters. The available actions can be found
         :ref:`here <reaction-recipe-actions>`.
@@ -452,23 +220,23 @@ class AtomPattern(Vertex):
         elif action[0].upper() == 'LOSE_RADICAL':
             self.__loseRadical(action[2])
         else:
-            raise ActionError('Unable to update AtomPattern: Invalid action %s".' % (action))
+            raise ActionError('Unable to update GroupAtom: Invalid action {0}".'.format(action))
 
     def equivalent(self, other):
         """
         Returns ``True`` if `other` is equivalent to `self` or ``False`` if not,
-        where `other` can be either an :class:`Atom` or an :class:`AtomPattern`
-        object. When comparing two :class:`AtomPattern` objects, this function
+        where `other` can be either an :class:`Atom` or an :class:`GroupAtom`
+        object. When comparing two :class:`GroupAtom` objects, this function
         respects wildcards, e.g. ``R!H`` is equivalent to ``C``.
         """
 
-        if not isinstance(other, AtomPattern):
+        if not isinstance(other, GroupAtom):
             # Let the equivalent method of other handle it
             # We expect self to be an Atom object, but can't test for it here
             # because that would create an import cycle
             return other.equivalent(self)
 
-        # Compare two atom patterns for equivalence
+        # Compare two atom groups for equivalence
         # Each atom type in self must have an equivalent in other (and vice versa)
         for atomType1 in self.atomType:
             for atomType2 in other.atomType:
@@ -491,7 +259,7 @@ class AtomPattern(Vertex):
                 if radical1 == radical2 and spin1 == spin2: break
             else:
                 return False
-        # Otherwise the two atom patterns are equivalent
+        # Otherwise the two atom groups are equivalent
         return True
 
     def isSpecificCaseOf(self, other):
@@ -501,13 +269,13 @@ class AtomPattern(Vertex):
         included in `other` or they are mutually exclusive.
         """
 
-        if not isinstance(other, AtomPattern):
+        if not isinstance(other, GroupAtom):
             # Let the isSpecificCaseOf method of other handle it
             # We expect self to be an Atom object, but can't test for it here
             # because that would create an import cycle
             return other.isSpecificCaseOf(self)
 
-        # Compare two atom patterns for equivalence
+        # Compare two atom groups for equivalence
         # Each atom type in self must have an equivalent in other (and vice versa)
         for atomType1 in self.atomType: # all these must match
             for atomType2 in other.atomType: # can match any of these
@@ -525,9 +293,9 @@ class AtomPattern(Vertex):
 
 ################################################################################
 
-class BondPattern(Edge):
+class GroupBond(Edge):
     """
-    A bond pattern. This class is based on the :class:`Bond` class, except that
+    A bond group. This class is based on the :class:`Bond` class, except that
     all attributes are lists rather than individual values. The allowed bond
     types are given :ref:`here <bond-types>`. The attributes are:
 
@@ -538,7 +306,7 @@ class BondPattern(Edge):
     =================== =================== ====================================
 
     Each list represents a logical OR construct, i.e. a bond will match the
-    pattern if it matches *any* item in the list.
+    group if it matches *any* item in the list.
     """
 
     def __init__(self, order=None):
@@ -549,30 +317,30 @@ class BondPattern(Edge):
         """
         Return a human-readable string representation of the object.
         """
-        return "<BondPattern %s>" % (self.order)
+        return "<GroupBond {0}>".format(self.order)
 
     def __repr__(self):
         """
         Return a representation that can be used to reconstruct the object.
         """
-        return "BondPattern(order=%s)" % (self.order)
+        return "GroupBond(order={0})".format(self.order)
 
     def __reduce__(self):
         """
         A helper function used when pickling an object.
         """
-        return (BondPattern, (self.order,))
+        return (GroupBond, (self.order,))
 
     def copy(self):
         """
-        Return a deep copy of the :class:`BondPattern` object. Modifying the
+        Return a deep copy of the :class:`GroupBond` object. Modifying the
         attributes of the copy will not affect the original.
         """
-        return BondPattern(self.order[:])
+        return GroupBond(self.order[:])
 
     def __changeBond(self, order):
         """
-        Update the bond pattern as a result of applying a CHANGE_BOND action,
+        Update the bond group as a result of applying a CHANGE_BOND action,
         where `order` specifies whether the bond is incremented or decremented
         in bond order, and should be 1 or -1.
         """
@@ -582,20 +350,20 @@ class BondPattern(Edge):
                 if bond == 'S':         newOrder.append('D')
                 elif bond == 'D':       newOrder.append('T')
                 else:
-                    raise ActionError('Unable to update BondPattern due to CHANGE_BOND action: Invalid bond order "%s" in set %s".' % (bond, self.order))
+                    raise ActionError('Unable to update GroupBond due to CHANGE_BOND action: Invalid bond order "{0}" in set {1}".'.format(bond, self.order))
             elif order == -1:
                 if bond == 'D':         newOrder.append('S')
                 elif bond == 'T':       newOrder.append('D')
                 else:
-                    raise ActionError('Unable to update BondPattern due to CHANGE_BOND action: Invalid bond order "%s" in set %s".' % (bond, self.order))
+                    raise ActionError('Unable to update GroupBond due to CHANGE_BOND action: Invalid bond order "{0}" in set {1}".'.format(bond, self.order))
             else:
-                raise ActionError('Unable to update BondPattern due to CHANGE_BOND action: Invalid order "%g".' % order)
+                raise ActionError('Unable to update GroupBond due to CHANGE_BOND action: Invalid order "{0}".'.format(order))
         # Set the new bond orders, removing any duplicates
         self.order = list(set(newOrder))
 
     def applyAction(self, action):
         """
-        Update the bond pattern as a result of applying `action`, a tuple
+        Update the bond group as a result of applying `action`, a tuple
         containing the name of the reaction recipe action along with any
         required parameters. The available actions can be found
         :ref:`here <reaction-recipe-actions>`.
@@ -603,22 +371,22 @@ class BondPattern(Edge):
         if action[0].upper() == 'CHANGE_BOND':
             self.__changeBond(action[2])
         else:
-            raise ActionError('Unable to update BondPattern: Invalid action %s".' % (action))
+            raise ActionError('Unable to update GroupBond: Invalid action {0}".'.format(action))
 
     def equivalent(self, other):
         """
         Returns ``True`` if `other` is equivalent to `self` or ``False`` if not,
-        where `other` can be either an :class:`Bond` or an :class:`BondPattern`
+        where `other` can be either an :class:`Bond` or an :class:`GroupBond`
         object.
         """
 
-        if not isinstance(other, BondPattern):
+        if not isinstance(other, GroupBond):
             # Let the equivalent method of other handle it
             # We expect self to be a Bond object, but can't test for it here
             # because that would create an import cycle
             return other.equivalent(self)
 
-        # Compare two bond patterns for equivalence
+        # Compare two bond groups for equivalence
         # Each atom type in self must have an equivalent in other (and vice versa)
         for order1 in self.order:
             for order2 in other.order:
@@ -630,7 +398,7 @@ class BondPattern(Edge):
                 if order1 == order2: break
             else:
                 return False
-        # Otherwise the two bond patterns are equivalent
+        # Otherwise the two bond groups are equivalent
         return True
 
     def isSpecificCaseOf(self, other):
@@ -640,13 +408,13 @@ class BondPattern(Edge):
         included in `other` or they are mutually exclusive.
         """
 
-        if not isinstance(other, BondPattern):
+        if not isinstance(other, GroupBond):
             # Let the isSpecificCaseOf method of other handle it
             # We expect self to be a Bond object, but can't test for it here
             # because that would create an import cycle
             return other.isSpecificCaseOf(self)
 
-        # Compare two bond patterns for equivalence
+        # Compare two bond groups for equivalence
         # Each atom type in self must have an equivalent in other
         for order1 in self.order: # all these must match
             for order2 in other.order: # can match any of these
@@ -658,12 +426,12 @@ class BondPattern(Edge):
 
 ################################################################################
 
-class MoleculePattern(Graph):
+class Group(Graph):
     """
-    A representation of a molecular substructure pattern using a graph data
+    A representation of a molecular substructure group using a graph data
     type, extending the :class:`Graph` class. The `atoms` and `bonds` attributes
     are aliases for the `vertices` and `edges` attributes, and store 
-    :class:`AtomPattern` and :class:`BondPattern` objects, respectively.
+    :class:`GroupAtom` and :class:`GroupBond` objects, respectively.
     Corresponding alias methods have also been provided.
     """
 
@@ -675,7 +443,7 @@ class MoleculePattern(Graph):
         """
         A helper function used when pickling an object.
         """
-        return (MoleculePattern, (self.vertices, self.edges))
+        return (Group, (self.vertices, self.edges))
 
     def __getAtoms(self): return self.vertices
     def __setAtoms(self, atoms): self.vertices = atoms
@@ -754,43 +522,43 @@ class MoleculePattern(Graph):
         If `deep` is ``False`` or not specified, a shallow copy is made: the
         original vertices and edges are used in the new graph.
         """
-        other = cython.declare(MoleculePattern)
+        other = cython.declare(Group)
         g = Graph.copy(self, deep)
-        other = MoleculePattern(g.vertices, g.edges)
+        other = Group(g.vertices, g.edges)
         return other
 
     def merge(self, other):
         """
-        Merge two patterns so as to store them in a single
-        :class:`MoleculePattern` object. The merged :class:`MoleculePattern`
+        Merge two groups so as to store them in a single
+        :class:`Group` object. The merged :class:`Group`
         object is returned.
         """
         g = Graph.merge(self, other)
-        molecule = MoleculePattern(atoms=g.vertices, bonds=g.edges)
+        molecule = Group(atoms=g.vertices, bonds=g.edges)
         return molecule
 
     def split(self):
         """
-        Convert a single :class:`MoleculePattern` object containing two or more
-        unconnected patterns into separate class:`MoleculePattern` objects.
+        Convert a single :class:`Group` object containing two or more
+        unconnected groups into separate class:`Group` objects.
         """
         graphs = Graph.split(self)
         molecules = []
         for g in graphs:
-            molecule = MoleculePattern(atoms=g.vertices, bonds=g.edges)
+            molecule = Group(atoms=g.vertices, bonds=g.edges)
             molecules.append(molecule)
         return molecules
 
     def clearLabeledAtoms(self):
         """
-        Remove the labels from all atoms in the molecular pattern.
+        Remove the labels from all atoms in the molecular group.
         """
         for atom in self.vertices:
             atom.label = ''
 
     def containsLabeledAtom(self, label):
         """
-        Return ``True`` if the pattern contains an atom with the label
+        Return ``True`` if the group contains an atom with the label
         `label` and ``False`` otherwise.
         """
         for atom in self.vertices:
@@ -799,11 +567,12 @@ class MoleculePattern(Graph):
 
     def getLabeledAtom(self, label):
         """
-        Return the atoms in the pattern that are labeled.
+        Return the atom in the group that is labeled with the given `label`.
+        Raises :class:`ValueError` if no atom in the group has that label.
         """
         for atom in self.vertices:
             if atom.label == label: return atom
-        return None
+        raise ValueError('No atom in the functional group has the label "{0}".'.format(label))
 
     def getLabeledAtoms(self):
         """
@@ -827,7 +596,7 @@ class MoleculePattern(Graph):
         Skips the first line (assuming it's a label) unless `withLabel` is
         ``False``.
         """
-        self.vertices, self.edges = fromAdjacencyList(adjlist, pattern=True, addH=False)
+        self.vertices, self.edges = fromAdjacencyList(adjlist, group=True, addH=False)
         self.updateConnectivityValues()
         return self
 
@@ -835,7 +604,7 @@ class MoleculePattern(Graph):
         """
         Convert the molecular structure to a string adjacency list.
         """
-        return toAdjacencyList(self, label='', pattern=True)
+        return toAdjacencyList(self, label='', group=True)
 
     def isIsomorphic(self, other, initialMap=None):
         """
@@ -843,12 +612,12 @@ class MoleculePattern(Graph):
         otherwise. The `initialMap` attribute can be used to specify a required
         mapping from `self` to `other` (i.e. the atoms of `self` are the keys,
         while the atoms of `other` are the values). The `other` parameter must
-        be a :class:`MoleculePattern` object, or a :class:`TypeError` is raised.
+        be a :class:`Group` object, or a :class:`TypeError` is raised.
         """
-        # It only makes sense to compare a MoleculePattern to a MoleculePattern for full
+        # It only makes sense to compare a Group to a Group for full
         # isomorphism, so raise an exception if this is not what was requested
-        if not isinstance(other, MoleculePattern):
-            raise TypeError('Got a %s object for parameter "other", when a MoleculePattern object is required.' % other.__class__)
+        if not isinstance(other, Group):
+            raise TypeError('Got a {0} object for parameter "other", when a Group object is required.'.format(other.__class__))
         # Do the isomorphism comparison
         return Graph.isIsomorphic(self, other, initialMap)
 
@@ -860,12 +629,12 @@ class MoleculePattern(Graph):
         atoms of `self` are the keys, while the atoms of `other` are the
         values). The returned mapping also uses the atoms of `self` for the keys
         and the atoms of `other` for the values. The `other` parameter must
-        be a :class:`MoleculePattern` object, or a :class:`TypeError` is raised.
+        be a :class:`Group` object, or a :class:`TypeError` is raised.
         """
-        # It only makes sense to compare a MoleculePattern to a MoleculePattern for full
+        # It only makes sense to compare a Group to a Group for full
         # isomorphism, so raise an exception if this is not what was requested
-        if not isinstance(other, MoleculePattern):
-            raise TypeError('Got a %s object for parameter "other", when a MoleculePattern object is required.' % other.__class__)
+        if not isinstance(other, Group):
+            raise TypeError('Got a {0} object for parameter "other", when a Group object is required.'.format(other.__class__))
         # Do the isomorphism comparison
         return Graph.findIsomorphism(self, other, initialMap)
 
@@ -875,12 +644,12 @@ class MoleculePattern(Graph):
         otherwise. The `initialMap` attribute can be used to specify a required
         mapping from `self` to `other` (i.e. the atoms of `self` are the keys,
         while the atoms of `other` are the values). The `other` parameter must
-        be a :class:`MoleculePattern` object, or a :class:`TypeError` is raised.
+        be a :class:`Group` object, or a :class:`TypeError` is raised.
         """
-        # It only makes sense to compare a MoleculePattern to a MoleculePattern for subgraph
+        # It only makes sense to compare a Group to a Group for subgraph
         # isomorphism, so raise an exception if this is not what was requested
-        if not isinstance(other, MoleculePattern):
-            raise TypeError('Got a %s object for parameter "other", when a MoleculePattern object is required.' % other.__class__)
+        if not isinstance(other, Group):
+            raise TypeError('Got a {0} object for parameter "other", when a Group object is required.'.format(other.__class__))
         # Do the isomorphism comparison
         return Graph.isSubgraphIsomorphic(self, other, initialMap)
 
@@ -892,13 +661,13 @@ class MoleculePattern(Graph):
         `self` to `other` (i.e. the atoms of `self` are the keys, while the
         atoms of `other` are the values). The returned mappings also use the
         atoms of `self` for the keys and the atoms of `other` for the values.
-        The `other` parameter must be a :class:`MoleculePattern` object, or a
+        The `other` parameter must be a :class:`Group` object, or a
         :class:`TypeError` is raised.
         """
-        # It only makes sense to compare a MoleculePattern to a MoleculePattern for subgraph
+        # It only makes sense to compare a Group to a Group for subgraph
         # isomorphism, so raise an exception if this is not what was requested
-        if not isinstance(other, MoleculePattern):
-            raise TypeError('Got a %s object for parameter "other", when a MoleculePattern object is required.' % other.__class__)
+        if not isinstance(other, Group):
+            raise TypeError('Got a {0} object for parameter "other", when a Group object is required.'.format(other.__class__))
         # Do the isomorphism comparison
         return Graph.findSubgraphIsomorphisms(self, other, initialMap)
 
@@ -911,11 +680,11 @@ class InvalidAdjacencyListError(Exception):
     """
     pass
 
-def fromAdjacencyList(adjlist, pattern=False, addH=False):
+def fromAdjacencyList(adjlist, group=False, addH=False):
     """
     Convert a string adjacency list `adjlist` into a set of :class:`Atom` and
-    :class:`Bond` objects (if `pattern` is ``False``) or a set of
-    :class:`AtomPattern` and :class:`BondPattern` objects (if `pattern` is
+    :class:`Bond` objects (if `group` is ``False``) or a set of
+    :class:`GroupAtom` and :class:`GroupBond` objects (if `group` is
     ``True``). Only adds hydrogen atoms if `addH` is ``True``. Skips the first
     line (assuming it's a label) unless `withLabel` is ``False``.
     """
@@ -934,7 +703,7 @@ def fromAdjacencyList(adjlist, pattern=False, addH=False):
         # Skip the first line if it contains a label
         if len(lines) > 0 and len(lines[0].split()) == 1:
             label = lines.pop(0)
-        # Iterate over the remaining lines, generating Atom or AtomPattern objects
+        # Iterate over the remaining lines, generating Atom or GroupAtom objects
         if len(lines) == 0:
             raise InvalidAdjacencyListError('No atoms specified in adjacency list.')
         for line in lines:
@@ -991,8 +760,8 @@ def fromAdjacencyList(adjlist, pattern=False, addH=False):
                     radicalElectrons.append(4); spinMultiplicity.append(5)
 
             # Create a new atom based on the above information
-            if pattern:
-                atom = AtomPattern(atomType, radicalElectrons, spinMultiplicity, [0 for e in radicalElectrons], label)
+            if group:
+                atom = GroupAtom(atomType, radicalElectrons, spinMultiplicity, [0 for e in radicalElectrons], label)
             else:
                 atom = Atom(atomType[0], radicalElectrons[0], spinMultiplicity[0], 0, 0, label)
 
@@ -1011,7 +780,7 @@ def fromAdjacencyList(adjlist, pattern=False, addH=False):
                 aid2, comma, order = datum[1:-1].partition(',')
                 aid2 = int(aid2)
                 if aid == aid2:
-                    raise InvalidAdjacencyListError('Attempted to create a bond between atom %i and itself.' % (aid))
+                    raise InvalidAdjacencyListError('Attempted to create a bond between atom {0:d} and itself.'.format(aid))
                 
                 if order[0] == '{':
                     order = order[1:-1].split(',')
@@ -1024,20 +793,20 @@ def fromAdjacencyList(adjlist, pattern=False, addH=False):
         for atom1 in bonds:
             for atom2 in bonds[atom1]:
                 if atom2 not in bonds:
-                    raise InvalidAdjacencyListError('Atom %i not in bond dictionary.' % atom2)
+                    raise InvalidAdjacencyListError('Atom {0:d} not in bond dictionary.'.format(atom2))
                 elif atom1 not in bonds[atom2]:
-                    raise InvalidAdjacencyListError('Found bond between %i and %i, but not the reverse.' % (atom1, atom2))
+                    raise InvalidAdjacencyListError('Found bond between {0:d} and {1:d}, but not the reverse.'.format(atom1, atom2))
                 elif bonds[atom1][atom2] != bonds[atom2][atom1]:
-                    raise InvalidAdjacencyListError('Found bonds between %i and %i, but of different orders "%s" and "%s".' % (atom1, atom2, bonds[atom1][atom2], bonds[atom2][atom1]))
+                    raise InvalidAdjacencyListError('Found bonds between {0:d} and {1:d}, but of different orders "{2}" and "{3}".'.format(atom1, atom2, bonds[atom1][atom2], bonds[atom2][atom1]))
 
-        # Convert bonddict to use Atom[Pattern] and Bond[Pattern] objects
+        # Convert bonddict to use Atom[group] and Bond[group] objects
         for aid1 in atomdict:
             bonds[atomdict[aid1]] = {}
             for aid2 in bonds[aid1]:
                 if aid1 < aid2:
                     order = bonds[aid1][aid2]
-                    if pattern:
-                        bonds[atomdict[aid1]][atomdict[aid2]] = BondPattern(order)
+                    if group:
+                        bonds[atomdict[aid1]][atomdict[aid2]] = GroupBond(order)
                     elif len(order) == 1:
                         bonds[atomdict[aid1]][atomdict[aid2]] = Bond(order[0])
                     else:
@@ -1047,7 +816,7 @@ def fromAdjacencyList(adjlist, pattern=False, addH=False):
             del bonds[aid1]
             
         # Add explicit hydrogen atoms to complete structure if desired
-        if addH and not pattern:
+        if addH and not group:
             valences = {'H': 1, 'C': 4, 'O': 2, 'N': 3, 'S': 2, 'Si': 4, 'He': 0, 'Ne': 0, 'Ar': 0}
             orders = {'S': 1, 'D': 2, 'T': 3, 'B': 1.5}
             newAtoms = []
@@ -1055,7 +824,7 @@ def fromAdjacencyList(adjlist, pattern=False, addH=False):
                 try:
                     valence = valences[atom.symbol]
                 except KeyError:
-                    raise InvalidAdjacencyListError('Cannot add hydrogens to adjacency list: Unknown valence for atom "%s".' % atom.symbol)
+                    raise InvalidAdjacencyListError('Cannot add hydrogens to adjacency list: Unknown valence for atom "{0}".'.format(atom.symbol))
                 radical = atom.radicalElectrons
                 order = 0
                 for atom2, bond in bonds[atom].iteritems():
@@ -1075,11 +844,11 @@ def fromAdjacencyList(adjlist, pattern=False, addH=False):
     
     return atoms, bonds
 
-def toAdjacencyList(molecule, label='', pattern=False, removeH=False):
+def toAdjacencyList(molecule, label='', group=False, removeH=False):
     """
-    Convert the `molecule` object to an adjacency list. `pattern` specifies
+    Convert the `molecule` object to an adjacency list. `group` specifies
     whether the graph object is a complete molecule (if ``False``) or a
-    substructure pattern (if ``True``). The `label` parameter is an optional
+    substructure group (if ``True``). The `label` parameter is an optional
     string to put as the first line of the adjacency list; if set to the empty
     string, this line will be omitted. If `removeH` is ``True``, hydrogen atoms
     (that do not have labels) will not be printed; this is a valid shorthand,
@@ -1112,17 +881,17 @@ def toAdjacencyList(molecule, label='', pattern=False, removeH=False):
         if removeH and atom.isHydrogen() and atom.label=='': continue
 
         # Atom number
-        adjlist += '%-2d ' % (atomNumbers[atom])
+        adjlist += '{0:<2} '.format(atomNumbers[atom])
 
         # Atom label
-        adjlist += "%-2s " % (atom.label)
+        adjlist += '{0:<2} '.format(atom.label)
 
-        if pattern:
+        if group:
             # Atom type(s)
             if len(atom.atomType) == 1:
                 adjlist += atom.atomType[0].label + ' '
             else:
-                adjlist += '{%s} ' % (','.join([a.label for a in atom.atomType]))
+                adjlist += '{{{0}}} '.format(','.join([a.label for a in atom.atomType]))
             # Electron state(s)
             if len(atom.radicalElectrons) > 1: adjlist += '{'
             for radical, spin in zip(atom.radicalElectrons, atom.spinMultiplicity):
@@ -1136,7 +905,7 @@ def toAdjacencyList(molecule, label='', pattern=False, removeH=False):
             if len(atom.radicalElectrons) > 1: adjlist = adjlist[0:-1] + '}'
         else:
             # Atom type
-            adjlist += "%-5s " % atom.symbol
+            adjlist += "{0:<5} ".format(atom.symbol)
             # Electron state(s)
             if atom.radicalElectrons == 0: adjlist += '0'
             elif atom.radicalElectrons == 1: adjlist += '1'
@@ -1153,14 +922,14 @@ def toAdjacencyList(molecule, label='', pattern=False, removeH=False):
         for atom2 in atoms2:
             if removeH and atom2.isHydrogen() and atom2.label=='': continue
             bond = bonds[atom][atom2]
-            adjlist += ' {%i,' % atomNumbers[atom2]
+            adjlist += ' {{{0:d},'.format(atomNumbers[atom2])
 
             # Bond type(s)
-            if pattern:
+            if group:
                 if len(bond.order) == 1:
                     adjlist += bond.order[0]
                 else:
-                    adjlist += '{%s}' % (','.join(bond.order))
+                    adjlist += '{{{0}}}'.format(','.join(bond.order))
             else:
                 adjlist += bond.order
             adjlist += '}'
