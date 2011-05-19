@@ -1,14 +1,20 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
+# encoding: utf-8 -*-
+
+"""
+This module can be used to invoke all of the unit tests in a single command.
+"""
 
 import unittest
 
-from gaussianTest import *
-from geometryTest import *
+from atomtypeTest import *
+from elementTest import *
 from graphTest import *
+from groupTest import *
+from kineticsTest import *
 from moleculeTest import *
-from reactionTest import *
-from statesTest import *
+from quantityTest import *
+from statmechTest import *
 from thermoTest import *
 
-unittest.main( testRunner = unittest.TextTestRunner(verbosity=2) )
+unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))
