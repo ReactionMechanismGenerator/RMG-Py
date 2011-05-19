@@ -39,8 +39,8 @@ import cython
 
 import element as elements
 from graph import Vertex, Edge, Graph
-from pattern import AtomPattern, BondPattern, MoleculePattern, AtomType, ActionError
-from pattern import atomTypes, getAtomType, fromAdjacencyList, toAdjacencyList
+from group import GroupAtom, GroupBond, Group, ActionError, fromAdjacencyList, toAdjacencyList
+from atomtype import AtomType, atomTypes, getAtomType
 
 ################################################################################
 
@@ -82,7 +82,7 @@ class Atom(Vertex):
         """
         Return a human-readable string representation of the object.
         """
-        return "<Atom '%s'>" % (
+        return "<Atom '{0}>".format(
             str(self.element) +
             ''.join(['.' for i in range(self.radicalElectrons)]) +
             ''.join(['+' for i in range(self.charge)]) +
@@ -93,7 +93,7 @@ class Atom(Vertex):
         """
         Return a representation that can be used to reconstruct the object.
         """
-        return "Atom(element='%s', radicalElectrons=%s, spinMultiplicity=%s, implicitHydrogens=%s, charge=%s, label='%s')" % (self.element, self.radicalElectrons, self.spinMultiplicity, self.implicitHydrogens, self.charge, self.label)
+        return 'Atom(element="{0}", radicalElectrons={1}, spinMultiplicity={2}, implicitHydrogens={3}, charge={4}, label="{5}")'.format(self.element, self.radicalElectrons, self.spinMultiplicity, self.implicitHydrogens, self.charge, self.label)
 
     def __reduce__(self):
         """
@@ -132,10 +132,10 @@ class Atom(Vertex):
         Return ``True`` if `other` is indistinguishable from this atom, or
         ``False`` otherwise. If `other` is an :class:`Atom` object, then all
         attributes except `label` must match exactly. If `other` is an
-        :class:`AtomPattern` object, then the atom must match any of the
+        :class:`GroupAtom` object, then the atom must match any of the
         combinations in the atom pattern.
         """
-        cython.declare(atom=Atom, ap=AtomPattern)
+        cython.declare(atom=Atom, ap=GroupAtom)
         if isinstance(other, Atom):
             atom = other
             return (self.element is atom.element and
@@ -143,7 +143,7 @@ class Atom(Vertex):
                 self.spinMultiplicity == atom.spinMultiplicity and
                 self.implicitHydrogens == atom.implicitHydrogens and
                 self.charge == atom.charge)
-        elif isinstance(other, AtomPattern):
+        elif isinstance(other, GroupAtom):
             cython.declare(a=AtomType, radical=cython.short, spin=cython.short, charge=cython.short)
             ap = other
             for a in ap.atomType:
@@ -165,13 +165,13 @@ class Atom(Vertex):
         Return ``True`` if `self` is a specific case of `other`, or ``False``
         otherwise. If `other` is an :class:`Atom` object, then this is the same
         as the :meth:`equivalent()` method. If `other` is an
-        :class:`AtomPattern` object, then the atom must match or be more
+        :class:`GroupAtom` object, then the atom must match or be more
         specific than any of the combinations in the atom pattern.
         """
         if isinstance(other, Atom):
             return self.equivalent(other)
-        elif isinstance(other, AtomPattern):
-            cython.declare(atom=AtomPattern, a=AtomType, radical=cython.short, spin=cython.short, charge=cython.short)
+        elif isinstance(other, GroupAtom):
+            cython.declare(atom=GroupAtom, a=AtomType, radical=cython.short, spin=cython.short, charge=cython.short)
             atom = other
             for a in atom.atomType: 
                 if self.atomType.isSpecificCaseOf(a): break
@@ -240,7 +240,7 @@ class Atom(Vertex):
         """
         # Set the new radical electron counts and spin multiplicities
         if self.radicalElectrons - 1 < 0:
-            raise ActionError('Unable to update Atom due to LOSE_RADICAL action: Invalid radical electron set "%s".' % (self.radicalElectrons))
+            raise ActionError('Unable to update Atom due to LOSE_RADICAL action: Invalid radical electron set "{0}".'.format(self.radicalElectrons))
         self.radicalElectrons -= 1
         if self.spinMultiplicity - 1 < 0:
             self.spinMultiplicity -= 1 - 2
@@ -265,7 +265,7 @@ class Atom(Vertex):
         elif action[0].upper() == 'LOSE_RADICAL':
             for i in range(abs(action[2])): self.decrementRadical()
         else:
-            raise ActionError('Unable to update Atom: Invalid action %s".' % (action))
+            raise ActionError('Unable to update Atom: Invalid action {0}".'.format(action))
 
 ################################################################################
 
@@ -289,13 +289,13 @@ class Bond(Edge):
         """
         Return a human-readable string representation of the object.
         """
-        return "<Bond '%s'>" % (self.order)
+        return '<Bond "{0}">'.format(self.order)
 
     def __repr__(self):
         """
         Return a representation that can be used to reconstruct the object.
         """
-        return "Bond(order='%s')" % (self.order)
+        return 'Bond(order="{0}")'.format(self.order)
 
     def __reduce__(self):
         """
@@ -307,13 +307,13 @@ class Bond(Edge):
         """
         Return ``True`` if `other` is indistinguishable from this bond, or
         ``False`` otherwise. `other` can be either a :class:`Bond` or a
-        :class:`BondPattern` object.
+        :class:`GroupBond` object.
         """
-        cython.declare(bond=Bond, bp=BondPattern)
+        cython.declare(bond=Bond, bp=GroupBond)
         if isinstance(other, Bond):
             bond = other
             return (self.order == bond.order)
-        elif isinstance(other, BondPattern):
+        elif isinstance(other, GroupBond):
             bp = other
             return (self.order in bp.order)
 
@@ -321,7 +321,7 @@ class Bond(Edge):
         """
         Return ``True`` if `self` is a specific case of `other`, or ``False``
         otherwise. `other` can be either a :class:`Bond` or a
-        :class:`BondPattern` object.
+        :class:`GroupBond` object.
         """
         # There are no generic bond types, so isSpecificCaseOf is the same as equivalent
         return self.equivalent(other)
@@ -369,7 +369,7 @@ class Bond(Edge):
         if self.order == 'S': self.order = 'D'
         elif self.order == 'D': self.order = 'T'
         else:
-            raise ActionError('Unable to update Bond due to CHANGE_BOND action: Invalid bond order "%s".' % (self.order))
+            raise ActionError('Unable to update Bond due to CHANGE_BOND action: Invalid bond order "{0}".'.format(self.order))
         
     def decrementOrder(self):
         """
@@ -379,7 +379,7 @@ class Bond(Edge):
         if self.order == 'D': self.order = 'S'
         elif self.order == 'T': self.order = 'D'
         else:
-            raise ActionError('Unable to update Bond due to CHANGE_BOND action: Invalid bond order "%s".' % (self.order))
+            raise ActionError('Unable to update Bond due to CHANGE_BOND action: Invalid bond order "{0}".'.format(self.order))
         
     def __changeBond(self, order):
         """
@@ -391,14 +391,14 @@ class Bond(Edge):
             if self.order == 'S': self.order = 'D'
             elif self.order == 'D': self.order = 'T'
             else:
-                raise ActionError('Unable to update Bond due to CHANGE_BOND action: Invalid bond order "%s".' % (self.order))
+                raise ActionError('Unable to update Bond due to CHANGE_BOND action: Invalid bond order "{0}".'.format(self.order))
         elif order == -1:
             if self.order == 'D': self.order = 'S'
             elif self.order == 'T': self.order = 'D'
             else:
-                raise ActionError('Unable to update Bond due to CHANGE_BOND action: Invalid bond order "%s".' % (self.order))
+                raise ActionError('Unable to update Bond due to CHANGE_BOND action: Invalid bond order "{0}".'.format(self.order))
         else:
-            raise ActionError('Unable to update Bond due to CHANGE_BOND action: Invalid order "%g".' % order)
+            raise ActionError('Unable to update Bond due to CHANGE_BOND action: Invalid order "{0}".'.format(order))
 
     def applyAction(self, action):
         """
@@ -413,9 +413,9 @@ class Bond(Edge):
             elif action[2] == -1:
                 self.decrementOrder()
             else:
-                raise ActionError('Unable to update Bond due to CHANGE_BOND action: Invalid order "%g".' % action[2])
+                raise ActionError('Unable to update Bond due to CHANGE_BOND action: Invalid order "{0}".'.format(action[2]))
         else:
-            raise ActionError('Unable to update BondPattern: Invalid action %s".' % (action))
+            raise ActionError('Unable to update GroupBond: Invalid action {0}.'.format(action))
 
 ################################################################################
 
@@ -447,13 +447,13 @@ class Molecule(Graph):
         """
         Return a human-readable string representation of the object.
         """
-        return "<Molecule '%s'>" % (self.toSMILES())
+        return '<Molecule "{0}">'.format(self.toSMILES())
 
     def __repr__(self):
         """
         Return a representation that can be used to reconstruct the object.
         """
-        return "Molecule(SMILES='%s')" % (self.toSMILES())
+        return 'Molecule(SMILES="{0}")'.format(self.toSMILES())
 
     def __reduce__(self):
         """
@@ -543,7 +543,12 @@ class Molecule(Graph):
         """
         Return the molecular weight of the molecule in kg/mol.
         """
-        return sum([atom.element.mass for atom in self.vertices])
+        mass = 0
+        H = elements.getElement('H')
+        for atom in self.vertices:
+            mass += atom.element.mass
+            mass += atom.implicitHydrogens * H.mass
+        return mass
 
     def copy(self, deep=False):
         """
@@ -683,7 +688,7 @@ class Molecule(Graph):
         """
         for atom in self.vertices:
             if atom.label == label: return atom
-        return None
+        raise ValueError('No atom in the molecule has the label "{0}".'.format(label))
 
     def getLabeledAtoms(self):
         """
@@ -713,7 +718,7 @@ class Molecule(Graph):
         # It only makes sense to compare a Molecule to a Molecule for full
         # isomorphism, so raise an exception if this is not what was requested
         if not isinstance(other0, Molecule):
-            raise TypeError('Got a %s object for parameter "other", when a Molecule object is required.' % other.__class__)
+            raise TypeError('Got a {0} object for parameter "other", when a Molecule object is required.'.format(other.__class__))
         other = other0
         # Ensure that both self and other have the same implicit hydrogen status
         # If not, make them both explicit just to be safe
@@ -743,7 +748,7 @@ class Molecule(Graph):
         # It only makes sense to compare a Molecule to a Molecule for full
         # isomorphism, so raise an exception if this is not what was requested
         if not isinstance(other0, Molecule):
-            raise TypeError('Got a %s object for parameter "other", when a Molecule object is required.' % other.__class__)
+            raise TypeError('Got a {0} object for parameter "other", when a Molecule object is required.'.format(other.__class__))
         other = other0
         # Ensure that both self and other have the same implicit hydrogen status
         # If not, make them both explicit just to be safe
@@ -765,12 +770,12 @@ class Molecule(Graph):
         otherwise. The `initialMap` attribute can be used to specify a required
         mapping from `self` to `other` (i.e. the atoms of `self` are the keys,
         while the atoms of `other` are the values). The `other` parameter must
-        be a :class:`MoleculePattern` object, or a :class:`TypeError` is raised.
+        be a :class:`Group` object, or a :class:`TypeError` is raised.
         """
-        # It only makes sense to compare a Molecule to a MoleculePattern for subgraph
+        # It only makes sense to compare a Molecule to a Group for subgraph
         # isomorphism, so raise an exception if this is not what was requested
-        if not isinstance(other, MoleculePattern):
-            raise TypeError('Got a %s object for parameter "other", when a MoleculePattern object is required.' % other.__class__)
+        if not isinstance(other, Group):
+            raise TypeError('Got a {0} object for parameter "other", when a Molecule object is required.'.format(other.__class__))
         # Ensure that self is explicit (assume other is explicit)
         implicitH = self.implicitHydrogens
         if implicitH: self.makeHydrogensExplicit()
@@ -788,13 +793,13 @@ class Molecule(Graph):
         `self` to `other` (i.e. the atoms of `self` are the keys, while the
         atoms of `other` are the values). The returned mappings also use the
         atoms of `self` for the keys and the atoms of `other` for the values.
-        The `other` parameter must be a :class:`MoleculePattern` object, or a
+        The `other` parameter must be a :class:`Group` object, or a
         :class:`TypeError` is raised.
         """
-        # It only makes sense to compare a Molecule to a MoleculePattern for subgraph
+        # It only makes sense to compare a Molecule to a Group for subgraph
         # isomorphism, so raise an exception if this is not what was requested
-        if not isinstance(other, MoleculePattern):
-            raise TypeError('Got a %s object for parameter "other", when a MoleculePattern object is required.' % other.__class__)
+        if not isinstance(other, Group):
+            raise TypeError('Got a {0} object for parameter "other", when a Molecule object is required.'.format(other.__class__))
         # Ensure that self is explicit (assume other is explicit)
         implicitH = self.implicitHydrogens
         if implicitH: self.makeHydrogensExplicit()
@@ -1026,7 +1031,7 @@ class Molecule(Graph):
         """
         implicitH = self.implicitHydrogens
         self.makeHydrogensExplicit()
-        result = toAdjacencyList(self, label=label, pattern=False, removeH=removeH)
+        result = toAdjacencyList(self, label=label, group=False, removeH=removeH)
         if implicitH: self.makeHydrogensImplicit()
         return result
 

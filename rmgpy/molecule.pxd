@@ -25,7 +25,8 @@
 ################################################################################
 
 from graph cimport Vertex, Edge, Graph
-from pattern cimport AtomPattern, BondPattern, MoleculePattern, AtomType
+from atomtype cimport AtomType
+from group cimport GroupAtom, GroupBond, Group
 from element cimport Element
 
 ################################################################################
