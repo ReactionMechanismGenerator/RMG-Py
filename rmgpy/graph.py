@@ -357,8 +357,6 @@ class Graph:
         cython.declare(count=cython.short, edges=dict)
         cython.declare(vertex1=Vertex, vertex2=Vertex)
 
-        assert str(self.__class__) != 'chempy.molecule.Molecule' or not self.implicitHydrogens, "%s has implicit hydrogens" % self
-
         for vertex1 in self.vertices:
             count = len(self.edges[vertex1])
             vertex1.connectivity1 = count
@@ -384,6 +382,9 @@ class Graph:
             if vertex.sortingLabel < 0: break
         else:
             return
+        # If we need to sort then let's also update the connecitivities so
+        # we're sure they are right, since the sorting labels depend on them
+        self.updateConnectivityValues()
         self.vertices.sort(key=getVertexConnectivityValue)
         for index, vertex in enumerate(self.vertices):
             vertex.sortingLabel = index
@@ -833,7 +834,7 @@ def __VF2_match(graph1, graph2, map21, map12, terminals1, terminals2, subgraph,
 
     # Make sure we don't get cause in an infinite recursive loop
     if callDepth < 0:
-        logging.error("Recursing too deep. Now %d" % callDepth)
+        logging.error("Recursing too deep. Now {0:d}".format(callDepth))
         if callDepth < -100:
             raise Exception("Recursing infinitely deep!")
 
@@ -841,14 +842,14 @@ def __VF2_match(graph1, graph2, map21, map12, terminals1, terminals2, subgraph,
     if callDepth == 0:
         if not subgraph:
             assert len(map21) == len(graph1.vertices), \
-                "Calldepth mismatch: callDepth = %g, len(map21) = %g, len(map12) = %g, len(graph1.vertices) = %g, len(graph2.vertices) = %g" % (callDepth, len(map21), len(map12), len(graph1.vertices), len(graph2.vertices))
+                "Calldepth mismatch: callDepth = {0:d}, len(map21) = {1:d}, len(map12) = {2:d}, len(graph1.vertices) = {3:d}, len(graph2.vertices) = {4:d}".format(callDepth, len(map21), len(map12), len(graph1.vertices), len(graph2.vertices))
             if findAll:
                 map21List.append(map21.copy())
                 map12List.append(map12.copy())
             return True
         else:
             assert len(map12) == len(graph2.vertices), \
-                "Calldepth mismatch: callDepth = %g, len(map21) = %g, len(map12) = %g, len(graph1.vertices) = %g, len(graph2.vertices) = %g" % (callDepth, len(map21), len(map12), len(graph1.vertices), len(graph2.vertices))
+                "Calldepth mismatch: callDepth = {0:d}, len(map21) = {1:d}, len(map12) = {2:d}, len(graph1.vertices) = {3:d}, len(graph2.vertices) = {4:d}".format(callDepth, len(map21), len(map12), len(graph1.vertices), len(graph2.vertices))
             if findAll:
                 map21List.append(map21.copy())
                 map12List.append(map12.copy())
