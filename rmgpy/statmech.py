@@ -1,11 +1,11 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
+# encoding: utf-8
 
 ################################################################################
 #
-#   ChemPy - A chemistry toolkit for Python
+#   RMG - Reaction Mechanism Generator
 #
-#   Copyright (c) 2010 by Joshua W. Allen (jwallen@mit.edu)
+#   Copyright (c) 2009-2011 by the RMG Team (rmg_dev@mit.edu)
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
 #   copy of this software and associated documentation files (the 'Software'),
@@ -28,8 +28,9 @@
 ################################################################################
 
 """
-This module contains models for various molecular degrees of freedom. All such
-models derive from the :class:`Mode` base class, and include:
+This module contains classes and methods for working with statistical mechanics
+models for various molecular degrees of freedom. All such models derive from 
+the :class:`Mode` base class, and include:
 
 * :class:`Translation` - 3D translational motion in an ideal gas
 
@@ -49,7 +50,7 @@ import math
 import cython
 import numpy
 
-import constants
+from quantity import Quantity, constants
 
 ################################################################################
 
