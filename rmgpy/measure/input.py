@@ -36,18 +36,14 @@ input file is unsuccessful, an :class:`InputError` will be raised.
 """
 
 import logging
-import quantities
-quantities.set_default_units('si')
-quantities.UnitQuantity('kilocalorie', 1000.0*quantities.cal, symbol='kcal')
-quantities.UnitQuantity('kilojoule', 1000.0*quantities.J, symbol='kJ')
 
-from rmgpy.chem.species import Species, TransitionState
-from rmgpy.chem.reaction import Reaction
-from rmgpy.chem.species import LennardJones
-from rmgpy.chem.molecule import Molecule
-from rmgpy.chem.states import *
-from rmgpy.chem.kinetics import Arrhenius
-from rmgpy.chem.thermo import *
+from rmgpy.quantity import Quantity
+from rmgpy.species import Species, TransitionState, LennardJones
+from rmgpy.reaction import Reaction
+from rmgpy.molecule import Molecule
+from rmgpy.statmech import *
+from rmgpy.kinetics import Arrhenius
+from rmgpy.thermo import *
 
 from network import Network
 from collision import SingleExponentialDownModel
@@ -94,11 +90,11 @@ def species(label='', E0=None, states=None, thermo=None, lennardJones=None, mole
     elif SMILES != '':
         spec.molecule = [Molecule(SMILES=SMILES)]
     speciesDict[label] = spec
-    logging.debug('Found species "%s"' % spec)
+    logging.debug('Found species "{0}"'.format(spec))
     # If the molecular weight was not specified but the structure was, then
     # get the molecular weight from the structure
-    if spec.molecularWeight == 0.0 and spec.molecule is not None and len(spec.molecule) > 0:
-        spec.molecularWeight = spec.molecule[0].getMolecularWeight()
+    if spec.molecularWeight.value == 0.0 and spec.molecule is not None and len(spec.molecule) > 0:
+        spec.molecularWeight = Quantity(spec.molecule[0].getMolecularWeight(),"kg/mol")
 
 def States(rotationalConstants=None, symmetry=1, frequencies=None, 
   frequencyScaleFactor=1.0, hinderedRotors=None, spinMultiplicity=1):
@@ -125,10 +121,10 @@ def reaction(reactants, products, kinetics=None, reversible=True, transitionStat
             transitionState=transitionState,
         )
     except KeyError, e:
-        raise InputError('A reaction was encountered with species "%s", but that species was not found in the input file.' % e.args[0])
+        raise InputError('A reaction was encountered with species "{0}", but that species was not found in the input file.'.format(e.args[0]))
         
     network.pathReactions.append(rxn)
-    logging.debug('Found reaction "%s"' % rxn)
+    logging.debug('Found reaction "{0}"'.format(rxn))
 
 def collisionModel(type, parameters, bathGas):
     global network, speciesDict
@@ -138,15 +134,15 @@ def collisionModel(type, parameters, bathGas):
         if len(parameters) == 1:
             if 'alpha' not in parameters:
                 raise InputError('Must specify either "alpha" or ("alpha0","T0","n") as parameters for SingleExponentialDownModel.')
-            alpha0 = constants.Quantity(parameters['alpha']).value
+            alpha0 = Quantity(parameters['alpha']).value
             T0 = 1000.0
             n = 0.0
         elif len(parameters) == 3:
             if 'alpha0' not in parameters or 'T0' not in parameters or 'n' not in parameters:
                 raise InputError('Must specify either "alpha" or ("alpha0","T0","n") as parameters for SingleExponentialDownModel.')
-            alpha0 = constants.Quantity(parameters['alpha0']).value
-            T0 = constants.Quantity(parameters['T0']).value
-            n = constants.Quantity(parameters['n']).value
+            alpha0 = Quantity(parameters['alpha0']).value
+            T0 = Quantity(parameters['T0']).value
+            n = Quantity(parameters['n']).value
         else:
             raise InputError('Must specify either "alpha" or ("alpha0","T0","n") as parameters for SingleExponentialDownModel.')
 
@@ -155,7 +151,7 @@ def collisionModel(type, parameters, bathGas):
         logging.debug('Collision model set to single exponential down')
         
     else:
-        raise NameError('Invalid collision model type "%s".' % type)
+        raise NameError('Invalid collision model type "{0}".'.format(type))
     # Set bath gas composition
     network.bathGas = {}
     for key, value in bathGas.iteritems():
@@ -168,14 +164,14 @@ def temperatures(Tlist0=None, Tmin=None, Tmax=None, count=None):
     global Tlist, Tparams
     if Tlist0 is not None:
         # We've been provided a list of specific temperatures to use
-        Tlist = constants.processQuantity(Tlist0)[0].value
+        Tlist = Quantity(Tlist0)[0].value
         Tparams = None
     elif Tmin is not None and Tmax is not None and count is not None:
         # We've been provided a temperature range and number of temperatures to use
         # We defer choosing the actual temperatures because they depend on the
         # choice of interpolation model
         Tlist = None
-        Tparams = [constants.Quantity(Tmin).value, constants.Quantity(Tmax).value, count]
+        Tparams = [Quantity(Tmin).value, Quantity(Tmax).value, count]
     else:
         raise SyntaxError('Must specify either a list of temperatures or Tmin, Tmax, and count.')
 
@@ -183,26 +179,26 @@ def pressures(Plist0=None, Pmin=None, Pmax=None, count=None):
     global Plist, Pparams
     if Plist0 is not None:
         # We've been provided a list of specific pressures to use
-        Plist = constants.processQuantity(Plist0).value
+        Plist = Quantity(Plist0).value
         Pparams = None
     elif Pmin is not None and Pmax is not None and count is not None:
         # We've been provided a pressures range and number of pressures to use
         # We defer choosing the actual pressures because they depend on the
         # choice of interpolation model
         Plist = None
-        Pparams = [constants.Quantity(Pmin).value, constants.Quantity(Pmax).value, count]
+        Pparams = [Quantity(Pmin).value, Quantity(Pmax).value, count]
     else:
         raise SyntaxError('Must specify either a list of pressures or Pmin, Pmax, and count.')
 
 def energies(Emin=None, Emax=None, dE=None, count=None):
     global Elist, network
     if dE is not None or count is not None:
-        dE = constants.Quantity(dE).value
+        dE = Quantity(dE).value
         if dE is None: dE = 0.0
         if count is None: count = 0
         if Emin is not None and Emax is not None:
-            Emin = constants.Quantity(Emin).value
-            Emax = constants.Quantity(Emax).value
+            Emin = Quantity(Emin).value
+            Emax = Quantity(Emax).value
             Elist = network.getEnergyGrains(Emin, Emax, dE, count)
         else:
             Elist = (dE, count)
@@ -212,7 +208,7 @@ def energies(Emin=None, Emax=None, dE=None, count=None):
 def _method(name):
     global method
     if name.lower() not in ['modified strong collision', 'reservoir state', 'chemically-significant eigenvalues', 'branching ratios']:
-        raise InputError('Invalid method "%s"; see documentation for available methods.' % name)
+        raise InputError('Invalid method "{0}"; see documentation for available methods.'.format(name))
     method = name
 
 def interpolationModel(name, *args):
@@ -234,20 +230,19 @@ def generateThermoFromStates(species):
     if species.thermo is not None or species.states is None: return
     # States data must have external rotational modes
     if not any([isinstance(mode, RigidRotor) for mode in species.states.modes]):
-        raise InputError('For species "%s", must specify external rotational constants to generate thermo model from states data.' % species)
+        raise InputError('For species "{0}", must specify external rotational constants to generate thermo model from states data.'.format(species))
     
     # Must use ThermoData because we can't rely on knowing
     # anything about the structure of the species
-    from rmgpy.chem.thermo import ThermoData
     Tdata = numpy.linspace(numpy.min(Tlist), numpy.max(Tlist), 20.0)
     Cpdata = species.states.getHeatCapacities(Tdata)
-    H298 = species.E0 + species.states.getEnthalpy(298)
+    H298 = species.E0.value + species.states.getEnthalpy(298)
     S298 = species.states.getEntropy(298)
 
     # Add in heat capacities for translational modes if missing
     if not any([isinstance(mode, Translation) for mode in species.states.modes]):
         if species.molecularWeight == 0:
-            raise InputError('Molecular weight required for species "%s".' % species)
+            raise InputError('Molecular weight required for species "{0}".'.format(species))
         trans = Translation(species.molecularWeight)
         Cpdata += trans.getHeatCapacities(Tdata)
         H298 += trans.getEnthalpy(298)
@@ -341,7 +336,7 @@ def readInput(path):
     try:
         f = open(path)
     except IOError, e:
-        logging.error('The input file "%s" could not be opened.' % path)
+        logging.error('The input file "{0}" could not be opened.'.format(path))
         logging.info('Check that the file exists and that you have read access.')
         return None
     
@@ -350,7 +345,7 @@ def readInput(path):
     # Create new network object
     network = Network()
     
-    logging.info('Reading input file "%s"...' % path)
+    logging.info('Reading input file "{0}"...'.format(path))
 
     global_context = { '__builtins__': None }
     local_context = {
@@ -466,36 +461,36 @@ def readInput(path):
             if isomer.molecularWeight == 0:
                 errorString0 += '    Required molecular weight was not provided.\n'
             if errorString0 != '':
-                errorString = 'For unimolecular isomer "%s":\n%s' % (isomer, errorString0)
+                errorString = 'For unimolecular isomer "{0}":\n{1}'.format(isomer, errorString0)
 
         for rxn in network.pathReactions:
             errorString0 = ''
             # All reactions must have either high-pressure-limit kinetics or transition state data
             if rxn.kinetics is None and rxn.transitionState.states is None:
-                errorString0 += '    Unable to determine microcanonical rate k(E); you must specify either the high-P kinetics or transition state molecular degrees of freedom.\n' % spec
+                errorString0 += '    Unable to determine microcanonical rate k(E); you must specify either the high-P kinetics or transition state molecular degrees of freedom.\n'
 
             if rxn.reversible:
                 # All reversible reactions must have thermo for both reactants and products
                 for spec in rxn.reactants:
                     if spec.thermo is None:
-                        errorString0 += '    Unable to determine thermo data for reactant "%s"; you must specify a thermodynamics model.\n' % spec
+                        errorString0 += '    Unable to determine thermo data for reactant "{0}"; you must specify a thermodynamics model.\n'.format(spec)
                 for spec in rxn.products:
                     if spec.thermo is None:
-                        errorString0 += '    Unable to determine thermo data for product "%s"; you must specify a thermodynamics model.\n' % spec
+                        errorString0 += '    Unable to determine thermo data for product "{0}"; you must specify a thermodynamics model.\n'.format(spec)
             else:
                 # All irreversible reactions must have states data for reactants
                 for spec in rxn.reactants:
                     if spec.states is None:
-                        errorString0 += '    Required molecular degree of freedom data for reactant "%s" was not provided.\n' % spec
+                        errorString0 += '    Required molecular degree of freedom data for reactant "{0}" was not provided.\n'.format(spec)
 
             if errorString0 != '':
-                errorString += 'For path reaction "%s":\n%s' % (rxn, errorString0)
+                errorString += 'For path reaction "{0}":\n{1}'.format(rxn, errorString0)
 
         if errorString != '':
             raise InputError(errorString)
 
     except InputError, e:
-        logging.error('The input file "%s" was invalid:' % path)
+        logging.error('The input file "{0}" was invalid:'.format(path))
         logging.info(e)
         return None
 
@@ -509,6 +504,6 @@ def readInput(path):
     if len(network.isomers) == 0:
         logging.info('Could not find any unimolecular isomers based on this network, so there is nothing to do.')
         return None
-      
+    
     return network, Tlist, Plist, Elist, method, model, Tmin, Tmax, Pmin, Pmax
 

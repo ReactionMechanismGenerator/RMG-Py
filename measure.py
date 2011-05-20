@@ -190,10 +190,10 @@ if __name__ == '__main__':
             K, p0 = network.calculateRateCoefficients(Tlist, Plist, Elist, method)
 
             # Fit interpolation model
-            from rmgpy.chem.reaction import Reaction
+            from rmgpy.reaction import Reaction
             from rmgpy.measure.reaction import fitInterpolationModel
             if model[0] != '':
-                logging.info('Fitting %s interpolation models...' % model[0])
+                logging.info('Fitting {0} interpolation models...'.format(model[0]))
             configurations = []
             configurations.extend([[isom] for isom in network.isomers])
             configurations.extend([reactants for reactants in network.reactants])
@@ -203,7 +203,7 @@ if __name__ == '__main__':
 
                     # Check that we have nonzero k(T,P) values
                     if (numpy.any(K[:,:,i,j]) and not numpy.all(K[:,:,i,j])):
-                        raise NetworkError('Zero rate coefficient encountered while updating network %s.' % network)
+                        raise NetworkError('Zero rate coefficient encountered while updating network {0}.'.format(network))
                     
                     # Make a new net reaction
                     forward = True
