@@ -108,7 +108,6 @@ class Species:
     `thermo`            :class:`ThermoModel`    The thermodynamics model for the species
     `states`            :class:`StatesModel`    The molecular degrees of freedom model for the species
     `molecule`          ``list``                The :class:`Molecule` objects describing the molecular structure
-    `geometry`          :class:`Geometry`       The 3D geometry of the molecule
     `E0`                ``double``              The ground-state energy in J/mol
     `lennardJones`      :class:`LennardJones`   A set of Lennard-Jones collision parameters
     `molecularWeight`   ``double``              The molecular weight of the species in kg/mol
@@ -117,13 +116,12 @@ class Species:
 
     """
 
-    def __init__(self, index=-1, label='', thermo=None, states=None, molecule=None, geometry=None, E0=0.0, lennardJones=None, molecularWeight=0.0, reactive=True):
+    def __init__(self, index=-1, label='', thermo=None, states=None, molecule=None, E0=0.0, lennardJones=None, molecularWeight=0.0, reactive=True):
         self.index = index
         self.label = label
         self.thermo = thermo
         self.states = states
         self.molecule = molecule or []
-        self.geometry = geometry
         self.E0 = constants.Quantity(E0).value
         self.lennardJones = lennardJones
         self.reactive = reactive
@@ -140,7 +138,6 @@ class Species:
         if self.thermo is not None: string += 'thermo=%r, ' % (self.thermo)
         if self.states is not None: string += 'states=%r, ' % (self.states)
         if len(self.molecule) > 0: string += 'molecule=[%r], ' % (self.molecule[0])
-        if self.geometry is not None: string += 'geometry=%r, ' % (self.geometry)
         if self.E0 != 0.0: string += 'E0=(%g,"kJ/mol"), ' % (self.E0 / 1000.)
         if self.lennardJones is not None: string += 'lennardJones=%r, ' % (self.lennardJones)
         if not self.reactive: string += 'reactive=%s, ' % (self.reactive)
@@ -159,7 +156,7 @@ class Species:
         """
         A helper function used when pickling an object.
         """
-        return (Species, (self.index, self.label, self.thermo, self.states, self.molecule, self.geometry, self.E0, self.lennardJones, self.molecularWeight, self.reactive))
+        return (Species, (self.index, self.label, self.thermo, self.states, self.molecule, self.E0, self.lennardJones, self.molecularWeight, self.reactive))
 
     def generateResonanceIsomers(self):
         """
@@ -184,7 +181,6 @@ class TransitionState:
     =============== =========================== ================================
     `label`         :class:`str`                A descriptive string label
     `states`        :class:`StatesModel`        The molecular degrees of freedom model for the species
-    `geometry`      :class:`Geometry`           The 3D geometry of the molecule
     `E0`            ``double``                  The ground-state energy in J/mol
     `frequency`     ``double``                  The negative frequency of the first-order saddle point in cm^-1
     `degeneracy`    ``int``                     The reaction path degeneracy
@@ -192,10 +188,9 @@ class TransitionState:
 
     """
 
-    def __init__(self, label='', states=None, geometry=None, E0=0.0, frequency=0.0, degeneracy=1):
+    def __init__(self, label='', states=None, E0=0.0, frequency=0.0, degeneracy=1):
         self.label = label
         self.states = states
-        self.geometry = geometry
         self.E0 = constants.Quantity(E0).value
         self.frequency = constants.Quantity(frequency).value
         self.degeneracy = degeneracy
@@ -208,7 +203,6 @@ class TransitionState:
         string = 'TransitionState('
         if self.label != -1: string += 'label="%s", ' % (self.label)
         if self.states is not None: string += 'states=%r, ' % (self.states)
-        if self.geometry is not None: string += 'geometry=%r, ' % (self.geometry)
         if self.E0 != 0.0: string += 'E0=(%g,"kJ/mol"), ' % (self.E0 / 1000.)
         if self.frequency != 0.0: string += 'frequency=(%g,"cm^-1"), ' % (self.frequency)
         if self.degeneracy != 1: string += 'degeneracy=%i, ' % (self.degeneracy)
@@ -219,5 +213,5 @@ class TransitionState:
         """
         A helper function used when pickling an object.
         """
-        return (TransitionState, (self.label, self.states, self.geometry, self.E0, self.frequency, self.degeneracy))
+        return (TransitionState, (self.label, self.states, self.E0, self.frequency, self.degeneracy))
 

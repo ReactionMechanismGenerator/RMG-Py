@@ -39,7 +39,6 @@ class SpeciesTest(unittest.TestCase):
                 HarmonicOscillator(frequencies=[834.50, 973.31, 975.37, 1067.1, 1238.5, 1379.5, 1472.3, 1691.3, 3121.6, 3136.7, 3192.5, 3221.0]),
             ]),
             molecule=[Molecule().fromSMILES('C=C')],
-            geometry=None,
             E0=0.0,
             lennardJones=LennardJones(sigma=1e-10, epsilon=constants.kB),
             molecularWeight=0.02803,
@@ -54,7 +53,6 @@ class SpeciesTest(unittest.TestCase):
         self.assertEqual(len(spec0.states.modes), len(spec.states.modes))
         self.assertEqual(len(spec0.molecule), len(spec.molecule))
         self.assertTrue(spec0.molecule[0].isIsomorphic(spec.molecule[0]))
-        self.assertEqual(spec.geometry, None)
         self.assertEqual(spec0.E0, spec.E0)
         self.assertEqual(spec0.lennardJones.sigma, spec.lennardJones.sigma)
         self.assertEqual(spec0.lennardJones.epsilon, spec.lennardJones.epsilon)
@@ -83,7 +81,6 @@ class SpeciesTest(unittest.TestCase):
                 HarmonicOscillator(frequencies=[834.50, 973.31, 975.37, 1067.1, 1238.5, 1379.5, 1472.3, 1691.3, 3121.6, 3136.7, 3192.5, 3221.0]),
             ]),
             molecule=[Molecule().fromSMILES('C=C')],
-            geometry=None,
             E0=0.0,
             lennardJones=LennardJones(sigma=1e-10, epsilon=constants.kB),
             molecularWeight=0.02803,
@@ -97,7 +94,6 @@ class SpeciesTest(unittest.TestCase):
         self.assertEqual(len(spec0.states.modes), len(spec.states.modes))
         self.assertEqual(len(spec0.molecule), len(spec.molecule))
         self.assertTrue(spec0.molecule[0].isIsomorphic(spec.molecule[0]))
-        self.assertEqual(spec.geometry, None)
         self.assertEqual(spec0.E0, spec.E0)
         self.assertAlmostEqual(spec0.lennardJones.sigma, spec.lennardJones.sigma, 6)
         self.assertAlmostEqual(spec0.lennardJones.epsilon, spec.lennardJones.epsilon, 6)
