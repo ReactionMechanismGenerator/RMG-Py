@@ -17,6 +17,8 @@ from groupTest import *
 from kineticsTest import *
 from moleculeTest import *
 from quantityTest import *
+from reactionTest import *
+from speciesTest import *
 from statmechTest import *
 from thermoTest import *
 
