@@ -1,11 +1,11 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python
+# encoding: utf-8
 
 ################################################################################
 #
-#   ChemPy - A chemistry toolkit for Python
+#   RMG - Reaction Mechanism Generator
 #
-#   Copyright (c) 2010 by Joshua W. Allen (jwallen@mit.edu)
+#   Copyright (c) 2009-2011 by the RMG Team (rmg_dev@mit.edu)
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
 #   copy of this software and associated documentation files (the 'Software'),
@@ -449,9 +449,9 @@ def renderAtom(symbol, atom, coordinates0, atoms, bonds, x0, y0, cr, heavyFirst=
         text = ''
         if atom.radicalElectrons > 0 and atom.charge != 0: width += 1
         if atom.charge == 1:          text = '+'
-        elif atom.charge > 1:         text = '%i+' % atom.charge
+        elif atom.charge > 1:         text = '{0:d}+'.format(atom.charge)
         elif atom.charge == -1:       text = u'\u2013'
-        elif atom.charge < -1:        text = u'%i\u2013' % abs(atom.charge)
+        elif atom.charge < -1:        text = u'{0:d}\u2013'.format(abs(atom.charge))
         if text != '':
             extents = cr.text_extents(text)
             width += extents[2] + 1
@@ -463,9 +463,9 @@ def renderAtom(symbol, atom, coordinates0, atoms, bonds, x0, y0, cr, heavyFirst=
         text = ''
         if atom.radicalElectrons > 0 and atom.charge != 0: height += 1
         if atom.charge == 1:          text = '+'
-        elif atom.charge > 1:         text = '%i+' % atom.charge
+        elif atom.charge > 1:         text = '{0:d}+'.format(atom.charge)
         elif atom.charge == -1:       text = u'\u2013'
-        elif atom.charge < -1:        text = u'%i\u2013' % abs(atom.charge)
+        elif atom.charge < -1:        text = u'{0:d}\u2013'.format(abs(atom.charge))
         if text != '':
             extents = cr.text_extents(text)
             height += extents[3] + 1
@@ -495,9 +495,9 @@ def renderAtom(symbol, atom, coordinates0, atoms, bonds, x0, y0, cr, heavyFirst=
         # Draw charges second
         text = ''
         if atom.charge == 1:       text = '+'
-        elif atom.charge > 1:      text = '%i+' % atom.charge
+        elif atom.charge > 1:      text = '{0:d}+'.format(atom.charge)
         elif atom.charge == -1:    text = u'\u2013'
-        elif atom.charge < -1:     text = u'%i\u2013' % abs(atom.charge)
+        elif atom.charge < -1:     text = u'{0:d}\u2013'.format(abs(atom.charge))
         if text != '':
             extents = cr.text_extents(text)
             cr.move_to(xi, yi - extents[1])
@@ -507,9 +507,9 @@ def renderAtom(symbol, atom, coordinates0, atoms, bonds, x0, y0, cr, heavyFirst=
         # Draw charges first
         text = ''
         if atom.charge == 1:       text = '+'
-        elif atom.charge > 1:      text = '%i+' % atom.charge
+        elif atom.charge > 1:      text = '{0:d}+'.format(atom.charge)
         elif atom.charge == -1:    text = u'\u2013'
-        elif atom.charge < -1:     text = u'%i\u2013' % abs(atom.charge)
+        elif atom.charge < -1:     text = u'{0:d}\u2013'.format(abs(atom.charge))
         if text != '':
             extents = cr.text_extents(text)
             cr.move_to(xi - extents[2]/2, yi - extents[1])
@@ -1094,7 +1094,7 @@ def createNewSurface(type, path=None, width=1024, height=768):
     elif type == 'ps':
         surface = cairo.PSSurface(path, width, height)
     else:
-        raise ValueError('Invalid value "%s" for type parameter; valid values are "png", "svg", "pdf", and "ps".' % type)
+        raise ValueError('Invalid value "{0}" for type parameter; valid values are "png", "svg", "pdf", and "ps".'.format(type))
     return surface
 
 def drawMolecule(molecule, path=None, surface=''):
@@ -1168,7 +1168,7 @@ def drawMolecule(molecule, path=None, surface=''):
     for i in range(len(symbols)):
         if symbols[i] != '':
             if atoms[i].implicitHydrogens == 1: symbols[i] = symbols[i] + 'H'
-            elif atoms[i].implicitHydrogens > 1: symbols[i] = symbols[i] + 'H%i' % (atoms[i].implicitHydrogens)
+            elif atoms[i].implicitHydrogens > 1: symbols[i] = symbols[i] + 'H{0:d}'.format(atoms[i].implicitHydrogens)
 
     # Special case: H2 (render as H2 and not H-H)
     if symbols == ['H','H']:
