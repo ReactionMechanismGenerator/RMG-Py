@@ -24,15 +24,16 @@
 #
 ################################################################################
 
+from quantity cimport Quantity
 from thermo cimport ThermoModel
-from states cimport StatesModel
+from statmech cimport StatesModel
 
 ################################################################################
 
 cdef class LennardJones:
 
-    cdef public double sigma
-    cdef public double epsilon
+    cdef public Quantity sigma
+    cdef public Quantity epsilon
 
 ################################################################################
 
@@ -43,9 +44,9 @@ cdef class Species:
     cdef public ThermoModel thermo
     cdef public StatesModel states
     cdef public LennardJones lennardJones
-    cdef public double E0
+    cdef public Quantity E0
     cdef public list molecule
-    cdef public double molecularWeight
+    cdef public Quantity molecularWeight
     cdef public bint reactive
 
     cpdef generateResonanceIsomers(self)
@@ -56,6 +57,6 @@ cdef class TransitionState:
     
     cdef public str label
     cdef public StatesModel states
-    cdef public double E0
-    cdef public double frequency
+    cdef public Quantity E0
+    cdef public Quantity frequency
     cdef public int degeneracy
