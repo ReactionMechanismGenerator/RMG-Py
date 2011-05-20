@@ -1,11 +1,11 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
+# encoding: utf-8
 
 ################################################################################
 #
-#   ChemPy - A chemistry toolkit for Python
+#   RMG - Reaction Mechanism Generator
 #
-#   Copyright (c) 2010 by Joshua W. Allen (jwallen@mit.edu)
+#   Copyright (c) 2009-2011 by the RMG Team (rmg_dev@mit.edu)
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
 #   copy of this software and associated documentation files (the 'Software'),
@@ -42,14 +42,14 @@ contains the :class:`TransitionState` class for representing chemical reaction
 transition states (first-order saddle points on a potential energy surface).
 """
 
-import constants
+from quantity import Quantity, constants
 
 ################################################################################
 
 class SpeciesError(Exception):
     """
-    An exception class for exceptional behavior involving :class:`Species`
-    objects. Pass a string describing the circumstances that caused the
+    An exception class for exceptional behavior that occurs while working with
+    chemical species. Pass a string describing the circumstances that caused the
     exceptional behavior.
     """
     pass
@@ -67,25 +67,31 @@ class LennardJones:
     second represents attraction due to van der Waals forces. The attributes
     are:
 
-    =============== =============== ============================================
-    Attribute       Type            Description
-    =============== =============== ============================================
-    `sigma`         ``double``      Distance at which the inter-particle potential is zero in m
-    `epsilon`       ``double``      Depth of the potential well in J
-    =============== =============== ============================================
-
+    =============== =================== ========================================
+    Attribute       Type                Description
+    =============== =================== ========================================
+    `sigma`         :class:`Quantity`   Distance at which the inter-particle potential is zero
+    `epsilon`       :class:`Quantity`   Depth of the potential well
+    =============== =================== ========================================
+    
     """
 
     def __init__(self, sigma=0.0, epsilon=0.0):
-        self.sigma = constants.Quantity(sigma).value
-        self.epsilon = constants.Quantity(epsilon).value
+        self.sigma = Quantity(sigma)
+        self.epsilon = Quantity(epsilon)
+        if self.epsilon.units == 'K':
+            # We also accept K as valid units for epsilon
+            # Let's convert it to proper energy units
+            self.epsilon.value *= constants.kB
+            self.epsilon.uncertainty *= constants.kB
+            self.epsilon.units = 'J'
 
     def __repr__(self):
         """
         Return a string representation that can be used to reconstruct the
         object.
         """
-        return 'LennardJones(sigma=(%g,"m"), epsilon=(%g,"J"))' % (self.sigma, self.epsilon)
+        return 'LennardJones(sigma={0!r}, epsilon={1!r})'.format(self.sigma, self.epsilon)
 
     def __reduce__(self):
         """
@@ -108,24 +114,24 @@ class Species:
     `thermo`            :class:`ThermoModel`    The thermodynamics model for the species
     `states`            :class:`StatesModel`    The molecular degrees of freedom model for the species
     `molecule`          ``list``                The :class:`Molecule` objects describing the molecular structure
-    `E0`                ``double``              The ground-state energy in J/mol
+    `E0`                :class:`Quantity`       The ground-state energy
     `lennardJones`      :class:`LennardJones`   A set of Lennard-Jones collision parameters
-    `molecularWeight`   ``double``              The molecular weight of the species in kg/mol
+    `molecularWeight`   :class:`Quantity`       The molecular weight of the species
     `reactive`          ``bool``                ``True`` if the species participates in reactions, ``False`` if not
     =================== ======================= ================================
 
     """
 
-    def __init__(self, index=-1, label='', thermo=None, states=None, molecule=None, E0=0.0, lennardJones=None, molecularWeight=0.0, reactive=True):
+    def __init__(self, index=-1, label='', thermo=None, states=None, molecule=None, E0=None, lennardJones=None, molecularWeight=None, reactive=True):
         self.index = index
         self.label = label
         self.thermo = thermo
         self.states = states
         self.molecule = molecule or []
-        self.E0 = constants.Quantity(E0).value
+        self.E0 = Quantity(E0)
         self.lennardJones = lennardJones
         self.reactive = reactive
-        self.molecularWeight = constants.Quantity(molecularWeight).value
+        self.molecularWeight = Quantity(molecularWeight)
 
     def __repr__(self):
         """
@@ -133,15 +139,15 @@ class Species:
         object.
         """
         string = 'Species('
-        if self.index != -1: string += 'index=%i, ' % (self.index)
-        if self.label != -1: string += 'label="%s", ' % (self.label)
-        if self.thermo is not None: string += 'thermo=%r, ' % (self.thermo)
-        if self.states is not None: string += 'states=%r, ' % (self.states)
-        if len(self.molecule) > 0: string += 'molecule=[%r], ' % (self.molecule[0])
-        if self.E0 != 0.0: string += 'E0=(%g,"kJ/mol"), ' % (self.E0 / 1000.)
-        if self.lennardJones is not None: string += 'lennardJones=%r, ' % (self.lennardJones)
-        if not self.reactive: string += 'reactive=%s, ' % (self.reactive)
-        if self.molecularWeight != 0.0: string += 'molecularWeight=(%g,"g/mol"), ' % (self.molecularWeight * 1000.)
+        if self.index != -1: string += 'index={0:d}, '.format(self.index)
+        if self.label != -1: string += 'label="{0}", '.format(self.label)
+        if self.thermo is not None: string += 'thermo={0!r}, '.format(self.thermo)
+        if self.states is not None: string += 'states={0!r}, '.format(self.states)
+        if len(self.molecule) > 0: string += 'molecule=[{0!r}], '.format(self.molecule[0])
+        if self.E0 is not None: string += 'E0={0!r}, '.format(self.E0)
+        if self.lennardJones is not None: string += 'lennardJones={0!r}, '.format(self.lennardJones)
+        if not self.reactive: string += 'reactive={0}, '.format(self.reactive)
+        if self.molecularWeight is not None: string += 'molecularWeight={0!r}, '.format(self.molecularWeight)
         string = string[:-2] + ')'
         return string
 
@@ -149,8 +155,8 @@ class Species:
         """
         Return a string representation of the species, in the form 'label(id)'.
         """
-        if self.index == -1: return '%s' % (self.label)
-        else: return '%s(%i)' % (self.label, self.index)
+        if self.index == -1: return self.label
+        else: return '{0}({1:d})'.format(self.label, self.index)
 
     def __reduce__(self):
         """
@@ -165,7 +171,6 @@ class Species:
         `molecule` is already greater than one, it is assumed that all of the
         resonance isomers have already been generated.
         """
-
         if len(self.molecule) == 1:
             self.molecule = self.molecule[0].generateResonanceIsomers()
 
@@ -176,23 +181,23 @@ class TransitionState:
     A chemical transition state, representing a first-order saddle point on a
     potential energy surface. The attributes are:
 
-    =============== =========================== ================================
-    Attribute       Type                        Description
-    =============== =========================== ================================
-    `label`         :class:`str`                A descriptive string label
-    `states`        :class:`StatesModel`        The molecular degrees of freedom model for the species
-    `E0`            ``double``                  The ground-state energy in J/mol
-    `frequency`     ``double``                  The negative frequency of the first-order saddle point in cm^-1
-    `degeneracy`    ``int``                     The reaction path degeneracy
-    =============== =========================== ================================
+    =============== ======================= ====================================
+    Attribute       Type                    Description
+    =============== ======================= ====================================
+    `label`         :class:`str`            A descriptive string label
+    `states`        :class:`StatesModel`    The molecular degrees of freedom model for the species
+    `E0`            :class:`Quantity`       The ground-state energy in J/mol
+    `frequency`     :class:`Quantity`       The negative frequency of the first-order saddle point in cm^-1
+    `degeneracy`    ``int``                 The reaction path degeneracy
+    =============== ======================= ====================================
 
     """
 
-    def __init__(self, label='', states=None, E0=0.0, frequency=0.0, degeneracy=1):
+    def __init__(self, label='', states=None, E0=None, frequency=None, degeneracy=1):
         self.label = label
         self.states = states
-        self.E0 = constants.Quantity(E0).value
-        self.frequency = constants.Quantity(frequency).value
+        self.E0 = Quantity(E0)
+        self.frequency = Quantity(frequency)
         self.degeneracy = degeneracy
 
     def __repr__(self):
@@ -201,11 +206,11 @@ class TransitionState:
         object.
         """
         string = 'TransitionState('
-        if self.label != -1: string += 'label="%s", ' % (self.label)
-        if self.states is not None: string += 'states=%r, ' % (self.states)
-        if self.E0 != 0.0: string += 'E0=(%g,"kJ/mol"), ' % (self.E0 / 1000.)
-        if self.frequency != 0.0: string += 'frequency=(%g,"cm^-1"), ' % (self.frequency)
-        if self.degeneracy != 1: string += 'degeneracy=%i, ' % (self.degeneracy)
+        if self.label != '': string += 'label="{0}", '.format(self.label)
+        if self.states is not None: string += 'states={0!r}, '.format(self.states)
+        if self.E0 is not None: string += 'E0={0!r}, '.format(self.E0)
+        if self.frequency is not None: string += 'frequency={0!r}, '.format(self.frequency)
+        if self.degeneracy != 1: string += 'degeneracy={0}, '.format(self.degeneracy)
         string = string[:-2] + ')'
         return string
 
@@ -214,4 +219,3 @@ class TransitionState:
         A helper function used when pickling an object.
         """
         return (TransitionState, (self.label, self.states, self.E0, self.frequency, self.degeneracy))
-

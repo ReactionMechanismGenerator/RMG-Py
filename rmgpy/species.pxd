@@ -1,8 +1,8 @@
 ################################################################################
 #
-#   ChemPy - A chemistry toolkit for Python
+#   RMG - Reaction Mechanism Generator
 #
-#   Copyright (c) 2010 by Joshua W. Allen (jwallen@mit.edu)
+#   Copyright (c) 2009-2011 by the RMG Team (rmg_dev@mit.edu)
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
 #   copy of this software and associated documentation files (the 'Software'),
@@ -24,15 +24,16 @@
 #
 ################################################################################
 
+from quantity cimport Quantity
 from thermo cimport ThermoModel
-from states cimport StatesModel
+from statmech cimport StatesModel
 
 ################################################################################
 
 cdef class LennardJones:
 
-    cdef public double sigma
-    cdef public double epsilon
+    cdef public Quantity sigma
+    cdef public Quantity epsilon
 
 ################################################################################
 
@@ -43,9 +44,9 @@ cdef class Species:
     cdef public ThermoModel thermo
     cdef public StatesModel states
     cdef public LennardJones lennardJones
-    cdef public double E0
+    cdef public Quantity E0
     cdef public list molecule
-    cdef public double molecularWeight
+    cdef public Quantity molecularWeight
     cdef public bint reactive
 
     cpdef generateResonanceIsomers(self)
@@ -56,6 +57,6 @@ cdef class TransitionState:
     
     cdef public str label
     cdef public StatesModel states
-    cdef public double E0
-    cdef public double frequency
+    cdef public Quantity E0
+    cdef public Quantity frequency
     cdef public int degeneracy
