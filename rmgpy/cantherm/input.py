@@ -51,6 +51,8 @@ speciesDict = {}
 transitionStateDict = {}
 # A dictionary associating reaction identifiers with reaction objects
 reactionDict = {}
+# A dictionary associated species and transition state identifiers with geometry objects
+geometryDict = {}
 
 # The file to save the output to
 outputFile = ''
@@ -142,7 +144,8 @@ def loadSpecies(label, geomLog, statesLog, extSymmetry, spinMultiplicity, freqSc
     global modelChemistry
     logging.info('Loading species %s...' % label)
     E0, geom, states = loadConfiguration(geomLog, statesLog, extSymmetry, spinMultiplicity, freqScaleFactor, linear, rotors, atoms, bonds, E0, TS=False)
-    speciesDict[label] = Species(label=label, thermo=None, states=states, geometry=geom, E0=E0)
+    speciesDict[label] = Species(label=label, thermo=None, states=states, E0=E0)
+    geometryDict[label] = geom
 
 def loadTransitionState(label, geomLog, statesLog, extSymmetry, spinMultiplicity, freqScaleFactor, linear, rotors, atoms, bonds, E0=None):
     global modelChemistry
@@ -150,7 +153,8 @@ def loadTransitionState(label, geomLog, statesLog, extSymmetry, spinMultiplicity
     E0, geom, states = loadConfiguration(geomLog, statesLog, extSymmetry, spinMultiplicity, freqScaleFactor, linear, rotors, atoms, bonds, E0, TS=True)
     log = GaussianLog(statesLog)
     frequency = log.loadNegativeFrequency()
-    transitionStateDict[label] = TransitionState(label=label, states=states, geometry=geom, frequency=frequency, E0=E0)
+    transitionStateDict[label] = TransitionState(label=label, states=states, frequency=frequency, E0=E0)
+    geometryDict[label] = geom
     
 ################################################################################
 
@@ -171,9 +175,9 @@ def generateStates(label):
     global outputFile, speciesDict, transitionStateDict
     from states import saveStates
     if label in speciesDict:
-        saveStates(speciesDict[label], label, outputFile)
+        saveStates(speciesDict[label], geometryDict[label], label, outputFile)
     elif label in transitionStateDict:
-        saveStates(transitionStateDict[label], label, outputFile)
+        saveStates(transitionStateDict[label], geometryDict[label], label, outputFile)
     
 def generateThermo(label, model, plot=False):
     global outputFile, speciesDict

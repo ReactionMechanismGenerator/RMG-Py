@@ -149,7 +149,7 @@ def projectRotors(geom, F, rotors, linear, TS):
 
 ################################################################################   
 
-def saveStates(species, label, path):
+def saveStates(species, geometry, label, path):
     """
     Append the molecular degrees of freedom for `species` with associated
     string `label` to the file located at `path` on disk.
@@ -157,8 +157,8 @@ def saveStates(species, label, path):
     
     f = open(path, 'a')
 
-    coordinates = species.geometry.coordinates * 1e10
-    number = species.geometry.number
+    coordinates = geometry.coordinates * 1e10
+    number = geometry.number
     numbers = {1: 'H', 6: 'C', 7: 'N', 8: 'O', 14: 'Si', 15: 'P', 16: 'S'}
 
     f = open(path, 'a')
