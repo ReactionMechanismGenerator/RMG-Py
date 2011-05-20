@@ -183,8 +183,8 @@ class GaussianLog:
 
                     # Read molecular mass for external translational modes
                     elif 'Molecular mass:' in line:
-                        mass = float(line.split()[2]) * 1e-3
-                        translation = Translation(mass=mass)
+                        mass = float(line.split()[2])
+                        translation = Translation(mass=(mass,"g/mol"))
                         modes.append(translation)
 
                     # Read Gaussian's estimate of the external symmetry number
@@ -195,13 +195,13 @@ class GaussianLog:
                     elif 'Rotational constants (GHZ):' in line:
                         inertia = [float(d) for d in line.split()[-3:]]
                         for i in range(3):
-                            inertia[i] = constants.h / (8 * constants.pi * constants.pi * inertia[i] * 1e9)
-                        rotation = RigidRotor(linear=False, inertia=inertia, symmetry=symmetry)
+                            inertia[i] = constants.h / (8 * constants.pi * constants.pi * inertia[i] * 1e9) *constants.Na*1e23
+                        rotation = RigidRotor(linear=False, inertia=(inertia,"amu*angstrom^2"), symmetry=symmetry)
                         modes.append(rotation)
                     elif 'Rotational constant (GHZ):' in line:
                         inertia = [float(line.split()[3])]
-                        inertia[0] = constants.h / (8 * constants.pi * constants.pi * inertia[0] * 1e9)
-                        rotation = RigidRotor(linear=True, inertia=inertia, symmetry=symmetry)
+                        inertia[0] = constants.h / (8 * constants.pi * constants.pi * inertia[0] * 1e9) *constants.Na*1e23
+                        rotation = RigidRotor(linear=True, inertia=(inertia,"amu*angstrom^2"), symmetry=symmetry)
                         modes.append(rotation)
 
                     # Read vibrational modes
@@ -216,7 +216,7 @@ class GaussianLog:
                             line = f.readline()
                         # Convert from K to cm^-1
                         frequencies = [freq * 0.695039 for freq in frequencies]  # kB = 0.695039 cm^-1/K
-                        vibration = HarmonicOscillator(frequencies=frequencies)
+                        vibration = HarmonicOscillator(frequencies=(frequencies,"cm^-1"))
                         modes.append(vibration)
 
                     # Read ground-state energy

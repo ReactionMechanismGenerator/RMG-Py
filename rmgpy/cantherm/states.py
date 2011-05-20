@@ -31,8 +31,8 @@ import math
 import numpy
 import logging
 
-import rmgpy.chem.constants as constants
-from rmgpy.chem.states import *
+from rmgpy.quantity import constants
+from rmgpy.statmech import *
 
 ################################################################################
 
@@ -53,12 +53,12 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds):
     elif modelChemistry == 'G3':
         atomEnergies = {'H':-0.5010030, 'N':-54.564343, 'O':-75.030991, 'C':-37.827717, 'P':-341.116432}
     else:
-        logging.warning('Unknown model chemistry "%s"; not applying energy corrections.' % modelChemistry)
+        logging.warning('Unknown model chemistry "{0}"; not applying energy corrections.'.format(modelChemistry))
         return E0
     for symbol, count in atoms.iteritems():
         if symbol in atomEnergies: E0 -= count * atomEnergies[symbol] * 4.35974394e-18 * constants.Na
         else:
-            logging.warning('Ignored unknown atom type "%s".' % symbol)
+            logging.warning('Ignored unknown atom type "{0}".'.format(symbol))
     
     # Step 2: Atom energy corrections to reach gas-phase reference state
     # Experimental number for H includes H + TC + SOC (SOC = spin-orbit coupling)
@@ -73,7 +73,7 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds):
     for symbol, count in bonds.iteritems():
         if symbol in bondEnergies: E0 += count * bondEnergies[symbol] * 4184
         else:
-            logging.warning('Ignored unknown bond type "%s".' % symbol)
+            logging.warning('Ignored unknown bond type "{0}".'.format(symbol))
     
     return E0
 
@@ -162,34 +162,23 @@ def saveStates(species, geometry, label, path):
     numbers = {1: 'H', 6: 'C', 7: 'N', 8: 'O', 14: 'Si', 15: 'P', 16: 'S'}
 
     f = open(path, 'a')
-    f.write('# Coordinates for %s (angstroms):\n' % label)
+    f.write('# Coordinates for {0} (angstroms):\n'.format(label))
     for i in range(coordinates.shape[0]):
         x = coordinates[i,0] - coordinates[0,0]
         y = coordinates[i,1] - coordinates[0,1]
         z = coordinates[i,2] - coordinates[0,2]
-        f.write('#   %s %9.4f %9.4f %9.4f\n' % (numbers[number[i]], x, y, z))
+        f.write('#   {0} {1:9.4f} {2:9.4f} {3:9.4f}\n'.format(numbers[number[i]], x, y, z))
     
     f.write('states(\n')
-    f.write('    label = "%s",\n' % label)
-    f.write('    E0 = (%g,"kcal/mol"),\n' % (species.E0 / 4184.))
+    f.write('    label = "{0}",\n'.format(label))
+    f.write('    E0 = {0!r},\n'.format(species.E0))
     f.write('    modes = [\n')
     for mode in species.states.modes:
-        if isinstance(mode, Translation):
-            f.write('        Translation(mass=(%g,"g/mol")),\n' % (mode.mass*1000))
-        elif isinstance(mode, RigidRotor):
-            f.write('        RigidRotor(linear=%s, inertia=[%s], "amu*angstrom^2"), symmetry=%i),\n' % (mode.linear, ', '.join(['%g' % (I * 6.022e46) for I in mode.inertia]), mode.symmetry))
-        elif isinstance(mode, HarmonicOscillator):
-            f.write('        HarmonicOscillator(frequencies=([%s], "cm^-1")),\n' % (', '.join(['%g' % (freq) for freq in mode.frequencies])))
-        elif isinstance(mode, HinderedRotor):
-            f.write('        HinderedRotor(inertia=(%g, "amu*angstrom^2"), symmetry=%i, fourier=[[%g, %g, %g, %g, %g], [%g, %g, %g, %g, %g]]),   # frequency = %g cm^-1, barrier = %g kJ/mol\n' % (mode.inertia * 6.022e46, mode.symmetry,
-                mode.fourier[0,0], mode.fourier[0,1], mode.fourier[0,2], mode.fourier[0,3], mode.fourier[0,4],
-                mode.fourier[1,0], mode.fourier[1,1], mode.fourier[1,2], mode.fourier[1,3], mode.fourier[1,4],
-                mode.getFrequency(), -2. * numpy.sum(mode.fourier[0,:]) / 1000.
-                ))
+        f.write('        {0!r},\n'.format(mode))
     f.write('    ],\n')
-    f.write('    spinMultiplicity = %i,\n' % (species.states.spinMultiplicity))
+    f.write('    spinMultiplicity = {0:d},\n'.format(species.states.spinMultiplicity))
     try:
-        f.write('    frequency=(%g,"cm^-1"),\n' % species.frequency)
+        f.write('    frequency={0!r},\n'.format(species.frequency))
     except AttributeError: pass
     f.write('    short_comment = "",\n')
     f.write('    long_comment = \n')

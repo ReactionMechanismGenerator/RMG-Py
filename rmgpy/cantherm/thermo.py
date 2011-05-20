@@ -31,9 +31,7 @@ import math
 import numpy.linalg
 import logging
 
-import rmgpy.chem.constants as constants
-from rmgpy.chem.thermo import ThermoData, Wilhoit, MultiNASA
-from rmgpy.chem.ext.thermo_converter import convertWilhoitToNASA
+from rmgpy.thermo import ThermoData, Wilhoit, MultiNASA, convertThermoModel
 
 ################################################################################
 
@@ -46,33 +44,33 @@ def generateThermoModel(species, model, plot=False):
     """
 
     if model.lower() not in ['group additivity', 'wilhoit', 'nasa']:
-        raise Exception('Unknown thermodynamic model "%s".' % model)
+        raise Exception('Unknown thermodynamic model "{0}".'.format(model))
 
-    logging.info('Generating %s thermo model for %s...' % (model, species))
+    logging.info('Generating {0} thermo model for {1}...'.format(model, species))
     linear = species.states.modes[1].linear
-    Nfreq = len(species.states.modes[2].frequencies)
+    Nfreq = len(species.states.modes[2].frequencies.values)
     Nrotors = len(species.states.modes[3:])
 
-    H298 = species.states.getEnthalpy(298.15) + species.E0
+    H298 = species.states.getEnthalpy(298.15) + species.E0.value
     S298 = species.states.getEntropy(298.15)
     
     if model.lower() == 'group additivity':
         Tdata = numpy.arange(300.0, 2001.0, 100.0, numpy.float64)
         Cpdata = species.states.getHeatCapacities(Tdata)
-        species.thermo = ThermoData(Tdata=Tdata, Cpdata=Cpdata, H298=H298, S298=S298)
+        species.thermo = ThermoData(Tdata=(Tdata,"K"), Cpdata=(Cpdata,"J/(mol*K)"), H298=(H298/1000.,"kJ/mol"), S298=(S298,"J/(mol*K)"))
     else:
         Tlist = numpy.arange(10.0, 3001.0, 10.0, numpy.float64)
         Cplist = species.states.getHeatCapacities(Tlist)
         wilhoit = Wilhoit()
         wilhoit.fitToData(Tlist, Cplist, linear, Nfreq, Nrotors, H298, S298, B0=500.0)
         if model.lower() == 'nasa':
-            species.thermo = convertWilhoitToNASA(wilhoit, Tmin=10.0, Tmax=3000.0, Tint=500.0, fixedTint=False, weighting=True, continuity=3)
+            species.thermo = convertThermoModel(wilhoit, MultiNASA, Tmin=10.0, Tmax=3000.0, Tint=500.0)
         else:
             species.thermo = wilhoit
             
     # Plots to compare with the states model predictions
     if plot:
-        print 'Plotting thermo model for %s...' % (species)
+        print 'Plotting thermo model for {0}...'.format(species)
 
         import pylab
         Tlist = numpy.arange(10.0, 2501.0, 10.0)
@@ -80,7 +78,7 @@ def generateThermoModel(species, model, plot=False):
         Cplist1 = species.thermo.getHeatCapacities(Tlist)
         Slist = species.states.getEntropies(Tlist)
         Slist1 = species.thermo.getEntropies(Tlist)
-        Hlist = species.states.getEnthalpies(Tlist) + species.E0
+        Hlist = species.states.getEnthalpies(Tlist) + species.E0.value
         Hlist1 = species.thermo.getEnthalpies(Tlist)
         Glist = Hlist - Tlist * Slist
         Glist1 = species.thermo.getFreeEnergies(Tlist)
@@ -122,46 +120,46 @@ def saveThermo(species, label, path):
     f = open(path, 'a')
 
     f.write('# Thermodynamics for %s:\n' % (label))
-    f.write('#   H(298 K)   = %9.3f kcal/mol\n' % (species.thermo.getEnthalpy(298) / 4184.))
-    f.write('#   S(298 K)   = %9.3f cal/(mol*K)\n' % (species.thermo.getEntropy(298) / 4.184))
-    f.write('#   Cp(300 K)  = %9.3f cal/(mol*K)\n' % (species.thermo.getHeatCapacity(300) / 4.184))
-    f.write('#   Cp(400 K)  = %9.3f cal/(mol*K)\n' % (species.thermo.getHeatCapacity(400) / 4.184))
-    f.write('#   Cp(500 K)  = %9.3f cal/(mol*K)\n' % (species.thermo.getHeatCapacity(500) / 4.184))
-    f.write('#   Cp(600 K)  = %9.3f cal/(mol*K)\n' % (species.thermo.getHeatCapacity(600) / 4.184))
-    f.write('#   Cp(800 K)  = %9.3f cal/(mol*K)\n' % (species.thermo.getHeatCapacity(800) / 4.184))
-    f.write('#   Cp(1000 K) = %9.3f cal/(mol*K)\n' % (species.thermo.getHeatCapacity(1000) / 4.184))
-    f.write('#   Cp(1500 K) = %9.3f cal/(mol*K)\n' % (species.thermo.getHeatCapacity(1500) / 4.184))
+    f.write('#   H(298 K)   = {0:9.3f} kcal/mol\n'.format(species.thermo.getEnthalpy(298) / 4184.))
+    f.write('#   S(298 K)   = {0:9.3f} cal/(mol*K)\n'.format(species.thermo.getEntropy(298) / 4.184))
+    f.write('#   Cp(300 K)  = {0:9.3f} cal/(mol*K)\n'.format(species.thermo.getHeatCapacity(300) / 4.184))
+    f.write('#   Cp(400 K)  = {0:9.3f} cal/(mol*K)\n'.format(species.thermo.getHeatCapacity(400) / 4.184))
+    f.write('#   Cp(500 K)  = {0:9.3f} cal/(mol*K)\n'.format(species.thermo.getHeatCapacity(500) / 4.184))
+    f.write('#   Cp(600 K)  = {0:9.3f} cal/(mol*K)\n'.format(species.thermo.getHeatCapacity(600) / 4.184))
+    f.write('#   Cp(800 K)  = {0:9.3f} cal/(mol*K)\n'.format(species.thermo.getHeatCapacity(800) / 4.184))
+    f.write('#   Cp(1000 K) = {0:9.3f} cal/(mol*K)\n'.format(species.thermo.getHeatCapacity(1000) / 4.184))
+    f.write('#   Cp(1500 K) = {0:9.3f} cal/(mol*K)\n'.format(species.thermo.getHeatCapacity(1500) / 4.184))
 
     f.write('thermo(\n')
     f.write('    label = "%s",\n' % label)
     
     if isinstance(species.thermo, ThermoData):
         f.write('    thermo = ThermoData(\n')
-        f.write('        Tdata = ([%s], "K"),\n' % (', '.join(['%g' % (T) for T in species.thermo.Tdata])))
-        f.write('        Cpdata = ([%s], "cal/(mol*K)"),\n' % (', '.join(['%g' % (Cp/4.184) for Cp in species.thermo.Cpdata])))
-        f.write('        H298 = (%g, "kcal/mol"),\n' % (species.thermo.H298 / 4184))
-        f.write('        S298 = (%g, "cal/(mol*K)"),\n' % (species.thermo.S298 / 4.184))
+        f.write('        Tdata = {0!r},\n'.format(species.thermo.Tdata))
+        f.write('        Cpdata = {0!r},\n'.format(species.thermo.Cpdata))
+        f.write('        H298 = {0!r},\n'.format(species.thermo.H298))
+        f.write('        S298 = {0!r},\n'.format(species.thermo.S298))
         f.write('    ),\n')
     elif isinstance(species.thermo, Wilhoit):
         f.write('    thermo = Wilhoit(\n')
-        f.write('        cp0 = (%g, "cal/(mol*K)"),\n' % (species.thermo.cp0 / 4.184))
-        f.write('        cpInf = (%g, "cal/(mol*K)"),\n' % (species.thermo.cpInf / 4.184))
-        f.write('        B = (%g, "K"),\n' % (species.thermo.B))
-        f.write('        a0 = %g,\n' % (species.thermo.a0))
-        f.write('        a1 = %g,\n' % (species.thermo.a1))
-        f.write('        a2 = %g,\n' % (species.thermo.a2))
-        f.write('        a3 = %g,\n' % (species.thermo.a3))
-        f.write('        H0 = (%g, "kcal/mol"),\n' % (species.thermo.H0 / 4184))
-        f.write('        S0 = (%g, "cal/(mol*K)"),\n' % (species.thermo.S0 / 4.184))
+        f.write('        cp0 = {0!r},\n'.format(species.thermo.cp0))
+        f.write('        cpInf = {0!r},\n'.format(species.thermo.cpInf))
+        f.write('        B = {0!r},\n'.format(species.thermo.B))
+        f.write('        a0 = {0:g},\n'.format(species.thermo.a0))
+        f.write('        a1 = {0:g},\n'.format(species.thermo.a1))
+        f.write('        a2 = {0:g},\n'.format(species.thermo.a2))
+        f.write('        a3 = {0:g},\n'.format(species.thermo.a3))
+        f.write('        H0 = {0!r},\n'.format(species.thermo.H0))
+        f.write('        S0 = {0!r},\n'.format(species.thermo.S0))
         f.write('    ),\n')
     elif isinstance(species.thermo, MultiNASA):
         f.write('    thermo = MultiNASA(polynomials = [\n')
         for poly in species.thermo.polynomials:
-            f.write('        NASA(Tmin=(%g,"K"), Tmax=(%g,"K"), coeffs=[%g, %g, %g, %g, %g, %g, %g]),\n' % (poly.Tmin, poly.Tmax, poly.c0, poly.c1, poly.c2, poly.c3, poly.c4, poly.c5, poly.c6))
+            f.write('        {0!r},\n'.format(poly))
         f.write('    ]),\n')
        
-    f.write('    Tmin = 0.0,\n')
-    f.write('    Tmax = 3000.0,\n')
+    f.write('    Tmin = (0.0,"K"),\n')
+    f.write('    Tmax = (3000.0,"K"),\n')
     f.write('    short_comment = "",\n')
     f.write('    long_comment = \n')
     f.write('"""\n')
