@@ -57,8 +57,8 @@ from rxngen import generateReactions
 
 class Species(rmgpy.chem.species.Species):
 
-    def __init__(self, index=-1, label='', thermo=None, states=None, molecule=None, geometry=None, E0=0.0, lennardJones=None, molecularWeight=0.0, reactive=True):
-        rmgpy.chem.species.Species.__init__(self, index, label, thermo, states, molecule, geometry, E0, lennardJones, molecularWeight, reactive)
+    def __init__(self, index=-1, label='', thermo=None, states=None, molecule=None, E0=0.0, lennardJones=None, molecularWeight=0.0, reactive=True):
+        rmgpy.chem.species.Species.__init__(self, index, label, thermo, states, molecule, E0, lennardJones, molecularWeight, reactive)
         self.coreSizeAtCreation = 0
 
     def __reduce__(self):
@@ -68,7 +68,7 @@ class Species(rmgpy.chem.species.Species):
         d = {
             'coreSizeAtCreation': self.coreSizeAtCreation,
         }
-        return (Species, (self.index, self.label, self.thermo, self.states, self.molecule, self.geometry, self.E0, self.lennardJones, self.molecularWeight, self.reactive), d)
+        return (Species, (self.index, self.label, self.thermo, self.states, self.molecule, self.E0, self.lennardJones, self.molecularWeight, self.reactive), d)
 
     def __setstate__(self, d):
         """
