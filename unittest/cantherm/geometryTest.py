@@ -4,7 +4,7 @@
 import numpy
 import unittest
 
-from rmgpy.chem.geometry import *
+from rmgpy.cantherm.geometry import *
 
 ################################################################################
 

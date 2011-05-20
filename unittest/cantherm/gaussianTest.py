@@ -1,13 +1,11 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
+# encoding: utf-8 -*-
 
 import numpy
 import unittest
-import sys
-sys.path.append('.')
 
-from chempy.io.gaussian import *
-from chempy.states import *
+from rmgpy.cantherm.gaussian import *
+from rmgpy.statmech import *
 
 ################################################################################
 
@@ -23,7 +21,7 @@ class GaussianTest(unittest.TestCase):
         molecular degrees of freedom can be properly read.
         """
 
-        log = GaussianLog('unittest/ethylene.log')
+        log = GaussianLog('unittest/cantherm/ethylene.log')
         s = log.loadStates()
         E0 = log.loadEnergy()
         
@@ -36,7 +34,7 @@ class GaussianTest(unittest.TestCase):
         rot = [mode for mode in s.modes if isinstance(mode,RigidRotor)][0]
         vib = [mode for mode in s.modes if isinstance(mode,HarmonicOscillator)][0]
         Tlist = numpy.array([298.15], numpy.float64)
-        self.assertAlmostEqual(trans.getPartitionFunction(Tlist) / 1.01325 / 5.83338e6, 1.0, 3)
+        self.assertAlmostEqual(trans.getPartitionFunction(Tlist) / 5.83338e6, 1.0, 3)
         self.assertAlmostEqual(rot.getPartitionFunction(Tlist) / 2.59622e3, 1.0, 3)
         self.assertAlmostEqual(vib.getPartitionFunction(Tlist) / 1.0481e0, 1.0, 3)
 
@@ -49,7 +47,7 @@ class GaussianTest(unittest.TestCase):
         molecular degrees of freedom can be properly read.
         """
 
-        log = GaussianLog('unittest/oxygen.log')
+        log = GaussianLog('unittest/cantherm/oxygen.log')
         s = log.loadStates()
         E0 = log.loadEnergy()
         
@@ -62,7 +60,7 @@ class GaussianTest(unittest.TestCase):
         rot = [mode for mode in s.modes if isinstance(mode,RigidRotor)][0]
         vib = [mode for mode in s.modes if isinstance(mode,HarmonicOscillator)][0]
         Tlist = numpy.array([298.15], numpy.float64)
-        self.assertAlmostEqual(trans.getPartitionFunction(Tlist) / 1.01325 / 7.11169e6, 1.0, 3)
+        self.assertAlmostEqual(trans.getPartitionFunction(Tlist) / 7.11169e6, 1.0, 3)
         self.assertAlmostEqual(rot.getPartitionFunction(Tlist) / 7.13316e1, 1.0, 3)
         self.assertAlmostEqual(vib.getPartitionFunction(Tlist) / 1.000037e0, 1.0, 3)
 

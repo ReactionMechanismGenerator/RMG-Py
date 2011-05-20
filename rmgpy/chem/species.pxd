@@ -26,7 +26,6 @@
 
 from thermo cimport ThermoModel
 from states cimport StatesModel
-from geometry cimport Geometry
 
 ################################################################################
 
@@ -43,7 +42,6 @@ cdef class Species:
     cdef public str label
     cdef public ThermoModel thermo
     cdef public StatesModel states
-    cdef public Geometry geometry
     cdef public LennardJones lennardJones
     cdef public double E0
     cdef public list molecule
@@ -58,7 +56,6 @@ cdef class TransitionState:
     
     cdef public str label
     cdef public StatesModel states
-    cdef public Geometry geometry
     cdef public double E0
     cdef public double frequency
     cdef public int degeneracy

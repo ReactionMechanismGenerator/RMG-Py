@@ -1,11 +1,11 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
+# encoding: utf-8
 
 ################################################################################
 #
-#   ChemPy - A chemistry toolkit for Python
+#   RMG - Reaction Mechanism Generator
 #
-#   Copyright (c) 2010 by Joshua W. Allen (jwallen@mit.edu)
+#   Copyright (c) 2009-2011 by the RMG Team (rmg_dev@mit.edu)
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
 #   copy of this software and associated documentation files (the 'Software'),
@@ -36,7 +36,7 @@ information, e.g. moments of inertia.
 import numpy
 import cython
 
-import constants
+from rmgpy.quantity import Quantity, constants
 
 ################################################################################
 
@@ -67,9 +67,9 @@ class Geometry:
     """
     
     def __init__(self, coordinates, number, mass):
-        self.coordinates = constants.Quantity(coordinates).values
-        self.number = constants.Quantity(number).values
-        self.mass = constants.Quantity(mass).values
+        self.coordinates = Quantity(coordinates).values
+        self.number = Quantity(number).values
+        self.mass = Quantity(mass).values
     
     def __repr__(self):
         """
@@ -79,11 +79,11 @@ class Geometry:
         coordinates = '(['
         for i in range(self.coordinates.shape[0]):
             if i > 0: coordinates += ', '
-            coordinates += '[%s]' % (','.join(['%g' % (self.coordinates[i,j]) for j in range(self.coordinates.shape[1])]))
+            coordinates += '[{0}]'.format(','.join(['{0:g}'.format(self.coordinates[i,j]) for j in range(self.coordinates.shape[1])]))
         coordinates += '],"m")'
-        number = '[%s]' % (','.join(['%i' % (n) for n in self.number]))
-        mass = '([%s],"g/mol")' % (','.join(['%g' % (m * 1000.) for m in self.mass]))
-        return 'Geometry(coordinates=%s, number=%s, mass=%s)' % (coordinates, number, mass)
+        number = '[{0}]'.format(','.join(['{0:d}'.format(n) for n in self.number]))
+        mass = '([{0}],"g/mol")'.format(','.join(['{0:g}'.format(m * 1000.) for m in self.mass]))
+        return 'Geometry(coordinates={0}, number={1}, mass={2})'.format(coordinates, number, mass)
 
     def __reduce__(self):
         """
