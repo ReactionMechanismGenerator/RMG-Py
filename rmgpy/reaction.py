@@ -43,8 +43,7 @@ import cython
 import math
 import numpy
 
-import constants
-
+from quantity import constants
 from species import Species
 from kinetics import Arrhenius
 
@@ -95,14 +94,14 @@ class Reaction:
         object.
         """
         string = 'Reaction('
-        if self.index != -1: string += 'index=%i, ' % (self.index)
-        if self.reactants is not None: string += 'reactants=%r, ' % (self.reactants)
-        if self.products is not None: string += 'products=%r, ' % (self.products)
-        if self.kinetics is not None: string += 'kinetics=%r, ' % (self.kinetics)
-        if not self.reversible: string += 'reversible=%s, ' % (self.reversible)
-        if self.transitionState is not None: string += 'transitionState=%r, ' % (self.transitionState)
-        if self.thirdBody: string += 'thirdBody=%s, ' % (self.thirdBody)
-        if self.degeneracy != 1: string += 'degeneracy=%i, ' % (self.degeneracy)
+        if self.index != -1: string += 'index={0:d}, '.format(self.index)
+        if self.reactants is not None: string += 'reactants={0!r}, '.format(self.reactants)
+        if self.products is not None: string += 'products={0!r}, '.format(self.products)
+        if self.kinetics is not None: string += 'kinetics={0!r}, '.format(self.kinetics)
+        if not self.reversible: string += 'reversible={0}, '.format(self.reversible)
+        if self.transitionState is not None: string += 'transitionState={0!r}, '.format(self.transitionState)
+        if self.thirdBody: string += 'thirdBody={0}, '.format(self.thirdBody)
+        if self.degeneracy != 1: string += 'degeneracy={0:d}, '.format(self.degeneracy)
         string = string[:-2] + ')'
         return string
 
@@ -268,8 +267,8 @@ class Reaction:
         temperature `T` in K and pressure `P` in Pa, including any reaction
         path degeneracies.
         """
-        return self.kinetics.getRateCoefficient(T, P) * self.degeneracy
-
+        return self.kinetics.getRateCoefficient(T, P)
+    
     def getRate(self, T, P, conc, totalConc=-1.0):
         """
         Return the net rate of reaction at temperature `T` and pressure `P`. The
@@ -324,7 +323,7 @@ class Reaction:
         works if the `kinetics` attribute is an :class:`Arrhenius` object.
         """
         if not isinstance(self.kinetics, Arrhenius):
-            raise ReactionError("Arrhenius kinetics required to use Reaction.generateReverseRateCoefficient(), but %s object encountered." % (self.kinetics.__class__))
+            raise ReactionError("Arrhenius kinetics required to use Reaction.generateReverseRateCoefficient(), but {0} object encountered.".format(self.kinetics.__class__))
 
         cython.declare(klist=numpy.ndarray, i=cython.int, kf=Arrhenius, kr=Arrhenius)
         kf = self.kinetics
@@ -335,8 +334,16 @@ class Reaction:
             klist[i] = kf.getRateCoefficient(Tlist[i]) / self.getEquilibriumConstant(Tlist[i])
 
         # Fit and return an Arrhenius model to the k_r(T) data
+        if len(self.products) == 1:
+            kunits = 's^-1'
+        elif len(self.products) == 2:
+            kunits = 'm^3/(mol*s)'
+        elif len(self.products) == 3:
+            kunits = 'm^6/(mol^2*s)'
+        else:
+            kunits = ''
         kr = Arrhenius()
-        kr.fitToData(Tlist, klist, kf.T0)
+        kr.fitToData(Tlist, klist, kunits, kf.T0.value)
         return kr
 
     def calculateTSTRateCoefficients(self, Tlist, tunneling=''):
@@ -360,7 +367,7 @@ class Reaction:
         """
         cython.declare(E0=cython.double)
         # Determine barrier height
-        E0 = self.transitionState.E0 - sum([spec.E0 for spec in self.reactants])
+        E0 = self.transitionState.E0.value - sum([spec.E0.value for spec in self.reactants])
         # Determine TST rate constant at each temperature
         Qreac = 1.0
         for spec in self.reactants: Qreac *= spec.states.getPartitionFunction(T) / (constants.R * T / 101325.)
@@ -388,7 +395,7 @@ class Reaction:
         state, not the reactants or products, but is also generally less 
         accurate than the Eckart correction.
         """
-        frequency = abs(self.transitionState.frequency)
+        frequency = abs(self.transitionState.frequency.value)
         return 1.0 + (constants.h * constants.c * 100.0 * frequency / constants.kB / T)**2 / 24.0
     
     def calculateEckartTunnelingCorrection(self, T):
@@ -433,7 +440,7 @@ class Reaction:
         cython.declare(kappa=cython.double, E_kT=numpy.ndarray, f=numpy.ndarray, integral=cython.double)
         cython.declare(i=cython.int, tol=cython.double, fcrit=cython.double, E_kTmin=cython.double, E_kTmax=cython.double)
         
-        frequency = abs(self.transitionState.frequency)
+        frequency = abs(self.transitionState.frequency.value)
         
         # Calculate intermediate constants
         dV1 = self.transitionState.E0 - sum([spec.E0 for spec in self.reactants]) # [=] J/mol
