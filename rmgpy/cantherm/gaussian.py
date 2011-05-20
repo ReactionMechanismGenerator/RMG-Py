@@ -30,9 +30,9 @@
 import math
 import numpy
 
-from rmgpy.chem.geometry import Geometry
-from rmgpy.chem.states import Translation, RigidRotor, HinderedRotor, HarmonicOscillator, StatesModel
-from rmgpy.chem import constants
+from geometry import Geometry
+from rmgpy.statmech import Translation, RigidRotor, HinderedRotor, HarmonicOscillator, StatesModel
+from rmgpy.quantity import constants
 
 ################################################################################
 
