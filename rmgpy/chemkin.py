@@ -1,11 +1,11 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
+# encoding: utf-8
 
 ################################################################################
 #
-#   ChemPy - A chemistry toolkit for Python
+#   RMG - Reaction Mechanism Generator
 #
-#   Copyright (c) 2010 by Joshua W. Allen (jwallen@mit.edu)
+#   Copyright (c) 2009-2011 by the RMG Team (rmg_dev@mit.edu)
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
 #   copy of this software and associated documentation files (the 'Software'),
@@ -58,26 +58,26 @@ def getSpeciesIdentifier(species):
     # First try to use the label and index
     # The label can only contain alphanumeric characters, hyphens, and underscores
     if len(species.label) > 0 and species.index >= 0 and not re.search('[^A-Za-z0-9\-_]+', species.label):
-        name = '%s(%i)' % (species.label, species.index)
+        name = '{0}({1:d})'.format(species.label, species.index)
         if len(name) <= 10:
             return name
 
     # Next try the chemical formula
     if len(species.molecule) > 0:
         # Try the chemical formula
-        name = '%s(%i)' % (species.molecule[0].getFormula(), species.index)
+        name = '{0}({1:d})'.format(species.molecule[0].getFormula(), species.index)
         if len(name) <= 10:
             return name
 
     # As a last resort, just use the index
     if species.index >= 0:
-        name = 'S(%i)' % (species.index)
+        name = 'S({0:d})'.format(species.index)
         if len(name) <= 10:
             return name
 
     # If we're here then we just can't come up with a valid Chemkin name
     # for this species, so raise an exception
-    raise ChemkinError("Unable to determine valid Chemkin identifier for species %s." % species)
+    raise ChemkinError("Unable to determine valid Chemkin identifier for species {0}.".format(species))
 
 ################################################################################
 
@@ -91,7 +91,7 @@ def writeThermoEntry(species):
     thermo = species.thermo
     if not isinstance(thermo, MultiNASA):
         return ''
-        raise ChemkinError('Cannot generate Chemkin string for species "%s": Thermodynamics data must be a MultiNASA object.' % species)
+        raise ChemkinError('Cannot generate Chemkin string for species "{0}": Thermodynamics data must be a MultiNASA object.'.format(species))
 
     assert len(thermo.polynomials) == 2
     assert thermo.polynomials[0].Tmin.value < thermo.polynomials[1].Tmin.value
@@ -126,31 +126,31 @@ def writeThermoEntry(species):
             index += 1
 
     # Line 1
-    string = '%-16s        ' % (getSpeciesIdentifier(species))
+    string = '{0:<16}        '.format(getSpeciesIdentifier(species))
     if len(elements) <= 4:
         # Use the original Chemkin syntax for the element counts
         for symbol, count in zip(elements, elementCounts):
-            string += '%-2s%3i' % (symbol, count)
+            string += '{0!s:<2}{1:<3d}'.format(symbol, count)
         string += '     ' * (4 - len(elements))
     else:
         string += '     ' * 4
-    string += 'G%10.3f%10.3f%8.2f      1' % (thermo.polynomials[0].Tmin.value, thermo.polynomials[1].Tmax.value, thermo.polynomials[0].Tmax.value)
+    string += 'G{0:<10.3f}{1:<10.3f}{2:<10.3f}{3:<8.2f}      1'.format(thermo.polynomials[0].Tmin.value, thermo.polynomials[1].Tmax.value, thermo.polynomials[0].Tmax.value)
     if len(elements) > 4:
         string += '&\n'
         # Use the new-style Chemkin syntax for the element counts
         # This will only be recognized by Chemkin 4 or later
         for symbol, count in zip(elements, elementCounts):
-            string += '%-2s%3i' % (symbol, count)
+            string += '{0!s:<2}{1:<3d}'.format(symbol, count)
     string += '\n'
 
     # Line 2
-    string += '%15.8E%15.8E%15.8E%15.8E%15.8E    2\n' % (thermo.polynomials[0].c0, thermo.polynomials[0].c1, thermo.polynomials[0].c2, thermo.polynomials[0].c3, thermo.polynomials[0].c4)
+    string += '{0:<15.8E}{1:<15.8E}{2:<15.8E}{3:<15.8E}{4:<15.8E}    2\n'.format(thermo.polynomials[0].c0, thermo.polynomials[0].c1, thermo.polynomials[0].c2, thermo.polynomials[0].c3, thermo.polynomials[0].c4)
 
     # Line 3
-    string += '%15.8E%15.8E%15.8E%15.8E%15.8E    3\n' % (thermo.polynomials[0].c5, thermo.polynomials[0].c6, thermo.polynomials[1].c0, thermo.polynomials[1].c1, thermo.polynomials[1].c2)
+    string += '{0:<15.8E}{1:<15.8E}{2:<15.8E}{3:<15.8E}{4:<15.8E}    3\n'.format(thermo.polynomials[0].c5, thermo.polynomials[0].c6, thermo.polynomials[1].c0, thermo.polynomials[1].c1, thermo.polynomials[1].c2)
 
     # Line 4
-    string += '%15.8E%15.8E%15.8E%15.8E                   4\n' % (thermo.polynomials[1].c3, thermo.polynomials[1].c4, thermo.polynomials[1].c5, thermo.polynomials[1].c6)
+    string += '{0:<15.8E}{1:<15.8E}{2:<15.8E}{3:<15.8E}                   4\n'.format(thermo.polynomials[1].c3, thermo.polynomials[1].c4, thermo.polynomials[1].c5, thermo.polynomials[1].c6)
 
     return string
 
@@ -178,37 +178,37 @@ def writeKineticsEntry(reaction):
     string += '+'.join([getSpeciesIdentifier(product) for product in reaction.products])
     string += thirdBody
 
-    string = '%-52s' % string
+    string = '{0!s:<52}'.format(string)
 
     if isinstance(kinetics, Arrhenius):
-        string += '%9.3e %9.3f %9.3f' % (
+        string += '{0:<9.3e} {1:<9.3f} {2:<9.3f}'.format(
             kinetics.A .value/ (kinetics.T0.value ** kinetics.n.value) * 1.0e6 ** (numReactants - 1),
             kinetics.n.value,
             kinetics.Ea.value / 4184.
         )
     elif isinstance(kinetics, ThirdBody):
         arrhenius = kinetics.arrheniusHigh
-        string += '%9.3e %9.3f %9.3f' % (
+        string += '{0:<9.3e} {1:<9.3f} {2:<9.3f}'.format(
             arrhenius.A.value / (arrhenius.T0.value ** arrhenius.n.value) * 1.0e6 ** (numReactants - 1),
             arrhenius.n.value,
             arrhenius.Ea.value / 4184.
         )
     else:
         # Print dummy values that Chemkin parses but ignores
-        string += '%9.3e %9.3f %9.3f' % (1, 0, 0)
+        string += '{0:<9.3e} {1:<9.3f} {2:<9.3f}'.format(1, 0, 0)
 
     string += '\n'
 
     if isinstance(kinetics, ThirdBody):
         # Write collider efficiencies
         for collider, efficiency in kinetics.efficiencies.iteritems():
-            string += '%s/%4.2f/ ' % (getSpeciesIdentifier(collider), efficiency)
+            string += '{0!s}/{1:<4.2f}/ '.format(getSpeciesIdentifier(collider), efficiency)
         string += '\n'
         
         if isinstance(kinetics, Lindemann):
             # Write low-P kinetics
             arrhenius = kinetics.arrheniusLow
-            string += '    LOW/ %9.3e %9.3f %9.3f/\n' % (
+            string += '    LOW/ {0:<9.3e} {1:<9.3f} {2:<9.3f}/\n'.format(
                 arrhenius.A.value / (arrhenius.T0.value ** arrhenius.n.value) * 1.0e6 ** (numReactants - 1),
                 arrhenius.n.value,
                 arrhenius.Ea.value / 4184.
@@ -216,27 +216,27 @@ def writeKineticsEntry(reaction):
             if isinstance(kinetics, Troe):
                 # Write Troe parameters
                 if kinetics.T2 == 1e100:
-                    string += '    TROE/ %9.3e %9.3f %9.3f/\n' % (kinetics.alpha.value, kinetics.T3.value, kinetics.T1.value)
+                    string += '    TROE/ {0:<9.3e} {1:<9.3f} {2:<9.3f}/\n'.format(kinetics.alpha.value, kinetics.T3.value, kinetics.T1.value)
                 else:
-                    string += '    TROE/ %9.3e %9.3f %9.3f %9.3f/\n' % (kinetics.alpha.value, kinetics.T3.value, kinetics.T1.value, kinetics.T2.value)
+                    string += '    TROE/ {0:<9.3e} {1:<9.3f} {2:<9.3f} {3:<9.3f}/\n'.format(kinetics.alpha.value, kinetics.T3.value, kinetics.T1.value, kinetics.T2.value)
     elif isinstance(kinetics, PDepArrhenius):
         for P, arrhenius in zip(kinetics.pressures.values, kinetics.arrhenius):
-            string += '    PLOG/ %9.3f %9.3f %9.3f %9.3f/\n' % (P / 101325.,
+            string += '    PLOG/ {0:<9.3f} {1:<9.3e} {2:<9.3f} {3:<9.3f}/\n'.format(P / 101325.,
                 arrhenius.A.value / (arrhenius.T0.value ** arrhenius.n.value) * 1.0e6 ** (numReactants - 1),
                 arrhenius.n.value,
                 arrhenius.Ea.value / 4184.
             )
     elif isinstance(kinetics, Chebyshev):
-        string += '    TCHEB/ %9.3f %9.3f/\n' % (kinetics.Tmin.value, kinetics.Tmax.value)
-        string += '    PCHEB/ %9.3f %9.3f/\n' % (kinetics.Pmin.value / 101325., kinetics.Pmax.value / 101325.)
-        string += '    CHEB/ %i %i/\n' % (kinetics.degreeT, kinetics.degreeP)
+        string += '    TCHEB/ {0:<9.3f} {1:<9.3f}/\n'.format(kinetics.Tmin.value, kinetics.Tmax.value)
+        string += '    PCHEB/ {0:<9.3f} {1:<9.3f}/\n'.format(kinetics.Pmin.value / 101325., kinetics.Pmax.value / 101325.)
+        string += '    CHEB/ {0:d} {1:d}/\n'.format(kinetics.degreeT, kinetics.degreeP)
         if kinetics.degreeP < 6:
             coeffs = kinetics.coeffs.copy()
             coeffs[0,0] += 6 * (numReactants - 1)
             for i in range(kinetics.degreeT):
                 string += '    CHEB/'
                 for j in range(kinetics.degreeP):
-                    string += ' %12.3e' % (coeffs[i,j])
+                    string += ' {0:<12.3e}'.format(coeffs[i,j])
                 string += '/\n'
         else:
             coeffs = []
@@ -246,7 +246,7 @@ def writeKineticsEntry(reaction):
             coeffs[0] += 6 * (numReactants - 1)
             for i in range(len(coeffs)):
                 if i % 5 == 0: string += '    CHEB/'
-                string += ' %12.3e' % (kinetics.coeffs[i,j])
+                string += ' {0:<12.3e}'.format(kinetics.coeffs[i,j])
                 if i % 5 == 4: string += '/\n'
 
     return string
@@ -267,7 +267,7 @@ def saveChemkinFile(path, species, reactions):
     f.write('SPECIES\n')
     for spec in species:
         label = getSpeciesIdentifier(spec)
-        f.write('    %-16s    ! %s\n' % (label, str(spec)))
+        f.write('    {0!s:<16}    ! {1}\n'.format(label, str(spec)))
     f.write('END\n\n\n\n')
 
     # Thermodynamics section
