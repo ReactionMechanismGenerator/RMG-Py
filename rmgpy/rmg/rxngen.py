@@ -101,7 +101,7 @@ def generateProductStructures(family, reactantStructures, maps, forward):
         if not productStructures: return None
     except rmgpy.data.kinetics.InvalidActionError, e:
         print 'Unable to apply reaction recipe!'
-        print 'Reaction family is %s in %s direction' % (family.label, 'forward' if forward else 'reverse')
+        print 'Reaction family is {0} in {1} direction'.format(family.label, 'forward' if forward else 'reverse')
         print 'Reactant structures are:'
         for struct in reactantStructures:
             print struct.toAdjacencyList()
@@ -338,7 +338,7 @@ def generateReactions(species, model):
 
     log_text = ' + '.join([str(spec) for spec in species])
 
-    logging.info('Generating reactions for %s...'%(log_text))
+    logging.info('Generating reactions for {0}...'.format(log_text))
 
     # Must use explicit hydrogens for reaction generation
     implicitH = [spec.molecule[0].implicitHydrogens for spec in species]

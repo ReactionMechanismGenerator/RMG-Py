@@ -36,7 +36,7 @@ cimport numpy
 import scipy.linalg
 import cython
 
-import rmgpy.chem.constants as constants
+from rmgpy.quantity import constants
 from me cimport computeRateCoefficients
 
 ################################################################################

@@ -38,8 +38,8 @@ import numpy
 import scipy.special
 import logging
 
-import rmgpy.chem.constants as constants
-from rmgpy.chem.states import HarmonicOscillator, HinderedRotor
+from rmgpy.quantity import constants
+from rmgpy.statmech import HarmonicOscillator, HinderedRotor
 from pydqed import DQED
 
 ################################################################################
@@ -95,7 +95,7 @@ def fitStatesToHeatCapacity(Tlist, Cvlist, Nvib, Nrot, molecule=None):
     if len(Tlist) < 7:
         raise StatesFitError('You must specify at least 7 heat capacity points to fitStatesToHeatCapacity().')
     if len(Tlist) != len(Cvlist):
-        raise StatesFitError('The number of heat capacity points (%i) does not match the number of temperatures provided (%i).' % (len(Cvlist), len(Tlist)))
+        raise StatesFitError('The number of heat capacity points ({0:d}) does not match the number of temperatures provided ({1:d}).'.format(len(Cvlist), len(Tlist)))
 
     # The number of optimization variables available is constrained to be less
     # than the number of heat capacity points
@@ -122,15 +122,15 @@ def fitStatesToHeatCapacity(Tlist, Cvlist, Nvib, Nrot, molecule=None):
 
     modes = []
     if Nvib > 0:
-        ho = HarmonicOscillator(frequencies=vib[:])
-        ho.frequencies.sort()
+        vib.sort()
+        ho = HarmonicOscillator(frequencies=(vib[:],"cm^-1"))
         modes.append(ho)
     for i in range(Nrot):
         freq = hind[i][0]
         barr = hind[i][1]
         inertia = (barr*constants.c*100.0*constants.h) / (8 * math.pi * math.pi * (freq*constants.c*100.0)**2)
         barrier = barr*constants.c*100.0*constants.h*constants.Na
-        hr = HinderedRotor(inertia=inertia, barrier=barrier, symmetry=1)
+        hr = HinderedRotor(inertia=(inertia*constants.Na*1e23,"amu*angstrom^2"), barrier=(barrier/1000.,"kJ/mol"), symmetry=1)
         modes.append(hr)
 
     # Return the fitted modes
@@ -180,9 +180,9 @@ def fitStatesDirect(Tlist, Cvlist, Nvib, Nrot, molecule=None):
 
     # Check that the results of the optimization are valid
     if not numpy.isfinite(x).all():
-        raise StatesFitError('Returned solution vector is nonsensical: x = %s.' % (x))
+        raise StatesFitError('Returned solution vector is nonsensical: x = {0}.'.format(x))
     if igo == 8:
-        logging.warning('Maximum number of iterations reached when fitting spectral data for %s.' % str(molecule))
+        logging.warning('Maximum number of iterations reached when fitting spectral data for {0}.'.format(molecule))
 
     # Postprocess optimization results
     vib = list(x[0:Nvib])
@@ -231,9 +231,9 @@ def fitStatesPseudoRotors(Tlist, Cvlist, Nvib, Nrot, molecule=None):
 
     # Check that the results of the optimization are valid
     if not numpy.isfinite(x).all():
-        raise StatesFitError('Returned solution vector is nonsensical: x = %s.' % (x))
+        raise StatesFitError('Returned solution vector is nonsensical: x = {0}.'.format(x))
     if igo == 8:
-        logging.warning('Maximum number of iterations reached when fitting spectral data for %s.' % str(molecule))
+        logging.warning('Maximum number of iterations reached when fitting spectral data for {0}.'.format(molecule))
 
     # Postprocess optimization results
     vib = list(x[0:Nvib])
@@ -287,15 +287,15 @@ def fitStatesPseudo(Tlist, Cvlist, Nvib, Nrot, molecule=None):
 
     # Check that the results of the optimization are valid
     if not numpy.isfinite(x).all():
-        raise StatesFitError('Returned solution vector is nonsensical: x = %s.' % (x))
+        raise StatesFitError('Returned solution vector is nonsensical: x = {0}.'.format(x))
     if igo == 8:
-        logging.warning('Maximum number of iterations reached when fitting spectral data for %s.' % str(molecule))
+        logging.warning('Maximum number of iterations reached when fitting spectral data for {0}.'.format(molecule))
 
     # Postprocess optimization results
     Nvib2 = int(round(x[1]))
     Nvib3 = Nvib - Nvib2 - 1
     if Nvib2 < 0 or Nvib2 > Nvib-1 or Nvib3 < 0 or Nvib3 > Nvib-1:
-        raise StatesFitError('Invalid degeneracies %s and %s fitted for pseudo-frequencies.' % (Nvib2, Nvib3))
+        raise StatesFitError('Invalid degeneracies {0} and {1} fitted for pseudo-frequencies.'.format(Nvib2, Nvib3))
 
     vib = [x[0]]
     for i in range(Nvib2): vib.append(x[2])

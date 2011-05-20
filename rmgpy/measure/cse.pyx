@@ -36,7 +36,7 @@ cimport numpy
 import numpy.linalg
 import logging
 
-import rmgpy.chem.constants as constants
+from rmgpy.quantity import constants
 
 from me import generateFullMEMatrix
 
@@ -160,11 +160,11 @@ def applyChemicallySignificantEigenvaluesMethod(double T, double P,
     # there is a zero eigenvalue if there should be (i.e. no product channels)
     # If not, print an error and return
     if Ncse != Nchem:
-        logging.error('Could only identify %i distinct eigenvalues, when %i are required.' % (Ncse, Nchem))
-        logging.info('Last IERE = %g    First CSE = %g    Ratio = %g' % (W0[ind[-Nchem-1]], W0[ind[-Nchem]], W0[ind[-Nchem-1]] / W0[ind[-Nchem]]))
+        logging.error('Could only identify {0:d} distinct eigenvalues, when {1:d} are required.'.format(Ncse, Nchem))
+        logging.info('Last IERE = {0:g}    First CSE = {1:g}    Ratio = {2:g}'.format(W0[ind[-Nchem-1]], W0[ind[-Nchem]], W0[ind[-Nchem-1]] / W0[ind[-Nchem]]))
     #elif Nprod == 0 and abs(W0[ind[-1]]) > 1e-3:
     #    logging.error('Could not identify zero eigenvalue.')
-    #    logging.info('Zero CSE = %g    Last CSE = %g    Ratio = %g' % (W0[ind[-1]], W0[ind[-2]], W0[ind[-1]] / W0[ind[-2]]))
+    #    logging.info('Zero CSE = {0:g}    Last CSE = {1:g}    Ratio = {2:g}'.format(W0[ind[-1]], W0[ind[-2]], W0[ind[-1]] / W0[ind[-2]]))
     else:
 
         # Extract the chemically-significant eigenvalues and eigenvectors

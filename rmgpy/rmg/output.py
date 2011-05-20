@@ -60,7 +60,7 @@ def saveOutputHTML(path, reactionModel):
 
     from model import PDepReaction
     
-    from rmgpy.chem.ext.molecule_draw import drawMolecule
+    from rmgpy.molecule_draw import drawMolecule
     try:
         import jinja2
     except ImportError:
@@ -72,7 +72,7 @@ def saveOutputHTML(path, reactionModel):
 
     # Draw molecules if necessary
     for spec in reactionModel.core.species:
-        fstr = os.path.join(dirname, 'species', '%s.png' % (spec))
+        fstr = os.path.join(dirname, 'species', '{0}.png'.format(spec))
         if not os.path.exists(fstr):
             drawMolecule(spec.molecule[0], fstr)
 

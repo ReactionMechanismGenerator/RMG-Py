@@ -39,8 +39,8 @@ import cython
 import logging
 import os.path
 
-import rmgpy.chem.constants as constants
-import rmgpy.chem.states as states
+from rmgpy.quantity import constants
+import rmgpy.statmech as states
 
 from reaction import *
 from collision import *
@@ -181,9 +181,9 @@ class Network:
         # The minimum energy is the lowest isomer or reactant energy on the PES
         Emin = 1.0e25
         for species in self.isomers:
-            if species.E0 < Emin: Emin = species.E0
+            if species.E0.value < Emin: Emin = species.E0.value
         for reactants in self.reactants:
-            E0 = sum([reactant.E0 for reactant in reactants])
+            E0 = sum([reactant.E0.value for reactant in reactants])
             if E0 < Emin: Emin = E0
         Emin = math.floor(Emin) # Round to nearest whole number
 
@@ -191,19 +191,19 @@ class Network:
         isomer = None
         for species in self.isomers:
             if isomer is None: isomer = species
-            elif species.E0 > isomer.E0: isomer = species
+            elif species.E0.value > isomer.E0.value: isomer = species
 
         # Use the highest energy on the PES as the initial guess for Emax0
-        Emax0 = isomer.E0
+        Emax0 = isomer.E0.value
         for reactants in self.reactants:
-            E0 = sum([reactant.E0 for reactant in reactants])
+            E0 = sum([reactant.E0.value for reactant in reactants])
             if E0 > Emax0: Emax0 = E0
         for products in self.products:
-            E0 = sum([product.E0 for product in products])
+            E0 = sum([product.E0.value for product in products])
             if E0 > Emax0: Emax0 = E0
         for rxn in self.pathReactions:
             if rxn.transitionState is not None:
-                E0 = rxn.transitionState.E0
+                E0 = rxn.transitionState.E0.value
                 if E0 > Emax0: Emax0 = E0
         
         # (Try to) purposely overestimate Emax using arbitrary multiplier
@@ -246,7 +246,7 @@ class Network:
 
         # Return the chosen energy grains
         Elist = self.getEnergyGrains(Emin, Emax, grainSize, Ngrains)
-        logging.info('Using %i grains from %.2f to %.2f kJ/mol in steps of %.2f kJ/mol' % (len(Elist), Elist[0] / 1000, Elist[-1] / 1000, (Elist[1] - Elist[0]) / 1000))
+        logging.info('Using {0:d} grains from {1:.2f} to {2:.2f} kJ/mol in steps of {3:.2f} kJ/mol'.format(len(Elist), Elist[0] / 1000, Elist[-1] / 1000, (Elist[1] - Elist[0]) / 1000))
         return Elist
 
     def calculateDensitiesOfStates(self, Elist, E0):
@@ -267,7 +267,7 @@ class Network:
 
         # Densities of states for isomers
         for i in range(Nisom):
-            logging.debug('Calculating density of states for isomer "%s"' % self.isomers[i])
+            logging.debug('Calculating density of states for isomer "{0}"'.format(self.isomers[i]))
             densStates0 = self.isomers[i].states.getDensityOfStates(Elist)
             # Shift to common zero of energy
             r0 = int(round(E0[i] / dE))
@@ -280,24 +280,24 @@ class Network:
             for n in range(Nreac):
                 r0 = int(round(E0[n+Nisom] / dE))
                 if self.reactants[n][0].states is not None and self.reactants[n][1].states is not None:
-                    logging.debug('Calculating density of states for reactant channel "%s"' % (' + '.join([str(spec) for spec in self.reactants[n]])))
+                    logging.debug('Calculating density of states for reactant channel "{0}"'.format(' + '.join([str(spec) for spec in self.reactants[n]])))
                     densStates0 = self.reactants[n][0].states.getDensityOfStates(Elist)
                     densStates1 = self.reactants[n][1].states.getDensityOfStates(Elist)
                     densStates0 = states.convolve(densStates0, densStates1, Elist)
                     # Shift to common zero of energy
                     densStates[n+Nisom,r0:] = densStates0[:-r0+len(densStates0)]
                 elif self.reactants[n][0].states is not None:
-                    logging.debug('Calculating density of states for reactant channel "%s"' % (' + '.join([str(spec) for spec in self.reactants[n]])))
+                    logging.debug('Calculating density of states for reactant channel "{0}"'.format(' + '.join([str(spec) for spec in self.reactants[n]])))
                     densStates0 = self.reactants[n][0].states.getDensityOfStates(Elist)
                     # Shift to common zero of energy
                     densStates[n+Nisom,r0:] = densStates0[:-r0+len(densStates0)]
                 elif self.reactants[n][1].states is not None:
-                    logging.debug('Calculating density of states for reactant channel "%s"' % (' + '.join([str(spec) for spec in self.reactants[n]])))
+                    logging.debug('Calculating density of states for reactant channel "{0}"'.format(' + '.join([str(spec) for spec in self.reactants[n]])))
                     densStates0 = self.reactants[n][1].states.getDensityOfStates(Elist)
                     # Shift to common zero of energy
                     densStates[n+Nisom,r0:] = densStates0[:-r0+len(densStates0)]
                 else:
-                    logging.debug('NOT calculating density of states for reactant channel "%s"' % (' + '.join([str(spec) for spec in self.reactants[n]])))
+                    logging.debug('NOT calculating density of states for reactant channel "{0}"'.format(' + '.join([str(spec) for spec in self.reactants[n]])))
             logging.debug('')
 
         return densStates
@@ -345,7 +345,7 @@ class Network:
                 prod = self.isomers.index(rxn.products[0])
                 Fim[prod,reac,:], Gnj[reac,prod,:] = calculateMicrocanonicalRateCoefficient(rxn, Elist, densStates[reac+Nisom,:], densStates[prod,:], T)
             else:
-                raise NetworkError('Unexpected type of path reaction "%s"' % rxn)
+                raise NetworkError('Unexpected type of path reaction "{0}"'.format(rxn))
         logging.debug('')
 
         return Kij, Gnj, Fim
@@ -368,16 +368,16 @@ class Network:
         logging.log(level, '-------------------')
         logging.log(level, 'Isomers:')
         for isomer in self.isomers:
-            logging.log(level, '    {0:<48s} {1:12g} kJ/mol'.format(str(isomer), isomer.E0 / 1000.0))
+            logging.log(level, '    {0:<48s} {1:12g} kJ/mol'.format(str(isomer), isomer.E0.value / 1000.0))
         logging.log(level, 'Reactant channels:')
         for reactants in self.reactants:
-            logging.log(level, '    {0:<48s} {1:12g} kJ/mol'.format(' + '.join([str(spec) for spec in reactants]), sum([spec.E0 for spec in reactants]) / 1000.0))
+            logging.log(level, '    {0:<48s} {1:12g} kJ/mol'.format(' + '.join([str(spec) for spec in reactants]), sum([spec.E0.value for spec in reactants]) / 1000.0))
         logging.log(level, 'Product channels:')
         for products in self.products:
-            logging.log(level, '    {0:<48s} {1:12g} kJ/mol'.format(' + '.join([str(spec) for spec in products]), sum([spec.E0 for spec in products]) / 1000.0))
+            logging.log(level, '    {0:<48s} {1:12g} kJ/mol'.format(' + '.join([str(spec) for spec in products]), sum([spec.E0.value for spec in products]) / 1000.0))
         logging.log(level, 'Path reactions:')
         for rxn in self.pathReactions:
-            logging.log(level, '    {0:<48s} {1:12g} kJ/mol'.format(rxn, rxn.transitionState.E0 / 1000.0))
+            logging.log(level, '    {0:<48s} {1:12g} kJ/mol'.format(rxn, rxn.transitionState.E0.value / 1000.0))
         logging.log(level, '========================================================================')
         logging.log(level, '')
 
@@ -404,32 +404,32 @@ class Network:
         # this information
         E0 = numpy.zeros((Nisom+Nreac), numpy.float64)
         for i in range(Nisom):
-            E0[i] = self.isomers[i].E0
+            E0[i] = self.isomers[i].E0.value
         for n in range(Nreac):
-            E0[n+Nisom] = sum([spec.E0 for spec in self.reactants[n]])
+            E0[n+Nisom] = sum([spec.E0.value for spec in self.reactants[n]])
 
         # Get first reactive grain for each isomer
         Ereac = numpy.ones(Nisom, numpy.float64) * 1e20
         for i in range(Nisom):
             for rxn in self.pathReactions:
                 if rxn.reactants[0] == self.isomers[i] or rxn.products[0] == self.isomers[i]:
-                    if rxn.transitionState.E0 < Ereac[i]:
-                        Ereac[i] = rxn.transitionState.E0
+                    if rxn.transitionState.E0.value < Ereac[i]:
+                        Ereac[i] = rxn.transitionState.E0.value
 
         # Shift energy grains such that lowest is zero
         Emin = Elist[0]
         for rxn in self.pathReactions:
-            rxn.transitionState.E0 -= Emin
+            rxn.transitionState.E0.value -= Emin
         E0 -= Emin
         Ereac -= Emin
         Elist -= Emin
 
         # Calculate density of states for each isomer and each reactant channel
         # that has the necessary parameters
-        logging.info('Calculating densities of states for network %i...' % self.index)
+        logging.info('Calculating densities of states for network {0:d}...'.format(self.index))
         densStates0 = self.calculateDensitiesOfStates(Elist, E0)
 
-        logging.info('Calculating phenomenological rate coefficients for network %i...' % self.index)
+        logging.info('Calculating phenomenological rate coefficients for network {0:d}...'.format(self.index))
         K = numpy.zeros((len(Tlist),len(Plist),Nisom+Nreac+Nprod,Nisom+Nreac+Nprod), numpy.float64)
         p0 = numpy.zeros((len(Tlist),len(Plist),Ngrains,Nisom,Nisom+Nreac), numpy.float64)
 
@@ -495,7 +495,7 @@ class Network:
                     import me
                     K[t,p,:,:], p0[t,p,:,:,:] = me.applyBranchingRatiosMethod(T, P, Elist, densStates, Mcoll, Kij, Fim, Gnj, Ereac, Nisom, Nreac, Nprod)
                 else:
-                    raise NetworkError('Unknown method "%s".' % method)
+                    raise NetworkError('Unknown method "{0}".'.format(method))
 
                 # Compute k(T,P) values from the return p0
                 # This should be identical to the k(T,P) values returned by each method
@@ -526,7 +526,7 @@ class Network:
 
         # Unshift energy grains
         for rxn in self.pathReactions:
-            rxn.transitionState.E0 += Emin
+            rxn.transitionState.E0.value += Emin
         Elist += Emin
 
         # Mark network as valid
@@ -561,22 +561,22 @@ class Network:
         # this information
         E0 = numpy.zeros((Nisom+Nreac), numpy.float64)
         for i in range(Nisom):
-            E0[i] = self.isomers[i].E0
+            E0[i] = self.isomers[i].E0.value
         for n in range(Nreac):
-            E0[n+Nisom] = sum([spec.E0 for spec in self.reactants[n]])
+            E0[n+Nisom] = sum([spec.E0.value for spec in self.reactants[n]])
 
         # Get first reactive grain for each isomer
         Ereac = numpy.ones(Nisom, numpy.float64) * 1e20
         for i in range(Nisom):
             for rxn in self.pathReactions:
                 if rxn.reactants[0] == self.isomers[i] or rxn.products[0] == self.isomers[i]:
-                    if rxn.transitionState.E0 < Ereac[i]:
-                        Ereac[i] = rxn.transitionState.E0
+                    if rxn.transitionState.E0.value < Ereac[i]:
+                        Ereac[i] = rxn.transitionState.E0.value
 
         # Shift energy grains such that lowest is zero
         Emin = Elist[0]
         for rxn in self.pathReactions:
-            rxn.transitionState.E0 -= Emin
+            rxn.transitionState.E0.value -= Emin
         E0 -= Emin
         Ereac -= Emin
         Elist -= Emin
@@ -606,7 +606,7 @@ class Network:
 
         # Unshift energy grains
         for rxn in self.pathReactions:
-            rxn.transitionState.E0 += Emin
+            rxn.transitionState.E0.value += Emin
         Elist += Emin
 
         # Construct accounting matrix
@@ -664,7 +664,7 @@ class Network:
         elif ext == '.ps':
             surface = cairo.PSSurface(fstr, width, height)
         else:
-            logging.warning('Unknown format for target "%s"; not drawing potential energy surface.' % fstr)
+            logging.warning('Unknown format for target "{0}"; not drawing potential energy surface.'.format(fstr))
             return
         cr = cairo.Context(surface)
         return surface, cr
@@ -718,8 +718,8 @@ class Network:
         padding_top = padding_left / 2.0
         padding_bottom = padding_left / 2.0
         wellWidth = 64.0; wellSpacing = 64.0; Eslope = 5.0; TSwidth = 16.0
-        E0 = [sum([spec.E0 for spec in well]) / 4184 for well in wells]
-        E0.extend([rxn.transitionState.E0 / 4184 for rxn in self.pathReactions])
+        E0 = [sum([spec.E0.value for spec in well]) / 4184 for well in wells]
+        E0.extend([rxn.transitionState.E0.value / 4184 for rxn in self.pathReactions])
         y_E0 = (max(E0) - 0.0) * Eslope + padding_top
 
         ext = os.path.splitext(fstr)[1].lower()
@@ -735,7 +735,7 @@ class Network:
         coordinates = numpy.zeros((len(wells), 2), numpy.float64)
         x = padding_left + wellWidth / 2.0
         for i, well in enumerate(wells):
-            E0 = sum([spec.E0 for spec in well]) / 4184
+            E0 = sum([spec.E0.value for spec in well]) / 4184
             y = y_E0 - E0 * Eslope
             coordinates[i] = [x, y]
             x += wellWidth + wellSpacing
@@ -778,7 +778,7 @@ class Network:
         elif Eunits == 'kcal/mol': Emult = 1.0 / 4184
         elif Eunits == 'cm^-1':    Emult = 1.0 / 11.96
         else:
-            logging.warning('Invalid value "%s" for Eunits parameter. Setting to "kJ/mol".' % (Eunits))
+            logging.warning('Invalid value "{0}" for Eunits parameter. Setting to "kJ/mol".'.format(Eunits))
             Emult = 1.0 / 1000
 
         # Initialize Cairo surface and context
@@ -792,9 +792,9 @@ class Network:
         for rxn in self.pathReactions:
             reac = wells.index(rxn.reactants)
             prod = wells.index(rxn.products)
-            E0_reac = sum([spec.E0 for spec in wells[reac]]) / 4184
-            E0_prod = sum([spec.E0 for spec in wells[prod]]) / 4184
-            E0_TS = rxn.transitionState.E0 / 4184
+            E0_reac = sum([spec.E0.value for spec in wells[reac]]) / 4184
+            E0_prod = sum([spec.E0.value for spec in wells[prod]]) / 4184
+            E0_TS = rxn.transitionState.E0.value / 4184
             if reac < prod:
                 x1, y1 = coordinates[reac,:]
                 x2, y2 = coordinates[prod,:]
@@ -821,7 +821,7 @@ class Network:
                 cr.line_to(x0+TSwidth/2.0, y0)
                 cr.stroke()
                 # Add background and text for energy
-                E0 = "%.1f" % (rxn.transitionState.E0 * Emult)
+                E0 = "{0:.1f}".format(rxn.transitionState.E0.value * Emult)
                 extents = cr.text_extents(E0)
                 x = x0 - extents[2] / 2.0; y = y0 - 6.0
                 cr.rectangle(x + extents[0] - 2.0, y + extents[1] - 2.0, extents[2] + 4.0, extents[3] + 4.0)
@@ -857,7 +857,7 @@ class Network:
             cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
             cr.stroke()
             # Add background and text for energy
-            E0 = "%.1f" % (sum([spec.E0 for spec in well]) * Emult)
+            E0 = "{0:.1f}".format(sum([spec.E0.value for spec in well]) * Emult)
             extents = cr.text_extents(E0)
             x = x0 - extents[2] / 2.0; y = y0 - 6.0
             cr.rectangle(x + extents[0] - 2.0, y + extents[1] - 2.0, extents[2] + 4.0, extents[3] + 4.0)

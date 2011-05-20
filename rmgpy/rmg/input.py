@@ -31,7 +31,7 @@
 import logging
 import quantities
 
-from rmgpy.chem.molecule import Molecule
+from rmgpy.molecule import Molecule
 
 from rmgpy.data.rmg import RMGDatabase
 
@@ -68,7 +68,7 @@ def database(path, thermoLibraries=None, reactionLibraries=None, frequenciesLibr
 
 def species(label, structure, reactive=True):
     global speciesDict, reactionModel
-    logging.debug('Found %s species "%s" (%s)' % ('reactive' if reactive else 'nonreactive', label, structure.toSMILES()))
+    logging.debug('Found {0} species "{1}" ({2})'.format('reactive' if reactive else 'nonreactive', label, structure.toSMILES()))
     speciesDict[label], isNew = reactionModel.makeNewSpecies(label=label, molecule=structure, reactive=reactive)
 
 def CML(string):
@@ -166,11 +166,11 @@ def readInputFile(path):
     try:
         f = open(path)
     except IOError, e:
-        logging.error('The input file "%s" could not be opened.' % path)
+        logging.error('The input file "{0}" could not be opened.'.format(path))
         logging.info('Check that the file exists and that you have read access.')
         return
 
-    logging.info('Reading input file "%s"...' % path)
+    logging.info('Reading input file "{0}"...'.format(path))
 
     reactionModel = CoreEdgeReactionModel()
 
@@ -196,7 +196,7 @@ def readInputFile(path):
     try:
         exec f in global_context, local_context
     except (NameError, TypeError, SyntaxError), e:
-        logging.error('The input file "%s" was invalid:' % path)
+        logging.error('The input file "{0}" was invalid:'.format(path))
         logging.exception(e)
         raise
     finally:

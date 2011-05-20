@@ -41,9 +41,9 @@ import numpy
 cimport numpy
 import logging
 
-import rmgpy.chem.constants as constants
-import rmgpy.chem.reaction
-from rmgpy.chem.kinetics import *
+from rmgpy.quantity import constants, Quantity
+import rmgpy.reaction
+from rmgpy.kinetics import *
 
 def convolve(numpy.ndarray[numpy.float64_t,ndim=1] rho1,
     numpy.ndarray[numpy.float64_t,ndim=1] rho2,
@@ -127,28 +127,28 @@ def calculateMicrocanonicalRateCoefficient(reaction,
         if reaction.transitionState.states is not None:
             # We've been provided with molecular degree of freedom data for the
             # transition state, so let's use the more accurate RRKM theory
-            logging.debug('Using RRKM theory for reaction "%s"' % reaction)
+            logging.debug('Using RRKM theory for reaction "{0}"'.format(reaction))
             kf = applyRRKMTheory(reaction.transitionState, Elist, reacDensStates)
         elif reaction.kinetics is not None:
             # We've been provided with high-pressure-limit rate coefficient data,
             # so let's use the less accurate inverse Laplace transform method
-            logging.debug('Using ILT method for reaction "%s"' % reaction)
-            kf = applyInverseLaplaceTransformMethod(reaction.kinetics, reaction.transitionState.E0, Elist, reacDensStates, T)
+            logging.debug('Using ILT method for reaction "{0}"'.format(reaction))
+            kf = applyInverseLaplaceTransformMethod(reaction.kinetics, reaction.transitionState.E0.value, Elist, reacDensStates, T)
 
     elif productStatesKnown:
         if reaction.transitionState.states is not None:
             # We've been provided with molecular degree of freedom data for the
             # transition state, so let's use the more accurate RRKM theory
-            logging.debug('Using RRKM theory for reaction "%s"' % reaction)
+            logging.debug('Using RRKM theory for reaction "{0}"'.format(reaction))
             kr = applyRRKMTheory(reaction.transitionState, Elist, prodDensStates)
         elif reaction.kinetics is not None:
             # We've been provided with high-pressure-limit rate coefficient data,
             # so let's use the less accurate inverse Laplace transform method
-            logging.debug('Using ILT method for reaction "%s"' % reaction)
+            logging.debug('Using ILT method for reaction "{0}"'.format(reaction))
             Tlist = 1.0/numpy.arange(1.0/2000.0, 1.0/300.0, 18, numpy.float64)
             if reaction.reverse.kinetics is None:
                 reaction.reverse.kinetics = reaction.generateReverseRateCoefficient(Tlist)
-            kr = applyInverseLaplaceTransformMethod(reaction.reverse.kinetics, reaction.transitionState.E0, Elist, prodDensStates, T)
+            kr = applyInverseLaplaceTransformMethod(reaction.reverse.kinetics, reaction.transitionState.E0.value, Elist, prodDensStates, T)
 
     else:
         raise ReactionError("Unable to determine microcanonical rate for association reaction: no density of states data provided.")
@@ -212,7 +212,7 @@ def applyRRKMTheory(transitionState,
     # Calculate sum of states of transition state
     sumStates0 = transitionState.states.getSumOfStates(Elist)
     # Shift to common zero of energy
-    r0 = int(round(transitionState.E0 / dE))
+    r0 = int(round(transitionState.E0.value / dE))
     sumStates = numpy.zeros_like(Elist)
     sumStates[r0:] = sumStates0[:-r0+len(sumStates0)]
     
@@ -312,11 +312,6 @@ def fitInterpolationModel(reaction, Tlist, Plist, K, model, Tmin, Tmax, Pmin, Pm
     it is optional.
     """
 
-    Tmin = constants.Quantity((Tmin,"K"))
-    Tmax = constants.Quantity((Tmax,"K"))
-    Pmin = constants.Quantity((Pmin/1e5,"bar"))
-    Pmax = constants.Quantity((Pmax/1e5,"bar"))
-
     # Set/update the net reaction kinetics using interpolation model
     if model[0].lower() == 'chebyshev':
         modelType, degreeT, degreeP = model
@@ -325,17 +320,17 @@ def fitInterpolationModel(reaction, Tlist, Plist, K, model, Tmin, Tmax, Pmin, Pm
         kinetics = chebyshev
     elif model[0].lower() == 'pdeparrhenius':
         pDepArrhenius = PDepArrhenius()
-        pDepArrhenius.fitToData(Tlist, Plist, K, T0=298.0)
+        pDepArrhenius.fitToData(Tlist, Plist, K, kunits='', T0=298.0)
         kinetics = pDepArrhenius
     else:
         return None
 
     # Set temperature and pressure ranges explicitly (as they may be different
     # from min(Tlist), max(Tlist), min(Plist), max(Plist))
-    kinetics.Tmin = Tmin
-    kinetics.Tmax = Tmax
-    kinetics.Pmin = Pmin
-    kinetics.Pmax = Pmax
+    kinetics.Tmin = Quantity(Tmin,"K")
+    kinetics.Tmax = Quantity(Tmax,"K")
+    kinetics.Pmin = Quantity(Pmin/1e5,"bar")
+    kinetics.Pmax = Quantity(Pmax/1e5,"bar")
 
     # Compute log RMS error for fit
     if errorCheck:
@@ -347,7 +342,7 @@ def fitInterpolationModel(reaction, Tlist, Plist, K, model, Tmin, Tmax, Pmin, Pm
                 logkdata = math.log(K[t,p])
                 logRMS += (logkmodel - logkdata) * (logkmodel - logkdata)
         logRMS = math.sqrt(logRMS / len(Tlist) / len(Plist))
-        if logRMS > 0.05:
-            logging.warning('RMS error for k(T,P) fit = %g for reaction %s.' % (logRMS, reaction))
+        if logRMS > 0.5:
+            logging.warning('RMS error for k(T,P) fit = {0:g} for reaction {1}.'.format(logRMS, reaction))
     
     return kinetics

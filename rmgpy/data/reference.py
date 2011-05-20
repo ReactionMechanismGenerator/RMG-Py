@@ -71,10 +71,10 @@ class Reference:
         reconstruct the object.
         """
         string = u'Reference('
-        if len(self.authors) != 0: string += u'authors=[%s], ' % (', '.join(['"%s"' % author for author in self.authors]))
-        if self.title != '':       string += u'title=%r, ' % (self.title)
-        if self.year != '':        string += u'year="%s", ' % (self.year)
-        if self.url != '':         string += u'url="%s", ' % (self.url)
+        if len(self.authors) != 0: string += u'authors=[{0}], '.format(', '.join(['"{0}"'.format(author) for author in self.authors]))
+        if self.title != '':       string += u'title={0!r}, '.format(self.title)
+        if self.year != '':        string += u'year="{0}", '.format(self.year)
+        if self.url != '':         string += u'url="{0}", '.format(self.url)
         if string[-2:] == u', ':   string = string[:-2]
         return string + u')'
 
@@ -85,9 +85,9 @@ class Reference:
         """
         string = self.getAuthorString()
         if self.title != '':
-            string += ' *%s*' % (self.title)
+            string += ' *{0}*'.format(self.title)
         if self.year != '':
-            string += ' (%s)' % (self.year)
+            string += ' ({0})'.format(self.year)
         if string[-1] != '.': string += '.'
         return string
 
@@ -98,13 +98,13 @@ class Reference:
         authors = ''
         if self.authors is not None and len(self.authors) > 0:
             if len(self.authors) == 1:
-                authors = '%s.' % (self.authors[0])
+                authors = '{0}.'.format(self.authors[0])
             elif len(self.authors) == 2:
-                authors = '%s and %s.' % (self.authors[0], self.authors[1])
+                authors = '{0} and {1}.'.format(self.authors[0], self.authors[1])
             elif self.authors[-1] == 'et al':
-                authors = '%s et al.' % (', '.join(self.authors[:-1]))
+                authors = '{0} et al.'.format(', '.join(self.authors[:-1]))
             else:
-                authors = '%s, and %s.' % (', '.join(self.authors[:-1]), self.authors[-1])
+                authors = '{0}, and {1}.'.format(', '.join(self.authors[:-1]), self.authors[-1])
             # reStructuredText automatically interprets "A." et al as a 
             # numbered list; this suppresses that behavior
             if authors[1:3] == '. ':
@@ -150,14 +150,14 @@ class Article(Reference):
         reconstruct the object.
         """
         string = u'Article('
-        if len(self.authors) != 0: string += u'authors=[%s], ' % (', '.join(['"%s"' % author for author in self.authors]))
-        if self.title != '':       string += u'title=%r, ' % (self.title)
-        if self.journal != '':     string += u'journal="%s", ' % (self.journal)
-        if self.volume != '':      string += u'volume="%s", ' % (self.volume)
-        if self.number != '':      string += u'number="%s", ' % (self.number)
-        if self.pages != '':       string += u'pages="""%s""", ' % (self.pages)
-        if self.year != '':        string += u'year="%s", ' % (self.year)
-        if self.url != '':         string += u'url="%s", ' % (self.url)
+        if len(self.authors) != 0: string += u'authors=[{0}], '.format(', '.join(['"{0}"'.format(author) for author in self.authors]))
+        if self.title != '':       string += u'title={0!r}, '.format(self.title)
+        if self.journal != '':     string += u'journal="{0}", '.format(self.journal)
+        if self.volume != '':      string += u'volume="{0}", '.format(self.volume)
+        if self.number != '':      string += u'number="{0}", '.format(self.number)
+        if self.pages != '':       string += u'pages="""{0}""", '.format(self.pages)
+        if self.year != '':        string += u'year="{0}", '.format(self.year)
+        if self.url != '':         string += u'url="{0}", '.format(self.url)
         if string[-2:] == u', ':   string = string[:-2]
         return string + u')'
 
@@ -168,17 +168,17 @@ class Article(Reference):
         """
         string = self.getAuthorString()
         if self.title != '':
-            string += ' "%s."' % (self.title)
+            string += ' "{0}."'.format(self.title)
         if self.journal != '':
-            string += ' *%s*' % (self.journal)
+            string += ' *{0}*'.format(self.journal)
         if self.volume != '':
-            string += ' **%s**' % (self.volume)
+            string += ' **{0}**'.format(self.volume)
         if self.number != '':
-            string += ' (%s)' % (self.number)
+            string += ' ({0})'.format(self.number)
         if self.pages != '':
-            string += ', p. %s' % (self.pages)
+            string += ', p. {0}'.format(self.pages)
         if self.year != '':
-            string += ' (%s)' % (self.year)
+            string += ' ({0})'.format(self.year)
         if string[-1] != '.': string += '.'
         return string
 
@@ -218,15 +218,15 @@ class Book(Reference):
         reconstruct the object.
         """
         string = u'Book('
-        if len(self.authors) != 0: string += u'authors=[%s], ' % (', '.join(['"%s"' % author for author in self.authors]))
-        if self.title != '':       string += u'title=%r, ' % (self.title)
-        if self.publisher != '':   string += u'publisher="%s", ' % (self.publisher)
-        if self.address != '':     string += u'address="%s", ' % (self.address)
-        if self.volume != '':      string += u'volume="%s", ' % (self.volume)
-        if self.series != '':      string += u'series="""%s""", ' % (self.series)
-        if self.edition != '':     string += u'edition="""%s""", ' % (self.edition)
-        if self.year != '':        string += u'year="%s", ' % (self.year)
-        if self.url != '':         string += u'url="%s", ' % (self.url)
+        if len(self.authors) != 0: string += u'authors=[{0}], '.format(', '.join(['"{0}"'.format(author) for author in self.authors]))
+        if self.title != '':       string += u'title={0!r}, '.format(self.title)
+        if self.publisher != '':   string += u'publisher="{0}", '.format(self.publisher)
+        if self.address != '':     string += u'address="{0}", '.format(self.address)
+        if self.volume != '':      string += u'volume="{0}", '.format(self.volume)
+        if self.series != '':      string += u'series="""{0}""", '.format(self.series)
+        if self.edition != '':     string += u'edition="""{0}""", '.format(self.edition)
+        if self.year != '':        string += u'year="{0}", '.format(self.year)
+        if self.url != '':         string += u'url="{0}", '.format(self.url)
         if string[-2:] == u', ':   string = string[:-2]
         return string + u')'
 
@@ -237,17 +237,17 @@ class Book(Reference):
         """
         string = self.getAuthorString()
         if self.title != '':
-            string += ' *%s.*' % (self.title)
+            string += ' *{0}.*'.format(self.title)
         if self.edition != '':
-            string += ' %s edition.' % (self.edition)
+            string += ' {0} edition.'.format(self.edition)
         if self.volume != '':
-            string += ' Vol. %s.' % (self.volume)
+            string += ' Vol. {0}.'.format(self.volume)
         if self.address != '':
-            string += ' %s:' % (self.address)
+            string += ' {0}:'.format(self.address)
         if self.publisher != '':
-            string += ' **%s**' % (self.publisher)
+            string += ' **{0}**'.format(self.publisher)
         if self.year != '':
-            string += ' (%s)' % (self.year)
+            string += ' ({0})'.format(self.year)
         return string + '.'
 
 ################################################################################
@@ -280,12 +280,12 @@ class Thesis(Reference):
         reconstruct the object.
         """
         string = u'Thesis('
-        if len(self.authors) != 0: string += u'authors=[%s], ' % (', '.join(['"%s"' % author for author in self.authors]))
-        if self.title != '':       string += u'title=%r, ' % (self.title)
-        if self.degree != '':      string += u'degree="%s", ' % (self.degree)
-        if self.school != '':      string += u'school="%s", ' % (self.school)
-        if self.year != '':        string += u'year="%s", ' % (self.year)
-        if self.url != '':         string += u'url="%s", ' % (self.url)
+        if len(self.authors) != 0: string += u'authors=[{0}], '.format(', '.join(['"{0}"'.format(author) for author in self.authors]))
+        if self.title != '':       string += u'title={0!r}, '.format(self.title)
+        if self.degree != '':      string += u'degree="{0}", '.format(self.degree)
+        if self.school != '':      string += u'school="{0}", '.format(self.school)
+        if self.year != '':        string += u'year="{0}", '.format(self.year)
+        if self.url != '':         string += u'url="{0}", '.format(self.url)
         if string[-2:] == u', ':   string = string[:-2]
         return string + u')'
 
@@ -296,13 +296,13 @@ class Thesis(Reference):
         """
         string = self.getAuthorString()
         if self.title != '':
-            string += ' "%s."' % (self.title)
+            string += ' "{0}."'.format(self.title)
         if self.degree != '':
-            string += ' %s thesis.' % (self.degree)
+            string += ' {0} thesis.'.format(self.degree)
         if self.school != '':
-            string += ' ' % (self.school)
+            string += ' {0}'.format(self.school)
         if self.year != '':
-            string += ' (%s)' % (self.year)
+            string += ' ({0})'.format(self.year)
         if string[-1] != '.': string += '.'
         return string
 

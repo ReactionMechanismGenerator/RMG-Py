@@ -32,9 +32,9 @@ import os.path
 import logging
 import numpy
 
-import rmgpy.chem.constants as constants
-from rmgpy.chem.states import *
-from rmgpy.chem.pattern import MoleculePattern
+from rmgpy.quantity import constants
+from rmgpy.statmech import *
+from rmgpy.group import Group
 
 from base import *
 
@@ -46,44 +46,44 @@ def saveEntry(f, entry):
     database to the file object `f`.
     """
     f.write('entry(\n')
-    f.write('    index = %i,\n' % (entry.index))
-    f.write('    label = "%s",\n' % (entry.label))
+    f.write('    index = {0:d},\n'.format(entry.index))
+    f.write('    label = "{0}",\n'.format(entry.label))
 
     if isinstance(entry.item, Molecule):
         f.write('    molecule = \n')
         f.write('"""\n')
         f.write(entry.item.toAdjacencyList(removeH=True))
         f.write('""",\n')
-    elif isinstance(entry.item, MoleculePattern):
+    elif isinstance(entry.item, Group):
         f.write('    group = \n')
         f.write('"""\n')
         f.write(entry.item.toAdjacencyList())
         f.write('""",\n')
     else:
-        f.write('    group = "%s",\n' % (entry.item))
+        f.write('    group = "{0}",\n'.format(entry.item))
 
     if isinstance(entry.data, StatesModel):
         f.write('    states = States(\n')
         f.write('        modes = [\n')
         for mode in entry.data.modes:
-            f.write('            %r,\n' % mode)
+            f.write('            {0!r},\n'.format(mode))
         f.write('        ],\n')
-        f.write('        spinMultiplicity = %r,\n' % (entry.data.spinMultiplicity))
+        f.write('        spinMultiplicity = {0!r},\n'.format(entry.data.spinMultiplicity))
         f.write('    ),\n')
     elif isinstance(entry.data, GroupFrequencies):
         f.write('    states = GroupFrequencies(\n')
         f.write('        frequencies = [\n')
         for lower, upper, degeneracy in entry.data.frequencies:
-            f.write('            (%g, %g, %d),\n' % (lower, upper, degeneracy))
+            f.write('            ({0:g}, {1:g}, {2:d}),\n'.format(lower, upper, degeneracy))
         f.write('        ],\n')
-        f.write('        symmetry = %d,\n' % (entry.data.symmetry))
+        f.write('        symmetry = {0:d},\n'.format(entry.data.symmetry))
         f.write('    ),\n')
     else:
-        f.write('    states = %r,\n' % (entry.data))
+        f.write('    states = {0!r},\n'.format(entry.data))
 
-    if entry.reference is not None: f.write('    reference = %r,\n' % (entry.reference))
-    if entry.referenceType != "": f.write('    referenceType = "%s",\n' % (entry.referenceType))
-    f.write('    shortDesc = """%s""",\n' % (entry.shortDesc))
+    if entry.reference is not None: f.write('    reference = {0!r},\n'.format(entry.reference))
+    if entry.referenceType != "": f.write('    referenceType = "{0}",\n'.format(entry.referenceType))
+    f.write('    shortDesc = """{0}""",\n'.format(entry.shortDesc))
     f.write('    longDesc = \n')
     f.write('"""\n')
     f.write(entry.longDesc)
@@ -91,7 +91,7 @@ def saveEntry(f, entry):
 
     f.write('    history = [\n')
     for time, user, action, description in entry.history:
-        f.write('        ("%s","%s","%s","""%s"""),\n' % (time, user, action, description))
+        f.write('        ("{0}","{1}","{2}","""{3}"""),\n'.format(time, user, action, description))
     f.write('    ],\n')
 
     f.write(')\n\n')
@@ -108,7 +108,7 @@ def generateOldLibraryEntry(data):
         for mode in data:
             items.extend([mode.degeneracy, mode.lower, mode.upper])
     else:
-        raise ValueError('data parameter must be in StatesModel format or a list; got %s instead' % (data.__class__))
+        raise ValueError('data parameter must be in StatesModel format or a list; got {0} instead'.format(data.__class__))
     return items
 
 def processOldLibraryEntry(data, format):
@@ -124,7 +124,7 @@ def processOldLibraryEntry(data, format):
             frequencies.append((float(lower), float(upper), int(degeneracy)))
         return GroupFrequencies(frequencies=frequencies, symmetry=int(data[0]))
     else:
-        raise ValueError('format parameter must be "library" or "groups"; got "%s" instead' % (format))
+        raise ValueError('format parameter must be "library" or "groups"; got "{0}" instead'.format(format))
 
 ################################################################################
 
@@ -212,7 +212,7 @@ class StatesGroups(Database):
         if group[0:3].upper() == 'OR{' or group[0:4].upper() == 'AND{' or group[0:7].upper() == 'NOT OR{' or group[0:8].upper() == 'NOT AND{':
             item = makeLogicNode(group)
         else:
-            item = MoleculePattern().fromAdjacencyList(group)
+            item = Group().fromAdjacencyList(group)
         self.entries[label] = Entry(
             index = index,
             label = label,
@@ -251,7 +251,7 @@ class StatesGroups(Database):
         `molecule` for the given `node` in the group database.
         """
         count = 0
-        if isinstance(self.dictionary[node], MoleculePattern):
+        if isinstance(self.dictionary[node], Group):
             ismatch, mappings = molecule.findSubgraphIsomorphisms(self.dictionary[node])
             count = len(mappings) if ismatch else 0
         elif isinstance(self.dictionary[node], LogicOr):
@@ -334,7 +334,7 @@ class StatesGroups(Database):
             if numRotors > difference:
                 numRotors -= difference
                 numVibrations = len(frequencies)
-                logging.warning('For %s, more characteristic frequencies were generated than vibrational modes allowed. Removed %i internal rotors to compensate.' % (molecule, difference))
+                logging.warning('For {0}, more characteristic frequencies were generated than vibrational modes allowed. Removed {1:d} internal rotors to compensate.'.format(molecule, difference))
             # If that won't work, turn off functional groups until the problem is underspecified again
             else:
                 groupsRemoved = 0
@@ -350,7 +350,7 @@ class StatesGroups(Database):
                     freqsRemoved += minDegeneracy
                     freqCount -= minDegeneracy
                 # Log warning
-                logging.warning('For %s, more characteristic frequencies were generated than vibrational modes allowed. Removed %i groups (%i frequencies) to compensate.' % (molecule, groupsRemoved, freqsRemoved))
+                logging.warning('For {0}, more characteristic frequencies were generated than vibrational modes allowed. Removed {1:d} groups ({2:d} frequencies) to compensate.'.format(molecule, groupsRemoved, freqsRemoved))
                 # Regenerate characteristic frequencies
                 frequencies = []
                 for entry, count in groupCount.iteritems():
@@ -373,11 +373,11 @@ class StatesGroups(Database):
         modes = fitStatesToHeatCapacity(Tlist, Cv, numVibrations - len(frequencies), numRotors, molecule)
         for mode in modes:
             if isinstance(mode, HarmonicOscillator):
-                frequencies.extend(mode.frequencies)
-                mode.frequencies = frequencies
+                frequencies.extend(mode.frequencies.values)
+                mode.frequencies.values = numpy.array(frequencies, numpy.float)
                 break
         else:
-            modes.insert(0, HarmonicOscillator(frequencies=frequencies))
+            modes.insert(0, HarmonicOscillator(frequencies=(frequencies,"cm^-1")))
 
         statesModel = StatesModel(modes=modes)
 
@@ -434,7 +434,7 @@ class StatesDatabase:
             for f in files:
                 name, ext = os.path.splitext(f)
                 if ext.lower() == '.py' and (libraries is None or name in libraries):
-                    logging.info('Loading frequencies library from %s in %s...' % (f, root))
+                    logging.info('Loading frequencies library from {0} in {1}...'.format(f, root))
                     library = StatesLibrary()
                     library.load(os.path.join(root, f), self.local_context, self.global_context)
                     library.label = os.path.splitext(f)[0]
@@ -448,7 +448,7 @@ class StatesDatabase:
         Load the states database from the given `path` on disk, where `path`
         points to the top-level folder of the thermo database.
         """
-        logging.info('Loading frequencies group database from %s...' % (path))
+        logging.info('Loading frequencies group database from {0}...'.format(path))
         self.groups = StatesGroups().load(os.path.join(path, 'groups.py' ), self.local_context, self.global_context)
 
     def save(self, path):
@@ -466,7 +466,7 @@ class StatesDatabase:
         librariesPath = os.path.join(path, 'libraries')
         if not os.path.exists(librariesPath): os.mkdir(librariesPath)
         for library in self.libraries.values():
-            library.save(os.path.join(librariesPath, '%s.py' % (library.label)))
+            library.save(os.path.join(librariesPath, '{0}.py'.format(library.label)))
 
         groupsPath = os.path.join(path, 'groups')
         if not os.path.exists(groupsPath): os.mkdir(groupsPath)

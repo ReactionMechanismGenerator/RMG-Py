@@ -40,14 +40,11 @@ import quantities as pq
 import re
 import codecs
 
-from rmgpy.chem.molecule import Molecule
-from rmgpy.chem.pattern import MoleculePattern, InvalidAdjacencyListError
+from rmgpy.quantity import *
+from rmgpy.molecule import Molecule
+from rmgpy.group import Group, InvalidAdjacencyListError
 
 from reference import *
-
-pq.UnitQuantity('kilocalories', pq.cal*1e3, symbol='kcal')
-pq.UnitQuantity('kilojoules', pq.J*1e3, symbol='kJ')
-pq.UnitQuantity('kilomoles', pq.mol*1e3, symbol='kmol')
 
 ################################################################################
 
@@ -106,7 +103,7 @@ class Entry:
         return self.label
 
     def __repr__(self):
-        return '<Entry index=%i label="%s">' % (self.index, self.label)
+        return '<Entry index={0:d} label="{1}">'.format(self.index, self.label)
 
 ################################################################################
 
@@ -231,8 +228,8 @@ class Database:
         entries = self.getEntriesToSave()
 
         f = codecs.open(path, 'w', 'utf-8')
-        f.write('name = "%s"\n' % (self.name))
-        f.write('shortDesc = "%s"\n' % (self.shortDesc))
+        f.write('name = "{0}"\n'.format(self.name))
+        f.write('shortDesc = "{0}"\n'.format(self.shortDesc))
         f.write('longDesc = """\n')
         f.write(self.longDesc)
         f.write('\n"""\n\n')
@@ -269,7 +266,7 @@ class Database:
         dictionary is a list of key-value pairs of a one-line string key and a
         multi-line string value. Each record is separated by at least one empty
         line. Returns a ``dict`` object with the values converted to
-        :class:`Molecule` or :class:`MoleculePattern` objects depending on the
+        :class:`Molecule` or :class:`Group` objects depending on the
         value of `pattern`.
         """
 
@@ -313,7 +310,7 @@ class Database:
         finally:
             if fdict: fdict.close()
 
-        # Convert the records in the dictionary to Molecule, MoleculePattern, or
+        # Convert the records in the dictionary to Molecule, Group, or
         # logical objects
         try:
             for label in self.entries:
@@ -324,7 +321,7 @@ class Database:
                     self.entries[label].item = makeLogicNode(' '.join(lines[1:]) )
                 # Otherwise convert adjacency list to molecule or pattern
                 elif pattern:
-                    self.entries[label].item = MoleculePattern().fromAdjacencyList(record)
+                    self.entries[label].item = Group().fromAdjacencyList(record)
                 else:
                     self.entries[label].item = Molecule().fromAdjacencyList(record)
         except InvalidAdjacencyListError, e:
@@ -351,14 +348,14 @@ class Database:
                 # Extract level
                 match = parser.match(line)
                 if not match:
-                    raise DatabaseError("Couldn't parse line '%s'" % line.strip())
+                    raise DatabaseError("Couldn't parse line '{0}'".format(line.strip()))
                 level = int(match.group('level'))
                 label = match.group('label')
 
                 # Find immediate parent of the new node
                 parent = None
                 if len(parents) < level:
-                    raise DatabaseError("Invalid level specified in line '%s'" % line.strip())
+                    raise DatabaseError("Invalid level specified in line '{0}'".format(line.strip()))
                 else:
                     while len(parents) > level:
                         parents.remove(parents[-1])
@@ -370,7 +367,7 @@ class Database:
 
                 if isinstance(parent, str):
                     import pdb; pdb.set_trace()
-                    raise DatabaseError('Unable to find parent entry "%s" of entry "%s" in tree.' % (parent, label))
+                    raise DatabaseError('Unable to find parent entry "{0}" of entry "{1}" in tree.'.format(parent, label))
 
                 # Update the parent and children of the nodes accordingly
                 if parent is not None:
@@ -387,11 +384,11 @@ class Database:
         # match of each children, so this makes it less likely to miss a
         # more detailed functional group
         # First determine if we can do the sort (that is, all children have
-        # one Molecule or MoleculePattern)
+        # one Molecule or Group)
         for label, entry in self.entries.iteritems():
             canSort = True
             for child in entry.children:
-                if not isinstance(child.item, Molecule) and not isinstance(child.item, MoleculePattern):
+                if not isinstance(child.item, Molecule) and not isinstance(child.item, Group):
                     canSort = False
             if canSort:
                 entry.children.sort(lambda x, y: cmp(len(x.item.atoms), len(y.item.atoms)))
@@ -494,13 +491,13 @@ class Database:
                         comment = comment.strip('"')
 
                     if label in entries:
-                        logging.debug("There was already something labeled %s in the library. Ignoring '%s' (%s)" % (label, index, parameters))
+                        logging.debug("There was already something labeled {0} in the library. Ignoring '{1}' ({2})".format(label, index, parameters))
                         skippedCount += 1
                     else:
                         entries[label] = (index, parameters, comment)
 
             if skippedCount > 0:
-                logging.warning("Skipped %i duplicate entries in this library." % skippedCount)
+                logging.warning("Skipped {0:d} duplicate entries in this library.".format(skippedCount))
 
         except DatabaseError, e:
             logging.exception(str(e))
@@ -552,15 +549,15 @@ class Database:
                 f.write(entry.label + '\n')
                 if isinstance(entry.item, Molecule):
                     f.write(entry.item.toAdjacencyList(removeH=True) + '\n')
-                elif isinstance(entry.item, MoleculePattern):
+                elif isinstance(entry.item, Group):
                     f.write(entry.item.toAdjacencyList() + '\n')
                 elif isinstance(entry.item, LogicAnd) or isinstance(entry.item, LogicOr):
-                    f.write('%s\n\n' % (str(entry.item)))
+                    f.write('{0}\n\n'.format(str(entry.item)))
                 else:
-                    raise DatabaseError('Unexpected item with label %s encountered in dictionary while attempting to save.' % label)
+                    raise DatabaseError('Unexpected item with label {0} encountered in dictionary while attempting to save.'.format(label))
             f.close()
         except IOError, e:
-            logging.exception('Unable to save old-style tree to "%s".' % (os.path.abspath(path)))
+            logging.exception('Unable to save old-style tree to "{0}".'.format(os.path.abspath(path)))
             raise
 
     def generateOldTree(self, entries, level):
@@ -571,7 +568,7 @@ class Database:
         string = ''
         for entry in entries:
             # Write current node
-            string += '%sL%i: %s\n' % ('    ' * (level-1), level, entry.label)
+            string += '{0}L{1:d}: {2}\n'.format('    ' * (level-1), level, entry.label)
             # Recursively descend children (depth-first)
             string += self.generateOldTree(entry.children, level+1)
         return string
@@ -592,7 +589,7 @@ class Database:
             f.write(self.generateOldTree(self.top, 1))
             f.close()
         except IOError, e:
-            logging.exception('Unable to save old-style tree to "%s".' % (os.path.abspath(path)))
+            logging.exception('Unable to save old-style tree to "{0}".'.format(os.path.abspath(path)))
             raise
 
     def saveOldLibrary(self, path):
@@ -629,7 +626,7 @@ class Database:
                 f.write('{:s}\n'.format(comment))
             f.close()
         except IOError, e:
-            logging.exception('Unable to save old-style library to "%s".' % (os.path.abspath(path)))
+            logging.exception('Unable to save old-style library to "{0}".'.format(os.path.abspath(path)))
             raise
 
     def __hashLabels(self, labels):
@@ -709,7 +706,7 @@ class Database:
             # All nodes in library must be in dictionary
             try:
                 if node not in self.entries:
-                    raise DatabaseError('Node "%s" in library is not present in dictionary.' % (node))
+                    raise DatabaseError('Node "{0}" in library is not present in dictionary.'.format(node))
             except DatabaseError, e:
                 wellFormed = False
                 logging.error(str(e))
@@ -720,7 +717,7 @@ class Database:
             if len(self.tree.parent) > 0:
                 try:
                     if node not in self.tree.parent:
-                        raise DatabaseError('Node "%s" in library is not present in tree.' % (node))
+                        raise DatabaseError('Node "{0}" in library is not present in tree.'.format(node))
                 except DatabaseError, e:
                     logging.warning(str(e))
 
@@ -729,7 +726,7 @@ class Database:
             for node in self.tree.parent:
                 try:
                     if node not in self.entries:
-                        raise DatabaseError('Node "%s" in tree is not present in dictionary.' % (node))
+                        raise DatabaseError('Node "{0}" in tree is not present in dictionary.'.format(node))
                 except DatabaseError, e:
                     wellFormed = False
                     logging.error(str(e))
@@ -758,7 +755,7 @@ class Database:
             for label in centers.keys():
                 # Make sure the labels are in both group and structure.
                 if label not in atoms:
-                    logging.log(0, "Label %s is in group %s but not in structure"%(label, node))
+                    logging.log(0, "Label {0} is in group {1} but not in structure".format(label, node))
                     continue # with the next label - ring structures might not have all labeled atoms
                     # return False # force it to have all the labeled atoms
                 center = centers[label]
@@ -783,7 +780,7 @@ class Database:
                     # but we don't mind if...
                     elif structure.hasBond(atom, atom2): # but group doesn't
                         logging.debug("We don't mind that structure "+ str(structure) +
-                            " has bond but group %s doesn't"%node )
+                            " has bond but group {0} doesn't".format(node))
                 # Passed semantic checks, so add to maps of already-matched atoms
                 initialMap[atom] = center
             # use mapped (labeled) atoms to try to match subgraph
@@ -819,8 +816,8 @@ class Database:
             return root
         else:
             #print structure.toAdjacencyList()
-            #raise DatabaseError('For structure %s, a node %s with non-mutually-exclusive children %s was encountered in tree with top level nodes %s.' % (structure.getFormula(), root, next, self.tree.top))
-            logging.warning('For %s, a node %s with overlapping children %s was encountered in tree with top level nodes %s.' % (structure, root, next, self.top))
+            #raise DatabaseError('For structure {0}, a node {1} with non-mutually-exclusive children {2} was encountered in tree with top level nodes {3}.'.format(structure.getFormula(), root, next, self.tree.top))
+            logging.warning('For {0}, a node {1} with overlapping children {2} was encountered in tree with top level nodes {3}.'.format(structure, root, next, self.top))
             return root
 
 ################################################################################
@@ -846,7 +843,7 @@ class LogicNode:
         result = ''
         if self.invert: result += 'NOT '
         result += self.symbol
-        result += "{%s}"%(', '.join([str(c) for c in self.components]))
+        result += "{{{0}}}".format(', '.join([str(c) for c in self.components]))
         return result
 
 class LogicOr(LogicNode):
@@ -884,7 +881,7 @@ class LogicOr(LogicNode):
             else:
                 structures.append(struct)
         for struct in structures: # check this worked
-            assert isinstance(struct,MoleculePattern)
+            assert isinstance(struct,Group)
         return structures
 
 class LogicAnd(LogicNode):
@@ -921,7 +918,7 @@ def makeLogicNode(string):
 
     match = re.match("(?i)\s*(NOT)?\s*(OR|AND|UNION)\s*(.*)",string)  # the (?i) makes it case-insensitive
     if not match:
-        raise Exception("Unexpected string for Logic Node: %s"%string)
+        raise Exception("Unexpected string for Logic Node: {0}".format(string))
 
     if match.group(1): invert = True
     else: invert = False
@@ -931,7 +928,7 @@ def makeLogicNode(string):
     contents = match.group(3).strip()
     while contents.startswith('{'):
         if not contents.endswith('}'):
-            raise Exception("Unbalanced braces in Logic Node: %s"%string)
+            raise Exception("Unbalanced braces in Logic Node: {0}".format(string))
         contents = contents[1:-1]
 
     items=[]
@@ -949,14 +946,14 @@ def makeLogicNode(string):
             chars.append(character)
     if chars: # add last item
         items.append(''.join(chars).lstrip().rstrip() )
-    if brace_depth != 0: raise Exception("Unbalanced braces in Logic Node: %s"%string)
+    if brace_depth != 0: raise Exception("Unbalanced braces in Logic Node: {0}".format(string))
 
     if logic.upper() in ['OR', 'UNION']:
         return LogicOr(items, invert)
     if logic == 'AND':
         return LogicAnd(items, invert)
 
-    raise Exception("Could not create Logic Node from %s" % string)
+    raise Exception("Could not create Logic Node from {0}".format(string))
 
 ################################################################################
 

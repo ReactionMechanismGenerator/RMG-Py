@@ -46,7 +46,7 @@ cimport numpy
 import logging
 import cython
 
-import rmgpy.chem.constants as constants
+from rmgpy.quantity import constants
 
 ################################################################################
 
@@ -75,23 +75,23 @@ cpdef double calculateCollisionFrequency(species, double T, double P, bathGas):
     cdef double gasConc, sigma, epsilon, Tred, omega22, value
     cdef double bathGasSigma, bathGasEpsilon, bathGasMW
     cdef double kB = constants.kB, pi = math.pi
-    
+
     bathGasSigma = 0.0; bathGasEpsilon = 1.0; bathGasMW = 0.0
     for key, value in bathGas.iteritems():
         try:
-            bathGasSigma += key.lennardJones.sigma * value
-            bathGasEpsilon *= key.lennardJones.epsilon ** value
+            bathGasSigma += key.lennardJones.sigma.value * value
+            bathGasEpsilon *= key.lennardJones.epsilon.value ** value
         except AttributeError:
-            raise CollisionError('No Lennard-Jones parameters specified for component "%s" in bath gas.' % bathGas)
-        bathGasMW += key.molecularWeight * value
-
+            raise CollisionError('No Lennard-Jones parameters specified for component "{0}" in bath gas.'.format(bathGas))
+        bathGasMW += key.molecularWeight.value * value
+        
     gasConc = P / constants.kB / T
-    mu = 1.0 / (1.0/species.molecularWeight + 1.0/bathGasMW) / 6.022e23
+    mu = 1.0 / (1.0/species.molecularWeight.value + 1.0/bathGasMW) / 6.022e23
     try:
-        sigma = 0.5 * (species.lennardJones.sigma + bathGasSigma)
-        epsilon = math.sqrt(species.lennardJones.epsilon * bathGasEpsilon)
+        sigma = 0.5 * (species.lennardJones.sigma.value + bathGasSigma)
+        epsilon = math.sqrt(species.lennardJones.epsilon.value * bathGasEpsilon)
     except AttributeError:
-        raise CollisionError('No Lennard-Jones parameters specified for species "%s".' % species)
+        raise CollisionError('No Lennard-Jones parameters specified for species "{0}".'.format(species))
 
     # Evaluate configuration integral
     Tred = kB * T / epsilon
@@ -172,10 +172,10 @@ def calculateCollisionEfficiency(species, double T,
     beta = (alpha / (alpha + Fe * R * T))**2 / Delta
 
     if beta > 1:
-        logging.warning('Collision efficiency %s calculated at %s K is greater than unity, so it will be set to unity.' % (beta, T))
+        logging.warning('Collision efficiency {0:.3f} calculated at {1:g} K is greater than unity, so it will be set to unity.'.format(beta, T))
         beta = 1
     if beta < 0:
-        raise CollisionError('Invalid collision efficiency %s calculated at %s K.' % (beta, T))
+        raise CollisionError('Invalid collision efficiency {0:.3f} calculated at {1:g} K.'.format(beta, T))
     
     return beta
 

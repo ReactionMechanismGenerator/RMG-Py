@@ -38,11 +38,9 @@ import numpy
 import os
 import os.path
 
-import rmgpy.chem.constants as constants
-import rmgpy.chem.species
-import rmgpy.chem.reaction
-from rmgpy.chem.thermo import Wilhoit, MultiNASA
-from rmgpy.chem.kinetics import Arrhenius, ArrheniusEP, Chebyshev, PDepArrhenius, ThirdBody
+from rmgpy.quantity import Quantity, constants
+import rmgpy.species
+from rmgpy.thermo import Wilhoit, MultiNASA
 
 from rmgpy.data.thermo import *
 from rmgpy.data.kinetics import *
@@ -51,14 +49,13 @@ from rmgpy.data.states import *
 import rmgpy.measure.network
 
 import settings
-from rxngen import generateReactions
 
 ################################################################################
 
-class Species(rmgpy.chem.species.Species):
+class Species(rmgpy.species.Species):
 
-    def __init__(self, index=-1, label='', thermo=None, states=None, molecule=None, geometry=None, E0=0.0, lennardJones=None, molecularWeight=0.0, reactive=True):
-        rmgpy.chem.species.Species.__init__(self, index, label, thermo, states, molecule, geometry, E0, lennardJones, molecularWeight, reactive)
+    def __init__(self, index=-1, label='', thermo=None, states=None, molecule=None, E0=0.0, lennardJones=None, molecularWeight=0.0, reactive=True):
+        rmgpy.species.Species.__init__(self, index, label, thermo, states, molecule, E0, lennardJones, molecularWeight, reactive)
         self.coreSizeAtCreation = 0
 
     def __reduce__(self):
@@ -68,7 +65,7 @@ class Species(rmgpy.chem.species.Species):
         d = {
             'coreSizeAtCreation': self.coreSizeAtCreation,
         }
-        return (Species, (self.index, self.label, self.thermo, self.states, self.molecule, self.geometry, self.E0, self.lennardJones, self.molecularWeight, self.reactive), d)
+        return (Species, (self.index, self.label, self.thermo, self.states, self.molecule, self.E0, self.lennardJones, self.molecularWeight, self.reactive), d)
 
     def __setstate__(self, d):
         """
@@ -110,14 +107,17 @@ class Species(rmgpy.chem.species.Species):
 
         # Convert to desired thermo class
         thermo0 = self.thermo
-        self.thermo = convertThermoData(self.thermo, self.molecule[0], Wilhoit)
-        self.E0 = self.thermo.getEnthalpy(1.0)
-        self.thermo = convertThermoData(self.thermo, self.molecule[0], thermoClass)
+        linear = self.molecule[0].isLinear()
+        nRotors = self.molecule[0].countInternalRotors()
+        nFreq = 3 * len(self.molecule[0].atoms) - (5 if linear else 6) - nRotors
+        self.thermo = convertThermoModel(self.thermo, Wilhoit, linear=linear, nFreq=nFreq, nRotors=nRotors)
+        self.E0 = Quantity(self.thermo.getEnthalpy(1.0)/1000.0,"kJ/mol")
+        self.thermo = convertThermoModel(self.thermo, thermoClass, Tmin=100.0, Tmax=5000.0, Tint=1000.0)
         if self.thermo.__class__ != thermo0.__class__:
             # Compute RMS error of overall transformation
             Tlist = numpy.array([300.0, 400.0, 500.0, 600.0, 800.0, 1000.0, 1500.0], numpy.float64)
             err = math.sqrt(numpy.sum((self.thermo.getHeatCapacities(Tlist) - thermo0.getHeatCapacities(Tlist))**2))/constants.R/len(Tlist)
-            logging.log(logging.WARNING if err > 0.1 else 0, 'Average RMS error in heat capacity fit to %s = %g*R' % (self, err))
+            logging.log(logging.WARNING if err > 0.1 else 0, 'Average RMS error in heat capacity fit to {0} = {1:g}*R'.format(self, err))
 
         # Restore implicit hydrogens if necessary
         for implicit, molecule in zip(implicitH, self.molecule):
@@ -132,7 +132,7 @@ class Species(rmgpy.chem.species.Species):
         :meth:`generateThermoData()`.
         """
         if not self.thermo:
-            raise Exception("Unable to determine states model for species %s: No thermodynamics model found." % self)
+            raise Exception("Unable to determine states model for species {0}: No thermodynamics model found.".format(self))
         molecule = self.molecule[0]
         implicitH = molecule.implicitHydrogens
         molecule.makeHydrogensExplicit()
@@ -146,60 +146,28 @@ class Species(rmgpy.chem.species.Species):
         """
 
         count = sum([1 for atom in self.molecule[0].vertices if atom.isNonHydrogen()])
-        self.lennardJones = rmgpy.chem.species.LennardJones()
+        self.lennardJones = rmgpy.species.LennardJones()
 
         if count == 1:
-            self.lennardJones.sigma = 3.758e-10
-            self.lennardJones.epsilon = 148.6 * constants.kB
+            self.lennardJones.sigma = Quantity(3.758e-10,"m")
+            self.lennardJones.epsilon = Quantity(148.6 * constants.kB,"J")
         elif count == 2:
-            self.lennardJones.sigma = 4.443e-10
-            self.lennardJones.epsilon = 110.7 * constants.kB
+            self.lennardJones.sigma = Quantity(4.443e-10,"m")
+            self.lennardJones.epsilon = Quantity(110.7 * constants.kB,"J")
         elif count == 3:
-            self.lennardJones.sigma = 5.118e-10
-            self.lennardJones.epsilon = 237.1 * constants.kB
+            self.lennardJones.sigma = Quantity(5.118e-10,"m")
+            self.lennardJones.epsilon = Quantity(237.1 * constants.kB,"J")
         elif count == 4:
-            self.lennardJones.sigma = 4.687e-10
-            self.lennardJones.epsilon = 531.4 * constants.kB
+            self.lennardJones.sigma = Quantity(4.687e-10,"m")
+            self.lennardJones.epsilon = Quantity(531.4 * constants.kB,"J")
         elif count == 5:
-            self.lennardJones.sigma = 5.784e-10
-            self.lennardJones.epsilon = 341.1 * constants.kB
+            self.lennardJones.sigma = Quantity(5.784e-10,"m")
+            self.lennardJones.epsilon = Quantity(341.1 * constants.kB,"J")
         else:
-            self.lennardJones.sigma = 5.949e-10
-            self.lennardJones.epsilon = 399.3 * constants.kB
+            self.lennardJones.sigma = Quantity(5.949e-10,"m")
+            self.lennardJones.epsilon = Quantity(399.3 * constants.kB,"J")
 
-def convertThermoData(thermoData, molecule, thermoClass=MultiNASA):
-    """
-    Convert a given set of `thermoData` to the class specified by `thermoClass`.
-    Raises a :class:`TypeError` if this is not possible.
-    """
-
-    from rmgpy.chem.thermo import ThermoData, Wilhoit, MultiNASA
-    from rmgpy.chem.ext.thermo_converter import convertGAtoWilhoit, convertWilhoitToNASA
-
-    # Nothing to do if we already have the right thermo model
-    if isinstance(thermoData, thermoClass):
-        return thermoData
-
-    thermoData0 = thermoData
-
-    # Convert to Wilhoit
-    if isinstance(thermoData, ThermoData) and (thermoClass == Wilhoit or thermoClass == MultiNASA):
-        rotors = molecule.countInternalRotors()
-        atoms = len(molecule.atoms)
-        linear = molecule.isLinear()
-        thermoData = convertGAtoWilhoit(thermoData, atoms, rotors, linear)
-
-    # Convert to MultiNASA
-    if isinstance(thermoData, Wilhoit) and thermoClass == MultiNASA:
-        thermoData = convertWilhoitToNASA(thermoData, Tmin=298.0, Tmax=6000.0, Tint=1000.0)
-
-    # Make sure we have the right class
-    if not isinstance(thermoData, thermoClass):
-        raise TypeError('Unable to convert thermo model of type %s to type %s.' % (thermoData0.__class__, thermoClass))
-
-    return thermoData
-
-class PDepReaction(rmgpy.chem.reaction.Reaction):
+class PDepReaction(rmgpy.reaction.Reaction):
 
     def __init__(self, index=-1, reactants=None, products=None, network=None, kinetics=None, reversible=True, transitionState=None, thirdBody=False):
         rmgpy.chem.reaction.Reaction.__init__(self, index, reactants, products, kinetics, reversible, transitionState, thirdBody)
@@ -254,7 +222,7 @@ class PDepNetwork(rmgpy.measure.network.Network):
                 if rxn.reverse.kinetics is not None:
                     rxn = rxn.reverse
                 else:
-                    raise PressureDependenceError('Path reaction %s with no high-pressure-limit kinetics encountered in PDepNetwork #%i while evaluating leak flux.' % (rxn, self.index))
+                    raise PressureDependenceError('Path reaction {0} with no high-pressure-limit kinetics encountered in PDepNetwork #{1:d} while evaluating leak flux.'.format(rxn, self.index))
             if rxn.products is self.source:
                 k = rxn.getRateCoefficient(T,P) / rxn.getEquilibriumConstant(T)
             else:
@@ -333,7 +301,7 @@ class PDepNetwork(rmgpy.measure.network.Network):
         assert isomer not in self.isomers
         assert isomer not in self.source
 
-        logging.info('Exploring isomer %s in pressure-dependent network #%i' % (isomer, self.index))
+        logging.info('Exploring isomer {0} in pressure-dependent network #{1:d}'.format(isomer, self.index))
         self.explored.append(isomer)
         # Find reactions involving the found species as unimolecular
         # reactant or product (e.g. A <---> products)
@@ -454,7 +422,7 @@ class PDepNetwork(rmgpy.measure.network.Network):
         Regenerate the :math:`k(T,P)` values for this partial network if the
         network is marked as invalid.
         """
-        from rmgpy.chem.kinetics import Arrhenius, KineticsData
+        from rmgpy.kinetics import Arrhenius, KineticsData
         from rmgpy.measure.collision import SingleExponentialDownModel
         from rmgpy.measure.reaction import fitInterpolationModel
         import rmgpy.measure.settings
@@ -469,9 +437,9 @@ class PDepNetwork(rmgpy.measure.network.Network):
         # Make sure we have high-P kinetics for all path reactions
         for rxn in self.pathReactions:
             if rxn.kinetics is None and rxn.reverse.kinetics is None:
-                raise PressureDependenceError('Path reaction %s with no high-pressure-limit kinetics encountered in PDepNetwork #%i.' % (rxn, self.index))
+                raise PressureDependenceError('Path reaction {0} with no high-pressure-limit kinetics encountered in PDepNetwork #{1:d}.'.format(rxn, self.index))
             elif rxn.kinetics is not None and rxn.kinetics.isPressureDependent():
-                raise PressureDependenceError('Pressure-dependent kinetics encountered for path reaction %s in PDepNetwork #%i.' % (rxn, self.index))
+                raise PressureDependenceError('Pressure-dependent kinetics encountered for path reaction {0} in PDepNetwork #{1:d}.'.format(rxn, self.index))
         
         # Do nothing if the network is already valid
         if self.valid: return
@@ -491,13 +459,21 @@ class PDepNetwork(rmgpy.measure.network.Network):
         # Note that we need Arrhenius kinetics in order to do this
         for rxn in self.pathReactions:
             if rxn.kinetics is None:
-                raise Exception('Path reaction "%s" in PDepNetwork #%i has no kinetics!' % (rxn, self.index))
+                raise Exception('Path reaction "{0}" in PDepNetwork #{1:d} has no kinetics!'.format(rxn, self.index))
             elif isinstance(rxn.kinetics, KineticsData):
-                rxn.kinetics = Arrhenius().fitToData(Tlist=rxn.kinetics.Tdata.values, klist=rxn.kinetics.kdata.values)
+                if len(rxn.reactants) == 1:
+                    kunits = 's^-1'
+                elif len(rxn.reactants) == 2:
+                    kunits = 'm^3/(mol*s)'
+                elif len(rxn.reactants) == 3:
+                    kunits = 'm^6/(mol^2*s)'
+                else:
+                    kunits = ''
+                rxn.kinetics = Arrhenius().fitToData(Tlist=rxn.kinetics.Tdata.values, klist=rxn.kinetics.kdata.values, kunits=kunits)
             elif not isinstance(rxn.kinetics, Arrhenius):
-                raise Exception('Path reaction "%s" in PDepNetwork #%i has invalid kinetics type "%s".' % (rxn, rxn.kinetics.__class__))
-            rxn.transitionState = rmgpy.chem.species.TransitionState(
-                E0=sum([spec.E0 for spec in rxn.reactants]) + rxn.kinetics.Ea.value,
+                raise Exception('Path reaction "{0}" in PDepNetwork #{1:d} has invalid kinetics type "{2}".'.format(rxn, rxn.kinetics.__class__))
+            rxn.transitionState = rmgpy.species.TransitionState(
+                E0=((sum([spec.E0.value for spec in rxn.reactants]) + rxn.kinetics.Ea.value)/1000.,"kJ/mol"),
             )
 
         # Determine reversibility of reactions
@@ -517,7 +493,7 @@ class PDepNetwork(rmgpy.measure.network.Network):
         self.collisionModel = SingleExponentialDownModel(alpha0=4.86 * 4184)
 
         # Save input file
-        rmgpy.measure.output.writeInput(os.path.join(settings.outputDirectory, 'pdep', 'network%i_%i.py' % (self.index, len(self.isomers))),
+        rmgpy.measure.output.writeInput(os.path.join(settings.outputDirectory, 'pdep', 'network{0:d}_{1:d}.py'.format(self.index, len(self.isomers))),
             self, Tlist, Plist, (grainSize, numGrains), method, model)
 
         self.printSummary(level=logging.INFO)
@@ -683,11 +659,11 @@ class CoreEdgeReactionModel:
 
         # If we're here then we're ready to make the new species
         if label == '': label = molecule.getFormula()
-        logging.debug('Creating new species %s' % str(label))
+        logging.debug('Creating new species {0}'.format(label))
         spec = Species(index=self.speciesCounter+1, label=label, molecule=[molecule], reactive=reactive)
         spec.coreSizeAtCreation = len(self.core.species)
         spec.generateResonanceIsomers()
-        spec.molecularWeight = spec.molecule[0].getMolecularWeight()
+        spec.molecularWeight = Quantity(spec.molecule[0].getMolecularWeight()*1000.,"g/mol")
         spec.generateLennardJonesParameters()
         formula = molecule.getFormula()
         if formula in self.speciesDict:
@@ -786,9 +762,9 @@ class CoreEdgeReactionModel:
 
         # Note in the log
         if isinstance(rxn, TemplateReaction):
-            logging.debug('Creating new %s reaction %s' % (forward.family.label, forward))
+            logging.debug('Creating new {0} reaction {1}'.format(forward.family.label, forward))
         else:
-            logging.debug('Creating new library reaction %s' % (forward))
+            logging.debug('Creating new library reaction {0}'.format(forward))
         
         # Add to the global dict/list of existing reactions (a list broken down by family, r1, r2)
         # identify r1 and r2
@@ -875,9 +851,9 @@ class CoreEdgeReactionModel:
             newSpecies = newObject
 
             if not newSpecies.reactive:
-                logging.info('NOT generating reactions for unreactive species %s' % newSpecies)
+                logging.info('NOT generating reactions for unreactive species {0}'.format(newSpecies))
             else:
-                logging.info('Adding species %s to model core' % newSpecies)
+                logging.info('Adding species {0} to model core'.format(newSpecies))
                 # Find reactions involving the new species as unimolecular reactant
                 # or product (e.g. A <---> products)
                 newReactions.extend(self.react(database, newSpecies))
@@ -903,7 +879,7 @@ class CoreEdgeReactionModel:
             self.processNewReactions(newReactions, newSpecies, pdepNetwork)
 
         else:
-            raise TypeError('Unable to use object %s to enlarge reaction model; expecting an object of class rmg.model.Species or rmg.model.PDepNetwork.' % newObject)
+            raise TypeError('Unable to use object {0} to enlarge reaction model; expecting an object of class rmg.model.Species or rmg.model.PDepNetwork.'.format(newObject))
 
         # If there are any core species among the unimolecular product channels
         # of any existing network, they need to be made included
@@ -948,7 +924,7 @@ class CoreEdgeReactionModel:
                     if found:
                         # The networks contain the same source and one or more common included isomers
                         # Therefore they need to be merged together
-                        logging.info('Merging PDepNetwork #%i and PDepNetwork #%i' % (network0.index, network.index))
+                        logging.info('Merging PDepNetwork #{0:d} and PDepNetwork #{1:d}'.format(network0.index, network.index))
                         network0.merge(network)
                         self.unirxnNetworks.remove(network)
                     else:
@@ -1029,26 +1005,26 @@ class CoreEdgeReactionModel:
         logging.info('')
         logging.info('Summary of Model Enlargement')
         logging.info('----------------------------')
-        logging.info('Added %i new core species' % (len(newCoreSpecies)))
+        logging.info('Added {0:d} new core species'.format(len(newCoreSpecies)))
         for spec in newCoreSpecies:
-            logging.info('    %s' % (spec))
-        logging.info('Created %i new edge species' % len(newEdgeSpecies))
+            logging.info('    {0}'.format(spec))
+        logging.info('Created {0:d} new edge species'.format(len(newEdgeSpecies)))
         for spec in newEdgeSpecies:
-            logging.info('    %s' % (spec))
-        logging.info('Added %i new core reactions' % (len(newCoreReactions)))
+            logging.info('    {0}'.format(spec))
+        logging.info('Added {0:d} new core reactions'.format(len(newCoreReactions)))
         for rxn in newCoreReactions:
-            logging.info('    %s' % (rxn))
-        logging.info('Created %i new edge reactions' % len(newEdgeReactions))
+            logging.info('    {0}'.format(rxn))
+        logging.info('Created {0:d} new edge reactions'.format(len(newEdgeReactions)))
         for rxn in newEdgeReactions:
-            logging.info('    %s' % (rxn))
+            logging.info('    {0}'.format(rxn))
 
         coreSpeciesCount, coreReactionCount, edgeSpeciesCount, edgeReactionCount = self.getModelSize()
 
         # Output current model size information after enlargement
         logging.info('')
         logging.info('After model enlargement:')
-        logging.info('    The model core has %s species and %s reactions' % (coreSpeciesCount, coreReactionCount))
-        logging.info('    The model edge has %s species and %s reactions' % (edgeSpeciesCount, edgeReactionCount))
+        logging.info('    The model core has {0:d} species and {1:d} reactions'.format(coreSpeciesCount, coreReactionCount))
+        logging.info('    The model edge has {0:d} species and {1:d} reactions'.format(edgeSpeciesCount, edgeReactionCount))
         logging.info('')
 
     def addSpeciesToCore(self, spec):
@@ -1154,14 +1130,14 @@ class CoreEdgeReactionModel:
 
         # Actually do the pruning
         if pruneDueToRateCounter > 0:
-            logging.info('Pruning %i species whose rates did not exceed the minimum threshold of %g' % (pruneDueToRateCounter, self.fluxToleranceKeepInEdge))
+            logging.info('Pruning {0:d} species whose rates did not exceed the minimum threshold of {1:g}'.format(pruneDueToRateCounter, self.fluxToleranceKeepInEdge))
             for index, spec in speciesToPrune[0:pruneDueToRateCounter]:
-                logging.debug('    %-56s    %10.4e' % (spec, maxEdgeSpeciesRates[index]))
+                logging.debug('    {0:<56}    {1:10.4e}'.format(spec, maxEdgeSpeciesRates[index]))
                 self.removeSpeciesFromEdge(spec)
         if len(speciesToPrune) - pruneDueToRateCounter > 0:
-            logging.info('Pruning %i species to obtain an edge size of %i species' % (len(speciesToPrune) - pruneDueToRateCounter, self.maximumEdgeSpecies))
+            logging.info('Pruning {0:d} species to obtain an edge size of {1:d} species'.format(len(speciesToPrune) - pruneDueToRateCounter, self.maximumEdgeSpecies))
             for index, spec in speciesToPrune[pruneDueToRateCounter:]:
-                logging.debug('    %-56s    %10.4e' % (spec, maxEdgeSpeciesRates[index]))
+                logging.debug('    {0:<56}    {1:10.4e}'.format(spec, maxEdgeSpeciesRates[index]))
                 self.removeSpeciesFromEdge(spec)
 
         # Delete any networks that became empty as a result of pruning
@@ -1170,9 +1146,9 @@ class CoreEdgeReactionModel:
             if len(network.pathReactions) == 0 and len(network.netReactions) == 0:
                 networksToDelete.append(network)
             if len(networksToDelete) > 0:
-                logging.info('Deleting %i empty pressure-dependent reaction networks' % (len(networksToDelete)))
+                logging.info('Deleting {0:d} empty pressure-dependent reaction networks'.format(len(networksToDelete)))
                 for network in networksToDelete:
-                    logging.debug('    Deleting empty pressure dependent reaction network #%i' % network.index)
+                    logging.debug('    Deleting empty pressure dependent reaction network #{0:d}'.format(network.index))
                     self.unirxnNetworks.remove(network)
 
         logging.info('')
@@ -1325,7 +1301,7 @@ class CoreEdgeReactionModel:
         numOldCoreSpecies = len(self.core.species)
         numOldCoreReactions = len(self.core.reactions)
 
-        logging.info('Adding seed mechanism %s to model core...' % seedMechanism)
+        logging.info('Adding seed mechanism {0} to model core...'.format(seedMechanism))
 
         seedMechanism = database.kinetics.libraries[seedMechanism]
 
@@ -1412,7 +1388,7 @@ class CoreEdgeReactionModel:
         """
 
         count = sum([1 for network in self.unirxnNetworks if not network.valid and not (len(network.explored) == 0 and len(network.source) > 1)])
-        logging.info('Updating %i modified unimolecular reaction networks...' % count)
+        logging.info('Updating {0:d} modified unimolecular reaction networks...'.format(count))
         
         # Iterate over all the networks, updating the invalid ones as necessary
         for network in self.unirxnNetworks:
@@ -1470,7 +1446,7 @@ class CoreEdgeReactionModel:
                     # Extract reactants and products
                     if '<=>' in rxn: arrow = rxn.index('<=>')
                     elif '=>' in rxn: arrow = rxn.index('=>')
-                    else: raise IOError('No arrow found in reaction equation from line %s' % line)
+                    else: raise IOError('No arrow found in reaction equation from line {0}'.format(line))
                     reactants = rxn[0:arrow:2]
                     products = rxn[arrow+1::2]
 
@@ -1490,7 +1466,7 @@ class CoreEdgeReactionModel:
                     # Process Arrhenius parameters
                     order = len(reactants)
                     if (thirdBody): order += 1
-                    Aunits = 'cm^%i/(mol^%i*s)' % (3*(order-1), order-1)
+                    Aunits = 'cm^{0:d}/(mol^{1:d}*s)'.format(3*(order-1), order-1)
                     A = float(pq.Quantity(float(items[-6]), Aunits).simplified)
                     n = float(items[-5])			# dimensionless
                     Ea = float(pq.Quantity(float(items[-4]), 'cal/mol').simplified)
@@ -1516,5 +1492,5 @@ class CoreEdgeReactionModel:
         """
         Save a Chemkin file for the current model core to `path`.
         """
-        from rmgpy.chem.chemkin import saveChemkinFile
+        from rmgpy.chemkin import saveChemkinFile
         saveChemkinFile(path, self.core.species, self.core.reactions)

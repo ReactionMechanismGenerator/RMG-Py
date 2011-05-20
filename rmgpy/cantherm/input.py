@@ -28,12 +28,13 @@
 ################################################################################
 
 import logging
+import numpy
 
-import rmgpy.chem.constants as constants
-from rmgpy.chem.states import HinderedRotor, HarmonicOscillator
-from rmgpy.chem.species import Species, TransitionState
-from rmgpy.chem.kinetics import Arrhenius
-from rmgpy.chem.reaction import Reaction
+from rmgpy.quantity import constants
+from rmgpy.statmech import HinderedRotor, HarmonicOscillator
+from rmgpy.species import Species, TransitionState
+from rmgpy.kinetics import Arrhenius
+from rmgpy.reaction import Reaction
 
 from gaussian import GaussianLog
 from states import projectRotors, applyEnergyCorrections
@@ -51,6 +52,8 @@ speciesDict = {}
 transitionStateDict = {}
 # A dictionary associating reaction identifiers with reaction objects
 reactionDict = {}
+# A dictionary associated species and transition state identifiers with geometry objects
+geometryDict = {}
 
 # The file to save the output to
 outputFile = ''
@@ -108,7 +111,7 @@ def loadConfiguration(geomLog, statesLog, extSymmetry, spinMultiplicity, freqSca
             log = GaussianLog(scanLog)
             fourier = log.fitFourierSeriesPotential()
             inertia = geom.getInternalReducedMomentOfInertia(pivots, top)
-            rotor = HinderedRotor(inertia=inertia, symmetry=symmetry, fourier=fourier)
+            rotor = HinderedRotor(inertia=(inertia*constants.Na*1e23,"amu*angstrom^2"), symmetry=symmetry, fourier=(fourier,"J/mol"))
             states.modes.append(rotor)
             
             #import numpy
@@ -126,7 +129,7 @@ def loadConfiguration(geomLog, statesLog, extSymmetry, spinMultiplicity, freqSca
         frequencies = list(projectRotors(geom, F, rotors, linear, TS))
         
     elif len(states.modes) > 2:
-        frequencies = states.modes[2].frequencies
+        frequencies = states.modes[2].frequencies.values
         rotors = []
     else:
         frequencies = []
@@ -134,7 +137,7 @@ def loadConfiguration(geomLog, statesLog, extSymmetry, spinMultiplicity, freqSca
 
     for mode in states.modes:
         if isinstance(mode, HarmonicOscillator):
-            mode.frequencies = [f * freqScaleFactor for f in frequencies]
+            mode.frequencies.values = numpy.array(frequencies, numpy.float) * freqScaleFactor
 
     return E0, geom, states
 
@@ -142,7 +145,8 @@ def loadSpecies(label, geomLog, statesLog, extSymmetry, spinMultiplicity, freqSc
     global modelChemistry
     logging.info('Loading species %s...' % label)
     E0, geom, states = loadConfiguration(geomLog, statesLog, extSymmetry, spinMultiplicity, freqScaleFactor, linear, rotors, atoms, bonds, E0, TS=False)
-    speciesDict[label] = Species(label=label, thermo=None, states=states, geometry=geom, E0=E0)
+    speciesDict[label] = Species(label=label, thermo=None, states=states, E0=(E0/1000.,"kJ/mol"))
+    geometryDict[label] = geom
 
 def loadTransitionState(label, geomLog, statesLog, extSymmetry, spinMultiplicity, freqScaleFactor, linear, rotors, atoms, bonds, E0=None):
     global modelChemistry
@@ -150,7 +154,8 @@ def loadTransitionState(label, geomLog, statesLog, extSymmetry, spinMultiplicity
     E0, geom, states = loadConfiguration(geomLog, statesLog, extSymmetry, spinMultiplicity, freqScaleFactor, linear, rotors, atoms, bonds, E0, TS=True)
     log = GaussianLog(statesLog)
     frequency = log.loadNegativeFrequency()
-    transitionStateDict[label] = TransitionState(label=label, states=states, geometry=geom, frequency=frequency, E0=E0)
+    transitionStateDict[label] = TransitionState(label=label, states=states, frequency=(frequency,"cm^-1"), E0=(E0/1000.,"kJ/mol"))
+    geometryDict[label] = geom
     
 ################################################################################
 
@@ -171,9 +176,9 @@ def generateStates(label):
     global outputFile, speciesDict, transitionStateDict
     from states import saveStates
     if label in speciesDict:
-        saveStates(speciesDict[label], label, outputFile)
+        saveStates(speciesDict[label], geometryDict[label], label, outputFile)
     elif label in transitionStateDict:
-        saveStates(transitionStateDict[label], label, outputFile)
+        saveStates(transitionStateDict[label], geometryDict[label], label, outputFile)
     
 def generateThermo(label, model, plot=False):
     global outputFile, speciesDict

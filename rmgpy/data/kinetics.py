@@ -35,10 +35,10 @@ import codecs
 
 from base import *
 
-from rmgpy.chem.reaction import Reaction, ReactionError
-from rmgpy.chem.kinetics import *
-from rmgpy.chem.pattern import BondPattern, MoleculePattern, ActionError
-from rmgpy.chem.molecule import Bond
+from rmgpy.reaction import Reaction, ReactionError
+from rmgpy.kinetics import *
+from rmgpy.group import GroupBond, Group
+from rmgpy.molecule import Bond
 
 ################################################################################
 
@@ -201,7 +201,7 @@ class ReactionRecipe:
         the structure should be labeled with the appropriate atom centers.
         """
 
-        pattern = isinstance(struct, MoleculePattern)
+        pattern = isinstance(struct, Group)
 
         for action in self.actions:
             if action[0] in ['CHANGE_BOND', 'FORM_BOND', 'BREAK_BOND']:
@@ -232,7 +232,7 @@ class ReactionRecipe:
                         atom2.applyAction(['CHANGE_BOND', label1, -info, label2])
                         bond.applyAction(['CHANGE_BOND', label1, -info, label2])
                 elif (action[0] == 'FORM_BOND' and doForward) or (action[0] == 'BREAK_BOND' and not doForward):
-                    bond = BondPattern(order=['S']) if pattern else Bond(order='S')
+                    bond = GroupBond(order=['S']) if pattern else Bond(order='S')
                     struct.addBond(atom1, atom2, bond)
                     atom1.applyAction(['FORM_BOND', label1, info, label2])
                     atom2.applyAction(['FORM_BOND', label1, info, label2])
@@ -252,7 +252,7 @@ class ReactionRecipe:
                 # Find associated atom
                 atom = struct.getLabeledAtom(label)
                 if atom is None:
-                    raise InvalidActionError('Unable to find atom with label "%s" while applying reaction recipe.' % label)
+                    raise InvalidActionError('Unable to find atom with label "{0}" while applying reaction recipe.'.format(label))
 
                 # Apply the action
                 for i in range(change):
@@ -298,121 +298,121 @@ def saveEntry(f, entry):
         return [(key, efficiencies[key]) for key in keys]
 
     f.write('entry(\n')
-    f.write('    index = %i,\n' % (entry.index))
+    f.write('    index = {0:d},\n'.format(entry.index))
     if entry.label != '':
-        f.write('    label = "%s",\n' % (entry.label))
+        f.write('    label = "{0}",\n'.format(entry.label))
 
     if isinstance(entry.item, Reaction):
         for i, reactant in enumerate(entry.item.reactants):
-            f.write('    reactant%i = \n' % (i+1))
+            f.write('    reactant{0:d} = \n'.format(i+1))
             f.write('"""\n')
             f.write(reactant.toAdjacencyList(removeH=True))
             f.write('""",\n')
         for i, product in enumerate(entry.item.products):
-            f.write('    product%i = \n' % (i+1))
+            f.write('    product{0:d} = \n'.format(i+1))
             f.write('"""\n')
             f.write(product.toAdjacencyList(removeH=True))
             f.write('""",\n')
-        f.write('    degeneracy = %i,\n' % (entry.item.degeneracy))
-    elif isinstance(entry.item, MoleculePattern):
+        f.write('    degeneracy = {0:d},\n'.format(entry.item.degeneracy))
+    elif isinstance(entry.item, Group):
         f.write('    group = \n')
         f.write('"""\n')
         f.write(entry.item.toAdjacencyList())
         f.write('""",\n')
     elif isinstance(entry.item, LogicNode):
-        f.write('    group = "%s",\n' % (entry.item))
+        f.write('    group = "{0}",\n'.format(entry.item))
     else:
-        raise InvalidDatabaseError("Encountered unexpected item of type %s while saving database." % (entry.item.__class__))
+        raise InvalidDatabaseError("Encountered unexpected item of type {0} while saving database.".format(entry.item.__class__))
 
     if isinstance(entry.data, Arrhenius):
         f.write('    kinetics = Arrhenius(\n')
-        f.write('        A = %r,\n' % (entry.data.A))
-        f.write('        n = %r,\n' % (entry.data.n))
-        f.write('        Ea = %r,\n' % (entry.data.Ea))
-        f.write('        T0 = %r,\n' % (entry.data.T0))
-        if entry.data.Tmin is not None: f.write('        Tmin = %r,\n' % (entry.data.Tmin))
-        if entry.data.Tmax is not None: f.write('        Tmax = %r,\n' % (entry.data.Tmax))
+        f.write('        A = {0!r},\n'.format(entry.data.A))
+        f.write('        n = {0!r},\n'.format(entry.data.n))
+        f.write('        Ea = {0!r},\n'.format(entry.data.Ea))
+        f.write('        T0 = {0!r},\n'.format(entry.data.T0))
+        if entry.data.Tmin is not None: f.write('        Tmin = {0!r},\n'.format(entry.data.Tmin))
+        if entry.data.Tmax is not None: f.write('        Tmax = {0!r},\n'.format(entry.data.Tmax))
         f.write('    ),\n')
     elif isinstance(entry.data, ArrheniusEP):
         f.write('    kinetics = ArrheniusEP(\n')
-        f.write('        A = %r,\n' % (entry.data.A))
-        f.write('        n = %r,\n' % (entry.data.n))
-        f.write('        alpha = %r,\n' % (entry.data.alpha))
-        f.write('        E0 = %r,\n' % (entry.data.E0))
-        if entry.data.Tmin is not None: f.write('        Tmin = %r,\n' % (entry.data.Tmin))
-        if entry.data.Tmax is not None: f.write('        Tmax = %r,\n' % (entry.data.Tmax))
+        f.write('        A = {0!r},\n'.format(entry.data.A))
+        f.write('        n = {0!r},\n'.format(entry.data.n))
+        f.write('        alpha = {0!r},\n'.format (entry.data.alpha))
+        f.write('        E0 = {0!r},\n'.format(entry.data.E0))
+        if entry.data.Tmin is not None: f.write('        Tmin = {0!r},\n'.format(entry.data.Tmin))
+        if entry.data.Tmax is not None: f.write('        Tmax = {0!r},\n'.format(entry.data.Tmax))
         f.write('    ),\n')
     elif isinstance(entry.data, MultiArrhenius):
         f.write('    kinetics = MultiArrhenius(\n')
         f.write('        arrheniusList = [\n')
         for arrh in entry.data.arrheniusList:
-            f.write('            %r,\n' % (arrh))
+            f.write('            {0!r},\n'.format(arrh))
         f.write('        ],\n')
-        if entry.data.Tmin is not None: f.write('        Tmin = %r,\n' % (entry.data.Tmin))
-        if entry.data.Tmax is not None: f.write('        Tmax = %r,\n' % (entry.data.Tmax))
+        if entry.data.Tmin is not None: f.write('        Tmin = {0!r},\n'.format(entry.data.Tmin))
+        if entry.data.Tmax is not None: f.write('        Tmax = {0!r},\n'.format(entry.data.Tmax))
         f.write('    ),\n')
     elif isinstance(entry.data, PDepArrhenius):
         f.write('    kinetics = PDepArrhenius(\n')
-        f.write('        pressures = %r,\n' % (entry.data.pressures))
+        f.write('        pressures = {0!r},\n'.format(entry.data.pressures))
         f.write('        arrhenius = [\n')
         for arrh in entry.data.arrhenius:
-            f.write('            %r,\n' % (arrh))
+            f.write('            {0!r},\n'.format(arrh))
         f.write('        ],\n')
-        if entry.data.Tmin is not None: f.write('        Tmin = %r,\n' % (entry.data.Tmin))
-        if entry.data.Tmax is not None: f.write('        Tmax = %r,\n' % (entry.data.Tmax))
-        if entry.data.Pmin is not None: f.write('        Pmin = %r,\n' % (entry.data.Pmin))
-        if entry.data.Pmax is not None: f.write('        Pmax = %r,\n' % (entry.data.Pmax))
+        if entry.data.Tmin is not None: f.write('        Tmin = {0!r},\n'.format(entry.data.Tmin))
+        if entry.data.Tmax is not None: f.write('        Tmax = {0!r},\n'.format(entry.data.Tmax))
+        if entry.data.Pmin is not None: f.write('        Pmin = {0!r},\n'.format(entry.data.Pmin))
+        if entry.data.Pmax is not None: f.write('        Pmax = {0!r},\n'.format(entry.data.Pmax))
         f.write('    ),\n')
     elif isinstance(entry.data, Troe):
         f.write('    kinetics = Troe(\n')
-        f.write('        arrheniusHigh = %r,\n' % (entry.data.arrheniusHigh))
-        f.write('        arrheniusLow = %r,\n' % (entry.data.arrheniusLow))
-        f.write('        efficiencies = {%s},\n' % (', '.join(['"%s": %g' % (label, eff) for label, eff in sortEfficiencies(entry.data.efficiencies)])))
-        f.write('        alpha = %r,\n' % (entry.data.alpha))
-        f.write('        T3 = %r,\n' % (entry.data.T3))
-        f.write('        T1 = %r,\n' % (entry.data.T1))
-        if entry.data.T2 is not None: f.write('        T2 = %r,\n' % (entry.data.T2))
-        if entry.data.Tmin is not None: f.write('        Tmin = %r,\n' % (entry.data.Tmin))
-        if entry.data.Tmax is not None: f.write('        Tmax = %r,\n' % (entry.data.Tmax))
-        if entry.data.Pmin is not None: f.write('        Pmin = %r,\n' % (entry.data.Pmin))
-        if entry.data.Pmax is not None: f.write('        Pmax = %r,\n' % (entry.data.Pmax))
+        f.write('        arrheniusHigh = {0!r},\n'.format(entry.data.arrheniusHigh))
+        f.write('        arrheniusLow = {0!r},\n'.format(entry.data.arrheniusLow))
+        f.write('        efficiencies = {{{0}}},\n'.format(', '.join(['"{0}": {1:g}'.format(label, eff) for label, eff in sortEfficiencies(entry.data.efficiencies)])))
+        f.write('        alpha = {0!r},\n'.format(entry.data.alpha))
+        f.write('        T3 = {0!r},\n'.format(entry.data.T3))
+        f.write('        T1 = {0!r},\n'.format(entry.data.T1))
+        if entry.data.T2 is not None: f.write('        T2 = {0!r},\n'.format(entry.data.T2))
+        if entry.data.Tmin is not None: f.write('        Tmin = {0!r},\n'.format(entry.data.Tmin))
+        if entry.data.Tmax is not None: f.write('        Tmax = {0!r},\n'.format(entry.data.Tmax))
+        if entry.data.Pmin is not None: f.write('        Pmin = {0!r},\n'.format(entry.data.Pmin))
+        if entry.data.Pmax is not None: f.write('        Pmax = {0!r},\n'.format(entry.data.Pmax))
         f.write('    ),\n')
     elif isinstance(entry.data, Lindemann):
         f.write('    kinetics = Lindemann(\n')
-        f.write('        arrheniusHigh = %r,\n' % (entry.data.arrheniusHigh))
-        f.write('        arrheniusLow = %r,\n' % (entry.data.arrheniusLow))
-        f.write('        efficiencies = {%s},\n' % (', '.join(['"%s": %g' % (label, eff) for label, eff in sortEfficiencies(entry.data.efficiencies)])))
-        if entry.data.Tmin is not None: f.write('        Tmin = %r,\n' % (entry.data.Tmin))
-        if entry.data.Tmax is not None: f.write('        Tmax = %r,\n' % (entry.data.Tmax))
-        if entry.data.Pmin is not None: f.write('        Pmin = %r,\n' % (entry.data.Pmin))
-        if entry.data.Pmax is not None: f.write('        Pmax = %r,\n' % (entry.data.Pmax))
+        f.write('        arrheniusHigh = {0!r},\n'.format(entry.data.arrheniusHigh))
+        f.write('        arrheniusLow = {0!r},\n'.format(entry.data.arrheniusLow))
+        f.write('        efficiencies = {{{0}}},\n'.format(', '.join(['"{0}": {1:g}'.format(label, eff) for label, eff in sortEfficiencies(entry.data.efficiencies)])))
+        if entry.data.Tmin is not None: f.write('        Tmin = {0!r},\n'.format(entry.data.Tmin))
+        if entry.data.Tmax is not None: f.write('        Tmax = {0!r},\n'.format(entry.data.Tmax))
+        if entry.data.Pmin is not None: f.write('        Pmin = {0!r},\n'.format(entry.data.Pmin))
+        if entry.data.Pmax is not None: f.write('        Pmax = {0!r},\n'.format(entry.data.Pmax))
         f.write('    ),\n')
     elif isinstance(entry.data, ThirdBody):
         f.write('    kinetics = ThirdBody(\n')
-        f.write('        arrheniusHigh = %r,\n' % (entry.data.arrheniusHigh))
-        f.write('        efficiencies = {%s},\n' % (', '.join(['"%s": %g' % (label, eff) for label, eff in sortEfficiencies(entry.data.efficiencies)])))
-        if entry.data.Tmin is not None: f.write('        Tmin = %r,\n' % (entry.data.Tmin))
-        if entry.data.Tmax is not None: f.write('        Tmax = %r,\n' % (entry.data.Tmax))
-        if entry.data.Pmin is not None: f.write('        Pmin = %r,\n' % (entry.data.Pmin))
-        if entry.data.Pmax is not None: f.write('        Pmax = %r,\n' % (entry.data.Pmax))
+        f.write('        arrheniusHigh = {0!r},\n'.format(entry.data.arrheniusHigh))
+        f.write('        efficiencies = {{{0}}},\n'.format(', '.join(['"{0}": {1:g}'.format(label, eff) for label, eff in sortEfficiencies(entry.data.efficiencies)])))
+        if entry.data.Tmin is not None: f.write('        Tmin = {0!r},\n'.format(entry.data.Tmin))
+        if entry.data.Tmax is not None: f.write('        Tmax = {0!r},\n'.format(entry.data.Tmax))
+        if entry.data.Pmin is not None: f.write('        Pmin = {0!r},\n'.format(entry.data.Pmin))
+        if entry.data.Pmax is not None: f.write('        Pmax = {0!r},\n'.format(entry.data.Pmax))
         f.write('    ),\n')
     elif isinstance(entry.data, Chebyshev):
         f.write('    kinetics = Chebyshev(\n')
         f.write('        coeffs = [\n')
         for i in range(entry.data.degreeT):
-            f.write('            [%s],\n' % (','.join(['%g' % (self.coeffs[i,j]) for j in range(self.degreeP)])))
+            f.write('            [{0}],\n'.format(','.join(['{0:g}'.format(self.coeffs[i,j]) for j in range(self.degreeP)])))
         f.write('        ],\n')
-        if entry.data.Tmin is not None: f.write('        Tmin = %r,\n' % (entry.data.Tmin))
-        if entry.data.Tmax is not None: f.write('        Tmax = %r,\n' % (entry.data.Tmax))
-        if entry.data.Pmin is not None: f.write('        Pmin = %r,\n' % (entry.data.Pmin))
-        if entry.data.Pmax is not None: f.write('        Pmax = %r,\n' % (entry.data.Pmax))
+        if entry.data.Tmin is not None: f.write('        Tmin = {0!r},\n'.format(entry.data.Tmin))
+        if entry.data.Tmax is not None: f.write('        Tmax = {0!r},\n'.format(entry.data.Tmax))
+        if entry.data.Pmin is not None: f.write('        Pmin = {0!r},\n'.format(entry.data.Pmin))
+        if entry.data.Pmax is not None: f.write('        Pmax = {0!r},\n'.format(entry.data.Pmax))
         f.write('    ),\n')
     else:
-        f.write('    kinetics = %r,\n' % (entry.data))
+        f.write('    kinetics = {0!r},\n'.format(entry.data))
 
-    f.write('    reference = %r,\n' % (entry.reference))
-    f.write('    referenceType = "%s",\n' % (entry.referenceType))
-    f.write('    shortDesc = """%s""",\n' % (entry.shortDesc))
+    f.write('    reference = {0!r},\n'.format(entry.reference))
+    f.write('    referenceType = "{0}",\n'.format(entry.referenceType))
+    f.write('    shortDesc = """{0}""",\n'.format(entry.shortDesc))
     f.write('    longDesc = \n')
     f.write('"""\n')
     f.write(entry.longDesc)
@@ -420,7 +420,7 @@ def saveEntry(f, entry):
 
     f.write('    history = [\n')
     for time, user, action, description in entry.history:
-        f.write('        ("%s","%s","%s","""%s"""),\n' % (time, user, action, description))
+        f.write('        ("{0}","{1}","{2}","""{3}"""),\n'.format(time, user, action, description))
     f.write('    ],\n')
 
     f.write(')\n\n')
@@ -550,9 +550,9 @@ class KineticsLibrary(Database):
                                 Aunits0[1] = Aunits0[1][0:-1] # Remove '3' from e.g. 'm3' or 'cm3'; this is assumed
                                 Aunits = [
                                     '',                                                         # Zeroth-order
-                                    '%s^-1' % (Aunits0[2]),                                     # First-order
-                                    '%s^3/(%s*%s)' % (Aunits0[1], Aunits0[0], Aunits0[2]),      # Second-order
-                                    '%s^6/(%s^2*%s)' % (Aunits0[1], Aunits0[0], Aunits0[2]),    # Third-order
+                                    '{0}^-1'.format(Aunits0[2]),                                     # First-order
+                                    '{0}^3/({1}*{2})'.format(Aunits0[1], Aunits0[0], Aunits0[2]),      # Second-order
+                                    '{0}^6/({1}^2*{2})'.format(Aunits0[1], Aunits0[0], Aunits0[2]),    # Third-order
                                 ]
                             elif 'E:' in line:
                                 Eunits = units
@@ -595,12 +595,12 @@ class KineticsLibrary(Database):
                                 try:
                                     reactants.append(species[item])
                                 except KeyError:
-                                    raise DatabaseError('Reactant %s not found in species dictionary.' % item)
+                                    raise DatabaseError('Reactant {0} not found in species dictionary.'.format(item))
                             for item in productItems:
                                 try:
                                     products.append(species[item])
                                 except KeyError:
-                                    raise DatabaseError('Product %s not found in species dictionary.' % item)
+                                    raise DatabaseError('Product {0} not found in species dictionary.'.format(item))
 
                             if dataIndex == -6:
                                 A = constants.Quantity((float(items[-6]), Aunits[len(reactants)]))
@@ -694,7 +694,7 @@ class KineticsLibrary(Database):
                                         species[spec] = Molecule().fromAdjacencyList('1 Ne 0')
                                 
                                 if spec not in species:
-                                    logging.warning('Collider %s for reaction %s not found in species dictionary.' % (spec, reaction))
+                                    logging.warning('Collider {0} for reaction {1} not found in species dictionary.'.format(spec, reaction))
                                 else:
                                     kinetics.efficiencies[species[spec]] = float(eff)
 
@@ -748,7 +748,7 @@ class KineticsGroups(Database):
         self.ownReverse = forwardTemplate is not None and reverseTemplate is None
 
     def __str__(self):
-        return '<ReactionFamily "%s">' % (self.label)
+        return '<ReactionFamily "{0}">'.format(self.label)
 
     def loadOld(self, path):
         """
@@ -794,7 +794,7 @@ class KineticsGroups(Database):
         elif self.label in ['intra_H_migration', 'Birad_recombination', 'intra_OH_migration', 'Cyclic_Ether_Formation', 'Intra_R_Add_Exocyclic', 'Intra_R_Add_Endocyclic', '1,2-Birad_to_alkene', 'Intra_Disproportionation']:
             Aunits = 's^-1'
         else:
-            raise ValueError('Unable to determine preexponential units for reaction family "%s".' % self.label)
+            raise ValueError('Unable to determine preexponential units for reaction family "{0}".'.format(self.label))
 
         try:
             Tmin, Tmax = data[0].split('-')
@@ -863,7 +863,7 @@ class KineticsGroups(Database):
         if group[0:3].upper() == 'OR{' or group[0:4].upper() == 'AND{' or group[0:7].upper() == 'NOT OR{' or group[0:8].upper() == 'NOT AND{':
             item = makeLogicNode(group)
         else:
-            item = MoleculePattern().fromAdjacencyList(group)
+            item = Group().fromAdjacencyList(group)
         self.entries[label] = Entry(
             index = index,
             label = label,
@@ -934,22 +934,22 @@ class KineticsGroups(Database):
                 
         # Write the header
         f = codecs.open(path, 'w', 'utf-8')
-        f.write('name = "%s"\n' % (self.name))
-        f.write('shortDesc = "%s"\n' % (self.shortDesc))
+        f.write('name = "{0}"\n'.format(self.name))
+        f.write('shortDesc = "{0}"\n'.format(self.shortDesc))
         f.write('longDesc = """\n')
         f.write(self.longDesc)
         f.write('\n"""\n\n')
 
         # Write the template
-        f.write('template(reactants=[%s], products=[%s], ownReverse=%s)\n\n' % (
-            ', '.join(['"%s"' % (entry.label) for entry in self.forwardTemplate.reactants]),
-            ', '.join(['"%s"' % (entry.label) for entry in self.forwardTemplate.products]),
+        f.write('template(reactants=[{0}], products=[{1}], ownReverse={2})\n\n'.format(
+            ', '.join(['"{0}"'.format(entry.label) for entry in self.forwardTemplate.reactants]),
+            ', '.join(['"{0}"'.format(entry.label) for entry in self.forwardTemplate.products]),
             self.ownReverse))
 
         # Write the recipe
         f.write('recipe(actions=[\n')
         for action in self.forwardRecipe.actions:
-            f.write('    %r,\n' % (action))
+            f.write('    {0!r},\n'.format(action))
         f.write('])\n\n')
 
         # Save the entries
@@ -982,12 +982,12 @@ class KineticsGroups(Database):
             if isinstance(reactant, list):  reactants = [reactant[0]]
             else:                           reactants = [reactant]
 
-            logging.log(0, "Reactants:%s"%reactants)
+            logging.log(0, "Reactants: {0}".format(reactants))
             for s in reactants: #
                 struct = s.item
                 if isinstance(struct, LogicNode):
                     all_structures = struct.getPossibleStructures(self.entries)
-                    logging.log(0, 'Expanding node %s to %s'%(s, all_structures))
+                    logging.log(0, 'Expanding node {0} to {1}'.format(s, all_structures))
                     reactantStructures.append(all_structures)
                 else:
                     reactantStructures.append([struct])
@@ -1033,7 +1033,7 @@ class KineticsGroups(Database):
                 counter = 0
                 for product in products:
                     entry = Entry(
-                        label = '%s%i' % (label,counter+1),
+                        label = '{0}{1:d}'.format(label,counter+1),
                         item = product,
                     )
                     item.append(entry.label)
@@ -1087,8 +1087,8 @@ class KineticsGroups(Database):
         # Also copy structures so we don't modify the originals
         # Since the tagging has already occurred, both the reactants and the
         # products will have tags
-        if isinstance(reactantStructures[0], MoleculePattern):
-            reactantStructure = MoleculePattern()
+        if isinstance(reactantStructures[0], Group):
+            reactantStructure = Group()
         else:
             reactantStructure = Molecule()
         for s in reactantStructures:
@@ -1105,7 +1105,7 @@ class KineticsGroups(Database):
                     identicalCenterCounter += 1
                     atom.label = '*' + str(identicalCenterCounter)
             if identicalCenterCounter != 2:
-                raise Exception('Unable to change labels from "*" to "*1" and "*2" for reaction family %s.' % (label))
+                raise Exception('Unable to change labels from "*" to "*1" and "*2" for reaction family {0}.'.format(label))
 
         # Generate the product structure by applying the recipe
         if forward:
@@ -1149,7 +1149,7 @@ class KineticsGroups(Database):
                 highest = len(atomLabels)
                 if highest>4:
                     for i in range(4,highest+1):
-                        atomLabels['*%d'%i].label = '*%d'%(4+highest-i)
+                        atomLabels['*{0:d}'.format(i)].label = '*{0:d}'.format(4+highest-i)
 
         if not forward: template = self.reverseTemplate
         else:           template = self.forwardTemplate
@@ -1226,7 +1226,7 @@ class KineticsGroups(Database):
             if not productStructures: return None
         except InvalidActionError, e:
             print 'Unable to apply reaction recipe!'
-            print 'Reaction family is %s in %s direction' % (self.label, 'forward' if forward else 'reverse')
+            print 'Reaction family is {0} in {1} direction'.format(self.label, 'forward' if forward else 'reverse')
             print 'Reactant structures are:'
             for struct in reactantStructures:
                 print struct.toAdjacencyList()
@@ -1297,7 +1297,7 @@ class KineticsGroups(Database):
                 ismatch, map = reactant.findSubgraphIsomorphisms(child_structure)
                 if ismatch: mappings.extend(map)
             return len(mappings) > 0, mappings
-        elif isinstance(struct, MoleculePattern):
+        elif isinstance(struct, Group):
             return reactant.findSubgraphIsomorphisms(struct)
 
     def generateReactions(self, reactants, forward=True):
@@ -1503,7 +1503,7 @@ class KineticsGroups(Database):
                 if matched_node is not None:
                     template.append(matched_node)
                 else:
-                    logging.warning("Couldn't find match for %s in %s" % (entry,atomList))
+                    logging.warning("Couldn't find match for {0} in {1}".format(entry,atomList))
                     logging.warning(reactant.toAdjacencyList())
 
         # Get fresh templates (with duplicate nodes back in)
@@ -1515,7 +1515,7 @@ class KineticsGroups(Database):
         # template is a list of the actual matched nodes
         # forwardTemplate is a list of the top level nodes that should be matched
         if len(template) != len(forwardTemplate):
-            logging.warning('Unable to find matching template for reaction %s in reaction family %s' % (str(reaction), str(self)) )
+            logging.warning('Unable to find matching template for reaction {0} in reaction family {1}'.format(str(reaction), str(self)) )
             logging.warning(" Trying to match " + str(forwardTemplate))
             logging.warning(" Matched "+str(template))
             print str(self), template, forwardTemplate
@@ -1548,7 +1548,7 @@ class KineticsGroups(Database):
             while entry.data is None and entry not in self.top:
                 entry = entry.parent
             if entry.data is not None and entry not in self.top:
-                kinetics *= entry.data
+                kinetics = self.__multiplyKineticsData(kinetics, entry.data)
 
         # Also include reaction-path degeneracy
         kinetics.kdata.values *= degeneracy
@@ -1580,9 +1580,9 @@ class KineticsGroups(Database):
                     kdata.append([kinetics.getRateCoefficient(T, 0) for T in Tlist])
                     kunits = kinetics.A.units
                 else:
-                    logging.warning('Skipping entry "%s" with nonzero value of alpha = %g.' % (labels, kinetics.alpha.value))
+                    logging.warning('Skipping entry "{0}" with nonzero value of alpha = {1:g}.'.format(labels, kinetics.alpha.value))
             else:
-                logging.warning('Skipping entry "%s" with non-ArrheniusEP kinetics "%s".' % (labels, kinetics.__class__))
+                logging.warning('Skipping entry "{0}" with non-ArrheniusEP kinetics "{1}".'.format(labels, kinetics.__class__))
         assert kunits in ['s^-1', 'cm^3/(mol*s)']
         if kunits == 'cm^3/(mol*s)':
             kunits = 'm^3/(mol*s)'
@@ -1650,7 +1650,7 @@ class KineticsGroups(Database):
                     A.append(Arow); b.append(brow)
                     
             if len(A) == 0:
-                logging.warning('Unable to fit kinetics groups for family "%s"; no valid data found.' % (self.label))
+                logging.warning('Unable to fit kinetics groups for family "{0}"; no valid data found.'.format(self.label))
                 return
             A = numpy.array(A)
             b = numpy.array(b)
@@ -1702,6 +1702,23 @@ class KineticsGroups(Database):
                 entry.data = None
 
         return groupValues, groupUncertainties, groupCounts, kmodel
+    
+    def __multiplyKineticsData(self, kineticsData1, kineticsData2):
+        """
+        Multiply two :class:`KineticsData` objects `kineticsData1` and 
+        `kineticsData2` together, returning their sum as a new 
+        :class:`KineticsData` object.
+        """
+        if len(kineticsData1.Tdata.values) != len(kineticsData2.Tdata.values) or any([T1 != T2 for T1, T2 in zip(kineticsData1.Tdata.values, kineticsData2.Tdata.values)]):
+            raise KineticsError('Cannot add these KineticsData objects due to their having different temperature points.')
+        new = KineticsData(
+            Tdata = (kineticsData1.Tdata.values, kineticsData1.Tdata.units),
+            kdata = (kineticsData1.kdata.values * kineticsData2.kdata.values, kineticsData1.kdata.units),
+        )
+        if kineticsData1.comment == '': new.comment = kineticsData2.comment
+        elif kineticsData2.comment == '': new.comment = kineticsData1.comment
+        else: new.comment = kineticsData1.comment + ' + ' + kineticsData2.comment
+        return new
 
 ################################################################################
 
@@ -1763,7 +1780,7 @@ class KineticsDatabase:
             for f in files:
                 name, ext = os.path.splitext(f)
                 if ext.lower() == '.py' and (libraries is None or name in libraries):
-                    logging.info('Loading kinetics library from %s in %s...' % (f, root))
+                    logging.info('Loading kinetics library from {0} in {1}...'.format(f, root))
                     library = KineticsLibrary()
                     library.load(os.path.join(root, f), self.local_context, self.global_context)
                     library.label = os.path.splitext(f)[0]
@@ -1778,11 +1795,11 @@ class KineticsDatabase:
         points to the top-level folder of the thermo database.
         """
         self.groups = {}
-        logging.info('Loading kinetics group database from %s' % (path))
+        logging.info('Loading kinetics group database from {0}'.format(path))
         for (root, dirs, files) in os.walk(os.path.join(path)):
             for f in files:
                 if os.path.splitext(f)[1].lower() == '.py':
-                    logging.debug('Loading kinetics groups from %s in %s...' % (f, root))
+                    logging.debug('Loading kinetics groups from {0} in {1}...'.format(f, root))
                     groups = KineticsGroups()
                     groups.load(os.path.join(root, f), self.local_context, self.global_context)
                     self.groups[groups.label] = groups
@@ -1799,7 +1816,7 @@ class KineticsDatabase:
         depositoryPath = os.path.join(path, 'depository')
         if not os.path.exists(depositoryPath): os.mkdir(depositoryPath)
         for label, depository in self.depository.iteritems():
-            depository.save(os.path.join(depositoryPath, '%s.py' % label))
+            depository.save(os.path.join(depositoryPath, '{0}.py'.format(label)))
 
         for label, library in self.libraries.iteritems():
             folders = label.split(os.sep)
@@ -1807,12 +1824,12 @@ class KineticsDatabase:
                 os.makedirs(os.path.join(path, 'libraries', *folders[:-1]))
             except OSError:
                 pass
-            library.save(os.path.join(path, 'libraries', '%s.py' % label))
+            library.save(os.path.join(path, 'libraries', '{0}.py'.format(label)))
 
         groupsPath = os.path.join(path, 'groups')
         if not os.path.exists(groupsPath): os.mkdir(groupsPath)
         for label, family in self.groups.iteritems():
-            family.save(os.path.join(groupsPath, '%s.py' % label))
+            family.save(os.path.join(groupsPath, '{0}.py'.format(label)))
 
     def loadOld(self, path):
         """
