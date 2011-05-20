@@ -7,6 +7,9 @@ This module can be used to invoke all of the unit tests in a single command.
 
 import unittest
 
+from cantherm.gaussianTest import *
+from cantherm.geometryTest import *
+
 from atomtypeTest import *
 from elementTest import *
 from graphTest import *
