@@ -374,9 +374,12 @@ class HinderedRotor(Mode):
     computationally demanding.
     """
 
-    def __init__(self, inertia=0.0, barrier=0.0, symmetry=1, fourier=None):
+    def __init__(self, inertia=0.0, barrier=None, symmetry=1, fourier=None):
         self.inertia = Quantity(inertia)
-        self.barrier = Quantity(barrier)
+        if barrier is not None:
+            self.barrier = Quantity(barrier)
+        else:
+            self.barrier = None
         self.symmetry = symmetry
         if fourier is not None:
             self.fourier = Quantity(fourier)
@@ -394,19 +397,30 @@ class HinderedRotor(Mode):
         HinderedRotor object.
         """
         if self.fourier is not None:
-            fourier = '['
+            fourier = '(['
             for i in range(self.fourier.values.shape[0]):
                 if i > 0: fourier += ', '
-                fourier += '[{0}]'.format(','.join(['{0:g}'.format(self.fourier.values[i,j]) for j in range(self.fourier.values.shape[1])]))
-            fourier += ']'
+                fourier += '[{0}]'.format(','.join(['{0:g}'.format(self.fourier.values[i,j] / 1000.) for j in range(self.fourier.values.shape[1])]))
+            fourier += '],"kJ/mol")'
         else:
             fourier = 'None'
 
-        return 'HinderedRotor(inertia={0!r}, barrier={1!r}, symmetry={2:d}, fourier={3})'.format(
-            self.inertia,
-            self.barrier,
-            self.symmetry,
-            fourier)
+        if self.fourier is not None and self.barrier is None:
+            return 'HinderedRotor(inertia={0!r}, symmetry={1:d}, fourier={2})'.format(
+                self.inertia,
+                self.symmetry,
+                fourier)
+        if self.fourier is None and self.barrier is not None:
+            return 'HinderedRotor(inertia={0!r}, barrier={1!r}, symmetry={2:d})'.format(
+                self.inertia,
+                self.barrier,
+                self.symmetry)
+        else:
+            return 'HinderedRotor(inertia={0!r}, barrier={1!r}, symmetry={2:d}, fourier={3})'.format(
+                self.inertia,
+                self.barrier,
+                self.symmetry,
+                fourier)
 
     def __reduce__(self):
         """
