@@ -4,12 +4,12 @@
 #
 ################################################################################
 
-all: chem measure solver
+all: main measure solver
 
 minimal: measure solver
 
-chem:
-	python setup.py build_ext chem --build-lib . --build-temp build --pyrex-c-in-temp
+main:
+	python setup.py build_ext main --build-lib . --build-temp build --pyrex-c-in-temp
 
 measure:
 	python setup.py build_ext measure --build-lib . --build-temp build --pyrex-c-in-temp

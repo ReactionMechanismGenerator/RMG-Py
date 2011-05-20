@@ -55,20 +55,19 @@ Cython.Compiler.Options.annotate = True
 
 ################################################################################
 
-def getChemExtensionModules():
+def getMainExtensionModules():
     return [
-        Extension('rmgpy.chem.constants', ['rmgpy/chem/constants.py'], include_dirs=['.']),
-        Extension('rmgpy.chem.element', ['rmgpy/chem/element.py'], include_dirs=['.']),
-        Extension('rmgpy.chem.graph', ['rmgpy/chem/graph.py'], include_dirs=['.']),
-        Extension('rmgpy.chem.geometry', ['rmgpy/chem/geometry.py'], include_dirs=['.']),
-        Extension('rmgpy.chem.kinetics', ['rmgpy/chem/kinetics.py'], include_dirs=['.']),
-        Extension('rmgpy.chem.molecule', ['rmgpy/chem/molecule.py'], include_dirs=['.']),
-        Extension('rmgpy.chem.pattern', ['rmgpy/chem/pattern.py'], include_dirs=['.']),
-        Extension('rmgpy.chem.reaction', ['rmgpy/chem/reaction.py'], include_dirs=['.']),
-        Extension('rmgpy.chem.species', ['rmgpy/chem/species.py'], include_dirs=['.']),
-        Extension('rmgpy.chem.states', ['rmgpy/chem/states.py'], include_dirs=['.']),
-        Extension('rmgpy.chem.thermo', ['rmgpy/chem/thermo.py'], include_dirs=['.']),
-        Extension('rmgpy.chem.ext.thermo_converter', ['rmgpy/chem/ext/thermo_converter.py'], include_dirs=['.']),
+        Extension('rmgpy.atomtype', ['rmgpy/atomtype.py'], include_dirs=['.']),
+        Extension('rmgpy.element', ['rmgpy/element.py'], include_dirs=['.']),
+        Extension('rmgpy.graph', ['rmgpy/graph.py'], include_dirs=['.']),
+        Extension('rmgpy.group', ['rmgpy/group.py'], include_dirs=['.']),
+        Extension('rmgpy.kinetics', ['rmgpy/kinetics.py'], include_dirs=['.']),
+        Extension('rmgpy.molecule', ['rmgpy/molecule.py'], include_dirs=['.']),
+        Extension('rmgpy.quantity', ['rmgpy/quantity.py'], include_dirs=['.']),
+        Extension('rmgpy.reaction', ['rmgpy/reaction.py'], include_dirs=['.']),
+        Extension('rmgpy.species', ['rmgpy/species.py'], include_dirs=['.']),
+        Extension('rmgpy.statmech', ['rmgpy/statmech.py'], include_dirs=['.']),
+        Extension('rmgpy.thermo', ['rmgpy/thermo.py'], include_dirs=['.']),
     ]
 
 def getMeasureExtensionModules():
@@ -92,13 +91,13 @@ def getSolverExtensionModules():
 ext_modules = []
 if 'install' in sys.argv:
     # This is so users can still do simply `python setup.py install`
-    ext_modules = getChemExtensionModules()
+    ext_modules.extend(getMainExtensionModules())
     ext_modules.extend(getMeasureExtensionModules())
     ext_modules.extend(getSolverExtensionModules())
-elif 'chem' in sys.argv:
-    # This is for `python setup.py build_ext chem`
-    sys.argv.remove('chem')
-    ext_modules.extend(getChemExtensionModules())
+elif 'main' in sys.argv:
+    # This is for `python setup.py build_ext main`
+    sys.argv.remove('main')
+    ext_modules.extend(getMainExtensionModules())
 elif 'measure' in sys.argv:
     # This is for `python setup.py build_ext measure`
     sys.argv.remove('measure')
@@ -106,13 +105,7 @@ elif 'measure' in sys.argv:
 elif 'solver' in sys.argv:
     # This is for `python setup.py build_ext solver`
     sys.argv.remove('solver')
-    ext_modules.extend(getSolverExtensionModules())
-elif 'statesfit' in sys.argv:
-    # This is for `python setup.py build_ext statesfit`
-    sys.argv.remove('statesfit')
-    #ext_modules.extend(getStatesFitExtensionModules())
-    
-    
+    ext_modules.extend(getSolverExtensionModules())   
     
 scripts=['cantherm.py', 'measure.py', 'rmg.py']
 
