@@ -32,9 +32,9 @@ import os.path
 import logging
 import numpy
 
-import rmgpy.chem.constants as constants
-from rmgpy.chem.states import *
-from rmgpy.chem.pattern import MoleculePattern
+from rmgpy.quantity import constants
+from rmgpy.statmech import *
+from rmgpy.group import Group
 
 from base import *
 
@@ -54,7 +54,7 @@ def saveEntry(f, entry):
         f.write('"""\n')
         f.write(entry.item.toAdjacencyList(removeH=True))
         f.write('""",\n')
-    elif isinstance(entry.item, MoleculePattern):
+    elif isinstance(entry.item, Group):
         f.write('    group = \n')
         f.write('"""\n')
         f.write(entry.item.toAdjacencyList())
@@ -212,7 +212,7 @@ class StatesGroups(Database):
         if group[0:3].upper() == 'OR{' or group[0:4].upper() == 'AND{' or group[0:7].upper() == 'NOT OR{' or group[0:8].upper() == 'NOT AND{':
             item = makeLogicNode(group)
         else:
-            item = MoleculePattern().fromAdjacencyList(group)
+            item = Group().fromAdjacencyList(group)
         self.entries[label] = Entry(
             index = index,
             label = label,
@@ -251,7 +251,7 @@ class StatesGroups(Database):
         `molecule` for the given `node` in the group database.
         """
         count = 0
-        if isinstance(self.dictionary[node], MoleculePattern):
+        if isinstance(self.dictionary[node], Group):
             ismatch, mappings = molecule.findSubgraphIsomorphisms(self.dictionary[node])
             count = len(mappings) if ismatch else 0
         elif isinstance(self.dictionary[node], LogicOr):
@@ -373,11 +373,11 @@ class StatesGroups(Database):
         modes = fitStatesToHeatCapacity(Tlist, Cv, numVibrations - len(frequencies), numRotors, molecule)
         for mode in modes:
             if isinstance(mode, HarmonicOscillator):
-                frequencies.extend(mode.frequencies)
-                mode.frequencies = frequencies
+                frequencies.extend(mode.frequencies.values)
+                mode.frequencies.values = numpy.array(frequencies, numpy.float)
                 break
         else:
-            modes.insert(0, HarmonicOscillator(frequencies=frequencies))
+            modes.insert(0, HarmonicOscillator(frequencies=(frequencies,"cm^-1")))
 
         statesModel = StatesModel(modes=modes)
 

@@ -40,10 +40,10 @@ import numpy
 
 from base import Database, Entry, makeLogicNode
 
-import rmgpy.chem.constants as constants
-from rmgpy.chem.thermo import *
-from rmgpy.chem.molecule import Molecule, Atom, Bond
-from rmgpy.chem.pattern import MoleculePattern
+from rmgpy.quantity import constants
+from rmgpy.thermo import *
+from rmgpy.molecule import Molecule, Atom, Bond
+from rmgpy.group import Group
 
 ################################################################################
 
@@ -62,7 +62,7 @@ def saveEntry(f, entry):
         f.write('"""\n')
         f.write(entry.item.toAdjacencyList(removeH=True))
         f.write('""",\n')
-    elif isinstance(entry.item, MoleculePattern):
+    elif isinstance(entry.item, Group):
         f.write('    group = \n')
         f.write('"""\n')
         f.write(entry.item.toAdjacencyList())
@@ -241,7 +241,7 @@ class ThermoGroups(Database):
         if group[0:3].upper() == 'OR{' or group[0:4].upper() == 'AND{' or group[0:7].upper() == 'NOT OR{' or group[0:8].upper() == 'NOT AND{':
             item = makeLogicNode(group)
         else:
-            item = MoleculePattern().fromAdjacencyList(group)
+            item = Group().fromAdjacencyList(group)
         self.entries[label] = Entry(
             index = index,
             label = label,
@@ -626,7 +626,7 @@ class ThermoDatabase:
 
                 saturatedStruct.updateConnectivityValues()
 
-                thermoData += self.__getGroupThermoData(self.groups['radical'], saturatedStruct, {'*':atom})
+                thermoData = self.__addThermoData(thermoData, self.__getGroupThermoData(self.groups['radical'], saturatedStruct, {'*':atom}))
 
                 # Re-saturate
                 for H, bond in added[atom]:
@@ -650,20 +650,20 @@ class ThermoDatabase:
                         if thermoData is None:
                             thermoData = self.__getGroupThermoData(self.groups['group'], molecule, {'*':atom})
                         else:
-                            thermoData += self.__getGroupThermoData(self.groups['group'], molecule, {'*':atom})
+                            thermoData = self.__addThermoData(thermoData, self.__getGroupThermoData(self.groups['group'], molecule, {'*':atom}))
                     except KeyError:
                         print molecule
                         print molecule.toAdjacencyList()
                         raise
                     # Correct for gauche and 1,5- interactions
                     try:
-                        thermoData += self.__getGroupThermoData(self.groups['gauche'], molecule, {'*':atom})
+                        thermoData = self.__addThermoData(thermoData, self.__getGroupThermoData(self.groups['gauche'], molecule, {'*':atom}))
                     except KeyError: pass
                     try:
-                        thermoData += self.__getGroupThermoData(self.groups['int15'], molecule, {'*':atom})
+                        thermoData = self.__addThermoData(thermoData, self.__getGroupThermoData(self.groups['int15'], molecule, {'*':atom}))
                     except KeyError: pass
                     try:
-                        thermoData += self.__getGroupThermoData(self.groups['other'], molecule, {'*':atom})
+                        thermoData = self.__addThermoData(thermoData, self.__getGroupThermoData(self.groups['other'], molecule, {'*':atom}))
                     except KeyError: pass
 
             # Do ring corrections separately because we only want to match
@@ -680,7 +680,7 @@ class ThermoDatabase:
                             ringStructure.addBond(atom1, atom2, molecule.getBond(atom1, atom2))
 
                 # Get thermo correction for this ring
-                thermoData += self.__getGroupThermoData(self.groups['ring'], ringStructure, {})
+                thermoData = self.__addThermoData(thermoData, self.__getGroupThermoData(self.groups['ring'], ringStructure, {}))
 
         # Correct entropy for symmetry number
         molecule.calculateSymmetryNumber()
@@ -690,6 +690,24 @@ class ThermoDatabase:
 
         return (thermoData, None, None)
 
+    def __addThermoData(self, thermoData1, thermoData2):
+        """
+        Add two :class:`ThermoData` objects `thermoData1` and `thermoData2`
+        together, returning their sum as a new :class:`ThermoData` object.
+        """
+        if len(thermoData1.Tdata.values) != len(thermoData2.Tdata.values) or any([T1 != T2 for T1, T2 in zip(thermoData1.Tdata.values, thermoData2.Tdata.values)]):
+            raise ThermoError('Cannot add these ThermoData objects due to their having different temperature points.')
+        new = ThermoData(
+            Tdata = (thermoData1.Tdata.values, thermoData1.Tdata.units),
+            Cpdata = (thermoData1.Cpdata.values + thermoData2.Cpdata.values, thermoData1.Tdata.units),
+            H298 = (thermoData1.H298.value + thermoData2.H298.value, thermoData1.Tdata.units),
+            S298 = (thermoData1.S298.value + thermoData2.S298.value, thermoData1.Tdata.units),
+        )
+        if thermoData1.comment == '': new.comment = thermoData2.comment
+        elif thermoData2.comment == '': new.comment = thermoData1.comment
+        else: new.comment = thermoData1.comment + ' + ' + thermoData2.comment
+        return new
+    
     def __getGroupThermoData(self, database, molecule, atom):
         """
         Determine the group additivity thermodynamic data for the atom `atom`
@@ -716,7 +734,6 @@ class ThermoDatabase:
                 if entry.label == data:
                     data = entry.data
                     break
-
 
         # This code prints the hierarchy of the found node; useful for debugging
         #result = ''

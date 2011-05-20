@@ -40,14 +40,11 @@ import quantities as pq
 import re
 import codecs
 
-from rmgpy.chem.molecule import Molecule
-from rmgpy.chem.pattern import MoleculePattern, InvalidAdjacencyListError
+from rmgpy.quantity import *
+from rmgpy.molecule import Molecule
+from rmgpy.group import Group, InvalidAdjacencyListError
 
 from reference import *
-
-pq.UnitQuantity('kilocalories', pq.cal*1e3, symbol='kcal')
-pq.UnitQuantity('kilojoules', pq.J*1e3, symbol='kJ')
-pq.UnitQuantity('kilomoles', pq.mol*1e3, symbol='kmol')
 
 ################################################################################
 
@@ -269,7 +266,7 @@ class Database:
         dictionary is a list of key-value pairs of a one-line string key and a
         multi-line string value. Each record is separated by at least one empty
         line. Returns a ``dict`` object with the values converted to
-        :class:`Molecule` or :class:`MoleculePattern` objects depending on the
+        :class:`Molecule` or :class:`Group` objects depending on the
         value of `pattern`.
         """
 
@@ -313,7 +310,7 @@ class Database:
         finally:
             if fdict: fdict.close()
 
-        # Convert the records in the dictionary to Molecule, MoleculePattern, or
+        # Convert the records in the dictionary to Molecule, Group, or
         # logical objects
         try:
             for label in self.entries:
@@ -324,7 +321,7 @@ class Database:
                     self.entries[label].item = makeLogicNode(' '.join(lines[1:]) )
                 # Otherwise convert adjacency list to molecule or pattern
                 elif pattern:
-                    self.entries[label].item = MoleculePattern().fromAdjacencyList(record)
+                    self.entries[label].item = Group().fromAdjacencyList(record)
                 else:
                     self.entries[label].item = Molecule().fromAdjacencyList(record)
         except InvalidAdjacencyListError, e:
@@ -387,11 +384,11 @@ class Database:
         # match of each children, so this makes it less likely to miss a
         # more detailed functional group
         # First determine if we can do the sort (that is, all children have
-        # one Molecule or MoleculePattern)
+        # one Molecule or Group)
         for label, entry in self.entries.iteritems():
             canSort = True
             for child in entry.children:
-                if not isinstance(child.item, Molecule) and not isinstance(child.item, MoleculePattern):
+                if not isinstance(child.item, Molecule) and not isinstance(child.item, Group):
                     canSort = False
             if canSort:
                 entry.children.sort(lambda x, y: cmp(len(x.item.atoms), len(y.item.atoms)))
@@ -552,7 +549,7 @@ class Database:
                 f.write(entry.label + '\n')
                 if isinstance(entry.item, Molecule):
                     f.write(entry.item.toAdjacencyList(removeH=True) + '\n')
-                elif isinstance(entry.item, MoleculePattern):
+                elif isinstance(entry.item, Group):
                     f.write(entry.item.toAdjacencyList() + '\n')
                 elif isinstance(entry.item, LogicAnd) or isinstance(entry.item, LogicOr):
                     f.write('%s\n\n' % (str(entry.item)))
@@ -884,7 +881,7 @@ class LogicOr(LogicNode):
             else:
                 structures.append(struct)
         for struct in structures: # check this worked
-            assert isinstance(struct,MoleculePattern)
+            assert isinstance(struct,Group)
         return structures
 
 class LogicAnd(LogicNode):

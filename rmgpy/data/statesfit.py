@@ -38,8 +38,8 @@ import numpy
 import scipy.special
 import logging
 
-import rmgpy.chem.constants as constants
-from rmgpy.chem.states import HarmonicOscillator, HinderedRotor
+from rmgpy.quantity import constants
+from rmgpy.statmech import HarmonicOscillator, HinderedRotor
 from pydqed import DQED
 
 ################################################################################
@@ -122,15 +122,15 @@ def fitStatesToHeatCapacity(Tlist, Cvlist, Nvib, Nrot, molecule=None):
 
     modes = []
     if Nvib > 0:
-        ho = HarmonicOscillator(frequencies=vib[:])
-        ho.frequencies.sort()
+        vib.sort()
+        ho = HarmonicOscillator(frequencies=(vib[:],"cm^-1"))
         modes.append(ho)
     for i in range(Nrot):
         freq = hind[i][0]
         barr = hind[i][1]
         inertia = (barr*constants.c*100.0*constants.h) / (8 * math.pi * math.pi * (freq*constants.c*100.0)**2)
         barrier = barr*constants.c*100.0*constants.h*constants.Na
-        hr = HinderedRotor(inertia=inertia, barrier=barrier, symmetry=1)
+        hr = HinderedRotor(inertia=(inertia*constants.Na*1e23,"amu*angstrom^2"), barrier=(barrier/1000.,"kJ/mol"), symmetry=1)
         modes.append(hr)
 
     # Return the fitted modes

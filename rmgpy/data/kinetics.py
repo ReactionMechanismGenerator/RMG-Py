@@ -35,10 +35,10 @@ import codecs
 
 from base import *
 
-from rmgpy.chem.reaction import Reaction, ReactionError
-from rmgpy.chem.kinetics import *
-from rmgpy.chem.pattern import BondPattern, MoleculePattern, ActionError
-from rmgpy.chem.molecule import Bond
+from rmgpy.reaction import Reaction, ReactionError
+from rmgpy.kinetics import *
+from rmgpy.group import GroupBond, Group
+from rmgpy.molecule import Bond
 
 ################################################################################
 
@@ -201,7 +201,7 @@ class ReactionRecipe:
         the structure should be labeled with the appropriate atom centers.
         """
 
-        pattern = isinstance(struct, MoleculePattern)
+        pattern = isinstance(struct, Group)
 
         for action in self.actions:
             if action[0] in ['CHANGE_BOND', 'FORM_BOND', 'BREAK_BOND']:
@@ -232,7 +232,7 @@ class ReactionRecipe:
                         atom2.applyAction(['CHANGE_BOND', label1, -info, label2])
                         bond.applyAction(['CHANGE_BOND', label1, -info, label2])
                 elif (action[0] == 'FORM_BOND' and doForward) or (action[0] == 'BREAK_BOND' and not doForward):
-                    bond = BondPattern(order=['S']) if pattern else Bond(order='S')
+                    bond = GroupBond(order=['S']) if pattern else Bond(order='S')
                     struct.addBond(atom1, atom2, bond)
                     atom1.applyAction(['FORM_BOND', label1, info, label2])
                     atom2.applyAction(['FORM_BOND', label1, info, label2])
@@ -314,7 +314,7 @@ def saveEntry(f, entry):
             f.write(product.toAdjacencyList(removeH=True))
             f.write('""",\n')
         f.write('    degeneracy = %i,\n' % (entry.item.degeneracy))
-    elif isinstance(entry.item, MoleculePattern):
+    elif isinstance(entry.item, Group):
         f.write('    group = \n')
         f.write('"""\n')
         f.write(entry.item.toAdjacencyList())
@@ -863,7 +863,7 @@ class KineticsGroups(Database):
         if group[0:3].upper() == 'OR{' or group[0:4].upper() == 'AND{' or group[0:7].upper() == 'NOT OR{' or group[0:8].upper() == 'NOT AND{':
             item = makeLogicNode(group)
         else:
-            item = MoleculePattern().fromAdjacencyList(group)
+            item = Group().fromAdjacencyList(group)
         self.entries[label] = Entry(
             index = index,
             label = label,
@@ -1087,8 +1087,8 @@ class KineticsGroups(Database):
         # Also copy structures so we don't modify the originals
         # Since the tagging has already occurred, both the reactants and the
         # products will have tags
-        if isinstance(reactantStructures[0], MoleculePattern):
-            reactantStructure = MoleculePattern()
+        if isinstance(reactantStructures[0], Group):
+            reactantStructure = Group()
         else:
             reactantStructure = Molecule()
         for s in reactantStructures:
@@ -1297,7 +1297,7 @@ class KineticsGroups(Database):
                 ismatch, map = reactant.findSubgraphIsomorphisms(child_structure)
                 if ismatch: mappings.extend(map)
             return len(mappings) > 0, mappings
-        elif isinstance(struct, MoleculePattern):
+        elif isinstance(struct, Group):
             return reactant.findSubgraphIsomorphisms(struct)
 
     def generateReactions(self, reactants, forward=True):
@@ -1548,7 +1548,7 @@ class KineticsGroups(Database):
             while entry.data is None and entry not in self.top:
                 entry = entry.parent
             if entry.data is not None and entry not in self.top:
-                kinetics *= entry.data
+                kinetics = self.__multiplyKineticsData(kinetics, entry.data)
 
         # Also include reaction-path degeneracy
         kinetics.kdata.values *= degeneracy
@@ -1702,6 +1702,23 @@ class KineticsGroups(Database):
                 entry.data = None
 
         return groupValues, groupUncertainties, groupCounts, kmodel
+    
+    def __multiplyKineticsData(self, kineticsData1, kineticsData2):
+        """
+        Multiply two :class:`KineticsData` objects `kineticsData1` and 
+        `kineticsData2` together, returning their sum as a new 
+        :class:`KineticsData` object.
+        """
+        if len(kineticsData1.Tdata.values) != len(kineticsData2.Tdata.values) or any([T1 != T2 for T1, T2 in zip(kineticsData1.Tdata.values, kineticsData2.Tdata.values)]):
+            raise KineticsError('Cannot add these KineticsData objects due to their having different temperature points.')
+        new = KineticsData(
+            Tdata = (kineticsData1.Tdata.values, kineticsData1.Tdata.units),
+            kdata = (kineticsData1.kdata.values * kineticsData2.kdata.values, kineticsData1.kdata.units),
+        )
+        if kineticsData1.comment == '': new.comment = kineticsData2.comment
+        elif kineticsData2.comment == '': new.comment = kineticsData1.comment
+        else: new.comment = kineticsData1.comment + ' + ' + kineticsData2.comment
+        return new
 
 ################################################################################
 
