@@ -134,7 +134,7 @@ def writeThermoEntry(species):
         string += '     ' * (4 - len(elements))
     else:
         string += '     ' * 4
-    string += 'G{0:<10.3f}{1:<10.3f}{2:<10.3f}{3:<8.2f}      1'.format(thermo.polynomials[0].Tmin.value, thermo.polynomials[1].Tmax.value, thermo.polynomials[0].Tmax.value)
+    string += 'G{0:<10.3f}{1:<10.3f}{2:<8.2f}      1'.format(thermo.polynomials[0].Tmin.value, thermo.polynomials[1].Tmax.value, thermo.polynomials[0].Tmax.value)
     if len(elements) > 4:
         string += '&\n'
         # Use the new-style Chemkin syntax for the element counts
@@ -144,13 +144,13 @@ def writeThermoEntry(species):
     string += '\n'
 
     # Line 2
-    string += '{0:<15.8E}{1:<15.8E}{2:<15.8E}{3:<15.8E}{4:<15.8E}    2\n'.format(thermo.polynomials[0].c0, thermo.polynomials[0].c1, thermo.polynomials[0].c2, thermo.polynomials[0].c3, thermo.polynomials[0].c4)
+    string += '{0:<15.8E}{1:<15.8E}{2:<15.8E}{3:<15.8E}{4:<15.8E}    2\n'.format(thermo.polynomials[1].c0, thermo.polynomials[1].c1, thermo.polynomials[1].c2, thermo.polynomials[1].c3, thermo.polynomials[1].c4)
 
     # Line 3
-    string += '{0:<15.8E}{1:<15.8E}{2:<15.8E}{3:<15.8E}{4:<15.8E}    3\n'.format(thermo.polynomials[0].c5, thermo.polynomials[0].c6, thermo.polynomials[1].c0, thermo.polynomials[1].c1, thermo.polynomials[1].c2)
+    string += '{0:<15.8E}{1:<15.8E}{2:<15.8E}{3:<15.8E}{4:<15.8E}    3\n'.format(thermo.polynomials[1].c5, thermo.polynomials[1].c6, thermo.polynomials[0].c0, thermo.polynomials[0].c1, thermo.polynomials[0].c2)
 
     # Line 4
-    string += '{0:<15.8E}{1:<15.8E}{2:<15.8E}{3:<15.8E}                   4\n'.format(thermo.polynomials[1].c3, thermo.polynomials[1].c4, thermo.polynomials[1].c5, thermo.polynomials[1].c6)
+    string += '{0:<15.8E}{1:<15.8E}{2:<15.8E}{3:<15.8E}                   4\n'.format(thermo.polynomials[0].c3, thermo.polynomials[0].c4, thermo.polynomials[0].c5, thermo.polynomials[0].c6)
 
     return string
 

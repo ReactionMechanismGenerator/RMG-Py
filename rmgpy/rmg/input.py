@@ -31,7 +31,7 @@
 import logging
 import quantities
 
-from rmgpy.chem.molecule import Molecule
+from rmgpy.molecule import Molecule
 
 from rmgpy.data.rmg import RMGDatabase
 

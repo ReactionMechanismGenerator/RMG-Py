@@ -90,7 +90,7 @@ import numpy
 import os.path
 import re
 
-from rmgpy.chem.molecule import *
+from rmgpy.molecule import *
 
 ################################################################################
 

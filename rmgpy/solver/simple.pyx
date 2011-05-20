@@ -36,7 +36,7 @@ from pydas cimport DASSL
 from base cimport ReactionSystem
 cimport cython
 
-import rmgpy.chem.constants as constants
+from rmgpy.quantity import constants
 
 cdef class SimpleReactor(ReactionSystem):
     """

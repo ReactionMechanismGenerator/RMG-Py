@@ -38,11 +38,9 @@ import numpy
 import os
 import os.path
 
-import rmgpy.chem.constants as constants
-import rmgpy.chem.species
-import rmgpy.chem.reaction
-from rmgpy.chem.thermo import Wilhoit, MultiNASA
-from rmgpy.chem.kinetics import Arrhenius, ArrheniusEP, Chebyshev, PDepArrhenius, ThirdBody
+from rmgpy.quantity import Quantity, constants
+import rmgpy.species
+from rmgpy.thermo import Wilhoit, MultiNASA
 
 from rmgpy.data.thermo import *
 from rmgpy.data.kinetics import *
@@ -51,14 +49,13 @@ from rmgpy.data.states import *
 import rmgpy.measure.network
 
 import settings
-from rxngen import generateReactions
 
 ################################################################################
 
-class Species(rmgpy.chem.species.Species):
+class Species(rmgpy.species.Species):
 
     def __init__(self, index=-1, label='', thermo=None, states=None, molecule=None, E0=0.0, lennardJones=None, molecularWeight=0.0, reactive=True):
-        rmgpy.chem.species.Species.__init__(self, index, label, thermo, states, molecule, E0, lennardJones, molecularWeight, reactive)
+        rmgpy.species.Species.__init__(self, index, label, thermo, states, molecule, E0, lennardJones, molecularWeight, reactive)
         self.coreSizeAtCreation = 0
 
     def __reduce__(self):
@@ -110,9 +107,12 @@ class Species(rmgpy.chem.species.Species):
 
         # Convert to desired thermo class
         thermo0 = self.thermo
-        self.thermo = convertThermoData(self.thermo, self.molecule[0], Wilhoit)
-        self.E0 = self.thermo.getEnthalpy(1.0)
-        self.thermo = convertThermoData(self.thermo, self.molecule[0], thermoClass)
+        linear = self.molecule[0].isLinear()
+        nRotors = self.molecule[0].countInternalRotors()
+        nFreq = 3 * len(self.molecule[0].atoms) - (5 if linear else 6) - nRotors
+        self.thermo = convertThermoModel(self.thermo, Wilhoit, linear=linear, nFreq=nFreq, nRotors=nRotors)
+        self.E0 = Quantity(self.thermo.getEnthalpy(1.0)/1000.0,"kJ/mol")
+        self.thermo = convertThermoModel(self.thermo, thermoClass, Tmin=100.0, Tmax=5000.0, Tint=1000.0)
         if self.thermo.__class__ != thermo0.__class__:
             # Compute RMS error of overall transformation
             Tlist = numpy.array([300.0, 400.0, 500.0, 600.0, 800.0, 1000.0, 1500.0], numpy.float64)
@@ -146,60 +146,28 @@ class Species(rmgpy.chem.species.Species):
         """
 
         count = sum([1 for atom in self.molecule[0].vertices if atom.isNonHydrogen()])
-        self.lennardJones = rmgpy.chem.species.LennardJones()
+        self.lennardJones = rmgpy.species.LennardJones()
 
         if count == 1:
-            self.lennardJones.sigma = 3.758e-10
-            self.lennardJones.epsilon = 148.6 * constants.kB
+            self.lennardJones.sigma = Quantity(3.758e-10,"m")
+            self.lennardJones.epsilon = Quantity(148.6 * constants.kB,"J")
         elif count == 2:
-            self.lennardJones.sigma = 4.443e-10
-            self.lennardJones.epsilon = 110.7 * constants.kB
+            self.lennardJones.sigma = Quantity(4.443e-10,"m")
+            self.lennardJones.epsilon = Quantity(110.7 * constants.kB,"J")
         elif count == 3:
-            self.lennardJones.sigma = 5.118e-10
-            self.lennardJones.epsilon = 237.1 * constants.kB
+            self.lennardJones.sigma = Quantity(5.118e-10,"m")
+            self.lennardJones.epsilon = Quantity(237.1 * constants.kB,"J")
         elif count == 4:
-            self.lennardJones.sigma = 4.687e-10
-            self.lennardJones.epsilon = 531.4 * constants.kB
+            self.lennardJones.sigma = Quantity(4.687e-10,"m")
+            self.lennardJones.epsilon = Quantity(531.4 * constants.kB,"J")
         elif count == 5:
-            self.lennardJones.sigma = 5.784e-10
-            self.lennardJones.epsilon = 341.1 * constants.kB
+            self.lennardJones.sigma = Quantity(5.784e-10,"m")
+            self.lennardJones.epsilon = Quantity(341.1 * constants.kB,"J")
         else:
-            self.lennardJones.sigma = 5.949e-10
-            self.lennardJones.epsilon = 399.3 * constants.kB
+            self.lennardJones.sigma = Quantity(5.949e-10,"m")
+            self.lennardJones.epsilon = Quantity(399.3 * constants.kB,"J")
 
-def convertThermoData(thermoData, molecule, thermoClass=MultiNASA):
-    """
-    Convert a given set of `thermoData` to the class specified by `thermoClass`.
-    Raises a :class:`TypeError` if this is not possible.
-    """
-
-    from rmgpy.chem.thermo import ThermoData, Wilhoit, MultiNASA
-    from rmgpy.chem.ext.thermo_converter import convertGAtoWilhoit, convertWilhoitToNASA
-
-    # Nothing to do if we already have the right thermo model
-    if isinstance(thermoData, thermoClass):
-        return thermoData
-
-    thermoData0 = thermoData
-
-    # Convert to Wilhoit
-    if isinstance(thermoData, ThermoData) and (thermoClass == Wilhoit or thermoClass == MultiNASA):
-        rotors = molecule.countInternalRotors()
-        atoms = len(molecule.atoms)
-        linear = molecule.isLinear()
-        thermoData = convertGAtoWilhoit(thermoData, atoms, rotors, linear)
-
-    # Convert to MultiNASA
-    if isinstance(thermoData, Wilhoit) and thermoClass == MultiNASA:
-        thermoData = convertWilhoitToNASA(thermoData, Tmin=298.0, Tmax=6000.0, Tint=1000.0)
-
-    # Make sure we have the right class
-    if not isinstance(thermoData, thermoClass):
-        raise TypeError('Unable to convert thermo model of type %s to type %s.' % (thermoData0.__class__, thermoClass))
-
-    return thermoData
-
-class PDepReaction(rmgpy.chem.reaction.Reaction):
+class PDepReaction(rmgpy.reaction.Reaction):
 
     def __init__(self, index=-1, reactants=None, products=None, network=None, kinetics=None, reversible=True, transitionState=None, thirdBody=False):
         rmgpy.chem.reaction.Reaction.__init__(self, index, reactants, products, kinetics, reversible, transitionState, thirdBody)
@@ -454,7 +422,7 @@ class PDepNetwork(rmgpy.measure.network.Network):
         Regenerate the :math:`k(T,P)` values for this partial network if the
         network is marked as invalid.
         """
-        from rmgpy.chem.kinetics import Arrhenius, KineticsData
+        from rmgpy.kinetics import Arrhenius, KineticsData
         from rmgpy.measure.collision import SingleExponentialDownModel
         from rmgpy.measure.reaction import fitInterpolationModel
         import rmgpy.measure.settings
@@ -493,11 +461,19 @@ class PDepNetwork(rmgpy.measure.network.Network):
             if rxn.kinetics is None:
                 raise Exception('Path reaction "%s" in PDepNetwork #%i has no kinetics!' % (rxn, self.index))
             elif isinstance(rxn.kinetics, KineticsData):
-                rxn.kinetics = Arrhenius().fitToData(Tlist=rxn.kinetics.Tdata.values, klist=rxn.kinetics.kdata.values)
+                if len(rxn.reactants) == 1:
+                    kunits = 's^-1'
+                elif len(rxn.reactants) == 2:
+                    kunits = 'm^3/(mol*s)'
+                elif len(rxn.reactants) == 3:
+                    kunits = 'm^6/(mol^2*s)'
+                else:
+                    kunits = ''
+                rxn.kinetics = Arrhenius().fitToData(Tlist=rxn.kinetics.Tdata.values, klist=rxn.kinetics.kdata.values, kunits=kunits)
             elif not isinstance(rxn.kinetics, Arrhenius):
                 raise Exception('Path reaction "%s" in PDepNetwork #%i has invalid kinetics type "%s".' % (rxn, rxn.kinetics.__class__))
-            rxn.transitionState = rmgpy.chem.species.TransitionState(
-                E0=sum([spec.E0 for spec in rxn.reactants]) + rxn.kinetics.Ea.value,
+            rxn.transitionState = rmgpy.species.TransitionState(
+                E0=((sum([spec.E0.value for spec in rxn.reactants]) + rxn.kinetics.Ea.value)/1000.,"kJ/mol"),
             )
 
         # Determine reversibility of reactions
@@ -687,7 +663,7 @@ class CoreEdgeReactionModel:
         spec = Species(index=self.speciesCounter+1, label=label, molecule=[molecule], reactive=reactive)
         spec.coreSizeAtCreation = len(self.core.species)
         spec.generateResonanceIsomers()
-        spec.molecularWeight = spec.molecule[0].getMolecularWeight()
+        spec.molecularWeight = Quantity(spec.molecule[0].getMolecularWeight()*1000.,"g/mol")
         spec.generateLennardJonesParameters()
         formula = molecule.getFormula()
         if formula in self.speciesDict:
@@ -1516,5 +1492,5 @@ class CoreEdgeReactionModel:
         """
         Save a Chemkin file for the current model core to `path`.
         """
-        from rmgpy.chem.chemkin import saveChemkinFile
+        from rmgpy.chemkin import saveChemkinFile
         saveChemkinFile(path, self.core.species, self.core.reactions)
