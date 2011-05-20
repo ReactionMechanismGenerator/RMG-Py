@@ -72,7 +72,7 @@ def saveOutputHTML(path, reactionModel):
 
     # Draw molecules if necessary
     for spec in reactionModel.core.species:
-        fstr = os.path.join(dirname, 'species', '%s.png' % (spec))
+        fstr = os.path.join(dirname, 'species', '{0}.png'.format(spec))
         if not os.path.exists(fstr):
             drawMolecule(spec.molecule[0], fstr)
 
