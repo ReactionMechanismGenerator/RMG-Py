@@ -378,6 +378,8 @@ class Reaction:
             k *= self.calculateWignerTunnelingCorrection(T)
         elif tunneling.lower() == 'eckart':
             k *= self.calculateEckartTunnelingCorrection(T)
+        # Add in reaction path degeneracy
+        k *= self.degeneracy
         return k
     
     def calculateWignerTunnelingCorrection(self, T):
@@ -443,10 +445,10 @@ class Reaction:
         frequency = abs(self.transitionState.frequency.value)
         
         # Calculate intermediate constants
-        dV1 = self.transitionState.E0 - sum([spec.E0 for spec in self.reactants]) # [=] J/mol
+        dV1 = self.transitionState.E0.value - sum([spec.E0.value for spec in self.reactants]) # [=] J/mol
         #if all([spec.states is not None for spec in self.products]):
             # Product data available, so use asymmetric Eckart correction
-        dV2 = self.transitionState.E0 - sum([spec.E0 for spec in self.products]) # [=] J/mol
+        dV2 = self.transitionState.E0.value - sum([spec.E0.value for spec in self.products]) # [=] J/mol
         #else:
             ## Product data not available, so use asymmetric Eckart correction
             #dV2 = dV1
