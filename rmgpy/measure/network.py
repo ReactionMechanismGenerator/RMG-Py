@@ -663,6 +663,8 @@ class Network:
             surface = cairo.PDFSurface(fstr, width, height)
         elif ext == '.ps':
             surface = cairo.PSSurface(fstr, width, height)
+        elif ext == '.png':
+            surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, int(width), int(height))
         else:
             logging.warning('Unknown format for target "{0}"; not drawing potential energy surface.'.format(fstr))
             return
@@ -787,6 +789,13 @@ class Network:
         # Some global settings
         cr.select_font_face("sans")
         cr.set_font_size(10)
+
+        # If we are drawing a PNG, first fill the background with white
+        ext = os.path.splitext(fstr)[1].lower()
+        if ext == '.png':
+            cr.set_source_rgba(1.0, 1.0, 1.0, 1.0)
+            cr.rectangle(0, 0, width, height)
+            cr.fill()
         
         # Draw path reactions
         for rxn in self.pathReactions:
@@ -879,7 +888,11 @@ class Network:
                 cr.restore()
 
         # Finish Cairo drawing
-        surface.finish()
+        ext = os.path.splitext(fstr)[1].lower()
+        if ext == '.png':
+            surface.write_to_png(fstr)
+        else:
+            surface.finish()
 
     def __drawText(self, text, ext, padding=0):
         """
@@ -888,7 +901,7 @@ class Network:
         surface is dictated by the `ext` parameter.
         """
 
-        from rmgpy.chem.ext.molecule_draw import createNewSurface, fontSizeNormal
+        from rmgpy.molecule_draw import createNewSurface, fontSizeNormal
         import cairo
 
         surface0 = createNewSurface(type=ext[1:])
@@ -915,7 +928,7 @@ class Network:
         will be used.
         """
 
-        from rmgpy.chem.ext.molecule_draw import createNewSurface, drawMolecule
+        from rmgpy.molecule_draw import createNewSurface, drawMolecule
         import cairo
         
         # Determine whether or not to use the molecular structures in the
