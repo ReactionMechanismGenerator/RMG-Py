@@ -690,29 +690,16 @@ class Network:
             logging.warning('Cairo not found; potential energy surface will not be drawn.')
             return
 
-        # Determine order of wells based on order of path reactions, but put
-        # all the unimolecular isomer wells first
+        # The order of wells is as follows:
+        #   - Reactant channels come first (to the left)
+        #   - Isomers are in the middle
+        #   - Product channels come last (to the right)
+        # This is done because most people will read the PES from left to right
         wells = []
-        for isomer in self.isomers: wells.append([isomer])
-        for rxn in self.pathReactions:
-            if rxn.reactants not in wells:
-                if len(rxn.products) == 1 and rxn.products[0] in self.isomers:
-                    if self.isomers.index(rxn.products[0]) < len(self.isomers) / 2:
-                        wells.insert(0, rxn.reactants)
-                    else:
-                        wells.append(rxn.reactants)
-                else:
-                    wells.append(rxn.reactants)
-            if rxn.products not in wells:
-                if rxn.products in self.products:
-                    wells.append(rxn.products)
-                elif len(rxn.reactants) == 1 and rxn.reactants[0] in self.isomers:
-                    if self.isomers.index(rxn.reactants[0]) < len(self.isomers) / 2:
-                        wells.insert(0, rxn.products)
-                    else:
-                        wells.append(rxn.products)
-                else:
-                    wells.append(rxn.products)
+        wells.extend(self.reactants)
+        for isomer in self.isomers:
+            wells.append([isomer])
+        wells.extend(self.products)
         
         # Drawing parameters
         padding_left = 96.0
