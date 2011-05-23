@@ -312,15 +312,25 @@ def fitInterpolationModel(reaction, Tlist, Plist, K, model, Tmin, Tmax, Pmin, Pm
     it is optional.
     """
 
+    # Determine units for k(T,P)
+    if len(reaction.reactants) == 1:
+        kunits = 's^-1'
+    elif len(reaction.reactants) == 2:
+        kunits = 'm^3/(mol*s)'
+    elif len(reaction.reactants) == 3:
+        kunits = 'm^6/(mol^2*s)'
+    else:
+        kunits = ''
+
     # Set/update the net reaction kinetics using interpolation model
     if model[0].lower() == 'chebyshev':
         modelType, degreeT, degreeP = model
         chebyshev = Chebyshev()
-        chebyshev.fitToData(Tlist, Plist, K, degreeT, degreeP, Tmin, Tmax, Pmin, Pmax)
+        chebyshev.fitToData(Tlist, Plist, K, kunits, degreeT, degreeP, Tmin, Tmax, Pmin, Pmax)
         kinetics = chebyshev
     elif model[0].lower() == 'pdeparrhenius':
         pDepArrhenius = PDepArrhenius()
-        pDepArrhenius.fitToData(Tlist, Plist, K, kunits='', T0=298.0)
+        pDepArrhenius.fitToData(Tlist, Plist, K, kunits=kunits, T0=298.0)
         kinetics = pDepArrhenius
     else:
         return None

@@ -661,6 +661,7 @@ class TestChebyshev(unittest.TestCase):
         coeffs = numpy.array([[1.0,2.0,3.0], [4.0,5.0,6.0], [7.0,8.0,9.0], [10.0,11.0,12.0]], numpy.float64)
         self.kinetics = Chebyshev(
             coeffs = coeffs,
+            kunits = 'm^3/(mol*s)',
             Tmin = (300.0,"K"), 
             Tmax = (2000.0,"K"), 
             Pmin = (0.1,"bar"), 
@@ -702,7 +703,7 @@ class TestChebyshev(unittest.TestCase):
         for t in range(len(Tdata)):
             for p in range(len(Pdata)):
                 kdata[t,p] = self.kinetics.getRateCoefficient(Tdata[t], Pdata[p])
-        kinetics = Chebyshev().fitToData(Tdata, Pdata, kdata, degreeT=6, degreeP=4, Tmin=300, Tmax=1500, Pmin=1e4, Pmax=1e6)
+        kinetics = Chebyshev().fitToData(Tdata, Pdata, kdata, kunits=self.kinetics.kunits, degreeT=6, degreeP=4, Tmin=300, Tmax=1500, Pmin=1e4, Pmax=1e6)
         for t in range(len(Tdata)):
             for p in range(len(Pdata)):
                 self.assertAlmostEqual(kinetics.getRateCoefficient(Tdata[t], Pdata[p]) / kdata[t,p], 1, 4)
@@ -719,6 +720,7 @@ class TestChebyshev(unittest.TestCase):
         degreeT = 4; degreeP = 3
         self.assertEqual(self.kinetics.coeffs.shape[0], degreeT)
         self.assertEqual(self.kinetics.coeffs.shape[1], degreeP)
+        self.assertEqual(self.kinetics.kunits, kinetics.kunits)
         self.assertEqual(self.kinetics.degreeT, degreeT)
         self.assertEqual(self.kinetics.degreeP, degreeP)
         self.assertEqual(kinetics.coeffs.shape[0], degreeT)
@@ -750,6 +752,7 @@ class TestChebyshev(unittest.TestCase):
         degreeT = 4; degreeP = 3
         self.assertEqual(self.kinetics.coeffs.shape[0], degreeT)
         self.assertEqual(self.kinetics.coeffs.shape[1], degreeP)
+        self.assertEqual(self.kinetics.kunits, kinetics.kunits)
         self.assertEqual(self.kinetics.degreeT, degreeT)
         self.assertEqual(self.kinetics.degreeP, degreeP)
         self.assertEqual(kinetics.coeffs.shape[0], degreeT)

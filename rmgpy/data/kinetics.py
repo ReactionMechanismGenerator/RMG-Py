@@ -402,6 +402,7 @@ def saveEntry(f, entry):
         for i in range(entry.data.degreeT):
             f.write('            [{0}],\n'.format(','.join(['{0:g}'.format(self.coeffs[i,j]) for j in range(self.degreeP)])))
         f.write('        ],\n')
+        f.write('        kunits = {0},\n'.format(entry.data.kunits))
         if entry.data.Tmin is not None: f.write('        Tmin = {0!r},\n'.format(entry.data.Tmin))
         if entry.data.Tmax is not None: f.write('        Tmax = {0!r},\n'.format(entry.data.Tmax))
         if entry.data.Pmin is not None: f.write('        Pmin = {0!r},\n'.format(entry.data.Pmin))

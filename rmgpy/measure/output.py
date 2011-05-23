@@ -176,6 +176,7 @@ def writePDepReaction(f, rxn):
             for t in range(rxn.kinetics.degreeT):
                 f.write('            [{0}],\n'.format(', '.join([('{0:g}'.format(rxn.kinetics.coeffs[t,p])) for p in range(rxn.kinetics.degreeP)])))
             f.write('        ],\n')
+            f.write('        kunits="{0}",\n'.format(rxn.kinetics.kunits))
             f.write('    ),\n')
         elif isinstance(rxn.kinetics, PDepArrhenius):
             f.write('    kinetics=PDepArrhenius(\n')

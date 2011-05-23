@@ -592,13 +592,14 @@ class Chebyshev(KineticsModel):
     Attribute       Type            Description
     =============== =============== ============================================
     `coeffs`        :class:`list`   Matrix of Chebyshev coefficients
+    `kunits`        ``str``         The units of the generated k(T, P) values
     `degreeT`       :class:`int`    The number of terms in the inverse temperature direction
     `degreeP`       :class:`int`    The number of terms in the log pressure direction
     =============== =============== ============================================
     
     """
 
-    def __init__(self, coeffs=None, Tmin=None, Tmax=None, Pmin=None, Pmax=None, comment=''):
+    def __init__(self, coeffs=None, kunits='', Tmin=None, Tmax=None, Pmin=None, Pmax=None, comment=''):
         KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, comment=comment)
         if coeffs is not None:
             self.coeffs = Quantity(numpy.array(coeffs, numpy.float64)).values
@@ -608,7 +609,8 @@ class Chebyshev(KineticsModel):
             self.coeffs = None
             self.degreeT = 0
             self.degreeP = 0
-
+        self.kunits = kunits
+        
     def __repr__(self):
         """
         Return a string representation that can be used to reconstruct the
@@ -621,6 +623,7 @@ class Chebyshev(KineticsModel):
         coeffs += ']'
         
         string = 'Chebyshev(coeffs={0}'.format(coeffs)
+        if self.kunits != '': string += ', kunits="{0}"'.format(self.kunits)
         if self.Tmin is not None: string += ', Tmin={0!r}'.format(self.Tmin)
         if self.Tmax is not None: string += ', Tmax={0!r}'.format(self.Tmax)
         if self.Pmin is not None: string += ', Pmin={0!r}'.format(self.Pmin)
@@ -633,7 +636,7 @@ class Chebyshev(KineticsModel):
         """
         A helper function used when pickling a Chebyshev object.
         """
-        return (Chebyshev, (self.coeffs, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.comment))
+        return (Chebyshev, (self.coeffs, self.kunits, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.comment))
 
     def isPressureDependent(self):
         """
@@ -705,7 +708,7 @@ class Chebyshev(KineticsModel):
                 k += self.coeffs[t,p] * self.__chebyshev(t, Tred) * self.__chebyshev(p, Pred)
         return 10.0**k
 
-    def fitToData(self, Tlist, Plist, K, degreeT, degreeP, Tmin, Tmax, Pmin, Pmax):
+    def fitToData(self, Tlist, Plist, K, kunits, degreeT, degreeP, Tmin, Tmax, Pmin, Pmax):
         """
         Fit a Chebyshev kinetic model to a set of rate coefficients `K`, which
         is a matrix corresponding to the temperatures `Tlist` in K and pressures
@@ -722,7 +725,7 @@ class Chebyshev(KineticsModel):
 
         nT = len(Tlist); nP = len(Plist)
 
-        self.degreeT = degreeT; self.degreeP = degreeP
+        self.kunits = kunits; self.degreeT = degreeT; self.degreeP = degreeP
 
         # Set temperature and pressure ranges
         self.Tmin = Quantity(Tmin,"K"); self.Tmax = Quantity(Tmax,"K")
