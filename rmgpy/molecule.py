@@ -832,7 +832,7 @@ class Molecule(Graph):
         ``.ps``; of these, the first is a raster format and the remainder are
         vector formats.
         """
-        from ext.molecule_draw import drawMolecule
+        from molecule_draw import drawMolecule
         drawMolecule(self, path=path)
 
     def fromCML(self, cmlstr, implicitH=False):
