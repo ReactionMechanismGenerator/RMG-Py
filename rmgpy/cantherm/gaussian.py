@@ -201,7 +201,7 @@ class GaussianLog:
                     elif 'Rotational constant (GHZ):' in line:
                         inertia = [float(line.split()[3])]
                         inertia[0] = constants.h / (8 * constants.pi * constants.pi * inertia[0] * 1e9) *constants.Na*1e23
-                        rotation = RigidRotor(linear=True, inertia=(inertia,"amu*angstrom^2"), symmetry=symmetry)
+                        rotation = RigidRotor(linear=True, inertia=(inertia[0],"amu*angstrom^2"), symmetry=symmetry)
                         modes.append(rotation)
 
                     # Read vibrational modes

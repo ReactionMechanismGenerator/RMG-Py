@@ -251,7 +251,8 @@ class RigidRotor(Mode):
         """
         cython.declare(theta=cython.double, inertia=cython.double)
         if self.linear:
-            theta = constants.h * constants.h / (8 * constants.pi * constants.pi * self.inertia.values[0] * constants.kB)
+            inertia = self.inertia.value
+            theta = constants.h * constants.h / (8 * constants.pi * constants.pi * inertia * constants.kB)
             return T / theta / self.symmetry
         else:
             theta = 1.0
@@ -334,7 +335,8 @@ class RigidRotor(Mode):
         """
         cython.declare(theta=cython.double, inertia=cython.double)
         if self.linear:
-            theta = constants.h * constants.h / (8 * constants.pi * constants.pi * self.inertia.values[0]) * constants.Na
+            inertia = self.inertia.value
+            theta = constants.h * constants.h / (8 * constants.pi * constants.pi * inertia) * constants.Na
             return numpy.ones_like(Elist) / theta / self.symmetry
         else:
             theta = 1.0
