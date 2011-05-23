@@ -110,13 +110,20 @@ def States(rotationalConstants=None, symmetry=1, frequencies=None,
             modes.append(HinderedRotor(inertia, barrier, symmetry))
     return StatesModel(modes, spinMultiplicity)
 
-def reaction(reactants, products, kinetics=None, reversible=True, transitionState=None):
+def addIsomer(species):
+    global network
+    network.isomers.append(species)
+
+def addReactants(speciesA, speciesB):
+    global network
+    network.reactants.append([speciesA, speciesB])
+
+def reaction(reactants, products, kinetics=None, transitionState=None):
     global network
     try:
         rxn = Reaction(
-            reactants = [speciesDict[label] for label in reactants],
-            products = [speciesDict[label] for label in products],
-            reversible = reversible,
+            reactants = reactants,
+            products = products,
             kinetics=kinetics,
             transitionState=transitionState,
         )
@@ -127,7 +134,7 @@ def reaction(reactants, products, kinetics=None, reversible=True, transitionStat
     logging.debug('Found reaction "{0}"'.format(rxn))
 
 def collisionModel(type, parameters, bathGas):
-    global network, speciesDict
+    global network
     if type.lower() == 'single exponential down':
 
         # Process parameters, making sure we have a valid set
@@ -155,7 +162,7 @@ def collisionModel(type, parameters, bathGas):
     # Set bath gas composition
     network.bathGas = {}
     for key, value in bathGas.iteritems():
-        network.bathGas[speciesDict[key]] = float(value)
+        network.bathGas[key] = float(value)
     # Normalize bath gas composition
     for key in network.bathGas:
         network.bathGas[key] /= sum(network.bathGas.values())
@@ -358,6 +365,8 @@ def readInput(path):
         'species': species,
         'States': States,
         'LennardJones': LennardJones,
+        'isomer': addIsomer,
+        'reactants': addReactants,
         'reaction': reaction,
         'Arrhenius': Arrhenius,
         'TransitionState': TransitionState,
@@ -420,6 +429,18 @@ def readInput(path):
         if method == '':
             raise InputError('No method() block found.')
 
+        # Convert string labels to Species objects
+        network.isomers = [speciesDict[label] for label in network.isomers]
+        network.reactants = [[speciesDict[label] for label in reactants] for reactants in network.reactants]
+        network.bathGas = dict([(speciesDict[label],value) for label, value in network.bathGas.iteritems()])
+        for reactants in network.reactants:
+            reactants.sort()
+        for rxn in network.pathReactions:
+            rxn.reactants = [speciesDict[label] for label in rxn.reactants]
+            rxn.reactants.sort()
+            rxn.products = [speciesDict[label] for label in rxn.products]
+            rxn.products.sort()
+            
         # Figure out which configurations are isomers, reactant channels, and product channels
         for rxn in network.pathReactions:
             # Sort bimolecular configurations so that we always encounter them in the
@@ -427,24 +448,19 @@ def readInput(path):
             # The actual order doesn't matter, as long as it is consistent
             rxn.reactants.sort()
             rxn.products.sort()
-            # Reactants:
-            # - All unimolecular configurations are automatically isomers
-            # - All bimolecular configurations are automatically reactant channels
-            if len(rxn.reactants) == 1 and rxn.reactants[0] not in network.isomers:
-                network.isomers.append(rxn.reactants[0])
-            elif len(rxn.reactants) > 1 and rxn.reactants not in network.reactants:
-                network.reactants.append(rxn.reactants)
-            # Products:
-            # - If reversible, the same actions are taken as for the reactants
-            # - If irreversible, configurations are treated as products
-            if rxn.reversible:
-                if len(rxn.products) == 1 and rxn.products[0] not in network.isomers:
-                    network.isomers.append(rxn.products[0])
-                elif len(rxn.products) > 1 and rxn.products not in network.reactants:
-                    network.reactants.append(rxn.products)
-            elif rxn.products not in network.products:
+            # All reactant configurations not already defined as reactants or 
+            # isomers are assumed to be product channels
+            if len(rxn.reactants) == 1 and rxn.reactants[0] not in network.isomers and rxn.reactants not in network.products:
+                network.products.append(rxn.reactants)
+            elif len(rxn.reactants) > 1 and rxn.reactants not in network.reactants and rxn.reactants not in network.products:
+                network.products.append(rxn.reactants)
+            # All product configurations not already defined as reactants or 
+            # isomers are assumed to be product channels
+            if len(rxn.products) == 1 and rxn.products[0] not in network.isomers and rxn.products not in network.products:
                 network.products.append(rxn.products)
-        
+            elif len(rxn.products) > 1 and rxn.products not in network.reactants and rxn.products not in network.products:
+                network.products.append(rxn.products)
+                
         # For each configuration with states data but not thermo data,
         # calculate the thermo data
         for isomer in network.isomers:
@@ -479,24 +495,40 @@ def readInput(path):
 
         for rxn in network.pathReactions:
             errorString0 = ''
-            # All reactions must have either high-pressure-limit kinetics or transition state data
-            if rxn.kinetics is None and rxn.transitionState.states is None:
-                errorString0 += '    Unable to determine microcanonical rate k(E); you must specify either the high-P kinetics or transition state molecular degrees of freedom.\n'
-
-            if rxn.reversible:
-                # All reversible reactions must have thermo for both reactants and products
-                for spec in rxn.reactants:
-                    if spec.thermo is None:
-                        errorString0 += '    Unable to determine thermo data for reactant "{0}"; you must specify a thermodynamics model.\n'.format(spec)
-                for spec in rxn.products:
-                    if spec.thermo is None:
-                        errorString0 += '    Unable to determine thermo data for product "{0}"; you must specify a thermodynamics model.\n'.format(spec)
+            
+            # If both the reactants and the products are product channels, then the path reaction is invalid
+            if rxn.reactants in network.products and rxn.products in network.products:
+                errorString0 += '    Both the reactants and the products are product channels.\n'
+            
+            # Reactions of the form A + B -> C + D are not allowed
+            elif len(rxn.reactants) > 1 and len(rxn.products) > 1:
+                errorString0 += '    Both the reactants and the products are bimolecular.\n'
+                
+            # The remaining errors are only meaningful if the path reaction is allowed
             else:
-                # All irreversible reactions must have states data for reactants
-                for spec in rxn.reactants:
-                    if spec.states is None:
-                        errorString0 += '    Required molecular degree of freedom data for reactant "{0}" was not provided.\n'.format(spec)
+                
+                # All reactions must have either high-pressure-limit kinetics or transition state data
+                if rxn.kinetics is None and rxn.transitionState.states is None:
+                    errorString0 += '    Unable to determine microcanonical rate k(E); you must specify either the high-P kinetics or transition state molecular degrees of freedom.\n'
 
+                # Certain reactions require that both reactants and products have thermo data
+                thermoRequired = False
+                if rxn.reactants not in network.products and rxn.products not in network.products:
+                    # Both reactants and products are isomers or reactant channels
+                    # The reaction must have thermo for both reactants and products
+                    thermoRequired = True
+                elif rxn.reactants in network.products and rxn.kinetics is not None and rxn.transitionState.states is None:
+                    # The reactants are product channels, and we will be using the ILT method to get k(E)
+                    # We will need the thermodynamics to generate the reverse k(T) and k(E)
+                    thermoRequired = True
+                if thermoRequired:
+                    for spec in rxn.reactants:
+                        if spec.thermo is None:
+                            errorString0 += '    Unable to determine thermo data for reactant "{0}"; you must specify a thermodynamics model.\n'.format(spec)
+                    for spec in rxn.products:
+                        if spec.thermo is None:
+                            errorString0 += '    Unable to determine thermo data for product "{0}"; you must specify a thermodynamics model.\n'.format(spec)
+                
             if errorString0 != '':
                 errorString += 'For path reaction "{0}":\n{1}'.format(rxn, errorString0)
 

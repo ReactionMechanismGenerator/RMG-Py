@@ -87,6 +87,21 @@ def writeStates(f, states, prefix=''):
 
 ################################################################################
 
+def writeNetworkConfigurations(f, network):
+    """
+    Write all configurations in the given unimolecular reaction `network` to a
+    file object `f`.
+    """
+    # Write isomer configurations
+    for isomer in network.isomers:
+        f.write('isomer("{0}")\n\n'.format(isomer.label))
+    # Write reactant configurations
+    for reactants in network.reactants:
+        f.write('reactants("{0}", "{1}")\n\n'.format(reactants[0].label, reactants[1].label))
+    # No need to write product configurations, as these are assumed
+
+################################################################################
+
 def writeNetworkSpecies(f, network):
     """
     Write all species in the given unimolecular reaction `network` to a file
@@ -253,7 +268,10 @@ def writeOutput(path, network, Tlist, Plist, Elist, method, model):
     # Write each species to file
     writeNetworkSpecies(f, network)
     f.write('################################################################################\n\n')
-
+    # Write each configuration to file
+    writeNetworkConfigurations(f, network)
+    f.write('################################################################################\n\n')
+    
     # Write each net reaction to file
     writeNetworkNetReactions(f, network)
     
@@ -303,6 +321,9 @@ def writeInput(path, network, Tlist, Plist, Elist, method, model):
     
     # Write each species to file
     writeNetworkSpecies(f, network)
+    f.write('################################################################################\n\n')
+    # Write each configuration to file
+    writeNetworkConfigurations(f, network)
     f.write('################################################################################\n\n')
     # Write each path reaction to file
     writeNetworkPathReactions(f, network)
