@@ -69,19 +69,43 @@ def writeStates(f, states, prefix=''):
     adjust the indentation.
     """
     f.write(prefix + 'states=States(\n')
+    
+    # Sort modes into rotational, vibrational, and torsional categories
+    rotations = []; vibrations = []; torsions = []
     for mode in states.modes:
         if isinstance(mode, RigidRotor):
-            f.write(prefix + '    rotationalConstants={0!r},\n'.format(mode.inertia))
-            f.write(prefix + '    symmetry={0:d},\n'.format(mode.symmetry))
+            rotations.append(mode)
         elif isinstance(mode, HarmonicOscillator):
-            f.write(prefix + '    frequencies={0!r},\n'.format(mode.frequencies))
-            f.write(prefix + '    frequencyScaleFactor=1.0,\n')
-    if any([isinstance(mode, HinderedRotor) for mode in states.modes]):
-        f.write(prefix + '    hinderedRotors=[\n')
-        for mode in states.modes:
-            if isinstance(mode, HinderedRotor):
-                f.write(prefix + '        ({0!r}, {1!r}, {2:d}),\n'.format(mode.inertia, mode.barrier, mode.symmetry))
+            vibrations.append(mode)
+        elif isinstance(mode, HinderedRotor):
+            torsions.append(mode)
+    
+    # Write rotational modes
+    if len(rotations) == 1:
+        f.write(prefix + '    rotations={0!r},\n'.format(rotations[0]))
+    elif len(rotations) > 1:
+        f.write(prefix + '    rotations=[\n')
+        for rotation in rotations:
+            f.write(prefix + '        {0!r},\n'.format(rotation))
         f.write(prefix + '    ],\n')
+    
+    # Write vibrational modes
+    if len(vibrations) == 1:
+        f.write(prefix + '    vibrations={0!r},\n'.format(vibrations[0]))
+    elif len(rotations) > 1:
+        f.write(prefix + '    vibrations=[\n')
+        for vibration in vibrations:
+            f.write(prefix + '        {0!r},\n'.format(vibration))
+        f.write(prefix + '    ],\n')
+    
+    # Write torsional modes
+    f.write(prefix + '    torsions=[\n')
+    for torsion in torsions:
+        f.write(prefix + '        {0!r},\n'.format(torsion))
+    f.write(prefix + '    ],\n')
+    
+    # Write other parameters
+    f.write(prefix + '    frequencyScaleFactor=1.0,\n')
     f.write(prefix + '    spinMultiplicity={0:d},\n'.format(states.spinMultiplicity))
     f.write(prefix + '),\n')
 

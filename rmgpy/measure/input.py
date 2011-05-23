@@ -96,18 +96,26 @@ def species(label='', E0=None, states=None, thermo=None, lennardJones=None, mole
     if spec.molecularWeight.value == 0.0 and spec.molecule is not None and len(spec.molecule) > 0:
         spec.molecularWeight = Quantity(spec.molecule[0].getMolecularWeight(),"kg/mol")
 
-def States(rotationalConstants=None, symmetry=1, frequencies=None, 
-  frequencyScaleFactor=1.0, hinderedRotors=None, spinMultiplicity=1):
+def States(rotations=None, vibrations=None, torsions=None, frequencyScaleFactor=1.0, spinMultiplicity=1):
     modes = []
-    if rotationalConstants is not None:
-        inertia = rotationalConstants
-        linear = len(inertia)==1
-        modes.append(RigidRotor(linear, inertia, symmetry))
-    if frequencies is not None: 
-        modes.append(HarmonicOscillator(frequencies))
-    if hinderedRotors is not None: 
-        for inertia, barrier, symmetry in hinderedRotors:
-            modes.append(HinderedRotor(inertia, barrier, symmetry))
+    if rotations is not None:
+        if isinstance(rotations, list) or isinstance(rotations, tuple):
+            modes.extend(rotations)
+        else:
+            modes.append(rotations)
+    if vibrations is not None:
+        if isinstance(vibrations, list) or isinstance(vibrations, tuple):
+            modes.extend(vibrations)
+        else:
+            modes.append(vibrations)
+    if torsions is not None:
+        if isinstance(torsions, list) or isinstance(torsions, tuple):
+            modes.extend(torsions)
+        else:
+            modes.append(torsions)
+    for mode in modes:
+        if isinstance(mode, HarmonicOscillator):
+            mode.frequencies.values *= frequencyScaleFactor
     return StatesModel(modes, spinMultiplicity)
 
 def addIsomer(species):
@@ -364,6 +372,9 @@ def readInput(path):
         'False': False,
         'species': species,
         'States': States,
+        'RigidRotor': RigidRotor,
+        'HarmonicOscillator': HarmonicOscillator,
+        'HinderedRotor': HinderedRotor,
         'LennardJones': LennardJones,
         'isomer': addIsomer,
         'reactants': addReactants,
