@@ -36,6 +36,7 @@ between the input and output file syntax.
 
 import logging
 import os.path
+import time
 
 from rmgpy.thermo import *
 from rmgpy.kinetics import *
@@ -43,6 +44,21 @@ from rmgpy.statmech import *
 
 from collision import *
 
+################################################################################
+
+def writeNetworkMetadata(f, network):
+    """
+    Write the metadata for the `network` to the given file object `f`.
+    """
+    if network.title != '' and network.title != 'Untitled':
+        f.write('title = "{0}"\n'.format(network.title))
+    if network.description != '':
+        f.write('description = \\\n')
+        f.write('"""\n')
+        f.write('{0}\n'.format(network.description))
+        f.write('"""\n')
+    f.write('\n')
+    
 ################################################################################
 
 def writeStates(f, states, prefix=''):
@@ -53,21 +69,60 @@ def writeStates(f, states, prefix=''):
     adjust the indentation.
     """
     f.write(prefix + 'states=States(\n')
+    
+    # Sort modes into rotational, vibrational, and torsional categories
+    rotations = []; vibrations = []; torsions = []
     for mode in states.modes:
         if isinstance(mode, RigidRotor):
-            f.write(prefix + '    rotationalConstants={0!r},\n'.format(mode.inertia))
-            f.write(prefix + '    symmetry={0:d},\n'.format(mode.symmetry))
+            rotations.append(mode)
         elif isinstance(mode, HarmonicOscillator):
-            f.write(prefix + '    frequencies={0!r},\n'.format(mode.frequencies))
-            f.write(prefix + '    frequencyScaleFactor=1.0,\n')
-    if any([isinstance(mode, HinderedRotor) for mode in states.modes]):
-        f.write(prefix + '    hinderedRotors=[\n')
-        for mode in states.modes:
-            if isinstance(mode, HinderedRotor):
-                f.write(prefix + '        ({0!r}, {1!r}, {2:d}),\n'.format(mode.inertia, mode.barrier, mode.symmetry))
+            vibrations.append(mode)
+        elif isinstance(mode, HinderedRotor):
+            torsions.append(mode)
+    
+    # Write rotational modes
+    if len(rotations) == 1:
+        f.write(prefix + '    rotations={0!r},\n'.format(rotations[0]))
+    elif len(rotations) > 1:
+        f.write(prefix + '    rotations=[\n')
+        for rotation in rotations:
+            f.write(prefix + '        {0!r},\n'.format(rotation))
         f.write(prefix + '    ],\n')
+    
+    # Write vibrational modes
+    if len(vibrations) == 1:
+        f.write(prefix + '    vibrations={0!r},\n'.format(vibrations[0]))
+    elif len(rotations) > 1:
+        f.write(prefix + '    vibrations=[\n')
+        for vibration in vibrations:
+            f.write(prefix + '        {0!r},\n'.format(vibration))
+        f.write(prefix + '    ],\n')
+    
+    # Write torsional modes
+    f.write(prefix + '    torsions=[\n')
+    for torsion in torsions:
+        f.write(prefix + '        {0!r},\n'.format(torsion))
+    f.write(prefix + '    ],\n')
+    
+    # Write other parameters
+    f.write(prefix + '    frequencyScaleFactor=1.0,\n')
     f.write(prefix + '    spinMultiplicity={0:d},\n'.format(states.spinMultiplicity))
     f.write(prefix + '),\n')
+
+################################################################################
+
+def writeNetworkConfigurations(f, network):
+    """
+    Write all configurations in the given unimolecular reaction `network` to a
+    file object `f`.
+    """
+    # Write isomer configurations
+    for isomer in network.isomers:
+        f.write('isomer("{0}")\n\n'.format(isomer.label))
+    # Write reactant configurations
+    for reactants in network.reactants:
+        f.write('reactants("{0}", "{1}")\n\n'.format(reactants[0].label, reactants[1].label))
+    # No need to write product configurations, as these are assumed
 
 ################################################################################
 
@@ -223,10 +278,24 @@ def writeOutput(path, network, Tlist, Plist, Elist, method, model):
 
     f = open(os.path.relpath(path), 'w')
 
+    f.write('################################################################################\n')
+    f.write('#\n')
+    f.write('#   MEASURE output file for {0}\n'.format(network))
+    f.write('#\n')
+    f.write('#   Generated on {0}\n'.format(time.asctime()))
+    f.write('#\n')
+    f.write('################################################################################\n\n')
+    
+    # Write metadata
+    writeNetworkMetadata(f, network)
+    
     # Write each species to file
     writeNetworkSpecies(f, network)
     f.write('################################################################################\n\n')
-
+    # Write each configuration to file
+    writeNetworkConfigurations(f, network)
+    f.write('################################################################################\n\n')
+    
     # Write each net reaction to file
     writeNetworkNetReactions(f, network)
     
@@ -263,8 +332,22 @@ def writeInput(path, network, Tlist, Plist, Elist, method, model):
 
     f = open(path, 'w')
 
+    f.write('################################################################################\n')
+    f.write('#\n')
+    f.write('#   MEASURE input file for {0}\n'.format(network))
+    f.write('#\n')
+    f.write('#   Generated on {0}\n'.format(time.asctime()))
+    f.write('#\n')
+    f.write('################################################################################\n\n')
+    
+    # Write metadata
+    writeNetworkMetadata(f, network)
+    
     # Write each species to file
     writeNetworkSpecies(f, network)
+    f.write('################################################################################\n\n')
+    # Write each configuration to file
+    writeNetworkConfigurations(f, network)
     f.write('################################################################################\n\n')
     # Write each path reaction to file
     writeNetworkPathReactions(f, network)
