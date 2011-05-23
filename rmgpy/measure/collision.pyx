@@ -172,10 +172,10 @@ def calculateCollisionEfficiency(species, double T,
     beta = (alpha / (alpha + Fe * R * T))**2 / Delta
 
     if beta > 1:
-        logging.warning('Collision efficiency {0:.3f} calculated at {1:g} K is greater than unity, so it will be set to unity.'.format(beta, T))
+        logging.warning('Collision efficiency {0:.3f} calculated at {1:g} K for species {2} is greater than unity, so it will be set to unity.'.format(beta, T, species))
         beta = 1
     if beta < 0:
-        raise CollisionError('Invalid collision efficiency {0:.3f} calculated at {1:g} K.'.format(beta, T))
+        raise CollisionError('Invalid collision efficiency {0:.3f} calculated at {1:g} K for species {2}.'.format(beta, T, species))
     
     return beta
 

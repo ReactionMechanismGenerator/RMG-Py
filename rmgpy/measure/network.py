@@ -361,7 +361,6 @@ class Network:
                 dummy, Gnj[reac,prod,:] = calculateMicrocanonicalRateCoefficient(rxn, Elist, None, densStates[prod,:], T)
             else:
                 raise NetworkError('Unexpected type of path reaction "{0}"'.format(rxn))
-        logging.debug('')
         
         return Kij, Gnj, Fim
 
@@ -441,10 +440,17 @@ class Network:
 
         # Calculate density of states for each isomer and each reactant channel
         # that has the necessary parameters
-        logging.info('Calculating densities of states for network {0:d}...'.format(self.index))
+        logging.info('Calculating densities of states for {0}...'.format(self))
         densStates0 = self.calculateDensitiesOfStates(Elist, E0)
 
-        logging.info('Calculating phenomenological rate coefficients for network {0:d}...'.format(self.index))
+        for rxn in self.pathReactions:
+            if rxn.transitionState.states is not None:
+                logging.debug('Using RRKM theory to compute k(E) for path reaction {0}.'.format(rxn))
+            elif rxn.kinetics is not None:
+                logging.debug('Using ILT method to compute k(E) for path reaction {0}.'.format(rxn))
+        logging.debug('')
+        
+        logging.info('Calculating phenomenological rate coefficients for {0}...'.format(self))
         K = numpy.zeros((len(Tlist),len(Plist),Nisom+Nreac+Nprod,Nisom+Nreac+Nprod), numpy.float64)
         p0 = numpy.zeros((len(Tlist),len(Plist),Ngrains,Nisom,Nisom+Nreac), numpy.float64)
 
@@ -475,24 +481,29 @@ class Network:
                 G = sum([spec.thermo.getFreeEnergy(T) for spec in self.reactants[i]])
                 eqRatios[Nisom+i] = math.exp(-G / constants.R / T) * conc ** (len(self.reactants[i]) - 1)
             
+            # Compute collision efficiencies if needed (MSC method only)
+            # Since they are only a function of temperature and not pressure,
+            # we do this outside the pressure loop
+            collEff = numpy.ones(Nisom, numpy.float64)
+            if method.lower() == 'modified strong collision':
+                for i in range(Nisom):
+                    collEff[i] *= calculateCollisionEfficiency(self.isomers[i], T, Elist, densStates[i,:], self.collisionModel, E0[i], Ereac[i])
+                
             for p, P in enumerate(Plist):
 
                 # Calculate collision frequencies
                 collFreq = numpy.zeros(Nisom, numpy.float64)
                 for i in range(Nisom):
-                    collFreq[i] = calculateCollisionFrequency(self.isomers[i], T, P, self.bathGas)
+                    collFreq[i] = calculateCollisionFrequency(self.isomers[i], T, P, self.bathGas) * collEff[i]
 
-                if method.lower() == 'modified strong collision':
-                    # Modify collision frequencies using efficiency factor
-                    for i in range(Nisom):
-                        collFreq[i] *= calculateCollisionEfficiency(self.isomers[i], T, Elist, densStates[i,:], self.collisionModel, E0[i], Ereac[i])
-                else:
-                    # The full collision matrix for each isomer
+                if method.lower() != 'modified strong collision':
+                    # Generate the full collision matrix for each isomer
                     Mcoll = numpy.zeros((Nisom,Ngrains,Ngrains), numpy.float64)
                     for i in range(Nisom):
                         Mcoll[i,:,:] = collFreq[i] * self.collisionModel.generateCollisionMatrix(Elist, T, densStates[i,:])
 
                 # Apply method
+                logging.debug('Applying {0} method at {1:g} K, {2:g} bar...'.format(method, T, P/1e5))
                 if method.lower() == 'modified strong collision':
                     # Apply modified strong collision method
                     import msc
@@ -536,8 +547,8 @@ class Network:
                                 
                             
                 logging.log(0, K[t,p,0:Nisom+Nreac+Nprod,0:Nisom+Nreac])
-
-                logging.debug('')
+                
+        logging.debug('')
 
         # Unshift energy grains
         for rxn in self.pathReactions:
