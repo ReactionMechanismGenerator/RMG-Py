@@ -726,7 +726,7 @@ class Chebyshev(KineticsModel):
 
         # Set temperature and pressure ranges
         self.Tmin = Quantity(Tmin,"K"); self.Tmax = Quantity(Tmax,"K")
-        self.Pmin = Quantity(Pmin,"bar"); self.Pmax = Quantity(Pmax,"bar")
+        self.Pmin = Quantity(Pmin/1e5,"bar"); self.Pmax = Quantity(Pmax/1e5,"bar")
 
         # Calculate reduced temperatures and pressures
         Tred = [self.__getReducedTemperature(T) for T in Tlist]
