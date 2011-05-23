@@ -117,6 +117,7 @@ cdef class PDepArrhenius(KineticsModel):
 cdef class Chebyshev(KineticsModel):
     
     cdef public object coeffs
+    cdef public str kunits
     cdef public int degreeT, degreeP
     
     cpdef bint isPressureDependent(self)
@@ -130,7 +131,7 @@ cdef class Chebyshev(KineticsModel):
     cpdef double getRateCoefficient(self, double T, double P)
 
     cpdef fitToData(self, numpy.ndarray Tlist, numpy.ndarray Plist, numpy.ndarray K,
-        int degreeT, int degreeP, double Tmin, double Tmax, double Pmin, double Pmax)
+        str kunits, int degreeT, int degreeP, double Tmin, double Tmax, double Pmin, double Pmax)
 
 ################################################################################
 
