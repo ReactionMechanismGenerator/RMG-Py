@@ -36,6 +36,7 @@ between the input and output file syntax.
 
 import logging
 import os.path
+import time
 
 from rmgpy.thermo import *
 from rmgpy.kinetics import *
@@ -43,6 +44,21 @@ from rmgpy.statmech import *
 
 from collision import *
 
+################################################################################
+
+def writeNetworkMetadata(f, network):
+    """
+    Write the metadata for the `network` to the given file object `f`.
+    """
+    if network.title != '' and network.title != 'Untitled':
+        f.write('title = "{0}"\n'.format(network.title))
+    if network.description != '':
+        f.write('description = \\\n')
+        f.write('"""\n')
+        f.write('{0}\n'.format(network.description))
+        f.write('"""\n')
+    f.write('\n')
+    
 ################################################################################
 
 def writeStates(f, states, prefix=''):
@@ -223,6 +239,17 @@ def writeOutput(path, network, Tlist, Plist, Elist, method, model):
 
     f = open(os.path.relpath(path), 'w')
 
+    f.write('################################################################################\n')
+    f.write('#\n')
+    f.write('#   MEASURE output file for {0}\n'.format(network))
+    f.write('#\n')
+    f.write('#   Generated on {0}\n'.format(time.asctime()))
+    f.write('#\n')
+    f.write('################################################################################\n\n')
+    
+    # Write metadata
+    writeNetworkMetadata(f, network)
+    
     # Write each species to file
     writeNetworkSpecies(f, network)
     f.write('################################################################################\n\n')
@@ -263,6 +290,17 @@ def writeInput(path, network, Tlist, Plist, Elist, method, model):
 
     f = open(path, 'w')
 
+    f.write('################################################################################\n')
+    f.write('#\n')
+    f.write('#   MEASURE input file for {0}\n'.format(network))
+    f.write('#\n')
+    f.write('#   Generated on {0}\n'.format(time.asctime()))
+    f.write('#\n')
+    f.write('################################################################################\n\n')
+    
+    # Write metadata
+    writeNetworkMetadata(f, network)
+    
     # Write each species to file
     writeNetworkSpecies(f, network)
     f.write('################################################################################\n\n')

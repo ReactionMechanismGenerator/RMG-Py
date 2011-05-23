@@ -345,6 +345,9 @@ def readInput(path):
     # Create new network object
     network = Network()
     
+    title = 'Untitled'
+    description = ''
+    
     logging.info('Reading input file "{0}"...'.format(path))
 
     global_context = { '__builtins__': None }
@@ -368,6 +371,8 @@ def readInput(path):
         'Wilhoit': Wilhoit,
         'MultiNASA': MultiNASA,
         'NASA': NASA,
+        'title': title,
+        'description': description,
     }
     
     try:
@@ -378,6 +383,15 @@ def readInput(path):
         # then return None so the program can terminate
         if network is None: return None
 
+        # Set title and description of network
+        network.title = local_context['title']
+        network.description = local_context['description'].strip()
+        # Log title and description
+        logging.info('')
+        logging.info('Network title: {0}'.format(network.title))
+        logging.info('Network description: ')
+        logging.info(network.description)
+        
         # Determine temperature grid if not yet known
         if Tparams is not None and Tlist is None:
             Tmin, Tmax, Tcount = Tparams

@@ -73,11 +73,13 @@ class Network:
     `collisionModel`    :class:`CollisionModel` The collision model to use
     `netReactions`      ``list``                A list of reaction objects that connect any pair of isomers
     `valid`             ``bool``                ``True`` if the rate coefficients for the network have been computed, ``False`` if not
+    `title`             ``str``                 A short title for the network
+    `description`       ``str``                 A verbose description of the network
     =================== ======================= ================================
 
     """
 
-    def __init__(self, index=-1, isomers=None, reactants=None, products=None, pathReactions=None, bathGas=None, collisionModel=None):
+    def __init__(self, index=-1, isomers=None, reactants=None, products=None, pathReactions=None, bathGas=None, collisionModel=None, title='', description=''):
         self.index = index
         self.isomers = isomers or []
         self.reactants = reactants or []
@@ -87,6 +89,14 @@ class Network:
         self.collisionModel = collisionModel
         self.netReactions = []
         self.valid = False
+        self.title = title
+        self.description = description
+        
+    def __str__(self):
+        if self.index != -1:
+            return 'Network #{0:d}'.format(self.index)
+        else:
+            return 'Network "{0}"'.format(self.title)
         
     def invalidate(self):
         """
