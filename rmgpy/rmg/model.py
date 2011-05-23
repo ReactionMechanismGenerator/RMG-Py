@@ -476,15 +476,6 @@ class PDepNetwork(rmgpy.measure.network.Network):
                 E0=((sum([spec.E0.value for spec in rxn.reactants]) + rxn.kinetics.Ea.value)/1000.,"kJ/mol"),
             )
 
-        # Determine reversibility of reactions
-        # While not currently important during RMG, this is important if you
-        # want to run the saved partial network input files standalone
-        for rxn in self.pathReactions:
-            rxn.reversible = (((len(rxn.reactants) == 1 and rxn.reactants[0] in self.isomers) or
-                (len(rxn.reactants) > 1 and rxn.reactants in self.reactants)) and
-                ((len(rxn.products) == 1 and rxn.products[0] in self.isomers) or
-                (len(rxn.products) > 1 and rxn.products in self.reactants)))
-
         # Set collision model
         bathGas = [spec for spec in reactionModel.core.species if not spec.reactive]
         self.bathGas = {}
@@ -647,6 +638,7 @@ class CoreEdgeReactionModel:
         Create a new species.
         """
 
+        molecule.clearLabeledAtoms()
         molecule.makeHydrogensImplicit()
 
         # If desired, check to ensure that the species is new; return the
@@ -820,10 +812,13 @@ class CoreEdgeReactionModel:
         if speciesB is None:
             for moleculeA in speciesA.molecule:
                 reactionList.extend(database.kinetics.generateReactions([moleculeA]))
+                moleculeA.clearLabeledAtoms()
         else:
             for moleculeA in speciesA.molecule:
                 for moleculeB in speciesB.molecule:
                     reactionList.extend(database.kinetics.generateReactions([moleculeA, moleculeB]))
+                    moleculeA.clearLabeledAtoms()
+                    moleculeB.clearLabeledAtoms()
         return reactionList
 
     def enlarge(self, newObject, database):
