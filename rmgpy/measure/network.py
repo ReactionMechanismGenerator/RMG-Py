@@ -350,14 +350,19 @@ class Network:
                 prod = self.products.index(rxn.products) + Nreac
                 Gnj[prod,reac,:], dummy = calculateMicrocanonicalRateCoefficient(rxn, Elist, densStates[reac,:], None, T)
             elif rxn.reactants in self.reactants and rxn.products[0] in self.isomers:
-                # Association
+                # Association (reversible)
                 reac = self.reactants.index(rxn.reactants)
                 prod = self.isomers.index(rxn.products[0])
                 Fim[prod,reac,:], Gnj[reac,prod,:] = calculateMicrocanonicalRateCoefficient(rxn, Elist, densStates[reac+Nisom,:], densStates[prod,:], T)
+            elif rxn.reactants in self.products and rxn.products[0] in self.isomers:
+                # Association (irreversible)
+                reac = self.products.index(rxn.reactants) + Nreac
+                prod = self.isomers.index(rxn.products[0])
+                dummy, Gnj[reac,prod,:] = calculateMicrocanonicalRateCoefficient(rxn, Elist, None, densStates[prod,:], T)
             else:
                 raise NetworkError('Unexpected type of path reaction "{0}"'.format(rxn))
         logging.debug('')
-
+        
         return Kij, Gnj, Fim
 
     def printSummary(self, level=logging.DEBUG):
