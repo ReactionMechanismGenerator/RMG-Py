@@ -325,7 +325,8 @@ class Database:
                 else:
                     self.entries[label].item = Molecule().fromAdjacencyList(record)
         except InvalidAdjacencyListError, e:
-            logging.exception(str(e))
+            logging.error('Error while loading old-style dictionary "{0}"'.format(path))
+            logging.error('Error occurred while parsing adjacency list "{0}"'.format(label))
             raise
 
     def __loadTree(self, tree):
