@@ -1,0 +1,36 @@
+{% extends "layout.html" %}
+{% set title = 'Overview' %}
+
+{% block body %}
+
+  <h1>RMG &#8211; Reaction Mechanism Generator</h1>
+
+  <p style="margin-top: 0px; padding-top: 12px">
+    <strong>RMG</strong> is an automatic chemical reaction mechanism generator 
+    that constructs kinetic models composed of elementary chemical reaction 
+    steps using a general understanding of how molecules react.
+  </p>
+
+  <p><strong>Parts of the documentation:</strong></p>
+  
+  <table class="contentstable" align="center" style="margin-left: 30px"><tr>
+    <td width="50%">
+      <p class="biglink"><a class="biglink" href="{{ pathto("users/index") }}">User's Guide</a><br/>
+         <span class="linkdescr">how to use RMG</span></p>
+      <p class="biglink"><a class="biglink" href="{{ pathto("developers/index") }}">Developer's Guide</a><br/>
+         <span class="linkdescr">how to develop in RMG</span></p>
+      <p class="biglink"><a class="biglink" href="{{ pathto("theory/index") }}">Theory Guide</a><br/>
+         <span class="linkdescr">the theory behind RMG</span></p>
+      <p class="biglink"><a class="biglink" href="{{ pathto("contents") }}">Contents</a><br/>
+         <span class="linkdescr">for a complete overview</span></p>
+   </td><td width="50%">
+      <p class="biglink"><a class="biglink" href="{{ pathto("search") }}">Search page</a><br/>
+         <span class="linkdescr">search the documentation</span></p>
+      <p class="biglink"><a class="biglink" href="{{ pathto("genindex") }}">General Index</a><br/>
+         <span class="linkdescr">all functions, classes, terms</span></p>
+      <p class="biglink"><a class="biglink" href="{{ pathto("modindex") }}">Module Index</a><br/>
+         <span class="linkdescr">all documented modules</span></p>
+    </td></tr>
+  </table>
+  
+{% endblock %}
