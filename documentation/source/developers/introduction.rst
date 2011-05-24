@@ -2,8 +2,7 @@
 Introduction
 ************
 
-The :mod:`rmgpy.chem` module provides a library of classes and functions for
-chemistry, chemical engineering, and materials science applications. 
+The :mod:`rmgpy` package contains all of the functionality of RMG.
 
 Dependencies
 ============
@@ -57,40 +56,4 @@ implementation.
         forked from, in their comparison. Cython has advanced significantly
         since that document was written, and today likely performs even more 
         efficiently than Pyrex.
-
-
-Modules
-=======
-
-The :mod:`rmgpy.chem` package contains a wide variety of classes and functions,
-grouped by purpose into the following modules. The remainder of this document
-will discuss each of these modules and their contents in detail:
-
-=============================== ================================================
-Module                          Description
-=============================== ================================================
-:mod:`rmgpy.chem.constants`     Declaration of common physical constants (in SI units)
-:mod:`rmgpy.chem.element`       Representation of chemical elements
-:mod:`rmgpy.chem.geometry`      Operations on 3D molecular geometries
-:mod:`rmgpy.chem.graph`         Efficient implementation of a graph data type and graph isomorphism algorithm
-:mod:`rmgpy.chem.kinetics`      Representation of kinetics models for chemical reaction rate coefficients
-:mod:`rmgpy.chem.molecule`      Representation of chemical molecules and their constituent atoms and bonds
-:mod:`rmgpy.chem.pattern`       Representation of molecular substructure patterns
-:mod:`rmgpy.chem.reaction`      Representation of chemical reactions
-:mod:`rmgpy.chem.species`       Representation of chemical species
-:mod:`rmgpy.chem.states`        Representation of internal and external molecular degrees of freedom
-:mod:`rmgpy.chem.thermo`        Representation of thermodynamics models for chemical species
-=============================== ================================================
-
-In addition to the above, there are a few extra modules providing extended
-functionality:
-
-======================================= ========================================
-Module                                  Description
-======================================= ========================================
-:mod:`rmgpy.chem.ext.thermo_converter`  Conversion between various thermodynamics models
-:mod:`rmgpy.chem.ext.molecule_draw`     2D depiction of structural formula of chemical molecules
-======================================= ========================================
-
-
 

@@ -1,14 +1,14 @@
-***********************************************
-:mod:`rmgpy.chem.element` --- Chemical Elements
-***********************************************
+******************************************
+:mod:`rmgpy.element` --- Chemical Elements
+******************************************
 
-.. automodule:: rmgpy.chem.element
+.. automodule:: rmgpy.element
 
-.. autoclass:: rmgpy.chem.element.ElementError
+.. autoclass:: rmgpy.element.ElementError
     :members:
 
-.. autoclass:: rmgpy.chem.element.Element
+.. autoclass:: rmgpy.element.Element
     :members:
 
-.. autofunction:: rmgpy.chem.element.getElement
+.. autofunction:: rmgpy.element.getElement
 

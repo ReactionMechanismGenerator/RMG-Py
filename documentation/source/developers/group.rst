@@ -1,72 +1,8 @@
-*********************************************************************
-:mod:`rmgpy.chem.pattern` --- Molecular Substructure Pattern Matching
-*********************************************************************
+****************************************
+:mod:`rmgpy.group` --- Functional Groups
+****************************************
 
-.. automodule:: rmgpy.chem.pattern
-
-Atom Types
-==========
-
-.. _atom-types:
-
-The atom type of an atom describes the atom itself and (often) something about
-the local bond structure around that atom. This is a useful semantic tool for
-accelerating graph isomorphism queries, and a useful shorthand when specifying
-molecular substructure patterns via an RMG-style adjacency list.
-
-We define the following basic atom types:
-
-=============== ============================================================
-Atom type       Description
-=============== ============================================================
-*General atom types*
-----------------------------------------------------------------------------
-``R``           any atom with any local bond structure
-``R!H``         any non-hydrogen atom with any local bond structure
-*Carbon atom types*
-----------------------------------------------------------------------------
-``C``           carbon atom with any local bond structure
-``Cs``          carbon atom with four single bonds
-``Cd``          carbon atom with one double bond (to carbon) and two single bonds
-``Cdd``         carbon atom with two double bonds
-``Ct``          carbon atom with one triple bond and one single bond
-``CO``          carbon atom with one double bond (to oxygen) and two single bonds
-``Cb``          carbon atom with two benzene bonds and one single bond
-``Cbf``         carbon atom with three benzene bonds
-*Hydrogen atom types*
-----------------------------------------------------------------------------
-``H``           hydrogen atom with one single bond
-*Oxygen atom types*
-----------------------------------------------------------------------------
-``O``           oxygen atom with any local bond structure
-``Os``          oxygen atom with two single bonds
-``Od``          oxygen atom with one double bond
-``Oa``          oxygen atom with no bonds
-*Silicon atom types*
-----------------------------------------------------------------------------
-``Si``          silicon atom with any local bond structure
-``Sis``         silicon atom with four single bonds
-``Sid``         silicon atom with one double bond (to carbon) and two single bonds
-``Sidd``        silicon atom with two double bonds
-``Sit``         silicon atom with one triple bond and one single bond
-``SiO``         silicon atom with one double bond (to oxygen) and two single bonds
-``Sib``         silicon atom with two benzene bonds and one single bond
-``Sibf``        silicon atom with three benzene bonds
-*Sulfur atom types*
-----------------------------------------------------------------------------
-``S``           sulfur atom with any local bond structure
-``Ss``          sulfur atom with two single bonds
-``Sd``          sulfur atom with one double bond
-``Sa``          sulfur atom with no bonds
-=============== ============================================================
-
-.. autoclass:: rmgpy.chem.pattern.AtomTypeError
-    :members:
-
-.. autoclass:: rmgpy.chem.pattern.AtomType
-    :members:
-
-.. autofunction:: rmgpy.chem.pattern.getAtomType
+.. automodule:: rmgpy.group
 
 Bond Types
 ==========
@@ -108,7 +44,7 @@ GAIN_RADICAL  `center`, `radical`           increase the number of free electron
 LOSE_RADICAL  `center`, `radical`           decrease the number of free electrons on `center` by `radical`
 ============= ============================= ================================
 
-.. autoclass:: rmgpy.chem.pattern.ActionError
+.. autoclass:: rmgpy.group.ActionError
     :members:
 
 Adjacency Lists
@@ -166,26 +102,26 @@ can be omitted if desired, as their presence is inferred::
     5 *1 C 0 {4,S} {6,S}
     6 *2 C 0 {5,S}
 
-.. autofunction:: rmgpy.chem.pattern.fromAdjacencyList
+.. autofunction:: rmgpy.group.fromAdjacencyList
 
-.. autofunction:: rmgpy.chem.pattern.toAdjacencyList
+.. autofunction:: rmgpy.group.toAdjacencyList
 
 
-AtomPattern Objects
-===================
+GroupAtom Objects
+=================
 
-.. autoclass:: rmgpy.chem.pattern.AtomPattern
+.. autoclass:: rmgpy.group.GroupAtom
     :members:
 
-BondPattern Objects
-===================
+GroupBond Objects
+=================
 
-.. autoclass:: rmgpy.chem.pattern.BondPattern
+.. autoclass:: rmgpy.group.GroupBond
     :members:
 
-MoleculePattern Objects
-=======================
+Group Objects
+=============
 
-.. autoclass:: rmgpy.chem.pattern.MoleculePattern
+.. autoclass:: rmgpy.group.Group
     :members:
 

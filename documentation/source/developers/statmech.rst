@@ -1,8 +1,8 @@
-*********************************************************
-:mod:`rmgpy.chem.states` --- Molecular Degrees of Freedom
-*********************************************************
+******************************************************
+:mod:`rmgpy.statmech` --- Molecular Degrees of Freedom
+******************************************************
 
-.. automodule:: rmgpy.chem.states
+.. automodule:: rmgpy.statmech
 
 Working With Molecular Degrees of Freedom
 =========================================
@@ -66,10 +66,10 @@ molecular degree of freedom are additive.
 Representing Molecular Degrees of Freedom
 =========================================
 
-.. autoclass:: rmgpy.chem.states.StatesModel
+.. autoclass:: rmgpy.statmech.StatesModel
     :members:
 
-.. autoclass:: rmgpy.chem.states.Mode
+.. autoclass:: rmgpy.statmech.Mode
     :members:
 
 External Degrees of Freedom
@@ -78,13 +78,13 @@ External Degrees of Freedom
 Translation
 -----------
 
-.. autoclass:: rmgpy.chem.states.Translation
+.. autoclass:: rmgpy.statmech.Translation
     :members:
 
 Rotation
 --------
 
-.. autoclass:: rmgpy.chem.states.RigidRotor
+.. autoclass:: rmgpy.statmech.RigidRotor
     :members:
 
 Internal Degrees of Freedom
@@ -93,11 +93,11 @@ Internal Degrees of Freedom
 Vibration
 ---------
 
-.. autoclass:: rmgpy.chem.states.HarmonicOscillator
+.. autoclass:: rmgpy.statmech.HarmonicOscillator
     :members:
 
 Torsion
 -------
 
-.. autoclass:: rmgpy.chem.states.HinderedRotor
+.. autoclass:: rmgpy.statmech.HinderedRotor
     :members:

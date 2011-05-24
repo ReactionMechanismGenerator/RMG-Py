@@ -1,28 +1,31 @@
 **********************************************
-:mod:`rmgpy.chem.kinetics` --- Kinetics Models
+:mod:`rmgpy.kinetics` --- Kinetics Models
 **********************************************
 
-.. automodule:: rmgpy.chem.kinetics
+.. automodule:: rmgpy.kinetics
 
 Base Class for Kinetics Models
 ==============================
 
-.. autoclass:: rmgpy.chem.kinetics.KineticsError
+.. autoclass:: rmgpy.kinetics.KineticsError
     :members:
 
-.. autoclass:: rmgpy.chem.kinetics.KineticsModel
+.. autoclass:: rmgpy.kinetics.KineticsModel
     :members:
 
 Pressure-Independent Kinetics Models
 ====================================
 
-.. autoclass:: rmgpy.chem.kinetics.Arrhenius
+.. autoclass:: rmgpy.kinetics.KineticsData
     :members:
 
-.. autoclass:: rmgpy.chem.kinetics.ArrheniusEP
+.. autoclass:: rmgpy.kinetics.Arrhenius
     :members:
 
-.. autoclass:: rmgpy.chem.kinetics.MultiArrhenius
+.. autoclass:: rmgpy.kinetics.ArrheniusEP
+    :members:
+
+.. autoclass:: rmgpy.kinetics.MultiArrhenius
     :members:
 
 Pressure-Dependent Kinetics Models
@@ -31,21 +34,21 @@ Pressure-Dependent Kinetics Models
 Single-Well Models
 ------------------
 
-.. autoclass:: rmgpy.chem.kinetics.ThirdBody
+.. autoclass:: rmgpy.kinetics.ThirdBody
     :members:
 
-.. autoclass:: rmgpy.chem.kinetics.Lindemann
+.. autoclass:: rmgpy.kinetics.Lindemann
     :members:
 
-.. autoclass:: rmgpy.chem.kinetics.Troe
+.. autoclass:: rmgpy.kinetics.Troe
     :members:
 
-.. autoclass:: rmgpy.chem.kinetics.PDepArrhenius
+.. autoclass:: rmgpy.kinetics.PDepArrhenius
     :members:
 
 Multi-Well Models
 -----------------
 
-.. autoclass:: rmgpy.chem.kinetics.Chebyshev
+.. autoclass:: rmgpy.kinetics.Chebyshev
     :members:
 

@@ -7,13 +7,24 @@
 Group Frequency Database
 ========================
 
-.. autoclass:: rmgpy.data.states.GroupFrequency
+.. autoclass:: rmgpy.data.states.GroupFrequencies
     :members:
 
-.. autoclass:: rmgpy.data.states.FrequencyGroupDatabase
+.. autoclass:: rmgpy.data.states.StatesDatabase
     :members:
 
-.. autofunction:: rmgpy.data.states.loadFrequencyDatabase
+.. autoclass:: rmgpy.data.states.StatesDepository
+    :members:
 
-.. autofunction:: rmgpy.data.states.generateFrequencyData
+.. autoclass:: rmgpy.data.states.StatesLibrary
+    :members:
+
+.. autoclass:: rmgpy.data.states.StatesGroups
+    :members:
+
+.. autofunction:: rmgpy.data.states.generateOldLibraryEntry
+
+.. autofunction:: rmgpy.data.states.processOldLibraryEntry
+
+.. autofunction:: rmgpy.data.states.saveEntry
 

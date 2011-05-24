@@ -1,23 +1,23 @@
-********************************************************************
-:mod:`rmgpy.chem.molecule` --- Structure and Properties of Molecules
-********************************************************************
+***************************************************************
+:mod:`rmgpy.molecule` --- Structure and Properties of Molecules
+***************************************************************
 
-.. automodule:: rmgpy.chem.molecule
+.. automodule:: rmgpy.molecule
 
 Atom Objects
 ============
 
-.. autoclass:: rmgpy.chem.molecule.Atom
+.. autoclass:: rmgpy.molecule.Atom
     :members:
 
 Bond Objects
 ============
 
-.. autoclass:: rmgpy.chem.molecule.Bond
+.. autoclass:: rmgpy.molecule.Bond
     :members:
 
 Molecule Objects
 ================
 
-.. autoclass:: rmgpy.chem.molecule.Molecule
+.. autoclass:: rmgpy.molecule.Molecule
     :members:

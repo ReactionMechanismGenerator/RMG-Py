@@ -7,20 +7,15 @@
 Database Model
 ==============
 
-.. autoclass:: rmgpy.data.base.Dictionary
+.. autoclass:: rmgpy.data.base.DatabaseError
     :members:
 
-.. autoclass:: rmgpy.data.base.Tree
-    :members:
-
-.. autoclass:: rmgpy.data.base.Library
+.. autoclass:: rmgpy.data.base.Entry
     :members:
 
 .. autoclass:: rmgpy.data.base.Database
     :members:
 
-.. autoclass:: rmgpy.data.base.InvalidDatabaseError
-    :members:
 
 Logical Nodes
 =============

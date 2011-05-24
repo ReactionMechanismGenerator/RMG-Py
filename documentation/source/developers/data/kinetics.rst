@@ -4,24 +4,37 @@
 
 .. automodule:: rmgpy.data.kinetics
 
+Reaction Types
+==============
+
+.. autoclass:: rmgpy.data.kinetics.DepositoryReaction
+    :members:
+
+.. autoclass:: rmgpy.data.kinetics.LibraryReaction
+    :members:
+
+.. autoclass:: rmgpy.data.kinetics.TemplateReaction
+    :members:
+
 Kinetics Database
 =================
 
 .. autoclass:: rmgpy.data.kinetics.ReactionRecipe
     :members:
 
-.. autoclass:: rmgpy.data.kinetics.ReactionFamily
+.. autoclass:: rmgpy.data.kinetics.KineticsDatabase
     :members:
 
-.. autoclass:: rmgpy.data.kinetics.KineticsGroupDatabase
+.. autoclass:: rmgpy.data.kinetics.KineticsDepository
     :members:
 
-.. autoclass:: rmgpy.data.kinetics.KineticsPrimaryDatabase
+.. autoclass:: rmgpy.data.kinetics.KineticsLibrary
     :members:
 
-.. autofunction:: rmgpy.data.kinetics.loadKineticsDatabase
+.. autoclass:: rmgpy.data.kinetics.KineticsGroups
+    :members:
 
-.. autofunction:: rmgpy.data.kinetics.generateKineticsData
+.. autofunction:: rmgpy.data.kinetics.saveEntry
 
 Exceptions
 ==========

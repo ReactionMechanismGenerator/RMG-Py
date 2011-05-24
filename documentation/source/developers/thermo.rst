@@ -1,36 +1,36 @@
-**************************************************
-:mod:`rmgpy.chem.thermo` --- Thermodynamics Models
-**************************************************
+*********************************************
+:mod:`rmgpy.thermo` --- Thermodynamics Models
+*********************************************
 
-.. automodule:: rmgpy.chem.thermo
+.. automodule:: rmgpy.thermo
 
 Base Class for Thermodynamics Models
 ====================================
 
-.. autoclass:: rmgpy.chem.thermo.ThermoError
+.. autoclass:: rmgpy.thermo.ThermoError
     :members:
 
-.. autoclass:: rmgpy.chem.thermo.ThermoModel
+.. autoclass:: rmgpy.thermo.ThermoModel
     :members:
 
 Group-Additivity Thermodynamics Model
 =====================================
 
-.. autoclass:: rmgpy.chem.thermo.ThermoData
+.. autoclass:: rmgpy.thermo.ThermoData
     :members:
 
 Wilhoit Polynomial Thermodynamics Model
 =======================================
 
-.. autoclass:: rmgpy.chem.thermo.Wilhoit
+.. autoclass:: rmgpy.thermo.Wilhoit
     :members:
 
 NASA Polynomial Thermodynamics Model
 ====================================
 
-.. autoclass:: rmgpy.chem.thermo.NASA
+.. autoclass:: rmgpy.thermo.NASA
     :members:
 
-.. autoclass:: rmgpy.chem.thermo.MultiNASA
+.. autoclass:: rmgpy.thermo.MultiNASA
     :members:
     
