@@ -558,7 +558,6 @@ class KineticsLibrary(Database):
                             elif 'E:' in line:
                                 Eunits = units
                     elif inReactionSection:
-                        reactants = []; products = []
                         if '=' in line:
                             # This line contains a reaction equation, (high-P) Arrhenius parameters, and uncertainties
 
@@ -592,6 +591,7 @@ class KineticsLibrary(Database):
                                     for i in item.split('+'):
                                         if i != '' and i != 'M': productItems.append(i)
                             
+                            reactants = []; products = []
                             for item in reactantItems:
                                 try:
                                     reactants.append(species[item])
