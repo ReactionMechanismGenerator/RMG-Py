@@ -35,6 +35,7 @@ import codecs
 
 from base import *
 
+from rmgpy.quantity import Quantity
 from rmgpy.reaction import Reaction, ReactionError
 from rmgpy.kinetics import *
 from rmgpy.group import GroupBond, Group
@@ -604,13 +605,13 @@ class KineticsLibrary(Database):
                                     raise DatabaseError('Product {0} not found in species dictionary.'.format(item))
 
                             if dataIndex == -6:
-                                A = constants.Quantity((float(items[-6]), Aunits[len(reactants)]))
-                                n = constants.Quantity((float(items[-5]), ''))
-                                Ea = constants.Quantity((float(items[-4]), Eunits))
+                                A = Quantity(float(items[-6]), Aunits[len(reactants)])
+                                n = Quantity(float(items[-5]), '')
+                                Ea = Quantity(float(items[-4]), Eunits)
                             else:
-                                A = constants.Quantity((float(items[-3]), Aunits[len(reactants)]))
-                                n = constants.Quantity((float(items[-2]), ''))
-                                Ea = constants.Quantity((float(items[-1]), Eunits))
+                                A = Quantity(float(items[-3]), Aunits[len(reactants)])
+                                n = Quantity(float(items[-2]), '')
+                                Ea = Quantity(float(items[-1]), Eunits)
                             kinetics = Arrhenius(A=A, n=n, Ea=Ea, T0=(1.0,"K"))
 
                             reaction = Reaction(
@@ -621,6 +622,24 @@ class KineticsLibrary(Database):
                             )
                             reactions.append(reaction)
 
+                        elif 'PLOG' in line:
+                            # This line contains pressure-dependent Arrhenius parameters in Chemkin format
+                            items = line.split('/')
+                            P, A, n, Ea = items[1].split()
+                            P = float(P)
+                            A = Quantity(float(A), Aunits[len(reactants)])
+                            n = Quantity(float(n), '')
+                            Ea = Quantity(float(Ea), Eunits)
+                            arrhenius = Arrhenius(A=A, n=n, Ea=Ea, T0=1.0)
+                            if not isinstance(kinetics, PDepArrhenius):
+                                kinetics = PDepArrhenius(pressures=([P],"atm"), arrhenius=[arrhenius])
+                            else:
+                                pressures = list(kinetics.pressures.values)
+                                pressures.append(P*101325.)
+                                kinetics.pressures.values = numpy.array(pressures, numpy.float)
+                                kinetics.arrhenius.append(arrhenius)
+                            reaction.kinetics = kinetics
+                            
                         elif 'LOW' in line:
                             # This line contains low-pressure-limit Arrhenius parameters in Chemkin format
 
@@ -634,9 +653,9 @@ class KineticsLibrary(Database):
 
                             items = line.split('/')
                             A, n, Ea = items[1].split()
-                            A = constants.Quantity((float(A), Aunits[len(reactants)]))
-                            n = constants.Quantity((float(n), ''))
-                            Ea = constants.Quantity((float(Ea), Eunits))
+                            A = Quantity(float(A), Aunits[len(reactants)])
+                            n = Quantity(float(n), '')
+                            Ea = Quantity(float(Ea), Eunits)
                             kinetics.arrheniusLow = Arrhenius(A=A, n=n, Ea=Ea, T0=1.0)
 
                         elif 'TROE' in line:
@@ -660,13 +679,13 @@ class KineticsLibrary(Database):
                             else:
                                 alpha, T3, T1, T2 = items
 
-                            kinetics.alpha = constants.Quantity(float(alpha))
-                            kinetics.T1 = constants.Quantity((float(T1),"K"))
+                            kinetics.alpha = Quantity(float(alpha))
+                            kinetics.T1 = Quantity(float(T1),"K")
                             if T2 is not None:
-                                kinetics.T2 = constants.Quantity((float(T2),"K"))
+                                kinetics.T2 = Quantity(float(T2),"K")
                             else:
                                 kinetics.T2 = None
-                            kinetics.T3 = constants.Quantity((float(T3),"K"))
+                            kinetics.T3 = Quantity(float(T3),"K")
 
                         else:
                             # This line contains collider efficiencies
