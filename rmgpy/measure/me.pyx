@@ -37,7 +37,7 @@ import numpy
 cimport numpy
 import cython
 
-import rmgpy.chem.constants as constants
+from rmgpy.quantity import constants
 
 from simulate import solveFullME
 
