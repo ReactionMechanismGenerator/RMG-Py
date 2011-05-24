@@ -15,12 +15,9 @@ Contents
 .. toctree::
     :maxdepth: 2
 
-    cantherm/index
-    chem/index
-    data/index
-    measure/index
-    rmg/index
-    solver/index
+    users/index
+    developers/index
+    theory/index
     
 Indices and tables
 ==================
