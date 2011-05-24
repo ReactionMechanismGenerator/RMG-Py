@@ -305,15 +305,22 @@ def saveEntry(f, entry):
 
     if isinstance(entry.item, Reaction):
         for i, reactant in enumerate(entry.item.reactants):
-            f.write('    reactant{0:d} = \n'.format(i+1))
-            f.write('"""\n')
-            f.write(reactant.toAdjacencyList(removeH=True))
-            f.write('""",\n')
+            if isinstance(reactant, Molecule):
+                f.write('    reactant{0:d} = \n'.format(i+1))
+                f.write('"""\n')
+                f.write(reactant.toAdjacencyList(removeH=True))
+                f.write('""",\n')
+            elif isinstance(reactant, Group):
+                f.write('    group{0:d} = \n'.format(i+1))
+                f.write('"""\n')
+                f.write(reactant.toAdjacencyList())
+                f.write('""",\n')
         for i, product in enumerate(entry.item.products):
-            f.write('    product{0:d} = \n'.format(i+1))
-            f.write('"""\n')
-            f.write(product.toAdjacencyList(removeH=True))
-            f.write('""",\n')
+            if isinstance(product, Molecule):
+                f.write('    product{0:d} = \n'.format(i+1))
+                f.write('"""\n')
+                f.write(product.toAdjacencyList(removeH=True))
+                f.write('""",\n')
         f.write('    degeneracy = {0:d},\n'.format(entry.item.degeneracy))
     elif isinstance(entry.item, Group):
         f.write('    group = \n')
@@ -431,25 +438,47 @@ def saveEntry(f, entry):
 
 class KineticsDepository(Database):
     """
-    A class for working with an RMG kinetics depository.
+    A class for working with an RMG kinetics depository. Each depository 
+    corresponds to a reaction family (a :class:`KineticsGroups` object). Each
+    entry in a kinetics depository involves a reaction defined either by
+    real reactant and product species (as in a kinetics library) or a set of
+    functional groups (as in a reaction family).
     """
 
     def __init__(self, label='', name='', shortDesc='', longDesc=''):
         Database.__init__(self, label=label, name=name, shortDesc=shortDesc, longDesc=longDesc)
 
-    def loadEntry(self, index, reactant1, product1, kinetics, reactant2=None, reactant3=None, product2=None, product3=None, degeneracy=1, label='', reference=None, referenceType='', shortDesc='', longDesc='', history=None):
-        reactants = [Molecule().fromAdjacencyList(reactant1)]
-        if reactant2 is not None: reactants.append(Molecule().fromAdjacencyList(reactant2))
-        if reactant3 is not None: reactants.append(Molecule().fromAdjacencyList(reactant3))
+    def loadEntry(self, index, reactant1=None, reactant2=None, reactant3=None, product1=None, product2=None, product3=None, group1=None, group2=None, group3=None, kinetics=None, degeneracy=1, label='', reference=None, referenceType='', shortDesc='', longDesc='', history=None):
+        
+        if reactant1 is not None and product1 is not None:
+            # The reaction involves real reactants and products
+            assert group1 is None and group2 is None and group3 is None
+            
+            reactants = [Molecule().fromAdjacencyList(reactant1)]
+            if reactant2 is not None: reactants.append(Molecule().fromAdjacencyList(reactant2))
+            if reactant3 is not None: reactants.append(Molecule().fromAdjacencyList(reactant3))
 
-        products = [Molecule().fromAdjacencyList(product1)]
-        if product2 is not None: products.append(Molecule().fromAdjacencyList(product2))
-        if product3 is not None: products.append(Molecule().fromAdjacencyList(product3))
-
+            products = [Molecule().fromAdjacencyList(product1)]
+            if product2 is not None: products.append(Molecule().fromAdjacencyList(product2))
+            if product3 is not None: products.append(Molecule().fromAdjacencyList(product3))
+            
+            reaction = Reaction(reactants=reactants, products=products, degeneracy=degeneracy),
+        
+        elif group1 is not None:
+            # The reaction involves functional groups
+            assert reactant1 is None and reactant2 is None and reactant3 is None
+            assert product1 is None and product2 is None and product3 is None
+            
+            reactants = [Group().fromAdjacencyList(group1)]
+            if group2 is not None: reactants.append(Group().fromAdjacencyList(group2))
+            if group3 is not None: reactants.append(Group().fromAdjacencyList(group3))
+            
+            reaction = Reaction(reactants=reactants, products=[])
+            
         self.entries[index] = Entry(
             index = index,
             label = label,
-            item = Reaction(reactants=reactants, products=products, degeneracy=degeneracy),
+            item = reaction,
             data = kinetics,
             reference = reference,
             referenceType = referenceType,
