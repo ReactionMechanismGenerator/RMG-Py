@@ -493,6 +493,58 @@ class KineticsDepository(Database):
         """
         return saveEntry(f, entry)
 
+    def processOldLibraryEntry(self, data):
+        """
+        Process a list of parameters `data` as read from an old-style RMG
+        thermo database, returning the corresponding kinetics object.
+        """
+        # This is hardcoding of reaction families!
+        label = os.path.split(self.label)[-2]
+        if label in ['H_Abstraction', 'R_Addition_MultipleBond', 'R_Recombination', 'HO2_Elimination_from_PeroxyRadical', 'Disproportionation', '1+2_Cycloaddition', '2+2_cycloaddition_Cd', '2+2_cycloaddition_CO', '2+2_cycloaddition_CCO', 'Diels_alder_addition', '1,2_Insertion', '1,3_Insertion_CO2', '1,3_Insertion_ROR', 'R_Addition_COm', 'Oa_R_Recombination']:
+            Aunits = 'cm^3/(mol*s)'
+        elif label in ['intra_H_migration', 'Birad_recombination', 'intra_OH_migration', 'Cyclic_Ether_Formation', 'Intra_R_Add_Exocyclic', 'Intra_R_Add_Endocyclic', '1,2-Birad_to_alkene', 'Intra_Disproportionation']:
+            Aunits = 's^-1'
+        else:
+            raise ValueError('Unable to determine preexponential units for old reaction family "{0}".'.format(self.label))
+
+        try:
+            Tmin, Tmax = data[0].split('-')
+            Tmin = (float(Tmin),"K")
+            Tmax = (float(Tmax),"K")
+        except ValueError:
+            Tmin = None
+            Tmax = None
+
+        return ArrheniusEP(
+            A = (float(data[1]),Aunits),
+            n = float(data[2]),
+            alpha = float(data[3]),
+            E0 = (float(data[4]),"kcal/mol"),
+            Tmin = Tmin,
+            Tmax = Tmax,
+        )
+
+    def loadOldRateRules(self, path, groups):
+        """
+        Load a set of old rate rules for kinetics groups into this depository.
+        """
+        # Parse the old library
+        numLabels = max(len(groups.forwardTemplate.reactants), len(groups.top))
+        entries = self.parseOldLibrary(os.path.join(path, 'rateLibrary.txt'), numParameters=10, numLabels=numLabels)
+        
+        self.entries = {}
+        for label, data in entries.iteritems():
+            index, kinetics, shortDesc = data
+            reactants = [groups.entries[l].item for l in label.split(';')]
+            item = Reaction(reactants=reactants, products=[])
+            self.entries[label] = Entry(
+                index = index,
+                label = label,
+                item = item,
+                data = kinetics,
+                shortDesc = shortDesc
+            )
+
 ################################################################################
 
 class KineticsLibrary(Database):
@@ -831,36 +883,6 @@ class KineticsGroups(Database):
             entry.index = index + 1
 
         return self
-
-    def processOldLibraryEntry(self, data):
-        """
-        Process a list of parameters `data` as read from an old-style RMG
-        thermo database, returning the corresponding kinetics object.
-        """
-        # This is hardcoding of reaction families!
-        if self.label in ['H_Abstraction', 'R_Addition_MultipleBond', 'R_Recombination', 'HO2_Elimination_from_PeroxyRadical', 'Disproportionation', '1+2_Cycloaddition', '2+2_cycloaddition_Cd', '2+2_cycloaddition_CO', '2+2_cycloaddition_CCO', 'Diels_alder_addition', '1,2_Insertion', '1,3_Insertion_CO2', '1,3_Insertion_ROR', 'R_Addition_COm', 'Oa_R_Recombination']:
-            Aunits = 'cm^3/(mol*s)'
-        elif self.label in ['intra_H_migration', 'Birad_recombination', 'intra_OH_migration', 'Cyclic_Ether_Formation', 'Intra_R_Add_Exocyclic', 'Intra_R_Add_Endocyclic', '1,2-Birad_to_alkene', 'Intra_Disproportionation']:
-            Aunits = 's^-1'
-        else:
-            raise ValueError('Unable to determine preexponential units for reaction family "{0}".'.format(self.label))
-
-        try:
-            Tmin, Tmax = data[0].split('-')
-            Tmin = (float(Tmin),"K")
-            Tmax = (float(Tmax),"K")
-        except ValueError:
-            Tmin = None
-            Tmax = None
-
-        return ArrheniusEP(
-            A = (float(data[1]),Aunits),
-            n = float(data[2]),
-            alpha = float(data[3]),
-            E0 = (float(data[4]),"kcal/mol"),
-            Tmin = Tmin,
-            Tmax = Tmax,
-        )
 
     def loadOldTemplate(self, path):
         """
@@ -1865,6 +1887,11 @@ class KineticsDatabase:
         depositoryPath = os.path.join(path, 'depository')
         if not os.path.exists(depositoryPath): os.mkdir(depositoryPath)
         for label, depository in self.depository.iteritems():
+            folders = label.split(os.sep)
+            try:
+                os.makedirs(os.path.join(path, 'depository', *folders[:-1]))
+            except OSError:
+                pass
             depository.save(os.path.join(depositoryPath, '{0}.py'.format(label)))
 
         for label, library in self.libraries.iteritems():
@@ -1898,10 +1925,15 @@ class KineticsDatabase:
                 
         for (root, dirs, files) in os.walk(os.path.join(path, 'kinetics_groups')):
             if os.path.exists(os.path.join(root, 'dictionary.txt')) and os.path.exists(os.path.join(root, 'rateLibrary.txt')):
+                # Load the dictionary and tree into a KineticsGroups object
                 group = KineticsGroups(label=os.path.basename(root), name=os.path.basename(root))
                 group.loadOld(root)
                 self.groups[group.label] = group
-                self.depository[group.label]  = KineticsDepository(label=group.label, name=group.name)
+                # Load the rate library (rate rules) into a KineticsDepository object
+                label = os.path.join(os.path.basename(root), 'rules')
+                depository = KineticsDepository(label=label, name=label)
+                depository.loadOldRateRules(root, group)
+                self.depository[label] = depository
 
         return self
 
