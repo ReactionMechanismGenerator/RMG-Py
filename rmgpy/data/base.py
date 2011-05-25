@@ -446,13 +446,13 @@ class Database:
             logging.warning("Skipped {0:d} duplicate entries in {1} library.".format(skippedCount, self.label))
 
         # Make sure each entry with data has a nonnegative index
-        entries = self.entries.values()
-        entries.sort(key=lambda entry: entry.index)
-        index = entries[-1].index + 1
+        entries2 = self.entries.values()
+        entries2.sort(key=lambda entry: entry.index)
+        index = entries2[-1].index + 1
         if index < 1: index = 1
-        for entry in entries:
-            if entry.index < 0:
-                entry.index = index
+        for index0, label, parameters, comment in entries:
+            if self.entries[label].index < 0:
+                self.entries[label].index = index
                 index += 1
 
     def parseOldLibrary(self, path, numParameters, numLabels=1):
@@ -540,9 +540,15 @@ class Database:
         if len(self.top) > 0:
             for entry in self.top:
                 entries.extend(self.descendants(entry))
+            # Don't forget entries that aren't in the tree
+            for entry in self.entries.values():
+                if entry not in entries:
+                    entries.append(entry)
         # Otherwise save the dictionary in any order
         else:
+            # Save the library in order by index
             entries = self.entries.values()
+            entries.sort(key=lambda x: x.index)
 
         try:
             f = open(path, 'w')
@@ -605,9 +611,13 @@ class Database:
         syntax.
         """
         try:
+            # Save the library in order by index
+            entries = self.entries.values()
+            entries.sort(key=lambda x: x.index)
+            
             f = open(path, 'w')
             records = []
-            for label, entry in self.entries.iteritems():
+            for entry in entries:
                 if entry.data is not None:
                     data = entry.data
                     if not isinstance(data, str):
