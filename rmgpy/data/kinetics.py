@@ -30,6 +30,7 @@
 
 import os
 import os.path
+import re
 import logging
 import codecs
 
@@ -544,7 +545,63 @@ class KineticsDepository(Database):
                 data = kinetics,
                 shortDesc = shortDesc
             )
-
+        self.__loadOldComments(path)
+    
+    def __loadOldComments(self, path):
+        """
+        Load a set of old comments from the ``comments.txt`` file for the old
+        kinetics groups. This function assumes that the groups have already
+        been loaded.
+        """
+        index = 'General' #mops up comments before the first rate ID
+        
+        re_underline = re.compile('^\-+')
+        
+        comments = {}
+        comments[index] = ''
+        
+        # Load the comments into a temporary dictionary for now
+        # If no comments file then do nothing
+        try:
+            f = codecs.open(os.path.join(path, 'comments.rst'), 'r', 'utf-8')
+        except IOError:
+            return
+        for line in f:
+            match = re_underline.match(line)
+            if match:
+                index = f.next().strip()
+                assert line.rstrip() == f.next().rstrip(), "Overline didn't match underline"
+                if not comments.has_key(index):
+                    comments[index] = ''
+                line = f.next()
+            comments[index] += line
+        f.close()
+        
+        # Transfer the comments to the longDesc attribute of the associated entry
+        unused = []
+        for index, longDesc in comments.iteritems():
+            try:
+                index = int(index)
+            except ValueError:
+                unused.append(index)
+                
+            if isinstance(index, int):
+                for entry in self.entries.values():
+                    if entry.index == index:
+                        entry.longDesc = longDesc
+                        break
+                #else:
+                #    unused.append(str(index))
+            
+        # Any unused comments are placed in the longDesc attribute of the depository
+        self.longDesc = comments['General'] + '\n'
+        unused.remove('General')
+        for index in unused:
+            try:
+                self.longDesc += comments[index] + '\n'
+            except KeyError:
+                import pdb; pdb.set_trace()
+    
 ################################################################################
 
 class KineticsLibrary(Database):
