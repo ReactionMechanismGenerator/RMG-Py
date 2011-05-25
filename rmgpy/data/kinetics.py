@@ -316,13 +316,16 @@ def saveEntry(f, entry):
                 f.write('"""\n')
                 f.write(reactant.toAdjacencyList())
                 f.write('""",\n')
+            elif isinstance(reactant, LogicNode):
+                f.write('    group{0:d} = "{1}",\n'.format(i+1, reactant))
         for i, product in enumerate(entry.item.products):
             if isinstance(product, Molecule):
                 f.write('    product{0:d} = \n'.format(i+1))
                 f.write('"""\n')
                 f.write(product.toAdjacencyList(removeH=True))
                 f.write('""",\n')
-        f.write('    degeneracy = {0:d},\n'.format(entry.item.degeneracy))
+        if not isinstance(entry.item.reactants[0], Group) and not isinstance(entry.item.reactants[0], LogicNode):
+            f.write('    degeneracy = {0:d},\n'.format(entry.item.degeneracy))
     elif isinstance(entry.item, Group):
         f.write('    group = \n')
         f.write('"""\n')
@@ -422,6 +425,8 @@ def saveEntry(f, entry):
 
     f.write('    reference = {0!r},\n'.format(entry.reference))
     f.write('    referenceType = "{0}",\n'.format(entry.referenceType))
+    if entry.rank is not None:
+        f.write('    rank = {0},\n'.format(entry.rank))
     f.write('    shortDesc = """{0}""",\n'.format(entry.shortDesc))
     f.write('    longDesc = \n')
     f.write('"""\n')
@@ -449,7 +454,7 @@ class KineticsDepository(Database):
     def __init__(self, label='', name='', shortDesc='', longDesc=''):
         Database.__init__(self, label=label, name=name, shortDesc=shortDesc, longDesc=longDesc)
 
-    def loadEntry(self, index, reactant1=None, reactant2=None, reactant3=None, product1=None, product2=None, product3=None, group1=None, group2=None, group3=None, kinetics=None, degeneracy=1, label='', reference=None, referenceType='', shortDesc='', longDesc='', history=None):
+    def loadEntry(self, index, reactant1=None, reactant2=None, reactant3=None, product1=None, product2=None, product3=None, group1=None, group2=None, group3=None, kinetics=None, degeneracy=1, label='', reference=None, referenceType='', shortDesc='', longDesc='', rank=None, history=None):
         
         if reactant1 is not None and product1 is not None:
             # The reaction involves real reactants and products
@@ -485,6 +490,7 @@ class KineticsDepository(Database):
             referenceType = referenceType,
             shortDesc = shortDesc,
             longDesc = longDesc.strip(),
+            rank = rank,
             history = history or [],
         )
 
@@ -546,7 +552,9 @@ class KineticsDepository(Database):
         else:
             E0 = Quantity(E0,'kcal/mol')
         
-        return ArrheniusEP(A=A, n=n, alpha=alpha, E0=E0, Tmin=Tmin, Tmax=Tmax)
+        rank = int(data[9])
+        
+        return ArrheniusEP(A=A, n=n, alpha=alpha, E0=E0, Tmin=Tmin, Tmax=Tmax), rank
 
     def loadOldRateRules(self, path, groups):
         """
@@ -558,7 +566,8 @@ class KineticsDepository(Database):
         
         self.entries = {}
         for entry in entries:
-            index, label, kinetics, shortDesc = entry
+            index, label, data, shortDesc = entry
+            kinetics, rank = data
             reactants = [groups.entries[l].item for l in label.split(';')]
             item = Reaction(reactants=reactants, products=[])
             self.entries[index] = Entry(
@@ -566,6 +575,7 @@ class KineticsDepository(Database):
                 label = label,
                 item = item,
                 data = kinetics,
+                rank = rank,
                 shortDesc = shortDesc
             )
         self.__loadOldComments(path)

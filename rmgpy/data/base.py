@@ -79,6 +79,7 @@ class Entry:
     `referenceType`     The way the data was determined: ``'theoretical'``, ``'experimental'``, or ``'review'``
     `shortDesc`         A brief (one-line) description of the data
     `longDesc`          A long, verbose description of the data
+    `rank`              An integer indicating the degree of confidence in the entry data, or ``None`` if not used
     `history`           A list of tuples containing the date/time of change, author, type of change, and a brief description of the change
     =================== ========================================================
 
@@ -86,7 +87,7 @@ class Entry:
 
     def __init__(self, index=-1, label='', item=None, parent=None,
         children=None, data=None, reference=None, referenceType='',
-        shortDesc='', longDesc='', history=None):
+        shortDesc='', longDesc='', rank=None, history=None):
         self.index = index
         self.label = label
         self.item = item
@@ -97,6 +98,7 @@ class Entry:
         self.referenceType = referenceType
         self.shortDesc = shortDesc
         self.longDesc = longDesc
+        self.rank = rank
         self.history = history or []
 
     def __str__(self):
