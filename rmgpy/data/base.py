@@ -498,7 +498,7 @@ class Database:
                         entries[label] = (index, parameters, comment)
 
             if skippedCount > 0:
-                logging.warning("Skipped {0:d} duplicate entries in this library.".format(skippedCount))
+                logging.warning("Skipped {0:d} duplicate entries in {1} library.".format(skippedCount, self.label))
 
         except DatabaseError, e:
             logging.exception(str(e))
