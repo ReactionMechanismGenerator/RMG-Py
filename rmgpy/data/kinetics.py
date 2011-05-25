@@ -516,14 +516,37 @@ class KineticsDepository(Database):
             Tmin = None
             Tmax = None
 
-        return ArrheniusEP(
-            A = (float(data[1]),Aunits),
-            n = float(data[2]),
-            alpha = float(data[3]),
-            E0 = (float(data[4]),"kcal/mol"),
-            Tmin = Tmin,
-            Tmax = Tmax,
-        )
+        A, n, alpha, E0, dA, dn, dalpha, dE0 = data[1:9]
+        
+        A = float(A)
+        if dA[0] == '*':
+            A = Quantity(A,Aunits,'*|/',float(dA[1:]))
+        else:
+            dA = float(dA)
+            if dA != 0:
+                A = Quantity(A,Aunits,'+|-',dA)
+            else:
+                A = Quantity(A,Aunits)
+        
+        n = float(n); dn = float(dn)
+        if dn != 0:
+            n = Quantity(n,'','+|-',dn)
+        else:
+            n = Quantity(n,'')
+                
+        alpha = float(alpha); dalpha = float(dalpha)
+        if dalpha != 0:
+            alpha = Quantity(alpha,'','+|-',dalpha)
+        else:
+            alpha = Quantity(alpha,'')
+        
+        E0 = float(E0); dE0 = float(dE0)
+        if dE0 != 0:
+            E0 = Quantity(E0,'kcal/mol','+|-',dE0)
+        else:
+            E0 = Quantity(E0,'kcal/mol')
+        
+        return ArrheniusEP(A=A, n=n, alpha=alpha, E0=E0, Tmin=Tmin, Tmax=Tmax)
 
     def loadOldRateRules(self, path, groups):
         """
@@ -743,13 +766,34 @@ class KineticsLibrary(Database):
                                     raise DatabaseError('Product {0} not found in species dictionary.'.format(item))
 
                             if dataIndex == -6:
-                                A = Quantity(float(items[-6]), Aunits[len(reactants)])
-                                n = Quantity(float(items[-5]), '')
-                                Ea = Quantity(float(items[-4]), Eunits)
+                                A, n, Ea, dA, dn, dEa = items[-6:]
+                                A = float(A)
                             else:
-                                A = Quantity(float(items[-3]), Aunits[len(reactants)])
-                                n = Quantity(float(items[-2]), '')
-                                Ea = Quantity(float(items[-1]), Eunits)
+                                A, n, Ea = items[-3:]
+                                dA = '0'; dn = '0'; dEa = '0'
+                            
+                            A = float(A)
+                            if dA[0] == '*':
+                                A = Quantity(A,Aunits[len(reactants)],'*|/',float(dA[1:]))
+                            else:
+                                dA = float(dA)
+                                if dA != 0:
+                                    A = Quantity(A,Aunits[len(reactants)],'+|-',dA)
+                                else:
+                                    A = Quantity(A,Aunits[len(reactants)])
+
+                            n = float(n); dn = float(dn)
+                            if dn != 0:
+                                n = Quantity(n,'','+|-',dn)
+                            else:
+                                n = Quantity(n,'')
+
+                            Ea = float(Ea); dEa = float(dEa)
+                            if dEa != 0:
+                                Ea = Quantity(Ea,Eunits,'+|-',dEa)
+                            else:
+                                Ea = Quantity(Ea,Eunits)
+
                             kinetics = Arrhenius(A=A, n=n, Ea=Ea, T0=(1.0,"K"))
 
                             reaction = Reaction(
