@@ -230,6 +230,8 @@ class Database:
         entries = self.getEntriesToSave()
 
         f = codecs.open(path, 'w', 'utf-8')
+        f.write('#!/usr/bin/env python\n')
+        f.write('# encoding: utf-8\n\n')
         f.write('name = "{0}"\n'.format(self.name))
         f.write('shortDesc = "{0}"\n'.format(self.shortDesc))
         f.write('longDesc = """\n')
