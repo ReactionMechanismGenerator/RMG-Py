@@ -425,12 +425,21 @@ class Database:
 
         entries = self.parseOldLibrary(path, numParameters, numLabels)
 
-        for label, entry in entries.iteritems():
+        # Load the parsed entries into the database, skipping duplicate entries
+        skippedCount = 0
+        for index, label, parameters, comment in entries:
             assert label in self.entries
-            index, parameters, comment = entry
-            self.entries[label].index = index
-            self.entries[label].data = parameters
-            self.entries[label].shortDesc = comment
+            if self.entries[label].index != -1:
+                # The entry is a duplicate, so skip it
+                logging.debug("There was already something labeled {0} in the {1} library. Ignoring '{2}' ({3})".format(label, self.label, index, parameters))
+                skippedCount += 1
+            else:
+                # The entry is not a duplicate
+                self.entries[label].index = index
+                self.entries[label].data = parameters
+                self.entries[label].shortDesc = comment
+        if skippedCount > 0:
+            logging.warning("Skipped {0:d} duplicate entries in {1} library.".format(skippedCount, self.label))
 
         # Make sure each entry with data has a nonnegative index
         entries = self.entries.values()
@@ -445,15 +454,15 @@ class Database:
     def parseOldLibrary(self, path, numParameters, numLabels=1):
         """
         Parse an RMG database library located at `path`, returning the loaded
-        entries (rather than storing them in the database).
+        entries (rather than storing them in the database). This method does
+        not discard duplicate entries.
         """
 
-        entries = {}
+        entries = []
         
         flib = None
         try:
             flib = open(path, 'r')
-            skippedCount = 0
             for line in flib:
                 line = removeCommentFromLine(line).strip()
                 if len(line) > 0:
@@ -491,14 +500,7 @@ class Database:
                         comment = ' '.join(info[offset:])
                         comment = comment.strip('"')
 
-                    if label in entries:
-                        logging.debug("There was already something labeled {0} in the library. Ignoring '{1}' ({2})".format(label, index, parameters))
-                        skippedCount += 1
-                    else:
-                        entries[label] = (index, parameters, comment)
-
-            if skippedCount > 0:
-                logging.warning("Skipped {0:d} duplicate entries in {1} library.".format(skippedCount, self.label))
+                    entries.append((index, label, parameters, comment))
 
         except DatabaseError, e:
             logging.exception(str(e))

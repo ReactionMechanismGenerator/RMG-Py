@@ -533,11 +533,11 @@ class KineticsDepository(Database):
         entries = self.parseOldLibrary(os.path.join(path, 'rateLibrary.txt'), numParameters=10, numLabels=numLabels)
         
         self.entries = {}
-        for label, data in entries.iteritems():
-            index, kinetics, shortDesc = data
+        for entry in entries:
+            index, label, kinetics, shortDesc = entry
             reactants = [groups.entries[l].item for l in label.split(';')]
             item = Reaction(reactants=reactants, products=[])
-            self.entries[label] = Entry(
+            self.entries[index] = Entry(
                 index = index,
                 label = label,
                 item = item,
