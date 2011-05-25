@@ -219,7 +219,7 @@ class Database:
             entries.sort(key=lambda x: x.index)
         return entries
 
-    def save(self, path, entryName='entry'):
+    def save(self, path):
         """
         Save the current database to the file at location `path` on disk. The
         optional `entryName` parameter specifies the identifier used for each
@@ -231,7 +231,7 @@ class Database:
         f.write('name = "{0}"\n'.format(self.name))
         f.write('shortDesc = "{0}"\n'.format(self.shortDesc))
         f.write('longDesc = """\n')
-        f.write(self.longDesc)
+        f.write(self.longDesc.strip())
         f.write('\n"""\n\n')
         for entry in entries:
             self.saveEntry(f, entry)

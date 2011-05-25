@@ -424,7 +424,7 @@ def saveEntry(f, entry):
     f.write('    shortDesc = """{0}""",\n'.format(entry.shortDesc))
     f.write('    longDesc = \n')
     f.write('"""\n')
-    f.write(entry.longDesc)
+    f.write(entry.longDesc.strip() + "\n")
     f.write('""",\n')
 
     f.write('    history = [\n')
