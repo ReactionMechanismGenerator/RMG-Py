@@ -556,8 +556,8 @@ class Database:
                     f.write(entry.item.toAdjacencyList(removeH=True) + '\n')
                 elif isinstance(entry.item, Group):
                     f.write(entry.item.toAdjacencyList() + '\n')
-                elif isinstance(entry.item, LogicAnd) or isinstance(entry.item, LogicOr):
-                    f.write('{0}\n\n'.format(str(entry.item)))
+                elif isinstance(entry.item, LogicOr):
+                    f.write('{0}\n\n'.format(entry.item).replace('OR{', 'Union {'))
                 else:
                     raise DatabaseError('Unexpected item with label {0} encountered in dictionary while attempting to save.'.format(label))
             f.close()
