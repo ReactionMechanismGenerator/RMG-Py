@@ -636,12 +636,12 @@ class Database:
             for index, labels, data, comment in records:
                 f.write('{:<6d} '.format(index))
                 for label in labels:
-                    f.write('{:<24s}'.format(label))
+                    f.write('{:<32s} '.format(label))
                 if isinstance(data, str):
                     f.write('{:s} '.format(data))
                 else:
                     f.write('{:s} '.format(' '.join(['{:<10g}'.format(d) for d in data])))
-                f.write('{:s}\n'.format(comment))
+                f.write('    {:s}\n'.format(comment))
             f.close()
         except IOError, e:
             logging.exception('Unable to save old-style library to "{0}".'.format(os.path.abspath(path)))

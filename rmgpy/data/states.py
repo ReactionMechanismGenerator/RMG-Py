@@ -101,14 +101,9 @@ def generateOldLibraryEntry(data):
     Return a list of values used to save entries to the old-style RMG
     thermo database based on the thermodynamics object `data`.
     """
-    items = []
-    if isinstance(data, StatesModel):
-        pass
-    elif isinstance(data, list):
-        for mode in data:
-            items.extend([mode.degeneracy, mode.lower, mode.upper])
-    else:
-        raise ValueError('data parameter must be in StatesModel format or a list; got {0} instead'.format(data.__class__))
+    items = '{0:3d}'.format(data.symmetry)
+    for lower, upper, degeneracy in data.frequencies:
+        items += '     {0:3d} {1:9.1f} {2:9.1f}'.format(degeneracy,lower,upper)
     return items
 
 def processOldLibraryEntry(data, format):
