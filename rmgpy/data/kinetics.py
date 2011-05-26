@@ -41,6 +41,7 @@ from rmgpy.reaction import Reaction, ReactionError
 from rmgpy.kinetics import *
 from rmgpy.group import GroupBond, Group
 from rmgpy.molecule import Bond
+from rmgpy.species import Species
 
 ################################################################################
 
@@ -311,6 +312,11 @@ def saveEntry(f, entry):
                 f.write('"""\n')
                 f.write(reactant.toAdjacencyList(removeH=True))
                 f.write('""",\n')
+            elif isinstance(reactant, Species):
+                f.write('    reactant{0:d} = \n'.format(i+1))
+                f.write('"""\n')
+                f.write(reactant.molecule[0].toAdjacencyList(label=reactant.label, removeH=True))
+                f.write('""",\n')
             elif isinstance(reactant, Group):
                 f.write('    group{0:d} = \n'.format(i+1))
                 f.write('"""\n')
@@ -323,6 +329,11 @@ def saveEntry(f, entry):
                 f.write('    product{0:d} = \n'.format(i+1))
                 f.write('"""\n')
                 f.write(product.toAdjacencyList(removeH=True))
+                f.write('""",\n')
+            elif isinstance(reactant, Species):
+                f.write('    product{0:d} = \n'.format(i+1))
+                f.write('"""\n')
+                f.write(product.molecule[0].toAdjacencyList(label=product.label, removeH=True))
                 f.write('""",\n')
         if not isinstance(entry.item.reactants[0], Group) and not isinstance(entry.item.reactants[0], LogicNode):
             f.write('    degeneracy = {0:d},\n'.format(entry.item.degeneracy))
@@ -658,15 +669,76 @@ class KineticsLibrary(Database):
     def __init__(self, label='', name='', shortDesc='', longDesc=''):
         Database.__init__(self, label=label, name=name, shortDesc=shortDesc, longDesc=longDesc)
 
-    def loadEntry(self, index, reactant1, product1, kinetics, reactant2=None, reactant3=None, product2=None, product3=None, degeneracy=1, label='', reference=None, referenceType='', shortDesc='', longDesc='', history=None):
-        reactants = [Molecule().fromAdjacencyList(reactant1)]
-        if reactant2 is not None: reactants.append(Molecule().fromAdjacencyList(reactant2))
-        if reactant3 is not None: reactants.append(Molecule().fromAdjacencyList(reactant3))
+    def getSpecies(self):
+        """
+        Return a dictionary containing all of the species in this kinetics
+        library.
+        """
+        speciesDict = {}
+        
+        def speciesMatch(speciesA, speciesB):
+            for moleculeA in speciesA.molecule:
+                for moleculeB in speciesB.molecule:
+                    if moleculeA.isIsomorphic(moleculeB):
+                        return True
+            return False
+        
+        entries = self.entries.values()
+        for entry in entries:
+            for reactant in entry.item.reactants:
+                if reactant.label not in speciesDict:
+                    speciesDict[reactant.label] = reactant
+                elif not speciesMatch(reactant, speciesDict[reactant.label]):
+                    print reactant.molecule[0].toAdjacencyList()
+                    print speciesDict[reactant.label].molecule[0].toAdjacencyList()
+                    raise DatabaseError('Species label "{0}" used for multiple species in kinetics library {1}.'.format(reactant.label, self.label))
+            for product in entry.item.products:
+                if product.label not in speciesDict:
+                    speciesDict[product.label] = product
+                elif not speciesMatch(product, speciesDict[product.label]):
+                    import pdb; pdb.set_trace()
+                    print product.molecule[0].toAdjacencyList()
+                    print speciesDict[product.label].molecule[0].toAdjacencyList()
+                    print product.molecule[0].isIsomorphic(speciesDict[product.label].molecule[0])
+                    raise DatabaseError('Species label "{0}" used for multiple species in kinetics library {1}.'.format(product.label, self.label))
+            if isinstance(entry.data, ThirdBody):
+                for molecule in entry.data.efficiencies:
+                    formula = molecule.getFormula()
+                    if formula in ['He', 'Ar', 'N2', 'Ne']:
+                        pass
+                    else:
+                        found = False
+                        for species in speciesDict.values():
+                            for mol in species.molecule:
+                                if mol.isIsomorphic(molecule):
+                                    found = True
+                                    break
+                        if not found:
+                            speciesDict[formula] = Species(label=formula, molecule=[molecule])
+        
+        return speciesDict
+    
+    def load(self, path, local_context=None, global_context=None):
+        Database.load(self, path, local_context, global_context)
+        
+        # Generate a unique set of the species in the kinetics library
+        speciesDict = self.getSpecies()
+        # Make sure all of the reactions draw from only this set
+        entries = self.entries.values()
+        for entry in entries:
+            entry.item.reactants = [speciesDict[spec.label] for spec in entry.item.reactants]
+            entry.item.products = [speciesDict[spec.label] for spec in entry.item.products]
+        
+    def loadEntry(self, index, reactant1, product1, kinetics, reactant2=None, reactant3=None, product2=None, product3=None, degeneracy=1, label='', duplicate=False, reference=None, referenceType='', shortDesc='', longDesc='', history=None):
+        
+        reactants = [Species(label=reactant1.strip().splitlines()[0].strip(), molecule=[Molecule().fromAdjacencyList(reactant1)])]
+        if reactant2 is not None: reactants.append(Species(label=reactant2.strip().splitlines()[0].strip(), molecule=[Molecule().fromAdjacencyList(reactant2)]))
+        if reactant3 is not None: reactants.append(Species(label=reactant3.strip().splitlines()[0].strip(), molecule=[Molecule().fromAdjacencyList(reactant3)]))
 
-        products = [Molecule().fromAdjacencyList(product1)]
-        if product2 is not None: products.append(Molecule().fromAdjacencyList(product2))
-        if product3 is not None: products.append(Molecule().fromAdjacencyList(product3))
-
+        products = [Species(label=product1.strip().splitlines()[0].strip(), molecule=[Molecule().fromAdjacencyList(product1)])]
+        if product2 is not None: products.append(Species(label=product2.strip().splitlines()[0].strip(), molecule=[Molecule().fromAdjacencyList(product2)]))
+        if product3 is not None: products.append(Species(label=product3.strip().splitlines()[0].strip(), molecule=[Molecule().fromAdjacencyList(product3)]))
+        
         self.entries[index] = Entry(
             index = index,
             label = label,
@@ -910,24 +982,24 @@ class KineticsLibrary(Database):
                                 # This is hardcoding to handle these special colliders
                                 if spec.upper() in ['N2', 'HE', 'AR', 'NE'] and spec not in species:
                                     if spec.upper() == 'N2':
-                                        species[spec] = Molecule().fromSMILES('N#N')
+                                        species[spec] = Species(label='N2', molecule=[Molecule().fromSMILES('N#N')])
                                     elif spec.upper() == 'HE':
-                                        species[spec] = Molecule().fromAdjacencyList('1 He 0')
+                                        species[spec] = Species(label='He', molecule=[Molecule().fromAdjacencyList('1 He 0')])
                                     elif spec.upper() == 'AR':
-                                        species[spec] = Molecule().fromAdjacencyList('1 Ar 0')
+                                        species[spec] = Species(label='Ar', molecule=[Molecule().fromAdjacencyList('1 Ar 0')])
                                     elif spec.upper() == 'NE':
-                                        species[spec] = Molecule().fromAdjacencyList('1 Ne 0')
+                                        species[spec] = Species(label='Ne', molecule=[Molecule().fromAdjacencyList('1 Ne 0')])
                                 
                                 if spec not in species:
                                     logging.warning('Collider {0} for reaction {1} not found in species dictionary.'.format(spec, reaction))
                                 else:
-                                    kinetics.efficiencies[species[spec]] = float(eff)
+                                    kinetics.efficiencies[species[spec].molecule[0]] = float(eff)
 
                     if 'Unit:' in line:
                         inUnitSection = True; inReactionSection = False
                     elif 'Reactions:' in line:
                         inUnitSection = False; inReactionSection = True
-
+                        
         except (DatabaseError, InvalidAdjacencyListError), e:
             logging.exception(str(e))
             raise
