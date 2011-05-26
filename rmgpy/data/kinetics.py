@@ -785,7 +785,7 @@ class KineticsLibrary(Database):
         path = os.path.abspath(path)
 
         self.loadOldDictionary(os.path.join(path,'species.txt'), pattern=False)
-        species = dict([(label, entry.item) for label, entry in self.entries.iteritems()])
+        species = dict([(label, Species(label=label, molecule=[entry.item])) for label, entry in self.entries.iteritems()])
         
         reactions = []
         reactions.extend(self.__loadOldReactions(os.path.join(path,'reactions.txt'), species))
@@ -1036,7 +1036,133 @@ class KineticsLibrary(Database):
             if fdict: fdict.close()
 
         return reactions
-
+    
+    def saveOld(self, path):
+        """
+        Save an old-style reaction library to `path`. This creates files named
+        ``species.txt``, ``reactions.txt``, and ``pdepreactions.txt`` in the
+        given directory; these contain the species dictionary, high-pressure
+        limit reactions and kinetics, and pressure-dependent reactions and
+        kinetics, respectively.
+        """
+        try:
+            os.makedirs(path)
+        except OSError:
+            pass
+        
+        def writeArrhenius(f, arrhenius):
+            f.write('{0:10.3e} {1:9.3f} {2:10.2f}     {3}{4:g} {5:g} {6:g}\n'.format(
+                arrhenius.A.value,
+                arrhenius.n.value,
+                arrhenius.Ea.value / 4.184,
+                '*' if arrhenius.A.isUncertaintyMultiplicative() else '',
+                arrhenius.A.uncertainty,
+                arrhenius.n.uncertainty,
+                arrhenius.Ea.uncertainty / 4.184,
+            ))
+        
+        # Gather all of the species used in this kinetics library
+        speciesDict = self.getSpecies()
+        
+        entries = self.entries.values()
+        entries.sort(key=lambda x: x.index)
+        
+        # Save the species dictionary
+        speciesList = speciesDict.values()
+        speciesList.sort(key=lambda x: x.label)
+        f = open(os.path.join(path, 'species.txt'), 'w')
+        for species in speciesList:
+            f.write(species.molecule[0].toAdjacencyList(label=species.label, removeH=True) + "\n")
+        f.close()
+        
+        # Save the high-pressure limit reactions
+        # Currently only Arrhenius kinetics are allowed
+        f = open(os.path.join(path, 'reactions.txt'), 'w')
+        f.write('Unit:\n')
+        f.write('A: mol/m3/s\n')
+        f.write('E: cal/mol\n\n')
+        f.write('Reactions:\n')
+        for entry in entries:
+            kinetics = entry.data
+            if not kinetics.isPressureDependent():
+                # Write reaction equation
+                f.write('{0:<48}'.format(entry.item))
+                # Write kinetics
+                if isinstance(kinetics, Arrhenius):
+                    writeArrhenius(f, kinetics)
+                else:
+                    raise DatabaseError('Unexpected kinetics type "{0}" encountered while saving old kinetics library (reactions.txt).'.format(kinetics.__class__))
+                # Mark as duplicate if needed
+                if entry.item.duplicate:
+                    f.write(' DUPLICATE\n')
+        f.close()
+        
+        # Save the pressure-dependent reactions
+        # Currently only ThirdBody, Lindemann, Troe, and PDepArrhenius kinetics are allowed
+        f = open(os.path.join(path, 'pdepreactions.txt'), 'w')
+        f.write('Unit:\n')
+        f.write('A: mol/m3/s\n')
+        f.write('E: cal/mol\n\n')
+        f.write('Reactions:\n')
+        for entry in entries:
+            kinetics = entry.data
+            if entry.data.isPressureDependent():
+                # Write reaction equation
+                equation = str(entry.item)
+                index = equation.find('<=>')
+                if isinstance(kinetics, ThirdBody) and not isinstance(kinetics, Lindemann):
+                    equation = '{0}+ M {1} + M'.format(equation[0:index], equation[index:]) 
+                else:
+                    equation = '{0}(+M) {1} (+M)'.format(equation[0:index], equation[index:]) 
+                f.write('{0:<48}'.format(equation))
+                # Write kinetics
+                if isinstance(kinetics, ThirdBody):
+                    writeArrhenius(f, kinetics.arrheniusHigh)
+                    if len(kinetics.efficiencies) > 0:
+                        for molecule, efficiency in kinetics.efficiencies.iteritems():
+                            for spec in speciesDict.values():
+                                if molecule in spec.molecule:
+                                    f.write('{0}/{1:.2f}/ '.format(spec.label, efficiency)) 
+                            else:
+                                f.write('{0}/{1:.2f}/ '.format(molecule.getFormula().upper(), efficiency)) 
+                        f.write('\n')
+                    if isinstance(kinetics, Lindemann):
+                        f.write('     LOW  /  {0:10.3e} {1:9.3f} {2:10.2f}/\n'.format(
+                            kinetics.arrheniusLow.A.value,
+                            kinetics.arrheniusLow.n.value,
+                            kinetics.arrheniusLow.Ea.value / 4.184,
+                        ))
+                    if isinstance(kinetics, Troe):
+                        if kinetics.T2 is not None:
+                            f.write('     TROE /  {0:10.4f} {1:10.2g} {2:10.2g} {3:10.2g}/\n'.format(
+                                kinetics.alpha.value,
+                                kinetics.T3.value,
+                                kinetics.T1.value,
+                                kinetics.T2.value,
+                            ))
+                        else:
+                            f.write('     TROE /  {0:10.4f} {1:10.2g} {2:10.2g}/\n'.format(
+                                kinetics.alpha.value,
+                                kinetics.T3.value,
+                                kinetics.T1.value,
+                            ))
+                        
+                elif isinstance(kinetics, PDepArrhenius):
+                    for pressure, arrhenius in zip(kinetics.pressures.values, kinetics.arrhenius):
+                        f.write('     PLOG /  {0:10g} {1:10.3e} {2:9.3f} {3:10.2f} /\n'.format(
+                            pressure / 1e5,
+                            arrhenius.A.value,
+                            arrhenius.n.value,
+                            arrhenius.Ea.value / 4.184,
+                        ))
+                else:
+                    raise DatabaseError('Unexpected kinetics type "{0}" encountered while saving old kinetics library (reactions.txt).'.format(kinetics.__class__))
+                # Mark as duplicate if needed
+                if entry.item.duplicate:
+                    f.write(' DUPLICATE\n')
+                f.write('\n')
+        f.close()
+    
 ################################################################################
 
 class KineticsGroups(Database):
@@ -2165,7 +2291,14 @@ class KineticsDatabase:
         Save the old RMG kinetics database to the given `path` on disk, where
         `path` points to the top-level folder of the old RMG database.
         """
-        pass
+        librariesPath = os.path.join(path, 'kinetics_libraries')
+        if not os.path.exists(librariesPath): os.mkdir(librariesPath)
+        for library in self.libraries.values():
+            libraryPath = os.path.join(librariesPath, library.label)
+            library.saveOld(libraryPath)
+
+        groupsPath = os.path.join(path, 'kinetics_groups')
+        if not os.path.exists(groupsPath): os.mkdir(groupsPath)
 
     def generateReactions(self, reactants, products=None):
         """
