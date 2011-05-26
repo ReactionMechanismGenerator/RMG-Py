@@ -190,7 +190,6 @@ class Database:
         self.name = local_context['name']
         self.shortDesc = local_context['shortDesc']
         self.longDesc = local_context['longDesc'].strip()
-        self.label = os.path.basename(os.path.splitext(path)[0])
         
         # Return the loaded database (to allow for Database().load() syntax)
         return self

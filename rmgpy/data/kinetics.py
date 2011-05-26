@@ -2059,8 +2059,9 @@ class KineticsDatabase:
         for (root, dirs, files) in os.walk(os.path.join(path)):
             for f in files:
                 if os.path.splitext(f)[1].lower() == '.py':
-                    depository = KineticsDepository()
-                    depository.load(os.path.join(root, f), self.local_context, self.global_context)
+                    depositoryPath = os.path.join(root, f)
+                    depository = KineticsDepository(label=depositoryPath[len(path)+1:-3])
+                    depository.load(depositoryPath, self.local_context, self.global_context)
                     self.depository[depository.label] = depository
 
     def loadLibraries(self, path, libraries=None):
@@ -2072,11 +2073,11 @@ class KineticsDatabase:
         for (root, dirs, files) in os.walk(os.path.join(path)):
             for f in files:
                 name, ext = os.path.splitext(f)
-                if ext.lower() == '.py' and (libraries is None or name in libraries):
+                if ext.lower() == '.py' and (libraries is None or libraries == [] or name in libraries):
                     logging.info('Loading kinetics library from {0} in {1}...'.format(f, root))
-                    library = KineticsLibrary()
-                    library.load(os.path.join(root, f), self.local_context, self.global_context)
-                    library.label = os.path.splitext(f)[0]
+                    libraryPath = os.path.join(root, f)
+                    library = KineticsLibrary(label=libraryPath[len(path)+1:-3])
+                    library.load(libraryPath, self.local_context, self.global_context)
                     self.libraries[library.label] = library
                     self.libraryOrder.append(library.label)
         if libraries is not None:
