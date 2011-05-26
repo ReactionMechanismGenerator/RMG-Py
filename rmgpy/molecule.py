@@ -615,6 +615,10 @@ class Molecule(Graph):
         # Remove the hydrogen atoms from the structure
         for atom in hydrogens:
             self.removeAtom(atom)
+        
+        # The connectivity values are different in implicit and explicit mode,
+        # so reset them so they are recomputed when needed
+        self.resetConnectivityValues()
 
         # Set implicitHydrogens flag to True
         self.implicitHydrogens = True
@@ -653,6 +657,10 @@ class Molecule(Graph):
             H.connectivity3 = atom.connectivity2
             H.sortingLabel = numAtoms
             numAtoms += 1
+
+        # The connectivity values are different in implicit and explicit mode,
+        # so reset them so they are recomputed when needed
+        self.resetConnectivityValues()
 
         # Set implicitHydrogens flag to False
         self.implicitHydrogens = False
