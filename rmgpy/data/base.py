@@ -167,6 +167,8 @@ class Database:
         # Set up global and local context
         if global_context is None: global_context = {}
         global_context['__builtins__'] = None
+        global_context['True'] = True
+        global_context['False'] = False
         if local_context is None: local_context = {}
         local_context['__builtins__'] = None
         local_context['entry'] = self.loadEntry

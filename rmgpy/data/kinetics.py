@@ -337,6 +337,8 @@ def saveEntry(f, entry):
                 f.write('""",\n')
         if not isinstance(entry.item.reactants[0], Group) and not isinstance(entry.item.reactants[0], LogicNode):
             f.write('    degeneracy = {0:d},\n'.format(entry.item.degeneracy))
+        if entry.item.duplicate: 
+            f.write('    duplicate = {0!r},\n'.format(entry.item.duplicate))
     elif isinstance(entry.item, Group):
         f.write('    group = \n')
         f.write('"""\n')
@@ -718,6 +720,23 @@ class KineticsLibrary(Database):
         
         return speciesDict
     
+    def checkForDuplicates(self):
+        """
+        Check that all duplicate reactions in the kinetics library are
+        properly marked (i.e. with their ``duplicate`` attribute set to 
+        ``True``).
+        """
+        for entry0 in self.entries.values():
+            reaction0 = entry0.item
+            if not reaction0.duplicate:
+                # This reaction is not marked as a duplicate reaction
+                # This means that if we find any duplicate reactions, it is an error
+                for entry in self.entries.values():
+                    reaction = entry.item
+                    if reaction0 is not reaction and reaction0.reactants == reaction.reactants and reaction0.products == reaction.products:
+                        # We found a duplicate reaction that wasn't marked!
+                        raise DatabaseError('Unexpected duplicate reaction {0} in kinetics library {1}.'.format(reaction0, self.label))                   
+
     def load(self, path, local_context=None, global_context=None):
         Database.load(self, path, local_context, global_context)
         
@@ -728,6 +747,8 @@ class KineticsLibrary(Database):
         for entry in entries:
             entry.item.reactants = [speciesDict[spec.label] for spec in entry.item.reactants]
             entry.item.products = [speciesDict[spec.label] for spec in entry.item.products]
+            
+        self.checkForDuplicates()
         
     def loadEntry(self, index, reactant1, product1, kinetics, reactant2=None, reactant3=None, product2=None, product3=None, degeneracy=1, label='', duplicate=False, reference=None, referenceType='', shortDesc='', longDesc='', history=None):
         
@@ -742,7 +763,7 @@ class KineticsLibrary(Database):
         self.entries[index] = Entry(
             index = index,
             label = label,
-            item = Reaction(reactants=reactants, products=products, degeneracy=degeneracy),
+            item = Reaction(reactants=reactants, products=products, degeneracy=degeneracy, duplicate=duplicate),
             data = kinetics,
             reference = reference,
             referenceType = referenceType,
@@ -779,6 +800,8 @@ class KineticsLibrary(Database):
                 data = reaction.kinetics,
             )
             reaction.kinetics = None
+        
+        self.checkForDuplicates()
 
     def __loadOldReactions(self, path, species):
         """
@@ -789,7 +812,7 @@ class KineticsLibrary(Database):
         is a seed mechanism.
         """
         reactions = []
-
+        
         # Process the reactions or pdepreactions file
         try:
             inUnitSection = False; inReactionSection = False
@@ -964,6 +987,9 @@ class KineticsLibrary(Database):
                                 kinetics.T2 = None
                             kinetics.T3 = Quantity(float(T3),"K")
 
+                        elif 'DUPLICATE' in line or 'DUP' in line:
+                            reaction.duplicate = True
+                                
                         else:
                             # This line contains collider efficiencies
 
