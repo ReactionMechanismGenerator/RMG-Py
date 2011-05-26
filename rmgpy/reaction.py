@@ -73,12 +73,13 @@ class Reaction:
     `reversible`        ``bool``                    ``True`` if the reaction is reversible, ``False`` if not
     `transitionState`   :class:`TransitionState`    The transition state
     `thirdBody`         ``bool``                    ``True`` if the reaction if the reaction kinetics imply a third body, ``False`` if not
+    `duplicate`         ``bool``                    ``True`` if the reaction is known to be a duplicate, ``False`` if not
     `degeneracy`        :class:`double`             The reaction path degeneracy for the reaction
     =================== =========================== ============================
     
     """
     
-    def __init__(self, index=-1, reactants=None, products=None, kinetics=None, reversible=True, transitionState=None, thirdBody=False, degeneracy=1):
+    def __init__(self, index=-1, reactants=None, products=None, kinetics=None, reversible=True, transitionState=None, thirdBody=False, duplicate=False, degeneracy=1):
         self.index = index
         self.reactants = reactants
         self.products = products
@@ -86,6 +87,7 @@ class Reaction:
         self.reversible = reversible
         self.transitionState = transitionState
         self.thirdBody = thirdBody
+        self.duplicate = duplicate
         self.degeneracy = degeneracy
 
     def __repr__(self):
@@ -101,6 +103,7 @@ class Reaction:
         if not self.reversible: string += 'reversible={0}, '.format(self.reversible)
         if self.transitionState is not None: string += 'transitionState={0!r}, '.format(self.transitionState)
         if self.thirdBody: string += 'thirdBody={0}, '.format(self.thirdBody)
+        if self.duplicate: string += 'duplicate={0}, '.format(self.duplicate)
         if self.degeneracy != 1: string += 'degeneracy={0:d}, '.format(self.degeneracy)
         string = string[:-2] + ')'
         return string
@@ -117,7 +120,7 @@ class Reaction:
         """
         A helper function used when pickling an object.
         """
-        return (Reaction, (self.index, self.reactants, self.products, self.kinetics, self.reversible, self.transitionState, self.thirdBody, self.degeneracy))
+        return (Reaction, (self.index, self.reactants, self.products, self.kinetics, self.reversible, self.transitionState, self.thirdBody, self.duplicate, self.degeneracy))
 
     def isIsomerization(self):
         """

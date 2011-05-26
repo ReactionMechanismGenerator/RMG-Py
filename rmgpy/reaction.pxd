@@ -40,6 +40,7 @@ cdef class Reaction:
     cdef public TransitionState transitionState
     cdef public KineticsModel kinetics
     cdef public bint thirdBody
+    cdef public bint duplicate
     cdef public double degeneracy
     
     cpdef bint isIsomerization(self)

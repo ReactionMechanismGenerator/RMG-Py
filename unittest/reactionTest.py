@@ -284,6 +284,10 @@ class TestReaction(unittest.TestCase):
         self.assertEqual(self.reaction.kinetics.Ea.value, reaction.kinetics.Ea.value)
         self.assertEqual(self.reaction.kinetics.comment, reaction.kinetics.comment)
 
+        self.assertEqual(self.reaction.thirdBody, reaction.thirdBody)
+        self.assertEqual(self.reaction.duplicate, reaction.duplicate)
+        self.assertEqual(self.reaction.degeneracy, reaction.degeneracy)        
+
     def testOutput(self):
         """
         Test that a Reaction object can be successfully reconstructed
@@ -309,6 +313,10 @@ class TestReaction(unittest.TestCase):
         self.assertEqual(self.reaction.kinetics.T0.value, reaction.kinetics.T0.value)
         self.assertEqual(self.reaction.kinetics.Ea.value, reaction.kinetics.Ea.value)
         self.assertEqual(self.reaction.kinetics.comment, reaction.kinetics.comment)
+        
+        self.assertEqual(self.reaction.thirdBody, reaction.thirdBody)
+        self.assertEqual(self.reaction.duplicate, reaction.duplicate)
+        self.assertEqual(self.reaction.degeneracy, reaction.degeneracy)   
 
 ################################################################################
 
