@@ -36,6 +36,7 @@ and the :class:`Constants` class for defining relevant physical constants.
 import math
 import numpy
 import quantities as pq
+import cython
 
 # Explicity set the default units to SI
 pq.set_default_units('si')
@@ -97,6 +98,9 @@ class Quantity:
     single uncertainty value for that quantity. The uncertainty data can be
     specified as either additive or multiplicative, and must be symmetric.
     """
+    
+    # A dict of conversion factors (to SI) for each of the frequent units
+    conversionFactors = {}
     
     def __init__(self, *args):
         """
@@ -287,9 +291,16 @@ class Quantity:
         Get the conversion factor for converting a quantity in a given set of
         `units` to the SI equivalent units.
         """
-        factor = float(pq.Quantity(1.0, self.units).simplified)
-        # Exception: don't convert wavenumbers (cm^-1) to m^-1
-        if self.units == 'cm^-1': factor = 1.0
+        cython.declare(factor=cython.double)
+        try:
+            # Process several common units manually for speed
+            factor = Quantity.conversionFactors[self.units]
+        except KeyError:
+            # Fall back to (slow!) quantities package for less common units
+            factor = float(pq.Quantity(1.0, self.units).simplified)
+            # Cache the conversion factor so we don't ever need to use
+            # quantities to compute it again
+            Quantity.conversionFactors[self.units] = factor
         return factor
 
     def getConversionFactorFromSI(self):
@@ -297,9 +308,8 @@ class Quantity:
         Get the conversion factor for converting a quantity to a given set of
         `units` from the SI equivalent units.
         """
-        factor = float(pq.Quantity(1.0, self.units).simplified)
-        # Exception: don't convert wavenumbers (cm^-1) to m^-1
-        if self.units == 'cm^-1': factor = 1.0
+        cython.declare(factor=cython.double)
+        factor = self.getConversionFactorToSI()
         return 1.0 / factor
 
     def isArray(self):
