@@ -545,7 +545,7 @@ class KineticsDepository(Database):
             Tmin = (float(Tmin),"K")
             Tmax = (float(Tmax),"K")
         except ValueError:
-            Tmin = None
+            Tmin = (float(data[0]),"K")
             Tmax = None
 
         A, n, alpha, E0, dA, dn, dalpha, dE0 = data[1:9]
@@ -660,6 +660,58 @@ class KineticsDepository(Database):
                 self.longDesc += comments[index] + '\n'
             except KeyError:
                 import pdb; pdb.set_trace()
+                
+    def saveOldRateRules(self, path, groups):
+        """
+        Save a set of old rate rules for kinetics groups from this depository.
+        """
+        
+        # This is hardcoding of reaction families!
+        label = os.path.split(self.label)[-2]
+        if label in ['H_Abstraction', 'R_Addition_MultipleBond', 'R_Recombination', 'HO2_Elimination_from_PeroxyRadical', 'Disproportionation', '1+2_Cycloaddition', '2+2_cycloaddition_Cd', '2+2_cycloaddition_CO', '2+2_cycloaddition_CCO', 'Diels_alder_addition', '1,2_Insertion', '1,3_Insertion_CO2', '1,3_Insertion_ROR', 'R_Addition_COm', 'Oa_R_Recombination']:
+            factor = 1.0e6
+        elif label in ['intra_H_migration', 'Birad_recombination', 'intra_OH_migration', 'Cyclic_Ether_Formation', 'Intra_R_Add_Exocyclic', 'Intra_R_Add_Endocyclic', '1,2-Birad_to_alkene', 'Intra_Disproportionation']:
+            factor = 1.0
+        else:
+            raise ValueError('Unable to determine preexponential units for old reaction family "{0}".'.format(self.label))
+
+        entries = self.entries.values()
+        entries.sort(key=lambda x: x.index)
+        
+        flib = open(os.path.join(path, 'rateLibrary.txt'), 'w')
+        flib.write('// The format for the data in this rate library\n')
+        flib.write('Arrhenius_EP\n\n')
+        
+        fcom = open(os.path.join(path, 'comments.rst'), 'w')
+        fcom.write('-------\n')
+        fcom.write('General\n')
+        fcom.write('-------\n')
+        fcom.write(self.longDesc.strip() + '\n\n')
+        
+        for entry in entries:
+            flib.write('{0:<5d} '.format(entry.index))
+            for label in entry.label.split(';'):
+                flib.write('{0:<23} '.format(label))
+            if entry.data.Tmax is None:
+                Trange = '{0:g}    '.format(entry.data.Tmin.value)
+            else:
+                Trange = '{0:g}-{1:g}    '.format(entry.data.Tmin.value, entry.data.Tmax.value)
+            flib.write('{0:<12}'.format(Trange))
+            flib.write('{0:11.2e} {1:9.2f} {2:9.2f} {3:11.2f} '.format(entry.data.A.value * factor, entry.data.n.value, entry.data.alpha.value, entry.data.E0.value / 4184.))
+            if entry.data.A.isUncertaintyMultiplicative():
+                flib.write('*{0:<6g} '.format(entry.data.A.uncertainty))
+            else:
+                flib.write('{0:<7g} '.format(entry.data.A.uncertainty * factor))
+            flib.write('{0:6g} {1:6g} {2:6g} '.format(entry.data.n.uncertainty, entry.data.alpha.uncertainty, entry.data.E0.uncertainty / 4184.))
+            flib.write('    {0:<4d}     {1}\n'.format(entry.rank, entry.shortDesc))
+            
+            fcom.write('------\n')
+            fcom.write('{0}\n'.format(entry.index))
+            fcom.write('------\n')
+            fcom.write(entry.longDesc.strip() + '\n\n')
+            
+        flib.close()
+        fcom.close()
     
 ################################################################################
 
@@ -1276,8 +1328,41 @@ class KineticsGroups(Database):
         """
         Save the old RMG kinetics groups to the given `path` on disk.
         """
-        pass
-
+        self.saveOldDictionary(os.path.join(path, 'dictionary.txt'))
+        self.saveOldTree(os.path.join(path, 'tree.txt'))
+        # The old kinetics groups use rate rules (not group additivity values),
+        # so we can't save the old rateLibrary.txt
+        self.saveOldTemplate(os.path.join(path, 'reactionAdjList.txt'))
+        
+    def saveOldTemplate(self, path):
+        """
+        Save an old-style RMG reaction family template from the location `path`.
+        """
+        ftemp = open(path, 'w')
+        
+        # Write the template
+        ftemp.write('{0} -> {1}\n'.format(
+            ' + '.join([entry.label for entry in self.forwardTemplate.reactants]),
+            ' + '.join([entry.label for entry in self.forwardTemplate.products]),
+        ))
+        ftemp.write('\n')
+        
+        # Write the reaction type and reverse name
+        if self.ownReverse:
+            ftemp.write('thermo_consistence\n')
+        else:
+            ftemp.write('forward\n')
+            ftemp.write('reverse: {0}_reverse\n'.format(self.label))
+        ftemp.write('\n')
+        
+        # Write the reaction recipe
+        ftemp.write('Actions 1\n')
+        for index, action in enumerate(self.forwardRecipe.actions):
+            ftemp.write('({0}) {1:<15} {{{2}}}\n'.format(index+1, action[0], ','.join(action[1:])))
+        ftemp.write('\n')
+        
+        ftemp.close()
+    
     def loadEntry(self, index, label, group, kinetics, reference=None, referenceType='', shortDesc='', longDesc='', history=None):
         if group[0:3].upper() == 'OR{' or group[0:4].upper() == 'AND{' or group[0:7].upper() == 'NOT OR{' or group[0:8].upper() == 'NOT AND{':
             item = makeLogicNode(group)
@@ -2299,6 +2384,15 @@ class KineticsDatabase:
 
         groupsPath = os.path.join(path, 'kinetics_groups')
         if not os.path.exists(groupsPath): os.mkdir(groupsPath)
+        for label, groups in self.groups.iteritems():
+            groupPath = os.path.join(groupsPath, label)
+            try:
+                os.makedirs(groupPath)
+            except OSError:
+                pass
+            depository = self.depository[os.path.join(label, 'rules')]
+            depository.saveOldRateRules(groupPath, groups)
+            groups.saveOld(groupPath)
 
     def generateReactions(self, reactants, products=None):
         """
