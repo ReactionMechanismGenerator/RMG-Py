@@ -1004,3 +1004,93 @@ def getAllCombinations(nodeLists):
         items = [ item + [node] for node in nodeList for item in items ]
 
     return items
+
+################################################################################
+
+class ForbiddenStructures(Database):
+    """
+    A database consisting solely of molecules whose structure is forbidden
+    from occurring.
+    """
+    
+    def isMoleculeForbidden(self, molecule):
+        """
+        Return ``True`` if the given :class:`Molecule` object `molecule`
+        contains forbidden functionality, or ``False`` if not.
+        """
+        for entry in self.entries.values():
+            if molecule.isSubgraphIsomorphic(entry.item):
+                return True
+        return False
+    
+    def loadOld(self, path):
+        """
+        Load an old forbidden structures file from the location `path` on disk.
+        """
+        self.loadOldDictionary(path, pattern=True)
+        return self
+
+    def saveOld(self, path):
+        """
+        Save an old forbidden structures file to the location `path` on disk.
+        """
+        self.saveOldDictionary(path)
+
+    def loadEntry(self, label, molecule=None, group=None, shortDesc='', longDesc='', history=None):
+        """
+        Load an entry from the forbidden structures database. This method is
+        automatically called during loading of the forbidden structures 
+        database.
+        """
+        assert molecule is not None or group is not None
+        assert not (molecule is not None and group is not None)
+        if molecule is not None:
+            item = Molecule.fromAdjacencyList(molecule)
+        elif group is not None:
+            if group[0:3].upper() == 'OR{' or group[0:4].upper() == 'AND{' or group[0:7].upper() == 'NOT OR{' or group[0:8].upper() == 'NOT AND{':
+                item = makeLogicNode(group)
+            else:
+                item = Group().fromAdjacencyList(group)
+        self.entries[label] = Entry(
+            label = label,
+            item = item,
+            shortDesc = shortDesc,
+            longDesc = longDesc.strip(),
+            history = history or [],
+        )
+    
+    def saveEntry(self, f, entry, name='entry'):
+        """
+        Save an `entry` from the forbidden structures database. This method is
+        automatically called during saving of the forbidden structures 
+        database.
+        """
+        
+        f.write('{0}(\n'.format(name))
+        f.write('    label = "{0}",\n'.format(entry.label))
+
+        if isinstance(entry.item, Molecule):
+            f.write('    molecule = \n')
+            f.write('"""\n')
+            f.write(entry.item.toAdjacencyList(removeH=True))
+            f.write('""",\n')
+        elif isinstance(entry.item, Group):
+            f.write('    group = \n')
+            f.write('"""\n')
+            f.write(entry.item.toAdjacencyList())
+            f.write('""",\n')
+        else:
+            f.write('    group = "{0}",\n'.format(entry.item))
+
+        f.write('    shortDesc = """{0}""",\n'.format(entry.shortDesc))
+        f.write('    longDesc = \n')
+        f.write('"""\n')
+        f.write(entry.longDesc.strip() + "\n")
+        f.write('\n""",\n')
+
+        f.write('    history = [\n')
+        for time, user, action, description in entry.history:
+            f.write('        ("{0}","{1}","{2}","""{3}"""),\n'.format(time, user, action, description))
+        f.write('    ],\n')
+
+        f.write(')\n\n')
