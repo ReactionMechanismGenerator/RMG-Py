@@ -1224,15 +1224,15 @@ class KineticsGroups(Database):
     a set of reactions with similar chemistry, and therefore similar reaction
     rates. The attributes are:
 
-    =================== ======================= ================================
-    Attribute           Type                    Description
-    =================== ======================= ================================
-    `forwardTemplate`   :class:`Reaction`       The forward reaction template
-    `forwardRecipe`     :class:`ReactionRecipe` The steps to take when applying the forward reaction to a set of reactants
-    `reverseTemplate`   :class:`Reaction`       The reverse reaction template
-    `reverseRecipe`     :class:`ReactionRecipe` The steps to take when applying the reverse reaction to a set of reactants
-    `forbidden`         ``dict``                (Optional) Forbidden product structures in either direction
-    =================== ======================= ================================
+    =================== =============================== ========================
+    Attribute           Type                            Description
+    =================== =============================== ========================
+    `forwardTemplate`   :class:`Reaction`               The forward reaction template
+    `forwardRecipe`     :class:`ReactionRecipe`         The steps to take when applying the forward reaction to a set of reactants
+    `reverseTemplate`   :class:`Reaction`               The reverse reaction template
+    `reverseRecipe`     :class:`ReactionRecipe`         The steps to take when applying the reverse reaction to a set of reactants
+    `forbidden`         :class:`ForbiddenStructures`    (Optional) Forbidden product structures in either direction
+    =================== =============================== ========================
 
     There are a few reaction families that are their own reverse (hydrogen
     abstraction and intramolecular hydrogen migration); for these
@@ -1276,6 +1276,10 @@ class KineticsGroups(Database):
             self.forwardTemplate = Reaction(reactants=reactants, products=products)
             self.reverseTemplate = Reaction(reactants=reactants, products=products)
 
+        # Load forbidden structures if present
+        if os.path.exists(os.path.join(path, 'forbiddenGroups.txt')):
+            self.forbidden = ForbiddenStructures().loadOld(os.path.join(path, 'forbiddenGroups.txt'))
+            
         entries = self.top[:]
         for entry in self.top:
             entries.extend(self.descendants(entry))
@@ -1333,7 +1337,10 @@ class KineticsGroups(Database):
         # The old kinetics groups use rate rules (not group additivity values),
         # so we can't save the old rateLibrary.txt
         self.saveOldTemplate(os.path.join(path, 'reactionAdjList.txt'))
-        
+        # Save forbidden structures if present
+        if self.forbidden is not None:
+            self.forbidden.saveOld(os.path.join(path, 'forbiddenGroups.txt'))
+            
     def saveOldTemplate(self, path):
         """
         Save an old-style RMG reaction family template from the location `path`.
@@ -1386,6 +1393,7 @@ class KineticsGroups(Database):
         """
         local_context['recipe'] = self.loadRecipe
         local_context['template'] = self.loadTemplate
+        local_context['forbidden'] = self.loadForbidden
         local_context['True'] = True
         local_context['False'] = False
         Database.load(self, path, local_context, global_context)
@@ -1401,9 +1409,7 @@ class KineticsGroups(Database):
             self.forwardTemplate.products = self.generateProductTemplate(self.forwardTemplate.reactants)
             self.reverseTemplate = Reaction(reactants=self.forwardTemplate.products, products=self.forwardTemplate.reactants)
             self.reverseRecipe = self.forwardRecipe.getReverse()
-
-        return self
-
+            
     def loadTemplate(self, reactants, products, ownReverse=False):
         """
         Load information about the reaction template.
@@ -1421,6 +1427,14 @@ class KineticsGroups(Database):
             action[0] = action[0].upper()
             assert action[0] in ['CHANGE_BOND','FORM_BOND','BREAK_BOND','GAIN_RADICAL','LOSE_RADICAL']
             self.forwardRecipe.addAction(action)
+
+    def loadForbidden(self, label, group, shortDesc='', longDesc='', history=None):
+        """
+        Load information about a forbidden structure.
+        """
+        if not self.forbidden:
+            self.forbidden = ForbiddenStructures()
+        self.forbidden.loadEntry(label=label, group=group, shortDesc=shortDesc, longDesc=longDesc, history=history)
 
     def saveEntry(self, f, entry):
         """
@@ -1468,6 +1482,13 @@ class KineticsGroups(Database):
             f.write('"""\n')
             f.write(')\n\n')
 
+        # Save forbidden structures, if present
+        if self.forbidden is not None:
+            entries = self.forbidden.entries.values()
+            entries.sort(key=lambda x: x.label)
+            for entry in entries:
+                self.forbidden.saveEntry(f, entry, name='forbidden')
+    
         f.close()
 
     def generateProductTemplate(self, reactants0):
@@ -1769,6 +1790,12 @@ class KineticsGroups(Database):
                 return None
             elif reactants[0].isIsomorphic(products[1]) and reactants[1].isIsomorphic(products[0]):
                 return None
+
+        # If forbidden structures are defined, make sure the products are not forbidden
+        if self.forbidden:
+            for product in products:
+                if self.forbidden.isMoleculeForbidden(product):
+                    return None
 
         # We need to save the reactant and product structures with atom labels so
         # we can generate the kinetics
