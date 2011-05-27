@@ -755,20 +755,6 @@ class KineticsLibrary(Database):
                     print speciesDict[product.label].molecule[0].toAdjacencyList()
                     print product.molecule[0].isIsomorphic(speciesDict[product.label].molecule[0])
                     raise DatabaseError('Species label "{0}" used for multiple species in kinetics library {1}.'.format(product.label, self.label))
-            if isinstance(entry.data, ThirdBody):
-                for molecule in entry.data.efficiencies:
-                    formula = molecule.getFormula()
-                    if formula in ['He', 'Ar', 'N2', 'Ne']:
-                        pass
-                    else:
-                        found = False
-                        for species in speciesDict.values():
-                            for mol in species.molecule:
-                                if mol.isIsomorphic(molecule):
-                                    found = True
-                                    break
-                        if not found:
-                            speciesDict[formula] = Species(label=formula, molecule=[molecule])
         
         return speciesDict
     
@@ -1115,6 +1101,22 @@ class KineticsLibrary(Database):
         
         # Gather all of the species used in this kinetics library
         speciesDict = self.getSpecies()
+        # Also include colliders in the above
+        for entry in self.entries.values():
+            if isinstance(entry.data, ThirdBody):
+                for molecule in entry.data.efficiencies:
+                    formula = molecule.getFormula()
+                    if formula in ['He', 'Ar', 'N2', 'Ne']:
+                        pass
+                    else:
+                        found = False
+                        for species in speciesDict.values():
+                            for mol in species.molecule:
+                                if mol.isIsomorphic(molecule):
+                                    found = True
+                                    break
+                        if not found:
+                            speciesDict[formula] = Species(label=formula, molecule=[molecule])
         
         entries = self.entries.values()
         entries.sort(key=lambda x: x.index)
