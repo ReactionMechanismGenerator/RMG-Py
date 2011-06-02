@@ -1770,11 +1770,10 @@ class KineticsGroups(Database):
         # Check that reactant and product structures are allowed in this family
         # If not, then stop
         if self.forbidden is not None:
-            for label, struct2 in self.forbidden.iteritems():
-                for struct in reactantStructures:
-                    if struct.isSubgraphIsomorphic(struct2): return None
-                for struct in productStructures:
-                    if struct.isSubgraphIsomorphic(struct2): return None
+            for struct in reactantStructures:
+                if self.forbidden.isMoleculeForbidden(struct): return None
+            for struct in productStructures:
+                if self.forbidden.isMoleculeForbidden(struct): return None
 
         return productStructures
 
@@ -2067,15 +2066,19 @@ class KineticsGroups(Database):
         Determine the appropriate kinetics for `reaction` which involves the
         labeled atoms in `atoms`.
         """
+        return self.getKineticsForTemplate(template=self.getReactionTemplate(reaction), degeneracy=degeneracy)
+
+    def getKineticsForTemplate(self, template, degeneracy=1):
+        """
+        Determine the appropriate kinetics for a reaction with the given
+        `template`.
+        """
 
         # Start with the generic kinetics of the top-level nodes
         kinetics = None
         for entry in self.forwardTemplate.reactants:
             if kinetics is None and entry.data is not None:
                 kinetics = entry.data
-
-        # Get the most specific nodes in the tree for each reactant
-        template = self.getReactionTemplate(reaction)
 
         # Now add in more specific corrections if possible
         for node in template:
@@ -2086,7 +2089,8 @@ class KineticsGroups(Database):
                 kinetics = self.__multiplyKineticsData(kinetics, entry.data)
 
         # Also include reaction-path degeneracy
-        kinetics.kdata.values *= degeneracy
+        if kinetics is not None:
+            kinetics.kdata.values *= degeneracy
 
         return kinetics
 
