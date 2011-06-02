@@ -110,7 +110,7 @@ def saveEntry(f, entry):
     f.write('    shortDesc = """{0}""",\n'.format(entry.shortDesc))
     f.write('    longDesc = \n')
     f.write('"""\n')
-    f.write(entry.longDesc)
+    f.write(entry.longDesc.strip() + "\n")
     f.write('\n""",\n')
 
     f.write('    history = [\n')
@@ -127,7 +127,7 @@ def generateOldLibraryEntry(data):
     """
     if not isinstance(data, ThermoData):
         raise ValueError('data parameter must be in ThermoData format; got {0} instead'.format(data.__class__))
-    return [
+    return '{0:9g} {1:9g} {2:9g} {3:9g} {4:9g} {5:9g} {6:9g} {7:9g} {8:9g} {9:9g} {10:9g} {11:9g}'.format(
         data.H298.value/4184.,
         data.S298.value/4.184,
         data.Cpdata.values[0]/4.184,
@@ -140,7 +140,7 @@ def generateOldLibraryEntry(data):
         data.H298.uncertainty/4184.,
         data.S298.uncertainty/4.184,
         data.Cpdata.uncertainty/4.184,
-    ]
+    )
 
 def processOldLibraryEntry(data):
     """

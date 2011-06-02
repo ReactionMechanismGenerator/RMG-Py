@@ -36,6 +36,7 @@ for working with the RMG database.
 import os
 import os.path
 
+from base import ForbiddenStructures
 from thermo import ThermoDatabase
 from kinetics import KineticsDatabase
 from states import StatesDatabase
@@ -49,6 +50,7 @@ class RMGDatabase:
 
     def __init__(self):
         self.thermo = None
+        self.forbiddenStructures = None
         self.kinetics = None
         self.states = None
 
@@ -61,6 +63,7 @@ class RMGDatabase:
         components of the database be loaded.
         """
         self.loadThermo(os.path.join(path, 'thermo'), thermoLibraries, depository)
+        self.loadForbiddenStructures(os.path.join(path, 'forbiddenStructures.py'))
         self.loadKinetics(os.path.join(path, 'kinetics'), reactionLibraries, seedMechanisms, depository)
         self.loadStates(os.path.join(path, 'states'), statesLibraries, depository)
 
@@ -71,6 +74,14 @@ class RMGDatabase:
         """
         self.thermo = ThermoDatabase()
         self.thermo.load(path, thermoLibraries, depository)
+
+    def loadForbiddenStructures(self, path):
+        """
+        Load the RMG forbidden structures from the given `path` on disk, where
+        `path` points to the forbidden structures file.
+        """
+        self.forbiddenStructures = ForbiddenStructures()
+        self.forbiddenStructures.load(path)
 
     def loadKinetics(self, path, reactionLibraries=None, seedMechanisms=None, depository=True):
         """
@@ -100,6 +111,8 @@ class RMGDatabase:
         """
         self.thermo = ThermoDatabase()
         self.thermo.loadOld(path)
+        self.forbiddenStructures = ForbiddenStructures()
+        self.forbiddenStructures.loadOld(os.path.join(path, 'ForbiddenStructures.txt'))
         self.kinetics = KineticsDatabase()
         self.kinetics.loadOld(path)
         self.states = StatesDatabase()
@@ -110,6 +123,7 @@ class RMGDatabase:
         Save the RMG database to the given `path` on disk.
         """
         if not os.path.exists(path): os.mkdir(path)
+        self.forbiddenStructures.save(os.path.join(path, 'forbiddenStructures.py'))
         self.thermo.save(os.path.join(path, 'thermo'))
         self.kinetics.save(os.path.join(path, 'kinetics'))
         self.states.save(os.path.join(path, 'states'))
@@ -120,5 +134,6 @@ class RMGDatabase:
         """
         if not os.path.exists(path): os.mkdir(path)
         self.thermo.saveOld(path)
+        self.forbiddenStructures.saveOld(os.path.join(path, 'ForbiddenStructures.txt'))
         self.kinetics.saveOld(path)
         self.states.saveOld(path)

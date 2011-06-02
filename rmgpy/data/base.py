@@ -79,6 +79,7 @@ class Entry:
     `referenceType`     The way the data was determined: ``'theoretical'``, ``'experimental'``, or ``'review'``
     `shortDesc`         A brief (one-line) description of the data
     `longDesc`          A long, verbose description of the data
+    `rank`              An integer indicating the degree of confidence in the entry data, or ``None`` if not used
     `history`           A list of tuples containing the date/time of change, author, type of change, and a brief description of the change
     =================== ========================================================
 
@@ -86,7 +87,7 @@ class Entry:
 
     def __init__(self, index=-1, label='', item=None, parent=None,
         children=None, data=None, reference=None, referenceType='',
-        shortDesc='', longDesc='', history=None):
+        shortDesc='', longDesc='', rank=None, history=None):
         self.index = index
         self.label = label
         self.item = item
@@ -97,6 +98,7 @@ class Entry:
         self.referenceType = referenceType
         self.shortDesc = shortDesc
         self.longDesc = longDesc
+        self.rank = rank
         self.history = history or []
 
     def __str__(self):
@@ -165,6 +167,8 @@ class Database:
         # Set up global and local context
         if global_context is None: global_context = {}
         global_context['__builtins__'] = None
+        global_context['True'] = True
+        global_context['False'] = False
         if local_context is None: local_context = {}
         local_context['__builtins__'] = None
         local_context['entry'] = self.loadEntry
@@ -186,7 +190,6 @@ class Database:
         self.name = local_context['name']
         self.shortDesc = local_context['shortDesc']
         self.longDesc = local_context['longDesc'].strip()
-        self.label = os.path.basename(os.path.splitext(path)[0])
         
         # Return the loaded database (to allow for Database().load() syntax)
         return self
@@ -216,10 +219,10 @@ class Database:
         else:
             # Otherwise save the entries sorted by index
             entries = self.entries.values()
-            entries.sort(key=lambda x: x.index)
+            entries.sort(key=lambda x: (x.index, x.label))
         return entries
 
-    def save(self, path, entryName='entry'):
+    def save(self, path):
         """
         Save the current database to the file at location `path` on disk. The
         optional `entryName` parameter specifies the identifier used for each
@@ -228,10 +231,12 @@ class Database:
         entries = self.getEntriesToSave()
 
         f = codecs.open(path, 'w', 'utf-8')
+        f.write('#!/usr/bin/env python\n')
+        f.write('# encoding: utf-8\n\n')
         f.write('name = "{0}"\n'.format(self.name))
         f.write('shortDesc = "{0}"\n'.format(self.shortDesc))
         f.write('longDesc = """\n')
-        f.write(self.longDesc)
+        f.write(self.longDesc.strip())
         f.write('\n"""\n\n')
         for entry in entries:
             self.saveEntry(f, entry)
@@ -425,35 +430,44 @@ class Database:
 
         entries = self.parseOldLibrary(path, numParameters, numLabels)
 
-        for label, entry in entries.iteritems():
+        # Load the parsed entries into the database, skipping duplicate entries
+        skippedCount = 0
+        for index, label, parameters, comment in entries:
             assert label in self.entries
-            index, parameters, comment = entry
-            self.entries[label].index = index
-            self.entries[label].data = parameters
-            self.entries[label].shortDesc = comment
+            if self.entries[label].index != -1:
+                # The entry is a duplicate, so skip it
+                logging.debug("There was already something labeled {0} in the {1} library. Ignoring '{2}' ({3})".format(label, self.label, index, parameters))
+                skippedCount += 1
+            else:
+                # The entry is not a duplicate
+                self.entries[label].index = index
+                self.entries[label].data = parameters
+                self.entries[label].shortDesc = comment
+        if skippedCount > 0:
+            logging.warning("Skipped {0:d} duplicate entries in {1} library.".format(skippedCount, self.label))
 
         # Make sure each entry with data has a nonnegative index
-        entries = self.entries.values()
-        entries.sort(key=lambda entry: entry.index)
-        index = entries[-1].index + 1
+        entries2 = self.entries.values()
+        entries2.sort(key=lambda entry: entry.index)
+        index = entries2[-1].index + 1
         if index < 1: index = 1
-        for entry in entries:
-            if entry.index < 0:
-                entry.index = index
+        for index0, label, parameters, comment in entries:
+            if self.entries[label].index < 0:
+                self.entries[label].index = index
                 index += 1
 
     def parseOldLibrary(self, path, numParameters, numLabels=1):
         """
         Parse an RMG database library located at `path`, returning the loaded
-        entries (rather than storing them in the database).
+        entries (rather than storing them in the database). This method does
+        not discard duplicate entries.
         """
 
-        entries = {}
+        entries = []
         
         flib = None
         try:
             flib = open(path, 'r')
-            skippedCount = 0
             for line in flib:
                 line = removeCommentFromLine(line).strip()
                 if len(line) > 0:
@@ -491,14 +505,7 @@ class Database:
                         comment = ' '.join(info[offset:])
                         comment = comment.strip('"')
 
-                    if label in entries:
-                        logging.debug("There was already something labeled {0} in the library. Ignoring '{1}' ({2})".format(label, index, parameters))
-                        skippedCount += 1
-                    else:
-                        entries[label] = (index, parameters, comment)
-
-            if skippedCount > 0:
-                logging.warning("Skipped {0:d} duplicate entries in this library.".format(skippedCount))
+                    entries.append((index, label, parameters, comment))
 
         except DatabaseError, e:
             logging.exception(str(e))
@@ -534,15 +541,21 @@ class Database:
         if len(self.top) > 0:
             for entry in self.top:
                 entries.extend(self.descendants(entry))
+            # Don't forget entries that aren't in the tree
+            for entry in self.entries.values():
+                if entry not in entries:
+                    entries.append(entry)
         # Otherwise save the dictionary in any order
         else:
+            # Save the library in order by index
             entries = self.entries.values()
+            entries.sort(key=lambda x: (x.index, x.label))
 
         try:
             f = open(path, 'w')
             f.write('////////////////////////////////////////////////////////////////////////////////\n')
             f.write('//\n')
-            f.write('//  Dictionary\n')
+            f.write('//  {0} dictionary\n'.format(self.name))
             f.write('//\n')
             f.write('////////////////////////////////////////////////////////////////////////////////\n')
             f.write('\n')
@@ -552,8 +565,10 @@ class Database:
                     f.write(entry.item.toAdjacencyList(removeH=True) + '\n')
                 elif isinstance(entry.item, Group):
                     f.write(entry.item.toAdjacencyList() + '\n')
-                elif isinstance(entry.item, LogicAnd) or isinstance(entry.item, LogicOr):
-                    f.write('{0}\n\n'.format(str(entry.item)))
+                elif isinstance(entry.item, LogicOr):
+                    f.write('{0}\n\n'.format(entry.item).replace('OR{', 'Union {'))
+                elif entry.label[0:7] == 'Others-':
+                    pass
                 else:
                     raise DatabaseError('Unexpected item with label {0} encountered in dictionary while attempting to save.'.format(label))
             f.close()
@@ -583,7 +598,7 @@ class Database:
             f = open(path, 'w')
             f.write('////////////////////////////////////////////////////////////////////////////////\n')
             f.write('//\n')
-            f.write('//  Tree\n')
+            f.write('//  {0} tree\n'.format(self.name))
             f.write('//\n')
             f.write('////////////////////////////////////////////////////////////////////////////////\n')
             f.write('\n')
@@ -599,9 +614,13 @@ class Database:
         syntax.
         """
         try:
+            # Save the library in order by index
+            entries = self.entries.values()
+            entries.sort(key=lambda x: x.index)
+            
             f = open(path, 'w')
             records = []
-            for label, entry in self.entries.iteritems():
+            for entry in entries:
                 if entry.data is not None:
                     data = entry.data
                     if not isinstance(data, str):
@@ -612,19 +631,19 @@ class Database:
 
             f.write('////////////////////////////////////////////////////////////////////////////////\n')
             f.write('//\n')
-            f.write('//  Library\n')
+            f.write('//  {0} library\n'.format(self.name))
             f.write('//\n')
             f.write('////////////////////////////////////////////////////////////////////////////////\n')
             f.write('\n')
             for index, labels, data, comment in records:
                 f.write('{:<6d} '.format(index))
                 for label in labels:
-                    f.write('{:<24s}'.format(label))
+                    f.write('{:<32s} '.format(label))
                 if isinstance(data, str):
                     f.write('{:s} '.format(data))
                 else:
                     f.write('{:s} '.format(' '.join(['{:<10g}'.format(d) for d in data])))
-                f.write('{:s}\n'.format(comment))
+                f.write('    {:s}\n'.format(comment))
             f.close()
         except IOError, e:
             logging.exception('Unable to save old-style library to "{0}".'.format(os.path.abspath(path)))
@@ -985,3 +1004,93 @@ def getAllCombinations(nodeLists):
         items = [ item + [node] for node in nodeList for item in items ]
 
     return items
+
+################################################################################
+
+class ForbiddenStructures(Database):
+    """
+    A database consisting solely of molecules whose structure is forbidden
+    from occurring.
+    """
+    
+    def isMoleculeForbidden(self, molecule):
+        """
+        Return ``True`` if the given :class:`Molecule` object `molecule`
+        contains forbidden functionality, or ``False`` if not.
+        """
+        for entry in self.entries.values():
+            if molecule.isSubgraphIsomorphic(entry.item):
+                return True
+        return False
+    
+    def loadOld(self, path):
+        """
+        Load an old forbidden structures file from the location `path` on disk.
+        """
+        self.loadOldDictionary(path, pattern=True)
+        return self
+
+    def saveOld(self, path):
+        """
+        Save an old forbidden structures file to the location `path` on disk.
+        """
+        self.saveOldDictionary(path)
+
+    def loadEntry(self, label, molecule=None, group=None, shortDesc='', longDesc='', history=None):
+        """
+        Load an entry from the forbidden structures database. This method is
+        automatically called during loading of the forbidden structures 
+        database.
+        """
+        assert molecule is not None or group is not None
+        assert not (molecule is not None and group is not None)
+        if molecule is not None:
+            item = Molecule.fromAdjacencyList(molecule)
+        elif group is not None:
+            if group[0:3].upper() == 'OR{' or group[0:4].upper() == 'AND{' or group[0:7].upper() == 'NOT OR{' or group[0:8].upper() == 'NOT AND{':
+                item = makeLogicNode(group)
+            else:
+                item = Group().fromAdjacencyList(group)
+        self.entries[label] = Entry(
+            label = label,
+            item = item,
+            shortDesc = shortDesc,
+            longDesc = longDesc.strip(),
+            history = history or [],
+        )
+    
+    def saveEntry(self, f, entry, name='entry'):
+        """
+        Save an `entry` from the forbidden structures database. This method is
+        automatically called during saving of the forbidden structures 
+        database.
+        """
+        
+        f.write('{0}(\n'.format(name))
+        f.write('    label = "{0}",\n'.format(entry.label))
+
+        if isinstance(entry.item, Molecule):
+            f.write('    molecule = \n')
+            f.write('"""\n')
+            f.write(entry.item.toAdjacencyList(removeH=True))
+            f.write('""",\n')
+        elif isinstance(entry.item, Group):
+            f.write('    group = \n')
+            f.write('"""\n')
+            f.write(entry.item.toAdjacencyList())
+            f.write('""",\n')
+        else:
+            f.write('    group = "{0}",\n'.format(entry.item))
+
+        f.write('    shortDesc = """{0}""",\n'.format(entry.shortDesc))
+        f.write('    longDesc = \n')
+        f.write('"""\n')
+        f.write(entry.longDesc.strip() + "\n")
+        f.write('\n""",\n')
+
+        f.write('    history = [\n')
+        for time, user, action, description in entry.history:
+            f.write('        ("{0}","{1}","{2}","""{3}"""),\n'.format(time, user, action, description))
+        f.write('    ],\n')
+
+        f.write(')\n\n')
