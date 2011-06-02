@@ -219,7 +219,7 @@ class Database:
         else:
             # Otherwise save the entries sorted by index
             entries = self.entries.values()
-            entries.sort(key=lambda x: x.index)
+            entries.sort(key=lambda x: (x.index, x.label))
         return entries
 
     def save(self, path):
@@ -549,13 +549,13 @@ class Database:
         else:
             # Save the library in order by index
             entries = self.entries.values()
-            entries.sort(key=lambda x: x.index)
+            entries.sort(key=lambda x: (x.index, x.label))
 
         try:
             f = open(path, 'w')
             f.write('////////////////////////////////////////////////////////////////////////////////\n')
             f.write('//\n')
-            f.write('//  Dictionary\n')
+            f.write('//  {0} dictionary\n'.format(self.name))
             f.write('//\n')
             f.write('////////////////////////////////////////////////////////////////////////////////\n')
             f.write('\n')
@@ -598,7 +598,7 @@ class Database:
             f = open(path, 'w')
             f.write('////////////////////////////////////////////////////////////////////////////////\n')
             f.write('//\n')
-            f.write('//  Tree\n')
+            f.write('//  {0} tree\n'.format(self.name))
             f.write('//\n')
             f.write('////////////////////////////////////////////////////////////////////////////////\n')
             f.write('\n')
@@ -631,7 +631,7 @@ class Database:
 
             f.write('////////////////////////////////////////////////////////////////////////////////\n')
             f.write('//\n')
-            f.write('//  Library\n')
+            f.write('//  {0} library\n'.format(self.name))
             f.write('//\n')
             f.write('////////////////////////////////////////////////////////////////////////////////\n')
             f.write('\n')

@@ -481,7 +481,7 @@ class KineticsDepository(Database):
             if product2 is not None: products.append(Molecule().fromAdjacencyList(product2))
             if product3 is not None: products.append(Molecule().fromAdjacencyList(product3))
             
-            reaction = Reaction(reactants=reactants, products=products, degeneracy=degeneracy),
+            reaction = Reaction(reactants=reactants, products=products, degeneracy=degeneracy)
         
         elif group1 is not None:
             # The reaction involves functional groups
@@ -1454,6 +1454,8 @@ class KineticsGroups(Database):
                 
         # Write the header
         f = codecs.open(path, 'w', 'utf-8')
+        f.write('#!/usr/bin/env python\n')
+        f.write('# encoding: utf-8\n\n')
         f.write('name = "{0}"\n'.format(self.name))
         f.write('shortDesc = "{0}"\n'.format(self.shortDesc))
         f.write('longDesc = """\n')
