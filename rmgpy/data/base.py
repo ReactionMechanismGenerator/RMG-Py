@@ -234,8 +234,8 @@ class Database:
         f.write('#!/usr/bin/env python\n')
         f.write('# encoding: utf-8\n\n')
         f.write('name = "{0}"\n'.format(self.name))
-        f.write('shortDesc = "{0}"\n'.format(self.shortDesc))
-        f.write('longDesc = """\n')
+        f.write('shortDesc = u"{0}"\n'.format(self.shortDesc))
+        f.write('longDesc = u"""\n')
         f.write(self.longDesc.strip())
         f.write('\n"""\n\n')
         for entry in entries:
@@ -1082,9 +1082,9 @@ class ForbiddenStructures(Database):
         else:
             f.write('    group = "{0}",\n'.format(entry.item))
 
-        f.write('    shortDesc = """{0}""",\n'.format(entry.shortDesc))
+        f.write('    shortDesc = u"""{0}""",\n'.format(entry.shortDesc))
         f.write('    longDesc = \n')
-        f.write('"""\n')
+        f.write('u"""\n')
         f.write(entry.longDesc.strip() + "\n")
         f.write('\n""",\n')
 
