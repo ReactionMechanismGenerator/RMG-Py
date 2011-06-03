@@ -2319,7 +2319,7 @@ class KineticsDatabase:
         for (root, dirs, files) in os.walk(os.path.join(path)):
             for f in files:
                 name, ext = os.path.splitext(f)
-                if ext.lower() == '.py' and (libraries is None or libraries == [] or name in libraries):
+                if ext.lower() == '.py' and (libraries is None or name in libraries):
                     logging.info('Loading kinetics library from {0} in {1}...'.format(f, root))
                     libraryPath = os.path.join(root, f)
                     library = KineticsLibrary(label=libraryPath[len(path)+1:-3])
