@@ -1,6 +1,6 @@
 # Data sources
 database(
-    '../RMG-database',
+    '../RMG-database/input',
     thermoLibraries = ['primaryThermoLibrary'],
     reactionLibraries = [],
     seedMechanisms = [],

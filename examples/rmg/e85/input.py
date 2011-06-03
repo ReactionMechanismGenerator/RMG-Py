@@ -1,6 +1,6 @@
 # Data sources
 database(
-    '../RMG-database',
+    '../RMG-database/input',
     thermoLibraries = ['primaryThermoLibrary', 'GRI-Mech3.0'],
     reactionLibraries = [],
     seedMechanisms = ['GRI-Mech3.0'],
