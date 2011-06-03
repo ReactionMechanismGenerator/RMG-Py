@@ -41,7 +41,7 @@ cdef class Reaction:
     cdef public KineticsModel kinetics
     cdef public bint thirdBody
     cdef public bint duplicate
-    cdef public double degeneracy
+    cdef public int degeneracy
     
     cpdef bint isIsomerization(self)
 
