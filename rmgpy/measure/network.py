@@ -126,6 +126,24 @@ class Network:
                 if rxn.products[0] == species and species in self.explored: return True
         return False
 
+    def getAllSpecies(self):
+        """
+        Return a list of all unique species in the network, including all
+        isomers, reactant and product channels, and bath gas species.
+        """
+        speciesList = []
+        for isomer in self.isomers:
+            if isomer not in speciesList: speciesList.append(isomer)
+        for reactants in self.reactants:
+            for spec in reactants:
+                if spec not in speciesList: speciesList.append(spec)
+        for products in self.products:
+            for spec in products:
+                if spec not in speciesList: speciesList.append(spec)
+        for spec in self.bathGas:
+            if spec not in speciesList: speciesList.append(spec)
+        return speciesList
+    
     def getEnergyGrains(self, Emin, Emax, dE=0.0, Ngrains=0):
         """
         Return an array of energy grains that have a minimum of `Emin`, a

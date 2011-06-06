@@ -132,21 +132,7 @@ def writeNetworkSpecies(f, network):
     object`f`. All isomer, reactant, product, and bath gas species are
     automatically written one time each.
     """
-
-    # Get list of all species in network
-    speciesList = []
-    for isomer in network.isomers:
-        if isomer not in speciesList: speciesList.append(isomer)
-    for reactants in network.reactants:
-        for spec in reactants:
-            if spec not in speciesList: speciesList.append(spec)
-    for products in network.products:
-        for spec in products:
-            if spec not in speciesList: speciesList.append(spec)
-    for spec in network.bathGas:
-        if spec not in speciesList: speciesList.append(spec)
-
-    for spec in speciesList:
+    for spec in network.getAllSpecies():
         writeSpecies(f, spec)
 
 def writeSpecies(f, spec):
