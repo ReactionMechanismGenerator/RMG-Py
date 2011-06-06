@@ -127,8 +127,8 @@ def execute(inputFile, outputFile=None, drawFile=None, logFile=None, quiet=False
     logHeader()
     
     # Load input file
-    from rmgpy.measure.input import readInput
-    params = readInput(os.path.relpath(inputFile))
+    from rmgpy.measure.input import readFile
+    params = readFile(os.path.relpath(inputFile))
 
     # Only proceed if the input network is valid
     if params is not None:
@@ -188,12 +188,12 @@ def execute(inputFile, outputFile=None, drawFile=None, logFile=None, quiet=False
             logging.info('')
             
             # Save results to file
-            from rmgpy.measure.output import writeOutput
+            from rmgpy.measure.output import writeFile
             if outputFile is not None:
                 out = os.path.relpath(outputFile)
             else:
                 out = os.path.join(outputDirectory, 'output.py')
-            writeOutput(out, network, Tlist, Plist, Elist, method, model)
+            writeFile(out, network, Tlist, Plist, Elist, method, model, Tmin, Tmax, Pmin, Pmax)
 
     # Log end timestamp
     logging.info('')

@@ -42,7 +42,7 @@ from rmgpy.species import Species, TransitionState, LennardJones
 from rmgpy.reaction import Reaction
 from rmgpy.molecule import Molecule
 from rmgpy.statmech import *
-from rmgpy.kinetics import Arrhenius
+from rmgpy.kinetics import Arrhenius, PDepArrhenius, Chebyshev
 from rmgpy.thermo import *
 
 from network import Network
@@ -140,6 +140,20 @@ def reaction(reactants, products, kinetics=None, transitionState=None):
         
     network.pathReactions.append(rxn)
     logging.debug('Found reaction "{0}"'.format(rxn))
+
+def pdepreaction(reactants, products, kinetics=None):
+    global network
+    try:
+        rxn = Reaction(
+            reactants = reactants,
+            products = products,
+            kinetics=kinetics,
+        )
+    except KeyError, e:
+        raise InputError('A reaction was encountered with species "{0}", but that species was not found in the input file.'.format(e.args[0]))
+        
+    network.netReactions.append(rxn)
+    logging.debug('Found pdepreaction "{0}"'.format(rxn))
 
 def collisionModel(type, parameters, bathGas):
     global network
@@ -309,9 +323,9 @@ def getPressuresForModel(model, Pmin, Pmax, Pcount):
         Plist = 10.0 ** numpy.linspace(math.log10(Pmin), math.log10(Pmax), Pcount)
     return Plist
 
-def readInput(path):
+def readFile(path):
     """
-    Reads a MEASURE input file from location `path` on disk. The input file
+    Reads a MEASURE input or output file from location `path` on disk. The file
     format is described in the :ref:`measureusersguide`. Returns a number of
     quantities:
 
@@ -381,6 +395,9 @@ def readInput(path):
         'reaction': reaction,
         'Arrhenius': Arrhenius,
         'TransitionState': TransitionState,
+        'pdepreaction': pdepreaction,
+        'Chebyshev': Chebyshev,
+        'PDepArrhenius': PDepArrhenius,
         'collisionModel': collisionModel,
         'temperatures': temperatures,
         'pressures': pressures,
@@ -447,6 +464,11 @@ def readInput(path):
         for reactants in network.reactants:
             reactants.sort()
         for rxn in network.pathReactions:
+            rxn.reactants = [speciesDict[label] for label in rxn.reactants]
+            rxn.reactants.sort()
+            rxn.products = [speciesDict[label] for label in rxn.products]
+            rxn.products.sort()
+        for rxn in network.netReactions:
             rxn.reactants = [speciesDict[label] for label in rxn.reactants]
             rxn.reactants.sort()
             rxn.products = [speciesDict[label] for label in rxn.products]

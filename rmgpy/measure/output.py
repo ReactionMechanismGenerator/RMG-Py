@@ -173,7 +173,6 @@ def writeReaction(f, rxn):
     f.write('reaction(\n')
     f.write('    reactants=[{0}],\n'.format(', '.join([('"{0}"'.format(spec)) for spec in rxn.reactants])))
     f.write('    products=[{0}],\n'.format(', '.join([('"{0}"'.format(spec)) for spec in rxn.products])))
-    f.write('    reversible={0!r},\n'.format(rxn.reversible))
     if rxn.kinetics is not None:
         f.write('    kinetics={0!r},\n'.format(rxn.kinetics))
     if rxn.transitionState is not None:
@@ -205,7 +204,6 @@ def writePDepReaction(f, rxn):
     f.write('pdepreaction(\n')
     f.write('    reactants=[{0}],\n'.format(', '.join([('"{0}"'.format(spec)) for spec in rxn.reactants])))
     f.write('    products=[{0}],\n'.format(', '.join([('"{0}"'.format(spec)) for spec in rxn.products])))
-    f.write('    reversible={0!r},\n'.format(rxn.reversible))
     if rxn.kinetics is not None:
         if isinstance(rxn.kinetics, Chebyshev):
             f.write('    kinetics=Chebyshev(\n')
@@ -232,67 +230,10 @@ def writePDepReaction(f, rxn):
 
 ################################################################################
 
-def writeOutput(path, network, Tlist, Plist, Elist, method, model):
-    """
-    Write a MEASURE output file to `path` on disk. The parameters needed mirror
-    those returned by :meth:`readInput()`:
-
-    * The :class:`Network` object `network` representing the unimolecular
-      reaction network
-
-    * The list of temperatures `Tlist` in K to be used in the master equation
-      calculation
-
-    * The list of pressures `Plist` in Pa to be used in the master equation
-      calculation
-
-    * A tuple `Elist` containing the maximum energy grain size in J/mol and the
-      minimum number of energy grains to use in the master equation calculation;
-      whichever of these results in more energy grains
-
-    * The approximate `method` to use to estimate the phenomenological rate
-      coefficients :math:`k(T,P)`
-
-    * The interpolation `model` to fit the estimated :math:`k(T,P)` values to
-
-    If successful, the file created on disk will contain all of the species
-    and net reaction data, including all phenomenological rate coefficients
-    :math:`k(T,P)`.
-    """
-
-    logging.info('Saving output to "{0}"...'.format(path))
-
-    f = open(os.path.relpath(path), 'w')
-
-    f.write('################################################################################\n')
-    f.write('#\n')
-    f.write('#   MEASURE output file for {0}\n'.format(network))
-    f.write('#\n')
-    f.write('#   Generated on {0}\n'.format(time.asctime()))
-    f.write('#\n')
-    f.write('################################################################################\n\n')
-    
-    # Write metadata
-    writeNetworkMetadata(f, network)
-    
-    # Write each species to file
-    writeNetworkSpecies(f, network)
-    f.write('################################################################################\n\n')
-    # Write each configuration to file
-    writeNetworkConfigurations(f, network)
-    f.write('################################################################################\n\n')
-    
-    # Write each net reaction to file
-    writeNetworkNetReactions(f, network)
-    
-    f.close()
-
-################################################################################
-
-def writeInput(path, network, Tlist, Plist, Elist, method, model):
+def writeFile(path, network, Tlist, Plist, Elist, method, model, Tmin, Tmax, Pmin, Pmax):
     """
     Write a MEASURE input file to `path` on disk. The parameters needed mirror
-    those returned by :meth:`readInput()`:
+    those returned by :meth:`readFile()`:
 
     * The :class:`Network` object `network` representing the unimolecular
       reaction network
@@ -320,7 +261,7 @@ def writeInput(path, network, Tlist, Plist, Elist, method, model):
 
     f.write('################################################################################\n')
     f.write('#\n')
-    f.write('#   MEASURE input file for {0}\n'.format(network))
+    f.write('#   MEASURE file for {0}\n'.format(network))
     f.write('#\n')
     f.write('#   Generated on {0}\n'.format(time.asctime()))
     f.write('#\n')
@@ -353,14 +294,26 @@ def writeInput(path, network, Tlist, Plist, Elist, method, model):
         f.write('    },\n')
     f.write(')\n\n')
     
-    f.write('temperatures(([{0}],"K"))\n'.format(', '.join([('{0:g}'.format(T)) for T in Tlist])))
-    f.write('pressures(([{0}],"bar"))\n'.format(', '.join([('{0:g}'.format(P/1e5)) for P in Plist])))
-    dE, count = Elist
+    if Tmin is not None and Tmax is not None:
+        f.write('temperatures(Tmin=({0},"K"), Tmax=({1},"K"), count={2})\n'.format(Tmin, Tmax, len(Tlist)))
+    else:
+        f.write('temperatures(([{0}],"K"))\n'.format(', '.join([('{0:g}'.format(T)) for T in Tlist])))
+    if Pmin is not None and Pmax is not None:
+        f.write('pressures(Pmin=({0},"bar"), Pmax=({1},"bar"), count={2})\n'.format(Pmin/1e5, Pmax/1e5, len(Plist)))
+    else:
+        f.write('pressures(([{0}],"bar"))\n'.format(', '.join([('{0:g}'.format(P/1e5)) for P in Plist])))
+    dE = Elist[1] - Elist[0]; count = len(Elist)
     f.write('energies(dE=({0:g},"kJ/mol"), count={1:d})\n'.format(dE/1000.0, count))
     f.write('method("{0}")\n'.format(method))
     if model[0].lower() == 'chebyshev':
         f.write('interpolationModel("chebyshev", {0:d}, {1:d})\n'.format(model[1], model[2]))
     else:
         f.write('interpolationModel("{0}")\n'.format(model[0].lower()))
-
+    f.write('\n')
+    
+    if len(network.netReactions) > 0:
+        f.write('################################################################################\n\n')
+        # Write each net reaction to file
+        writeNetworkNetReactions(f, network)
+    
     f.close()
