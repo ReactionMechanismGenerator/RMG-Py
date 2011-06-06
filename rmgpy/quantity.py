@@ -100,7 +100,8 @@ class Quantity:
     """
     
     # A dict of conversion factors (to SI) for each of the frequent units
-    conversionFactors = {}
+    # Here we also define that cm^-1 is not to be converted to m^-1 (or Hz, J, K, etc.)
+    conversionFactors = {'cm^-1': 1.0}
     
     def __init__(self, *args):
         """
