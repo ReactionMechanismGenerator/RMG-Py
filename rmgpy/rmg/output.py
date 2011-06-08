@@ -120,7 +120,7 @@ def saveOutputHTML(path, reactionModel):
             text-decoration: underline;
         }
         table.speciesList, table.reactionList {
-            width: 100%;
+            # width: 100%;
             border-collapse: collapse;
         }
         table.speciesList th, table.reactionList th {
@@ -146,7 +146,7 @@ def saveOutputHTML(path, reactionModel):
             font-size: small;
         }
         .KineticsData {
-            border: 1px solid grey;
+            # border: 1px solid grey;
         }
         .KineticsData th { width: 11em;}
         .KineticsData td {
