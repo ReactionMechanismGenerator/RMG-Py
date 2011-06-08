@@ -139,6 +139,19 @@ def saveOutputHTML(path, reactionModel):
         td.species img, td.reactants img, td.products img {
             vertical-align: middle;
         }
+        tr.comment {
+            font-size: small;
+        }
+        tr.kinetics {
+            font-size: small;
+        }
+        .KineticsData {
+            border: 1px solid grey;
+        }
+        .KineticsData th { width: 11em;}
+        .KineticsData td {
+            width: 3em;
+        }
     </style>
     <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.1/jquery.min.js"></script>
     <script type="text/javascript">
@@ -186,6 +199,8 @@ def saveOutputHTML(path, reactionModel):
 
 <p>
 <form id='familySelector'>
+    <div><input type="checkbox" id="kinetics" name="family" value="kinetics" checked="checked" onclick="updateFamily(this);"/><label for="kinetics">Kinetics</label></div>
+    <div><input type="checkbox" id="comment" name="family" value="comment" checked="checked" onclick="updateFamily(this);"/><label for="comment">Comments</label></div>
     <div>Reaction families:</div>
 {% for family in families %}    <div><input type="checkbox" id="{{ family.label }}" name="family" value="{{ family.label }}" checked="checked" onclick="updateFamily(this);"/><label for="{{ family.label }}">{{ family.label }} ({{ familyCount[family] }})</label></div>
 {% endfor %}    <div><a href="#" onclick="checkAllFamilies();">check all</a> &nbsp; &nbsp; <a href="#" onclick="uncheckAllFamilies();">uncheck all</a></div>
@@ -202,6 +217,14 @@ def saveOutputHTML(path, reactionModel):
         <td class="products">{% for product in rxn.products %}<img src="species/{{ product }}.png" alt="{{ product }}" title="{{ product }}"/>{% if not loop.last %} + {% endif %}{% endfor %}</td>
         <td class="family">{{ rxn.family.label }}</td>
     </tr>
+    <tr class="kinetics">
+        <td></td>
+        <td colspan="4">{{ rxn.kinetics.toHTML() }}</td>
+    </tr>
+    <tr class="comment">
+        <td></td>
+        <td colspan="4">{{ rxn.kinetics.comment }}</td>
+    </tr>
     {% endfor %}
     {% for rxn in pdepreactions %}
     <tr class="reaction {{ pdepnetreaction }}">
@@ -210,6 +233,14 @@ def saveOutputHTML(path, reactionModel):
         <td class="reactionArrow">{% if rxn.reversible %}&hArr;{% else %}&rarr;{% endif %}</td>
         <td class="products">{% for product in rxn.products %}<img src="species/{{ product }}.png" alt="{{ product }}" title="{{ product }}"/>{% if not loop.last %} + {% endif %}{% endfor %}</td>
         <td class="family"></td>
+    </tr>
+    <tr class="kinetics">
+        <td></td>
+        <td colspan="4">{{ rxn.kinetics.toHTML() }}</td>
+    </tr>
+    <tr class="comment">
+        <td></td>
+        <td colspan="4">{{ rxn.kinetics.comment }}</td>
     </tr>
     {% endfor %}
 </table>
