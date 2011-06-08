@@ -50,6 +50,8 @@ cdef class KineticsModel:
     cpdef bint isPressureDependent(self)
     
     cpdef numpy.ndarray getRateCoefficients(self, numpy.ndarray Tlist)
+    
+    cpdef str toHTML(self)
 
 ################################################################################
 
@@ -60,6 +62,8 @@ cdef class KineticsData(KineticsModel):
     cpdef bint isPressureDependent(self)
 
     cpdef double getRateCoefficient(self, double T, double P=?)
+    
+    cpdef str toHTML(self)
 
 ################################################################################
 

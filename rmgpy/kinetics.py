@@ -162,6 +162,12 @@ class KineticsModel:
         `Tlist` in K.
         """
         return numpy.array([self.getRateCoefficient(T) for T in Tlist], numpy.float64)
+    
+    def toHTML(self):
+        """
+        Return an HTML rendering.
+        """
+        return "<code>{0!r}</code>".format(self)
 
 ################################################################################
 
@@ -201,6 +207,21 @@ class KineticsData(KineticsModel):
         A helper function used when pickling a KineticsData object.
         """
         return (KineticsData, (self.Tdata, self.kdata, self.Tmin, self.Tmax, self.comment))
+    
+    def toHTML(self):
+        """
+        Return an HTML rendering.
+        """
+        cython.declare(T=cython.double, k=cython.double)
+        cython.declare(string=str)
+        string = '<table class="KineticsData"><tr class="KineticsData_Tdata"><th>T/[{0!s}]</th>\n   '.format(self.Tdata.units)
+        for T in self.Tdata.values:
+            string += '<td>{0:.0f}</td>'.format(T)
+        string += '\n</tr><tr class="KineticsData_kdata"><th>log<sub>10</sub>(k/[{0!s}])\n    '.format(self.kdata.units)
+        for k in self.kdata.values:
+            string += '<td>{0:+.1f}'.format(math.log10(k))
+        string += '\n</tr></table>'
+        return string
 
     def isPressureDependent(self):
         """

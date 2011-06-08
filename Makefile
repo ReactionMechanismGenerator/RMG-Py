@@ -4,6 +4,8 @@
 #
 ################################################################################
 
+.PHONY : all minimal main measure solver clean
+
 all: main measure solver
 
 minimal: measure solver
