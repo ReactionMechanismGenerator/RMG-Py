@@ -212,6 +212,8 @@ class KineticsData(KineticsModel):
         """
         Return an HTML rendering.
         """
+        cython.declare(T=cython.double, k=cython.double)
+        cython.declare(string=str)
         string = '<table class="KineticsData"><tr class="KineticsData_Tdata"><th>T/[{0!s}]</th>\n   '.format(self.Tdata.units)
         for T in self.Tdata.values:
             string += '<td>{0:.0f}</td>'.format(T)
