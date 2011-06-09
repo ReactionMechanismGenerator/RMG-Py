@@ -165,26 +165,25 @@ def execute(inputFile, outputFile=None, drawFile=None, logFile=None, quiet=False
             configurations.extend([reactants for reactants in network.reactants])
             configurations.extend([products for products in network.products])
             for i in range(Nisom+Nreac+Nprod):
-                for j in range(min(i, Nisom+Nreac)):
+                for j in range(Nisom+Nreac):
+                    if i != j:
+                        # Check that we have nonzero k(T,P) values
+                        if (numpy.any(K[:,:,i,j]) and not numpy.all(K[:,:,i,j])):
+                            raise NetworkError('Zero rate coefficient encountered while updating network {0}.'.format(network))
 
-                    # Check that we have nonzero k(T,P) values
-                    if (numpy.any(K[:,:,i,j]) and not numpy.all(K[:,:,i,j])):
-                        raise NetworkError('Zero rate coefficient encountered while updating network {0}.'.format(network))
-                    
-                    # Make a new net reaction
-                    forward = True
-                    netReaction = Reaction(
-                        reactants=configurations[j],
-                        products=configurations[i],
-                        kinetics=None,
-                        reversible=(i<Nisom+Nreac),
-                    )
-                    network.netReactions.append(netReaction)
-
-                    # Set/update the net reaction kinetics using interpolation model
-                    netReaction.kinetics = fitInterpolationModel(netReaction, Tlist, Plist,
-                        K[:,:,i,j] if forward else K[:,:,j,i],
-                        model, Tmin, Tmax, Pmin, Pmax, errorCheck=True)
+                        # Make a new net reaction
+                        netReaction = Reaction(
+                            reactants=configurations[j],
+                            products=configurations[i],
+                            kinetics=None,
+                            reversible=(i<Nisom+Nreac),
+                        )
+                        network.netReactions.append(netReaction)
+                        
+                        # Set/update the net reaction kinetics using interpolation model
+                        netReaction.kinetics = fitInterpolationModel(netReaction, Tlist, Plist,
+                            K[:,:,i,j],
+                            model, Tmin, Tmax, Pmin, Pmax, errorCheck=True)
             logging.info('')
             
             # Save results to file
