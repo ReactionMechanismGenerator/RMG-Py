@@ -91,6 +91,7 @@ class Network:
         self.valid = False
         self.title = title
         self.description = description
+        self.errorString = ''
         
     def __str__(self):
         if self.index != -1:

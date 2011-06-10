@@ -517,32 +517,32 @@ def readFile(path):
             errorString0 = ''
             # All isomers must have states data
             if isomer.states is None:
-                errorString0 += '    Required molecular degree of freedom data was not provided.\n'
+                errorString0 += '* Required molecular degree of freedom data was not provided.\n'
             # All isomers must have collision parameters
             if isomer.lennardJones is None:
-                errorString0 += '    Required Lennard-Jones parameters were not provided.\n'
+                errorString0 += '* Required Lennard-Jones parameters were not provided.\n'
             if isomer.molecularWeight == 0:
-                errorString0 += '    Required molecular weight was not provided.\n'
+                errorString0 += '* Required molecular weight was not provided.\n'
             if errorString0 != '':
-                errorString = 'For unimolecular isomer "{0}":\n{1}'.format(isomer, errorString0)
+                errorString = 'For unimolecular isomer "{0}":\n{1}\n'.format(isomer, errorString0)
 
         for rxn in network.pathReactions:
             errorString0 = ''
             
             # If both the reactants and the products are product channels, then the path reaction is invalid
             if rxn.reactants in network.products and rxn.products in network.products:
-                errorString0 += '    Both the reactants and the products are product channels.\n'
+                errorString0 += '* Both the reactants and the products are product channels.\n'
             
             # Reactions of the form A + B -> C + D are not allowed
             elif len(rxn.reactants) > 1 and len(rxn.products) > 1:
-                errorString0 += '    Both the reactants and the products are bimolecular.\n'
+                errorString0 += '* Both the reactants and the products are bimolecular.\n'
                 
             # The remaining errors are only meaningful if the path reaction is allowed
             else:
                 
                 # All reactions must have either high-pressure-limit kinetics or transition state data
                 if rxn.kinetics is None and rxn.transitionState.states is None:
-                    errorString0 += '    Unable to determine microcanonical rate k(E); you must specify either the high-P kinetics or transition state molecular degrees of freedom.\n'
+                    errorString0 += '* Unable to determine microcanonical rate k(E). you must specify either\n  the high-P kinetics or transition state molecular degrees of freedom.\n'
 
                 # Certain reactions require that both reactants and products have thermo data
                 thermoRequired = False
@@ -557,22 +557,22 @@ def readFile(path):
                 if thermoRequired:
                     for spec in rxn.reactants:
                         if spec.thermo is None:
-                            errorString0 += '    Unable to determine thermo data for reactant "{0}"; you must specify a thermodynamics model.\n'.format(spec)
+                            errorString0 += '* Unable to determine thermodynamics data for reactant "{0}".\n  You must specify molecular degrees of freedom or a thermodynamics model.\n'.format(spec)
                     for spec in rxn.products:
                         if spec.thermo is None:
-                            errorString0 += '    Unable to determine thermo data for product "{0}"; you must specify a thermodynamics model.\n'.format(spec)
+                            errorString0 += '* Unable to determine thermodynamics data for product "{0}".\n  You must specify molecular degrees of freedom or a thermodynamics model.\n'.format(spec)
                 
             if errorString0 != '':
-                errorString += 'For path reaction "{0}":\n{1}'.format(rxn, errorString0)
+                errorString += 'For path reaction "{0}":\n{1}\n'.format(rxn, errorString0)
 
         if errorString != '':
             raise InputError(errorString)
 
     except InputError, e:
+        network.errorString = str(e)
         logging.error('The input file "{0}" was invalid:'.format(path))
         logging.info(e)
-        return None
-
+    
     # Print lots of information about the loaded network
     # In particular, we want to give all of the energies on the PES
     # This will help the user decide if the range of energies selected is 
@@ -581,8 +581,9 @@ def readFile(path):
     
     # If there are no isomers, then there's nothing to do
     if len(network.isomers) == 0:
-        logging.info('Could not find any unimolecular isomers based on this network, so there is nothing to do.')
-        return None
+        message = 'Could not find any unimolecular isomers based on this network, so there is nothing to do.'
+        network.errorString = message
+        logging.info(message)
     
     return network, Tlist, Plist, Elist, method, model, Tmin, Tmax, Pmin, Pmax
 

@@ -131,7 +131,7 @@ def execute(inputFile, outputFile=None, drawFile=None, logFile=None, quiet=False
     params = readFile(os.path.relpath(inputFile))
 
     # Only proceed if the input network is valid
-    if params is not None:
+    if params is not None and params[0].errorString == '':
 
         network, Tlist, Plist, Elist, method, model, Tmin, Tmax, Pmin, Pmax = params
 
