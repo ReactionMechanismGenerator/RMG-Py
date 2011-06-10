@@ -69,7 +69,7 @@ def database(path, thermoLibraries=None, reactionLibraries=None, frequenciesLibr
 def species(label, structure, reactive=True):
     global speciesDict, reactionModel
     logging.debug('Found {0} species "{1}" ({2})'.format('reactive' if reactive else 'nonreactive', label, structure.toSMILES()))
-    speciesDict[label], isNew = reactionModel.makeNewSpecies(label=label, molecule=structure, reactive=reactive)
+    speciesDict[label], isNew = reactionModel.makeNewSpecies(structure, label=label, reactive=reactive)
 
 def CML(string):
     return Molecule().fromCML(string)

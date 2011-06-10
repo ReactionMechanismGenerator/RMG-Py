@@ -633,11 +633,20 @@ class CoreEdgeReactionModel:
         # At this point we can conclude that the structure does not exist
         return False, None
 
-    def makeNewSpecies(self, molecule, label='', reactive=True, checkForExisting=True):
+    def makeNewSpecies(self, object, label='', reactive=True, checkForExisting=True):
         """
-        Create a new species.
+        Formally create a new species from the specified `object`, which can be
+        either a :class:`Molecule` object or an :class:`rmgpy.species.Species`
+        object.
         """
 
+        if isinstance(object, rmgpy.species.Species):
+            molecule = object.molecule[0]
+            label = label if label != '' else object.label
+            reactive = object.reactive
+        else:
+            molecule = object
+            
         molecule.clearLabeledAtoms()
         molecule.makeHydrogensImplicit()
 
@@ -744,9 +753,9 @@ class CoreEdgeReactionModel:
         made such that the forward reaction is exothermic at 298K.
         """
 
-        # Convert the reactants and products to species objects
-        forward.reactants = [self.makeNewSpecies(molecule)[0] for molecule in forward.reactants]
-        forward.products  = [self.makeNewSpecies(molecule)[0] for molecule in forward.products]
+        # Determine the proper species objects for all reactants and products
+        forward.reactants = [self.makeNewSpecies(reactant)[0] for reactant in forward.reactants]
+        forward.products  = [self.makeNewSpecies(product)[0]  for product  in forward.products ]
 
         if checkExisting:
             found, rxn = self.checkForExistingReaction(forward)
