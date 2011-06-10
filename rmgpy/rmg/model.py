@@ -879,7 +879,7 @@ class CoreEdgeReactionModel:
         elif isinstance(newObject, tuple) and isinstance(newObject[0], PDepNetwork) and settings.pressureDependence:
 
             pdepNetwork, newSpecies = newObject
-            newReactions.extend(network.exploreIsomer(species, self, database))
+            newReactions.extend(pdepNetwork.exploreIsomer(newSpecies, self, database))
             self.processNewReactions(newReactions, newSpecies, pdepNetwork)
 
         else:
