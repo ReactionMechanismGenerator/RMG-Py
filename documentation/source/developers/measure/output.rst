@@ -7,9 +7,7 @@
 Input and Output File Writing
 =============================
 
-.. autofunction:: rmgpy.measure.output.writeInput
-
-.. autofunction:: rmgpy.measure.output.writeOutput
+.. autofunction:: rmgpy.measure.output.writeFile
 
 Helper Functions
 ================

@@ -6,7 +6,7 @@
 
 .. autoclass:: rmgpy.measure.input.InputError
 
-.. autofunction:: rmgpy.measure.input.readInput
+.. autofunction:: rmgpy.measure.input.readFile
 
 .. autofunction:: rmgpy.measure.input.generateThermoFromStates
 

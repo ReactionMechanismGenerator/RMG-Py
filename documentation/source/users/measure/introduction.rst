@@ -19,11 +19,11 @@ About MEASURE
 MEASURE was originally developed by Joshua W. Allen under the tutelage of
 `Prof. William H. Green <http://web.mit.edu/greengp/>`_ in the 
 `Department of Chemical Engineering <http://web.mit.edu/cheme/>`_ at the 
-`Massachusetts Institute of Technology <http://web.mit.edu/>`_. Its original 
-purpose was to be a component of the automatic reaction mechanism generation
-software `RMG <http://rmg.sourceforge.net/>`_. Since then it has also been 
-adapted as a standalone package useful for investigating individual reaction 
-networks in greater detail.
+`Massachusetts Institute of Technology <http://web.mit.edu/>`_. It is a
+component of the automatic reaction mechanism generation software 
+`RMG <http://rmg.sourceforge.net/>`_, and provides functionality for estimating
+pressure-dependent rate coefficients to that software. It is also useful as
+a tool for exploring individual reaction networks in detail.
 
 MEASURE is written in the `Python <http://www.python.org/>`_ programming
 language to facilitate ease of development, installation, and use. Certain

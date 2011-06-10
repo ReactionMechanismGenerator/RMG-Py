@@ -28,14 +28,24 @@ Python standard library:
 * `Cairo <http://cairographics.org/>`_. Provides 2D drawing support, used for
   automatic drawing of potential energy surfaces.
 
-Finally, MEASURE also depends on the Green group's base library for Python
-projects, named `ChemPy <http://github.com/jwallen/ChemPy>`_.
-
 Installing MEASURE
 ==================
 
-Once you have obtained the required dependencies, MEASURE can be installed by
-executing the following command from within the root package directory::
+.. note::
+
+    MEASURE can also be used directly from the web! Visit 
+    http://rmg.mit.edu/measure/ for more information.
+
+MEASURE is installed automatically as part of the installation process for 
+RMG-Py. You can obtain a copy of RMG-Py from 
+http://github.com/GreenGroup/RMG-Py, either by downloading the current snapshot
+or by cloning the repository using `git <http://git-scm.com/>`_. The latter is
+recommended so that you can easily keep up to date with new features and 
+bugfixes.
+
+Once you have obtained the required dependencies, RMG-Py and MEASURE can be 
+installed by executing the following command from within the root package 
+directory::
 
     $ python setup.py install
 
@@ -43,10 +53,10 @@ This will move all of the necessary files to the appropriate Python installation
 location on disk. If Cython is installed, this will also compile the appropriate
 modules prior to installation.
 
-You can also use MEASURE without installing if you prefer. This is done by
-appending the full path to the package's root directory to your ``PYTHONPATH``
-environment variable. To compile the Cython modules in this case, use the
-command ::
+You can also use RMG-Py and MEASURE without installing if you prefer. This is 
+done by appending the full path to the package's root directory to your 
+``PYTHONPATH`` environment variable. To compile the Cython modules in this 
+case, use the command ::
 
     $ python setup.py build_ext --inplace
 
