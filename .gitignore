@@ -22,3 +22,7 @@ make.inc
 # Example output files
 examples/*
 !examples/*/input.py
+
+# NetBeans project files
+nbproject/*
+

@@ -2436,7 +2436,7 @@ class KineticsDatabase:
         searches the depository, libraries, and groups, in that order.
         """
         reactionList = []
-        reactionList.extend(self.generateReactionsFromDepository(reactants))
+        #reactionList.extend(self.generateReactionsFromDepository(reactants))
         reactionList.extend(self.generateReactionsFromLibraries(reactants))
         reactionList.extend(self.generateReactionsFromGroups(reactants))
 
@@ -2464,26 +2464,34 @@ class KineticsDatabase:
         reactants or products for the given ``reaction``, or ``False`` if not.
         The reactants should be :class:`Molecule` objects.
         """
+        assert all([isinstance(reactant, Molecule) for reactant in reactants])
+        assert all([isinstance(reactant, Species) for reactant in reaction.reactants])
+        assert all([isinstance(product, Species) for product in reaction.products])
+        
         # Check forward direction
         if len(reactants) == len(reaction.reactants) == 1:
-            if reactants[0].isIsomorphic(reaction.reactants[0]):
+            if any([reactants[0].isIsomorphic(molecule) for molecule in reaction.reactants[0].molecule]):
                 return True
         elif len(reactants) == len(reaction.reactants) == 2:
-            if reactants[0].isIsomorphic(reaction.reactants[0]) and reactants[1].isIsomorphic(reaction.reactants[1]):
+            if (any([reactants[0].isIsomorphic(molecule) for molecule in reaction.reactants[0].molecule]) and
+                any([reactants[1].isIsomorphic(molecule) for molecule in reaction.reactants[1].molecule])):
                 return True
-            elif reactants[0].isIsomorphic(reaction.reactants[1]) and reactants[1].isIsomorphic(reaction.reactants[0]):
+            elif (any([reactants[0].isIsomorphic(molecule) for molecule in reaction.reactants[1].molecule]) and
+                any([reactants[1].isIsomorphic(molecule) for molecule in reaction.reactants[0].molecule])):
                 return True
 
         # Check reverse direction
         if len(reactants) == len(reaction.products) == 1:
-            if reactants[0].isIsomorphic(reaction.products[0]):
+            if any([reactants[0].isIsomorphic(molecule) for molecule in reaction.products[0].molecule]):
                 return True
         elif len(reactants) == len(reaction.products) == 2:
-            if reactants[0].isIsomorphic(reaction.products[0]) and reactants[1].isIsomorphic(reaction.products[1]):
+            if (any([reactants[0].isIsomorphic(molecule) for molecule in reaction.products[0].molecule]) and
+                any([reactants[1].isIsomorphic(molecule) for molecule in reaction.products[1].molecule])):
                 return True
-            elif reactants[0].isIsomorphic(reaction.products[1]) and reactants[1].isIsomorphic(reaction.products[0]):
+            elif (any([reactants[0].isIsomorphic(molecule) for molecule in reaction.products[1].molecule]) and
+                any([reactants[1].isIsomorphic(molecule) for molecule in reaction.products[0].molecule])):
                 return True
-
+            
         # If we're here then neither direction matched, so return false
         return False
 
