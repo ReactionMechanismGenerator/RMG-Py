@@ -211,12 +211,12 @@ def saveOutputHTML(path, reactionModel):
 <table class="reactionList">
     <tr><th>Index</th><th colspan="3" style="text-align: center;">Reaction</th><th>Family</th></tr>
     {% for rxn in reactions %}
-    <tr class="reaction {{ rxn.family.label }}">
+    <tr class="reaction {{ rxn.getSource().label }}">
         <td class="index">{{ rxn.index }}.</td>
         <td class="reactants">{% for reactant in rxn.reactants %}<img src="species/{{ reactant }}.png" alt="{{ reactant }}" title="{{ reactant }}"/>{% if not loop.last %} + {% endif %}{% endfor %}</td>
         <td class="reactionArrow">{% if rxn.reversible %}&hArr;{% else %}&rarr;{% endif %}</td>
         <td class="products">{% for product in rxn.products %}<img src="species/{{ product }}.png" alt="{{ product }}" title="{{ product }}"/>{% if not loop.last %} + {% endif %}{% endfor %}</td>
-        <td class="family">{{ rxn.family.label }}</td>
+        <td class="family">{{ rxn.getSource().label }}</td>
     </tr>
     <tr class="kinetics">
         <td></td>

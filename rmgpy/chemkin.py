@@ -156,7 +156,7 @@ def writeThermoEntry(species):
 
 ################################################################################
 
-def writeKineticsEntry(reaction):
+def writeKineticsEntry(reaction, speciesList):
     """
     Return a string representation of the reaction as used in a Chemkin
     file.
@@ -202,7 +202,10 @@ def writeKineticsEntry(reaction):
     if isinstance(kinetics, ThirdBody):
         # Write collider efficiencies
         for collider, efficiency in kinetics.efficiencies.iteritems():
-            string += '{0!s}/{1:<4.2f}/ '.format(getSpeciesIdentifier(collider), efficiency)
+            for species in speciesList:
+                if any([collider.isIsomorphic(molecule) for molecule in species.molecule]):
+                    string += '{0!s}/{1:<4.2f}/ '.format(getSpeciesIdentifier(species), efficiency)
+                    break
         string += '\n'
         
         if isinstance(kinetics, Lindemann):
@@ -285,7 +288,7 @@ def saveChemkinFile(path, species, reactions):
     # Reactions section
     f.write('REACTIONS    KCAL/MOLE   MOLES\n\n')
     for rxn in reactions:
-        f.write(writeKineticsEntry(rxn))
+        f.write(writeKineticsEntry(rxn, speciesList=species))
         # Don't forget to mark duplicates!
         f.write('\n')
     f.write('END\n\n')
