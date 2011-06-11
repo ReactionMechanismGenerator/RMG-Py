@@ -2312,27 +2312,31 @@ class KineticsDatabase:
 
     def loadLibraries(self, path, libraries=None):
         """
-        Load the kinetics database from the given `path` on disk, where `path`
-        points to the top-level folder of the thermo database.
+        Load the listed kinetics libraries from the given `path` on disk.
+        
+        The `path` points to the folder of kinetics libraries in the database,
+        and the libraries should be in files like :file:`<path>/<library>.py`.
         """
         self.libraries = {}; self.libraryOrder = []
-        for (root, dirs, files) in os.walk(os.path.join(path)):
-            for f in files:
-                name, ext = os.path.splitext(f)
-                if ext.lower() == '.py' and (libraries is None or name in libraries):
-                    logging.info('Loading kinetics library from {0} in {1}...'.format(f, root))
-                    libraryPath = os.path.join(root, f)
-                    library = KineticsLibrary(label=libraryPath[len(path)+1:-3])
-                    library.load(libraryPath, self.local_context, self.global_context)
-                    self.libraries[library.label] = library
-                    self.libraryOrder.append(library.label)
+        
+        for library_name in libraries:
+            library_file = os.path.join(path, library_name+'.py')
+            if os.path.exists(library_file):
+                logging.info('Loading kinetics library {0} from {1}...'.format(library_name, library_file))
+                library = KineticsLibrary(label=library_name)
+                library.load(library_file, self.local_context, self.global_context)
+                self.libraries[library.label] = library
+                self.libraryOrder.append(library.label)
+            else:
+                raise IOError("Couldn't find kinetics library {0}".format(library_file))
         if libraries is not None:
-            self.libraryOrder = libraries
+            assert (self.libraryOrder == libraries)
 
     def loadGroups(self, path):
         """
-        Load the kinetics database from the given `path` on disk, where `path`
-        points to the top-level folder of the thermo database.
+        Load the kinetics groups data from the given `path` on disk.
+        
+        The `path` points to the folder containing the groups database `.py` files.
         """
         self.groups = {}
         logging.info('Loading kinetics group database from {0}'.format(path))
