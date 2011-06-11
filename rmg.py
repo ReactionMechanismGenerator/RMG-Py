@@ -38,6 +38,7 @@ import argparse
 import logging
 import time
 import numpy
+import shutil
 
 import rmgpy.rmg.settings as settings
 from rmgpy.rmg.input import readInputFile
@@ -188,9 +189,7 @@ def makeOutputSubdirectory(folder):
     dir = os.path.join(settings.outputDirectory, folder)
     if os.path.exists(dir):
         # The directory already exists, so delete it (and all its content!)
-        for f in os.listdir(dir):
-            os.remove(os.path.join(dir, f))
-        os.rmdir(dir)
+        shutil.rmtree(dir)
     os.mkdir(dir)
 
 def execute(args):
