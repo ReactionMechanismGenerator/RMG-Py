@@ -2314,23 +2314,36 @@ class KineticsDatabase:
         """
         Load the listed kinetics libraries from the given `path` on disk.
         
+        Loads them all if `libraries` list is not specified or `None`.
         The `path` points to the folder of kinetics libraries in the database,
         and the libraries should be in files like :file:`<path>/<library>.py`.
         """
         self.libraries = {}; self.libraryOrder = []
         
-        for library_name in libraries:
-            library_file = os.path.join(path, library_name+'.py')
-            if os.path.exists(library_file):
-                logging.info('Loading kinetics library {0} from {1}...'.format(library_name, library_file))
-                library = KineticsLibrary(label=library_name)
-                library.load(library_file, self.local_context, self.global_context)
-                self.libraries[library.label] = library
-                self.libraryOrder.append(library.label)
-            else:
-                raise IOError("Couldn't find kinetics library {0}".format(library_file))
         if libraries is not None:
+            for library_name in libraries:
+                library_file = os.path.join(path, library_name+'.py')
+                if os.path.exists(library_file):
+                    logging.info('Loading kinetics library {0} from {1}...'.format(library_name, library_file))
+                    library = KineticsLibrary(label=library_name)
+                    library.load(library_file, self.local_context, self.global_context)
+                    self.libraries[library.label] = library
+                    self.libraryOrder.append(library.label)
+                else:
+                    raise IOError("Couldn't find kinetics library {0}".format(library_file))
             assert (self.libraryOrder == libraries)
+        else:# load all the libraries you can find
+            for (root, dirs, files) in os.walk(os.path.join(path)):
+                for f in files:
+                    name, ext = os.path.splitext(f)
+                    if ext.lower() == '.py':
+                        library_file = os.path.join(root, f)
+                        label=library_file[len(path)+1:-3]
+                        logging.info('Loading kinetics library {0} from {1}...'.format(label, library_file))
+                        library = KineticsLibrary(label=label)
+                        library.load(library_file, self.local_context, self.global_context)
+                        self.libraries[library.label] = library
+                        self.libraryOrder.append(library.label)
 
     def loadGroups(self, path):
         """
