@@ -625,9 +625,15 @@ class ThermoDatabase:
                     atom.incrementRadical()
 
                 saturatedStruct.updateConnectivityValues()
-
-                thermoData = self.__addThermoData(thermoData, self.__getGroupThermoData(self.groups['radical'], saturatedStruct, {'*':atom}))
-
+                
+                try:
+                    thermoData = self.__addThermoData(thermoData, self.__getGroupThermoData(self.groups['radical'], saturatedStruct, {'*':atom}))
+                except KeyError:
+                    logging.error("Couldn't find in radical thermo database:")
+                    logging.error(molecule)
+                    logging.error(molecule.toAdjacencyList())
+                    raise
+                        
                 # Re-saturate
                 for H, bond in added[atom]:
                     saturatedStruct.addAtom(H)
@@ -652,8 +658,9 @@ class ThermoDatabase:
                         else:
                             thermoData = self.__addThermoData(thermoData, self.__getGroupThermoData(self.groups['group'], molecule, {'*':atom}))
                     except KeyError:
-                        print molecule
-                        print molecule.toAdjacencyList()
+                        logging.error("Couldn't find in main thermo database:")
+                        logging.error(molecule)
+                        logging.error(molecule.toAdjacencyList())
                         raise
                     # Correct for gauche and 1,5- interactions
                     try:
@@ -680,8 +687,14 @@ class ThermoDatabase:
                             ringStructure.addBond(atom1, atom2, molecule.getBond(atom1, atom2))
 
                 # Get thermo correction for this ring
-                thermoData = self.__addThermoData(thermoData, self.__getGroupThermoData(self.groups['ring'], ringStructure, {}))
-
+                try:
+                    thermoData = self.__addThermoData(thermoData, self.__getGroupThermoData(self.groups['ring'], ringStructure, {}))
+                except KeyError:
+                    logging.error("Couldn't find in ring database:")
+                    logging.error(ringStructure)
+                    logging.error(ringStructure.toAdjacencyList())
+                    raise
+                
         # Correct entropy for symmetry number
         molecule.calculateSymmetryNumber()
         thermoData.S298.value -= constants.R * math.log(molecule.symmetryNumber)
@@ -717,9 +730,7 @@ class ThermoDatabase:
         node0 = database.descendTree(molecule, atom, None)
 
         if node0 is None:
-            details = ' atom={0!r}; molecule={1!r}; database="{2!s}"'.format(
-                        atom, molecule, database.name)
-            raise KeyError('Node not found in database.'+details)
+            raise KeyError('Node not found in database.')
 
         # It's possible (and allowed) that items in the tree may not be in the
         # library, in which case we need to fall up the tree until we find an
