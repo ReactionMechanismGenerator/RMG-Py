@@ -595,17 +595,21 @@ def generateExecutionPlots(execTime, coreSpeciesCount, coreReactionCount,
 
 ################################################################################
 
-class tee:
-	"""A simple tee to create a stream which prints to many streams"""
-	def __init__(self, *fileobjects):
-		self.fileobjects=fileobjects
-	def write(self, string):
-		for fileobject in self.fileobjects:
-			fileobject.write(string)
+class Tee:
+    """A simple tee to create a stream which prints to many streams.
+    
+    This is used to report the profiling statistics to both the log file
+    and the standard output.
+    """
+    def __init__(self, *fileobjects):
+        self.fileobjects=fileobjects
+    def write(self, string):
+        for fileobject in self.fileobjects:
+            fileobject.write(string)
 
-def processStats(stats_file, log_file):
+def processProfileStats(stats_file, log_file):
     import pstats
-    out_stream = tee(sys.stdout,open(log_file,'a')) # print to screen AND append to RMG.log
+    out_stream = Tee(sys.stdout,open(log_file,'a')) # print to screen AND append to RMG.log
     stats = pstats.Stats(stats_file,stream=out_stream)
     stats.strip_dirs()
     print >>out_stream, "Sorted by internal time"
@@ -618,6 +622,38 @@ def processStats(stats_file, log_file):
     stats.print_callers(25)
     stats.print_callees(25)
 
+def makeProfileGraph(stats_file):
+    """
+    Uses gprof2dot to create a graphviz dot file of the profiling information.
+    
+    This requires the gprof2dot package available via `pip install gprof2dot`.
+    Render the result using the program 'dot' via a command like
+    `dot -Tpdf input.dot -o output.pdf`.
+    """
+    try:
+        from gprof2dot import gprof2dot
+    except ImportError:
+        logging.warning('Package gprof2dot not found. Unable to create a graph of the profile statistics.')
+        # `pip install gprof2dot` if you don't have it.
+        return
+    m = gprof2dot.Main()
+    class Options:
+        pass
+    m.options = Options()
+    m.options.node_thres = 0.5
+    m.options.edge_thres = 0.1
+    m.options.strip = False
+    m.options.wrap = False
+    m.theme = m.themes['color']
+    parser = gprof2dot.PstatsParser(stats_file)
+    m.profile = parser.parse()
+    dot_file = stats_file + '.dot'
+    m.output = open(dot_file,'wt')
+    m.write_graph()
+    logging.info("Now try:\n     dot -Tsvg %s -o %s.svg"%(dot_file,dot_file))
+    # we could actually try this here using subprocess.Popen() or something
+    # wrapped in a try: block.
+    
 ################################################################################
 
 if __name__ == '__main__':
@@ -667,7 +703,9 @@ if __name__ == '__main__':
             cProfile.runctx(command, global_vars, local_vars, stats_file)
         # postprocess the stats
         log_file = os.path.join(args.output_directory,'RMG.log')
-        processStats(stats_file, log_file)
+        processProfileStats(stats_file, log_file)
+        makeProfileGraph(stats_file)
+        
 
     else:
         execute(args)
