@@ -235,7 +235,7 @@ def renderBond(atom1, atom2, bond, coordinates, symbols, cr):
     dv = math.sin(angle + math.pi / 2)
     if bond.isDouble() and (symbols[atom1] != '' or symbols[atom2] != ''):
         # Draw double bond centered on bond axis
-        du *= 2; dv *= 2
+        du *= 1.6; dv *= 1.6
         drawLine(cr, x1 - du, y1 - dv, x2 - du, y2 - dv)
         drawLine(cr, x1 + du, y1 + dv, x2 + du, y2 + dv)
     elif bond.isTriple() and (symbols[atom1] != '' or symbols[atom2] != ''):
@@ -249,10 +249,10 @@ def renderBond(atom1, atom2, bond, coordinates, symbols, cr):
         drawLine(cr, x1, y1, x2, y2)
         # Draw other bonds
         if bond.isDouble():
-            du *= 4; dv *= 4; dx = 4 * dx / bondLength; dy = 4 * dy / bondLength
+            du *= 3.2; dv *= 3.2; dx = 2 * dx / bondLength; dy = 2 * dy / bondLength
             drawLine(cr, x1 + du + dx, y1 + dv + dy, x2 + du - dx, y2 + dv - dy)
         elif bond.isTriple():
-            du *= 3; dv *= 3; dx = 3 * dx / bondLength; dy = 3 * dy / bondLength
+            du *= 3; dv *= 3; dx = 2 * dx / bondLength; dy = 2 * dy / bondLength
             drawLine(cr, x1 - du + dx, y1 - dv + dy, x2 - du - dx, y2 - dv - dy)
             drawLine(cr, x1 + du + dx, y1 + dv + dy, x2 + du - dx, y2 + dv - dy)
     
@@ -422,17 +422,17 @@ def renderAtom(symbol, atom, coordinates0, atoms, bonds, x0, y0, cr, heavyFirst=
 
     # (xi, yi) mark the center of the space in which to place the radicals and charges
     if orientation[0] == 'l':
-        xi = x - 2
+        xi = x - 3
         yi = y - extents[3]/2
     elif orientation[0] == 'b':
         xi = x + extents[0] + extents[2]/2
-        yi = y - extents[3] - 3
+        yi = y - extents[3] - 4
     elif orientation[0] == 'r':
-        xi = x + extents[0] + extents[2] + 3
+        xi = x + extents[0] + extents[2] + 4
         yi = y - extents[3]/2
     elif orientation[0] == 't':
         xi = x + extents[0] + extents[2]/2
-        yi = y + 3
+        yi = y + 4
 
     # If we couldn't use one of the four sides, then offset the radical/charges
     # horizontally by a few pixels, in hope that this avoids overlap with an
