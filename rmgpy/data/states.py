@@ -272,7 +272,10 @@ class StatesGroups(Database):
         node = node0
         while node.data is None and node.parent is not None:
             node = node.parent
-
+        if node.data is None:
+            logging.warning('States node {0!r} and all its parents have data=None'.format(node0))
+            return None
+            raise KeyError('States node {0!r} and all its parents have data=None'.format(node0))
         return node
 
     def getFrequencyGroups(self, molecule):
