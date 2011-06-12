@@ -246,7 +246,7 @@ class PDepNetwork(rmgpy.measure.network.Network):
         if len(self.netReactions) == 0 and len(self.pathReactions) == 1:
             maxK = self.getLeakCoefficient(T,P)
             rxn = self.pathReactions[0]
-            if rxn.products is self.source:
+            if rxn.products == self.source:
                 assert len(rxn.reactants) == 1
                 maxSpecies = rxn.reactants[0]
             else:
