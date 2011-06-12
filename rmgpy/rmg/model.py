@@ -359,7 +359,9 @@ class PDepNetwork(rmgpy.measure.network.Network):
         for reaction in other.pathReactions:
             found = False
             for rxn in self.pathReactions:
-                if reaction.isEquivalent(rxn):
+                if reaction.reactants == rxn.reactants and reaction.products == rxn.products:
+                    # NB the isEquivalent() method that used to be on the previous line also checked reverse direction.
+                    # I am not sure which is appropriate 
                     found = True
                     break
             if not found:
@@ -371,7 +373,9 @@ class PDepNetwork(rmgpy.measure.network.Network):
         for reaction in other.netReactions:
             found = False
             for rxn in self.netReactions:
-                if reaction.isEquivalent(rxn):
+                if reaction.reactants == rxn.reactants and reaction.products == rxn.products:
+                    # NB the isEquivalent() method that used to be on the previous line also checked reverse direction.
+                    # I am not sure which is appropriate 
                     found = True
                     break
             if not found:
