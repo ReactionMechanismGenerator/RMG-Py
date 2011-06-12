@@ -141,6 +141,7 @@ def saveOutputHTML(path, reactionModel):
         }
         tr.comment {
             font-size: small;
+            border-bottom: 1px solid #808080;
         }
         tr.kinetics {
             font-size: small;
@@ -148,7 +149,10 @@ def saveOutputHTML(path, reactionModel):
         .KineticsData {
             # border: 1px solid grey;
         }
-        .KineticsData th { width: 11em;}
+        .KineticsData th {
+            width: 15em;
+            word-wrap: none;
+        }
         .KineticsData td {
             width: 3em;
         }

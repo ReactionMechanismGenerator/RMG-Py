@@ -166,8 +166,36 @@ class KineticsModel:
     def toHTML(self):
         """
         Return an HTML rendering.
-        """
-        return "<code>{0!r}</code>".format(self)
+        """    
+        cython.declare(T=cython.double, k=cython.double)
+        cython.declare(string=str)
+        cython.declare(kdata1=list, Tdata=list, kdata10=list)
+        string = '<table class="KineticsData"><tr class="KineticsData_Tdata"><th>T/[K]</th>\n   '
+        kdata1 = []
+        kdata10 = []
+        Tdata = [500,1000,1500,2000]
+        for T in Tdata:
+            string += '<td>{0:.0f}</td>'.format(T)
+            kdata1.append(self.getRateCoefficient(T,P=1e5))
+            if self.isPressureDependent():
+                kdata10.append(self.getRateCoefficient(T,P=1e6))
+                
+        if self.isPressureDependent():
+            string += '\n</tr><tr class="KineticsData_kdata"><th>log<sub>10</sub>(k(1 bar)/[mole,m,s])\n    '
+            for k in kdata1:
+                string += '<td>{0:+.1f}'.format(math.log10(k))
+            string += '\n</tr><tr class="KineticsData_kdata"><th>log<sub>10</sub>(k(10 bar)/[mole,m,s])\n    '
+            for k in kdata10:
+                string += '<td>{0:+.1f}'.format(math.log10(k))
+        else:
+            string += '\n</tr><tr class="KineticsData_kdata"><th>log<sub>10</sub>(k/[mole,m,s])\n    '
+            for k in kdata1:
+                string += '<td>{0:+.1f}'.format(math.log10(k))
+     
+        string += '\n</tr></table>'
+        string += "<code>{0!r}</code>".format(self)
+        return string
+        
 
 ################################################################################
 
