@@ -125,8 +125,8 @@ if __name__ == '__main__':
     if args.profile:
         import cProfile, sys, pstats, os
         global_vars = {}
-        local_vars = {'args': args, 'execute': execute}
-        command = """execute(args)"""
+        local_vars = {'args': args, 'RMG': RMG}
+        command = """rmg = RMG(); rmg.execute(args)"""
         stats_file = os.path.join(args.output_directory,'RMG.profile')
         print("Running under cProfile")
         if not args.postprocess:
@@ -138,4 +138,5 @@ if __name__ == '__main__':
         makeProfileGraph(stats_file)
         
     else:
-        execute(args)
+        rmg = RMG()
+        rmg.execute(args)
