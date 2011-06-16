@@ -582,7 +582,7 @@ class ThermoDatabase:
 
         thermoData = None
 
-        if sum([atom.radicalElectrons for atom in molecule.atoms]) > 0:
+        if sum([atom.radicalElectrons for atom in molecule.atoms]) > 0: # radical species
 
             # Make a copy of the structure so we don't change the original
             saturatedStruct = molecule.copy(deep=True)
@@ -646,7 +646,7 @@ class ThermoDatabase:
 
             # Correct the entropy for the symmetry number
 
-        else:
+        else: # non-radical species
             # Generate estimate of thermodynamics
             for atom in molecule.atoms:
                 # Iterate over heavy (non-hydrogen) atoms

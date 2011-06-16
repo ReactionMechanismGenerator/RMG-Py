@@ -488,8 +488,8 @@ class PDepNetwork(rmgpy.measure.network.Network):
         self.collisionModel = SingleExponentialDownModel(alpha0=4.86 * 4184)
 
         # Save input file
-        rmgpy.measure.output.writeInput(os.path.join(settings.outputDirectory, 'pdep', 'network{0:d}_{1:d}.py'.format(self.index, len(self.isomers))),
-            self, Tlist, Plist, (grainSize, numGrains), method, model)
+        rmgpy.measure.output.writeFile(os.path.join(settings.outputDirectory, 'pdep', 'network{0:d}_{1:d}.py'.format(self.index, len(self.isomers))),
+            self, Tlist, Plist, (grainSize, numGrains), method, model, Tmin, Tmax, Pmin, Pmax)
 
         self.printSummary(level=logging.INFO)
 
