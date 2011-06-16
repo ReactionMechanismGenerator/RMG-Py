@@ -118,10 +118,10 @@ def writeNetworkConfigurations(f, network):
     """
     # Write isomer configurations
     for isomer in network.isomers:
-        f.write('isomer("{0}")\n\n'.format(isomer.label))
+        f.write('isomer("{0}")\n\n'.format(isomer))
     # Write reactant configurations
     for reactants in network.reactants:
-        f.write('reactants("{0}", "{1}")\n\n'.format(reactants[0].label, reactants[1].label))
+        f.write('reactants("{0}", "{1}")\n\n'.format(reactants[0], reactants[1]))
     # No need to write product configurations, as these are assumed
 
 ################################################################################
