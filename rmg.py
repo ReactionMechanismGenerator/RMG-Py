@@ -251,6 +251,10 @@ def execute(args):
     # Read input file
     reactionModel, coreSpecies, reactionSystems, database, seedMechanisms = readInputFile(inputFile)
     
+    # Delete previous HTML file
+    from rmgpy.rmg.output import saveOutputHTML
+    saveOutputHTML(os.path.join(settings.outputDirectory, 'output.html'), reactionModel)
+    
     # Initialize reaction model
     if args.restart:
         reactionModel = loadRestartFile(os.path.join(settings.outputDirectory,'restart.pkl.gz'))
@@ -335,7 +339,6 @@ def execute(args):
 
         # Save the current state of the model core to a pretty HTML file
         logging.info('Saving latest model core to HTML file...')
-        from rmgpy.rmg.output import saveOutputHTML
         saveOutputHTML(os.path.join(settings.outputDirectory, 'output.html'), reactionModel)
 
         # Save a Chemkin file containing the current model core
