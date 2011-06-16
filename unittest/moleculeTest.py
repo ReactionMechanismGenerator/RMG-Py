@@ -856,7 +856,22 @@ class TestMolecule(unittest.TestCase):
         self.assertEqual(molecule0.getFormula(), molecule.getFormula())
         self.assertTrue(molecule0.isIsomorphic(molecule))
         self.assertTrue(molecule.isIsomorphic(molecule0))
-        
+
+    def testRadicalCH(self):
+        """
+        Test that the species [CH] has three radical electrons and a spin multiplicity of 4.
+        """
+        molecule = Molecule().fromSMILES('[CH]')
+        self.assertEqual(molecule.atoms[0].radicalElectrons, 3)
+        self.assertEqual(molecule.atoms[0].spinMultiplicity, 4)
+
+    def testRadicalCH2(self):
+        """
+        Test that the species [CH2] has two radical electrons and a spin multiplicity of 3.
+        """
+        molecule = Molecule().fromSMILES('[CH2]')
+        self.assertEqual(molecule.atoms[0].radicalElectrons, 2)
+        self.assertEqual(molecule.atoms[0].spinMultiplicity, 3)
 ################################################################################
 
 class TestMoleculeSymmetry(unittest.TestCase):
