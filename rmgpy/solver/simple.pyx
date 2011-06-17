@@ -144,10 +144,21 @@ cdef class SimpleReactor(ReactionSystem):
         y0 = numpy.zeros((numCoreSpecies), numpy.float64)
         for spec, moleFrac in self.initialMoleFractions.iteritems():
             y0[speciesIndex[spec]] = moleFrac * (self.P / constants.R / self.T)
+            self.coreSpeciesConcentrations[speciesIndex[spec]] = y0[speciesIndex[spec]]
         
         # Initialize the model
         dydt0 = - self.residual(t0, y0, numpy.zeros((numCoreSpecies), numpy.float64))[0]
         DASSL.initialize(self, t0, y0, dydt0)
+
+    cpdef writeWorksheetHeader(self, worksheet):
+        """
+        Write some descriptive information about the reaction system to the
+        first two rows of the given `worksheet`.
+        """
+        import xlwt
+        style0 = xlwt.easyxf('font: bold on')
+        worksheet.write(0, 0, 'Simple Reactor', style0)
+        worksheet.write(1, 0, 'T = {0:g} K, P = {1:g} bar'.format(self.T, self.P/1e5))
 
     @cython.boundscheck(False)
     def residual(self, double t, numpy.ndarray[numpy.float64_t, ndim=1] y, numpy.ndarray[numpy.float64_t, ndim=1] dydt):
@@ -178,12 +189,16 @@ cdef class SimpleReactor(ReactionSystem):
         numEdgeReactions = len(self.edgeReactionRates)
         numPdepNetworks = len(self.networkLeakRates)
 
+        coreSpeciesConcentrations = numpy.zeros_like(self.coreSpeciesConcentrations)
         coreSpeciesRates = numpy.zeros_like(self.coreSpeciesRates)
         coreReactionRates = numpy.zeros_like(self.coreReactionRates)
         edgeSpeciesRates = numpy.zeros_like(self.edgeSpeciesRates)
         edgeReactionRates = numpy.zeros_like(self.edgeReactionRates)
         networkLeakRates = numpy.zeros_like(self.networkLeakRates)
 
+        for j in range(y.shape[0]):
+            coreSpeciesConcentrations[j] = y[j]
+        
         for j in range(ir.shape[0]):
             k = kf[j]
             if ir[j,0] >= numCoreSpecies or ir[j,1] >= numCoreSpecies or ir[j,2] >= numCoreSpecies:
@@ -264,6 +279,7 @@ cdef class SimpleReactor(ReactionSystem):
                 reactionRate = k * y[inet[j,0]] * y[inet[j,1]] * y[inet[j,2]]
             networkLeakRates[j] = reactionRate
 
+        self.coreSpeciesConcentrations = coreSpeciesConcentrations
         self.coreSpeciesRates = coreSpeciesRates
         self.coreReactionRates = coreReactionRates
         self.edgeSpeciesRates = edgeSpeciesRates

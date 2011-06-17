@@ -32,6 +32,7 @@ from pydas cimport DASSL
 
 cdef class ReactionSystem(DASSL):
 
+    cdef public numpy.ndarray coreSpeciesConcentrations
     cdef public numpy.ndarray coreSpeciesRates
     cdef public numpy.ndarray coreReactionRates
     cdef public numpy.ndarray edgeSpeciesRates
@@ -44,9 +45,11 @@ cdef class ReactionSystem(DASSL):
 
     cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions, list pdepNetworks=?)
 
+    cpdef writeWorksheetHeader(self, worksheet)
+    
     cpdef simulate(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions,
         double toleranceKeepInEdge, double toleranceMoveToCore, double toleranceInterruptSimulation,
-        list termination, list pdepNetworks=?)
+        list termination, list pdepNetworks=?, worksheet=?)
 
     cpdef logRates(self, double charRate, object species, double speciesRate, object network, double networkRate)
 

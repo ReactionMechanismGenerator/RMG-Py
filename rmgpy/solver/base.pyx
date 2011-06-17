@@ -50,6 +50,7 @@ cdef class ReactionSystem(DASSL):
     def __init__(self):
         DASSL.__init__(self)
         # The reaction and species rates at the current time (in mol/m^3*s)
+        self.coreSpeciesConcentrations = None
         self.coreSpeciesRates = None
         self.coreReactionRates = None
         self.edgeSpeciesRates = None
@@ -76,6 +77,7 @@ cdef class ReactionSystem(DASSL):
         numEdgeReactions = len(edgeReactions)
         numPdepNetworks = len(pdepNetworks)
 
+        self.coreSpeciesConcentrations = numpy.zeros((numCoreSpecies), numpy.float64)
         self.coreReactionRates = numpy.zeros((numCoreReactions), numpy.float64)
         self.edgeReactionRates = numpy.zeros((numEdgeReactions), numpy.float64)
         self.coreSpeciesRates = numpy.zeros((numCoreSpecies), numpy.float64)
@@ -85,10 +87,20 @@ cdef class ReactionSystem(DASSL):
         self.maxEdgeSpeciesRates = numpy.zeros((numEdgeSpecies), numpy.float64)
         self.maxNetworkLeakRates = numpy.zeros((numPdepNetworks), numpy.float64)
 
+    
+    cpdef writeWorksheetHeader(self, worksheet):
+        """
+        Write some descriptive information about the reaction system to the
+        first two rows of the given `worksheet`.
+        """
+        import xlwt
+        style0 = xlwt.easyxf('font: bold on')
+        worksheet.write(0, 0, 'Reaction System', style0)
+
     @cython.boundscheck(False)
     cpdef simulate(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions,
         double toleranceKeepInEdge, double toleranceMoveToCore, double toleranceInterruptSimulation,
-        list termination, list pdepNetworks=None):
+        list termination, list pdepNetworks=None, worksheet=None):
         """
         Simulate the reaction system with the provided reaction model,
         consisting of lists of core species, core reactions, edge species, and
@@ -109,6 +121,7 @@ cdef class ReactionSystem(DASSL):
         cdef numpy.ndarray[numpy.float64_t, ndim=1] maxCoreSpeciesRates, maxEdgeSpeciesRates, maxNetworkLeakRates
         cdef bint terminated
         cdef object maxSpecies, maxNetwork
+        cdef int iteration, i
         
         pdepNetworks = pdepNetworks or []
 
@@ -130,6 +143,7 @@ cdef class ReactionSystem(DASSL):
         maxNetworkIndex = -1
         maxNetwork = None
         maxNetworkRate = 0.0
+        iteration = 0
 
         maxCoreSpeciesRates = self.maxCoreSpeciesRates
         maxEdgeSpeciesRates = self.maxEdgeSpeciesRates
@@ -138,10 +152,27 @@ cdef class ReactionSystem(DASSL):
         # Copy the initial conditions to use in evaluating conversions
         y0 = self.y.copy()
 
+        if worksheet:
+            import xlwt
+            self.writeWorksheetHeader(worksheet)
+            style0 = xlwt.easyxf('font: bold on')
+            style1 = xlwt.easyxf(num_format_str='0.000E+00')
+            worksheet.write(3, 0, 'Time (s)', style0)
+            worksheet.write(3, 1, 'Concentrations (mol/m^3)', style0)
+            for i in range(numCoreSpecies):
+                worksheet.write(4, i+1, str(coreSpecies[i]), style0)
+            
         stepTime = 1e-12
         while not terminated:
             # Integrate forward in time by one time step
             self.step(stepTime)
+
+            iteration += 1
+
+            if worksheet:
+                worksheet.write(iteration+4, 0, self.t, style1)
+                for i in range(numCoreSpecies):
+                    worksheet.write(iteration+4, i+1, self.coreSpeciesConcentrations[i], style1)
 
             # Get the characteristic flux
             charRate = sqrt(numpy.sum(self.coreSpeciesRates * self.coreSpeciesRates))

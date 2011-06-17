@@ -242,11 +242,20 @@ def execute(args):
     except ImportError:
         logging.info('Optional package dependency "psutil" not found; memory profiling information will not be saved.')
 
+    # See if spreadsheet writing package is available
+    saveConcentrationProfiles = False
+    try:
+        import xlwt
+        saveConcentrationProfiles = True
+    except ImportError:
+        logging.info('Optional package dependency "xlwt" not found; reaction system concentration profiles will not be saved.')
+
     # Make output subdirectories
     makeOutputSubdirectory('plot')
     makeOutputSubdirectory('species')
     makeOutputSubdirectory('pdep')
     makeOutputSubdirectory('chemkin')
+    makeOutputSubdirectory('solver')
     
     # Read input file
     reactionModel, coreSpecies, reactionSystems, database, seedMechanisms = readInputFile(inputFile)
@@ -291,11 +300,19 @@ def execute(args):
     done = False
     while not done:
 
+        if saveConcentrationProfiles:
+            workbook = xlwt.Workbook()
+            
         done = True
         objectsToEnlarge = []
         allTerminated = True
         for index, reactionSystem in enumerate(reactionSystems):
 
+            if saveConcentrationProfiles:
+                worksheet = workbook.add_sheet('#{0:d}'.format(index+1))
+            else:
+                worksheet = None
+            
             # Conduct simulation
             logging.info('Conducting simulation of reaction system %s...' % (index+1))
             terminated, obj = reactionSystem.simulate(
@@ -308,6 +325,7 @@ def execute(args):
                 toleranceInterruptSimulation = reactionModel.fluxToleranceInterrupt,
                 termination = reactionModel.termination,
                 pdepNetworks = reactionModel.unirxnNetworks,
+                worksheet = worksheet,
             )
             allTerminated = allTerminated and terminated
             logging.info('')
@@ -322,6 +340,9 @@ def execute(args):
                     obj = (obj, obj.getMaximumLeakSpecies(reactionSystem.T, reactionSystem.P))
                 objectsToEnlarge.append(obj)
                 done = False
+
+        if saveConcentrationProfiles:
+            workbook.save(os.path.join(settings.outputDirectory, 'solver', 'simulation_{0:d}.xls'.format(len(reactionModel.core.species))))
 
         if not done:
 
