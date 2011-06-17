@@ -125,22 +125,36 @@ def generateOldLibraryEntry(data):
     Return a list of values used to save entries to the old-style RMG
     thermo database based on the thermodynamics object `data`.
     """
-    if not isinstance(data, ThermoData):
-        raise ValueError('data parameter must be in ThermoData format; got {0} instead'.format(data.__class__))
-    return '{0:9g} {1:9g} {2:9g} {3:9g} {4:9g} {5:9g} {6:9g} {7:9g} {8:9g} {9:9g} {10:9g} {11:9g}'.format(
-        data.H298.value/4184.,
-        data.S298.value/4.184,
-        data.Cpdata.values[0]/4.184,
-        data.Cpdata.values[1]/4.184,
-        data.Cpdata.values[2]/4.184,
-        data.Cpdata.values[3]/4.184,
-        data.Cpdata.values[4]/4.184,
-        data.Cpdata.values[5]/4.184,
-        data.Cpdata.values[6]/4.184,
-        data.H298.uncertainty/4184.,
-        data.S298.uncertainty/4.184,
-        data.Cpdata.uncertainty/4.184,
-    )
+    if isinstance(data, ThermoData):
+        return '{0:9g} {1:9g} {2:9g} {3:9g} {4:9g} {5:9g} {6:9g} {7:9g} {8:9g} {9:9g} {10:9g} {11:9g}'.format(
+            data.H298.value/4184.,
+            data.S298.value/4.184,
+            data.Cpdata.values[0]/4.184,
+            data.Cpdata.values[1]/4.184,
+            data.Cpdata.values[2]/4.184,
+            data.Cpdata.values[3]/4.184,
+            data.Cpdata.values[4]/4.184,
+            data.Cpdata.values[5]/4.184,
+            data.Cpdata.values[6]/4.184,
+            data.H298.uncertainty/4184.,
+            data.S298.uncertainty/4.184,
+            data.Cpdata.uncertainty/4.184,
+        )
+    else:
+        return '{0:9g} {1:9g} {2:9g} {3:9g} {4:9g} {5:9g} {6:9g} {7:9g} {8:9g} {9:9g} {10:9g} {11:9g}'.format(
+            data.getEnthalpy(298)/4184.,
+            data.getEntropy(298)/4.184,
+            data.getHeatCapacity(300)/4.184,
+            data.getHeatCapacity(400)/4.184,
+            data.getHeatCapacity(500)/4.184,
+            data.getHeatCapacity(600)/4.184,
+            data.getHeatCapacity(800)/4.184,
+            data.getHeatCapacity(1000)/4.184,
+            data.getHeatCapacity(1500)/4.184,
+            0,
+            0,
+            0,
+        )
 
 def processOldLibraryEntry(data):
     """
