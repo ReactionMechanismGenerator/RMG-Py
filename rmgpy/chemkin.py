@@ -218,7 +218,7 @@ def writeKineticsEntry(reaction, speciesList):
             )
             if isinstance(kinetics, Troe):
                 # Write Troe parameters
-                if kinetics.T2 == 1e100:
+                if kinetics.T2 is None:
                     string += '    TROE/ {0:<9.3e} {1:<9.3f} {2:<9.3f}/\n'.format(kinetics.alpha.value, kinetics.T3.value, kinetics.T1.value)
                 else:
                     string += '    TROE/ {0:<9.3e} {1:<9.3f} {2:<9.3f} {3:<9.3f}/\n'.format(kinetics.alpha.value, kinetics.T3.value, kinetics.T1.value, kinetics.T2.value)
