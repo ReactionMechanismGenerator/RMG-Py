@@ -70,8 +70,8 @@ class DepositoryReaction(Reaction):
     store the library and the entry in that depository that it was created from.
     """
 
-    def __init__(self, index=-1, reactants=None, products=None, kinetics=None, reversible=True, transitionState=None, thirdBody=False, degeneracy=1, depository=None, entry=None):
-        Reaction.__init__(self, index, reactants, products, kinetics, reversible, transitionState, thirdBody, degeneracy)
+    def __init__(self, index=-1, reactants=None, products=None, kinetics=None, reversible=True, transitionState=None, thirdBody=False, duplicate=False, degeneracy=1, depository=None, entry=None):
+        Reaction.__init__(self, index=index, reactants=reactants, products=products, kinetics=kinetics, reversible=reversible, transitionState=transitionState, thirdBody=thirdBody, duplicate=duplicate, degeneracy=degeneracy)
         self.depository = depository
         self.entry = entry
 
@@ -96,9 +96,9 @@ class LibraryReaction(Reaction):
     usual attributes, this class includes `library` and `entry` attributes to
     store the library and the entry in that library that it was created from.
     """
-
-    def __init__(self, index=-1, reactants=None, products=None, kinetics=None, reversible=True, transitionState=None, thirdBody=False, degeneracy=1, library=None, entry=None):
-        Reaction.__init__(self, index, reactants, products, kinetics, reversible, transitionState, thirdBody, degeneracy)
+    
+    def __init__(self, index=-1, reactants=None, products=None, kinetics=None, reversible=True, transitionState=None, thirdBody=False, duplicate=False, degeneracy=1, library=None, entry=None):
+        Reaction.__init__(self, index=index, reactants=reactants, products=products, kinetics=kinetics, reversible=reversible, transitionState=transitionState, thirdBody=thirdBody, duplicate=duplicate, degeneracy=degeneracy)
         self.library = library
         self.entry = entry
 
@@ -124,8 +124,8 @@ class TemplateReaction(Reaction):
     family that it was created from.
     """
 
-    def __init__(self, index=-1, reactants=None, products=None, kinetics=None, reversible=True, transitionState=None, thirdBody=False, degeneracy=1, family=None):
-        Reaction.__init__(self, index, reactants, products, kinetics, reversible, transitionState, thirdBody, degeneracy)
+    def __init__(self, index=-1, reactants=None, products=None, kinetics=None, reversible=True, transitionState=None, thirdBody=False, duplicate=False, degeneracy=1, family=None):
+        Reaction.__init__(self, index=index, reactants=reactants, products=products, kinetics=kinetics, reversible=reversible, transitionState=transitionState, thirdBody=thirdBody, duplicate=duplicate, degeneracy=degeneracy)
         self.family = family
 
     def __reduce__(self):
