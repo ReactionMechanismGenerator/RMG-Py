@@ -2610,3 +2610,125 @@ class KineticsDatabase:
             reaction.kinetics = reaction.family.getKinetics(reaction, degeneracy=reaction.degeneracy)
 
         return reactionList
+
+    def getForwardReactionForFamilyEntry(self, entry, family, thermoDatabase):
+        """
+        For a given `entry` for a reaction of the given reaction `family` (the
+        string label of the family), return the reaction with kinetics and
+        degeneracy for the "forward" direction as defined by the reaction 
+        family. For families that are their own reverse, the direction the
+        kinetics is given in will be preserved. If the entry contains 
+        functional groups for the reactants, assume that it is given in the 
+        forward direction and do nothing. Returns the reaction in the direction
+        consistent with the reaction family template, and the matching template.
+        Note that the returned reaction will have its kinetics and degeneracy
+        set appropriately.
+        
+        In order to reverse the reactions that are given in the reverse of the
+        direction the family is defined, we need to compute the thermodynamics
+        of the reactants and products. For this reason you must also pass
+        the `thermoDatabase` to use to generate the thermo data.
+        """
+
+        def generateThermoData(species, thermoDatabase):
+            thermoData = [thermoDatabase.getThermoData(molecule) for molecule in species.molecule]
+            thermoData.sort(key=lambda x: x.getEnthalpy(298))
+            return thermoData[0]
+        
+        def matchSpeciesToMolecules(species, molecules):
+            if len(species) == len(molecules) == 1:
+                for mol in species[0].molecule:
+                    if mol.isIsomorphic(molecules[0]):
+                        return True
+            elif len(species) == len(molecules) == 2:
+                for molA in species[0].molecule:
+                    for molB in species[1].molecule:
+                        if molA.isIsomorphic(molecules[0]) and molB.isIsomorphic(molecules[1]):
+                            return True
+                        elif molA.isIsomorphic(molecules[1]) and molB.isIsomorphic(molecules[0]):
+                            return True
+            return False
+
+        reaction = None; template = None
+
+        # Get the indicated reaction family
+        try:
+            groups = self.groups[family]
+        except KeyError:
+            raise ValueError('Invalid value "{0}" for family parameter.'.format(family))
+
+        if all([(isinstance(reactant, Group) or isinstance(reactant, LogicNode)) for reactant in entry.item.reactants]):
+            # The entry is a rate rule, containing functional groups only
+            # By convention, these are always given in the forward direction and
+            # have kinetics defined on a per-site basis
+            reaction = Reaction(
+                reactants = entry.item.reactants[:],
+                products = [],
+                kinetics = entry.data,
+                degeneracy = 1,
+            )
+            template = [groups.entries[label] for label in entry.label.split(';')]
+
+        elif (all([isinstance(reactant, Molecule) for reactant in entry.item.reactants]) and
+            all([isinstance(product, Molecule) for product in entry.item.products])):
+            # The entry is a real reaction, containing molecules
+            # These could be defined for either the forward or reverse direction
+            # and could have a reaction-path degeneracy
+
+            reaction = Reaction(reactants=[], products=[])
+            for molecule in entry.item.reactants:
+                molecule.makeHydrogensExplicit()
+                reactant = Species(molecule=[molecule], label=molecule.toSMILES())
+                reactant.generateResonanceIsomers()
+                reactant.thermo = generateThermoData(reactant, thermoDatabase)
+                reaction.reactants.append(reactant)
+            for molecule in entry.item.products:
+                molecule.makeHydrogensExplicit()
+                product = Species(molecule=[molecule], label=molecule.toSMILES())
+                product.generateResonanceIsomers()
+                product.thermo = generateThermoData(product, thermoDatabase)
+                reaction.products.append(product)
+
+            # Generate all possible reactions involving the reactant species
+            generatedReactions = self.generateReactionsFromGroups([reactant.molecule for reactant in reaction.reactants], only_families=[family])
+
+            # Remove from that set any reactions that don't produce the desired reactants and products
+            forward = []; reverse = []
+            for rxn in generatedReactions:
+                if matchSpeciesToMolecules(reaction.reactants, rxn.reactants) and matchSpeciesToMolecules(reaction.products, rxn.products):
+                    forward.append(rxn)
+                if matchSpeciesToMolecules(reaction.reactants, rxn.products) and matchSpeciesToMolecules(reaction.products, rxn.reactants):
+                    reverse.append(rxn)
+
+            # We should now know whether the reaction is given in the forward or
+            # reverse direction
+            if len(forward) == 1 and len(reverse) == 0:
+                # The reaction is in the forward direction, so use as-is
+                reaction = forward[0]
+                template = groups.getReactionTemplate(reaction)
+                # Don't forget to overwrite the estimated kinetics from the database with the kinetics for this entry
+                reaction.kinetics = entry.data
+            elif len(reverse) == 1 and len(forward) == 0:
+                # The reaction is in the reverse direction
+                # First fit Arrhenius kinetics in that direction
+                Tdata = 1.0/numpy.arange(0.0005,0.0035,0.0001,numpy.float64)
+                kdata = []
+                for T in Tdata:
+                    kdata.append(entry.data.getRateCoefficient(T) / reaction.getEquilibriumConstant(T))
+                kdata = numpy.array(kdata, numpy.float64)
+                kunits = 'm^3/(mol*s)' if len(reverse[0].reactants) == 2 else 's^-1'
+                kinetics = Arrhenius().fitToData(Tdata, kdata, kunits, T0=1.0)
+                # Now flip the direction
+                reaction = reverse[0]
+                reaction.kinetics = kinetics
+                template = groups.getReactionTemplate(reaction)
+            elif len(reverse) > 0 and len(forward) > 0:
+                print 'FAIL: Multiple reactions found for "%s".' % (entry.label)
+            elif len(reverse) == 0 and len(forward) == 0:
+                print 'FAIL: No reactions found for "%s".' % (entry.label)
+            else:
+                print 'FAIL: Unable to estimate kinetics for "%s".' % (entry.label)
+
+        assert reaction is not None
+        assert template is not None
+        return reaction, template
