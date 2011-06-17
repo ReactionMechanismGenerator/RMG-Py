@@ -682,7 +682,7 @@ class KineticsDepository(Database):
         flib.write('// The format for the data in this rate library\n')
         flib.write('Arrhenius_EP\n\n')
         
-        fcom = open(os.path.join(path, 'comments.rst'), 'w')
+        fcom = codecs.open(os.path.join(path, 'comments.rst'), 'w', 'utf-8')
         fcom.write('-------\n')
         fcom.write('General\n')
         fcom.write('-------\n')
