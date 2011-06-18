@@ -37,6 +37,7 @@ import math
 import numpy
 import os
 import os.path
+import multiprocessing
 
 from rmgpy.quantity import Quantity, constants
 import rmgpy.species
@@ -552,6 +553,17 @@ class ReactionModel:
 
 ################################################################################
 
+## for multiprocessing pools
+def initializer(database):
+    global __database
+    __database = database
+    print "Setting global database in {0}".format(multiprocessing.current_process().name)
+def makeThermoForSpecies(spec):
+    global __database
+    #logging.info("Generating thermo for {0} on {1}".format(spec.label,multiprocessing.current_process().name))
+    spec.generateThermoData(__database)
+    return spec.thermo
+
 class CoreEdgeReactionModel:
     """
     Represent a reaction model constructed using a rate-based screening
@@ -606,6 +618,7 @@ class CoreEdgeReactionModel:
         self.reactionCounter = 0
         self.newSpeciesList = []
         self.newReactionList = []
+        self.pool = None
 
     def checkForExistingSpecies(self, molecule):
         """
@@ -853,6 +866,11 @@ class CoreEdgeReactionModel:
         numOldEdgeReactions = len(self.edge.reactions)
 
         pdepNetwork = None
+        
+        # Set up pool of worker processes (number depends on number of cores)
+        # and set each with the database
+        if self.pool is None:
+            self.pool = multiprocessing.Pool(initializer=initializer,initargs=(database,))
 
         if isinstance(newObject, Species):
 
@@ -908,8 +926,13 @@ class CoreEdgeReactionModel:
         
         # Generate thermodynamics of new species
         logging.info('Generating thermodynamics for new species...')
-        for spec in self.newSpeciesList:
-            spec.generateThermoData(database)
+        outputs = self.pool.map(makeThermoForSpecies, self.newSpeciesList)
+        for spec, thermo in zip(self.newSpeciesList, outputs):
+            spec.thermo = thermo
+        #pool.close()
+        #assert all(outputs)
+        #for spec in self.newSpeciesList:
+        #    spec.generateThermoData(database)
             
         # Update unimolecular (pressure dependent) reaction networks
         if settings.pressureDependence:
