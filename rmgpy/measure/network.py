@@ -397,7 +397,7 @@ class Network:
 
         logging.log(level, '')
         logging.log(level, '========================================================================')
-        logging.log(level, 'Network Information')
+        logging.log(level, 'Network Information (Network #{0})'.format(self.index))
         logging.log(level, '-------------------')
         logging.log(level, 'Isomers:')
         for isomer in self.isomers:
