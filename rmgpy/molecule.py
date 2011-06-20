@@ -909,7 +909,11 @@ class Molecule(Graph):
                 radicalElectrons = 1; spinMultiplicity = 2
             elif spinMultiplicity == 3:
                 radicalElectrons = 2; spinMultiplicity = 3
-
+            elif spinMultiplicity == 4:
+                radicalElectrons = 3; spinMultiplicity = 4
+            elif spinMultiplicity == 5:
+                radicalElectrons = 4; spinMultiplicity = 5
+            
             # Process charge
             charge = obatom.GetFormalCharge()
 
