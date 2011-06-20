@@ -2363,35 +2363,51 @@ class KineticsDatabase:
 
     def save(self, path):
         """
-        Save the thermo database to the given `path` on disk, where `path`
-        points to the top-level folder of the thermo database.
+        Save the kinetics database to the given `path` on disk, where `path`
+        points to the top-level folder of the kinetics database.
         """
-
         path = os.path.abspath(path)
         if not os.path.exists(path): os.mkdir(path)
+        self.saveDepository(os.path.join(path, 'depository'))
+        self.saveLibraries(os.path.join(path, 'libraries'))
+        self.saveGroups(os.path.join(path, 'groups'))
 
-        depositoryPath = os.path.join(path, 'depository')
-        if not os.path.exists(depositoryPath): os.mkdir(depositoryPath)
+    def saveDepository(self, path):
+        """
+        Save the kinetics depository to the given `path` on disk, where `path`
+        points to the top-level folder of the kinetics depository.
+        """
+        path = os.path.join(path, 'depository')
+        if not os.path.exists(path): os.mkdir(path)
         for label, depository in self.depository.iteritems():
             folders = label.split(os.sep)
             try:
-                os.makedirs(os.path.join(path, 'depository', *folders[:-1]))
+                os.makedirs(os.path.join(path, *folders[:-1]))
             except OSError:
                 pass
-            depository.save(os.path.join(depositoryPath, '{0}.py'.format(label)))
+            depository.save(os.path.join(path, '{0}.py'.format(label)))
 
+    def saveLibraries(self, path):
+        """
+        Save the kinetics libraries to the given `path` on disk, where `path`
+        points to the top-level folder of the kinetics libraries.
+        """
         for label, library in self.libraries.iteritems():
             folders = label.split(os.sep)
             try:
-                os.makedirs(os.path.join(path, 'libraries', *folders[:-1]))
+                os.makedirs(os.path.join(path, *folders[:-1]))
             except OSError:
                 pass
-            library.save(os.path.join(path, 'libraries', '{0}.py'.format(label)))
+            library.save(os.path.join(path, '{0}.py'.format(label)))
 
-        groupsPath = os.path.join(path, 'groups')
-        if not os.path.exists(groupsPath): os.mkdir(groupsPath)
+    def saveGroups(self, path):
+        """
+        Save the kinetics groups to the given `path` on disk, where `path`
+        points to the top-level folder of the kinetics groups.
+        """
+        if not os.path.exists(path): os.mkdir(path)
         for label, family in self.groups.iteritems():
-            family.save(os.path.join(groupsPath, '{0}.py'.format(label)))
+            family.save(os.path.join(path, '{0}.py'.format(label)))
 
     def loadOld(self, path):
         """

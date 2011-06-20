@@ -452,23 +452,38 @@ class StatesDatabase:
     def save(self, path):
         """
         Save the states database to the given `path` on disk, where `path`
-        points to the top-level folder of the thermo database.
+        points to the top-level folder of the states database.
         """
         path = os.path.abspath(path)
         if not os.path.exists(path): os.mkdir(path)
+        self.saveDepository(os.path.join(path, 'depository'))
+        self.saveLibraries(os.path.join(path, 'libraries'))
+        self.saveGroups(os.path.join(path, 'groups'))
 
-        depositoryPath = os.path.join(path, 'depository')
-        if not os.path.exists(depositoryPath): os.mkdir(depositoryPath)
-        self.depository.save(os.path.join(depositoryPath, 'depository.py'))
+    def saveDepository(self, path):
+        """
+        Save the states depository to the given `path` on disk, where `path`
+        points to the top-level folder of the states depository.
+        """
+        if not os.path.exists(path): os.mkdir(path)
+        self.depository.save(os.path.join(path, 'depository.py'))
 
-        librariesPath = os.path.join(path, 'libraries')
-        if not os.path.exists(librariesPath): os.mkdir(librariesPath)
+    def saveLibraries(self, path):
+        """
+        Save the states libraries to the given `path` on disk, where `path`
+        points to the top-level folder of the states libraries.
+        """
+        if not os.path.exists(path): os.mkdir(path)
         for library in self.libraries.values():
-            library.save(os.path.join(librariesPath, '{0}.py'.format(library.label)))
+            library.save(os.path.join(path, '{0}.py'.format(library.label)))
 
-        groupsPath = os.path.join(path, 'groups')
-        if not os.path.exists(groupsPath): os.mkdir(groupsPath)
-        self.groups.save(os.path.join(groupsPath, 'groups.py'))
+    def saveGroups(self, path):
+        """
+        Save the states groups to the given `path` on disk, where `path`
+        points to the top-level folder of the states groups.
+        """
+        if not os.path.exists(path): os.mkdir(path)
+        self.groups.save(os.path.join(path, 'groups.py'))
 
     def loadOld(self, path):
         """

@@ -369,25 +369,40 @@ class ThermoDatabase:
         """
         path = os.path.abspath(path)
         if not os.path.exists(path): os.mkdir(path)
+        self.saveDepository(os.path.join(path, 'depository'))
+        self.saveLibraries(os.path.join(path, 'libraries'))
+        self.saveGroups(os.path.join(path, 'groups'))
 
-        depositoryPath = os.path.join(path, 'depository')
-        if not os.path.exists(depositoryPath): os.mkdir(depositoryPath)
-        self.depository['stable'].save(os.path.join(depositoryPath, 'stable.py'))
-        self.depository['radical'].save(os.path.join(depositoryPath, 'radical.py'))
+    def saveDepository(self, path):
+        """
+        Save the thermo depository to the given `path` on disk, where `path`
+        points to the top-level folder of the thermo depository.
+        """
+        if not os.path.exists(path): os.mkdir(path)
+        self.depository['stable'].save(os.path.join(path, 'stable.py'))
+        self.depository['radical'].save(os.path.join(path, 'radical.py'))
 
-        librariesPath = os.path.join(path, 'libraries')
-        if not os.path.exists(librariesPath): os.mkdir(librariesPath)
+    def saveLibraries(self, path):
+        """
+        Save the thermo libraries to the given `path` on disk, where `path`
+        points to the top-level folder of the thermo libraries.
+        """
+        if not os.path.exists(path): os.mkdir(path)
         for library in self.libraries.values():
-            library.save(os.path.join(librariesPath, '{0}.py'.format(library.label)))
-        
-        groupsPath = os.path.join(path, 'groups')
-        if not os.path.exists(groupsPath): os.mkdir(groupsPath)
-        self.groups['group'].save(os.path.join(groupsPath, 'group.py'))
-        self.groups['gauche'].save(os.path.join(groupsPath, 'gauche.py'))
-        self.groups['int15'].save(os.path.join(groupsPath, 'int15.py'))
-        self.groups['ring'].save(os.path.join(groupsPath, 'ring.py'))
-        self.groups['radical'].save(os.path.join(groupsPath, 'radical.py'))
-        self.groups['other'].save(os.path.join(groupsPath, 'other.py'))
+            library.save(os.path.join(path, '{0}.py'.format(library.label)))
+
+    def saveGroups(self, path):
+        """
+        Save the thermo groups to the given `path` on disk, where `path`
+        points to the top-level folder of the thermo groups.
+        """
+        if not os.path.exists(path): os.mkdir(path)
+        self.groups['group'].save(os.path.join(path, 'group.py'))
+        self.groups['gauche'].save(os.path.join(path, 'gauche.py'))
+        self.groups['int15'].save(os.path.join(path, 'int15.py'))
+        self.groups['ring'].save(os.path.join(path, 'ring.py'))
+        self.groups['radical'].save(os.path.join(path, 'radical.py'))
+        self.groups['other'].save(os.path.join(path, 'other.py'))
 
     def loadOld(self, path):
         """
