@@ -54,17 +54,19 @@ class Reference:
     `authors`           A list of the authors of the reference
     `title`             The title of the reference
     `year`              The year the reference was published (as a string)
-    `url`               A DOI or other permalink to the reference
+    `doi`               A DOI link to the reference
+    `url`               Any other link to the reference
     =================== ========================================================
 
     """
 
-    def __init__(self, authors=None, title='', year='', url=''):
+    def __init__(self, authors=None, title='', year='', doi='', url=''):
         self.authors = authors or []
         self.title = title
         self.year = year
+        self.doi = doi
         self.url = url
-
+        
     def __repr__(self):
         """
         Return a string representation of the reference that can be used to
@@ -74,6 +76,7 @@ class Reference:
         if len(self.authors) != 0: string += u'authors=[{0}], '.format(', '.join(['"{0}"'.format(author) for author in self.authors]))
         if self.title != '':       string += u'title={0!r}, '.format(self.title)
         if self.year != '':        string += u'year="{0}", '.format(self.year)
+        if self.doi != '':         string += u'doi="{0}", '.format(self.doi)
         if self.url != '':         string += u'url="{0}", '.format(self.url)
         if string[-2:] == u', ':   string = string[:-2]
         return string + u')'
@@ -132,13 +135,14 @@ class Article(Reference):
     `number`            The number that the article appears in (as a string)
     `pages`             The range of pages of the article (as a string)
     `year`              The year the reference was published (as a string)
-    `url`               A DOI or other permalink to the reference
+    `doi`               A DOI link to the reference
+    `url`               Any other link to the reference
     =================== ========================================================
 
     """
 
-    def __init__(self, authors=None, title='', journal='', volume='', number='', pages='', year='', url=''):
-        Reference.__init__(self, authors=authors, title=title, year=year, url=url)
+    def __init__(self, authors=None, title='', journal='', volume='', number='', pages='', year='', doi='', url=''):
+        Reference.__init__(self, authors=authors, title=title, year=year, doi=doi, url=url)
         self.journal = journal
         self.volume = volume
         self.number = number
@@ -157,6 +161,7 @@ class Article(Reference):
         if self.number != '':      string += u'number="{0}", '.format(self.number)
         if self.pages != '':       string += u'pages="""{0}""", '.format(self.pages)
         if self.year != '':        string += u'year="{0}", '.format(self.year)
+        if self.doi != '':         string += u'doi="{0}", '.format(self.doi)
         if self.url != '':         string += u'url="{0}", '.format(self.url)
         if string[-2:] == u', ':   string = string[:-2]
         return string + u')'
@@ -199,13 +204,14 @@ class Book(Reference):
     `series`            The series the book belongs to
     `edition`           The edition of the book, as a string ordinal (e.g. ``'First'``)
     `year`              The year the reference was published (as a string)
-    `url`               A DOI or other permalink to the reference
+    `doi`               A DOI link to the reference
+    `url`               Any other link to the reference
     =================== ========================================================
 
     """
 
-    def __init__(self, authors=None, title='', publisher='', address='', volume='', series='', edition='', year='', url=''):
-        Reference.__init__(self, authors=authors, title=title, year=year, url=url)
+    def __init__(self, authors=None, title='', publisher='', address='', volume='', series='', edition='', year='', doi='', url=''):
+        Reference.__init__(self, authors=authors, title=title, year=year, doi=doi, url=url)
         self.publisher = publisher
         self.address = address
         self.volume = volume
@@ -226,6 +232,7 @@ class Book(Reference):
         if self.series != '':      string += u'series="""{0}""", '.format(self.series)
         if self.edition != '':     string += u'edition="""{0}""", '.format(self.edition)
         if self.year != '':        string += u'year="{0}", '.format(self.year)
+        if self.doi != '':         string += u'doi="{0}", '.format(self.doi)
         if self.url != '':         string += u'url="{0}", '.format(self.url)
         if string[-2:] == u', ':   string = string[:-2]
         return string + u')'
@@ -264,13 +271,14 @@ class Thesis(Reference):
     `degree`            ``'Ph.D.'`` or ``'Masters'``
     `school`            The name of the institution at which the thesis was written
     `year`              The year the reference was published (as a string)
-    `url`               A DOI or other permalink to the reference
+    `doi`               A DOI link to the reference
+    `url`               Any other link to the reference
     =================== ========================================================
 
     """
 
-    def __init__(self, authors=None, title='', degree='', school='', year='', url=''):
-        Reference.__init__(self, authors=authors, title=title, year=year, url=url)
+    def __init__(self, authors=None, title='', degree='', school='', year='', doi='', url=''):
+        Reference.__init__(self, authors=authors, title=title, year=year, doi=doi, url=url)
         self.degree = degree
         self.school = school
 
@@ -285,6 +293,7 @@ class Thesis(Reference):
         if self.degree != '':      string += u'degree="{0}", '.format(self.degree)
         if self.school != '':      string += u'school="{0}", '.format(self.school)
         if self.year != '':        string += u'year="{0}", '.format(self.year)
+        if self.doi != '':         string += u'doi="{0}", '.format(self.doi)
         if self.url != '':         string += u'url="{0}", '.format(self.url)
         if string[-2:] == u', ':   string = string[:-2]
         return string + u')'
