@@ -111,7 +111,7 @@ def saveEntry(f, entry):
     f.write('    longDesc = \n')
     f.write('u"""\n')
     f.write(entry.longDesc.strip() + "\n")
-    f.write('\n""",\n')
+    f.write('""",\n')
 
     f.write('    history = [\n')
     for time, user, action, description in entry.history:

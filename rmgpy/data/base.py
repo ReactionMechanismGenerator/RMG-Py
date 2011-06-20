@@ -236,8 +236,8 @@ class Database:
         f.write('name = "{0}"\n'.format(self.name))
         f.write('shortDesc = u"{0}"\n'.format(self.shortDesc))
         f.write('longDesc = u"""\n')
-        f.write(self.longDesc.strip())
-        f.write('\n"""\n\n')
+        f.write(self.longDesc.strip() + '\n')
+        f.write('"""\n\n')
         for entry in entries:
             self.saveEntry(f, entry)
 
@@ -1086,7 +1086,7 @@ class ForbiddenStructures(Database):
         f.write('    longDesc = \n')
         f.write('u"""\n')
         f.write(entry.longDesc.strip() + "\n")
-        f.write('\n""",\n')
+        f.write('""",\n')
 
         f.write('    history = [\n')
         for time, user, action, description in entry.history:
