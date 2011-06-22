@@ -2089,27 +2089,75 @@ class KineticsGroups(Database):
                 kinetics = self.__multiplyKineticsData(kinetics, entry.data)
 
         # Also include reaction-path degeneracy
-        if kinetics is not None:
+        if isinstance(kinetics, KineticsData):
             kinetics.kdata.values *= degeneracy
-
+        elif isinstance(kinetics, Arrhenius):
+            kinetics.A.value *= degeneracy
+        elif kinetics is not None:
+            KineticsError('Unexpected kinetics type "{0}" encountered while generating kinetics from group values.'.format(kinetics.__class__))
+            
         return kinetics
 
-    def __multiplyKineticsData(self, kineticsData1, kineticsData2):
+    def __multiplyKineticsData(self, kinetics1, kinetics2):
         """
-        Multiply two :class:`KineticsData` objects `kineticsData1` and 
-        `kineticsData2` together, returning their sum as a new 
-        :class:`KineticsData` object.
+        Multiply two kinetics objects `kinetics1` and `kinetics2` of the same
+        class together, returning their product as a new kinetics object of 
+        that class. Currently this only works for :class:`KineticsData` or
+        :class:`Arrhenius` objects.
         """
-        if len(kineticsData1.Tdata.values) != len(kineticsData2.Tdata.values) or any([T1 != T2 for T1, T2 in zip(kineticsData1.Tdata.values, kineticsData2.Tdata.values)]):
-            raise KineticsError('Cannot add these KineticsData objects due to their having different temperature points.')
-        new = KineticsData(
-            Tdata = (kineticsData1.Tdata.values, kineticsData1.Tdata.units),
-            kdata = (kineticsData1.kdata.values * kineticsData2.kdata.values, kineticsData1.kdata.units),
-        )
-        if kineticsData1.comment == '': new.comment = kineticsData2.comment
-        elif kineticsData2.comment == '': new.comment = kineticsData1.comment
-        else: new.comment = kineticsData1.comment + ' + ' + kineticsData2.comment
-        return new
+        if isinstance(kinetics1, KineticsData) and isinstance(kinetics2, KineticsData):
+            if len(kinetics1.Tdata.values) != len(kinetics2.Tdata.values) or any([T1 != T2 for T1, T2 in zip(kinetics1.Tdata.values, kinetics2.Tdata.values)]):
+                raise KineticsError('Cannot add these KineticsData objects due to their having different temperature points.')
+            kinetics = KineticsData(
+                Tdata = (kinetics1.Tdata.values, kinetics2.Tdata.units),
+                kdata = (kinetics1.kdata.values * kinetics2.kdata.values, kinetics1.kdata.units),
+            )
+        elif isinstance(kinetics1, Arrhenius) and isinstance(kinetics2, Arrhenius):
+            assert kinetics1.A.units == kinetics2.A.units
+            assert kinetics1.Ea.units == kinetics2.Ea.units
+            assert kinetics1.T0.units == kinetics2.T0.units
+            assert kinetics1.T0.value == kinetics2.T0.value
+            kinetics = Arrhenius(
+                A = (kinetics1.A.value * kinetics2.A.value, kinetics1.A.units),
+                n = (kinetics1.n.value + kinetics2.n.value, kinetics1.n.units),
+                Ea = (kinetics1.Ea.value + kinetics2.Ea.value, kinetics1.Ea.units),
+                T0 = (kinetics1.T0.value, kinetics1.T0.units),
+            )
+        else:
+            raise KineticsError('Unable to multiply kinetics types "{0}" and "{1}".'.format(kinetics1.__class__, kinetics2.__class__))
+        
+        if kinetics1.Tmin is not None and kinetics2.Tmin is not None:
+            kinetics.Tmin = kinetics1.Tmin if kinetics1.Tmin.value > kinetics2.Tmin.value else kinetics2.Tmin
+        elif kinetics1.Tmin is not None and kinetics2.Tmin is None:
+            kinetics.Tmin = kinetics1.Tmin
+        elif kinetics1.Tmin is None and kinetics2.Tmin is not None:
+            kinetics.Tmin = kinetics2.Tmin
+        
+        if kinetics1.Tmax is not None and kinetics2.Tmax is not None:
+            kinetics.Tmax = kinetics1.Tmax if kinetics1.Tmax.value < kinetics2.Tmax.value else kinetics2.Tmax
+        elif kinetics1.Tmax is not None and kinetics2.Tmax is None:
+            kinetics.Tmax = kinetics1.Tmax
+        elif kinetics1.Tmax is None and kinetics2.Tmax is not None:
+            kinetics.Tmax = kinetics2.Tmax
+        
+        if kinetics1.Pmin is not None and kinetics2.Pmin is not None:
+            kinetics.Pmin = kinetics1.Pmin if kinetics1.Pmin.value > kinetics2.Pmin.value else kinetics2.Pmin
+        elif kinetics1.Pmin is not None and kinetics2.Pmin is None:
+            kinetics.Pmin = kinetics1.Pmin
+        elif kinetics1.Pmin is None and kinetics2.Pmin is not None:
+            kinetics.Pmin = kinetics2.Pmin
+        
+        if kinetics1.Pmax is not None and kinetics2.Pmax is not None:
+            kinetics.Pmax = kinetics1.Pmax if kinetics1.Pmax.value < kinetics2.Pmax.value else kinetics2.Pmax
+        elif kinetics1.Pmax is not None and kinetics2.Pmax is None:
+            kinetics.Pmax = kinetics1.Pmax
+        elif kinetics1.Pmax is None and kinetics2.Pmax is not None:
+            kinetics.Pmax = kinetics2.Pmax
+        
+        if kinetics1.comment == '': kinetics.comment = kinetics2.comment
+        elif kinetics2.comment == '': kinetics.comment = kinetics1.comment
+        else: kinetics.comment = kinetics1.comment + ' + ' + kinetics2.comment
+        return kinetics
 
 ################################################################################
 
