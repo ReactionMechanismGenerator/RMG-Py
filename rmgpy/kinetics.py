@@ -264,7 +264,7 @@ class KineticsData(KineticsModel):
         `T` in K.
         """
         cython.declare(Tmin=cython.double, Tmax=cython.double, kmin=cython.double, kmax=cython.double)
-        cython.declare(k=cython.double)
+        cython.declare(k=cython.double, slope=cython.double)
         k = 0.0
         if not self.isTemperatureValid(T):
             raise KineticsError('Invalid temperature "{0:g} K" for heat capacity estimation.'.format(T))
@@ -275,7 +275,8 @@ class KineticsData(KineticsModel):
         else:
             for Tmin, Tmax, kmin, kmax in zip(self.Tdata.values[:-1], self.Tdata.values[1:], self.kdata.values[:-1], self.kdata.values[1:]):
                 if Tmin <= T and T < Tmax:
-                    k = (kmax - kmin) * ((T - Tmin) / (Tmax - Tmin)) + kmin
+                    slope = (1.0/T - 1.0/Tmin) / (1.0/Tmax - 1.0/Tmin)
+                    k = kmin * (kmax / kmin)**slope
         return k
 
 ################################################################################
