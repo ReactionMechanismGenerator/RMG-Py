@@ -1219,140 +1219,130 @@ class KineticsLibrary(Database):
     
 ################################################################################
 
-class KineticsFamily:
-    """
-    A class for working with an RMG kinetics family: a set of reactions with
-    similar chemistry, and therefore similar reaction rates. The attributes 
-    are:
-    
-    =================== =============================== ========================
-    Attribute           Type                            Description
-    =================== =============================== ========================
-    `label`             ``str``                         The label of the kinetics family
-    ------------------- ------------------------------- ------------------------
-    `groups`            :class:`KineticsGroups`         The kinetics group additivity values
-    `rules`             :class:`KineticsDepository`     The depository of kinetics rate rules
-    `training`          :class:`KineticsDepository`     The depository of kinetics data used to train group values
-    `test`              :class:`KineticsDepository`     The depository of kinetics data used to test group values
-    `PrIMe`             :class:`KineticsDepository`     The depository of kinetics data obtained from the PrIMe database
-    =================== =============================== ========================
-    
-    There are a few reaction families that are their own reverse (hydrogen
-    abstraction and intramolecular hydrogen migration); for these
-    `reverseTemplate` and `reverseRecipe` will both be ``None``.
-    """
-    
-    def __init__(self, label=''):
-        self.label = label
-        self.groups = None
-        self.rules = None
-        self.training = None
-        self.test = None
-        self.PrIMe = None
-    
-    def load(self, path, local_context, global_context):
-        """
-        Load a kinetics family from a directory `path` on disk.
-        """
-        self.groups = KineticsGroups(label='{0}'.format(self.label))
-        self.groups.load(os.path.join(path, 'groups.py'), local_context, global_context)
-        self.rules = KineticsDepository(label='{0}/rules'.format(self.label))
-        self.rules.load(os.path.join(path, 'rules.py'), local_context, global_context)
-        self.training = KineticsDepository(label='{0}/training'.format(self.label))
-        self.training.load(os.path.join(path, 'training.py'), local_context, global_context)
-        self.test = KineticsDepository(label='{0}/test'.format(self.label))
-        self.test.load(os.path.join(path, 'test.py'), local_context, global_context)
-        if os.path.exists(os.path.join(path, 'PrIMe.py')):
-            self.PrIMe = KineticsDepository(label='{0}/PrIMe'.format(self.label))
-            self.PrIMe.load(os.path.join(path, 'PrIMe.py'), local_context, global_context)
-        else:
-            self.PrIMe = None
-            
-    def save(self, path):
-        """
-        Save a kinetics family to a directory `path` on disk.
-        """
-        self.groups.save(os.path.join(path, 'groups.py'))
-        self.rules.save(os.path.join(path, 'rules.py'))
-        self.training.save(os.path.join(path, 'training.py'))
-        self.test.save(os.path.join(path, 'test.py'))
-        if self.PrIMe:
-            self.PrIMe.save(os.path.join(path, 'PrIMe.py'))
-        
-        
-    def loadOld(self, path):
-        """
-        Load an old kinetics family from a directory `path` on disk.
-        """
-        self.groups = KineticsGroups(label='{0}'.format(self.label))
-        self.groups.loadOld(path)
-        self.rules = KineticsDepository(label='{0}/rules'.format(self.label))
-        self.rules.loadOldRateRules(path, self.groups)
-        self.training = KineticsDepository(label='{0}/training'.format(self.label))
-        self.test = KineticsDepository(label='{0}/test'.format(self.label))
-        self.PrIMe = None
-        
-    def saveOld(self, path):
-        """
-        Save an old kinetics family to a directory `path` on disk.
-        """
-        if not os.path.exists(path): os.mkdir(path)
-        self.rules.saveOldRateRules(path, self.groups)
-        self.groups.saveOld(path)
-    
-    def generateReactions(self, reactants):
-        """
-        Generate all reactions between the provided list of one or two
-        `reactants`, which should be :class:`Molecule` objects.
-        """
-        reactionList = []
-        
-        # Forward direction (the direction in which kinetics is defined)
-        reactions = family.generateReactions(reactants, forward=True)
-        for rxn in reactions:
-            reaction = TemplateReaction(
-                reactants = rxn.reactants[:],
-                products = rxn.products[:],
-                degeneracy = rxn.degeneracy,
-                thirdBody = rxn.thirdBody,
-                reversible = rxn.reversible,
-                family = family,
-            )
-            reactionList.append(reaction)
-
-        # Reverse direction (the direction in which kinetics is not defined)
-        reactions = family.generateReactions(reactants, forward=False)
-        for rxn in reactions:
-            reaction = TemplateReaction(
-                reactants = rxn.products[:],
-                products = rxn.reactants[:],
-                degeneracy = rxn.degeneracy,
-                thirdBody = rxn.thirdBody,
-                reversible = rxn.reversible,
-                family = family,
-            )
-            reactionList.append(reaction)
-
-        # While we're here, we might as well get the kinetics too
-        for reaction in reactionList:
-            reaction.kinetics = self.getKinetics(reaction, degeneracy=reaction.degeneracy)
-
-        return reactionList
-    
-    def getKinetics(self, reaction, degeneracy):
-        """
-        Return the kinetics for the specified `reaction` in this family.
-        """
-        return self.groups.getKinetics(reaction, degeneracy)
-    
-################################################################################
-
 class KineticsGroups(Database):
     """
-    A class for working with an RMG kinetics group additivity database.
-    In particular, each instance of this class represents a reaction family:
-    a set of reactions with similar chemistry, and therefore similar reaction
-    rates. The attributes are:
+    A class for working with an RMG kinetics family group additivity values. 
+    """
+
+    def __init__(self, entries=None, top=None, label='', name='', shortDesc='', longDesc='', forwardTemplate=None, forwardRecipe=None, reverseTemplate=None, reverseRecipe=None, forbidden=None):
+        Database.__init__(self, entries, top, label, name, shortDesc, longDesc)
+        self.numReactants = 0
+        
+    def __str__(self):
+        return '<KineticsGroups "{0}">'.format(self.label)
+
+    def loadEntry(self, index, label, group, kinetics, reference=None, referenceType='', shortDesc='', longDesc='', history=None):
+        if group[0:3].upper() == 'OR{' or group[0:4].upper() == 'AND{' or group[0:7].upper() == 'NOT OR{' or group[0:8].upper() == 'NOT AND{':
+            item = makeLogicNode(group)
+        else:
+            item = Group().fromAdjacencyList(group)
+        self.entries[label] = Entry(
+            index = index,
+            label = label,
+            item = item,
+            data = kinetics,
+            reference = reference,
+            referenceType = referenceType,
+            shortDesc = shortDesc,
+            longDesc = longDesc.strip(),
+            history = history or [],
+        )
+
+    def getKineticsForTemplate(self, template, referenceKinetics, degeneracy=1):
+        """
+        Determine the appropriate kinetics for a reaction with the given
+        `template`.
+        """
+
+        # Start with the generic kinetics of the top-level nodes
+        kinetics = referenceKinetics
+        
+        # Now add in more specific corrections if possible
+        for node in template:
+            entry = node
+            while entry.data is None and entry not in self.top:
+                entry = entry.parent
+            if entry.data is not None and entry not in self.top:
+                kinetics = self.__multiplyKineticsData(kinetics, entry.data)
+
+        # Also include reaction-path degeneracy
+        if isinstance(kinetics, KineticsData):
+            kinetics.kdata.values *= degeneracy
+        elif isinstance(kinetics, Arrhenius):
+            kinetics.A.value *= degeneracy
+        elif kinetics is not None:
+            KineticsError('Unexpected kinetics type "{0}" encountered while generating kinetics from group values.'.format(kinetics.__class__))
+            
+        return kinetics
+
+    def __multiplyKineticsData(self, kinetics1, kinetics2):
+        """
+        Multiply two kinetics objects `kinetics1` and `kinetics2` of the same
+        class together, returning their product as a new kinetics object of 
+        that class. Currently this only works for :class:`KineticsData` or
+        :class:`Arrhenius` objects.
+        """
+        if isinstance(kinetics1, KineticsData) and isinstance(kinetics2, KineticsData):
+            if len(kinetics1.Tdata.values) != len(kinetics2.Tdata.values) or any([T1 != T2 for T1, T2 in zip(kinetics1.Tdata.values, kinetics2.Tdata.values)]):
+                raise KineticsError('Cannot add these KineticsData objects due to their having different temperature points.')
+            kinetics = KineticsData(
+                Tdata = (kinetics1.Tdata.values, kinetics2.Tdata.units),
+                kdata = (kinetics1.kdata.values * kinetics2.kdata.values, kinetics1.kdata.units),
+            )
+        elif isinstance(kinetics1, Arrhenius) and isinstance(kinetics2, Arrhenius):
+            assert kinetics1.A.units == kinetics2.A.units
+            assert kinetics1.Ea.units == kinetics2.Ea.units
+            assert kinetics1.T0.units == kinetics2.T0.units
+            assert kinetics1.T0.value == kinetics2.T0.value
+            kinetics = Arrhenius(
+                A = (kinetics1.A.value * kinetics2.A.value, kinetics1.A.units),
+                n = (kinetics1.n.value + kinetics2.n.value, kinetics1.n.units),
+                Ea = (kinetics1.Ea.value + kinetics2.Ea.value, kinetics1.Ea.units),
+                T0 = (kinetics1.T0.value, kinetics1.T0.units),
+            )
+        else:
+            raise KineticsError('Unable to multiply kinetics types "{0}" and "{1}".'.format(kinetics1.__class__, kinetics2.__class__))
+        
+        if kinetics1.Tmin is not None and kinetics2.Tmin is not None:
+            kinetics.Tmin = kinetics1.Tmin if kinetics1.Tmin.value > kinetics2.Tmin.value else kinetics2.Tmin
+        elif kinetics1.Tmin is not None and kinetics2.Tmin is None:
+            kinetics.Tmin = kinetics1.Tmin
+        elif kinetics1.Tmin is None and kinetics2.Tmin is not None:
+            kinetics.Tmin = kinetics2.Tmin
+        
+        if kinetics1.Tmax is not None and kinetics2.Tmax is not None:
+            kinetics.Tmax = kinetics1.Tmax if kinetics1.Tmax.value < kinetics2.Tmax.value else kinetics2.Tmax
+        elif kinetics1.Tmax is not None and kinetics2.Tmax is None:
+            kinetics.Tmax = kinetics1.Tmax
+        elif kinetics1.Tmax is None and kinetics2.Tmax is not None:
+            kinetics.Tmax = kinetics2.Tmax
+        
+        if kinetics1.Pmin is not None and kinetics2.Pmin is not None:
+            kinetics.Pmin = kinetics1.Pmin if kinetics1.Pmin.value > kinetics2.Pmin.value else kinetics2.Pmin
+        elif kinetics1.Pmin is not None and kinetics2.Pmin is None:
+            kinetics.Pmin = kinetics1.Pmin
+        elif kinetics1.Pmin is None and kinetics2.Pmin is not None:
+            kinetics.Pmin = kinetics2.Pmin
+        
+        if kinetics1.Pmax is not None and kinetics2.Pmax is not None:
+            kinetics.Pmax = kinetics1.Pmax if kinetics1.Pmax.value < kinetics2.Pmax.value else kinetics2.Pmax
+        elif kinetics1.Pmax is not None and kinetics2.Pmax is None:
+            kinetics.Pmax = kinetics1.Pmax
+        elif kinetics1.Pmax is None and kinetics2.Pmax is not None:
+            kinetics.Pmax = kinetics2.Pmax
+        
+        if kinetics1.comment == '': kinetics.comment = kinetics2.comment
+        elif kinetics2.comment == '': kinetics.comment = kinetics1.comment
+        else: kinetics.comment = kinetics1.comment + ' + ' + kinetics2.comment
+        return kinetics
+
+################################################################################
+
+class KineticsFamily(Database):
+    """
+    A class for working with an RMG kinetics family: a set of reactions with 
+    similar chemistry, and therefore similar reaction rates. The attributes 
+    are:
 
     =================== =============================== ========================
     Attribute           Type                            Description
@@ -1362,6 +1352,12 @@ class KineticsGroups(Database):
     `reverseTemplate`   :class:`Reaction`               The reverse reaction template
     `reverseRecipe`     :class:`ReactionRecipe`         The steps to take when applying the reverse reaction to a set of reactants
     `forbidden`         :class:`ForbiddenStructures`    (Optional) Forbidden product structures in either direction
+    ------------------- ------------------------------- ------------------------
+    `groups`            :class:`KineticsGroups`         The set of kinetics group additivity values
+    `rules`             :class:`KineticsDepository`     The depository of kinetics rate rules
+    `training`          :class:`KineticsDepository`     The depository of kinetics data used to train group values
+    `test`              :class:`KineticsDepository`     The depository of kinetics data used to test group values
+    `PrIMe`             :class:`KineticsDepository`     The depository of kinetics data obtained from the PrIMe database
     =================== =============================== ========================
 
     There are a few reaction families that are their own reverse (hydrogen
@@ -1377,6 +1373,12 @@ class KineticsGroups(Database):
         self.reverseRecipe = reverseRecipe
         self.forbidden = forbidden
         self.ownReverse = forwardTemplate is not None and reverseTemplate is None
+        # Kinetics depositories of training and test data
+        self.groups = None
+        self.rules = None
+        self.training = None
+        self.test = None
+        self.PrIMe = None
 
     def __str__(self):
         return '<ReactionFamily "{0}">'.format(self.label)
@@ -1389,15 +1391,15 @@ class KineticsGroups(Database):
         self.label = os.path.basename(path)
         self.name = self.label
 
-        self.loadOldDictionary(os.path.join(path, 'dictionary.txt'), pattern=True)
-        self.loadOldTree(os.path.join(path, 'tree.txt'))
+        self.groups.loadOldDictionary(os.path.join(path, 'dictionary.txt'), pattern=True)
+        self.groups.loadOldTree(os.path.join(path, 'tree.txt'))
         # The old kinetics groups use rate rules (not group additivity values),
         # so we can't load the old rateLibrary.txt
 
         # Load the reaction recipe
         self.loadOldTemplate(os.path.join(path, 'reactionAdjList.txt'))
         # Construct the forward and reverse templates
-        reactants = [self.entries[label] for label in self.forwardTemplate.reactants]
+        reactants = [self.groups.entries[label] for label in self.forwardTemplate.reactants]
         if self.ownReverse:
             self.forwardTemplate = Reaction(reactants=reactants, products=reactants)
             self.reverseTemplate = None
@@ -1406,15 +1408,23 @@ class KineticsGroups(Database):
             self.forwardTemplate = Reaction(reactants=reactants, products=products)
             self.reverseTemplate = Reaction(reactants=reactants, products=products)
 
+        self.groups.numReactants = len(self.forwardTemplate.reactants)
+
         # Load forbidden structures if present
         if os.path.exists(os.path.join(path, 'forbiddenGroups.txt')):
             self.forbidden = ForbiddenStructures().loadOld(os.path.join(path, 'forbiddenGroups.txt'))
             
-        entries = self.top[:]
-        for entry in self.top:
-            entries.extend(self.descendants(entry))
+        entries = self.groups.top[:]
+        for entry in self.groups.top:
+            entries.extend(self.groups.descendants(entry))
         for index, entry in enumerate(entries):
             entry.index = index + 1
+            
+        self.rules = KineticsDepository(label='{0}/rules'.format(self.label))
+        self.rules.loadOldRateRules(path, self)
+        self.training = KineticsDepository(label='{0}/training'.format(self.label))
+        self.test = KineticsDepository(label='{0}/test'.format(self.label))
+        self.PrIMe = None
 
         return self
 
@@ -1462,14 +1472,18 @@ class KineticsGroups(Database):
         """
         Save the old RMG kinetics groups to the given `path` on disk.
         """
-        self.saveOldDictionary(os.path.join(path, 'dictionary.txt'))
-        self.saveOldTree(os.path.join(path, 'tree.txt'))
+        if not os.path.exists(path): os.mkdir(path)
+        
+        self.groups.saveOldDictionary(os.path.join(path, 'dictionary.txt'))
+        self.groups.saveOldTree(os.path.join(path, 'tree.txt'))
         # The old kinetics groups use rate rules (not group additivity values),
         # so we can't save the old rateLibrary.txt
         self.saveOldTemplate(os.path.join(path, 'reactionAdjList.txt'))
         # Save forbidden structures if present
         if self.forbidden is not None:
             self.forbidden.saveOld(os.path.join(path, 'forbiddenGroups.txt'))
+            
+        self.rules.saveOldRateRules(path, self)
             
     def saveOldTemplate(self, path):
         """
@@ -1500,23 +1514,6 @@ class KineticsGroups(Database):
         
         ftemp.close()
     
-    def loadEntry(self, index, label, group, kinetics, reference=None, referenceType='', shortDesc='', longDesc='', history=None):
-        if group[0:3].upper() == 'OR{' or group[0:4].upper() == 'AND{' or group[0:7].upper() == 'NOT OR{' or group[0:8].upper() == 'NOT AND{':
-            item = makeLogicNode(group)
-        else:
-            item = Group().fromAdjacencyList(group)
-        self.entries[label] = Entry(
-            index = index,
-            label = label,
-            item = item,
-            data = kinetics,
-            reference = reference,
-            referenceType = referenceType,
-            shortDesc = shortDesc,
-            longDesc = longDesc.strip(),
-            history = history or [],
-        )
-
     def load(self, path, local_context=None, global_context=None):
         """
         Load a thermodynamics database from a file located at `path` on disk.
@@ -1526,10 +1523,12 @@ class KineticsGroups(Database):
         local_context['forbidden'] = self.loadForbidden
         local_context['True'] = True
         local_context['False'] = False
-        Database.load(self, path, local_context, global_context)
-
+        self.groups = KineticsGroups(label='{0}/groups'.format(self.label))
+        Database.load(self.groups, os.path.join(path, 'groups.py'), local_context, global_context)
+        self.name = self.label
+        
         # Generate the reverse template if necessary
-        self.forwardTemplate.reactants = [self.entries[label] for label in self.forwardTemplate.reactants]
+        self.forwardTemplate.reactants = [self.groups.entries[label] for label in self.forwardTemplate.reactants]
         if self.ownReverse:
             self.forwardTemplate.products = self.forwardTemplate.reactants[:]
             self.reverseTemplate = None
@@ -1538,6 +1537,20 @@ class KineticsGroups(Database):
             self.forwardTemplate.products = self.generateProductTemplate(self.forwardTemplate.reactants)
             self.reverseTemplate = Reaction(reactants=self.forwardTemplate.products, products=self.forwardTemplate.reactants)
             self.reverseRecipe = self.forwardRecipe.getReverse()
+        
+        self.groups.numReactants = len(self.forwardTemplate.reactants)
+            
+        self.rules = KineticsDepository(label='{0}/rules'.format(self.label))
+        self.rules.load(os.path.join(path, 'rules.py'), local_context, global_context)
+        self.training = KineticsDepository(label='{0}/training'.format(self.label))
+        self.training.load(os.path.join(path, 'training.py'), local_context, global_context)
+        self.test = KineticsDepository(label='{0}/test'.format(self.label))
+        self.test.load(os.path.join(path, 'test.py'), local_context, global_context)
+        if os.path.exists(os.path.join(path, 'PrIMe.py')):
+            self.PrIMe = KineticsDepository(label='{0}/PrIMe'.format(self.label))
+            self.PrIMe.load(os.path.join(path, 'PrIMe.py'), local_context, global_context)
+        else:
+            self.PrIMe = None
             
     def loadTemplate(self, reactants, products, ownReverse=False):
         """
@@ -1577,10 +1590,10 @@ class KineticsGroups(Database):
         optional `entryName` parameter specifies the identifier used for each
         data entry.
         """
-        entries = self.getEntriesToSave()
+        entries = self.groups.getEntriesToSave()
                 
         # Write the header
-        f = codecs.open(path, 'w', 'utf-8')
+        f = codecs.open(os.path.join(path, 'groups.py'), 'w', 'utf-8')
         f.write('#!/usr/bin/env python\n')
         f.write('# encoding: utf-8\n\n')
         f.write('name = "{0}"\n'.format(self.name))
@@ -1621,6 +1634,12 @@ class KineticsGroups(Database):
                 self.forbidden.saveEntry(f, entry, name='forbidden')
     
         f.close()
+        
+        self.rules.save(os.path.join(path, 'rules.py'))
+        self.training.save(os.path.join(path, 'training.py'))
+        self.test.save(os.path.join(path, 'test.py'))
+        if self.PrIMe:
+            self.PrIMe.save(os.path.join(path, 'PrIMe.py'))
 
     def generateProductTemplate(self, reactants0):
         """
@@ -1642,7 +1661,7 @@ class KineticsGroups(Database):
             for s in reactants: #
                 struct = s.item
                 if isinstance(struct, LogicNode):
-                    all_structures = struct.getPossibleStructures(self.entries)
+                    all_structures = struct.getPossibleStructures(self.groups.entries)
                     logging.log(0, 'Expanding node {0} to {1}'.format(s, all_structures))
                     reactantStructures.append(all_structures)
                 else:
@@ -1682,7 +1701,7 @@ class KineticsGroups(Database):
                     label = label,
                     item = products[0],
                 )
-                self.entries[entry.label] = entry
+                self.groups.entries[entry.label] = entry
                 productSet.append(entry)
             else:
                 item = []
@@ -1693,7 +1712,7 @@ class KineticsGroups(Database):
                         item = product,
                     )
                     item.append(entry.label)
-                    self.entries[entry.label] = entry
+                    self.groups.entries[entry.label] = entry
                     counter += 1
 
                 item = LogicOr(item,invert=False)
@@ -1701,7 +1720,7 @@ class KineticsGroups(Database):
                     label = label,
                     item = item,
                 )
-                self.entries[entry.label] = entry
+                self.groups.entries[entry.label] = entry
                 counter += 1
                 productSet.append(entry)
 
@@ -1954,14 +1973,53 @@ class KineticsGroups(Database):
         
         if isinstance(struct, LogicNode):
             mappings = []
-            for child_structure in struct.getPossibleStructures(self.entries):
+            for child_structure in struct.getPossibleStructures(self.groups.entries):
                 ismatch, map = reactant.findSubgraphIsomorphisms(child_structure)
                 if ismatch: mappings.extend(map)
             return len(mappings) > 0, mappings
         elif isinstance(struct, Group):
             return reactant.findSubgraphIsomorphisms(struct)
 
-    def generateReactions(self, reactants, forward=True):
+    def generateReactions(self, reactants):
+        """
+        Generate all reactions between the provided list of one or two
+        `reactants`, which should be :class:`Molecule` objects.
+        """
+        reactionList = []
+        
+        # Forward direction (the direction in which kinetics is defined)
+        reactions = self.__generateReactions(reactants, forward=True)
+        for rxn in reactions:
+            reaction = TemplateReaction(
+                reactants = rxn.reactants[:],
+                products = rxn.products[:],
+                degeneracy = rxn.degeneracy,
+                thirdBody = rxn.thirdBody,
+                reversible = rxn.reversible,
+                family = self,
+            )
+            reactionList.append(reaction)
+
+        # Reverse direction (the direction in which kinetics is not defined)
+        reactions = self.__generateReactions(reactants, forward=False)
+        for rxn in reactions:
+            reaction = TemplateReaction(
+                reactants = rxn.products[:],
+                products = rxn.reactants[:],
+                degeneracy = rxn.degeneracy,
+                thirdBody = rxn.thirdBody,
+                reversible = rxn.reversible,
+                family = self,
+            )
+            reactionList.append(reaction)
+
+        # While we're here, we might as well get the kinetics too
+        for reaction in reactionList:
+            reaction.kinetics = self.getKinetics(reaction, degeneracy=reaction.degeneracy)
+
+        return reactionList
+    
+    def __generateReactions(self, reactants, forward=True):
         """
         Generate a list of all of the possible reactions of this family between
         the list of `reactants`. The number of reactants provided must match
@@ -2200,91 +2258,13 @@ class KineticsGroups(Database):
         Determine the appropriate kinetics for a reaction with the given
         `template`.
         """
-
         # Start with the generic kinetics of the top-level nodes
         kinetics = None
         for entry in self.forwardTemplate.reactants:
             if kinetics is None and entry.data is not None:
                 kinetics = entry.data
-
         # Now add in more specific corrections if possible
-        for node in template:
-            entry = node
-            while entry.data is None and entry not in self.top:
-                entry = entry.parent
-            if entry.data is not None and entry not in self.top:
-                kinetics = self.__multiplyKineticsData(kinetics, entry.data)
-
-        # Also include reaction-path degeneracy
-        if isinstance(kinetics, KineticsData):
-            kinetics.kdata.values *= degeneracy
-        elif isinstance(kinetics, Arrhenius):
-            kinetics.A.value *= degeneracy
-        elif kinetics is not None:
-            KineticsError('Unexpected kinetics type "{0}" encountered while generating kinetics from group values.'.format(kinetics.__class__))
-            
-        return kinetics
-
-    def __multiplyKineticsData(self, kinetics1, kinetics2):
-        """
-        Multiply two kinetics objects `kinetics1` and `kinetics2` of the same
-        class together, returning their product as a new kinetics object of 
-        that class. Currently this only works for :class:`KineticsData` or
-        :class:`Arrhenius` objects.
-        """
-        if isinstance(kinetics1, KineticsData) and isinstance(kinetics2, KineticsData):
-            if len(kinetics1.Tdata.values) != len(kinetics2.Tdata.values) or any([T1 != T2 for T1, T2 in zip(kinetics1.Tdata.values, kinetics2.Tdata.values)]):
-                raise KineticsError('Cannot add these KineticsData objects due to their having different temperature points.')
-            kinetics = KineticsData(
-                Tdata = (kinetics1.Tdata.values, kinetics2.Tdata.units),
-                kdata = (kinetics1.kdata.values * kinetics2.kdata.values, kinetics1.kdata.units),
-            )
-        elif isinstance(kinetics1, Arrhenius) and isinstance(kinetics2, Arrhenius):
-            assert kinetics1.A.units == kinetics2.A.units
-            assert kinetics1.Ea.units == kinetics2.Ea.units
-            assert kinetics1.T0.units == kinetics2.T0.units
-            assert kinetics1.T0.value == kinetics2.T0.value
-            kinetics = Arrhenius(
-                A = (kinetics1.A.value * kinetics2.A.value, kinetics1.A.units),
-                n = (kinetics1.n.value + kinetics2.n.value, kinetics1.n.units),
-                Ea = (kinetics1.Ea.value + kinetics2.Ea.value, kinetics1.Ea.units),
-                T0 = (kinetics1.T0.value, kinetics1.T0.units),
-            )
-        else:
-            raise KineticsError('Unable to multiply kinetics types "{0}" and "{1}".'.format(kinetics1.__class__, kinetics2.__class__))
-        
-        if kinetics1.Tmin is not None and kinetics2.Tmin is not None:
-            kinetics.Tmin = kinetics1.Tmin if kinetics1.Tmin.value > kinetics2.Tmin.value else kinetics2.Tmin
-        elif kinetics1.Tmin is not None and kinetics2.Tmin is None:
-            kinetics.Tmin = kinetics1.Tmin
-        elif kinetics1.Tmin is None and kinetics2.Tmin is not None:
-            kinetics.Tmin = kinetics2.Tmin
-        
-        if kinetics1.Tmax is not None and kinetics2.Tmax is not None:
-            kinetics.Tmax = kinetics1.Tmax if kinetics1.Tmax.value < kinetics2.Tmax.value else kinetics2.Tmax
-        elif kinetics1.Tmax is not None and kinetics2.Tmax is None:
-            kinetics.Tmax = kinetics1.Tmax
-        elif kinetics1.Tmax is None and kinetics2.Tmax is not None:
-            kinetics.Tmax = kinetics2.Tmax
-        
-        if kinetics1.Pmin is not None and kinetics2.Pmin is not None:
-            kinetics.Pmin = kinetics1.Pmin if kinetics1.Pmin.value > kinetics2.Pmin.value else kinetics2.Pmin
-        elif kinetics1.Pmin is not None and kinetics2.Pmin is None:
-            kinetics.Pmin = kinetics1.Pmin
-        elif kinetics1.Pmin is None and kinetics2.Pmin is not None:
-            kinetics.Pmin = kinetics2.Pmin
-        
-        if kinetics1.Pmax is not None and kinetics2.Pmax is not None:
-            kinetics.Pmax = kinetics1.Pmax if kinetics1.Pmax.value < kinetics2.Pmax.value else kinetics2.Pmax
-        elif kinetics1.Pmax is not None and kinetics2.Pmax is None:
-            kinetics.Pmax = kinetics1.Pmax
-        elif kinetics1.Pmax is None and kinetics2.Pmax is not None:
-            kinetics.Pmax = kinetics2.Pmax
-        
-        if kinetics1.comment == '': kinetics.comment = kinetics2.comment
-        elif kinetics2.comment == '': kinetics.comment = kinetics1.comment
-        else: kinetics.comment = kinetics1.comment + ' + ' + kinetics2.comment
-        return kinetics
+        return self.groups.getKineticsForTemplate(template, kinetics, degeneracy)
 
 ################################################################################
 
@@ -2547,7 +2527,7 @@ class KineticsDatabase:
         searches the depository.
         """
         reactionList = []
-        for label, family in self.groups.iteritems():
+        for label, family in self.families.iteritems():
             if only_families is None or label in only_families:
                 reactionList.extend(family.generateReactions(reactants))
         return reactionList
