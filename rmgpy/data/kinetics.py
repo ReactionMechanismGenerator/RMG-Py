@@ -1219,6 +1219,89 @@ class KineticsLibrary(Database):
     
 ################################################################################
 
+class KineticsFamily:
+    """
+    A class for working with an RMG kinetics family: a set of reactions with
+    similar chemistry, and therefore similar reaction rates. The attributes 
+    are:
+    
+    =================== =============================== ========================
+    Attribute           Type                            Description
+    =================== =============================== ========================
+    `label`             ``str``                         The label of the kinetics family
+    ------------------- ------------------------------- ------------------------
+    `groups`            :class:`KineticsGroups`         The kinetics group additivity values
+    `rules`             :class:`KineticsDepository`     The depository of kinetics rate rules
+    `training`          :class:`KineticsDepository`     The depository of kinetics data used to train group values
+    `test`              :class:`KineticsDepository`     The depository of kinetics data used to test group values
+    `PrIMe`             :class:`KineticsDepository`     The depository of kinetics data obtained from the PrIMe database
+    =================== =============================== ========================
+    
+    There are a few reaction families that are their own reverse (hydrogen
+    abstraction and intramolecular hydrogen migration); for these
+    `reverseTemplate` and `reverseRecipe` will both be ``None``.
+    """
+    
+    def __init__(self, label=''):
+        self.label = label
+        self.groups = None
+        self.rules = None
+        self.training = None
+        self.test = None
+        self.PrIMe = None
+    
+    def load(self, path, local_context, global_context):
+        """
+        Load a kinetics family from a directory `path` on disk.
+        """
+        self.groups = KineticsGroups(label='{0}'.format(self.label))
+        self.groups.load(os.path.join(path, 'groups.py'), local_context, global_context)
+        self.rules = KineticsDepository(label='{0}/rules'.format(self.label))
+        self.rules.load(os.path.join(path, 'rules.py'), local_context, global_context)
+        self.training = KineticsDepository(label='{0}/training'.format(self.label))
+        self.training.load(os.path.join(path, 'training.py'), local_context, global_context)
+        self.test = KineticsDepository(label='{0}/test'.format(self.label))
+        self.test.load(os.path.join(path, 'test.py'), local_context, global_context)
+        if os.path.exists(os.path.join(path, 'PrIMe.py')):
+            self.PrIMe = KineticsDepository(label='{0}/PrIMe'.format(self.label))
+            self.PrIMe.load(os.path.join(path, 'PrIMe.py'), local_context, global_context)
+        else:
+            self.PrIMe = None
+            
+    def save(self, path):
+        """
+        Save a kinetics family to a directory `path` on disk.
+        """
+        self.groups.save(os.path.join(path, 'groups.py'))
+        self.rules.save(os.path.join(path, 'rules.py'))
+        self.training.save(os.path.join(path, 'training.py'))
+        self.test.save(os.path.join(path, 'test.py'))
+        if self.PrIMe:
+            self.PrIMe.save(os.path.join(path, 'PrIMe.py'))
+        
+        
+    def loadOld(self, path):
+        """
+        Load an old kinetics family from a directory `path` on disk.
+        """
+        self.groups = KineticsGroups(label='{0}'.format(self.label))
+        self.groups.loadOld(path)
+        self.rules = KineticsDepository(label='{0}/rules'.format(self.label))
+        self.rules.loadOldRateRules(path, self.groups)
+        self.training = KineticsDepository(label='{0}/training'.format(self.label))
+        self.test = KineticsDepository(label='{0}/test'.format(self.label))
+        self.PrIMe = None
+        
+    def saveOld(self, path):
+        """
+        Save an old kinetics family to a directory `path` on disk.
+        """
+        if not os.path.exists(path): os.mkdir(path)
+        self.rules.saveOldRateRules(path, self.groups)
+        self.groups.saveOld(path)
+        
+################################################################################
+
 class KineticsGroups(Database):
     """
     A class for working with an RMG kinetics group additivity database.
@@ -1400,7 +1483,6 @@ class KineticsGroups(Database):
         local_context['False'] = False
         Database.load(self, path, local_context, global_context)
 
-        self.label = os.path.basename(os.path.splitext(path)[0])
         # Generate the reverse template if necessary
         self.forwardTemplate.reactants = [self.entries[label] for label in self.forwardTemplate.reactants]
         if self.ownReverse:
@@ -2167,9 +2249,8 @@ class KineticsDatabase:
     """
 
     def __init__(self):
-        self.depository = {}
+        self.families = {}
         self.libraries = {}
-        self.groups = {}
         self.libraryOrder = []
         self.local_context = {
             'KineticsData': KineticsData,
@@ -2184,31 +2265,27 @@ class KineticsDatabase:
         }
         self.global_context = {}
 
-    def load(self, path, libraries=None, depository=True):
+    def load(self, path, libraries=None):
         """
         Load the kinetics database from the given `path` on disk, where `path`
-        points to the top-level folder of the thermo database.
+        points to the top-level folder of the families database.
         """
-        if depository:
-            self.loadDepository(os.path.join(path, 'depository'))
-        else:
-            self.depository = {}
+        self.loadFamilies(os.path.join(path, 'families'))
         self.loadLibraries(os.path.join(path, 'libraries'), libraries)
-        self.loadGroups(os.path.join(path, 'groups'))
-
-    def loadDepository(self, path):
+        
+    def loadFamilies(self, path):
         """
-        Load the kinetics database from the given `path` on disk, where `path`
-        points to the top-level folder of the thermo database.
+        Load the kinetics families from the given `path` on disk, where `path`
+        points to the top-level folder of the kinetics families.
         """
-        self.depository = {}
+        self.families = {}
+        logging.info('Loading kinetics families from {0}'.format(path))
         for (root, dirs, files) in os.walk(os.path.join(path)):
-            for f in files:
-                if os.path.splitext(f)[1].lower() == '.py':
-                    depositoryPath = os.path.join(root, f)
-                    depository = KineticsDepository(label=depositoryPath[len(path)+1:-3])
-                    depository.load(depositoryPath, self.local_context, self.global_context)
-                    self.depository[depository.label] = depository
+            for d in dirs:
+                familyPath = os.path.join(root, d)
+                family = KineticsFamily(label=d)
+                family.load(familyPath, self.local_context, self.global_context)
+                self.families[d] = family
 
     def loadLibraries(self, path, libraries=None):
         """
@@ -2245,22 +2322,6 @@ class KineticsDatabase:
                         self.libraries[library.label] = library
                         self.libraryOrder.append(library.label)
 
-    def loadGroups(self, path):
-        """
-        Load the kinetics groups data from the given `path` on disk.
-        
-        The `path` points to the folder containing the groups database `.py` files.
-        """
-        self.groups = {}
-        logging.info('Loading kinetics group database from {0}'.format(path))
-        for (root, dirs, files) in os.walk(os.path.join(path)):
-            for f in files:
-                if os.path.splitext(f)[1].lower() == '.py':
-                    logging.debug('Loading kinetics groups from {0} in {1}...'.format(f, root))
-                    groups = KineticsGroups()
-                    groups.load(os.path.join(root, f), self.local_context, self.global_context)
-                    self.groups[groups.label] = groups
-
     def save(self, path):
         """
         Save the kinetics database to the given `path` on disk, where `path`
@@ -2268,24 +2329,19 @@ class KineticsDatabase:
         """
         path = os.path.abspath(path)
         if not os.path.exists(path): os.mkdir(path)
-        self.saveDepository(os.path.join(path, 'depository'))
+        self.saveFamilies(os.path.join(path, 'families'))
         self.saveLibraries(os.path.join(path, 'libraries'))
-        self.saveGroups(os.path.join(path, 'groups'))
 
-    def saveDepository(self, path):
+    def saveFamilies(self, path):
         """
-        Save the kinetics depository to the given `path` on disk, where `path`
-        points to the top-level folder of the kinetics depository.
+        Save the kinetics families to the given `path` on disk, where `path`
+        points to the top-level folder of the kinetics families.
         """
-        path = os.path.join(path, 'depository')
         if not os.path.exists(path): os.mkdir(path)
-        for label, depository in self.depository.iteritems():
-            folders = label.split(os.sep)
-            try:
-                os.makedirs(os.path.join(path, *folders[:-1]))
-            except OSError:
-                pass
-            depository.save(os.path.join(path, '{0}.py'.format(label)))
+        for label, family in self.families.iteritems():
+            familyPath = os.path.join(path, label)
+            if not os.path.exists(familyPath): os.mkdir(familyPath)
+            family.save(familyPath)
 
     def saveLibraries(self, path):
         """
@@ -2300,24 +2356,14 @@ class KineticsDatabase:
                 pass
             library.save(os.path.join(path, '{0}.py'.format(label)))
 
-    def saveGroups(self, path):
-        """
-        Save the kinetics groups to the given `path` on disk, where `path`
-        points to the top-level folder of the kinetics groups.
-        """
-        if not os.path.exists(path): os.mkdir(path)
-        for label, family in self.groups.iteritems():
-            family.save(os.path.join(path, '{0}.py'.format(label)))
-
     def loadOld(self, path):
         """
         Load the old RMG kinetics database from the given `path` on disk, where
         `path` points to the top-level folder of the old RMG database.
         """
-        self.depository = {}
+        self.families = {}
         self.libraries = {}
-        self.groups = {}
-
+        
         librariesPath = os.path.join(path, 'kinetics_libraries')
         for (root, dirs, files) in os.walk(os.path.join(path, 'kinetics_libraries')):
             if os.path.exists(os.path.join(root, 'species.txt')) and os.path.exists(os.path.join(root, 'reactions.txt')):
@@ -2327,15 +2373,10 @@ class KineticsDatabase:
                 
         for (root, dirs, files) in os.walk(os.path.join(path, 'kinetics_groups')):
             if os.path.exists(os.path.join(root, 'dictionary.txt')) and os.path.exists(os.path.join(root, 'rateLibrary.txt')):
-                # Load the dictionary and tree into a KineticsGroups object
-                group = KineticsGroups(label=os.path.basename(root), name=os.path.basename(root))
-                group.loadOld(root)
-                self.groups[group.label] = group
-                # Load the rate library (rate rules) into a KineticsDepository object
-                label = os.path.join(os.path.basename(root), 'rules')
-                depository = KineticsDepository(label=label, name=label)
-                depository.loadOldRateRules(root, group)
-                self.depository[label] = depository
+                label = os.path.split(root)[1]
+                family = KineticsFamily(label=label)
+                family.loadOld(root)
+                self.families[family.label] = family
 
         return self
 
@@ -2352,15 +2393,9 @@ class KineticsDatabase:
 
         groupsPath = os.path.join(path, 'kinetics_groups')
         if not os.path.exists(groupsPath): os.mkdir(groupsPath)
-        for label, groups in self.groups.iteritems():
+        for label, family in self.families.iteritems():
             groupPath = os.path.join(groupsPath, label)
-            try:
-                os.makedirs(groupPath)
-            except OSError:
-                pass
-            depository = self.depository[os.path.join(label, 'rules')]
-            depository.saveOldRateRules(groupPath, groups)
-            groups.saveOld(groupPath)
+            family.saveOld(groupPath)
 
     def generateReactions(self, reactants, products=None):
         """
