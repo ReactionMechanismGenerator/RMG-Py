@@ -1299,7 +1299,52 @@ class KineticsFamily:
         if not os.path.exists(path): os.mkdir(path)
         self.rules.saveOldRateRules(path, self.groups)
         self.groups.saveOld(path)
+    
+    def generateReactions(self, reactants):
+        """
+        Generate all reactions between the provided list of one or two
+        `reactants`, which should be :class:`Molecule` objects.
+        """
+        reactionList = []
         
+        # Forward direction (the direction in which kinetics is defined)
+        reactions = family.generateReactions(reactants, forward=True)
+        for rxn in reactions:
+            reaction = TemplateReaction(
+                reactants = rxn.reactants[:],
+                products = rxn.products[:],
+                degeneracy = rxn.degeneracy,
+                thirdBody = rxn.thirdBody,
+                reversible = rxn.reversible,
+                family = family,
+            )
+            reactionList.append(reaction)
+
+        # Reverse direction (the direction in which kinetics is not defined)
+        reactions = family.generateReactions(reactants, forward=False)
+        for rxn in reactions:
+            reaction = TemplateReaction(
+                reactants = rxn.products[:],
+                products = rxn.reactants[:],
+                degeneracy = rxn.degeneracy,
+                thirdBody = rxn.thirdBody,
+                reversible = rxn.reversible,
+                family = family,
+            )
+            reactionList.append(reaction)
+
+        # While we're here, we might as well get the kinetics too
+        for reaction in reactionList:
+            reaction.kinetics = self.getKinetics(reaction, degeneracy=reaction.degeneracy)
+
+        return reactionList
+    
+    def getKinetics(self, reaction, degeneracy):
+        """
+        Return the kinetics for the specified `reaction` in this family.
+        """
+        return self.groups.getKinetics(reaction, degeneracy)
+    
 ################################################################################
 
 class KineticsGroups(Database):
@@ -2404,9 +2449,8 @@ class KineticsDatabase:
         searches the depository, libraries, and groups, in that order.
         """
         reactionList = []
-        #reactionList.extend(self.generateReactionsFromDepository(reactants))
         reactionList.extend(self.generateReactionsFromLibraries(reactants))
-        reactionList.extend(self.generateReactionsFromGroups(reactants))
+        reactionList.extend(self.generateReactionsFromFamilies(reactants))
 
         # Remove any reactions from the above that don't also involve *all* of the specified products
         if products is not None:
@@ -2463,30 +2507,6 @@ class KineticsDatabase:
         # If we're here then neither direction matched, so return false
         return False
 
-    def generateReactionsFromDepository(self, reactants, only_families=None):
-        """
-        Generate all reactions between the provided list of one or two
-        `reactants`, which should be :class:`Molecule` objects. This method
-        searches the depository.
-        """
-        reactionList = []
-        for label, depository in self.depository.iteritems():
-            if only_families is None or label in only_families:
-                for entry in depository.entries.values():
-                    if self.__reactionMatchesReactants(reactants, entry.item):
-                        reaction = DepositoryReaction(
-                            reactants = entry.item.reactants[:],
-                            products = entry.item.products[:],
-                            degeneracy = entry.item.degeneracy,
-                            thirdBody = entry.item.thirdBody,
-                            reversible = entry.item.reversible,
-                            kinetics = entry.data,
-                            depository = depository,
-                            entry = entry,
-                        )
-                        reactionList.append(reaction)
-        return reactionList
-
     def generateReactionsFromLibraries(self, reactants):
         """
         Generate all reactions between the provided list of one or two
@@ -2520,7 +2540,7 @@ class KineticsDatabase:
                 reactionList.append(reaction)
         return reactionList
 
-    def generateReactionsFromGroups(self, reactants, only_families=None):
+    def generateReactionsFromFamilies(self, reactants, only_families=None):
         """
         Generate all reactions between the provided list of one or two
         `reactants`, which should be :class:`Molecule` objects. This method
@@ -2529,37 +2549,7 @@ class KineticsDatabase:
         reactionList = []
         for label, family in self.groups.iteritems():
             if only_families is None or label in only_families:
-
-                # Forward direction (the direction in which kinetics is defined)
-                reactions = family.generateReactions(reactants, forward=True)
-                for rxn in reactions:
-                    reaction = TemplateReaction(
-                        reactants = rxn.reactants[:],
-                        products = rxn.products[:],
-                        degeneracy = rxn.degeneracy,
-                        thirdBody = rxn.thirdBody,
-                        reversible = rxn.reversible,
-                        family = family,
-                    )
-                    reactionList.append(reaction)
-
-                # Reverse direction (the direction in which kinetics is not defined)
-                reactions = family.generateReactions(reactants, forward=False)
-                for rxn in reactions:
-                    reaction = TemplateReaction(
-                        reactants = rxn.products[:],
-                        products = rxn.reactants[:],
-                        degeneracy = rxn.degeneracy,
-                        thirdBody = rxn.thirdBody,
-                        reversible = rxn.reversible,
-                        family = family,
-                    )
-                    reactionList.append(reaction)
-
-        # While we're here, we might as well get the kinetics too
-        for reaction in reactionList:
-            reaction.kinetics = reaction.family.getKinetics(reaction, degeneracy=reaction.degeneracy)
-
+                reactionList.extend(family.generateReactions(reactants))
         return reactionList
 
     def getForwardReactionForFamilyEntry(self, entry, family, thermoDatabase):
