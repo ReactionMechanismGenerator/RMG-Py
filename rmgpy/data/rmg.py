@@ -64,7 +64,7 @@ class RMGDatabase:
         """
         self.loadThermo(os.path.join(path, 'thermo'), thermoLibraries, depository)
         self.loadForbiddenStructures(os.path.join(path, 'forbiddenStructures.py'))
-        self.loadKinetics(os.path.join(path, 'kinetics'), reactionLibraries, seedMechanisms, depository)
+        self.loadKinetics(os.path.join(path, 'kinetics'), reactionLibraries, seedMechanisms)
         self.loadStates(os.path.join(path, 'states'), statesLibraries, depository)
 
     def loadThermo(self, path, thermoLibraries=None, depository=True):
@@ -83,18 +83,24 @@ class RMGDatabase:
         self.forbiddenStructures = ForbiddenStructures()
         self.forbiddenStructures.load(path)
 
-    def loadKinetics(self, path, reactionLibraries=None, seedMechanisms=None, depository=True):
+    def loadKinetics(self, path, reactionLibraries=None, seedMechanisms=None):
         """
         Load the RMG kinetics database from the given `path` on disk, where
         `path` points to the top-level folder of the RMG kinetics database.
         """
-        if reactionLibraries is None: reactionLibraries = []
-        if seedMechanisms is None: seedMechanisms = []
-        self.kinetics = KineticsDatabase()
         kineticsLibraries = []
-        kineticsLibraries.extend(seedMechanisms)
-        kineticsLibraries.extend(reactionLibraries)
-        self.kinetics.load(path, kineticsLibraries, depository)
+        if reactionLibraries is not None and seedMechanisms is not None:
+            kineticsLibraries.extend(seedMechanisms)
+            kineticsLibraries.extend(reactionLibraries)
+        elif reactionLibraries is not None and seedMechanisms is None:
+            kineticsLibraries.extend(reactionLibraries)
+        elif reactionLibraries is None and seedMechanisms is not None:
+            kineticsLibraries.extend(seedMechanisms)
+        else:
+            kineticsLibraries = None
+            
+        self.kinetics = KineticsDatabase()
+        self.kinetics.load(path, kineticsLibraries)
 
     def loadStates(self, path, statesLibraries=None, depository=True):
         """
