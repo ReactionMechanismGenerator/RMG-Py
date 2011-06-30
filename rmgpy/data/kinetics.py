@@ -2103,9 +2103,11 @@ class KineticsFamily(Database):
 
         rxnList = []; speciesList = []
 
-        for index in range(len(reactants)):
-            if not isinstance(reactants[index], list):
-                reactants[index] = [reactants[index]]
+        # Wrap each reactant in a list if not already done (this is done to 
+        # allow for passing multiple resonance structures for each molecule)
+        # This also makes a copy of the reactants list so we don't modify the
+        # original
+        reactants = [reactant if isinstance(reactant, list) else [reactant] for reactant in reactants]
 
         # Reactants must have explicit hydrogen atoms
         implicitH = []
