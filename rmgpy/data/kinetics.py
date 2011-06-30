@@ -1248,6 +1248,78 @@ class KineticsGroups(Database):
             history = history or [],
         )
 
+    def getReactionTemplate(self, reaction):
+        """
+        For a given `reaction` with properly-labeled :class:`Molecule` objects
+        as the reactants, determine the most specific nodes in the tree that
+        describe the reaction.
+        """
+
+        # Get forward reaction template and remove any duplicates
+        forwardTemplate = self.top[:]
+
+        temporary = []
+        symmetricTree = False
+        for entry in forwardTemplate:
+            if entry not in temporary:
+                temporary.append(entry)
+            else:
+                # duplicate node found at top of tree
+                # eg. R_recombination: ['Y_rad', 'Y_rad']
+                assert len(forwardTemplate)==2 , 'Can currently only do symmetric trees with nothing else in them'
+                symmetricTree = True
+        forwardTemplate = temporary
+
+        # Descend reactant trees as far as possible
+        template = []
+        for entry in forwardTemplate:
+            # entry is a top-level node that should be matched
+            group = entry.item
+
+            # To sort out "union" groups, descend to the first child that's not a logical node
+            # ...but this child may not match the structure.
+            # eg. an R3 ring node will not match an R4 ring structure.
+            # (but at least the first such child will contain fewest labels - we hope)
+            if isinstance(entry.item, LogicNode):
+                group = entry.item.getPossibleStructures(self.entries)[0]
+
+            atomList = group.getLabeledAtoms() # list of atom labels in highest non-union node
+
+            for reactant in reaction.reactants:
+                # Match labeled atoms
+                # Check this reactant has each of the atom labels in this group
+                if not all([reactant.containsLabeledAtom(label) for label in atomList]):
+                    continue # don't try to match this structure - the atoms aren't there!
+                # Match structures
+                atoms = reactant.getLabeledAtoms()
+                matched_node = self.descendTree(reactant, atoms, root=entry)
+                if matched_node is not None:
+                    template.append(matched_node)
+                else:
+                    logging.warning("Couldn't find match for {0} in {1}".format(entry,atomList))
+                    logging.warning(reactant.toAdjacencyList())
+
+        # Get fresh templates (with duplicate nodes back in)
+        forwardTemplate = self.top[:]
+        if self.label.lower() == 'r_recombination':
+            forwardTemplate.append(forwardTemplate[0])
+
+        # Check that we were able to match the template.
+        # template is a list of the actual matched nodes
+        # forwardTemplate is a list of the top level nodes that should be matched
+        if len(template) != len(forwardTemplate):
+            logging.warning('Unable to find matching template for reaction {0} in reaction family {1}'.format(str(reaction), str(self)) )
+            logging.warning(" Trying to match " + str(forwardTemplate))
+            logging.warning(" Matched "+str(template))
+            print str(self), template, forwardTemplate
+            for reactant in reaction.reactants:
+                print reactant.toAdjacencyList() + '\n'
+            for product in reaction.products:
+                print product.toAdjacencyList() + '\n'
+            raise UndeterminableKineticsError(reaction)
+
+        return template
+
     def getKineticsForTemplate(self, template, referenceKinetics, degeneracy=1):
         """
         Determine the appropriate kinetics for a reaction with the given
@@ -2180,71 +2252,7 @@ class KineticsFamily(Database):
         as the reactants, determine the most specific nodes in the tree that
         describe the reaction.
         """
-
-        # Get forward reaction template and remove any duplicates
-        forwardTemplate = self.top[:]
-
-        temporary = []
-        symmetricTree = False
-        for entry in forwardTemplate:
-            if entry not in temporary:
-                temporary.append(entry)
-            else:
-                # duplicate node found at top of tree
-                # eg. R_recombination: ['Y_rad', 'Y_rad']
-                assert len(forwardTemplate)==2 , 'Can currently only do symmetric trees with nothing else in them'
-                symmetricTree = True
-        forwardTemplate = temporary
-
-        # Descend reactant trees as far as possible
-        template = []
-        for entry in forwardTemplate:
-            # entry is a top-level node that should be matched
-            group = entry.item
-
-            # To sort out "union" groups, descend to the first child that's not a logical node
-            # ...but this child may not match the structure.
-            # eg. an R3 ring node will not match an R4 ring structure.
-            # (but at least the first such child will contain fewest labels - we hope)
-            if isinstance(entry.item, LogicNode):
-                group = entry.item.getPossibleStructures(self.entries)[0]
-
-            atomList = group.getLabeledAtoms() # list of atom labels in highest non-union node
-
-            for reactant in reaction.reactants:
-                # Match labeled atoms
-                # Check this reactant has each of the atom labels in this group
-                if not all([reactant.containsLabeledAtom(label) for label in atomList]):
-                    continue # don't try to match this structure - the atoms aren't there!
-                # Match structures
-                atoms = reactant.getLabeledAtoms()
-                matched_node = self.descendTree(reactant, atoms, root=entry)
-                if matched_node is not None:
-                    template.append(matched_node)
-                else:
-                    logging.warning("Couldn't find match for {0} in {1}".format(entry,atomList))
-                    logging.warning(reactant.toAdjacencyList())
-
-        # Get fresh templates (with duplicate nodes back in)
-        forwardTemplate = self.top[:]
-        if self.label.lower() == 'r_recombination':
-            forwardTemplate.append(forwardTemplate[0])
-
-        # Check that we were able to match the template.
-        # template is a list of the actual matched nodes
-        # forwardTemplate is a list of the top level nodes that should be matched
-        if len(template) != len(forwardTemplate):
-            logging.warning('Unable to find matching template for reaction {0} in reaction family {1}'.format(str(reaction), str(self)) )
-            logging.warning(" Trying to match " + str(forwardTemplate))
-            logging.warning(" Matched "+str(template))
-            print str(self), template, forwardTemplate
-            for reactant in reaction.reactants:
-                print reactant.toAdjacencyList() + '\n'
-            for product in reaction.products:
-                print product.toAdjacencyList() + '\n'
-            raise UndeterminableKineticsError(reaction)
-
-        return template
+        return self.groups.getReactionTemplate(reaction)
 
     def getKinetics(self, reaction, degeneracy=1):
         """
@@ -2574,7 +2582,7 @@ class KineticsDatabase:
 
         # Get the indicated reaction family
         try:
-            groups = self.groups[family]
+            groups = self.families[family].groups
         except KeyError:
             raise ValueError('Invalid value "{0}" for family parameter.'.format(family))
 
@@ -2611,7 +2619,7 @@ class KineticsDatabase:
                 reaction.products.append(product)
 
             # Generate all possible reactions involving the reactant species
-            generatedReactions = self.generateReactionsFromGroups([reactant.molecule for reactant in reaction.reactants], only_families=[family])
+            generatedReactions = self.generateReactionsFromFamilies([reactant.molecule for reactant in reaction.reactants], only_families=[family])
 
             # Remove from that set any reactions that don't produce the desired reactants and products
             forward = []; reverse = []
