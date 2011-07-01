@@ -800,9 +800,13 @@ def fromAdjacencyList(adjlist, group=False, addH=False):
                     raise InvalidAdjacencyListError('Found bonds between {0:d} and {1:d}, but of different orders "{2}" and "{3}".'.format(atom1, atom2, bonds[atom1][atom2], bonds[atom2][atom1]))
 
         # Convert bonddict to use Atom[group] and Bond[group] objects
-        for aid1 in atomdict:
+        atomkeys = atomdict.keys()
+        atomkeys.sort()
+        for aid1 in atomkeys:
             bonds[atomdict[aid1]] = {}
-            for aid2 in bonds[aid1]:
+            atomkeys2 = bonds[aid1].keys()
+            atomkeys2.sort()
+            for aid2 in atomkeys2:
                 if aid1 < aid2:
                     order = bonds[aid1][aid2]
                     if group:
