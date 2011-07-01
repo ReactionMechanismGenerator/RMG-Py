@@ -43,6 +43,7 @@ transition states (first-order saddle points on a potential energy surface).
 """
 
 from quantity import Quantity, constants
+from molecule import Molecule
 
 ################################################################################
 
@@ -173,7 +174,25 @@ class Species:
         """
         if len(self.molecule) == 1:
             self.molecule = self.molecule[0].generateResonanceIsomers()
-
+    
+    def isIsomorphic(self, other):
+        """
+        Return ``True`` if the species is isomorphic to `other`, which can be
+        either a :class:`Molecule` object or a :class:`Species` object.
+        """
+        if isinstance(other, Molecule):
+            for molecule in self.molecule:
+                if molecule.isIsomorphic(other):
+                    return True
+        elif isinstance(other, Species):
+            for molecule1 in self.molecule:
+                for molecule2 in other.molecule:
+                    if molecule1.isIsomorphic(molecule2):
+                        return True
+        else:
+            raise ValueError('Unexpected value "{0!r}" for other parameter; should be a Molecule or Species object.'.format(other))
+        return False
+    
 ################################################################################
 
 class TransitionState:

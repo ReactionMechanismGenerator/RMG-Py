@@ -50,6 +50,8 @@ cdef class Species:
     cdef public bint reactive
 
     cpdef generateResonanceIsomers(self)
+    
+    cpdef bint isIsomorphic(self, other)
 
 ################################################################################
 
