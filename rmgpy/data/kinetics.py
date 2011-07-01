@@ -2089,6 +2089,11 @@ class KineticsFamily(Database):
         for reaction in reactionList:
             reaction.kinetics = self.getKinetics(reaction, degeneracy=reaction.degeneracy)
 
+        # Return the reactions as containing Species objects, not Molecule objects
+        for reaction in reactionList:
+            reaction.reactants = [Species(label=reactant.toSMILES(), molecule=[reactant]) for reactant in reaction.reactants]
+            reaction.products = [Species(label=product.toSMILES(), molecule=[product]) for product in reaction.products]
+
         return reactionList
     
     def __generateReactions(self, reactants, forward=True):
