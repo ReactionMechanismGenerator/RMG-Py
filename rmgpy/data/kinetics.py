@@ -2477,26 +2477,22 @@ class KineticsDatabase:
         
         # Check forward direction
         if len(reactants) == len(reaction.reactants) == 1:
-            if any([reactants[0].isIsomorphic(molecule) for molecule in reaction.reactants[0].molecule]):
+            if reaction.reactants[0].isIsomorphic(reactants[0]): 
                 return True
         elif len(reactants) == len(reaction.reactants) == 2:
-            if (any([reactants[0].isIsomorphic(molecule) for molecule in reaction.reactants[0].molecule]) and
-                any([reactants[1].isIsomorphic(molecule) for molecule in reaction.reactants[1].molecule])):
+            if reaction.reactants[0].isIsomorphic(reactants[0]) and reaction.reactants[1].isIsomorphic(reactants[1]):
                 return True
-            elif (any([reactants[0].isIsomorphic(molecule) for molecule in reaction.reactants[1].molecule]) and
-                any([reactants[1].isIsomorphic(molecule) for molecule in reaction.reactants[0].molecule])):
+            elif reaction.reactants[0].isIsomorphic(reactants[1]) and reaction.reactants[1].isIsomorphic(reactants[0]):
                 return True
 
         # Check reverse direction
         if len(reactants) == len(reaction.products) == 1:
-            if any([reactants[0].isIsomorphic(molecule) for molecule in reaction.products[0].molecule]):
+            if reaction.products[0].isIsomorphic(reactants[0]): 
                 return True
         elif len(reactants) == len(reaction.products) == 2:
-            if (any([reactants[0].isIsomorphic(molecule) for molecule in reaction.products[0].molecule]) and
-                any([reactants[1].isIsomorphic(molecule) for molecule in reaction.products[1].molecule])):
+            if reaction.products[0].isIsomorphic(reactants[0]) and reaction.products[1].isIsomorphic(reactants[1]):
                 return True
-            elif (any([reactants[0].isIsomorphic(molecule) for molecule in reaction.products[1].molecule]) and
-                any([reactants[1].isIsomorphic(molecule) for molecule in reaction.products[0].molecule])):
+            elif reaction.products[0].isIsomorphic(reactants[1]) and reaction.products[1].isIsomorphic(reactants[0]):
                 return True
             
         # If we're here then neither direction matched, so return false
