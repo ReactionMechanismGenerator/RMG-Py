@@ -26,3 +26,7 @@ examples/*
 # NetBeans project files
 nbproject/*
 
+# Eclipse project files
+.project
+.pydevproject
+.settings/*
