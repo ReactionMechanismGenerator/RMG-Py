@@ -50,6 +50,8 @@ cdef class Reaction:
     cpdef bint isAssociation(self)
 
     cpdef bint hasTemplate(self, list reactants, list products)
+    
+    cpdef bint isIsomorphic(self, Reaction other)
 
     cpdef double getEnthalpyOfReaction(self, double T)
 
