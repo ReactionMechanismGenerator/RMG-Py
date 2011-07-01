@@ -45,7 +45,7 @@ import numpy
 
 from quantity import constants
 from species import Species
-from kinetics import Arrhenius
+from kinetics import Arrhenius, KineticsData
 
 ################################################################################
 
@@ -319,24 +319,16 @@ class Reaction:
         # Return rate
         return rateConstant * (forward - reverse / equilibriumConstant)
 
-    def generateReverseRateCoefficient(self, Tlist):
+    def generateReverseRateCoefficient(self):
         """
-        Generate and return a rate coefficient model for the reverse reaction
-        using a supplied set of temperatures `Tlist`. Currently this only
-        works if the `kinetics` attribute is an :class:`Arrhenius` object.
+        Generate and return a rate coefficient model for the reverse reaction. 
+        Currently this only works if the `kinetics` attribute is an 
+        :class:`Arrhenius` or :class:`KineticsData` object.
         """
-        if not isinstance(self.kinetics, Arrhenius):
-            raise ReactionError("Arrhenius kinetics required to use Reaction.generateReverseRateCoefficient(), but {0} object encountered.".format(self.kinetics.__class__))
-
-        cython.declare(klist=numpy.ndarray, i=cython.int, kf=Arrhenius, kr=Arrhenius)
-        kf = self.kinetics
-
-        # Determine the values of the reverse rate coefficient k_r(T) at each temperature
-        klist = numpy.zeros_like(Tlist)
-        for i in range(len(Tlist)):
-            klist[i] = kf.getRateCoefficient(Tlist[i]) / self.getEquilibriumConstant(Tlist[i])
-
-        # Fit and return an Arrhenius model to the k_r(T) data
+        
+        cython.declare(Tlist=numpy.ndarray, klist=numpy.ndarray, i=cython.int)
+            
+        # Get the units for the reverse rate coefficient
         if len(self.products) == 1:
             kunits = 's^-1'
         elif len(self.products) == 2:
@@ -345,9 +337,38 @@ class Reaction:
             kunits = 'm^6/(mol^2*s)'
         else:
             kunits = ''
-        kr = Arrhenius()
-        kr.fitToData(Tlist, klist, kunits, kf.T0.value)
-        return kr
+            
+        kf = self.kinetics
+        if isinstance(kf, KineticsData):
+            
+            Tlist = kf.Tdata.values
+            klist = numpy.zeros_like(Tlist)
+            print Tlist
+            for i in range(len(Tlist)):
+                print kf.getRateCoefficient(Tlist[i]), self.getEquilibriumConstant(Tlist[i])
+                klist[i] = kf.getRateCoefficient(Tlist[i]) / self.getEquilibriumConstant(Tlist[i])
+            
+            kr = KineticsData(Tdata=(Tlist,"K"), kdata=(klist,kunits), Tmin=(numpy.min(Tlist),"K"), Tmax=(numpy.max(Tlist),"K"))
+            return kr
+            
+        elif isinstance(kf, Arrhenius):
+            
+            if kf.Tmin is not None and kf.Tmax is not None:
+                Tlist = 1.0/numpy.linspace(1.0/kf.Tmax.value, 1.0/kf.Tmin.value, 50)
+            else:
+                Tlist = 1.0/numpy.arange(0.0005, 0.0035, 0.0001)
+                
+            # Determine the values of the reverse rate coefficient k_r(T) at each temperature
+            klist = numpy.zeros_like(Tlist)
+            for i in range(len(Tlist)):
+                klist[i] = kf.getRateCoefficient(Tlist[i]) / self.getEquilibriumConstant(Tlist[i])
+    
+            kr = Arrhenius()
+            kr.fitToData(Tlist, klist, kunits, kf.T0.value)
+            return kr
+        
+        else:
+            raise ReactionError("Unexpected kinetics type {0}; should be Arrhenius or KineticsData.".format(self.kinetics.__class__))
 
     def calculateTSTRateCoefficients(self, Tlist, tunneling=''):
         return numpy.array([self.calculateTSTRateCoefficient(T, tunneling) for T in Tlist], numpy.float64)

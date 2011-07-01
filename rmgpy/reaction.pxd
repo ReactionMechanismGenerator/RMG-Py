@@ -73,7 +73,7 @@ cdef class Reaction:
 
     cpdef double getRate(self, double T, double P, dict conc, double totalConc=?)
 
-    cpdef generateReverseRateCoefficient(self, numpy.ndarray Tlist)
+    cpdef generateReverseRateCoefficient(self)
 
     cpdef numpy.ndarray calculateTSTRateCoefficients(self, numpy.ndarray Tlist, str tunneling=?)
 
