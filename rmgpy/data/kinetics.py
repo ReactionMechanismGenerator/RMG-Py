@@ -1286,6 +1286,8 @@ class KineticsGroups(Database):
             atomList = group.getLabeledAtoms() # list of atom labels in highest non-union node
 
             for reactant in reaction.reactants:
+                if isinstance(reactant, Species):
+                    reactant = reactant.molecule[0]
                 # Match labeled atoms
                 # Check this reactant has each of the atom labels in this group
                 if not all([reactant.containsLabeledAtom(label) for label in atomList]):
@@ -2568,16 +2570,12 @@ class KineticsDatabase:
         
         def matchSpeciesToMolecules(species, molecules):
             if len(species) == len(molecules) == 1:
-                for mol in species[0].molecule:
-                    if mol.isIsomorphic(molecules[0]):
-                        return True
+                return species[0].isIsomorphic(molecules[0])
             elif len(species) == len(molecules) == 2:
-                for molA in species[0].molecule:
-                    for molB in species[1].molecule:
-                        if molA.isIsomorphic(molecules[0]) and molB.isIsomorphic(molecules[1]):
-                            return True
-                        elif molA.isIsomorphic(molecules[1]) and molB.isIsomorphic(molecules[0]):
-                            return True
+                if species[0].isIsomorphic(molecules[0]) and species[1].isIsomorphic(molecules[1]):
+                    return True
+                elif species[0].isIsomorphic(molecules[1]) and species[1].isIsomorphic(molecules[0]):
+                    return True
             return False
 
         reaction = None; template = None
