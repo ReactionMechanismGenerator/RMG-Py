@@ -2451,11 +2451,10 @@ class KineticsDatabase:
         if products is not None:
             reactionsToRemove = []
             for reaction in reactionList:
-                rxn = reaction[0]
-                products0 = [p for p in rxn.products]
+                products0 = [p for p in reaction.products]
                 for product in products:
                     for product0 in products0:
-                        if product.isIsomorphic(product0):
+                        if product0.isIsomorphic(product):
                             products0.remove(product0)
                             break
                 if len(products0) != 0:
