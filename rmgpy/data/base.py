@@ -1022,11 +1022,19 @@ class ForbiddenStructures(Database):
     def isMoleculeForbidden(self, molecule):
         """
         Return ``True`` if the given :class:`Molecule` object `molecule`
-        contains forbidden functionality, or ``False`` if not.
+        contains forbidden functionality, or ``False`` if not. Labeled atoms
+        on the forbidden structures and the molecule are honored.
         """
         for entry in self.entries.values():
-            if molecule.isSubgraphIsomorphic(entry.item):
-                return True
+            entryLabeledAtoms = entry.item.getLabeledAtoms()
+            moleculeLabeledAtoms = molecule.getLabeledAtoms()
+            try:
+                initialMap = {moleculeLabeledAtoms[label]: entryLabeledAtoms[label] for label in entryLabeledAtoms}
+            except KeyError:
+                continue
+            else:
+                if molecule.isMappingValid(entry.item, initialMap) and molecule.isSubgraphIsomorphic(entry.item, initialMap):
+                    return True
         return False
     
     def loadOld(self, path):
