@@ -2138,10 +2138,6 @@ class KineticsFamily(Database):
                 ismatch, mappings = self.__matchReactantToTemplate(molecule, template.reactants[0])
                 if ismatch:
                     for map in mappings:
-                        reactantAtomLabels = [{}]
-                        for atom1, atom2 in map.iteritems():
-                            reactantAtomLabels[0][atom1.label] = atom2
-
                         reactantStructures = [molecule]
                         try:
                             productStructures = self.__generateProductStructures(reactantStructures, [map], forward)
@@ -2169,13 +2165,6 @@ class KineticsFamily(Database):
                     if ismatchA and ismatchB:
                         for mapA in mappingsA:
                             for mapB in mappingsB:
-
-                                reactantAtomLabels = [{},{}]
-                                for atom1, atom2 in mapA.iteritems():
-                                    reactantAtomLabels[0][atom1.label] = atom2
-                                for atom1, atom2 in mapB.iteritems():
-                                    reactantAtomLabels[1][atom1.label] = atom2
-
                                 reactantStructures = [moleculeA, moleculeB]
                                 try:
                                     productStructures = self.__generateProductStructures(reactantStructures, [mapA, mapB], forward)
@@ -2196,13 +2185,6 @@ class KineticsFamily(Database):
                         if ismatchA and ismatchB:
                             for mapA in mappingsA:
                                 for mapB in mappingsB:
-
-                                    reactantAtomLabels = [{},{}]
-                                    for atom1, atom2 in mapA.iteritems():
-                                        reactantAtomLabels[0][atom1.label] = atom2
-                                    for atom1, atom2 in mapB.iteritems():
-                                        reactantAtomLabels[1][atom1.label] = atom2
-
                                     reactantStructures = [moleculeA, moleculeB]
                                     try:
                                         productStructures = self.__generateProductStructures(reactantStructures, [mapA, mapB], forward)
