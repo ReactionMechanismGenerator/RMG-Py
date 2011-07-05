@@ -1007,6 +1007,12 @@ def getAllCombinations(nodeLists):
 
 ################################################################################
 
+class ForbiddenStructureException(Exception):
+    """
+    Made a forbidden structure.
+    """
+    pass
+
 class ForbiddenStructures(Database):
     """
     A database consisting solely of molecules whose structure is forbidden

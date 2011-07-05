@@ -1991,9 +1991,9 @@ class KineticsFamily(Database):
         # If not, then stop
         if self.forbidden is not None:
             for struct in reactantStructures:
-                if self.forbidden.isMoleculeForbidden(struct): return None
+                if self.forbidden.isMoleculeForbidden(struct): raise ForbiddenStructureException()
             for struct in productStructures:
-                if self.forbidden.isMoleculeForbidden(struct): return None
+                if self.forbidden.isMoleculeForbidden(struct): raise ForbiddenStructureException()
 
         return productStructures
 
@@ -2143,8 +2143,11 @@ class KineticsFamily(Database):
                             reactantAtomLabels[0][atom1.label] = atom2
 
                         reactantStructures = [molecule]
-                        productStructures = self.__generateProductStructures(reactantStructures, [map], forward)
-                        if productStructures:
+                        try:
+                            productStructures = self.__generateProductStructures(reactantStructures, [map], forward)
+                        except ForbiddenStructureException:
+                            pass
+                        else:
                             rxn = self.__createReaction(reactantStructures, productStructures, forward)
                             if rxn: rxnList.append(rxn)
 
@@ -2174,8 +2177,11 @@ class KineticsFamily(Database):
                                     reactantAtomLabels[1][atom1.label] = atom2
 
                                 reactantStructures = [moleculeA, moleculeB]
-                                productStructures = self.__generateProductStructures(reactantStructures, [mapA, mapB], forward)
-                                if productStructures:
+                                try:
+                                    productStructures = self.__generateProductStructures(reactantStructures, [mapA, mapB], forward)
+                                except ForbiddenStructureException:
+                                    pass
+                                else:
                                     rxn = self.__createReaction(reactantStructures, productStructures, forward)
                                     if rxn: rxnList.append(rxn)
 
@@ -2198,8 +2204,11 @@ class KineticsFamily(Database):
                                         reactantAtomLabels[1][atom1.label] = atom2
 
                                     reactantStructures = [moleculeA, moleculeB]
-                                    productStructures = self.__generateProductStructures(reactantStructures, [mapA, mapB], forward)
-                                    if productStructures:
+                                    try:
+                                        productStructures = self.__generateProductStructures(reactantStructures, [mapA, mapB], forward)
+                                    except ForbiddenStructureException:
+                                        pass
+                                    else:
                                         rxn = self.__createReaction(reactantStructures, productStructures, forward)
                                         if rxn: rxnList.append(rxn)
 
