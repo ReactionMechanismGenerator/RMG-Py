@@ -193,6 +193,14 @@ class Species:
             raise ValueError('Unexpected value "{0!r}" for other parameter; should be a Molecule or Species object.'.format(other))
         return False
     
+    def toAdjacencyList(self):
+        """
+        Return a string containing each of the molecules' adjacency lists.
+        """
+        output = '\n\n'.join([m.toAdjacencyList(label=self.label, removeH=True) for m in self.molecule])
+        return output
+            
+    
 ################################################################################
 
 class TransitionState:

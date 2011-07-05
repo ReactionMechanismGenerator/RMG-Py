@@ -93,6 +93,13 @@ class TestSpecies(unittest.TestCase):
         self.assertEqual(self.species.molecularWeight.value, species.molecularWeight.value)
         self.assertEqual(self.species.molecularWeight.units, species.molecularWeight.units)
         self.assertEqual(self.species.reactive, species.reactive)
+        
+    def testToAdjacencyList(self):
+        """
+        Test that toAdjacencyList() works as expected.
+        """
+        string = self.species.toAdjacencyList()
+        self.assertTrue(string.startswith(self.species.molecule[0].toAdjacencyList(label=self.species.label,removeH=True)))
 
 ################################################################################
 
