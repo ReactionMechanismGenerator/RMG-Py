@@ -1454,7 +1454,7 @@ class KineticsFamily(Database):
         self.test = None
         self.PrIMe = None
 
-    def __str__(self):
+    def __repr__(self):
         return '<ReactionFamily "{0}">'.format(self.label)
 
     def loadOld(self, path):
@@ -1590,7 +1590,7 @@ class KineticsFamily(Database):
     
     def load(self, path, local_context=None, global_context=None):
         """
-        Load a thermodynamics database from a file located at `path` on disk.
+        Load a kinetics database from a file located at `path` on disk.
         """
         local_context['recipe'] = self.loadRecipe
         local_context['template'] = self.loadTemplate
@@ -1943,8 +1943,7 @@ class KineticsFamily(Database):
         reactants are stored in the reaction family template. The `maps`
         parameter is a list of mappings of the top-level tree node of each
         *template* reactant to the corresponding *structure*. This function
-        returns the product structures, species, and a boolean that tells
-        whether any species are new.
+        returns the product structures.
         """
 
         if not forward: template = self.reverseTemplate
@@ -1965,8 +1964,8 @@ class KineticsFamily(Database):
             maps[1] = newMap
 
         # Tag atoms with labels
-        for map in maps:
-            for reactantAtom, templateAtom in map.iteritems():
+        for m in maps:
+            for reactantAtom, templateAtom in m.iteritems():
                 reactantAtom.label = templateAtom.label
 
         # Generate the product structures by applying the forward reaction recipe
@@ -2233,7 +2232,7 @@ class KineticsFamily(Database):
         # For R_Recombination reactions, the degeneracy is twice what it should
         # be, so divide those by two
         # This is hardcoding of reaction families!
-        if self.label.lower() == 'unimolecular homolysis':
+        if self.label.lower().startswith('r_recombination'):
             for rxn in rxnList:
                 rxn.degeneracy /= 2
 
