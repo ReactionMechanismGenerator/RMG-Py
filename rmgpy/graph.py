@@ -626,6 +626,37 @@ class Graph:
 
         return cycleList
 
+    def isMappingValid(self, other, mapping):
+        """
+        Check that a proposed `mapping` of vertices from `self` to `other`
+        is valid by checking that the vertices and edges involved in the
+        mapping are mutually equivalent.
+        """
+        #cython.declare(vertex1=Vertex, vertex2=Vertex, vertices1=cython.list, vertices2=cython.list)
+        #cython.declare(i=cython.int, j=cython.int)
+        # Check that the mapped pairs of vertices are equivalent
+        for vertex1, vertex2 in mapping.iteritems():
+            if not vertex1.equivalent(vertex2):
+                return False
+        # Check that any edges connected mapped vertices are equivalent
+        vertices1 = mapping.keys(); vertices2 = mapping.values()
+        for i in range(len(mapping)):
+            for j in range(i+1, len(mapping)):
+                selfHasEdge = self.hasEdge(vertices1[i], vertices1[j])
+                otherHasEdge = other.hasEdge(vertices1[i], vertices1[j])
+                if selfHasEdge and otherHasEdge:
+                    # Both graphs have the edge, so we must check it for equivalence
+                    edge1 = self.getEdge(vertices1[i], vertices1[j])
+                    edge2 = self.getEdge(vertices2[i], vertices2[j])
+                    if not edge1.equivalent(edge2):
+                        return False
+                elif selfHasEdge or otherHasEdge:
+                    # Only one of the graphs has the edge, so the mapping must be invalid
+                    return False
+        # If we're here then the vertices and edges are equivalent, so the
+        # mapping is valid
+        return True
+
 ################################################################################
 
 def VF2_isomorphism(graph1, graph2, subgraph=False, findAll=False, initialMap=None):

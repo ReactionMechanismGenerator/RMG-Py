@@ -105,6 +105,8 @@ cdef class Graph:
     cpdef __exploreCyclesRecursively(self, list chain, list cycleList)
 
     cpdef getSmallestSetOfSmallestRings(self)
+    
+    cpdef bint isMappingValid(self, Graph other, dict mapping)
 
 ################################################################################
 
