@@ -321,6 +321,13 @@ class Arrhenius(KineticsModel):
         if self.comment != '': string += ', comment="""{0}"""'.format(self.comment)
         string += ')'
         return string
+    
+    def __str__(self):
+        """
+        Return a string representation that is a bit shorter and prettier than __repr__.
+        """
+        string = 'Arrhenius(A={0!r}, n={1!r}, Ea={2!r}, T0={3!r})'.format(self.A, self.n, self.Ea, self.T0)
+        return string
 
     def __reduce__(self):
         """
