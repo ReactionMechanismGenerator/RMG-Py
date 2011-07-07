@@ -1625,6 +1625,12 @@ class KineticsFamily(Database):
             self.PrIMe.load(os.path.join(path, 'PrIMe.py'), local_context, global_context)
         else:
             self.PrIMe = None
+        # why is all this hard-coded?
+        if os.path.exists(os.path.join(path, 'PrIMe_RMG_Java.py')):
+            self.PrIMe_RMG_Java = KineticsDepository(label='{0}/PrIMe_RMG_Java'.format(self.label))
+            self.PrIMe_RMG_Java.load(os.path.join(path, 'PrIMe_RMG_Java.py'), local_context, global_context)
+        else:
+            self.PrIMeRMGJava = None
             
     def loadTemplate(self, reactants, products, ownReverse=False):
         """
