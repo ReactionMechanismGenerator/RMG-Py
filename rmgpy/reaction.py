@@ -154,10 +154,11 @@ class Reaction:
             (all([spec in self.products for spec in reactants]) and
             all([spec in self.reactants for spec in products])))
 
-    def isIsomorphic(self, other):
+    def isIsomorphic(self, other, eitherDirection=True):
         """
         Return ``True`` if this reaction is the same as the `other` reaction,
-        or ``False`` if they are different.
+        or ``False`` if they are different. 
+        If `eitherDirection=False` then the directions must match.
         """
         
         # Compare reactants to reactants
@@ -204,7 +205,7 @@ class Reaction:
             elif self.products[0].isIsomorphic(other.reactants[1]) and self.products[1].isIsomorphic(other.reactants[0]):
                 reverseProductsMatch = True
         
-        return (forwardReactantsMatch and forwardProductsMatch) or (reverseReactantsMatch and reverseProductsMatch)
+        return (forwardReactantsMatch and forwardProductsMatch) or (eitherDirection and reverseReactantsMatch and reverseProductsMatch)
     
     def getEnthalpyOfReaction(self, T):
         """

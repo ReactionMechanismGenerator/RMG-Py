@@ -51,7 +51,7 @@ cdef class Reaction:
 
     cpdef bint hasTemplate(self, list reactants, list products)
     
-    cpdef bint isIsomorphic(self, Reaction other)
+    cpdef bint isIsomorphic(self, Reaction other, bint eitherDirection=?)
 
     cpdef double getEnthalpyOfReaction(self, double T)
 
