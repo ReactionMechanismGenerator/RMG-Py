@@ -2066,7 +2066,7 @@ class KineticsFamily(Database):
         elif isinstance(struct, Group):
             return reactant.findSubgraphIsomorphisms(struct)
 
-    def generateReactions(self, reactants):
+    def generateReactions(self, reactants, searchAll=False):
         """
         Generate all reactions between the provided list of one or two
         `reactants`, which should be :class:`Molecule` objects.
@@ -2100,8 +2100,32 @@ class KineticsFamily(Database):
             reactionList.append(reaction)
 
         # While we're here, we might as well get the kinetics too
-        for reaction in reactionList:
-            reaction.kinetics = self.getKinetics(reaction, degeneracy=reaction.degeneracy)
+        reactionList0 = reactionList; reactionList = []
+        for rxn in reactionList0:
+            kineticsList = self.getAllKinetics(rxn, degeneracy=rxn.degeneracy, searchMode='all' if searchAll else 'recommended')
+            for kinetics, source, entry in kineticsList:
+                if source is not None:
+                    reaction = DepositoryReaction(
+                        reactants = rxn.reactants[:],
+                        products = rxn.products[:],
+                        kinetics = kinetics,
+                        degeneracy = rxn.degeneracy,
+                        thirdBody = rxn.thirdBody,
+                        reversible = rxn.reversible,
+                        depository = source,
+                        entry = entry,
+                    )
+                else:
+                    reaction = TemplateReaction(
+                        reactants = rxn.reactants[:],
+                        products = rxn.products[:],
+                        kinetics = kinetics,
+                        degeneracy = rxn.degeneracy,
+                        thirdBody = rxn.thirdBody,
+                        reversible = rxn.reversible,
+                        family = self,
+                    )
+                reactionList.append(reaction)
 
         # Return the reactions as containing Species objects, not Molecule objects
         for reaction in reactionList:
@@ -2335,6 +2359,7 @@ class KineticsFamily(Database):
             depositories = [self.training, self.rules, self.PrIMe, self.test]
         else:
             depositories = [self.training, self.rules]
+        depositories = [d for d in depositories if d is not None]
         
         # Check the various depositories for kinetics
         for depository in depositories:
@@ -2503,6 +2528,31 @@ class KineticsDatabase:
             groupPath = os.path.join(groupsPath, label)
             family.saveOld(groupPath)
 
+    def __filterReactions(self, reactants, products, reactionList):
+        """
+        Remove any reactions from the given `reactionList` whose reactants do
+        not involve all the given `reactants` or whose products do not involve 
+        all the given `products`.
+        """
+        reactions = reactionList[:]
+        if products is not None:
+            for reaction in reactionList:
+                reactants0 = [r for r in reaction.reactants]
+                for reactant in reactants:
+                    for reactant0 in reactants0:
+                        if reactant0.isIsomorphic(reactant):
+                            reactants0.remove(reactant0)
+                            break
+                products0 = [p for p in reaction.products]
+                for product in products:
+                    for product0 in products0:
+                        if product0.isIsomorphic(product):
+                            products0.remove(product0)
+                            break
+                if len(reactants0) != 0 or len(products0) != 0:
+                    reactions.remove(reaction)
+        return reactions
+    
     def generateReactions(self, reactants, products=None):
         """
         Generate all reactions between the provided list of one or two
@@ -2510,24 +2560,8 @@ class KineticsDatabase:
         searches the depository, libraries, and groups, in that order.
         """
         reactionList = []
-        reactionList.extend(self.generateReactionsFromLibraries(reactants))
-        reactionList.extend(self.generateReactionsFromFamilies(reactants))
-
-        # Remove any reactions from the above that don't also involve *all* of the specified products
-        if products is not None:
-            reactionsToRemove = []
-            for reaction in reactionList:
-                products0 = [p for p in reaction.products]
-                for product in products:
-                    for product0 in products0:
-                        if product0.isIsomorphic(product):
-                            products0.remove(product0)
-                            break
-                if len(products0) != 0:
-                    reactionsToRemove.append(reaction)
-            for reaction in reactionsToRemove:
-                reactionList.remove(reaction)
-
+        reactionList.extend(self.generateReactionsFromLibraries(reactants, products))
+        reactionList.extend(self.generateReactionsFromFamilies(reactants, products))
         return reactionList
 
     def __reactionMatchesReactants(self, reactants, reaction):
@@ -2563,7 +2597,7 @@ class KineticsDatabase:
         # If we're here then neither direction matched, so return false
         return False
 
-    def generateReactionsFromLibraries(self, reactants):
+    def generateReactionsFromLibraries(self, reactants, products):
         """
         Generate all reactions between the provided list of one or two
         `reactants`, which should be :class:`Molecule` objects. This method
@@ -2571,10 +2605,10 @@ class KineticsDatabase:
         """
         reactionList = []
         for label in self.libraryOrder:
-            reactionList.extend(self.generateReactionsFromLibrary(reactants, self.libraries[label]))
+            reactionList.extend(self.generateReactionsFromLibrary(reactants, products, self.libraries[label]))
         return reactionList
 
-    def generateReactionsFromLibrary(self, reactants, library):
+    def generateReactionsFromLibrary(self, reactants, products, library):
         """
         Generate all reactions between the provided list of one or two
         `reactants`, which should be :class:`Molecule` objects. This method
@@ -2594,9 +2628,9 @@ class KineticsDatabase:
                     entry = entry,
                 )
                 reactionList.append(reaction)
-        return reactionList
+        return self.__filterReactions(reactants, products, reactionList)
 
-    def generateReactionsFromFamilies(self, reactants, only_families=None):
+    def generateReactionsFromFamilies(self, reactants, products, only_families=None, searchAll=False):
         """
         Generate all reactions between the provided list of one or two
         `reactants`, which should be :class:`Molecule` objects. This method
@@ -2605,8 +2639,8 @@ class KineticsDatabase:
         reactionList = []
         for label, family in self.families.iteritems():
             if only_families is None or label in only_families:
-                reactionList.extend(family.generateReactions(reactants))
-        return reactionList
+                reactionList.extend(family.generateReactions(reactants, searchAll=searchAll))
+        return self.__filterReactions(reactants, products, reactionList)
 
     def getForwardReactionForFamilyEntry(self, entry, family, thermoDatabase):
         """
