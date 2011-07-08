@@ -1670,13 +1670,26 @@ class KineticsFamily(Database):
         optional `entryName` parameter specifies the identifier used for each
         data entry.
         """
+        self.saveGroups(os.path.join(path, 'groups.py'), entryName=entryName)
+        self.rules.save(os.path.join(path, 'rules.py'))
+        self.training.save(os.path.join(path, 'training.py'))
+        self.test.save(os.path.join(path, 'test.py'))
+        if self.PrIMe:
+            self.PrIMe.save(os.path.join(path, 'PrIMe.py'))
+
+    def saveGroups(self, path, entryName='entry'):
+        """
+        Save the current database to the file at location `path` on disk. The
+        optional `entryName` parameter specifies the identifier used for each
+        data entry.
+        """
         entries = self.groups.getEntriesToSave()
                 
         # Write the header
-        f = codecs.open(os.path.join(path, 'groups.py'), 'w', 'utf-8')
+        f = codecs.open(path, 'w', 'utf-8')
         f.write('#!/usr/bin/env python\n')
         f.write('# encoding: utf-8\n\n')
-        f.write('name = "{0}"\n'.format(self.name))
+        f.write('name = "{0}/groups"\n'.format(self.name))
         f.write('shortDesc = "{0}"\n'.format(self.shortDesc))
         f.write('longDesc = """\n')
         f.write(self.longDesc)
@@ -1699,10 +1712,10 @@ class KineticsFamily(Database):
             self.saveEntry(f, entry)
 
         # Write the tree
-        if len(self.top) > 0:
+        if len(self.groups.top) > 0:
             f.write('tree(\n')
             f.write('"""\n')
-            f.write(self.generateOldTree(self.top, 1))
+            f.write(self.generateOldTree(self.groups.top, 1))
             f.write('"""\n')
             f.write(')\n\n')
 
@@ -1714,12 +1727,6 @@ class KineticsFamily(Database):
                 self.forbidden.saveEntry(f, entry, name='forbidden')
     
         f.close()
-        
-        self.rules.save(os.path.join(path, 'rules.py'))
-        self.training.save(os.path.join(path, 'training.py'))
-        self.test.save(os.path.join(path, 'test.py'))
-        if self.PrIMe:
-            self.PrIMe.save(os.path.join(path, 'PrIMe.py'))
 
     def generateProductTemplate(self, reactants0):
         """
