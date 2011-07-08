@@ -2268,11 +2268,19 @@ class KineticsFamily(Database):
 
     def getKinetics(self, reaction, degeneracy=1):
         """
-        Determine the appropriate kinetics for `reaction` which involves the
-        labeled atoms in `atoms`.
+        Determine the appropriate kinetics for `reaction`. This method first
+        searches the "trusted" kinetics depositories; if not found there, a
+        group additivity estimate is generated.
         """
-        return self.getKineticsForTemplate(template=self.getReactionTemplate(reaction), degeneracy=degeneracy)
-
+        template = self.getReactionTemplate(reaction)
+        # Check the various depositories for kinetics
+        for depository in [self.training, self.rules]:
+            kinetics, entry = self.getKineticsFromDepository(depository, reaction, template, degeneracy)
+            if kinetics:
+                return kinetics
+        # If no kinetics found above, generate a group additivity estimate
+        return self.getKineticsForTemplate(template, degeneracy)
+        
     def getKineticsForTemplate(self, template, degeneracy=1):
         """
         Determine the appropriate kinetics for a reaction with the given
@@ -2285,6 +2293,59 @@ class KineticsFamily(Database):
                 kinetics = entry.data
         # Now add in more specific corrections if possible
         return self.groups.getKineticsForTemplate(template, kinetics, degeneracy)
+
+    def getKineticsFromDepository(self, depository, reaction, template, degeneracy):
+        """
+        Search the given `depository` in this kinetics family for kinetics
+        for the given `reaction`. If found, return the kinetics. If not found,
+        return ``None``.
+        """
+        kinetics = None; entry = None
+        if depository.label.endswith('rules'):
+            # The depository contains groups
+            entries = depository.entries.values()
+            for entry in entries:
+                entryLabels = entry.label.split(';')
+                templateLabels = [group.label for group in template]
+                if all([group in entryLabels for group in templateLabels]) and all([group in templateLabels for group in entryLabels]):
+                    kinetics = entry.data
+                    break
+        else:
+            # The depository contains real reactions
+            entries = depository.entries.values()
+            for entry in entries:
+                if reaction.isIsomorphic(entry.item):
+                    kinetics = entry.data
+                    break
+        
+        return kinetics, entry
+    
+    def getAllKinetics(self, reaction, degeneracy=1, searchMode='recommended'):
+        """
+        Return the kinetics for the given `reaction` by searching the various
+        depositories as well as generating a group additivity estimate. Unlike
+        the regular :meth:`getKinetics()` method, this returns a list of
+        results, with each result comprising the kinetics, the source, and
+        the entry.
+        """
+        kineticsList = []
+        template = self.getReactionTemplate(reaction)
+        
+        if searchMode == 'all':
+            depositories = [self.training, self.rules, self.PrIMe, self.test]
+        else:
+            depositories = [self.training, self.rules]
+        
+        # Check the various depositories for kinetics
+        for depository in depositories:
+            kinetics, entry = self.getKineticsFromDepository(depository, reaction, template, degeneracy)
+            if kinetics:
+                kineticsList.append([kinetics, depository, entry])
+        # Also generate a group additivity estimate
+        kinetics = self.getKineticsForTemplate(template, degeneracy)
+        if kinetics:
+            kineticsList.append([kinetics, None, None])
+        return kineticsList
 
 ################################################################################
 
