@@ -2536,11 +2536,13 @@ class KineticsDatabase:
         """
         Remove any reactions from the given `reactionList` whose reactants do
         not involve all the given `reactants` or whose products do not involve 
-        all the given `products`.
+        all the given `products`. This method checks both forward and reverse
+        directions, and only filters out reactions that don't match either.
         """
         reactions = reactionList[:]
         if products is not None:
             for reaction in reactionList:
+                # Forward direction
                 reactants0 = [r for r in reaction.reactants]
                 for reactant in reactants:
                     for reactant0 in reactants0:
@@ -2553,7 +2555,22 @@ class KineticsDatabase:
                         if product0.isIsomorphic(product):
                             products0.remove(product0)
                             break
-                if len(reactants0) != 0 or len(products0) != 0:
+                forward = not (len(reactants0) != 0 or len(products0) != 0)
+                # Reverse direction
+                reactants0 = [r for r in reaction.products]
+                for reactant in reactants:
+                    for reactant0 in reactants0:
+                        if reactant0.isIsomorphic(reactant):
+                            reactants0.remove(reactant0)
+                            break
+                products0 = [p for p in reaction.reactants]
+                for product in products:
+                    for product0 in products0:
+                        if product0.isIsomorphic(product):
+                            products0.remove(product0)
+                            break
+                reverse = not (len(reactants0) != 0 or len(products0) != 0)
+                if not forward and not reverse:
                     reactions.remove(reaction)
         return reactions
     
