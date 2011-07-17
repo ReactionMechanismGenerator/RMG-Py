@@ -2334,6 +2334,10 @@ class KineticsFamily(Database):
                 if all([group in entryLabels for group in templateLabels]) and all([group in templateLabels for group in entryLabels]):
                     kinetics = entry.data
                     break
+            if kinetics is not None:
+                # The rules are defined on a per-site basis, so we need to include the degeneracy manually
+                assert isinstance(kinetics, ArrheniusEP)
+                kinetics.A.value *= degeneracy
         else:
             # The depository contains real reactions
             entries = depository.entries.values()
