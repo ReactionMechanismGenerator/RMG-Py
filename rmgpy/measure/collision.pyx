@@ -276,7 +276,7 @@ cdef class SingleExponentialDownModel(CollisionModel):
 
         # Determine unnormalized entries in collisional transfer probability matrix
         for r in range(start, Ngrains):
-            for s in range(r+1):
+            for s in range(start,r+1):
                 P[s,r] = exp(-(Elist[r] - Elist[s]) * alpha)
             for s in range(r+1,Ngrains):
                 P[s,r] = exp(-(Elist[s] - Elist[r]) * alpha) * densStates[s] / densStates[r] * exp(-(Elist[s] - Elist[r]) * beta)
