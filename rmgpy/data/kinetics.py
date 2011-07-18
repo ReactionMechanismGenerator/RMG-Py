@@ -2321,10 +2321,10 @@ class KineticsFamily(Database):
     def getKineticsFromDepository(self, depository, reaction, template, degeneracy):
         """
         Search the given `depository` in this kinetics family for kinetics
-        for the given `reaction`. If found, return the kinetics. If not found,
-        return ``None``.
+        for the given `reaction`. Returns a list of all of the matching 
+        kinetics and corresponding entries.
         """
-        kinetics = None; entry = None
+        kineticsList = []
         if depository.label.endswith('rules'):
             # The depository contains groups
             entries = depository.entries.values()
@@ -2332,21 +2332,20 @@ class KineticsFamily(Database):
                 entryLabels = entry.label.split(';')
                 templateLabels = [group.label for group in template]
                 if all([group in entryLabels for group in templateLabels]) and all([group in templateLabels for group in entryLabels]):
-                    kinetics = entry.data
-                    break
-            if kinetics is not None:
-                # The rules are defined on a per-site basis, so we need to include the degeneracy manually
-                assert isinstance(kinetics, ArrheniusEP)
-                kinetics.A.value *= degeneracy
+                    kineticsList.append([entry.data, entry])
+            for kinetics, entry in kineticsList:
+                if kinetics is not None:
+                    # The rules are defined on a per-site basis, so we need to include the degeneracy manually
+                    assert isinstance(kinetics, ArrheniusEP)
+                    kinetics.A.value *= degeneracy
         else:
             # The depository contains real reactions
             entries = depository.entries.values()
             for entry in entries:
                 if reaction.isIsomorphic(entry.item):
-                    kinetics = entry.data
-                    break
+                    kineticsList.append([entry.data, entry])
         
-        return kinetics, entry
+        return kineticsList
     
     def getAllKinetics(self, reaction, degeneracy=1, searchMode='recommended'):
         """
@@ -2367,8 +2366,7 @@ class KineticsFamily(Database):
         
         # Check the various depositories for kinetics
         for depository in depositories:
-            kinetics, entry = self.getKineticsFromDepository(depository, reaction, template, degeneracy)
-            if kinetics:
+            for kinetics, entry in self.getKineticsFromDepository(depository, reaction, template, degeneracy):
                 kineticsList.append([kinetics, depository, entry])
         # Also generate a group additivity estimate
         kinetics = self.getKineticsForTemplate(template, degeneracy)
