@@ -55,18 +55,6 @@ cdef class KineticsModel:
 
 ################################################################################
 
-cdef class KineticsData(KineticsModel):
-
-    cdef public Quantity Tdata, kdata
-
-    cpdef bint isPressureDependent(self)
-
-    cpdef double getRateCoefficient(self, double T, double P=?)
-    
-    cpdef str toHTML(self)
-
-################################################################################
-
 cdef class Arrhenius(KineticsModel):
     
     cdef public Quantity A, T0, Ea, n
@@ -78,6 +66,20 @@ cdef class Arrhenius(KineticsModel):
     cpdef changeT0(self, double T0)
 
     cpdef fitToData(self, numpy.ndarray Tlist, numpy.ndarray klist, str kunits, double T0=?)
+
+################################################################################
+
+cdef class KineticsData(KineticsModel):
+
+    cdef public Quantity Tdata, kdata
+
+    cpdef bint isPressureDependent(self)
+
+    cpdef double getRateCoefficient(self, double T, double P=?)
+    
+    cpdef str toHTML(self)
+    
+    cpdef public Arrhenius toArrhenius(self)
 
 ################################################################################
 

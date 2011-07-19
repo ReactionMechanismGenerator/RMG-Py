@@ -278,6 +278,12 @@ class KineticsData(KineticsModel):
                     slope = (1.0/T - 1.0/Tmin) / (1.0/Tmax - 1.0/Tmin)
                     k = kmin * (kmax / kmin)**slope
         return k
+    
+    def toArrhenius(self):
+        """
+        Return an :class:`Arrhenius` expression fitted to this data
+        """
+        return Arrhenius().fitToData(Tlist=self.Tdata.values, klist=self.kdata.values, kunits=self.kdata.units)
 
 ################################################################################
 
