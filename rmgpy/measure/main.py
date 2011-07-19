@@ -172,6 +172,71 @@ class MEASURE:
         
         writeFile(self.outputFile, self.network, self.Tlist, self.Plist, self.Elist, self.method, self.model, self.Tmin, self.Tmax, self.Pmin, self.Pmax)
 
+    def draw(self):
+        """
+        Draw the potential energy surface corresponding to the loaded MEASURE 
+        calculation.
+        """
+        logging.info('Drawing potential energy surface...')
+        self.network.drawPotentialEnergySurface(self.drawFile)
+    
+    def compute(self):
+        """
+        Compute the pressure-dependent rate coefficients :math:`k(T,P)` for
+        the loaded MEASURE calculation.
+        """
+        
+        # Only proceed if the input network is valid
+        if self.network is None or self.network.errorString != '':
+            raise PDepError('Attempted to run MEASURE calculation with invalid input.')
+    
+        network, Tlist, Plist, Elist, method, model, Tmin, Tmax, Pmin, Pmax = self.network, self.Tlist, self.Plist, self.Elist, self.method, self.model, self.Tmin, self.Tmax, self.Pmin, self.Pmax
+
+        Nisom = len(network.isomers)
+        Nreac = len(network.reactants)
+        Nprod = len(network.products)
+
+        # Automatically choose a suitable set of energy grains if they were not
+        # explicitly specified in the input file
+        if len(Elist) == 2:
+            logging.info('Automatically determining energy grains...')
+            grainSize, Ngrains = Elist
+            Elist = network.autoGenerateEnergyGrains(Tmax=Tmax, grainSize=grainSize, Ngrains=Ngrains)
+            
+        # Calculate the rate coefficients
+        K, p0 = network.calculateRateCoefficients(Tlist, Plist, Elist, method)
+
+        # Fit interpolation model
+        from rmgpy.reaction import Reaction
+        from rmgpy.measure.reaction import fitInterpolationModel
+        if model[0] != '':
+            logging.info('Fitting {0} interpolation models...'.format(model[0]))
+        configurations = []
+        configurations.extend([[isom] for isom in network.isomers])
+        configurations.extend([reactants for reactants in network.reactants])
+        configurations.extend([products for products in network.products])
+        for i in range(Nisom+Nreac+Nprod):
+            for j in range(Nisom+Nreac):
+                if i != j:
+                    # Check that we have nonzero k(T,P) values
+                    if (numpy.any(K[:,:,i,j]) and not numpy.all(K[:,:,i,j])):
+                        raise NetworkError('Zero rate coefficient encountered while updating network {0}.'.format(network))
+
+                    # Make a new net reaction
+                    netReaction = Reaction(
+                        reactants=configurations[j],
+                        products=configurations[i],
+                        kinetics=None,
+                        reversible=(i<Nisom+Nreac),
+                    )
+                    network.netReactions.append(netReaction)
+                    
+                    # Set/update the net reaction kinetics using interpolation model
+                    netReaction.kinetics = fitInterpolationModel(netReaction, Tlist, Plist,
+                        K[:,:,i,j],
+                        model, Tmin, Tmax, Pmin, Pmax, errorCheck=True)
+        logging.info('')
+
 ################################################################################
 
 def initializeLogging(level, logFile=None):
@@ -268,63 +333,15 @@ def execute(inputFile, outputFile=None, drawFile=None, logFile=None, quiet=False
     # Load input file
     measure.loadInput()
     
-    # Only proceed if the input network is valid
+    # Proceed with the desired job
     if measure.network is not None and measure.network.errorString == '':
-    
-        network, Tlist, Plist, Elist, method, model, Tmin, Tmax, Pmin, Pmax = measure.network, measure.Tlist, measure.Plist, measure.Elist, measure.method, measure.model, measure.Tmin, measure.Tmax, measure.Pmin, measure.Pmax
-
-        Nisom = len(network.isomers)
-        Nreac = len(network.reactants)
-        Nprod = len(network.products)
-
-        # Draw potential energy surface
         if drawFile is not None:
-            logging.info('Drawing potential energy surface...')
-            network.drawPotentialEnergySurface(drawFile)
-
+            # Draw the potential energy surface
+            measure.draw()
         else:
-            # Automatically choose a suitable set of energy grains if they were not
-            # explicitly specified in the input file
-            if len(Elist) == 2:
-                logging.info('Automatically determining energy grains...')
-                grainSize, Ngrains = Elist
-                Elist = network.autoGenerateEnergyGrains(Tmax=Tmax, grainSize=grainSize, Ngrains=Ngrains)
-                
-            # Calculate the rate coefficients
-            K, p0 = network.calculateRateCoefficients(Tlist, Plist, Elist, method)
-
-            # Fit interpolation model
-            from rmgpy.reaction import Reaction
-            from rmgpy.measure.reaction import fitInterpolationModel
-            if model[0] != '':
-                logging.info('Fitting {0} interpolation models...'.format(model[0]))
-            configurations = []
-            configurations.extend([[isom] for isom in network.isomers])
-            configurations.extend([reactants for reactants in network.reactants])
-            configurations.extend([products for products in network.products])
-            for i in range(Nisom+Nreac+Nprod):
-                for j in range(Nisom+Nreac):
-                    if i != j:
-                        # Check that we have nonzero k(T,P) values
-                        if (numpy.any(K[:,:,i,j]) and not numpy.all(K[:,:,i,j])):
-                            raise NetworkError('Zero rate coefficient encountered while updating network {0}.'.format(network))
-
-                        # Make a new net reaction
-                        netReaction = Reaction(
-                            reactants=configurations[j],
-                            products=configurations[i],
-                            kinetics=None,
-                            reversible=(i<Nisom+Nreac),
-                        )
-                        network.netReactions.append(netReaction)
-                        
-                        # Set/update the net reaction kinetics using interpolation model
-                        netReaction.kinetics = fitInterpolationModel(netReaction, Tlist, Plist,
-                            K[:,:,i,j],
-                            model, Tmin, Tmax, Pmin, Pmax, errorCheck=True)
-            logging.info('')
-            
-            # Save results to file
+            # Compute the k(T,P) values
+            measure.compute()
+            # Save results to output file
             measure.saveOutput()
 
     # Log end timestamp
