@@ -233,7 +233,7 @@ class TestReaction(unittest.TestCase):
         """
         Tlist = numpy.arange(200.0, 2001.0, 200.0, numpy.float64)
         P = 1e5
-        reverseKinetics = self.reaction2.generateReverseRateCoefficient(Tlist)
+        reverseKinetics = self.reaction2.generateReverseRateCoefficient()
         for T in Tlist:
             kr0 = self.reaction2.getRateCoefficient(T, P) / self.reaction2.getEquilibriumConstant(T)
             kr = reverseKinetics.getRateCoefficient(T)
