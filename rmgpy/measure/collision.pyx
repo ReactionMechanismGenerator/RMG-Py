@@ -46,7 +46,8 @@ cimport numpy
 import logging
 import cython
 
-from rmgpy.quantity import constants
+from rmgpy.quantity import Quantity, constants
+from rmgpy.quantity cimport Quantity
 
 ################################################################################
 
@@ -226,9 +227,9 @@ cdef class SingleExponentialDownModel(CollisionModel):
     
     """
 
-    cdef public double alpha0, T0, n
+    cdef public Quantity alpha0, T0, n
 
-    def __init__(self, alpha0=0.0, T0=1.0, n=0.0):
+    def __init__(self, alpha0=None, T0=None, n=None):
         self.alpha0 = alpha0
         self.T0 = T0
         self.n = n
@@ -246,7 +247,7 @@ cdef class SingleExponentialDownModel(CollisionModel):
         transferred in a deactivating collision
         :math:`\\left< \\Delta E_\\mathrm{d} \\right>`, and has units of J/mol.
         """
-        return self.alpha0 * (T / self.T0) ** self.n
+        return self.alpha0.value * (T / self.T0.value) ** self.n.value
 
     def generateCollisionMatrix(self,
         numpy.ndarray[numpy.float64_t,ndim=1] Elist,

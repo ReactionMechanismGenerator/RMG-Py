@@ -163,15 +163,15 @@ def collisionModel(type, parameters, bathGas):
         if len(parameters) == 1:
             if 'alpha' not in parameters:
                 raise InputError('Must specify either "alpha" or ("alpha0","T0","n") as parameters for SingleExponentialDownModel.')
-            alpha0 = Quantity(parameters['alpha']).value
-            T0 = 1000.0
-            n = 0.0
+            alpha0 = Quantity(parameters['alpha'])
+            T0 = Quantity(1000.0,"K")
+            n = Quantity(0.0)
         elif len(parameters) == 3:
             if 'alpha0' not in parameters or 'T0' not in parameters or 'n' not in parameters:
                 raise InputError('Must specify either "alpha" or ("alpha0","T0","n") as parameters for SingleExponentialDownModel.')
-            alpha0 = Quantity(parameters['alpha0']).value
-            T0 = Quantity(parameters['T0']).value
-            n = Quantity(parameters['n']).value
+            alpha0 = Quantity(parameters['alpha0'])
+            T0 = Quantity(parameters['T0'])
+            n = Quantity(parameters['n'])
         else:
             raise InputError('Must specify either "alpha" or ("alpha0","T0","n") as parameters for SingleExponentialDownModel.')
 
