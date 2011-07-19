@@ -859,6 +859,9 @@ class Molecule(Graph):
         Convert an InChI string `inchistr` to a molecular structure. Uses
         `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
         """
+        if inchistr in ['InChI=1/H', 'InChI=1S/H']:
+            # cope with a bug in OpenBabel
+            return self.fromAdjacencyList('1 H 1')
         import pybel
         mol = pybel.readstring('inchi', inchistr)
         self.fromOBMol(mol.OBMol, implicitH)
@@ -869,6 +872,9 @@ class Molecule(Graph):
         Convert a SMILES string `smilesstr` to a molecular structure. Uses
         `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
         """
+        if smilesstr == '[H]':
+            # cope with a bug in OpenBabel < 2.3
+            return self.fromAdjacencyList('1 H 1')
         import pybel
         mol = pybel.readstring('smiles', smilesstr)
         self.fromOBMol(mol.OBMol, implicitH)
