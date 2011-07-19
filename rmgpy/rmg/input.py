@@ -60,7 +60,7 @@ def database(path, thermoLibraries=None, reactionLibraries=None, frequenciesLibr
     if isinstance(reactionLibraries, str): reactionLibraries = [reactionLibraries]
     if isinstance(seedMechanisms, str): seedMechanisms = [seedMechanisms]
     if isinstance(frequenciesLibraries, str): frequenciesLibraries = [frequenciesLibraries]
-    databases['path'] = os.path.abspath(path)
+    databases['path'] = os.path.abspath(os.path.expandvars(path))
     databases['thermoLibraries'] = thermoLibraries or []
     databases['reactionLibraries'] = reactionLibraries or []
     databases['seedMechanisms'] = seedMechanisms or []

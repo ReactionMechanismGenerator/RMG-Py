@@ -1,6 +1,6 @@
 # Data sources
 database(
-    '../RMG-database/input',
+    '/$RMGpy/RMG-database/input',
     thermoLibraries = ['primaryThermoLibrary','DFT_QCI_thermo','GRI-Mech3.0'],
     reactionLibraries = ['Methylformate','Glarborg/highP'],
     seedMechanisms = ['GRI-Mech3.0'],
