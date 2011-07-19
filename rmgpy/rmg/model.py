@@ -755,6 +755,8 @@ class CoreEdgeReactionModel:
         The forward direction is determined using the "is_reverse" attribute of the
         reaction's family.  If the reaction family is its own reverse, then it is
         made such that the forward reaction is exothermic at 298K.
+        
+        The forward reaction is appended to self.newReactionList if it is new.
         """
 
         # Determine the proper species objects for all reactants and products
@@ -910,7 +912,14 @@ class CoreEdgeReactionModel:
         logging.info('Generating thermodynamics for new species...')
         for spec in self.newSpeciesList:
             spec.generateThermoData(database)
-            
+        
+        # For new reactions, convert ArrheniusEP to Arrhenius, and fix barrier heights.
+        # self.newReactionList only contains *actually* new reactions, all in the forward direction.
+        for reaction in self.newReactionList:
+            if isinstance(reaction,TemplateReaction) or isinstance(reaction,DepositoryReaction): # i.e. not LibraryReaction
+                reaction.fixBarrierHeight() # also converts to Arrhenius.
+        
+        
         # Update unimolecular (pressure dependent) reaction networks
         if settings.pressureDependence:
             # Merge networks if necessary
@@ -960,7 +969,6 @@ class CoreEdgeReactionModel:
         species or explored isomer `newSpecies` in network `pdepNetwork`.
         """
         for rxn in newReactions:
-
             rxn, isNew = self.makeNewReaction(rxn)
             if not isNew:
                 continue

@@ -42,10 +42,11 @@ representing a set of chemical reactions and the species involved.
 import cython
 import math
 import numpy
+import logging
 
 from quantity import constants
 from species import Species
-from kinetics import Arrhenius, KineticsData
+from kinetics import Arrhenius, KineticsData, ArrheniusEP
 
 ################################################################################
 
@@ -371,6 +372,29 @@ class Reaction:
 
         # Return rate
         return rateConstant * (forward - reverse / equilibriumConstant)
+
+    def fixBarrierHeight(self):
+        """
+        Turns the kinetics into Arrhenius (if they were ArrheniusEP)
+        and ensures the activation energy is at least the endothermicity
+        for endothermic reactions, and is not negative only as a result 
+        of using Evans Polanyi with an exothermic reaction.
+        """
+        cython.declare(H=cython.double, Ea=cython.double)
+        H = self.getEnthalpyOfReaction(298)
+        if isinstance(self.kinetics, ArrheniusEP):
+            Ea = self.kinetics.E0.value # temporarily using Ea to store the intrinsic barrier height E0
+            self.kinetics = self.kinetics.toArrhenius(H)
+            if Ea > 0 and self.kinetics.Ea.value < 0:
+                self.kinetics.comment += "Ea raised from {0:.1f} to 0 kJ/mol.".format(self.kinetics.Ea.value/1000)
+                logging.info("For reaction {1!s} Ea raised from {0:.1f} to 0 kJ/mol.".format(self.kinetics.Ea.value/1000, self))
+                self.kinetics.Ea.value = 0
+        if isinstance(self.kinetics, Arrhenius):
+            Ea = self.kinetics.Ea.value
+            if H > 0 and Ea < H:
+                self.kinetics.Ea.value = H
+                self.kinetics.comment += "Ea raised from {0:.1f} to {1:.1f} kJ/mol to match endothermicity of reaction.".format(Ea/1000,H/1000)
+                logging.info("For reaction {2!s}, Ea raised from {0:.1f} to {1:.1f} kJ/mol to match endothermicity of reaction.".format(Ea/1000, H/1000, self))
 
     def generateReverseRateCoefficient(self):
         """
