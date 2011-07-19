@@ -127,7 +127,7 @@ class MEASURE:
             self.logFile = os.path.join(inputDirectory, 'MEASURE.log')
         
         # Load the data from the input file
-        self.network, self.Tlist, self.Plist, self.Elist, self.method, self.model, self.Tmin, self.Tmax, self.Pmin, self.Pmax = readFile(self.inputFile)
+        readFile(self.inputFile, self)
         
     def loadOutput(self, outputFile=None):
         """
@@ -144,7 +144,7 @@ class MEASURE:
             raise PDepError('Output file "{0}" does not exist.'.format(self.outputFile))
         
         # Load the data from the output file
-        self.network, self.Tlist, self.Plist, self.Elist, self.method, self.model, self.Tmin, self.Tmax, self.Pmin, self.Pmax = readFile(self.outputFile)
+        readFile(self.outputFile, self)
         
     def saveInput(self, inputFile=None):
         """
@@ -157,7 +157,7 @@ class MEASURE:
         if inputFile is not None:
             self.inputFile = inputFile
         
-        writeFile(self.inputFile, self.network, self.Tlist, self.Plist, self.Elist, self.method, self.model, self.Tmin, self.Tmax, self.Pmin, self.Pmax)
+        writeFile(self.inputFile, self)
 
     def saveOutput(self, outputFile=None):
         """
@@ -170,7 +170,7 @@ class MEASURE:
         if outputFile is not None:
             self.outputFile = outputFile
         
-        writeFile(self.outputFile, self.network, self.Tlist, self.Plist, self.Elist, self.method, self.model, self.Tmin, self.Tmax, self.Pmin, self.Pmax)
+        writeFile(self.outputFile, self)
 
     def draw(self):
         """
