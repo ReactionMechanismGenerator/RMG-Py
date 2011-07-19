@@ -768,10 +768,14 @@ class CoreEdgeReactionModel:
             if found: return rxn, False
 
         # Note in the log
-        if isinstance(rxn, TemplateReaction):
-            logging.debug('Creating new {0} reaction {1}'.format(forward.family.label, forward))
-        else:
+        if isinstance(forward, TemplateReaction):
+            logging.debug('Creating new {0} template reaction {1}'.format(forward.family.label, forward))
+        elif isinstance(forward, DepositoryReaction):
+            logging.debug('Creating new {0} reaction {1}'.format(forward.getSource().label, forward))
+        elif isinstance(forward, LibraryReaction):
             logging.debug('Creating new library reaction {0}'.format(forward))
+        else:
+            raise Exception("Unrecognized reaction type {0!s}".format(forward.__class__))
         
         # Add to the global dict/list of existing reactions (a list broken down by family, r1, r2)
         # identify r1 and r2
