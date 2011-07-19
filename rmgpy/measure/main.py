@@ -190,19 +190,29 @@ class MEASURE:
         if self.network is None or self.network.errorString != '':
             raise PDepError('Attempted to run MEASURE calculation with invalid input.')
     
-        network, Tlist, Plist, Elist, method, model, Tmin, Tmax, Pmin, Pmax = self.network, self.Tlist, self.Plist, self.Elist, self.method, self.model, self.Tmin, self.Tmax, self.Pmin, self.Pmax
-
-        Nisom = len(network.isomers)
-        Nreac = len(network.reactants)
-        Nprod = len(network.products)
+        Nisom = len(self.network.isomers)
+        Nreac = len(self.network.reactants)
+        Nprod = len(self.network.products)
 
         # Automatically choose a suitable set of energy grains if they were not
         # explicitly specified in the input file
-        if len(Elist) == 2:
+        if self.Emin is not None and self.Emax is not None:
+            self.Elist = Quantity(self.getEnergyGrains(self.Emin.value, self.Emax.value, self.grainSize.value, self.grainCount), "J/mol")
+        else:
             logging.info('Automatically determining energy grains...')
-            grainSize, Ngrains = Elist
-            Elist = network.autoGenerateEnergyGrains(Tmax=Tmax, grainSize=grainSize, Ngrains=Ngrains)
-            
+            self.Elist = Quantity(self.network.autoGenerateEnergyGrains(Tmax=numpy.max(self.Tlist.values), grainSize=self.grainSize.value, Ngrains=self.grainCount), "J/mol")
+        
+        network = self.network   
+        Tmin = self.Tmin.value
+        Tmax = self.Tmax.value
+        Tlist = self.Tlist.values
+        Pmin = self.Pmin.value
+        Pmax = self.Pmax.value
+        Plist = self.Plist.values
+        Elist = self.Elist.values
+        method = self.method
+        model = self.model
+        
         # Calculate the rate coefficients
         K, p0 = network.calculateRateCoefficients(Tlist, Plist, Elist, method)
 
