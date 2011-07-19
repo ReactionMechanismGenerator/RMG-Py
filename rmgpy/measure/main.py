@@ -36,6 +36,142 @@ import time
 import os.path
 import numpy
 
+from rmgpy.quantity import Quantity
+
+################################################################################
+
+class MEASURE:
+    """
+    A representation of a Master Equation Automatic Solver for Unimolecular
+    REactions (MEASURE) job. The attributes are:
+    
+    =================== ======================= ================================
+    Attribute           Type                    Description
+    =================== ======================= ================================
+    `inputFile`         ``str``                 The path to the input file
+    `logFile`           ``str``                 The path to the log file
+    `outputFile`        ``str``                 The path to the output file
+    `drawFile`          ``str``                 The path to the PES drawing file (PNG, SVG, PDF, or PS)
+    ------------------- ----------------------- --------------------------------
+    `Tmin`              :class:`Quantity`       The minimum temperature at which to compute :math:`k(T,P)` values
+    `Tmax`              :class:`Quantity`       The maximum temperature at which to compute :math:`k(T,P)` values
+    `Tcount`            ``int``                 The number of temperatures at which to compute :math:`k(T,P)` values
+    `Pmin`              :class:`Quantity`       The minimum pressure at which to compute :math:`k(T,P)` values
+    `Pmax`              :class:`Quantity`       The maximum pressure at which to compute :math:`k(T,P)` values
+    `Pcount`            ``int``                 The number of pressures at which to compute :math:`k(T,P)` values
+    `Emin`              :class:`Quantity`       The minimum energy to use to compute :math:`k(T,P)` values
+    `Emax`              :class:`Quantity`       The maximum energy to use to compute :math:`k(T,P)` values
+    `grainSize`         :class:`Quantity`       The maximum energy grain size to use to compute :math:`k(T,P)` values
+    `grainCount`        ``int``                 The minimum number of energy grains to use to compute :math:`k(T,P)` values
+    `method`            ``str``                 The method to use to reduce the master equation to :math:`k(T,P)` values
+    `model`             ``str``                 The interpolation model to fit to the computed :math:`k(T,P)` values
+    ------------------- ----------------------- --------------------------------
+    `network`           :class:`Network`        The unimolecular reaction network
+    `Tlist`             :class:`Quantity`       An array of temperatures at which to compute :math:`k(T,P)` values
+    `Plist`             :class:`Quantity`       An array of pressures at which to compute :math:`k(T,P)` values
+    `Elist`             :class:`Quantity`       An array of energies to use to compute :math:`k(T,P)` values
+    =================== ======================= ================================
+
+    """
+    
+    def __init__(self, inputFile=None, outputFile=None, logFile=None, drawFile=None):
+        self.inputFile = inputFile
+        self.logFile = logFile
+        self.outputFile = outputFile
+        self.drawFile = drawFile
+        self.clear()
+    
+    def clear(self):
+        """
+        Clear all loaded information about the job (except the file paths).
+        """
+        self.Tmin = None
+        self.Tmax = None
+        self.Tcount = None
+        self.Pmin = None
+        self.Pmax = None
+        self.Pcount = None
+        self.Emin = None
+        self.Emax = None
+        self.grainSize = None
+        self.grainCount = None
+        
+        self.method = None
+        self.model = None
+        
+        self.network = None
+        self.Tlist = None
+        self.Plist = None
+        self.Elist = None
+    
+    def loadInput(self, inputFile=None):
+        """
+        Load a MEASURE job from the input file located at `inputFile`, or
+        from the `inputFile` attribute if not given as a parameter.
+        """
+        from input import readFile
+        
+        # If an input file is specified, then it overrides the inputFile attribute
+        if inputFile is not None:
+            self.inputFile = inputFile
+        # No matter where we got the input filename, make sure that it exists
+        if not os.path.exists(self.inputFile):
+            raise PDepError('Input file "{0}" does not exist.'.format(self.inputFile))
+        
+        # Set locations of log and output files to be in same folder as input file
+        # (unless already set previously)
+        inputDirectory = os.path.dirname(os.path.relpath(self.inputFile))
+        if not self.outputFile:
+            self.outputFile = os.path.join(inputDirectory, 'output.py')
+        if not self.logFile:
+            self.logFile = os.path.join(inputDirectory, 'MEASURE.log')
+        
+        # Load the data from the input file
+        self.network, self.Tlist, self.Plist, self.Elist, self.method, self.model, self.Tmin, self.Tmax, self.Pmin, self.Pmax = readFile(self.inputFile)
+        
+    def loadOutput(self, outputFile=None):
+        """
+        Load a MEASURE job from the output file located at `outputFile`, or
+        from the `outputFile` attribute if not given as a parameter.
+        """
+        from input import readFile
+        
+        # If an input file is specified, then it overrides the inputFile attribute
+        if outputFile is not None:
+            self.outputFile = outputFile
+        # No matter where we got the input filename, make sure that it exists
+        if not os.path.exists(self.outputFile):
+            raise PDepError('Output file "{0}" does not exist.'.format(self.outputFile))
+        
+        # Load the data from the output file
+        self.network, self.Tlist, self.Plist, self.Elist, self.method, self.model, self.Tmin, self.Tmax, self.Pmin, self.Pmax = readFile(self.outputFile)
+        
+    def saveInput(self, inputFile=None):
+        """
+        Save a MEASURE job to the output file located at `outputFile`, or
+        from the `outputFile` attribute if not given as a parameter.
+        """
+        from output import writeFile
+        
+        # If an input file is specified, then it overrides the inputFile attribute
+        if inputFile is not None:
+            self.inputFile = inputFile
+        
+        writeFile(self.inputFile, self.network, self.Tlist, self.Plist, self.Elist, self.method, self.model, self.Tmin, self.Tmax, self.Pmin, self.Pmax)
+
+    def saveOutput(self, outputFile=None):
+        """
+        Save a MEASURE job to the output file located at `outputFile`, or
+        from the `outputFile` attribute if not given as a parameter.
+        """
+        from output import writeFile
+        
+        # If an output file is specified, then it overrides the outputFile attribute
+        if outputFile is not None:
+            self.outputFile = outputFile
+        
+        writeFile(self.outputFile, self.network, self.Tlist, self.Plist, self.Elist, self.method, self.model, self.Tmin, self.Tmax, self.Pmin, self.Pmax)
+
 ################################################################################
 
 def initializeLogging(level, logFile=None):
