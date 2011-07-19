@@ -251,10 +251,10 @@ def execute(inputFile, outputFile=None, drawFile=None, logFile=None, quiet=False
         
     # Initialize the logging system
     if logFile is not None:
-        log = os.path.abspath(logFile)
+        logFile = os.path.abspath(logFile)
     else:
-        log = os.path.join(outputDirectory, 'MEASURE.log')  
-    initializeLogging(level, log)
+        logFile = os.path.join(outputDirectory, 'MEASURE.log')  
+    initializeLogging(level, logFile)
     
     # Log start timestamp
     logging.info('MEASURE execution initiated at ' + time.asctime() + '\n')
@@ -262,14 +262,16 @@ def execute(inputFile, outputFile=None, drawFile=None, logFile=None, quiet=False
     # Log header
     logHeader()
     
+    # Initialize the MEASURE job
+    measure = MEASURE(inputFile=inputFile, outputFile=outputFile, logFile=logFile, drawFile=drawFile)
+        
     # Load input file
-    from rmgpy.measure.input import readFile
-    params = readFile(os.path.relpath(inputFile))
-
+    measure.loadInput()
+    
     # Only proceed if the input network is valid
-    if params is not None and params[0].errorString == '':
-
-        network, Tlist, Plist, Elist, method, model, Tmin, Tmax, Pmin, Pmax = params
+    if measure.network is not None and measure.network.errorString == '':
+    
+        network, Tlist, Plist, Elist, method, model, Tmin, Tmax, Pmin, Pmax = measure.network, measure.Tlist, measure.Plist, measure.Elist, measure.method, measure.model, measure.Tmin, measure.Tmax, measure.Pmin, measure.Pmax
 
         Nisom = len(network.isomers)
         Nreac = len(network.reactants)
@@ -323,12 +325,7 @@ def execute(inputFile, outputFile=None, drawFile=None, logFile=None, quiet=False
             logging.info('')
             
             # Save results to file
-            from rmgpy.measure.output import writeFile
-            if outputFile is not None:
-                out = os.path.relpath(outputFile)
-            else:
-                out = os.path.join(outputDirectory, 'output.py')
-            writeFile(out, network, Tlist, Plist, Elist, method, model, Tmin, Tmax, Pmin, Pmax)
+            measure.saveOutput()
 
     # Log end timestamp
     logging.info('')
