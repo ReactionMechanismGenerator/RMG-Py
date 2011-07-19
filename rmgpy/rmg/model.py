@@ -475,7 +475,7 @@ class PDepNetwork(rmgpy.measure.network.Network):
                     kunits = ''
                 rxn.kinetics = Arrhenius().fitToData(Tlist=rxn.kinetics.Tdata.values, klist=rxn.kinetics.kdata.values, kunits=kunits)
             elif not isinstance(rxn.kinetics, Arrhenius):
-                raise Exception('Path reaction "{0}" in PDepNetwork #{1:d} has invalid kinetics type "{2}".'.format(rxn, rxn.kinetics.__class__))
+                raise Exception('Path reaction "{0}" in PDepNetwork #{1:d} has invalid kinetics type "{2!s}".'.format(rxn, self.index, rxn.kinetics.__class__))
             rxn.transitionState = rmgpy.species.TransitionState(
                 E0=((sum([spec.E0.value for spec in rxn.reactants]) + rxn.kinetics.Ea.value)/1000.,"kJ/mol"),
             )
