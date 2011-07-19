@@ -920,8 +920,12 @@ class CoreEdgeReactionModel:
         # For new reactions, convert ArrheniusEP to Arrhenius, and fix barrier heights.
         # self.newReactionList only contains *actually* new reactions, all in the forward direction.
         for reaction in self.newReactionList:
+            # convert KineticsData to Arrhenius forms
+            if isinstance(reaction.kinetics, KineticsData):
+                reaction.kinetics = reaction.kinetics.toArrhenius()
+            #  correct barrier heights of estimated kinetics
             if isinstance(reaction,TemplateReaction) or isinstance(reaction,DepositoryReaction): # i.e. not LibraryReaction
-                reaction.fixBarrierHeight() # also converts to Arrhenius.
+                reaction.fixBarrierHeight() # also converts ArrheniusEP to Arrhenius.
         
         
         # Update unimolecular (pressure dependent) reaction networks
