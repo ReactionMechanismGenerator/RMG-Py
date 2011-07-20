@@ -162,15 +162,15 @@ def processQuantity(quantity):
 def readInputFile(path):
 
     global speciesDict, reactionModel, databases, reactionSystems
-
+    full_path = os.path.abspath(os.path.expandvars(path))
     try:
-        f = open(path)
+        f = open(full_path)
     except IOError, e:
-        logging.error('The input file "{0}" could not be opened.'.format(path))
+        logging.error('The input file "{0}" could not be opened.'.format(full_path))
         logging.info('Check that the file exists and that you have read access.')
-        return
+        raise e
 
-    logging.info('Reading input file "{0}"...'.format(path))
+    logging.info('Reading input file "{0}"...'.format(full_path))
 
     reactionModel = CoreEdgeReactionModel()
 
@@ -196,7 +196,7 @@ def readInputFile(path):
     try:
         exec f in global_context, local_context
     except (NameError, TypeError, SyntaxError), e:
-        logging.error('The input file "{0}" was invalid:'.format(path))
+        logging.error('The input file "{0}" was invalid:'.format(full_path))
         logging.exception(e)
         raise
     finally:
