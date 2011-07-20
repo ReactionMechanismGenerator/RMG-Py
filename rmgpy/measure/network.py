@@ -383,6 +383,54 @@ class Network:
         
         return Kij, Gnj, Fim
 
+    def deleteSpecies(self, species):
+        """
+        Completely remove the given `species` from the network, including any
+        path and net reactions it participates in. 
+        """
+        # Remove the species from the list of isomers
+        if species in self.isomers:
+            self.isomers.remove(species)
+        
+        # Remove any reactant channels containing the species
+        reactantsToRemove = []
+        for reactants in self.reactants:
+            if species in reactants:
+                reactantsToRemove.append(reactants)
+        for reactants in reactantsToRemove:
+            self.reactants.remove(reactants)
+            
+        # Remove any product channels containing the species
+        productsToRemove = []
+        for products in self.products:
+            if species in products:
+                productsToRemove.append(products)
+        for products in productsToRemove:
+            self.products.remove(products)
+        
+        # Remove any path reactions containing the species
+        pathReactionsToRemove = []
+        for reaction in self.pathReactions:
+            if species in reaction.reactants or species in reaction.products:
+                pathReactionsToRemove.append(reaction)
+        for reaction in pathReactionsToRemove:
+            self.pathReactions.remove(reaction)
+        
+        # Remove any net reactions containing the species
+        netReactionsToRemove = []
+        for reaction in self.netReactions:
+            if species in reaction.reactants or species in reaction.products:
+                netReactionsToRemove.append(reaction)
+        for reaction in netReactionsToRemove:
+            self.netReactions.remove(reaction)
+    
+    def deletePathReaction(self, reaction):
+        """
+        Remove the given path `reaction` from the network. Does not remove the
+        species involved in the reaction.
+        """
+        self.pathReactions.remove(reaction)
+    
     def printSummary(self, level=logging.DEBUG):
         """
         Print a formatted list of information about the current network. Each
