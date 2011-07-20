@@ -622,6 +622,42 @@ class Reaction:
         # Complete and return integrand
         return exp(-E_kT) * kappaE
     
+    def isBalanced(self):
+        """
+        Return ``True`` if the reaction has the same number of each atom on
+        each side of the reaction equation, or ``False`` if not.
+        """
+        from rmgpy.element import elementList
+        
+        cython.declare(reactantElements=dict, productElements=dict, molecule=Molecule, atom=Atom, element=Element)
+        
+        reactantElements = {}; productElements = {}
+        for element in elementList:
+            reactantElements[element] = 0
+            productElements[element] = 0
+        
+        for reactant in self.reactants:
+            if isinstance(reactant, Species):
+                molecule = reactant.molecule[0]
+            elif isinstance(reactant, Molecule):
+                molecule = reactant
+            for atom in molecule.atoms:
+                reactantElements[atom.element] += 1
+        
+        for product in self.products:
+            if isinstance(product, Species):
+                molecule = product.molecule[0]
+            elif isinstance(product, Molecule):
+                molecule = product
+            for atom in molecule.atoms:
+                productElements[atom.element] += 1
+         
+        for element in elementList:
+            if reactantElements[element] != productElements[element]:
+                return False
+        
+        return True
+        
 ################################################################################
 
 class ReactionModel:

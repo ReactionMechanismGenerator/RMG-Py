@@ -25,6 +25,8 @@
 ################################################################################
 
 from species cimport Species, TransitionState
+from molecule cimport Atom, Molecule
+from element cimport Element
 from kinetics cimport KineticsModel, Arrhenius
 
 cimport numpy
@@ -89,6 +91,8 @@ cdef class Reaction:
 
     cpdef double __eckartIntegrand(self, double E_kT, double kT, double dV1, double alpha1, double alpha2)
 
+    cpdef bint isBalanced(self)
+    
 ################################################################################
 
 cdef class ReactionModel:
