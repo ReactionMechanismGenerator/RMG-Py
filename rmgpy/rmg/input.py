@@ -224,7 +224,7 @@ def readInputFile(path):
         initialMoleFractions = {}
         for label, moleFrac in reactionSystem.initialMoleFractions.iteritems():
             initialMoleFractions[speciesDict[label]] = moleFrac
-    reactionSystem.initialMoleFractions = initialMoleFractions
+        reactionSystem.initialMoleFractions = initialMoleFractions
 
     return reactionModel, speciesList, reactionSystems, rmgDatabase, seedMechanisms
 
