@@ -1029,7 +1029,7 @@ class ForbiddenStructures(Database):
             entryLabeledAtoms = entry.item.getLabeledAtoms()
             moleculeLabeledAtoms = molecule.getLabeledAtoms()
             try:
-                initialMap = {moleculeLabeledAtoms[label]: entryLabeledAtoms[label] for label in entryLabeledAtoms}
+                initialMap = dict([(moleculeLabeledAtoms[label], entryLabeledAtoms[label]) for label in entryLabeledAtoms])
             except KeyError:
                 continue
             else:
