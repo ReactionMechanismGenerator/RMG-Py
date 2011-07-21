@@ -71,10 +71,10 @@ class InputError(Exception):
 
 ################################################################################
 
-def species(label='', E0=None, states=None, thermo=None, lennardJones=None, molecularWeight=0.0, SMILES='', InChI=''):
+def species(label='', E0=None, states=None, thermo=None, lennardJones=None, molecularWeight=0.0, collisionModel=None, SMILES='', InChI=''):
     global speciesDict
     if label == '': raise InputError('Missing "label" attribute in species() block.')
-    spec = Species(label=label, states=states, thermo=thermo, E0=E0, molecularWeight=molecularWeight, lennardJones=lennardJones)
+    spec = Species(label=label, states=states, thermo=thermo, E0=E0, molecularWeight=molecularWeight, lennardJones=lennardJones, collisionModel=collisionModel)
     if InChI != '':
         spec.molecule = [Molecule(InChI=InChI)]
     elif SMILES != '':
@@ -85,7 +85,7 @@ def species(label='', E0=None, states=None, thermo=None, lennardJones=None, mole
     # get the molecular weight from the structure
     if spec.molecularWeight.value == 0.0 and spec.molecule is not None and len(spec.molecule) > 0:
         spec.molecularWeight = Quantity(spec.molecule[0].getMolecularWeight(),"kg/mol")
-
+    
 def States(rotations=None, vibrations=None, torsions=None, frequencyScaleFactor=1.0, spinMultiplicity=1):
     modes = []
     if rotations is not None:
@@ -145,40 +145,6 @@ def pdepreaction(reactants, products, kinetics=None):
     network.netReactions.append(rxn)
     logging.debug('Found pdepreaction "{0}"'.format(rxn))
 
-def collisionModel(type, parameters, bathGas):
-    global network
-    if type.lower() == 'single exponential down':
-
-        # Process parameters, making sure we have a valid set
-        if len(parameters) == 1:
-            if 'alpha' not in parameters:
-                raise InputError('Must specify either "alpha" or ("alpha0","T0","n") as parameters for SingleExponentialDownModel.')
-            alpha0 = Quantity(parameters['alpha'])
-            T0 = Quantity(1000.0,"K")
-            n = Quantity(0.0)
-        elif len(parameters) == 3:
-            if 'alpha0' not in parameters or 'T0' not in parameters or 'n' not in parameters:
-                raise InputError('Must specify either "alpha" or ("alpha0","T0","n") as parameters for SingleExponentialDownModel.')
-            alpha0 = Quantity(parameters['alpha0'])
-            T0 = Quantity(parameters['T0'])
-            n = Quantity(parameters['n'])
-        else:
-            raise InputError('Must specify either "alpha" or ("alpha0","T0","n") as parameters for SingleExponentialDownModel.')
-
-        # Create the collision model object
-        network.collisionModel = SingleExponentialDownModel(alpha0=alpha0, T0=T0, n=n)
-        logging.debug('Collision model set to single exponential down')
-        
-    else:
-        raise NameError('Invalid collision model type "{0}".'.format(type))
-    # Set bath gas composition
-    network.bathGas = {}
-    for key, value in bathGas.iteritems():
-        network.bathGas[key] = float(value)
-    # Normalize bath gas composition
-    for key in network.bathGas:
-        network.bathGas[key] /= sum(network.bathGas.values())
-    
 def temperatures(Tlist=None, Tmin=None, Tmax=None, count=None):
     global measure
     if Tlist is not None:
@@ -393,7 +359,7 @@ def readFile(path, measure0):
         'pdepreaction': pdepreaction,
         'Chebyshev': Chebyshev,
         'PDepArrhenius': PDepArrhenius,
-        'collisionModel': collisionModel,
+        'SingleExponentialDown': SingleExponentialDownModel,
         'temperatures': temperatures,
         'pressures': pressures,
         'energies': energies,
@@ -452,7 +418,15 @@ def readFile(path, measure0):
         # Convert string labels to Species objects
         network.isomers = [speciesDict[label] for label in network.isomers]
         network.reactants = [[speciesDict[label] for label in reactants] for reactants in network.reactants]
-        network.bathGas = dict([(speciesDict[label],value) for label, value in network.bathGas.iteritems()])
+        
+        # Set bath gas composition
+        network.bathGas = {}
+        for label, value in local_context['bathGas'].iteritems():
+            network.bathGas[speciesDict[label]] = float(value)
+        # Normalize bath gas composition
+        for key in network.bathGas:
+            network.bathGas[key] /= sum(network.bathGas.values())
+        
         for reactants in network.reactants:
             reactants.sort()
         for rxn in network.pathReactions:
@@ -485,7 +459,7 @@ def readFile(path, measure0):
                 network.products.append(rxn.products)
             elif len(rxn.products) > 1 and rxn.products not in network.reactants and rxn.products not in network.products:
                 network.products.append(rxn.products)
-                
+        
         # For each configuration with states data but not thermo data,
         # calculate the thermo data
         for isomer in network.isomers:
@@ -515,6 +489,9 @@ def readFile(path, measure0):
                 errorString0 += '* Required Lennard-Jones parameters were not provided.\n'
             if isomer.molecularWeight == 0:
                 errorString0 += '* Required molecular weight was not provided.\n'
+            # Either the isomer or the bath gas (or both) must have collision parameters
+            if isomer.collisionModel is None and not any([spec.collisionModel is not None for spec in network.bathGas]):
+                errorString0 += '* Collisional energy transfer model not provided.\n'
             if errorString0 != '':
                 errorString = 'For unimolecular isomer "{0}":\n{1}\n'.format(isomer, errorString0)
 
