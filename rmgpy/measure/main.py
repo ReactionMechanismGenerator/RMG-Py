@@ -36,6 +36,476 @@ import time
 import os.path
 import numpy
 
+from rmgpy.quantity import Quantity, constants
+
+################################################################################
+
+class MEASURE:
+    """
+    A representation of a Master Equation Automatic Solver for Unimolecular
+    REactions (MEASURE) job. The attributes are:
+    
+    =================== ======================= ================================
+    Attribute           Type                    Description
+    =================== ======================= ================================
+    `inputFile`         ``str``                 The path to the input file
+    `logFile`           ``str``                 The path to the log file
+    `outputFile`        ``str``                 The path to the output file
+    `drawFile`          ``str``                 The path to the PES drawing file (PNG, SVG, PDF, or PS)
+    ------------------- ----------------------- --------------------------------
+    `Tmin`              :class:`Quantity`       The minimum temperature at which to compute :math:`k(T,P)` values
+    `Tmax`              :class:`Quantity`       The maximum temperature at which to compute :math:`k(T,P)` values
+    `Tcount`            ``int``                 The number of temperatures at which to compute :math:`k(T,P)` values
+    `Pmin`              :class:`Quantity`       The minimum pressure at which to compute :math:`k(T,P)` values
+    `Pmax`              :class:`Quantity`       The maximum pressure at which to compute :math:`k(T,P)` values
+    `Pcount`            ``int``                 The number of pressures at which to compute :math:`k(T,P)` values
+    `Emin`              :class:`Quantity`       The minimum energy to use to compute :math:`k(T,P)` values
+    `Emax`              :class:`Quantity`       The maximum energy to use to compute :math:`k(T,P)` values
+    `grainSize`         :class:`Quantity`       The maximum energy grain size to use to compute :math:`k(T,P)` values
+    `grainCount`        ``int``                 The minimum number of energy grains to use to compute :math:`k(T,P)` values
+    `method`            ``str``                 The method to use to reduce the master equation to :math:`k(T,P)` values
+    `model`             ``str``                 The interpolation model to fit to the computed :math:`k(T,P)` values
+    ------------------- ----------------------- --------------------------------
+    `network`           :class:`Network`        The unimolecular reaction network
+    `Tlist`             :class:`Quantity`       An array of temperatures at which to compute :math:`k(T,P)` values
+    `Plist`             :class:`Quantity`       An array of pressures at which to compute :math:`k(T,P)` values
+    `Elist`             :class:`Quantity`       An array of energies to use to compute :math:`k(T,P)` values
+    =================== ======================= ================================
+
+    """
+    
+    def __init__(self, inputFile=None, outputFile=None, logFile=None, drawFile=None):
+        self.inputFile = inputFile
+        self.logFile = logFile
+        self.outputFile = outputFile
+        self.drawFile = drawFile
+        self.clear()
+    
+    def clear(self):
+        """
+        Clear all loaded information about the job (except the file paths).
+        """
+        self.Tmin = None
+        self.Tmax = None
+        self.Tcount = None
+        self.Pmin = None
+        self.Pmax = None
+        self.Pcount = None
+        self.Emin = None
+        self.Emax = None
+        self.grainSize = None
+        self.grainCount = None
+        
+        self.method = None
+        self.model = None
+        
+        self.network = None
+        self.Tlist = None
+        self.Plist = None
+        self.Elist = None
+    
+    def loadInput(self, inputFile=None):
+        """
+        Load a MEASURE job from the input file located at `inputFile`, or
+        from the `inputFile` attribute if not given as a parameter.
+        """
+        from input import readFile
+        
+        # If an input file is specified, then it overrides the inputFile attribute
+        if inputFile is not None:
+            self.inputFile = inputFile
+        # No matter where we got the input filename, make sure that it exists
+        if not os.path.exists(self.inputFile):
+            raise PDepError('Input file "{0}" does not exist.'.format(self.inputFile))
+        
+        # Set locations of log and output files to be in same folder as input file
+        # (unless already set previously)
+        inputDirectory = os.path.dirname(os.path.relpath(self.inputFile))
+        if not self.outputFile:
+            self.outputFile = os.path.join(inputDirectory, 'output.py')
+        if not self.logFile:
+            self.logFile = os.path.join(inputDirectory, 'MEASURE.log')
+        
+        # Load the data from the input file
+        readFile(self.inputFile, self)
+        
+    def loadOutput(self, outputFile=None):
+        """
+        Load a MEASURE job from the output file located at `outputFile`, or
+        from the `outputFile` attribute if not given as a parameter.
+        """
+        from input import readFile
+        
+        # If an input file is specified, then it overrides the inputFile attribute
+        if outputFile is not None:
+            self.outputFile = outputFile
+        # No matter where we got the input filename, make sure that it exists
+        if not os.path.exists(self.outputFile):
+            raise PDepError('Output file "{0}" does not exist.'.format(self.outputFile))
+        
+        # Load the data from the output file
+        readFile(self.outputFile, self)
+        
+    def saveInput(self, inputFile=None):
+        """
+        Save a MEASURE job to the output file located at `outputFile`, or
+        from the `outputFile` attribute if not given as a parameter.
+        """
+        from output import writeFile
+        
+        # If an input file is specified, then it overrides the inputFile attribute
+        if inputFile is not None:
+            self.inputFile = inputFile
+        
+        writeFile(self.inputFile, self)
+
+    def saveOutput(self, outputFile=None):
+        """
+        Save a MEASURE job to the output file located at `outputFile`, or
+        from the `outputFile` attribute if not given as a parameter.
+        """
+        from output import writeFile
+        
+        # If an output file is specified, then it overrides the outputFile attribute
+        if outputFile is not None:
+            self.outputFile = outputFile
+        
+        writeFile(self.outputFile, self)
+
+    def draw(self):
+        """
+        Draw the potential energy surface corresponding to the loaded MEASURE 
+        calculation.
+        """
+        logging.info('Drawing potential energy surface...')
+        self.network.drawPotentialEnergySurface(self.drawFile)
+    
+    def compute(self):
+        """
+        Compute the pressure-dependent rate coefficients :math:`k(T,P)` for
+        the loaded MEASURE calculation.
+        """
+        
+        # Only proceed if the input network is valid
+        if self.network is None or self.network.errorString != '':
+            raise PDepError('Attempted to run MEASURE calculation with invalid input.')
+    
+        Nisom = len(self.network.isomers)
+        Nreac = len(self.network.reactants)
+        Nprod = len(self.network.products)
+
+        # Automatically choose a suitable set of energy grains if they were not
+        # explicitly specified in the input file
+        if self.Emin is not None and self.Emax is not None:
+            self.Elist = Quantity(self.getEnergyGrains(self.Emin.value, self.Emax.value, self.grainSize.value, self.grainCount), "J/mol")
+        else:
+            logging.info('Automatically determining energy grains...')
+            self.Elist = Quantity(self.network.autoGenerateEnergyGrains(Tmax=numpy.max(self.Tlist.values), grainSize=self.grainSize.value, Ngrains=self.grainCount), "J/mol")
+        
+        network = self.network   
+        Tmin = self.Tmin.value
+        Tmax = self.Tmax.value
+        Tlist = self.Tlist.values
+        Pmin = self.Pmin.value
+        Pmax = self.Pmax.value
+        Plist = self.Plist.values
+        Elist = self.Elist.values
+        method = self.method
+        model = self.model
+        
+        # Calculate the rate coefficients
+        K, p0 = network.calculateRateCoefficients(Tlist, Plist, Elist, method)
+
+        # Fit interpolation model
+        from rmgpy.reaction import Reaction
+        from rmgpy.measure.reaction import fitInterpolationModel
+        if model[0] != '':
+            logging.info('Fitting {0} interpolation models...'.format(model[0]))
+        configurations = []
+        configurations.extend([[isom] for isom in network.isomers])
+        configurations.extend([reactants for reactants in network.reactants])
+        configurations.extend([products for products in network.products])
+        for i in range(Nisom+Nreac+Nprod):
+            for j in range(Nisom+Nreac):
+                if i != j:
+                    # Check that we have nonzero k(T,P) values
+                    if (numpy.any(K[:,:,i,j]) and not numpy.all(K[:,:,i,j])):
+                        raise NetworkError('Zero rate coefficient encountered while updating network {0}.'.format(network))
+
+                    # Make a new net reaction
+                    netReaction = Reaction(
+                        reactants=configurations[j],
+                        products=configurations[i],
+                        kinetics=None,
+                        reversible=(i<Nisom+Nreac),
+                    )
+                    network.netReactions.append(netReaction)
+                    
+                    # Set/update the net reaction kinetics using interpolation model
+                    netReaction.kinetics = fitInterpolationModel(netReaction, Tlist, Plist,
+                        K[:,:,i,j],
+                        model, Tmin, Tmax, Pmin, Pmax, errorCheck=True)
+        logging.info('')
+    
+    def loadFAMEInput(self, path, moleculeDict=None):
+        """
+        Load the contents of a FAME input file into the MEASURE object. FAME
+        is an early version of MEASURE written in Fortran and used by RMG-Java.
+        This script enables importing FAME input files into MEASURE so we can
+        use the additional functionality that MEASURE provides. Note that it
+        is mostly designed to load the FAME input files generated automatically
+        by RMG-Java, and may not load hand-crafted FAME input files. If you
+        specify a `moleculeDict`, then this script will use it to associate
+        the species with their structures.
+        """
+        
+        from network import Network
+        from collision import SingleExponentialDown
+        from rmgpy.species import Species, TransitionState
+        from rmgpy.reaction import Reaction
+        from rmgpy.species import LennardJones
+        from rmgpy.statmech import HarmonicOscillator, HinderedRotor, StatesModel
+        from rmgpy.thermo import ThermoData
+        from rmgpy.kinetics import Arrhenius
+
+        def readMeaningfulLine(f):
+            line = f.readline()
+            while line != '':
+                line = line.strip()
+                if len(line) > 0 and line[0] != '#':
+                    return line
+                else:
+                    line = f.readline()
+            return ''
+
+        moleculeDict = moleculeDict or {}
+
+        logging.info('Loading file "{0}"...'.format(path))
+        f = open(path)
+
+        # Read method
+        method = readMeaningfulLine(f).lower()
+        if method == 'modifiedstrongcollision': 
+            self.method = 'modified strong collision'
+        elif method == 'reservoirstate': 
+            self.method = 'reservoir state'
+
+        # Read temperatures
+        Tcount, Tunits, Tmin, Tmax = readMeaningfulLine(f).split()
+        self.Tmin = Quantity(float(Tmin), Tunits) 
+        self.Tmax = Quantity(float(Tmax), Tunits)
+        self.Tcount = int(Tcount)
+        Tlist = []
+        for i in range(int(Tcount)):
+            Tlist.append(float(readMeaningfulLine(f)))
+        self.Tlist = Quantity(Tlist, Tunits)
+        
+        # Read pressures
+        Pcount, Punits, Pmin, Pmax = readMeaningfulLine(f).split()
+        self.Pmin = Quantity(float(Pmin), Punits) 
+        self.Pmax = Quantity(float(Pmax), Punits)
+        self.Pcount = int(Pcount)
+        Plist = []
+        for i in range(int(Pcount)):
+            Plist.append(float(readMeaningfulLine(f)))
+        self.Plist = Quantity(Plist, Punits)
+        
+        # Read interpolation model
+        model = readMeaningfulLine(f).split()
+        if model[0].lower() == 'chebyshev':
+            self.model = ['chebyshev', int(model[1]), int(model[2])]
+        elif model[0].lower() == 'pdeparrhenius':
+            self.model = ['pdeparrhenius']
+        
+        # Read grain size or number of grains
+        data = readMeaningfulLine(f).split()
+        if data[0].lower() == 'numgrains':
+            self.grainCount = int(data[1])
+            self.grainSize = Quantity(0.0, "J/mol")
+        elif data[0].lower() == 'grainsize':
+            self.grainCount = 0
+            self.grainSize = Quantity(float(data[2]), data[1])
+
+        # Create the Network
+        self.network = Network()
+
+        # Read collision model
+        data = readMeaningfulLine(f)
+        assert data.lower() == 'singleexpdown'
+        alpha0units, alpha0 = readMeaningfulLine(f).split()
+        T0units, T0 = readMeaningfulLine(f).split()
+        n = readMeaningfulLine(f)
+        collisionModel = SingleExponentialDown(
+            alpha0 = Quantity(float(alpha0), alpha0units),
+            T0 = Quantity(float(T0), T0units),
+            n = Quantity(float(n)),
+        )
+        
+        speciesDict = {}
+
+        # Read bath gas parameters
+        bathGas = Species(label='bath_gas', collisionModel=collisionModel)
+        molWtunits, molWt = readMeaningfulLine(f).split()
+        if molWtunits == 'u': molWtunits = 'g/mol'
+        bathGas.molecularWeight = Quantity(float(molWt), molWtunits)
+        sigmaLJunits, sigmaLJ = readMeaningfulLine(f).split()
+        epsilonLJunits, epsilonLJ = readMeaningfulLine(f).split()
+        bathGas.lennardJones = LennardJones(
+            sigma = Quantity(float(sigmaLJ), sigmaLJunits),
+            epsilon = Quantity(float(epsilonLJ), epsilonLJunits),
+        )
+        self.network.bathGas = {bathGas: 1.0}
+        
+        # Read species data
+        Nspec = int(readMeaningfulLine(f))
+        for i in range(Nspec):
+            species = Species()
+            
+            # Read species label
+            species.label = readMeaningfulLine(f)
+            speciesDict[species.label] = species
+            if species.label in moleculeDict:
+                species.molecule = [moleculeDict[species.label]]
+            
+            # Read species E0
+            E0units, E0 = readMeaningfulLine(f).split()
+            species.E0 = Quantity(float(E0), E0units)
+            
+            # Read species thermo data
+            H298units, H298 = readMeaningfulLine(f).split()
+            S298units, S298 = readMeaningfulLine(f).split()
+            Cpcount, Cpunits = readMeaningfulLine(f).split()
+            Cpdata = []
+            for i in range(int(Cpcount)):
+                Cpdata.append(float(readMeaningfulLine(f)))
+            species.thermo = ThermoData(
+                H298 = Quantity(float(H298), H298units),
+                S298 = Quantity(float(S298), S298units),
+                Tdata = Quantity([300,400,500,600,800,1000,1500], "K"),
+                Cpdata = Quantity(Cpdata, Cpunits),
+            )
+            
+            # Read species collision parameters
+            molWtunits, molWt = readMeaningfulLine(f).split()
+            if molWtunits == 'u': molWtunits = 'g/mol'
+            species.molecularWeight = Quantity(float(molWt), molWtunits)
+            sigmaLJunits, sigmaLJ = readMeaningfulLine(f).split()
+            epsilonLJunits, epsilonLJ = readMeaningfulLine(f).split()
+            species.lennardJones = LennardJones(
+                sigma = Quantity(float(sigmaLJ), sigmaLJunits),
+                epsilon = Quantity(float(epsilonLJ), epsilonLJunits),
+            )
+            
+            species.states = StatesModel()
+            
+            # Read species vibrational frequencies
+            freqCount, freqUnits = readMeaningfulLine(f).split()
+            frequencies = []
+            for j in range(int(freqCount)):
+                frequencies.append(float(readMeaningfulLine(f)))
+            species.states.modes.append(HarmonicOscillator(
+                frequencies = Quantity(frequencies, freqUnits),
+            ))
+            
+            # Read species external rotors
+            rotCount, rotUnits = readMeaningfulLine(f).split()
+            if int(rotCount) > 0:
+                raise NotImplementedError('Cannot handle external rotational modes in FAME input.')
+            
+            # Read species internal rotors
+            freqCount, freqUnits = readMeaningfulLine(f).split()
+            frequencies = []
+            for j in range(int(freqCount)):
+                frequencies.append(float(readMeaningfulLine(f)))
+            barrCount, barrUnits = readMeaningfulLine(f).split()
+            barriers = []
+            for j in range(int(barrCount)):
+                barriers.append(float(readMeaningfulLine(f)))
+            if barrUnits == 'cm^-1':
+                barrUnits = 'J/mol'
+                barriers = [barr * constants.h * constants.c * constants.Na * 100. for barr in barriers]
+            elif barrUnits in ['Hz', 's^-1']:
+                barrUnits = 'J/mol'
+                barriers = [barr * constants.h * constants.Na for barr in barriers]
+            elif barrUnits != 'J/mol':
+                raise Exception('Unexpected units "{0}" for hindered rotor barrier height.'.format(barrUnits))
+            inertia = [V0 / 2.0 / (nu * constants.c * 100.)**2 / constants.Na for nu, V0 in zip(frequencies, barriers)]
+            for I, V0 in zip(inertia, barriers):
+                species.states.modes.append(HinderedRotor(
+                    inertia = Quantity(I,"kg*m^2"), 
+                    barrier = Quantity(V0,barrUnits), 
+                    symmetry = 1,
+                ))
+                
+            # Read overall symmetry number
+            species.states.spinMultiplicity = int(readMeaningfulLine(f))
+            
+        # Read isomer, reactant channel, and product channel data
+        Nisom = int(readMeaningfulLine(f))
+        Nreac = int(readMeaningfulLine(f))
+        Nprod = int(readMeaningfulLine(f))
+        for i in range(Nisom):
+            data = readMeaningfulLine(f).split()
+            assert data[0] == '1'
+            self.network.isomers.append(speciesDict[data[1]])
+        for i in range(Nreac):
+            data = readMeaningfulLine(f).split()
+            assert data[0] == '2'
+            self.network.reactants.append([speciesDict[data[1]], speciesDict[data[2]]])
+        for i in range(Nprod):
+            data = readMeaningfulLine(f).split()
+            if data[0] == '1':
+                self.network.products.append([speciesDict[data[1]]])
+            elif data[0] == '2':
+                self.network.products.append([speciesDict[data[1]], speciesDict[data[2]]])
+
+        # Read path reactions
+        Nrxn = int(readMeaningfulLine(f))
+        for i in range(Nrxn):
+            
+            # Read and ignore reaction equation
+            equation = readMeaningfulLine(f)
+            reaction = Reaction(transitionState=TransitionState(), reversible=True)
+            self.network.pathReactions.append(reaction)
+            
+            # Read reactant and product indices
+            data = readMeaningfulLine(f).split()
+            reac = int(data[0]) - 1
+            prod = int(data[1]) - 1
+            if reac < Nisom:
+                reaction.reactants = [self.network.isomers[reac]]
+            elif reac < Nisom+Nreac:
+                reaction.reactants = self.network.reactants[reac-Nisom]
+            else:
+                reaction.reactants = self.network.products[reac-Nisom-Nreac]
+            if prod < Nisom:
+                reaction.products = [self.network.isomers[prod]]
+            elif prod < Nisom+Nreac:
+                reaction.products = self.network.reactants[prod-Nisom]
+            else:
+                reaction.products = self.network.products[prod-Nisom-Nreac]
+            
+            # Read reaction E0
+            E0units, E0 = readMeaningfulLine(f).split()
+            reaction.transitionState.E0 = Quantity(float(E0), E0units)
+            
+            # Read high-pressure limit kinetics
+            data = readMeaningfulLine(f)
+            assert data.lower() == 'arrhenius'
+            Aunits, A = readMeaningfulLine(f).split()
+            if '/' in Aunits:
+                index = Aunits.find('/')
+                Aunits = '{0}/({1})'.format(Aunits[0:index], Aunits[index+1:])
+            Eaunits, Ea = readMeaningfulLine(f).split()
+            n = readMeaningfulLine(f)
+            reaction.kinetics = Arrhenius(
+                A = Quantity(float(A), Aunits),
+                Ea = Quantity(float(Ea), Eaunits),
+                n = Quantity(float(n)),
+            )
+    
+        f.close()
+
 ################################################################################
 
 def initializeLogging(level, logFile=None):
@@ -115,10 +585,10 @@ def execute(inputFile, outputFile=None, drawFile=None, logFile=None, quiet=False
         
     # Initialize the logging system
     if logFile is not None:
-        log = os.path.abspath(logFile)
+        logFile = os.path.abspath(logFile)
     else:
-        log = os.path.join(outputDirectory, 'MEASURE.log')  
-    initializeLogging(level, log)
+        logFile = os.path.join(outputDirectory, 'MEASURE.log')  
+    initializeLogging(level, logFile)
     
     # Log start timestamp
     logging.info('MEASURE execution initiated at ' + time.asctime() + '\n')
@@ -126,73 +596,22 @@ def execute(inputFile, outputFile=None, drawFile=None, logFile=None, quiet=False
     # Log header
     logHeader()
     
+    # Initialize the MEASURE job
+    measure = MEASURE(inputFile=inputFile, outputFile=outputFile, logFile=logFile, drawFile=drawFile)
+        
     # Load input file
-    from rmgpy.measure.input import readFile
-    params = readFile(os.path.relpath(inputFile))
-
-    # Only proceed if the input network is valid
-    if params is not None and params[0].errorString == '':
-
-        network, Tlist, Plist, Elist, method, model, Tmin, Tmax, Pmin, Pmax = params
-
-        Nisom = len(network.isomers)
-        Nreac = len(network.reactants)
-        Nprod = len(network.products)
-
-        # Draw potential energy surface
+    measure.loadInput()
+    
+    # Proceed with the desired job
+    if measure.network is not None and measure.network.errorString == '':
         if drawFile is not None:
-            logging.info('Drawing potential energy surface...')
-            network.drawPotentialEnergySurface(drawFile)
-
+            # Draw the potential energy surface
+            measure.draw()
         else:
-            # Automatically choose a suitable set of energy grains if they were not
-            # explicitly specified in the input file
-            if len(Elist) == 2:
-                logging.info('Automatically determining energy grains...')
-                grainSize, Ngrains = Elist
-                Elist = network.autoGenerateEnergyGrains(Tmax=Tmax, grainSize=grainSize, Ngrains=Ngrains)
-                
-            # Calculate the rate coefficients
-            K, p0 = network.calculateRateCoefficients(Tlist, Plist, Elist, method)
-
-            # Fit interpolation model
-            from rmgpy.reaction import Reaction
-            from rmgpy.measure.reaction import fitInterpolationModel
-            if model[0] != '':
-                logging.info('Fitting {0} interpolation models...'.format(model[0]))
-            configurations = []
-            configurations.extend([[isom] for isom in network.isomers])
-            configurations.extend([reactants for reactants in network.reactants])
-            configurations.extend([products for products in network.products])
-            for i in range(Nisom+Nreac+Nprod):
-                for j in range(Nisom+Nreac):
-                    if i != j:
-                        # Check that we have nonzero k(T,P) values
-                        if (numpy.any(K[:,:,i,j]) and not numpy.all(K[:,:,i,j])):
-                            raise NetworkError('Zero rate coefficient encountered while updating network {0}.'.format(network))
-
-                        # Make a new net reaction
-                        netReaction = Reaction(
-                            reactants=configurations[j],
-                            products=configurations[i],
-                            kinetics=None,
-                            reversible=(i<Nisom+Nreac),
-                        )
-                        network.netReactions.append(netReaction)
-                        
-                        # Set/update the net reaction kinetics using interpolation model
-                        netReaction.kinetics = fitInterpolationModel(netReaction, Tlist, Plist,
-                            K[:,:,i,j],
-                            model, Tmin, Tmax, Pmin, Pmax, errorCheck=True)
-            logging.info('')
-            
-            # Save results to file
-            from rmgpy.measure.output import writeFile
-            if outputFile is not None:
-                out = os.path.relpath(outputFile)
-            else:
-                out = os.path.join(outputDirectory, 'output.py')
-            writeFile(out, network, Tlist, Plist, Elist, method, model, Tmin, Tmax, Pmin, Pmax)
+            # Compute the k(T,P) values
+            measure.compute()
+            # Save results to output file
+            measure.saveOutput()
 
     # Log end timestamp
     logging.info('')

@@ -46,7 +46,8 @@ cimport numpy
 import logging
 import cython
 
-from rmgpy.quantity import constants
+from rmgpy.quantity import Quantity, constants
+from rmgpy.quantity cimport Quantity
 
 ################################################################################
 
@@ -105,7 +106,7 @@ cpdef double calculateCollisionFrequency(species, double T, double P, bathGas):
 def calculateCollisionEfficiency(species, double T,
     numpy.ndarray[numpy.float64_t,ndim=1] Elist,
     numpy.ndarray[numpy.float64_t,ndim=1] densStates,
-    collisionModel, double E0, double Ereac):
+    double dEdown, double E0, double Ereac):
     """
     Calculate an efficiency factor for collisions, particularly useful for the
     modified strong collision method. The collisions involve the given 
@@ -123,14 +124,10 @@ def calculateCollisionEfficiency(species, double T,
 
     """
 
-    cdef double alpha, dE, FeNum, FeDen, Delta1, Delta2, DeltaN, Delta, value, beta
+    cdef double dE, FeNum, FeDen, Delta1, Delta2, DeltaN, Delta, value, beta
     cdef double R = constants.R
     cdef int Ngrains, r
 
-    if not isinstance(collisionModel, SingleExponentialDownModel):
-        raise CollisionError('Calculation of collision efficients requires the single exponential down collision model.')
-    alpha = collisionModel.getAlpha(T)
-    
     # Ensure that the barrier height is sufficiently above the ground state
     # Otherwise invalid efficiencies are observed
     if Ereac - E0 < 100000:
@@ -167,9 +164,9 @@ def calculateCollisionEfficiency(species, double T,
     Delta1 /= DeltaN
     Delta2 /= DeltaN
 
-    Delta = Delta1 - (Fe * R * T) / (alpha + Fe * R * T) * Delta2
+    Delta = Delta1 - (Fe * R * T) / (dEdown + Fe * R * T) * Delta2
 
-    beta = (alpha / (alpha + Fe * R * T))**2 / Delta
+    beta = (dEdown / (dEdown + Fe * R * T))**2 / Delta
 
     if beta > 1:
         logging.warning('Collision efficiency {0:.3f} calculated at {1:g} K for species {2} is greater than unity, so it will be set to unity.'.format(beta, T, species))
@@ -198,7 +195,7 @@ cdef class CollisionModel:
 
 ################################################################################
 
-cdef class SingleExponentialDownModel(CollisionModel):
+cdef class SingleExponentialDown(CollisionModel):
     r"""
     Refactoring of collision and reaction modules to full Cython syntax.
     A single exponential down collision model, based around the collisional 
@@ -226,18 +223,34 @@ cdef class SingleExponentialDownModel(CollisionModel):
     
     """
 
-    cdef public double alpha0, T0, n
+    cdef public Quantity alpha0, T0, n
 
-    def __init__(self, alpha0=0.0, T0=1.0, n=0.0):
-        self.alpha0 = alpha0
-        self.T0 = T0
-        self.n = n
+    def __init__(self, alpha0=None, T0=None, n=None):
+        if alpha0 is not None:
+            self.alpha0 = Quantity(alpha0)
+        else:
+            self.alpha0 = None
+        if T0 is not None:
+            self.T0 = Quantity(T0)
+        else:
+            self.T0 = None
+        if n is not None:
+            self.n = Quantity(n)
+        else:
+            self.n = None
+
+    def __repr__(self):
+        """
+        Return a string representation that can be used to reconstruct the
+        SingleExponentialDownModel object.
+        """
+        return 'SingleExponentialDown(alpha0={0!r}, T0={1!r}, n={2!r})'.format(self.alpha0, self.T0, self.n)
 
     def __reduce__(self):
         """
         A helper function used when pickling an object.
         """
-        return (SingleExponentialDownModel, (self.alpha0, self.T0, self.n))
+        return (SingleExponentialDown, (self.alpha0, self.T0, self.n))
 
     cpdef double getAlpha(self, double T):
         """
@@ -246,21 +259,28 @@ cdef class SingleExponentialDownModel(CollisionModel):
         transferred in a deactivating collision
         :math:`\\left< \\Delta E_\\mathrm{d} \\right>`, and has units of J/mol.
         """
-        return self.alpha0 * (T / self.T0) ** self.n
+        if self.alpha0 is None:
+            return 0.0
+        elif self.T0 is None or self.n is None:
+            return self.alpha0.value
+        else:
+            return self.alpha0.value * (T / self.T0.value) ** self.n.value
 
     def generateCollisionMatrix(self,
         numpy.ndarray[numpy.float64_t,ndim=1] Elist,
         double T,
-        numpy.ndarray[numpy.float64_t,ndim=1] densStates):
+        numpy.ndarray[numpy.float64_t,ndim=1] densStates,
+        double dEdown):
         """
         Generate and return the collision matrix
         :math:`\\matrix{M}_\\mathrm{coll} / \\omega = \\matrix{P} - \\matrix{I}`
         corresponding to this collision model for a given set of energies
         `Elist` in J/mol, temperature `T` in K, and isomer density of states
-        `densStates`.
+        `densStates`. You must also supply the average energy transferred in
+        a deactivating collision `dEdown` in J/mol.
         """
 
-        cdef double alpha = 1.0/self.getAlpha(T), beta = 1.0 / (constants.R * T)
+        cdef double alpha = 1.0/dEdown, beta = 1.0 / (constants.R * T)
         cdef double C, left, right
         cdef int Ngrains, start, i, r
         cdef numpy.ndarray[numpy.float64_t,ndim=2] P

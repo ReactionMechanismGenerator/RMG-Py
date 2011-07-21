@@ -152,6 +152,8 @@ def writeSpecies(f, spec):
         f.write('    lennardJones={0!r},\n'.format(spec.lennardJones))
     if spec.molecularWeight is not None:
         f.write('    molecularWeight={0!r},\n'.format(spec.molecularWeight))
+    if spec.collisionModel is not None:
+        f.write('    collisionModel={0!r},\n'.format(spec.collisionModel))
     f.write(')\n\n')
 
 ################################################################################
@@ -230,32 +232,13 @@ def writePDepReaction(f, rxn):
 
 ################################################################################
 
-def writeFile(path, network, Tlist, Plist, Elist, method, model, Tmin, Tmax, Pmin, Pmax):
+def writeFile(path, measure):
     """
     Write a MEASURE input file to `path` on disk. The parameters needed mirror
-    those returned by :meth:`readFile()`:
-
-    * The :class:`Network` object `network` representing the unimolecular
-      reaction network
-
-    * The list of temperatures `Tlist` in K to be used in the master equation
-      calculation
-
-    * The list of pressures `Plist` in Pa to be used in the master equation
-      calculation
-
-    * A tuple `Elist` containing the maximum energy grain size in J/mol and the
-      minimum number of energy grains to use in the master equation calculation;
-      whichever of these results in more energy grains
-
-    * The approximate `method` to use to estimate the phenomenological rate
-      coefficients :math:`k(T,P)`
-
-    * The interpolation `model` to fit the estimated :math:`k(T,P)` values to
-
-    If successful, the file created on disk should be able to be read in by
-    :meth:`readInput()` with (hopefully) no loss of fidelity.
+    those returned by :meth:`readFile()`.
     """
+
+    network = measure.network   
 
     f = open(path, 'w')
 
@@ -280,35 +263,36 @@ def writeFile(path, network, Tlist, Plist, Elist, method, model, Tmin, Tmax, Pmi
     writeNetworkPathReactions(f, network)
     f.write('################################################################################\n\n')
 
-    f.write('collisionModel(\n')
-    if isinstance(network.collisionModel, SingleExponentialDownModel):
-        f.write('    type="single exponential down",\n')
-        f.write('    parameters={\n')
-        f.write('        "alpha0": ({0:g},"kJ/mol"),\n'.format(network.collisionModel.alpha0/1000.0))
-        f.write('        "T0": ({0:g},"K"),\n'.format(network.collisionModel.T0))
-        f.write('        "n": {0:g},\n'.format(network.collisionModel.n))
-        f.write('    },\n')
-        f.write('    bathGas={\n')
-        for spec, frac in network.bathGas.iteritems():
-            f.write('        "{0}": {1:g},\n'.format(spec, frac))
-        f.write('    },\n')
-    f.write(')\n\n')
+    f.write('bathGas = {\n')
+    for spec, frac in network.bathGas.iteritems():
+        f.write('    "{0}": {1:g},\n'.format(spec, frac))
+    f.write('}\n\n')
     
-    if Tmin is not None and Tmax is not None:
-        f.write('temperatures(Tmin=({0},"K"), Tmax=({1},"K"), count={2})\n'.format(Tmin, Tmax, len(Tlist)))
+    if measure.Tmin is not None and measure.Tmax is not None and measure.Tcount is not None:
+        f.write('temperatures(Tmin={0!r}, Tmax={1!r}, count={2})\n'.format(measure.Tmin, measure.Tmax, measure.Tcount))
     else:
-        f.write('temperatures(([{0}],"K"))\n'.format(', '.join([('{0:g}'.format(T)) for T in Tlist])))
-    if Pmin is not None and Pmax is not None:
-        f.write('pressures(Pmin=({0},"bar"), Pmax=({1},"bar"), count={2})\n'.format(Pmin/1e5, Pmax/1e5, len(Plist)))
+        f.write('temperatures({0!r})\n'.format(Tlist))
+    if measure.Pmin is not None and measure.Pmax is not None and measure.Pcount is not None:
+        f.write('pressures(Pmin={0!r}, Pmax={1!r}, count={2})\n'.format(measure.Pmin, measure.Pmax, measure.Pcount))
     else:
-        f.write('pressures(([{0}],"bar"))\n'.format(', '.join([('{0:g}'.format(P/1e5)) for P in Plist])))
-    dE = Elist[1] - Elist[0]; count = len(Elist)
-    f.write('energies(dE=({0:g},"kJ/mol"), count={1:d})\n'.format(dE/1000.0, count))
-    f.write('method("{0}")\n'.format(method))
-    if model[0].lower() == 'chebyshev':
-        f.write('interpolationModel("chebyshev", {0:d}, {1:d})\n'.format(model[1], model[2]))
+        f.write('pressures({0!r})\n'.format(Plist))
+    
+    f.write('energies(')
+    if measure.Emin is not None and measure.Emax is not None:
+        f.write('Emin={0!r}, Emax={1!r}, '.format(measure.Emin, measure.Emax))
+    if measure.grainSize is not None and measure.grainCount is not None:
+        f.write('dE={0!r}, count={1}'.format(measure.grainSize, measure.grainCount))
+    elif measure.grainSize is not None:
+        f.write('dE={0!r}'.format(measure.grainSize))
+    elif measure.grainCount is not None:
+        f.write('count={0}'.format(measure.grainCount))
+    f.write(')\n')
+    
+    f.write('method("{0}")\n'.format(measure.method))
+    if measure.model[0].lower() == 'chebyshev':
+        f.write('interpolationModel("chebyshev", {0:d}, {1:d})\n'.format(measure.model[1], measure.model[2]))
     else:
-        f.write('interpolationModel("{0}")\n'.format(model[0].lower()))
+        f.write('interpolationModel("{0}")\n'.format(measure.model[0].lower()))
     f.write('\n')
     
     if len(network.netReactions) > 0:

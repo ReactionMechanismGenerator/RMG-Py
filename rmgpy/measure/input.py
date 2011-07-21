@@ -46,28 +46,18 @@ from rmgpy.kinetics import Arrhenius, PDepArrhenius, Chebyshev
 from rmgpy.thermo import *
 
 from network import Network
-from collision import SingleExponentialDownModel
+from collision import SingleExponentialDown
 
 ################################################################################
+
+# The current MEASURE job object
+measure = None
 
 # The current network
 network = None
 
 # A dict of the species in the input file, enabling lookup by label
 speciesDict = {}
-
-# The temperatures and pressures to consider
-Tlist = None; Tparams = None
-Plist = None; Pparams = None
-
-# The energy grains to use
-Elist = None
-
-# The method to use
-method = ''
-
-# The interpolation model to use
-model = ['']
 
 ################################################################################
 
@@ -81,10 +71,10 @@ class InputError(Exception):
 
 ################################################################################
 
-def species(label='', E0=None, states=None, thermo=None, lennardJones=None, molecularWeight=0.0, SMILES='', InChI=''):
+def species(label='', E0=None, states=None, thermo=None, lennardJones=None, molecularWeight=0.0, collisionModel=None, SMILES='', InChI=''):
     global speciesDict
     if label == '': raise InputError('Missing "label" attribute in species() block.')
-    spec = Species(label=label, states=states, thermo=thermo, E0=E0, molecularWeight=molecularWeight, lennardJones=lennardJones)
+    spec = Species(label=label, states=states, thermo=thermo, E0=E0, molecularWeight=molecularWeight, lennardJones=lennardJones, collisionModel=collisionModel)
     if InChI != '':
         spec.molecule = [Molecule(InChI=InChI)]
     elif SMILES != '':
@@ -95,7 +85,7 @@ def species(label='', E0=None, states=None, thermo=None, lennardJones=None, mole
     # get the molecular weight from the structure
     if spec.molecularWeight.value == 0.0 and spec.molecule is not None and len(spec.molecule) > 0:
         spec.molecularWeight = Quantity(spec.molecule[0].getMolecularWeight(),"kg/mol")
-
+    
 def States(rotations=None, vibrations=None, torsions=None, frequencyScaleFactor=1.0, spinMultiplicity=1):
     modes = []
     if rotations is not None:
@@ -155,99 +145,67 @@ def pdepreaction(reactants, products, kinetics=None):
     network.netReactions.append(rxn)
     logging.debug('Found pdepreaction "{0}"'.format(rxn))
 
-def collisionModel(type, parameters, bathGas):
-    global network
-    if type.lower() == 'single exponential down':
-
-        # Process parameters, making sure we have a valid set
-        if len(parameters) == 1:
-            if 'alpha' not in parameters:
-                raise InputError('Must specify either "alpha" or ("alpha0","T0","n") as parameters for SingleExponentialDownModel.')
-            alpha0 = Quantity(parameters['alpha']).value
-            T0 = 1000.0
-            n = 0.0
-        elif len(parameters) == 3:
-            if 'alpha0' not in parameters or 'T0' not in parameters or 'n' not in parameters:
-                raise InputError('Must specify either "alpha" or ("alpha0","T0","n") as parameters for SingleExponentialDownModel.')
-            alpha0 = Quantity(parameters['alpha0']).value
-            T0 = Quantity(parameters['T0']).value
-            n = Quantity(parameters['n']).value
-        else:
-            raise InputError('Must specify either "alpha" or ("alpha0","T0","n") as parameters for SingleExponentialDownModel.')
-
-        # Create the collision model object
-        network.collisionModel = SingleExponentialDownModel(alpha0=alpha0, T0=T0, n=n)
-        logging.debug('Collision model set to single exponential down')
-        
-    else:
-        raise NameError('Invalid collision model type "{0}".'.format(type))
-    # Set bath gas composition
-    network.bathGas = {}
-    for key, value in bathGas.iteritems():
-        network.bathGas[key] = float(value)
-    # Normalize bath gas composition
-    for key in network.bathGas:
-        network.bathGas[key] /= sum(network.bathGas.values())
-    
-def temperatures(Tlist0=None, Tmin=None, Tmax=None, count=None):
-    global Tlist, Tparams
-    if Tlist0 is not None:
+def temperatures(Tlist=None, Tmin=None, Tmax=None, count=None):
+    global measure
+    if Tlist is not None:
         # We've been provided a list of specific temperatures to use
-        Tlist = Quantity(Tlist0)[0].value
-        Tparams = None
+        measure.Tlist = Quantity(Tlist)
+        measure.Tmin = Quantity(numpy.min(measure.Tlist.values),"K")
+        measure.Tmax = Quantity(numpy.max(measure.Tlist.values),"K")
     elif Tmin is not None and Tmax is not None and count is not None:
         # We've been provided a temperature range and number of temperatures to use
         # We defer choosing the actual temperatures because they depend on the
         # choice of interpolation model
-        Tlist = None
-        Tparams = [Quantity(Tmin).value, Quantity(Tmax).value, count]
+        measure.Tmin = Quantity(Tmin)
+        measure.Tmax = Quantity(Tmax)
+        measure.Tcount = count
     else:
         raise SyntaxError('Must specify either a list of temperatures or Tmin, Tmax, and count.')
 
-def pressures(Plist0=None, Pmin=None, Pmax=None, count=None):
-    global Plist, Pparams
-    if Plist0 is not None:
+def pressures(Plist=None, Pmin=None, Pmax=None, count=None):
+    global measure
+    if Plist is not None:
         # We've been provided a list of specific pressures to use
-        Plist = Quantity(Plist0).value
-        Pparams = None
+        measure.Plist = Quantity(Plist)
+        measure.Pmin = Quantity(numpy.min(measure.Plist.values),"Pa")
+        measure.Pmax = Quantity(numpy.max(measure.Plist.values),"Pa")
     elif Pmin is not None and Pmax is not None and count is not None:
         # We've been provided a pressures range and number of pressures to use
         # We defer choosing the actual pressures because they depend on the
         # choice of interpolation model
-        Plist = None
-        Pparams = [Quantity(Pmin).value, Quantity(Pmax).value, count]
+        measure.Pmin = Quantity(Pmin)
+        measure.Pmax = Quantity(Pmax)
+        measure.Pcount = count
     else:
         raise SyntaxError('Must specify either a list of pressures or Pmin, Pmax, and count.')
 
 def energies(Emin=None, Emax=None, dE=None, count=None):
-    global Elist, network
+    global measure
     if dE is not None or count is not None:
-        dE = Quantity(dE).value
-        if dE is None: dE = 0.0
-        if count is None: count = 0
+        if dE is not None:
+            measure.grainSize = Quantity(dE)
+        if count is not None:
+            measure.grainCount = count
         if Emin is not None and Emax is not None:
-            Emin = Quantity(Emin).value
-            Emax = Quantity(Emax).value
-            Elist = network.getEnergyGrains(Emin, Emax, dE, count)
-        else:
-            Elist = (dE, count)
+            measure.Emin = Quantity(Emin)
+            measure.Emax = Quantity(Emax)
     else:
         raise InputError('Must specify either dE or count in energies() block.')
 
 def _method(name):
-    global method
+    global measure
     if name.lower() not in ['modified strong collision', 'reservoir state', 'chemically-significant eigenvalues', 'branching ratios']:
         raise InputError('Invalid method "{0}"; see documentation for available methods.'.format(name))
-    method = name
+    measure.method = name
 
 def interpolationModel(name, *args):
-    global model
-    model = [name]
-    model.extend(list(args))
+    global measure
+    measure.model = [name]
+    measure.model.extend(list(args))
 
 ################################################################################
 
-def generateThermoFromStates(species):
+def generateThermoFromStates(species, Tlist):
     """
     For a given :class:`Species` object `species` with molecular degrees of
     freedom data in its ``states`` attribute, generate a corresponding thermo
@@ -323,7 +281,7 @@ def getPressuresForModel(model, Pmin, Pmax, Pcount):
         Plist = 10.0 ** numpy.linspace(math.log10(Pmin), math.log10(Pmax), Pcount)
     return Plist
 
-def readFile(path):
+def readFile(path, measure0):
     """
     Reads a MEASURE input or output file from location `path` on disk. The file
     format is described in the :ref:`measureusersguide`. Returns a number of
@@ -360,7 +318,7 @@ def readFile(path):
     
     """
 
-    global speciesDict, network, Tlist, Tparams, Plist, Pparams, Elist, method, model
+    global measure, speciesDict, network, Tlist, Tparams, Plist, Pparams, Elist, method, model
     
     try:
         f = open(path)
@@ -369,6 +327,9 @@ def readFile(path):
         logging.info('Check that the file exists and that you have read access.')
         return None
     
+    # Clear the job object
+    measure = measure0
+    measure.clear()
     # Clear any existing loaded species
     speciesDict = {}
     # Create new network object
@@ -398,7 +359,7 @@ def readFile(path):
         'pdepreaction': pdepreaction,
         'Chebyshev': Chebyshev,
         'PDepArrhenius': PDepArrhenius,
-        'collisionModel': collisionModel,
+        'SingleExponentialDown': SingleExponentialDown,
         'temperatures': temperatures,
         'pressures': pressures,
         'energies': energies,
@@ -415,10 +376,9 @@ def readFile(path):
     try:
         exec f in global_context, local_context
     
-    
         # If loading of the input file was unsuccessful for any reason,
-        # then return None so the program can terminate
-        if network is None: return None
+        # then return so the program can terminate
+        if network is None: return
 
         # Set title and description of network
         network.title = local_context['title']
@@ -429,38 +389,44 @@ def readFile(path):
         logging.info('Network description: ')
         logging.info(network.description)
         
+        measure.network = network
+        
         # Determine temperature grid if not yet known
-        if Tparams is not None and Tlist is None:
-            Tmin, Tmax, Tcount = Tparams
-            Tlist = getTemperaturesForModel(model, Tmin, Tmax, Tcount)
-        elif Tparams is None and Tlist is not None:
-            Tmin = min(Tlist); Tmax = max(Tlist); Tcount = len(Tlist)
+        if measure.Tlist is None and measure.Tmin is not None and measure.Tmax is not None and measure.Tcount is not None:
+            measure.Tlist = Quantity(getTemperaturesForModel(measure.model, measure.Tmin.value, measure.Tmax.value, measure.Tcount),"K")
+        elif measure.Tmin is not None and measure.Tmax is not None and measure.Tcount is not None:
+            pass
         else:
             raise InputError('No temperature() block found.')
-        Tlist = numpy.array(Tlist, numpy.float64)
-
+        
         # Determine pressure grid if not yet known
-        if Pparams is not None and Plist is None:
-            Pmin, Pmax, Pcount = Pparams
-            Plist = getPressuresForModel(model, Pmin, Pmax, Pcount)
-        elif Pparams is None and Plist is not None:
-            Pmin = min(Plist); Pmax = max(Plist); Pcount = len(Plist)
+        if measure.Plist is None and measure.Pmin is not None and measure.Pmax is not None and measure.Pcount is not None:
+            measure.Plist = Quantity(getPressuresForModel(measure.model, measure.Pmin.value, measure.Pmax.value, measure.Pcount),"Pa")
+        elif measure.Pmin is not None and measure.Pmax is not None and measure.Pcount is not None:
+            pass
         else:
             raise InputError('No pressure() block found.')
-        Plist = numpy.array(Plist, numpy.float64)
-
+        
         # Check that we have energy grain information
-        if Elist is None:
+        if measure.grainSize is None and measure.grainCount is None:
             raise InputError('No energies() block found.')
 
         # Check that a method was specified
-        if method == '':
+        if measure.method is None:
             raise InputError('No method() block found.')
 
         # Convert string labels to Species objects
         network.isomers = [speciesDict[label] for label in network.isomers]
         network.reactants = [[speciesDict[label] for label in reactants] for reactants in network.reactants]
-        network.bathGas = dict([(speciesDict[label],value) for label, value in network.bathGas.iteritems()])
+        
+        # Set bath gas composition
+        network.bathGas = {}
+        for label, value in local_context['bathGas'].iteritems():
+            network.bathGas[speciesDict[label]] = float(value)
+        # Normalize bath gas composition
+        for key in network.bathGas:
+            network.bathGas[key] /= sum(network.bathGas.values())
+        
         for reactants in network.reactants:
             reactants.sort()
         for rxn in network.pathReactions:
@@ -493,20 +459,20 @@ def readFile(path):
                 network.products.append(rxn.products)
             elif len(rxn.products) > 1 and rxn.products not in network.reactants and rxn.products not in network.products:
                 network.products.append(rxn.products)
-                
+        
         # For each configuration with states data but not thermo data,
         # calculate the thermo data
         for isomer in network.isomers:
             if isomer.thermo is None and isomer.states is not None:
-                generateThermoFromStates(isomer)
+                generateThermoFromStates(isomer, measure.Tlist.values)
         for reactants in network.reactants:
             for spec in reactants:
                 if spec.thermo is None and spec.states is not None:
-                    generateThermoFromStates(spec)
+                    generateThermoFromStates(spec, measure.Tlist.values)
         for products in network.products:
             for spec in products:
                 if spec.thermo is None and spec.states is not None:
-                    generateThermoFromStates(spec)
+                    generateThermoFromStates(spec, measure.Tlist.values)
 
         # Check that we have the right data for each configuration
         # Use a string to store the errors so that the user can see all of
@@ -523,6 +489,9 @@ def readFile(path):
                 errorString0 += '* Required Lennard-Jones parameters were not provided.\n'
             if isomer.molecularWeight == 0:
                 errorString0 += '* Required molecular weight was not provided.\n'
+            # Either the isomer or the bath gas (or both) must have collision parameters
+            if isomer.collisionModel is None and not any([spec.collisionModel is not None for spec in network.bathGas]):
+                errorString0 += '* Collisional energy transfer model not provided.\n'
             if errorString0 != '':
                 errorString = 'For unimolecular isomer "{0}":\n{1}\n'.format(isomer, errorString0)
 
@@ -584,6 +553,3 @@ def readFile(path):
         message = 'Could not find any unimolecular isomers based on this network, so there is nothing to do.'
         network.errorString = message
         logging.info(message)
-    
-    return network, Tlist, Plist, Elist, method, model, Tmin, Tmax, Pmin, Pmax
-
