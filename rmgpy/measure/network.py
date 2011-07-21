@@ -560,7 +560,7 @@ class Network:
                 dEdown[i] /= totalFrac
                 # If the isomer also has a collision model, then average its dEdown with that of the bath gas
                 if self.isomers[i].collisionModel is not None:
-                    dEdown[i] = 0.5 * (dEdown[i] + network.isomers[i].collisionModel.getAlpha(T))
+                    dEdown[i] = 0.5 * (dEdown[i] + self.isomers[i].collisionModel.getAlpha(T))
                    
             # Compute collision efficiencies if needed (MSC method only)
             # Since they are only a function of temperature and not pressure,

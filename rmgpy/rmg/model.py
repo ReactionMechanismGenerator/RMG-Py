@@ -54,8 +54,8 @@ import settings
 
 class Species(rmgpy.species.Species):
 
-    def __init__(self, index=-1, label='', thermo=None, states=None, molecule=None, E0=0.0, lennardJones=None, molecularWeight=0.0, reactive=True):
-        rmgpy.species.Species.__init__(self, index, label, thermo, states, molecule, E0, lennardJones, molecularWeight, reactive)
+    def __init__(self, index=-1, label='', thermo=None, states=None, molecule=None, E0=0.0, lennardJones=None, molecularWeight=0.0, collisionModel=None, reactive=True):
+        rmgpy.species.Species.__init__(self, index, label, thermo, states, molecule, E0, lennardJones, molecularWeight, collisionModel, reactive)
         self.coreSizeAtCreation = 0
 
     def __reduce__(self):
@@ -439,12 +439,25 @@ class PDepNetwork(rmgpy.measure.network.Network):
         from rmgpy.kinetics import Arrhenius, KineticsData
         from rmgpy.measure.collision import SingleExponentialDown
         from rmgpy.measure.reaction import fitInterpolationModel
+        from rmgpy.measure.main import MEASURE
         import rmgpy.measure.settings
-        import rmgpy.measure.output
-
+        
         # Get the parameters for the pressure dependence calculation
         method, Tmin, Tmax, Tlist, Pmin, Pmax, Plist, grainSize, numGrains, model = settings.pressureDependence
-
+        
+        measure = MEASURE()
+        measure.method = method
+        measure.Tmin = Quantity(Tmin, "K")
+        measure.Tmax = Quantity(Tmax, "K")
+        measure.Tlist = Quantity(Tlist, "K")
+        measure.Pmin = Quantity(Pmin/1e5, "bar")
+        measure.Pmax = Quantity(Pmax/1e5, "bar")
+        measure.Plist = Quantity(Plist/1e5, "bar")
+        measure.grainSize = Quantity(grainSize/1000., "kJ/mol")
+        measure.grainCount = numGrains
+        measure.model = model
+        measure.network = self
+        
         # Figure out which configurations are isomers, reactant channels, and product channels
         self.updateConfigurations()
 
@@ -498,9 +511,8 @@ class PDepNetwork(rmgpy.measure.network.Network):
             spec.collisionModel = SingleExponentialDown(alpha0=4.86 * 4184)
 
         # Save input file
-        rmgpy.measure.output.writeFile(os.path.join(settings.outputDirectory, 'pdep', 'network{0:d}_{1:d}.py'.format(self.index, len(self.isomers))),
-            self, Tlist, Plist, (grainSize, numGrains), method, model, Tmin, Tmax, Pmin, Pmax)
-
+        measure.saveInput(os.path.join(settings.outputDirectory, 'pdep', 'network{0:d}_{1:d}.py'.format(self.index, len(self.isomers))))
+        
         self.printSummary(level=logging.INFO)
 
         # Automatically choose a suitable set of energy grains if they were not

@@ -271,11 +271,11 @@ def writeFile(path, measure):
     if measure.Tmin is not None and measure.Tmax is not None and measure.Tcount is not None:
         f.write('temperatures(Tmin={0!r}, Tmax={1!r}, count={2})\n'.format(measure.Tmin, measure.Tmax, measure.Tcount))
     else:
-        f.write('temperatures({0!r})\n'.format(Tlist))
+        f.write('temperatures({0!r})\n'.format(measure.Tlist))
     if measure.Pmin is not None and measure.Pmax is not None and measure.Pcount is not None:
         f.write('pressures(Pmin={0!r}, Pmax={1!r}, count={2})\n'.format(measure.Pmin, measure.Pmax, measure.Pcount))
     else:
-        f.write('pressures({0!r})\n'.format(Plist))
+        f.write('pressures({0!r})\n'.format(measure.Plist))
     
     f.write('energies(')
     if measure.Emin is not None and measure.Emax is not None:
