@@ -260,7 +260,7 @@ class MEASURE:
         """
         
         from network import Network
-        from collision import SingleExponentialDownModel
+        from collision import SingleExponentialDown
         from rmgpy.species import Species, TransitionState
         from rmgpy.reaction import Reaction
         from rmgpy.species import LennardJones
@@ -335,7 +335,7 @@ class MEASURE:
         alpha0units, alpha0 = readMeaningfulLine(f).split()
         T0units, T0 = readMeaningfulLine(f).split()
         n = readMeaningfulLine(f)
-        self.network.collisionModel = SingleExponentialDownModel(
+        collisionModel = SingleExponentialDown(
             alpha0 = Quantity(float(alpha0), alpha0units),
             T0 = Quantity(float(T0), T0units),
             n = Quantity(float(n)),
@@ -344,7 +344,7 @@ class MEASURE:
         speciesDict = {}
 
         # Read bath gas parameters
-        bathGas = Species(label='bath_gas')
+        bathGas = Species(label='bath_gas', collisionModel=collisionModel)
         molWtunits, molWt = readMeaningfulLine(f).split()
         if molWtunits == 'u': molWtunits = 'g/mol'
         bathGas.molecularWeight = Quantity(float(molWt), molWtunits)

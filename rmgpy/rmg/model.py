@@ -437,7 +437,7 @@ class PDepNetwork(rmgpy.measure.network.Network):
         network is marked as invalid.
         """
         from rmgpy.kinetics import Arrhenius, KineticsData
-        from rmgpy.measure.collision import SingleExponentialDownModel
+        from rmgpy.measure.collision import SingleExponentialDown
         from rmgpy.measure.reaction import fitInterpolationModel
         import rmgpy.measure.settings
         import rmgpy.measure.output
@@ -495,7 +495,7 @@ class PDepNetwork(rmgpy.measure.network.Network):
         self.bathGas = {}
         for spec in bathGas:
             self.bathGas[spec] = 1.0 / len(bathGas)
-        self.collisionModel = SingleExponentialDownModel(alpha0=4.86 * 4184)
+            spec.collisionModel = SingleExponentialDown(alpha0=4.86 * 4184)
 
         # Save input file
         rmgpy.measure.output.writeFile(os.path.join(settings.outputDirectory, 'pdep', 'network{0:d}_{1:d}.py'.format(self.index, len(self.isomers))),

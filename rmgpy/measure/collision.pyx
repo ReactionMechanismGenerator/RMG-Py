@@ -195,7 +195,7 @@ cdef class CollisionModel:
 
 ################################################################################
 
-cdef class SingleExponentialDownModel(CollisionModel):
+cdef class SingleExponentialDown(CollisionModel):
     r"""
     Refactoring of collision and reaction modules to full Cython syntax.
     A single exponential down collision model, based around the collisional 
@@ -239,11 +239,18 @@ cdef class SingleExponentialDownModel(CollisionModel):
         else:
             self.n = None
 
+    def __repr__(self):
+        """
+        Return a string representation that can be used to reconstruct the
+        SingleExponentialDownModel object.
+        """
+        return 'SingleExponentialDown(alpha0={0!r}, T0={1!r}, n={2!r})'.format(self.alpha0, self.T0, self.n)
+
     def __reduce__(self):
         """
         A helper function used when pickling an object.
         """
-        return (SingleExponentialDownModel, (self.alpha0, self.T0, self.n))
+        return (SingleExponentialDown, (self.alpha0, self.T0, self.n))
 
     cpdef double getAlpha(self, double T):
         """

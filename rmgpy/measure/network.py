@@ -581,7 +581,7 @@ class Network:
                     # Generate the full collision matrix for each isomer
                     Mcoll = numpy.zeros((Nisom,Ngrains,Ngrains), numpy.float64)
                     for i in range(Nisom):
-                        Mcoll[i,:,:] = collFreq[i] * self.collisionModel.generateCollisionMatrix(Elist, T, densStates[i,:], dEdown[i])
+                        Mcoll[i,:,:] = collFreq[i] * SingleExponentialDown().generateCollisionMatrix(Elist, T, densStates[i,:], dEdown[i])
 
                 # Apply method
                 logging.debug('Applying {0} method at {1:g} K, {2:g} bar...'.format(method, T, P/1e5))

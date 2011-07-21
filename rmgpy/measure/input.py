@@ -46,7 +46,7 @@ from rmgpy.kinetics import Arrhenius, PDepArrhenius, Chebyshev
 from rmgpy.thermo import *
 
 from network import Network
-from collision import SingleExponentialDownModel
+from collision import SingleExponentialDown
 
 ################################################################################
 
@@ -359,7 +359,7 @@ def readFile(path, measure0):
         'pdepreaction': pdepreaction,
         'Chebyshev': Chebyshev,
         'PDepArrhenius': PDepArrhenius,
-        'SingleExponentialDown': SingleExponentialDownModel,
+        'SingleExponentialDown': SingleExponentialDown,
         'temperatures': temperatures,
         'pressures': pressures,
         'energies': energies,
