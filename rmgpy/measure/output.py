@@ -152,6 +152,8 @@ def writeSpecies(f, spec):
         f.write('    lennardJones={0!r},\n'.format(spec.lennardJones))
     if spec.molecularWeight is not None:
         f.write('    molecularWeight={0!r},\n'.format(spec.molecularWeight))
+    if spec.collisionModel is not None:
+        f.write('    collisionModel={0!r},\n'.format(spec.collisionModel))
     f.write(')\n\n')
 
 ################################################################################
@@ -261,19 +263,10 @@ def writeFile(path, measure):
     writeNetworkPathReactions(f, network)
     f.write('################################################################################\n\n')
 
-    f.write('collisionModel(\n')
-    if isinstance(network.collisionModel, SingleExponentialDownModel):
-        f.write('    type="single exponential down",\n')
-        f.write('    parameters={\n')
-        f.write('        "alpha0": {0!r},\n'.format(network.collisionModel.alpha0))
-        f.write('        "T0": {0!r},\n'.format(network.collisionModel.T0))
-        f.write('        "n": {0!r},\n'.format(network.collisionModel.n))
-        f.write('    },\n')
-        f.write('    bathGas={\n')
-        for spec, frac in network.bathGas.iteritems():
-            f.write('        "{0}": {1:g},\n'.format(spec, frac))
-        f.write('    },\n')
-    f.write(')\n\n')
+    f.write('bathGas = {\n')
+    for spec, frac in network.bathGas.iteritems():
+        f.write('    "{0}": {1:g},\n'.format(spec, frac))
+    f.write('}\n\n')
     
     if measure.Tmin is not None and measure.Tmax is not None and measure.Tcount is not None:
         f.write('temperatures(Tmin={0!r}, Tmax={1!r}, count={2})\n'.format(measure.Tmin, measure.Tmax, measure.Tcount))
