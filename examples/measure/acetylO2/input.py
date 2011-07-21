@@ -128,6 +128,11 @@ species(
     label='nitrogen',
     SMILES='N#N',
     lennardJones=LennardJones(sigma=(3.70,'angstrom'), epsilon=(94.9,'K')),
+    collisionModel = SingleExponentialDown(
+        alpha0 = (0.5718,'kcal/mol'),
+        T0 = (300,'K'),
+        n = 0.85,
+    ),
 )
 
 ################################################################################
@@ -259,21 +264,13 @@ reaction(
 
 #################################################################################
 
-collisionModel(
-    type='single exponential down',
-    parameters={
-        'alpha0': (0.5718,'kcal/mol'),
-        'T0': (300,'K'),
-        'n': 0.85,
-    },
-    bathGas={
-        'nitrogen': 1.0,
-    }
-)
+bathGas = {
+    'nitrogen': 1.0,
+}
 
 temperatures(Tmin=(300.0,'K'), Tmax=(2000.0,'K'), count=7)
 pressures(Pmin=(0.01,'bar'), Pmax=(100.0,'bar'), count=5)
-energies(dE=(0.5,'kcal/mol'), count=200)
+energies(dE=(0.5,'kcal/mol'), count=250)
 method('modified strong collision')
 #method('reservoir state')
 interpolationModel('chebyshev', 6, 4)
