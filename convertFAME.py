@@ -9,17 +9,18 @@ import argparse
 import numpy
 import os.path
 
-from rmgpy.chem.molecule import Molecule
-from rmgpy.chem.species import Species, TransitionState
-from rmgpy.chem.reaction import Reaction
-from rmgpy.chem.species import LennardJones
-from rmgpy.chem.states import *
-from rmgpy.chem.thermo import ThermoGAModel
-from rmgpy.chem.kinetics import ArrheniusModel
+from rmgpy.quantity import Quantity
+from rmgpy.molecule import Molecule
+from rmgpy.species import Species, TransitionState
+from rmgpy.reaction import Reaction
+from rmgpy.species import LennardJones
+from rmgpy.statmech import *
+from rmgpy.thermo import ThermoData
+from rmgpy.kinetics import Arrhenius
 
+from rmgpy.measure.main import MEASURE
 from rmgpy.measure.network import Network
 from rmgpy.measure.collision import SingleExponentialDownModel
-from rmgpy.measure.output import writeInput
 
 ################################################################################
 
@@ -82,119 +83,165 @@ if __name__ == '__main__':
         
         f = open(fstr)
 
+        # Construct MEASURE job
+        measure = MEASURE()
+        
         # Read method
         method = readMeaningfulLine(f).lower()
-        if method == 'modifiedstrongcollision': method = 'modified strong collision'
-        elif method == 'reservoirstate': method = 'reservoir state'
+        if method == 'modifiedstrongcollision': 
+            measure.method = 'modified strong collision'
+        elif method == 'reservoirstate': 
+            measure.method = 'reservoir state'
 
         # Read temperatures
-        data = readMeaningfulLine(f).split()
-        assert data[1] == 'K'
-        Tmin = float(data[2]); Tmax = float(data[3])
-        Tlist = numpy.zeros(int(data[0]), numpy.float64)
-        for i in range(int(data[0])):
-            Tlist[i] = float(readMeaningfulLine(f))
+        Tcount, Tunits, Tmin, Tmax = readMeaningfulLine(f).split()
+        measure.Tmin = Quantity(float(Tmin), Tunits) 
+        measure.Tmax = Quantity(float(Tmax), Tunits)
+        measure.Tcount = int(Tcount)
+        Tlist = []
+        for i in range(int(Tcount)):
+            Tlist.append(float(readMeaningfulLine(f)))
+        measure.Tlist = Quantity(Tlist, Tunits)
         
         # Read pressures
-        data = readMeaningfulLine(f).split()
-        assert data[1] == 'Pa'
-        Pmin = float(data[2]); Pmax = float(data[3])
-        Plist = numpy.zeros(int(data[0]), numpy.float64)
-        for i in range(int(data[0])):
-            Plist[i] = float(readMeaningfulLine(f))
-
+        Pcount, Punits, Pmin, Pmax = readMeaningfulLine(f).split()
+        measure.Pmin = Quantity(float(Pmin), Punits) 
+        measure.Pmax = Quantity(float(Pmax), Punits)
+        measure.Pcount = int(Pcount)
+        Plist = []
+        for i in range(int(Pcount)):
+            Plist.append(float(readMeaningfulLine(f)))
+        measure.Plist = Quantity(Plist, Punits)
+        
         # Read interpolation model
         model = readMeaningfulLine(f).split()
         if model[0].lower() == 'chebyshev':
-            model = ['chebyshev', int(model[1]), int(model[2])]
+            measure.model = ['chebyshev', int(model[1]), int(model[2])]
+        elif model[0].lower() == 'pdeparrhenius':
+            measure.model = ['pdeparrhenius']
         
         # Read grain size or number of grains
         data = readMeaningfulLine(f).split()
         if data[0].lower() == 'numgrains':
-            Ngrains = int(data[1])
-            grainSize = 0.0
+            measure.grainCount = int(data[1])
+            measure.grainSize = Quantity(0.0, "J/mol")
         elif data[0].lower() == 'grainsize':
-            assert data[2] == 'J/mol'
-            Ngrains = 0
-            grainSize = float(data[2])
+            measure.grainCount = 0
+            measure.grainSize = Quantity(float(data[2]), data[1])
 
-        network = Network()
+        # Create the Network
+        measure.network = Network()
 
         # Read collision model
-        data = readMeaningfulLine(f).split()
-        assert data[0].lower() == 'singleexpdown'
-        assert data[1] == 'J/mol'
-        network.collisionModel = SingleExponentialDownModel(alpha0=float(data[2]), T0=298, n=0.0)
+        data = readMeaningfulLine(f)
+        assert data.lower() == 'singleexpdown'
+        alpha0units, alpha0 = readMeaningfulLine(f).split()
+        T0units, T0 = readMeaningfulLine(f).split()
+        n = readMeaningfulLine(f)
+        measure.network.collisionModel = SingleExponentialDownModel(
+            alpha0 = Quantity(float(alpha0), alpha0units),
+            T0 = Quantity(float(T0), T0units),
+            n = Quantity(float(n)),
+        )
         
         speciesDict = {}
 
         # Read bath gas parameters
         bathGas = Species(label='bath_gas')
-        bathGas.molecularWeight = float(readMeaningfulLine(f).split()[1]) / 1000.0
-        bathGas.lennardJones = LennardJones(sigma=float(readMeaningfulLine(f).split()[1]), epsilon=float(readMeaningfulLine(f).split()[1]))
-        network.bathGas = {bathGas: 1.0}
+        molWtunits, molWt = readMeaningfulLine(f).split()
+        if molWtunits == 'u': molWtunits = 'g/mol'
+        bathGas.molecularWeight = Quantity(float(molWt), molWtunits)
+        sigmaLJunits, sigmaLJ = readMeaningfulLine(f).split()
+        epsilonLJunits, epsilonLJ = readMeaningfulLine(f).split()
+        bathGas.lennardJones = LennardJones(
+            sigma = Quantity(float(sigmaLJ), sigmaLJunits),
+            epsilon = Quantity(float(epsilonLJ), epsilonLJunits),
+        )
+        measure.network.bathGas = {bathGas: 1.0}
         
         # Read species data
         Nspec = int(readMeaningfulLine(f))
         for i in range(Nspec):
-            spec = Species()
+            species = Species()
+            
             # Read species label
-            spec.label = readMeaningfulLine(f)
-            speciesDict[spec.label] = spec
-            if spec.label in moleculeDict:
-                spec.molecule = [moleculeDict[spec.label]]
+            species.label = readMeaningfulLine(f)
+            speciesDict[species.label] = species
+            if species.label in moleculeDict:
+                species.molecule = [moleculeDict[species.label]]
+            
             # Read species E0
-            data = readMeaningfulLine(f).split()
-            assert data[0] == 'J/mol'
-            spec.E0 = float(data[1])
+            E0units, E0 = readMeaningfulLine(f).split()
+            species.E0 = Quantity(float(E0), E0units)
+            
             # Read species thermo data
-            spec.thermo = ThermoGAModel()
-            data = readMeaningfulLine(f).split()
-            assert data[0] == 'J/mol'
-            spec.thermo.H298 = float(data[1])
-            data = readMeaningfulLine(f).split()
-            assert data[0] == 'J/mol*K'
-            spec.thermo.S298 = float(data[1])
-            data = readMeaningfulLine(f).split()
-            assert data[1] == 'J/mol*K'
-            assert int(data[0]) == 7
-            spec.thermo.Tdata = numpy.array([300,400,500,600,800,1000,1500], numpy.float64)
+            H298units, H298 = readMeaningfulLine(f).split()
+            S298units, S298 = readMeaningfulLine(f).split()
+            Cpcount, Cpunits = readMeaningfulLine(f).split()
             Cpdata = []
-            for j in range(7):
-                data = readMeaningfulLine(f).split()
-                Cpdata.append(float(data[0]))
-            spec.thermo.Cpdata = numpy.array(Cpdata, numpy.float64)
+            for i in range(int(Cpcount)):
+                Cpdata.append(float(readMeaningfulLine(f)))
+            species.thermo = ThermoData(
+                H298 = Quantity(float(H298), H298units),
+                S298 = Quantity(float(S298), S298units),
+                Tdata = Quantity([300,400,500,600,800,1000,1500], "K"),
+                Cpdata = Quantity(Cpdata, Cpunits),
+            )
+            
             # Read species collision parameters
-            spec.molecularWeight = float(readMeaningfulLine(f).split()[1]) / 1000.0
-            spec.lennardJones = LennardJones(sigma=float(readMeaningfulLine(f).split()[1]), epsilon=float(readMeaningfulLine(f).split()[1]))
-            # Read species frequencies
-            spec.states = StatesModel()
-            data = readMeaningfulLine(f).split()
-            assert data[1] == 'cm^-1'
+            molWtunits, molWt = readMeaningfulLine(f).split()
+            if molWtunits == 'u': molWtunits = 'g/mol'
+            species.molecularWeight = Quantity(float(molWt), molWtunits)
+            sigmaLJunits, sigmaLJ = readMeaningfulLine(f).split()
+            epsilonLJunits, epsilonLJ = readMeaningfulLine(f).split()
+            species.lennardJones = LennardJones(
+                sigma = Quantity(float(sigmaLJ), sigmaLJunits),
+                epsilon = Quantity(float(epsilonLJ), epsilonLJunits),
+            )
+            
+            species.states = StatesModel()
+            
+            # Read species vibrational frequencies
+            freqCount, freqUnits = readMeaningfulLine(f).split()
             frequencies = []
-            for j in range(int(data[0])):
+            for j in range(int(freqCount)):
                 frequencies.append(float(readMeaningfulLine(f)))
-            spec.states.modes.append(HarmonicOscillator(frequencies))
+            species.states.modes.append(HarmonicOscillator(
+                frequencies = Quantity(frequencies, freqUnits),
+            ))
+            
             # Read species external rotors
-            data = readMeaningfulLine(f).split()
-            assert data[0] == '0'
-            assert data[1] == 'cm^-1'
+            rotCount, rotUnits = readMeaningfulLine(f).split()
+            if int(rotCount) > 0:
+                raise NotImplementedError('Cannot handle external rotational modes in FAME input.')
+            
             # Read species internal rotors
-            data = readMeaningfulLine(f).split()
-            assert data[1] == 'cm^-1'
+            freqCount, freqUnits = readMeaningfulLine(f).split()
             frequencies = []
-            for j in range(int(data[0])):
-                frequencies.append(float(readMeaningfulLine(f)) * 2.9979e10)
-            data = readMeaningfulLine(f).split()
-            assert data[1] == 'cm^-1'
+            for j in range(int(freqCount)):
+                frequencies.append(float(readMeaningfulLine(f)))
+            barrCount, barrUnits = readMeaningfulLine(f).split()
             barriers = []
-            for j in range(int(data[0])):
-                barriers.append(float(readMeaningfulLine(f)) * 11.96)
-            inertia = [V0 / 2.0 / nu**2 / 6.022e23 for nu, V0 in zip(frequencies, barriers)]
+            for j in range(int(barrCount)):
+                barriers.append(float(readMeaningfulLine(f)))
+            if barrUnits == 'cm^-1':
+                barrUnits = 'J/mol'
+                barriers = [barr * constants.h * constants.c * constants.Na * 100. for barr in barriers]
+            elif barrUnits in ['Hz', 's^-1']:
+                barrUnits = 'J/mol'
+                barriers = [barr * constants.h * constants.Na for barr in barriers]
+            elif barrUnits != 'J/mol':
+                raise Exception('Unexpected units "{0}" for hindered rotor barrier height.'.format(barrUnits))
+            inertia = [V0 / 2.0 / (nu * constants.c * 100.)**2 / constants.Na for nu, V0 in zip(frequencies, barriers)]
             for I, V0 in zip(inertia, barriers):
-                spec.states.modes.append(HinderedRotor(inertia=I, barrier=V0, symmetry=1))
+                species.states.modes.append(HinderedRotor(
+                    inertia = Quantity(I,"kg*m^2"), 
+                    barrier = Quantity(V0,barrUnits), 
+                    symmetry = 1,
+                ))
+                
             # Read overall symmetry number
-            symm = int(readMeaningfulLine(f))
+            species.states.spinMultiplicity = int(readMeaningfulLine(f))
             
         # Read isomer, reactant channel, and product channel data
         Nisom = int(readMeaningfulLine(f))
@@ -203,52 +250,61 @@ if __name__ == '__main__':
         for i in range(Nisom):
             data = readMeaningfulLine(f).split()
             assert data[0] == '1'
-            network.isomers.append(speciesDict[data[1]])
+            measure.network.isomers.append(speciesDict[data[1]])
         for i in range(Nreac):
             data = readMeaningfulLine(f).split()
             assert data[0] == '2'
-            network.reactants.append([speciesDict[data[1]], speciesDict[data[2]]])
+            measure.network.reactants.append([speciesDict[data[1]], speciesDict[data[2]]])
         for i in range(Nprod):
             data = readMeaningfulLine(f).split()
             if data[0] == '1':
-                network.products.append([speciesDict[data[1]]])
+                measure.network.products.append([speciesDict[data[1]]])
             elif data[0] == '2':
-                network.products.append([speciesDict[data[1]], speciesDict[data[2]]])
+                measure.network.products.append([speciesDict[data[1]], speciesDict[data[2]]])
 
         # Read path reactions
         Nrxn = int(readMeaningfulLine(f))
         for i in range(Nrxn):
+            
             # Read and ignore reaction equation
             equation = readMeaningfulLine(f)
-            rxn = Reaction(transitionState=TransitionState(), reversible=True)
-            network.pathReactions.append(rxn)
+            reaction = Reaction(transitionState=TransitionState(), reversible=True)
+            measure.network.pathReactions.append(reaction)
+            
             # Read reactant and product indices
             data = readMeaningfulLine(f).split()
             reac = int(data[0]) - 1
             prod = int(data[1]) - 1
             if reac < Nisom:
-                rxn.reactants = [network.isomers[reac]]
+                reaction.reactants = [measure.network.isomers[reac]]
             elif reac < Nisom+Nreac:
-                rxn.reactants = network.reactants[reac-Nisom]
+                reaction.reactants = measure.network.reactants[reac-Nisom]
             else:
-                rxn.reactants = network.products[reac-Nisom-Nreac]
+                reaction.reactants = measure.network.products[reac-Nisom-Nreac]
             if prod < Nisom:
-                rxn.products = [network.isomers[prod]]
+                reaction.products = [measure.network.isomers[prod]]
             elif prod < Nisom+Nreac:
-                rxn.products = network.reactants[prod-Nisom]
+                reaction.products = measure.network.reactants[prod-Nisom]
             else:
-                rxn.products = network.products[prod-Nisom-Nreac]
+                reaction.products = measure.network.products[prod-Nisom-Nreac]
+            
             # Read reaction E0
-            data = readMeaningfulLine(f).split()
-            assert data[0] == 'J/mol'
-            rxn.transitionState.E0 = float(data[1])
+            E0units, E0 = readMeaningfulLine(f).split()
+            reaction.transitionState.E0 = Quantity(float(E0), E0units)
+            
             # Read high-pressure limit kinetics
             data = readMeaningfulLine(f)
             assert data.lower() == 'arrhenius'
-            rxn.kinetics = ArrheniusModel(
-                A=float(readMeaningfulLine(f).split()[1]),
-                Ea=float(readMeaningfulLine(f).split()[1]),
-                n=float(readMeaningfulLine(f).split()[0]),
+            Aunits, A = readMeaningfulLine(f).split()
+            if '/' in Aunits:
+                index = Aunits.find('/')
+                Aunits = '{0}/({1})'.format(Aunits[0:index], Aunits[index+1:])
+            Eaunits, Ea = readMeaningfulLine(f).split()
+            n = readMeaningfulLine(f)
+            reaction.kinetics = Arrhenius(
+                A = Quantity(float(A), Aunits),
+                Ea = Quantity(float(Ea), Eaunits),
+                n = Quantity(float(n)),
             )
             
         # Close file
@@ -258,4 +314,4 @@ if __name__ == '__main__':
         dirname, basename = os.path.split(os.path.abspath(fstr))
         basename, ext = os.path.splitext(basename)
         path = os.path.join(dirname, basename + '.py')
-        writeInput(path, network, Tlist, Plist, (grainSize, Ngrains), method, model)
+        measure.saveInput(path)
