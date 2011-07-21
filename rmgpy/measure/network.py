@@ -548,13 +548,27 @@ class Network:
                 G = sum([spec.thermo.getFreeEnergy(T) for spec in self.reactants[i]])
                 eqRatios[Nisom+i] = math.exp(-G / constants.R / T) * conc ** (len(self.reactants[i]) - 1)
             
+            # Compute average energy transferred in a deactivating collision
+            dEdown = numpy.zeros(Nisom, numpy.float64)
+            for i in range(Nisom):
+                # First compute dEdown as a weighted sum of the values from each of the bath gas components
+                totalFrac = 0
+                for species, frac in self.bathGas.iteritems():
+                    if species.collisionModel is not None:
+                        dEdown[i] += frac * species.collisionModel.getAlpha(T)
+                        totalFrac += frac
+                dEdown[i] /= totalFrac
+                # If the isomer also has a collision model, then average its dEdown with that of the bath gas
+                if self.isomers[i].collisionModel is not None:
+                    dEdown[i] = 0.5 * (dEdown[i] + network.isomers[i].collisionModel.getAlpha(T))
+                   
             # Compute collision efficiencies if needed (MSC method only)
             # Since they are only a function of temperature and not pressure,
             # we do this outside the pressure loop
             collEff = numpy.ones(Nisom, numpy.float64)
             if method.lower() == 'modified strong collision':
                 for i in range(Nisom):
-                    collEff[i] *= calculateCollisionEfficiency(self.isomers[i], T, Elist, densStates[i,:], self.collisionModel, E0[i], Ereac[i])
+                    collEff[i] *= calculateCollisionEfficiency(self.isomers[i], T, Elist, densStates[i,:], dEdown[i], E0[i], Ereac[i])
                 
             for p, P in enumerate(Plist):
 
@@ -567,7 +581,7 @@ class Network:
                     # Generate the full collision matrix for each isomer
                     Mcoll = numpy.zeros((Nisom,Ngrains,Ngrains), numpy.float64)
                     for i in range(Nisom):
-                        Mcoll[i,:,:] = collFreq[i] * self.collisionModel.generateCollisionMatrix(Elist, T, densStates[i,:])
+                        Mcoll[i,:,:] = collFreq[i] * self.collisionModel.generateCollisionMatrix(Elist, T, densStates[i,:], dEdown[i])
 
                 # Apply method
                 logging.debug('Applying {0} method at {1:g} K, {2:g} bar...'.format(method, T, P/1e5))
