@@ -118,12 +118,13 @@ class Species:
     `E0`                :class:`Quantity`       The ground-state energy
     `lennardJones`      :class:`LennardJones`   A set of Lennard-Jones collision parameters
     `molecularWeight`   :class:`Quantity`       The molecular weight of the species
+    `collisionModel`    ``object``              The collisional energy transfer model to use
     `reactive`          ``bool``                ``True`` if the species participates in reactions, ``False`` if not
     =================== ======================= ================================
 
     """
 
-    def __init__(self, index=-1, label='', thermo=None, states=None, molecule=None, E0=None, lennardJones=None, molecularWeight=None, reactive=True):
+    def __init__(self, index=-1, label='', thermo=None, states=None, molecule=None, E0=None, lennardJones=None, molecularWeight=None, collisionModel=None, reactive=True):
         self.index = index
         self.label = label
         self.thermo = thermo
@@ -133,6 +134,7 @@ class Species:
         self.lennardJones = lennardJones
         self.reactive = reactive
         self.molecularWeight = Quantity(molecularWeight)
+        self.collisionModel = collisionModel
 
     def __repr__(self):
         """
@@ -149,6 +151,7 @@ class Species:
         if self.lennardJones is not None: string += 'lennardJones={0!r}, '.format(self.lennardJones)
         if not self.reactive: string += 'reactive={0}, '.format(self.reactive)
         if self.molecularWeight is not None: string += 'molecularWeight={0!r}, '.format(self.molecularWeight)
+        if self.collisionModel is not None: string += 'collisionModel={0!r}, '.format(self.collisionModel)
         string = string[:-2] + ')'
         return string
 
@@ -163,7 +166,7 @@ class Species:
         """
         A helper function used when pickling an object.
         """
-        return (Species, (self.index, self.label, self.thermo, self.states, self.molecule, self.E0, self.lennardJones, self.molecularWeight, self.reactive))
+        return (Species, (self.index, self.label, self.thermo, self.states, self.molecule, self.E0, self.lennardJones, self.molecularWeight, self.collisionModel, self.reactive))
 
     def generateResonanceIsomers(self):
         """

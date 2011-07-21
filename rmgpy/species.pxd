@@ -48,7 +48,8 @@ cdef class Species:
     cdef public list molecule
     cdef public Quantity molecularWeight
     cdef public bint reactive
-
+    cdef public object collisionModel
+    
     cpdef generateResonanceIsomers(self)
     
     cpdef bint isIsomorphic(self, other)
