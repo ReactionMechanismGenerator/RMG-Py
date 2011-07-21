@@ -274,7 +274,8 @@ class PDepNetwork(rmgpy.measure.network.Network):
         ratios = {}
         if len(self.netReactions) == 0 and len(self.pathReactions) == 1:
             rxn = self.pathReactions[0]
-            if rxn.products is self.source:
+            assert rxn.reactants == self.source or rxn.products == self.source
+            if rxn.products == self.source:
                 assert len(rxn.reactants) == 1
                 ratios[rxn.reactants[0]] = 1.0
             else:
