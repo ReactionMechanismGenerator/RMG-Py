@@ -2180,8 +2180,9 @@ class KineticsFamily(Database):
                         except ForbiddenStructureException:
                             pass
                         else:
-                            rxn = self.__createReaction(reactantStructures, productStructures, forward)
-                            if rxn: rxnList.append(rxn)
+                            if productStructures is not None:
+                                rxn = self.__createReaction(reactantStructures, productStructures, forward)
+                                if rxn: rxnList.append(rxn)
 
         # Bimolecular reactants: A + B --> products
         elif len(reactants) == 2 and len(template.reactants) == 2:
@@ -2207,8 +2208,9 @@ class KineticsFamily(Database):
                                 except ForbiddenStructureException:
                                     pass
                                 else:
-                                    rxn = self.__createReaction(reactantStructures, productStructures, forward)
-                                    if rxn: rxnList.append(rxn)
+                                    if productStructures is not None:
+                                        rxn = self.__createReaction(reactantStructures, productStructures, forward)
+                                        if rxn: rxnList.append(rxn)
 
                     # Only check for swapped reactants if they are different
                     if reactants[0] is not reactants[1]:
@@ -2227,8 +2229,9 @@ class KineticsFamily(Database):
                                     except ForbiddenStructureException:
                                         pass
                                     else:
-                                        rxn = self.__createReaction(reactantStructures, productStructures, forward)
-                                        if rxn: rxnList.append(rxn)
+                                        if productStructures is not None:
+                                            rxn = self.__createReaction(reactantStructures, productStructures, forward)
+                                            if rxn: rxnList.append(rxn)
 
         # Remove duplicates from the reaction list
         index0 = 0
