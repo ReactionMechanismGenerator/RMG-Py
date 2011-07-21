@@ -342,18 +342,27 @@ class PDepNetwork(rmgpy.measure.network.Network):
         for isomer in other.isomers:
             if isomer not in self.isomers:
                 self.isomers.append(isomer)
-            else:
-                # If the isomer is explored in either network, then it is explored in the combined network
-                if isomer in other.explored and not isomer in self.explored:
-                    self.explored.append(isomer)
+        # Merge explored
+        for isomer in other.explored:
+            if isomer not in self.explored:
+                self.explored.append(isomer)
         # Merge reactants
         for reactants in other.reactants:
             if reactants not in self.reactants:
                 self.reactants.append(reactants)
         # Merge products
         for products in other.products:
-            if isomer not in self.isomers:
-                self.isomers.append(isomer)
+            if products not in self.products:
+                self.products.append(products)
+        
+        # However, products that have been explored are actually isomers
+        # These should be removed from the list of products!
+        productsToRemove = []
+        for products in self.products:
+            if len(products) == 1 and products[0] in self.isomers:
+                productsToRemove.append(products)
+        for products in productsToRemove:
+            self.products.remove(products)
 
         # Merge path reactions
         for reaction in other.pathReactions:
