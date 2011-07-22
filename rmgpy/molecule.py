@@ -231,7 +231,14 @@ class Atom(Vertex):
         """
         # Set the new radical electron counts and spin multiplicities
         self.radicalElectrons += 1
-        self.spinMultiplicity += 1
+        if self.radicalElectrons <= 0:
+            raise ActionError('Unable to update Atom due to GAIN_RADICAL action: Invalid radical electron set "{0}".'.format(self.radicalElectrons))
+        elif self.radicalElectrons == 1:
+            self.spinMultiplicity = 2
+        elif self.radicalElectrons == 2:
+            self.spinMultiplicity = 3   # Assume this always results in the triplet, as they tend to be more stable than the singlet (though there are exceptions!)
+        else:
+            self.spinMultiplicity = self.radicalElectrons + 1
 
     def decrementRadical(self):
         """
@@ -239,13 +246,17 @@ class Atom(Vertex):
         where `radical` specifies the number of radical electrons to remove.
         """
         # Set the new radical electron counts and spin multiplicities
-        if self.radicalElectrons - 1 < 0:
-            raise ActionError('Unable to update Atom due to LOSE_RADICAL action: Invalid radical electron set "{0}".'.format(self.radicalElectrons))
         self.radicalElectrons -= 1
-        if self.spinMultiplicity - 1 < 0:
-            self.spinMultiplicity -= 1 - 2
+        if self.radicalElectrons  < 0:
+            raise ActionError('Unable to update Atom due to LOSE_RADICAL action: Invalid radical electron set "{0}".'.format(self.radicalElectrons))
+        elif self.radicalElectrons == 0:
+            self.spinMultiplicity = 1
+        elif self.radicalElectrons == 1:
+            self.spinMultiplicity = 2
+        elif self.radicalElectrons == 2:
+            self.spinMultiplicity = 3   # Assume this always results in the triplet, as they tend to be more stable than the singlet (though there are exceptions!)
         else:
-            self.spinMultiplicity -= 1
+            self.spinMultiplicity = self.radicalElectrons + 1
 
     def applyAction(self, action):
         """
@@ -1488,13 +1499,13 @@ class Molecule(Graph):
                 isomer = isomers[index]
                 newIsomers = isomer.getAdjacentResonanceIsomers()
                 for newIsomer in newIsomers:
+                    newIsomer.updateAtomTypes()
                     # Append to isomer list if unique
-                    found = False
                     for isom in isomers:
-                        if isom.isIsomorphic(newIsomer): found = True
-                    if not found:
+                        if isom.isIsomorphic(newIsomer):
+                            break
+                    else:
                         isomers.append(newIsomer)
-                        newIsomer.updateAtomTypes()
                 # Move to next resonance isomer
                 index += 1
 
