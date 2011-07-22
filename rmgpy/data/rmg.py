@@ -41,6 +41,9 @@ from thermo import ThermoDatabase
 from kinetics import KineticsDatabase
 from states import StatesDatabase
 
+# Module-level variable to store the (only) instance of RMGDatabase in use.
+database = None
+
 ################################################################################
 
 class RMGDatabase:
@@ -53,6 +56,11 @@ class RMGDatabase:
         self.forbiddenStructures = None
         self.kinetics = None
         self.states = None
+        
+        # Store the newly created database in the module.
+        global database
+        assert database is None, "Should only make one instance of RMGDatabase because it's stored as a module-level variable."
+        database = self
 
     def load(self, path, thermoLibraries=None, reactionLibraries=None, seedMechanisms=None, statesLibraries=None, depository=True):
         """
