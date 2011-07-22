@@ -1346,6 +1346,7 @@ class CoreEdgeReactionModel:
         species. For large seed mechanisms this can be prohibitively expensive,
         so it is not done by default.
         """
+        if react: raise NotImplementedError("react=True doesn't work yet")
         database = rmgpy.data.rmg.database
         
         self.newReactionList = []; self.newSpeciesList = []
@@ -1363,11 +1364,7 @@ class CoreEdgeReactionModel:
         for spec in self.newSpeciesList:
             if spec.reactive: spec.generateThermoData(database)
         for spec in self.newSpeciesList:
-            if react:
-                self.enlarge(spec)
-            else:
-                self.addSpeciesToCore(spec)
-        
+            self.addSpeciesToCore(spec)
         for rxn in self.newReactionList:
             self.addReactionToCore(rxn)
 
