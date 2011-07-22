@@ -45,6 +45,7 @@ from rmgpy.thermo import Wilhoit, MultiNASA
 from rmgpy.data.thermo import *
 from rmgpy.data.kinetics import *
 from rmgpy.data.states import *
+import rmgpy.data.rmg
 
 import rmgpy.measure.network
 
@@ -865,7 +866,7 @@ class CoreEdgeReactionModel:
                     moleculeB.clearLabeledAtoms()
         return reactionList
 
-    def enlarge(self, newObject, database):
+    def enlarge(self, newObject):
         """
         Enlarge a reaction model by processing `newObject`. If `newObject` is a
         :class:`rmg.species.Species` object, then the species is moved from
@@ -874,7 +875,8 @@ class CoreEdgeReactionModel:
         is a :class:`rmg.unirxn.network.Network` object, then reactions are
         generated for the species in the network with the largest leak flux.
         """
-
+        database = rmgpy.data.rmg.database
+        
         self.newReactionList = []; self.newSpeciesList = []
         newReactions = []
 
@@ -1336,7 +1338,7 @@ class CoreEdgeReactionModel:
             rxnRate[j] = rxn.getRate(T, P, Ci)
         return rxnRate
 
-    def addSeedMechanismToCore(self, database, seedMechanism, react=False):
+    def addSeedMechanismToCore(self, seedMechanism, react=False):
         """
         Add all species and reactions from `seedMechanism`, a 
         :class:`KineticsPrimaryDatabase` object, to the model core. If `react`
@@ -1344,6 +1346,7 @@ class CoreEdgeReactionModel:
         species. For large seed mechanisms this can be prohibitively expensive,
         so it is not done by default.
         """
+        database = rmgpy.data.rmg.database
         
         self.newReactionList = []; self.newSpeciesList = []
 

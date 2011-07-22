@@ -272,20 +272,20 @@ def execute(args):
         # Seed mechanisms: add species and reactions from seed mechanism
         # DON'T generate any more reactions for the seed species at this time
         for seedMechanism in seedMechanisms:
-            reactionModel.addSeedMechanismToCore(database, seedMechanism, react=False)
+            reactionModel.addSeedMechanismToCore(seedMechanism, react=False)
         
         # Add nonreactive species (e.g. bath gases) to core first
         # This is necessary so that the PDep algorithm can identify the bath gas
         for spec in coreSpecies:
             if not spec.reactive:
-                reactionModel.enlarge(spec, database)
+                reactionModel.enlarge(spec)
         # Then add remaining reactive species
         for spec in coreSpecies:
             if spec.reactive:
                 spec.generateThermoData(database)
         for spec in coreSpecies:
             if spec.reactive:
-                reactionModel.enlarge(spec, database)
+                reactionModel.enlarge(spec)
 
     # RMG execution statistics
     coreSpeciesCount = []
@@ -356,7 +356,7 @@ def execute(args):
             logging.info('')
             objectsToEnlarge = list(set(objectsToEnlarge))
             for object in objectsToEnlarge:
-                reactionModel.enlarge(object, database)
+                reactionModel.enlarge(object)
 
         # Save the current state of the model core to a pretty HTML file
         logging.info('Saving latest model core to HTML file...')
