@@ -78,6 +78,7 @@ def getMeasureExtensionModules():
         Extension('rmgpy.measure.rs', ['rmgpy/measure/rs.pyx'], include_dirs=['.']),
         Extension('rmgpy.measure.cse', ['rmgpy/measure/cse.pyx'], include_dirs=['.']),
         Extension('rmgpy.measure.me', ['rmgpy/measure/me.pyx'], include_dirs=['.']),
+        Extension('rmgpy.quantity', ['rmgpy/quantity.py'], include_dirs=['.']),
     ]
     
 def getSolverExtensionModules():
