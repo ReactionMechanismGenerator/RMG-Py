@@ -156,6 +156,9 @@ def saveOutputHTML(path, reactionModel):
         .KineticsData td {
             width: 3em;
         }
+        .searchlink {
+            font-size: large;
+        }
     </style>
     <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.1/jquery.min.js"></script>
     <script type="text/javascript" src="../../../external/jquery.min.js"></script>
@@ -223,7 +226,9 @@ def saveOutputHTML(path, reactionModel):
         <td class="family">{{ rxn.getSource().label }}</td>
     </tr>
     <tr class="kinetics">
-        <td></td>
+        <td>
+        <a href="{{ rxn.getURL() }}" alt="Search on RMG website" class="searchlink">?</a>
+        </td>
         <td colspan="4">{{ rxn.kinetics.toHTML() }}</td>
     </tr>
     <tr class="comment">
@@ -240,7 +245,9 @@ def saveOutputHTML(path, reactionModel):
         <td class="family"></td>
     </tr>
     <tr class="kinetics">
-        <td></td>
+        <td>
+        <a href="{{ rxn.getURL() }}" alt="Search on RMG website" class="searchlink">?</a>
+        </td>
         <td colspan="4">{{ rxn.kinetics.toHTML() }}</td>
     </tr>
     <tr class="comment">

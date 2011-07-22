@@ -43,6 +43,7 @@ import cython
 import math
 import numpy
 import logging
+import re
 
 from quantity import constants
 from species import Species
@@ -123,6 +124,21 @@ class Reaction:
         """
         return (Reaction, (self.index, self.reactants, self.products, self.kinetics, self.reversible, self.transitionState, self.thirdBody, self.duplicate, self.degeneracy))
 
+    def getURL(self):
+        """
+        Get a URL to search for this reaction in the rmg website.
+        """
+        # eg. http://dev.rmg.mit.edu/database/kinetics/reaction/reactant1=1%20C%200%20%7B2,S%7D;2%20O%200%20%7B1,S%7D;__reactant2=1%20C%202T;__product1=1%20C%201;__product2=1%20C%200%20%7B2,S%7D;2%20O%201%20%7B1,S%7D;
+
+        url = "http://rmg.mit.edu/database/kinetics/reaction/"
+        for i,species in enumerate(self.reactants):
+            adjlist = species.molecule[0].toAdjacencyList(removeH=True)
+            url += "reactant{0}={1}__".format(i+1, re.sub('\s+', '%20', adjlist.replace('\n', ';')))
+        for i,species in enumerate(self.products):
+            adjlist = species.molecule[0].toAdjacencyList(removeH=True)
+            url += "product{0}={1}__".format(i+1, re.sub('\s+', '%20', adjlist.replace('\n', ';')))
+        return url.strip('_')
+        
     def isIsomerization(self):
         """
         Return ``True`` if the reaction represents an isomerization reaction
