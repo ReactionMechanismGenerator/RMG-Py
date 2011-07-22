@@ -71,9 +71,10 @@ class DepositoryReaction(Reaction):
     store the library and the entry in that depository that it was created from.
     """
 
-    def __init__(self, index=-1, reactants=None, products=None, kinetics=None, reversible=True, transitionState=None, thirdBody=False, duplicate=False, degeneracy=1, depository=None, entry=None):
+    def __init__(self, index=-1, reactants=None, products=None, kinetics=None, reversible=True, transitionState=None, thirdBody=False, duplicate=False, degeneracy=1, depository=None, family=None, entry=None):
         Reaction.__init__(self, index=index, reactants=reactants, products=products, kinetics=kinetics, reversible=reversible, transitionState=transitionState, thirdBody=thirdBody, duplicate=duplicate, degeneracy=degeneracy)
         self.depository = depository
+        self.family = family
         self.entry = entry
 
     def __reduce__(self):
@@ -101,6 +102,7 @@ class LibraryReaction(Reaction):
     def __init__(self, index=-1, reactants=None, products=None, kinetics=None, reversible=True, transitionState=None, thirdBody=False, duplicate=False, degeneracy=1, library=None, entry=None):
         Reaction.__init__(self, index=index, reactants=reactants, products=products, kinetics=kinetics, reversible=reversible, transitionState=transitionState, thirdBody=thirdBody, duplicate=duplicate, degeneracy=degeneracy)
         self.library = library
+        self.family = library
         self.entry = entry
 
     def __reduce__(self):
@@ -2114,6 +2116,7 @@ class KineticsFamily(Database):
                         thirdBody = rxn.thirdBody,
                         reversible = rxn.reversible,
                         depository = source,
+                        family = self,
                         entry = entry,
                     )
                 else:

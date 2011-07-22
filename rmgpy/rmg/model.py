@@ -725,7 +725,7 @@ class CoreEdgeReactionModel:
         r1 = rxn.reactants[0]
         if len(rxn.reactants)==1: r2 = None
         else: r2 = rxn.reactants[1]
-        family = rxn.getSource()
+        family = rxn.family
         try:
             my_reactionList = self.reactionDict[family][r1][r2]
         except KeyError: # no such short-list: must be new, unless in seed.
@@ -803,7 +803,7 @@ class CoreEdgeReactionModel:
         # identify r1 and r2
         r1 = forward.reactants[0]
         r2 = None if len(forward.reactants) == 1 else forward.reactants[1]
-        family = forward.getSource()
+        family = forward.family
         # make dictionary entries if necessary
         if family not in self.reactionDict:
             self.reactionDict[family] = {}
