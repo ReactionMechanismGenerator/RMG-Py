@@ -740,9 +740,12 @@ class CoreEdgeReactionModel:
         # We want to check for duplicates in *other* seed mechanisms, but allow
         # duplicated *within* the same seed mechanism
         for family0 in self.reactionDict:
-            if isinstance(family, KineticsLibrary) and family0 != family:
+            if isinstance(family0, KineticsLibrary) and family0 != family:
 
                 # First check seed short-list in forward direction
+                r1 = rxn.reactants[0]
+                if len(rxn.reactants)==1: r2 = None
+                else: r2 = rxn.reactants[1]
                 try:
                     my_reactionList = self.reactionDict[family0][r1][r2]
                 except KeyError:
