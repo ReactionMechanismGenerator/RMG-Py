@@ -995,6 +995,7 @@ def Wilhoit2NASA_TintOpt(wilhoit, tmin, tmax, weighting, contCons):
     #cf. http://docs.scipy.org/doc/scipy/reference/tutorial/optimize.html and http://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.fminbound.html#scipy.optimize.fminbound)
     import scipy.optimize
     tint = scipy.optimize.fminbound(TintOpt_objFun, tmin, tmax, args=(wilhoit, tmin, tmax, weighting, contCons))
+    tint = float(tint) # fminbound returns a numpy.ndarray object
     #note that we have not used any guess when using this minimization routine
     #2. determine the bi parameters based on the optimized Tint (alternatively, maybe we could have TintOpt_objFun also return these parameters, along with the objective function, which would avoid an extra calculation)
     (nasa1, nasa2) = Wilhoit2NASA(wilhoit, tmin, tmax, tint, weighting, contCons)
