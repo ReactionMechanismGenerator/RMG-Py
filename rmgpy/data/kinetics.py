@@ -2016,6 +2016,13 @@ class KineticsFamily(Database):
             for struct in productStructures:
                 if self.forbidden.isMoleculeForbidden(struct): raise ForbiddenStructureException()
 
+        # Also check the global forbiddenStructures
+        from rmgpy.data.rmg import database
+        for struct in reactantStructures:
+            if database.forbiddenStructures.isMoleculeForbidden(struct): raise ForbiddenStructureException()
+        for struct in productStructures:
+            if database.forbiddenStructures.isMoleculeForbidden(struct): raise ForbiddenStructureException()
+
         return productStructures
 
     def __createReaction(self, reactants, products, isForward):
@@ -2040,6 +2047,10 @@ class KineticsFamily(Database):
             for product in products:
                 if self.forbidden.isMoleculeForbidden(product):
                     return None
+        # Also check the global forbiddenStructures
+        from rmgpy.data.rmg import database
+        for product in products:
+            if database.forbiddenStructures.isMoleculeForbidden(product): return None
 
         # We need to save the reactant and product structures with atom labels so
         # we can generate the kinetics

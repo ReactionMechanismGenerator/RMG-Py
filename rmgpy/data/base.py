@@ -1015,7 +1015,7 @@ class ForbiddenStructureException(Exception):
 
 class ForbiddenStructures(Database):
     """
-    A database consisting solely of molecules whose structure is forbidden
+    A database consisting solely of structures that are forbidden
     from occurring.
     """
     
