@@ -470,6 +470,9 @@ class KineticsDepository(Database):
     def __init__(self, label='', name='', shortDesc='', longDesc=''):
         Database.__init__(self, label=label, name=name, shortDesc=shortDesc, longDesc=longDesc)
 
+    def __repr__(self):
+        return '<KineticsDepository "{0}">'.format(self.label)
+
     def loadEntry(self, index, reactant1=None, reactant2=None, reactant3=None, product1=None, product2=None, product3=None, group1=None, group2=None, group3=None, kinetics=None, degeneracy=1, label='', reference=None, referenceType='', shortDesc='', longDesc='', rank=None, history=None):
         
         if reactant1 is not None and product1 is not None:
@@ -725,6 +728,9 @@ class KineticsLibrary(Database):
 
     def __init__(self, label='', name='', shortDesc='', longDesc=''):
         Database.__init__(self, label=label, name=name, shortDesc=shortDesc, longDesc=longDesc)
+
+    def __repr__(self):
+        return '<KineticsLibrary "{0}">'.format(self.label)
 
     def getSpecies(self):
         """
@@ -1231,7 +1237,7 @@ class KineticsGroups(Database):
         Database.__init__(self, entries, top, label, name, shortDesc, longDesc)
         self.numReactants = 0
         
-    def __str__(self):
+    def __repr__(self):
         return '<KineticsGroups "{0}">'.format(self.label)
 
     def loadEntry(self, index, label, group, kinetics, reference=None, referenceType='', shortDesc='', longDesc='', history=None):
