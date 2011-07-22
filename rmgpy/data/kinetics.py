@@ -33,6 +33,7 @@ import os.path
 import re
 import logging
 import codecs
+from copy import copy, deepcopy
 
 from base import *
 
@@ -2317,7 +2318,7 @@ class KineticsFamily(Database):
         kinetics = None
         for entry in self.forwardTemplate.reactants:
             if kinetics is None and entry.data is not None:
-                kinetics = entry.data
+                kinetics = deepcopy(entry.data)
         # Now add in more specific corrections if possible
         return self.groups.getKineticsForTemplate(template, kinetics, degeneracy)
 
@@ -2335,7 +2336,7 @@ class KineticsFamily(Database):
                 entryLabels = entry.label.split(';')
                 templateLabels = [group.label for group in template]
                 if all([group in entryLabels for group in templateLabels]) and all([group in templateLabels for group in entryLabels]):
-                    kineticsList.append([entry.data, entry])
+                    kineticsList.append([deepcopy(entry.data), entry])
             for kinetics, entry in kineticsList:
                 if kinetics is not None:
                     # The rules are defined on a per-site basis, so we need to include the degeneracy manually
@@ -2346,7 +2347,7 @@ class KineticsFamily(Database):
             entries = depository.entries.values()
             for entry in entries:
                 if reaction.isIsomorphic(entry.item):
-                    kineticsList.append([entry.data, entry])
+                    kineticsList.append([deepcopy(entry.data), entry])
         
         return kineticsList
     
@@ -2645,7 +2646,7 @@ class KineticsDatabase:
                     degeneracy = entry.item.degeneracy,
                     thirdBody = entry.item.thirdBody,
                     reversible = entry.item.reversible,
-                    kinetics = entry.data,
+                    kinetics = deepcopy(entry.data),
                     library = library,
                     entry = entry,
                 )

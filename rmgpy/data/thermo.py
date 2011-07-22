@@ -37,6 +37,7 @@ import os.path
 import math
 import logging
 import numpy
+from copy import copy, deepcopy
 
 from base import Database, Entry, makeLogicNode
 
@@ -574,10 +575,10 @@ class ThermoDatabase:
         items = []
         for label, entry in self.depository['stable'].entries.iteritems():
             if molecule.isIsomorphic(entry.item):
-                items.append((entry.data, self.depository['stable'], entry))
+                items.append((deepcopy(entry.data), self.depository['stable'], entry))
         for label, entry in self.depository['radical'].entries.iteritems():
             if molecule.isIsomorphic(entry.item):
-                items.append((entry.data, self.depository['radical'], entry))
+                items.append((deepcopy(entry.data), self.depository['radical'], entry))
         return items
 
     def getThermoDataFromLibrary(self, molecule, library):
@@ -591,7 +592,7 @@ class ThermoDatabase:
         """
         for label, entry in library.entries.iteritems():
             if molecule.isIsomorphic(entry.item) and entry.data is not None:
-                return (entry.data, library, entry)
+                return (deepcopy(entry.data), library, entry)
         return None
 
     def getThermoDataFromGroups(self, molecule):
