@@ -1359,10 +1359,10 @@ class CoreEdgeReactionModel:
 
         for entry in seedMechanism.entries.values():
             rxn = LibraryReaction(reactants=entry.item.reactants[:], products=entry.item.reactants[:], library=seedMechanism, kinetics=entry.data)
-            r, isNew = self.makeNewReaction(rxn)
-            
+            r, isNew = self.makeNewReaction(rxn) # updates self.newSpeciesList and self.newReactionlist
         for spec in self.newSpeciesList:
             if spec.reactive: spec.generateThermoData(database)
+        for spec in self.newSpeciesList:
             if react:
                 self.enlarge(spec)
             else:
