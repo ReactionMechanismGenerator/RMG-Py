@@ -1437,10 +1437,8 @@ class KineticsFamily(Database):
     `forbidden`         :class:`ForbiddenStructures`    (Optional) Forbidden product structures in either direction
     ------------------- ------------------------------- ------------------------
     `groups`            :class:`KineticsGroups`         The set of kinetics group additivity values
-    `rules`             :class:`KineticsDepository`     The depository of kinetics rate rules
-    `training`          :class:`KineticsDepository`     The depository of kinetics data used to train group values
-    `test`              :class:`KineticsDepository`     The depository of kinetics data used to test group values
-    `PrIMe`             :class:`KineticsDepository`     The depository of kinetics data obtained from the PrIMe database
+    `rules`             :class:`KineticsDepository`     The depository of kinetics rate rules from RMG-Java
+    `depositories`      ``dict``                        A set of additional depositories used to store kinetics data from various sources
     =================== =============================== ========================
 
     There are a few reaction families that are their own reverse (hydrogen
@@ -1459,9 +1457,7 @@ class KineticsFamily(Database):
         # Kinetics depositories of training and test data
         self.groups = None
         self.rules = None
-        self.training = None
-        self.test = None
-        self.PrIMe = None
+        self.depositories = {}
 
     def __repr__(self):
         return '<ReactionFamily "{0}">'.format(self.label)
@@ -1505,9 +1501,7 @@ class KineticsFamily(Database):
             
         self.rules = KineticsDepository(label='{0}/rules'.format(self.label))
         self.rules.loadOldRateRules(path, self)
-        self.training = KineticsDepository(label='{0}/training'.format(self.label))
-        self.test = KineticsDepository(label='{0}/test'.format(self.label))
-        self.PrIMe = None
+        self.depositories = {}
 
         return self
 
@@ -1625,21 +1619,16 @@ class KineticsFamily(Database):
             
         self.rules = KineticsDepository(label='{0}/rules'.format(self.label))
         self.rules.load(os.path.join(path, 'rules.py'), local_context, global_context)
-        self.training = KineticsDepository(label='{0}/training'.format(self.label))
-        self.training.load(os.path.join(path, 'training.py'), local_context, global_context)
-        self.test = KineticsDepository(label='{0}/test'.format(self.label))
-        self.test.load(os.path.join(path, 'test.py'), local_context, global_context)
-        if os.path.exists(os.path.join(path, 'PrIMe.py')):
-            self.PrIMe = KineticsDepository(label='{0}/PrIMe'.format(self.label))
-            self.PrIMe.load(os.path.join(path, 'PrIMe.py'), local_context, global_context)
-        else:
-            self.PrIMe = None
-        # why is all this hard-coded?
-        if os.path.exists(os.path.join(path, 'PrIMe_RMG_Java.py')):
-            self.PrIMe_RMG_Java = KineticsDepository(label='{0}/PrIMe_RMG_Java'.format(self.label))
-            self.PrIMe_RMG_Java.load(os.path.join(path, 'PrIMe_RMG_Java.py'), local_context, global_context)
-        else:
-            self.PrIMeRMGJava = None
+        
+        self.depositories = {}
+        for root, dirs, files in os.walk(path):
+            for f in files:
+                if f.endswith('.py') and f not in ['groups.py', 'rules.py']:
+                    fpath = os.path.join(root, f)
+                    label = '{0}/{1}'.format(self.label, fpath[len(path)+1:-3])
+                    depository = KineticsDepository(label=label)
+                    depository.load(fpath, local_context, global_context)
+                    self.depositories[label] = depository
             
     def loadTemplate(self, reactants, products, ownReverse=False):
         """
@@ -1681,11 +1670,16 @@ class KineticsFamily(Database):
         """
         self.saveGroups(os.path.join(path, 'groups.py'), entryName=entryName)
         self.rules.save(os.path.join(path, 'rules.py'))
-        self.training.save(os.path.join(path, 'training.py'))
-        self.test.save(os.path.join(path, 'test.py'))
-        if self.PrIMe:
-            self.PrIMe.save(os.path.join(path, 'PrIMe.py'))
-
+        for label, depository in self.depositories.iteritems():
+            self.saveDepository(depository, os.path.join(path, '{0}.py'.format(label[len(self.label)+1:])))
+    
+    def saveDepository(self, depository, path):
+        """
+        Save the given kinetics family `depository` to the location `path` on
+        disk.
+        """
+        depository.save(os.path.join(path))        
+        
     def saveGroups(self, path, entryName='entry'):
         """
         Save the current database to the file at location `path` on disk. The
@@ -2382,11 +2376,11 @@ class KineticsFamily(Database):
         kineticsList = []
         template = self.getReactionTemplate(reaction)
         
+        depositories = [self.rules]
         if searchMode == 'all':
-            depositories = [self.training, self.rules, self.PrIMe, self.test]
+            depositories.extend(self.depositories.values())
         else:
-            depositories = [self.training, self.rules]
-        depositories = [d for d in depositories if d is not None]
+            depositories.extend([d for d in self.depositories.values() if d.recommended])
         
         # Check the various depositories for kinetics
         for depository in depositories:
