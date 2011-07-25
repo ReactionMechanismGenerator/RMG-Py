@@ -178,6 +178,9 @@ class Reaction:
         If `eitherDirection=False` then the directions must match.
         """
         
+        if max(len(self.reactants),len(self.products),len(other.reactants),len(other.products)) > 2:
+            raise NotImplementedError("Can't check isomorphism of anything greater than bimolecular!")
+        
         # Compare reactants to reactants
         forwardReactantsMatch = False
         if len(self.reactants) == len(other.reactants) == 1:
