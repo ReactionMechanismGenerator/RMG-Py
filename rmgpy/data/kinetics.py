@@ -370,14 +370,16 @@ def saveEntry(f, entry):
         if entry.data.Tmin is not None: f.write('        Tmin = {0!r},\n'.format(entry.data.Tmin))
         if entry.data.Tmax is not None: f.write('        Tmax = {0!r},\n'.format(entry.data.Tmax))
         f.write('    ),\n')
-    elif isinstance(entry.data, MultiArrhenius):
-        f.write('    kinetics = MultiArrhenius(\n')
-        f.write('        arrheniusList = [\n')
-        for arrh in entry.data.arrheniusList:
-            f.write('            {0!r},\n'.format(arrh))
+    elif isinstance(entry.data, MultiKinetics):
+        f.write('    kinetics = MultiKinetics(\n')
+        f.write('        kineticsList = [\n')
+        for kin in entry.data.kineticsList:
+            f.write('            {0!r},\n'.format(kin))
         f.write('        ],\n')
         if entry.data.Tmin is not None: f.write('        Tmin = {0!r},\n'.format(entry.data.Tmin))
         if entry.data.Tmax is not None: f.write('        Tmax = {0!r},\n'.format(entry.data.Tmax))
+        if entry.data.Pmin is not None: f.write('        Pmin = {0!r},\n'.format(entry.data.Pmin))
+        if entry.data.Pmax is not None: f.write('        Pmax = {0!r},\n'.format(entry.data.Pmax))
         f.write('    ),\n')
     elif isinstance(entry.data, PDepArrhenius):
         f.write('    kinetics = PDepArrhenius(\n')
@@ -2407,7 +2409,7 @@ class KineticsDatabase:
             'KineticsData': KineticsData,
             'Arrhenius': Arrhenius,
             'ArrheniusEP': ArrheniusEP,
-            'MultiArrhenius': MultiArrhenius,
+            'MultiKinetics': MultiKinetics,
             'PDepArrhenius': PDepArrhenius,
             'Chebyshev': Chebyshev,
             'ThirdBody': ThirdBody,

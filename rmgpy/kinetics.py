@@ -37,8 +37,8 @@ such models derive from the :class:`KineticsModel` base class:
 * :class:`ArrheniusEP` - A kinetics model based on the modified Arrhenius
   equation with Evans-Polanyi correction to the activation energy
 
-* :class:`MultiArrhenius` - A kinetics model based on a summation of
-  modified Arrhenius expressions
+* :class:`MultiKinetics` - A kinetics model based on a summation of
+  several other kinetics expressions
 
 * :class:`ThirdBody` - A pressure-dependent kinetics model based on the  
   modified Arrhenius equation, but with an additional factor for the third body 
@@ -464,61 +464,62 @@ class ArrheniusEP(KineticsModel):
 
 ################################################################################
 
-class MultiArrhenius(KineticsModel):
+class MultiKinetics(KineticsModel):
     """
-    Represent a rate coefficient as multiple sets of modified Arrhenius
-    parameters, i.e.
+    Represent a rate coefficient as multiple sets of kinetics expressions
 
-    .. math:: k(T) = \\sum_{i=1}^N A_i \\left( \\frac{T}{T_{0,i}} \\right)^{n_i} \\exp \\left( - \\frac{E_{\\mathrm{a},i}}{RT} \\right)
+    .. math:: k(T,P) = \\sum_{i=1}^N k_i(T,P)
 
     The attributes are:
 
     =============== =============== ============================================
     Attribute       Type            Description
     =============== =============== ============================================
-    `arrheniusList` ``list``        A list of the :class:`Arrhenius` objects that sum to represent the kinetics
+    `kineticsList` ``list``        A list of the :class:`KineticsModel` objects that sum to represent the kinetics
     =============== =============== ============================================
 
     """
 
-    def __init__(self, arrheniusList=None, Tmin=None, Tmax=None, comment=''):
-        KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, comment=comment)
-        self.arrheniusList = arrheniusList or []
+    def __init__(self, kineticsList=None, Tmin=None, Tmax=None, Pmin=None, Pmax=None, comment=''):
+        KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, comment=comment)
+        self.kineticsList = kineticsList or []
 
     def __repr__(self):
         """
         Return a string representation that can be used to reconstruct the
-        MultiArrhenius object.
+        MultiKinetics object.
         """
-        string = 'MultiArrhenius(arrheniusList=[{0}]'.format(', '.join([repr(arrh) for arrh in self.arrheniusList]))
+        string = 'MultiKinetics(kineticsList=[{0}]'.format(', '.join([repr(k) for k in self.kineticsList]))
         if self.Tmin is not None: string += ', Tmin={0!r}'.format(self.Tmin)
         if self.Tmax is not None: string += ', Tmax={0!r}'.format(self.Tmax)
+        if self.Pmin is not None: string += ', Pmin={0!r}'.format(self.Pmin)
+        if self.Pmax is not None: string += ', Pmax={0!r}'.format(self.Pmax)
         if self.comment != '': string += ', comment="""{0}"""'.format(self.comment)
         string += ')'
         return string
 
     def __reduce__(self):
         """
-        A helper function used when pickling a MultiArrhenius object.
+        A helper function used when pickling a MultiKinetics object.
         """
-        return (MultiArrhenius, (self.arrheniusList, self.Tmin, self.Tmax, self.comment))
+        return (MultiKinetics, (self.kineticsList, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.comment))
 
     def isPressureDependent(self):
         """
-        Returns ``False`` since MultiArrhenius kinetics are not 
+        Returns ``True`` if any of the multiple kinetics expressions are
         pressure-dependent.
         """
-        return False
+        return any([k.isPressureDependent() for k in self.kineticsList])
 
     def getRateCoefficient(self, T, P=1e5):
         """
         Return the rate coefficient k(T) in SI units at temperature
         `T` in K.
         """
-        cython.declare(k=cython.double, arrhenius=Arrhenius)
+        cython.declare(k=cython.double, kinetics=KineticsModel)
         k = 0.0
-        for arrhenius in self.arrheniusList:
-            k += arrhenius.getRateCoefficient(T)
+        for kin in self.kineticsList:
+            k += kin.getRateCoefficient(T,P)
         return k
 
 ################################################################################

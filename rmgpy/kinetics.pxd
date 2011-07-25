@@ -95,9 +95,9 @@ cdef class ArrheniusEP(KineticsModel):
 
 ################################################################################
 
-cdef class MultiArrhenius(KineticsModel):
+cdef class MultiKinetics(KineticsModel):
 
-    cdef public list arrheniusList
+    cdef public list kineticsList
 
     cpdef bint isPressureDependent(self)
 

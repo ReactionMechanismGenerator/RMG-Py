@@ -391,9 +391,9 @@ class TestArrheniusEP(unittest.TestCase):
 
 ################################################################################
 
-class TestMultiArrhenius(unittest.TestCase):
+class TestMultiKinetics(unittest.TestCase):
     """
-    Contains unit tests of the MultiArrhenius class.
+    Contains unit tests of the MultiKinetics class: very simple test with two Arrhenius rates.
     """
     
     def setUp(self):
@@ -418,8 +418,8 @@ class TestMultiArrhenius(unittest.TestCase):
             Tmax = (2000.0,"K"), 
             comment = """This data is completely made up""",
         )
-        self.kinetics = MultiArrhenius(
-            arrheniusList = [arrh0, arrh1],
+        self.kinetics = MultiKinetics(
+            kineticsList = [arrh0, arrh1],
             Tmin = (300.0,"K"), 
             Tmax = (2000.0,"K"), 
             comment = """This data is completely made up""",
@@ -427,7 +427,7 @@ class TestMultiArrhenius(unittest.TestCase):
     
     def testIsPressureDependent(self):
         """
-        Test the MultiArrhenius.isPressureDependent() method.
+        Test the MultiKinetics.isPressureDependent() method.
         
         """
         self.assertFalse(self.kinetics.isPressureDependent())
@@ -438,12 +438,12 @@ class TestMultiArrhenius(unittest.TestCase):
         """
         for T in [300,400,500,600,700,800,900,1000,1100,1200,1300,1400,1500]:
             k0 = self.kinetics.getRateCoefficient(T)
-            k1 = sum([arrh.getRateCoefficient(T) for arrh in self.kinetics.arrheniusList])
+            k1 = sum([arrh.getRateCoefficient(T) for arrh in self.kinetics.kineticsList])
             self.assertAlmostEqual(k0 / k1, 1, 6)
     
     def testPickle(self):
         """
-        Test that a MultiArrhenius object can be successfully pickled and
+        Test that a MultiKinetics object can be successfully pickled and
         unpickled with no loss of information.
         """
 
@@ -451,13 +451,13 @@ class TestMultiArrhenius(unittest.TestCase):
         kinetics = cPickle.loads(cPickle.dumps(self.kinetics))
         
         Narrh = 2
-        self.assertEqual(len(self.kinetics.arrheniusList), Narrh)
-        self.assertEqual(len(kinetics.arrheniusList), Narrh)
+        self.assertEqual(len(self.kinetics.kineticsList), Narrh)
+        self.assertEqual(len(kinetics.kineticsList), Narrh)
         for i in range(Narrh):
-            self.assertEqual(self.kinetics.arrheniusList[i].A.value, kinetics.arrheniusList[i].A.value)
-            self.assertEqual(self.kinetics.arrheniusList[i].n.value, kinetics.arrheniusList[i].n.value)
-            self.assertEqual(self.kinetics.arrheniusList[i].T0.value, kinetics.arrheniusList[i].T0.value)
-            self.assertEqual(self.kinetics.arrheniusList[i].Ea.value, kinetics.arrheniusList[i].Ea.value)
+            self.assertEqual(self.kinetics.kineticsList[i].A.value, kinetics.kineticsList[i].A.value)
+            self.assertEqual(self.kinetics.kineticsList[i].n.value, kinetics.kineticsList[i].n.value)
+            self.assertEqual(self.kinetics.kineticsList[i].T0.value, kinetics.kineticsList[i].T0.value)
+            self.assertEqual(self.kinetics.kineticsList[i].Ea.value, kinetics.kineticsList[i].Ea.value)
 
         self.assertEqual(self.kinetics.Tmin.value, kinetics.Tmin.value)
         self.assertEqual(self.kinetics.Tmin.units, kinetics.Tmin.units)
@@ -469,20 +469,20 @@ class TestMultiArrhenius(unittest.TestCase):
     
     def testOutput(self):
         """
-        Test that a MultiArrhenius object can be successfully reconstructed
+        Test that a MultiKinetics object can be successfully reconstructed
         from its repr() output with no loss of information.
         """
 
         exec('kinetics = {0!r}'.format(self.kinetics))
         
         Narrh = 2
-        self.assertEqual(len(self.kinetics.arrheniusList), Narrh)
-        self.assertEqual(len(kinetics.arrheniusList), Narrh)
+        self.assertEqual(len(self.kinetics.kineticsList), Narrh)
+        self.assertEqual(len(kinetics.kineticsList), Narrh)
         for i in range(Narrh):
-            self.assertEqual(self.kinetics.arrheniusList[i].A.value, kinetics.arrheniusList[i].A.value)
-            self.assertEqual(self.kinetics.arrheniusList[i].n.value, kinetics.arrheniusList[i].n.value)
-            self.assertEqual(self.kinetics.arrheniusList[i].T0.value, kinetics.arrheniusList[i].T0.value)
-            self.assertEqual(self.kinetics.arrheniusList[i].Ea.value, kinetics.arrheniusList[i].Ea.value)
+            self.assertEqual(self.kinetics.kineticsList[i].A.value, kinetics.kineticsList[i].A.value)
+            self.assertEqual(self.kinetics.kineticsList[i].n.value, kinetics.kineticsList[i].n.value)
+            self.assertEqual(self.kinetics.kineticsList[i].T0.value, kinetics.kineticsList[i].T0.value)
+            self.assertEqual(self.kinetics.kineticsList[i].Ea.value, kinetics.kineticsList[i].Ea.value)
 
         self.assertEqual(self.kinetics.Tmin.value, kinetics.Tmin.value)
         self.assertEqual(self.kinetics.Tmin.units, kinetics.Tmin.units)
