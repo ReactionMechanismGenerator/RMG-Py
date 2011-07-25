@@ -524,6 +524,7 @@ class TestPDepArrhenius(unittest.TestCase):
         self.kinetics = PDepArrhenius(
             pressures = ([0.1, 10.0],"bar"),
             arrhenius = [arrh0, arrh1],
+            highPlimit = arrh1,
             Tmin = (300.0,"K"), 
             Tmax = (2000.0,"K"), 
             Pmin = (0.1,"bar"), 
@@ -603,6 +604,10 @@ class TestPDepArrhenius(unittest.TestCase):
         self.assertEqual(self.kinetics.Pmax.value, kinetics.Pmax.value)
         self.assertEqual(self.kinetics.Pmax.units, kinetics.Pmax.units)
         self.assertEqual(self.kinetics.comment, kinetics.comment)
+        self.assertEqual(self.kinetics.highPlimit.A.value,  kinetics.highPlimit.A.value)
+        self.assertEqual(self.kinetics.highPlimit.n.value,  kinetics.highPlimit.n.value)
+        self.assertEqual(self.kinetics.highPlimit.T0.value, kinetics.highPlimit.T0.value)
+        self.assertEqual(self.kinetics.highPlimit.Ea.value, kinetics.highPlimit.Ea.value)
 
     def testOutput(self):
         """
@@ -633,6 +638,10 @@ class TestPDepArrhenius(unittest.TestCase):
         self.assertEqual(self.kinetics.Pmax.value, kinetics.Pmax.value)
         self.assertEqual(self.kinetics.Pmax.units, kinetics.Pmax.units)
         self.assertEqual(self.kinetics.comment, kinetics.comment)
+        self.assertEqual(self.kinetics.highPlimit.A.value,  kinetics.highPlimit.A.value)
+        self.assertEqual(self.kinetics.highPlimit.n.value,  kinetics.highPlimit.n.value)
+        self.assertEqual(self.kinetics.highPlimit.T0.value, kinetics.highPlimit.T0.value)
+        self.assertEqual(self.kinetics.highPlimit.Ea.value, kinetics.highPlimit.Ea.value)
 
 ################################################################################
 

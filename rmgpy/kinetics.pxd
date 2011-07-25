@@ -109,6 +109,7 @@ cdef class PDepArrhenius(KineticsModel):
     
     cdef public Quantity pressures
     cdef public list arrhenius
+    cdef public Arrhenius highPlimit
     
     cpdef bint isPressureDependent(self)
 

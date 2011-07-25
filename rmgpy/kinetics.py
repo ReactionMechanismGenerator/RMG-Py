@@ -534,19 +534,22 @@ class PDepArrhenius(KineticsModel):
     where the modified Arrhenius parameters are stored at a variety of pressures
     and interpolated between on a logarithmic scale. The attributes are:
 
-    =============== =============== ============================================
-    Attribute       Type            Description
-    =============== =============== ============================================
-    `pressures`     :class:`list`   The list of pressures in Pa
-    `arrhenius`     :class:`list`   The list of :class:`Arrhenius` objects at each pressure
-    =============== =============== ============================================
+    =============== ================== ============================================
+    Attribute       Type               Description
+    =============== ================== ============================================
+    `pressures`     :class:`list`      The list of pressures in Pa
+    `arrhenius`     :class:`list`      The list of :class:`Arrhenius` objects at each pressure
+    `highPlimit`    :class:`Arrhenius` The high (infinite) pressure limiting :class:`Arrhenius` expression
+    =============== ================== ============================================
     
+    Note that `highPlimit` is not used in evaluating k(T,P).
     """
 
-    def __init__(self, pressures=None, arrhenius=None, Tmin=None, Tmax=None, Pmin=None, Pmax=None, comment=''):
+    def __init__(self, pressures=None, arrhenius=None, highPlimit=None, Tmin=None, Tmax=None, Pmin=None, Pmax=None, comment=''):
         KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, comment=comment)
         self.pressures = Quantity(pressures)
         self.arrhenius = arrhenius or []
+        self.highPlimit = highPlimit or None
 
     def __repr__(self):
         """
@@ -554,6 +557,7 @@ class PDepArrhenius(KineticsModel):
         PDepArrhenius object.
         """
         string = 'PDepArrhenius(pressures={0!r}, arrhenius=[{1}]'.format(self.pressures, ', '.join([repr(arrh) for arrh in self.arrhenius]))
+        if self.highPlimit is not None: string += ", highPlimit={0!r}".format(self.highPlimit)
         if self.Tmin is not None: string += ', Tmin={0!r}'.format(self.Tmin)
         if self.Tmax is not None: string += ', Tmax={0!r}'.format(self.Tmax)
         if self.Pmin is not None: string += ', Pmin={0!r}'.format(self.Pmin)
@@ -566,7 +570,7 @@ class PDepArrhenius(KineticsModel):
         """
         A helper function used when pickling a PDepArrhenius object.
         """
-        return (PDepArrhenius, (self.pressures, self.arrhenius, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.comment))
+        return (PDepArrhenius, (self.pressures, self.arrhenius, self.highPlimit, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.comment))
 
     def isPressureDependent(self):
         """

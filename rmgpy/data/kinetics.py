@@ -382,12 +382,14 @@ def saveEntry(f, entry):
         if entry.data.Pmax is not None: f.write('        Pmax = {0!r},\n'.format(entry.data.Pmax))
         f.write('    ),\n')
     elif isinstance(entry.data, PDepArrhenius):
+        # Why is all this here AND in rmgpy.kinetics.PDepArrhenius.__repr__ ?
         f.write('    kinetics = PDepArrhenius(\n')
         f.write('        pressures = {0!r},\n'.format(entry.data.pressures))
         f.write('        arrhenius = [\n')
         for arrh in entry.data.arrhenius:
             f.write('            {0!r},\n'.format(arrh))
         f.write('        ],\n')
+        if entry.data.highPlimit is not None: f.write('        highPlimit = {0!r},\n'.format(entry.data.highPlimit))
         if entry.data.Tmin is not None: f.write('        Tmin = {0!r},\n'.format(entry.data.Tmin))
         if entry.data.Tmax is not None: f.write('        Tmax = {0!r},\n'.format(entry.data.Tmax))
         if entry.data.Pmin is not None: f.write('        Pmin = {0!r},\n'.format(entry.data.Pmin))
@@ -981,7 +983,9 @@ class KineticsLibrary(Database):
                             Ea = Quantity(float(Ea), Eunits)
                             arrhenius = Arrhenius(A=A, n=n, Ea=Ea, T0=1.0)
                             if not isinstance(kinetics, PDepArrhenius):
-                                kinetics = PDepArrhenius(pressures=([P],"atm"), arrhenius=[arrhenius])
+                                old_kinetics = kinetics
+                                assert isinstance(old_kinetics, Arrhenius)
+                                kinetics = PDepArrhenius(pressures=([P],"atm"), arrhenius=[arrhenius], highPlimit=old_kinetics)
                             else:
                                 pressures = list(kinetics.pressures.values)
                                 pressures.append(P*101325.)
