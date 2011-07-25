@@ -41,7 +41,8 @@ import numpy
 import shutil
 
 import rmgpy.rmg.settings as settings
-from rmgpy.rmg.input import readInputFile
+from rmgpy.data.rmg import RMGDatabase
+from rmgpy.rmg.input import InputFile
 from rmgpy.rmg.model import Species, PDepNetwork
 
 ################################################################################
@@ -195,7 +196,7 @@ def makeOutputSubdirectory(folder):
 def execute(args):
     """
     Generate a reaction model for the set of reaction systems specified in an
-    input file at location `inputFile`. Output and temporary files will be
+    input file at location `inputFilePath`. Output and temporary files will be
     placed in the directories `outputDir` and `scratchDir`, respectively; if
     either of these are empty strings, the corresponding files will be placed
     in the same directory as the input file. The `libraryDir` parameter can be
@@ -203,8 +204,30 @@ def execute(args):
     `verbose` parameter is an integer specifying the amount of log text seen
     at the console; the levels correspond to those of the :data:`logging` module.
     """
+    inputFilePath= args.file[0]
 
-    inputFile = args.file[0]
+    # Create input file object and load from path.
+    inputFile = InputFile()
+    inputFile = inputFile.load(inputFilePath)
+
+    reactionModel = inputFile.reactionModel
+    coreSpecies = inputFile.speciesList
+    reactionSystems = inputFile.reactionSystems
+
+    # Load databases
+    database = RMGDatabase()
+    database.load(
+        path = inputFile.databases['path'],
+        thermoLibraries = inputFile.databases['thermoLibraries'],
+        reactionLibraries = inputFile.databases['reactionLibraries'],
+        seedMechanisms = inputFile.databases['seedMechanisms'],
+        #frequenciesLibraries = databases['frequenciesLibraries'],
+        depository = False, # Don't bother loading the depository information, as we don't use it
+    )
+    seedMechanisms = inputFile.databases['seedMechanisms']
+
+    pdepSettings = inputFile.pdepSettings
+    runSettings = inputFile.runSettings
 
     # Set directories
     settings.outputDirectory = args.output_directory
@@ -256,10 +279,10 @@ def execute(args):
     makeOutputSubdirectory('pdep')
     makeOutputSubdirectory('chemkin')
     makeOutputSubdirectory('solver')
-    
+
     # Read input file
-    reactionModel, coreSpecies, reactionSystems, database, seedMechanisms = readInputFile(inputFile)
-    
+    #  reactionModel, coreSpecies, reactionSystems, database, seedMechanisms = readInputFile(inputFile)
+
     # Delete previous HTML file
     from rmgpy.rmg.output import saveOutputHTML
     saveOutputHTML(os.path.join(settings.outputDirectory, 'output.html'), reactionModel)
@@ -278,17 +301,17 @@ def execute(args):
         # This is necessary so that the PDep algorithm can identify the bath gas
         for spec in coreSpecies:
             if not spec.reactive:
-                reactionModel.enlarge(spec)
+                reactionModel.enlarge(spec, pdepSettings)
         # Then add remaining reactive species
         for spec in coreSpecies:
             if spec.reactive:
                 spec.generateThermoData(database)
         for spec in coreSpecies:
             if spec.reactive:
-                reactionModel.enlarge(spec)
+                reactionModel.enlarge(spec, pdepSettings)
         
         # Save a restart file if desired
-        if settings.saveRestart:
+        if runSettings['saveRestart']:
             saveRestartFile(os.path.join(settings.outputDirectory,'restart.pkl.gz'), reactionModel)
 
     # RMG execution statistics
@@ -360,7 +383,7 @@ def execute(args):
             logging.info('')
             objectsToEnlarge = list(set(objectsToEnlarge))
             for object in objectsToEnlarge:
-                reactionModel.enlarge(object)
+                reactionModel.enlarge(object, pdepSettings)
 
         # Save the current state of the model core to a pretty HTML file
         logging.info('Saving latest model core to HTML file...')
@@ -376,7 +399,7 @@ def execute(args):
         os.link(this_chemkin_path,latest_chemkin_path)
 
         # Save the restart file if desired
-        if settings.saveRestart or done:
+        if runSettings['saveRestart'] or done:
             saveRestartFile(os.path.join(settings.outputDirectory,'restart.pkl.gz'), reactionModel, delay=0 if done else 3600)
 
         # Update RMG execution statistics
@@ -596,8 +619,9 @@ def generateExecutionPlots(execTime, coreSpeciesCount, coreReactionCount,
     """
 
     # Only generate plots if that flag is turned on (in input file)
-    if not settings.generatePlots:
-        return
+    # Not yet working, also need to pass in runSettings if we want this feature later
+#    if not runSettings['generatePlots']:
+#        return
 
     import matplotlib.pyplot as plt
     fig = plt.figure()

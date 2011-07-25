@@ -430,9 +430,9 @@ class PDepNetwork(rmgpy.measure.network.Network):
                 if len(rxn.products) == 1 and rxn.products[0] not in self.isomers:
                     self.products.append(rxn.products)
                 elif len(rxn.products) > 1 and rxn.products not in self.reactants:
-                    self.products.append(rxn.products)
+                    self.products.appende(rxn.products)
 
-    def update(self, reactionModel, database):
+    def update(self, reactionModel, database, pdepSettings):
         """
         Regenerate the :math:`k(T,P)` values for this partial network if the
         network is marked as invalid.
@@ -444,8 +444,18 @@ class PDepNetwork(rmgpy.measure.network.Network):
         import rmgpy.measure.settings
         
         # Get the parameters for the pressure dependence calculation
-        method, Tmin, Tmax, Tlist, Pmin, Pmax, Plist, grainSize, numGrains, model = settings.pressureDependence
-        
+        # method, Tmin, Tmax, Tlist, Pmin, Pmax, Plist, grainSize, numGrains, model = settings.pressureDependence
+        method = pdepSettings['method']
+        Tmin = pdepSettings['Tmin']
+        Tmax = pdepSettings['Tmax']
+        Tlist = pdepSettings['Tlist']
+        Pmin = pdepSettings['Pmin']
+        Pmax = pdepSettings['Pmax']
+        Plist = pdepSettings['Plist']
+        grainSize = pdepSettings['minimumGrainSize']
+        numGrains = pdepSettings['minimumNumberOfGrains']
+        model = pdepSettings['interpolation']
+
         measure = MEASURE()
         measure.method = method
         measure.Tmin = Quantity(Tmin, "K")
@@ -458,7 +468,7 @@ class PDepNetwork(rmgpy.measure.network.Network):
         measure.grainCount = numGrains
         measure.model = model
         measure.network = self
-        
+
         # Figure out which configurations are isomers, reactant channels, and product channels
         self.updateConfigurations()
 
@@ -866,7 +876,7 @@ class CoreEdgeReactionModel:
                     moleculeB.clearLabeledAtoms()
         return reactionList
 
-    def enlarge(self, newObject):
+    def enlarge(self, newObject, pdepSettings):
         """
         Enlarge a reaction model by processing `newObject`. If `newObject` is a
         :class:`rmg.species.Species` object, then the species is moved from
@@ -983,7 +993,7 @@ class CoreEdgeReactionModel:
                         index += 1
 
             # Recalculate k(T,P) values for modified networks
-            self.updateUnimolecularReactionNetworks(database)
+            self.updateUnimolecularReactionNetworks(database,pdepSettings)
             logging.info('')
 
         # Print summary of enlargement
@@ -1338,7 +1348,7 @@ class CoreEdgeReactionModel:
             rxnRate[j] = rxn.getRate(T, P, Ci)
         return rxnRate
 
-    def addSeedMechanismToCore(self, seedMechanism, react=False):
+    def addSeedMechanismToCore(self, seedMechanism, pdepSettings, react=False):
         """
         Add all species and reactions from `seedMechanism`, a 
         :class:`KineticsPrimaryDatabase` object, to the model core. If `react`
@@ -1346,6 +1356,7 @@ class CoreEdgeReactionModel:
         species. For large seed mechanisms this can be prohibitively expensive,
         so it is not done by default.
         """
+
         if react: raise NotImplementedError("react=True doesn't work yet")
         database = rmgpy.data.rmg.database
         
@@ -1365,6 +1376,7 @@ class CoreEdgeReactionModel:
             if spec.reactive: spec.generateThermoData(database)
         for spec in self.newSpeciesList:
             self.addSpeciesToCore(spec)
+
         for rxn in self.newReactionList:
             self.addReactionToCore(rxn)
 
@@ -1427,7 +1439,7 @@ class CoreEdgeReactionModel:
         # Return the network that the reaction was added to
         return network
 
-    def updateUnimolecularReactionNetworks(self, database):
+    def updateUnimolecularReactionNetworks(self, database,pdepSettings):
         """
         Iterate through all of the currently-existing unimolecular reaction
         networks, updating those that have been marked as invalid. In each update,
@@ -1440,8 +1452,9 @@ class CoreEdgeReactionModel:
         logging.info('Updating {0:d} modified unimolecular reaction networks...'.format(count))
         
         # Iterate over all the networks, updating the invalid ones as necessary
+        # self = reactionModel object
         for network in self.unirxnNetworks:
-            network.update(self, database)
+            network.update(self, database,pdepSettings)
 
     def loadSeedMechanism(self, path):
         """

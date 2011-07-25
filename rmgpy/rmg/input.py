@@ -46,12 +46,6 @@ class InputError(Exception): pass
 
 ################################################################################
 
-speciesDict = {}
-databases = {}
-pdepSettings = {}
-settings = {}
-reactionSystems = []
-reactionModel = None
 
 def database(path, thermoLibraries=None, reactionLibraries=None, frequenciesLibraries=None, seedMechanisms=None):
     global databases
@@ -152,29 +146,32 @@ def pressureDependence(method, temperatures, pressures, minimumGrainSize=0.0, mi
     pdepSettings['Tmin'] = processQuantity((Tmin, Tmin_units))[0]
     pdepSettings['Tmax'] = processQuantity((Tmax, Tmax_units))[0]
     pdepSettings['Tlist'] = getTemperaturesForModel(interpolation, Tmin, Tmax, Tcount)
+    pdepSettings['Tcount'] = Tcount
 
     # Process pressures
     Pmin, Pmin_units, Pmax, Pmax_units, Pcount = pressures
     pdepSettings['Pmin'] = processQuantity((Pmin, Pmin_units))[0]
     pdepSettings['Pmax'] = processQuantity((Pmax, Pmax_units))[0]
     pdepSettings['Plist'] = getPressuresForModel(interpolation, Pmin, Pmax, Pcount)
-
+    pdepSettings['Pcount'] = Pcount
     # Process grain size
     pdepSettings['minimumGrainSize'] = processQuantity(minimumGrainSize)[0]
 
     # Save settings (setting this to non-None enables pressure dependence)
     pdepSettings['minimumNumberOfGrains'] = minimumNumberOfGrains
     pdepSettings['interpolation'] = interpolation
+    
+    settings.pressureDependence = True
 
 def options(units='si', saveRestart=False, drawMolecules=False, generatePlots=False):
     # settings.saveRestart = saveRestart
     
     # currently drawMolecules, generatePlots don't actually work yet...
-    global settingss
-    settings['units']=units
-    settings['saveRestart']=saveRestart
-    settings['drawMolecules']=drawMolecules
-    settings['generatePlots']=generatePlots
+    global runSettings
+    runSettings['units']=units
+    runSettings['saveRestart']=saveRestart
+    runSettings['drawMolecules']=drawMolecules
+    runSettings['generatePlots']=generatePlots
 
 ################################################################################
 
@@ -278,24 +275,31 @@ class InputFile():
     `speciesList `          ``list`     list of species objects
     `databases`             ``dict``    dictionary of thermo, reaction, seedmech, etc. libraries
     `pdepSettings`          ``dict``    dictionary of pressure dependence settings
-    `settings`              ``dict``    run settings
+    `runSettings`              ``dict``    run settings
     ======================= =========== ========================================
 
    """
 
-    def __init__(self,reactionModel=None, reactionSystems = None, speciesList= '', databases={}, pdepSettings={},settings={}):
+    def __init__(self,reactionModel=None, reactionSystems = [], speciesList= '', databases={}, pdepSettings={},runSettings={}):
         self.reactionModel = reactionModel
         self.reactionSystems = reactionSystems
         self.speciesList = speciesList
         self.databases = databases
         self.pdepSettings = pdepSettings
-        self.settings = settings
+        self.runSettings = runSettings
 
     def load(self, path):
         """
         Load input.py file as InputFile object.
         """
-        global reactionModel, reactionSystems, speciesDict, databases, pdepSettings, settings
+        global reactionModel, reactionSystems, speciesDict, databases, pdepSettings, runSettings
+        speciesDict = {}
+        databases = {}
+        pdepSettings = {}
+        runSettings = {}
+        reactionSystems = []
+        reactionModel = None
+        
         full_path = os.path.abspath(os.path.expandvars(path))
         try:
             f = open(full_path)
@@ -351,7 +355,7 @@ class InputFile():
         self.speciesList = speciesList
         self.databases = databases
         self.pdepSettings = pdepSettings
-        self.settings = settings
+        self.runSettings = runSettings
         return self
 
     def save(self, path):
@@ -366,7 +370,7 @@ class InputFile():
 	f.write("\t'{}',\n".format(self.databases['path']))
 	f.write("\tthermoLibraries = {},\n".format(self.databases['thermoLibraries']))
 	f.write("\treactionLibraries = {},\n".format(self.databases['reactionLibraries']))
-	f.write("\tseedMechanims = {},\n".format(self.databases['seedMechanisms']))
+	f.write("\tseedMechanisms = {},\n".format(self.databases['seedMechanisms']))
 	f.write(")\n\n")
 
 	# Species
@@ -430,15 +434,15 @@ class InputFile():
             # change from J/mol to kJ/mol
             f.write("\tminimumGrainSize = ({},'kJ/mol'),\n".format(self.pdepSettings['minimumGrainSize']/1e3))
             f.write("\tminimumNumberOfGrains = {},\n".format(self.pdepSettings['minimumNumberOfGrains']))
-            f.write("\ttemperature = ({},'K',{},'K'),\n".format(self.pdepSettings['Tmin'],self.pdepSettings['Tmax']))
+            f.write("\ttemperatures = ({},'K',{},'K',{}),\n".format(self.pdepSettings['Tmin'],self.pdepSettings['Tmax'],self.pdepSettings['Tcount']))
             # convert pressure to bar here
-            f.write("\tpressure = ({},'bar',{},'bar'),\n".format(self.pdepSettings['Pmin']/1e5,self.pdepSettings['Pmax']/1e5))
+            f.write("\tpressures = ({},'bar',{},'bar',{}),\n".format(self.pdepSettings['Pmin']/1e5,self.pdepSettings['Pmax']/1e5,self.pdepSettings['Pcount']))
             f.write("\tinterpolation = {},\n".format(self.pdepSettings['interpolation']))
             f.write(")\n\n")
         
 	# Options
         f.write("options(\n")
-        for property, value in self.settings.iteritems():
+        for property, value in self.runSettings.iteritems():
             f.write("\t{} = '{}',\n".format(property,value))
         f.write(")\n")
         
