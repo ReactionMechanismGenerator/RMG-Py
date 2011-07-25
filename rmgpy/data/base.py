@@ -994,6 +994,19 @@ def removeCommentFromLine(line):
         line = line[0:index]
     return line
 
+def splitLineAndComment(line):
+    """
+    Returns a tuple(line, comment) based on a '//' comment delimiter.
+    
+    Either `line` or `comment` may be ''.
+    Does not strip whitespace, nor remove more than two slashes.
+    """
+    split = line.split('//',1)
+    if len(split) == 1:
+        return (split[0],'')
+    else:
+        return tuple(split)
+
 def getAllCombinations(nodeLists):
     """
     Generate a list of all possible combinations of items in the list of
