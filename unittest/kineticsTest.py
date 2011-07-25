@@ -102,9 +102,10 @@ class TestKineticsData(unittest.TestCase):
         """
         A function run before each unit test in this class.
         """
+        Tlist = [300.0,400.0,500.0,600.0,800.0,1000.0,1500.0]
         self.kinetics = KineticsData(
-            Tdata = ([300.0,400.0,500.0,600.0,800.0,1000.0,1500.0],"K"),
-            kdata = ([3.0,4.0,5.0,6.0,8.0,10.0,15.0],"m^3/(mol*s)"),
+            Tdata = (Tlist,"K"),
+            kdata = ([10**(1000/T) for T in Tlist],"m^3/(mol*s)"),
             Tmin = (300.0,"K"), 
             Tmax = (2000.0,"K"), 
             comment = """This data is completely made up""",
@@ -121,22 +122,8 @@ class TestKineticsData(unittest.TestCase):
         """
         Test the KineticsData.getRateCoefficient() method.
         """
-        self.assertEqual(self.kinetics.getRateCoefficient(300), 3)
-        self.assertEqual(self.kinetics.getRateCoefficient(350), 3.5)
-        self.assertEqual(self.kinetics.getRateCoefficient(400), 4)
-        self.assertEqual(self.kinetics.getRateCoefficient(450), 4.5)
-        self.assertEqual(self.kinetics.getRateCoefficient(500), 5)
-        self.assertEqual(self.kinetics.getRateCoefficient(550), 5.5)
-        self.assertEqual(self.kinetics.getRateCoefficient(600), 6)
-        self.assertEqual(self.kinetics.getRateCoefficient(700), 7)
-        self.assertEqual(self.kinetics.getRateCoefficient(800), 8)
-        self.assertEqual(self.kinetics.getRateCoefficient(900), 9)
-        self.assertEqual(self.kinetics.getRateCoefficient(1000), 10)
-        self.assertEqual(self.kinetics.getRateCoefficient(1100), 11)
-        self.assertEqual(self.kinetics.getRateCoefficient(1200), 12)
-        self.assertEqual(self.kinetics.getRateCoefficient(1300), 13)
-        self.assertEqual(self.kinetics.getRateCoefficient(1400), 14)
-        self.assertEqual(self.kinetics.getRateCoefficient(1500), 15)
+        for T in xrange(300,1500,50):
+            self.assertAlmostEqual(self.kinetics.getRateCoefficient(T), 10**(1000.0/T),4)
     
     def testPickle(self):
         """
@@ -173,7 +160,7 @@ class TestKineticsData(unittest.TestCase):
         self.assertEqual(self.kinetics.Tdata.units, kinetics.Tdata.units)
         self.assertEqual(len(self.kinetics.kdata.values), len(kinetics.kdata.values))
         for k0, k in zip(self.kinetics.kdata.values, kinetics.kdata.values):
-            self.assertEqual(k0, k)
+            self.assertAlmostEqual(k0, k, 2)
         self.assertEqual(self.kinetics.kdata.units, kinetics.kdata.units)
         self.assertEqual(self.kinetics.Tmin.value, kinetics.Tmin.value)
         self.assertEqual(self.kinetics.Tmin.units, kinetics.Tmin.units)
