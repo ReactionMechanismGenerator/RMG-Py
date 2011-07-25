@@ -224,14 +224,15 @@ class Quantity:
         """
         A helper function used when pickling a Quantity object.
         """
-        d = {}
-        d['value'] = self.value
-        d['units'] = self.units
-        d['uncertaintyType'] = self.uncertaintyType
-        d['uncertainty'] = self.uncertainty
-        d['values'] = self.values
-        d['uncertainties'] = self.uncertainties
-        return (Quantity, tuple([None]), d)
+        d = {
+            'value': self.value,
+            'units': self.units,
+            'uncertaintyType': self.uncertaintyType,
+            'uncertainty': self.uncertainty,
+            'values': self.values,
+            'uncertainties': self.uncertainties,
+        }
+        return (Quantity, (None,), d)
 
     def __setstate__(self, d):
         """
