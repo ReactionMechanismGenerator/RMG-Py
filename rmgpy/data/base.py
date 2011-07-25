@@ -134,13 +134,14 @@ class Database:
     new and old database formats.
     """
 
-    def __init__(self, entries=None, top=None, label='', name='', shortDesc='', longDesc=''):
+    def __init__(self, entries=None, top=None, label='', name='', shortDesc='', longDesc='', recommended=False):
         self.entries = entries or {}
         self.top = top or []
         self.label = label
         self.name = name
         self.shortDesc = shortDesc
         self.longDesc = longDesc
+        self.recommended = recommended
 
     def load(self, path, local_context=None, global_context=None):
         """
@@ -180,7 +181,8 @@ class Database:
         local_context['Article'] = Article
         local_context['Book'] = Book
         local_context['Thesis'] = Thesis
-
+        local_context['recommended'] = False
+        
         # Process the file
         f = open(path, 'r')
         exec f in global_context, local_context
@@ -190,6 +192,7 @@ class Database:
         self.name = local_context['name']
         self.shortDesc = local_context['shortDesc']
         self.longDesc = local_context['longDesc'].strip()
+        self.recommended = local_context['recommended']
         
         # Return the loaded database (to allow for Database().load() syntax)
         return self
@@ -237,7 +240,9 @@ class Database:
         f.write('shortDesc = u"{0}"\n'.format(self.shortDesc))
         f.write('longDesc = u"""\n')
         f.write(self.longDesc.strip() + '\n')
-        f.write('"""\n\n')
+        f.write('"""\n')
+        f.write('recommended = {0}\n\n'.format(self.recommended))
+        
         for entry in entries:
             self.saveEntry(f, entry)
 
