@@ -436,12 +436,11 @@ def loadRestartFile(path):
     Load a restart file at `path` on disk.
     """
 
-    import gzip
     import cPickle
 
     # Unpickle the reaction model from the specified restart file
     logging.info('Loading previous restart file...')
-    f = gzip.GzipFile(path, 'rb')
+    f = open(path, 'rb')
     reactionModel = cPickle.load(f)
     f.close()
 
@@ -502,14 +501,13 @@ def saveRestartFile(path, reactionModel):
     Save a restart file to `path` on disk containing the contents of the
     provided `reactionModel`.
     """
-    import gzip
     import cPickle
     
     # Pickle the reaction model to the specified file
     # We also compress the restart file to save space (and lower the disk read/write time)
     logging.info('Saving restart file...')
-    f = gzip.GzipFile(path, 'wb')
-    cPickle.dump(reactionModel, f)
+    f = open(path, 'wb')
+    cPickle.dump(reactionModel, f, cPickle.HIGHEST_PROTOCOL)
     f.close()
 
 ################################################################################
