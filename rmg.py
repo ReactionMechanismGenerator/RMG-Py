@@ -286,6 +286,10 @@ def execute(args):
         for spec in coreSpecies:
             if spec.reactive:
                 reactionModel.enlarge(spec)
+        
+        # Save a restart file if desired
+        if settings.saveRestart:
+            saveRestartFile(os.path.join(settings.outputDirectory,'restart.pkl.gz'), reactionModel)
 
     # RMG execution statistics
     coreSpeciesCount = []
@@ -372,8 +376,8 @@ def execute(args):
         os.link(this_chemkin_path,latest_chemkin_path)
 
         # Save the restart file if desired
-        if settings.saveRestart:
-            saveRestartFile(os.path.join(settings.outputDirectory,'restart.pkl.gz'), reactionModel)
+        if settings.saveRestart or done:
+            saveRestartFile(os.path.join(settings.outputDirectory,'restart.pkl.gz'), reactionModel, delay=0 if done else 3600)
 
         # Update RMG execution statistics
         logging.info('Updating RMG execution statistics...')
@@ -496,12 +500,20 @@ def loadRestartFile(path):
     # Return the unpickled reaction model
     return reactionModel
 
-def saveRestartFile(path, reactionModel):
+def saveRestartFile(path, reactionModel, delay=0):
     """
     Save a restart file to `path` on disk containing the contents of the
-    provided `reactionModel`.
+    provided `reactionModel`. The `delay` parameter is a time in seconds; if
+    the restart file is not at least that old, the save is aborted. (Use the
+    default value of 0 to force the restart file to be saved.)
     """
     import cPickle
+    
+    # Saving of a restart file is very slow (likely due to all the Quantity objects)
+    # Therefore, to save it less frequently, don't bother if the restart file is less than an hour old
+    if time.time() - os.path.getmtime(path) < delay:
+        logging.info('Not saving restart file in this iteration.')
+        return
     
     # Pickle the reaction model to the specified file
     # We also compress the restart file to save space (and lower the disk read/write time)
