@@ -204,9 +204,39 @@ def execute(args):
     `verbose` parameter is an integer specifying the amount of log text seen
     at the console; the levels correspond to those of the :data:`logging` module.
     """
-    inputFilePath= args.file[0]
+    # Save initialization time
+    settings.initializationTime = time.time()
 
-    # Create input file object and load from path.
+    # Log start timestamp
+    logging.info('RMG execution initiated at ' + time.asctime() + '\n')
+
+    # Print out RMG header
+    logHeader()
+
+    # See if memory profiling package is available
+    try:
+        import os
+        import psutil
+    except ImportError:
+        logging.info('Optional package dependency "psutil" not found; memory profiling information will not be saved.')
+
+    # See if spreadsheet writing package is available
+    saveConcentrationProfiles = False
+    try:
+        import xlwt
+        saveConcentrationProfiles = True
+    except ImportError:
+        logging.info('Optional package dependency "xlwt" not found; reaction system concentration profiles will not be saved.')
+
+    # Make output subdirectories
+    makeOutputSubdirectory('plot')
+    makeOutputSubdirectory('species')
+    makeOutputSubdirectory('pdep')
+    makeOutputSubdirectory('chemkin')
+    makeOutputSubdirectory('solver')
+
+    # Read input file
+    inputFilePath = args.file[0]
     inputFile = InputFile()
     inputFile = inputFile.load(inputFilePath)
 
@@ -248,40 +278,6 @@ def execute(args):
             settings.wallTime = int(data[-1]) + 60 * int(data[-2]) + 3600 * int(data[-3]) + 86400 * int(data[-4])
         else:
             raise ValueError('Invalid format for wall time; should be HH:MM:SS.')
-
-    # Save initialization time
-    settings.initializationTime = time.time()
-
-    # Log start timestamp
-    logging.info('RMG execution initiated at ' + time.asctime() + '\n')
-
-    # Print out RMG header
-    logHeader()
-
-    # See if memory profiling package is available
-    try:
-        import os
-        import psutil
-    except ImportError:
-        logging.info('Optional package dependency "psutil" not found; memory profiling information will not be saved.')
-
-    # See if spreadsheet writing package is available
-    saveConcentrationProfiles = False
-    try:
-        import xlwt
-        saveConcentrationProfiles = True
-    except ImportError:
-        logging.info('Optional package dependency "xlwt" not found; reaction system concentration profiles will not be saved.')
-
-    # Make output subdirectories
-    makeOutputSubdirectory('plot')
-    makeOutputSubdirectory('species')
-    makeOutputSubdirectory('pdep')
-    makeOutputSubdirectory('chemkin')
-    makeOutputSubdirectory('solver')
-
-    # Read input file
-    #  reactionModel, coreSpecies, reactionSystems, database, seedMechanisms = readInputFile(inputFile)
 
     # Delete previous HTML file
     from rmgpy.rmg.output import saveOutputHTML
