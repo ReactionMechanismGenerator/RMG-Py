@@ -43,7 +43,7 @@ model(
 
 options(
     units='si',
-    saveRestart=True,
+    saveRestart=False,
     drawMolecules=False,
     generatePlots=False,
 )
