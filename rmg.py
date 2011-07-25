@@ -421,7 +421,8 @@ def execute(args):
         else:
             restartSize.append(0.0)
         saveExecutionStatistics(execTime, coreSpeciesCount, coreReactionCount, edgeSpeciesCount, edgeReactionCount, memoryUse, restartSize)
-        generateExecutionPlots(execTime, coreSpeciesCount, coreReactionCount, edgeSpeciesCount, edgeReactionCount, memoryUse, restartSize)
+        if runSettings['generatePlots']:
+            generateExecutionPlots(execTime, coreSpeciesCount, coreReactionCount, edgeSpeciesCount, edgeReactionCount, memoryUse, restartSize)
 
         logging.info('')
 
@@ -614,10 +615,7 @@ def generateExecutionPlots(execTime, coreSpeciesCount, coreReactionCount,
     folder.
     """
 
-    # Only generate plots if that flag is turned on (in input file)
-    # Not yet working, also need to pass in runSettings if we want this feature later
-#    if not runSettings['generatePlots']:
-#        return
+    logging.info('Generating plots of execution statistics...')
 
     import matplotlib.pyplot as plt
     fig = plt.figure()
