@@ -871,6 +871,7 @@ def toAdjacencyList(molecule, label='', group=False, removeH=False):
     if label != '': adjlist += label + '\n'
 
     molecule.updateConnectivityValues() # so we can sort by them
+    molecule.sortAtoms()
     atoms = molecule.atoms
     bonds = molecule.bonds
 
