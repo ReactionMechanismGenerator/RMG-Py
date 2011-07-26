@@ -43,13 +43,13 @@ cdef class ReactionSystem(DASSL):
     cdef public numpy.ndarray maxEdgeSpeciesRates
     cdef public numpy.ndarray maxNetworkLeakRates
 
-    cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions, list pdepNetworks=?)
+    cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions, list pdepNetworks=?, atol=?, rtol=?)
 
     cpdef writeWorksheetHeader(self, worksheet)
     
     cpdef simulate(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions,
         double toleranceKeepInEdge, double toleranceMoveToCore, double toleranceInterruptSimulation,
-        list termination, list pdepNetworks=?, worksheet=?)
+        list termination, list pdepNetworks=?, worksheet=?, absoluteTolerance=?, relativeTolerance=?)
 
     cpdef logRates(self, double charRate, object species, double speciesRate, object network, double networkRate)
 

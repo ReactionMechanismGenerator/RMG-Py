@@ -69,7 +69,7 @@ cdef class SimpleReactor(ReactionSystem):
         self.forwardRateCoefficients = None
         self.reverseRateCoefficients = None
 
-    cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions, list pdepNetworks=None):
+    cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions, list pdepNetworks=None, atol=1e-16, rtol=1e-8):
         """
         Initialize a simulation of the simple reactor using the provided kinetic
         model.
@@ -77,7 +77,7 @@ cdef class SimpleReactor(ReactionSystem):
 
         # First call the base class version of the method
         # This initializes the attributes declared in the base class
-        ReactionSystem.initializeModel(self, coreSpecies, coreReactions, edgeSpecies, edgeReactions, pdepNetworks)
+        ReactionSystem.initializeModel(self, coreSpecies, coreReactions, edgeSpecies, edgeReactions, pdepNetworks, atol, rtol)
 
         cdef int numCoreSpecies, numCoreReactions, numEdgeSpecies, numEdgeReactions, numPdepNetworks
         cdef int i, j, l, index
@@ -148,7 +148,7 @@ cdef class SimpleReactor(ReactionSystem):
         
         # Initialize the model
         dydt0 = - self.residual(t0, y0, numpy.zeros((numCoreSpecies), numpy.float64))[0]
-        DASSL.initialize(self, t0, y0, dydt0)
+        DASSL.initialize(self, t0, y0, dydt0, atol, rtol)
 
     cpdef writeWorksheetHeader(self, worksheet):
         """

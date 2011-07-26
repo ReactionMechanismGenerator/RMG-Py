@@ -84,7 +84,7 @@ model(
 
 pressureDependence(
     method='modified strong collision',
-    minimumGrainSize=(2.0,'kcal/mol'),
+    maximumGrainSize=(2.0,'kcal/mol'),
     minimumNumberOfGrains=200,
     temperatures=(300,'K',2000,'K',8),
     pressures=(0.01,'bar',100,'bar',5),
@@ -93,7 +93,7 @@ pressureDependence(
 
 options(
     units='si',
-    saveRestart='daily',
+    saveRestart=False,
     drawMolecules=False,
     generatePlots=False,
 )
