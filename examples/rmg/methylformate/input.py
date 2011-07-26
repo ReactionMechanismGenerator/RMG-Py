@@ -102,8 +102,26 @@ species(
 
 # Reaction systems
 simpleReactor(
-    temperature=(1350,'K'),
+    temperature=(650,'K'),
     pressure=(1.0,'bar'),
+    initialMoleFractions={
+        "Mfmt": 0.01,
+        "O2": 0.02,
+        "Ar": 0.08,
+    },
+)
+simpleReactor(
+    temperature=(1350,'K'),
+    pressure=(3.0,'bar'),
+    initialMoleFractions={
+        "Mfmt": 0.01,
+        "O2": 0.02,
+        "Ar": 0.97,
+    },
+)
+simpleReactor(
+    temperature=(1950,'K'),
+    pressure=(10.0,'bar'),
     initialMoleFractions={
         "Mfmt": 0.01,
         "O2": 0.02,
