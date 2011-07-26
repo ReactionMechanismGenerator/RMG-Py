@@ -35,6 +35,7 @@ import re
 
 from thermo import MultiNASA
 from kinetics import *
+from reaction import Reaction
 
 ################################################################################
 
@@ -163,6 +164,18 @@ def writeKineticsEntry(reaction, speciesList):
     """
     string = ""
     
+    if isinstance(reaction.kinetics, MultiKinetics):
+        if reaction.kinetics.comment:
+            for line in reaction.kinetics.comment.split("\n"):
+                string += "! {0}\n".format(line) 
+        for kinetics in reaction.kinetics.kineticsList:
+            new_reaction = Reaction(reactants=reaction.reactants,
+                     products=reaction.products,
+                     reversible=reaction.reversible,
+                     kinetics=kinetics)
+            string += writeKineticsEntry(new_reaction, speciesList)
+            string += "DUPLICATE\n"
+
     if reaction.kinetics.comment:
         for line in reaction.kinetics.comment.split("\n"):
             string += "! {0}\n".format(line) 
