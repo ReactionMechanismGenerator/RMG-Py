@@ -457,7 +457,7 @@ class CoreEdgeReactionModel:
                     moleculeB.clearLabeledAtoms()
         return reactionList
 
-    def enlarge(self, newObject, pdepSettings):
+    def enlarge(self, newObject):
         """
         Enlarge a reaction model by processing `newObject`. If `newObject` is a
         :class:`rmg.species.Species` object, then the species is moved from
@@ -574,7 +574,7 @@ class CoreEdgeReactionModel:
                         index += 1
 
             # Recalculate k(T,P) values for modified networks
-            self.updateUnimolecularReactionNetworks(database,pdepSettings)
+            self.updateUnimolecularReactionNetworks(database)
             logging.info('')
 
         # Print summary of enlargement
@@ -929,7 +929,7 @@ class CoreEdgeReactionModel:
             rxnRate[j] = rxn.getRate(T, P, Ci)
         return rxnRate
 
-    def addSeedMechanismToCore(self, seedMechanism, pdepSettings, react=False):
+    def addSeedMechanismToCore(self, seedMechanism, react=False):
         """
         Add all species and reactions from `seedMechanism`, a 
         :class:`KineticsPrimaryDatabase` object, to the model core. If `react`
@@ -1020,7 +1020,7 @@ class CoreEdgeReactionModel:
         # Return the network that the reaction was added to
         return network
 
-    def updateUnimolecularReactionNetworks(self, database,pdepSettings):
+    def updateUnimolecularReactionNetworks(self, database):
         """
         Iterate through all of the currently-existing unimolecular reaction
         networks, updating those that have been marked as invalid. In each update,
@@ -1035,7 +1035,7 @@ class CoreEdgeReactionModel:
         # Iterate over all the networks, updating the invalid ones as necessary
         # self = reactionModel object
         for network in self.unirxnNetworks:
-            network.update(self, database,pdepSettings)
+            network.update(self, database, self.pressureDependence)
 
     def loadSeedMechanism(self, path):
         """

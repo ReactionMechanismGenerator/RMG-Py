@@ -244,14 +244,14 @@ class RMG:
             # This is necessary so that the PDep algorithm can identify the bath gas
             for spec in self.initialSpecies:
                 if not spec.reactive:
-                    self.reactionModel.enlarge(spec, self.pressureDependence)
+                    self.reactionModel.enlarge(spec)
             # Then add remaining reactive species
             for spec in self.initialSpecies:
                 if spec.reactive:
                     spec.generateThermoData(self.database)
             for spec in self.initialSpecies:
                 if spec.reactive:
-                    self.reactionModel.enlarge(spec, self.pressureDependence)
+                    self.reactionModel.enlarge(spec)
             
             # Save a restart file if desired
             if self.saveRestart:
@@ -328,7 +328,7 @@ class RMG:
                 logging.info('')
                 objectsToEnlarge = list(set(objectsToEnlarge))
                 for object in objectsToEnlarge:
-                    self.reactionModel.enlarge(object, self.pressureDependence)
+                    self.reactionModel.enlarge(object)
     
             # Save the current state of the model core to a pretty HTML file
             logging.info('Saving latest model core to HTML file...')
