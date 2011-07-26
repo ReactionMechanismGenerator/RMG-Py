@@ -1043,7 +1043,7 @@ class KineticsLibrary(Database):
                             A = Quantity(float(A), Aunits[len(reactants)])
                             n = Quantity(float(n), '')
                             Ea = Quantity(float(Ea), Eunits)
-                            arrhenius = Arrhenius(A=A, n=n, Ea=Ea, T0=1.0)
+                            arrhenius = Arrhenius(A=A, n=n, Ea=Ea, T0=(1.0,"K"))
                             if not isinstance(kinetics, PDepArrhenius):
                                 old_kinetics = kinetics
                                 comment = old_kinetics.comment
