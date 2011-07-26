@@ -556,14 +556,14 @@ class PDepArrhenius(KineticsModel):
         Return a string representation that can be used to reconstruct the
         PDepArrhenius object.
         """
-        string = 'PDepArrhenius(pressures={0!r}, arrhenius=[{1}]'.format(self.pressures, ', '.join([repr(arrh) for arrh in self.arrhenius]))
-        if self.highPlimit is not None: string += ", highPlimit={0!r}".format(self.highPlimit)
+        string = 'PDepArrhenius(\n pressures={0!r},\n arrhenius=[\n  {1}]'.format(self.pressures, ',\n  '.join([repr(arrh) for arrh in self.arrhenius]))
+        if self.highPlimit is not None: string += ",\n highPlimit={0!r}".format(self.highPlimit)
         if self.Tmin is not None: string += ', Tmin={0!r}'.format(self.Tmin)
         if self.Tmax is not None: string += ', Tmax={0!r}'.format(self.Tmax)
         if self.Pmin is not None: string += ', Pmin={0!r}'.format(self.Pmin)
         if self.Pmax is not None: string += ', Pmax={0!r}'.format(self.Pmax)
-        if self.comment != '': string += ', comment="""{0}"""'.format(self.comment)
-        string += ')'
+        if self.comment != '': string += ',\n comment="""{0}"""'.format(self.comment)
+        string += '\n)'
         return string
 
     def __reduce__(self):

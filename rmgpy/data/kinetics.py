@@ -372,9 +372,14 @@ def saveEntry(f, entry):
         f.write('    ),\n')
     elif isinstance(entry.data, MultiKinetics):
         f.write('    kinetics = MultiKinetics(\n')
-        f.write('        kineticsList = [\n')
+        f.write('        kineticsList = [')
         for kin in entry.data.kineticsList:
-            f.write('            {0!r},\n'.format(kin))
+            for line in repr(kin).split('\n'):
+                f.write('\n            '+line)
+            if kin is entry.data.kineticsList[-1]:
+                f.write('\n')
+            else:
+                f.write(',')
         f.write('        ],\n')
         if entry.data.Tmin is not None: f.write('        Tmin = {0!r},\n'.format(entry.data.Tmin))
         if entry.data.Tmax is not None: f.write('        Tmax = {0!r},\n'.format(entry.data.Tmax))
