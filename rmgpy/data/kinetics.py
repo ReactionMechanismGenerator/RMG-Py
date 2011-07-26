@@ -860,6 +860,13 @@ class KineticsLibrary(Database):
         if product2 is not None: products.append(Species(label=product2.strip().splitlines()[0].strip(), molecule=[Molecule().fromAdjacencyList(product2)]))
         if product3 is not None: products.append(Species(label=product3.strip().splitlines()[0].strip(), molecule=[Molecule().fromAdjacencyList(product3)]))
         
+        comment = "Reaction from {0}".format(self.label)
+        if shortDesc.strip(): 
+            comment += "{0!s}\n".format(shortdesc.strip())
+        if longDesc.strip():
+            comment += str(re.sub('\s*\n\s*','\n',longDesc))
+        kinetics.comment = comment.strip()
+        
         self.entries[index] = Entry(
             index = index,
             label = label,
