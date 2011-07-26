@@ -175,6 +175,7 @@ def writeKineticsEntry(reaction, speciesList):
                      kinetics=kinetics)
             string += writeKineticsEntry(new_reaction, speciesList)
             string += "DUPLICATE\n"
+        return string + "\n"
 
     if reaction.kinetics.comment:
         for line in reaction.kinetics.comment.split("\n"):
