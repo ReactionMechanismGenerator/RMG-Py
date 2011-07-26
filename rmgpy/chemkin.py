@@ -182,7 +182,7 @@ def writeKineticsEntry(reaction, speciesList):
 
     if isinstance(kinetics, Arrhenius):
         string += '{0:<9.3e} {1:<9.3f} {2:<9.3f}'.format(
-            kinetics.A .value/ (kinetics.T0.value ** kinetics.n.value) * 1.0e6 ** (numReactants - 1),
+            kinetics.A.value/ (kinetics.T0.value ** kinetics.n.value) * 1.0e6 ** (numReactants - 1),
             kinetics.n.value,
             kinetics.Ea.value / 4184.
         )
@@ -193,6 +193,13 @@ def writeKineticsEntry(reaction, speciesList):
             arrhenius.n.value,
             arrhenius.Ea.value / 4184.
         )
+    elif hasattr(kinetics,'highPlimit'):
+        arrhenius = kinetics.highPlimit
+        string += '{0:<9.3e} {1:<9.3f} {2:<9.3f}'.format(
+            arrhenius.A.value / (arrhenius.T0.value ** arrhenius.n.value) * 1.0e6 ** (numReactants - 1),
+            arrhenius.n.value,
+            arrhenius.Ea.value / 4184.
+            )
     else:
         # Print dummy values that Chemkin parses but ignores
         string += '{0:<9.3e} {1:<9.3f} {2:<9.3f}'.format(1, 0, 0)
