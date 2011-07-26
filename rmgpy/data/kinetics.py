@@ -788,6 +788,50 @@ class KineticsLibrary(Database):
                         # We found a duplicate reaction that wasn't marked!
                         raise DatabaseError('Unexpected duplicate reaction {0} in kinetics library {1}.'.format(reaction0, self.label))                   
 
+    def convertDuplicatesToMulti(self):
+        """
+        Merge all marked duplicate reactions in the kinetics library
+        into single reactions with multiple kinetics.
+        """
+        print "trying to find duplicates"
+        entries_to_remove = []
+        for entry0 in self.entries.values():
+            if entry0 in entries_to_remove:
+                continue
+            reaction0 = entry0.item
+            if not reaction0.duplicate:
+                continue
+            print "Found a duplicate reaction: {0}".format(reaction0)
+            duplicates = [entry0]
+            for entry in self.entries.values():
+                reaction = entry.item
+                if reaction0 is reaction:
+                    continue
+                if reaction0.isIsomorphic(reaction, eitherDirection=False):
+                    duplicates.append(entry)
+            
+            assert len(duplicates)>1
+            kineticsList = []
+            longDesc = ''
+            
+            for entry in duplicates:
+                kinetics = entry.data
+                kineticsList.append(kinetics)
+                Tmin = kinetics.Tmin
+                Tmax = kinetics.Tmax
+                Pmin = kinetics.Pmin
+                Pmax = kinetics.Pmax
+                longDesc += entry.longDesc+'\n'
+            
+            entry0.data = MultiKinetics(kineticsList=kineticsList, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax)
+            entry0.longDesc = longDesc
+            entries_to_remove.extend(duplicates[1:])
+        for entry in entries_to_remove:
+            print "removing duplicate reaction with index {0}.".format(entry.index)
+            del(self.entries[entry.index])
+        print "NB. the entries have not been renumbered, so these indices are missing."
+        
+        
     def load(self, path, local_context=None, global_context=None):
         Database.load(self, path, local_context, global_context)
         
@@ -856,6 +900,7 @@ class KineticsLibrary(Database):
             reaction.kinetics = None
         
         self.checkForDuplicates()
+        self.convertDuplicatesToMulti()
 
     def __loadOldReactions(self, path, species):
         """
