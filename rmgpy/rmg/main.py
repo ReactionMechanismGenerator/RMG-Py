@@ -738,20 +738,31 @@ def makeProfileGraph(stats_file):
         logging.warning('Package gprof2dot not found. Unable to create a graph of the profile statistics.')
         # `pip install gprof2dot` if you don't have it.
         return
+    import subprocess
     m = gprof2dot.Main()
     class Options:
         pass
     m.options = Options()
-    m.options.node_thres = 0.5
+    m.options.node_thres = 0.8
     m.options.edge_thres = 0.1
     m.options.strip = False
-    m.options.wrap = False
-    m.theme = m.themes['color']
+    m.options.wrap = True
+    m.theme = m.themes['color'] # bw color gray pink
     parser = gprof2dot.PstatsParser(stats_file)
     m.profile = parser.parse()
     dot_file = stats_file + '.dot'
     m.output = open(dot_file,'wt')
     m.write_graph()
-    logging.info("Now try:\n     dot -Tsvg %s -o %s.svg"%(dot_file,dot_file))
+    m.output.close()
+    try:
+        subprocess.check_call(['dot', '-Tpdf', dot_file, '-o', '{0}.pdf'.format(dot_file)])
+    except subprocess.CalledProcessError:
+        logging.error("Error returned by 'dot' when generating graph of the profile statistics.")
+        logging.info("To try it yourself:\n     dot -Tpdf {0} -o {0}.pdf".format(dot_file))
+    except OSError:
+        logging.error("Couldn't run 'dot' to create graph of profile statistics. Check graphviz is installed properly and on your path.")
+        logging.info("Once you've got it, try:\n     dot -Tpdf {0} -o {0}.pdf".format(dot_file))
+    else:
+        logging.info("Graph of profile statistics saved to: \n {0}.pdf".format(dot_file))
     # we could actually try this here using subprocess.Popen() or something
     # wrapped in a try: block.
