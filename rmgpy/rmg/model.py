@@ -191,13 +191,6 @@ class CoreEdgeReactionModel:
     =========================  ==============================================================
     `core`                     The species and reactions of the current model core
     `edge`                     The species and reactions of the current model edge
-    `absoluteTolerance`        The absolute tolerance used in the ODE/DAE solver
-    `relativeTolerance`        The relative tolerance used in the ODE/DAE solver
-    `fluxToleranceKeepInEdge`  The relative species flux below which species are discarded from the edge
-    `fluxToleranceMoveToCore`  The relative species flux above which species are moved from the edge to the core
-    `fluxToleranceInterrupt`   The relative species flux above which the simulation will halt
-    `maximumEdgeSpecies`       The maximum number of edge species allowed at any time
-    `termination`              A list of termination targets (i.e :class:`TerminationTime` and :class:`TerminationConversion` objects)
     `unirxnNetworks`           A list of unimolecular reaction networks (:class:`unirxn.network.Network` objects)
     `networkCount`             A counter for the number of unirxn networks created
     =========================  ==============================================================
@@ -217,13 +210,6 @@ class CoreEdgeReactionModel:
         # The default tolerances mimic the original RMG behavior; no edge
         # pruning takes place, and the simulation is interrupted as soon as
         # a species flux higher than the validity
-        self.fluxToleranceKeepInEdge = 0.0
-        self.fluxToleranceMoveToCore = 1.0
-        self.fluxToleranceInterrupt = 1.0
-        self.absoluteTolerance = 1.0e-8
-        self.relativeTolerance = 1.0e-4
-        self.maximumEdgeSpecies = 1000000
-        self.termination = []
         self.unirxnNetworks = []
         self.networkCount = 0
         self.speciesDict = {}
@@ -721,7 +707,7 @@ class CoreEdgeReactionModel:
         """
         self.edge.species.append(spec)
 
-    def prune(self, reactionSystems):
+    def prune(self, reactionSystems, fluxToleranceKeepInEdge, maximumEdgeSpecies):
         """
         Remove species from the model edge based on the simulation results from
         the list of `reactionSystems`.
@@ -775,23 +761,23 @@ class CoreEdgeReactionModel:
         pruneDueToRateCounter = 0
         for index in indices:
             # Remove the species with rates below the pruning tolerance from the model edge
-            if maxEdgeSpeciesRates[index] < self.fluxToleranceKeepInEdge and self.edge.species[index] not in ineligibleSpecies:
+            if maxEdgeSpeciesRates[index] < fluxToleranceKeepInEdge and self.edge.species[index] not in ineligibleSpecies:
                 speciesToPrune.append((index, self.edge.species[index]))
                 pruneDueToRateCounter += 1
             # Keep removing species with the lowest rates until we are below the maximum edge species size
-            elif numEdgeSpecies - len(speciesToPrune) > self.maximumEdgeSpecies and self.edge.species[index] not in ineligibleSpecies:
+            elif numEdgeSpecies - len(speciesToPrune) > maximumEdgeSpecies and self.edge.species[index] not in ineligibleSpecies:
                 speciesToPrune.append((index, self.edge.species[index]))
             else:
                 break
 
         # Actually do the pruning
         if pruneDueToRateCounter > 0:
-            logging.info('Pruning {0:d} species whose rates did not exceed the minimum threshold of {1:g}'.format(pruneDueToRateCounter, self.fluxToleranceKeepInEdge))
+            logging.info('Pruning {0:d} species whose rates did not exceed the minimum threshold of {1:g}'.format(pruneDueToRateCounter, fluxToleranceKeepInEdge))
             for index, spec in speciesToPrune[0:pruneDueToRateCounter]:
                 logging.debug('    {0:<56}    {1:10.4e}'.format(spec, maxEdgeSpeciesRates[index]))
                 self.removeSpeciesFromEdge(spec)
         if len(speciesToPrune) - pruneDueToRateCounter > 0:
-            logging.info('Pruning {0:d} species to obtain an edge size of {1:d} species'.format(len(speciesToPrune) - pruneDueToRateCounter, self.maximumEdgeSpecies))
+            logging.info('Pruning {0:d} species to obtain an edge size of {1:d} species'.format(len(speciesToPrune) - pruneDueToRateCounter, maximumEdgeSpecies))
             for index, spec in speciesToPrune[pruneDueToRateCounter:]:
                 logging.debug('    {0:<56}    {1:10.4e}'.format(spec, maxEdgeSpeciesRates[index]))
                 self.removeSpeciesFromEdge(spec)
