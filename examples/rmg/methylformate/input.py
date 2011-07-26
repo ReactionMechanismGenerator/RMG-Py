@@ -3,7 +3,7 @@ database(
     '/$RMGpy/RMG-database/input',
     thermoLibraries = ['primaryThermoLibrary','DFT_QCI_thermo','GRI-Mech3.0'],
     reactionLibraries = ['Methylformate','Glarborg/highP'],
-    seedMechanisms = ['GRI-Mech3.0'],
+    seedMechanisms = ['Glarborg/C2'],
 )
 
 # List of species
@@ -140,5 +140,5 @@ options(
     units='si',
     saveRestart=False,
     drawMolecules=False,
-    generatePlots=True,
+    generatePlots=False,
 )

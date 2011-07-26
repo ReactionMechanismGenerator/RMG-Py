@@ -3,7 +3,7 @@ database(
     '/$RMGpy/RMG-database/input',
     thermoLibraries = ['primaryThermoLibrary', 'GRI-Mech3.0'],
     reactionLibraries = ['GRI-Mech3.0'],
-    seedMechanisms = [],
+    seedMechanisms = ['Glarborg/C1'],
 )
 
 # List of species
