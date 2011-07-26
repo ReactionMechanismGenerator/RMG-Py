@@ -605,6 +605,12 @@ class PDepArrhenius(KineticsModel):
         Return the rate constant k(T, P) in SI units at a temperature 
         `T` in K and pressure `P` in Pa by evaluating the pressure-
         dependent Arrhenius expression.
+        
+        If k(P+) and k(P-) (the values either side of the P requested) are zero,
+        then zero is returned. If only k(P-)==0 then it is replaced with 
+        k(P+)/1e10, and vice versa. This allows the logarithmic interpolation
+        to procede without zero-division errors. (The expression is not defined when
+        one of them is zero and the other is not, so we have to assume something.)
         """
         cython.declare(Plow=cython.double, Phigh=cython.double)
         cython.declare(alow=Arrhenius, ahigh=Arrhenius)
@@ -617,6 +623,9 @@ class PDepArrhenius(KineticsModel):
         else:
             klow = alow.getRateCoefficient(T)
             khigh = ahigh.getRateCoefficient(T)
+            if klow == khigh == 0.0: return 0.0
+            if klow == 0: klow = khigh/1e10
+            if khigh == 0: khigh = klow/1e10
             k = klow * 10**(math.log10(P/Plow)/math.log10(Phigh/Plow)*math.log10(khigh/klow))
         return k
 
