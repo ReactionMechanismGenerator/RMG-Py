@@ -232,9 +232,9 @@ def writeKineticsEntry(reaction, speciesList):
             if isinstance(kinetics, Troe):
                 # Write Troe parameters
                 if kinetics.T2 is None:
-                    string += '    TROE/ {0:<9.3e} {1:<9.3f} {2:<9.3f}/\n'.format(kinetics.alpha.value, kinetics.T3.value, kinetics.T1.value)
+                    string += '    TROE/ {0:<9.3e} {1:<9.3g} {2:<9.3g}/\n'.format(kinetics.alpha.value, kinetics.T3.value, kinetics.T1.value)
                 else:
-                    string += '    TROE/ {0:<9.3e} {1:<9.3f} {2:<9.3f} {3:<9.3f}/\n'.format(kinetics.alpha.value, kinetics.T3.value, kinetics.T1.value, kinetics.T2.value)
+                    string += '    TROE/ {0:<9.3e} {1:<9.3g} {2:<9.3g} {3:<9.3g}/\n'.format(kinetics.alpha.value, kinetics.T3.value, kinetics.T1.value, kinetics.T2.value)
     elif isinstance(kinetics, PDepArrhenius):
         for P, arrhenius in zip(kinetics.pressures.values, kinetics.arrhenius):
             string += '    PLOG/ {0:<9.3f} {1:<9.3e} {2:<9.3f} {3:<9.3f}/\n'.format(P / 101325.,
