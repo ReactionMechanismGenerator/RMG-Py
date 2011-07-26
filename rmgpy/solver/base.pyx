@@ -60,7 +60,7 @@ cdef class ReactionSystem(DASSL):
         self.maxEdgeSpeciesRates = None
         self.maxNetworkLeakRates = None
     
-    cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions, list pdepNetworks=None):
+    cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions, list pdepNetworks=None, atol=1e-16, rtol=1e-8):
         """
         Initialize a simulation of the reaction system using the provided
         kinetic model. You will probably want to create your own version of this
@@ -100,7 +100,7 @@ cdef class ReactionSystem(DASSL):
     @cython.boundscheck(False)
     cpdef simulate(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions,
         double toleranceKeepInEdge, double toleranceMoveToCore, double toleranceInterruptSimulation,
-        list termination, list pdepNetworks=None, worksheet=None):
+        list termination, list pdepNetworks=None, worksheet=None, absoluteTolerance=1e-16, relativeTolerance=1e-8):
         """
         Simulate the reaction system with the provided reaction model,
         consisting of lists of core species, core reactions, edge species, and
@@ -133,7 +133,7 @@ cdef class ReactionSystem(DASSL):
         for index, spec in enumerate(coreSpecies):
             speciesIndex[spec] = index
         
-        self.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions, pdepNetworks)
+        self.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions, pdepNetworks, absoluteTolerance, relativeTolerance)
 
         invalidObject = None
         terminated = False
