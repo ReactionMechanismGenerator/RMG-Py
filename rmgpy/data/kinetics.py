@@ -2683,39 +2683,6 @@ class KineticsDatabase:
         reactionList.extend(self.generateReactionsFromFamilies(reactants, products))
         return reactionList
 
-    def __reactionMatchesReactants(self, reactants, reaction):
-        """
-        Return ``True`` if the given ``reactants`` represent the total set of
-        reactants or products for the given ``reaction``, or ``False`` if not.
-        The reactants should be :class:`Molecule` objects.
-        """
-        assert all([isinstance(reactant, Molecule) for reactant in reactants])
-        assert all([isinstance(reactant, Species) for reactant in reaction.reactants])
-        assert all([isinstance(product, Species) for product in reaction.products])
-        
-        # Check forward direction
-        if len(reactants) == len(reaction.reactants) == 1:
-            if reaction.reactants[0].isIsomorphic(reactants[0]): 
-                return True
-        elif len(reactants) == len(reaction.reactants) == 2:
-            if reaction.reactants[0].isIsomorphic(reactants[0]) and reaction.reactants[1].isIsomorphic(reactants[1]):
-                return True
-            elif reaction.reactants[0].isIsomorphic(reactants[1]) and reaction.reactants[1].isIsomorphic(reactants[0]):
-                return True
-
-        # Check reverse direction
-        if len(reactants) == len(reaction.products) == 1:
-            if reaction.products[0].isIsomorphic(reactants[0]): 
-                return True
-        elif len(reactants) == len(reaction.products) == 2:
-            if reaction.products[0].isIsomorphic(reactants[0]) and reaction.products[1].isIsomorphic(reactants[1]):
-                return True
-            elif reaction.products[0].isIsomorphic(reactants[1]) and reaction.products[1].isIsomorphic(reactants[0]):
-                return True
-            
-        # If we're here then neither direction matched, so return false
-        return False
-
     def generateReactionsFromLibraries(self, reactants, products):
         """
         Generate all reactions between the provided list of one or two
@@ -2735,7 +2702,7 @@ class KineticsDatabase:
         """
         reactionList = []
         for entry in library.entries.values():
-            if self.__reactionMatchesReactants(reactants, entry.item):
+            if entry.item.matchesMolecules(reactants):
                 reaction = LibraryReaction(
                     reactants = entry.item.reactants[:],
                     products = entry.item.products[:],
