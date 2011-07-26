@@ -161,7 +161,11 @@ def writeKineticsEntry(reaction, speciesList):
     Return a string representation of the reaction as used in a Chemkin
     file.
     """
-
+    string = ""
+    
+    if reaction.kinetics.comment:
+        for line in reaction.kinetics.comment.split("\n"):
+            string += "! {0}\n".format(line) 
     kinetics = reaction.kinetics
     numReactants = len(reaction.reactants)
     
@@ -172,13 +176,13 @@ def writeKineticsEntry(reaction, speciesList):
         else:
             thirdBody = '(+M)'
     
-    string = '+'.join([getSpeciesIdentifier(reactant) for reactant in reaction.reactants])
-    string += thirdBody
-    string += '=>' if not reaction.reversible else '='
-    string += '+'.join([getSpeciesIdentifier(product) for product in reaction.products])
-    string += thirdBody
-
-    string = '{0!s:<52}'.format(string)
+    reaction_string = '+'.join([getSpeciesIdentifier(reactant) for reactant in reaction.reactants])
+    reaction_string += thirdBody
+    reaction_string += '=>' if not reaction.reversible else '='
+    reaction_string += '+'.join([getSpeciesIdentifier(product) for product in reaction.products])
+    reaction_string += thirdBody
+    
+    string += '{0!s:<52}'.format(reaction_string)
 
     if isinstance(kinetics, Arrhenius):
         string += '{0:<9.3e} {1:<9.3f} {2:<9.3f}'.format(
