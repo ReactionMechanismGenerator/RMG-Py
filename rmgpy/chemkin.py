@@ -173,6 +173,8 @@ def writeKineticsEntry(reaction, speciesList):
     if kinetics.isPressureDependent():
         if isinstance(kinetics, ThirdBody) and not isinstance(kinetics, Lindemann) and not isinstance(kinetics, Troe):
             thirdBody = '+M'
+        elif isinstance(kinetics, PDepArrhenius):
+            thirdBody = ''
         else:
             thirdBody = '(+M)'
     
