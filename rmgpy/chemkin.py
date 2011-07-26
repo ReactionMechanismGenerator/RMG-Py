@@ -35,6 +35,7 @@ import re
 
 from thermo import MultiNASA
 from kinetics import *
+from reaction import Reaction
 
 ################################################################################
 
@@ -161,7 +162,23 @@ def writeKineticsEntry(reaction, speciesList):
     Return a string representation of the reaction as used in a Chemkin
     file.
     """
+    string = ""
+    
+    if isinstance(reaction.kinetics, MultiKinetics):
+        if reaction.kinetics.comment:
+            for line in reaction.kinetics.comment.split("\n"):
+                string += "! {0}\n".format(line) 
+        for kinetics in reaction.kinetics.kineticsList:
+            new_reaction = Reaction(reactants=reaction.reactants,
+                     products=reaction.products,
+                     reversible=reaction.reversible,
+                     kinetics=kinetics)
+            string += writeKineticsEntry(new_reaction, speciesList)
+            string += "DUPLICATE\n"
 
+    if reaction.kinetics.comment:
+        for line in reaction.kinetics.comment.split("\n"):
+            string += "! {0}\n".format(line) 
     kinetics = reaction.kinetics
     numReactants = len(reaction.reactants)
     
@@ -169,20 +186,22 @@ def writeKineticsEntry(reaction, speciesList):
     if kinetics.isPressureDependent():
         if isinstance(kinetics, ThirdBody) and not isinstance(kinetics, Lindemann) and not isinstance(kinetics, Troe):
             thirdBody = '+M'
+        elif isinstance(kinetics, PDepArrhenius):
+            thirdBody = ''
         else:
             thirdBody = '(+M)'
     
-    string = '+'.join([getSpeciesIdentifier(reactant) for reactant in reaction.reactants])
-    string += thirdBody
-    string += '=>' if not reaction.reversible else '='
-    string += '+'.join([getSpeciesIdentifier(product) for product in reaction.products])
-    string += thirdBody
-
-    string = '{0!s:<52}'.format(string)
+    reaction_string = '+'.join([getSpeciesIdentifier(reactant) for reactant in reaction.reactants])
+    reaction_string += thirdBody
+    reaction_string += '=>' if not reaction.reversible else '='
+    reaction_string += '+'.join([getSpeciesIdentifier(product) for product in reaction.products])
+    reaction_string += thirdBody
+    
+    string += '{0!s:<52}'.format(reaction_string)
 
     if isinstance(kinetics, Arrhenius):
         string += '{0:<9.3e} {1:<9.3f} {2:<9.3f}'.format(
-            kinetics.A .value/ (kinetics.T0.value ** kinetics.n.value) * 1.0e6 ** (numReactants - 1),
+            kinetics.A.value/ (kinetics.T0.value ** kinetics.n.value) * 1.0e6 ** (numReactants - 1),
             kinetics.n.value,
             kinetics.Ea.value / 4184.
         )
@@ -193,6 +212,13 @@ def writeKineticsEntry(reaction, speciesList):
             arrhenius.n.value,
             arrhenius.Ea.value / 4184.
         )
+    elif hasattr(kinetics,'highPlimit'):
+        arrhenius = kinetics.highPlimit
+        string += '{0:<9.3e} {1:<9.3f} {2:<9.3f}'.format(
+            arrhenius.A.value / (arrhenius.T0.value ** arrhenius.n.value) * 1.0e6 ** (numReactants - 1),
+            arrhenius.n.value,
+            arrhenius.Ea.value / 4184.
+            )
     else:
         # Print dummy values that Chemkin parses but ignores
         string += '{0:<9.3e} {1:<9.3f} {2:<9.3f}'.format(1, 0, 0)
@@ -219,9 +245,9 @@ def writeKineticsEntry(reaction, speciesList):
             if isinstance(kinetics, Troe):
                 # Write Troe parameters
                 if kinetics.T2 is None:
-                    string += '    TROE/ {0:<9.3e} {1:<9.3f} {2:<9.3f}/\n'.format(kinetics.alpha.value, kinetics.T3.value, kinetics.T1.value)
+                    string += '    TROE/ {0:<9.3e} {1:<9.3g} {2:<9.3g}/\n'.format(kinetics.alpha.value, kinetics.T3.value, kinetics.T1.value)
                 else:
-                    string += '    TROE/ {0:<9.3e} {1:<9.3f} {2:<9.3f} {3:<9.3f}/\n'.format(kinetics.alpha.value, kinetics.T3.value, kinetics.T1.value, kinetics.T2.value)
+                    string += '    TROE/ {0:<9.3e} {1:<9.3g} {2:<9.3g} {3:<9.3g}/\n'.format(kinetics.alpha.value, kinetics.T3.value, kinetics.T1.value, kinetics.T2.value)
     elif isinstance(kinetics, PDepArrhenius):
         for P, arrhenius in zip(kinetics.pressures.values, kinetics.arrhenius):
             string += '    PLOG/ {0:<9.3f} {1:<9.3e} {2:<9.3f} {3:<9.3f}/\n'.format(P / 101325.,

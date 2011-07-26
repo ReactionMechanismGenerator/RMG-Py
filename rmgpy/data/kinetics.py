@@ -1254,7 +1254,9 @@ class KineticsLibrary(Database):
                 equation = str(entry.item)
                 index = equation.find('<=>')
                 if isinstance(kinetics, ThirdBody) and not isinstance(kinetics, Lindemann):
-                    equation = '{0}+ M {1} + M'.format(equation[0:index], equation[index:]) 
+                    equation = '{0}+ M {1} + M'.format(equation[0:index], equation[index:])
+                elif isinstance(kinetics, PDepArrhenius):
+                    pass
                 else:
                     equation = '{0}(+M) {1} (+M)'.format(equation[0:index], equation[index:]) 
                 f.write('{0:<48}'.format(equation))
