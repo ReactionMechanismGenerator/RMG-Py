@@ -41,7 +41,6 @@ import shutil
 
 from rmgpy.data.rmg import RMGDatabase
 
-from input import InputFile
 from model import Species
 from pdep import PDepNetwork
 
@@ -142,6 +141,15 @@ class RMG:
         if self.pressureDependence:
             self.pressureDependence.outputFile = self.outputDirectory
             self.reactionModel.pressureDependence = self.pressureDependence
+        
+    def saveInput(self, path=None):
+        """
+        Save an RMG job to the input file located at `path`, or
+        from the `outputFile` attribute if not given as a parameter.
+        """
+        from input import saveInputFile
+        if path is None: path = self.outputFile
+        saveInputFile(path, self)
         
     def loadDatabase(self):
         

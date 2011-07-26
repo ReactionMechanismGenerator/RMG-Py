@@ -144,7 +144,7 @@ def pressureDependence(method, temperatures, pressures, maximumGrainSize=0.0, mi
     # Process grain size and count
     rmg.pressureDependence.grainSize = Quantity(maximumGrainSize)
     rmg.pressureDependence.grainCount = minimumNumberOfGrains
-   
+
     # Process interpolation model
     rmg.pressureDependence.model = interpolation
 
@@ -218,188 +218,100 @@ def readInputFile(path, rmg0):
 
 ################################################################################
 
-class InputFile():
+def saveInputFile(path, rmg):
     """
-    A class for storing the information in a RMG-Py input file as well as loading
-    and saving it.
+    Save an RMG input file at `path` on disk from the :class:`RMG` object 
+    `rmg`.
+    """
 
-    ======================= =========== ========================================
-    Attribute               Type        Description
-    ======================= =========== ========================================
-    `reactionModel`		        rmgpy.rmg.model.CoreEdgeReactionModel instance
-    `reactionSystems`			rmgpy.solver.simple.SimpleReactor object
-    `speciesList `          ``list`     list of species objects
-    `databases`             ``dict``    dictionary of thermo, reaction, seedmech, etc. libraries
-    `pdepSettings`          ``dict``    dictionary of pressure dependence settings
-    `runSettings`              ``dict``    run settings
-    ======================= =========== ========================================
+    f = open(path, 'w')
 
-   """
+    # Databases
+    f.write('database(\n')
+    f.write('    "{0}",\n'.format(rmg.databaseDirectory))
+    f.write('    thermoLibraries = {0!r},\n'.format(rmg.thermoLibraries))
+    f.write('    reactionLibraries = {0!r},\n'.format(rmg.reactionLibraries))
+    f.write('    seedMechanisms = {0!r},\n'.format(rmg.seedMechanisms))
+    f.write(')\n\n')
 
-    def __init__(self,reactionModel=None, reactionSystems = [], speciesList= '', databases={}, pdepSettings={},runSettings={}):
-        self.reactionModel = reactionModel
-        self.reactionSystems = reactionSystems
-        self.speciesList = speciesList
-        self.databases = databases
-        self.pdepSettings = pdepSettings
-        self.runSettings = runSettings
+    # Species
+    for species in rmg.initialSpecies:
+        f.write('species(\n')
+        f.write('    label = "{0}",\n'.format(species.label))
+        f.write('    reactive = {0},\n'.format(species.reactive))
+        f.write('    structure = adjacencyList(\n')
+        f.write('"""\n')
+        f.write(species.molecule[0].toAdjacencyList())
+        f.write('"""),\n')
+        f.write(')\n\n')
 
-    def load(self, path):
-        """
-        Load input.py file as InputFile object.
-        """
-        global reactionModel, reactionSystems, speciesDict, databases, pdepSettings, runSettings
-        speciesDict = {}
-        databases = {}
-        pdepSettings = {}
-        runSettings = {}
-        reactionSystems = []
-        reactionModel = None
+    # Reaction systems
+    for system in rmg.reactionSystems:
+        f.write('simpleReactor(\n')
+        f.write('    temperature = ({0:g},"K"),\n'.format(system.T))
+        # Convert the pressure from SI pascal units to bar here
+        # Do something more fancy later for converting to user's desired units for both T and P..
+        f.write('    pressure = ({0:g},"bar"),\n'.format(system.P/1e5))
+        f.write('    initialMoleFractions={\n')
+        for species, molfrac in system.initialMoleFractions.iteritems():
+            f.write('        "{0!s}": {1:g},\n'.format(species.label, molfrac))
+        f.write('    },\n')
+        f.write(')\n\n')
+
+    # Termination
+    f.write('termination(\n')
+    for term in rmg.termination:
+        if isinstance(term,TerminationTime):
+            f.write('    time = ({}, "s"),\n'.format(term.time))
+        if isinstance(term,TerminationConversion):
+            f.write('    conversion = {\n')
+            f.write('        "{0:s}": {1:g},\n'.format(term.species.label, term.conversion))
+            f.write('    }\n')
+    f.write(')\n\n')
+
+    # Simulator tolerances
+    f.write('simulator(\n')
+    f.write('    atol = {0:g},\n'.format(rmg.absoluteTolerance))
+    f.write('    rtol = {0:g},\n'.format(rmg.relativeTolerance))
+    f.write(')\n\n')
+
+    # Model
+    f.write('model(\n')
+    f.write('    toleranceKeepInEdge = {0:g},\n'.format(rmg.fluxToleranceKeepInEdge))
+    f.write('    toleranceMoveToCore = {0:g},\n'.format(rmg.fluxToleranceMoveToCore))
+    f.write('    toleranceInterruptSimulation = {0:g},\n'.format(rmg.fluxToleranceInterrupt))
+    f.write('    maximumEdgeSpecies = {0:d},\n'.format(rmg.maximumEdgeSpecies))
+    f.write(')\n\n')
+
+    # Pressure Dependence
+    if rmg.pressureDependence:
+        f.write('pressureDependence(\n')
+        f.write('    method = "{0!s}",\n'.format(rmg.pressureDependence.method))
+        f.write('    maximumGrainSize = {0!r},\n'.format(rmg.pressureDependence.grainSize))
+        f.write('    minimumNumberOfGrains = {0},\n'.format(rmg.pressureDependence.grainCount))
+        f.write('    temperatures = ({0:g},"{1!s}",{2:g},"{3!s}",{4:d}),\n'.format(
+            rmg.pressureDependence.Tmin.value,
+            rmg.pressureDependence.Tmin.units,
+            rmg.pressureDependence.Tmax.value,
+            rmg.pressureDependence.Tmax.units,
+            rmg.pressureDependence.Tcount,
+        ))
+        f.write('    pressures = ({0:g},"{1!s}",{2:g},"{3!s}",{4:d}),\n'.format(
+            rmg.pressureDependence.Pmin.value,
+            rmg.pressureDependence.Pmin.units,
+            rmg.pressureDependence.Pmax.value,
+            rmg.pressureDependence.Pmax.units,
+            rmg.pressureDependence.Pcount,
+        ))
+        f.write('    interpolation = {0},\n'.format(rmg.pressureDependence.model))
+        f.write(')\n\n')
         
-        full_path = os.path.abspath(os.path.expandvars(path))
-        try:
-            f = open(full_path)
-        except IOError, e:
-            logging.error('The input file "{0}" could not be opened.'.format(full_path))
-            logging.info('Check that the file exists and that you have read access.')
-            raise e
-
-        logging.info('Reading input file "{0}"...'.format(full_path))
-
-        reactionModel = CoreEdgeReactionModel()
-
-        global_context = { '__builtins__': None }
-        local_context = {
-            '__builtins__': None,
-            'True': True,
-            'False': False,
-            'database': database,
-            'species': species,
-            'CML': CML,
-            'SMILES': SMILES,
-            'InChI': InChI,
-            'adjacencyList': adjacencyList,
-            'simpleReactor': simpleReactor,
-            'termination': termination,
-            'simulator': simulator,
-            'model': model,
-            'pressureDependence': pressureDependence,
-            'options': options,
-        }
-
-        try:
-            exec f in global_context, local_context
-        except (NameError, TypeError, SyntaxError), e:
-            logging.error('The input file "{0}" was invalid:'.format(full_path))
-            logging.exception(e)
-            raise
-        finally:
-            f.close()
-
-
-        speciesList = speciesDict.values()
-        speciesList.sort(cmp=lambda x, y: x.index - y.index)
-
-        for reactionSystem in reactionSystems:
-            initialMoleFractions = {}
-            for label, moleFrac in reactionSystem.initialMoleFractions.iteritems():
-                initialMoleFractions[speciesDict[label]] = moleFrac
-            reactionSystem.initialMoleFractions = initialMoleFractions
-
-        self.reactionModel = reactionModel
-        self.reactionSystems = reactionSystems
-        self.speciesList = speciesList
-        self.databases = databases
-        self.pdepSettings = pdepSettings
-        self.runSettings = runSettings
-        return self
-
-    def save(self, path):
-        """
-        Saves InputFile object as a input.py file.
-        """
-
-        f = open(path, 'w')
-
-        # Databases
-        f.write("database(\n")
-	f.write("\t'{}',\n".format(self.databases['path']))
-	f.write("\tthermoLibraries = {},\n".format(self.databases['thermoLibraries']))
-	f.write("\treactionLibraries = {},\n".format(self.databases['reactionLibraries']))
-	f.write("\tseedMechanisms = {},\n".format(self.databases['seedMechanisms']))
-	f.write(")\n\n")
-
-	# Species
-	for species in self.speciesList:
-		f.write("species(\n")
-		f.write("\tlabel = '{}',\n".format(species.label))
-		f.write("\treactive = {},\n".format(species.reactive))
-                adjlist = species.molecule[0].toAdjacencyList()
-		f.write("\tstructure = adjacencyList(\n")
-                f.write('\t\t"""\n')
-                for line in adjlist.splitlines():
-                    f.write("\t\t{}\n".format(line))
-                f.write('\t\t"""),\n')
-
-		f.write(")\n\n")
-
-	# Reaction systems
-	for system in self.reactionSystems:
-		f.write("simpleReactor(\n")
-		f.write("\ttemperature = ({}, 'K'),\n".format(system.T))
-		# Convert the pressure from SI pascal units to bar here
-		# Do something more fancy later for converting to user's desired units for both T and P..
-		f.write("\tpressure = ({}, 'bar'),\n".format(system.P/1e5))
-
-		f.write("\tinitialMoleFractions={\n")
-		for species, molfrac in system.initialMoleFractions.iteritems():
-			f.write('\t\t"{}": {},\n'.format(species.label, molfrac))
-		f.write("\t},\n")
-
-		f.write(")\n\n")
-
-	# Termination
-	f.write("termination(\n")
-	for term in self.reactionModel.termination:
-		if isinstance(term,TerminationTime):
-			f.write("\ttime = ({}, 's'),\n".format(term.time))
-		if isinstance(term,TerminationConversion):
-			f.write("\tconversion = {\n")
-			f.write("'{}': {},\n".format(term.species.label, term.conversion))
-			f.write("\t}\n")
-	f.write(")\n\n")
-
-	# Simulator tolerances
-	f.write("simulator(\n")
-	f.write("\tatol = {},\n".format(self.reactionModel.absoluteTolerance))
-	f.write("\trtol = {},\n".format(self.reactionModel.relativeTolerance))
-	f.write(")\n\n")
-
-	# Model
-	f.write("model(\n")
-	f.write("\ttoleranceKeepInEdge = {},\n".format(self.reactionModel.fluxToleranceKeepInEdge))
-    	f.write("\ttoleranceMoveToCore = {},\n".format(self.reactionModel.fluxToleranceMoveToCore))
-    	f.write("\ttoleranceInterruptSimulation = {},\n".format(self.reactionModel.fluxToleranceInterrupt))
-    	f.write("\tmaximumEdgeSpecies = {},\n".format(self.reactionModel.maximumEdgeSpecies))
-	f.write(")\n\n")
-
-	# Pressure Dependence
-        if pdepSettings:
-            f.write("pressureDependence(\n")
-            f.write("\tmethod = '{}',\n".format(self.pdepSettings['method']))
-            # change from J/mol to kJ/mol
-            f.write("\tminimumGrainSize = ({},'kJ/mol'),\n".format(self.pdepSettings['minimumGrainSize']/1e3))
-            f.write("\tminimumNumberOfGrains = {},\n".format(self.pdepSettings['minimumNumberOfGrains']))
-            f.write("\ttemperatures = ({},'K',{},'K',{}),\n".format(self.pdepSettings['Tmin'],self.pdepSettings['Tmax'],self.pdepSettings['Tcount']))
-            # convert pressure to bar here
-            f.write("\tpressures = ({},'bar',{},'bar',{}),\n".format(self.pdepSettings['Pmin']/1e5,self.pdepSettings['Pmax']/1e5,self.pdepSettings['Pcount']))
-            f.write("\tinterpolation = {},\n".format(self.pdepSettings['interpolation']))
-            f.write(")\n\n")
+    # Options
+    f.write('options(\n')
+    f.write('    units = "{0}",\n'.format(rmg.units))
+    f.write('    saveRestart = {0},\n'.format(rmg.saveRestart))
+    f.write('    drawMolecules = {0},\n'.format(rmg.drawMolecules))
+    f.write('    generatePlots = {0},\n'.format(rmg.generatePlots))
+    f.write(')\n\n')
         
-	# Options
-        f.write("options(\n")
-        for property, value in self.runSettings.iteritems():
-            f.write("\t{} = '{}',\n".format(property,value))
-        f.write(")\n")
-        
-        f.close()
+    f.close()
