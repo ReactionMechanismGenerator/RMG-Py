@@ -141,4 +141,5 @@ options(
     saveRestart=False,
     drawMolecules=False,
     generatePlots=False,
+    saveConcentrationProfiles=False,
 )

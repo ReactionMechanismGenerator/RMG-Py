@@ -148,11 +148,12 @@ def pressureDependence(method, temperatures, pressures, maximumGrainSize=0.0, mi
     # Process interpolation model
     rmg.pressureDependence.model = interpolation
 
-def options(units='si', saveRestart=False, drawMolecules=False, generatePlots=False):
+def options(units='si', saveRestart=False, drawMolecules=False, generatePlots=False, saveConcentrationProfiles=True):
     rmg.units = units
     rmg.saveRestart = saveRestart
     rmg.drawMolecules = drawMolecules
     rmg.generatePlots = generatePlots
+    rmg.saveConcentrationProfiles = saveConcentrationProfiles
 
 ################################################################################
 
@@ -312,6 +313,7 @@ def saveInputFile(path, rmg):
     f.write('    saveRestart = {0},\n'.format(rmg.saveRestart))
     f.write('    drawMolecules = {0},\n'.format(rmg.drawMolecules))
     f.write('    generatePlots = {0},\n'.format(rmg.generatePlots))
+    f.write('    saveConcentrationProfiles = {0},\n'.format(rmg.saveConcentrationProfiles))
     f.write(')\n\n')
         
     f.close()

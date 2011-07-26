@@ -126,6 +126,7 @@ class RMG:
         self.units = 'si'
         self.drawMolecules = None
         self.generatePlots = None
+        self.saveConcentrationProfiles = None
         self.pressureDependence = None
         self.wallTime = 0
         self.initializationTime = 0
@@ -140,6 +141,7 @@ class RMG:
         readInputFile(path, self)
         if self.pressureDependence:
             self.pressureDependence.outputFile = self.outputDirectory
+            assert self.outputDirectory
             self.reactionModel.pressureDependence = self.pressureDependence
         
     def saveInput(self, path=None):
@@ -177,6 +179,13 @@ class RMG:
     
         # Print out RMG header
         self.logHeader()
+        
+        # Set directories
+        self.outputDirectory = args.output_directory
+        self.scratchDirectory = args.scratch_directory
+        
+        # Read input file
+        self.loadInput(args.file[0])
     
         # See if memory profiling package is available
         try:
@@ -186,16 +195,12 @@ class RMG:
             logging.info('Optional package dependency "psutil" not found; memory profiling information will not be saved.')
     
         # See if spreadsheet writing package is available
-        saveConcentrationProfiles = False
-        try:
-            import xlwt
-            saveConcentrationProfiles = True
-        except ImportError:
-            logging.info('Optional package dependency "xlwt" not found; reaction system concentration profiles will not be saved.')
-    
-        # Set directories
-        self.outputDirectory = args.output_directory
-        self.scratchDirectory = args.scratch_directory
+        if self.saveConcentrationProfiles:
+            try:
+                import xlwt
+            except ImportError:
+                logging.warning('Package dependency "xlwt" not found; reaction system concentration profiles will not be saved, despite saveConcentrationProfiles = True option.')
+                self.saveConcentrationProfiles = False
         
         # Make output subdirectories
         self.makeOutputSubdirectory('plot')
@@ -203,9 +208,6 @@ class RMG:
         self.makeOutputSubdirectory('pdep')
         self.makeOutputSubdirectory('chemkin')
         self.makeOutputSubdirectory('solver')
-    
-        # Read input file
-        self.loadInput(args.file[0])
         
         # Load databases
         self.loadDatabase()
@@ -270,7 +272,7 @@ class RMG:
         done = False
         while not done:
     
-            if saveConcentrationProfiles:
+            if self.saveConcentrationProfiles:
                 workbook = xlwt.Workbook()
                 
             done = True
@@ -278,7 +280,7 @@ class RMG:
             allTerminated = True
             for index, reactionSystem in enumerate(self.reactionSystems):
     
-                if saveConcentrationProfiles:
+                if self.saveConcentrationProfiles:
                     worksheet = workbook.add_sheet('#{0:d}'.format(index+1))
                 else:
                     worksheet = None
@@ -313,7 +315,7 @@ class RMG:
                     objectsToEnlarge.append(obj)
                     done = False
     
-            if saveConcentrationProfiles:
+            if self.saveConcentrationProfiles:
                 workbook.save(os.path.join(self.outputDirectory, 'solver', 'simulation_{0:d}.xls'.format(len(self.reactionModel.core.species))))
     
             if not done:
