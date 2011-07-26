@@ -47,7 +47,7 @@ import re
 
 from quantity import constants
 from species import Species
-from kinetics import Arrhenius, KineticsData, ArrheniusEP
+from kinetics import Arrhenius, KineticsData, ArrheniusEP, ThirdBody
 
 ################################################################################
 
@@ -426,7 +426,13 @@ class Reaction:
 
         # Evaluate rate constant
         rateConstant = self.getRateCoefficient(T, P)
-        if self.thirdBody: rateConstant *= totalConc
+        
+        #if self.thirdBody: rateConstant *= totalConc
+        if isinstance(self.kinetics, ThirdBody):
+            assert self.thirdBody
+            rateConstant = self.kinetics.getRateCoefficient(T,P,conc)
+        else:
+            assert not self.thirdBody
 
         # Evaluate equilibrium constant
         equilibriumConstant = self.getEquilibriumConstant(T)
