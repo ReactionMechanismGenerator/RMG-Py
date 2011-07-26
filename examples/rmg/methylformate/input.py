@@ -129,7 +129,7 @@ model(
 
 pressureDependence(
     method='modified strong collision', # 'reservoir state'
-    minimumGrainSize=(2.0,'kcal/mol'),
+    maximumGrainSize=(2.0,'kcal/mol'),
     minimumNumberOfGrains=200,
     temperatures=(290,'K',3500,'K',8),
     pressures=(0.02,'bar',100,'bar',5),
