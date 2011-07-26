@@ -17,6 +17,68 @@ from rmgpy.quantity import constants
 
 ################################################################################
 
+class PseudoSpecies:
+    """
+    Can be used in place of a :class:`rmg.species.Species` for isomorphism checks.
+    
+    PseudoSpecies('a') is isomorphic with PseudoSpecies('A')
+    but nothing else.
+    """
+    def __init__(self, label):
+        self.label = label
+    def __repr__(self):
+        return "PseudoSpecies('{0}')".format(self.label)
+    def __str__(self):
+        return self.label
+    def isIsomorphic(self, other):
+        return self.label.lower() == other.label.lower()
+
+class TestReactionIsomorphism(unittest.TestCase):
+    """
+    Contains unit tests of the isomorphism testing of the  Reaction class.
+    """
+
+    def makeReaction(self,reaction_string):
+        """"
+        Make a Reaction (containing PseudoSpecies) of from a string like 'Ab=CD'
+        """
+        reactants, products = reaction_string.split('=')
+        reactants = [PseudoSpecies(i) for i in reactants]
+        products = [PseudoSpecies(i) for i in products]
+        return Reaction(reactants=reactants, products=products)
+    def test1to1(self):
+        r1 = self.makeReaction('A=B')
+        self.assertTrue(r1.isIsomorphic(self.makeReaction('a=B')))
+        self.assertTrue(r1.isIsomorphic(self.makeReaction('b=A')))
+        self.assertFalse(r1.isIsomorphic(self.makeReaction('B=a'),eitherDirection=False))
+        self.assertFalse(r1.isIsomorphic(self.makeReaction('A=C')))
+        self.assertFalse(r1.isIsomorphic(self.makeReaction('A=BB')))
+    def test1to2(self):
+        r1 = self.makeReaction('A=BC')
+        self.assertTrue(r1.isIsomorphic(self.makeReaction('a=Bc')))
+        self.assertTrue(r1.isIsomorphic(self.makeReaction('cb=a')))
+        self.assertTrue(r1.isIsomorphic(self.makeReaction('a=cb'),eitherDirection=False))
+        self.assertFalse(r1.isIsomorphic(self.makeReaction('bc=a'),eitherDirection=False))
+        self.assertFalse(r1.isIsomorphic(self.makeReaction('a=c')))
+        self.assertFalse(r1.isIsomorphic(self.makeReaction('ab=c')))
+    def test2to2(self):
+        r1 = self.makeReaction('AB=CD')
+        self.assertTrue(r1.isIsomorphic(self.makeReaction('ab=cd')))
+        self.assertTrue(r1.isIsomorphic(self.makeReaction('ab=dc'),eitherDirection=False))
+        self.assertTrue(r1.isIsomorphic(self.makeReaction('dc=ba')))
+        self.assertFalse(r1.isIsomorphic(self.makeReaction('cd=ab'),eitherDirection=False))
+        self.assertFalse(r1.isIsomorphic(self.makeReaction('ab=ab')))
+        self.assertFalse(r1.isIsomorphic(self.makeReaction('ab=cde')))
+    def test2to3(self):
+        r1 = self.makeReaction('AB=CDE')
+        self.assertTrue(r1.isIsomorphic(self.makeReaction('ab=cde')))
+        self.assertTrue(r1.isIsomorphic(self.makeReaction('ba=edc'),eitherDirection=False))
+        self.assertTrue(r1.isIsomorphic(self.makeReaction('dec=ba')))
+        self.assertFalse(r1.isIsomorphic(self.makeReaction('cde=ab'),eitherDirection=False))
+        self.assertFalse(r1.isIsomorphic(self.makeReaction('ab=abc')))
+        self.assertFalse(r1.isIsomorphic(self.makeReaction('abe=cde')))
+
+
 class TestReaction(unittest.TestCase):
     """
     Contains unit tests of the Reaction class.
