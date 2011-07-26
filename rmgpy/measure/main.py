@@ -104,6 +104,38 @@ class MEASURE:
         self.Plist = None
         self.Elist = None
     
+    def copy(self):
+        """
+        Return a copy of the current MEASURE job.
+        """
+        measure = MEASURE()
+        
+        measure.inputFile = self.inputFile
+        measure.logFile = self.logFile
+        measure.outputFile = self.outputFile
+        measure.drawFile = self.drawFile
+        
+        measure.Tmin = Quantity(self.Tmin)
+        measure.Tmax = Quantity(self.Tmax)
+        measure.Tcount = self.Tcount
+        measure.Pmin = Quantity(self.Pmin)
+        measure.Pmax = Quantity(self.Pmax)
+        measure.Pcount = self.Pcount
+        measure.Emin = Quantity(self.Emin)
+        measure.Emax = Quantity(self.Emax)
+        measure.grainSize = Quantity(self.grainSize)
+        measure.grainCount = self.grainCount
+        
+        measure.method = self.method
+        measure.model = self.model
+        
+        measure.network = self.network
+        measure.Tlist = self.Tlist
+        measure.Plist = self.Plist
+        measure.Elist = self.Elist
+        
+        return measure
+    
     def loadInput(self, inputFile=None):
         """
         Load a MEASURE job from the input file located at `inputFile`, or
