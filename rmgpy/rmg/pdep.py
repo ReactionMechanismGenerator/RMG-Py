@@ -306,7 +306,7 @@ class PDepNetwork(rmgpy.measure.network.Network):
                 if len(rxn.products) == 1 and rxn.products[0] not in self.isomers:
                     self.products.append(rxn.products)
                 elif len(rxn.products) > 1 and rxn.products not in self.reactants:
-                    self.products.appende(rxn.products)
+                    self.products.append(rxn.products)
 
     def update(self, reactionModel, database, pdepSettings):
         """
