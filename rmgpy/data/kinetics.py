@@ -845,11 +845,14 @@ class KineticsLibrary(Database):
 
         self.entries = {}
         for index, reaction in enumerate(reactions):
-            self.entries[index+1] = Entry(
+            entry = Entry(
                 index = index+1,
                 item = reaction,
                 data = reaction.kinetics,
             )
+            entry.longDesc = reaction.kinetics.comment
+            reaction.kinetics.comment = ''
+            self.entries[index+1] = entry
             reaction.kinetics = None
         
         self.checkForDuplicates()
@@ -869,11 +872,18 @@ class KineticsLibrary(Database):
             inUnitSection = False; inReactionSection = False
             Aunits = []; Eunits = ''
             reaction = None; kinetics = None
+            next_reaction_comment = ''
 
             fdict = open(path, 'r')
             for line in fdict:
-                line = removeCommentFromLine(line).strip()
-                if len(line) > 0:
+                line, comment = splitLineAndComment(line)
+                line = line.strip()
+                if len(line) == 0:
+                    comment = comment.strip()
+                    # collect all comment lines and assume they're for the following reaction 
+                    next_reaction_comment += comment + '\n'
+                    continue
+                else: # line is not empty
                     if inUnitSection:
                         if 'A:' in line or 'E:' in line:
                             units = line.split()[1]
@@ -971,6 +981,8 @@ class KineticsLibrary(Database):
                                 kinetics=kinetics,
                                 reversible=(arrow in ['<=>', '=']),
                             )
+                            reaction.kinetics.comment = next_reaction_comment
+                            next_reaction_comment = ""
                             reactions.append(reaction)
 
                         elif 'PLOG' in line:
@@ -984,8 +996,10 @@ class KineticsLibrary(Database):
                             arrhenius = Arrhenius(A=A, n=n, Ea=Ea, T0=1.0)
                             if not isinstance(kinetics, PDepArrhenius):
                                 old_kinetics = kinetics
+                                comment = old_kinetics.comment
+                                old_kinetics.comment = ''
                                 assert isinstance(old_kinetics, Arrhenius)
-                                kinetics = PDepArrhenius(pressures=([P],"atm"), arrhenius=[arrhenius], highPlimit=old_kinetics)
+                                kinetics = PDepArrhenius(pressures=([P],"atm"), arrhenius=[arrhenius], highPlimit=old_kinetics, comment=comment)
                             else:
                                 pressures = list(kinetics.pressures.values)
                                 pressures.append(P*101325.)
@@ -998,10 +1012,13 @@ class KineticsLibrary(Database):
 
                             # Upgrade the kinetics to a Lindemann if not already done
                             if isinstance(kinetics, ThirdBody):
-                                kinetics = Lindemann(arrheniusHigh=kinetics.arrheniusHigh, efficiencies=kinetics.efficiencies)
+                                kinetics = Lindemann(arrheniusHigh=kinetics.arrheniusHigh,
+                                                     efficiencies=kinetics.efficiencies,
+                                                     comment=kinetics.comment)
                                 reaction.kinetics = kinetics
                             elif isinstance(kinetics, Arrhenius):
-                                kinetics = Lindemann(arrheniusHigh=kinetics)
+                                kinetics = Lindemann(arrheniusHigh=kinetics, comment=kinetics.comment)
+                                kinetics.arrheniusHigh.comment = ''
                                 reaction.kinetics = kinetics
 
                             items = line.split('/')
@@ -1016,13 +1033,19 @@ class KineticsLibrary(Database):
 
                             # Upgrade the kinetics to a Troe if not already done
                             if isinstance(kinetics, Lindemann):
-                                kinetics = Troe(arrheniusLow=kinetics.arrheniusLow, arrheniusHigh=kinetics.arrheniusHigh, efficiencies=kinetics.efficiencies)
+                                kinetics = Troe(arrheniusLow=kinetics.arrheniusLow,
+                                                arrheniusHigh=kinetics.arrheniusHigh,
+                                                efficiencies=kinetics.efficiencies,
+                                                comment=kinetics.comment)
                                 reaction.kinetics = kinetics
                             elif isinstance(kinetics, ThirdBody):
-                                kinetics = Troe(arrheniusHigh=kinetics.arrheniusHigh, efficiencies=kinetics.efficiencies)
+                                kinetics = Troe(arrheniusHigh=kinetics.arrheniusHigh,
+                                                efficiencies=kinetics.efficiencies,
+                                                comment=kinetics.comment)
                                 reaction.kinetics = kinetics
                             elif isinstance(kinetics, Arrhenius):
-                                kinetics = Troe(arrheniusHigh=kinetics)
+                                kinetics = Troe(arrheniusHigh=kinetics, comment=kinetics.comment)
+                                kinetics.arrheniusHigh.comment = ''
                                 reaction.kinetics = kinetics
 
                             items = line.split('/')
@@ -1042,13 +1065,14 @@ class KineticsLibrary(Database):
 
                         elif 'DUPLICATE' in line or 'DUP' in line:
                             reaction.duplicate = True
-                                
+                        
                         else:
                             # This line contains collider efficiencies
 
                             # Upgrade the kinetics to a ThirdBody if not already done
                             if isinstance(kinetics, Arrhenius):
-                                kinetics = ThirdBody(arrheniusHigh=kinetics)
+                                kinetics = ThirdBody(arrheniusHigh=kinetics, comment=kinetics.comment)
+                                kinetics.arrheniusHigh.comment = ''
                                 reaction.kinetics = kinetics
 
                             items = line.split('/')
