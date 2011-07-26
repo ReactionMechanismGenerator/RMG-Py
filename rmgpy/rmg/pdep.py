@@ -320,32 +320,21 @@ class PDepNetwork(rmgpy.measure.network.Network):
         import rmgpy.measure.settings
         
         # Get the parameters for the pressure dependence calculation
-        # method, Tmin, Tmax, Tlist, Pmin, Pmax, Plist, grainSize, numGrains, model = settings.pressureDependence
-        method = pdepSettings['method']
-        Tmin = pdepSettings['Tmin']
-        Tmax = pdepSettings['Tmax']
-        Tlist = pdepSettings['Tlist']
-        Pmin = pdepSettings['Pmin']
-        Pmax = pdepSettings['Pmax']
-        Plist = pdepSettings['Plist']
-        grainSize = pdepSettings['minimumGrainSize']
-        numGrains = pdepSettings['minimumNumberOfGrains']
-        model = pdepSettings['interpolation']
-        outputDirectory = pdepSettings['outputDirectory']
-        
-        measure = MEASURE()
-        measure.method = method
-        measure.Tmin = Quantity(Tmin, "K")
-        measure.Tmax = Quantity(Tmax, "K")
-        measure.Tlist = Quantity(Tlist, "K")
-        measure.Pmin = Quantity(Pmin/1e5, "bar")
-        measure.Pmax = Quantity(Pmax/1e5, "bar")
-        measure.Plist = Quantity(Plist/1e5, "bar")
-        measure.grainSize = Quantity(grainSize/1000., "kJ/mol")
-        measure.grainCount = numGrains
-        measure.model = model
+        measure = pdepSettings.copy()
         measure.network = self
-
+        outputDirectory = measure.outputFile
+        
+        Tmin = measure.Tmin.value
+        Tmax = measure.Tmax.value
+        Pmin = measure.Pmin.value
+        Pmax = measure.Pmax.value
+        Tlist = measure.Tlist.values
+        Plist = measure.Plist.values
+        grainSize = measure.grainSize
+        Ngrains = measure.grainCount
+        method = measure.method
+        model = measure.model
+        
         # Figure out which configurations are isomers, reactant channels, and product channels
         self.updateConfigurations()
 
@@ -405,7 +394,7 @@ class PDepNetwork(rmgpy.measure.network.Network):
 
         # Automatically choose a suitable set of energy grains if they were not
         # explicitly specified in the input file
-        Elist = self.autoGenerateEnergyGrains(Tmax=Tmax, grainSize=grainSize, Ngrains=numGrains)
+        Elist = self.autoGenerateEnergyGrains(Tmax=Tmax, grainSize=grainSize, Ngrains=Ngrains)
         
         # Calculate the rate coefficients
         K, p0 = self.calculateRateCoefficients(Tlist, Plist, Elist, method)

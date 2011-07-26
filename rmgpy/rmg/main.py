@@ -136,31 +136,12 @@ class RMG:
         Load an RMG job from the input file located at `inputFile`, or
         from the `inputFile` attribute if not given as a parameter.
         """
-        from input import InputFile
-        
-        if path is None:
-            path = self.inputFile
-        
-        inputFile = InputFile().load(path)
-
-        self.reactionModel = inputFile.reactionModel
-        self.initialSpecies = inputFile.speciesList
-        self.reactionSystems = inputFile.reactionSystems
-        
-        self.databaseDirectory = inputFile.databases['path']
-        self.thermoLibraries = inputFile.databases['thermoLibraries']
-        self.reactionLibraries = inputFile.databases['reactionLibraries']
-        #self.statmechLibraries = databases['frequenciesLibraries']
-        self.seedMechanisms = inputFile.databases['seedMechanisms']
-            
-        self.pressureDependence = inputFile.pdepSettings
-        self.reactionModel.pressureDependence = self.pressureDependence
-        self.pressureDependence['outputDirectory'] = self.outputDirectory
-        
-        self.units = inputFile.runSettings['units']
-        self.saveRestart = inputFile.runSettings['saveRestart']
-        self.drawMolecules = inputFile.runSettings['drawMolecules']
-        self.generatePlots = inputFile.runSettings['generatePlots']
+        from input import readInputFile
+        if path is None: path = self.inputFile
+        readInputFile(path, self)
+        if self.pressureDependence:
+            self.pressureDependence.outputFile = self.outputDirectory
+            self.reactionModel.pressureDependence = self.pressureDependence
         
     def loadDatabase(self):
         

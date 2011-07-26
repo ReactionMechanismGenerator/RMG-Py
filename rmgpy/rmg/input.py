@@ -46,9 +46,10 @@ class InputError(Exception): pass
 
 ################################################################################
 
+rmg = None
+speciesDict = {}
 
 def database(path, thermoLibraries=None, reactionLibraries=None, frequenciesLibraries=None, seedMechanisms=None):
-    global databases
     # This function just stores the information about the database to be loaded
     # We don't actually load the database until after we're finished reading
     # the input file
@@ -56,17 +57,18 @@ def database(path, thermoLibraries=None, reactionLibraries=None, frequenciesLibr
     if isinstance(reactionLibraries, str): reactionLibraries = [reactionLibraries]
     if isinstance(seedMechanisms, str): seedMechanisms = [seedMechanisms]
     if isinstance(frequenciesLibraries, str): frequenciesLibraries = [frequenciesLibraries]
-    databases['path'] = os.path.abspath(os.path.expandvars(path))
-    databases['thermoLibraries'] = thermoLibraries or []
-    databases['reactionLibraries'] = reactionLibraries or []
-    databases['seedMechanisms'] = seedMechanisms or []
-    databases['frequenciesLibraries'] = frequenciesLibraries or []
+    rmg.databaseDirectory = os.path.abspath(os.path.expandvars(path))
+    rmg.thermoLibraries = thermoLibraries or []
+    rmg.reactionLibraries = reactionLibraries or []
+    rmg.seedMechanisms = seedMechanisms or []
+    rmg.statmechLibraries = frequenciesLibraries or []
 
 def species(label, structure, reactive=True):
-    global speciesDict, reactionModel
     logging.debug('Found {0} species "{1}" ({2})'.format('reactive' if reactive else 'nonreactive', label, structure.toSMILES()))
-    speciesDict[label], isNew = reactionModel.makeNewSpecies(structure, label=label, reactive=reactive)
-
+    spec, isNew = rmg.reactionModel.makeNewSpecies(structure, label=label, reactive=reactive)
+    rmg.initialSpecies.append(spec)
+    speciesDict[label] = spec
+    
 def CML(string):
     return Molecule().fromCML(string)
 
@@ -81,7 +83,6 @@ def adjacencyList(string):
 
 # Reaction systems
 def simpleReactor(temperature, pressure, initialMoleFractions):
-    global reactionSystems
     logging.debug('Found SimpleReactor reaction system')
 
     if sum(initialMoleFractions.values()) != 1:
@@ -89,106 +90,80 @@ def simpleReactor(temperature, pressure, initialMoleFractions):
         for spec in initialMoleFractions:
             initialMoleFractions[spec] /= sum(initialMoleFractions.values())
 
-    T = processQuantity(temperature)[0]
-    P = processQuantity(pressure)[0]
+    T = Quantity(temperature).value
+    P = Quantity(pressure).value
     
     system = SimpleReactor(T, P, initialMoleFractions)
-    reactionSystems.append(system)
+    rmg.reactionSystems.append(system)
 
 def termination(conversion=None, time=None):
-    global reactionModel, speciesDict
-    reactionModel.termination = []
+    rmg.termination = []
     if conversion is not None:
         for spec, conv in conversion.iteritems():
-            reactionModel.termination.append(TerminationConversion(speciesDict[spec], conv))
+            rmg.termination.append(TerminationConversion(speciesDict[spec], conv))
     if time is not None:
-        reactionModel.termination.append(TerminationTime(processQuantity(time)[0]))
+        rmg.termination.append(TerminationTime(Quantity(time).value))
 
 def simulator(atol, rtol):
-    global reactionModel
-    reactionModel.absoluteTolerance = atol
-    reactionModel.relativeTolerance = rtol
+    rmg.absoluteTolerance = atol
+    rmg.relativeTolerance = rtol
 
 def model(toleranceMoveToCore, toleranceKeepInEdge=0.0, toleranceInterruptSimulation=1.0, maximumEdgeSpecies=None):
-    global reactionModel
-    reactionModel.fluxToleranceKeepInEdge = toleranceKeepInEdge
-    reactionModel.fluxToleranceMoveToCore = toleranceMoveToCore
-    reactionModel.fluxToleranceInterrupt = toleranceInterruptSimulation
-    reactionModel.maximumEdgeSpecies = maximumEdgeSpecies
+    rmg.fluxToleranceKeepInEdge = toleranceKeepInEdge
+    rmg.fluxToleranceMoveToCore = toleranceMoveToCore
+    rmg.fluxToleranceInterrupt = toleranceInterruptSimulation
+    rmg.maximumEdgeSpecies = maximumEdgeSpecies
 
-def pressureDependence(method, temperatures, pressures, minimumGrainSize=0.0, minimumNumberOfGrains=0, interpolation=None):
+def pressureDependence(method, temperatures, pressures, maximumGrainSize=0.0, minimumNumberOfGrains=0, interpolation=None):
 
-#    from rmgpy.measure.input import getTemperaturesForModel, getPressuresForModel
-#    # Process temperatures
-#    Tmin, Tmin_units, Tmax, Tmax_units, Tcount = temperatures
-#    Tmin = processQuantity((Tmin, Tmin_units))[0]
-#    Tmax = processQuantity((Tmax, Tmax_units))[0]
-#    Tlist = getTemperaturesForModel(interpolation, Tmin, Tmax, Tcount)
-#
-#    # Process pressures
-#    Pmin, Pmin_units, Pmax, Pmax_units, Pcount = pressures
-#    Pmin = processQuantity((Pmin, Pmin_units))[0]
-#    Pmax = processQuantity((Pmax, Pmax_units))[0]
-#    Plist = getPressuresForModel(interpolation, Pmin, Pmax, Pcount)
-#
-#    # Process grain size
-#    minimumGrainSize = processQuantity(minimumGrainSize)[0]
-#
-#    # Save settings (setting this to non-None enables pressure dependence)
-#    settings.pressureDependence = (method, Tmin, Tmax, Tlist, Pmin, Pmax, Plist, minimumGrainSize, minimumNumberOfGrains, interpolation)
-
-    global pdepSettings
     from rmgpy.measure.input import getTemperaturesForModel, getPressuresForModel
-
-    pdepSettings['method']= method
+    from rmgpy.measure.main import MEASURE
+    
+    # Setting the pressureDependence attribute to non-None enables pressure dependence
+    rmg.pressureDependence = MEASURE()
+    
+    # Process method
+    rmg.pressureDependence.method = method
+    
     # Process temperatures
     Tmin, Tmin_units, Tmax, Tmax_units, Tcount = temperatures
-    pdepSettings['Tmin'] = processQuantity((Tmin, Tmin_units))[0]
-    pdepSettings['Tmax'] = processQuantity((Tmax, Tmax_units))[0]
-    pdepSettings['Tlist'] = getTemperaturesForModel(interpolation, Tmin, Tmax, Tcount)
-    pdepSettings['Tcount'] = Tcount
-
+    rmg.pressureDependence.Tmin = Quantity(Tmin, Tmin_units)
+    rmg.pressureDependence.Tmax = Quantity(Tmax, Tmax_units)
+    rmg.pressureDependence.Tcount = Tcount
+    Tlist = getTemperaturesForModel(interpolation, rmg.pressureDependence.Tmin.value, rmg.pressureDependence.Tmax.value, rmg.pressureDependence.Tcount)
+    rmg.pressureDependence.Tlist = Quantity(Tlist,"K")
+    
     # Process pressures
     Pmin, Pmin_units, Pmax, Pmax_units, Pcount = pressures
-    pdepSettings['Pmin'] = processQuantity((Pmin, Pmin_units))[0]
-    pdepSettings['Pmax'] = processQuantity((Pmax, Pmax_units))[0]
-    pdepSettings['Plist'] = getPressuresForModel(interpolation, Pmin, Pmax, Pcount)
-    pdepSettings['Pcount'] = Pcount
-    # Process grain size
-    pdepSettings['minimumGrainSize'] = processQuantity(minimumGrainSize)[0]
-
-    # Save settings (setting this to non-None enables pressure dependence)
-    pdepSettings['minimumNumberOfGrains'] = minimumNumberOfGrains
-    pdepSettings['interpolation'] = interpolation
+    rmg.pressureDependence.Pmin = Quantity(Pmin, Pmin_units)
+    rmg.pressureDependence.Pmax = Quantity(Pmax, Pmax_units)
+    rmg.pressureDependence.Pcount = Pcount
+    Plist = getPressuresForModel(interpolation, rmg.pressureDependence.Pmin.value, rmg.pressureDependence.Pmax.value, rmg.pressureDependence.Pcount)
+    rmg.pressureDependence.Plist = Quantity(Plist,"Pa")
+    
+    # Process grain size and count
+    rmg.pressureDependence.grainSize = Quantity(maximumGrainSize)
+    rmg.pressureDependence.grainCount = minimumNumberOfGrains
+   
+    # Process interpolation model
+    rmg.pressureDependence.model = interpolation
 
 def options(units='si', saveRestart=False, drawMolecules=False, generatePlots=False):
-    # settings.saveRestart = saveRestart
+    rmg.units = units
+    rmg.saveRestart = saveRestart
+    rmg.drawMolecules = drawMolecules
+    rmg.generatePlots = generatePlots
+
+################################################################################
+
+def readInputFile(path, rmg0):
+    """
+    Read an RMG input file at `path` on disk into the :class:`RMG` object 
+    `rmg`.
+    """
+
+    global rmg, speciesDict
     
-    # currently drawMolecules, generatePlots don't actually work yet...
-    global runSettings
-    runSettings['units']=units
-    runSettings['saveRestart']=saveRestart
-    runSettings['drawMolecules']=drawMolecules
-    runSettings['generatePlots']=generatePlots
-
-################################################################################
-
-def processQuantity(quantity):
-    if isinstance(quantity, tuple) or isinstance(quantity, list):
-        value, units = quantity
-    else:
-        value = quantity; units = ''
-    newUnits = str(quantities.Quantity(1.0, units).simplified.units).split()[1]
-    if isinstance(value, tuple) or isinstance(value, list):
-        return [float(quantities.Quantity(v, units).simplified) for v in value], newUnits
-    else:
-        return float(quantities.Quantity(value, units).simplified), newUnits
-
-################################################################################
-
-def readInputFile(path):
-
-    global speciesDict, reactionModel, databases, reactionSystems
     full_path = os.path.abspath(os.path.expandvars(path))
     try:
         f = open(full_path)
@@ -199,8 +174,12 @@ def readInputFile(path):
 
     logging.info('Reading input file "{0}"...'.format(full_path))
 
-    reactionModel = CoreEdgeReactionModel()
-
+    rmg = rmg0
+    rmg.reactionModel = CoreEdgeReactionModel()
+    rmg.initialSpecies = []
+    rmg.reactionSystems = []
+    speciesDict = {}
+    
     global_context = { '__builtins__': None }
     local_context = {
         '__builtins__': None,
@@ -229,34 +208,13 @@ def readInputFile(path):
     finally:
         f.close()
 
-    logging.info('')
-
-    # Load databases
-    rmgDatabase = RMGDatabase()
-    rmgDatabase.load(
-        path = databases['path'],
-        thermoLibraries = databases['thermoLibraries'],
-        reactionLibraries = databases['reactionLibraries'],
-        seedMechanisms = databases['seedMechanisms'],
-        #frequenciesLibraries = databases['frequenciesLibraries'],
-        depository = False, # Don't bother loading the depository information, as we don't use it
-    )
-    seedMechanisms = databases['seedMechanisms']
-    logging.info("")
-    
-    speciesList = speciesDict.values()
-    speciesList.sort(cmp=lambda x, y: x.index - y.index)
-
-    for reactionSystem in reactionSystems:
+    for reactionSystem in rmg.reactionSystems:
         initialMoleFractions = {}
         for label, moleFrac in reactionSystem.initialMoleFractions.iteritems():
             initialMoleFractions[speciesDict[label]] = moleFrac
         reactionSystem.initialMoleFractions = initialMoleFractions
 
-    return reactionModel, speciesList, reactionSystems, rmgDatabase, seedMechanisms
-
-
-
+    logging.info('')
 
 ################################################################################
 
