@@ -40,8 +40,6 @@ from rmgpy.quantity import Quantity
 import rmgpy.measure.network
 import rmgpy.reaction
 
-import settings
-
 ################################################################################
 
 class PressureDependenceError(Exception):
@@ -333,7 +331,8 @@ class PDepNetwork(rmgpy.measure.network.Network):
         grainSize = pdepSettings['minimumGrainSize']
         numGrains = pdepSettings['minimumNumberOfGrains']
         model = pdepSettings['interpolation']
-
+        outputDirectory = pdepSettings['outputDirectory']
+        
         measure = MEASURE()
         measure.method = method
         measure.Tmin = Quantity(Tmin, "K")
@@ -400,7 +399,7 @@ class PDepNetwork(rmgpy.measure.network.Network):
             spec.collisionModel = SingleExponentialDown(alpha0=4.86 * 4184)
 
         # Save input file
-        measure.saveInput(os.path.join(settings.outputDirectory, 'pdep', 'network{0:d}_{1:d}.py'.format(self.index, len(self.isomers))))
+        measure.saveInput(os.path.join(outputDirectory, 'pdep', 'network{0:d}_{1:d}.py'.format(self.index, len(self.isomers))))
         
         self.printSummary(level=logging.INFO)
 

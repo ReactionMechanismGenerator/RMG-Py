@@ -138,12 +138,14 @@ class RMG:
         self.seedMechanisms = inputFile.databases['seedMechanisms']
             
         self.pressureDependence = inputFile.pdepSettings
+        self.reactionModel.pressureDependence = self.pressureDependence
+        self.pressureDependence['outputDirectory'] = self.outputDirectory
         
         self.units = inputFile.runSettings['units']
         self.saveRestart = inputFile.runSettings['saveRestart']
         self.drawMolecules = inputFile.runSettings['drawMolecules']
         self.generatePlots = inputFile.runSettings['generatePlots']
-    
+        
     def loadDatabase(self):
         
         self.database = RMGDatabase()

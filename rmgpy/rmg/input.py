@@ -160,8 +160,6 @@ def pressureDependence(method, temperatures, pressures, minimumGrainSize=0.0, mi
     # Save settings (setting this to non-None enables pressure dependence)
     pdepSettings['minimumNumberOfGrains'] = minimumNumberOfGrains
     pdepSettings['interpolation'] = interpolation
-    
-    settings.pressureDependence = True
 
 def options(units='si', saveRestart=False, drawMolecules=False, generatePlots=False):
     # settings.saveRestart = saveRestart

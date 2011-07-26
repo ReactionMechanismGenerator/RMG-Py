@@ -48,8 +48,6 @@ import rmgpy.data.rmg
 
 from pdep import PDepReaction, PDepNetwork
 
-import settings
-
 ################################################################################
 
 class Species(rmgpy.species.Species):
@@ -235,6 +233,7 @@ class CoreEdgeReactionModel:
         self.reactionCounter = 0
         self.newSpeciesList = []
         self.newReactionList = []
+        self.pressureDependence = None
 
     def checkForExistingSpecies(self, molecule):
         """
@@ -519,7 +518,7 @@ class CoreEdgeReactionModel:
             # Process the new reactions
             self.processNewReactions(newReactions, newSpecies, pdepNetwork)
 
-        elif isinstance(newObject, tuple) and isinstance(newObject[0], PDepNetwork) and settings.pressureDependence:
+        elif isinstance(newObject, tuple) and isinstance(newObject[0], PDepNetwork) and self.pressureDependence:
 
             pdepNetwork, newSpecies = newObject
             newReactions.extend(pdepNetwork.exploreIsomer(newSpecies, self, database))
@@ -562,7 +561,7 @@ class CoreEdgeReactionModel:
         
         
         # Update unimolecular (pressure dependent) reaction networks
-        if settings.pressureDependence:
+        if self.pressureDependence:
             # Merge networks if necessary
             # Two partial networks having the same source and containing one or
             # more explored isomers in common must be merged together to avoid
@@ -629,7 +628,7 @@ class CoreEdgeReactionModel:
                         self.addSpeciesToEdge(spec)
             # If pressure dependence is on, we only add reactions that are not unimolecular;
             # unimolecular reactions will be added after processing the associated networks
-            if not settings.pressureDependence or \
+            if not self.pressureDependence or \
                 not (rxn.isIsomerization() or rxn.isDissociation() or rxn.isAssociation()) or \
                 (rxn.kinetics is not None and rxn.kinetics.isPressureDependent()):
                 if allSpeciesInCore:
@@ -798,7 +797,7 @@ class CoreEdgeReactionModel:
                 self.removeSpeciesFromEdge(spec)
 
         # Delete any networks that became empty as a result of pruning
-        if settings.pressureDependence:
+        if self.pressureDependence:
             networksToDelete = []
             if len(network.pathReactions) == 0 and len(network.netReactions) == 0:
                 networksToDelete.append(network)
@@ -827,7 +826,7 @@ class CoreEdgeReactionModel:
             self.edge.reactions.remove(rxn)
         
         # Remove the species from any unirxn networks it is in
-        if settings.pressureDependence:
+        if self.pressureDependence:
             for network in self.unirxnNetworks:
                 # Delete all path reactions involving the species
                 rxnList = []
