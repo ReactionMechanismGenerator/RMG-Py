@@ -35,6 +35,7 @@ files.
 
 import os.path
 import logging
+import re
 
 ################################################################################
 
@@ -82,30 +83,40 @@ def saveOutputHTML(path, reactionModel):
     species = reactionModel.core.species[:]
     species.sort(key=lambda x: x.index)
 
-    reactions = [rxn for rxn in reactionModel.core.reactions if not isinstance(rxn, PDepReaction)]
+    reactions = [rxn for rxn in reactionModel.core.reactions ]
     reactions.sort(key=lambda x: x.index)
-
-    pdepreactions = [rxn for rxn in reactionModel.core.reactions if isinstance(rxn, PDepReaction)]
-    pdepreactions.sort(key=lambda x: x.index)
 
     familyCount = {}
     for rxn in reactions:
-        family = rxn.getSource()
+        if isinstance(rxn, PDepReaction):
+            family = "PDepNetwork"
+        else:
+            family = rxn.getSource().label
         if family in familyCount:
             familyCount[family] += 1
         else:
             familyCount[family] = 1
     families = familyCount.keys()
-    families.sort(key=lambda x: x.label)
+    families.sort()
+    
+    
+    ## jinja2 filters etc.
+    to_remove_from_css_names = re.compile('[/.\-+,]')
+    def csssafe(input):
+        "Replace unsafe CSS class name characters with an underscore."
+        return to_remove_from_css_names.sub('_',input)
+        
+    environment = jinja2.Environment()
+    environment.filters['csssafe'] = csssafe
     
     # Make HTML file
-    template = jinja2.Template(
+    template = environment.from_string(
 """<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
 <html lang="en">
-
 <head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
     <title>{{ title }}</title>
-    <style>
+    <style type="text/css">
         body {
             font-family: sans-serif;
         }
@@ -120,11 +131,14 @@ def saveOutputHTML(path, reactionModel):
             text-decoration: underline;
         }
         table.speciesList, table.reactionList {
-            # width: 100%;
+            width: 100%;
             border-collapse: collapse;
         }
         table.speciesList th, table.reactionList th {
             text-align: left;
+        }
+        tr.reaction td {
+            border-top: 1px solid #808080;
         }
         td.reactants {
             text-align: right;
@@ -141,13 +155,12 @@ def saveOutputHTML(path, reactionModel):
         }
         tr.comment {
             font-size: small;
-            border-bottom: 1px solid #808080;
         }
         tr.kinetics {
             font-size: small;
         }
         .KineticsData {
-            # border: 1px solid grey;
+            # border: 1px solid gray;
         }
         .KineticsData th {
             width: 15em;
@@ -158,6 +171,22 @@ def saveOutputHTML(path, reactionModel):
         }
         .searchlink {
             font-size: large;
+        }
+        
+        .chemkin, .KineticsData_repr {
+           white-space: pre-wrap;
+           font-size: x-small;
+           font-family: "Andale Mono", monospace;
+        }
+        
+        .hide_comment .comment{
+            display: none !important;
+        }
+        .hide_kinetics .kinetics{
+           display: none !important;
+        }
+        .hide_chemkin .chemkin{
+           display: none !important;
         }
     </style>
     <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.1/jquery.min.js"></script>
@@ -170,17 +199,32 @@ def saveOutputHTML(path, reactionModel):
             $("."+family.value).hide();
         }
     }
-
+    function updateDetails(type) {
+        if (type.checked) {
+            $(".reactionList").removeClass("hide_"+type.value);
+        } else {
+            $(".reactionList").addClass("hide_"+type.value);
+        }
+    }
     function checkAllFamilies() {
-        $("#familyForm").find("input").each(function() { this.checked = true; updateFamily(this); });
+        $("#familySelector").find("[name='family']").each(function() { this.checked = true; updateFamily(this); });
+        return false;
     }
-
     function uncheckAllFamilies() {
-        $("#familyForm").find("input").each(function() { this.checked = false; updateFamily(this); });
+        $("#familySelector").find("[name='family']").each(function() { this.checked = false; updateFamily(this); });
+        return false;
     }
-
+    function checkAllDetails() {
+        $("#familySelector").find("[name='detail']").each(function() { this.checked = true; updateDetails(this); });
+        return false;
+    }
+    function uncheckAllDetails() {
+        $("#familySelector").find("[name='detail']").each(function() { this.checked = false; updateDetails(this); });
+        return false;
+    }
     $(document).ready(function() {
         checkAllFamilies();
+        uncheckAllDetails();
     });
 
     </script>
@@ -188,7 +232,7 @@ def saveOutputHTML(path, reactionModel):
 
 <body>
 
-<h1>{{ title }}<h1>
+<h1>{{ title }}</h1>
 
 <h2>Species ({{ species|length }})</h2>
 
@@ -197,7 +241,7 @@ def saveOutputHTML(path, reactionModel):
     {% for spec in species %}
     <tr class="species">
         <td class="index">{{ spec.index }}.</td>
-        <td class="structure"><img src="species/{{ spec|replace('#','%23') }}.png" alt="{{ spec }}" title="{{ spec }}"/></td>
+        <td class="structure"><img src="species/{{ spec|replace('#','%23') }}.png" alt="{{ spec }}" title="{{ spec }}"></td>
         <td class="label">{{ spec.label }}</td>
     </tr>
     {% endfor %}
@@ -205,56 +249,47 @@ def saveOutputHTML(path, reactionModel):
 
 <h2>Reactions ({{ reactions|length }})</h2>
 
-<p>
-<form id='familySelector'>
-    <div><input type="checkbox" id="kinetics" name="family" value="kinetics" checked="checked" onclick="updateFamily(this);"/><label for="kinetics">Kinetics</label></div>
-    <div><input type="checkbox" id="comment" name="family" value="comment" checked="checked" onclick="updateFamily(this);"/><label for="comment">Comments</label></div>
-    <div>Reaction families:</div>
-{% for family in families %}    <div><input type="checkbox" id="{{ family.label }}" name="family" value="{{ family.label }}" checked="checked" onclick="updateFamily(this);"/><label for="{{ family.label }}">{{ family.label }} ({{ familyCount[family] }})</label></div>
-{% endfor %}    <div><a href="#" onclick="checkAllFamilies();">check all</a> &nbsp; &nbsp; <a href="#" onclick="uncheckAllFamilies();">uncheck all</a></div>
-</form>
-</p>
+<form id='familySelector' action="">
+    <h4>Reaction families:</h4>
+{% for family in families %}    <input type="checkbox" id="{{ family|csssafe }}" name="family" value="{{ family|csssafe }}" checked="checked" onclick="updateFamily(this);"><label for="{{ family|csssafe }}">{{ family }} ({{ familyCount[family] }} rxn{{ 's' if familyCount[family] != 1 }})</label><br>
+{% endfor %}
+    <a href="javascript:checkAllFamilies();" onclick="checkAllFamilies()">check all</a> &nbsp; &nbsp; <a href="javascript:uncheckAllFamilies();" onclick="uncheckAllFamilies();">uncheck all</a><br>
 
-<table class="reactionList">
+    <h4>Reaction Details:</h4>
+    <input type="checkbox" id="kinetics" name="detail" value="kinetics" onclick="updateDetails(this);"><label for="kinetics">Kinetics</label><br>
+    <input type="checkbox" id="comment" name="detail" value="comment" onclick="updateDetails(this);"><label for="comment">Comments</label><br>
+    <input type="checkbox" id="chemkin" name="detail" value="chemkin" onclick="updateDetails(this);"><label for="chemkin">Chemkin strings</label><br>
+    <a href="javascript:checkAllDetails();" onclick="checkAllDetails()">check all</a> &nbsp; &nbsp; <a href="javascript:uncheckAllDetails();" onclick="uncheckAllDetails();">uncheck all</a>
+</form>
+
+<h4>Reaction List:</h4>
+
+<table class="reactionList hide_comment hide_kinetics hide_chemkin">
     <tr><th>Index</th><th colspan="3" style="text-align: center;">Reaction</th><th>Family</th></tr>
     {% for rxn in reactions %}
-    <tr class="reaction {{ rxn.getSource().label }}">
+    <tr class="reaction {{ rxn.getSource().label|csssafe }}">
         <td class="index">{{ rxn.index }}.</td>
-        <td class="reactants">{% for reactant in rxn.reactants %}<img src="species/{{ reactant|replace('#','%23') }}.png" alt="{{ reactant }}" title="{{ reactant }}"/>{% if not loop.last %} + {% endif %}{% endfor %}</td>
+        <td class="reactants">{% for reactant in rxn.reactants %}<img src="species/{{ reactant|replace('#','%23') }}.png" alt="{{ reactant }}" title="{{ reactant }}">{% if not loop.last %} + {% endif %}{% endfor %}</td>
         <td class="reactionArrow">{% if rxn.reversible %}&hArr;{% else %}&rarr;{% endif %}</td>
-        <td class="products">{% for product in rxn.products %}<img src="species/{{ product|replace('#','%23') }}.png" alt="{{ product }}" title="{{ product }}"/>{% if not loop.last %} + {% endif %}{% endfor %}</td>
+        <td class="products">{% for product in rxn.products %}<img src="species/{{ product|replace('#','%23') }}.png" alt="{{ product }}" title="{{ product }}">{% if not loop.last %} + {% endif %}{% endfor %}</td>
         <td class="family">{{ rxn.getSource().label }}</td>
     </tr>
-    <tr class="kinetics">
+    <tr class="kinetics {{ rxn.getSource().label|csssafe }}">
         <td>
-        <a href="{{ rxn.getURL() }}" alt="Search on RMG website" class="searchlink">?</a>
+        <a href="{{ rxn.getURL() }}" title="Search on RMG website" class="searchlink">?</a>
         </td>
         <td colspan="4">{{ rxn.kinetics.toHTML() }}</td>
     </tr>
-    <tr class="comment">
+    <tr class="chemkin {{ rxn.getSource().label|csssafe }}">
+        <td></td>
+        <td colspan="4">{{ rxn.toChemkin(species) }}</td>
+    </tr>
+    <tr class="comment {{ rxn.getSource().label|csssafe }}">
         <td></td>
         <td colspan="4">{{ rxn.kinetics.comment }}</td>
     </tr>
     {% endfor %}
-    {% for rxn in pdepreactions %}
-    <tr class="reaction {{ pdepnetreaction }}">
-        <td class="index">{{ rxn.index }}.</td>
-        <td class="reactants">{% for reactant in rxn.reactants %}<img src="species/{{ reactant|replace('#','%23') }}.png" alt="{{ reactant }}" title="{{ reactant }}"/>{% if not loop.last %} + {% endif %}{% endfor %}</td>
-        <td class="reactionArrow">{% if rxn.reversible %}&hArr;{% else %}&rarr;{% endif %}</td>
-        <td class="products">{% for product in rxn.products %}<img src="species/{{ product|replace('#','%23') }}.png" alt="{{ product }}" title="{{ product }}"/>{% if not loop.last %} + {% endif %}{% endfor %}</td>
-        <td class="family"></td>
-    </tr>
-    <tr class="kinetics">
-        <td>
-        <a href="{{ rxn.getURL() }}" alt="Search on RMG website" class="searchlink">?</a>
-        </td>
-        <td colspan="4">{{ rxn.kinetics.toHTML() }}</td>
-    </tr>
-    <tr class="comment">
-        <td></td>
-        <td colspan="4">{{ rxn.kinetics.comment }}</td>
-    </tr>
-    {% endfor %}
+
 </table>
 
 </body>
@@ -262,5 +297,5 @@ def saveOutputHTML(path, reactionModel):
 </html>
 """)
     f = open(path, 'w')
-    f.write(template.render(title=title, species=species, reactions=reactions, pdepreactions=pdepreactions, families=families, familyCount=familyCount))
+    f.write(template.render(title=title, species=species, reactions=reactions, families=families, familyCount=familyCount))
     f.close()
