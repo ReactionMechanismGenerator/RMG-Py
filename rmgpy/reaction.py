@@ -124,6 +124,15 @@ class Reaction:
         """
         return (Reaction, (self.index, self.reactants, self.products, self.kinetics, self.reversible, self.transitionState, self.thirdBody, self.duplicate, self.degeneracy))
 
+    def toChemkin(self, speciesList):
+        """
+        Return the chemkin-formatted string for this reaction.
+        
+        Requires the `speciesList` to figure out third body colliders.
+        """
+        import rmgpy.chemkin
+        return rmgpy.chemkin.writeKineticsEntry(self, speciesList)
+        
     def getURL(self):
         """
         Get a URL to search for this reaction in the rmg website.
