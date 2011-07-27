@@ -32,11 +32,14 @@ This module contains functions for writing of Chemkin input files.
 """
 
 import re
-
+import logging
 from thermo import MultiNASA
 from kinetics import *
 from reaction import Reaction
 
+
+__chemkin_reaction_count = None
+    
 ################################################################################
 
 class ChemkinError(Exception):
@@ -169,14 +172,19 @@ def writeKineticsEntry(reaction, speciesList):
             for line in reaction.kinetics.comment.split("\n"):
                 string += "! {0}\n".format(line) 
         for kinetics in reaction.kinetics.kineticsList:
-            new_reaction = Reaction(reactants=reaction.reactants,
+            new_reaction = Reaction( index=reaction.index,
+                     reactants=reaction.reactants,
                      products=reaction.products,
                      reversible=reaction.reversible,
                      kinetics=kinetics)
             string += writeKineticsEntry(new_reaction, speciesList)
             string += "DUPLICATE\n"
         return string + "\n"
-
+    
+    global __chemkin_reaction_count
+    if __chemkin_reaction_count is not None:
+        __chemkin_reaction_count += 1
+        string += "! Chemkin # {0}. RMG # {1}.\n".format(__chemkin_reaction_count, reaction.index)
     if reaction.kinetics.comment:
         for line in reaction.kinetics.comment.split("\n"):
             string += "! {0}\n".format(line) 
@@ -314,10 +322,13 @@ def saveChemkinFile(path, species, reactions):
 
     # Reactions section
     f.write('REACTIONS    KCAL/MOLE   MOLES\n\n')
+    global __chemkin_reaction_count
+    __chemkin_reaction_count = 0
     for rxn in reactions:
         f.write(writeKineticsEntry(rxn, speciesList=species))
         # Don't forget to mark duplicates!
         f.write('\n')
     f.write('END\n\n')
-
     f.close()
+    logging.info("Chemkin file contains {0} reactions.".format(__chemkin_reaction_count))
+    __chemkin_reaction_count = None
