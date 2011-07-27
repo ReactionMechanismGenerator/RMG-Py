@@ -193,7 +193,7 @@ class KineticsModel:
                 string += '<td>{0:+.1f}'.format(math.log10(k))
      
         string += '\n</tr></table>'
-        string += "<code>{0!r}</code>".format(self)
+        string += "<span class='KineticsData_repr'>{0!r}</span>".format(self)
         return string
         
 
