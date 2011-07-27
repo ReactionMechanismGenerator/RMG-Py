@@ -57,6 +57,12 @@ class PDepReaction(rmgpy.reaction.Reaction):
     def __init__(self, index=-1, reactants=None, products=None, network=None, kinetics=None, reversible=True, transitionState=None, thirdBody=False):
         rmgpy.reaction.Reaction.__init__(self, index, reactants, products, kinetics, reversible, transitionState, thirdBody)
         self.network = network
+        
+    def getSource(self):
+        """
+        Get the source of this PDepReaction
+        """
+        return self.network
 
 ################################################################################
 
@@ -81,6 +87,13 @@ class PDepNetwork(rmgpy.measure.network.Network):
         rmgpy.measure.network.Network.__init__(self, index=index)
         self.source = source
         self.explored = []
+    
+    @property
+    def label(self):
+        """
+        Get the `label` for this network (analogous to reaction families as a reaction's source)
+        """
+        return "PDepNetwork {0}".format(self.index)
 
     def getLeakCoefficient(self, T, P):
         """
