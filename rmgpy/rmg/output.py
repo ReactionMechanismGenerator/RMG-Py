@@ -197,7 +197,7 @@ def saveOutputHTML(path, reactionModel):
     {% for spec in species %}
     <tr class="species">
         <td class="index">{{ spec.index }}.</td>
-        <td class="structure"><img src="species/{{ spec }}.png" alt="{{ spec }}" title="{{ spec }}"/></td>
+        <td class="structure"><img src="species/{{ spec|replace('#','%23') }}.png" alt="{{ spec }}" title="{{ spec }}"/></td>
         <td class="label">{{ spec.label }}</td>
     </tr>
     {% endfor %}
@@ -220,9 +220,9 @@ def saveOutputHTML(path, reactionModel):
     {% for rxn in reactions %}
     <tr class="reaction {{ rxn.getSource().label }}">
         <td class="index">{{ rxn.index }}.</td>
-        <td class="reactants">{% for reactant in rxn.reactants %}<img src="species/{{ reactant }}.png" alt="{{ reactant }}" title="{{ reactant }}"/>{% if not loop.last %} + {% endif %}{% endfor %}</td>
+        <td class="reactants">{% for reactant in rxn.reactants %}<img src="species/{{ reactant|replace('#','%23') }}.png" alt="{{ reactant }}" title="{{ reactant }}"/>{% if not loop.last %} + {% endif %}{% endfor %}</td>
         <td class="reactionArrow">{% if rxn.reversible %}&hArr;{% else %}&rarr;{% endif %}</td>
-        <td class="products">{% for product in rxn.products %}<img src="species/{{ product }}.png" alt="{{ product }}" title="{{ product }}"/>{% if not loop.last %} + {% endif %}{% endfor %}</td>
+        <td class="products">{% for product in rxn.products %}<img src="species/{{ product|replace('#','%23') }}.png" alt="{{ product }}" title="{{ product }}"/>{% if not loop.last %} + {% endif %}{% endfor %}</td>
         <td class="family">{{ rxn.getSource().label }}</td>
     </tr>
     <tr class="kinetics">
@@ -239,9 +239,9 @@ def saveOutputHTML(path, reactionModel):
     {% for rxn in pdepreactions %}
     <tr class="reaction {{ pdepnetreaction }}">
         <td class="index">{{ rxn.index }}.</td>
-        <td class="reactants">{% for reactant in rxn.reactants %}<img src="species/{{ reactant }}.png" alt="{{ reactant }}" title="{{ reactant }}"/>{% if not loop.last %} + {% endif %}{% endfor %}</td>
+        <td class="reactants">{% for reactant in rxn.reactants %}<img src="species/{{ reactant|replace('#','%23') }}.png" alt="{{ reactant }}" title="{{ reactant }}"/>{% if not loop.last %} + {% endif %}{% endfor %}</td>
         <td class="reactionArrow">{% if rxn.reversible %}&hArr;{% else %}&rarr;{% endif %}</td>
-        <td class="products">{% for product in rxn.products %}<img src="species/{{ product }}.png" alt="{{ product }}" title="{{ product }}"/>{% if not loop.last %} + {% endif %}{% endfor %}</td>
+        <td class="products">{% for product in rxn.products %}<img src="species/{{ product|replace('#','%23') }}.png" alt="{{ product }}" title="{{ product }}"/>{% if not loop.last %} + {% endif %}{% endfor %}</td>
         <td class="family"></td>
     </tr>
     <tr class="kinetics">
