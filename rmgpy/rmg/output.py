@@ -180,13 +180,13 @@ def saveOutputHTML(path, reactionModel):
         }
         
         .hide_comment .comment{
-            display: none;
+            display: none !important;
         }
         .hide_kinetics .kinetics{
-           display: none;
+           display: none !important;
         }
         .hide_chemkin .chemkin{
-           display: none;
+           display: none !important;
         }
     </style>
     <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.1/jquery.min.js"></script>
@@ -207,16 +207,24 @@ def saveOutputHTML(path, reactionModel):
         }
     }
     function checkAllFamilies() {
-        $("#familySelector").find("input").each(function() { this.checked = true; updateFamily(this); });
-        return False;
+        $("#familySelector").find("[name='family']").each(function() { this.checked = true; updateFamily(this); });
+        return false;
     }
     function uncheckAllFamilies() {
-        $("#familySelector").find("input").each(function() { this.checked = false; updateFamily(this); });
-        return False;
+        $("#familySelector").find("[name='family']").each(function() { this.checked = false; updateFamily(this); });
+        return false;
     }
-
+    function checkAllDetails() {
+        $("#familySelector").find("[name='detail']").each(function() { this.checked = true; updateDetails(this); });
+        return false;
+    }
+    function uncheckAllDetails() {
+        $("#familySelector").find("[name='detail']").each(function() { this.checked = false; updateDetails(this); });
+        return false;
+    }
     $(document).ready(function() {
         checkAllFamilies();
+        checkAllDetails();
     });
 
     </script>
@@ -248,9 +256,10 @@ def saveOutputHTML(path, reactionModel):
     <a href="javascript:checkAllFamilies();" onclick="checkAllFamilies()">check all</a> &nbsp; &nbsp; <a href="javascript:uncheckAllFamilies();" onclick="uncheckAllFamilies();">uncheck all</a><br>
 
     <h4>Reaction Details:</h4>
-    <div><input type="checkbox" id="kinetics" name="family" value="kinetics" checked="checked" onclick="updateDetails(this);"><label for="kinetics">Kinetics</label></div>
-    <div><input type="checkbox" id="comment" name="family" value="comment" checked="checked" onclick="updateDetails(this);"><label for="comment">Comments</label></div>
-    <div><input type="checkbox" id="chemkin" name="family" value="chemkin" checked="checked" onclick="updateDetails(this);"><label for="chemkin">Chemkin strings</label></div>
+    <input type="checkbox" id="kinetics" name="detail" value="kinetics" checked="checked" onclick="updateDetails(this);"><label for="kinetics">Kinetics</label><br>
+    <input type="checkbox" id="comment" name="detail" value="comment" checked="checked" onclick="updateDetails(this);"><label for="comment">Comments</label><br>
+    <input type="checkbox" id="chemkin" name="detail" value="chemkin" checked="checked" onclick="updateDetails(this);"><label for="chemkin">Chemkin strings</label><br>
+    <a href="javascript:checkAllDetails();" onclick="checkAllDetails()">check all</a> &nbsp; &nbsp; <a href="javascript:uncheckAllDetails();" onclick="uncheckAllDetails();">uncheck all</a>
 </form>
 
 
