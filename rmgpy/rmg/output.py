@@ -83,21 +83,22 @@ def saveOutputHTML(path, reactionModel):
     species = reactionModel.core.species[:]
     species.sort(key=lambda x: x.index)
 
-    reactions = [rxn for rxn in reactionModel.core.reactions if not isinstance(rxn, PDepReaction)]
+    reactions = [rxn for rxn in reactionModel.core.reactions ]
     reactions.sort(key=lambda x: x.index)
-
-    pdepreactions = [rxn for rxn in reactionModel.core.reactions if isinstance(rxn, PDepReaction)]
-    pdepreactions.sort(key=lambda x: x.index)
 
     familyCount = {}
     for rxn in reactions:
-        family = rxn.getSource()
+        if isinstance(rxn, PDepReaction):
+            family = "PDepNetwork"
+        else:
+            family = rxn.getSource().label
         if family in familyCount:
             familyCount[family] += 1
         else:
             familyCount[family] = 1
     families = familyCount.keys()
-    families.sort(key=lambda x: x.label)
+    families.sort()
+    
     
     ## jinja2 filters etc.
     to_remove_from_css_names = re.compile('[/.\-+,]')
@@ -242,13 +243,14 @@ def saveOutputHTML(path, reactionModel):
 
 <form id='familySelector' action="">
     <h4>Reaction families:</h4>
-{% for family in families %}    <input type="checkbox" id="{{ family.label|csssafe }}" name="family" value="{{ family.label|csssafe }}" checked="checked" onclick="updateFamily(this);"><label for="{{ family.label|csssafe }}">{{ family }} ({{ familyCount[family] }} rxn{{ 's' if familyCount[family] != 1 }})</label><br>
+{% for family in families %}    <input type="checkbox" id="{{ family|csssafe }}" name="family" value="{{ family|csssafe }}" checked="checked" onclick="updateFamily(this);"><label for="{{ family|csssafe }}">{{ family }} ({{ familyCount[family] }} rxn{{ 's' if familyCount[family] != 1 }})</label><br>
 {% endfor %}
+    <a href="javascript:checkAllFamilies();" onclick="checkAllFamilies()">check all</a> &nbsp; &nbsp; <a href="javascript:uncheckAllFamilies();" onclick="uncheckAllFamilies();">uncheck all</a><br>
+
     <h4>Reaction Details:</h4>
     <div><input type="checkbox" id="kinetics" name="family" value="kinetics" checked="checked" onclick="updateDetails(this);"><label for="kinetics">Kinetics</label></div>
     <div><input type="checkbox" id="comment" name="family" value="comment" checked="checked" onclick="updateDetails(this);"><label for="comment">Comments</label></div>
     <div><input type="checkbox" id="chemkin" name="family" value="chemkin" checked="checked" onclick="updateDetails(this);"><label for="chemkin">Chemkin strings</label></div>
-    <div><a href="javascript:checkAllFamilies();" onclick="checkAllFamilies()">check all</a> &nbsp; &nbsp; <a href="javascript:uncheckAllFamilies();" onclick="uncheckAllFamilies();">uncheck all</a></div>
 </form>
 
 
@@ -265,29 +267,6 @@ def saveOutputHTML(path, reactionModel):
     <tr class="kinetics {{ rxn.getSource().label|csssafe }}">
         <td>
         <a href="{{ rxn.getURL() }}" title="Search on RMG website" class="searchlink">?</a>
-        </td>
-        <td colspan="4">{{ rxn.kinetics.toHTML() }}</td>
-    </tr>
-    <tr class="chemkin {{ rxn.getSource().label|replace('/','_') }}">
-        <td></td>
-        <td colspan="4">{{ rxn.toChemkin(species) }}</td>
-    </tr>
-    <tr class="comment {{ rxn.getSource().label|replace('/','_') }}">
-        <td></td>
-        <td colspan="4">{{ rxn.kinetics.comment }}</td>
-    </tr>
-    {% endfor %}
-    {% for rxn in pdepreactions %}
-    <tr class="reaction {{ pdepnetreaction }}">
-        <td class="index">{{ rxn.index }}.</td>
-        <td class="reactants">{% for reactant in rxn.reactants %}<img src="species/{{ reactant|replace('#','%23') }}.png" alt="{{ reactant }}" title="{{ reactant }}">{% if not loop.last %} + {% endif %}{% endfor %}</td>
-        <td class="reactionArrow">{% if rxn.reversible %}&hArr;{% else %}&rarr;{% endif %}</td>
-        <td class="products">{% for product in rxn.products %}<img src="species/{{ product|replace('#','%23') }}.png" alt="{{ product }}" title="{{ product }}">{% if not loop.last %} + {% endif %}{% endfor %}</td>
-        <td class="family"></td>
-    </tr>
-    <tr class="kinetics">
-        <td>
-        <a href="{{ rxn.getURL() }}" alt="Search on RMG website" class="searchlink">?</a>
         </td>
         <td colspan="4">{{ rxn.kinetics.toHTML() }}</td>
     </tr>
@@ -308,5 +287,5 @@ def saveOutputHTML(path, reactionModel):
 </html>
 """)
     f = open(path, 'w')
-    f.write(template.render(title=title, species=species, reactions=reactions, pdepreactions=pdepreactions, families=families, familyCount=familyCount))
+    f.write(template.render(title=title, species=species, reactions=reactions, families=families, familyCount=familyCount))
     f.close()
