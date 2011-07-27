@@ -35,6 +35,7 @@ files.
 
 import os.path
 import logging
+import re
 
 ################################################################################
 
@@ -98,8 +99,17 @@ def saveOutputHTML(path, reactionModel):
     families = familyCount.keys()
     families.sort(key=lambda x: x.label)
     
+    ## jinja2 filters etc.
+    to_remove_from_css_names = re.compile('[/.\-+,]')
+    def csssafe(input):
+        "Replace unsafe CSS class name characters with an underscore."
+        return to_remove_from_css_names.sub('_',input)
+        
+    environment = jinja2.Environment()
+    environment.filters['csssafe'] = csssafe
+    
     # Make HTML file
-    template = jinja2.Template(
+    template = environment.from_string(
 """<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
 <html lang="en">
 <head>
@@ -232,8 +242,8 @@ def saveOutputHTML(path, reactionModel):
 
 <form id='familySelector' action="">
     <h4>Reaction families:</h4>
-{% for family in families %}    <div><input type="checkbox" id="{{ family.label|replace('/','_') }}" name="family" value="{{ family.label|replace('/','_') }}" checked="checked" onclick="updateFamily(this);"><label for="{{ family.label|replace('/','_') }}">{{ family.label|replace('/','_') }} ({{ familyCount[family] }})</label></div>
-{% endfor %}    
+{% for family in families %}    <input type="checkbox" id="{{ family.label|csssafe }}" name="family" value="{{ family.label|csssafe }}" checked="checked" onclick="updateFamily(this);"><label for="{{ family.label|csssafe }}">{{ family }} ({{ familyCount[family] }} rxn{{ 's' if familyCount[family] != 1 }})</label><br>
+{% endfor %}
     <h4>Reaction Details:</h4>
     <div><input type="checkbox" id="kinetics" name="family" value="kinetics" checked="checked" onclick="updateDetails(this);"><label for="kinetics">Kinetics</label></div>
     <div><input type="checkbox" id="comment" name="family" value="comment" checked="checked" onclick="updateDetails(this);"><label for="comment">Comments</label></div>
@@ -245,14 +255,14 @@ def saveOutputHTML(path, reactionModel):
 <table class="reactionList">
     <tr><th>Index</th><th colspan="3" style="text-align: center;">Reaction</th><th>Family</th></tr>
     {% for rxn in reactions %}
-    <tr class="reaction {{ rxn.getSource().label|replace('/','_') }}">
+    <tr class="reaction {{ rxn.getSource().label|csssafe }}">
         <td class="index">{{ rxn.index }}.</td>
         <td class="reactants">{% for reactant in rxn.reactants %}<img src="species/{{ reactant|replace('#','%23') }}.png" alt="{{ reactant }}" title="{{ reactant }}">{% if not loop.last %} + {% endif %}{% endfor %}</td>
         <td class="reactionArrow">{% if rxn.reversible %}&hArr;{% else %}&rarr;{% endif %}</td>
         <td class="products">{% for product in rxn.products %}<img src="species/{{ product|replace('#','%23') }}.png" alt="{{ product }}" title="{{ product }}">{% if not loop.last %} + {% endif %}{% endfor %}</td>
-        <td class="family">{{ rxn.getSource().label|replace('/','_') }}</td>
+        <td class="family">{{ rxn.getSource().label }}</td>
     </tr>
-    <tr class="kinetics {{ rxn.getSource().label|replace('/','_') }}">
+    <tr class="kinetics {{ rxn.getSource().label|csssafe }}">
         <td>
         <a href="{{ rxn.getURL() }}" title="Search on RMG website" class="searchlink">?</a>
         </td>
@@ -281,15 +291,16 @@ def saveOutputHTML(path, reactionModel):
         </td>
         <td colspan="4">{{ rxn.kinetics.toHTML() }}</td>
     </tr>
-    <tr class="chemkin {{ rxn.getSource().label|replace('/','_') }}">
+    <tr class="chemkin {{ rxn.getSource().label|csssafe }}">
         <td></td>
         <td colspan="4">{{ rxn.toChemkin(species) }}</td>
     </tr>
-    <tr class="comment {{ rxn.getSource().label|replace('/','_') }}">
+    <tr class="comment {{ rxn.getSource().label|csssafe }}">
         <td></td>
         <td colspan="4">{{ rxn.kinetics.comment }}</td>
     </tr>
     {% endfor %}
+
 </table>
 
 </body>
