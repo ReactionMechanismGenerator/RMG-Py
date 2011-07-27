@@ -224,7 +224,7 @@ def saveOutputHTML(path, reactionModel):
     }
     $(document).ready(function() {
         checkAllFamilies();
-        checkAllDetails();
+        uncheckAllDetails();
     });
 
     </script>
@@ -256,14 +256,15 @@ def saveOutputHTML(path, reactionModel):
     <a href="javascript:checkAllFamilies();" onclick="checkAllFamilies()">check all</a> &nbsp; &nbsp; <a href="javascript:uncheckAllFamilies();" onclick="uncheckAllFamilies();">uncheck all</a><br>
 
     <h4>Reaction Details:</h4>
-    <input type="checkbox" id="kinetics" name="detail" value="kinetics" checked="checked" onclick="updateDetails(this);"><label for="kinetics">Kinetics</label><br>
-    <input type="checkbox" id="comment" name="detail" value="comment" checked="checked" onclick="updateDetails(this);"><label for="comment">Comments</label><br>
-    <input type="checkbox" id="chemkin" name="detail" value="chemkin" checked="checked" onclick="updateDetails(this);"><label for="chemkin">Chemkin strings</label><br>
+    <input type="checkbox" id="kinetics" name="detail" value="kinetics" onclick="updateDetails(this);"><label for="kinetics">Kinetics</label><br>
+    <input type="checkbox" id="comment" name="detail" value="comment" onclick="updateDetails(this);"><label for="comment">Comments</label><br>
+    <input type="checkbox" id="chemkin" name="detail" value="chemkin" onclick="updateDetails(this);"><label for="chemkin">Chemkin strings</label><br>
     <a href="javascript:checkAllDetails();" onclick="checkAllDetails()">check all</a> &nbsp; &nbsp; <a href="javascript:uncheckAllDetails();" onclick="uncheckAllDetails();">uncheck all</a>
 </form>
 
+<h4>Reaction List:</h4>
 
-<table class="reactionList">
+<table class="reactionList hide_comment hide_kinetics hide_chemkin">
     <tr><th>Index</th><th colspan="3" style="text-align: center;">Reaction</th><th>Family</th></tr>
     {% for rxn in reactions %}
     <tr class="reaction {{ rxn.getSource().label|csssafe }}">
