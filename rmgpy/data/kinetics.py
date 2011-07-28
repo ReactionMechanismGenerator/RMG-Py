@@ -2187,10 +2187,16 @@ class KineticsFamily(Database):
         elif isinstance(struct, Group):
             return reactant.findSubgraphIsomorphisms(struct)
 
-    def generateReactions(self, reactants, searchAll=False):
+    def generateReactions(self, reactants, returnAllKinetics=False):
         """
         Generate all reactions between the provided list of one or two
         `reactants`, which should be :class:`Molecule` objects.
+        
+        If searchAll==True then it searches every possible depository in the family
+        If searchAll==False (default) only those marked as recommended are searched.
+        If returnAllKinetics==True then multiple copies of each reaction are returned,
+         one with each kinetics source or estimate.
+        if returnAllKinetics==False (default) then only the best is returned.
         """
         reactionList = []
         
@@ -2223,7 +2229,8 @@ class KineticsFamily(Database):
         # While we're here, we might as well get the kinetics too
         reactionList0 = reactionList; reactionList = []
         for rxn in reactionList0:
-            kineticsList = self.getAllKinetics(rxn, degeneracy=rxn.degeneracy, searchMode='all' if searchAll else 'recommended')
+            kineticsList = self.getAllKinetics(rxn, degeneracy=rxn.degeneracy,
+                                               returnAllKinetics=returnAllKinetics)
             for kinetics, source, entry in kineticsList:
                 if source is not None:
                     reaction = DepositoryReaction(
@@ -2472,13 +2479,15 @@ class KineticsFamily(Database):
         
         return kineticsList
     
-    def getAllKinetics(self, reaction, degeneracy=1, searchMode='recommended'):
+    def getAllKinetics(self, reaction, degeneracy=1, returnAllKinetics=True):
         """
         Return the kinetics for the given `reaction` by searching the various
         depositories as well as generating a group additivity estimate. Unlike
         the regular :meth:`getKinetics()` method, this returns a list of
         results, with each result comprising the kinetics, the source, and
-        the entry.
+        the entry. If it came from a template estimate, the source and entry
+        will both be `None`.
+        If returnAllKinetics==False, only the first (best?) matching kinetics is returned.
         """
         kineticsList = []
         template = self.getReactionTemplate(reaction)
@@ -2489,6 +2498,8 @@ class KineticsFamily(Database):
         # Check the various depositories for kinetics
         for depository in depositories:
             for kinetics, entry in self.getKineticsFromDepository(depository, reaction, template, degeneracy):
+                if not returnAllKinetics:
+                    return [[kinetics,depository,entry]]
                 kineticsList.append([kinetics, depository, entry])
         # Also generate a group additivity estimate
         kinetics = self.getKineticsForTemplate(template, degeneracy)
@@ -2739,16 +2750,16 @@ class KineticsDatabase:
                 reactionList.append(reaction)
         return filterReactions(reactants, products, reactionList)
 
-    def generateReactionsFromFamilies(self, reactants, products, only_families=None, searchAll=False):
+    def generateReactionsFromFamilies(self, reactants, products, only_families=None):
         """
         Generate all reactions between the provided list of one or two
         `reactants`, which should be :class:`Molecule` objects. This method
-        searches the depository.
+        applies the reaction family.
         """
         reactionList = []
         for label, family in self.families.iteritems():
             if only_families is None or label in only_families:
-                reactionList.extend(family.generateReactions(reactants, searchAll=searchAll))
+                reactionList.extend(family.generateReactions(reactants))
         return filterReactions(reactants, products, reactionList)
 
     def getForwardReactionForFamilyEntry(self, entry, family, thermoDatabase):
