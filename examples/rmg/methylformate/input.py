@@ -149,8 +149,8 @@ pressureDependence(
     method='modified strong collision', # 'reservoir state'
     maximumGrainSize=(2.0,'kcal/mol'),
     minimumNumberOfGrains=200,
-    temperatures=(290,'K',3500,'K',8),
-    pressures=(0.02,'bar',100,'bar',5),
+    temperatures=(290,3500,'K',8),
+    pressures=(0.02,100,'bar',5),
     interpolation=('Chebyshev', 6, 4),
 )
 

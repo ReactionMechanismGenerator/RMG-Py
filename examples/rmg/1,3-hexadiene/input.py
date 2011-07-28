@@ -86,8 +86,8 @@ pressureDependence(
     method='modified strong collision',
     maximumGrainSize=(2.0,'kcal/mol'),
     minimumNumberOfGrains=200,
-    temperatures=(300,'K',2000,'K',8),
-    pressures=(0.01,'bar',100,'bar',5),
+    temperatures=(300,2000,'K',8),
+    pressures=(0.01,100,'bar',5),
     interpolation=('Chebyshev', 6, 4),
 )
 

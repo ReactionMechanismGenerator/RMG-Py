@@ -126,17 +126,17 @@ def pressureDependence(method, temperatures, pressures, maximumGrainSize=0.0, mi
     rmg.pressureDependence.method = method
     
     # Process temperatures
-    Tmin, Tmin_units, Tmax, Tmax_units, Tcount = temperatures
-    rmg.pressureDependence.Tmin = Quantity(Tmin, Tmin_units)
-    rmg.pressureDependence.Tmax = Quantity(Tmax, Tmax_units)
+    Tmin, Tmax, T_units, Tcount = temperatures
+    rmg.pressureDependence.Tmin = Quantity(Tmin, T_units)
+    rmg.pressureDependence.Tmax = Quantity(Tmax, T_units)
     rmg.pressureDependence.Tcount = Tcount
     Tlist = getTemperaturesForModel(interpolation, rmg.pressureDependence.Tmin.value, rmg.pressureDependence.Tmax.value, rmg.pressureDependence.Tcount)
     rmg.pressureDependence.Tlist = Quantity(Tlist,"K")
     
     # Process pressures
-    Pmin, Pmin_units, Pmax, Pmax_units, Pcount = pressures
-    rmg.pressureDependence.Pmin = Quantity(Pmin, Pmin_units)
-    rmg.pressureDependence.Pmax = Quantity(Pmax, Pmax_units)
+    Pmin, Pmax, P_units, Pcount = pressures
+    rmg.pressureDependence.Pmin = Quantity(Pmin, P_units)
+    rmg.pressureDependence.Pmax = Quantity(Pmax, P_units)
     rmg.pressureDependence.Pcount = Pcount
     Plist = getPressuresForModel(interpolation, rmg.pressureDependence.Pmin.value, rmg.pressureDependence.Pmax.value, rmg.pressureDependence.Pcount)
     rmg.pressureDependence.Plist = Quantity(Plist,"Pa")
@@ -290,17 +290,15 @@ def saveInputFile(path, rmg):
         f.write('    method = "{0!s}",\n'.format(rmg.pressureDependence.method))
         f.write('    maximumGrainSize = {0!r},\n'.format(rmg.pressureDependence.grainSize))
         f.write('    minimumNumberOfGrains = {0},\n'.format(rmg.pressureDependence.grainCount))
-        f.write('    temperatures = ({0:g},"{1!s}",{2:g},"{3!s}",{4:d}),\n'.format(
-            rmg.pressureDependence.Tmin.value,
-            rmg.pressureDependence.Tmin.units,
-            rmg.pressureDependence.Tmax.value,
+        f.write('    temperatures = ({0:g},{1:g},"{2!s}",{3:d}),\n'.format(
+            rmg.pressureDependence.Tmin.getValueInGivenUnits(),
+            rmg.pressureDependence.Tmax.getValueInGivenUnits(),
             rmg.pressureDependence.Tmax.units,
             rmg.pressureDependence.Tcount,
         ))
-        f.write('    pressures = ({0:g},"{1!s}",{2:g},"{3!s}",{4:d}),\n'.format(
-            rmg.pressureDependence.Pmin.value,
-            rmg.pressureDependence.Pmin.units,
-            rmg.pressureDependence.Pmax.value,
+        f.write('    pressures = ({0:g},{1:g},"{2!s}",{3:d}),\n'.format(
+            rmg.pressureDependence.Pmin.getValueInGivenUnits(),
+            rmg.pressureDependence.Pmax.getValueInGivenUnits(),
             rmg.pressureDependence.Pmax.units,
             rmg.pressureDependence.Pcount,
         ))
