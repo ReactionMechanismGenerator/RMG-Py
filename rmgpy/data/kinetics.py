@@ -2097,11 +2097,11 @@ class KineticsFamily(Database):
             productStructures = self.applyRecipe(reactantStructures, forward=forward)
             if not productStructures: return None
         except InvalidActionError, e:
-            print 'Unable to apply reaction recipe!'
-            print 'Reaction family is {0} in {1} direction'.format(self.label, 'forward' if forward else 'reverse')
-            print 'Reactant structures are:'
+            logging.error('Unable to apply reaction recipe!')
+            logging.error('Reaction family is {0} in {1} direction'.format(self.label, 'forward' if forward else 'reverse'))
+            logging.error('Reactant structures are:')
             for struct in reactantStructures:
-                print struct.toAdjacencyList()
+                logging.error(struct.toAdjacencyList())
             raise
 
         # If there are two product structures, place the one containing '*1' first
