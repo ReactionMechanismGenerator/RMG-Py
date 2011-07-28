@@ -596,15 +596,13 @@ class Molecule(Graph):
 
     def makeHydrogensImplicit(self):
         """
-        Convert all explicitly stored hydrogen atoms to be stored implicitly.
+        Convert all explicitly stored hydrogen atoms to be stored implicitly,
+        unless they are labeled atoms (then they remain explicit).
         An implicit hydrogen atom is stored on the heavy atom it is connected
         to as a single integer counter. This is done to save memory.
         """
 
         cython.declare(atom=Atom, neighbor=Atom, hydrogens=list)
-
-        # Do nothing if already implicit
-        if self.implicitHydrogens: return
 
         # Check that the structure contains at least one heavy atom
         for atom in self.vertices:
@@ -629,7 +627,8 @@ class Molecule(Graph):
         
         # The connectivity values are different in implicit and explicit mode,
         # so reset them so they are recomputed when needed
-        self.resetConnectivityValues()
+        if hydrogens:
+            self.resetConnectivityValues()
 
         # Set implicitHydrogens flag to True
         self.implicitHydrogens = True
@@ -643,9 +642,6 @@ class Molecule(Graph):
         """
 
         cython.declare(atom=Atom, H=Atom, bond=Bond, hydrogens=list, numAtoms=cython.short)
-
-        # Do nothing if already explicit
-        if not self.implicitHydrogens: return
 
         # Create new hydrogen atoms for each implicit hydrogen
         hydrogens = []
@@ -671,7 +667,8 @@ class Molecule(Graph):
 
         # The connectivity values are different in implicit and explicit mode,
         # so reset them so they are recomputed when needed
-        self.resetConnectivityValues()
+        if hydrogens:
+            self.resetConnectivityValues()
 
         # Set implicitHydrogens flag to False
         self.implicitHydrogens = False
