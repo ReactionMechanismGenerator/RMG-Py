@@ -102,7 +102,7 @@ def termination(conversion=None, time=None):
         for spec, conv in conversion.iteritems():
             rmg.termination.append(TerminationConversion(speciesDict[spec], conv))
     if time is not None:
-        rmg.termination.append(TerminationTime(Quantity(time).value))
+        rmg.termination.append(TerminationTime(Quantity(time)))
 
 def simulator(atol, rtol):
     rmg.absoluteTolerance = atol

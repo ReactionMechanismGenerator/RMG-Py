@@ -229,7 +229,7 @@ cdef class ReactionSystem(DASSL):
             # Finish simulation if any of the termination criteria are satisfied
             for term in termination:
                 if isinstance(term, TerminationTime):
-                    if self.t > term.time:
+                    if self.t > term.time.value:
                         terminated = True
                         break
                 elif isinstance(term, TerminationConversion):
