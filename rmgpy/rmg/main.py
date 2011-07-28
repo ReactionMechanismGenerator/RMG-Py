@@ -140,8 +140,11 @@ class RMG:
         if path is None: path = self.inputFile
         readInputFile(path, self)
         if self.pressureDependence:
+            # If the output directory is not yet set, then set it to the same
+            # directory as the input file by default
+            if not self.outputDirectory:
+                self.outputDirectory = os.path.dirname(path)
             self.pressureDependence.outputFile = self.outputDirectory
-            assert self.outputDirectory
             self.reactionModel.pressureDependence = self.pressureDependence
         
     def saveInput(self, path=None):
