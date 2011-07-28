@@ -2268,10 +2268,14 @@ class KineticsFamily(Database):
                     rev_kinetics, rev_source, rev_entry = kineticsList[0]
                     
                     if (source is not None and rev_source is None):
-                        pass # keep the forward
-                    elif ((source is None and rev_source is not None) or
-                          (rev_kinetics.getRateCoefficient(298) > kinetics.getRateCoefficient(298))):
-                        # probably want the reverse (may revisit ways to decide later)
+                        continue # keep the forward
+                    
+                    # Just for comparison, estimate rates at 298K without any Evans Polanyi corrections
+                    T = 298
+                    fwd_rate = kinetics.getRateCoefficient(T,0) if isinstance(kinetics,ArrheniusEP) else kinetics.getRateCoefficient(T)
+                    rev_rate = rev_kinetics.getRateCoefficient(T,0) if isinstance(rev_kinetics,ArrheniusEP) else rev_kinetics.getRateCoefficient(T)
+                    if ((source is None and rev_source is not None) # Reverse has source - use it.
+                        or  (rev_rate > fwd_rate)): # Neither or Both have sources, but reverse is faster - use it.
                         rxn = rxn.reverse
                         kinetics = rev_kinetics
                         source = rev_source
