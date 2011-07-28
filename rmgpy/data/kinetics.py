@@ -1546,7 +1546,7 @@ class KineticsFamily(Database):
         # Kinetics depositories of training and test data
         self.groups = None
         self.rules = None
-        self.depositories = {}
+        self.depositories = []
 
     def __repr__(self):
         return '<ReactionFamily "{0}">'.format(self.label)
@@ -1680,9 +1680,13 @@ class KineticsFamily(Database):
         
         ftemp.close()
     
-    def load(self, path, local_context=None, global_context=None):
+    def load(self, path, local_context=None, global_context=None, depositoryLabels=None):
         """
         Load a kinetics database from a file located at `path` on disk.
+        
+        If `depositoryLabels` is a list, eg. ['training','PrIMe'], then only those
+        depositories are loaded, and they are searched in that order when
+        generating kinetics.
         """
         local_context['recipe'] = self.loadRecipe
         local_context['template'] = self.loadTemplate
@@ -1709,15 +1713,29 @@ class KineticsFamily(Database):
         self.rules = KineticsDepository(label='{0}/rules'.format(self.label))
         self.rules.load(os.path.join(path, 'rules.py'), local_context, global_context)
         
-        self.depositories = {}
-        for root, dirs, files in os.walk(path):
-            for f in files:
-                if f.endswith('.py') and f not in ['groups.py', 'rules.py']:
-                    fpath = os.path.join(root, f)
-                    label = '{0}/{1}'.format(self.label, fpath[len(path)+1:-3])
-                    depository = KineticsDepository(label=label)
-                    depository.load(fpath, local_context, global_context)
-                    self.depositories[label] = depository
+        self.depositories = []
+        for label in depositoryLabels or ['training']:
+            f = label+'.py'
+            fpath = os.path.join(path,f)
+            if not os.path.exists(fpath):
+                logging.warning("Requested depository {0} does not exist".format(fpath))
+                continue
+            depository = KineticsDepository(label=label)
+            depository.load(fpath, local_context, global_context)
+            self.depositories.append(depository)
+        
+        if depositoryLabels is None:
+            # load all the remaining depositories, in order returned by os.walk
+            for root, dirs, files in os.walk(path):
+                for f in files:
+                    if not f.endswith('.py'): continue
+                    name = f.strip('.py')
+                    if name not in ['groups', 'rules'] and name not in (depositoryLabels or []):
+                        fpath = os.path.join(root, f)
+                        label = '{0}/{1}'.format(self.label, name)
+                        depository = KineticsDepository(label=label)
+                        depository.load(fpath, local_context, global_context)
+                        self.depositories.append(depository)
             
     def loadTemplate(self, reactants, products, ownReverse=False):
         """
@@ -2465,11 +2483,8 @@ class KineticsFamily(Database):
         kineticsList = []
         template = self.getReactionTemplate(reaction)
         
-        depositories = [self.rules]
-        if searchMode == 'all':
-            depositories.extend(self.depositories.values())
-        else:
-            depositories.extend([d for d in self.depositories.values() if d.recommended])
+        depositories = self.depositories[:]
+        depositories.append(self.rules)
         
         # Check the various depositories for kinetics
         for depository in depositories:
