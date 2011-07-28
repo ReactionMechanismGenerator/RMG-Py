@@ -249,10 +249,10 @@ def saveInputFile(path, rmg):
     # Reaction systems
     for system in rmg.reactionSystems:
         f.write('simpleReactor(\n')
-        f.write('    temperature = ({0:g},"K"),\n'.format(system.T))
+        f.write('    temperature = ({0:g},"{1!s}"),\n'.format(system.T.getValueInGivenUnits(),system.T.units))
         # Convert the pressure from SI pascal units to bar here
         # Do something more fancy later for converting to user's desired units for both T and P..
-        f.write('    pressure = ({0:g},"bar"),\n'.format(system.P/1e5))
+        f.write('    pressure = ({0:g},"{1!s}"),\n'.format(system.P.getValueInGivenUnits(),system.P.units))
         f.write('    initialMoleFractions={\n')
         for species, molfrac in system.initialMoleFractions.iteritems():
             f.write('        "{0!s}": {1:g},\n'.format(species.label, molfrac))
@@ -263,7 +263,7 @@ def saveInputFile(path, rmg):
     f.write('termination(\n')
     for term in rmg.termination:
         if isinstance(term,TerminationTime):
-            f.write('    time = ({}, "s"),\n'.format(term.time))
+            f.write('    time = ({0:g},"{1!s}"),\n'.format(term.time.getValueInGivenUnits(),term.time.units))
         if isinstance(term,TerminationConversion):
             f.write('    conversion = {\n')
             f.write('        "{0:s}": {1:g},\n'.format(term.species.label, term.conversion))
@@ -288,7 +288,7 @@ def saveInputFile(path, rmg):
     if rmg.pressureDependence:
         f.write('pressureDependence(\n')
         f.write('    method = "{0!s}",\n'.format(rmg.pressureDependence.method))
-        f.write('    maximumGrainSize = {0!r},\n'.format(rmg.pressureDependence.grainSize))
+        f.write('    maximumGrainSize = ({0:g},"{1!s}"),\n'.format(rmg.pressureDependence.grainSize.getValueInGivenUnits(),rmg.pressureDependence.grainSize.units))
         f.write('    minimumNumberOfGrains = {0},\n'.format(rmg.pressureDependence.grainCount))
         f.write('    temperatures = ({0:g},{1:g},"{2!s}",{3:d}),\n'.format(
             rmg.pressureDependence.Tmin.getValueInGivenUnits(),
