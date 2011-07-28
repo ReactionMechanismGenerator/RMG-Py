@@ -1524,6 +1524,7 @@ class KineticsFamily(Database):
     `reverseTemplate`   :class:`Reaction`               The reverse reaction template
     `reverseRecipe`     :class:`ReactionRecipe`         The steps to take when applying the reverse reaction to a set of reactants
     `forbidden`         :class:`ForbiddenStructures`    (Optional) Forbidden product structures in either direction
+    `ownReverse`        `Boolean`                       It's its own reverse?
     ------------------- ------------------------------- ------------------------
     `groups`            :class:`KineticsGroups`         The set of kinetics group additivity values
     `rules`             :class:`KineticsDepository`     The depository of kinetics rate rules from RMG-Java
@@ -1546,7 +1547,7 @@ class KineticsFamily(Database):
         # Kinetics depositories of training and test data
         self.groups = None
         self.rules = None
-        self.depositories = {}
+        self.depositories = []
 
     def __repr__(self):
         return '<ReactionFamily "{0}">'.format(self.label)
@@ -1680,9 +1681,13 @@ class KineticsFamily(Database):
         
         ftemp.close()
     
-    def load(self, path, local_context=None, global_context=None):
+    def load(self, path, local_context=None, global_context=None, depositoryLabels=None):
         """
         Load a kinetics database from a file located at `path` on disk.
+        
+        If `depositoryLabels` is a list, eg. ['training','PrIMe'], then only those
+        depositories are loaded, and they are searched in that order when
+        generating kinetics.
         """
         local_context['recipe'] = self.loadRecipe
         local_context['template'] = self.loadTemplate
@@ -1709,15 +1714,29 @@ class KineticsFamily(Database):
         self.rules = KineticsDepository(label='{0}/rules'.format(self.label))
         self.rules.load(os.path.join(path, 'rules.py'), local_context, global_context)
         
-        self.depositories = {}
-        for root, dirs, files in os.walk(path):
-            for f in files:
-                if f.endswith('.py') and f not in ['groups.py', 'rules.py']:
-                    fpath = os.path.join(root, f)
-                    label = '{0}/{1}'.format(self.label, fpath[len(path)+1:-3])
-                    depository = KineticsDepository(label=label)
-                    depository.load(fpath, local_context, global_context)
-                    self.depositories[label] = depository
+        self.depositories = []
+        for label in depositoryLabels or ['training']:
+            f = label+'.py'
+            fpath = os.path.join(path,f)
+            if not os.path.exists(fpath):
+                logging.warning("Requested depository {0} does not exist".format(fpath))
+                continue
+            depository = KineticsDepository(label=label)
+            depository.load(fpath, local_context, global_context)
+            self.depositories.append(depository)
+        
+        if depositoryLabels is None:
+            # load all the remaining depositories, in order returned by os.walk
+            for root, dirs, files in os.walk(path):
+                for f in files:
+                    if not f.endswith('.py'): continue
+                    name = f.strip('.py')
+                    if name not in ['groups', 'rules'] and name not in (depositoryLabels or []):
+                        fpath = os.path.join(root, f)
+                        label = '{0}/{1}'.format(self.label, name)
+                        depository = KineticsDepository(label=label)
+                        depository.load(fpath, local_context, global_context)
+                        self.depositories.append(depository)
             
     def loadTemplate(self, reactants, products, ownReverse=False):
         """
@@ -2169,10 +2188,16 @@ class KineticsFamily(Database):
         elif isinstance(struct, Group):
             return reactant.findSubgraphIsomorphisms(struct)
 
-    def generateReactions(self, reactants, searchAll=False):
+    def generateReactions(self, reactants, returnAllKinetics=False):
         """
         Generate all reactions between the provided list of one or two
         `reactants`, which should be :class:`Molecule` objects.
+        
+        If searchAll==True then it searches every possible depository in the family
+        If searchAll==False (default) only those marked as recommended are searched.
+        If returnAllKinetics==True then multiple copies of each reaction are returned,
+         one with each kinetics source or estimate.
+        if returnAllKinetics==False (default) then only the best is returned.
         """
         reactionList = []
         
@@ -2188,48 +2213,119 @@ class KineticsFamily(Database):
                 family = self,
             )
             reactionList.append(reaction)
-
-        # Reverse direction (the direction in which kinetics is not defined)
-        reactions = self.__generateReactions(reactants, forward=False)
-        for rxn in reactions:
-            reaction = TemplateReaction(
-                reactants = rxn.products[:],
-                products = rxn.reactants[:],
-                degeneracy = rxn.degeneracy,
-                thirdBody = rxn.thirdBody,
-                reversible = rxn.reversible,
-                family = self,
-            )
-            reactionList.append(reaction)
-
-        # While we're here, we might as well get the kinetics too
-        reactionList0 = reactionList; reactionList = []
-        for rxn in reactionList0:
-            kineticsList = self.getAllKinetics(rxn, degeneracy=rxn.degeneracy, searchMode='all' if searchAll else 'recommended')
-            for kinetics, source, entry in kineticsList:
-                if source is not None:
-                    reaction = DepositoryReaction(
-                        reactants = rxn.reactants[:],
-                        products = rxn.products[:],
-                        kinetics = kinetics,
-                        degeneracy = rxn.degeneracy,
-                        thirdBody = rxn.thirdBody,
-                        reversible = rxn.reversible,
-                        depository = source,
-                        family = self,
-                        entry = entry,
-                    )
-                else:
-                    reaction = TemplateReaction(
-                        reactants = rxn.reactants[:],
-                        products = rxn.products[:],
-                        kinetics = kinetics,
-                        degeneracy = rxn.degeneracy,
-                        thirdBody = rxn.thirdBody,
-                        reversible = rxn.reversible,
-                        family = self,
-                    )
+        
+        reverseReactions = []
+        if self.ownReverse:
+            # for each reaction, make its reverse reaction and store in a 'reverse' attribute
+            for rxn in reactionList:
+                reactions = self.__generateReactions(rxn.products, forward=True)
+                reactions = filterReactions(rxn.products, rxn.reactants, reactions)
+                assert len(reactions) == 1, "Expecting one matching reverse reaction, not {0}".format(len(reactions))
+                reaction = reactions[0]
+                reaction = TemplateReaction(
+                    reactants = reaction.reactants[:],
+                    products = reaction.products[:],
+                    degeneracy = reaction.degeneracy,
+                    thirdBody = reaction.thirdBody,
+                    reversible = reaction.reversible,
+                    family = self,
+                )
+                rxn.reverse = reaction
+                reverseReactions.append(reaction)
+            
+        else: # family is not ownReverse
+            # Reverse direction (the direction in which kinetics is not defined)
+            reactions = self.__generateReactions(reactants, forward=False)
+            for rxn in reactions:
+                reaction = TemplateReaction(
+                    reactants = rxn.products[:],
+                    products = rxn.reactants[:],
+                    degeneracy = rxn.degeneracy,
+                    thirdBody = rxn.thirdBody,
+                    reversible = rxn.reversible,
+                    family = self,
+                )
                 reactionList.append(reaction)
+        
+        rxnListToReturn = []
+        if not returnAllKinetics:
+            """
+            We want to return one reaction, or its reverse, per reaction.
+            """
+            reactionList0 = reactionList; reactionList = []
+            for rxn in reactionList0:
+                kineticsList = self.getAllKinetics(rxn, degeneracy=rxn.degeneracy,
+                                                   returnAllKinetics=returnAllKinetics)
+                assert len(kineticsList)==1
+                kinetics, source, entry = kineticsList[0]
+                
+                if hasattr(rxn,'reverse'):
+                    # fetch the reverse kinetics, and decide which to keep
+                    kineticsList = self.getAllKinetics(rxn.reverse,
+                                                degeneracy=rxn.reverse.degeneracy,
+                                                returnAllKinetics=returnAllKinetics)
+                    assert len(kineticsList)==1
+                    rev_kinetics, rev_source, rev_entry = kineticsList[0]
+                    
+                    if (source is not None and rev_source is None):
+                        continue # keep the forward
+                    
+                    # Just for comparison, estimate rates at 298K without any Evans Polanyi corrections
+                    T = 298
+                    fwd_rate = kinetics.getRateCoefficient(T,0) if isinstance(kinetics,ArrheniusEP) else kinetics.getRateCoefficient(T)
+                    rev_rate = rev_kinetics.getRateCoefficient(T,0) if isinstance(rev_kinetics,ArrheniusEP) else rev_kinetics.getRateCoefficient(T)
+                    if ((source is None and rev_source is not None) # Reverse has source - use it.
+                        or  (rev_rate > fwd_rate)): # Neither or Both have sources, but reverse is faster - use it.
+                        rxn = rxn.reverse
+                        kinetics = rev_kinetics
+                        source = rev_source
+                        entry = rev_entry
+                rxnListToReturn.append([rxn,kinetics,source,entry])
+        
+        else: # returnAllKinetics == True
+            """
+            We want to return a reaction for every kinetics match, in both directions.
+            """
+            reactionList0 = reactionList; reactionList = []
+            for rxn in reactionList0:
+                kineticsList = self.getAllKinetics(rxn, degeneracy=rxn.degeneracy,
+                                                   returnAllKinetics=returnAllKinetics)
+                for kinetics, source, entry in kineticsList:
+                    rxnListToReturn.append([rxn,kinetics,source,entry])
+                    
+                if hasattr(rxn,'reverse'):
+                    # fetch the reverse kinetics, and add them all 
+                    kineticsList = self.getAllKinetics(rxn.reverse,
+                                                degeneracy=rxn.reverse.degeneracy,
+                                                returnAllKinetics=returnAllKinetics)
+                    for kinetics, source, entry in kineticsList:
+                        rxnListToReturn.append([rxn,kinetics,source,entry])
+                    
+        reactionList = []
+        for rxn, kinetics, source, entry in rxnListToReturn:
+            if source is not None:
+                reaction = DepositoryReaction(
+                    reactants = rxn.reactants[:],
+                    products = rxn.products[:],
+                    kinetics = kinetics,
+                    degeneracy = rxn.degeneracy,
+                    thirdBody = rxn.thirdBody,
+                    reversible = rxn.reversible,
+                    depository = source,
+                    family = self,
+                    entry = entry,
+                )
+            else:
+                reaction = TemplateReaction(
+                    reactants = rxn.reactants[:],
+                    products = rxn.products[:],
+                    kinetics = kinetics,
+                    degeneracy = rxn.degeneracy,
+                    thirdBody = rxn.thirdBody,
+                    reversible = rxn.reversible,
+                    family = self,
+                )
+            reactionList.append(reaction)
 
         # Return the reactions as containing Species objects, not Molecule objects
         for reaction in reactionList:
@@ -2265,9 +2361,12 @@ class KineticsFamily(Database):
                 isomer.makeHydrogensExplicit()
             implicitH.append(implicit)
 
-        if forward: template = self.forwardTemplate
-        elif not forward and self.reverseTemplate is not None: template = self.reverseTemplate
-        else: return rxnList
+        if forward:
+            template = self.forwardTemplate
+        elif self.reverseTemplate is None:
+            return []
+        else:
+            template = self.reverseTemplate
 
         # Unimolecular reactants: A --> products
         if len(reactants) == 1 and len(template.reactants) == 1:
@@ -2454,26 +2553,27 @@ class KineticsFamily(Database):
         
         return kineticsList
     
-    def getAllKinetics(self, reaction, degeneracy=1, searchMode='recommended'):
+    def getAllKinetics(self, reaction, degeneracy=1, returnAllKinetics=True):
         """
         Return the kinetics for the given `reaction` by searching the various
         depositories as well as generating a group additivity estimate. Unlike
         the regular :meth:`getKinetics()` method, this returns a list of
         results, with each result comprising the kinetics, the source, and
-        the entry.
+        the entry. If it came from a template estimate, the source and entry
+        will both be `None`.
+        If returnAllKinetics==False, only the first (best?) matching kinetics is returned.
         """
         kineticsList = []
         template = self.getReactionTemplate(reaction)
         
-        depositories = [self.rules]
-        if searchMode == 'all':
-            depositories.extend(self.depositories.values())
-        else:
-            depositories.extend([d for d in self.depositories.values() if d.recommended])
+        depositories = self.depositories[:]
+        depositories.append(self.rules)
         
         # Check the various depositories for kinetics
         for depository in depositories:
             for kinetics, entry in self.getKineticsFromDepository(depository, reaction, template, degeneracy):
+                if not returnAllKinetics:
+                    return [[kinetics,depository,entry]]
                 kineticsList.append([kinetics, depository, entry])
         # Also generate a group additivity estimate
         kinetics = self.getKineticsForTemplate(template, degeneracy)
@@ -2483,6 +2583,49 @@ class KineticsFamily(Database):
 
 ################################################################################
 
+def filterReactions(reactants, products, reactionList):
+    """
+    Remove any reactions from the given `reactionList` whose reactants do
+    not involve all the given `reactants` or whose products do not involve 
+    all the given `products`. This method checks both forward and reverse
+    directions, and only filters out reactions that don't match either.
+    """
+    reactions = reactionList[:]
+    if products is not None:
+        for reaction in reactionList:
+            # Forward direction
+            reactants0 = [r for r in reaction.reactants]
+            for reactant in reactants:
+                for reactant0 in reactants0:
+                    if reactant0.isIsomorphic(reactant):
+                        reactants0.remove(reactant0)
+                        break
+            products0 = [p for p in reaction.products]
+            for product in products:
+                for product0 in products0:
+                    if product0.isIsomorphic(product):
+                        products0.remove(product0)
+                        break
+            forward = not (len(reactants0) != 0 or len(products0) != 0)
+            # Reverse direction
+            reactants0 = [r for r in reaction.products]
+            for reactant in reactants:
+                for reactant0 in reactants0:
+                    if reactant0.isIsomorphic(reactant):
+                        reactants0.remove(reactant0)
+                        break
+            products0 = [p for p in reaction.reactants]
+            for product in products:
+                for product0 in products0:
+                    if product0.isIsomorphic(product):
+                        products0.remove(product0)
+                        break
+            reverse = not (len(reactants0) != 0 or len(products0) != 0)
+            if not forward and not reverse:
+                reactions.remove(reaction)
+    return reactions
+        
+###########
 class KineticsDatabase:
     """
     A class for working with the RMG kinetics database.
@@ -2636,48 +2779,6 @@ class KineticsDatabase:
         for label, family in self.families.iteritems():
             groupPath = os.path.join(groupsPath, label)
             family.saveOld(groupPath)
-
-    def __filterReactions(self, reactants, products, reactionList):
-        """
-        Remove any reactions from the given `reactionList` whose reactants do
-        not involve all the given `reactants` or whose products do not involve 
-        all the given `products`. This method checks both forward and reverse
-        directions, and only filters out reactions that don't match either.
-        """
-        reactions = reactionList[:]
-        if products is not None:
-            for reaction in reactionList:
-                # Forward direction
-                reactants0 = [r for r in reaction.reactants]
-                for reactant in reactants:
-                    for reactant0 in reactants0:
-                        if reactant0.isIsomorphic(reactant):
-                            reactants0.remove(reactant0)
-                            break
-                products0 = [p for p in reaction.products]
-                for product in products:
-                    for product0 in products0:
-                        if product0.isIsomorphic(product):
-                            products0.remove(product0)
-                            break
-                forward = not (len(reactants0) != 0 or len(products0) != 0)
-                # Reverse direction
-                reactants0 = [r for r in reaction.products]
-                for reactant in reactants:
-                    for reactant0 in reactants0:
-                        if reactant0.isIsomorphic(reactant):
-                            reactants0.remove(reactant0)
-                            break
-                products0 = [p for p in reaction.reactants]
-                for product in products:
-                    for product0 in products0:
-                        if product0.isIsomorphic(product):
-                            products0.remove(product0)
-                            break
-                reverse = not (len(reactants0) != 0 or len(products0) != 0)
-                if not forward and not reverse:
-                    reactions.remove(reaction)
-        return reactions
     
     def generateReactions(self, reactants, products=None):
         """
@@ -2721,19 +2822,19 @@ class KineticsDatabase:
                     entry = entry,
                 )
                 reactionList.append(reaction)
-        return self.__filterReactions(reactants, products, reactionList)
+        return filterReactions(reactants, products, reactionList)
 
-    def generateReactionsFromFamilies(self, reactants, products, only_families=None, searchAll=False):
+    def generateReactionsFromFamilies(self, reactants, products, only_families=None):
         """
         Generate all reactions between the provided list of one or two
         `reactants`, which should be :class:`Molecule` objects. This method
-        searches the depository.
+        applies the reaction family.
         """
         reactionList = []
         for label, family in self.families.iteritems():
             if only_families is None or label in only_families:
-                reactionList.extend(family.generateReactions(reactants, searchAll=searchAll))
-        return self.__filterReactions(reactants, products, reactionList)
+                reactionList.extend(family.generateReactions(reactants))
+        return filterReactions(reactants, products, reactionList)
 
     def getForwardReactionForFamilyEntry(self, entry, family, thermoDatabase):
         """
