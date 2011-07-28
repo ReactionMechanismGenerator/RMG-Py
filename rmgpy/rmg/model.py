@@ -535,6 +535,16 @@ class CoreEdgeReactionModel:
         for spec in self.newSpeciesList:
             spec.generateThermoData(database)
         
+        # if it's it's own reverse, make sure it's in the preferred direction
+        # (this is usually exothermic)
+        for reaction in self.newReactionList:
+            if not isinstance(reaction,TemplateReaction):
+                continue
+            if reaction.family.ownReverse:
+                if reaction.getEnthalpyOfReaction(298) > 0:
+                    logging.warning("Reversible reaction kinetics estimated in endothermic direction for {0}".format(reaction))
+            
+        
         # For new reactions, convert ArrheniusEP to Arrhenius, and fix barrier heights.
         # self.newReactionList only contains *actually* new reactions, all in the forward direction.
         for reaction in self.newReactionList:
