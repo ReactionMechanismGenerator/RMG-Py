@@ -90,8 +90,8 @@ def simpleReactor(temperature, pressure, initialMoleFractions):
         for spec in initialMoleFractions:
             initialMoleFractions[spec] /= sum(initialMoleFractions.values())
 
-    T = Quantity(temperature).value
-    P = Quantity(pressure).value
+    T = Quantity(temperature)
+    P = Quantity(pressure)
     
     system = SimpleReactor(T, P, initialMoleFractions)
     rmg.reactionSystems.append(system)

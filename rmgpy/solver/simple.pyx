@@ -36,7 +36,8 @@ from pydas cimport DASSL
 from base cimport ReactionSystem
 cimport cython
 
-from rmgpy.quantity import constants
+from rmgpy.quantity import Quantity, constants
+from rmgpy.quantity cimport Quantity
 
 cdef class SimpleReactor(ReactionSystem):
     """
@@ -45,8 +46,8 @@ cdef class SimpleReactor(ReactionSystem):
     this solver to complete very rapidly, even for large kinetic models.
     """
 
-    cdef public double T
-    cdef public double P
+    cdef public Quantity T
+    cdef public Quantity P
     cdef public dict initialMoleFractions
 
     cdef numpy.ndarray reactantIndices
@@ -58,8 +59,8 @@ cdef class SimpleReactor(ReactionSystem):
 
     def __init__(self, T, P, initialMoleFractions):
         ReactionSystem.__init__(self)
-        self.T = T
-        self.P = P
+        self.T = Quantity(T)
+        self.P = Quantity(P)
         self.initialMoleFractions = initialMoleFractions
 
         # These are helper variables used within the solver
@@ -115,8 +116,8 @@ cdef class SimpleReactor(ReactionSystem):
         for rxnList in [coreReactions, edgeReactions]:
             for rxn in rxnList:
                 j = reactionIndex[rxn]
-                forwardRateCoefficients[j] = rxn.getRateCoefficient(self.T, self.P)
-                reverseRateCoefficients[j] = forwardRateCoefficients[j] / rxn.getEquilibriumConstant(self.T)
+                forwardRateCoefficients[j] = rxn.getRateCoefficient(self.T.value, self.P.value)
+                reverseRateCoefficients[j] = forwardRateCoefficients[j] / rxn.getEquilibriumConstant(self.T.value)
                 for l, spec in enumerate(rxn.reactants):
                     i = speciesIndex[spec]
                     reactantIndices[j,l] = i
@@ -127,7 +128,7 @@ cdef class SimpleReactor(ReactionSystem):
         networkIndices = -numpy.ones((numPdepNetworks, 3), numpy.int )
         networkLeakCoefficients = numpy.zeros((numPdepNetworks), numpy.float64)
         for j, network in enumerate(pdepNetworks):
-            networkLeakCoefficients[j] = network.getLeakCoefficient(self.T, self.P)
+            networkLeakCoefficients[j] = network.getLeakCoefficient(self.T.value, self.P.value)
             for l, spec in enumerate(network.source):
                 i = speciesIndex[spec]
                 networkIndices[j,l] = i
@@ -143,7 +144,7 @@ cdef class SimpleReactor(ReactionSystem):
         t0 = 0.0
         y0 = numpy.zeros((numCoreSpecies), numpy.float64)
         for spec, moleFrac in self.initialMoleFractions.iteritems():
-            y0[speciesIndex[spec]] = moleFrac * (self.P / constants.R / self.T)
+            y0[speciesIndex[spec]] = moleFrac * (self.P.value / constants.R / self.T.value)
             self.coreSpeciesConcentrations[speciesIndex[spec]] = y0[speciesIndex[spec]]
         
         # Initialize the model
@@ -158,7 +159,7 @@ cdef class SimpleReactor(ReactionSystem):
         import xlwt
         style0 = xlwt.easyxf('font: bold on')
         worksheet.write(0, 0, 'Simple Reactor', style0)
-        worksheet.write(1, 0, 'T = {0:g} K, P = {1:g} bar'.format(self.T, self.P/1e5))
+        worksheet.write(1, 0, 'T = {0:g} K, P = {1:g} bar'.format(self.T.value, self.P.value/1e5))
 
     @cython.boundscheck(False)
     def residual(self, double t, numpy.ndarray[numpy.float64_t, ndim=1] y, numpy.ndarray[numpy.float64_t, ndim=1] dydt):
