@@ -240,14 +240,14 @@ class CoreEdgeReactionModel:
         # Return an existing species if a match is found
         formula = molecule.getFormula()
         try:
-            for spec in self.speciesDict[formula]:
-                for mol in spec.molecule:
-                    if molecule.isIsomorphic(mol):
-                        self.speciesCache.pop()
-                        self.speciesCache.insert(0, spec)
-                        return True, spec
-        except KeyError: pass
-        
+             speciesList = self.speciesDict[formula]
+        except KeyError:
+            return False, None
+        for spec in speciesList:
+            if spec.isIsomorphic(molecule):
+                self.speciesCache.pop()
+                self.speciesCache.insert(0, spec)
+                return True, spec
         # At this point we can conclude that the structure does not exist
         return False, None
 
