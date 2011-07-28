@@ -314,6 +314,16 @@ class Quantity:
         factor = self.getConversionFactorToSI()
         return 1.0 / factor
 
+    def getValueInGivenUnits(self):
+        """
+        Return the value of the quantity in the stored units. (The value is
+        stored internally in SI units.)
+        """
+        if self.isArray():
+            return self.values * self.getConversionFactorFromSI()
+        else:
+            return self.value * self.getConversionFactorFromSI()
+        
     def isArray(self):
         """
         Return ``True`` if this quantity contains an array of values or 
