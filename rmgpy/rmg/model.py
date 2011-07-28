@@ -609,6 +609,8 @@ class CoreEdgeReactionModel:
         """
         Process a list of newly-generated reactions involving the new core
         species or explored isomer `newSpecies` in network `pdepNetwork`.
+        
+        Makes a reaction and decides where to put it: core, edge, or PDepNetwork.
         """
         for rxn in newReactions:
             rxn, isNew = self.makeNewReaction(rxn)
@@ -1015,8 +1017,8 @@ class CoreEdgeReactionModel:
                         assert network is None
                         network = n
             elif len(reactants) > 1:
-                # Find the network containing the reactant as the source AND the
-                # product channel as an explored isomer
+                # Find the network containing the reactants as the source AND the
+                # product as an explored isomer
                 for n in self.unirxnNetworks:
                     if reactants == n.source and products[0] in n.explored:
                         assert network is None
