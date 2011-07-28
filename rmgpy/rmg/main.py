@@ -59,7 +59,7 @@ class RMG:
     --------------------------- ------------------------------------------------
     `databaseDirectory`         The directory containing the RMG database
     `thermoLibraries`           The thermodynamics libraries to load
-    `kineticsLibraries`         The kinetics libraries to load
+    `reactionLibraries`         The kinetics libraries to load
     `statmechLibraries`         The statistical mechanics libraries to load
     `seedMechanisms`            The seed mechanisms included in the model
     --------------------------- ------------------------------------------------
@@ -104,7 +104,7 @@ class RMG:
         """
         self.databaseDirectory = None
         self.thermoLibraries = None
-        self.kineticsLibraries = None
+        self.reactionLibraries = None
         self.statmechLibraries = None
         self.seedMechanisms = None
         
