@@ -736,18 +736,17 @@ class Molecule(Graph):
         if not isinstance(other0, Molecule):
             raise TypeError('Got a {0} object for parameter "other", when a Molecule object is required.'.format(other.__class__))
         other = other0
-        # Ensure that both self and other have the same implicit hydrogen status
-        # If not, make them both explicit just to be safe
+        # Save whether they were implicit or explicit so we can put them back later.
         selfImplicitH = self.implicitHydrogens
         otherImplicitH = other.implicitHydrogens
-        if not selfImplicitH or not otherImplicitH:
-            self.makeHydrogensExplicit()
-            other.makeHydrogensExplicit()
+        # Make them implicit for the isomorphism check.
+        self.makeHydrogensImplicit()
+        other.makeHydrogensImplicit()
         # Do the isomorphism comparison
         result = Graph.isIsomorphic(self, other, initialMap)
-        # Restore implicit status if needed
-        if selfImplicitH and not self.implicitHydrogens: self.makeHydrogensImplicit()
-        if otherImplicitH and not other.implicitHydrogens: other.makeHydrogensImplicit()
+        # Restore implicit status
+        if not selfImplicitH: self.makeHydrogensExplicit()
+        if not otherImplicitH: other.makeHydrogensExplicit()
         return result
 
     def findIsomorphism(self, other0, initialMap=None):
