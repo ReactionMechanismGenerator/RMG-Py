@@ -343,7 +343,7 @@ class PDepNetwork(rmgpy.measure.network.Network):
         Pmax = measure.Pmax.value
         Tlist = measure.Tlist.values
         Plist = measure.Plist.values
-        grainSize = measure.grainSize
+        grainSize = measure.grainSize.value
         Ngrains = measure.grainCount
         method = measure.method
         model = measure.model
