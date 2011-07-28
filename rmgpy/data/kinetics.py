@@ -2267,7 +2267,10 @@ class KineticsFamily(Database):
                     assert len(kineticsList)==1
                     rev_kinetics, rev_source, rev_entry = kineticsList[0]
                     
-                    if rev_kinetics.getRateCoefficient(298) > kinetics.getRateCoefficient(298):
+                    if (source is not None and rev_source is None):
+                        pass # keep the forward
+                    elif ((source is None and rev_source is not None) or
+                          (rev_kinetics.getRateCoefficient(298) > kinetics.getRateCoefficient(298))):
                         # probably want the reverse (may revisit ways to decide later)
                         rxn = rxn.reverse
                         kinetics = rev_kinetics
