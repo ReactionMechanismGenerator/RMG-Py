@@ -1524,6 +1524,7 @@ class KineticsFamily(Database):
     `reverseTemplate`   :class:`Reaction`               The reverse reaction template
     `reverseRecipe`     :class:`ReactionRecipe`         The steps to take when applying the reverse reaction to a set of reactants
     `forbidden`         :class:`ForbiddenStructures`    (Optional) Forbidden product structures in either direction
+    `ownReverse`        `Boolean`                       It's its own reverse?
     ------------------- ------------------------------- ------------------------
     `groups`            :class:`KineticsGroups`         The set of kinetics group additivity values
     `rules`             :class:`KineticsDepository`     The depository of kinetics rate rules from RMG-Java
@@ -2212,49 +2213,112 @@ class KineticsFamily(Database):
                 family = self,
             )
             reactionList.append(reaction)
-
-        # Reverse direction (the direction in which kinetics is not defined)
-        reactions = self.__generateReactions(reactants, forward=False)
-        for rxn in reactions:
-            reaction = TemplateReaction(
-                reactants = rxn.products[:],
-                products = rxn.reactants[:],
-                degeneracy = rxn.degeneracy,
-                thirdBody = rxn.thirdBody,
-                reversible = rxn.reversible,
-                family = self,
-            )
-            reactionList.append(reaction)
-
-        # While we're here, we might as well get the kinetics too
-        reactionList0 = reactionList; reactionList = []
-        for rxn in reactionList0:
-            kineticsList = self.getAllKinetics(rxn, degeneracy=rxn.degeneracy,
-                                               returnAllKinetics=returnAllKinetics)
-            for kinetics, source, entry in kineticsList:
-                if source is not None:
-                    reaction = DepositoryReaction(
-                        reactants = rxn.reactants[:],
-                        products = rxn.products[:],
-                        kinetics = kinetics,
-                        degeneracy = rxn.degeneracy,
-                        thirdBody = rxn.thirdBody,
-                        reversible = rxn.reversible,
-                        depository = source,
-                        family = self,
-                        entry = entry,
-                    )
-                else:
-                    reaction = TemplateReaction(
-                        reactants = rxn.reactants[:],
-                        products = rxn.products[:],
-                        kinetics = kinetics,
-                        degeneracy = rxn.degeneracy,
-                        thirdBody = rxn.thirdBody,
-                        reversible = rxn.reversible,
-                        family = self,
-                    )
+        
+        reverseReactions = []
+        if self.ownReverse:
+            # for each reaction, make its reverse reaction and store in a 'reverse' attribute
+            for rxn in reactionList:
+                reactions = self.__generateReactions(rxn.products, forward=True)
+                reactions = filterReactions(rxn.products, rxn.reactants, reactions)
+                assert len(reactions) == 1, "Expecting one matching reverse reaction, not {0}".format(len(reactions))
+                reaction = reactions[0]
+                reaction = TemplateReaction(
+                    reactants = reaction.reactants[:],
+                    products = reaction.products[:],
+                    degeneracy = reaction.degeneracy,
+                    thirdBody = reaction.thirdBody,
+                    reversible = reaction.reversible,
+                    family = self,
+                )
+                rxn.reverse = reaction
+                reverseReactions.append(reaction)
+            
+        else: # family is not ownReverse
+            # Reverse direction (the direction in which kinetics is not defined)
+            reactions = self.__generateReactions(reactants, forward=False)
+            for rxn in reactions:
+                reaction = TemplateReaction(
+                    reactants = rxn.products[:],
+                    products = rxn.reactants[:],
+                    degeneracy = rxn.degeneracy,
+                    thirdBody = rxn.thirdBody,
+                    reversible = rxn.reversible,
+                    family = self,
+                )
                 reactionList.append(reaction)
+        
+        rxnListToReturn = []
+        if not returnAllKinetics:
+            """
+            We want to return one reaction, or its reverse, per reaction.
+            """
+            reactionList0 = reactionList; reactionList = []
+            for rxn in reactionList0:
+                kineticsList = self.getAllKinetics(rxn, degeneracy=rxn.degeneracy,
+                                                   returnAllKinetics=returnAllKinetics)
+                assert len(kineticsList)==1
+                kinetics, source, entry = kineticsList[0]
+                
+                if hasattr(rxn,'reverse'):
+                    # fetch the reverse kinetics, and decide which to keep
+                    kineticsList = self.getAllKinetics(rxn.reverse,
+                                                degeneracy=rxn.reverse.degeneracy,
+                                                returnAllKinetics=returnAllKinetics)
+                    assert len(kineticsList)==1
+                    rev_kinetics, rev_source, rev_entry = kineticsList[0]
+                    
+                    if rev_kinetics.getRateCoefficient(298) > kinetics.getRateCoefficient(298):
+                        # probably want the reverse (may revisit ways to decide later)
+                        rxn = rxn.reverse
+                        kinetics = rev_kinetics
+                        source = rev_source
+                        entry = rev_entry
+                rxnListToReturn.append([rxn,kinetics,source,entry])
+        
+        else: # returnAllKinetics == True
+            """
+            We want to return a reaction for every kinetics match, in both directions.
+            """
+            reactionList0 = reactionList; reactionList = []
+            for rxn in reactionList0:
+                kineticsList = self.getAllKinetics(rxn, degeneracy=rxn.degeneracy,
+                                                   returnAllKinetics=returnAllKinetics)
+                for kinetics, source, entry in kineticsList:
+                    rxnListToReturn.append([rxn,kinetics,source,entry])
+                    
+                if hasattr(rxn,'reverse'):
+                    # fetch the reverse kinetics, and add them all 
+                    kineticsList = self.getAllKinetics(rxn.reverse,
+                                                degeneracy=rxn.reverse.degeneracy,
+                                                returnAllKinetics=returnAllKinetics)
+                    for kinetics, source, entry in kineticsList:
+                        rxnListToReturn.append([rxn,kinetics,source,entry])
+                    
+        reactionList = []
+        for rxn, kinetics, source, entry in rxnListToReturn:
+            if source is not None:
+                reaction = DepositoryReaction(
+                    reactants = rxn.reactants[:],
+                    products = rxn.products[:],
+                    kinetics = kinetics,
+                    degeneracy = rxn.degeneracy,
+                    thirdBody = rxn.thirdBody,
+                    reversible = rxn.reversible,
+                    depository = source,
+                    family = self,
+                    entry = entry,
+                )
+            else:
+                reaction = TemplateReaction(
+                    reactants = rxn.reactants[:],
+                    products = rxn.products[:],
+                    kinetics = kinetics,
+                    degeneracy = rxn.degeneracy,
+                    thirdBody = rxn.thirdBody,
+                    reversible = rxn.reversible,
+                    family = self,
+                )
+            reactionList.append(reaction)
 
         # Return the reactions as containing Species objects, not Molecule objects
         for reaction in reactionList:
@@ -2290,9 +2354,12 @@ class KineticsFamily(Database):
                 isomer.makeHydrogensExplicit()
             implicitH.append(implicit)
 
-        if forward: template = self.forwardTemplate
-        elif not forward and self.reverseTemplate is not None: template = self.reverseTemplate
-        else: return rxnList
+        if forward:
+            template = self.forwardTemplate
+        elif self.reverseTemplate is None:
+            return []
+        else:
+            template = self.reverseTemplate
 
         # Unimolecular reactants: A --> products
         if len(reactants) == 1 and len(template.reactants) == 1:
