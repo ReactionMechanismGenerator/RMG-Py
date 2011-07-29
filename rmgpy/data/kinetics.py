@@ -2247,6 +2247,11 @@ class KineticsFamily(Database):
                 )
                 reactionList.append(reaction)
         
+        # Generate the kinetics for each reaction
+        # The list of kinetics from getKinetics() could be for either the
+        # forward or reverse direction (since we can store kinetics entries in
+        # the various depositories in either direction)
+        
         rxnListToReturn = []
         if not returnAllKinetics:
             """
@@ -2257,7 +2262,7 @@ class KineticsFamily(Database):
                 kineticsList = self.getKinetics(rxn, degeneracy=rxn.degeneracy,
                                                    returnAllKinetics=returnAllKinetics)
                 assert len(kineticsList)==1
-                kinetics, source, entry = kineticsList[0]
+                kinetics, source, entry, isForward = kineticsList[0]
                 
                 if hasattr(rxn,'reverse'):
                     # fetch the reverse kinetics, and decide which to keep
@@ -2265,7 +2270,7 @@ class KineticsFamily(Database):
                                                 degeneracy=rxn.reverse.degeneracy,
                                                 returnAllKinetics=returnAllKinetics)
                     assert len(kineticsList)==1
-                    rev_kinetics, rev_source, rev_entry = kineticsList[0]
+                    rev_kinetics, rev_source, rev_entry, rev_isForward = kineticsList[0]
                     
                     if (source is not None and rev_source is None):
                         # Only the forward has a source.
@@ -2281,7 +2286,7 @@ class KineticsFamily(Database):
                         kinetics = rev_kinetics
                         source = rev_source
                         entry = rev_entry
-                rxnListToReturn.append([rxn,kinetics,source,entry])
+                rxnListToReturn.append([rxn,kinetics,source,entry,isForward])
         
         else: # returnAllKinetics == True
             """
@@ -2291,23 +2296,29 @@ class KineticsFamily(Database):
             for rxn in reactionList0:
                 kineticsList = self.getKinetics(rxn, degeneracy=rxn.degeneracy,
                                                    returnAllKinetics=returnAllKinetics)
-                for kinetics, source, entry in kineticsList:
-                    rxnListToReturn.append([rxn,kinetics,source,entry])
+                for kinetics, source, entry, isForward in kineticsList:
+                    rxnListToReturn.append([rxn,kinetics,source,entry,isForward])
                     
                 if hasattr(rxn,'reverse'):
                     # fetch the reverse kinetics, and add them all 
                     kineticsList = self.getKinetics(rxn.reverse,
                                                 degeneracy=rxn.reverse.degeneracy,
                                                 returnAllKinetics=returnAllKinetics)
-                    for kinetics, source, entry in kineticsList:
-                        rxnListToReturn.append([rxn,kinetics,source,entry])
+                    for kinetics, source, entry, isForward in kineticsList:
+                        rxnListToReturn.append([rxn,kinetics,source,entry,isForward])
                     
         reactionList = []
-        for rxn, kinetics, source, entry in rxnListToReturn:
+        for rxn, kinetics, source, entry, isForward in rxnListToReturn:
+            if isForward:
+                reactants = rxn.reactants[:]
+                products = rxn.products[:]
+            else:
+                reactants = rxn.products[:]
+                products = rxn.reactants[:]
             if source is not None:
                 reaction = DepositoryReaction(
-                    reactants = rxn.reactants[:],
-                    products = rxn.products[:],
+                    reactants = reactants,
+                    products = products,
                     kinetics = kinetics,
                     degeneracy = rxn.degeneracy,
                     thirdBody = rxn.thirdBody,
@@ -2318,8 +2329,8 @@ class KineticsFamily(Database):
                 )
             else:
                 reaction = TemplateReaction(
-                    reactants = rxn.reactants[:],
-                    products = rxn.products[:],
+                    reactants = reactants,
+                    products = products,
                     kinetics = kinetics,
                     degeneracy = rxn.degeneracy,
                     thirdBody = rxn.thirdBody,
@@ -2514,7 +2525,9 @@ class KineticsFamily(Database):
         """
         Search the given `depository` in this kinetics family for kinetics
         for the given `reaction`. Returns a list of all of the matching 
-        kinetics and corresponding entries.
+        kinetics, the corresponding entries, and ``True`` if the kinetics
+        match the forward direction or ``False`` if they match the reverse
+        direction.
         """
         kineticsList = []
         if depository.label.endswith('rules'):
@@ -2524,8 +2537,8 @@ class KineticsFamily(Database):
                 entryLabels = entry.label.split(';')
                 templateLabels = [group.label for group in template]
                 if all([group in entryLabels for group in templateLabels]) and all([group in templateLabels for group in entryLabels]):
-                    kineticsList.append([deepcopy(entry.data), entry])
-            for kinetics, entry in kineticsList:
+                    kineticsList.append([deepcopy(entry.data), entry, True])
+            for kinetics, entry, isForward in kineticsList:
                 if kinetics is not None:
                     # The rules are defined on a per-site basis, so we need to include the degeneracy manually
                     assert isinstance(kinetics, ArrheniusEP)
@@ -2535,7 +2548,7 @@ class KineticsFamily(Database):
             entries = depository.entries.values()
             for entry in entries:
                 if reaction.isIsomorphic(entry.item):
-                    kineticsList.append([deepcopy(entry.data), entry])
+                    kineticsList.append([deepcopy(entry.data), entry, reaction.isIsomorphic(entry.item, eitherDirection=False)])
         
         return kineticsList
     
@@ -2557,14 +2570,14 @@ class KineticsFamily(Database):
         
         # Check the various depositories for kinetics
         for depository in depositories:
-            for kinetics, entry in self.getKineticsFromDepository(depository, reaction, template, degeneracy):
+            for kinetics, entry, isForward in self.getKineticsFromDepository(depository, reaction, template, degeneracy):
                 if not returnAllKinetics:
-                    return [[kinetics,depository,entry]]
-                kineticsList.append([kinetics, depository, entry])
+                    return [[kinetics,depository,entry,isForward]]
+                kineticsList.append([kinetics, depository, entry, isForward])
         # Also generate a group additivity estimate
         kinetics = self.getKineticsForTemplate(template, degeneracy)
         if kinetics:
-            kineticsList.append([kinetics, None, None])
+            kineticsList.append([kinetics, None, None, True])
         return kineticsList
 
 ################################################################################
