@@ -1740,7 +1740,7 @@ class KineticsFamily(Database):
                 for f in files:
                     if not f.endswith('.py'): continue
                     name = f.strip('.py')
-                    if name not in ['groups', 'rules'] and name not in (depositoryLabels or []):
+                    if name not in ['groups', 'rules'] and name not in (depositoryLabels or ['training']):
                         fpath = os.path.join(root, f)
                         label = '{0}/{1}'.format(self.label, name)
                         depository = KineticsDepository(label=label)
