@@ -529,7 +529,7 @@ class RMG:
         
         # Saving of a restart file is very slow (likely due to all the Quantity objects)
         # Therefore, to save it less frequently, don't bother if the restart file is less than an hour old
-        if time.time() - os.path.getmtime(path) < delay:
+        if os.path.exists(path) and time.time() - os.path.getmtime(path) < delay:
             logging.info('Not saving restart file in this iteration.')
             return
         
