@@ -314,7 +314,7 @@ class RMG:
                         # Determine which species in that network has the highest leak rate
                         # We do this here because we need a temperature and pressure
                         # Store the maximum leak species along with the associated network
-                        obj = (obj, obj.getMaximumLeakSpecies(reactionSystem.T, reactionSystem.P))
+                        obj = (obj, obj.getMaximumLeakSpecies(reactionSystem.T.value, reactionSystem.P.value))
                     objectsToEnlarge.append(obj)
                     done = False
     
