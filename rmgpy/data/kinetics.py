@@ -2272,20 +2272,34 @@ class KineticsFamily(Database):
                     assert len(kineticsList)==1
                     rev_kinetics, rev_source, rev_entry, rev_isForward = kineticsList[0]
                     
+                    flip_it = False
                     if (source is not None and rev_source is None):
                         # Only the forward has a source.
-                        continue # keep the forward
+                        pass # keep the forward
+                    elif (source is None and rev_source is not None):
+                        # Only reverse has source - use reverse.
+                        flip_it = True
+                    elif (source is not None and rev_source is not None 
+                          and entry is rev_entry):
+                        # Both found the same depository reaction.
+                        # Return the one with forward kinetics
+                        if not isForward: flip_it = True
+                    else:
+                        # Still haven't decided.
+                        # Just for comparison, estimate rates at 298K without any Evans Polanyi corrections
+                        T = 298
+                        fwd_rate = kinetics.getRateCoefficient(T,0) if isinstance(kinetics,ArrheniusEP) else kinetics.getRateCoefficient(T)
+                        rev_rate = rev_kinetics.getRateCoefficient(T,0) if isinstance(rev_kinetics,ArrheniusEP) else rev_kinetics.getRateCoefficient(T)
+                        if (rev_rate > fwd_rate ) and rev_isForward and isForward: 
+                            # Rverse is faster - use reverse.
+                            flip_it = True
                     
-                    # Just for comparison, estimate rates at 298K without any Evans Polanyi corrections
-                    T = 298
-                    fwd_rate = kinetics.getRateCoefficient(T,0) if isinstance(kinetics,ArrheniusEP) else kinetics.getRateCoefficient(T)
-                    rev_rate = rev_kinetics.getRateCoefficient(T,0) if isinstance(rev_kinetics,ArrheniusEP) else rev_kinetics.getRateCoefficient(T)
-                    if ((source is None and rev_source is not None) # Only reverse has source - use reverse.
-                        or  (rev_rate > fwd_rate)): # Neither or Both have sources, but reverse is faster - use reverse.
+                    if flip_it:
                         rxn = rxn.reverse
                         kinetics = rev_kinetics
                         source = rev_source
                         entry = rev_entry
+                        isForward = rev_isForward
                 rxnListToReturn.append([rxn,kinetics,source,entry,isForward])
         
         else: # returnAllKinetics == True
