@@ -1688,6 +1688,9 @@ class KineticsFamily(Database):
         If `depositoryLabels` is a list, eg. ['training','PrIMe'], then only those
         depositories are loaded, and they are searched in that order when
         generating kinetics.
+        
+        If depositoryLabels is None then load 'training' first then everything else.
+        If depositoryLabels is not None then load in the order specified in depositoryLabels.
         """
         local_context['recipe'] = self.loadRecipe
         local_context['template'] = self.loadTemplate
@@ -1695,6 +1698,7 @@ class KineticsFamily(Database):
         local_context['True'] = True
         local_context['False'] = False
         self.groups = KineticsGroups(label='{0}/groups'.format(self.label))
+        logging.debug("Loading kinetics family groups from {0}".format(os.path.join(path, 'groups.py')))
         Database.load(self.groups, os.path.join(path, 'groups.py'), local_context, global_context)
         self.name = self.label
         
@@ -1712,16 +1716,21 @@ class KineticsFamily(Database):
         self.groups.numReactants = len(self.forwardTemplate.reactants)
             
         self.rules = KineticsDepository(label='{0}/rules'.format(self.label))
+        logging.debug("Loading kinetics family rules from {0}".format(os.path.join(path, 'rules.py')))
         self.rules.load(os.path.join(path, 'rules.py'), local_context, global_context)
         
         self.depositories = []
-        for label in depositoryLabels or ['training']:
-            f = label+'.py'
+        # If depositoryLabels is None then load 'training' first then everything else.
+        # If depositoryLabels is not None then load in the order specified in depositoryLabels.
+        for name in (['training'] if depositoryLabels is None else depositoryLabels) :
+            label = '{0}/{1}'.format(self.label, name)
+            f = name+'.py'
             fpath = os.path.join(path,f)
             if not os.path.exists(fpath):
                 logging.warning("Requested depository {0} does not exist".format(fpath))
                 continue
             depository = KineticsDepository(label=label)
+            logging.debug("Loading kinetics family depository from {0}".format(fpath))
             depository.load(fpath, local_context, global_context)
             self.depositories.append(depository)
         
@@ -1735,6 +1744,7 @@ class KineticsFamily(Database):
                         fpath = os.path.join(root, f)
                         label = '{0}/{1}'.format(self.label, name)
                         depository = KineticsDepository(label=label)
+                        logging.debug("Loading kinetics family depository from {0}".format(fpath))
                         depository.load(fpath, local_context, global_context)
                         self.depositories.append(depository)
             
@@ -2661,15 +2671,15 @@ class KineticsDatabase:
         }
         self.global_context = {}
 
-    def load(self, path, libraries=None):
+    def load(self, path, libraries=None, depositories=None):
         """
         Load the kinetics database from the given `path` on disk, where `path`
         points to the top-level folder of the families database.
         """
-        self.loadFamilies(os.path.join(path, 'families'))
+        self.loadFamilies(os.path.join(path, 'families'), depositories)
         self.loadLibraries(os.path.join(path, 'libraries'), libraries)
         
-    def loadFamilies(self, path):
+    def loadFamilies(self, path, depositories=None):
         """
         Load the kinetics families from the given `path` on disk, where `path`
         points to the top-level folder of the kinetics families.
@@ -2680,7 +2690,7 @@ class KineticsDatabase:
             for d in dirs:
                 familyPath = os.path.join(root, d)
                 family = KineticsFamily(label=d)
-                family.load(familyPath, self.local_context, self.global_context)
+                family.load(familyPath, self.local_context, self.global_context, depositoryLabels=depositories)
                 self.families[d] = family
 
     def loadLibraries(self, path, libraries=None):

@@ -49,7 +49,7 @@ class InputError(Exception): pass
 rmg = None
 speciesDict = {}
 
-def database(path, thermoLibraries=None, reactionLibraries=None, frequenciesLibraries=None, seedMechanisms=None):
+def database(path, thermoLibraries=None, reactionLibraries=None, frequenciesLibraries=None, seedMechanisms=None, kineticsDepositories='default'):
     # This function just stores the information about the database to be loaded
     # We don't actually load the database until after we're finished reading
     # the input file
@@ -62,6 +62,13 @@ def database(path, thermoLibraries=None, reactionLibraries=None, frequenciesLibr
     rmg.reactionLibraries = reactionLibraries or []
     rmg.seedMechanisms = seedMechanisms or []
     rmg.statmechLibraries = frequenciesLibraries or []
+    if kineticsDepositories == 'default':
+        rmg.kineticsDepositories = ['training']
+    elif kineticsDepositories == 'all':
+        rmg.kineticsDepositories = None
+    else:
+        assert isinstance(kineticsDepositories,list), "kineticsDepositories should be either 'default', 'all', or a list of names eg. ['training','PrIMe']."
+        rmg.kineticsDepositories = kineticsDepositories
 
 def species(label, structure, reactive=True):
     logging.debug('Found {0} species "{1}" ({2})'.format('reactive' if reactive else 'nonreactive', label, structure.toSMILES()))
@@ -233,6 +240,7 @@ def saveInputFile(path, rmg):
     f.write('    thermoLibraries = {0!r},\n'.format(rmg.thermoLibraries))
     f.write('    reactionLibraries = {0!r},\n'.format(rmg.reactionLibraries))
     f.write('    seedMechanisms = {0!r},\n'.format(rmg.seedMechanisms))
+    f.write('    kineticsDepositories = {0!r},\n'.format(rmg.kineticsDepositories))
     f.write(')\n\n')
 
     # Species

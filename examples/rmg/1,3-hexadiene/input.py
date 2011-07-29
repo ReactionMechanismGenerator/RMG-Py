@@ -4,6 +4,7 @@ database(
     thermoLibraries = ['primaryThermoLibrary', 'GRI-Mech3.0'],
     reactionLibraries = ['GRI-Mech3.0'],
     seedMechanisms = ['Glarborg/C1'],
+    kineticsDepositories = ['training'], #  'all', 'default'==['training'], [], 
 )
 
 # List of species

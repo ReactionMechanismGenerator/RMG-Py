@@ -62,7 +62,7 @@ class RMGDatabase:
         assert database is None, "Should only make one instance of RMGDatabase because it's stored as a module-level variable."
         database = self
 
-    def load(self, path, thermoLibraries=None, reactionLibraries=None, seedMechanisms=None, statesLibraries=None, depository=True):
+    def load(self, path, thermoLibraries=None, reactionLibraries=None, seedMechanisms=None, kineticsDepositories=None, statesLibraries=None, depository=True):
         """
         Load the RMG database from the given `path` on disk, where `path`
         points to the top-level folder of the RMG database. If none of the
@@ -72,7 +72,7 @@ class RMGDatabase:
         """
         self.loadThermo(os.path.join(path, 'thermo'), thermoLibraries, depository)
         self.loadForbiddenStructures(os.path.join(path, 'forbiddenStructures.py'))
-        self.loadKinetics(os.path.join(path, 'kinetics'), reactionLibraries, seedMechanisms)
+        self.loadKinetics(os.path.join(path, 'kinetics'), reactionLibraries, seedMechanisms, kineticsDepositories)
         self.loadStates(os.path.join(path, 'states'), statesLibraries, depository)
 
     def loadThermo(self, path, thermoLibraries=None, depository=True):
@@ -91,7 +91,7 @@ class RMGDatabase:
         self.forbiddenStructures = ForbiddenStructures()
         self.forbiddenStructures.load(path)
 
-    def loadKinetics(self, path, reactionLibraries=None, seedMechanisms=None):
+    def loadKinetics(self, path, reactionLibraries=None, seedMechanisms=None, kineticsDepositories=None):
         """
         Load the RMG kinetics database from the given `path` on disk, where
         `path` points to the top-level folder of the RMG kinetics database.
@@ -108,7 +108,7 @@ class RMGDatabase:
             kineticsLibraries = None
             
         self.kinetics = KineticsDatabase()
-        self.kinetics.load(path, kineticsLibraries)
+        self.kinetics.load(path, libraries=kineticsLibraries, depositories=kineticsDepositories)
 
     def loadStates(self, path, statesLibraries=None, depository=True):
         """

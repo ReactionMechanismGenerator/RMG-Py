@@ -4,6 +4,7 @@ database(
     thermoLibraries = ['primaryThermoLibrary','DFT_QCI_thermo','GRI-Mech3.0'],
     reactionLibraries = ['Methylformate','Glarborg/highP'],
     seedMechanisms = ['Glarborg/C2'],
+    kineticsDepositories = ['training'],
 )
 
 # List of species

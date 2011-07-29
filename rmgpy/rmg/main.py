@@ -164,6 +164,7 @@ class RMG:
             thermoLibraries = self.thermoLibraries,
             reactionLibraries = self.reactionLibraries,
             seedMechanisms = self.seedMechanisms,
+            kineticsDepositories = self.kineticsDepositories,
             #frequenciesLibraries = self.statmechLibraries,
             depository = False, # Don't bother loading the depository information, as we don't use it
         )
