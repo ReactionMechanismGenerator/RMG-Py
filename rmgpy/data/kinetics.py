@@ -2254,28 +2254,29 @@ class KineticsFamily(Database):
             """
             reactionList0 = reactionList; reactionList = []
             for rxn in reactionList0:
-                kineticsList = self.getAllKinetics(rxn, degeneracy=rxn.degeneracy,
+                kineticsList = self.getKinetics(rxn, degeneracy=rxn.degeneracy,
                                                    returnAllKinetics=returnAllKinetics)
                 assert len(kineticsList)==1
                 kinetics, source, entry = kineticsList[0]
                 
                 if hasattr(rxn,'reverse'):
                     # fetch the reverse kinetics, and decide which to keep
-                    kineticsList = self.getAllKinetics(rxn.reverse,
+                    kineticsList = self.getKinetics(rxn.reverse,
                                                 degeneracy=rxn.reverse.degeneracy,
                                                 returnAllKinetics=returnAllKinetics)
                     assert len(kineticsList)==1
                     rev_kinetics, rev_source, rev_entry = kineticsList[0]
                     
                     if (source is not None and rev_source is None):
+                        # Only the forward has a source.
                         continue # keep the forward
                     
                     # Just for comparison, estimate rates at 298K without any Evans Polanyi corrections
                     T = 298
                     fwd_rate = kinetics.getRateCoefficient(T,0) if isinstance(kinetics,ArrheniusEP) else kinetics.getRateCoefficient(T)
                     rev_rate = rev_kinetics.getRateCoefficient(T,0) if isinstance(rev_kinetics,ArrheniusEP) else rev_kinetics.getRateCoefficient(T)
-                    if ((source is None and rev_source is not None) # Reverse has source - use it.
-                        or  (rev_rate > fwd_rate)): # Neither or Both have sources, but reverse is faster - use it.
+                    if ((source is None and rev_source is not None) # Only reverse has source - use reverse.
+                        or  (rev_rate > fwd_rate)): # Neither or Both have sources, but reverse is faster - use reverse.
                         rxn = rxn.reverse
                         kinetics = rev_kinetics
                         source = rev_source
@@ -2288,14 +2289,14 @@ class KineticsFamily(Database):
             """
             reactionList0 = reactionList; reactionList = []
             for rxn in reactionList0:
-                kineticsList = self.getAllKinetics(rxn, degeneracy=rxn.degeneracy,
+                kineticsList = self.getKinetics(rxn, degeneracy=rxn.degeneracy,
                                                    returnAllKinetics=returnAllKinetics)
                 for kinetics, source, entry in kineticsList:
                     rxnListToReturn.append([rxn,kinetics,source,entry])
                     
                 if hasattr(rxn,'reverse'):
                     # fetch the reverse kinetics, and add them all 
-                    kineticsList = self.getAllKinetics(rxn.reverse,
+                    kineticsList = self.getKinetics(rxn.reverse,
                                                 degeneracy=rxn.reverse.degeneracy,
                                                 returnAllKinetics=returnAllKinetics)
                     for kinetics, source, entry in kineticsList:
@@ -2496,21 +2497,6 @@ class KineticsFamily(Database):
         """
         return self.groups.getReactionTemplate(reaction)
 
-    def getKinetics(self, reaction, degeneracy=1):
-        """
-        Determine the appropriate kinetics for `reaction`. This method first
-        searches the "trusted" kinetics depositories; if not found there, a
-        group additivity estimate is generated.
-        """
-        template = self.getReactionTemplate(reaction)
-        # Check the various depositories for kinetics
-        for depository in [self.training, self.rules]:
-            kinetics, entry = self.getKineticsFromDepository(depository, reaction, template, degeneracy)
-            if kinetics:
-                return kinetics
-        # If no kinetics found above, generate a group additivity estimate
-        return self.getKineticsForTemplate(template, degeneracy)
-        
     def getKineticsForTemplate(self, template, degeneracy=1):
         """
         Determine the appropriate kinetics for a reaction with the given
@@ -2553,7 +2539,7 @@ class KineticsFamily(Database):
         
         return kineticsList
     
-    def getAllKinetics(self, reaction, degeneracy=1, returnAllKinetics=True):
+    def getKinetics(self, reaction, degeneracy=1, returnAllKinetics=True):
         """
         Return the kinetics for the given `reaction` by searching the various
         depositories as well as generating a group additivity estimate. Unlike
