@@ -2810,16 +2810,18 @@ class KineticsDatabase:
                 reactionList.append(reaction)
         return filterReactions(reactants, products, reactionList)
 
-    def generateReactionsFromFamilies(self, reactants, products, only_families=None):
+    def generateReactionsFromFamilies(self, reactants, products, only_families=None, returnAllKinetics=False):
         """
         Generate all reactions between the provided list of one or two
         `reactants`, which should be :class:`Molecule` objects. This method
         applies the reaction family.
+        If returnAllKinetics=True then a multiple duplicate reactions may be returned:
+        one for each possible kinetics source. If False, only the 'best' is returned.
         """
         reactionList = []
         for label, family in self.families.iteritems():
             if only_families is None or label in only_families:
-                reactionList.extend(family.generateReactions(reactants))
+                reactionList.extend(family.generateReactions(reactants, returnAllKinetics=returnAllKinetics))
         return filterReactions(reactants, products, reactionList)
 
     def getForwardReactionForFamilyEntry(self, entry, family, thermoDatabase):
