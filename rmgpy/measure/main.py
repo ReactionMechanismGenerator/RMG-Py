@@ -115,15 +115,15 @@ class MEASURE:
         measure.outputFile = self.outputFile
         measure.drawFile = self.drawFile
         
-        measure.Tmin = Quantity(self.Tmin)
-        measure.Tmax = Quantity(self.Tmax)
+        if self.Tmin is not None: measure.Tmin = Quantity(self.Tmin)
+        if self.Tmax is not None: measure.Tmax = Quantity(self.Tmax)
         measure.Tcount = self.Tcount
-        measure.Pmin = Quantity(self.Pmin)
-        measure.Pmax = Quantity(self.Pmax)
+        if self.Pmin is not None: measure.Pmin = Quantity(self.Pmin)
+        if self.Pmax is not None: measure.Pmax = Quantity(self.Pmax)
         measure.Pcount = self.Pcount
-        measure.Emin = Quantity(self.Emin)
-        measure.Emax = Quantity(self.Emax)
-        measure.grainSize = Quantity(self.grainSize)
+        if self.Emin is not None: measure.Emin = Quantity(self.Emin)
+        if self.Emax is not None: measure.Emax = Quantity(self.Emax)
+        if self.grainSize is not None: measure.grainSize = Quantity(self.grainSize)
         measure.grainCount = self.grainCount
         
         measure.method = self.method
