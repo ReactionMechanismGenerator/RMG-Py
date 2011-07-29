@@ -808,6 +808,17 @@ class Network:
             wells.append([isomer])
         wells.extend(self.products)
         
+        # Get minimum and maximum energy on surface (so we can compute bounding box)
+        E0min = sum([spec.E0.value for spec in wells[0]]); E0max = E0min
+        for i, well in enumerate(wells):
+            E0 = sum([spec.E0.value for spec in well])
+            if E0 < E0min: E0min = E0
+            if E0 > E0max: E0max = E0
+        for rxn in self.pathReactions:
+            E0 = rxn.transitionState.E0.value
+            if E0 < E0min: E0min = E0
+            if E0 > E0max: E0max = E0
+        
         # Drawing parameters
         padding_left = 96.0
         padding_right = padding_left
@@ -865,7 +876,7 @@ class Network:
 
         # Determine required size of diagram
         width = numpy.max(coordinates[:,0]) - numpy.min(coordinates[:,0]) + wellWidth + padding_left + padding_right
-        height = numpy.max(coordinates[:,1]) - numpy.min(coordinates[:,1]) + 32.0 + padding_top + padding_bottom
+        height = (E0max - E0min) / 4184. * Eslope + 32.0 + padding_top + padding_bottom
 
         # Choose multiplier to convert energies to desired units
         if Eunits == 'J/mol':      Emult = 1.0
