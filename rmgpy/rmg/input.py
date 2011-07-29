@@ -148,9 +148,9 @@ def pressureDependence(method, temperatures, pressures, maximumGrainSize=0.0, mi
     # Process interpolation model
     rmg.pressureDependence.model = interpolation
 
-def options(units='si', saveRestart=False, drawMolecules=False, generatePlots=False, saveConcentrationProfiles=True):
+def options(units='si', saveRestartPeriod=None, drawMolecules=False, generatePlots=False, saveConcentrationProfiles=True):
     rmg.units = units
-    rmg.saveRestart = saveRestart
+    rmg.saveRestartPeriod = Quantity(saveRestartPeriod) if saveRestartPeriod else None
     rmg.drawMolecules = drawMolecules
     rmg.generatePlots = generatePlots
     rmg.saveConcentrationProfiles = saveConcentrationProfiles
@@ -308,7 +308,10 @@ def saveInputFile(path, rmg):
     # Options
     f.write('options(\n')
     f.write('    units = "{0}",\n'.format(rmg.units))
-    f.write('    saveRestart = {0},\n'.format(rmg.saveRestart))
+    if rmg.saveRestartPeriod:
+        f.write('    saveRestartPeriod = ({0},"{1}"),\n'.format(rmg.saveRestartPeriod.getValueInGivenUnits(), rmg.saveRestartPeriod.units))
+    else:
+        f.write('    saveRestartPeriod = None,\n')
     f.write('    drawMolecules = {0},\n'.format(rmg.drawMolecules))
     f.write('    generatePlots = {0},\n'.format(rmg.generatePlots))
     f.write('    saveConcentrationProfiles = {0},\n'.format(rmg.saveConcentrationProfiles))

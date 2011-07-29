@@ -79,7 +79,7 @@ class RMG:
     `scratchDirectory`          The directory used to save temporary files
     `verbosity`                 The level of logging verbosity for console output
     `loadRestart`               ``True`` if restarting a previous job, ``False`` otherwise
-    `saveRestart`               ``True`` to periodically save a restart file, ``False`` otherwise
+    `saveRestartPeriod`         The time period to periodically save a restart file (:class:`Quantity`), or ``None`` for never.
     `units`                     The unit system to use to save output files (currently must be 'si')
     `drawMolecules`             ``True`` to draw pictures of the species in the core, ``False`` otherwise
     `generatePlots`             ``True`` to generate plots of the job execution statistics after each iteration, ``False`` otherwise
@@ -122,7 +122,7 @@ class RMG:
         
         self.verbosity = logging.INFO
         self.loadRestart = None
-        self.saveRestart = None
+        self.saveRestartPeriod = None
         self.units = 'si'
         self.drawMolecules = None
         self.generatePlots = None
@@ -259,8 +259,8 @@ class RMG:
                     self.reactionModel.enlarge(spec)
             
             # Save a restart file if desired
-            if self.saveRestart:
-                self.saveRestartFile(os.path.join(self.outputDirectory,'restart.pkl.gz'), self.reactionModel)
+            if self.saveRestartPeriod:
+                self.saveRestartFile(os.path.join(self.outputDirectory,'restart.pkl'), self.reactionModel)
     
         # RMG execution statistics
         coreSpeciesCount = []
@@ -349,8 +349,8 @@ class RMG:
             os.link(this_chemkin_path,latest_chemkin_path)
     
             # Save the restart file if desired
-            if self.saveRestart or done:
-                self.saveRestartFile(os.path.join(self.outputDirectory,'restart.pkl.gz'), self.reactionModel, delay=0 if done else 3600)
+            if self.saveRestartPeriod or done:
+                self.saveRestartFile(os.path.join(self.outputDirectory,'restart.pkl'), self.reactionModel, delay=0 if done else self.saveRestartPeriod.value)
     
             # Update RMG execution statistics
             logging.info('Updating RMG execution statistics...')

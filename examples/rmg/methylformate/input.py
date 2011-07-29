@@ -156,7 +156,7 @@ pressureDependence(
 
 options(
     units='si',
-    saveRestart=False,
+    saveRestartPeriod=None,
     drawMolecules=False,
     generatePlots=False,
     saveConcentrationProfiles=False,
