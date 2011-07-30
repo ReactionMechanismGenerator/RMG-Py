@@ -2198,16 +2198,15 @@ class KineticsFamily(Database):
         elif isinstance(struct, Group):
             return reactant.findSubgraphIsomorphisms(struct)
 
-    def generateReactions(self, reactants, returnAllKinetics=False):
+    def generateReactions(self, reactants):
         """
         Generate all reactions between the provided list of one or two
-        `reactants`, which should be :class:`Molecule` objects.
-        
-        If searchAll==True then it searches every possible depository in the family
-        If searchAll==False (default) only those marked as recommended are searched.
-        If returnAllKinetics==True then multiple copies of each reaction are returned,
-         one with each kinetics source or estimate.
-        if returnAllKinetics==False (default) then only the best is returned.
+        `reactants`, which should be either single :class:`Molecule` objects
+        or lists of same. Does not estimate the kinetics of these reactions
+        at this time. Returns a list of :class:`TemplateReaction` objects
+        using :class:`Species` objects for both reactants and products. The
+        reactions are constructed such that the forward direction is consistent
+        with the template of this reaction family.
         """
         reactionList = []
         
@@ -2256,112 +2255,6 @@ class KineticsFamily(Database):
                     family = self,
                 )
                 reactionList.append(reaction)
-        
-        # Generate the kinetics for each reaction
-        # The list of kinetics from getKinetics() could be for either the
-        # forward or reverse direction (since we can store kinetics entries in
-        # the various depositories in either direction)
-        
-        rxnListToReturn = []
-        if not returnAllKinetics:
-            """
-            We want to return one reaction, or its reverse, per reaction.
-            """
-            reactionList0 = reactionList; reactionList = []
-            for rxn in reactionList0:
-                kineticsList = self.getKinetics(rxn, degeneracy=rxn.degeneracy,
-                                                   returnAllKinetics=returnAllKinetics)
-                assert len(kineticsList)==1
-                kinetics, source, entry, isForward = kineticsList[0]
-                
-                if hasattr(rxn,'reverse'):
-                    # fetch the reverse kinetics, and decide which to keep
-                    kineticsList = self.getKinetics(rxn.reverse,
-                                                degeneracy=rxn.reverse.degeneracy,
-                                                returnAllKinetics=returnAllKinetics)
-                    assert len(kineticsList)==1
-                    rev_kinetics, rev_source, rev_entry, rev_isForward = kineticsList[0]
-                    
-                    flip_it = False
-                    if (source is not None and rev_source is None):
-                        # Only the forward has a source.
-                        pass # keep the forward
-                    elif (source is None and rev_source is not None):
-                        # Only reverse has source - use reverse.
-                        flip_it = True
-                    elif (source is not None and rev_source is not None 
-                          and entry is rev_entry):
-                        # Both found the same depository reaction.
-                        # Return the one with forward kinetics
-                        if not isForward: flip_it = True
-                    else:
-                        # Still haven't decided.
-                        # Just for comparison, estimate rates at 298K without any Evans Polanyi corrections
-                        T = 298
-                        fwd_rate = kinetics.getRateCoefficient(T,0) if isinstance(kinetics,ArrheniusEP) else kinetics.getRateCoefficient(T)
-                        rev_rate = rev_kinetics.getRateCoefficient(T,0) if isinstance(rev_kinetics,ArrheniusEP) else rev_kinetics.getRateCoefficient(T)
-                        if (rev_rate > fwd_rate ) and rev_isForward and isForward: 
-                            # Rverse is faster - use reverse.
-                            flip_it = True
-                    
-                    if flip_it:
-                        rxn = rxn.reverse
-                        kinetics = rev_kinetics
-                        source = rev_source
-                        entry = rev_entry
-                        isForward = rev_isForward
-                rxnListToReturn.append([rxn,kinetics,source,entry,isForward])
-        
-        else: # returnAllKinetics == True
-            """
-            We want to return a reaction for every kinetics match, in both directions.
-            """
-            reactionList0 = reactionList; reactionList = []
-            for rxn in reactionList0:
-                kineticsList = self.getKinetics(rxn, degeneracy=rxn.degeneracy,
-                                                   returnAllKinetics=returnAllKinetics)
-                for kinetics, source, entry, isForward in kineticsList:
-                    rxnListToReturn.append([rxn,kinetics,source,entry,isForward])
-                    
-                if hasattr(rxn,'reverse'):
-                    # fetch the reverse kinetics, and add them all 
-                    kineticsList = self.getKinetics(rxn.reverse,
-                                                degeneracy=rxn.reverse.degeneracy,
-                                                returnAllKinetics=returnAllKinetics)
-                    for kinetics, source, entry, isForward in kineticsList:
-                        rxnListToReturn.append([rxn,kinetics,source,entry,isForward])
-                    
-        reactionList = []
-        for rxn, kinetics, source, entry, isForward in rxnListToReturn:
-            if isForward:
-                reactants = rxn.reactants[:]
-                products = rxn.products[:]
-            else:
-                reactants = rxn.products[:]
-                products = rxn.reactants[:]
-            if source is not None:
-                reaction = DepositoryReaction(
-                    reactants = reactants,
-                    products = products,
-                    kinetics = kinetics,
-                    degeneracy = rxn.degeneracy,
-                    thirdBody = rxn.thirdBody,
-                    reversible = rxn.reversible,
-                    depository = source,
-                    family = self,
-                    entry = entry,
-                )
-            else:
-                reaction = TemplateReaction(
-                    reactants = reactants,
-                    products = products,
-                    kinetics = kinetics,
-                    degeneracy = rxn.degeneracy,
-                    thirdBody = rxn.thirdBody,
-                    reversible = rxn.reversible,
-                    family = self,
-                )
-            reactionList.append(reaction)
 
         # Return the reactions as containing Species objects, not Molecule objects
         for reaction in reactionList:
@@ -2847,18 +2740,16 @@ class KineticsDatabase:
                 reactionList.append(reaction)
         return filterReactions(reactants, products, reactionList)
 
-    def generateReactionsFromFamilies(self, reactants, products, only_families=None, returnAllKinetics=False):
+    def generateReactionsFromFamilies(self, reactants, products, only_families=None):
         """
         Generate all reactions between the provided list of one or two
         `reactants`, which should be :class:`Molecule` objects. This method
         applies the reaction family.
-        If returnAllKinetics=True then a multiple duplicate reactions may be returned:
-        one for each possible kinetics source. If False, only the 'best' is returned.
         """
         reactionList = []
         for label, family in self.families.iteritems():
             if only_families is None or label in only_families:
-                reactionList.extend(family.generateReactions(reactants, returnAllKinetics=returnAllKinetics))
+                reactionList.extend(family.generateReactions(reactants))
         return filterReactions(reactants, products, reactionList)
 
     def getForwardReactionForFamilyEntry(self, entry, family, thermoDatabase):
