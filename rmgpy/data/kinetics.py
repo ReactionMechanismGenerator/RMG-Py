@@ -127,15 +127,16 @@ class TemplateReaction(Reaction):
     family that it was created from.
     """
 
-    def __init__(self, index=-1, reactants=None, products=None, kinetics=None, reversible=True, transitionState=None, thirdBody=False, duplicate=False, degeneracy=1, family=None):
+    def __init__(self, index=-1, reactants=None, products=None, kinetics=None, reversible=True, transitionState=None, thirdBody=False, duplicate=False, degeneracy=1, family=None, template=None):
         Reaction.__init__(self, index=index, reactants=reactants, products=products, kinetics=kinetics, reversible=reversible, transitionState=transitionState, thirdBody=thirdBody, duplicate=duplicate, degeneracy=degeneracy)
         self.family = family
+        self.template = template
 
     def __reduce__(self):
         """
         A helper function used when pickling an object.
         """
-        return (TemplateReaction, (self.index, self.reactants, self.products, self.kinetics, self.reversible, self.transitionState, self.thirdBody, self.degeneracy, self.family))
+        return (TemplateReaction, (self.index, self.reactants, self.products, self.kinetics, self.reversible, self.transitionState, self.thirdBody, self.degeneracy, self.family, self.template))
 
     def getSource(self):
         """
@@ -2256,6 +2257,12 @@ class KineticsFamily(Database):
                 )
                 reactionList.append(reaction)
 
+        # Also store the reaction template (useful so we can easily get the kinetics later)
+        for reaction in reactionList:
+            reaction.template = self.getReactionTemplate(reaction)
+            if hasattr(reaction,'reverse'):
+                reaction.reverse.template = self.getReactionTemplate(reaction.reverse)
+        
         # Return the reactions as containing Species objects, not Molecule objects
         for reaction in reactionList:
             reaction.reactants = [Species(label=reactant.toSMILES(), molecule=[reactant]) for reactant in reaction.reactants]
