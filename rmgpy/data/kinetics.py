@@ -2476,7 +2476,7 @@ class KineticsFamily(Database):
         
         return kineticsList
     
-    def getKinetics(self, reaction, degeneracy=1, returnAllKinetics=True):
+    def getKinetics(self, reaction, template, degeneracy=1, returnAllKinetics=True):
         """
         Return the kinetics for the given `reaction` by searching the various
         depositories as well as generating a group additivity estimate. Unlike
@@ -2487,7 +2487,6 @@ class KineticsFamily(Database):
         If returnAllKinetics==False, only the first (best?) matching kinetics is returned.
         """
         kineticsList = []
-        template = self.getReactionTemplate(reaction)
         
         depositories = self.depositories[:]
         depositories.append(self.rules)
