@@ -2495,12 +2495,18 @@ class KineticsFamily(Database):
         for depository in depositories:
             for kinetics, entry, isForward in self.getKineticsFromDepository(depository, reaction, template, degeneracy):
                 if not returnAllKinetics:
-                    return [[kinetics,depository,entry,isForward]]
+                    return kinetics, depository, entry, isForward
                 kineticsList.append([kinetics, depository, entry, isForward])
         # Also generate a group additivity estimate
         kinetics = self.getKineticsForTemplate(template, degeneracy)
         if kinetics:
+            if not returnAllKinetics:
+                return kinetics, None, None, True
             kineticsList.append([kinetics, None, None, True])
+        
+        if not returnAllKinetics:
+            raise UndeterminableKineticsError(reaction)
+        
         return kineticsList
 
 ################################################################################
