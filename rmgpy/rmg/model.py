@@ -541,16 +541,23 @@ class CoreEdgeReactionModel:
         for spec in self.newSpeciesList:
             spec.generateThermoData(database)
         
-        # if it's it's own reverse, make sure it's in the preferred direction
-        # (this is usually exothermic)
+        # Generate kinetics of new reactions
+        logging.info('Generating kinetics for new reactions...')
         for reaction in self.newReactionList:
-            if not isinstance(reaction,TemplateReaction):
-                continue
-            if reaction.family.ownReverse:
-                if reaction.getEnthalpyOfReaction(298) > 0:
-                    logging.warning("Reversible reaction kinetics estimated in endothermic direction for {0}".format(reaction))
-            
-        
+            # If the reaction already has kinetics (e.g. from a library),
+            # assume the kinetics are satisfactory
+            if reaction.kinetics is None:
+                # Set the reaction kinetics
+                kinetics, source, entry, isForward = self.generateKinetics(reaction)
+                reaction.kinetics = kinetics
+                # Flip the reaction direction if the kinetics are defined in the reverse direction
+                if not isForward:
+                    reaction.reactants, reaction.products = reaction.products, reaction.reactants
+                
+                if reaction.family.ownReverse and hasattr(reaction,'reverse'):
+                    # We're done with the "reverse" attribute, so delete it to save a bit of memory
+                    delattr(reaction,'reverse')
+                    
         # For new reactions, convert ArrheniusEP to Arrhenius, and fix barrier heights.
         # self.newReactionList only contains *actually* new reactions, all in the forward direction.
         for reaction in self.newReactionList:
@@ -651,6 +658,49 @@ class CoreEdgeReactionModel:
                 # (path) reactions are added to
                 net = self.addReactionToUnimolecularNetworks(rxn, newSpecies=newSpecies, network=pdepNetwork)
 
+    def generateKinetics(self, reaction):
+        """
+        Generate kinetics for the given `reaction` using the kinetics database.
+        """
+        # Only reactions from families should be missing kinetics
+        assert isinstance(reaction, TemplateReaction)
+        
+        # Get the kinetics for the reaction
+        kinetics, source, entry, isForward = reaction.family.getKinetics(reaction, template=reaction.template, degeneracy=reaction.degeneracy, returnAllKinetics=False)
+        
+        if reaction.family.ownReverse and hasattr(reaction,'reverse'):
+            
+            # The kinetics family is its own reverse, so we could estimate kinetics in either direction
+            
+            # First get the kinetics for the other direction
+            rev_kinetics, rev_source, rev_entry, rev_isForward = reaction.family.getKinetics(reaction.reverse, template=reaction.reverse.template, degeneracy=reaction.reverse.degeneracy, returnAllKinetics=False)
+
+            # Now decide which direction's kinetics to keep
+            keepReverse = False
+            if (source is not None and rev_source is None):
+                # Only the forward has a source - use forward.
+                pass
+            elif (source is None and rev_source is not None):
+                # Only the reverse has a source - use reverse.
+                keepReverse = True
+            elif (source is not None and rev_source is not None 
+                  and entry is rev_entry):
+                # Both forward and reverse have the same source and entry
+                # Use the one for which the kinetics is the forward kinetics
+                keepReverse = not isForward
+            else:
+                # Keep the direction that is exothermic at 298 K
+                # This must be done after the thermo generation step
+                keepReverse = reaction.getEnthalpyOfReaction(298) > 0 and isForward and rev_isForward
+            
+            if keepReverse:
+                kinetics = rev_kinetics
+                source = rev_source
+                entry = rev_entry
+                isForward = not rev_isForward
+        
+        return kinetics, source, entry, isForward
+    
     def printEnlargeSummary(self, newCoreSpecies, newCoreReactions, newEdgeSpecies, newEdgeReactions, newSpecies=None):
         """
         Output a summary of a model enlargement step to the log. The details of
