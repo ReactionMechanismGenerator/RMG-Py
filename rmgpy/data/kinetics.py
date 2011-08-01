@@ -1441,6 +1441,8 @@ class KineticsGroups(Database):
             if entry.data is not None and entry not in self.top:
                 kinetics = self.__multiplyKineticsData(kinetics, entry.data)
                 comment_line += "{0} ({1})".format(entry.label, entry.longDesc.split('\n')[0])
+            elif entry in self.top:
+                comment_line += "{0} (Top node)".format(entry.label)
             kinetics.comment += comment_line + '\n'
 
         # Also include reaction-path degeneracy
