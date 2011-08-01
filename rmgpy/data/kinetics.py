@@ -1451,7 +1451,7 @@ class KineticsGroups(Database):
         elif isinstance(kinetics, Arrhenius):
             kinetics.A.value *= degeneracy
         elif kinetics is not None:
-            KineticsError('Unexpected kinetics type "{0}" encountered while generating kinetics from group values.'.format(kinetics.__class__))
+            raise KineticsError('Unexpected kinetics type "{0}" encountered while generating kinetics from group values.'.format(kinetics.__class__))
         kinetics.comment += "Multiplied by reaction path degeneracy {0}".format(degeneracy)
         
         return kinetics
