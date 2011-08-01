@@ -491,6 +491,7 @@ class CoreEdgeReactionModel:
         
         self.newReactionList = []; self.newSpeciesList = []
         newReactions = []
+        reactionsMovedFromEdge = []
 
         numOldCoreSpecies = len(self.core.species)
         numOldCoreReactions = len(self.core.reactions)
@@ -520,7 +521,7 @@ class CoreEdgeReactionModel:
                 newReactions.extend(self.react(database, newSpecies, newSpecies))
 
             # Add new species
-            self.addSpeciesToCore(newSpecies)
+            reactionsMovedFromEdge = self.addSpeciesToCore(newSpecies)
 
             # Process the new reactions
             self.processNewReactions(newReactions, newSpecies, pdepNetwork)
@@ -616,13 +617,17 @@ class CoreEdgeReactionModel:
             logging.info('')
 
         # Print summary of enlargement
-        if not isinstance(newObject, Species): newSpecies = None
+        if isinstance(newObject, Species):
+            # moved one species from edge to core
+            numOldEdgeSpecies -= 1
+            # moved these reactions from edge to core
+            numOldEdgeReactions -= len(reactionsMovedFromEdge)
         self.printEnlargeSummary(
             newCoreSpecies=self.core.species[numOldCoreSpecies:],
             newCoreReactions=self.core.reactions[numOldCoreReactions:],
+            reactionsMovedFromEdge=reactionsMovedFromEdge,
             newEdgeSpecies=self.edge.species[numOldEdgeSpecies:],
-            newEdgeReactions=self.edge.reactions[numOldEdgeReactions:],
-            newSpecies=newSpecies,
+            newEdgeReactions=self.edge.reactions[numOldEdgeReactions:]
         )
 
         logging.info('')
@@ -716,15 +721,11 @@ class CoreEdgeReactionModel:
         
         return kinetics, source, entry, isForward
     
-    def printEnlargeSummary(self, newCoreSpecies, newCoreReactions, newEdgeSpecies, newEdgeReactions, newSpecies=None):
+    def printEnlargeSummary(self, newCoreSpecies, newCoreReactions, newEdgeSpecies, newEdgeReactions, reactionsMovedFromEdge=None):
         """
         Output a summary of a model enlargement step to the log. The details of
         the enlargement are passed in the `newCoreSpecies`, `newCoreReactions`,
-        `newEdgeSpecies`, and `newEdgeReactions` objects. If the model
-        enlargement is based around one species, you may optionally pass that
-        species as `newSpecies`, which will cause all of the reactions to be
-        printed with that species as the reactant. If `newSpecies` is ``None``,
-        the reactions are printed in the direction for which kinetics are known.
+        `newEdgeSpecies`, and `newEdgeReactions` objects. 
         """
 
         logging.info('')
@@ -736,6 +737,13 @@ class CoreEdgeReactionModel:
         logging.info('Created {0:d} new edge species'.format(len(newEdgeSpecies)))
         for spec in newEdgeSpecies:
             logging.info('    {0}'.format(spec))
+        
+        if reactionsMovedFromEdge:
+            logging.info('Moved {0:d} reactions from edge to core'.format(len(reactionsMovedFromEdge)))
+            for rxn in reactionsMovedFromEdge:
+                logging.info('    {0}'.format(rxn))
+                newCoreReactions.remove(rxn)
+
         logging.info('Added {0:d} new core reactions'.format(len(newCoreReactions)))
         for rxn in newCoreReactions:
             logging.info('    {0}'.format(rxn))
@@ -757,21 +765,23 @@ class CoreEdgeReactionModel:
         Add a species `spec` to the reaction model core (and remove from edge if
         necessary). This function also moves any reactions in the edge that gain
         core status as a result of this change in status to the core.
+        If this are any such reactions, they are returned in a list.
         """
 
         assert spec not in self.core.species, "Tried to add species {0} to core, but it's already there".format(spec.label)
 
         # Add the species to the core
         self.core.species.append(spec)
-
+        
+        rxnList = []
         if spec in self.edge.species:
 
             # If species was in edge, remove it
+            logging.debug("Removing species {0} from edge.".format(spec))
             self.edge.species.remove(spec)
 
             # Search edge for reactions that now contain only core species;
             # these belong in the model core and will be moved there
-            rxnList = []
             for rxn in self.edge.reactions:
                 allCore = True
                 for reactant in rxn.reactants:
@@ -783,6 +793,8 @@ class CoreEdgeReactionModel:
             # Move any identified reactions to the core
             for rxn in rxnList:
                 self.addReactionToCore(rxn)
+                logging.debug("Moving reaction from edge to core: {0}".format(rxn))
+        return rxnList
 
     def addSpeciesToEdge(self, spec):
         """
