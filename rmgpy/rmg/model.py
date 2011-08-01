@@ -322,11 +322,27 @@ class CoreEdgeReactionModel:
             my_reactionList = self.reactionDict[family][r1][r2]
         except KeyError: # no such short-list: must be new, unless in seed.
             my_reactionList = []
+        
+        # if the family is its own reverse (H-Abstraction) then check the other direction
+        if isinstance(family,KineticsFamily) and family.ownReverse: # (family may be a KineticsLibrary)
+            # Get the short-list of reactions with the same family, product1 and product2
+            r1 = rxn.products[0]
+            if len(rxn.products)==1: r2 = None
+            else: r2 = rxn.products[1]
+            family = rxn.family
+            try:
+                my_reactionList.extend(self.reactionDict[family][r1][r2])
+            except KeyError: # no such short-list: must be new, unless in seed.
+                pass
 
         # Now use short-list to check for matches. All should be in same forward direction.
         for rxn0 in my_reactionList:
             if (rxn0.reactants == rxn.reactants and rxn0.products == rxn.products):
                 return True, rxn0
+            
+            if isinstance(family,KineticsFamily) and family.ownReverse:
+                if (rxn0.reactants == rxn.products and rxn0.products == rxn.reactants):
+                    return True, rxn0
 
         # Now check seed mechanisms
         # We want to check for duplicates in *other* seed mechanisms, but allow
@@ -363,8 +379,7 @@ class CoreEdgeReactionModel:
 
     def makeNewReaction(self, forward, checkExisting=True):
         """
-        Make a new reaction given a :class:`Reaction` object `forward`. The kinetics
-        of the reaction are estimated and the reaction is added to the global list
+        Make a new reaction given a :class:`Reaction` object `forward`. The reaction is added to the global list
         of reactions. Returns the reaction in the direction that corresponds to the
         estimated kinetics, along with whether or not the reaction is new to the
         global reaction list.
