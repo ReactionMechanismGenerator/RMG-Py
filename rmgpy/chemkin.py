@@ -58,6 +58,10 @@ def getSpeciesIdentifier(species):
     species identifier, this function uses a maximum of 10 to ensure that all
     reaction equations fit in the maximum limit of 52 characters.
     """
+    
+    # Special case for inert colliders - just use the label if possible
+    if not species.reactive and 0 < len(species.label) < 10:
+        return species.label
 
     # First try to use the label and index
     # The label can only contain alphanumeric characters, hyphens, and underscores
