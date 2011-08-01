@@ -104,6 +104,9 @@ class Species(rmgpy.species.Species):
         implicitH = [implicitH[ind] for ind in indices]
 
         # Convert to desired thermo class
+        if isinstance(self.thermo, thermoClass):
+            return self.thermo
+        
         thermo0 = self.thermo
         linear = self.molecule[0].isLinear()
         nRotors = self.molecule[0].countInternalRotors()

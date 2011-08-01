@@ -253,8 +253,7 @@ class RMG:
                     self.reactionModel.enlarge(spec)
             # Then add remaining reactive species
             for spec in self.initialSpecies:
-                if spec.reactive:
-                    spec.generateThermoData(self.database)
+                spec.generateThermoData(self.database)
             for spec in self.initialSpecies:
                 if spec.reactive:
                     self.reactionModel.enlarge(spec)
