@@ -297,13 +297,15 @@ def saveChemkinFile(path, species, reactions):
     of `species` and `reactions`.
     """
     f = open(path, 'w')
+    
+    sorted_species = sorted(species, key=lambda species: species.index)
 
     # Elements section
     f.write('ELEMENTS H C O N Ne Ar He Si S END\n\n')
 
     # Species section
     f.write('SPECIES\n')
-    for spec in species:
+    for spec in sorted_species:
         label = getSpeciesIdentifier(spec)
         f.write('    {0!s:<16}    ! {1}\n'.format(label, str(spec)))
     f.write('END\n\n\n\n')
@@ -311,7 +313,7 @@ def saveChemkinFile(path, species, reactions):
     # Thermodynamics section
     f.write('THERM ALL\n')
     f.write('    300.000  1000.000  5000.000\n\n')
-    for spec in species:
+    for spec in sorted_species:
         f.write(writeThermoEntry(spec))
         f.write('\n')
     f.write('END\n\n\n\n')
