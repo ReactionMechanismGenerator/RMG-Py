@@ -2236,7 +2236,7 @@ class KineticsFamily(Database):
             for rxn in reactionList:
                 reactions = self.__generateReactions(rxn.products, forward=True)
                 reactions = filterReactions(rxn.products, rxn.reactants, reactions)
-                assert len(reactions) == 1, "Expecting one matching reverse reaction, not {0}".format(len(reactions))
+                assert len(reactions) == 1, "Expecting one matching reverse reaction, not {0}. Forward reaction {1!s} : {1!r}".format(len(reactions), rxn)
                 reaction = reactions[0]
                 reaction = TemplateReaction(
                     reactants = reaction.reactants[:],
@@ -2527,39 +2527,54 @@ def filterReactions(reactants, products, reactionList):
     all the given `products`. This method checks both forward and reverse
     directions, and only filters out reactions that don't match either.
     """
+    
+    # Convert from molecules to species and generate resonance isomers.
+    reactant_species = []
+    for mol in reactants:
+        s = Species(molecule=[mol])
+        s.generateResonanceIsomers()
+        reactant_species.append(s)
+    reactants = reactant_species
+    product_species = []
+    for mol in products:
+        s = Species(molecule=[mol])
+        s.generateResonanceIsomers()
+        product_species.append(s)
+    products = product_species
+    
     reactions = reactionList[:]
-    if products is not None:
-        for reaction in reactionList:
-            # Forward direction
-            reactants0 = [r for r in reaction.reactants]
-            for reactant in reactants:
-                for reactant0 in reactants0:
-                    if reactant0.isIsomorphic(reactant):
-                        reactants0.remove(reactant0)
-                        break
-            products0 = [p for p in reaction.products]
-            for product in products:
-                for product0 in products0:
-                    if product0.isIsomorphic(product):
-                        products0.remove(product0)
-                        break
-            forward = not (len(reactants0) != 0 or len(products0) != 0)
-            # Reverse direction
-            reactants0 = [r for r in reaction.products]
-            for reactant in reactants:
-                for reactant0 in reactants0:
-                    if reactant0.isIsomorphic(reactant):
-                        reactants0.remove(reactant0)
-                        break
-            products0 = [p for p in reaction.reactants]
-            for product in products:
-                for product0 in products0:
-                    if product0.isIsomorphic(product):
-                        products0.remove(product0)
-                        break
-            reverse = not (len(reactants0) != 0 or len(products0) != 0)
-            if not forward and not reverse:
-                reactions.remove(reaction)
+    
+    for reaction in reactionList:
+        # Forward direction
+        reactants0 = [r for r in reaction.reactants]
+        for reactant in reactants:
+            for reactant0 in reactants0:
+                if reactant.isIsomorphic(reactant0):
+                    reactants0.remove(reactant0)
+                    break
+        products0 = [p for p in reaction.products]
+        for product in products:
+            for product0 in products0:
+                if product.isIsomorphic(product0):
+                    products0.remove(product0)
+                    break
+        forward = not (len(reactants0) != 0 or len(products0) != 0)
+        # Reverse direction
+        reactants0 = [r for r in reaction.products]
+        for reactant in reactants:
+            for reactant0 in reactants0:
+                if reactant.isIsomorphic(reactant0):
+                    reactants0.remove(reactant0)
+                    break
+        products0 = [p for p in reaction.reactants]
+        for product in products:
+            for product0 in products0:
+                if product.isIsomorphic(product0):
+                    products0.remove(product0)
+                    break
+        reverse = not (len(reactants0) != 0 or len(products0) != 0)
+        if not forward and not reverse:
+            reactions.remove(reaction)
     return reactions
         
 ###########
@@ -2759,7 +2774,9 @@ class KineticsDatabase:
                     entry = entry,
                 )
                 reactionList.append(reaction)
-        return filterReactions(reactants, products, reactionList)
+        if products:
+            reactionList = filterReactions(reactants, products, reactionList)
+        return reactionList
 
     def generateReactionsFromFamilies(self, reactants, products, only_families=None):
         """
@@ -2771,7 +2788,9 @@ class KineticsDatabase:
         for label, family in self.families.iteritems():
             if only_families is None or label in only_families:
                 reactionList.extend(family.generateReactions(reactants))
-        return filterReactions(reactants, products, reactionList)
+        if products:
+            reactionList = filterReactions(reactants, products, reactionList)
+        return reactionList
 
     def getForwardReactionForFamilyEntry(self, entry, family, thermoDatabase):
         """
