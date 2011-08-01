@@ -1433,10 +1433,15 @@ class KineticsGroups(Database):
         # Now add in more specific corrections if possible
         for node in template:
             entry = node
+            comment_line = "Matched node "
             while entry.data is None and entry not in self.top:
+                # Keep climbing tree until you find a (non-top) node with data.
+                comment_line += "{0} >> ".format(entry.label)
                 entry = entry.parent
             if entry.data is not None and entry not in self.top:
                 kinetics = self.__multiplyKineticsData(kinetics, entry.data)
+                comment_line += "{0} ({1})".format(entry.label, entry.longDesc.split('\n')[0])
+            kinetics.comment += comment_line + '\n'
 
         # Also include reaction-path degeneracy
         if isinstance(kinetics, KineticsData):
@@ -1445,7 +1450,8 @@ class KineticsGroups(Database):
             kinetics.A.value *= degeneracy
         elif kinetics is not None:
             KineticsError('Unexpected kinetics type "{0}" encountered while generating kinetics from group values.'.format(kinetics.__class__))
-            
+        kinetics.comment += "Multiplied by reaction path degeneracy {0}".format(degeneracy)
+        
         return kinetics
 
     def __multiplyKineticsData(self, kinetics1, kinetics2):
@@ -2467,13 +2473,16 @@ class KineticsFamily(Database):
                     # The rules are defined on a per-site basis, so we need to include the degeneracy manually
                     assert isinstance(kinetics, ArrheniusEP)
                     kinetics.A.value *= degeneracy
+                    kinetics.comment += "Matched rule {0} {1} in {2}".format(entry.index, entry.label, depository.label)
         else:
             # The depository contains real reactions
             entries = depository.entries.values()
             for entry in entries:
                 if reaction.isIsomorphic(entry.item):
                     kineticsList.append([deepcopy(entry.data), entry, reaction.isIsomorphic(entry.item, eitherDirection=False)])
-        
+            for kinetics, entry, isForward in kineticsList:
+                if kinetics is not None:
+                    kinetics.comment += "Matched reaction {0} {1} in {2}".format(entry.index, entry.label, depository.label)
         return kineticsList
     
     def getKinetics(self, reaction, template, degeneracy=1, returnAllKinetics=True):

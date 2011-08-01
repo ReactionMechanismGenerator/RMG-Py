@@ -283,7 +283,7 @@ class KineticsData(KineticsModel):
         """
         Return an :class:`Arrhenius` expression fitted to this data
         """
-        return Arrhenius().fitToData(Tlist=self.Tdata.values, klist=self.kdata.values, kunits=self.kdata.units)
+        return Arrhenius(comment=self.comment, Tmin=self.Tmin, Tmax=self.Tmax).fitToData(Tlist=self.Tdata.values, klist=self.kdata.values, kunits=self.kdata.units)
 
 ################################################################################
 
@@ -460,7 +460,7 @@ class ArrheniusEP(KineticsModel):
         by using the provided enthalpy of reaction `dHrxn` in J/mol to calculate
         the activation energy.
         """
-        return Arrhenius(A=self.A, n=self.n, Ea=(self.getActivationEnergy(dHrxn),"J/mol"), T0=(1.0,"K"))
+        return Arrhenius(A=self.A, n=self.n, Ea=(self.getActivationEnergy(dHrxn),"J/mol"), T0=(1.0,"K"), Tmin=self.Tmin, Tmax=self.Tmax, comment=self.comment)
 
 ################################################################################
 
