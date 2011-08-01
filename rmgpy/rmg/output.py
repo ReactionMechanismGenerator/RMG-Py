@@ -169,9 +169,6 @@ def saveOutputHTML(path, reactionModel):
         .KineticsData td {
             width: 3em;
         }
-        .searchlink {
-            font-size: large;
-        }
         
         .chemkin, .KineticsData_repr {
            white-space: pre-wrap;
@@ -268,16 +265,14 @@ def saveOutputHTML(path, reactionModel):
     <tr><th>Index</th><th colspan="3" style="text-align: center;">Reaction</th><th>Family</th></tr>
     {% for rxn in reactions %}
     <tr class="reaction {{ rxn.getSource().label|csssafe }}">
-        <td class="index">{{ rxn.index }}.</td>
+        <td class="index"><a href="{{ rxn.getURL() }}" title="Search on RMG website" class="searchlink">{{ rxn.index }}.</a></td>
         <td class="reactants">{% for reactant in rxn.reactants %}<img src="species/{{ reactant|replace('#','%23') }}.png" alt="{{ reactant }}" title="{{ reactant }}">{% if not loop.last %} + {% endif %}{% endfor %}</td>
         <td class="reactionArrow">{% if rxn.reversible %}&hArr;{% else %}&rarr;{% endif %}</td>
         <td class="products">{% for product in rxn.products %}<img src="species/{{ product|replace('#','%23') }}.png" alt="{{ product }}" title="{{ product }}">{% if not loop.last %} + {% endif %}{% endfor %}</td>
         <td class="family">{{ rxn.getSource().label }}</td>
     </tr>
     <tr class="kinetics {{ rxn.getSource().label|csssafe }}">
-        <td>
-        <a href="{{ rxn.getURL() }}" title="Search on RMG website" class="searchlink">?</a>
-        </td>
+        <td></td>
         <td colspan="4">{{ rxn.kinetics.toHTML() }}</td>
     </tr>
     <tr class="chemkin {{ rxn.getSource().label|csssafe }}">
