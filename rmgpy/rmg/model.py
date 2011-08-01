@@ -744,7 +744,7 @@ class CoreEdgeReactionModel:
         core status as a result of this change in status to the core.
         """
 
-        if spec in self.core.species: return
+        assert spec not in self.core.species, "Tried to add species {0} to core, but it's already there".format(spec.label)
 
         # Add the species to the core
         self.core.species.append(spec)

@@ -24,11 +24,6 @@ species(
     structure=SMILES("C#[C]"),
 )
 species(
-    label='C2H',
-    reactive=True,
-    structure=SMILES("C#[C]"),
-)
-species(
     label='CH',
     reactive=True,
     structure=adjacencyList(

@@ -73,6 +73,7 @@ def database(path, thermoLibraries=None, reactionLibraries=None, frequenciesLibr
 def species(label, structure, reactive=True):
     logging.debug('Found {0} species "{1}" ({2})'.format('reactive' if reactive else 'nonreactive', label, structure.toSMILES()))
     spec, isNew = rmg.reactionModel.makeNewSpecies(structure, label=label, reactive=reactive)
+    assert isNew, "Species {0} is a duplicate of {1}. Species in input file must be unique".format(label,spec.label)
     rmg.initialSpecies.append(spec)
     speciesDict[label] = spec
     
