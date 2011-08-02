@@ -475,7 +475,7 @@ class MultiKinetics(KineticsModel):
     =============== =============== ============================================
     Attribute       Type            Description
     =============== =============== ============================================
-    `kineticsList` ``list``        A list of the :class:`KineticsModel` objects that sum to represent the kinetics
+    `kineticsList`  ``list``        A list of the :class:`KineticsModel` objects that sum to represent the kinetics
     =============== =============== ============================================
 
     """

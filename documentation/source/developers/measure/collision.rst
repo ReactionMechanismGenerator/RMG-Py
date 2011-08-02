@@ -13,7 +13,7 @@ Collision Models
 Single Exponential Down Model
 -----------------------------
 
-.. autoclass:: rmgpy.measure.collision.SingleExponentialDownModel
+.. autoclass:: rmgpy.measure.collision.SingleExponentialDown
     :members:
 
 Collision Parameters
