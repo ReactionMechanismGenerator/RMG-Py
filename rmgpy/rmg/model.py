@@ -633,6 +633,35 @@ class CoreEdgeReactionModel:
             newEdgeReactions=self.edge.reactions[numOldEdgeReactions:]
         )
 
+        # PDepReaction objects generated from partial networks are irreversible
+        # However, it makes more sense to have reversible reactions in the core
+        # Thus we mark PDepReaction objects as reversible and remove the reverse
+        # direction from the list of core reactions
+        # Note that well-skipping reactions may not have a reverse if the well
+        # that they skip over is not itself in the core
+        index = 0
+        while index < len(self.core.reactions):
+            reaction = self.core.reactions[index]
+            if isinstance(reaction, PDepReaction):
+                for reaction2 in self.core.reactions[index+1:]:
+                    if isinstance(reaction2, PDepReaction) and reaction.reactants == reaction2.products and reaction.products == reaction2.reactants:
+                        # We've found the PDepReaction for the reverse direction
+                        # Delete the endothermic one
+                        if reaction.getEnthalpyOfReaction(298) < reaction2.getEnthalpyOfReaction(298):
+                            self.core.reactions.remove(reaction2)
+                            reaction.reversible = True
+                        else:
+                            self.core.reactions.remove(reaction)
+                            self.core.reactions.remove(reaction2)
+                            self.core.reactions.insert(index, reaction2)
+                            reaction2.reversible = True
+                        # There should be only one reverse, so we can stop searching once we've found it
+                        break
+                else:
+                    reaction.reversible = True
+            # Move to the next core reaction
+            index += 1
+        
         logging.info('')
 
     def processNewReactions(self, newReactions, newSpecies, pdepNetwork=None):
