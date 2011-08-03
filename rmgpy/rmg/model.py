@@ -644,27 +644,31 @@ class CoreEdgeReactionModel:
         """
         for rxn in newReactions:
             rxn, isNew = self.makeNewReaction(rxn)
-            if not isNew:
-                continue
-
-            allSpeciesInCore = True
-            # Add the reactant and product species to the edge if necessary
-            # At the same time, check if all reactants and products are in the core
-            for spec in rxn.reactants:
-                if spec not in self.core.species:
-                    allSpeciesInCore = False
-                    if spec not in self.edge.species:
-                        self.addSpeciesToEdge(spec)
-            for spec in rxn.products:
-                if spec not in self.core.species:
-                    allSpeciesInCore = False
-                    if spec not in self.edge.species:
-                        self.addSpeciesToEdge(spec)
+            if isNew:
+                # We've made a new reaction, so make sure the species involved
+                # are in the core or edge
+                allSpeciesInCore = True
+                # Add the reactant and product species to the edge if necessary
+                # At the same time, check if all reactants and products are in the core
+                for spec in rxn.reactants:
+                    if spec not in self.core.species:
+                        allSpeciesInCore = False
+                        if spec not in self.edge.species:
+                            self.addSpeciesToEdge(spec)
+                for spec in rxn.products:
+                    if spec not in self.core.species:
+                        allSpeciesInCore = False
+                        if spec not in self.edge.species:
+                            self.addSpeciesToEdge(spec)
+            
             # If pressure dependence is on, we only add reactions that are not unimolecular;
             # unimolecular reactions will be added after processing the associated networks
             if not self.pressureDependence or \
                 not (rxn.isIsomerization() or rxn.isDissociation() or rxn.isAssociation()) or \
                 (rxn.kinetics is not None and rxn.kinetics.isPressureDependent()):
+                if not isNew: 
+                    # The reaction is not new, so it should already be in the core or edge
+                    continue
                 if allSpeciesInCore:
                     #for reaction in self.core.reactions:
                     #    if isinstance(reaction, Reaction) and reaction.isEquivalent(rxn): break
@@ -679,6 +683,10 @@ class CoreEdgeReactionModel:
                 # Add the reaction to the appropriate unimolecular reaction network
                 # If pdepNetwork is not None then that will be the network the
                 # (path) reactions are added to
+                # Note that this must be done even with reactions that are not new
+                # because of the way partial networks are explored
+                # Since PDepReactions are created as irreversible, not doing so
+                # would cause you to miss the reverse reactions!
                 net = self.addReactionToUnimolecularNetworks(rxn, newSpecies=newSpecies, network=pdepNetwork)
 
     def generateKinetics(self, reaction):
