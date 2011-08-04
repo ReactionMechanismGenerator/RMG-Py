@@ -362,7 +362,7 @@ class Arrhenius(KineticsModel):
         self.A.value /= (self.T0.value / T0)**self.n.value
         self.T0.value = T0
 
-    def fitToData(self, Tlist, klist, kunits, T0=300):
+    def fitToData(self, Tlist, klist, kunits, T0=1):
         """
         Fit the Arrhenius parameters to a set of rate coefficient data `klist`
         in units of `kunits` corresponding to a set of temperatures `Tlist` in 
