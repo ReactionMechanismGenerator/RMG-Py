@@ -88,9 +88,9 @@ class Reference:
         """
         string = self.getAuthorString()
         if self.title != '':
-            string += ' *{0}*'.format(self.title)
+            string += u' *{0}*'.format(self.title)
         if self.year != '':
-            string += ' ({0})'.format(self.year)
+            string += u' ({0})'.format(self.year)
         if string[-1] != '.': string += '.'
         return string
 
@@ -101,17 +101,17 @@ class Reference:
         authors = ''
         if self.authors is not None and len(self.authors) > 0:
             if len(self.authors) == 1:
-                authors = '{0}.'.format(self.authors[0])
+                authors = u'{0}.'.format(self.authors[0])
             elif len(self.authors) == 2:
-                authors = '{0} and {1}.'.format(self.authors[0], self.authors[1])
+                authors = u'{0} and {1}.'.format(self.authors[0], self.authors[1])
             elif self.authors[-1] == 'et al':
-                authors = '{0} et al.'.format(', '.join(self.authors[:-1]))
+                authors = u'{0} et al.'.format(', '.join(self.authors[:-1]))
             else:
-                authors = '{0}, and {1}.'.format(', '.join(self.authors[:-1]), self.authors[-1])
+                authors = u'{0}, and {1}.'.format(', '.join(self.authors[:-1]), self.authors[-1])
             # reStructuredText automatically interprets "A." et al as a 
             # numbered list; this suppresses that behavior
             if authors[1:3] == '. ':
-                authors = authors[0:2] + '\ ' + authors[2:]
+                authors = authors[0:2] + u'\ ' + authors[2:]
             # If the last author is of the form "Lastname, A. B.", this will
             # remove the extra period at the end of the sentence
             if authors[-2:] == '..':
@@ -173,18 +173,18 @@ class Article(Reference):
         """
         string = self.getAuthorString()
         if self.title != '':
-            string += ' "{0}."'.format(self.title)
+            string += u' "{0}."'.format(self.title)
         if self.journal != '':
-            string += ' *{0}*'.format(self.journal)
+            string += u' *{0}*'.format(self.journal)
         if self.volume != '':
-            string += ' **{0}**'.format(self.volume)
+            string += u' **{0}**'.format(self.volume)
         if self.number != '':
-            string += ' ({0})'.format(self.number)
+            string += u' ({0})'.format(self.number)
         if self.pages != '':
-            string += ', p. {0}'.format(self.pages)
+            string += u', p. {0}'.format(self.pages)
         if self.year != '':
-            string += ' ({0})'.format(self.year)
-        if string[-1] != '.': string += '.'
+            string += u' ({0})'.format(self.year)
+        if string[-1] != '.': string += u'.'
         return string
 
 ################################################################################
@@ -244,18 +244,18 @@ class Book(Reference):
         """
         string = self.getAuthorString()
         if self.title != '':
-            string += ' *{0}.*'.format(self.title)
+            string += u' *{0}.*'.format(self.title)
         if self.edition != '':
-            string += ' {0} edition.'.format(self.edition)
+            string += u' {0} edition.'.format(self.edition)
         if self.volume != '':
-            string += ' Vol. {0}.'.format(self.volume)
+            string += u' Vol. {0}.'.format(self.volume)
         if self.address != '':
-            string += ' {0}:'.format(self.address)
+            string += u' {0}:'.format(self.address)
         if self.publisher != '':
-            string += ' **{0}**'.format(self.publisher)
+            string += u' **{0}**'.format(self.publisher)
         if self.year != '':
-            string += ' ({0})'.format(self.year)
-        return string + '.'
+            string += u' ({0})'.format(self.year)
+        return string + u'.'
 
 ################################################################################
 
@@ -305,14 +305,14 @@ class Thesis(Reference):
         """
         string = self.getAuthorString()
         if self.title != '':
-            string += ' "{0}."'.format(self.title)
+            string += u' "{0}."'.format(self.title)
         if self.degree != '':
-            string += ' {0} thesis.'.format(self.degree)
+            string += u' {0} thesis.'.format(self.degree)
         if self.school != '':
-            string += ' {0}'.format(self.school)
+            string += u' {0}'.format(self.school)
         if self.year != '':
-            string += ' ({0})'.format(self.year)
-        if string[-1] != '.': string += '.'
+            string += u' ({0})'.format(self.year)
+        if string[-1] != '.': string += u'.'
         return string
 
 ################################################################################
