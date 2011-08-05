@@ -2789,6 +2789,8 @@ class KineticsDatabase:
         Generate all reactions between the provided list of one or two
         `reactants`, which should be :class:`Molecule` objects. This method
         applies the reaction family.
+        If `only_families` is a list of strings, only families with those labels
+        are used.
         """
         reactionList = []
         for label, family in self.families.iteritems():
