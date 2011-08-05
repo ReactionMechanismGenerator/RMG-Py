@@ -522,8 +522,10 @@ class KineticsDepository(Database):
                     reactants.append(Group().fromAdjacencyList(group3))
             
             reaction = Reaction(reactants=reactants, products=[])
+        else:
+            raise ValueError("Entry doesn't seem to involve reactants and products, or groups.")
             
-        self.entries[index] = Entry(
+        entry = Entry(
             index = index,
             label = label,
             item = reaction,
@@ -535,6 +537,8 @@ class KineticsDepository(Database):
             rank = rank,
             history = history or [],
         )
+        self.entries[index] = entry
+        return entry
 
     def saveEntry(self, f, entry):
         """
