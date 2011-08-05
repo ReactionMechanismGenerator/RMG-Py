@@ -91,7 +91,7 @@ class Reference:
             string += u' *{0}*'.format(self.title)
         if self.year != '':
             string += u' ({0})'.format(self.year)
-        if string[-1] != '.': string += '.'
+        if string and string[-1] != '.': string += '.'
         return string
 
     def getAuthorString(self):
