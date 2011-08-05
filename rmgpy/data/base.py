@@ -133,6 +133,12 @@ class Database:
     :meth:`generateOldLibraryEntry` methods in order to load and save from the
     new and old database formats.
     """
+    
+    local_context = {}
+    local_context['Reference'] = Reference
+    local_context['Article'] = Article
+    local_context['Book'] = Book
+    local_context['Thesis'] = Thesis
 
     def __init__(self, entries=None, top=None, label='', name='', shortDesc='', longDesc='', recommended=False):
         self.entries = entries or {}
@@ -177,11 +183,10 @@ class Database:
         local_context['name'] = self.name
         local_context['shortDesc'] = self.shortDesc
         local_context['longDesc'] = self.longDesc
-        local_context['Reference'] = Reference
-        local_context['Article'] = Article
-        local_context['Book'] = Book
-        local_context['Thesis'] = Thesis
         local_context['recommended'] = False
+        # add in anything from the Class level dictionary.
+        for key, value in Database.local_context.iteritems():
+            local_context[key]=value
         
         # Process the file
         f = open(path, 'r')
