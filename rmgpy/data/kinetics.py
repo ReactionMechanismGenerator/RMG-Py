@@ -2300,15 +2300,13 @@ class KineticsFamily(Database):
         # original
         reactants = [reactant if isinstance(reactant, list) else [reactant] for reactant in reactants]
 
-        # Reactants must have explicit hydrogen atoms
-        implicitH = []
-        for reactant in reactants:
-            implicit = []
-            for isomer in reactant:
-                implicit.append(isomer.implicitHydrogens)
-                isomer.makeHydrogensExplicit()
-            implicitH.append(implicit)
-
+        # Also make a deep copy of each reactant molecule
+        for i in range(len(reactants)):
+            for j in range(len(reactants[i])):
+                reactants[i][j] = reactants[i][j].copy(deep=True)
+                # Each molecule must have explicit hydrogen atoms
+                reactants[i][j].makeHydrogensExplicit()
+                
         if forward:
             template = self.forwardTemplate
         elif self.reverseTemplate is None:
@@ -2426,11 +2424,6 @@ class KineticsFamily(Database):
         if self.label.lower().startswith('r_recombination'):
             for rxn in rxnList:
                 rxn.degeneracy /= 2
-
-        # Restore implicit hydrogen atoms if necessary
-        for reactant, implicit in zip(reactants, implicitH):
-            for isomer, H in zip(reactant, implicit):
-                if H: isomer.makeHydrogensImplicit()
 
         # This reaction list has only checked for duplicates within itself, not
         # with the global list of reactions

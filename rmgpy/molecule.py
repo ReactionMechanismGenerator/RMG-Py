@@ -734,7 +734,7 @@ class Molecule(Graph):
         # It only makes sense to compare a Molecule to a Molecule for full
         # isomorphism, so raise an exception if this is not what was requested
         if not isinstance(other0, Molecule):
-            raise TypeError('Got a {0} object for parameter "other", when a Molecule object is required.'.format(other.__class__))
+            raise TypeError('Got a {0} object for parameter "other0", when a Molecule object is required.'.format(other0.__class__))
         other = other0
         # Ensure that both self and other have the same implicit hydrogen status
         # If not, make them both explicit just to be safe
@@ -764,7 +764,7 @@ class Molecule(Graph):
         # It only makes sense to compare a Molecule to a Molecule for full
         # isomorphism, so raise an exception if this is not what was requested
         if not isinstance(other0, Molecule):
-            raise TypeError('Got a {0} object for parameter "other", when a Molecule object is required.'.format(other.__class__))
+            raise TypeError('Got a {0} object for parameter "other0", when a Molecule object is required.'.format(other0.__class__))
         other = other0
         # Ensure that both self and other have the same implicit hydrogen status
         # If not, make them both explicit just to be safe
