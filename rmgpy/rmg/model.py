@@ -683,7 +683,7 @@ class CoreEdgeReactionModel:
 
     def generateKinetics(self, reaction):
         """
-        Generate kinetics for the given `reaction` using the kinetics database.
+        Generate best possible kinetics for the given `reaction` using the kinetics database.
         """
         # Only reactions from families should be missing kinetics
         assert isinstance(reaction, TemplateReaction)
@@ -702,25 +702,40 @@ class CoreEdgeReactionModel:
             keepReverse = False
             if (source is not None and rev_source is None):
                 # Only the forward has a source - use forward.
-                pass
+                reason = "This direction matched an entry in {0}, the other was just a group additive estimate.".format(source.label)
             elif (source is None and rev_source is not None):
                 # Only the reverse has a source - use reverse.
                 keepReverse = True
+                reason = "This direction matched an entry in {0}, the other was just a group additive estimate.".format(rev_source.label)
             elif (source is not None and rev_source is not None 
                   and entry is rev_entry):
                 # Both forward and reverse have the same source and entry
                 # Use the one for which the kinetics is the forward kinetics
+                reason = "Both direction matched the same entry in {0}, which is defined in this direction.".format(source.label)
                 keepReverse = not isForward
+            elif (kinetics.comment.find("Fitted to 1 rate")>0
+                  and not rev_kinetics.comment.find("Fitted to 1 rate")>0) :
+                    # forward kinetics were fitted to only 1 rate, but reverse are hopefully better
+                    keepReverse = True
+                    reason = "Other direction matched a group only fitted to 1 rate."
+            elif (not kinetics.comment.find("Fitted to 1 rate")>0
+                  and rev_kinetics.comment.find("Fitted to 1 rate")>0) :
+                    # reverse kinetics were fitted to only 1 rate, but forward are hopefully better
+                    keepReverse = False
+                    reason = "Other direction matched a group only fitted to 1 rate."
             else:
                 # Keep the direction that is exothermic at 298 K
                 # This must be done after the thermo generation step
                 keepReverse = reaction.getEnthalpyOfReaction(298) > 0 and isForward and rev_isForward
+                reason = "Both directions are group additive estimates, but this direction is exothermic."
             
             if keepReverse:
                 kinetics = rev_kinetics
                 source = rev_source
                 entry = rev_entry
                 isForward = not rev_isForward
+                
+            kinetics.comment += "\nKinetics were estimated in this direction instead of the reverse because:\n{0}".format(reason)
         
         return kinetics, source, entry, isForward
     
