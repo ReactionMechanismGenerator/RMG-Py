@@ -351,7 +351,7 @@ def saveEntry(f, entry):
     elif isinstance(entry.item, LogicNode):
         f.write('    group = "{0}",\n'.format(entry.item))
     else:
-        raise InvalidDatabaseError("Encountered unexpected item of type {0} while saving database.".format(entry.item.__class__))
+        raise DatabaseError("Encountered unexpected item of type {0} while saving database.".format(entry.item.__class__))
 
     if isinstance(entry.data, Arrhenius):
         f.write('    kinetics = Arrhenius(\n')
