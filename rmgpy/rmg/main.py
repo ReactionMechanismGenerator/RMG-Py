@@ -715,6 +715,9 @@ class Tee:
 def processProfileStats(stats_file, log_file):
     import pstats
     out_stream = Tee(sys.stdout,open(log_file,'a')) # print to screen AND append to RMG.log
+    print >>out_stream, "="*80
+    print >>out_stream, "Profiling Data".center(80)
+    print >>out_stream, "="*80
     stats = pstats.Stats(stats_file,stream=out_stream)
     stats.strip_dirs()
     print >>out_stream, "Sorted by internal time"
