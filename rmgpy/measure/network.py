@@ -395,7 +395,7 @@ class Network:
                 # Dissociation (irreversible)
                 reac = self.isomers.index(rxn.reactants[0])
                 prod = self.products.index(rxn.products) + Nreac
-                Gnj[prod,reac,:], dummy = calculateMicrocanonicalRateCoefficient(rxn, Elist, densStates[reac,:], None, T)
+                Gnj[prod,reac,:], dummy = calculateMicrocanonicalRateCoefficient(rxn, Elist, densStates[reac,:], densStates[prod+Nisom,:], T)
             elif rxn.reactants in self.reactants and rxn.products[0] in self.isomers:
                 # Association (reversible)
                 reac = self.reactants.index(rxn.reactants)
@@ -405,7 +405,7 @@ class Network:
                 # Association (irreversible)
                 reac = self.products.index(rxn.reactants) + Nreac
                 prod = self.isomers.index(rxn.products[0])
-                dummy, Gnj[reac,prod,:] = calculateMicrocanonicalRateCoefficient(rxn, Elist, None, densStates[prod,:], T)
+                dummy, Gnj[reac,prod,:] = calculateMicrocanonicalRateCoefficient(rxn, Elist, densStates[reac+Nisom,:], densStates[prod,:], T)
             else:
                 raise NetworkError('Unexpected type of path reaction "{0}"'.format(rxn))
         
