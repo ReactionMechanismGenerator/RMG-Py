@@ -46,7 +46,7 @@ from rmgpy.data.kinetics import *
 from rmgpy.data.states import *
 import rmgpy.data.rmg
 
-from pdep import PDepReaction, PDepNetwork
+from pdep import PDepReaction, PDepNetwork, PressureDependenceError
 
 ################################################################################
 
@@ -655,6 +655,16 @@ class CoreEdgeReactionModel:
                 for reaction2 in self.core.reactions[index+1:]:
                     if isinstance(reaction2, PDepReaction) and reaction.reactants == reaction2.products and reaction.products == reaction2.reactants:
                         # We've found the PDepReaction for the reverse direction
+                        kf = reaction.getRateCoefficient(1000,1e5)
+                        kr = reaction.getRateCoefficient(1000,1e5) / reaction.getEquilibriumConstant(1000)
+                        kf2 = reaction2.getRateCoefficient(1000,1e5) / reaction2.getEquilibriumConstant(1000)
+                        kr2 = reaction2.getRateCoefficient(1000,1e5)
+                        if kf / kf2 < 0.5 or kf / kf2 > 2.0:
+                            print reaction
+                            print kf, kf2
+                            print reaction2
+                            print kr, kr2
+                            raise PressureDependenceError('Forward and reverse PDepReactions generated from networks {0:d} and {1:d} do not satisfy thermodynamic consistency.'.format(reaction.network.index, reaction2.network.index))
                         # Delete the endothermic one
                         if reaction.getEnthalpyOfReaction(298) < reaction2.getEnthalpyOfReaction(298):
                             self.core.reactions.remove(reaction2)
