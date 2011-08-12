@@ -639,15 +639,16 @@ class Graph:
             if not vertex1.equivalent(vertex2):
                 return False
         # Check that any edges connected mapped vertices are equivalent
-        vertices1 = mapping.keys(); vertices2 = mapping.values()
+        vertices1 = mapping.keys()
+        vertices2 = mapping.values()
         for i in range(len(mapping)):
             for j in range(i+1, len(mapping)):
                 selfHasEdge = self.hasEdge(vertices1[i], vertices1[j])
-                otherHasEdge = other.hasEdge(vertices1[i], vertices1[j])
+                otherHasEdge = other.hasEdge(vertices2[i], vertices2[j])
                 if selfHasEdge and otherHasEdge:
                     # Both graphs have the edge, so we must check it for equivalence
                     edge1 = self.getEdge(vertices1[i], vertices1[j])
-                    edge2 = self.getEdge(vertices2[i], vertices2[j])
+                    edge2 = other.getEdge(vertices2[i], vertices2[j])
                     if not edge1.equivalent(edge2):
                         return False
                 elif selfHasEdge or otherHasEdge:

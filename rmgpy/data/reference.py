@@ -184,7 +184,7 @@ class Article(Reference):
             string += u', p. {0}'.format(self.pages)
         if self.year != '':
             string += u' ({0})'.format(self.year)
-        if string[-1] != '.': string += u'.'
+        if string and string[-1] != '.': string += u'.'
         return string
 
 ################################################################################
@@ -312,7 +312,7 @@ class Thesis(Reference):
             string += u' {0}'.format(self.school)
         if self.year != '':
             string += u' ({0})'.format(self.year)
-        if string[-1] != '.': string += u'.'
+        if string and string[-1] != '.': string += u'.'
         return string
 
 ################################################################################
