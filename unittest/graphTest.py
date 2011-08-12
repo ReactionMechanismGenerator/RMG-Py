@@ -379,6 +379,10 @@ class TestGraph(unittest.TestCase):
         ismatch, mapList = graph1.findSubgraphIsomorphisms(graph2)
         self.assertTrue(ismatch)
         self.assertTrue(len(mapList) == 10)
+        
+        for mapping in mapList:
+            self.assertTrue( graph1.isMappingValid(graph2,mapping) )
+            self.assertTrue( graph1.isMappingValid(graph2,mapping) )
 
     def testIsCyclic(self):
         """
