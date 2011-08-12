@@ -377,7 +377,13 @@ class StatesGroups(Database):
         else:
             modes.insert(0, HarmonicOscillator(frequencies=(frequencies,"cm^-1")))
 
-        statesModel = StatesModel(modes=modes)
+        # Compute spin multiplicity
+        # For closed-shell molecule the spin multiplicity is 1
+        # For monoradicals the spin multiplicity is 2
+        # For higher-order radicals the highest allowed spin multiplicity is assumed
+        spinMultiplicity = sum([atom.radicalElectrons for atom in molecule.atoms]) + 1
+        
+        statesModel = StatesModel(modes=modes, spinMultiplicity=spinMultiplicity)
 
         return (statesModel, None, None)
 
