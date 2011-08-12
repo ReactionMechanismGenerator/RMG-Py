@@ -207,12 +207,15 @@ class Network:
         # For the purposes of finding the maximum energy we will use 251 grains
         nE = 251; dE = 0.0
 
-        # The minimum energy is the lowest isomer or reactant energy on the PES
+        # The minimum energy is the lowest isomer or reactant or product energy on the PES
         Emin = 1.0e25
         for species in self.isomers:
             if species.E0.value < Emin: Emin = species.E0.value
         for reactants in self.reactants:
             E0 = sum([reactant.E0.value for reactant in reactants])
+            if E0 < Emin: Emin = E0
+        for products in self.products:
+            E0 = sum([product.E0.value for product in products])
             if E0 < Emin: Emin = E0
         Emin = math.floor(Emin) # Round to nearest whole number
 
