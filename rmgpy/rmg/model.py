@@ -97,23 +97,32 @@ class Species(rmgpy.species.Species):
         # If multiple resonance isomers are present, use the thermo data of
         # the most stable isomer (i.e. one with lowest enthalpy of formation)
         # as the thermo data of the species
-        self.thermo = thermo[indices[0]]
+        thermo0 = thermo[indices[0]]
 
         # Sort the structures in order of decreasing stability
         self.molecule = [self.molecule[ind] for ind in indices]
         implicitH = [implicitH[ind] for ind in indices]
 
-        # Convert to desired thermo class
-        if isinstance(self.thermo, thermoClass):
-            return self.thermo
+        # Always convert to Wilhoit so we can compute E0
+        if isinstance(thermo0, Wilhoit):
+            wilhoit = thermo0
+        else:
+            linear = self.molecule[0].isLinear()
+            nRotors = self.molecule[0].countInternalRotors()
+            nFreq = 3 * len(self.molecule[0].atoms) - (5 if linear else 6) - nRotors
+            wilhoit = convertThermoModel(thermo0, Wilhoit, linear=linear, nFreq=nFreq, nRotors=nRotors)
         
-        thermo0 = self.thermo
-        linear = self.molecule[0].isLinear()
-        nRotors = self.molecule[0].countInternalRotors()
-        nFreq = 3 * len(self.molecule[0].atoms) - (5 if linear else 6) - nRotors
-        self.thermo = convertThermoModel(self.thermo, Wilhoit, linear=linear, nFreq=nFreq, nRotors=nRotors)
-        self.E0 = Quantity(self.thermo.getEnthalpy(1.0)/1000.0,"kJ/mol")
-        self.thermo = convertThermoModel(self.thermo, thermoClass, Tmin=100.0, Tmax=5000.0, Tint=1000.0)
+        # Compute E0 by extrapolation to 0 K
+        self.E0 = Quantity(wilhoit.getEnthalpy(1.0)/1000.0,"kJ/mol")
+        
+        # Convert to desired thermo class
+        if isinstance(thermo0, thermoClass):
+            self.thermo = thermo0
+        elif isinstance(wilhoit, thermoClass):
+            self.thermo = wilhoit
+        else:
+            self.thermo = convertThermoModel(wilhoit, thermoClass, Tmin=100.0, Tmax=5000.0, Tint=1000.0)
+        
         if self.thermo.__class__ != thermo0.__class__:
             # Compute RMS error of overall transformation
             Tlist = numpy.array([300.0, 400.0, 500.0, 600.0, 800.0, 1000.0, 1500.0], numpy.float64)
