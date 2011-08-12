@@ -46,7 +46,7 @@ from rmgpy.data.kinetics import *
 from rmgpy.data.states import *
 import rmgpy.data.rmg
 
-from pdep import PDepReaction, PDepNetwork
+from pdep import PDepReaction, PDepNetwork, PressureDependenceError
 
 ################################################################################
 
@@ -97,23 +97,32 @@ class Species(rmgpy.species.Species):
         # If multiple resonance isomers are present, use the thermo data of
         # the most stable isomer (i.e. one with lowest enthalpy of formation)
         # as the thermo data of the species
-        self.thermo = thermo[indices[0]]
+        thermo0 = thermo[indices[0]]
 
         # Sort the structures in order of decreasing stability
         self.molecule = [self.molecule[ind] for ind in indices]
         implicitH = [implicitH[ind] for ind in indices]
 
-        # Convert to desired thermo class
-        if isinstance(self.thermo, thermoClass):
-            return self.thermo
+        # Always convert to Wilhoit so we can compute E0
+        if isinstance(thermo0, Wilhoit):
+            wilhoit = thermo0
+        else:
+            linear = self.molecule[0].isLinear()
+            nRotors = self.molecule[0].countInternalRotors()
+            nFreq = 3 * len(self.molecule[0].atoms) - (5 if linear else 6) - nRotors
+            wilhoit = convertThermoModel(thermo0, Wilhoit, linear=linear, nFreq=nFreq, nRotors=nRotors)
         
-        thermo0 = self.thermo
-        linear = self.molecule[0].isLinear()
-        nRotors = self.molecule[0].countInternalRotors()
-        nFreq = 3 * len(self.molecule[0].atoms) - (5 if linear else 6) - nRotors
-        self.thermo = convertThermoModel(self.thermo, Wilhoit, linear=linear, nFreq=nFreq, nRotors=nRotors)
-        self.E0 = Quantity(self.thermo.getEnthalpy(1.0)/1000.0,"kJ/mol")
-        self.thermo = convertThermoModel(self.thermo, thermoClass, Tmin=100.0, Tmax=5000.0, Tint=1000.0)
+        # Compute E0 by extrapolation to 0 K
+        self.E0 = Quantity(wilhoit.getEnthalpy(1.0)/1000.0,"kJ/mol")
+        
+        # Convert to desired thermo class
+        if isinstance(thermo0, thermoClass):
+            self.thermo = thermo0
+        elif isinstance(wilhoit, thermoClass):
+            self.thermo = wilhoit
+        else:
+            self.thermo = convertThermoModel(wilhoit, thermoClass, Tmin=100.0, Tmax=5000.0, Tint=1000.0)
+        
         if self.thermo.__class__ != thermo0.__class__:
             # Compute RMS error of overall transformation
             Tlist = numpy.array([300.0, 400.0, 500.0, 600.0, 800.0, 1000.0, 1500.0], numpy.float64)
@@ -633,6 +642,45 @@ class CoreEdgeReactionModel:
             newEdgeReactions=self.edge.reactions[numOldEdgeReactions:]
         )
 
+        # PDepReaction objects generated from partial networks are irreversible
+        # However, it makes more sense to have reversible reactions in the core
+        # Thus we mark PDepReaction objects as reversible and remove the reverse
+        # direction from the list of core reactions
+        # Note that well-skipping reactions may not have a reverse if the well
+        # that they skip over is not itself in the core
+        index = 0
+        while index < len(self.core.reactions):
+            reaction = self.core.reactions[index]
+            if isinstance(reaction, PDepReaction):
+                for reaction2 in self.core.reactions[index+1:]:
+                    if isinstance(reaction2, PDepReaction) and reaction.reactants == reaction2.products and reaction.products == reaction2.reactants:
+                        # We've found the PDepReaction for the reverse direction
+                        kf = reaction.getRateCoefficient(1000,1e5)
+                        kr = reaction.getRateCoefficient(1000,1e5) / reaction.getEquilibriumConstant(1000)
+                        kf2 = reaction2.getRateCoefficient(1000,1e5) / reaction2.getEquilibriumConstant(1000)
+                        kr2 = reaction2.getRateCoefficient(1000,1e5)
+                        if kf / kf2 < 0.5 or kf / kf2 > 2.0:
+                            print reaction
+                            print kf, kf2
+                            print reaction2
+                            print kr, kr2
+                            raise PressureDependenceError('Forward and reverse PDepReactions generated from networks {0:d} and {1:d} do not satisfy thermodynamic consistency.'.format(reaction.network.index, reaction2.network.index))
+                        # Delete the endothermic one
+                        if reaction.getEnthalpyOfReaction(298) < reaction2.getEnthalpyOfReaction(298):
+                            self.core.reactions.remove(reaction2)
+                            reaction.reversible = True
+                        else:
+                            self.core.reactions.remove(reaction)
+                            self.core.reactions.remove(reaction2)
+                            self.core.reactions.insert(index, reaction2)
+                            reaction2.reversible = True
+                        # There should be only one reverse, so we can stop searching once we've found it
+                        break
+                else:
+                    reaction.reversible = True
+            # Move to the next core reaction
+            index += 1
+        
         logging.info('')
 
     def processNewReactions(self, newReactions, newSpecies, pdepNetwork=None):
@@ -644,27 +692,31 @@ class CoreEdgeReactionModel:
         """
         for rxn in newReactions:
             rxn, isNew = self.makeNewReaction(rxn)
-            if not isNew:
-                continue
-
-            allSpeciesInCore = True
-            # Add the reactant and product species to the edge if necessary
-            # At the same time, check if all reactants and products are in the core
-            for spec in rxn.reactants:
-                if spec not in self.core.species:
-                    allSpeciesInCore = False
-                    if spec not in self.edge.species:
-                        self.addSpeciesToEdge(spec)
-            for spec in rxn.products:
-                if spec not in self.core.species:
-                    allSpeciesInCore = False
-                    if spec not in self.edge.species:
-                        self.addSpeciesToEdge(spec)
+            if isNew:
+                # We've made a new reaction, so make sure the species involved
+                # are in the core or edge
+                allSpeciesInCore = True
+                # Add the reactant and product species to the edge if necessary
+                # At the same time, check if all reactants and products are in the core
+                for spec in rxn.reactants:
+                    if spec not in self.core.species:
+                        allSpeciesInCore = False
+                        if spec not in self.edge.species:
+                            self.addSpeciesToEdge(spec)
+                for spec in rxn.products:
+                    if spec not in self.core.species:
+                        allSpeciesInCore = False
+                        if spec not in self.edge.species:
+                            self.addSpeciesToEdge(spec)
+            
             # If pressure dependence is on, we only add reactions that are not unimolecular;
             # unimolecular reactions will be added after processing the associated networks
             if not self.pressureDependence or \
                 not (rxn.isIsomerization() or rxn.isDissociation() or rxn.isAssociation()) or \
                 (rxn.kinetics is not None and rxn.kinetics.isPressureDependent()):
+                if not isNew: 
+                    # The reaction is not new, so it should already be in the core or edge
+                    continue
                 if allSpeciesInCore:
                     #for reaction in self.core.reactions:
                     #    if isinstance(reaction, Reaction) and reaction.isEquivalent(rxn): break
@@ -679,6 +731,10 @@ class CoreEdgeReactionModel:
                 # Add the reaction to the appropriate unimolecular reaction network
                 # If pdepNetwork is not None then that will be the network the
                 # (path) reactions are added to
+                # Note that this must be done even with reactions that are not new
+                # because of the way partial networks are explored
+                # Since PDepReactions are created as irreversible, not doing so
+                # would cause you to miss the reverse reactions!
                 net = self.addReactionToUnimolecularNetworks(rxn, newSpecies=newSpecies, network=pdepNetwork)
 
     def generateKinetics(self, reaction):

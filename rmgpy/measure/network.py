@@ -291,7 +291,8 @@ class Network:
         Ngrains = len(Elist)
         Nisom = len(self.isomers)
         Nreac = len(self.reactants)
-        densStates = numpy.zeros((Nisom+Nreac, Ngrains), numpy.float64)
+        Nprod = len(self.products)
+        densStates = numpy.zeros((Nisom+Nreac+Nprod, Ngrains), numpy.float64)
         dE = Elist[1] - Elist[0]
 
         # Densities of states for isomers
@@ -304,30 +305,57 @@ class Network:
             densStates[i,r0:] = densStates0[:-r0+len(densStates0)]
 
         # Densities of states for reactant channels
-        # (Only if not minimizing the number of density of states calculations)
-        if not settings.minimizeDensityOfStatesCalculations:
-            for n in range(Nreac):
-                r0 = int(round(E0[n+Nisom] / dE))
-                if self.reactants[n][0].states is not None and self.reactants[n][1].states is not None:
-                    logging.debug('Calculating density of states for reactant channel "{0}"'.format(' + '.join([str(spec) for spec in self.reactants[n]])))
-                    densStates0 = self.reactants[n][0].states.getDensityOfStates(Elist)
-                    densStates1 = self.reactants[n][1].states.getDensityOfStates(Elist)
-                    densStates0 = states.convolve(densStates0, densStates1, Elist)
-                    # Shift to common zero of energy
-                    densStates[n+Nisom,r0:] = densStates0[:-r0+len(densStates0)]
-                elif self.reactants[n][0].states is not None:
-                    logging.debug('Calculating density of states for reactant channel "{0}"'.format(' + '.join([str(spec) for spec in self.reactants[n]])))
-                    densStates0 = self.reactants[n][0].states.getDensityOfStates(Elist)
-                    # Shift to common zero of energy
-                    densStates[n+Nisom,r0:] = densStates0[:-r0+len(densStates0)]
-                elif self.reactants[n][1].states is not None:
-                    logging.debug('Calculating density of states for reactant channel "{0}"'.format(' + '.join([str(spec) for spec in self.reactants[n]])))
-                    densStates0 = self.reactants[n][1].states.getDensityOfStates(Elist)
-                    # Shift to common zero of energy
-                    densStates[n+Nisom,r0:] = densStates0[:-r0+len(densStates0)]
-                else:
-                    logging.debug('NOT calculating density of states for reactant channel "{0}"'.format(' + '.join([str(spec) for spec in self.reactants[n]])))
-            logging.debug('')
+        for n in range(Nreac):
+            r0 = int(round(E0[n+Nisom] / dE))
+            if self.reactants[n][0].states is not None and self.reactants[n][1].states is not None:
+                logging.debug('Calculating density of states for reactant channel "{0}"'.format(' + '.join([str(spec) for spec in self.reactants[n]])))
+                densStates0 = self.reactants[n][0].states.getDensityOfStates(Elist)
+                densStates1 = self.reactants[n][1].states.getDensityOfStates(Elist)
+                densStates0 = states.convolve(densStates0, densStates1, Elist)
+                # Shift to common zero of energy
+                densStates[n+Nisom,r0:] = densStates0[:-r0+len(densStates0)]
+            elif self.reactants[n][0].states is not None:
+                logging.debug('Calculating density of states for reactant channel "{0}"'.format(' + '.join([str(spec) for spec in self.reactants[n]])))
+                densStates0 = self.reactants[n][0].states.getDensityOfStates(Elist)
+                # Shift to common zero of energy
+                densStates[n+Nisom,r0:] = densStates0[:-r0+len(densStates0)]
+            elif self.reactants[n][1].states is not None:
+                logging.debug('Calculating density of states for reactant channel "{0}"'.format(' + '.join([str(spec) for spec in self.reactants[n]])))
+                densStates0 = self.reactants[n][1].states.getDensityOfStates(Elist)
+                # Shift to common zero of energy
+                densStates[n+Nisom,r0:] = densStates0[:-r0+len(densStates0)]
+            else:
+                logging.debug('NOT calculating density of states for reactant channel "{0}"'.format(' + '.join([str(spec) for spec in self.reactants[n]])))
+        
+        # Densities of states for product channels
+        for n in range(Nprod):
+            r0 = int(round(E0[n+Nisom+Nreac] / dE))
+            if len(self.products[n]) == 1 and self.products[n][0].states is not None:
+                logging.debug('Calculating density of states for product channel "{0}"'.format(' + '.join([str(spec) for spec in self.products[n]])))
+                densStates0 = self.isomers[i].states.getDensityOfStates(Elist)
+                # Shift to common zero of energy
+                densStates[n+Nisom+Nreac,r0:] = densStates0[:-r0+len(densStates0)]
+            elif len(self.products[n]) == 2 and self.products[n][0].states is not None and self.products[n][1].states is not None:
+                logging.debug('Calculating density of states for product channel "{0}"'.format(' + '.join([str(spec) for spec in self.products[n]])))
+                densStates0 = self.products[n][0].states.getDensityOfStates(Elist)
+                densStates1 = self.products[n][1].states.getDensityOfStates(Elist)
+                densStates0 = states.convolve(densStates0, densStates1, Elist)
+                # Shift to common zero of energy
+                densStates[n+Nisom+Nreac,r0:] = densStates0[:-r0+len(densStates0)]
+            elif len(self.products[n]) == 2 and self.products[n][0].states is not None:
+                logging.debug('Calculating density of states for product channel "{0}"'.format(' + '.join([str(spec) for spec in self.products[n]])))
+                densStates0 = self.products[n][0].states.getDensityOfStates(Elist)
+                # Shift to common zero of energy
+                densStates[n+Nisom+Nreac,r0:] = densStates0[:-r0+len(densStates0)]
+            elif len(self.products[n]) == 2 and self.products[n][1].states is not None:
+                logging.debug('Calculating density of states for product channel "{0}"'.format(' + '.join([str(spec) for spec in self.products[n]])))
+                densStates0 = self.products[n][1].states.getDensityOfStates(Elist)
+                # Shift to common zero of energy
+                densStates[n+Nisom+Nreac,r0:] = densStates0[:-r0+len(densStates0)]
+            else:
+                logging.debug('NOT calculating density of states for product channel "{0}"'.format(' + '.join([str(spec) for spec in self.products[n]])))
+        
+        logging.debug('')
 
         return densStates
 
@@ -367,7 +395,7 @@ class Network:
                 # Dissociation (irreversible)
                 reac = self.isomers.index(rxn.reactants[0])
                 prod = self.products.index(rxn.products) + Nreac
-                Gnj[prod,reac,:], dummy = calculateMicrocanonicalRateCoefficient(rxn, Elist, densStates[reac,:], None, T)
+                Gnj[prod,reac,:], dummy = calculateMicrocanonicalRateCoefficient(rxn, Elist, densStates[reac,:], densStates[prod+Nisom,:], T)
             elif rxn.reactants in self.reactants and rxn.products[0] in self.isomers:
                 # Association (reversible)
                 reac = self.reactants.index(rxn.reactants)
@@ -377,7 +405,7 @@ class Network:
                 # Association (irreversible)
                 reac = self.products.index(rxn.reactants) + Nreac
                 prod = self.isomers.index(rxn.products[0])
-                dummy, Gnj[reac,prod,:] = calculateMicrocanonicalRateCoefficient(rxn, Elist, None, densStates[prod,:], T)
+                dummy, Gnj[reac,prod,:] = calculateMicrocanonicalRateCoefficient(rxn, Elist, densStates[reac+Nisom,:], densStates[prod,:], T)
             else:
                 raise NetworkError('Unexpected type of path reaction "{0}"'.format(rxn))
         
@@ -483,11 +511,13 @@ class Network:
         # that has the necessary parameters
         # An exception will be raised if a unimolecular isomer is missing
         # this information
-        E0 = numpy.zeros((Nisom+Nreac), numpy.float64)
+        E0 = numpy.zeros((Nisom+Nreac+Nprod), numpy.float64)
         for i in range(Nisom):
             E0[i] = self.isomers[i].E0.value
         for n in range(Nreac):
             E0[n+Nisom] = sum([spec.E0.value for spec in self.reactants[n]])
+        for n in range(Nprod):
+            E0[n+Nisom+Nreac] = sum([spec.E0.value for spec in self.products[n]])
 
         # Get first reactive grain for each isomer
         Ereac = numpy.ones(Nisom, numpy.float64) * 1e20
