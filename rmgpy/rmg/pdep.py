@@ -369,7 +369,12 @@ class PDepNetwork(rmgpy.measure.network.Network):
         for reactants in self.reactants:
             for spec in reactants:
                 if spec.states is None: spec.generateStatesData(database)
-
+        # Also generate states data for any path reaction reactants, so we can
+        # always apply the ILT method in the direction the kinetics are known
+        for reaction in self.pathReactions:
+            for spec in reaction.reactants:
+                if spec.states is None: spec.generateStatesData(database)
+        
         # Determine transition state energies on potential energy surface
         # In the absence of any better information, we simply set it to
         # be the reactant ground-state energy + the activation energy
