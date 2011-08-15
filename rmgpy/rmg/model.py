@@ -550,7 +550,7 @@ class CoreEdgeReactionModel:
         # If there are any core species among the unimolecular product channels
         # of any existing network, they need to be made included
         for network in self.unirxnNetworks:
-            network.updateConfigurations()
+            network.updateConfigurations(self)
             index = 0
             while index < len(self.core.species):
                 species = self.core.species[index]
@@ -558,7 +558,7 @@ class CoreEdgeReactionModel:
                     if len(products) == 1 and products[0] == species:
                         newReactions = network.exploreIsomer(species, self, database)
                         self.processNewReactions(newReactions, species, network)
-                        network.updateConfigurations()
+                        network.updateConfigurations(self)
                         index = 0
                         break
                 else:
