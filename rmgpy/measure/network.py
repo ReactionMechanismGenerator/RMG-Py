@@ -281,6 +281,24 @@ class Network:
         logging.info('Using {0:d} grains from {1:.2f} to {2:.2f} kJ/mol in steps of {3:.2f} kJ/mol'.format(len(Elist), Elist[0] / 1000, Elist[-1] / 1000, (Elist[1] - Elist[0]) / 1000))
         return Elist
 
+    def calculateGroundStateEnergies(self):
+        """
+        Return an array of the ground-state energies in J/mol of each isomer,
+        reactant channel, and product channel, in that order.
+        """
+        Nisom = len(self.isomers)
+        Nreac = len(self.reactants)
+        Nprod = len(self.products)
+        
+        E0 = numpy.zeros((Nisom+Nreac+Nprod), numpy.float64)
+        for i in range(Nisom):
+            E0[i] = self.isomers[i].E0.value
+        for n in range(Nreac):
+            E0[n+Nisom] = sum([spec.E0.value for spec in self.reactants[n]])
+        for n in range(Nprod):
+            E0[n+Nisom+Nreac] = sum([spec.E0.value for spec in self.products[n]])
+        return E0
+        
     def calculateDensitiesOfStates(self, Elist, E0):
         """
         Calculate and return an array containing the density of states for each
@@ -514,14 +532,8 @@ class Network:
         # that has the necessary parameters
         # An exception will be raised if a unimolecular isomer is missing
         # this information
-        E0 = numpy.zeros((Nisom+Nreac+Nprod), numpy.float64)
-        for i in range(Nisom):
-            E0[i] = self.isomers[i].E0.value
-        for n in range(Nreac):
-            E0[n+Nisom] = sum([spec.E0.value for spec in self.reactants[n]])
-        for n in range(Nprod):
-            E0[n+Nisom+Nreac] = sum([spec.E0.value for spec in self.products[n]])
-
+        E0 = self.calculateGroundStateEnergies() 
+        
         # Get first reactive grain for each isomer
         Ereac = numpy.ones(Nisom, numpy.float64) * 1e20
         for i in range(Nisom):
