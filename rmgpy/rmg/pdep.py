@@ -284,41 +284,63 @@ class PDepNetwork(rmgpy.measure.network.Network):
         # Mark this network as invalid
         self.valid = False
 
-    def updateConfigurations(self):
+    def updateConfigurations(self, reactionModel):
         """
-        Regenerate the :math:`k(T,P)` values for this partial network if the
-        network is marked as invalid.
+        Sort the reactants and products of each of the network's path reactions
+        into isomers, reactant channels, and product channels. You must pass 
+        the current `reactionModel` because some decisions on sorting are made
+        based on which species are in the model core. 
         """
 
-        # Figure out which configurations are isomers, reactant channels, and product channels
+        # Clear existing configurations
+        self.isomers = []
+        self.reactants = []
         self.products = []
+        
+        # All explored species are isomers
+        self.isomers = self.explored[:]
+        
+        # The source configuration is an isomer (if unimolecular) or a reactant channel (if bimolecular)
         if len(self.source) == 1:
             # The source is a unimolecular isomer
-            self.isomers = self.explored[:]
             if self.source[0] not in self.isomers: self.isomers.insert(0, self.source[0])
-            self.reactants = []
         else:
             # The source is a bimolecular reactant channel
             self.source.sort()
-            self.isomers = self.explored[:]
-            self.reactants = [self.source]
+            self.reactants.append(self.source)
+        
+        # Iterate over path reactions and make sure each set of reactants and products is classified
         for rxn in self.pathReactions:
             # Sort bimolecular configurations so that we always encounter them in the
             # same order
             # The actual order doesn't matter, as long as it is consistent
             rxn.reactants.sort()
             rxn.products.sort()
-            # All reactants and products not already assigned as an isomer or
-            # a reactant channel are product channels
-            if rxn.reactants not in self.products:
-                if len(rxn.reactants) == 1 and rxn.reactants[0] not in self.isomers:
+            # Reactants of the path reaction
+            if len(rxn.reactants) == 1 and rxn.reactants[0] not in self.isomers and rxn.reactants not in self.products:
+                # We've encountered a unimolecular reactant that is not classified
+                # These are always product channels (since they would be in source or explored otherwise)
+                self.products.append(rxn.reactants)
+            elif len(rxn.reactants) > 1 and rxn.reactants not in self.reactants and rxn.reactants not in self.products:
+                # We've encountered bimolecular reactants that are not classified
+                if all([reactant in reactionModel.core.species for reactant in rxn.reactants]):
+                    # Both reactants are in the core, so treat as reactant channel
+                    self.reactants.append(rxn.reactants)
+                else:
+                    # One or more reactants is an edge species, so treat as product channel
                     self.products.append(rxn.reactants)
-                elif len(rxn.reactants) > 1 and rxn.reactants not in self.reactants:
-                    self.products.append(rxn.reactants)
-            if rxn.products not in self.products:
-                if len(rxn.products) == 1 and rxn.products[0] not in self.isomers:
-                    self.products.append(rxn.products)
-                elif len(rxn.products) > 1 and rxn.products not in self.reactants:
+            # Products of the path reaction
+            if len(rxn.products) == 1 and rxn.products[0] not in self.isomers and rxn.products not in self.products:
+                # We've encountered a unimolecular product that is not classified
+                # These are always product channels (since they would be in source or explored otherwise)
+                self.products.append(rxn.products)
+            elif len(rxn.products) > 1 and rxn.products not in self.reactants and rxn.products not in self.products:
+                # We've encountered bimolecular products that are not classified
+                if all([product in reactionModel.core.species for product in rxn.products]):
+                    # Both products are in the core, so treat as reactant channel
+                    self.reactants.append(rxn.products)
+                else:
+                    # One or more reactants is an edge species, so treat as product channel
                     self.products.append(rxn.products)
 
     def update(self, reactionModel, database, pdepSettings):
@@ -349,7 +371,7 @@ class PDepNetwork(rmgpy.measure.network.Network):
         model = measure.model
         
         # Figure out which configurations are isomers, reactant channels, and product channels
-        self.updateConfigurations()
+        self.updateConfigurations(reactionModel)
 
         # Make sure we have high-P kinetics for all path reactions
         for rxn in self.pathReactions:
