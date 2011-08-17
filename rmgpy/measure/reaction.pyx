@@ -175,7 +175,7 @@ def calculateMicrocanonicalRateCoefficient(reaction,
                     for r in range(len(Elist)):
                         if prodEqDist[r] > 0: break
                     kr[r:] = kf[r:] * (reacDensStates[r:] / prodDensStates[r:]) * (prodQ / reacQ) / Keq
-                kf = kf * (reacEqDist / reacQ)
+                kf = kf * reacEqDist / reacQ
 
         elif kr.any():
             # We computed the reverse rate coefficient above
@@ -191,7 +191,7 @@ def calculateMicrocanonicalRateCoefficient(reaction,
                     for r in range(len(Elist)):
                         if reacEqDist[r] > 0: break
                     kf[r:] = kr[r:] * (prodDensStates[r:] / reacDensStates[r:]) * (reacQ / prodQ) * Keq
-                kr = kr * (prodEqDist / prodQ)
+                kr = kr * prodEqDist / prodQ
 
     return kf, kr
 
@@ -262,18 +262,18 @@ def applyInverseLaplaceTransformMethod(kinetics, double E0,
         if Ea < 0:
             A *= exp(-Ea / R / T)
             Ea = 0.0
-        if n < 0:
+        if n != 0:
             A *= T**n
             n = 0.0
 
-        if n == 0:
+        if n < 0.001:
             # Determine the microcanonical rate directly
             s = int(floor(Ea / dE))
             for r in range(s, Ngrains):
                 if Elist[r] > E0 and densStates[r] != 0:
                     k[r] = A * densStates[r - s] / densStates[r]
                     
-        elif n > 0.0:
+        elif n >= 0.001:
             import scipy.special
             # Evaluate the inverse Laplace transform of the T**n piece, which only
             # exists for n >= 0
