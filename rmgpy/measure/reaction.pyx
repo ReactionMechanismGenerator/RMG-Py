@@ -167,15 +167,15 @@ def calculateMicrocanonicalRateCoefficient(reaction,
             if reaction.isIsomerization() and productStatesKnown:
                 for r in range(len(Elist)):
                     if prodEqDist[r] > 0: break
-                kr[r:] = kf[r:] * (reacEqDist[r:] / reacQ) / (prodEqDist[r:] / prodQ) / Keq
+                kr[r:] = kf[r:] * (reacDensStates[r:] / prodDensStates[r:]) * (prodQ / reacQ) / Keq
             elif reaction.isDissociation():
                 kr = kf * (reacEqDist / reacQ) / Keq
             elif reaction.isAssociation():
-                kf = kf * (reacEqDist / reacQ)
                 if productStatesKnown:
                     for r in range(len(Elist)):
                         if prodEqDist[r] > 0: break
-                    kr[r:] = kf[r:] / (prodEqDist[r:] / prodQ) / Keq
+                    kr[r:] = kf[r:] * (reacDensStates[r:] / prodDensStates[r:]) * (prodQ / reacQ) / Keq
+                kf = kf * (reacEqDist / reacQ)
 
         elif kr.any():
             # We computed the reverse rate coefficient above
@@ -183,15 +183,15 @@ def calculateMicrocanonicalRateCoefficient(reaction,
             if reaction.isIsomerization() and reactantStatesKnown:
                 for r in range(len(Elist)):
                     if reacEqDist[r] > 0: break
-                kf[r:] = kr[r:] * (prodEqDist[r:] / prodQ) / (reacEqDist[r:] / reacQ) * Keq
+                kf[r:] = kr[r:] * (prodDensStates[r:] / reacDensStates[r:]) * (reacQ / prodQ) * Keq
             elif reaction.isAssociation():
                 kf = kr * (prodEqDist / prodQ) * Keq
             elif reaction.isDissociation():
-                kr = kr * (prodEqDist / prodQ)
                 if reactantStatesKnown:
                     for r in range(len(Elist)):
                         if reacEqDist[r] > 0: break
-                    kf[r:] = kr[r:] / (reacEqDist[r:] / reacQ) * Keq
+                    kf[r:] = kr[r:] * (prodDensStates[r:] / reacDensStates[r:]) * (reacQ / prodQ) * Keq
+                kr = kr * (prodEqDist / prodQ)
 
     return kf, kr
 

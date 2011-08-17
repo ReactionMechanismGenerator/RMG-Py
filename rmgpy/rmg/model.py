@@ -660,13 +660,26 @@ class CoreEdgeReactionModel:
                         kf2 = reaction2.getRateCoefficient(1000,1e5) / reaction2.getEquilibriumConstant(1000)
                         kr2 = reaction2.getRateCoefficient(1000,1e5)
                         if kf / kf2 < 0.5 or kf / kf2 > 2.0:
-                            print reaction
-                            print kf, kf2
-                            print reaction2
-                            print kr, kr2
-                            raise PressureDependenceError('Forward and reverse PDepReactions generated from networks {0:d} and {1:d} do not satisfy thermodynamic consistency.'.format(reaction.network.index, reaction2.network.index))
-                        # Delete the endothermic one
-                        if reaction.getEnthalpyOfReaction(298) < reaction2.getEnthalpyOfReaction(298):
+                            # Most pairs of reactions should satisfy thermodynamic consistency (or at least be "close")
+                            # Warn about the ones that aren't close (but don't abort)
+                            logging.warning('Forward and reverse PDepReactions for reaction {0!s} generated from networks {1:d} and {2:d} do not satisfy thermodynamic consistency.'.format(reaction, reaction.network.index, reaction2.network.index))
+                            logging.debug('{0!s}:'.format(reaction))
+                            logging.debug('{0:.2e} {1:.2e}:'.format(kf, kf2))
+                            logging.debug('{0!s}:'.format(reaction2))
+                            logging.debug('{0:.2e} {1:.2e}:'.format(kr, kr2))
+                        # Keep the one from the more explored network (as it's probably more accurate)
+                        keepFirst = True
+                        if len(reaction.network.explored) > len(reaction2.network.explored):
+                            keepFirst = True
+                        elif len(reaction.network.explored) < len(reaction2.network.explored):
+                            keepFirst = False
+                        # If that's not enough, keep the one that's faster (comparing in the same direction)
+                        elif kf > kf2:
+                            keepFirst = True
+                        else:
+                            keepFirst = False
+                        # Delete the PDepReaction that we aren't keeping
+                        if keepFirst:
                             self.core.reactions.remove(reaction2)
                             reaction.reversible = True
                         else:

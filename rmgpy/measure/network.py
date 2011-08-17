@@ -430,6 +430,11 @@ class Network:
             else:
                 raise NetworkError('Unexpected type of path reaction "{0}"'.format(rxn))
         
+        # In the past, we have occasionally encountered k(E) values that are NaN
+        # Just to be safe, let's check to be sure this isn't happening with this network
+        if numpy.isnan(Kij).any() or numpy.isnan(Gnj).any() or numpy.isnan(Fim).any():
+            raise NetworkError('One or more k(E) values is NaN for network {0:d}.'.format(self.index))
+        
         return Kij, Gnj, Fim
 
     def deleteSpecies(self, species):

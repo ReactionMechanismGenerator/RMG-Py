@@ -507,7 +507,8 @@ class Reaction:
         of using Evans Polanyi with an exothermic reaction.
         """
         cython.declare(H=cython.double, Ea=cython.double)
-        H = self.getEnthalpyOfReaction(298)
+        #H = self.getEnthalpyOfReaction(298)
+        H = sum([spec.E0.value for spec in self.products]) - sum([spec.E0.value for spec in self.reactants])
         if isinstance(self.kinetics, ArrheniusEP):
             Ea = self.kinetics.E0.value # temporarily using Ea to store the intrinsic barrier height E0
             self.kinetics = self.kinetics.toArrhenius(H)
