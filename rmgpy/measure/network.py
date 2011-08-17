@@ -401,35 +401,95 @@ class Network:
         Gnj = numpy.zeros([Nreac+Nprod,Nisom,Ngrains], numpy.float64)
         Fim = numpy.zeros([Nisom,Nreac,Ngrains], numpy.float64)
 
+        # Set to True to also check that the computed k(E) values integrate to
+        # give the expected k(T) values (allowing for some numerical error)
+        check = True
+        
         for rxn in self.pathReactions:
+            kf0 = 0.0; kr0 = 0.0; kf = 0.0; kr = 0.0
             if rxn.reactants[0] in self.isomers and rxn.products[0] in self.isomers:
                 # Isomerization
                 reac = self.isomers.index(rxn.reactants[0])
                 prod = self.isomers.index(rxn.products[0])
                 Kij[prod,reac,:], Kij[reac,prod,:] = calculateMicrocanonicalRateCoefficient(rxn, Elist, densStates[reac,:], densStates[prod,:], T)
+                if check:
+                    kf0 = numpy.sum(Kij[prod,reac,:] * densStates[reac,:] * numpy.exp(-Elist / constants.R / T)) / numpy.sum(densStates[reac,:] * numpy.exp(-Elist / constants.R / T))
+                    kr0 = numpy.sum(Kij[reac,prod,:] * densStates[prod,:] * numpy.exp(-Elist / constants.R / T)) / numpy.sum(densStates[prod,:] * numpy.exp(-Elist / constants.R / T))
             elif rxn.reactants[0] in self.isomers and rxn.products in self.reactants:
                 # Dissociation (reversible)
                 reac = self.isomers.index(rxn.reactants[0])
                 prod = self.reactants.index(rxn.products)
                 Gnj[prod,reac,:], Fim[reac,prod,:] = calculateMicrocanonicalRateCoefficient(rxn, Elist, densStates[reac,:], densStates[prod+Nisom,:], T)
+                if check:
+                    kf0 = numpy.sum(Gnj[prod,reac,:] * densStates[reac,:] * numpy.exp(-Elist / constants.R / T)) / numpy.sum(densStates[reac,:] * numpy.exp(-Elist / constants.R / T))
+                    kr0 = numpy.sum(Fim[reac,prod,:])
             elif rxn.reactants[0] in self.isomers and rxn.products in self.products:
                 # Dissociation (irreversible)
                 reac = self.isomers.index(rxn.reactants[0])
                 prod = self.products.index(rxn.products) + Nreac
                 Gnj[prod,reac,:], dummy = calculateMicrocanonicalRateCoefficient(rxn, Elist, densStates[reac,:], densStates[prod+Nisom,:], T)
+                if check:
+                    kf0 = numpy.sum(Gnj[prod,reac,:] * densStates[reac,:] * numpy.exp(-Elist / constants.R / T)) / numpy.sum(densStates[reac,:] * numpy.exp(-Elist / constants.R / T))
+                    if rxn.isIsomerization():
+                        if not densStates[prod+Nisom,:].any():
+                            kr0 = 0.0
+                        else:
+                            kr0 = numpy.sum(dummy * densStates[prod+Nisom,:] * numpy.exp(-Elist / constants.R / T)) / numpy.sum(densStates[prod+Nisom,:] * numpy.exp(-Elist / constants.R / T))
+                    else:
+                        kr0 = numpy.sum(dummy)
             elif rxn.reactants in self.reactants and rxn.products[0] in self.isomers:
                 # Association (reversible)
                 reac = self.reactants.index(rxn.reactants)
                 prod = self.isomers.index(rxn.products[0])
                 Fim[prod,reac,:], Gnj[reac,prod,:] = calculateMicrocanonicalRateCoefficient(rxn, Elist, densStates[reac+Nisom,:], densStates[prod,:], T)
+                if check:
+                    kf0 = numpy.sum(Fim[prod,reac,:])
+                    kr0 = numpy.sum(Gnj[reac,prod,:] * densStates[prod,:] * numpy.exp(-Elist / constants.R / T)) / numpy.sum(densStates[prod,:] * numpy.exp(-Elist / constants.R / T))
             elif rxn.reactants in self.products and rxn.products[0] in self.isomers:
                 # Association (irreversible)
                 reac = self.products.index(rxn.reactants) + Nreac
                 prod = self.isomers.index(rxn.products[0])
                 dummy, Gnj[reac,prod,:] = calculateMicrocanonicalRateCoefficient(rxn, Elist, densStates[reac+Nisom,:], densStates[prod,:], T)
+                if check:
+                    if rxn.isIsomerization():
+                        if not densStates[reac+Nisom,:].any():
+                            kf0 = 0.0
+                        else:
+                            kf0 = numpy.sum(dummy * densStates[reac+Nisom,:] * numpy.exp(-Elist / constants.R / T)) / numpy.sum(densStates[reac+Nisom,:] * numpy.exp(-Elist / constants.R / T))
+                    else:
+                        kf0 = numpy.sum(dummy)
+                    kr0 = numpy.sum(Gnj[reac,prod,:] * densStates[prod,:] * numpy.exp(-Elist / constants.R / T)) / numpy.sum(densStates[prod,:] * numpy.exp(-Elist / constants.R / T))
             else:
                 raise NetworkError('Unexpected type of path reaction "{0}"'.format(rxn))
         
+            if check:
+                # Check that the computed k(E) values integrate to give the 
+                # expected k(T) values (allowing for some numerical error)
+                error = False
+                kf = rxn.kinetics.getRateCoefficient(T)
+                if kr0 != 0:
+                    # Check both kf(T) and Keq(T)
+                    Keq0 = kf0 / kr0
+                    Keq = rxn.getEquilibriumConstant(T)
+                    if kf0 / kf < 0.1 or kf0 / kf > 10.0 or Keq0 / Keq < 0.5 or Keq0 / Keq > 2.0:
+                        error = True
+                        logging.error('For path reaction {0!s}:'.format(rxn))
+                        logging.error('    Expected kf({0:g} K) = {1:g}'.format(T, kf))
+                        logging.error('      Actual kf({0:g} K) = {1:g}'.format(T, kf0))
+                        logging.error('    Expected Keq({0:g} K) = {1:g}'.format(T, Keq))
+                        logging.error('      Actual Keq({0:g} K) = {1:g}'.format(T, Keq0))
+                else:
+                    # Check only kf(T)
+                    if kf0 / kf < 0.1 or kf0 / kf > 10.0:
+                        error = True
+                        logging.error('For path reaction {0!s}:'.format(rxn))
+                        logging.error('    Expected kf({0:g} K) = {1:g}'.format(T, kf))
+                        logging.error('      Actual kf({0:g} K) = {1:g}'.format(T, kf0))
+                # If the k(E) values are invalid (in that they give the wrong 
+                # kf(T) or kr(T) when integrated), then raise an exception
+                if error:
+                    raise NetworkError('Invalid k(E) values computed for path reaction "{0}" do not satisfy'.format(rxn))
+                
         # In the past, we have occasionally encountered k(E) values that are NaN
         # Just to be safe, let's check to be sure this isn't happening with this network
         if numpy.isnan(Kij).any() or numpy.isnan(Gnj).any() or numpy.isnan(Fim).any():
@@ -654,6 +714,31 @@ class Network:
                 else:
                     raise NetworkError('Unknown method "{0}".'.format(method))
 
+                # Check that the k(T,P) values satisfy macroscopic equilibrium
+                for i in range(Nisom+Nreac):
+                    for j in range(i):
+                        Keq0 = K[t,p,i,j] / K[t,p,j,i]
+                        Keq = eqRatios[i] / eqRatios[j]
+                        #print j, i, Keq0, Keq, Keq0 / Keq
+                        if Keq0 / Keq < 0.8 or Keq0 / Keq > 1.25:
+                            if i < Nisom:
+                                reactants = [self.isomers[i]]
+                            elif i < Nisom+Nreac:
+                                reactants = self.reactants[i-Nisom]
+                            else:
+                                reactants = self.products[i-Nisom-Nreac]
+                            if j < Nisom:
+                                products = [self.isomers[j]]
+                            elif j < Nisom+Nreac:
+                                products = self.reactants[j-Nisom]
+                            else:
+                                products = self.products[j-Nisom-Nreac]
+                            reaction = Reaction(reactants=reactants, products=products)
+                            logging.error('For net reaction {0!s}:'.format(rxn))
+                            logging.error('Expected Keq({1:g} K, {2:g} bar) = {0:11.3e}'.format(Keq, T, P/1e5))
+                            logging.error('  Actual Keq({1:g} K, {2:g} bar) = {0:11.3e}'.format(Keq0, T, P/1e5))
+                            raise NetworkError('MEASURE computed k(T,P) values for reaction {0!s} do not satisfy macroscopic equilibrium.'.format(reaction))
+                            
                 # Compute k(T,P) values from the return p0
                 # This should be identical to the k(T,P) values returned by each method
                 #if method.lower() != 'modified strong collision':
