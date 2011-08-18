@@ -371,17 +371,23 @@ class Arrhenius(KineticsModel):
         data.
         """
         import numpy.linalg
+        import scipy.stats
         A = numpy.zeros((len(Tlist),3), numpy.float64)
         A[:,0] = numpy.ones_like(Tlist)
         A[:,1] = numpy.log(Tlist / T0)
         A[:,2] = -1.0 / constants.R / Tlist
         b = numpy.log(klist)
-        x = numpy.linalg.lstsq(A,b)[0]
+        x, residues, rank, s = numpy.linalg.lstsq(A,b)
         
-        self.A = Quantity(math.exp(x[0]), kunits)
-        self.n = Quantity(x[1])
-        self.Ea = Quantity((x[2], "J/mol"))
-        self.T0 = Quantity((T0, "K"))
+        # Determine covarianace matrix to obtain parameter uncertainties
+        count = klist.size
+        cov = residues[0] / (count - 3) * numpy.linalg.inv(numpy.dot(A.T, A))
+        t = scipy.stats.t.ppf(0.975, count - 3)
+            
+        self.A = Quantity(math.exp(x[0]), kunits, '*|/', t * math.exp(math.sqrt(cov[0,0])))
+        self.n = Quantity(x[1], '', '+|-', t * math.sqrt(cov[1,1]))
+        self.Ea = Quantity(x[2], "J/mol", '+|-', t * math.sqrt(cov[2,2]))
+        self.T0 = Quantity(T0, "K")
         return self
     
 ################################################################################
