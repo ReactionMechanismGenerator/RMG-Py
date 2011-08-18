@@ -196,6 +196,25 @@ class Species:
             raise ValueError('Unexpected value "{0!r}" for other parameter; should be a Molecule or Species object.'.format(other))
         return False
     
+    def fromAdjacencyList(self, adjlist):
+        """
+        Load the structure of a species as a :class:`Molecule` object from the
+        given adjacency list `adjlist` and store it as the first entry of a 
+        list in the `molecule` attribute. Does not generate resonance isomers
+        of the loaded molecule.
+        """
+        self.molecule = [Molecule().fromAdjacencyList(adjlist)]
+        # If the first line is a label, then save it to the label attribute
+        for label in adjlist.splitlines():
+            if label.strip():
+                break
+        else:
+            label = ''
+        if len(label.split()) > 0 and not label.split()[0].isdigit():
+            self.label = label
+        # Return a reference to itself so we can use e.g. Species().fromAdjacencyList()
+        return self
+    
     def toAdjacencyList(self):
         """
         Return a string containing each of the molecules' adjacency lists.
