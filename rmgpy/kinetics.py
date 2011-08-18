@@ -362,7 +362,7 @@ class Arrhenius(KineticsModel):
         self.A.value /= (self.T0.value / T0)**self.n.value
         self.T0.value = T0
 
-    def fitToData(self, Tlist, klist, kunits, T0=1):
+    def fitToData(self, Tlist, klist, kunits, T0=1, weights=None):
         """
         Fit the Arrhenius parameters to a set of rate coefficient data `klist`
         in units of `kunits` corresponding to a set of temperatures `Tlist` in 
@@ -377,6 +377,10 @@ class Arrhenius(KineticsModel):
         A[:,1] = numpy.log(Tlist / T0)
         A[:,2] = -1.0 / constants.R / Tlist
         b = numpy.log(klist)
+        if weights is not None:
+            for n in range(b.size):
+                A[n,:] *= weights[n]
+                b[n] *= weights[n]
         x, residues, rank, s = numpy.linalg.lstsq(A,b)
         
         # Determine covarianace matrix to obtain parameter uncertainties
