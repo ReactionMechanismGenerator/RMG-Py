@@ -353,103 +353,28 @@ def saveEntry(f, entry):
     else:
         raise DatabaseError("Encountered unexpected item of type {0} while saving database.".format(entry.item.__class__))
 
-    if isinstance(entry.data, Arrhenius):
-        f.write('    kinetics = Arrhenius(\n')
-        f.write('        A = {0!r},\n'.format(entry.data.A))
-        f.write('        n = {0!r},\n'.format(entry.data.n))
-        f.write('        Ea = {0!r},\n'.format(entry.data.Ea))
-        f.write('        T0 = {0!r},\n'.format(entry.data.T0))
-        if entry.data.Tmin is not None: f.write('        Tmin = {0!r},\n'.format(entry.data.Tmin))
-        if entry.data.Tmax is not None: f.write('        Tmax = {0!r},\n'.format(entry.data.Tmax))
-        f.write('    ),\n')
-    elif isinstance(entry.data, ArrheniusEP):
-        f.write('    kinetics = ArrheniusEP(\n')
-        f.write('        A = {0!r},\n'.format(entry.data.A))
-        f.write('        n = {0!r},\n'.format(entry.data.n))
-        f.write('        alpha = {0!r},\n'.format (entry.data.alpha))
-        f.write('        E0 = {0!r},\n'.format(entry.data.E0))
-        if entry.data.Tmin is not None: f.write('        Tmin = {0!r},\n'.format(entry.data.Tmin))
-        if entry.data.Tmax is not None: f.write('        Tmax = {0!r},\n'.format(entry.data.Tmax))
-        f.write('    ),\n')
-    elif isinstance(entry.data, MultiKinetics):
-        f.write('    kinetics = MultiKinetics(\n')
-        f.write('        kineticsList = [')
-        for kin in entry.data.kineticsList:
-            for line in repr(kin).split('\n'):
-                f.write('\n            '+line)
-            if kin is entry.data.kineticsList[-1]:
-                f.write('\n')
-            else:
-                f.write(',')
-        f.write('        ],\n')
-        if entry.data.Tmin is not None: f.write('        Tmin = {0!r},\n'.format(entry.data.Tmin))
-        if entry.data.Tmax is not None: f.write('        Tmax = {0!r},\n'.format(entry.data.Tmax))
-        if entry.data.Pmin is not None: f.write('        Pmin = {0!r},\n'.format(entry.data.Pmin))
-        if entry.data.Pmax is not None: f.write('        Pmax = {0!r},\n'.format(entry.data.Pmax))
-        f.write('    ),\n')
-    elif isinstance(entry.data, PDepArrhenius):
-        # Why is all this here AND in rmgpy.kinetics.PDepArrhenius.__repr__ ?
-        f.write('    kinetics = PDepArrhenius(\n')
-        f.write('        pressures = {0!r},\n'.format(entry.data.pressures))
-        f.write('        arrhenius = [\n')
-        for arrh in entry.data.arrhenius:
-            f.write('            {0!r},\n'.format(arrh))
-        f.write('        ],\n')
-        if entry.data.highPlimit is not None: f.write('        highPlimit = {0!r},\n'.format(entry.data.highPlimit))
-        if entry.data.Tmin is not None: f.write('        Tmin = {0!r},\n'.format(entry.data.Tmin))
-        if entry.data.Tmax is not None: f.write('        Tmax = {0!r},\n'.format(entry.data.Tmax))
-        if entry.data.Pmin is not None: f.write('        Pmin = {0!r},\n'.format(entry.data.Pmin))
-        if entry.data.Pmax is not None: f.write('        Pmax = {0!r},\n'.format(entry.data.Pmax))
-        f.write('    ),\n')
-    elif isinstance(entry.data, Troe):
-        f.write('    kinetics = Troe(\n')
-        f.write('        arrheniusHigh = {0!r},\n'.format(entry.data.arrheniusHigh))
-        f.write('        arrheniusLow = {0!r},\n'.format(entry.data.arrheniusLow))
-        f.write('        efficiencies = {{{0}}},\n'.format(', '.join(['"{0}": {1:g}'.format(label, eff) for label, eff in sortEfficiencies(entry.data.efficiencies)])))
-        f.write('        alpha = {0!r},\n'.format(entry.data.alpha))
-        f.write('        T3 = {0!r},\n'.format(entry.data.T3))
-        f.write('        T1 = {0!r},\n'.format(entry.data.T1))
-        if entry.data.T2 is not None: f.write('        T2 = {0!r},\n'.format(entry.data.T2))
-        if entry.data.Tmin is not None: f.write('        Tmin = {0!r},\n'.format(entry.data.Tmin))
-        if entry.data.Tmax is not None: f.write('        Tmax = {0!r},\n'.format(entry.data.Tmax))
-        if entry.data.Pmin is not None: f.write('        Pmin = {0!r},\n'.format(entry.data.Pmin))
-        if entry.data.Pmax is not None: f.write('        Pmax = {0!r},\n'.format(entry.data.Pmax))
-        f.write('    ),\n')
-    elif isinstance(entry.data, Lindemann):
-        f.write('    kinetics = Lindemann(\n')
-        f.write('        arrheniusHigh = {0!r},\n'.format(entry.data.arrheniusHigh))
-        f.write('        arrheniusLow = {0!r},\n'.format(entry.data.arrheniusLow))
-        f.write('        efficiencies = {{{0}}},\n'.format(', '.join(['"{0}": {1:g}'.format(label, eff) for label, eff in sortEfficiencies(entry.data.efficiencies)])))
-        if entry.data.Tmin is not None: f.write('        Tmin = {0!r},\n'.format(entry.data.Tmin))
-        if entry.data.Tmax is not None: f.write('        Tmax = {0!r},\n'.format(entry.data.Tmax))
-        if entry.data.Pmin is not None: f.write('        Pmin = {0!r},\n'.format(entry.data.Pmin))
-        if entry.data.Pmax is not None: f.write('        Pmax = {0!r},\n'.format(entry.data.Pmax))
-        f.write('    ),\n')
-    elif isinstance(entry.data, ThirdBody):
-        f.write('    kinetics = ThirdBody(\n')
-        f.write('        arrheniusHigh = {0!r},\n'.format(entry.data.arrheniusHigh))
-        f.write('        efficiencies = {{{0}}},\n'.format(', '.join(['"{0}": {1:g}'.format(label, eff) for label, eff in sortEfficiencies(entry.data.efficiencies)])))
-        if entry.data.Tmin is not None: f.write('        Tmin = {0!r},\n'.format(entry.data.Tmin))
-        if entry.data.Tmax is not None: f.write('        Tmax = {0!r},\n'.format(entry.data.Tmax))
-        if entry.data.Pmin is not None: f.write('        Pmin = {0!r},\n'.format(entry.data.Pmin))
-        if entry.data.Pmax is not None: f.write('        Pmax = {0!r},\n'.format(entry.data.Pmax))
-        f.write('    ),\n')
-    elif isinstance(entry.data, Chebyshev):
-        f.write('    kinetics = Chebyshev(\n')
-        f.write('        coeffs = [\n')
-        for i in range(entry.data.degreeT):
-            f.write('            [{0}],\n'.format(','.join(['{0:g}'.format(self.coeffs[i,j]) for j in range(self.degreeP)])))
-        f.write('        ],\n')
-        f.write('        kunits = {0},\n'.format(entry.data.kunits))
-        if entry.data.Tmin is not None: f.write('        Tmin = {0!r},\n'.format(entry.data.Tmin))
-        if entry.data.Tmax is not None: f.write('        Tmax = {0!r},\n'.format(entry.data.Tmax))
-        if entry.data.Pmin is not None: f.write('        Pmin = {0!r},\n'.format(entry.data.Pmin))
-        if entry.data.Pmax is not None: f.write('        Pmax = {0!r},\n'.format(entry.data.Pmax))
-        f.write('    ),\n')
+    # Write kinetics
+    if entry.data is not None:
+        kinetics = entry.data.toPrettyRepr()
+        lines = kinetics.splitlines()
+        f.write('    kinetics = {0}\n'.format(lines[0]))
+        for line in lines[1:-1]:
+            f.write('    {0}\n'.format(line))
+        f.write('    ),\n'.format(lines[0]))
     else:
-        f.write('    kinetics = {0!r},\n'.format(entry.data))
-
-    f.write('    reference = {0!r},\n'.format(entry.reference))
+        f.write('    kinetics = None,\n')
+            
+    # Write reference
+    if entry.reference is not None:
+        reference = entry.reference.toPrettyRepr()
+        lines = reference.splitlines()
+        f.write('    reference = {0}\n'.format(lines[0]))
+        for line in lines[1:-1]:
+            f.write('    {0}\n'.format(line))
+        f.write('    ),\n'.format(lines[0]))
+    else:
+        f.write('    kinetics = None,\n')
+    
     f.write('    referenceType = "{0}",\n'.format(entry.referenceType))
     if entry.rank is not None:
         f.write('    rank = {0},\n'.format(entry.rank))
@@ -1750,6 +1675,7 @@ class KineticsFamily(Database):
         if depositoryLabels is None:
             # load all the remaining depositories, in order returned by os.walk
             for root, dirs, files in os.walk(path):
+                if 'training' in root: continue
                 for f in files:
                     if not f.endswith('.py'): continue
                     name = f.strip('.py')
