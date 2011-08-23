@@ -59,6 +59,8 @@ cdef class Arrhenius(KineticsModel):
     
     cdef public Quantity A, T0, Ea, n
     
+    cpdef toPrettyRepr(self)
+
     cpdef bint isPressureDependent(self)
 
     cpdef double getRateCoefficient(self, double T, double P=?)
@@ -72,6 +74,8 @@ cdef class Arrhenius(KineticsModel):
 cdef class KineticsData(KineticsModel):
 
     cdef public Quantity Tdata, kdata
+
+    cpdef toPrettyRepr(self)
 
     cpdef bint isPressureDependent(self)
 
@@ -99,6 +103,8 @@ cdef class MultiKinetics(KineticsModel):
 
     cdef public list kineticsList
 
+    cpdef toPrettyRepr(self)
+
     cpdef bint isPressureDependent(self)
 
     cpdef double getRateCoefficient(self, double T, double P=?)
@@ -111,6 +117,8 @@ cdef class PDepArrhenius(KineticsModel):
     cdef public list arrhenius
     cdef public Arrhenius highPlimit
     
+    cpdef toPrettyRepr(self)
+
     cpdef bint isPressureDependent(self)
 
     cpdef tuple __getAdjacentExpressions(self, double P)
@@ -127,6 +135,8 @@ cdef class Chebyshev(KineticsModel):
     cdef public str kunits
     cdef public int degreeT, degreeP
     
+    cpdef toPrettyRepr(self)
+
     cpdef bint isPressureDependent(self)
 
     cpdef double __chebyshev(self, double n, double x)
@@ -147,6 +157,8 @@ cdef class ThirdBody(KineticsModel):
     cdef public Arrhenius arrheniusHigh
     cdef public dict efficiencies
     
+    cpdef toPrettyRepr(self)
+
     cpdef bint isPressureDependent(self)
 
     cpdef getColliderEfficiency(self, collider)
@@ -159,6 +171,8 @@ cdef class Lindemann(ThirdBody):
 
     cdef public Arrhenius arrheniusLow
     
+    cpdef toPrettyRepr(self)
+
     cpdef bint isPressureDependent(self)
 
     cpdef double getRateCoefficient(self, double T, double P, collider=?)
@@ -169,6 +183,8 @@ cdef class Troe(Lindemann):
 
     cdef public Quantity alpha, T1, T2, T3
     
+    cpdef toPrettyRepr(self)
+
     cpdef bint isPressureDependent(self)
 
     cpdef double getRateCoefficient(self, double T, double P, collider=?)

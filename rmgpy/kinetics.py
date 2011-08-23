@@ -65,6 +65,7 @@ import math
 import numpy
 import numpy.linalg
 import cython
+import re
 
 from quantity import Quantity, constants
 from molecule import Molecule
@@ -122,8 +123,20 @@ class KineticsModel:
         Return a string representation that can be used to reconstruct the
         KineticsModel object.
         """
-        return 'KineticsModel(Tmin={0!r}, Tmax={1!r}, Pmin={2!r}, Pmax={3!r}, comment="""{4}""")'.format(self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.comment)
+        string = self.toPrettyRepr()
+        string = re.sub(r'\(\n    ', '(', string)
+        string = re.sub(r',\n    ', ', ', string)
+        string = re.sub(r',\n\)', ')', string)
+        string = re.sub(r' = ', '=', string)
+        return string
 
+    def toPrettyRepr(self):
+        """
+        Return a string representation that can be used to reconstruct the
+        KineticsModel object.
+        """
+        raise NotImplementedError('You must implement this method in your derived class.')
+    
     def __reduce__(self):
         """
         A helper function used when pickling a KineticsModel object.
@@ -218,18 +231,19 @@ class KineticsData(KineticsModel):
         self.Tdata = Quantity(Tdata)
         self.kdata = Quantity(kdata)
 
-    def __repr__(self):
+    def toPrettyRepr(self):
         """
-        Return a string representation that can be used to reconstruct the
-        KineticsData object.
+        Return a string representation of the reference that can be used to
+        reconstruct the object.
         """
-        string = 'KineticsData(Tdata={0!r}, kdata={1!r}'.format(self.Tdata, self.kdata)
-        if self.Tmin is not None: string += ', Tmin={0!r}'.format(self.Tmin)
-        if self.Tmax is not None: string += ', Tmax={0!r}'.format(self.Tmax)
-        if self.comment != '': string += ', comment="""{0}"""'.format(self.comment)
-        string += ')'
-        return string
-
+        string = u'KineticsData(\n'
+        string += u'    Tdata = {0!r},\n'.format(self.Tdata)
+        string += u'    kdata = {0!r},\n'.format(self.kdata)
+        if self.Tmin is not None: string += '    Tmin = {0!r},\n'.format(self.Tmin)
+        if self.Tmax is not None: string += '    Tmax = {0!r},\n'.format(self.Tmax)
+        if self.comment != '': string += '    comment = """{0}""",\n'.format(self.comment)
+        return string + u')'
+    
     def __reduce__(self):
         """
         A helper function used when pickling a KineticsData object.
@@ -316,17 +330,20 @@ class Arrhenius(KineticsModel):
         self.n = Quantity(n)
         self.Ea = Quantity(Ea)
     
-    def __repr__(self):
+    def toPrettyRepr(self):
         """
-        Return a string representation that can be used to reconstruct the
-        Arrhenius object.
+        Return a string representation of the reference that can be used to
+        reconstruct the object.
         """
-        string = 'Arrhenius(A={0!r}, n={1!r}, Ea={2!r}, T0={3!r}'.format(self.A, self.n, self.Ea, self.T0)
-        if self.Tmin is not None: string += ', Tmin={0!r}'.format(self.Tmin)
-        if self.Tmax is not None: string += ', Tmax={0!r}'.format(self.Tmax)
-        if self.comment != '': string += ', comment="""{0}"""'.format(self.comment)
-        string += ')'
-        return string
+        string = u'Arrhenius(\n'
+        string += u'    A = {0!r},\n'.format(self.A)
+        string += u'    n = {0!r},\n'.format(self.n)
+        string += u'    Ea = {0!r},\n'.format(self.Ea)
+        string += u'    T0 = {0!r},\n'.format(self.T0)
+        if self.Tmin is not None: string += '    Tmin = {0!r},\n'.format(self.Tmin)
+        if self.Tmax is not None: string += '    Tmax = {0!r},\n'.format(self.Tmax)
+        if self.comment != '': string += '    comment = """{0}""",\n'.format(self.comment)
+        return string + u')'
     
     def __str__(self):
         """
@@ -423,17 +440,20 @@ class ArrheniusEP(KineticsModel):
         self.alpha = Quantity(alpha)
         self.E0 = Quantity(E0)
 
-    def __repr__(self):
+    def toPrettyRepr(self):
         """
-        Return a string representation that can be used to reconstruct the
-        ArrheniusEP object.
+        Return a string representation of the reference that can be used to
+        reconstruct the object.
         """
-        string = 'ArrheniusEP(A={0!r}, n={1!r}, alpha={2!r}, E0={3!r}'.format(self.A, self.n, self.alpha, self.E0)
-        if self.Tmin is not None: string += ', Tmin={0!r}'.format(self.Tmin)
-        if self.Tmax is not None: string += ', Tmax={0!r}'.format(self.Tmax)
-        if self.comment != '': string += ', comment="""{0}"""'.format(self.comment)
-        string += ')'
-        return string
+        string = u'ArrheniusEP(\n'
+        string += u'    A = {0!r},\n'.format(self.A)
+        string += u'    n = {0!r},\n'.format(self.n)
+        string += u'    alpha = {0!r},\n'.format(self.alpha)
+        string += u'    E0 = {0!r},\n'.format(self.E0)
+        if self.Tmin is not None: string += '    Tmin = {0!r},\n'.format(self.Tmin)
+        if self.Tmax is not None: string += '    Tmax = {0!r},\n'.format(self.Tmax)
+        if self.comment != '': string += '    comment = """{0}""",\n'.format(self.comment)
+        return string + u')'
 
     def __reduce__(self):
         """
@@ -494,19 +514,24 @@ class MultiKinetics(KineticsModel):
         KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, comment=comment)
         self.kineticsList = kineticsList or []
 
-    def __repr__(self):
+    def toPrettyRepr(self):
         """
-        Return a string representation that can be used to reconstruct the
-        MultiKinetics object.
+        Return a string representation of the reference that can be used to
+        reconstruct the object.
         """
-        string = 'MultiKinetics(kineticsList=[{0}]'.format(', '.join([repr(k) for k in self.kineticsList]))
-        if self.Tmin is not None: string += ', Tmin={0!r}'.format(self.Tmin)
-        if self.Tmax is not None: string += ', Tmax={0!r}'.format(self.Tmax)
-        if self.Pmin is not None: string += ', Pmin={0!r}'.format(self.Pmin)
-        if self.Pmax is not None: string += ', Pmax={0!r}'.format(self.Pmax)
-        if self.comment != '': string += ', comment="""{0}"""'.format(self.comment)
-        string += ')'
-        return string
+        string = u'MultiKinetics(\n'
+        string += u'    kineticsList = [\n'
+        for kinetics in self.kineticsList:
+            for line in kinetics.toPrettyRepr().splitlines()[:-1]:
+                string += u'    {0}\n'.format(line)
+            string += u'    ),\n'
+        string += u'    ],\n'
+        if self.Tmin is not None: string += '    Tmin = {0!r},\n'.format(self.Tmin)
+        if self.Tmax is not None: string += '    Tmax = {0!r},\n'.format(self.Tmax)
+        if self.Pmin is not None: string += '    Pmin = {0!r},\n'.format(self.Pmin)
+        if self.Pmax is not None: string += '    Pmax = {0!r},\n'.format(self.Pmax)
+        if self.comment != '': string += '    comment = """{0}""",\n'.format(self.comment)
+        return string + u')'
 
     def __reduce__(self):
         """
@@ -560,6 +585,25 @@ class PDepArrhenius(KineticsModel):
         self.pressures = Quantity(pressures)
         self.arrhenius = arrhenius or []
         self.highPlimit = highPlimit or None
+
+    def toPrettyRepr(self):
+        """
+        Return a string representation of the reference that can be used to
+        reconstruct the object.
+        """
+        string = u'MultiKinetics(\n'
+        string += u'    pressures = {0!r},\n'.format(self.pressures)
+        string += u'    arrhenius = [\n'
+        for kinetics in self.arrhenius:
+            for line in kinetics.toPrettyRepr().splitlines():
+                string += u'    {0}\n'.format(line)
+        string += u'    ],\n'
+        if self.Tmin is not None: string += '    Tmin = {0!r},\n'.format(self.Tmin)
+        if self.Tmax is not None: string += '    Tmax = {0!r},\n'.format(self.Tmax)
+        if self.Pmin is not None: string += '    Pmin = {0!r},\n'.format(self.Pmin)
+        if self.Pmax is not None: string += '    Pmax = {0!r},\n'.format(self.Pmax)
+        if self.comment != '': string += '    comment = """{0}""",\n'.format(self.comment)
+        return string + u')'
 
     def __repr__(self):
         """
@@ -698,6 +742,23 @@ class Chebyshev(KineticsModel):
             self.degreeP = 0
         self.kunits = kunits
         
+    def toPrettyRepr(self):
+        """
+        Return a string representation of the reference that can be used to
+        reconstruct the object.
+        """
+        string = u'Chebyshev(\n'
+        string += u'    coeffs = [\n'
+        for i in range(self.degreeT):
+            string += u'        [{0}]'.format(','.join(['{0:g}'.format(self.coeffs[i,j]) for j in range(self.degreeP)]))
+        string += u'    ],\n'
+        if self.Tmin is not None: string += '    Tmin = {0!r},\n'.format(self.Tmin)
+        if self.Tmax is not None: string += '    Tmax = {0!r},\n'.format(self.Tmax)
+        if self.Pmin is not None: string += '    Pmin = {0!r},\n'.format(self.Pmin)
+        if self.Pmax is not None: string += '    Pmax = {0!r},\n'.format(self.Pmax)
+        if self.comment != '': string += '    comment = """{0}""",\n'.format(self.comment)
+        return string + u')'
+
     def __repr__(self):
         """
         Return a string representation that can be used to reconstruct the
@@ -879,22 +940,33 @@ class ThirdBody(KineticsModel):
                 else:
                     self.efficiencies[Molecule().fromSMILES(mol)] = eff
 
-    def __repr__(self):
+    def toPrettyRepr(self):
         """
-        Return a string representation that can be used to reconstruct the
-        ThirdBody object.
+        Return a string representation of the reference that can be used to
+        reconstruct the object.
         """
-        string = 'ThirdBody(arrheniusHigh={0!r}'.format(self.arrheniusHigh)
-        molecules = [(molecule.toSMILES(), molecule) for molecule in self.efficiencies]
-        molecules.sort()
-        string += ', efficiencies={{{0}}}'.format(', '.join(['"{0}": {1:g}'.format(smiles, self.efficiencies[molecule]) for smiles, molecule in molecules]))
-        if self.Tmin is not None: string += ', Tmin={0!r}'.format(self.Tmin)
-        if self.Tmax is not None: string += ', Tmax={0!r}'.format(self.Tmax)
-        if self.Pmin is not None: string += ', Pmin={0!r}'.format(self.Pmin)
-        if self.Pmax is not None: string += ', Pmax={0!r}'.format(self.Pmax)
-        if self.comment != '': string += ', comment="""{0}"""'.format(self.comment)
-        string += ')'
-        return string
+        string = u'ThirdBody(\n'
+        
+        lines = self.arrheniusHigh.toPrettyRepr().splitlines()
+        string += u'    arrheniusHigh = {0}\n'.format(lines[0])
+        for line in lines[1:-1]:
+            string += u'    {0}\n'.format(line)
+        string += u'    ),\n'
+        
+        if len(self.efficiencies) > 0:
+            molecules = [(molecule.toSMILES(), molecule) for molecule in self.efficiencies]
+            molecules.sort()
+            string += u'    efficiencies = {\n'
+            for smiles, molecule in molecules:
+                string += u'        "{0}": {1:g},\n'.format(smiles, self.efficiencies[molecule])
+            string += u'    },\n'
+        
+        if self.Tmin is not None: string += '    Tmin = {0!r},\n'.format(self.Tmin)
+        if self.Tmax is not None: string += '    Tmax = {0!r},\n'.format(self.Tmax)
+        if self.Pmin is not None: string += '    Pmin = {0!r},\n'.format(self.Pmin)
+        if self.Pmax is not None: string += '    Pmax = {0!r},\n'.format(self.Pmax)
+        if self.comment != '': string += '    comment = """{0}""",\n'.format(self.comment)
+        return string + u')'
 
     def __reduce__(self):
         """
@@ -1000,22 +1072,39 @@ class Lindemann(ThirdBody):
         ThirdBody.__init__(self, arrheniusHigh=arrheniusHigh, efficiencies=efficiencies, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, comment=comment)
         self.arrheniusLow = arrheniusLow
 
-    def __repr__(self):
+    def toPrettyRepr(self):
         """
-        Return a string representation that can be used to reconstruct the
-        Lindemann object.
+        Return a string representation of the reference that can be used to
+        reconstruct the object.
         """
-        string = 'Lindemann(arrheniusHigh={0!r}, arrheniusLow={1!r}'.format(self.arrheniusHigh, self.arrheniusLow)
-        molecules = [(molecule.toSMILES(), molecule) for molecule in self.efficiencies]
-        molecules.sort()
-        string += ', efficiencies={{{0}}}'.format(', '.join(['"{0}": {1:g}'.format(smiles, self.efficiencies[molecule]) for smiles, molecule in molecules]))
-        if self.Tmin is not None: string += ', Tmin={0!r}'.format(self.Tmin)
-        if self.Tmax is not None: string += ', Tmax={0!r}'.format(self.Tmax)
-        if self.Pmin is not None: string += ', Pmin={0!r}'.format(self.Pmin)
-        if self.Pmax is not None: string += ', Pmax={0!r}'.format(self.Pmax)
-        if self.comment != '': string += ', comment="""{0}"""'.format(self.comment)
-        string += ')'
-        return string
+        string = u'Lindemann(\n'
+        
+        lines = self.arrheniusHigh.toPrettyRepr().splitlines()
+        string += u'    arrheniusHigh = {0}\n'.format(lines[0])
+        for line in lines[1:-1]:
+            string += u'    {0}\n'.format(line)
+        string += u'    ),\n'
+        
+        lines = self.arrheniusLow.toPrettyRepr().splitlines()
+        string += u'    arrheniusLow = {0}\n'.format(lines[0])
+        for line in lines[1:-1]:
+            string += u'    {0}\n'.format(line)
+        string += u'    ),\n'
+        
+        if len(self.efficiencies) > 0:
+            molecules = [(molecule.toSMILES(), molecule) for molecule in self.efficiencies]
+            molecules.sort()
+            string += u'    efficiencies = {\n'
+            for smiles, molecule in molecules:
+                string += u'        "{0}": {1:g},\n'.format(smiles, self.efficiencies[molecule])
+            string += u'    },\n'
+        
+        if self.Tmin is not None: string += '    Tmin = {0!r},\n'.format(self.Tmin)
+        if self.Tmax is not None: string += '    Tmax = {0!r},\n'.format(self.Tmax)
+        if self.Pmin is not None: string += '    Pmin = {0!r},\n'.format(self.Pmin)
+        if self.Pmax is not None: string += '    Pmax = {0!r},\n'.format(self.Pmax)
+        if self.comment != '': string += '    comment = """{0}""",\n'.format(self.comment)
+        return string + u')'
 
     def __reduce__(self):
         """
@@ -1106,24 +1195,44 @@ class Troe(Lindemann):
         else:
             self.T2 = None
         
-    def __repr__(self):
+    def toPrettyRepr(self):
         """
-        Return a string representation that can be used to reconstruct the
-        Troe object.
+        Return a string representation of the reference that can be used to
+        reconstruct the object.
         """
-        string = 'Troe(arrheniusHigh={0!r}, arrheniusLow={1!r}'.format(self.arrheniusHigh, self.arrheniusLow)
-        string += ', alpha={0!r}, T3={1!r}, T1={2!r}'.format(self.alpha, self.T3, self.T1)
-        if self.T2 is not None: string += ', T2={0!r}'.format(self.T2)
-        molecules = [(molecule.toSMILES(), molecule) for molecule in self.efficiencies]
-        molecules.sort()
-        string += ', efficiencies={{{0}}}'.format(', '.join(['"{0}": {1:g}'.format(smiles, self.efficiencies[molecule]) for smiles, molecule in molecules]))
-        if self.Tmin is not None: string += ', Tmin={0!r}'.format(self.Tmin)
-        if self.Tmax is not None: string += ', Tmax={0!r}'.format(self.Tmax)
-        if self.Pmin is not None: string += ', Pmin={0!r}'.format(self.Pmin)
-        if self.Pmax is not None: string += ', Pmax={0!r}'.format(self.Pmax)
-        if self.comment != '': string += ', comment="""{0}"""'.format(self.comment)
-        string += ')'
-        return string
+        string = u'Troe(\n'
+        
+        lines = self.arrheniusHigh.toPrettyRepr().splitlines()
+        string += u'    arrheniusHigh = {0}\n'.format(lines[0])
+        for line in lines[1:-1]:
+            string += u'    {0}\n'.format(line)
+        string += u'    ),\n'
+        
+        lines = self.arrheniusLow.toPrettyRepr().splitlines()
+        string += u'    arrheniusLow = {0}\n'.format(lines[0])
+        for line in lines[1:-1]:
+            string += u'    {0}\n'.format(line)
+        string += u'    ),\n'
+        
+        string += u'    alpha = {0!r},\n'.format(self.alpha)
+        string += u'    T3 = {0!r},\n'.format(self.T3)
+        string += u'    T1 = {0!r},\n'.format(self.T1)
+        if self.T2 is not None: string += u'    T2 = {0!r},\n'.format(self.T2)
+
+        if len(self.efficiencies) > 0:
+            molecules = [(molecule.toSMILES(), molecule) for molecule in self.efficiencies]
+            molecules.sort()
+            string += u'    efficiencies = {\n'
+            for smiles, molecule in molecules:
+                string += u'        "{0}": {1:g},\n'.format(smiles, self.efficiencies[molecule])
+            string += u'    },\n'
+        
+        if self.Tmin is not None: string += '    Tmin = {0!r},\n'.format(self.Tmin)
+        if self.Tmax is not None: string += '    Tmax = {0!r},\n'.format(self.Tmax)
+        if self.Pmin is not None: string += '    Pmin = {0!r},\n'.format(self.Pmin)
+        if self.Pmax is not None: string += '    Pmax = {0!r},\n'.format(self.Pmax)
+        if self.comment != '': string += '    comment = """{0}""",\n'.format(self.comment)
+        return string + u')'
 
     def __reduce__(self):
         """
