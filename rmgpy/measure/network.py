@@ -40,6 +40,7 @@ import logging
 import os.path
 
 from rmgpy.quantity import constants
+from rmgpy.reaction import Reaction
 import rmgpy.statmech as states
 
 from reaction import *
