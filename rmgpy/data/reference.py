@@ -42,6 +42,8 @@ The above are all derived from the base :class:`Reference` class, which can
 also be used if the reference does not fit into any of the above categories.
 """
 
+import re
+
 ################################################################################
 
 class Reference:
@@ -72,14 +74,12 @@ class Reference:
         Return a string representation of the reference that can be used to
         reconstruct the object.
         """
-        string = u'Reference('
-        if len(self.authors) != 0: string += u'authors=[{0}], '.format(', '.join(['"{0}"'.format(author) for author in self.authors]))
-        if self.title != '':       string += u'title={0!r}, '.format(self.title)
-        if self.year != '':        string += u'year="{0}", '.format(self.year)
-        if self.doi != '':         string += u'doi="{0}", '.format(self.doi)
-        if self.url != '':         string += u'url="{0}", '.format(self.url)
-        if string[-2:] == u', ':   string = string[:-2]
-        return string + u')'
+        string = self.toPrettyRepr()
+        string = re.sub(r'\(\n    ', '(', string)
+        string = re.sub(r',\n    ', ', ', string)
+        string = re.sub(r',\n\)', ')', string)
+        string = re.sub(r' = ', '=', string)
+        return string
 
     def __str__(self):
         """
@@ -93,6 +93,19 @@ class Reference:
             string += u' ({0})'.format(self.year)
         if string and string[-1] != '.': string += '.'
         return string
+
+    def toPrettyRepr(self):
+        """
+        Return a string representation of the reference that can be used to
+        reconstruct the object.
+        """
+        string = u'Reference(\n'
+        if len(self.authors) != 0: string += u'    authors = [{0}],\n'.format(', '.join(['"{0}"'.format(author) for author in self.authors]))
+        if self.title != '':       string += u'    title = {0!r},\n'.format(self.title)
+        if self.year != '':        string += u'    year = "{0}",\n'.format(self.year)
+        if self.doi != '':         string += u'    doi = "{0}",\n'.format(self.doi)
+        if self.url != '':         string += u'    url = "{0}",\n'.format(self.url)
+        return string + u')'
 
     def getAuthorString(self):
         """
@@ -148,24 +161,6 @@ class Article(Reference):
         self.number = number
         self.pages = pages
 
-    def __repr__(self):
-        """
-        Return a string representation of the reference that can be used to
-        reconstruct the object.
-        """
-        string = u'Article('
-        if len(self.authors) != 0: string += u'authors=[{0}], '.format(', '.join(['"{0}"'.format(author) for author in self.authors]))
-        if self.title != '':       string += u'title={0!r}, '.format(self.title)
-        if self.journal != '':     string += u'journal="{0}", '.format(self.journal)
-        if self.volume != '':      string += u'volume="{0}", '.format(self.volume)
-        if self.number != '':      string += u'number="{0}", '.format(self.number)
-        if self.pages != '':       string += u'pages="""{0}""", '.format(self.pages)
-        if self.year != '':        string += u'year="{0}", '.format(self.year)
-        if self.doi != '':         string += u'doi="{0}", '.format(self.doi)
-        if self.url != '':         string += u'url="{0}", '.format(self.url)
-        if string[-2:] == u', ':   string = string[:-2]
-        return string + u')'
-
     def __str__(self):
         """
         Return a string representation of the reference in reStructuredText
@@ -186,6 +181,23 @@ class Article(Reference):
             string += u' ({0})'.format(self.year)
         if string and string[-1] != '.': string += u'.'
         return string
+    
+    def toPrettyRepr(self):
+        """
+        Return a string representation of the reference that can be used to
+        reconstruct the object.
+        """
+        string = u'Article(\n'
+        if len(self.authors) != 0: string += u'    authors = [{0}],\n'.format(', '.join(['"{0}"'.format(author) for author in self.authors]))
+        if self.title != '':       string += u'    title = {0!r},\n'.format(self.title)
+        if self.journal != '':     string += u'    journal = "{0}",\n'.format(self.journal)
+        if self.volume != '':      string += u'    volume = "{0}",\n'.format(self.volume)
+        if self.number != '':      string += u'    number = "{0}",\n'.format(self.number)
+        if self.pages != '':       string += u'    pages = """{0}""",\n'.format(self.pages)
+        if self.year != '':        string += u'    year = "{0}",\n'.format(self.year)
+        if self.doi != '':         string += u'    doi = "{0}",\n'.format(self.doi)
+        if self.url != '':         string += u'    url = "{0}",\n'.format(self.url)
+        return string + u')'
 
 ################################################################################
 
@@ -218,25 +230,6 @@ class Book(Reference):
         self.series = series
         self.edition = edition
 
-    def __repr__(self):
-        """
-        Return a string representation of the reference that can be used to
-        reconstruct the object.
-        """
-        string = u'Book('
-        if len(self.authors) != 0: string += u'authors=[{0}], '.format(', '.join(['"{0}"'.format(author) for author in self.authors]))
-        if self.title != '':       string += u'title={0!r}, '.format(self.title)
-        if self.publisher != '':   string += u'publisher="{0}", '.format(self.publisher)
-        if self.address != '':     string += u'address="{0}", '.format(self.address)
-        if self.volume != '':      string += u'volume="{0}", '.format(self.volume)
-        if self.series != '':      string += u'series="""{0}""", '.format(self.series)
-        if self.edition != '':     string += u'edition="""{0}""", '.format(self.edition)
-        if self.year != '':        string += u'year="{0}", '.format(self.year)
-        if self.doi != '':         string += u'doi="{0}", '.format(self.doi)
-        if self.url != '':         string += u'url="{0}", '.format(self.url)
-        if string[-2:] == u', ':   string = string[:-2]
-        return string + u')'
-
     def __str__(self):
         """
         Return a string representation of the reference in reStructuredText
@@ -256,6 +249,24 @@ class Book(Reference):
         if self.year != '':
             string += u' ({0})'.format(self.year)
         return string + u'.'
+    
+    def toPrettyRepr(self):
+        """
+        Return a string representation of the reference that can be used to
+        reconstruct the object.
+        """
+        string = u'Book(\n'
+        if len(self.authors) != 0: string += u'    authors = [{0}],\n'.format(', '.join(['"{0}"'.format(author) for author in self.authors]))
+        if self.title != '':       string += u'    title = {0!r},\n'.format(self.title)
+        if self.publisher != '':   string += u'    publisher = "{0}",\n'.format(self.publisher)
+        if self.address != '':     string += u'    address = "{0}",\n'.format(self.address)
+        if self.volume != '':      string += u'    volume = "{0}",\n'.format(self.volume)
+        if self.series != '':      string += u'    series = """{0}""",\n'.format(self.series)
+        if self.edition != '':     string += u'    edition = """{0}""",\n'.format(self.edition)
+        if self.year != '':        string += u'    year = "{0}",\n'.format(self.year)
+        if self.doi != '':         string += u'    doi = "{0}",\n'.format(self.doi)
+        if self.url != '':         string += u'    url = "{0}",\n'.format(self.url)
+        return string + u')'
 
 ################################################################################
 
@@ -282,22 +293,6 @@ class Thesis(Reference):
         self.degree = degree
         self.school = school
 
-    def __repr__(self):
-        """
-        Return a string representation of the reference that can be used to
-        reconstruct the object.
-        """
-        string = u'Thesis('
-        if len(self.authors) != 0: string += u'authors=[{0}], '.format(', '.join(['"{0}"'.format(author) for author in self.authors]))
-        if self.title != '':       string += u'title={0!r}, '.format(self.title)
-        if self.degree != '':      string += u'degree="{0}", '.format(self.degree)
-        if self.school != '':      string += u'school="{0}", '.format(self.school)
-        if self.year != '':        string += u'year="{0}", '.format(self.year)
-        if self.doi != '':         string += u'doi="{0}", '.format(self.doi)
-        if self.url != '':         string += u'url="{0}", '.format(self.url)
-        if string[-2:] == u', ':   string = string[:-2]
-        return string + u')'
-
     def __str__(self):
         """
         Return a string representation of the reference in reStructuredText
@@ -314,5 +309,20 @@ class Thesis(Reference):
             string += u' ({0})'.format(self.year)
         if string and string[-1] != '.': string += u'.'
         return string
+    
+    def toPrettyRepr(self):
+        """
+        Return a string representation of the reference that can be used to
+        reconstruct the object.
+        """
+        string = u'Thesis(\n'
+        if len(self.authors) != 0: string += u'    authors = [{0}],\n'.format(', '.join(['"{0}"'.format(author) for author in self.authors]))
+        if self.title != '':       string += u'    title = {0!r},\n'.format(self.title)
+        if self.degree != '':      string += u'    degree = "{0}",\n'.format(self.degree)
+        if self.school != '':      string += u'    school = "{0}",\n'.format(self.school)
+        if self.year != '':        string += u'    year = "{0}",\n'.format(self.year)
+        if self.doi != '':         string += u'    doi = "{0}",\n'.format(self.doi)
+        if self.url != '':         string += u'    url = "{0}",\n'.format(self.url)
+        return string + u')'
 
 ################################################################################
