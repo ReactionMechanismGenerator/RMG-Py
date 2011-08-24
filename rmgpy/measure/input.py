@@ -86,8 +86,13 @@ def species(label='', E0=None, states=None, thermo=None, lennardJones=None, mole
     if spec.molecularWeight.value == 0.0 and spec.molecule is not None and len(spec.molecule) > 0:
         spec.molecularWeight = Quantity(spec.molecule[0].getMolecularWeight(),"kg/mol")
     
-def States(rotations=None, vibrations=None, torsions=None, frequencyScaleFactor=1.0, spinMultiplicity=1):
+def States(translation=None, rotations=None, vibrations=None, torsions=None, frequencyScaleFactor=1.0, spinMultiplicity=1):
     modes = []
+    if translation is not None:
+        if isinstance(translation, list) or isinstance(translation, tuple):
+            modes.extend(translation)
+        else:
+            modes.append(translation)
     if rotations is not None:
         if isinstance(rotations, list) or isinstance(rotations, tuple):
             modes.extend(rotations)
@@ -347,6 +352,7 @@ def readFile(path, measure0):
         'False': False,
         'species': species,
         'States': States,
+        'Translation': Translation,
         'RigidRotor': RigidRotor,
         'HarmonicOscillator': HarmonicOscillator,
         'HinderedRotor': HinderedRotor,
