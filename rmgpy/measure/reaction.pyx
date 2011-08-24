@@ -148,6 +148,23 @@ def calculateMicrocanonicalRateCoefficient(reaction,
     else:
         raise ReactionError('Unable to compute k(E) values for path reaction "{0}".'.format(rxn))
     
+    # If the reaction is endothermic and barrierless, it is possible that the
+    # forward k(E) will have a nonzero value at an energy where the product
+    # density of states is zero (but the reactant density of states is not),
+    # which violates detailed balance
+    # To fix, we set the forward k(E) to zero wherever this is true
+    # (This is correct within the accuracy of discretizing the energy grains)
+    if kf.any() and productStatesKnown:
+        for r in range(len(Elist)):
+            if reacDensStates[r] != 0 and prodDensStates[r] != 0:
+                break
+            kf[r] = 0
+    if kr.any() and reactantStatesKnown:
+        for r in range(len(Elist)):
+            if reacDensStates[r] != 0 and prodDensStates[r] != 0:
+                break
+            kr[r] = 0
+    
     # Get the reverse microcanonical rate coefficient if possible
     if (all([reactant.thermo is not None for reactant in reaction.reactants]) and 
         all([product.thermo is not None for product in reaction.products])):
