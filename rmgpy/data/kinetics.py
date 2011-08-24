@@ -2541,11 +2541,12 @@ class KineticsDatabase:
         self.families = {}
         logging.info('Loading kinetics families from {0}'.format(path))
         for (root, dirs, files) in os.walk(os.path.join(path)):
-            for d in dirs:
-                familyPath = os.path.join(root, d)
-                family = KineticsFamily(label=d)
-                family.load(familyPath, self.local_context, self.global_context, depositoryLabels=depositories)
-                self.families[d] = family
+            if root == path:
+                for d in dirs:
+                    familyPath = os.path.join(root, d)
+                    family = KineticsFamily(label=d)
+                    family.load(familyPath, self.local_context, self.global_context, depositoryLabels=depositories)
+                    self.families[d] = family
 
     def loadLibraries(self, path, libraries=None):
         """
