@@ -42,6 +42,7 @@ import os.path
 from rmgpy.quantity import constants
 from rmgpy.reaction import Reaction
 import rmgpy.statmech as states
+from rmgpy.reaction import Reaction
 
 from reaction import *
 from collision import *
@@ -248,7 +249,7 @@ class Network:
             E0[n+Nisom+Nreac] = sum([spec.E0.value for spec in self.products[n]])
         return E0
         
-    def calculateDensitiesOfStates(self, Elist, E0):
+    def calculateDensitiesOfStates(self, Elist):
         """
         Calculate and return an array containing the density of states for each
         isomer and reactant channel in the network. `Elist` represents the
@@ -268,60 +269,40 @@ class Network:
         # Densities of states for isomers
         for i in range(Nisom):
             logging.debug('Calculating density of states for isomer "{0}"'.format(self.isomers[i]))
-            densStates0 = self.isomers[i].states.getDensityOfStates(Elist)
-            # Shift to common zero of energy
-            r0 = int(round(E0[i] / dE))
-            if r0 < 0: r0 = 0
-            densStates[i,r0:] = densStates0[:-r0+len(densStates0)]
-
+            densStates[i,:] = self.isomers[i].states.getDensityOfStates(Elist)
+       
         # Densities of states for reactant channels
         for n in range(Nreac):
-            r0 = int(round(E0[n+Nisom] / dE))
             if self.reactants[n][0].states is not None and self.reactants[n][1].states is not None:
                 logging.debug('Calculating density of states for reactant channel "{0}"'.format(' + '.join([str(spec) for spec in self.reactants[n]])))
                 densStates0 = self.reactants[n][0].states.getDensityOfStates(Elist)
                 densStates1 = self.reactants[n][1].states.getDensityOfStates(Elist)
-                densStates0 = states.convolve(densStates0, densStates1, Elist)
-                # Shift to common zero of energy
-                densStates[n+Nisom,r0:] = densStates0[:-r0+len(densStates0)]
+                densStates[n+Nisom,:] = states.convolve(densStates0, densStates1, Elist)
             elif self.reactants[n][0].states is not None:
                 logging.debug('Calculating density of states for reactant channel "{0}"'.format(' + '.join([str(spec) for spec in self.reactants[n]])))
-                densStates0 = self.reactants[n][0].states.getDensityOfStates(Elist)
-                # Shift to common zero of energy
-                densStates[n+Nisom,r0:] = densStates0[:-r0+len(densStates0)]
+                densStates[n+Nisom,:] = self.reactants[n][0].states.getDensityOfStates(Elist)
             elif self.reactants[n][1].states is not None:
                 logging.debug('Calculating density of states for reactant channel "{0}"'.format(' + '.join([str(spec) for spec in self.reactants[n]])))
-                densStates0 = self.reactants[n][1].states.getDensityOfStates(Elist)
-                # Shift to common zero of energy
-                densStates[n+Nisom,r0:] = densStates0[:-r0+len(densStates0)]
+                densStates[n+Nisom,:] = self.reactants[n][1].states.getDensityOfStates(Elist)
             else:
                 logging.debug('NOT calculating density of states for reactant channel "{0}"'.format(' + '.join([str(spec) for spec in self.reactants[n]])))
         
         # Densities of states for product channels
         for n in range(Nprod):
-            r0 = int(round(E0[n+Nisom+Nreac] / dE))
             if len(self.products[n]) == 1 and self.products[n][0].states is not None:
                 logging.debug('Calculating density of states for product channel "{0}"'.format(' + '.join([str(spec) for spec in self.products[n]])))
-                densStates0 = self.isomers[i].states.getDensityOfStates(Elist)
-                # Shift to common zero of energy
-                densStates[n+Nisom+Nreac,r0:] = densStates0[:-r0+len(densStates0)]
+                densStates[n+Nisom+Nreac,:] = self.isomers[i].states.getDensityOfStates(Elist)
             elif len(self.products[n]) == 2 and self.products[n][0].states is not None and self.products[n][1].states is not None:
                 logging.debug('Calculating density of states for product channel "{0}"'.format(' + '.join([str(spec) for spec in self.products[n]])))
                 densStates0 = self.products[n][0].states.getDensityOfStates(Elist)
                 densStates1 = self.products[n][1].states.getDensityOfStates(Elist)
-                densStates0 = states.convolve(densStates0, densStates1, Elist)
-                # Shift to common zero of energy
-                densStates[n+Nisom+Nreac,r0:] = densStates0[:-r0+len(densStates0)]
+                densStates[n+Nisom+Nreac,:] = states.convolve(densStates0, densStates1, Elist)
             elif len(self.products[n]) == 2 and self.products[n][0].states is not None:
                 logging.debug('Calculating density of states for product channel "{0}"'.format(' + '.join([str(spec) for spec in self.products[n]])))
-                densStates0 = self.products[n][0].states.getDensityOfStates(Elist)
-                # Shift to common zero of energy
-                densStates[n+Nisom+Nreac,r0:] = densStates0[:-r0+len(densStates0)]
+                densStates[n+Nisom+Nreac,:] = self.products[n][0].states.getDensityOfStates(Elist)
             elif len(self.products[n]) == 2 and self.products[n][1].states is not None:
                 logging.debug('Calculating density of states for product channel "{0}"'.format(' + '.join([str(spec) for spec in self.products[n]])))
-                densStates0 = self.products[n][1].states.getDensityOfStates(Elist)
-                # Shift to common zero of energy
-                densStates[n+Nisom+Nreac,r0:] = densStates0[:-r0+len(densStates0)]
+                densStates[n+Nisom+Nreac,:] = self.products[n][1].states.getDensityOfStates(Elist)
             else:
                 logging.debug('NOT calculating density of states for product channel "{0}"'.format(' + '.join([str(spec) for spec in self.products[n]])))
         
@@ -525,7 +506,7 @@ class Network:
         logging.log(level, '========================================================================')
         logging.log(level, '')
 
-    def calculateRateCoefficients(self, Tlist, Plist, Elist, method, errorCheck=True):
+    def calculateRateCoefficients(self, Tlist, Plist, method, grainCount=None, grainSize=None, errorCheck=True):
         """
         Calculate the phenomenological rate coefficients :math:`k(T,P)` for the
         network at the given temperatures `Tlist` in K and pressures `Plist` in
@@ -536,12 +517,10 @@ class Network:
         """
 
         # Determine the values of some counters
-        Ngrains = len(Elist)
         Nisom = len(self.isomers)
         Nreac = len(self.reactants)
         Nprod = len(self.products)
-        dE = Elist[1] - Elist[0]
-
+        
         # Get ground-state energies of all isomers and each reactant channel
         # that has the necessary parameters
         # An exception will be raised if a unimolecular isomer is missing
@@ -556,19 +535,25 @@ class Network:
                     if rxn.transitionState.E0.value < Ereac[i]:
                         Ereac[i] = rxn.transitionState.E0.value
 
-        # Shift energy grains such that lowest is zero
-        Emin = Elist[0]
-        for rxn in self.pathReactions:
-            rxn.transitionState.E0.value -= Emin
-        E0 -= Emin
-        Ereac -= Emin
-        Elist -= Emin
-
-        # Calculate density of states for each isomer and each reactant channel
-        # that has the necessary parameters
+        # Choose the energies used to compute the densities of states
+        # We want to use the smallest needed grain spacing (which always occurs at the minimum temperature)
+        # We want to use the largest needed maximum energy (which always occurs at the maximum temperature)
+        Elist0 = self.autoGenerateEnergyGrains(numpy.min(Tlist), grainSize, grainCount)
+        grainSize0 = Elist0[1] - Elist0[0]
+        Elist0 = self.autoGenerateEnergyGrains(numpy.max(Tlist), grainSize, grainCount)
+        grainCount0 = len(Elist0)
+        Emin0 = numpy.min(Elist0)
+        Emax0 = numpy.max(Elist0)
+        Elist0 = self.getEnergyGrains(Emin0, Emax0, grainSize0, grainCount0)
+        logging.info('Using {0:d} grains from {1:.2f} to {2:.2f} kJ/mol in steps of {3:.2f} kJ/mol to compute densities of states'.format(len(Elist0), Elist0[0] / 1000, Elist0[-1] / 1000, (Elist0[1] - Elist0[0]) / 1000))
+        Ngrains0 = len(Elist0)
+        Elist0 -= Elist0[0]
+        
+        # Calculate density of states for each configuration that has the necessary parameters
+        # In these arrays the zero of energy is that configuration's E0
         logging.info('Calculating densities of states for {0}...'.format(self))
-        densStates0 = self.calculateDensitiesOfStates(Elist, E0)
-
+        densStates0 = self.calculateDensitiesOfStates(Elist0)
+        
         for rxn in self.pathReactions:
             if rxn.transitionState.states is not None:
                 logging.debug('Using RRKM theory to compute k(E) for path reaction {0}.'.format(rxn))
@@ -578,25 +563,52 @@ class Network:
         
         logging.info('Calculating phenomenological rate coefficients for {0}...'.format(self))
         K = numpy.zeros((len(Tlist),len(Plist),Nisom+Nreac+Nprod,Nisom+Nreac+Nprod), numpy.float64)
-        p0 = numpy.zeros((len(Tlist),len(Plist),Ngrains,Nisom,Nisom+Nreac), numpy.float64)
-
+        
         for t, T in enumerate(Tlist):
 
+            # Choose the energy grains to use to compute k(T,P) values at this temperature
+            Elist = self.autoGenerateEnergyGrains(T, grainSize, grainCount)
+            Emin = numpy.min(Elist)
+            Emax = numpy.max(Elist)
+            Ngrains = len(Elist)
+            dE = Elist[1] - Elist[0]
+            logging.info('Using {0:d} grains from {1:.2f} to {2:.2f} kJ/mol in steps of {3:.2f} kJ/mol to compute the k(T,P) values at {4:g} K'.format(Ngrains, Emin / 1000, Emax / 1000, dE / 1000, T))
+            
+            # Map the densities of states onto this set of energies
+            # Also shift each density of states to a common zero of energy
+            densStates = numpy.zeros((Nisom+Nreac+Nprod, Ngrains), numpy.float64)
+            for i in range(Nisom+Nreac+Nprod):
+                for r in range(Ngrains):
+                    if Elist[r] >= E0[i]:
+                        for s in range(Ngrains0):
+                            if E0[i] + Elist0[s] >= Elist[r]:
+                                if densStates0[i,s-1] > 0 and densStates0[i,s] > 0:
+                                    densStates[i,r] = densStates0[i,s] * (densStates0[i,s-1] / densStates0[i,s]) ** ((Elist[r] - E0[i] - Elist0[s]) / (Elist0[s-1] - Elist0[s]))
+                                else:
+                                    densStates[i,r] = densStates0[i,s] + (densStates0[i,s-1] - densStates0[i,s]) * (Elist[r] - E0[i] - Elist0[s]) / (Elist0[s-1] - Elist0[s])
+                                break
+                        else:
+                            if i < Nisom:
+                                raise NetworkError('Unable to determine density of states for isomer {0} at {1:g} K.'.format(self.isomers[i],T))
+                            elif i < Nisom+Nreac:
+                                raise NetworkError('Unable to determine density of states for reactant channel {0} at {1:g} K.'.format(' + '.join(['{0!s}'.format(r) for r in self.reactants[i-Nisom]]),T))
+                            else:
+                                raise NetworkError('Unable to determine density of states for product channel {0} at {1:g} K.'.format(' + '.join(['{0!s}'.format(r) for p in self.products[i-Nisom-Nreac]]),T))
+                            
             # Calculate microcanonical rate coefficients for each path reaction
             # If degree of freedom data is provided for the transition state, then RRKM theory is used
             # If high-pressure limit Arrhenius data is provided, then the inverse Laplace transform method is used
             # Otherwise an exception is raised
             # This is only dependent on temperature for the ILT method with
             # certain Arrhenius parameters
-            Kij, Gnj, Fim = self.calculateMicrocanonicalRates(Elist, densStates0, T)
+            Kij, Gnj, Fim = self.calculateMicrocanonicalRates(Elist, densStates, T)
 
             # Rescale densities of states such that, when they are integrated
             # using the Boltzmann factor as a weighting factor, the result is unity
-            densStates = numpy.zeros_like(densStates0)
             eqRatios = numpy.zeros(Nisom+Nreac, numpy.float64)
             for i in range(Nisom+Nreac):
-                eqRatios[i] = numpy.sum(densStates0[i,:] * numpy.exp(-Elist / constants.R / T)) * dE
-                densStates[i,:] = densStates0[i,:] / eqRatios[i] * dE
+                eqRatios[i] = numpy.sum(densStates[i,:] * numpy.exp(-Elist / constants.R / T)) * dE
+                densStates[i,:] = densStates[i,:] / eqRatios[i] * dE
             # Use free energy to determine equilibrium ratios of each isomer and product channel
             eqRatios = numpy.zeros(Nisom+Nreac, numpy.float64)
             conc = 1e5 / constants.R / T
@@ -647,19 +659,19 @@ class Network:
                 if method.lower() == 'modified strong collision':
                     # Apply modified strong collision method
                     import msc
-                    K[t,p,:,:], p0[t,p,:,:,:] = msc.applyModifiedStrongCollisionMethod(T, P, Elist, densStates, collFreq, Kij, Fim, Gnj, Ereac, Nisom, Nreac, Nprod)
+                    K[t,p,:,:], p0 = msc.applyModifiedStrongCollisionMethod(T, P, Elist, densStates, collFreq, Kij, Fim, Gnj, Ereac, Nisom, Nreac, Nprod)
                 elif method.lower() == 'reservoir state':
                     # Apply reservoir state method
                     import rs
-                    K[t,p,:,:], p0[t,p,:,:,:] = rs.applyReservoirStateMethod(T, P, Elist, densStates, Mcoll, Kij, Fim, Gnj, Ereac, Nisom, Nreac, Nprod)
+                    K[t,p,:,:], p0 = rs.applyReservoirStateMethod(T, P, Elist, densStates, Mcoll, Kij, Fim, Gnj, Ereac, Nisom, Nreac, Nprod)
                 elif method.lower() == 'chemically-significant eigenvalues':
                     # Apply chemically-significant eigenvalues method
                     import cse
-                    K[t,p,:,:], p0[t,p,:,:,:] = cse.applyChemicallySignificantEigenvaluesMethod(T, P, Elist, densStates, Mcoll, Kij, Fim, Gnj, eqRatios, Nisom, Nreac, Nprod)
+                    K[t,p,:,:], p0 = cse.applyChemicallySignificantEigenvaluesMethod(T, P, Elist, densStates, Mcoll, Kij, Fim, Gnj, eqRatios, Nisom, Nreac, Nprod)
                 elif method.lower() == 'branching ratios':
                     # Apply chemically-significant eigenvalues method
                     import me
-                    K[t,p,:,:], p0[t,p,:,:,:] = me.applyBranchingRatiosMethod(T, P, Elist, densStates, Mcoll, Kij, Fim, Gnj, Ereac, Nisom, Nreac, Nprod)
+                    K[t,p,:,:], p0 = me.applyBranchingRatiosMethod(T, P, Elist, densStates, Mcoll, Kij, Fim, Gnj, Ereac, Nisom, Nreac, Nprod)
                 else:
                     raise NetworkError('Unknown method "{0}".'.format(method))
 
@@ -683,7 +695,7 @@ class Network:
                             else:
                                 products = self.products[j-Nisom-Nreac]
                             reaction = Reaction(reactants=reactants, products=products)
-                            logging.error('For net reaction {0!s}:'.format(rxn))
+                            logging.error('For net reaction {0!s}:'.format(reaction))
                             logging.error('Expected Keq({1:g} K, {2:g} bar) = {0:11.3e}'.format(Keq, T, P/1e5))
                             logging.error('  Actual Keq({1:g} K, {2:g} bar) = {0:11.3e}'.format(Keq0, T, P/1e5))
                             raise NetworkError('MEASURE computed k(T,P) values for reaction {0!s} do not satisfy macroscopic equilibrium.'.format(reaction))
@@ -714,11 +726,6 @@ class Network:
                 logging.log(0, K[t,p,0:Nisom+Nreac+Nprod,0:Nisom+Nreac])
                 
         logging.debug('')
-
-        # Unshift energy grains
-        for rxn in self.pathReactions:
-            rxn.transitionState.E0.value += Emin
-        Elist += Emin
 
         # Mark network as valid
         self.valid = True

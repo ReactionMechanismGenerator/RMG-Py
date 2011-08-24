@@ -226,14 +226,6 @@ class MEASURE:
         Nreac = len(self.network.reactants)
         Nprod = len(self.network.products)
 
-        # Automatically choose a suitable set of energy grains if they were not
-        # explicitly specified in the input file
-        if self.Emin is not None and self.Emax is not None:
-            self.Elist = Quantity(self.network.getEnergyGrains(self.Emin.value, self.Emax.value, self.grainSize.value, self.grainCount), "J/mol")
-        else:
-            logging.info('Automatically determining energy grains...')
-            self.Elist = Quantity(self.network.autoGenerateEnergyGrains(Tmax=numpy.max(self.Tlist.values), grainSize=self.grainSize.value, Ngrains=self.grainCount), "J/mol")
-        
         network = self.network   
         Tmin = self.Tmin.value
         Tmax = self.Tmax.value
@@ -241,12 +233,11 @@ class MEASURE:
         Pmin = self.Pmin.value
         Pmax = self.Pmax.value
         Plist = self.Plist.values
-        Elist = self.Elist.values
         method = self.method
         model = self.model
         
         # Calculate the rate coefficients
-        K, p0 = network.calculateRateCoefficients(Tlist, Plist, Elist, method)
+        K, p0 = network.calculateRateCoefficients(Tlist, Plist, method, grainCount=self.grainCount, grainSize=self.grainSize.value)
 
         # Fit interpolation model
         from rmgpy.reaction import Reaction
