@@ -260,7 +260,7 @@ def applyInverseLaplaceTransformMethod(kinetics, double E0,
     the inverse transform is undefined).
     """
 
-    cdef double A, n, T0, Ea, dE, R = constants.R
+    cdef double A, n, T0, Ea, dE, s0, rem, R = constants.R
     cdef numpy.ndarray[numpy.float64_t,ndim=1] k, phi
     cdef int i, r, s, Ngrains = len(Elist)
 
@@ -285,10 +285,17 @@ def applyInverseLaplaceTransformMethod(kinetics, double E0,
 
         if n < 0.001:
             # Determine the microcanonical rate directly
-            s = int(floor(Ea / dE))
-            for r in range(s, Ngrains):
-                if Elist[r] > E0 and densStates[r] != 0:
-                    k[r] = A * densStates[r - s] / densStates[r]
+            s0, rem = divmod(Ea, dE)
+            s = int(s0)
+            if rem == 0:
+                for r in range(s, Ngrains):
+                    if Elist[r] > E0 and densStates[r] != 0:
+                        k[r] = A * densStates[r-s] / densStates[r]
+            else:
+                for r in range(s+1, Ngrains):
+                    if Elist[r] > E0 and densStates[r] != 0 and densStates[r-s] != 0:
+                        num = densStates[r-s] * (densStates[r-s-1] / densStates[r-s]) ** (-rem / (Elist[r-s-1] - Elist[r-s]))
+                        k[r] = A * num / densStates[r]
                     
         elif n >= 0.001:
             import scipy.special
@@ -303,10 +310,17 @@ def applyInverseLaplaceTransformMethod(kinetics, double E0,
             # Evaluate the convolution
             phi = convolve(phi, densStates, Elist)
             # Apply to determine the microcanonical rate
-            s = int(floor(Ea / dE))
-            for r in range(Ngrains):
-                if Elist[r] > E0 and densStates[r] != 0:
-                    k[r] = A * phi[r - s] / densStates[r]
+            s0, rem = divmod(Ea, dE)
+            s = int(s0)
+            if rem == 0:
+                for r in range(s, Ngrains):
+                    if Elist[r] > E0 and densStates[r] != 0:
+                        k[r] = A * phi[r-s] / densStates[r]
+            else:
+                for r in range(s+1, Ngrains):
+                    if Elist[r] > E0 and densStates[r] != 0 and phi[r-s] != 0:
+                        num = phi[r-s] * (phi[r-s-1] / phi[r-s]) ** (-rem / (Elist[r-s-1] - Elist[r-s]))
+                        k[r] = A * num / densStates[r]
 
     else:
         raise ReactionError('Unable to use inverse Laplace transform method for non-Arrhenius kinetics or for n < 0.')
