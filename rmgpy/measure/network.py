@@ -179,18 +179,9 @@ class Network:
     def autoGenerateEnergyGrains(self, Tmax, grainSize=0.0, Ngrains=0):
         """
         Select a suitable list of energies to use for subsequent calculations.
-        The procedure is:
-
-        1. Calculate the equilibrium distribution of the highest-energy isomer
-           at the largest temperature of interest (to get the broadest
-           distribution)
-
-        2. Calculate the energy at which the tail of the distribution is some
-           fraction of the maximum
-
-        3. Add the difference between the ground-state energy of the isomer and
-           the highest ground-state energy in the system (either isomer or
-           transition state)
+        This is done by finding the minimum and maximum energies on the 
+        potential energy surface, then adding a multiple of 
+        :math:`k_\\mathrm{B} T` onto the maximum energy.
 
         You must specify either the desired grain spacing `grainSize` in J/mol
         or the desired number of grains `Ngrains`, as well as a temperature
@@ -205,13 +196,10 @@ class Network:
         if grainSize == 0.0 and Ngrains == 0:
             raise NetworkError('Must provide either grainSize or Ngrains parameter to Network.determineEnergyGrains().')
 
-        # For the purposes of finding the maximum energy we will use 251 grains
-        nE = 251; dE = 0.0
-
         # The minimum energy is the lowest isomer or reactant or product energy on the PES
         Emin = 1.0e25
-        for species in self.isomers:
-            if species.E0.value < Emin: Emin = species.E0.value
+        for isomer in self.isomers:
+            if isomer.E0.value < Emin: Emin = isomer.E0.value
         for reactants in self.reactants:
             E0 = sum([reactant.E0.value for reactant in reactants])
             if E0 < Emin: Emin = E0
@@ -220,67 +208,27 @@ class Network:
             if E0 < Emin: Emin = E0
         Emin = math.floor(Emin) # Round to nearest whole number
 
-        # Determine the isomer with the maximum ground-state energy
-        isomer = None
-        for species in self.isomers:
-            if isomer is None: isomer = species
-            elif species.E0.value > isomer.E0.value: isomer = species
-
         # Use the highest energy on the PES as the initial guess for Emax0
-        Emax0 = isomer.E0.value
+        Emax = -1.0e25
+        for isomer in self.isomers:
+            if isomer.E0.value > Emax: Emax = isomer.E0.value
         for reactants in self.reactants:
             E0 = sum([reactant.E0.value for reactant in reactants])
-            if E0 > Emax0: Emax0 = E0
+            if E0 > Emax: Emax = E0
         for products in self.products:
             E0 = sum([product.E0.value for product in products])
-            if E0 > Emax0: Emax0 = E0
+            if E0 > Emax: Emax = E0
         for rxn in self.pathReactions:
             if rxn.transitionState is not None:
                 E0 = rxn.transitionState.E0.value
-                if E0 > Emax0: Emax0 = E0
+                if E0 > Emax: Emax = E0
         
-        # (Try to) purposely overestimate Emax using arbitrary multiplier
-        # to (hopefully) avoid multiple density of states calculations
-        mult = 20
-        done = False
-        maxIter = 5
-        iterCount = 0
-        while not done and iterCount < maxIter:
-
-            iterCount += 1
-
-            Emax = math.ceil(Emax0 + mult * constants.R * Tmax)
-
-            Elist = self.getEnergyGrains(0.0, Emax-Emin, dE, nE)
-            densStates = isomer.states.getDensityOfStates(Elist)
-            eqDist = densStates * numpy.exp(-Elist / constants.R / Tmax)
-            eqDist /= numpy.sum(eqDist)
-
-            # Find maximum of distribution
-            maxIndex = eqDist.argmax()
-
-            # If tail of distribution is much lower than the maximum, then we've found bounds for Emax
-            tol = 1e-4
-            if eqDist[-1] / eqDist[maxIndex] < tol:
-                r = nE - 1
-                while r > maxIndex and not done:
-                    if eqDist[r] / eqDist[maxIndex] > tol: done = True
-                    else: r -= 1
-                Emax = Elist[r] + Emax0
-                # A final check to ensure we've captured almost all of the equilibrium distribution
-                if abs(1.0 - numpy.sum(eqDist[0:r]) / numpy.sum(eqDist)) > tol:
-                    done = False
-                    mult += 20
-            else:
-                mult += 20
-
-        # Round Emax up to nearest integer
-        Emax = math.ceil(Emax)
+        # Choose the actual Emax as many kB * T above the maximum energy on the PES
+        # You should check that this is high enough so that the Boltzmann distributions have trailed off to negligible values
+        Emax += 40 * constants.R * Tmax
 
         # Return the chosen energy grains
-        Elist = self.getEnergyGrains(Emin, Emax, grainSize, Ngrains)
-        logging.info('Using {0:d} grains from {1:.2f} to {2:.2f} kJ/mol in steps of {3:.2f} kJ/mol'.format(len(Elist), Elist[0] / 1000, Elist[-1] / 1000, (Elist[1] - Elist[0]) / 1000))
-        return Elist
+        return self.getEnergyGrains(Emin, Emax, grainSize, Ngrains)
 
     def calculateGroundStateEnergies(self):
         """
