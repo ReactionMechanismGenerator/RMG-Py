@@ -31,7 +31,9 @@ import math
 import numpy.linalg
 import logging
 
+from rmgpy.quantity import Quantity
 from rmgpy.thermo import ThermoData, Wilhoit, MultiNASA, convertThermoModel
+from rmgpy.statmech import RigidRotor
 
 ################################################################################
 
@@ -47,9 +49,14 @@ def generateThermoModel(species, model, plot=False):
         raise Exception('Unknown thermodynamic model "{0}".'.format(model))
 
     logging.info('Generating {0} thermo model for {1}...'.format(model, species))
-    linear = species.states.modes[1].linear
-    Nfreq = len(species.states.modes[2].frequencies.values)
-    Nrotors = len(species.states.modes[3:])
+    if not any([isinstance(mode, RigidRotor) for mode in species.states.modes]):
+        linear = False
+        Nfreq = 0
+        Nrotors = 0
+    else:
+        linear = species.states.modes[1].linear
+        Nfreq = len(species.states.modes[2].frequencies.values)
+        Nrotors = len(species.states.modes[3:])
 
     H298 = species.states.getEnthalpy(298.15) + species.E0.value
     S298 = species.states.getEntropy(298.15)
@@ -62,7 +69,16 @@ def generateThermoModel(species, model, plot=False):
         Tlist = numpy.arange(10.0, 3001.0, 10.0, numpy.float64)
         Cplist = species.states.getHeatCapacities(Tlist)
         wilhoit = Wilhoit()
-        wilhoit.fitToData(Tlist, Cplist, linear, Nfreq, Nrotors, H298, S298, B0=500.0)
+        if Nfreq == 0 and Nrotors == 0:
+            wilhoit.cp0 = Quantity(Cplist[0],"J/(mol*K)")
+            wilhoit.cpInf = Quantity(Cplist[0],"J/(mol*K)")
+            wilhoit.B = Quantity(500,"K")
+            wilhoit.H0 = Quantity(0,"J/mol")
+            wilhoit.S0 = Quantity(0,"J/(mol*K)")
+            wilhoit.H0 = Quantity(species.states.getEnthalpy(298.15) - wilhoit.getEnthalpy(298.15) + species.E0.value,"J/mol")
+            wilhoit.S0 = Quantity(species.states.getEntropy(298.15) - wilhoit.getEntropy(298.15),"J/(mol*K)")
+        else:
+            wilhoit.fitToData(Tlist, Cplist, linear, Nfreq, Nrotors, H298, S298, B0=500.0)
         if model.lower() == 'nasa':
             species.thermo = convertThermoModel(wilhoit, MultiNASA, Tmin=10.0, Tmax=3000.0, Tint=500.0)
         else:
