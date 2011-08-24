@@ -211,7 +211,7 @@ class Species:
         else:
             label = ''
         if len(label.split()) > 0 and not label.split()[0].isdigit():
-            self.label = label
+            self.label = label.strip()
         # Return a reference to itself so we can use e.g. Species().fromAdjacencyList()
         return self
     
