@@ -183,14 +183,14 @@ def calculateMicrocanonicalRateCoefficient(reaction,
             # Thus we need to compute the reverse rate coefficient here
             if reaction.isIsomerization() and productStatesKnown:
                 for r in range(len(Elist)):
-                    if prodEqDist[r] > 0: break
+                    if prodDensStates[r] > 0: break
                 kr[r:] = kf[r:] * (reacDensStates[r:] / prodDensStates[r:]) * (prodQ / reacQ) / Keq
             elif reaction.isDissociation():
                 kr = kf * (reacEqDist / reacQ) / Keq
             elif reaction.isAssociation():
                 if productStatesKnown:
                     for r in range(len(Elist)):
-                        if prodEqDist[r] > 0: break
+                        if prodDensStates[r] > 0: break
                     kr[r:] = kf[r:] * (reacDensStates[r:] / prodDensStates[r:]) * (prodQ / reacQ) / Keq
                 kf = kf * reacEqDist / reacQ
 
@@ -199,14 +199,14 @@ def calculateMicrocanonicalRateCoefficient(reaction,
             # Thus we need to compute the forward rate coefficient here
             if reaction.isIsomerization() and reactantStatesKnown:
                 for r in range(len(Elist)):
-                    if reacEqDist[r] > 0: break
+                    if reacDensStates[r] > 0: break
                 kf[r:] = kr[r:] * (prodDensStates[r:] / reacDensStates[r:]) * (reacQ / prodQ) * Keq
             elif reaction.isAssociation():
                 kf = kr * (prodEqDist / prodQ) * Keq
             elif reaction.isDissociation():
                 if reactantStatesKnown:
                     for r in range(len(Elist)):
-                        if reacEqDist[r] > 0: break
+                        if reacDensStates[r] > 0: break
                     kf[r:] = kr[r:] * (prodDensStates[r:] / reacDensStates[r:]) * (reacQ / prodQ) * Keq
                 kr = kr * prodEqDist / prodQ
 
@@ -303,10 +303,7 @@ def applyInverseLaplaceTransformMethod(kinetics, double E0,
             # exists for n >= 0
             phi = numpy.zeros(Ngrains, numpy.float64)
             for i in range(Ngrains):
-                if Elist[i] == 0.0:
-                    phi[i] = 0.0
-                else:
-                    phi[i] = Elist[i]**(n-1) / (R**n * scipy.special.gamma(n))
+                phi[i] = (Elist[i] - Elist[0])**(n-1) / (R**n * scipy.special.gamma(n))
             # Evaluate the convolution
             phi = convolve(phi, densStates, Elist)
             # Apply to determine the microcanonical rate
