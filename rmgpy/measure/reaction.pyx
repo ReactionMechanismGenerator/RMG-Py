@@ -148,6 +148,23 @@ def calculateMicrocanonicalRateCoefficient(reaction,
     else:
         raise ReactionError('Unable to compute k(E) values for path reaction "{0}".'.format(rxn))
     
+    # If the reaction is endothermic and barrierless, it is possible that the
+    # forward k(E) will have a nonzero value at an energy where the product
+    # density of states is zero (but the reactant density of states is not),
+    # which violates detailed balance
+    # To fix, we set the forward k(E) to zero wherever this is true
+    # (This is correct within the accuracy of discretizing the energy grains)
+    if kf.any() and productStatesKnown:
+        for r in range(len(Elist)):
+            if reacDensStates[r] != 0 and prodDensStates[r] != 0:
+                break
+            kf[r] = 0
+    if kr.any() and reactantStatesKnown:
+        for r in range(len(Elist)):
+            if reacDensStates[r] != 0 and prodDensStates[r] != 0:
+                break
+            kr[r] = 0
+    
     # Get the reverse microcanonical rate coefficient if possible
     if (all([reactant.thermo is not None for reactant in reaction.reactants]) and 
         all([product.thermo is not None for product in reaction.products])):
@@ -166,14 +183,14 @@ def calculateMicrocanonicalRateCoefficient(reaction,
             # Thus we need to compute the reverse rate coefficient here
             if reaction.isIsomerization() and productStatesKnown:
                 for r in range(len(Elist)):
-                    if prodEqDist[r] > 0: break
+                    if prodDensStates[r] > 0: break
                 kr[r:] = kf[r:] * (reacDensStates[r:] / prodDensStates[r:]) * (prodQ / reacQ) / Keq
             elif reaction.isDissociation():
                 kr = kf * (reacEqDist / reacQ) / Keq
             elif reaction.isAssociation():
                 if productStatesKnown:
                     for r in range(len(Elist)):
-                        if prodEqDist[r] > 0: break
+                        if prodDensStates[r] > 0: break
                     kr[r:] = kf[r:] * (reacDensStates[r:] / prodDensStates[r:]) * (prodQ / reacQ) / Keq
                 kf = kf * reacEqDist / reacQ
 
@@ -182,14 +199,14 @@ def calculateMicrocanonicalRateCoefficient(reaction,
             # Thus we need to compute the forward rate coefficient here
             if reaction.isIsomerization() and reactantStatesKnown:
                 for r in range(len(Elist)):
-                    if reacEqDist[r] > 0: break
+                    if reacDensStates[r] > 0: break
                 kf[r:] = kr[r:] * (prodDensStates[r:] / reacDensStates[r:]) * (reacQ / prodQ) * Keq
             elif reaction.isAssociation():
                 kf = kr * (prodEqDist / prodQ) * Keq
             elif reaction.isDissociation():
                 if reactantStatesKnown:
                     for r in range(len(Elist)):
-                        if reacEqDist[r] > 0: break
+                        if reacDensStates[r] > 0: break
                     kf[r:] = kr[r:] * (prodDensStates[r:] / reacDensStates[r:]) * (reacQ / prodQ) * Keq
                 kr = kr * prodEqDist / prodQ
 
@@ -213,9 +230,9 @@ def applyRRKMTheory(transitionState,
     dE = Elist[1] - Elist[0]
     
     # Calculate sum of states of transition state
-    sumStates0 = transitionState.states.getSumOfStates(Elist)
+    sumStates0 = transitionState.states.getSumOfStates(Elist - Elist[0])
     # Shift to common zero of energy
-    r0 = int(round(transitionState.E0.value / dE))
+    r0 = int(round((transitionState.E0.value - Elist[0]) / dE))
     sumStates = numpy.zeros_like(Elist)
     sumStates[r0:] = sumStates0[:-r0+len(sumStates0)]
     
@@ -243,7 +260,7 @@ def applyInverseLaplaceTransformMethod(kinetics, double E0,
     the inverse transform is undefined).
     """
 
-    cdef double A, n, T0, Ea, dE, R = constants.R
+    cdef double A, n, T0, Ea, dE, s0, rem, R = constants.R
     cdef numpy.ndarray[numpy.float64_t,ndim=1] k, phi
     cdef int i, r, s, Ngrains = len(Elist)
 
@@ -268,10 +285,17 @@ def applyInverseLaplaceTransformMethod(kinetics, double E0,
 
         if n < 0.001:
             # Determine the microcanonical rate directly
-            s = int(floor(Ea / dE))
-            for r in range(s, Ngrains):
-                if Elist[r] > E0 and densStates[r] != 0:
-                    k[r] = A * densStates[r - s] / densStates[r]
+            s0, rem = divmod(Ea, dE)
+            s = int(s0)
+            if rem == 0:
+                for r in range(s, Ngrains):
+                    if Elist[r] > E0 and densStates[r] != 0:
+                        k[r] = A * densStates[r-s] / densStates[r]
+            else:
+                for r in range(s+1, Ngrains):
+                    if Elist[r] > E0 and densStates[r] != 0 and densStates[r-s] != 0:
+                        num = densStates[r-s] * (densStates[r-s-1] / densStates[r-s]) ** (-rem / (Elist[r-s-1] - Elist[r-s]))
+                        k[r] = A * num / densStates[r]
                     
         elif n >= 0.001:
             import scipy.special
@@ -279,17 +303,21 @@ def applyInverseLaplaceTransformMethod(kinetics, double E0,
             # exists for n >= 0
             phi = numpy.zeros(Ngrains, numpy.float64)
             for i in range(Ngrains):
-                if Elist[i] == 0.0:
-                    phi[i] = 0.0
-                else:
-                    phi[i] = Elist[i]**(n-1) / (R**n * scipy.special.gamma(n))
+                phi[i] = (Elist[i] - Elist[0])**(n-1) / (R**n * scipy.special.gamma(n))
             # Evaluate the convolution
             phi = convolve(phi, densStates, Elist)
             # Apply to determine the microcanonical rate
-            s = int(floor(Ea / dE))
-            for r in range(Ngrains):
-                if Elist[r] > E0 and densStates[r] != 0:
-                    k[r] = A * phi[r - s] / densStates[r]
+            s0, rem = divmod(Ea, dE)
+            s = int(s0)
+            if rem == 0:
+                for r in range(s, Ngrains):
+                    if Elist[r] > E0 and densStates[r] != 0:
+                        k[r] = A * phi[r-s] / densStates[r]
+            else:
+                for r in range(s+1, Ngrains):
+                    if Elist[r] > E0 and densStates[r] != 0 and phi[r-s] != 0:
+                        num = phi[r-s] * (phi[r-s-1] / phi[r-s]) ** (-rem / (Elist[r-s-1] - Elist[r-s]))
+                        k[r] = A * num / densStates[r]
 
     else:
         raise ReactionError('Unable to use inverse Laplace transform method for non-Arrhenius kinetics or for n < 0.')
