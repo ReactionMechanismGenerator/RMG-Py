@@ -71,19 +71,19 @@ def saveOutputHTML(path, reactionModel):
     path = os.path.abspath(path)
     dirname = os.path.dirname(path)
 
-    # Draw molecules if necessary
-    for spec in reactionModel.core.species:
+    # Prepare parameters to pass to jinja template
+    title = 'RMG Output'
+
+    species = reactionModel.core.species[:] + reactionModel.outputSpeciesList
+    species.sort(key=lambda x: x.index)
+
+     # Draw molecules if necessary
+    for spec in species:
         fstr = os.path.join(dirname, 'species', '{0}.png'.format(spec))
         if not os.path.exists(fstr):
             drawMolecule(spec.molecule[0], fstr)
 
-    # Prepare parameters to pass to jinja template
-    title = 'RMG Output'
-
-    species = reactionModel.core.species[:]
-    species.sort(key=lambda x: x.index)
-
-    reactions = [rxn for rxn in reactionModel.core.reactions ]
+    reactions = [rxn for rxn in reactionModel.core.reactions ] + reactionModel.outputReactionList
     reactions.sort(key=lambda x: x.index)
 
     familyCount = {}

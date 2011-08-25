@@ -162,7 +162,7 @@ class RMG:
         self.database.load(
             path = self.databaseDirectory,
             thermoLibraries = self.thermoLibraries,
-            reactionLibraries = self.reactionLibraries,
+            reactionLibraries = [library for library, option in self.reactionLibraries],
             seedMechanisms = self.seedMechanisms,
             kineticsDepositories = self.kineticsDepositories,
             #frequenciesLibraries = self.statmechLibraries,
@@ -245,6 +245,11 @@ class RMG:
             # DON'T generate any more reactions for the seed species at this time
             for seedMechanism in self.seedMechanisms:
                 self.reactionModel.addSeedMechanismToCore(seedMechanism, react=False)
+
+            # Reaction libraries: add species and reactions from reaction library to the edge so
+            # that RMG can find them if their rates are large enough
+            for library, option in self.reactionLibraries:
+                self.reactionModel.addReactionLibraryToEdge(library)
             
             # Add nonreactive species (e.g. bath gases) to core first
             # This is necessary so that the PDep algorithm can identify the bath gas
@@ -334,7 +339,16 @@ class RMG:
                 objectsToEnlarge = list(set(objectsToEnlarge))
                 for object in objectsToEnlarge:
                     self.reactionModel.enlarge(object)
-    
+
+            # If the user specifies it, add unused reaction library reactions to
+            # an additional output species and reaction list which is written to the ouput HTML
+            # file as well as the chemkin file
+            self.reactionModel.outputSpeciesList = []
+            self.reactionModel.outputReactionList = []
+            for library, option in self.reactionLibraries:
+                if option:
+                    self.reactionModel.addReactionLibraryToOutput(library)
+                    
             # Save the current state of the model core to a pretty HTML file
             logging.info('Saving latest model core to HTML file...')
             saveOutputHTML(os.path.join(self.outputDirectory, 'output.html'), self.reactionModel)
@@ -351,7 +365,7 @@ class RMG:
             # Save the restart file if desired
             if self.saveRestartPeriod or done:
                 self.saveRestartFile(os.path.join(self.outputDirectory,'restart.pkl'), self.reactionModel, delay=0 if done else self.saveRestartPeriod.value)
-    
+
             # Update RMG execution statistics
             logging.info('Updating RMG execution statistics...')
             coreSpec, coreReac, edgeSpec, edgeReac = self.reactionModel.getModelSize()

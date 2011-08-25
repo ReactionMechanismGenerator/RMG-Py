@@ -231,6 +231,8 @@ class CoreEdgeReactionModel:
         self.reactionCounter = 0
         self.newSpeciesList = []
         self.newReactionList = []
+        self.outputSpeciesList = []
+        self.outputReactionList = []
         self.pressureDependence = None
 
     def checkForExistingSpecies(self, molecule):
@@ -837,6 +839,8 @@ class CoreEdgeReactionModel:
         logging.info('Created {0:d} new edge reactions'.format(len(newEdgeReactions)))
         for rxn in newEdgeReactions:
             logging.info('    {0}'.format(rxn))
+            logging.info('    {0}'.format(rxn.kinetics))
+           #logging.info('    K = {0}'.format(rxn.getEquilibriumConstant(700)))
 
         coreSpeciesCount, coreReactionCount, edgeSpeciesCount, edgeReactionCount = self.getModelSize()
 
@@ -1150,6 +1154,76 @@ class CoreEdgeReactionModel:
             newEdgeReactions=[],
         )
 
+
+
+    def addReactionLibraryToEdge(self, reactionLibrary):
+        """
+        Add all species and reactions from `reactionLibrary`, a
+        :class:`KineticsPrimaryDatabase` object, to the model edge.
+        """
+
+        database = rmgpy.data.rmg.database
+
+        self.newReactionList = []; self.newSpeciesList = []
+
+        numOldEdgeSpecies = len(self.edge.species)
+        numOldEdgeReactions = len(self.edge.reactions)
+
+        logging.info('Adding reaction library {0} to model edge...'.format(reactionLibrary))
+        reactionLibrary = database.kinetics.libraries[reactionLibrary]
+
+        for entry in reactionLibrary.entries.values():
+            rxn = LibraryReaction(reactants=entry.item.reactants[:], products=entry.item.products[:], library=reactionLibrary, kinetics=entry.data)
+            r, isNew = self.makeNewReaction(rxn) # updates self.newSpeciesList and self.newReactionlist
+        for spec in self.newSpeciesList:
+            if spec.reactive: spec.generateThermoData(database)
+        for spec in self.newSpeciesList:
+            self.addSpeciesToEdge(spec)
+
+        for rxn in self.newReactionList:
+            rxn.kinetics.comment += "\nRMG did not find reaction rate to be high enough to be included in model core."
+            self.addReactionToEdge(rxn)
+
+        self.printEnlargeSummary(
+            newCoreSpecies=[],
+            newCoreReactions=[],
+            newEdgeSpecies=self.edge.species[numOldEdgeSpecies:],
+            newEdgeReactions=self.edge.reactions[numOldEdgeReactions:],
+        )
+
+    def addReactionLibraryToOutput(self, reactionLib):
+        """
+        Add all species and reactions from `reactionLibrary`, a
+        :class:`KineticsPrimaryDatabase` object, to the output.
+        This does not bring any of the reactions or species into the core itself.
+        """
+
+        logging.info('Adding reaction library {0} to output file...'.format(reactionLib))
+        database = rmgpy.data.rmg.database
+        reactionLibrary = database.kinetics.libraries[reactionLib]
+
+        for entry in reactionLibrary.entries.values():
+            rxn = LibraryReaction(reactants=entry.item.reactants[:], products=entry.item.products[:], library=reactionLibrary, kinetics=entry.data)
+            rxn.reactants = [self.makeNewSpecies(reactant)[0] for reactant in rxn.reactants]
+            rxn.products = [self.makeNewSpecies(product)[0] for product in rxn.products]
+
+            for species in rxn.reactants:
+                if species not in self.core.species and species not in self.outputSpeciesList:
+                    self.outputSpeciesList.append(species)
+
+            for species in rxn.products:
+                if species not in self.core.species and species not in self.outputSpeciesList:
+                    self.outputSpeciesList.append(species)
+
+            # Reaction library was already on the edge, so we just need to get right label
+            rxn = self.checkForExistingReaction(rxn)[1]
+            if rxn in self.core.reactions:
+                if rxn.kinetics.comment.find("RMG did not find reaction rate to be high enough to be included in model core."):
+                    rxn.kinetics.comment = "Reaction from {0}.".format(reactionLib)
+            else:
+                self.outputReactionList.append(rxn)
+
+
     def addReactionToUnimolecularNetworks(self, newReaction, newSpecies, network=None):
         """
         Given a newly-created :class:`Reaction` object `newReaction`, update the
@@ -1315,7 +1389,10 @@ class CoreEdgeReactionModel:
 
     def saveChemkinFile(self, path):
         """
-        Save a Chemkin file for the current model core to `path`.
+        Save a Chemkin file for the current model core as well as any desired output
+        species and reactions to `path`.
         """
         from rmgpy.chemkin import saveChemkinFile
-        saveChemkinFile(path, self.core.species, self.core.reactions)
+        speciesList = self.core.species + self.outputSpeciesList
+        rxnList = self.core.reactions + self.outputReactionList
+        saveChemkinFile(path, speciesList, rxnList)
