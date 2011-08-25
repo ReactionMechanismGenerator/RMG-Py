@@ -36,7 +36,9 @@ import logging
 from thermo import MultiNASA
 from kinetics import *
 from reaction import Reaction
-
+from species import Species
+from thermo import NASA, MultiNASA
+from quantity import constants, Quantity
 
 __chemkin_reaction_count = None
     
@@ -49,6 +51,350 @@ class ChemkinError(Exception):
     """
     pass
 
+################################################################################
+
+def readThermoEntry(entry):
+    """
+    Read a thermodynamics `entry` for one species in a Chemkin file. Returns
+    the label of the species and the thermodynamics model as a 
+    :class:`MultiNASA` object.
+    """
+    lines = entry.splitlines()
+    species = str(lines[0][0:24].split()[0].strip())
+        
+    # Extract the NASA polynomial coefficients
+    # Remember that the high-T polynomial comes first!
+    try:
+        Tmin = float(lines[0][45:55].strip())
+        Tmax = float(lines[0][55:65].strip())
+        Tint = float(lines[0][65:75].strip())
+    
+        a0_high = float(lines[1][0:15].strip())
+        a1_high = float(lines[1][15:30].strip())
+        a2_high = float(lines[1][30:45].strip())
+        a3_high = float(lines[1][45:60].strip())
+        a4_high = float(lines[1][60:75].strip())
+    
+        a5_high = float(lines[2][0:15].strip())
+        a6_high = float(lines[2][15:30].strip())
+        a0_low = float(lines[2][30:45].strip())
+        a1_low = float(lines[2][45:60].strip())
+        a2_low = float(lines[2][60:75].strip())
+    
+        a3_low = float(lines[3][0:15].strip())
+        a4_low = float(lines[3][15:30].strip())
+        a5_low = float(lines[3][30:45].strip())
+        a6_low = float(lines[3][45:60].strip())
+    except (IndexError, ValueError):
+        raise ChemkinError('Error while reading thermo entry for species {0}'.format(species))
+    
+    # Construct and return the thermodynamics model
+    thermo = MultiNASA(
+        polynomials = [
+            NASA(Tmin=(Tmin,"K"), Tmax=(Tint,"K"), coeffs=[a0_low, a1_low, a2_low, a3_low, a4_low, a5_low, a6_low]),
+            NASA(Tmin=(Tint,"K"), Tmax=(Tmax,"K"), coeffs=[a0_high, a1_high, a2_high, a3_high, a4_high, a5_high, a6_high])
+        ],
+        Tmin = (Tmin,"K"),
+        Tmax = (Tmax,"K"),
+    )
+
+    return species, thermo
+
+################################################################################
+
+def readKineticsEntry(entry, speciesDict, energyUnits, moleculeUnits):
+    """
+    Read a kinetics `entry` for a single reaction as loaded from a Chemkin
+    file. The associated mapping of labels to species `speciesDict` should also
+    be provided. Returns a :class:`Reaction` object with the reaction and its
+    associated kinetics.
+    """
+    
+    if energyUnits.lower() in ['kcal/mole', 'kcal/mol']:
+        energyFactor = 1.0 
+    elif energyUnits.lower() in ['cal/mole', 'cal/mol']:
+        energyFactor = 0.001 
+    else:
+        raise ChemkinError('Unexpected energy units "{0}" in reaction block.'.format(energyUnits))
+    if moleculeUnits.lower() in ['moles']:
+        moleculeFactor = 1.0 
+    else:
+        raise ChemkinError('Unexpected molecule units "{0}" in reaction block.'.format(energyUnits))
+    
+    lines = entry.strip().splitlines()
+    
+    # Extract the reaction equation
+    reaction = str(lines[0][0:52].strip())
+    thirdBody = False
+        
+    # Split the reaction equation into reactants and products
+    reversible = True
+    reactants, products = reaction.split('=')
+    if '=>' in reaction:
+        products = products[1:]
+        reversible = False
+    if '(+M)' in reactants: reactants = reactants.replace('(+M)','')
+    if '(+m)' in reactants: reactants = reactants.replace('(+m)','')
+    if '(+M)' in products:  products = products.replace('(+M)','')
+    if '(+m)' in products:  products = products.replace('(+m)','')
+    
+    # Create a new Reaction object for this reaction
+    reaction = Reaction(reactants=[], products=[], reversible=reversible)
+    
+    # Convert the reactants and products to Species objects using the speciesDict
+    for reactant in reactants.split('+'):
+        reactant = reactant.strip()
+        if reactant == 'M':
+            thirdBody = True
+        elif reactant not in speciesDict:
+            raise ChemkinError('Unexpected reactant "{0}" in reaction {1}.'.format(reactant, reaction))
+        else:
+            reaction.reactants.append(speciesDict[reactant])
+    for product in products.split('+'):
+        product = product.strip()
+        if product.upper() == 'M':
+            pass
+        elif product not in speciesDict:
+            raise ChemkinError('Unexpected product "{0}" in reaction {1}.'.format(product, reaction))
+        else:
+            reaction.products.append(speciesDict[product])
+    
+    # Determine the appropriate units for k(T) and k(T,P) based on the number of reactants
+    # This assumes elementary kinetics for all reactions
+    if len(reaction.reactants) + (1 if thirdBody else 0) == 3:
+        kunits = "cm^6/(mol^2*s)"
+        klow_units = "cm^9/(mol^3*s)"
+    elif len(reaction.reactants) + (1 if thirdBody else 0) == 2:
+        kunits = "cm^3/(mol*s)" 
+        klow_units = "cm^6/(mol^2*s)"
+    elif len(reaction.reactants) + (1 if thirdBody else 0) == 1:
+        kunits = "s^-1" 
+        klow_units = "cm^3/(mol*s)"
+    else:
+        raise ChemkinError('Invalid number of reactant species for reaction {0}.'.format(reaction))
+    
+    # The rest of the first line contains the high-P limit Arrhenius parameters (if available)
+    tokens = lines[0][52:].split()
+    arrheniusHigh = Arrhenius(
+        A = (float(tokens[0].strip()),kunits),
+        n = float(tokens[1].strip()),
+        Ea = (float(tokens[2].strip()) * energyFactor,"kcal/mol"),
+        T0 = (1,"K"),
+    )
+    
+    if len(lines) == 1:
+        # If there's only one line then we know to use the high-P limit kinetics as-is
+        reaction.kinetics = arrheniusHigh
+    else:
+        # There's more kinetics information to be read
+        arrheniusLow = None
+        troe = None
+        lindemann = None
+        chebyshev = None
+        pdepArrhenius = None
+        efficiencies = {}
+        chebyshevCoeffs = []
+    
+        # Note that the subsequent lines could be in any order
+        for line in lines[1:]:
+            tokens = line.split('/')
+            if 'LOW' in line:
+                # Low-pressure-limit Arrhenius parameters
+                tokens = tokens[1].split()
+                arrheniusLow = Arrhenius(
+                    A = (float(tokens[0].strip()),klow_units),
+                    n = float(tokens[1].strip()),
+                    Ea = (float(tokens[2].strip()) * energyFactor,"kcal/mol"),
+                    T0 = (1,"K"),
+                )
+            
+            elif 'TROE' in line:
+                # Troe falloff parameters
+                tokens = tokens[1].split()
+                alpha = float(tokens[0].strip())
+                T3 = float(tokens[1].strip())
+                T1 = float(tokens[2].strip())
+                try:
+                    T2 = float(tokens[3].strip())
+                except (IndexError, ValueError):
+                    T2 = None
+                
+                troe = Troe(
+                    alpha = (alpha,''),
+                    T3 = (T3,"K"),
+                    T1 = (T1,"K"),
+                    T2 = (T2,"K") if T2 is not None else None,
+                )
+            
+            elif 'CHEB' in line:
+                # Chebyshev parameters
+                if chebyshev is None:
+                    chebyshev = Chebyshev()
+                tokens = [t.strip() for t in tokens]
+                if 'TCHEB' in line:
+                    index = tokens.index('TCHEB')
+                    tokens2 = tokens[index+1].split()
+                    chebyshev.Tmin = Quantity(float(tokens2[0].strip()),"K")
+                    chebyshev.Tmax = Quantity(float(tokens2[1].strip()),"K")
+                if 'PCHEB' in line:
+                    index = tokens.index('PCHEB')
+                    tokens2 = tokens[index+1].split()
+                    chebyshev.Pmin = Quantity(float(tokens2[0].strip()),"atm")
+                    chebyshev.Pmax = Quantity(float(tokens2[1].strip()),"atm")
+                if 'TCHEB' in line or 'PCHEB' in line:
+                    pass
+                elif chebyshev.degreeT == 0 or chebyshev.degreeP == 0:
+                    tokens2 = tokens[1].split()
+                    chebyshev.degreeT = int(tokens2[0].strip())
+                    chebyshev.degreeP = int(tokens2[1].strip())
+                    chebyshev.coeffs = numpy.zeros((chebyshev.degreeT,chebyshev.degreeP), numpy.float64)
+                else:
+                    tokens2 = tokens[1].split()
+                    chebyshevCoeffs.extend([float(t.strip()) for t in tokens2])
+                    
+            elif 'PLOG' in line:
+                # Pressure-dependent Arrhenius parameters
+                if pdepArrhenius is None:
+                    pdepArrhenius = []
+                tokens = tokens[1].split()
+                pdepArrhenius = [float(tokens[0].strip()), Arrhenius(
+                    A = (float(tokens[1].strip()),kunits),
+                    n = float(tokens[2].strip()),
+                    Ea = (float(tokens[3].strip()) * energyFactor,"kcal/mol"),
+                    T0 = (1,"K"),
+                )]
+                
+            else:
+                # Assume a list of collider efficiencies
+                for collider, efficiency in zip(tokens[0::2], tokens[1::2]):
+                    efficiencies[speciesDict[collider.strip()]] = float(efficiency.strip())
+    
+        # Decide which kinetics to keep and store them on the reaction object
+        # Only one of these should be true at a time!
+        if chebyshev is not None:
+            if chebyshev.Tmin is None or chebyshev.Tmax is None:
+                raise ChemkinError('Missing TCHEB line for reaction {0}'.format(reaction))
+            if chebyshev.Pmin is None or chebyshev.Pmax is None:
+                raise ChemkinError('Missing PCHEB line for reaction {0}'.format(reaction))
+            index = 0
+            for t in range(chebyshev.degreeT):
+                for p in range(chebyshev.degreeP):
+                    chebyshev.coeffs[t,p] = chebyshevCoeffs[index]
+                    index += 1
+            reaction.kinetics = chebyshev
+        elif pdepArrhenius is not None:
+            reaction.kinetics = PDepArrhenius(
+                pressures = ([P for P, arrh in pdepArrhenius],"atm"),
+                arrhenius = [arrh in pdepArrhenius],
+            )
+        elif troe is not None:
+            troe.arrheniusHigh = arrheniusHigh
+            troe.arrheniusLow = arrheniusLow
+            troe.efficiencies = efficiencies
+            reaction.kinetics = troe
+        elif arrheniusLow is not None:
+            reaction.kinetics = Lindemann(arrheniusHigh=arrheniusHigh, arrheniusLow=arrheniusLow)
+            reaction.kinetics.efficiencies = efficiencies
+        elif thirdBody:
+            reaction.kinetics = ThirdBody(arrheniusHigh=arrheniusHigh)
+            reaction.kinetics.efficiencies = efficiencies
+        else:
+            raise ChemkinError('Unable to determine pressure-dependent kinetics for reaction {0}.'.format(reaction))
+    
+    return reaction
+
+################################################################################
+
+def loadChemkinFile(path):
+    """
+    Load a Chemkin input file to `path` on disk, returning lists of the species
+    and reactions in the Chemkin file.
+    """
+    
+    speciesList = []; speciesDict = {}
+    reactionList = []
+    
+    def removeCommentFromLine(line):
+        if '!' in line:
+            index = line.index('!')
+            return line[0:index] + '\n'
+        else:
+            return line
+        
+    with open(path, 'r') as f:
+    
+        line = f.readline()
+        while line != '':
+        
+            line = removeCommentFromLine(line)
+            line = line.strip()
+            tokens = line.split()
+            
+            if 'SPECIES' in line:
+                # List of species identifiers
+                index = tokens.index('SPECIES')
+                tokens = tokens[index+1:]
+                while 'END' not in tokens:
+                    line = f.readline()
+                    line = removeCommentFromLine(line)
+                    line = line.strip()
+                    tokens.extend(line.split())
+                
+                for token in tokens:
+                    if token == 'END':
+                        break
+                    species = Species(label=token)
+                    speciesList.append(species)
+                    speciesDict[token] = species
+                    
+            
+            elif 'THERM' in line:
+                # List of thermodynamics (hopefully one per species!)
+                line = f.readline()
+                thermo = ''
+                while line != '' and 'END' not in line:
+                    line = removeCommentFromLine(line)
+                    if len(line) >= 80:
+                        if line[79] in ['1', '2', '3', '4']:
+                            thermo += line
+                            if line[79] == '4':
+                                label, thermo = readThermoEntry(thermo)
+                                try:
+                                    speciesDict[label].thermo = thermo
+                                except KeyError:
+                                    if label in ['Ar', 'N2', 'He', 'Ne']:
+                                        pass
+                                    else:
+                                        raise ChemkinError('Unexpected species "{0}" while reading thermodynamics entry.'.format(label))
+                                thermo = ''
+                    line = f.readline()
+                
+            elif 'REACTIONS' in line:
+                # Reactions section
+                energyUnits, moleculeUnits = tokens[1:3]
+                
+                line = f.readline()
+                kinetics = ''
+                while line != '' and 'END' not in line:
+                    line = removeCommentFromLine(line)
+                    if '=' in line and kinetics.strip() != '':
+                        # Start of a new reaction entry
+                        reaction = readKineticsEntry(kinetics, speciesDict, energyUnits, moleculeUnits)
+                        reactionList.append(reaction)
+                        kinetics = ''
+                    kinetics += line
+                    
+                    line = f.readline()
+                # Don't forget the last reaction!
+                if kinetics.strip() != '':
+                    # Start of a new reaction entry
+                    reaction = readKineticsEntry(kinetics, speciesDict, energyUnits, moleculeUnits)
+                    reactionList.append(reaction)
+                        
+            line = f.readline()
+    
+    return speciesList, reactionList
+    
 ################################################################################
 
 def getSpeciesIdentifier(species):
