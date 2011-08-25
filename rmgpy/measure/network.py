@@ -307,7 +307,7 @@ class Network:
                 logging.debug('NOT calculating density of states for product channel "{0}"'.format(' + '.join([str(spec) for spec in self.products[n]])))
         
         logging.debug('')
-
+        
         return densStates
 
     def calculateMicrocanonicalRates(self, Elist, densStates, T=None):
@@ -392,7 +392,7 @@ class Network:
             else:
                 raise NetworkError('Unexpected type of path reaction "{0}"'.format(rxn))
         
-            if check:
+            if check and rxn.kinetics is not None:
                 # Check that the computed k(E) values integrate to give the 
                 # expected k(T) values (allowing for some numerical error)
                 error = False
@@ -680,8 +680,7 @@ class Network:
                     for j in range(i):
                         Keq0 = K[t,p,i,j] / K[t,p,j,i]
                         Keq = eqRatios[i] / eqRatios[j]
-                        #print j, i, Keq0, Keq, Keq0 / Keq
-                        if Keq0 / Keq < 0.8 or Keq0 / Keq > 1.25:
+                        if Keq0 / Keq < 0.5 or Keq0 / Keq > 2.0:
                             if i < Nisom:
                                 reactants = [self.isomers[i]]
                             elif i < Nisom+Nreac:
