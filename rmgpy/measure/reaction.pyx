@@ -230,9 +230,9 @@ def applyRRKMTheory(transitionState,
     dE = Elist[1] - Elist[0]
     
     # Calculate sum of states of transition state
-    sumStates0 = transitionState.states.getSumOfStates(Elist)
+    sumStates0 = transitionState.states.getSumOfStates(Elist - Elist[0])
     # Shift to common zero of energy
-    r0 = int(round(transitionState.E0.value / dE))
+    r0 = int(round((transitionState.E0.value - Elist[0]) / dE))
     sumStates = numpy.zeros_like(Elist)
     sumStates[r0:] = sumStates0[:-r0+len(sumStates0)]
     
