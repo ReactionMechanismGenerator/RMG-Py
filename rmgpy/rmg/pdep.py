@@ -366,7 +366,7 @@ class PDepNetwork(rmgpy.measure.network.Network):
         Tlist = measure.Tlist.values
         Plist = measure.Plist.values
         grainSize = measure.grainSize.value
-        Ngrains = measure.grainCount
+        grainCount = measure.grainCount
         method = measure.method
         model = measure.model
         
@@ -432,12 +432,8 @@ class PDepNetwork(rmgpy.measure.network.Network):
         
         self.printSummary(level=logging.INFO)
 
-        # Automatically choose a suitable set of energy grains if they were not
-        # explicitly specified in the input file
-        Elist = self.autoGenerateEnergyGrains(Tmax=Tmax, grainSize=grainSize, Ngrains=Ngrains)
-        
         # Calculate the rate coefficients
-        K, p0 = self.calculateRateCoefficients(Tlist, Plist, Elist, method)
+        K, p0 = self.calculateRateCoefficients(Tlist, Plist, method, grainSize=grainSize, grainCount=grainCount)
 
         # Generate PDepReaction objects
         configurations = []
