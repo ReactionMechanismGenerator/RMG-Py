@@ -641,6 +641,16 @@ def writeKineticsEntry(reaction, speciesList):
 
 ################################################################################
 
+def saveSpeciesDictionary(path, species):
+    """
+    Save the given list of `species` as adjacency lists in a text file `path` 
+    on disk.
+    """
+    with open(path, 'w') as f:
+        for spec in species:
+            f.write(spec.molecule[0].toAdjacencyList(label=getSpeciesIdentifier(spec), removeH=True))
+            f.write('\n')
+
 def saveChemkinFile(path, species, reactions):
     """
     Save a Chemkin input file to `path` on disk containing the provided lists

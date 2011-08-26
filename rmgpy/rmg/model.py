@@ -1387,12 +1387,14 @@ class CoreEdgeReactionModel:
         for rxn in seedReactionList:
             self.addReactionToCore(rxn)
 
-    def saveChemkinFile(self, path):
+    def saveChemkinFile(self, path, dictionaryPath=None):
         """
         Save a Chemkin file for the current model core as well as any desired output
         species and reactions to `path`.
         """
-        from rmgpy.chemkin import saveChemkinFile
+        from rmgpy.chemkin import saveChemkinFile, saveSpeciesDictionary
         speciesList = self.core.species + self.outputSpeciesList
         rxnList = self.core.reactions + self.outputReactionList
         saveChemkinFile(path, speciesList, rxnList)
+        if dictionaryPath:
+            saveSpeciesDictionary(dictionaryPath, speciesList)

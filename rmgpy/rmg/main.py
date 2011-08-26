@@ -352,12 +352,13 @@ class RMG:
             # Save the current state of the model core to a pretty HTML file
             logging.info('Saving latest model core to HTML file...')
             saveOutputHTML(os.path.join(self.outputDirectory, 'output.html'), self.reactionModel)
-    
+            
             # Save a Chemkin file containing the current model core
             logging.info('Saving latest model core to Chemkin file...')
             this_chemkin_path = os.path.join(self.outputDirectory, 'chemkin', 'chem%04i.inp' % len(self.reactionModel.core.species))
             latest_chemkin_path = os.path.join(self.outputDirectory, 'chemkin','chem.inp')
-            self.reactionModel.saveChemkinFile(this_chemkin_path)
+            latest_dictionary_path = os.path.join(self.outputDirectory, 'chemkin','species_dictionary.txt')
+            self.reactionModel.saveChemkinFile(this_chemkin_path, latest_dictionary_path)
             if os.path.exists(latest_chemkin_path):
                 os.unlink(latest_chemkin_path)
             os.link(this_chemkin_path,latest_chemkin_path)
