@@ -305,7 +305,7 @@ def readKineticsEntry(entry, speciesDict, energyUnits, moleculeUnits):
 
 ################################################################################
 
-def loadChemkinFile(path):
+def loadChemkinFile(path, dictionaryPath=None):
     """
     Load a Chemkin input file to `path` on disk, returning lists of the species
     and reactions in the Chemkin file.
@@ -313,6 +313,23 @@ def loadChemkinFile(path):
     
     speciesList = []; speciesDict = {}
     reactionList = []
+    
+    # If the dictionary path is given, the read it and generate Molecule objects
+    if dictionaryPath:
+        with open(dictionaryPath, 'r') as f:
+            adjlist = ''
+            for line in f:
+                if line.strip() == '' and adjlist.strip() != '':
+                    # Finish this adjacency list
+                    species = Species().fromAdjacencyList(adjlist)
+                    species.generateResonanceIsomers()
+                    speciesDict[species.label] = species
+                    adjlist = ''
+                else:
+                    if '//' in line:
+                        index = line.index('//')
+                        line = line[0:index]
+                    adjlist += line
     
     def removeCommentFromLine(line):
         if '!' in line:
@@ -343,11 +360,13 @@ def loadChemkinFile(path):
                 for token in tokens:
                     if token == 'END':
                         break
-                    species = Species(label=token)
-                    speciesList.append(species)
-                    speciesDict[token] = species
-                    
-            
+                    if token in speciesDict:
+                        species = speciesDict[token]
+                    else:
+                        species = Species(label=token)
+                        speciesDict[token] = species
+                    speciesList.append(species)         
+                
             elif 'THERM' in line:
                 # List of thermodynamics (hopefully one per species!)
                 line = f.readline()
