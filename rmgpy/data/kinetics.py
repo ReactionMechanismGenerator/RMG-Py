@@ -2364,7 +2364,7 @@ class KineticsFamily(Database):
         """
         return self.groups.getReactionTemplate(reaction)
 
-    def getKineticsForTemplate(self, template, degeneracy=1, mode='group additivity'):
+    def getKineticsForTemplate(self, template, degeneracy=1, mode='rate rules'):
         """
         Return an estimate of the kinetics for a reaction with the given
         `template` and reaction-path `degeneracy`. There are two possible modes
@@ -2458,7 +2458,31 @@ class KineticsFamily(Database):
         # Now add in more specific corrections if possible
         return self.groups.estimateKineticsUsingGroupAdditivity(template, kinetics, degeneracy)
     
-    def __getKineticsForRateRule(self, template0, distance0):
+    def __getAverageKinetics(self, kineticsList):
+        Aunits = kineticsList[0].A.units
+        averagedKinetics = ArrheniusEP(
+            A = (0,Aunits),
+            n = 0,
+            alpha = 0,
+            E0 = (0,"kJ/mol"),
+        )
+        averagedKinetics.A.value = 1.0
+        count = len(kineticsList)
+        for kinetics in kineticsList:
+            averagedKinetics.A.value *= kinetics.A.value
+            averagedKinetics.n.value += kinetics.n.value
+            averagedKinetics.alpha.value += kinetics.alpha.value
+            averagedKinetics.E0.value += kinetics.E0.value
+        averagedKinetics.A.value **= (1.0/count)
+        averagedKinetics.n.value /= count
+        averagedKinetics.alpha.value /= count
+        averagedKinetics.E0.value /= count
+        return averagedKinetics
+        
+    def __getTemplateLabel(self, template):
+        return '({0})'.format(','.join([g.label for g in template]))
+        
+    def __getKineticsForRateRule(self, template0):
         """
         Determine the appropriate kinetics for a reaction with the given
         `template` using rate rules. The procedure is as follows:
@@ -2479,29 +2503,6 @@ class KineticsFamily(Database):
         for this family.          
         """
         
-        def getTemplateLabel(template):
-            return '({0})'.format(','.join([g.label for g in template]))
-        
-        def getAverageKinetics(kineticsList):
-            averagedKinetics = ArrheniusEP(
-                A = (0,kunits),
-                n = 0,
-                alpha = 0,
-                E0 = (0,"kJ/mol"),
-            )
-            averagedKinetics.A.value = 1.0
-            count = len(kineticsList)
-            for kinetics in kineticsList:
-                averagedKinetics.A.value *= kinetics.A.value
-                averagedKinetics.n.value += kinetics.n.value
-                averagedKinetics.alpha.value += kinetics.alpha.value
-                averagedKinetics.E0.value += kinetics.E0.value
-            averagedKinetics.A.value **= (1.0/count)
-            averagedKinetics.n.value /= count
-            averagedKinetics.alpha.value /= count
-            averagedKinetics.E0.value /= count
-            return averagedKinetics
-        
         entries = self.rules.entries.values()
             
         # Do we have a rate rule for this exact template?
@@ -2512,9 +2513,9 @@ class KineticsFamily(Database):
                 # We do! Use these kinetics as-is
                 kinetics = deepcopy(entry.data)
                 kinetics.comment += 'Explicit rate rule for {0}'.format(
-                    getTemplateLabel(template0),
+                    self.__getTemplateLabel(template0),
                 )
-                return kinetics, template0, distance0
+                return kinetics, template0
         
         # Okay, we don't have an exact rate rule.
         # Can we average the rate rules for the child nodes?
@@ -2536,49 +2537,57 @@ class KineticsFamily(Database):
             # We've found one or more rate rules for the child nodes!
             # Average them together and return the result
             kunits = kineticsList[0][0].A.units
-            averagedKinetics = getAverageKinetics([kinetics for kinetics, children in kineticsList])
-            averagedKinetics.comment += 'Averaged rate rule for {0} (Average of {1})'.format(
-                getTemplateLabel(template0),
-                ' + '.join([getTemplateLabel(children) for kinetics, children in kineticsList]),
+            averagedKinetics = self.__getAverageKinetics([kinetics for kinetics, children in kineticsList])
+            averagedKinetics.comment += '(Averaged rate rule for {0} (Average of {1}))'.format(
+                self.__getTemplateLabel(template0),
+                ' + '.join([self.__getTemplateLabel(children) for kinetics, children in kineticsList]),
             )
-            return averagedKinetics, template0, distance0
+            return averagedKinetics, template0
         
         # Well, we couldn't construct an average at this node either
-        # Let's continue falling up the tree
-        # We explore all nodes with a distance one higher than the current node and with individual distances such that
-        parentsList = []
-        for index in range(len(template0)):
-            if not template0[index].parent:
-                # We're at the top-level node in this subtreee
-                continue
-            distance = distance0[:]
-            distance[index] += 1
-            template = template0[:]
-            template[index] = template[index].parent
-            parentsList.append([template, distance])
-        parentsList.sort(key=lambda x: reduce(lambda x,y:x*y, x[1]))
-        parentsList.reverse()
-        for template, distance in parentsList:
-            kinetics1, template1, distance1 = self.__getKineticsForRateRule(template, distance)
-            if kinetics1:
-                return kinetics1, template1, distance1
-        
-        # Well, we couldn't find any kinetics whatsoever for this template, so return None
-        # (The calling function should handle this case)
-        return None, None, None
+        # Give up and return None
+        return None, None
         
     def estimateKineticsUsingRateRules(self, template, degeneracy=1):
         """
         Determine the appropriate kinetics for a reaction with the given
         `template` using rate rules.
         """
-        distance = [0 for entry in template]
-        kinetics1, template1, distance1 = self.__getKineticsForRateRule(template, distance)
-        assert kinetics1 is not None
-        assert isinstance(kinetics1, ArrheniusEP)
-        kinetics1.A.value *= degeneracy
-        kinetics1.comment += ' [{0}]'.format(','.join([g.label for g in template]))
-        return kinetics1
+        templateList = [template]
+        while len(templateList) > 0:
+            
+            kineticsList = []
+            for t in templateList:
+                kinetics1, template1 = self.__getKineticsForRateRule(t)
+                if kinetics1:
+                    kineticsList.append([kinetics1, template1])
+            
+            if len(kineticsList) > 0:
+                # We found one or more results! Let's average them together
+                kinetics = self.__getAverageKinetics([k for k, t in kineticsList])
+                kinetics.comment += '(Average of {0})'.format(
+                    ' + '.join([k.comment for k, t in kineticsList]),
+                )
+                kinetics.A.value *= degeneracy
+                kinetics.comment += ' [{0}]'.format(','.join([g.label for g in template]))
+                return kinetics
+            
+            else:
+                # No results found
+                templateList0 = templateList
+                templateList = []
+                for template0 in templateList0:
+                    for index in range(len(template0)):
+                        if not template0[index].parent:
+                            # We're at the top-level node in this subtreee
+                            continue
+                        t = template0[:]
+                        t[index] = t[index].parent
+                        if t not in templateList:
+                            templateList.append(t)
+                
+        # If we're here then we couldn't estimate any kinetics, which is an exception
+        raise Exception('Unable to determine kinetics for reaction with template {0}.'.format(template))
 
 ################################################################################
 
