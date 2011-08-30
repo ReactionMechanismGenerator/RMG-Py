@@ -1350,14 +1350,15 @@ class KineticsGroups(Database):
 
         return template
 
-    def getKineticsForTemplate(self, template, referenceKinetics, degeneracy=1):
+    def estimateKineticsUsingGroupAdditivity(self, template, referenceKinetics, degeneracy=1):
         """
         Determine the appropriate kinetics for a reaction with the given
-        `template`.
+        `template` using group additivity.
         """
 
         # Start with the generic kinetics of the top-level nodes
-        kinetics = referenceKinetics
+        # Make a copy so we don't modify the original
+        kinetics = deepcopy(referenceKinetics)
         
         # Now add in more specific corrections if possible
         for node in template:
@@ -2363,19 +2364,20 @@ class KineticsFamily(Database):
         """
         return self.groups.getReactionTemplate(reaction)
 
-    def getKineticsForTemplate(self, template, degeneracy=1):
+    def getKineticsForTemplate(self, template, degeneracy=1, mode='group additivity'):
         """
-        Determine the appropriate kinetics for a reaction with the given
-        `template`.
+        Return an estimate of the kinetics for a reaction with the given
+        `template` and reaction-path `degeneracy`. There are two possible modes
+        to use: 'group additivity' (new RMG-Py behavior) and 'rate rules' (old
+        RMG-Java behavior).
         """
-        # Start with the generic kinetics of the top-level nodes
-        kinetics = None
-        for entry in self.forwardTemplate.reactants:
-            if kinetics is None and entry.data is not None:
-                kinetics = deepcopy(entry.data)
-        # Now add in more specific corrections if possible
-        return self.groups.getKineticsForTemplate(template, kinetics, degeneracy)
-
+        if mode.lower() == 'group additivity':
+            return self.estimateKineticsUsingGroupAdditivity(template, degeneracy)
+        elif mode.lower() == 'rate rules':
+            return self.estimateKineticsUsingRateRules(template, degeneracy)
+        else:
+            raise ValueError('Invalid value "{0}" for mode parameter; should be "group additivity" or "rate rules".'.format(mode))
+        
     def getKineticsFromDepository(self, depository, reaction, template, degeneracy):
         """
         Search the given `depository` in this kinetics family for kinetics
@@ -2442,6 +2444,26 @@ class KineticsFamily(Database):
             raise UndeterminableKineticsError(reaction)
         
         return kineticsList
+    
+    def estimateKineticsUsingGroupAdditivity(self, template, degeneracy=1):
+        """
+        Determine the appropriate kinetics for a reaction with the given
+        `template` using group additivity.
+        """
+        # Start with the generic kinetics of the top-level nodes
+        kinetics = None
+        for entry in self.forwardTemplate.reactants:
+            if kinetics is None and entry.data is not None:
+                kinetics = entry.data
+        # Now add in more specific corrections if possible
+        return self.groups.estimateKineticsUsingGroupAdditivity(template, kinetics, degeneracy)
+    
+    def estimateKineticsUsingRateRules(self, template, degeneracy=1):
+        """
+        Determine the appropriate kinetics for a reaction with the given
+        `template` using rate rules.
+        """
+        raise NotImplementedError
 
 ################################################################################
 
