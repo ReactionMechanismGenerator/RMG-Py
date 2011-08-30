@@ -2458,12 +2458,127 @@ class KineticsFamily(Database):
         # Now add in more specific corrections if possible
         return self.groups.estimateKineticsUsingGroupAdditivity(template, kinetics, degeneracy)
     
+    def __getKineticsForRateRule(self, template0, distance0):
+        """
+        Determine the appropriate kinetics for a reaction with the given
+        `template` using rate rules. The procedure is as follows:
+        
+        * If there is a rate rule at the exact template, then use that rule.
+        
+        * If there is no rate rule at the template, but there are one or more
+          combinations of child nodes with a rate rule, then average those
+          rules and use the result.
+        
+        * If there is no exact or averaged rate rule at the template, then
+          fall up the tree in search of a rule. We want the rule that is the
+          minimum "distance" (i.e. number of ancestors) away from this 
+          combination of nodes. This algorithm uses a breadth-first search
+          so as to prefer
+        
+        The worst case is that we fall all the way up to the top-level nodes
+        for this family.          
+        """
+        
+        def getTemplateLabel(template):
+            return '({0})'.format(','.join([g.label for g in template]))
+        
+        def getAverageKinetics(kineticsList):
+            averagedKinetics = ArrheniusEP(
+                A = (0,kunits),
+                n = 0,
+                alpha = 0,
+                E0 = (0,"kJ/mol"),
+            )
+            averagedKinetics.A.value = 1.0
+            count = len(kineticsList)
+            for kinetics in kineticsList:
+                averagedKinetics.A.value *= kinetics.A.value
+                averagedKinetics.n.value += kinetics.n.value
+                averagedKinetics.alpha.value += kinetics.alpha.value
+                averagedKinetics.E0.value += kinetics.E0.value
+            averagedKinetics.A.value **= (1.0/count)
+            averagedKinetics.n.value /= count
+            averagedKinetics.alpha.value /= count
+            averagedKinetics.E0.value /= count
+            return averagedKinetics
+        
+        entries = self.rules.entries.values()
+            
+        # Do we have a rate rule for this exact template?
+        templateLabels = [group.label for group in template0]
+        for entry in entries:
+            entryLabels = entry.label.split(';')
+            if all([group in entryLabels for group in templateLabels]) and all([group in templateLabels for group in entryLabels]):
+                # We do! Use these kinetics as-is
+                kinetics = deepcopy(entry.data)
+                kinetics.comment += 'Explicit rate rule for {0}'.format(
+                    getTemplateLabel(template0),
+                )
+                return kinetics, template0, distance0
+        
+        # Okay, we don't have an exact rate rule.
+        # Can we average the rate rules for the child nodes?
+        childrenList = [[group] for group in template0]
+        for group in childrenList:
+            group.extend(group[0].children)
+        childrenList = getAllCombinations(childrenList)
+        kineticsList = []
+        for children in childrenList:
+            templateLabels = [group.label for group in children]
+            for entry in entries:
+                entryLabels = entry.label.split(';')
+                if all([group in entryLabels for group in templateLabels]) and all([group in templateLabels for group in entryLabels]):
+                    # We've found a combination of child nodes with a rate rule!
+                    kineticsList.append([entry.data, children])
+                    # Only keep the first hit (in case there are multiple instances of the same rule)
+                    break
+        if len(kineticsList) > 0:
+            # We've found one or more rate rules for the child nodes!
+            # Average them together and return the result
+            kunits = kineticsList[0][0].A.units
+            averagedKinetics = getAverageKinetics([kinetics for kinetics, children in kineticsList])
+            averagedKinetics.comment += 'Averaged rate rule for {0} (Average of {1})'.format(
+                getTemplateLabel(template0),
+                ' + '.join([getTemplateLabel(children) for kinetics, children in kineticsList]),
+            )
+            return averagedKinetics, template0, distance0
+        
+        # Well, we couldn't construct an average at this node either
+        # Let's continue falling up the tree
+        # We explore all nodes with a distance one higher than the current node and with individual distances such that
+        parentsList = []
+        for index in range(len(template0)):
+            if not template0[index].parent:
+                # We're at the top-level node in this subtreee
+                continue
+            distance = distance0[:]
+            distance[index] += 1
+            template = template0[:]
+            template[index] = template[index].parent
+            parentsList.append([template, distance])
+        parentsList.sort(key=lambda x: reduce(lambda x,y:x*y, x[1]))
+        parentsList.reverse()
+        for template, distance in parentsList:
+            kinetics1, template1, distance1 = self.__getKineticsForRateRule(template, distance)
+            if kinetics1:
+                return kinetics1, template1, distance1
+        
+        # Well, we couldn't find any kinetics whatsoever for this template, so return None
+        # (The calling function should handle this case)
+        return None, None, None
+        
     def estimateKineticsUsingRateRules(self, template, degeneracy=1):
         """
         Determine the appropriate kinetics for a reaction with the given
         `template` using rate rules.
         """
-        raise NotImplementedError
+        distance = [0 for entry in template]
+        kinetics1, template1, distance1 = self.__getKineticsForRateRule(template, distance)
+        assert kinetics1 is not None
+        assert isinstance(kinetics1, ArrheniusEP)
+        kinetics1.A.value *= degeneracy
+        kinetics1.comment += ' [{0}]'.format(','.join([g.label for g in template]))
+        return kinetics1
 
 ################################################################################
 
