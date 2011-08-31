@@ -75,13 +75,19 @@ def saveOutputHTML(path, reactionModel):
     title = 'RMG Output'
 
     species = reactionModel.core.species[:] + reactionModel.outputSpeciesList
-    species.sort(key=lambda x: x.index)
 
-     # Draw molecules if necessary
     for spec in species:
+        # if the species dictionary came from an RMG-Java job, make them prettier
+        index = spec.label.find('(')
+        if index >= 0:
+            spec.index = int(spec.label[index+1:-1])
+            spec.label = spec.label[0:index]
+        # Draw molecules if necessary
         fstr = os.path.join(dirname, 'species', '{0}.png'.format(spec))
         if not os.path.exists(fstr):
             drawMolecule(spec.molecule[0], fstr)
+    
+    species.sort(key=lambda x: x.index)
 
     reactions = [rxn for rxn in reactionModel.core.reactions ] + reactionModel.outputReactionList
     reactions.sort(key=lambda x: x.index)
@@ -237,7 +243,8 @@ def saveOutputHTML(path, reactionModel):
     <tr><th>Index</th><th>Structure</th><th>Label</th></tr>
     {% for spec in species %}
     <tr class="species">
-        <td class="index">{{ spec.index }}.</td>
+        <td class="index">
+        {{ spec.index }}.</td>
         <td class="structure"><img src="species/{{ spec|replace('#','%23') }}.png" alt="{{ spec }}" title="{{ spec }}"></td>
         <td class="label">{{ spec.label }}</td>
     </tr>

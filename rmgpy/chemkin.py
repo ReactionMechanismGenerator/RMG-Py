@@ -33,6 +33,7 @@ This module contains functions for writing of Chemkin input files.
 
 import re
 import logging
+import os.path
 from thermo import MultiNASA
 from kinetics import *
 from reaction import Reaction
@@ -263,7 +264,7 @@ def readKineticsEntry(entry, speciesDict, energyUnits, moleculeUnits):
                     Ea = (float(tokens[3].strip()) * energyFactor,"kcal/mol"),
                     T0 = (1,"K"),
                 )]
-                
+
             else:
                 # Assume a list of collider efficiencies
                 for collider, efficiency in zip(tokens[0::2], tokens[1::2]):
@@ -300,7 +301,7 @@ def readKineticsEntry(entry, speciesDict, energyUnits, moleculeUnits):
             reaction.kinetics.efficiencies = efficiencies
         else:
             raise ChemkinError('Unable to determine pressure-dependent kinetics for reaction {0}.'.format(reaction))
-    
+   
     return reaction
 
 ################################################################################
@@ -313,8 +314,11 @@ def loadChemkinFile(path, dictionaryPath=None):
     
     speciesList = []; speciesDict = {}
     reactionList = []
-    
+
     # If the dictionary path is given, the read it and generate Molecule objects
+    # You need to append an additional adjacency list for nonreactive species, such
+    # as N2, or else the species objects will not store any structures for the final
+    # HTML output.
     if dictionaryPath:
         with open(dictionaryPath, 'r') as f:
             adjlist = ''
@@ -334,16 +338,58 @@ def loadChemkinFile(path, dictionaryPath=None):
     def removeCommentFromLine(line):
         if '!' in line:
             index = line.index('!')
-            return line[0:index] + '\n'
+            comment = line[index+1:-1] + '\n'
+            line = line[0:index] + '\n'
+            return line, comment
         else:
-            return line
-        
+            comment = ''
+            return line, comment
+
+    def checkDuplicateKinetics(reaction, kinetics,comments,dupReactionList,reactionList):
+        if 'DUP' in kinetics:
+            if dupReactionList:
+                if not reaction.hasTemplate(dupReactionList[-1].reactants,dupReactionList[-1].products):
+                    # It's not the same kind of duplicate reaction
+                    oldReactionKinetics = MultiKinetics()
+                    for item in dupReactionList:
+                        oldReactionKinetics.kineticsList.append(item.kinetics)
+                    oldReaction = dupReactionList[0]
+                    oldReaction.kinetics = oldReactionKinetics
+                    reactionList.append(oldReaction)
+                    dupReactionList = []
+            kinetics = kinetics.replace('\nDUP','')
+            reaction = readKineticsEntry(kinetics,speciesDict,energyUnits,moleculeUnits)
+            reaction.kinetics.comment = comments
+            dupReactionList.append(reaction)
+            kinetics = ''
+            comments = ''
+            return reaction, kinetics, comments, dupReactionList, reactionList
+
+        else:
+            # No more duplicate reactions
+            if dupReactionList:
+                # add previous reaction if they were duplicate reactions
+                oldReactionKinetics = MultiKinetics()
+                for item in dupReactionList:
+                    oldReactionKinetics.kineticsList.append(item.kinetics)
+                oldReaction = dupReactionList[0]
+                oldReaction.kinetics = oldReactionKinetics
+                reactionList.append(oldReaction)
+                dupReactionList = []
+            # add this new, nonduplicate reaction
+            reaction = readKineticsEntry(kinetics,speciesDict,energyUnits,moleculeUnits)
+            reaction.kinetics.comment = comments
+            print reaction.kinetics
+            reactionList.append(reaction)
+            kinetics = ''
+            comments = ''
+            return reaction, kinetics, comments, dupReactionList, reactionList
+
     with open(path, 'r') as f:
     
         line = f.readline()
-        while line != '':
-        
-            line = removeCommentFromLine(line)
+        while line != '':        
+            line = removeCommentFromLine(line)[0]
             line = line.strip()
             tokens = line.split()
             
@@ -353,7 +399,7 @@ def loadChemkinFile(path, dictionaryPath=None):
                 tokens = tokens[index+1:]
                 while 'END' not in tokens:
                     line = f.readline()
-                    line = removeCommentFromLine(line)
+                    line = removeCommentFromLine(line)[0]
                     line = line.strip()
                     tokens.extend(line.split())
                 
@@ -372,7 +418,7 @@ def loadChemkinFile(path, dictionaryPath=None):
                 line = f.readline()
                 thermo = ''
                 while line != '' and 'END' not in line:
-                    line = removeCommentFromLine(line)
+                    line = removeCommentFromLine(line)[0]
                     if len(line) >= 80:
                         if line[79] in ['1', '2', '3', '4']:
                             thermo += line
@@ -391,31 +437,74 @@ def loadChemkinFile(path, dictionaryPath=None):
             elif 'REACTIONS' in line:
                 # Reactions section
                 energyUnits, moleculeUnits = tokens[1:3]
-                
+
                 line = f.readline()
                 kinetics = ''
+                comments = ''
+                dupReactionList = []
+                reaction = None
                 while line != '' and 'END' not in line:
-                    line = removeCommentFromLine(line)
+                    line, comment = removeCommentFromLine(line)
                     if '=' in line and kinetics.strip() != '':
-                        # Start of a new reaction entry
-                        reaction = readKineticsEntry(kinetics, speciesDict, energyUnits, moleculeUnits)
-                        reactionList.append(reaction)
-                        kinetics = ''
+                        reaction, kinetics,comments,dupReactionList,reactionList = checkDuplicateKinetics(reaction, kinetics, comments, dupReactionList, reactionList)
+
                     kinetics += line
+                    comments += comment
                     
                     line = f.readline()
                 # Don't forget the last reaction!
                 if kinetics.strip() != '':
-                    # Start of a new reaction entry
-                    reaction = readKineticsEntry(kinetics, speciesDict, energyUnits, moleculeUnits)
-                    reactionList.append(reaction)
+#                    # Start of a new reaction entry
+#                    print kinetics
+                    reaction, kinetics,comments,dupReactionList,reactionList = checkDuplicateKinetics(reaction, kinetics, comments, dupReactionList, reactionList)
+                    if dupReactionList:
+                    # add previous reaction if they were duplicate reactions
+                        oldReactionKinetics = MultiKinetics()
+                        for item in dupReactionList:
+                            oldReactionKinetics.kineticsList.append(item.kinetics)
+                        oldReaction = dupReactionList[0]
+                        oldReaction.kinetics = oldReactionKinetics
+                        reactionList.append(oldReaction)
+                        dupReactionList = []
+#                    reaction = readKineticsEntry(kinetics, speciesDict, energyUnits, moleculeUnits)
+#                    reaction.kinetics.comment = comments
+#                    print reaction.kinetics
+#                    reactionList.append(reaction)
                         
             line = f.readline()
-    
-    return speciesList, reactionList
+
+    from rmgpy.data.kinetics import LibraryReaction, KineticsLibrary
+    library = KineticsLibrary(label="RMG-Java")
+    newReactionList = []
+    index = 0
+    # Create LibraryReactions for each reaction to include the additional info that it came from RMG-Java
+    # and so it will work with the saveOutputHTML function
+    for reaction in reactionList:
+        index += 1
+        newReaction = LibraryReaction(reactants = reaction.reactants, products = reaction.products, kinetics = reaction.kinetics, library=library,index=index)
+        newReactionList.append(newReaction)
+
+    return speciesList, newReactionList
     
 ################################################################################
 
+def saveHTMLFile(path):
+    """
+    Save an output HTML file from the contents of a RMG-Java output folder
+    """
+    from rmgpy.rmg.model import CoreEdgeReactionModel
+    from rmgpy.rmg.output import saveOutputHTML
+    chemkinPath= path + '/chemkin/chem.inp'
+    dictionaryPath = path + 'RMG_Dictionary.txt'
+    model = CoreEdgeReactionModel()
+    model.core.species, model.core.reactions = loadChemkinFile(chemkinPath,dictionaryPath)
+    outputPath = path + 'output.html'
+    speciesPath = path + '/species/'
+    if not os.path.isdir(speciesPath):
+        os.makedirs(speciesPath)
+    saveOutputHTML(outputPath, model)
+
+################################################################################
 def getSpeciesIdentifier(species):
     """
     Return a string identifier for the provided `species` that can be used in a
@@ -423,7 +512,7 @@ def getSpeciesIdentifier(species):
     species identifier, this function uses a maximum of 10 to ensure that all
     reaction equations fit in the maximum limit of 52 characters.
     """
-    
+
     # Special case for inert colliders - just use the label if possible
     if not species.reactive and 0 < len(species.label) < 10:
         return species.label
@@ -447,6 +536,10 @@ def getSpeciesIdentifier(species):
         name = 'S({0:d})'.format(species.index)
         if len(name) <= 10:
             return name
+
+    if species.index == -1:
+        # this didn't come from an RMG-job.  It came from a preexisting chemkin file.
+        return species.label
 
     # If we're here then we just can't come up with a valid Chemkin name
     # for this species, so raise an exception
