@@ -127,7 +127,8 @@ def readKineticsEntry(entry, speciesDict, energyUnits, moleculeUnits):
     # Extract the reaction equation
     reaction = str(lines[0][0:52].strip())
     thirdBody = False
-        
+    duplicate = False
+    
     # Split the reaction equation into reactants and products
     reversible = True
     reactants, products = reaction.split('=')
@@ -199,7 +200,11 @@ def readKineticsEntry(entry, speciesDict, energyUnits, moleculeUnits):
         # Note that the subsequent lines could be in any order
         for line in lines[1:]:
             tokens = line.split('/')
-            if 'LOW' in line:
+            if 'DUP' in line:
+                # Duplicate reaction
+                duplicate = True
+            
+            elif 'LOW' in line:
                 # Low-pressure-limit Arrhenius parameters
                 tokens = tokens[1].split()
                 arrheniusLow = Arrhenius(
@@ -299,6 +304,8 @@ def readKineticsEntry(entry, speciesDict, energyUnits, moleculeUnits):
         elif thirdBody:
             reaction.kinetics = ThirdBody(arrheniusHigh=arrheniusHigh)
             reaction.kinetics.efficiencies = efficiencies
+        elif duplicate:
+            reaction.kinetics = arrheniusHigh
         else:
             raise ChemkinError('Unable to determine pressure-dependent kinetics for reaction {0}.'.format(reaction))
    
