@@ -706,7 +706,7 @@ def writeKineticsEntry(reaction, speciesList):
             arrhenius.n.value,
             arrhenius.Ea.value / 4184.
         )
-    elif hasattr(kinetics,'highPlimit'):
+    elif hasattr(kinetics,'highPlimit') and kinetics.highPlimit is not None:
         arrhenius = kinetics.highPlimit
         string += '{0:<9.3e} {1:<9.3f} {2:<9.3f}'.format(
             arrhenius.A.value / (arrhenius.T0.value ** arrhenius.n.value) * 1.0e6 ** (numReactants - 1),
