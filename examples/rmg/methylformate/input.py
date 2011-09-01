@@ -5,6 +5,7 @@ database(
     reactionLibraries = ['Methylformate','Glarborg/highP'],
     seedMechanisms = ['Glarborg/C2'],
     kineticsDepositories = ['training'],
+    kineticsEstimator = 'group additivity',
 )
 
 # List of species
