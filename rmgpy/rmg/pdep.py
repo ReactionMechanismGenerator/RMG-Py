@@ -468,7 +468,7 @@ class PDepNetwork(rmgpy.measure.network.Network):
                         reactionModel.addReactionToEdge(netReaction)
 
                 # Set/update the net reaction kinetics using interpolation model
-                netReaction.kinetics = fitInterpolationModel(netReaction, Tlist, Plist, K[:,:,i,j], model, Tmin, Tmax, Pmin, Pmax)
+                netReaction.kinetics = fitInterpolationModel(netReaction, Tlist, Plist, K[:,:,i,j], model, Tmin, Tmax, Pmin, Pmax, errorCheck=True)
 
         # We're done processing this network, so mark it as valid
         self.valid = True
