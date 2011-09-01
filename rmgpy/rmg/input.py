@@ -49,7 +49,7 @@ class InputError(Exception): pass
 rmg = None
 speciesDict = {}
 
-def database(path, thermoLibraries=None, reactionLibraries=None, frequenciesLibraries=None, seedMechanisms=None, kineticsDepositories='default'):
+def database(path, thermoLibraries=None, reactionLibraries=None, frequenciesLibraries=None, seedMechanisms=None, kineticsDepositories='default', kineticsEstimator='group additivity'):
     # This function just stores the information about the database to be loaded
     # We don't actually load the database until after we're finished reading
     # the input file
@@ -62,6 +62,7 @@ def database(path, thermoLibraries=None, reactionLibraries=None, frequenciesLibr
     rmg.reactionLibraries = reactionLibraries or []
     rmg.seedMechanisms = seedMechanisms or []
     rmg.statmechLibraries = frequenciesLibraries or []
+    rmg.kineticsEstimator = kineticsEstimator
     if kineticsDepositories == 'default':
         rmg.kineticsDepositories = ['training']
     elif kineticsDepositories == 'all':

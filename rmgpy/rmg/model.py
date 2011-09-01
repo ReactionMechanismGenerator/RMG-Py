@@ -234,6 +234,7 @@ class CoreEdgeReactionModel:
         self.outputSpeciesList = []
         self.outputReactionList = []
         self.pressureDependence = None
+        self.kineticsEstimator = 'group additivity'
 
     def checkForExistingSpecies(self, molecule):
         """
@@ -760,7 +761,7 @@ class CoreEdgeReactionModel:
         assert isinstance(reaction, TemplateReaction)
         
         # Get the kinetics for the reaction
-        kinetics, source, entry, isForward = reaction.family.getKinetics(reaction, template=reaction.template, degeneracy=reaction.degeneracy, returnAllKinetics=False)
+        kinetics, source, entry, isForward = reaction.family.getKinetics(reaction, template=reaction.template, degeneracy=reaction.degeneracy, estimator=self.kineticsEstimator, returnAllKinetics=False)
         
         if reaction.family.ownReverse and hasattr(reaction,'reverse'):
             

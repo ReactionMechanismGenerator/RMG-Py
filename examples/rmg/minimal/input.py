@@ -4,6 +4,7 @@ database(
     thermoLibraries = ['primaryThermoLibrary'],
     reactionLibraries = [],
     seedMechanisms = [],
+    kineticsEstimator = 'group additivity',
 )
 
 # List of species

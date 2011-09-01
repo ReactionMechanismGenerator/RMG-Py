@@ -5,6 +5,7 @@ database(
     reactionLibraries = ['GRI-Mech3.0'],
     seedMechanisms = ['Glarborg/C1'],
     kineticsDepositories = ['training'], #  'all', 'default'==['training'], [], 
+    kineticsEstimator = 'rate rules',  # or 'rate rules'
 )
 
 # List of species
