@@ -2364,16 +2364,16 @@ class KineticsFamily(Database):
         """
         return self.groups.getReactionTemplate(reaction)
 
-    def getKineticsForTemplate(self, template, degeneracy=1, mode='rate rules'):
+    def getKineticsForTemplate(self, template, degeneracy=1, method='rate rules'):
         """
         Return an estimate of the kinetics for a reaction with the given
         `template` and reaction-path `degeneracy`. There are two possible modes
         to use: 'group additivity' (new RMG-Py behavior) and 'rate rules' (old
         RMG-Java behavior).
         """
-        if mode.lower() == 'group additivity':
+        if method.lower() == 'group additivity':
             return self.estimateKineticsUsingGroupAdditivity(template, degeneracy)
-        elif mode.lower() == 'rate rules':
+        elif method.lower() == 'rate rules':
             return self.estimateKineticsUsingRateRules(template, degeneracy)
         else:
             raise ValueError('Invalid value "{0}" for mode parameter; should be "group additivity" or "rate rules".'.format(mode))
@@ -2412,7 +2412,7 @@ class KineticsFamily(Database):
                     kinetics.comment += "Matched reaction {0} {1} in {2}".format(entry.index, entry.label, depository.label)
         return kineticsList
     
-    def getKinetics(self, reaction, template, degeneracy=1, returnAllKinetics=True):
+    def getKinetics(self, reaction, template, degeneracy=1, estimator='group additivity', returnAllKinetics=True):
         """
         Return the kinetics for the given `reaction` by searching the various
         depositories as well as generating a group additivity estimate. Unlike
@@ -2434,7 +2434,7 @@ class KineticsFamily(Database):
                     return kinetics, depository, entry, isForward
                 kineticsList.append([kinetics, depository, entry, isForward])
         # Also generate a group additivity estimate
-        kinetics = self.getKineticsForTemplate(template, degeneracy)
+        kinetics = self.getKineticsForTemplate(template, degeneracy, method=estimator)
         if kinetics:
             if not returnAllKinetics:
                 return kinetics, None, None, True
