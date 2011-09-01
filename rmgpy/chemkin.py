@@ -345,7 +345,7 @@ def loadChemkinFile(path, dictionaryPath=None):
     def removeCommentFromLine(line):
         if '!' in line:
             index = line.index('!')
-            comment = line[index+1:-1] + '\n'
+            comment = line[index+1:-1]
             line = line[0:index] + '\n'
             return line, comment
         else:
@@ -354,6 +354,9 @@ def loadChemkinFile(path, dictionaryPath=None):
 
     def checkDuplicateKinetics(reaction, kinetics,comments,dupReactionList,reactionList):
         if 'DUP' in kinetics:
+            kinetics = kinetics.replace('\nDUP','')
+            reaction = readKineticsEntry(kinetics,speciesDict,energyUnits,moleculeUnits)
+            reaction.kinetics.comment = comments
             if dupReactionList:
                 if not reaction.hasTemplate(dupReactionList[-1].reactants,dupReactionList[-1].products):
                     # It's not the same kind of duplicate reaction
@@ -364,9 +367,6 @@ def loadChemkinFile(path, dictionaryPath=None):
                     oldReaction.kinetics = oldReactionKinetics
                     reactionList.append(oldReaction)
                     dupReactionList = []
-            kinetics = kinetics.replace('\nDUP','')
-            reaction = readKineticsEntry(kinetics,speciesDict,energyUnits,moleculeUnits)
-            reaction.kinetics.comment = comments
             dupReactionList.append(reaction)
             kinetics = ''
             comments = ''
@@ -461,8 +461,6 @@ def loadChemkinFile(path, dictionaryPath=None):
                     line = f.readline()
                 # Don't forget the last reaction!
                 if kinetics.strip() != '':
-#                    # Start of a new reaction entry
-#                    print kinetics
                     reaction, kinetics,comments,dupReactionList,reactionList = checkDuplicateKinetics(reaction, kinetics, comments, dupReactionList, reactionList)
                     if dupReactionList:
                     # add previous reaction if they were duplicate reactions
@@ -473,22 +471,40 @@ def loadChemkinFile(path, dictionaryPath=None):
                         oldReaction.kinetics = oldReactionKinetics
                         reactionList.append(oldReaction)
                         dupReactionList = []
-#                    reaction = readKineticsEntry(kinetics, speciesDict, energyUnits, moleculeUnits)
-#                    reaction.kinetics.comment = comments
-#                    print reaction.kinetics
-#                    reactionList.append(reaction)
-                        
+
             line = f.readline()
 
-    from rmgpy.data.kinetics import LibraryReaction, KineticsLibrary
-    library = KineticsLibrary(label="RMG-Java")
+    from rmgpy.data.kinetics import LibraryReaction,TemplateReaction, KineticsLibrary, KineticsFamily
+    from rmgpy.rmg.pdep import PDepReaction, PDepNetwork
     newReactionList = []
     index = 0
-    # Create LibraryReactions for each reaction to include the additional info that it came from RMG-Java
-    # and so it will work with the saveOutputHTML function
+    # Create sources for each reaction to include the additional info that it came from RMG-Java
+    # and so it will generate family categories with the saveOutputHTML function
     for reaction in reactionList:
         index += 1
-        newReaction = LibraryReaction(reactants = reaction.reactants, products = reaction.products, kinetics = reaction.kinetics, library=library,index=index)
+        
+        #duplicate reactions only occur in libraries
+        if reaction.kinetics.comment:
+       
+            comment = reaction.kinetics.comment
+            if comment.find('PDepNetwork') > 0:
+                number = comment.split(' ')[3][1:]
+                network = PDepNetwork(index = int(number))
+                newReaction = PDepReaction(reactants = reaction.reactants, products = reaction.products, kinetics = reaction.kinetics, network = network, index = index)
+            else:
+                comment = comment.split(' ')
+                comment0 = comment[0]
+                if comment0.find('Library:') > 0:
+                    library = KineticsLibrary(label= comment[1])
+                    newReaction = LibraryReaction(reactants = reaction.reactants, products = reaction.products, kinetics = reaction.kinetics, library = library, index = index)
+                else:
+                    family = KineticsFamily(label = comment[0])
+                    newReaction = TemplateReaction(reactants = reaction.reactants, products = reaction.products, kinetics = reaction.kinetics, family = family, index = index)
+        else:
+            print reaction.kinetics.kineticsList[0].comment.split(' ')[1]
+            library = KineticsLibrary(label = reaction.kinetics.kineticsList[0].comment.split(' ')[1])
+            newReaction = LibraryReaction(reactants = reaction.reactants, products = reaction.products, kinetics = reaction.kinetics, library=library,index=index)
+
         newReactionList.append(newReaction)
 
     return speciesList, newReactionList
