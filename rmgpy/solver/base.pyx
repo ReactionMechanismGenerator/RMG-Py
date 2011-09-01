@@ -193,9 +193,14 @@ cdef class ReactionSystem(DASSL):
                     maxNetworkLeakRates[index] = networkLeakRates[index]
 
             # Get the edge species with the highest flux
-            maxSpeciesIndex = numpy.argmax(self.edgeSpeciesRates)
-            maxSpecies = edgeSpecies[maxSpeciesIndex]
-            maxSpeciesRate = self.edgeSpeciesRates[maxSpeciesIndex]
+            if numEdgeSpecies > 0:
+                maxSpeciesIndex = numpy.argmax(self.edgeSpeciesRates)
+                maxSpecies = edgeSpecies[maxSpeciesIndex]
+                maxSpeciesRate = self.edgeSpeciesRates[maxSpeciesIndex]
+            else:
+                maxSpeciesIndex = -1
+                maxSpecies = None
+                maxSpeciesRate = 0.0
             if pdepNetworks:
                 maxNetworkIndex = numpy.argmax(self.networkLeakRates)
                 maxNetwork = pdepNetworks[maxNetworkIndex]
