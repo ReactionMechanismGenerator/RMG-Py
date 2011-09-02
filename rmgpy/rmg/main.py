@@ -45,6 +45,7 @@ from rmgpy.molecule import Molecule
 from rmgpy.solver.base import TerminationTime, TerminationConversion
 from rmgpy.solver.simple import SimpleReactor
 from rmgpy.data.rmg import RMGDatabase
+from rmgpy.data.kinetics import KineticsLibrary, KineticsFamily, LibraryReaction, TemplateReaction
 
 from model import Species, CoreEdgeReactionModel
 from pdep import PDepNetwork
@@ -248,7 +249,7 @@ class RMG:
         
         # Initialize reaction model
         if args.restart:
-            self.loadRestartFile(os.path.join(self.outputDirectory,'restart.pkl.gz'))
+            self.loadRestartFile(os.path.join(self.outputDirectory,'restart.pkl'))
         else:
     
             # Seed mechanisms: add species and reactions from seed mechanism
@@ -487,7 +488,7 @@ class RMG:
         # Unpickle the reaction model from the specified restart file
         logging.info('Loading previous restart file...')
         f = open(path, 'rb')
-        reactionModel = cPickle.load(f)
+        self.reactionModel = cPickle.load(f)
         f.close()
     
         # A few things still point to the species in the input file, so update
@@ -495,52 +496,60 @@ class RMG:
     
         # The termination conversions still point to the old species
         from rmgpy.solver.base import TerminationConversion
-        for term in reactionModel.termination:
-            if isinstance(term, TerminationConversion):
-                term.species, isNew = reactionModel.makeNewSpecies(term.species.molecule[0], term.species.label, term.species.reactive)
+        for reactionSystem in self.reactionSystems:
+            for term in reactionSystem.termination:
+                if isinstance(term, TerminationConversion):
+                    term.species, isNew = self.reactionModel.makeNewSpecies(term.species.molecule[0], term.species.label, term.species.reactive)
     
         # The initial mole fractions in the reaction systems still point to the old species
-        for reactionSystem in reactionSystems:
+        for reactionSystem in self.reactionSystems:
             initialMoleFractions = {}
             for spec0, moleFrac in reactionSystem.initialMoleFractions.iteritems():
-                spec, isNew = reactionModel.makeNewSpecies(spec0.molecule[0], spec0.label, spec0.reactive)
+                spec, isNew = self.reactionModel.makeNewSpecies(spec0.molecule[0], spec0.label, spec0.reactive)
                 initialMoleFractions[spec] = moleFrac
             reactionSystem.initialMoleFractions = initialMoleFractions
     
         # The reactions and reactionDict still point to the old reaction families
         reactionDict = {}
-        for family0 in reactionModel.reactionDict:
+        oldFamilies = self.reactionModel.reactionDict.keys()
+        for family0 in self.reactionModel.reactionDict:
     
-            # Find the equivalent family in the newly-loaded database
-            import rmgpy.data.kinetics
+            # Find the equivalent library or family in the newly-loaded kinetics database
             family = None
-            for kineticsDatabase in rmgpy.data.kinetics.kineticsDatabases:
-                if isinstance(kineticsDatabase, rmgpy.data.kinetics.KineticsPrimaryDatabase):
-                    if kineticsDatabase.label == family0.label:
-                        family = kineticsDatabase
+            if isinstance(family0, KineticsLibrary):
+                for label, database in self.database.kinetics.libraries.iteritems():
+                    if database.label == family0.label:
+                        family = database
                         break
-                elif isinstance(kineticsDatabase, rmgpy.data.kinetics.KineticsGroupDatabase):
-                    for label, fam in kineticsDatabase.families.iteritems():
-                        if fam.label == family0.label:
-                            family = fam
-                            break
+            elif isinstance(family0, KineticsFamily):
+                for label, database in self.database.kinetics.families.iteritems():
+                    if database.label == family0.label:
+                        family = database
+                        break    
+            else:
+                import pdb; pdb.set_trace()
             if family is None:
                 raise Exception("Unable to find matching reaction family for %s" % family0.label)
     
             # Update each affected reaction to point to that new family
             # Also use that new family in a duplicate reactionDict
             reactionDict[family] = {}
-            for reactant1 in reactionModel.reactionDict[family0]:
+            for reactant1 in self.reactionModel.reactionDict[family0]:
                 reactionDict[family][reactant1] = {}
-                for reactant2 in reactionModel.reactionDict[family0][reactant1]:
+                for reactant2 in self.reactionModel.reactionDict[family0][reactant1]:
                     reactionDict[family][reactant1][reactant2] = []
-                    for rxn in reactionModel.reactionDict[family0][reactant1][reactant2]:
-                        rxn.family = family
-                        rxn.reverse.family = family
-                        reactionDict[family][reactant1][reactant2].append(rxn)
-    
-        # Return the unpickled reaction model
-        return reactionModel
+                    if isinstance(family0, KineticsLibrary):
+                        for rxn in self.reactionModel.reactionDict[family0][reactant1][reactant2]:
+                            assert isinstance(rxn, LibraryReaction)
+                            rxn.library = family
+                            reactionDict[family][reactant1][reactant2].append(rxn)
+                    elif isinstance(family0, KineticsFamily):
+                        for rxn in self.reactionModel.reactionDict[family0][reactant1][reactant2]:
+                            assert isinstance(rxn, TemplateReaction)
+                            rxn.family = family
+                            reactionDict[family][reactant1][reactant2].append(rxn)
+        
+        self.reactionModel.reactionDict = reactionDict
     
     def saveRestartFile(self, path, reactionModel, delay=0):
         """

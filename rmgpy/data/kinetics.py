@@ -109,7 +109,7 @@ class LibraryReaction(Reaction):
         """
         A helper function used when pickling an object.
         """
-        return (LibraryReaction, (self.index, self.reactants, self.products, self.kinetics, self.reversible, self.transitionState, self.thirdBody, self.degeneracy, self.library, self.entry))
+        return (LibraryReaction, (self.index, self.reactants, self.products, self.kinetics, self.reversible, self.transitionState, self.thirdBody, self.duplicate, self.degeneracy, self.library, self.entry))
 
     def getSource(self):
         """
@@ -136,7 +136,7 @@ class TemplateReaction(Reaction):
         """
         A helper function used when pickling an object.
         """
-        return (TemplateReaction, (self.index, self.reactants, self.products, self.kinetics, self.reversible, self.transitionState, self.thirdBody, self.degeneracy, self.family, self.template))
+        return (TemplateReaction, (self.index, self.reactants, self.products, self.kinetics, self.reversible, self.transitionState, self.thirdBody, self.duplicate, self.degeneracy, self.family, self.template))
 
     def getSource(self):
         """

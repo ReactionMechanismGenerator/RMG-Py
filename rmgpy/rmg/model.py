@@ -52,24 +52,15 @@ from pdep import PDepReaction, PDepNetwork, PressureDependenceError
 
 class Species(rmgpy.species.Species):
 
-    def __init__(self, index=-1, label='', thermo=None, states=None, molecule=None, E0=0.0, lennardJones=None, molecularWeight=0.0, collisionModel=None, reactive=True):
+    def __init__(self, index=-1, label='', thermo=None, states=None, molecule=None, E0=0.0, lennardJones=None, molecularWeight=0.0, collisionModel=None, reactive=True, coreSizeAtCreation=0):
         rmgpy.species.Species.__init__(self, index, label, thermo, states, molecule, E0, lennardJones, molecularWeight, collisionModel, reactive)
-        self.coreSizeAtCreation = 0
+        self.coreSizeAtCreation = coreSizeAtCreation
 
     def __reduce__(self):
         """
         A helper function used when pickling an object.
         """
-        d = {
-            'coreSizeAtCreation': self.coreSizeAtCreation,
-        }
-        return (Species, (self.index, self.label, self.thermo, self.states, self.molecule, self.E0, self.lennardJones, self.molecularWeight, self.reactive), d)
-
-    def __setstate__(self, d):
-        """
-        A helper function used when unpickling an object.
-        """
-        self.coreSizeAtCreation = d['coreSizeAtCreation']
+        return (Species, (self.index, self.label, self.thermo, self.states, self.molecule, self.E0, self.lennardJones, self.molecularWeight, self.reactive, self.coreSizeAtCreation),)
 
     def generateThermoData(self, database, thermoClass=MultiNASA):
         """
