@@ -91,7 +91,7 @@ def adjacencyList(string):
     return Molecule().fromAdjacencyList(string)
 
 # Reaction systems
-def simpleReactor(temperature, pressure, initialMoleFractions):
+def simpleReactor(temperature, pressure, initialMoleFractions, terminationConversion=None, terminationTime=None):
     logging.debug('Found SimpleReactor reaction system')
 
     if sum(initialMoleFractions.values()) != 1:
@@ -102,16 +102,17 @@ def simpleReactor(temperature, pressure, initialMoleFractions):
     T = Quantity(temperature)
     P = Quantity(pressure)
     
-    system = SimpleReactor(T, P, initialMoleFractions)
+    termination = []
+    if terminationConversion is not None:
+        for spec, conv in terminationConversion.iteritems():
+            termination.append(TerminationConversion(speciesDict[spec], conv))
+    if terminationTime is not None:
+        termination.append(TerminationTime(Quantity(terminationTime)))
+    if len(termination) == 0:
+        raise InputError('No termination conditions specified for reaction system #{0}.'.format(len(rmg.reactionSystems)+2))
+    
+    system = SimpleReactor(T, P, initialMoleFractions, termination)
     rmg.reactionSystems.append(system)
-
-def termination(conversion=None, time=None):
-    rmg.termination = []
-    if conversion is not None:
-        for spec, conv in conversion.iteritems():
-            rmg.termination.append(TerminationConversion(speciesDict[spec], conv))
-    if time is not None:
-        rmg.termination.append(TerminationTime(Quantity(time)))
 
 def simulator(atol, rtol):
     rmg.absoluteTolerance = atol
@@ -202,7 +203,6 @@ def readInputFile(path, rmg0):
         'InChI': InChI,
         'adjacencyList': adjacencyList,
         'simpleReactor': simpleReactor,
-        'termination': termination,
         'simulator': simulator,
         'model': model,
         'pressureDependence': pressureDependence,
