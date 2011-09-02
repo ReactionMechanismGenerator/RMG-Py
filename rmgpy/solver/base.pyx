@@ -47,7 +47,7 @@ cdef class ReactionSystem(DASSL):
     A base class for all RMG reaction systems.
     """
 
-    def __init__(self):
+    def __init__(self, termination=None):
         DASSL.__init__(self)
         # The reaction and species rates at the current time (in mol/m^3*s)
         self.coreSpeciesConcentrations = None
@@ -59,6 +59,7 @@ cdef class ReactionSystem(DASSL):
         self.maxCoreSpeciesRates = None
         self.maxEdgeSpeciesRates = None
         self.maxNetworkLeakRates = None
+        self.termination = termination or []
     
     cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions, list pdepNetworks=None, atol=1e-16, rtol=1e-8):
         """
@@ -100,7 +101,7 @@ cdef class ReactionSystem(DASSL):
     @cython.boundscheck(False)
     cpdef simulate(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions,
         double toleranceKeepInEdge, double toleranceMoveToCore, double toleranceInterruptSimulation,
-        list termination, list pdepNetworks=None, worksheet=None, absoluteTolerance=1e-16, relativeTolerance=1e-8):
+        list pdepNetworks=None, worksheet=None, absoluteTolerance=1e-16, relativeTolerance=1e-8):
         """
         Simulate the reaction system with the provided reaction model,
         consisting of lists of core species, core reactions, edge species, and
@@ -210,12 +211,12 @@ cdef class ReactionSystem(DASSL):
             if maxSpeciesRate > toleranceMoveToCore * charRate and not invalidObject:
                 logging.info('At time {0:10.4e} s, species {1} exceeded the minimum rate for moving to model core'.format(self.t, maxSpecies))
                 self.logRates(charRate, maxSpecies, maxSpeciesRate, maxNetwork, maxNetworkRate)
-                self.logConversions(termination, speciesIndex, y0)
+                self.logConversions(speciesIndex, y0)
                 invalidObject = maxSpecies
             if maxSpeciesRate > toleranceInterruptSimulation * charRate:
                 logging.info('At time {0:10.4e} s, species {1} exceeded the minimum rate for simulation interruption'.format(self.t, maxSpecies))
                 self.logRates(charRate, maxSpecies, maxSpeciesRate, maxNetwork, maxNetworkRate)
-                self.logConversions(termination, speciesIndex, y0)
+                self.logConversions(speciesIndex, y0)
                 break
 
             # If pressure dependence, also check the network leak fluxes
@@ -223,16 +224,16 @@ cdef class ReactionSystem(DASSL):
                 if maxNetworkRate > toleranceMoveToCore * charRate and not invalidObject:
                     logging.info('At time {0:10.4e} s, PDepNetwork #{1:d} exceeded the minimum rate for exploring'.format(self.t, maxNetwork.index))
                     self.logRates(charRate, maxSpecies, maxSpeciesRate, maxNetwork, maxNetworkRate)
-                    self.logConversions(termination, speciesIndex, y0)
+                    self.logConversions(speciesIndex, y0)
                     invalidObject = maxNetwork
                 if maxNetworkRate > toleranceInterruptSimulation * charRate:
                     logging.info('At time {0:10.4e} s, PDepNetwork #{1:d} exceeded the minimum rate for simulation interruption'.format(self.t, maxNetwork.index))
                     self.logRates(charRate, maxSpecies, maxSpeciesRate, maxNetwork, maxNetworkRate)
-                    self.logConversions(termination, speciesIndex, y0)
+                    self.logConversions(speciesIndex, y0)
                     break
 
             # Finish simulation if any of the termination criteria are satisfied
-            for term in termination:
+            for term in self.termination:
                 if isinstance(term, TerminationTime):
                     if self.t > term.time.value:
                         terminated = True
@@ -269,11 +270,11 @@ cdef class ReactionSystem(DASSL):
             if network is not None:
                 logging.info('    PDepNetwork #{0:d} leak rate: {1:10.4e} mol/m^3*s ({2:.4g})'.format(network.index, networkRate, networkRate / charRate))
 
-    cpdef logConversions(self, termination, speciesIndex, y0):
+    cpdef logConversions(self, speciesIndex, y0):
         """
         Log information about the current conversion values.
         """
-        for term in termination:
+        for term in self.termination:
             if isinstance(term, TerminationConversion):
                 index = speciesIndex[term.species]
                 X = (y0[index] - self.y[index]) / y0[index]

@@ -57,12 +57,12 @@ cdef class SimpleReactor(ReactionSystem):
     cdef numpy.ndarray reverseRateCoefficients
     cdef numpy.ndarray networkLeakCoefficients
 
-    def __init__(self, T, P, initialMoleFractions):
-        ReactionSystem.__init__(self)
+    def __init__(self, T, P, initialMoleFractions, termination):
+        ReactionSystem.__init__(self, termination)
         self.T = Quantity(T)
         self.P = Quantity(P)
         self.initialMoleFractions = initialMoleFractions
-
+        
         # These are helper variables used within the solver
         self.reactantIndices = None
         self.productIndices = None
