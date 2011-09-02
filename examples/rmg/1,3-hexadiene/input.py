@@ -63,13 +63,10 @@ simpleReactor(
         "H2": 0.0156,
         "N2": 0.8797,
     },
-)
-
-termination(
-    conversion={
+    terminationConversion={
         'HXD13': 0.9,
     },
-    time=(1e0,'s'),
+    terminationTime=(1e0,'s'),
 )
 
 simulator(

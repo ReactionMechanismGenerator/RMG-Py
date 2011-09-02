@@ -21,13 +21,10 @@ simpleReactor(
     initialMoleFractions={
         "ethane": 1.0,
     },
-)
-
-termination(
-    conversion={
+    terminationConversion={
         'ethane': 0.9,
     },
-    time=(1e6,'s'),
+    terminationTime=(1e6,'s'),
 )
 
 simulator(

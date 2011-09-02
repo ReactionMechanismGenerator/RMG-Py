@@ -50,13 +50,8 @@ simpleReactor(
         "C6H12n": 2.1000044337e-05,
         "Ar": 0.990929988899,
     },
-)
-
-termination(
-    conversion={
-        'C2H6On': 0.9,
-    },
-    time=(2e2,'s'),
+    terminationConversion = {'C2H6On': 0.9},
+    terminationTime = (2e2,'s'),
 )
    
 simulator(
