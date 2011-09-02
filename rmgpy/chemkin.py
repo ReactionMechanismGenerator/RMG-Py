@@ -146,7 +146,8 @@ def readKineticsEntry(entry, speciesDict, energyUnits, moleculeUnits):
     # Convert the reactants and products to Species objects using the speciesDict
     for reactant in reactants.split('+'):
         reactant = reactant.strip()
-        if reactant == 'M':
+        if reactant == 'M' or reactant == 'm':
+            print 'thirdbody true'
             thirdBody = True
         elif reactant not in speciesDict:
             raise ChemkinError('Unexpected reactant "{0}" in reaction {1}.'.format(reactant, reaction))
@@ -154,7 +155,7 @@ def readKineticsEntry(entry, speciesDict, energyUnits, moleculeUnits):
             reaction.reactants.append(speciesDict[reactant])
     for product in products.split('+'):
         product = product.strip()
-        if product.upper() == 'M':
+        if product.upper() == 'M' or product == 'm':
             pass
         elif product not in speciesDict:
             raise ChemkinError('Unexpected product "{0}" in reaction {1}.'.format(product, reaction))
@@ -273,7 +274,7 @@ def readKineticsEntry(entry, speciesDict, energyUnits, moleculeUnits):
             else:
                 # Assume a list of collider efficiencies
                 for collider, efficiency in zip(tokens[0::2], tokens[1::2]):
-                    efficiencies[speciesDict[collider.strip()]] = float(efficiency.strip())
+                    efficiencies[speciesDict[collider.strip()].molecule[0]] = float(efficiency.strip())
     
         # Decide which kinetics to keep and store them on the reaction object
         # Only one of these should be true at a time!
