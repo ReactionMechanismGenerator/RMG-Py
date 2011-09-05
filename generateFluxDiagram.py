@@ -318,16 +318,10 @@ def simulate(reactionModel, reactionSystem):
 
 ################################################################################
 
-if __name__ == '__main__':
-
-    import argparse
-    
-    parser = argparse.ArgumentParser()
-    parser.add_argument('input', metavar='INPUT', type=str, nargs=1,
-        help='the RMG input file to use')
-    
-    args = parser.parse_args()
-    inputFile = args.input[0]
+def loadRMGPyJob(inputFile):
+    """
+    Load the results of an RMG-Py job generated from the given `inputFile`.
+    """
     
     # Load the specified RMG input file
     rmg = RMG()
@@ -358,6 +352,22 @@ if __name__ == '__main__':
     rmg.reactionModel.core.species = speciesList
     rmg.reactionModel.core.reactions = reactionList
     
+    return rmg
+
+################################################################################
+
+if __name__ == '__main__':
+
+    import argparse
+    
+    parser = argparse.ArgumentParser()
+    parser.add_argument('input', metavar='INPUT', type=str, nargs=1,
+        help='the RMG input file to use')
+    args = parser.parse_args()
+    inputFile = args.input[0]
+    
+    rmg = loadRMGPyJob(inputFile)
+        
     # Generate a flux diagram video for each reaction system
     rmg.makeOutputSubdirectory('flux')
     for index, reactionSystem in enumerate(rmg.reactionSystems):
