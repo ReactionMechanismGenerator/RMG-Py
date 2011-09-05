@@ -22,6 +22,31 @@ from rmgpy.solver.simple import SimpleReactor
 
 ################################################################################
 
+# Here you can set the default values for options that control the generated
+# flux diagrams.
+
+# Options controlling the individual flux diagram renderings:
+program = 'dot'                 # The program to use to lay out the nodes and edges
+maximumNodeCount = 50           # The maximum number of nodes to show in the diagram
+maximumEdgeCount = 50           # The maximum number of edges to show in the diagram
+concentrationTolerance = 1e-6   # The lowest fractional concentration to show (values below this will appear as zero)
+speciesRateTolerance = 1e-6     # The lowest fractional species rate to show (values below this will appear as zero)
+maximumNodePenWidth = 10.0      # The thickness of the border around a node at maximum concentration
+maximumEdgePenWidth = 10.0      # The thickness of the edge at maximum species rate
+
+# Options controlling the ODE simulations:
+initialTime = 1e-12             # The time at which to initiate the simulation, in seconds
+timeStep = 10**0.1              # The multiplicative factor to use between consecutive time points
+absoluteTolerance = 1e-16       # The absolute tolerance to use in the ODE simluations
+relativeTolerance = 1e-8        # The relative tolerance to use in the ODE simulations
+
+# Options controlling the generated movie:
+framesPerSecond = 6             # The number of frames per second in the generated movie
+initialPadding = 5              # The number of seconds to display the initial fluxes at the start of the video
+finalPadding = 5                # The number of seconds to display the final fluxes at the end of the video
+
+################################################################################
+
 def getFluxPairs(reaction):
     """
     For a given `reaction`, match each reactant with a product for the purposes
@@ -77,16 +102,6 @@ def generateFluxDiagram(reactionModel, times, concentrations, reactionRates, out
     a movie. The individual frames and the final movie are saved on disk at
     `outputDirectory.`
     """
-    
-    # These settings control how the flux diagram is generated
-    program = 'dot'
-    maximumNodeCount = 50
-    maximumEdgeCount = 50
-    concentrationTolerance = 1e-6
-    speciesRateTolerance = 1e-6
-    maximumNodePenWidth = 10.0
-    maximumEdgePenWidth = 10.0
-    framesPerSecond = 6
     
     # Get the species and reactions corresponding to the provided concentrations and reaction rates
     speciesList = reactionModel.core.species[:]
@@ -205,8 +220,10 @@ def generateFluxDiagram(reactionModel, times, concentrations, reactionRates, out
         # Save the graph at this time to a dot file and a PNG image
         label = 't = 10^{0:.1f} s'.format(math.log10(times[t]))
         graph.set_label(label)
-        if t == 0 or t == len(times) - 1:
-            repeat = framesPerSecond * 5
+        if t == 0:
+            repeat = framesPerSecond * initialPadding
+        elif t == len(times) - 1:
+            repeat = framesPerSecond * finalPadding
         else:
             repeat = 1
         for r in range(repeat):
@@ -233,14 +250,10 @@ def generateFluxDiagram(reactionModel, times, concentrations, reactionRates, out
     
 ################################################################################
 
-def simulate(reactionModel, reactionSystem, t0, dt, atol=1e-16, rtol=1e-8):
+def simulate(reactionModel, reactionSystem):
     """
     Generate and return a set of core and edge species and reaction fluxes
     by simulating the given `reactionSystem` using the given `reactionModel`.
-    The fluxes are returned at time points that begin at `t0` and are spaced
-    `dt` apart (where `dt` is a multiplicative factor). The given absolute and
-    relative tolerances `atol` and `rtol` are passed along as options to the
-    solver.
     """
     
     coreSpecies = reactionModel.core.species
@@ -257,7 +270,7 @@ def simulate(reactionModel, reactionSystem, t0, dt, atol=1e-16, rtol=1e-8):
     for index, spec in enumerate(coreSpecies):
         speciesIndex[spec] = index
     
-    reactionSystem.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions, [], atol, rtol)
+    reactionSystem.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions, [], absoluteTolerance, relativeTolerance)
 
     # Copy the initial conditions to use in evaluating conversions
     y0 = reactionSystem.y.copy()
@@ -267,11 +280,11 @@ def simulate(reactionModel, reactionSystem, t0, dt, atol=1e-16, rtol=1e-8):
     coreReactionRates = []
     edgeReactionRates = []
 
-    stepTime = t0
+    nextTime = initialTime
     terminated = False; iteration = 0
     while not terminated:
         # Integrate forward in time to the next time point
-        reactionSystem.advance(stepTime)
+        reactionSystem.advance(nextTime)
 
         iteration += 1
         
@@ -293,8 +306,8 @@ def simulate(reactionModel, reactionSystem, t0, dt, atol=1e-16, rtol=1e-8):
                     break
 
         # Increment destination step time if necessary
-        if reactionSystem.t >= 0.9999 * stepTime:
-            stepTime *= dt
+        if reactionSystem.t >= 0.9999 * nextTime:
+            nextTime *= timeStep
 
     time = numpy.array(time)
     coreSpeciesConcentrations = numpy.array(coreSpeciesConcentrations)
@@ -352,7 +365,7 @@ if __name__ == '__main__':
         rmg.makeOutputSubdirectory('flux/{0:d}'.format(index+1))
         
         print 'Conducting simulation of reaction system {0:d}...'.format(index+1)
-        time, coreSpeciesConcentrations, coreReactionRates, edgeReactionRates = simulate(rmg.reactionModel, reactionSystem, t0=1e-12, dt=10**0.1, atol=rmg.absoluteTolerance, rtol=rmg.relativeTolerance)
+        time, coreSpeciesConcentrations, coreReactionRates, edgeReactionRates = simulate(rmg.reactionModel, reactionSystem)
         
         print 'Generating flux diagram for reaction system {0:d}...'.format(index+1)
         generateFluxDiagram(rmg.reactionModel, time, coreSpeciesConcentrations, coreReactionRates, os.path.join(rmg.outputDirectory, 'flux', '{0:d}'.format(index+1)))
