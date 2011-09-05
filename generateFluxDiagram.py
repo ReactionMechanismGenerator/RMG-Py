@@ -367,6 +367,15 @@ def loadRMGJavaJob(inputFile):
     rmg.reactionModel.core.species = speciesList
     rmg.reactionModel.core.reactions = reactionList
     
+    # RMG-Java doesn't generate species images, so draw them ourselves now
+    speciesPath = os.path.join(os.path.dirname(inputFile), 'species')
+    try:
+        os.mkdir(speciesPath)
+    except OSError:
+        pass
+    for species in speciesList:
+        species.molecule[0].draw(os.path.join(speciesPath, '{0!s}.png'.format(species)))
+    
     return rmg
 
 ################################################################################
