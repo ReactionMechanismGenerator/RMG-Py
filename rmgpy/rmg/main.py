@@ -38,10 +38,15 @@ import sys
 import logging
 import time
 import shutil
+import numpy
 
+from rmgpy.species import Species
+from rmgpy.molecule import Molecule
+from rmgpy.solver.base import TerminationTime, TerminationConversion
+from rmgpy.solver.simple import SimpleReactor
 from rmgpy.data.rmg import RMGDatabase
 
-from model import Species
+from model import Species, CoreEdgeReactionModel
 from pdep import PDepNetwork
 
 ################################################################################
@@ -662,6 +667,173 @@ class RMG:
         ax1.legend(['RAM', 'Restart file'], loc=2)
         plt.savefig(os.path.join(self.outputDirectory, 'plot/memoryUse.svg'))
         plt.clf()
+        
+    def loadRMGJavaInput(self, path):
+        """
+        Load an RMG-Java job from the input file located at `inputFile`, or
+        from the `inputFile` attribute if not given as a parameter.
+        """
+        
+        # NOTE: This function is currently incomplete!
+        # It only loads a subset of the available information.
+    
+        self.reactionModel = CoreEdgeReactionModel()
+        self.initialSpecies = []
+        self.reactionSystems = []
+    
+        Tlist = []; Plist = []; concentrationList = []; speciesDict = {}
+        termination = []; atol=1e-16; rtol=1e-8
+        
+        with open(path, 'r') as f:
+            line = f.readline()
+            while line != '':
+                line = line.strip()
+                if '//' in line: line = line[0:line.index('//')]
+                
+                if line.startswith('TemperatureModel:'):
+                    tokens = line.split()
+                    units = tokens[2][1:-1]
+                    assert units in ['C', 'F', 'K']
+                    if units == 'C':
+                        Tlist = [float(T)+273.15 for T in tokens[3:]]
+                    elif units == 'F':
+                        Tlist = [(float(T)+459.67)*5./9. for T in tokens[3:]]
+                    else:
+                        Tlist = [float(T) for T in tokens[3:]]
+                
+                elif line.startswith('PressureModel:'):
+                    tokens = line.split()
+                    units = tokens[2][1:-1]
+                    assert units in ['atm', 'bar', 'Pa', 'torr']
+                    if units == 'atm':
+                        Plist = [float(P)*101325. for P in tokens[3:]]
+                    elif units == 'bar':
+                        Plist = [float(P)*100000. for P in tokens[3:]]
+                    elif units == 'torr':
+                        Plist = [float(P)/760.*101325. for P in tokens[3:]]
+                    else:
+                        Plist = [float(P) for P in tokens[3:]]
+                        
+                elif line.startswith('InitialStatus:'):
+                    label = ''; concentrations = []; adjlist = ''
+                    
+                    line = f.readline().strip()
+                    while line != 'END':
+                        if '//' in line: line = line[0:line.index('//')]
+                        
+                        if line == '' and label != '':
+                            species = Species(label=label, molecule=[Molecule().fromAdjacencyList(adjlist)])
+                            self.initialSpecies.append(species)
+                            speciesDict[label] = species
+                            concentrationList.append(concentrations)
+                            label = ''; concentrations = []; adjlist = ''
+                        
+                        elif line != '' and label == '':
+                            tokens = line.split()
+                            label = tokens[0]
+                            units = tokens[1][1:-1]
+                            if tokens[-1] in ['Unreactive', 'ConstantConcentration']:
+                                tokens.pop(-1)
+                            assert units in ['mol/cm3', 'mol/m3', 'mol/l']
+                            if units == 'mol/cm3':
+                                concentrations = [float(C)*1.0e6 for C in tokens[2:]]
+                            elif units == 'mol/l':
+                                concentrations = [float(C)*1.0e3 for C in tokens[2:]]
+                            else:
+                                concentrations = [float(C) for C in tokens[2:]]
+                        
+                        elif line != '':
+                            adjlist += line + '\n'
+                        
+                        line = f.readline().strip()
+                        
+                elif line.startswith('InertGas:'):
+                    
+                    line = f.readline().strip()
+                    while line != 'END':
+                        if '//' in line: line = line[0:line.index('//')]
+                        
+                        if line != '':
+                            tokens = line.split()
+                            label = tokens[0]
+                            assert label in ['N2', 'Ar', 'He', 'Ne']
+                            if label == 'Ne':
+                                smiles = '[Ne]'
+                            elif label == 'Ar':
+                                smiles = '[Ar]'
+                            elif label == 'He':
+                                smiles = '[He]'
+                            else:
+                                smiles = 'N#N'
+                            units = tokens[1][1:-1]
+                            assert units in ['mol/cm3', 'mol/m3', 'mol/l']
+                            if units == 'mol/cm3':
+                                concentrations = [float(C)*1.0e6 for C in tokens[2:]]
+                            elif units == 'mol/l':
+                                concentrations = [float(C)*1.0e3 for C in tokens[2:]]
+                            else:
+                                concentrations = [float(C) for C in tokens[2:]]
+                            
+                            species = Species(label=label, reactive=False, molecule=[Molecule().fromSMILES(smiles)])
+                            self.initialSpecies.append(species)
+                            speciesDict[label] = species
+                            concentrationList.append(concentrations)
+                            
+                        line = f.readline().strip()
+                
+                elif line.startswith('FinishController:'):
+                    
+                    line = f.readline().strip()
+                    if '//' in line: line = line[0:line.index('//')]
+                
+                    tokens = line.split()
+                    if tokens[2].lower() == 'conversion:':
+                        label = tokens[3]
+                        conversion = float(tokens[4])
+                        termination.append(TerminationConversion(spec=speciesDict[label], conv=conversion))
+                    elif tokens[2].lower() == 'reactiontime:':
+                        time = float(tokens[3])
+                        units = tokens[4][1:-1]
+                        assert units in ['sec', 'min', 'hr', 'day']
+                        if units == 'min':
+                            time *= 60.
+                        elif units == 'hr':
+                            time *= 60. * 60.
+                        elif units == 'day':
+                            time *= 60. * 60. * 24.
+                        termination.append(TerminationTime(time=time))
+                            
+                    line = f.readline().strip()
+                    if '//' in line: line = line[0:line.index('//')]
+                
+                elif line.startswith('Atol:'):
+                    tokens = line.split()
+                    atol = float(tokens[1])
+                    
+                elif line.startswith('Rtol:'):
+                    tokens = line.split()
+                    rtol = float(tokens[1])
+                
+                line = f.readline()
+        
+        assert len(Tlist) > 0
+        assert len(Plist) > 0
+        concentrationList = numpy.array(concentrationList)
+        assert concentrationList.shape[1] == 1 or concentrationList.shape[1] == len(Tlist) * len(Plist) 
+        
+        # Make a reaction system for each (T,P) combination
+        systemCounter = 0
+        for T in Tlist:
+            for P in Plist:
+                if concentrationList.shape[1] == 1:
+                    concentrations = concentrationList[:,0]
+                else:
+                    concentrations = concentrationList[:,systemCounter]
+                totalConc = numpy.sum(concentrations)
+                initialMoleFractions = dict([(self.initialSpecies[i], concentrations[i] / totalConc) for i in range(len(self.initialSpecies))])
+                reactionSystem = SimpleReactor(T, P, initialMoleFractions=initialMoleFractions, termination=termination)
+                self.reactionSystems.append(reactionSystem)
+                systemCounter += 1
     
 ################################################################################
 
