@@ -484,27 +484,25 @@ def loadChemkinFile(path, dictionaryPath=None):
     for reaction in reactionList:
         index += 1
         
-        #duplicate reactions only occur in libraries
         if reaction.kinetics.comment:
-       
             comment = reaction.kinetics.comment
-            if comment.find('PDepNetwork') > 0:
-                number = comment.split(' ')[3][1:]
-                network = PDepNetwork(index = int(number))
-                newReaction = PDepReaction(reactants = reaction.reactants, products = reaction.products, kinetics = reaction.kinetics, network = network, index = index)
-            else:
-                comment = comment.split(' ')
-                comment0 = comment[0]
-                if comment0.find('Library:') > 0:
-                    library = KineticsLibrary(label= comment[1])
-                    newReaction = LibraryReaction(reactants = reaction.reactants, products = reaction.products, kinetics = reaction.kinetics, library = library, index = index)
-                else:
-                    family = KineticsFamily(label = comment[0])
-                    newReaction = TemplateReaction(reactants = reaction.reactants, products = reaction.products, kinetics = reaction.kinetics, family = family, index = index)
         else:
-            print reaction.kinetics.kineticsList[0].comment.split(' ')[1]
-            library = KineticsLibrary(label = reaction.kinetics.kineticsList[0].comment.split(' ')[1])
-            newReaction = LibraryReaction(reactants = reaction.reactants, products = reaction.products, kinetics = reaction.kinetics, library=library,index=index)
+            # We have a MultiKinetics reaction, so take the first reaction's comments
+            comment = reaction.kinetics.kineticsList[0].comment
+
+        if comment.find('PDepNetwork') > 0:
+            number = comment.split(' ')[3][1:]
+            network = PDepNetwork(index = int(number))
+            newReaction = PDepReaction(reactants = reaction.reactants, products = reaction.products, kinetics = reaction.kinetics, network = network, index = index)
+        else:
+            comment = comment.split(' ')
+            comment0 = comment[0]
+            if comment0.find('Library:') > 0:
+                library = KineticsLibrary(label= comment[1])
+                newReaction = LibraryReaction(reactants = reaction.reactants, products = reaction.products, kinetics = reaction.kinetics, library = library, index = index)
+            else:
+                family = KineticsFamily(label = comment[0])
+                newReaction = TemplateReaction(reactants = reaction.reactants, products = reaction.products, kinetics = reaction.kinetics, family = family, index = index)
 
         newReactionList.append(newReaction)
 
