@@ -40,6 +40,8 @@ from pydas cimport DASSL
 import cython
 import logging
 
+from rmgpy.quantity cimport Quantity
+
 ################################################################################
 
 cdef class ReactionSystem(DASSL):
@@ -288,8 +290,8 @@ class TerminationTime:
     has one attribute: the termination `time` in seconds.
     """
 
-    def __init__(self, time=0.0):
-        self.time = time
+    def __init__(self, time=(0.0,'s')):
+        self.time = Quantity(time)
 
 ################################################################################
 
