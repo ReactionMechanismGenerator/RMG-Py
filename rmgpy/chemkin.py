@@ -418,7 +418,22 @@ def loadChemkinFile(path, dictionaryPath=None):
                     else:
                         species = Species(label=token)
                         speciesDict[token] = species
-                    speciesList.append(species)         
+                    speciesList.append(species)
+                
+                # Also always add in a few bath gases (since RMG-Java does)
+                for label, smiles in [('Ar','[Ar]'), ('He','[He]'), ('Ne','[Ne]'), ('N2','N#N')]:
+                    molecule = Molecule().fromSMILES(smiles)
+                    for species in speciesList:
+                        if species.label == label:
+                            if len(species.molecule) == 0:
+                                species.molecule = [molecule]
+                            break
+                        if species.isIsomorphic(molecule):
+                            break
+                    else:
+                        species = Species(label=label, molecule=[molecule])
+                        speciesList.append(species)
+                        speciesDict[label] = species                            
                 
             elif 'THERM' in line:
                 # List of thermodynamics (hopefully one per species!)
