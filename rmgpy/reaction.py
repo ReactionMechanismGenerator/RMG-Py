@@ -77,11 +77,12 @@ class Reaction:
     `thirdBody`         ``bool``                    ``True`` if the reaction if the reaction kinetics imply a third body, ``False`` if not
     `duplicate`         ``bool``                    ``True`` if the reaction is known to be a duplicate, ``False`` if not
     `degeneracy`        :class:`double`             The reaction path degeneracy for the reaction
+    `pairs`             ``list``                    Reactant-product pairings to use in converting reaction flux to species flux
     =================== =========================== ============================
     
     """
     
-    def __init__(self, index=-1, reactants=None, products=None, kinetics=None, reversible=True, transitionState=None, thirdBody=False, duplicate=False, degeneracy=1):
+    def __init__(self, index=-1, reactants=None, products=None, kinetics=None, reversible=True, transitionState=None, thirdBody=False, duplicate=False, degeneracy=1, pairs=None):
         self.index = index
         self.reactants = reactants
         self.products = products
@@ -91,6 +92,7 @@ class Reaction:
         self.thirdBody = thirdBody
         self.duplicate = duplicate
         self.degeneracy = degeneracy
+        self.pairs = pairs
 
     def __repr__(self):
         """
@@ -107,6 +109,7 @@ class Reaction:
         if self.thirdBody: string += 'thirdBody={0}, '.format(self.thirdBody)
         if self.duplicate: string += 'duplicate={0}, '.format(self.duplicate)
         if self.degeneracy != 1: string += 'degeneracy={0:d}, '.format(self.degeneracy)
+        if self.pairs is not None: string += 'pairs={0}, '.format(self.pairs)
         string = string[:-2] + ')'
         return string
 
@@ -122,7 +125,7 @@ class Reaction:
         """
         A helper function used when pickling an object.
         """
-        return (Reaction, (self.index, self.reactants, self.products, self.kinetics, self.reversible, self.transitionState, self.thirdBody, self.duplicate, self.degeneracy))
+        return (Reaction, (self.index, self.reactants, self.products, self.kinetics, self.reversible, self.transitionState, self.thirdBody, self.duplicate, self.degeneracy, self.pairs))
 
     def toChemkin(self, speciesList):
         """

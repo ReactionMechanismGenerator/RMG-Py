@@ -44,6 +44,7 @@ cdef class Reaction:
     cdef public bint thirdBody
     cdef public bint duplicate
     cdef public int degeneracy
+    cdef public list pairs
     
     cpdef bint isIsomerization(self)
 
