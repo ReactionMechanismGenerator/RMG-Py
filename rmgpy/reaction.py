@@ -812,11 +812,13 @@ class Reaction:
         self.pairs = []
         
         if len(self.reactants) == 1 or len(self.products) == 1:
+            # Pair each reactant with each product
             for reactant in self.reactants:
                 for product in self.products:
                     self.pairs.append((reactant, product))
             
-        elif len(self.reactants) == 2 and len(self.products) == 2:
+        else:
+                
             reactants = self.reactants[:]
             products = self.products[:]
             
@@ -824,19 +826,21 @@ class Reaction:
             productCarbons  = [sum([1 for atom in  product.molecule[0].atoms if atom.isCarbon()]) for product  in products ]
             reactantOxygens = [sum([1 for atom in reactant.molecule[0].atoms if atom.isOxygen()]) for reactant in reactants]
             productOxygens  = [sum([1 for atom in  product.molecule[0].atoms if atom.isOxygen()]) for product  in products ]
-            if (
-                reactants[0] is products[1] or
-                reactants[1] is products[0] or
-                abs(reactantCarbons[0] - productCarbons[1]) < abs(reactantCarbons[0] - productCarbons[0]) or
-                abs(reactantOxygens[0] - productOxygens[1]) < abs(reactantOxygens[0] - productOxygens[0])
-            ):
-                self.pairs = [(reactants[0], products[1]), (reactants[1], products[0])]
-            else:
-                self.pairs = [(reactants[0], products[0]), (reactants[1], products[1])]
+            
+            # Sort the reactants and products by carbon number, then by oxygen number
+            reactants = [(carbon, oxygen, reactant) for carbon, oxygen, reactant in zip(reactantCarbons,reactantOxygens,reactants)]
+            reactants.sort()
+            products = [(carbon, oxygen, product) for carbon, oxygen, product in zip(productCarbons,productOxygens,products)]
+            products.sort()
+            
+            while len(reactants) > 1 and len(products) > 1:
+                self.pairs.append((reactants[-1][2], products[-1][2]))
+                reactants.pop()
+                products.pop()
+            for reactant in reactants:
+                for product in products:
+                    self.pairs.append((reactant[2], product[2]))
                 
-        else:
-            raise ReactionError('Unable to determine reaction flux pairs for {0}.'.format(self))
-        
 ################################################################################
 
 class ReactionModel:
